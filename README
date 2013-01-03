@@ -1,0 +1,87 @@
+/*********************************************************\
+ * Copyright (c) 2012-2013 Christian Ofenberg
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the “Software”), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+== Unrimp Description ==
+Unified renderer implementation ("Un r imp"). Extensive examples from basic to advanced are provided as well.
+
+
+== Features ==
+- General library design
+	- Compact user-header for the renderer API
+		- A single all in one header for ease-of-use and best possible compile times
+		- No need to links against the renderer library itself, load renderer interface implementations dynamically during runtime
+	- Lightweight renderer implementations
+		- Implementations try to stick as best as possible close-to-the-metal and as a result are just a few KiB instead of MiB in memory size
+		- Implementations load the entry points of Direct3D, OpenGL and so on during runtime, meaning it's possible to react on system failures by e.g. dynamically switching to another renderer implementation
+	- Support for static and dynamic build
+- Renderer implementations for
+	- Direct3D 9 with support for HLSL and Cg shaders
+	- Direct3D 10 with support for HLSL and Cg shaders
+	- Direct3D 11 with support for HLSL and Cg shaders
+	- OpenGL with support for GLSL and Cg shaders
+	- OpenGL ES 2 with support for GLSL and Cg shaders
+- Shaders
+	- Vertex shader (VS)
+	- Tessellation control shader (TCS, "hull shader" in Direct3D terminology)
+	- Tessellation evaluation shader (TES, "domain shader" in Direct3D terminology)
+	- Geometry shader (GS)
+	- Fragment shader (FS, "pixel shader" in Direct3D terminology)
+- Vertex array object (VAO, input-assembler (IA) stage) with support for multiple vertex streams
+	- Vertex buffer object (VBO, input-assembler (IA) stage)
+	- Index buffer object (IBO, input-assembler (IA) stage)
+- Render targets
+	- Swap chains, render into one or multiple operation system windows
+	- Framebuffer object (FBO) used for render to texture, support for multiple render targets (MRT)
+- Buffers
+	- Uniform buffer object (UBO, "constant buffer" in Direct3D terminology)
+	- Texture buffer object (TBO)
+- Textures
+	- 2D texture
+	- 2D texture array
+- State objects with mapping to API specific settings during creation, not runtime
+	- Rasterizer state object (rasterizer stage (RS))
+	- Depth stencil state object (output-merger (OM) stage)
+	- Blend state object (output-merger (OM) stage)
+	- Sampler state object (SO)
+- Collections to potentially reduce the number of state changes
+	- Texture collection
+	- Sampler state collection
+- Instancing support
+	- Instanced arrays (shader model 3 feature, vertex array element advancing per-instance instead of per-vertex)
+	- Draw instanced (shader model 4 feature, build in shader variable holding the current instance ID)
+- Debug methods
+	- When using Direct3D <11.1, those methods map to the Direct3D 9 PIX functions (D3DPERF_* functions, also works directly within VisualStudio 2012 out-of-the-box)
+	- Used inside the renderer implementations for better renderer debugging
+- Renderer implementation specific optimizations
+	- OpenGL: Usage of direct state access (DSA), if available
+
+
+== Hints ==
+The unified renderer interface can't unify some graphics API behaviour differences. Here's a list of hints you might want to know:
+- Texel coordinate system origin
+	- OpenGL: Left/bottom
+	- Direct3D: Left/top
+		- See "Coordinate Systems (Direct3D 10)" at MSDN http://msdn.microsoft.com/en-us/library/windows/desktop/cc308049%28v=vs.85%29.aspx
+- Pixel coordinate system 
+	- Direct3D: See "Coordinate Systems (Direct3D 10)" at MSDN http://msdn.microsoft.com/en-us/library/windows/desktop/cc308049%28v=vs.85%29.aspx
+- Clip space coordinate system
+	- OpenGL: [-1, -1, -1] ... [1, 1, 1]
+	- Direct3D: [-1, -1, 0] ... [1, 1, 1]
+	- Additional information: "The Cg Tutorial"-book, section "4.1.8 The Projection Transform", online available at http://http.developer.nvidia.com/CgTutorial/cg_tutorial_chapter04.html

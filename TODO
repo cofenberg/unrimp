@@ -1,0 +1,72 @@
+== General ==
+- Search for "TODO" (e.g. "TODO(co)")
+
+
+== Platform Specific ==
+- Get Windows 64 bit support up-and-running
+- Get Linux 32 & 64 bit support up-and-running
+- Get Android support up-and-running
+- Get WinRT support up-and-running
+- Get NaCL support up-and-running
+- Get Mac OS X support up-and-running
+- Get iOS support up-and-running
+
+
+== Build System ==
+- Complete CMake scripts
+
+
+== New Features ==
+- Occlusion query
+- Multisample Anti-Aliasing
+- Transform feedback
+- Compute Shader (Direct3D 11, OpenGL 4.3 -> "GL_ARB_compute_shader")
+- OpenCL support
+- Multithreaded rendering
+- Rest of texture types like cube maps
+- Add OpenGL ES 3 renderer implementation
+- Add support for separate shader objects, nothing special in Direct3D, for OpenGL use http://www.opengl.org/registry/specs/ARB/separate_shader_objects.txt
+
+
+== Complete ==
+- Add support for defining shader profiles for the Direct3D renderer implementations
+- Review Direct3D 9 pixel center issue, see "FirstMultipleRenderTargets", "FirstPostProcessing" (upper image part), "FXAA"
+	- "Coordinate Systems (Direct3D 10)" http://msdn.microsoft.com/en-us/library/windows/desktop/cc308049%28v=vs.85%29.aspx
+- Swap chain
+	- Support for multiple windows
+		- OpenGL
+			mWindowDeviceContext = ::GetDC(reinterpret_cast<HWND>(mWindow));
+			HGLRC rc = wglCreateContextAttribsARB(mWindowDeviceContext, nullptr, attributes);		
+			wglMakeCurrent(mWindowDeviceContext, mWindowRenderContext);
+		- OpenGL ES 2
+			eglCreateWindowSurface(mDisplay, mConfig, mDummyNativeWindow, nullptr)
+			eglMakeCurrent(mDisplay, eglSurface, eglSurface, mContext)
+		- "FirstMultipleSwapChains": Check OpenGL and OpenGL ES 2 behaviour
+		- Remove "IRenderer::getMainSwapChain()" if possible
+	- "Present()": Support for swap interval
+	- Support for fullscreen/window switch in: Direct3D 9, OpenGL, OpenGL ES 2
+		- Make it possible to choose a configuration
+		- Direct3D 10 is currently flickering while switching?
+	- Fix: "FirstMultipleSwapChains": Direct3D 11: When closing the second window:
+		"D3D11: ERROR: ID3D11DeviceContext::RSSetViewports: Viewport at slot 0 is invalid. Valid Viewport extents are -32768.000000 <= TopLeftX, TopLeftY, (TopLeftX+Width), (TopLeftY+Height) <= 32767.000000, 0.000000 <= MinDepth, MaxDepth <= 1.000000, and MinDepth <= MaxDepth. Your viewport is: (TopLeftX,Y) = (0.000000, 0.000000), (Width,Height) = (6303096.000000, 4291823360.000000), (MinDepth,MaxDepth) = (0.000000, 1.000000) [ STATE_SETTING ERROR #259: DEVICE_RSSETVIEWPORTS_INVALIDVIEWPORT ]"
+- Texture interface
+	- Support for up/downloading mipmaps
+	- Support for up/downloading compressed textures
+	- Add more texture formats like floating point textures
+
+
+== Fine Tuning ==
+- Get rid of "Unbind our texture from the texture unit before rendering into it" which is required when using Direct3D, this is error prone and complicated to use
+
+
+== Examples ==
+- Work on a nice example framework with support for switching between examples and e.g. running examples in multiple windows while each window is using another renderer implementation
+- Complete "FirstGpgpu": Read back data from GPU
+- Add multisample antialiasing, quite simple sample using just another renderer setting
+- Add "FirstMultiViewports" showing how to deal with multiple viewports
+- Add billboarding example using a geometry shader
+- Add HDR example
+- Add shadow mapping example
+- Add deferred rendering example
+- Add example showing how to use e.g. OpenGL directly in case the abstract renderer interface does not offer a required special feature
+- Get rid of the nasty quick'n'dirty borrowed "TGALoader" inside the example framework
