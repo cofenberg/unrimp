@@ -37,6 +37,9 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 	- Direct3D 11 with support for HLSL and Cg shaders
 	- OpenGL with support for GLSL and Cg shaders
 	- OpenGL ES 2 with support for GLSL and Cg shaders
+- Cross-platform
+	- Windows
+	- Linux
 - Shaders
 	- Vertex shader (VS)
 	- Tessellation control shader (TCS, "hull shader" in Direct3D terminology)
