@@ -32,11 +32,11 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 		- Implementations load the entry points of Direct3D, OpenGL and so on during runtime, meaning it's possible to react on system failures by e.g. dynamically switching to another renderer implementation
 	- Support for static and dynamic build
 - Renderer implementations for
-	- Direct3D 9 with support for HLSL and Cg shaders
-	- Direct3D 10 with support for HLSL and Cg shaders
-	- Direct3D 11 with support for HLSL and Cg shaders
-	- OpenGL with support for GLSL and Cg shaders
-	- OpenGL ES 2 with support for GLSL and Cg shaders
+	- Direct3D 9
+	- Direct3D 10
+	- Direct3D 11
+	- OpenGL
+	- OpenGL ES 2
 - Cross-platform
 	- Windows
 	- Linux
