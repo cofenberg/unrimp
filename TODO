@@ -50,8 +50,9 @@
 	- Fix: "FirstMultipleSwapChains": Direct3D 11: When closing the second window:
 		"D3D11: ERROR: ID3D11DeviceContext::RSSetViewports: Viewport at slot 0 is invalid. Valid Viewport extents are -32768.000000 <= TopLeftX, TopLeftY, (TopLeftX+Width), (TopLeftY+Height) <= 32767.000000, 0.000000 <= MinDepth, MaxDepth <= 1.000000, and MinDepth <= MaxDepth. Your viewport is: (TopLeftX,Y) = (0.000000, 0.000000), (Width,Height) = (6303096.000000, 4291823360.000000), (MinDepth,MaxDepth) = (0.000000, 1.000000) [ STATE_SETTING ERROR #259: DEVICE_RSSETVIEWPORTS_INVALIDVIEWPORT ]"
 - Texture interface
-	- Support for up/downloading mipmaps
-	- Support for up/downloading compressed textures
+	- "Texture2DArray" backends: Add support for "Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS" and compressed textures
+	- Support for downloading mipmaps
+	- Support for downloading compressed textures
 	- Add more texture formats like floating point textures
 
 
@@ -69,4 +70,3 @@
 - Add shadow mapping example
 - Add deferred rendering example
 - Add example showing how to use e.g. OpenGL directly in case the abstract renderer interface does not offer a required special feature
-- Get rid of the nasty quick'n'dirty borrowed "TGALoader" inside the example framework
