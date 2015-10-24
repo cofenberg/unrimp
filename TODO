@@ -17,12 +17,15 @@
 
 
 == New Features ==
+- Multithreaded rendering
+	- Background thread "RendererRuntime::IResourceLoader::onRendererBackendDispatch()" execution
 - Occlusion query
+- V-sync control
+- Asynchronous shader compilation
 - Multisample Anti-Aliasing
 - Transform feedback
 - Compute Shader (Direct3D 11, OpenGL 4.3 -> "GL_ARB_compute_shader")
 - OpenCL support
-- Multithreaded rendering
 - Rest of texture types like cube maps
 - Add OpenGL ES 3 renderer implementation
 - Add support for separate shader objects, nothing special in Direct3D, for OpenGL use http://www.opengl.org/registry/specs/ARB/separate_shader_objects.txt
