@@ -24,6 +24,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 
 == Features ==
 - General library design
+	- C++ 11 and above, no legacy compiler support
 	- Compact user-header for the renderer API
 		- A single all in one header for ease-of-use and best possible compile times
 		- No need to links against the renderer library itself, load renderer interface implementations dynamically during runtime
@@ -31,6 +32,9 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 		- Implementations try to stick as best as possible close-to-the-metal and as a result are just a few KiB instead of MiB in memory size
 		- Implementations load the entry points of Direct3D, OpenGL and so on during runtime, meaning it's possible to react on system failures by e.g. dynamically switching to another renderer implementation
 	- Support for static and dynamic build
+	- Separation into runtime and toolkit
+		- Runtime designed with end-user in mind: Efficiency and responsiveness over flexibility
+		- Toolkit designed with developer in mind: Asset source flexibility, asset background compilation, hot-reloading
 - Renderer implementations for
 	- Direct3D 9
 	- Direct3D 10
