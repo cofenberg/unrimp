@@ -37,14 +37,10 @@
 	- "Coordinate Systems (Direct3D 10)" http://msdn.microsoft.com/en-us/library/windows/desktop/cc308049%28v=vs.85%29.aspx
 - Swap chain
 	- Support for multiple windows
-		- OpenGL
-			mWindowDeviceContext = ::GetDC(reinterpret_cast<HWND>(mWindow));
-			HGLRC rc = wglCreateContextAttribsARB(mWindowDeviceContext, nullptr, attributes);		
-			wglMakeCurrent(mWindowDeviceContext, mWindowRenderContext);
 		- OpenGL ES 2
 			eglCreateWindowSurface(mDisplay, mConfig, mDummyNativeWindow, nullptr)
 			eglMakeCurrent(mDisplay, eglSurface, eglSurface, mContext)
-		- "FirstMultipleSwapChains": Check OpenGL and OpenGL ES 2 behaviour
+		- "FirstMultipleSwapChains": Check OpenGL ES 2 behaviour
 		- Remove "IRenderer::getMainSwapChain()" if possible
 	- "Present()": Support for swap interval
 	- Support for fullscreen/window switch in: Direct3D 9, OpenGL, OpenGL ES 2
