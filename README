@@ -100,6 +100,28 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 - Using Assimp (Open Asset Import Library) for mesh import
 
 
+== Terminology and Acronyms ==
+- Renderer backend
+	- Vertex buffer object (VBO)
+	- Index buffer object (IBO)
+	- Vertex array object (VAO)
+	- Uniform buffer object (UBO), "constant buffer" in Direct3D terminology
+	- Texture buffer object (TBO)
+	- Sampler state object (SO)
+	- Pipeline state object (PSO)
+	- Vertex shader (VS)
+	- Tessellation control shader (TCS), "hull shader" in Direct3D terminology
+	- Tessellation evaluation shader (TES), "domain shader" in Direct3D terminology
+	- Geometry shader (GS)
+	- Fragment shader (FS), "pixel shader" in Direct3D terminology
+- Renderer runtime
+	- Asset: Lightweight content metadata like ID, type and location (texture, mesh, shader etc. - on this abstraction level everything is an asset)
+	- Resource: A concrete asset type used during runtime in-memory (texture, mesh, shader etc.)
+	- Mesh: 3D-model consisting of a vertex- and index-buffer, geometry subdivided into sub-meshes
+	- Shader: High-level rendering description
+	- Material: Just a property-set used as shader input
+
+
 == Hints ==
 The unified renderer interface can't unify some graphics API behaviour differences. Here's a list of hints you might want to know:
 - Texel coordinate system origin
