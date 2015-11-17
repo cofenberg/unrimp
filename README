@@ -25,7 +25,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 == Features ==
 - General library design
 	- C++ 11 and above, no legacy compiler support, compiled with wall warning level
-	- Compact user-header for the renderer API
+	- Compact user-header for the renderer backend API
 		- A single all in one header for ease-of-use and best possible compile times
 		- No need to links against the renderer library itself, load renderer interface implementations dynamically during runtime
 	- Lightweight renderer implementations
@@ -35,7 +35,9 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 	- Support for static and dynamic build
 	- Separation into backend, runtime and toolkit
 		- Backend abstracts way the underlying renderer API like OpenGL/DirectX
-		- Runtime designed with end-user in mind: Efficiency and responsiveness over flexibility
+		- Runtime designed with end-user and middleware-user in mind
+			- Efficiency and responsiveness over flexibility
+			- Intented to be controlled by a high-level entity-component system, no unused implementation feature overkill in the basic runtime
 		- Toolkit designed with developer in mind: Asset source flexibility, asset background compilation, hot-reloading
 - Cross-platform
 	- Windows
