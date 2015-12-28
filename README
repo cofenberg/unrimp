@@ -94,6 +94,16 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 	- No inefficient generic stuff, no e.g. endianess handling, primarily raw chunks which can be fed into memory and GPU as efficient as possible
 	- Efficient CRN textures are used by default, DDS is supported as well
 - Asynchronous loading for all resources
+	- To fight lags, micro stutter / judder
+	- Especially for virtual reality applications one needs a constant framerate
+- Material and shader blueprint system
+	- New material types can be added without a single line of C++ source code, meaning technical artists can create and fine-tune the shaders in realtime
+	- Materials reference material blueprints and just are a list of key-value-pairs
+	- Support for reusable shader pieces
+- Compositor
+	- Setup your overal rendering flow without a single line of C++ source code
+- Scene as most top-level concept
+	- Fancy-feature set kept simple because more complex applications / games usually add an entity-component-system
 
 
 == Renderer Toolkit (e.g. "The Editor") ==
@@ -120,7 +130,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 	- Asset: Lightweight content metadata like ID, type and location (texture, mesh, shader etc. - on this abstraction level everything is an asset)
 	- Resource: A concrete asset type used during runtime in-memory (texture, mesh, shader etc.)
 	- Mesh: 3D-model consisting of a vertex- and index-buffer, geometry subdivided into sub-meshes
-	- Shader: High-level rendering description
+	- Material and shader blueprint: High-level rendering description
 	- Material: Just a property-set used as shader input
 
 
