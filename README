@@ -18,6 +18,10 @@
 \*********************************************************/
 
 
+== Warning ==
+This project is currently still heavy under construction and not usable for productive projects.
+
+
 == Unrimp Description ==
 Unified renderer implementation ("Un r imp"). Extensive examples from basic to advanced are provided as well.
 
@@ -94,8 +98,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 	- No inefficient generic stuff, no e.g. endianess handling, primarily raw chunks which can be fed into memory and GPU as efficient as possible
 	- Efficient CRN textures are used by default, DDS is supported as well
 - Asynchronous loading for all resources
-	- To fight lags, micro stutter / judder
-	- Especially for virtual reality applications one needs a constant framerate
+	- To fight lags, micro stutter / judder, especially for virtual reality applications one needs a constant framerate
 - Material and shader blueprint system
 	- New material types can be added without a single line of C++ source code, meaning technical artists can create and fine-tune the shaders in realtime
 	- Materials reference material blueprints and just are a list of key-value-pairs
