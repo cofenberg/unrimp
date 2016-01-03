@@ -137,6 +137,12 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 	- Material: Just a property-set used as shader input
 
 
+== MS Windows: First Example Kickoff ==
+- Build "Release_Dynamic" target with Visual Studio
+- Compile the runtime assets by starting "bin\x86_dynamic\ExampleProjectCompiler.exe"
+- Use command line arguments to start the example application, e.g. "bin\x86_dynamic\Examples.exe FirstScene -r Direct3D11"
+
+
 == Hints ==
 The unified renderer interface can't unify some graphics API behaviour differences. Here's a list of hints you might want to know:
 - Texel coordinate system origin
