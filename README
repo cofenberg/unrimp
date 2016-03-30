@@ -53,7 +53,8 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 	- Direct3D 9
 	- Direct3D 10
 	- Direct3D 11
-	- Direct3D 12
+	- Direct3D 12 (early phase)
+	- Vulkan (early phase)
 	- OpenGL
 	- OpenGL ES 2
 - Shaders
