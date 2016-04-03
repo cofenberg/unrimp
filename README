@@ -124,6 +124,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 	- Uniform buffer object (UBO), "constant buffer" in Direct3D terminology
 	- Texture buffer object (TBO)
 	- Sampler state object (SO)
+	- Root signature (Direct3D terminology) = pipeline layout in Vulkan terminology
 	- Pipeline state object (PSO)
 	- Vertex shader (VS)
 	- Tessellation control shader (TCS), "hull shader" in Direct3D terminology
