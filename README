@@ -29,6 +29,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 == Features ==
 - General library design
 	- C++ 11 and above, no legacy compiler support, compiled with wall warning level
+	- Since this is a spare time project for personal fun, some experimental STD features are used which hopefully find a way into the final C++ 17. For example "std::tr2::sys::path" ( https://msdn.microsoft.com/en-us/library/hh874694.aspx ) to avoid having to use external libraries for such basics.
 	- Compact user-header for the renderer backend API
 		- A single all in one header for ease-of-use and best possible compile times
 		- No need to links against the renderer library itself, load renderer interface implementations dynamically during runtime
