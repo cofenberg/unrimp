@@ -113,7 +113,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 == Renderer Toolkit (e.g. "The Editor") ==
 - Project compiler will transform source data into runtime data
 - Asynchronous resource compilation and hot reloading for all resources if the toolkit is enabled (true for production, probably not true for shippped titles)
-- Using Assimp (Open Asset Import Library) for mesh import
+- Using Assimp (Open Asset Import Library) for mesh import and post processing like joining identical vertices, vertex cache optimization etc.
 
 
 == Terminology and Acronyms ==
