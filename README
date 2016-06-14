@@ -46,7 +46,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 		- Toolkit designed with developer in mind: Asset source flexibility, asset background compilation, hot-reloading
 - Cross-platform
 	- Windows
-	- Linux
+	- Linux (currently not maintained until the big picture stuff is up-and-running)
 
 
 == Renderer API and Backends ==
@@ -109,6 +109,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 	- Setup your overal rendering flow without a single line of C++ source code
 - Scene as most top-level concept
 	- Fancy-feature set kept simple because more complex applications / games usually add an entity-component-system
+- "ImGui" ( https://github.com/ocornut/imgui ) is used as debug GUI to be able to quickly add interactive GUI elements for debugging, prototyping or visualization
 
 
 == Renderer Toolkit (e.g. "The Editor") ==
