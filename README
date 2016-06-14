@@ -132,6 +132,9 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 	- Tessellation evaluation shader (TES), "domain shader" in Direct3D terminology
 	- Geometry shader (GS)
 	- Fragment shader (FS), "pixel shader" in Direct3D terminology
+	- Uniform buffer view (UBV)
+	- Shader resource view (SRV)
+	- Unordered access view (UAV)
 - Renderer runtime
 	- Asset: Lightweight content metadata like ID, type and location (texture, mesh, shader etc. - on this abstraction level everything is an asset)
 	- Resource: A concrete asset type used during runtime in-memory (texture, mesh, shader etc.)
