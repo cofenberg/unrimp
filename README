@@ -39,7 +39,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 		- Implementations load the entry points of Direct3D, OpenGL and so on during runtime, meaning it's possible to react on system failures by e.g. dynamically switching to another renderer implementation
 	- Support for static and dynamic build
 	- Separation into backend, runtime and toolkit
-		- Backend abstracts way the underlying renderer API like OpenGL/DirectX
+		- Backend abstracts way the underlying renderer API like Vulkan/OpenGL/DirectX
 		- Runtime designed with end-user and middleware-user in mind
 			- Efficiency and responsiveness over flexibility
 			- Intented to be controlled by a high-level entity-component system, no unused implementation feature overkill in the basic runtime
@@ -82,14 +82,11 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 		- Depth stencil state object (output-merger (OM) stage)
 		- Blend state object (output-merger (OM) stage)
 	- Sampler state object (SO)
-- Collections to potentially reduce the number of state changes
-	- Texture collection
-	- Sampler state collection
 - Instancing support
 	- Instanced arrays (shader model 3 feature, vertex array element advancing per-instance instead of per-vertex)
 	- Draw instanced (shader model 4 feature, build in shader variable holding the current instance ID)
 - Debug methods
-	- When using Direct3D <11.1, those methods map to the Direct3D 9 PIX functions (D3DPERF_* functions, also works directly within VisualStudio 2012 out-of-the-box)
+	- When using Direct3D <11.1, those methods map to the Direct3D 9 PIX functions (D3DPERF_* functions, also works directly within VisualStudio 2015 out-of-the-box)
 	- Used inside the renderer implementations for better renderer debugging
 - Renderer implementation specific optimizations
 	- OpenGL: Usage of direct state access (DSA), if available
@@ -98,7 +95,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 == Renderer Runtime (e.g. "The Game") ==
 - During runtime, only platform optimized and compressed binary assets are used
 	- No inefficient generic stuff, no e.g. endianess handling, primarily raw chunks which can be fed into memory and GPU as efficient as possible
-	- Efficient CRN textures are used by default, DDS is supported as well
+	- Efficient CRN ( https://github.com/richgel999/crunch ) textures are used by default, DDS is supported as well
 - Asynchronous loading for all resources
 	- To fight lags, micro stutter / judder, especially for virtual reality applications one needs a constant framerate
 - Material and shader blueprint system
