@@ -47,6 +47,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 - Cross-platform
 	- Windows
 	- Linux (currently not maintained until the big picture stuff is up-and-running)
+	- Mac OS X in mind (nothing more at the moment, but in mind is important because Mac OS X 10.11 only supports OpenGL 4.1 and has some other nasty issues)
 
 
 == Renderer API and Backends ==
@@ -56,7 +57,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 	- Direct3D 11
 	- Direct3D 12 (early phase)
 	- Vulkan (early phase)
-	- OpenGL
+	- OpenGL (by default a OpenGL 4.1 context is created, the best OpenGL version Mac OS X 10.11 supports, so lowest version we have to support)
 	- OpenGL ES 2
 - Shaders
 	- Vertex shader (VS)
@@ -101,6 +102,8 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 - Material and shader blueprint system
 	- New material types can be added without a single line of C++ source code, meaning technical artists can create and fine-tune the shaders in realtime
 	- Materials reference material blueprints and just are a list of key-value-pairs
+	- Shader language specifics are abstracted away. Write shaders once, use them across multiple renderer APIs.
+	- Support for shader combinations (Uber-shaders)
 	- Support for reusable shader pieces
 - Compositor
 	- Setup your overal rendering flow without a single line of C++ source code
@@ -112,6 +115,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 == Renderer Toolkit (e.g. "The Editor") ==
 - Project compiler will transform source data into runtime data
 - Asynchronous resource compilation and hot reloading for all resources if the toolkit is enabled (true for production, probably not true for shippped titles)
+	- Shader-resource example: It's possible to develop shaders while the application is running and see changes instantly
 - Using Assimp (Open Asset Import Library) for mesh import and post processing like joining identical vertices, vertex cache optimization etc.
 
 
