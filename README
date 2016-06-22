@@ -110,6 +110,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 - Scene as most top-level concept
 	- Fancy-feature set kept simple because more complex applications / games usually add an entity-component-system
 - "ImGui" ( https://github.com/ocornut/imgui ) is used as debug GUI to be able to quickly add interactive GUI elements for debugging, prototyping or visualization
+- Virtual reality manager which is internally using OpenVR ( https://github.com/ValveSoftware/openvr ) for head-mounted display support
 
 
 == Renderer Toolkit (e.g. "The Editor") ==
