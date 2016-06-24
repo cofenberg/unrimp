@@ -105,6 +105,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 	- Shader language specifics are abstracted away. Write shaders once, use them across multiple renderer APIs.
 	- Support for shader combinations (Uber-shaders)
 	- Support for reusable shader pieces
+	- Using "MojoShader" ( https://icculus.org/mojoshader/ ) as shader preprocessor so the resulting shaders are compact and easy to debug
 - Compositor
 	- Setup your overal rendering flow without a single line of C++ source code
 - Scene as most top-level concept
