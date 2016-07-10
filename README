@@ -41,7 +41,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 	- Separation into backend, runtime and toolkit
 		- Backend abstracts way the underlying renderer API like Vulkan/OpenGL/DirectX
 		- Runtime designed with end-user and middleware-user in mind
-			- Efficiency and responsiveness over flexibility
+			- Efficiency and responsiveness over flexibility (were it isn't useful in practice)
 			- Intented to be controlled by a high-level entity-component system, no unused implementation feature overkill in the basic runtime
 		- Toolkit designed with developer in mind: Asset source flexibility, asset background compilation, hot-reloading
 - Cross-platform
@@ -97,14 +97,14 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 - During runtime, only platform optimized and compressed binary assets are used
 	- No inefficient generic stuff, no e.g. endianess handling, primarily raw chunks which can be fed into memory and GPU as efficient as possible
 	- Efficient CRN ( https://github.com/richgel999/crunch ) textures are used by default, DDS is supported as well
-- Asynchronous loading for all resources
-	- To fight lags, micro stutter / judder, especially for virtual reality applications one needs a constant framerate
-- Material and shader blueprint system
+- Asynchronous loading for all resources: To fight lags, micro stutter / judder, especially for virtual reality applications one needs a constant framerate
+- Material and shader blueprint system which was desiged from ground up for pipeline state object (PSO) architecture
 	- New material types can be added without a single line of C++ source code, meaning technical artists can create and fine-tune the shaders in realtime
 	- Materials reference material blueprints and just are a list of key-value-pairs
-	- Shader language specifics are abstracted away. Write shaders once, use them across multiple renderer APIs.
+	- Shader language specifics are abstracted away: Write shaders once, use them across multiple renderer APIs
 	- Support for shader combinations (Uber-shaders)
 	- Support for reusable shader pieces
+	- Material inheritance for materials which should share common properties, but differ in other properties
 	- Using "MojoShader" ( https://icculus.org/mojoshader/ ) as shader preprocessor so the resulting shaders are compact and easy to debug
 - Compositor
 	- Setup your overal rendering flow without a single line of C++ source code
@@ -118,6 +118,10 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 - Project compiler will transform source data into runtime data
 - Asynchronous resource compilation and hot reloading for all resources if the toolkit is enabled (true for production, probably not true for shippped titles)
 	- Shader-resource example: It's possible to develop shaders while the application is running and see changes instantly
+- Most source file formats are using JSON; RapidJSON ( http://rapidjson.org/ ) is used for parsing
+- Performs optimizations and validations at tooltime instead of runtime. Examples:
+	- Strips comments from shader source codes
+	- Checks the material blueprint resources for valid uniform buffer packing rules
 - Using Assimp (Open Asset Import Library) for mesh import and post processing like joining identical vertices, vertex cache optimization etc.
 
 
