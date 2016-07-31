@@ -106,6 +106,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 	- Support for reusable shader pieces
 	- Material inheritance for materials which should share common properties, but differ in other properties
 	- Using "MojoShader" ( https://icculus.org/mojoshader/ ) as shader preprocessor so the resulting shaders are compact and easy to debug
+	- Asyncrounous pipeline state compilation, including a fallback system to reduce visual artefacts in case of pipeline cache misses
 - Compositor
 	- Setup your overal rendering flow without a single line of C++ source code
 - Scene as most top-level concept
