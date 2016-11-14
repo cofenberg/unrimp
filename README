@@ -74,6 +74,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 - Buffers
 	- Uniform buffer object (UBO, "constant buffer" in Direct3D terminology)
 	- Texture buffer object (TBO)
+	- Indirect buffer object
 - Textures
 	- 2D texture
 	- 2D texture array
