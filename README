@@ -59,22 +59,22 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 	- Vulkan (early phase)
 	- OpenGL (by default a OpenGL 4.1 context is created, the best OpenGL version Mac OS X 10.11 supports, so lowest version we have to support)
 	- OpenGL ES 2
+- Render targets
+	- Swap chains, render into one or multiple operation system windows
+	- Framebuffer object (FBO) used for render to texture, support for multiple render targets (MRT)
 - Shaders
 	- Vertex shader (VS)
 	- Tessellation control shader (TCS, "hull shader" in Direct3D terminology)
 	- Tessellation evaluation shader (TES, "domain shader" in Direct3D terminology)
 	- Geometry shader (GS)
 	- Fragment shader (FS, "pixel shader" in Direct3D terminology)
-- Vertex array object (VAO, input-assembler (IA) stage) with support for multiple vertex streams
-	- Vertex buffer object (VBO, input-assembler (IA) stage)
-	- Index buffer object (IBO, input-assembler (IA) stage)
-- Render targets
-	- Swap chains, render into one or multiple operation system windows
-	- Framebuffer object (FBO) used for render to texture, support for multiple render targets (MRT)
 - Buffers
+	- Vertex array object (VAO, input-assembler (IA) stage) with support for multiple vertex streams
+		- Vertex buffer object (VBO, input-assembler (IA) stage)
+		- Index buffer object (IBO, input-assembler (IA) stage)
+	- Indirect buffer object with optional internal emulation, draw methods always use an indirect buffer to have an unified draw call API
 	- Uniform buffer object (UBO, "constant buffer" in Direct3D terminology)
 	- Texture buffer object (TBO)
-	- Indirect buffer object
 - Textures
 	- 2D texture
 	- 2D texture array
