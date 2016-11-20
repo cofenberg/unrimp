@@ -108,10 +108,9 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 	- Material inheritance for materials which should share common properties, but differ in other properties
 	- Using "MojoShader" ( https://icculus.org/mojoshader/ ) as shader preprocessor so the resulting shaders are compact and easy to debug
 	- Asyncrounous pipeline state compilation, including a fallback system to reduce visual artefacts in case of pipeline cache misses
-- Compositor
-	- Setup your overal rendering flow without a single line of C++ source code
-- Scene as most top-level concept
-	- Fancy-feature set kept simple because more complex applications / games usually add an entity-component-system
+- Compositor: Setup your overal rendering flow without a single line of C++ source code
+- Scene as most top-level concept: Fancy-feature set kept simple because more complex applications / games usually add an entity-component-system
+- Render queue fed with generic renderables to decouple concrete constructs like meshes, particles, terrain etc. from the generic rendering
 - "ImGui" ( https://github.com/ocornut/imgui ) is used as debug GUI to be able to quickly add interactive GUI elements for debugging, prototyping or visualization
 - Virtual reality manager which is internally using OpenVR ( https://github.com/ValveSoftware/openvr ) for head-mounted display support
 
