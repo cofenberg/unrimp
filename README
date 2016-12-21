@@ -110,6 +110,8 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 	- Using "MojoShader" ( https://icculus.org/mojoshader/ ) as shader preprocessor so the resulting shaders are compact and easy to debug
 	- Asyncrounous pipeline state compilation, including a fallback system to reduce visual artefacts in case of pipeline cache misses
 - Compositor: Setup your overal rendering flow without a single line of C++ source code
+	- The compositor is using the material blueprint system, meaning compact C++ implementation while offering mighty possibilities
+	- Supports resolution scale
 - Scene as most top-level concept: Fancy-feature set kept simple because more complex applications / games usually add an entity-component-system
 - Render queue fed with generic renderables to decouple concrete constructs like meshes, particles, terrain etc. from the generic rendering
 - "ImGui" ( https://github.com/ocornut/imgui ) is used as debug GUI to be able to quickly add interactive GUI elements for debugging, prototyping or visualization
