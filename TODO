@@ -33,7 +33,7 @@
 
 == Complete ==
 - Add support for defining shader profiles for the Direct3D renderer implementations
-- Review Direct3D 9 pixel center issue, see "FirstMultipleRenderTargets", "FirstPostProcessing" (upper image part), "FXAA"
+- Review Direct3D 9 pixel center issue, see "FirstMultipleRenderTargets"
 	- "Coordinate Systems (Direct3D 10)" http://msdn.microsoft.com/en-us/library/windows/desktop/cc308049%28v=vs.85%29.aspx
 - Swap chain
 	- Support for multiple windows
