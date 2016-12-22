@@ -129,6 +129,10 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 - Using Assimp (Open Asset Import Library) for mesh import and post processing like joining identical vertices, vertex cache optimization etc.
 
 
+== Examples (just some keywords) ==
+- Fast Approximate Anti-Aliasing (FXAA)
+
+
 == Terminology and Acronyms ==
 - Renderer backend
 	- Vertex buffer object (VBO)
