@@ -131,6 +131,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 
 == Examples (just some high level keywords) ==
 - Fast Approximate Anti-Aliasing (FXAA)
+- Gaussian blur, used to e.g. blur the transparent ImGui background
 
 
 == Terminology and Acronyms ==
