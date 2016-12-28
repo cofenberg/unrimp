@@ -62,7 +62,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 	(legacy = critical features like uniform buffer, texture buffer and/or compute shaders are missing which are required for modern efficient renderers which provide e.g. automatic instancing or clustered deferred rendering)
 - Render targets
 	- Swap chains, render into one or multiple operation system windows
-	- Framebuffer object (FBO) used for render to texture, support for multiple render targets (MRT)
+	- Framebuffer object (FBO) used for render to texture, support for multiple render targets (MRT), support for multisample (MSAA)
 - Shaders
 	- Vertex shader (VS)
 	- Tessellation control shader (TCS, "hull shader" in Direct3D terminology)
