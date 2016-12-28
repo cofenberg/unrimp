@@ -52,13 +52,14 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 
 == Renderer API and Backends ==
 - Renderer implementations for
-	- Direct3D 9
-	- Direct3D 10
+	- Direct3D 9 (legacy, still maintained for curiosity reasons)
+	- Direct3D 10 (legacy, still maintained for curiosity reasons)
 	- Direct3D 11
 	- Direct3D 12 (early phase)
 	- Vulkan (early phase)
 	- OpenGL (by default a OpenGL 4.1 context is created, the best OpenGL version Mac OS X 10.11 supports, so lowest version we have to support)
-	- OpenGL ES 2
+	- OpenGL ES 2 (legacy, still maintained for curiosity reasons)
+	(legacy = critical features like uniform buffer, texture buffer and/or compute shaders are missing which are required for modern efficient renderers which provide e.g. automatic instancing or clustered deferred rendering)
 - Render targets
 	- Swap chains, render into one or multiple operation system windows
 	- Framebuffer object (FBO) used for render to texture, support for multiple render targets (MRT)
