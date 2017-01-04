@@ -121,7 +121,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 
 
 == Renderer Toolkit (e.g. "The Editor") ==
-- Project compiler will transform source data into runtime data
+- Project compiler will transform source data into runtime data and while doing so tries to detect editing issues at tooltime as early as possible to reduce runtime harm and long debugging seasons
 - Asynchronous resource compilation and hot reloading for all resources if the toolkit is enabled (true for production, probably not true for shippped titles)
 	- Shader-resource example: It's possible to develop shaders while the application is running and see changes instantly
 - Most source file formats are using JSON; RapidJSON ( http://rapidjson.org/ ) is used for parsing
