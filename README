@@ -45,8 +45,9 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 			- Intented to be controlled by a high-level entity-component system, no unused implementation feature overkill in the basic runtime
 		- Toolkit designed with developer in mind: Asset source flexibility, asset background compilation, hot-reloading
 - Cross-platform
-	- Windows
+	- Microsoft Windows
 	- Linux
+	- Android (work in progress)
 	- Mac OS X in mind (nothing more at the moment, but in mind is important because Mac OS X 10.11 only supports OpenGL 4.1 and has some other nasty issues)
 
 
@@ -58,7 +59,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 	- Direct3D 12 (early phase)
 	- Vulkan (early phase)
 	- OpenGL (by default a OpenGL 4.1 context is created, the best OpenGL version Mac OS X 10.11 supports, so lowest version we have to support)
-	- OpenGL ES 2 (legacy, still maintained for curiosity reasons)
+	- OpenGL ES 2 (legacy, still maintained for curiosity reasons, currently migrating to OpenGL ES 3.1)
 	(legacy = critical features like uniform buffer, texture buffer and/or compute shaders are missing which are required for modern efficient renderers which provide e.g. automatic instancing or clustered deferred rendering)
 - Render targets
 	- Swap chains, render into one or multiple operation system windows
@@ -132,6 +133,8 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 
 
 == Examples (just some high level keywords) ==
+- Microsoft Windows: "NVIDIA Optimus" and "AMD Dynamic Switchable Graphic" awareness to reduce the risk of getting the integrated graphics unit assigned when there's a dedicated graphics card as well
+- Memory leaks: On Microsoft Windows, "_CrtMemCheckpoint()" and "_CrtMemDumpAllObjectsSince()" is used by default to detect memory leaks while developing and not later on. In case something triggers, third parts tools like Deleaker ( http://www.deleaker.com/ ) can be used to locate the memory leak in detail.
 - Fast Approximate Anti-Aliasing (FXAA)
 - Gaussian blur, used to e.g. blur the transparent ImGui background
 
@@ -162,7 +165,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 	- Material: Just a property-set used as shader input
 
 
-== MS Windows: First Example Kickoff ==
+== Microsoft Windows: First Example Kickoff ==
 - Build "Release_Dynamic" target with Visual Studio
 - Compile the runtime assets by starting "bin\x86_dynamic\ExampleProjectCompiler.exe"
 - Use command line arguments to start the example application, e.g. "bin\x86_dynamic\Examples.exe FirstScene -r Direct3D11"
