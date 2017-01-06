@@ -136,6 +136,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 - Microsoft Windows: "NVIDIA Optimus" and "AMD Dynamic Switchable Graphic" awareness to reduce the risk of getting the integrated graphics unit assigned when there's a dedicated graphics card as well
 - Memory leaks: On Microsoft Windows, "_CrtMemCheckpoint()" and "_CrtMemDumpAllObjectsSince()" is used by default to detect memory leaks while developing and not later on. In case something triggers, third parts tools like Deleaker ( http://www.deleaker.com/ ) can be used to locate the memory leak in detail.
 - Fast Approximate Anti-Aliasing (FXAA)
+- Custom resolved MSAA for antialiased deferred rendering
 - Gaussian blur, used to e.g. blur the transparent ImGui background
 
 
