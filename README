@@ -140,6 +140,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 - Gaussian blur, used to e.g. blur the transparent ImGui background
 - High dynamic range (HDR) rendering with adaptive luminance
 - Gamma correct rendering
+- Bloom with dirty lens
 
 
 == Terminology and Acronyms ==
