@@ -119,6 +119,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 - Render queue fed with generic renderables to decouple concrete constructs like meshes, particles, terrain etc. from the generic rendering
 - "ImGui" ( https://github.com/ocornut/imgui ) is used as debug GUI to be able to quickly add interactive GUI elements for debugging, prototyping or visualization
 - Virtual reality manager which is internally using OpenVR ( https://github.com/ValveSoftware/openvr ) for head-mounted display support
+- Abstract file interface so the Unrimp user has control over the file handling
 
 
 == Renderer Toolkit (e.g. "The Editor") ==
