@@ -45,7 +45,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 			- Intented to be controlled by a high-level entity-component system, no unused implementation feature overkill in the basic runtime
 		- Toolkit designed with developer in mind: Asset source flexibility, asset background compilation, hot-reloading
 - Cross-platform
-	- Microsoft Windows
+	- Microsoft Windows x86 and x64
 	- Linux
 	- Android (work in progress)
 	- Mac OS X in mind (nothing more at the moment, but in mind is important because Mac OS X 10.11 only supports OpenGL 4.1 and has some other nasty issues)
