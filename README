@@ -59,7 +59,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 	- Direct3D 12 (early phase)
 	- Vulkan (early phase)
 	- OpenGL (by default a OpenGL 4.1 context is created, the best OpenGL version Mac OS X 10.11 supports, so lowest version we have to support)
-	- OpenGL ES 2 (legacy, still maintained for curiosity reasons, currently migrating to OpenGL ES 3.1)
+	- OpenGL ES 3
 	(legacy = critical features like uniform buffer, texture buffer and/or compute shaders are missing which are required for modern efficient renderers which provide e.g. automatic instancing or clustered deferred rendering)
 - Render targets
 	- Swap chains, render into one or multiple operation system windows
