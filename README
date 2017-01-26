@@ -142,7 +142,10 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 - High dynamic range (HDR) rendering with adaptive luminance
 - Gamma correct rendering
 - Bloom with dirty lens
+- Pseudo lens flare
 - Depth of field
+- RGB dither
+- Depth fog
 
 
 == Terminology and Acronyms ==
