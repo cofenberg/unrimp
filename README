@@ -140,6 +140,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 - Custom resolved MSAA for antialiased deferred rendering
 - Gaussian blur, used to e.g. blur the transparent ImGui background
 - High dynamic range (HDR) rendering with adaptive luminance
+- Screen space ambient occlusion (SSAO)
 - Gamma correct rendering
 - Bloom with dirty lens
 - Pseudo lens flare
