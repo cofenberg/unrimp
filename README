@@ -78,9 +78,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 	- Uniform buffer object (UBO, "constant buffer" in Direct3D terminology)
 	- Texture buffer object (TBO)
 	- Command buffer mandatory by design, not just build on top
-- Textures
-	- 2D texture
-	- 2D texture array
+- Textures: 1D, 2D, 2D array, 3D, cube
 - State objects with mapping to API specific settings during creation, not runtime
 	- Pipeline state object (PSO) which directly maps to Direct3D 12, other backends internally subdivide into
 		- Rasterizer state object (rasterizer stage (RS))
