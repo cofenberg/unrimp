@@ -47,7 +47,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 - Cross-platform
 	- Microsoft Windows x86 and x64
 	- Linux
-	- Android (work in progress)
+	- Android
 	- Mac OS X in mind (nothing more at the moment, but in mind is important because Mac OS X 10.11 only supports OpenGL 4.1 and has some other nasty issues)
 
 
