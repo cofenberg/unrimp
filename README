@@ -144,6 +144,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 - Tangent space BC5/3DC/ATI2N stored normal maps
 - Color correction via 3D lookup table (LUT)
 - Screen space ambient occlusion (SSAO)
+- Physically based shading (PBS)
 - Gamma correct rendering
 - Bloom with dirty lens
 - Pseudo lens flare
@@ -199,3 +200,7 @@ The unified renderer interface can't unify some graphics API behaviour differenc
 	- OpenGL: [-1, -1, -1] ... [1, 1, 1]
 	- Direct3D: [-1, -1, 0] ... [1, 1, 1]
 	- Additional information: "The Cg Tutorial"-book, section "4.1.8 The Projection Transform", online available at http://http.developer.nvidia.com/CgTutorial/cg_tutorial_chapter04.html
+- Physically based shading (PBS)
+	- "Physically-Based Rendering, And You Can Too!" - By Joe "EarthQuake" Wilson - https://www.marmoset.co/posts/physically-based-rendering-and-you-can-too/
+	- http://www.frostbite.com/wp-content/uploads/2014/11/course_notes_moving_frostbite_to_pbr.pdf
+	- http://www.trentreed.net/blog/physically-based-shading-and-image-based-lighting/
