@@ -121,6 +121,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 - Virtual reality manager which is internally using OpenVR ( https://github.com/ValveSoftware/openvr ) for head-mounted display support
 - Abstract file interface so the Unrimp user has control over the file handling
 - Texture top mipmap removal support while loading textures for efficient texture quality reduction
+- Light types: Directional, point and spot
 - Skeleton animation
 
 
