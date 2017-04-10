@@ -58,18 +58,26 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 	- Direct3D 11
 	- Direct3D 12 (early phase)
 	- Vulkan (early phase)
-	- OpenGL (by default a OpenGL 4.1 context is created, the best OpenGL version Mac OS X 10.11 supports, so lowest version we have to support)
+	- OpenGL
+		- By default a OpenGL 4.1 context is created, the best OpenGL version Mac OS X 10.11 supports, so lowest version we have to support
+		- SPIR-V support for cross-plattform vendor and GPU driver independent shader bytecodes
+			- Optional build in online GLSL to SPIR-V compilation using glslang ( https://github.com/KhronosGroup/glslang ), offline compilation before shipping a product is preferred of course but not manditory
+			- Using SMOL-V: like Vulkan/Khronos SPIR-V, but smaller ( https://github.com/aras-p/smol-v )
 	- OpenGL ES 3
 	(legacy = critical features like uniform buffer, texture buffer and/or compute shaders are missing which are required for modern efficient renderers which provide e.g. automatic instancing or clustered deferred rendering)
 - Render targets
 	- Swap chains, render into one or multiple operation system windows
 	- Framebuffer object (FBO) used for render to texture, support for multiple render targets (MRT), support for multisample (MSAA)
 - Shaders
-	- Vertex shader (VS)
-	- Tessellation control shader (TCS, "hull shader" in Direct3D terminology)
-	- Tessellation evaluation shader (TES, "domain shader" in Direct3D terminology)
-	- Geometry shader (GS)
-	- Fragment shader (FS, "pixel shader" in Direct3D terminology)
+	- Shader types
+		- Vertex shader (VS)
+		- Tessellation control shader (TCS, "hull shader" in Direct3D terminology)
+		- Tessellation evaluation shader (TES, "domain shader" in Direct3D terminology)
+		- Geometry shader (GS)
+		- Fragment shader (FS, "pixel shader" in Direct3D terminology)
+	- Shader data sources
+		- Shader bytecode (aka shader microcode, binary large object (BLOB))
+		- Shader source code
 - Buffers
 	- Vertex array object (VAO, input-assembler (IA) stage) with support for multiple vertex streams
 		- Vertex buffer object (VBO, input-assembler (IA) stage)
