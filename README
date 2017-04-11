@@ -107,6 +107,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 - During runtime, only platform optimized and compressed binary assets are used
 	- No inefficient generic stuff, no e.g. endianess handling, primarily raw chunks which can be fed into memory and GPU as efficient as possible
 	- Efficient CRN ( https://github.com/richgel999/crunch ) textures are used by default, DDS is supported as well
+	- Using LZ4 compression ( http://lz4.github.io/lz4/ )
 - Asynchronous loading for all resources: To fight lags, micro stutter / judder, especially for virtual reality applications one needs a constant framerate
 - Material and shader blueprint system which was desiged from ground up for pipeline state object (PSO) architecture
 	- New material types can be added without a single line of C++ source code, meaning technical artists can create and fine-tune the shaders in realtime
