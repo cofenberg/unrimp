@@ -60,7 +60,7 @@ Unified renderer implementation ("Un r imp"). Extensive examples from basic to a
 	- Vulkan (early phase)
 	- OpenGL
 		- By default a OpenGL 4.1 context is created, the best OpenGL version Mac OS X 10.11 supports, so lowest version we have to support
-		- SPIR-V support for cross-plattform vendor and GPU driver independent shader bytecodes
+		- SPIR-V support for cross-platform vendor and GPU driver independent shader bytecodes
 			- Optional build in online GLSL to SPIR-V compilation using glslang ( https://github.com/KhronosGroup/glslang ), offline compilation before shipping a product is preferred of course but not manditory
 			- Using SMOL-V: like Vulkan/Khronos SPIR-V, but smaller ( https://github.com/aras-p/smol-v )
 	- OpenGL ES 3
