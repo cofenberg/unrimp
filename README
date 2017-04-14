@@ -25,6 +25,8 @@ This project is currently still heavy under construction and not usable for prod
 == Unrimp Description ==
 Unified renderer implementation ("Un r imp"). Extensive examples from basic to advanced are provided as well. Originally started as modern renderer replacement for the PixelLight engine (https://www.pixellight.org/ or https://github.com/PixelLightFoundation/pixellight).
 
+The first public source code release after starting the project on Friday, 1 June 2012 was on January 03, 2013.
+
 
 == Features ==
 - General library design
