@@ -145,6 +145,7 @@ The first public source code release after starting the project on Friday, 1 Jun
 	- Strips comments from shader source codes
 	- Checks the material blueprint resources for valid uniform buffer packing rules
 - Using Assimp (Open Asset Import Library) for mesh import and post processing like joining identical vertices, vertex cache optimization etc.
+- Using "mikktspace" by Morten S. Mikkelsen for semi-standard tangent space generation (see e.g. https://wiki.blender.org/index.php/Dev:Shading/Tangent_Space_Normal_Maps for background information)
 
 
 == Examples (just some high level keywords) ==
