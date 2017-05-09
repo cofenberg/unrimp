@@ -130,6 +130,8 @@ The first public source code release after starting the project on Friday, 1 Jun
 - "ImGui" ( https://github.com/ocornut/imgui ) is used as debug GUI to be able to quickly add interactive GUI elements for debugging, prototyping or visualization
 	- Usage of "ImGuizmo" ( https://github.com/CedricGuillemet/ImGuizmo ) 3D gizmo extension
 - Virtual reality manager which is internally using OpenVR ( https://github.com/ValveSoftware/openvr ) for head-mounted display support
+	- Animated controller visualization supported
+	- Hidden area mesh supported
 - Abstract file interface so the Unrimp user has control over the file handling
 - Texture top mipmap removal support while loading textures for efficient texture quality reduction
 - Light types: Directional, point and spot
