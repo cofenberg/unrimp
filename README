@@ -156,6 +156,7 @@ The first public source code release after starting the project on Friday, 1 Jun
 - Gaussian blur, used to e.g. blur the transparent ImGui background
 - High dynamic range (HDR) rendering with adaptive luminance
 - Custom resolved MSAA for antialiased deferred rendering
+- Toksvig specular anti-aliasing to reduce shimmering
 - Tangent space BC5/3DC/ATI2N stored normal maps
 - Color correction via 3D lookup table (LUT)
 - Fast Approximate Anti-Aliasing (FXAA)
