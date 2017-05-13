@@ -156,6 +156,7 @@ The first public source code release after starting the project on Friday, 1 Jun
 - Gaussian blur, used to e.g. blur the transparent ImGui background
 - High dynamic range (HDR) rendering with adaptive luminance
 - Custom resolved MSAA for antialiased deferred rendering
+- Toksvig specular anti-aliasing to reduce shimmering
 - Tangent space BC5/3DC/ATI2N stored normal maps
 - Color correction via 3D lookup table (LUT)
 - Fast Approximate Anti-Aliasing (FXAA)
@@ -205,11 +206,11 @@ The first public source code release after starting the project on Friday, 1 Jun
 
 
 == Hints ==
-OpenGL ES 3 development on MS Windows: PowerVR works well. Tested "Windows Installer: PowerVR Tools & SDK 2016 R2" - https://community.imgtec.com/downloads/windows-installer-powervr-tools-sdk-2016-r2/ ). Just copy "libEGL.dll" and "libGLESv2.dll" e.g. into "unrimp\bin\x86d_dynamic".
-
-Error strategy
-- Inside renderer toolkit: Exceptions in extreme, up to no error tolerance. If something smells odd, blame it to make it possible to detect problems as early as possible in the production pipeline.
-- Inside renderer runtime: The show must go on. If the floor breaks, just keep smiling and continue dancing.
+- When shipping a product, use a static build and e.g. UPX ( https://upx.github.io/ ) to get executables even more compact on end-user-systems
+- OpenGL ES 3 development on MS Windows: PowerVR works well. Tested "Windows Installer: PowerVR Tools & SDK 2016 R2" - https://community.imgtec.com/downloads/windows-installer-powervr-tools-sdk-2016-r2/ ). Just copy "libEGL.dll" and "libGLESv2.dll" e.g. into "unrimp\bin\x86d_dynamic".
+- Error strategy
+	- Inside renderer toolkit: Exceptions in extreme, up to no error tolerance. If something smells odd, blame it to make it possible to detect problems as early as possible in the production pipeline.
+	- Inside renderer runtime: The show must go on. If the floor breaks, just keep smiling and continue dancing.
 
 The unified renderer interface can't unify some graphics API behaviour differences. Here's a list of hints you might want to know:
 - Texel coordinate system origin
