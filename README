@@ -147,7 +147,8 @@ The first public source code release after starting the project on Friday, 1 Jun
 	- Strips comments from shader source codes
 	- Checks the material blueprint resources for valid uniform buffer packing rules
 - Using Assimp (Open Asset Import Library) for mesh import and post processing like joining identical vertices, vertex cache optimization etc.
-- Using "mikktspace" by Morten S. Mikkelsen for semi-standard tangent space generation (see e.g. https://wiki.blender.org/index.php/Dev:Shading/Tangent_Space_Normal_Maps for background information)
+- Using "mikktspace" by Morten S. Mikkelsen for semi-standard mesh tangent space generation (see e.g. https://wiki.blender.org/index.php/Dev:Shading/Tangent_Space_Normal_Maps for background information)
+- Toksvig specular anti-aliasing to reduce shimmering/sparkling via texture modifiations during texture asset compilation
 
 
 == Examples (just some high level keywords) ==
@@ -156,7 +157,6 @@ The first public source code release after starting the project on Friday, 1 Jun
 - Gaussian blur, used to e.g. blur the transparent ImGui background
 - High dynamic range (HDR) rendering with adaptive luminance
 - Custom resolved MSAA for antialiased deferred rendering
-- Toksvig specular anti-aliasing to reduce shimmering
 - Tangent space BC5/3DC/ATI2N stored normal maps
 - Color correction via 3D lookup table (LUT)
 - Fast Approximate Anti-Aliasing (FXAA)
