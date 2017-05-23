@@ -40,7 +40,7 @@ The first public source code release after starting the project on Friday, 1 Jun
 		- Implementations try to stick as best as possible close-to-the-metal and as a result are just a few KiB instead of MiB in memory size
 		- Implementations load the entry points of Direct3D, OpenGL and so on during runtime, meaning it's possible to react on system failures by e.g. dynamically switching to another renderer implementation
 	- Support for static and dynamic build
-	- Separation into backend, runtime and toolkit
+	- Separation into backend, runtime and toolkit for asset cooking
 		- Backend abstracts way the underlying renderer API like Vulkan/OpenGL/DirectX
 		- Runtime designed with end-user and middleware-user in mind
 			- Efficiency and responsiveness over flexibility (were it isn't useful in practice)
@@ -206,6 +206,9 @@ The first public source code release after starting the project on Friday, 1 Jun
 
 
 == Hints ==
+- Assets are referenced by using
+	- Source asset ID naming scheme "<name>.asset"
+	- Compiled or runtime generated asset ID naming scheme "<project name>/<asset type>/<asset category>/<asset name>"
 - When shipping a product, use a static build and e.g. UPX ( https://upx.github.io/ ) to get executables even more compact on end-user-systems
 - OpenGL ES 3 development on MS Windows: PowerVR works well. Tested "Windows Installer: PowerVR Tools & SDK 2016 R2" - https://community.imgtec.com/downloads/windows-installer-powervr-tools-sdk-2016-r2/ ). Just copy "libEGL.dll" and "libGLESv2.dll" e.g. into "unrimp\bin\x86d_dynamic".
 - Error strategy
