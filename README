@@ -123,7 +123,7 @@ The first public source code release after starting the project on Friday, 1 Jun
 - Compositor: Setup your overal rendering flow without a single line of C++ source code
 	- The compositor is using the material blueprint system, meaning compact C++ implementation while offering mighty possibilities
 	- Supports resolution scale
-	- Blurred cascaded (CSM) exponential variance (EVSM) shadow mapping
+	- Blurred stabilized cascaded (CSM) exponential variance (EVSM) shadow mapping
 - Scene as most top-level concept: Fancy-feature set kept simple because more complex applications / games usually add an entity-component-system
 - Render queue fed with generic renderables to decouple concrete constructs like meshes, particles, terrain etc. from the generic rendering
 - Using mathematics library GLM ( https://glm.g-truc.net/ ) with the C-preprocessor definitions "GLM_FORCE_RADIANS", "GLM_FORCE_LEFT_HANDED" and "GLM_FORCE_DEPTH_ZERO_TO_ONE"
