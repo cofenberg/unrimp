@@ -134,8 +134,11 @@ The first public source code release after starting the project on Friday, 1 Jun
 	- Hidden area mesh supported
 - Abstract file interface so the Unrimp user has control over the file handling
 - Texture top mipmap removal support while loading textures for efficient texture quality reduction
-- Light types: Directional, point and spot
+- Light
+	- Types: Directional, point and spot
+	- High-level sunlight controlled via time-of-day
 - Skeleton animation
+- Skybox
 
 
 == Renderer Toolkit (e.g. "The Editor") ==
