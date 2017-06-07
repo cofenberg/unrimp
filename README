@@ -139,6 +139,8 @@ The first public source code release after starting the project on Friday, 1 Jun
 	- High-level sunlight controlled via time-of-day
 - Skeleton animation
 - Skybox
+	- Classic environment cube map
+	- Procedural Hosek-Wilkie sky
 
 
 == Renderer Toolkit (e.g. "The Editor") ==
