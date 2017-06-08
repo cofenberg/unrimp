@@ -140,7 +140,7 @@ The first public source code release after starting the project on Friday, 1 Jun
 - Skeleton animation
 - Skybox
 	- Classic environment cube map
-	- Procedural Hosek-Wilkie sky
+	- Procedural Hosek-Wilkie sky which is also used to derive a sun color
 
 
 == Renderer Toolkit (e.g. "The Editor") ==
