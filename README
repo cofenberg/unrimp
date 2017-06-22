@@ -225,7 +225,7 @@ The first public source code release after starting the project on Friday, 1 Jun
 	- Direct3D 11 graphics debugging can be done directly inside Visual Studio 2015
 	- For CPU profiling the tool Very Sleepy ( http://www.codersnotes.com/sleepy/ ) is easy to use while provinding useful results
 - When shipping a product, use a static build and e.g. UPX ( https://upx.github.io/ ) to get executables even more compact on end-user-systems
-- OpenGL ES 3 development on MS Windows: PowerVR works well. Tested "Windows Installer: PowerVR Tools & SDK 2016 R2" - https://community.imgtec.com/downloads/windows-installer-powervr-tools-sdk-2016-r2/ ). Just copy "libEGL.dll" and "libGLESv2.dll" e.g. into "unrimp\bin\x86d_dynamic".
+- OpenGL ES 3 development on MS Windows: PowerVR (SDK 2017 R1 or newer) works well. Tested "Windows Installer: PowerVR Tools & SDK 2016 R2" - https://community.imgtec.com/downloads/windows-installer-powervr-tools-sdk-2016-r2/ ). Just copy "libEGL.dll" and "libGLESv2.dll" e.g. into "unrimp\bin\x86d_dynamic".
 - Error strategy
 	- Inside renderer toolkit: Exceptions in extreme, up to no error tolerance. If something smells odd, blame it to make it possible to detect problems as early as possible in the production pipeline.
 	- Inside renderer runtime: The show must go on. If the floor breaks, just keep smiling and continue dancing.
