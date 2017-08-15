@@ -59,7 +59,7 @@ The first public source code release after starting the project on Friday, 1 Jun
 	- Direct3D 10 (legacy, still maintained for curiosity reasons)
 	- Direct3D 11
 	- Direct3D 12 (early phase)
-	- Vulkan (early phase)
+	- Vulkan (not feature complete, yet)
 	- OpenGL
 		- By default a OpenGL 4.1 context is created, the best OpenGL version Mac OS X 10.11 supports, so lowest version we have to support
 		- SPIR-V support for cross-platform vendor and GPU driver independent shader bytecodes
