@@ -223,6 +223,7 @@ The first public source code release after starting the project on Friday, 1 Jun
 	- Compiled or runtime generated asset ID naming scheme "<project name>/<asset type>/<asset category>/<asset name>"
 - When profiling a product under MS Windows
 	- Direct3D 11 graphics debugging can be done directly inside Visual Studio 2015
+	- RenderDoc ( https://renderdoc.org/ ) for other renderer APIs like Vulkan is working like a charme
 	- For CPU profiling the tool Very Sleepy ( http://www.codersnotes.com/sleepy/ ) is easy to use while provinding useful results
 - When shipping a product, use a static build and e.g. UPX ( https://upx.github.io/ ) to get executables even more compact on end-user-systems
 - OpenGL ES 3 development on MS Windows: PowerVR (SDK 2017 R1 or newer) works well. Just copy "libEGL.dll" and "libGLESv2.dll" e.g. into "unrimp\bin\x86d_dynamic".
