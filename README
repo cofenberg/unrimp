@@ -99,7 +99,7 @@ The first public source code release after starting the project on Friday, 1 Jun
 	- Instanced arrays (shader model 3 feature, vertex array element advancing per-instance instead of per-vertex)
 	- Draw instanced (shader model 4 feature, build in shader variable holding the current instance ID)
 - Debug methods
-	- When using Direct3D <11.1, those methods map to the Direct3D 9 PIX functions (D3DPERF_* functions, also works directly within VisualStudio 2015 out-of-the-box)
+	- When using Direct3D <11.1, those methods map to the Direct3D 9 PIX functions (D3DPERF_* functions, also works directly within VisualStudio 2017 out-of-the-box)
 	- Used inside the renderer implementations for better renderer debugging
 - Renderer implementation specific optimizations
 	- OpenGL: Usage of direct state access (DSA), if available
@@ -222,7 +222,7 @@ The first public source code release after starting the project on Friday, 1 Jun
 	- Source asset ID naming scheme "<name>.asset"
 	- Compiled or runtime generated asset ID naming scheme "<project name>/<asset type>/<asset category>/<asset name>"
 - When profiling a product under MS Windows
-	- Direct3D 11 graphics debugging can be done directly inside Visual Studio 2015
+	- Direct3D 11 graphics debugging can be done directly inside Visual Studio 2017
 	- RenderDoc ( https://renderdoc.org/ ) for other renderer APIs like Vulkan is working like a charme
 	- For CPU profiling the tool Very Sleepy ( http://www.codersnotes.com/sleepy/ ) is easy to use while provinding useful results
 - When shipping a product, use a static build and e.g. UPX ( https://upx.github.io/ ) to get executables even more compact on end-user-systems
