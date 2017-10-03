@@ -133,6 +133,7 @@ The first public source code release after starting the project on Friday, 1 Jun
 	- Animated controller visualization supported
 	- Hidden area mesh supported
 - Abstract file interface so the Unrimp user has control over the file handling
+	- Optional header-only standard implementations for STD file streams as well as PhysicsFS ( https://icculus.org/physfs/ ) for shipping packed asset packages are provided
 - Texture top mipmap removal support while loading textures for efficient texture quality reduction
 - Light
 	- Types: Directional, point and spot
