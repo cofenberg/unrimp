@@ -234,6 +234,11 @@ The first public source code release after starting the project on Friday, 1 Jun
 - OpenGL ES 3 development: PowerVR (SDK 2017 R1 or newer) works well. Just copy "libEGL.dll" and "libGLESv2.dll" e.g. into "unrimp\bin\x86d_dynamic".
 
 
+== Useful Asset Sources ==
+- Realtime ready meshes with textures and a web-browser relatime preview: Sketchfab ( https://sketchfab.com/ ), search for downloadable
+- Realtime ready shaders and a web-browser relatime preview: Shadertoy ( https://www.shadertoy.com/ )
+
+
 == Hints ==
 - Assets are referenced by using
 	- Source asset ID naming scheme "<name>.asset"
