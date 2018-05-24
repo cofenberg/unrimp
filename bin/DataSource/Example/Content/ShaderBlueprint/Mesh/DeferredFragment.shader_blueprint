@@ -1,0 +1,149 @@
+/*********************************************************\
+ * Copyright (c) 2012-2018 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+//[-------------------------------------------------------]
+//[ Definitions                                           ]
+//[-------------------------------------------------------]
+@includepiece($ProjectName/ShaderPiece/Core.asset)
+	@insertpiece(SetCrossPlatformSettings)
+@includepiece($ProjectName/ShaderPiece/MotionBlur.asset)
+@includepiece($ProjectName/ShaderPiece/ComplexPixel.asset)
+
+
+//[-------------------------------------------------------]
+//[ Define pieces                                         ]
+//[-------------------------------------------------------]
+// TODO(co) Define this outside
+@piece(MaximumNumberOfMaterials)2@end
+
+
+//[-------------------------------------------------------]
+//[ Input / output                                        ]
+//[-------------------------------------------------------]
+// Attribute input / output
+INPUT_BEGIN
+	INPUT_TEXTURE_COORDINATE_NOINTERPOLATION(1, uint,   AssignedMaterialSlotVS,			0)	// The assigned material slot inside the material uniform buffer
+	INPUT_TEXTURE_COORDINATE				(2, float2, TexCoordVS,						1)	// Texture coordinate
+	INPUT_TEXTURE_COORDINATE				(3, float3, TangentFrame0VS,				2)	// Tangent frame
+	INPUT_TEXTURE_COORDINATE				(4, float3, TangentFrame1VS,				3)	// Tangent frame
+	INPUT_TEXTURE_COORDINATE				(5, float3, TangentFrame2VS,				4)	// Tangent frame
+	INPUT_TEXTURE_COORDINATE				(6, float3, PreviousClipSpacePositionVS,	5)	// Previous clip space position
+	DECLARE_FRAGMENT_POSITION
+	DECLARE_COVERAGE_MASK
+	DECLARE_IS_FRONT_FACE
+INPUT_END
+OUTPUT_BEGIN
+	OUTPUT_COLOR(0)	// GBuffer 0: rgb = albedo color, a = alpha unused (required for blend operations)
+	OUTPUT_COLOR(1)	// GBuffer 1: rgb = view space normal, a = roughness
+	OUTPUT_COLOR(2)	// GBuffer 2: rgb = emissive color, a = metallic
+	OUTPUT_COLOR(3)	// 			  rg  = screen space velocity
+OUTPUT_END
+
+// Uniform buffers
+struct PassDataStruct
+{
+	float4x4 WorldSpaceToClipSpaceMatrix;
+	float4x4 PreviousWorldSpaceToClipSpaceMatrix;
+	float4	 WorldSpaceToViewSpaceQuaternion;
+	float2   ViewportSize;
+	uint	 FullCoverageMask;
+};
+UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
+	PassDataStruct PassData;
+UNIFORM_BUFFER_END
+struct Material
+{
+	float3 AlbedoColor;
+	float  Roughness;
+	float  Metallic;
+	float  AlphaReference;
+	float  EmissiveIntensity;
+};
+UNIFORM_BUFFER_BEGIN(1, 0, MaterialUniformBuffer, 1)
+	Material Materials[FAST_SHADER_BUILD_HACK(@insertpiece(MaximumNumberOfMaterials))];
+UNIFORM_BUFFER_END
+
+// Textures: We need to start at texture unit 1 instead of texture unit 0 because the vertex shader has an instance texture buffer bound at texture unit 0 (OpenGL shares those bindings accros all shader stages while Direct3D doesn't)
+TEXTURE_2D(3, 0, _argb_nxa, 1)		// RGB channel = Albedo map ("_a"-postfix), A channel = x component of normal map ("_n"-postfix)
+TEXTURE_2D(3, 1, _hr_rg_mb_nya, 2)	// R channel = Height map ("_h"-postfix), G channel = Roughness map ("_r"-postfix), B channel = Metallic map ("_m"-postfix), A channel = y component of normal map ("_n"-postfix)
+@property(UseAlphaMap)
+	TEXTURE_2D(3, 2, AlphaMap, 3)
+@end
+@property(UseEmissiveMap)
+	TEXTURE_2D(3, 3, EmissiveMap, 4)
+@end
+
+// Samplers
+SAMPLER_STATE(4, 0, SamplerLinear, 0)
+
+
+//[-------------------------------------------------------]
+//[ Functions                                             ]
+//[-------------------------------------------------------]
+@includepiece($ProjectName/ShaderPiece/TangentFrame.asset)
+	@insertpiece(DefineUnpackTextureNormalXY)
+
+
+//[-------------------------------------------------------]
+//[ Main                                                  ]
+//[-------------------------------------------------------]
+MAIN_BEGIN
+	// Get the used material
+	Material material = Materials[MAIN_INPUT(AssignedMaterialSlotVS)];
+
+	// Read channel packed texture data
+	// -> "_argb_nxa" = RGB channel = Albedo map ("_a"-postfix), A channel = x component of normal map ("_n"-postfix)
+	// -> "_hr_rg_mb_nya" = R channel = Height map ("_h"-postfix), G channel = Roughness map ("_r"-postfix), B channel = Metallic map ("_m"-postfix), A channel = y component of normal map ("_n"-postfix)
+	float4 value_argb_nxa = SAMPLE_2D(_argb_nxa, SamplerLinear, MAIN_INPUT(TexCoordVS));
+	float4 value_hr_rg_mb_nya = SAMPLE_2D(_hr_rg_mb_nya, SamplerLinear, MAIN_INPUT(TexCoordVS));
+
+	// Transform the tangent space normal into view space
+	float3 viewSpaceNormal = UnpackTextureNormalXY(value_argb_nxa.a, value_hr_rg_mb_nya.a);
+	viewSpaceNormal = normalize(viewSpaceNormal.x * MAIN_INPUT(TangentFrame0VS) + viewSpaceNormal.y * MAIN_INPUT(TangentFrame1VS) + viewSpaceNormal.z * MAIN_INPUT(TangentFrame2VS));
+
+	// Handle two sided lighting
+	// -> It's not worth to add additional expensive shader combinations just for this tiny thing
+	viewSpaceNormal = IS_FRONT_FACE ? viewSpaceNormal : -viewSpaceNormal;
+
+	// Albedo
+	float3 albedo = material.AlbedoColor * value_argb_nxa.rgb;
+
+	// Roughness and metallic
+	float roughness = material.Roughness * value_hr_rg_mb_nya.g;
+	float metallic = material.Metallic + value_hr_rg_mb_nya.b;
+
+	// Emissive
+	float3 emissive = float3(0.0f, 0.0f, 0.0f);
+	@property(UseEmissiveMap)
+		emissive = SAMPLE_2D(EmissiveMap, SamplerLinear, MAIN_INPUT(TexCoordVS)).rgb * material.EmissiveIntensity;
+	@end
+
+	// Complex pixel detection and alpha test using alpha to coverage
+	@insertpiece(PerformComplexPixelDetection)
+
+	// Calculate screen space velocity
+	@insertpiece(DefineCalculateScreenSpaceVelocity)
+
+	// Done
+	MAIN_OUTPUT_COLOR(0) = float4(albedo, edgePixel);
+	MAIN_OUTPUT_COLOR(1) = float4(viewSpaceNormal, roughness);
+	MAIN_OUTPUT_COLOR(2) = float4(emissive, metallic);
+	MAIN_OUTPUT_COLOR(3) = float4(velocity.x, velocity.y, 0.0f, 0.0f);
+MAIN_END

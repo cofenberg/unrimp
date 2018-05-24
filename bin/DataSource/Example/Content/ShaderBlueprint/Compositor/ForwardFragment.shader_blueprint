@@ -1,0 +1,154 @@
+/*********************************************************\
+ * Copyright (c) 2012-2018 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+//[-------------------------------------------------------]
+//[ Definitions                                           ]
+//[-------------------------------------------------------]
+@includepiece($ProjectName/ShaderPiece/Core.asset)
+	@insertpiece(SetCrossPlatformSettings)
+
+
+//[-------------------------------------------------------]
+//[ Input / output                                        ]
+//[-------------------------------------------------------]
+// Attribute input / output
+INPUT_BEGIN
+	INPUT_TEXTURE_COORDINATE(1, float2, TexCoordVS, 0)	// Texture coordinate
+	INPUT_TEXTURE_COORDINATE(2, float3, ViewRayVS,  1)	// View space ray used for view space position reconstruction
+INPUT_END
+OUTPUT_BEGIN
+	OUTPUT_COLOR(0)
+OUTPUT_END
+
+// Uniform buffers
+struct PassDataStruct
+{
+	float4   ViewSpaceFrustumCorners[4];
+	float4x4 ClipSpaceToViewSpaceMatrix;
+	float3	 ViewSpaceSunlightDirection;
+	float	 AtmosphereFogDensity;
+	float3	 AmbientColor;
+	float3	 SunlightColor;
+	float3   DiffuseFogColor;
+	float2   ViewportSize;
+	float2	 ProjectionParameters;
+};
+UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
+	PassDataStruct PassData;
+UNIFORM_BUFFER_END
+
+// Textures
+TEXTURE_2D(1, 0, ColorMap, 0)
+TEXTURE_2D(1, 1, DepthMap, 1)
+TEXTURE_2D(1, 2, ScreenSpaceAmbientOcclusionMap, 2)
+TEXTURE_2D(1, 3, DistortionMap, 3)
+TEXTURE_2D(1, 4, VolumetricLightMap, 4)
+
+// Samplers
+SAMPLER_STATE(2, 0, SamplerPointClamp, 0)
+SAMPLER_STATE(2, 1, SamplerLinearClamp, 1)
+
+
+//[-------------------------------------------------------]
+//[ Functions                                             ]
+//[-------------------------------------------------------]
+@includepiece($ProjectName/ShaderPiece/Color.asset)
+	@insertpiece(DefineCalculateFoggedColor)
+@includepiece($ProjectName/ShaderPiece/Depth.asset)
+	@insertpiece(DefineGetLinearDepth)
+
+// Upscale volumetric light/fog using bilateral upsampling (aka "nearest depth up-sampling")
+// -> The implementation is basing on "Volumetric lights" by Alexandre Pestana ( http://www.alexandre-pestana.com/volumetric-lights/ )
+float3 VolumetricLightBilateralUpsampling(float2 screenSpacePosition, float upSampledDepth)
+{
+	float3 color = float3(0.0f, 0.0f, 0.0f);
+	float totalWeight = 0.0f;
+
+	// Select the closest downscaled pixels
+	uint2 coordinate = CAST_TO(screenSpacePosition * PassData.ViewportSize, uint2);
+	float xOffset = (((coordinate.x % 2u) == 0) ? -1.0f : 1.0f) / PassData.ViewportSize.x;
+	float yOffset = (((coordinate.y % 2u) == 0) ? -1.0f : 1.0f) / PassData.ViewportSize.y;
+	float2 offset[4];
+	offset[0] = float2(0.0f, 0.0f);
+	offset[1] = float2(0.0f, yOffset);
+	offset[2] = float2(xOffset, 0.0f);
+	offset[3] = float2(xOffset, yOffset);
+	for (int i = 0; i < 4; ++i)
+	{
+		float3 downscaledColor = SAMPLE_2D_LOD(VolumetricLightMap, SamplerLinearClamp, float4(screenSpacePosition + offset[i], 0.0f, 0.0f)).rgb;
+		float downscaledDepth = SAMPLE_DEPTH_2D_LOD(DepthMap, SamplerPointClamp, float4(screenSpacePosition + offset[i], 0.0f, 1.0f));
+		float currentWeight = 1.0f;
+		currentWeight *= max(0.0f, 1.0f - 0.05f * abs(downscaledDepth - upSampledDepth));
+		color += downscaledColor * currentWeight;
+		totalWeight += currentWeight;
+	}
+
+	// Done
+	return color / (totalWeight + 0.0001f);
+}
+
+float3 CalculateColor(float3 viewRay, float3 color, float screenSpaceAmbientOcclusion, float2 screenSpacePosition)
+{
+	// Read depth map value and check whether or not a depth value was written (depth = 1 = depth clear value)
+	float depth = SAMPLE_DEPTH_2D_LOD(DepthMap, SamplerPointClamp, float4(screenSpacePosition, 0.0f, 0.0f));
+	if (1.0f != depth)
+	{
+		// Scale the view ray by the ratio of the linear z value to the projected view ray
+		// -> For details see "The Danger Zone" - "Position From Depth 3: Back In The Habit" - "Written by MJPSeptember 5, 2010" - https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
+		float3 viewSpacePosition = viewRay * (GetLinearDepth(depth) / dot(float3(0.0f, 0.0f, 1.0f), viewRay));
+
+		// Calculate fogged color
+		float3 foggedColor = CalculateFoggedColor(viewSpacePosition, color * screenSpaceAmbientOcclusion);
+
+		// Apply volumetric light
+		foggedColor += VolumetricLightBilateralUpsampling(screenSpacePosition, depth);
+
+		// Done
+		return foggedColor;
+	}
+	else
+	{
+		// Sky
+		return color;
+	}
+}
+
+
+//[-------------------------------------------------------]
+//[ Main                                                  ]
+//[-------------------------------------------------------]
+MAIN_BEGIN
+	// Get texture coordinate and apply distortion
+	float2 texCoord = MAIN_INPUT(TexCoordVS);
+	texCoord += SAMPLE_2D_LOD(DistortionMap, SamplerLinearClamp, float4(texCoord, 0.0f, 0.0f)).rg;
+
+	// Get color and screen space ambient occlusion value
+	float3 color = SAMPLE_2D_LOD(ColorMap, SamplerPointClamp, float4(texCoord, 0.0f, 0.0f)).rgb;
+	float screenSpaceAmbientOcclusion = SAMPLE_2D_LOD(ScreenSpaceAmbientOcclusionMap, SamplerPointClamp, float4(texCoord, 0.0f, 0.0f)).r;
+
+	// Get the normalized view ray
+	float3 viewRay = normalize(MAIN_INPUT(ViewRayVS));
+
+	// Calculate fragment color
+	float3 finalColor = CalculateColor(viewRay, color, screenSpaceAmbientOcclusion, texCoord);
+
+	// Done
+	MAIN_OUTPUT_COLOR(0) = float4(finalColor, 1.0f);
+MAIN_END

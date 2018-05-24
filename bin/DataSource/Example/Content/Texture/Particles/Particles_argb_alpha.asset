@@ -1,0 +1,26 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"AssetMetadata":
+		{
+			"AssetType": "Texture",
+			"AssetCategory": "Particles",
+			"Copyright": "Copyright (c) 2012-2018 The Unrimp Team"
+		},
+		"TextureAssetCompiler":
+		{
+			"TextureSemantic": "PACKED_CHANNELS",
+			"TextureChannelPacking": "_argb_alpha",
+			"InputFiles":
+			{
+				"ALBEDO_MAP": "Particles.png",
+				"ALPHA_MAP": "Particles.png"
+			}
+		}
+	}
+}

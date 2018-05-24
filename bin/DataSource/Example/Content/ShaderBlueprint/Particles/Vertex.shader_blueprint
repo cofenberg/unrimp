@@ -1,0 +1,96 @@
+/*********************************************************\
+ * Copyright (c) 2012-2018 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+//[-------------------------------------------------------]
+//[ Definitions                                           ]
+//[-------------------------------------------------------]
+@includepiece($ProjectName/ShaderPiece/Core.asset)
+	@insertpiece(SetCrossPlatformSettings)
+
+
+//[-------------------------------------------------------]
+//[ Input / output                                        ]
+//[-------------------------------------------------------]
+// Attribute input / output
+INPUT_BEGIN_VERTEX
+	INPUT_VERTEX_ID
+INPUT_END_VERTEX
+OUTPUT_BEGIN_VERTEX
+	OUTPUT_TEXTURE_COORDINATE(1, float3, TexCoordDepthVS, 0)	// xy = texture coordinate, z = particle depth
+	OUTPUT_TEXTURE_COORDINATE(2, float4, ColorVS, 		  1)	// Color
+	OUTPUT_POSITION			 (0)								// Clip space vertex position as output, left/bottom is (-1,-1) and right/top is (1,1)
+OUTPUT_END_VERTEX
+
+// Uniform buffers
+struct PassDataStruct
+{
+	float4x4 WorldSpaceToViewSpaceMatrix[2];
+	float4x4 ViewSpaceToClipSpaceMatrix[2];
+	float2   InverseViewportSize;
+	float2	 ProjectionParameters;
+	float    GlobalTimeInSeconds;
+};
+UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
+	PassDataStruct PassData;
+UNIFORM_BUFFER_END
+
+
+//[-------------------------------------------------------]
+//[ Main                                                  ]
+//[-------------------------------------------------------]
+MAIN_BEGIN_VERTEX
+	// TODO(co) Just a test, later on controlled by particle data
+	float3 particlePosition = float3(0.0f, 0.0f, 0.0f);
+	float particleRotation = PassData.GlobalTimeInSeconds;
+	float particleSize = 1.0f;	// TODO(co) Just a test, later on controlled by particle data
+	float4 particleColor = float4(1.0f, 1.0f, 1.0f, 1.0f);	// TODO(co) Optimization: The particle color can probably be reduced to 8 bit per channel
+
+	// Get vertex and particle index
+	uint vertexIndex = MAIN_INPUT_VERTEX_ID % 6u;
+	uint particleIndex = MAIN_INPUT_VERTEX_ID / 6u;
+
+	// Get view space vertex position and texture coordinate
+	float3 BILLBOARD[6];
+	BILLBOARD[0] = float3(-1.0f, -1.0f, 0.0f);	// 0
+	BILLBOARD[1] = float3( 1.0f, -1.0f, 0.0f);	// 1
+	BILLBOARD[2] = float3(-1.0f,  1.0f, 0.0f);	// 2
+	BILLBOARD[3] = float3(-1.0f,  1.0f, 0.0f);	// 3
+	BILLBOARD[4] = float3( 1.0f, -1.0f, 0.0f);	// 4
+	BILLBOARD[5] = float3( 1.0f,  1.0f, 0.0f);	// 5
+	float3 viewSpacePosition = BILLBOARD[vertexIndex];
+	float2 uv = viewSpacePosition.xy * float2(0.5f, 0.5f) + float2(0.5f, 0.5f);
+
+	// Rotate the billboard clockwise
+	float2x2 rotationMatrix = ROW_MATRIX_2x2(float2(cos(particleRotation), -sin(particleRotation)),
+											 float2(sin(particleRotation),  cos(particleRotation)));
+	viewSpacePosition.xy = MATRIX_MUL(viewSpacePosition.xy, rotationMatrix);
+
+	// Scale the billboard
+	viewSpacePosition *= particleSize;
+
+	// Transform the billboard to clip-space
+	MAIN_OUTPUT_POSITION = MATRIX_MUL(PassData.WorldSpaceToViewSpaceMatrix[MAIN_INPUT_STEREO_EYE_INDEX], float4(particlePosition, 1.0f));
+	MAIN_OUTPUT_POSITION.xyz += viewSpacePosition;
+	MAIN_OUTPUT_POSITION = MATRIX_MUL(PassData.ViewSpaceToClipSpaceMatrix[MAIN_INPUT_STEREO_EYE_INDEX], MAIN_OUTPUT_POSITION);
+
+	// Pass through the texture coordinate, color and clip space position
+	MAIN_OUTPUT(TexCoordDepthVS) = float3(uv, MAIN_OUTPUT_POSITION.w);
+	MAIN_OUTPUT(ColorVS) = particleColor;
+MAIN_END_VERTEX(MAIN_OUTPUT_POSITION)

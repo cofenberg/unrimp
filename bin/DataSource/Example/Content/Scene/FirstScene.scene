@@ -1,0 +1,280 @@
+{
+	"Format":
+	{
+		"Type": "SceneAsset",
+		"Version": "1"
+	},
+	"SceneAsset":
+	{
+		"Nodes":
+		[
+			{
+				"Properties":
+				{
+					"Position": "-3.12873816 0.6473912 2.20889306 METER",
+					"Rotation": "-0.0201802868 0.909596086 0.0444870926 0.412612021 QUATERNION"
+				},
+				"Items":
+				{
+					"CameraSceneItem":
+					{
+					}
+				}
+			},
+			{
+				"Items":
+				{
+					"SunlightSceneItem":
+					{
+						"EastDirection": "25.0 DEGREE",
+						"TimeOfDay": "14.42 O_CLOCK"
+					},
+					"SkySceneItem":
+					{
+						"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Sky/Sky.asset",
+						"SetMaterialProperties":
+						{
+							"UseProceduralSky": "TRUE"
+						}
+					},
+					"TerrainSceneItem":
+					{
+						"Material": "$ProjectName/Material/Base/Terrain.asset",
+						"SetMaterialProperties":
+						{
+							"HeightMap": "$ProjectName/Texture/Terrain/Gonzales_h.asset",
+							"_argb_nxa": "$ProjectName/Texture/Terrain/Gonzales_argb_nxa.asset",
+							"_aor_rg_mb_nya": "$ProjectName/Texture/Terrain/Gonzales_aor_rg_mb_nya.asset",
+							"WorldPosition": "1000.0 -43.1 400.0",
+							"WorldSize": "4096.0 200.0 4096.0"
+						}
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Rotation": "0.0 45.0 0.0 DEGREE",
+					"Scale": "0.07 0.07 0.07 FACTOR"
+				},
+				"Items":
+				{
+					"MeshSceneItem":
+					{
+						"Mesh": "$ProjectName/Mesh/Imrod/Imrod.asset"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "-4.0 0.0 1.0 METER",
+					"Scale": "0.07 0.07 0.07 FACTOR"
+				},
+				"Items":
+				{
+					"MeshSceneItem":
+					{
+						"Mesh": "$ProjectName/Mesh/Imrod/Imrod.asset",
+						"SubMeshMaterials": [ "$ProjectName/Material/Sponza/bricks.asset", "$ProjectName/Material/Imrod/TransparentImrod.asset" ]
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "2.0 0.0 -5.0 METER",
+					"Scale": "0.07 0.07 0.07 FACTOR"
+				},
+				"Items":
+				{
+					"MeshSceneItem":
+					{
+						"Mesh": "$ProjectName/Mesh/Imrod/Imrod.asset"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "7 13.3 3 METER",
+					"Rotation": "0.0 45.0 0.0 DEGREE",
+					"Scale": "0.07 0.07 0.07 FACTOR"
+				},
+				"Items":
+				{
+					"MeshSceneItem":
+					{
+						"Mesh": "$ProjectName/Mesh/Imrod/Imrod.asset"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Scale": "1.0 1.0 1.0 PERCENTAGE"
+				},
+				"Items":
+				{
+					"MeshSceneItem":
+					{
+						"Mesh": "$ProjectName/Mesh/Sponza/sponza.asset"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "-2.56804585 1.92319942 1.58084095 METER"
+				},
+				"Items":
+				{
+					"LightSceneItem":
+					{
+						"LightType": "POINT",
+						"Color": "1.0 0.0 0.0 RGB_FLOAT 2.0 INTENSITY",
+						"Radius": "2.0 METER"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "1.20822608 2.13819814 3.82538891 METER"
+				},
+				"Items":
+				{
+					"LightSceneItem":
+					{
+						"LightType": "POINT",
+						"Color": "0 255 0 RGB 6600.0 KELVIN",
+						"Radius": "1.0 METER"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "-1.91534328 2.73809576 -5.37067556 METER"
+				},
+				"Items":
+				{
+					"LightSceneItem":
+					{
+						"LightType": "POINT",
+						"Color": "6600.0 KELVIN",
+						"Radius": "3.0 METER"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "0.448334336 2.81350160 -5.06476307 METER"
+				},
+				"Items":
+				{
+					"LightSceneItem":
+					{
+						"LightType": "POINT",
+						"Color": "0.0 1.5 1.5 RGB_FLOAT",
+						"Radius": "2.5 METER"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "12.5456219 0.492846817 -5.29046202 METER"
+				},
+				"Items":
+				{
+					"LightSceneItem":
+					{
+						"LightType": "POINT",
+						"Color": "FF00FF HEX",
+						"Radius": "2.5 METER"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "8.0 0.0 1.5 METER",
+					"Scale": "0.03 0.03 0.03 FACTOR"
+				},
+				"Items":
+				{
+					"SkeletonMeshSceneItem":
+					{
+						"Mesh": "$ProjectName/Mesh/Bob/Bob.asset",
+						"SkeletonAnimation": "$ProjectName/SkeletonAnimation/Bob/Bob.asset"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "0.0 0.1 -1.5 METER"
+				},
+				"Items":
+				{
+					"LightSceneItem":
+					{
+						"LightType": "SPOT",
+						"Color": "10.0 INTENSITY 6600.0 KELVIN",
+						"Radius": "5.0 METER",
+						"InnerAngle": "45.0 DEGREE",
+						"OuterAngle": "50.0 DEGREE"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "-3.0 1.0 2.0 METER"
+				},
+				"Items":
+				{
+					"LightSceneItem":
+					{
+						"LightType": "POINT",
+						"Color": "120.0 1 1 HSV",
+						"Radius": "2.0 METER"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "6.0 0.47 2.0 METER",
+					"Rotation": "0.0 -145.0 0.0 DEGREE"
+				},
+				"Items":
+				{
+					"MeshSceneItem":
+					{
+						"Mesh": "$ProjectName/Mesh/TestObject/testObj.asset"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "0.0 0.0 0.0 METER"
+				},
+				"Items":
+				{
+					"ParticlesSceneItem":
+					{
+						"Material": "$ProjectName/Material/Base/Particles.asset",
+						"SetMaterialProperties":
+						{
+							"_argb_alpha": "$ProjectName/Texture/Particles/Particles_argb_alpha.asset"
+						}
+					}
+				}
+			}
+		]
+	}
+}

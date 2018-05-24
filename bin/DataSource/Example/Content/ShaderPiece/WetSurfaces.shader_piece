@@ -1,0 +1,132 @@
+/*********************************************************\
+ * Copyright (c) 2012-2018 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+//[-------------------------------------------------------]
+//[ Pieces                                                ]
+//[-------------------------------------------------------]
+@piece(DefineWetSurfaces)
+	// Basing on "Water drop 3b – Physically based wet surfaces" by Sébastien Lagarde ( https://seblagarde.wordpress.com/2013/04/14/water-drop-3b-physically-based-wet-surfaces/ )
+	void DoWetProcess(float wetLevel, inout float3 albedo, inout float roughness, float metallic)
+	{
+		// Calculate albedo factor
+		float porosity = SATURATE((roughness - 0.5f) / 0.4f);
+		float factor = LERP(1.0f, 0.2f, porosity);
+
+		// Water influence on material BRDF
+		albedo *= LERP(1.0f, factor, wetLevel);	// Attenuate albedo
+		roughness = LERP(0.0f, roughness, LERP(1.0f, factor, 0.5f * wetLevel));
+	}
+
+	// Basing on "Water drop 2b – Dynamic rain and its effects" by Sébastien Lagarde ( https://seblagarde.wordpress.com/2013/04/14/water-drop-3b-physically-based-wet-surfaces/ )
+	float3 ComputeRipple(float2 uv, float currentTime, float weight)
+	{
+		float4 ripple = SAMPLE_2D_LOD(RippleMap, SamplerLinear, float4(uv, 0.0f, 0.0f)).bgra;
+		ripple.yz = ripple.yz * 2 - 1;	// Decompress perturbation
+
+		float dropFrac = frac(ripple.w + currentTime);	// Apply time shift
+		float timeFrac = dropFrac - 1.0f + ripple.x;
+		float dropFactor = SATURATE(0.2f + weight * 0.8f - dropFrac);
+		float finalFactor = dropFactor * ripple.x * sin(clamp(timeFrac * 9.0f, 0.0f, 3.0f) * PI);
+
+		return float3(ripple.yz * finalFactor * 0.35f, 1.0f);
+	}
+
+	// Basing on "Water drop 2b – Dynamic rain and its effects" by Sébastien Lagarde ( https://seblagarde.wordpress.com/2013/04/14/water-drop-3b-physically-based-wet-surfaces/ )
+	float3 ComputeRippleNormal(float2 uv, float rainIntensity)
+	{
+		// This are just visually tweak value
+		const float GLOBAL_TIME_SCALE = 0.5f;
+		const float4 TIME_BIAS = float4(1.0f, 0.85f, 0.93f, 1.13f);
+		const float4 TIME_OFFSET = float4(0.0f, 0.2f, 0.45f, 0.7f);
+		float4 times = (PassData.GlobalTimeInSeconds * GLOBAL_TIME_SCALE * TIME_BIAS + TIME_OFFSET) * 1.6f;
+		times = frac(times);
+
+		// We enable one layer by quarter intensity and progressively blend in the current layer
+		float4 weights = float4(rainIntensity, rainIntensity - 0.25f, rainIntensity - 0.5f, rainIntensity - 0.75f);
+		weights = SATURATE(weights * 4.0f);
+
+		// Generate four shifted layer of animated circle
+		float3 ripple1 = ComputeRipple(uv + float2( 0.25f, 0.0f),  times.x, weights.x);
+		float3 ripple2 = ComputeRipple(uv + float2(-0.55f, 0.3f),  times.y, weights.y);
+		float3 ripple3 = ComputeRipple(uv + float2( 0.6f,  0.85f), times.z, weights.z);
+		float3 ripple4 = ComputeRipple(uv + float2( 0.5f, -0.75f), times.w, weights.w);
+
+		// Compose normal of the four layer based on weights
+		float4 z = LERP(float4(1.0f, 1.0f, 1.0f, 1.0f), float4(ripple1.z, ripple2.z, ripple3.z, ripple4.z), weights);
+		float3 normal = float3( weights.x * ripple1.xy +
+								weights.y * ripple2.xy +
+								weights.z * ripple3.xy +
+								weights.w * ripple4.xy,
+								z.x * z.y * z.z * z.w);
+
+		// Done
+		return normalize(normal);
+	}
+
+	// Basing on "Water drop 2b – Dynamic rain and its effects" by Sébastien Lagarde ( https://seblagarde.wordpress.com/2013/04/14/water-drop-3b-physically-based-wet-surfaces/ )
+	// -> "puddleFactor": 0 means puddle and 1 means no puddle
+	void DoWaterProcess(float3 worldSpacePosition, float shadowVisibility, float heightMapValue, float puddleFactor, float wetLevel, float cracksFloodLevel, float puddleFloodLevel, float rainIntensity, inout float3 albedo, inout float roughness, inout float metallic, inout float3 viewSpaceNormal)
+	{
+		// TODO(co) Optimization: Pass this as shader uniform
+		float3 waterViewSpaceNormal = normalize(MultiplyQuaternionVector(PassData.WorldSpaceToViewSpaceQuaternion, float3(0.0f, 1.0f, 0.0f)));
+
+		// Get depth/accumulation water information
+		float2 accumulatedWaters;
+
+		// Get the "size" of the accumulated water in a hole/cracks
+		accumulatedWaters.x = wetLevel * min(cracksFloodLevel, 1.0f - heightMapValue);
+
+		// Get the size of the accumulated water in puddle taking into account the margin (0.4 constant here)
+		accumulatedWaters.y = SATURATE((puddleFloodLevel - puddleFactor) / 0.4f);
+
+		// Mix vertex color and height map accumulated water by taking the higher
+		float accumulatedWater = max(accumulatedWaters.x, accumulatedWaters.y);
+
+		// Walls don't accumulate water
+		accumulatedWater *= SATURATE(dot(waterViewSpaceNormal, viewSpaceNormal));
+
+		// "wetLevel" could be 0 but we can still require to have wet surface if there is accumulated water
+		float newWetLevel = SATURATE(wetLevel + accumulatedWater);
+
+		// Type 2 : Wet region
+		DoWetProcess(newWetLevel, albedo, roughness, metallic);
+
+		{ // Apply accumulated water effect: When "accumulatedWater" is 1.0 we are in Type 4 so full water properties, in between we are in Type 3
+			// Water is smooth
+			roughness = LERP(roughness, 0.0f, accumulatedWater);
+
+			// Water F0 specular is 0.02 (based on IOR of 1.33)
+			const float WATER_METALLIC = 0.0f;	// Result of: SATURATE(0.02f * 0.33f * 1000 - 500) - see "Metallic and smooth material"-section of "Water drop 2b – Dynamic rain and its effects"
+			metallic = LERP(metallic, 1.0f - WATER_METALLIC, accumulatedWater);
+
+			// Water ripples modify the view space normal
+			float rainIntensityOn = (rainIntensity > 0.0f && shadowVisibility > 0.0f) ? 1.0f : 0.0f;
+			if (rainIntensityOn > 0.0f)
+			{
+				const float RIPPLE_SCALE_FACTOR = 0.5f;
+				float3 rippleNormal = ComputeRippleNormal(worldSpacePosition.xz * RIPPLE_SCALE_FACTOR, rainIntensity);	// TODO(co) Optimization: Create a global dynamic ripple texture instead of calculating it on-the-fly in each using shader
+				rippleNormal = rippleNormal.xzy;
+				float3 waterNormal = LERP(float3(0.0f, 1.0f, 0.0f), rippleNormal, rainIntensityOn);
+				float3 rippleViewSpaceNormal = normalize(MultiplyQuaternionVector(PassData.WorldSpaceToViewSpaceQuaternion, waterNormal));
+				viewSpaceNormal = normalize(LERP(viewSpaceNormal, rippleViewSpaceNormal, accumulatedWater));
+			}
+		}
+	}
+@end

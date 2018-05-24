@@ -1,0 +1,26 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"AssetMetadata":
+		{
+			"AssetType": "Texture",
+			"AssetCategory": "Scene",
+			"Copyright": "Sponza model downloaded from http://www.crytek.com/cryengine/cryengine3/downloads - 'Base color, Roughness and Metallic textures for Sponza' by Alexandre Pestana ( http://www.alexandre-pestana.com/pbr-textures-sponza/ )"
+		},
+		"TextureAssetCompiler":
+		{
+			"TextureSemantic": "PACKED_CHANNELS",
+			"TextureChannelPacking": "_argb_nxa",
+			"InputFiles":
+			{
+				"ALBEDO_MAP": "Sponza_Column_c_diffuse.png",
+				"NORMAL_MAP": "Sponza_Column_c_normal.png"
+			}
+		}
+	}
+}

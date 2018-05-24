@@ -1,0 +1,18 @@
+{
+	"Format":
+	{
+		"Type": "MaterialAsset",
+		"Version": "1"
+	},
+	"MaterialAsset":
+	{
+		"Techniques":
+		{
+			"Default": "$ProjectName/MaterialBlueprint/Mesh/DebugSkinned.asset",
+			"Debug": "$ProjectName/MaterialBlueprint/Mesh/DebugSkinned.asset",
+			"Forward": "$ProjectName/MaterialBlueprint/Mesh/ForwardSkinned.asset",
+			"Deferred": "$ProjectName/MaterialBlueprint/Mesh/DeferredSkinned.asset",
+			"DepthOnly": "$ProjectName/MaterialBlueprint/Mesh/DepthOnlySkinned.asset"
+		}
+	}
+}

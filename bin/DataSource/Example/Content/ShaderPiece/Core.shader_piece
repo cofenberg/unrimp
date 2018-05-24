@@ -1,0 +1,832 @@
+/*********************************************************\
+ * Copyright (c) 2012-2018 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+//[-------------------------------------------------------]
+//[ HLSL shader language                                  ]
+//[-------------------------------------------------------]
+// Direct3D: Left-handed coordinate system with clip space depth value range 0..1
+@property(HLSL)
+	// We're using HLSL syntax inside our shaders. So not much to map but only abstract in here so a mapping to GLSL is possible.
+	@piece(SetCrossPlatformSettings)
+		// Hack to speed up shader compilation, see e.g.
+		// - https://www.gamedev.net/forums/topic/663243-slow-shader-compile-time-when-using-large-arrays/
+		// - https://bitbucket.org/sinbad/ogre/commits/30c9ea48d86718abd26067fcbfe80ea3c78a1432
+		// - https://bitbucket.org/sinbad/ogre/commits/cf46287f17faeed4a47d411e911787c164d296ba
+		#define FAST_SHADER_BUILD_HACK(numberOfElements) 2
+
+		/**
+		*  @brief
+		*    Apply Reversed-Z
+		*
+		*  @note
+		*    - This macro is used to make it easy to search for Reversed-Z relevant places
+		*    - For background theory see "Depth Precision Visualized" by Nathan Reed - https://developer.nvidia.com/content/depth-precision-visualized
+		*    - For practical information see "Reversed-Z in OpenGL" by Nicolas Guillemot - https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/
+		*/
+		#define REVERSED_Z(z) (1.0f - z)
+
+		// Shader attribute input
+		#define INPUT_BEGIN struct SHADER_INPUT {
+		#define INPUT_BEGIN_PATCH struct SHADER_INPUT_PATCH {
+		#define INPUT_BEGIN_CONTROL_POINT struct SHADER_INPUT_CONTROL_POINT {
+			#define INPUT_ARRAY(name) name
+			#define INPUT_VERTEX_ID uint vertexId : SV_VERTEXID;
+			#define INPUT_VERTEX_DRAW_ID(attributeIndex) uint drawId : DRAWID;	// "DRAWID" is a special vertex attribute semantic introduced, see "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html
+			#define INPUT_VERTEX_POSITION(attributeIndex, type, name) type name : POSITION;
+			#define INPUT_POSITION(attributeIndex, type, name) type name : SV_POSITION;
+			#define INPUT_VERTEX_COLOR(attributeIndex, type, name) type name : COLOR;
+			#define INPUT_VERTEX_NORMAL(attributeIndex, type, name) type name : NORMAL;
+			#define INPUT_VERTEX_TANGENT(attributeIndex, type, name) type name : TANGENT;
+			#define INPUT_TEXTURE_COORDINATE(attributeIndex, type, name, semanticIndex) type name : TEXCOORD##semanticIndex;
+			#define INPUT_TEXTURE_COORDINATE_NOINTERPOLATION(attributeIndex, type, name, semanticIndex) nointerpolation type name : TEXCOORD##semanticIndex;
+			#define INPUT_VERTEX_BLEND_INDICES(attributeIndex, type, name) type name : BLENDINDICES;
+			#define INPUT_VERTEX_BLEND_WEIGHTS(attributeIndex, type, name) type name : BLENDWEIGHT;
+			#define INPUT_TESS_LEVEL_INNER(numberOfComponents) float TessLevelInner[numberOfComponents] : SV_INSIDETESSFACTOR;
+			#define INPUT_TESS_LEVEL_OUTER(numberOfComponents) float TessLevelOuter[numberOfComponents] : SV_TESSFACTOR;
+		#define INPUT_END };
+		#define INPUT_END_PATCH };
+		#define INPUT_END_CONTROL_POINT };
+
+		// Shader attribute output
+		#define OUTPUT_BEGIN struct SHADER_OUTPUT {
+		#define OUTPUT_BEGIN_PATCH struct SHADER_OUTPUT_PATCH {
+			#define OUTPUT_ARRAY(name) name
+			#define OUTPUT_POSITION(attributeIndex) float4 OutputPosition : SV_POSITION;
+			#define OUTPUT_POSITION_NAMED(attributeIndex, type, name) type name : SV_POSITION;
+			#define OUTPUT_TEXTURE_COORDINATE(attributeIndex, type, name, semanticIndex) type name : TEXCOORD##semanticIndex;
+			#define OUTPUT_TEXTURE_COORDINATE_NOINTERPOLATION(attributeIndex, type, name, semanticIndex) nointerpolation type name : TEXCOORD##semanticIndex;
+			#define OUTPUT_COLOR(semanticIndex) float4 OutputColor##semanticIndex : SV_TARGET##semanticIndex;
+			#define OUTPUT_DEPTH float OutputDepth : SV_DEPTH;
+			#define OUTPUT_TESS_LEVEL_INNER(numberOfComponents)	float TessLevelInner[numberOfComponents] : SV_INSIDETESSFACTOR;
+			#define OUTPUT_TESS_LEVEL_OUTER(numberOfComponents)	float TessLevelOuter[numberOfComponents] : SV_TESSFACTOR;
+		#define OUTPUT_END };
+		#define OUTPUT_END_PATCH };
+
+		// Main
+		#define MAIN_BEGIN SHADER_OUTPUT main(SHADER_INPUT ShaderInput) { SHADER_OUTPUT shaderOutput;
+		#define MAIN_BEGIN_NO_OUTPUT void main(SHADER_INPUT ShaderInput) {
+		#define MAIN_BEGIN_TESSELLATION_CONTROL_PATCH(numberOfInputControlPoints) SHADER_OUTPUT_PATCH mainPerPatchInvocation(SHADER_INPUT_PATCH ShaderInputPatch, InputPatch<SHADER_INPUT, numberOfInputControlPoints> ShaderInput) { SHADER_OUTPUT_PATCH shaderOutputPatch;
+		#define MAIN_BEGIN_TESSELLATION_CONTROL(numberOfInputControlPoints, numberOfOutputControlPoints) [outputcontrolpoints(numberOfOutputControlPoints)] [patchconstantfunc("mainPerPatchInvocation")] SHADER_OUTPUT main(SHADER_INPUT_CONTROL_POINT ShaderInputControlPoint, InputPatch<SHADER_INPUT, numberOfInputControlPoints> ShaderInput) { SHADER_OUTPUT shaderOutput;
+		#define MAIN_BEGIN_TESSELLATION_EVALUATION(numberOfInputControlPoints) SHADER_OUTPUT main(SHADER_INPUT_PATCH ShaderInputPatch, const OutputPatch<SHADER_INPUT, numberOfInputControlPoints> ShaderInput) { SHADER_OUTPUT shaderOutput;
+			#define MAIN_INPUT(name) ShaderInput.name
+			#define MAIN_INPUT_ARRAY(name, index) ShaderInput[index].name
+			#define MAIN_INPUT_VERTEX_ID ShaderInput.vertexId
+			#define MAIN_INPUT_DRAW_ID ShaderInput.drawId
+			#define MAIN_OUTPUT(name) shaderOutput.name
+			#define MAIN_OUTPUT_POSITION shaderOutput.OutputPosition
+			#define MAIN_OUTPUT_COLOR(semanticIndex) shaderOutput.OutputColor##semanticIndex
+			#define MAIN_OUTPUT_DEPTH shaderOutput.OutputDepth
+			#define MAIN_OUTPUT_CONTROL_POINT(name) shaderOutput.name
+			#define MAIN_OUTPUT_TESS_LEVEL_INNER shaderOutputPatch.TessLevelInner
+			#define MAIN_OUTPUT_TESS_LEVEL_OUTER shaderOutputPatch.TessLevelOuter
+			#define MAIN_RETURN return shaderOutput;
+		#define MAIN_END return shaderOutput; }
+		#define MAIN_END_TESSELLATION_CONTROL_PATCH return shaderOutputPatch; }
+		#define MAIN_END_NO_OUTPUT }
+
+		// Shader vertex attribute input, output and main with build in support for single pass stereo rendering via instancing as described in "High Performance Stereo Rendering For VR", Timothy Wilson, San Diego, Virtual Reality Meetup
+		// -> Instance ID: Use low bit as stereo eye index
+		@property(SinglePassStereoInstancing)
+			#define INPUT_BEGIN_VERTEX struct SHADER_INPUT { uint stereoInstanceId : SV_INSTANCEID;
+			#define INPUT_END_VERTEX };
+			#define OUTPUT_BEGIN_VERTEX struct SHADER_OUTPUT {
+			#define OUTPUT_END_VERTEX float stereoClipDistance : SV_ClipDistance0; float stereoCullDistance : SV_CullDistance0; };
+			#define MAIN_BEGIN_VERTEX SHADER_OUTPUT main(SHADER_INPUT ShaderInput) { SHADER_OUTPUT shaderOutput; uint stereoEyeIndex = (ShaderInput.stereoInstanceId & 1u);
+				#define MAIN_INPUT_DRAW_ID_VERTEX (ShaderInput.drawId - stereoEyeIndex)
+				#define MAIN_INPUT_STEREO_EYE_INDEX stereoEyeIndex
+			#define MAIN_END_VERTEX(vertexOutputPosition) { float4 StereoEyeClipEdge[2]; StereoEyeClipEdge[0] = float4(1.0f, 0.0f, 0.0f, 1.0f); StereoEyeClipEdge[1] = float4(-1.0f, 0.0f, 0.0f, 1.0f); float StereoEyeOffsetScale[2] = { 0.5f, -0.5f }; shaderOutput.stereoCullDistance = shaderOutput.stereoClipDistance = dot(StereoEyeClipEdge[stereoEyeIndex], vertexOutputPosition); vertexOutputPosition.x *= 0.5f; vertexOutputPosition.x += StereoEyeOffsetScale[stereoEyeIndex] * vertexOutputPosition.w; } return shaderOutput; }
+		@end
+		@property(!SinglePassStereoInstancing)
+			#define INPUT_BEGIN_VERTEX struct SHADER_INPUT {
+			#define INPUT_END_VERTEX };
+			#define OUTPUT_BEGIN_VERTEX struct SHADER_OUTPUT {
+			#define OUTPUT_END_VERTEX };
+			#define MAIN_BEGIN_VERTEX SHADER_OUTPUT main(SHADER_INPUT ShaderInput) { SHADER_OUTPUT shaderOutput;
+				#define MAIN_INPUT_DRAW_ID_VERTEX ShaderInput.drawId
+				#define MAIN_INPUT_STEREO_EYE_INDEX 0
+			#define MAIN_END_VERTEX(vertexOutputPosition) return shaderOutput; }
+		@end
+
+		// Math
+		#define LERP(a, b, t) lerp(a, b, t)
+		#define SATURATE(a) saturate(a)
+		#define ROW_MATRIX_2x2(r0, r1) float2x2(r0, r1)
+		#define ROW_MATRIX_3x3(r0, r1, r2) float3x3(r0, r1, r2)
+		#define ROW_MATRIX_4x4(r0, r1, r2, r3) float4x4(r0, r1, r2, r3)
+		#define MATRIX_MUL(m, v) mul(m, v)
+		#define CAST_TO(a, b) ((b)(a))
+		#define DDX(x) ddx(x)
+		#define DDY(x) ddy(x)
+
+		// Uniform buffer
+		#define UNIFORM_BUFFER_BEGIN(resourceGroupIndex, resourceIndex, name, registerIndex) cbuffer name : register(b##registerIndex) {
+		#define UNIFORM_BUFFER_END }
+
+		// Texture buffer
+		#define TEXTURE_BUFFER(resourceGroupIndex, resourceIndex, type, name, registerIndex) Buffer<type> name : register(t##registerIndex);
+		#define TEXTURE_BUFFER_FETCH(name, texelIndex) name.Load(texelIndex)
+
+		// Texture
+		#define TEXTURE_1D(resourceGroupIndex, resourceIndex, name, registerIndex) Texture1D name : register(t##registerIndex);
+		#define TEXTURE_2D(resourceGroupIndex, resourceIndex, name, registerIndex) Texture2D name : register(t##registerIndex);
+		#define TEXTURE_2D_ARRAY(resourceGroupIndex, resourceIndex, name, registerIndex) Texture2DArray name : register(t##registerIndex);
+		#define TEXTURE_2D_MS(resourceGroupIndex, resourceIndex, name, numberOfMultisamples, registerIndex) Texture2DMS<float4, numberOfMultisamples> name : register(t##registerIndex);
+		#define TEXTURE_3D(resourceGroupIndex, resourceIndex, name, registerIndex) Texture3D name : register(t##registerIndex);
+		#define TEXTURE_3D_UINT(resourceGroupIndex, resourceIndex, name, registerIndex) Texture3D<uint> name : register(t##registerIndex);
+		#define TEXTURE_CUBE(resourceGroupIndex, resourceIndex, name, registerIndex) TextureCube name : register(t##registerIndex);
+		float2 getDirect3DTexture2DSize(Texture2D textureObject, uint mipmapIndex)
+		{
+			uint width;
+			uint height;
+			float numberOfLevels;
+			textureObject.GetDimensions(mipmapIndex, width, height, numberOfLevels);
+			return float2(width, height);
+		}
+		#define GET_TEXTURE_2D_SIZE(textureObject, mipmapIndex) getDirect3DTexture2DSize(textureObject, mipmapIndex)
+		float2 getDirect3DTextureCubeSize(TextureCube textureObject, uint mipmapIndex)
+		{
+			uint width;
+			uint height;
+			float numberOfLevels;
+			textureObject.GetDimensions(mipmapIndex, width, height, numberOfLevels);
+			return float2(width, height);
+		}
+		#define GET_TEXTURE_CUBE_SIZE(textureObject, mipmapIndex) getDirect3DTextureCubeSize(textureObject, mipmapIndex)
+
+		// Sampler
+		#define SAMPLER_STATE(resourceGroupIndex, resourceIndex, name, registerIndex) SamplerState name : register(s##registerIndex);
+		#define SAMPLER_COMPARISON_STATE(resourceGroupIndex, resourceIndex, name, registerIndex) SamplerComparisonState name : register(s##registerIndex);
+		#define SAMPLE_1D(textureObject, samplerObject, coordinate) textureObject.Sample(samplerObject, coordinate)
+		#define SAMPLE_1D_LOD(textureObject, samplerObject, coordinate) textureObject.SampleLevel(samplerObject, coordinate.x, coordinate.w)
+		#define SAMPLE_2D(textureObject, samplerObject, coordinate) textureObject.Sample(samplerObject, coordinate)
+		#define SAMPLE_2D_LOD(textureObject, samplerObject, coordinate) textureObject.SampleLevel(samplerObject, coordinate.xy, coordinate.w)
+		#define SAMPLE_2D_ARRAY(textureObject, samplerObject, coordinate) textureObject.Sample(samplerObject, coordinate)
+		#define SAMPLE_2D_ARRAY_LOD(textureObject, samplerObject, coordinate) textureObject.SampleLevel(samplerObject, coordinate.xyz, coordinate.w)
+		#define SAMPLE_2D_ARRAY_GRAD(textureObject, samplerObject, coordinate, _ddx, _ddy) textureObject.SampleGrad(samplerObject, coordinate.xyz, _ddx, _ddy)
+		#define SAMPLE_2D_MS(textureObject, coordinate, sampleIndex) textureObject.Load(coordinate, sampleIndex)
+		#define SAMPLE_2D_CMP_LEVEL_ZERO(textureObject, samplerObject, coordinate) textureObject.SampleCmpLevelZero(samplerObject, coordinate.xy, coordinate.w)
+		#define SAMPLE_3D_LOD(textureObject, samplerObject, coordinate) textureObject.SampleLevel(samplerObject, coordinate.xyz, coordinate.w)
+		#define SAMPLE_CUBE(textureObject, samplerObject, coordinate) textureObject.Sample(samplerObject, coordinate)
+		#define SAMPLE_CUBE_LOD(textureObject, samplerObject, coordinate) textureObject.SampleLevel(samplerObject, coordinate.xyz, coordinate.w)
+		#define SAMPLE_DEPTH_2D_LOD(textureObject, samplerObject, coordinate) REVERSED_Z(textureObject.SampleLevel(samplerObject, coordinate.xy, coordinate.w).r)
+		#define SAMPLE_DEPTH_2D_MS(textureObject, coordinate, sampleIndex) REVERSED_Z(textureObject.Load(coordinate, sampleIndex).r)
+
+		// Load/fetch
+		#define TEXTURE_FETCH_2D(name, texelIndex) name.Load(texelIndex)
+		#define TEXTURE_FETCH_ARRAY(name, texelIndex) name.Load(texelIndex)
+		#define TEXTURE_FETCH_3D(name, texelIndex) name.Load(texelIndex)
+
+		// Fragment shader only
+		#define DECLARE_FRAGMENT_POSITION float4 FragmentPosition : SV_POSITION;
+		#define FRAGMENT_POSITION ShaderInput.FragmentPosition
+		#define DECLARE_IS_FRONT_FACE bool IsFrontFace : SV_ISFRONTFACE;
+		#define IS_FRONT_FACE ShaderInput.IsFrontFace
+		#define DECLARE_PRIMITIVE_ID uint PrimitiveId : SV_PrimitiveID;
+		#define PRIMITIVE_ID ((int)ShaderInputPatch.PrimitiveId)
+		#define DECLARE_CONTROL_POINT_ID uint OutputControlPointId : SV_OutputControlPointID;
+		#define CONTROL_POINT_ID ((int)ShaderInputControlPoint.OutputControlPointId)
+		#define DECLARE_TESS_COORD(type) type TessCoord : SV_DOMAINLOCATION;
+		#define TESS_COORD ShaderInputPatch.TessCoord
+		@property(Direct3D10)
+			#define DECLARE_COVERAGE_MASK
+			#define COVERAGE_MASK 0
+		@end
+		@property(Direct3D11 || Direct3D12)
+			#define DECLARE_COVERAGE_MASK uint CoverageMask : SV_COVERAGE;
+			#define COVERAGE_MASK ShaderInput.CoverageMask
+		@end
+
+		// Compiler hints
+		#define UNROLL_HINT [unroll]
+		#define FLATTEN_HINT [flatten]
+	@end
+@end
+
+
+//[-------------------------------------------------------]
+//[ GLSL shader language                                  ]
+//[-------------------------------------------------------]
+// We're using HLSL syntax inside our shaders. Hence we have to map GLSL to HLSL in here. See e.g.
+// - http://dench.flatlib.jp/opengl/glsl_hlsl
+// - https://hl2glsl.codeplex.com/wikipage?title=Differences%20Between%20HLSL%20and%20GLSL
+// - https://msdn.microsoft.com/en-us/library/windows/apps/dn166865.aspx
+// - https://anteru.net/blog/2016/mapping-between-hlsl-and-glsl/
+// for a shader language mapping
+
+// Vulkan: Left-handed coordinate system with clip space depth value range 0..1
+@property(Vulkan)
+	@piece(SetCrossPlatformSettings)
+		#version 450 core	// OpenGL 4.5
+
+		// Hack to speed up shader compilation, see e.g.
+		// - https://www.gamedev.net/forums/topic/663243-slow-shader-compile-time-when-using-large-arrays/
+		// - https://bitbucket.org/sinbad/ogre/commits/30c9ea48d86718abd26067fcbfe80ea3c78a1432
+		// - https://bitbucket.org/sinbad/ogre/commits/cf46287f17faeed4a47d411e911787c164d296ba
+		// -> Not relevant for GLSL
+		#define FAST_SHADER_BUILD_HACK(numberOfElements) numberOfElements
+
+		/**
+		*  @brief
+		*    Apply Reversed-Z
+		*
+		*  @note
+		*    - This macro is used to make it easy to search for Reversed-Z relevant places
+		*    - For background theory see "Depth Precision Visualized" by Nathan Reed - https://developer.nvidia.com/content/depth-precision-visualized
+		*    - For practical information see "Reversed-Z in OpenGL" by Nicolas Guillemot - https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/
+		*/
+		#define REVERSED_Z(z) (1.0f - z)
+
+		// Shader attribute input
+		#define INPUT_BEGIN
+		#define INPUT_BEGIN_PATCH
+		#define INPUT_BEGIN_CONTROL_POINT
+			#define INPUT_ARRAY(name) name[]
+			#define INPUT_VERTEX_ID
+			#define INPUT_VERTEX_DRAW_ID(attributeIndex) layout(location = attributeIndex) in uint drawId;	// See "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html
+			#define INPUT_VERTEX_POSITION(attributeIndex, type, name) layout(location = attributeIndex) in type name;
+			#define INPUT_POSITION(attributeIndex, type, name) layout(location = attributeIndex) in type name;
+			#define INPUT_VERTEX_COLOR(attributeIndex, type, name) layout(location = attributeIndex) in type name;
+			#define INPUT_VERTEX_NORMAL(attributeIndex, type, name) layout(location = attributeIndex) in type name;
+			#define INPUT_VERTEX_TANGENT(attributeIndex, type, name) layout(location = attributeIndex) in type name;
+			#define INPUT_TEXTURE_COORDINATE(attributeIndex, type, name, semanticIndex) layout(location = attributeIndex) in type name;
+			#define INPUT_TEXTURE_COORDINATE_NOINTERPOLATION(attributeIndex, type, name, semanticIndex) layout(location = attributeIndex) flat in type name;
+			#define INPUT_VERTEX_BLEND_INDICES(attributeIndex, type, name) layout(location = attributeIndex) in type name;
+			#define INPUT_VERTEX_BLEND_WEIGHTS(attributeIndex, type, name) layout(location = attributeIndex) in type name;
+			#define INPUT_TESS_LEVEL_INNER(numberOfComponents)
+			#define INPUT_TESS_LEVEL_OUTER(numberOfComponents)
+		#define INPUT_END
+		#define INPUT_END_PATCH
+		#define INPUT_END_CONTROL_POINT
+
+		// Shader attribute output
+		#define OUTPUT_BEGIN
+		#define OUTPUT_BEGIN_PATCH
+			#define OUTPUT_ARRAY(name) name[]
+			#define OUTPUT_POSITION(attributeIndex) layout(location = attributeIndex) out gl_PerVertex { vec4 gl_Position; };
+			#define OUTPUT_POSITION_NAMED(attributeIndex, type, name) layout(location = attributeIndex) out type name;
+			#define OUTPUT_TEXTURE_COORDINATE(attributeIndex, type, name, semanticIndex) layout(location = attributeIndex) out type name;
+			#define OUTPUT_TEXTURE_COORDINATE_NOINTERPOLATION(attributeIndex, type, name, semanticIndex) layout(location = attributeIndex) flat out type name;
+			#define OUTPUT_COLOR(semanticIndex) layout(location = ##semanticIndex) out vec4 OutputColor##semanticIndex;
+			#define OUTPUT_DEPTH
+			#define OUTPUT_TESS_LEVEL_INNER(numberOfComponents)
+			#define OUTPUT_TESS_LEVEL_OUTER(numberOfComponents)
+		#define OUTPUT_END
+		#define OUTPUT_END_PATCH
+
+		// Main
+		#define MAIN_BEGIN void main() {
+		#define MAIN_BEGIN_NO_OUTPUT void mainPerPatchInvocation() {
+		#define MAIN_BEGIN_TESSELLATION_CONTROL_PATCH(numberOfInputControlPoints) void mainPerPatchInvocation() {
+		#define MAIN_BEGIN_TESSELLATION_CONTROL(numberOfInputControlPoints, numberOfOutputControlPoints) layout(vertices = numberOfOutputControlPoints) out; void main() { if (0 == gl_InvocationID) { mainPerPatchInvocation(); }
+		#define MAIN_BEGIN_TESSELLATION_EVALUATION(numberOfInputControlPoints) void main() {
+			#define MAIN_INPUT(name) name
+			#define MAIN_INPUT_ARRAY(name, index) name[index]
+			#define MAIN_INPUT_VERTEX_ID uint(gl_VertexIndex)						// "gl_VertexIndex" is equivalent to OpenGL's "gl_VertexID"
+
+			// TODO(co) Review in detail: Looks like that with "gl_InstanceIndex" we don't need the "drawId"-hack in Vulkan
+			#define MAIN_INPUT_DRAW_ID uint(gl_InstanceIndex)				// "gl_InstanceIndex" is not equivalent to OpenGL's "gl_InstanceID" because "gl_InstanceID" does not include the "baseInstance"-parameter
+			// #define MAIN_INPUT_DRAW_ID (drawId + uint(gl_InstanceIndex))	// "gl_InstanceIndex" is not equivalent to OpenGL's "gl_InstanceID" because "gl_InstanceID" does not include the "baseInstance"-parameter
+
+			#define MAIN_OUTPUT(name) name
+			#define MAIN_OUTPUT_POSITION gl_Position
+			#define MAIN_OUTPUT_COLOR(semanticIndex) OutputColor##semanticIndex
+			#define MAIN_OUTPUT_DEPTH gl_FragDepth
+			#define MAIN_OUTPUT_CONTROL_POINT(name) name[gl_InvocationID]
+			#define MAIN_OUTPUT_TESS_LEVEL_INNER gl_TessLevelInner
+			#define MAIN_OUTPUT_TESS_LEVEL_OUTER gl_TessLevelOuter
+			#define MAIN_RETURN
+		#define MAIN_END }
+		#define MAIN_END_TESSELLATION_CONTROL_PATCH }
+		#define MAIN_END_NO_OUTPUT }
+
+		// Shader vertex attribute input, output and main with build in support for single pass stereo rendering via instancing as described in "High Performance Stereo Rendering For VR", Timothy Wilson, San Diego, Virtual Reality Meetup
+		// TODO(co) Implement me
+		#define INPUT_BEGIN_VERTEX
+		#define INPUT_END_VERTEX
+		#define OUTPUT_BEGIN_VERTEX
+		#define OUTPUT_END_VERTEX
+		#define MAIN_BEGIN_VERTEX void main() {
+			#define MAIN_INPUT_DRAW_ID_VERTEX uint(gl_InstanceIndex)
+			#define MAIN_INPUT_STEREO_EYE_INDEX 0
+		#define MAIN_END_VERTEX(vertexOutputPosition) }
+
+		// Math
+		#define LERP(a, b, t) mix(a, b, t)
+		#define SATURATE(a) clamp(a, 0.0f, 1.0f)
+		#define ROW_MATRIX_2x2(r0, r1) transpose(mat2(r0, r1))
+		#define ROW_MATRIX_3x3(r0, r1, r2) transpose(mat3(r0, r1, r2))
+		#define ROW_MATRIX_4x4(r0, r1, r2, r3) transpose(mat4(r0, r1, r2, r3))
+		#define MATRIX_MUL(m, v) (m * v)
+		#define CAST_TO(a, b) b(a)
+		#define DDX(x) dFdx(x)
+		#define DDY(x) dFdy(x)
+
+		// Uniform buffer
+		#define UNIFORM_BUFFER_BEGIN(resourceGroupIndex, resourceIndex, name, registerIndex) layout(std140, set = resourceGroupIndex, binding = resourceIndex) uniform name {
+		#define UNIFORM_BUFFER_END };
+
+		// Texture buffer
+		#define TEXTURE_BUFFER(resourceGroupIndex, resourceIndex, type, name, registerIndex) layout(set = resourceGroupIndex, binding = resourceIndex) uniform samplerBuffer name;
+		#define TEXTURE_BUFFER_FETCH(name, texelIndex) texelFetch(name, int(texelIndex))
+
+		// Texture
+		#define TEXTURE_1D(resourceGroupIndex, resourceIndex, name, registerIndex) layout(set = resourceGroupIndex, binding = resourceIndex) uniform sampler1D name;
+		#define TEXTURE_2D(resourceGroupIndex, resourceIndex, name, registerIndex) layout(set = resourceGroupIndex, binding = resourceIndex) uniform sampler2D name;
+		#define TEXTURE_2D_MS(resourceGroupIndex, resourceIndex, name, numberOfMultisamples, registerIndex) layout(set = resourceGroupIndex, binding = resourceIndex) uniform sampler2DMS name;
+		#define TEXTURE_2D_ARRAY(resourceGroupIndex, resourceIndex, name, registerIndex) layout(set = resourceGroupIndex, binding = resourceIndex) uniform sampler2DArray name;
+		#define TEXTURE_3D(resourceGroupIndex, resourceIndex, name, registerIndex) layout(set = resourceGroupIndex, binding = resourceIndex) uniform sampler3D name;
+		#define TEXTURE_3D_UINT(resourceGroupIndex, resourceIndex, name, registerIndex) layout(set = resourceGroupIndex, binding = resourceIndex) uniform isampler3D name;
+		#define TEXTURE_CUBE(resourceGroupIndex, resourceIndex, name, registerIndex) layout(set = resourceGroupIndex, binding = resourceIndex) uniform samplerCube name;
+		#define GET_TEXTURE_2D_SIZE(textureObject, mipmapIndex) textureSize(textureObject, mipmapIndex)
+		#define GET_TEXTURE_CUBE_SIZE(textureObject, mipmapIndex) textureSize(textureObject, mipmapIndex)
+
+		// Sampler
+		#define SAMPLER_STATE(resourceGroupIndex, resourceIndex, name, registerIndex) int name = registerIndex;	// We need something to pass into functions
+		#define SAMPLER_COMPARISON_STATE(resourceGroupIndex, resourceIndex, name, registerIndex)
+		#define SAMPLE_1D(textureObject, samplerObject, coordinate) texture(textureObject, coordinate)
+		#define SAMPLE_1D_LOD(textureObject, samplerObject, coordinate) textureLod(textureObject, coordinate.x, coordinate.w)
+		#define SAMPLE_2D(textureObject, samplerObject, coordinate) texture(textureObject, coordinate)
+		#define SAMPLE_2D_LOD(textureObject, samplerObject, coordinate) textureLod(textureObject, coordinate.xy, coordinate.w)
+		#define SAMPLE_2D_ARRAY(textureObject, samplerObject, coordinate) texture(textureObject, coordinate)
+		#define SAMPLE_2D_ARRAY_LOD(textureObject, samplerObject, coordinate) textureLod(textureObject, coordinate.xyz, coordinate.w)
+		#define SAMPLE_2D_ARRAY_GRAD(textureObject, samplerObject, coordinate, _ddx, _ddy) textureGrad(textureObject, coordinate.xyz, _ddx, _ddy)
+		#define SAMPLE_2D_MS(textureObject, coordinate, sampleIndex) texelFetch(textureObject, coordinate, sampleIndex)
+		#define SAMPLE_2D_CMP_LEVEL_ZERO(textureObject, samplerObject, coordinate) vec4(coordinate.w <= textureLod(textureObject, coordinate.xy, 0.0f).r, 0.0f, 0.0f, 0.0f)
+		#define SAMPLE_3D_LOD(textureObject, samplerObject, coordinate) textureLod(textureObject, coordinate.xyz, coordinate.w)
+		#define SAMPLE_CUBE(textureObject, samplerObject, coordinate) texture(textureObject, coordinate)
+		#define SAMPLE_CUBE_LOD(textureObject, samplerObject, coordinate) textureLod(textureObject, coordinate.xyz, coordinate.w)
+		#define SAMPLE_DEPTH_2D_LOD(textureObject, samplerObject, coordinate) REVERSED_Z(textureLod(textureObject, coordinate.xy, coordinate.w).r)
+		#define SAMPLE_DEPTH_2D_MS(textureObject, coordinate, sampleIndex) REVERSED_Z(texelFetch(textureObject, coordinate, sampleIndex).r)
+
+		// Fragment shader only
+		#define DECLARE_FRAGMENT_POSITION
+		#define FRAGMENT_POSITION gl_FragCoord
+		#define DECLARE_IS_FRONT_FACE
+		#define IS_FRONT_FACE gl_FrontFacing
+		#define DECLARE_PRIMITIVE_ID
+		#define PRIMITIVE_ID gl_PrimitiveID
+		#define DECLARE_CONTROL_POINT_ID
+		#define CONTROL_POINT_ID gl_InvocationID
+		#define DECLARE_TESS_COORD(type)
+		#define TESS_COORD gl_TessCoord
+		#define DECLARE_COVERAGE_MASK
+		#define COVERAGE_MASK gl_SampleMaskIn[0]
+
+		// Compiler hints
+		#define UNROLL_HINT
+		#define FLATTEN_HINT
+
+		// Primitive HLSL datatypes
+		#define float2 vec2
+		#define float3 vec3
+		#define float4 vec4
+		#define float4x4 mat4
+		#define float3x4 mat3x4
+		#define float3x3 mat3
+		#define float3x2 mat3x2
+		#define float2x3 mat2x3
+		#define float2x2 mat2x2
+		#define int2 ivec2
+		#define int3 ivec3
+		#define int4 ivec4
+		#define uint2 uvec2
+		#define uint3 uvec3
+		#define uint4 uvec4
+
+		// Load/fetch
+		#define TEXTURE_FETCH_2D(name, texelIndex) texelFetch(name, texelIndex.xy, texelIndex.z)
+		#define TEXTURE_FETCH_ARRAY(name, texelIndex) texelFetch(name, texelIndex.xyz, texelIndex.w)
+		#define TEXTURE_FETCH_3D(name, texelIndex) texelFetch(name, texelIndex.xyz, texelIndex.w)
+
+		// HLSL math functions
+		#define rsqrt(x) inversesqrt(x)
+		#define frac(x) fract(x)
+		#define rcp(x) (1.0f / x)
+		#define fmod(x, y) (x - y * trunc(x / y))
+
+		// HLSL bit functions
+		#define firstbitlow(x) findLSB(x)
+	@end
+@end
+
+// OpenGL
+// -> If the "GL_ARB_clip_control"-extension is available: Left-handed coordinate system with clip space depth value range 0..1
+// -> If the "GL_ARB_clip_control"-extension isn't available: Right-handed coordinate system with clip space depth value range -1..1
+@property(OpenGL)
+	@piece(SetCrossPlatformSettings)
+		#version 410 core	// This is what Mac OS X 10.11 and similar support, no fancy 420, no "#extension GL_ARB_shading_language_420pack : enable" and hence no "layout(binding)" usage possible (no problem, we're using material blueprints with a root signature)
+
+		// Hack to speed up shader compilation, see e.g.
+		// - https://www.gamedev.net/forums/topic/663243-slow-shader-compile-time-when-using-large-arrays/
+		// - https://bitbucket.org/sinbad/ogre/commits/30c9ea48d86718abd26067fcbfe80ea3c78a1432
+		// - https://bitbucket.org/sinbad/ogre/commits/cf46287f17faeed4a47d411e911787c164d296ba
+		// -> Not relevant for GLSL
+		#define FAST_SHADER_BUILD_HACK(numberOfElements) numberOfElements
+
+		/**
+		*  @brief
+		*    Apply Reversed-Z
+		*
+		*  @note
+		*    - This macro is used to make it easy to search for Reversed-Z relevant places
+		*    - For background theory see "Depth Precision Visualized" by Nathan Reed - https://developer.nvidia.com/content/depth-precision-visualized
+		*    - For practical information see "Reversed-Z in OpenGL" by Nicolas Guillemot - https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/
+		*/
+		#define REVERSED_Z(z) (1.0f - z)
+
+		// Shader attribute input
+		#define INPUT_BEGIN
+		#define INPUT_BEGIN_PATCH
+		#define INPUT_BEGIN_CONTROL_POINT
+			#define INPUT_ARRAY(name) name[]
+			#define INPUT_VERTEX_ID
+			#define INPUT_VERTEX_DRAW_ID(attributeIndex) in uint drawId; uniform uint drawIdUniform;	// See "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html - "drawIdUniform" is used in case "GL_ARB_base_instance" isn't supported (Mac OS X 10.11 for example)
+			#define INPUT_VERTEX_POSITION(attributeIndex, type, name) in type name;
+			#define INPUT_POSITION(attributeIndex, type, name) in type name;
+			#define INPUT_VERTEX_COLOR(attributeIndex, type, name) in type name;
+			#define INPUT_VERTEX_NORMAL(attributeIndex, type, name) in type name;
+			#define INPUT_VERTEX_TANGENT(attributeIndex, type, name) in type name;
+			#define INPUT_TEXTURE_COORDINATE(attributeIndex, type, name, semanticIndex) in type name;
+			#define INPUT_TEXTURE_COORDINATE_NOINTERPOLATION(attributeIndex, type, name, semanticIndex) flat in type name;
+			#define INPUT_VERTEX_BLEND_INDICES(attributeIndex, type, name) in type name;
+			#define INPUT_VERTEX_BLEND_WEIGHTS(attributeIndex, type, name) in type name;
+			#define INPUT_TESS_LEVEL_INNER(numberOfComponents)
+			#define INPUT_TESS_LEVEL_OUTER(numberOfComponents)
+		#define INPUT_END
+		#define INPUT_END_PATCH
+		#define INPUT_END_CONTROL_POINT
+
+		// Shader attribute output
+		#define OUTPUT_BEGIN
+		#define OUTPUT_BEGIN_PATCH
+			#define OUTPUT_ARRAY(name) name[]
+			#define OUTPUT_POSITION(attributeIndex) out gl_PerVertex { vec4 gl_Position; };
+			#define OUTPUT_POSITION_NAMED(attributeIndex, type, name) layout(location = attributeIndex) out type name;
+			#define OUTPUT_TEXTURE_COORDINATE(attributeIndex, type, name, semanticIndex) out type name;
+			#define OUTPUT_TEXTURE_COORDINATE_NOINTERPOLATION(attributeIndex, type, name, semanticIndex) flat out type name;
+			#define OUTPUT_COLOR(semanticIndex) layout(location = ##semanticIndex) out vec4 OutputColor##semanticIndex;
+			#define OUTPUT_DEPTH
+			#define OUTPUT_TESS_LEVEL_INNER(numberOfComponents)
+			#define OUTPUT_TESS_LEVEL_OUTER(numberOfComponents)
+		#define OUTPUT_END
+		#define OUTPUT_END_PATCH
+
+		// Main
+		#define MAIN_BEGIN void main() {
+		#define MAIN_BEGIN_NO_OUTPUT void main() {
+		#define MAIN_BEGIN_TESSELLATION_CONTROL_PATCH(numberOfInputControlPoints) void mainPerPatchInvocation() {
+		#define MAIN_BEGIN_TESSELLATION_CONTROL(numberOfInputControlPoints, numberOfOutputControlPoints) layout(vertices = numberOfOutputControlPoints) out; void main() { if (0 == gl_InvocationID) { mainPerPatchInvocation(); }
+		#define MAIN_BEGIN_TESSELLATION_EVALUATION(numberOfInputControlPoints) void main() {
+			#define MAIN_INPUT(name) name
+			#define MAIN_INPUT_ARRAY(name, index) name[index]
+			#define MAIN_INPUT_VERTEX_ID uint(gl_VertexID)
+			#define MAIN_INPUT_DRAW_ID (drawId + drawIdUniform + uint(gl_InstanceID))
+			#define MAIN_OUTPUT(name) name
+			#define MAIN_OUTPUT_POSITION gl_Position
+			#define MAIN_OUTPUT_COLOR(semanticIndex) OutputColor##semanticIndex
+			#define MAIN_OUTPUT_DEPTH gl_FragDepth
+			#define MAIN_OUTPUT_CONTROL_POINT(name) name[gl_InvocationID]
+			#define MAIN_OUTPUT_TESS_LEVEL_INNER gl_TessLevelInner
+			#define MAIN_OUTPUT_TESS_LEVEL_OUTER gl_TessLevelOuter
+			#define MAIN_RETURN
+		#define MAIN_END }
+		#define MAIN_END_TESSELLATION_CONTROL_PATCH }
+		#define MAIN_END_NO_OUTPUT }
+
+		// Shader vertex attribute input, output and main with build in support for single pass stereo rendering via instancing as described in "High Performance Stereo Rendering For VR", Timothy Wilson, San Diego, Virtual Reality Meetup
+		// TODO(co) Implement me
+		#define INPUT_BEGIN_VERTEX
+		#define INPUT_END_VERTEX
+		#define OUTPUT_BEGIN_VERTEX
+		#define OUTPUT_END_VERTEX
+		#define MAIN_BEGIN_VERTEX void main() {
+			#define MAIN_INPUT_DRAW_ID_VERTEX (drawId + drawIdUniform + uint(gl_InstanceID))
+			#define MAIN_INPUT_STEREO_EYE_INDEX 0
+		#define MAIN_END_VERTEX(vertexOutputPosition) }
+
+		// Math
+		#define LERP(a, b, t) mix(a, b, t)
+		#define SATURATE(a) clamp(a, 0.0f, 1.0f)
+		#define ROW_MATRIX_2x2(r0, r1) transpose(mat2(r0, r1))
+		#define ROW_MATRIX_3x3(r0, r1, r2) transpose(mat3(r0, r1, r2))
+		#define ROW_MATRIX_4x4(r0, r1, r2, r3) transpose(mat4(r0, r1, r2, r3))
+		#define MATRIX_MUL(m, v) (m * v)
+		#define CAST_TO(a, b) b(a)
+		#define DDX(x) dFdx(x)
+		#define DDY(x) dFdy(x)
+
+		// Uniform buffer
+		#define UNIFORM_BUFFER_BEGIN(resourceGroupIndex, resourceIndex, name, registerIndex) layout(std140) uniform name {
+		#define UNIFORM_BUFFER_END };
+
+		// Texture buffer
+		#define TEXTURE_BUFFER(resourceGroupIndex, resourceIndex, type, name, registerIndex) uniform samplerBuffer name;
+		#define TEXTURE_BUFFER_FETCH(name, texelIndex) texelFetch(name, int(texelIndex))
+
+		// Texture
+		#define TEXTURE_1D(resourceGroupIndex, resourceIndex, name, registerIndex) uniform sampler1D name;
+		#define TEXTURE_2D(resourceGroupIndex, resourceIndex, name, registerIndex) uniform sampler2D name;
+		#define TEXTURE_2D_MS(resourceGroupIndex, resourceIndex, name, numberOfMultisamples, registerIndex) uniform sampler2DMS name;
+		#define TEXTURE_2D_ARRAY(resourceGroupIndex, resourceIndex, name, registerIndex) uniform sampler2DArray name;
+		#define TEXTURE_3D(resourceGroupIndex, resourceIndex, name, registerIndex) uniform sampler3D name;
+		#define TEXTURE_3D_UINT(resourceGroupIndex, resourceIndex, name, registerIndex) uniform isampler3D name;
+		#define TEXTURE_CUBE(resourceGroupIndex, resourceIndex, name, registerIndex) uniform samplerCube name;
+		#define GET_TEXTURE_2D_SIZE(textureObject, mipmapIndex) textureSize(textureObject, mipmapIndex)
+		#define GET_TEXTURE_CUBE_SIZE(textureObject, mipmapIndex) textureSize(textureObject, mipmapIndex)
+
+		// Sampler
+		#define SAMPLER_STATE(resourceGroupIndex, resourceIndex, name, registerIndex) int name = registerIndex;	// We need something to pass into functions
+		#define SAMPLER_COMPARISON_STATE(resourceGroupIndex, resourceIndex, name, registerIndex)
+		#define SAMPLE_1D(textureObject, samplerObject, coordinate) texture(textureObject, coordinate)
+		#define SAMPLE_1D_LOD(textureObject, samplerObject, coordinate) textureLod(textureObject, coordinate.x, coordinate.w)
+		#define SAMPLE_2D(textureObject, samplerObject, coordinate) texture(textureObject, coordinate)
+		#define SAMPLE_2D_LOD(textureObject, samplerObject, coordinate) textureLod(textureObject, coordinate.xy, coordinate.w)
+		#define SAMPLE_2D_ARRAY(textureObject, samplerObject, coordinate) texture(textureObject, coordinate)
+		#define SAMPLE_2D_ARRAY_LOD(textureObject, samplerObject, coordinate) textureLod(textureObject, coordinate.xyz, coordinate.w)
+		#define SAMPLE_2D_ARRAY_GRAD(textureObject, samplerObject, coordinate, _ddx, _ddy) textureGrad(textureObject, coordinate.xyz, _ddx, _ddy)
+		#define SAMPLE_2D_MS(textureObject, coordinate, sampleIndex) texelFetch(textureObject, coordinate, sampleIndex)
+		#define SAMPLE_2D_CMP_LEVEL_ZERO(textureObject, samplerObject, coordinate) vec4(coordinate.w <= textureLod(textureObject, coordinate.xy, 0.0f).r, 0.0f, 0.0f, 0.0f)
+		#define SAMPLE_3D_LOD(textureObject, samplerObject, coordinate) textureLod(textureObject, coordinate.xyz, coordinate.w)
+		#define SAMPLE_CUBE(textureObject, samplerObject, coordinate) texture(textureObject, coordinate)
+		#define SAMPLE_CUBE_LOD(textureObject, samplerObject, coordinate) textureLod(textureObject, coordinate.xyz, coordinate.w)
+		@property(ZeroToOneClipZ)
+			#define SAMPLE_DEPTH_2D_LOD(textureObject, samplerObject, coordinate) REVERSED_Z(textureLod(textureObject, coordinate.xy, coordinate.w).r)
+			#define SAMPLE_DEPTH_2D_MS(textureObject, coordinate, sampleIndex) REVERSED_Z(texelFetch(textureObject, coordinate, sampleIndex).r)
+		@end
+		@property(!ZeroToOneClipZ)
+			#define SAMPLE_DEPTH_2D_LOD(textureObject, samplerObject, coordinate) (REVERSED_Z(textureLod(textureObject, coordinate.xy, coordinate.w).r) * 2.0f - 1.0f)	// 0..1 -> -1..1
+			#define SAMPLE_DEPTH_2D_MS(textureObject, coordinate, sampleIndex) (REVERSED_Z(texelFetch(textureObject, coordinate, sampleIndex).r) * 2.0f - 1.0f)	// 0..1 -> -1..1
+		@end
+
+		// Fragment shader only
+		#define DECLARE_FRAGMENT_POSITION
+		#define FRAGMENT_POSITION gl_FragCoord
+		#define DECLARE_IS_FRONT_FACE
+		#define IS_FRONT_FACE gl_FrontFacing
+		#define DECLARE_PRIMITIVE_ID
+		#define PRIMITIVE_ID gl_PrimitiveID
+		#define DECLARE_CONTROL_POINT_ID
+		#define CONTROL_POINT_ID gl_InvocationID
+		#define DECLARE_TESS_COORD(type)
+		#define TESS_COORD gl_TessCoord
+		#define DECLARE_COVERAGE_MASK
+		#define COVERAGE_MASK gl_SampleMaskIn[0]
+
+		// Compiler hints
+		#define UNROLL_HINT
+		#define FLATTEN_HINT
+
+		// Primitive HLSL datatypes
+		#define float2 vec2
+		#define float3 vec3
+		#define float4 vec4
+		#define float4x4 mat4
+		#define float3x4 mat3x4
+		#define float3x3 mat3
+		#define float3x2 mat3x2
+		#define float2x3 mat2x3
+		#define float2x2 mat2x2
+		#define int2 ivec2
+		#define int3 ivec3
+		#define int4 ivec4
+		#define uint2 uvec2
+		#define uint3 uvec3
+		#define uint4 uvec4
+
+		// Load/fetch
+		#define TEXTURE_FETCH_2D(name, texelIndex) texelFetch(name, texelIndex.xy, texelIndex.z)
+		#define TEXTURE_FETCH_ARRAY(name, texelIndex) texelFetch(name, texelIndex.xyz, texelIndex.w)
+		#define TEXTURE_FETCH_3D(name, texelIndex) texelFetch(name, texelIndex.xyz, texelIndex.w)
+
+		// HLSL math functions
+		#define rsqrt(x) inversesqrt(x)
+		#define frac(x) fract(x)
+		#define rcp(x) (1.0f / x)
+		#define fmod(x, y) (x - y * trunc(x / y))
+
+		// HLSL bit functions
+		#define firstbitlow(x) findLSB(x)
+	@end
+@end
+
+// OpenGL ES 3
+// -> If the "GL_EXT_clip_control"-extension is available: Left-handed coordinate system with clip space depth value range 0..1
+// -> If the "GL_EXT_clip_control"-extension isn't available: Right-handed coordinate system with clip space depth value range -1..1
+@property(OpenGLES3)
+	@piece(SetCrossPlatformSettings)
+		#version 300 es	// OpenGL ES 3.1. We need at least OpenGL ES 3.1 support due texture buffer handling	- TODO(co) But currently we can only use OpenGL ES 3.0 inside our test
+
+		// #extension GL_EXT_texture_buffer : enable	// TODO(co) Currently we only emulate texture buffer using limited uniform buffer
+		precision highp float;
+
+		// Hack to speed up shader compilation, see e.g.
+		// - https://www.gamedev.net/forums/topic/663243-slow-shader-compile-time-when-using-large-arrays/
+		// - https://bitbucket.org/sinbad/ogre/commits/30c9ea48d86718abd26067fcbfe80ea3c78a1432
+		// - https://bitbucket.org/sinbad/ogre/commits/cf46287f17faeed4a47d411e911787c164d296ba
+		// -> Not relevant for GLSL
+		#define FAST_SHADER_BUILD_HACK(numberOfElements) numberOfElements
+
+		/**
+		*  @brief
+		*    Apply Reversed-Z
+		*
+		*  @note
+		*    - This macro is used to make it easy to search for Reversed-Z relevant places
+		*    - For background theory see "Depth Precision Visualized" by Nathan Reed - https://developer.nvidia.com/content/depth-precision-visualized
+		*    - For practical information see "Reversed-Z in OpenGL" by Nicolas Guillemot - https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/
+		*/
+		#define REVERSED_Z(z) (1.0f - z)
+
+		// Shader attribute input// Shader attribute input
+		#define INPUT_BEGIN
+		#define INPUT_BEGIN_PATCH
+		#define INPUT_BEGIN_CONTROL_POINT
+			#define INPUT_ARRAY(name) name[]
+			#define INPUT_VERTEX_ID
+			#define INPUT_VERTEX_DRAW_ID(attributeIndex) in uint drawId; uniform uint drawIdUniform;	// See "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html - "drawIdUniform" is used in case "GL_EXT_base_instance" isn't supported
+			#define INPUT_VERTEX_POSITION(attributeIndex, type, name) in highp type name;
+			#define INPUT_POSITION(attributeIndex, type, name) in highp type name;
+			#define INPUT_VERTEX_COLOR(attributeIndex, type, name) in highp type name;
+			#define INPUT_VERTEX_NORMAL(attributeIndex, type, name) in highp type name;
+			#define INPUT_VERTEX_TANGENT(attributeIndex, type, name) in highp type name;
+			#define INPUT_TEXTURE_COORDINATE(attributeIndex, type, name, semanticIndex) in highp type name;
+			#define INPUT_TEXTURE_COORDINATE_NOINTERPOLATION(attributeIndex, type, name, semanticIndex) flat in highp type name;
+			#define INPUT_VERTEX_BLEND_INDICES(attributeIndex, type, name) in highp type name;
+			#define INPUT_VERTEX_BLEND_WEIGHTS(attributeIndex, type, name) in highp type name;
+			#define INPUT_TESS_LEVEL_INNER(numberOfComponents)
+			#define INPUT_TESS_LEVEL_OUTER(numberOfComponents)
+		#define INPUT_END
+		#define INPUT_END_PATCH
+		#define INPUT_END_CONTROL_POINT
+
+		// Shader attribute output
+		#define OUTPUT_BEGIN
+		#define OUTPUT_BEGIN_PATCH
+			#define OUTPUT_ARRAY(name) name[]
+			#define OUTPUT_POSITION(attributeIndex) // gl_Position is still defined in OpenGL ES 300 GLSL
+			#define OUTPUT_POSITION_NAMED(attributeIndex, type, name) layout(location = attributeIndex) out type name;
+			#define OUTPUT_TEXTURE_COORDINATE(attributeIndex, type, name, semanticIndex) out highp type name;
+			#define OUTPUT_TEXTURE_COORDINATE_NOINTERPOLATION(attributeIndex, type, name, semanticIndex) flat out highp type name;
+			#define OUTPUT_COLOR(semanticIndex) layout(location = ##semanticIndex) out highp vec4 OutputColor##semanticIndex;
+			#define OUTPUT_DEPTH
+			#define OUTPUT_TESS_LEVEL_INNER(numberOfComponents)
+			#define OUTPUT_TESS_LEVEL_OUTER(numberOfComponents)
+		#define OUTPUT_END
+		#define OUTPUT_END_PATCH
+
+		// Main
+		#define MAIN_BEGIN void main() {
+		#define MAIN_BEGIN_NO_OUTPUT void main() {
+		#define MAIN_BEGIN_TESSELLATION_CONTROL_PATCH(numberOfInputControlPoints) void mainPerPatchInvocation() {
+		#define MAIN_BEGIN_TESSELLATION_CONTROL(numberOfInputControlPoints, numberOfOutputControlPoints) layout(vertices = numberOfOutputControlPoints) out; void main() { if (0 == gl_InvocationID) { mainPerPatchInvocation(); }
+		#define MAIN_BEGIN_TESSELLATION_EVALUATION(numberOfInputControlPoints) void main() {
+			#define MAIN_INPUT(name) name
+			#define MAIN_INPUT_ARRAY(name, index) name[index]
+			#define MAIN_INPUT_VERTEX_ID uint(gl_VertexID)
+			#define MAIN_INPUT_DRAW_ID (drawId + drawIdUniform + uint(gl_InstanceID))
+			#define MAIN_OUTPUT(name) name
+			#define MAIN_OUTPUT_POSITION gl_Position
+			#define MAIN_OUTPUT_COLOR(semanticIndex) OutputColor##semanticIndex
+			#define MAIN_OUTPUT_DEPTH gl_FragDepth
+			#define MAIN_OUTPUT_CONTROL_POINT(name) name[gl_InvocationID]
+			#define MAIN_OUTPUT_TESS_LEVEL_INNER gl_TessLevelInner
+			#define MAIN_OUTPUT_TESS_LEVEL_OUTER gl_TessLevelOuter
+			#define MAIN_RETURN
+		#define MAIN_END }
+		#define MAIN_END_TESSELLATION_CONTROL_PATCH }
+		#define MAIN_END_NO_OUTPUT }
+
+		// Shader vertex attribute input, output and main with build in support for single pass stereo rendering via instancing as described in "High Performance Stereo Rendering For VR", Timothy Wilson, San Diego, Virtual Reality Meetup
+		// -> Not implemented because we're not using OpenGL ES 3 for VR
+		#define INPUT_BEGIN_VERTEX
+		#define INPUT_END_VERTEX
+		#define OUTPUT_BEGIN_VERTEX
+		#define OUTPUT_END_VERTEX
+		#define MAIN_BEGIN_VERTEX void main() {
+			#define MAIN_INPUT_DRAW_ID_VERTEX (drawId + drawIdUniform + uint(gl_InstanceID))
+			#define MAIN_INPUT_STEREO_EYE_INDEX 0
+		#define MAIN_END_VERTEX(vertexOutputPosition) }
+
+		// Math
+		#define LERP(a, b, t) mix(a, b, t)
+		#define SATURATE(a) clamp(a, 0.0f, 1.0f)
+		#define ROW_MATRIX_2x2(r0, r1) transpose(mat2(r0, r1))
+		#define ROW_MATRIX_3x3(r0, r1, r2) transpose(mat3(r0, r1, r2))
+		#define ROW_MATRIX_4x4(r0, r1, r2, r3) transpose(mat4(r0, r1, r2, r3))
+		#define MATRIX_MUL(m, v) (m * v)
+		#define CAST_TO(a, b) b(a)
+		#define DDX(x) dFdx(x)
+		#define DDY(x) dFdy(x)
+
+		// Uniform buffer
+		#define UNIFORM_BUFFER_BEGIN(resourceGroupIndex, resourceIndex, name, registerIndex) layout(std140) uniform name {
+		#define UNIFORM_BUFFER_END };
+
+		// Texture buffer
+		// TODO(co) Currently we only emulate texture buffer using limited uniform buffer
+		// #define TEXTURE_BUFFER(resourceGroupIndex, resourceIndex, type, name, registerIndex) uniform highp samplerBuffer name;
+		// #define TEXTURE_BUFFER_FETCH(name, texelIndex) texelFetch(name, int(texelIndex))
+		#define TEXTURE_BUFFER(resourceGroupIndex, resourceIndex, type, name, registerIndex) layout(std140) uniform name { highp float4 textureBufferEmulation_##name[4096]; };
+		#define TEXTURE_BUFFER_FETCH(name, texelIndex) textureBufferEmulation_##name[int(texelIndex)]
+
+		// Texture
+		#define TEXTURE_1D(resourceGroupIndex, resourceIndex, name, registerIndex) uniform highp sampler2D name;	// OpenGL ES 3 has no 1D textures, just use a 2D texture with a height of one
+		#define TEXTURE_2D(resourceGroupIndex, resourceIndex, name, registerIndex) uniform highp sampler2D name;
+		#define TEXTURE_2D_MS(resourceGroupIndex, resourceIndex, name, numberOfMultisamples, registerIndex) uniform sampler2DMS name;
+		#define TEXTURE_2D_ARRAY(resourceGroupIndex, resourceIndex, name, registerIndex) uniform highp sampler2DArray name;
+		#define TEXTURE_3D(resourceGroupIndex, resourceIndex, name, registerIndex) uniform highp sampler3D name;
+		#define TEXTURE_3D_UINT(resourceGroupIndex, resourceIndex, name, registerIndex) uniform highp isampler3D name;
+		#define TEXTURE_CUBE(resourceGroupIndex, resourceIndex, name, registerIndex) uniform highp samplerCube name;
+		#define GET_TEXTURE_2D_SIZE(textureObject, mipmapIndex) textureSize(textureObject, mipmapIndex)
+		#define GET_TEXTURE_CUBE_SIZE(textureObject, mipmapIndex) textureSize(textureObject, mipmapIndex)
+
+		// Sampler
+		#define SAMPLER_STATE(resourceGroupIndex, resourceIndex, name, registerIndex) int name = registerIndex;	// We need something to pass into functions
+		#define SAMPLER_COMPARISON_STATE(resourceGroupIndex, resourceIndex, name, registerIndex)
+		#define SAMPLE_1D(textureObject, samplerObject, coordinate) texture(textureObject, vec2(coordinate, 0.0f))							// OpenGL ES 3 has no 1D textures, just use a 2D texture with a height of one
+		#define SAMPLE_1D_LOD(textureObject, samplerObject, coordinate) textureLod(textureObject, vec2(coordinate.x, 0.0f), coordinate.w)	// OpenGL ES 3 has no 1D textures, just use a 2D texture with a height of one
+		#define SAMPLE_2D(textureObject, samplerObject, coordinate) texture(textureObject, coordinate)
+		#define SAMPLE_2D_LOD(textureObject, samplerObject, coordinate) textureLod(textureObject, coordinate.xy, coordinate.w)
+		#define SAMPLE_2D_ARRAY(textureObject, samplerObject, coordinate) texture(textureObject, coordinate)
+		#define SAMPLE_2D_ARRAY_LOD(textureObject, samplerObject, coordinate) textureLod(textureObject, coordinate.xyz, coordinate.w)
+		#define SAMPLE_2D_ARRAY_GRAD(textureObject, samplerObject, coordinate, _ddx, _ddy) textureGrad(textureObject, coordinate.xyz, _ddx, _ddy)
+		#define SAMPLE_2D_MS(textureObject, coordinate, sampleIndex) texelFetch(textureObject, coordinate, sampleIndex)
+		#define SAMPLE_2D_CMP_LEVEL_ZERO(textureObject, samplerObject, coordinate) vec4(coordinate.w <= textureLod(textureObject, coordinate.xy, 0.0f).r, 0.0f, 0.0f, 0.0f)
+		#define SAMPLE_3D_LOD(textureObject, samplerObject, coordinate) textureLod(textureObject, coordinate.xyz, coordinate.w)
+		#define SAMPLE_CUBE(textureObject, samplerObject, coordinate) texture(textureObject, coordinate)
+		#define SAMPLE_CUBE_LOD(textureObject, samplerObject, coordinate) textureLod(textureObject, coordinate.xyz, coordinate.w)
+		@property(ZeroToOneClipZ)
+			#define SAMPLE_DEPTH_2D_LOD(textureObject, samplerObject, coordinate) REVERSED_Z(textureLod(textureObject, coordinate.xy, coordinate.w).r)
+			#define SAMPLE_DEPTH_2D_MS(textureObject, coordinate, sampleIndex) REVERSED_Z(texelFetch(textureObject, coordinate, sampleIndex).r)
+		@end
+		@property(!ZeroToOneClipZ)
+			#define SAMPLE_DEPTH_2D_LOD(textureObject, samplerObject, coordinate) (REVERSED_Z(textureLod(textureObject, coordinate.xy, coordinate.w).r) * 2.0f - 1.0f)	// 0..1 -> -1..1
+			#define SAMPLE_DEPTH_2D_MS(textureObject, coordinate, sampleIndex) (REVERSED_Z(texelFetch(textureObject, coordinate, sampleIndex).r) * 2.0f - 1.0f)	// 0..1 -> -1..1
+		@end
+
+		// Fragment shader only
+		#define DECLARE_FRAGMENT_POSITION
+		#define FRAGMENT_POSITION gl_FragCoord
+		#define DECLARE_IS_FRONT_FACE
+		#define IS_FRONT_FACE gl_FrontFacing
+		#define DECLARE_PRIMITIVE_ID
+		#define PRIMITIVE_ID gl_PrimitiveID
+		#define DECLARE_CONTROL_POINT_ID
+		#define CONTROL_POINT_ID gl_InvocationID
+		#define DECLARE_TESS_COORD(type)
+		#define TESS_COORD gl_TessCoord
+		#define DECLARE_COVERAGE_MASK
+		#define COVERAGE_MASK 0u	// OpenGL ES shading language version 3.20 needed
+
+		// Compiler hints
+		#define UNROLL_HINT
+		#define FLATTEN_HINT
+
+		// Primitive HLSL datatypes
+		#define float2 vec2
+		#define float3 vec3
+		#define float4 vec4
+		#define float4x4 mat4
+		#define float3x4 mat3x4
+		#define float3x3 mat3
+		#define float3x2 mat3x2
+		#define float2x3 mat2x3
+		#define float2x2 mat2x2
+		#define int2 ivec2
+		#define int3 ivec3
+		#define int4 ivec4
+		#define uint2 uvec2
+		#define uint3 uvec3
+		#define uint4 uvec4
+
+		// Load/fetch
+		#define TEXTURE_FETCH_2D(name, texelIndex) texelFetch(name, texelIndex.xy, texelIndex.z)
+		#define TEXTURE_FETCH_ARRAY(name, texelIndex) texelFetch(name, texelIndex.xyz, texelIndex.w)
+		#define TEXTURE_FETCH_3D(name, texelIndex) texelFetch(name, texelIndex.xyz, texelIndex.w)
+
+		// HLSL math functions
+		#define rsqrt(x) inversesqrt(x)
+		#define frac(x) fract(x)
+		#define rcp(x) (1.0f / x)
+
+		// HLSL bit functions
+		#define firstbitlow(x) 0u	// TODO(co) "findLSB(x)" needs OpenGL ES 3.10, emulation needed
+	@end
+@end

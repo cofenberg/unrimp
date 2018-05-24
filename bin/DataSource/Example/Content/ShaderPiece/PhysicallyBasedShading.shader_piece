@@ -1,0 +1,332 @@
+/*********************************************************\
+ * Copyright (c) 2012-2018 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+// Overview over different BRDF functions: "Graphic Rants" - "Specular BRDF Reference" - http://graphicrants.blogspot.de/2013/08/specular-brdf-reference.html
+
+
+//[-------------------------------------------------------]
+//[ Pieces                                                ]
+//[-------------------------------------------------------]
+@piece(DefinePhysicallyBasedShading)
+	//[-------------------------------------------------------]
+	//[ Constants                                             ]
+	//[-------------------------------------------------------]
+	#define PI 3.14159265359f
+
+
+	//[-------------------------------------------------------]
+	//[ Ambient                                               ]
+	//[-------------------------------------------------------]
+	// See http://sunandblackcat.com/tipFullView.php?l=eng&topicid=31&topic=Advanced-GLSL-Lighting-Models
+	float3 CalculateHemisphereLighting(float3 worldSpaceNormal, float3 groundColor, float3 skyColor)
+	{
+		// Cosine between normal and direction to upper hemisphere
+		// ->  1 - normal is oriented to upper hemisphere
+		// -> -1 - normal is oriented to lower hemisphere
+		float3 topHemisphereDirection = float3(0.0f, -1.0f, 0.0f);
+		float dotNL = dot(worldSpaceNormal, topHemisphereDirection);
+
+		// From [-1, 1] to [0, 1] range
+		float lightInfluence = dotNL * 0.5f + 0.5f;
+
+		// Interpolate colors from upper and lower hemispheres
+		return LERP(groundColor, skyColor, lightInfluence);
+	}
+
+
+	//[-------------------------------------------------------]
+	//[ Diffuse model                                         ]
+	//[-------------------------------------------------------]
+	// Burley 2012, "Physically-Based Shading at Disney" - https://disney-animation.s3.amazonaws.com/library/s2012_pbs_disney_brdf_notes_v2.pdf
+	float3 DiffuseBurley(float3 albedo, float roughness, float dotNV, float dotNL, float dotVH)
+	{
+		float FD90 = 0.5f + 2.0f * dotVH * dotVH * roughness;
+		float FdV = 1.0f + (FD90 - 1.0f) * exp2((-5.55473f * dotNV - 6.98316f) * dotNV);
+		float FdL = 1.0f + (FD90 - 1.0f) * exp2((-5.55473f * dotNL - 6.98316f) * dotNL);
+		return albedo / PI * FdV * FdL;
+	}
+
+
+	//[-------------------------------------------------------]
+	//[ Fresnel                                               ]
+	//[-------------------------------------------------------]
+	// Schlick 1994, "An Inexpensive BRDF Model for Physically-Based Rendering"
+	float3 FresnelSchlick(float ct, float3 F0)
+	{
+		return F0 + (float3(1.0f, 1.0f, 1.0f) - F0) * pow(1.0f - ct, 5.0f);
+	}
+
+
+	//[-------------------------------------------------------]
+	//[ Normal distribution functions (NDF)                   ]
+	//[-------------------------------------------------------]
+	float NDF_blinnPhong(float dotNH, float alphaSqr)
+	{
+		return 1.0f / (PI * alphaSqr) * pow(dotNH, 2.0f / alphaSqr - 2.0f);
+	}
+
+	float NDF_beckmann(float dotNH, float alphaSqr)
+	{
+		float dotNH2 = dotNH * dotNH;
+		return 1.0f / (PI * alphaSqr * dotNH2 * dotNH2) * exp((dotNH2 - 1.0f) / (alphaSqr * dotNH2));
+	}
+
+	// GGX / Trowbridge-Reitz
+	// Walter et al. 2007, "Microfacet models for refraction through rough surfaces"
+	float NDF_GGX(float dotNH, float alphaSqr)
+	{
+		float result = alphaSqr / (PI * pow(dotNH * dotNH * (alphaSqr - 1.0f) + 1.0f, 2.0f));
+
+		// Ensure we never get insane values resulting in visual artefacts
+		result = min(result, 10.0f);
+
+		// Done
+		return result;
+	}
+
+
+	//[-------------------------------------------------------]
+	//[ Geometry visibility functions (GEOM)                  ]
+	//[-------------------------------------------------------]
+	float GEOM_SchlickSmith(float dotNL, float dotNV, float alpha)
+	{
+		float k = pow(0.8f + 0.5f * alpha, 2.0f) / 2.0f;
+		float GL = 1.0f / (dotNL * (1.0f - k) + k);
+		float GV = 1.0f / (dotNV * (1.0f - k) + k);
+		return GL * GV;
+	}
+
+
+	//[-------------------------------------------------------]
+	//[ Lighting function                                     ]
+	//[-------------------------------------------------------]
+	// N = Surface normalize
+	// V = Camera direction
+	// L = Light direction
+	float3 PBS_Specular(float3 N, float3 V, float3 L, float roughness, float3 F0)
+	{
+		float alpha = roughness * roughness;
+		float alphaSqr = alpha * alpha;
+
+		float3 H = normalize(V + L);
+		float dotNL = SATURATE(dot(N, L));
+		float dotNV = SATURATE(dot(N, V));
+		float dotNH = SATURATE(dot(N, H));
+		float dotLH = SATURATE(dot(L, H));
+
+		// Normal / microfacet distribution
+		float Di = NDF_GGX(dotNH, alphaSqr);
+
+		// Fresnel
+		float3 Fs = FresnelSchlick(dotNV, F0);
+
+		// Visibility term
+		float Vs = GEOM_SchlickSmith(dotNL, dotNV, alpha);
+
+		// Combine
+		return dotNL * Di * Fs * Vs;
+	}
+
+	/**
+	*  @brief
+	*    Calculate lighting
+	*
+	*  @param[in] albedo
+	*    Albedo = base color
+	*  @param[in] roughness
+	*    Roughness = 1 - glossiness (= smoothness)
+	*  @param[in] metallic
+	*    Metallic
+	*  @param[in] N
+	*    N = Surface normal
+	*  @param[in] V
+	*    V = Camera direction
+	*  @param[in] reflectionColor
+	*    Reflection color, has horizon occlusion build in
+	*  @param[in] L
+	*    L = Light direction
+	*  @param[in] lightColor
+	*    Light color
+	*/
+	float3 CalculateLighting(float3 albedo, float roughness, float metallic, float3 N, float3 V, float3 reflectionColor, float3 L, float3 lightColor)
+	{
+		// Derive data
+		float3 R = reflect(-V, N);
+		float3 H = normalize(V + L);
+		float dotVH = SATURATE(dot(V, H));
+		float dotNV = SATURATE(dot(N, V));
+		float dotNL = SATURATE(dot(N, L));
+
+		// Image quality improvement via "Horizon Occlusion for Normal Mapped Reflections" ( http://marmosetco.tumblr.com/post/81245981087 )
+		float horizonFade = 1.3f;
+		float horiz = SATURATE(1.0f + horizonFade * dot(R, N));
+		horiz *= horiz;
+
+		// Diffuse part
+		float3 albedoReduced = albedo * (1.0f - metallic);
+		float3 diffuseColor = lightColor * DiffuseBurley(albedoReduced, roughness, dotNV, dotNL, dotVH);
+
+		// Specular part
+		// -> F0 based on metallic factor of material
+		float3 dielectricColor = float3(0.04f, 0.04f, 0.04f);
+		float3 F0 = LERP(dielectricColor, albedo, metallic);
+		float3 specularColor = horiz * lightColor * PBS_Specular(N, V, L, roughness, F0);
+		reflectionColor *= lightColor;
+		reflectionColor -= specularColor;
+
+		// Final output mixes based on material metalness
+		return LERP(diffuseColor, reflectionColor, metallic) + specularColor;
+	}
+@end
+
+@piece(DefineBlinnPhongBasedShading)
+	//[-------------------------------------------------------]
+	//[ Constants                                             ]
+	//[-------------------------------------------------------]
+	#define PI 3.14159265359f
+
+
+	//[-------------------------------------------------------]
+	//[ Ambient                                               ]
+	//[-------------------------------------------------------]
+	// See http://sunandblackcat.com/tipFullView.php?l=eng&topicid=31&topic=Advanced-GLSL-Lighting-Models
+	float3 CalculateHemisphereLighting(float3 worldSpaceNormal, float3 groundColor, float3 skyColor)
+	{
+		// Cosine between normal and direction to upper hemisphere
+		// ->  1 - normal is oriented to upper hemisphere
+		// -> -1 - normal is oriented to lower hemisphere
+		float3 topHemisphereDirection = float3(0.0f, -1.0f, 0.0f);
+		float dotNL = dot(worldSpaceNormal, topHemisphereDirection);
+
+		// From [-1, 1] to [0, 1] range
+		float lightInfluence = dotNL * 0.5f + 0.5f;
+
+		// Interpolate colors from upper and lower hemispheres
+		return LERP(groundColor, skyColor, lightInfluence);
+	}
+
+
+	//[-------------------------------------------------------]
+	//[ Lighting function                                     ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Calculate lighting
+	*
+	*  @param[in] albedo
+	*    Albedo = base color
+	*  @param[in] roughness
+	*    Roughness = 1 - glossiness (= smoothness)
+	*  @param[in] metallic
+	*    Metallic
+	*  @param[in] N
+	*    N = Surface normal
+	*  @param[in] V
+	*    V = Camera direction
+	*  @param[in] reflectionColor
+	*    Reflection color, has horizon occlusion build in
+	*  @param[in] L
+	*    L = Light direction
+	*  @param[in] lightColor
+	*    Light color
+	*/
+	float3 CalculateLighting(float3 albedo, float roughness, float metallic, float3 N, float3 V, float3 reflectionColor, float3 L, float3 lightColor)
+	{
+		// Perform traditional Blinn-Phong diffuse and specular lighting
+
+		// Calculate the diffuse lighting
+		float diffuseLightFactor = max(dot(N, L), 0.0f);
+		float3 diffuseLightColor = lightColor * diffuseLightFactor;
+
+		// Calculate the specular lighting
+		float3 viewSpaceHalfVector = normalize(L + V);
+		float specularLightFactor = (diffuseLightFactor > 0.0f) ? pow(max(dot(N, viewSpaceHalfVector), 0.0f), 256.0f) : 0.0f;
+		float3 specularLightColor = lightColor * specularLightFactor;
+
+		// Diffuse term
+		float3 color = diffuseLightColor * albedo;
+
+		// Specular term
+		color += specularLightColor * metallic;
+
+		// Done
+		return color;
+	}
+@end
+
+@piece(PerformClusteredShading)
+	// Compute light cluster and fetch its light mask: Basing on the clustered shading demo from Emil Persson - http://humus.name/index.php?page=3D
+	// "
+	// We're using a 32bit integer format where each set bit enables the light of that index.
+	// This supports up to 32 lights, which is enough for this demo, and probably for some games. It's possible to expand if more lights are needed,
+	// for instance RGBA32_UINT for up to 128 lights in a single fetch, which is enough for many AAA titles. At some point, a list of indices becomes
+	// more compact in practice, so if thousands of lights are needed, that's probably the way to go. Using a fixed bitmask has the advantage of fixed
+	// size storage, simple addressing, and one indirection less in the inner loop.
+	// "
+	uint lightMask = uint(TEXTURE_FETCH_3D(LightClustersMap3D, int4(worldSpacePosition * PassData.LightClustersScale + PassData.LightClustersBias, 0)).x);
+
+	// Point and spot lights using clustered shading
+	while (0u != lightMask)
+	{
+		// Extract a light from the mask and disable that bit
+		uint lightIndex = firstbitlow(lightMask);
+		lightMask &= ~(1u << lightIndex);
+
+		// Check if the fragment is inside the bounding volume of the light
+		float4 lightPositionRadius = TEXTURE_BUFFER_FETCH(LightTextureBuffer, lightIndex * 4u);
+		float3 lightDirection = lightPositionRadius.xyz - worldSpacePosition;
+		float lightDistance = length(lightDirection);
+		if (lightDistance < lightPositionRadius.w)
+		{
+			float4 lightColorType = TEXTURE_BUFFER_FETCH(LightTextureBuffer, lightIndex * 4u + 1u);
+			float lightIntensity = 1.0f;
+
+			// Normalize the light direction
+			lightDirection /= lightDistance;
+
+			// Spot-light attenuation
+			if (2.0f == lightColorType.w)
+			{
+				float4 innerOuterNearClip = TEXTURE_BUFFER_FETCH(LightTextureBuffer, lightIndex * 4u + 2u);
+				if (lightDistance < innerOuterNearClip.z)
+				{
+					// Early escape: Not influenced by the light
+					continue;
+				}
+				float3 spotlightDirection = TEXTURE_BUFFER_FETCH(LightTextureBuffer, lightIndex * 4u + 3u).xyz;
+				float spotlightAngle = SATURATE(dot(spotlightDirection, -lightDirection));
+				float spotlightFalloff = SATURATE((spotlightAngle - innerOuterNearClip.x) / (innerOuterNearClip.y - innerOuterNearClip.x));
+				lightIntensity *= (1.0f - spotlightFalloff);
+			}
+
+			// Attenuation by using inverse-square falloff for higher quality falloff
+			// -> Physically accurate inverse-square falloff as described in "Real Shading in Unreal Engine 4" by Brian Karis, Epic Games - "Lighting Model" on page 12 - http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
+			float distanceLightRadius = lightDistance / lightPositionRadius.w;
+			float t1 = SATURATE(1.0f - distanceLightRadius * distanceLightRadius * distanceLightRadius * distanceLightRadius);
+			lightIntensity *= t1 / (lightDistance * lightDistance + 1.0f);
+
+			// Calculate lighting
+			if (lightIntensity > 0.0f && dot(worldSpaceNormal, lightDirection) > 0.0f)
+			{
+				color += CalculateLighting(albedo, roughness, metallic, worldSpaceNormal, worldSpaceIncident, reflectionColor, lightDirection, lightColorType.rgb * lightIntensity);
+			}
+		}
+	}
+@end

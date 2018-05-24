@@ -1,0 +1,77 @@
+/*********************************************************\
+ * Copyright (c) 2012-2018 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+//[-------------------------------------------------------]
+//[ Definitions                                           ]
+//[-------------------------------------------------------]
+@includepiece($ProjectName/ShaderPiece/Core.asset)
+	@insertpiece(SetCrossPlatformSettings)
+
+
+//[-------------------------------------------------------]
+//[ Input / output                                        ]
+//[-------------------------------------------------------]
+// Attribute input / output
+INPUT_BEGIN
+	INPUT_TEXTURE_COORDINATE				(1, float2, TexCoordVS, 0)				// Texture coordinate
+	INPUT_TEXTURE_COORDINATE_NOINTERPOLATION(2, float2, InverseTextureSize0VS, 1)	// Inverse texture size 0
+INPUT_END
+OUTPUT_BEGIN
+	OUTPUT_COLOR(0)
+OUTPUT_END
+
+// Textures
+TEXTURE_2D(0, 0, ColorMap, 0)
+
+// Samplers
+SAMPLER_STATE(1, 0, SamplerLinear, 0)
+
+
+//[-------------------------------------------------------]
+//[ Main                                                  ]
+//[-------------------------------------------------------]
+MAIN_BEGIN
+	// Constants
+	float offset[3];
+	offset[0] = 0.0f;
+	offset[1] = 1.3846153846f;
+	offset[2] = 3.2307692308f;
+	float weight[3];
+	weight[0] = 0.227027027f;
+	weight[1] = 0.3162162162f;
+	weight[2] = 0.0702702703f;
+
+	// Gather values
+	float4 color = SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(MAIN_INPUT(TexCoordVS), 0.0f, 0.0f)) * weight[0];
+	for (int i = 1; i < 3; ++i)
+	{
+		@property(VerticalBlur)
+			float2 texelOffset = float2(offset[i], 0.0f) * MAIN_INPUT(InverseTextureSize0VS);
+		@end
+		@property(!VerticalBlur)
+			float2 texelOffset = float2(0.0f, offset[i]) * MAIN_INPUT(InverseTextureSize0VS);
+		@end
+		color += SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(MAIN_INPUT(TexCoordVS) + texelOffset, 0.0f, 0.0f)) * weight[i];
+		color += SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(MAIN_INPUT(TexCoordVS) - texelOffset, 0.0f, 0.0f)) * weight[i];
+	}
+
+	// Done
+	MAIN_OUTPUT_COLOR(0) = color;
+MAIN_END

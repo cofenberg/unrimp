@@ -1,0 +1,160 @@
+/*********************************************************\
+ * Copyright (c) 2012-2018 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+//[-------------------------------------------------------]
+//[ Definitions                                           ]
+//[-------------------------------------------------------]
+@includepiece($ProjectName/ShaderPiece/Core.asset)
+	@insertpiece(SetCrossPlatformSettings)
+
+#define PI 3.14159265359	// TODO(co) Add generic PI definition in a math shader piece?
+
+
+//[-------------------------------------------------------]
+//[ Input / output                                        ]
+//[-------------------------------------------------------]
+// Attribute input / output
+INPUT_BEGIN
+	INPUT_TEXTURE_COORDINATE(1, float2, TexCoordVS, 0)	// Texture coordinate
+	INPUT_TEXTURE_COORDINATE(2, float3, ViewRayVS,  1)	// View space ray used for view space position reconstruction
+INPUT_END
+OUTPUT_BEGIN
+	OUTPUT_COLOR(0)
+OUTPUT_END
+
+// Uniform buffers
+struct PassDataStruct
+{
+	float4   ViewSpaceFrustumCorners[4];
+	float4x4 ClipSpaceToViewSpaceMatrix;
+	float4x4 ViewSpaceToWorldSpaceMatrix;
+	float4x4 WorldSpaceToViewSpaceMatrix;
+	float4x4 ShadowMatrix;
+	float4   ShadowCascadeOffsets[4];
+	float4   ShadowCascadeScales[4];
+	float4   ShadowCascadeSplits;
+	float3   WorldSpaceSunlightDirection;
+	float    AtmosphereFogDensity;
+	float4   ViewSpaceToWorldSpaceQuaternion;
+	float3   SunlightColor;
+	float3   DiffuseFogColor;
+	float3   CameraWorldSpacePosition;
+	float3   LightClustersScale;
+	float3   LightClustersBias;
+	float2   ViewportSize;
+	float2   ProjectionParameters;
+};
+UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
+	PassDataStruct PassData;
+UNIFORM_BUFFER_END
+
+// Texture buffers
+TEXTURE_BUFFER(1, 0, float4, LightTextureBuffer, 0)	// "LIGHT"
+
+// Textures
+TEXTURE_2D(2, 0, DepthMap, 1)
+TEXTURE_2D_ARRAY(2, 1, ShadowMap, 2)
+TEXTURE_3D_UINT(2, 2, LightClustersMap3D, 3)
+
+// Samplers
+SAMPLER_STATE(2, 0, SamplerPoint, 0)
+SAMPLER_STATE(2, 1, SamplerLinear, 1)
+
+
+//[-------------------------------------------------------]
+//[ Functions                                             ]
+//[-------------------------------------------------------]
+@includepiece($ProjectName/ShaderPiece/Color.asset)
+	@insertpiece(DefineGetBayerScreenSpaceDitherValue)
+@includepiece($ProjectName/ShaderPiece/Depth.asset)
+	@insertpiece(DefineGetLinearDepth)
+@includepiece($ProjectName/ShaderPiece/ExponentialShadow.asset)
+	@insertpiece(DefineExponentialShadow)
+@includepiece($ProjectName/ShaderPiece/Shadow.asset)
+	@insertpiece(DefineCalculateShadowVisibility)
+
+// Mie scaterring approximated with Henyey-Greenstein phase function as outlined in "GPU Pro 5", page 131, equation 3.1
+// Let x = angle between light and camera vectors
+//     g = Mie scattering coefficient (ScatterFalloff)
+// f(x) = (1 - g)^2 / (4PI * (1 + g^2 - 2g*cos(x))^[3/2])
+float CalculateMieScatter(float3 lightDirection, float3 cameraDirection)
+{
+	float ScatterFalloff = 0.5f;	// TODO(co) Make to pass parameter, values from 0.0 - 1.0
+
+	float n = 1 - ScatterFalloff;											// 1 - g
+	float c = dot(lightDirection, cameraDirection);							// cos(x)
+	float d = 1 + ScatterFalloff * ScatterFalloff - 2 * ScatterFalloff * c;	// 1 + g^2 - 2g*cos(x)
+	return (n * n) / (4 * PI * pow(abs(d), 1.5f));
+}
+
+
+//[-------------------------------------------------------]
+//[ Main                                                  ]
+//[-------------------------------------------------------]
+MAIN_BEGIN
+	// Read depth map value, since we're rendering the volumetric light with half-size use the second mipmap
+	float depth = SAMPLE_DEPTH_2D_LOD(DepthMap, SamplerPoint, float4(MAIN_INPUT(TexCoordVS), 0.0f, 1.0f));
+
+	// Get the normalized view ray
+	float3 viewRay = normalize(MAIN_INPUT(ViewRayVS));
+
+	// Scale the view ray by the ratio of the linear z value to the projected view ray
+	// -> For details see "The Danger Zone" - "Position From Depth 3: Back In The Habit" - "Written by MJPSeptember 5, 2010" - https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
+	float linearDepth = GetLinearDepth(depth) / dot(float3(0.0f, 0.0f, 1.0f), viewRay);
+	float3 viewSpacePosition = viewRay * linearDepth;
+
+	// Derive data
+	float3 worldSpacePosition = MATRIX_MUL(PassData.ViewSpaceToWorldSpaceMatrix, float4(viewSpacePosition.xyz, 1.0f)).xyz;
+
+	// Dither using a Bayer matrix to hide banding artefacts when using not enough samples
+	float ditherValue = GetBayerScreenSpaceDitherValue(CAST_TO(MAIN_INPUT(TexCoordVS) * CAST_TO(GET_TEXTURE_2D_SIZE(DepthMap, 1), float2), uint2));
+
+// TODO(co) Make flexible
+#define NUMBER_OF_STEPS 32
+//#define NUMBER_OF_STEPS 128
+
+	// Traverse through the volume
+	float3 startPosition = worldSpacePosition;
+	float3 rayVector = startPosition - PassData.CameraWorldSpacePosition;
+	float rayLength = length(rayVector);
+	float3 rayDirection = rayVector / rayLength;
+	float stepLength = rayLength / NUMBER_OF_STEPS;
+	float3 step = rayDirection * stepLength;
+	float3 currentPosition = startPosition - step * ditherValue;
+	float3 accumulatedFog = float3(0.0f, 0.0f, 0.0f);
+	float3 mieScatter = 2 * CalculateMieScatter(PassData.WorldSpaceSunlightDirection, rayDirection) * PassData.SunlightColor;
+	for (int i = 0; i < NUMBER_OF_STEPS; ++i)
+	{
+		linearDepth = MATRIX_MUL(PassData.WorldSpaceToViewSpaceMatrix, float4(currentPosition.xyz, 1.0f)).z;
+
+		float shadowVisibility = CalculateShadowVisibility(currentPosition, linearDepth);
+		if (shadowVisibility > 0.0f)
+		{
+			accumulatedFog += mieScatter;
+		}
+		currentPosition -= step;
+	}
+	accumulatedFog /= NUMBER_OF_STEPS;
+
+	// TODO(co) Add other lights
+
+	// Done
+	MAIN_OUTPUT_COLOR(0) = float4(accumulatedFog, 1.0f);
+MAIN_END

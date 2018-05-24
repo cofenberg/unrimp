@@ -1,0 +1,185 @@
+/*********************************************************\
+ * Copyright (c) 2012-2018 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+//[-------------------------------------------------------]
+//[ Definitions                                           ]
+//[-------------------------------------------------------]
+@includepiece($ProjectName/ShaderPiece/Core.asset)
+	@insertpiece(SetCrossPlatformSettings)
+@includepiece($ProjectName/ShaderPiece/MotionBlur.asset)
+
+
+//[-------------------------------------------------------]
+//[ Input / output                                        ]
+//[-------------------------------------------------------]
+// Attribute input / output
+INPUT_BEGIN
+	INPUT_TEXTURE_COORDINATE(1, float3, TexCoordVS, 				 0)	// Texture coordinate
+	INPUT_TEXTURE_COORDINATE(2, float3, PreviousClipSpacePositionVS, 1)	// Previous clip space position
+	DECLARE_FRAGMENT_POSITION
+INPUT_END
+OUTPUT_BEGIN
+	OUTPUT_COLOR(0)	// rgb = albedo color, a = alpha
+	OUTPUT_COLOR(1)	// rg  = screen space velocity
+OUTPUT_END
+
+// Uniform buffers
+struct PassDataStruct
+{
+	float4x4 WorldSpaceToViewSpaceMatrix;
+	float4x4 PreviousWorldSpaceToViewSpaceMatrix;
+	float4x4 ViewSpaceToClipSpaceMatrix;
+	float4   HosekWilkieSkyCoefficients1[4];
+	float4   HosekWilkieSkyCoefficients2[4];
+	float3   WorldSpaceSunlightDirection;
+	float    GlobalTimeInSeconds;
+	float2   ViewportSize;
+	float	 CloudsIntensity;
+	float	 WindSpeed;
+	float3   SunlightColor;
+};
+UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
+	PassDataStruct PassData;
+UNIFORM_BUFFER_END
+
+@property(UseProceduralSky)
+	// Textures
+	TEXTURE_2D(1, 1, CloudsMap, 1)
+
+	// Samplers
+	SAMPLER_STATE(2, 1, SamplerLinearWrap, 1)
+@end
+@property(!UseProceduralSky)
+	// Textures
+	TEXTURE_CUBE(1, 0, EnvironmentCubeMap, 0)
+
+	// Samplers
+	SAMPLER_STATE(2, 0, SamplerLinearClamp, 0)
+@end
+
+
+//[-------------------------------------------------------]
+//[ Functions                                             ]
+//[-------------------------------------------------------]
+/**
+*  @brief
+*    Hosek-Wilkie sky
+*
+*  @remarks
+*    The following pass parameters are needed
+*    - PassData.WorldSpaceSunlightDirection
+*    - PassData.HosekWilkieSkyCoefficients1
+*    - PassData.HosekWilkieSkyCoefficients2
+*
+*    Hosek-Wilkie Sky needs the 10 float3 coefficients A, B, C, D, E, F, G, H, I, Z. In order to transport them inside uniform buffers in an efficient way, we pack them into two float4x4 matrices.
+*    - HosekWilkieSkyCoefficients1: A, B, C, D, E
+*        Row 0: A.xyz B.x
+*        Row 1: B.yz  C.xy
+*        Row 2: C.z   D.xyz
+*        Row 3: E.xyz F.x
+*    - HosekWilkieSkyCoefficients2: F, G, H, I, Z
+*        Row 0: F.yz  G.xy
+*        Row 1: G.z   H.xyz
+*        Row 2: I.xyz Z.x
+*        Row 3: Z.yz
+*
+*  @note
+*    - "An Analytic Model for Full Spectral Sky-Dome Radiance (Lukas Hosek, Alexander Wilkie)"
+*    - The implementation is basing on https://github.com/ddiakopoulos/sandbox/blob/master/assets/shaders/sky_hosek_frag.glsl (has also a Preetham implementation)
+*/
+@property(UseProceduralSky)
+	float3 HosekWilkie(float cos_theta, float gamma, float cos_gamma)
+	{
+		// Unpack
+		float3 A = PassData.HosekWilkieSkyCoefficients1[0].xyz;
+		float3 B = float3(PassData.HosekWilkieSkyCoefficients1[0].w, PassData.HosekWilkieSkyCoefficients1[1].xy);
+		float3 C = float3(PassData.HosekWilkieSkyCoefficients1[1].zw, PassData.HosekWilkieSkyCoefficients1[2].x);
+		float3 D = PassData.HosekWilkieSkyCoefficients1[2].yzw;
+		float3 E = PassData.HosekWilkieSkyCoefficients1[3].xyz;
+		float3 F = float3(PassData.HosekWilkieSkyCoefficients1[3].w, PassData.HosekWilkieSkyCoefficients2[0].xy);
+		float3 G = float3(PassData.HosekWilkieSkyCoefficients2[0].zw, PassData.HosekWilkieSkyCoefficients2[1].x);
+		float3 H = PassData.HosekWilkieSkyCoefficients2[1].yzw;
+		float3 I = PassData.HosekWilkieSkyCoefficients2[2].xyz;
+
+		// Basing on the "ArHosekSkyModel_GetRadianceInternal"-function ( http://cgg.mff.cuni.cz/projects/SkylightModelling/ )
+		float3 chi = (1.0f + cos_gamma * cos_gamma) / pow(abs(1.0f + H * H - 2.0f * cos_gamma * H), float3(1.5f, 1.5f, 1.5f));
+		return (1.0f + A * exp(B / (cos_theta + 0.01f))) * (C + D * exp(E * gamma) + F * (cos_gamma * cos_gamma) + G * chi + I * sqrt(cos_theta));
+	}
+
+	/**
+	*  @brief
+	*    Calculate the Hosek-Wilkie Sky color for the given normalized world space direction vector
+	*/
+	float3 CalculateHosekWilkieSkyColor(float3 direction)
+	{
+		// Unpack
+		float3 Z = float3(PassData.HosekWilkieSkyCoefficients2[2].w, PassData.HosekWilkieSkyCoefficients2[3].xy);
+
+		// Calculate
+		float cos_theta = SATURATE(direction.y);
+		float cos_gamma = dot(direction, PassData.WorldSpaceSunlightDirection);
+		float gamma = acos(cos_gamma);
+		return Z * HosekWilkie(cos_theta, gamma, cos_gamma);
+	}
+@end
+
+
+//[-------------------------------------------------------]
+//[ Main                                                  ]
+//[-------------------------------------------------------]
+MAIN_BEGIN
+	// Calculate the sky color
+	@property(UseProceduralSky)
+		// Sky
+		float3 color = CalculateHosekWilkieSkyColor(normalize(MAIN_INPUT(TexCoordVS)));
+		if (MAIN_INPUT(TexCoordVS).y > 0.0f)
+		{
+			// Add sun
+			color += pow(SATURATE(dot(PassData.WorldSpaceSunlightDirection, normalize(MAIN_INPUT(TexCoordVS))) + 0.0001f), 64.0f) * PassData.SunlightColor;
+
+			{ // Add distance clouds
+				float3 texCoord = MAIN_INPUT(TexCoordVS);
+				texCoord.y = texCoord.y * 10.0f;
+				texCoord.xz = normalize(texCoord).xz;
+				float horizonFade = SATURATE(pow(abs(texCoord.y), 1.0f));
+				float sunIntensity = (1.0f - PassData.WorldSpaceSunlightDirection.y) * SATURATE(dot(PassData.WorldSpaceSunlightDirection, MAIN_INPUT(TexCoordVS)));
+				float speed = PassData.GlobalTimeInSeconds * PassData.WindSpeed;
+				float cloudsIntensity = PassData.CloudsIntensity * horizonFade * SAMPLE_2D(CloudsMap, SamplerLinearWrap, texCoord.xz + float2(0.1f, 0.3f) * speed).r;
+				cloudsIntensity *= horizonFade * SAMPLE_2D(CloudsMap, SamplerLinearWrap, texCoord.xz + float2(0.35f, 0.45f) * speed).r;
+
+				// Color mixing basing on Shadertoy "Canyon" by Inigo Quilez ( https://www.shadertoy.com/view/MdBGzG )
+				float3 cloudsColor = LERP(float3(0.4f, 0.5f, 0.6f), float3(1.3f, 0.6f, 0.4f), pow(sunIntensity, 2.0f)) * (0.5f + 0.5f * cloudsIntensity);
+				color = LERP(color, cloudsColor, 0.5f * smoothstep(0.4f, 1.0f, cloudsIntensity));
+			}
+		}
+	@end
+	@property(!UseProceduralSky)
+		// Sample the environment cube map
+		float3 color = SAMPLE_CUBE_LOD(EnvironmentCubeMap, SamplerLinearClamp, float4(-MAIN_INPUT(TexCoordVS), 0.0f)).rgb;
+	@end
+
+	// Calculate screen space velocity
+	@insertpiece(DefineCalculateScreenSpaceVelocity)
+
+	// Done
+	// -> Simple performance trick: No need to write out 0 as depth, we're telling via compositor node that the maximum depth is 0.0 so the GPU automatially writes out zero depth for us
+	MAIN_OUTPUT_COLOR(0) = float4(color, 1.0f);
+	MAIN_OUTPUT_COLOR(1) = float4(velocity.x, velocity.y, 0.0f, 0.0f);
+MAIN_END

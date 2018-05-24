@@ -1,0 +1,269 @@
+/*********************************************************\
+ * Copyright (c) 2012-2018 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+//[-------------------------------------------------------]
+//[ Definitions                                           ]
+//[-------------------------------------------------------]
+@includepiece($ProjectName/ShaderPiece/Core.asset)
+	@insertpiece(SetCrossPlatformSettings)
+
+
+//[-------------------------------------------------------]
+//[ Input / output                                        ]
+//[-------------------------------------------------------]
+// Attribute input / output
+INPUT_BEGIN
+	INPUT_TEXTURE_COORDINATE(1, float2, TexCoordVS, 0)	// Texture coordinate
+	INPUT_TEXTURE_COORDINATE(2, float3, ViewRayVS,  1)	// View space ray used for view space position reconstruction
+INPUT_END
+OUTPUT_BEGIN
+	OUTPUT_COLOR(0)
+OUTPUT_END
+
+// Uniform buffers
+struct PassDataStruct
+{
+	float4   ViewSpaceFrustumCorners[4];
+	float4x4 ClipSpaceToViewSpaceMatrix;
+	float4x4 ViewSpaceToWorldSpaceMatrix;
+	float4x4 ShadowMatrix;
+	float4   ShadowCascadeOffsets[4];
+	float4   ShadowCascadeScales[4];
+	float4   ShadowCascadeSplits;
+	float4	 WetSurfaces;	// x=wet level, y=hole/cracks flood level, z=puddle flood level, w=rain intensity
+	float3   ViewSpaceSunlightDirection;
+	float3   AmbientColor;
+	float    AtmosphereFogDensity;
+	float4   ViewSpaceToWorldSpaceQuaternion;
+	float4	 WorldSpaceToViewSpaceQuaternion;
+	float3   SunlightColor;
+	float    GlobalTimeInSeconds;
+	float3   DiffuseFogColor;
+	float3   CameraWorldSpacePosition;
+	float3   LightClustersScale;
+	float3   LightClustersBias;
+	float2   ViewportSize;
+	float2   ProjectionParameters;
+};
+UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
+	PassDataStruct PassData;
+UNIFORM_BUFFER_END
+
+// Texture buffers
+TEXTURE_BUFFER(1, 0, float4, LightTextureBuffer, 0)	// "LIGHT"
+
+// Textures
+@property(NumberOfMultisamples)
+	TEXTURE_2D_MS(2, 0, GBufferMap0, @value(NumberOfMultisamples), 1)	// GBuffer 0: rgb = albedo color, a = alpha unused (required for blend operations)
+	TEXTURE_2D_MS(2, 1, GBufferMap1, @value(NumberOfMultisamples), 2)	// GBuffer 1: rgb = view space normal, a = roughness
+	TEXTURE_2D_MS(2, 2, GBufferMap2, @value(NumberOfMultisamples), 3)	// GBuffer 2: rgb = emissive color, a = metallic
+	TEXTURE_2D_MS(2, 3, DepthMap, @value(NumberOfMultisamples), 4)
+@end
+@property(!NumberOfMultisamples)
+	TEXTURE_2D(2, 0, GBufferMap0, 1)	// GBuffer 0: rgb = albedo color, a = alpha unused (required for blend operations)
+	TEXTURE_2D(2, 1, GBufferMap1, 2)	// GBuffer 1: rgb = view space normal, a = roughness
+	TEXTURE_2D(2, 2, GBufferMap2, 3)	// GBuffer 2: rgb = emissive color, a = metallic
+	TEXTURE_2D(2, 3, DepthMap, 4)
+@end
+TEXTURE_2D_ARRAY(2, 4, ShadowMap, 5)
+TEXTURE_2D(2, 5, ScreenSpaceAmbientOcclusionMap, 6)
+TEXTURE_2D(2, 6, DistortionMap, 7)
+TEXTURE_2D(2, 7, VolumetricLightMap, 8)
+TEXTURE_2D(2, 8, ReflectionMap, 9)
+TEXTURE_3D_UINT(2, 9, LightClustersMap3D, 10)
+@property(UseWetSurfaces)
+	TEXTURE_2D(2, 10, RippleMap, 11)
+@end
+
+// Samplers
+SAMPLER_STATE(2, 0, SamplerPoint, 0)
+SAMPLER_STATE(2, 1, SamplerLinear, 1)
+
+
+//[-------------------------------------------------------]
+//[ Functions                                             ]
+//[-------------------------------------------------------]
+@includepiece($ProjectName/ShaderPiece/Color.asset)
+	@insertpiece(DefineCalculateFoggedColor)
+@includepiece($ProjectName/ShaderPiece/TangentFrame.asset)
+	@insertpiece(DefineGetTangentFrame)
+@includepiece($ProjectName/ShaderPiece/PhysicallyBasedShading.asset)
+	@property(HighQualityLighting)
+		@insertpiece(DefinePhysicallyBasedShading)
+	@end
+	@property(!HighQualityLighting)
+		@insertpiece(DefineBlinnPhongBasedShading)
+	@end
+@includepiece($ProjectName/ShaderPiece/Depth.asset)
+	@insertpiece(DefineGetLinearDepth)
+@includepiece($ProjectName/ShaderPiece/ExponentialShadow.asset)
+	@insertpiece(DefineExponentialShadow)
+@includepiece($ProjectName/ShaderPiece/Shadow.asset)
+	@insertpiece(DefineCalculateShadowVisibility)
+	@insertpiece(DefineShadowDebugging)
+@includepiece($ProjectName/ShaderPiece/Noise.asset)
+	@insertpiece(DefineMultipleOctavesNoise3D)
+@property(UseWetSurfaces)
+	@includepiece($ProjectName/ShaderPiece/WetSurfaces.asset)
+		@insertpiece(DefineWetSurfaces)
+@end
+
+float3 CalculateColorByGBuffer(float3 viewRay, float4 gbuffer0Value, float4 gbuffer1Value, float4 gbuffer2Value, float depth, float screenSpaceAmbientOcclusion, float3 volumetricLight, float3 reflectionColor)
+{
+	// Gather GBuffer data
+	float3 albedo		   = gbuffer0Value.rgb;
+	float3 viewSpaceNormal = gbuffer1Value.rgb;
+	float  roughness	   = gbuffer1Value.a;
+	float3 emissive		   = gbuffer2Value.rgb;
+	float  metallic		   = gbuffer2Value.a;
+
+	// Scale the view ray by the ratio of the linear z value to the projected view ray
+	// -> For details see "The Danger Zone" - "Position From Depth 3: Back In The Habit" - "Written by MJPSeptember 5, 2010" - https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
+	float linearDepth = GetLinearDepth(depth) / dot(float3(0.0f, 0.0f, 1.0f), viewRay);
+	float3 viewSpacePosition = viewRay * linearDepth;
+
+	// Shadow mapping
+	float3 worldSpacePosition = MATRIX_MUL(PassData.ViewSpaceToWorldSpaceMatrix, float4(viewSpacePosition.xyz, 1.0f)).xyz;
+	float shadowVisibility = CalculateShadowVisibility(worldSpacePosition, linearDepth);
+
+	// Water influence on material BRDF
+	// -> Wet surfaces parameter layout: x=wet level, y=hole/cracks flood level, z=puddle flood level, w=rain intensity
+	@property(UseWetSurfaces)
+		if (0.0f != PassData.WetSurfaces.x)
+		{
+			float heightMapValue = 0.0f;	// TODO(co) Transport this information?
+			DoWaterProcess(worldSpacePosition, shadowVisibility, heightMapValue, multipleOctavesNoise3D(worldSpacePosition), PassData.WetSurfaces.x, PassData.WetSurfaces.y, PassData.WetSurfaces.z, PassData.WetSurfaces.w, albedo, roughness, metallic, viewSpaceNormal);
+		}
+	@end
+
+	// Derive data
+	float3 viewSpaceIncident = -normalize(viewSpacePosition);	// In view space, the camera is at the origin
+	float3 worldSpaceIncident = MultiplyQuaternionVector(PassData.ViewSpaceToWorldSpaceQuaternion, viewSpaceIncident);
+	float3 worldSpaceNormal = MultiplyQuaternionVector(PassData.ViewSpaceToWorldSpaceQuaternion, viewSpaceNormal);
+
+	// Ambient term
+	float3 color = (reflectionColor * metallic + albedo) * (PassData.AmbientColor.rgb + CalculateHemisphereLighting(worldSpaceNormal.xyz, PassData.AmbientColor.rgb * 0.7f, PassData.AmbientColor.rgb * 0.2f));
+
+	// Directional sunlight, our primary light
+	if (shadowVisibility > 0.0f)
+	{
+		color += shadowVisibility * CalculateLighting(albedo, roughness, metallic, viewSpaceNormal, viewSpaceIncident, reflectionColor, PassData.ViewSpaceSunlightDirection, PassData.SunlightColor);
+	}
+
+	// Perform clustered shading
+	@insertpiece(PerformClusteredShading)
+
+	// Apply screen space ambient occlusion
+	color *= float3(screenSpaceAmbientOcclusion, screenSpaceAmbientOcclusion, screenSpaceAmbientOcclusion);
+
+	// Emissive term
+	color += emissive;
+
+	// Apply fog
+	color = CalculateFoggedColor(viewSpacePosition, color);
+
+	// Apply volumetric light
+	color += volumetricLight;
+
+	// Don't remove the following commented code: Shadow map debugging
+	// color *= GetShadowCascadeColor(linearDepth);
+
+	// Done
+	return color;
+}
+
+
+//[-------------------------------------------------------]
+//[ Main                                                  ]
+//[-------------------------------------------------------]
+MAIN_BEGIN
+	// Get the normalized view ray
+	float3 viewRay = normalize(MAIN_INPUT(ViewRayVS));
+
+	// Get texture coordinate and apply distortion
+	float2 texCoord = MAIN_INPUT(TexCoordVS);
+	texCoord += SAMPLE_2D_LOD(DistortionMap, SamplerLinear, float4(texCoord, 0.0f, 0.0f)).rg;
+
+	// Gather screen space ambient occlusion value
+	float screenSpaceAmbientOcclusion = SAMPLE_2D_LOD(ScreenSpaceAmbientOcclusionMap, SamplerPoint, float4(texCoord, 0.0f, 0.0f)).r;
+
+	// Gather volumetric light value
+	float3 volumetricLight = SAMPLE_2D_LOD(VolumetricLightMap, SamplerLinear, float4(texCoord, 0.0f, 0.0f)).rgb;
+
+	// Gather reflection color value
+	float3 reflectionColor = SAMPLE_2D(ReflectionMap, SamplerLinear, texCoord).rgb;
+
+	// Calculate color by GBuffer
+	float3 color = float3(0.0f, 0.0f, 0.0f);
+	@property(NumberOfMultisamples)
+		// Custom MSAA resolve
+		int2 textureCoordinate = int2(texCoord * PassData.ViewportSize);
+		@foreach(NumberOfMultisamples, i, 0)
+		{
+			// Read GBuffer data
+			float4 gbuffer0Value = SAMPLE_2D_MS(GBufferMap0, textureCoordinate, @i);
+
+			// Read depth map value and check whether or not a depth value was written (depth = 1 = depth clear value)
+			float depth = SAMPLE_DEPTH_2D_MS(DepthMap, textureCoordinate, @i);
+			if (1.0f != depth)
+			{
+				// Read GBuffer data
+				float4 gbuffer1Value = SAMPLE_2D_MS(GBufferMap1, textureCoordinate, @i);
+				float4 gbuffer2Value = SAMPLE_2D_MS(GBufferMap2, textureCoordinate, @i);
+
+				// Calculate color by GBuffer
+				color += CalculateColorByGBuffer(viewRay, gbuffer0Value, gbuffer1Value, gbuffer2Value, depth, screenSpaceAmbientOcclusion, volumetricLight, reflectionColor);
+			}
+			else
+			{
+				// Sky
+				color += gbuffer0Value.rgb;
+			}
+		}
+		@end
+		color /= @value(NumberOfMultisamples);
+	@end
+	@property(!NumberOfMultisamples)
+		float4 textureCoordinate = float4(texCoord, 0.0f, 0.0f);
+
+		// Read GBuffer data
+		float4 gbuffer0Value = SAMPLE_2D_LOD(GBufferMap0, SamplerPoint, textureCoordinate);
+
+		// Read depth map value and check whether or not a depth value was written (depth = 1 = depth clear value)
+		float depth = SAMPLE_DEPTH_2D_LOD(DepthMap, SamplerPoint, textureCoordinate);
+		if (1.0f != depth)
+		{
+			// Read GBuffer data
+			float4 gbuffer1Value = SAMPLE_2D_LOD(GBufferMap1, SamplerPoint, textureCoordinate);
+			float4 gbuffer2Value = SAMPLE_2D_LOD(GBufferMap2, SamplerPoint, textureCoordinate);
+
+			// Calculate color by GBuffer
+			color = CalculateColorByGBuffer(viewRay, gbuffer0Value, gbuffer1Value, gbuffer2Value, depth, screenSpaceAmbientOcclusion, volumetricLight, reflectionColor);
+		}
+		else
+		{
+			// Sky
+			color = gbuffer0Value.rgb;
+		}
+	@end
+
+	// Done
+	MAIN_OUTPUT_COLOR(0) = float4(color, 1.0f);
+MAIN_END

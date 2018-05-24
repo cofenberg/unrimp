@@ -1,0 +1,845 @@
+{
+	"Format":
+	{
+		"Type": "CompositorNodeAsset",
+		"Version": "1"
+	},
+	"CompositorNodeAsset":
+	{
+		"InputChannels":
+		{
+			"0": "InputRenderTarget",
+			"1": "OutputRenderTarget"
+		},
+		"RenderTargetTextures":
+		{
+			"Example/Texture/Dynamic/ScreenSpaceReflectionRayTracingRenderTarget":
+			{
+				"TextureFormat": "R16G16B16A16F",
+				"Scale": "0.5"
+			},
+			"Example/Texture/Dynamic/ReflectionRenderTarget":
+			{
+				"TextureFormat": "R11G11B10F"
+			},
+			"Example/Texture/Dynamic/MultisampleGBufferRenderTarget0":
+			{
+				"Description": "GBuffer 0: rgb = albedo color, a = alpha unused (required for blend operations)",
+				"TextureFormat": "R8G8B8A8",
+				"AllowMultisample": "TRUE"
+			},
+			"Example/Texture/Dynamic/MultisampleGBufferRenderTarget1":
+			{
+				"Description": "GBuffer 1: rgb = view space normal, a = roughness",
+				"TextureFormat": "R16G16B16A16F",
+				"AllowMultisample": "TRUE"
+			},
+			"Example/Texture/Dynamic/MultisampleGBufferRenderTarget2":
+			{
+				"Description": "GBuffer 2: rgb = emissive color, a = metallic",
+				"TextureFormat": "R16G16B16A16F",
+				"AllowMultisample": "TRUE"
+			},
+			"Example/Texture/Dynamic/MultisampleVelocityRenderTarget":
+			{
+				"TextureFormat": "R16G16_SNORM",
+				"AllowMultisample": "TRUE"
+			},
+			"Example/Texture/Dynamic/MultisampleDepthStencilRenderTarget":
+			{
+				"TextureFormat": "D32_FLOAT",
+				"AllowMultisample": "TRUE"
+			},
+			"Example/Texture/Dynamic/DepthStencilRenderTarget":
+			{
+				"TextureFormat": "D32_FLOAT"
+			},
+			"Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget":
+			{
+				"Description": "Hierarchical depth buffer (aka Hi-Z map or HZB), useful for GPU occlusion culling, screen space reflections as well as using the second depth buffer mipmap for e.g. a half-sized volumetric light/fog bilateral upsampling",
+				"TextureFormat": "D32_FLOAT",
+				"GenerateMipmaps": "TRUE"
+			},
+			"Example/Texture/Dynamic/ScreenSpaceAmbientOcclusionRenderTarget":
+			{
+				"TextureFormat": "R32_FLOAT"
+			},
+			"Example/Texture/Dynamic/BlurredScreenSpaceAmbientOcclusionRenderTarget":
+			{
+				"TextureFormat": "R32_FLOAT"
+			},
+			"Example/Texture/Dynamic/DistortionRenderTarget":
+			{
+				"Description": "Distortion which can e.g. be used for heat haze",
+				"TextureFormat": "R16G16_SNORM",
+				"Scale": "0.5"
+			},
+			"Example/Texture/Dynamic/VolumetricLightRenderTarget":
+			{
+				"Description": "Volumetric light/fog (aka crepuscular rays, god rays, sunbeams, sunbursts, light shafts or star flare)",
+				"TextureFormat": "R11G11B10F",
+				"Scale": "0.5"
+			},
+			"Example/Texture/Dynamic/HdrColorRenderTarget0":
+			{
+				"TextureFormat": "R11G11B10F"
+			},
+			"Example/Texture/Dynamic/HdrColorRenderTarget1":
+			{
+				"TextureFormat": "R11G11B10F"
+			},
+			"Example/Texture/Dynamic/PreviousHdrColorRenderTarget":
+			{
+				"TextureFormat": "R11G11B10F"
+			},
+			"Example/Texture/Dynamic/LuminanceRenderTarget":
+			{
+				"Width": "1024",
+				"Height": "1024",
+				"TextureFormat": "R32_FLOAT",
+				"GenerateMipmaps": "TRUE"
+			},
+			"Example/Texture/Dynamic/PreviousLuminanceRenderTarget":
+			{
+				"Width": "1",
+				"Height": "1",
+				"TextureFormat": "R32_FLOAT"
+			},
+			"Example/Texture/Dynamic/AdaptiveLuminanceRenderTarget":
+			{
+				"Width": "1",
+				"Height": "1",
+				"TextureFormat": "R32_FLOAT"
+			},
+			"Example/Texture/Dynamic/BloomColorRenderTarget":
+			{
+				"TextureFormat": "R11G11B10F",
+				"Width": "256",
+				"Height": "256"
+			},
+			"Example/Texture/Dynamic/BloomDownscale2ColorRenderTarget":
+			{
+				"TextureFormat": "R11G11B10F",
+				"Width": "128",
+				"Height": "128"
+			},
+			"Example/Texture/Dynamic/BloomDownscale4ColorRenderTarget":
+			{
+				"TextureFormat": "R11G11B10F",
+				"Width": "64",
+				"Height": "64"
+			},
+			"Example/Texture/Dynamic/BloomDownscale8ColorRenderTarget":
+			{
+				"TextureFormat": "R11G11B10F",
+				"Width": "32",
+				"Height": "32"
+			},
+			"Example/Texture/Dynamic/BloomDownscale8GaussianBlurTemporaryRenderTarget":
+			{
+				"TextureFormat": "R11G11B10F",
+				"Width": "32",
+				"Height": "32"
+			},
+			"Example/Texture/Dynamic/LensFlareColorRenderTarget":
+			{
+				"TextureFormat": "R11G11B10F",
+				"Width": "256",
+				"Height": "256"
+			},
+			"Example/Texture/Dynamic/LdrColorRenderTarget0":
+			{
+				"TextureFormat": "R8G8B8A8"
+			},
+			"Example/Texture/Dynamic/LdrColorRenderTarget1":
+			{
+				"TextureFormat": "R8G8B8A8"
+			},
+			"Example/Texture/Dynamic/GaussianBlurDownscale2ColorRenderTarget":
+			{
+				"TextureFormat": "R11G11B10F",
+				"AllowResolutionScale": "FALSE",
+				"Scale": "0.5"
+			},
+			"Example/Texture/Dynamic/GaussianBlurDownscale4ColorRenderTarget":
+			{
+				"TextureFormat": "R11G11B10F",
+				"AllowResolutionScale": "FALSE",
+				"Scale": "0.25"
+			},
+			"Example/Texture/Dynamic/GaussianBlurRenderTarget0":
+			{
+				"TextureFormat": "R11G11B10F",
+				"AllowResolutionScale": "FALSE",
+				"Scale": "0.25"
+			},
+			"Example/Texture/Dynamic/GaussianBlurRenderTarget1":
+			{
+				"TextureFormat": "R11G11B10F",
+				"AllowResolutionScale": "FALSE",
+				"Scale": "0.25"
+			}
+		},
+		"Framebuffers":
+		{
+			"ScreenSpaceReflectionRayTracingFramebuffer":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/ScreenSpaceReflectionRayTracingRenderTarget" ]
+			},
+			"ReflectionFramebuffer":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/ReflectionRenderTarget" ]
+			},
+			"GBufferFramebuffer":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/MultisampleGBufferRenderTarget0", "Example/Texture/Dynamic/MultisampleGBufferRenderTarget1", "Example/Texture/Dynamic/MultisampleGBufferRenderTarget2", "Example/Texture/Dynamic/MultisampleVelocityRenderTarget" ],
+				"DepthStencilTexture": "Example/Texture/Dynamic/MultisampleDepthStencilRenderTarget"
+			},
+			"GBufferSkyFramebuffer":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/MultisampleGBufferRenderTarget0", "Example/Texture/Dynamic/MultisampleVelocityRenderTarget" ],
+				"DepthStencilTexture": "Example/Texture/Dynamic/MultisampleDepthStencilRenderTarget"
+			},
+			"MsaaResolveDepthFramebuffer":
+			{
+				"DepthStencilTexture": "Example/Texture/Dynamic/DepthStencilRenderTarget"
+			},
+			"HierarchicalDepthStencilRenderTargetFramebuffer":
+			{
+				"TODO": "Get rid of this, it must be possible to define compositor textures which aren't referenced by a framebuffer",
+				"DepthStencilTexture": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget"
+			},
+			"ScreenSpaceAmbientOcclusionFramebuffer":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/ScreenSpaceAmbientOcclusionRenderTarget" ]
+			},
+			"BlurredScreenSpaceAmbientOcclusionFramebuffer":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/BlurredScreenSpaceAmbientOcclusionRenderTarget" ]
+			},
+			"DistortionFramebuffer":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/DistortionRenderTarget" ],
+				"DepthStencilAttachment":
+				{
+					"DepthStencilTexture": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
+					"MipmapIndex": "1"
+				}
+			},
+			"VolumetricLightFramebuffer":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/VolumetricLightRenderTarget" ]
+			},
+			"HdrFramebuffer0":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/HdrColorRenderTarget0" ]
+			},
+			"HdrFramebuffer1":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/HdrColorRenderTarget1" ]
+			},
+			"TransparentFramebuffer":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/HdrColorRenderTarget0" ],
+				"DepthStencilTexture": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget"
+			},
+			"PreviousHdrFramebuffer":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/PreviousHdrColorRenderTarget" ]
+			},
+			"LuminanceFramebuffer":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/LuminanceRenderTarget" ]
+			},
+			"PreviousLuminanceFramebuffer":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/PreviousLuminanceRenderTarget" ]
+			},
+			"AdaptiveLuminanceFramebuffer":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/AdaptiveLuminanceRenderTarget" ]
+			},
+			"BloomFramebuffer":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/BloomColorRenderTarget" ]
+			},
+			"BloomDownscale2Framebuffer":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/BloomDownscale2ColorRenderTarget" ]
+			},
+			"BloomDownscale4Framebuffer":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/BloomDownscale4ColorRenderTarget" ]
+			},
+			"BloomDownscale8Framebuffer":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/BloomDownscale8ColorRenderTarget" ]
+			},
+			"BloomDownscale8GaussianBlurTemporaryFramebuffer":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/BloomDownscale8GaussianBlurTemporaryRenderTarget" ]
+			},
+			"LensFlareFramebuffer":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/LensFlareColorRenderTarget" ]
+			},
+			"LdrFramebuffer0":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/LdrColorRenderTarget0" ]
+			},
+			"LdrFramebuffer1":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/LdrColorRenderTarget1" ]
+			},
+			"GaussianBlurDownscale2Framebuffer":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/GaussianBlurDownscale2ColorRenderTarget" ]
+			},
+			"GaussianBlurDownscale4Framebuffer":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/GaussianBlurDownscale4ColorRenderTarget" ]
+			},
+			"GaussianBlurFramebuffer0":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/GaussianBlurRenderTarget0" ]
+			},
+			"GaussianBlurFramebuffer1":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/GaussianBlurRenderTarget1" ]
+			}
+		},
+		"Targets":
+		{
+			"OutputRenderTarget":
+			{
+				"ShadowMap":
+				{
+					"MinimumRenderQueueIndex": "0",
+					"MaximumRenderQueueIndex": "253",
+					"MaterialTechnique": "DepthOnly",
+					"Texture": "Example/Texture/Dynamic/ShadowMapRenderTarget",
+					"DepthToExponentialVarianceMaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/DepthToExponentialVariance.asset",
+					"BlurMaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/ShadowBlur.asset"
+				}
+			},
+			"GBufferFramebuffer":
+			{
+				"Clear":
+				{
+					"Flags": "DEPTH"
+				},
+				"Scene":
+				{
+					"Description": "Render solid objects into GBuffer",
+					"MinimumRenderQueueIndex": "0",
+					"MaximumRenderQueueIndex": "253",
+					"MaterialTechnique": "Deferred"
+				},
+				"Scene":
+				{
+					"Description": "Render terrain into GBuffer",
+					"MinimumRenderQueueIndex": "253",
+					"MaximumRenderQueueIndex": "253",
+					"MaterialTechnique": "Deferred"
+				}
+			},
+			"GBufferSkyFramebuffer":
+			{
+				"Scene":
+				{
+					"Description": "Render sky",
+					"MaximumDepth": "0.0",
+					"MinimumRenderQueueIndex": "254",
+					"MaximumRenderQueueIndex": "254",
+					"MaterialTechnique": "Default"
+				}
+			},
+			"MsaaResolveDepthFramebuffer":
+			{
+				"Quad":
+				{
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/MsaaResolveDepth.asset",
+					"SetMaterialProperties":
+					{
+						"DepthMap": "Example/Texture/Dynamic/MultisampleDepthStencilRenderTarget"
+					}
+				}
+			},
+			"HierarchicalDepthStencilRenderTargetFramebuffer":
+			{
+				"TODO": "Get rid of this, it must be possible to define compositor textures which aren't referenced by a framebuffer",
+				"Copy":
+				{
+					"Description": "Sadly even with read-only it's impossible to read from a depth map while it's bound as depth buffer, so we need a copy",
+					"DestinationTexture": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
+					"SourceTexture": "Example/Texture/Dynamic/DepthStencilRenderTarget"
+				},
+				"GenerateMipmaps":
+				{
+					"Description": "Generate the mipmap chain of the hierarchical depth buffer",
+					"DepthTexture": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/DepthGenerateMipmap.asset"
+				}
+			},
+			"ScreenSpaceAmbientOcclusionFramebuffer":
+			{
+				"Quad":
+				{
+					"Description": "Screen space ambient occlusion (SSAO) generation",
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/ScreenSpaceAmbientOcclusionGeneration.asset",
+					"SetMaterialProperties":
+					{
+						"NormalMap": "Example/Texture/Dynamic/MultisampleGBufferRenderTarget1",
+						"DepthMap": "Example/Texture/Dynamic/DepthStencilRenderTarget"
+					}
+				}
+			},
+			"BlurredScreenSpaceAmbientOcclusionFramebuffer":
+			{
+				"Quad":
+				{
+					"Description": "Screen space ambient occlusion (SSAO) blur",
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/ScreenSpaceAmbientOcclusionBlur.asset",
+					"SetMaterialProperties":
+					{
+						"ScreenSpaceAmbientOcclusionMap": "Example/Texture/Dynamic/ScreenSpaceAmbientOcclusionRenderTarget"
+					}
+				}
+			},
+			"DistortionFramebuffer":
+			{
+				"Clear":
+				{
+					"Flags": "COLOR"
+				},
+				"Scene":
+				{
+					"Description": "Render transparent objects which contain distortion TODO(co) Currently everything transparent is rendered to have something to start with",
+					"MinimumRenderQueueIndex": "255",
+					"MaximumRenderQueueIndex": "255",
+					"TransparentPass": "TRUE",
+					"MaterialTechnique": "Transparent"
+				}
+			},
+			"VolumetricLightFramebuffer":
+			{
+				"Quad":
+				{
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/VolumetricLight.asset",
+					"SetMaterialProperties":
+					{
+						"DepthMap": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
+						"ShadowMap": "Example/Texture/Dynamic/ShadowMapRenderTarget"
+					}
+				}
+			},
+			"ScreenSpaceReflectionRayTracingFramebuffer":
+			{
+				"Quad":
+				{
+					"SkipFirstExecution": "TRUE",
+					"Description": "Screen space reflection (SSR) ray tracing",
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/ScreenSpaceReflectionRayTracing.asset",
+					"SetMaterialProperties":
+					{
+						"NormalMap": "Example/Texture/Dynamic/MultisampleGBufferRenderTarget1",
+						"VelocityMap": "Example/Texture/Dynamic/MultisampleVelocityRenderTarget",
+						"DepthMap": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget"
+					}
+				}
+			},
+			"ReflectionFramebuffer":
+			{
+				"Clear":
+				{
+					"NumberOfExecutions": "1",
+					"Flags": "COLOR"
+				},
+				"Quad":
+				{
+					"SkipFirstExecution": "TRUE",
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Reflection.asset",
+					"SetMaterialProperties":
+					{
+						"NormalMap": "Example/Texture/Dynamic/MultisampleGBufferRenderTarget1",
+						"ScreenSpaceReflectionMap": "Example/Texture/Dynamic/ScreenSpaceReflectionRayTracingRenderTarget",
+						"DepthMap": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
+						"ColorMap": "Example/Texture/Dynamic/PreviousHdrColorRenderTarget"
+					}
+				}
+			},
+			"HdrFramebuffer0":
+			{
+				"Clear":
+				{
+					"Flags": "COLOR"
+				},
+				"Quad":
+				{
+					"Description": "Composite deferred data",
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Deferred.asset",
+					"SetMaterialProperties":
+					{
+						"GBufferMap0": "Example/Texture/Dynamic/MultisampleGBufferRenderTarget0",
+						"GBufferMap1": "Example/Texture/Dynamic/MultisampleGBufferRenderTarget1",
+						"GBufferMap2": "Example/Texture/Dynamic/MultisampleGBufferRenderTarget2",
+						"DepthMap": "Example/Texture/Dynamic/MultisampleDepthStencilRenderTarget",
+						"ShadowMap": "Example/Texture/Dynamic/ShadowMapRenderTarget",
+						"ScreenSpaceAmbientOcclusionMap": "Example/Texture/Dynamic/BlurredScreenSpaceAmbientOcclusionRenderTarget",
+						"DistortionMap": "Example/Texture/Dynamic/DistortionRenderTarget",
+						"VolumetricLightMap": "Example/Texture/Dynamic/VolumetricLightRenderTarget",
+						"ReflectionMap": "Example/Texture/Dynamic/ReflectionRenderTarget"
+					}
+				}
+			},
+			"TransparentFramebuffer":
+			{
+				"Scene":
+				{
+					"Description": "Render transparent objects",
+					"MinimumRenderQueueIndex": "255",
+					"MaximumRenderQueueIndex": "255",
+					"TransparentPass": "TRUE",
+					"MaterialTechnique": "Transparent"
+				}
+			},
+			"PreviousHdrFramebuffer":
+			{
+				"Copy":
+				{
+					"DestinationTexture": "Example/Texture/Dynamic/PreviousHdrColorRenderTarget",
+					"SourceTexture": "Example/Texture/Dynamic/HdrColorRenderTarget0"
+				}
+			},
+			"LuminanceFramebuffer":
+			{
+				"Quad":
+				{
+					"Description": "Calculate luminance. The mipmaps are generated automatically after the next render target change.",
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/CalculateLuminance.asset",
+					"SetMaterialProperties":
+					{
+						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget0"
+					}
+				}
+			},
+			"PreviousLuminanceFramebuffer":
+			{
+				"Copy":
+				{
+					"SkipFirstExecution": "TRUE",
+					"Description": "Backup the adaptive luminance from the previous frame. Skip the first execution since there's no valid previous adaptive luminance available in this situation. The current compositor target isn't used for this.",
+					"DestinationTexture": "Example/Texture/Dynamic/PreviousLuminanceRenderTarget",
+					"SourceTexture": "Example/Texture/Dynamic/AdaptiveLuminanceRenderTarget"
+				}
+			},
+			"AdaptiveLuminanceFramebuffer":
+			{
+				"Quad":
+				{
+					"SkipFirstExecution": "TRUE",
+					"Description": "Slowly adjusts the scene luminance based on the previous scene luminance. Skip the first execution since there's no valid previous adaptive luminance available in this situation.",
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/AdaptiveLuminance.asset",
+					"SetMaterialProperties":
+					{
+						"CurrentLuminanceMap": "Example/Texture/Dynamic/LuminanceRenderTarget",
+						"PreviousLuminanceMap": "Example/Texture/Dynamic/PreviousLuminanceRenderTarget"
+					}
+				},
+				"Quad":
+				{
+					"NumberOfExecutions": "1",
+					"Description": "During the first execution there's no valid previous adaptive luminance available, so use the just calculated luminance as previous luminance.",
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/AdaptiveLuminance.asset",
+					"SetMaterialProperties":
+					{
+						"CurrentLuminanceMap": "Example/Texture/Dynamic/LuminanceRenderTarget",
+						"FirstExecution": "TRUE"
+					}
+				}
+			},
+			"GaussianBlurDownscale2Framebuffer":
+			{
+				"Quad":
+				{
+					"Description": "Downscale",
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
+					"SetMaterialProperties":
+					{
+						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget0"
+					}
+				}
+			},
+			"GaussianBlurDownscale4Framebuffer":
+			{
+				"Quad":
+				{
+					"Description": "Downscale",
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
+					"SetMaterialProperties":
+					{
+						"ColorMap": "Example/Texture/Dynamic/GaussianBlurDownscale2ColorRenderTarget"
+					}
+				}
+			},
+			"@foreach(4, i)":
+			{
+				"GaussianBlurFramebuffer0":
+				{
+					"Quad":
+					{
+						"Description": "Vertical Gaussian blur",
+						"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/GaussianBlur.asset",
+						"SetMaterialProperties":
+						{
+							"VerticalBlur": "TRUE", 
+							"ColorMap": "Example/Texture/Dynamic/GaussianBlurDownscale4ColorRenderTarget"
+						}
+					}
+				},
+				"GaussianBlurFramebuffer1":
+				{
+					"Quad":
+					{
+						"Description": "Horizontal Gaussian blur",
+						"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/GaussianBlur.asset",
+						"SetMaterialProperties":
+						{
+							"VerticalBlur": "FALSE", 
+							"ColorMap": "Example/Texture/Dynamic/GaussianBlurRenderTarget0"
+						}
+					}
+				}
+			},
+			"GaussianBlurDownscale2Framebuffer":
+			{
+				"Quad":
+				{
+					"Description": "Upscale",
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
+					"SetMaterialProperties":
+					{
+						"ColorMap": "Example/Texture/Dynamic/GaussianBlurRenderTarget1"
+					}
+				}
+			},
+			"HdrFramebuffer1":
+			{
+				"Quad":
+				{
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/DepthOfField.asset",
+					"SetMaterialProperties":
+					{
+						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget0",
+						"DepthMap": "Example/Texture/Dynamic/DepthStencilRenderTarget",
+						"BlurMap": "Example/Texture/Dynamic/GaussianBlurDownscale2ColorRenderTarget"
+					}
+				}
+			},
+			"HdrFramebuffer0":
+			{
+				"Quad":
+				{
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/MotionBlur.asset",
+					"SetMaterialProperties":
+					{
+						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget1",
+						"VelocityMap": "Example/Texture/Dynamic/MultisampleVelocityRenderTarget"
+					}
+				}
+			},
+			"BloomFramebuffer":
+			{
+				"Quad":
+				{
+					"Description": "Bloom pass: Use a lower exposure to produce a value suitable for a bloom pass",
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/HdrToLdrBloomThreshold.asset",
+					"SetMaterialProperties":
+					{
+						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget0",
+						"LuminanceMap": "Example/Texture/Dynamic/AdaptiveLuminanceRenderTarget"
+					}
+				}
+			},
+			"BloomDownscale2Framebuffer":
+			{
+				"Quad":
+				{
+					"Description": "Bloom pass: Downscale",
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
+					"SetMaterialProperties":
+					{
+						"ColorMap": "Example/Texture/Dynamic/BloomColorRenderTarget"
+					}
+				}
+			},
+			"BloomDownscale4Framebuffer":
+			{
+				"Quad":
+				{
+					"Description": "Bloom pass: Downscale",
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
+					"SetMaterialProperties":
+					{
+						"ColorMap": "Example/Texture/Dynamic/BloomDownscale2ColorRenderTarget"
+					}
+				}
+			},
+			"BloomDownscale8Framebuffer":
+			{
+				"Quad":
+				{
+					"Description": "Bloom pass: Downscale",
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
+					"SetMaterialProperties":
+					{
+						"ColorMap": "Example/Texture/Dynamic/BloomDownscale4ColorRenderTarget"
+					}
+				}
+			},
+			"@foreach(4, i)":
+			{
+				"BloomDownscale8GaussianBlurTemporaryFramebuffer":
+				{
+					"Quad":
+					{
+						"Description": "Bloom pass: Vertical Gaussian blur",
+						"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/GaussianBlur.asset",
+						"SetMaterialProperties":
+						{
+							"VerticalBlur": "TRUE", 
+							"ColorMap": "Example/Texture/Dynamic/BloomDownscale8ColorRenderTarget"
+						}
+					}
+				},
+				"BloomDownscale8Framebuffer":
+				{
+					"Quad":
+					{
+						"Description": "Bloom pass: Horizontal Gaussian blur",
+						"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/GaussianBlur.asset",
+						"SetMaterialProperties":
+						{
+							"VerticalBlur": "FALSE", 
+							"ColorMap": "Example/Texture/Dynamic/BloomDownscale8GaussianBlurTemporaryRenderTarget"
+						}
+					}
+				}
+			},
+			"BloomDownscale4Framebuffer":
+			{
+				"Quad":
+				{
+					"Description": "Bloom pass: Upscale",
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
+					"SetMaterialProperties":
+					{
+						"ColorMap": "Example/Texture/Dynamic/BloomDownscale8ColorRenderTarget"
+					}
+				}
+			},
+			"BloomDownscale2Framebuffer":
+			{
+				"Quad":
+				{
+					"Description": "Bloom pass: Upscale",
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
+					"SetMaterialProperties":
+					{
+						"ColorMap": "Example/Texture/Dynamic/BloomDownscale4ColorRenderTarget"
+					}
+				}
+			},
+			"BloomFramebuffer":
+			{
+				"Quad":
+				{
+					"Description": "Lens flare pass: Use a lower exposure to produce a value suitable for a lens flare pass",
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/LensFlareThreshold.asset",
+					"SetMaterialProperties":
+					{
+						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget0"
+					}
+				}
+			},
+			"LensFlareFramebuffer":
+			{
+				"Quad":
+				{
+					"Description": "Lens flare pass: Feature generation",
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/LensFlareFeatureGeneration.asset",
+					"SetMaterialProperties":
+					{
+						"ColorMap": "Example/Texture/Dynamic/BloomColorRenderTarget"
+					}
+				}
+			},
+			"BloomFramebuffer":
+			{
+				"Quad":
+				{
+					"Description": "Lens flare pass: Vertical Gaussian blur",
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/GaussianBlur.asset",
+					"SetMaterialProperties":
+					{
+						"VerticalBlur": "TRUE", 
+						"ColorMap": "Example/Texture/Dynamic/LensFlareColorRenderTarget"
+					}
+				}
+			},
+			"LensFlareFramebuffer":
+			{
+				"Quad":
+				{
+					"Description": "Lens flare pass: Horizontal Gaussian blur",
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/GaussianBlur.asset",
+					"SetMaterialProperties":
+					{
+						"VerticalBlur": "FALSE", 
+						"ColorMap": "Example/Texture/Dynamic/BloomColorRenderTarget"
+					}
+				}
+			},
+			"LdrFramebuffer0":
+			{
+				"Quad":
+				{
+					"Description": "HDR to LDR",
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/HdrToLdr.asset",
+					"SetMaterialProperties":
+					{
+						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget0",
+						"LuminanceMap": "Example/Texture/Dynamic/AdaptiveLuminanceRenderTarget",
+						"BloomMap": "Example/Texture/Dynamic/BloomDownscale2ColorRenderTarget",
+						"LensFlareMap": "Example/Texture/Dynamic/LensFlareColorRenderTarget"
+					}
+				}
+			},
+			"OutputRenderTarget":
+			{
+				"Quad":
+				{
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Final.asset",
+					"SetMaterialProperties":
+					{
+						"ColorMap": "Example/Texture/Dynamic/LdrColorRenderTarget0"
+					}
+				},
+				"DebugGui":
+				{
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Gui/Debug.asset",
+					"SetMaterialProperties":
+					{
+						"GlyphMap": "Unrimp/Texture/DynamicByCode/ImGuiGlyphMap2D",
+						"BackgroundMap": "Example/Texture/Dynamic/GaussianBlurDownscale2ColorRenderTarget"
+					}
+				}
+			}
+		},
+		"OutputChannels":
+		{
+			"0": "OutputRenderTarget",
+			"1": "InputRenderTarget"
+		}
+	}
+}

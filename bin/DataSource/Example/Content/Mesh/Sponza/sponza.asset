@@ -1,0 +1,50 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"AssetMetadata":
+		{
+			"AssetType": "Mesh",
+			"AssetCategory": "Scene",
+			"Copyright": "Sponza model downloaded from http://www.crytek.com/cryengine/cryengine3/downloads"
+		},
+		"MeshAssetCompiler":
+		{
+			"InputFile": "sponza.obj",
+			"MaterialNameToAssetId":
+			{
+				"arch": "$ProjectName/Material/Sponza/arch.asset",
+				"Material__298": "$ProjectName/Material/Sponza/background.asset",
+				"bricks": "$ProjectName/Material/Sponza/bricks.asset",
+				"ceiling": "$ProjectName/Material/Sponza/ceiling.asset",
+				"chain": "$ProjectName/Material/Sponza/chain.asset",
+				"column_a": "$ProjectName/Material/Sponza/column_a.asset",
+				"column_b": "$ProjectName/Material/Sponza/column_b.asset",
+				"column_c": "$ProjectName/Material/Sponza/column_c.asset",
+				"details": "$ProjectName/Material/Sponza/details.asset",
+				"fabric_a": "$ProjectName/Material/Sponza/fabric_a.asset",
+				"fabric_c": "$ProjectName/Material/Sponza/fabric_c.asset",
+				"fabric_d": "$ProjectName/Material/Sponza/fabric_d.asset",
+				"fabric_e": "$ProjectName/Material/Sponza/fabric_e.asset",
+				"fabric_f": "$ProjectName/Material/Sponza/fabric_f.asset",
+				"fabric_g": "$ProjectName/Material/Sponza/fabric_g.asset",
+				"flagpole": "$ProjectName/Material/Sponza/flagpole.asset",
+				"floor": "$ProjectName/Material/Sponza/floor.asset",
+				"16___Default": "$ProjectName/Material/Sponza/gi_flag.asset",
+				"leaf": "$ProjectName/Material/Sponza/leaf.asset",
+				"Material__25": "$ProjectName/Material/Sponza/lion.asset",
+				"roof": "$ProjectName/Material/Sponza/roof.asset",
+				"vase": "$ProjectName/Material/Sponza/vase.asset",
+				"vase_hanging": "$ProjectName/Material/Sponza/vase_hanging.asset",
+				"Material__57": "$ProjectName/Material/Sponza/vase_plant.asset",
+				"vase_round": "$ProjectName/Material/Sponza/vase_round.asset",
+				"Material__47": "$ProjectName/Material/Sponza/white.asset",
+				"DefaultMaterial": "$ProjectName/Material/Sponza/white.asset"
+			}
+		}
+	}
+}

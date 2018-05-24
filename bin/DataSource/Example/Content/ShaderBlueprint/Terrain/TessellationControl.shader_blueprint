@@ -1,0 +1,306 @@
+/*********************************************************\
+ * Copyright (c) 2012-2018 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+// This software contains source code provided by NVIDIA Corporation. The height map terrain tessellation implementation is basing on "DirectX 11 Terrain Tessellation" by Iain Cantlay ( https://developer.nvidia.com/sites/default/files/akamai/gamedev/files/sdk/11/TerrainTessellation_WhitePaper.pdf ) and the concrete implementation "TerrainTessellation"-sample inside "NVIDIA Direct3D SDK 11" ( https://developer.nvidia.com/dx11-samples ).
+
+
+//[-------------------------------------------------------]
+//[ Definitions                                           ]
+//[-------------------------------------------------------]
+@includepiece($ProjectName/ShaderPiece/Core.asset)
+	@insertpiece(SetCrossPlatformSettings)
+@includepiece($ProjectName/ShaderPiece/Terrain.asset)
+	@insertpiece(DefineTerrainPassDataStruct)
+
+
+//[-------------------------------------------------------]
+//[ Input / output                                        ]
+//[-------------------------------------------------------]
+// Per patch input / output
+INPUT_BEGIN_PATCH
+	DECLARE_PRIMITIVE_ID
+INPUT_END_PATCH
+OUTPUT_BEGIN_PATCH
+	OUTPUT_TESS_LEVEL_INNER(2)	// Inner tessellation level
+	OUTPUT_TESS_LEVEL_OUTER(4)	// Outer tessellation level
+OUTPUT_END_PATCH
+
+// Per patch control point input / output
+INPUT_BEGIN_CONTROL_POINT
+	DECLARE_CONTROL_POINT_ID
+INPUT_END_CONTROL_POINT
+INPUT_BEGIN
+	INPUT_POSITION			(0, float4, INPUT_ARRAY(PositionVS))		// World space control point position of the patch we received from the vertex shader (VS) as input
+	INPUT_TEXTURE_COORDINATE(1, float4, INPUT_ARRAY(AdjacencyVS), 0)	// These are the size of the neighbours along +/- x or y axes. For interior tiles this is 1. For edge tiles it is 0.5 or 2.0. x = neighbour minus x, y = neighbour minus y, z = neighbour plus x, w = neighbour plus y.
+INPUT_END
+OUTPUT_BEGIN
+	OUTPUT_POSITION_NAMED(0, float4, OUTPUT_ARRAY(PositionTC))	// World space control point position of the patch as output
+OUTPUT_END
+
+// Uniform buffers
+UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
+	TerrainPassDataStruct PassData;
+UNIFORM_BUFFER_END
+
+
+//[-------------------------------------------------------]
+//[ Functions                                             ]
+//[-------------------------------------------------------]
+// From shader piece "$ProjectName/ShaderPiece/Terrain.asset"
+	@insertpiece(DefineWorldXZToHeightUV)
+@includepiece($ProjectName/ShaderPiece/TangentFrame.asset)
+	@insertpiece(DefineGetTangentFrame)
+
+bool IsInsideHeightMap(float2 worldXZ)
+{
+	float2 uv = WorldXZToHeightUV(worldXZ);
+	return (uv.x >= 0.0f && uv.x <= 1.0f && uv.y >= 0.0f && uv.y <= 1.0f);
+}
+
+// The implementation is basing on the "Island11"-sample by Tim Tcheblokov inside the "NVIDIA Direct3D SDK 11" ( https://developer.nvidia.com/dx11-samples )
+bool IsInsideFrustum(float3 position, float3 cameraPosition, float3 cameraDirection, float margin)
+{
+	// Conservative frustum culling
+	float3 cameraToPosition = position - cameraPosition;
+	float3 patchToCameraDirection = cameraDirection * dot(cameraToPosition, cameraDirection) - cameraToPosition;
+	float3 patchCenterRealigned = position + normalize(patchToCameraDirection) * min(margin, length(patchToCameraDirection));
+	float4 patchScreenSpaceCenter = MATRIX_MUL(PassData.WorldSpaceToClipSpaceMatrix, float4(patchCenterRealigned, 1.0f));
+	return ((patchScreenSpaceCenter.x / patchScreenSpaceCenter.w > -1.0f) && (patchScreenSpaceCenter.x / patchScreenSpaceCenter.w < 1.0f) &&
+			(patchScreenSpaceCenter.y / patchScreenSpaceCenter.w > -1.0f) && (patchScreenSpaceCenter.y / patchScreenSpaceCenter.w < 1.0f) &&
+			(patchScreenSpaceCenter.w > 0.0f)) || (length(position - cameraPosition) < margin);
+}
+
+void MakeVertexHeightsAgree(inout float3 p0, inout float3 p1)
+{
+	// This ought to work: If the adjacency has repositioned a vertex in XZ, we need to re-acquire its height. However, causes an internal fxc error.
+	// float h0 = SampleHeightMap(p0.xz);
+	// float h1 = SampleHeightMap(p1.xz);
+	// p0.y = h0;
+	// p1.y = h1;
+
+	// Instead set both vertex heights to zero. It's the only way I can think to agree with the neighbours when sampling is broken in fxc.
+	p0.y = p1.y = 0;
+}
+
+float ClipToScreenSpaceTessellation(float4 clip0, float4 clip1)
+{
+	clip0 /= clip0.w;
+	clip1 /= clip1.w;
+
+	clip0.xy *= PassData.ViewportSize;
+	clip1.xy *= PassData.ViewportSize;
+
+	float d = distance(clip0, clip1);
+
+	// "PassData.TessellatedTriangleWidth" is desired pixels per triangle edge
+	return clamp(d / PassData.TessellatedTriangleWidth, 0.0f, 64.0f);
+}
+
+// Project a sphere into clip space and return the number of triangles that are required to fit across the
+// screen space diameter. For convenience of the caller, we expect two edge end points and use the mid point as centre.
+float SphereToScreenSpaceTessellation(float3 p0, float3 p1, float diameter)
+{
+	float3 centre = 0.5f * (p0 + p1);
+	float4 view0 = MATRIX_MUL(PassData.WorldSpaceToViewSpaceMatrix, float4(centre, 1.0f));
+	float4 view1 = view0;
+	view1.x += diameter;
+
+	float4 clip0 = MATRIX_MUL(PassData.ViewSpaceToClipSpaceMatrix, view0);
+	float4 clip1 = MATRIX_MUL(PassData.ViewSpaceToClipSpaceMatrix, view1);
+	return ClipToScreenSpaceTessellation(clip0, clip1);
+}
+
+// The adjacency calculations ensure that neighbours have tessellations that agree.
+// However, only power of two sizes seem to get correctly tessellated with no cracks.
+float SmallerNeighbourAdjacencyClamp(float tessellation)
+{
+	// Clamp to the nearest larger power of two. Any power of two works; larger means that we don't lose detail.
+	// Output is [4,64].
+	float logTessellation = ceil(log2(tessellation));
+	float t = pow(2.0f, logTessellation);
+
+	// Our smaller neighbour's minimum tessellation is pow(2,1) = 2. As we are twice its size, we can't go below 4.
+	return max(4.0f, t);
+}
+
+float SmallerNeighbourAdjacencyFix(float3 p0, float3 p1, float diameter)
+{
+	MakeVertexHeightsAgree(p0, p1);
+	float t = SphereToScreenSpaceTessellation(p0, p1, diameter);
+	return SmallerNeighbourAdjacencyClamp(t);
+}
+
+float LargerNeighbourAdjacencyClamp(float tessellation)
+{
+	// Clamp to the nearest larger power of two. Any power of two works; larger means that we don't lose detail.
+	float logTessellation = ceil(log2(tessellation));
+	float t = pow(2.0f, logTessellation);
+
+	// Our larger neighbour's maximum tessellation is 64; as we are half its size, our tessellation must maximum out
+	// at 32, otherwise we could be over-tessellated relative to the neighbour. Output is [2,32].
+	return clamp(t, 2.0f, 32.0f);
+}
+
+float LargerNeighbourAdjacencyFix(float3 p0, float3 p1, int patchIndex, float diameter)
+{
+	// We move one of the corner vertices in 2D (x,z) to match where the corner vertex is
+	// on our larger neighbour. We move p0 or p1 depending on the even/odd patch index.
+	//
+	// Larger neighbour
+	// +-------------------+
+	// +---------+
+	// p0   Us   p1 ---->  +		Move p1
+	// |    0    |    1    |		patchIndex % 2
+	//
+	//           +---------+
+	// +  <----  p0   Us   p1		Move p0
+	// |    0    |    1    |		patchIndex % 2
+	//
+	if ((uint(patchIndex) % 2) != 0)
+	{
+		p0 += (p0 - p1);
+	}
+	else
+	{
+		p1 += (p1 - p0);
+	}
+
+	// Having moved the vertex in (x,z), its height is no longer correct
+	MakeVertexHeightsAgree(p0, p1);
+
+	// Half the tessellation because the edge is twice as long
+	float t = 0.5f * SphereToScreenSpaceTessellation(p0, p1, 2.0f * diameter);
+	return LargerNeighbourAdjacencyClamp(t);
+}
+
+
+//[-------------------------------------------------------]
+//[ Main: Program invocation per patch                    ]
+//[-------------------------------------------------------]
+MAIN_BEGIN_TESSELLATION_CONTROL_PATCH(4)
+	// Reject patches which are outside the height map
+	if (IsInsideHeightMap(MAIN_INPUT_ARRAY(PositionVS, 0).xz) && IsInsideHeightMap(MAIN_INPUT_ARRAY(PositionVS, 1).xz) &&
+		IsInsideHeightMap(MAIN_INPUT_ARRAY(PositionVS, 2).xz) && IsInsideHeightMap(MAIN_INPUT_ARRAY(PositionVS, 3).xz))
+	{
+		float3 centre = 0.25f * (MAIN_INPUT_ARRAY(PositionVS, 0).xyz + MAIN_INPUT_ARRAY(PositionVS, 1).xyz + MAIN_INPUT_ARRAY(PositionVS, 2).xyz + MAIN_INPUT_ARRAY(PositionVS, 3).xyz);
+		float  sideLength = max(abs(MAIN_INPUT_ARRAY(PositionVS, 1).x - MAIN_INPUT_ARRAY(PositionVS, 0).x), abs(MAIN_INPUT_ARRAY(PositionVS, 1).x - MAIN_INPUT_ARRAY(PositionVS, 2).x));	// Assume square and uniform
+		float  diagonalLength = sqrt(2 * sideLength * sideLength);
+
+		// Reject patches which are outside the camera frustum
+		// TODO(co) Optimize: Add world space camera direction vector parameter
+		float3 worldSpaceCameraDirection = MultiplyQuaternionVector(PassData.ViewSpaceToWorldSpaceQuaternion, float3(0.0f, 0.0f, -1.0f));
+		if (IsInsideFrustum(centre, PassData.CameraWorldSpacePosition, worldSpaceCameraDirection, diagonalLength))
+		{
+			// Edges that need adjacency adjustment are identified by the per-instance "MAIN_INPUT_ARRAY(adjacency, 0)"
+			// scalars, in conjunction with a patch ID that puts them on the edge of a tile
+			int2 patchXY;
+			patchXY.y = int(uint(PRIMITIVE_ID) / TERRAIN_PATCHES_PER_TILE_EDGE);
+			patchXY.x = PRIMITIVE_ID - patchXY.y * TERRAIN_PATCHES_PER_TILE_EDGE;
+
+			// Identify patch edges that are adjacent to a patch of a different size. The size difference
+			// is encoded in "MAIN_INPUT_ARRAY(adjacency, n)", either 0.5, 1.0 or 2.0.
+			// neighbourMinusX refers to our adjacent neighbour in the direction of -ve x. The value
+			// is the neighbour's size relative to ours. Similarly for plus and Y, etc. You really
+			// need a diagram to make sense of the adjacency conditions in the if statements.
+			// These four ifs deal with neighbours that are smaller.
+			if (MAIN_INPUT_ARRAY(AdjacencyVS, 0).x < 0.55f && 0 == patchXY.x)
+			{
+				MAIN_OUTPUT_TESS_LEVEL_OUTER[0] = SmallerNeighbourAdjacencyFix(MAIN_INPUT_ARRAY(PositionVS, 0).xyz, MAIN_INPUT_ARRAY(PositionVS, 1).xyz, sideLength);
+			}
+			else if (MAIN_INPUT_ARRAY(AdjacencyVS, 0).x > 1.0f && 0 == patchXY.x)
+			{
+				// Deal with neighbours that are larger than us
+				MAIN_OUTPUT_TESS_LEVEL_OUTER[0] = LargerNeighbourAdjacencyFix(MAIN_INPUT_ARRAY(PositionVS, 0).xyz, MAIN_INPUT_ARRAY(PositionVS, 1).xyz, patchXY.y, sideLength);
+			}
+			else
+			{
+				MAIN_OUTPUT_TESS_LEVEL_OUTER[0] = SphereToScreenSpaceTessellation(MAIN_INPUT_ARRAY(PositionVS, 0).xyz, MAIN_INPUT_ARRAY(PositionVS, 1).xyz, sideLength);
+			}
+			if (MAIN_INPUT_ARRAY(AdjacencyVS, 0).y < 0.55f && 0 == patchXY.y)
+			{
+				MAIN_OUTPUT_TESS_LEVEL_OUTER[1] = SmallerNeighbourAdjacencyFix(MAIN_INPUT_ARRAY(PositionVS, 3).xyz, MAIN_INPUT_ARRAY(PositionVS, 0).xyz, sideLength);
+			}
+			else if (MAIN_INPUT_ARRAY(AdjacencyVS, 0).y > 1.0f && 0 == patchXY.y)
+			{
+				// Deal with neighbours that are larger than us
+				MAIN_OUTPUT_TESS_LEVEL_OUTER[1] = LargerNeighbourAdjacencyFix(MAIN_INPUT_ARRAY(PositionVS, 0).xyz, MAIN_INPUT_ARRAY(PositionVS, 3).xyz, patchXY.x, sideLength);	// Irregular index pattern - it's correct
+			}
+			else
+			{
+				MAIN_OUTPUT_TESS_LEVEL_OUTER[1] = SphereToScreenSpaceTessellation(MAIN_INPUT_ARRAY(PositionVS, 3).xyz, MAIN_INPUT_ARRAY(PositionVS, 0).xyz, sideLength);
+			}
+			if (MAIN_INPUT_ARRAY(AdjacencyVS, 0).z < 0.55f && TERRAIN_PATCHES_PER_TILE_EDGE - 1 == patchXY.x)
+			{
+				MAIN_OUTPUT_TESS_LEVEL_OUTER[2] = SmallerNeighbourAdjacencyFix(MAIN_INPUT_ARRAY(PositionVS, 2).xyz, MAIN_INPUT_ARRAY(PositionVS, 3).xyz, sideLength);
+			}
+			else if (MAIN_INPUT_ARRAY(AdjacencyVS, 0).z > 1.0f && TERRAIN_PATCHES_PER_TILE_EDGE - 1 == patchXY.x)
+			{
+				// Deal with neighbours that are larger than us
+				MAIN_OUTPUT_TESS_LEVEL_OUTER[2] = LargerNeighbourAdjacencyFix(MAIN_INPUT_ARRAY(PositionVS, 3).xyz, MAIN_INPUT_ARRAY(PositionVS, 2).xyz, patchXY.y, sideLength);
+			}
+			else
+			{
+				MAIN_OUTPUT_TESS_LEVEL_OUTER[2] = SphereToScreenSpaceTessellation(MAIN_INPUT_ARRAY(PositionVS, 2).xyz, MAIN_INPUT_ARRAY(PositionVS, 3).xyz, sideLength);
+			}
+			if (MAIN_INPUT_ARRAY(AdjacencyVS, 0).w < 0.55f && TERRAIN_PATCHES_PER_TILE_EDGE - 1 == patchXY.y)
+			{
+				MAIN_OUTPUT_TESS_LEVEL_OUTER[3] = SmallerNeighbourAdjacencyFix(MAIN_INPUT_ARRAY(PositionVS, 1).xyz, MAIN_INPUT_ARRAY(PositionVS, 2).xyz, sideLength);
+			}
+			else if (MAIN_INPUT_ARRAY(AdjacencyVS, 0).w > 1.0f && TERRAIN_PATCHES_PER_TILE_EDGE - 1 == patchXY.y)
+			{
+				// Deal with neighbours that are larger than us
+				MAIN_OUTPUT_TESS_LEVEL_OUTER[3] = LargerNeighbourAdjacencyFix(MAIN_INPUT_ARRAY(PositionVS, 1).xyz, MAIN_INPUT_ARRAY(PositionVS, 2).xyz, patchXY.x, sideLength);	// Irregular index pattern - it's correct
+			}
+			else
+			{
+				MAIN_OUTPUT_TESS_LEVEL_OUTER[3] = SphereToScreenSpaceTessellation(MAIN_INPUT_ARRAY(PositionVS, 1).xyz, MAIN_INPUT_ARRAY(PositionVS, 2).xyz, sideLength);
+			}
+
+			// Use average of edge points for interior - visually looks OK.
+			// fxc bug if we assign different complex expressions to Inside[0] and [1].
+			MAIN_OUTPUT_TESS_LEVEL_INNER[1] = 0.5f * (MAIN_OUTPUT_TESS_LEVEL_OUTER[0] + MAIN_OUTPUT_TESS_LEVEL_OUTER[2]);
+			MAIN_OUTPUT_TESS_LEVEL_INNER[0] = 0.5f * (MAIN_OUTPUT_TESS_LEVEL_OUTER[1] + MAIN_OUTPUT_TESS_LEVEL_OUTER[3]);
+		}
+		else
+		{
+			// Reject patches which are outside the camera frustum
+			MAIN_OUTPUT_TESS_LEVEL_OUTER[0] = MAIN_OUTPUT_TESS_LEVEL_OUTER[1] = MAIN_OUTPUT_TESS_LEVEL_OUTER[2] = MAIN_OUTPUT_TESS_LEVEL_OUTER[3] = MAIN_OUTPUT_TESS_LEVEL_INNER[0] = MAIN_OUTPUT_TESS_LEVEL_INNER[1] = -1.0f;
+		}
+	}
+	else
+	{
+		// Reject patches which are outside the height map
+		MAIN_OUTPUT_TESS_LEVEL_OUTER[0] = MAIN_OUTPUT_TESS_LEVEL_OUTER[1] = MAIN_OUTPUT_TESS_LEVEL_OUTER[2] = MAIN_OUTPUT_TESS_LEVEL_OUTER[3] = MAIN_OUTPUT_TESS_LEVEL_INNER[0] = MAIN_OUTPUT_TESS_LEVEL_INNER[1] = -1.0f;
+	}
+MAIN_END_TESSELLATION_CONTROL_PATCH
+
+
+//[-------------------------------------------------------]
+//[ Main: Program invocation per patch control point      ]
+//[-------------------------------------------------------]
+@property(HLSL)
+	[domain("quad")]
+	[partitioning("fractional_even")]
+	[outputtopology("triangle_cw")]
+@end
+MAIN_BEGIN_TESSELLATION_CONTROL(4, 4)
+	// Pass through the world space control point position of the patch
+	MAIN_OUTPUT_CONTROL_POINT(PositionTC) = MAIN_INPUT_ARRAY(PositionVS, CONTROL_POINT_ID);
+MAIN_END

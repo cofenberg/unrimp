@@ -1,0 +1,125 @@
+/*********************************************************\
+ * Copyright (c) 2012-2018 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+//[-------------------------------------------------------]
+//[ Pieces                                                ]
+//[-------------------------------------------------------]
+@piece(DefineCalculateShadowVisibility)
+	/**
+	*  @brief
+	*    Sample the EVSM shadow map
+	*/
+	float SampleShadowMapEvsm(float3 shadowPosition, float3 shadowPositionDX, float3 shadowPositionDY, uint cascadeIndex)
+	{
+		float2 exponents = GetEvsmExponents(PassData.ShadowCascadeScales[cascadeIndex].xyz);
+		float2 warpedDepth = WarpDepth(shadowPosition.z, exponents);
+		float4 occluder = SAMPLE_2D_ARRAY_GRAD(ShadowMap, SamplerLinear, float4(shadowPosition.xy, cascadeIndex, 0.0f), shadowPositionDX.xy, shadowPositionDY.xy);
+
+		// Derivative of warping at depth
+		float2 depthScale = 0.0001f * exponents * warpedDepth;
+		float2 minimumVariance = depthScale * depthScale;
+
+		float positiveContribution = ChebyshevUpperBound(occluder.xz, warpedDepth.x, minimumVariance.x);
+		float negativeContribution = ChebyshevUpperBound(occluder.yw, warpedDepth.y, minimumVariance.y);
+		float shadowContribution = positiveContribution;
+		shadowContribution = min(shadowContribution, negativeContribution);
+
+		// Done
+		return shadowContribution;
+	}
+
+	/**
+	*  @brief
+	*    Sample the appropriate shadow map cascade
+	*/
+	float SampleShadowCascade(float3 shadowPosition, float3 shadowPositionDX, float3 shadowPositionDY, uint cascadeIndex)
+	{
+		shadowPosition += PassData.ShadowCascadeOffsets[cascadeIndex].xyz;
+		shadowPosition *= PassData.ShadowCascadeScales[cascadeIndex].xyz;
+
+		shadowPositionDX *= PassData.ShadowCascadeScales[cascadeIndex].xyz;
+		shadowPositionDY *= PassData.ShadowCascadeScales[cascadeIndex].xyz;
+
+		return SampleShadowMapEvsm(shadowPosition, shadowPositionDX, shadowPositionDY, cascadeIndex);
+	}
+
+	/**
+	*  @brief
+	*    Get shadow cascade index
+	*/
+	uint GetShadowCascadeIndex(float linearDepth)
+	{
+		// We support up to four shadow cascades
+		uint cascadeIndex = 0u;
+		UNROLL_HINT
+		for(uint i = 0u; i < (4u - 1u); ++i)
+		{
+			FLATTEN_HINT
+			if (linearDepth > PassData.ShadowCascadeSplits[i])
+			{
+				cascadeIndex = i + 1u;
+			}
+		}
+		return cascadeIndex;
+	}
+
+	/**
+	*  @brief
+	*    Compute the visibility term by performing the shadow test
+	*/
+	float CalculateShadowVisibility(float3 worldSpacePosition, float linearDepth)
+	{
+		// Project into shadow space
+		float3 samplePosition = worldSpacePosition;
+		float3 shadowPosition = MATRIX_MUL(PassData.ShadowMatrix, float4(samplePosition, 1.0f)).xyz;
+		float3 shadowPositionDX = DDX(shadowPosition);
+		float3 shadowPositionDY = DDY(shadowPosition);
+
+		// Sample shadow cascade
+		return SampleShadowCascade(shadowPosition, shadowPositionDX, shadowPositionDY, GetShadowCascadeIndex(linearDepth));
+	}
+@end
+
+@piece(DefineShadowDebugging)
+	/**
+	*  @brief
+	*    For debugging: Get shadow cascade color
+	*/
+	float3 GetShadowCascadeColor(float linearDepth)
+	{
+		switch (GetShadowCascadeIndex(linearDepth))
+		{
+			case 0u:
+				return float3(1.0f, 0.0f, 0.0f);	// Red
+
+			case 1u:
+				return float3(0.0f, 1.0f, 0.0f);	// Green
+
+			case 2u:
+				return float3(0.0f, 0.0f, 1.0f);	// Blue
+
+			case 3u:
+				return float3(1.0f, 0.0f, 1.0f);	// Pink
+
+			default:
+				return float3(1.0f, 1.0f, 1.0f);	// White
+		}
+	}
+@end

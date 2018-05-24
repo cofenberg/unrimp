@@ -1,0 +1,36 @@
+{
+	"Format":
+	{
+		"Type": "CompositorNodeAsset",
+		"Version": "1"
+	},
+	"CompositorNodeAsset":
+	{
+		"InputChannels":
+		{
+			"0": "InputRenderTarget",
+			"1": "OutputRenderTarget"
+		},
+		"Targets":
+		{
+			"OutputRenderTarget":
+			{
+				"Clear":
+				{
+					"Flags": "COLOR | DEPTH",
+					"Color": "0.5 0.5 0.5 1.0",
+					"Z": "0.0",
+					"Stencil": "0"
+				},
+				"FirstCompositorExample":
+				{
+				}
+			}
+		},
+		"OutputChannels":
+		{
+			"0": "OutputRenderTarget",
+			"1": "InputRenderTarget"
+		}
+	}
+}

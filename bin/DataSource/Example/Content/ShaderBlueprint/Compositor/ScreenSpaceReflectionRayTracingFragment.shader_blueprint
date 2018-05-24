@@ -1,0 +1,379 @@
+/*********************************************************\
+ * Copyright (c) 2012-2018 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+// Basing on "Screen Space Ray Tracing" http://casual-effects.blogspot.de/2014/08/screen-space-ray-tracing.html
+// By Morgan McGuire and Michael Mara at Williams College 2014
+// Released as open source under the BSD 2-Clause License
+// http://opensource.org/licenses/BSD-2-Clause
+
+// TODO(co) Optimization: Add empty space skipping via hierarchical depth buffer (aka Hi-Z map or HZB) as seen in http://bitsquid.blogspot.de/2017/08/notes-on-screen-space-hiz-tracing.html
+
+
+//[-------------------------------------------------------]
+//[ Definitions                                           ]
+//[-------------------------------------------------------]
+@includepiece($ProjectName/ShaderPiece/Core.asset)
+	@insertpiece(SetCrossPlatformSettings)
+
+
+//[-------------------------------------------------------]
+//[ Input / output                                        ]
+//[-------------------------------------------------------]
+// Attribute input / output
+INPUT_BEGIN
+	INPUT_TEXTURE_COORDINATE(1, float2, TexCoordVS, 0)	// Texture coordinate
+	INPUT_TEXTURE_COORDINATE(2, float3, ViewRayVS,  1)	// View space ray used for view space position reconstruction
+	DECLARE_FRAGMENT_POSITION
+INPUT_END
+OUTPUT_BEGIN
+	OUTPUT_COLOR(0)
+OUTPUT_END
+
+// Uniform buffers
+struct PassDataStruct
+{
+	float4   ViewSpaceFrustumCorners[4];
+	float4x4 ViewSpaceToClipSpaceMatrix;
+	float2   ViewportSize;
+	float2   ProjectionParameters;
+	float2   NearFarZ;
+	float	 Stride;
+	float	 StrideZCutoff;
+	float	 ZThickness;
+	float	 MaximumNumberOfSteps;
+	float	 MaximumDistance;
+};
+UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
+	PassDataStruct PassData;
+UNIFORM_BUFFER_END
+
+// Textures
+@property(NumberOfMultisamples)
+	TEXTURE_2D_MS(1, 0, NormalMap, @value(NumberOfMultisamples), 0)	// Normal map: rgb = view space normal
+	TEXTURE_2D_MS(1, 1, VelocityMap, @value(NumberOfMultisamples), 1)
+@end
+@property(!NumberOfMultisamples)
+	TEXTURE_2D(1, 0, NormalMap, 0)	// rgb = view space normal, a = roughness
+	TEXTURE_2D(1, 1, VelocityMap, 1)
+@end
+TEXTURE_2D(1, 2, DepthMap, 2)
+
+// Samplers
+SAMPLER_STATE(2, 0, SamplerPointClamp, 0)
+
+
+//[-------------------------------------------------------]
+//[ Functions                                             ]
+//[-------------------------------------------------------]
+@includepiece($ProjectName/ShaderPiece/Depth.asset)
+	@insertpiece(DefineGetLinearDepth)
+
+float4 GetNormalFromNormalMap(float2 textureCoordinate, int sampleIndex)
+{
+	@property(NumberOfMultisamples)
+		// *2 = For performance reasons the screen space reflection ray tracing is done at half-size
+		return SAMPLE_2D_MS(NormalMap, int2(textureCoordinate * PassData.ViewportSize * 2), sampleIndex);
+	@end
+	@property(!NumberOfMultisamples)
+		return SAMPLE_2D_LOD(NormalMap, SamplerPointClamp, float4(textureCoordinate, 0.0f, 0.0f));
+	@end
+}
+
+float2 GetVelocityFromVelocityMap(float2 textureCoordinate, int sampleIndex)
+{
+	@property(NumberOfMultisamples)
+		// *2 = For performance reasons the screen space reflection ray tracing is done at half-size
+		return SAMPLE_2D_MS(VelocityMap, int2(textureCoordinate * PassData.ViewportSize * 2), sampleIndex).rg;
+	@end
+	@property(!NumberOfMultisamples)
+		return SAMPLE_2D_LOD(VelocityMap, SamplerPointClamp, float4(textureCoordinate, 0.0f, 0.0f)).rg;
+	@end
+}
+
+float GetDistanceSquared(float2 a, float2 b)
+{
+	a -= b;
+	return dot(a, a);
+}
+
+bool IntersectsDepthBuffer(float z, float minimumZ, float maximumZ)
+{
+	// Based on how far away from the camera the depth is, adding a bit of extra thickness can help improve some
+	// artifacts. Driving this value up too high can cause artifacts of its own.
+	// TODO(co) See e.g. http://www.kode80.com/blog/2015/03/11/screen-space-reflections-in-unity-5/ for dynamic correct thickness by introducing another rendering pass
+	float depthScale = min(1.0f, z * PassData.StrideZCutoff);
+	z += PassData.ZThickness + LERP(0.0f, 1.0f, depthScale);
+	return ((maximumZ >= z) && (minimumZ - PassData.ZThickness <= z));
+}
+
+float LinearDepthTexelFetch(float3 viewRay, float2 hitPixel)
+{
+	// Load returns 0 for any value accessed out of bounds
+	// -> Depth map LOD = 1 = For performance reasons the screen space reflection ray tracing is done at half-size
+	float depth = REVERSED_Z(TEXTURE_FETCH_2D(DepthMap, int3(CAST_TO(hitPixel, int2), 1)).r);
+
+	// Scale the view ray by the ratio of the linear z value to the projected view ray
+	// -> For details see "The Danger Zone" - "Position From Depth 3: Back In The Habit" - "Written by MJPSeptember 5, 2010" - https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
+	return GetLinearDepth(depth) / dot(float3(0.0f, 0.0f, 1.0f), viewRay);
+}
+
+// Returns true if the ray hit something
+bool TraceScreenSpaceRay(
+	float3 viewRay,
+	float3 rayOrigin,		// View space ray origin, which must be within the view volume
+	float3 rayDir,			// Unit length view space ray direction
+	float jitterFraction,	// Number between 0 and 1 for how far to bump the ray in stride units to conceal banding artifacts. Not needed if stride == 1.
+	out float2 hitPixel,	// Pixel coordinates of the first intersection with the scene
+	out float3 hitPoint)	// View space location of the ray hit
+{
+	// Clip ray to a near plane in 3D (doesn't have to be *the* near plane, although that would be a good idea)
+	float rayLength = ((rayOrigin.z + rayDir.z * PassData.MaximumDistance) < PassData.NearFarZ.x) ? ((PassData.NearFarZ.x - rayOrigin.z) / rayDir.z) : PassData.MaximumDistance;
+	float3 rayEndPoint = rayOrigin + rayDir * rayLength;
+
+	// TODO(co) Add combined input from C++ side
+	@property(HLSL)
+		float4x4 test = float4x4(0.5f,  0.0f, 0.0f, 0.5f,
+								 0.0f, -0.5f, 0.0f, 0.5f,
+								 0.0f,  0.0f, 1.0f, 0.0f,
+								 0.0f,  0.0f, 0.0f, 1.0f);
+	@end
+	@property(GLSL)
+		float4x4 test = float4x4(0.5f,  0.0f, 0.0f, 0.0f,
+								 0.0f, -0.5f, 0.0f, 0.0f,
+								 0.0f,  0.0f, 0.5f, 0.0f,
+								 0.5f,  0.5f, 0.5f, 1.0f);
+	@end
+	float4x4 viewSpaceToTextureSpaceMatrix = MATRIX_MUL(test, PassData.ViewSpaceToClipSpaceMatrix);
+
+	// Project into homogeneous clip space
+	float4 H0 = MATRIX_MUL(viewSpaceToTextureSpaceMatrix, float4(rayOrigin, 1.0f));
+	float4 H1 = MATRIX_MUL(viewSpaceToTextureSpaceMatrix, float4(rayEndPoint, 1.0f));
+
+	// There are a lot of divisions by w that can be turned into multiplications at some minor precision loss, and we need to interpolate these 1/w values anyway.
+	// Because the caller was required to clip to the near plane, this homogeneous division (projecting from 4D to 2D) is guaranteed to succeed.
+	float k0 = 1.0f / H0.w;
+	float k1 = 1.0f / H1.w;
+
+	// The interpolated homogeneous version of the view space points
+	float3 Q0 = rayOrigin * k0;
+	float3 Q1 = rayEndPoint * k1;
+
+	// Screen-space endpoints
+	float2 P0 = H0.xy * k0;
+	float2 P1 = H1.xy * k1;
+	P0.xy *= PassData.ViewportSize;
+	P1.xy *= PassData.ViewportSize;
+
+	// TODO(co) Optional clipping to frustum sides here
+
+	// Initialize to off screen
+	hitPixel = float2(-1.0f, -1.0f);
+
+	// If the line is degenerate, make it cover at least one pixel to avoid handling zero-pixel extent as a special case later
+	P1 += (GetDistanceSquared(P0, P1) < 0.0001f) ? float2(0.01f, 0.01f) : float2(0.0f, 0.0f);
+	float2 delta = P1 - P0;
+
+	// Permute so that the primary iteration is in x to collapse all quadrant-specific DDA cases later
+	bool permute = false;
+	if(abs(delta.x) < abs(delta.y))
+	{
+		// More-vertical line, create a permutation that swaps x and y in the output
+		permute = true;
+
+		// Directly swizzle the inputs
+		delta = delta.yx;
+		P0 = P0.yx;
+		P1 = P1.yx;
+	}
+
+	// From now on, "x" is the primary iteration direction and "y" is the secondary one
+
+	float stepDirection = sign(delta.x);
+	float invdx = stepDirection / delta.x;
+	float2 dP = float2(stepDirection, delta.y * invdx);
+
+	// Track the derivatives of Q and k
+	float3 dQ = (Q1 - Q0) * invdx;
+	float dk = (k1 - k0) * invdx;
+
+	{ // Scale derivatives by the desired pixel stride
+		float strideScale = 1.0f - min(1.0f, rayOrigin.z * PassData.StrideZCutoff);
+		float stride = 1.0f + strideScale * PassData.Stride;
+		dP *= stride;
+		dQ *= stride;
+		dk *= stride;
+	}
+
+	// Offset the starting values by the jitter fraction
+	P0 += dP * jitterFraction;
+	Q0 += dQ * jitterFraction;
+	k0 += dk * jitterFraction;
+
+	// Slide P from P0 to P1, (now-homogeneous) Q from Q0 to Q1, k from k0 to k1
+	float4 PQk = float4(P0, Q0.z, k0);
+	float4 dPQk = float4(dP, dQ.z, dk);
+	float3 Q = Q0;
+
+	// Adjust end condition for iteration direction: P1.x is never modified after
+	// this point, so pre-scale it by the step direction for a signed comparison
+	float end = P1.x * stepDirection;
+
+	// We track the ray depth at +/- 1/2 pixel to treat pixels as clip-space solid
+	// voxels. Because the depth at -1/2 for a given pixel will be the same as at
+	// +1/2 for the previous iteration, we actually only have to compute one value
+	// per iteration.
+	float stepCount = 0.0f;
+	float previousZMaximumEstimate = rayOrigin.z;
+	float rayZMinimum = previousZMaximumEstimate;
+	float rayZMaximum = previousZMaximumEstimate;
+	float sceneZMaximum = rayZMaximum + 100.0f;
+
+	// We only advance the z field of Q in the inner loop, since Q.xy is never used until after the loop terminates
+	for (;
+		((PQk.x * stepDirection) <= end) && (stepCount < PassData.MaximumNumberOfSteps) &&
+		!IntersectsDepthBuffer(sceneZMaximum, rayZMinimum, rayZMaximum) &&
+		(0.0f != sceneZMaximum);
+		++stepCount)
+	{
+		// The depth range that the ray covers within this loop
+		// iteration. Assume that the ray is moving in increasing z
+		// and swap if backwards. Because one end of the interval is
+		// shared between adjacent iterations, we track the previous
+		// value and then swap as needed to ensure correct ordering.
+		rayZMinimum = previousZMaximumEstimate;
+
+		// Compute the value at 1/2 pixel into the future
+		rayZMaximum = (dPQk.z * 0.5f + PQk.z) / (dPQk.w * 0.5f + PQk.w);
+		previousZMaximumEstimate = rayZMaximum;
+		if (rayZMinimum > rayZMaximum)
+		{
+			// Swap
+			float t = rayZMinimum;
+			rayZMinimum = rayZMaximum;
+			rayZMaximum = t;
+		}
+
+		// View space z of the background
+		hitPixel = permute ? PQk.yx : PQk.xy;
+		sceneZMaximum = LinearDepthTexelFetch(viewRay, hitPixel);
+
+		PQk += dPQk;
+	}
+
+	// Advance Q based on the number of steps
+	Q.xy += dQ.xy * stepCount;
+	hitPoint = Q * (1.0f / PQk.w);
+	return IntersectsDepthBuffer(sceneZMaximum, rayZMinimum, rayZMaximum);
+}
+
+
+//[-------------------------------------------------------]
+//[ Main                                                  ]
+//[-------------------------------------------------------]
+MAIN_BEGIN
+	// Get depth and normal of the fragment
+	// -> No complex pixel detection since it doesn't make a notable visual difference here
+	// -> Depth map LOD = 1 = For performance reasons the screen space reflection ray tracing is done at half-size
+	float2 texCoord = MAIN_INPUT(TexCoordVS);
+	float depth = SAMPLE_DEPTH_2D_LOD(DepthMap, SamplerPointClamp, float4(texCoord, 0.0f, 1.0f));
+	float4 normalMapValue = GetNormalFromNormalMap(texCoord, 0);
+	float3 viewSpaceNormal = normalMapValue.xyz;
+	float roughness = normalMapValue.a;
+
+	// Get the normalized view ray
+	float3 viewRay = normalize(MAIN_INPUT(ViewRayVS));
+
+	// Scale the view ray by the ratio of the linear z value to the projected view ray
+	// -> For details see "The Danger Zone" - "Position From Depth 3: Back In The Habit" - "Written by MJPSeptember 5, 2010" - https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
+	float linearDepth = GetLinearDepth(depth) / dot(float3(0.0f, 0.0f, 1.0f), viewRay);
+	float3 viewSpacePosition = viewRay * linearDepth;
+
+	// Derive data
+	float3 viewSpaceIncident = -normalize(viewSpacePosition);	// In view space, the camera is at the origin
+
+	// Calculate screen space reflection (SSR)
+	float2 hitPixel = float2(-1.0f, -1.0f);
+	float reflectionIntensity = 0.0f;
+	{
+		// Reflection vector
+		float3 viewSpaceDirection = normalize(viewSpacePosition);
+		float3 viewSpaceReflectDirection = normalize(reflect(viewSpaceDirection, viewSpaceNormal));
+
+		// Early escape: Viewer facing reflections
+		// -> Modulate the reflection intensity basing on "Screen Space Reflections in Killing Floor 2" by Sakib Saikia ( https://sakibsaikia.github.io/graphics/2016/12/25/Screen-Space-Reflection-in-Killing-Floor-2.html )
+		// -> This will check the direction of the reflection vector with the view direction,
+		//    and if they are pointing in the same direction, it will drown out those reflections
+		//    since we are limited to pixels visible on screen. Attenuate reflections for angles between
+		//    60 degrees and 75 degrees, and drop all contribution beyond the (-60,60) degree range.
+		float cameraFacingReflectionAttenuation = 1 - smoothstep(0.25f, 0.5f, dot(-viewSpaceDirection, viewSpaceReflectDirection));
+
+		// Reject if the reflection vector is pointing back at the viewer
+		if (cameraFacingReflectionAttenuation > 0.0f)
+		{
+			// Early escape: Reflections outside the viewport
+			// -> Modulate the reflection intensity basing on "Screen Space Reflections in Killing Floor 2" by Sakib Saikia ( https://sakibsaikia.github.io/graphics/2016/12/25/Screen-Space-Reflection-in-Killing-Floor-2.html )
+			float2 uvSamplingAttenuation = smoothstep(0.0f, 0.05f, texCoord) * (1 - smoothstep(0.975f, 1.0f, texCoord));
+			uvSamplingAttenuation.x *= uvSamplingAttenuation.y;
+			if (uvSamplingAttenuation.x > 0.0f)
+			{
+				// Jitter: Number between 0 and 1 for how far to bump the ray in stride units to conceal banding artifacts
+				// -> For an alternative solution see "Screen Space Reflections in Killing Floor 2" by Sakib Saikia ( https://sakibsaikia.github.io/graphics/2016/12/25/Screen-Space-Reflection-in-Killing-Floor-2.html ) - "Banding and Self-Intersection"
+				float jitterFraction = (PassData.Stride > 1.0f) ? float(int(FRAGMENT_POSITION.xy.x + FRAGMENT_POSITION.xy.y) & 1) * 0.5f : 0.0f;
+
+				// Raycast
+				float3 hitPoint = float3(-1.0f, -1.0f, -1.0f);
+				if (TraceScreenSpaceRay(
+					viewRay,
+					viewSpacePosition,			// View space ray origin, which must be within the view volume
+					viewSpaceReflectDirection,	// Unit length view space ray direction
+					jitterFraction,				// Number between 0 and 1 for how far to bump the ray in stride units to conceal banding artifacts. Not needed if stride == 1.
+					hitPixel,					// Pixel coordinates of the first intersection with the scene
+					hitPoint))					// View space location of the ray hit
+				{
+					hitPixel.xy /= PassData.ViewportSize;
+
+					// Temporal reprojection: We're using color data from the previous frame for the screen space reflection color. In order to
+					// hide that the reflections lag one frame behind we're reprojecting the hit pixel basing on previous camera related data.
+					hitPixel.xy -= GetVelocityFromVelocityMap(hitPixel.xy, 0);
+
+					// Reflections of back faces
+					// -> Modulate the reflection intensity basing on "Screen Space Reflections in Killing Floor 2" by Sakib Saikia ( https://sakibsaikia.github.io/graphics/2016/12/25/Screen-Space-Reflection-in-Killing-Floor-2.html )
+					// -> This will check the direction of the normal of the reflection sample with the
+					//    direction of the reflection vector, and if they are pointing in the same direction,
+					//    it will drown out those reflections since backward facing pixels are not available
+					//    for screen space reflection. Attenuate reflections for angles between 90 degrees
+					//    and 100 degrees, and drop all contribution beyond the (-100,100) degree range.
+					float3 reflectionNormalColor = GetNormalFromNormalMap(hitPixel.xy, 0).xyz;
+					float3 reflectionNormal = reflectionNormalColor * float3(2, 2, 2) - float3(1, 1, 1);
+					float directionBasedAttenuation = smoothstep(-0.17f, 0.0f, dot(reflectionNormal, -viewSpaceReflectDirection));
+
+					// Modulate the reflection intensity basing on "Screen Space Reflections in Killing Floor 2" by Sakib Saikia ( https://sakibsaikia.github.io/graphics/2016/12/25/Screen-Space-Reflection-in-Killing-Floor-2.html )
+					float distanceAttenuation = 1.0f - SATURATE(distance(hitPoint, viewSpacePosition) / PassData.MaximumDistance);
+					float2 coordinateEdgeAttenuation = float2(1.0f, 1.0f) - pow(SATURATE(abs(hitPixel.xy - float2(0.5f, 0.5f)) * 2), float2(8.0f, 8.0f));
+					float screenEdgeAttenuation = SATURATE(min(coordinateEdgeAttenuation.x, coordinateEdgeAttenuation.y));
+					reflectionIntensity = cameraFacingReflectionAttenuation * uvSamplingAttenuation.x * directionBasedAttenuation * distanceAttenuation * screenEdgeAttenuation;
+				}
+			}
+		}
+	}
+
+	// Done
+	MAIN_OUTPUT_COLOR(0) = float4(hitPixel, reflectionIntensity, 0.0f);
+MAIN_END

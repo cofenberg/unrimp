@@ -1,0 +1,18 @@
+/.vs
+/include
+/lib
+*.kdev4
+/build*
+# ignore all in bin folder except the DataSource subfolder
+/bin/*
+!/bin/DataSource
+/Renderer/Renderer/Direct3D10Renderer/Direct3D10Renderer.vcxproj.user
+/Renderer/Renderer/Direct3D11Renderer/Direct3D11Renderer.vcxproj.user
+/Renderer/Renderer/Direct3D12Renderer/Direct3D12Renderer.vcxproj.user
+/Renderer/Renderer/Direct3D9Renderer/Direct3D9Renderer.vcxproj.user
+/Renderer/Renderer/NullRenderer/NullRenderer.vcxproj.user
+/Renderer/Renderer/OpenGLES3Renderer/OpenGLES3Renderer.vcxproj.user
+/Renderer/Renderer/OpenGLRenderer/OpenGLRenderer.vcxproj.user
+/Renderer/Renderer/VulkanRenderer/VulkanRenderer.vcxproj.user
+/Renderer/RendererRuntime/RendererRuntime.vcxproj.user
+/Renderer/RendererToolkit/RendererToolkit.vcxproj.user

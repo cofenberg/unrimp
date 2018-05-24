@@ -1,0 +1,17 @@
+{
+	"Format":
+	{
+		"Type": "Project",
+		"Version": "1"
+	},
+	"Project":
+	{
+		"ProjectMetadata":
+		{
+			"Copyright": "Copyright (c) 2012-2018 The Unrimp Team"
+		},
+		"AssetPackages": ["Content"],
+		"TargetsFilename": "Example.targets",
+		"QualityStrategy": "PRODUCTION"
+	}
+}

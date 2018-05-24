@@ -1,0 +1,84 @@
+/*********************************************************\
+ * Copyright (c) 2012-2018 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+// Basing on https://mynameismjp.wordpress.com/2013/09/10/shadow-maps/ - https://github.com/TheRealMJP/Shadows
+
+
+//[-------------------------------------------------------]
+//[ Pieces                                                ]
+//[-------------------------------------------------------]
+@piece(DefineExponentialShadow)
+	float2 GetEvsmExponents(float positiveExponent, float negativeExponent, float3 cascadeScale)
+	{
+		const float MAXIMUM_EXPONENT = 42.0f;
+
+		// Make sure exponents say consistent in light space regardless of partition scaling. This prevents the exponentials from ever getting too rediculous and maintains consistency across partitions.
+		// -> Clamp to maximum range of fp32/fp16 to prevent overflow/underflow
+		float2 lightSpaceExponents = float2(positiveExponent, negativeExponent);
+		return min(lightSpaceExponents / cascadeScale.z, MAXIMUM_EXPONENT);
+	}
+
+	float2 GetEvsmExponents(float3 cascadeScale)
+	{
+		const float POSITIVE_EXPONENT = 40.0f;
+		const float NEGATIVE_EXPONENT = 8.0f;
+		return GetEvsmExponents(POSITIVE_EXPONENT, NEGATIVE_EXPONENT, cascadeScale);
+	}
+
+	// Input depth should be in [0, 1]
+	float2 WarpDepth(float depth, float2 exponents)
+	{
+		// Rescale depth into [-1, 1]
+		depth = 2.0f * depth - 1.0f;
+		float positive =  exp( exponents.x * depth);
+		float negative = -exp(-exponents.y * depth);
+		return float2(positive, negative);
+	}
+
+	float Linstep(float a, float b, float v)
+	{
+		return SATURATE((v - a) / (b - a));
+	}
+
+	float ReduceLightBleeding(float pMaximum, float amount)
+	{
+		// Remove the [0, amount] tail and linearly rescale (amount, 1]
+		return Linstep(amount, 1.0f, pMaximum);
+	}
+
+	float ChebyshevUpperBound(float2 moments, float mean, float minimumVariance)
+	{
+		const float LIGHT_BLEEDING_REDUCTION = 0.1f;
+
+		// Compute variance
+		float variance = moments.y - (moments.x * moments.x);
+		variance = max(variance, minimumVariance);
+
+		// Compute probabilistic upper bound
+		float d = mean - moments.x;
+		float pMaximum = variance / (variance + (d * d));
+
+		// Reduce light bleeding
+		pMaximum = ReduceLightBleeding(pMaximum, LIGHT_BLEEDING_REDUCTION);
+
+		// One-tailed Chebyshev
+		return (mean <= moments.x) ? 1.0f : pMaximum;
+	}
+@end

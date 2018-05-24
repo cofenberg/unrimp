@@ -1,0 +1,125 @@
+/*********************************************************\
+ * Copyright (c) 2012-2018 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+//[-------------------------------------------------------]
+//[ Definitions                                           ]
+//[-------------------------------------------------------]
+@includepiece($ProjectName/ShaderPiece/Core.asset)
+	@insertpiece(SetCrossPlatformSettings)
+
+
+//[-------------------------------------------------------]
+//[ Input / output                                        ]
+//[-------------------------------------------------------]
+// Attribute input / output
+INPUT_BEGIN
+	INPUT_TEXTURE_COORDINATE(1, float2, TexCoordVS, 0)	// Texture coordinate
+INPUT_END
+OUTPUT_BEGIN
+	OUTPUT_COLOR(0)
+OUTPUT_END
+
+// Uniform buffers
+struct PassDataStruct
+{
+	float4x4 LensStarMatrix;
+	float 	 ToneMapKeyValue;	// Used by "CalculateExposedColor()"
+	float 	 BloomIntensity;
+};
+UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
+	PassDataStruct PassData;
+UNIFORM_BUFFER_END
+
+// Textures
+TEXTURE_2D(1, 0, ColorMap, 0)
+TEXTURE_2D(1, 1, LuminanceMap, 1)
+TEXTURE_2D(1, 2, BloomMap, 2)
+TEXTURE_2D(1, 3, DirtyLensMap, 3)
+@property(UseLensFlareMap)
+	TEXTURE_2D(1, 4, LensFlareMap, 4)
+	TEXTURE_2D(1, 5, LensStarMap, 5)
+@end
+
+// Samplers
+SAMPLER_STATE(2, 0, SamplerPoint, 0)
+SAMPLER_STATE(2, 1, SamplerLinear, 1)
+
+
+//[-------------------------------------------------------]
+//[ Functions                                             ]
+//[-------------------------------------------------------]
+@includepiece($ProjectName/ShaderPiece/Color.asset)
+	@insertpiece(DefineColorToLuminance)
+	@insertpiece(DefineCalculateExposedColor)
+
+// Apply the filmic curve from John Hable's presentation
+float3 ToneMapFilmicAlu(float3 color)
+{
+	color = max(float3(0.0f, 0.0f, 0.0f), color - 0.004f);
+	color = (color * (6.2f * color + 0.5f)) / (color * (6.2f * color + 1.7f) + 0.06f);
+
+	// Result has 1 / 2.2 baked in
+	return pow(color, float3(2.2f, 2.2f, 2.2f));
+}
+
+// Apply exposure and tone mapping to the specific color, apply the threshold to the exposure value
+float3 ToneMap(float3 color, float averageLuminance, float threshold, out float exposure)
+{
+	color = CalculateExposedColor(color, averageLuminance, threshold, exposure);
+	color = ToneMapFilmicAlu(color);
+	return color;
+}
+
+
+//[-------------------------------------------------------]
+//[ Main                                                  ]
+//[-------------------------------------------------------]
+MAIN_BEGIN
+	float4 textureCoordinate = float4(MAIN_INPUT(TexCoordVS), 0.0f, 0.0f);
+	float4 color = SAMPLE_2D_LOD(ColorMap, SamplerPoint, textureCoordinate);
+	float averageLuminance = SAMPLE_2D_LOD(LuminanceMap, SamplerPoint, float4(0.5f, 0.5f, 0.0f, 0.0f)).r;
+
+	// Get dirty lens value
+	float3 dirtyLens = SAMPLE_2D_LOD(DirtyLensMap, SamplerLinear, textureCoordinate).rgb;
+
+	{ // Tone map
+		float exposure = 0.0f;
+		color.rgb = ToneMap(color.rgb, averageLuminance, 0.0f, exposure);
+	}
+
+	@property(UseLensFlareMap)
+	{
+		// Apply the lens flare with dirty lens
+		float lensFlareIntensity = 0.1f;
+		float3 lensFlare = SAMPLE_2D_LOD(LensFlareMap, SamplerLinear, textureCoordinate).rgb;
+		float2 lensStarTexcoord = (MATRIX_MUL(float3(MAIN_INPUT(TexCoordVS), 1.0f), CAST_TO(PassData.LensStarMatrix, float3x3))).xy;
+		color.rgb += lensFlare * lensFlareIntensity;
+		color.rgb += lensFlare * SAMPLE_2D_LOD(LensStarMap, SamplerLinear, float4(lensStarTexcoord, 0.0f, 0.0f)).rgb * 10.0f;
+	}
+	@end
+
+	{ // Apply the bloom with dirty lens
+		float3 bloom = SAMPLE_2D_LOD(BloomMap, SamplerLinear, textureCoordinate).rgb;
+		color.rgb += bloom * PassData.BloomIntensity + bloom * PassData.BloomIntensity * dirtyLens;
+	}
+
+	// Done, ensure we're in a 0..1 range
+	MAIN_OUTPUT_COLOR(0) = float4(SATURATE(color.rgb), color.a);
+MAIN_END

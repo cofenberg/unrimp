@@ -1,0 +1,211 @@
+/*********************************************************\
+ * Copyright (c) 2012-2018 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+//[-------------------------------------------------------]
+//[ Pieces                                                ]
+//[-------------------------------------------------------]
+// Basing on https://github.com/ashima/webgl-noise/blob/master/src/noise2D.glsl
+// Description : Array and textureless GLSL 2D simplex noise function.
+//      Author : Ian McEwan, Ashima Arts.
+//  Maintainer : stegu
+//     Lastmod : 20110822 (ijm)
+//     License : Copyright (C) 2011 Ashima Arts. All rights reserved.
+//               Distributed under the MIT License. See LICENSE file.
+//               https://github.com/ashima/webgl-noise
+//               https://github.com/stegu/webgl-noise
+@piece(DefineSimplexNoise2D)
+	float3 Mod289(float3 x)
+	{
+		return x - floor(x * (1.0f / 289.0f)) * 289.0f;
+	}
+
+	float2 Mod289(float2 x)
+	{
+		return x - floor(x * (1.0f / 289.0f)) * 289.0f;
+	}
+
+	float3 Permute(float3 x)
+	{
+		return Mod289(((x * 34.0f) + 1.0f) * x);
+	}
+
+	float SimplexNoise(float2 v)
+	{
+		const float4 C = float4(0.211324865405187f,		// (3.0 - sqrt(3.0)) / 6.0
+								0.366025403784439f,		// 0.5 * (sqrt(3.0) - 1.0)
+								-0.577350269189626f,	// -1.0 + 2.0 * C.x
+								0.024390243902439f);	// 1.0 / 41.0
+
+		// First corner
+		float2 i  = floor(v + dot(v, C.yy));
+		float2 x0 = v -   i + dot(i, C.xx);
+
+		// Other corners
+		float2 i1 = (x0.x > x0.y) ? float2(1.0f, 0.0f) : float2(0.0f, 1.0f);
+		// x0 = x0 - 0.0 + 0.0 * C.xx;
+		// x1 = x0 - i1 + 1.0 * C.xx;
+		// x2 = x0 - 1.0 + 2.0 * C.xx;
+		float4 x12 = x0.xyxy + C.xxzz;
+		x12.xy -= i1;
+
+		// Permutations
+		i = Mod289(i);	// Avoid truncation effects in permutation
+		float3 p = Permute(Permute(i.y + float3(0.0f, i1.y, 1.0f)) + i.x + float3(0.0f, i1.x, 1.0f));
+
+		float3 m = max(0.5f - float3(dot(x0, x0), dot(x12.xy, x12.xy), dot(x12.zw, x12.zw)), 0.0f);
+		m = m * m;
+		m = m * m;
+
+		// Gradients: 41 points uniformly over a line, mapped onto a diamond.
+		// The ring size 17*17 = 289 is close to a multiple of 41 (41*7 = 287)
+		float3 x = 2.0f * frac(p * C.www) - 1.0f;
+		float3 h = abs(x) - 0.5f;
+		float3 ox = floor(x + 0.5f);
+		float3 a0 = x - ox;
+
+		// Normalise gradients implicitly by scaling m
+		// Approximation of: m *= inversesqrt(a0 * a0 + h * h);
+		m *= 1.79284291400159f - 0.85373472095314f * (a0 * a0 + h * h);
+
+		// Compute final noise value at P
+		float3 g;
+		g.x  = a0.x  * x0.x  + h.x  * x0.y;
+		g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+		return 130.0f * dot(m, g);
+	}
+@end
+
+// From https://www.shadertoy.com/view/4dS3Wd found via the nice procedural dynamic noise collection https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83
+// By Morgan McGuire @morgan3d, http://graphicscodex.com
+// Reuse permitted under the BSD license.
+// All noise functions are designed for values on integer scale.
+// They are tuned to avoid visible periodicity for both positive and
+// negative coordinates within a few orders of magnitude.
+@piece(DefineMultipleOctavesNoise1D)
+	float hash1D(float n)
+	{
+		return frac(sin(n) * 1e4f);
+	}
+
+	float noise1D(float x)
+	{
+		float i = floor(x);
+		float f = frac(x);
+		float u = f * f * (3.0f - 2.0f * f);
+		return LERP(hash1D(i), hash1D(i + 1.0f), u);
+	}
+
+	float multipleOctavesNoise1D(float x)
+	{
+		float v = 0.0f;
+		float a = 0.5f;
+		float shift = 100.0f;
+		for (int i = 0; i < 5; ++i)
+		{
+			v += a * noise1D(x);
+			x = x * 2.0f + shift;
+			a *= 0.5f;
+		}
+		return v;
+	}
+@end
+@piece(DefineMultipleOctavesNoise2D)
+	float hash2D(float2 p)
+	{
+		return frac(1e4f * sin(17.0f * p.x + p.y * 0.1f) * (0.1f + abs(sin(p.y * 13.0f + p.x))));
+	}
+
+	float noise2D(float2 x)
+	{
+		float2 i = floor(x);
+		float2 f = frac(x);
+
+		// Four corners in 2D of a tile
+		float a = hash2D(i);
+		float b = hash2D(i + float2(1.0f, 0.0f));
+		float c = hash2D(i + float2(0.0f, 1.0f));
+		float d = hash2D(i + float2(1.0f, 1.0f));
+
+		// Simple 2D lerp using smoothstep envelope between the values
+		// return float3(LERP(LERP(a, b, smoothstep(0.0f, 1.0f, f.x)),
+		//			LERP(c, d, smoothstep(0.0f, 1.0f, f.x)),
+		//			smoothstep(0.0f, 1.0f, f.y)));
+
+		// Same code, with the clamps in smoothstep and common subexpressions optimized away
+		float2 u = f * f * (3.0f - 2.0f * f);
+		return LERP(a, b, u.x) + (c - a) * u.y * (1.0f - u.x) + (d - b) * u.x * u.y;
+	}
+
+	float multipleOctavesNoise2D(float2 x)
+	{
+		float v = 0.0f;
+		float a = 0.5f;
+		float2 shift = float2(100.0f, 100.0f);
+
+		// Rotate to reduce axial bias
+		float2x2 rot = float2x2(cos(0.5f), sin(0.5f), -sin(0.5f), cos(0.5f));
+		for (int i = 0; i < 5; ++i)
+		{
+			v += a * noise2D(x);
+			x = MATRIX_MUL(rot,  x * 2.0f + shift);
+			a *= 0.5f;
+		}
+		return v;
+	}
+@end
+@piece(DefineMultipleOctavesNoise3D)
+	float hash1D(float n)
+	{
+		return frac(sin(n) * 1e4f);
+	}
+
+	float noise3D(float3 x)
+	{
+		const float3 step = float3(110.0f, 241.0f, 171.0f);
+
+		float3 i = floor(x);
+		float3 f = frac(x);
+
+		// For performance, compute the base input to a 1D hash from the integer part of the argument and the
+		// incremental change to the 1D based on the 3D -> 1D wrapping
+		float n = dot(i, step);
+
+		float3 u = f * f * (3.0f - 2.0f * f);
+		float lerp1 = LERP(hash1D(n + dot(step, float3(0, 0, 0))), hash1D(n + dot(step, float3(1, 0, 0))), u.x);
+		float lerp2 = LERP(hash1D(n + dot(step, float3(0, 1, 0))), hash1D(n + dot(step, float3(1, 1, 0))), u.x);
+		float lerp3 = LERP(hash1D(n + dot(step, float3(0, 0, 1))), hash1D(n + dot(step, float3(1, 0, 1))), u.x);
+		float lerp4 = LERP(hash1D(n + dot(step, float3(0, 1, 1))), hash1D(n + dot(step, float3(1, 1, 1))), u.x);
+		return LERP(LERP(lerp1, lerp2, u.y), LERP(lerp3, lerp4, u.y), u.z);
+	}
+
+	float multipleOctavesNoise3D(float3 x)
+	{
+		float v = 0.0f;
+		float a = 0.5;
+		float3 shift = float3(100.0f, 100.0f, 100.0f);
+		for (int i = 0; i < 5; ++i)
+		{
+			v += a * noise3D(x);
+			x = x * 2.0f + shift;
+			a *= 0.5f;
+		}
+		return v;
+	}
+@end

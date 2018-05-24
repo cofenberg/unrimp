@@ -1,0 +1,28 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"AssetMetadata":
+		{
+			"AssetType": "Mesh",
+			"AssetCategory": "Object",
+			"Copyright": "'Test Object' by Yasutoshi Mori, updated version downloaded from http://graphics.cs.williams.edu/data/meshes.xml"
+		},
+		"MeshAssetCompiler":
+		{
+			"InputFile": "testObj.obj",
+			"MaterialNameToAssetId":
+			{
+				"BackGroundMat": "$ProjectName/Material/TestObject/InnerMat.asset",
+				"InnerMat": "$ProjectName/Material/TestObject/InnerMat.asset",
+				"LTELogo": "$ProjectName/Material/TestObject/LTELogo.asset",
+				"Material": "$ProjectName/Material/TestObject/OuterMat.asset",
+				"OuterMat": "$ProjectName/Material/TestObject/OuterMat.asset"
+			}
+		}
+	}
+}

@@ -1,0 +1,111 @@
+/*********************************************************\
+ * Copyright (c) 2012-2018 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+//[-------------------------------------------------------]
+//[ Pieces                                                ]
+//[-------------------------------------------------------]
+@piece(DefineOldCrtEffect)
+	float OldCrtScanline(float2 uv, float resolutionY)
+	{
+		return sin(resolutionY * uv.y * 0.7f - PassData.GlobalTimeInSeconds * 10.0f);
+	}
+
+	float OldCrtSlowScan(float2 uv, float resolutionY)
+	{
+		return sin(resolutionY * uv.y * 0.02f + PassData.GlobalTimeInSeconds * 6.0f);
+	}
+
+	float OldCrtNoise(float2 uv)
+	{
+		return clamp(SimplexNoise(uv.xy*300.0f + PassData.GlobalTimeInSeconds * 6.0f) +
+					 SimplexNoise(uv.xy*300.0f - PassData.GlobalTimeInSeconds * 4.0f), 0.94f, 1.0f);
+	}
+
+	// From https://www.shadertoy.com/view/4sf3Dr
+	float2 OldCrtDistort(float2 coord, float bend)
+	{
+		// Put in symmetrical coordinates
+		coord = (coord - 0.5f) * 2.0f;
+
+		// Deform coordinates
+		coord.x *= 1.0f + pow(abs(abs(coord.y) / bend), 2.0f);
+		coord.y *= 1.0f + pow(abs(abs(coord.x) / bend), 2.0f);
+
+		// Transform back to 0.0 - 1.0 space
+		coord  = (coord / 2.0f) + 0.5f;
+
+		return coord;
+	}
+
+	float2 OldCrtColorShift(float2 uv, float amount, float rand)
+	{
+		return float2(
+			uv.x,
+			uv.y + amount * rand // * sin(uv.y * iResolution.y * 0.12 + PassData.GlobalTimeInSeconds)
+		);
+	}
+
+	float2 OldCrtScanDistort(float2 uv)
+	{
+		@property(UpperLeftOrigin)
+			float globalTimeInSeconds = -PassData.GlobalTimeInSeconds;
+		@end
+		@property(!UpperLeftOrigin)
+			float globalTimeInSeconds = PassData.GlobalTimeInSeconds;
+		@end
+		float scan1 = clamp(cos(uv.y * 2.0f + globalTimeInSeconds), 0.0f, 1.0f);
+		float scan2 = clamp(cos(uv.y * 2.0f + globalTimeInSeconds + 4.0f) * 10.0f, 0.0f, 1.0f);
+		float amount = scan1 * scan2 * uv.x;
+		uv.x -= 0.05f * LERP(SimplexNoise(float2(uv.x, amount)) * amount, amount, 0.9f);
+		return uv;
+	}
+
+	float OldCrtVignette(float2 uv)
+	{
+		uv = (uv - 0.5f) * 0.98f;
+		float M_PI = 3.14159265358f;
+		return clamp(pow(abs(cos(uv.x * M_PI)), 1.2f) * pow(abs(cos(uv.y * M_PI)), 1.2f) * 50.0f, 0.0f, 1.0f);
+	}
+@end
+
+@piece(ApplyOldCrtEffect)
+{
+	float2 uv = MAIN_INPUT(TexCoordVS);
+	float2 sd_uv = OldCrtScanDistort(uv);
+	float crtDistortFactor = 2.6f;
+	float2 crt_uv = OldCrtDistort(sd_uv, crtDistortFactor);
+	float rand = SimplexNoise(crt_uv) * 0.5f;
+
+	// Texture chromatic distort
+	color.r = SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(OldCrtDistort(OldCrtColorShift(sd_uv, 0.025f, rand), crtDistortFactor), 0.0f, 0.0f)).r;
+	color.g = SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(OldCrtDistort(OldCrtColorShift(sd_uv, 0.01f, rand), crtDistortFactor), 0.0f, 0.0f)).g;
+	color.b = SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(OldCrtDistort(OldCrtColorShift(sd_uv, 0.024f, rand), crtDistortFactor), 0.0f, 0.0f)).b;
+
+	float resolutionY = CAST_TO(GET_TEXTURE_2D_SIZE(ColorMap, 0), float2).y;
+	float scanline_color = OldCrtScanline(crt_uv, resolutionY);
+	float slowscan_color = OldCrtSlowScan(crt_uv, resolutionY);
+
+	color.rgb = LERP(color.rgb, LERP(float3(scanline_color, scanline_color, scanline_color), float3(slowscan_color, slowscan_color, slowscan_color), 0.5f), 0.05f) * OldCrtVignette(uv) * OldCrtNoise(uv);
+
+	// There will be visible texture distortions on the borders, if this is not wanted one could add
+	// "if (any(clamp(crt_uv, float2(0.0f, 0.0f), float2(1.0f, 1.0f)) - crt_uv))" and return a black
+	// color in this situation as seen in https://github.com/thefranke/dirtchamber/blob/master/shader/pp_crt.hlsl
+}
+@end

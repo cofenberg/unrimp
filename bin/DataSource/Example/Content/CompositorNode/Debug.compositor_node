@@ -1,0 +1,56 @@
+{
+	"Format":
+	{
+		"Type": "CompositorNodeAsset",
+		"Version": "1"
+	},
+	"CompositorNodeAsset":
+	{
+		"InputChannels":
+		{
+			"0": "InputRenderTarget",
+			"1": "OutputRenderTarget"
+		},
+		"Targets":
+		{
+			"OutputRenderTarget":
+			{
+				"Clear":
+				{
+					"Flags": "COLOR | DEPTH",
+					"Color": "0.5 0.5 0.5 1.0"
+				},
+				"Scene":
+				{
+					"Description": "Render solid objects",
+					"MinimumRenderQueueIndex": "0",
+					"MaximumRenderQueueIndex": "253",
+					"MaterialTechnique": "Debug"
+				},
+				"Scene":
+				{
+					"Description": "Render terrain",
+					"MinimumRenderQueueIndex": "253",
+					"MaximumRenderQueueIndex": "253",
+					"MaterialTechnique": "Debug"
+				},
+				"Scene":
+				{
+					"Description": "Render sky",
+					"MaximumDepth": "0.0",
+					"MinimumRenderQueueIndex": "254",
+					"MaximumRenderQueueIndex": "254",
+					"MaterialTechnique": "Default"
+				},
+				"DebugGui":
+				{
+				}
+			}
+		},
+		"OutputChannels":
+		{
+			"0": "OutputRenderTarget",
+			"1": "InputRenderTarget"
+		}
+	}
+}

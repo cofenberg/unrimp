@@ -1,0 +1,11 @@
+{
+	"Format":
+	{
+		"Type": "MaterialAsset",
+		"Version": "1"
+	},
+	"MaterialAsset":
+	{
+		"BaseMaterial": "$ProjectName/Material/Base/Mesh.asset"
+	}
+}

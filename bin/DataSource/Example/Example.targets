@@ -1,0 +1,381 @@
+{
+	"Format":
+	{
+		"Type": "Targets",
+		"Version": "1"
+	},
+	"Targets":
+	{
+		"TextureChannelPackings":
+		{
+			"_argb_nxa":
+			{
+				"Sources":
+				[
+					{
+						"TextureSemantic": "ALBEDO_MAP",
+						"NumberOfChannels": 3,
+						"DefaultColor": "1.0 1.0 1.0"
+					},
+					{
+						"TextureSemantic": "NORMAL_MAP",
+						"NumberOfChannels": 3,
+						"DefaultColor": "0.5 0.5 1.0"
+					}
+				],
+				"Destinations":
+				[
+					{
+						"TextureSemantic": "ALBEDO_MAP",
+						"SourceChannel": 0
+					},
+					{
+						"TextureSemantic": "ALBEDO_MAP",
+						"SourceChannel": 1
+					},
+					{
+						"TextureSemantic": "ALBEDO_MAP",
+						"SourceChannel": 2
+					},
+					{
+						"TextureSemantic": "NORMAL_MAP",
+						"SourceChannel": 0
+					}
+				],
+				"RgbHardwareGammaCorrection": "TRUE"
+			},
+			"_hr_rg_mb_nya":
+			{
+				"Sources":
+				[
+					{
+						"TextureSemantic": "HEIGHT_MAP",
+						"NumberOfChannels": 1,
+						"DefaultColor": "0.0"
+					},
+					{
+						"TextureSemantic": "ROUGHNESS_MAP",
+						"NumberOfChannels": 1,
+						"DefaultColor": "1.0"
+					},
+					{
+						"TextureSemantic": "METALLIC_MAP",
+						"NumberOfChannels": 1,
+						"DefaultColor": "0.0"
+					},
+					{
+						"TextureSemantic": "NORMAL_MAP",
+						"NumberOfChannels": 3,
+						"DefaultColor": "0.5 0.5 1.0"
+					}
+				],
+				"Destinations":
+				[
+					{
+						"TextureSemantic": "HEIGHT_MAP",
+						"SourceChannel": 0
+					},
+					{
+						"TextureSemantic": "ROUGHNESS_MAP",
+						"SourceChannel": 0
+					},
+					{
+						"TextureSemantic": "METALLIC_MAP",
+						"SourceChannel": 0
+					},
+					{
+						"TextureSemantic": "NORMAL_MAP",
+						"SourceChannel": 1
+					}
+				],
+				"RgbHardwareGammaCorrection": "FALSE"
+			},
+			"_aor_rg_mb_nya":
+			{
+				"Sources":
+				[
+					{
+						"TextureSemantic": "AMBIENT_OCCLUSION_MAP",
+						"NumberOfChannels": 1,
+						"DefaultColor": "1.0"
+					},
+					{
+						"TextureSemantic": "ROUGHNESS_MAP",
+						"NumberOfChannels": 1,
+						"DefaultColor": "1.0"
+					},
+					{
+						"TextureSemantic": "METALLIC_MAP",
+						"NumberOfChannels": 1,
+						"DefaultColor": "0.0"
+					},
+					{
+						"TextureSemantic": "NORMAL_MAP",
+						"NumberOfChannels": 3,
+						"DefaultColor": "0.5 0.5 1.0"
+					}
+				],
+				"Destinations":
+				[
+					{
+						"TextureSemantic": "AMBIENT_OCCLUSION_MAP",
+						"SourceChannel": 0
+					},
+					{
+						"TextureSemantic": "ROUGHNESS_MAP",
+						"SourceChannel": 0
+					},
+					{
+						"TextureSemantic": "METALLIC_MAP",
+						"SourceChannel": 0
+					},
+					{
+						"TextureSemantic": "NORMAL_MAP",
+						"SourceChannel": 1
+					}
+				],
+				"RgbHardwareGammaCorrection": "FALSE"
+			},
+			"_argb_alpha":
+			{
+				"Sources":
+				[
+					{
+						"TextureSemantic": "ALBEDO_MAP",
+						"NumberOfChannels": 3,
+						"DefaultColor": "1.0 1.0 1.0"
+					},
+					{
+						"TextureSemantic": "ALPHA_MAP",
+						"NumberOfChannels": 1,
+						"DefaultColor": "1.0"
+					}
+				],
+				"Destinations":
+				[
+					{
+						"TextureSemantic": "ALBEDO_MAP",
+						"SourceChannel": 0
+					},
+					{
+						"TextureSemantic": "ALBEDO_MAP",
+						"SourceChannel": 1
+					},
+					{
+						"TextureSemantic": "ALBEDO_MAP",
+						"SourceChannel": 2
+					},
+					{
+						"TextureSemantic": "ALPHA_MAP",
+						"SourceChannel": 0
+					}
+				],
+				"RgbHardwareGammaCorrection": "TRUE"
+			}
+		},
+		"TextureTargets":
+		{
+			"PcLegacy":
+			{
+				"FileFormat": "dds",
+				"TextureSemantic":
+				{
+					"AlbedoMap":
+					{
+						"Compression": "BC1"
+					},
+					"RoughnessMap":
+					{
+						"Compression": "BC1"
+					},
+					"EmissiveMap":
+					{
+						"Compression": "BC1"
+					},
+					"NormalMap":
+					{
+						"Compression": "BC1"
+					}
+				}
+			},
+			"Pc":
+			{
+				"FileFormat": "crn",
+				"TextureSemantic":
+				{
+					"AlbedoMap":
+					{
+						"Compression": "BC1"
+					},
+					"RoughnessMap":
+					{
+						"Compression": "BC4"
+					},
+					"EmissiveMap":
+					{
+						"Compression": "BC1"
+					},
+					"NormalMap":
+					{
+						"Compression": "BC5"
+					}
+				}
+			},
+			"Mobile":
+			{
+				"FileFormat": "ktx",
+				"TextureSemantic":
+				{
+					"AlbedoMap":
+					{
+						"Compression": "ETC1"
+					},
+					"RoughnessMap":
+					{
+						"Compression": "ETC1"
+					},
+					"EmissiveMap":
+					{
+						"Compression": "ETC1"
+					},
+					"NormalMap":
+					{
+						"Compression": "ETC1"
+					}
+				}
+			}
+		},
+		"ShaderTargets":
+		{
+			"Direct3D_30":
+			{
+				"Renderer": "Direct3D",
+				"ShaderVersion": "3.0"
+			},
+			"Direct3D_40":
+			{
+				"Renderer": "Direct3D",
+				"ShaderVersion": "4.0"
+			},
+			"Direct3D_50":
+			{
+				"Renderer": "Direct3D",
+				"ShaderVersion": "5.0"
+			},
+			"OpenGL_120":
+			{
+				"RendererBackend": "OpenGL",
+				"ShaderVersion": "1.2"
+			},
+			"OpenGL_330":
+			{
+				"RendererBackend": "OpenGL",
+				"ShaderVersion": "3.30"
+			},
+			"OpenGL_440":
+			{
+				"RendererBackend": "OpenGL",
+				"ShaderVersion": "4.40"
+			},
+			"OpenGLES_100":
+			{
+				"RendererBackend": "OpenGLES3",
+				"ShaderVersion": "1.00"
+			},
+			"OpenGLES_300":
+			{
+				"RendererBackend": "OpenGLES3",
+				"ShaderVersion": "3.00"
+			}
+		},
+		"MaterialTargets":
+		{
+			"Default":
+			{
+				"TextureCompositing": "Default"
+			}
+		},
+		"MeshTargets":
+		{
+			"Default":
+			{
+				"VertexLayout": "Default"
+			}
+		},
+		"RendererTargets":
+		{
+			"Direct3D9_30":
+			{
+				"Platform": "Pc",
+				"RendererBackend": "Direct3D9",
+				"TextureTarget": "PcLegacy",
+				"ShaderTarget": "Direct3D_30",
+				"MaterialTarget": "Default",
+				"MeshTarget": "Default"
+			},
+			"Direct3D10_40":
+			{
+				"Platform": "Pc",
+				"RendererBackend": "Direct3D10",
+				"TextureTarget": "Pc",
+				"ShaderTarget": "Direct3D_40",
+				"MaterialTarget": "Default",
+				"MeshTarget": "Default"
+			},
+			"Direct3D11_50":
+			{
+				"Platform": "Pc",
+				"RendererBackend": "Direct3D11",
+				"TextureTarget": "Pc",
+				"ShaderTarget": "Direct3D_50",
+				"MaterialTarget": "Default",
+				"MeshTarget": "Default"
+			},
+			"OpenGL_120":
+			{
+				"Platform": "Pc",
+				"RendererBackend": "OpenGL",
+				"TextureTarget": "PcLegacy",
+				"ShaderTarget": "OpenGL_120",
+				"MaterialTarget": "Default",
+				"MeshTarget": "Default"
+			},
+			"OpenGL_330":
+			{
+				"Platform": "Pc",
+				"RendererBackend": "OpenGL",
+				"TextureTarget": "Pc",
+				"ShaderTarget": "OpenGL_330",
+				"MaterialTarget": "Default",
+				"MeshTarget": "Default"
+			},
+			"OpenGL_440":
+			{
+				"Platform": "Pc",
+				"RendererBackend": "OpenGL",
+				"TextureTarget": "Pc",
+				"ShaderTarget": "OpenGL_440",
+				"MaterialTarget": "Default",
+				"MeshTarget": "Default"
+			},
+			"OpenGLES2_100":
+			{
+				"Platform": "Mobile",
+				"RendererBackend": "OpenGLES2",
+				"TextureTarget": "Mobile",
+				"ShaderTarget": "OpenGLES_100",
+				"MaterialTarget": "Default",
+				"MeshTarget": "Default"
+			},
+			"OpenGLES3_300":
+			{
+				"Platform": "Mobile",
+				"RendererBackend": "OpenGLES2",
+				"TextureTarget": "Mobile",
+				"ShaderTarget": "OpenGLES_300",
+				"MaterialTarget": "Default",
+				"MeshTarget": "Default"
+			}
+		}
+	}
+}

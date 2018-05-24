@@ -1,0 +1,16 @@
+{
+	"Format":
+	{
+		"Type": "CompositorWorkspaceAsset",
+		"Version": "1"
+	},
+	"CompositorWorkspaceAsset":
+	{
+		"Nodes":
+		{
+			"$ProjectName/CompositorNode/Vr.asset":
+			{
+			}
+		}
+	}
+}

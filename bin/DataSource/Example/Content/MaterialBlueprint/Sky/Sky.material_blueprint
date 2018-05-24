@@ -1,0 +1,214 @@
+{
+	"Format":
+	{
+		"Type": "MaterialBlueprintAsset",
+		"Version": "2"
+	},
+	"MaterialBlueprintAsset":
+	{
+		"Properties":
+		{
+			"RenderQueueIndex":
+			{
+				"Usage": "STATIC",
+				"ValueType": "INTEGER",
+				"Value": "254",
+				"Description": "Render queue index [0, 255]",
+				"MinimumIntegerValue": "0",
+				"MaximumIntegerValue": "255"
+			},
+			"UseProceduralSky":
+			{
+				"Usage": "SHADER_COMBINATION",
+				"ValueType": "BOOLEAN",
+				"Value": "FALSE",
+				"Description": "Use procedural Hosek-Wilkie sky?",
+				"VisualImportance": "MANDATORY"
+			},
+			"EnvironmentCubeMap":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "Unrimp/Texture/DynamicByCode/BlackMapCube",
+				"Description": "Environment cube map, only used if no procedural sky is used"
+			},
+			"CloudsMap":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "$ProjectName/Texture/Compositor/TileableCloudPatterns.asset",
+				"Description": "Clouds map, only used if procedural sky is used"
+			},
+			"GlobalCloudsIntensity":
+			{
+				"Usage": "GLOBAL_REFERENCE_FALLBACK",
+				"ValueType": "FLOAT",
+				"Value": "1.0",
+				"MinimumValue": "0.0",
+				"MaximumValue": "1.0",
+				"StepSize": "0.01",
+				"Description": "Fallback value in case there's no clouds intensity global material property"
+			},
+			"GlobalWindSpeed":
+			{
+				"Usage": "GLOBAL_REFERENCE_FALLBACK",
+				"ValueType": "FLOAT",
+				"Value": "0.01",
+				"MinimumValue": "0.0",
+				"MaximumValue": "1.0",
+				"StepSize": "0.01",
+				"Description": "Fallback value in case there's no wind speed global material property"
+			}
+		},
+		"PipelineState":
+		{
+			"VertexAttributes": "$ProjectName/VertexAttributes/Default/Position.asset",
+			"ShaderBlueprints":
+			{
+				"VertexShaderBlueprint": "$ProjectName/ShaderBlueprint/Sky/Vertex.asset",
+				"FragmentShaderBlueprint": "$ProjectName/ShaderBlueprint/Sky/Fragment.asset"
+			},
+			"RasterizerState":
+			{
+				"CullMode": "NONE"
+			},
+			"DepthStencilState":
+			{
+				"DepthWriteMask": "ZERO",
+				"DepthFunc": "GREATER_EQUAL"
+			}
+		},
+		"ResourceGroups":
+		{
+			"0":
+			{
+				"0":
+				{
+					"BaseShaderRegisterName": "PassUniformBuffer",
+					"BaseShaderRegister": "0",
+					"ResourceType": "UNIFORM_BUFFER",
+					"BufferUsage": "PASS",
+					"NumberOfElements": "1",
+					"ElementProperties":
+					{
+						"WorldSpaceToViewSpaceMatrix":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4_4",
+							"Value": "@WORLD_SPACE_TO_VIEW_SPACE_MATRIX"
+						},
+						"PreviousWorldSpaceToViewSpaceMatrix":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4_4",
+							"Value": "@PREVIOUS_WORLD_SPACE_TO_VIEW_SPACE_MATRIX"
+						},
+						"ViewSpaceToClipSpaceMatrix":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4_4",
+							"Value": "@VIEW_SPACE_TO_CLIP_SPACE_MATRIX"
+						},
+						"HosekWilkieSkyCoefficients1":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4_4",
+							"Value": "@HOSEK_WILKIE_SKY_COEFFICIENTS_1"
+						},
+						"HosekWilkieSkyCoefficients2":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4_4",
+							"Value": "@HOSEK_WILKIE_SKY_COEFFICIENTS_2"
+						},
+						"WorldSpaceSunlightDirection":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_3",
+							"Value": "@WORLD_SPACE_SUNLIGHT_DIRECTION"
+						},
+						"GlobalTimeInSeconds":
+						{
+							"Usage": "GLOBAL_REFERENCE",
+							"ValueType": "FLOAT",
+							"Value": "@GlobalTimeInSeconds"
+						},
+						"ViewportSize":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_2",
+							"Value": "@VIEWPORT_SIZE"
+						},
+						"CloudsIntensity":
+						{
+							"Usage": "GLOBAL_REFERENCE",
+							"ValueType": "FLOAT",
+							"Value": "@GlobalCloudsIntensity"
+						},
+						"WindSpeed":
+						{
+							"Usage": "GLOBAL_REFERENCE",
+							"ValueType": "FLOAT",
+							"Value": "@GlobalWindSpeed"
+						},
+						"SunlightColor":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_3",
+							"Value": "@SUNLIGHT_COLOR"
+						}
+					}
+				}
+			},
+			"1":
+			{
+				"0":
+				{
+					"BaseShaderRegisterName": "EnvironmentCubeMap",
+					"BaseShaderRegister": "0",
+					"ShaderVisibility": "FRAGMENT",
+					"ResourceType": "TEXTURE",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@EnvironmentCubeMap",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMapCube",
+					"RgbHardwareGammaCorrection": "TRUE",
+					"SamplerStateBaseShaderRegisterName": "SamplerLinearClamp"
+				},
+				"1":
+				{
+					"BaseShaderRegisterName": "CloudsMap",
+					"BaseShaderRegister": "1",
+					"ShaderVisibility": "FRAGMENT",
+					"ResourceType": "TEXTURE",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@CloudsMap",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+					"RgbHardwareGammaCorrection": "TRUE",
+					"SamplerStateBaseShaderRegisterName": "SamplerLinearWrap"
+				}
+			},
+			"2":
+			{
+				"0":
+				{
+					"BaseShaderRegisterName": "SamplerLinearClamp",
+					"BaseShaderRegister": "0",
+					"ShaderVisibility": "FRAGMENT",
+					"ResourceType": "SAMPLER_STATE"
+				},
+				"1":
+				{
+					"BaseShaderRegisterName": "SamplerLinearWrap",
+					"BaseShaderRegister": "1",
+					"ShaderVisibility": "FRAGMENT",
+					"ResourceType": "SAMPLER_STATE",
+					"AddressU": "WRAP",
+					"AddressV": "WRAP",
+					"AddressW": "WRAP"
+				}
+			}
+		}
+	}
+}

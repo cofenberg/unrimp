@@ -1,0 +1,20 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"AssetMetadata":
+		{
+			"AssetType": "MaterialBlueprint",
+			"AssetCategory": "Compositor",
+			"Copyright": "Basing on https://mynameismjp.wordpress.com/2013/09/10/shadow-maps/ - https://github.com/TheRealMJP/Shadows"
+		},
+		"MaterialBlueprintAssetCompiler":
+		{
+			"InputFile": "DepthToExponentialVariance.material_blueprint"
+		}
+	}
+}

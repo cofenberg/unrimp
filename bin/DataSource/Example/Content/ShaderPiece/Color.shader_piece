@@ -1,0 +1,179 @@
+/*********************************************************\
+ * Copyright (c) 2012-2018 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+//[-------------------------------------------------------]
+//[ Pieces                                                ]
+//[-------------------------------------------------------]
+// Approximate luminance from a RGB value
+@piece(DefineColorToLuminance)
+	float ColorToLuminance(float3 color)
+	{
+		return max(dot(color, float3(0.299f, 0.587f, 0.114f)), 0.0001f);
+	}
+@end
+
+// Determine the color based on exposure settings
+@piece(DefineCalculateExposedColor)
+	float3 CalculateExposedColor(float3 color, float averageLuminance, float threshold, out float exposure)
+	{
+		// Use geometric mean
+		averageLuminance = clamp(averageLuminance, 0.125f, 4.0f);
+		float linearExposure = (PassData.ToneMapKeyValue / averageLuminance);
+		exposure = log2(max(linearExposure, 0.0001f));
+		exposure -= threshold;
+		return exp2(exposure) * color;
+	}
+@end
+
+// RGB color linear space to gamma space
+@piece(DefineLinearSpaceToGammaSpace3)
+	float3 LinearSpaceToGammaSpace3(float3 color)
+	{
+		return SATURATE(pow(abs(color), float3(1.0f / 2.2f, 1.0f / 2.2f, 1.0f / 2.2f)));
+	}
+@end
+
+@piece(DefineFilmGrain)
+	// The implementation is basing on https://github.com/thefranke/dirtchamber/blob/master/shader/pp_film_grain.hlsl
+	float3 ApplyFilmGrain(float3 color, float2 uv, float intensity)
+	{
+		// Calculate the grain
+		float grain = 0.0f;
+		{
+			float l = ColorToLuminance(color);
+
+			// Add noise
+			float x = uv.x * uv.y * PassData.GlobalTimeInSeconds *  1000.0f;
+			x = fmod(x, 13.0f) * fmod(x, 123.0f);
+			float dx = fmod(x, 0.01f);
+			float y = clamp(0.1f + dx * 100.0f, 0.0f, 1.0f) * intensity;
+			float r = 0.5f * intensity - y;
+
+			grain = 1.0f + r;
+		}
+
+		// Done
+		return color * grain;
+	}
+@end
+
+@piece(DefineChromaticAberrationEffect)
+	// Basing on https://github.com/spite/Wagner/blob/master/fragment-shaders/chromatic-aberration-fs.glsl
+	float2 ChromaticAberrationBarrelDistortion(float2 coord, float amt, float ditherValue)
+	{
+		float2 cc = coord - 0.5f;
+		float dist = dot(cc, cc);
+		float2 factor = cc * dist * amt;
+		return SATURATE(coord + factor + factor * ditherValue);
+	}
+
+	float ChromaticAberrationLinterp(float t)
+	{
+		return SATURATE(1.0f - abs(2.0f * t - 1.0f));
+	}
+
+	float ChromaticAberrationRemap(float t, float a, float b)
+	{
+		return SATURATE((t - a) / (b - a));
+	}
+
+	float4 ChromaticAberrationSpectrumOffset(float t)
+	{
+		float lo = step(t, 0.5f);
+		float hi = 1.0f - lo;
+		float w = ChromaticAberrationLinterp(ChromaticAberrationRemap(t, 1.0f / 6.0f, 5.0f / 6.0f));
+		float4 ret = float4(lo, 1.0f, hi, 1.0f) * float4(1.0f - w, w, 1.0f - w, 1.0f);
+		return pow(abs(ret), float4(1.0f / 2.2f, 1.0f / 2.2f, 1.0f / 2.2f, 1.0f / 2.2f));
+	}
+@end
+
+@piece(ApplyChromaticAberration)
+{
+	// Basing on https://github.com/spite/Wagner/blob/master/fragment-shaders/chromatic-aberration-fs.glsl
+
+	// Dither using a Bayer matrix to hide banding artefacts when using not enough samples
+	float ditherValue = GetBayerScreenSpaceDitherValue(CAST_TO(MAIN_INPUT(TexCoordVS) * CAST_TO(GET_TEXTURE_2D_SIZE(ColorMap, 0), float2), uint2));
+
+	// Chromatic aberration
+	float4 colorSum = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	float4 weightSum = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	float stepSize = 1.0f / float(PassData.ChromaticAberrationIterations);
+	for (int i = 0; i < PassData.ChromaticAberrationIterations; ++i)
+	{
+		float t = float(i) * stepSize;
+		float4 w = ChromaticAberrationSpectrumOffset(t);
+		weightSum += w;
+		colorSum += w * SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(ChromaticAberrationBarrelDistortion(MAIN_INPUT(TexCoordVS), 0.6f * PassData.ChromaticAberrationMaximumDistort * t, ditherValue), 0.0f, 0.0f));
+	}
+	color = colorSum / weightSum;
+}
+@end
+
+@piece(DefineScreenSpaceDither)
+	// Iestyn's RGB dither (7 asm instructions) from Portal2 X360, slightly modified for VR
+	// -> See "Iestyn's RGB dither" - https://www.shadertoy.com/view/MtBGDD
+	// -> See "Advanced VR Rendering" - http://media.steampowered.com/apps/valve/2015/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf - page 49
+	// -> "Valve's screen space dither" https://www.shadertoy.com/view/4dcSRX - shows the effect nicely
+	float3 ScreenSpaceDither(float2 screenPosition)
+	{
+		float ditherFactor = dot(float2(171.0f, 231.0f), screenPosition.xy + PassData.GlobalTimeInSeconds);
+		float3 dither = float3(ditherFactor, ditherFactor, ditherFactor);
+		dither.rgb = frac(dither.rgb / float3(103.0f, 71.0f, 97.0f)) - float3(0.5f, 0.5f, 0.5f);
+		return (dither.rgb / 255.0f) * 0.375f;
+	}
+@end
+
+@piece(DefineGetBayerScreenSpaceDitherValue)
+	// Dither value using a Bayer matrix to hide banding artefacts when using not enough samples
+	// -> Basing on http://www.alexandre-pestana.com/volumetric-lights/
+	float GetBayerScreenSpaceDitherValue(uint2 screenSpacePosition)
+	{
+		float4x4 ditherPattern;
+		ditherPattern[0] = float4(0.0f, 0.5f, 0.125f, 0.625f);
+		ditherPattern[1] = float4(0.75f, 0.22f, 0.875f, 0.375f);
+		ditherPattern[2] = float4(0.1875f, 0.6875f, 0.0625f, 0.5625f);
+		ditherPattern[3] = float4(0.9375f, 0.4375f, 0.8125f, 0.3125f);
+		return ditherPattern[screenSpacePosition.x % 4][screenSpacePosition.y % 4];
+	}
+@end
+
+// Fog
+@piece(DefineCalculateFoggedColor)
+	float3 CalculateFoggedColor(float3 viewSpacePosition, float3 color)
+	{
+		// Traditional depth fog
+		// -> Depth fog: Exponential^2 (see e.g. http://developer.download.nvidia.com/assets/gamedev/docs/Fog2.pdf?display=style-table )
+		float factor = viewSpacePosition.z * PassData.AtmosphereFogDensity;
+		factor *= factor;
+		float fogDepth = 1.0f - SATURATE(1.0f / exp(factor));
+
+		// Fog lighting direction
+		float3 viewSpaceCameraDirection = -normalize(viewSpacePosition);	// In view space, we always look along the positive z-axis
+		float fogDirection = SATURATE(dot(viewSpaceCameraDirection, -PassData.ViewSpaceSunlightDirection));
+		fogDirection = pow(fogDirection, 15.0f);
+
+		// Calculate fogged color
+		// -> See e.g. http://www.iquilezles.org/www/articles/fog/fog.htm
+		float3 ambientFogDiffuseColor = PassData.AmbientColor * PassData.DiffuseFogColor;
+		float3 sunFogDiffuseColor = PassData.SunlightColor * PassData.DiffuseFogColor;
+		float3 litFog = LERP(ambientFogDiffuseColor, ambientFogDiffuseColor + sunFogDiffuseColor, fogDirection);
+		return LERP(color, litFog, fogDepth);
+	}
+@end
