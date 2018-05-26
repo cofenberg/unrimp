@@ -148,7 +148,8 @@ if(WIN32)
 		"C4577" # 'noexcept' used with no exception handling mode specified; termination on exception is not guaranteed. Specify /EHsc
 		"C4710" # function '<x>' not inlined
 		"C4711" # function <x> selected for inline expansion
-		"C4738" # warning C4738: storing 32-bit float result in memory, possible loss of performance
+		"C4738" # storing 32-bit float result in memory, possible loss of performance
+		"C4770" # partially validated enum 'blend' used as index
 		"C4820" # '<x>' : '<y>' bytes padding added after data member '<z>'
 		"C4996" # '<x>': This function or variable may be unsafe
 		"C5045" # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified - https://blogs.msdn.microsoft.com/vcblog/2018/04/20/spectre-diagnostic-in-visual-studio-2017-version-15-7-preview-4/
@@ -172,9 +173,18 @@ if(WIN32)
 	# - "Enable Function-Level Linking"		= "Yes (/Gy)"
 	# - "Floating Point Model"				= "Fast (/fp:fast)"
 	# - "Enable Floating Point Exceptions"	= "No (/fp:except-)"
+	# - "Whole Program Optimization"		= "Yes (/GL)" with linker flag "LTCG"
+	# - "Gw" - see https://blogs.msdn.microsoft.com/vcblog/2013/09/11/introducing-gw-compiler-switch/
+	# - "Enable Large Addresses"			= "Yes (/LARGEADDRESSAWARE)"
+	# - "Enable COMDAT Folding"				= "Yes (/OPT:ICF)"
+	# - "References"						= "Yes (/OPT:REF)"
 	if(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
-		set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -Ob2 -Oi -Ot -Oy -GF -GS- -Gy -fp:fast -fp:except-")
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ob2 -Oi -Ot -Oy -GF -GS- -Gy -fp:fast -fp:except-")
+		set(CompilerFlags "-Ob2 -Oi -Ot -Oy -GF -GS- -Gy -fp:fast -fp:except- -GL /Gw")
+		set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${CompilerFlags}")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CompilerFlags}")
+		set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /LTCG")
+		set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /LARGEADDRESSAWARE /LTCG /OPT:ICF /OPT:REF")
+		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LARGEADDRESSAWARE /LTCG /OPT:ICF /OPT:REF")
 	endif()
 	if(NOT SHARED_LIBRARY)
 		# "Runtime Library" = "Multi-threaded (/MT)" or "Multi-threaded Debug (/MTd)" in debug builds (the "d" at the end won't be touched)
