@@ -247,8 +247,7 @@ Microsoft Windows: First Example Kickoff
 - Build "Windows_x64_Shared" project settings
 - Compile the runtime assets by starting "unrimp\bin\Windows_x64_Shared\ExampleProjectCompiler.exe"
 - Run "unrimp\bin\Windows_x64_Shared\Examples.exe" (is using default command line arguments "unrimp\bin\Windows_x64_Shared\Examples.exe FirstScene -r Direct3D11")
-- For debugging you need to set ["currentDir"](https://stackoverflow.com/a/42973332) of ["launch.vs.json"](https://github.com/Microsoft/vscode-cpptools/blob/master/launch.md) to e.g. "unrimp\bin\Windows_x86d_Shared"
-- To change the used renderer for debugging, add e.g. [""args": [ "FirstScene -r Direct3D11" ]"](https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studio/)) inside ["launch.vs.json"](https://github.com/Microsoft/vscode-cpptools/blob/master/launch.md)
+- Modify ["launch.vs.json"](https://github.com/Microsoft/vscode-cpptools/blob/master/launch.md) to change the Visual Studio application launch options
 
 
 Useful Microsoft Windows Developer Tools

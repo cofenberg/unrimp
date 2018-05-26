@@ -1,13 +1,19 @@
 {
   // See https://go.microsoft.com//fwlink//?linkid=834763 for more information about this file.
+  "environments": [
+    {
+      "BuildDirectory": "${workspaceRoot}\\.vs\\unrimp\\CMakeBuilds\\build",
+      "InstallDirectory": "${workspaceRoot}\\.vs\\unrimp\\CMakeBuilds\\install"
+    }
+  ],
   "configurations": [
     {
       "name": "Windows_x86d_Shared",
       "generator": "Ninja",
       "configurationType": "Debug",
       "inheritEnvironments": [ "msvc_x86" ],
-      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+      "buildRoot": "${env.BuildDirectory}\\${name}",
+      "installRoot": "${env.InstallDirectory}\\${name}",
       "cmakeCommandArgs": "-DARCHITECTURE_X86=1",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
@@ -17,8 +23,8 @@
       "generator": "Ninja",
       "configurationType": "Release",
       "inheritEnvironments": [ "msvc_x86" ],
-      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+      "buildRoot": "${env.BuildDirectory}\\${name}",
+      "installRoot": "${env.InstallDirectory}\\${name}",
       "cmakeCommandArgs": "-DARCHITECTURE_X86=1",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
@@ -28,8 +34,8 @@
       "generator": "Ninja",
       "configurationType": "Debug",
       "inheritEnvironments": [ "msvc_x64_x64" ],
-      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+      "buildRoot": "${env.BuildDirectory}\\${name}",
+      "installRoot": "${env.InstallDirectory}\\${name}",
       "cmakeCommandArgs": "-DARCHITECTURE_X64=1",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
@@ -39,8 +45,8 @@
       "generator": "Ninja",
       "configurationType": "Release",
       "inheritEnvironments": [ "msvc_x64_x64" ],
-      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+      "buildRoot": "${env.BuildDirectory}\\${name}",
+      "installRoot": "${env.InstallDirectory}\\${name}",
       "cmakeCommandArgs": "-DARCHITECTURE_X64=1",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
@@ -50,8 +56,8 @@
       "generator": "Ninja",
       "configurationType": "Debug",
       "inheritEnvironments": [ "msvc_x86" ],
-      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+      "buildRoot": "${env.BuildDirectory}\\${name}",
+      "installRoot": "${env.InstallDirectory}\\${name}",
       "cmakeCommandArgs": "-DARCHITECTURE_X86=1 -DSHARED_LIBRARY=0 -DSTATIC_LIBRARY=1",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
@@ -61,8 +67,8 @@
       "generator": "Ninja",
       "configurationType": "Release",
       "inheritEnvironments": [ "msvc_x86" ],
-      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+      "buildRoot": "${env.BuildDirectory}\\${name}",
+      "installRoot": "${env.InstallDirectory}\\${name}",
       "cmakeCommandArgs": "-DARCHITECTURE_X86=1 -DSHARED_LIBRARY=0 -DSTATIC_LIBRARY=1",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
@@ -72,8 +78,8 @@
       "generator": "Ninja",
       "configurationType": "Debug",
       "inheritEnvironments": [ "msvc_x64_x64" ],
-      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+      "buildRoot": "${env.BuildDirectory}\\${name}",
+      "installRoot": "${env.InstallDirectory}\\${name}",
       "cmakeCommandArgs": "-DARCHITECTURE_X64=1 -DSHARED_LIBRARY=0 -DSTATIC_LIBRARY=1",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
@@ -83,8 +89,8 @@
       "generator": "Ninja",
       "configurationType": "Release",
       "inheritEnvironments": [ "msvc_x64_x64" ],
-      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+      "buildRoot": "${env.BuildDirectory}\\${name}",
+      "installRoot": "${env.InstallDirectory}\\${name}",
       "cmakeCommandArgs": "-DARCHITECTURE_X64=1 -DSHARED_LIBRARY=0 -DSTATIC_LIBRARY=1",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
@@ -96,8 +102,8 @@
       "configurationType": "Debug",
       "remoteCMakeListsRoot": "/var/tmp/src/${workspaceHash}/${name}",
       "cmakeExecutable": "/usr/local/bin/cmake",
-      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+      "buildRoot": "${env.BuildDirectory}\\${name}",
+      "installRoot": "${env.InstallDirectory}\\${name}",
       "remoteBuildRoot": "/var/tmp/build/${workspaceHash}/build/${name}",
       "remoteInstallRoot": "/var/tmp/build/${workspaceHash}/install/${name}",
       "remoteCopySources": true,
@@ -117,8 +123,8 @@
       "configurationType": "Release",
       "remoteCMakeListsRoot": "/var/tmp/src/${workspaceHash}/${name}",
       "cmakeExecutable": "/usr/local/bin/cmake",
-      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+      "buildRoot": "${env.BuildDirectory}\\${name}",
+      "installRoot": "${env.InstallDirectory}\\${name}",
       "remoteBuildRoot": "/var/tmp/build/${workspaceHash}/build/${name}",
       "remoteInstallRoot": "/var/tmp/build/${workspaceHash}/install/${name}",
       "remoteCopySources": true,
