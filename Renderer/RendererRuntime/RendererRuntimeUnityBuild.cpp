@@ -20,8 +20,7 @@
 
 // Amalgamated/unity build
 #include "RendererRuntime/PrecompiledHeader.h"
-#ifndef ANDROID
-	// Not Android source codes
+#ifdef RENDERER_RUNTIME_OPENVR
 	#include "src/Vr/OpenVR/OpenVRRuntimeLinking.cpp"
 	#include "src/Vr/OpenVR/VrManagerOpenVR.cpp"
 	#include "src/Vr/OpenVR/Loader/OpenVRMeshResourceLoader.cpp"

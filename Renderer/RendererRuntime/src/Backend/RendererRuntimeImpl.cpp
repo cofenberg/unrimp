@@ -52,7 +52,9 @@
 		#include "RendererRuntime/DebugGui/Detail/DebugGuiManagerLinux.h"
 	#endif
 #endif
-#include "RendererRuntime/Vr/OpenVR/VrManagerOpenVR.h"
+#ifdef RENDERER_RUNTIME_OPENVR
+	#include "RendererRuntime/Vr/OpenVR/VrManagerOpenVR.h"
+#endif
 #include "RendererRuntime/Context.h"
 
 #include <cstring>
@@ -230,8 +232,7 @@ namespace RendererRuntime
 			#endif
 		#endif
 
-		#ifndef ANDROID
-			// TODO(sw) For now no OpenVR support under Android
+		#ifdef RENDERER_RUNTIME_OPENVR
 			mVrManager = new VrManagerOpenVR(*this);
 		#endif
 
@@ -247,7 +248,9 @@ namespace RendererRuntime
 		savePipelineStateObjectCache();
 
 		// Destroy the optional manager instances
-		delete mVrManager;
+		#ifdef RENDERER_RUNTIME_OPENVR
+			delete mVrManager;
+		#endif
 		#ifdef RENDERER_RUNTIME_IMGUI
 			delete mDebugGuiManager;
 		#endif

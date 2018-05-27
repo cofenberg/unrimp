@@ -42,7 +42,8 @@ endif()
 add_definitions(-DGLM_FORCE_RADIANS -DGLM_FORCE_LEFT_HANDED -DGLM_FORCE_DEPTH_ZERO_TO_ONE -DGLM_ENABLE_EXPERIMENTAL)
 unrimp_add_definition(RENDERER_RUNTIME_PROFILER)
 unrimp_add_definition(RENDERER_RUNTIME_IMGUI)
-if(UNIX)
+unrimp_add_definition(RENDERER_RUNTIME_OPENVR)
+if(UNIX AND RENDERER_RUNTIME_OPENVR)
 	# Needed for OpenVR
 	add_definitions(-DCOMPILER_GCC)
 endif()
@@ -53,15 +54,19 @@ endif()
 ##################################################
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../)	# The directory "Renderer/Renderer.h" resides in
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/ImGui/include/)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/ImGuizmo/include/)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/OpenVR/include/)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/crunch/inc/)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/glm/include/)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/xsimd/include/)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/lz4/include/)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/mikktspace/include/)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/utf8cpp/)
+if(RENDERER_RUNTIME_IMGUI)
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/ImGui/include/)
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/ImGuizmo/include/)
+endif()
+if(RENDERER_RUNTIME_OPENVR)
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/OpenVR/include/)
+endif()
 
 
 ##################################################
@@ -125,5 +130,7 @@ if(WIN32)
 	endif()
 	
 	# Copy OpenVR dll
-	add_custom_command(TARGET RendererRuntime COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../../External/Windows_${ARCHITECTURE}/OpenVR/bin/openvr_api.dll" ${OUTPUT_BIN_DIRECTORY})
+	if(RENDERER_RUNTIME_OPENVR)
+		add_custom_command(TARGET RendererRuntime COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../../External/Windows_${ARCHITECTURE}/OpenVR/bin/openvr_api.dll" ${OUTPUT_BIN_DIRECTORY})
+	endif()
 endif()

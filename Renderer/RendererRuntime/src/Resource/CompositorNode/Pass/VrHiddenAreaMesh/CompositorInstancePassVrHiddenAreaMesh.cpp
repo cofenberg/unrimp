@@ -27,15 +27,16 @@
 #include "RendererRuntime/Resource/CompositorNode/CompositorNodeInstance.h"
 #include "RendererRuntime/Resource/CompositorWorkspace/CompositorContextData.h"
 #include "RendererRuntime/Resource/CompositorWorkspace/CompositorWorkspaceInstance.h"
-#include "RendererRuntime/Vr/OpenVR/VrManagerOpenVR.h"
+#ifdef RENDERER_RUNTIME_OPENVR
+	#include "RendererRuntime/Vr/OpenVR/VrManagerOpenVR.h"
+#endif
 #include "RendererRuntime/IRendererRuntime.h"
 #include "RendererRuntime/Context.h"
 
 #include <Renderer/Renderer.h>
 
 
-#ifndef ANDROID
-	// TODO(sw) For now no OpenVR support under Android
+#ifdef RENDERER_RUNTIME_OPENVR
 	//[-------------------------------------------------------]
 	//[ Anonymous detail namespace                            ]
 	//[-------------------------------------------------------]
@@ -261,10 +262,9 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::ICompositorInstancePass methods ]
 	//[-------------------------------------------------------]
-	void CompositorInstancePassVrHiddenAreaMesh::onFillCommandBuffer(const Renderer::IRenderTarget&, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
+	void CompositorInstancePassVrHiddenAreaMesh::onFillCommandBuffer(const Renderer::IRenderTarget&, MAYBE_UNUSED const CompositorContextData& compositorContextData, MAYBE_UNUSED Renderer::CommandBuffer& commandBuffer)
 	{
-		#ifndef ANDROID
-			// TODO(sw) For now no OpenVR support under Android
+		#ifdef RENDERER_RUNTIME_OPENVR
 			if (nullptr != ::detail::g_MeshPtr)
 			{
 				// Begin debug event
@@ -277,6 +277,8 @@ namespace RendererRuntime
 				// End debug event
 				COMMAND_END_DEBUG_EVENT(commandBuffer)
 			}
+		#else
+			assert(false && "OpenVR support is disabled");
 		#endif
 	}
 
@@ -287,8 +289,7 @@ namespace RendererRuntime
 	CompositorInstancePassVrHiddenAreaMesh::CompositorInstancePassVrHiddenAreaMesh(const CompositorResourcePassVrHiddenAreaMesh& compositorResourcePassVrHiddenAreaMesh, const CompositorNodeInstance& compositorNodeInstance) :
 		ICompositorInstancePass(compositorResourcePassVrHiddenAreaMesh, compositorNodeInstance)
 	{
-		#ifndef ANDROID
-			// TODO(sw) For now no OpenVR support under Android
+		#ifdef RENDERER_RUNTIME_OPENVR
 			// Add reference to vertex array object (VAO) shared between all compositor instance pass VR hidden area mesh instances
 			if (nullptr == ::detail::g_MeshPtr)
 			{
@@ -309,8 +310,7 @@ namespace RendererRuntime
 
 	CompositorInstancePassVrHiddenAreaMesh::~CompositorInstancePassVrHiddenAreaMesh()
 	{
-		#ifndef ANDROID
-			// TODO(sw) For now no OpenVR support under Android
+		#ifdef RENDERER_RUNTIME_OPENVR
 			// Release reference to vertex array object (VAO) shared between all compositor instance pass VR hidden area mesh instances
 			if (nullptr != ::detail::g_MeshPtr && 1 == ::detail::g_MeshPtr->releaseReference())	// +1 for reference to global shared pointer
 			{

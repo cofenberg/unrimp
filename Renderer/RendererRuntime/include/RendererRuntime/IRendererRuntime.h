@@ -46,11 +46,9 @@ PRAGMA_WARNING_POP
 namespace RendererRuntime
 {
 	class Context;
-	class IVrManager;
 	class TimeManager;
 	class IFileManager;
 	class AssetManager;
-	class DebugGuiManager;
 	class IRendererRuntime;
 	class ResourceStreamer;
 	class IResourceManager;
@@ -70,6 +68,12 @@ namespace RendererRuntime
 	class CompositorWorkspaceResourceManager;
 	template <typename ReturnType> class ThreadPool;
 	typedef ThreadPool<void> DefaultThreadPool;
+	#ifdef RENDERER_RUNTIME_IMGUI
+		class DebugGuiManager;
+	#endif
+	#ifdef RENDERER_RUNTIME_OPENVR
+		class IVrManager;
+	#endif
 }
 
 
@@ -417,29 +421,33 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Optional                                              ]
 		//[-------------------------------------------------------]
-		/**
-		*  @brief
-		*    Return the debug GUI manager instance
-		*
-		*  @return
-		*    The debug GUI manager instance, do not release the returned instance
-		*/
-		inline DebugGuiManager& getDebugGuiManager() const
-		{
-			return *mDebugGuiManager;
-		}
+		#ifdef RENDERER_RUNTIME_IMGUI
+			/**
+			*  @brief
+			*    Return the debug GUI manager instance
+			*
+			*  @return
+			*    The debug GUI manager instance, do not release the returned instance
+			*/
+			inline DebugGuiManager& getDebugGuiManager() const
+			{
+				return *mDebugGuiManager;
+			}
+		#endif
 
-		/**
-		*  @brief
-		*    Return the VR manager instance
-		*
-		*  @return
-		*    The VR manager instance, do not release the returned instance
-		*/
-		inline IVrManager& getVrManager() const
-		{
-			return *mVrManager;
-		}
+		#ifdef RENDERER_RUNTIME_OPENVR
+			/**
+			*  @brief
+			*    Return the VR manager instance
+			*
+			*  @return
+			*    The VR manager instance, do not release the returned instance
+			*/
+			inline IVrManager& getVrManager() const
+			{
+				return *mVrManager;
+			}
+		#endif
 
 
 	//[-------------------------------------------------------]
@@ -511,10 +519,14 @@ namespace RendererRuntime
 			mCompositorNodeResourceManager(nullptr),
 			mCompositorWorkspaceResourceManager(nullptr),
 			// Misc
-			mPipelineStateCompiler(nullptr),
+			mPipelineStateCompiler(nullptr)
 			// Optional
-			mDebugGuiManager(nullptr),
-			mVrManager(nullptr)
+			#ifdef RENDERER_RUNTIME_IMGUI
+				, mDebugGuiManager(nullptr)
+			#endif
+			#ifdef RENDERER_RUNTIME_OPENVR
+				, mVrManager(nullptr)
+			#endif
 		{
 			// Nothing here
 		}
@@ -555,8 +567,12 @@ namespace RendererRuntime
 		// Misc
 		PipelineStateCompiler* mPipelineStateCompiler;
 		// Optional
-		DebugGuiManager* mDebugGuiManager;
-		IVrManager*		 mVrManager;
+		#ifdef RENDERER_RUNTIME_IMGUI
+			DebugGuiManager* mDebugGuiManager;
+		#endif
+		#ifdef RENDERER_RUNTIME_OPENVR
+			IVrManager* mVrManager;
+		#endif
 
 
 	};

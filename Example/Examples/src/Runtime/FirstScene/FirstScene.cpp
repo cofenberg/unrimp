@@ -24,20 +24,24 @@
 #include "PrecompiledHeader.h"
 #include "Runtime/FirstScene/FirstScene.h"
 #include "Runtime/FirstScene/FreeCameraController.h"
-#ifdef WIN32	// TODO(sw) openvr doesn't support non windows systems yet
+#ifdef RENDERER_RUNTIME_OPENVR
 	#include "Runtime/FirstScene/VrController.h"
+#endif
+#ifdef WIN32
 	#include "Framework/WindowsHeader.h"
 #endif
 
 #include <RendererToolkit/Public/RendererToolkit.h>
 
 #include <RendererRuntime/IRendererRuntime.h>
-#include <RendererRuntime/Vr/IVrManager.h>
 #include <RendererRuntime/Core/Math/EulerAngles.h>
 #include <RendererRuntime/Core/Time/TimeManager.h>
 #ifdef RENDERER_RUNTIME_IMGUI
 	#include <RendererRuntime/DebugGui/ImGuiLog.h>
 	#include <RendererRuntime/DebugGui/DebugGuiManager.h>
+#endif
+#ifdef RENDERER_RUNTIME_OPENVR
+	#include <RendererRuntime/Vr/IVrManager.h>
 #endif
 #include <RendererRuntime/Resource/Scene/SceneNode.h>
 #include <RendererRuntime/Resource/Scene/SceneResource.h>
@@ -193,7 +197,9 @@ void FirstScene::onInitialization()
 		// Load the material resource we're going to clone
 		rendererRuntime->getMaterialResourceManager().loadMaterialResourceByAssetId(::detail::IMROD_MATERIAL_ASSET_ID, mMaterialResourceId, this);
 
-		{ // Desktop-PC: Try to startup the VR-manager if a HMD is present
+		// Try to startup the VR-manager if a HMD is present
+		#ifdef RENDERER_RUNTIME_OPENVR
+		{
 			RendererRuntime::IVrManager& vrManager = rendererRuntime->getVrManager();
 			if (vrManager.isHmdPresent())
 			{
@@ -211,6 +217,7 @@ void FirstScene::onInitialization()
 				}
 			}
 		}
+		#endif
 
 		// When using OpenGL ES 3, switch to a compositor which is designed for mobile devices
 		// TODO(co) The Vulkan renderer backend is under construction, so debug compositor for now
@@ -427,7 +434,7 @@ void FirstScene::onLoadingStateChange(const RendererRuntime::IResource& resource
 
 			if (nullptr != mCameraSceneItem && nullptr != mCameraSceneItem->getParentSceneNode())
 			{
-				#ifdef WIN32	// TODO(sw) openvr doesn't support non windows systems yet
+				#ifdef RENDERER_RUNTIME_OPENVR
 					if (mCompositorWorkspaceInstance->getRendererRuntime().getVrManager().isRunning())
 					{
 						mController = new VrController(*mCameraSceneItem);

@@ -28,7 +28,7 @@
 #include "RendererRuntime/Resource/Texture/Loader/KtxTextureResourceLoader.h"
 #include "RendererRuntime/Resource/Texture/Loader/Lz4DdsTextureResourceLoader.h"
 #include "RendererRuntime/Resource/Detail/ResourceManagerTemplate.h"
-#ifdef WIN32	// TODO(sw) openvr doesn't support non windows systems yet
+#ifdef RENDERER_RUNTIME_OPENVR
 	#include "RendererRuntime/Vr/OpenVR/Loader/OpenVRTextureResourceLoader.h"
 #endif
 
@@ -381,7 +381,7 @@ namespace RendererRuntime
 			case KtxTextureResourceLoader::TYPE_ID:
 				return new KtxTextureResourceLoader(*this, mInternalResourceManager->getRendererRuntime());
 
-			#ifdef WIN32	// TODO(sw) openvr doesn't support non windows systems yet
+			#ifdef RENDERER_RUNTIME_OPENVR
 				case OpenVRTextureResourceLoader::TYPE_ID:
 					return new OpenVRTextureResourceLoader(*this, mInternalResourceManager->getRendererRuntime());
 			#endif

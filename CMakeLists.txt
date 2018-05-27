@@ -88,8 +88,13 @@ set(SHARED_LIBRARY "1" CACHE BOOL "'true' to build as shared library (dynamic li
 # Renderer runtime
 set(RENDERER_RUNTIME "1" CACHE BOOL "Build renderer runtime?")
 if(RENDERER_RUNTIME)
-	set(RENDERER_RUNTIME_PROFILER "1" CACHE BOOL "'true' to enable profiler support, else 'false' to reduce the binary size")
-	set(RENDERER_RUNTIME_IMGUI	  "1" CACHE BOOL "'true' to enable ImGui support, else 'false' to reduce the binary size")
+	set(RENDERER_RUNTIME_PROFILER "1" CACHE BOOL "For debugging: 'true' to enable profiler support, else 'false' to reduce the binary size")
+	set(RENDERER_RUNTIME_IMGUI	  "1" CACHE BOOL "For debugging: 'true' to enable ImGui support, else 'false' to reduce the binary size")
+
+	# TODO(sw) OpenVR doesn't support non Windows systems yet
+	if(WIN32)
+		set(RENDERER_RUNTIME_OPENVR "1" CACHE BOOL "For virtual reality: 'true' to enable OpenVR support, else 'false' to reduce the binary size")
+	endif()
 endif()
 
 # Renderer toolkit is not for Android

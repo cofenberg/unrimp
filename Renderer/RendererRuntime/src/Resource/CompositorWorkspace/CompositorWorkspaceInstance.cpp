@@ -47,7 +47,9 @@
 #include "RendererRuntime/Resource/Scene/Culling/SceneCullingManager.h"
 #include "RendererRuntime/Core/Renderer/FramebufferManager.h"
 #include "RendererRuntime/Core/Renderer/RenderTargetTextureManager.h"
-#include "RendererRuntime/Vr/IVrManager.h"
+#ifdef RENDERER_RUNTIME_OPENVR
+	#include "RendererRuntime/Vr/IVrManager.h"
+#endif
 #include "RendererRuntime/IRendererRuntime.h"
 
 #include <algorithm>
@@ -126,16 +128,18 @@ namespace RendererRuntime
 	void CompositorWorkspaceInstance::executeVr(Renderer::IRenderTarget& renderTarget, CameraSceneItem* cameraSceneItem, const LightSceneItem* lightSceneItem)
 	{
 		// Decide whether or not the VR-manager is used for rendering
-		IVrManager& vrManager = mRendererRuntime.getVrManager();
-		if (vrManager.isRunning())
-		{
-			// Update the VR-manager just before rendering
-			vrManager.updateHmdMatrixPose(cameraSceneItem);
+		#ifdef RENDERER_RUNTIME_OPENVR
+			IVrManager& vrManager = mRendererRuntime.getVrManager();
+			if (vrManager.isRunning())
+			{
+				// Update the VR-manager just before rendering
+				vrManager.updateHmdMatrixPose(cameraSceneItem);
 
-			// Execute the compositor workspace instance
-			vrManager.executeCompositorWorkspaceInstance(*this, renderTarget, cameraSceneItem, lightSceneItem);
-		}
-		else
+				// Execute the compositor workspace instance
+				vrManager.executeCompositorWorkspaceInstance(*this, renderTarget, cameraSceneItem, lightSceneItem);
+			}
+			else
+		#endif
 		{
 			// Execute the compositor workspace instance
 			execute(renderTarget, cameraSceneItem, lightSceneItem);

@@ -25,16 +25,17 @@ Renderer runtime.
 == Dependencies ==
 - GLM (header only library)
 - lz4 (directly compiled and linked in)
-- ImGui (directly compiled and linked in)
-- ImGuizmo (directly compiled and linked in)
 - MojoShader (directly compiled and linked in)
 - mikktspace (directly compiled and linked in)
-- OpenVR (header with dynamic runtime linking)
 - crunch (header only part of the library, doesn't depend on crn compression library)
+- ImGui (directly compiled and linked in)
+- ImGuizmo (directly compiled and linked in)
+- OpenVR (header with dynamic runtime linking)
 
 
 == Preprocessor Definitions ==
 - Set "RENDERER_RUNTIME_EXPORTS" as preprocessor definition when building this library as shared library
 - Set "RENDERER_RUNTIME_PROFILER" as preprocessor definition to enable profiler support
 - Set "RENDERER_RUNTIME_IMGUI" as preprocessor definition to enable ImGui support
+- Set "RENDERER_RUNTIME_OPENVR" as preprocessor definition to enable OpenVR support
 - Do also have a look into the renderer header file for renderer backend preprocessor definitions

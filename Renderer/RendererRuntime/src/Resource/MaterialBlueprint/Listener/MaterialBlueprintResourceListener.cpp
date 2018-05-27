@@ -36,7 +36,9 @@
 #include "RendererRuntime/Core/Time/TimeManager.h"
 #include "RendererRuntime/Core/Math/Transform.h"
 #include "RendererRuntime/Core/Math/Math.h"
-#include "RendererRuntime/Vr/IVrManager.h"
+#ifdef RENDERER_RUNTIME_OPENVR
+	#include "RendererRuntime/Vr/IVrManager.h"
+#endif
 #include "RendererRuntime/IRendererRuntime.h"
 
 #include <Renderer/Renderer.h>
@@ -364,33 +366,39 @@ namespace RendererRuntime
 		glm::mat4 viewSpaceToClipSpaceMatrix;
 		glm::mat4 viewSpaceToClipSpaceMatrixReversedZ;
 		glm::mat4 previousWorldSpaceToViewSpaceMatrix;
-		const IVrManager& vrManager = rendererRuntime.getVrManager();
-		const bool vrRendering = (singlePassStereoInstancing && vrManager.isRunning() && !cameraSceneItem->hasCustomWorldSpaceToViewSpaceMatrix() && !cameraSceneItem->hasCustomViewSpaceToClipSpaceMatrix());
+		#ifdef RENDERER_RUNTIME_OPENVR
+			const IVrManager& vrManager = rendererRuntime.getVrManager();
+			const bool vrRendering = (singlePassStereoInstancing && vrManager.isRunning() && !cameraSceneItem->hasCustomWorldSpaceToViewSpaceMatrix() && !cameraSceneItem->hasCustomViewSpaceToClipSpaceMatrix());
+		#else
+			static constexpr bool vrRendering = false;
+		#endif
 		const uint32_t numberOfEyes = vrRendering ? 2u : 1u;
 		for (uint32_t eyeIndex = 0; eyeIndex < numberOfEyes; ++eyeIndex)
 		{
 			if (nullptr != cameraSceneItem)
 			{
-				if (vrRendering)
-				{
-					// Virtual reality rendering
+				#ifdef RENDERER_RUNTIME_OPENVR
+					if (vrRendering)
+					{
+						// Virtual reality rendering
 
-					// Ask the virtual reality manager for the HMD transformation
-					// -> Near and far flipped due to usage of Reversed-Z (see e.g. https://developer.nvidia.com/content/depth-precision-visualized and https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/)
-					const IVrManager::VrEye vrEye = (0 == eyeIndex) ? IVrManager::VrEye::RIGHT : IVrManager::VrEye::LEFT;
-					viewSpaceToClipSpaceMatrix = vrManager.getHmdViewSpaceToClipSpaceMatrix(vrEye, mNearZ, mFarZ);
-					viewSpaceToClipSpaceMatrixReversedZ = vrManager.getHmdViewSpaceToClipSpaceMatrix(vrEye, mFarZ, mNearZ);
-					const glm::mat4& viewTranslateMatrix = glm::inverse(vrManager.getHmdEyeSpaceToHeadSpaceMatrix(vrEye)) * glm::inverse(vrManager.getHmdPoseMatrix());
+						// Ask the virtual reality manager for the HMD transformation
+						// -> Near and far flipped due to usage of Reversed-Z (see e.g. https://developer.nvidia.com/content/depth-precision-visualized and https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/)
+						const IVrManager::VrEye vrEye = (0 == eyeIndex) ? IVrManager::VrEye::RIGHT : IVrManager::VrEye::LEFT;
+						viewSpaceToClipSpaceMatrix = vrManager.getHmdViewSpaceToClipSpaceMatrix(vrEye, mNearZ, mFarZ);
+						viewSpaceToClipSpaceMatrixReversedZ = vrManager.getHmdViewSpaceToClipSpaceMatrix(vrEye, mFarZ, mNearZ);
+						const glm::mat4& viewTranslateMatrix = glm::inverse(vrManager.getHmdEyeSpaceToHeadSpaceMatrix(vrEye)) * glm::inverse(vrManager.getHmdPoseMatrix());
 
-					// Calculate the world space to view space matrix (Aka "view matrix")
-					const Transform& worldSpaceToViewSpaceTransform = cameraSceneItem->getWorldSpaceToViewSpaceTransform();
-					mPassData->worldSpaceToViewSpaceMatrix[eyeIndex] = glm::translate(glm::mat4(1.0f), worldSpaceToViewSpaceTransform.position) * glm::toMat4(worldSpaceToViewSpaceTransform.rotation);
-					mPassData->worldSpaceToViewSpaceMatrix[eyeIndex] = viewTranslateMatrix * mPassData->worldSpaceToViewSpaceMatrix[eyeIndex];
+						// Calculate the world space to view space matrix (Aka "view matrix")
+						const Transform& worldSpaceToViewSpaceTransform = cameraSceneItem->getWorldSpaceToViewSpaceTransform();
+						mPassData->worldSpaceToViewSpaceMatrix[eyeIndex] = glm::translate(glm::mat4(1.0f), worldSpaceToViewSpaceTransform.position) * glm::toMat4(worldSpaceToViewSpaceTransform.rotation);
+						mPassData->worldSpaceToViewSpaceMatrix[eyeIndex] = viewTranslateMatrix * mPassData->worldSpaceToViewSpaceMatrix[eyeIndex];
 
-					// TODO(co) Implement "previousWorldSpaceToViewSpaceMatrix"
-					previousWorldSpaceToViewSpaceMatrix = mPassData->worldSpaceToViewSpaceMatrix[eyeIndex];
-				}
-				else
+						// TODO(co) Implement "previousWorldSpaceToViewSpaceMatrix"
+						previousWorldSpaceToViewSpaceMatrix = mPassData->worldSpaceToViewSpaceMatrix[eyeIndex];
+					}
+					else
+				#endif
 				{
 					// Standard rendering using a camera scene item
 
@@ -578,6 +586,7 @@ namespace RendererRuntime
 			{
 				assert(sizeof(float) * 4 * 4 == numberOfBytes);
 				#ifdef RENDERER_RUNTIME_IMGUI
+					const ImGuiIO& imGuiIo = ImGui::GetIO();
 					const float objectSpaceToClipSpaceMatrix[4][4] =
 					{
 						{  2.0f / imGuiIo.DisplaySize.x, 0.0f,                          0.0f, 0.0f },

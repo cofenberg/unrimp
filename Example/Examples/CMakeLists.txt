@@ -56,6 +56,7 @@ if (Boost_FILESYSTEM_FOUND)
 endif()
 unrimp_add_definition(RENDERER_RUNTIME_PROFILER)
 unrimp_add_definition(RENDERER_RUNTIME_IMGUI)
+unrimp_add_definition(RENDERER_RUNTIME_OPENVR)
 
 
 ##################################################
@@ -67,11 +68,17 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../Renderer/RendererRuntime/i
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../Renderer/RendererToolkit/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/glm/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/utf8cpp)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/ImGui/include/)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/OpenVR/include/)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/PhysicsFS/include/)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/PLInput/include/)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/Remotery/)
+if(RENDERER_RUNTIME_PROFILER)
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/Remotery/)
+endif()
+if(RENDERER_RUNTIME_IMGUI)
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/ImGui/include/)
+endif()
+if(RENDERER_RUNTIME_OPENVR)
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/OpenVR/include/)
+endif()
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/${OS_ARCHITECTURE})
 
 
@@ -158,9 +165,7 @@ if(RENDERER_RUNTIME)
 		src/Advanced/InstancedCubes/CubeRendererInstancedArrays/CubeRendererInstancedArrays.cpp
 		src/Advanced/InstancedCubes/InstancedCubes.cpp
 	)
-
-	# TODO(sw) OpenVR doesn't support non Windows systems yet
-	if(WIN32)
+	if(RENDERER_RUNTIME_OPENVR)
 		set(SOURCE_CODES
 			${SOURCE_CODES}
 			src/Runtime/FirstScene/VrController.cpp
