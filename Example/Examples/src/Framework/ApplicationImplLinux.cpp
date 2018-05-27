@@ -27,8 +27,10 @@
 #include "Framework/X11Application.h"
 #include "Framework/IApplicationRendererRuntime.h"
 
-#include <RendererRuntime/IRendererRuntime.h>
-#include <RendererRuntime/DebugGui/Detail/DebugGuiManagerLinux.h>
+#ifdef RENDERER_RUNTIME_IMGUI
+	#include <RendererRuntime/IRendererRuntime.h>
+	#include <RendererRuntime/DebugGui/Detail/DebugGuiManagerLinux.h>
+#endif
 
 #include <X11/Xutil.h>
 
@@ -95,59 +97,60 @@ public:
 			}
 		}
 
-#ifndef RENDERER_NO_RUNTIME
-
-		// TODO(co) Evil cast ahead. Maybe simplify the example application framework? After all, it's just an example framework for Unrimp and nothing too generic.
-		const IApplicationRendererRuntime* applicationRendererRuntime = dynamic_cast<IApplicationRendererRuntime*>(&mApplication);
-		if (nullptr != applicationRendererRuntime)
+		#ifdef RENDERER_RUNTIME_IMGUI
 		{
-			const RendererRuntime::IRendererRuntime* rendererRuntime = applicationRendererRuntime->getRendererRuntime();
-			if (nullptr != rendererRuntime)
+			// TODO(co) Evil cast ahead. Maybe simplify the example application framework? After all, it's just an example framework for Unrimp and nothing too generic.
+			const IApplicationRendererRuntime* applicationRendererRuntime = dynamic_cast<IApplicationRendererRuntime*>(&mApplication);
+			if (nullptr != applicationRendererRuntime)
 			{
-				RendererRuntime::DebugGuiManagerLinux& debugGuiLinux = static_cast<RendererRuntime::DebugGuiManagerLinux&>(rendererRuntime->getDebugGuiManager());
-				switch(event.type)
+				const RendererRuntime::IRendererRuntime* rendererRuntime = applicationRendererRuntime->getRendererRuntime();
+				if (nullptr != rendererRuntime)
 				{
-					case ConfigureNotify:
+					RendererRuntime::DebugGuiManagerLinux& debugGuiLinux = static_cast<RendererRuntime::DebugGuiManagerLinux&>(rendererRuntime->getDebugGuiManager());
+					switch(event.type)
 					{
-						debugGuiLinux.onWindowResize(event.xconfigure.width, event.xconfigure.height);
-						break;
-					}
-					case KeyPress:
-					case KeyRelease:
-					{
-						const int buffer_size = 2;
-						char buffer[buffer_size + 1];
-						KeySym keySym;
-						int count = XLookupString(&event.xkey, buffer, buffer_size, &keySym, nullptr);
-						buffer[count] = 0;
-
-						debugGuiLinux.onKeyInput(keySym, buffer[0], event.type == KeyPress);
-						break;
-					}
-					case ButtonRelease:
-					case ButtonPress:
-					{
-						const bool isPressed = event.type == ButtonPress;
-						if (isPressed && (event.xbutton.button == 4 || event.xbutton.button == 5)) // Wheel buttons
+						case ConfigureNotify:
 						{
-							debugGuiLinux.onMouseWheelInput(event.xbutton.button == 4);
+							debugGuiLinux.onWindowResize(event.xconfigure.width, event.xconfigure.height);
+							break;
 						}
-						else
+						case KeyPress:
+						case KeyRelease:
 						{
-							debugGuiLinux.onMouseButtonInput(event.xbutton.button, isPressed);
-						}
-						break;
-					}
+							const int buffer_size = 2;
+							char buffer[buffer_size + 1];
+							KeySym keySym;
+							int count = XLookupString(&event.xkey, buffer, buffer_size, &keySym, nullptr);
+							buffer[count] = 0;
 
-					case MotionNotify:
-					{
-						debugGuiLinux.onMouseMoveInput(event.xmotion.x, event.xmotion.y);
-						break;
+							debugGuiLinux.onKeyInput(keySym, buffer[0], event.type == KeyPress);
+							break;
+						}
+						case ButtonRelease:
+						case ButtonPress:
+						{
+							const bool isPressed = (ButtonPress == event.type);
+							if (isPressed && (event.xbutton.button == 4 || event.xbutton.button == 5)) // Wheel buttons
+							{
+								debugGuiLinux.onMouseWheelInput(event.xbutton.button == 4);
+							}
+							else
+							{
+								debugGuiLinux.onMouseButtonInput(event.xbutton.button, isPressed);
+							}
+							break;
+						}
+
+						case MotionNotify:
+						{
+							debugGuiLinux.onMouseMoveInput(event.xmotion.x, event.xmotion.y);
+							break;
+						}
 					}
 				}
 			}
 		}
-#endif
+		#endif
 		return false;
 	}
 private:

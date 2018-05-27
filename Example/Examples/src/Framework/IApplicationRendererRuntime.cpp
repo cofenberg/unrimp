@@ -45,7 +45,7 @@
 #include <RendererRuntime/Core/File/FileSystemHelper.h>
 #include <RendererRuntime/Core/File/DefaultFileManager.h>
 #include <RendererRuntime/Core/File/PhysicsFSFileManager.h>
-#ifdef RENDERERRUNTIME_PROFILER
+#ifdef RENDERER_RUNTIME_PROFILER
 	#include <RendererRuntime/Core/RemoteryProfiler.h>
 #endif
 #include <RendererRuntime/Asset/AssetManager.h>
@@ -58,7 +58,7 @@
 IApplicationRendererRuntime::IApplicationRendererRuntime(const char* rendererName, ExampleBase* exampleBase) :
 	IApplicationRenderer(rendererName, exampleBase),
 	mFileManager(nullptr),
-	#ifdef RENDERERRUNTIME_PROFILER
+	#ifdef RENDERER_RUNTIME_PROFILER
 		mProfiler(nullptr),
 	#endif
 	mRendererRuntimeContext(nullptr),
@@ -120,7 +120,7 @@ void IApplicationRendererRuntime::onInitialization()
 	{
 		// Create the renderer runtime instance
 		mFileManager = new RendererRuntime::PhysicsFSFileManager(renderer->getContext().getLog(), (std_filesystem::canonical(std_filesystem::current_path()) / "..").generic_string());
-		#ifdef RENDERERRUNTIME_PROFILER
+		#ifdef RENDERER_RUNTIME_PROFILER
 			mProfiler = new RendererRuntime::RemoteryProfiler(*renderer);
 			mRendererRuntimeContext = new RendererRuntime::Context(*renderer, *mFileManager, *mProfiler);
 		#else
@@ -195,7 +195,7 @@ void IApplicationRendererRuntime::onDeinitialization()
 	mRendererRuntimeInstance = nullptr;
 	delete mRendererRuntimeContext;
 	mRendererRuntimeContext = nullptr;
-	#ifdef RENDERERRUNTIME_PROFILER
+	#ifdef RENDERER_RUNTIME_PROFILER
 		delete static_cast<RendererRuntime::RemoteryProfiler*>(mProfiler);
 	#endif
 	delete static_cast<RendererRuntime::PhysicsFSFileManager*>(mFileManager);

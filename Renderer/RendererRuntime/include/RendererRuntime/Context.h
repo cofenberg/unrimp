@@ -43,7 +43,7 @@ namespace Renderer
 namespace RendererRuntime
 {
 	class IFileManager;
-	#ifdef RENDERERRUNTIME_PROFILER
+	#ifdef RENDERER_RUNTIME_PROFILER
 		class IProfiler;
 	#endif
 }
@@ -82,7 +82,7 @@ namespace RendererRuntime
 		*  @param[in] profiler
 		*    Profiler instance to use, the profiler instance must stay valid as long as the renderer runtime instance exists
 		*/
-		#ifdef RENDERERRUNTIME_PROFILER
+		#ifdef RENDERER_RUNTIME_PROFILER
 			RENDERERRUNTIME_API_EXPORT Context(Renderer::IRenderer& renderer, IFileManager& fileManager, IProfiler& profiler);
 		#else
 			RENDERERRUNTIME_API_EXPORT Context(Renderer::IRenderer& renderer, IFileManager& fileManager);
@@ -157,7 +157,7 @@ namespace RendererRuntime
 			return mFileManager;
 		}
 
-		#ifdef RENDERERRUNTIME_PROFILER
+		#ifdef RENDERER_RUNTIME_PROFILER
 			/**
 			*  @brief
 			*    Return the used profiler instance
@@ -189,7 +189,7 @@ namespace RendererRuntime
 		Renderer::IAllocator& mAllocator;
 		Renderer::IRenderer&  mRenderer;
 		IFileManager&		  mFileManager;
-		#ifdef RENDERERRUNTIME_PROFILER
+		#ifdef RENDERER_RUNTIME_PROFILER
 			IProfiler& mProfiler;
 		#endif
 

@@ -38,7 +38,9 @@
 #include <RendererRuntime/Vr/OpenVR/VrManagerOpenVR.h>
 #include <RendererRuntime/Vr/OpenVR/IVrManagerOpenVRListener.h>
 
-#include <imgui/imgui.h>
+#ifdef RENDERER_RUNTIME_IMGUI
+	#include <imgui/imgui.h>
+#endif
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -229,21 +231,23 @@ namespace
 			virtual bool fillPassValue(uint32_t referenceValue, uint8_t* buffer, uint32_t numberOfBytes) override
 			{
 				// The GUI is placed over the second VR controller
-				if (::detail::IMGUI_OBJECT_SPACE_TO_CLIP_SPACE_MATRIX == referenceValue && mVrManagerOpenVRListener->getNumberOfVrControllers() > SECOND_CONTROLLER_INDEX)
-				{
-					assert(sizeof(float) * 4 * 4 == numberOfBytes);
-					const ImGuiIO& imGuiIo = ImGui::GetIO();
-					const glm::quat rotationOffset = RendererRuntime::EulerAngles::eulerToQuaternion(glm::vec3(glm::degrees(0.0f), glm::degrees(180.0f), 0.0f));
-					const glm::mat4 guiScaleMatrix = glm::scale(RendererRuntime::Math::MAT4_IDENTITY, glm::vec3(1.0f / imGuiIo.DisplaySize.x, 1.0f / imGuiIo.DisplaySize.y, 1.0f));
-					const glm::mat4& devicePoseMatrix = mVrManagerOpenVR->getDevicePoseMatrix(mVrManagerOpenVRListener->getVrControllerTrackedDeviceIndices(SECOND_CONTROLLER_INDEX));
-					const glm::mat4& cameraPositionMatrix = glm::translate(RendererRuntime::Math::MAT4_IDENTITY, -mVrController->getCameraSceneItem().getParentSceneNodeSafe().getGlobalTransform().position);
-					const glm::mat4 objectSpaceToClipSpaceMatrix = getPassData().worldSpaceToClipSpaceMatrixReversedZ[0] * cameraPositionMatrix * devicePoseMatrix * glm::mat4_cast(rotationOffset) * guiScaleMatrix;
-					memcpy(buffer, glm::value_ptr(objectSpaceToClipSpaceMatrix), numberOfBytes);
+				#ifdef RENDERER_RUNTIME_IMGUI
+					if (::detail::IMGUI_OBJECT_SPACE_TO_CLIP_SPACE_MATRIX == referenceValue && mVrManagerOpenVRListener->getNumberOfVrControllers() > SECOND_CONTROLLER_INDEX)
+					{
+						assert(sizeof(float) * 4 * 4 == numberOfBytes);
+						const ImGuiIO& imGuiIo = ImGui::GetIO();
+						const glm::quat rotationOffset = RendererRuntime::EulerAngles::eulerToQuaternion(glm::vec3(glm::degrees(0.0f), glm::degrees(180.0f), 0.0f));
+						const glm::mat4 guiScaleMatrix = glm::scale(RendererRuntime::Math::MAT4_IDENTITY, glm::vec3(1.0f / imGuiIo.DisplaySize.x, 1.0f / imGuiIo.DisplaySize.y, 1.0f));
+						const glm::mat4& devicePoseMatrix = mVrManagerOpenVR->getDevicePoseMatrix(mVrManagerOpenVRListener->getVrControllerTrackedDeviceIndices(SECOND_CONTROLLER_INDEX));
+						const glm::mat4& cameraPositionMatrix = glm::translate(RendererRuntime::Math::MAT4_IDENTITY, -mVrController->getCameraSceneItem().getParentSceneNodeSafe().getGlobalTransform().position);
+						const glm::mat4 objectSpaceToClipSpaceMatrix = getPassData().worldSpaceToClipSpaceMatrixReversedZ[0] * cameraPositionMatrix * devicePoseMatrix * glm::mat4_cast(rotationOffset) * guiScaleMatrix;
+						memcpy(buffer, glm::value_ptr(objectSpaceToClipSpaceMatrix), numberOfBytes);
 
-					// Value filled
-					return true;
-				}
-				else
+						// Value filled
+						return true;
+					}
+					else
+				#endif
 				{
 					// Call the base implementation
 					return RendererRuntime::MaterialBlueprintResourceListener::fillPassValue(referenceValue, buffer, numberOfBytes);

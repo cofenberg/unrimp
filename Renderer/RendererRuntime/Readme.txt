@@ -34,6 +34,7 @@ Renderer runtime.
 
 
 == Preprocessor Definitions ==
-- Set "RENDERERRUNTIME_EXPORTS" as preprocessor definition when building this library as shared library
-- Set "RENDERERRUNTIME_PROFILER" as preprocessor definition to enable profiler support
+- Set "RENDERER_RUNTIME_EXPORTS" as preprocessor definition when building this library as shared library
+- Set "RENDERER_RUNTIME_PROFILER" as preprocessor definition to enable profiler support
+- Set "RENDERER_RUNTIME_IMGUI" as preprocessor definition to enable ImGui support
 - Do also have a look into the renderer header file for renderer backend preprocessor definitions

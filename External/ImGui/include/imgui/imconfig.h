@@ -18,7 +18,7 @@
 
 //---- Define attributes of all API symbols declarations, e.g. for DLL under Windows.
 #ifdef SHARED_LIBRARIES
-	#ifdef RENDERERRUNTIME_EXPORTS
+	#ifdef RENDERER_RUNTIME_EXPORTS
 		#define IMGUI_API GENERIC_API_EXPORT
 	#else
 		#define IMGUI_API GENERIC_API_IMPORT

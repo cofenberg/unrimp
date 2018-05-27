@@ -22,8 +22,8 @@
 //[ Header guard                                          ]
 //[-------------------------------------------------------]
 #pragma once
-#ifndef RENDERERRUNTIME_PROFILER
-	#error "Do only include this header if the RENDERERRUNTIME_PROFILER preprocessor definition is set"
+#ifndef RENDERER_RUNTIME_PROFILER
+	#error "Do only include this header if the RENDERER_RUNTIME_PROFILER preprocessor definition is set"
 #endif
 
 

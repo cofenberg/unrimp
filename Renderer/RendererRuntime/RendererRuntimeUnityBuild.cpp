@@ -27,13 +27,7 @@
 	#include "src/Vr/OpenVR/Loader/OpenVRMeshResourceLoader.cpp"
 	#include "src/Vr/OpenVR/Loader/OpenVRTextureResourceLoader.cpp"
 #endif
-#ifdef UNIX
-	// Unix source codes
-	#include "src/DebugGui/Detail/DebugGuiManagerLinux.cpp"
-#endif
 #ifdef WIN32
-	// Windows source codes
-	#include "src/DebugGui/Detail/DebugGuiManagerWindows.cpp"
 	#include "src/PrecompiledHeader.cpp"
 #endif
 #include "src/Context.cpp"
@@ -55,8 +49,15 @@
 #include "src/Core/Renderer/RenderTargetTextureSignature.cpp"
 #include "src/Core/Time/Stopwatch.cpp"
 #include "src/Core/Time/TimeManager.cpp"
-#include "src/DebugGui/DebugGuiHelper.cpp"
-#include "src/DebugGui/DebugGuiManager.cpp"
+#ifdef RENDERER_RUNTIME_IMGUI
+	#include "src/DebugGui/DebugGuiHelper.cpp"
+	#include "src/DebugGui/DebugGuiManager.cpp"
+	#ifdef WIN32
+		#include "src/DebugGui/Detail/DebugGuiManagerWindows.cpp"
+	#elif UNIX
+		#include "src/DebugGui/Detail/DebugGuiManagerLinux.cpp"
+	#endif
+#endif
 #include "src/RenderQueue/Renderable.cpp"
 #include "src/RenderQueue/RenderableManager.cpp"
 #include "src/RenderQueue/RenderQueue.cpp"

@@ -87,6 +87,10 @@ set(SHARED_LIBRARY "1" CACHE BOOL "'true' to build as shared library (dynamic li
 
 # Renderer runtime
 set(RENDERER_RUNTIME "1" CACHE BOOL "Build renderer runtime?")
+if(RENDERER_RUNTIME)
+	set(RENDERER_RUNTIME_PROFILER "1" CACHE BOOL "'true' to enable profiler support, else 'false' to reduce the binary size")
+	set(RENDERER_RUNTIME_IMGUI	  "1" CACHE BOOL "'true' to enable ImGui support, else 'false' to reduce the binary size")
+endif()
 
 # Renderer toolkit is not for Android
 if(NOT ANDROID)
@@ -124,6 +128,17 @@ macro(unrimp_replace_cmake_cxx_flags from to)
 	foreach(CompilerFlag ${CompilerFlags})
 		string(REPLACE "${from}" "${to}" ${CompilerFlag} "${${CompilerFlag}}")
 	endforeach()
+endmacro()
+
+##################################################
+## MACRO: "unrimp_add_definition()" for setting a conditional preprocessor definition
+#
+# Usage example: "unrimp_add_definition(RENDERER_RUNTIME_PROFILER)"
+##################################################
+macro(unrimp_add_definition definition)
+	if(${definition})
+		add_definitions(-D${definition})
+	endif()
 endmacro()
 
 

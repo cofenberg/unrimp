@@ -58,7 +58,7 @@
 // utils
 #include "src/crn_checksum.cpp"
 
-#ifdef RENDERERTOOLKIT_EXPORTS
+#ifdef RENDERER_TOOLKIT_EXPORTS
 	#undef CRND_HEADER_FILE_ONLY
 	#include "inc/crn_decomp.h"
 #endif

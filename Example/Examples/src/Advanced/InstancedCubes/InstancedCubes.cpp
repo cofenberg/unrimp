@@ -28,9 +28,11 @@
 #include "Framework/IApplication.h"
 #include "Framework/Color4.h"
 
-#include <RendererRuntime/IRendererRuntime.h>
-#include <RendererRuntime/DebugGui/DebugGuiManager.h>
-#include <RendererRuntime/DebugGui/DebugGuiHelper.h>
+#ifdef RENDERER_RUNTIME_IMGUI
+	#include <RendererRuntime/IRendererRuntime.h>
+	#include <RendererRuntime/DebugGui/DebugGuiManager.h>
+	#include <RendererRuntime/DebugGui/DebugGuiHelper.h>
+#endif
 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -221,40 +223,42 @@ void InstancedCubes::onDraw()
 		}
 
 		// Display statistics
-		if (mDisplayStatistics)
-		{
-			RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
-			if (nullptr != rendererRuntime && nullptr != getMainRenderTarget())
+		#ifdef RENDERER_RUNTIME_IMGUI
+			if (mDisplayStatistics)
 			{
-				RendererRuntime::DebugGuiManager& debugGuiManager = rendererRuntime->getDebugGuiManager();
-				debugGuiManager.newFrame(*getMainRenderTarget());
-
-				// Is there a cube renderer instance?
-				if (nullptr != mCubeRenderer)
+				RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
+				if (nullptr != rendererRuntime && nullptr != getMainRenderTarget())
 				{
-					char text[128];
+					RendererRuntime::DebugGuiManager& debugGuiManager = rendererRuntime->getDebugGuiManager();
+					debugGuiManager.newFrame(*getMainRenderTarget());
 
-					// Number of cubes
-					snprintf(text, glm::countof(text), "Number of cubes: %d", mNumberOfCubeInstances);
-					RendererRuntime::DebugGuiHelper::drawText(text, 10.0f, 10.0f);
+					// Is there a cube renderer instance?
+					if (nullptr != mCubeRenderer)
+					{
+						char text[128];
 
-					// Frames per second
-					snprintf(text, glm::countof(text), "Frames per second: %.2f", mFramesPerSecond);
-					RendererRuntime::DebugGuiHelper::drawText(text, 10.0f, 40.0f);
+						// Number of cubes
+						snprintf(text, glm::countof(text), "Number of cubes: %d", mNumberOfCubeInstances);
+						RendererRuntime::DebugGuiHelper::drawText(text, 10.0f, 10.0f);
 
-					// Cubes per second
-					// -> In every frame we draw n-cubes...
-					// -> TODO(co) This number can get huge... had over 1 million cubes with >25 FPS... million cubes at ~2.4 FPS...
-					snprintf(text, glm::countof(text), "Cubes per second: %u", static_cast<uint32_t>(mFramesPerSecond) * mNumberOfCubeInstances);
-					RendererRuntime::DebugGuiHelper::drawText(text, 10.0f, 70.0f);
+						// Frames per second
+						snprintf(text, glm::countof(text), "Frames per second: %.2f", mFramesPerSecond);
+						RendererRuntime::DebugGuiHelper::drawText(text, 10.0f, 40.0f);
+
+						// Cubes per second
+						// -> In every frame we draw n-cubes...
+						// -> TODO(co) This number can get huge... had over 1 million cubes with >25 FPS... million cubes at ~2.4 FPS...
+						snprintf(text, glm::countof(text), "Cubes per second: %u", static_cast<uint32_t>(mFramesPerSecond) * mNumberOfCubeInstances);
+						RendererRuntime::DebugGuiHelper::drawText(text, 10.0f, 70.0f);
+					}
+					else
+					{
+						RendererRuntime::DebugGuiHelper::drawText("No cube renderer instance", 10.0f, 10.0f);
+					}
+					debugGuiManager.fillCommandBufferUsingFixedBuildInRendererConfiguration(mCommandBuffer);
 				}
-				else
-				{
-					RendererRuntime::DebugGuiHelper::drawText("No cube renderer instance", 10.0f, 10.0f);
-				}
-				debugGuiManager.fillCommandBufferUsingFixedBuildInRendererConfiguration(mCommandBuffer);
 			}
-		}
+		#endif
 
 		// Submit command buffer to the renderer backend
 		mCommandBuffer.submitToRendererAndClear(*renderer);

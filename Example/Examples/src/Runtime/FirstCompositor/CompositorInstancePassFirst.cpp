@@ -37,8 +37,10 @@
 #include "Runtime/FirstCompositor/CompositorResourcePassFirst.h"
 
 #include <RendererRuntime/IRendererRuntime.h>
-#include <RendererRuntime/DebugGui/DebugGuiManager.h>
-#include <RendererRuntime/DebugGui/DebugGuiHelper.h>
+#ifdef RENDERER_RUNTIME_IMGUI
+	#include <RendererRuntime/DebugGui/DebugGuiManager.h>
+	#include <RendererRuntime/DebugGui/DebugGuiHelper.h>
+#endif
 #include <RendererRuntime/Resource/CompositorNode/CompositorNodeInstance.h>
 #include <RendererRuntime/Resource/CompositorWorkspace/CompositorWorkspaceInstance.h>
 
@@ -46,14 +48,18 @@
 //[-------------------------------------------------------]
 //[ Protected virtual RendererRuntime::ICompositorInstancePass methods ]
 //[-------------------------------------------------------]
-void CompositorInstancePassFirst::onFillCommandBuffer(const Renderer::IRenderTarget&, const RendererRuntime::CompositorContextData&, Renderer::CommandBuffer& commandBuffer)
+void CompositorInstancePassFirst::onFillCommandBuffer(const Renderer::IRenderTarget&, const RendererRuntime::CompositorContextData&, MAYBE_UNUSED Renderer::CommandBuffer& commandBuffer)
 {
 	// Well right now I'm not that creative and the purpose of this example is to show how to add custom compositor passes, so, draw a simple text
-	const RendererRuntime::CompositorWorkspaceInstance& compositorWorkspaceInstance = getCompositorNodeInstance().getCompositorWorkspaceInstance();
-	RendererRuntime::DebugGuiManager& debugGuiManager = compositorWorkspaceInstance.getRendererRuntime().getDebugGuiManager();
-	debugGuiManager.newFrame(*compositorWorkspaceInstance.getExecutionRenderTarget());	// We know that the render target must be valid if we're in here
-	RendererRuntime::DebugGuiHelper::drawText("42", 100.0f, 100.0f);
-	debugGuiManager.fillCommandBufferUsingFixedBuildInRendererConfiguration(commandBuffer);
+	#ifdef RENDERER_RUNTIME_IMGUI
+		const RendererRuntime::CompositorWorkspaceInstance& compositorWorkspaceInstance = getCompositorNodeInstance().getCompositorWorkspaceInstance();
+		RendererRuntime::DebugGuiManager& debugGuiManager = compositorWorkspaceInstance.getRendererRuntime().getDebugGuiManager();
+		debugGuiManager.newFrame(*compositorWorkspaceInstance.getExecutionRenderTarget());	// We know that the render target must be valid if we're in here
+		RendererRuntime::DebugGuiHelper::drawText("42", 100.0f, 100.0f);
+		debugGuiManager.fillCommandBufferUsingFixedBuildInRendererConfiguration(commandBuffer);
+	#else
+		assert(false && "ImGui support is disabled");
+	#endif
 }
 
 

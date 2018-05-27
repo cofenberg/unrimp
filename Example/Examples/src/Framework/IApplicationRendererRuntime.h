@@ -39,7 +39,7 @@ namespace RendererRuntime
 	class IFileManager;
 	class IRendererRuntime;
 	class RendererRuntimeInstance;
-	#ifdef RENDERERRUNTIME_PROFILER
+	#ifdef RENDERER_RUNTIME_PROFILER
 		class IProfiler;
 	#endif
 }
@@ -166,7 +166,7 @@ private:
 //[-------------------------------------------------------]
 private:
 	RendererRuntime::IFileManager*			  mFileManager;				///< File manager instance, can be a null pointer
-	#ifdef RENDERERRUNTIME_PROFILER
+	#ifdef RENDERER_RUNTIME_PROFILER
 		RendererRuntime::IProfiler*			  mProfiler;				///< Profiler instance, can be a null pointer
 	#endif
 	RendererRuntime::Context*				  mRendererRuntimeContext;	///< Renderer runtime context instance, can be a null pointer

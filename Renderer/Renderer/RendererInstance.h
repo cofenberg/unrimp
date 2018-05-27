@@ -66,6 +66,10 @@
 		#define NOMCX
 		#define NOCRYPT
 		#include <windows.h>
+
+		// Get rid of some nasty OS macros
+		#undef min
+		#undef max
 	#elif defined LINUX
 		// Nothing here
 	#else

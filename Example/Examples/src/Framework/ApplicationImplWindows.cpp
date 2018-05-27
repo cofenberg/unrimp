@@ -26,8 +26,10 @@
 #include "Framework/IApplication.h"
 #include "Framework/IApplicationRendererRuntime.h"
 
-#include <RendererRuntime/IRendererRuntime.h>
-#include <RendererRuntime/DebugGui/Detail/DebugGuiManagerWindows.h>
+#ifdef RENDERER_RUNTIME_IMGUI
+	#include <RendererRuntime/IRendererRuntime.h>
+	#include <RendererRuntime/DebugGui/Detail/DebugGuiManagerWindows.h>
+#endif
 
 
 //[-------------------------------------------------------]
@@ -258,19 +260,21 @@ LRESULT CALLBACK ApplicationImplWindows::wndProc(HWND hWnd, UINT message, WPARAM
 	}
 
 	// Call the MS Windows callback of the debug GUI
-	if (nullptr != applicationImplWindows)
-	{
-		// TODO(co) Evil cast ahead. Maybe simplify the example application framework? After all, it's just an example framework for Unrimp and nothing too generic.
-		const IApplicationRendererRuntime* applicationRendererRuntime = dynamic_cast<IApplicationRendererRuntime*>(&applicationImplWindows->getApplication());
-		if (nullptr != applicationRendererRuntime)
+	#ifdef RENDERER_RUNTIME_IMGUI
+		if (nullptr != applicationImplWindows)
 		{
-			const RendererRuntime::IRendererRuntime* rendererRuntime = applicationRendererRuntime->getRendererRuntime();
-			if (nullptr != rendererRuntime)
+			// TODO(co) Evil cast ahead. Maybe simplify the example application framework? After all, it's just an example framework for Unrimp and nothing too generic.
+			const IApplicationRendererRuntime* applicationRendererRuntime = dynamic_cast<IApplicationRendererRuntime*>(&applicationImplWindows->getApplication());
+			if (nullptr != applicationRendererRuntime)
 			{
-				static_cast<RendererRuntime::DebugGuiManagerWindows&>(rendererRuntime->getDebugGuiManager()).wndProc(hWnd, message, wParam, lParam);
+				const RendererRuntime::IRendererRuntime* rendererRuntime = applicationRendererRuntime->getRendererRuntime();
+				if (nullptr != rendererRuntime)
+				{
+					static_cast<RendererRuntime::DebugGuiManagerWindows&>(rendererRuntime->getDebugGuiManager()).wndProc(hWnd, message, wParam, lParam);
+				}
 			}
 		}
-	}
+	#endif
 
 	// Evaluate message
 	switch (message)

@@ -41,7 +41,9 @@
 
 #include <Renderer/Renderer.h>
 
-#include <imgui/imgui.h>
+#ifdef RENDERER_RUNTIME_IMGUI
+	#include <imgui/imgui.h>
+#endif
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -575,14 +577,23 @@ namespace RendererRuntime
 			case ::detail::IMGUI_OBJECT_SPACE_TO_CLIP_SPACE_MATRIX:
 			{
 				assert(sizeof(float) * 4 * 4 == numberOfBytes);
-				const ImGuiIO& imGuiIo = ImGui::GetIO();
-				const float objectSpaceToClipSpaceMatrix[4][4] =
-				{
-					{  2.0f / imGuiIo.DisplaySize.x, 0.0f,                          0.0f, 0.0f },
-					{  0.0f,                         2.0f / -imGuiIo.DisplaySize.y, 0.0f, 0.0f },
-					{  0.0f,                         0.0f,                          0.5f, 0.0f },
-					{ -1.0f,                         1.0f,                          0.5f, 1.0f }
-				};
+				#ifdef RENDERER_RUNTIME_IMGUI
+					const float objectSpaceToClipSpaceMatrix[4][4] =
+					{
+						{  2.0f / imGuiIo.DisplaySize.x, 0.0f,                          0.0f, 0.0f },
+						{  0.0f,                         2.0f / -imGuiIo.DisplaySize.y, 0.0f, 0.0f },
+						{  0.0f,                         0.0f,                          0.5f, 0.0f },
+						{ -1.0f,                         1.0f,                          0.5f, 1.0f }
+					};
+				#else
+					static constexpr float objectSpaceToClipSpaceMatrix[4][4] =
+					{
+						{ 1.0f, 0.0f, 0.0f, 0.0f },
+						{ 0.0f, 1.0f, 0.0f, 0.0f },
+						{ 0.0f, 0.0f, 1.0f, 0.0f },
+						{ 0.0f, 0.0f, 0.0f, 1.0f }
+					};
+				#endif
 				memcpy(buffer, objectSpaceToClipSpaceMatrix, numberOfBytes);
 				break;
 			}

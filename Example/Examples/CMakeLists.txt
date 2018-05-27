@@ -54,6 +54,8 @@ endif()
 if (Boost_FILESYSTEM_FOUND)
 	add_definitions(-DUNRIMP_USE_BOOST_FILESYSTEM)
 endif()
+unrimp_add_definition(RENDERER_RUNTIME_PROFILER)
+unrimp_add_definition(RENDERER_RUNTIME_IMGUI)
 
 
 ##################################################

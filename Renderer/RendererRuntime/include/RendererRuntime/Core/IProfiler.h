@@ -24,7 +24,7 @@
 #pragma once
 
 
-#ifdef RENDERERRUNTIME_PROFILER
+#ifdef RENDERER_RUNTIME_PROFILER
 
 
 	//[-------------------------------------------------------]

@@ -37,7 +37,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
-	#ifdef RENDERERRUNTIME_PROFILER
+	#ifdef RENDERER_RUNTIME_PROFILER
 		Context::Context(Renderer::IRenderer& renderer, IFileManager& fileManager, IProfiler& profiler) :
 	#else
 		Context::Context(Renderer::IRenderer& renderer, IFileManager& fileManager) :
@@ -47,7 +47,7 @@ namespace RendererRuntime
 		mAllocator(renderer.getContext().getAllocator()),
 		mRenderer(renderer),
 		mFileManager(fileManager)
-		#ifdef RENDERERRUNTIME_PROFILER
+		#ifdef RENDERER_RUNTIME_PROFILER
 			, mProfiler(profiler)
 		#endif
 	{

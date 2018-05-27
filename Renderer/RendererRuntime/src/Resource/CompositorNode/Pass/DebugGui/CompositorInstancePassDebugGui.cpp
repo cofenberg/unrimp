@@ -41,42 +41,46 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::ICompositorInstancePass methods ]
 	//[-------------------------------------------------------]
-	void CompositorInstancePassDebugGui::onFillCommandBuffer(const Renderer::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
+	void CompositorInstancePassDebugGui::onFillCommandBuffer(MAYBE_UNUSED const Renderer::IRenderTarget& renderTarget, MAYBE_UNUSED const CompositorContextData& compositorContextData, MAYBE_UNUSED Renderer::CommandBuffer& commandBuffer)
 	{
-		// Begin debug event
-		COMMAND_BEGIN_DEBUG_EVENT_FUNCTION(commandBuffer)
+		#ifdef RENDERER_RUNTIME_IMGUI
+			// Begin debug event
+			COMMAND_BEGIN_DEBUG_EVENT_FUNCTION(commandBuffer)
 
-		// Fill command buffer
-		DebugGuiManager& debugGuiManager = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getDebugGuiManager();
-		RenderableManager::Renderables& renderables = mRenderableManager.getRenderables();
-		if (renderables.empty())
-		{
-			// Fill command buffer using fixed build in renderer configuration resources
-			compositorContextData.resetCurrentlyBoundMaterialBlueprintResource();
-			debugGuiManager.fillCommandBufferUsingFixedBuildInRendererConfiguration(commandBuffer);
-		}
-		else
-		{
-			// Fill command buffer, this sets the material resource blueprint
+			// Fill command buffer
+			DebugGuiManager& debugGuiManager = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getDebugGuiManager();
+			RenderableManager::Renderables& renderables = mRenderableManager.getRenderables();
+			if (renderables.empty())
 			{
-				Renderer::IVertexArrayPtr vertexArrayPtr = debugGuiManager.getFillVertexArrayPtr();
-				if (vertexArrayPtr != renderables[0].getVertexArrayPtr())
+				// Fill command buffer using fixed build in renderer configuration resources
+				compositorContextData.resetCurrentlyBoundMaterialBlueprintResource();
+				debugGuiManager.fillCommandBufferUsingFixedBuildInRendererConfiguration(commandBuffer);
+			}
+			else
+			{
+				// Fill command buffer, this sets the material resource blueprint
 				{
-					renderables[0].setVertexArrayPtr(vertexArrayPtr);
+					Renderer::IVertexArrayPtr vertexArrayPtr = debugGuiManager.getFillVertexArrayPtr();
+					if (vertexArrayPtr != renderables[0].getVertexArrayPtr())
+					{
+						renderables[0].setVertexArrayPtr(vertexArrayPtr);
+					}
 				}
-			}
-			mRenderQueue.addRenderablesFromRenderableManager(mRenderableManager);
-			if (mRenderQueue.getNumberOfDrawCalls() > 0)
-			{
-				mRenderQueue.fillCommandBuffer(renderTarget, static_cast<const CompositorResourcePassDebugGui&>(getCompositorResourcePass()).getMaterialTechniqueId(), compositorContextData, commandBuffer);
+				mRenderQueue.addRenderablesFromRenderableManager(mRenderableManager);
+				if (mRenderQueue.getNumberOfDrawCalls() > 0)
+				{
+					mRenderQueue.fillCommandBuffer(renderTarget, static_cast<const CompositorResourcePassDebugGui&>(getCompositorResourcePass()).getMaterialTechniqueId(), compositorContextData, commandBuffer);
+				}
+
+				// Fill command buffer using custom material blueprint resource
+				debugGuiManager.fillCommandBuffer(commandBuffer);
 			}
 
-			// Fill command buffer using custom material blueprint resource
-			debugGuiManager.fillCommandBuffer(commandBuffer);
-		}
-
-		// End debug event
-		COMMAND_END_DEBUG_EVENT(commandBuffer)
+			// End debug event
+			COMMAND_END_DEBUG_EVENT(commandBuffer)
+		#else
+			assert(false && "ImGui support is disabled");
+		#endif
 	}
 
 

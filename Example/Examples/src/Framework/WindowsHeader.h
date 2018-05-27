@@ -69,4 +69,5 @@ __pragma(warning(push))
 __pragma(warning(pop))
 
 // Get rid of some nasty OS macros
+#undef min
 #undef max

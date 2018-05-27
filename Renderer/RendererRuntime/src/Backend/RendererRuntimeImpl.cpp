@@ -45,10 +45,12 @@
 #include "RendererRuntime/Resource/SkeletonAnimation/SkeletonAnimationResourceManager.h"
 #include "RendererRuntime/Resource/CompositorNode/CompositorNodeResourceManager.h"
 #include "RendererRuntime/Resource/CompositorWorkspace/CompositorWorkspaceResourceManager.h"
-#ifdef WIN32
-	#include "RendererRuntime/DebugGui/Detail/DebugGuiManagerWindows.h"
-#elif LINUX
-	#include "RendererRuntime/DebugGui/Detail/DebugGuiManagerLinux.h"
+#ifdef RENDERER_RUNTIME_IMGUI
+	#ifdef WIN32
+		#include "RendererRuntime/DebugGui/Detail/DebugGuiManagerWindows.h"
+	#elif LINUX
+		#include "RendererRuntime/DebugGui/Detail/DebugGuiManagerLinux.h"
+	#endif
 #endif
 #include "RendererRuntime/Vr/OpenVR/VrManagerOpenVR.h"
 #include "RendererRuntime/Context.h"
@@ -149,7 +151,9 @@ namespace RendererRuntime
 		TextureResourceManager::getDefaultTextureAssetIds(assetIds);
 		MaterialBlueprintResourceListener::getDefaultTextureAssetIds(assetIds);
 		LightBufferManager::getDefaultTextureAssetIds(assetIds);
-		DebugGuiManager::getDefaultTextureAssetIds(assetIds);
+		#ifdef RENDERER_RUNTIME_IMGUI
+			DebugGuiManager::getDefaultTextureAssetIds(assetIds);
+		#endif
 	}
 
 
@@ -211,17 +215,19 @@ namespace RendererRuntime
 		mPipelineStateCompiler = new PipelineStateCompiler(*this);
 
 		// Create the optional manager instances
-		#ifdef WIN32
-			mDebugGuiManager = new DebugGuiManagerWindows(*this);
-		#elif LINUX
-			mDebugGuiManager = new DebugGuiManagerLinux(*this);
-			// TODO(sw) Implement an Linux manager for this (or we use generally SDL?)
-			// TODO(co) No SDL inside the renderer runtime, it's beyond it's scope. It would be valid to define an abstract
-			//          minimalistic input interface which e.g. in concrete applications using renderer runtime use SDL. On
-			//          the other hand, this would be overkill for the super minimalistic debug GUI. Would prefer a self contained
-			//          solution to not have to many external dependencies making it harder to use renderer runtime in projects.
-		#else
-			#error "Unsupported platform"
+		#ifdef RENDERER_RUNTIME_IMGUI
+			#ifdef WIN32
+				mDebugGuiManager = new DebugGuiManagerWindows(*this);
+			#elif LINUX
+				mDebugGuiManager = new DebugGuiManagerLinux(*this);
+				// TODO(sw) Implement an Linux manager for this (or we use generally SDL?)
+				// TODO(co) No SDL inside the renderer runtime, it's beyond it's scope. It would be valid to define an abstract
+				//          minimalistic input interface which e.g. in concrete applications using renderer runtime use SDL. On
+				//          the other hand, this would be overkill for the super minimalistic debug GUI. Would prefer a self contained
+				//          solution to not have to many external dependencies making it harder to use renderer runtime in projects.
+			#else
+				#error "Unsupported platform"
+			#endif
 		#endif
 
 		#ifndef ANDROID
@@ -242,9 +248,11 @@ namespace RendererRuntime
 
 		// Destroy the optional manager instances
 		delete mVrManager;
-		delete mDebugGuiManager;
+		#ifdef RENDERER_RUNTIME_IMGUI
+			delete mDebugGuiManager;
+		#endif
 
-		// Destroy misc
+		// Destroy miscellaneous
 		delete mPipelineStateCompiler;
 
 		{ // Destroy the resource manager instances in reverse order

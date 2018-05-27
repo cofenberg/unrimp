@@ -40,6 +40,8 @@ endif()
 ## Preprocessor definitions
 ##################################################
 add_definitions(-DGLM_FORCE_RADIANS -DGLM_FORCE_LEFT_HANDED -DGLM_FORCE_DEPTH_ZERO_TO_ONE -DGLM_ENABLE_EXPERIMENTAL)
+unrimp_add_definition(RENDERER_RUNTIME_PROFILER)
+unrimp_add_definition(RENDERER_RUNTIME_IMGUI)
 if(UNIX)
 	# Needed for OpenVR
 	add_definitions(-DCOMPILER_GCC)
@@ -66,15 +68,20 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/utf8cpp/)
 ## Source codes
 ##################################################
 set(EXTERNAL_SOURCE_CODES
-	${CMAKE_CURRENT_SOURCE_DIR}/../../External/ImGui/src/imgui.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/../../External/ImGui/src/imgui_draw.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/../../External/ImGuizmo/src/ImGuizmo.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/../../External/lz4/src/lz4.c
 	${CMAKE_CURRENT_SOURCE_DIR}/../../External/lz4/src/lz4frame.c
 	${CMAKE_CURRENT_SOURCE_DIR}/../../External/lz4/src/lz4hc.c
 	${CMAKE_CURRENT_SOURCE_DIR}/../../External/lz4/src/xxhash.c
 	${CMAKE_CURRENT_SOURCE_DIR}/../../External/mikktspace/src/mikktspace.c
 )
+if(RENDERER_RUNTIME_IMGUI)
+	set(EXTERNAL_SOURCE_CODES
+		${EXTERNAL_SOURCE_CODES}
+		${CMAKE_CURRENT_SOURCE_DIR}/../../External/ImGui/src/imgui.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/../../External/ImGui/src/imgui_draw.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/../../External/ImGuizmo/src/ImGuizmo.cpp
+	)
+endif()
 set(SOURCE_CODES
 	${EXTERNAL_SOURCE_CODES}
 	RendererRuntimeUnityBuild.cpp
@@ -99,7 +106,7 @@ endif()
 ##################################################
 add_library(RendererRuntime ${LIBRARY_TYPE} ${SOURCE_CODES})
 if(SHARED_LIBRARY)
-	set_target_properties(RendererRuntime PROPERTIES COMPILE_FLAGS "-DSHARED_LIBRARIES -DRENDERERRUNTIME_EXPORTS")
+	set_target_properties(RendererRuntime PROPERTIES COMPILE_FLAGS "-DSHARED_LIBRARIES -DRENDERER_RUNTIME_EXPORTS")
 	if(ANDROID)
 		target_link_libraries(RendererRuntime dl ${ANDROID_CXX_STANDARD_LIBRARIES})
 	elseif(UNIX)

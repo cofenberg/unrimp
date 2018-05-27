@@ -30,7 +30,7 @@
 //[ Global functions                                      ]
 //[-------------------------------------------------------]
 // Export the instance creation function
-#ifdef RENDERERTOOLKIT_EXPORTS
+#ifdef RENDERER_TOOLKIT_EXPORTS
 	#define RENDERERTOOLKIT_FUNCTION_EXPORT GENERIC_FUNCTION_EXPORT
 #else
 	#define RENDERERTOOLKIT_FUNCTION_EXPORT

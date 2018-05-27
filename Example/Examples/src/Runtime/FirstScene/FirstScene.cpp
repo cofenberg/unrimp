@@ -26,6 +26,7 @@
 #include "Runtime/FirstScene/FreeCameraController.h"
 #ifdef WIN32	// TODO(sw) openvr doesn't support non windows systems yet
 	#include "Runtime/FirstScene/VrController.h"
+	#include "Framework/WindowsHeader.h"
 #endif
 
 #include <RendererToolkit/Public/RendererToolkit.h>
@@ -34,8 +35,10 @@
 #include <RendererRuntime/Vr/IVrManager.h>
 #include <RendererRuntime/Core/Math/EulerAngles.h>
 #include <RendererRuntime/Core/Time/TimeManager.h>
-#include <RendererRuntime/DebugGui/ImGuiLog.h>
-#include <RendererRuntime/DebugGui/DebugGuiManager.h>
+#ifdef RENDERER_RUNTIME_IMGUI
+	#include <RendererRuntime/DebugGui/ImGuiLog.h>
+	#include <RendererRuntime/DebugGui/DebugGuiManager.h>
+#endif
 #include <RendererRuntime/Resource/Scene/SceneNode.h>
 #include <RendererRuntime/Resource/Scene/SceneResource.h>
 #include <RendererRuntime/Resource/Scene/SceneResourceManager.h>
@@ -56,7 +59,9 @@
 
 #include <PLInput/Input.h>
 
-#include <imgui/imgui.h>
+#ifdef RENDERER_RUNTIME_IMGUI
+	#include <imgui/imgui.h>
+#endif
 
 
 //[-------------------------------------------------------]
@@ -152,8 +157,10 @@ FirstScene::~FirstScene()
 //[-------------------------------------------------------]
 void FirstScene::onInitialization()
 {
-	mImGuiLog = new RendererRuntime::ImGuiLog();
-	setCustomLog(mImGuiLog);
+	#ifdef RENDERER_RUNTIME_IMGUI
+		mImGuiLog = new RendererRuntime::ImGuiLog();
+		setCustomLog(mImGuiLog);
+	#endif
 
 	// Call the base implementation
 	ExampleBase::onInitialization();
@@ -163,7 +170,7 @@ void FirstScene::onInitialization()
 	if (nullptr != rendererRuntime)
 	{
 		// Usability: Restore the position and size of the main window from a previous session
-		#ifdef WIN32
+		#if defined(WIN32) && defined(RENDERER_RUNTIME_IMGUI)
 		{
 			float value[4] = {};
 			if (rendererRuntime->getDebugGuiManager().getIniSetting("MainWindowPositionSize", value))
@@ -243,8 +250,10 @@ void FirstScene::onDeinitialization()
 	ExampleBase::onDeinitialization();
 
 	// Destroy our ImGui log instance
-	delete mImGuiLog;
-	mImGuiLog = nullptr;
+	#ifdef RENDERER_RUNTIME_IMGUI
+		delete mImGuiLog;
+		mImGuiLog = nullptr;
+	#endif
 }
 
 void FirstScene::onUpdate()
@@ -286,7 +295,12 @@ void FirstScene::onUpdate()
 			#else
 				bool hasWindowFocus = true;
 			#endif
-			mController->onUpdate(rendererRuntime->getTimeManager().getPastSecondsSinceLastFrame(), hasWindowFocus && (mController->isMouseControlInProgress() || !ImGui::IsAnyWindowHovered()));
+			#ifdef RENDERER_RUNTIME_IMGUI
+				const bool isAnyWindowHovered = ImGui::IsAnyWindowHovered();
+			#else
+				const bool isAnyWindowHovered = false;
+			#endif
+			mController->onUpdate(rendererRuntime->getTimeManager().getPastSecondsSinceLastFrame(), hasWindowFocus && (mController->isMouseControlInProgress() || !isAnyWindowHovered));
 		}
 
 		// Scene hot-reloading memory
@@ -296,19 +310,21 @@ void FirstScene::onUpdate()
 			mCameraTransformBackup = mCameraSceneItem->getParentSceneNodeSafe().getGlobalTransform();
 
 			// Backup camera position and rotation for a following session, but only if VR isn't running right now
-			if (!rendererRuntime->getVrManager().isRunning())
-			{
-				RendererRuntime::DebugGuiManager& debugGuiManager = mCompositorWorkspaceInstance->getRendererRuntime().getDebugGuiManager();
+			#ifdef RENDERER_RUNTIME_IMGUI
+				if (!rendererRuntime->getVrManager().isRunning())
 				{
-					const float value[4] = { mCameraTransformBackup.position.x, mCameraTransformBackup.position.y, mCameraTransformBackup.position.z, 0.0f };
-					debugGuiManager.setIniSetting("CameraPosition", value);
+					RendererRuntime::DebugGuiManager& debugGuiManager = mCompositorWorkspaceInstance->getRendererRuntime().getDebugGuiManager();
+					{
+						const float value[4] = { mCameraTransformBackup.position.x, mCameraTransformBackup.position.y, mCameraTransformBackup.position.z, 0.0f };
+						debugGuiManager.setIniSetting("CameraPosition", value);
+					}
+					debugGuiManager.setIniSetting("CameraRotation", glm::value_ptr(mCameraTransformBackup.rotation));
 				}
-				debugGuiManager.setIniSetting("CameraRotation", glm::value_ptr(mCameraTransformBackup.rotation));
-			}
+			#endif
 		}
 
 		// Usability: Backup the position and size of the main window so we can restore it in the next session
-		#ifdef WIN32
+		#if defined(WIN32) && defined(RENDERER_RUNTIME_IMGUI)
 		{
 			RECT rect;
 			::GetWindowRect(reinterpret_cast<HWND>(rendererRuntime->getRenderer().getContext().getNativeWindowHandle()), &rect);
@@ -427,19 +443,21 @@ void FirstScene::onLoadingStateChange(const RendererRuntime::IResource& resource
 					mController = new FreeCameraController(*mInputManager, *mCameraSceneItem);
 
 					// Restore camera position and rotation from a previous session if virtual reality is disabled
-					if (!mHasCameraTransformBackup)
-					{
-						float value[4] = {};
-						RendererRuntime::DebugGuiManager& debugGuiManager = mCompositorWorkspaceInstance->getRendererRuntime().getDebugGuiManager();
-						if (debugGuiManager.getIniSetting("CameraPosition", value))
+					#ifdef RENDERER_RUNTIME_IMGUI
+						if (!mHasCameraTransformBackup)
 						{
-							mCameraSceneItem->getParentSceneNode()->setPosition(glm::vec3(value[0], value[1], value[2]));
+							float value[4] = {};
+							RendererRuntime::DebugGuiManager& debugGuiManager = mCompositorWorkspaceInstance->getRendererRuntime().getDebugGuiManager();
+							if (debugGuiManager.getIniSetting("CameraPosition", value))
+							{
+								mCameraSceneItem->getParentSceneNode()->setPosition(glm::vec3(value[0], value[1], value[2]));
+							}
+							if (debugGuiManager.getIniSetting("CameraRotation", value))
+							{
+								mCameraSceneItem->getParentSceneNode()->setRotation(glm::quat(value[3], value[0], value[1], value[2]));
+							}
 						}
-						if (debugGuiManager.getIniSetting("CameraRotation", value))
-						{
-							mCameraSceneItem->getParentSceneNode()->setRotation(glm::quat(value[3], value[0], value[1], value[2]));
-						}
-					}
+					#endif
 				}
 			}
 		}
@@ -598,185 +616,187 @@ void FirstScene::createCompositorWorkspace()
 	}
 }
 
-void FirstScene::createDebugGui(Renderer::IRenderTarget& mainRenderTarget)
+void FirstScene::createDebugGui(MAYBE_UNUSED Renderer::IRenderTarget& mainRenderTarget)
 {
-	RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
-	if (nullptr != mCompositorWorkspaceInstance && RendererRuntime::isInitialized(mSceneResourceId) && nullptr != rendererRuntime)
-	{
-		// Get the render target the debug GUI is rendered into, use the provided main render target as fallback
-		const RendererRuntime::ICompositorInstancePass* compositorInstancePass = mCompositorWorkspaceInstance->getFirstCompositorInstancePassByCompositorPassTypeId(RendererRuntime::CompositorResourcePassDebugGui::TYPE_ID);
-		if (nullptr != compositorInstancePass)
+	#ifdef RENDERER_RUNTIME_IMGUI
+		RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
+		if (nullptr != mCompositorWorkspaceInstance && RendererRuntime::isInitialized(mSceneResourceId) && nullptr != rendererRuntime)
 		{
-			// Setup GUI
-			RendererRuntime::DebugGuiManager& debugGuiManager = rendererRuntime->getDebugGuiManager();
-			debugGuiManager.newFrame(((nullptr != compositorInstancePass->getRenderTarget()) ? *compositorInstancePass->getRenderTarget() : mainRenderTarget), mCompositorWorkspaceInstance);
-			mImGuiLog->draw(rendererRuntime->getContext().getFileManager());
-			if (ImGui::Begin("Options"))
+			// Get the render target the debug GUI is rendered into, use the provided main render target as fallback
+			const RendererRuntime::ICompositorInstancePass* compositorInstancePass = mCompositorWorkspaceInstance->getFirstCompositorInstancePassByCompositorPassTypeId(RendererRuntime::CompositorResourcePassDebugGui::TYPE_ID);
+			if (nullptr != compositorInstancePass)
 			{
-				// Status
-				static const ImVec4 GREY_COLOR(0.5f, 0.5f, 0.5f, 1.0f);
-				static const ImVec4 RED_COLOR(1.0f, 0.0f, 0.0f, 1.0f);
-				ImGui::PushStyleColor(ImGuiCol_Text, GREY_COLOR);
-					ImGui::Text("Renderer: %s", mainRenderTarget.getRenderer().getName());
-					ImGui::Text("GPU: %s", mainRenderTarget.getRenderer().getCapabilities().deviceName);
-					{
-						const RendererToolkit::IRendererToolkit* rendererToolkit = getRendererToolkit();
-						if (nullptr != rendererToolkit)
+				// Setup GUI
+				RendererRuntime::DebugGuiManager& debugGuiManager = rendererRuntime->getDebugGuiManager();
+				debugGuiManager.newFrame(((nullptr != compositorInstancePass->getRenderTarget()) ? *compositorInstancePass->getRenderTarget() : mainRenderTarget), mCompositorWorkspaceInstance);
+				mImGuiLog->draw(rendererRuntime->getContext().getFileManager());
+				if (ImGui::Begin("Options"))
+				{
+					// Status
+					static const ImVec4 GREY_COLOR(0.5f, 0.5f, 0.5f, 1.0f);
+					static const ImVec4 RED_COLOR(1.0f, 0.0f, 0.0f, 1.0f);
+					ImGui::PushStyleColor(ImGuiCol_Text, GREY_COLOR);
+						ImGui::Text("Renderer: %s", mainRenderTarget.getRenderer().getName());
+						ImGui::Text("GPU: %s", mainRenderTarget.getRenderer().getCapabilities().deviceName);
 						{
-							const bool idle = (RendererToolkit::IRendererToolkit::State::IDLE == rendererToolkit->getState());
+							const RendererToolkit::IRendererToolkit* rendererToolkit = getRendererToolkit();
+							if (nullptr != rendererToolkit)
+							{
+								const bool idle = (RendererToolkit::IRendererToolkit::State::IDLE == rendererToolkit->getState());
+								ImGui::PushStyleColor(ImGuiCol_Text, idle ? GREY_COLOR : RED_COLOR);
+									ImGui::Text("Renderer Toolkit: %s", idle ? "Idle" : "Busy");
+								ImGui::PopStyleColor();
+							}
+						}
+						{ // Resource streamer
+							const bool idle = (0 == rendererRuntime->getResourceStreamer().getNumberOfInFlightLoadRequests());
 							ImGui::PushStyleColor(ImGuiCol_Text, idle ? GREY_COLOR : RED_COLOR);
-								ImGui::Text("Renderer Toolkit: %s", idle ? "Idle" : "Busy");
+								ImGui::Text("Resource Streamer: %s", idle ? "Idle" : "Busy");
 							ImGui::PopStyleColor();
 						}
-					}
-					{ // Resource streamer
-						const bool idle = (0 == rendererRuntime->getResourceStreamer().getNumberOfInFlightLoadRequests());
-						ImGui::PushStyleColor(ImGuiCol_Text, idle ? GREY_COLOR : RED_COLOR);
-							ImGui::Text("Resource Streamer: %s", idle ? "Idle" : "Busy");
-						ImGui::PopStyleColor();
-					}
-					ImGui::Text("Pipeline State Compiler: %s", (0 == rendererRuntime->getPipelineStateCompiler().getNumberOfInFlightCompilerRequests()) ? "Idle" : "Busy");
-				ImGui::PopStyleColor();
-				if (ImGui::Button("Log"))
-				{
-					mImGuiLog->open();
-				}
-				ImGui::SameLine();
-				if (ImGui::Button("Metrics"))
-				{
-					debugGuiManager.openMetricsWindow();
-				}
-				ImGui::Separator();
-
-				// Video
-				if (ImGui::BeginMenu("Video"))
-				{
-					// TODO(co) Add fullscreen combo box (window, borderless window, native fullscreen)
-					mFullscreen = static_cast<Renderer::ISwapChain&>(mainRenderTarget).getFullscreenState();	// It's possible to toggle fullscreen by using ALT-return, take this into account
-					ImGui::Checkbox("Fullscreen", &mFullscreen);
-					// TODO(co) Add resolution and refresh rate combo box
-					ImGui::SliderFloat("Resolution Scale", &mResolutionScale, 0.05f, 4.0f, "%.3f");
-					ImGui::Checkbox("Vertical Synchronization", &mUseVerticalSynchronization);
-					if (rendererRuntime->getRenderer().getCapabilities().maximumNumberOfMultisamples > 1)
+						ImGui::Text("Pipeline State Compiler: %s", (0 == rendererRuntime->getPipelineStateCompiler().getNumberOfInFlightCompilerRequests()) ? "Idle" : "Busy");
+					ImGui::PopStyleColor();
+					if (ImGui::Button("Log"))
 					{
-						const char* items[] = { "None", "2x", "4x", "8x" };
-						ImGui::Combo("MSAA", &mCurrentMsaa, items, static_cast<int>(glm::countof(items)));
+						mImGuiLog->open();
 					}
-					ImGui::EndMenu();
-				}
-
-				// Graphics
-				if (ImGui::BeginMenu("Graphics"))
-				{
+					ImGui::SameLine();
+					if (ImGui::Button("Metrics"))
 					{
-						const char* items[] = { "Debug", "Forward", "Deferred", "VR" };
-						ImGui::Combo("Compositor", &mCurrentCompositor, items, static_cast<int>(glm::countof(items)));
+						debugGuiManager.openMetricsWindow();
 					}
-					ImGui::Checkbox("High Quality Lighting", &mHighQualityLighting);
-					ImGui::Checkbox("Soft-Particles", &mSoftParticles);
-					{
-						const char* items[] = { "Point", "Bilinear", "Trilinear", "2x Anisotropic", "4x Anisotropic", "8x Anisotropic", "16x Anisotropic" };
-						ImGui::Combo("Texture filtering", &mCurrentTextureFiltering, items, static_cast<int>(glm::countof(items)));
-					}
-					ImGui::SliderInt("Mipmaps to Remove", &mNumberOfTopTextureMipmapsToRemove, 0, 8);
-					ImGui::EndMenu();
-				}
+					ImGui::Separator();
 
-				// Environment
-				if (ImGui::BeginMenu("Environment"))
-				{
-					if (nullptr != mSunlightSceneItem)
+					// Video
+					if (ImGui::BeginMenu("Video"))
 					{
-						float timeOfDay = mSunlightSceneItem->getTimeOfDay();
-						ImGui::SliderFloat("Time of Day", &timeOfDay, 0.0f, 23.59f, "%.2f");
-						mSunlightSceneItem->setTimeOfDay(timeOfDay);
-					}
-					ImGui::SliderFloat("Clouds Intensity", &mCloudsIntensity, 0.0f, 10.0f, "%.3f");
-					ImGui::SliderFloat("Wind Speed", &mWindSpeed, 0.0f, 1.0f, "%.3f");
-					ImGui::SliderFloat("Wetness", &mWetSurfaces[0], 0.0f, 1.0f, "%.3f");
-					ImGui::EndMenu();
-				}
-
-				// Post processing
-				if (ImGui::BeginMenu("Post Processing"))
-				{
-					{ // Mutually exclusive
-						int activeRadioButton = -1;
-						if (mPerformFxaa)
+						// TODO(co) Add fullscreen combo box (window, borderless window, native fullscreen)
+						mFullscreen = static_cast<Renderer::ISwapChain&>(mainRenderTarget).getFullscreenState();	// It's possible to toggle fullscreen by using ALT-return, take this into account
+						ImGui::Checkbox("Fullscreen", &mFullscreen);
+						// TODO(co) Add resolution and refresh rate combo box
+						ImGui::SliderFloat("Resolution Scale", &mResolutionScale, 0.05f, 4.0f, "%.3f");
+						ImGui::Checkbox("Vertical Synchronization", &mUseVerticalSynchronization);
+						if (rendererRuntime->getRenderer().getCapabilities().maximumNumberOfMultisamples > 1)
 						{
-							activeRadioButton = 0;
+							const char* items[] = { "None", "2x", "4x", "8x" };
+							ImGui::Combo("MSAA", &mCurrentMsaa, items, static_cast<int>(glm::countof(items)));
 						}
-						else if (mPerformSharpen)
-						{
-							activeRadioButton = 1;
-						}
-						else if (mPerformChromaticAberration)
-						{
-							activeRadioButton = 2;
-						}
-						else if (mPerformOldCrtEffect)
-						{
-							activeRadioButton = 3;
-						}
-						ImGui::RadioButton("-",					   &activeRadioButton, -1);
-						ImGui::RadioButton("FXAA",				   &activeRadioButton, 0);
-						ImGui::RadioButton("Sharpen",			   &activeRadioButton, 1);
-						ImGui::RadioButton("Chromatic Aberration", &activeRadioButton, 2);
-						ImGui::RadioButton("Old CRT",			   &activeRadioButton, 3);
-						ImGui::Separator();
-						mPerformFxaa				= (0 == activeRadioButton);
-						mPerformSharpen				= (1 == activeRadioButton);
-						mPerformChromaticAberration	= (2 == activeRadioButton);
-						mPerformOldCrtEffect		= (3 == activeRadioButton);
+						ImGui::EndMenu();
 					}
-					ImGui::Checkbox("Film Grain", &mPerformFilmGrain);
-					ImGui::Checkbox("Sepia Color Correction", &mPerformSepiaColorCorrection);
-					ImGui::Checkbox("Vignette", &mPerformVignette);
-					ImGui::SliderFloat("Depth of Field", &mDepthOfFieldBlurrinessCutoff, 0.0f, 1.0f, "%.3f");
-					ImGui::EndMenu();
-				}
 
-				// Selected material properties
-				if (ImGui::BeginMenu("Selected Material"))
-				{
-					ImGui::Checkbox("Use Emissive Map", &mUseEmissiveMap);
-					ImGui::ColorEdit3("Albedo Color", mAlbedoColor);
-					ImGui::EndMenu();
-				}
-
-				// Selected scene item
-				if (ImGui::BeginMenu("Selected Scene Item"))
-				{
-					ImGui::SliderFloat("Rotation Speed", &mRotationSpeed, 0.0f, 2.0f, "%.3f");
-					ImGui::Checkbox("Show Skeleton", &mShowSkeleton);
-					ImGui::EndMenu();
-				}
-				if (nullptr != mCameraSceneItem)
-				{
-					// Draw skeleton
-					if (mShowSkeleton && nullptr != mSkeletonMeshSceneItem && nullptr != mSkeletonMeshSceneItem->getParentSceneNode())
+					// Graphics
+					if (ImGui::BeginMenu("Graphics"))
 					{
-						RendererRuntime::DebugGuiHelper::drawSkeleton(*mCameraSceneItem, *mSkeletonMeshSceneItem);
+						{
+							const char* items[] = { "Debug", "Forward", "Deferred", "VR" };
+							ImGui::Combo("Compositor", &mCurrentCompositor, items, static_cast<int>(glm::countof(items)));
+						}
+						ImGui::Checkbox("High Quality Lighting", &mHighQualityLighting);
+						ImGui::Checkbox("Soft-Particles", &mSoftParticles);
+						{
+							const char* items[] = { "Point", "Bilinear", "Trilinear", "2x Anisotropic", "4x Anisotropic", "8x Anisotropic", "16x Anisotropic" };
+							ImGui::Combo("Texture filtering", &mCurrentTextureFiltering, items, static_cast<int>(glm::countof(items)));
+						}
+						ImGui::SliderInt("Mipmaps to Remove", &mNumberOfTopTextureMipmapsToRemove, 0, 8);
+						ImGui::EndMenu();
 					}
 
-					// Scene node transform using gizmo
-					if (nullptr != mSceneNode)
+					// Environment
+					if (ImGui::BeginMenu("Environment"))
 					{
-						// Draw gizmo
-						ImGui::Separator();
-						RendererRuntime::Transform transform = mSceneNode->getGlobalTransform();
-						RendererRuntime::DebugGuiHelper::drawGizmo(*mCameraSceneItem, mGizmoSettings, transform);
-						mSceneNode->setTransform(transform);
+						if (nullptr != mSunlightSceneItem)
+						{
+							float timeOfDay = mSunlightSceneItem->getTimeOfDay();
+							ImGui::SliderFloat("Time of Day", &timeOfDay, 0.0f, 23.59f, "%.2f");
+							mSunlightSceneItem->setTimeOfDay(timeOfDay);
+						}
+						ImGui::SliderFloat("Clouds Intensity", &mCloudsIntensity, 0.0f, 10.0f, "%.3f");
+						ImGui::SliderFloat("Wind Speed", &mWindSpeed, 0.0f, 1.0f, "%.3f");
+						ImGui::SliderFloat("Wetness", &mWetSurfaces[0], 0.0f, 1.0f, "%.3f");
+						ImGui::EndMenu();
+					}
 
-						// Draw grid
-						// TODO(co) Make this optional via GUI
-						// RendererRuntime::DebugGuiHelper::drawGrid(*mCameraSceneItem, transform.position.y);
+					// Post processing
+					if (ImGui::BeginMenu("Post Processing"))
+					{
+						{ // Mutually exclusive
+							int activeRadioButton = -1;
+							if (mPerformFxaa)
+							{
+								activeRadioButton = 0;
+							}
+							else if (mPerformSharpen)
+							{
+								activeRadioButton = 1;
+							}
+							else if (mPerformChromaticAberration)
+							{
+								activeRadioButton = 2;
+							}
+							else if (mPerformOldCrtEffect)
+							{
+								activeRadioButton = 3;
+							}
+							ImGui::RadioButton("-",					   &activeRadioButton, -1);
+							ImGui::RadioButton("FXAA",				   &activeRadioButton, 0);
+							ImGui::RadioButton("Sharpen",			   &activeRadioButton, 1);
+							ImGui::RadioButton("Chromatic Aberration", &activeRadioButton, 2);
+							ImGui::RadioButton("Old CRT",			   &activeRadioButton, 3);
+							ImGui::Separator();
+							mPerformFxaa				= (0 == activeRadioButton);
+							mPerformSharpen				= (1 == activeRadioButton);
+							mPerformChromaticAberration	= (2 == activeRadioButton);
+							mPerformOldCrtEffect		= (3 == activeRadioButton);
+						}
+						ImGui::Checkbox("Film Grain", &mPerformFilmGrain);
+						ImGui::Checkbox("Sepia Color Correction", &mPerformSepiaColorCorrection);
+						ImGui::Checkbox("Vignette", &mPerformVignette);
+						ImGui::SliderFloat("Depth of Field", &mDepthOfFieldBlurrinessCutoff, 0.0f, 1.0f, "%.3f");
+						ImGui::EndMenu();
+					}
+
+					// Selected material properties
+					if (ImGui::BeginMenu("Selected Material"))
+					{
+						ImGui::Checkbox("Use Emissive Map", &mUseEmissiveMap);
+						ImGui::ColorEdit3("Albedo Color", mAlbedoColor);
+						ImGui::EndMenu();
+					}
+
+					// Selected scene item
+					if (ImGui::BeginMenu("Selected Scene Item"))
+					{
+						ImGui::SliderFloat("Rotation Speed", &mRotationSpeed, 0.0f, 2.0f, "%.3f");
+						ImGui::Checkbox("Show Skeleton", &mShowSkeleton);
+						ImGui::EndMenu();
+					}
+					if (nullptr != mCameraSceneItem)
+					{
+						// Draw skeleton
+						if (mShowSkeleton && nullptr != mSkeletonMeshSceneItem && nullptr != mSkeletonMeshSceneItem->getParentSceneNode())
+						{
+							RendererRuntime::DebugGuiHelper::drawSkeleton(*mCameraSceneItem, *mSkeletonMeshSceneItem);
+						}
+
+						// Scene node transform using gizmo
+						if (nullptr != mSceneNode)
+						{
+							// Draw gizmo
+							ImGui::Separator();
+							RendererRuntime::Transform transform = mSceneNode->getGlobalTransform();
+							RendererRuntime::DebugGuiHelper::drawGizmo(*mCameraSceneItem, mGizmoSettings, transform);
+							mSceneNode->setTransform(transform);
+
+							// Draw grid
+							// TODO(co) Make this optional via GUI
+							// RendererRuntime::DebugGuiHelper::drawGrid(*mCameraSceneItem, transform.position.y);
+						}
 					}
 				}
+				ImGui::End();
 			}
-			ImGui::End();
 		}
-	}
+	#endif
 }
 
 void FirstScene::trySetCustomMaterialResource()

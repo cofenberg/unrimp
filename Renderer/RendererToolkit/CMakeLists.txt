@@ -164,7 +164,7 @@ endif()
 ##################################################
 add_library(RendererToolkit ${LIBRARY_TYPE} ${SOURCE_CODES})
 if(SHARED_LIBRARY)
-	set_target_properties(RendererToolkit PROPERTIES COMPILE_FLAGS "-DSHARED_LIBRARIES -DRENDERERTOOLKIT_EXPORTS")
+	set_target_properties(RendererToolkit PROPERTIES COMPILE_FLAGS "-DSHARED_LIBRARIES -DRENDERER_TOOLKIT_EXPORTS")
 	if(WIN32)
 		target_link_libraries(RendererToolkit RendererRuntime.lib)
 	else()

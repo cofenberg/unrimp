@@ -90,6 +90,7 @@ PRAGMA_WARNING_POP
 		#include <windows.h>
 
 		// Get rid of some nasty OS macros
+		#undef min
 		#undef max
 	PRAGMA_WARNING_POP
 #elif LINUX
