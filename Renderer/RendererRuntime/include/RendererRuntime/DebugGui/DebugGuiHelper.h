@@ -110,7 +110,12 @@ namespace RendererRuntime
 	//[ Private static methods                                ]
 	//[-------------------------------------------------------]
 	private:
-		static void beginFrame();
+		inline static void beginFrame()
+		{
+			// Reset the draw text counter
+			mDrawTextCounter = 0;
+		}
+
 		static void drawMetricsWindow(bool& open, CompositorWorkspaceInstance* compositorWorkspaceInstance);
 
 

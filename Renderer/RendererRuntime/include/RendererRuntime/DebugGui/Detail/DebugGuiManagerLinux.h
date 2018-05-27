@@ -53,13 +53,12 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
-	// TODO(sw) Move this into base class, because these methods are input/windowing agnostic?
 	public:
-		void RENDERERRUNTIME_API_EXPORT onWindowResize(uint32_t width, uint32_t heigth);
-		void RENDERERRUNTIME_API_EXPORT onKeyInput(uint32_t keySym, char character, bool pressed);
-		void RENDERERRUNTIME_API_EXPORT onMouseMoveInput(int x, int y);
-		void RENDERERRUNTIME_API_EXPORT onMouseButtonInput(uint32_t button, bool pressed);
-		void RENDERERRUNTIME_API_EXPORT onMouseWheelInput(bool scrollUp);
+		RENDERERRUNTIME_API_EXPORT void onWindowResize(uint32_t width, uint32_t heigth);
+		RENDERERRUNTIME_API_EXPORT void onKeyInput(uint32_t keySym, char character, bool pressed);
+		RENDERERRUNTIME_API_EXPORT void onMouseMoveInput(int x, int y);
+		RENDERERRUNTIME_API_EXPORT void onMouseButtonInput(uint32_t button, bool pressed);
+		RENDERERRUNTIME_API_EXPORT void onMouseWheelInput(bool scrollUp);
 
 
 	//[-------------------------------------------------------]
@@ -74,11 +73,22 @@ namespace RendererRuntime
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		explicit DebugGuiManagerLinux(IRendererRuntime& rendererRuntime);
-		virtual ~DebugGuiManagerLinux() override;
+		inline explicit DebugGuiManagerLinux(IRendererRuntime& rendererRuntime) :
+			DebugGuiManager(rendererRuntime),
+			mWindowWidth(0),
+			mWindowHeigth(0),
+			mTime(0)
+		{
+			// Nothing here
+		}
+
+		inline virtual ~DebugGuiManagerLinux() override
+		{
+			// Nothing here
+		}
+
 		explicit DebugGuiManagerLinux(const DebugGuiManagerLinux&) = delete;
 		DebugGuiManagerLinux& operator=(const DebugGuiManagerLinux&) = delete;
-		void updateMousePosition(int x, int y);
 
 
 	//[-------------------------------------------------------]

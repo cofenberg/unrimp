@@ -43,7 +43,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Classes                                               ]
 		//[-------------------------------------------------------]
-		class AssimpIOStream : public Assimp::IOStream
+		class AssimpIOStream final : public Assimp::IOStream
 		{
 
 

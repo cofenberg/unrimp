@@ -74,8 +74,19 @@ namespace RendererRuntime
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		explicit DebugGuiManagerWindows(IRendererRuntime& rendererRuntime);
-		virtual ~DebugGuiManagerWindows() override;
+		inline explicit DebugGuiManagerWindows(IRendererRuntime& rendererRuntime) :
+			DebugGuiManager(rendererRuntime),
+			mTime(0),
+			mTicksPerSecond(0)
+		{
+			// Nothing here
+		}
+
+		inline virtual ~DebugGuiManagerWindows() override
+		{
+			// Nothing here
+		}
+
 		explicit DebugGuiManagerWindows(const DebugGuiManagerWindows&) = delete;
 		DebugGuiManagerWindows& operator=(const DebugGuiManagerWindows&) = delete;
 

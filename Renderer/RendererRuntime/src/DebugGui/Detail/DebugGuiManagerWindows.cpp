@@ -193,23 +193,6 @@ namespace RendererRuntime
 	}
 
 
-	//[-------------------------------------------------------]
-	//[ Private methods                                       ]
-	//[-------------------------------------------------------]
-	DebugGuiManagerWindows::DebugGuiManagerWindows(IRendererRuntime& rendererRuntime) :
-		DebugGuiManager(rendererRuntime),
-		mTime(0),
-		mTicksPerSecond(0)
-	{
-		// Nothing here
-	}
-
-	DebugGuiManagerWindows::~DebugGuiManagerWindows()
-	{
-		// Nothing here
-	}
-
-
 //[-------------------------------------------------------]
 //[ Namespace                                             ]
 //[-------------------------------------------------------]

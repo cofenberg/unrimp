@@ -302,12 +302,6 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Private static methods                                ]
 	//[-------------------------------------------------------]
-	void DebugGuiHelper::beginFrame()
-	{
-		// Reset the draw text counter
-		mDrawTextCounter = 0;
-	}
-
 	void DebugGuiHelper::drawMetricsWindow(bool& open, CompositorWorkspaceInstance* compositorWorkspaceInstance)
 	{
 		if (ImGui::Begin("Metrics", &open))

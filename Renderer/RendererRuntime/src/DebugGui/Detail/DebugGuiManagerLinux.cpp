@@ -57,19 +57,19 @@ namespace RendererRuntime
 			{
 				imGuiIo.KeysDown[keySym] = pressed;
 			}
-			else if (keySym == XK_Alt_L)
+			else if (XK_Alt_L == keySym)
 			{
 				imGuiIo.KeyAlt = pressed;
 			}
-			else if (keySym == XK_Shift_L)
+			else if (XK_Shift_L == keySym)
 			{
 				imGuiIo.KeyShift = pressed;
 			}
-			else if (keySym == XK_Control_L )
+			else if (XK_Control_L == keySym)
 			{
 				imGuiIo.KeyCtrl = pressed;
 			}
-			else if (keySym == XK_Super_L)
+			else if (XK_Super_L == keySym)
 			{
 				imGuiIo.KeySuper = pressed;
 			}
@@ -78,7 +78,6 @@ namespace RendererRuntime
 				// It is a special key (e.g. tab key) map the value to a range between 0x0ff and 0x1ff
 				imGuiIo.KeysDown[(keySym & 0x1ff)] = pressed;
 			}
-
 			if (pressed && character > 0)
 			{
 				imGuiIo.AddInputCharacter(character);
@@ -88,24 +87,39 @@ namespace RendererRuntime
 
 	void DebugGuiManagerLinux::onMouseMoveInput(int x, int y)
 	{
-		updateMousePosition(x,y);
+		float windowWidth  = 1.0f;
+		float windowHeight = 1.0f;
+		{
+			// Ensure that none of them is ever zero
+			if (mWindowWidth >= 1)
+			{
+				windowWidth = static_cast<float>(mWindowWidth);
+			}
+			if (mWindowHeigth >= 1)
+			{
+				windowHeight = static_cast<float>(mWindowHeigth);
+			}
+		}
+
+		{
+			ImGuiIO& imGuiIo = ImGui::GetIO();
+			imGuiIo.MousePos.x = static_cast<float>(x) * (imGuiIo.DisplaySize.x / windowWidth);
+			imGuiIo.MousePos.y = static_cast<float>(y) * (imGuiIo.DisplaySize.y / windowHeight);
+		}
 	}
 
 	void DebugGuiManagerLinux::onMouseButtonInput(uint32_t button, bool pressed)
 	{
-		ImGuiIO& imGuiIo = ImGui::GetIO();
-
 		// The mouse buttons on X11 starts at index 1 for the left mouse button. In ImGui the left mouse button is at index 0. Compensate it.
 		if (button > 0 && button <= 5)
 		{
-			imGuiIo.MouseDown[button - 1] = pressed;
+			ImGui::GetIO().MouseDown[button - 1] = pressed;
 		}
 	}
 
 	void DebugGuiManagerLinux::onMouseWheelInput(bool scrollUp)
 	{
-		ImGuiIO& imGuiIo = ImGui::GetIO();
-		imGuiIo.MouseWheel += scrollUp ? -1.0f : 1.0f;
+		ImGui::GetIO().MouseWheel += scrollUp ? -1.0f : 1.0f;
 	}
 
 
@@ -118,19 +132,19 @@ namespace RendererRuntime
 		ImGuiIO& imGuiIo = ImGui::GetIO();
 		#ifndef ANDROID
 			// TODO(sw) These keysyms are 16bit values with an value > 512. We map them to a range between 0x0ff and 0x1ff
-			imGuiIo.KeyMap[ImGuiKey_Tab]		= XK_Tab & 0x1ff;
-			imGuiIo.KeyMap[ImGuiKey_LeftArrow]	= XK_Left & 0x1ff;
-			imGuiIo.KeyMap[ImGuiKey_RightArrow]	= XK_Right & 0x1ff;
-			imGuiIo.KeyMap[ImGuiKey_UpArrow]	= XK_Up & 0x1ff;
-			imGuiIo.KeyMap[ImGuiKey_DownArrow]	= XK_Down & 0x1ff;
-			imGuiIo.KeyMap[ImGuiKey_PageUp]		= XK_Page_Up & 0x1ff;
-			imGuiIo.KeyMap[ImGuiKey_PageDown]	= XK_Page_Down & 0x1ff;
-			imGuiIo.KeyMap[ImGuiKey_Home]		= XK_Home & 0x1ff;
-			imGuiIo.KeyMap[ImGuiKey_End]		= XK_End & 0x1ff;
-			imGuiIo.KeyMap[ImGuiKey_Delete]		= XK_Delete & 0x1ff;
-			imGuiIo.KeyMap[ImGuiKey_Backspace]	= XK_BackSpace & 0x1ff;
-			imGuiIo.KeyMap[ImGuiKey_Enter]		= XK_Return & 0x1ff;
-			imGuiIo.KeyMap[ImGuiKey_Escape]		= XK_Escape & 0x1ff;
+			imGuiIo.KeyMap[ImGuiKey_Tab]		= (XK_Tab & 0x1ff);
+			imGuiIo.KeyMap[ImGuiKey_LeftArrow]	= (XK_Left & 0x1ff);
+			imGuiIo.KeyMap[ImGuiKey_RightArrow]	= (XK_Right & 0x1ff);
+			imGuiIo.KeyMap[ImGuiKey_UpArrow]	= (XK_Up & 0x1ff);
+			imGuiIo.KeyMap[ImGuiKey_DownArrow]	= (XK_Down & 0x1ff);
+			imGuiIo.KeyMap[ImGuiKey_PageUp]		= (XK_Page_Up & 0x1ff);
+			imGuiIo.KeyMap[ImGuiKey_PageDown]	= (XK_Page_Down & 0x1ff);
+			imGuiIo.KeyMap[ImGuiKey_Home]		= (XK_Home & 0x1ff);
+			imGuiIo.KeyMap[ImGuiKey_End]		= (XK_End & 0x1ff);
+			imGuiIo.KeyMap[ImGuiKey_Delete]		= (XK_Delete & 0x1ff);
+			imGuiIo.KeyMap[ImGuiKey_Backspace]	= (XK_BackSpace & 0x1ff);
+			imGuiIo.KeyMap[ImGuiKey_Enter]		= (XK_Return & 0x1ff);
+			imGuiIo.KeyMap[ImGuiKey_Escape]		= (XK_Escape & 0x1ff);
 			imGuiIo.KeyMap[ImGuiKey_A]			= XK_a;
 			imGuiIo.KeyMap[ImGuiKey_C]			= XK_c;
 			imGuiIo.KeyMap[ImGuiKey_V]			= XK_v;
@@ -157,49 +171,10 @@ namespace RendererRuntime
 		{ // Setup time step
 			timeval currentTimeValue;
 			gettimeofday(&currentTimeValue, nullptr);
-			uint64_t currentTime = currentTimeValue.tv_sec * 1000000 + currentTimeValue.tv_usec;
+			const uint64_t currentTime = currentTimeValue.tv_sec * 1000000 + currentTimeValue.tv_usec;
 			imGuiIo.DeltaTime = static_cast<float>(currentTime - mTime) / 1000000.0f;
 			mTime = currentTime;
 		}
-	}
-
-
-	//[-------------------------------------------------------]
-	//[ Private methods                                       ]
-	//[-------------------------------------------------------]
-	DebugGuiManagerLinux::DebugGuiManagerLinux(IRendererRuntime& rendererRuntime) :
-		DebugGuiManager(rendererRuntime),
-		mWindowWidth(0),
-		mWindowHeigth(0),
-		mTime(0)
-	{
-		// Nothing here
-	}
-
-	DebugGuiManagerLinux::~DebugGuiManagerLinux()
-	{
-		// Nothing here
-	}
-	
-	void DebugGuiManagerLinux::updateMousePosition(int x, int y)
-	{
-		ImGuiIO& imGuiIo = ImGui::GetIO();
-		float windowWidth  = 1.0f;
-		float windowHeight = 1.0f;
-		{
-			// Ensure that none of them is ever zero
-			if (mWindowWidth >= 1)
-			{
-				windowWidth = static_cast<float>(mWindowWidth);
-			}
-			if (mWindowHeigth >= 1)
-			{
-				windowHeight = static_cast<float>(mWindowHeigth);
-			}
-		}
-		
-		imGuiIo.MousePos.x = static_cast<float>(x) * (imGuiIo.DisplaySize.x / windowWidth);
-		imGuiIo.MousePos.y = static_cast<float>(y) * (imGuiIo.DisplaySize.y / windowHeight);
 	}
 
 
