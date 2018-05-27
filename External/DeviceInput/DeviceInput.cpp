@@ -24,7 +24,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "PLInput/Input.h"
+#include "DeviceInput/DeviceInput.h"
 
 #ifdef WIN32
 	// Disable warnings in external headers, we can't fix them
@@ -265,7 +265,7 @@ PRAGMA_WARNING_DISABLE_MSVC(4355)	// warning C4355: 'this': used in base member 
 //[-------------------------------------------------------]
 //[ Namespace                                             ]
 //[-------------------------------------------------------]
-namespace PLInput
+namespace DeviceInput
 {
 
 
@@ -1862,7 +1862,7 @@ namespace PLInput
 
 
 	//[-------------------------------------------------------]
-	//[ PLInput::Control                                      ]
+	//[ DeviceInput::Control                                  ]
 	//[-------------------------------------------------------]
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
@@ -1899,7 +1899,7 @@ namespace PLInput
 
 
 	//[-------------------------------------------------------]
-	//[ PLInput::Connection                                   ]
+	//[ DeviceInput::Connection                               ]
 	//[-------------------------------------------------------]
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
@@ -1985,7 +1985,7 @@ namespace PLInput
 
 	// TODO(co) Below this: Cleanup
 	//[-------------------------------------------------------]
-	//[ PLInput::Controller                                   ]
+	//[ DeviceInput::Controller                               ]
 	//[-------------------------------------------------------]
 	//[-------------------------------------------------------]
 	//[ Public functions                                      ]
@@ -2182,7 +2182,7 @@ namespace PLInput
 
 
 	//[-------------------------------------------------------]
-	//[ PLInput::Device                                       ]
+	//[ DeviceInput::Device                                   ]
 	//[-------------------------------------------------------]
 	//[-------------------------------------------------------]
 	//[ Public functions                                      ]
@@ -2213,7 +2213,7 @@ namespace PLInput
 
 
 	//[-------------------------------------------------------]
-	//[ PLInput::Keyboard                                     ]
+	//[ DeviceInput::Keyboard                                 ]
 	//[-------------------------------------------------------]
 	//[-------------------------------------------------------]
 	//[ Public functions                                      ]
@@ -2372,7 +2372,7 @@ namespace PLInput
 
 
 	//[-------------------------------------------------------]
-	//[ PLInput::Mouse                                        ]
+	//[ DeviceInput::Mouse                                    ]
 	//[-------------------------------------------------------]
 	//[-------------------------------------------------------]
 	//[ Public functions                                      ]
@@ -2415,7 +2415,7 @@ namespace PLInput
 
 
 	//[-------------------------------------------------------]
-	//[ PLInput::Joystick                                     ]
+	//[ DeviceInput::Joystick                                 ]
 	//[-------------------------------------------------------]
 	//[-------------------------------------------------------]
 	//[ Public functions                                      ]
@@ -2647,7 +2647,7 @@ namespace PLInput
 
 
 	//[-------------------------------------------------------]
-	//[ PLInput::SpaceMouse                                   ]
+	//[ DeviceInput::SpaceMouse                               ]
 	//[-------------------------------------------------------]
 	//[-------------------------------------------------------]
 	//[ Public functions                                      ]
@@ -2791,7 +2791,7 @@ namespace PLInput
 
 
 	//[-------------------------------------------------------]
-	//[ PLInput::WiiMote                                      ]
+	//[ DeviceInput::WiiMote                                  ]
 	//[-------------------------------------------------------]
 	//[-------------------------------------------------------]
 	//[ Definitions                                           ]
@@ -3770,7 +3770,7 @@ namespace PLInput
 
 
 	//[-------------------------------------------------------]
-	//[ PLInput::SensorManager                                ]
+	//[ DeviceInput::SensorManager                            ]
 	//[-------------------------------------------------------]
 	//[-------------------------------------------------------]
 	//[ Public functions                                      ]
@@ -3814,7 +3814,7 @@ namespace PLInput
 
 
 	//[-------------------------------------------------------]
-	//[ PLInput::SplitTouchPad                                ]
+	//[ DeviceInput::SplitTouchPad                            ]
 	//[-------------------------------------------------------]
 	//[-------------------------------------------------------]
 	//[ Public functions                                      ]
@@ -3845,7 +3845,7 @@ namespace PLInput
 
 
 	//[-------------------------------------------------------]
-	//[ PLInput::VirtualStandardController                    ]
+	//[ DeviceInput::VirtualStandardController                ]
 	//[-------------------------------------------------------]
 	//[-------------------------------------------------------]
 	//[ Public functions                                      ]
@@ -4248,7 +4248,7 @@ namespace PLInput
 
 
 	//[-------------------------------------------------------]
-	//[ PLInput::InputManager                                 ]
+	//[ DeviceInput::InputManager                             ]
 	//[-------------------------------------------------------]
 	//[-------------------------------------------------------]
 	//[ Public functions                                      ]
@@ -4303,18 +4303,18 @@ namespace PLInput
 
 		// Query available input providers
 		// TODO(co) Add provider factory
-		DetectProvider("PLInput::HIDProvider", bReset);
-		DetectProvider("PLInput::BluetoothProvider", bReset);
+		DetectProvider("DeviceInput::HIDProvider", bReset);
+		DetectProvider("DeviceInput::BluetoothProvider", bReset);
 		#if defined(WIN32)
-			// "PLInput::LegacyJoystickProvider" must be detected after InputHID, otherwise everything will be detected just as joysticks
-			DetectProvider("PLInput::RawInputProvider", bReset);
-			DetectProvider("PLInput::LegacyJoystickProvider", bReset);
+			// "DeviceInput::LegacyJoystickProvider" must be detected after InputHID, otherwise everything will be detected just as joysticks
+			DetectProvider("DeviceInput::RawInputProvider", bReset);
+			DetectProvider("DeviceInput::LegacyJoystickProvider", bReset);
 		#elif defined(LINUX)
-			DetectProvider("PLInput::LinuxProvider", bReset);
+			DetectProvider("DeviceInput::LinuxProvider", bReset);
 		#elif defined(APPLE)
-			DetectProvider("PLInput::MacOSXProvider", bReset);
+			DetectProvider("DeviceInput::MacOSXProvider", bReset);
 		#elif defined(ANDROID)
-			DetectProvider("PLInput::AndroidProvider", bReset);
+			DetectProvider("DeviceInput::AndroidProvider", bReset);
 		#else
 			#error "Unsupported platform"
 		#endif
@@ -4408,7 +4408,7 @@ namespace PLInput
 	//[ Abstract backend only interface implementations       ]
 	//[-------------------------------------------------------]
 	//[-------------------------------------------------------]
-	//[ PLInput::Provider                                     ]
+	//[ DeviceInput::Provider                                 ]
 	//[-------------------------------------------------------]
 	//[-------------------------------------------------------]
 	//[ Public functions                                      ]
@@ -4487,7 +4487,7 @@ namespace PLInput
 
 
 	//[-------------------------------------------------------]
-	//[ PLInput::ConnectionDevice                             ]
+	//[ DeviceInput::ConnectionDevice                         ]
 	//[-------------------------------------------------------]
 	void ConnectionDevice::InitThread()
 	{
@@ -9819,7 +9819,7 @@ namespace PLInput
 
 
 	//[-------------------------------------------------------]
-	//[ PLInput::InputManager methods                         ]
+	//[ DeviceInput::InputManager methods                     ]
 	//[-------------------------------------------------------]
 	void InputManager::DetectProvider(const std::string &sProvider, bool bReset)
 	{
@@ -9827,20 +9827,20 @@ namespace PLInput
 		Provider *pProvider = GetProvider(sProvider);
 		if (!pProvider) {
 			// TODO(co) Add provider factory
-			if ("PLInput::HIDProvider" == sProvider)
+			if ("DeviceInput::HIDProvider" == sProvider)
 			{
 				pProvider = new HIDProvider(*this);
 			}
-			else if ("PLInput::BluetoothProvider" == sProvider)
+			else if ("DeviceInput::BluetoothProvider" == sProvider)
 			{
 				pProvider = new BluetoothProvider(*this);
 			}
 			#if defined(WIN32)
-				else if ("PLInput::RawInputProvider" == sProvider)
+				else if ("DeviceInput::RawInputProvider" == sProvider)
 				{
 					pProvider = new RawInputProvider(*this);
 				}
-				else if ("PLInput::LegacyJoystickProvider" == sProvider)
+				else if ("DeviceInput::LegacyJoystickProvider" == sProvider)
 				{
 					pProvider = new LegacyJoystickProvider(*this);
 				}
@@ -9871,4 +9871,4 @@ namespace PLInput
 //[-------------------------------------------------------]
 //[ Namespace                                             ]
 //[-------------------------------------------------------]
-} // PLInput
+} // DeviceInput

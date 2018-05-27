@@ -69,7 +69,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../Renderer/RendererToolkit/i
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/glm/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/utf8cpp)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/PhysicsFS/include/)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/PLInput/include/)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/)	# For "DeviceInput"
 if(RENDERER_RUNTIME_PROFILER)
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/Remotery/)
 endif()
@@ -93,8 +93,8 @@ set(EXTERNAL_SOURCE_CODES
 	${CMAKE_CURRENT_SOURCE_DIR}/../../External/PhysicsFS/src/physfs_archiver_unpacked.c
 	${CMAKE_CURRENT_SOURCE_DIR}/../../External/PhysicsFS/src/physfs_byteorder.c
 	${CMAKE_CURRENT_SOURCE_DIR}/../../External/PhysicsFS/src/physfs_unicode.c
-	# PLInput external library
-	${CMAKE_CURRENT_SOURCE_DIR}/../../External/PLInput/src/Input.cpp
+	# DeviceInput external library
+	${CMAKE_CURRENT_SOURCE_DIR}/../../External/DeviceInput/DeviceInput.cpp
 	# Remotery external library
 	${CMAKE_CURRENT_SOURCE_DIR}/../../External/Remotery/Remotery/Remotery.c
 )

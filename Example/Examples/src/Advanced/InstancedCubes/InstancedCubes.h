@@ -35,7 +35,7 @@
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace PLInput
+namespace DeviceInput
 {
 	class InputManager;
 }
@@ -109,10 +109,10 @@ private:
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
-	PLInput::InputManager*	mInputManager;			///< Input manager instance, always valid
-	ICubeRenderer*			mCubeRenderer;			///< Cube renderer instance, can be a null pointer
-	uint32_t				mNumberOfCubeInstances;	///< Number of cube instances
-	Renderer::CommandBuffer mCommandBuffer;			///< Command buffer
+	DeviceInput::InputManager*	mInputManager;			///< Input manager instance, always valid
+	ICubeRenderer*				mCubeRenderer;			///< Cube renderer instance, can be a null pointer
+	uint32_t					mNumberOfCubeInstances;	///< Number of cube instances
+	Renderer::CommandBuffer 	mCommandBuffer;			///< Command buffer
 	// The rest is for timing and statistics
 	RendererRuntime::Stopwatch mStopwatch;			///< Stopwatch instance
 	float					   mGlobalTimer;		///< Global timer

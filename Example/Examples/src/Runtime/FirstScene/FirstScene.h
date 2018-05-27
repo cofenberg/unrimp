@@ -38,7 +38,7 @@
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
 class IController;
-namespace PLInput
+namespace DeviceInput
 {
 	class InputManager;
 }
@@ -166,7 +166,7 @@ private:
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
-	PLInput::InputManager*						  mInputManager;
+	DeviceInput::InputManager*					  mInputManager;
 	RendererRuntime::ImGuiLog*					  mImGuiLog;
 	RendererRuntime::CompositorWorkspaceInstance* mCompositorWorkspaceInstance;
 	RendererRuntime::SceneResourceId			  mSceneResourceId;

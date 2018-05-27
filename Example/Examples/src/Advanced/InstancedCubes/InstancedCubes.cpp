@@ -37,7 +37,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <PLInput/Input.h>
+#include <DeviceInput/DeviceInput.h>
 
 #include <math.h>
 #include <stdio.h>
@@ -48,7 +48,7 @@
 //[ Public methods                                        ]
 //[-------------------------------------------------------]
 InstancedCubes::InstancedCubes() :
-	mInputManager(new PLInput::InputManager()),
+	mInputManager(new DeviceInput::InputManager()),
 	mCubeRenderer(nullptr),
 	mNumberOfCubeInstances(1000),
 	mGlobalTimer(0.0f),
@@ -140,7 +140,7 @@ void InstancedCubes::onUpdate()
 	mStopwatch.start();
 
 	{ // Input
-		const PLInput::Keyboard* keyboard = mInputManager->GetKeyboard();
+		const DeviceInput::Keyboard* keyboard = mInputManager->GetKeyboard();
 		if (keyboard->HasChanged())
 		{
 			// Add a fixed number of cubes

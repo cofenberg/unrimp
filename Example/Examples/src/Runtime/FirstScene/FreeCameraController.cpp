@@ -30,7 +30,7 @@
 #include <RendererRuntime/Resource/Scene/SceneNode.h>
 #include <RendererRuntime/Resource/Scene/Item/Camera/CameraSceneItem.h>
 
-#include <PLInput/Input.h>
+#include <DeviceInput/DeviceInput.h>
 
 
 //[-------------------------------------------------------]
@@ -65,9 +65,9 @@ namespace
 //[-------------------------------------------------------]
 //[ Public methods                                        ]
 //[-------------------------------------------------------]
-FreeCameraController::FreeCameraController(PLInput::InputManager& inputManager, RendererRuntime::CameraSceneItem& cameraSceneItem) :
+FreeCameraController::FreeCameraController(DeviceInput::InputManager& inputManager, RendererRuntime::CameraSceneItem& cameraSceneItem) :
 	IController(cameraSceneItem),
-	mVirtualStandardController(new PLInput::VirtualStandardController(inputManager)),
+	mVirtualStandardController(new DeviceInput::VirtualStandardController(inputManager)),
 	mOriginalFovY(cameraSceneItem.getFovY())
 {
 	// Nothing here

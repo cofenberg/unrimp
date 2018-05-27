@@ -33,7 +33,7 @@
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace PLInput
+namespace DeviceInput
 {
 	class InputManager;
 	class VirtualStandardController;
@@ -64,7 +64,7 @@ public:
 	*  @param[in] cameraSceneItem
 	*    Camera scene item to control, instance must stay valid as long as this controller instance exists
 	*/
-	FreeCameraController(PLInput::InputManager& inputManager, RendererRuntime::CameraSceneItem& cameraSceneItem);
+	FreeCameraController(DeviceInput::InputManager& inputManager, RendererRuntime::CameraSceneItem& cameraSceneItem);
 
 	/**
 	*  @brief
@@ -92,8 +92,8 @@ private:
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
-	PLInput::VirtualStandardController* mVirtualStandardController;
-	float								mOriginalFovY;
+	DeviceInput::VirtualStandardController* mVirtualStandardController;
+	float									mOriginalFovY;
 
 
 };

@@ -274,7 +274,7 @@ namespace std
 {
 	class mutex;
 }
-namespace PLInput
+namespace DeviceInput
 {
 	class Axis;
 	class Mouse;
@@ -295,7 +295,7 @@ namespace PLInput
 //[-------------------------------------------------------]
 //[ Namespace                                             ]
 //[-------------------------------------------------------]
-namespace PLInput
+namespace DeviceInput
 {
 
 
@@ -3549,4 +3549,4 @@ namespace PLInput
 //[-------------------------------------------------------]
 //[ Namespace                                             ]
 //[-------------------------------------------------------]
-} // PLInput
+} // DeviceInput

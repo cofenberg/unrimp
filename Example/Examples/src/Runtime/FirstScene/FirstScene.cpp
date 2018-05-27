@@ -61,7 +61,7 @@
 #include <RendererRuntime/Resource/Detail/ResourceStreamer.h>
 #include <RendererRuntime/Context.h>
 
-#include <PLInput/Input.h>
+#include <DeviceInput/DeviceInput.h>
 
 #ifdef RENDERER_RUNTIME_IMGUI
 	#include <imgui/imgui.h>
@@ -95,7 +95,7 @@ namespace
 //[ Public methods                                        ]
 //[-------------------------------------------------------]
 FirstScene::FirstScene() :
-	mInputManager(new PLInput::InputManager()),
+	mInputManager(new DeviceInput::InputManager()),
 	mImGuiLog(nullptr),
 	mCompositorWorkspaceInstance(nullptr),
 	mSceneResourceId(RendererRuntime::getUninitialized<RendererRuntime::SceneResourceId>()),
