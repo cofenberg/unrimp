@@ -1877,7 +1877,7 @@ namespace
 		//[-------------------------------------------------------]
 		typedef LONG NTSTATUS, *PNTSTATUS;
 		typedef NTSTATUS (WINAPI* RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
-		static constexpr char* HLSL_NAME = "HLSL";	///< ASCII name of this shader language, always valid (do not free the memory the returned pointer is pointing to)
+		static constexpr const char* HLSL_NAME = "HLSL";	///< ASCII name of this shader language, always valid (do not free the memory the returned pointer is pointing to)
 
 
 		//[-------------------------------------------------------]

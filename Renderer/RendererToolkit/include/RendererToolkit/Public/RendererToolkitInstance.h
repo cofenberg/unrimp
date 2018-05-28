@@ -31,7 +31,7 @@
 
 #ifdef SHARED_LIBRARIES
 	// Dynamically linked libraries
-	#ifdef WIN32
+	#ifdef _WIN32
 		#include "RendererToolkit/WindowsHeader.h"
 	#elif defined LINUX
 		#include <dlfcn.h>
@@ -145,7 +145,7 @@ namespace RendererToolkit
 		{
 			#ifdef SHARED_LIBRARIES
 				// Dynamically linked libraries
-				#ifdef WIN32
+				#ifdef _WIN32
 					// Load in the dll
 					static constexpr char RENDERER_TOOLKIT_FILENAME[] = "RendererToolkit.dll";
 					mRendererToolkitSharedLibrary = ::LoadLibraryExA(RENDERER_TOOLKIT_FILENAME, nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
@@ -221,7 +221,7 @@ namespace RendererToolkit
 
 			// Destroy the shared library instance
 			#ifdef SHARED_LIBRARIES
-				#ifdef WIN32
+				#ifdef _WIN32
 					if (nullptr != mRendererToolkitSharedLibrary)
 					{
 						::FreeLibrary(static_cast<HMODULE>(mRendererToolkitSharedLibrary));

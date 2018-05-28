@@ -340,7 +340,7 @@ namespace
 
 		void findBlockEnd(const Renderer::Context& context, SubStringRef& outSubString, bool& syntaxError)
 		{
-			static constexpr char* blockNames[] =
+			static constexpr const char* blockNames[] =
 			{
 				"foreach",
 				"property",

@@ -92,7 +92,7 @@ ExampleRunner::ExampleRunner()
 			"OpenGLES3"
 		#elif RENDERER_ONLY_VULKAN
 			"Vulkan"
-		#elif WIN32
+		#elif _WIN32
 			#ifdef RENDERER_ONLY_DIRECT3D9
 				"Direct3D9"
 			#elif RENDERER_ONLY_DIRECT3D10
@@ -108,7 +108,7 @@ ExampleRunner::ExampleRunner()
 	// Try to ensure that there's always a default renderer backend in case it's not provided via command line arguments
 	if (m_defaultRendererName.empty())
 	{
-		#ifdef WIN32
+		#ifdef _WIN32
 			#if !defined(RENDERER_ONLY_NULL) && !defined(RENDERER_ONLY_OPENGL) && !defined(RENDERER_ONLY_OPENGLES3) && !defined(RENDERER_ONLY_DIRECT3D9) && !defined(RENDERER_ONLY_DIRECT3D10) && !defined(RENDERER_ONLY_DIRECT3D12) && !defined(RENDERER_ONLY_VULKAN)
 				m_defaultRendererName = "Direct3D11";
 			#endif
@@ -156,7 +156,7 @@ ExampleRunner::ExampleRunner()
 	#ifndef RENDERER_NO_NULL
 		m_availableRenderer.insert("Null");
 	#endif
-	#ifdef WIN32
+	#ifdef _WIN32
 		#ifndef RENDERER_NO_DIRECT3D9
 			m_availableRenderer.insert("Direct3D9");
 		#endif

@@ -19,7 +19,7 @@
 
 
 // Amalgamated/unity build
-#ifdef WIN32
+#ifdef _WIN32
 	// Disable warnings in external headers, we can't fix them
 	__pragma(warning(disable: 4061))	// warning C4061: enumerator 'EBadProfile' in switch of enum 'EProfile' is not explicitly handled by a case label
 	__pragma(warning(disable: 4100))	// warning C4100: 'typeProxy': unreferenced formal parameter
@@ -84,7 +84,7 @@
 #include "SPIRV/SpvBuilder.cpp"
 
 // Moved into "glslangUnityBuild3.cpp" since it doesn't play well together with the other source codes
-#ifdef WIN32
+#ifdef _WIN32
 	// #include "glslang/OSDependent/Windows/ossource.cpp"
 #elif UNIX
 	// #include "glslang/OSDependent/Unix/ossource.cpp"

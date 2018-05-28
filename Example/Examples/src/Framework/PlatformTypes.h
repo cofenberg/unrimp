@@ -27,7 +27,7 @@
 //[-------------------------------------------------------]
 //[ C++ compiler keywords                                 ]
 //[-------------------------------------------------------]
-#ifdef WIN32
+#ifdef _WIN32
 	/**
 	*  @brief
 	*    Force the compiler to inline something
@@ -212,7 +212,7 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Data types                                            ]
 //[-------------------------------------------------------]
-#ifdef WIN32
+#ifdef _WIN32
 	#ifdef X64_ARCHITECTURE
 		typedef unsigned __int64 handle;	// Replacement for nasty Microsoft Windows stuff leading to header chaos
 	#else

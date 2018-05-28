@@ -26,7 +26,7 @@
 //[-------------------------------------------------------]
 #include "DeviceInput/DeviceInput.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 	// Disable warnings in external headers, we can't fix them
 	PRAGMA_WARNING_PUSH
 		PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'argument': conversion from 'const char' to 'utf8::uint8_t', signed/unsigned mismatch
@@ -4305,7 +4305,7 @@ namespace DeviceInput
 		// TODO(co) Add provider factory
 		DetectProvider("DeviceInput::HIDProvider", bReset);
 		DetectProvider("DeviceInput::BluetoothProvider", bReset);
-		#if defined(WIN32)
+		#if defined(_WIN32)
 			// "DeviceInput::LegacyJoystickProvider" must be detected after InputHID, otherwise everything will be detected just as joysticks
 			DetectProvider("DeviceInput::RawInputProvider", bReset);
 			DetectProvider("DeviceInput::LegacyJoystickProvider", bReset);
@@ -4313,7 +4313,7 @@ namespace DeviceInput
 			DetectProvider("DeviceInput::LinuxProvider", bReset);
 		#elif defined(APPLE)
 			DetectProvider("DeviceInput::MacOSXProvider", bReset);
-		#elif defined(ANDROID)
+		#elif defined(__ANDROID__)
 			DetectProvider("DeviceInput::AndroidProvider", bReset);
 		#else
 			#error "Unsupported platform"
@@ -4568,7 +4568,7 @@ namespace DeviceInput
 	//[-------------------------------------------------------]
 	int ConnectionDevice::ReadThread(void *pData)
 	{
-		#ifdef WIN32
+		#ifdef _WIN32
 			// Set thread name to improve debugging
 			__try
 			{
@@ -5015,7 +5015,7 @@ namespace DeviceInput
 	//[-------------------------------------------------------]
 	//[ MS Windows backend implementation                     ]
 	//[-------------------------------------------------------]
-	#if defined(WIN32)
+	#if defined(_WIN32)
 		//[-------------------------------------------------------]
 		//[ Includes                                              ]
 		//[-------------------------------------------------------]
@@ -7009,7 +7009,7 @@ namespace DeviceInput
 	//[-------------------------------------------------------]
 	//[ Linux backend implementation                          ]
 	//[-------------------------------------------------------]
-	#elif defined(LINUX) && !defined(ANDROID) && !defined(APPLE)
+	#elif defined(LINUX) && !defined(__ANDROID__) && !defined(APPLE)
 		//[-------------------------------------------------------]
 		//[ Includes                                              ]
 		//[-------------------------------------------------------]
@@ -8717,7 +8717,7 @@ namespace DeviceInput
 	//[-------------------------------------------------------]
 	//[ Android backend implementation                        ]
 	//[-------------------------------------------------------]
-	#elif defined(ANDROID)
+	#elif defined(__ANDROID__)
 		//[-------------------------------------------------------]
 		//[ Includes                                              ]
 		//[-------------------------------------------------------]
@@ -9835,7 +9835,7 @@ namespace DeviceInput
 			{
 				pProvider = new BluetoothProvider(*this);
 			}
-			#if defined(WIN32)
+			#if defined(_WIN32)
 				else if ("DeviceInput::RawInputProvider" == sProvider)
 				{
 					pProvider = new RawInputProvider(*this);
@@ -9848,7 +9848,7 @@ namespace DeviceInput
 				#error "TODO(co) Implement me"
 			#elif defined(APPLE)
 				#error "TODO(co) Implement me"
-			#elif defined(ANDROID)
+			#elif defined(__ANDROID__)
 				#error "TODO(co) Implement me"
 			#elif
 				#error "Unsupported platform"

@@ -23,7 +23,7 @@
 //[-------------------------------------------------------]
 #include "PrecompiledHeader.h"
 #include "Framework/IApplication.h"
-#ifdef WIN32
+#ifdef _WIN32
 	#include "Framework/ApplicationImplWindows.h"
 #elif defined LINUX
 	#include "Framework/ApplicationImplLinux.h"
@@ -82,7 +82,7 @@ IApplication::IApplication(const char* windowTitle) :
 	mExit(false)
 {
 	// We're using "this" in here, so we are not allowed to write the following within the initializer list
-	#ifdef WIN32
+	#ifdef _WIN32
 		mApplicationImpl = new ApplicationImplWindows(*this, windowTitle);
 	#elif defined LINUX
 		mApplicationImpl = new ApplicationImplLinux(*this, windowTitle);

@@ -31,7 +31,7 @@
 #include <RendererRuntime/IRendererRuntime.h>
 
 #ifdef SHARED_LIBRARIES
-	#ifdef WIN32
+	#ifdef _WIN32
 		#include "RendererRuntime/Core/Platform/WindowsHeader.h"
 	#elif defined LINUX
 		#include <dlfcn.h>
@@ -102,9 +102,9 @@ namespace RendererRuntime
 		{
 			#ifdef SHARED_LIBRARIES
 				// Dynamically linked libraries
-				#ifdef WIN32
+				#ifdef _WIN32
 					// Load in the dll
-					static constexpr char RENDERER_RUNTIME_FILENAME[] = "RendererRuntime.dll";
+					static constexpr const char RENDERER_RUNTIME_FILENAME[] = "RendererRuntime.dll";
 					mRendererRuntimeSharedLibrary = ::LoadLibraryExA(RENDERER_RUNTIME_FILENAME, nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
 					if (nullptr != mRendererRuntimeSharedLibrary)
 					{
@@ -131,7 +131,7 @@ namespace RendererRuntime
 					}
 				#elif defined LINUX
 					// Load in the shared library
-					static constexpr char RENDERER_RUNTIME_FILENAME[] = "libRendererRuntime.so";
+					static constexpr const char RENDERER_RUNTIME_FILENAME[] = "libRendererRuntime.so";
 					mRendererRuntimeSharedLibrary = dlopen(RENDERER_RUNTIME_FILENAME, RTLD_NOW);
 					if (nullptr != mRendererRuntimeSharedLibrary)
 					{
@@ -178,7 +178,7 @@ namespace RendererRuntime
 
 			// Destroy the shared library instance
 			#ifdef SHARED_LIBRARIES
-				#ifdef WIN32
+				#ifdef _WIN32
 					if (nullptr != mRendererRuntimeSharedLibrary)
 					{
 						::FreeLibrary(static_cast<HMODULE>(mRendererRuntimeSharedLibrary));

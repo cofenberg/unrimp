@@ -27,7 +27,7 @@
 #include <imgui/imgui.h>
 
 // TODO(sw) Implement a android version
-#ifndef ANDROID
+#ifndef __ANDROID__
 	#include <X11/Xutil.h>
 #endif
 #include <sys/time.h>
@@ -51,7 +51,7 @@ namespace RendererRuntime
 
 	void DebugGuiManagerLinux::onKeyInput(uint32_t keySym, char character, bool pressed)
 	{
-		#ifndef ANDROID
+		#ifndef __ANDROID__
 			ImGuiIO& imGuiIo = ImGui::GetIO();
 			if (keySym < 512)
 			{
@@ -130,7 +130,7 @@ namespace RendererRuntime
 	{
 		// Keyboard mapping. ImGui will use those indices to peek into the imGuiIo.KeyDown[] array that we will update during the application lifetime.
 		ImGuiIO& imGuiIo = ImGui::GetIO();
-		#ifndef ANDROID
+		#ifndef __ANDROID__
 			// TODO(sw) These keysyms are 16bit values with an value > 512. We map them to a range between 0x0ff and 0x1ff
 			imGuiIo.KeyMap[ImGuiKey_Tab]		= (XK_Tab & 0x1ff);
 			imGuiIo.KeyMap[ImGuiKey_LeftArrow]	= (XK_Left & 0x1ff);

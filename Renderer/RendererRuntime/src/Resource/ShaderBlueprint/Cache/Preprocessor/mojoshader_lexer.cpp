@@ -22,7 +22,7 @@
 //  tools.
 
 // Disable warnings
-#ifdef WIN32
+#ifdef _WIN32
 	#pragma warning(disable: 4267)	// warning C4267: '=' : conversion from '<x>' to '<y>', possible loss of data
 	#pragma warning(disable: 4668)	// warning C4668: '<x>' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
 	#pragma warning(disable: 4127)	// warning C4127: conditional expression is constant

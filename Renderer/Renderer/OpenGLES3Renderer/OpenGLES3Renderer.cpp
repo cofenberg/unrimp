@@ -50,7 +50,7 @@ PRAGMA_WARNING_PUSH
 	#include <EGL/eglext.h>
 PRAGMA_WARNING_POP
 
-#ifdef WIN32
+#ifdef _WIN32
 	// Set Windows version to Windows Vista (0x0600), we don't support Windows XP (0x0501)
 	#ifdef WINVER
 		#undef WINVER
@@ -87,11 +87,11 @@ PRAGMA_WARNING_POP
 	#include <windows.h>
 #endif
 
-#ifdef ANDROID
+#ifdef __ANDROID__
 	#include <android/native_window.h>	// For "ANativeWindow_setBuffersGeometry()"
 #endif
 
-#if defined LINUX || defined(ANDROID)
+#if defined LINUX || defined(__ANDROID__)
 	// Get rid of some nasty OS macros
 	#undef None	// Linux: Undefine "None", this name is used inside enums defined by Unrimp (which gets defined inside "Xlib.h" pulled in by "egl.h")
 
@@ -151,7 +151,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
-		static constexpr char* GLSLES_NAME = "GLSLES";	///< ASCII name of this shader language, always valid (do not free the memory the returned pointer is pointing to)
+		static constexpr const char* GLSLES_NAME = "GLSLES";	///< ASCII name of this shader language, always valid (do not free the memory the returned pointer is pointing to)
 
 
 		//[-------------------------------------------------------]
@@ -910,7 +910,7 @@ namespace OpenGLES3Renderer
 		*  @param[in] userParam
 		*    Additional user parameter of the debug message
 		*/
-		static void CALLBACK debugMessageCallback(uint32_t source, uint32_t type, uint32_t id, uint32_t severity, int length, const char* message, const void* userParam);
+		static void GL_APIENTRY debugMessageCallback(uint32_t source, uint32_t type, uint32_t id, uint32_t severity, int length, const char* message, const void* userParam);
 
 
 	//[-------------------------------------------------------]
@@ -1095,7 +1095,7 @@ namespace OpenGLES3Renderer
 		//[-------------------------------------------------------]
 		//[ Platform specific                                     ]
 		//[-------------------------------------------------------]
-		#if defined(LINUX) && !defined(ANDROID)
+		#if defined(LINUX) && !defined(__ANDROID__)
 			inline ::Display* getX11Display() const
 			{
 				return mX11Display;
@@ -1125,7 +1125,7 @@ namespace OpenGLES3Renderer
 			}
 
 			// Get display
-			#if (defined(LINUX) && !defined(ANDROID))
+			#if (defined(LINUX) && !defined(__ANDROID__))
 				mEGLDisplay = eglGetDisplay(static_cast<EGLNativeDisplayType>(mX11Display));
 			#else
 				mEGLDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
@@ -1162,7 +1162,7 @@ namespace OpenGLES3Renderer
 																								// reinterpret_cast<EGLNativeWindowType>(nativeWindowHandle) under MS Windows ("HWND"), we would need static_cast<EGLNativeWindowType>(nativeWindowHandle)
 																								// under Linux ("int")... so, to avoid #ifdefs, we just use old school c-style casts in here...
 
-								#ifdef ANDROID
+								#ifdef __ANDROID__
 									// Reconfigure the ANativeWindow buffers to match
 									EGLint format;
 									eglGetConfigAttrib(mEGLDisplay, mEGLConfig, EGL_NATIVE_VISUAL_ID, &format);
@@ -1172,7 +1172,7 @@ namespace OpenGLES3Renderer
 							else
 							{
 								// Create the dummy native window
-								#ifdef WIN32
+								#ifdef _WIN32
 									HINSTANCE moduleHandle = ::GetModuleHandle(nullptr);
 									WNDCLASS windowClass;
 									windowClass.hInstance	  = moduleHandle;
@@ -1187,8 +1187,7 @@ namespace OpenGLES3Renderer
 									windowClass.hbrBackground = nullptr;
 									::RegisterClass(&windowClass);
 									mDummyNativeWindow = ::CreateWindow(TEXT("OpenGLES3DummyNativeWindow"), TEXT("PFormat"), WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0, 0, 8, 8, HWND_DESKTOP, nullptr, moduleHandle, nullptr);
-								#endif
-								#if (defined(LINUX) && !defined(ANDROID))
+								#elif (defined(LINUX) && !defined(__ANDROID__))
 									// Create dummy window
 									XSetWindowAttributes xSetWindowAttributes;
 									xSetWindowAttributes.event_mask   = 0;
@@ -1264,7 +1263,7 @@ namespace OpenGLES3Renderer
 		*/
 		IOpenGLES3Context(MAYBE_UNUSED OpenGLES3Renderer& openGLES3Renderer, Renderer::handle nativeWindowHandle, bool useExternalContext) :
 			mNativeWindowHandle(nativeWindowHandle),
-			#if (defined(LINUX) && !defined(ANDROID))
+			#if (defined(LINUX) && !defined(__ANDROID__))
 				mX11Display(nullptr),
 				mOwnsX11Display(true),
 			#endif
@@ -1275,7 +1274,7 @@ namespace OpenGLES3Renderer
 			mDummySurface(EGL_NO_SURFACE),
 			mUseExternalContext(useExternalContext)
 		{
-			#if (defined(LINUX) && !defined(ANDROID))
+			#if (defined(LINUX) && !defined(__ANDROID__))
 				const Renderer::Context& context = openGLES3Renderer.getContext();
 
 				// If the given renderer context is an X11 context use the display connection object provided by the context
@@ -1349,14 +1348,13 @@ namespace OpenGLES3Renderer
 				mEGLConfig  = nullptr;
 
 				// Destroy the dummy native window, if required
-				#ifdef WIN32
+				#ifdef _WIN32
 					if (NULL_HANDLE == mNativeWindowHandle && NULL_HANDLE != mDummyNativeWindow)
 					{
 						::DestroyWindow(mDummyNativeWindow);
 						::UnregisterClass(TEXT("OpenGLES3DummyNativeWindow"), ::GetModuleHandle(nullptr));
 					}
-				#endif
-				#if (defined(LINUX) && !defined(ANDROID))
+				#elif (defined(LINUX) && !defined(__ANDROID__))
 					// Destroy the dummy native window
 					if (NULL_HANDLE == mNativeWindowHandle && NULL_HANDLE != mDummyNativeWindow)
 					{
@@ -1472,7 +1470,7 @@ namespace OpenGLES3Renderer
 	protected:
 		Renderer::handle	mNativeWindowHandle;	///< Handle of a native OS window which is valid as long as the renderer instance exists, "NULL_HANDLE" if there's no such window
 		// X11
-		#if (defined(LINUX) && !defined(ANDROID))
+		#if (defined(LINUX) && !defined(__ANDROID__))
 			::Display	   *mX11Display;
 			bool 			mOwnsX11Display;
 		#endif
@@ -1955,7 +1953,7 @@ namespace OpenGLES3Renderer
 			RENDERER_DELETE(mOpenGLES3Renderer.getContext(), ExtensionsRuntimeLinking, mExtensions);
 
 			// Destroy the shared library instances
-			#ifdef WIN32
+			#ifdef _WIN32
 				if (nullptr != mEGLSharedLibrary)
 				{
 					::FreeLibrary(static_cast<HMODULE>(mEGLSharedLibrary));
@@ -2098,7 +2096,7 @@ namespace OpenGLES3Renderer
 			// We don't need to check m_pEGLSharedLibrary and m_pGLESSharedLibrary at this point because we know they must contain a null pointer
 
 			// EGL and OpenGL ES 3 may be within a single shared library, or within two separate shared libraries
-			#ifdef WIN32
+			#ifdef _WIN32
 				// First, try the OpenGL ES 3 emulator from ARM (it's possible to move around this dll without issues, so, this one first)
 				mEGLSharedLibrary = ::LoadLibraryExA("libEGL.dll", nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
 				if (nullptr != mEGLSharedLibrary)
@@ -2123,7 +2121,14 @@ namespace OpenGLES3Renderer
 						}
 					}
 				}
-			#elif defined LINUX && !defined ANDROID
+			#elif defined __ANDROID__
+				// On Android we have "libEGL.so"
+				mEGLSharedLibrary = ::dlopen("libEGL.so", RTLD_LAZY);
+				if (nullptr != mEGLSharedLibrary)
+				{
+					mGLESSharedLibrary = ::dlopen("libGLESv2.so", RTLD_LAZY);
+				}
+			#elif defined LINUX
 				// First "libGL.so": The closed source drivers doesn't provide separate libraries for GLES and EGL (at least the drivers from AMD)
 				// but the separate EGL/GLES3 libs might be present on the system
 				mEGLSharedLibrary = ::dlopen("libGL.so", RTLD_LAZY);
@@ -2153,13 +2158,6 @@ namespace OpenGLES3Renderer
 						mGLESSharedLibrary = ::dlopen("libGLESv2.so", RTLD_LAZY);
 					}
 				}
-			#elif defined ANDROID
-				// On Android we have "libEGL.so"
-				mEGLSharedLibrary = ::dlopen("libEGL.so", RTLD_LAZY);
-				if (nullptr != mEGLSharedLibrary)
-				{
-					mGLESSharedLibrary = ::dlopen("libGLESv2.so", RTLD_LAZY);
-				}
 			#else
 				#error "Unsupported platform"
 			#endif
@@ -2183,7 +2181,7 @@ namespace OpenGLES3Renderer
 			bool result = true;	// Success by default
 
 			// Define a helper macro
-			#ifdef WIN32
+			#ifdef _WIN32
 				#define IMPORT_FUNC(funcName)																																								\
 					if (result)																																												\
 					{																																														\
@@ -2210,7 +2208,32 @@ namespace OpenGLES3Renderer
 							result = false;																																									\
 						}																																													\
 					}
-			#elif defined LINUX && !defined(ANDROID)
+			#elif defined(__ANDROID__)
+				#define IMPORT_FUNC(funcName)																																							\
+					if (result)																																											\
+					{																																													\
+						void* symbol = ::dlsym(mEGLSharedLibrary, #funcName);																															\
+						if (nullptr == symbol)																																							\
+						{																																												\
+							/* The specification states that "eglGetProcAddress" is only for extension functions, but when using OpenGL ES 3 on desktop PC by using a									\
+							   native OpenGL ES 3 capable graphics driver under Linux (tested with "AMD Catalyst 11.8"), only this way will work */														\
+							if (nullptr != eglGetProcAddress)																																			\
+							{																																											\
+								symbol = eglGetProcAddress(#funcName);																																	\
+							}																																											\
+						}																																												\
+						if (nullptr != symbol)																																							\
+						{																																												\
+							*(reinterpret_cast<void**>(&(funcName))) = symbol;																															\
+						}																																												\
+						else																																											\
+						{																																												\
+							const char* libraryName = "unknown";																																		\
+							RENDERER_LOG(mOpenGLES3Renderer.getContext(), CRITICAL, "Failed to locate the OpenGL ES 3 entry point \"%s\" within the EGL shared library \"%s\"", #funcName, libraryName)	\
+							result = false;																																								\
+						}																																												\
+					}
+			#elif defined LINUX
 				#define IMPORT_FUNC(funcName)																																							\
 					if (result)																																											\
 					{																																													\
@@ -2237,31 +2260,6 @@ namespace OpenGLES3Renderer
 								libraryName = linkMap->l_name;																																			\
 							}																																											\
 							libraryName = libraryName; /* To avoid -Wunused-but-set-variable warning when RENDERER_LOG is defined empty */ \
-							RENDERER_LOG(mOpenGLES3Renderer.getContext(), CRITICAL, "Failed to locate the OpenGL ES 3 entry point \"%s\" within the EGL shared library \"%s\"", #funcName, libraryName)	\
-							result = false;																																								\
-						}																																												\
-					}
-			#elif defined (LINUX) && defined(ANDROID)
-				#define IMPORT_FUNC(funcName)																																							\
-					if (result)																																											\
-					{																																													\
-						void* symbol = ::dlsym(mEGLSharedLibrary, #funcName);																															\
-						if (nullptr == symbol)																																							\
-						{																																												\
-							/* The specification states that "eglGetProcAddress" is only for extension functions, but when using OpenGL ES 3 on desktop PC by using a									\
-							   native OpenGL ES 3 capable graphics driver under Linux (tested with "AMD Catalyst 11.8"), only this way will work */														\
-							if (nullptr != eglGetProcAddress)																																			\
-							{																																											\
-								symbol = eglGetProcAddress(#funcName);																																	\
-							}																																											\
-						}																																												\
-						if (nullptr != symbol)																																							\
-						{																																												\
-							*(reinterpret_cast<void**>(&(funcName))) = symbol;																															\
-						}																																												\
-						else																																											\
-						{																																												\
-							const char* libraryName = "unknown";																																		\
 							RENDERER_LOG(mOpenGLES3Renderer.getContext(), CRITICAL, "Failed to locate the OpenGL ES 3 entry point \"%s\" within the EGL shared library \"%s\"", #funcName, libraryName)	\
 							result = false;																																								\
 						}																																												\
@@ -2325,7 +2323,7 @@ namespace OpenGLES3Renderer
 			bool result = true;	// Success by default
 
 			// Define a helper macro
-			#ifdef ANDROID
+			#ifdef __ANDROID__
 				// Native OpenGL ES 3 on mobile device
 				#define IMPORT_FUNC(funcName)																														\
 					if (result)																																		\
@@ -6839,7 +6837,7 @@ namespace OpenGLES3Renderer
 				mRenderWindow->getWidthAndHeight(width, height);
 				return;
 			}
-			#ifdef WIN32
+			#ifdef _WIN32
 				// Is there a valid native OS window?
 				if (NULL_HANDLE != mNativeWindowHandle)
 				{
@@ -6873,7 +6871,14 @@ namespace OpenGLES3Renderer
 					height = static_cast<UINT>(swapChainHeight);
 				}
 				else
-			#elif defined LINUX && !defined(ANDROID)
+			#elif defined(__ANDROID__)
+				if (NULL_HANDLE != mNativeWindowHandle)
+				{
+					//TODO(sw) get size on Android
+					width = height = 1;
+				}
+				else
+			#elif defined LINUX
 				if (NULL_HANDLE != mNativeWindowHandle)
 				{
 					IOpenGLES3Context& openGLES3Context = static_cast<OpenGLES3Renderer&>(getRenderer()).getOpenGLES3Context();
@@ -6900,13 +6905,6 @@ namespace OpenGLES3Renderer
 					// Done
 					width = unsignedWidth;
 					height = unsignedHeight;
-				}
-				else
-			#elif defined(ANDROID)
-				if (NULL_HANDLE != mNativeWindowHandle)
-				{
-					//TODO(sw) get size on android
-					width = height = 1;
 				}
 				else
 			#else

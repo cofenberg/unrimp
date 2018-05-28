@@ -27,7 +27,7 @@
 #include "RendererRuntime/IRendererRuntime.h"
 #include "RendererRuntime/Context.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 	#include "RendererRuntime/Core/Platform/WindowsHeader.h"
 #elif defined LINUX
 	// TODO(co) Review which of the following headers can be removed
@@ -57,7 +57,7 @@ namespace RendererRuntime
 	//[ Macros                                                ]
 	//[-------------------------------------------------------]
 	// Define a helper macro
-	#ifdef WIN32
+	#ifdef _WIN32
 		#define IMPORT_FUNC(funcName)																																											\
 			if (result)																																															\
 			{																																																	\
@@ -116,7 +116,7 @@ namespace RendererRuntime
 	OpenVRRuntimeLinking::~OpenVRRuntimeLinking()
 	{
 		// Destroy the shared library instances
-		#ifdef WIN32
+		#ifdef _WIN32
 			if (nullptr != mOpenVRSharedLibrary)
 			{
 				::FreeLibrary(static_cast<HMODULE>(mOpenVRSharedLibrary));
@@ -154,7 +154,7 @@ namespace RendererRuntime
 	bool OpenVRRuntimeLinking::loadSharedLibraries()
 	{
 		// Load the shared library
-		#ifdef WIN32
+		#ifdef _WIN32
 			mOpenVRSharedLibrary = ::LoadLibraryExA("openvr_api.dll", nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
 			if (nullptr == mOpenVRSharedLibrary)
 			{

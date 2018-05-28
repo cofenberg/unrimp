@@ -23,7 +23,7 @@
 //[-------------------------------------------------------]
 #include "PrecompiledHeader.h"
 #include "Framework/CommandLineArguments.h"
-#ifdef WIN32
+#ifdef _WIN32
 	#include "Framework/WindowsHeader.h"
 	#ifdef UNICODE
 		// Disable warnings in external headers, we can't fix them
@@ -48,7 +48,7 @@
 //[-------------------------------------------------------]
 CommandLineArguments::CommandLineArguments()
 {
-#if WIN32
+#if _WIN32
 	#ifdef UNICODE
 		int wargc = 0;
 		wchar_t** wargv = ::CommandLineToArgvW(GetCommandLineW(), &wargc);

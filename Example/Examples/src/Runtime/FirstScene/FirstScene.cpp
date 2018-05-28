@@ -27,7 +27,7 @@
 #ifdef RENDERER_RUNTIME_OPENVR
 	#include "Runtime/FirstScene/VrController.h"
 #endif
-#ifdef WIN32
+#ifdef _WIN32
 	#include "Framework/WindowsHeader.h"
 #endif
 
@@ -174,7 +174,7 @@ void FirstScene::onInitialization()
 	if (nullptr != rendererRuntime)
 	{
 		// Usability: Restore the position and size of the main window from a previous session
-		#if defined(WIN32) && defined(RENDERER_RUNTIME_IMGUI)
+		#if defined(_WIN32) && defined(RENDERER_RUNTIME_IMGUI)
 		{
 			float value[4] = {};
 			if (rendererRuntime->getDebugGuiManager().getIniSetting("MainWindowPositionSize", value))
@@ -297,7 +297,7 @@ void FirstScene::onUpdate()
 			// -> While the mouse is hovering over an GUI element, disable the ingame controller
 			// -> Avoid that while looking around with the mouse the mouse is becoming considered hovering over an GUI element
 			// -> Remember: Unrimp is about rendering related topics, it's not an all-in-one-framework including an advanced input framework, so a simple non-generic solution is sufficient in here
-			#ifdef WIN32
+			#ifdef _WIN32
 				const bool hasWindowFocus = (::GetFocus() == reinterpret_cast<HWND>(rendererRuntime->getRenderer().getContext().getNativeWindowHandle()));
 			#else
 				bool hasWindowFocus = true;
@@ -331,7 +331,7 @@ void FirstScene::onUpdate()
 		}
 
 		// Usability: Backup the position and size of the main window so we can restore it in the next session
-		#if defined(WIN32) && defined(RENDERER_RUNTIME_IMGUI)
+		#if defined(_WIN32) && defined(RENDERER_RUNTIME_IMGUI)
 		{
 			RECT rect;
 			::GetWindowRect(reinterpret_cast<HWND>(rendererRuntime->getRenderer().getContext().getNativeWindowHandle()), &rect);

@@ -30,7 +30,7 @@
 #include <Renderer/Renderer.h>
 
 #ifdef SHARED_LIBRARIES
-	#ifdef WIN32
+	#ifdef _WIN32
 		// Set Windows version to Windows Vista (0x0600), we don't support Windows XP (0x0501)
 		#ifdef WINVER
 			#undef WINVER
@@ -193,7 +193,7 @@ namespace Renderer
 			}
 			#ifdef SHARED_LIBRARIES
 				// Dynamically linked libraries
-				#ifdef WIN32
+				#ifdef _WIN32
 					// Load in the dll
 					char rendererFilename[128];
 					snprintf(rendererFilename, countof(rendererFilename), "%sRenderer.dll", rendererName);
@@ -342,7 +342,7 @@ namespace Renderer
 
 			// Unload the shared library instance
 			#ifdef SHARED_LIBRARIES
-				#ifdef WIN32
+				#ifdef _WIN32
 					if (nullptr != mRendererSharedLibrary)
 					{
 						::FreeLibrary(static_cast<HMODULE>(mRendererSharedLibrary));
@@ -366,7 +366,7 @@ namespace Renderer
 			#endif
 
 			// Unload the renderer API shared library instance
-			#ifdef WIN32
+			#ifdef _WIN32
 				if (nullptr != mRendererApiSharedLibrary)
 				{
 					::FreeLibrary(static_cast<HMODULE>(mRendererApiSharedLibrary));

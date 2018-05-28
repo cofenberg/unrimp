@@ -7,6 +7,7 @@
     }
   ],
   "configurations": [
+    // Microsoft Windows
     {
       "name": "Windows_x86d_Shared",
       "generator": "Ninja",
@@ -58,7 +59,7 @@
       "inheritEnvironments": [ "msvc_x86" ],
       "buildRoot": "${env.BuildDirectory}\\${name}",
       "installRoot": "${env.InstallDirectory}\\${name}",
-      "cmakeCommandArgs": "-DARCHITECTURE_X86=1 -DSHARED_LIBRARY=0 -DSTATIC_LIBRARY=1",
+      "cmakeCommandArgs": "-DARCHITECTURE_X86=1 -DSHARED_LIBRARY=0",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
     },
@@ -69,7 +70,7 @@
       "inheritEnvironments": [ "msvc_x86" ],
       "buildRoot": "${env.BuildDirectory}\\${name}",
       "installRoot": "${env.InstallDirectory}\\${name}",
-      "cmakeCommandArgs": "-DARCHITECTURE_X86=1 -DSHARED_LIBRARY=0 -DSTATIC_LIBRARY=1",
+      "cmakeCommandArgs": "-DARCHITECTURE_X86=1 -DSHARED_LIBRARY=0",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
     },
@@ -80,7 +81,7 @@
       "inheritEnvironments": [ "msvc_x64_x64" ],
       "buildRoot": "${env.BuildDirectory}\\${name}",
       "installRoot": "${env.InstallDirectory}\\${name}",
-      "cmakeCommandArgs": "-DARCHITECTURE_X64=1 -DSHARED_LIBRARY=0 -DSTATIC_LIBRARY=1",
+      "cmakeCommandArgs": "-DARCHITECTURE_X64=1 -DSHARED_LIBRARY=0",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
     },
@@ -91,10 +92,36 @@
       "inheritEnvironments": [ "msvc_x64_x64" ],
       "buildRoot": "${env.BuildDirectory}\\${name}",
       "installRoot": "${env.InstallDirectory}\\${name}",
-      "cmakeCommandArgs": "-DARCHITECTURE_X64=1 -DSHARED_LIBRARY=0 -DSTATIC_LIBRARY=1",
+      "cmakeCommandArgs": "-DARCHITECTURE_X64=1 -DSHARED_LIBRARY=0",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
     },
+
+    // TODO(co) Android
+    {
+      "name": "TODO(co) Android_arm64d_Static",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "inheritEnvironments": [ "vsdev" ],
+      "buildRoot": "${env.BuildDirectory}\\${name}",
+      "installRoot": "${env.InstallDirectory}\\${name}",
+      "cmakeCommandArgs": "-DCMAKE_TOOLCHAIN_FILE:FILEPATH=\"${workspaceRoot}\\Build\\AndroidToolchain.cmake\" -DARCHITECTURE_X64=1 -DSHARED_LIBRARY=0",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": ""
+    },
+    {
+      "name": "TODO(co) Android_arm64_Static",
+      "generator": "Ninja",
+      "configurationType": "Release",
+      "inheritEnvironments": [ "vsdev" ],
+      "buildRoot": "${env.BuildDirectory}\\${name}",
+      "installRoot": "${env.InstallDirectory}\\${name}",
+      "cmakeCommandArgs": "-DCMAKE_TOOLCHAIN_FILE:FILEPATH=\"${workspaceRoot}\\Build\\AndroidToolchain.cmake\" -DARCHITECTURE_X64=1 -DSHARED_LIBRARY=0",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": ""
+    },
+
+    // TODO(co) Linux
     {
       "name": "TODO(co) Linux-Debug",
       "generator": "Unix Makefiles",

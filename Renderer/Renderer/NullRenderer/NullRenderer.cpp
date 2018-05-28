@@ -37,7 +37,7 @@
 //[-------------------------------------------------------]
 #include <Renderer/Renderer.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 	// Set Windows version to Windows Vista (0x0600), we don't support Windows XP (0x0501)
 	#ifdef WINVER
 		#undef WINVER
@@ -123,7 +123,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
-		static constexpr char* NULL_NAME = "Null";	///< ASCII name of this shader language, always valid (do not free the memory the returned pointer is pointing to)
+		static constexpr const char* NULL_NAME = "Null";	///< ASCII name of this shader language, always valid (do not free the memory the returned pointer is pointing to)
 
 
 //[-------------------------------------------------------]
@@ -1671,7 +1671,7 @@ namespace NullRenderer
 	public:
 		virtual void getWidthAndHeight(uint32_t& width, uint32_t& height) const override
 		{
-			#ifdef WIN32
+			#ifdef _WIN32
 				// Is there a valid native OS window?
 				if (NULL_HANDLE != mNativeWindowHandle)
 				{

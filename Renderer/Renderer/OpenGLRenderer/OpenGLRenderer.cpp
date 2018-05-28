@@ -61,7 +61,7 @@
 
 #include <smol-v/smolv.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 	// Set Windows version to Windows Vista (0x0600), we don't support Windows XP (0x0501)
 	#ifdef WINVER
 		#undef WINVER
@@ -206,7 +206,7 @@ FNDEF_GL(void,		glFinish,			(void));
 FNDEF_GL(GLubyte *,	glGetStringi,	(GLenum, GLuint));
 
 // Platform specific
-#ifdef WIN32
+#ifdef _WIN32
 	FNDEF_GL(HDC,	wglGetCurrentDC,	(VOID));
 	FNDEF_GL(PROC,	wglGetProcAddress,	(LPCSTR));
 	FNDEF_GL(HGLRC,	wglCreateContext,	(HDC));
@@ -268,7 +268,7 @@ FNDEF_GL(GLubyte *,	glGetStringi,	(GLenum, GLuint));
 #define glGetStringi FNPTR(glGetStringi)
 
 // Platform specific
-#ifdef WIN32
+#ifdef _WIN32
 	#define wglGetCurrentDC		FNPTR(wglGetCurrentDC)
 	#define wglGetProcAddress	FNPTR(wglGetProcAddress)
 	#define wglCreateContext	FNPTR(wglCreateContext)
@@ -291,7 +291,7 @@ FNDEF_GL(GLubyte *,	glGetStringi,	(GLenum, GLuint));
 #endif
 
 // Define a helper macro
-#ifdef WIN32
+#ifdef _WIN32
 	#define IMPORT_FUNC(funcName)																																					\
 		if (result)																																									\
 		{																																											\
@@ -347,7 +347,7 @@ FNDEF_GL(GLubyte *,	glGetStringi,	(GLenum, GLuint));
 //[-------------------------------------------------------]
 //[ WGL (Windows only) definitions                        ]
 //[-------------------------------------------------------]
-#ifdef WIN32
+#ifdef _WIN32
 	// WGL_ARB_extensions_string
 	FNDEF_EX(wglGetExtensionsStringARB,	PFNWGLGETEXTENSIONSSTRINGARBPROC);
 
@@ -624,7 +624,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
-		static constexpr char* GLSL_NAME = "GLSL";	///< ASCII name of this shader language, always valid (do not free the memory the returned pointer is pointing to)
+		static constexpr const char* GLSL_NAME = "GLSL";	///< ASCII name of this shader language, always valid (do not free the memory the returned pointer is pointing to)
 
 		#ifdef OPENGLRENDERER_GLSLTOSPIRV
 			static bool GlslangInitialized = false;
@@ -1592,7 +1592,7 @@ namespace OpenGLRenderer
 			if (mOwnsOpenGLSharedLibrary)
 			{
 				// Destroy the shared library instances
-				#ifdef WIN32
+				#ifdef _WIN32
 					if (nullptr != mOpenGLSharedLibrary)
 					{
 						::FreeLibrary(static_cast<HMODULE>(mOpenGLSharedLibrary));
@@ -1655,7 +1655,7 @@ namespace OpenGLRenderer
 			if (mOwnsOpenGLSharedLibrary)
 			{
 				// Load the shared library
-				#ifdef WIN32
+				#ifdef _WIN32
 					mOpenGLSharedLibrary = ::LoadLibraryExA("opengl32.dll", nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
 					if (nullptr == mOpenGLSharedLibrary)
 					{
@@ -1717,7 +1717,7 @@ namespace OpenGLRenderer
 			IMPORT_FUNC(glScissor);
 			IMPORT_FUNC(glFlush);
 			IMPORT_FUNC(glFinish);
-			#ifdef WIN32
+			#ifdef _WIN32
 				IMPORT_FUNC(wglGetCurrentDC);
 				IMPORT_FUNC(wglGetProcAddress);
 				IMPORT_FUNC(wglCreateContext);
@@ -2107,7 +2107,7 @@ namespace OpenGLRenderer
 			{
 				// Under Windows all available extensions can be received via one additional function
 				// but under Linux there are two additional functions for this
-				#ifdef WIN32
+				#ifdef _WIN32
 					// "glGetString()" & "wglGetExtensionsStringARB()"
 					const int numberOfLoops = 2;
 				#elif APPLE
@@ -2133,7 +2133,7 @@ namespace OpenGLRenderer
 					// TODO(sw) Move the query for advanced extensions (via platform specific methods) to the context?
 					if (loopIndex > 0)
 					{
-						#ifdef WIN32
+						#ifdef _WIN32
 							// WGL extensions
 							if (!mWGL_ARB_extensions_string)
 							{
@@ -2275,7 +2275,7 @@ namespace OpenGLRenderer
 		*  @note
 		*    - Platform dependent implementation
 		*/
-		#ifdef WIN32
+		#ifdef _WIN32
 			bool initialize(bool useExtensions = true)
 			{
 				// Disable the following warning, we can't do anything to resolve this warning
@@ -2360,7 +2360,7 @@ namespace OpenGLRenderer
 		bool initializeUniversal()
 		{
 			// Define a platform dependent helper macro
-			#ifdef WIN32
+			#ifdef _WIN32
 				#define IMPORT_FUNC(funcName)																															\
 					if (result)																																			\
 					{																																					\
@@ -3093,7 +3093,7 @@ namespace OpenGLRenderer
 
 
 
-	#ifdef WIN32
+	#ifdef _WIN32
 		//[-------------------------------------------------------]
 		//[ OpenGLRenderer/OpenGLContextWindows.h                 ]
 		//[-------------------------------------------------------]
@@ -8697,7 +8697,7 @@ namespace OpenGLRenderer
 			glPixelStorei(GL_UNPACK_ALIGNMENT, (Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat) & 3) ? 1 : 4);
 
 			// Create the OpenGL texture instance
-			#ifdef WIN32
+			#ifdef _WIN32
 				// TODO(co) It appears that DSA "glGenerateTextureMipmap()" is not working (one notices the noise) or we're using it wrong, tested with
 				//			- "InstancedCubes"-example -> "CubeRendereDrawInstanced"
 				//		    - AMD 290X Radeon software version 17.7.2 as well as with GeForce 980m 384.94
@@ -9803,7 +9803,7 @@ namespace OpenGLRenderer
 			// TODO(co) "GL_ARB_direct_state_access" AMD graphics card driver bug ahead
 			// -> AMD graphics card: 13.02.2017 using Radeon software 17.1.1 on MS Windows: Looks like "GL_ARB_direct_state_access" is broken when trying to use "glCompressedTextureSubImage3D()" for upload
 			// -> Describes the same problem: https://community.amd.com/thread/194748 - "Upload data to GL_TEXTURE_CUBE_MAP with glTextureSubImage3D (DSA) broken ?"
-			#ifdef WIN32
+			#ifdef _WIN32
 				const bool isArbDsa = false;
 			#else
 				const bool isArbDsa = openGLRenderer.getExtensions().isGL_ARB_direct_state_access();
@@ -11150,7 +11150,7 @@ namespace OpenGLRenderer
 		SwapChain(Renderer::IRenderPass& renderPass, Renderer::WindowHandle windowHandle, MAYBE_UNUSED bool useExternalContext) :
 			ISwapChain(renderPass),
 			mNativeWindowHandle(windowHandle.nativeWindowHandle),
-			#ifdef WIN32
+			#ifdef _WIN32
 				mOpenGLContext(RENDERER_NEW(renderPass.getRenderer().getContext(), OpenGLContextWindows)(static_cast<const RenderPass&>(renderPass).getDepthStencilAttachmentTextureFormat(), windowHandle.nativeWindowHandle, static_cast<const OpenGLContextWindows*>(&static_cast<OpenGLRenderer&>(renderPass.getRenderer()).getOpenGLContext()))),
 			#elif defined LINUX
 				mOpenGLContext(RENDERER_NEW(renderPass.getRenderer().getContext(), OpenGLContextLinux)(static_cast<OpenGLRenderer&>(renderPass.getRenderer()), static_cast<const RenderPass&>(renderPass).getDepthStencilAttachmentTextureFormat(), windowHandle.nativeWindowHandle, useExternalContext, static_cast<const OpenGLContextLinux*>(&static_cast<OpenGLRenderer&>(renderPass.getRenderer()).getOpenGLContext()))),
@@ -11200,7 +11200,7 @@ namespace OpenGLRenderer
 				mRenderWindow->getWidthAndHeight(width, height);
 				return;
 			}
-			#ifdef WIN32
+			#ifdef _WIN32
 				// Is there a valid native OS window?
 				if (NULL_HANDLE != mNativeWindowHandle)
 				{
@@ -11296,7 +11296,7 @@ namespace OpenGLRenderer
 				mRenderWindow->present();
 				return;
 			}
-			#ifdef WIN32
+			#ifdef _WIN32
 			{
 				// Set new vertical synchronization interval?
 				// -> We do this in here to avoid having to use "wglMakeCurrent()"/"glXMakeCurrent()" to often at multiple places
@@ -16094,7 +16094,7 @@ namespace OpenGLRenderer
 			const Renderer::handle nativeWindowHandle = mContext.getNativeWindowHandle();
 			const Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::Enum::R8G8B8A8;
 			const RenderPass renderPass(*this, 1, &textureFormat, Renderer::TextureFormat::Enum::UNKNOWN, 1);
-			#ifdef WIN32
+			#ifdef _WIN32
 			{
 				// TODO(co) Add external OpenGL context support
 				mOpenGLContext = RENDERER_NEW(mContext, OpenGLContextWindows)(mOpenGLRuntimeLinking, renderPass.getDepthStencilAttachmentTextureFormat(), nativeWindowHandle);

@@ -40,7 +40,7 @@ int programEntryPoint(const CommandLineArguments& commandLineArguments);
 //[ Platform dependent program entry point                ]
 //[-------------------------------------------------------]
 // Windows implementation
-#ifdef WIN32
+#ifdef _WIN32
 
 	// For memory leak detection
 	#ifdef _DEBUG

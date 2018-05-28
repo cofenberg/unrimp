@@ -74,7 +74,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
-		static constexpr char* PHYSICSFS_LOCAL_DATA_MOUNT_POINT = "LocalData";
+		static constexpr const char* PHYSICSFS_LOCAL_DATA_MOUNT_POINT = "LocalData";
 
 
 		//[-------------------------------------------------------]

@@ -261,7 +261,7 @@ Renderer::IRenderer* IApplicationRenderer::createRendererInstance(const char* re
 	{
 		bool loadRendererApiSharedLibrary = false;
 		Renderer::ILog& log = (nullptr != mExampleBase && nullptr != mExampleBase->getCustomLog()) ? *mExampleBase->getCustomLog() : ::detail::g_DefaultLog;
-		#ifdef WIN32
+		#ifdef _WIN32
 			mRendererContext = new Renderer::Context(log, ::detail::g_DefaultAssert, ::detail::g_DefaultAllocator, getNativeWindowHandle());
 		#elif LINUX
 			// Under Linux the OpenGL library interacts with the library from X11 so we need to load the library ourself instead letting it be loaded by the renderer instance

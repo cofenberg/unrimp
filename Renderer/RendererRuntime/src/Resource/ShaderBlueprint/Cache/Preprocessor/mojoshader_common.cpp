@@ -1,5 +1,5 @@
 // Disable warnings
-#ifdef WIN32
+#ifdef _WIN32
 	#pragma warning(disable: 4267)	// warning C4267: '=' : conversion from '<x>' to '<y>', possible loss of data
 	#pragma warning(disable: 4018)	// warning C4018: '<x>' : signed/unsigned mismatch
 	#pragma warning(disable: 4668)	// warning C4668: '<x>' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'

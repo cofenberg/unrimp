@@ -27,7 +27,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#ifdef WIN32
+#ifdef _WIN32
 	// Disable warnings in external headers, we can't fix them
 	__pragma(warning(push))
 		__pragma(warning(disable: 4574)) // warning C4574: '_HAS_ITERATOR_DEBUGGING' is defined to be '0': did you mean to use '#if _HAS_ITERATOR_DEBUGGING'?
@@ -179,7 +179,9 @@ namespace RendererRuntime
 			mId(compileTimeFNV(string))
 		{
 			// It's a trap!
-			static_assert(false, "Use the \"STRING_ID()\" macro to mark compile string IDs");
+			#ifdef _WIN32
+				static_assert(false, "Use the \"STRING_ID()\" macro to mark compile string IDs");
+			#endif
 		}
 
 		/**

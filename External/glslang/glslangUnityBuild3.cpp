@@ -19,7 +19,7 @@
 
 
 // Amalgamated/unity build
-#ifdef WIN32
+#ifdef _WIN32
 	// Disable warnings in external headers, we can't fix them
 	__pragma(warning(disable: 4061))	// warning C4061: enumerator 'EBadProfile' in switch of enum 'EProfile' is not explicitly handled by a case label
 	__pragma(warning(disable: 4100))	// warning C4100: 'typeProxy': unreferenced formal parameter

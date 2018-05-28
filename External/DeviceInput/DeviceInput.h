@@ -39,7 +39,7 @@
 //[-------------------------------------------------------]
 //[ C++ compiler keywords                                 ]
 //[-------------------------------------------------------]
-#ifdef WIN32
+#ifdef _WIN32
 	/**
 	*  @brief
 	*    Force the compiler to inline something
@@ -214,7 +214,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#ifdef WIN32
+#ifdef _WIN32
 	#include <intrin.h>	// For "__nop()"
 #endif
 // Disable warnings in external headers, we can't fix them
@@ -236,7 +236,7 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Project independent generic export                    ]
 //[-------------------------------------------------------]
-#ifdef WIN32
+#ifdef _WIN32
 	// To export classes, methods and variables
 	#define GENERIC_API_EXPORT	__declspec(dllexport)
 
@@ -256,7 +256,7 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Project independent generic import                    ]
 //[-------------------------------------------------------]
-#ifdef WIN32
+#ifdef _WIN32
 	// To import classes, methods and variables
 	#define GENERIC_API_IMPORT	__declspec(dllimport)
 #elif LINUX

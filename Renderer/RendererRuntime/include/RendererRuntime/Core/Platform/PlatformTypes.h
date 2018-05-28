@@ -33,7 +33,7 @@
 //[-------------------------------------------------------]
 //[ Project independent generic export                    ]
 //[-------------------------------------------------------]
-#ifdef WIN32
+#ifdef _WIN32
 	// To export classes, methods and variables
 	#define GENERIC_API_EXPORT	__declspec(dllexport)
 #elif LINUX
@@ -47,7 +47,7 @@
 //[-------------------------------------------------------]
 //[ Project independent generic import                    ]
 //[-------------------------------------------------------]
-#ifdef WIN32
+#ifdef _WIN32
 	// To import classes, methods and variables
 	#define GENERIC_API_IMPORT __declspec(dllimport)
 #elif LINUX

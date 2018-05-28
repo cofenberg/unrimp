@@ -37,32 +37,30 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		// TODO(sw) This code is only needed when not using boost::filesystem and a c++ runtime library which implements fully the c++ filesystem TS
-		// TODO(sw) Add check/define if c++ runtime library is used which supports std::filesystem::path::lexically_normal
-		#ifndef UNRIMP_USE_BOOST_FILESYSTEM
+		#ifndef __ANDROID__
 			// Copied from boost: https://github.com/boostorg/filesystem/blob/a682eaa476cf0b4e992884d32dd2ddcfb0b6b1aa/src/path.cpp
 			// Implement lexically_normal used when std::filesystem::path implementation of the c++ runtime doesn't provide this as member method
 			// std::filesystem::path::lexically_normal is part of the filesystem TS which is part of C++17
 			const std_filesystem::path&  dot_path()
 			{
-				#   ifdef WIN32
-				static const std_filesystem::path dot_pth(L".");
-				#   else
-				static const std_filesystem::path dot_pth(".");
-				#   endif
+				#ifdef _WIN32
+					static const std_filesystem::path dot_pth(L".");
+				#else
+					static const std_filesystem::path dot_pth(".");
+				#endif
 				return dot_pth;
 			}
 		
-			# ifdef WIN32
+			#ifdef _WIN32
 				const std_filesystem::path::value_type      separator = L'/';
 				const std_filesystem::path::value_type      preferred_separator = L'\\';
 				const std_filesystem::path::value_type      dot = L'.';
 				const std_filesystem::path::value_type      colon = L':';
-			# else 
+			#else 
 				const std_filesystem::path::value_type      separator = '/';
 				const std_filesystem::path::value_type      preferred_separator = '/';
 				const std_filesystem::path::value_type      dot = '.';
-			# endif
+			#endif
 		
 			std_filesystem::path lexically_normal(const std_filesystem::path& path)
 			{
@@ -95,9 +93,9 @@ namespace
 						&& (lf.size() != 2 
 							|| (lf[0] != detail::dot
 							&& lf[1] != detail::dot
-						#             ifdef WIN32
+						#ifdef _WIN32
 							&& lf[1] != ::detail::colon
-						#             endif
+						#endif
 							)
 							)
 						)
@@ -156,7 +154,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	std_filesystem::path FileSystemHelper::lexicallyNormal(const std_filesystem::path& path)
 	{
-		#ifdef UNRIMP_USE_BOOST_FILESYSTEM
+		#ifdef __ANDROID__
 			// boost itself has this implemented
 			return path.lexically_normal();
 		#else

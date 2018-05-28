@@ -45,7 +45,7 @@ PRAGMA_WARNING_PUSH
 	#include <mutex>
 PRAGMA_WARNING_POP
 
-#ifdef WIN32
+#ifdef _WIN32
 	// Disable warnings in external headers, we can't fix them
 	PRAGMA_WARNING_PUSH
 		PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'argument': conversion from 'const char' to 'utf8::uint8_t', signed/unsigned mismatch
@@ -228,7 +228,7 @@ namespace Renderer
 			}
 
 			// Platform specific handling
-			#ifdef WIN32
+			#ifdef _WIN32
 			{
 				// Convert UTF-8 string to UTF-16
 				std::wstring utf16Line;

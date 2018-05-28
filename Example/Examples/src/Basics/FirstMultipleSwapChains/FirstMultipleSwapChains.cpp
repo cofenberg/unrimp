@@ -24,7 +24,7 @@
 #include "PrecompiledHeader.h"
 #include "Basics/FirstMultipleSwapChains/FirstMultipleSwapChains.h"
 #include "Framework/Color4.h"
-#ifdef WIN32
+#ifdef _WIN32
 	// This is only a simple and close-to-the-metal example, don't use OS stuff directly in more complex projects
 	#include "Framework/WindowsHeader.h"
 #elif defined LINUX
@@ -37,7 +37,7 @@
 
 
 // This is only a simple and close-to-the-metal example, don't use OS stuff directly in more complex projects
-#ifdef WIN32
+#ifdef _WIN32
 	//[-------------------------------------------------------]
 	//[ Global MS Windows callback function                   ]
 	//[-------------------------------------------------------]
@@ -207,7 +207,7 @@ void FirstMultipleSwapChains::onInitialization()
 
 			// Create the OS native window instance
 			// -> This is only a simple and close-to-the-metal example, don't use OS stuff directly in more complex projects
-			#ifdef WIN32
+			#ifdef _WIN32
 				{ // Setup and register the window class for the this example window
 					WNDCLASS windowDummyClass;
 					windowDummyClass.hInstance		= ::GetModuleHandle(nullptr);
@@ -247,7 +247,7 @@ void FirstMultipleSwapChains::onInitialization()
 			mSwapChain = renderer->createSwapChain(getMainRenderTarget()->getRenderPass(), Renderer::WindowHandle{nativeWindowHandle, nullptr, nullptr});
 
 			// This is only a simple and close-to-the-metal example, don't use OS stuff directly in more complex projects
-			#ifdef WIN32
+			#ifdef _WIN32
 				// Is there a valid OS native window instance?
 				if (NULL_HANDLE != hWnd)
 				{
@@ -289,7 +289,7 @@ void FirstMultipleSwapChains::onDeinitialization()
 	if (nullptr != mSwapChain)
 	{
 		// This is only a simple and close-to-the-metal example, don't use OS stuff directly in more complex projects
-		#ifdef WIN32
+		#ifdef _WIN32
 			// Destroy the native OS window instance
 			const HWND hWnd = reinterpret_cast<HWND>(mSwapChain->getNativeWindowHandle());
 			if (NULL_HANDLE != hWnd)

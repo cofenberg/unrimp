@@ -250,6 +250,15 @@ Microsoft Windows: First Example Kickoff
 - Modify ["launch.vs.json"](https://github.com/Microsoft/vscode-cpptools/blob/master/launch.md) to change the Visual Studio application launch options
 
 
+Microsoft Windows: Targeting Android
+======
+- Install the Visual Studio 2017 ["Mobile development with C++"-workload](https://blogs.msdn.microsoft.com/vcblog/2017/04/18/android-and-ios-development-with-c-in-visual-studio/)
+- Build and run the ["Native Activity Application (Android)"-template](https://docs.microsoft.com/en-us/visualstudio/cross-platform/create-an-android-native-activity-app) to verify your installation and setup
+- [Open Visual Studio 2017 and select "File -> Open -> CMake..." -> "unrimp\CMakeLists.txt"](https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studio/)
+- Build "Android_arm64_Static" project settings
+- TODO(co) Work-in-progress: Upload to device to test and debug
+
+
 Useful Microsoft Windows Developer Tools
 ======
 - When profiling a product

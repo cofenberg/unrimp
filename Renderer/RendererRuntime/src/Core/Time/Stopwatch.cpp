@@ -23,7 +23,7 @@
 //[-------------------------------------------------------]
 #include "RendererRuntime/PrecompiledHeader.h"
 #include "RendererRuntime/Core/Time/Stopwatch.h"
-#ifdef WIN32
+#ifdef _WIN32
 	#include "RendererRuntime/Core/Platform/WindowsHeader.h"
 #elif defined LINUX
 	#include <sys/time.h>
@@ -42,7 +42,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	std::time_t Stopwatch::getSystemMicroseconds() const
 	{
-		#ifdef WIN32
+		#ifdef _WIN32
 			// Frequency of the performance counter
 			static LARGE_INTEGER performanceFrequency;
 			static bool performanceFrequencyInitialized = false;

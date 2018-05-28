@@ -57,9 +57,6 @@ PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4774)	// warning C4774: 'sprintf_s' : format string expected in argument 3 is not a string literal
 	#include <string>
 PRAGMA_WARNING_POP
-#ifdef ANDROID
-	#include <cstdio>	// For implementing own "std::to_string()"
-#endif
 
 
 //[-------------------------------------------------------]
@@ -82,22 +79,6 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		std::string own_to_string(uint32_t value)
-		{
-			// Own "std::to_string()" implementation similar to the one used in GCC STL
-			// -> We need it on Android because GNU STL doesn't implement it, which is part of the Android NDK
-			// -> We need to support GNU STL because Qt-runtime uses Qt Android which currently only supports GNU STL as C++ runtime
-			#ifdef ANDROID
-				// We convert only an "uint32_t"-value which has a maximum value of 4294967295 -> 11 characters so with 16 we are on the safe side
-				const size_t bufferSize = 16;
-				char buffer[bufferSize] = {0};
-				const int length = snprintf(buffer, bufferSize, "%u", value);
-				return std::string(buffer, buffer + length);
-			#else
-				return std::to_string(value);
-			#endif
-		}
-
 		bool objectSpaceToScreenSpacePosition(const glm::vec3& objectSpacePosition, const glm::mat4& objectSpaceToClipSpaceMatrix, ImVec2& screenSpacePosition)
 		{
 			glm::vec4 position = objectSpaceToClipSpaceMatrix * glm::vec4(objectSpacePosition, 1.0f);
@@ -157,10 +138,8 @@ namespace RendererRuntime
 		{
 			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.0f, 0.0f, 0.0f, 0.0f));
 		}
-		// TODO(co) Get rid of "std::to_string()" later on in case it's a problem (memory allocations inside)
-		// TODO(sw) The GNUSTL on Android (currently needed to be used in conjunction with Qt) doesn't have "std::to_string"
-		ImGui::Begin(("RendererRuntime::DebugGuiManager::drawText_" + ::detail::own_to_string(mDrawTextCounter)).c_str(), nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoFocusOnAppearing);
-			ImGui::Text("%s", text);	// Use "%s" as format instead of the text itself to avoid compiler warning "-Wformat-security"
+		ImGui::Begin(("RendererRuntime::DebugGuiManager::drawText_" + std::to_string(mDrawTextCounter)).c_str(), nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoFocusOnAppearing);
+			ImGui::Text("%s", text);
 			ImGui::SetWindowPos(ImVec2(x, y));
 		ImGui::End();
 		if (!drawBackground)
@@ -341,8 +320,8 @@ namespace RendererRuntime
 						}
 					}
 				}
-				ImGui::Text("Rendered renderable managers %d", processedRenderableManager.size());
-				ImGui::Text("Rendered renderables %d", numberOfRenderables);
+				ImGui::Text("Rendered renderable managers %d", static_cast<int>(processedRenderableManager.size()));
+				ImGui::Text("Rendered renderables %d", static_cast<int>(numberOfRenderables));
 
 				// Command buffer metrics
 				const Renderer::CommandBuffer& commandBuffer = compositorWorkspaceInstance->getCommandBuffer();
@@ -383,7 +362,7 @@ namespace RendererRuntime
 					}
 
 					// Print the number of emitted command functions
-					static constexpr char* commandFunction[Renderer::CommandDispatchFunctionIndex::NumberOfFunctions] =
+					static constexpr const char* commandFunction[Renderer::CommandDispatchFunctionIndex::NumberOfFunctions] =
 					{
 						"ExecuteCommandBuffer",
 						"SetGraphicsRootSignature",

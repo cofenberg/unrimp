@@ -41,7 +41,7 @@
 //[-------------------------------------------------------]
 #include <Renderer/Renderer.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 	// Set Windows version to Windows Vista (0x0600), we don't support Windows XP (0x0501)
 	#ifdef WINVER
 		#undef WINVER
@@ -79,6 +79,9 @@
 	#include <windows.h>
 
 	#undef max	// Get rid of nasty OS macro
+#elif defined __ANDROID__
+	#include <link.h>
+	#include <dlfcn.h>
 #elif defined LINUX
 	// TODO(co) Review which of the following headers can be removed
 	#include <X11/Xlib.h>
@@ -392,15 +395,15 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
-		static constexpr char* GLSL_NAME = "GLSL";	///< ASCII name of this shader language, always valid (do not free the memory the returned pointer is pointing to)
+		static constexpr const char* GLSL_NAME = "GLSL";	///< ASCII name of this shader language, always valid (do not free the memory the returned pointer is pointing to)
 		typedef std::vector<VkPhysicalDevice> VkPhysicalDevices;
 		typedef std::vector<VkExtensionProperties> VkExtensionPropertiesVector;
 		typedef std::array<VkPipelineShaderStageCreateInfo, 5> VkPipelineShaderStageCreateInfos;
-		#if defined(__ANDROID__)
+		#ifdef __ANDROID__
 			// On Android we need to explicitly select all layers
 			#warning "TODO(co) Not tested"
 			static constexpr uint32_t NUMBER_OF_VALIDATION_LAYERS = 6;
-			static constexpr char*    VALIDATION_LAYER_NAMES[] =
+			static constexpr const char* VALIDATION_LAYER_NAMES[] =
 			{
 				"VK_LAYER_GOOGLE_threading",
 				"VK_LAYER_LUNARG_parameter_validation",
@@ -412,7 +415,7 @@ namespace
 		#else
 			// On desktop the LunarG loaders exposes a meta layer that contains all layers
 			static constexpr uint32_t NUMBER_OF_VALIDATION_LAYERS = 1;
-			static constexpr char*    VALIDATION_LAYER_NAMES[] =
+			static constexpr const char* VALIDATION_LAYER_NAMES[] =
 			{
 				"VK_LAYER_LUNARG_standard_validation"
 			};
@@ -1887,7 +1890,7 @@ namespace VulkanRenderer
 			}
 
 			// Destroy the shared library instances
-			#ifdef WIN32
+			#ifdef _WIN32
 				if (nullptr != mVulkanSharedLibrary)
 				{
 					::FreeLibrary(static_cast<HMODULE>(mVulkanSharedLibrary));
@@ -2123,7 +2126,7 @@ namespace VulkanRenderer
 		bool loadSharedLibraries()
 		{
 			// Load the shared library
-			#ifdef WIN32
+			#ifdef _WIN32
 				mVulkanSharedLibrary = ::LoadLibraryExA("vulkan-1.dll", nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
 				if (nullptr == mVulkanSharedLibrary)
 				{
@@ -2155,7 +2158,7 @@ namespace VulkanRenderer
 			bool result = true;	// Success by default
 
 			// Define a helper macro
-			#ifdef WIN32
+			#ifdef _WIN32
 				#define IMPORT_FUNC(funcName)																																					\
 					if (result)																																									\
 					{																																											\
@@ -2172,6 +2175,22 @@ namespace VulkanRenderer
 							RENDERER_LOG(mVulkanRenderer.getContext(), CRITICAL, "Failed to locate the entry point \"%s\" within the shared Vulkan library \"%s\"", #funcName, moduleFilename)	\
 							result = false;																																						\
 						}																																										\
+					}
+			#elif defined(__ANDROID__)
+				#define IMPORT_FUNC(funcName)																																						\
+					if (result)																																										\
+					{																																												\
+						void* symbol = ::dlsym(mVulkanSharedLibrary, #funcName);																													\
+						if (nullptr != symbol)																																						\
+						{																																											\
+							*(reinterpret_cast<void**>(&(funcName))) = symbol;																														\
+						}																																											\
+						else																																										\
+						{																																											\
+							const char* libraryName = "unknown";																																	\
+							RENDERER_LOG(mVulkanRenderer.getContext(), CRITICAL, "Failed to locate the Vulkan entry point \"%s\" within the Vulkan shared library \"%s\"", #funcName, libraryName)	\
+							result = false;																																							\
+						}																																											\
 					}
 			#elif defined LINUX
 				#define IMPORT_FUNC(funcName)																																				\
@@ -6664,7 +6683,7 @@ namespace VulkanRenderer
 				mRenderWindow->getWidthAndHeight(width, height);
 				return;
 			}
-			#ifdef WIN32
+			#ifdef _WIN32
 				// Is there a valid native OS window?
 				if (NULL_HANDLE != mNativeWindowHandle)
 				{
@@ -6696,6 +6715,13 @@ namespace VulkanRenderer
 					// Write out the width and height
 					width  = static_cast<UINT>(swapChainWidth);
 					height = static_cast<UINT>(swapChainHeight);
+				}
+				else
+			#elif defined(__ANDROID__)
+				if (NULL_HANDLE != mNativeWindowHandle)
+				{
+					// TODO(co) Get size on Android
+					width = height = 1;
 				}
 				else
 			#elif defined LINUX
@@ -8766,7 +8792,7 @@ namespace VulkanRenderer
 				VK_DYNAMIC_STATE_VIEWPORT,
 				VK_DYNAMIC_STATE_SCISSOR
 			};
-			static constexpr VkPipelineDynamicStateCreateInfo vkPipelineDynamicStateCreateInfo =
+			static const VkPipelineDynamicStateCreateInfo vkPipelineDynamicStateCreateInfo =
 			{
 				VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,	// sType (VkStructureType)
 				nullptr,												// pNext (const void*)

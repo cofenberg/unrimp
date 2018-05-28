@@ -18,7 +18,7 @@
 \*********************************************************/
 
 
-// TODO(co) The C++17 filesystem is still experimental and hence not handled in an uniform way cross platform. Until C++17 has been released, we need to use those helper.
+// TODO(co) The C++17 filesystem is still experimental and hence not handled in an uniform way cross platform. Until C++17 has been released on all targeted platforms, we need to use those helper.
 
 
 //[-------------------------------------------------------]
@@ -36,7 +36,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#ifdef WIN32
+#ifdef _WIN32
 	// Disable warnings in external headers, we can't fix them
 	__pragma(warning(push))
 		__pragma(warning(disable: 4365))	// warning C4365: 'return': conversion from 'int' to 'std::_Rand_urng_from_func::result_type', signed/unsigned mismatch
@@ -50,22 +50,15 @@
 		__pragma(warning(disable: 5027))	// warning C5027: 'std::messages_base': move assignment operator was implicitly defined as deleted
 		#include <filesystem>
 	__pragma(warning(pop))
-#else
-	#ifdef UNRIMP_USE_BOOST_FILESYSTEM
-		#include <boost/filesystem.hpp>
-	#else
-		#include <experimental/filesystem>
-	#endif
-#endif
-
-
-//[-------------------------------------------------------]
-//[ Global definitions                                    ]
-//[-------------------------------------------------------]
-#ifdef UNRIMP_USE_BOOST_FILESYSTEM
-	namespace std_filesystem = boost::filesystem;
-#else
 	namespace std_filesystem = std::experimental::filesystem;
+#elif defined(__ANDROID__)
+	#include <boost/filesystem.hpp>
+	namespace std_filesystem = boost::filesystem;
+#elif LINUX
+	#include <experimental/filesystem>
+	namespace std_filesystem = std::experimental::filesystem;
+#else
+	#error "Unsupported platform"
 #endif
 
 

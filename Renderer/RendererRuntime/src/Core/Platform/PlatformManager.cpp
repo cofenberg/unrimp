@@ -23,7 +23,7 @@
 //[-------------------------------------------------------]
 #include "RendererRuntime/PrecompiledHeader.h"
 #include "RendererRuntime/Core/Platform/PlatformManager.h"
-#ifdef WIN32
+#ifdef _WIN32
 	#include "RendererRuntime/Core/Platform/WindowsHeader.h"
 
 	// Disable warnings in external headers, we can't fix them
@@ -55,7 +55,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Windows                                               ]
 		//[-------------------------------------------------------]
-		#ifdef WIN32
+		#ifdef _WIN32
 			const DWORD MS_VC_EXCEPTION = 0x406D1388;
 
 			#pragma pack(push, 8)
@@ -115,7 +115,7 @@ namespace RendererRuntime
 		assert(strlen(descriptiveName) >= strlen(shortName));
 
 		// Platform specific part
-		#ifdef WIN32
+		#ifdef _WIN32
 			::detail::setThreadName(::GetCurrentThreadId(), descriptiveName);
 		#elif LINUX
 			::pthread_setname_np(pthread_self(), shortName);
@@ -136,7 +136,7 @@ namespace RendererRuntime
 		assert(nullptr != workingDirectory);
 
 		// Platform specific part
-		#ifdef WIN32
+		#ifdef _WIN32
 			// Get UTF-16 command string
 			std::string_view stdString = command;
 			std::wstring utf16Command;
@@ -159,6 +159,9 @@ namespace RendererRuntime
 			return (result > HINSTANCE(32));
 		#elif LINUX
 			#warning "RendererRuntime::PlatformManager::execute() isn't implemented"
+
+			// Error!
+			return false;
 		#else
 			#error "Unsupported platform"
 		#endif
@@ -171,11 +174,14 @@ namespace RendererRuntime
 		assert(strlen(url) != 0);
 
 		// Platform specific part
-		#ifdef WIN32
+		#ifdef _WIN32
 			// Execute command
 			return execute("explorer", url);
 		#elif LINUX
 			#warning "RendererRuntime::PlatformManager::openUrlExternal() isn't implemented"
+
+			// Error!
+			return false;
 		#else
 			#error "Unsupported platform"
 		#endif

@@ -151,9 +151,9 @@ endmacro()
 ## Compiler configuration
 ##################################################
 # We need C++17 support (see https://cmake.org/cmake/help/latest/prop_tgt/CXX_STANDARD.html for details)
-set(CMAKE_CXX_STANDARD 17)				# "C++ Language Standard" = "ISO C++17 Standard (/std:c++17)"
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)			# "Disable Language Extensions" = "Yes (/Za)"
+set(CMAKE_CXX_STANDARD			17)		# "C++ Language Standard" = "ISO C++17 Standard (/std:c++17)"
+set(CMAKE_CXX_STANDARD_REQUIRED	ON)
+set(CMAKE_CXX_EXTENSIONS		OFF)	# "Disable Language Extensions" = "Yes (/Za)"
 
 if(WIN32)
 	# Used options:
@@ -212,23 +212,6 @@ if(WIN32)
 	endif()
 endif()
 
-include(CheckIncludeFileCXX)
-CHECK_INCLUDE_FILE_CXX("filesystem" HAVE_CXX17_FILESYSTEM)
-CHECK_INCLUDE_FILE_CXX("experimental/filesystem" HAVE_CXX1z_FILESYSTEM)
-
-if(NOT WIN32 AND (RENDERER_TOOLKIT OR EXAMPLES))
-	if(NOT HAVE_CXX17_FILESYSTEM AND NOT HAVE_CXX1z_FILESYSTEM)
-		FIND_PACKAGE(Boost COMPONENTS "filesystem")
-		if(Boost_FILESYSTEM_FOUND)
-			message(STATUS "Using boost filesystem as C++ filesystem TS replacement")
-		else()
-			message(FATAL_ERROR "Renderer toolkit and/or Examples needs C++ filesystem TS support but the compiler ${CMAKE_CXX_COMPILER} doesn't support C++ filesystem TS. Please use a different C++ compiler.")
-		endif()
-	else()
-		set(HAVE_CXX_FILESYSTEM_TS_SUPPORT "ON")
-	endif()
-endif()
-
 # Enable visibility hidden support (with gcc/clang this would be -fvisibility=hidden)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
@@ -240,33 +223,22 @@ if(UNIX)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DLINUX")
 endif()
 
-# We treat Android also as Linux
-if(ANDROID)
-	# We use exceptions so enable exception feature, is disabled by default by the Android NDK
-	set(ANDROID_CPP_FEATURES "exceptions" CACHE STRING "")
-
-	# We only support Android 5.1+
-	set(ANDROID_PLATFORM "android-22" CACHE STRING "")
-
-	# We want also the llvm libc++ which is fully C++11 compatible
-	# TODO(sw) For qtunrimp we cannot use llvm libc++ because Qt is not yet compilable with llvm libc++ on Android
-	#          For now we need to use gnustl_shared
-	#set(ANDROID_STL "c++_shared" CACHE STRING "")
-	set(ANDROID_STL "gnustl_shared" CACHE STRING "")
-endif()
-
 
 ##################################################
 ## Platform
 ##################################################
 # Check which architecture has the host system
 if(${CMAKE_GENERATOR} MATCHES "Ninja")	# Ninja is used for "CMake support in Visual" - https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studio/
-	if(ARCHITECTURE_X64)
-		set(ARCHITECTURE "x64")
-	elseif(ARCHITECTURE_X86)
-		set(ARCHITECTURE "x86")
+	if(ANDROID)
+		set(ARCHITECTURE "${CMAKE_ANDROID_ARCH}")
 	else()
-		message(FATAL_ERROR "Unsupported architecture")
+		if(ARCHITECTURE_X64)
+			set(ARCHITECTURE "x64")
+		elseif(ARCHITECTURE_X86)
+			set(ARCHITECTURE "x86")
+		else()
+			message(FATAL_ERROR "Unsupported architecture")
+		endif()
 	endif()
 elseif(${CMAKE_GENERATOR} MATCHES "Visual Studio 15 Win64")
 	set(ARCHITECTURE_X64 1)

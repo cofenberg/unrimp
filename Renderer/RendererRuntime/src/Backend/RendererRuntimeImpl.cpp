@@ -46,7 +46,7 @@
 #include "RendererRuntime/Resource/CompositorNode/CompositorNodeResourceManager.h"
 #include "RendererRuntime/Resource/CompositorWorkspace/CompositorWorkspaceResourceManager.h"
 #ifdef RENDERER_RUNTIME_IMGUI
-	#ifdef WIN32
+	#ifdef _WIN32
 		#include "RendererRuntime/DebugGui/Detail/DebugGuiManagerWindows.h"
 	#elif LINUX
 		#include "RendererRuntime/DebugGui/Detail/DebugGuiManagerLinux.h"
@@ -218,7 +218,7 @@ namespace RendererRuntime
 
 		// Create the optional manager instances
 		#ifdef RENDERER_RUNTIME_IMGUI
-			#ifdef WIN32
+			#ifdef _WIN32
 				mDebugGuiManager = new DebugGuiManagerWindows(*this);
 			#elif LINUX
 				mDebugGuiManager = new DebugGuiManagerLinux(*this);

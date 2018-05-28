@@ -19,7 +19,7 @@
 
 
 // Amalgamated/unity build
-#ifdef WIN32
+#ifdef _WIN32
 	// Disable warnings in external headers, we can't fix them
 	__pragma(warning(disable: 4061))	// warning C4061: enumerator 'FORCE_32BIT' in switch of enum 'aiMetadataType' is not explicitly handled by a case label
 	__pragma(warning(disable: 4065))	// warning C4065: switch statement contains 'default' but no 'case' labels

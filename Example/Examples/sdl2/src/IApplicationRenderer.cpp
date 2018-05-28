@@ -699,7 +699,7 @@ Renderer::Context* IApplicationRenderer::createRendererContext() const
 		{
 			switch (info.subsystem)
 			{
-				#ifdef WIN32
+				#ifdef _WIN32
 					case SDL_SYSWM_WINDOWS:
 						return new Renderer::Context(::detail::g_RendererLog, ::detail::g_RendererAssert, ::detail::g_RendererMemory, info.info.win.window, isOpenGLRenderer);
 				#endif
@@ -745,7 +745,7 @@ Renderer::WindowInfo IApplicationRenderer::getWindowInfo(SDL_Window* sdlWindow)
 		{
 			switch(info.subsystem)
 			{
-		#ifdef WIN32
+		#ifdef _WIN32
 				case SDL_SYSWM_WINDOWS:
 					//return new Renderer::Context(Renderer::Context::ContextType::WINDOWS, ::detail::g_RendererLog, info.info.win.window, isOpenGLRenderer);
 					windowInfo.nativeWindowHandle = info.info.win.window;

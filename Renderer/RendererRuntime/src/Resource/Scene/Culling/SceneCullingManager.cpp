@@ -348,8 +348,7 @@ namespace
 
 				// Store 0 for spheres that didn't intersect or ended up on the positive side of the frustum planes
 				// -> Store 0xffffffff for spheres that are visible
-				// TODO(co) No direct usage of "__m128"
-				xsimd::store_aligned(reinterpret_cast<__m128*>(&visibilityFlag[sceneItemIndex]), inside);
+				xsimd::store_aligned(reinterpret_cast<bool4*>(&visibilityFlag[sceneItemIndex]), inside);
 			}
 		}
 
@@ -518,8 +517,7 @@ namespace
 				// TODO(co) Add "contribution culling" as mentioned at http://bitsquid.blogspot.de/2016/10/the-implementation-of-frustum-culling.html - "Conclusion"
 
 				// Store the result in the "visibilityFlag"-array in a compacted way
-				// TODO(co) No direct usage of "__m128"
-				xsimd::store_aligned(reinterpret_cast<__m128*>(&visibilityFlag[sceneItemIndex]), inside);
+				xsimd::store_aligned(reinterpret_cast<bool4*>(&visibilityFlag[sceneItemIndex]), inside);
 			}
 		}
 

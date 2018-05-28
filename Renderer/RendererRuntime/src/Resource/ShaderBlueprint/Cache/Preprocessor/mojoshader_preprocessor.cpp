@@ -7,7 +7,7 @@
  *  This file written by Ryan C. Gordon.
  */
 
-#ifdef WIN32
+#ifdef _WIN32
 	// Disable warnings
 	#pragma warning(disable: 4267)	// warning C4267: '=' : conversion from '<x>' to '<y>', possible loss of data
 	#pragma warning(disable: 4668)	// warning C4668: '<x>' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'

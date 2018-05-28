@@ -26,7 +26,7 @@
 	#include "src/Vr/OpenVR/Loader/OpenVRMeshResourceLoader.cpp"
 	#include "src/Vr/OpenVR/Loader/OpenVRTextureResourceLoader.cpp"
 #endif
-#ifdef WIN32
+#ifdef _WIN32
 	#include "src/PrecompiledHeader.cpp"
 #endif
 #include "src/Context.cpp"
@@ -51,7 +51,7 @@
 #ifdef RENDERER_RUNTIME_IMGUI
 	#include "src/DebugGui/DebugGuiHelper.cpp"
 	#include "src/DebugGui/DebugGuiManager.cpp"
-	#ifdef WIN32
+	#ifdef _WIN32
 		#include "src/DebugGui/Detail/DebugGuiManagerWindows.cpp"
 	#elif UNIX
 		#include "src/DebugGui/Detail/DebugGuiManagerLinux.cpp"

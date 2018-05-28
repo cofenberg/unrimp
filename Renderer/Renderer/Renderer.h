@@ -32,9 +32,10 @@
 *    None.
 *
 *    == Preprocessor Definitions ==
-*    - Set "WIN32" as preprocessor definition when building for MS Windows
+*    - Set "_WIN32" as preprocessor definition when building for Microsoft Windows
 *    - Set "LINUX" as preprocessor definition when building for Linux or similar platforms
 *        - For Linux or similar platforms: Set "HAVE_VISIBILITY_ATTR" as preprocessor definition to use the visibility attribute (the used compiler must support it)
+*    - Set "__ANDROID__" as preprocessor definition when building for Android
 *    - Set "X64_ARCHITECTURE" as preprocessor definition when building for x64 instead of x86
 *    - Set "RENDERER_NO_STATISTICS" as preprocessor definition in order to disable the gathering of statistics (it's recommended to only set this preprocessor definition if there are best possible performance requirements)
 *    - Set "RENDERER_DEBUG" as preprocessor definition in order to enable e.g. Direct3D 9 PIX functions (D3DPERF_* functions, also works directly within VisualStudio 2012 out-of-the-box) debug features (disabling support just reduces the binary size slightly but makes debugging more difficult)
@@ -50,7 +51,7 @@
 //[-------------------------------------------------------]
 //[ C++ compiler keywords                                 ]
 //[-------------------------------------------------------]
-#ifdef WIN32
+#ifdef _WIN32
 	#ifndef NULL_HANDLE
 		#define NULL_HANDLE 0
 	#endif
@@ -276,7 +277,7 @@ PRAGMA_WARNING_POP
 		#include <atomic>	// For "std::atomic<>"
 	PRAGMA_WARNING_POP
 #endif
-#ifdef WIN32
+#ifdef _WIN32
 	#include <intrin.h>	// For "__nop()"
 #endif
 #ifdef LINUX
@@ -352,7 +353,7 @@ namespace Renderer
 	//[-------------------------------------------------------]
 	//[ Renderer/PlatformTypes.h                              ]
 	//[-------------------------------------------------------]
-	#ifdef WIN32
+	#ifdef _WIN32
 		#ifdef X64_ARCHITECTURE
 			typedef unsigned __int64 handle;	// Replacement for nasty Microsoft Windows stuff leading to header chaos
 		#else
@@ -6407,11 +6408,10 @@ namespace Renderer
 		*/
 		static inline uint32_t getNumberOfMipmaps(uint32_t width)
 		{
-			// Don't write "return static_cast<uint32_t>(1 + std::floor(std::log2(width)));"
-			// -> Android GNU STL has no "std::log2()", poor but no disaster in here because we can use another solution
+			// If "std::log2()" wouldn't be supported, we could write the following: "return static_cast<uint32_t>(1 + std::floor(std::log(width) / 0.69314718055994529));"
 			// -> log2(x) = log(x) / log(2)
 			// -> log(2) = 0.69314718055994529
-			return static_cast<uint32_t>(1 + std::floor(std::log(width) / 0.69314718055994529));
+			return static_cast<uint32_t>(1 + std::floor(std::log2(width)));
 		}
 
 		/**

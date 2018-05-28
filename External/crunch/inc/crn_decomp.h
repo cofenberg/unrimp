@@ -2426,7 +2426,7 @@ namespace crnd
          {
 #ifdef WIN32
             *pActual_size = p_new ? ::_msize(p_new) : 0;
-#elif defined(ANDROID) // TODO(sw) android does not have malloc_usable_size in there c runtime anymore
+#elif defined(__ANDROID__) // TODO(sw) android does not have malloc_usable_size in there c runtime anymore
             *pActual_size = size;
 #else
             *pActual_size = p_new ? malloc_usable_size(p_new) : 0;
@@ -2464,7 +2464,7 @@ namespace crnd
          {
 #ifdef WIN32
             *pActual_size = ::_msize(p_final_block);
-#elif defined(ANDROID) // TODO(sw) android does not have malloc_usable_size in there c runtime anymore
+#elif defined(__ANDROID__) // TODO(sw) android does not have malloc_usable_size in there c runtime anymore
             *pActual_size = p_new ? size : 0;
 #else
             *pActual_size = ::malloc_usable_size(p_final_block);
@@ -2480,7 +2480,7 @@ namespace crnd
       pUser_data;
 #ifdef WIN32
       return p ? _msize(p) : 0;
-#elif defined(ANDROID) // TODO(sw) android does not have malloc_usable_size in there c runtime anymore
+#elif defined(__ANDROID__) // TODO(sw) android does not have malloc_usable_size in there c runtime anymore
       return 0;
 #else
       return p ? malloc_usable_size(p) : 0;
@@ -2544,7 +2544,8 @@ namespace crnd
 
    void* crnd_realloc(void* p, size_t size, size_t* pActual_size, bool movable)
    {
-      if ((uint32)reinterpret_cast<ptr_bits>(p) & (CRND_MIN_ALLOC_ALIGNMENT - 1))
+      // TODO(sw) The first cast to uintptr_t is needed otherwise clang issues an error: cast from pointer to smaller type 'uint32' (aka 'unsigned int') loses information. I guess the information loss is indented here
+      if (((uint32)((uintptr_t)p)) & (CRND_MIN_ALLOC_ALIGNMENT - 1))
       {
          crnd_mem_error("crnd_realloc: bad ptr");
          return NULL;
@@ -2573,7 +2574,8 @@ namespace crnd
       if (!p)
          return;
 
-      if ((uint32)reinterpret_cast<ptr_bits>(p) & (CRND_MIN_ALLOC_ALIGNMENT - 1))
+      // TODO(sw) The first cast to uintptr_t is needed otherwise clang issues an error: cast from pointer to smaller type 'uint32' (aka 'unsigned int') loses information. I guess the information loss is indented here
+      if (((uint32)((uintptr_t)p)) & (CRND_MIN_ALLOC_ALIGNMENT - 1))
       {
          crnd_mem_error("crnd_free: bad ptr");
          return;
@@ -2587,7 +2589,8 @@ namespace crnd
       if (!p)
          return 0;
 
-      if ((uint32)reinterpret_cast<ptr_bits>(p) & (CRND_MIN_ALLOC_ALIGNMENT - 1))
+      // TODO(sw) The first cast to uintptr_t is needed otherwise clang issues an error: cast from pointer to smaller type 'uint32' (aka 'unsigned int') loses information. I guess the information loss is indented here
+      if (((uint32)((uintptr_t)p)) & (CRND_MIN_ALLOC_ALIGNMENT - 1))
       {
          crnd_mem_error("crnd_msize: bad ptr");
          return 0;
