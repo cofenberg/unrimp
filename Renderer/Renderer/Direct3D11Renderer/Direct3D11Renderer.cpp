@@ -2450,7 +2450,7 @@ namespace Direct3D11Renderer
 						// Optional vendor specific part: AMD AGS
 						if (amdDxgiAdapter)
 						{
-							#ifdef X64_ARCHITECTURE
+							#ifdef ARCHITECTURE_X64
 								mAmdAgsSharedLibrary = ::LoadLibraryExA("amd_ags_x64.dll", nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
 							#else
 								// TODO(co) Currently an "Exception thrown: write access violation. **this** was nullptr."-exception gets thrown when calling "agsInit()" in x86 release (fine in x86 debug, fine in x64)
@@ -2475,7 +2475,7 @@ namespace Direct3D11Renderer
 						// Optional vendor specific part: NvAPI
 						if (nvidiaDxgiAdapter)
 						{
-							#ifdef X64_ARCHITECTURE
+							#ifdef ARCHITECTURE_X64
 								mNvAPISharedLibrary = ::LoadLibraryExA("nvapi64.dll", nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
 							#else
 								mNvAPISharedLibrary = ::LoadLibraryExA("nvapi.dll", nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);

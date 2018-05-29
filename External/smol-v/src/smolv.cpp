@@ -1012,28 +1012,28 @@ static_assert(_SMOLV_ARRAY_SIZE(kSpirvOpData) == kKnownOpsCount, "kSpirvOpData t
 
 static bool smolv_OpHasResult(SpvOp op)
 {
-	if (op < 0 || op >= kKnownOpsCount)
+	if (op >= kKnownOpsCount)
 		return false;
 	return kSpirvOpData[op].hasResult != 0;
 }
 
 static bool smolv_OpHasType(SpvOp op)
 {
-	if (op < 0 || op >= kKnownOpsCount)
+	if (op >= kKnownOpsCount)
 		return false;
 	return kSpirvOpData[op].hasType != 0;
 }
 
 static int smolv_OpDeltaFromResult(SpvOp op)
 {
-	if (op < 0 || op >= kKnownOpsCount)
+	if (op >= kKnownOpsCount)
 		return 0;
 	return kSpirvOpData[op].deltaFromResult;
 }
 
 static bool smolv_OpVarRest(SpvOp op)
 {
-	if (op < 0 || op >= kKnownOpsCount)
+	if (op >= kKnownOpsCount)
 		return false;
 	return kSpirvOpData[op].varrest != 0;
 }

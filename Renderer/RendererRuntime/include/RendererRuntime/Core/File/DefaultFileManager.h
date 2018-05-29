@@ -451,14 +451,7 @@ namespace RendererRuntime
 		inline virtual int64_t getLastModificationTime(VirtualFilename virtualFilename) const override
 		{
 			const std::string absoluteFilename = mapVirtualToAbsoluteFilename(FileMode::READ, virtualFilename);
-			if (!absoluteFilename.empty())
-			{
-				const std_filesystem::file_time_type lastWriteTime = std_filesystem::last_write_time(std_filesystem::u8path(absoluteFilename));
-				return static_cast<int64_t>(decltype(lastWriteTime)::clock::to_time_t(lastWriteTime));
-			}
-
-			// Error!
-			return -1;
+			return absoluteFilename.empty() ? -1 : static_cast<int64_t>(std_filesystem::last_write_time(std_filesystem::u8path(absoluteFilename)).time_since_epoch().count());
 		}
 
 		inline virtual int64_t getFileSize(VirtualFilename virtualFilename) const override

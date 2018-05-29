@@ -213,7 +213,7 @@ PRAGMA_WARNING_POP
 //[ Data types                                            ]
 //[-------------------------------------------------------]
 #ifdef _WIN32
-	#ifdef X64_ARCHITECTURE
+	#ifdef ARCHITECTURE_X64
 		typedef unsigned __int64 handle;	// Replacement for nasty Microsoft Windows stuff leading to header chaos
 	#else
 		typedef unsigned __int32 handle;	// Replacement for nasty Microsoft Windows stuff leading to header chaos
@@ -222,7 +222,7 @@ PRAGMA_WARNING_POP
 		#define NULL_HANDLE 0
 	#endif
 #elif LINUX
-	#ifdef X64_ARCHITECTURE
+	#ifdef ARCHITECTURE_X64
 		typedef uint64_t handle;
 	#else
 		typedef uint32_t handle;

@@ -93,6 +93,8 @@ PRAGMA_WARNING_POP
 		#undef min
 		#undef max
 	PRAGMA_WARNING_POP
+#elif __ANDROID__
+	#include <android/log.h>
 #elif LINUX
 	// Nothing here
 #else
@@ -251,6 +253,33 @@ namespace Renderer
 					requestDebugBreak = true;
 				}
 			}
+			#elif __ANDROID__
+				int prio = ANDROID_LOG_DEFAULT;
+				switch (type)
+				{
+					case Type::TRACE:
+						prio = ANDROID_LOG_VERBOSE;
+						break;
+
+					case Type::DEBUG:
+						prio = ANDROID_LOG_DEBUG;
+						break;
+
+					case Type::INFORMATION:
+						prio = ANDROID_LOG_INFO;
+						break;
+
+					case Type::WARNING:
+					case Type::PERFORMANCE_WARNING:
+					case Type::COMPATIBILITY_WARNING:
+						prio = ANDROID_LOG_WARN;
+						break;
+
+					case Type::CRITICAL:
+						prio = ANDROID_LOG_ERROR;
+						break;
+				}
+				__android_log_write(prio, "Unrimp", fullMessage.c_str());	// TODO(co) Might make sense to make the app-name customizable
 			#elif LINUX
 				// Write into standard output stream
 				if (Type::CRITICAL == type)

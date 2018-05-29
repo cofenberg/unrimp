@@ -172,8 +172,10 @@ namespace xsimd
             typename std::allocator<void>::const_pointer) -> pointer
     {
         pointer res = reinterpret_cast<pointer>(aligned_malloc(sizeof(T) * n, A));
-        if (res == nullptr)
-            throw std::bad_alloc();
+        #if _HAS_EXCEPTIONS
+            if (res == nullptr)
+                throw std::bad_alloc();
+        #endif
         return res;
     }
 

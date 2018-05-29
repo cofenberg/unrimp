@@ -7007,15 +7007,1324 @@ namespace DeviceInput
 
 
 	//[-------------------------------------------------------]
-	//[ Linux backend implementation                          ]
+	//[ Android backend implementation                        ]
 	//[-------------------------------------------------------]
-	#elif defined(LINUX) && !defined(__ANDROID__) && !defined(APPLE)
+	#elif defined(__ANDROID__)
 		//[-------------------------------------------------------]
 		//[ Includes                                              ]
 		//[-------------------------------------------------------]
 		// TODO(co) Remove this
-		#include <PLCore/String/ParseTools.h>
-		#include <PLCore/Log/Log.h>
+		//#include <PLCore/Log/Log.h>
+		//#include <PLCore/System/System.h>
+		//#include <PLCore/System/SystemAndroid.h>
+
+		#include <android_native_app_glue.h>
+
+		#include <android/input.h>
+		#include <android/sensor.h>
+
+
+		//[-------------------------------------------------------]
+		//[ Global functions                                      ]
+		//[-------------------------------------------------------]
+		/**
+		*  @brief
+		*    Returns the sign of the given value
+		*/
+		inline float sign(float x)
+		{
+			return (x < 0.0f) ? -1.0f : 1.0f;
+		}
+
+
+		//[-------------------------------------------------------]
+		//[ Android standard input                                ]
+		//[-------------------------------------------------------]
+		/**
+		*  @brief
+		*    Keyboard implementation for Android
+		*/
+		class AndroidKeyboardDevice : public UpdateDevice
+		{
+
+
+		//[-------------------------------------------------------]
+		//[ Public functions                                      ]
+		//[-------------------------------------------------------]
+		public:
+			/**
+			*  @brief
+			*    Default constructor
+			*/
+			inline AndroidKeyboardDevice()
+			{
+				// Destroy device implementation automatically
+				m_bDelete = true;
+			}
+
+			/**
+			*  @brief
+			*    Destructor
+			*/
+			inline virtual ~AndroidKeyboardDevice() override
+			{
+				// Nothing here
+			}
+
+			/**
+			*  @brief
+			*    Call this to process the next key input event
+			*
+			*  @param[in] cAKeyInputEvent
+			*    Key input event to process
+			*/
+			void OnKeyInputEvent(const struct AInputEvent &cAKeyInputEvent)
+			{
+				// Check if input device is valid
+				if (m_pDevice) {
+					// Get Android key code
+					const int32_t nKeyCode = AKeyEvent_getKeyCode(&cAKeyInputEvent);
+
+					// Lookout! The virtual keyboard of Android sends "down" and "up" directly one after another
+					// -> This is really a problem and we have to delay further keys...
+					if (std::find(m_lstProcessedKeys.cbegin(), m_lstProcessedKeys.cend(), nKeyCode) != m_lstProcessedKeys.cend()) {
+						// Add key for later processing
+						KeyInfo sKeyInfo;
+						sKeyInfo.nKeyCode = nKeyCode;
+						sKeyInfo.bPressed = (AKeyEvent_getAction(&cAKeyInputEvent) == AKEY_EVENT_ACTION_DOWN);
+						m_lstDelayedKeys.push_back(sKeyInfo);
+					} else {
+						// Get keyboard device
+						Keyboard *pKeyboard = static_cast<Keyboard*>(m_pDevice);
+
+						// Get button
+						Button *pButton = GetKeyboardKey(*pKeyboard, nKeyCode);
+						if (pButton) {
+							// Get button state
+							const bool bPressed = (AKeyEvent_getAction(&cAKeyInputEvent) == AKEY_EVENT_ACTION_DOWN);
+
+							// Propagate changes
+							if (pButton->isPressed() != bPressed)
+							{
+								pButton->setPressed(bPressed);
+							}
+						}
+
+						// Add this key to the processed keys
+						m_lstProcessedKeys.push_back(nKeyCode);
+					}
+				}
+			}
+
+
+		//[-------------------------------------------------------]
+		//[ Public virtual UpdateDevice functions                 ]
+		//[-------------------------------------------------------]
+		public:
+			virtual void Update() override
+			{
+				// Check if input device is valid
+				if (m_pDevice) {
+					// Get keyboard device
+					Keyboard *pKeyboard = static_cast<Keyboard*>(m_pDevice);
+
+					// Process delayed keys
+					for (uint32_t i=0; i<m_lstDelayedKeys.size(); i++) {
+						const KeyInfo &sKeyInfo = m_lstDelayedKeys[i];
+
+						// Get button
+						Button *pButton = GetKeyboardKey(*pKeyboard, sKeyInfo.nKeyCode);
+						if (pButton) {
+							// Get button state
+							const bool bPressed = sKeyInfo.bPressed;
+
+							// Propagate changes
+							if (pButton->isPressed() != bPressed)
+							{
+								pButton->setPressed(bPressed);
+							}
+						}
+					}
+					m_lstDelayedKeys.clear();
+					m_lstProcessedKeys.clear();
+				}
+			}
+
+
+		//[-------------------------------------------------------]
+		//[ Private functions                                     ]
+		//[-------------------------------------------------------]
+		private:
+			/**
+			*  @brief
+			*    Get key for Android key code
+			*
+			*  @param[in] cKeyboard
+			*    Reference to keyboard device
+			*  @param[in] int32_t
+			*    Key code
+			*
+			*  @return
+			*    Corresponding key, a null pointer if Android key code is invalid
+			*/
+			Button *GetKeyboardKey(Keyboard &cKeyboard, int32_t nKeyCode)
+			{
+				// Return key that corresponds to the given Android key code
+				switch (nKeyCode) {
+					// AKEYCODE_SOFT_LEFT			-> ignored
+					// AKEYCODE_SOFT_RIGHT			-> ignored
+					case AKEYCODE_HOME:				return &cKeyboard.Home;
+					case AKEYCODE_BACK:				return &cKeyboard.Backspace;
+					// AKEYCODE_CALL				-> ignored
+					// AKEYCODE_ENDCAL				-> ignored
+					case AKEYCODE_0:				return &cKeyboard.Key0;
+					case AKEYCODE_1:				return &cKeyboard.Key1;
+					case AKEYCODE_2:				return &cKeyboard.Key2;
+					case AKEYCODE_3:				return &cKeyboard.Key3;
+					case AKEYCODE_4:				return &cKeyboard.Key4;
+					case AKEYCODE_5:				return &cKeyboard.Key5;
+					case AKEYCODE_6:				return &cKeyboard.Key6;
+					case AKEYCODE_7:				return &cKeyboard.Key7;
+					case AKEYCODE_8:				return &cKeyboard.Key8;
+					case AKEYCODE_9:				return &cKeyboard.Key9;
+					// AKEYCODE_STAR				-> ignored
+					// AKEYCODE_POUND				-> ignored
+					case AKEYCODE_DPAD_UP:			return &cKeyboard.Up;
+					case AKEYCODE_DPAD_DOWN:		return &cKeyboard.Down;
+					case AKEYCODE_DPAD_LEFT:		return &cKeyboard.Left;
+					case AKEYCODE_DPAD_RIGHT:		return &cKeyboard.Right;
+					// AKEYCODE_DPAD_CENTER			-> ignored
+					// AKEYCODE_VOLUME_UP			-> ignored
+					// AKEYCODE_VOLUME_DOWN			-> ignored
+					// AKEYCODE_POWER				-> ignored
+					// AKEYCODE_CAMERA				-> ignored
+					case AKEYCODE_CLEAR:			return &cKeyboard.Clear;
+					case AKEYCODE_A:				return &cKeyboard.A;
+					case AKEYCODE_B:				return &cKeyboard.B;
+					case AKEYCODE_C:				return &cKeyboard.C;
+					case AKEYCODE_D:				return &cKeyboard.D;
+					case AKEYCODE_E:				return &cKeyboard.E;
+					case AKEYCODE_F:				return &cKeyboard.F;
+					case AKEYCODE_G:				return &cKeyboard.G;
+					case AKEYCODE_H:				return &cKeyboard.H;
+					case AKEYCODE_I:				return &cKeyboard.I;
+					case AKEYCODE_J:				return &cKeyboard.J;
+					case AKEYCODE_K:				return &cKeyboard.K;
+					case AKEYCODE_L:				return &cKeyboard.L;
+					case AKEYCODE_M:				return &cKeyboard.M;
+					case AKEYCODE_N:				return &cKeyboard.N;
+					case AKEYCODE_O:				return &cKeyboard.O;
+					case AKEYCODE_P:				return &cKeyboard.P;
+					case AKEYCODE_Q:				return &cKeyboard.Q;
+					case AKEYCODE_R:				return &cKeyboard.R;
+					case AKEYCODE_S:				return &cKeyboard.S;
+					case AKEYCODE_T:				return &cKeyboard.T;
+					case AKEYCODE_U:				return &cKeyboard.U;
+					case AKEYCODE_V:				return &cKeyboard.V;
+					case AKEYCODE_W:				return &cKeyboard.W;
+					case AKEYCODE_X:				return &cKeyboard.X;
+					case AKEYCODE_Y:				return &cKeyboard.Y;
+					case AKEYCODE_Z:				return &cKeyboard.Z;
+					// AKEYCODE_COMMA				-> ignored
+					// AKEYCODE_PERIOD				-> ignored
+					case AKEYCODE_ALT_LEFT:			return &cKeyboard.Alt;
+					case AKEYCODE_ALT_RIGHT:		return &cKeyboard.Control;
+					case AKEYCODE_SHIFT_LEFT:		return &cKeyboard.Shift;
+					// AKEYCODE_SHIFT_RIGHT			-> ignored
+					case AKEYCODE_TAB:				return &cKeyboard.Tab;
+					case AKEYCODE_SPACE:			return &cKeyboard.Space;
+					// AKEYCODE_SYM					-> ignored
+					// AKEYCODE_EXPLORER			-> ignored
+					// AKEYCODE_ENVELOPE			-> ignored
+					case AKEYCODE_ENTER:			return &cKeyboard.Return;
+					case AKEYCODE_DEL:				return &cKeyboard.Delete;
+					// AKEYCODE_GRAVE				-> ignored
+					case AKEYCODE_MINUS:			return &cKeyboard.NumpadSubtract;
+					// AKEYCODE_EQUALS				-> ignored
+					// AKEYCODE_LEFT_BRACKET		-> ignored
+					// AKEYCODE_RIGHT_BRACKET		-> ignored
+					// AKEYCODE_BACKSLASH			-> ignored
+					// AKEYCODE_SEMICOLON			-> ignored
+					// AKEYCODE_APOSTROPHE			-> ignored
+					// AKEYCODE_SLASH				-> ignored
+					// AKEYCODE_AT					-> ignored
+					// AKEYCODE_NUM					-> ignored
+					// AKEYCODE_HEADSETHOOK			-> ignored
+					// AKEYCODE_FOCUS				-> ignored
+					case AKEYCODE_PLUS:				return &cKeyboard.NumpadAdd;
+					// AKEYCODE_MENU				-> ignored
+					// AKEYCODE_NOTIFICATION		-> ignored
+					// AKEYCODE_SEARCH				-> ignored
+					case AKEYCODE_MEDIA_PLAY_PAUSE:	return &cKeyboard.Pause;
+					// AKEYCODE_MEDIA_STOP			-> ignored
+					// AKEYCODE_MEDIA_NEXT			-> ignored
+					// AKEYCODE_MEDIA_PREVIOUS		-> ignored
+					// AKEYCODE_MEDIA_REWIND		-> ignored
+					// AKEYCODE_MEDIA_FAST_FORWARD	-> ignored
+					// AKEYCODE_MUTE				-> ignored
+					case AKEYCODE_PAGE_UP:			return &cKeyboard.PageUp;
+					case AKEYCODE_PAGE_DOWN:		return &cKeyboard.PageDown;
+					// AKEYCODE_PICTSYMBOLS			-> ignored
+					// AKEYCODE_SWITCH_CHARSET		-> ignored
+					case AKEYCODE_BUTTON_A:			return &cKeyboard.A;
+					case AKEYCODE_BUTTON_B:			return &cKeyboard.B;
+					case AKEYCODE_BUTTON_C:			return &cKeyboard.C;
+					case AKEYCODE_BUTTON_X:			return &cKeyboard.X;
+					case AKEYCODE_BUTTON_Y:			return &cKeyboard.Y;
+					case AKEYCODE_BUTTON_Z:			return &cKeyboard.Z;
+					// AKEYCODE_BUTTON_L1			-> ignored
+					// AKEYCODE_BUTTON_R1			-> ignored
+					// AKEYCODE_BUTTON_L2			-> ignored
+					// AKEYCODE_BUTTON_R2			-> ignored
+					// AKEYCODE_BUTTON_THUMBL		-> ignored
+					// AKEYCODE_BUTTON_THUMBR		-> ignored
+					// AKEYCODE_BUTTON_START		-> ignored
+					case AKEYCODE_BUTTON_SELECT:	return &cKeyboard.Select;
+					// AKEYCODE_BUTTON_MODE			-> ignored
+					default:						return nullptr;
+				}
+			}
+
+
+		//[-------------------------------------------------------]
+		//[ Private data                                          ]
+		//[-------------------------------------------------------]
+		private:
+			std::vector<int32_t> m_lstProcessedKeys;
+			class KeyInfo {
+				public:
+					int32_t nKeyCode;
+					bool    bPressed;
+					bool operator ==(const KeyInfo &cSource) { return false; }
+			};
+			std::vector<KeyInfo> m_lstDelayedKeys;
+
+
+		};
+
+		/**
+		*  @brief
+		*    Android gamepad device emulation by using a touch screen making it possible to e.g. move & look at the same time
+		*/
+		class AndroidSplitTouchPadDevice : public UpdateDevice
+		{
+
+
+		//[-------------------------------------------------------]
+		//[ Public functions                                      ]
+		//[-------------------------------------------------------]
+		public:
+			/**
+			*  @brief
+			*    Default constructor
+			*/
+			inline AndroidSplitTouchPadDevice() :
+				// Left
+				m_nLeftTouchPointerID(-1),
+				m_fOriginLeftTouchPositionX(0.0f),
+				m_fOriginLeftTouchPositionY(0.0f),
+				m_fLeftTouchPositionX(0.0f),
+				m_fLeftTouchPositionY(0.0f),
+				// Right
+				m_nRightTouchPointerID(-1),
+				m_fOriginRightTouchPositionX(0.0f),
+				m_fOriginRightTouchPositionY(0.0f),
+				m_fRightTouchPositionX(0.0f),
+				m_fRightTouchPositionY(0.0f)
+			{
+				// Destroy device implementation automatically
+				m_bDelete = true;
+			}
+
+			/**
+			*  @brief
+			*    Destructor
+			*/
+			inline virtual ~AndroidSplitTouchPadDevice() override
+			{
+				// Nothing here
+			}
+
+			/**
+			*  @brief
+			*    Call this to process the next motion input event
+			*
+			*  @param[in] cAMotionInputEvent
+			*    Motion input event to process
+			*/
+			void OnMotionInputEvent(const struct AInputEvent &cAMotionInputEvent)
+			{
+				// We need the display size and orientation for splitting the screen
+				// TODO(co) Android update
+				// struct android_app *pAndroidApp = reinterpret_cast<SystemAndroid*>(System::GetInstance())->GetAndroidApp();
+				struct android_app *pAndroidApp = nullptr;
+				if (pAndroidApp) {
+					ANativeWindow *pANativeWindow = pAndroidApp->window;
+					if (pANativeWindow) {
+						// Get the screen width: This is our base line for splitting
+						const int32_t nScreenWidth = ANativeWindow_getWidth(pANativeWindow);
+
+						// Get the number of pointers of data contained in this event
+						const size_t nAndroidPointerCount = AMotionEvent_getPointerCount(&cAMotionInputEvent);
+
+						// Evaluate every point
+						for (size_t i=0; i<nAndroidPointerCount; i++) {
+							size_t nAndroidPointerID    = AMotionEvent_getPointerId(&cAMotionInputEvent, i);
+							size_t nAndroidAction       = (AMotionEvent_getAction(&cAMotionInputEvent) & AMOTION_EVENT_ACTION_MASK);
+							size_t nAndroidPointerIndex = i;
+							if (nAndroidAction == AMOTION_EVENT_ACTION_POINTER_DOWN || nAndroidAction == AMOTION_EVENT_ACTION_POINTER_UP) {
+								nAndroidPointerIndex = (AMotionEvent_getAction(&cAMotionInputEvent) & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
+								nAndroidPointerID    = AMotionEvent_getPointerId(&cAMotionInputEvent, nAndroidPointerIndex);
+							}
+
+							// Get the current X and Y coordinate of this event for the given pointer index
+							const float fPointerPositionX = AMotionEvent_getX(&cAMotionInputEvent, nAndroidPointerIndex);
+							const float fPointerPositionY = AMotionEvent_getY(&cAMotionInputEvent, nAndroidPointerIndex);
+
+							// Does the touch start?
+							if (nAndroidAction == AMOTION_EVENT_ACTION_DOWN || nAndroidAction == AMOTION_EVENT_ACTION_POINTER_DOWN) {
+								// Decide if the point is in the left or right screen half
+								if (fPointerPositionX < (nScreenWidth/2)) {
+									// This is the on the left half of the screen
+									if (m_nLeftTouchPointerID == -1) {
+										// This is our initial start point (origin position = current position)
+										m_fOriginLeftTouchPositionX = m_fLeftTouchPositionX = fPointerPositionX;
+										m_fOriginLeftTouchPositionY = m_fLeftTouchPositionY = fPointerPositionY;
+
+										// We're now active, save the ID of this pointer
+										m_nLeftTouchPointerID = nAndroidPointerID;
+									}
+								} else {
+									// This is on the right half of the screen
+									if (m_nRightTouchPointerID == -1) {
+										// This is our initial start point (origin position = current position)
+										m_fOriginRightTouchPositionX = m_fRightTouchPositionX = fPointerPositionX;
+										m_fOriginRightTouchPositionY = m_fRightTouchPositionY = fPointerPositionY;
+
+										// We're now active, save the ID of this pointer
+										m_nRightTouchPointerID = nAndroidPointerID;
+									}
+								}
+
+							// Does the touch stop?
+							} else if (nAndroidAction == AMOTION_EVENT_ACTION_UP || nAndroidAction == AMOTION_EVENT_ACTION_POINTER_UP) {
+								// Use the pointer ID to figure out whether this is our left or right pointer
+								if (m_nLeftTouchPointerID == nAndroidPointerID) {
+									// We're now longer active
+									m_nLeftTouchPointerID = -1;
+
+									// Let the left simulated pad stick snap back to it's origin
+									SplitTouchPad *pSplitTouchPad = static_cast<SplitTouchPad*>(m_pDevice);
+									if (pSplitTouchPad) {
+										pSplitTouchPad->LeftX.setValue(0.0f, false);
+										pSplitTouchPad->LeftY.setValue(0.0f, false);
+									}
+									m_fLeftTouchPositionX = m_fOriginLeftTouchPositionX;
+									m_fLeftTouchPositionY = m_fOriginLeftTouchPositionY;
+
+								} else if (m_nRightTouchPointerID == nAndroidPointerID) {
+									// We're now longer active
+									m_nRightTouchPointerID = -1;
+
+									// Let the right simulated pad stick snap back to it's origin
+									SplitTouchPad *pSplitTouchPad = static_cast<SplitTouchPad*>(m_pDevice);
+									if (pSplitTouchPad) {
+										pSplitTouchPad->RightX.setValue(0.0f, false);
+										pSplitTouchPad->RightY.setValue(0.0f, false);
+									}
+									m_fRightTouchPositionX = m_fOriginRightTouchPositionX;
+									m_fRightTouchPositionY = m_fOriginRightTouchPositionY;
+								}
+
+							// Did we move?
+							} else if (nAndroidAction == AMOTION_EVENT_ACTION_MOVE) {
+								// Use the pointer ID to figure out whether this is our left or right pointer
+								if (m_nLeftTouchPointerID == nAndroidPointerID) {
+									m_fLeftTouchPositionX = fPointerPositionX;
+									m_fLeftTouchPositionY = fPointerPositionY;
+
+								} else if (m_nRightTouchPointerID == nAndroidPointerID) {
+									m_fRightTouchPositionX = fPointerPositionX;
+									m_fRightTouchPositionY = fPointerPositionY;
+								}
+							}
+						}
+					}
+				}
+			}
+
+
+		//[-------------------------------------------------------]
+		//[ Public virtual UpdateDevice functions                 ]
+		//[-------------------------------------------------------]
+		public:
+			virtual void Update() override
+			{
+				// Check if input device is valid
+				if (m_pDevice) {
+					// Get split touch pad device
+					SplitTouchPad *pSplitTouchPad = static_cast<SplitTouchPad*>(m_pDevice);
+
+					// Maximum allowed delta
+					static constexpr float MaxDelta = 160.0f;
+					static constexpr float MinDelta = 5.0f;
+
+					// Update left axes?
+					if (m_nLeftTouchPointerID != -1) {
+						// Get the left touch movement and clamp it to the maximum allowed delta
+						float fLeftDeltaX = m_fLeftTouchPositionX - m_fOriginLeftTouchPositionX;
+						float fLeftDeltaY = m_fLeftTouchPositionY - m_fOriginLeftTouchPositionY;
+						if (fLeftDeltaX > MaxDelta)
+							fLeftDeltaX = MaxDelta;
+						if (fLeftDeltaX < -MaxDelta)
+							fLeftDeltaX = -MaxDelta;
+						if (fLeftDeltaY > MaxDelta)
+							fLeftDeltaY = MaxDelta;
+						if (fLeftDeltaY < -MaxDelta)
+							fLeftDeltaY = -MaxDelta;
+
+						// Give our fat finger some space to sit down :D
+						if (fabs(fLeftDeltaX) < MinDelta)
+							fLeftDeltaX = 0.0f;
+						else
+							fLeftDeltaX -= MinDelta * sign(fLeftDeltaX);
+						if (fabs(fLeftDeltaY) < MinDelta)
+							fLeftDeltaY = 0.0f;
+						else
+							fLeftDeltaY -= MinDelta * sign(fLeftDeltaY);
+
+						// Now update left axes
+						if (pSplitTouchPad->LeftX.getValue() != fLeftDeltaX)
+							pSplitTouchPad->LeftX.setValue(fLeftDeltaX, false);
+						if (pSplitTouchPad->LeftY.getValue() != fLeftDeltaY)
+							pSplitTouchPad->LeftY.setValue(fLeftDeltaY, false);
+					}
+
+					// Update right axes?
+					if (m_nRightTouchPointerID != -1) {
+						// Get the right touch movement and clamp it to the maximum allowed delta
+						float fRightDeltaX = m_fRightTouchPositionX - m_fOriginRightTouchPositionX;
+						float fRightDeltaY = m_fRightTouchPositionY - m_fOriginRightTouchPositionY;
+						if (fRightDeltaX > MaxDelta)
+							fRightDeltaX = MaxDelta;
+						if (fRightDeltaX < -MaxDelta)
+							fRightDeltaX = -MaxDelta;
+						if (fRightDeltaY > MaxDelta)
+							fRightDeltaY = MaxDelta;
+						if (fRightDeltaY < -MaxDelta)
+							fRightDeltaY = -MaxDelta;
+
+						// Give our fat finger some space to sit down :D
+						if (fabs(fRightDeltaX) < MinDelta)
+							fRightDeltaX = 0.0f;
+						else
+							fRightDeltaX -= MinDelta * sign(fRightDeltaX);
+						if (fabs(fRightDeltaY) < MinDelta)
+							fRightDeltaY = 0.0f;
+						else
+							fRightDeltaY -= MinDelta * sign(fRightDeltaY);
+
+						// Now update right axes
+						if (pSplitTouchPad->RightX.getValue() != fRightDeltaX)
+							pSplitTouchPad->RightX.setValue(fRightDeltaX, false);
+						if (pSplitTouchPad->RightY.getValue() != fRightDeltaY)
+							pSplitTouchPad->RightY.setValue(fRightDeltaY, false);
+					}
+				}
+			}
+
+
+		//[-------------------------------------------------------]
+		//[ Private data                                          ]
+		//[-------------------------------------------------------]
+		private:
+			// Left
+			int   m_nLeftTouchPointerID;		///< Left screen touch pointer ID, -1 if none
+			float m_fOriginLeftTouchPositionX;	///< Origin left touch x position
+			float m_fOriginLeftTouchPositionY;	///< Origin left touch y position
+			float m_fLeftTouchPositionX;		///< Current left touch x position
+			float m_fLeftTouchPositionY;		///< Current left touch y position
+			// Right
+			int   m_nRightTouchPointerID;		///< Right screen touch pointer ID, -1 if none
+			float m_fOriginRightTouchPositionX;	///< Origin right touch x position
+			float m_fOriginRightTouchPositionY;	///< Origin right touch y position
+			float m_fRightTouchPositionX;		///< Current right touch x position
+			float m_fRightTouchPositionY;		///< Current right touch y position
+
+
+		};
+
+		/**
+		*  @brief
+		*    Mouse implementation for Android
+		*
+		*  @remarks
+		*    Mouse emulation by using the touchscreen. When moving around the finger on the touchscreen,
+		*    the change in movement is used for the mouse axis. A short touch without any movement is handled
+		*    as "left mouse button clicked". As soon the mouse is moved, no "left mouse button"-events can be
+		*    generated anymore during the current touch. When touching without movement for half a second, the
+		*    emulation changes into "left mouse button hold down"-mode, following mouse movement will not change
+		*    this mode.
+		*/
+		class AndroidMouseDevice : public UpdateDevice
+		{
+
+
+		//[-------------------------------------------------------]
+		//[ Public functions                                      ]
+		//[-------------------------------------------------------]
+		public:
+			/**
+			*  @brief
+			*    Constructor
+			*
+			*  @param[in] pAndroidSplitTouchPadDevice
+			*    Optional Android split touch pad device this device interacts with, can be a null pointer
+			*/
+			inline explicit AndroidMouseDevice(AndroidSplitTouchPadDevice *pAndroidSplitTouchPadDevice) :
+				m_pAndroidSplitTouchPadDevice(pAndroidSplitTouchPadDevice),
+				m_bMouseMoved(false),
+				m_fPreviousMousePositionX(0.0f),
+				m_fPreviousMousePositionY(0.0f),
+				m_fPreviousMousePressure(0.0f),
+				m_fMousePositionX(0.0f),
+				m_fMousePositionY(0.0f),
+				m_fMousePressure(0.0f),
+				m_bLeftMouseButton(false)
+			{
+				// Destroy device implementation automatically
+				m_bDelete = true;
+			}
+
+			/**
+			*  @brief
+			*    Destructor
+			*/
+			inline virtual ~AndroidMouseDevice() override
+			{
+				// Nothing here
+			}
+
+			/**
+			*  @brief
+			*    Call this to process the next motion input event
+			*
+			*  @param[in] cAMotionInputEvent
+			*    Motion input event to process
+			*/
+			void OnMotionInputEvent(const struct AInputEvent &cAMotionInputEvent)
+			{
+				// Get the number of pointers of data contained in this event
+				const size_t nAndroidPointerCount = AMotionEvent_getPointerCount(&cAMotionInputEvent);
+				if (nAndroidPointerCount) {
+					// Get the current X and Y coordinate of this event for the given pointer index
+					m_fMousePositionX = AMotionEvent_getX(&cAMotionInputEvent, 0);
+					m_fMousePositionY = AMotionEvent_getY(&cAMotionInputEvent, 0);
+					m_fMousePressure  = AMotionEvent_getPressure(&cAMotionInputEvent, 0);
+
+					// Get the combined motion event action code and the action code
+					const int32_t nAndroidCombinedAction = AMotionEvent_getAction(&cAMotionInputEvent);
+					const int32_t nAndroidAction		 = (nAndroidCombinedAction & AMOTION_EVENT_ACTION_MASK);
+
+					// Touch end?
+					if (nAndroidAction == AMOTION_EVENT_ACTION_UP) {
+						// Jap, touch end, previous mouse position = current mouse position
+						m_fPreviousMousePositionX = m_fMousePositionX;
+						m_fPreviousMousePositionY = m_fMousePositionY;
+						m_fPreviousMousePressure = m_fMousePressure;
+
+						// Mouse moved during the current touch? If no, this is handled as a left mouse button click as well.
+						if (!m_bMouseMoved && !m_bLeftMouseButton) {
+							// Check if input device is valid
+							if (m_pDevice) {
+								// Get mouse device
+								Mouse *pMouse = static_cast<Mouse*>(m_pDevice);
+
+								// Update button
+								if (pMouse->Left.isPressed())
+								{
+									pMouse->Left.setPressed(true);
+								}
+							}
+						}
+
+						// The left mouse button is now no longer down
+						m_bLeftMouseButton = false;
+					} else {
+						// Touch start?
+						if (nAndroidAction == AMOTION_EVENT_ACTION_DOWN) {
+							// Jap, touch start, previous mouse position = current mouse position
+							m_fPreviousMousePositionX = m_fMousePositionX;
+							m_fPreviousMousePositionY = m_fMousePositionY;
+							m_fPreviousMousePressure = m_fMousePressure;
+
+							// The mouse was not yet moved
+							m_bMouseMoved = false;
+
+							// The left mouse button is not pressed
+							m_bLeftMouseButton = false;
+						}
+
+						// As long as the mouse was not yet moved, a "left mouse button is hold down" can still be generated
+						if (!m_bMouseMoved && !m_bLeftMouseButton) {
+							// Get the past time since the touch has been started (in nanoseconds)
+							const int64_t nPastTime = AMotionEvent_getEventTime(&cAMotionInputEvent) - AMotionEvent_getDownTime(&cAMotionInputEvent);
+
+							// If the mouse has not been moved for half a second, we go into "left mouse button is hold down"-mode
+							if (nPastTime > 500*1000*1000) {
+								// The left mouse button is now down
+								m_bLeftMouseButton = true;
+							}
+						}
+					}
+				}
+			}
+
+
+		//[-------------------------------------------------------]
+		//[ Public virtual UpdateDevice functions                 ]
+		//[-------------------------------------------------------]
+		public:
+			virtual void Update() override
+			{
+				// Check if input device is valid
+				if (m_pDevice) {
+					// Get mouse device
+					Mouse *pMouse = static_cast<Mouse*>(m_pDevice);
+
+					// Update relative axes?
+					// ->  In case there's an active "AndroidSplitTouchPadDevice"-instance we have to deactivate the
+					//     "mouse movement"-emulation or this will conflict with "AndroidSplitTouchPadDevice"
+					if (!m_pAndroidSplitTouchPadDevice || !m_pAndroidSplitTouchPadDevice->GetDevice() || !m_pAndroidSplitTouchPadDevice->GetDevice()->GetActive()) {
+						// Get the mouse movement
+						float fDeltaX = m_fMousePositionX - m_fPreviousMousePositionX;
+						float fDeltaY = m_fMousePositionY - m_fPreviousMousePositionY;
+						float fDeltaPressure = m_fMousePressure - m_fPreviousMousePressure;
+
+						// Was the mouse already moved? (if so, we're in "mouse move"-mode, not in "left mouse button click"-mode)
+						if (!m_bMouseMoved) {
+							// Check whether or not the mouse was moved - with a little bit of tolerance
+							if ((fabs(fDeltaX) > 6 || fabs(fDeltaY) > 6) && fabs(fDeltaPressure) < 0.4f) {
+								m_bMouseMoved = true;
+							} else {
+								fDeltaX = fDeltaY = 0.0f;
+								m_fPreviousMousePositionX = m_fMousePositionX;
+								m_fPreviousMousePositionY = m_fMousePositionY;
+							}
+						}
+
+						// Update axes
+						if (pMouse->X.getValue() != fDeltaX)
+							pMouse->X.setValue(fDeltaX, true);
+						if (pMouse->Y.getValue() != fDeltaY)
+							pMouse->Y.setValue(fDeltaY, true);
+
+						// The current mouse position becomes the previous mouse position
+						m_fPreviousMousePositionX = m_fMousePositionX;
+						m_fPreviousMousePositionY = m_fMousePositionY;
+					}
+
+					// Update buttons
+					if (pMouse->Left.isPressed() != m_bLeftMouseButton)
+					{
+						pMouse->Left.setPressed(m_bLeftMouseButton);
+					}
+				}
+			}
+
+
+		//[-------------------------------------------------------]
+		//[ Private data                                          ]
+		//[-------------------------------------------------------]
+		private:
+			AndroidSplitTouchPadDevice *m_pAndroidSplitTouchPadDevice;	///< Optional Android split touch pad device this device interacts with, can be a null pointer
+			bool						m_bMouseMoved;					///< Mouse moved during the current touch?
+			float						m_fPreviousMousePositionX;		///< Previous mouse x position
+			float						m_fPreviousMousePositionY;		///< Previous mouse y position
+			float						m_fPreviousMousePressure;		///< Previous mouse pressure
+			float						m_fMousePositionX;				///< Current mouse x position
+			float						m_fMousePositionY;				///< Current mouse y position
+			float						m_fMousePressure;				///< Current mouse pressure
+			bool						m_bLeftMouseButton;				///< Is the left mouse button currently down?
+
+
+		};
+
+		/**
+		*  @brief
+		*    Sensor manager implementation for Android
+		*/
+		class AndroidSensorManagerDevice : public UpdateDevice
+		{
+
+
+		//[-------------------------------------------------------]
+		//[ Public functions                                      ]
+		//[-------------------------------------------------------]
+		public:
+			/**
+			*  @brief
+			*    Default constructor
+			*/
+			AndroidSensorManagerDevice() :
+				m_pSensorManager(nullptr),
+				m_pSensorEventQueue(nullptr),
+				m_pAccelerometerSensor(nullptr),
+				m_pMagneticFieldSensor(nullptr),
+				m_pGyroscopeSensor(nullptr),
+				m_pLightSensor(nullptr),
+				m_pProximitySensor(nullptr)
+			{
+				// Destroy device implementation automatically
+				m_bDelete = true;
+
+				// TODO(co) Sensors are working, but it's no good idea to enable all available sensors by default with a 60 events per second rate for all sensors
+				// -> The device stops responding, so, rethink this very first experiment... maybe one device per sensor which is deactivated by default and has the
+				//    option to be enabled/disabled + event rate configuration?
+
+				// Get the Android sensor manager instance
+				m_pSensorManager = ASensorManager_getInstance();
+				if (m_pSensorManager) {
+					// Create sensor event queue instance
+					m_pSensorEventQueue = ASensorManager_createEventQueue(m_pSensorManager, ALooper_forThread(), LOOPER_ID_USER, nullptr, nullptr);
+			/*
+					// Get accelerometer sensor instance
+					m_pAccelerometerSensor = ASensorManager_getDefaultSensor(m_pSensorManager, ASENSOR_TYPE_ACCELEROMETER);
+					if (m_pAccelerometerSensor) {
+						// Write some debug information into the log
+					// TODO(co) Log
+					//	PL_LOG(Debug, String("Android sensor manager accelerometer sensor instance found: Name=\"") + ASensor_getName(m_pAccelerometerSensor) +
+					//																				  "\" Vendor=\"" + ASensor_getVendor(m_pAccelerometerSensor) +
+					//																				  "\" Resolution=\"" + ASensor_getResolution(m_pAccelerometerSensor) +
+					//																				  "\" Minimum delay=\"" + ASensor_getMinDelay(m_pAccelerometerSensor) + '\"')
+
+						// Start monitoring the accelerometer
+						if (ASensorEventQueue_enableSensor(m_pSensorEventQueue, m_pAccelerometerSensor) >= 0) {
+							// We'd like to get 60 events per second (in us)
+							ASensorEventQueue_setEventRate(m_pSensorEventQueue, m_pAccelerometerSensor, (1000L/60)*1000);
+						}
+					}
+
+					// Get magnetic field sensor instance
+					m_pMagneticFieldSensor = ASensorManager_getDefaultSensor(m_pSensorManager, ASENSOR_TYPE_MAGNETIC_FIELD);
+					if (m_pMagneticFieldSensor) {
+						// Write some debug information into the log
+						// TODO(co) Log
+					//	PL_LOG(Debug, String("Android sensor manager magnetic field sensor instance found: Name=\"") + ASensor_getName(m_pMagneticFieldSensor) +
+					//																				   "\" Vendor=\"" + ASensor_getVendor(m_pMagneticFieldSensor) +
+					//																				   "\" Resolution=\"" + ASensor_getResolution(m_pMagneticFieldSensor) +
+					//																				   "\" Minimum delay=\"" + ASensor_getMinDelay(m_pAccelerometerSensor) + '\"')
+
+						// Start monitoring the accelerometer
+						if (ASensorEventQueue_enableSensor(m_pSensorEventQueue, m_pMagneticFieldSensor) >= 0) {
+							// We'd like to get 60 events per second (in us)
+							ASensorEventQueue_setEventRate(m_pSensorEventQueue, m_pMagneticFieldSensor, (1000L/60)*1000);
+						}
+					}
+
+					// Get gyroscope sensor instance
+					m_pGyroscopeSensor = ASensorManager_getDefaultSensor(m_pSensorManager, ASENSOR_TYPE_GYROSCOPE);
+					if (m_pGyroscopeSensor) {
+						// Write some debug information into the log
+						// TODO(co) Log
+					//	PL_LOG(Debug, String("Android sensor manager gyroscope sensor instance found: Name=\"") + ASensor_getName(m_pGyroscopeSensor) +
+					//																			  "\" Vendor=\"" + ASensor_getVendor(m_pGyroscopeSensor) +
+					//																			  "\" Resolution=\"" + ASensor_getResolution(m_pGyroscopeSensor) +
+					//																			  "\" Minimum delay=\"" + ASensor_getMinDelay(m_pGyroscopeSensor) + '\"')
+
+						// Start monitoring the accelerometer
+						if (ASensorEventQueue_enableSensor(m_pSensorEventQueue, m_pGyroscopeSensor) >= 0) {
+							// We'd like to get 60 events per second (in us)
+							ASensorEventQueue_setEventRate(m_pSensorEventQueue, m_pGyroscopeSensor, (1000L/60)*1000);
+						}
+					}
+
+					// Get light sensor instance
+					m_pLightSensor = ASensorManager_getDefaultSensor(m_pSensorManager, ASENSOR_TYPE_LIGHT);
+					if (m_pLightSensor) {
+						// Write some debug information into the log
+						// TODO(co) Log
+					//	PL_LOG(Debug, String("Android sensor manager light sensor instance found: Name=\"") + ASensor_getName(m_pLightSensor) +
+					//																		  "\" Vendor=\"" + ASensor_getVendor(m_pLightSensor) +
+					//																		  "\" Resolution=\"" + ASensor_getResolution(m_pLightSensor) +
+					//																		  "\" Minimum delay=\"" + ASensor_getMinDelay(m_pLightSensor) + '\"')
+
+						// Start monitoring the accelerometer
+						if (ASensorEventQueue_enableSensor(m_pSensorEventQueue, m_pLightSensor) >= 0) {
+							// We'd like to get 60 events per second (in us)
+							ASensorEventQueue_setEventRate(m_pSensorEventQueue, m_pLightSensor, (1000L/60)*1000);
+						}
+					}
+
+					// Get proximity sensor instance
+					m_pProximitySensor = ASensorManager_getDefaultSensor(m_pSensorManager, ASENSOR_TYPE_PROXIMITY);
+					if (m_pProximitySensor) {
+						// Write some debug information into the log
+						// TODO(co) Log
+					//	PL_LOG(Debug, String("Android sensor manager proximity sensor instance found: Name=\"") + ASensor_getName(m_pProximitySensor) +
+					//																			  "\" Vendor=\"" + ASensor_getVendor(m_pProximitySensor) +
+					//																			  "\" Resolution=\"" + ASensor_getResolution(m_pProximitySensor) +
+					//																			  "\" Minimum delay=\"" + ASensor_getMinDelay(m_pProximitySensor) + '\"')
+
+						// Start monitoring the accelerometer
+						if (ASensorEventQueue_enableSensor(m_pSensorEventQueue, m_pProximitySensor) >= 0) {
+							// We'd like to get 60 events per second (in us)
+							ASensorEventQueue_setEventRate(m_pSensorEventQueue, m_pProximitySensor, (1000L/60)*1000);
+						}
+					}
+					*/
+				}
+			}
+
+			/**
+			*  @brief
+			*    Destructor
+			*/
+			inline virtual ~AndroidSensorManagerDevice() override
+			{
+				// Destroy sensor event queue instance
+				ASensorManager_destroyEventQueue(m_pSensorManager, m_pSensorEventQueue);
+			}
+
+
+		//[-------------------------------------------------------]
+		//[ Public virtual UpdateDevice functions                 ]
+		//[-------------------------------------------------------]
+		public:
+			virtual void Update() override
+			{
+				// Check if input device and event queue are valid
+				if (m_pDevice && m_pSensorEventQueue) {
+					// Get sensor manager device
+					SensorManager *pSensorManager = static_cast<SensorManager*>(m_pDevice);
+
+					// Process sensor event queue instance
+					ASensorEvent sASensorEvent;
+					while (ASensorEventQueue_getEvents(m_pSensorEventQueue, &sASensorEvent, 1) > 0) {
+						// Check the sensor type
+						switch (sASensorEvent.type) {
+							// Accelerometer
+							case ASENSOR_TYPE_ACCELEROMETER:
+								if (pSensorManager->AccelerationX.getValue() != sASensorEvent.acceleration.x)
+									pSensorManager->AccelerationX.setValue(sASensorEvent.acceleration.x, true);
+								if (pSensorManager->AccelerationY.getValue() != sASensorEvent.acceleration.y)
+									pSensorManager->AccelerationY.setValue(sASensorEvent.acceleration.y, true);
+								if (pSensorManager->AccelerationZ.getValue() != sASensorEvent.acceleration.z)
+									pSensorManager->AccelerationZ.setValue(sASensorEvent.acceleration.z, true);
+								break;
+
+							// Magnetic field
+							case ASENSOR_TYPE_MAGNETIC_FIELD:
+								if (pSensorManager->MagneticX.getValue() != sASensorEvent.magnetic.x)
+									pSensorManager->MagneticX.setValue(sASensorEvent.magnetic.x, true);
+								if (pSensorManager->MagneticY.getValue() != sASensorEvent.magnetic.y)
+									pSensorManager->MagneticY.setValue(sASensorEvent.magnetic.y, true);
+								if (pSensorManager->MagneticZ.getValue() != sASensorEvent.magnetic.z)
+									pSensorManager->MagneticZ.setValue(sASensorEvent.magnetic.z, true);
+								break;
+
+							// Gyroscope
+							case ASENSOR_TYPE_GYROSCOPE:
+								if (pSensorManager->RotationX.getValue() != sASensorEvent.vector.x)
+									pSensorManager->RotationX.setValue(sASensorEvent.vector.x, true);
+								if (pSensorManager->RotationY.getValue() != sASensorEvent.vector.y)
+									pSensorManager->RotationY.setValue(sASensorEvent.vector.y, true);
+								if (pSensorManager->RotationZ.getValue() != sASensorEvent.vector.z)
+									pSensorManager->RotationZ.setValue(sASensorEvent.vector.z, true);
+								break;
+
+							// Light
+							case ASENSOR_TYPE_LIGHT:
+								if (pSensorManager->Light.getValue() != sASensorEvent.light)
+									pSensorManager->Light.setValue(sASensorEvent.light, true);
+								break;
+
+							// Proximity
+							case ASENSOR_TYPE_PROXIMITY:
+								if (pSensorManager->Proximity.getValue() != sASensorEvent.distance)
+									pSensorManager->Proximity.setValue(sASensorEvent.distance, true);
+								break;
+						}
+					}
+				}
+			}
+
+
+		//[-------------------------------------------------------]
+		//[ Private data                                          ]
+		//[-------------------------------------------------------]
+		private:
+			ASensorManager    *m_pSensorManager;		///< Android sensor manager, can be a null pointer
+			ASensorEventQueue *m_pSensorEventQueue;		///< Sensor event queue, can be a null pointer
+			const ASensor     *m_pAccelerometerSensor;	///< Accelerometer sensor, can be a null pointer
+			const ASensor     *m_pMagneticFieldSensor;	///< Magnetic field sensor, can be a null pointer
+			const ASensor     *m_pGyroscopeSensor;		///< Gyroscope sensor, can be a null pointer
+			const ASensor     *m_pLightSensor;			///< Light sensor, can be a null pointer
+			const ASensor     *m_pProximitySensor;		///< Proximity sensor, can be a null pointer
+
+
+		};
+
+		/**
+		*  @brief
+		*    Standard input provider for Android
+		*/
+		class AndroidProvider : public Provider
+		{
+
+
+		//[-------------------------------------------------------]
+		//[ Public functions                                      ]
+		//[-------------------------------------------------------]
+		public:
+			AndroidProvider() = delete;
+
+			/**
+			*  @brief
+			*    Constructor
+			*
+			*  @param[in] inputManager
+			*    Owner input manager
+			*/
+			inline explicit AndroidProvider(InputManager& inputManager) :
+				Provider(inputManager),
+				m_pAndroidKeyboardDevice(nullptr),
+				m_pAndroidSplitTouchPadDevice(nullptr),
+				m_pAndroidMouseDevice(nullptr)
+			{
+				// Connect the Android input event handler
+				// "TODO(co) See https://github.com/PixelLightFoundation/pixellight - "AndroidProvider::OnInputEvent()" must be called
+				// PLCore::SystemAndroid::EventInputEvent.Connect(SlotInputEvent);
+			}
+
+			/**
+			*  @brief
+			*    Destructor
+			*/
+			inline virtual ~AndroidProvider() override
+			{
+			}
+
+			AndroidProvider& operator= (const AndroidProvider& source) = delete;
+
+
+		//[-------------------------------------------------------]
+		//[ Private virtual Provider functions                    ]
+		//[-------------------------------------------------------]
+		private:
+			virtual void QueryDevices() override
+			{
+				// Create a keyboard device
+				if (!CheckDevice("Keyboard")) {
+					// Add device
+					m_pAndroidKeyboardDevice = new AndroidKeyboardDevice();
+					AddDevice("Keyboard", new Keyboard(mInputManager, "Keyboard", m_pAndroidKeyboardDevice));
+				}
+
+				// Create a splitscreen touch pad device
+				if (!CheckDevice("SplitTouchPad")) {
+					// Add device
+					m_pAndroidSplitTouchPadDevice = new AndroidSplitTouchPadDevice();
+					AddDevice("SplitTouchPad", new SplitTouchPad(mInputManager, "SplitTouchPad", m_pAndroidSplitTouchPadDevice));
+				}
+
+				// Create a mouse device
+				if (!CheckDevice("Mouse")) {
+					// Add device
+					m_pAndroidMouseDevice = new AndroidMouseDevice(m_pAndroidSplitTouchPadDevice);
+					AddDevice("Mouse", new Mouse(mInputManager, "Mouse", m_pAndroidMouseDevice));
+				}
+
+				// Create a sensor manager device
+				if (!CheckDevice("SensorManager")) {
+					AndroidSensorManagerDevice *pImpl = new AndroidSensorManagerDevice();
+					AddDevice("SensorManager", new SensorManager(mInputManager, "SensorManager", pImpl));
+				}
+			}
+
+
+		//[-------------------------------------------------------]
+		//[ Private functions                                     ]
+		//[-------------------------------------------------------]
+		private:
+			/**
+			*  @brief
+			*    Called to process the next Android input event
+			*
+			*  @param[in] cAInputEvent
+			*    Android input event to process
+			*/
+			void OnInputEvent(const struct AInputEvent &cAInputEvent)
+			{
+				// Check the input event type
+				switch (AInputEvent_getType(&cAInputEvent)) {
+					// Key (e.g. from the soft keyboard)
+					case AINPUT_EVENT_TYPE_KEY:
+						if (m_pAndroidKeyboardDevice)
+							m_pAndroidKeyboardDevice->OnKeyInputEvent(cAInputEvent);
+						break;
+
+					// Motion (e.g. from the touchscreen)
+					case AINPUT_EVENT_TYPE_MOTION:
+						if (m_pAndroidMouseDevice)
+							m_pAndroidMouseDevice->OnMotionInputEvent(cAInputEvent);
+						if (m_pAndroidSplitTouchPadDevice)
+							m_pAndroidSplitTouchPadDevice->OnMotionInputEvent(cAInputEvent);
+						break;
+				}
+			}
+
+
+		//[-------------------------------------------------------]
+		//[ Private data                                          ]
+		//[-------------------------------------------------------]
+		private:
+			AndroidKeyboardDevice		*m_pAndroidKeyboardDevice;		///< Android keyboard device instance, can be a null pointer
+			AndroidSplitTouchPadDevice	*m_pAndroidSplitTouchPadDevice;	///< Android splitted touchscreen mouse device instance, can be a null pointer
+			AndroidMouseDevice			*m_pAndroidMouseDevice;			///< Android mouse device instance, can be a null pointer
+
+
+		};
+
+
+		//[-------------------------------------------------------]
+		//[ HID constructor                                       ]
+		//[-------------------------------------------------------]
+		HID::HID() :
+			m_pHIDImpl(nullptr)
+		{
+			// Detect devices
+			DetectDevices();
+		}
+
+
+		//[-------------------------------------------------------]
+		//[ Bluetooth constructor                                 ]
+		//[-------------------------------------------------------]
+		Bluetooth::Bluetooth() :
+			m_pBTImpl(nullptr)
+		{
+			// Detect devices
+			DetectDevices();
+		}
+
+
+
+
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ MacOSX backend implementation                         ]
+	//[-------------------------------------------------------]
+	#elif defined(APPLE)
+		//[-------------------------------------------------------]
+		//[ MacOSX standard input                                 ]
+		//[-------------------------------------------------------]
+		/**
+		*  @brief
+		*    Keyboard implementation for Mac OS X
+		*/
+		class MacOSXKeyboardDevice : public UpdateDevice
+		{
+
+
+		//[-------------------------------------------------------]
+		//[ Public functions                                      ]
+		//[-------------------------------------------------------]
+		public:
+			/**
+			*  @brief
+			*    Default constructor
+			*/
+			inline MacOSXKeyboardDevice()
+			{
+				// Destroy device implementation automatically
+				m_bDelete = true;
+			}
+
+			/**
+			*  @brief
+			*    Destructor
+			*/
+			inline virtual ~MacOSXKeyboardDevice() override
+			{
+				// Nothing here
+			}
+
+
+		//[-------------------------------------------------------]
+		//[ Public virtual UpdateDevice functions                 ]
+		//[-------------------------------------------------------]
+		public:
+			virtual void Update() override
+			{
+				// Check if input device is valid
+				if (m_pDevice) {
+					// Get keyboard device
+					Keyboard *pKeyboard = static_cast<Keyboard*>(m_pDevice);
+
+					// TODO(co) Implement Mac OS X version
+					// -> "Cocoa Event Handling Guide" page 13 looks promising: https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/EventOverview/EventOverview.pdf
+				}
+			}
+
+
+		};
+
+		/**
+		*  @brief
+		*    Mouse implementation for Mac OS X
+		*/
+		class MacOSXMouseDevice : public UpdateDevice
+		{
+
+
+		//[-------------------------------------------------------]
+		//[ Public functions                                      ]
+		//[-------------------------------------------------------]
+		public:
+			/**
+			*  @brief
+			*    Default constructor
+			*/
+			inline MacOSXMouseDevice()
+			{
+				// Destroy device implementation automatically
+				m_bDelete = true;
+			}
+
+			/**
+			*  @brief
+			*    Destructor
+			*/
+			inline virtual ~MacOSXMouseDevice()
+			{
+				// Nothing here
+			}
+
+
+		//[-------------------------------------------------------]
+		//[ Public virtual UpdateDevice functions                 ]
+		//[-------------------------------------------------------]
+		public:
+			virtual void Update() override
+			{
+				// Check if input device is valid
+				if (m_pDevice) {
+					// Get mouse device
+					Mouse *pMouse = static_cast<Mouse*>(m_pDevice);
+
+					// TODO(co) Implement Mac OS X version
+					// -> "Cocoa Event Handling Guide" page 13 looks promising: https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/EventOverview/EventOverview.pdf
+				}
+			}
+
+
+		};
+
+		/**
+		*  @brief
+		*    Standard input provider for Mac OS X
+		*/
+		class MacOSXProvider : public Provider
+		{
+
+
+		//[-------------------------------------------------------]
+		//[ Public functions                                      ]
+		//[-------------------------------------------------------]
+		public:
+			MacOSXProvider() = delete;
+
+			/**
+			*  @brief
+			*    Constructor
+			*
+			*  @param[in] inputManager
+			*    Owner input manager
+			*/
+			inline explicit MacOSXProvider(InputManager& inputManager)
+				Provider(inputManager)
+			{
+				// Nothing here
+			}
+
+			/**
+			*  @brief
+			*    Destructor
+			*/
+			inline virtual ~MacOSXProvider() override
+			{
+				// Nothing here
+			}
+
+			MacOSXProvider& operator= (const MacOSXProvider& source) = delete;
+
+
+		//[-------------------------------------------------------]
+		//[ Private virtual Provider functions                    ]
+		//[-------------------------------------------------------]
+		private:
+			virtual void QueryDevices() override
+			{
+				// Create a keyboard device
+				if (!CheckDevice("Keyboard")) {
+					// Add device
+					MacOSXKeyboardDevice *pImpl = new MacOSXKeyboardDevice();
+					AddDevice("Keyboard", new Keyboard("Keyboard", pImpl));
+				}
+
+				// Create a mouse device
+				if (!CheckDevice("Mouse")) {
+					MacOSXMouseDevice *pImpl = new MacOSXMouseDevice();
+					AddDevice("Mouse", new Mouse("Mouse", pImpl));
+				}
+			}
+
+
+		};
+
+
+		//[-------------------------------------------------------]
+		//[ HID constructor                                       ]
+		//[-------------------------------------------------------]
+		HID::HID() :
+			m_pHIDImpl(nullptr)
+		{
+			// Detect devices
+			DetectDevices();
+		}
+
+
+		//[-------------------------------------------------------]
+		//[ Bluetooth constructor                                 ]
+		//[-------------------------------------------------------]
+		Bluetooth::Bluetooth() :
+			m_pBTImpl(nullptr)
+		{
+			// Detect devices
+			DetectDevices();
+		}
+
+
+
+
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ Linux backend implementation                          ]
+	//[-------------------------------------------------------]
+	#elif defined(LINUX) && !defined(__ANDROID__)
+		//[-------------------------------------------------------]
+		//[ Includes                                              ]
+		//[-------------------------------------------------------]
+		// TODO(co) Remove this
+		//#include <PLCore/String/ParseTools.h>
+		//#include <PLCore/Log/Log.h>
 
 		#include <X11/Xlib.h>
 		#include <X11/Xutil.h>
@@ -8246,7 +9555,8 @@ namespace DeviceInput
 				dbus_bus_add_match(&cConnection, "type='signal',interface='org.bluez.Adapter'", &sError);
 				dbus_connection_flush(&cConnection);
 				if (dbus_error_is_set(&sError)) {
-					PL_LOG(Error, "BTLinux: DBUS match error (" + std::string(sError.message) + ')')
+					// TODO(co) Log
+					// PL_LOG(Error, "BTLinux: DBUS match error (" + std::string(sError.message) + ')')
 				} else {
 					// Listen for signals
 					bool bAbort = false;
@@ -8325,7 +9635,8 @@ namespace DeviceInput
 								}
 
 								// Device info
-								PL_LOG(Info, "BTLinux: Found device '" + sDeviceName + "', Address = " + sDeviceAddress)
+								// TODO(co) Log
+								//PL_LOG(Info, "BTLinux: Found device '" + sDeviceName + "', Address = " + sDeviceAddress)
 
 								// Convert address from string to bytes
 								const int nAddress0 = ParseTools::ParseHexValue(sDeviceAddress.GetSubstring( 0, 2));
@@ -8418,7 +9729,8 @@ namespace DeviceInput
 				dbus_error_init(&sError);
 
 				// Get DBUS connection
-				PL_LOG(Info, "BTLinux: Discovering Bluetooth devices")
+				// TODO(co) Log
+				// PL_LOG(Info, "BTLinux: Discovering Bluetooth devices")
 				DBusConnection *pConnection = dbus_bus_get(DBUS_BUS_SYSTEM, &sError);
 				if (pConnection) {
 					// Get default Bluetooth adapter
@@ -8450,7 +9762,8 @@ namespace DeviceInput
 							dbus_message_unref(pMessage);
 
 						if (dbus_error_is_set(&sError)) {
-							PL_LOG(Error, "BTLinux (Set timeout for device discovery): DBUS error (" + std::string(sError.message) + ')')
+							// TODO(co) Log
+							//PL_LOG(Error, "BTLinux (Set timeout for device discovery): DBUS error (" + std::string(sError.message) + ')')
 						} else {
 							// Start device discovery
 							pMessage = dbus_message_new_method_call("org.bluez", sAdapter.GetASCII(), "org.bluez.Adapter", "StartDiscovery");
@@ -8461,7 +9774,8 @@ namespace DeviceInput
 								dbus_message_unref(pMessage);
 
 							if (dbus_error_is_set(&sError))
-								PL_LOG(Error, "BTLinux (Start device discovery): DBUS error (" + std::string(sError.message) + ')')
+								// TODO(co) Log
+								// PL_LOG(Error, "BTLinux (Start device discovery): DBUS error (" + std::string(sError.message) + ')')
 							else
 								EnumerateBluetoothDevices(lstDevices, *pConnection);
 						}
@@ -8471,7 +9785,8 @@ namespace DeviceInput
 					dbus_error_free(&sError);
 					dbus_connection_unref(pConnection);
 				} else {
-					PL_LOG(Error, "BTLinux: Could not create DBUS connection")
+					// TODO(co) Log
+					// PL_LOG(Error, "BTLinux: Could not create DBUS connection")
 				}
 			}
 
@@ -8502,1307 +9817,6 @@ namespace DeviceInput
 		//[-------------------------------------------------------]
 		Bluetooth::Bluetooth() :
 			m_pBTImpl(new BTLinux())
-		{
-			// Detect devices
-			DetectDevices();
-		}
-
-
-
-
-
-
-
-
-	//[-------------------------------------------------------]
-	//[ MacOSX backend implementation                         ]
-	//[-------------------------------------------------------]
-	#elif defined(APPLE)
-		//[-------------------------------------------------------]
-		//[ MacOSX standard input                                 ]
-		//[-------------------------------------------------------]
-		/**
-		*  @brief
-		*    Keyboard implementation for Mac OS X
-		*/
-		class MacOSXKeyboardDevice : public UpdateDevice
-		{
-
-
-		//[-------------------------------------------------------]
-		//[ Public functions                                      ]
-		//[-------------------------------------------------------]
-		public:
-			/**
-			*  @brief
-			*    Default constructor
-			*/
-			inline MacOSXKeyboardDevice()
-			{
-				// Destroy device implementation automatically
-				m_bDelete = true;
-			}
-
-			/**
-			*  @brief
-			*    Destructor
-			*/
-			inline virtual ~MacOSXKeyboardDevice() override
-			{
-				// Nothing here
-			}
-
-
-		//[-------------------------------------------------------]
-		//[ Public virtual UpdateDevice functions                 ]
-		//[-------------------------------------------------------]
-		public:
-			virtual void Update() override
-			{
-				// Check if input device is valid
-				if (m_pDevice) {
-					// Get keyboard device
-					Keyboard *pKeyboard = static_cast<Keyboard*>(m_pDevice);
-
-					// TODO(co) Implement Mac OS X version
-					// -> "Cocoa Event Handling Guide" page 13 looks promising: https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/EventOverview/EventOverview.pdf
-				}
-			}
-
-
-		};
-
-		/**
-		*  @brief
-		*    Mouse implementation for Mac OS X
-		*/
-		class MacOSXMouseDevice : public UpdateDevice
-		{
-
-
-		//[-------------------------------------------------------]
-		//[ Public functions                                      ]
-		//[-------------------------------------------------------]
-		public:
-			/**
-			*  @brief
-			*    Default constructor
-			*/
-			inline MacOSXMouseDevice()
-			{
-				// Destroy device implementation automatically
-				m_bDelete = true;
-			}
-
-			/**
-			*  @brief
-			*    Destructor
-			*/
-			inline virtual ~MacOSXMouseDevice()
-			{
-				// Nothing here
-			}
-
-
-		//[-------------------------------------------------------]
-		//[ Public virtual UpdateDevice functions                 ]
-		//[-------------------------------------------------------]
-		public:
-			virtual void Update() override
-			{
-				// Check if input device is valid
-				if (m_pDevice) {
-					// Get mouse device
-					Mouse *pMouse = static_cast<Mouse*>(m_pDevice);
-
-					// TODO(co) Implement Mac OS X version
-					// -> "Cocoa Event Handling Guide" page 13 looks promising: https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/EventOverview/EventOverview.pdf
-				}
-			}
-
-
-		};
-
-		/**
-		*  @brief
-		*    Standard input provider for Mac OS X
-		*/
-		class MacOSXProvider : public Provider
-		{
-
-
-		//[-------------------------------------------------------]
-		//[ Public functions                                      ]
-		//[-------------------------------------------------------]
-		public:
-			MacOSXProvider() = delete;
-
-			/**
-			*  @brief
-			*    Constructor
-			*
-			*  @param[in] inputManager
-			*    Owner input manager
-			*/
-			inline explicit MacOSXProvider(InputManager& inputManager)
-				Provider(inputManager)
-			{
-				// Nothing here
-			}
-
-			/**
-			*  @brief
-			*    Destructor
-			*/
-			inline virtual ~MacOSXProvider() override
-			{
-				// Nothing here
-			}
-
-			MacOSXProvider& operator= (const MacOSXProvider& source) = delete;
-
-
-		//[-------------------------------------------------------]
-		//[ Private virtual Provider functions                    ]
-		//[-------------------------------------------------------]
-		private:
-			virtual void QueryDevices() override
-			{
-				// Create a keyboard device
-				if (!CheckDevice("Keyboard")) {
-					// Add device
-					MacOSXKeyboardDevice *pImpl = new MacOSXKeyboardDevice();
-					AddDevice("Keyboard", new Keyboard("Keyboard", pImpl));
-				}
-
-				// Create a mouse device
-				if (!CheckDevice("Mouse")) {
-					MacOSXMouseDevice *pImpl = new MacOSXMouseDevice();
-					AddDevice("Mouse", new Mouse("Mouse", pImpl));
-				}
-			}
-
-
-		};
-
-
-		//[-------------------------------------------------------]
-		//[ HID constructor                                       ]
-		//[-------------------------------------------------------]
-		HID::HID() :
-			m_pHIDImpl(nullptr)
-		{
-			// Detect devices
-			DetectDevices();
-		}
-
-
-		//[-------------------------------------------------------]
-		//[ Bluetooth constructor                                 ]
-		//[-------------------------------------------------------]
-		Bluetooth::Bluetooth() :
-			m_pBTImpl(nullptr)
-		{
-			// Detect devices
-			DetectDevices();
-		}
-
-
-
-
-
-
-
-
-	//[-------------------------------------------------------]
-	//[ Android backend implementation                        ]
-	//[-------------------------------------------------------]
-	#elif defined(__ANDROID__)
-		//[-------------------------------------------------------]
-		//[ Includes                                              ]
-		//[-------------------------------------------------------]
-		// TODO(co) Remove this
-		#include <PLCore/Log/Log.h>
-		#include <PLCore/System/System.h>
-		#include <PLCore/System/SystemAndroid.h>
-
-		#include <android/input.h>
-		#include <android/sensor.h>
-		#include <android_native_app_glue.h>
-
-
-		//[-------------------------------------------------------]
-		//[ Global functions                                      ]
-		//[-------------------------------------------------------]
-		/**
-		*  @brief
-		*    Returns the sign of the given value
-		*/
-		inline float sign(float x)
-		{
-			return (x < 0.0f) ? -1.0f : 1.0f;
-		}
-
-
-		//[-------------------------------------------------------]
-		//[ Android standard input                                ]
-		//[-------------------------------------------------------]
-		/**
-		*  @brief
-		*    Keyboard implementation for Android
-		*/
-		class AndroidKeyboardDevice : public UpdateDevice
-		{
-
-
-		//[-------------------------------------------------------]
-		//[ Public functions                                      ]
-		//[-------------------------------------------------------]
-		public:
-			/**
-			*  @brief
-			*    Default constructor
-			*/
-			inline AndroidKeyboardDevice()
-			{
-				// Destroy device implementation automatically
-				m_bDelete = true;
-			}
-
-			/**
-			*  @brief
-			*    Destructor
-			*/
-			inline virtual ~AndroidKeyboardDevice() override
-			{
-				// Nothing here
-			}
-
-			/**
-			*  @brief
-			*    Call this to process the next key input event
-			*
-			*  @param[in] cAKeyInputEvent
-			*    Key input event to process
-			*/
-			void OnKeyInputEvent(const struct AInputEvent &cAKeyInputEvent)
-			{
-				// Check if input device is valid
-				if (m_pDevice) {
-					// Get Android key code
-					const int32_t nKeyCode = AKeyEvent_getKeyCode(&cAKeyInputEvent);
-
-					// Lookout! The virtual keyboard of Android sends "down" and "up" directly one after another
-					// -> This is really a problem and we have to delay further keys...
-					if (m_lstProcessedKeys.IsElement(nKeyCode)) {
-						// Add key for later processing
-						KeyInfo sKeyInfo;
-						sKeyInfo.nKeyCode = nKeyCode;
-						sKeyInfo.bPressed = (AKeyEvent_getAction(&cAKeyInputEvent) == AKEY_EVENT_ACTION_DOWN);
-						m_lstDelayedKeys.Add(sKeyInfo);
-					} else {
-						// Get keyboard device
-						Keyboard *pKeyboard = static_cast<Keyboard*>(m_pDevice);
-
-						// Get button
-						Button *pButton = GetKeyboardKey(*pKeyboard, nKeyCode);
-						if (pButton) {
-							// Get button state
-							const bool bPressed = (AKeyEvent_getAction(&cAKeyInputEvent) == AKEY_EVENT_ACTION_DOWN);
-
-							// Propagate changes
-							if (pButton->isPressed() != bPressed)
-							{
-								pButton->setPressed(bPressed);
-							}
-						}
-
-						// Add this key to the processed keys
-						m_lstProcessedKeys.Add(nKeyCode);
-					}
-				}
-			}
-
-
-		//[-------------------------------------------------------]
-		//[ Public virtual UpdateDevice functions                 ]
-		//[-------------------------------------------------------]
-		public:
-			virtual void Update() override
-			{
-				// Check if input device is valid
-				if (m_pDevice) {
-					// Get keyboard device
-					Keyboard *pKeyboard = static_cast<Keyboard*>(m_pDevice);
-
-					// Process delayed keys
-					for (uint32_t i=0; i<m_lstDelayedKeys.size(); i++) {
-						const KeyInfo &sKeyInfo = m_lstDelayedKeys[i];
-
-						// Get button
-						Button *pButton = GetKeyboardKey(*pKeyboard, sKeyInfo.nKeyCode);
-						if (pButton) {
-							// Get button state
-							const bool bPressed = sKeyInfo.bPressed;
-
-							// Propagate changes
-							if (pButton->isPressed() != bPressed)
-							{
-								pButton->setPressed(bPressed);
-							}
-						}
-					}
-					m_lstDelayedKeys.clear();
-					m_lstProcessedKeys.clear();
-				}
-			}
-
-
-		//[-------------------------------------------------------]
-		//[ Private functions                                     ]
-		//[-------------------------------------------------------]
-		private:
-			/**
-			*  @brief
-			*    Get key for Android key code
-			*
-			*  @param[in] cKeyboard
-			*    Reference to keyboard device
-			*  @param[in] int32_t
-			*    Key code
-			*
-			*  @return
-			*    Corresponding key, a null pointer if Android key code is invalid
-			*/
-			Button *GetKeyboardKey(Keyboard &cKeyboard, int32_t nKeyCode)
-			{
-				// Return key that corresponds to the given Android key code
-				switch (nKeyCode) {
-					// AKEYCODE_SOFT_LEFT			-> ignored
-					// AKEYCODE_SOFT_RIGHT			-> ignored
-					case AKEYCODE_HOME:				return &cKeyboard.Home;
-					case AKEYCODE_BACK:				return &cKeyboard.Backspace;
-					// AKEYCODE_CALL				-> ignored
-					// AKEYCODE_ENDCAL				-> ignored
-					case AKEYCODE_0:				return &cKeyboard.Key0;
-					case AKEYCODE_1:				return &cKeyboard.Key1;
-					case AKEYCODE_2:				return &cKeyboard.Key2;
-					case AKEYCODE_3:				return &cKeyboard.Key3;
-					case AKEYCODE_4:				return &cKeyboard.Key4;
-					case AKEYCODE_5:				return &cKeyboard.Key5;
-					case AKEYCODE_6:				return &cKeyboard.Key6;
-					case AKEYCODE_7:				return &cKeyboard.Key7;
-					case AKEYCODE_8:				return &cKeyboard.Key8;
-					case AKEYCODE_9:				return &cKeyboard.Key9;
-					// AKEYCODE_STAR				-> ignored
-					// AKEYCODE_POUND				-> ignored
-					case AKEYCODE_DPAD_UP:			return &cKeyboard.Up;
-					case AKEYCODE_DPAD_DOWN:		return &cKeyboard.Down;
-					case AKEYCODE_DPAD_LEFT:		return &cKeyboard.Left;
-					case AKEYCODE_DPAD_RIGHT:		return &cKeyboard.Right;
-					// AKEYCODE_DPAD_CENTER			-> ignored
-					// AKEYCODE_VOLUME_UP			-> ignored
-					// AKEYCODE_VOLUME_DOWN			-> ignored
-					// AKEYCODE_POWER				-> ignored
-					// AKEYCODE_CAMERA				-> ignored
-					case AKEYCODE_CLEAR:			return &cKeyboard.Clear;
-					case AKEYCODE_A:				return &cKeyboard.A;
-					case AKEYCODE_B:				return &cKeyboard.B;
-					case AKEYCODE_C:				return &cKeyboard.C;
-					case AKEYCODE_D:				return &cKeyboard.D;
-					case AKEYCODE_E:				return &cKeyboard.E;
-					case AKEYCODE_F:				return &cKeyboard.F;
-					case AKEYCODE_G:				return &cKeyboard.G;
-					case AKEYCODE_H:				return &cKeyboard.H;
-					case AKEYCODE_I:				return &cKeyboard.I;
-					case AKEYCODE_J:				return &cKeyboard.J;
-					case AKEYCODE_K:				return &cKeyboard.K;
-					case AKEYCODE_L:				return &cKeyboard.L;
-					case AKEYCODE_M:				return &cKeyboard.M;
-					case AKEYCODE_N:				return &cKeyboard.N;
-					case AKEYCODE_O:				return &cKeyboard.O;
-					case AKEYCODE_P:				return &cKeyboard.P;
-					case AKEYCODE_Q:				return &cKeyboard.Q;
-					case AKEYCODE_R:				return &cKeyboard.R;
-					case AKEYCODE_S:				return &cKeyboard.S;
-					case AKEYCODE_T:				return &cKeyboard.T;
-					case AKEYCODE_U:				return &cKeyboard.U;
-					case AKEYCODE_V:				return &cKeyboard.V;
-					case AKEYCODE_W:				return &cKeyboard.W;
-					case AKEYCODE_X:				return &cKeyboard.X;
-					case AKEYCODE_Y:				return &cKeyboard.Y;
-					case AKEYCODE_Z:				return &cKeyboard.Z;
-					// AKEYCODE_COMMA				-> ignored
-					// AKEYCODE_PERIOD				-> ignored
-					case AKEYCODE_ALT_LEFT:			return &cKeyboard.Alt;
-					case AKEYCODE_ALT_RIGHT:		return &cKeyboard.Control;
-					case AKEYCODE_SHIFT_LEFT:		return &cKeyboard.Shift;
-					// AKEYCODE_SHIFT_RIGHT			-> ignored
-					case AKEYCODE_TAB:				return &cKeyboard.Tab;
-					case AKEYCODE_SPACE:			return &cKeyboard.Space;
-					// AKEYCODE_SYM					-> ignored
-					// AKEYCODE_EXPLORER			-> ignored
-					// AKEYCODE_ENVELOPE			-> ignored
-					case AKEYCODE_ENTER:			return &cKeyboard.Return;
-					case AKEYCODE_DEL:				return &cKeyboard.Delete;
-					// AKEYCODE_GRAVE				-> ignored
-					case AKEYCODE_MINUS:			return &cKeyboard.NumpadSubtract;
-					// AKEYCODE_EQUALS				-> ignored
-					// AKEYCODE_LEFT_BRACKET		-> ignored
-					// AKEYCODE_RIGHT_BRACKET		-> ignored
-					// AKEYCODE_BACKSLASH			-> ignored
-					// AKEYCODE_SEMICOLON			-> ignored
-					// AKEYCODE_APOSTROPHE			-> ignored
-					// AKEYCODE_SLASH				-> ignored
-					// AKEYCODE_AT					-> ignored
-					// AKEYCODE_NUM					-> ignored
-					// AKEYCODE_HEADSETHOOK			-> ignored
-					// AKEYCODE_FOCUS				-> ignored
-					case AKEYCODE_PLUS:				return &cKeyboard.NumpadAdd;
-					// AKEYCODE_MENU				-> ignored
-					// AKEYCODE_NOTIFICATION		-> ignored
-					// AKEYCODE_SEARCH				-> ignored
-					case AKEYCODE_MEDIA_PLAY_PAUSE:	return &cKeyboard.Pause;
-					// AKEYCODE_MEDIA_STOP			-> ignored
-					// AKEYCODE_MEDIA_NEXT			-> ignored
-					// AKEYCODE_MEDIA_PREVIOUS		-> ignored
-					// AKEYCODE_MEDIA_REWIND		-> ignored
-					// AKEYCODE_MEDIA_FAST_FORWARD	-> ignored
-					// AKEYCODE_MUTE				-> ignored
-					case AKEYCODE_PAGE_UP:			return &cKeyboard.PageUp;
-					case AKEYCODE_PAGE_DOWN:		return &cKeyboard.PageDown;
-					// AKEYCODE_PICTSYMBOLS			-> ignored
-					// AKEYCODE_SWITCH_CHARSET		-> ignored
-					case AKEYCODE_BUTTON_A:			return &cKeyboard.A;
-					case AKEYCODE_BUTTON_B:			return &cKeyboard.B;
-					case AKEYCODE_BUTTON_C:			return &cKeyboard.C;
-					case AKEYCODE_BUTTON_X:			return &cKeyboard.X;
-					case AKEYCODE_BUTTON_Y:			return &cKeyboard.Y;
-					case AKEYCODE_BUTTON_Z:			return &cKeyboard.Z;
-					// AKEYCODE_BUTTON_L1			-> ignored
-					// AKEYCODE_BUTTON_R1			-> ignored
-					// AKEYCODE_BUTTON_L2			-> ignored
-					// AKEYCODE_BUTTON_R2			-> ignored
-					// AKEYCODE_BUTTON_THUMBL		-> ignored
-					// AKEYCODE_BUTTON_THUMBR		-> ignored
-					// AKEYCODE_BUTTON_START		-> ignored
-					case AKEYCODE_BUTTON_SELECT:	return &cKeyboard.Select;
-					// AKEYCODE_BUTTON_MODE			-> ignored
-					default:						return nullptr;
-				}
-			}
-
-
-		//[-------------------------------------------------------]
-		//[ Private data                                          ]
-		//[-------------------------------------------------------]
-		private:
-			std::vector<int32_t> m_lstProcessedKeys;
-			class KeyInfo {
-				public:
-					int32_t nKeyCode;
-					bool    bPressed;
-					bool operator ==(const KeyInfo &cSource) { return false; }
-			};
-			std::vector<KeyInfo> m_lstDelayedKeys;
-
-
-		};
-
-		/**
-		*  @brief
-		*    Mouse implementation for Android
-		*
-		*  @remarks
-		*    Mouse emulation by using the touchscreen. When moving around the finger on the touchscreen,
-		*    the change in movement is used for the mouse axis. A short touch without any movement is handled
-		*    as "left mouse button clicked". As soon the mouse is moved, no "left mouse button"-events can be
-		*    generated anymore during the current touch. When touching without movement for half a second, the
-		*    emulation changes into "left mouse button hold down"-mode, following mouse movement will not change
-		*    this mode.
-		*/
-		class AndroidMouseDevice : public UpdateDevice
-		{
-
-
-		//[-------------------------------------------------------]
-		//[ Public functions                                      ]
-		//[-------------------------------------------------------]
-		public:
-			/**
-			*  @brief
-			*    Constructor
-			*
-			*  @param[in] pAndroidSplitTouchPadDevice
-			*    Optional Android split touch pad device this device interacts with, can be a null pointer
-			*/
-			inline explicit AndroidMouseDevice(AndroidSplitTouchPadDevice *pAndroidSplitTouchPadDevice)
-				m_pAndroidSplitTouchPadDevice(pAndroidSplitTouchPadDevice),
-				m_bMouseMoved(false),
-				m_fPreviousMousePositionX(0.0f),
-				m_fPreviousMousePositionY(0.0f),
-				m_fPreviousMousePressure(0.0f),
-				m_fMousePositionX(0.0f),
-				m_fMousePositionY(0.0f),
-				m_fMousePressure(0.0f),
-				m_bLeftMouseButton(false)
-			{
-				// Destroy device implementation automatically
-				m_bDelete = true;
-			}
-
-			/**
-			*  @brief
-			*    Destructor
-			*/
-			inline virtual ~AndroidMouseDevice() override
-			{
-				// Nothing here
-			}
-
-			/**
-			*  @brief
-			*    Call this to process the next motion input event
-			*
-			*  @param[in] cAMotionInputEvent
-			*    Motion input event to process
-			*/
-			void OnMotionInputEvent(const struct AInputEvent &cAMotionInputEvent)
-			{
-				// Get the number of pointers of data contained in this event
-				const size_t nAndroidPointerCount = AMotionEvent_getPointerCount(&cAMotionInputEvent);
-				if (nAndroidPointerCount) {
-					// Get the current X and Y coordinate of this event for the given pointer index
-					m_fMousePositionX = AMotionEvent_getX(&cAMotionInputEvent, 0);
-					m_fMousePositionY = AMotionEvent_getY(&cAMotionInputEvent, 0);
-					m_fMousePressure  = AMotionEvent_getPressure(&cAMotionInputEvent, 0);
-
-					// Get the combined motion event action code and the action code
-					const int32_t nAndroidCombinedAction = AMotionEvent_getAction(&cAMotionInputEvent);
-					const int32_t nAndroidAction		 = (nAndroidCombinedAction & AMOTION_EVENT_ACTION_MASK);
-
-					// Touch end?
-					if (nAndroidAction == AMOTION_EVENT_ACTION_UP) {
-						// Jap, touch end, previous mouse position = current mouse position
-						m_fPreviousMousePositionX = m_fMousePositionX;
-						m_fPreviousMousePositionY = m_fMousePositionY;
-						m_fPreviousMousePressure = m_fMousePressure;
-
-						// Mouse moved during the current touch? If no, this is handled as a left mouse button click as well.
-						if (!m_bMouseMoved && !m_bLeftMouseButton) {
-							// Check if input device is valid
-							if (m_pDevice) {
-								// Get mouse device
-								Mouse *pMouse = static_cast<Mouse*>(m_pDevice);
-
-								// Update button
-								if (pMouse->Left.isPressed())
-								{
-									pMouse->Left.setPressed(true);
-								}
-							}
-						}
-
-						// The left mouse button is now no longer down
-						m_bLeftMouseButton = false;
-					} else {
-						// Touch start?
-						if (nAndroidAction == AMOTION_EVENT_ACTION_DOWN) {
-							// Jap, touch start, previous mouse position = current mouse position
-							m_fPreviousMousePositionX = m_fMousePositionX;
-							m_fPreviousMousePositionY = m_fMousePositionY;
-							m_fPreviousMousePressure = m_fMousePressure;
-
-							// The mouse was not yet moved
-							m_bMouseMoved = false;
-
-							// The left mouse button is not pressed
-							m_bLeftMouseButton = false;
-						}
-
-						// As long as the mouse was not yet moved, a "left mouse button is hold down" can still be generated
-						if (!m_bMouseMoved && !m_bLeftMouseButton) {
-							// Get the past time since the touch has been started (in nanoseconds)
-							const int64_t nPastTime = AMotionEvent_getEventTime(&cAMotionInputEvent) - AMotionEvent_getDownTime(&cAMotionInputEvent);
-
-							// If the mouse has not been moved for half a second, we go into "left mouse button is hold down"-mode
-							if (nPastTime > 500*1000*1000) {
-								// The left mouse button is now down
-								m_bLeftMouseButton = true;
-							}
-						}
-					}
-				}
-			}
-
-
-		//[-------------------------------------------------------]
-		//[ Public virtual UpdateDevice functions                 ]
-		//[-------------------------------------------------------]
-		public:
-			virtual void Update() override
-			{
-				// Check if input device is valid
-				if (m_pDevice) {
-					// Get mouse device
-					Mouse *pMouse = static_cast<Mouse*>(m_pDevice);
-
-					// Update relative axes?
-					// ->  In case there's an active "AndroidSplitTouchPadDevice"-instance we have to deactivate the
-					//     "mouse movement"-emulation or this will conflict with "AndroidSplitTouchPadDevice"
-					if (!m_pAndroidSplitTouchPadDevice || !m_pAndroidSplitTouchPadDevice->GetDevice() || !m_pAndroidSplitTouchPadDevice->GetDevice()->GetActive()) {
-						// Get the mouse movement
-						float fDeltaX = m_fMousePositionX - m_fPreviousMousePositionX;
-						float fDeltaY = m_fMousePositionY - m_fPreviousMousePositionY;
-						float fDeltaPressure = m_fMousePressure - m_fPreviousMousePressure;
-
-						// Was the mouse already moved? (if so, we're in "mouse move"-mode, not in "left mouse button click"-mode)
-						if (!m_bMouseMoved) {
-							// Check whether or not the mouse was moved - with a little bit of tolerance
-							if ((fabs(fDeltaX) > 6 || fabs(fDeltaY) > 6) && fabs(fDeltaPressure) < 0.4f) {
-								m_bMouseMoved = true;
-							} else {
-								fDeltaX = fDeltaY = 0.0f;
-								m_fPreviousMousePositionX = m_fMousePositionX;
-								m_fPreviousMousePositionY = m_fMousePositionY;
-							}
-						}
-
-						// Update axes
-						if (pMouse->X.getValue() != fDeltaX)
-							pMouse->X.setValue(fDeltaX, true);
-						if (pMouse->Y.getValue() != fDeltaY)
-							pMouse->Y.setValue(fDeltaY, true);
-
-						// The current mouse position becomes the previous mouse position
-						m_fPreviousMousePositionX = m_fMousePositionX;
-						m_fPreviousMousePositionY = m_fMousePositionY;
-					}
-
-					// Update buttons
-					if (pMouse->Left.isPressed() != m_bLeftMouseButton)
-					{
-						pMouse->Left.setPressed(m_bLeftMouseButton);
-					}
-				}
-			}
-
-
-		//[-------------------------------------------------------]
-		//[ Private data                                          ]
-		//[-------------------------------------------------------]
-		private:
-			AndroidSplitTouchPadDevice *m_pAndroidSplitTouchPadDevice;	///< Optional Android split touch pad device this device interacts with, can be a null pointer
-			bool						m_bMouseMoved;					///< Mouse moved during the current touch?
-			float						m_fPreviousMousePositionX;		///< Previous mouse x position
-			float						m_fPreviousMousePositionY;		///< Previous mouse y position
-			float						m_fPreviousMousePressure;		///< Previous mouse pressure
-			float						m_fMousePositionX;				///< Current mouse x position
-			float						m_fMousePositionY;				///< Current mouse y position
-			float						m_fMousePressure;				///< Current mouse pressure
-			bool						m_bLeftMouseButton;				///< Is the left mouse button currently down?
-
-
-		};
-
-		/**
-		*  @brief
-		*    Android gamepad device emulation by using a touch screen making it possible to e.g. move & look at the same time
-		*/
-		class AndroidSplitTouchPadDevice : public UpdateDevice
-		{
-
-
-		//[-------------------------------------------------------]
-		//[ Public functions                                      ]
-		//[-------------------------------------------------------]
-		public:
-			/**
-			*  @brief
-			*    Default constructor
-			*/
-			inline AndroidSplitTouchPadDevice()
-				// Left
-				m_nLeftTouchPointerID(-1),
-				m_fOriginLeftTouchPositionX(0.0f),
-				m_fOriginLeftTouchPositionY(0.0f),
-				m_fLeftTouchPositionX(0.0f),
-				m_fLeftTouchPositionY(0.0f),
-				// Right
-				m_nRightTouchPointerID(-1),
-				m_fOriginRightTouchPositionX(0.0f),
-				m_fOriginRightTouchPositionY(0.0f),
-				m_fRightTouchPositionX(0.0f),
-				m_fRightTouchPositionY(0.0f)
-			{
-				// Destroy device implementation automatically
-				m_bDelete = true;
-			}
-
-			/**
-			*  @brief
-			*    Destructor
-			*/
-			inline virtual ~AndroidSplitTouchPadDevice() override
-			{
-				// Nothing here
-			}
-
-			/**
-			*  @brief
-			*    Call this to process the next motion input event
-			*
-			*  @param[in] cAMotionInputEvent
-			*    Motion input event to process
-			*/
-			void OnMotionInputEvent(const struct AInputEvent &cAMotionInputEvent)
-			{
-				// We need the display size and orientation for splitting the screen
-				struct android_app *pAndroidApp = reinterpret_cast<SystemAndroid*>(System::GetInstance())->GetAndroidApp();
-				if (pAndroidApp) {
-					ANativeWindow *pANativeWindow = pAndroidApp->window;
-					if (pANativeWindow) {
-						// Get the screen width: This is our base line for splitting
-						const int32_t nScreenWidth = ANativeWindow_getWidth(pANativeWindow);
-
-						// Get the number of pointers of data contained in this event
-						const size_t nAndroidPointerCount = AMotionEvent_getPointerCount(&cAMotionInputEvent);
-
-						// Evaluate every point
-						for (size_t i=0; i<nAndroidPointerCount; i++) {
-							size_t nAndroidPointerID    = AMotionEvent_getPointerId(&cAMotionInputEvent, i);
-							size_t nAndroidAction       = (AMotionEvent_getAction(&cAMotionInputEvent) & AMOTION_EVENT_ACTION_MASK);
-							size_t nAndroidPointerIndex = i;
-							if (nAndroidAction == AMOTION_EVENT_ACTION_POINTER_DOWN || nAndroidAction == AMOTION_EVENT_ACTION_POINTER_UP) {
-								nAndroidPointerIndex = (AMotionEvent_getAction(&cAMotionInputEvent) & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
-								nAndroidPointerID    = AMotionEvent_getPointerId(&cAMotionInputEvent, nAndroidPointerIndex);
-							}
-
-							// Get the current X and Y coordinate of this event for the given pointer index
-							const float fPointerPositionX = AMotionEvent_getX(&cAMotionInputEvent, nAndroidPointerIndex);
-							const float fPointerPositionY = AMotionEvent_getY(&cAMotionInputEvent, nAndroidPointerIndex);
-
-							// Does the touch start?
-							if (nAndroidAction == AMOTION_EVENT_ACTION_DOWN || nAndroidAction == AMOTION_EVENT_ACTION_POINTER_DOWN) {
-								// Decide if the point is in the left or right screen half
-								if (fPointerPositionX < (nScreenWidth/2)) {
-									// This is the on the left half of the screen
-									if (m_nLeftTouchPointerID == -1) {
-										// This is our initial start point (origin position = current position)
-										m_fOriginLeftTouchPositionX = m_fLeftTouchPositionX = fPointerPositionX;
-										m_fOriginLeftTouchPositionY = m_fLeftTouchPositionY = fPointerPositionY;
-
-										// We're now active, save the ID of this pointer
-										m_nLeftTouchPointerID = nAndroidPointerID;
-									}
-								} else {
-									// This is on the right half of the screen
-									if (m_nRightTouchPointerID == -1) {
-										// This is our initial start point (origin position = current position)
-										m_fOriginRightTouchPositionX = m_fRightTouchPositionX = fPointerPositionX;
-										m_fOriginRightTouchPositionY = m_fRightTouchPositionY = fPointerPositionY;
-
-										// We're now active, save the ID of this pointer
-										m_nRightTouchPointerID = nAndroidPointerID;
-									}
-								}
-
-							// Does the touch stop?
-							} else if (nAndroidAction == AMOTION_EVENT_ACTION_UP || nAndroidAction == AMOTION_EVENT_ACTION_POINTER_UP) {
-								// Use the pointer ID to figure out whether this is our left or right pointer
-								if (m_nLeftTouchPointerID == nAndroidPointerID) {
-									// We're now longer active
-									m_nLeftTouchPointerID = -1;
-
-									// Let the left simulated pad stick snap back to it's origin
-									SplitTouchPad *pSplitTouchPad = static_cast<SplitTouchPad*>(m_pDevice);
-									if (pSplitTouchPad) {
-										pSplitTouchPad->LeftX.setValue(0.0f, false);
-										pSplitTouchPad->LeftY.setValue(0.0f, false);
-									}
-									m_fLeftTouchPositionX = m_fOriginLeftTouchPositionX;
-									m_fLeftTouchPositionY = m_fOriginLeftTouchPositionY;
-
-								} else if (m_nRightTouchPointerID == nAndroidPointerID) {
-									// We're now longer active
-									m_nRightTouchPointerID = -1;
-
-									// Let the right simulated pad stick snap back to it's origin
-									SplitTouchPad *pSplitTouchPad = static_cast<SplitTouchPad*>(m_pDevice);
-									if (pSplitTouchPad) {
-										pSplitTouchPad->RightX.setValue(0.0f, false);
-										pSplitTouchPad->RightY.setValue(0.0f, false);
-									}
-									m_fRightTouchPositionX = m_fOriginRightTouchPositionX;
-									m_fRightTouchPositionY = m_fOriginRightTouchPositionY;
-								}
-
-							// Did we move?
-							} else if (nAndroidAction == AMOTION_EVENT_ACTION_MOVE) {
-								// Use the pointer ID to figure out whether this is our left or right pointer
-								if (m_nLeftTouchPointerID == nAndroidPointerID) {
-									m_fLeftTouchPositionX = fPointerPositionX;
-									m_fLeftTouchPositionY = fPointerPositionY;
-
-								} else if (m_nRightTouchPointerID == nAndroidPointerID) {
-									m_fRightTouchPositionX = fPointerPositionX;
-									m_fRightTouchPositionY = fPointerPositionY;
-								}
-							}
-						}
-					}
-				}
-			}
-
-
-		//[-------------------------------------------------------]
-		//[ Public virtual UpdateDevice functions                 ]
-		//[-------------------------------------------------------]
-		public:
-			virtual void Update() override
-			{
-				// Check if input device is valid
-				if (m_pDevice) {
-					// Get split touch pad device
-					SplitTouchPad *pSplitTouchPad = static_cast<SplitTouchPad*>(m_pDevice);
-
-					// Maximum allowed delta
-					static constexpr float MaxDelta = 160.0f;
-					static constexpr float MinDelta = 5.0f;
-
-					// Update left axes?
-					if (m_nLeftTouchPointerID != -1) {
-						// Get the left touch movement and clamp it to the maximum allowed delta
-						float fLeftDeltaX = m_fLeftTouchPositionX - m_fOriginLeftTouchPositionX;
-						float fLeftDeltaY = m_fLeftTouchPositionY - m_fOriginLeftTouchPositionY;
-						if (fLeftDeltaX > MaxDelta)
-							fLeftDeltaX = MaxDelta;
-						if (fLeftDeltaX < -MaxDelta)
-							fLeftDeltaX = -MaxDelta;
-						if (fLeftDeltaY > MaxDelta)
-							fLeftDeltaY = MaxDelta;
-						if (fLeftDeltaY < -MaxDelta)
-							fLeftDeltaY = -MaxDelta;
-
-						// Give our fat finger some space to sit down :D
-						if (fabs(fLeftDeltaX) < MinDelta)
-							fLeftDeltaX = 0.0f;
-						else
-							fLeftDeltaX -= MinDelta * sign(fLeftDeltaX);
-						if (fabs(fLeftDeltaY) < MinDelta)
-							fLeftDeltaY = 0.0f;
-						else
-							fLeftDeltaY -= MinDelta * sign(fLeftDeltaY);
-
-						// Now update left axes
-						if (pSplitTouchPad->LeftX.getValue() != fLeftDeltaX)
-							pSplitTouchPad->LeftX.setValue(fLeftDeltaX, false);
-						if (pSplitTouchPad->LeftY.getValue() != fLeftDeltaY)
-							pSplitTouchPad->LeftY.setValue(fLeftDeltaY, false);
-					}
-
-					// Update right axes?
-					if (m_nRightTouchPointerID != -1) {
-						// Get the right touch movement and clamp it to the maximum allowed delta
-						float fRightDeltaX = m_fRightTouchPositionX - m_fOriginRightTouchPositionX;
-						float fRightDeltaY = m_fRightTouchPositionY - m_fOriginRightTouchPositionY;
-						if (fRightDeltaX > MaxDelta)
-							fRightDeltaX = MaxDelta;
-						if (fRightDeltaX < -MaxDelta)
-							fRightDeltaX = -MaxDelta;
-						if (fRightDeltaY > MaxDelta)
-							fRightDeltaY = MaxDelta;
-						if (fRightDeltaY < -MaxDelta)
-							fRightDeltaY = -MaxDelta;
-
-						// Give our fat finger some space to sit down :D
-						if (fabs(fRightDeltaX) < MinDelta)
-							fRightDeltaX = 0.0f;
-						else
-							fRightDeltaX -= MinDelta * sign(fRightDeltaX);
-						if (fabs(fRightDeltaY) < MinDelta)
-							fRightDeltaY = 0.0f;
-						else
-							fRightDeltaY -= MinDelta * sign(fRightDeltaY);
-
-						// Now update right axes
-						if (pSplitTouchPad->RightX.getValue() != fRightDeltaX)
-							pSplitTouchPad->RightX.setValue(fRightDeltaX, false);
-						if (pSplitTouchPad->RightY.getValue() != fRightDeltaY)
-							pSplitTouchPad->RightY.setValue(fRightDeltaY, false);
-					}
-				}
-			}
-
-
-		//[-------------------------------------------------------]
-		//[ Private data                                          ]
-		//[-------------------------------------------------------]
-		private:
-			// Left
-			int   m_nLeftTouchPointerID;		///< Left screen touch pointer ID, -1 if none
-			float m_fOriginLeftTouchPositionX;	///< Origin left touch x position
-			float m_fOriginLeftTouchPositionY;	///< Origin left touch y position
-			float m_fLeftTouchPositionX;		///< Current left touch x position
-			float m_fLeftTouchPositionY;		///< Current left touch y position
-			// Right
-			int   m_nRightTouchPointerID;		///< Right screen touch pointer ID, -1 if none
-			float m_fOriginRightTouchPositionX;	///< Origin right touch x position
-			float m_fOriginRightTouchPositionY;	///< Origin right touch y position
-			float m_fRightTouchPositionX;		///< Current right touch x position
-			float m_fRightTouchPositionY;		///< Current right touch y position
-
-
-		};
-
-		/**
-		*  @brief
-		*    Sensor manager implementation for Android
-		*/
-		class AndroidSensorManagerDevice : public UpdateDevice
-		{
-
-
-		//[-------------------------------------------------------]
-		//[ Public functions                                      ]
-		//[-------------------------------------------------------]
-		public:
-			/**
-			*  @brief
-			*    Default constructor
-			*/
-			AndroidSensorManagerDevice() :
-				m_pSensorManager(nullptr),
-				m_pSensorEventQueue(nullptr),
-				m_pAccelerometerSensor(nullptr),
-				m_pMagneticFieldSensor(nullptr),
-				m_pGyroscopeSensor(nullptr),
-				m_pLightSensor(nullptr),
-				m_pProximitySensor(nullptr)
-			{
-				// Destroy device implementation automatically
-				m_bDelete = true;
-
-				// TODO(co) Sensors are working, but it's no good idea to enable all available sensors by default with a 60 events per second rate for all sensors
-				// -> The device stops responding, so, rethink this very first experiment... maybe one device per sensor which is deactivated by default and has the
-				//    option to be enabled/disabled + event rate configuration?
-
-				// Get the Android sensor manager instance
-				m_pSensorManager = ASensorManager_getInstance();
-				if (m_pSensorManager) {
-					// Create sensor event queue instance
-					m_pSensorEventQueue = ASensorManager_createEventQueue(m_pSensorManager, ALooper_forThread(), LOOPER_ID_USER, nullptr, nullptr);
-			/*
-					// Get accelerometer sensor instance
-					m_pAccelerometerSensor = ASensorManager_getDefaultSensor(m_pSensorManager, ASENSOR_TYPE_ACCELEROMETER);
-					if (m_pAccelerometerSensor) {
-						// Write some debug information into the log
-						PL_LOG(Debug, String("Android sensor manager accelerometer sensor instance found: Name=\"") + ASensor_getName(m_pAccelerometerSensor) +
-																									  "\" Vendor=\"" + ASensor_getVendor(m_pAccelerometerSensor) +
-																									  "\" Resolution=\"" + ASensor_getResolution(m_pAccelerometerSensor) +
-																									  "\" Minimum delay=\"" + ASensor_getMinDelay(m_pAccelerometerSensor) + '\"')
-
-						// Start monitoring the accelerometer
-						if (ASensorEventQueue_enableSensor(m_pSensorEventQueue, m_pAccelerometerSensor) >= 0) {
-							// We'd like to get 60 events per second (in us)
-							ASensorEventQueue_setEventRate(m_pSensorEventQueue, m_pAccelerometerSensor, (1000L/60)*1000);
-						}
-					}
-
-					// Get magnetic field sensor instance
-					m_pMagneticFieldSensor = ASensorManager_getDefaultSensor(m_pSensorManager, ASENSOR_TYPE_MAGNETIC_FIELD);
-					if (m_pMagneticFieldSensor) {
-						// Write some debug information into the log
-						PL_LOG(Debug, String("Android sensor manager magnetic field sensor instance found: Name=\"") + ASensor_getName(m_pMagneticFieldSensor) +
-																									   "\" Vendor=\"" + ASensor_getVendor(m_pMagneticFieldSensor) +
-																									   "\" Resolution=\"" + ASensor_getResolution(m_pMagneticFieldSensor) +
-																									   "\" Minimum delay=\"" + ASensor_getMinDelay(m_pAccelerometerSensor) + '\"')
-
-						// Start monitoring the accelerometer
-						if (ASensorEventQueue_enableSensor(m_pSensorEventQueue, m_pMagneticFieldSensor) >= 0) {
-							// We'd like to get 60 events per second (in us)
-							ASensorEventQueue_setEventRate(m_pSensorEventQueue, m_pMagneticFieldSensor, (1000L/60)*1000);
-						}
-					}
-
-					// Get gyroscope sensor instance
-					m_pGyroscopeSensor = ASensorManager_getDefaultSensor(m_pSensorManager, ASENSOR_TYPE_GYROSCOPE);
-					if (m_pGyroscopeSensor) {
-						// Write some debug information into the log
-						PL_LOG(Debug, String("Android sensor manager gyroscope sensor instance found: Name=\"") + ASensor_getName(m_pGyroscopeSensor) +
-																								  "\" Vendor=\"" + ASensor_getVendor(m_pGyroscopeSensor) +
-																								  "\" Resolution=\"" + ASensor_getResolution(m_pGyroscopeSensor) +
-																								  "\" Minimum delay=\"" + ASensor_getMinDelay(m_pGyroscopeSensor) + '\"')
-
-						// Start monitoring the accelerometer
-						if (ASensorEventQueue_enableSensor(m_pSensorEventQueue, m_pGyroscopeSensor) >= 0) {
-							// We'd like to get 60 events per second (in us)
-							ASensorEventQueue_setEventRate(m_pSensorEventQueue, m_pGyroscopeSensor, (1000L/60)*1000);
-						}
-					}
-
-					// Get light sensor instance
-					m_pLightSensor = ASensorManager_getDefaultSensor(m_pSensorManager, ASENSOR_TYPE_LIGHT);
-					if (m_pLightSensor) {
-						// Write some debug information into the log
-						PL_LOG(Debug, String("Android sensor manager light sensor instance found: Name=\"") + ASensor_getName(m_pLightSensor) +
-																							  "\" Vendor=\"" + ASensor_getVendor(m_pLightSensor) +
-																							  "\" Resolution=\"" + ASensor_getResolution(m_pLightSensor) +
-																							  "\" Minimum delay=\"" + ASensor_getMinDelay(m_pLightSensor) + '\"')
-
-						// Start monitoring the accelerometer
-						if (ASensorEventQueue_enableSensor(m_pSensorEventQueue, m_pLightSensor) >= 0) {
-							// We'd like to get 60 events per second (in us)
-							ASensorEventQueue_setEventRate(m_pSensorEventQueue, m_pLightSensor, (1000L/60)*1000);
-						}
-					}
-
-					// Get proximity sensor instance
-					m_pProximitySensor = ASensorManager_getDefaultSensor(m_pSensorManager, ASENSOR_TYPE_PROXIMITY);
-					if (m_pProximitySensor) {
-						// Write some debug information into the log
-						PL_LOG(Debug, String("Android sensor manager proximity sensor instance found: Name=\"") + ASensor_getName(m_pProximitySensor) +
-																								  "\" Vendor=\"" + ASensor_getVendor(m_pProximitySensor) +
-																								  "\" Resolution=\"" + ASensor_getResolution(m_pProximitySensor) +
-																								  "\" Minimum delay=\"" + ASensor_getMinDelay(m_pProximitySensor) + '\"')
-
-						// Start monitoring the accelerometer
-						if (ASensorEventQueue_enableSensor(m_pSensorEventQueue, m_pProximitySensor) >= 0) {
-							// We'd like to get 60 events per second (in us)
-							ASensorEventQueue_setEventRate(m_pSensorEventQueue, m_pProximitySensor, (1000L/60)*1000);
-						}
-					}
-					*/
-				}
-			}
-
-			/**
-			*  @brief
-			*    Destructor
-			*/
-			inline virtual ~AndroidSensorManagerDevice() override
-			{
-				// Destroy sensor event queue instance
-				ASensorManager_destroyEventQueue(m_pSensorManager, m_pSensorEventQueue);
-			}
-
-
-		//[-------------------------------------------------------]
-		//[ Public virtual UpdateDevice functions                 ]
-		//[-------------------------------------------------------]
-		public:
-			virtual void Update() override
-			{
-				// Check if input device and event queue are valid
-				if (m_pDevice && m_pSensorEventQueue) {
-					// Get sensor manager device
-					SensorManager *pSensorManager = static_cast<SensorManager*>(m_pDevice);
-
-					// Process sensor event queue instance
-					ASensorEvent sASensorEvent;
-					while (ASensorEventQueue_getEvents(m_pSensorEventQueue, &sASensorEvent, 1) > 0) {
-						// Check the sensor type
-						switch (sASensorEvent.type) {
-							// Accelerometer
-							case ASENSOR_TYPE_ACCELEROMETER:
-								if (pSensorManager->AccelerationX.getValue() != sASensorEvent.acceleration.x)
-									pSensorManager->AccelerationX.setValue(sASensorEvent.acceleration.x, true);
-								if (pSensorManager->AccelerationY.getValue() != sASensorEvent.acceleration.y)
-									pSensorManager->AccelerationY.setValue(sASensorEvent.acceleration.y, true);
-								if (pSensorManager->AccelerationZ.getValue() != sASensorEvent.acceleration.z)
-									pSensorManager->AccelerationZ.setValue(sASensorEvent.acceleration.z, true);
-								break;
-
-							// Magnetic field
-							case ASENSOR_TYPE_MAGNETIC_FIELD:
-								if (pSensorManager->MagneticX.getValue() != sASensorEvent.magnetic.x)
-									pSensorManager->MagneticX.setValue(sASensorEvent.magnetic.x, true);
-								if (pSensorManager->MagneticY.getValue() != sASensorEvent.magnetic.y)
-									pSensorManager->MagneticY.setValue(sASensorEvent.magnetic.y, true);
-								if (pSensorManager->MagneticZ.getValue() != sASensorEvent.magnetic.z)
-									pSensorManager->MagneticZ.setValue(sASensorEvent.magnetic.z, true);
-								break;
-
-							// Gyroscope
-							case ASENSOR_TYPE_GYROSCOPE:
-								if (pSensorManager->RotationX.getValue() != sASensorEvent.vector.x)
-									pSensorManager->RotationX.setValue(sASensorEvent.vector.x, true);
-								if (pSensorManager->RotationY.getValue() != sASensorEvent.vector.y)
-									pSensorManager->RotationY.setValue(sASensorEvent.vector.y, true);
-								if (pSensorManager->RotationZ.getValue() != sASensorEvent.vector.z)
-									pSensorManager->RotationZ.setValue(sASensorEvent.vector.z, true);
-								break;
-
-							// Light
-							case ASENSOR_TYPE_LIGHT:
-								if (pSensorManager->Light.getValue() != sASensorEvent.light)
-									pSensorManager->Light.setValue(sASensorEvent.light, true);
-								break;
-
-							// Proximity
-							case ASENSOR_TYPE_PROXIMITY:
-								if (pSensorManager->Proximity.getValue() != sASensorEvent.distance)
-									pSensorManager->Proximity.setValue(sASensorEvent.distance, true);
-								break;
-						}
-					}
-				}
-			}
-
-
-		//[-------------------------------------------------------]
-		//[ Private data                                          ]
-		//[-------------------------------------------------------]
-		private:
-			ASensorManager    *m_pSensorManager;		///< Android sensor manager, can be a null pointer
-			ASensorEventQueue *m_pSensorEventQueue;		///< Sensor event queue, can be a null pointer
-			const ASensor     *m_pAccelerometerSensor;	///< Accelerometer sensor, can be a null pointer
-			const ASensor     *m_pMagneticFieldSensor;	///< Magnetic field sensor, can be a null pointer
-			const ASensor     *m_pGyroscopeSensor;		///< Gyroscope sensor, can be a null pointer
-			const ASensor     *m_pLightSensor;			///< Light sensor, can be a null pointer
-			const ASensor     *m_pProximitySensor;		///< Proximity sensor, can be a null pointer
-
-
-		};
-
-		/**
-		*  @brief
-		*    Standard input provider for Android
-		*/
-		class AndroidProvider : public Provider
-		{
-
-
-		//[-------------------------------------------------------]
-		//[ Public functions                                      ]
-		//[-------------------------------------------------------]
-		public:
-			AndroidProvider() = delete;
-
-			/**
-			*  @brief
-			*    Constructor
-			*
-			*  @param[in] inputManager
-			*    Owner input manager
-			*/
-			inline explicit AndroidProvider(InputManager& inputManager) :
-				Provider(inputManager),
-				m_pAndroidKeyboardDevice(nullptr),
-				m_pAndroidSplitTouchPadDevice(nullptr),
-				m_pAndroidMouseDevice(nullptr)
-			{
-				// Connect the Android input event handler
-				// "TODO(co) See https://github.com/PixelLightFoundation/pixellight - "AndroidProvider::OnInputEvent()" must be called
-				// PLCore::SystemAndroid::EventInputEvent.Connect(SlotInputEvent);
-			}
-
-			/**
-			*  @brief
-			*    Destructor
-			*/
-			inline virtual ~AndroidProvider() override
-			{
-			}
-
-			AndroidProvider& operator= (const AndroidProvider& source) = delete;
-
-
-		//[-------------------------------------------------------]
-		//[ Private virtual Provider functions                    ]
-		//[-------------------------------------------------------]
-		private:
-			virtual void QueryDevices() override
-			{
-				// Create a keyboard device
-				if (!CheckDevice("Keyboard")) {
-					// Add device
-					m_pAndroidKeyboardDevice = new AndroidKeyboardDevice();
-					AddDevice("Keyboard", new Keyboard("Keyboard", m_pAndroidKeyboardDevice));
-				}
-
-				// Create a splitscreen touch pad device
-				if (!CheckDevice("SplitTouchPad")) {
-					// Add device
-					m_pAndroidSplitTouchPadDevice = new AndroidSplitTouchPadDevice();
-					AddDevice("SplitTouchPad", new SplitTouchPad("SplitTouchPad", m_pAndroidSplitTouchPadDevice));
-				}
-
-				// Create a mouse device
-				if (!CheckDevice("Mouse")) {
-					// Add device
-					m_pAndroidMouseDevice = new AndroidMouseDevice(m_pAndroidSplitTouchPadDevice);
-					AddDevice("Mouse", new Mouse("Mouse", m_pAndroidMouseDevice));
-				}
-
-				// Create a sensor manager device
-				if (!CheckDevice("SensorManager")) {
-					AndroidSensorManagerDevice *pImpl = new AndroidSensorManagerDevice();
-					AddDevice("SensorManager", new SensorManager("SensorManager", pImpl));
-				}
-			}
-
-
-		//[-------------------------------------------------------]
-		//[ Private functions                                     ]
-		//[-------------------------------------------------------]
-		private:
-			/**
-			*  @brief
-			*    Called to process the next Android input event
-			*
-			*  @param[in] cAInputEvent
-			*    Android input event to process
-			*/
-			void OnInputEvent(const struct AInputEvent &cAInputEvent)
-			{
-				// Check the input event type
-				switch (AInputEvent_getType(&cAInputEvent)) {
-					// Key (e.g. from the soft keyboard)
-					case AINPUT_EVENT_TYPE_KEY:
-						if (m_pAndroidKeyboardDevice)
-							m_pAndroidKeyboardDevice->OnKeyInputEvent(cAInputEvent);
-						break;
-
-					// Motion (e.g. from the touchscreen)
-					case AINPUT_EVENT_TYPE_MOTION:
-						if (m_pAndroidMouseDevice)
-							m_pAndroidMouseDevice->OnMotionInputEvent(cAInputEvent);
-						if (m_pAndroidSplitTouchPadDevice)
-							m_pAndroidSplitTouchPadDevice->OnMotionInputEvent(cAInputEvent);
-						break;
-				}
-			}
-
-
-		//[-------------------------------------------------------]
-		//[ Private data                                          ]
-		//[-------------------------------------------------------]
-		private:
-			AndroidKeyboardDevice		*m_pAndroidKeyboardDevice;		///< Android keyboard device instance, can be a null pointer
-			AndroidSplitTouchPadDevice	*m_pAndroidSplitTouchPadDevice;	///< Android splitted touchscreen mouse device instance, can be a null pointer
-			AndroidMouseDevice			*m_pAndroidMouseDevice;			///< Android mouse device instance, can be a null pointer
-
-
-		};
-
-
-		//[-------------------------------------------------------]
-		//[ HID constructor                                       ]
-		//[-------------------------------------------------------]
-		HID::HID() :
-			m_pHIDImpl(nullptr)
-		{
-			// Detect devices
-			DetectDevices();
-		}
-
-
-		//[-------------------------------------------------------]
-		//[ Bluetooth constructor                                 ]
-		//[-------------------------------------------------------]
-		Bluetooth::Bluetooth() :
-			m_pBTImpl(nullptr)
 		{
 			// Detect devices
 			DetectDevices();
@@ -9844,12 +9858,12 @@ namespace DeviceInput
 				{
 					pProvider = new LegacyJoystickProvider(*this);
 				}
-			#elif defined(LINUX)
-				#error "TODO(co) Implement me"
-			#elif defined(APPLE)
-				#error "TODO(co) Implement me"
 			#elif defined(__ANDROID__)
-				#error "TODO(co) Implement me"
+				#warning "TODO(co) Implement me"
+			#elif defined(LINUX)
+				#warning "TODO(co) Implement me"
+			#elif defined(APPLE)
+				#warning "TODO(co) Implement me"
 			#elif
 				#error "Unsupported platform"
 			#endif

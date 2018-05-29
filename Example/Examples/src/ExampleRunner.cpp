@@ -34,7 +34,9 @@
 #include "Basics/FirstTexture/FirstTexture.h"
 #include "Basics/FirstRenderToTexture/FirstRenderToTexture.h"
 #include "Basics/FirstMultipleRenderTargets/FirstMultipleRenderTargets.h"
-#include "Basics/FirstMultipleSwapChains/FirstMultipleSwapChains.h"
+#ifndef __ANDROID__
+	#include "Basics/FirstMultipleSwapChains/FirstMultipleSwapChains.h"
+#endif
 #include "Basics/FirstInstancing/FirstInstancing.h"
 #include "Basics/FirstGeometryShader/FirstGeometryShader.h"
 #include "Basics/FirstTessellation/FirstTessellation.h"
@@ -95,18 +97,18 @@ ExampleRunner::ExampleRunner() :
 			"Null"
 		#elif defined(RENDERER_ONLY_OPENGL) || defined(LINUX)
 			"OpenGL"
-		#elifdef RENDERER_ONLY_OPENGLES3
+		#elif defined(RENDERER_ONLY_OPENGLES3)
 			"OpenGLES3"
-		#elifdef RENDERER_ONLY_VULKAN
+		#elif defined(RENDERER_ONLY_VULKAN)
 			"Vulkan"
 		#elif _WIN32
 			#ifdef RENDERER_ONLY_DIRECT3D9
 				"Direct3D9"
-			#elifdef RENDERER_ONLY_DIRECT3D10
+			#elif defined(RENDERER_ONLY_DIRECT3D10)
 				"Direct3D10"
-			#elifdef RENDERER_ONLY_DIRECT3D11
+			#elif defined(RENDERER_ONLY_DIRECT3D11)
 				"Direct3D11"
-			#elifdef RENDERER_ONLY_DIRECT3D12
+			#elif defined(RENDERER_ONLY_DIRECT3D12)
 				"Direct3D12"
 			#endif
 		#endif
@@ -139,7 +141,9 @@ ExampleRunner::ExampleRunner() :
 	addExample("FirstTexture",					&RunRenderExample<FirstTexture>,				supportsAllRenderer);
 	addExample("FirstRenderToTexture",			&RunRenderExample<FirstRenderToTexture>,		supportsAllRenderer);
 	addExample("FirstMultipleRenderTargets",	&RunRenderExample<FirstMultipleRenderTargets>,	supportsAllRenderer);
-	addExample("FirstMultipleSwapChains",		&RunExample<FirstMultipleSwapChains>,			supportsAllRenderer);
+	#ifndef __ANDROID__
+		addExample("FirstMultipleSwapChains",	&RunExample<FirstMultipleSwapChains>,			supportsAllRenderer);
+	#endif
 	addExample("FirstInstancing",				&RunRenderExample<FirstInstancing>,				supportsAllRenderer);
 	addExample("FirstGeometryShader",			&RunRenderExample<FirstGeometryShader>,			onlyShaderModel4Plus);
 	addExample("FirstTessellation",				&RunRenderExample<FirstTessellation>,			onlyShaderModel5Plus);

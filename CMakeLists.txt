@@ -71,11 +71,14 @@ set(SHARED_LIBRARY "1" CACHE BOOL "'true' to build as shared library (dynamic li
 		mark_as_advanced(RENDERER_OPENGLES3_STATE_CLEANUP)
 
 	# Vulkan renderer backend
+	# TODO(co) The Vulkan renderer backend under Android isn't ready, yet
+	if(NOT ANDROID)
 		set(RENDERER_VULKAN "1" CACHE BOOL "Build Vulkan renderer?")
 
 		# Advanced Vulkan renderer options
 		set(RENDERER_VULKAN_GLSLTOSPIRV "1" CACHE BOOL "If true, GLSL to SPIR-V compiler is included for online shader compilation, increases the binary size around one MiB")
 		mark_as_advanced(RENDERER_VULKAN_GLSLTOSPIRV)
+	endif()
 
 	# Microsoft Windows only Direct3D renderer backends
 	if(WIN32)
@@ -103,8 +106,8 @@ if(NOT ANDROID)
 endif()
 
 # Examples
+set(EXAMPLES "1" CACHE BOOL "Build examples?")
 if(NOT ANDROID)
-	set(EXAMPLES				 "1" CACHE BOOL "Build examples?")
 	set(EXAMPLE_PROJECT_COMPILER "1" CACHE BOOL "Build example project compiler?")
 	set(EXAMPLE_RUNNER_SDL2		 "0" CACHE BOOL "Build sdl2 version of the examples?")
 endif()
@@ -142,6 +145,18 @@ endmacro()
 macro(unrimp_add_conditional_definition definition)
 	if(${definition})
 		add_definitions(-D${definition})
+	endif()
+endmacro()
+
+##################################################
+## MACRO: "unrimp_add_conditional_library_dependency()" for setting a conditional library and dependency definition
+#
+# Usage example: "unrimp_add_conditional_library_dependency(Examples RENDERER_NULL NullRenderer)"
+##################################################
+macro(unrimp_add_conditional_library_dependency targetName definition libraryName)
+	if(${definition})
+		set(LIBRARIES ${LIBRARIES} ${libraryName})
+		add_dependencies(${targetName} ${libraryName})
 	endif()
 endmacro()
 
@@ -208,6 +223,19 @@ if(WIN32)
 	if(NOT SHARED_LIBRARY)
 		# "Runtime Library" = "Multi-threaded (/MT)" or "Multi-threaded Debug (/MTd)" in debug builds (the "d" at the end won't be touched)
 		unrimp_replace_cmake_cxx_flags(/MD /MT)
+	endif()
+elseif(ANDROID)
+	if(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
+		# Used release build options:
+		# - Link time optimization (LTO)
+		# - Discard unused functions with gc-sections (see https://blog.algolia.com/android-ndk-how-to-reduce-libs-size/)
+		set(CompilerFlags "-ffunction-sections -fdata-sections -flto -fno-exceptions -fno-rtti -Os -fomit-frame-pointer")
+		set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${CompilerFlags}")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CompilerFlags}")
+		set(LinkerFlags "")
+		set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} ${LinkerFlags}")
+		set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LinkerFlags} -flto")
+		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LinkerFlags} -flto")
 	endif()
 endif()
 
@@ -304,7 +332,7 @@ message(STATUS "Output library binary directory: ${OUTPUT_LIB_BIN_DIRECTORY}")
 ##################################################
 ## Preprocessor definitions
 ##################################################
-unrimp_add_conditional_definition(X64_ARCHITECTURE)
+unrimp_add_conditional_definition(ARCHITECTURE_X64)
 if(RENDERER_DEBUG)
 	add_definitions(-DRENDERER_DEBUG)
 	add_definitions(-DRENDERER_STATISTICS)

@@ -238,16 +238,32 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 #ifdef _WIN32
 	// To export classes, methods and variables
-	#define GENERIC_API_EXPORT	__declspec(dllexport)
+	#ifndef GENERIC_API_EXPORT
+		#define GENERIC_API_EXPORT	__declspec(dllexport)
+	#endif
 
 	// To export functions
-	#define GENERIC_FUNCTION_EXPORT	extern "C" __declspec(dllexport)
+	#ifndef GENERIC_FUNCTION_EXPORT
+		#define GENERIC_FUNCTION_EXPORT	extern "C" __declspec(dllexport)
+	#endif
 #elif LINUX
 	// To export classes, methods and variables
-	#define GENERIC_API_EXPORT __attribute__ ((visibility("default")))
+	#ifndef GENERIC_API_EXPORT
+		#if defined(HAVE_VISIBILITY_ATTR)
+			#define GENERIC_API_EXPORT __attribute__ ((visibility("default")))
+		#else
+			#define GENERIC_API_EXPORT
+		#endif
+	#endif
 
 	// To export functions
-	#define GENERIC_FUNCTION_EXPORT extern "C"  __attribute__ ((visibility("default")))
+	#ifndef GENERIC_FUNCTION_EXPORT
+		#if defined(HAVE_VISIBILITY_ATTR)
+			#define GENERIC_FUNCTION_EXPORT extern "C" __attribute__ ((visibility("default")))
+		#else
+			#define GENERIC_FUNCTION_EXPORT extern "C"
+		#endif
+	#endif
 #else
 	#error "Unsupported platform"
 #endif
@@ -270,10 +286,20 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace std
-{
-	class mutex;
-}
+#ifdef __ANDROID__
+	namespace std
+	{
+		inline namespace __ndk1
+		{
+			class mutex;
+		}
+	}
+#else
+	namespace std
+	{
+		class mutex;
+	}
+#endif
 namespace DeviceInput
 {
 	class Axis;

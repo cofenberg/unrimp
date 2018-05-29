@@ -93,6 +93,8 @@ PRAGMA_WARNING_POP
 		#undef min
 		#undef max
 	PRAGMA_WARNING_POP
+#elif __ANDROID__
+	#include <android/log.h>
 #elif LINUX
 	// Nothing here
 #else
@@ -238,6 +240,9 @@ namespace Renderer
 					requestDebugBreak = true;
 				}
 			}
+			#elif __ANDROID__
+				__android_log_write(ANDROID_LOG_DEBUG, "Unrimp", fullMessage.c_str());	// TODO(co) Might make sense to make the app-name customizable
+				requestDebugBreak = true;
 			#elif LINUX
 				// Write into standard output stream
 				std::cerr << fullMessage.c_str();

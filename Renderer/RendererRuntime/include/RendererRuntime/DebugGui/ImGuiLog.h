@@ -247,7 +247,7 @@ namespace RendererRuntime
 
 			// Add to ImGui log
 			int previousSize = mImGuiTextBuffer.size();
-			mImGuiTextBuffer.appendf(fullMessage.c_str());
+			mImGuiTextBuffer.appendf("%s", fullMessage.c_str());
 			for (int newSize = mImGuiTextBuffer.size(); previousSize < newSize; ++previousSize)
 			{
 				if ('\n' == mImGuiTextBuffer[previousSize])

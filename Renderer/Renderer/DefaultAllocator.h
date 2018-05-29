@@ -69,6 +69,20 @@ namespace
 
 					// Allocate
 					return (0 != newNumberOfBytes) ? ::_aligned_malloc(newNumberOfBytes, alignment) : nullptr;
+				#elif defined(__ANDROID__)
+					// Null pointer is valid in here, does nothing in this case
+					::free(oldPointer);
+
+					// Allocate
+					if (0 != newNumberOfBytes)
+					{
+						void* memptr = nullptr;
+						return (posix_memalign(&memptr, alignment, newNumberOfBytes) == 0) ? memptr : nullptr;
+					}
+					else
+					{
+						return nullptr;
+					}
 				#else
 					// Null pointer is valid in here, does nothing in this case
 					::free(oldPointer);

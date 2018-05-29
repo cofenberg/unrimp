@@ -50,10 +50,7 @@
 		__pragma(warning(disable: 5027))	// warning C5027: 'std::messages_base': move assignment operator was implicitly defined as deleted
 		#include <filesystem>
 	__pragma(warning(pop))
-	namespace std_filesystem = std::experimental::filesystem;
-#elif defined(__ANDROID__)
-	#include <boost/filesystem.hpp>
-	namespace std_filesystem = boost::filesystem;
+	namespace std_filesystem = std::filesystem;
 #elif LINUX
 	#include <experimental/filesystem>
 	namespace std_filesystem = std::experimental::filesystem;

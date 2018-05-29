@@ -36,7 +36,7 @@
 *    - Set "LINUX" as preprocessor definition when building for Linux or similar platforms
 *        - For Linux or similar platforms: Set "HAVE_VISIBILITY_ATTR" as preprocessor definition to use the visibility attribute (the used compiler must support it)
 *    - Set "__ANDROID__" as preprocessor definition when building for Android
-*    - Set "X64_ARCHITECTURE" as preprocessor definition when building for x64 instead of x86
+*    - Set "ARCHITECTURE_X64" as preprocessor definition when building for x64 instead of x86
 *    - Set "RENDERER_STATISTICS" as preprocessor definition in order to enable the gathering of statistics (tiny binary size and tiny negative performance impact)
 *    - Set "RENDERER_DEBUG" as preprocessor definition in order to enable e.g. Direct3D 9 PIX functions (D3DPERF_* functions, also works directly within VisualStudio 2012 out-of-the-box) debug features (disabling support just reduces the binary size slightly but makes debugging more difficult)
 */
@@ -263,7 +263,7 @@ PRAGMA_WARNING_POP
 	#include <cassert>
 	#define ASSERT assert	// TODO(co) "RENDERER_ASSERT()" should be used everywhere
 #else
-	#define ASSERT			// TODO(co) "RENDERER_ASSERT()" should be used everywhere
+	#define ASSERT(x)	// TODO(co) "RENDERER_ASSERT()" should be used everywhere
 #endif
 #ifdef RENDERER_STATISTICS
 	// Disable warnings in external headers, we can't fix them
@@ -354,13 +354,13 @@ namespace Renderer
 	//[ Renderer/PlatformTypes.h                              ]
 	//[-------------------------------------------------------]
 	#ifdef _WIN32
-		#ifdef X64_ARCHITECTURE
+		#ifdef ARCHITECTURE_X64
 			typedef unsigned __int64 handle;	// Replacement for nasty Microsoft Windows stuff leading to header chaos
 		#else
 			typedef unsigned __int32 handle;	// Replacement for nasty Microsoft Windows stuff leading to header chaos
 		#endif
 	#elif LINUX
-		#ifdef X64_ARCHITECTURE
+		#ifdef ARCHITECTURE_X64
 			typedef uint64_t handle;
 		#else
 			typedef uint32_t handle;
@@ -679,7 +679,7 @@ namespace Renderer
 		*/
 		enum class Type
 		{
-			TRACE,					///< Trace
+			TRACE,					///< Trace, also known as verbose logging
 			DEBUG,					///< Debug
 			INFORMATION,			///< Information
 			WARNING,				///< General warning
@@ -872,7 +872,7 @@ namespace Renderer
 		*/
 		inline void* reallocate(void* oldPointer, size_t oldNumberOfBytes, size_t newNumberOfBytes, size_t alignment)
 		{
-			ASSERT(mReallocateFuntion);
+			ASSERT(nullptr != mReallocateFuntion);
 			ASSERT(nullptr != oldPointer || 0 == oldNumberOfBytes);
 			return (*mReallocateFuntion)(*this, oldPointer, oldNumberOfBytes, newNumberOfBytes, alignment);
 		}
@@ -886,7 +886,7 @@ namespace Renderer
 		inline explicit IAllocator(ReallocateFuntion reallocateFuntion) :
 			mReallocateFuntion(reallocateFuntion)
 		{
-			ASSERT(mReallocateFuntion);
+			ASSERT(nullptr != mReallocateFuntion);
 		}
 
 		inline virtual ~IAllocator()

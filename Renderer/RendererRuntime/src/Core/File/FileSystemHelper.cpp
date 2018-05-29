@@ -37,7 +37,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		#ifndef __ANDROID__
+		#ifdef LINUX
 			// Copied from boost: https://github.com/boostorg/filesystem/blob/a682eaa476cf0b4e992884d32dd2ddcfb0b6b1aa/src/path.cpp
 			// Implement lexically_normal used when std::filesystem::path implementation of the c++ runtime doesn't provide this as member method
 			// std::filesystem::path::lexically_normal is part of the filesystem TS which is part of C++17
@@ -154,11 +154,10 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	std_filesystem::path FileSystemHelper::lexicallyNormal(const std_filesystem::path& path)
 	{
-		#ifdef __ANDROID__
-			// boost itself has this implemented
-			return path.lexically_normal();
-		#else
+		#ifdef LINUX
 			return ::detail::lexically_normal(path);
+		#else
+			return path.lexically_normal();
 		#endif
 	}
 

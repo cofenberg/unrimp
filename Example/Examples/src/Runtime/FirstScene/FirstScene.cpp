@@ -31,7 +31,9 @@
 	#include "Framework/WindowsHeader.h"
 #endif
 
-#include <RendererToolkit/Public/RendererToolkit.h>
+#ifdef RENDERER_TOOLKIT
+	#include <RendererToolkit/Public/RendererToolkit.h>
+#endif
 
 #include <RendererRuntime/IRendererRuntime.h>
 #include <RendererRuntime/Core/Math/EulerAngles.h>
@@ -318,7 +320,9 @@ void FirstScene::onUpdate()
 
 			// Backup camera position and rotation for a following session, but only if VR isn't running right now
 			#ifdef RENDERER_RUNTIME_IMGUI
-				if (!rendererRuntime->getVrManager().isRunning())
+				#ifdef RENDERER_RUNTIME_OPENVR
+					if (!rendererRuntime->getVrManager().isRunning())
+				#endif
 				{
 					RendererRuntime::DebugGuiManager& debugGuiManager = mCompositorWorkspaceInstance->getRendererRuntime().getDebugGuiManager();
 					{
@@ -645,6 +649,7 @@ void FirstScene::createDebugGui(MAYBE_UNUSED Renderer::IRenderTarget& mainRender
 					ImGui::PushStyleColor(ImGuiCol_Text, GREY_COLOR);
 						ImGui::Text("Renderer: %s", mainRenderTarget.getRenderer().getName());
 						ImGui::Text("GPU: %s", mainRenderTarget.getRenderer().getCapabilities().deviceName);
+						#ifdef RENDERER_TOOLKIT
 						{
 							const RendererToolkit::IRendererToolkit* rendererToolkit = getRendererToolkit();
 							if (nullptr != rendererToolkit)
@@ -655,6 +660,7 @@ void FirstScene::createDebugGui(MAYBE_UNUSED Renderer::IRenderTarget& mainRender
 								ImGui::PopStyleColor();
 							}
 						}
+						#endif
 						{ // Resource streamer
 							const bool idle = (0 == rendererRuntime->getResourceStreamer().getNumberOfInFlightLoadRequests());
 							ImGui::PushStyleColor(ImGuiCol_Text, idle ? GREY_COLOR : RED_COLOR);

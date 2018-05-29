@@ -24,6 +24,7 @@
 cmake_minimum_required(VERSION 3.11.0)
 
 
+# TODO(co) Qt GUI runner currently isn't maintained
 find_package(Qt4 COMPONENTS QtCore QtGui)
 if(QT4_FOUND AND QT_QTGUI_FOUND)
 	set(EXAMPLE_RUNNER_QT4 "0" CACHE BOOL "Use Qt GUI runner")
@@ -45,8 +46,30 @@ if(EXAMPLE_RUNNER_QT4)
 endif()
 if(WIN32)
 	add_definitions(-DUNICODE)
-elseif(UNIX)
-	add_definitions(-DRENDERER_NO_DIRECT3D9 -DRENDERER_NO_DIRECT3D10 -DRENDERER_NO_DIRECT3D11 -DRENDERER_NO_DIRECT3D12)
+endif()
+if(NOT RENDERER_NULL)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRENDERER_NO_NULL")
+endif()
+if(NOT RENDERER_OPENGL)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRENDERER_NO_OPENGL")
+endif()
+if(NOT RENDERER_OPENGLES3)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRENDERER_NO_OPENGLES3")
+endif()
+if(NOT RENDERER_VULKAN)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRENDERER_NO_VULKAN")
+endif()
+if(NOT RENDERER_DIRECT3D9)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRENDERER_NO_DIRECT3D9")
+endif()
+if(NOT RENDERER_DIRECT3D10)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRENDERER_NO_DIRECT3D10")
+endif()
+if(NOT RENDERER_DIRECT3D11)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRENDERER_NO_DIRECT3D11")
+endif()
+if(NOT RENDERER_DIRECT3D12)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRENDERER_NO_DIRECT3D12")
 endif()
 unrimp_add_conditional_definition(RENDERER_RUNTIME)
 unrimp_add_conditional_definition(RENDERER_RUNTIME_PROFILER)
@@ -65,7 +88,6 @@ endif()
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../Renderer/)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../Renderer/RendererRuntime/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../Renderer/RendererToolkit/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/glm/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/utf8cpp)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/PhysicsFS/include/)
@@ -78,6 +100,12 @@ if(RENDERER_RUNTIME_IMGUI)
 endif()
 if(RENDERER_RUNTIME_OPENVR)
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/OpenVR/include/)
+endif()
+if(ANDROID)
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/Android/)
+endif()
+if(RENDERER_TOOLKIT)
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../Renderer/RendererToolkit/include)
 endif()
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/${OS_ARCHITECTURE})
 
@@ -95,9 +123,14 @@ set(EXTERNAL_SOURCE_CODES
 	${CMAKE_CURRENT_SOURCE_DIR}/../../External/PhysicsFS/src/physfs_unicode.c
 	# DeviceInput external library
 	${CMAKE_CURRENT_SOURCE_DIR}/../../External/DeviceInput/DeviceInput.cpp
-	# Remotery external library
-	${CMAKE_CURRENT_SOURCE_DIR}/../../External/Remotery/Remotery/Remotery.c
 )
+if(RENDERER_RUNTIME_PROFILER)
+	set(EXTERNAL_SOURCE_CODES
+		${EXTERNAL_SOURCE_CODES}
+		# Remotery external library
+		${CMAKE_CURRENT_SOURCE_DIR}/../../External/Remotery/Remotery/Remotery.c
+	)
+endif()
 if(WIN32)
 	set(EXTERNAL_SOURCE_CODES
 		${EXTERNAL_SOURCE_CODES}
@@ -108,6 +141,7 @@ elseif(UNIX)
 	set(EXTERNAL_SOURCE_CODES
 		${EXTERNAL_SOURCE_CODES}
 		# PhysicsFS external library
+		${CMAKE_CURRENT_SOURCE_DIR}/../../External/PhysicsFS/src/physfs_platform_unix.c
 		${CMAKE_CURRENT_SOURCE_DIR}/../../External/PhysicsFS/src/physfs_platform_posix.c
 	)
 endif()
@@ -119,7 +153,6 @@ set(SOURCE_CODES
 	src/Basics/FirstIndirectBuffer/FirstIndirectBuffer.cpp
 	src/Basics/FirstInstancing/FirstInstancing.cpp
 	src/Basics/FirstMultipleRenderTargets/FirstMultipleRenderTargets.cpp
-	src/Basics/FirstMultipleSwapChains/FirstMultipleSwapChains.cpp
 	src/Basics/FirstRenderToTexture/FirstRenderToTexture.cpp
 	src/Basics/FirstTessellation/FirstTessellation.cpp
 	src/Basics/FirstTexture/FirstTexture.cpp
@@ -135,12 +168,20 @@ set(SOURCE_CODES
 	src/Framework/ExampleBase.cpp
 	src/Main.cpp
 )
+if(NOT ANDROID)
+	set(SOURCE_CODES
+		${SOURCE_CODES}
+		src/Basics/FirstMultipleSwapChains/FirstMultipleSwapChains.cpp
+	)
+endif()
 if(WIN32)
 	set(SOURCE_CODES
 		${SOURCE_CODES}
 		src/Framework/ApplicationImplWindows.cpp
 		src/PrecompiledHeader.cpp
 	)
+elseif(ANDROID)
+	message("TODO(co) Examples: Add Android support")
 elseif(UNIX)
 	set(SOURCE_CODES
 		${SOURCE_CODES}
@@ -199,104 +240,21 @@ endif()
 ##################################################
 ## Executables
 ##################################################
-if(NOT SHARED_LIBRARY)
-	if(WIN32)
-		add_executable(Examples WIN32 ${SOURCE_CODES})
+if(WIN32)
+	add_executable(Examples WIN32 ${SOURCE_CODES})
 
-		# Set Visual Studio debugger working directory (see https://stackoverflow.com/a/42973332 )
-		set_target_properties(Examples PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/${OS_ARCHITECTURE}/")
-	else()
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRENDERER_NO_DIRECT3D9 -DRENDERER_NO_DIRECT3D10 -DRENDERER_NO_DIRECT3D11 -DRENDERER_NO_DIRECT3D12")
-		add_executable(Examples ${SOURCE_CODES})
-		if(EXAMPLE_RUNNER_QT4)
-			TARGET_LINK_LIBRARIES(Examples ${QT_LIBRARIES})
-		endif()
-		TARGET_LINK_LIBRARIES(Examples dl)
-	endif()
-	if(RENDERER_NULL)
-		set(LIBRARIES ${LIBRARIES} NullRenderer)
-	else()
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRENDERER_NO_NULL")
-	endif()
-	if(RENDERER_OPENGL)
-		set(LIBRARIES ${LIBRARIES} OpenGLRenderer)
-		if(UNIX)
-			set(LIBRARIES ${LIBRARIES} X11)
-		endif()
-	else()
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRENDERER_NO_OPENGL")
-	endif()
-	if(RENDERER_OPENGLES3)
-		set(LIBRARIES ${LIBRARIES} OpenGLES3Renderer)
-		if(UNIX)
-			set(LIBRARIES ${LIBRARIES} X11)
-		endif()
-	else()
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRENDERER_NO_OPENGLES3")
-	endif()
-	if(RENDERER_VULKAN)
-		set(LIBRARIES ${LIBRARIES} VulkanRenderer)
-		if(UNIX)
-			set(LIBRARIES ${LIBRARIES} X11)
-		endif()
-	else()
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRENDERER_NO_VULKAN")
-	endif()
-	if(WIN32)
-		if(RENDERER_DIRECT3D9)
-			set(LIBRARIES ${LIBRARIES} Direct3D9Renderer)
-		else()
-			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRENDERER_NO_DIRECT3D9")
-		endif()
-		if(RENDERER_DIRECT3D10)
-			set(LIBRARIES ${LIBRARIES} Direct3D10Renderer)
-		else()
-			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRENDERER_NO_DIRECT3D10")
-		endif()
-		if(RENDERER_DIRECT3D11)
-			set(LIBRARIES ${LIBRARIES} Direct3D11Renderer)
-		else()
-			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRENDERER_NO_DIRECT3D11")
-		endif()
-		if(RENDERER_DIRECT3D12)
-			set(LIBRARIES ${LIBRARIES} Direct3D12Renderer)
-		else()
-			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRENDERER_NO_DIRECT3D12")
-		endif()
-	endif()
-	if(RENDERER_RUNTIME)
-		set(LIBRARIES ${LIBRARIES} RendererRuntime)
-	endif()
-	if(UNIX)
-		set(LIBRARIES ${LIBRARIES} pthread)
-	endif()
-	target_link_libraries(Examples ${LIBRARIES})
-	if(WIN32)
-		add_dependencies(Examples NullRenderer Direct3D9Renderer Direct3D10Renderer Direct3D11Renderer Direct3D12Renderer)
-	else()
-		add_dependencies(Examples NullRenderer)
-	endif()
-	if(RENDERER_VULKAN)
-		add_dependencies(Examples VulkanRenderer)
-	endif()
-	if(RENDERER_OPENGL)
-		add_dependencies(Examples OpenGLRenderer)
-	endif()
-	if(RENDERER_OPENGLES3)
-		add_dependencies(Examples OpenGLES3Renderer)
+	# Set Visual Studio debugger working directory (see https://stackoverflow.com/a/42973332 )
+	set_target_properties(Examples PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/${OS_ARCHITECTURE}/")
+elseif(ANDROID)
+	add_library(Examples SHARED ${SOURCE_CODES})
+else()
+	add_executable(Examples ${SOURCE_CODES})
+	set(LIBRARIES ${LIBRARIES} X11 dl)
+	if(EXAMPLE_RUNNER_QT4)
+		TARGET_LINK_LIBRARIES(Examples ${QT_LIBRARIES})
 	endif()
 endif()
 if(SHARED_LIBRARY)
-	# Shared
-	if(WIN32)
-		add_executable(Examples WIN32 ${SOURCE_CODES})
-
-		# Set Visual Studio debugger working directory (see https://stackoverflow.com/a/42973332 )
-		set_target_properties(Examples PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/${OS_ARCHITECTURE}/")
-	else()
-		add_executable(Examples ${SOURCE_CODES})
-		target_link_libraries(Examples X11 dl)
-	endif()
 	if(RENDERER_RUNTIME)
 		if(WIN32)
 			target_link_libraries(Examples RendererRuntime.lib)
@@ -306,16 +264,34 @@ if(SHARED_LIBRARY)
 		add_dependencies(Examples RendererRuntime)
 	endif()
 	if(EXAMPLE_RUNNER_QT4)
-		TARGET_LINK_LIBRARIES(Examples ${QT_LIBRARIES})
+		target_link_libraries(Examples ${QT_LIBRARIES})
 	endif()
 	set_target_properties(Examples PROPERTIES COMPILE_FLAGS -DSHARED_LIBRARIES)
+else()
+	unrimp_add_conditional_library_dependency(Examples RENDERER_NULL NullRenderer)
+	unrimp_add_conditional_library_dependency(Examples RENDERER_OPENGL OpenGLRenderer)
+	unrimp_add_conditional_library_dependency(Examples RENDERER_OPENGLES3 OpenGLES3Renderer)
+	unrimp_add_conditional_library_dependency(Examples RENDERER_VULKAN VulkanRenderer)
+	unrimp_add_conditional_library_dependency(Examples RENDERER_DIRECT3D9 Direct3D9Renderer)
+	unrimp_add_conditional_library_dependency(Examples RENDERER_DIRECT3D10 Direct3D10Renderer)
+	unrimp_add_conditional_library_dependency(Examples RENDERER_DIRECT3D11 Direct3D11Renderer)
+	unrimp_add_conditional_library_dependency(Examples RENDERER_DIRECT3D12 Direct3D12Renderer)
+	unrimp_add_conditional_library_dependency(Examples RENDERER_RUNTIME RendererRuntime)
+	if(UNIX AND NOT ANDROID)
+		set(LIBRARIES ${LIBRARIES} pthread)
+	endif()
+	target_link_libraries(Examples ${LIBRARIES})
 endif()
 
 
 ##################################################
 ## Post build
 ##################################################
-add_custom_command(TARGET Examples COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/Examples${CMAKE_EXECUTABLE_SUFFIX}" ${OUTPUT_BIN_DIRECTORY})
+if(ANDROID)
+	add_custom_command(TARGET Examples COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${CMAKE_SHARED_LIBRARY_PREFIX}Examples${CMAKE_SHARED_LIBRARY_SUFFIX}" ${OUTPUT_BIN_DIRECTORY})
+else()
+	add_custom_command(TARGET Examples COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/Examples${CMAKE_EXECUTABLE_SUFFIX}" ${OUTPUT_BIN_DIRECTORY})
+endif()
 if(EXAMPLE_RUNNER_SDL2)
 	add_subdirectory(sdl2)
 endif()
