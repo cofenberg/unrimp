@@ -37,7 +37,7 @@
 *        - For Linux or similar platforms: Set "HAVE_VISIBILITY_ATTR" as preprocessor definition to use the visibility attribute (the used compiler must support it)
 *    - Set "__ANDROID__" as preprocessor definition when building for Android
 *    - Set "X64_ARCHITECTURE" as preprocessor definition when building for x64 instead of x86
-*    - Set "RENDERER_NO_STATISTICS" as preprocessor definition in order to disable the gathering of statistics (it's recommended to only set this preprocessor definition if there are best possible performance requirements)
+*    - Set "RENDERER_STATISTICS" as preprocessor definition in order to enable the gathering of statistics (tiny binary size and tiny negative performance impact)
 *    - Set "RENDERER_DEBUG" as preprocessor definition in order to enable e.g. Direct3D 9 PIX functions (D3DPERF_* functions, also works directly within VisualStudio 2012 out-of-the-box) debug features (disabling support just reduces the binary size slightly but makes debugging more difficult)
 */
 
@@ -265,7 +265,7 @@ PRAGMA_WARNING_POP
 #else
 	#define ASSERT			// TODO(co) "RENDERER_ASSERT()" should be used everywhere
 #endif
-#ifndef RENDERER_NO_STATISTICS
+#ifdef RENDERER_STATISTICS
 	// Disable warnings in external headers, we can't fix them
 	PRAGMA_WARNING_PUSH
 		PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'return': conversion from 'int' to 'std::char_traits<wchar_t>::int_type', signed/unsigned mismatch
@@ -3611,7 +3611,7 @@ namespace Renderer
 	//[-------------------------------------------------------]
 	//[ Renderer/Statistics.h                                 ]
 	//[-------------------------------------------------------]
-	#ifndef RENDERER_NO_STATISTICS
+	#ifdef RENDERER_STATISTICS
 		/**
 		*  @brief
 		*    Statistics class
@@ -3957,7 +3957,7 @@ namespace Renderer
 			return mCapabilities;
 		}
 
-		#ifndef RENDERER_NO_STATISTICS
+		#ifdef RENDERER_STATISTICS
 			/**
 			*  @brief
 			*    Return the statistics of the renderer instance
@@ -4301,7 +4301,7 @@ namespace Renderer
 		explicit IRenderer(const IRenderer& source) = delete;
 		IRenderer& operator =(const IRenderer& source) = delete;
 
-		#ifndef RENDERER_NO_STATISTICS
+		#ifdef RENDERER_STATISTICS
 			/**
 			*  @brief
 			*    Return the statistics of the renderer instance
@@ -4325,7 +4325,7 @@ namespace Renderer
 		const Context& mContext;		///< Context
 		Capabilities   mCapabilities;	///< Capabilities
 
-	#ifndef RENDERER_NO_STATISTICS
+	#ifdef RENDERER_STATISTICS
 		// Private data
 		private:
 			Statistics mStatistics;	///< Statistics
@@ -4961,7 +4961,7 @@ namespace Renderer
 		*/
 		inline virtual ~IRootSignature() override
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				--getRenderer().getStatistics().currentNumberOfRootSignatures;
 			#endif
@@ -4999,7 +4999,7 @@ namespace Renderer
 		inline explicit IRootSignature(IRenderer& renderer) :
 			IResource(ResourceType::ROOT_SIGNATURE, renderer)
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				++getRenderer().getStatistics().numberOfCreatedRootSignatures;
 				++getRenderer().getStatistics().currentNumberOfRootSignatures;
@@ -5045,7 +5045,7 @@ namespace Renderer
 		*/
 		inline virtual ~IResourceGroup() override
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				--getRenderer().getStatistics().currentNumberOfResourceGroups;
 			#endif
@@ -5063,7 +5063,7 @@ namespace Renderer
 		inline explicit IResourceGroup(IRenderer& renderer) :
 			IResource(ResourceType::RESOURCE_GROUP, renderer)
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				++getRenderer().getStatistics().numberOfCreatedResourceGroups;
 				++getRenderer().getStatistics().currentNumberOfResourceGroups;
@@ -5098,7 +5098,7 @@ namespace Renderer
 		*/
 		inline virtual ~IProgram() override
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				--getRenderer().getStatistics().currentNumberOfPrograms;
 			#endif
@@ -5145,7 +5145,7 @@ namespace Renderer
 		inline explicit IProgram(IRenderer& renderer) :
 			IResource(ResourceType::PROGRAM, renderer)
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				++getRenderer().getStatistics().numberOfCreatedPrograms;
 				++getRenderer().getStatistics().currentNumberOfPrograms;
@@ -5180,7 +5180,7 @@ namespace Renderer
 		*/
 		inline virtual ~IRenderPass() override
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				--getRenderer().getStatistics().currentNumberOfRenderPasses;
 			#endif
@@ -5198,7 +5198,7 @@ namespace Renderer
 		inline explicit IRenderPass(IRenderer& renderer) :
 			IResource(ResourceType::RENDER_PASS, renderer)
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				++getRenderer().getStatistics().numberOfCreatedRenderPasses;
 				++getRenderer().getStatistics().currentNumberOfRenderPasses;
@@ -5364,7 +5364,7 @@ namespace Renderer
 		*/
 		inline virtual ~ISwapChain() override
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				--getRenderer().getStatistics().currentNumberOfSwapChains;
 			#endif
@@ -5450,7 +5450,7 @@ namespace Renderer
 		inline explicit ISwapChain(IRenderPass& renderPass) :
 			IRenderTarget(ResourceType::SWAP_CHAIN, renderPass)
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				++getRenderer().getStatistics().numberOfCreatedSwapChains;
 				++getRenderer().getStatistics().currentNumberOfSwapChains;
@@ -5502,7 +5502,7 @@ namespace Renderer
 		*/
 		inline virtual ~IFramebuffer() override
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				--getRenderer().getStatistics().currentNumberOfFramebuffers;
 			#endif
@@ -5520,7 +5520,7 @@ namespace Renderer
 		inline explicit IFramebuffer(IRenderPass& renderPass) :
 			IRenderTarget(ResourceType::FRAMEBUFFER, renderPass)
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				++getRenderer().getStatistics().numberOfCreatedFramebuffers;
 				++getRenderer().getStatistics().currentNumberOfFramebuffers;
@@ -5757,7 +5757,7 @@ namespace Renderer
 		*/
 		inline virtual ~IVertexArray() override
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				--getRenderer().getStatistics().currentNumberOfVertexArrays;
 			#endif
@@ -5775,7 +5775,7 @@ namespace Renderer
 		inline explicit IVertexArray(IRenderer& renderer) :
 			IResource(ResourceType::VERTEX_ARRAY, renderer)
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				++getRenderer().getStatistics().numberOfCreatedVertexArrays;
 				++getRenderer().getStatistics().currentNumberOfVertexArrays;
@@ -5868,7 +5868,7 @@ namespace Renderer
 		*/
 		inline virtual ~IIndexBuffer() override
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				--getRenderer().getStatistics().currentNumberOfIndexBuffers;
 			#endif
@@ -5886,7 +5886,7 @@ namespace Renderer
 		inline explicit IIndexBuffer(IRenderer& renderer) :
 			IBuffer(ResourceType::INDEX_BUFFER, renderer)
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				++getRenderer().getStatistics().numberOfCreatedIndexBuffers;
 				++getRenderer().getStatistics().currentNumberOfIndexBuffers;
@@ -5921,7 +5921,7 @@ namespace Renderer
 		*/
 		inline virtual ~IVertexBuffer() override
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				--getRenderer().getStatistics().currentNumberOfVertexBuffers;
 			#endif
@@ -5939,7 +5939,7 @@ namespace Renderer
 		inline explicit IVertexBuffer(IRenderer& renderer) :
 			IBuffer(ResourceType::VERTEX_BUFFER, renderer)
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				++getRenderer().getStatistics().numberOfCreatedVertexBuffers;
 				++getRenderer().getStatistics().currentNumberOfVertexBuffers;
@@ -5987,7 +5987,7 @@ namespace Renderer
 		*/
 		inline virtual ~IUniformBuffer() override
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				--getRenderer().getStatistics().currentNumberOfUniformBuffers;
 			#endif
@@ -6005,7 +6005,7 @@ namespace Renderer
 		inline explicit IUniformBuffer(IRenderer& renderer) :
 			IBuffer(ResourceType::UNIFORM_BUFFER, renderer)
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				++getRenderer().getStatistics().numberOfCreatedUniformBuffers;
 				++getRenderer().getStatistics().currentNumberOfUniformBuffers;
@@ -6054,7 +6054,7 @@ namespace Renderer
 		*/
 		inline virtual ~ITextureBuffer() override
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				--getRenderer().getStatistics().currentNumberOfTextureBuffers;
 			#endif
@@ -6072,7 +6072,7 @@ namespace Renderer
 		inline explicit ITextureBuffer(IRenderer& renderer) :
 			IBuffer(ResourceType::TEXTURE_BUFFER, renderer)
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				++getRenderer().getStatistics().numberOfCreatedTextureBuffers;
 				++getRenderer().getStatistics().currentNumberOfTextureBuffers;
@@ -6112,7 +6112,7 @@ namespace Renderer
 		*/
 		inline virtual ~IIndirectBuffer() override
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				--getRenderer().getStatistics().currentNumberOfIndirectBuffers;
 			#endif
@@ -6152,7 +6152,7 @@ namespace Renderer
 		inline explicit IIndirectBuffer(IRenderer& renderer) :
 			IBuffer(ResourceType::INDIRECT_BUFFER, renderer)
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				++getRenderer().getStatistics().numberOfCreatedIndirectBuffers;
 				++getRenderer().getStatistics().currentNumberOfIndirectBuffers;
@@ -6576,7 +6576,7 @@ namespace Renderer
 		*/
 		inline virtual ~ITexture1D() override
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				--getRenderer().getStatistics().currentNumberOfTexture1Ds;
 			#endif
@@ -6609,7 +6609,7 @@ namespace Renderer
 			ITexture(ResourceType::TEXTURE_1D, renderer),
 			mWidth(width)
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				++getRenderer().getStatistics().numberOfCreatedTexture1Ds;
 				++getRenderer().getStatistics().currentNumberOfTexture1Ds;
@@ -6648,7 +6648,7 @@ namespace Renderer
 		*/
 		inline virtual ~ITexture2D() override
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				--getRenderer().getStatistics().currentNumberOfTexture2Ds;
 			#endif
@@ -6696,7 +6696,7 @@ namespace Renderer
 			mWidth(width),
 			mHeight(height)
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				++getRenderer().getStatistics().numberOfCreatedTexture2Ds;
 				++getRenderer().getStatistics().currentNumberOfTexture2Ds;
@@ -6736,7 +6736,7 @@ namespace Renderer
 		*/
 		inline virtual ~ITexture2DArray() override
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				--getRenderer().getStatistics().currentNumberOfTexture2DArrays;
 			#endif
@@ -6799,7 +6799,7 @@ namespace Renderer
 			mHeight(height),
 			mNumberOfSlices(numberOfSlices)
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				++getRenderer().getStatistics().numberOfCreatedTexture2DArrays;
 				++getRenderer().getStatistics().currentNumberOfTexture2DArrays;
@@ -6840,7 +6840,7 @@ namespace Renderer
 		*/
 		inline virtual ~ITexture3D() override
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				--getRenderer().getStatistics().currentNumberOfTexture3Ds;
 			#endif
@@ -6903,7 +6903,7 @@ namespace Renderer
 			mHeight(height),
 			mDepth(depth)
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				++getRenderer().getStatistics().numberOfCreatedTexture3Ds;
 				++getRenderer().getStatistics().currentNumberOfTexture3Ds;
@@ -6944,7 +6944,7 @@ namespace Renderer
 		*/
 		inline virtual ~ITextureCube() override
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				--getRenderer().getStatistics().currentNumberOfTextureCubes;
 			#endif
@@ -6992,7 +6992,7 @@ namespace Renderer
 			mWidth(width),
 			mHeight(height)
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				++getRenderer().getStatistics().numberOfCreatedTextureCubes;
 				++getRenderer().getStatistics().currentNumberOfTextureCubes;
@@ -7076,7 +7076,7 @@ namespace Renderer
 		*/
 		inline virtual ~IPipelineState() override
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				--getRenderer().getStatistics().currentNumberOfPipelineStates;
 			#endif
@@ -7094,7 +7094,7 @@ namespace Renderer
 		inline explicit IPipelineState(IRenderer& renderer) :
 			IState(ResourceType::PIPELINE_STATE, renderer)
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				++getRenderer().getStatistics().numberOfCreatedPipelineStates;
 				++getRenderer().getStatistics().currentNumberOfPipelineStates;
@@ -7178,7 +7178,7 @@ namespace Renderer
 		*/
 		inline virtual ~ISamplerState() override
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				--getRenderer().getStatistics().currentNumberOfSamplerStates;
 			#endif
@@ -7196,7 +7196,7 @@ namespace Renderer
 		inline explicit ISamplerState(IRenderer& renderer) :
 			IState(ResourceType::SAMPLER_STATE, renderer)
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				++getRenderer().getStatistics().numberOfCreatedSamplerStates;
 				++getRenderer().getStatistics().currentNumberOfSamplerStates;
@@ -7289,7 +7289,7 @@ namespace Renderer
 		*/
 		inline virtual ~IVertexShader() override
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				--getRenderer().getStatistics().currentNumberOfVertexShaders;
 			#endif
@@ -7307,7 +7307,7 @@ namespace Renderer
 		inline explicit IVertexShader(IRenderer& renderer) :
 			IShader(ResourceType::VERTEX_SHADER, renderer)
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				++getRenderer().getStatistics().numberOfCreatedVertexShaders;
 				++getRenderer().getStatistics().currentNumberOfVertexShaders;
@@ -7342,7 +7342,7 @@ namespace Renderer
 		*/
 		inline virtual ~ITessellationControlShader() override
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				--getRenderer().getStatistics().currentNumberOfTessellationControlShaders;
 			#endif
@@ -7360,7 +7360,7 @@ namespace Renderer
 		inline explicit ITessellationControlShader(IRenderer& renderer) :
 			IShader(ResourceType::TESSELLATION_CONTROL_SHADER, renderer)
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				++getRenderer().getStatistics().numberOfCreatedTessellationControlShaders;
 				++getRenderer().getStatistics().currentNumberOfTessellationControlShaders;
@@ -7395,7 +7395,7 @@ namespace Renderer
 		*/
 		inline virtual ~ITessellationEvaluationShader() override
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				--getRenderer().getStatistics().currentNumberOfTessellationEvaluationShaders;
 			#endif
@@ -7413,7 +7413,7 @@ namespace Renderer
 		inline explicit ITessellationEvaluationShader(IRenderer& renderer) :
 			IShader(ResourceType::TESSELLATION_EVALUATION_SHADER, renderer)
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				++getRenderer().getStatistics().numberOfCreatedTessellationEvaluationShaders;
 				++getRenderer().getStatistics().currentNumberOfTessellationEvaluationShaders;
@@ -7448,7 +7448,7 @@ namespace Renderer
 		*/
 		inline virtual ~IGeometryShader() override
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				--getRenderer().getStatistics().currentNumberOfGeometryShaders;
 			#endif
@@ -7466,7 +7466,7 @@ namespace Renderer
 		inline explicit IGeometryShader(IRenderer& renderer) :
 			IShader(ResourceType::GEOMETRY_SHADER, renderer)
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				++getRenderer().getStatistics().numberOfCreatedGeometryShaders;
 				++getRenderer().getStatistics().currentNumberOfGeometryShaders;
@@ -7501,7 +7501,7 @@ namespace Renderer
 		*/
 		inline virtual ~IFragmentShader() override
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				--getRenderer().getStatistics().currentNumberOfFragmentShaders;
 			#endif
@@ -7519,7 +7519,7 @@ namespace Renderer
 		inline explicit IFragmentShader(IRenderer& renderer) :
 			IShader(ResourceType::FRAGMENT_SHADER, renderer)
 		{
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				// Update the statistics
 				++getRenderer().getStatistics().numberOfCreatedFragmentShaders;
 				++getRenderer().getStatistics().currentNumberOfFragmentShaders;
@@ -7699,7 +7699,7 @@ namespace Renderer
 			mCommandPacketBuffer(nullptr),
 			mPreviousCommandPacketByteIndex(~0u),
 			mCurrentCommandPacketByteIndex(0)
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				, mNumberOfCommands(0)
 			#endif
 		{}
@@ -7725,7 +7725,7 @@ namespace Renderer
 			return (~0u == mPreviousCommandPacketByteIndex);
 		}
 
-		#ifndef RENDERER_NO_STATISTICS
+		#ifdef RENDERER_STATISTICS
 			/**
 			*  @brief
 			*    Return the number of commands inside the command buffer
@@ -7765,7 +7765,7 @@ namespace Renderer
 		{
 			mPreviousCommandPacketByteIndex = ~0u;
 			mCurrentCommandPacketByteIndex = 0;
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				mNumberOfCommands = 0;
 			#endif
 		}
@@ -7823,7 +7823,7 @@ namespace Renderer
 			mCurrentCommandPacketByteIndex += numberOfCommandBytes;
 
 			// Done
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				++mNumberOfCommands;
 			#endif
 			return CommandPacketHelper::getCommand<U>(commandPacket);
@@ -7916,7 +7916,7 @@ namespace Renderer
 			// Finalize
 			commandBuffer.mPreviousCommandPacketByteIndex = commandBuffer.mCurrentCommandPacketByteIndex + mPreviousCommandPacketByteIndex;
 			commandBuffer.mCurrentCommandPacketByteIndex += mCurrentCommandPacketByteIndex;
-			#ifndef RENDERER_NO_STATISTICS
+			#ifdef RENDERER_STATISTICS
 				commandBuffer.mNumberOfCommands += mNumberOfCommands;
 			#endif
 		}
@@ -7946,7 +7946,7 @@ namespace Renderer
 		// Current state
 		uint32_t mPreviousCommandPacketByteIndex;
 		uint32_t mCurrentCommandPacketByteIndex;
-		#ifndef RENDERER_NO_STATISTICS
+		#ifdef RENDERER_STATISTICS
 			uint32_t mNumberOfCommands;
 		#endif
 

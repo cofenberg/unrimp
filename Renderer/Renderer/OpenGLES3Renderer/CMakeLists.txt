@@ -39,9 +39,7 @@ endif()
 ##################################################
 ## Preprocessor definitions
 ##################################################
-if(RENDERER_OPENGLES3_NO_STATE_CLEANUP)
-	add_definitions(-DRENDERER_OPENGLES3_NO_STATE_CLEANUP)
-endif()
+unrimp_add_conditional_definition(RENDERER_OPENGLES3_STATE_CLEANUP)
 
 
 ##################################################
@@ -62,7 +60,7 @@ set(SOURCE_CODES OpenGLES3Renderer.cpp)
 ##################################################
 add_library(OpenGLES3Renderer ${LIBRARY_TYPE} ${SOURCE_CODES})
 if(SHARED_LIBRARY)
-	set_target_properties(OpenGLES3Renderer PROPERTIES COMPILE_FLAGS "-DSHARED_LIBRARIES -DOPENGLES3RENDERER_EXPORTS")
+	set_target_properties(OpenGLES3Renderer PROPERTIES COMPILE_FLAGS "-DSHARED_LIBRARIES -DRENDERER_OPENGLES3_EXPORTS")
 	if(ANDROID)
 		# It references ANativeWindow_setBuffersGeometry so link against Android library
 		target_link_libraries(OpenGLES3Renderer android)

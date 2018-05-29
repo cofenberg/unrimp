@@ -24,7 +24,6 @@ Standalone renderer project compiler example.
 
 == Preprocessor Definitions ==
 Other
-- "UNICODE":			 Enable MS Windows command line Unicode support
-- "SHARED_LIBRARIES":	 Use renderers via shared libraries, if this is not defined, the renderers are statically linked
-- "RENDERER_NO_RUNTIME": Disable renderer runtime support
+- "UNICODE":		   Enable Microsoft Windows command line Unicode support
+- "SHARED_LIBRARIES":  Use renderers via shared libraries, if this is not defined, the renderers are statically linked
 - Do also have a look into the renderer header file for renderer backend preprocessor definitions

@@ -27,7 +27,7 @@
 *    None.
 *
 *    == Preprocessor Definitions ==
-*    - Set "NULLRENDERER_EXPORTS" as preprocessor definition when building this library as shared library
+*    - Set "RENDERER_NULL_EXPORTS" as preprocessor definition when building this library as shared library
 *    - Do also have a look into the renderer header file documentation
 */
 
@@ -2835,7 +2835,7 @@ namespace NullRenderer
 			mGraphicsRootSignature = nullptr;
 		}
 
-		#ifndef RENDERER_NO_STATISTICS
+		#ifdef RENDERER_STATISTICS
 		{ // For debugging: At this point there should be no resource instances left, validate this!
 			// -> Are the currently any resource instances?
 			const unsigned long numberOfCurrentResources = getStatistics().getNumberOfCurrentResources();
@@ -3372,7 +3372,7 @@ namespace NullRenderer
 //[ Global functions                                      ]
 //[-------------------------------------------------------]
 // Export the instance creation function
-#ifdef NULLRENDERER_EXPORTS
+#ifdef RENDERER_NULL_EXPORTS
 	#define NULLRENDERER_FUNCTION_EXPORT GENERIC_FUNCTION_EXPORT
 #else
 	#define NULLRENDERER_FUNCTION_EXPORT

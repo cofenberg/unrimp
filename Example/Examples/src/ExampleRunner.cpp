@@ -41,7 +41,7 @@
 // Advanced
 #include "Advanced/FirstGpgpu/FirstGpgpu.h"
 #include "Advanced/IcosahedronTessellation/IcosahedronTessellation.h"
-#ifndef RENDERER_NO_RUNTIME
+#ifdef RENDERER_RUNTIME
 	#include "Runtime/FirstMesh/FirstMesh.h"
 	#include "Runtime/FirstCompositor/FirstCompositor.h"
 	#include "Runtime/FirstScene/FirstScene.h"
@@ -147,15 +147,15 @@ ExampleRunner::ExampleRunner() :
 	// Advanced
 	addExample("FirstGpgpu",					&RunExample<FirstGpgpu>,						supportsAllRenderer);
 	addExample("IcosahedronTessellation",		&RunRenderExample<IcosahedronTessellation>,		onlyShaderModel5Plus);
-	#ifdef RENDERER_NO_RUNTIME
-		m_defaultExampleName = "FirstTriangle";
-	#else
+	#ifdef RENDERER_RUNTIME
 		// Renderer runtime
 		addExample("FirstMesh",					&RunRenderRuntimeExample<FirstMesh>,		supportsAllRenderer);
 		addExample("FirstCompositor",			&RunRenderRuntimeExample<FirstCompositor>,	supportsAllRenderer);
 		addExample("FirstScene",				&RunRenderRuntimeExample<FirstScene>,		supportsAllRenderer);
 		addExample("InstancedCubes",			&RunRenderRuntimeExample<InstancedCubes>,	supportsAllRenderer);
 		m_defaultExampleName = "FirstScene";
+	#else
+		m_defaultExampleName = "FirstTriangle";
 	#endif
 
 	#ifndef RENDERER_NO_NULL

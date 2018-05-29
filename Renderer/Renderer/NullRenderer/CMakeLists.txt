@@ -53,7 +53,7 @@ set(SOURCE_CODES NullRenderer.cpp)
 ##################################################
 add_library(NullRenderer ${LIBRARY_TYPE} ${SOURCE_CODES})
 if(SHARED_LIBRARY)
-	set_target_properties(NullRenderer PROPERTIES COMPILE_FLAGS "-DSHARED_LIBRARIES -DNULLRENDERER_EXPORTS")
+	set_target_properties(NullRenderer PROPERTIES COMPILE_FLAGS "-DSHARED_LIBRARIES -DRENDERER_NULL_EXPORTS")
 endif()
 
 

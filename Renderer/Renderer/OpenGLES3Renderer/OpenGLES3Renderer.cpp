@@ -28,8 +28,8 @@
 *    - EGL, GLES3 and KHR headers which can be found at "<unrimp>\External\OpenGLES\include\"
 *
 *    == Preprocessor Definitions ==
-*    - Set "OPENGLES3RENDERER_EXPORTS" as preprocessor definition when building this library as shared library
-*    - If this renderer was compiled with "OPENGLES3RENDERER_NO_STATE_CLEANUP" set as preprocessor definition, the previous OpenGL ES 3 state will not be restored after performing an operation (better performance, reduces the binary size slightly, but might result in unexpected behaviour when using OpenGL ES 3 directly beside this renderer)
+*    - Set "RENDERER_OPENGLES3_EXPORTS" as preprocessor definition when building this library as shared library
+*    - If this renderer was compiled with "RENDERER_OPENGLES3_STATE_CLEANUP" set as preprocessor definition, the previous OpenGL ES 3 state will be restored after performing an operation (worse performance, increases the binary size slightly, might avoid unexpected behaviour when using OpenGL ES 3 directly beside this renderer)
 *    - Do also have a look into the renderer header file documentation
 */
 
@@ -3697,7 +3697,7 @@ namespace OpenGLES3Renderer
 				// Set the OpenGL ES 3 index buffer data type
 				mOpenGLES3Type = Mapping::getOpenGLES3Type(indexBufferFormat);
 
-				#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+				#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 					// Backup the currently bound OpenGL ES 3 element array buffer
 					GLint openGLES3ElementArrayBufferBackup = 0;
 					glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &openGLES3ElementArrayBufferBackup);
@@ -3707,7 +3707,7 @@ namespace OpenGLES3Renderer
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mOpenGLES3ElementArrayBuffer);
 				glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(numberOfBytes), data, Mapping::getOpenGLES3Type(bufferUsage));
 
-				#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+				#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 					// Be polite and restore the previous bound OpenGL ES 3 element array buffer
 					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLuint>(openGLES3ElementArrayBufferBackup));
 				#endif
@@ -3857,7 +3857,7 @@ namespace OpenGLES3Renderer
 			// Create the OpenGL ES 3 array buffer
 			glGenBuffers(1, &mOpenGLES3ArrayBuffer);
 
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Backup the currently bound OpenGL ES 3 array buffer
 				GLint openGLES3ArrayBufferBackup = 0;
 				glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &openGLES3ArrayBufferBackup);
@@ -3867,7 +3867,7 @@ namespace OpenGLES3Renderer
 			glBindBuffer(GL_ARRAY_BUFFER, mOpenGLES3ArrayBuffer);
 			glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(numberOfBytes), data, Mapping::getOpenGLES3Type(bufferUsage));
 
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Be polite and restore the previous bound OpenGL ES 3 array buffer
 				glBindBuffer(GL_ARRAY_BUFFER, static_cast<GLuint>(openGLES3ArrayBufferBackup));
 			#endif
@@ -3989,7 +3989,7 @@ namespace OpenGLES3Renderer
 			// Create the OpenGL ES 3 vertex array
 			glGenVertexArrays(1, &mOpenGLES3VertexArray);
 
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Backup the currently bound OpenGL ES 3 array buffer
 				GLint openGLES3ArrayBufferBackup = 0;
 				glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &openGLES3ArrayBufferBackup);
@@ -4065,7 +4065,7 @@ namespace OpenGLES3Renderer
 				}
 			}
 
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Be polite and restore the previous bound OpenGL ES 3 vertex array
 				glBindVertexArray(static_cast<GLuint>(openGLES3VertexArrayBackup));
 
@@ -4224,7 +4224,7 @@ namespace OpenGLES3Renderer
 			// Create the OpenGL ES 3 uniform buffer
 			glGenBuffers(1, &mOpenGLES3UniformBuffer);
 
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Backup the currently bound OpenGL ES 3 uniform buffer
 				GLint openGLES3UniformBufferBackup = 0;
 				glGetIntegerv(GL_UNIFORM_BUFFER_BINDING, &openGLES3UniformBufferBackup);
@@ -4237,7 +4237,7 @@ namespace OpenGLES3Renderer
 			// -> Usage: These constants directly map to GL_EXT_vertex_buffer_object and OpenGL ES 3 constants, do not change them
 			glBufferData(GL_UNIFORM_BUFFER, static_cast<GLsizeiptr>(numberOfBytes), data, static_cast<GLenum>(bufferUsage));
 
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Be polite and restore the previous bound OpenGL ES 3 uniform buffer
 				glBindBuffer(GL_UNIFORM_BUFFER, static_cast<GLuint>(openGLES3UniformBufferBackup));
 			#endif
@@ -4495,7 +4495,7 @@ namespace OpenGLES3Renderer
 			TextureBuffer(openGLES3Renderer, numberOfBytes)
 		{
 			{ // Buffer part
-				#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+				#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 					// Backup the currently bound OpenGL ES 3 texture buffer
 					GLint openGLES3TextureBufferBackup = 0;
 					glGetIntegerv(GL_TEXTURE_BINDING_BUFFER_EXT, &openGLES3TextureBufferBackup);
@@ -4506,14 +4506,14 @@ namespace OpenGLES3Renderer
 				// -> Usage: These constants directly map to "GL_ARB_vertex_buffer_object" and OpenGL ES 3 constants, do not change them
 				glBufferData(GL_TEXTURE_BUFFER_EXT, static_cast<GLsizeiptr>(numberOfBytes), data, static_cast<GLenum>(bufferUsage));
 
-				#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+				#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 					// Be polite and restore the previous bound OpenGL ES 3 texture buffer
 					glBindBuffer(GL_TEXTURE_BUFFER_EXT, static_cast<GLuint>(openGLES3TextureBufferBackup));
 				#endif
 			}
 
 			{ // Texture part
-				#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+				#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 					// Backup the currently bound OpenGL ES 3 texture
 					GLint openGLESTextureBackup = 0;
 					glGetIntegerv(GL_TEXTURE_BUFFER_BINDING_EXT, &openGLESTextureBackup);
@@ -4525,7 +4525,7 @@ namespace OpenGLES3Renderer
 				// Attaches the storage for the buffer object to the active buffer texture
 				glTexBufferEXT(GL_TEXTURE_BUFFER_EXT, Mapping::getOpenGLES3InternalFormat(textureFormat), mOpenGLES3TextureBuffer);
 
-				#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+				#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 					// Be polite and restore the previous bound OpenGL ES 3 texture
 					glBindTexture(GL_TEXTURE_BUFFER_EXT, static_cast<GLuint>(openGLESTextureBackup));
 				#endif
@@ -4586,7 +4586,7 @@ namespace OpenGLES3Renderer
 		TextureBufferBindEmulation(OpenGLES3Renderer& openGLES3Renderer, uint32_t numberOfBytes, MAYBE_UNUSED Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
 			TextureBuffer(openGLES3Renderer, numberOfBytes)
 		{
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Backup the currently bound OpenGL ES 3 uniform buffer
 				GLint openGLES3UniformBufferBackup = 0;
 				glGetIntegerv(GL_UNIFORM_BUFFER_BINDING, &openGLES3UniformBufferBackup);
@@ -4599,7 +4599,7 @@ namespace OpenGLES3Renderer
 			// -> Usage: These constants directly map to GL_EXT_vertex_buffer_object and OpenGL ES 3 constants, do not change them
 			glBufferData(GL_UNIFORM_BUFFER, static_cast<GLsizeiptr>(numberOfBytes), data, static_cast<GLenum>(bufferUsage));
 
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Be polite and restore the previous bound OpenGL ES 3 uniform buffer
 				glBindBuffer(GL_UNIFORM_BUFFER, static_cast<GLuint>(openGLES3UniformBufferBackup));
 			#endif
@@ -4894,7 +4894,7 @@ namespace OpenGLES3Renderer
 
 			// TODO(co) Check support formats
 
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Backup the currently set alignment
 				GLint openGLES3AlignmentBackup = 0;
 				glGetIntegerv(GL_UNPACK_ALIGNMENT, &openGLES3AlignmentBackup);
@@ -4983,7 +4983,7 @@ namespace OpenGLES3Renderer
 			}
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Be polite and restore the previous bound OpenGL ES 3 texture
 				glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(openGLES3TextureBackup));
 
@@ -5123,7 +5123,7 @@ namespace OpenGLES3Renderer
 
 			// TODO(co) Check support formats
 
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Backup the currently set alignment
 				GLint openGLES3AlignmentBackup = 0;
 				glGetIntegerv(GL_UNPACK_ALIGNMENT, &openGLES3AlignmentBackup);
@@ -5215,7 +5215,7 @@ namespace OpenGLES3Renderer
 			}
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Be polite and restore the previous bound OpenGL ES 3 texture
 				glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(openGLES3TextureBackup));
 
@@ -5270,7 +5270,7 @@ namespace OpenGLES3Renderer
 		*/
 		void setMinimumMaximumMipmapIndex(uint32_t minimumMipmapIndex, uint32_t maximumMipmapIndex)
 		{
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Backup the currently bound OpenGL ES 3 texture
 				GLint openGLES3TextureBackup = 0;
 				glGetIntegerv(GL_TEXTURE_BINDING_2D, &openGLES3TextureBackup);
@@ -5289,7 +5289,7 @@ namespace OpenGLES3Renderer
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, static_cast<GLint>(minimumMipmapIndex));
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, static_cast<GLint>(maximumMipmapIndex));
 
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Be polite and restore the previous bound OpenGL ES 3 texture
 				glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(openGLES3TextureBackup));
 			#endif
@@ -5388,7 +5388,7 @@ namespace OpenGLES3Renderer
 		{
 			// TODO(co) Check support formats
 
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Backup the currently set alignment
 				GLint openGLES3AlignmentBackup = 0;
 				glGetIntegerv(GL_UNPACK_ALIGNMENT, &openGLES3AlignmentBackup);
@@ -5426,7 +5426,7 @@ namespace OpenGLES3Renderer
 			}
 			glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Be polite and restore the previous bound OpenGL ES 3 texture
 				glBindTexture(GL_TEXTURE_2D_ARRAY, static_cast<GLuint>(openGLES3TextureBackup));
 
@@ -5551,7 +5551,7 @@ namespace OpenGLES3Renderer
 
 			// TODO(co) Check support formats
 
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Backup the currently set alignment
 				GLint openGLES3AlignmentBackup = 0;
 				glGetIntegerv(GL_UNPACK_ALIGNMENT, &openGLES3AlignmentBackup);
@@ -5654,7 +5654,7 @@ namespace OpenGLES3Renderer
 			}
 			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Be polite and restore the previous bound OpenGL ES 3 texture
 				glBindTexture(GL_TEXTURE_3D, static_cast<GLuint>(openGLES3TextureBackup));
 
@@ -5795,7 +5795,7 @@ namespace OpenGLES3Renderer
 
 			// TODO(co) Check support formats
 
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Backup the currently set alignment
 				GLint openGLES3AlignmentBackup = 0;
 				glGetIntegerv(GL_UNPACK_ALIGNMENT, &openGLES3AlignmentBackup);
@@ -5920,7 +5920,7 @@ namespace OpenGLES3Renderer
 			}
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Be polite and restore the previous bound OpenGL ES 3 texture
 				glBindTexture(GL_TEXTURE_CUBE_MAP, static_cast<GLuint>(openGLES3TextureBackup));
 
@@ -7055,7 +7055,7 @@ namespace OpenGLES3Renderer
 			// Create the OpenGL ES 3 framebuffer
 			glGenFramebuffers(1, &mOpenGLES3Framebuffer);
 
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Backup the currently bound OpenGL ES 3 framebuffer
 				GLint openGLES3FramebufferBackup = 0;
 				glGetIntegerv(GL_FRAMEBUFFER_BINDING, &openGLES3FramebufferBackup);
@@ -7283,7 +7283,7 @@ namespace OpenGLES3Renderer
 					break;
 			}
 
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Be polite and restore the previous bound OpenGL ES 3 framebuffer
 				glBindFramebuffer(GL_FRAMEBUFFER, static_cast<GLuint>(openGLES3FramebufferBackup));
 			#endif
@@ -7389,7 +7389,7 @@ namespace OpenGLES3Renderer
 					Texture2D* texture2D = static_cast<Texture2D*>(*colorTexture);
 					if (texture2D->getGenerateMipmaps())
 					{
-						#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+						#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 							// Backup the currently bound OpenGL ES 3 texture
 							// TODO(co) It's possible to avoid calling this multiple times
 							GLint openGLES3TextureBackup = 0;
@@ -7401,7 +7401,7 @@ namespace OpenGLES3Renderer
 						glBindTexture(GL_TEXTURE_2D, texture2D->getOpenGLES3Texture());
 						glGenerateMipmap(GL_TEXTURE_2D);
 
-						#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+						#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 							// Be polite and restore the previous bound OpenGL ES 3 texture
 							glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(openGLES3TextureBackup));
 						#endif
@@ -7840,7 +7840,7 @@ namespace OpenGLES3Renderer
 											// -> When using Direct3D 9, Direct3D 10 or Direct3D 11, the texture unit
 											//    to use is usually defined directly within the shader by using the "register"-keyword
 											// TODO(co) There's room for binding API call related optimization in here (will certainly be no huge overall efficiency gain)
-											#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+											#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 												// Backup the currently used OpenGL ES 3 program
 												GLint openGLES3ProgramBackup = 0;
 												glGetIntegerv(GL_CURRENT_PROGRAM, &openGLES3ProgramBackup);
@@ -7957,7 +7957,7 @@ namespace OpenGLES3Renderer
 
 		virtual void setUniform1i(Renderer::handle uniformHandle, int value) override
 		{
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Backup the currently used OpenGL ES 3 program
 				GLint openGLES3ProgramBackup = 0;
 				glGetIntegerv(GL_CURRENT_PROGRAM, &openGLES3ProgramBackup);
@@ -7984,7 +7984,7 @@ namespace OpenGLES3Renderer
 
 		virtual void setUniform1f(Renderer::handle uniformHandle, float value) override
 		{
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Backup the currently used OpenGL ES 3 program
 				GLint openGLES3ProgramBackup = 0;
 				glGetIntegerv(GL_CURRENT_PROGRAM, &openGLES3ProgramBackup);
@@ -8011,7 +8011,7 @@ namespace OpenGLES3Renderer
 
 		virtual void setUniform2fv(Renderer::handle uniformHandle, const float* value) override
 		{
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Backup the currently used OpenGL ES 3 program
 				GLint openGLES3ProgramBackup = 0;
 				glGetIntegerv(GL_CURRENT_PROGRAM, &openGLES3ProgramBackup);
@@ -8038,7 +8038,7 @@ namespace OpenGLES3Renderer
 
 		virtual void setUniform3fv(Renderer::handle uniformHandle, const float* value) override
 		{
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Backup the currently used OpenGL ES 3 program
 				GLint openGLES3ProgramBackup = 0;
 				glGetIntegerv(GL_CURRENT_PROGRAM, &openGLES3ProgramBackup);
@@ -8065,7 +8065,7 @@ namespace OpenGLES3Renderer
 
 		virtual void setUniform4fv(Renderer::handle uniformHandle, const float* value) override
 		{
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Backup the currently used OpenGL ES 3 program
 				GLint openGLES3ProgramBackup = 0;
 				glGetIntegerv(GL_CURRENT_PROGRAM, &openGLES3ProgramBackup);
@@ -8092,7 +8092,7 @@ namespace OpenGLES3Renderer
 
 		virtual void setUniformMatrix3fv(Renderer::handle uniformHandle, const float* value) override
 		{
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Backup the currently used OpenGL ES 3 program
 				GLint openGLES3ProgramBackup = 0;
 				glGetIntegerv(GL_CURRENT_PROGRAM, &openGLES3ProgramBackup);
@@ -8119,7 +8119,7 @@ namespace OpenGLES3Renderer
 
 		virtual void setUniformMatrix4fv(Renderer::handle uniformHandle, const float* value) override
 		{
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Backup the currently used OpenGL ES 3 program
 				GLint openGLES3ProgramBackup = 0;
 				glGetIntegerv(GL_CURRENT_PROGRAM, &openGLES3ProgramBackup);
@@ -8524,7 +8524,7 @@ namespace
 		{
 			// TODO(co) This buffer update isn't efficient, use e.g. persistent buffer mapping
 
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Backup the currently bound OpenGL ES 3 buffer
 				GLint openGLES3BufferBackup = 0;
 				OpenGLES3Renderer::glGetIntegerv(bindingTarget, &openGLES3BufferBackup);
@@ -8538,7 +8538,7 @@ namespace
 			mappedSubresource.rowPitch   = 0;
 			mappedSubresource.depthPitch = 0;
 
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Be polite and restore the previous bound OpenGL ES 3 buffer
 				OpenGLES3Renderer::glBindBuffer(target, static_cast<GLuint>(openGLES3BufferBackup));
 			#endif
@@ -8550,7 +8550,7 @@ namespace
 
 		void unmapBuffer(GLenum target, GLenum bindingTarget, GLuint openGLES3Buffer)
 		{
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Backup the currently bound OpenGL ES 3 buffer
 				GLint openGLES3BufferBackup = 0;
 				OpenGLES3Renderer::glGetIntegerv(bindingTarget, &openGLES3BufferBackup);
@@ -8562,7 +8562,7 @@ namespace
 			// Unmap
 			OpenGLES3Renderer::glUnmapBuffer(target);
 
-			#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 				// Be polite and restore the previous bound OpenGL ES 3 buffer
 				OpenGLES3Renderer::glBindBuffer(target, static_cast<GLuint>(openGLES3BufferBackup));
 			#endif
@@ -8905,7 +8905,7 @@ namespace OpenGLES3Renderer
 			mGraphicsRootSignature->releaseReference();
 		}
 
-		#ifndef RENDERER_NO_STATISTICS
+		#ifdef RENDERER_STATISTICS
 		{ // For debugging: At this point there should be no resource instances left, validate this!
 			// -> Are the currently any resource instances?
 			const unsigned long numberOfCurrentResources = getStatistics().getNumberOfCurrentResources();
@@ -9046,7 +9046,7 @@ namespace OpenGLES3Renderer
 							case Renderer::ShaderVisibility::VERTEX:
 							case Renderer::ShaderVisibility::FRAGMENT:
 							{
-								#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+								#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 									// Backup the currently active OpenGL ES 3 texture
 									GLint openGLES3ActiveTextureBackup = 0;
 									glGetIntegerv(GL_ACTIVE_TEXTURE, &openGLES3ActiveTextureBackup);
@@ -9097,7 +9097,7 @@ namespace OpenGLES3Renderer
 									}
 								}
 
-								#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+								#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 									// Be polite and restore the previous active OpenGL ES 3 texture
 									glActiveTexture(static_cast<GLuint>(openGLES3ActiveTextureBackup));
 								#endif
@@ -9503,7 +9503,7 @@ namespace OpenGLES3Renderer
 					RENDERER_ASSERT(mContext, openGlEs3DestinationTexture2D.getWidth() == openGlEs3SourceTexture2D.getWidth(), "OpenGL source and destination width must be identical for resource copy")
 					RENDERER_ASSERT(mContext, openGlEs3DestinationTexture2D.getHeight() == openGlEs3SourceTexture2D.getHeight(), "OpenGL source and destination height must be identical for resource copy")
 
-					#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+					#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 						// Backup the currently bound OpenGL ES 3 framebuffer
 						GLint openGLES3FramebufferBackup = 0;
 						glGetIntegerv(GL_FRAMEBUFFER_BINDING, &openGLES3FramebufferBackup);
@@ -9526,7 +9526,7 @@ namespace OpenGLES3Renderer
 					glDrawBuffers(1, OPENGL_DRAW_BUFFER);
 					glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
-					#ifndef OPENGLES3RENDERER_NO_STATE_CLEANUP
+					#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
 						// Be polite and restore the previous bound OpenGL ES 3 framebuffer
 						glBindFramebuffer(GL_FRAMEBUFFER, static_cast<GLuint>(openGLES3FramebufferBackup));
 					#endif
@@ -10466,7 +10466,7 @@ namespace OpenGLES3Renderer
 //[ Global functions                                      ]
 //[-------------------------------------------------------]
 // Export the instance creation function
-#ifdef OPENGLES3RENDERER_EXPORTS
+#ifdef RENDERER_OPENGLES3_EXPORTS
 	#define OPENGLES3RENDERER_FUNCTION_EXPORT GENERIC_FUNCTION_EXPORT
 #else
 	#define OPENGLES3RENDERER_FUNCTION_EXPORT

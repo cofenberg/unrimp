@@ -51,7 +51,7 @@ set(SOURCE_CODES Direct3D12Renderer.cpp)
 ##################################################
 add_library(Direct3D12Renderer ${LIBRARY_TYPE} ${SOURCE_CODES})
 if(SHARED_LIBRARY)
-	set_target_properties(Direct3D12Renderer PROPERTIES COMPILE_FLAGS "-DSHARED_LIBRARIES -DDIRECT3D12RENDERER_EXPORTS")
+	set_target_properties(Direct3D12Renderer PROPERTIES COMPILE_FLAGS "-DSHARED_LIBRARIES -DRENDERER_DIRECT3D12_EXPORTS")
 endif()
 
 

@@ -27,12 +27,12 @@
 *    - OpenGL capable graphics driver
 *    - OpenGL headers which can be found at "<unrimp>\External\OpenGL\include\"
 *    - smol-v (directly compiled and linked in)
-*    - glslang if "OPENGLRENDERER_GLSLTOSPIRV" is set (directly compiled and linked in)
+*    - glslang if "RENDERER_OPENGL_GLSLTOSPIRV" is set (directly compiled and linked in)
 *
 *    == Preprocessor Definitions ==
-*    - Set "OPENGLRENDERER_EXPORTS" as preprocessor definition when building this library as shared library
-*    - If this renderer was compiled with "OPENGLRENDERER_NO_STATE_CLEANUP" set as preprocessor definition, the previous OpenGL state will not be restored after performing an operation (better performance, reduces the binary size slightly, but might result in unexpected behaviour when using OpenGL directly beside this renderer)
-*    - Set "OPENGLRENDERER_GLSLTOSPIRV" as preprocessor definition when building this library to add support for compiling GLSL into SPIR-V, increases the binary size around one MiB
+*    - Set "RENDERER_OPENGL_EXPORTS" as preprocessor definition when building this library as shared library
+*    - If this renderer was compiled with "RENDERER_OPENGL_STATE_CLEANUP" set as preprocessor definition, the previous OpenGL state will be restored after performing an operation (worse performance, increases the binary size slightly, might avoid unexpected behaviour when using OpenGL directly beside this renderer)
+*    - Set "RENDERER_OPENGL_GLSLTOSPIRV" as preprocessor definition when building this library to add support for compiling GLSL into SPIR-V, increases the binary size around one MiB
 *    - Do also have a look into the renderer header file documentation
 */
 
@@ -42,7 +42,7 @@
 //[-------------------------------------------------------]
 #include <Renderer/Renderer.h>
 
-#ifdef OPENGLRENDERER_GLSLTOSPIRV
+#ifdef RENDERER_OPENGL_GLSLTOSPIRV
 	// Disable warnings in external headers, we can't fix them
 	PRAGMA_WARNING_PUSH
 		PRAGMA_WARNING_DISABLE_MSVC(4061)	// warning C4061: enumerator '<x>' in switch of enum '<y>' is not explicitly handled by a case label
@@ -626,7 +626,7 @@ namespace
 		//[-------------------------------------------------------]
 		static constexpr const char* GLSL_NAME = "GLSL";	///< ASCII name of this shader language, always valid (do not free the memory the returned pointer is pointing to)
 
-		#ifdef OPENGLRENDERER_GLSLTOSPIRV
+		#ifdef RENDERER_OPENGL_GLSLTOSPIRV
 			static bool GlslangInitialized = false;
 
 			// Settings from "glslang/StandAlone/ResourceLimits.cpp"
@@ -1108,7 +1108,7 @@ namespace
 		#endif
 		void shaderSourceCodeToShaderBytecode(const Renderer::Context& context, GLenum shaderType, const GLchar* sourceCode, Renderer::ShaderBytecode& shaderBytecode)
 		{
-			#ifdef OPENGLRENDERER_GLSLTOSPIRV
+			#ifdef RENDERER_OPENGL_GLSLTOSPIRV
 				// Initialize glslang, if necessary
 				if (!GlslangInitialized)
 				{
@@ -1233,7 +1233,7 @@ namespace
 				else
 				{
 					// TODO(co) There's room for binding API call related optimization in here (will certainly be no huge overall efficiency gain)
-					#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+					#ifdef RENDERER_OPENGL_STATE_CLEANUP
 						// Backup the currently used OpenGL program
 						GLint openGLProgramBackup = 0;
 						glGetProgramPipelineiv(openGLProgramPipeline, GL_ACTIVE_PROGRAM, &openGLProgramBackup);
@@ -5017,7 +5017,7 @@ namespace OpenGLRenderer
 		IndexBufferBind(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, Renderer::IndexBufferFormat::Enum indexBufferFormat, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
 			IndexBuffer(openGLRenderer, indexBufferFormat)
 		{
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently bound OpenGL element array buffer
 				GLint openGLElementArrayBufferBackup = 0;
 				glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING_ARB, &openGLElementArrayBufferBackup);
@@ -5031,7 +5031,7 @@ namespace OpenGLRenderer
 			glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, mOpenGLElementArrayBuffer);
 			glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, static_cast<GLsizeiptrARB>(numberOfBytes), data, static_cast<GLenum>(bufferUsage));
 
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Be polite and restore the previous bound OpenGL element array buffer
 				glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, static_cast<GLuint>(openGLElementArrayBufferBackup));
 			#endif
@@ -5265,7 +5265,7 @@ namespace OpenGLRenderer
 		VertexBufferBind(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
 			VertexBuffer(openGLRenderer)
 		{
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently bound OpenGL array buffer
 				GLint openGLArrayBufferBackup = 0;
 				glGetIntegerv(GL_ARRAY_BUFFER_BINDING_ARB, &openGLArrayBufferBackup);
@@ -5279,7 +5279,7 @@ namespace OpenGLRenderer
 			glBindBufferARB(GL_ARRAY_BUFFER_ARB, mOpenGLArrayBuffer);
 			glBufferDataARB(GL_ARRAY_BUFFER_ARB, static_cast<GLsizeiptrARB>(numberOfBytes), data, static_cast<GLenum>(bufferUsage));
 
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Be polite and restore the previous bound OpenGL array buffer
 				glBindBufferARB(GL_ARRAY_BUFFER_ARB, static_cast<GLuint>(openGLArrayBufferBackup));
 			#endif
@@ -5596,7 +5596,7 @@ namespace OpenGLRenderer
 		*/
 		void enableOpenGLVertexAttribArrays()
 		{
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently bound OpenGL array buffer
 				// -> Using "GL_EXT_direct_state_access" this would not help in here because "glVertexAttribPointerARB" is not specified there :/
 				GLint openGLArrayBufferBackup = 0;
@@ -5641,7 +5641,7 @@ namespace OpenGLRenderer
 				glEnableVertexAttribArrayARB(attributeLocation);
 			}
 
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Be polite and restore the previous bound OpenGL array buffer
 				glBindBufferARB(GL_ARRAY_BUFFER_ARB, static_cast<GLuint>(openGLArrayBufferBackup));
 			#endif
@@ -5873,7 +5873,7 @@ namespace OpenGLRenderer
 		{
 			// Vertex buffer reference handling is done within the base class "VertexArrayVao"
 
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently bound OpenGL array buffer
 				GLint openGLArrayBufferBackup = 0;
 				glGetIntegerv(GL_ARRAY_BUFFER_BINDING_ARB, &openGLArrayBufferBackup);
@@ -5939,7 +5939,7 @@ namespace OpenGLRenderer
 				glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indexBuffer->getOpenGLElementArrayBuffer());
 			}
 
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Be polite and restore the previous bound OpenGL vertex array
 				glBindVertexArray(static_cast<GLuint>(openGLVertexArrayBackup));
 
@@ -6076,7 +6076,7 @@ namespace OpenGLRenderer
 						// Sadly, DSA has no support for "GL_ARB_instanced_arrays", so, we have to use the bind way
 						// -> Keep the bind-horror as local as possible
 
-						#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+						#ifdef RENDERER_OPENGL_STATE_CLEANUP
 							// Backup the currently bound OpenGL vertex array
 							GLint openGLVertexArrayBackup = 0;
 							glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &openGLVertexArrayBackup);
@@ -6091,7 +6091,7 @@ namespace OpenGLRenderer
 							glVertexAttribDivisorARB(attributeLocation, attribute->instancesPerElement);
 						}
 
-						#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+						#ifdef RENDERER_OPENGL_STATE_CLEANUP
 							// Be polite and restore the previous bound OpenGL vertex array
 							glBindVertexArray(static_cast<GLuint>(openGLVertexArrayBackup));
 						#endif
@@ -6116,7 +6116,7 @@ namespace OpenGLRenderer
 					// Sadly, EXT DSA has no support for element array buffer, so, we have to use the bind way
 					// -> Keep the bind-horror as local as possible
 
-					#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+					#ifdef RENDERER_OPENGL_STATE_CLEANUP
 						// Backup the currently bound OpenGL vertex array
 						GLint openGLVertexArrayBackup = 0;
 						glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &openGLVertexArrayBackup);
@@ -6132,7 +6132,7 @@ namespace OpenGLRenderer
 					// Bind OpenGL element array buffer
 					glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indexBuffer->getOpenGLElementArrayBuffer());
 
-					#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+					#ifdef RENDERER_OPENGL_STATE_CLEANUP
 						// Be polite and restore the previous bound OpenGL vertex array
 						glBindVertexArray(static_cast<GLuint>(openGLVertexArrayBackup));
 
@@ -6302,7 +6302,7 @@ namespace OpenGLRenderer
 		{
 			// TODO(co) Review OpenGL uniform buffer alignment topic
 
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently bound OpenGL uniform buffer
 				GLint openGLUniformBufferBackup = 0;
 				glGetIntegerv(GL_UNIFORM_BUFFER_BINDING, &openGLUniformBufferBackup);
@@ -6316,7 +6316,7 @@ namespace OpenGLRenderer
 			glBindBufferARB(GL_UNIFORM_BUFFER, mOpenGLUniformBuffer);
 			glBufferDataARB(GL_UNIFORM_BUFFER, static_cast<GLsizeiptrARB>(numberOfBytes), data, static_cast<GLenum>(bufferUsage));
 
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Be polite and restore the previous bound OpenGL uniform buffer
 				glBindBufferARB(GL_UNIFORM_BUFFER, static_cast<GLuint>(openGLUniformBufferBackup));
 			#endif
@@ -6578,7 +6578,7 @@ namespace OpenGLRenderer
 			TextureBuffer(openGLRenderer)
 		{
 			{ // Buffer part
-				#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+				#ifdef RENDERER_OPENGL_STATE_CLEANUP
 					// Backup the currently bound OpenGL texture buffer
 					GLint openGLTextureBufferBackup = 0;
 					glGetIntegerv(GL_TEXTURE_BINDING_BUFFER_ARB, &openGLTextureBufferBackup);
@@ -6592,14 +6592,14 @@ namespace OpenGLRenderer
 				glBindBufferARB(GL_TEXTURE_BUFFER_ARB, mOpenGLTextureBuffer);
 				glBufferDataARB(GL_TEXTURE_BUFFER_ARB, static_cast<GLsizeiptrARB>(numberOfBytes), data, static_cast<GLenum>(bufferUsage));
 
-				#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+				#ifdef RENDERER_OPENGL_STATE_CLEANUP
 					// Be polite and restore the previous bound OpenGL texture buffer
 					glBindBufferARB(GL_TEXTURE_BUFFER_ARB, static_cast<GLuint>(openGLTextureBufferBackup));
 				#endif
 			}
 
 			{ // Texture part
-				#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+				#ifdef RENDERER_OPENGL_STATE_CLEANUP
 					// Backup the currently bound OpenGL texture
 					GLint openGLTextureBackup = 0;
 					glGetIntegerv(GL_TEXTURE_BINDING_BUFFER_ARB, &openGLTextureBackup);
@@ -6614,7 +6614,7 @@ namespace OpenGLRenderer
 				// Attaches the storage for the buffer object to the active buffer texture
 				glTexBufferARB(GL_TEXTURE_BUFFER_ARB, Mapping::getOpenGLInternalFormat(textureFormat), mOpenGLTextureBuffer);
 
-				#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+				#ifdef RENDERER_OPENGL_STATE_CLEANUP
 					// Be polite and restore the previous bound OpenGL texture
 					glBindTexture(GL_TEXTURE_BUFFER_ARB, static_cast<GLuint>(openGLTextureBackup));
 				#endif
@@ -6708,7 +6708,7 @@ namespace OpenGLRenderer
 				glNamedBufferDataEXT(mOpenGLTextureBuffer, static_cast<GLsizeiptr>(numberOfBytes), data, static_cast<GLenum>(bufferUsage));
 
 				{ // Texture part
-					#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+					#ifdef RENDERER_OPENGL_STATE_CLEANUP
 						// Backup the currently bound OpenGL texture
 						GLint openGLTextureBackup = 0;
 						glGetIntegerv(GL_TEXTURE_BINDING_BUFFER_ARB, &openGLTextureBackup);
@@ -6721,7 +6721,7 @@ namespace OpenGLRenderer
 					// -> Sadly, there's no direct state access (DSA) function defined for this in "GL_EXT_direct_state_access"
 					glTexBufferARB(GL_TEXTURE_BUFFER_ARB, Mapping::getOpenGLInternalFormat(textureFormat), mOpenGLTextureBuffer);
 
-					#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+					#ifdef RENDERER_OPENGL_STATE_CLEANUP
 						// Be polite and restore the previous bound OpenGL texture
 						glBindTexture(GL_TEXTURE_BUFFER_ARB, static_cast<GLuint>(openGLTextureBackup));
 					#endif
@@ -6893,7 +6893,7 @@ namespace OpenGLRenderer
 		IndirectBufferBind(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
 			IndirectBuffer(openGLRenderer)
 		{
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently bound OpenGL indirect buffer
 				GLint openGLIndirectBufferBackup = 0;
 				glGetIntegerv(GL_DRAW_INDIRECT_BUFFER_BINDING, &openGLIndirectBufferBackup);
@@ -6907,7 +6907,7 @@ namespace OpenGLRenderer
 			glBindBufferARB(GL_DRAW_INDIRECT_BUFFER, mOpenGLIndirectBuffer);
 			glBufferDataARB(GL_DRAW_INDIRECT_BUFFER, static_cast<GLsizeiptrARB>(numberOfBytes), data, static_cast<GLenum>(bufferUsage));
 
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Be polite and restore the previous bound OpenGL indirect buffer
 				glBindBufferARB(GL_DRAW_INDIRECT_BUFFER, static_cast<GLuint>(openGLIndirectBufferBackup));
 			#endif
@@ -7388,7 +7388,7 @@ namespace OpenGLRenderer
 			// Create the OpenGL texture instance
 			glGenTextures(1, &mOpenGLTexture);
 
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently set alignment
 				GLint openGLAlignmentBackup = 0;
 				glGetIntegerv(GL_UNPACK_ALIGNMENT, &openGLAlignmentBackup);
@@ -7476,7 +7476,7 @@ namespace OpenGLRenderer
 			}
 			glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Be polite and restore the previous bound OpenGL texture
 				glBindTexture(GL_TEXTURE_1D, static_cast<GLuint>(openGLTextureBackup));
 
@@ -7546,7 +7546,7 @@ namespace OpenGLRenderer
 			// Multisample texture?
 			const bool isArbDsa = openGLRenderer.getExtensions().isGL_ARB_direct_state_access();
 
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently set alignment
 				GLint openGLAlignmentBackup = 0;
 				glGetIntegerv(GL_UNPACK_ALIGNMENT, &openGLAlignmentBackup);
@@ -7712,7 +7712,7 @@ namespace OpenGLRenderer
 				glTextureParameteriEXT(mOpenGLTexture, GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			}
 
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Restore previous alignment
 				glPixelStorei(GL_UNPACK_ALIGNMENT, openGLAlignmentBackup);
 			#endif
@@ -7948,7 +7948,7 @@ namespace OpenGLRenderer
 			// Multisample texture?
 			if (numberOfMultisamples > 1)
 			{
-				#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+				#ifdef RENDERER_OPENGL_STATE_CLEANUP
 					// Backup the currently bound OpenGL texture
 					GLint openGLTextureBackup = 0;
 					glGetIntegerv(GL_TEXTURE_BINDING_2D_MULTISAMPLE, &openGLTextureBackup);
@@ -7960,14 +7960,14 @@ namespace OpenGLRenderer
 				// Define the texture
 				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, numberOfMultisamples, Mapping::getOpenGLInternalFormat(textureFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), GL_TRUE);
 
-				#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+				#ifdef RENDERER_OPENGL_STATE_CLEANUP
 					// Be polite and restore the previous bound OpenGL texture
 					glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, static_cast<GLuint>(openGLTextureBackup));
 				#endif
 			}
 			else
 			{
-				#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+				#ifdef RENDERER_OPENGL_STATE_CLEANUP
 					// Backup the currently set alignment
 					GLint openGLAlignmentBackup = 0;
 					glGetIntegerv(GL_UNPACK_ALIGNMENT, &openGLAlignmentBackup);
@@ -8057,7 +8057,7 @@ namespace OpenGLRenderer
 				}
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-				#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+				#ifdef RENDERER_OPENGL_STATE_CLEANUP
 					// Be polite and restore the previous bound OpenGL texture
 					glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(openGLTextureBackup));
 
@@ -8081,7 +8081,7 @@ namespace OpenGLRenderer
 	public:
 		virtual void setMinimumMaximumMipmapIndex(uint32_t minimumMipmapIndex, uint32_t maximumMipmapIndex) override
 		{
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently bound OpenGL texture
 				GLint openGLTextureBackup = 0;
 				glGetIntegerv(GL_TEXTURE_BINDING_2D, &openGLTextureBackup);
@@ -8100,7 +8100,7 @@ namespace OpenGLRenderer
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, static_cast<GLint>(minimumMipmapIndex));
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, static_cast<GLint>(maximumMipmapIndex));
 
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Be polite and restore the previous bound OpenGL texture
 				glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(openGLTextureBackup));
 			#endif
@@ -8183,7 +8183,7 @@ namespace OpenGLRenderer
 					// Create the OpenGL texture instance
 					glGenTextures(1, &mOpenGLTexture);
 
-					#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+					#ifdef RENDERER_OPENGL_STATE_CLEANUP
 						// Backup the currently bound OpenGL texture
 						GLint openGLTextureBackup = 0;
 						glGetIntegerv(GL_TEXTURE_BINDING_2D_MULTISAMPLE, &openGLTextureBackup);
@@ -8196,7 +8196,7 @@ namespace OpenGLRenderer
 					// -> Sadly, there's no direct state access (DSA) function defined for this in "GL_EXT_direct_state_access"
 					glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, numberOfMultisamples, Mapping::getOpenGLInternalFormat(textureFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), GL_TRUE);
 
-					#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+					#ifdef RENDERER_OPENGL_STATE_CLEANUP
 						// Be polite and restore the previous bound OpenGL texture
 						glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, static_cast<GLuint>(openGLTextureBackup));
 					#endif
@@ -8204,7 +8204,7 @@ namespace OpenGLRenderer
 			}
 			else
 			{
-				#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+				#ifdef RENDERER_OPENGL_STATE_CLEANUP
 					// Backup the currently set alignment
 					GLint openGLAlignmentBackup = 0;
 					glGetIntegerv(GL_UNPACK_ALIGNMENT, &openGLAlignmentBackup);
@@ -8373,7 +8373,7 @@ namespace OpenGLRenderer
 					glTextureParameteriEXT(mOpenGLTexture, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 				}
 
-				#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+				#ifdef RENDERER_OPENGL_STATE_CLEANUP
 					// Restore previous alignment
 					glPixelStorei(GL_UNPACK_ALIGNMENT, openGLAlignmentBackup);
 				#endif
@@ -8580,7 +8580,7 @@ namespace OpenGLRenderer
 		Texture2DArrayBind(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags) :
 			Texture2DArray(openGLRenderer, width, height, numberOfSlices)
 		{
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently set alignment
 				GLint openGLAlignmentBackup = 0;
 				glGetIntegerv(GL_UNPACK_ALIGNMENT, &openGLAlignmentBackup);
@@ -8620,7 +8620,7 @@ namespace OpenGLRenderer
 			}
 			glTexParameteri(GL_TEXTURE_2D_ARRAY_EXT, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Be polite and restore the previous bound OpenGL texture
 				glBindTexture(GL_TEXTURE_2D_ARRAY_EXT, static_cast<GLuint>(openGLTextureBackup));
 
@@ -8687,7 +8687,7 @@ namespace OpenGLRenderer
 		Texture2DArrayDsa(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags) :
 			Texture2DArray(openGLRenderer, width, height, numberOfSlices)
 		{
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently set alignment
 				GLint openGLAlignmentBackup = 0;
 				glGetIntegerv(GL_UNPACK_ALIGNMENT, &openGLAlignmentBackup);
@@ -8770,7 +8770,7 @@ namespace OpenGLRenderer
 				glTextureParameteriEXT(mOpenGLTexture, GL_TEXTURE_2D_ARRAY_EXT, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			}
 
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Restore previous alignment
 				glPixelStorei(GL_UNPACK_ALIGNMENT, openGLAlignmentBackup);
 			#endif
@@ -9001,7 +9001,7 @@ namespace OpenGLRenderer
 			// Create the OpenGL texture instance
 			glGenTextures(1, &mOpenGLTexture);
 
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently set alignment
 				GLint openGLAlignmentBackup = 0;
 				glGetIntegerv(GL_UNPACK_ALIGNMENT, &openGLAlignmentBackup);
@@ -9018,7 +9018,7 @@ namespace OpenGLRenderer
 			if (Renderer::TextureUsage::IMMUTABLE != textureUsage)
 			{
 				// Backup the currently bound OpenGL pixel unpack buffer
-				#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+				#ifdef RENDERER_OPENGL_STATE_CLEANUP
 					GLint openGLUnpackBufferBackup = 0;
 					glGetIntegerv(GL_PIXEL_UNPACK_BUFFER_BINDING_ARB, &openGLUnpackBufferBackup);
 				#endif
@@ -9033,7 +9033,7 @@ namespace OpenGLRenderer
 				glBufferDataARB(GL_PIXEL_UNPACK_BUFFER_ARB, static_cast<GLsizeiptrARB>(numberOfBytes), nullptr, static_cast<GLenum>(GL_STREAM_DRAW));
 
 				// Be polite and restore the previous bound OpenGL pixel unpack buffer
-				#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+				#ifdef RENDERER_OPENGL_STATE_CLEANUP
 					glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, static_cast<GLuint>(openGLUnpackBufferBackup));
 				#else
 					glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
@@ -9130,7 +9130,7 @@ namespace OpenGLRenderer
 			}
 			glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Be polite and restore the previous bound OpenGL texture
 				glBindTexture(GL_TEXTURE_3D, static_cast<GLuint>(openGLTextureBackup));
 
@@ -9203,7 +9203,7 @@ namespace OpenGLRenderer
 			RENDERER_ASSERT(openGLRenderer.getContext(), 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL texture parameters")
 			RENDERER_ASSERT(openGLRenderer.getContext(), (flags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "OpenGL render target textures can't be filled using provided data")
 
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently set alignment
 				GLint openGLAlignmentBackup = 0;
 				glGetIntegerv(GL_UNPACK_ALIGNMENT, &openGLAlignmentBackup);
@@ -9397,7 +9397,7 @@ namespace OpenGLRenderer
 				glTextureParameteriEXT(mOpenGLTexture, GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			}
 
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Restore previous alignment
 				glPixelStorei(GL_UNPACK_ALIGNMENT, openGLAlignmentBackup);
 			#endif
@@ -9591,7 +9591,7 @@ namespace OpenGLRenderer
 			// Create the OpenGL texture instance
 			glGenTextures(1, &mOpenGLTexture);
 
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently set alignment
 				GLint openGLAlignmentBackup = 0;
 				glGetIntegerv(GL_UNPACK_ALIGNMENT, &openGLAlignmentBackup);
@@ -9715,7 +9715,7 @@ namespace OpenGLRenderer
 			}
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Be polite and restore the previous bound OpenGL texture
 				glBindTexture(GL_TEXTURE_CUBE_MAP, static_cast<GLuint>(openGLTextureBackup));
 
@@ -9784,7 +9784,7 @@ namespace OpenGLRenderer
 			RENDERER_ASSERT(openGLRenderer.getContext(), 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL texture parameters")
 			RENDERER_ASSERT(openGLRenderer.getContext(), (flags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "OpenGL render target textures can't be filled using provided data")
 
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently set alignment
 				GLint openGLAlignmentBackup = 0;
 				glGetIntegerv(GL_UNPACK_ALIGNMENT, &openGLAlignmentBackup);
@@ -10002,7 +10002,7 @@ namespace OpenGLRenderer
 				glTextureParameteriEXT(mOpenGLTexture, GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			}
 
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Restore previous alignment
 				glPixelStorei(GL_UNPACK_ALIGNMENT, openGLAlignmentBackup);
 			#endif
@@ -11795,7 +11795,7 @@ namespace OpenGLRenderer
 			// Texture reference handling is done within the base class "Framebuffer"
 			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(renderPass.getRenderer());
 
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently bound OpenGL framebuffer
 				GLint openGLFramebufferBackup = 0;
 				glGetIntegerv(GL_FRAMEBUFFER_BINDING, &openGLFramebufferBackup);
@@ -12001,7 +12001,7 @@ namespace OpenGLRenderer
 					break;
 			}
 
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Be polite and restore the previous bound OpenGL framebuffer
 				glBindFramebuffer(GL_FRAMEBUFFER, static_cast<GLuint>(openGLFramebufferBackup));
 			#endif
@@ -12037,7 +12037,7 @@ namespace OpenGLRenderer
 					Texture2D* texture2D = static_cast<Texture2D*>(*colorTexture);
 					if (texture2D->getGenerateMipmaps())
 					{
-						#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+						#ifdef RENDERER_OPENGL_STATE_CLEANUP
 							// Backup the currently bound OpenGL texture
 							// TODO(co) It's possible to avoid calling this multiple times
 							GLint openGLTextureBackup = 0;
@@ -12049,7 +12049,7 @@ namespace OpenGLRenderer
 						glBindTexture(GL_TEXTURE_2D, texture2D->getOpenGLTexture());
 						glGenerateMipmap(GL_TEXTURE_2D);
 
-						#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+						#ifdef RENDERER_OPENGL_STATE_CLEANUP
 							// Be polite and restore the previous bound OpenGL texture
 							glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(openGLTextureBackup));
 						#endif
@@ -13171,7 +13171,7 @@ namespace OpenGLRenderer
 									else
 									{
 										// TODO(co) There's room for binding API call related optimization in here (will certainly be no huge overall efficiency gain)
-										#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+										#ifdef RENDERER_OPENGL_STATE_CLEANUP
 											// Backup the currently used OpenGL program
 											GLint openGLProgramBackup = 0;
 											glGetIntegerv(GL_CURRENT_PROGRAM, &openGLProgramBackup);
@@ -13288,7 +13288,7 @@ namespace OpenGLRenderer
 
 		virtual void setUniform1i(Renderer::handle uniformHandle, int value) override
 		{
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently used OpenGL program
 				const GLhandleARB openGLProgramBackup = glGetHandleARB(GL_PROGRAM_OBJECT_ARB);
 				if (openGLProgramBackup == mOpenGLProgram)
@@ -13314,7 +13314,7 @@ namespace OpenGLRenderer
 
 		virtual void setUniform1f(Renderer::handle uniformHandle, float value) override
 		{
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently used OpenGL program
 				const GLhandleARB openGLProgramBackup = glGetHandleARB(GL_PROGRAM_OBJECT_ARB);
 				if (openGLProgramBackup == mOpenGLProgram)
@@ -13340,7 +13340,7 @@ namespace OpenGLRenderer
 
 		virtual void setUniform2fv(Renderer::handle uniformHandle, const float* value) override
 		{
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently used OpenGL program
 				const GLhandleARB openGLProgramBackup = glGetHandleARB(GL_PROGRAM_OBJECT_ARB);
 				if (openGLProgramBackup == mOpenGLProgram)
@@ -13366,7 +13366,7 @@ namespace OpenGLRenderer
 
 		virtual void setUniform3fv(Renderer::handle uniformHandle, const float* value) override
 		{
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently used OpenGL program
 				const GLhandleARB openGLProgramBackup = glGetHandleARB(GL_PROGRAM_OBJECT_ARB);
 				if (openGLProgramBackup == mOpenGLProgram)
@@ -13392,7 +13392,7 @@ namespace OpenGLRenderer
 
 		virtual void setUniform4fv(Renderer::handle uniformHandle, const float* value) override
 		{
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently used OpenGL program
 				const GLhandleARB openGLProgramBackup = glGetHandleARB(GL_PROGRAM_OBJECT_ARB);
 				if (openGLProgramBackup == mOpenGLProgram)
@@ -13418,7 +13418,7 @@ namespace OpenGLRenderer
 
 		virtual void setUniformMatrix3fv(Renderer::handle uniformHandle, const float* value) override
 		{
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently used OpenGL program
 				const GLhandleARB openGLProgramBackup = glGetHandleARB(GL_PROGRAM_OBJECT_ARB);
 				if (openGLProgramBackup == mOpenGLProgram)
@@ -13444,7 +13444,7 @@ namespace OpenGLRenderer
 
 		virtual void setUniformMatrix4fv(Renderer::handle uniformHandle, const float* value) override
 		{
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently used OpenGL program
 				const GLhandleARB openGLProgramBackup = glGetHandleARB(GL_PROGRAM_OBJECT_ARB);
 				if (openGLProgramBackup == mOpenGLProgram)
@@ -14640,13 +14640,13 @@ namespace OpenGLRenderer
 			glGenProgramPipelines(1, &mOpenGLProgramPipeline);
 
 			// If the "GL_ARB_direct_state_access" nor "GL_EXT_direct_state_access" extension is available, we need to change OpenGL states during resource creation (nasty thing)
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently used OpenGL program pipeline
 				GLint openGLProgramPipelineBackup = 0;
 			#endif
 			if (nullptr == glProgramUniform1i && nullptr == glProgramUniform1iEXT)
 			{
-				#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+				#ifdef RENDERER_OPENGL_STATE_CLEANUP
 					glGetIntegerv(GL_PROGRAM_PIPELINE_BINDING, &openGLProgramPipelineBackup);
 				#endif
 				glBindProgramPipeline(mOpenGLProgramPipeline);
@@ -14791,7 +14791,7 @@ namespace OpenGLRenderer
 				}
 			}
 
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Be polite and restore the previous used OpenGL program pipeline
 				if (nullptr == glProgramUniform1i && nullptr == glProgramUniform1iEXT)
 				{
@@ -14892,7 +14892,7 @@ namespace OpenGLRenderer
 
 		virtual void setUniform1i(Renderer::handle uniformHandle, int value) override
 		{
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently used OpenGL program pipeline
 				GLint openGLProgramPipelineBackup = 0;
 				glGetIntegerv(GL_PROGRAM_PIPELINE_BINDING, &openGLProgramPipelineBackup);
@@ -14914,7 +14914,7 @@ namespace OpenGLRenderer
 
 		virtual void setUniform1f(Renderer::handle uniformHandle, float value) override
 		{
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently used OpenGL program pipeline
 				GLint openGLProgramPipelineBackup = 0;
 				glGetIntegerv(GL_PROGRAM_PIPELINE_BINDING, &openGLProgramPipelineBackup);
@@ -14936,7 +14936,7 @@ namespace OpenGLRenderer
 
 		virtual void setUniform2fv(Renderer::handle uniformHandle, const float* value) override
 		{
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently used OpenGL program pipeline
 				GLint openGLProgramPipelineBackup = 0;
 				glGetIntegerv(GL_PROGRAM_PIPELINE_BINDING, &openGLProgramPipelineBackup);
@@ -14958,7 +14958,7 @@ namespace OpenGLRenderer
 
 		virtual void setUniform3fv(Renderer::handle uniformHandle, const float* value) override
 		{
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently used OpenGL program pipeline
 				GLint openGLProgramPipelineBackup = 0;
 				glGetIntegerv(GL_PROGRAM_PIPELINE_BINDING, &openGLProgramPipelineBackup);
@@ -14980,7 +14980,7 @@ namespace OpenGLRenderer
 
 		virtual void setUniform4fv(Renderer::handle uniformHandle, const float* value) override
 		{
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently used OpenGL program pipeline
 				GLint openGLProgramPipelineBackup = 0;
 				glGetIntegerv(GL_PROGRAM_PIPELINE_BINDING, &openGLProgramPipelineBackup);
@@ -15002,7 +15002,7 @@ namespace OpenGLRenderer
 
 		virtual void setUniformMatrix3fv(Renderer::handle uniformHandle, const float* value) override
 		{
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently used OpenGL program pipeline
 				GLint openGLProgramPipelineBackup = 0;
 				glGetIntegerv(GL_PROGRAM_PIPELINE_BINDING, &openGLProgramPipelineBackup);
@@ -15024,7 +15024,7 @@ namespace OpenGLRenderer
 
 		virtual void setUniformMatrix4fv(Renderer::handle uniformHandle, const float* value) override
 		{
-			#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently used OpenGL program pipeline
 				GLint openGLProgramPipelineBackup = 0;
 				glGetIntegerv(GL_PROGRAM_PIPELINE_BINDING, &openGLProgramPipelineBackup);
@@ -15252,7 +15252,7 @@ namespace OpenGLRenderer
 		virtual ~ShaderLanguageSeparate() override
 		{
 			// De-initialize glslang, if necessary
-			#ifdef OPENGLRENDERER_GLSLTOSPIRV
+			#ifdef RENDERER_OPENGL_GLSLTOSPIRV
 				if (::detail::GlslangInitialized)
 				{
 					// TODO(co) Fix glslang related memory leaks. See also
@@ -15767,7 +15767,7 @@ namespace
 			{
 				// Traditional bind version
 
-				#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+				#ifdef RENDERER_OPENGL_STATE_CLEANUP
 					// Backup the currently bound OpenGL buffer
 					GLint openGLBufferBackup = 0;
 					glGetIntegerv(bindingTarget, &openGLBufferBackup);
@@ -15781,7 +15781,7 @@ namespace
 				mappedSubresource.rowPitch   = 0;
 				mappedSubresource.depthPitch = 0;
 
-				#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+				#ifdef RENDERER_OPENGL_STATE_CLEANUP
 					// Be polite and restore the previous bound OpenGL buffer
 					glBindBufferARB(target, static_cast<GLuint>(openGLBufferBackup));
 				#endif
@@ -15810,7 +15810,7 @@ namespace
 			{
 				// Traditional bind version
 
-				#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+				#ifdef RENDERER_OPENGL_STATE_CLEANUP
 					// Backup the currently bound OpenGL buffer
 					GLint openGLBufferBackup = 0;
 					glGetIntegerv(bindingTarget, &openGLBufferBackup);
@@ -15822,7 +15822,7 @@ namespace
 				// Unmap
 				glUnmapBufferARB(target);
 
-				#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+				#ifdef RENDERER_OPENGL_STATE_CLEANUP
 					// Be polite and restore the previous bound OpenGL buffer
 					glBindBufferARB(target, static_cast<GLuint>(openGLBufferBackup));
 				#endif
@@ -16193,7 +16193,7 @@ namespace OpenGLRenderer
 			mGraphicsRootSignature->releaseReference();
 		}
 
-		#ifndef RENDERER_NO_STATISTICS
+		#ifdef RENDERER_STATISTICS
 		{ // For debugging: At this point there should be no resource instances left, validate this!
 			// -> Are the currently any resource instances?
 			const unsigned long numberOfCurrentResources = getStatistics().getNumberOfCurrentResources();
@@ -16450,7 +16450,7 @@ namespace OpenGLRenderer
 									}
 									else
 									{
-										#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+										#ifdef RENDERER_OPENGL_STATE_CLEANUP
 											// Backup the currently active OpenGL texture
 											GLint openGLActiveTextureBackup = 0;
 											glGetIntegerv(GL_ACTIVE_TEXTURE, &openGLActiveTextureBackup);
@@ -16473,7 +16473,7 @@ namespace OpenGLRenderer
 											static_cast<const SamplerStateBind*>(samplerState)->setOpenGLSamplerStates();
 										}
 
-										#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+										#ifdef RENDERER_OPENGL_STATE_CLEANUP
 											// Be polite and restore the previous active OpenGL texture
 											glActiveTextureARB(static_cast<GLenum>(openGLActiveTextureBackup));
 										#endif
@@ -16488,7 +16488,7 @@ namespace OpenGLRenderer
 							// "GL_ARB_multitexture" required
 							if (mExtensions->isGL_ARB_multitexture())
 							{
-								#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+								#ifdef RENDERER_OPENGL_STATE_CLEANUP
 									// Backup the currently active OpenGL texture
 									GLint openGLActiveTextureBackup = 0;
 									glGetIntegerv(GL_ACTIVE_TEXTURE, &openGLActiveTextureBackup);
@@ -16579,7 +16579,7 @@ namespace OpenGLRenderer
 									}
 								}
 
-								#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+								#ifdef RENDERER_OPENGL_STATE_CLEANUP
 									// Be polite and restore the previous active OpenGL texture
 									glActiveTextureARB(static_cast<GLenum>(openGLActiveTextureBackup));
 								#endif
@@ -17074,7 +17074,7 @@ namespace OpenGLRenderer
 					}
 					else
 					{
-						#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+						#ifdef RENDERER_OPENGL_STATE_CLEANUP
 							// Backup the currently bound OpenGL framebuffer
 							GLint openGLFramebufferBackup = 0;
 							glGetIntegerv(GL_FRAMEBUFFER_BINDING, &openGLFramebufferBackup);
@@ -17095,7 +17095,7 @@ namespace OpenGLRenderer
 						glDrawBuffersARB(1, OPENGL_DRAW_BUFFER);	// We could use "glDrawBuffer(GL_COLOR_ATTACHMENT1);", but then we would also have to get the "glDrawBuffer()" function pointer, avoid OpenGL function overkill
 						glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
-						#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+						#ifdef RENDERER_OPENGL_STATE_CLEANUP
 							// Be polite and restore the previous bound OpenGL framebuffer
 							glBindFramebuffer(GL_FRAMEBUFFER, static_cast<GLuint>(openGLFramebufferBackup));
 						#endif
@@ -17822,7 +17822,7 @@ namespace OpenGLRenderer
 				::detail::unmapBuffer(*mExtensions, GL_PIXEL_UNPACK_BUFFER_ARB, GL_PIXEL_UNPACK_BUFFER_BINDING_ARB, openGLPixelUnpackBuffer);
 
 				// Backup the currently set alignment and currently bound OpenGL pixel unpack buffer
-				#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+				#ifdef RENDERER_OPENGL_STATE_CLEANUP
 					GLint openGLAlignmentBackup = 0;
 					glGetIntegerv(GL_UNPACK_ALIGNMENT, &openGLAlignmentBackup);
 					GLint openGLUnpackBufferBackup = 0;
@@ -17849,7 +17849,7 @@ namespace OpenGLRenderer
 					// Traditional bind version
 
 					// Backup the currently bound OpenGL texture
-					#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+					#ifdef RENDERER_OPENGL_STATE_CLEANUP
 						GLint openGLTextureBackup = 0;
 						glGetIntegerv(GL_TEXTURE_BINDING_3D, &openGLTextureBackup);
 					#endif
@@ -17859,13 +17859,13 @@ namespace OpenGLRenderer
 					glTexSubImage3DEXT(GL_TEXTURE_3D, 0, 0, 0, 0, static_cast<GLsizei>(texture3D.getWidth()), static_cast<GLsizei>(texture3D.getHeight()), static_cast<GLsizei>(texture3D.getDepth()), Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), 0);
 
 					// Be polite and restore the previous bound OpenGL texture
-					#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+					#ifdef RENDERER_OPENGL_STATE_CLEANUP
 						glBindTexture(GL_TEXTURE_3D, static_cast<GLuint>(openGLTextureBackup));
 					#endif
 				}
 
 				// Restore previous alignment and pixel unpack buffer
-				#ifndef OPENGLRENDERER_NO_STATE_CLEANUP
+				#ifdef RENDERER_OPENGL_STATE_CLEANUP
 					glPixelStorei(GL_UNPACK_ALIGNMENT, openGLAlignmentBackup);
 					glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, static_cast<GLuint>(openGLUnpackBufferBackup));
 				#else
@@ -18364,7 +18364,7 @@ namespace OpenGLRenderer
 //[ Global functions                                      ]
 //[-------------------------------------------------------]
 // Export the instance creation function
-#ifdef OPENGLRENDERER_EXPORTS
+#ifdef RENDERER_OPENGL_EXPORTS
 	#define OPENGLRENDERER_FUNCTION_EXPORT GENERIC_FUNCTION_EXPORT
 #else
 	#define OPENGLRENDERER_FUNCTION_EXPORT

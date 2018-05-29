@@ -25,12 +25,6 @@
 
 
 //[-------------------------------------------------------]
-//[ Preprocessor                                          ]
-//[-------------------------------------------------------]
-#ifndef RENDERER_NO_RUNTIME
-
-
-//[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
 #include "Runtime/FirstCompositor/CompositorInstancePassFirst.h"
@@ -71,9 +65,3 @@ CompositorInstancePassFirst::CompositorInstancePassFirst(const CompositorResourc
 {
 	// Nothing here
 }
-
-
-//[-------------------------------------------------------]
-//[ Preprocessor                                          ]
-//[-------------------------------------------------------]
-#endif // RENDERER_NO_RUNTIME

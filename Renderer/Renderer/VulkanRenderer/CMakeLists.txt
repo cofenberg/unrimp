@@ -39,9 +39,7 @@ endif()
 ##################################################
 ## Preprocessor definitions
 ##################################################
-if(RENDERER_VULKAN_GLSLTOSPIRV)
-	add_definitions(-DVULKANRENDERER_GLSLTOSPIRV)
-endif()
+unrimp_add_conditional_definition(RENDERER_VULKAN_GLSLTOSPIRV)
 
 
 ##################################################
@@ -99,7 +97,7 @@ endif()
 ##################################################
 add_library(VulkanRenderer ${LIBRARY_TYPE} ${SOURCE_CODES})
 if(SHARED_LIBRARY)
-	set_target_properties(VulkanRenderer PROPERTIES COMPILE_FLAGS "-DSHARED_LIBRARIES -DVULKANRENDERER_EXPORTS")
+	set_target_properties(VulkanRenderer PROPERTIES COMPILE_FLAGS "-DSHARED_LIBRARIES -DRENDERER_VULKAN_EXPORTS")
 endif()
 
 

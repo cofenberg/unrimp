@@ -27,11 +27,11 @@
 *    - Vulkan capable graphics driver
 *    - Vulkan headers which can be found at "<unrimp>\External\Vulkan\include\"
 *    - smol-v (directly compiled and linked in)
-*    - glslang if "VULKANRENDERER_GLSLTOSPIRV" is set (directly compiled and linked in)
+*    - glslang if "RENDERER_VULKAN_GLSLTOSPIRV" is set (directly compiled and linked in)
 *
 *    == Preprocessor Definitions ==
-*    - Set "VULKANRENDERER_EXPORTS" as preprocessor definition when building this library as shared library
-*    - Set "VULKANRENDERER_GLSLTOSPIRV" as preprocessor definition when building this library to add support for compiling GLSL into SPIR-V, increases the binary size around one MiB
+*    - Set "RENDERER_VULKAN_EXPORTS" as preprocessor definition when building this library as shared library
+*    - Set "RENDERER_VULKAN_GLSLTOSPIRV" as preprocessor definition when building this library to add support for compiling GLSL into SPIR-V, increases the binary size around one MiB
 *    - Do also have a look into the renderer header file documentation
 */
 
@@ -98,7 +98,7 @@
 	#error "Unsupported platform"
 #endif
 
-#ifdef VULKANRENDERER_GLSLTOSPIRV
+#ifdef RENDERER_VULKAN_GLSLTOSPIRV
 	// Disable warnings in external headers, we can't fix them
 	PRAGMA_WARNING_PUSH
 		PRAGMA_WARNING_DISABLE_MSVC(4061)	// warning C4061: enumerator '<x>' in switch of enum '<y>' is not explicitly handled by a case label
@@ -421,7 +421,7 @@ namespace
 			};
 		#endif
 
-		#ifdef VULKANRENDERER_GLSLTOSPIRV
+		#ifdef RENDERER_VULKAN_GLSLTOSPIRV
 			static bool GlslangInitialized = false;
 
 			// Settings from "glslang/StandAlone/ResourceLimits.cpp"
@@ -1468,7 +1468,7 @@ namespace
 		#endif
 		VkShaderModule createVkShaderModuleFromSourceCode(const Renderer::Context& context, const VkAllocationCallbacks* vkAllocationCallbacks, VkDevice vkDevice, VkShaderStageFlagBits vkShaderStageFlagBits, const char* sourceCode, Renderer::ShaderBytecode* shaderBytecode)
 		{
-			#ifdef VULKANRENDERER_GLSLTOSPIRV
+			#ifdef RENDERER_VULKAN_GLSLTOSPIRV
 				// Initialize glslang, if necessary
 				if (!GlslangInitialized)
 				{
@@ -8383,7 +8383,7 @@ namespace VulkanRenderer
 		inline virtual ~ShaderLanguageGlsl() override
 		{
 			// De-initialize glslang, if necessary
-			#ifdef VULKANRENDERER_GLSLTOSPIRV
+			#ifdef RENDERER_VULKAN_GLSLTOSPIRV
 				if (::detail::GlslangInitialized)
 				{
 					// TODO(co) Fix glslang related memory leaks. See also
@@ -9650,7 +9650,7 @@ namespace VulkanRenderer
 			mGraphicsRootSignature->releaseReference();
 		}
 
-		#ifndef RENDERER_NO_STATISTICS
+		#ifdef RENDERER_STATISTICS
 		{ // For debugging: At this point there should be no resource instances left, validate this!
 			// -> Are the currently any resource instances?
 			const unsigned long numberOfCurrentResources = getStatistics().getNumberOfCurrentResources();
@@ -10690,7 +10690,7 @@ namespace VulkanRenderer
 //[ Global functions                                      ]
 //[-------------------------------------------------------]
 // Export the instance creation function
-#ifdef VULKANRENDERER_EXPORTS
+#ifdef RENDERER_VULKAN_EXPORTS
 	#define VULKANRENDERER_FUNCTION_EXPORT GENERIC_FUNCTION_EXPORT
 #else
 	#define VULKANRENDERER_FUNCTION_EXPORT

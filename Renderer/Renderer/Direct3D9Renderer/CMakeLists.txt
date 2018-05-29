@@ -51,7 +51,7 @@ set(SOURCE_CODES Direct3D9Renderer.cpp)
 ##################################################
 add_library(Direct3D9Renderer ${LIBRARY_TYPE} ${SOURCE_CODES})
 if(SHARED_LIBRARY)
-	set_target_properties(Direct3D9Renderer PROPERTIES COMPILE_FLAGS "-DSHARED_LIBRARIES -DDIRECT3D9RENDERER_EXPORTS")
+	set_target_properties(Direct3D9Renderer PROPERTIES COMPILE_FLAGS "-DSHARED_LIBRARIES -DRENDERER_DIRECT3D9_EXPORTS")
 endif()
 
 

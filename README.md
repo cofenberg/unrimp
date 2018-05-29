@@ -256,7 +256,7 @@ Microsoft Windows: Targeting Android
 - Build and run the ["Native Activity Application (Android)"-template](https://docs.microsoft.com/en-us/visualstudio/cross-platform/create-an-android-native-activity-app) to verify your installation and setup
 - [Open Visual Studio 2017 and select "File -> Open -> CMake..." -> "unrimp\CMakeLists.txt"](https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studio/)
 - Build "Android_arm64_Static" project settings
-- TODO(co) Work-in-progress: Upload to device to test and debug
+- TODO(co) Work-in-progress: Compile data for mobile target, upload to device to test and debug
 
 
 Useful Microsoft Windows Developer Tools

@@ -25,12 +25,6 @@
 
 
 //[-------------------------------------------------------]
-//[ Preprocessor                                          ]
-//[-------------------------------------------------------]
-#ifndef RENDERER_NO_RUNTIME
-
-
-//[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
 #include "Runtime/FirstCompositor/CompositorPassFactoryFirst.h"
@@ -70,9 +64,3 @@ RendererRuntime::ICompositorInstancePass* CompositorPassFactoryFirst::createComp
 	// Done
 	return compositorInstancePass;
 }
-
-
-//[-------------------------------------------------------]
-//[ Preprocessor                                          ]
-//[-------------------------------------------------------]
-#endif // RENDERER_NO_RUNTIME

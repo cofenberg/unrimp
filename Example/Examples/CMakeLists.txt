@@ -39,9 +39,6 @@ endif()
 ## Preprocessor definitions
 ##################################################
 add_definitions(-DGLM_FORCE_RADIANS -DGLM_FORCE_LEFT_HANDED -DGLM_FORCE_DEPTH_ZERO_TO_ONE -DGLM_ENABLE_EXPERIMENTAL)
-if(NOT RENDERER_RUNTIME)
-	add_definitions(-DRENDERER_NO_RUNTIME)
-endif()
 if(EXAMPLE_RUNNER_QT4)
 	add_definitions(-DEXAMPLE_RUNNER_QT4)
 	ADD_DEFINITIONS(${QT_DEFINITIONS})
@@ -51,9 +48,15 @@ if(WIN32)
 elseif(UNIX)
 	add_definitions(-DRENDERER_NO_DIRECT3D9 -DRENDERER_NO_DIRECT3D10 -DRENDERER_NO_DIRECT3D11 -DRENDERER_NO_DIRECT3D12)
 endif()
-unrimp_add_definition(RENDERER_RUNTIME_PROFILER)
-unrimp_add_definition(RENDERER_RUNTIME_IMGUI)
-unrimp_add_definition(RENDERER_RUNTIME_OPENVR)
+unrimp_add_conditional_definition(RENDERER_RUNTIME)
+unrimp_add_conditional_definition(RENDERER_RUNTIME_PROFILER)
+unrimp_add_conditional_definition(RENDERER_RUNTIME_IMGUI)
+unrimp_add_conditional_definition(RENDERER_RUNTIME_OPENVR)
+
+# Static builds are usually used for shipping builds, so disable the renderer toolkit for static builds
+if(SHARED_LIBRARY)
+	unrimp_add_conditional_definition(RENDERER_TOOLKIT)
+endif()
 
 
 ##################################################

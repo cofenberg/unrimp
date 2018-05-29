@@ -27,17 +27,11 @@
 
 
 //[-------------------------------------------------------]
-//[ Preprocessor                                          ]
-//[-------------------------------------------------------]
-#ifndef RENDERER_NO_RUNTIME
-
-
-//[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
 #include "Framework/IApplicationRendererRuntime.h"
 
-#ifdef SHARED_LIBRARIES
+#ifdef RENDERER_TOOLKIT
 	#include <RendererToolkit/Public/RendererToolkitInstance.h>
 #endif
 
@@ -63,7 +57,7 @@ IApplicationRendererRuntime::IApplicationRendererRuntime(const char* rendererNam
 	#endif
 	mRendererRuntimeContext(nullptr),
 	mRendererRuntimeInstance(nullptr)
-	#ifdef SHARED_LIBRARIES
+	#ifdef RENDERER_TOOLKIT
 		, mRendererToolkitFileManager(nullptr)
 		, mRendererToolkitContext(nullptr)
 		, mRendererToolkitInstance(nullptr)
@@ -84,7 +78,7 @@ RendererRuntime::IRendererRuntime* IApplicationRendererRuntime::getRendererRunti
 
 RendererToolkit::IRendererToolkit* IApplicationRendererRuntime::getRendererToolkit()
 {
-	#ifdef SHARED_LIBRARIES
+	#ifdef RENDERER_TOOLKIT
 		// Create the renderer toolkit instance, if required
 		if (nullptr == mRendererToolkitInstance)
 		{
@@ -155,7 +149,7 @@ void IApplicationRendererRuntime::onInitialization()
 				rendererRuntime->loadPipelineStateObjectCache();
 
 				// Load renderer toolkit project to enable hot-reloading in case of asset changes
-				#ifdef SHARED_LIBRARIES
+				#ifdef RENDERER_TOOLKIT
 				{
 					RendererToolkit::IRendererToolkit* rendererToolkit = getRendererToolkit();
 					if (nullptr != rendererToolkit)
@@ -200,7 +194,7 @@ void IApplicationRendererRuntime::onDeinitialization()
 	#endif
 	delete static_cast<RendererRuntime::PhysicsFSFileManager*>(mFileManager);
 	mFileManager = nullptr;
-	#ifdef SHARED_LIBRARIES
+	#ifdef RENDERER_TOOLKIT
 		if (nullptr != mProject)
 		{
 			delete mProject;
@@ -238,9 +232,3 @@ void IApplicationRendererRuntime::onUpdate()
 	// Call base implementation
 	IApplicationRenderer::onUpdate();
 }
-
-
-//[-------------------------------------------------------]
-//[ Preprocessor                                          ]
-//[-------------------------------------------------------]
-#endif // RENDERER_NO_RUNTIME

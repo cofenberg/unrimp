@@ -37,7 +37,7 @@
 //[-------------------------------------------------------]
 #include "IApplicationRendererRuntime.h"
 
-#ifdef SHARED_LIBRARIES
+#ifdef RENDERER_TOOLKIT
 	#include <RendererToolkit/Public/RendererToolkitInstance.h>
 #endif
 
@@ -54,7 +54,7 @@ IApplicationRendererRuntime::IApplicationRendererRuntime(const std::string& rend
 	IApplicationRenderer(rendererName, exampleBase),
 	mFileManager(nullptr),
 	mRendererRuntimeInstance(nullptr)
-	#ifdef SHARED_LIBRARIES
+	#ifdef RENDERER_TOOLKIT
 		, mRendererToolkitInstance(nullptr)
 		, mProject(nullptr)
 	#endif
@@ -80,7 +80,7 @@ RendererRuntime::IRendererRuntime *IApplicationRendererRuntime::getRendererRunti
 
 RendererToolkit::IRendererToolkit *IApplicationRendererRuntime::getRendererToolkit()
 {
-	#ifdef SHARED_LIBRARIES
+	#ifdef RENDERER_TOOLKIT
 		// Create the renderer toolkit instance, if required
 		if (nullptr == mRendererToolkitInstance)
 		{
@@ -132,7 +132,7 @@ void IApplicationRendererRuntime::onInitialization()
 					}
 					rendererRuntime->loadPipelineStateObjectCache();
 
-					#ifdef SHARED_LIBRARIES
+					#ifdef RENDERER_TOOLKIT
 					{
 						// TODO(co) First asset hot-reloading test
 						RendererToolkit::IRendererToolkit* rendererToolkit = getRendererToolkit();
@@ -182,7 +182,7 @@ void IApplicationRendererRuntime::onDeinitialization()
 	mRendererRuntimeInstance = nullptr;
 	delete static_cast<RendererRuntime::StdFileManager*>(mFileManager);
 	mFileManager = nullptr;
-	#ifdef SHARED_LIBRARIES
+	#ifdef RENDERER_TOOLKIT
 		if (nullptr != mProject)
 		{
 			delete mProject;

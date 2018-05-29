@@ -51,7 +51,7 @@ set(SOURCE_CODES Direct3D10Renderer.cpp)
 ##################################################
 add_library(Direct3D10Renderer ${LIBRARY_TYPE} ${SOURCE_CODES})
 if(SHARED_LIBRARY)
-	set_target_properties(Direct3D10Renderer PROPERTIES COMPILE_FLAGS "-DSHARED_LIBRARIES -DDIRECT3D10RENDERER_EXPORTS")
+	set_target_properties(Direct3D10Renderer PROPERTIES COMPILE_FLAGS "-DSHARED_LIBRARIES -DRENDERER_DIRECT3D10_EXPORTS")
 endif()
 
 

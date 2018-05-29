@@ -39,12 +39,8 @@ endif()
 ##################################################
 ## Preprocessor definitions
 ##################################################
-if(RENDERER_OPENGL_NO_STATE_CLEANUP)
-	add_definitions(-DOPENGLRENDERER_NO_STATE_CLEANUP)
-endif()
-if(RENDERER_OPENGL_GLSLTOSPIRV)
-	add_definitions(-DOPENGLRENDERER_GLSLTOSPIRV)
-endif()
+unrimp_add_conditional_definition(RENDERER_OPENGL_STATE_CLEANUP)
+unrimp_add_conditional_definition(RENDERER_OPENGL_GLSLTOSPIRV)
 
 
 ##################################################
@@ -102,7 +98,7 @@ endif()
 ##################################################
 add_library(OpenGLRenderer ${LIBRARY_TYPE} ${SOURCE_CODES})
 if(SHARED_LIBRARY)
-	set_target_properties(OpenGLRenderer PROPERTIES COMPILE_FLAGS "-DSHARED_LIBRARIES -DOPENGLRENDERER_EXPORTS")
+	set_target_properties(OpenGLRenderer PROPERTIES COMPILE_FLAGS "-DSHARED_LIBRARIES -DRENDERER_OPENGL_EXPORTS")
 endif()
 
 

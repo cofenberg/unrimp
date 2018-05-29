@@ -325,7 +325,9 @@ namespace RendererRuntime
 
 				// Command buffer metrics
 				const Renderer::CommandBuffer& commandBuffer = compositorWorkspaceInstance->getCommandBuffer();
-				#ifdef RENDERER_NO_STATISTICS
+				#ifdef RENDERER_STATISTICS
+					const uint32_t numberOfCommands = commandBuffer.getNumberOfCommands();
+				#else
 					uint32_t numberOfCommands = 0;
 					{
 						const uint8_t* commandPacketBuffer = commandBuffer.getCommandPacketBuffer();
@@ -341,8 +343,6 @@ namespace RendererRuntime
 							}
 						}
 					}
-				#else
-					const uint32_t numberOfCommands = commandBuffer.getNumberOfCommands();
 				#endif
 				if (ImGui::TreeNode("EmittedCommands", "Emitted commands: %d", numberOfCommands))
 				{
@@ -390,7 +390,7 @@ namespace RendererRuntime
 				}
 
 				// Renderer statistics
-				#ifndef RENDERER_NO_STATISTICS
+				#ifdef RENDERER_STATISTICS
 					const Renderer::Statistics& statistics = static_cast<const Renderer::IRenderer&>(compositorWorkspaceInstance->getRendererRuntime().getRenderer()).getStatistics();
 					if (ImGui::TreeNode("RendererResources", "Renderer resources: %d", statistics.getNumberOfCurrentResources()))
 					{

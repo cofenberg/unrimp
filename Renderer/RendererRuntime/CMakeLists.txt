@@ -40,9 +40,9 @@ endif()
 ## Preprocessor definitions
 ##################################################
 add_definitions(-DGLM_FORCE_RADIANS -DGLM_FORCE_LEFT_HANDED -DGLM_FORCE_DEPTH_ZERO_TO_ONE -DGLM_ENABLE_EXPERIMENTAL)
-unrimp_add_definition(RENDERER_RUNTIME_PROFILER)
-unrimp_add_definition(RENDERER_RUNTIME_IMGUI)
-unrimp_add_definition(RENDERER_RUNTIME_OPENVR)
+unrimp_add_conditional_definition(RENDERER_RUNTIME_PROFILER)
+unrimp_add_conditional_definition(RENDERER_RUNTIME_IMGUI)
+unrimp_add_conditional_definition(RENDERER_RUNTIME_OPENVR)
 if(UNIX AND RENDERER_RUNTIME_OPENVR)
 	# Needed for OpenVR
 	add_definitions(-DCOMPILER_GCC)

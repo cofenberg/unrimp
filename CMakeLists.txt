@@ -56,8 +56,8 @@ set(SHARED_LIBRARY "1" CACHE BOOL "'true' to build as shared library (dynamic li
 			set(RENDERER_OPENGL "1" CACHE BOOL "Build OpenGL renderer?")
 
 			# Advanced OpenGL renderer options
-			set(RENDERER_OPENGL_NO_STATE_CLEANUP "1" CACHE BOOL "If true, the previous OpenGL state will not be restored after performing an operation (better performance, reduces the binary size slightly, but might result in unexpected behaviour when using OpenGL directly beside this renderer)")
-			mark_as_advanced(RENDERER_OPENGL_NO_STATE_CLEANUP)
+			set(RENDERER_OPENGL_STATE_CLEANUP "0" CACHE BOOL "If true, the previous OpenGL state will be restored after performing an operation (worse performance, increases the binary size slightly, might avoid unexpected behaviour when using OpenGL directly beside this renderer)")
+			mark_as_advanced(RENDERER_OPENGL_STATE_CLEANUP)
 
 			set(RENDERER_OPENGL_GLSLTOSPIRV "1" CACHE BOOL "If true, GLSL to SPIR-V compiler is included for online shader compilation, increases the binary size around one MiB")
 			mark_as_advanced(RENDERER_OPENGL_GLSLTOSPIRV)
@@ -67,8 +67,8 @@ set(SHARED_LIBRARY "1" CACHE BOOL "'true' to build as shared library (dynamic li
 		set(RENDERER_OPENGLES3 "1" CACHE BOOL "Build OpenGL ES 3 renderer?")
 
 		# Advanced OpenGL ES 3 renderer options
-		set(RENDERER_OPENGLES3_NO_STATE_CLEANUP "0" CACHE BOOL "If true, the previous OpenGL ES 3 state will not be restored after performing an operation (better performance, reduces the binary size slightly, but might result in unexpected behaviour when using OpenGL ES 3 directly beside this renderer)")
-		mark_as_advanced(RENDERER_OPENGLES3_NO_STATE_CLEANUP)
+		set(RENDERER_OPENGLES3_STATE_CLEANUP "1" CACHE BOOL "If true, the previous OpenGL ES 3 state will be restored after performing an operation (worse performance, increases the binary size slightly, might avoid unexpected behaviour when using OpenGL ES 3 directly beside this renderer)")
+		mark_as_advanced(RENDERER_OPENGLES3_STATE_CLEANUP)
 
 	# Vulkan renderer backend
 		set(RENDERER_VULKAN "1" CACHE BOOL "Build Vulkan renderer?")
@@ -102,12 +102,11 @@ if(NOT ANDROID)
 	set(RENDERER_TOOLKIT "1" CACHE BOOL "Build renderer toolkit?")
 endif()
 
-# No examples for Android for now
+# Examples
 if(NOT ANDROID)
-	# Examples
 	set(EXAMPLES				 "1" CACHE BOOL "Build examples?")
 	set(EXAMPLE_PROJECT_COMPILER "1" CACHE BOOL "Build example project compiler?")
-	set(EXAMPLE_RUNNER_SDL2 	 "0" CACHE BOOL "Build sdl2 version of the examples?")
+	set(EXAMPLE_RUNNER_SDL2		 "0" CACHE BOOL "Build sdl2 version of the examples?")
 endif()
 
 
@@ -136,11 +135,11 @@ macro(unrimp_replace_cmake_cxx_flags from to)
 endmacro()
 
 ##################################################
-## MACRO: "unrimp_add_definition()" for setting a conditional preprocessor definition
+## MACRO: "unrimp_add_conditional_definition()" for setting a conditional preprocessor definition
 #
-# Usage example: "unrimp_add_definition(RENDERER_RUNTIME_PROFILER)"
+# Usage example: "unrimp_add_conditional_definition(RENDERER_RUNTIME_PROFILER)"
 ##################################################
-macro(unrimp_add_definition definition)
+macro(unrimp_add_conditional_definition definition)
 	if(${definition})
 		add_definitions(-D${definition})
 	endif()
@@ -305,13 +304,10 @@ message(STATUS "Output library binary directory: ${OUTPUT_LIB_BIN_DIRECTORY}")
 ##################################################
 ## Preprocessor definitions
 ##################################################
-if(${ARCHITECTURE_X64})
-	add_definitions(-DX64_ARCHITECTURE)
-endif()
+unrimp_add_conditional_definition(X64_ARCHITECTURE)
 if(RENDERER_DEBUG)
 	add_definitions(-DRENDERER_DEBUG)
-else()
-	add_definitions(-DRENDERER_NO_STATISTICS)
+	add_definitions(-DRENDERER_STATISTICS)
 endif()
 
 

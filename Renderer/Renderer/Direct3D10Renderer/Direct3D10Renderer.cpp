@@ -27,7 +27,7 @@
 *    Direct3D 10 runtime and Direct3D 10 capable graphics driver, nothing else.
 *
 *    == Preprocessor Definitions ==
-*    - Set "DIRECT3D10RENDERER_EXPORTS" as preprocessor definition when building this library as shared library
+*    - Set "RENDERER_DIRECT3D10_EXPORTS" as preprocessor definition when building this library as shared library
 *    - Do also have a look into the renderer header file documentation
 */
 
@@ -9044,7 +9044,7 @@ namespace Direct3D10Renderer
 			mGraphicsRootSignature = nullptr;
 		}
 
-		#ifndef RENDERER_NO_STATISTICS
+		#ifdef RENDERER_STATISTICS
 		{ // For debugging: At this point there should be no resource instances left, validate this!
 			// -> Are the currently any resource instances?
 			const unsigned long numberOfCurrentResources = getStatistics().getNumberOfCurrentResources();
@@ -10545,7 +10545,7 @@ namespace Direct3D10Renderer
 //[ Global functions                                      ]
 //[-------------------------------------------------------]
 // Export the instance creation function
-#ifdef DIRECT3D10RENDERER_EXPORTS
+#ifdef RENDERER_DIRECT3D10_EXPORTS
 	#define DIRECT3D10RENDERER_FUNCTION_EXPORT GENERIC_FUNCTION_EXPORT
 #else
 	#define DIRECT3D10RENDERER_FUNCTION_EXPORT

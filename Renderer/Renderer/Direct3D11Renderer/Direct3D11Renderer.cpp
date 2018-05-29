@@ -29,7 +29,7 @@
 *    - Optional NVIDIA NvAPI for multi-draw-indirect on NVIDIA GPUs ("nvapi.dll" is automatically installed with the GPU driver)
 *
 *    == Preprocessor Definitions ==
-*    - Set "DIRECT3D11RENDERER_EXPORTS" as preprocessor definition when building this library as shared library
+*    - Set "RENDERER_DIRECT3D11_EXPORTS" as preprocessor definition when building this library as shared library
 *    - Do also have a look into the renderer header file documentation
 */
 
@@ -10107,7 +10107,7 @@ namespace Direct3D11Renderer
 			mGraphicsRootSignature = nullptr;
 		}
 
-		#ifndef RENDERER_NO_STATISTICS
+		#ifdef RENDERER_STATISTICS
 		{ // For debugging: At this point there should be no resource instances left, validate this!
 			// -> Are the currently any resource instances?
 			const unsigned long numberOfCurrentResources = getStatistics().getNumberOfCurrentResources();
@@ -11939,7 +11939,7 @@ namespace Direct3D11Renderer
 //[ Global functions                                      ]
 //[-------------------------------------------------------]
 // Export the instance creation function
-#ifdef DIRECT3D11RENDERER_EXPORTS
+#ifdef RENDERER_DIRECT3D11_EXPORTS
 	#define DIRECT3D11RENDERER_FUNCTION_EXPORT GENERIC_FUNCTION_EXPORT
 #else
 	#define DIRECT3D11RENDERER_FUNCTION_EXPORT

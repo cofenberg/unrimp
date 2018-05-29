@@ -183,7 +183,8 @@ For disabling supporting a particular renderer:
 - "RENDERER_NO_VULKAN":		Do not support Vulkan
 
 Other
-- "UNICODE":			 Enable MS Windows command line Unicode support
-- "SHARED_LIBRARIES":	 Use renderers via shared libraries, if this is not defined, the renderers are statically linked
-- "RENDERER_NO_RUNTIME": Disable renderer runtime support
+- "UNICODE":		  Enable Microsoft Windows command line Unicode support
+- "SHARED_LIBRARIES": Use renderers via shared libraries, if this is not defined, the renderers are statically linked
+- "RENDERER_RUNTIME": Enable renderer runtime support
+- "RENDERER_TOOLKIT": Enable renderer toolkit support
 - Do also have a look into the renderer header file for renderer backend preprocessor definitions
