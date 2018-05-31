@@ -35,15 +35,21 @@
 	#include <RendererToolkit/Public/RendererToolkitInstance.h>
 #endif
 
+#include <RendererRuntime/Context.h>
 #include <RendererRuntime/Public/RendererRuntimeInstance.h>
+#include <RendererRuntime/Asset/AssetManager.h>
 #include <RendererRuntime/Core/File/FileSystemHelper.h>
 #include <RendererRuntime/Core/File/DefaultFileManager.h>
-#include <RendererRuntime/Core/File/PhysicsFSFileManager.h>
 #ifdef RENDERER_RUNTIME_PROFILER
 	#include <RendererRuntime/Core/RemoteryProfiler.h>
 #endif
-#include <RendererRuntime/Asset/AssetManager.h>
-#include <RendererRuntime/Context.h>
+#ifdef __ANDROID__
+	#include <RendererRuntime/Core/File/AndroidFileManager.h>
+
+	#include <android_native_app_glue.h>
+#else
+	#include <RendererRuntime/Core/File/PhysicsFSFileManager.h>
+#endif
 
 
 //[-------------------------------------------------------]
@@ -113,7 +119,13 @@ void IApplicationRendererRuntime::onInitialization()
 	if (nullptr != renderer)
 	{
 		// Create the renderer runtime instance
-		mFileManager = new RendererRuntime::PhysicsFSFileManager(renderer->getContext().getLog(), (std_filesystem::canonical(std_filesystem::current_path()) / "..").generic_string());
+		#ifdef __ANDROID__
+			struct android_app androidApp;	// TODO(co) Get Android app instance
+			assert((nullptr != androidApp.activity->assetManager) && "Invalid Android asset manager instance");
+			mFileManager = new RendererRuntime::AndroidFileManager(renderer->getContext().getLog(), renderer->getContext().getAssert(), renderer->getContext().getAllocator(), (std_filesystem::canonical(std_filesystem::current_path()) / "..").generic_string(), *androidApp.activity->assetManager);
+		#else
+			mFileManager = new RendererRuntime::PhysicsFSFileManager(renderer->getContext().getLog(), (std_filesystem::canonical(std_filesystem::current_path()) / "..").generic_string());
+		#endif
 		#ifdef RENDERER_RUNTIME_PROFILER
 			mProfiler = new RendererRuntime::RemoteryProfiler(*renderer);
 			mRendererRuntimeContext = new RendererRuntime::Context(*renderer, *mFileManager, *mProfiler);
@@ -192,7 +204,11 @@ void IApplicationRendererRuntime::onDeinitialization()
 	#ifdef RENDERER_RUNTIME_PROFILER
 		delete static_cast<RendererRuntime::RemoteryProfiler*>(mProfiler);
 	#endif
-	delete static_cast<RendererRuntime::PhysicsFSFileManager*>(mFileManager);
+	#ifdef __ANDROID__
+		delete static_cast<RendererRuntime::AndroidFileManager*>(mFileManager);
+	#else
+		delete static_cast<RendererRuntime::PhysicsFSFileManager*>(mFileManager);
+	#endif
 	mFileManager = nullptr;
 	#ifdef RENDERER_TOOLKIT
 		if (nullptr != mProject)

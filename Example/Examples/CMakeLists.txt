@@ -73,7 +73,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../Renderer/)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../Renderer/RendererRuntime/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/glm/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/PhysicsFS/include/)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/)	# For "DeviceInput"
 if(WIN32)
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/utf8cpp)
@@ -89,6 +88,8 @@ if(RENDERER_RUNTIME_OPENVR)
 endif()
 if(ANDROID)
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/Android/)
+else()
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/PhysicsFS/include/)
 endif()
 if(RENDERER_TOOLKIT)
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../Renderer/RendererToolkit/include)
@@ -100,16 +101,21 @@ link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/${OS_ARCHITECTURE})
 ## Source codes
 ##################################################
 set(EXTERNAL_SOURCE_CODES
-	# PhysicsFS external library
-	${CMAKE_CURRENT_SOURCE_DIR}/../../External/PhysicsFS/src/physfs.c
-	${CMAKE_CURRENT_SOURCE_DIR}/../../External/PhysicsFS/src/physfs_archiver_zip.c
-	${CMAKE_CURRENT_SOURCE_DIR}/../../External/PhysicsFS/src/physfs_archiver_dir.c
-	${CMAKE_CURRENT_SOURCE_DIR}/../../External/PhysicsFS/src/physfs_archiver_unpacked.c
-	${CMAKE_CURRENT_SOURCE_DIR}/../../External/PhysicsFS/src/physfs_byteorder.c
-	${CMAKE_CURRENT_SOURCE_DIR}/../../External/PhysicsFS/src/physfs_unicode.c
 	# DeviceInput external library
 	${CMAKE_CURRENT_SOURCE_DIR}/../../External/DeviceInput/DeviceInput.cpp
 )
+if(NOT ANDROID)
+	set(EXTERNAL_SOURCE_CODES
+		${EXTERNAL_SOURCE_CODES}
+		# PhysicsFS external library
+		${CMAKE_CURRENT_SOURCE_DIR}/../../External/PhysicsFS/src/physfs.c
+		${CMAKE_CURRENT_SOURCE_DIR}/../../External/PhysicsFS/src/physfs_archiver_zip.c
+		${CMAKE_CURRENT_SOURCE_DIR}/../../External/PhysicsFS/src/physfs_archiver_dir.c
+		${CMAKE_CURRENT_SOURCE_DIR}/../../External/PhysicsFS/src/physfs_archiver_unpacked.c
+		${CMAKE_CURRENT_SOURCE_DIR}/../../External/PhysicsFS/src/physfs_byteorder.c
+		${CMAKE_CURRENT_SOURCE_DIR}/../../External/PhysicsFS/src/physfs_unicode.c
+	)
+endif()
 if(RENDERER_RUNTIME_PROFILER)
 	set(EXTERNAL_SOURCE_CODES
 		${EXTERNAL_SOURCE_CODES}
@@ -123,7 +129,7 @@ if(WIN32)
 		# PhysicsFS external library
 		${CMAKE_CURRENT_SOURCE_DIR}/../../External/PhysicsFS/src/physfs_platform_windows.c
 	)
-elseif(UNIX)
+elseif(UNIX AND NOT ANDROID)
 	set(EXTERNAL_SOURCE_CODES
 		${EXTERNAL_SOURCE_CODES}
 		# PhysicsFS external library
