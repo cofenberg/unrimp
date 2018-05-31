@@ -21,7 +21,7 @@
 //[-------------------------------------------------------]
 //[ Shader start                                          ]
 //[-------------------------------------------------------]
-#if !defined(RENDERER_NO_DIRECT3D10) || !defined(RENDERER_NO_DIRECT3D11) || !defined(RENDERER_NO_DIRECT3D12)
+#if defined(RENDERER_DIRECT3D10) || defined(RENDERER_DIRECT3D11) || defined(RENDERER_DIRECT3D12)
 if (mRenderer->getNameId() == Renderer::NameId::DIRECT3D10 || mRenderer->getNameId() == Renderer::NameId::DIRECT3D11 || mRenderer->getNameId() == Renderer::NameId::DIRECT3D12)
 {
 

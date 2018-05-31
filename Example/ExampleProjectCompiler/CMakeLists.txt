@@ -40,7 +40,9 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../Renderer/)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../Renderer/RendererRuntime/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../Renderer/RendererToolkit/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/utf8cpp)
+if(WIN32)
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/utf8cpp)
+endif()
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/${OS_ARCHITECTURE})
 
 

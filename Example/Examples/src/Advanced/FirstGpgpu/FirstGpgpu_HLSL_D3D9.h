@@ -21,7 +21,7 @@
 //[-------------------------------------------------------]
 //[ Shader start                                          ]
 //[-------------------------------------------------------]
-#ifndef RENDERER_NO_DIRECT3D9
+#ifdef RENDERER_DIRECT3D9
 if (mRenderer->getNameId() == Renderer::NameId::DIRECT3D9)
 {
 

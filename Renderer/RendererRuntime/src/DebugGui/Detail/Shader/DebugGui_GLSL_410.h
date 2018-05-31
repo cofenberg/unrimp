@@ -21,7 +21,7 @@
 //[-------------------------------------------------------]
 //[ Shader start                                          ]
 //[-------------------------------------------------------]
-#ifndef RENDERER_NO_OPENGL
+#ifdef RENDERER_OPENGL
 if (renderer.getNameId() == Renderer::NameId::OPENGL)
 {
 

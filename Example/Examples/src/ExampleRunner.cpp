@@ -89,50 +89,34 @@ int RunExample(const char* rendererName)
 }
 
 ExampleRunner::ExampleRunner() :
-	// Case sensitive name of the renderer to instance, might be ignored in case e.g. "RENDERER_ONLY_DIRECT3D12" was set as preprocessor definition
-	// -> Example renderer names: "Null", "OpenGL", "OpenGLES3", "Vulkan", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"
+	// Case sensitive name of the renderer to instance, might be ignored in case e.g. "RENDERER_DIRECT3D12" was set as preprocessor definition
+	// -> Example renderer names: "Null", "Vulkan", "OpenGL", "OpenGLES3", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"
 	// -> In case the graphics driver supports it, the OpenGL ES 3 renderer can automatically also run on a desktop PC without an emulator (perfect for testing/debugging)
 	m_defaultRendererName(
-		#ifdef RENDERER_ONLY_NULL
-			"Null"
-		#elif defined(RENDERER_ONLY_OPENGL) || defined(LINUX)
+		#ifdef RENDERER_DIRECT3D11
+			"Direct3D11"
+		#elif defined(RENDERER_OPENGL)
 			"OpenGL"
-		#elif defined(RENDERER_ONLY_OPENGLES3)
+		#elif defined(RENDERER_DIRECT3D10)
+			"Direct3D10"
+		#elif defined(RENDERER_DIRECT3D9)
+			"Direct3D9"
+		#elif defined(RENDERER_OPENGLES3)
 			"OpenGLES3"
-		#elif defined(RENDERER_ONLY_VULKAN)
+		#elif defined(RENDERER_VULKAN)
 			"Vulkan"
-		#elif _WIN32
-			#ifdef RENDERER_ONLY_DIRECT3D9
-				"Direct3D9"
-			#elif defined(RENDERER_ONLY_DIRECT3D10)
-				"Direct3D10"
-			#elif defined(RENDERER_ONLY_DIRECT3D11)
-				"Direct3D11"
-			#elif defined(RENDERER_ONLY_DIRECT3D12)
-				"Direct3D12"
-			#endif
+		#elif defined(RENDERER_DIRECT3D12)
+			"Direct3D12"
+		#elif defined(RENDERER_NULL)
+			"Null"
 		#endif
 	)
 {
-	// Try to ensure that there's always a default renderer backend in case it's not provided via command line arguments
-	if (m_defaultRendererName.empty())
-	{
-		#ifdef _WIN32
-			#if !defined(RENDERER_ONLY_NULL) && !defined(RENDERER_ONLY_OPENGL) && !defined(RENDERER_ONLY_OPENGLES3) && !defined(RENDERER_ONLY_DIRECT3D9) && !defined(RENDERER_ONLY_DIRECT3D10) && !defined(RENDERER_ONLY_DIRECT3D12) && !defined(RENDERER_ONLY_VULKAN)
-				m_defaultRendererName = "Direct3D11";
-			#endif
-		#else
-			#if !defined(RENDERER_ONLY_NULL) && !defined(RENDERER_ONLY_OPENGLES3) && !defined(RENDERER_ONLY_DIRECT3D9) && !defined(RENDERER_ONLY_DIRECT3D10) && !defined(RENDERER_ONLY_DIRECT3D11) && !defined(RENDERER_ONLY_DIRECT3D12) && !defined(RENDERER_ONLY_VULKAN)
-				m_defaultRendererName = "OpenGL";
-			#endif
-		#endif
-	}
-
 	// Sets of supported renderer backends
-	std::array<std::string, 8> supportsAllRenderer = {{"Null", "OpenGL", "OpenGLES3", "Vulkan", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"}};
-	std::array<std::string, 7> doesNotSupportOpenGLES3 = {{"Null", "OpenGL", "Vulkan", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"}};
-	std::array<std::string, 6> onlyShaderModel4Plus = {{"Null", "OpenGL", "Vulkan", "Direct3D10", "Direct3D11", "Direct3D12"}};
-	std::array<std::string, 5> onlyShaderModel5Plus = {{"Null", "OpenGL", "Vulkan", "Direct3D11", "Direct3D12"}};
+	std::array<std::string, 8> supportsAllRenderer = {{"Null", "Vulkan", "OpenGL", "OpenGLES3", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"}};
+	std::array<std::string, 7> doesNotSupportOpenGLES3 = {{"Null", "Vulkan", "OpenGL", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"}};
+	std::array<std::string, 6> onlyShaderModel4Plus = {{"Null", "Vulkan", "OpenGL", "Direct3D10", "Direct3D11", "Direct3D12"}};
+	std::array<std::string, 5> onlyShaderModel5Plus = {{"Null", "Vulkan", "OpenGL", "Direct3D11", "Direct3D12"}};
 
 	// Basics
 	addExample("FirstTriangle",					&RunRenderExample<FirstTriangle>,				supportsAllRenderer);
@@ -162,31 +146,29 @@ ExampleRunner::ExampleRunner() :
 		m_defaultExampleName = "FirstTriangle";
 	#endif
 
-	#ifndef RENDERER_NO_NULL
+	#ifdef RENDERER_NULL
 		m_availableRenderer.insert("Null");
 	#endif
-	#ifdef _WIN32
-		#ifndef RENDERER_NO_DIRECT3D9
-			m_availableRenderer.insert("Direct3D9");
-		#endif
-		#ifndef RENDERER_NO_DIRECT3D10
-			m_availableRenderer.insert("Direct3D10");
-		#endif
-		#ifndef RENDERER_NO_DIRECT3D11
-			m_availableRenderer.insert("Direct3D11");
-		#endif
-		#ifndef RENDERER_NO_DIRECT3D12
-			m_availableRenderer.insert("Direct3D12");
-		#endif
+	#ifdef RENDERER_VULKAN
+		m_availableRenderer.insert("Vulkan");
 	#endif
-	#ifndef RENDERER_NO_OPENGL
+	#ifdef RENDERER_OPENGL
 		m_availableRenderer.insert("OpenGL");
 	#endif
-	#ifndef RENDERER_NO_OPENGLES3
+	#ifdef RENDERER_OPENGLES3
 		m_availableRenderer.insert("OpenGLES3");
 	#endif
-	#ifndef RENDERER_NO_VULKAN
-		m_availableRenderer.insert("Vulkan");
+	#ifdef RENDERER_DIRECT3D9
+		m_availableRenderer.insert("Direct3D9");
+	#endif
+	#ifdef RENDERER_DIRECT3D10
+		m_availableRenderer.insert("Direct3D10");
+	#endif
+	#ifdef RENDERER_DIRECT3D11
+		m_availableRenderer.insert("Direct3D11");
+	#endif
+	#ifdef RENDERER_DIRECT3D12
+		m_availableRenderer.insert("Direct3D12");
 	#endif
 }
 

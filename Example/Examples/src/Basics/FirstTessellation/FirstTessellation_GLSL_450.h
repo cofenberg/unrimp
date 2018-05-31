@@ -21,7 +21,7 @@
 //[-------------------------------------------------------]
 //[ Shader start                                          ]
 //[-------------------------------------------------------]
-#ifndef RENDERER_NO_VULKAN
+#ifdef RENDERER_VULKAN
 if (renderer->getNameId() == Renderer::NameId::VULKAN)
 {
 

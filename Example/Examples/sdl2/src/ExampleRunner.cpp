@@ -153,31 +153,29 @@ ExampleRunner::ExampleRunner()
 		m_defaultExampleName = "FirstScene";
 	#endif
 
-	#ifndef RENDERER_NO_NULL
+	#ifdef RENDERER_NULL
 		m_availableRenderer.insert("Null");
 	#endif
-	#ifdef _WIN32
-		#ifndef RENDERER_NO_DIRECT3D9
-			m_availableRenderer.insert("Direct3D9");
-		#endif
-		#ifndef RENDERER_NO_DIRECT3D10
-			m_availableRenderer.insert("Direct3D10");
-		#endif
-		#ifndef RENDERER_NO_DIRECT3D11
-			m_availableRenderer.insert("Direct3D11");
-		#endif
-		#ifndef RENDERER_NO_DIRECT3D12
-			m_availableRenderer.insert("Direct3D12");
-		#endif
+	#ifdef RENDERER_VULKAN
+		m_availableRenderer.insert("Vulkan");
 	#endif
-	#ifndef RENDERER_NO_OPENGL
+	#ifdef RENDERER_OPENGL
 		m_availableRenderer.insert("OpenGL");
 	#endif
-	#ifndef RENDERER_NO_OPENGLES3
+	#ifdef RENDERER_OPENGLES3
 		m_availableRenderer.insert("OpenGLES3");
 	#endif
-	#ifndef RENDERER_NO_VULKAN
-		m_availableRenderer.insert("Vulkan");
+	#ifdef RENDERER_DIRECT3D9
+		m_availableRenderer.insert("Direct3D9");
+	#endif
+	#ifdef RENDERER_DIRECT3D10
+		m_availableRenderer.insert("Direct3D10");
+	#endif
+	#ifdef RENDERER_DIRECT3D11
+		m_availableRenderer.insert("Direct3D11");
+	#endif
+	#ifdef RENDERER_DIRECT3D12
+		m_availableRenderer.insert("Direct3D12");
 	#endif
 }
 

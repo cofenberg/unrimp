@@ -162,29 +162,17 @@ Standalone renderer examples.
 
 
 == Preprocessor Definitions ==
-For only supporting a particular renderer:
-- "RENDERER_ONLY_NULL":			 Do only support Null
-- "RENDERER_ONLY_OPENGL":		 Do only support OpenGL
-- "RENDERER_ONLY_OPENGLES3":	 Do only support OpenGL ES 3
-- "RENDERER_ONLY_DIRECT3D9":	 Do only support Direct3D 9
-- "RENDERER_ONLY_DIRECT3D10":	 Do only support Direct3D 10
-- "RENDERER_ONLY_DIRECT3D11":	 Do only support Direct3D 11
-- "RENDERER_ONLY_DIRECT3D12":	 Do only support Direct3D 12
-- "RENDERER_ONLY_VULKAN":		 Do only support Vulkan
-
-For disabling supporting a particular renderer:
-- "RENDERER_NO_NULL":		Do not support Null
-- "RENDERER_NO_OPENGL":		Do not support OpenGL
-- "RENDERER_NO_OPENGLES3":	Do not support OpenGL ES 3
-- "RENDERER_NO_DIRECT3D9":	Do not support Direct3D 9
-- "RENDERER_NO_DIRECT3D10":	Do not support Direct3D 10
-- "RENDERER_NO_DIRECT3D11":	Do not support Direct3D 11
-- "RENDERER_NO_DIRECT3D12":	Do not support Direct3D 12
-- "RENDERER_NO_VULKAN":		Do not support Vulkan
-
-Other
-- "UNICODE":		  Enable Microsoft Windows command line Unicode support
-- "SHARED_LIBRARIES": Use renderers via shared libraries, if this is not defined, the renderers are statically linked
-- "RENDERER_RUNTIME": Enable renderer runtime support
-- "RENDERER_TOOLKIT": Enable renderer toolkit support
+For supporting a particular renderer backend:
+- "RENDERER_NULL":		 Enable Null renderer backend support
+- "RENDERER_VULKAN":	 Enable Vulkan renderer backend support
+- "RENDERER_OPENGL":	 Enable OpenGL renderer backend support
+- "RENDERER_OPENGLES3":	 Enable OpenGL ES 3 renderer backend support
+- "RENDERER_DIRECT3D9":	 Enable Direct3D 9 renderer backend support
+- "RENDERER_DIRECT3D10": Enable Direct3D 10 renderer backend support
+- "RENDERER_DIRECT3D11": Enable Direct3D 11 renderer backend support
+- "RENDERER_DIRECT3D12": Enable Direct3D 12 renderer backend support
+- "UNICODE":			 Enable Microsoft Windows command line Unicode support
+- "SHARED_LIBRARIES":	 Use renderers via shared libraries, if this is not defined, the renderers are statically linked
+- "RENDERER_RUNTIME":	 Enable renderer runtime support
+- "RENDERER_TOOLKIT":	 Enable renderer toolkit support
 - Do also have a look into the renderer header file for renderer backend preprocessor definitions

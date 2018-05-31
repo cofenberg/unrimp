@@ -18,7 +18,7 @@
 \*********************************************************/
 
 
-#ifndef RENDERER_NO_NULL
+#ifdef RENDERER_NULL
 	if (renderer.getNameId() == Renderer::NameId::NULL_DUMMY)
 	{
 		vertexShaderSourceCode = fragmentShaderSourceCode = "42";

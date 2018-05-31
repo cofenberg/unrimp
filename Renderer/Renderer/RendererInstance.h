@@ -93,49 +93,49 @@
 // This is needed to do here because the methods in the libraries are also defined in global namespace
 #ifndef SHARED_LIBRARIES
 	// Null
-	#ifndef RENDERER_NO_NULL
+	#ifdef RENDERER_NULL
 		// "createNullRendererInstance()" signature
 		extern Renderer::IRenderer* createNullRendererInstance(const Renderer::Context&);
 	#endif
 
+	// Vulkan
+	#ifdef RENDERER_VULKAN
+		// "createVulkanRendererInstance()" signature
+		extern Renderer::IRenderer* createVulkanRendererInstance(const Renderer::Context&);
+	#endif
+
 	// OpenGL
-	#ifndef RENDERER_NO_OPENGL
+	#ifdef RENDERER_OPENGL
 		// "createOpenGLRendererInstance()" signature
 		extern Renderer::IRenderer* createOpenGLRendererInstance(const Renderer::Context&);
 	#endif
 
 	// OpenGLES3
-	#ifndef RENDERER_NO_OPENGLES3
+	#ifdef RENDERER_OPENGLES3
 		// "createOpenGLES3RendererInstance()" signature
 		extern Renderer::IRenderer* createOpenGLES3RendererInstance(const Renderer::Context&);
 	#endif
 
-	// Vulkan
-	#ifndef RENDERER_NO_VULKAN
-		// "createVulkanRendererInstance()" signature
-		extern Renderer::IRenderer* createVulkanRendererInstance(const Renderer::Context&);
-	#endif
-
 	// Direct3D 9
-	#ifndef RENDERER_NO_DIRECT3D9
+	#ifdef RENDERER_DIRECT3D9
 		// "createDirect3D9RendererInstance()" signature
 		extern Renderer::IRenderer* createDirect3D9RendererInstance(const Renderer::Context&);
 	#endif
 
 	// Direct3D 10
-	#ifndef RENDERER_NO_DIRECT3D10
+	#ifdef RENDERER_DIRECT3D10
 		// "createDirect3D10RendererInstance()" signature
 		extern Renderer::IRenderer* createDirect3D10RendererInstance(const Renderer::Context&);
 	#endif
 
 	// Direct3D 11
-	#ifndef RENDERER_NO_DIRECT3D11
+	#ifdef RENDERER_DIRECT3D11
 		// "createDirect3D11RendererInstance()" signature
 		extern Renderer::IRenderer* createDirect3D11RendererInstance(const Renderer::Context&);
 	#endif
 
 	// Direct3D 12
-	#ifndef RENDERER_NO_DIRECT3D12
+	#ifdef RENDERER_DIRECT3D12
 		// "createDirect3D12RendererInstance()" signature
 		extern Renderer::IRenderer* createDirect3D12RendererInstance(const Renderer::Context&);
 	#endif
@@ -173,7 +173,7 @@ namespace Renderer
 		*
 		*  @param[in] rendererName
 		*    Case sensitive ASCII name of the renderer to instance, must be valid.
-		*    Example renderer names: "Null", "OpenGL", "OpenGLES3", "Vulkan", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"
+		*    Example renderer names: "Null", "Vulkan", "OpenGL", "OpenGLES3", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"
 		*  @param[in] context
 		*    Renderer context, the renderer context instance must stay valid as long as the renderer instance exists
 		*  @param[in] loadRendererApiSharedLibrary
@@ -258,7 +258,7 @@ namespace Renderer
 				// Statically linked libraries
 
 				// Null
-				#ifndef RENDERER_NO_NULL
+				#ifdef RENDERER_NULL
 					if (0 == strcmp(rendererName, "Null"))
 					{
 						// Create the renderer instance
@@ -266,8 +266,17 @@ namespace Renderer
 					}
 				#endif
 
+				// Vulkan
+				#ifdef RENDERER_VULKAN
+					if (0 == strcmp(rendererName, "Vulkan"))
+					{
+						// Create the renderer instance
+						mRenderer = createVulkanRendererInstance(context);
+					}
+				#endif
+
 				// OpenGL
-				#ifndef RENDERER_NO_OPENGL
+				#ifdef RENDERER_OPENGL
 					if (0 == strcmp(rendererName, "OpenGL"))
 					{
 						// Create the renderer instance
@@ -276,7 +285,7 @@ namespace Renderer
 				#endif
 
 				// OpenGLES3
-				#ifndef RENDERER_NO_OPENGLES3
+				#ifdef RENDERER_OPENGLES3
 					if (0 == strcmp(rendererName, "OpenGLES3"))
 					{
 						// Create the renderer instance
@@ -284,17 +293,8 @@ namespace Renderer
 					}
 				#endif
 
-				// Vulkan
-				#ifndef RENDERER_NO_VULKAN
-					if (0 == strcmp(rendererName, "Vulkan"))
-					{
-						// Create the renderer instance
-						mRenderer = createVulkanRendererInstance(context);
-					}
-				#endif
-
 				// Direct3D 9
-				#ifndef RENDERER_NO_DIRECT3D9
+				#ifdef RENDERER_DIRECT3D9
 					if (0 == strcmp(rendererName, "Direct3D9"))
 					{
 						// Create the renderer instance
@@ -303,7 +303,7 @@ namespace Renderer
 				#endif
 
 				// Direct3D 10
-				#ifndef RENDERER_NO_DIRECT3D10
+				#ifdef RENDERER_DIRECT3D10
 					if (0 == strcmp(rendererName, "Direct3D10"))
 					{
 						// Create the renderer instance
@@ -312,7 +312,7 @@ namespace Renderer
 				#endif
 
 				// Direct3D 11
-				#ifndef RENDERER_NO_DIRECT3D11
+				#ifdef RENDERER_DIRECT3D11
 					if (0 == strcmp(rendererName, "Direct3D11"))
 					{
 						// Create the renderer instance
@@ -321,7 +321,7 @@ namespace Renderer
 				#endif
 
 				// Direct3D 12
-				#ifndef RENDERER_NO_DIRECT3D12
+				#ifdef RENDERER_DIRECT3D12
 					if (0 == strcmp(rendererName, "Direct3D12"))
 					{
 						// Create the renderer instance

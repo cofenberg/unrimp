@@ -18,7 +18,7 @@
 \*********************************************************/
 
 
-#ifndef RENDERER_NO_NULL
+#ifdef RENDERER_NULL
 	if (mRenderer->getNameId() == Renderer::NameId::NULL_DUMMY)
 	{
 		vertexShaderSourceCode = fragmentShaderSourceCode_ContentGeneration = fragmentShaderSourceCode_ContentProcessing = "42";

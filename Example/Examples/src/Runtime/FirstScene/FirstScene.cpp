@@ -223,7 +223,7 @@ void FirstScene::onInitialization()
 
 		// When using OpenGL ES 3, switch to a compositor which is designed for mobile devices
 		// TODO(co) The Vulkan renderer backend is under construction, so debug compositor for now
-		if (rendererRuntime->getRenderer().getNameId() == Renderer::NameId::OPENGLES3 || rendererRuntime->getRenderer().getNameId() == Renderer::NameId::VULKAN)
+		if (rendererRuntime->getRenderer().getNameId() == Renderer::NameId::VULKAN || rendererRuntime->getRenderer().getNameId() == Renderer::NameId::OPENGLES3)
 		{
 			// TODO(co) Add compositor designed for mobile devices, for now we're using the most simple debug compositor to have something on the screen
 			mCurrentCompositor = mInstancedCompositor = Compositor::DEBUG;
@@ -691,7 +691,7 @@ void FirstScene::createDebugGui(MAYBE_UNUSED Renderer::IRenderTarget& mainRender
 						ImGui::Checkbox("Vertical Synchronization", &mUseVerticalSynchronization);
 						if (rendererRuntime->getRenderer().getCapabilities().maximumNumberOfMultisamples > 1)
 						{
-							const char* items[] = { "None", "2x", "4x", "8x" };
+							static constexpr const char* items[] = { "None", "2x", "4x", "8x" };
 							ImGui::Combo("MSAA", &mCurrentMsaa, items, static_cast<int>(glm::countof(items)));
 						}
 						ImGui::EndMenu();
@@ -701,13 +701,13 @@ void FirstScene::createDebugGui(MAYBE_UNUSED Renderer::IRenderTarget& mainRender
 					if (ImGui::BeginMenu("Graphics"))
 					{
 						{
-							const char* items[] = { "Debug", "Forward", "Deferred", "VR" };
+							static constexpr const char* items[] = { "Debug", "Forward", "Deferred", "VR" };
 							ImGui::Combo("Compositor", &mCurrentCompositor, items, static_cast<int>(glm::countof(items)));
 						}
 						ImGui::Checkbox("High Quality Lighting", &mHighQualityLighting);
 						ImGui::Checkbox("Soft-Particles", &mSoftParticles);
 						{
-							const char* items[] = { "Point", "Bilinear", "Trilinear", "2x Anisotropic", "4x Anisotropic", "8x Anisotropic", "16x Anisotropic" };
+							static constexpr const char* items[] = { "Point", "Bilinear", "Trilinear", "2x Anisotropic", "4x Anisotropic", "8x Anisotropic", "16x Anisotropic" };
 							ImGui::Combo("Texture filtering", &mCurrentTextureFiltering, items, static_cast<int>(glm::countof(items)));
 						}
 						ImGui::SliderInt("Mipmaps to Remove", &mNumberOfTopTextureMipmapsToRemove, 0, 8);

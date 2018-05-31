@@ -21,7 +21,7 @@
 //[-------------------------------------------------------]
 //[ Shader start                                          ]
 //[-------------------------------------------------------]
-#ifndef RENDERER_NO_OPENGLES3
+#ifdef RENDERER_OPENGLES3
 if (renderer.getNameId() == Renderer::NameId::OPENGLES3)
 {
 

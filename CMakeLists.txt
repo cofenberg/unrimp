@@ -50,6 +50,16 @@ set(SHARED_LIBRARY "1" CACHE BOOL "'true' to build as shared library (dynamic li
 			set(RENDERER_NULL "1" CACHE BOOL "Build null renderer?")
 		endif()
 
+	# Vulkan renderer backend
+	# TODO(co) The Vulkan renderer backend under Android isn't ready, yet
+	if(NOT ANDROID)
+		set(RENDERER_VULKAN "1" CACHE BOOL "Build Vulkan renderer?")
+
+		# Advanced Vulkan renderer options
+		set(RENDERER_VULKAN_GLSLTOSPIRV "1" CACHE BOOL "If true, GLSL to SPIR-V compiler is included for online shader compilation, increases the binary size around one MiB")
+		mark_as_advanced(RENDERER_VULKAN_GLSLTOSPIRV)
+	endif()
+
 	# OpenGL renderer backend
 		# OpenGL renderer is not for Android
 		if(NOT ANDROID)
@@ -69,16 +79,6 @@ set(SHARED_LIBRARY "1" CACHE BOOL "'true' to build as shared library (dynamic li
 		# Advanced OpenGL ES 3 renderer options
 		set(RENDERER_OPENGLES3_STATE_CLEANUP "1" CACHE BOOL "If true, the previous OpenGL ES 3 state will be restored after performing an operation (worse performance, increases the binary size slightly, might avoid unexpected behaviour when using OpenGL ES 3 directly beside this renderer)")
 		mark_as_advanced(RENDERER_OPENGLES3_STATE_CLEANUP)
-
-	# Vulkan renderer backend
-	# TODO(co) The Vulkan renderer backend under Android isn't ready, yet
-	if(NOT ANDROID)
-		set(RENDERER_VULKAN "1" CACHE BOOL "Build Vulkan renderer?")
-
-		# Advanced Vulkan renderer options
-		set(RENDERER_VULKAN_GLSLTOSPIRV "1" CACHE BOOL "If true, GLSL to SPIR-V compiler is included for online shader compilation, increases the binary size around one MiB")
-		mark_as_advanced(RENDERER_VULKAN_GLSLTOSPIRV)
-	endif()
 
 	# Microsoft Windows only Direct3D renderer backends
 	if(WIN32)
@@ -196,23 +196,26 @@ if(WIN32)
 	string(REPLACE "C" " -w4" MSVC_LEVEL4_WARNINGS_STR ${MSVC_LEVEL4_WARNINGS_LIST})
 	set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -Wall -WX /MP ${MSVC_DISABLED_WARNINGS_STR} ${MSVC_LEVEL4_WARNINGS_STR}")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -WX /MP ${MSVC_DISABLED_WARNINGS_STR} ${MSVC_LEVEL4_WARNINGS_STR}")
-
-	# Used release build options:
-	# - "Inline Function Expansion"			= "Any Suitable (/Ob2)"
-	# - "Enable Intrinsic Functions"		= "Yes (/Oi)"
-	# - "Favor Size Or Speed"				= "Favor fast code (/Ot)"
-	# - "Omit Fame Pointers"				= "Yes (/Oy)"
-	# - "Enable String Pooling"				= "Yes (/GF)"
-	# - "Security Check"					= "Disable Security Check (/GS-)"
-	# - "Enable Function-Level Linking"		= "Yes (/Gy)"
-	# - "Floating Point Model"				= "Fast (/fp:fast)"
-	# - "Enable Floating Point Exceptions"	= "No (/fp:except-)"
-	# - "Whole Program Optimization"		= "Yes (/GL)" with linker flag "LTCG"
-	# - "Gw" - see https://blogs.msdn.microsoft.com/vcblog/2013/09/11/introducing-gw-compiler-switch/
-	# - "Enable Large Addresses"			= "Yes (/LARGEADDRESSAWARE)"
-	# - "Enable COMDAT Folding"				= "Yes (/OPT:ICF)"
-	# - "References"						= "Yes (/OPT:REF)"
-	if(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
+	if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
+		# Used debug build options:
+		# - "Debug Information Format" = "Program Database for Edit And Continue (/ZI)"
+		unrimp_replace_cmake_cxx_flags(/Zi /ZI)
+	else()
+		# Used release build options:
+		# - "Inline Function Expansion"			= "Any Suitable (/Ob2)"
+		# - "Enable Intrinsic Functions"		= "Yes (/Oi)"
+		# - "Favor Size Or Speed"				= "Favor fast code (/Ot)"
+		# - "Omit Fame Pointers"				= "Yes (/Oy)"
+		# - "Enable String Pooling"				= "Yes (/GF)"
+		# - "Security Check"					= "Disable Security Check (/GS-)"
+		# - "Enable Function-Level Linking"		= "Yes (/Gy)"
+		# - "Floating Point Model"				= "Fast (/fp:fast)"
+		# - "Enable Floating Point Exceptions"	= "No (/fp:except-)"
+		# - "Whole Program Optimization"		= "Yes (/GL)" with linker flag "LTCG"
+		# - "Gw" - see https://blogs.msdn.microsoft.com/vcblog/2013/09/11/introducing-gw-compiler-switch/
+		# - "Enable Large Addresses"			= "Yes (/LARGEADDRESSAWARE)"
+		# - "Enable COMDAT Folding"				= "Yes (/OPT:ICF)"
+		# - "References"						= "Yes (/OPT:REF)"
 		set(CompilerFlags "-Ob2 -Oi -Ot -Oy -GF -GS- -Gy -fp:fast -fp:except- -GL /Gw")
 		set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${CompilerFlags}")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CompilerFlags}")
