@@ -83,8 +83,6 @@
 	#include <dlfcn.h>	// We need it also for the non shared libraries case
 #endif
 
-#include <string.h>
-
 
 //[-------------------------------------------------------]
 //[ Global functions                                      ]

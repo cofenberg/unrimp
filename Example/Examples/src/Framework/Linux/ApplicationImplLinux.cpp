@@ -22,9 +22,10 @@
 //[ Includes                                              ]
 //[-------------------------------------------------------]
 #include "PrecompiledHeader.h"
-#include "Framework/ApplicationImplLinux.h"
+#include "Framework/Linux/ApplicationImplLinux.h"
+#include "Framework/Linux/X11Application.h"
+#include "Framework/Linux/X11Window.h"
 #include "Framework/IApplication.h"
-#include "Framework/X11Application.h"
 #include "Framework/IApplicationRendererRuntime.h"
 
 #ifdef RENDERER_RUNTIME_IMGUI
@@ -33,6 +34,7 @@
 #endif
 
 #include <X11/Xutil.h>
+#include <X11/Xlib.h>
 
 #include <unordered_map>
 

@@ -26,11 +26,13 @@
 #include "Framework/Color4.h"
 #ifdef _WIN32
 	// This is only a simple and close-to-the-metal example, don't use OS stuff directly in more complex projects
-	#include "Framework/WindowsHeader.h"
+	#include <RendererRuntime/Core/Platform/WindowsHeader.h>
 #elif defined LINUX
 	// This is only a simple and close-to-the-metal example, don't use OS stuff directly in more complex projects
-	#include "Framework/LinuxHeader.h"
-	#include "Framework/X11Application.h"
+	#include "Framework/Linux/X11Window.h"
+	#include "Framework/Linux/X11Application.h"
+
+	#include <X11/Xlib.h>
 #endif
 
 #include <string.h>

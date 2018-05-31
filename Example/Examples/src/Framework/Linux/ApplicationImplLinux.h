@@ -28,7 +28,6 @@
 //[ Includes                                              ]
 //[-------------------------------------------------------]
 #include "Framework/IApplicationImpl.h"
-#include "Framework/LinuxHeader.h"
 
 
 //[-------------------------------------------------------]

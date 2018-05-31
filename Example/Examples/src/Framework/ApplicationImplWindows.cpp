@@ -227,11 +227,6 @@ void ApplicationImplWindows::getWindowSize(int& width, int& height) const
 	}
 }
 
-handle ApplicationImplWindows::getNativeWindowHandle() const
-{
-	return reinterpret_cast<handle>(mNativeWindowHandle);
-}
-
 void ApplicationImplWindows::redraw()
 {
 	// Is there a valid OS window?

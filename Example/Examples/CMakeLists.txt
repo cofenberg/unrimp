@@ -177,9 +177,9 @@ elseif(ANDROID)
 elseif(UNIX)
 	set(SOURCE_CODES
 		${SOURCE_CODES}
-		src/Framework/ApplicationImplLinux.cpp
-		src/Framework/X11Window.cpp
-		src/Framework/X11Application.cpp
+		src/Framework/Linux/ApplicationImplLinux.cpp
+		src/Framework/Linux/X11Window.cpp
+		src/Framework/Linux/X11Application.cpp
 	)
 endif()
 if(RENDERER_RUNTIME)

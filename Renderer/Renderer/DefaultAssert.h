@@ -39,13 +39,14 @@ PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(5026)	// warning C5026: 'std::_Generic_error_category': move constructor was implicitly defined as deleted
 	PRAGMA_WARNING_DISABLE_MSVC(5027)	// warning C5027: 'std::_Generic_error_category': move assignment operator was implicitly defined as deleted
 	PRAGMA_WARNING_DISABLE_MSVC(5039)	// warning C5039: '_Thrd_start': pointer or reference to potentially throwing function passed to extern C function under -EHc. Undefined behavior may occur if this function throws an exception.
-	#include <iostream>
-	#include <cstdarg>
 	#include <string>
 	#include <mutex>
 PRAGMA_WARNING_POP
 
 #ifdef _WIN32
+	#include <iostream>
+	#include <cstdarg>
+
 	// Disable warnings in external headers, we can't fix them
 	PRAGMA_WARNING_PUSH
 		PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'argument': conversion from 'const char' to 'utf8::uint8_t', signed/unsigned mismatch
@@ -96,7 +97,8 @@ PRAGMA_WARNING_POP
 #elif __ANDROID__
 	#include <android/log.h>
 #elif LINUX
-	// Nothing here
+	#include <iostream>
+	#include <cstdarg>
 #else
 	#error "Unsupported platform"
 #endif

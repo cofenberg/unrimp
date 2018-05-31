@@ -24,7 +24,8 @@
 #include "PrecompiledHeader.h"
 #include "Framework/CommandLineArguments.h"
 #ifdef _WIN32
-	#include "Framework/WindowsHeader.h"
+	#include <RendererRuntime/Core/Platform/WindowsHeader.h>
+
 	#ifdef UNICODE
 		// Disable warnings in external headers, we can't fix them
 		PRAGMA_WARNING_PUSH

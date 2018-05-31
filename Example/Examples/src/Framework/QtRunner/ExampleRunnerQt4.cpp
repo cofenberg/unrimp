@@ -25,8 +25,8 @@
 //[ Includes                                              ]
 //[-------------------------------------------------------]
 #include "Framework/PlatformTypes.h"
-#include "Framework/CLocaleChanger.h"
 #include "Framework/CommandLineArguments.h"
+#include "Framework/QtRunner/CLocaleChanger.h"
 #include "Framework/QtRunner/ExampleRunnerQt4.h"
 
 #include <QMessageBox>

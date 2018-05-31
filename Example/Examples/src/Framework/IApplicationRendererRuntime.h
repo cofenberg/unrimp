@@ -61,7 +61,7 @@ namespace RendererToolkit
 *  @brief
 *    Renderer runtime application interface
 */
-class IApplicationRendererRuntime : public IApplicationRenderer
+class IApplicationRendererRuntime final : public IApplicationRenderer
 {
 
 
@@ -79,7 +79,23 @@ public:
 	*  @param[in] exampleBase
 	*    Pointer to an example which should be used
 	*/
-	explicit IApplicationRendererRuntime(const char* rendererName, ExampleBase* exampleBase);
+	inline IApplicationRendererRuntime(const char* rendererName, ExampleBase* exampleBase) :
+		IApplicationRenderer(rendererName, exampleBase),
+		mFileManager(nullptr),
+		#ifdef RENDERER_RUNTIME_PROFILER
+			mProfiler(nullptr),
+		#endif
+		mRendererRuntimeContext(nullptr),
+		mRendererRuntimeInstance(nullptr)
+		#ifdef RENDERER_TOOLKIT
+			, mRendererToolkitFileManager(nullptr)
+			, mRendererToolkitContext(nullptr)
+			, mRendererToolkitInstance(nullptr)
+			, mProject(nullptr)
+		#endif
+	{
+		// Nothing here
+	}
 
 	/**
 	*  @brief

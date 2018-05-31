@@ -28,7 +28,8 @@
 //[ Includes                                              ]
 //[-------------------------------------------------------]
 #include "Framework/IApplicationImpl.h"
-#include "Framework/WindowsHeader.h"
+
+#include <RendererRuntime/Core/Platform/WindowsHeader.h>
 
 
 //[-------------------------------------------------------]
@@ -82,7 +83,12 @@ public:
 	virtual void onDeinitialization() override;
 	virtual bool processMessages() override;
 	virtual void getWindowSize(int &width, int &height) const override;
-	virtual handle getNativeWindowHandle() const override;
+
+	inline virtual handle getNativeWindowHandle() const override
+	{
+		return reinterpret_cast<handle>(mNativeWindowHandle);
+	}
+
 	virtual void redraw() override;
 
 

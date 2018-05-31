@@ -28,7 +28,7 @@
 #elif defined __ANDROID__
 	#warning TODO(co) The Android support is work-in-progress
 #elif defined LINUX
-	#include "Framework/ApplicationImplLinux.h"
+	#include "Framework/Linux/ApplicationImplLinux.h"
 #endif
 
 

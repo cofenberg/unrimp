@@ -182,7 +182,7 @@ int ExampleRunner::runExample(const std::string& rendererName, const std::string
 	if (m_supportedRendererForExample.end() != supportedRenderer)
 	{
 		const SupportedRenderers& supportedRendererList = supportedRenderer->second;
-		rendererNotSupportedByExample =  std::find(supportedRendererList.begin(), supportedRendererList.end(), rendererName) == supportedRendererList.end();
+		rendererNotSupportedByExample = std::find(supportedRendererList.begin(), supportedRendererList.end(), rendererName) == supportedRendererList.end();
 	}
 
 	if (m_availableExamples.end() == example || m_availableRenderer.end() == renderer || rendererNotSupportedByExample)

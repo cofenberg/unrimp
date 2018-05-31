@@ -69,7 +69,8 @@ int programEntryPoint(const CommandLineArguments& commandLineArguments);
 				return result;
 			}
 	#else
-		#include "Framework/WindowsHeader.h"
+		#include <RendererRuntime/Core/Platform/WindowsHeader.h>
+
 		#ifdef UNICODE
 			int WINAPI wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 		#else

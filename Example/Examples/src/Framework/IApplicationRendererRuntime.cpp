@@ -22,24 +22,11 @@
 //[ Includes                                              ]
 //[-------------------------------------------------------]
 #include "PrecompiledHeader.h"
-
-#include <exception>
-
-
-//[-------------------------------------------------------]
-//[ Includes                                              ]
-//[-------------------------------------------------------]
 #include "Framework/IApplicationRendererRuntime.h"
-
-#ifdef RENDERER_TOOLKIT
-	#include <RendererToolkit/Public/RendererToolkitInstance.h>
-#endif
 
 #include <RendererRuntime/Context.h>
 #include <RendererRuntime/Public/RendererRuntimeInstance.h>
 #include <RendererRuntime/Asset/AssetManager.h>
-#include <RendererRuntime/Core/File/FileSystemHelper.h>
-#include <RendererRuntime/Core/File/DefaultFileManager.h>
 #ifdef RENDERER_RUNTIME_PROFILER
 	#include <RendererRuntime/Core/RemoteryProfiler.h>
 #endif
@@ -51,27 +38,13 @@
 	#include <RendererRuntime/Core/File/PhysicsFSFileManager.h>
 #endif
 
+#ifdef RENDERER_TOOLKIT
+	#include <RendererRuntime/Core/File/DefaultFileManager.h>
 
-//[-------------------------------------------------------]
-//[ Public methods                                        ]
-//[-------------------------------------------------------]
-IApplicationRendererRuntime::IApplicationRendererRuntime(const char* rendererName, ExampleBase* exampleBase) :
-	IApplicationRenderer(rendererName, exampleBase),
-	mFileManager(nullptr),
-	#ifdef RENDERER_RUNTIME_PROFILER
-		mProfiler(nullptr),
-	#endif
-	mRendererRuntimeContext(nullptr),
-	mRendererRuntimeInstance(nullptr)
-	#ifdef RENDERER_TOOLKIT
-		, mRendererToolkitFileManager(nullptr)
-		, mRendererToolkitContext(nullptr)
-		, mRendererToolkitInstance(nullptr)
-		, mProject(nullptr)
-	#endif
-{
-	// Nothing here
-}
+	#include <RendererToolkit/Public/RendererToolkitInstance.h>
+
+	#include <exception>
+#endif
 
 
 //[-------------------------------------------------------]
@@ -192,7 +165,7 @@ void IApplicationRendererRuntime::onInitialization()
 
 void IApplicationRendererRuntime::onDeinitialization()
 {
-	// Deinitinitialize example before we tear down any dependencies
+	// Deinitialize example before we tear down any dependencies
 	// -> The base class calls this too but this is safe to do because the deinitialization is only done when the example wasn't already deinitialized
 	deinitializeExample();
 

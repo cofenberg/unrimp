@@ -21,7 +21,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "Main.h"
+#include "CommandLineArguments.h"
 
 #include <RendererToolkit/Public/RendererToolkitInstance.h>
 
@@ -85,3 +85,68 @@ int programEntryPoint(const CommandLineArguments& commandLineArguments)
 	// No error
 	return 0;
 }
+
+
+//[-------------------------------------------------------]
+//[ Platform dependent program entry point                ]
+//[-------------------------------------------------------]
+// Windows implementation
+#ifdef _WIN32
+
+	// For memory leak detection
+	#ifdef _DEBUG
+		#define _CRTDBG_MAP_ALLOC
+		#include <stdlib.h>
+		#include <crtdbg.h>
+	#endif
+
+	#ifdef _CONSOLE
+		#ifdef UNICODE
+			int wmain(int, wchar_t**)
+		#else
+			int main(int, char**)
+		#endif
+			{
+				// Call the platform independent program entry point
+				// -> Uses internally "GetCommandLine()" to fetch the command line arguments
+				const int result = programEntryPoint(CommandLineArguments());
+
+				// For memory leak detection
+				#ifdef _DEBUG
+					_CrtDumpMemoryLeaks();
+				#endif
+
+				// Done
+				return result;
+			}
+	#else
+		#include <RendererRuntime/Core/Platform/WindowsHeader.h>
+
+		#ifdef UNICODE
+			int WINAPI wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
+		#else
+			int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+		#endif
+			{
+				// Call the platform independent program entry point
+				// -> Uses internally "GetCommandLine()" to fetch the command line arguments
+				const int result = programEntryPoint(CommandLineArguments());
+
+				// For memory leak detection
+				#ifdef _DEBUG
+					_CrtDumpMemoryLeaks();
+				#endif
+
+				// Done
+				return result;
+			}
+	#endif
+
+// Linux implementation
+#elif LINUX
+	int main(int argc, char** argv)
+	{
+		// Call the platform independent program entry point
+		return programEntryPoint(CommandLineArguments(argc, argv));
+	}
+#endif

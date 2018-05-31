@@ -28,7 +28,7 @@
 	#include "Runtime/FirstScene/VrController.h"
 #endif
 #ifdef _WIN32
-	#include "Framework/WindowsHeader.h"
+	#include <RendererRuntime/Core/Platform/WindowsHeader.h>
 #endif
 
 #ifdef RENDERER_TOOLKIT
