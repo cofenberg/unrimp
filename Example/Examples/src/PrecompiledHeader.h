@@ -55,7 +55,6 @@ PRAGMA_WARNING_POP
 
 // C++ standard headers
 #include <math.h>
-#include <string.h>
 #include <float.h>
 #include <stdlib.h>
 #include <limits.h>

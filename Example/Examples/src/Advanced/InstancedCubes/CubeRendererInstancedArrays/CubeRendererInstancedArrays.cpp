@@ -26,7 +26,6 @@
 #include "Advanced/InstancedCubes/CubeRendererInstancedArrays/BatchInstancedArrays.h"
 
 #include <math.h>
-#include <string.h>
 #include <float.h>	// For "FLT_MAX"
 #include <stdlib.h>	// For "rand()"
 

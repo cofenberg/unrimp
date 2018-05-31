@@ -36,8 +36,6 @@
 	#include <GL/glx.h>
 	#include <GL/glxext.h>
 
-	#include <string.h>
-
 	#include <dlfcn.h>
 	#include <link.h>
 	#include <iostream>

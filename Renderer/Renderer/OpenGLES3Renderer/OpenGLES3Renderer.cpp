@@ -99,11 +99,6 @@ PRAGMA_WARNING_POP
 	#include <link.h>	// For getting the path to the library (for the error message)
 #endif
 
-// TODO(co) Can we remove this?
-#ifdef LINUX
-	#include <string.h>
-#endif
-
 
 
 

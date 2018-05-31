@@ -42,8 +42,6 @@
 	#include <stdio.h>
 #endif
 
-#include <string.h>
-
 
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]

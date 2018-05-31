@@ -26,7 +26,6 @@
 #include "Framework/Color4.h"
 
 #include <float.h> // For FLT_MAX
-#include <string.h>
 #include <stdlib.h> // For rand()
 
 

@@ -25,8 +25,6 @@
 #include "Basics/FirstInstancing/FirstInstancing.h"
 #include "Framework/Color4.h"
 
-#include <string.h>
-
 
 //[-------------------------------------------------------]
 //[ Public virtual IApplication methods                   ]

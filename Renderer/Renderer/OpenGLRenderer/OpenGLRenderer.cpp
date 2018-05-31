@@ -120,8 +120,6 @@
 	// TODO(co) Review which of the following headers can be removed
 	#include <X11/Xlib.h>
 
-	#include <string.h>
-
 	#include <dlfcn.h>
 	#include <link.h>
 	#include <iostream>	// TODO(co) Can this include be removed?

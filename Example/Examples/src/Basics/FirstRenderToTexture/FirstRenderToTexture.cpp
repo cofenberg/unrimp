@@ -25,8 +25,6 @@
 #include "Basics/FirstRenderToTexture/FirstRenderToTexture.h"
 #include "Framework/Color4.h"
 
-#include <string.h>
-
 
 //[-------------------------------------------------------]
 //[ Public virtual IApplication methods                   ]

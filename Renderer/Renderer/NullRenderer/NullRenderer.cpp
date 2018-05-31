@@ -76,8 +76,6 @@
 #elif LINUX
 	// TODO(co) Review which of the following headers can be removed
 	#include <X11/Xlib.h>
-
-	#include <string.h>
 #endif
 
 

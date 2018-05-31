@@ -35,8 +35,6 @@
 	#include <X11/Xlib.h>
 #endif
 
-#include <string.h>
-
 
 // This is only a simple and close-to-the-metal example, don't use OS stuff directly in more complex projects
 #ifdef _WIN32

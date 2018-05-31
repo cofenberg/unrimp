@@ -30,8 +30,6 @@
 #include <Renderer/DefaultAllocator.h>
 #include <Renderer/RendererInstance.h>
 
-#include <string.h>
-
 
 //[-------------------------------------------------------]
 //[ Public methods                                        ]

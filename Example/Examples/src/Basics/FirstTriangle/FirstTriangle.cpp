@@ -25,8 +25,6 @@
 #include "Basics/FirstTriangle/FirstTriangle.h"
 #include "Framework/Color4.h"
 
-#include <string.h>
-
 
 //[-------------------------------------------------------]
 //[ Public virtual IApplication methods                   ]

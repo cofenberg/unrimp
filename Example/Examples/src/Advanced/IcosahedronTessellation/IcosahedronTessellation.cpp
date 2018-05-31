@@ -29,7 +29,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <float.h> // For FLT_MAX
-#include <string.h>
 #include <stdlib.h> // For rand()
 
 

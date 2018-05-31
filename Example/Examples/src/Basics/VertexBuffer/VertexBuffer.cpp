@@ -25,8 +25,6 @@
 #include "Basics/VertexBuffer/VertexBuffer.h"
 #include "Framework/Color4.h"
 
-#include <string.h>
-
 
 //[-------------------------------------------------------]
 //[ Public virtual IApplication methods                   ]
