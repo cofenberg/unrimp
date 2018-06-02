@@ -21,7 +21,6 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/PrecompiledHeader.h"
 #include "RendererRuntime/Resource/MaterialBlueprint/BufferManager/LightBufferManager.h"
 #include "RendererRuntime/Resource/MaterialBlueprint/MaterialBlueprintResource.h"
 #include "RendererRuntime/Resource/Texture/TextureResourceManager.h"

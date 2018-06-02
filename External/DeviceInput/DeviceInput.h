@@ -76,19 +76,19 @@
 
 	/**
 	*  @brief
-	*    Platform specific "#pragma warning(push)" (MS Windows Visual Studio)
+	*    Platform specific "#pragma warning(push)" (Microsoft Windows Visual Studio)
 	*/
 	#define PRAGMA_WARNING_PUSH __pragma(warning(push))
 
 	/**
 	*  @brief
-	*    Platform specific "#pragma warning(pop)" (MS Windows Visual Studio)
+	*    Platform specific "#pragma warning(pop)" (Microsoft Windows Visual Studio)
 	*/
 	#define PRAGMA_WARNING_POP __pragma(warning(pop))
 
 	/**
 	*  @brief
-	*    Platform specific "#pragma warning(disable: <x>)" (MS Windows Visual Studio)
+	*    Platform specific "#pragma warning(disable: <x>)" (Microsoft Windows Visual Studio)
 	*/
 	#define PRAGMA_WARNING_DISABLE_MSVC(id) __pragma(warning(disable: id))
 
@@ -153,7 +153,7 @@
 
 		/**
 		*  @brief
-		*    Platform specific "#pragma warning(disable: <x>)" (MS Windows Visual Studio)
+		*    Platform specific "#pragma warning(disable: <x>)" (Microsoft Windows Visual Studio)
 		*/
 		#define PRAGMA_WARNING_DISABLE_MSVC(id)
 
@@ -186,7 +186,7 @@
 
 		/**
 		*  @brief
-		*    Platform specific "#pragma warning(disable: <x>)" (MS Windows Visual Studio)
+		*    Platform specific "#pragma warning(disable: <x>)" (Microsoft Windows Visual Studio)
 		*/
 		#define PRAGMA_WARNING_DISABLE_MSVC(id)
 

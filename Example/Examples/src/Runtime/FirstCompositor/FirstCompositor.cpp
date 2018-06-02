@@ -21,12 +21,6 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "PrecompiledHeader.h"
-
-
-//[-------------------------------------------------------]
-//[ Includes                                              ]
-//[-------------------------------------------------------]
 #include "Runtime/FirstCompositor/FirstCompositor.h"
 #include "Runtime/FirstCompositor/CompositorPassFactoryFirst.h"
 

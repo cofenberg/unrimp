@@ -21,7 +21,6 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/PrecompiledHeader.h"
 #include "RendererRuntime/Resource/ShaderPiece/ShaderPieceResourceManager.h"
 #include "RendererRuntime/Resource/ShaderPiece/ShaderPieceResource.h"
 #include "RendererRuntime/Resource/ShaderPiece/Loader/ShaderPieceResourceLoader.h"

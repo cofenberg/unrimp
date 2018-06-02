@@ -21,7 +21,6 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/PrecompiledHeader.h"
 #include "RendererRuntime/Resource/Detail/ResourceStreamer.h"
 #include "RendererRuntime/Resource/Detail/IResourceLoader.h"
 #include "RendererRuntime/Resource/Detail/IResourceManager.h"

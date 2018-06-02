@@ -21,9 +21,17 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "PrecompiledHeader.h"
 #include "Basics/VertexBuffer/VertexBuffer.h"
 #include "Framework/Color4.h"
+
+// Disable warnings in external headers, we can't fix them
+PRAGMA_WARNING_PUSH
+	PRAGMA_WARNING_DISABLE_MSVC(4201)	// warning C4201: nonstandard extension used: nameless struct/union
+	PRAGMA_WARNING_DISABLE_MSVC(4464)	// warning C4464: relative include path contains '..'
+	PRAGMA_WARNING_DISABLE_MSVC(4324)	// warning C4324: '<x>': structure was padded due to alignment specifier
+	PRAGMA_WARNING_DISABLE_MSVC(4668)	// warning C4668: '_M_HYBRID_X86_ARM64' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+	#include <glm/glm.hpp>
+PRAGMA_WARNING_POP
 
 
 //[-------------------------------------------------------]

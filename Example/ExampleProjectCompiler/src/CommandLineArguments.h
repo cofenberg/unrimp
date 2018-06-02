@@ -71,7 +71,7 @@ public:
 	*    Default constructor
 	*
 	*  @note
-	*    - Uses "GetCommandLineW" under MS Windows to get the command line parameters for the program
+	*    - Uses "GetCommandLineW()" under Microsoft Windows to get the command line parameters for the program
 	*/
 	CommandLineArguments();
 

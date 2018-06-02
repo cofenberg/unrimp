@@ -21,7 +21,6 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "PrecompiledHeader.h"
 #include "Framework/CommandLineArguments.h"
 #ifdef _WIN32
 	#include <RendererRuntime/Core/Platform/WindowsHeader.h>

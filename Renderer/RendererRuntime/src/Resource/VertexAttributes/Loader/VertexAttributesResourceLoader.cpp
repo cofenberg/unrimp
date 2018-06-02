@@ -21,7 +21,6 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/PrecompiledHeader.h"
 #include "RendererRuntime/Resource/VertexAttributes/Loader/VertexAttributesResourceLoader.h"
 #include "RendererRuntime/Resource/VertexAttributes/Loader/VertexAttributesFileFormat.h"
 #include "RendererRuntime/Resource/VertexAttributes/VertexAttributesResource.h"

@@ -21,7 +21,6 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/PrecompiledHeader.h"
 #include "RendererRuntime/Resource/Scene/Item/Sky/SkySceneItem.h"
 #include "RendererRuntime/Resource/Scene/SceneResource.h"
 #include "RendererRuntime/Resource/Scene/SceneNode.h"

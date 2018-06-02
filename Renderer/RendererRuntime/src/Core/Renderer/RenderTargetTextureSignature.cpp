@@ -21,7 +21,6 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/PrecompiledHeader.h"
 #include "RendererRuntime/Core/Renderer/RenderTargetTextureSignature.h"
 #include "RendererRuntime/Core/Math/Math.h"
 

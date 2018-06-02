@@ -21,7 +21,6 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "PrecompiledHeader.h"
 #include "Runtime/FirstScene/VrController.h"
 
 #include <RendererRuntime/IRendererRuntime.h>
@@ -48,6 +47,7 @@ PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4324)	// warning C4324: '<x>': structure was padded due to alignment specifier
 	#include <glm/gtx/intersect.hpp>
 	#include <glm/gtx/matrix_decompose.hpp>
+	#include <glm/gtc/type_ptr.hpp>
 PRAGMA_WARNING_POP
 
 

@@ -57,7 +57,7 @@ namespace RendererRuntime
 	public:
 		/**
 		*  @brief
-		*    MS Windows callback method to be called from the outside for input handling
+		*    Microsoft Windows callback method to be called from the outside for input handling
 		*/
 		RENDERERRUNTIME_API_EXPORT LRESULT wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 

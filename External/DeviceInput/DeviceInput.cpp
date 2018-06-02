@@ -5013,7 +5013,7 @@ namespace DeviceInput
 
 
 	//[-------------------------------------------------------]
-	//[ MS Windows backend implementation                     ]
+	//[ Microsoft Windows backend implementation              ]
 	//[-------------------------------------------------------]
 	#if defined(_WIN32)
 		//[-------------------------------------------------------]

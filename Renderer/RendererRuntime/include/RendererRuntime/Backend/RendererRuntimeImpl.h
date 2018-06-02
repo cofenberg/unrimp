@@ -30,7 +30,11 @@
 #include "RendererRuntime/Export.h"
 #include "RendererRuntime/IRendererRuntime.h"
 
-#include <mutex>
+// Disable warnings in external headers, we can't fix them
+PRAGMA_WARNING_PUSH
+	PRAGMA_WARNING_DISABLE_MSVC(4530)	// warning C4530: C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc
+	#include <mutex>
+PRAGMA_WARNING_POP
 
 
 //[-------------------------------------------------------]

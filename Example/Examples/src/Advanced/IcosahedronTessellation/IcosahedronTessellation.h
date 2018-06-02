@@ -29,13 +29,15 @@
 //[-------------------------------------------------------]
 #include "Framework/ExampleBase.h"
 
+#include <Renderer/Renderer.h>
+
 
 //[-------------------------------------------------------]
 //[ Classes                                               ]
 //[-------------------------------------------------------]
 /**
 *  @brief
-*    More advanced tessellation examnple
+*    More advanced tessellation example
 *
 *  @remarks
 *    Demonstrates:

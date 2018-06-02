@@ -21,7 +21,6 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "PrecompiledHeader.h"
 #include "Framework/Linux/ApplicationImplLinux.h"
 #include "Framework/Linux/X11Application.h"
 #include "Framework/Linux/X11Window.h"

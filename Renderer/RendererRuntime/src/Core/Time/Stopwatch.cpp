@@ -21,7 +21,6 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/PrecompiledHeader.h"
 #include "RendererRuntime/Core/Time/Stopwatch.h"
 #ifdef _WIN32
 	#include "RendererRuntime/Core/Platform/WindowsHeader.h"

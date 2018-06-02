@@ -21,7 +21,6 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/PrecompiledHeader.h"
 #include "RendererRuntime/Resource/Scene/Item/Sky/HosekWilkieSky.h"
 #include "RendererRuntime/Core/Math/Math.h"
 

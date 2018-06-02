@@ -21,7 +21,6 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "PrecompiledHeader.h"
 #include "Framework/ApplicationImplWindows.h"
 #include "Framework/IApplication.h"
 #include "Framework/IApplicationRendererRuntime.h"
@@ -239,7 +238,7 @@ void ApplicationImplWindows::redraw()
 
 
 //[-------------------------------------------------------]
-//[ Private static MS Windows callback function           ]
+//[ Private static Microsoft Windows callback function    ]
 //[-------------------------------------------------------]
 LRESULT CALLBACK ApplicationImplWindows::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -254,7 +253,7 @@ LRESULT CALLBACK ApplicationImplWindows::wndProc(HWND hWnd, UINT message, WPARAM
 		applicationImplWindows = reinterpret_cast<ApplicationImplWindows*>(::GetWindowLongPtr(hWnd, GWLP_USERDATA));
 	}
 
-	// Call the MS Windows callback of the debug GUI
+	// Call the Microsoft Windows callback of the debug GUI
 	#ifdef RENDERER_RUNTIME_IMGUI
 		if (nullptr != applicationImplWindows)
 		{

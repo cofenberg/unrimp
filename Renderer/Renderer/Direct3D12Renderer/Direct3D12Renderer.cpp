@@ -3548,7 +3548,7 @@ namespace Direct3D12Renderer
 	//[ D3DCompiler functions                                 ]
 	//[-------------------------------------------------------]
 	#define FNDEF_D3DX12(retType, funcName, args) retType (WINAPI *funcPtr_##funcName) args
-	typedef __interface ID3D10Blob *LPD3D10BLOB;	// "__interface" is no keyword of the ISO C++ standard, shouldn't be a problem because this in here is MS Windows only and it's also within the Direct3D headers we have to use
+	typedef __interface ID3D10Blob *LPD3D10BLOB;	// "__interface" is no keyword of the ISO C++ standard, shouldn't be a problem because this in here is Microsoft Windows only and it's also within the Direct3D headers we have to use
 	typedef ID3D10Blob ID3DBlob;
 	FNDEF_D3DX12(HRESULT,	D3DCompile,		(LPCVOID, SIZE_T, LPCSTR, CONST D3D_SHADER_MACRO*, ID3DInclude*, LPCSTR, LPCSTR, UINT, UINT, ID3DBlob**, ID3DBlob**));
 	FNDEF_D3DX12(HRESULT,	D3DCreateBlob,	(SIZE_T Size, ID3DBlob** ppBlob));

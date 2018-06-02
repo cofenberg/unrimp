@@ -188,12 +188,7 @@ if(WIN32)
 		"C4996" # '<x>': This function or variable may be unsafe
 		"C5045" # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified - https://blogs.msdn.microsoft.com/vcblog/2018/04/20/spectre-diagnostic-in-visual-studio-2017-version-15-7-preview-4/
 		)
-	set(MSVC_LEVEL4_WARNINGS_LIST
-		# See https://docs.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2010/23k5d385(v=vs.100)
-		"C4265" # 'class': class has virtual functions, but destructor is not virtual
-		)
 	string(REPLACE "C" " -wd" MSVC_DISABLED_WARNINGS_STR ${MSVC_DISABLED_WARNINGS_LIST})
-	string(REPLACE "C" " -w4" MSVC_LEVEL4_WARNINGS_STR ${MSVC_LEVEL4_WARNINGS_LIST})
 	set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -Wall -WX /MP ${MSVC_DISABLED_WARNINGS_STR} ${MSVC_LEVEL4_WARNINGS_STR}")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -WX /MP ${MSVC_DISABLED_WARNINGS_STR} ${MSVC_LEVEL4_WARNINGS_STR}")
 	if(${CMAKE_BUILD_TYPE} MATCHES "Debug")

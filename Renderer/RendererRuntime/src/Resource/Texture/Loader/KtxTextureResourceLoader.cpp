@@ -21,7 +21,6 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/PrecompiledHeader.h"
 #include "RendererRuntime/Resource/Texture/Loader/KtxTextureResourceLoader.h"
 #include "RendererRuntime/Resource/Texture/TextureResource.h"
 #include "RendererRuntime/Core/File/IFile.h"

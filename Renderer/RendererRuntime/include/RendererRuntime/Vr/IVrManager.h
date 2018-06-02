@@ -109,7 +109,7 @@ namespace RendererRuntime
 		*
 		*  @note
 		*    - The VR manager is using OpenVR with runtime linking, so you need to ensure the OpenVR shared library
-		*      can be loaded ("openvr_api.dll" under MS Windows, "libopenvr_api.so" under Linux)
+		*      can be loaded ("openvr_api.dll" under Microsoft Windows, "libopenvr_api.so" under Linux)
 		*    - Method can also be used when the VR manager is not running
 		*/
 		virtual bool isHmdPresent() const = 0;

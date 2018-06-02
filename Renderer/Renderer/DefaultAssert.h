@@ -120,7 +120,7 @@ namespace Renderer
 	*
 	*  @note
 	*    - Designed to be instanced and used inside a single C++ file
-	*    - On MS Windows it will print to the Visual Studio output console and the debugger will break
+	*    - On Microsoft Windows it will print to the Visual Studio output console and the debugger will break
 	*    - On Linux it will print on the console
 	*/
 	class DefaultAssert final : public IAssert
@@ -235,7 +235,7 @@ namespace Renderer
 				// Write into standard output stream
 				std::wcerr << utf16Line.c_str();
 
-				// On MS Windows, ensure the output can be seen inside the Visual Studio output window as well
+				// On Microsoft Windows, ensure the output can be seen inside the Visual Studio output window as well
 				::OutputDebugStringW(utf16Line.c_str());
 				if (::IsDebuggerPresent())
 				{

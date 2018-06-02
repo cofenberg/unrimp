@@ -29,6 +29,8 @@
 //[-------------------------------------------------------]
 #include "Basics/FirstTriangle/FirstTriangle.h"
 
+#include <Renderer/Renderer.h>
+
 
 //[-------------------------------------------------------]
 //[ Classes                                               ]

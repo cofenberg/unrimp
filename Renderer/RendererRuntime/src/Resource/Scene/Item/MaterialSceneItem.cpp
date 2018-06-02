@@ -21,7 +21,6 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/PrecompiledHeader.h"
 #include "RendererRuntime/Resource/Scene/Item/MaterialSceneItem.h"
 #include "RendererRuntime/Resource/Scene/Loader/SceneFileFormat.h"
 #include "RendererRuntime/Resource/Scene/SceneResource.h"

@@ -21,7 +21,6 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "PrecompiledHeader.h"
 #include "ConsoleExampleRunner.h"
 #include "Framework/PlatformTypes.h"
 #include "Framework/CommandLineArguments.h"

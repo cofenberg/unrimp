@@ -21,7 +21,6 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/PrecompiledHeader.h"
 #include "RendererRuntime/Resource/CompositorNode/Pass/Quad/CompositorResourcePassQuad.h"
 #include "RendererRuntime/Resource/CompositorNode/Loader/CompositorNodeFileFormat.h"
 #include "RendererRuntime/Resource/Material/MaterialResourceManager.h"

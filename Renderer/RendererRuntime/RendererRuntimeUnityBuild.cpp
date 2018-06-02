@@ -19,15 +19,11 @@
 
 
 // Amalgamated/unity build
-#include "RendererRuntime/PrecompiledHeader.h"
 #ifdef RENDERER_RUNTIME_OPENVR
 	#include "src/Vr/OpenVR/OpenVRRuntimeLinking.cpp"
 	#include "src/Vr/OpenVR/VrManagerOpenVR.cpp"
 	#include "src/Vr/OpenVR/Loader/OpenVRMeshResourceLoader.cpp"
 	#include "src/Vr/OpenVR/Loader/OpenVRTextureResourceLoader.cpp"
-#endif
-#ifdef _WIN32
-	#include "src/PrecompiledHeader.cpp"
 #endif
 #include "src/Context.cpp"
 #include "src/Asset/AssetManager.cpp"

@@ -30,6 +30,7 @@
 #include <Renderer/Renderer.h>
 
 #include <stdlib.h>
+#include <cassert>
 
 
 //[-------------------------------------------------------]

@@ -21,7 +21,6 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/PrecompiledHeader.h"
 #include "RendererRuntime/Core/Renderer/RenderTargetTextureManager.h"
 #include "RendererRuntime/Resource/Texture/TextureResourceManager.h"
 #include "RendererRuntime/Resource/Texture/TextureResource.h"

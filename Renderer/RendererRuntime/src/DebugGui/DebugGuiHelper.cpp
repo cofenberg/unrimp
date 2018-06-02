@@ -21,7 +21,6 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/PrecompiledHeader.h"
 #include "RendererRuntime/DebugGui/DebugGuiHelper.h"
 #include "RendererRuntime/Core/Math/Transform.h"
 #include "RendererRuntime/Core/Math/EulerAngles.h"
@@ -56,6 +55,7 @@ PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4668)	// warning C4668: '_M_HYBRID_X86_ARM64' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
 	PRAGMA_WARNING_DISABLE_MSVC(4774)	// warning C4774: 'sprintf_s' : format string expected in argument 3 is not a string literal
 	#include <string>
+	#include <unordered_set>
 PRAGMA_WARNING_POP
 
 

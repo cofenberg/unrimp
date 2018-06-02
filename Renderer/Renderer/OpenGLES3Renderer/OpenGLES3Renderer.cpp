@@ -1154,7 +1154,7 @@ namespace OpenGLES3Renderer
 							{
 								// There's no need to create a dummy native window, we've got a real native window to work with :D
 								mDummyNativeWindow = (EGLNativeWindowType)mNativeWindowHandle;	// Interesting - in here, we have an OS dependent cast issue when using C++ casts: While we would need
-																								// reinterpret_cast<EGLNativeWindowType>(nativeWindowHandle) under MS Windows ("HWND"), we would need static_cast<EGLNativeWindowType>(nativeWindowHandle)
+																								// reinterpret_cast<EGLNativeWindowType>(nativeWindowHandle) under Microsoft Windows ("HWND"), we would need static_cast<EGLNativeWindowType>(nativeWindowHandle)
 																								// under Linux ("int")... so, to avoid #ifdefs, we just use old school c-style casts in here...
 
 								#ifdef __ANDROID__

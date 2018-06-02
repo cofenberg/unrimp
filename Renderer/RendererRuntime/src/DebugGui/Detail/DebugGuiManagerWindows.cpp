@@ -21,7 +21,6 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/PrecompiledHeader.h"
 #include "RendererRuntime/DebugGui/Detail/DebugGuiManagerWindows.h"
 
 #include <imgui/imgui.h>

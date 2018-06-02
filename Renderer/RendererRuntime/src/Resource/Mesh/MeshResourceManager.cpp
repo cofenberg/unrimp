@@ -21,7 +21,6 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/PrecompiledHeader.h"
 #include "RendererRuntime/Resource/Mesh/MeshResourceManager.h"
 #include "RendererRuntime/Resource/Mesh/MeshResource.h"
 #include "RendererRuntime/Resource/Mesh/Loader/MeshResourceLoader.h"

@@ -93,7 +93,7 @@ public:
 
 
 //[-------------------------------------------------------]
-//[ Private static MS Windows callback function           ]
+//[ Private static Microsoft Windows callback function    ]
 //[-------------------------------------------------------]
 private:
 	static LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);

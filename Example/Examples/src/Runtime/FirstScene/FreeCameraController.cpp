@@ -21,7 +21,6 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "PrecompiledHeader.h"
 #include "Runtime/FirstScene/FreeCameraController.h"
 #include "Framework/IApplication.h"
 

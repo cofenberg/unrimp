@@ -21,7 +21,6 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/PrecompiledHeader.h"
 #define OPENVR_DEFINERUNTIMELINKING
 #include "RendererRuntime/Vr/OpenVR/OpenVRRuntimeLinking.h"
 #include "RendererRuntime/IRendererRuntime.h"

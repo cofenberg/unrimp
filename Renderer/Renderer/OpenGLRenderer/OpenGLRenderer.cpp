@@ -3236,7 +3236,7 @@ namespace OpenGLRenderer
 				mOwnsRenderContext(true)
 			{
 				// Create a OpenGL dummy window?
-				// -> Under MS Windows, a OpenGL context is always coupled to a window... even if we're not going to render into a window at all...
+				// -> Under Microsoft Windows, a OpenGL context is always coupled to a window... even if we're not going to render into a window at all...
 				if (NULL_HANDLE == mNativeWindowHandle)
 				{
 					// Setup and register the window class for the OpenGL dummy window
@@ -9799,7 +9799,7 @@ namespace OpenGLRenderer
 
 			// Create the OpenGL texture instance
 			// TODO(co) "GL_ARB_direct_state_access" AMD graphics card driver bug ahead
-			// -> AMD graphics card: 13.02.2017 using Radeon software 17.1.1 on MS Windows: Looks like "GL_ARB_direct_state_access" is broken when trying to use "glCompressedTextureSubImage3D()" for upload
+			// -> AMD graphics card: 13.02.2017 using Radeon software 17.1.1 on Microsoft Windows: Looks like "GL_ARB_direct_state_access" is broken when trying to use "glCompressedTextureSubImage3D()" for upload
 			// -> Describes the same problem: https://community.amd.com/thread/194748 - "Upload data to GL_TEXTURE_CUBE_MAP with glTextureSubImage3D (DSA) broken ?"
 			#ifdef _WIN32
 				const bool isArbDsa = false;

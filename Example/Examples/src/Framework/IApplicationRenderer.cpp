@@ -21,7 +21,6 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "PrecompiledHeader.h"
 #include "Framework/IApplicationRenderer.h"
 #include "Framework/ExampleBase.h"
 

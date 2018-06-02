@@ -170,7 +170,6 @@ if(WIN32)
 	set(SOURCE_CODES
 		${SOURCE_CODES}
 		src/Framework/ApplicationImplWindows.cpp
-		src/PrecompiledHeader.cpp
 	)
 elseif(ANDROID)
 	message("TODO(co) Examples: Add Android support")

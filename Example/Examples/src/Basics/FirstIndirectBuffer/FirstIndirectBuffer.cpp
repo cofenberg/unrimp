@@ -21,9 +21,10 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "PrecompiledHeader.h"
 #include "Basics/FirstIndirectBuffer/FirstIndirectBuffer.h"
 #include "Framework/Color4.h"
+
+#include <cassert>
 
 
 //[-------------------------------------------------------]

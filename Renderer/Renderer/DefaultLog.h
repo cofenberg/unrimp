@@ -120,8 +120,9 @@ namespace Renderer
 	*
 	*  @note
 	*    - Designed to be instanced and used inside a single C++ file
-	*    - On MS Windows it will print to the Visual Studio output console, on critical message the debugger will break
+	*    - On Microsoft Windows it will print to the Visual Studio output console, on critical message the debugger will break
 	*    - On Linux it will print on the console
+	*    - On Android it will print into the Android system log
 	*/
 	class DefaultLog : public ILog
 	{
@@ -248,7 +249,7 @@ namespace Renderer
 					std::wcout << utf16Line.c_str();
 				}
 
-				// On MS Windows, ensure the output can be seen inside the Visual Studio output window as well
+				// On Microsoft Windows, ensure the output can be seen inside the Visual Studio output window as well
 				::OutputDebugStringW(utf16Line.c_str());
 				if (Type::CRITICAL == type && ::IsDebuggerPresent())
 				{

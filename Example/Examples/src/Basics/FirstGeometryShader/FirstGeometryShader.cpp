@@ -21,9 +21,10 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "PrecompiledHeader.h"
 #include "Basics/FirstGeometryShader/FirstGeometryShader.h"
 #include "Framework/Color4.h"
+
+#include <cassert>
 
 
 //[-------------------------------------------------------]
