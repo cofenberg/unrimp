@@ -130,18 +130,23 @@ set(SOURCE_CODES
 # Disable warnings in external libraries, we can't fix them
 if(WIN32)
 	# Used options:
+	# - Disable "warning C4018: '<': signed/unsigned mismatch"
+	# - Disable "warning C4100: 'data': unreferenced formal parameter"
 	# - Disable "warning C4127: conditional expression is constant"
 	# - Disable "warning C4131: 'adler32_z': uses old-style declarator"
 	# - Disable "warning C4201: nonstandard extension used: nameless struct/union"
 	# - Disable "warning C4204: nonstandard extension used: non-constant aggregate initializer"
 	# - Disable "warning C4242: '=': conversion from 'unsigned int' to 'Bytef', possible loss of data"
 	# - Disable "warning C4244: '=': conversion from 'unsigned int' to 'Bytef', possible loss of data"
+	# - Disable "warning C4245: '=': conversion from 'int' to 'crnlib::uint', signed/unsigned mismatch"
 	# - Disable "warning C4255: 'get_crc_table': no function prototype given: converting '()' to '(void)'"
 	# - Disable "warning C4365: 'argument': conversion from 'std::_Atomic_integral_t' to 'long', signed/unsigned mismatch"
 	# - Disable "warning C4456: declaration of 'i' hides previous local declaration"
 	# - Disable "warning C4464: relative include path contains '..'"
 	# - Disable "warning C4548: expression before comma has no effect; expected expression with side-effect"
+	# - Disable "warning C4554: '<<': check operator precedence for possible error; use parentheses to clarify precedence"
 	# - Disable "warning C4555: result of expression not used"
+	# - Disable "warning C4701: potentially uninitialized local variable 'refinerResults' used"
 	# - Disable "warning C4774: '_scprintf' : format string expected in argument 1 is not a string literal""
 	# - Disable "warning C4571: Informational: catch(...) semantics changed since Visual C++ 7.1; structured exceptions (SEH) are no longer caught"
 	# - Disable "warning C4574: '_SECURE_SCL' is defined to be '0': did you mean to use '#if _SECURE_SCL'?"
@@ -149,10 +154,12 @@ if(WIN32)
 	# - Disable "warning C4625: 'std::codecvt_base': copy constructor was implicitly defined as deleted"
 	# - Disable "warning C4626: 'std::codecvt_base': assignment operator was implicitly defined as deleted"
 	# - Disable "warning C4668: 'CRNLIB_SUPPORT_ETC_A1' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'"
+	# - Disable "warning C4703: potentially uninitialized local pointer variable 'pScan_line' used"
 	# - Disable "warning C5026: 'std::_Generic_error_category': move constructor was implicitly defined as deleted"
 	# - Disable "warning C5027: 'std::_Generic_error_category': move assignment operator was implicitly defined as deleted"
+	# - Disable "warning C5038: data member 'crnlib::dxt_hc::m_has_etc_color_blocks' will be initialized after data member 'crnlib::dxt_hc::m_num_alpha_blocks'"
 	# - Disable "warning C5039: 'ReadDirectoryChangesW': pointer or reference to potentially throwing function passed to extern C function under -EHc. Undefined behavior may occur if this function throws an exception."
-	set_source_files_properties(${EXTERNAL_SOURCE_CODES} PROPERTIES COMPILE_FLAGS "-wd 4127 -wd 4131 -wd 4201 -wd 4204 -wd 4242 -wd 4244 -wd 4255 -wd 4365 -wd 4456 -wd 4464 -wd 4548 -wd 4555 -wd 4774 -wd 4571 -wd 4574 -wd 4061 -wd 4625 -wd 4626 -wd 4668 -wd 5026 -wd 5027 -wd 5039")
+	set_source_files_properties(${EXTERNAL_SOURCE_CODES} PROPERTIES COMPILE_FLAGS "-wd 4018 -wd 4100 -wd 4127 -wd 4131 -wd 4201 -wd 4204 -wd 4242 -wd 4244 -wd 4245 -wd 4255 -wd 4365 -wd 4456 -wd 4464 -wd 4548 -wd 4554 -wd 4555 -wd 4701 -wd 4774 -wd 4571 -wd 4574 -wd 4061 -wd 4625 -wd 4626 -wd 4703 -wd 4668 -wd 5026 -wd 5027 -wd 5038 -wd 5039")
 endif()
 
 

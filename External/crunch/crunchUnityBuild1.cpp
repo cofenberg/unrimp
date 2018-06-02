@@ -63,7 +63,7 @@
 #include "src/crn_rg_etc1.cpp"
 #include "src/crn_ryg_dxt.cpp"
 #include "src/crn_symbol_codec.cpp"
-#include "src/crn_zeng.cpp"
+#include "src/crn_hash_map.cpp"
 // console
 #include "src/crn_colorized_console.cpp"
 #include "src/crn_console.cpp"
@@ -74,7 +74,9 @@
 // crn
 //#include "src/crn_comp.cpp"	// Moved into "crunchUnityBuild2.cpp" since it doesn't play well together with the other source codes
 #include "src/crn_dds_comp.cpp"
-#include "src/crn_decomp.cpp"
+#ifdef RENDERER_TOOLKIT_EXPORTS
+	#include "src/crn_decomp.cpp"
+#endif
 // #include "src/crn_dxt_hc.cpp"	// Moved into "crunchUnityBuild2.cpp" since it doesn't play well together with the other source codes
 #include "src/crn_texture_comp.cpp"
 // file

@@ -57,8 +57,3 @@
 #include "src/lzma_LzmaDec.cpp"
 // utils
 #include "src/crn_checksum.cpp"
-
-#ifdef RENDERER_TOOLKIT_EXPORTS
-	#undef CRND_HEADER_FILE_ONLY
-	#include "inc/crn_decomp.h"
-#endif

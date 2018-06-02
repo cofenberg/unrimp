@@ -11,7 +11,7 @@ namespace crnlib {
 #define CProb UInt16
 #endif
 
-#define IsJcc(b0, b1) ((b0) == 0x0F && ((b1) & 0xF0) == 0x80)
+#define IsJcc(b0, b1) ((b0) == 0x0F && ((b1)&0xF0) == 0x80)
 #define IsJ(b0, b1) ((b1 & 0xFE) == 0xE8 || IsJcc(b0, b1))
 
 #define kNumTopBits 24
@@ -22,23 +22,49 @@ namespace crnlib {
 #define kNumMoveBits 5
 
 #define RC_READ_BYTE (*buffer++)
-#define RC_TEST { if (buffer == bufferLim) return SZ_ERROR_DATA; }
-#define RC_INIT2 code = 0; range = 0xFFFFFFFF; \
-  { int i; for (i = 0; i < 5; i++) { RC_TEST; code = (code << 8) | RC_READ_BYTE; }}
+#define RC_TEST              \
+  {                          \
+    if (buffer == bufferLim) \
+      return SZ_ERROR_DATA;  \
+  }
+#define RC_INIT2                         \
+  code = 0;                              \
+  range = 0xFFFFFFFF;                    \
+  {                                      \
+    int i;                               \
+    for (i = 0; i < 5; i++) {            \
+      RC_TEST;                           \
+      code = (code << 8) | RC_READ_BYTE; \
+    }                                    \
+  }
 
-#define NORMALIZE if (range < kTopValue) { RC_TEST; range <<= 8; code = (code << 8) | RC_READ_BYTE; }
+#define NORMALIZE                      \
+  if (range < kTopValue) {             \
+    RC_TEST;                           \
+    range <<= 8;                       \
+    code = (code << 8) | RC_READ_BYTE; \
+  }
 
-#define IF_BIT_0(p) ttt = *(p); bound = (range >> kNumBitModelTotalBits) * ttt; if (code < bound)
-#define UPDATE_0(p) range = bound; *(p) = (CProb)(ttt + ((kBitModelTotal - ttt) >> kNumMoveBits)); NORMALIZE;
-#define UPDATE_1(p) range -= bound; code -= bound; *(p) = (CProb)(ttt - (ttt >> kNumMoveBits)); NORMALIZE;
+#define IF_BIT_0(p)                               \
+  ttt = *(p);                                     \
+  bound = (range >> kNumBitModelTotalBits) * ttt; \
+  if (code < bound)
+#define UPDATE_0(p)                                               \
+  range = bound;                                                  \
+  *(p) = (CProb)(ttt + ((kBitModelTotal - ttt) >> kNumMoveBits)); \
+  NORMALIZE;
+#define UPDATE_1(p)                            \
+  range -= bound;                              \
+  code -= bound;                               \
+  *(p) = (CProb)(ttt - (ttt >> kNumMoveBits)); \
+  NORMALIZE;
 
 int Bcj2_Decode(
-    const Byte *buf0, SizeT size0,
-    const Byte *buf1, SizeT size1,
-    const Byte *buf2, SizeT size2,
-    const Byte *buf3, SizeT size3,
-    Byte *outBuf, SizeT outSize)
-{
+    const Byte* buf0, SizeT size0,
+    const Byte* buf1, SizeT size1,
+    const Byte* buf2, SizeT size2,
+    const Byte* buf3, SizeT size3,
+    Byte* outBuf, SizeT outSize) {
   CProb p[256 + 2];
   SizeT inPos = 0, outPos = 0;
 
@@ -57,18 +83,16 @@ int Bcj2_Decode(
   if (outSize == 0)
     return SZ_OK;
 
-  for (;;)
-  {
+  for (;;) {
     Byte b;
-    CProb *prob;
+    CProb* prob;
     UInt32 bound;
     UInt32 ttt;
 
     SizeT limit = size0 - inPos;
     if (outSize - outPos < limit)
       limit = outSize - outPos;
-    while (limit != 0)
-    {
+    while (limit != 0) {
       Byte b = buf0[inPos];
       outBuf[outPos++] = b;
       if (IsJ(prevByte, b))
@@ -90,26 +114,21 @@ int Bcj2_Decode(
     else
       prob = p + 257;
 
-    IF_BIT_0(prob)
-    {
+    IF_BIT_0(prob) {
       UPDATE_0(prob)
       prevByte = b;
     }
-    else
-    {
+    else {
       UInt32 dest;
-      const Byte *v;
+      const Byte* v;
       UPDATE_1(prob)
-      if (b == 0xE8)
-      {
+      if (b == 0xE8) {
         v = buf1;
         if (size1 < 4)
           return SZ_ERROR_DATA;
         buf1 += 4;
         size1 -= 4;
-      }
-      else
-      {
+      } else {
         v = buf2;
         if (size2 < 4)
           return SZ_ERROR_DATA;
@@ -117,7 +136,8 @@ int Bcj2_Decode(
         size2 -= 4;
       }
       dest = (((UInt32)v[0] << 24) | ((UInt32)v[1] << 16) |
-          ((UInt32)v[2] << 8) | ((UInt32)v[3])) - ((UInt32)outPos + 4);
+              ((UInt32)v[2] << 8) | ((UInt32)v[3])) -
+             ((UInt32)outPos + 4);
       outBuf[outPos++] = (Byte)dest;
       if (outPos == outSize)
         break;
@@ -132,5 +152,4 @@ int Bcj2_Decode(
   }
   return (outPos == outSize) ? SZ_OK : SZ_ERROR_DATA;
 }
-
 }

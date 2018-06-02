@@ -5,64 +5,59 @@
 #include "crn_vec.h"
 #include "crn_pixel_format.h"
 
-namespace crnlib
-{
-   struct texture_file_types
-   {
-      enum format
-      {
-         cFormatInvalid = -1,
+namespace crnlib {
+struct texture_file_types {
+  enum format {
+    cFormatInvalid = -1,
 
-         cFormatDDS,
-         cFormatCRN,
-         cFormatKTX,
+    cFormatDDS,
+    cFormatCRN,
+    cFormatKTX,
 
-         cNumMipmappedFileFormats,
+    cNumMipmappedFileFormats,
 
-         cFormatTGA = cNumMipmappedFileFormats,
-         cFormatPNG,
-         cFormatJPG,
-         cFormatJPEG,
-         cFormatBMP,
-         cFormatGIF,
-         cFormatTIF,
-         cFormatTIFF,
-         cFormatPPM,
-         cFormatPGM,
-         cFormatPSD,
-         cFormatJP2,
-         
-         cNumRegularFileFormats,
-         
-         cNumImageFileFormats = cNumRegularFileFormats - cNumMipmappedFileFormats,
+    cFormatTGA = cNumMipmappedFileFormats,
+    cFormatPNG,
+    cFormatJPG,
+    cFormatJPEG,
+    cFormatBMP,
+    cFormatGIF,
+    cFormatTIF,
+    cFormatTIFF,
+    cFormatPPM,
+    cFormatPGM,
+    cFormatPSD,
+    cFormatJP2,
 
-         // Not really a file format
-         cFormatClipboard = cNumRegularFileFormats,
-         cFormatDragDrop,
+    cNumRegularFileFormats,
 
-         cNumFileFormats
-      };
+    cNumImageFileFormats = cNumRegularFileFormats - cNumMipmappedFileFormats,
 
-      static const char* get_extension(format fmt);
+    // Not really a file format
+    cFormatClipboard = cNumRegularFileFormats,
+    cFormatDragDrop,
 
-      static format determine_file_format(const char* pFilename);
+    cNumFileFormats
+  };
 
-      static bool supports_mipmaps(format fmt);
-      static bool supports_alpha(format fmt);
-   };
+  static const char* get_extension(format fmt);
 
-   enum texture_type
-   {
-      cTextureTypeUnknown = 0,
-      cTextureTypeRegularMap,
-      cTextureTypeNormalMap,
-      cTextureTypeVerticalCrossCubemap,
-      cTextureTypeCubemap,
+  static format determine_file_format(const char* pFilename);
 
-      cNumTextureTypes
-   };
+  static bool supports_mipmaps(format fmt);
+  static bool supports_alpha(format fmt);
+};
 
-   const char* get_texture_type_desc(texture_type t);
+enum texture_type {
+  cTextureTypeUnknown = 0,
+  cTextureTypeRegularMap,
+  cTextureTypeNormalMap,
+  cTextureTypeVerticalCrossCubemap,
+  cTextureTypeCubemap,
 
-} // namespace crnlib
+  cNumTextureTypes
+};
 
+const char* get_texture_type_desc(texture_type t);
+
+}  // namespace crnlib
