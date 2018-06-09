@@ -104,7 +104,7 @@ if(WIN32)
 	# - Disable "warning C4456: declaration of 'i' hides previous local declaration"
 	# - Disable "warning C4530: C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc"
 	# - Disable "warning C4668: '__GNUC__' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'"
-	set_source_files_properties(${EXTERNAL_SOURCE_CODES} PROPERTIES COMPILE_FLAGS "-wd 4201 -wd 4204 -wd 4255 -wd 4456 -wd 4530 -wd 4668")
+	set_source_files_properties(${EXTERNAL_SOURCE_CODES} PROPERTIES COMPILE_FLAGS "/wd4201 /wd4204 /wd4255 /wd4456 /wd4530 /wd4668")
 endif()
 
 

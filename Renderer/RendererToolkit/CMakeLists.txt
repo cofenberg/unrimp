@@ -159,7 +159,7 @@ if(WIN32)
 	# - Disable "warning C5027: 'std::_Generic_error_category': move assignment operator was implicitly defined as deleted"
 	# - Disable "warning C5038: data member 'crnlib::dxt_hc::m_has_etc_color_blocks' will be initialized after data member 'crnlib::dxt_hc::m_num_alpha_blocks'"
 	# - Disable "warning C5039: 'ReadDirectoryChangesW': pointer or reference to potentially throwing function passed to extern C function under -EHc. Undefined behavior may occur if this function throws an exception."
-	set_source_files_properties(${EXTERNAL_SOURCE_CODES} PROPERTIES COMPILE_FLAGS "-wd 4018 -wd 4100 -wd 4127 -wd 4131 -wd 4201 -wd 4204 -wd 4242 -wd 4244 -wd 4245 -wd 4255 -wd 4365 -wd 4456 -wd 4464 -wd 4548 -wd 4554 -wd 4555 -wd 4701 -wd 4774 -wd 4571 -wd 4574 -wd 4061 -wd 4625 -wd 4626 -wd 4703 -wd 4668 -wd 5026 -wd 5027 -wd 5038 -wd 5039")
+	set_source_files_properties(${EXTERNAL_SOURCE_CODES} PROPERTIES COMPILE_FLAGS "/wd4018 /wd4100 /wd4127 /wd4131 /wd4201 /wd4204 /wd4242 /wd4244 /wd4245 /wd4255 /wd4365 /wd4456 /wd4464 /wd4548 /wd4554 /wd4555 /wd4701 /wd4774 /wd4571 /wd4574 /wd4061 /wd4625 /wd4626 /wd4703 /wd4668 /wd5026 /wd5027 /wd5038 /wd5039")
 endif()
 
 

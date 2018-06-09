@@ -234,7 +234,7 @@ if(WIN32)
 	# - Disable "warning C4548: expression before comma has no effect; expected expression with side-effect"
 	# - Disable "warning C4668: '_USING_V110_SDK71_' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'"
 	# - Disable "warning C4701: potentially uninitialized local variable 'timestamp' used"
-	set_source_files_properties(${EXTERNAL_SOURCE_CODES} PROPERTIES COMPILE_FLAGS "-wd 4100 -wd 4127 -wd 4201 -wd 4242 -wd 4244 -wd 4255 -wd 4389 -wd 4456 -wd 4548 -wd 4668 -wd 4701")
+	set_source_files_properties(${EXTERNAL_SOURCE_CODES} PROPERTIES COMPILE_FLAGS "/wd4100 /wd4127 /wd4201 /wd4242 /wd4244 /wd4255 /wd4389 /wd4456 /wd4548 /wd4668 /wd4701")
 endif()
 
 
