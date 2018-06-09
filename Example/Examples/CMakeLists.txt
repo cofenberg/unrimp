@@ -57,6 +57,14 @@ unrimp_add_conditional_definition(RENDERER_DIRECT3D11)
 unrimp_add_conditional_definition(RENDERER_DIRECT3D12)
 unrimp_add_conditional_definition(RENDERER_RUNTIME)
 unrimp_add_conditional_definition(RENDERER_RUNTIME_PROFILER)
+if(RENDERER_RUNTIME_PROFILER)
+	if(RENDERER_DIRECT3D11)
+		add_definitions(-DRMT_USE_D3D11)
+	endif()
+	if(RENDERER_OPENGL)
+		add_definitions(-DRMT_USE_OPENGL)
+	endif()
+endif()
 unrimp_add_conditional_definition(RENDERER_RUNTIME_IMGUI)
 unrimp_add_conditional_definition(RENDERER_RUNTIME_OPENVR)
 
@@ -217,6 +225,7 @@ if(WIN32)
 	# Used options:
 	# - Disable "warning C4100: 'len': unreferenced formal parameter"
 	# - Disable "warning C4127: conditional expression is constant"
+	# - Disable "warning C4201: nonstandard extension used: nameless struct/union"
 	# - Disable "warning C4242: '=': conversion from 'PHYSFS_uint32' to 'PHYSFS_uint16', possible loss of data"
 	# - Disable "warning C4244: 'initializing': conversion from 'const PHYSFS_uint32' to 'const PHYSFS_uint16', possible loss of data"
 	# - Disable "warning C4255: '__slwpcb': no function prototype given: converting '()' to '(void)'"
@@ -224,7 +233,8 @@ if(WIN32)
 	# - Disable "warning C4456: declaration of 'len' hides previous local declaration"
 	# - Disable "warning C4548: expression before comma has no effect; expected expression with side-effect"
 	# - Disable "warning C4668: '_USING_V110_SDK71_' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'"
-	set_source_files_properties(${EXTERNAL_SOURCE_CODES} PROPERTIES COMPILE_FLAGS "-wd 4100 -wd 4127 -wd 4242 -wd 4244 -wd 4255 -wd 4389 -wd 4456 -wd 4548 -wd 4668")
+	# - Disable "warning C4701: potentially uninitialized local variable 'timestamp' used"
+	set_source_files_properties(${EXTERNAL_SOURCE_CODES} PROPERTIES COMPILE_FLAGS "-wd 4100 -wd 4127 -wd 4201 -wd 4242 -wd 4244 -wd 4255 -wd 4389 -wd 4456 -wd 4548 -wd 4668 -wd 4701")
 endif()
 
 

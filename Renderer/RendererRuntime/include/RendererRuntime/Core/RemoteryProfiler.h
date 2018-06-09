@@ -144,7 +144,7 @@ namespace RendererRuntime
 					_rmt_UnbindD3D11();
 				}
 			#endif
-			#if RMT_USE_D3D11
+			#if RMT_USE_OPENGL
 				if (mUseOpenGL)
 				{
 					// TODO(co) Might take some time due to "rmt_UnbindOpenGL blocks indefinitely #112" - https://github.com/Celtoys/Remotery/issues/112
@@ -177,7 +177,7 @@ namespace RendererRuntime
 					_rmt_BeginD3D11Sample(name, hashCache);
 				}
 			#endif
-			#if RMT_USE_D3D11
+			#if RMT_USE_OPENGL
 				if (mUseOpenGL)
 				{
 					_rmt_BeginOpenGLSample(name, hashCache);
@@ -193,7 +193,7 @@ namespace RendererRuntime
 					_rmt_EndD3D11Sample();
 				}
 			#endif
-			#if RMT_USE_D3D11
+			#if RMT_USE_OPENGL
 				if (mUseOpenGL)
 				{
 					_rmt_EndOpenGLSample();
