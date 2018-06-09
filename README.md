@@ -254,7 +254,7 @@ Microsoft Windows: Targeting Android
 ======
 - Install the Visual Studio 2017 ["Mobile development with C++"-workload](https://blogs.msdn.microsoft.com/vcblog/2017/04/18/android-and-ios-development-with-c-in-visual-studio/)
 - Build and run the ["Native Activity Application (Android)"-template](https://docs.microsoft.com/en-us/visualstudio/cross-platform/create-an-android-native-activity-app) to verify your installation and setup
-- Unrimp needs at least "android-ndk-r17" due to the usage of C++17 features like the filesystem, download this Android NDK if needed
+- Unrimp needs at least ["android-ndk-r17"](https://developer.android.com/ndk/downloads/) due to the usage of C++17 features like the filesystem, download this Android NDK if needed
 - [Open Visual Studio 2017 and select "File -> Open -> CMake..." -> "unrimp\CMakeLists.txt"](https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studio/)
 - Build "Android_arm64_Static" project settings
 - TODO(co) Work-in-progress: Compile data for mobile target, upload to device to test and debug
