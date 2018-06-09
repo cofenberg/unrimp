@@ -32,6 +32,7 @@
 #include "RendererRuntime/Resource/Material/MaterialResource.h"
 #include "RendererRuntime/Resource/Texture/TextureResourceManager.h"
 #include "RendererRuntime/Resource/Texture/TextureResource.h"
+#include "RendererRuntime/Core/IProfiler.h"
 #include "RendererRuntime/IRendererRuntime.h"
 
 
@@ -82,8 +83,8 @@ namespace RendererRuntime
 						mCommandBuffer.clear();
 						if (!mFramebuffersPtrs.empty())
 						{
-							// Scoped debug event
-							COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
+							// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
+							RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(rendererRuntime.getContext(), mCommandBuffer)
 
 							// Basing on "Hierarchical-Z map based occlusion culling" - "Hi-Z map construction" - http://rastergrid.com/blog/2010/10/hierarchical-z-map-based-occlusion-culling/
 							uint32_t currentWidth = renderTargetWidth;

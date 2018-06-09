@@ -28,6 +28,7 @@
 #include "RendererRuntime/Resource/CompositorWorkspace/CompositorWorkspaceInstance.h"
 #include "RendererRuntime/Resource/Texture/TextureResourceManager.h"
 #include "RendererRuntime/Resource/Texture/TextureResource.h"
+#include "RendererRuntime/Core/IProfiler.h"
 #include "RendererRuntime/IRendererRuntime.h"
 
 
@@ -43,13 +44,14 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void CompositorInstancePassCopy::onFillCommandBuffer(const Renderer::IRenderTarget&, const CompositorContextData&, Renderer::CommandBuffer& commandBuffer)
 	{
-		// Scoped debug event
-		COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)
+		// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
+		const IRendererRuntime& rendererRuntime = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime();
+		RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(rendererRuntime.getContext(), commandBuffer)
 
 		// Get destination and source texture resources
 		// TODO(co) "RendererRuntime::TextureResourceManager::getTextureResourceByAssetId()" is considered to be inefficient, don't use it in here
 		const CompositorResourcePassCopy& compositorResourcePassCopy = static_cast<const CompositorResourcePassCopy&>(getCompositorResourcePass());
-		const TextureResourceManager& textureResourceManager = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getTextureResourceManager();
+		const TextureResourceManager& textureResourceManager = rendererRuntime.getTextureResourceManager();
 		const TextureResource* destinationTextureResource = textureResourceManager.getTextureResourceByAssetId(compositorResourcePassCopy.getDestinationTextureAssetId());
 		const TextureResource* sourceTextureResource = textureResourceManager.getTextureResourceByAssetId(compositorResourcePassCopy.getSourceTextureAssetId());
 		if (nullptr != destinationTextureResource && nullptr != sourceTextureResource)

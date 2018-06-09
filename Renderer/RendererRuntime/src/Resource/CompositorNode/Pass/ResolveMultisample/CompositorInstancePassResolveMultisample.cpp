@@ -27,6 +27,7 @@
 #include "RendererRuntime/Resource/CompositorWorkspace/CompositorWorkspaceResourceManager.h"
 #include "RendererRuntime/Resource/CompositorWorkspace/CompositorWorkspaceInstance.h"
 #include "RendererRuntime/Core/Renderer/FramebufferManager.h"
+#include "RendererRuntime/Core/IProfiler.h"
 #include "RendererRuntime/IRendererRuntime.h"
 
 
@@ -42,11 +43,12 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void CompositorInstancePassResolveMultisample::onFillCommandBuffer(const Renderer::IRenderTarget& renderTarget, const CompositorContextData&, Renderer::CommandBuffer& commandBuffer)
 	{
-		// Scoped debug event
-		COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)
+		// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
+		const IRendererRuntime& rendererRuntime = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime();
+		RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(rendererRuntime.getContext(), commandBuffer)
 
 		// Resolve
-		Renderer::IFramebuffer* framebuffer = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getCompositorWorkspaceResourceManager().getFramebufferManager().getFramebufferByCompositorFramebufferId(static_cast<const CompositorResourcePassResolveMultisample&>(getCompositorResourcePass()).getSourceMultisampleCompositorFramebufferId());
+		Renderer::IFramebuffer* framebuffer = rendererRuntime.getCompositorWorkspaceResourceManager().getFramebufferManager().getFramebufferByCompositorFramebufferId(static_cast<const CompositorResourcePassResolveMultisample&>(getCompositorResourcePass()).getSourceMultisampleCompositorFramebufferId());
 		if (nullptr != framebuffer)
 		{
 			// TODO(co) Get rid of the evil const-cast

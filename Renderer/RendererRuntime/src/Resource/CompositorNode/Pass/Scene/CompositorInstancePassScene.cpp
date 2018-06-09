@@ -25,6 +25,7 @@
 #include "RendererRuntime/Resource/CompositorNode/Pass/Scene/CompositorResourcePassScene.h"
 #include "RendererRuntime/Resource/CompositorNode/CompositorNodeInstance.h"
 #include "RendererRuntime/Resource/MaterialBlueprint/MaterialBlueprintResourceManager.h"
+#include "RendererRuntime/Core/IProfiler.h"
 #include "RendererRuntime/IRendererRuntime.h"
 
 
@@ -49,8 +50,8 @@ namespace RendererRuntime
 
 	void CompositorInstancePassScene::onFillCommandBuffer(const Renderer::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
 	{
-		// Scoped debug event
-		COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)
+		// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
+		RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), commandBuffer)
 
 		// Fill command buffer
 		assert(nullptr != mRenderQueueIndexRange);

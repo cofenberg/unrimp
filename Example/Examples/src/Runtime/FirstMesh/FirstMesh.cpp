@@ -24,7 +24,9 @@
 #include "Runtime/FirstMesh/FirstMesh.h"
 #include "Framework/Color4.h"
 
+#include <RendererRuntime/Context.h>
 #include <RendererRuntime/IRendererRuntime.h>
+#include <RendererRuntime/Core/IProfiler.h>
 #include <RendererRuntime/Resource/Mesh/MeshResource.h>
 #include <RendererRuntime/Resource/Mesh/MeshResourceManager.h>
 #include <RendererRuntime/Resource/Texture/TextureResource.h>
@@ -272,8 +274,8 @@ void FirstMesh::onDraw()
 	Renderer::IRendererPtr renderer(getRenderer());
 	if (nullptr != renderer && nullptr != mPipelineState)
 	{
-		// Scoped debug event
-		COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
+		// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
+		RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(rendererRuntime->getContext(), mCommandBuffer)
 
 		// Set the viewport and get the aspect ratio
 		float aspectRatio = 4.0f / 3.0f;

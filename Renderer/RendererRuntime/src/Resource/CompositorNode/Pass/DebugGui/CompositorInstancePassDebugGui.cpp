@@ -27,6 +27,7 @@
 #include "RendererRuntime/Resource/CompositorWorkspace/CompositorContextData.h"
 #include "RendererRuntime/Resource/CompositorWorkspace/CompositorWorkspaceInstance.h"
 #include "RendererRuntime/DebugGui/DebugGuiManager.h"
+#include "RendererRuntime/Core/IProfiler.h"
 #include "RendererRuntime/IRendererRuntime.h"
 
 
@@ -43,11 +44,12 @@ namespace RendererRuntime
 	void CompositorInstancePassDebugGui::onFillCommandBuffer(MAYBE_UNUSED const Renderer::IRenderTarget& renderTarget, MAYBE_UNUSED const CompositorContextData& compositorContextData, MAYBE_UNUSED Renderer::CommandBuffer& commandBuffer)
 	{
 		#ifdef RENDERER_RUNTIME_IMGUI
-			// Scoped debug event
-			COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)
+			// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
+			const IRendererRuntime& rendererRuntime = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime();
+			RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(rendererRuntime.getContext(), commandBuffer)
 
 			// Fill command buffer
-			DebugGuiManager& debugGuiManager = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getDebugGuiManager();
+			DebugGuiManager& debugGuiManager = rendererRuntime.getDebugGuiManager();
 			RenderableManager::Renderables& renderables = mRenderableManager.getRenderables();
 			if (renderables.empty())
 			{

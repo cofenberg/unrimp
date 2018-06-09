@@ -44,6 +44,7 @@
 #include "RendererRuntime/Resource/Scene/Item/Camera/CameraSceneItem.h"
 #include "RendererRuntime/Resource/Scene/Item/Mesh/SkeletonMeshSceneItem.h"
 #include "RendererRuntime/Resource/Scene/Culling/SceneCullingManager.h"
+#include "RendererRuntime/Core/IProfiler.h"
 #include "RendererRuntime/Core/Renderer/FramebufferManager.h"
 #include "RendererRuntime/Core/Renderer/RenderTargetTextureManager.h"
 #ifdef RENDERER_RUNTIME_OPENVR
@@ -220,8 +221,8 @@ namespace RendererRuntime
 				}
 
 				{ // Scene rendering
-					// Scoped debug event
-					COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
+					// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
+					RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(mRendererRuntime.getContext(), mCommandBuffer)
 
 					// Set the current render target
 					Renderer::Command::SetRenderTarget::create(mCommandBuffer, &renderTarget);

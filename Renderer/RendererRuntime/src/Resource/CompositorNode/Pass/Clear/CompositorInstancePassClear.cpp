@@ -23,6 +23,7 @@
 //[-------------------------------------------------------]
 #include "RendererRuntime/Resource/CompositorNode/Pass/Clear/CompositorInstancePassClear.h"
 #include "RendererRuntime/Resource/CompositorNode/Pass/Clear/CompositorResourcePassClear.h"
+#include "RendererRuntime/Core/IProfiler.h"
 
 #include <Renderer/Renderer.h>
 
@@ -46,8 +47,8 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void CompositorInstancePassClear::onFillCommandBuffer(const Renderer::IRenderTarget&, const CompositorContextData&, Renderer::CommandBuffer& commandBuffer)
 	{
-		// Scoped debug event
-		COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)
+		// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
+		RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), commandBuffer)
 
 		// Push the clear command
 		const CompositorResourcePassClear& compositorResourcePassClear = static_cast<const CompositorResourcePassClear&>(getCompositorResourcePass());

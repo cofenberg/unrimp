@@ -32,6 +32,7 @@
 #include "RendererRuntime/Resource/Scene/SceneNode.h"
 #include "RendererRuntime/RenderQueue/RenderableManager.h"
 #include "RendererRuntime/Core/Math/Math.h"
+#include "RendererRuntime/Core/IProfiler.h"
 #include "RendererRuntime/IRendererRuntime.h"
 
 // Disable warnings in external headers, we can't fix them
@@ -160,8 +161,9 @@ namespace RendererRuntime
 				}
 			}
 
-			// Scoped debug event
-			COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)
+			// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
+			const IRendererRuntime& rendererRuntime = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime();
+			RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(rendererRuntime.getContext(), commandBuffer)
 
 			// Render the meshes to each cascade
 			// -> Shadows should never be rendered via single pass stereo instancing
@@ -169,7 +171,7 @@ namespace RendererRuntime
 			for (uint8_t cascadeIndex = 0; cascadeIndex < numberOfShadowCascades; ++cascadeIndex)
 			{
 				// Scoped debug event
-				COMMAND_SCOPED_DEBUG_EVENT(commandBuffer, ("Shadow cascade " + std::to_string(cascadeIndex)).c_str())
+				RENDERER_SCOPED_PROFILER_EVENT_DYNAMIC(rendererRuntime.getContext(), commandBuffer, ("Shadow cascade " + std::to_string(cascadeIndex)).c_str())
 
 				// Compute the MVP matrix from the light's point of view
 				glm::mat4 depthProjectionMatrix;
@@ -277,7 +279,7 @@ namespace RendererRuntime
 
 				{ // Render shadow casters
 					// Scoped debug event
-					COMMAND_SCOPED_DEBUG_EVENT(commandBuffer, "Render shadow casters")
+					RENDERER_SCOPED_PROFILER_EVENT(rendererRuntime.getContext(), commandBuffer, "Render shadow casters")
 
 					// Set render target
 					Renderer::Command::SetRenderTarget::create(commandBuffer, mDepthFramebufferPtr);
@@ -315,7 +317,7 @@ namespace RendererRuntime
 				const_cast<CameraSceneItem*>(cameraSceneItem)->unsetCustomViewSpaceToClipSpaceMatrix();
 
 				// Apply the scale/offset matrix, which transforms from [-1,1] post-projection space to [0,1] UV space
-				const glm::mat4 shadowMatrix = Math::getTextureScaleBiasMatrix(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getRenderer()) * viewSpaceToClipSpace;
+				const glm::mat4 shadowMatrix = Math::getTextureScaleBiasMatrix(rendererRuntime.getRenderer()) * viewSpaceToClipSpace;
 
 				// Store the split distance in terms of view space depth
 				const float clipDistance = cameraSceneItem->getFarZ() - cameraSceneItem->getNearZ();
@@ -353,7 +355,7 @@ namespace RendererRuntime
 					{ // Execute compositor instance pass quad, use cascade index three as intermediate render target
 						const uint8_t INTERMEDIATE_CASCADE_INDEX = 3;
 						assert(nullptr != mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX]);
-						COMMAND_SCOPED_DEBUG_EVENT(commandBuffer, "Depth to exponential variance")
+						RENDERER_SCOPED_PROFILER_EVENT(rendererRuntime.getContext(), commandBuffer, "Depth to exponential variance")
 						Renderer::Command::SetRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX]);
 						mDepthToExponentialVarianceCompositorInstancePassQuad->onFillCommandBuffer(*mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX], shadowCompositorContextData, commandBuffer);
 						mDepthToExponentialVarianceCompositorInstancePassQuad->onPostCommandBufferExecution();
@@ -361,7 +363,7 @@ namespace RendererRuntime
 
 					{ // Horizontal blur
 						mPassData.shadowFilterSize = filterSizeX;
-						COMMAND_SCOPED_DEBUG_EVENT(commandBuffer, "Horizontal blur")
+						RENDERER_SCOPED_PROFILER_EVENT(rendererRuntime.getContext(), commandBuffer, "Horizontal blur")
 						Renderer::Command::SetRenderTarget::create(commandBuffer, mIntermediateFramebufferPtr);
 						mHorizontalBlurCompositorInstancePassQuad->onFillCommandBuffer(*mIntermediateFramebufferPtr, shadowCompositorContextData, commandBuffer);
 						mHorizontalBlurCompositorInstancePassQuad->onPostCommandBufferExecution();
@@ -370,7 +372,7 @@ namespace RendererRuntime
 					{ // Vertical blur
 						mPassData.shadowFilterSize = filterSizeY;
 						assert(nullptr != mVarianceFramebufferPtr[cascadeIndex]);
-						COMMAND_SCOPED_DEBUG_EVENT(commandBuffer, "Vertical blur")
+						RENDERER_SCOPED_PROFILER_EVENT(rendererRuntime.getContext(), commandBuffer, "Vertical blur")
 						Renderer::Command::SetRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[cascadeIndex]);
 						mVerticalBlurCompositorInstancePassQuad->onFillCommandBuffer(*mVarianceFramebufferPtr[cascadeIndex], shadowCompositorContextData, commandBuffer);
 						mVerticalBlurCompositorInstancePassQuad->onPostCommandBufferExecution();
@@ -379,7 +381,7 @@ namespace RendererRuntime
 				else
 				{
 					// Execute compositor instance pass quad
-					COMMAND_SCOPED_DEBUG_EVENT(commandBuffer, "Depth to exponential variance")
+					RENDERER_SCOPED_PROFILER_EVENT(rendererRuntime.getContext(), commandBuffer, "Depth to exponential variance")
 					assert(nullptr != mVarianceFramebufferPtr[cascadeIndex]);
 					Renderer::Command::SetRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[cascadeIndex]);
 					mDepthToExponentialVarianceCompositorInstancePassQuad->onFillCommandBuffer(*mVarianceFramebufferPtr[cascadeIndex], shadowCompositorContextData, commandBuffer);

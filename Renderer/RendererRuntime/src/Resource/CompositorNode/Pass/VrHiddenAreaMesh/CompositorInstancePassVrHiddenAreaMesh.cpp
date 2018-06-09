@@ -26,6 +26,7 @@
 #include "RendererRuntime/Resource/CompositorNode/CompositorNodeInstance.h"
 #include "RendererRuntime/Resource/CompositorWorkspace/CompositorContextData.h"
 #include "RendererRuntime/Resource/CompositorWorkspace/CompositorWorkspaceInstance.h"
+#include "RendererRuntime/Core/IProfiler.h"
 #ifdef RENDERER_RUNTIME_OPENVR
 	#include "RendererRuntime/Vr/OpenVR/VrManagerOpenVR.h"
 #endif
@@ -266,8 +267,8 @@ namespace RendererRuntime
 		#ifdef RENDERER_RUNTIME_OPENVR
 			if (nullptr != ::detail::g_MeshPtr)
 			{
-				// Scoped debug event
-				COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)
+				// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
+				RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), commandBuffer)
 
 				// Fill command buffer
 				compositorContextData.resetCurrentlyBoundMaterialBlueprintResource();

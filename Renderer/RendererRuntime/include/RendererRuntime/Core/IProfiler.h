@@ -62,7 +62,7 @@
 			*  @param[in] name
 			*    Section name
 			*  @param[in] hashCache
-			*    Hash cache
+			*    Hash cache, can be a null pointer (less efficient)
 			*/
 			virtual void beginCpuSample(const char* name, uint32_t* hashCache) = 0;
 
@@ -79,7 +79,7 @@
 			*  @param[in] name
 			*    Section name
 			*  @param[in] hashCache
-			*    Hash cache
+			*    Hash cache, can be a null pointer (less efficient)
 			*/
 			virtual void beginGpuSample(const char* name, uint32_t* hashCache) = 0;
 
@@ -251,6 +251,58 @@
 			PRAGMA_WARNING_DISABLE_MSVC(4456) \
 			RendererRuntime::RendererProfilerScopedGpuSampleOnExit rendererProfilerScopedGpuSampleOnExit##__FUNCTION__((context).getProfiler()); \
 		PRAGMA_WARNING_POP
+
+	/**
+	*  @brief
+	*    Combined scoped profiler CPU and GPU sample as well as renderer debug event command and a constant name (more efficient)
+	*
+	*  @param[in] context
+	*    Renderer context to ask for the profiler interface
+	*  @param[in] commandBuffer
+	*    Reference to the renderer instance to use
+	*  @param[in] name
+	*    Section name
+	*/
+	#define RENDERER_SCOPED_PROFILER_EVENT(context, commandBuffer, name) \
+		COMMAND_SCOPED_DEBUG_EVENT(commandBuffer, name) \
+		{ static uint32_t sampleHash_##__LINE__ = 0; (context).getProfiler().beginGpuSample(name, &sampleHash_##__LINE__); (context).getProfiler().beginCpuSample(name, &sampleHash_##__LINE__); } \
+		PRAGMA_WARNING_PUSH \
+			PRAGMA_WARNING_DISABLE_MSVC(4456) \
+			RendererRuntime::RendererProfilerScopedCpuSampleOnExit rendererProfilerScopedCpuSampleOnExit##__FUNCTION__((context).getProfiler()); \
+			RendererRuntime::RendererProfilerScopedGpuSampleOnExit rendererProfilerScopedGpuSampleOnExit##__FUNCTION__((context).getProfiler()); \
+		PRAGMA_WARNING_POP
+
+	/**
+	*  @brief
+	*    Combined scoped profiler CPU and GPU sample as well as renderer debug event command and a dynamic name (less efficient)
+	*
+	*  @param[in] context
+	*    Renderer context to ask for the profiler interface
+	*  @param[in] commandBuffer
+	*    Reference to the renderer instance to use
+	*  @param[in] name
+	*    Section name
+	*/
+	#define RENDERER_SCOPED_PROFILER_EVENT_DYNAMIC(context, commandBuffer, name) \
+		COMMAND_SCOPED_DEBUG_EVENT(commandBuffer, name) \
+		(context).getProfiler().beginGpuSample(name, nullptr); \
+		(context).getProfiler().beginCpuSample(name, nullptr); \
+		PRAGMA_WARNING_PUSH \
+			PRAGMA_WARNING_DISABLE_MSVC(4456) \
+			RendererRuntime::RendererProfilerScopedCpuSampleOnExit rendererProfilerScopedCpuSampleOnExit##__FUNCTION__((context).getProfiler()); \
+			RendererRuntime::RendererProfilerScopedGpuSampleOnExit rendererProfilerScopedGpuSampleOnExit##__FUNCTION__((context).getProfiler()); \
+		PRAGMA_WARNING_POP
+
+	/**
+	*  @brief
+	*    Combined scoped profiler CPU and GPU sample as well as renderer debug event command, the current function name ("__FUNCTION__") as event name
+	*
+	*  @param[in] context
+	*    Renderer context to ask for the profiler interface
+	*  @param[in] commandBuffer
+	*    Reference to the renderer instance to use
+	*/
+	#define RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(context, commandBuffer) RENDERER_SCOPED_PROFILER_EVENT(context, commandBuffer, __FUNCTION__)
 #else
 	//[-------------------------------------------------------]
 	//[ Macros & definitions                                  ]

@@ -32,6 +32,7 @@
 #include "RendererRuntime/Resource/MaterialBlueprint/BufferManager/LightBufferManager.h"
 #include "RendererRuntime/Resource/MaterialBlueprint/BufferManager/InstanceBufferManager.h"
 #include "RendererRuntime/Resource/MaterialBlueprint/BufferManager/IndirectBufferManager.h"
+#include "RendererRuntime/Core/IProfiler.h"
 #include "RendererRuntime/Core/Math/Transform.h"
 #include "RendererRuntime/IRendererRuntime.h"
 
@@ -314,8 +315,8 @@ namespace RendererRuntime
 		assert((getNumberOfDrawCalls() > 0) && "Don't call the fill command buffer method if there's no work to be done");
 		assert(mScratchCommandBuffer.isEmpty() && "Scratch command buffer should be empty at this point in time");
 
-		// Scoped debug event
-		COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)
+		// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
+		RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(mRendererRuntime.getContext(), commandBuffer)
 
 		// TODO(co) This is just a dummy implementation. For example automatic instancing has to be incorporated as well as more efficient buffer management.
 		const MaterialResourceManager& materialResourceManager = mRendererRuntime.getMaterialResourceManager();

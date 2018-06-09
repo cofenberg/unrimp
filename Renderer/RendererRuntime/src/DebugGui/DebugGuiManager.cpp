@@ -25,6 +25,7 @@
 #include "RendererRuntime/DebugGui/DebugGuiHelper.h"
 #include "RendererRuntime/Resource/Texture/TextureResourceManager.h"
 #include "RendererRuntime/Core/File/IFileManager.h"
+#include "RendererRuntime/Core/IProfiler.h"
 #include "RendererRuntime/IRendererRuntime.h"
 #include "RendererRuntime/Context.h"
 
@@ -278,8 +279,8 @@ namespace RendererRuntime
 	{
 		if (GImGui->Initialized)
 		{
-			// Scoped debug event
-			COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)
+			// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
+			RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(mRendererRuntime.getContext(), commandBuffer)
 
 			// Render command lists
 			// -> There's no need to try to gather draw calls and batch them into multi-draw-indirect buffers, ImGui does already a pretty good job
@@ -315,8 +316,8 @@ namespace RendererRuntime
 	{
 		if (GImGui->Initialized)
 		{
-			// Scoped debug event
-			COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)
+			// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
+			RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(mRendererRuntime.getContext(), commandBuffer)
 
 			// Create fixed build in renderer configuration resources, if required
 			if (nullptr == mRootSignature)
