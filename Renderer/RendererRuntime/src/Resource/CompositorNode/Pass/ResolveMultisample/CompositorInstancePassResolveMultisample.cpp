@@ -42,8 +42,8 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void CompositorInstancePassResolveMultisample::onFillCommandBuffer(const Renderer::IRenderTarget& renderTarget, const CompositorContextData&, Renderer::CommandBuffer& commandBuffer)
 	{
-		// Begin debug event
-		COMMAND_BEGIN_DEBUG_EVENT_FUNCTION(commandBuffer)
+		// Scoped debug event
+		COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)
 
 		// Resolve
 		Renderer::IFramebuffer* framebuffer = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getCompositorWorkspaceResourceManager().getFramebufferManager().getFramebufferByCompositorFramebufferId(static_cast<const CompositorResourcePassResolveMultisample&>(getCompositorResourcePass()).getSourceMultisampleCompositorFramebufferId());
@@ -57,9 +57,6 @@ namespace RendererRuntime
 			// Error!
 			assert(false);
 		}
-
-		// End debug event
-		COMMAND_END_DEBUG_EVENT(commandBuffer)
 	}
 
 

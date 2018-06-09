@@ -129,8 +129,8 @@ void FirstGeometryShader::fillCommandBuffer()
 	assert(nullptr != mRootSignature);
 	assert(nullptr != mPipelineState);
 
-	// Begin debug event
-	COMMAND_BEGIN_DEBUG_EVENT_FUNCTION(mCommandBuffer)
+	// Scoped debug event
+	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
 
 	// Clear the color buffer of the current render target with gray, do also clear the depth buffer
 	Renderer::Command::Clear::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
@@ -145,7 +145,4 @@ void FirstGeometryShader::fillCommandBuffer()
 	// -> Emit a single point in order to generate a draw call, the geometry shader does the rest
 	// -> Attribute-less rendering (aka "drawing without data")
 	Renderer::Command::Draw::create(mCommandBuffer, 1);
-
-	// End debug event
-	COMMAND_END_DEBUG_EVENT(mCommandBuffer)
 }

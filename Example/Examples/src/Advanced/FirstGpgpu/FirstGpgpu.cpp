@@ -302,8 +302,8 @@ void FirstGpgpu::fillCommandBufferContentGeneration()
 	assert(nullptr != mVertexArrayContentGeneration);
 	assert(mCommandBufferContentGeneration.isEmpty());
 
-	// Begin debug event
-	COMMAND_BEGIN_DEBUG_EVENT(mCommandBufferContentGeneration, "Generate the content of the 2D texture to process later on")
+	// Scoped debug event
+	COMMAND_SCOPED_DEBUG_EVENT(mCommandBufferContentGeneration, "Generate the content of the 2D texture to process later on")
 
 	// Set the render target to render into
 	Renderer::Command::SetRenderTarget::create(mCommandBufferContentGeneration, mFramebuffer[0]);
@@ -336,9 +336,6 @@ void FirstGpgpu::fillCommandBufferContentGeneration()
 
 	// Render the specified geometric primitive, based on indexing into an array of vertices
 	Renderer::Command::Draw::create(mCommandBufferContentGeneration, 3);
-
-	// End debug event
-	COMMAND_END_DEBUG_EVENT(mCommandBufferContentGeneration)
 }
 
 void FirstGpgpu::fillCommandBufferContentProcessing()
@@ -352,8 +349,8 @@ void FirstGpgpu::fillCommandBufferContentProcessing()
 	assert(nullptr != mTexture2D[0]);
 	assert(mCommandBufferContentProcessing.isEmpty());
 
-	// Begin debug event
-	COMMAND_BEGIN_DEBUG_EVENT(mCommandBufferContentProcessing, "Content processing")
+	// Scoped debug event
+	COMMAND_SCOPED_DEBUG_EVENT(mCommandBufferContentProcessing, "Content processing")
 
 	// Set the render target to render into
 	Renderer::Command::SetRenderTarget::create(mCommandBufferContentProcessing, mFramebuffer[1]);
@@ -375,9 +372,6 @@ void FirstGpgpu::fillCommandBufferContentProcessing()
 
 	// Render the specified geometric primitive, based on indexing into an array of vertices
 	Renderer::Command::Draw::create(mCommandBufferContentProcessing, 4);
-
-	// End debug event
-	COMMAND_END_DEBUG_EVENT(mCommandBufferContentProcessing)
 }
 
 void FirstGpgpu::onDoJob()

@@ -288,8 +288,8 @@ void FirstInstancing::fillCommandBuffer()
 	assert(!getRenderer()->getCapabilities().drawInstanced || nullptr != mPipelineStateDrawInstanced);
 	assert(!getRenderer()->getCapabilities().drawInstanced || nullptr != mVertexArrayDrawInstanced);
 
-	// Begin debug event
-	COMMAND_BEGIN_DEBUG_EVENT_FUNCTION(mCommandBuffer)
+	// Scoped debug event
+	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
 
 	// Clear the color buffer of the current render target with gray, do also clear the depth buffer
 	Renderer::Command::Clear::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
@@ -300,8 +300,8 @@ void FirstInstancing::fillCommandBuffer()
 	// Left side (green): Instanced arrays (shader model 3 feature, vertex array element advancing per-instance instead of per-vertex)
 	if (getRenderer()->getCapabilities().instancedArrays)
 	{
-		// Begin debug event
-		COMMAND_BEGIN_DEBUG_EVENT(mCommandBuffer, "Draw using instanced arrays")
+		// Scoped debug event
+		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Draw using instanced arrays")
 
 		// Set the used pipeline state object (PSO)
 		Renderer::Command::SetPipelineState::create(mCommandBuffer, mPipelineStateInstancedArrays);
@@ -314,16 +314,13 @@ void FirstInstancing::fillCommandBuffer()
 		// -> In Direct3D 9, instanced arrays with hardware support is only possible when drawing indexed primitives, see
 		//    "Efficiently Drawing Multiple Instances of Geometry (Direct3D 9)"-article at MSDN: http://msdn.microsoft.com/en-us/library/windows/desktop/bb173349%28v=vs.85%29.aspx#Drawing_Non_Indexed_Geometry
 		Renderer::Command::DrawIndexed::create(mCommandBuffer, 3, 2);
-
-		// End debug event
-		COMMAND_END_DEBUG_EVENT(mCommandBuffer)
 	}
 
 	// Right side (blue): Draw instanced (shader model 4 feature, build in shader variable holding the current instance ID)
 	if (getRenderer()->getCapabilities().drawInstanced)
 	{
-		// Begin debug event
-		COMMAND_BEGIN_DEBUG_EVENT(mCommandBuffer, "Draw instanced")
+		// Scoped debug event
+		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Draw instanced")
 
 		// Set the used pipeline state object (PSO)
 		Renderer::Command::SetPipelineState::create(mCommandBuffer, mPipelineStateDrawInstanced);
@@ -333,11 +330,5 @@ void FirstInstancing::fillCommandBuffer()
 
 		// Render the specified geometric primitive, based on an array of vertices
 		Renderer::Command::Draw::create(mCommandBuffer, 3, 2);
-
-		// End debug event
-		COMMAND_END_DEBUG_EVENT(mCommandBuffer)
 	}
-
-	// End debug event
-	COMMAND_END_DEBUG_EVENT(mCommandBuffer)
 }

@@ -272,8 +272,8 @@ void FirstMesh::onDraw()
 	Renderer::IRendererPtr renderer(getRenderer());
 	if (nullptr != renderer && nullptr != mPipelineState)
 	{
-		// Begin debug event
-		COMMAND_BEGIN_DEBUG_EVENT_FUNCTION(mCommandBuffer)
+		// Scoped debug event
+		COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
 
 		// Set the viewport and get the aspect ratio
 		float aspectRatio = 4.0f / 3.0f;
@@ -358,9 +358,6 @@ void FirstMesh::onDraw()
 				Renderer::Command::DrawIndexed::create(mCommandBuffer, meshResource->getNumberOfIndices());
 			}
 		}
-
-		// End debug event
-		COMMAND_END_DEBUG_EVENT(mCommandBuffer)
 
 		// Submit command buffer to the renderer backend
 		mCommandBuffer.submitToRendererAndClear(*renderer);

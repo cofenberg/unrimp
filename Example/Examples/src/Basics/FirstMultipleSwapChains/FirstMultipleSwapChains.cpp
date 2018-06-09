@@ -355,8 +355,8 @@ void FirstMultipleSwapChains::onDrawRequest()
 				if (renderer->beginScene())
 				{
 					{ // Fill the command buffer
-						// Begin debug event
-						COMMAND_BEGIN_DEBUG_EVENT(mCommandBuffer, "Draw into the main swap chain")
+						// Scoped debug event
+						COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Draw into the main swap chain")
 
 						// Set the render target to render into
 						Renderer::Command::SetRenderTarget::create(mCommandBuffer, mainRenderTarget);
@@ -373,9 +373,6 @@ void FirstMultipleSwapChains::onDrawRequest()
 
 						// Draw into the main swap chain
 						fillCommandBuffer(Color4::GRAY, mCommandBuffer);
-
-						// End debug event
-						COMMAND_END_DEBUG_EVENT(mCommandBuffer)
 					}
 
 					// Submit command buffer to the renderer backend
@@ -401,8 +398,8 @@ void FirstMultipleSwapChains::onDrawRequest()
 		if (nullptr != mSwapChain && renderer->beginScene())
 		{
 			{ // Fill the command buffer
-				// Begin debug event
-				COMMAND_BEGIN_DEBUG_EVENT(mCommandBuffer, "Render to the swap chain created in this example")
+				// Scoped debug event
+				COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Render to the swap chain created in this example")
 
 				// Set the render target to render into
 				Renderer::Command::SetRenderTarget::create(mCommandBuffer, mSwapChain);
@@ -430,9 +427,6 @@ void FirstMultipleSwapChains::onDrawRequest()
 
 				// Draw into the swap chain created in this example
 				fillCommandBuffer(Color4::GREEN, mCommandBuffer);
-
-				// End debug event
-				COMMAND_END_DEBUG_EVENT(mCommandBuffer)
 			}
 
 			// Submit command buffer to the renderer backend
@@ -460,8 +454,8 @@ void FirstMultipleSwapChains::fillCommandBuffer(const float color[4], Renderer::
 	assert(nullptr != mPipelineState);
 	assert(nullptr != mVertexArray);
 
-	// Begin debug event
-	COMMAND_BEGIN_DEBUG_EVENT_FUNCTION(commandBuffer)
+	// Scoped debug event
+	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)
 
 	// Clear the color buffer of the current render target with the provided color, do also clear the depth buffer
 	Renderer::Command::Clear::create(commandBuffer, Renderer::ClearFlag::COLOR_DEPTH, color);
@@ -477,7 +471,4 @@ void FirstMultipleSwapChains::fillCommandBuffer(const float color[4], Renderer::
 
 	// Render the specified geometric primitive, based on an array of vertices
 	Renderer::Command::Draw::create(commandBuffer, 3);
-
-	// End debug event
-	COMMAND_END_DEBUG_EVENT(commandBuffer)
 }

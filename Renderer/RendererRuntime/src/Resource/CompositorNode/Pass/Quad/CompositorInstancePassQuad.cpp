@@ -94,8 +94,8 @@ namespace RendererRuntime
 	{
 		if (!mRenderableManager.getRenderables().empty())
 		{
-			// Begin debug event
-			COMMAND_BEGIN_DEBUG_EVENT_FUNCTION(commandBuffer)
+			// Scoped debug event
+			COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)
 
 			// Fill command buffer
 			mRenderQueue.addRenderablesFromRenderableManager(mRenderableManager);
@@ -103,9 +103,6 @@ namespace RendererRuntime
 			{
 				mRenderQueue.fillCommandBuffer(renderTarget, static_cast<const CompositorResourcePassQuad&>(getCompositorResourcePass()).getMaterialTechniqueId(), compositorContextData, commandBuffer);
 			}
-
-			// End debug event
-			COMMAND_END_DEBUG_EVENT(commandBuffer)
 		}
 	}
 

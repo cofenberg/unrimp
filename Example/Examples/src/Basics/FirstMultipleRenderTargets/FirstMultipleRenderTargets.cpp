@@ -247,12 +247,12 @@ void FirstMultipleRenderTargets::fillCommandBuffer()
 	assert(nullptr != mPipelineState);
 	assert(nullptr != mVertexArray);
 
-	// Begin debug event
-	COMMAND_BEGIN_DEBUG_EVENT_FUNCTION(mCommandBuffer)
+	// Scoped debug event
+	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
 
 	{ // Render to multiple render targets
-		// Begin debug event
-		COMMAND_BEGIN_DEBUG_EVENT(mCommandBuffer, "Render to multiple render targets")
+		// Scoped debug event
+		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Render to multiple render targets")
 
 		// This in here is of course just an example. In a real application
 		// there would be no point in constantly updating texture content
@@ -281,14 +281,11 @@ void FirstMultipleRenderTargets::fillCommandBuffer()
 
 		// Restore main swap chain as current render target
 		Renderer::Command::SetRenderTarget::create(mCommandBuffer, getMainRenderTarget());
-
-		// End debug event
-		COMMAND_END_DEBUG_EVENT(mCommandBuffer)
 	}
 
 	{ // Use the render to multiple render targets result
-		// Begin debug event
-		COMMAND_BEGIN_DEBUG_EVENT(mCommandBuffer, "Use the render to multiple render targets result")
+		// Scoped debug event
+		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Use the render to multiple render targets result")
 
 		{ // Set the viewport
 			// Get the render target with and height
@@ -322,11 +319,5 @@ void FirstMultipleRenderTargets::fillCommandBuffer()
 
 		// Render the specified geometric primitive, based on an array of vertices
 		Renderer::Command::Draw::create(mCommandBuffer, 3);
-
-		// End debug event
-		COMMAND_END_DEBUG_EVENT(mCommandBuffer)
 	}
-
-	// End debug event
-	COMMAND_END_DEBUG_EVENT(mCommandBuffer)
 }

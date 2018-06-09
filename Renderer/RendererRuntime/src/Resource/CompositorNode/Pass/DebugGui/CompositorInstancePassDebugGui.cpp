@@ -43,8 +43,8 @@ namespace RendererRuntime
 	void CompositorInstancePassDebugGui::onFillCommandBuffer(MAYBE_UNUSED const Renderer::IRenderTarget& renderTarget, MAYBE_UNUSED const CompositorContextData& compositorContextData, MAYBE_UNUSED Renderer::CommandBuffer& commandBuffer)
 	{
 		#ifdef RENDERER_RUNTIME_IMGUI
-			// Begin debug event
-			COMMAND_BEGIN_DEBUG_EVENT_FUNCTION(commandBuffer)
+			// Scoped debug event
+			COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)
 
 			// Fill command buffer
 			DebugGuiManager& debugGuiManager = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getDebugGuiManager();
@@ -74,9 +74,6 @@ namespace RendererRuntime
 				// Fill command buffer using custom material blueprint resource
 				debugGuiManager.fillCommandBuffer(commandBuffer);
 			}
-
-			// End debug event
-			COMMAND_END_DEBUG_EVENT(commandBuffer)
 		#else
 			assert(false && "ImGui support is disabled");
 		#endif

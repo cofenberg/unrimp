@@ -177,8 +177,8 @@ void FirstTriangle::fillCommandBuffer()
 	assert(nullptr != mPipelineState);
 	assert(nullptr != mVertexArray);
 
-	// Begin debug event
-	COMMAND_BEGIN_DEBUG_EVENT_FUNCTION(mCommandBuffer)
+	// Scoped debug event
+	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
 
 	// Clear the color buffer of the current render target with gray, do also clear the depth buffer
 	Renderer::Command::Clear::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
@@ -198,16 +198,10 @@ void FirstTriangle::fillCommandBuffer()
 	COMMAND_SET_DEBUG_MARKER(mCommandBuffer, "Everyone ready for the upcoming triangle?")
 
 	{
-		// Begin debug event
-		COMMAND_BEGIN_DEBUG_EVENT(mCommandBuffer, "Drawing the fancy triangle")
+		// Scoped debug event
+		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Drawing the fancy triangle")
 
 		// Render the specified geometric primitive, based on an array of vertices
 		Renderer::Command::Draw::create(mCommandBuffer, 3);
-
-		// End debug event
-		COMMAND_END_DEBUG_EVENT(mCommandBuffer)
 	}
-
-	// End debug event
-	COMMAND_END_DEBUG_EVENT(mCommandBuffer)
 }

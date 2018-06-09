@@ -82,8 +82,8 @@ namespace RendererRuntime
 						mCommandBuffer.clear();
 						if (!mFramebuffersPtrs.empty())
 						{
-							// Begin debug event
-							COMMAND_BEGIN_DEBUG_EVENT_FUNCTION(mCommandBuffer)
+							// Scoped debug event
+							COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
 
 							// Basing on "Hierarchical-Z map based occlusion culling" - "Hi-Z map construction" - http://rastergrid.com/blog/2010/10/hierarchical-z-map-based-occlusion-culling/
 							uint32_t currentWidth = renderTargetWidth;
@@ -111,9 +111,6 @@ namespace RendererRuntime
 
 							// Reset mipmap level range for the depth texture
 							Renderer::Command::SetTextureMinimumMaximumMipmapIndex::create(mCommandBuffer, *texture, 0, numberOfMipmaps - 1);
-
-							// End debug event
-							COMMAND_END_DEBUG_EVENT(mCommandBuffer)
 						}
 					}
 				}

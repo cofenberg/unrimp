@@ -314,8 +314,8 @@ namespace RendererRuntime
 		assert((getNumberOfDrawCalls() > 0) && "Don't call the fill command buffer method if there's no work to be done");
 		assert(mScratchCommandBuffer.isEmpty() && "Scratch command buffer should be empty at this point in time");
 
-		// Begin debug event
-		COMMAND_BEGIN_DEBUG_EVENT_FUNCTION(commandBuffer)
+		// Scoped debug event
+		COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)
 
 		// TODO(co) This is just a dummy implementation. For example automatic instancing has to be incorporated as well as more efficient buffer management.
 		const MaterialResourceManager& materialResourceManager = mRendererRuntime.getMaterialResourceManager();
@@ -628,9 +628,6 @@ namespace RendererRuntime
 				}
 			}
 		}
-
-		// End debug event
-		COMMAND_END_DEBUG_EVENT(commandBuffer)
 	}
 
 

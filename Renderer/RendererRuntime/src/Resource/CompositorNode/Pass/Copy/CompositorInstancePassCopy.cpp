@@ -43,8 +43,8 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void CompositorInstancePassCopy::onFillCommandBuffer(const Renderer::IRenderTarget&, const CompositorContextData&, Renderer::CommandBuffer& commandBuffer)
 	{
-		// Begin debug event
-		COMMAND_BEGIN_DEBUG_EVENT_FUNCTION(commandBuffer)
+		// Scoped debug event
+		COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)
 
 		// Get destination and source texture resources
 		// TODO(co) "RendererRuntime::TextureResourceManager::getTextureResourceByAssetId()" is considered to be inefficient, don't use it in here
@@ -71,9 +71,6 @@ namespace RendererRuntime
 			// Error!
 			assert(false);
 		}
-
-		// End debug event
-		COMMAND_END_DEBUG_EVENT(commandBuffer)
 	}
 
 

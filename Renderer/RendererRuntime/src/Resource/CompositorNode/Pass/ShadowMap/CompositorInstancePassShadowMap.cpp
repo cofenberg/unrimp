@@ -160,15 +160,16 @@ namespace RendererRuntime
 				}
 			}
 
-			// Begin debug event
-			COMMAND_BEGIN_DEBUG_EVENT_FUNCTION(commandBuffer)
+			// Scoped debug event
+			COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)
 
 			// Render the meshes to each cascade
 			// -> Shadows should never be rendered via single pass stereo instancing
 			const CompositorContextData shadowCompositorContextData(compositorContextData.getCompositorWorkspaceInstance(), compositorContextData.getCameraSceneItem(), false, compositorContextData.getLightSceneItem(), compositorContextData.getCompositorInstancePassShadowMap());
 			for (uint8_t cascadeIndex = 0; cascadeIndex < numberOfShadowCascades; ++cascadeIndex)
 			{
-				COMMAND_BEGIN_DEBUG_EVENT(commandBuffer, ("Shadow cascade " + std::to_string(cascadeIndex)).c_str())
+				// Scoped debug event
+				COMMAND_SCOPED_DEBUG_EVENT(commandBuffer, ("Shadow cascade " + std::to_string(cascadeIndex)).c_str())
 
 				// Compute the MVP matrix from the light's point of view
 				glm::mat4 depthProjectionMatrix;
@@ -275,7 +276,8 @@ namespace RendererRuntime
 				const_cast<CameraSceneItem*>(cameraSceneItem)->setCustomViewSpaceToClipSpaceMatrix(depthProjectionMatrix, glm::ortho(minimumExtents.x, maximumExtents.x, minimumExtents.y, maximumExtents.y, cascadeExtents.z, 0.0f));
 
 				{ // Render shadow casters
-					COMMAND_BEGIN_DEBUG_EVENT(commandBuffer, "Render shadow casters")
+					// Scoped debug event
+					COMMAND_SCOPED_DEBUG_EVENT(commandBuffer, "Render shadow casters")
 
 					// Set render target
 					Renderer::Command::SetRenderTarget::create(commandBuffer, mDepthFramebufferPtr);
@@ -306,9 +308,6 @@ namespace RendererRuntime
 						mRenderQueue.fillCommandBuffer(renderTarget, static_cast<const CompositorResourcePassScene&>(getCompositorResourcePass()).getMaterialTechniqueId(), shadowCompositorContextData, commandBuffer);
 						mRenderQueue.clear();
 					}
-
-					// End debug event
-					COMMAND_END_DEBUG_EVENT(commandBuffer)
 				}
 
 				// Unset custom camera matrices
@@ -351,53 +350,46 @@ namespace RendererRuntime
 				const float filterSizeY = std::max(shadowFilterSize * cascadeScale.y, 1.0f);
 				if (filterSizeX > 1.0f || filterSizeY > 1.0f)
 				{
-					// Execute compositor instance pass quad, use cascade index three as intermediate render target
-					const uint8_t INTERMEDIATE_CASCADE_INDEX = 3;
-					assert(nullptr != mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX]);
-					COMMAND_BEGIN_DEBUG_EVENT(commandBuffer, "Depth to exponential variance")
-					Renderer::Command::SetRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX]);
-					mDepthToExponentialVarianceCompositorInstancePassQuad->onFillCommandBuffer(*mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX], shadowCompositorContextData, commandBuffer);
-					mDepthToExponentialVarianceCompositorInstancePassQuad->onPostCommandBufferExecution();
-					COMMAND_END_DEBUG_EVENT(commandBuffer)
+					{ // Execute compositor instance pass quad, use cascade index three as intermediate render target
+						const uint8_t INTERMEDIATE_CASCADE_INDEX = 3;
+						assert(nullptr != mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX]);
+						COMMAND_SCOPED_DEBUG_EVENT(commandBuffer, "Depth to exponential variance")
+						Renderer::Command::SetRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX]);
+						mDepthToExponentialVarianceCompositorInstancePassQuad->onFillCommandBuffer(*mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX], shadowCompositorContextData, commandBuffer);
+						mDepthToExponentialVarianceCompositorInstancePassQuad->onPostCommandBufferExecution();
+					}
 
-					// Horizontal blur
-					mPassData.shadowFilterSize = filterSizeX;
-					COMMAND_BEGIN_DEBUG_EVENT(commandBuffer, "Horizontal blur")
-					Renderer::Command::SetRenderTarget::create(commandBuffer, mIntermediateFramebufferPtr);
-					mHorizontalBlurCompositorInstancePassQuad->onFillCommandBuffer(*mIntermediateFramebufferPtr, shadowCompositorContextData, commandBuffer);
-					mHorizontalBlurCompositorInstancePassQuad->onPostCommandBufferExecution();
-					COMMAND_END_DEBUG_EVENT(commandBuffer)
+					{ // Horizontal blur
+						mPassData.shadowFilterSize = filterSizeX;
+						COMMAND_SCOPED_DEBUG_EVENT(commandBuffer, "Horizontal blur")
+						Renderer::Command::SetRenderTarget::create(commandBuffer, mIntermediateFramebufferPtr);
+						mHorizontalBlurCompositorInstancePassQuad->onFillCommandBuffer(*mIntermediateFramebufferPtr, shadowCompositorContextData, commandBuffer);
+						mHorizontalBlurCompositorInstancePassQuad->onPostCommandBufferExecution();
+					}
 
-					// Vertical blur
-					mPassData.shadowFilterSize = filterSizeY;
-					assert(nullptr != mVarianceFramebufferPtr[cascadeIndex]);
-					COMMAND_BEGIN_DEBUG_EVENT(commandBuffer, "Vertical blur")
-					Renderer::Command::SetRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[cascadeIndex]);
-					mVerticalBlurCompositorInstancePassQuad->onFillCommandBuffer(*mVarianceFramebufferPtr[cascadeIndex], shadowCompositorContextData, commandBuffer);
-					mVerticalBlurCompositorInstancePassQuad->onPostCommandBufferExecution();
-					COMMAND_END_DEBUG_EVENT(commandBuffer)
+					{ // Vertical blur
+						mPassData.shadowFilterSize = filterSizeY;
+						assert(nullptr != mVarianceFramebufferPtr[cascadeIndex]);
+						COMMAND_SCOPED_DEBUG_EVENT(commandBuffer, "Vertical blur")
+						Renderer::Command::SetRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[cascadeIndex]);
+						mVerticalBlurCompositorInstancePassQuad->onFillCommandBuffer(*mVarianceFramebufferPtr[cascadeIndex], shadowCompositorContextData, commandBuffer);
+						mVerticalBlurCompositorInstancePassQuad->onPostCommandBufferExecution();
+					}
 				}
 				else
 				{
 					// Execute compositor instance pass quad
-					COMMAND_BEGIN_DEBUG_EVENT(commandBuffer, "Depth to exponential variance")
+					COMMAND_SCOPED_DEBUG_EVENT(commandBuffer, "Depth to exponential variance")
 					assert(nullptr != mVarianceFramebufferPtr[cascadeIndex]);
 					Renderer::Command::SetRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[cascadeIndex]);
 					mDepthToExponentialVarianceCompositorInstancePassQuad->onFillCommandBuffer(*mVarianceFramebufferPtr[cascadeIndex], shadowCompositorContextData, commandBuffer);
 					mDepthToExponentialVarianceCompositorInstancePassQuad->onPostCommandBufferExecution();
-					COMMAND_END_DEBUG_EVENT(commandBuffer)
 				}
-
-				// End debug event
-				COMMAND_END_DEBUG_EVENT(commandBuffer)
 			}
 
 			// Reset to previous render target
 			// TODO(co) Get rid of this
 			Renderer::Command::SetRenderTarget::create(commandBuffer, &const_cast<Renderer::IRenderTarget&>(renderTarget));
-
-			// End debug event
-			COMMAND_END_DEBUG_EVENT(commandBuffer)
 		}
 		else
 		{

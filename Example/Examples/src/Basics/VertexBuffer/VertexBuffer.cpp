@@ -257,8 +257,8 @@ void VertexBuffer::fillCommandBuffer()
 	assert(nullptr != mPipelineStateVBOs);
 	assert(nullptr != mVertexArrayVBOs);
 
-	// Begin debug event
-	COMMAND_BEGIN_DEBUG_EVENT_FUNCTION(mCommandBuffer)
+	// Scoped debug event
+	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
 
 	// Clear the color buffer of the current render target with gray, do also clear the depth buffer
 	Renderer::Command::Clear::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
@@ -269,8 +269,8 @@ void VertexBuffer::fillCommandBuffer()
 	// First lower triangle using one vertex buffer object (VBO)
 	if (nullptr != mPipelineStateVBO)
 	{
-		// Begin debug event
-		COMMAND_BEGIN_DEBUG_EVENT(mCommandBuffer, "Draw using one VBO")
+		// Scoped debug event
+		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Draw using one VBO")
 
 		// Set the used pipeline state object (PSO)
 		Renderer::Command::SetPipelineState::create(mCommandBuffer, mPipelineStateVBO);
@@ -280,16 +280,13 @@ void VertexBuffer::fillCommandBuffer()
 
 		// Render the specified geometric primitive, based on an array of vertices
 		Renderer::Command::Draw::create(mCommandBuffer, 3);
-
-		// End debug event
-		COMMAND_END_DEBUG_EVENT(mCommandBuffer)
 	}
 
 	// Second upper triangle using multiple vertex buffer object (VBO)
 	if (nullptr != mPipelineStateVBOs)
 	{
-		// Begin debug event
-		COMMAND_BEGIN_DEBUG_EVENT(mCommandBuffer, "Draw using multiple VBOs")
+		// Scoped debug event
+		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Draw using multiple VBOs")
 
 		// Set the used pipeline state object (PSO)
 		Renderer::Command::SetPipelineState::create(mCommandBuffer, mPipelineStateVBOs);
@@ -299,11 +296,5 @@ void VertexBuffer::fillCommandBuffer()
 
 		// Render the specified geometric primitive, based on an array of vertices
 		Renderer::Command::Draw::create(mCommandBuffer, 3);
-
-		// End debug event
-		COMMAND_END_DEBUG_EVENT(mCommandBuffer)
 	}
-
-	// End debug event
-	COMMAND_END_DEBUG_EVENT(mCommandBuffer)
 }

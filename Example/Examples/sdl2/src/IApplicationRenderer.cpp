@@ -265,35 +265,34 @@ void IApplicationRenderer::onDrawRequest()
 		// -> Not required for Direct3D 10, Direct3D 11, OpenGL and OpenGL ES 2
 		if (mRenderer->beginScene())
 		{
-			// Begin debug event
-			COMMAND_BEGIN_DEBUG_EVENT_FUNCTION(mCommandBuffer)
+			{ // Scene rendering
+				// Scoped debug event
+				COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
 
-			// Make the main swap chain to the current render target
-			Renderer::Command::SetRenderTarget::create(mCommandBuffer, mMainSwapChain);
+				// Make the main swap chain to the current render target
+				Renderer::Command::SetRenderTarget::create(mCommandBuffer, mMainSwapChain);
 
-			{ // Since Direct3D 12 is command list based, the viewport and scissor rectangle
-				// must be set in every draw call to work with all supported renderer APIs
-				// Get the window size
-				uint32_t width  = 1;
-				uint32_t height = 1;
+				{ // Since Direct3D 12 is command list based, the viewport and scissor rectangle
+					// must be set in every draw call to work with all supported renderer APIs
+					// Get the window size
+					uint32_t width  = 1;
+					uint32_t height = 1;
 
-				getWindowSize(width, height);
+					getWindowSize(width, height);
 
-				// Set the viewport and scissor rectangle
-				Renderer::Command::SetViewportAndScissorRectangle::create(mCommandBuffer, 0, 0, width, height);
+					// Set the viewport and scissor rectangle
+					Renderer::Command::SetViewportAndScissorRectangle::create(mCommandBuffer, 0, 0, width, height);
+				}
+
+				// Submit command buffer to the renderer backend
+				mCommandBuffer.submitAndClear(*mRenderer);
+
+				// Call the draw method
+				if (nullptr != mExample)
+				{
+					mExample->draw();
+				}
 			}
-
-			// Submit command buffer to the renderer backend
-			mCommandBuffer.submitAndClear(*mRenderer);
-
-			// Call the draw method
-			if (nullptr != mExample)
-			{
-				mExample->draw();
-			}
-
-			// End debug event
-			COMMAND_END_DEBUG_EVENT(mCommandBuffer)
 
 			// Submit command buffer to the renderer backend
 			mCommandBuffer.submitAndClear(*mRenderer);

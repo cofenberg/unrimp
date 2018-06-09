@@ -128,8 +128,8 @@ void BatchInstancedArrays::initialize(Renderer::IBufferManager& bufferManager, R
 
 void BatchInstancedArrays::fillCommandBuffer(Renderer::CommandBuffer& commandBuffer) const
 {
-	// Begin debug event
-	COMMAND_BEGIN_DEBUG_EVENT_FUNCTION(commandBuffer)
+	// Scoped debug event
+	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)
 
 	// Set the used pipeline state object (PSO)
 	Renderer::Command::SetPipelineState::create(commandBuffer, mPipelineState);
@@ -140,7 +140,4 @@ void BatchInstancedArrays::fillCommandBuffer(Renderer::CommandBuffer& commandBuf
 	// Use instancing in order to draw multiple cubes with just a single draw call
 	// -> Draw calls are one of the most expensive rendering, avoid them if possible
 	Renderer::Command::DrawIndexed::create(commandBuffer, 36, mNumberOfCubeInstances);
-
-	// End debug event
-	COMMAND_END_DEBUG_EVENT(commandBuffer)
 }

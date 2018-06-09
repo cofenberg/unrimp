@@ -49,8 +49,8 @@ namespace RendererRuntime
 
 	void CompositorInstancePassScene::onFillCommandBuffer(const Renderer::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
 	{
-		// Begin debug event
-		COMMAND_BEGIN_DEBUG_EVENT_FUNCTION(commandBuffer)
+		// Scoped debug event
+		COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)
 
 		// Fill command buffer
 		assert(nullptr != mRenderQueueIndexRange);
@@ -65,9 +65,6 @@ namespace RendererRuntime
 		{
 			mRenderQueue.fillCommandBuffer(renderTarget, static_cast<const CompositorResourcePassScene&>(getCompositorResourcePass()).getMaterialTechniqueId(), compositorContextData, commandBuffer);
 		}
-
-		// End debug event
-		COMMAND_END_DEBUG_EVENT(commandBuffer)
 	}
 
 

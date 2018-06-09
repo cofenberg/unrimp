@@ -8608,7 +8608,7 @@ namespace Renderer
 		*    Begin debug event
 		*
 		*  @param[in] commandBuffer
-		*    Reference to the renderer instance to use
+		*    Reference to the renderer instance to use, must be ended by using "COMMAND_END_DEBUG_EVENT()"
 		*  @param[in] name
 		*    ASCII name of the debug event
 		*/
@@ -8616,7 +8616,7 @@ namespace Renderer
 
 		/**
 		*  @brief
-		*    Begin debug event by using the current function name ("__FUNCTION__") as event name
+		*    Begin debug event by using the current function name ("__FUNCTION__") as event name, must be ended by using "COMMAND_END_DEBUG_EVENT()"
 		*
 		*  @param[in] commandBuffer
 		*    Reference to the renderer instance to use
@@ -8631,6 +8631,63 @@ namespace Renderer
 		*    Reference to the renderer instance to use
 		*/
 		#define COMMAND_END_DEBUG_EVENT(commandBuffer) Renderer::Command::EndDebugEvent::create(commandBuffer);
+
+		/**
+		*  @brief
+		*    Scoped debug event class
+		*/
+		class CommandScopedDebugEventOnExit
+		{
+		// Public methods
+		public:
+			inline explicit CommandScopedDebugEventOnExit(CommandBuffer& commandBuffer) :
+				mCommandBuffer(commandBuffer)
+			{}
+
+			inline ~CommandScopedDebugEventOnExit()
+			{
+				Renderer::Command::EndDebugEvent::create(mCommandBuffer);
+			}
+
+		// Private methods
+		private:
+			explicit CommandScopedDebugEventOnExit(const CommandScopedDebugEventOnExit& commandScopedDebugEventOnExit) = delete;
+			CommandScopedDebugEventOnExit& operator =(const CommandScopedDebugEventOnExit& commandScopedDebugEventOnExit) = delete;
+
+		// Private data
+		private:
+			CommandBuffer& mCommandBuffer;
+		};
+
+		/**
+		*  @brief
+		*    Scoped debug event, minor internal overhead compared to manual begin/end
+		*
+		*  @param[in] commandBuffer
+		*    Reference to the renderer instance to use
+		*  @param[in] name
+		*    ASCII name of the debug event
+		*/
+		#define COMMAND_SCOPED_DEBUG_EVENT(commandBuffer, name) \
+			Renderer::Command::BeginDebugEvent::create(commandBuffer, name); \
+			PRAGMA_WARNING_PUSH \
+				PRAGMA_WARNING_DISABLE_MSVC(4456) \
+				Renderer::CommandScopedDebugEventOnExit commandScopedDebugEventOnExit##__FUNCTION__(commandBuffer); \
+			PRAGMA_WARNING_POP
+
+		/**
+		*  @brief
+		*    Scoped debug event by using the current function name ("__FUNCTION__") as event name, minor internal overhead compared to manual begin/end
+		*
+		*  @param[in] commandBuffer
+		*    Reference to the renderer instance to use
+		*/
+		#define COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer) \
+			Renderer::Command::BeginDebugEvent::create(commandBuffer, __FUNCTION__); \
+			PRAGMA_WARNING_PUSH \
+				PRAGMA_WARNING_DISABLE_MSVC(4456) \
+				Renderer::CommandScopedDebugEventOnExit commandScopedDebugEventOnExit##__FUNCTION__(commandBuffer); \
+			PRAGMA_WARNING_POP
 	#else
 		/**
 		*  @brief
@@ -8654,7 +8711,7 @@ namespace Renderer
 
 		/**
 		*  @brief
-		*    Begin debug event
+		*    Begin debug event, must be ended by using "COMMAND_END_DEBUG_EVENT()"
 		*
 		*  @param[in] commandBuffer
 		*    Reference to the renderer instance to use
@@ -8665,7 +8722,7 @@ namespace Renderer
 
 		/**
 		*  @brief
-		*    Begin debug event by using the current function name ("__FUNCTION__") as event name
+		*    Begin debug event by using the current function name ("__FUNCTION__") as event name, must be ended by using "COMMAND_END_DEBUG_EVENT()"
 		*
 		*  @param[in] commandBuffer
 		*    Reference to the renderer instance to use
@@ -8680,6 +8737,26 @@ namespace Renderer
 		*    Reference to the renderer instance to use
 		*/
 		#define COMMAND_END_DEBUG_EVENT(commandBuffer)
+
+		/**
+		*  @brief
+		*    Scoped debug event, minor internal overhead compared to manual begin/end
+		*
+		*  @param[in] commandBuffer
+		*    Reference to the renderer instance to use
+		*  @param[in] name
+		*    ASCII name of the debug event
+		*/
+		#define COMMAND_SCOPED_DEBUG_EVENT(commandBuffer, name)
+
+		/**
+		*  @brief
+		*    Scoped debug event by using the current function name ("__FUNCTION__") as event name, minor internal overhead compared to manual begin/end
+		*
+		*  @param[in] commandBuffer
+		*    Reference to the renderer instance to use
+		*/
+		#define COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)
 	#endif
 
 

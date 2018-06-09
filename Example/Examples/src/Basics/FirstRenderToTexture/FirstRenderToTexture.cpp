@@ -218,12 +218,12 @@ void FirstRenderToTexture::fillCommandBuffer()
 	assert(nullptr != mPipelineState);
 	assert(nullptr != mVertexArray);
 
-	// Begin debug event
-	COMMAND_BEGIN_DEBUG_EVENT_FUNCTION(mCommandBuffer)
+	// Scoped debug event
+	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
 
 	{ // Render to texture
-		// Begin debug event
-		COMMAND_BEGIN_DEBUG_EVENT(mCommandBuffer, "Render to texture")
+		// Scoped debug event
+		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Render to texture")
 
 		// This in here is of course just an example. In a real application
 		// there would be no point in constantly updating texture content
@@ -237,14 +237,11 @@ void FirstRenderToTexture::fillCommandBuffer()
 
 		// Restore main swap chain as current render target
 		Renderer::Command::SetRenderTarget::create(mCommandBuffer, getMainRenderTarget());
-
-		// End debug event
-		COMMAND_END_DEBUG_EVENT(mCommandBuffer)
 	}
 
 	{ // Use the render to texture result
-		// Begin debug event
-		COMMAND_BEGIN_DEBUG_EVENT(mCommandBuffer, "Use the render to texture result")
+		// Scoped debug event
+		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Use the render to texture result")
 
 		// Clear the color buffer of the current render target with gray, do also clear the depth buffer
 		Renderer::Command::Clear::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
@@ -264,11 +261,5 @@ void FirstRenderToTexture::fillCommandBuffer()
 
 		// Render the specified geometric primitive, based on an array of vertices
 		Renderer::Command::Draw::create(mCommandBuffer, 3);
-
-		// End debug event
-		COMMAND_END_DEBUG_EVENT(mCommandBuffer)
 	}
-
-	// End debug event
-	COMMAND_END_DEBUG_EVENT(mCommandBuffer)
 }

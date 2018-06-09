@@ -266,15 +266,12 @@ namespace RendererRuntime
 		#ifdef RENDERER_RUNTIME_OPENVR
 			if (nullptr != ::detail::g_MeshPtr)
 			{
-				// Begin debug event
-				COMMAND_BEGIN_DEBUG_EVENT_FUNCTION(commandBuffer)
+				// Scoped debug event
+				COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)
 
 				// Fill command buffer
 				compositorContextData.resetCurrentlyBoundMaterialBlueprintResource();
 				::detail::g_MeshPtr->onFillCommandBuffer(commandBuffer);
-
-				// End debug event
-				COMMAND_END_DEBUG_EVENT(commandBuffer)
 			}
 		#else
 			assert(false && "OpenVR support is disabled");

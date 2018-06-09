@@ -278,8 +278,8 @@ namespace RendererRuntime
 	{
 		if (GImGui->Initialized)
 		{
-			// Begin debug event
-			COMMAND_BEGIN_DEBUG_EVENT_FUNCTION(commandBuffer)
+			// Scoped debug event
+			COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)
 
 			// Render command lists
 			// -> There's no need to try to gather draw calls and batch them into multi-draw-indirect buffers, ImGui does already a pretty good job
@@ -308,9 +308,6 @@ namespace RendererRuntime
 				}
 				vertexOffset += imDrawList->VtxBuffer.size();
 			}
-
-			// End debug event
-			COMMAND_END_DEBUG_EVENT(commandBuffer)
 		}
 	}
 
@@ -318,8 +315,8 @@ namespace RendererRuntime
 	{
 		if (GImGui->Initialized)
 		{
-			// Begin debug event
-			COMMAND_BEGIN_DEBUG_EVENT_FUNCTION(commandBuffer)
+			// Scoped debug event
+			COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)
 
 			// Create fixed build in renderer configuration resources, if required
 			if (nullptr == mRootSignature)
@@ -373,9 +370,6 @@ namespace RendererRuntime
 
 			// Render command lists
 			fillCommandBuffer(commandBuffer);
-
-			// End debug event
-			COMMAND_END_DEBUG_EVENT(commandBuffer)
 		}
 	}
 

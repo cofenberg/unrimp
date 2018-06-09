@@ -219,26 +219,25 @@ namespace RendererRuntime
 					materialBlueprintResourceManager.getLightBufferManager().fillBuffer(cameraSceneItem->getSceneResource(), mCommandBuffer);
 				}
 
-				// Begin debug event
-				COMMAND_BEGIN_DEBUG_EVENT_FUNCTION(mCommandBuffer)
+				{ // Scene rendering
+					// Scoped debug event
+					COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
 
-				// Set the current render target
-				Renderer::Command::SetRenderTarget::create(mCommandBuffer, &renderTarget);
+					// Set the current render target
+					Renderer::Command::SetRenderTarget::create(mCommandBuffer, &renderTarget);
 
-				// Set the viewport and scissor rectangle
-				// -> Since Direct3D 12 is command list based, the viewport and scissor rectangle must be set in every draw call to work with all supported renderer APIs
-				Renderer::Command::SetViewportAndScissorRectangle::create(mCommandBuffer, 0, 0, renderTargetWidth, renderTargetHeight);
+					// Set the viewport and scissor rectangle
+					// -> Since Direct3D 12 is command list based, the viewport and scissor rectangle must be set in every draw call to work with all supported renderer APIs
+					Renderer::Command::SetViewportAndScissorRectangle::create(mCommandBuffer, 0, 0, renderTargetWidth, renderTargetHeight);
 
-				{ // Fill command buffer
-					Renderer::IRenderTarget* currentRenderTarget = &renderTarget;
-					for (const CompositorNodeInstance* compositorNodeInstance : mSequentialCompositorNodeInstances)
-					{
-						currentRenderTarget = &compositorNodeInstance->fillCommandBuffer(*currentRenderTarget, compositorContextData, mCommandBuffer);
+					{ // Fill command buffer
+						Renderer::IRenderTarget* currentRenderTarget = &renderTarget;
+						for (const CompositorNodeInstance* compositorNodeInstance : mSequentialCompositorNodeInstances)
+						{
+							currentRenderTarget = &compositorNodeInstance->fillCommandBuffer(*currentRenderTarget, compositorContextData, mCommandBuffer);
+						}
 					}
 				}
-
-				// End debug event
-				COMMAND_END_DEBUG_EVENT(mCommandBuffer)
 
 				{ // Submit command buffer to the renderer backend
 					// The command buffer is about to be submitted, inform everyone who cares about this

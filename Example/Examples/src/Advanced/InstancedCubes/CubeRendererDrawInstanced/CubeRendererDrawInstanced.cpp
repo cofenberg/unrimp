@@ -464,8 +464,8 @@ void CubeRendererDrawInstanced::fillReusableCommandBuffer()
 	assert(nullptr != mSamplerStateGroup);
 	assert(nullptr != mVertexArray);
 
-	// Begin debug event
-	COMMAND_BEGIN_DEBUG_EVENT_FUNCTION(mCommandBuffer)
+	// Scoped debug event
+	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
 
 	// Set the used graphics root signature
 	Renderer::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
@@ -490,7 +490,4 @@ void CubeRendererDrawInstanced::fillReusableCommandBuffer()
 			batch->fillCommandBuffer(mCommandBuffer);
 		}
 	}
-
-	// End debug event
-	COMMAND_END_DEBUG_EVENT(mCommandBuffer)
 }
