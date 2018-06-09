@@ -122,7 +122,7 @@
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    Begin profiler CPU sample section
+	*    Begin profiler CPU sample section, must be ended by using "RENDERER_PROFILER_END_CPU_SAMPLE()"
 	*
 	*  @param[in] context
 	*    Renderer context to ask for the profiler interface
@@ -140,9 +140,55 @@
 	*/
 	#define RENDERER_PROFILER_END_CPU_SAMPLE(context) (context).getProfiler().endCpuSample();
 
+	namespace RendererRuntime
+	{
+		/**
+		*  @brief
+		*    Scoped profiler CPU sample section
+		*/
+		class RendererProfilerScopedCpuSampleOnExit
+		{
+		// Public methods
+		public:
+			inline explicit RendererProfilerScopedCpuSampleOnExit(IProfiler& profiler) :
+				mProfiler(profiler)
+			{}
+
+			inline ~RendererProfilerScopedCpuSampleOnExit()
+			{
+				mProfiler.endCpuSample();
+			}
+
+		// Private methods
+		private:
+			explicit RendererProfilerScopedCpuSampleOnExit(const RendererProfilerScopedCpuSampleOnExit& rendererProfilerScopedCpuSampleOnExit) = delete;
+			RendererProfilerScopedCpuSampleOnExit& operator =(const RendererProfilerScopedCpuSampleOnExit& rendererProfilerScopedCpuSampleOnExit) = delete;
+
+		// Private data
+		private:
+			IProfiler& mProfiler;
+		};
+	}
+
 	/**
 	*  @brief
-	*    Begin profiler GPU sample section
+	*    Scoped profiler CPU sample section, minor internal overhead compared to manual begin/end
+	*
+	*  @param[in] context
+	*    Renderer context to ask for the profiler interface
+	*  @param[in] name
+	*    Section name
+	*/
+	#define RENDERER_PROFILER_SCOPED_CPU_SAMPLE(context, name) \
+		{ static uint32_t sampleHash_##__LINE__ = 0; (context).getProfiler().beginCpuSample(name, &sampleHash_##__LINE__); } \
+		PRAGMA_WARNING_PUSH \
+			PRAGMA_WARNING_DISABLE_MSVC(4456) \
+			RendererRuntime::RendererProfilerScopedCpuSampleOnExit rendererProfilerScopedCpuSampleOnExit##__FUNCTION__((context).getProfiler()); \
+		PRAGMA_WARNING_POP
+
+	/**
+	*  @brief
+	*    Begin profiler GPU sample section, must be ended by using "RENDERER_PROFILER_END_GPU_SAMPLE()"
 	*
 	*  @param[in] context
 	*    Renderer context to ask for the profiler interface
@@ -159,13 +205,59 @@
 	*    Renderer context to ask for the profiler interface
 	*/
 	#define RENDERER_PROFILER_END_GPU_SAMPLE(context) (context).getProfiler().endGpuSample();
+
+	namespace RendererRuntime
+	{
+		/**
+		*  @brief
+		*    Scoped profiler GPU sample section
+		*/
+		class RendererProfilerScopedGpuSampleOnExit
+		{
+		// Public methods
+		public:
+			inline explicit RendererProfilerScopedGpuSampleOnExit(IProfiler& profiler) :
+				mProfiler(profiler)
+			{}
+
+			inline ~RendererProfilerScopedGpuSampleOnExit()
+			{
+				mProfiler.endGpuSample();
+			}
+
+		// Private methods
+		private:
+			explicit RendererProfilerScopedGpuSampleOnExit(const RendererProfilerScopedGpuSampleOnExit& rendererProfilerScopedGpuSampleOnExit) = delete;
+			RendererProfilerScopedGpuSampleOnExit& operator =(const RendererProfilerScopedGpuSampleOnExit& rendererProfilerScopedGpuSampleOnExit) = delete;
+
+		// Private data
+		private:
+			IProfiler& mProfiler;
+		};
+	}
+
+	/**
+	*  @brief
+	*    Scoped profiler GPU sample section, minor internal overhead compared to manual begin/end
+	*
+	*  @param[in] context
+	*    Renderer context to ask for the profiler interface
+	*  @param[in] name
+	*    Section name
+	*/
+	#define RENDERER_PROFILER_SCOPED_GPU_SAMPLE(context, name) \
+		{ static uint32_t sampleHash_##__LINE__ = 0; (context).getProfiler().beginGpuSample(name, &sampleHash_##__LINE__); } \
+		PRAGMA_WARNING_PUSH \
+			PRAGMA_WARNING_DISABLE_MSVC(4456) \
+			RendererRuntime::RendererProfilerScopedGpuSampleOnExit rendererProfilerScopedGpuSampleOnExit##__FUNCTION__((context).getProfiler()); \
+		PRAGMA_WARNING_POP
 #else
 	//[-------------------------------------------------------]
 	//[ Macros & definitions                                  ]
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    Begin profiler CPU sample section
+	*    Begin profiler CPU sample section, must be ended by using "RENDERER_PROFILER_END_CPU_SAMPLE()"
 	*
 	*  @param[in] context
 	*    Renderer context to ask for the profiler interface
@@ -185,7 +277,18 @@
 
 	/**
 	*  @brief
-	*    Begin profiler GPU sample section
+	*    Scoped profiler CPU sample section, minor internal overhead compared to manual begin/end
+	*
+	*  @param[in] context
+	*    Renderer context to ask for the profiler interface
+	*  @param[in] name
+	*    Section name
+	*/
+	#define RENDERER_PROFILER_SCOPED_CPU_SAMPLE(context, name)
+
+	/**
+	*  @brief
+	*    Begin profiler GPU sample section, must be ended by using "RENDERER_PROFILER_END_GPU_SAMPLE()"
 	*
 	*  @param[in] context
 	*    Renderer context to ask for the profiler interface
@@ -202,4 +305,15 @@
 	*    Renderer context to ask for the profiler interface
 	*/
 	#define RENDERER_PROFILER_END_GPU_SAMPLE(context)
+
+	/**
+	*  @brief
+	*    Scoped profiler GPU sample section, minor internal overhead compared to manual begin/end
+	*
+	*  @param[in] context
+	*    Renderer context to ask for the profiler interface
+	*  @param[in] name
+	*    Section name
+	*/
+	#define RENDERER_PROFILER_SCOPED_GPU_SAMPLE(context, name)
 #endif
