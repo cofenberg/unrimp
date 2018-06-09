@@ -194,7 +194,9 @@ if(WIN32)
 	if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
 		# Used debug build options:
 		# - "Debug Information Format" = "Program Database for Edit And Continue (/ZI)"
+		# - "Basic Runtime Checks" = "Default" instead of "/RTC1" which is causing a massive slow-down when debugging
 		unrimp_replace_cmake_cxx_flags(/Zi /ZI)
+		unrimp_replace_cmake_cxx_flags(/RTC1 "")
 	else()
 		# Used release build options:
 		# - "Inline Function Expansion"			= "Any Suitable (/Ob2)"
