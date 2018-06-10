@@ -100,7 +100,7 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline RemoteryProfiler(Renderer::IRenderer& renderer) :
+		inline explicit RemoteryProfiler(Renderer::IRenderer& renderer) :
 			mRemotery(nullptr),
 			mUseD3D11(false),
 			mUseOpenGL(false)
