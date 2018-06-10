@@ -53,7 +53,7 @@ namespace RendererToolkit
 //[-------------------------------------------------------]
 /**
 *  @brief
-*    Application frontend interface
+*    Abstract application frontend interface
 */
 class IApplicationFrontend
 {
@@ -71,6 +71,23 @@ public:
 	{
 		// Nothing here
 	}
+
+	/**
+	*  @brief
+	*    Ask the application politely to switch to another example as soon as possible
+	*
+	*  @param[in] exampleName
+	*    Example name, must be valid
+	*  @param[in] rendererName
+	*    Renderer name, if null pointer the default renderer will be used
+	*/
+	virtual void switchExample(const char* exampleName, const char* rendererName = nullptr) = 0;
+
+	/**
+	*  @brief
+	*    Ask the application politely to shut down as soon as possible
+	*/
+	virtual void exit() = 0;
 
 	/**
 	*  @brief

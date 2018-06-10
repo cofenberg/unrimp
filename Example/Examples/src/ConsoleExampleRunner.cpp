@@ -31,55 +31,99 @@
 #include <iostream>
 
 
+//[-------------------------------------------------------]
+//[ Public virtual ExampleRunner methods                  ]
+//[-------------------------------------------------------]
+int ConsoleExampleRunner::run(const CommandLineArguments& commandLineArguments)
+{
+	if (!parseArgs(commandLineArguments))
+	{
+		printUsage(mAvailableExamples, mAvailableRenderers);
+		return -1;
+	}
+
+	// Run example and switch as long between examples as asked to
+	int result = 0;
+	do
+	{
+		// Run current example
+		result = runExample(mCurrentRendererName, mCurrentExampleName);
+		if (0 == result && !mNextRendererName.empty() && !mNextExampleName.empty())
+		{
+			// Switch to next example
+			mCurrentRendererName = mNextRendererName;
+			mCurrentExampleName = mNextExampleName;
+			mNextRendererName.clear();
+			mNextExampleName.clear();
+			result = 1;
+		}
+	} while (result);
+
+	// Done
+	return result;
+}
+
+
+//[-------------------------------------------------------]
+//[ Protected virtual ExampleRunner methods               ]
+//[-------------------------------------------------------]
+void ConsoleExampleRunner::printUsage(const AvailableExamples& availableExamples, const AvailableRenderers& availableRenderers)
+{
+	std::cout << "Usage: ./Examples <exampleName> [-r <rendererName>]\n";
+
+	// Available examples
+	std::cout << "Available Examples:\n";
+	for (const auto& pair : availableExamples)
+	{
+		std::cout << "\t" << pair.first << '\n';
+	}
+
+	// Available renderers
+	std::cout << "Available Renderer:\n";
+	for (const std::string& rendererName : availableRenderers)
+	{
+		std::cout << "\t" << rendererName << '\n';
+	}
+}
+
 void ConsoleExampleRunner::showError(const std::string& errorMessage)
 {
 	std::cout << errorMessage << "\n";
 }
 
-void ConsoleExampleRunner::printUsage(const ExampleRunner::AvailableExamplesMap& knownExamples, const ExampleRunner::AvailableRendererMap& availableRenderer)
-{
-	std::cout << "Usage: ./Examples <exampleName> [-r <rendererName>]\n";
-	std::cout << "Available Examples:\n";
-	for (AvailableExamplesMap::const_iterator it=knownExamples.cbegin(); it!=knownExamples.cend(); ++it)
-		std::cout << "\t" << it->first << '\n';
-	std::cout << "Available Renderer:\n";
-	for (AvailableRendererMap::const_iterator it=availableRenderer.cbegin(); it!=availableRenderer.cend(); ++it)
-		std::cout << "\t" << *it << '\n';
-}
 
-int ConsoleExampleRunner::run(const CommandLineArguments& commandLineArguments)
-{
-	if(!parseArgs(commandLineArguments)) {
-		printUsage(m_availableExamples, m_availableRenderer);
-		return -1;
-	}
-	return runExample(m_rendererName, m_exampleName);
-}
-
+//[-------------------------------------------------------]
+//[ Private methods                                       ]
+//[-------------------------------------------------------]
 bool ConsoleExampleRunner::parseArgs(const CommandLineArguments& commandLineArguments)
 {
-	unsigned int length = commandLineArguments.getCount();
-	for(unsigned int i = 0; i < length; ++i) {
-		std::string arg = commandLineArguments.getArgumentAtIndex(i);
-		if (arg != "-r") {
-			m_exampleName = arg;
+	uint32_t numberOfArguments = commandLineArguments.getCount();
+	for (uint32_t argumentIndex = 0; argumentIndex < numberOfArguments; ++argumentIndex)
+	{
+		const std::string argument = commandLineArguments.getArgumentAtIndex(argumentIndex);
+		if (argument != "-r")
+		{
+			mCurrentExampleName = argument;
 		}
-		else {
-			if (i+1 < length) {
-				++i;
-				m_rendererName = commandLineArguments.getArgumentAtIndex(i);
-			}
-			else
-			{
-				showError("missing argument for parameter -r");
-				return false;
-			}
+		else if (argumentIndex + 1 < numberOfArguments)
+		{
+			++argumentIndex;
+			mCurrentRendererName = commandLineArguments.getArgumentAtIndex(argumentIndex);
 		}
-		
+		else
+		{
+			showError("Missing argument for parameter -r");
+
+			// Error!
+			return false;
+		}
 	}
 
-	if (m_rendererName.empty())
-		m_rendererName = m_defaultRendererName;
+	if (mCurrentRendererName.empty())
+	{
+		mCurrentRendererName = mDefaultRendererName;
+	}
 
+	// Done
 	return true;
 }

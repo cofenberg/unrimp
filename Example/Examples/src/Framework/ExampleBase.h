@@ -25,6 +25,18 @@
 
 
 //[-------------------------------------------------------]
+//[ Includes                                              ]
+//[-------------------------------------------------------]
+#include "Framework/PlatformTypes.h"
+
+// Disable warnings in external headers, we can't fix them
+PRAGMA_WARNING_PUSH
+	PRAGMA_WARNING_DISABLE_MSVC(4574)	// warning C4574: '_HAS_ITERATOR_DEBUGGING' is defined to be '0': did you mean to use '#if _HAS_ITERATOR_DEBUGGING'?
+	#include <cassert>
+PRAGMA_WARNING_POP
+
+
+//[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
 namespace Renderer
@@ -41,6 +53,7 @@ namespace RendererToolkit
 {
 	class IRendererToolkit;
 }
+class ExampleRunner;
 class IApplicationFrontend;
 
 
@@ -56,9 +69,27 @@ class ExampleBase
 
 
 //[-------------------------------------------------------]
+//[ Friends                                               ]
+//[-------------------------------------------------------]
+friend class ExampleRunner;
+
+
+//[-------------------------------------------------------]
 //[ Public methods                                        ]
 //[-------------------------------------------------------]
 public:
+	/**
+	*  @brief
+	*    Constructor
+	*/
+	inline explicit ExampleBase(ExampleRunner& exampleRunner) :
+		mExampleRunner(&exampleRunner),
+		mCustomLog(nullptr),
+		mApplicationFrontend(nullptr)
+	{
+		// Nothing here
+	}
+
 	/**
 	*  @brief
 	*    Destructor
@@ -66,6 +97,19 @@ public:
 	inline virtual ~ExampleBase()
 	{
 		// Nothing here
+	}
+
+	/**
+	*  @brief
+	*    Return the example runner instance
+	*
+	*  @return
+	*    The example runner instance
+	*/
+	inline ExampleRunner& getExampleRunner()
+	{
+		assert((nullptr != mExampleRunner) && "Don't call this method inside constructors");
+		return *mExampleRunner;
 	}
 
 	/**
@@ -78,32 +122,6 @@ public:
 	inline Renderer::ILog* getCustomLog() const
 	{
 		return mCustomLog;
-	}
-
-	/**
-	*  @brief
-	*    Initializes the example; does nothing when already initialized
-	*/
-	inline void initialize()
-	{
-		if (!mInitialized)
-		{
-			onInitialization();
-			mInitialized = true;
-		}
-	}
-
-	/**
-	*  @brief
-	*    Deinitialize the example; does nothing when already deinitialized
-	*/
-	inline void deinitialize()
-	{
-		if (mInitialized)
-		{
-			onDeinitialization();
-			mInitialized = false;
-		}
 	}
 
 	/**
@@ -169,6 +187,23 @@ public:
 	*/
 	RendererToolkit::IRendererToolkit* getRendererToolkit();
 
+	/**
+	*  @brief
+	*    Ask the application politely to switch to another example as soon as possible
+	*
+	*  @param[in] exampleName
+	*    Example name, must be valid
+	*  @param[in] rendererName
+	*    Renderer name, if null pointer the default renderer will be used
+	*/
+	void switchExample(const char* exampleName, const char* rendererName = nullptr);
+
+	/**
+	*  @brief
+	*    Ask the application politely to shut down as soon as possible
+	*/
+	void exit();
+
 
 //[-------------------------------------------------------]
 //[ Public virtual ExampleBase methods                    ]
@@ -214,11 +249,11 @@ public:
 protected:
 	/**
 	*  @brief
-	*    Default constructor
+	*    Constructor
 	*/
 	inline ExampleBase() :
+		mExampleRunner(nullptr),
 		mCustomLog(nullptr),
-		mInitialized(false),
 		mApplicationFrontend(nullptr)
 	{
 		// Nothing here
@@ -241,8 +276,8 @@ protected:
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
+	ExampleRunner*		  mExampleRunner;
 	Renderer::ILog*		  mCustomLog;			///< Optional custom log instance, can be a null pointer, don't destroy the instance
-	bool				  mInitialized;
 	IApplicationFrontend* mApplicationFrontend;	///< Renderer instance, can be a null pointer, do not destroy the instance
 
 

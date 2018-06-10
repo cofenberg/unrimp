@@ -67,9 +67,9 @@ public:
 	*    Case sensitive ASCII name of the renderer to instance, if null pointer or unknown renderer no renderer will be used.
 	*    Example renderer names: "Null", "Vulkan", "OpenGL", "OpenGLES3", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"
 	*  @param[in] exampleBase
-	*    Pointer to an example which should be used
+	*    Reference to an example which should be used
 	*/
-	IApplicationRenderer(const char* rendererName, ExampleBase* exampleBase);
+	IApplicationRenderer(const char* rendererName, ExampleBase& exampleBase);
 
 	/**
 	*  @brief
@@ -85,6 +85,13 @@ public:
 //[ Public virtual IApplicationFrontend methods           ]
 //[-------------------------------------------------------]
 public:
+	virtual void switchExample(const char* exampleName, const char* rendererName = nullptr) override;
+
+	inline virtual void exit() override
+	{
+		IApplication::exit();
+	}
+
 	inline virtual Renderer::IRenderer* getRenderer() const override
 	{
 		return mRenderer;
@@ -106,6 +113,7 @@ public:
 	virtual void onResize() override;
 	virtual void onToggleFullscreenState() override;
 	virtual void onDrawRequest() override;
+	virtual void onEscapeKey() override;
 
 
 //[-------------------------------------------------------]
@@ -114,35 +122,22 @@ public:
 protected:
 	/**
 	*  @brief
-	*    Constructor
-	*
-	*  @param[in] rendererName
-	*    Case sensitive ASCII name of the renderer to instance, if null pointer or unknown renderer no renderer will be used.
-	*    Example renderer names: "Null", "Vulkan", "OpenGL", "OpenGLES3", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"
-	*/
-	inline explicit IApplicationRenderer(const char* rendererName) :
-		IApplicationRenderer(rendererName, nullptr)
-	{
-		// Nothing here
-	}
-
-	/**
-	*  @brief
-	*    Create the renderer instance when it not already exists
+	*    Create the renderer instance
 	*/
 	void createRenderer();
 
 	/**
 	*  @brief
-	*    Initialize the example, when not already done
+	*    Destroy the renderer instance
 	*/
-	void initializeExample();
+	void destroyRenderer();
 
-	/**
-	*  @brief
-	*    Deinitialize the example, when not already done
-	*/
-	void deinitializeExample();
+
+//[-------------------------------------------------------]
+//[ Protected data                                        ]
+//[-------------------------------------------------------]
+protected:
+	ExampleBase& mExampleBase;
 
 
 //[-------------------------------------------------------]
@@ -176,7 +171,6 @@ private:
 	Renderer::IRenderer*		mRenderer;			///< Renderer instance, can be a null pointer, do not destroy the instance
 	Renderer::ISwapChain*		mMainSwapChain;		///< Main swap chain instance, can be a null pointer, release the instance if you no longer need it
 	Renderer::CommandBuffer		mCommandBuffer;		///< Command buffer
-	ExampleBase*				mExampleBase;
 
 
 };

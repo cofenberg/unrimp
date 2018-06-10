@@ -443,6 +443,11 @@ void FirstMultipleSwapChains::onDrawRequest()
 	}
 }
 
+void FirstMultipleSwapChains::onEscapeKey()
+{
+	switchExample("ImGuiExampleSelector");
+}
+
 
 //[-------------------------------------------------------]
 //[ Private methods                                       ]

@@ -132,6 +132,8 @@ Standalone renderer examples.
 		- Root signature
 		- Pipeline state object (PSO)
 - Runtime
+	- "ImGuiExampleSelector"demonstrates:
+		- ImGui usage to select the example to start
 	- "FirstMesh" demonstrates:
 		- Vertex buffer object (VBO)
 		- Vertex array object (VAO)

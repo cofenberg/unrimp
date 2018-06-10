@@ -23,6 +23,7 @@
 //[-------------------------------------------------------]
 #include "Advanced/FirstGpgpu/FirstGpgpu.h"
 #include "Framework/Color4.h"
+#include "ExampleRunner.h"
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -42,7 +43,8 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Public methods                                        ]
 //[-------------------------------------------------------]
-FirstGpgpu::FirstGpgpu(const char* rendererName) :
+FirstGpgpu::FirstGpgpu(ExampleRunner& exampleRunner, const char* rendererName) :
+	mExampleRunner(exampleRunner),
 	mRendererInstance(nullptr)
 {
 	// Copy the given renderer name
@@ -65,7 +67,6 @@ int FirstGpgpu::run()
 	Renderer::DefaultLog defaultLog;
 	Renderer::DefaultAssert defaultAssert;
 	Renderer::DefaultAllocator defaultAllocator;
-	// TODO(sw) We misuse the Microsoft Windows context type here because no window handle is given
 	Renderer::Context rendererContext(defaultLog, defaultAssert, defaultAllocator);
 	mRendererInstance = new Renderer::RendererInstance(mRendererName, rendererContext);
 
@@ -100,6 +101,7 @@ int FirstGpgpu::run()
 	mRendererInstance = nullptr;
 
 	// Done, no error
+	mExampleRunner.switchExample("ImGuiExampleSelector");
 	return 0;
 }
 

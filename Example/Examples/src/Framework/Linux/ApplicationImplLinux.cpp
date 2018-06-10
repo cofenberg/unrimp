@@ -87,12 +87,11 @@ public:
 
 			case KeyPress:
 			{
-				// Application shutdown = "escape"-key = for all examples
 				const uint32_t key = XLookupKeysym(&event.xkey, 0);
 				auto keyIterator = mX11KeySymToKeyMap.find(key);
 				if (keyIterator != mX11KeySymToKeyMap.end() && 27 == keyIterator->second)
 				{
-					mApplication.exit();
+					mApplication.onEscapeKey();
 				}
 				break;
 			}

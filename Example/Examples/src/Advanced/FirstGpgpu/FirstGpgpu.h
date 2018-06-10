@@ -37,6 +37,7 @@ namespace Renderer
 {
 	class RendererInstance;
 }
+class ExampleRunner;
 
 
 //[-------------------------------------------------------]
@@ -70,11 +71,13 @@ public:
 	*  @brief
 	*    Constructor
 	*
+	*  @param[in] exampleRunner
+	*    Example runner
 	*  @param[in] rendererName
 	*    Case sensitive ASCII name of the renderer to instance, if null pointer or unknown renderer no renderer will be used.
 	*    Example renderer names: "Null", "Vulkan", "OpenGL", "OpenGLES3", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"
 	*/
-	explicit FirstGpgpu(const char* rendererName);
+	FirstGpgpu(ExampleRunner& exampleRunner, const char* rendererName);
 
 	/**
 	*  @brief
@@ -100,6 +103,8 @@ public:
 //[ Private methods                                       ]
 //[-------------------------------------------------------]
 private:
+	FirstGpgpu& operator=(const FirstGpgpu& firstGpgpu) = delete;
+
 	/**
 	*  @brief
 	*    Called on application initialization
@@ -150,6 +155,7 @@ private:
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
+	ExampleRunner&				 mExampleRunner;
 	char						 mRendererName[32];		///< Case sensitive ASCII name of the renderer to instance
 	Renderer::RendererInstance*	 mRendererInstance;		///< Renderer instance, can be a null pointer
 	Renderer::IRendererPtr		 mRenderer;				///< Renderer instance, can be a null pointer

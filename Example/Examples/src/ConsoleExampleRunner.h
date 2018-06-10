@@ -18,6 +18,9 @@
 \*********************************************************/
 
 
+//[-------------------------------------------------------]
+//[ Header guard                                          ]
+//[-------------------------------------------------------]
 #pragma once
 
 
@@ -27,19 +30,33 @@
 #include "ExampleRunner.h"
 
 
+//[-------------------------------------------------------]
+//[ Classes                                               ]
+//[-------------------------------------------------------]
 class ConsoleExampleRunner final :  ExampleRunner
 {
+
+
+//[-------------------------------------------------------]
+//[ Public virtual ExampleRunner methods                  ]
+//[-------------------------------------------------------]
 public:
 	virtual int run(const CommandLineArguments& commandLineArguments) override;
 
-protected:
-	virtual void showError(const std::string& errorMsg) override;
-	virtual void printUsage(const ExampleRunner::AvailableExamplesMap& knownExamples, const ExampleRunner::AvailableRendererMap& availableRenderer) override;
 
+//[-------------------------------------------------------]
+//[ Protected virtual ExampleRunner methods               ]
+//[-------------------------------------------------------]
+protected:
+	virtual void printUsage(const AvailableExamples& availableExamples, const AvailableRenderers& availableRenderers) override;
+	virtual void showError(const std::string& errorMessage) override;
+
+
+//[-------------------------------------------------------]
+//[ Private methods                                       ]
+//[-------------------------------------------------------]
 private:
 	bool parseArgs(const CommandLineArguments& commandLineArguments);
 
-private:
-	std::string m_rendererName;
-	std::string m_exampleName;
+
 };

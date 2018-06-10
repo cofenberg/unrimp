@@ -22,6 +22,7 @@
 //[ Includes                                              ]
 //[-------------------------------------------------------]
 #include "Framework/IApplicationRendererRuntime.h"
+#include "Framework/ExampleBase.h"
 
 #include <RendererRuntime/Context.h>
 #include <RendererRuntime/Public/RendererRuntimeInstance.h>
@@ -81,8 +82,6 @@ RendererToolkit::IRendererToolkit* IApplicationRendererRuntime::getRendererToolk
 //[-------------------------------------------------------]
 void IApplicationRendererRuntime::onInitialization()
 {
-	// Don't call the base, this would break examples which depends on renderer runtime instance
-
 	// Create the renderer instance
 	createRenderer();
 
@@ -159,14 +158,13 @@ void IApplicationRendererRuntime::onInitialization()
 	}
 
 	// Initialize the example now that the renderer instance should be created successfully
-	initializeExample();
+	mExampleBase.onInitialization();
 }
 
 void IApplicationRendererRuntime::onDeinitialization()
 {
 	// Deinitialize example before we tear down any dependencies
-	// -> The base class calls this too but this is safe to do because the deinitialization is only done when the example wasn't already deinitialized
-	deinitializeExample();
+	mExampleBase.onDeinitialization();
 
 	// Delete the renderer runtime instance
 	delete mRendererRuntimeInstance;
@@ -205,8 +203,8 @@ void IApplicationRendererRuntime::onDeinitialization()
 		}
 	#endif
 
-	// Call the base implementation
-	IApplicationRenderer::onDeinitialization();
+	// Destroy renderer
+	destroyRenderer();
 }
 
 void IApplicationRendererRuntime::onUpdate()

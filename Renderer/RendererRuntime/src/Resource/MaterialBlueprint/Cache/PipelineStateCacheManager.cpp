@@ -56,12 +56,10 @@ namespace RendererRuntime
 			}
 		}
 
-		// Performance: Cached direct reference to the pipeline state compiler instance to use, since this instance doesn't change during runtime we can do so without mercy
-		static PipelineStateCompiler& pipelineStateCompiler = mMaterialBlueprintResource.getResourceManager<MaterialBlueprintResourceManager>().getRendererRuntime().getPipelineStateCompiler();
-
 		// Fallback: OK, the pipeline state signature is unknown and we now have to perform more complex and time consuming work. So first, check whether or not this work
 		// should be performed asynchronous (usually the case). If asynchronous, we need to return a fallback pipeline state cache while the pipeline state compiler is working.
 		PipelineStateCache* fallbackPipelineStateCache = nullptr;
+		PipelineStateCompiler& pipelineStateCompiler = mMaterialBlueprintResource.getResourceManager<MaterialBlueprintResourceManager>().getRendererRuntime().getPipelineStateCompiler();
 		if (pipelineStateCompiler.isAsynchronousCompilationEnabled())
 		{
 			// Asynchronous

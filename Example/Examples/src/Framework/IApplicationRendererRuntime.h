@@ -77,9 +77,9 @@ public:
 	*    Case sensitive ASCII name of the renderer to instance, if null pointer or unknown renderer no renderer will be used.
 	*    Example renderer names: "Null", "Vulkan", "OpenGL", "OpenGLES3", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"
 	*  @param[in] exampleBase
-	*    Pointer to an example which should be used
+	*    Reference to an example which should be used
 	*/
-	inline IApplicationRendererRuntime(const char* rendererName, ExampleBase* exampleBase) :
+	inline IApplicationRendererRuntime(const char* rendererName, ExampleBase& exampleBase) :
 		IApplicationRenderer(rendererName, exampleBase),
 		mFileManager(nullptr),
 		#ifdef RENDERER_RUNTIME_PROFILER
@@ -148,25 +148,6 @@ public:
 	virtual void onInitialization() override;
 	virtual void onDeinitialization() override;
 	virtual void onUpdate() override;
-
-
-//[-------------------------------------------------------]
-//[ Protected methods                                     ]
-//[-------------------------------------------------------]
-protected:
-	/**
-	*  @brief
-	*    Constructor
-	*
-	*  @param[in] rendererName
-	*    Case sensitive ASCII name of the renderer to instance, if null pointer or unknown renderer no renderer will be used.
-	*    Example renderer names: "Null", "Vulkan", "OpenGL", "OpenGLES3", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"
-	*/
-	inline explicit IApplicationRendererRuntime(const char* rendererName) :
-		IApplicationRendererRuntime(rendererName, nullptr)
-	{
-		// Nothing here
-	}
 
 
 //[-------------------------------------------------------]

@@ -167,6 +167,9 @@ void ApplicationImplWindows::onDeinitialization()
 
 	// Unregister the window class for the OpenGL dummy window
 	::UnregisterClass(TEXT("ApplicationImplWindows"), ::GetModuleHandle(nullptr));
+
+	// Flush messages
+	processMessages();
 }
 
 bool ApplicationImplWindows::processMessages()
@@ -298,10 +301,9 @@ LRESULT CALLBACK ApplicationImplWindows::wndProc(HWND hWnd, UINT message, WPARAM
 			return 0;
 
 		case WM_KEYDOWN:
-			// Application shutdown = "escape"-key = for all examples
 			if (27 == wParam)
 			{
-				applicationImplWindows->mApplication->exit();
+				applicationImplWindows->mApplication->onEscapeKey();
 			}
 			return 0;
 

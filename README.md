@@ -246,8 +246,8 @@ Microsoft Windows: First Example Kickoff
 - [Open Visual Studio 2017 and select "File -> Open -> CMake..." -> "unrimp\CMakeLists.txt"](https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studio/)
 - Build "Windows_x64_Shared" project settings
 - Compile the runtime assets by starting "unrimp\bin\Windows_x64_Shared\ExampleProjectCompiler.exe"
-- Run "unrimp\bin\Windows_x64_Shared\Examples.exe" (is using default command line arguments "unrimp\bin\Windows_x64_Shared\Examples.exe FirstScene -r Direct3D11")
-- Modify ["launch.vs.json"](https://github.com/Microsoft/vscode-cpptools/blob/master/launch.md) to change the Visual Studio application launch options
+- Run "unrimp\bin\Windows_x64_Shared\Examples.exe" (is using default command line arguments "unrimp\bin\Windows_x64_Shared\Examples.exe ImGuiExampleSelector -r Direct3D11")
+- Modify ["launch.vs.json"](https://github.com/Microsoft/vscode-cpptools/blob/master/launch.md) to change the Visual Studio application launch options, e.g. to start the "FirstScene"-example by default
 
 
 Microsoft Windows: Targeting Android

@@ -17,9 +17,16 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 \*********************************************************/
 
+
+//[-------------------------------------------------------]
+//[ Header guard                                          ]
+//[-------------------------------------------------------]
 #pragma once
 
 
+//[-------------------------------------------------------]
+//[ Includes                                              ]
+//[-------------------------------------------------------]
 #include "Framework/PlatformTypes.h"
 
 // Disable warnings in external headers, we can't fix them
@@ -39,38 +46,161 @@ PRAGMA_WARNING_PUSH
 	#include <string>
 PRAGMA_WARNING_POP
 
+
+//[-------------------------------------------------------]
+//[ Forward declarations                                  ]
+//[-------------------------------------------------------]
 class CommandLineArguments;
 
+
+//[-------------------------------------------------------]
+//[ Classes                                               ]
+//[-------------------------------------------------------]
 class ExampleRunner
 {
-public:
-	virtual int run(const CommandLineArguments& commandLineArguments) = 0;
 
+
+//[-------------------------------------------------------]
+//[ Public definitions                                    ]
+//[-------------------------------------------------------]
+public:
+	typedef int(*RunnerMethod)(ExampleRunner&, const char*);
+	typedef std::map<std::string, RunnerMethod>		  AvailableExamples;
+	typedef std::set<std::string>					  AvailableRenderers;
+	typedef std::vector<std::string>				  SupportedRenderers;
+	typedef std::map<std::string, SupportedRenderers> ExampleToSupportedRenderers;
+
+
+//[-------------------------------------------------------]
+//[ Public methods                                        ]
+//[-------------------------------------------------------]
+public:
+	inline const AvailableRenderers& getAvailableRenderers() const
+	{
+		return mAvailableRenderers;
+	}
+
+	inline const ExampleToSupportedRenderers& getExampleToSupportedRenderers() const
+	{
+		return mExampleToSupportedRenderers;
+	}
+
+	inline const std::string& getDefaultRendererName() const
+	{
+		return mDefaultRendererName;
+	}
+
+	inline const std::string& getDefaultExampleName() const
+	{
+		return mDefaultExampleName;
+	}
+
+	inline const std::string& getCurrentRendererName() const
+	{
+		return mCurrentRendererName;
+	}
+
+	inline const std::string& getCurrentExampleName() const
+	{
+		return mCurrentExampleName;
+	}
+
+	/**
+	*  @brief
+	*    Ask the example runner politely to switch to another example as soon as possible
+	*
+	*  @param[in] exampleName
+	*    Example name, must be valid
+	*  @param[in] rendererName
+	*    Renderer name, if null pointer the default renderer will be used
+	*/
+	void switchExample(const char* exampleName, const char* rendererName = nullptr);
+
+
+//[-------------------------------------------------------]
+//[ Public virtual ExampleRunner methods                  ]
+//[-------------------------------------------------------]
+public:
 	inline virtual ~ExampleRunner()
 	{}
 
-protected:
-	typedef int(*RunnerMethod)(const char*);
-	typedef std::map<std::string, RunnerMethod> AvailableExamplesMap;
-	typedef std::set<std::string> AvailableRendererMap;
-	typedef std::vector<std::string> SupportedRenderers;
-	typedef std::map<std::string, SupportedRenderers> ExampleToSupportedRendererMap;
-	
-	ExampleRunner();
-	
-	virtual void printUsage(const AvailableExamplesMap &knownExamples, const AvailableRendererMap &availableRenderer) = 0;
-	virtual void showError(const std::string& errorMessage) = 0;
-	
-	int runExample(const std::string &rendererName, const std::string &exampleName);
+	virtual int run(const CommandLineArguments& commandLineArguments) = 0;
 
+
+//[-------------------------------------------------------]
+//[ Protected methods                                     ]
+//[-------------------------------------------------------]
+protected:
+	ExampleRunner();
+	int runExample(const std::string& rendererName, const std::string& exampleName);
+
+
+//[-------------------------------------------------------]
+//[ Protected virtual ExampleRunner methods               ]
+//[-------------------------------------------------------]
+protected:
+	virtual void printUsage(const AvailableExamples& availableExamples, const AvailableRenderers& availableRenderers) = 0;
+	virtual void showError(const std::string& errorMessage) = 0;
+
+
+//[-------------------------------------------------------]
+//[ Protected data                                        ]
+//[-------------------------------------------------------]
+protected:
+	AvailableExamples 			mAvailableExamples;
+	AvailableRenderers			mAvailableRenderers;
+	ExampleToSupportedRenderers	mExampleToSupportedRenderers;
+	std::string					mDefaultRendererName;
+	std::string					mDefaultExampleName;
+	std::string					mCurrentRendererName;
+	std::string					mCurrentExampleName;
+	std::string					mNextRendererName;
+	std::string					mNextExampleName;
+
+
+//[-------------------------------------------------------]
+//[ Private static methods                                ]
+//[-------------------------------------------------------]
+private:
+	template <class ExampleClass>
+	static int runRenderExample(ExampleRunner& exampleRunner, const char* rendererName)
+	{
+		ExampleClass exampleClass;
+		exampleClass.mExampleRunner = &exampleRunner;
+		return IApplicationRenderer(rendererName, exampleClass).run();
+	}
+
+	template <class ExampleClass>
+	static int runRenderRuntimeExample(ExampleRunner& exampleRunner, const char* rendererName)
+	{
+		ExampleClass exampleClass;
+		exampleClass.mExampleRunner = &exampleRunner;
+		return IApplicationRendererRuntime(rendererName, exampleClass).run();
+	}
+
+	template <class ExampleClass>
+	static int runBasicExample(ExampleRunner& exampleRunner, const char* rendererName)
+	{
+		ExampleClass exampleClass(exampleRunner, rendererName);
+		return exampleClass.run();
+	}
+
+
+//[-------------------------------------------------------]
+//[ Private methods                                       ]
+//[-------------------------------------------------------]
 private:
 	template<typename T>
-	void addExample(const std::string& name, RunnerMethod runnerMethod, T const &supportedRendererList);
+	void addExample(const std::string& name, RunnerMethod runnerMethod, T const& supportedRendererList)
+	{
+		mAvailableExamples.insert(std::pair<std::string,RunnerMethod>(name, runnerMethod));
+		SupportedRenderers supportedRenderers;
+		for (const std::string& supportedRenderer : supportedRendererList)
+		{
+			supportedRenderers.push_back(supportedRenderer);
+		}
+		mExampleToSupportedRenderers.insert(std::pair<std::string, std::vector<std::string>>(name, std::move(supportedRenderers)));
+	}
 
-protected:
-	AvailableExamplesMap 			m_availableExamples;
-	AvailableRendererMap 			m_availableRenderer;
-	ExampleToSupportedRendererMap	m_supportedRendererForExample;
-	std::string						m_defaultRendererName;
-	std::string						m_defaultExampleName;
+
 };

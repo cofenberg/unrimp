@@ -47,3 +47,20 @@ RendererToolkit::IRendererToolkit* ExampleBase::getRendererToolkit()
 {
 	return (nullptr != mApplicationFrontend) ? mApplicationFrontend->getRendererToolkit() : nullptr;
 }
+
+void ExampleBase::switchExample(const char* exampleName, const char* rendererName)
+{
+	assert(nullptr != exampleName);
+	if (nullptr != mApplicationFrontend)
+	{
+		mApplicationFrontend->switchExample(exampleName, rendererName);
+	}
+}
+
+void ExampleBase::exit()
+{
+	if (nullptr != mApplicationFrontend)
+	{
+		mApplicationFrontend->exit();
+	}
+}

@@ -43,6 +43,9 @@
 #include "Advanced/FirstGpgpu/FirstGpgpu.h"
 #include "Advanced/IcosahedronTessellation/IcosahedronTessellation.h"
 #ifdef RENDERER_RUNTIME
+	#ifdef RENDERER_RUNTIME_IMGUI
+		#include "Runtime/ImGuiExampleSelector/ImGuiExampleSelector.h"
+	#endif
 	#include "Runtime/FirstMesh/FirstMesh.h"
 	#include "Runtime/FirstCompositor/FirstCompositor.h"
 	#include "Runtime/FirstScene/FirstScene.h"
@@ -65,33 +68,24 @@ PRAGMA_WARNING_POP
 
 
 //[-------------------------------------------------------]
-//[ Helper function templates                             ]
+//[ Public methods                                        ]
 //[-------------------------------------------------------]
-template <class ExampleClass>
-int RunRenderExample(const char* rendererName)
+void ExampleRunner::switchExample(const char* exampleName, const char* rendererName)
 {
-	ExampleClass example;
-	return IApplicationRenderer(rendererName, &example).run();
+	assert(nullptr != exampleName);
+	mNextRendererName = (nullptr != rendererName) ? rendererName : mDefaultRendererName;
+	mNextExampleName = exampleName;
 }
 
-template <class ExampleClass>
-int RunRenderRuntimeExample(const char* rendererName)
-{
-	ExampleClass example;
-	return IApplicationRendererRuntime(rendererName, &example).run();
-}
 
-template <class ExampleClass>
-int RunExample(const char* rendererName)
-{
-	return ExampleClass(rendererName).run();
-}
-
+//[-------------------------------------------------------]
+//[ Protected methods                                     ]
+//[-------------------------------------------------------]
 ExampleRunner::ExampleRunner() :
 	// Case sensitive name of the renderer to instance, might be ignored in case e.g. "RENDERER_DIRECT3D12" was set as preprocessor definition
 	// -> Example renderer names: "Null", "Vulkan", "OpenGL", "OpenGLES3", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"
 	// -> In case the graphics driver supports it, the OpenGL ES 3 renderer can automatically also run on a desktop PC without an emulator (perfect for testing/debugging)
-	m_defaultRendererName(
+	mDefaultRendererName(
 		#ifdef RENDERER_DIRECT3D11
 			"Direct3D11"
 		#elif defined(RENDERER_OPENGL)
@@ -112,106 +106,105 @@ ExampleRunner::ExampleRunner() :
 	)
 {
 	// Sets of supported renderer backends
-	std::array<std::string, 8> supportsAllRenderer = {{"Null", "Vulkan", "OpenGL", "OpenGLES3", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"}};
+	std::array<std::string, 8> supportsAllRenderer	   = {{"Null", "Vulkan", "OpenGL", "OpenGLES3", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"}};
 	std::array<std::string, 7> doesNotSupportOpenGLES3 = {{"Null", "Vulkan", "OpenGL", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"}};
-	std::array<std::string, 6> onlyShaderModel4Plus = {{"Null", "Vulkan", "OpenGL", "Direct3D10", "Direct3D11", "Direct3D12"}};
-	std::array<std::string, 5> onlyShaderModel5Plus = {{"Null", "Vulkan", "OpenGL", "Direct3D11", "Direct3D12"}};
+	std::array<std::string, 6> onlyShaderModel4Plus	   = {{"Null", "Vulkan", "OpenGL", "Direct3D10", "Direct3D11", "Direct3D12"}};
+	std::array<std::string, 5> onlyShaderModel5Plus    = {{"Null", "Vulkan", "OpenGL", "Direct3D11", "Direct3D12"}};
 
 	// Basics
-	addExample("FirstTriangle",					&RunRenderExample<FirstTriangle>,				supportsAllRenderer);
-	addExample("FirstIndirectBuffer",			&RunRenderExample<FirstIndirectBuffer>,			supportsAllRenderer);
-	addExample("VertexBuffer",					&RunRenderExample<VertexBuffer>,				supportsAllRenderer);
-	addExample("FirstTexture",					&RunRenderExample<FirstTexture>,				supportsAllRenderer);
-	addExample("FirstRenderToTexture",			&RunRenderExample<FirstRenderToTexture>,		supportsAllRenderer);
-	addExample("FirstMultipleRenderTargets",	&RunRenderExample<FirstMultipleRenderTargets>,	supportsAllRenderer);
+	addExample("FirstTriangle",					&runRenderExample<FirstTriangle>,				supportsAllRenderer);
+	addExample("FirstIndirectBuffer",			&runRenderExample<FirstIndirectBuffer>,			supportsAllRenderer);
+	addExample("VertexBuffer",					&runRenderExample<VertexBuffer>,				supportsAllRenderer);
+	addExample("FirstTexture",					&runRenderExample<FirstTexture>,				supportsAllRenderer);
+	addExample("FirstRenderToTexture",			&runRenderExample<FirstRenderToTexture>,		supportsAllRenderer);
+	addExample("FirstMultipleRenderTargets",	&runRenderExample<FirstMultipleRenderTargets>,	supportsAllRenderer);
 	#ifndef __ANDROID__
-		addExample("FirstMultipleSwapChains",	&RunExample<FirstMultipleSwapChains>,			supportsAllRenderer);
+		addExample("FirstMultipleSwapChains",	&runBasicExample<FirstMultipleSwapChains>,		supportsAllRenderer);
 	#endif
-	addExample("FirstInstancing",				&RunRenderExample<FirstInstancing>,				supportsAllRenderer);
-	addExample("FirstGeometryShader",			&RunRenderExample<FirstGeometryShader>,			onlyShaderModel4Plus);
-	addExample("FirstTessellation",				&RunRenderExample<FirstTessellation>,			onlyShaderModel5Plus);
+	addExample("FirstInstancing",				&runRenderExample<FirstInstancing>,				supportsAllRenderer);
+	addExample("FirstGeometryShader",			&runRenderExample<FirstGeometryShader>,			onlyShaderModel4Plus);
+	addExample("FirstTessellation",				&runRenderExample<FirstTessellation>,			onlyShaderModel5Plus);
 
 	// Advanced
-	addExample("FirstGpgpu",					&RunExample<FirstGpgpu>,						supportsAllRenderer);
-	addExample("IcosahedronTessellation",		&RunRenderExample<IcosahedronTessellation>,		onlyShaderModel5Plus);
+	addExample("FirstGpgpu",					&runBasicExample<FirstGpgpu>,					supportsAllRenderer);
+	addExample("IcosahedronTessellation",		&runRenderExample<IcosahedronTessellation>,		onlyShaderModel5Plus);
 	#ifdef RENDERER_RUNTIME
 		// Renderer runtime
-		addExample("FirstMesh",					&RunRenderRuntimeExample<FirstMesh>,		supportsAllRenderer);
-		addExample("FirstCompositor",			&RunRenderRuntimeExample<FirstCompositor>,	supportsAllRenderer);
-		addExample("FirstScene",				&RunRenderRuntimeExample<FirstScene>,		supportsAllRenderer);
-		addExample("InstancedCubes",			&RunRenderRuntimeExample<InstancedCubes>,	supportsAllRenderer);
-		m_defaultExampleName = "FirstScene";
+		#ifdef RENDERER_RUNTIME_IMGUI
+			addExample("ImGuiExampleSelector",	&runRenderRuntimeExample<ImGuiExampleSelector>,	supportsAllRenderer);
+		#endif
+		addExample("FirstMesh",					&runRenderRuntimeExample<FirstMesh>,			supportsAllRenderer);
+		addExample("FirstCompositor",			&runRenderRuntimeExample<FirstCompositor>,		supportsAllRenderer);
+		addExample("FirstScene",				&runRenderRuntimeExample<FirstScene>,			supportsAllRenderer);
+		addExample("InstancedCubes",			&runRenderRuntimeExample<InstancedCubes>,		supportsAllRenderer);
+		mDefaultExampleName = "ImGuiExampleSelector";
 	#else
-		m_defaultExampleName = "FirstTriangle";
+		mDefaultExampleName = "FirstTriangle";
 	#endif
 
 	#ifdef RENDERER_NULL
-		m_availableRenderer.insert("Null");
+		mAvailableRenderers.insert("Null");
 	#endif
 	#ifdef RENDERER_VULKAN
-		m_availableRenderer.insert("Vulkan");
+		mAvailableRenderers.insert("Vulkan");
 	#endif
 	#ifdef RENDERER_OPENGL
-		m_availableRenderer.insert("OpenGL");
+		mAvailableRenderers.insert("OpenGL");
 	#endif
 	#ifdef RENDERER_OPENGLES3
-		m_availableRenderer.insert("OpenGLES3");
+		mAvailableRenderers.insert("OpenGLES3");
 	#endif
 	#ifdef RENDERER_DIRECT3D9
-		m_availableRenderer.insert("Direct3D9");
+		mAvailableRenderers.insert("Direct3D9");
 	#endif
 	#ifdef RENDERER_DIRECT3D10
-		m_availableRenderer.insert("Direct3D10");
+		mAvailableRenderers.insert("Direct3D10");
 	#endif
 	#ifdef RENDERER_DIRECT3D11
-		m_availableRenderer.insert("Direct3D11");
+		mAvailableRenderers.insert("Direct3D11");
 	#endif
 	#ifdef RENDERER_DIRECT3D12
-		m_availableRenderer.insert("Direct3D12");
+		mAvailableRenderers.insert("Direct3D12");
 	#endif
 }
 
 int ExampleRunner::runExample(const std::string& rendererName, const std::string& exampleName)
 {
-	const std::string& selectedExampleName = exampleName.empty() ? m_defaultExampleName : exampleName;
-	AvailableExamplesMap::iterator example = m_availableExamples.find(selectedExampleName);
-	AvailableRendererMap::iterator renderer = m_availableRenderer.find(rendererName);
-	ExampleToSupportedRendererMap::iterator supportedRenderer = m_supportedRendererForExample.find(selectedExampleName);
+	// Get selected renderer and selected example
+	const AvailableRenderers::iterator selectedRenderer = mAvailableRenderers.find(rendererName);
+	const std::string& selectedExampleName = exampleName.empty() ? mDefaultExampleName : exampleName;
+	const AvailableExamples::iterator selectedExample = mAvailableExamples.find(selectedExampleName);
+
+	// Ensure the selected renderer is supported by the selected example
+	ExampleToSupportedRenderers::iterator supportedRenderer = mExampleToSupportedRenderers.find(selectedExampleName);
 	bool rendererNotSupportedByExample = false;
-	if (m_supportedRendererForExample.end() != supportedRenderer)
+	if (mExampleToSupportedRenderers.end() != supportedRenderer)
 	{
 		const SupportedRenderers& supportedRendererList = supportedRenderer->second;
 		rendererNotSupportedByExample = std::find(supportedRendererList.begin(), supportedRendererList.end(), rendererName) == supportedRendererList.end();
 	}
-
-	if (m_availableExamples.end() == example || m_availableRenderer.end() == renderer || rendererNotSupportedByExample)
+	if (mAvailableExamples.end() == selectedExample || mAvailableRenderers.end() == selectedRenderer || rendererNotSupportedByExample)
 	{
-		if (m_availableExamples.end() == example)
-			showError("no or unknown example given");
-		if (m_availableRenderer.end() == renderer)
-			showError("unknown renderer: \"" + rendererName + "\"");
-		if (rendererNotSupportedByExample) 
-			showError("the example \"" + selectedExampleName + "\" doesn't support renderer: \"" + rendererName + "\"");
+		if (mAvailableExamples.end() == selectedExample)
+		{
+			showError("No or unknown example given");
+		}
+		if (mAvailableRenderers.end() == selectedRenderer)
+		{
+			showError("Unknown renderer: \"" + rendererName + "\"");
+		}
+		if (rendererNotSupportedByExample)
+		{
+			showError("The example \"" + selectedExampleName + "\" doesn't support renderer: \"" + rendererName + "\"");
+		}
 
 		// Print usage
-		printUsage(m_availableExamples, m_availableRenderer);
+		printUsage(mAvailableExamples, mAvailableRenderers);
 		return 0;
 	}
 	else
 	{
 		// Run example
-		return example->second(rendererName.c_str());
+		return selectedExample->second(*this, rendererName.c_str());
 	}
-}
-
-template<typename T>
-void ExampleRunner::addExample(const std::string& name, RunnerMethod runnerMethod, T const& supportedRendererList)
-{
-	m_availableExamples.insert(std::pair<std::string,RunnerMethod>(name, runnerMethod));
-	SupportedRenderers supportedRenderers;
-	for (const std::string& supportedRenderer : supportedRendererList)
-	{
-		supportedRenderers.push_back(supportedRenderer);
-	}
-	m_supportedRendererForExample.insert(std::pair<std::string, std::vector<std::string>>(name, std::move(supportedRenderers)));
 }

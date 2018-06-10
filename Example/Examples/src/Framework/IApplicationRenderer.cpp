@@ -23,6 +23,7 @@
 //[-------------------------------------------------------]
 #include "Framework/IApplicationRenderer.h"
 #include "Framework/ExampleBase.h"
+#include "ExampleRunner.h"
 
 #include <Renderer/DefaultLog.h>
 #include <Renderer/DefaultAssert.h>
@@ -57,18 +58,15 @@ namespace
 //[-------------------------------------------------------]
 //[ Public methods                                        ]
 //[-------------------------------------------------------]
-IApplicationRenderer::IApplicationRenderer(const char* rendererName, ExampleBase* exampleBase) :
+IApplicationRenderer::IApplicationRenderer(const char* rendererName, ExampleBase& exampleBase) :
 	IApplication(rendererName),
+	mExampleBase(exampleBase),
 	mRendererContext(nullptr),
 	mRendererInstance(nullptr),
 	mRenderer(nullptr),
-	mMainSwapChain(nullptr),
-	mExampleBase(exampleBase)
+	mMainSwapChain(nullptr)
 {
-	if (nullptr != mExampleBase)
-	{
-		mExampleBase->setApplicationFrontend(this);
-	}
+	mExampleBase.setApplicationFrontend(this);
 	
 	// Copy the given renderer name
 	if (nullptr != rendererName)
@@ -86,46 +84,34 @@ IApplicationRenderer::IApplicationRenderer(const char* rendererName, ExampleBase
 
 
 //[-------------------------------------------------------]
+//[ Public virtual IApplicationFrontend methods           ]
+//[-------------------------------------------------------]
+void IApplicationRenderer::switchExample(const char* exampleName, const char* rendererName)
+{
+	assert(nullptr != exampleName);
+	mExampleBase.getExampleRunner().switchExample(exampleName, rendererName);
+	exit();
+}
+
+
+//[-------------------------------------------------------]
 //[ Public virtual IApplication methods                   ]
 //[-------------------------------------------------------]
 void IApplicationRenderer::onInitialization()
 {
 	createRenderer();
-	initializeExample();
+	mExampleBase.onInitialization();
 }
 
 void IApplicationRenderer::onDeinitialization()
 {
-	deinitializeExample();
-
-	// Delete the renderer instance
-	if (nullptr != mMainSwapChain)
-	{
-		mMainSwapChain->releaseReference();
-		mMainSwapChain = nullptr;
-	}
-	mRenderer = nullptr;
-	if (nullptr != mRendererInstance)
-	{
-		mRendererInstance->destroyRenderer();
-	}
-
-	// Call base implementation after renderer was destroyed, needed at least under Linux see comments in private method "RendererInstance::loadRendererApiSharedLibrary()" for more details
-	IApplication::onDeinitialization();
-
-	// Delete the renderer instance
-	delete mRendererInstance;
-	mRendererInstance = nullptr;
-	delete mRendererContext;
-	mRendererContext = nullptr;
+	mExampleBase.onDeinitialization();
+	destroyRenderer();
 }
 
 void IApplicationRenderer::onUpdate()
 {
-	if (nullptr != mExampleBase)
-	{
-		mExampleBase->onUpdate();
-	}
+	mExampleBase.onUpdate();
 }
 
 void IApplicationRenderer::onResize()
@@ -152,10 +138,10 @@ void IApplicationRenderer::onToggleFullscreenState()
 
 void IApplicationRenderer::onDrawRequest()
 {
-	if (nullptr != mExampleBase && mExampleBase->doesCompleteOwnDrawing())
+	if (mExampleBase.doesCompleteOwnDrawing())
 	{
 		// The example does the drawing completely on its own
-		mExampleBase->draw();
+		mExampleBase.draw();
 	}
 
 	// Is there a renderer and main swap chain instance?
@@ -188,10 +174,7 @@ void IApplicationRenderer::onDrawRequest()
 				mCommandBuffer.submitToRendererAndClear(*mRenderer);
 
 				// Call the draw method
-				if (nullptr != mExampleBase)
-				{
-					mExampleBase->draw();
-				}
+				mExampleBase.draw();
 			}
 
 			// Submit command buffer to the renderer backend
@@ -208,44 +191,63 @@ void IApplicationRenderer::onDrawRequest()
 	}
 }
 
+void IApplicationRenderer::onEscapeKey()
+{
+	if (mExampleBase.getExampleRunner().getCurrentExampleName() == "ImGuiExampleSelector")
+	{
+		exit();
+	}
+	else
+	{
+		switchExample("ImGuiExampleSelector");
+	}
+}
+
 
 //[-------------------------------------------------------]
 //[ Protected methods                                     ]
 //[-------------------------------------------------------]
 void IApplicationRenderer::createRenderer()
 {
-	if (nullptr == mRenderer)
-	{
-		// Create the renderer instance
-		mRenderer = createRendererInstance(mRendererName);
-		if (nullptr != mRenderer)
-		{
-			// Create render pass using the preferred swap chain texture format
-			const Renderer::Capabilities& capabilities = mRenderer->getCapabilities();
-			Renderer::IRenderPass* renderPass = mRenderer->createRenderPass(1, &capabilities.preferredSwapChainColorTextureFormat, capabilities.preferredSwapChainDepthStencilTextureFormat);
+	assert(nullptr == mRenderer);
 
-			// Create a main swap chain instance
-			mMainSwapChain = mRenderer->createSwapChain(*renderPass, Renderer::WindowHandle{getNativeWindowHandle(), nullptr, nullptr}, mRenderer->getContext().isUsingExternalContext());
-			RENDERER_SET_RESOURCE_DEBUG_NAME(mMainSwapChain, "Main swap chain")
-			mMainSwapChain->addReference();	// Internal renderer reference
-		}
+	// Create the renderer instance
+	mRenderer = createRendererInstance(mRendererName);
+	if (nullptr != mRenderer)
+	{
+		// Create render pass using the preferred swap chain texture format
+		const Renderer::Capabilities& capabilities = mRenderer->getCapabilities();
+		Renderer::IRenderPass* renderPass = mRenderer->createRenderPass(1, &capabilities.preferredSwapChainColorTextureFormat, capabilities.preferredSwapChainDepthStencilTextureFormat);
+
+		// Create a main swap chain instance
+		mMainSwapChain = mRenderer->createSwapChain(*renderPass, Renderer::WindowHandle{getNativeWindowHandle(), nullptr, nullptr}, mRenderer->getContext().isUsingExternalContext());
+		RENDERER_SET_RESOURCE_DEBUG_NAME(mMainSwapChain, "Main swap chain")
+		mMainSwapChain->addReference();	// Internal renderer reference
 	}
 }
 
-void IApplicationRenderer::initializeExample()
+void IApplicationRenderer::destroyRenderer()
 {
-	if (nullptr != mExampleBase)
+	// Delete the renderer instance
+	if (nullptr != mMainSwapChain)
 	{
-		mExampleBase->initialize();
+		mMainSwapChain->releaseReference();
+		mMainSwapChain = nullptr;
 	}
-}
+	mRenderer = nullptr;
+	if (nullptr != mRendererInstance)
+	{
+		mRendererInstance->destroyRenderer();
+	}
 
-void IApplicationRenderer::deinitializeExample()
-{
-	if (nullptr != mExampleBase)
-	{
-		mExampleBase->deinitialize();
-	}
+	// Call base implementation after renderer was destroyed, needed at least under Linux see comments in private method "RendererInstance::loadRendererApiSharedLibrary()" for more details
+	IApplication::onDeinitialization();
+
+	// Delete the renderer instance
+	delete mRendererInstance;
+	mRendererInstance = nullptr;
+	delete mRendererContext;
+	mRendererContext = nullptr;
 }
 
 
@@ -258,7 +260,7 @@ Renderer::IRenderer* IApplicationRenderer::createRendererInstance(const char* re
 	if (nullptr != rendererName)
 	{
 		bool loadRendererApiSharedLibrary = false;
-		Renderer::ILog& log = (nullptr != mExampleBase && nullptr != mExampleBase->getCustomLog()) ? *mExampleBase->getCustomLog() : ::detail::g_DefaultLog;
+		Renderer::ILog& log = (nullptr != mExampleBase.getCustomLog()) ? *mExampleBase.getCustomLog() : ::detail::g_DefaultLog;
 		#ifdef _WIN32
 			mRendererContext = new Renderer::Context(log, ::detail::g_DefaultAssert, ::detail::g_DefaultAllocator, getNativeWindowHandle());
 		#elif LINUX

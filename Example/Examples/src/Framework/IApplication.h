@@ -205,6 +205,18 @@ public:
 		// Nothing here
 	}
 
+	/**
+	*  @brief
+	*    Called when the escape key has been pressed
+	*
+	*  @note
+	*    - The base implementation is empty
+	*/
+	virtual void onEscapeKey()
+	{
+		// Nothing here
+	}
+
 
 //[-------------------------------------------------------]
 //[ Protected methods                                     ]

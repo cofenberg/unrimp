@@ -198,6 +198,12 @@ if(RENDERER_RUNTIME)
 		src/Advanced/InstancedCubes/CubeRendererInstancedArrays/CubeRendererInstancedArrays.cpp
 		src/Advanced/InstancedCubes/InstancedCubes.cpp
 	)
+	if(RENDERER_RUNTIME_IMGUI)
+		set(SOURCE_CODES
+			${SOURCE_CODES}
+			src/Runtime/ImGuiExampleSelector/ImGuiExampleSelector.cpp
+		)
+	endif()
 	if(RENDERER_RUNTIME_OPENVR)
 		set(SOURCE_CODES
 			${SOURCE_CODES}
