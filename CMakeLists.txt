@@ -149,6 +149,22 @@ macro(unrimp_add_conditional_definition definition)
 endmacro()
 
 ##################################################
+## MACRO: "unrimp_add_conditional_renderer_definitions()" for setting a conditional renderer preprocessor definitions
+#
+# Usage example: "unrimp_add_conditional_renderer_definitions()"
+##################################################
+macro(unrimp_add_conditional_renderer_definitions)
+	unrimp_add_conditional_definition(RENDERER_NULL)
+	unrimp_add_conditional_definition(RENDERER_VULKAN)
+	unrimp_add_conditional_definition(RENDERER_OPENGL)
+	unrimp_add_conditional_definition(RENDERER_OPENGLES3)
+	unrimp_add_conditional_definition(RENDERER_DIRECT3D9)
+	unrimp_add_conditional_definition(RENDERER_DIRECT3D10)
+	unrimp_add_conditional_definition(RENDERER_DIRECT3D11)
+	unrimp_add_conditional_definition(RENDERER_DIRECT3D12)
+endmacro()
+
+##################################################
 ## MACRO: "unrimp_add_conditional_library_dependency()" for setting a conditional library and dependency definition
 #
 # Usage example: "unrimp_add_conditional_library_dependency(Examples RENDERER_NULL NullRenderer)"

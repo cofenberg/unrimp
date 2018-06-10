@@ -30,6 +30,7 @@ cmake_minimum_required(VERSION 3.11.0)
 if(WIN32)
 	add_definitions(-DUNICODE)
 endif()
+unrimp_add_conditional_renderer_definitions()
 
 
 ##################################################

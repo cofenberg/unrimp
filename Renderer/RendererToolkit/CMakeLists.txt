@@ -28,6 +28,7 @@ cmake_minimum_required(VERSION 3.11.0)
 ## Preprocessor definitions
 ##################################################
 add_definitions(-DGLM_FORCE_RADIANS -DGLM_FORCE_LEFT_HANDED -DGLM_FORCE_DEPTH_ZERO_TO_ONE -DGLM_ENABLE_EXPERIMENTAL)
+unrimp_add_conditional_renderer_definitions()
 
 
 ##################################################
