@@ -100,7 +100,8 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline explicit RemoteryProfiler(Renderer::IRenderer& renderer) :
+		// TODO(co) Remotery GPU profiling: Disabled by default since it might take some shutdown time due to "rmt_UnbindOpenGL blocks indefinitely #112" - https://github.com/Celtoys/Remotery/issues/112
+		inline RemoteryProfiler(Renderer::IRenderer& renderer, MAYBE_UNUSED bool enableGpuProfiling = false) :
 			mRemotery(nullptr),
 			mUseD3D11(false),
 			mUseOpenGL(false)
@@ -121,14 +122,14 @@ namespace RendererRuntime
 			// Bind Remotery renderer API
 			assert((nullptr != mRemotery) && "Failed to create global Remotery profiler instance");
 			#if RMT_USE_D3D11
-				if (renderer.getD3D11DevicePointer() != nullptr && renderer.getD3D11ImmediateContextPointer() != nullptr)
+				if (enableGpuProfiling && renderer.getD3D11DevicePointer() != nullptr && renderer.getD3D11ImmediateContextPointer() != nullptr)
 				{
 					_rmt_BindD3D11(renderer.getD3D11DevicePointer(), renderer.getD3D11ImmediateContextPointer());
 					mUseD3D11 = true;
 				}
 			#endif
 			#if RMT_USE_OPENGL
-				if (renderer.getNameId() == Renderer::NameId::OPENGL)
+				if (enableGpuProfiling && renderer.getNameId() == Renderer::NameId::OPENGL)
 				{
 					_rmt_BindOpenGL();
 					mUseOpenGL = true;
@@ -150,7 +151,6 @@ namespace RendererRuntime
 			#if RMT_USE_OPENGL
 				if (mUseOpenGL)
 				{
-					// TODO(co) Might take some time due to "rmt_UnbindOpenGL blocks indefinitely #112" - https://github.com/Celtoys/Remotery/issues/112
 					_rmt_UnbindOpenGL();
 				}
 			#endif
