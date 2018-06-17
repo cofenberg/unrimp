@@ -138,6 +138,9 @@ namespace RendererRuntime
 
 		inline virtual ~RemoteryProfiler() override
 		{
+			#ifdef _DEBUG
+				assert((0 == mNumberOfCurrentlyBegunCpuSamples && 0 == mNumberOfCurrentlyBegunGpuSamples) && "Profiler sampling leak detected, not all begun samples were ended");
+			#endif
 			#if RMT_USE_D3D11
 				if (mUseD3D11)
 				{
@@ -161,16 +164,25 @@ namespace RendererRuntime
 	public:
 		virtual void beginCpuSample(const char* name, uint32_t* hashCache) override
 		{
+			#ifdef _DEBUG
+				++mNumberOfCurrentlyBegunCpuSamples;
+			#endif
 			_rmt_BeginCPUSample(name, RMTSF_Aggregate, hashCache);
 		}
 
 		virtual void endCpuSample() override
 		{
 			_rmt_EndCPUSample();
+			#ifdef _DEBUG
+				--mNumberOfCurrentlyBegunCpuSamples;
+			#endif
 		}
 
 		virtual void beginGpuSample(MAYBE_UNUSED const char* name, MAYBE_UNUSED uint32_t* hashCache) override
 		{
+			#ifdef _DEBUG
+				++mNumberOfCurrentlyBegunGpuSamples;
+			#endif
 			#if RMT_USE_D3D11
 				if (mUseD3D11)
 				{
@@ -199,6 +211,9 @@ namespace RendererRuntime
 					_rmt_EndOpenGLSample();
 				}
 			#endif
+			#ifdef _DEBUG
+				--mNumberOfCurrentlyBegunGpuSamples;
+			#endif
 		}
 
 
@@ -217,6 +232,10 @@ namespace RendererRuntime
 		Remotery* mRemotery;
 		bool	  mUseD3D11;
 		bool	  mUseOpenGL;
+		#ifdef _DEBUG
+			int mNumberOfCurrentlyBegunCpuSamples = 0;	///< For leak detection
+			int mNumberOfCurrentlyBegunGpuSamples = 0;	///< For leak detection
+		#endif
 
 
 	};
