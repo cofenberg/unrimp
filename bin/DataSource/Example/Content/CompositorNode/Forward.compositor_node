@@ -326,8 +326,8 @@
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/ScreenSpaceReflectionRayTracing.asset",
 					"SetMaterialProperties":
 					{
+						"UseTemporalReprojection": "FALSE",
 						"NormalMap": "Example/Texture/Dynamic/MultisampleNormalRenderTarget",
-						"VelocityMap": "Example/Texture/Dynamic/MultisampleVelocityRenderTarget",
 						"DepthMap": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget"
 					}
 				}

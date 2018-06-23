@@ -18,6 +18,14 @@
 				"MaximumIntegerValue": "8",
 				"ValidIntegerValues": [ 0, 2, 4, 8 ]
 			},
+			"UseTemporalReprojection":
+			{
+				"Usage": "SHADER_COMBINATION",
+				"ValueType": "BOOLEAN",
+				"Value": "TRUE",
+				"Description": "'true' if temporal reprojection should be used, else 'false' in case e.g. a forward renderer will apply the temporal reprojection instead",
+				"VisualImportance": "100"
+			},
 			"Stride":
 			{
 				"Usage": "SHADER_UNIFORM",
@@ -70,7 +78,7 @@
 				"Usage": "TEXTURE_REFERENCE",
 				"ValueType": "TEXTURE_ASSET_ID",
 				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
-				"Description": "2D velocity map"
+				"Description": "2D velocity map, only used if 'UseTemporalReprojection' is 'true'"
 			},
 			"DepthMap":
 			{

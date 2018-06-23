@@ -178,8 +178,19 @@ MAIN_BEGIN
 	float3 viewSpaceIncident = MultiplyQuaternionVector(PassData.WorldSpaceToViewSpaceQuaternion, worldSpaceIncident);
 	float3 triPlanarBlending = GetTriPlanarBlending(worldSpaceNormal);	// TODO(co) Use this for the detail textures
 
+	// Calculate screen space velocity
+	@insertpiece(DefineCalculateScreenSpaceVelocity)
+
 	// Get reflection color
-	float3 reflectionColor = SAMPLE_2D(ReflectionMap, SamplerLinear, FRAGMENT_POSITION.xy / PassData.ViewportSize).rgb;
+	float3 reflectionColor;
+	{
+		// Temporal reprojection: We're using data from the previous frame for the reflection color. In order to hide that
+		// the reflections lag one frame behind we're reprojecting the reflection basing on previous camera related data.
+		float2 reflectionTexCoord = (FRAGMENT_POSITION.xy / PassData.ViewportSize) - velocity;
+		float2 coordinateEdgeAttenuation = float2(1.0f, 1.0f) - pow(SATURATE(abs(reflectionTexCoord - float2(0.5f, 0.5f)) * 2), float2(8.0f, 8.0f));
+		float screenEdgeAttenuation = SATURATE(min(coordinateEdgeAttenuation.x, coordinateEdgeAttenuation.y));
+		reflectionColor = SAMPLE_2D(ReflectionMap, SamplerLinear, reflectionTexCoord).rgb * float3(screenEdgeAttenuation, screenEdgeAttenuation, screenEdgeAttenuation);
+	}
 
 	// Ambient term
 	float3 color = (reflectionColor * metallic + albedo) * (PassData.AmbientColor.rgb + CalculateHemisphereLighting(worldSpaceNormal.xyz, PassData.AmbientColor.rgb * 0.7f, PassData.AmbientColor.rgb * 0.2f));
@@ -199,9 +210,6 @@ MAIN_BEGIN
 	// Complex pixel detection
 	// -> See "Antialiased Deferred Rendering" - https://docs.nvidia.com/gameworks/content/gameworkslibrary/graphicssamples/d3d_samples/antialiaseddeferredrendering.htm
 	float edgePixel = (COVERAGE_MASK != PassData.FullCoverageMask) ? 1.0f : 0.0f;
-
-	// Calculate screen space velocity
-	@insertpiece(DefineCalculateScreenSpaceVelocity)
 
 	// Don't remove the following commented code: Shadow map debugging
 	// color *= GetShadowCascadeColor(GetLinearDepthReversedZ(FRAGMENT_POSITION.z));

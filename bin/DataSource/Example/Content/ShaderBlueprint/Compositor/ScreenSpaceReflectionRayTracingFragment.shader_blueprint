@@ -67,11 +67,15 @@ UNIFORM_BUFFER_END
 // Textures
 @property(NumberOfMultisamples)
 	TEXTURE_2D_MS(1, 0, NormalMap, @value(NumberOfMultisamples), 0)	// Normal map: rgb = view space normal
-	TEXTURE_2D_MS(1, 1, VelocityMap, @value(NumberOfMultisamples), 1)
+	@property(UseTemporalReprojection)
+		TEXTURE_2D_MS(1, 1, VelocityMap, @value(NumberOfMultisamples), 1)
+	@end
 @end
 @property(!NumberOfMultisamples)
 	TEXTURE_2D(1, 0, NormalMap, 0)	// rgb = view space normal, a = roughness
-	TEXTURE_2D(1, 1, VelocityMap, 1)
+	@property(UseTemporalReprojection)
+		TEXTURE_2D(1, 1, VelocityMap, 1)
+	@end
 @end
 TEXTURE_2D(1, 2, DepthMap, 2)
 
@@ -96,16 +100,18 @@ float4 GetNormalFromNormalMap(float2 textureCoordinate, int sampleIndex)
 	@end
 }
 
-float2 GetVelocityFromVelocityMap(float2 textureCoordinate, int sampleIndex)
-{
-	@property(NumberOfMultisamples)
-		// *2 = For performance reasons the screen space reflection ray tracing is done at half-size
-		return SAMPLE_2D_MS(VelocityMap, int2(textureCoordinate * PassData.ViewportSize * 2), sampleIndex).rg;
-	@end
-	@property(!NumberOfMultisamples)
-		return SAMPLE_2D_LOD(VelocityMap, SamplerPointClamp, float4(textureCoordinate, 0.0f, 0.0f)).rg;
-	@end
-}
+@property(UseTemporalReprojection)
+	float2 GetVelocityFromVelocityMap(float2 textureCoordinate, int sampleIndex)
+	{
+		@property(NumberOfMultisamples)
+			// *2 = For performance reasons the screen space reflection ray tracing is done at half-size
+			return SAMPLE_2D_MS(VelocityMap, int2(textureCoordinate * PassData.ViewportSize * 2), sampleIndex).rg;
+		@end
+		@property(!NumberOfMultisamples)
+			return SAMPLE_2D_LOD(VelocityMap, SamplerPointClamp, float4(textureCoordinate, 0.0f, 0.0f)).rg;
+		@end
+	}
+@end
 
 float GetDistanceSquared(float2 a, float2 b)
 {
@@ -348,10 +354,11 @@ MAIN_BEGIN
 					hitPoint))					// View space location of the ray hit
 				{
 					hitPixel.xy /= PassData.ViewportSize;
-
-					// Temporal reprojection: We're using color data from the previous frame for the screen space reflection color. In order to
-					// hide that the reflections lag one frame behind we're reprojecting the hit pixel basing on previous camera related data.
-					hitPixel.xy -= GetVelocityFromVelocityMap(hitPixel.xy, 0);
+					@property(UseTemporalReprojection)
+						// Temporal reprojection: We're using color data from the previous frame for the screen space reflection color. In order to
+						// hide that the reflections lag one frame behind we're reprojecting the hit pixel basing on previous camera related data.
+						hitPixel.xy -= GetVelocityFromVelocityMap(hitPixel.xy, 0);
+					@end
 
 					// Reflections of back faces
 					// -> Modulate the reflection intensity basing on "Screen Space Reflections in Killing Floor 2" by Sakib Saikia ( https://sakibsaikia.github.io/graphics/2016/12/25/Screen-Space-Reflection-in-Killing-Floor-2.html )
