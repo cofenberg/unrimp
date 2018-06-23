@@ -43,7 +43,7 @@ int programEntryPoint(const CommandLineArguments& commandLineArguments)
 	Renderer::DefaultLog defaultLog;
 	Renderer::DefaultAssert defaultAssert;
 	Renderer::DefaultAllocator defaultAllocator;
-	RendererRuntime::DefaultFileManager defaultFileManager(defaultLog, defaultAssert, defaultAllocator, (std_filesystem::canonical(std_filesystem::current_path()) / "..").generic_string());
+	RendererRuntime::DefaultFileManager defaultFileManager(defaultLog, defaultAssert, defaultAllocator, std_filesystem::canonical(std_filesystem::current_path() / "..").generic_string());
 	RendererToolkit::Context rendererToolkitContext(defaultLog, defaultAssert, defaultAllocator, defaultFileManager);
 	RendererToolkit::RendererToolkitInstance rendererToolkitInstance(rendererToolkitContext);
 	RendererToolkit::IRendererToolkit* rendererToolkit = rendererToolkitInstance.getRendererToolkit();

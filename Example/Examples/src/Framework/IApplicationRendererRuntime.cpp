@@ -93,9 +93,9 @@ void IApplicationRendererRuntime::onInitialization()
 		#ifdef __ANDROID__
 			struct android_app androidApp;	// TODO(co) Get Android app instance
 			assert((nullptr != androidApp.activity->assetManager) && "Invalid Android asset manager instance");
-			mFileManager = new RendererRuntime::AndroidFileManager(renderer->getContext().getLog(), renderer->getContext().getAssert(), renderer->getContext().getAllocator(), (std_filesystem::canonical(std_filesystem::current_path()) / "..").generic_string(), *androidApp.activity->assetManager);
+			mFileManager = new RendererRuntime::AndroidFileManager(renderer->getContext().getLog(), renderer->getContext().getAssert(), renderer->getContext().getAllocator(), std_filesystem::canonical(std_filesystem::current_path() / "..").generic_string(), *androidApp.activity->assetManager);
 		#else
-			mFileManager = new RendererRuntime::PhysicsFSFileManager(renderer->getContext().getLog(), (std_filesystem::canonical(std_filesystem::current_path()) / "..").generic_string());
+			mFileManager = new RendererRuntime::PhysicsFSFileManager(renderer->getContext().getLog(), std_filesystem::canonical(std_filesystem::current_path() / "..").generic_string());
 		#endif
 		#ifdef RENDERER_RUNTIME_PROFILER
 			mProfiler = new RendererRuntime::RemoteryProfiler(*renderer);
