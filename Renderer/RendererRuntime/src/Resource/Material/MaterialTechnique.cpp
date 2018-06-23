@@ -209,6 +209,7 @@ namespace RendererRuntime
 					TextureResource* textureResource = textureResourceManager.tryGetById(textures[i].textureResourceId);
 					assert(nullptr != textureResource);
 					textureResources[i] = textureResource->getTexture();
+					assert(nullptr != textureResources[i]);
 
 					// Set sampler state, if there's one (e.g. texel fetch instead of sampling might be used)
 					if (isInitialized(materialBlueprintResourceTextures[i].samplerStateIndex))

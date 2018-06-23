@@ -4564,6 +4564,7 @@ namespace OpenGLRenderer
 			for (uint32_t resourceIndex = 0; resourceIndex < mNumberOfResources; ++resourceIndex, ++resources)
 			{
 				Renderer::IResource* resource = *resources;
+				RENDERER_ASSERT(renderer.getContext(), nullptr != resource, "Invalid OpenGL resource")
 				mResources[resourceIndex] = resource;
 				resource->addReference();
 

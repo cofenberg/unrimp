@@ -3350,6 +3350,7 @@ namespace OpenGLES3Renderer
 			for (uint32_t resourceIndex = 0; resourceIndex < mNumberOfResources; ++resourceIndex, ++resources)
 			{
 				Renderer::IResource* resource = *resources;
+				RENDERER_ASSERT(openGLES3Renderer.getContext(), nullptr != resource, "Invalid OpenGL ES 3 resource")
 				mResources[resourceIndex] = resource;
 				resource->addReference();
 
