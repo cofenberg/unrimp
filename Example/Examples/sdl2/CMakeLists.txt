@@ -52,7 +52,6 @@ include_directories(${UNRIMP_EXAMPLES_BASE_PATH}/../../Renderer/Renderer/include
 include_directories(${UNRIMP_EXAMPLES_BASE_PATH}/../../Renderer/RendererRuntime/include)
 include_directories(${UNRIMP_EXAMPLES_BASE_PATH}/../../Renderer/RendererToolkit/include)
 include_directories(${UNRIMP_EXAMPLES_BASE_PATH}/../../External/glm/include)
-include_directories(${UNRIMP_EXAMPLES_BASE_PATH}/../../External/utf8cpp)
 include_directories(${UNRIMP_EXAMPLES_BASE_PATH}/../../External/ImGui/include/)
 include_directories(${UNRIMP_EXAMPLES_BASE_PATH}/../../External/OpenVR/include/)
 link_directories(${UNRIMP_EXAMPLES_BASE_PATH}/../../lib/${OS_ARCHITECTURE})

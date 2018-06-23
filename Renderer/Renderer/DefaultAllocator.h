@@ -117,6 +117,7 @@ namespace Renderer
 	*    Default memory allocator implementation class one can use
 	*
 	*  @note
+	*    - Example: uint8_t* spirvOutputBuffer = RENDERER_MALLOC_TYPED(context, uint8_t, spirvOutputBufferSize);
 	*    - Designed to be instanced and used inside a single C++ file
 	*/
 	class DefaultAllocator final : public IAllocator

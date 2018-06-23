@@ -23,7 +23,6 @@
 
 // TODO(co) Code style related adjustments and other cosmetic polishing
 // TODO(co) Review "PLINPUT_API", it should still be possible to optionally export symbols
-// TODO(co) Slim down: Remove "utf8/utf8.h"-dependency, the current external dependency
 // TODO(co) Get Linux port up-and-running (was working in PixelLight)
 // TODO(co) Get Android port up-and-running (was working in PixelLight)
 // TODO(co) Get MacOSX port up-and-running (wasn't working in PixelLight)

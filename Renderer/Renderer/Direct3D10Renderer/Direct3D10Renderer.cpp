@@ -10390,7 +10390,7 @@ namespace Direct3D10Renderer
 			DXGI_ADAPTER_DESC dxgiAdapterDesc = {};
 			FAILED_DEBUG_BREAK(dxgiAdapter->GetDesc(&dxgiAdapterDesc));
 
-			// Convert a wide Unicode string to an UTF-8 string without using additional external libraries like "utf8cpp" ( http://utfcpp.sourceforge.net/ ) to keep the dependencies low
+			// Convert UTF-16 string to UTF-8
 			const size_t numberOfCharacters = _countof(mCapabilities.deviceName) - 1;
 			::WideCharToMultiByte(CP_UTF8, 0, dxgiAdapterDesc.Description, static_cast<int>(wcslen(dxgiAdapterDesc.Description)), mCapabilities.deviceName, static_cast<int>(numberOfCharacters), nullptr, nullptr);
 			mCapabilities.deviceName[numberOfCharacters] = '\0';

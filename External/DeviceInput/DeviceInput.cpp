@@ -27,13 +27,6 @@
 #include "DeviceInput/DeviceInput.h"
 
 #ifdef _WIN32
-	// Disable warnings in external headers, we can't fix them
-	PRAGMA_WARNING_PUSH
-		PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'argument': conversion from 'const char' to 'utf8::uint8_t', signed/unsigned mismatch
-		// TODO(co) Remove those
-		#include <utf8/utf8.h>	// To convert UTF-8 strings to UTF-16
-	PRAGMA_WARNING_POP
-
 	// Set windows version to Windows XP
 	#define WINVER			0x0501
 	#define _WIN32_WINNT	0x0501
@@ -5978,7 +5971,10 @@ namespace DeviceInput
 								std::wstring utf16Name;
 								utf16Name.resize(nSize + 1);
 								GetRawInputDeviceInfo(pDevices[i].hDevice, RIDI_DEVICENAME, const_cast<wchar_t*>(utf16Name.data()), &nSize);	// TODO(co) Get rid of the evil const-cast
-								utf8::utf16to8(utf16Name.begin(), utf16Name.end(), std::back_inserter(sName));
+
+								// Convert UTF-16 string to UTF-8
+								sName.resize(static_cast<size_t>(::WideCharToMultiByte(CP_UTF8, 0, utf16Name.data(), static_cast<int>(utf16Name.size()), nullptr, 0, nullptr, nullptr)));
+								::WideCharToMultiByte(CP_UTF8, 0, utf16Name.data(), static_cast<int>(utf16Name.size()), sName.data(), static_cast<int>(sName.size()), nullptr, nullptr);
 							}
 
 							// Get device info
@@ -6523,9 +6519,12 @@ namespace DeviceInput
 				if (IsOpen())
 					Close();
 
-				// Connect to device
+				// Convert UTF-8 string to UTF-16
 				std::wstring utf16Name;
-				utf8::utf8to16(GetName().cbegin(), GetName().cend(), std::back_inserter(utf16Name));
+				utf16Name.resize(static_cast<std::wstring::size_type>(::MultiByteToWideChar(CP_UTF8, 0, GetName().c_str(), static_cast<int>(GetName().size()), nullptr , 0)));
+				::MultiByteToWideChar(CP_UTF8, 0, GetName().c_str(), static_cast<int>(GetName().size()), utf16Name.data(), static_cast<int>(utf16Name.size()));
+
+				// Connect to device
 				m_hDevice = CreateFile(utf16Name.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, nullptr);
 				if (m_hDevice != INVALID_HANDLE_VALUE) {
 					// Start read thread
@@ -6797,8 +6796,12 @@ namespace DeviceInput
 					if (SetupDiGetDeviceInterfaceDetail(hDevInfo, &sDevice, sDeviceDetail, nDetailsSize, &nDetailsSize, nullptr)) {
 						// Create device
 						HIDDeviceWindows *pDevice = new HIDDeviceWindows();
-						std::wstring utf16Name = sDeviceDetail->DevicePath;
-						utf8::utf16to8(utf16Name.cbegin(), utf16Name.cend(), std::back_inserter(pDevice->m_sName));
+
+						{ // Device name: Convert UTF-16 string to UTF-8
+							const int numberOfCharacters = static_cast<int>(wcslen(sDeviceDetail->DevicePath));
+							pDevice->m_sName.resize(static_cast<size_t>(::WideCharToMultiByte(CP_UTF8, 0, sDeviceDetail->DevicePath, numberOfCharacters, nullptr, 0, nullptr, nullptr)));
+							::WideCharToMultiByte(CP_UTF8, 0, sDeviceDetail->DevicePath, numberOfCharacters, pDevice->m_sName.data(), static_cast<int>(pDevice->m_sName.size()), nullptr, nullptr);
+						}
 
 						// Open device to get detailed information
 						HANDLE hDevice = CreateFile(sDeviceDetail->DevicePath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);

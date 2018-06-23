@@ -25,13 +25,7 @@
 #ifdef _WIN32
 	#include <RendererRuntime/Core/Platform/WindowsHeader.h>
 
-	#ifdef UNICODE
-		// Disable warnings in external headers, we can't fix them
-		PRAGMA_WARNING_PUSH
-			PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'argument': conversion from 'const char' to 'utf8::uint8_t', signed/unsigned mismatch
-			#include <utf8/utf8.h>	// To convert UTF-8 strings to UTF-16
-		PRAGMA_WARNING_POP
-	#else
+	#ifndef UNICODE
 		PRAGMA_WARNING_PUSH
 			PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'initializing': conversion from 'int' to '::size_t', signed/unsigned mismatch
 			PRAGMA_WARNING_DISABLE_MSVC(4774)	// warning C4774: '_scprintf' : format string expected in argument 1 is not a string literal
@@ -60,8 +54,12 @@ CommandLineArguments::CommandLineArguments()
 			std::vector<std::wstring> lines(wargv + 1, wargv + wargc);
 			for (std::vector<std::wstring>::iterator iterator = lines.begin(); iterator != lines.end(); ++iterator)
 			{
+				// Convert UTF-16 string to UTF-8
 				std::string utf8Line;
-				utf8::utf16to8((*iterator).begin(), (*iterator).end(), std::back_inserter(utf8Line));
+				utf8Line.resize(static_cast<size_t>(::WideCharToMultiByte(CP_UTF8, 0, iterator->data(), static_cast<int>(iterator->size()), nullptr, 0, nullptr, nullptr)));
+				::WideCharToMultiByte(CP_UTF8, 0, iterator->data(), static_cast<int>(iterator->size()), utf8Line.data(), static_cast<int>(utf8Line.size()), nullptr, nullptr);
+
+				// Backup argument
 				mArguments.push_back(utf8Line);
 			}
 		}

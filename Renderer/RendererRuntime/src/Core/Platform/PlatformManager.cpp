@@ -24,20 +24,14 @@
 #include "RendererRuntime/Core/Platform/PlatformManager.h"
 #ifdef _WIN32
 	#include "RendererRuntime/Core/Platform/WindowsHeader.h"
-
-	// Disable warnings in external headers, we can't fix them
-	PRAGMA_WARNING_PUSH
-		PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'argument': conversion from 'const char' to 'utf8::uint8_t', signed/unsigned mismatch
-		#include <utf8/utf8.h>	// To convert UTF-8 strings to UTF-16
-	PRAGMA_WARNING_POP
 #elif LINUX
 	#include <sys/prctl.h>
 #endif
 
-#include <cassert>
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4668)	// warning C4668: '_M_HYBRID_X86_ARM64' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+	#include <cassert>
 	#include <inttypes.h>	// For uint32_t, uint64_t etc.
 PRAGMA_WARNING_POP
 
@@ -136,23 +130,20 @@ namespace RendererRuntime
 
 		// Platform specific part
 		#ifdef _WIN32
-			// Get UTF-16 command string
-			std::string_view stdString = command;
-			std::wstring utf16Command;
-			utf8::utf8to16(stdString.begin(), stdString.end(), std::back_inserter(utf16Command));
-
-			// Get UTF-16 parameters string
-			stdString = parameters;
-			std::wstring utf16Parameters;
-			utf8::utf8to16(stdString.begin(), stdString.end(), std::back_inserter(utf16Parameters));
-
-			// Get UTF-16 working directory string
-			stdString = workingDirectory;
-			std::wstring utf16WorkingDirectory;
-			utf8::utf8to16(stdString.begin(), stdString.end(), std::back_inserter(utf16WorkingDirectory));
+			// Define a helper macro: Convert UTF-8 string to UTF-16
+			#define UTF8_TO_UTF16(utf8Command, utf16Command) \
+				std::wstring utf16Command; \
+				utf16Command.resize(static_cast<std::wstring::size_type>(::MultiByteToWideChar(CP_UTF8, 0, utf8Command, -1, nullptr , 0))); \
+				::MultiByteToWideChar(CP_UTF8, 0, utf8Command, -1, utf16Command.data(), static_cast<int>(utf16Command.size()));
 
 			// Execute command
+			UTF8_TO_UTF16(command, utf16Command)
+			UTF8_TO_UTF16(parameters, utf16Parameters)
+			UTF8_TO_UTF16(workingDirectory, utf16WorkingDirectory)
 			const HINSTANCE result = ::ShellExecuteW(nullptr, L"open", utf16Command.c_str(), utf16Parameters.c_str(), utf16WorkingDirectory.c_str(), SW_SHOWDEFAULT);
+
+			// Undefine the helper macro
+			#undef UTF8_TO_UTF16
 
 			// Has the execution been successful?
 			return (result > HINSTANCE(32));

@@ -49,11 +49,6 @@ PRAGMA_WARNING_POP
 
 	// Disable warnings in external headers, we can't fix them
 	PRAGMA_WARNING_PUSH
-		PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'argument': conversion from 'const char' to 'utf8::uint8_t', signed/unsigned mismatch
-		PRAGMA_WARNING_DISABLE_MSVC(4668)	// warning C4668: '_M_HYBRID_X86_ARM64' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
-		PRAGMA_WARNING_DISABLE_MSVC(5039)	// warning C5039: 'TpSetCallbackCleanupGroup': pointer or reference to potentially throwing function passed to extern C function under -EHc. Undefined behavior may occur if this function throws an exception.
-		#include <utf8/utf8.h>	// To convert UTF-8 strings to UTF-16
-
 		// Set Windows version to Windows Vista (0x0600), we don't support Windows XP (0x0501)
 		#ifdef WINVER
 			#undef WINVER
@@ -88,7 +83,12 @@ PRAGMA_WARNING_POP
 		#define NODEFERWINDOWPOS
 		#define NOMCX
 		#define NOCRYPT
-		#include <windows.h>
+
+		// Disable warnings in external headers, we can't fix them
+		__pragma(warning(push))
+			__pragma(warning(disable: 5039))	// warning C5039: 'TpSetCallbackCleanupGroup': pointer or reference to potentially throwing function passed to extern C function under -EHc. Undefined behavior may occur if this function throws an exception. (compiling source file src\CommandLineArguments.cpp)
+			#include <windows.h>
+		__pragma(warning(pop))
 
 		// Get rid of some nasty OS macros
 		#undef min
@@ -119,6 +119,7 @@ namespace Renderer
 	*    Default log implementation class one can use
 	*
 	*  @note
+	*    - Example: RENDERER_LOG(mContext, DEBUG, "Direct3D 11 renderer backend startup")
 	*    - Designed to be instanced and used inside a single C++ file
 	*    - On Microsoft Windows it will print to the Visual Studio output console, on critical message the debugger will break
 	*    - On Linux it will print on the console
@@ -237,7 +238,8 @@ namespace Renderer
 			{
 				// Convert UTF-8 string to UTF-16
 				std::wstring utf16Line;
-				utf8::utf8to16(fullMessage.begin(), fullMessage.end(), std::back_inserter(utf16Line));
+				utf16Line.resize(static_cast<std::wstring::size_type>(::MultiByteToWideChar(CP_UTF8, 0, fullMessage.c_str(), static_cast<int>(fullMessage.size()), nullptr , 0)));
+				::MultiByteToWideChar(CP_UTF8, 0, fullMessage.c_str(), static_cast<int>(fullMessage.size()), utf16Line.data(), static_cast<int>(utf16Line.size()));
 
 				// Write into standard output stream
 				if (Type::CRITICAL == type)
