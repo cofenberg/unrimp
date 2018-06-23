@@ -209,7 +209,16 @@ namespace RendererToolkit
 		const std::string virtualAssetInputDirectory = std_filesystem::path(virtualAssetFilename).parent_path().generic_string();
 		const std::string assetType = rapidJsonValueAssetMetadata["AssetType"].GetString();
 		const std::string assetCategory = rapidJsonValueAssetMetadata["AssetCategory"].GetString();
-		const std::string virtualAssetOutputDirectory = getRenderTargetDataRootDirectory(rendererTarget) + '/' + mProjectName + '/' + mAssetPackageDirectoryName + '/' + assetType + '/' + assetCategory;
+		const std::string renderTargetDataRootDirectory = getRenderTargetDataRootDirectory(rendererTarget);
+		const std::string virtualAssetOutputDirectory = renderTargetDataRootDirectory + '/' + mProjectName + '/' + mAssetPackageDirectoryName + '/' + assetType + '/' + assetCategory;
+
+		{ // Do we need to mount a directory now? (e.g. "DataPc", "DataMobile" etc.)
+			RendererRuntime::IFileManager& fileManager = mContext.getFileManager();
+			if (fileManager.getMountPoint(renderTargetDataRootDirectory.c_str()) == nullptr)
+			{
+				fileManager.mountDirectory((fileManager.getAbsoluteRootDirectory() + '/' + renderTargetDataRootDirectory).c_str(), renderTargetDataRootDirectory.c_str());
+			}
+		}
 
 		// Asset compiler input
 		IAssetCompiler::Input input(mContext, mProjectName, *mCacheManager, virtualAssetPackageInputDirectory, virtualAssetFilename, virtualAssetInputDirectory, virtualAssetOutputDirectory, mSourceAssetIdToCompiledAssetId, mCompiledAssetIdToSourceAssetId, mSourceAssetIdToVirtualFilename, mDefaultTextureAssetIds);
@@ -245,7 +254,7 @@ namespace RendererToolkit
 
 		// Parse JSON
 		rapidjson::Document rapidJsonDocument;
-		const RendererRuntime::IFileManager& fileManager = mContext.getFileManager();
+		RendererRuntime::IFileManager& fileManager = mContext.getFileManager();
 		JsonHelper::loadDocumentByFilename(fileManager, virtualAssetFilename, "Asset", "1", rapidJsonDocument);
 
 		// Mandatory main sections of the asset
@@ -260,10 +269,17 @@ namespace RendererToolkit
 		const std::string virtualAssetInputDirectory = std_filesystem::path(virtualAssetFilename).parent_path().generic_string();
 		const std::string assetType = rapidJsonValueAssetMetadata["AssetType"].GetString();
 		const std::string assetCategory = rapidJsonValueAssetMetadata["AssetCategory"].GetString();
-		const std::string virtualAssetOutputDirectory = getRenderTargetDataRootDirectory(rendererTarget) + '/' + mProjectName + '/' + mAssetPackageDirectoryName + '/' + assetType + '/' + assetCategory;
+		const std::string renderTargetDataRootDirectory = getRenderTargetDataRootDirectory(rendererTarget);
+		const std::string virtualAssetOutputDirectory = renderTargetDataRootDirectory + '/' + mProjectName + '/' + mAssetPackageDirectoryName + '/' + assetType + '/' + assetCategory;
 
 		// Ensure that the asset output directory exists, else creating output file streams will fail
 		fileManager.createDirectories(virtualAssetOutputDirectory.c_str());
+
+		// Do we need to mount a directory now? (e.g. "DataPc", "DataMobile" etc.)
+		if (fileManager.getMountPoint(renderTargetDataRootDirectory.c_str()) == nullptr)
+		{
+			fileManager.mountDirectory((fileManager.getAbsoluteRootDirectory() + '/' + renderTargetDataRootDirectory).c_str(), renderTargetDataRootDirectory.c_str());
+		}
 
 		// Asset compiler input
 		IAssetCompiler::Input input(mContext, mProjectName, *mCacheManager, virtualAssetPackageInputDirectory, virtualAssetFilename, virtualAssetInputDirectory, virtualAssetOutputDirectory, mSourceAssetIdToCompiledAssetId, mCompiledAssetIdToSourceAssetId, mSourceAssetIdToVirtualFilename, mDefaultTextureAssetIds);
@@ -372,23 +388,6 @@ namespace RendererToolkit
 			readTargetsByFilename(rapidJsonValueProject["TargetsFilename"].GetString());
 			::detail::optionalQualityStrategy(rapidJsonValueProject, "QualityStrategy", mQualityStrategy);
 			RENDERER_LOG(mContext, INFORMATION, "Found %u assets", mAssetPackage.getSortedAssetVector().size())
-		}
-
-		{ // Mount project read/write file system directories
-			const rapidjson::Value& rapidJsonValueRendererTargets = (*mRapidJsonDocument)["Targets"]["RendererTargets"];
-			std::unordered_set<std::string> renderTargetDataRootDirectories;
-			for (rapidjson::Value::ConstMemberIterator rapidJsonMemberIteratorRenderTarget = rapidJsonValueRendererTargets.MemberBegin(); rapidJsonMemberIteratorRenderTarget != rapidJsonValueRendererTargets.MemberEnd(); ++rapidJsonMemberIteratorRenderTarget)
-			{
-				renderTargetDataRootDirectories.insert(getRenderTargetDataRootDirectory(rapidJsonMemberIteratorRenderTarget->name.GetString()));
-			}
-			const std::string& absoluteRootDirectory = fileManager.getAbsoluteRootDirectory();
-			for (const std::string& renderTargetDataRootDirectory : renderTargetDataRootDirectories)
-			{
-				if (fileManager.createDirectories(renderTargetDataRootDirectory.c_str()))
-				{
-					fileManager.mountDirectory((absoluteRootDirectory + '/' + renderTargetDataRootDirectory).c_str(), renderTargetDataRootDirectory.c_str());
-				}
-			}
 		}
 
 		// Setup project folder for cache manager, it will store there its data

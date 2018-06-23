@@ -392,6 +392,12 @@ namespace RendererRuntime
 			return ::detail::PHYSICSFS_LOCAL_DATA_MOUNT_POINT;
 		}
 
+		inline virtual const char* getMountPoint(const char* mountPoint) const override
+		{
+			assert(nullptr != mountPoint);
+			return PHYSFS_getMountPoint(mountPoint);
+		}
+
 		inline virtual bool mountDirectory(AbsoluteDirectoryName absoluteDirectoryName, const char* mountPoint, bool appendToPath = false) override
 		{
 			// Sanity check

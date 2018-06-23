@@ -154,6 +154,21 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
+		*    Return a mounted directory
+		*
+		*  @param[in] mountPoint
+		*    UTF-8 mount point (example: "MyProject"), never ever a null pointer and always finished by a terminating zero
+		*
+		*  @return
+		*    Absolute UTF-8 name of the mounted directory,, null pointer on error
+		*
+		*  @see
+		*    - "RendererRuntime::IFileManager::mountDirectory()"
+		*/
+		virtual const char* getMountPoint(const char* mountPoint) const = 0;
+
+		/**
+		*  @brief
 		*    Mount a directory into the file manager
 		*
 		*  @param[in] absoluteDirectoryName

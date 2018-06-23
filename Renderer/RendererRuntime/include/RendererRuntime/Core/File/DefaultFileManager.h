@@ -346,6 +346,22 @@ namespace RendererRuntime
 			return ::detail::DEFAULT_LOCAL_DATA_MOUNT_POINT;
 		}
 
+		inline virtual const char* getMountPoint(const char* mountPoint) const override
+		{
+			assert(nullptr != mountPoint);
+			const MountedDirectories::const_iterator mountedDirectoriesIterator = mMountedDirectories.find(mountPoint);
+			if (mMountedDirectories.cend() != mountedDirectoriesIterator)
+			{
+				const AbsoluteDirectoryNames& absoluteDirectoryNames = mountedDirectoriesIterator->second;
+				return absoluteDirectoryNames.empty() ? nullptr : absoluteDirectoryNames[0].c_str();
+			}
+			else
+			{
+				// Unknown mount point
+				return nullptr;
+			}
+		}
+
 		inline virtual bool mountDirectory(AbsoluteDirectoryName absoluteDirectoryName, const char* mountPoint, bool appendToPath = false) override
 		{
 			// Sanity check
