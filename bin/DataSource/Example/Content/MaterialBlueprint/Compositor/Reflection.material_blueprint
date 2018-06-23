@@ -18,6 +18,14 @@
 				"MaximumIntegerValue": "8",
 				"ValidIntegerValues": [ 0, 2, 4, 8 ]
 			},
+			"UseScreenSpaceReflectionMap":
+			{
+				"Usage": "SHADER_COMBINATION",
+				"ValueType": "BOOLEAN",
+				"Value": "TRUE",
+				"Description": "'true' if the screen space reflection map should be used, else 'false'",
+				"VisualImportance": "100"
+			},
 			"NormalMap":
 			{
 				"Usage": "TEXTURE_REFERENCE",
@@ -30,7 +38,7 @@
 				"Usage": "TEXTURE_REFERENCE",
 				"ValueType": "TEXTURE_ASSET_ID",
 				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
-				"Description": "2D screen space reflection ray tracing map"
+				"Description": "2D screen space reflection ray tracing map, only used if 'UseScreenSpaceReflectionMap' is 'true'"
 			},
 			"DepthMap":
 			{
@@ -44,7 +52,7 @@
 				"Usage": "TEXTURE_REFERENCE",
 				"ValueType": "TEXTURE_ASSET_ID",
 				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
-				"Description": "2D color map"
+				"Description": "2D color map, only used if 'UseScreenSpaceReflectionMap' is 'true'"
 			},
 			"ReflectionCubeMap":
 			{

@@ -57,9 +57,13 @@ UNIFORM_BUFFER_END
 @property(!NumberOfMultisamples)
 	TEXTURE_2D(1, 0, NormalMap, 0)	// rgb = view space normal, a = roughness
 @end
-TEXTURE_2D(1, 1, ScreenSpaceReflectionMap, 1)
+@property(UseScreenSpaceReflectionMap)
+	TEXTURE_2D(1, 1, ScreenSpaceReflectionMap, 1)
+@end
 TEXTURE_2D(1, 2, DepthMap, 2)
-TEXTURE_2D(1, 3, ColorMap, 3)
+@property(UseScreenSpaceReflectionMap)
+	TEXTURE_2D(1, 3, ColorMap, 3)
+@end
 TEXTURE_CUBE(1, 4, ReflectionCubeMap, 4)
 
 // Samplers
@@ -112,10 +116,12 @@ MAIN_BEGIN
 	float3 worldSpaceNormal = MultiplyQuaternionVector(PassData.ViewSpaceToWorldSpaceQuaternion, viewSpaceNormal);
 
 	// Fetch the screen space reflection color
-	float3 screenSpaceReflectionValue = SAMPLE_2D_LOD(ScreenSpaceReflectionMap, SamplerPointClamp, float4(texCoord, 0.0f, 0.0f)).rgb;
-	float2 hitPixel = screenSpaceReflectionValue.xy;
-	float3 reflectionColor = SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(hitPixel.xy, 0.0f, 0.0f)).rgb;
-	float reflectionIntensity = screenSpaceReflectionValue.z;
+	@property(UseScreenSpaceReflectionMap)
+		float3 screenSpaceReflectionValue = SAMPLE_2D_LOD(ScreenSpaceReflectionMap, SamplerPointClamp, float4(texCoord, 0.0f, 0.0f)).rgb;
+		float2 hitPixel = screenSpaceReflectionValue.xy;
+		float3 reflectionColor = SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(hitPixel.xy, 0.0f, 0.0f)).rgb;
+		float reflectionIntensity = screenSpaceReflectionValue.z;
+	@end
 
 	// Calculate cube reflection color
 	float3 cubeReflectionColor;
@@ -133,9 +139,12 @@ MAIN_BEGIN
 		cubeReflectionColor *= horizon;
 	}
 
-	// Mix screen space reflection (SSR) and cube map reflection color
-	reflectionColor = LERP(cubeReflectionColor, reflectionColor, reflectionIntensity);
-
 	// Done
-	MAIN_OUTPUT_COLOR(0) = float4(reflectionColor, 0.0f);
+	@property(UseScreenSpaceReflectionMap)	
+		// Mix screen space reflection (SSR) and cube map reflection color
+		MAIN_OUTPUT_COLOR(0) = float4(LERP(cubeReflectionColor, reflectionColor, reflectionIntensity), 0.0f);
+	@end
+	@property(!UseScreenSpaceReflectionMap)	
+		MAIN_OUTPUT_COLOR(0) = float4(cubeReflectionColor, 0.0f);
+	@end
 MAIN_END

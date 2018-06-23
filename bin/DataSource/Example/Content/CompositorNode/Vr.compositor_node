@@ -13,6 +13,10 @@
 		},
 		"RenderTargetTextures":
 		{
+			"Example/Texture/Dynamic/ReflectionRenderTarget":
+			{
+				"TextureFormat": "R11G11B10F"
+			},
 			"Example/Texture/Dynamic/HdrMultisampleColorRenderTarget":
 			{
 				"TextureFormat": "R16G16B16A16F",
@@ -107,6 +111,10 @@
 		},
 		"Framebuffers":
 		{
+			"ReflectionFramebuffer":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/ReflectionRenderTarget" ]
+			},
 			"HdrMultisampleFramebuffer":
 			{
 				"ColorTextures": [ "Example/Texture/Dynamic/HdrMultisampleColorRenderTarget", "Example/Texture/Dynamic/MultisampleNormalRenderTarget" ],
@@ -187,6 +195,25 @@
 					"Texture": "Example/Texture/Dynamic/ShadowMapRenderTarget",
 					"DepthToExponentialVarianceMaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/DepthToExponentialVariance.asset",
 					"BlurMaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/ShadowBlur.asset"
+				}
+			},
+			"ReflectionFramebuffer":
+			{
+				"Clear":
+				{
+					"NumberOfExecutions": "1",
+					"Flags": "COLOR"
+				},
+				"Quad":
+				{
+					"SkipFirstExecution": "TRUE",
+					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Reflection.asset",
+					"SetMaterialProperties":
+					{
+						"UseScreenSpaceReflectionMap": "FALSE",
+						"NormalMap": "Example/Texture/Dynamic/MultisampleNormalRenderTarget",
+						"DepthMap": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget"
+					}
 				}
 			},
 			"HdrMultisampleFramebuffer":
