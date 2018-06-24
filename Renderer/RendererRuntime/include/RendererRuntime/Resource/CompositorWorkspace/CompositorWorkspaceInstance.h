@@ -169,7 +169,7 @@ namespace RendererRuntime
 		CompositorWorkspaceInstance& operator=(const CompositorWorkspaceInstance&) = delete;
 		void destroySequentialCompositorNodeInstances();
 		void createFramebuffersAndRenderTargetTextures(const Renderer::IRenderTarget& mainRenderTarget);
-		void destroyFramebuffersAndRenderTargetTextures();
+		void destroyFramebuffersAndRenderTargetTextures(bool clearManagers = false);
 		void clearRenderQueueIndexRangesRenderableManagers();
 
 

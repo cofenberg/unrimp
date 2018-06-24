@@ -77,42 +77,43 @@ namespace RendererRuntime
 							mFramebuffersPtrs[mipmapIndex] = renderer.createFramebuffer(*renderPass, nullptr, &depthFramebufferAttachment);
 							RENDERER_SET_RESOURCE_DEBUG_NAME(mFramebuffersPtrs[mipmapIndex], ("Compositor instance pass generate mipmap " + std::to_string(mipmapIndex)).c_str())
 						}
+					}
 
-						// Record reusable command buffer
-						// TODO(co) There's certainly room for command buffer optimization here (e.g. the pipeline state stays the same)
-						mCommandBuffer.clear();
-						if (!mFramebuffersPtrs.empty())
+					// Record reusable command buffer
+					// TODO(co) Optimization: Make this hot-reloading ready and also listen to other critical compositor setting changes like number of multisamples, when done we can fill the following command buffer once and then just reuse it
+					// TODO(co) There's certainly room for command buffer optimization here (e.g. the pipeline state stays the same)
+					mCommandBuffer.clear();
+					if (!mFramebuffersPtrs.empty())
+					{
+						// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
+						RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(rendererRuntime.getContext(), mCommandBuffer)
+
+						// Basing on "Hierarchical-Z map based occlusion culling" - "Hi-Z map construction" - http://rastergrid.com/blog/2010/10/hierarchical-z-map-based-occlusion-culling/
+						uint32_t currentWidth = renderTargetWidth;
+						uint32_t currentHeight = renderTargetHeight;
+						for (uint32_t mipmapIndex = 1; mipmapIndex < numberOfMipmaps; ++mipmapIndex)
 						{
-							// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
-							RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(rendererRuntime.getContext(), mCommandBuffer)
+							// Calculate next viewport size and ensure that the viewport size is always at least 1x1
+							currentWidth = Renderer::ITexture::getHalfSize(currentWidth);
+							currentHeight = Renderer::ITexture::getHalfSize(currentHeight);
 
-							// Basing on "Hierarchical-Z map based occlusion culling" - "Hi-Z map construction" - http://rastergrid.com/blog/2010/10/hierarchical-z-map-based-occlusion-culling/
-							uint32_t currentWidth = renderTargetWidth;
-							uint32_t currentHeight = renderTargetHeight;
-							for (uint32_t mipmapIndex = 1; mipmapIndex < numberOfMipmaps; ++mipmapIndex)
-							{
-								// Calculate next viewport size and ensure that the viewport size is always at least 1x1
-								currentWidth = Renderer::ITexture::getHalfSize(currentWidth);
-								currentHeight = Renderer::ITexture::getHalfSize(currentHeight);
+							// Set render target
+							Renderer::Command::SetRenderTarget::create(mCommandBuffer, mFramebuffersPtrs[mipmapIndex]);
 
-								// Set render target
-								Renderer::Command::SetRenderTarget::create(mCommandBuffer, mFramebuffersPtrs[mipmapIndex]);
+							// Set the viewport and scissor rectangle
+							Renderer::Command::SetViewportAndScissorRectangle::create(mCommandBuffer, 0, 0, currentWidth, currentHeight);
 
-								// Set the viewport and scissor rectangle
-								Renderer::Command::SetViewportAndScissorRectangle::create(mCommandBuffer, 0, 0, currentWidth, currentHeight);
+							// Restrict fetches only to previous depth texture mipmap level
+							Renderer::Command::SetTextureMinimumMaximumMipmapIndex::create(mCommandBuffer, *texture, mipmapIndex - 1, mipmapIndex - 1);
 
-								// Restrict fetches only to previous depth texture mipmap level
-								Renderer::Command::SetTextureMinimumMaximumMipmapIndex::create(mCommandBuffer, *texture, mipmapIndex - 1, mipmapIndex - 1);
-
-								// Draw full-screen quad
-								CompositorContextData localCompositorContextData(compositorContextData.getCompositorWorkspaceInstance(), nullptr);
-								mCompositorInstancePassQuad->onFillCommandBuffer(*mFramebuffersPtrs[mipmapIndex], localCompositorContextData, mCommandBuffer);
-								mCompositorInstancePassQuad->onPostCommandBufferExecution();
-							}
-
-							// Reset mipmap level range for the depth texture
-							Renderer::Command::SetTextureMinimumMaximumMipmapIndex::create(mCommandBuffer, *texture, 0, numberOfMipmaps - 1);
+							// Draw full-screen quad
+							CompositorContextData localCompositorContextData(compositorContextData.getCompositorWorkspaceInstance(), nullptr);
+							mCompositorInstancePassQuad->onFillCommandBuffer(*mFramebuffersPtrs[mipmapIndex], localCompositorContextData, mCommandBuffer);
+							mCompositorInstancePassQuad->onPostCommandBufferExecution();
 						}
+
+						// Reset mipmap level range for the depth texture
+						Renderer::Command::SetTextureMinimumMaximumMipmapIndex::create(mCommandBuffer, *texture, 0, numberOfMipmaps - 1);
 					}
 				}
 				else

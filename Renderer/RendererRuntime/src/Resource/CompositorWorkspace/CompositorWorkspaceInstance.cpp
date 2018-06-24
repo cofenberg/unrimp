@@ -429,7 +429,7 @@ namespace RendererRuntime
 		mCompositorInstancePassShadowMap = nullptr;
 
 		// Destroy framebuffers and render target textures
-		destroyFramebuffersAndRenderTargetTextures();
+		destroyFramebuffersAndRenderTargetTextures(true);
 	}
 
 	void CompositorWorkspaceInstance::createFramebuffersAndRenderTargetTextures(const Renderer::IRenderTarget& mainRenderTarget)
@@ -450,7 +450,7 @@ namespace RendererRuntime
 		mFramebufferManagerInitialized = true;
 	}
 
-	void CompositorWorkspaceInstance::destroyFramebuffersAndRenderTargetTextures()
+	void CompositorWorkspaceInstance::destroyFramebuffersAndRenderTargetTextures(bool clearManagers)
 	{
 		// All compositor instance passes need to forget about the render targets
 		for (CompositorNodeInstance* compositorNodeInstance : mSequentialCompositorNodeInstances)
@@ -464,8 +464,16 @@ namespace RendererRuntime
 
 		// Destroy renderer resources of framebuffers and render target textures
 		CompositorWorkspaceResourceManager& compositorWorkspaceResourceManager = mRendererRuntime.getCompositorWorkspaceResourceManager();
-		compositorWorkspaceResourceManager.getFramebufferManager().clearRendererResources();
-		compositorWorkspaceResourceManager.getRenderTargetTextureManager().clearRendererResources();
+		if (clearManagers)
+		{
+			compositorWorkspaceResourceManager.getFramebufferManager().clear();
+			compositorWorkspaceResourceManager.getRenderTargetTextureManager().clear();
+		}
+		else
+		{
+			compositorWorkspaceResourceManager.getFramebufferManager().clearRendererResources();
+			compositorWorkspaceResourceManager.getRenderTargetTextureManager().clearRendererResources();
+		}
 		mFramebufferManagerInitialized = false;
 	}
 
