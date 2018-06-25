@@ -2503,9 +2503,9 @@ namespace Direct3D11Renderer
 						}
 
 						// Optional vendor specific part: AMD AGS
-						#ifdef DYNAMIC_AMD_AGS
-							if (amdDxgiAdapter)
-							{
+						if (amdDxgiAdapter)
+						{
+							#ifdef DYNAMIC_AMD_AGS
 								#ifdef ARCHITECTURE_X64
 									static constexpr const char* AMD_AGS_SHARED_LIBRARY_NAME = "amd_ags_x64.dll";
 								#else
@@ -2531,18 +2531,18 @@ namespace Direct3D11Renderer
 								{
 									RENDERER_LOG(mDirect3D11Renderer.getContext(), PERFORMANCE_WARNING, "Direct3D 11: Failed to load the AMD AGS shared library \"%s\"", AMD_AGS_SHARED_LIBRARY_NAME)
 								}
-							}
-						#else
-							// Initialize AMD AGS (e.g. for multi-indirect-draw support)
-							if (AGS_SUCCESS == agsInit(&mAgsContext, nullptr, nullptr))
-							{
-								RENDERER_LOG(mDirect3D11Renderer.getContext(), INFORMATION, "Direct3D 11: Successfully initialized AMD AGS")
-							}
-							else
-							{
-								RENDERER_LOG(mDirect3D11Renderer.getContext(), CRITICAL, "Direct3D 11: Failed to initialize AMD AGS")
-							}
-						#endif
+							#else
+								// Initialize AMD AGS (e.g. for multi-indirect-draw support)
+								if (AGS_SUCCESS == agsInit(&mAgsContext, nullptr, nullptr))
+								{
+									RENDERER_LOG(mDirect3D11Renderer.getContext(), INFORMATION, "Direct3D 11: Successfully initialized AMD AGS")
+								}
+								else
+								{
+									RENDERER_LOG(mDirect3D11Renderer.getContext(), CRITICAL, "Direct3D 11: Failed to initialize AMD AGS")
+								}
+							#endif
+						}
 
 						// Optional vendor specific part: NvAPI
 						if (nvidiaDxgiAdapter)
