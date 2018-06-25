@@ -280,7 +280,11 @@ namespace RendererRuntime
 				case Renderer::ILog::Type::PERFORMANCE_WARNING:
 				case Renderer::ILog::Type::COMPATIBILITY_WARNING:
 				case Renderer::ILog::Type::CRITICAL:
-					open();
+					// ImGui might not have been initialized yet
+					if (nullptr != ImGui::GetCurrentContext())
+					{
+						open();
+					}
 					break;
 			}
 
