@@ -93,6 +93,9 @@ if(RENDERER_TOOLKIT)
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../Renderer/RendererToolkit/include)
 endif()
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/${OS_ARCHITECTURE})
+if(RENDERER_DIRECT3D11)
+	link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/Windows_${ARCHITECTURE}/AGS_SDK/lib/)
+endif()
 
 
 ##################################################

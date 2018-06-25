@@ -1820,9 +1820,9 @@ ID3DUserDefinedAnnotation : public IUnknown
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
+struct AGSContext;	// AMD AGS
 namespace Direct3D11Renderer
 {
-	struct AGSContext;	// AMD AGS
 	class RootSignature;
 	class Direct3D11RuntimeLinking;
 }
@@ -2250,9 +2250,15 @@ namespace Direct3D11Renderer
 	//[-------------------------------------------------------]
 	//[ AMD AGS functions                                     ]
 	//[-------------------------------------------------------]
-	// -> Using v5.1.1 - 2017-09-19
+	}
+	extern "C" {
+	// -> Using AMD AGS v5.2.0 - May 23, 2018
 	// -> From https://github.com/GPUOpen-LibrariesAndSDKs/AGS_SDK and https://raw.githubusercontent.com/GPUOpen-LibrariesAndSDKs/Barycentrics12/master/ags_lib/inc/amd_ags.h
-	#define FNDEF_AMD_AGS(retType, funcName, args) retType (WINAPI *funcPtr_##funcName) args
+	// -> We're using the static linked version of AMD AGS in order to reduce the number of individual shipped files
+	// -> For debug builds there are no static AMD AGS libraries available
+	#ifdef _DEBUG
+		#define DYNAMIC_AMD_AGS
+	#endif
 	struct AGSGPUInfo;
 	struct AGSConfiguration;
 	struct AGSDX11DeviceCreationParams
@@ -2266,44 +2272,84 @@ namespace Direct3D11Renderer
 		UINT                        SDKVersion;
 		const DXGI_SWAP_CHAIN_DESC* pSwapChainDesc;
 	};
+	enum AGSCrossfireMode
+	{
+		AGS_CROSSFIRE_MODE_DRIVER_AFR = 0,
+		AGS_CROSSFIRE_MODE_EXPLICIT_AFR,
+		AGS_CROSSFIRE_MODE_DISABLE
+	};
 	struct AGSDX11ExtensionParams
 	{
-		unsigned int uavSlot;
-		const WCHAR* pAppName;
-		UINT         appVersion;
-		const WCHAR* pEngineName;
-		UINT         engineVersion;
+		const WCHAR*     pAppName;
+		const WCHAR*     pEngineName;
+		unsigned int     appVersion;
+		unsigned int     engineVersion;
+		unsigned int     numBreadcrumbMarkers;
+		unsigned int     uavSlot;
+		AGSCrossfireMode crossfireMode;
 	};
 	struct AGSDX11ReturnedParams
 	{
 		ID3D11Device*        pDevice;
-		D3D_FEATURE_LEVEL    FeatureLevel;
 		ID3D11DeviceContext* pImmediateContext;
 		IDXGISwapChain*      pSwapChain;
+		D3D_FEATURE_LEVEL    FeatureLevel;
 		unsigned int         extensionsSupported;
+		unsigned int         crossfireGPUCount;
+		void*                breadcrumbBuffer;
 	};
 	enum AGSReturnCode
 	{
 		AGS_SUCCESS,
+		AGS_FAILURE,
 		AGS_INVALID_ARGS,
 		AGS_OUT_OF_MEMORY,
 		AGS_ERROR_MISSING_DLL,
 		AGS_ERROR_LEGACY_DRIVER,
 		AGS_EXTENSION_NOT_SUPPORTED,
-		AGS_ADL_FAILURE,
+		AGS_ADL_FAILURE
 	};
+	#ifdef DYNAMIC_AMD_AGS
+		#define FNDEF_AMD_AGS(retType, funcName, args) retType (WINAPI *funcPtr_##funcName) args
+	#else
+		#define FNDEF_AMD_AGS(retType, funcName, args) retType WINAPI funcName args
+	#endif
 	FNDEF_AMD_AGS(AGSReturnCode,	agsInit,													(AGSContext** context, const AGSConfiguration* config, AGSGPUInfo* gpuInfo));
 	FNDEF_AMD_AGS(AGSReturnCode,	agsDeInit,													(AGSContext* context));
 	FNDEF_AMD_AGS(AGSReturnCode,	agsDriverExtensionsDX11_CreateDevice,						(AGSContext* context, AGSDX11DeviceCreationParams* creationParams, AGSDX11ExtensionParams* extensionParams, AGSDX11ReturnedParams* returnedParams));
-	FNDEF_AMD_AGS(AGSReturnCode,	agsDriverExtensionsDX11_DestroyDevice,						(AGSContext* context, ID3D11Device* device, unsigned int* references));
+	FNDEF_AMD_AGS(AGSReturnCode,	agsDriverExtensionsDX11_DestroyDevice,						(AGSContext* context, ID3D11Device* device, unsigned int* deviceReferences, ID3D11DeviceContext* immediateContext, unsigned int* immediateContextReferences));
 	FNDEF_AMD_AGS(AGSReturnCode,	agsDriverExtensionsDX11_MultiDrawInstancedIndirect,			(AGSContext* context, unsigned int drawCount, ID3D11Buffer* pBufferForArgs, unsigned int alignedByteOffsetForArgs, unsigned int byteStrideForArgs));
 	FNDEF_AMD_AGS(AGSReturnCode,	agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect,	(AGSContext* context, unsigned int drawCount, ID3D11Buffer* pBufferForArgs, unsigned int alignedByteOffsetForArgs, unsigned int byteStrideForArgs));
-	#define agsInit														FNPTR(agsInit)
-	#define agsDeInit													FNPTR(agsDeInit)
-	#define agsDriverExtensionsDX11_CreateDevice						FNPTR(agsDriverExtensionsDX11_CreateDevice)
-	#define agsDriverExtensionsDX11_DestroyDevice						FNPTR(agsDriverExtensionsDX11_DestroyDevice)
-	#define agsDriverExtensionsDX11_MultiDrawInstancedIndirect			FNPTR(agsDriverExtensionsDX11_MultiDrawInstancedIndirect)
-	#define agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect	FNPTR(agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect)
+	#ifdef DYNAMIC_AMD_AGS
+		#define agsInit														FNPTR(agsInit)
+		#define agsDeInit													FNPTR(agsDeInit)
+		#define agsDriverExtensionsDX11_CreateDevice						FNPTR(agsDriverExtensionsDX11_CreateDevice)
+		#define agsDriverExtensionsDX11_DestroyDevice						FNPTR(agsDriverExtensionsDX11_DestroyDevice)
+		#define agsDriverExtensionsDX11_MultiDrawInstancedIndirect			FNPTR(agsDriverExtensionsDX11_MultiDrawInstancedIndirect)
+		#define agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect	FNPTR(agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect)
+	#else
+		#ifdef ARCHITECTURE_X64
+			#ifdef RENDERER_DIRECT3D11_EXPORTS
+				// Dynamic library is using "Multi-threaded DLL (/MD)"
+				#pragma comment(lib, "amd_ags_x64_2017_MD.lib")
+			#else
+				// Static library is using "Multi-threaded (/MT)"
+				#pragma comment(lib, "amd_ags_x64_2017_MT.lib")
+			#endif
+		#else
+			#ifdef RENDERER_DIRECT3D11_EXPORTS
+				// Dynamic library is using "Multi-threaded DLL (/MD)"
+				#pragma comment(lib, "amd_ags_x86_2017_MD.lib")
+			#else
+				// Static library is using "Multi-threaded (/MT)"
+				#pragma comment(lib, "amd_ags_x86_2017_MT.lib")
+			#endif
+		#endif
+	#endif
+	}
+	namespace Direct3D11Renderer
+	{
+
 
 	//[-------------------------------------------------------]
 	//[ NvAPI functions                                       ]
@@ -2346,7 +2392,9 @@ namespace Direct3D11Renderer
 			mD3D11SharedLibrary(nullptr),
 			mD3DX11SharedLibrary(nullptr),
 			mD3DCompilerSharedLibrary(nullptr),
-			mAmdAgsSharedLibrary(nullptr),
+			#ifdef DYNAMIC_AMD_AGS
+				mAmdAgsSharedLibrary(nullptr),
+			#endif
 			mAgsContext(nullptr),
 			mNvAPISharedLibrary(nullptr),
 			mEntryPointsRegistered(false),
@@ -2376,14 +2424,21 @@ namespace Direct3D11Renderer
 			{
 				::FreeLibrary(static_cast<HMODULE>(mD3DCompilerSharedLibrary));
 			}
-			if (nullptr != mAmdAgsSharedLibrary)
-			{
-				if (nullptr != agsDeInit && AGS_SUCCESS != agsDeInit(mAgsContext))
+			#ifdef DYNAMIC_AMD_AGS
+				if (nullptr != mAmdAgsSharedLibrary)
+				{
+					if (nullptr != agsDeInit && AGS_SUCCESS != agsDeInit(mAgsContext))
+					{
+						RENDERER_LOG(mDirect3D11Renderer.getContext(), CRITICAL, "Direct3D 11: Failed to unload AMG AGS")
+					}
+					::FreeLibrary(static_cast<HMODULE>(mAmdAgsSharedLibrary));
+				}
+			#else
+				if (AGS_SUCCESS != agsDeInit(mAgsContext))
 				{
 					RENDERER_LOG(mDirect3D11Renderer.getContext(), CRITICAL, "Direct3D 11: Failed to unload AMG AGS")
 				}
-				::FreeLibrary(static_cast<HMODULE>(mAmdAgsSharedLibrary));
-			}
+			#endif
 			if (nullptr != mNvAPISharedLibrary)
 			{
 				if (nullptr != NvAPI_Unload && 0 != NvAPI_Unload())
@@ -2448,47 +2503,72 @@ namespace Direct3D11Renderer
 						}
 
 						// Optional vendor specific part: AMD AGS
-						if (amdDxgiAdapter)
-						{
-							#ifdef ARCHITECTURE_X64
-								mAmdAgsSharedLibrary = ::LoadLibraryExA("amd_ags_x64.dll", nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
-							#else
-								// TODO(co) Currently an "Exception thrown: write access violation. **this** was nullptr."-exception gets thrown when calling "agsInit()" in x86 release (fine in x86 debug, fine in x64)
-								#ifdef DEBUG
-									mAmdAgsSharedLibrary = ::LoadLibraryExA("amd_ags_x86.dll", nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
-								#endif
-							#endif
-							if (nullptr != mAmdAgsSharedLibrary && !loadAmdAgsEntryPoints())
+						#ifdef DYNAMIC_AMD_AGS
+							if (amdDxgiAdapter)
 							{
-								RENDERER_LOG(mDirect3D11Renderer.getContext(), CRITICAL, "Direct3D 11: Failed to load AMD AGS function entry points")
-								::FreeLibrary(static_cast<HMODULE>(mAmdAgsSharedLibrary));
-								mAmdAgsSharedLibrary									  = nullptr;
-								agsInit													  = nullptr;
-								agsDeInit												  = nullptr;
-								agsDriverExtensionsDX11_CreateDevice					  = nullptr;
-								agsDriverExtensionsDX11_DestroyDevice					  = nullptr;
-								agsDriverExtensionsDX11_MultiDrawInstancedIndirect		  = nullptr;
-								agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect = nullptr;
+								#ifdef ARCHITECTURE_X64
+									static constexpr const char* AMD_AGS_SHARED_LIBRARY_NAME = "amd_ags_x64.dll";
+								#else
+									static constexpr const char* AMD_AGS_SHARED_LIBRARY_NAME = "amd_ags_x86.dll";
+								#endif
+								mAmdAgsSharedLibrary = ::LoadLibraryExA(AMD_AGS_SHARED_LIBRARY_NAME, nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
+								if (nullptr != mAmdAgsSharedLibrary)
+								{
+									if (!loadAmdAgsEntryPoints())
+									{
+										RENDERER_LOG(mDirect3D11Renderer.getContext(), CRITICAL, "Direct3D 11: Failed to load AMD AGS function entry points")
+										::FreeLibrary(static_cast<HMODULE>(mAmdAgsSharedLibrary));
+										mAmdAgsSharedLibrary									  = nullptr;
+										agsInit													  = nullptr;
+										agsDeInit												  = nullptr;
+										agsDriverExtensionsDX11_CreateDevice					  = nullptr;
+										agsDriverExtensionsDX11_DestroyDevice					  = nullptr;
+										agsDriverExtensionsDX11_MultiDrawInstancedIndirect		  = nullptr;
+										agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect = nullptr;
+									}
+								}
+								else
+								{
+									RENDERER_LOG(mDirect3D11Renderer.getContext(), PERFORMANCE_WARNING, "Direct3D 11: Failed to load the AMD AGS shared library \"%s\"", AMD_AGS_SHARED_LIBRARY_NAME)
+								}
 							}
-						}
+						#else
+							// Initialize AMD AGS (e.g. for multi-indirect-draw support)
+							if (AGS_SUCCESS == agsInit(&mAgsContext, nullptr, nullptr))
+							{
+								RENDERER_LOG(mDirect3D11Renderer.getContext(), INFORMATION, "Direct3D 11: Successfully initialized AMD AGS")
+							}
+							else
+							{
+								RENDERER_LOG(mDirect3D11Renderer.getContext(), CRITICAL, "Direct3D 11: Failed to initialize AMD AGS")
+							}
+						#endif
 
 						// Optional vendor specific part: NvAPI
 						if (nvidiaDxgiAdapter)
 						{
 							#ifdef ARCHITECTURE_X64
-								mNvAPISharedLibrary = ::LoadLibraryExA("nvapi64.dll", nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
+								static constexpr const char* NVAPI_SHARED_LIBRARY_NAME = "nvapi64.dll";
 							#else
-								mNvAPISharedLibrary = ::LoadLibraryExA("nvapi.dll", nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
+								static constexpr const char* NVAPI_SHARED_LIBRARY_NAME = "nvapi.dll";
 							#endif
-							if (nullptr != mNvAPISharedLibrary && !loadNvAPIEntryPoints())
+							mNvAPISharedLibrary = ::LoadLibraryExA(NVAPI_SHARED_LIBRARY_NAME, nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
+							if (nullptr != mNvAPISharedLibrary)
 							{
-								RENDERER_LOG(mDirect3D11Renderer.getContext(), CRITICAL, "Direct3D 11: Failed to load NvAPI function entry points")
-								::FreeLibrary(static_cast<HMODULE>(mNvAPISharedLibrary));
-								mNvAPISharedLibrary							  = nullptr;
-								NvAPI_Initialize							  = nullptr;
-								NvAPI_Unload								  = nullptr;
-								NvAPI_D3D11_MultiDrawInstancedIndirect		  = nullptr;
-								NvAPI_D3D11_MultiDrawIndexedInstancedIndirect = nullptr;
+								if (!loadNvAPIEntryPoints())
+								{
+									RENDERER_LOG(mDirect3D11Renderer.getContext(), CRITICAL, "Direct3D 11: Failed to load NvAPI function entry points")
+									::FreeLibrary(static_cast<HMODULE>(mNvAPISharedLibrary));
+									mNvAPISharedLibrary							  = nullptr;
+									NvAPI_Initialize							  = nullptr;
+									NvAPI_Unload								  = nullptr;
+									NvAPI_D3D11_MultiDrawInstancedIndirect		  = nullptr;
+									NvAPI_D3D11_MultiDrawIndexedInstancedIndirect = nullptr;
+								}
+							}
+							else
+							{
+								RENDERER_LOG(mDirect3D11Renderer.getContext(), PERFORMANCE_WARNING, "Direct3D 11: Failed to load the NvAPI shared library \"%s\"", NVAPI_SHARED_LIBRARY_NAME)
 							}
 						}
 					}
@@ -2724,57 +2804,66 @@ namespace Direct3D11Renderer
 			return result;
 		}
 
-		/**
-		*  @brief
-		*    Load the AMD AGS entry points
-		*
-		*  @return
-		*    "true" if all went fine, else "false"
-		*/
-		bool loadAmdAgsEntryPoints()
-		{
-			bool result = true;	// Success by default
+		#ifdef DYNAMIC_AMD_AGS
+			/**
+			*  @brief
+			*    Load the AMD AGS entry points
+			*
+			*  @return
+			*    "true" if all went fine, else "false"
+			*/
+			bool loadAmdAgsEntryPoints()
+			{
+				bool result = true;	// Success by default
 
-			// Define a helper macro
-			#define IMPORT_FUNC(funcName)																																						\
-				if (result)																																										\
-				{																																												\
-					void* symbol = ::GetProcAddress(static_cast<HMODULE>(mAmdAgsSharedLibrary), #funcName);																						\
-					if (nullptr != symbol)																																						\
-					{																																											\
-						*(reinterpret_cast<void**>(&(funcName))) = symbol;																														\
-					}																																											\
-					else																																										\
-					{																																											\
-						wchar_t moduleFilename[MAX_PATH];																																		\
-						moduleFilename[0] = '\0';																																				\
-						::GetModuleFileNameW(static_cast<HMODULE>(mAmdAgsSharedLibrary), moduleFilename, MAX_PATH);																				\
-						RENDERER_LOG(mDirect3D11Renderer.getContext(), CRITICAL, "Failed to locate the entry point \"%s\" within the AMD AGS shared library \"%s\"", #funcName, moduleFilename)	\
-						result = false;																																							\
-					}																																											\
+				// Define a helper macro
+				#define IMPORT_FUNC(funcName)																																						\
+					if (result)																																										\
+					{																																												\
+						void* symbol = ::GetProcAddress(static_cast<HMODULE>(mAmdAgsSharedLibrary), #funcName);																						\
+						if (nullptr != symbol)																																						\
+						{																																											\
+							*(reinterpret_cast<void**>(&(funcName))) = symbol;																														\
+						}																																											\
+						else																																										\
+						{																																											\
+							wchar_t moduleFilename[MAX_PATH];																																		\
+							moduleFilename[0] = '\0';																																				\
+							::GetModuleFileNameW(static_cast<HMODULE>(mAmdAgsSharedLibrary), moduleFilename, MAX_PATH);																				\
+							RENDERER_LOG(mDirect3D11Renderer.getContext(), CRITICAL, "Failed to locate the entry point \"%s\" within the AMD AGS shared library \"%s\"", #funcName, moduleFilename)	\
+							result = false;																																							\
+						}																																											\
+					}
+
+				// Load the entry points
+				IMPORT_FUNC(agsInit);
+				IMPORT_FUNC(agsDeInit);
+				IMPORT_FUNC(agsDriverExtensionsDX11_CreateDevice);
+				IMPORT_FUNC(agsDriverExtensionsDX11_DestroyDevice);
+				IMPORT_FUNC(agsDriverExtensionsDX11_MultiDrawInstancedIndirect);
+				IMPORT_FUNC(agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect);
+
+				// Undefine the helper macro
+				#undef IMPORT_FUNC
+
+				// Initialize AMD AGS (e.g. for multi-indirect-draw support)
+				if (nullptr != agsInit)
+				{
+					if (AGS_SUCCESS == agsInit(&mAgsContext, nullptr, nullptr))
+					{
+						RENDERER_LOG(mDirect3D11Renderer.getContext(), INFORMATION, "Direct3D 11: Successfully initialized AMD AGS")
+					}
+					else
+					{
+						RENDERER_LOG(mDirect3D11Renderer.getContext(), CRITICAL, "Direct3D 11: Failed to initialize AMD AGS")
+						result = false;
+					}
 				}
 
-			// Load the entry points
-			IMPORT_FUNC(agsInit);
-			IMPORT_FUNC(agsDeInit);
-			IMPORT_FUNC(agsDriverExtensionsDX11_CreateDevice);
-			IMPORT_FUNC(agsDriverExtensionsDX11_DestroyDevice);
-			IMPORT_FUNC(agsDriverExtensionsDX11_MultiDrawInstancedIndirect);
-			IMPORT_FUNC(agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect);
-
-			// Undefine the helper macro
-			#undef IMPORT_FUNC
-
-			// Initialize AMD AGS (e.g. for multi-indirect-draw support)
-			if (nullptr != agsInit && AGS_SUCCESS != agsInit(&mAgsContext, nullptr, nullptr))
-			{
-				RENDERER_LOG(mDirect3D11Renderer.getContext(), CRITICAL, "Direct3D 11: Failed to initialize AMD AGS")
-				result = false;
+				// Done
+				return result;
 			}
-
-			// Done
-			return result;
-		}
+		#endif
 
 		/**
 		*  @brief
@@ -2830,10 +2919,17 @@ namespace Direct3D11Renderer
 			#undef IMPORT_FUNC
 
 			// Initialize NvAPI (e.g. for multi-indirect-draw support)
-			if (result && nullptr != NvAPI_Initialize && 0 != NvAPI_Initialize())
+			if (result)
 			{
-				RENDERER_LOG(mDirect3D11Renderer.getContext(), CRITICAL, "Direct3D 11: Failed to initialize NvAPI")
-				result = false;
+				if (nullptr != NvAPI_Initialize && 0 == NvAPI_Initialize())
+				{
+					RENDERER_LOG(mDirect3D11Renderer.getContext(), INFORMATION, "Direct3D 11: Successfully initialized NvAPI")
+				}
+				else
+				{
+					RENDERER_LOG(mDirect3D11Renderer.getContext(), CRITICAL, "Direct3D 11: Failed to initialize NvAPI")
+					result = false;
+				}
 			}
 
 			// Done
@@ -2850,7 +2946,9 @@ namespace Direct3D11Renderer
 		void*				mD3D11SharedLibrary;		///< D3D11 shared library, can be a null pointer
 		void*				mD3DX11SharedLibrary;		///< D3DX11 shared library, can be a null pointer
 		void*				mD3DCompilerSharedLibrary;	///< D3DCompiler shared library, can be a null pointer
-		void*				mAmdAgsSharedLibrary;		///< AMD AGS shared library, can be a null pointer
+		#ifdef DYNAMIC_AMD_AGS
+			void*			mAmdAgsSharedLibrary;		///< AMD AGS shared library, can be a null pointer
+		#endif
 		AGSContext*			mAgsContext;				///< AMD AGS context, can be a null pointer
 		void*				mNvAPISharedLibrary;		///< NvAPI shared library, can be a null pointer
 		bool				mEntryPointsRegistered;		///< Entry points successfully registered?
@@ -9611,7 +9709,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		bool createDevice(Direct3D11Renderer::AGSContext* agsContext, UINT flags, ID3D11Device** d3d11Device, ID3D11DeviceContext** d3d11DeviceContext, D3D_FEATURE_LEVEL& d3dFeatureLevel)
+		bool createDevice(AGSContext* agsContext, UINT flags, ID3D11Device** d3d11Device, ID3D11DeviceContext** d3d11DeviceContext, D3D_FEATURE_LEVEL& d3dFeatureLevel)
 		{
 			// Driver types
 			static constexpr D3D_DRIVER_TYPE D3D_DRIVER_TYPES[] =
@@ -9637,10 +9735,10 @@ namespace
 			{
 				for (UINT deviceType = 0; deviceType < NUMBER_OF_DRIVER_TYPES; ++deviceType)
 				{
-					Direct3D11Renderer::AGSDX11ExtensionParams agsDx11ExtensionParams = {};
-					Direct3D11Renderer::AGSDX11ReturnedParams agsDx11ReturnedParams = {};
-					Direct3D11Renderer::AGSDX11DeviceCreationParams agsDx11DeviceCreationParams1 = { nullptr, D3D_DRIVER_TYPES[deviceType], nullptr, flags, D3D_FEATURE_LEVELS, NUMBER_OF_FEATURE_LEVELS, D3D11_SDK_VERSION, nullptr };
-					if (Direct3D11Renderer::agsDriverExtensionsDX11_CreateDevice(agsContext, &agsDx11DeviceCreationParams1, &agsDx11ExtensionParams, &agsDx11ReturnedParams) == Direct3D11Renderer::AGS_SUCCESS)
+					AGSDX11ExtensionParams agsDx11ExtensionParams = {};
+					AGSDX11ReturnedParams agsDx11ReturnedParams = {};
+					AGSDX11DeviceCreationParams agsDx11DeviceCreationParams1 = { nullptr, D3D_DRIVER_TYPES[deviceType], nullptr, flags, D3D_FEATURE_LEVELS, NUMBER_OF_FEATURE_LEVELS, D3D11_SDK_VERSION, nullptr };
+					if (agsDriverExtensionsDX11_CreateDevice(agsContext, &agsDx11DeviceCreationParams1, &agsDx11ExtensionParams, &agsDx11ReturnedParams) == AGS_SUCCESS)
 					{
 						*d3d11Device = agsDx11ReturnedParams.pDevice;
 						*d3d11DeviceContext = agsDx11ReturnedParams.pImmediateContext;
@@ -9651,8 +9749,8 @@ namespace
 					else
 					{
 						// Maybe the system doesn't support Direct3D 11.1, try again requesting Direct3D 11
-						Direct3D11Renderer::AGSDX11DeviceCreationParams agsDx11DeviceCreationParams2 = { nullptr, D3D_DRIVER_TYPES[deviceType], nullptr, flags, &D3D_FEATURE_LEVELS[1], NUMBER_OF_FEATURE_LEVELS - 1, D3D11_SDK_VERSION, nullptr };
-						if (Direct3D11Renderer::agsDriverExtensionsDX11_CreateDevice(agsContext, &agsDx11DeviceCreationParams2, &agsDx11ExtensionParams, &agsDx11ReturnedParams) == Direct3D11Renderer::AGS_SUCCESS)
+						AGSDX11DeviceCreationParams agsDx11DeviceCreationParams2 = { nullptr, D3D_DRIVER_TYPES[deviceType], nullptr, flags, &D3D_FEATURE_LEVELS[1], NUMBER_OF_FEATURE_LEVELS - 1, D3D11_SDK_VERSION, nullptr };
+						if (agsDriverExtensionsDX11_CreateDevice(agsContext, &agsDx11DeviceCreationParams2, &agsDx11ExtensionParams, &agsDx11ReturnedParams) == AGS_SUCCESS)
 						{
 							*d3d11Device = agsDx11ReturnedParams.pDevice;
 							*d3d11DeviceContext = agsDx11ReturnedParams.pImmediateContext;
@@ -10148,23 +10246,35 @@ namespace Direct3D11Renderer
 			mD3DUserDefinedAnnotation->Release();
 			mD3DUserDefinedAnnotation = nullptr;
 		}
-		if (nullptr != mD3D11DeviceContext)
-		{
-			mD3D11DeviceContext->Release();
-			mD3D11DeviceContext = nullptr;
-		}
-		if (nullptr != mD3D11Device)
 		{
 			AGSContext* agsContext = mDirect3D11RuntimeLinking->getAgsContext();
 			if (nullptr != agsContext)
 			{
-				agsDriverExtensionsDX11_DestroyDevice(agsContext, mD3D11Device, nullptr);
+				unsigned int deviceReferences = 0;
+				unsigned int immediateContextReferences = 0;
+				agsDriverExtensionsDX11_DestroyDevice(agsContext, mD3D11Device, &deviceReferences, mD3D11DeviceContext, &immediateContextReferences);
+				// TODO(co) AMD AGS v5.2.0 - May 23, 2018 behaves odd when it comes to the reference counters, "deviceReferences" handles as "immediateContextReferences"?
+				//          When done in any other way there will be crashes or resource leaks.
+				if (nullptr != mD3D11DeviceContext && deviceReferences > 0)
+				{
+					mD3D11DeviceContext->Release();
+				}
+				mD3D11DeviceContext = nullptr;
+				mD3D11Device = nullptr;
 			}
 			else
 			{
-				mD3D11Device->Release();
+				if (nullptr != mD3D11DeviceContext)
+				{
+					mD3D11DeviceContext->Release();
+					mD3D11DeviceContext = nullptr;
+				}
+				if (nullptr != mD3D11Device)
+				{
+					mD3D11Device->Release();
+					mD3D11Device = nullptr;
+				}
 			}
-			mD3D11Device = nullptr;
 		}
 
 		// Destroy the Direct3D 11 runtime linking instance
