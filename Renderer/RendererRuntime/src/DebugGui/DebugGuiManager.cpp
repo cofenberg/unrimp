@@ -162,6 +162,11 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public static methods                                 ]
 	//[-------------------------------------------------------]
+	void DebugGuiManager::setImGuiAllocatorFunctions(Renderer::IAllocator& allocator)
+	{
+		ImGui::SetAllocatorFunctions(::detail::AllocFunc, ::detail::FreeFunc, &allocator);
+	}
+
 	void DebugGuiManager::getDefaultTextureAssetIds(AssetIds& assetIds)
 	{
 		// Define helper macro
@@ -448,7 +453,7 @@ namespace RendererRuntime
 		mOpenMetricsWindow(false)
 	{
 		// Set ImGui allocator functions
-		ImGui::SetAllocatorFunctions(::detail::AllocFunc, ::detail::FreeFunc, &rendererRuntime.getContext().getAllocator());
+		setImGuiAllocatorFunctions(rendererRuntime.getContext().getAllocator());
 
 		// Create ImGui context
 		mImGuiContext = ImGui::CreateContext();

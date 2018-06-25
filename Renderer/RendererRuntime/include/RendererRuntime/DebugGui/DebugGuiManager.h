@@ -101,6 +101,15 @@ namespace RendererRuntime
 	public:
 		/**
 		*  @brief
+		*    Set ImGui allocator functions
+		*
+		*  @param[in] allocator
+		*    Allocator to use
+		*/
+		RENDERERRUNTIME_API_EXPORT static void setImGuiAllocatorFunctions(Renderer::IAllocator& allocator);
+
+		/**
+		*  @brief
 		*    Return the asset IDs of automatically generated dynamic default texture assets
 		*
 		*  @param[out] assetIds

@@ -32,6 +32,12 @@
 
 
 //[-------------------------------------------------------]
+//[ Global variables                                      ]
+//[-------------------------------------------------------]
+Renderer::DefaultAllocator g_DefaultAllocator;
+
+
+//[-------------------------------------------------------]
 //[ Anonymous detail namespace                            ]
 //[-------------------------------------------------------]
 namespace
@@ -43,9 +49,8 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global variables                                      ]
 		//[-------------------------------------------------------]
-		Renderer::DefaultLog	   g_DefaultLog;
-		Renderer::DefaultAssert	   g_DefaultAssert;
-		Renderer::DefaultAllocator g_DefaultAllocator;
+		Renderer::DefaultLog	g_DefaultLog;
+		Renderer::DefaultAssert g_DefaultAssert;
 
 
 //[-------------------------------------------------------]
@@ -262,12 +267,12 @@ Renderer::IRenderer* IApplicationRenderer::createRendererInstance(const char* re
 		bool loadRendererApiSharedLibrary = false;
 		Renderer::ILog& log = (nullptr != mExampleBase.getCustomLog()) ? *mExampleBase.getCustomLog() : ::detail::g_DefaultLog;
 		#ifdef _WIN32
-			mRendererContext = new Renderer::Context(log, ::detail::g_DefaultAssert, ::detail::g_DefaultAllocator, getNativeWindowHandle());
+			mRendererContext = new Renderer::Context(log, ::detail::g_DefaultAssert, g_DefaultAllocator, getNativeWindowHandle());
 		#elif LINUX
 			// Under Linux the OpenGL library interacts with the library from X11 so we need to load the library ourself instead letting it be loaded by the renderer instance
 			// -> See http://dri.sourceforge.net/doc/DRIuserguide.html "11.5 libGL.so and dlopen()"
 			loadRendererApiSharedLibrary = true;
-			mRendererContext = new Renderer::X11Context(log, ::detail::g_DefaultAssert, ::detail::g_DefaultAllocator, getX11Display(), getNativeWindowHandle());
+			mRendererContext = new Renderer::X11Context(log, ::detail::g_DefaultAssert, g_DefaultAllocator, getX11Display(), getNativeWindowHandle());
 		#endif
 		mRendererInstance = new Renderer::RendererInstance(rendererName, *mRendererContext, loadRendererApiSharedLibrary);
 	}

@@ -62,6 +62,8 @@
 #include <RendererRuntime/Resource/Detail/ResourceStreamer.h>
 #include <RendererRuntime/Context.h>
 
+#include <Renderer/DefaultAllocator.h>
+
 #include <DeviceInput/DeviceInput.h>
 
 #ifdef RENDERER_RUNTIME_IMGUI
@@ -76,6 +78,12 @@ PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4668)	// warning C4668: '_M_HYBRID_X86_ARM64' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
 	#include <glm/gtc/type_ptr.hpp>
 PRAGMA_WARNING_POP
+
+
+//[-------------------------------------------------------]
+//[ Global variables                                      ]
+//[-------------------------------------------------------]
+extern Renderer::DefaultAllocator g_DefaultAllocator;
 
 
 //[-------------------------------------------------------]
@@ -154,7 +162,11 @@ FirstScene::FirstScene() :
 	// Scene hot-reloading memory
 	mHasCameraTransformBackup(false)
 {
-	// Nothing here
+	#ifdef RENDERER_RUNTIME_IMGUI
+		RendererRuntime::DebugGuiManager::setImGuiAllocatorFunctions(g_DefaultAllocator);
+		mImGuiLog = new RendererRuntime::ImGuiLog();
+		setCustomLog(mImGuiLog);
+	#endif
 }
 
 FirstScene::~FirstScene()
@@ -163,6 +175,11 @@ FirstScene::~FirstScene()
 
 	// Destroy our input manager instance
 	delete mInputManager;
+
+	// Destroy our ImGui log instance
+	#ifdef RENDERER_RUNTIME_IMGUI
+		delete mImGuiLog;
+	#endif
 }
 
 
@@ -171,11 +188,6 @@ FirstScene::~FirstScene()
 //[-------------------------------------------------------]
 void FirstScene::onInitialization()
 {
-	#ifdef RENDERER_RUNTIME_IMGUI
-		mImGuiLog = new RendererRuntime::ImGuiLog();
-		setCustomLog(mImGuiLog);
-	#endif
-
 	// Call the base implementation
 	ExampleBase::onInitialization();
 
@@ -265,12 +277,6 @@ void FirstScene::onDeinitialization()
 
 	// Call the base implementation
 	ExampleBase::onDeinitialization();
-
-	// Destroy our ImGui log instance
-	#ifdef RENDERER_RUNTIME_IMGUI
-		delete mImGuiLog;
-		mImGuiLog = nullptr;
-	#endif
 }
 
 void FirstScene::onUpdate()
