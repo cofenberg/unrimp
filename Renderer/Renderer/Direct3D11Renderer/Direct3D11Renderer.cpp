@@ -2260,7 +2260,13 @@ namespace Direct3D11Renderer
 		#define DYNAMIC_AMD_AGS
 	#endif
 	struct AGSGPUInfo;
-	struct AGSConfiguration;
+	typedef void* (__stdcall *AGS_ALLOC_CALLBACK)(size_t allocationSize);
+	typedef void (__stdcall *AGS_FREE_CALLBACK)(void* allocationPtr);
+	struct AGSConfiguration
+	{
+		AGS_ALLOC_CALLBACK allocCallback;
+		AGS_FREE_CALLBACK  freeCallback;
+	};
 	struct AGSDX11DeviceCreationParams
 	{
 		IDXGIAdapter*               pAdapter;
@@ -2346,6 +2352,15 @@ namespace Direct3D11Renderer
 			#endif
 		#endif
 	#endif
+	Renderer::IAllocator* g_AmdAgsAllocator = nullptr;	///< Evil global variable since AMD AGS doesn't allow to pass in user data to the allocator functions
+	void* __stdcall AmdAgsAllocCallback(size_t allocationSize)
+	{
+		return g_AmdAgsAllocator->reallocate(nullptr, 0, allocationSize, 1);
+	}
+	void __stdcall AmdAgsFreeCallback(void* allocationPtr)
+	{
+		g_AmdAgsAllocator->reallocate(allocationPtr, 0, 0, 1);
+	}
 	}
 	namespace Direct3D11Renderer
 	{
@@ -2505,6 +2520,7 @@ namespace Direct3D11Renderer
 						// Optional vendor specific part: AMD AGS
 						if (amdDxgiAdapter)
 						{
+							g_AmdAgsAllocator = &mDirect3D11Renderer.getContext().getAllocator();
 							#ifdef DYNAMIC_AMD_AGS
 								#ifdef ARCHITECTURE_X64
 									static constexpr const char* AMD_AGS_SHARED_LIBRARY_NAME = "amd_ags_x64.dll";
@@ -2532,8 +2548,10 @@ namespace Direct3D11Renderer
 									RENDERER_LOG(mDirect3D11Renderer.getContext(), PERFORMANCE_WARNING, "Direct3D 11: Failed to load the AMD AGS shared library \"%s\"", AMD_AGS_SHARED_LIBRARY_NAME)
 								}
 							#else
+							{
 								// Initialize AMD AGS (e.g. for multi-indirect-draw support)
-								if (AGS_SUCCESS == agsInit(&mAgsContext, nullptr, nullptr))
+								const AGSConfiguration agsConfiguration = { &AmdAgsAllocCallback, &AmdAgsFreeCallback };
+								if (AGS_SUCCESS == agsInit(&mAgsContext, &agsConfiguration, nullptr))
 								{
 									RENDERER_LOG(mDirect3D11Renderer.getContext(), INFORMATION, "Direct3D 11: Successfully initialized AMD AGS")
 								}
@@ -2541,6 +2559,7 @@ namespace Direct3D11Renderer
 								{
 									RENDERER_LOG(mDirect3D11Renderer.getContext(), CRITICAL, "Direct3D 11: Failed to initialize AMD AGS")
 								}
+							}
 							#endif
 						}
 
@@ -2849,7 +2868,8 @@ namespace Direct3D11Renderer
 				// Initialize AMD AGS (e.g. for multi-indirect-draw support)
 				if (nullptr != agsInit)
 				{
-					if (AGS_SUCCESS == agsInit(&mAgsContext, nullptr, nullptr))
+					const AGSConfiguration agsConfiguration = { &AmdAgsAllocCallback, &AmdAgsFreeCallback };
+					if (AGS_SUCCESS == agsInit(&mAgsContext, &agsConfiguration, nullptr))
 					{
 						RENDERER_LOG(mDirect3D11Renderer.getContext(), INFORMATION, "Direct3D 11: Successfully initialized AMD AGS")
 					}
