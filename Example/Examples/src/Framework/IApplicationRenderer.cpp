@@ -246,7 +246,10 @@ void IApplicationRenderer::destroyRenderer()
 	}
 
 	// Call base implementation after renderer was destroyed, needed at least under Linux see comments in private method "RendererInstance::loadRendererApiSharedLibrary()" for more details
-	IApplication::onDeinitialization();
+	// TODO(co): Try to find another solution which doesn't change the application flow which results in deinitialization been called twice
+	#ifdef LINUX
+		IApplication::onDeinitialization();
+	#endif
 
 	// Delete the renderer instance
 	delete mRendererInstance;

@@ -23,10 +23,8 @@
 //[-------------------------------------------------------]
 #include "Framework/ApplicationImplWindows.h"
 #include "Framework/IApplication.h"
-#include "Framework/IApplicationRendererRuntime.h"
 
 #ifdef RENDERER_RUNTIME_IMGUI
-	#include <RendererRuntime/IRendererRuntime.h>
 	#include <RendererRuntime/DebugGui/Detail/DebugGuiManagerWindows.h>
 #endif
 
@@ -258,19 +256,7 @@ LRESULT CALLBACK ApplicationImplWindows::wndProc(HWND hWnd, UINT message, WPARAM
 
 	// Call the Microsoft Windows callback of the debug GUI
 	#ifdef RENDERER_RUNTIME_IMGUI
-		if (nullptr != applicationImplWindows)
-		{
-			// TODO(co) Evil cast ahead. Maybe simplify the example application framework? After all, it's just an example framework for Unrimp and nothing too generic.
-			const IApplicationRendererRuntime* applicationRendererRuntime = dynamic_cast<IApplicationRendererRuntime*>(&applicationImplWindows->getApplication());
-			if (nullptr != applicationRendererRuntime)
-			{
-				const RendererRuntime::IRendererRuntime* rendererRuntime = applicationRendererRuntime->getRendererRuntime();
-				if (nullptr != rendererRuntime)
-				{
-					static_cast<RendererRuntime::DebugGuiManagerWindows&>(rendererRuntime->getDebugGuiManager()).wndProc(hWnd, message, wParam, lParam);
-				}
-			}
-		}
+		RendererRuntime::DebugGuiManagerWindows::wndProc(hWnd, message, wParam, lParam);
 	#endif
 
 	// Evaluate message

@@ -2,6 +2,11 @@
   // See https://go.microsoft.com//fwlink//?linkid=834763 for more information about this file.
   "environments": [
     {
+      // Optional "Simple DirectMedia Layer" (SDL, https://www.libsdl.org/ ) support inside the example framework
+      "EXAMPLE_SDL2_ENABLED": "0",
+      "SDL2_DIR": "${workspaceRoot}\\External\\SDL2", // Ease-of-use on Microsoft Windows: Download e.g. "SDL2-devel-2.0.8-VC.zip" from https://www.libsdl.org/download-2.0.php and extract it into "unrimp/External/SDL2" (directory contains "include" and "lib")
+
+      // Usually fixed directories
       "BuildDirectory": "${workspaceRoot}\\.vs\\unrimp\\CMakeBuilds\\build",
       "InstallDirectory": "${workspaceRoot}\\.vs\\unrimp\\CMakeBuilds\\install"
     }
@@ -15,7 +20,7 @@
       "inheritEnvironments": [ "msvc_x86" ],
       "buildRoot": "${env.BuildDirectory}\\${name}",
       "installRoot": "${env.InstallDirectory}\\${name}",
-      "cmakeCommandArgs": "-DARCHITECTURE_X86=1",
+      "cmakeCommandArgs": "-DARCHITECTURE_X86=1 -DEXAMPLE_SDL2_ENABLED=${env.EXAMPLE_SDL2_ENABLED} -DSDL2_DIR=\"${env.SDL2_DIR}\"",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
     },
@@ -26,7 +31,7 @@
       "inheritEnvironments": [ "msvc_x86" ],
       "buildRoot": "${env.BuildDirectory}\\${name}",
       "installRoot": "${env.InstallDirectory}\\${name}",
-      "cmakeCommandArgs": "-DARCHITECTURE_X86=1",
+      "cmakeCommandArgs": "-DARCHITECTURE_X86=1 -DEXAMPLE_SDL2_ENABLED=${env.EXAMPLE_SDL2_ENABLED} -DSDL2_DIR=\"${env.SDL2_DIR}\"",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
     },
@@ -37,7 +42,7 @@
       "inheritEnvironments": [ "msvc_x64_x64" ],
       "buildRoot": "${env.BuildDirectory}\\${name}",
       "installRoot": "${env.InstallDirectory}\\${name}",
-      "cmakeCommandArgs": "-DARCHITECTURE_X64=1",
+      "cmakeCommandArgs": "-DARCHITECTURE_X64=1 -DEXAMPLE_SDL2_ENABLED=${env.EXAMPLE_SDL2_ENABLED} -DSDL2_DIR=\"${env.SDL2_DIR}\"",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
     },
@@ -48,7 +53,7 @@
       "inheritEnvironments": [ "msvc_x64_x64" ],
       "buildRoot": "${env.BuildDirectory}\\${name}",
       "installRoot": "${env.InstallDirectory}\\${name}",
-      "cmakeCommandArgs": "-DARCHITECTURE_X64=1",
+      "cmakeCommandArgs": "-DARCHITECTURE_X64=1 -DEXAMPLE_SDL2_ENABLED=${env.EXAMPLE_SDL2_ENABLED} -DSDL2_DIR=\"${env.SDL2_DIR}\"",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
     },
@@ -59,7 +64,7 @@
       "inheritEnvironments": [ "msvc_x86" ],
       "buildRoot": "${env.BuildDirectory}\\${name}",
       "installRoot": "${env.InstallDirectory}\\${name}",
-      "cmakeCommandArgs": "-DARCHITECTURE_X86=1 -DSHARED_LIBRARY=0",
+      "cmakeCommandArgs": "-DARCHITECTURE_X86=1 -DSHARED_LIBRARY=0 -DEXAMPLE_SDL2_ENABLED=${env.EXAMPLE_SDL2_ENABLED} -DSDL2_DIR=\"${env.SDL2_DIR}\"",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
     },
@@ -70,7 +75,7 @@
       "inheritEnvironments": [ "msvc_x86" ],
       "buildRoot": "${env.BuildDirectory}\\${name}",
       "installRoot": "${env.InstallDirectory}\\${name}",
-      "cmakeCommandArgs": "-DARCHITECTURE_X86=1 -DSHARED_LIBRARY=0",
+      "cmakeCommandArgs": "-DARCHITECTURE_X86=1 -DSHARED_LIBRARY=0 -DEXAMPLE_SDL2_ENABLED=${env.EXAMPLE_SDL2_ENABLED} -DSDL2_DIR=\"${env.SDL2_DIR}\"",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
     },
@@ -81,7 +86,7 @@
       "inheritEnvironments": [ "msvc_x64_x64" ],
       "buildRoot": "${env.BuildDirectory}\\${name}",
       "installRoot": "${env.InstallDirectory}\\${name}",
-      "cmakeCommandArgs": "-DARCHITECTURE_X64=1 -DSHARED_LIBRARY=0",
+      "cmakeCommandArgs": "-DARCHITECTURE_X64=1 -DSHARED_LIBRARY=0 -DEXAMPLE_SDL2_ENABLED=${env.EXAMPLE_SDL2_ENABLED} -DSDL2_DIR=\"${env.SDL2_DIR}\"",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
     },
@@ -92,7 +97,7 @@
       "inheritEnvironments": [ "msvc_x64_x64" ],
       "buildRoot": "${env.BuildDirectory}\\${name}",
       "installRoot": "${env.InstallDirectory}\\${name}",
-      "cmakeCommandArgs": "-DARCHITECTURE_X64=1 -DSHARED_LIBRARY=0",
+      "cmakeCommandArgs": "-DARCHITECTURE_X64=1 -DSHARED_LIBRARY=0 -DEXAMPLE_SDL2_ENABLED=${env.EXAMPLE_SDL2_ENABLED} -DSDL2_DIR=\"${env.SDL2_DIR}\"",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
     },

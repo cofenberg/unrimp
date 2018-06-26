@@ -52,20 +52,21 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
-	//[ Public methods                                        ]
+	//[ Public static methods                                 ]
 	//[-------------------------------------------------------]
 	public:
 		/**
 		*  @brief
 		*    Microsoft Windows callback method to be called from the outside for input handling
 		*/
-		RENDERERRUNTIME_API_EXPORT LRESULT wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+		RENDERERRUNTIME_API_EXPORT static LRESULT wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::DebugGuiManager methods ]
 	//[-------------------------------------------------------]
 	protected:
+		virtual void initializeImGuiKeyMap() override;
 		virtual void startup() override;
 		virtual void onNewFrame(Renderer::IRenderTarget& renderTarget) override;
 

@@ -23,6 +23,15 @@
 ##################################################
 cmake_minimum_required(VERSION 3.11.0)
 
+# Optional "Simple DirectMedia Layer" (SDL, https://www.libsdl.org/ ) support inside the example framework
+if(EXAMPLE_SDL2_ENABLED)
+	set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/Build/")
+	set(SDL2_BUILDING_LIBRARY "1")	# Ignore "SDL2main" since the example framework has an own main program entry point
+	find_package(SDL2)
+endif()
+if(SDL2_FOUND)
+	message("Found SDL2, SDL2 example enabled")
+endif()
 
 # TODO(co) Qt GUI runner currently isn't maintained
 find_package(Qt4 COMPONENTS QtCore QtGui)
@@ -60,6 +69,7 @@ if(RENDERER_RUNTIME_PROFILER)
 endif()
 unrimp_add_conditional_definition(RENDERER_RUNTIME_IMGUI)
 unrimp_add_conditional_definition(RENDERER_RUNTIME_OPENVR)
+unrimp_add_conditional_definition(SDL2_FOUND)
 
 # Static builds are usually used for shipping builds, so disable the renderer toolkit for static builds
 if(SHARED_LIBRARY)
@@ -95,6 +105,9 @@ endif()
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/${OS_ARCHITECTURE})
 if(RENDERER_DIRECT3D11)
 	link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../External/Windows_${ARCHITECTURE}/AGS_SDK/lib/)
+endif()
+if(SDL2_FOUND)
+	include_directories(${SDL2_INCLUDE_DIR})
 endif()
 
 
@@ -168,10 +181,17 @@ if(NOT ANDROID)
 	)
 endif()
 if(WIN32)
-	set(SOURCE_CODES
-		${SOURCE_CODES}
-		src/Framework/ApplicationImplWindows.cpp
-	)
+	if(SDL2_FOUND)
+		set(SOURCE_CODES
+			${SOURCE_CODES}
+			src/Framework/ApplicationImplSdl2.cpp
+		)
+	else()
+		set(SOURCE_CODES
+			${SOURCE_CODES}
+			src/Framework/ApplicationImplWindows.cpp
+		)
+	endif()
 elseif(ANDROID)
 	message("TODO(co) Examples: Add Android support")
 elseif(UNIX)
@@ -282,6 +302,9 @@ else()
 	endif()
 	target_link_libraries(Examples ${LIBRARIES})
 endif()
+if(SDL2_FOUND)
+	target_link_libraries(Examples ${SDL2_LIBRARY})
+endif()
 
 
 ##################################################
@@ -292,6 +315,9 @@ if(ANDROID)
 else()
 	add_custom_command(TARGET Examples COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/Examples${CMAKE_EXECUTABLE_SUFFIX}" ${OUTPUT_BIN_DIRECTORY})
 endif()
-if(EXAMPLE_RUNNER_SDL2)
-	add_subdirectory(sdl2)
+
+# Copy the SDL2 shared library, if necessary
+if(WIN32 AND SDL2_FOUND)
+	message("SDL copy " "${CMAKE_CURRENT_SOURCE_DIR}/../../External/SDL2/lib/${ARCHITECTURE}/SDL2.dll")
+	add_custom_command(TARGET Examples COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../../External/SDL2/lib/${ARCHITECTURE}/SDL2.dll" ${OUTPUT_BIN_DIRECTORY})
 endif()

@@ -250,6 +250,12 @@ Microsoft Windows: First Example Kickoff
 - Modify ["launch.vs.json"](https://github.com/Microsoft/vscode-cpptools/blob/master/launch.md) to change the Visual Studio application launch options, e.g. to start the "FirstScene"-example by default
 
 
+Microsoft Windows: Using the Unrimp examples together with [SDL2](https://www.libsdl.org/)
+======
+- Download e.g. "SDL2-devel-2.0.8-VC.zip" from https://www.libsdl.org/download-2.0.php and extract it into "unrimp/External/SDL2" (directory contains "include" and "lib")
+- Inside "unrimp\CMakeSettings.json", set "EXAMPLE_SDL2_ENABLED" to "1"
+
+
 Microsoft Windows: Targeting Android
 ======
 - Install the Visual Studio 2017 ["Mobile development with C++"-workload](https://blogs.msdn.microsoft.com/vcblog/2017/04/18/android-and-ios-development-with-c-in-visual-studio/)

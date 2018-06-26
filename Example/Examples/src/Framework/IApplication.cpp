@@ -22,7 +22,9 @@
 //[ Includes                                              ]
 //[-------------------------------------------------------]
 #include "Framework/IApplication.h"
-#ifdef _WIN32
+#ifdef SDL2_FOUND
+	#include "Framework/ApplicationImplSdl2.h"
+#elif defined _WIN32
 	#include "Framework/ApplicationImplWindows.h"
 #elif defined __ANDROID__
 	#warning TODO(co) The Android support is work-in-progress
@@ -83,7 +85,9 @@ IApplication::IApplication(const char* windowTitle) :
 	mExit(false)
 {
 	// We're using "this" in here, so we are not allowed to write the following within the initializer list
-	#ifdef _WIN32
+	#ifdef SDL2_FOUND
+		mApplicationImpl = new ApplicationImplSdl2(*this, windowTitle);
+	#elif defined _WIN32
 		mApplicationImpl = new ApplicationImplWindows(*this, windowTitle);
 	#elif defined __ANDROID__
 		#warning TODO(co) The Android support is work-in-progress

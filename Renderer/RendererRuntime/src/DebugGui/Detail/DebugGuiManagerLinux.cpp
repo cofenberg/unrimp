@@ -125,11 +125,11 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::DebugGuiManager methods ]
 	//[-------------------------------------------------------]
-	void DebugGuiManagerLinux::startup()
+	void DebugGuiManagerLinux::initializeImGuiKeyMap()
 	{
-		// Keyboard mapping. ImGui will use those indices to peek into the imGuiIo.KeyDown[] array that we will update during the application lifetime.
-		ImGuiIO& imGuiIo = ImGui::GetIO();
+		// Keyboard mapping: ImGui will use those indices to peek into the "ImGuiIO::KeyDown[]" array that we will update during the application lifetime
 		#ifndef __ANDROID__
+			ImGuiIO& imGuiIo = ImGui::GetIO();
 			// TODO(sw) These keysyms are 16bit values with an value > 512. We map them to a range between 0x0ff and 0x1ff
 			imGuiIo.KeyMap[ImGuiKey_Tab]		= (XK_Tab & 0x1ff);
 			imGuiIo.KeyMap[ImGuiKey_LeftArrow]	= (XK_Left & 0x1ff);
@@ -140,8 +140,10 @@ namespace RendererRuntime
 			imGuiIo.KeyMap[ImGuiKey_PageDown]	= (XK_Page_Down & 0x1ff);
 			imGuiIo.KeyMap[ImGuiKey_Home]		= (XK_Home & 0x1ff);
 			imGuiIo.KeyMap[ImGuiKey_End]		= (XK_End & 0x1ff);
+			imGuiIo.KeyMap[ImGuiKey_Insert]		= (XK_Insert & 0x1ff);
 			imGuiIo.KeyMap[ImGuiKey_Delete]		= (XK_Delete & 0x1ff);
 			imGuiIo.KeyMap[ImGuiKey_Backspace]	= (XK_BackSpace & 0x1ff);
+			imGuiIo.KeyMap[ImGuiKey_Space]		= (XK_Space & 0x1ff);
 			imGuiIo.KeyMap[ImGuiKey_Enter]		= (XK_Return & 0x1ff);
 			imGuiIo.KeyMap[ImGuiKey_Escape]		= (XK_Escape & 0x1ff);
 			imGuiIo.KeyMap[ImGuiKey_A]			= XK_a;
@@ -151,9 +153,6 @@ namespace RendererRuntime
 			imGuiIo.KeyMap[ImGuiKey_Y]			= XK_y;
 			imGuiIo.KeyMap[ImGuiKey_Z]			= XK_z;
 		#endif
-
-		// Call the base implementation
-		DebugGuiManager::startup();
 	}
 
 	void DebugGuiManagerLinux::onNewFrame(Renderer::IRenderTarget& renderTarget)

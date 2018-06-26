@@ -150,6 +150,7 @@ namespace RendererRuntime
 	//[ Protected virtual RendererRuntime::DebugGuiManager methods ]
 	//[-------------------------------------------------------]
 	protected:
+		virtual void initializeImGuiKeyMap() = 0;
 		virtual void startup();
 		virtual void onNewFrame(Renderer::IRenderTarget& renderTarget) = 0;
 

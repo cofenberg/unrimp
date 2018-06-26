@@ -65,7 +65,7 @@ namespace RendererRuntime
 	//[ Protected virtual RendererRuntime::DebugGuiManager methods ]
 	//[-------------------------------------------------------]
 	protected:
-		virtual void startup() override;
+		virtual void initializeImGuiKeyMap() override;
 		virtual void onNewFrame(Renderer::IRenderTarget& renderTarget) override;
 
 

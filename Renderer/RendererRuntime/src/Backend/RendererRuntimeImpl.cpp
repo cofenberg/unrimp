@@ -221,14 +221,10 @@ namespace RendererRuntime
 				mDebugGuiManager = new DebugGuiManagerWindows(*this);
 			#elif LINUX
 				mDebugGuiManager = new DebugGuiManagerLinux(*this);
-				// TODO(sw) Implement an Linux manager for this (or we use generally SDL?)
-				// TODO(co) No SDL inside the renderer runtime, it's beyond it's scope. It would be valid to define an abstract
-				//          minimalistic input interface which e.g. in concrete applications using renderer runtime use SDL. On
-				//          the other hand, this would be overkill for the super minimalistic debug GUI. Would prefer a self contained
-				//          solution to not have to many external dependencies making it harder to use renderer runtime in projects.
 			#else
 				#error "Unsupported platform"
 			#endif
+			mDebugGuiManager->initializeImGuiKeyMap();
 		#endif
 
 		#ifdef RENDERER_RUNTIME_OPENVR

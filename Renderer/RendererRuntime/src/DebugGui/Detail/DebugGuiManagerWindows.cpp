@@ -34,93 +34,96 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
-	//[ Public methods                                        ]
+	//[ Public static methods                                 ]
 	//[-------------------------------------------------------]
 	LRESULT DebugGuiManagerWindows::wndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
-		ImGuiIO& imGuiIo = ImGui::GetIO();
-		switch (message)
+		if (ImGui::GetCurrentContext() != nullptr)
 		{
-			case WM_LBUTTONDOWN:
-				imGuiIo.MouseDown[0] = true;
-				return true;
-
-			case WM_LBUTTONUP:
-				imGuiIo.MouseDown[0] = false;
-				return true;
-
-			case WM_RBUTTONDOWN:
-				imGuiIo.MouseDown[1] = true;
-				return true;
-
-			case WM_RBUTTONUP:
-				imGuiIo.MouseDown[1] = false;
-				return true;
-
-			case WM_MBUTTONDOWN:
-				imGuiIo.MouseDown[2] = true;
-				return true;
-
-			case WM_MBUTTONUP:
-				imGuiIo.MouseDown[2] = false;
-				return true;
-
-			case WM_MOUSEWHEEL:
-				imGuiIo.MouseWheel += (GET_WHEEL_DELTA_WPARAM(wParam) > 0) ? 1.0f : -1.0f;
-				return true;
-
-			case WM_MOUSEMOVE:
+			ImGuiIO& imGuiIo = ImGui::GetIO();
+			switch (message)
 			{
-				// Get the operation system window width and height
-				float windowWidth  = 1.0f;
-				float windowHeight = 1.0f;
+				case WM_LBUTTONDOWN:
+					imGuiIo.MouseDown[0] = true;
+					return true;
+
+				case WM_LBUTTONUP:
+					imGuiIo.MouseDown[0] = false;
+					return true;
+
+				case WM_RBUTTONDOWN:
+					imGuiIo.MouseDown[1] = true;
+					return true;
+
+				case WM_RBUTTONUP:
+					imGuiIo.MouseDown[1] = false;
+					return true;
+
+				case WM_MBUTTONDOWN:
+					imGuiIo.MouseDown[2] = true;
+					return true;
+
+				case WM_MBUTTONUP:
+					imGuiIo.MouseDown[2] = false;
+					return true;
+
+				case WM_MOUSEWHEEL:
+					imGuiIo.MouseWheel += (GET_WHEEL_DELTA_WPARAM(wParam) > 0) ? 1.0f : -1.0f;
+					return true;
+
+				case WM_MOUSEMOVE:
 				{
-					// Get the client rectangle of the native output window
-					RECT rect;
-					::GetClientRect(hwnd, &rect);
-
-					// Get the width and height...
-					windowWidth  = static_cast<float>(rect.right  - rect.left);
-					windowHeight = static_cast<float>(rect.bottom - rect.top);
-
-					// ... and ensure that none of them is ever zero
-					if (windowWidth < 1.0f)
+					// Get the operation system window width and height
+					float windowWidth  = 1.0f;
+					float windowHeight = 1.0f;
 					{
-						windowWidth = 1.0f;
+						// Get the client rectangle of the native output window
+						RECT rect;
+						::GetClientRect(hwnd, &rect);
+
+						// Get the width and height...
+						windowWidth  = static_cast<float>(rect.right  - rect.left);
+						windowHeight = static_cast<float>(rect.bottom - rect.top);
+
+						// ... and ensure that none of them is ever zero
+						if (windowWidth < 1.0f)
+						{
+							windowWidth = 1.0f;
+						}
+						if (windowHeight < 1.0f)
+						{
+							windowHeight = 1.0f;
+						}
 					}
-					if (windowHeight < 1.0f)
-					{
-						windowHeight = 1.0f;
-					}
+
+					// Tell imGui about the mouse position and while doing so take into account that the GUI might not render into the window directly but in a lower/higher resolution render target texture
+					imGuiIo.MousePos.x = static_cast<unsigned short>(lParam) * (imGuiIo.DisplaySize.x / windowWidth);
+					imGuiIo.MousePos.y = static_cast<unsigned short>(lParam >> 16) * (imGuiIo.DisplaySize.y / windowHeight);
+					return true;
 				}
 
-				// Tell imGui about the mouse position and while doing so take into account that the GUI might not render into the window directly but in a lower/higher resolution render target texture
-				imGuiIo.MousePos.x = static_cast<unsigned short>(lParam) * (imGuiIo.DisplaySize.x / windowWidth);
-				imGuiIo.MousePos.y = static_cast<unsigned short>(lParam >> 16) * (imGuiIo.DisplaySize.y / windowHeight);
-				return true;
+				case WM_KEYDOWN:
+					if (wParam < 256)
+					{
+						imGuiIo.KeysDown[wParam] = 1;
+					}
+					return true;
+
+				case WM_KEYUP:
+					if (wParam < 256)
+					{
+						imGuiIo.KeysDown[wParam] = 0;
+					}
+					return true;
+
+				case WM_CHAR:
+					// You can also use ToAscii() + GetKeyboardState() to retrieve characters.
+					if (wParam > 0 && wParam < 0x10000)
+					{
+						imGuiIo.AddInputCharacter(static_cast<unsigned short>(wParam));
+					}
+					return true;
 			}
-
-			case WM_KEYDOWN:
-				if (wParam < 256)
-				{
-					imGuiIo.KeysDown[wParam] = 1;
-				}
-				return true;
-
-			case WM_KEYUP:
-				if (wParam < 256)
-				{
-					imGuiIo.KeysDown[wParam] = 0;
-				}
-				return true;
-
-			case WM_CHAR:
-				// You can also use ToAscii() + GetKeyboardState() to retrieve characters.
-				if (wParam > 0 && wParam < 0x10000)
-				{
-					imGuiIo.AddInputCharacter(static_cast<unsigned short>(wParam));
-				}
-				return true;
 		}
 
 		// Done
@@ -131,12 +134,9 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::DebugGuiManager methods ]
 	//[-------------------------------------------------------]
-	void DebugGuiManagerWindows::startup()
+	void DebugGuiManagerWindows::initializeImGuiKeyMap()
 	{
-		::QueryPerformanceFrequency(reinterpret_cast<LARGE_INTEGER*>(&mTicksPerSecond));
-		::QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&mTime));
-
-		// Keyboard mapping. ImGui will use those indices to peek into the imGuiIo.KeyDown[] array that we will update during the application lifetime.
+		// Keyboard mapping: ImGui will use those indices to peek into the "ImGuiIO::KeyDown[]" array that we will update during the application lifetime
 		ImGuiIO& imGuiIo = ImGui::GetIO();
 		imGuiIo.KeyMap[ImGuiKey_Tab]		= VK_TAB;
 		imGuiIo.KeyMap[ImGuiKey_LeftArrow]	= VK_LEFT;
@@ -147,8 +147,10 @@ namespace RendererRuntime
 		imGuiIo.KeyMap[ImGuiKey_PageDown]	= VK_NEXT;
 		imGuiIo.KeyMap[ImGuiKey_Home]		= VK_HOME;
 		imGuiIo.KeyMap[ImGuiKey_End]		= VK_END;
+		imGuiIo.KeyMap[ImGuiKey_Insert]		= VK_INSERT;
 		imGuiIo.KeyMap[ImGuiKey_Delete]		= VK_DELETE;
 		imGuiIo.KeyMap[ImGuiKey_Backspace]	= VK_BACK;
+		imGuiIo.KeyMap[ImGuiKey_Space]		= VK_SPACE;
 		imGuiIo.KeyMap[ImGuiKey_Enter]		= VK_RETURN;
 		imGuiIo.KeyMap[ImGuiKey_Escape]		= VK_ESCAPE;
 		imGuiIo.KeyMap[ImGuiKey_A]			= 'A';
@@ -157,6 +159,12 @@ namespace RendererRuntime
 		imGuiIo.KeyMap[ImGuiKey_X]			= 'X';
 		imGuiIo.KeyMap[ImGuiKey_Y]			= 'Y';
 		imGuiIo.KeyMap[ImGuiKey_Z]			= 'Z';
+	}
+
+	void DebugGuiManagerWindows::startup()
+	{
+		::QueryPerformanceFrequency(reinterpret_cast<LARGE_INTEGER*>(&mTicksPerSecond));
+		::QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&mTime));
 
 		// Call the base implementation
 		DebugGuiManager::startup();

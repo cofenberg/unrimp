@@ -196,7 +196,7 @@ void FirstScene::onInitialization()
 	if (nullptr != rendererRuntime)
 	{
 		// Usability: Restore the position and size of the main window from a previous session
-		#if defined(_WIN32) && defined(RENDERER_RUNTIME_IMGUI)
+		#if defined(_WIN32) && !defined(SDL2_FOUND) && defined(RENDERER_RUNTIME_IMGUI)
 		{
 			float value[4] = {};
 			if (rendererRuntime->getDebugGuiManager().getIniSetting("MainWindowPositionSize", value))

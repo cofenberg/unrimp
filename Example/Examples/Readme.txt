@@ -161,6 +161,7 @@ Standalone renderer examples.
 - Renderer runtime
 - Renderer toolkit for hot-reloading support
 - PhysicsFS (directly compiled and linked in)
+- Optional SDL2 ( https://www.libsdl.org/ )
 
 
 == Preprocessor Definitions ==
@@ -177,4 +178,5 @@ For supporting a particular renderer backend:
 - "SHARED_LIBRARIES":	 Use renderers via shared libraries, if this is not defined, the renderers are statically linked
 - "RENDERER_RUNTIME":	 Enable renderer runtime support
 - "RENDERER_TOOLKIT":	 Enable renderer toolkit support
+- "SDL2_FOUND":"		 Enable SDL2 ( https://www.libsdl.org/ ) support
 - Do also have a look into the renderer header file for renderer backend preprocessor definitions
