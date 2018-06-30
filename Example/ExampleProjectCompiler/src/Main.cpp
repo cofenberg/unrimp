@@ -32,8 +32,6 @@
 #include <Renderer/DefaultAssert.h>
 #include <Renderer/DefaultAllocator.h>
 
-#include <iostream>
-
 
 //[-------------------------------------------------------]
 //[ Platform independent program entry point              ]
@@ -92,13 +90,7 @@ int programEntryPoint(const CommandLineArguments& commandLineArguments)
 //[-------------------------------------------------------]
 // Windows implementation
 #ifdef _WIN32
-
-	// For memory leak detection
-	#ifdef _DEBUG
-		#define _CRTDBG_MAP_ALLOC
-		#include <stdlib.h>
-		#include <crtdbg.h>
-	#endif
+	#include <RendererRuntime/Core/Platform/WindowsHeader.h>
 
 	#ifdef _CONSOLE
 		#ifdef UNICODE
@@ -107,21 +99,26 @@ int programEntryPoint(const CommandLineArguments& commandLineArguments)
 			int main(int, char**)
 		#endif
 			{
+				// For memory leak detection
+				#ifdef _DEBUG
+					// "_CrtDumpMemoryLeaks()" reports false positive memory leak with static variables, so use a memory difference instead
+					_CrtMemState crtMemState = { 0 };
+					_CrtMemCheckpoint(&crtMemState);
+				#endif
+
 				// Call the platform independent program entry point
 				// -> Uses internally "GetCommandLine()" to fetch the command line arguments
 				const int result = programEntryPoint(CommandLineArguments());
 
 				// For memory leak detection
 				#ifdef _DEBUG
-					_CrtDumpMemoryLeaks();
+					_CrtMemDumpAllObjectsSince(&crtMemState);
 				#endif
 
 				// Done
 				return result;
 			}
 	#else
-		#include <RendererRuntime/Core/Platform/WindowsHeader.h>
-
 		#ifdef UNICODE
 			int WINAPI wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 		#else

@@ -21,7 +21,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "Framework/Main.h"
+#include "Framework/CommandLineArguments.h"
 #include "ExampleRunner.h"
 #ifdef EXAMPLE_RUNNER_QT4
 	#include "Framework/QtRunner/ExampleRunnerQt4.h"
@@ -29,9 +29,26 @@
 
 
 //[-------------------------------------------------------]
-//[ Global variables                                      ]
+//[ Platform independent program entry point              ]
 //[-------------------------------------------------------]
+int programEntryPoint(const CommandLineArguments& commandLineArguments)
+{
+	#ifdef EXAMPLE_RUNNER_QT4
+		return ExampleRunnerQt4().run(commandLineArguments);
+	#else
+		return ExampleRunner().run(commandLineArguments);
+	#endif
+}
+
+
+//[-------------------------------------------------------]
+//[ Platform dependent program entry point                ]
+//[-------------------------------------------------------]
+// Windows implementation
 #ifdef _WIN32
+	#include <RendererRuntime/Core/Platform/WindowsHeader.h>
+
+	// Global variables
 	extern "C"
 	{
 		// NVIDIA: Force usage of NVidia GPU in case there is an integrated graphics unit as well, if we don't do this we risk getting the integrated graphics unit and hence a horrible performance
@@ -42,17 +59,68 @@
 		// -> Named "Dynamic Switchable Graphics", found no official documentation, only https://community.amd.com/message/1307599#comment-1307599 - "Can an OpenGL app default to the discrete GPU on an Enduro system?"
 		__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 	}
-#endif // _WIN32
 
+	// Global functions
+	#ifdef _CONSOLE
+		#ifdef UNICODE
+			int wmain(int, wchar_t**)
+		#else
+			int main(int, char**)
+		#endif
+			{
+				// For memory leak detection
+				#ifdef _DEBUG
+					// "_CrtDumpMemoryLeaks()" reports false positive memory leak with static variables, so use a memory difference instead
+					_CrtMemState crtMemState = { 0 };
+					_CrtMemCheckpoint(&crtMemState);
+				#endif
 
-//[-------------------------------------------------------]
-//[ Platform independent program entry point              ]
-//[-------------------------------------------------------]
-int programEntryPoint(const CommandLineArguments& commandLineArguments)
-{
-#ifdef EXAMPLE_RUNNER_QT4
-	return ExampleRunnerQt4().run(commandLineArguments);
-#else
-	return ExampleRunner().run(commandLineArguments);
+				// Call the platform independent program entry point
+				// -> Uses internally "GetCommandLine()" to fetch the command line arguments
+				const int result = programEntryPoint(CommandLineArguments());
+
+				// For memory leak detection
+				#ifdef _DEBUG
+					_CrtMemDumpAllObjectsSince(&crtMemState);
+				#endif
+
+				// Done
+				return result;
+			}
+	#else
+		#ifdef UNICODE
+			int WINAPI wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
+		#else
+			int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+		#endif
+			{
+				// For memory leak detection
+				#ifdef _DEBUG
+					// "_CrtDumpMemoryLeaks()" reports false positive memory leak with static variables, so use a memory difference instead
+					_CrtMemState crtMemState = { 0 };
+					_CrtMemCheckpoint(&crtMemState);
+				#endif
+
+				// Call the platform independent program entry point
+				// -> Uses internally "GetCommandLine()" to fetch the command line arguments
+				const int result = programEntryPoint(CommandLineArguments());
+
+				// For memory leak detection
+				#ifdef _DEBUG
+					_CrtMemDumpAllObjectsSince(&crtMemState);
+				#endif
+
+				// Done
+				return result;
+			}
+	#endif
+
+// Linux implementation
+#elif LINUX
+	#include "Framework/PlatformTypes.h"
+	int main(int argc, char** argv)
+	{
+		// Call the platform independent program entry point
+		return programEntryPoint(CommandLineArguments(argc, argv));
+	}
 #endif
-}
