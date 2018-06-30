@@ -164,7 +164,6 @@ set(SOURCE_CODES
 	src/Basics/FirstTexture/FirstTexture.cpp
 	src/Basics/FirstTriangle/FirstTriangle.cpp
 	src/Basics/VertexBuffer/VertexBuffer.cpp
-	src/ConsoleExampleRunner.cpp
 	src/ExampleRunner.cpp
 	src/Framework/CommandLineArguments.cpp
 	src/Framework/Color4.cpp

@@ -56,7 +56,7 @@ class CommandLineArguments;
 //[-------------------------------------------------------]
 //[ Classes                                               ]
 //[-------------------------------------------------------]
-class ExampleRunner
+class ExampleRunner final
 {
 
 
@@ -75,6 +75,11 @@ public:
 //[ Public methods                                        ]
 //[-------------------------------------------------------]
 public:
+	ExampleRunner();
+
+	inline ~ExampleRunner()
+	{}
+
 	inline const AvailableRenderers& getAvailableRenderers() const
 	{
 		return mAvailableRenderers;
@@ -105,6 +110,8 @@ public:
 		return mCurrentExampleName;
 	}
 
+	int run(const CommandLineArguments& commandLineArguments);
+
 	/**
 	*  @brief
 	*    Ask the example runner politely to switch to another example as soon as possible
@@ -115,47 +122,6 @@ public:
 	*    Renderer name, if null pointer the default renderer will be used
 	*/
 	void switchExample(const char* exampleName, const char* rendererName = nullptr);
-
-
-//[-------------------------------------------------------]
-//[ Public virtual ExampleRunner methods                  ]
-//[-------------------------------------------------------]
-public:
-	inline virtual ~ExampleRunner()
-	{}
-
-	virtual int run(const CommandLineArguments& commandLineArguments) = 0;
-
-
-//[-------------------------------------------------------]
-//[ Protected methods                                     ]
-//[-------------------------------------------------------]
-protected:
-	ExampleRunner();
-	int runExample(const std::string& rendererName, const std::string& exampleName);
-
-
-//[-------------------------------------------------------]
-//[ Protected virtual ExampleRunner methods               ]
-//[-------------------------------------------------------]
-protected:
-	virtual void printUsage(const AvailableExamples& availableExamples, const AvailableRenderers& availableRenderers) = 0;
-	virtual void showError(const std::string& errorMessage) = 0;
-
-
-//[-------------------------------------------------------]
-//[ Protected data                                        ]
-//[-------------------------------------------------------]
-protected:
-	AvailableExamples 			mAvailableExamples;
-	AvailableRenderers			mAvailableRenderers;
-	ExampleToSupportedRenderers	mExampleToSupportedRenderers;
-	std::string					mDefaultRendererName;
-	std::string					mDefaultExampleName;
-	std::string					mCurrentRendererName;
-	std::string					mCurrentExampleName;
-	std::string					mNextRendererName;
-	std::string					mNextExampleName;
 
 
 //[-------------------------------------------------------]
@@ -190,6 +156,11 @@ private:
 //[ Private methods                                       ]
 //[-------------------------------------------------------]
 private:
+	bool parseCommandLineArguments(const CommandLineArguments& commandLineArguments);
+	void printUsage(const AvailableExamples& availableExamples, const AvailableRenderers& availableRenderers);
+	void showError(const std::string& errorMessage);
+	int runExample(const std::string& rendererName, const std::string& exampleName);
+
 	template<typename T>
 	void addExample(const std::string& name, RunnerMethod runnerMethod, T const& supportedRendererList)
 	{
@@ -201,6 +172,21 @@ private:
 		}
 		mExampleToSupportedRenderers.insert(std::pair<std::string, std::vector<std::string>>(name, std::move(supportedRenderers)));
 	}
+
+
+//[-------------------------------------------------------]
+//[ Private data                                          ]
+//[-------------------------------------------------------]
+private:
+	AvailableExamples 			mAvailableExamples;
+	AvailableRenderers			mAvailableRenderers;
+	ExampleToSupportedRenderers	mExampleToSupportedRenderers;
+	std::string					mDefaultRendererName;
+	std::string					mDefaultExampleName;
+	std::string					mCurrentRendererName;
+	std::string					mCurrentExampleName;
+	std::string					mNextRendererName;
+	std::string					mNextExampleName;
 
 
 };

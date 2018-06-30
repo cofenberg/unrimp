@@ -63,23 +63,13 @@ PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(5026)	// warning C5026: 'std::_Generic_error_category': move constructor was implicitly defined as deleted
 	PRAGMA_WARNING_DISABLE_MSVC(5027)	// warning C5027: 'std::_Generic_error_category': move assignment operator was implicitly defined as deleted
 	#include <array>
+	#include <iostream>
 	#include <algorithm>
 PRAGMA_WARNING_POP
 
 
 //[-------------------------------------------------------]
 //[ Public methods                                        ]
-//[-------------------------------------------------------]
-void ExampleRunner::switchExample(const char* exampleName, const char* rendererName)
-{
-	assert(nullptr != exampleName);
-	mNextRendererName = (nullptr != rendererName) ? rendererName : mDefaultRendererName;
-	mNextExampleName = exampleName;
-}
-
-
-//[-------------------------------------------------------]
-//[ Protected methods                                     ]
 //[-------------------------------------------------------]
 ExampleRunner::ExampleRunner() :
 	// Case sensitive name of the renderer to instance, might be ignored in case e.g. "RENDERER_DIRECT3D12" was set as preprocessor definition
@@ -166,6 +156,103 @@ ExampleRunner::ExampleRunner() :
 	#ifdef RENDERER_DIRECT3D12
 		mAvailableRenderers.insert("Direct3D12");
 	#endif
+}
+
+int ExampleRunner::run(const CommandLineArguments& commandLineArguments)
+{
+	if (!parseCommandLineArguments(commandLineArguments))
+	{
+		printUsage(mAvailableExamples, mAvailableRenderers);
+		return -1;
+	}
+
+	// Run example and switch as long between examples as asked to
+	int result = 0;
+	do
+	{
+		// Run current example
+		result = runExample(mCurrentRendererName, mCurrentExampleName);
+		if (0 == result && !mNextRendererName.empty() && !mNextExampleName.empty())
+		{
+			// Switch to next example
+			mCurrentRendererName = mNextRendererName;
+			mCurrentExampleName = mNextExampleName;
+			mNextRendererName.clear();
+			mNextExampleName.clear();
+			result = 1;
+		}
+	} while (result);
+
+	// Done
+	return result;
+}
+
+void ExampleRunner::switchExample(const char* exampleName, const char* rendererName)
+{
+	assert(nullptr != exampleName);
+	mNextRendererName = (nullptr != rendererName) ? rendererName : mDefaultRendererName;
+	mNextExampleName = exampleName;
+}
+
+
+//[-------------------------------------------------------]
+//[ Private methods                                       ]
+//[-------------------------------------------------------]
+bool ExampleRunner::parseCommandLineArguments(const CommandLineArguments& commandLineArguments)
+{
+	const uint32_t numberOfArguments = commandLineArguments.getCount();
+	for (uint32_t argumentIndex = 0; argumentIndex < numberOfArguments; ++argumentIndex)
+	{
+		const std::string argument = commandLineArguments.getArgumentAtIndex(argumentIndex);
+		if ("-r" != argument)
+		{
+			mCurrentExampleName = argument;
+		}
+		else if (argumentIndex + 1 < numberOfArguments)
+		{
+			++argumentIndex;
+			mCurrentRendererName = commandLineArguments.getArgumentAtIndex(argumentIndex);
+		}
+		else
+		{
+			showError("Missing argument for parameter -r");
+
+			// Error!
+			return false;
+		}
+	}
+
+	if (mCurrentRendererName.empty())
+	{
+		mCurrentRendererName = mDefaultRendererName;
+	}
+
+	// Done
+	return true;
+}
+
+void ExampleRunner::printUsage(const AvailableExamples& availableExamples, const AvailableRenderers& availableRenderers)
+{
+	std::cout << "Usage: ./Examples <exampleName> [-r <rendererName>]\n";
+
+	// Available examples
+	std::cout << "Available Examples:\n";
+	for (const auto& pair : availableExamples)
+	{
+		std::cout << "\t" << pair.first << '\n';
+	}
+
+	// Available renderers
+	std::cout << "Available Renderer:\n";
+	for (const std::string& rendererName : availableRenderers)
+	{
+		std::cout << "\t" << rendererName << '\n';
+	}
+}
+
+void ExampleRunner::showError(const std::string& errorMessage)
+{
+	std::cout << errorMessage << "\n";
 }
 
 int ExampleRunner::runExample(const std::string& rendererName, const std::string& exampleName)
