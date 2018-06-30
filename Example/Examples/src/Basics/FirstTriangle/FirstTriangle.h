@@ -47,7 +47,7 @@
 *    - Root signature
 *    - Pipeline state object (PSO)
 *    - Debug methods: When using Direct3D <11.1, those methods map to the Direct3D 9 PIX functions
-*      (D3DPERF_* functions, also works directly within VisualStudio 2012 out-of-the-box)
+*      (D3DPERF_* functions, also works directly within VisualStudio 2017 out-of-the-box)
 */
 class FirstTriangle : public ExampleBase
 {

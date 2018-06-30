@@ -17441,7 +17441,7 @@ namespace OpenGLRenderer
 
 	bool OpenGLRenderer::isDebugEnabled()
 	{
-		// OpenGL has nothing that is similar to the Direct3D 9 PIX functions (D3DPERF_* functions, also works directly within VisualStudio 2012 out-of-the-box)
+		// OpenGL has nothing that is similar to the Direct3D 9 PIX functions (D3DPERF_* functions, also works directly within VisualStudio 2017 out-of-the-box)
 
 		// Debug disabled
 		return false;

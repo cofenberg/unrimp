@@ -89,7 +89,7 @@
   - The Direct3D headers are somewhat chaotic and include tons of other headers.
     This slows down compilation and the more headers are included, the higher the risk of
     naming or redefinition conflicts.
-  - Starting with Windows 8, Direct3D is part of the Windows SDK. When using VisualStudio 2012
+  - Starting with Windows 8, Direct3D is part of the Windows SDK. When using VisualStudio 2017
     and the Direct3D headers from "Microsoft DirectX SDK (June 2010)" you will get a lot of
     "
       <path>\external\directx\include\dxgitype.h(12): warning C4005: 'DXGI_STATUS_OCCLUDED' : macro redefinition

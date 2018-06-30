@@ -297,7 +297,7 @@ Renderer::IRenderer* IApplicationRenderer::createRendererInstance(const char* re
 		//   "Renderer::IRenderer::isDebugEnabled()"
 		// in here its possible to check whether or not your application is currently running
 		// within a known debug/profile tool like e.g. Direct3D PIX (also works directly within VisualStudio
-		// 2012 out-of-the-box). In case you want at least try to protect your asset, you might want to stop
+		// 2017 out-of-the-box). In case you want at least try to protect your asset, you might want to stop
 		// the execution of your application when a debug/profile tool is used which can e.g. record your data.
 		// Please be aware that this will only make it a little bit harder to debug and e.g. while doing so
 		// reading out your asset data. Public articles like

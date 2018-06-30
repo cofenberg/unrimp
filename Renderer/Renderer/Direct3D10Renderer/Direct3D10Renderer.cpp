@@ -87,7 +87,7 @@
   - The Direct3D headers are somewhat chaotic and include tons of other headers.
     This slows down compilation and the more headers are included, the higher the risk of
     naming or redefinition conflicts.
-  - Starting with Windows 8, Direct3D is part of the Windows SDK. When using VisualStudio 2012
+  - Starting with Windows 8, Direct3D is part of the Windows SDK. When using VisualStudio 2017
     and the Direct3D headers from "Microsoft DirectX SDK (June 2010)" you will get a lot of
     "
       <path>\external\directx\include\dxgitype.h(12): warning C4005: 'DXGI_STATUS_OCCLUDED' : macro redefinition
@@ -2244,7 +2244,7 @@ namespace Direct3D10Renderer
 	//[-------------------------------------------------------]
 	//[ Direct3D10Renderer/Direct3D9RuntimeLinking.h          ]
 	//[-------------------------------------------------------]
-	// For the Direct3D 9 PIX functions (D3DPERF_* functions, also works directly within VisualStudio 2012 out-of-the-box) used for debugging, also works directly within VisualStudio 2012 out-of-the-box
+	// For the Direct3D 9 PIX functions (D3DPERF_* functions, also works directly within VisualStudio 2017 out-of-the-box) used for debugging
 	#ifdef RENDERER_DEBUG
 		//[-------------------------------------------------------]
 		//[ D3D9 core functions                                   ]

@@ -38,7 +38,7 @@
 *    - Set "__ANDROID__" as preprocessor definition when building for Android
 *    - Set "ARCHITECTURE_X64" as preprocessor definition when building for x64 instead of x86
 *    - Set "RENDERER_STATISTICS" as preprocessor definition in order to enable the gathering of statistics (tiny binary size and tiny negative performance impact)
-*    - Set "RENDERER_DEBUG" as preprocessor definition in order to enable e.g. Direct3D 9 PIX functions (D3DPERF_* functions, also works directly within VisualStudio 2012 out-of-the-box) debug features (disabling support just reduces the binary size slightly but makes debugging more difficult)
+*    - Set "RENDERER_DEBUG" as preprocessor definition in order to enable e.g. Direct3D 9 PIX functions (D3DPERF_* functions, also works directly within VisualStudio 2017 out-of-the-box) debug features (disabling support just reduces the binary size slightly but makes debugging more difficult)
 */
 
 
@@ -4006,7 +4006,7 @@ namespace Renderer
 		*      "Renderer::IRenderer::isDebugEnabled();"
 		*    it is possible to check whether or not your application is currently running
 		*    within a known debug/profile tool like e.g. Direct3D PIX (also works directly within VisualStudio
-		*    2012 out-of-the-box). In case you want at least try to protect your asset, you might want to stop
+		*    2017 out-of-the-box). In case you want at least try to protect your asset, you might want to stop
 		*    the execution of your application when a debug/profile tool is used which can e.g. record your data.
 		*    Please be aware that this will only make it a little bit harder to debug and e.g. while doing so
 		*    reading out your asset data. Public articles like

@@ -340,7 +340,7 @@ void FirstMultipleSwapChains::onDrawRequest()
 		// swap chain as soon as the main swap chain gets redrawn.
 
 		// Debug methods: When using Direct3D <11.1, these methods map to the Direct3D 9 PIX functions
-		// (D3DPERF_* functions, also works directly within VisualStudio 2012 out-of-the-box)
+		// (D3DPERF_* functions, also works directly within VisualStudio 2017 out-of-the-box)
 		// -> In this example we're using multiple swap chains and calling "Renderer::ISwapChain::present()" twice per application
 		// -> Usually, a swap chain present is interpreted by the debug/profile tool as a single frame, which is of course correct
 		// -> In this example this behaviour makes it difficult to catch the desired frame of the desired native OS window
