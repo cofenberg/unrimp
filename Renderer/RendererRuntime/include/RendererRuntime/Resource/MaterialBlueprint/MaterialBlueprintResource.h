@@ -146,7 +146,7 @@ namespace RendererRuntime
 			MaterialPropertyValue materialPropertyValue;
 
 			TextureBuffer() :
-				rootParameterIndex(getUninitialized<uint32_t>()),
+				rootParameterIndex(getInvalid<uint32_t>()),
 				bufferUsage(BufferUsage::UNKNOWN),
 				materialPropertyValue(MaterialPropertyValue::fromUnknown())
 			{
@@ -156,7 +156,7 @@ namespace RendererRuntime
 			TextureBuffer(uint32_t rootParameterIndex, BufferUsage bufferUsage, const MaterialPropertyValue& _materialPropertyValue) :
 				rootParameterIndex(rootParameterIndex),
 				bufferUsage(bufferUsage),
-				materialPropertyValue(MaterialProperty(getUninitialized<MaterialPropertyId>(), getMaterialPropertyUsageFromBufferUsage(bufferUsage), _materialPropertyValue))
+				materialPropertyValue(MaterialProperty(getInvalid<MaterialPropertyId>(), getMaterialPropertyUsageFromBufferUsage(bufferUsage), _materialPropertyValue))
 			{
 				// Nothing here
 			}
@@ -179,17 +179,17 @@ namespace RendererRuntime
 			MaterialProperty  materialProperty;
 			AssetId			  fallbackTextureAssetId;
 			bool			  rgbHardwareGammaCorrection;
-			uint32_t		  samplerStateIndex;	///< Index of the material blueprint sampler state resource to use, can be uninitialized (e.g. texel fetch instead of sampling might be used)
+			uint32_t		  samplerStateIndex;	///< Index of the material blueprint sampler state resource to use, can be invalid (e.g. texel fetch instead of sampling might be used)
 
 			// Derived data
 			TextureResourceId textureResourceId;
 
 			// Constructors
 			Texture() :
-				rootParameterIndex(getUninitialized<uint32_t>()),
+				rootParameterIndex(getInvalid<uint32_t>()),
 				rgbHardwareGammaCorrection(false),
-				samplerStateIndex(getUninitialized<uint32_t>()),
-				textureResourceId(getUninitialized<TextureResourceId>())
+				samplerStateIndex(getInvalid<uint32_t>()),
+				textureResourceId(getInvalid<TextureResourceId>())
 			{
 				// Nothing here
 			}
@@ -305,7 +305,7 @@ namespace RendererRuntime
 		*    Return a vertex attributes resource ID
 		*
 		*  @return
-		*    The requested vertex attributes resource ID, can be uninitialized
+		*    The requested vertex attributes resource ID, can be invalid
 		*/
 		inline VertexAttributesResourceId getVertexAttributesResourceId() const
 		{
@@ -317,7 +317,7 @@ namespace RendererRuntime
 		*    Return a shader blueprint resource ID
 		*
 		*  @return
-		*    The requested shader blueprint resource ID, can be uninitialized
+		*    The requested shader blueprint resource ID, can be invalid
 		*/
 		inline ShaderBlueprintResourceId getShaderBlueprintResourceId(ShaderType shaderType) const
 		{

@@ -105,7 +105,7 @@ namespace RendererRuntime
 			for (size_t i = 0; i < mNumberOfTechniques; ++i, ++v1MaterialTechnique)
 			{
 				materialBlueprintResourceManager.loadMaterialBlueprintResourceByAssetId(v1MaterialTechnique->materialBlueprintAssetId, mMaterialBlueprintResourceIds[i]);
-				assert(isInitialized(mMaterialBlueprintResourceIds[i]));
+				assert(isValid(mMaterialBlueprintResourceIds[i]));
 			}
 		}
 

@@ -142,8 +142,8 @@ namespace RendererRuntime
 		ICompositorInstancePass(compositorResourcePassGenerateMipmaps, compositorNodeInstance),
 		mCompositorResourcePassQuad(nullptr),
 		mCompositorInstancePassQuad(nullptr),
-		mRenderTargetWidth(getUninitialized<uint32_t>()),
-		mRenderTargetHeight(getUninitialized<uint32_t>())
+		mRenderTargetWidth(getInvalid<uint32_t>()),
+		mRenderTargetHeight(getInvalid<uint32_t>())
 	{
 		// Create compositor pass quad
 		MaterialProperties materialProperties;

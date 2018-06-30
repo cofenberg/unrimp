@@ -64,7 +64,7 @@ namespace RendererRuntime
 			// Check whether or not to execute the compositor pass instance
 			const ICompositorResourcePass& compositorResourcePass = compositorInstancePass->getCompositorResourcePass();
 			if ((!compositorResourcePass.getSkipFirstExecution() || compositorInstancePass->mNumberOfExecutionRequests > 0) &&
-				(isUninitialized(compositorResourcePass.getNumberOfExecutions()) || compositorInstancePass->mNumberOfExecutionRequests < compositorResourcePass.getNumberOfExecutions()))
+				(isInvalid(compositorResourcePass.getNumberOfExecutions()) || compositorInstancePass->mNumberOfExecutionRequests < compositorResourcePass.getNumberOfExecutions()))
 			{
 				{ // Set the current render target
 					Renderer::IRenderTarget* newRenderTarget = compositorInstancePass->getRenderTarget();

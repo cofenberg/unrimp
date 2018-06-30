@@ -29,7 +29,7 @@
 //[-------------------------------------------------------]
 #include "RendererRuntime/Export.h"
 #include "RendererRuntime/Core/StringId.h"
-#include "RendererRuntime/Core/GetUninitialized.h"
+#include "RendererRuntime/Core/GetInvalid.h"
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -139,9 +139,9 @@ namespace RendererRuntime
 	protected:
 		inline IResource() :
 			mResourceManager(nullptr),
-			mResourceId(getUninitialized<ResourceId>()),
-			mAssetId(getUninitialized<AssetId>()),
-			mResourceLoaderTypeId(getUninitialized<ResourceLoaderTypeId>()),
+			mResourceId(getInvalid<ResourceId>()),
+			mAssetId(getInvalid<AssetId>()),
+			mResourceLoaderTypeId(getInvalid<ResourceLoaderTypeId>()),
 			mLoadingState(LoadingState::UNLOADED)
 		{
 			// Nothing here
@@ -151,9 +151,9 @@ namespace RendererRuntime
 		{
 			// Sanity checks
 			assert(nullptr == mResourceManager);
-			assert(isUninitialized(mResourceId));
-			assert(isUninitialized(mAssetId));
-			assert(isUninitialized(mResourceLoaderTypeId));
+			assert(isInvalid(mResourceId));
+			assert(isInvalid(mAssetId));
+			assert(isInvalid(mResourceLoaderTypeId));
 			assert(LoadingState::UNLOADED == mLoadingState);
 			assert(mSortedResourceListeners.empty());
 			#ifdef _DEBUG
@@ -189,9 +189,9 @@ namespace RendererRuntime
 		{
 			// Sanity checks
 			assert(nullptr == mResourceManager);
-			assert(isUninitialized(mResourceId));
-			assert(isUninitialized(mAssetId));
-			assert(isUninitialized(mResourceLoaderTypeId));
+			assert(isInvalid(mResourceId));
+			assert(isInvalid(mAssetId));
+			assert(isInvalid(mResourceLoaderTypeId));
 			assert(LoadingState::UNLOADED == mLoadingState);
 			assert(mSortedResourceListeners.empty());
 			#ifdef _DEBUG

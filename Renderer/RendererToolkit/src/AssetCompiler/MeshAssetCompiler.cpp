@@ -266,7 +266,7 @@ namespace
 						return boneIndex;
 					}
 				}
-				return RendererRuntime::getUninitialized<uint32_t>();
+				return RendererRuntime::getInvalid<uint32_t>();
 			}
 
 
@@ -278,7 +278,7 @@ namespace
 			{
 				// Sanity check
 				const uint32_t boneId = RendererRuntime::StringId::calculateFNV(assimpNode.mName.C_Str());
-				if (RendererRuntime::isInitialized(getBoneIndexByBoneId(boneId)))
+				if (RendererRuntime::isValid(getBoneIndexByBoneId(boneId)))
 				{
 					throw std::runtime_error(std::string("Assimp bone name \"") + assimpNode.mName.C_Str() + "\" is not unique");
 				}
@@ -346,7 +346,7 @@ namespace
 
 				{ // Add sub-mesh
 					// Get the source material asset ID
-					RendererRuntime::AssetId materialAssetId = RendererRuntime::getUninitialized<RendererRuntime::AssetId>();
+					RendererRuntime::AssetId materialAssetId = RendererRuntime::getInvalid<RendererRuntime::AssetId>();
 					aiString materialName;
 					const aiMaterial* assimpMaterial = assimpScene.mMaterials[assimpMesh.mMaterialIndex];
 					{
@@ -379,7 +379,7 @@ namespace
 					}
 
 					// Add sub-mesh
-					if (RendererRuntime::isInitialized(materialAssetId))
+					if (RendererRuntime::isValid(materialAssetId))
 					{
 						RendererRuntime::v1Mesh::SubMesh subMesh;
 						subMesh.materialAssetId	   = materialAssetId;
@@ -562,7 +562,7 @@ namespace
 					{
 						const aiBone* assimpBone = assimpMesh.mBones[bone];
 						const uint32_t boneIndex = skeleton.getBoneIndexByBoneId(RendererRuntime::StringId::calculateFNV(assimpBone->mName.C_Str()));
-						if (RendererRuntime::isUninitialized(boneIndex))
+						if (RendererRuntime::isInvalid(boneIndex))
 						{
 							throw std::runtime_error(std::string("Invalid Assimp bone name \"") + assimpBone->mName.C_Str() + '\"');
 						}

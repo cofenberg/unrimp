@@ -28,7 +28,7 @@
 //[ Includes                                              ]
 //[-------------------------------------------------------]
 #include "RendererRuntime/Core/StringId.h"
-#include "RendererRuntime/Core/GetUninitialized.h"
+#include "RendererRuntime/Core/GetInvalid.h"
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -118,7 +118,7 @@ namespace RendererRuntime
 				{
 					float	 minimumDepth		= 0.0f;
 					float	 maximumDepth		= 1.0f;
-					uint32_t numberOfExecutions	= RendererRuntime::getUninitialized<uint32_t>();
+					uint32_t numberOfExecutions	= RendererRuntime::getInvalid<uint32_t>();
 					bool	 skipFirstExecution	= false;
 				};
 			#pragma pack(pop)
@@ -166,7 +166,7 @@ namespace RendererRuntime
 			mMinimumDepth(0.0f),
 			mMaximumDepth(1.0f),
 			mSkipFirstExecution(false),
-			mNumberOfExecutions(RendererRuntime::getUninitialized<uint32_t>())
+			mNumberOfExecutions(RendererRuntime::getInvalid<uint32_t>())
 		{
 			// Nothing here
 		}

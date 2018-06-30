@@ -127,7 +127,7 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		AssetId						 mSkeletonAnimationAssetId;		///< Skeleton animation asset ID, can be set to uninitialized value
+		AssetId						 mSkeletonAnimationAssetId;		///< Skeleton animation asset ID, can be set to invalid value
 		SkeletonAnimationController* mSkeletonAnimationController;	///< Skeleton animation controller instance, can be a null pointer, destroy the instance if you no longer need it
 
 

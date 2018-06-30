@@ -198,7 +198,7 @@ namespace
 		void createMeshSceneItem(RendererRuntime::SceneResource& sceneResource, RendererRuntime::SceneNode& sceneNode, const std::string& renderModelName)
 		{
 			// Check whether or not we need to generate the runtime mesh asset right now
-			RendererRuntime::MeshResourceId meshResourceId = RendererRuntime::getUninitialized<RendererRuntime::MeshResourceId>();
+			RendererRuntime::MeshResourceId meshResourceId = RendererRuntime::getInvalid<RendererRuntime::MeshResourceId>();
 			sceneResource.getRendererRuntime().getMeshResourceManager().loadMeshResourceByAssetId(RendererRuntime::AssetId(renderModelName.c_str()), meshResourceId, nullptr, false, RendererRuntime::OpenVRMeshResourceLoader::TYPE_ID);
 
 			// Create mesh scene item
@@ -451,8 +451,8 @@ namespace RendererRuntime
 
 			// Try to load the device material resource material
 			mVrDeviceMaterialResourceLoaded = false;
-			mVrDeviceMaterialResourceId = getUninitialized<MaterialResourceId>();
-			if (isInitialized(vrDeviceMaterialAssetId))
+			mVrDeviceMaterialResourceId = getInvalid<MaterialResourceId>();
+			if (isValid(vrDeviceMaterialAssetId))
 			{
 				mRendererRuntime.getMaterialResourceManager().loadMaterialResourceByAssetId(vrDeviceMaterialAssetId, mVrDeviceMaterialResourceId, this);
 			}
@@ -740,8 +740,8 @@ namespace RendererRuntime
 		mRendererRuntime(rendererRuntime),
 		mVrManagerOpenVRListener(&::detail::defaultVrManagerOpenVRListener),
 		mVrDeviceMaterialResourceLoaded(false),
-		mVrDeviceMaterialResourceId(getUninitialized<MaterialResourceId>()),
-		mSceneResourceId(getUninitialized<SceneResourceId>()),
+		mVrDeviceMaterialResourceId(getInvalid<MaterialResourceId>()),
+		mSceneResourceId(getInvalid<SceneResourceId>()),
 		mSceneNodes{},
 		mOpenVRRuntimeLinking(new OpenVRRuntimeLinking(rendererRuntime)),
 		mVrTextureType(vr::TextureType_OpenGL),

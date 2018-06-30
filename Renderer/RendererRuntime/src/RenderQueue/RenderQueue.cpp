@@ -194,7 +194,7 @@ namespace
 			}
 
 			// Automatic "UseGpuSkinning"-property setting
-			if (RendererRuntime::isInitialized(renderable.getSkeletonResourceId()))
+			if (RendererRuntime::isValid(renderable.getSkeletonResourceId()))
 			{
 				static constexpr uint32_t USE_GPU_SKINNING = STRING_ID("UseGpuSkinning");
 				if (nullptr != materialBlueprintResource.getMaterialProperties().getPropertyById(USE_GPU_SKINNING))
@@ -376,10 +376,10 @@ namespace RendererRuntime
 							lightBufferManager.fillCommandBuffer(*materialBlueprintResource, commandBuffer);
 
 							// Cheap state change: Bind the material technique to the used renderer
-							uint32_t textureResourceGroupRootParameterIndex = getUninitialized<uint32_t>();
+							uint32_t textureResourceGroupRootParameterIndex = getInvalid<uint32_t>();
 							Renderer::IResourceGroup* textureResourceGroup = nullptr;
 							materialTechnique->fillCommandBuffer(mRendererRuntime, commandBuffer, textureResourceGroupRootParameterIndex, &textureResourceGroup);
-							if (isInitialized(textureResourceGroupRootParameterIndex) && nullptr != textureResourceGroup)
+							if (isValid(textureResourceGroupRootParameterIndex) && nullptr != textureResourceGroup)
 							{
 								Renderer::Command::SetGraphicsResourceGroup::create(commandBuffer, textureResourceGroupRootParameterIndex, textureResourceGroup);
 							}
@@ -533,10 +533,10 @@ namespace RendererRuntime
 										}
 
 										// Cheap state change: Bind the material technique to the used renderer
-										uint32_t textureResourceGroupRootParameterIndex = getUninitialized<uint32_t>();
+										uint32_t textureResourceGroupRootParameterIndex = getInvalid<uint32_t>();
 										Renderer::IResourceGroup* textureResourceGroup = nullptr;
 										materialTechnique->fillCommandBuffer(mRendererRuntime, mScratchCommandBuffer, textureResourceGroupRootParameterIndex, &textureResourceGroup);
-										if (isInitialized(textureResourceGroupRootParameterIndex) && nullptr != textureResourceGroup && currentSetGraphicsResourceGroup[textureResourceGroupRootParameterIndex] != textureResourceGroup)
+										if (isValid(textureResourceGroupRootParameterIndex) && nullptr != textureResourceGroup && currentSetGraphicsResourceGroup[textureResourceGroupRootParameterIndex] != textureResourceGroup)
 										{
 											currentSetGraphicsResourceGroup[textureResourceGroupRootParameterIndex] = textureResourceGroup;
 											Renderer::Command::SetGraphicsResourceGroup::create(mScratchCommandBuffer, textureResourceGroupRootParameterIndex, textureResourceGroup);

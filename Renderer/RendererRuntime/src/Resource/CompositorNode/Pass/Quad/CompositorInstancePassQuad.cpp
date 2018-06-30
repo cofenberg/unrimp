@@ -45,28 +45,28 @@ namespace RendererRuntime
 	CompositorInstancePassQuad::CompositorInstancePassQuad(const CompositorResourcePassQuad& compositorResourcePassQuad, const CompositorNodeInstance& compositorNodeInstance) :
 		ICompositorInstancePass(compositorResourcePassQuad, compositorNodeInstance),
 		mRenderQueue(compositorNodeInstance.getCompositorWorkspaceInstance().getRendererRuntime().getMaterialBlueprintResourceManager().getIndirectBufferManager(), 0, 0, false, false),
-		mMaterialResourceId(getUninitialized<MaterialResourceId>())
+		mMaterialResourceId(getInvalid<MaterialResourceId>())
 	{
 		// Sanity checks
-		assert(!compositorResourcePassQuad.isMaterialDefinitionMandatory() || isInitialized(compositorResourcePassQuad.getMaterialAssetId()) || isInitialized(compositorResourcePassQuad.getMaterialBlueprintAssetId()));
-		assert(!(isInitialized(compositorResourcePassQuad.getMaterialAssetId()) && isInitialized(compositorResourcePassQuad.getMaterialBlueprintAssetId())));
+		assert(!compositorResourcePassQuad.isMaterialDefinitionMandatory() || isValid(compositorResourcePassQuad.getMaterialAssetId()) || isValid(compositorResourcePassQuad.getMaterialBlueprintAssetId()));
+		assert(!(isValid(compositorResourcePassQuad.getMaterialAssetId()) && isValid(compositorResourcePassQuad.getMaterialBlueprintAssetId())));
 
 		// Get parent material resource ID and initiate creating the compositor instance pass quad material resource
 		MaterialResourceManager& materialResourceManager = compositorNodeInstance.getCompositorWorkspaceInstance().getRendererRuntime().getMaterialResourceManager();
-		if (isInitialized(compositorResourcePassQuad.getMaterialAssetId()))
+		if (isValid(compositorResourcePassQuad.getMaterialAssetId()))
 		{
 			// Get or load material resource
-			MaterialResourceId materialResourceId = getUninitialized<MaterialResourceId>();
+			MaterialResourceId materialResourceId = getInvalid<MaterialResourceId>();
 			materialResourceManager.loadMaterialResourceByAssetId(compositorResourcePassQuad.getMaterialAssetId(), materialResourceId, this);
 		}
 		else
 		{
 			// Get or load material blueprint resource
 			const AssetId materialBlueprintAssetId = compositorResourcePassQuad.getMaterialBlueprintAssetId();
-			if (isInitialized(materialBlueprintAssetId))
+			if (isValid(materialBlueprintAssetId))
 			{
 				MaterialResourceId parentMaterialResourceId = materialResourceManager.getMaterialResourceIdByAssetId(materialBlueprintAssetId);
-				if (isUninitialized(parentMaterialResourceId))
+				if (isInvalid(parentMaterialResourceId))
 				{
 					parentMaterialResourceId = materialResourceManager.createMaterialResourceByAssetId(materialBlueprintAssetId, materialBlueprintAssetId, compositorResourcePassQuad.getMaterialTechniqueId());
 				}
@@ -77,7 +77,7 @@ namespace RendererRuntime
 
 	CompositorInstancePassQuad::~CompositorInstancePassQuad()
 	{
-		if (isInitialized(mMaterialResourceId))
+		if (isValid(mMaterialResourceId))
 		{
 			// Clear the renderable manager
 			mRenderableManager.getRenderables().clear();
@@ -124,8 +124,8 @@ namespace RendererRuntime
 	void CompositorInstancePassQuad::createMaterialResource(MaterialResourceId parentMaterialResourceId)
 	{
 		// Sanity checks
-		assert(isUninitialized(mMaterialResourceId));
-		assert(isInitialized(parentMaterialResourceId));
+		assert(isInvalid(mMaterialResourceId));
+		assert(isValid(parentMaterialResourceId));
 
 		// Each compositor instance pass quad must have its own material resource since material property values might vary
 		const IRendererRuntime& rendererRuntime = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime();
@@ -148,7 +148,7 @@ namespace RendererRuntime
 		}
 
 		// Setup renderable manager using attribute-less rendering
-		mRenderableManager.getRenderables().emplace_back(mRenderableManager, Renderer::IVertexArrayPtr(), false, 0, 3, materialResourceManager, mMaterialResourceId, getUninitialized<SkeletonResourceId>());
+		mRenderableManager.getRenderables().emplace_back(mRenderableManager, Renderer::IVertexArrayPtr(), false, 0, 3, materialResourceManager, mMaterialResourceId, getInvalid<SkeletonResourceId>());
 	}
 
 

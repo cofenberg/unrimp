@@ -37,7 +37,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void IResourceListener::disconnectFromResourceById(ResourceId resourceId)
 	{
-		assert(isInitialized(resourceId));
+		assert(isValid(resourceId));
 		ResourceConnections resourceConnectionsToDisconnect;
 		resourceConnectionsToDisconnect.reserve(mResourceConnections.size());
 		for (const ResourceConnection& resourceConnection : mResourceConnections)

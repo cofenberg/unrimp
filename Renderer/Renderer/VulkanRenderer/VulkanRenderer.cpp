@@ -7175,7 +7175,7 @@ namespace VulkanRenderer
 		SwapChainBuffers mSwapChainBuffer;				///< Swap chain buffer for managing the color render targets
 		VkSemaphore		 mImageAvailableVkSemaphore;	///< Vulkan semaphore, destroy if no longer needed
 		VkSemaphore		 mRenderingFinishedVkSemaphore;	///< Vulkan semaphore, destroy if no longer needed
-		uint32_t		 mCurrentImageIndex;			///< The index of the current Vulkan swap chain image to render into, ~0 if uninitialized
+		uint32_t		 mCurrentImageIndex;			///< The index of the current Vulkan swap chain image to render into, ~0 if invalid
 		// Depth render target related
 		VkFormat		mDepthVkFormat;	///< Can be "VK_FORMAT_UNDEFINED" if no depth stencil buffer is needed
 		VkImage			mDepthVkImage;

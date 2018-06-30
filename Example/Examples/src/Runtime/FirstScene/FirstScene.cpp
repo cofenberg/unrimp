@@ -116,9 +116,9 @@ FirstScene::FirstScene() :
 	mInputManager(new DeviceInput::InputManager()),
 	mImGuiLog(nullptr),
 	mCompositorWorkspaceInstance(nullptr),
-	mSceneResourceId(RendererRuntime::getUninitialized<RendererRuntime::SceneResourceId>()),
-	mMaterialResourceId(RendererRuntime::getUninitialized<RendererRuntime::MaterialResourceId>()),
-	mCloneMaterialResourceId(RendererRuntime::getUninitialized<RendererRuntime::MaterialResourceId>()),
+	mSceneResourceId(RendererRuntime::getInvalid<RendererRuntime::SceneResourceId>()),
+	mMaterialResourceId(RendererRuntime::getInvalid<RendererRuntime::MaterialResourceId>()),
+	mCloneMaterialResourceId(RendererRuntime::getInvalid<RendererRuntime::MaterialResourceId>()),
 	mCustomMaterialResourceSet(false),
 	mController(nullptr),
 	// Crazy raw-pointers to point-of-interest scene stuff
@@ -265,7 +265,7 @@ void FirstScene::onDeinitialization()
 	if (nullptr != rendererRuntime)
 	{
 		rendererRuntime->getSceneResourceManager().destroySceneResource(mSceneResourceId);
-		RendererRuntime::setUninitialized(mSceneResourceId);
+		RendererRuntime::setInvalid(mSceneResourceId);
 	}
 
 	// Destroy controller instance
@@ -518,7 +518,7 @@ void FirstScene::onLoadingStateChange(const RendererRuntime::IResource& resource
 void FirstScene::applyCurrentSettings(Renderer::IRenderTarget& mainRenderTarget)
 {
 	RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
-	if (nullptr != mCompositorWorkspaceInstance && RendererRuntime::isInitialized(mSceneResourceId) && nullptr != rendererRuntime)
+	if (nullptr != mCompositorWorkspaceInstance && RendererRuntime::isValid(mSceneResourceId) && nullptr != rendererRuntime)
 	{
 		// Changes in main swap chain?
 		if (mCurrentFullscreen != mFullscreen)
@@ -645,7 +645,7 @@ void FirstScene::createDebugGui(MAYBE_UNUSED Renderer::IRenderTarget& mainRender
 {
 	#ifdef RENDERER_RUNTIME_IMGUI
 		RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
-		if (nullptr != mCompositorWorkspaceInstance && RendererRuntime::isInitialized(mSceneResourceId) && nullptr != rendererRuntime)
+		if (nullptr != mCompositorWorkspaceInstance && RendererRuntime::isValid(mSceneResourceId) && nullptr != rendererRuntime)
 		{
 			// Get the render target the debug GUI is rendered into, use the provided main render target as fallback
 			const RendererRuntime::ICompositorInstancePass* compositorInstancePass = mCompositorWorkspaceInstance->getFirstCompositorInstancePassByCompositorPassTypeId(RendererRuntime::CompositorResourcePassDebugGui::TYPE_ID);
@@ -828,7 +828,7 @@ void FirstScene::createDebugGui(MAYBE_UNUSED Renderer::IRenderTarget& mainRender
 
 void FirstScene::trySetCustomMaterialResource()
 {
-	if (!mCustomMaterialResourceSet && nullptr != mSceneNode && RendererRuntime::isInitialized(mCloneMaterialResourceId))
+	if (!mCustomMaterialResourceSet && nullptr != mSceneNode && RendererRuntime::isValid(mCloneMaterialResourceId))
 	{
 		const RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
 		if (nullptr != rendererRuntime)

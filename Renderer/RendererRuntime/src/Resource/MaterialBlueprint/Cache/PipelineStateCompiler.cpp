@@ -215,7 +215,7 @@ namespace RendererRuntime
 						// Get the shader blueprint resource ID
 						const ShaderType shaderType = static_cast<ShaderType>(i);
 						const ShaderBlueprintResourceId shaderBlueprintResourceId = materialBlueprintResource.getShaderBlueprintResourceId(shaderType);
-						if (isInitialized(shaderBlueprintResourceId))
+						if (isValid(shaderBlueprintResourceId))
 						{
 							// Get the shader cache identifier, often but not always identical to the shader combination ID
 							const ShaderCacheId shaderCacheId = pipelineStateSignature.getShaderCombinationId(shaderType);

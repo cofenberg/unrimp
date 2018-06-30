@@ -129,7 +129,7 @@ namespace RendererRuntime
 
 	const RenderableManager* TerrainSceneItem::getRenderableManager() const
 	{
-		if (!isInitialized(getMaterialResourceId()))
+		if (!isValid(getMaterialResourceId()))
 		{
 			// TODO(co) Get rid of the nasty delayed initialization in here, including the evil const-cast. For this, full asynchronous material blueprint loading must work. See "TODO(co) Currently material blueprint resource loading is a blocking process.".
 			const_cast<TerrainSceneItem*>(this)->initialize();
@@ -154,7 +154,7 @@ namespace RendererRuntime
 			for (int i = 0; i != mNumberOfTerrainTileRings; ++i)
 			{
 				const TerrainTileRing& terrainTileRing = mTerrainTileRings[i];
-				renderables.emplace_back(mRenderableManager, terrainTileRing.vertexArrayPtr, true, 0, ::detail::NUMBER_OF_INDICES, rendererRuntime.getMaterialResourceManager(), getMaterialResourceId(), getUninitialized<SkeletonResourceId>(), terrainTileRing.numberOfTiles);
+				renderables.emplace_back(mRenderableManager, terrainTileRing.vertexArrayPtr, true, 0, ::detail::NUMBER_OF_INDICES, rendererRuntime.getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>(), terrainTileRing.numberOfTiles);
 			}
 			mRenderableManager.updateCachedRenderablesData();
 		}
@@ -193,7 +193,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	TerrainSceneItem::~TerrainSceneItem()
 	{
-		if (isInitialized(getMaterialResourceId()))
+		if (isValid(getMaterialResourceId()))
 		{
 			// Clear the renderable manager right now so we have no more references to the shared vertex array
 			mRenderableManager.getRenderables().clear();

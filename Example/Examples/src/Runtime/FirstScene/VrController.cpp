@@ -96,7 +96,7 @@ namespace
 			{
 				for (uint32_t i = 0; i < vr::k_unMaxTrackedDeviceCount; ++i)
 				{
-					mVrControllerTrackedDeviceIndices[i] = RendererRuntime::getUninitialized<vr::TrackedDeviceIndex_t>();
+					mVrControllerTrackedDeviceIndices[i] = RendererRuntime::getInvalid<vr::TrackedDeviceIndex_t>();
 				}
 			}
 

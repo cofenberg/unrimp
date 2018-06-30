@@ -27,7 +27,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/Core/GetUninitialized.h"
+#include "RendererRuntime/Core/GetInvalid.h"
 #include "RendererRuntime/Resource/Material/MaterialPropertyValue.h"
 
 
@@ -124,7 +124,7 @@ namespace RendererRuntime
 		*/
 		inline MaterialProperty() :
 			MaterialPropertyValue(fromUnknown()),
-			mMaterialPropertyId(getUninitialized<MaterialPropertyId>()),
+			mMaterialPropertyId(getInvalid<MaterialPropertyId>()),
 			mUsage(Usage::UNKNOWN),
 			mOverwritten(false)
 		{

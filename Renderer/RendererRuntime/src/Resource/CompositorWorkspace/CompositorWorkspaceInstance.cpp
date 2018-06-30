@@ -70,10 +70,10 @@ namespace RendererRuntime
 		mNumberOfMultisamples(1),
 		mCurrentlyUsedNumberOfMultisamples(1),
 		mResolutionScale(1.0f),
-		mRenderTargetWidth(getUninitialized<uint32_t>()),
-		mRenderTargetHeight(getUninitialized<uint32_t>()),
+		mRenderTargetWidth(getInvalid<uint32_t>()),
+		mRenderTargetHeight(getInvalid<uint32_t>()),
 		mExecutionRenderTarget(nullptr),
-		mCompositorWorkspaceResourceId(getUninitialized<CompositorWorkspaceResourceId>()),
+		mCompositorWorkspaceResourceId(getInvalid<CompositorWorkspaceResourceId>()),
 		mFramebufferManagerInitialized(false),
 		mCompositorInstancePassShadowMap(nullptr)
 	{
@@ -312,7 +312,7 @@ namespace RendererRuntime
 			for (size_t nodeIndex = 0; nodeIndex < numberOfCompositorResourceNodes; ++nodeIndex)
 			{
 				// Get the compositor node resource instance
-				CompositorNodeResourceId compositorNodeResourceId = getUninitialized<CompositorNodeResourceId>();
+				CompositorNodeResourceId compositorNodeResourceId = getInvalid<CompositorNodeResourceId>();
 				compositorNodeResourceManager.loadCompositorNodeResourceByAssetId(compositorNodeAssetIds[nodeIndex], compositorNodeResourceId);
 				CompositorNodeResource& compositorNodeResource = compositorNodeResourceManager.getById(compositorNodeResourceId);
 
@@ -441,7 +441,7 @@ namespace RendererRuntime
 			for (ICompositorInstancePass* compositorInstancePass : compositorNodeInstance->mCompositorInstancePasses)
 			{
 				const CompositorFramebufferId compositorFramebufferId = compositorInstancePass->getCompositorResourcePass().getCompositorTarget().getCompositorFramebufferId();
-				if (isInitialized(compositorFramebufferId))
+				if (isValid(compositorFramebufferId))
 				{
 					compositorInstancePass->mRenderTarget = framebufferManager.getFramebufferByCompositorFramebufferId(compositorFramebufferId, mainRenderTarget, mCurrentlyUsedNumberOfMultisamples, mResolutionScale);
 				}

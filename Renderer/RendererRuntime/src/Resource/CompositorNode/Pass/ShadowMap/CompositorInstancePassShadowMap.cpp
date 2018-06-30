@@ -406,9 +406,9 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	CompositorInstancePassShadowMap::CompositorInstancePassShadowMap(const CompositorResourcePassShadowMap& compositorResourcePassShadowMap, const CompositorNodeInstance& compositorNodeInstance) :
 		CompositorInstancePassScene(compositorResourcePassShadowMap, compositorNodeInstance),
-		mDepthTextureResourceId(getUninitialized<TextureResourceId>()),
-		mVarianceTextureResourceId(getUninitialized<TextureResourceId>()),
-		mIntermediateDepthBlurTextureResourceId(getUninitialized<TextureResourceId>()),
+		mDepthTextureResourceId(getInvalid<TextureResourceId>()),
+		mVarianceTextureResourceId(getInvalid<TextureResourceId>()),
+		mIntermediateDepthBlurTextureResourceId(getInvalid<TextureResourceId>()),
 		mDepthToExponentialVarianceCompositorResourcePassQuad(nullptr),
 		mDepthToExponentialVarianceCompositorInstancePassQuad(nullptr),
 		mHorizontalBlurCompositorResourcePassQuad(nullptr),
@@ -532,7 +532,7 @@ namespace RendererRuntime
 
 	void CompositorInstancePassShadowMap::destroyShadowMapRenderTarget()
 	{
-		assert(isInitialized(mDepthTextureResourceId) && isInitialized(mVarianceTextureResourceId) && isInitialized(mIntermediateDepthBlurTextureResourceId) && nullptr != mDepthFramebufferPtr);
+		assert(isValid(mDepthTextureResourceId) && isValid(mVarianceTextureResourceId) && isValid(mIntermediateDepthBlurTextureResourceId) && nullptr != mDepthFramebufferPtr);
 
 		// Depth to exponential variance
 		delete mDepthToExponentialVarianceCompositorInstancePassQuad;

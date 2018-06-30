@@ -29,7 +29,7 @@
 //[-------------------------------------------------------]
 #include "RendererRuntime/Export.h"
 #include "RendererRuntime/Core/StringId.h"
-#include "RendererRuntime/Core/GetUninitialized.h"
+#include "RendererRuntime/Core/GetInvalid.h"
 
 #include <cassert>
 #include <cstring>	// For "memcpy()"
@@ -58,7 +58,7 @@ namespace RendererRuntime
 		uint32_t mipmapIndex;
 		uint32_t layerIndex;	///< "slice" in Direct3D terminology, depending on the texture type it's a 2D texture array layer, 3D texture slice or cube map face
 		inline FramebufferSignatureAttachment() :
-			textureAssetId(getUninitialized<AssetId>()),
+			textureAssetId(getInvalid<AssetId>()),
 			mipmapIndex(0),
 			layerIndex(0)
 		{
@@ -98,7 +98,7 @@ namespace RendererRuntime
 		*/
 		inline FramebufferSignature() :
 			mNumberOfColorAttachments(0),
-			mFramebufferSignatureId(getUninitialized<FramebufferSignatureId>())
+			mFramebufferSignatureId(getInvalid<FramebufferSignatureId>())
 		{
 			// Nothing here
 		}

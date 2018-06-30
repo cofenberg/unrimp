@@ -83,7 +83,7 @@ namespace RendererRuntime
 	void MaterialBlueprintResourceManager::loadMaterialBlueprintResourceByAssetId(AssetId assetId, MaterialBlueprintResourceId& materialBlueprintResourceId, IResourceListener* resourceListener, bool reload, ResourceLoaderTypeId resourceLoaderTypeId)
 	{
 		// Choose default resource loader type ID, if necessary
-		if (isUninitialized(resourceLoaderTypeId))
+		if (isInvalid(resourceLoaderTypeId))
 		{
 			resourceLoaderTypeId = MaterialBlueprintResourceLoader::TYPE_ID;
 		}
@@ -114,7 +114,7 @@ namespace RendererRuntime
 		}
 		else
 		{
-			materialBlueprintResourceId = getUninitialized<MaterialBlueprintResourceId>();
+			materialBlueprintResourceId = getInvalid<MaterialBlueprintResourceId>();
 		}
 
 		// Load the resource, if required
@@ -234,7 +234,7 @@ namespace RendererRuntime
 					{
 						for (MaterialTechnique* materialTechnique : materialResourceManager.getByIndex(materialIndex).getSortedMaterialTechniqueVector())
 						{
-							if (materialTechnique->getMaterialBlueprintResourceId() == materialBlueprintResource.getId() && isInitialized(materialTechnique->getAssignedMaterialSlot()))
+							if (materialTechnique->getMaterialBlueprintResourceId() == materialBlueprintResource.getId() && isValid(materialTechnique->getAssignedMaterialSlot()))
 							{
 								materialBufferManager->releaseSlot(*materialTechnique);
 							}
@@ -243,7 +243,7 @@ namespace RendererRuntime
 				}
 
 				// Reload material blueprint resource
-				MaterialBlueprintResourceId materialBlueprintResourceId = getUninitialized<MaterialBlueprintResourceId>();
+				MaterialBlueprintResourceId materialBlueprintResourceId = getInvalid<MaterialBlueprintResourceId>();
 				loadMaterialBlueprintResourceByAssetId(assetId, materialBlueprintResourceId, nullptr, true, materialBlueprintResource.getResourceLoaderTypeId());
 
 				// Clear pipeline state cache manager
@@ -409,9 +409,9 @@ namespace RendererRuntime
 			{
 				// TODO(co) Currently material blueprint resource loading is a blocking process
 				const ::detail::MaterialBlueprintCacheEntry& materialBlueprintCacheEntry = materialBlueprintCacheEntries[i];
-				MaterialBlueprintResourceId materialBlueprintResourceId = getUninitialized<MaterialBlueprintResourceId>();
+				MaterialBlueprintResourceId materialBlueprintResourceId = getInvalid<MaterialBlueprintResourceId>();
 				loadMaterialBlueprintResourceByAssetId(materialBlueprintCacheEntry.materialBlueprintAssetId, materialBlueprintResourceId);
-				if (isInitialized(materialBlueprintResourceId))
+				if (isValid(materialBlueprintResourceId))
 				{
 					mInternalResourceManager->getResources().getElementById(materialBlueprintResourceId).loadPipelineStateObjectCache(file);
 				}

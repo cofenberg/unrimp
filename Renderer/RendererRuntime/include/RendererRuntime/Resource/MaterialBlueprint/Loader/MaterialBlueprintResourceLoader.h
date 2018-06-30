@@ -29,7 +29,7 @@
 //[-------------------------------------------------------]
 #include "RendererRuntime/Resource/ShaderBlueprint/ShaderType.h"
 #include "RendererRuntime/Resource/Detail/IResourceLoader.h"
-#include "RendererRuntime/Core/GetUninitialized.h"
+#include "RendererRuntime/Core/GetInvalid.h"
 #include "RendererRuntime/Core/File/MemoryFile.h"
 
 #include <Renderer/Renderer.h>
@@ -116,13 +116,13 @@ namespace RendererRuntime
 			mMaterialBlueprintResource(nullptr),
 			mMaximumNumberOfRootParameters(0),
 			mMaximumNumberOfDescriptorRanges(0),
-			mVertexAttributesAssetId(getUninitialized<AssetId>()),
+			mVertexAttributesAssetId(getInvalid<AssetId>()),
 			mMaximumNumberOfMaterialBlueprintSamplerStates(0),
 			mMaterialBlueprintSamplerStates(nullptr),
 			mMaximumNumberOfMaterialBlueprintTextures(0),
 			mMaterialBlueprintTextures(nullptr)
 		{
-			memset(mShaderBlueprintAssetId, static_cast<int>(getUninitialized<AssetId>()), sizeof(AssetId) * NUMBER_OF_SHADER_TYPES);
+			memset(mShaderBlueprintAssetId, static_cast<int>(getInvalid<AssetId>()), sizeof(AssetId) * NUMBER_OF_SHADER_TYPES);
 		}
 
 		virtual ~MaterialBlueprintResourceLoader() override;

@@ -48,7 +48,7 @@ namespace RendererRuntime
 	MaterialResourceId MaterialResourceManager::getMaterialResourceIdByAssetId(AssetId assetId) const
 	{
 		const MaterialResource* materialResource = getMaterialResourceByAssetId(assetId);
-		return (nullptr != materialResource) ? materialResource->getId() : getUninitialized<MaterialResourceId>();
+		return (nullptr != materialResource) ? materialResource->getId() : getInvalid<MaterialResourceId>();
 	}
 
 	void MaterialResourceManager::loadMaterialResourceByAssetId(AssetId assetId, MaterialResourceId& materialResourceId, IResourceListener* resourceListener, bool reload, ResourceLoaderTypeId resourceLoaderTypeId)
@@ -69,7 +69,7 @@ namespace RendererRuntime
 		{ // Setup material resource instance
 			// Copy over the material properties of the material blueprint resource
 			MaterialBlueprintResourceManager& materialBlueprintResourceManager = mRendererRuntime.getMaterialBlueprintResourceManager();
-			MaterialBlueprintResourceId materialBlueprintResourceId = getUninitialized<MaterialBlueprintResourceId>();
+			MaterialBlueprintResourceId materialBlueprintResourceId = getInvalid<MaterialBlueprintResourceId>();
 			materialBlueprintResourceManager.loadMaterialBlueprintResourceByAssetId(materialBlueprintAssetId, materialBlueprintResourceId);
 			MaterialBlueprintResource* materialBlueprintResource = materialBlueprintResourceManager.tryGetById(materialBlueprintResourceId);
 			if (nullptr != materialBlueprintResource)

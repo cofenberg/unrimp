@@ -28,7 +28,7 @@
 //[ Includes                                              ]
 //[-------------------------------------------------------]
 #include "RendererRuntime/Core/Manager.h"
-#include "RendererRuntime/Core/GetUninitialized.h"
+#include "RendererRuntime/Core/GetInvalid.h"
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -97,7 +97,7 @@ namespace RendererRuntime
 
 		inline bool isElementIdValid(ID_TYPE id) const
 		{
-			if (isInitialized(id))
+			if (isValid(id))
 			{
 				const Index& index = mIndices[id & INDEX_MASK];
 				return (index.id == id && index.index != USHRT_MAX);
@@ -113,7 +113,7 @@ namespace RendererRuntime
 
 		inline ELEMENT_TYPE* tryGetElementById(ID_TYPE id) const
 		{
-			if (isInitialized(id))
+			if (isValid(id))
 			{
 				const Index& index = mIndices[id & INDEX_MASK];
 				return (index.id == id && index.index != USHRT_MAX) ? &mElements[index.index] : nullptr;

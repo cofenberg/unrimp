@@ -45,52 +45,52 @@ namespace RendererRuntime
 
 	/**
 	*  @brief
-	*    Return uninitialized default value for a given type
+	*    Return invalid default value for a given type
 	*/
 	template <typename TYPE>
-	TYPE getUninitialized()
+	TYPE getInvalid()
 	{
 		return std::numeric_limits<TYPE>::max();
 	}
 
 	/**
 	*  @brief
-	*    Return uninitialized default value for a type provided by a variable
+	*    Return invalid default value for a type provided by a variable
 	*/
 	template <typename TYPE>
-	TYPE getUninitialized(const TYPE&)
+	TYPE getInvalid(const TYPE&)
 	{
 		return std::numeric_limits<TYPE>::max();
 	}
 
 	/**
 	*  @brief
-	*    Set the given variable to uninitialized default value
+	*    Set the given variable to invalid default value
 	*/
 	template <typename TYPE>
-	void setUninitialized(TYPE& value)
+	void setInvalid(TYPE& value)
 	{
-		value = getUninitialized<TYPE>();
+		value = getInvalid<TYPE>();
 	}
 
 	/**
 	*  @brief
-	*    Check whether or not the given variable has not the uninitialized default value
+	*    Check whether or not the given variable has not the invalid default value
 	*/
 	template <typename TYPE>
-	bool isInitialized(const TYPE& value)
+	bool isValid(const TYPE& value)
 	{
-		return (getUninitialized<TYPE>() != value);
+		return (getInvalid<TYPE>() != value);
 	}
 
 	/**
 	*  @brief
-	*    Check whether or not the given variable has the uninitialized default value
+	*    Check whether or not the given variable has the invalid default value
 	*/
 	template <typename TYPE>
-	bool isUninitialized(const TYPE& value)
+	bool isInvalid(const TYPE& value)
 	{
-		return (getUninitialized<TYPE>() == value);
+		return (getInvalid<TYPE>() == value);
 	}
 
 

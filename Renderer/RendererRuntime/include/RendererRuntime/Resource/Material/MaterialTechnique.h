@@ -136,7 +136,7 @@ namespace RendererRuntime
 		*    Return the ID of the used material blueprint resource
 		*
 		*  @return
-		*    The ID of the used material blueprint resource, can be uninitialized
+		*    The ID of the used material blueprint resource, can be invalid
 		*/
 		inline MaterialBlueprintResourceId getMaterialBlueprintResourceId() const
 		{
@@ -176,7 +176,7 @@ namespace RendererRuntime
 		*  @param[out] commandBuffer
 		*    Command buffer to fill
 		*  @param[out] textureResourceGroupRootParameterIndex
-		*    Root parameter index to bind the texture resource group to, can be "RendererRuntime::getUninitialized<uint32_t>()"
+		*    Root parameter index to bind the texture resource group to, can be "RendererRuntime::getInvalid<uint32_t>()"
 		*  @param[out] textureResourceGroup
 		*    Renderer texture resource group to set
 		*/
@@ -229,7 +229,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	private:
 		MaterialTechniqueId			mMaterialTechniqueId;			///< Material technique ID
-		MaterialBlueprintResourceId	mMaterialBlueprintResourceId;	///< Material blueprint resource ID, can be set to uninitialized value
+		MaterialBlueprintResourceId	mMaterialBlueprintResourceId;	///< Material blueprint resource ID, can be set to invalid value
 		Textures					mTextures;
 		uint32_t					mSerializedPipelineStateHash;	///< FNV1a hash of "Renderer::SerializedPipelineState"
 		Renderer::IResourceGroupPtr	mTextureResourceGroup;			///< Texture resource group, can be a null pointer

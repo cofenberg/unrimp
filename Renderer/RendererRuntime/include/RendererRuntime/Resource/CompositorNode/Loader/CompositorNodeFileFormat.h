@@ -108,7 +108,7 @@ namespace RendererRuntime
 			{
 				float	 minimumDepth		= 0.0f;
 				float	 maximumDepth		= 1.0f;
-				uint32_t numberOfExecutions	= RendererRuntime::getUninitialized<uint32_t>();
+				uint32_t numberOfExecutions	= RendererRuntime::getInvalid<uint32_t>();
 				bool	 skipFirstExecution	= false;
 			};
 
@@ -160,9 +160,9 @@ namespace RendererRuntime
 
 			struct PassQuad : public Pass
 			{
-				AssetId				materialAssetId;				///< If material blueprint asset ID is set, material asset ID must be uninitialized
+				AssetId				materialAssetId;				///< If material blueprint asset ID is set, material asset ID must be invalid
 				MaterialTechniqueId	materialTechniqueId;			///< Must always be valid
-				AssetId				materialBlueprintAssetId;		///< If material asset ID is set, material blueprint asset ID must be uninitialized
+				AssetId				materialBlueprintAssetId;		///< If material asset ID is set, material blueprint asset ID must be invalid
 				uint32_t			numberOfMaterialProperties = 0;
 			};
 

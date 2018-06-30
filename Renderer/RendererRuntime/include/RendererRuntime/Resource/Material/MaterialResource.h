@@ -100,7 +100,7 @@ namespace RendererRuntime
 		*    Return the parent material resource ID
 		*
 		*  @return
-		*    The parent material resource ID, uninitialized if there's no parent
+		*    The parent material resource ID, invalid if there's no parent
 		*/
 		inline MaterialResourceId getParentMaterialResourceId() const
 		{
@@ -112,7 +112,7 @@ namespace RendererRuntime
 		*    Set the parent material resource ID
 		*
 		*  @param[in] parentMaterialResourceId
-		*    Parent material resource ID, can be uninitialized
+		*    Parent material resource ID, can be invalid
 		*
 		*  @note
 		*    - Parent material resource must be fully loaded
@@ -232,7 +232,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	private:
 		inline MaterialResource() :
-			mParentMaterialResourceId(getUninitialized<MaterialResourceId>())
+			mParentMaterialResourceId(getInvalid<MaterialResourceId>())
 		{
 			// Nothing here
 		}
@@ -248,7 +248,7 @@ namespace RendererRuntime
 		inline void initializeElement(MaterialResourceId materialResourceId)
 		{
 			// Sanity checks
-			assert(isUninitialized(mParentMaterialResourceId));
+			assert(isInvalid(mParentMaterialResourceId));
 			assert(mSortedChildMaterialResourceIds.empty());
 			assert(mSortedMaterialTechniqueVector.empty());
 			assert(mMaterialProperties.getSortedPropertyVector().empty());

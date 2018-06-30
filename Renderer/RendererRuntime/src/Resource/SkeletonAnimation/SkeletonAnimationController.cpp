@@ -43,7 +43,7 @@ namespace RendererRuntime
 	{
 		clear();
 		mSkeletonAnimationResourceId = skeletonAnimationResourceId;
-		if (isInitialized(skeletonAnimationResourceId))
+		if (isValid(skeletonAnimationResourceId))
 		{
 			mRendererRuntime.getSkeletonAnimationResourceManager().getResourceByResourceId(skeletonAnimationResourceId).connectResourceListener(*this);
 		}
@@ -57,10 +57,10 @@ namespace RendererRuntime
 
 	void SkeletonAnimationController::clear()
 	{
-		if (isInitialized(mSkeletonAnimationResourceId))
+		if (isValid(mSkeletonAnimationResourceId))
 		{
 			disconnectFromResourceById(mSkeletonAnimationResourceId);
-			setUninitialized(mSkeletonAnimationResourceId);
+			setInvalid(mSkeletonAnimationResourceId);
 		}
 		destroySkeletonAnimationEvaluator();
 		mTimeInSeconds = 0.0f;
@@ -131,7 +131,7 @@ namespace RendererRuntime
 			for (size_t i = 0; i < boneIds.size(); ++i)
 			{
 				const uint32_t boneIndex = skeletonResource.getBoneIndexByBoneId(boneIds[i]);
-				if (isInitialized(boneIndex))
+				if (isValid(boneIndex))
 				{
 					localBoneMatrices[boneIndex] = transformMatrices[i];
 				}

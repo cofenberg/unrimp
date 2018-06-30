@@ -73,7 +73,7 @@ namespace RendererRuntime
 	void MaterialBufferManager::requestSlot(MaterialBufferSlot& materialBufferSlot)
 	{
 		// Release slot, if required
-		if (isInitialized(materialBufferSlot.mAssignedMaterialPool))
+		if (isValid(materialBufferSlot.mAssignedMaterialPool))
 		{
 			releaseSlot(materialBufferSlot);
 		}
@@ -106,8 +106,8 @@ namespace RendererRuntime
 		BufferPool* bufferPool = static_cast<BufferPool*>(materialBufferSlot.mAssignedMaterialPool);
 
 		// Sanity checks
-		assert(isInitialized(materialBufferSlot.mAssignedMaterialPool));
-		assert(isInitialized(materialBufferSlot.mAssignedMaterialSlot));
+		assert(isValid(materialBufferSlot.mAssignedMaterialPool));
+		assert(isValid(materialBufferSlot.mAssignedMaterialSlot));
 		assert(materialBufferSlot.mAssignedMaterialSlot < mSlotsPerPool);
 		assert(std::find(bufferPool->freeSlots.begin(), bufferPool->freeSlots.end(), materialBufferSlot.mAssignedMaterialSlot) == bufferPool->freeSlots.end());
 		assert(materialBufferSlot.mGlobalIndex < static_cast<int>(mMaterialBufferSlots.size()));
@@ -126,7 +126,7 @@ namespace RendererRuntime
 		// Put the slot back to the list of free slots
 		bufferPool->freeSlots.push_back(materialBufferSlot.mAssignedMaterialSlot);
 		materialBufferSlot.mAssignedMaterialPool = nullptr;
-		materialBufferSlot.mAssignedMaterialSlot = getUninitialized<uint32_t>();
+		materialBufferSlot.mAssignedMaterialSlot = getInvalid<uint32_t>();
 		materialBufferSlot.mDirty				 = false;
 		MaterialBufferSlots::iterator iterator = mMaterialBufferSlots.begin() + materialBufferSlot.mGlobalIndex;
 		iterator = ::detail::swizzleVectorElementRemove(mMaterialBufferSlots, iterator);

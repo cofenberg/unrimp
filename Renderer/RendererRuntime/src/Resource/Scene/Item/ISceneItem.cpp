@@ -41,7 +41,7 @@ namespace RendererRuntime
 		mSceneResource(sceneResource),
 		mParentSceneNode(nullptr),
 		mSceneItemSet(nullptr),
-		mSceneItemSetIndex(getUninitialized<uint32_t>())
+		mSceneItemSetIndex(getInvalid<uint32_t>())
 	{
 		// TODO(co) The following is just for culling kickoff and won't stay this way
 		if (cullable)

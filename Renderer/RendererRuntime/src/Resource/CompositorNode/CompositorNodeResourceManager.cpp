@@ -109,7 +109,7 @@ namespace RendererRuntime
 			const CompositorNodeResource& compositorNodeResource = mInternalResourceManager->getResources().getElementByIndex(i);
 			if (compositorNodeResource.getAssetId() == assetId)
 			{
-				CompositorNodeResourceId compositorNodeResourceId = getUninitialized<CompositorNodeResourceId>();
+				CompositorNodeResourceId compositorNodeResourceId = getInvalid<CompositorNodeResourceId>();
 				loadCompositorNodeResourceByAssetId(assetId, compositorNodeResourceId, nullptr, true, compositorNodeResource.getResourceLoaderTypeId());
 
 				{ // Reload all compositor workspace resources using this compositor node resource

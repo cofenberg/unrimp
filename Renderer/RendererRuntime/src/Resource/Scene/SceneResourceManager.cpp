@@ -81,7 +81,7 @@ namespace RendererRuntime
 	SceneResourceId SceneResourceManager::getSceneResourceIdByAssetId(AssetId assetId) const
 	{
 		const SceneResource* sceneResource = getSceneResourceByAssetId(assetId);
-		return (nullptr != sceneResource) ? sceneResource->getId() : getUninitialized<SceneResourceId>();
+		return (nullptr != sceneResource) ? sceneResource->getId() : getInvalid<SceneResourceId>();
 	}
 
 	void SceneResourceManager::loadSceneResourceByAssetId(AssetId assetId, SceneResourceId& sceneResourceId, IResourceListener* resourceListener, bool reload, ResourceLoaderTypeId resourceLoaderTypeId)

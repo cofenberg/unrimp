@@ -48,10 +48,10 @@ PRAGMA_WARNING_POP
 //[ Public methods                                        ]
 //[-------------------------------------------------------]
 FirstMesh::FirstMesh() :
-	mMeshResourceId(RendererRuntime::getUninitialized<RendererRuntime::MeshResourceId>()),
-	m_argb_nxaTextureResourceId(RendererRuntime::getUninitialized<RendererRuntime::TextureResourceId>()),
-	m_hr_rg_mb_nyaTextureResourceId(RendererRuntime::getUninitialized<RendererRuntime::TextureResourceId>()),
-	mEmissiveTextureResourceId(RendererRuntime::getUninitialized<RendererRuntime::TextureResourceId>()),
+	mMeshResourceId(RendererRuntime::getInvalid<RendererRuntime::MeshResourceId>()),
+	m_argb_nxaTextureResourceId(RendererRuntime::getInvalid<RendererRuntime::TextureResourceId>()),
+	m_hr_rg_mb_nyaTextureResourceId(RendererRuntime::getInvalid<RendererRuntime::TextureResourceId>()),
+	mEmissiveTextureResourceId(RendererRuntime::getInvalid<RendererRuntime::TextureResourceId>()),
 	mObjectSpaceToClipSpaceMatrixUniformHandle(NULL_HANDLE),
 	mObjectSpaceToViewSpaceMatrixUniformHandle(NULL_HANDLE),
 	mGlobalTimer(0.0f)
@@ -214,10 +214,10 @@ void FirstMesh::onDeinitialization()
 	mSamplerStateGroup = nullptr;
 	mSamplerStatePtr = nullptr;
 	mResourceGroup = nullptr;
-	RendererRuntime::setUninitialized(mEmissiveTextureResourceId);
-	RendererRuntime::setUninitialized(m_hr_rg_mb_nyaTextureResourceId);
-	RendererRuntime::setUninitialized(m_argb_nxaTextureResourceId);
-	RendererRuntime::setUninitialized(mMeshResourceId);
+	RendererRuntime::setInvalid(mEmissiveTextureResourceId);
+	RendererRuntime::setInvalid(m_hr_rg_mb_nyaTextureResourceId);
+	RendererRuntime::setInvalid(m_argb_nxaTextureResourceId);
+	RendererRuntime::setInvalid(mMeshResourceId);
 	mProgram	   = nullptr;
 	mPipelineState = nullptr;
 	mUniformBuffer = nullptr;

@@ -28,7 +28,7 @@
 //[ Includes                                              ]
 //[-------------------------------------------------------]
 #include <RendererRuntime/Core/StringId.h>
-#include <RendererRuntime/Core/GetUninitialized.h>
+#include <RendererRuntime/Core/GetInvalid.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH

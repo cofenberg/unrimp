@@ -75,7 +75,7 @@ namespace RendererRuntime
 				{ // Remove a fallback shader property
 					// Find the most useless shader property, we're going to sacrifice it
 					ShaderProperties::SortedPropertyVector::iterator worstHitShaderPropertyIterator = sortedFallbackPropertyVector.end();
-					int32_t worstHitVisualImportanceOfShaderProperty = getUninitialized<int32_t>();
+					int32_t worstHitVisualImportanceOfShaderProperty = getInvalid<int32_t>();
 					ShaderProperties::SortedPropertyVector::iterator iterator = sortedFallbackPropertyVector.begin();
 					while (iterator != sortedFallbackPropertyVector.end())
 					{
@@ -83,7 +83,7 @@ namespace RendererRuntime
 						const int32_t visualImportanceOfShaderProperty = mMaterialBlueprintResource.getVisualImportanceOfShaderProperty(iterator->shaderPropertyId);
 						if (MaterialBlueprintResource::MANDATORY_SHADER_PROPERTY != visualImportanceOfShaderProperty)
 						{
-							if (isInitialized(worstHitVisualImportanceOfShaderProperty))
+							if (isValid(worstHitVisualImportanceOfShaderProperty))
 							{
 								// Lower visual importance value = lower probability that someone will miss the shader property
 								if (worstHitVisualImportanceOfShaderProperty > visualImportanceOfShaderProperty)

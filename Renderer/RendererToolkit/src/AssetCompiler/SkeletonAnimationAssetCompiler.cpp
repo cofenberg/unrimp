@@ -35,7 +35,7 @@
 #include <RendererRuntime/Core/File/MemoryFile.h>
 #include <RendererRuntime/Core/File/IFileManager.h>
 #include <RendererRuntime/Core/File/FileSystemHelper.h>
-#include <RendererRuntime/Core/GetUninitialized.h>
+#include <RendererRuntime/Core/GetInvalid.h>
 #include <RendererRuntime/Resource/SkeletonAnimation/SkeletonAnimationResource.h>
 #include <RendererRuntime/Resource/SkeletonAnimation/Loader/SkeletonAnimationFileFormat.h>
 
@@ -123,7 +123,7 @@ namespace RendererToolkit
 			if (nullptr != assimpScene && nullptr != assimpScene->mRootNode)
 			{
 				// Read skeleton animation asset compiler configuration
-				uint32_t animationIndex = RendererRuntime::getUninitialized<uint32_t>();
+				uint32_t animationIndex = RendererRuntime::getInvalid<uint32_t>();
 				JsonHelper::optionalIntegerProperty(rapidJsonValueSkeletonAnimationAssetCompiler, "AnimationIndex", animationIndex);
 				bool ignoreBoneScale = false;
 				JsonHelper::optionalBooleanProperty(rapidJsonValueSkeletonAnimationAssetCompiler, "IgnoreBoneScale", ignoreBoneScale);
@@ -138,7 +138,7 @@ namespace RendererToolkit
 				}
 				if (assimpScene->mNumAnimations > 1)
 				{
-					if (RendererRuntime::isUninitialized(animationIndex))
+					if (RendererRuntime::isInvalid(animationIndex))
 					{
 						throw std::runtime_error("The input file \"" + virtualInputFilename + "\" contains multiple animations, but the skeleton animation compiler wasn't provided with an animation index");
 					}

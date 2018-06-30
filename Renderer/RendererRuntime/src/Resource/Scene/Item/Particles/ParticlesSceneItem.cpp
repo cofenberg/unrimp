@@ -47,7 +47,7 @@ namespace RendererRuntime
 
 	const RenderableManager* ParticlesSceneItem::getRenderableManager() const
 	{
-		if (!isInitialized(getMaterialResourceId()))
+		if (!isValid(getMaterialResourceId()))
 		{
 			// TODO(co) Get rid of the nasty delayed initialization in here, including the evil const-cast. For this, full asynchronous material blueprint loading must work. See "TODO(co) Currently material blueprint resource loading is a blocking process.".
 			const_cast<ParticlesSceneItem*>(this)->initialize();
@@ -62,7 +62,7 @@ namespace RendererRuntime
 	void ParticlesSceneItem::onMaterialResourceCreated()
 	{
 		// Setup renderable manager using attribute-less rendering
-		mRenderableManager.getRenderables().emplace_back(mRenderableManager, Renderer::IVertexArrayPtr(), false, 0, 6 * mMaximumNumberOfParticles, getSceneResource().getRendererRuntime().getMaterialResourceManager(), getMaterialResourceId(), getUninitialized<SkeletonResourceId>());
+		mRenderableManager.getRenderables().emplace_back(mRenderableManager, Renderer::IVertexArrayPtr(), false, 0, 6 * mMaximumNumberOfParticles, getSceneResource().getRendererRuntime().getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>());
 		mRenderableManager.updateCachedRenderablesData();
 	}
 
@@ -83,7 +83,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	ParticlesSceneItem::~ParticlesSceneItem()
 	{
-		if (isInitialized(getMaterialResourceId()))
+		if (isValid(getMaterialResourceId()))
 		{
 			// Clear the renderable manager right now
 			mRenderableManager.getRenderables().clear();

@@ -118,7 +118,7 @@ namespace RendererRuntime
 		//[ Lifecycle                                             ]
 		//[-------------------------------------------------------]
 		virtual void setSceneResourceId(SceneResourceId sceneResourceId) = 0;
-		virtual bool startup(AssetId vrDeviceMaterialAssetId) = 0;	// If uninitialized material asset ID, no VR devices will be rendered
+		virtual bool startup(AssetId vrDeviceMaterialAssetId) = 0;	// If invalid material asset ID, no VR devices will be rendered
 		virtual bool isRunning() const = 0;
 		virtual void shutdown() = 0;
 

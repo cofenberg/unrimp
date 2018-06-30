@@ -129,7 +129,7 @@ namespace RendererRuntime
 			return mBoneSpaceMatrices;
 		}
 
-		uint32_t getBoneIndexByBoneId(uint32_t boneId) const;	// Bone IDs = "RendererRuntime::StringId" on bone name, "RendererRuntime::getUninitialized<uint32_t>()" if unknown bone ID
+		uint32_t getBoneIndexByBoneId(uint32_t boneId) const;	// Bone IDs = "RendererRuntime::StringId" on bone name, "RendererRuntime::getInvalid<uint32_t>()" if unknown bone ID
 		void localToGlobalPose();
 
 

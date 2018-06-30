@@ -28,7 +28,7 @@
 //[ Includes                                              ]
 //[-------------------------------------------------------]
 #include "RendererRuntime/Core/StringId.h"
-#include "RendererRuntime/Core/GetUninitialized.h"
+#include "RendererRuntime/Core/GetInvalid.h"
 #include "RendererRuntime/Resource/IResourceListener.h"
 
 
@@ -98,7 +98,7 @@ namespace RendererRuntime
 		inline SkeletonAnimationController(const IRendererRuntime& rendererRuntime, SkeletonResourceId skeletonResourceId) :
 			mRendererRuntime(rendererRuntime),
 			mSkeletonResourceId(skeletonResourceId),
-			mSkeletonAnimationResourceId(getUninitialized<SkeletonAnimationResourceId>()),
+			mSkeletonAnimationResourceId(getInvalid<SkeletonAnimationResourceId>()),
 			mSkeletonAnimationEvaluator(nullptr),
 			mTimeInSeconds(0.0f)
 		{
@@ -171,7 +171,7 @@ namespace RendererRuntime
 	private:
 		const IRendererRuntime&		mRendererRuntime;				///< Renderer runtime to use
 		SkeletonResourceId			mSkeletonResourceId;			///< ID of the controlled skeleton resource
-		SkeletonAnimationResourceId mSkeletonAnimationResourceId;	///< Skeleton animation resource ID, can be set to uninitialized value
+		SkeletonAnimationResourceId mSkeletonAnimationResourceId;	///< Skeleton animation resource ID, can be set to invalid value
 		SkeletonAnimationEvaluator* mSkeletonAnimationEvaluator;	///< Skeleton animation evaluator instance, can be a null pointer, destroy the instance if you no longer need it
 		float						mTimeInSeconds;					///< Time in seconds
 

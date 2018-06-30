@@ -96,7 +96,7 @@ namespace RendererRuntime
 		mSerializedPipelineStateHash(pipelineStateSignature.mSerializedPipelineStateHash),
 		mShaderProperties(pipelineStateSignature.mShaderProperties),
 		mPipelineStateSignatureId(pipelineStateSignature.mPipelineStateSignatureId),
-		mShaderCombinationId{getUninitialized<ShaderCombinationId>(), getUninitialized<ShaderCombinationId>(), getUninitialized<ShaderCombinationId>(), getUninitialized<ShaderCombinationId>(), getUninitialized<ShaderCombinationId>()}
+		mShaderCombinationId{getInvalid<ShaderCombinationId>(), getInvalid<ShaderCombinationId>(), getInvalid<ShaderCombinationId>(), getInvalid<ShaderCombinationId>(), getInvalid<ShaderCombinationId>()}
 	{
 		for (uint8_t i = 0; i < NUMBER_OF_SHADER_TYPES; ++i)
 		{
@@ -127,7 +127,7 @@ namespace RendererRuntime
 		mPipelineStateSignatureId	 = Math::FNV1a_INITIAL_HASH_32;
 		for (uint8_t i = 0; i < NUMBER_OF_SHADER_TYPES; ++i)
 		{
-			mShaderCombinationId[i] = getUninitialized<ShaderCombinationId>();
+			mShaderCombinationId[i] = getInvalid<ShaderCombinationId>();
 		}
 
 		// Incorporate primitive hashes

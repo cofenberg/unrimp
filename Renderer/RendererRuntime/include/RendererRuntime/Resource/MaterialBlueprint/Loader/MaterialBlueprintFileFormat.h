@@ -93,7 +93,7 @@ namespace RendererRuntime
 			struct TextureBufferHeader final
 			{
 				MaterialPropertyValue				   materialPropertyValue = MaterialPropertyValue::fromUnknown();
-				uint32_t							   rootParameterIndex	 = getUninitialized<uint32_t>();	///< Root parameter index = resource group index
+				uint32_t							   rootParameterIndex	 = getInvalid<uint32_t>();	///< Root parameter index = resource group index
 				MaterialBlueprintResource::BufferUsage bufferUsage			 = MaterialBlueprintResource::BufferUsage::UNKNOWN;
 			};
 
@@ -109,12 +109,12 @@ namespace RendererRuntime
 				MaterialProperty materialProperty;
 				AssetId			 fallbackTextureAssetId;
 				bool			 rgbHardwareGammaCorrection;
-				uint32_t		 samplerStateIndex;		///< Index of the material blueprint sampler state resource to use, can be uninitialized (e.g. texel fetch instead of sampling might be used)
+				uint32_t		 samplerStateIndex;		///< Index of the material blueprint sampler state resource to use, can be invalid (e.g. texel fetch instead of sampling might be used)
 
 				Texture() :
-					rootParameterIndex(getUninitialized<uint32_t>()),
+					rootParameterIndex(getInvalid<uint32_t>()),
 					rgbHardwareGammaCorrection(false),
-					samplerStateIndex(getUninitialized<uint32_t>())
+					samplerStateIndex(getInvalid<uint32_t>())
 				{
 					// Nothing here
 				}

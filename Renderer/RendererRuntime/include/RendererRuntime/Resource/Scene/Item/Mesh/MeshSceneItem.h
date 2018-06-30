@@ -130,7 +130,7 @@ namespace RendererRuntime
 	protected:
 		inline explicit MeshSceneItem(SceneResource& sceneResource) :
 			ISceneItem(sceneResource),
-			mMeshResourceId(getUninitialized<MeshResourceId>())
+			mMeshResourceId(getInvalid<MeshResourceId>())
 		{
 			// Nothing here
 		}
@@ -162,7 +162,7 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		MeshResourceId			mMeshResourceId;			///< Mesh resource ID, can be set to uninitialized value
+		MeshResourceId			mMeshResourceId;			///< Mesh resource ID, can be set to invalid value
 		SubMeshMaterialAssetIds	mSubMeshMaterialAssetIds;	///< Sub-mesh material asset IDs received during deserialization
 		RenderableManager		mRenderableManager;
 

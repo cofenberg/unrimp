@@ -62,13 +62,13 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	Renderable::Renderable() :
 		// Derived data
-		mSortingKey(getUninitialized<uint64_t>()),
+		mSortingKey(getInvalid<uint64_t>()),
 		// Data
 		mRenderableManager(::detail::NullRenderableManager),
 		mStartIndexLocation(0),
 		mNumberOfIndices(0),
-		mMaterialResourceId(getUninitialized<MaterialResourceId>()),
-		mSkeletonResourceId(getUninitialized<SkeletonResourceId>()),
+		mMaterialResourceId(getInvalid<MaterialResourceId>()),
+		mSkeletonResourceId(getInvalid<SkeletonResourceId>()),
 		mInstanceCount(1),
 		mDrawIndexed(false),
 		// Cached material data
@@ -76,20 +76,20 @@ namespace RendererRuntime
 		mCastShadows(false),
 		// Internal data
 		mMaterialResourceManager(nullptr),
-		mMaterialResourceAttachmentIndex(getUninitialized<int>())
+		mMaterialResourceAttachmentIndex(getInvalid<int>())
 	{
 		// Nothing here
 	}
 
 	Renderable::Renderable(RenderableManager& renderableManager, const Renderer::IVertexArrayPtr& vertexArrayPtr, bool drawIndexed, uint32_t startIndexLocation, uint32_t numberOfIndices, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, uint32_t instanceCount) :
 		// Derived data
-		mSortingKey(getUninitialized<uint64_t>()),
+		mSortingKey(getInvalid<uint64_t>()),
 		// Data
 		mRenderableManager(renderableManager),
 		mVertexArrayPtr(vertexArrayPtr),
 		mStartIndexLocation(startIndexLocation),
 		mNumberOfIndices(numberOfIndices),
-		mMaterialResourceId(getUninitialized<MaterialResourceId>()),
+		mMaterialResourceId(getInvalid<MaterialResourceId>()),
 		mSkeletonResourceId(skeletonResourceId),
 		mInstanceCount(instanceCount),
 		mDrawIndexed(drawIndexed),
@@ -98,9 +98,9 @@ namespace RendererRuntime
 		mCastShadows(false),
 		// Internal data
 		mMaterialResourceManager(nullptr),
-		mMaterialResourceAttachmentIndex(getUninitialized<int>())
+		mMaterialResourceAttachmentIndex(getInvalid<int>())
 	{
-		if (isInitialized(materialResourceId))
+		if (isValid(materialResourceId))
 		{
 			setMaterialResourceId(materialResourceManager, materialResourceId);
 		}
@@ -123,7 +123,7 @@ namespace RendererRuntime
 			if (nullptr != materialResource)
 			{
 				// Sanity checks
-				assert(isUninitialized(mMaterialResourceAttachmentIndex));
+				assert(isInvalid(mMaterialResourceAttachmentIndex));
 				assert(nullptr == mMaterialResourceManager);
 
 				// Attach the renderable from the material resource
@@ -180,7 +180,7 @@ namespace RendererRuntime
 		else
 		{
 			// Sanity check
-			assert((isInitialized(mMaterialResourceId) && &materialResourceManager == mMaterialResourceManager) || (isUninitialized(mMaterialResourceId) && nullptr == mMaterialResourceManager));
+			assert((isValid(mMaterialResourceId) && &materialResourceManager == mMaterialResourceManager) || (isInvalid(mMaterialResourceId) && nullptr == mMaterialResourceManager));
 		}
 	}
 
@@ -193,16 +193,16 @@ namespace RendererRuntime
 		// TODO(co) Implement me, "mVertexArrayPtr" and "mMaterialResourceId" have an influence
 
 		// The quantized depth is a dynamic part which can't be set inside the cached sorting key (see "RendererRuntime::RenderQueue::addRenderablesFromRenderableManager()")
-		mSortingKey = getUninitialized<uint64_t>();
+		mSortingKey = getInvalid<uint64_t>();
 	}
 
 	void Renderable::unsetMaterialResourceIdInternal()
 	{
-		if (isInitialized(mMaterialResourceId))
+		if (isValid(mMaterialResourceId))
 		{
 			// Sanity checks
 			assert(nullptr != mMaterialResourceManager);
-			assert(isInitialized(mMaterialResourceAttachmentIndex));
+			assert(isValid(mMaterialResourceAttachmentIndex));
 
 			// Get the material resource we're going to detach from
 			MaterialResource& materialResource = mMaterialResourceManager->getById(mMaterialResourceId);
@@ -220,9 +220,9 @@ namespace RendererRuntime
 				// The node that was at the end got swapped and has now a different index
 				(*iterator)->mMaterialResourceAttachmentIndex = static_cast<int>(iterator - materialResource.mAttachedRenderables.begin());
 			}
-			setUninitialized(mMaterialResourceId);
+			setInvalid(mMaterialResourceId);
 			mMaterialResourceManager = nullptr;
-			setUninitialized(mMaterialResourceAttachmentIndex);
+			setInvalid(mMaterialResourceAttachmentIndex);
 		}
 	}
 

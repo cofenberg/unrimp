@@ -73,8 +73,8 @@ namespace RendererRuntime
 		}
 
 		// Sanity checks
-		assert(!mMaterialDefinitionMandatory || isInitialized(mMaterialAssetId) || isInitialized(mMaterialBlueprintAssetId));
-		assert(!(isInitialized(mMaterialAssetId) && isInitialized(mMaterialBlueprintAssetId)));
+		assert(!mMaterialDefinitionMandatory || isValid(mMaterialAssetId) || isValid(mMaterialBlueprintAssetId));
+		assert(!(isValid(mMaterialAssetId) && isValid(mMaterialBlueprintAssetId)));
 	}
 
 

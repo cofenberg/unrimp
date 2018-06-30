@@ -163,7 +163,7 @@ namespace RendererRuntime
 		const uint32_t	  mMaximumTextureBufferSize;	///< Maximum texture buffer size in bytes
 		InstanceBuffers	  mInstanceBuffers;				///< Instance buffers
 		// Current instance buffer related data
-		size_t			mCurrentInstanceBufferIndex;	///< Current instance buffer index, can be uninitialized if there's currently no current instance buffer
+		size_t			mCurrentInstanceBufferIndex;	///< Current instance buffer index, can be invalid if there's currently no current instance buffer
 		InstanceBuffer* mCurrentInstanceBuffer;			///< Current instance buffer, can be a null pointer, don't destroy the instance since this is just a reference
 		uint8_t*		mStartUniformBufferPointer;
 		uint8_t*		mCurrentUniformBufferPointer;

@@ -40,8 +40,8 @@ namespace RendererRuntime
 		mMaterialResourceManager(&materialResource.getResourceManager<MaterialResourceManager>()),
 		mMaterialResourceId(materialResource.getId()),
 		mAssignedMaterialPool(nullptr),
-		mAssignedMaterialSlot(getUninitialized<uint32_t>()),
-		mGlobalIndex(getUninitialized<int>()),
+		mAssignedMaterialSlot(getInvalid<uint32_t>()),
+		mGlobalIndex(getInvalid<int>()),
 		mDirty(false)
 	{
 		// Nothing here

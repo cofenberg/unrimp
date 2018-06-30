@@ -27,7 +27,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/Core/GetUninitialized.h"
+#include "RendererRuntime/Core/GetInvalid.h"
 #include "RendererRuntime/Resource/ShaderBlueprint/Cache/ShaderProperties.h"
 
 #include <Renderer/Renderer.h>
@@ -80,10 +80,10 @@ namespace RendererRuntime
 		*    Default constructor
 		*/
 		inline PipelineStateSignature() :
-			mMaterialBlueprintResourceId(getUninitialized<MaterialBlueprintResourceId>()),
-			mSerializedPipelineStateHash(getUninitialized<uint32_t>()),
-			mPipelineStateSignatureId(getUninitialized<PipelineStateSignatureId>()),
-			mShaderCombinationId{getUninitialized<ShaderCombinationId>(), getUninitialized<ShaderCombinationId>(), getUninitialized<ShaderCombinationId>(), getUninitialized<ShaderCombinationId>(), getUninitialized<ShaderCombinationId>()}
+			mMaterialBlueprintResourceId(getInvalid<MaterialBlueprintResourceId>()),
+			mSerializedPipelineStateHash(getInvalid<uint32_t>()),
+			mPipelineStateSignatureId(getInvalid<PipelineStateSignatureId>()),
+			mShaderCombinationId{getInvalid<ShaderCombinationId>(), getInvalid<ShaderCombinationId>(), getInvalid<ShaderCombinationId>(), getInvalid<ShaderCombinationId>(), getInvalid<ShaderCombinationId>()}
 		{
 			// Nothing here
 		}

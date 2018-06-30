@@ -384,7 +384,7 @@ namespace RendererRuntime
 				{
 					materialBlueprintSamplerState->samplerState.filter = defaultTextureFilterMode;
 				}
-				if (isUninitialized(materialBlueprintSamplerState->samplerState.maxAnisotropy))
+				if (isInvalid(materialBlueprintSamplerState->samplerState.maxAnisotropy))
 				{
 					materialBlueprintSamplerState->samplerState.maxAnisotropy = defaultMaximumTextureAnisotropy;
 				}
@@ -432,7 +432,7 @@ namespace RendererRuntime
 		for (uint8_t i = 0; i < NUMBER_OF_SHADER_TYPES; ++i)
 		{
 			const ShaderBlueprintResourceId shaderBlueprintResourceId = mMaterialBlueprintResource->mShaderBlueprintResourceId[i];
-			if (isInitialized(shaderBlueprintResourceId) && IResource::LoadingState::LOADED != shaderBlueprintResourceManager.getResourceByResourceId(shaderBlueprintResourceId).getLoadingState())
+			if (isValid(shaderBlueprintResourceId) && IResource::LoadingState::LOADED != shaderBlueprintResourceManager.getResourceByResourceId(shaderBlueprintResourceId).getLoadingState())
 			{
 				// Not fully loaded
 				return false;

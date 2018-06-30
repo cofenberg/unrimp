@@ -576,7 +576,7 @@ namespace
 			struct Source final
 			{
 				TextureSemantic			  textureSemantic  = TextureSemantic::UNKNOWN;
-				uint8_t					  numberOfChannels = RendererRuntime::getUninitialized<uint8_t>();
+				uint8_t					  numberOfChannels = RendererRuntime::getInvalid<uint8_t>();
 				float					  defaultColor[4]  = { 0.0f, 0.0f, 0.0f, 0.0f };
 				crnlib::mipmapped_texture crunchMipmappedTexture;
 			};
@@ -584,8 +584,8 @@ namespace
 
 			struct Destination final
 			{
-				uint8_t sourceIndex	  = RendererRuntime::getUninitialized<uint8_t>();
-				uint8_t sourceChannel = RendererRuntime::getUninitialized<uint8_t>();
+				uint8_t sourceIndex	  = RendererRuntime::getInvalid<uint8_t>();
+				uint8_t sourceChannel = RendererRuntime::getInvalid<uint8_t>();
 			};
 			typedef std::vector<Destination> Destinations;
 
@@ -713,7 +713,7 @@ namespace
 									break;
 								}
 							}
-							if (RendererRuntime::isUninitialized(destination.sourceIndex))
+							if (RendererRuntime::isInvalid(destination.sourceIndex))
 							{
 								throw std::runtime_error("Texture channel packing \"" + textureChannelPacking + "\" destination " + std::to_string(i) + ": Found no texture channel packing source for the given texture semantic");
 							}

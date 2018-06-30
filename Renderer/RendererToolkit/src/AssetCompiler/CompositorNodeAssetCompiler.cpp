@@ -154,19 +154,19 @@ namespace
 			passQuad.numberOfMaterialProperties = static_cast<uint32_t>(sortedMaterialPropertyVector.size());
 
 			// Sanity checks
-			if (materialDefinitionMandatory && RendererRuntime::isUninitialized(passQuad.materialAssetId) && RendererRuntime::isUninitialized(passQuad.materialBlueprintAssetId))
+			if (materialDefinitionMandatory && RendererRuntime::isInvalid(passQuad.materialAssetId) && RendererRuntime::isInvalid(passQuad.materialBlueprintAssetId))
 			{
 				throw std::runtime_error("Material asset ID or material blueprint asset ID must be defined");
 			}
-			if (RendererRuntime::isInitialized(passQuad.materialAssetId) && RendererRuntime::isInitialized(passQuad.materialBlueprintAssetId))
+			if (RendererRuntime::isValid(passQuad.materialAssetId) && RendererRuntime::isValid(passQuad.materialBlueprintAssetId))
 			{
 				throw std::runtime_error("Material asset ID is defined, but material blueprint asset ID is defined as well. Only one asset ID is allowed.");
 			}
-			if (RendererRuntime::isInitialized(passQuad.materialAssetId) && RendererRuntime::isUninitialized(passQuad.materialTechniqueId))
+			if (RendererRuntime::isValid(passQuad.materialAssetId) && RendererRuntime::isInvalid(passQuad.materialTechniqueId))
 			{
 				throw std::runtime_error("Material asset ID is defined, but material technique is not defined");
 			}
-			if (RendererRuntime::isInitialized(passQuad.materialBlueprintAssetId) && RendererRuntime::isUninitialized(passQuad.materialTechniqueId))
+			if (RendererRuntime::isValid(passQuad.materialBlueprintAssetId) && RendererRuntime::isInvalid(passQuad.materialTechniqueId))
 			{
 				passQuad.materialTechniqueId = RendererRuntime::MaterialResourceManager::DEFAULT_MATERIAL_TECHNIQUE_ID;
 			}
@@ -189,7 +189,7 @@ namespace
 
 		uint32_t getRenderTargetTextureSize(const rapidjson::Value& rapidJsonValueRenderTargetTexture, const char* propertyName, const char* defaultValue)
 		{
-			uint32_t size = RendererRuntime::getUninitialized<uint32_t>();
+			uint32_t size = RendererRuntime::getInvalid<uint32_t>();
 			if (rapidJsonValueRenderTargetTexture.HasMember(propertyName))
 			{
 				const char* valueAsString = rapidJsonValueRenderTargetTexture[propertyName].GetString();
@@ -274,8 +274,8 @@ namespace
 					  // -> Render target might be compositor channel (external interconnection) or compositor framebuffer (node internal processing)
 						const uint32_t id = RendererRuntime::StringId::calculateFNV(targetName.c_str());
 						RendererRuntime::v1CompositorNode::Target target;
-						target.compositorChannelId	   = (compositorChannelIds.find(id) != compositorChannelIds.end()) ? id : RendererRuntime::getUninitialized<uint32_t>();
-						target.compositorFramebufferId = (compositorFramebufferIds.find(id) != compositorFramebufferIds.end()) ? id : RendererRuntime::getUninitialized<uint32_t>();
+						target.compositorChannelId	   = (compositorChannelIds.find(id) != compositorChannelIds.end()) ? id : RendererRuntime::getInvalid<uint32_t>();
+						target.compositorFramebufferId = (compositorFramebufferIds.find(id) != compositorFramebufferIds.end()) ? id : RendererRuntime::getInvalid<uint32_t>();
 						target.numberOfPasses		   = rapidJsonValuePasses.MemberCount();
 						file.write(&target, sizeof(RendererRuntime::v1CompositorNode::Target));
 					}
@@ -616,7 +616,7 @@ namespace RendererToolkit
 
 							// Allow resolution scale?
 							bool allowResolutionScale = true;
-							if (RendererRuntime::isInitialized(width) && RendererRuntime::isInitialized(height) && rapidJsonValueRenderTargetTexture.HasMember("AllowResolutionScale"))
+							if (RendererRuntime::isValid(width) && RendererRuntime::isValid(height) && rapidJsonValueRenderTargetTexture.HasMember("AllowResolutionScale"))
 							{
 								throw std::runtime_error(std::string("Render target texture \"") + rapidJsonMemberIteratorRenderTargetTextures->name.GetString() + "\" has a fixed defined width and height, usage of \"AllowResolutionScale\" is not allowed for this use-case");
 							}
@@ -624,7 +624,7 @@ namespace RendererToolkit
 
 							// Width scale
 							float widthScale = 1.0f;
-							if (RendererRuntime::isInitialized(width) && rapidJsonValueRenderTargetTexture.HasMember("WidthScale"))
+							if (RendererRuntime::isValid(width) && rapidJsonValueRenderTargetTexture.HasMember("WidthScale"))
 							{
 								throw std::runtime_error(std::string("Render target texture \"") + rapidJsonMemberIteratorRenderTargetTextures->name.GetString() + "\" has a fixed defined width, usage of \"WidthScale\" is not allowed for this use-case");
 							}
@@ -632,7 +632,7 @@ namespace RendererToolkit
 
 							// Height scale
 							float heightScale = 1.0f;
-							if (RendererRuntime::isInitialized(height) && rapidJsonValueRenderTargetTexture.HasMember("HeightScale"))
+							if (RendererRuntime::isValid(height) && rapidJsonValueRenderTargetTexture.HasMember("HeightScale"))
 							{
 								throw std::runtime_error(std::string("Render target texture \"") + rapidJsonMemberIteratorRenderTargetTextures->name.GetString() + "\" has a fixed defined height, usage of \"HeightScale\" is not allowed for this use-case");
 							}
@@ -694,7 +694,7 @@ namespace RendererToolkit
 									const rapidjson::Value& rapidJsonValueFramebufferColorAttachment = rapidJsonValueFramebufferColorAttachments[i];
 									RendererRuntime::FramebufferSignatureAttachment& colorFramebufferSignatureAttachment = colorFramebufferSignatureAttachments[i];
 									const RendererRuntime::AssetId textureAssetId = StringHelper::getAssetIdByString(rapidJsonValueFramebufferColorAttachment["ColorTexture"].GetString());
-									if (RendererRuntime::isInitialized(textureAssetId) && renderTargetTextureAssetIds.find(textureAssetId) == renderTargetTextureAssetIds.end())
+									if (RendererRuntime::isValid(textureAssetId) && renderTargetTextureAssetIds.find(textureAssetId) == renderTargetTextureAssetIds.end())
 									{
 										throw std::runtime_error(std::string("Color texture \"") + rapidJsonValueFramebufferColorAttachment["ColorTexture"].GetString() + "\" at index " + std::to_string(i) + " of framebuffer \"" + rapidJsonMemberIteratorFramebuffers->name.GetString() + "\" is unknown");
 									}
@@ -711,7 +711,7 @@ namespace RendererToolkit
 								for (uint8_t i = 0; i < numberOfColorFramebufferAttachments; ++i)
 								{
 									const RendererRuntime::AssetId textureAssetId = StringHelper::getAssetIdByString(rapidJsonValueFramebufferColorTextures[i].GetString());
-									if (RendererRuntime::isInitialized(textureAssetId) && renderTargetTextureAssetIds.find(textureAssetId) == renderTargetTextureAssetIds.end())
+									if (RendererRuntime::isValid(textureAssetId) && renderTargetTextureAssetIds.find(textureAssetId) == renderTargetTextureAssetIds.end())
 									{
 										throw std::runtime_error(std::string("Color texture \"") + rapidJsonValueFramebufferColorTextures[i].GetString() + "\" at index " + std::to_string(i) + " of framebuffer \"" + rapidJsonMemberIteratorFramebuffers->name.GetString() + "\" is unknown");
 									}
@@ -720,7 +720,7 @@ namespace RendererToolkit
 							}
 
 							// Optional depth stencil framebuffer attachment
-							uint32_t depthStencilTextureAssetId = RendererRuntime::getUninitialized<uint32_t>();
+							uint32_t depthStencilTextureAssetId = RendererRuntime::getInvalid<uint32_t>();
 							RendererRuntime::FramebufferSignatureAttachment depthStencilFramebufferSignatureAttachment;
 							if (rapidJsonValueFramebuffer.HasMember("DepthStencilTexture") && rapidJsonValueFramebuffer.HasMember("DepthStencilAttachment"))
 							{
@@ -737,10 +737,10 @@ namespace RendererToolkit
 							else
 							{
 								// Ease-of-use "DepthStencilTexture" for zero mipmap index and layer index, sufficient most of the time
-								depthStencilTextureAssetId = rapidJsonValueFramebuffer.HasMember("DepthStencilTexture") ? StringHelper::getAssetIdByString(rapidJsonValueFramebuffer["DepthStencilTexture"].GetString()) : RendererRuntime::getUninitialized<RendererRuntime::AssetId>();
+								depthStencilTextureAssetId = rapidJsonValueFramebuffer.HasMember("DepthStencilTexture") ? StringHelper::getAssetIdByString(rapidJsonValueFramebuffer["DepthStencilTexture"].GetString()) : RendererRuntime::getInvalid<RendererRuntime::AssetId>();
 							}
 							depthStencilFramebufferSignatureAttachment.textureAssetId = depthStencilTextureAssetId;
-							if (RendererRuntime::isInitialized(depthStencilTextureAssetId) && renderTargetTextureAssetIds.find(depthStencilTextureAssetId) == renderTargetTextureAssetIds.end())
+							if (RendererRuntime::isValid(depthStencilTextureAssetId) && renderTargetTextureAssetIds.find(depthStencilTextureAssetId) == renderTargetTextureAssetIds.end())
 							{
 								throw std::runtime_error(std::string("Depth stencil texture \"") + rapidJsonValueFramebuffer["DepthStencilTexture"].GetString() + "\" of framebuffer \"" + rapidJsonMemberIteratorFramebuffers->name.GetString() + "\" is unknown");
 							}

@@ -28,7 +28,7 @@
 //[ Includes                                              ]
 //[-------------------------------------------------------]
 #include "RendererRuntime/Export.h"
-#include "RendererRuntime/Core/GetUninitialized.h"
+#include "RendererRuntime/Core/GetInvalid.h"
 
 #include <Renderer/Renderer.h>
 
@@ -66,15 +66,15 @@ namespace RendererRuntime
 		*    Default constructor
 		*/
 		inline RenderTargetTextureSignature() :
-			mWidth(getUninitialized<uint32_t>()),
-			mHeight(getUninitialized<uint32_t>()),
+			mWidth(getInvalid<uint32_t>()),
+			mHeight(getInvalid<uint32_t>()),
 			mTextureFormat(Renderer::TextureFormat::UNKNOWN),
 			mAllowMultisample(false),
 			mGenerateMipmaps(false),
 			mAllowResolutionScale(true),
 			mWidthScale(1.0f),
 			mHeightScale(1.0f),
-			mRenderTargetTextureSignatureId(getUninitialized<RenderTargetTextureSignatureId>())
+			mRenderTargetTextureSignatureId(getInvalid<RenderTargetTextureSignatureId>())
 		{
 			// Nothing here
 		}

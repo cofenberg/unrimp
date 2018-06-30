@@ -29,7 +29,7 @@
 //[-------------------------------------------------------]
 #include "RendererRuntime/Export.h"
 #include "RendererRuntime/Core/StringId.h"
-#include "RendererRuntime/Core/GetUninitialized.h"
+#include "RendererRuntime/Core/GetInvalid.h"
 #include "RendererRuntime/Resource/MaterialBlueprint/Listener/IMaterialBlueprintResourceListener.h"
 
 // Disable warnings in external headers, we can't fix them
@@ -107,9 +107,9 @@ namespace RendererRuntime
 		*    Default constructor
 		*/
 		inline MaterialBlueprintResourceListener() :
-			mIdentityColorCorrectionLookupTable3D(getUninitialized<TextureResourceId>()),
-			mSsaoSampleKernelTextureResourceId(getUninitialized<TextureResourceId>()),
-			mSsaoNoiseTexture4x4ResourceId(getUninitialized<TextureResourceId>()),
+			mIdentityColorCorrectionLookupTable3D(getInvalid<TextureResourceId>()),
+			mSsaoSampleKernelTextureResourceId(getInvalid<TextureResourceId>()),
+			mSsaoNoiseTexture4x4ResourceId(getInvalid<TextureResourceId>()),
 			mRendererRuntime(nullptr),
 			mPassData(nullptr),
 			mCompositorContextData(nullptr),
@@ -118,7 +118,7 @@ namespace RendererRuntime
 			mNearZ(0.0f),
 			mFarZ(0.0f),
 			mPreviousJitter(0.0f, 0.0f),
-			mPreviousNumberOfRenderedFrames(getUninitialized<uint64_t>()),
+			mPreviousNumberOfRenderedFrames(getInvalid<uint64_t>()),
 			mHosekWilkieSky(nullptr),
 			mObjectSpaceToWorldSpaceTransform(nullptr),
 			mMaterialTechnique(nullptr)

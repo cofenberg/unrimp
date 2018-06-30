@@ -48,7 +48,7 @@ namespace RendererRuntime
 	void MeshResourceManager::loadMeshResourceByAssetId(AssetId assetId, MeshResourceId& meshResourceId, IResourceListener* resourceListener, bool reload, ResourceLoaderTypeId resourceLoaderTypeId)
 	{
 		// Choose default resource loader type ID, if necessary
-		if (isUninitialized(resourceLoaderTypeId))
+		if (isInvalid(resourceLoaderTypeId))
 		{
 			resourceLoaderTypeId = MeshResourceLoader::TYPE_ID;
 		}

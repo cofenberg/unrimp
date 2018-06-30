@@ -191,8 +191,8 @@ namespace RendererRuntime
 				const AssetId assetId = textureResource.getAssetId();
 				if (nullptr != assetManager.tryGetAssetByAssetId(assetId) && textureResource.getLoadingState() == RendererRuntime::IResource::LoadingState::LOADED)
 				{
-					TextureResourceId textureResourceId = getUninitialized<TextureResourceId>();
-					loadTextureResourceByAssetId(assetId, getUninitialized<AssetId>(), textureResourceId, nullptr, textureResource.isRgbHardwareGammaCorrection(), true);
+					TextureResourceId textureResourceId = getInvalid<TextureResourceId>();
+					loadTextureResourceByAssetId(assetId, getInvalid<AssetId>(), textureResourceId, nullptr, textureResource.isRgbHardwareGammaCorrection(), true);
 				}
 			}
 		}
@@ -206,7 +206,7 @@ namespace RendererRuntime
 	TextureResourceId TextureResourceManager::getTextureResourceIdByAssetId(AssetId assetId) const
 	{
 		const TextureResource* textureResource = getTextureResourceByAssetId(assetId);
-		return (nullptr != textureResource) ? textureResource->getId() : getUninitialized<TextureResourceId>();
+		return (nullptr != textureResource) ? textureResource->getId() : getInvalid<TextureResourceId>();
 	}
 
 	void TextureResourceManager::loadTextureResourceByAssetId(AssetId assetId, AssetId fallbackTextureAssetId, TextureResourceId& textureResourceId, IResourceListener* resourceListener, bool rgbHardwareGammaCorrection, bool reload, ResourceLoaderTypeId resourceLoaderTypeId)
@@ -241,14 +241,14 @@ namespace RendererRuntime
 		}
 		else
 		{
-			textureResourceId = getUninitialized<TextureResourceId>();
+			textureResourceId = getInvalid<TextureResourceId>();
 		}
 
 		// Load the resource, if required
 		if (load)
 		{
 			// Prepare the resource loader
-			if (isUninitialized(resourceLoaderTypeId))
+			if (isInvalid(resourceLoaderTypeId))
 			{
 				// The totally primitive texture resource loader type detection is sufficient for now
 				const char* filenameExtension = strrchr(&asset->virtualFilename[0], '.');
@@ -262,7 +262,7 @@ namespace RendererRuntime
 					assert(false);
 				}
 			}
-			if (isInitialized(resourceLoaderTypeId))
+			if (isValid(resourceLoaderTypeId))
 			{
 				// Commit resource streamer asset load request
 				rendererRuntime.getResourceStreamer().commitLoadRequest(ResourceStreamer::LoadRequest(*asset, resourceLoaderTypeId, reload, *this, textureResourceId));
@@ -271,7 +271,7 @@ namespace RendererRuntime
 				// -> In case there's already a renderer texture, keep that as long as possible (for example there might be a change in the number of top mipmaps to remove)
 				if (nullptr == textureResource->mTexture)
 				{
-					if (isInitialized(fallbackTextureAssetId))
+					if (isValid(fallbackTextureAssetId))
 					{
 						const TextureResource* fallbackTextureResource = getTextureResourceByAssetId(fallbackTextureAssetId);
 						if (nullptr != fallbackTextureResource)
@@ -355,8 +355,8 @@ namespace RendererRuntime
 			const TextureResource& textureResource = mInternalResourceManager->getResources().getElementByIndex(i);
 			if (textureResource.getAssetId() == assetId)
 			{
-				TextureResourceId textureResourceId = getUninitialized<TextureResourceId>();
-				loadTextureResourceByAssetId(assetId, getUninitialized<AssetId>(), textureResourceId, nullptr, textureResource.isRgbHardwareGammaCorrection(), true, textureResource.getResourceLoaderTypeId());
+				TextureResourceId textureResourceId = getInvalid<TextureResourceId>();
+				loadTextureResourceByAssetId(assetId, getInvalid<AssetId>(), textureResourceId, nullptr, textureResource.isRgbHardwareGammaCorrection(), true, textureResource.getResourceLoaderTypeId());
 				break;
 			}
 		}

@@ -145,9 +145,9 @@ namespace RendererRuntime
 
 		// Reset everything
 		mResourceManager = nullptr;
-		setUninitialized(mResourceId);
-		setUninitialized(mAssetId);
-		setUninitialized(mResourceLoaderTypeId);
+		setInvalid(mResourceId);
+		setInvalid(mAssetId);
+		setInvalid(mResourceLoaderTypeId);
 		mSortedResourceListeners.clear();
 		#ifdef _DEBUG
 			mDebugName.clear();

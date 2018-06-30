@@ -79,7 +79,7 @@ namespace RendererRuntime
 		mMaximumUniformBufferSize(std::min(rendererRuntime.getRenderer().getCapabilities().maximumUniformBufferSize, ::detail::DEFAULT_UNIFORM_BUFFER_NUMBER_OF_BYTES)),
 		mMaximumTextureBufferSize(std::min(rendererRuntime.getRenderer().getCapabilities().maximumTextureBufferSize, ::detail::DEFAULT_TEXTURE_BUFFER_NUMBER_OF_BYTES)),
 		// Current instance buffer related data
-		mCurrentInstanceBufferIndex(getUninitialized<size_t>()),
+		mCurrentInstanceBufferIndex(getInvalid<size_t>()),
 		mCurrentInstanceBuffer(nullptr),
 		mStartUniformBufferPointer(nullptr),
 		mCurrentUniformBufferPointer(nullptr),
@@ -156,7 +156,7 @@ namespace RendererRuntime
 		const MaterialBlueprintResource::UniformBufferElementProperties& uniformBufferElementProperties = instanceUniformBuffer.uniformBufferElementProperties;
 		const size_t numberOfUniformBufferElementProperties = uniformBufferElementProperties.size();
 		const SkeletonResourceId skeletonResourceId = renderable.getSkeletonResourceId();
-		const SkeletonResource* skeletonResource = isInitialized(skeletonResourceId) ? &mRendererRuntime.getSkeletonResourceManager().getById(skeletonResourceId) : nullptr;
+		const SkeletonResource* skeletonResource = isValid(skeletonResourceId) ? &mRendererRuntime.getSkeletonResourceManager().getById(skeletonResourceId) : nullptr;
 		static const PassBufferManager::PassData passData = {};
 		materialBlueprintResourceListener.beginFillInstance((nullptr != passBufferManager) ? passBufferManager->getPassData() : passData, objectSpaceToWorldSpaceTransform, materialTechnique);
 
@@ -315,7 +315,7 @@ namespace RendererRuntime
 	void InstanceBufferManager::onPreCommandBufferExecution()
 	{
 		// Unmap the current instance buffer and reset the current instance buffer to the first instance
-		if (isInitialized(mCurrentInstanceBufferIndex))
+		if (isValid(mCurrentInstanceBufferIndex))
 		{
 			unmapCurrentInstanceBuffer();
 			mCurrentInstanceBufferIndex = 0;
@@ -335,7 +335,7 @@ namespace RendererRuntime
 		unmapCurrentInstanceBuffer();
 
 		// Update current instance buffer
-		mCurrentInstanceBufferIndex = isInitialized(mCurrentInstanceBufferIndex) ? (mCurrentInstanceBufferIndex + 1) : 0;
+		mCurrentInstanceBufferIndex = isValid(mCurrentInstanceBufferIndex) ? (mCurrentInstanceBufferIndex + 1) : 0;
 		if (mCurrentInstanceBufferIndex >= mInstanceBuffers.size())
 		{
 			// Create uniform buffer instance

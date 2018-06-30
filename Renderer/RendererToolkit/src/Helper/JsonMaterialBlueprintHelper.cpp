@@ -583,14 +583,14 @@ namespace RendererToolkit
 
 			case RendererRuntime::MaterialPropertyValue::ValueType::TEXTURE_ASSET_ID:
 			{
-				RendererRuntime::AssetId textureAssetId = RendererRuntime::getUninitialized<RendererRuntime::AssetId>();
+				RendererRuntime::AssetId textureAssetId = RendererRuntime::getInvalid<RendererRuntime::AssetId>();
 				if (rapidJsonValue.HasMember(propertyName))
 				{
 					// Usage of asset IDs is the preferred way to go, but we also need to support the asset ID naming scheme
 					// "<project name>/<asset type>/<asset category>/<asset name>" to be able to reference e.g. runtime generated assets
 					textureAssetId = StringHelper::getAssetIdByString(rapidJsonValue[propertyName].GetString(), input);
 				}
-				if (RendererRuntime::isUninitialized(textureAssetId))
+				if (RendererRuntime::isInvalid(textureAssetId))
 				{
 					throw std::runtime_error("Inside material blueprints, texture asset reference material properties must always have a value");
 				}
@@ -601,7 +601,7 @@ namespace RendererToolkit
 
 			case RendererRuntime::MaterialPropertyValue::ValueType::GLOBAL_MATERIAL_PROPERTY_ID:
 			{
-				RendererRuntime::MaterialPropertyId materialPropertyId = RendererRuntime::getUninitialized<RendererRuntime::MaterialPropertyId>();
+				RendererRuntime::MaterialPropertyId materialPropertyId = RendererRuntime::getInvalid<RendererRuntime::MaterialPropertyId>();
 				if (rapidJsonValue.HasMember(propertyName))
 				{
 					// Get the reference value as string
@@ -620,7 +620,7 @@ namespace RendererToolkit
 						throw std::runtime_error("Inside material blueprints, global material property ID material property values must begin with a @");
 					}
 				}
-				if (RendererRuntime::isUninitialized(materialPropertyId))
+				if (RendererRuntime::isInvalid(materialPropertyId))
 				{
 					throw std::runtime_error("Inside material blueprints, global material property ID material properties must always have a value");
 				}
@@ -893,7 +893,7 @@ namespace RendererToolkit
 			const rapidjson::Value& rapidJsonValueShaderBlueprints = rapidJsonValuePipelineState["ShaderBlueprints"];
 
 			RendererRuntime::AssetId shaderBlueprintAssetId[RendererRuntime::NUMBER_OF_SHADER_TYPES];
-			memset(shaderBlueprintAssetId, static_cast<int>(RendererRuntime::getUninitialized<RendererRuntime::AssetId>()), sizeof(RendererRuntime::AssetId) * RendererRuntime::NUMBER_OF_SHADER_TYPES);
+			memset(shaderBlueprintAssetId, static_cast<int>(RendererRuntime::getInvalid<RendererRuntime::AssetId>()), sizeof(RendererRuntime::AssetId) * RendererRuntime::NUMBER_OF_SHADER_TYPES);
 			shaderBlueprintAssetId[static_cast<uint8_t>(RendererRuntime::ShaderType::Vertex)] = JsonHelper::getCompiledAssetId(input, rapidJsonValueShaderBlueprints, "VertexShaderBlueprint");
 			JsonHelper::optionalCompiledAssetId(input, rapidJsonValueShaderBlueprints, "TessellationControlShaderBlueprint", shaderBlueprintAssetId[static_cast<uint8_t>(RendererRuntime::ShaderType::TessellationControl)]);
 			JsonHelper::optionalCompiledAssetId(input, rapidJsonValueShaderBlueprints, "TessellationEvaluationShaderBlueprint", shaderBlueprintAssetId[static_cast<uint8_t>(RendererRuntime::ShaderType::TessellationEvaluation)]);
@@ -1246,10 +1246,10 @@ namespace RendererToolkit
 						++samplerStateIndex;
 					}
 
-					// By default, inside the material blueprint system the texture filter and maximum anisotropy are set to uninitialized. Unless explicitly
+					// By default, inside the material blueprint system the texture filter and maximum anisotropy are set to invalid. Unless explicitly
 					// set by a material blueprint author, those values are dynamic during runtime so the user can decide about the performance/quality trade-off.
 					samplerState.filter = Renderer::FilterMode::UNKNOWN;
-					RendererRuntime::setUninitialized(samplerState.maxAnisotropy);
+					RendererRuntime::setInvalid(samplerState.maxAnisotropy);
 
 					// The optional properties
 					materialBlueprintSamplerState.rootParameterIndex = static_cast<uint32_t>(resourceGroupIndex);
@@ -1325,7 +1325,7 @@ namespace RendererToolkit
 					// "MipmapsUsed" with the default value "TRUE" isn't used, but it should be defined if mipmaps are not used to support debugging and optimization possibility spotting
 
 					// Map optional (e.g. texel fetch instead of sampling might be used) "SamplerStateBaseShaderRegisterName" to the index of the material blueprint sampler state resource to use
-					uint32_t samplerStateIndex = RendererRuntime::getUninitialized<uint32_t>();
+					uint32_t samplerStateIndex = RendererRuntime::getInvalid<uint32_t>();
 					if (rapidJsonValue.HasMember("SamplerStateBaseShaderRegisterName"))
 					{
 						char baseShaderRegisterName[Renderer::DescriptorRange::NAME_LENGTH] = {};
@@ -1352,7 +1352,7 @@ namespace RendererToolkit
 								const RendererRuntime::MaterialPropertyValue materialPropertyValue = RendererRuntime::MaterialPropertyValue::fromTextureAssetId(StringHelper::getAssetIdByString(rapidJsonValue["Value"].GetString(), input));
 
 								// Write down the texture
-								const RendererRuntime::v1MaterialBlueprint::Texture materialBlueprintTexture(rootParameterIndex, RendererRuntime::MaterialProperty(RendererRuntime::getUninitialized<RendererRuntime::MaterialPropertyId>(), usage, materialPropertyValue), fallbackTextureAssetId, rgbHardwareGammaCorrection, samplerStateIndex);
+								const RendererRuntime::v1MaterialBlueprint::Texture materialBlueprintTexture(rootParameterIndex, RendererRuntime::MaterialProperty(RendererRuntime::getInvalid<RendererRuntime::MaterialPropertyId>(), usage, materialPropertyValue), fallbackTextureAssetId, rgbHardwareGammaCorrection, samplerStateIndex);
 								file.write(&materialBlueprintTexture, sizeof(RendererRuntime::v1MaterialBlueprint::Texture));
 
 								// TODO(co) Error handling: Compiled asset ID not found (meaning invalid source asset ID given)

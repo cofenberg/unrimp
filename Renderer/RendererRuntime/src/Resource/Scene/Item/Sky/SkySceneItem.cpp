@@ -131,7 +131,7 @@ namespace RendererRuntime
 
 	const RenderableManager* SkySceneItem::getRenderableManager() const
 	{
-		if (!isInitialized(getMaterialResourceId()))
+		if (!isValid(getMaterialResourceId()))
 		{
 			// TODO(co) Get rid of the nasty delayed initialization in here, including the evil const-cast. For this, full asynchronous material blueprint loading must work. See "TODO(co) Currently material blueprint resource loading is a blocking process.".
 			const_cast<SkySceneItem*>(this)->initialize();
@@ -156,7 +156,7 @@ namespace RendererRuntime
 		::detail::VertexArrayPtr->addReference();
 
 		// Setup renderable manager
-		mRenderableManager.getRenderables().emplace_back(mRenderableManager, ::detail::VertexArrayPtr, true, 0, 36, rendererRuntime.getMaterialResourceManager(), getMaterialResourceId(), getUninitialized<SkeletonResourceId>());
+		mRenderableManager.getRenderables().emplace_back(mRenderableManager, ::detail::VertexArrayPtr, true, 0, 36, rendererRuntime.getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>());
 		mRenderableManager.updateCachedRenderablesData();
 	}
 
@@ -166,7 +166,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	SkySceneItem::~SkySceneItem()
 	{
-		if (isInitialized(getMaterialResourceId()))
+		if (isValid(getMaterialResourceId()))
 		{
 			// Clear the renderable manager right now so we have no more references to the shared vertex array
 			mRenderableManager.getRenderables().clear();

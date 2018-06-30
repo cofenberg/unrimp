@@ -28,7 +28,7 @@
 //[ Includes                                              ]
 //[-------------------------------------------------------]
 #include "RendererRuntime/Core/StringId.h"
-#include "RendererRuntime/Core/GetUninitialized.h"
+#include "RendererRuntime/Core/GetInvalid.h"
 
 #include <Renderer/Renderer.h>
 
@@ -128,7 +128,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	private:
 		inline ShaderCache() :
-			mShaderCacheId(getUninitialized<ShaderCacheId>()),
+			mShaderCacheId(getInvalid<ShaderCacheId>()),
 			mMasterShaderCache(nullptr)
 		{
 			// Nothing here

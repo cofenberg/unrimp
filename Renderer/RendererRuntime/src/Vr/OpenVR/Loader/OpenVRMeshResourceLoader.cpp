@@ -155,7 +155,7 @@ namespace
 		{
 			// Check whether or not we need to generate the runtime mesh asset right now
 			RendererRuntime::AssetId assetId = RendererRuntime::VrManagerOpenVR::albedoTextureIdToAssetId(vrRenderModel.diffuseTextureId);
-			RendererRuntime::TextureResourceId textureResourceId = RendererRuntime::getUninitialized<RendererRuntime::TextureResourceId>();
+			RendererRuntime::TextureResourceId textureResourceId = RendererRuntime::getInvalid<RendererRuntime::TextureResourceId>();
 			const bool rgbHardwareGammaCorrection = true;	// TODO(co) It must be possible to set the property name from the outside: Ask the material blueprint whether or not hardware gamma correction should be used
 			rendererRuntime.getTextureResourceManager().loadTextureResourceByAssetId(assetId, STRING_ID("Unrimp/Texture/DynamicByCode/IdentityAlbedoMap2D"), textureResourceId, nullptr, rgbHardwareGammaCorrection, false, RendererRuntime::OpenVRTextureResourceLoader::TYPE_ID);
 
@@ -172,11 +172,11 @@ namespace
 			// Check whether or not we need to generate the runtime material asset right now
 			RendererRuntime::MaterialResourceManager& materialResourceManager = rendererRuntime.getMaterialResourceManager();
 			RendererRuntime::MaterialResourceId materialResourceId = materialResourceManager.getMaterialResourceIdByAssetId(materialAssetId);
-			if (RendererRuntime::isUninitialized(materialResourceId))
+			if (RendererRuntime::isInvalid(materialResourceId))
 			{
 				// We need to generate the runtime material asset right now
 				materialResourceId = materialResourceManager.createMaterialResourceByCloning(vrDeviceMaterialResourceId, materialAssetId);
-				if (RendererRuntime::isInitialized(materialResourceId))
+				if (RendererRuntime::isValid(materialResourceId))
 				{
 					RendererRuntime::MaterialResource* materialResource = materialResourceManager.tryGetById(materialResourceId);
 					if (nullptr != materialResource)

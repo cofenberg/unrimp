@@ -51,7 +51,7 @@ namespace RendererRuntime
 				return boneIndex;
 			}
 		}
-		return getUninitialized<uint32_t>();
+		return getInvalid<uint32_t>();
 	}
 
 	void SkeletonResource::localToGlobalPose()

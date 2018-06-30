@@ -155,7 +155,7 @@ namespace RendererRuntime
 					// Get the texture width and height and apply resolution scale in case the main compositor workspace render target is used
 					uint32_t width = renderTargetTextureSignature.getWidth();
 					uint32_t height = renderTargetTextureSignature.getHeight();
-					if (isUninitialized(width) || isUninitialized(height))
+					if (isInvalid(width) || isInvalid(height))
 					{
 						uint32_t renderTargetWidth = 1;
 						uint32_t renderTargetHeight = 1;
@@ -164,7 +164,7 @@ namespace RendererRuntime
 						{
 							resolutionScale = 1.0f;
 						}
-						if (isUninitialized(width))
+						if (isInvalid(width))
 						{
 							width = static_cast<uint32_t>(static_cast<float>(renderTargetWidth) * resolutionScale * renderTargetTextureSignature.getWidthScale());
 							if (width < 1)
@@ -172,7 +172,7 @@ namespace RendererRuntime
 								width = 1;
 							}
 						}
-						if (isUninitialized(height))
+						if (isInvalid(height))
 						{
 							height = static_cast<uint32_t>(static_cast<float>(renderTargetHeight) * resolutionScale * renderTargetTextureSignature.getHeightScale());
 							if (height < 1)

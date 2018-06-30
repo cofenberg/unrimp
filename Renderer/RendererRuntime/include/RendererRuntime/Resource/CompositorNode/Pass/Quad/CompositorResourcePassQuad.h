@@ -151,9 +151,9 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	private:
 		bool				mMaterialDefinitionMandatory;
-		AssetId				mMaterialAssetId;			///< If material blueprint asset ID is set, material asset ID must be uninitialized
+		AssetId				mMaterialAssetId;			///< If material blueprint asset ID is set, material asset ID must be invalid
 		MaterialTechniqueId	mMaterialTechniqueId;		///< Must always be valid
-		AssetId				mMaterialBlueprintAssetId;	///< If material asset ID is set, material blueprint asset ID must be uninitialized
+		AssetId				mMaterialBlueprintAssetId;	///< If material asset ID is set, material blueprint asset ID must be invalid
 		MaterialProperties	mMaterialProperties;
 
 

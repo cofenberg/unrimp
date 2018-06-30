@@ -574,7 +574,7 @@ namespace RendererToolkit
 				// Copy asset data
 				RendererRuntime::Asset asset;
 				asset.assetId = RendererRuntime::StringId(virtualFilename.c_str());
-				RendererRuntime::setUninitialized(asset.fileHash);
+				RendererRuntime::setInvalid(asset.fileHash);
 				strcpy(asset.virtualFilename, virtualFilename.c_str());
 				sortedAssetVector.push_back(asset);
 			}

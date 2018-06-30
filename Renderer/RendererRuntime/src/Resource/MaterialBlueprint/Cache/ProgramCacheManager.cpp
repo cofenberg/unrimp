@@ -49,7 +49,7 @@ namespace RendererRuntime
 		for (uint8_t i = 0; i < NUMBER_OF_SHADER_TYPES; ++i)
 		{
 			const ShaderCombinationId shaderCombinationId = pipelineStateSignature.getShaderCombinationId(static_cast<ShaderType>(i));
-			if (isInitialized(shaderCombinationId))
+			if (isValid(shaderCombinationId))
 			{
 				programCacheId = Math::calculateFNV1a32(reinterpret_cast<const uint8_t*>(&shaderCombinationId), sizeof(ShaderCombinationId), programCacheId);
 			}

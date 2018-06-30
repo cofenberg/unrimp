@@ -150,15 +150,15 @@ namespace
 			materialItem.numberOfMaterialProperties = static_cast<uint32_t>(sortedMaterialPropertyVector.size());
 
 			// Sanity checks
-			if (RendererRuntime::isUninitialized(materialItem.materialAssetId) && RendererRuntime::isUninitialized(materialItem.materialBlueprintAssetId))
+			if (RendererRuntime::isInvalid(materialItem.materialAssetId) && RendererRuntime::isInvalid(materialItem.materialBlueprintAssetId))
 			{
 				throw std::runtime_error("Material asset ID or material blueprint asset ID must be defined");
 			}
-			if (RendererRuntime::isInitialized(materialItem.materialAssetId) && RendererRuntime::isInitialized(materialItem.materialBlueprintAssetId))
+			if (RendererRuntime::isValid(materialItem.materialAssetId) && RendererRuntime::isValid(materialItem.materialBlueprintAssetId))
 			{
 				throw std::runtime_error("Material asset ID is defined, but material blueprint asset ID is defined as well. Only one asset ID is allowed.");
 			}
-			if (RendererRuntime::isUninitialized(materialItem.materialTechniqueId))
+			if (RendererRuntime::isInvalid(materialItem.materialTechniqueId))
 			{
 				materialItem.materialTechniqueId = RendererRuntime::MaterialResourceManager::DEFAULT_MATERIAL_TECHNIQUE_ID;
 			}
@@ -414,7 +414,7 @@ namespace RendererToolkit
 												RendererRuntime::v1Scene::SkeletonMeshItem skeletonMeshItem;
 
 												// Optional skeleton animation: Map the source asset ID to the compiled asset ID
-												skeletonMeshItem.skeletonAnimationAssetId = RendererRuntime::getUninitialized<RendererRuntime::AssetId>();
+												skeletonMeshItem.skeletonAnimationAssetId = RendererRuntime::getInvalid<RendererRuntime::AssetId>();
 												JsonHelper::optionalCompiledAssetId(input, rapidJsonValueItem, "SkeletonAnimation", skeletonMeshItem.skeletonAnimationAssetId);
 
 												// Write down
@@ -438,7 +438,7 @@ namespace RendererToolkit
 												{
 													// Empty string means "Don't overwrite the original material asset ID of the sub-mesh"
 													const std::string valueAsString = rapidJsonValueSubMeshMaterialAssetIds[i].GetString();
-													subMeshMaterialAssetIds[i] = valueAsString.empty() ? RendererRuntime::getUninitialized<RendererRuntime::AssetId>() : StringHelper::getAssetIdByString(valueAsString, input);
+													subMeshMaterialAssetIds[i] = valueAsString.empty() ? RendererRuntime::getInvalid<RendererRuntime::AssetId>() : StringHelper::getAssetIdByString(valueAsString, input);
 												}
 											}
 											meshItem.numberOfSubMeshMaterialAssetIds = static_cast<uint32_t>(subMeshMaterialAssetIds.size());

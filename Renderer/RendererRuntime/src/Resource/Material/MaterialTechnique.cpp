@@ -73,7 +73,7 @@ namespace RendererRuntime
 		MaterialBufferSlot(materialResource),
 		mMaterialTechniqueId(materialTechniqueId),
 		mMaterialBlueprintResourceId(materialBlueprintResourceId),
-		mSerializedPipelineStateHash(getUninitialized<uint32_t>())
+		mSerializedPipelineStateHash(getInvalid<uint32_t>())
 	{
 		MaterialBufferManager* materialBufferManager = getMaterialBufferManager();
 		if (nullptr != materialBufferManager)
@@ -88,7 +88,7 @@ namespace RendererRuntime
 	MaterialTechnique::~MaterialTechnique()
 	{
 		// Due to hot-reloading it's possible that there's no assigned material slot, so we need to do a check here
-		if (isInitialized(getAssignedMaterialSlot()))
+		if (isValid(getAssignedMaterialSlot()))
 		{
 			MaterialBufferManager* materialBufferManager = getMaterialBufferManager();
 			assert(nullptr != materialBufferManager);
@@ -120,7 +120,7 @@ namespace RendererRuntime
 
 					// Apply material specific modifications
 					const MaterialPropertyId materialPropertyId = texture.materialProperty.getMaterialPropertyId();
-					if (isInitialized(materialPropertyId))
+					if (isValid(materialPropertyId))
 					{
 						// Figure out the material property value
 						const MaterialProperty* materialProperty = materialResource.getPropertyById(materialPropertyId);
@@ -143,7 +143,7 @@ namespace RendererRuntime
 	void MaterialTechnique::fillCommandBuffer(const IRendererRuntime& rendererRuntime, Renderer::CommandBuffer& commandBuffer, uint32_t& textureResourceGroupRootParameterIndex, Renderer::IResourceGroup** textureResourceGroup)
 	{
 		// Sanity check
-		assert(isInitialized(mMaterialBlueprintResourceId));
+		assert(isValid(mMaterialBlueprintResourceId));
 		assert((nullptr != textureResourceGroup) && "The renderer texture resource group pointer must be valid");
 
 		{ // Bind the material buffer manager
@@ -158,7 +158,7 @@ namespace RendererRuntime
 		const Textures& textures = getTextures(rendererRuntime);
 		if (textures.empty())
 		{
-			setUninitialized(textureResourceGroupRootParameterIndex);
+			setInvalid(textureResourceGroupRootParameterIndex);
 			*textureResourceGroup = nullptr;
 		}
 		else
@@ -212,7 +212,7 @@ namespace RendererRuntime
 					assert(nullptr != textureResources[i]);
 
 					// Set sampler state, if there's one (e.g. texel fetch instead of sampling might be used)
-					if (isInitialized(materialBlueprintResourceTextures[i].samplerStateIndex))
+					if (isValid(materialBlueprintResourceTextures[i].samplerStateIndex))
 					{
 						assert(materialBlueprintResourceTextures[i].samplerStateIndex < materialBlueprintResourceSamplerStates.size());
 						samplerStates[i] = materialBlueprintResourceSamplerStates[materialBlueprintResourceTextures[i].samplerStateIndex].samplerStatePtr;
@@ -323,7 +323,7 @@ namespace RendererRuntime
 		}
 		else
 		{
-			setUninitialized(mSerializedPipelineStateHash);
+			setInvalid(mSerializedPipelineStateHash);
 		}
 	}
 

@@ -27,7 +27,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/Core/GetUninitialized.h"
+#include "RendererRuntime/Core/GetInvalid.h"
 
 
 //[-------------------------------------------------------]
@@ -59,7 +59,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	public:
 		inline SubMesh() :
-			mMaterialResourceId(getUninitialized<MaterialResourceId>()),
+			mMaterialResourceId(getInvalid<MaterialResourceId>()),
 			mStartIndexLocation(0),
 			mNumberOfIndices(0)
 		{
@@ -132,7 +132,7 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		MaterialResourceId mMaterialResourceId;	///< Material resource ID, can be set to uninitialized value
+		MaterialResourceId mMaterialResourceId;	///< Material resource ID, can be set to invalid value
 		uint32_t		   mStartIndexLocation;
 		uint32_t		   mNumberOfIndices;
 

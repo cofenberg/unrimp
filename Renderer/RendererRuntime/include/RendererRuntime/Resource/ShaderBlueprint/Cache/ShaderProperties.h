@@ -29,7 +29,7 @@
 //[-------------------------------------------------------]
 #include "RendererRuntime/Export.h"
 #include "RendererRuntime/Core/StringId.h"
-#include "RendererRuntime/Core/GetUninitialized.h"
+#include "RendererRuntime/Core/GetInvalid.h"
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -74,8 +74,8 @@ namespace RendererRuntime
 			int32_t			 value;
 
 			inline Property() :
-				shaderPropertyId(getUninitialized<ShaderPropertyId>()),
-				value(getUninitialized<int32_t>())
+				shaderPropertyId(getInvalid<ShaderPropertyId>()),
+				value(getInvalid<int32_t>())
 			{
 				// Nothing here
 			}

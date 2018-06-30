@@ -399,7 +399,7 @@ namespace RendererRuntime
 				}
 
 				// Create the current pipeline state cache instances for the material blueprint
-				const Renderer::IPipelineStatePtr pipelineStatePtr = mPipelineStateCacheManager.getPipelineStateCacheByCombination(getUninitialized<uint32_t>(), shaderProperties, true);
+				const Renderer::IPipelineStatePtr pipelineStatePtr = mPipelineStateCacheManager.getPipelineStateCacheByCombination(getInvalid<uint32_t>(), shaderProperties, true);
 				assert(nullptr != pipelineStatePtr);	// TODO(co) Decent error handling
 			}
 			while (shaderCombinationIterator.iterate());
@@ -413,7 +413,7 @@ namespace RendererRuntime
 	MaterialBlueprintResource::MaterialBlueprintResource() :
 		mPipelineStateCacheManager(*this),
 		mPipelineState(Renderer::PipelineStateBuilder()),
-		mVertexAttributesResourceId(getUninitialized<ShaderBlueprintResourceId>()),
+		mVertexAttributesResourceId(getInvalid<ShaderBlueprintResourceId>()),
 		mPassUniformBuffer(nullptr),
 		mMaterialUniformBuffer(nullptr),
 		mInstanceUniformBuffer(nullptr),
@@ -422,7 +422,7 @@ namespace RendererRuntime
 		mPassBufferManager(nullptr),
 		mMaterialBufferManager(nullptr)
 	{
-		memset(mShaderBlueprintResourceId, static_cast<int>(getUninitialized<ShaderBlueprintResourceId>()), sizeof(ShaderBlueprintResourceId) * NUMBER_OF_SHADER_TYPES);
+		memset(mShaderBlueprintResourceId, static_cast<int>(getInvalid<ShaderBlueprintResourceId>()), sizeof(ShaderBlueprintResourceId) * NUMBER_OF_SHADER_TYPES);
 	}
 
 	MaterialBlueprintResource::~MaterialBlueprintResource()
@@ -464,7 +464,7 @@ namespace RendererRuntime
 		{
 			for (SamplerState& samplerState : mSamplerStates)
 			{
-				if (Renderer::FilterMode::UNKNOWN == samplerState.rendererSamplerState.filter || isUninitialized(samplerState.rendererSamplerState.maxAnisotropy))
+				if (Renderer::FilterMode::UNKNOWN == samplerState.rendererSamplerState.filter || isInvalid(samplerState.rendererSamplerState.maxAnisotropy))
 				{
 					mSamplerStateGroup = nullptr;
 					Renderer::SamplerState rendererSamplerState = samplerState.rendererSamplerState;
@@ -472,7 +472,7 @@ namespace RendererRuntime
 					{
 						rendererSamplerState.filter = defaultFilterMode;
 					}
-					if (isUninitialized(rendererSamplerState.maxAnisotropy))
+					if (isInvalid(rendererSamplerState.maxAnisotropy))
 					{
 						rendererSamplerState.maxAnisotropy = maximumDefaultAnisotropy;
 					}
@@ -518,8 +518,8 @@ namespace RendererRuntime
 	void MaterialBlueprintResource::deinitializeElement()
 	{
 		// TODO(co) Reset everything
-		setUninitialized(mVertexAttributesResourceId);
-		memset(mShaderBlueprintResourceId, static_cast<int>(getUninitialized<ShaderBlueprintResourceId>()), sizeof(ShaderBlueprintResourceId) * NUMBER_OF_SHADER_TYPES);
+		setInvalid(mVertexAttributesResourceId);
+		memset(mShaderBlueprintResourceId, static_cast<int>(getInvalid<ShaderBlueprintResourceId>()), sizeof(ShaderBlueprintResourceId) * NUMBER_OF_SHADER_TYPES);
 
 		// Call base implementation
 		IResource::deinitializeElement();

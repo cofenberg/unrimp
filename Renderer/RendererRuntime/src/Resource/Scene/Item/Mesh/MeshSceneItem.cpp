@@ -52,12 +52,12 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void MeshSceneItem::setMeshResourceId(MeshResourceId meshResourceId)
 	{
-		if (isInitialized(mMeshResourceId))
+		if (isValid(mMeshResourceId))
 		{
 			disconnectFromResourceById(mMeshResourceId);
 		}
 		mMeshResourceId = meshResourceId;
-		if (isInitialized(meshResourceId))
+		if (isValid(meshResourceId))
 		{
 			getSceneResource().getRendererRuntime().getMeshResourceManager().getResourceByResourceId(meshResourceId).connectResourceListener(*this);
 		}
@@ -65,7 +65,7 @@ namespace RendererRuntime
 
 	void MeshSceneItem::setMeshResourceIdByAssetId(AssetId meshAssetId)
 	{
-		if (isInitialized(mMeshResourceId))
+		if (isValid(mMeshResourceId))
 		{
 			disconnectFromResourceById(mMeshResourceId);
 		}
@@ -209,9 +209,9 @@ namespace RendererRuntime
 						const uint32_t numberOfMaterials = static_cast<uint32_t>(std::min(mSubMeshMaterialAssetIds.size(), mRenderableManager.getRenderables().size()));
 						for (size_t i = 0; i < numberOfMaterials; ++i)
 						{
-							if (isInitialized(mSubMeshMaterialAssetIds[i]))
+							if (isValid(mSubMeshMaterialAssetIds[i]))
 							{
-								MaterialResourceId materialResourceId = getUninitialized<MaterialResourceId>();
+								MaterialResourceId materialResourceId = getInvalid<MaterialResourceId>();
 								materialResourceManager.loadMaterialResourceByAssetId(mSubMeshMaterialAssetIds[i], materialResourceId, this);
 							}
 						}

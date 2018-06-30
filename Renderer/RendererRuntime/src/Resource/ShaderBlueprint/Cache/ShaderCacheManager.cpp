@@ -51,7 +51,7 @@ namespace RendererRuntime
 
 		// Get the shader blueprint resource ID
 		const ShaderBlueprintResourceId shaderBlueprintResourceId = materialBlueprintResource.getShaderBlueprintResourceId(shaderType);
-		if (isInitialized(shaderBlueprintResourceId))
+		if (isValid(shaderBlueprintResourceId))
 		{
 			// Get the shader cache identifier, often but not always identical to the shader combination ID
 			const ShaderCacheId shaderCacheId = pipelineStateSignature.getShaderCombinationId(shaderType);
@@ -221,7 +221,7 @@ namespace RendererRuntime
 		const AssetManager& assetManager = mShaderBlueprintResourceManager.getRendererRuntime().getAssetManager();
 
 		{ // Load shader caches
-			uint32_t numberOfShaderCaches = getUninitialized<uint32_t>();
+			uint32_t numberOfShaderCaches = getInvalid<uint32_t>();
 			file.read(&numberOfShaderCaches, sizeof(uint32_t));
 			mShaderCacheByShaderCacheId.reserve(numberOfShaderCaches);
 			std::vector<uint8_t> bytecode;
@@ -231,21 +231,21 @@ namespace RendererRuntime
 				ShaderCache* shaderCache = nullptr;
 
 				// Load shader cache
-				ShaderCacheId shaderCacheId = getUninitialized<ShaderCacheId>();
+				ShaderCacheId shaderCacheId = getInvalid<ShaderCacheId>();
 				file.read(&shaderCacheId, sizeof(ShaderCacheId));
-				uint32_t numberOfBytes = getUninitialized<uint32_t>();
+				uint32_t numberOfBytes = getInvalid<uint32_t>();
 				file.read(&numberOfBytes, sizeof(uint32_t));
-				if (isInitialized(numberOfBytes))
+				if (isValid(numberOfBytes))
 				{
 					// Master shader cache
 
 					// Load list of IDs of the assets (shader blueprint, shader piece) which took part in the shader cache creation
-					uint32_t numberOfAssetIds = getUninitialized<uint32_t>();
+					uint32_t numberOfAssetIds = getInvalid<uint32_t>();
 					file.read(&numberOfAssetIds, sizeof(uint32_t));
 					assert(0 != numberOfAssetIds);
 					assetIds.resize(numberOfAssetIds);
 					file.read(assetIds.data(), sizeof(uint32_t) * numberOfAssetIds);
-					uint64_t combinedAssetFileHashes = getUninitialized<uint64_t>();
+					uint64_t combinedAssetFileHashes = getInvalid<uint64_t>();
 					file.read(&combinedAssetFileHashes, sizeof(uint64_t));
 
 					// Check whether or not the shader cache is still valid
@@ -281,7 +281,7 @@ namespace RendererRuntime
 				}
 				else
 				{
-					ShaderCacheId masterShaderCacheId = getUninitialized<ShaderCacheId>();
+					ShaderCacheId masterShaderCacheId = getInvalid<ShaderCacheId>();
 					file.read(&masterShaderCacheId, sizeof(ShaderCacheId));
 					if (outOfDateShaderCacheIds.find(masterShaderCacheId) == outOfDateShaderCacheIds.cend())
 					{
@@ -315,14 +315,14 @@ namespace RendererRuntime
 		}
 
 		{ // Load shader source code ID to shader cache ID mapping
-			uint32_t numberOfElements = getUninitialized<uint32_t>();
+			uint32_t numberOfElements = getInvalid<uint32_t>();
 			file.read(&numberOfElements, sizeof(uint32_t));
 			mShaderCacheByShaderSourceCodeId.reserve(numberOfElements);
 			for (uint32_t i = 0; i < numberOfElements; ++i)
 			{
-				ShaderSourceCodeId shaderSourceCodeId = getUninitialized<ShaderSourceCodeId>();
+				ShaderSourceCodeId shaderSourceCodeId = getInvalid<ShaderSourceCodeId>();
 				file.read(&shaderSourceCodeId, sizeof(ShaderSourceCodeId));
-				ShaderCacheId shaderCacheId = getUninitialized<ShaderCacheId>();
+				ShaderCacheId shaderCacheId = getInvalid<ShaderCacheId>();
 				file.read(&shaderCacheId, sizeof(ShaderCacheId));
 				if (outOfDateShaderCacheIds.find(shaderCacheId) == outOfDateShaderCacheIds.cend())
 				{
@@ -378,7 +378,7 @@ namespace RendererRuntime
 				const ShaderCache* masterShaderCache = shaderCache->getMasterShaderCache();
 				assert((nullptr != masterShaderCache->getShaderPtr().getPointer()) && "A shader cache must always have a valid shader instance, else it's a pointless shader cache");
 				file.write(&shaderCache->mShaderCacheId, sizeof(ShaderCacheId));
-				const uint32_t numberOfBytes = getUninitialized<uint32_t>();
+				const uint32_t numberOfBytes = getInvalid<uint32_t>();
 				file.write(&numberOfBytes, sizeof(uint32_t));
 				file.write(&masterShaderCache->mShaderCacheId, sizeof(ShaderCacheId));
 			}

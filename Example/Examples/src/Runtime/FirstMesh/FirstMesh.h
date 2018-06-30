@@ -130,7 +130,7 @@ private:
 	Renderer::IUniformBufferPtr			  mUniformBuffer;			///< Uniform buffer object (UBO), can be a null pointer
 	Renderer::IPipelineStatePtr			  mPipelineState;			///< Pipeline state object (PSO), can be a null pointer
 	Renderer::IProgramPtr				  mProgram;					///< Program, can be a null pointer
-	RendererRuntime::MeshResourceId		  mMeshResourceId;			///< Mesh resource ID, can be set to uninitialized value
+	RendererRuntime::MeshResourceId		  mMeshResourceId;			///< Mesh resource ID, can be set to invalid value
 	RendererRuntime::TextureResourceId	  m_argb_nxaTextureResourceId;
 	RendererRuntime::TextureResourceId	  m_hr_rg_mb_nyaTextureResourceId;
 	RendererRuntime::TextureResourceId	  mEmissiveTextureResourceId;

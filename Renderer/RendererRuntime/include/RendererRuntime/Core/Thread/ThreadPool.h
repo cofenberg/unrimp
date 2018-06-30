@@ -30,7 +30,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/Core/GetUninitialized.h"
+#include "RendererRuntime/Core/GetInvalid.h"
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -126,10 +126,10 @@ namespace RendererRuntime
 
 
 	public:
-		/// Uninitialized number of threads means to use as many threads as there are hardware threads on the system
-		explicit ThreadPool(size_t threads = getUninitialized<size_t>())
+		/// Invalid number of threads means to use as many threads as there are hardware threads on the system
+		explicit ThreadPool(size_t threads = getInvalid<size_t>())
 		{
-			if (isUninitialized(threads))
+			if (isInvalid(threads))
 			{
 				threads = std::thread::hardware_concurrency();
 			}

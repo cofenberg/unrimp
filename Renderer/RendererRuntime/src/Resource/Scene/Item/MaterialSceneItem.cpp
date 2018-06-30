@@ -60,8 +60,8 @@ namespace RendererRuntime
 		}
 
 		// Sanity checks
-		assert(isInitialized(mMaterialAssetId) || isInitialized(mMaterialBlueprintAssetId));
-		assert(!(isInitialized(mMaterialAssetId) && isInitialized(mMaterialBlueprintAssetId)));
+		assert(isValid(mMaterialAssetId) || isValid(mMaterialBlueprintAssetId));
+		assert(!(isValid(mMaterialAssetId) && isValid(mMaterialBlueprintAssetId)));
 	}
 
 
@@ -83,7 +83,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	MaterialSceneItem::~MaterialSceneItem()
 	{
-		if (isInitialized(mMaterialResourceId))
+		if (isValid(mMaterialResourceId))
 		{
 			// Destroy the material resource we created
 			getSceneResource().getRendererRuntime().getMaterialResourceManager().destroyMaterialResource(mMaterialResourceId);
@@ -93,25 +93,25 @@ namespace RendererRuntime
 	void MaterialSceneItem::initialize()
 	{
 		// Sanity checks
-		assert(isInitialized(mMaterialAssetId) || isInitialized(mMaterialBlueprintAssetId));
-		assert(!(isInitialized(mMaterialAssetId) && isInitialized(mMaterialBlueprintAssetId)));
+		assert(isValid(mMaterialAssetId) || isValid(mMaterialBlueprintAssetId));
+		assert(!(isValid(mMaterialAssetId) && isValid(mMaterialBlueprintAssetId)));
 
 		// Get parent material resource ID and initiate creating the material resource
 		MaterialResourceManager& materialResourceManager = getSceneResource().getRendererRuntime().getMaterialResourceManager();
-		if (isInitialized(mMaterialAssetId))
+		if (isValid(mMaterialAssetId))
 		{
 			// Get or load material resource
-			MaterialResourceId materialResourceId = getUninitialized<MaterialResourceId>();
+			MaterialResourceId materialResourceId = getInvalid<MaterialResourceId>();
 			materialResourceManager.loadMaterialResourceByAssetId(mMaterialAssetId, materialResourceId, this);
 		}
 		else
 		{
 			// Get or load material blueprint resource
 			const AssetId materialBlueprintAssetId = mMaterialBlueprintAssetId;
-			if (isInitialized(materialBlueprintAssetId))
+			if (isValid(materialBlueprintAssetId))
 			{
 				MaterialResourceId parentMaterialResourceId = materialResourceManager.getMaterialResourceIdByAssetId(materialBlueprintAssetId);
-				if (isUninitialized(parentMaterialResourceId))
+				if (isInvalid(parentMaterialResourceId))
 				{
 					parentMaterialResourceId = materialResourceManager.createMaterialResourceByAssetId(materialBlueprintAssetId, materialBlueprintAssetId, mMaterialTechniqueId);
 				}
@@ -123,8 +123,8 @@ namespace RendererRuntime
 	void MaterialSceneItem::createMaterialResource(MaterialResourceId parentMaterialResourceId)
 	{
 		// Sanity checks
-		assert(isUninitialized(mMaterialResourceId));
-		assert(isInitialized(parentMaterialResourceId));
+		assert(isInvalid(mMaterialResourceId));
+		assert(isValid(parentMaterialResourceId));
 
 		// Each material user instance must have its own material resource since material property values might vary
 		const IRendererRuntime& rendererRuntime = getSceneResource().getRendererRuntime();
