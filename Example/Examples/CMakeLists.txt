@@ -33,26 +33,11 @@ if(SDL2_FOUND)
 	message("Found SDL2, SDL2 example enabled")
 endif()
 
-# TODO(co) Qt GUI runner currently isn't maintained
-find_package(Qt4 COMPONENTS QtCore QtGui)
-if(QT4_FOUND AND QT_QTGUI_FOUND)
-	set(EXAMPLE_RUNNER_QT4 "0" CACHE BOOL "Use Qt GUI runner")
-else()
-	unset(EXAMPLE_RUNNER_QT4 CACHE)
-endif()
-if(EXAMPLE_RUNNER_QT4)
-	include(${QT_USE_FILE})
-endif()
-
 
 ##################################################
 ## Preprocessor definitions
 ##################################################
 add_definitions(-DGLM_FORCE_RADIANS -DGLM_FORCE_LEFT_HANDED -DGLM_FORCE_DEPTH_ZERO_TO_ONE -DGLM_ENABLE_EXPERIMENTAL)
-if(EXAMPLE_RUNNER_QT4)
-	add_definitions(-DEXAMPLE_RUNNER_QT4)
-	ADD_DEFINITIONS(${QT_DEFINITIONS})
-endif()
 if(WIN32)
 	add_definitions(-DUNICODE)
 endif()
@@ -230,13 +215,6 @@ if(RENDERER_RUNTIME)
 		)
 	endif()
 endif()
-if(EXAMPLE_RUNNER_QT4)
-	# Qt runner source codes
-	set(SOURCE_CODES
-		${SOURCE_CODES}
-		src/Framework/QtRunner/ExampleRunnerQt4.cpp
-	)
-endif()
 
 # Disable warnings in external libraries, we can't fix them
 if(WIN32)
@@ -269,9 +247,6 @@ elseif(ANDROID)
 else()
 	add_executable(Examples ${SOURCE_CODES})
 	set(LIBRARIES ${LIBRARIES} X11 dl)
-	if(EXAMPLE_RUNNER_QT4)
-		TARGET_LINK_LIBRARIES(Examples ${QT_LIBRARIES})
-	endif()
 endif()
 if(SHARED_LIBRARY)
 	if(RENDERER_RUNTIME)
@@ -281,9 +256,6 @@ if(SHARED_LIBRARY)
 			target_link_libraries(Examples RendererRuntime)
 		endif()
 		add_dependencies(Examples RendererRuntime)
-	endif()
-	if(EXAMPLE_RUNNER_QT4)
-		target_link_libraries(Examples ${QT_LIBRARIES})
 	endif()
 	set_target_properties(Examples PROPERTIES COMPILE_FLAGS -DSHARED_LIBRARIES)
 else()

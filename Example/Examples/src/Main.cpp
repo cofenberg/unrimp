@@ -23,9 +23,6 @@
 //[-------------------------------------------------------]
 #include "Framework/CommandLineArguments.h"
 #include "ExampleRunner.h"
-#ifdef EXAMPLE_RUNNER_QT4
-	#include "Framework/QtRunner/ExampleRunnerQt4.h"
-#endif
 
 
 //[-------------------------------------------------------]
@@ -33,11 +30,7 @@
 //[-------------------------------------------------------]
 int programEntryPoint(const CommandLineArguments& commandLineArguments)
 {
-	#ifdef EXAMPLE_RUNNER_QT4
-		return ExampleRunnerQt4().run(commandLineArguments);
-	#else
-		return ExampleRunner().run(commandLineArguments);
-	#endif
+	return ExampleRunner().run(commandLineArguments);
 }
 
 
