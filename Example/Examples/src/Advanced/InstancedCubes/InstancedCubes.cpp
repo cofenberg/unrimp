@@ -80,9 +80,6 @@ InstancedCubes::~InstancedCubes()
 //[-------------------------------------------------------]
 void InstancedCubes::onInitialization()
 {
-	// Call the base implementation
-	ExampleBase::onInitialization();
-
 	// Get and check the renderer instance
 	Renderer::IRendererPtr renderer(getRenderer());
 	if (nullptr != renderer)
@@ -118,9 +115,6 @@ void InstancedCubes::onDeinitialization()
 		delete mCubeRenderer;
 		mCubeRenderer = nullptr;
 	}
-
-	// Call the base implementation
-	ExampleBase::onDeinitialization();
 }
 
 void InstancedCubes::onUpdate()

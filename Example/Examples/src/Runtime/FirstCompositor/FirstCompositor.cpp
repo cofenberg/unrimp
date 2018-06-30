@@ -56,9 +56,6 @@ namespace
 //[-------------------------------------------------------]
 void FirstCompositor::onInitialization()
 {
-	// Call the base implementation
-	ExampleBase::onInitialization();
-
 	// Get and check the renderer runtime instance
 	RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
 	if (nullptr != rendererRuntime)
@@ -83,9 +80,6 @@ void FirstCompositor::onDeinitialization()
 	{
 		rendererRuntime->getCompositorNodeResourceManager().setCompositorPassFactory(nullptr);
 	}
-
-	// Call the base implementation
-	ExampleBase::onDeinitialization();
 }
 
 void FirstCompositor::onDraw()

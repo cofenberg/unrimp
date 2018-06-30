@@ -42,9 +42,6 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 void FirstTexture::onInitialization()
 {
-	// Call the base implementation
-	ExampleBase::onInitialization();
-
 	// Get and check the renderer instance
 	Renderer::IRendererPtr renderer(getRenderer());
 	if (nullptr != renderer)
@@ -241,9 +238,6 @@ void FirstTexture::onDeinitialization()
 	mCommandBuffer.clear();
 	mTextureManager = nullptr;
 	mBufferManager = nullptr;
-
-	// Call the base implementation
-	ExampleBase::onDeinitialization();
 }
 
 void FirstTexture::onDraw()

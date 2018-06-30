@@ -32,9 +32,6 @@
 //[-------------------------------------------------------]
 void FirstGeometryShader::onInitialization()
 {
-	// Call the base implementation
-	ExampleBase::onInitialization();
-
 	// Get and check the renderer instance
 	// -> Geometry shaders supported?
 	Renderer::IRendererPtr renderer(getRenderer());
@@ -102,9 +99,6 @@ void FirstGeometryShader::onDeinitialization()
 	mRootSignature = nullptr;
 	mCommandBuffer.clear();
 	mBufferManager = nullptr;
-
-	// Call the base implementation
-	ExampleBase::onDeinitialization();
 }
 
 void FirstGeometryShader::onDraw()

@@ -39,9 +39,6 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 void FirstMultipleRenderTargets::onInitialization()
 {
-	// Call the base implementation
-	ExampleBase::onInitialization();
-
 	// Get and check the renderer instance
 	Renderer::IRendererPtr renderer(getRenderer());
 	if (nullptr != renderer)
@@ -213,9 +210,6 @@ void FirstMultipleRenderTargets::onDeinitialization()
 	mCommandBuffer.clear();
 	mTextureManager = nullptr;
 	mBufferManager = nullptr;
-
-	// Call the base implementation
-	ExampleBase::onDeinitialization();
 }
 
 void FirstMultipleRenderTargets::onDraw()

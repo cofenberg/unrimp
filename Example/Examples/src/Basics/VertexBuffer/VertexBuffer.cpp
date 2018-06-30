@@ -39,9 +39,6 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 void VertexBuffer::onInitialization()
 {
-	// Call the base implementation
-	ExampleBase::onInitialization();
-
 	// Get and check the renderer instance
 	Renderer::IRendererPtr renderer(getRenderer());
 	if (nullptr != renderer)
@@ -227,9 +224,6 @@ void VertexBuffer::onDeinitialization()
 	mRootSignature = nullptr;
 	mCommandBuffer.clear();
 	mBufferManager = nullptr;
-
-	// Call the base implementation
-	ExampleBase::onDeinitialization();
 }
 
 void VertexBuffer::onDraw()

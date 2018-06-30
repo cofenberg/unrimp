@@ -188,9 +188,6 @@ FirstScene::~FirstScene()
 //[-------------------------------------------------------]
 void FirstScene::onInitialization()
 {
-	// Call the base implementation
-	ExampleBase::onInitialization();
-
 	// Get and check the renderer runtime instance
 	RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
 	if (nullptr != rendererRuntime)
@@ -274,16 +271,10 @@ void FirstScene::onDeinitialization()
 		delete mController;
 		mController = nullptr;
 	}
-
-	// Call the base implementation
-	ExampleBase::onDeinitialization();
 }
 
 void FirstScene::onUpdate()
 {
-	// Call the base implementation
-	ExampleBase::onUpdate();
-
 	const RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
 	if (nullptr != rendererRuntime)
 	{

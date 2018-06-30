@@ -65,9 +65,6 @@ FirstMesh::FirstMesh() :
 //[-------------------------------------------------------]
 void FirstMesh::onInitialization()
 {
-	// Call the base implementation
-	ExampleBase::onInitialization();
-
 	// Get and check the renderer runtime instance
 	RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
 	if (nullptr != rendererRuntime)
@@ -223,16 +220,10 @@ void FirstMesh::onDeinitialization()
 	mUniformBuffer = nullptr;
 	mRootSignature = nullptr;
 	mCommandBuffer.clear();
-
-	// Call the base implementation
-	ExampleBase::onDeinitialization();
 }
 
 void FirstMesh::onUpdate()
 {
-	// Call the base implementation
-	ExampleBase::onUpdate();
-
 	// Stop the stopwatch
 	mStopwatch.stop();
 

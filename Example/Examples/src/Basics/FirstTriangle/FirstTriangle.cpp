@@ -39,9 +39,6 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 void FirstTriangle::onInitialization()
 {
-	// Call the base implementation
-	ExampleBase::onInitialization();
-
 	// Get and check the renderer instance
 	Renderer::IRendererPtr renderer(getRenderer());
 	if (nullptr != renderer)
@@ -149,9 +146,6 @@ void FirstTriangle::onDeinitialization()
 	mRootSignature = nullptr;
 	mCommandBuffer.clear();
 	mBufferManager = nullptr;
-
-	// Call the base implementation
-	ExampleBase::onDeinitialization();
 }
 
 void FirstTriangle::onDraw()

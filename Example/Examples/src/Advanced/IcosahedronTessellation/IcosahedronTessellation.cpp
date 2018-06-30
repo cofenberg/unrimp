@@ -44,9 +44,6 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 void IcosahedronTessellation::onInitialization()
 {
-	// Call the base implementation
-	ExampleBase::onInitialization();
-
 	// Get and check the renderer instance
 	// -> Uniform buffer object (UBO, "constant buffer" in Direct3D terminology) supported?
 	// -> Geometry shaders supported?
@@ -238,9 +235,6 @@ void IcosahedronTessellation::onDeinitialization()
 	mRootSignature = nullptr;
 	mCommandBuffer.clear();
 	mBufferManager = nullptr;
-
-	// Call the base implementation
-	ExampleBase::onDeinitialization();
 }
 
 void IcosahedronTessellation::onDraw()

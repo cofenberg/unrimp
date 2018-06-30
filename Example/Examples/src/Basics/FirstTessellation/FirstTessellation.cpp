@@ -39,9 +39,6 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 void FirstTessellation::onInitialization()
 {
-	// Call the base implementation
-	ExampleBase::onInitialization();
-
 	// Get and check the renderer instance
 	// -> Uniform buffer object (UBO, "constant buffer" in Direct3D terminology) supported?
 	// -> Tessellation control and tessellation evaluation shaders supported?
@@ -150,9 +147,6 @@ void FirstTessellation::onDeinitialization()
 	mRootSignature = nullptr;
 	mCommandBuffer.clear();
 	mBufferManager = nullptr;
-
-	// Call the base implementation
-	ExampleBase::onDeinitialization();
 }
 
 void FirstTessellation::onDraw()
