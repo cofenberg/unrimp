@@ -51,7 +51,7 @@ namespace
 		//[ Global variables                                      ]
 		//[-------------------------------------------------------]
 		// Vertex input layout
-		static constexpr Renderer::VertexAttribute VertexAttributesLayout[] =
+		static constexpr Renderer::VertexAttribute CubeRendererDrawInstancedVertexAttributesLayout[] =
 		{
 			{ // Attribute 0
 				// Data destination
@@ -90,7 +90,7 @@ namespace
 				0											// instancesPerElement (uint32_t)
 			}
 		};
-		const Renderer::VertexAttributes VertexAttributes(static_cast<uint32_t>(glm::countof(VertexAttributesLayout)), VertexAttributesLayout);
+		const Renderer::VertexAttributes CubeRendererDrawInstancedVertexAttributes(static_cast<uint32_t>(glm::countof(CubeRendererDrawInstancedVertexAttributesLayout)), CubeRendererDrawInstancedVertexAttributesLayout);
 
 
 //[-------------------------------------------------------]
@@ -275,7 +275,7 @@ CubeRendererDrawInstanced::CubeRendererDrawInstanced(Renderer::IRenderer& render
 		//    reference of the used vertex buffer objects (VBO). If the reference counter of a
 		//    vertex buffer object (VBO) reaches zero, it's automatically destroyed.
 		const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
-		mVertexArray = mBufferManager->createVertexArray(detail::VertexAttributes, static_cast<uint32_t>(glm::countof(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBuffer);
+		mVertexArray = mBufferManager->createVertexArray(detail::CubeRendererDrawInstancedVertexAttributes, static_cast<uint32_t>(glm::countof(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBuffer);
 	}
 
 	// Uniform buffer object (UBO, "constant buffer" in Direct3D terminology) supported?
@@ -322,8 +322,8 @@ CubeRendererDrawInstanced::CubeRendererDrawInstanced(Renderer::IRenderer& render
 		// Create the program
 		mProgram = shaderLanguage->createProgram(
 			*mRootSignature,
-			detail::VertexAttributes,
-			shaderLanguage->createVertexShaderFromSourceCode(detail::VertexAttributes, vertexShaderSourceCode),
+			detail::CubeRendererDrawInstancedVertexAttributes,
+			shaderLanguage->createVertexShaderFromSourceCode(detail::CubeRendererDrawInstancedVertexAttributes, vertexShaderSourceCode),
 			shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 	}
 }
@@ -369,7 +369,7 @@ void CubeRendererDrawInstanced::setNumberOfCubes(uint32_t numberOfCubes)
 	for (int remaningNumberOfCubes = static_cast<int>(numberOfSolidCubes); batch < lastBatch; ++batch, remaningNumberOfCubes -= mMaximumNumberOfInstancesPerBatch)
 	{
 		const uint32_t currentNumberOfCubes = (remaningNumberOfCubes > static_cast<int>(mMaximumNumberOfInstancesPerBatch)) ? mMaximumNumberOfInstancesPerBatch : remaningNumberOfCubes;
-		batch->initialize(*mBufferManager, *mRootSignature, detail::VertexAttributes, *mProgram, mRenderPass, currentNumberOfCubes, false, mNumberOfTextures, mSceneRadius);
+		batch->initialize(*mBufferManager, *mRootSignature, detail::CubeRendererDrawInstancedVertexAttributes, *mProgram, mRenderPass, currentNumberOfCubes, false, mNumberOfTextures, mSceneRadius);
 	}
 
 	// Initialize the transparent batches
@@ -378,7 +378,7 @@ void CubeRendererDrawInstanced::setNumberOfCubes(uint32_t numberOfCubes)
 	for (int remaningNumberOfCubes = static_cast<int>(numberOfTransparentCubes); batch < lastBatch; ++batch, remaningNumberOfCubes -= mMaximumNumberOfInstancesPerBatch)
 	{
 		const uint32_t currentNumberOfCubes = (remaningNumberOfCubes > static_cast<int>(mMaximumNumberOfInstancesPerBatch)) ? mMaximumNumberOfInstancesPerBatch : remaningNumberOfCubes;
-		batch->initialize(*mBufferManager, *mRootSignature, detail::VertexAttributes, *mProgram, mRenderPass, currentNumberOfCubes, true, mNumberOfTextures, mSceneRadius);
+		batch->initialize(*mBufferManager, *mRootSignature, detail::CubeRendererDrawInstancedVertexAttributes, *mProgram, mRenderPass, currentNumberOfCubes, true, mNumberOfTextures, mSceneRadius);
 	}
 
 	// Since we're always submitting the same commands to the renderer, we can fill the command buffer once during initialization and then reuse it multiple times during runtime

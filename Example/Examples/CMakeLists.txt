@@ -138,17 +138,7 @@ elseif(UNIX AND NOT ANDROID)
 endif()
 set(SOURCE_CODES
 	${EXTERNAL_SOURCE_CODES}
-	src/Advanced/FirstGpgpu/FirstGpgpu.cpp
-	src/Advanced/IcosahedronTessellation/IcosahedronTessellation.cpp
-	src/Basics/FirstGeometryShader/FirstGeometryShader.cpp
-	src/Basics/FirstIndirectBuffer/FirstIndirectBuffer.cpp
-	src/Basics/FirstInstancing/FirstInstancing.cpp
-	src/Basics/FirstMultipleRenderTargets/FirstMultipleRenderTargets.cpp
-	src/Basics/FirstRenderToTexture/FirstRenderToTexture.cpp
-	src/Basics/FirstTessellation/FirstTessellation.cpp
-	src/Basics/FirstTexture/FirstTexture.cpp
-	src/Basics/FirstTriangle/FirstTriangle.cpp
-	src/Basics/VertexBuffer/VertexBuffer.cpp
+	ExamplesUnityBuild.cpp
 	src/ExampleRunner.cpp
 	src/Framework/CommandLineArguments.cpp
 	src/Framework/Color4.cpp
@@ -158,12 +148,6 @@ set(SOURCE_CODES
 	src/Framework/ExampleBase.cpp
 	src/Main.cpp
 )
-if(NOT ANDROID)
-	set(SOURCE_CODES
-		${SOURCE_CODES}
-		src/Basics/FirstMultipleSwapChains/FirstMultipleSwapChains.cpp
-	)
-endif()
 if(WIN32)
 	if(SDL2_FOUND)
 		set(SOURCE_CODES
@@ -190,30 +174,7 @@ if(RENDERER_RUNTIME)
 	set(SOURCE_CODES
 		${SOURCE_CODES}
 		src/Framework/IApplicationRendererRuntime.cpp
-		src/Runtime/FirstMesh/FirstMesh.cpp
-		src/Runtime/FirstScene/FirstScene.cpp
-		src/Runtime/FirstScene/FreeCameraController.cpp
-		src/Runtime/FirstCompositor/FirstCompositor.cpp
-		src/Runtime/FirstCompositor/CompositorInstancePassFirst.cpp
-		src/Runtime/FirstCompositor/CompositorPassFactoryFirst.cpp
-		src/Advanced/InstancedCubes/CubeRendererDrawInstanced/BatchDrawInstanced.cpp
-		src/Advanced/InstancedCubes/CubeRendererDrawInstanced/CubeRendererDrawInstanced.cpp
-		src/Advanced/InstancedCubes/CubeRendererInstancedArrays/BatchInstancedArrays.cpp
-		src/Advanced/InstancedCubes/CubeRendererInstancedArrays/CubeRendererInstancedArrays.cpp
-		src/Advanced/InstancedCubes/InstancedCubes.cpp
 	)
-	if(RENDERER_RUNTIME_IMGUI)
-		set(SOURCE_CODES
-			${SOURCE_CODES}
-			src/Runtime/ImGuiExampleSelector/ImGuiExampleSelector.cpp
-		)
-	endif()
-	if(RENDERER_RUNTIME_OPENVR)
-		set(SOURCE_CODES
-			${SOURCE_CODES}
-			src/Runtime/FirstScene/VrController.cpp
-		)
-	endif()
 endif()
 
 # Disable warnings in external libraries, we can't fix them

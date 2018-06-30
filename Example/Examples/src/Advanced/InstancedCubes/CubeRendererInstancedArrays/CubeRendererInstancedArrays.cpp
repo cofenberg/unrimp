@@ -51,7 +51,7 @@ namespace
 		//[ Global variables                                      ]
 		//[-------------------------------------------------------]
 		// Vertex input layout
-		static constexpr Renderer::VertexAttribute VertexAttributesLayout[] =
+		static constexpr Renderer::VertexAttribute CubeRendererInstancedArraysVertexAttributesLayout[] =
 		{
 			// Mesh data
 			{ // Attribute 0
@@ -117,7 +117,7 @@ namespace
 				1											// instancesPerElement (uint32_t)
 			}
 		};
-		const Renderer::VertexAttributes VertexAttributes(static_cast<uint32_t>(glm::countof(VertexAttributesLayout)), VertexAttributesLayout);
+		const Renderer::VertexAttributes CubeRendererInstancedArraysVertexAttributes(static_cast<uint32_t>(glm::countof(CubeRendererInstancedArraysVertexAttributesLayout)), CubeRendererInstancedArraysVertexAttributesLayout);
 
 
 //[-------------------------------------------------------]
@@ -272,8 +272,8 @@ CubeRendererInstancedArrays::CubeRendererInstancedArrays(Renderer::IRenderer& re
 		// Create the program
 		mProgram = shaderLanguage->createProgram(
 			*mRootSignature,
-			detail::VertexAttributes,
-			shaderLanguage->createVertexShaderFromSourceCode(detail::VertexAttributes, vertexShaderSourceCode),
+			detail::CubeRendererInstancedArraysVertexAttributes,
+			shaderLanguage->createVertexShaderFromSourceCode(detail::CubeRendererInstancedArraysVertexAttributes, vertexShaderSourceCode),
 			shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 	}
 
@@ -382,7 +382,7 @@ void CubeRendererInstancedArrays::setNumberOfCubes(uint32_t numberOfCubes)
 	for (int remaningNumberOfCubes = static_cast<int>(numberOfSolidCubes); batch < lastBatch; ++batch, remaningNumberOfCubes -= mMaximumNumberOfInstancesPerBatch)
 	{
 		const uint32_t currentNumberOfCubes = (remaningNumberOfCubes > static_cast<int>(mMaximumNumberOfInstancesPerBatch)) ? mMaximumNumberOfInstancesPerBatch : remaningNumberOfCubes;
-		batch->initialize(*mBufferManager, *mRootSignature, detail::VertexAttributes, *mVertexBuffer, *mIndexBuffer, *mProgram, mRenderPass, currentNumberOfCubes, false, mNumberOfTextures, mSceneRadius);
+		batch->initialize(*mBufferManager, *mRootSignature, detail::CubeRendererInstancedArraysVertexAttributes, *mVertexBuffer, *mIndexBuffer, *mProgram, mRenderPass, currentNumberOfCubes, false, mNumberOfTextures, mSceneRadius);
 	}
 
 	// Initialize the transparent batches
@@ -391,7 +391,7 @@ void CubeRendererInstancedArrays::setNumberOfCubes(uint32_t numberOfCubes)
 	for (int remaningNumberOfCubes = static_cast<int>(numberOfTransparentCubes); batch < lastBatch; ++batch, remaningNumberOfCubes -= mMaximumNumberOfInstancesPerBatch)
 	{
 		const uint32_t currentNumberOfCubes = (remaningNumberOfCubes > static_cast<int>(mMaximumNumberOfInstancesPerBatch)) ? mMaximumNumberOfInstancesPerBatch : remaningNumberOfCubes;
-		batch->initialize(*mBufferManager, *mRootSignature, detail::VertexAttributes, *mVertexBuffer, *mIndexBuffer, *mProgram, mRenderPass, currentNumberOfCubes, true, mNumberOfTextures, mSceneRadius);
+		batch->initialize(*mBufferManager, *mRootSignature, detail::CubeRendererInstancedArraysVertexAttributes, *mVertexBuffer, *mIndexBuffer, *mProgram, mRenderPass, currentNumberOfCubes, true, mNumberOfTextures, mSceneRadius);
 	}
 
 	// Since we're always submitting the same commands to the renderer, we can fill the command buffer once during initialization and then reuse it multiple times during runtime

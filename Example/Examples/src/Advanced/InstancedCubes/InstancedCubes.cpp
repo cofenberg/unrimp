@@ -126,10 +126,16 @@ void InstancedCubes::onDeinitialization()
 void InstancedCubes::onUpdate()
 {
 	// Stop the stopwatch
-	mStopwatch.stop();
+	#ifdef RENDERER_RUNTIME
+		mStopwatch.stop();
+	#endif
 
 	// Update the global timer (FPS independent movement)
-	const float timeDifference = mStopwatch.getMilliseconds();
+	#ifdef RENDERER_RUNTIME
+		const float timeDifference = mStopwatch.getMilliseconds();
+	#else
+		const float timeDifference = 0.0f;
+	#endif
 	mGlobalTimer += timeDifference;
 
 	// Calculate the current FPS
@@ -143,7 +149,9 @@ void InstancedCubes::onUpdate()
 	}
 
 	// Start the stopwatch
-	mStopwatch.start();
+	#ifdef RENDERER_RUNTIME
+		mStopwatch.start();
+	#endif
 
 	{ // Input
 		const DeviceInput::Keyboard* keyboard = mInputManager->GetKeyboard();
