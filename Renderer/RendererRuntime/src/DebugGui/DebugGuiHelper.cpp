@@ -231,6 +231,9 @@ namespace RendererRuntime
 			const glm::mat4* globalBoneMatrices = skeletonResource->getGlobalBoneMatrices();
 
 			// Draw skeleton hierarchy as lines
+			// -> Update ImGui style to not have a visible round border
+			ImGui::PushStyleColor(ImGuiCol_WindowBg, 0);
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 			if (ImGui::Begin("skeleton", nullptr, ImGui::GetIO().DisplaySize, 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus))
 			{
 				static const ImColor WHITE_COLOR(255, 255, 255);
@@ -243,6 +246,8 @@ namespace RendererRuntime
 				}
 			}
 			ImGui::End();
+			ImGui::PopStyleVar();
+			ImGui::PopStyleColor();
 		}
 	}
 
