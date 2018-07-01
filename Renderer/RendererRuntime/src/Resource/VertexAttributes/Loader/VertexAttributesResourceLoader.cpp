@@ -25,6 +25,7 @@
 #include "RendererRuntime/Resource/VertexAttributes/Loader/VertexAttributesFileFormat.h"
 #include "RendererRuntime/Resource/VertexAttributes/VertexAttributesResource.h"
 #include "RendererRuntime/Resource/Scene/Item/Terrain/TerrainSceneItem.h"
+#include "RendererRuntime/Resource/Scene/Item/Particles/ParticlesSceneItem.h"
 #include "RendererRuntime/Resource/Mesh/MeshResource.h"
 
 // Disable warnings in external headers, we can't fix them
@@ -143,6 +144,10 @@ namespace RendererRuntime
 		else if (STRING_ID("Example/VertexAttributes/Default/SkinnedMesh") == getAsset().assetId)
 		{
 			mVertexAttributesResource->mVertexAttributes = Renderer::VertexAttributes(MeshResource::SKINNED_VERTEX_ATTRIBUTES.numberOfAttributes, MeshResource::SKINNED_VERTEX_ATTRIBUTES.attributes);
+		}
+		else if (STRING_ID("Example/VertexAttributes/Default/Particles") == getAsset().assetId)
+		{
+			mVertexAttributesResource->mVertexAttributes = Renderer::VertexAttributes(ParticlesSceneItem::VERTEX_ATTRIBUTES.numberOfAttributes, ParticlesSceneItem::VERTEX_ATTRIBUTES.attributes);
 		}
 		else if (STRING_ID("Example/VertexAttributes/Default/Terrain") == getAsset().assetId)
 		{

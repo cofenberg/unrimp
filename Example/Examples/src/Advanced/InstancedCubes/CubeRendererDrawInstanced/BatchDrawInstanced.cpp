@@ -55,8 +55,8 @@ void BatchDrawInstanced::initialize(Renderer::IBufferManager& bufferManager, Ren
 	{ // Create the texture buffer instance
 		// Allocate the local per instance data
 		const uint32_t numberOfElements = mNumberOfCubeInstances * 2 * 4;
-		float *data = new float[numberOfElements];
-		float *dataCurrent = data;
+		float* data = new float[numberOfElements];
+		float* dataCurrent = data;
 
 		// Set data
 		// -> Layout: [Position][Rotation][Position][Rotation]...

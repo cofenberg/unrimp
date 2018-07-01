@@ -28,10 +28,65 @@
 
 
 //[-------------------------------------------------------]
+//[ Anonymous detail namespace                            ]
+//[-------------------------------------------------------]
+namespace
+{
+	namespace detail
+	{
+
+
+		//[-------------------------------------------------------]
+		//[ Global variables                                      ]
+		//[-------------------------------------------------------]
+		// Vertex input layout
+		static constexpr Renderer::VertexAttribute ParticlesVertexAttributesLayout[] =
+		{
+			{ // Attribute 0
+				// Data destination
+				Renderer::VertexAttributeFormat::FLOAT_4,					// vertexAttributeFormat (Renderer::VertexAttributeFormat)
+				"PositionSize",												// name[32] (char)
+				"POSITION",													// semanticName[32] (char)
+				0,															// semanticIndex (uint32_t)
+				// Data source
+				0,															// inputSlot (uint32_t)
+				0,															// alignedByteOffset (uint32_t)
+				sizeof(RendererRuntime::ParticlesSceneItem::ParticleData),	// strideInBytes (uint32_t)
+				1															// instancesPerElement (uint32_t)
+			},
+			{ // Attribute 1
+				// Data destination
+				Renderer::VertexAttributeFormat::FLOAT_4,					// vertexAttributeFormat (Renderer::VertexAttributeFormat)
+				"Color",													// name[32] (char)
+				"COLOR",													// semanticName[32] (char)
+				0,															// semanticIndex (uint32_t)
+				// Data source
+				0,															// inputSlot (uint32_t)
+				sizeof(float) * 4,											// alignedByteOffset (uint32_t)
+				sizeof(RendererRuntime::ParticlesSceneItem::ParticleData),	// strideInBytes (uint32_t)
+				1															// instancesPerElement (uint32_t)
+			}
+		};
+
+
+//[-------------------------------------------------------]
+//[ Anonymous detail namespace                            ]
+//[-------------------------------------------------------]
+	} // detail
+}
+
+
+//[-------------------------------------------------------]
 //[ Namespace                                             ]
 //[-------------------------------------------------------]
 namespace RendererRuntime
 {
+
+
+	//[-------------------------------------------------------]
+	//[ Public definitions                                    ]
+	//[-------------------------------------------------------]
+	const Renderer::VertexAttributes ParticlesSceneItem::VERTEX_ATTRIBUTES(static_cast<uint32_t>(glm::countof(::detail::ParticlesVertexAttributesLayout)), ::detail::ParticlesVertexAttributesLayout);
 
 
 	//[-------------------------------------------------------]
@@ -61,8 +116,8 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void ParticlesSceneItem::onMaterialResourceCreated()
 	{
-		// Setup renderable manager using attribute-less rendering
-		mRenderableManager.getRenderables().emplace_back(mRenderableManager, Renderer::IVertexArrayPtr(), false, 0, 6 * mMaximumNumberOfParticles, getSceneResource().getRendererRuntime().getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>());
+		// Setup renderable manager: Six vertices per particle, particle index = instance index
+		mRenderableManager.getRenderables().emplace_back(mRenderableManager, mParticlesVertexArrayPtr, false, 0, 6, getSceneResource().getRendererRuntime().getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>(), mMaximumNumberOfParticles);
 		mRenderableManager.updateCachedRenderablesData();
 	}
 
@@ -72,9 +127,60 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	ParticlesSceneItem::ParticlesSceneItem(SceneResource& sceneResource) :
 		MaterialSceneItem(sceneResource, false),	// TODO(co) Set bounding box
-		mMaximumNumberOfParticles(1)	// TODO(co) Make this dynamic
+		mMaximumNumberOfParticles(8)	// TODO(co) Make this dynamic
 	{
-		// Nothing here
+		{ // Create vertex array object (VAO)
+			// Create the vertex buffer object (VBO)
+			// TODO(co) Make this dynamic
+			const ParticleData particlesData[8] =
+			{
+				{
+					4.88f,  1.4f, -1.44f, 0.5f,
+					 1.0f,  1.0f,   1.0f, 0.3f
+				},
+				{
+					-6.2f,  1.4f, -1.44f, 0.5f,
+					 1.0f,  1.0f,   1.0f, 0.3f
+				},
+				{
+					4.88f,  1.4f,   2.2f, 0.5f,
+					 1.0f,  1.0f,   1.0f, 0.3f
+				},
+				{
+					-6.2f,  1.4f,   2.2f, 0.5f,
+					 1.0f,  1.0f,   1.0f, 0.3f
+				},
+				{
+					-12.0f, 1.39f,  -4.0f, 1.0f,
+					  1.0f,  0.0f,   0.0f, 1.0f
+				},
+				{
+					11.2f, 1.39f,  -4.0f, 1.0f,
+					 0.0f,  1.0f,   0.0f, 1.0f
+				},
+				{
+					-12.0f, 1.39f,   4.5f, 1.0f,
+					  0.0f,  0.0f,   1.0f, 1.0f
+				},
+				{
+					11.2f, 1.39f,   4.5f, 1.0f,
+					 1.0f,  1.0f,   1.0f, 1.0f
+				}
+			};
+			Renderer::IBufferManager& bufferManager = getSceneResource().getRendererRuntime().getBufferManager();
+			Renderer::IVertexBufferPtr vertexBuffer(bufferManager.createVertexBuffer(sizeof(ParticleData) * mMaximumNumberOfParticles, particlesData, Renderer::BufferUsage::STATIC_DRAW));
+			RENDERER_SET_RESOURCE_DEBUG_NAME(vertexBuffer, "Particles VBO")
+
+			// Create vertex array object (VAO)
+			// -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)
+			// -> This means that there's no need to keep an own vertex buffer object (VBO) reference
+			// -> When the vertex array object (VAO) is destroyed, it automatically decreases the
+			//    reference of the used vertex buffer objects (VBO). If the reference counter of a
+			//    vertex buffer object (VBO) reaches zero, it's automatically destroyed.
+			const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
+			mParticlesVertexArrayPtr = bufferManager.createVertexArray(VERTEX_ATTRIBUTES, static_cast<uint32_t>(glm::countof(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
+			RENDERER_SET_RESOURCE_DEBUG_NAME(mParticlesVertexArrayPtr, "Particles VAO")
+		}
 	}
 
 

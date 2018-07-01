@@ -42,7 +42,7 @@
 		},
 		"PipelineState":
 		{
-			"VertexAttributes": "$ProjectName/VertexAttributes/Default/Null.asset", 
+			"VertexAttributes": "$ProjectName/VertexAttributes/Default/Particles.asset", 
 			"ShaderBlueprints":
 			{
 				"VertexShaderBlueprint": "$ProjectName/ShaderBlueprint/Particles/Vertex.asset",
