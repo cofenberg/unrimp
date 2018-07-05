@@ -304,11 +304,11 @@ namespace RendererRuntime
 					}
 					else
 					{
-						// Set scissor rectangle
-						Renderer::Command::SetScissorRectangles::create(commandBuffer, static_cast<long>(pcmd->ClipRect.x), static_cast<long>(pcmd->ClipRect.y), static_cast<long>(pcmd->ClipRect.z), static_cast<long>(pcmd->ClipRect.w));
+						// Set graphics scissor rectangle
+						Renderer::Command::SetGraphicsScissorRectangles::create(commandBuffer, static_cast<long>(pcmd->ClipRect.x), static_cast<long>(pcmd->ClipRect.y), static_cast<long>(pcmd->ClipRect.z), static_cast<long>(pcmd->ClipRect.w));
 
-						// Draw
-						Renderer::Command::DrawIndexed::create(commandBuffer, static_cast<uint32_t>(pcmd->ElemCount), 1, static_cast<uint32_t>(indexOffset), static_cast<int32_t>(vertexOffset));
+						// Draw graphics
+						Renderer::Command::DrawIndexedGraphics::create(commandBuffer, static_cast<uint32_t>(pcmd->ElemCount), 1, static_cast<uint32_t>(indexOffset), static_cast<int32_t>(vertexOffset));
 					}
 					indexOffset += pcmd->ElemCount;
 				}
@@ -363,16 +363,16 @@ namespace RendererRuntime
 				// Set the used graphics root signature
 				Renderer::Command::SetGraphicsRootSignature::create(commandBuffer, mRootSignature);
 
-				// Set the used pipeline state object (PSO)
-				Renderer::Command::SetPipelineState::create(commandBuffer, mPipelineState);
+				// Set the used graphics pipeline state object (PSO)
+				Renderer::Command::SetGraphicsPipelineState::create(commandBuffer, mPipelineState);
 
-				// Set resource groups
+				// Set graphics resource groups
 				Renderer::Command::SetGraphicsResourceGroup::create(commandBuffer, 0, mResourceGroup);
 				Renderer::Command::SetGraphicsResourceGroup::create(commandBuffer, 1, mSamplerStateGroup);
 			}
 
 			// Setup input assembly (IA): Set the used vertex array
-			Renderer::Command::SetVertexArray::create(commandBuffer, getFillVertexArrayPtr());
+			Renderer::Command::SetGraphicsVertexArray::create(commandBuffer, getFillVertexArrayPtr());
 
 			// Render command lists
 			fillCommandBuffer(commandBuffer);

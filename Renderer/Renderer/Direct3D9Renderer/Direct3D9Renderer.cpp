@@ -1447,35 +1447,23 @@ namespace Direct3D9Renderer
 		}
 
 		//[-------------------------------------------------------]
-		//[ States                                                ]
+		//[ Graphics                                              ]
 		//[-------------------------------------------------------]
 		void setGraphicsRootSignature(Renderer::IRootSignature* rootSignature);
+		void setGraphicsPipelineState(Renderer::IPipelineState* graphicsPipelineState);
 		void setGraphicsResourceGroup(uint32_t rootParameterIndex, Renderer::IResourceGroup* resourceGroup);
-		void setPipelineState(Renderer::IPipelineState* pipelineState);
+		void setGraphicsVertexArray(Renderer::IVertexArray* vertexArray);															// Input-assembler (IA) stage
+		void setGraphicsViewports(uint32_t numberOfViewports, const Renderer::Viewport* viewports);									// Rasterizer (RS) stage
+		void setGraphicsScissorRectangles(uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles);	// Rasterizer (RS) stage
+		void setGraphicsRenderTarget(Renderer::IRenderTarget* renderTarget);														// Output-merger (OM) stage
+		void clearGraphics(uint32_t flags, const float color[4], float z, uint32_t stencil);
+		void drawGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
+		void drawIndexedGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		//[-------------------------------------------------------]
-		//[ Input-assembler (IA) stage                            ]
+		//[ Resource                                              ]
 		//[-------------------------------------------------------]
-		void iaSetVertexArray(Renderer::IVertexArray* vertexArray);
-		//[-------------------------------------------------------]
-		//[ Rasterizer (RS) stage                                 ]
-		//[-------------------------------------------------------]
-		void rsSetViewports(uint32_t numberOfViewports, const Renderer::Viewport* viewports);
-		void rsSetScissorRectangles(uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles);
-		//[-------------------------------------------------------]
-		//[ Output-merger (OM) stage                              ]
-		//[-------------------------------------------------------]
-		void omSetRenderTarget(Renderer::IRenderTarget* renderTarget);
-		//[-------------------------------------------------------]
-		//[ Operations                                            ]
-		//[-------------------------------------------------------]
-		void clear(uint32_t flags, const float color[4], float z, uint32_t stencil);
 		void resolveMultisampleFramebuffer(Renderer::IRenderTarget& destinationRenderTarget, Renderer::IFramebuffer& sourceMultisampleFramebuffer);
 		void copyResource(Renderer::IResource& destinationResource, Renderer::IResource& sourceResource);
-		//[-------------------------------------------------------]
-		//[ Draw call                                             ]
-		//[-------------------------------------------------------]
-		void drawEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
-		void drawIndexedEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		//[-------------------------------------------------------]
 		//[ Debug                                                 ]
 		//[-------------------------------------------------------]
@@ -5464,7 +5452,7 @@ namespace Direct3D9Renderer
 				// In case this swap chain is the current render target, we have to unset it before continuing
 				if (this == renderTargetBackup)
 				{
-					static_cast<Direct3D9Renderer&>(getRenderer()).omSetRenderTarget(nullptr);
+					static_cast<Direct3D9Renderer&>(getRenderer()).setGraphicsRenderTarget(nullptr);
 				}
 				else
 				{
@@ -5721,6 +5709,7 @@ namespace Direct3D9Renderer
 						case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 						case Renderer::ResourceType::GEOMETRY_SHADER:
 						case Renderer::ResourceType::FRAGMENT_SHADER:
+						case Renderer::ResourceType::COMPUTE_SHADER:
 						default:
 							RENDERER_LOG(direct3D9Renderer.getContext(), CRITICAL, "The type of the given color texture at index %d is not supported by the Direct3D 9 renderer backend", colorTexture - mColorTextures)
 							*direct3D9ColorSurface = nullptr;
@@ -5778,6 +5767,7 @@ namespace Direct3D9Renderer
 					case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Renderer::ResourceType::GEOMETRY_SHADER:
 					case Renderer::ResourceType::FRAGMENT_SHADER:
+					case Renderer::ResourceType::COMPUTE_SHADER:
 					default:
 						RENDERER_LOG(direct3D9Renderer.getContext(), CRITICAL, "The type of the given depth stencil texture is not supported by the Direct3D 9 renderer backend")
 						break;
@@ -6646,6 +6636,18 @@ namespace Direct3D9Renderer
 			return RENDERER_NEW(getRenderer().getContext(), FragmentShaderHlsl)(static_cast<Direct3D9Renderer&>(getRenderer()), shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode);
 		}
 
+		inline virtual Renderer::IComputeShader* createComputeShaderFromBytecode(const Renderer::ShaderBytecode&) override
+		{
+			// Error! Direct3D 9 has no compute shader support.
+			return nullptr;
+		}
+
+		inline virtual Renderer::IComputeShader* createComputeShaderFromSourceCode(const Renderer::ShaderSourceCode&, Renderer::ShaderBytecode* = nullptr) override
+		{
+			// Error! Direct3D 9 has no compute shader support.
+			return nullptr;
+		}
+
 		virtual Renderer::IProgram* createProgram(MAYBE_UNUSED const Renderer::IRootSignature& rootSignature, MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
 		{
 			// A shader can be a null pointer, but if it's not the shader and program language must match!
@@ -6947,12 +6949,18 @@ namespace
 			}
 
 			//[-------------------------------------------------------]
-			//[ Graphics root                                         ]
+			//[ Graphics                                              ]
 			//[-------------------------------------------------------]
 			void SetGraphicsRootSignature(const void* data, Renderer::IRenderer& renderer)
 			{
 				const Renderer::Command::SetGraphicsRootSignature* realData = static_cast<const Renderer::Command::SetGraphicsRootSignature*>(data);
 				static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).setGraphicsRootSignature(realData->rootSignature);
+			}
+
+			void SetGraphicsPipelineState(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::SetGraphicsPipelineState* realData = static_cast<const Renderer::Command::SetGraphicsPipelineState*>(data);
+				static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).setGraphicsPipelineState(realData->graphicsPipelineState);
 			}
 
 			void SetGraphicsResourceGroup(const void* data, Renderer::IRenderer& renderer)
@@ -6961,98 +6969,74 @@ namespace
 				static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).setGraphicsResourceGroup(realData->rootParameterIndex, realData->resourceGroup);
 			}
 
-			//[-------------------------------------------------------]
-			//[ States                                                ]
-			//[-------------------------------------------------------]
-			void SetPipelineState(const void* data, Renderer::IRenderer& renderer)
+			void SetGraphicsVertexArray(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::SetPipelineState* realData = static_cast<const Renderer::Command::SetPipelineState*>(data);
-				static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).setPipelineState(realData->pipelineState);
+				// Input-assembler (IA) stage
+				const Renderer::Command::SetGraphicsVertexArray* realData = static_cast<const Renderer::Command::SetGraphicsVertexArray*>(data);
+				static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).setGraphicsVertexArray(realData->vertexArray);
 			}
 
-			//[-------------------------------------------------------]
-			//[ Input-assembler (IA) stage                            ]
-			//[-------------------------------------------------------]
-			void SetVertexArray(const void* data, Renderer::IRenderer& renderer)
+			void SetGraphicsViewports(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::SetVertexArray* realData = static_cast<const Renderer::Command::SetVertexArray*>(data);
-				static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).iaSetVertexArray(realData->vertexArray);
+				// Rasterizer (RS) stage
+				const Renderer::Command::SetGraphicsViewports* realData = static_cast<const Renderer::Command::SetGraphicsViewports*>(data);
+				static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).setGraphicsViewports(realData->numberOfViewports, (nullptr != realData->viewports) ? realData->viewports : reinterpret_cast<const Renderer::Viewport*>(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData)));
 			}
 
-			//[-------------------------------------------------------]
-			//[ Rasterizer (RS) stage                                 ]
-			//[-------------------------------------------------------]
-			void SetViewports(const void* data, Renderer::IRenderer& renderer)
+			void SetGraphicsScissorRectangles(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::SetViewports* realData = static_cast<const Renderer::Command::SetViewports*>(data);
-				static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).rsSetViewports(realData->numberOfViewports, (nullptr != realData->viewports) ? realData->viewports : reinterpret_cast<const Renderer::Viewport*>(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData)));
+				// Rasterizer (RS) stage
+				const Renderer::Command::SetGraphicsScissorRectangles* realData = static_cast<const Renderer::Command::SetGraphicsScissorRectangles*>(data);
+				static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).setGraphicsScissorRectangles(realData->numberOfScissorRectangles, (nullptr != realData->scissorRectangles) ? realData->scissorRectangles : reinterpret_cast<const Renderer::ScissorRectangle*>(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData)));
 			}
 
-			void SetScissorRectangles(const void* data, Renderer::IRenderer& renderer)
+			void SetGraphicsRenderTarget(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::SetScissorRectangles* realData = static_cast<const Renderer::Command::SetScissorRectangles*>(data);
-				static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).rsSetScissorRectangles(realData->numberOfScissorRectangles, (nullptr != realData->scissorRectangles) ? realData->scissorRectangles : reinterpret_cast<const Renderer::ScissorRectangle*>(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData)));
+				// Output-merger (OM) stage
+				const Renderer::Command::SetGraphicsRenderTarget* realData = static_cast<const Renderer::Command::SetGraphicsRenderTarget*>(data);
+				static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).setGraphicsRenderTarget(realData->renderTarget);
 			}
 
-			//[-------------------------------------------------------]
-			//[ Output-merger (OM) stage                              ]
-			//[-------------------------------------------------------]
-			void SetRenderTarget(const void* data, Renderer::IRenderer& renderer)
+			void ClearGraphics(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::SetRenderTarget* realData = static_cast<const Renderer::Command::SetRenderTarget*>(data);
-				static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).omSetRenderTarget(realData->renderTarget);
+				const Renderer::Command::ClearGraphics* realData = static_cast<const Renderer::Command::ClearGraphics*>(data);
+				static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).clearGraphics(realData->flags, realData->color, realData->z, realData->stencil);
 			}
 
-			//[-------------------------------------------------------]
-			//[ Operations                                            ]
-			//[-------------------------------------------------------]
-			void Clear(const void* data, Renderer::IRenderer& renderer)
+			void DrawGraphics(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::Clear* realData = static_cast<const Renderer::Command::Clear*>(data);
-				static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).clear(realData->flags, realData->color, realData->z, realData->stencil);
-			}
-
-			void ResolveMultisampleFramebuffer(const void* data, Renderer::IRenderer& renderer)
-			{
-				const Renderer::Command::ResolveMultisampleFramebuffer* realData = static_cast<const Renderer::Command::ResolveMultisampleFramebuffer*>(data);
-				static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).resolveMultisampleFramebuffer(*realData->destinationRenderTarget, *realData->sourceMultisampleFramebuffer);
-			}
-
-			void CopyResource(const void* data, Renderer::IRenderer& renderer)
-			{
-				const Renderer::Command::CopyResource* realData = static_cast<const Renderer::Command::CopyResource*>(data);
-				static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).copyResource(*realData->destinationResource, *realData->sourceResource);
-			}
-
-			//[-------------------------------------------------------]
-			//[ Draw call                                             ]
-			//[-------------------------------------------------------]
-			void Draw(const void* data, Renderer::IRenderer& renderer)
-			{
-				const Renderer::Command::Draw* realData = static_cast<const Renderer::Command::Draw*>(data);
+				const Renderer::Command::DrawGraphics* realData = static_cast<const Renderer::Command::DrawGraphics*>(data);
 				if (nullptr != realData->indirectBuffer)
 				{
 					// No resource owner security check in here, we only support emulated indirect buffer
-					static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).drawEmulated(realData->indirectBuffer->getEmulationData(), realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).drawGraphicsEmulated(realData->indirectBuffer->getEmulationData(), realData->indirectBufferOffset, realData->numberOfDraws);
 				}
 				else
 				{
-					static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).drawEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).drawGraphicsEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
 				}
 			}
 
-			void DrawIndexed(const void* data, Renderer::IRenderer& renderer)
+			void DrawIndexedGraphics(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::Draw* realData = static_cast<const Renderer::Command::Draw*>(data);
+				const Renderer::Command::DrawIndexedGraphics* realData = static_cast<const Renderer::Command::DrawIndexedGraphics*>(data);
 				if (nullptr != realData->indirectBuffer)
 				{
 					// No resource owner security check in here, we only support emulated indirect buffer
-					static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).drawIndexedEmulated(realData->indirectBuffer->getEmulationData(), realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).drawIndexedGraphicsEmulated(realData->indirectBuffer->getEmulationData(), realData->indirectBufferOffset, realData->numberOfDraws);
 				}
 				else
 				{
-					static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).drawIndexedEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).drawIndexedGraphicsEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
 				}
+			}
+
+			//[-------------------------------------------------------]
+			//[ Compute                                               ]
+			//[-------------------------------------------------------]
+			void DispatchCompute(const void*, Renderer::IRenderer& renderer)
+			{
+				RENDERER_LOG(static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).getContext(), CRITICAL, "Direct3D 9 doesn't support compute dispatch")
 			}
 
 			//[-------------------------------------------------------]
@@ -7069,6 +7053,18 @@ namespace
 				{
 					RENDERER_LOG(static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).getContext(), CRITICAL, "Unsupported Direct3D 9 texture resource type")
 				}
+			}
+
+			void ResolveMultisampleFramebuffer(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::ResolveMultisampleFramebuffer* realData = static_cast<const Renderer::Command::ResolveMultisampleFramebuffer*>(data);
+				static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).resolveMultisampleFramebuffer(*realData->destinationRenderTarget, *realData->sourceMultisampleFramebuffer);
+			}
+
+			void CopyResource(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::CopyResource* realData = static_cast<const Renderer::Command::CopyResource*>(data);
+				static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).copyResource(*realData->destinationResource, *realData->sourceResource);
 			}
 
 			//[-------------------------------------------------------]
@@ -7113,27 +7109,23 @@ namespace
 		{
 			// Command buffer
 			&BackendDispatch::ExecuteCommandBuffer,
-			// Graphics root
+			// Graphics states
 			&BackendDispatch::SetGraphicsRootSignature,
+			&BackendDispatch::SetGraphicsPipelineState,
 			&BackendDispatch::SetGraphicsResourceGroup,
-			// States
-			&BackendDispatch::SetPipelineState,
-			// Input-assembler (IA) stage
-			&BackendDispatch::SetVertexArray,
-			// Rasterizer (RS) stage
-			&BackendDispatch::SetViewports,
-			&BackendDispatch::SetScissorRectangles,
-			// Output-merger (OM) stage
-			&BackendDispatch::SetRenderTarget,
-			// Operations
-			&BackendDispatch::Clear,
-			&BackendDispatch::ResolveMultisampleFramebuffer,
-			&BackendDispatch::CopyResource,
-			// Draw call
-			&BackendDispatch::Draw,
-			&BackendDispatch::DrawIndexed,
+			&BackendDispatch::SetGraphicsVertexArray,		// Input-assembler (IA) stage
+			&BackendDispatch::SetGraphicsViewports,			// Rasterizer (RS) stage
+			&BackendDispatch::SetGraphicsScissorRectangles,	// Rasterizer (RS) stage
+			&BackendDispatch::SetGraphicsRenderTarget,		// Output-merger (OM) stage
+			&BackendDispatch::ClearGraphics,
+			&BackendDispatch::DrawGraphics,
+			&BackendDispatch::DrawIndexedGraphics,
+			// Compute
+			&BackendDispatch::DispatchCompute,
 			// Resource
 			&BackendDispatch::SetTextureMinimumMaximumMipmapIndex,
+			&BackendDispatch::ResolveMultisampleFramebuffer,
+			&BackendDispatch::CopyResource,
 			// Debug
 			&BackendDispatch::SetDebugMarker,
 			&BackendDispatch::BeginDebugEvent,
@@ -7199,9 +7191,9 @@ namespace Direct3D9Renderer
 
 				// Create the Direct3D 9 device instance
 				// -> In Direct3D 9, there is always at least one swap chain for each device, known as the implicit swap chain
-				// -> The size of the swap chain can be changed by using "IDirect3DDevice9::Reset()"...but this results in a
-				//    loss of ALL resources and EVERYTHING has to be rebuild and configured from scratch!
-				// -> We really don't want to use the implicit swap chain, so we're creating a tiny one (because we have to!)
+				// -> The size of the swap chain can be changed by using "IDirect3DDevice9::Reset()", this results in a
+				//    loss of all resources and everything has to be rebuild and configured from scratch
+				// -> We really don't want to use the implicit swap chain, so we're creating a tiny one (because we have to)
 				//    and then using "IDirect3DDevice9::CreateAdditionalSwapChain()" later on for the real main swap chain
 				FAILED_DEBUG_BREAK(mDirect3D9->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, NULL_HANDLE, D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dPresentParameters, &mDirect3DDevice9));
 				if (nullptr != mDirect3DDevice9)
@@ -7318,7 +7310,7 @@ namespace Direct3D9Renderer
 
 
 	//[-------------------------------------------------------]
-	//[ States                                                ]
+	//[ Graphics                                              ]
 	//[-------------------------------------------------------]
 	void Direct3D9Renderer::setGraphicsRootSignature(Renderer::IRootSignature* rootSignature)
 	{
@@ -7333,6 +7325,24 @@ namespace Direct3D9Renderer
 
 			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
 			DIRECT3D9RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *rootSignature)
+		}
+	}
+
+	void Direct3D9Renderer::setGraphicsPipelineState(Renderer::IPipelineState* graphicsPipelineState)
+	{
+		if (nullptr != graphicsPipelineState)
+		{
+			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			DIRECT3D9RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *graphicsPipelineState)
+
+			// Set pipeline state
+			const PipelineState* direct3D9PipelineState = static_cast<const PipelineState*>(graphicsPipelineState);
+			mPrimitiveTopology = direct3D9PipelineState->getPrimitiveTopology();
+			direct3D9PipelineState->bindPipelineState();
+		}
+		else
+		{
+			// TODO(co) Handle this situation?
 		}
 	}
 
@@ -7451,6 +7461,7 @@ namespace Direct3D9Renderer
 							case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 							case Renderer::ResourceType::GEOMETRY_SHADER:
 							case Renderer::ResourceType::FRAGMENT_SHADER:
+							case Renderer::ResourceType::COMPUTE_SHADER:
 								// Nothing here
 								break;
 						}
@@ -7476,6 +7487,7 @@ namespace Direct3D9Renderer
 						switch (descriptorRange.shaderVisibility)
 						{
 							case Renderer::ShaderVisibility::ALL:
+							case Renderer::ShaderVisibility::ALL_GRAPHICS:
 							{
 								// Begin debug event
 								RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(this)
@@ -7552,6 +7564,10 @@ namespace Direct3D9Renderer
 								// End debug event
 								RENDERER_END_DEBUG_EVENT(this)
 								break;
+
+							case Renderer::ShaderVisibility::COMPUTE:
+								RENDERER_LOG(mContext, CRITICAL, "Direct3D 9 has no compute shader support")
+								break;
 						}
 						break;
 					}
@@ -7576,6 +7592,7 @@ namespace Direct3D9Renderer
 					case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Renderer::ResourceType::GEOMETRY_SHADER:
 					case Renderer::ResourceType::FRAGMENT_SHADER:
+					case Renderer::ResourceType::COMPUTE_SHADER:
 						RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 9 renderer backend resource type")
 						break;
 				}
@@ -7587,30 +7604,9 @@ namespace Direct3D9Renderer
 		}
 	}
 
-	void Direct3D9Renderer::setPipelineState(Renderer::IPipelineState* pipelineState)
+	void Direct3D9Renderer::setGraphicsVertexArray(Renderer::IVertexArray* vertexArray)
 	{
-		if (nullptr != pipelineState)
-		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
-			DIRECT3D9RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *pipelineState)
-
-			// Set pipeline state
-			const PipelineState* direct3D9PipelineState = static_cast<const PipelineState*>(pipelineState);
-			mPrimitiveTopology = direct3D9PipelineState->getPrimitiveTopology();
-			direct3D9PipelineState->bindPipelineState();
-		}
-		else
-		{
-			// TODO(co) Handle this situation?
-		}
-	}
-
-
-	//[-------------------------------------------------------]
-	//[ Input-assembler (IA) stage                            ]
-	//[-------------------------------------------------------]
-	void Direct3D9Renderer::iaSetVertexArray(Renderer::IVertexArray* vertexArray)
-	{
+		// Input-assembler (IA) stage
 		if (nullptr != vertexArray)
 		{
 			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
@@ -7631,12 +7627,10 @@ namespace Direct3D9Renderer
 		}
 	}
 
-
-	//[-------------------------------------------------------]
-	//[ Rasterizer (RS) stage                                 ]
-	//[-------------------------------------------------------]
-	void Direct3D9Renderer::rsSetViewports(MAYBE_UNUSED uint32_t numberOfViewports, const Renderer::Viewport* viewports)
+	void Direct3D9Renderer::setGraphicsViewports(MAYBE_UNUSED uint32_t numberOfViewports, const Renderer::Viewport* viewports)
 	{
+		// Rasterizer (RS) stage
+
 		// Sanity check
 		RENDERER_ASSERT(mContext, numberOfViewports > 0 && nullptr != viewports, "Invalid Direct3D 9 rasterizer state viewports")
 
@@ -7655,8 +7649,10 @@ namespace Direct3D9Renderer
 		FAILED_DEBUG_BREAK(mDirect3DDevice9->SetViewport(&direct3D9Viewport));
 	}
 
-	void Direct3D9Renderer::rsSetScissorRectangles(MAYBE_UNUSED uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles)
+	void Direct3D9Renderer::setGraphicsScissorRectangles(MAYBE_UNUSED uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles)
 	{
+		// Rasterizer (RS) stage
+
 		// Sanity check
 		RENDERER_ASSERT(mContext, numberOfScissorRectangles > 0 && nullptr != scissorRectangles, "Invalid Direct3D 9 rasterizer state scissor rectangles")
 
@@ -7667,12 +7663,10 @@ namespace Direct3D9Renderer
 		FAILED_DEBUG_BREAK(mDirect3DDevice9->SetScissorRect(reinterpret_cast<const RECT*>(scissorRectangles)));
 	}
 
-
-	//[-------------------------------------------------------]
-	//[ Output-merger (OM) stage                              ]
-	//[-------------------------------------------------------]
-	void Direct3D9Renderer::omSetRenderTarget(Renderer::IRenderTarget* renderTarget)
+	void Direct3D9Renderer::setGraphicsRenderTarget(Renderer::IRenderTarget* renderTarget)
 	{
+		// Output-merger (OM) stage
+
 		// New render target?
 		if (mRenderTarget != renderTarget)
 		{
@@ -7767,6 +7761,7 @@ namespace Direct3D9Renderer
 					case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Renderer::ResourceType::GEOMETRY_SHADER:
 					case Renderer::ResourceType::FRAGMENT_SHADER:
+					case Renderer::ResourceType::COMPUTE_SHADER:
 					default:
 						// Not handled in here
 						break;
@@ -7800,11 +7795,7 @@ namespace Direct3D9Renderer
 		}
 	}
 
-
-	//[-------------------------------------------------------]
-	//[ Operations                                            ]
-	//[-------------------------------------------------------]
-	void Direct3D9Renderer::clear(uint32_t flags, const float color[4], float z, uint32_t stencil)
+	void Direct3D9Renderer::clearGraphics(uint32_t flags, const float color[4], float z, uint32_t stencil)
 	{
 		// Begin debug event
 		RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(this)
@@ -7895,21 +7886,7 @@ namespace Direct3D9Renderer
 		RENDERER_END_DEBUG_EVENT(this)
 	}
 
-	void Direct3D9Renderer::resolveMultisampleFramebuffer(Renderer::IRenderTarget&, Renderer::IFramebuffer&)
-	{
-		// TODO(co) Implement me
-	}
-
-	void Direct3D9Renderer::copyResource(Renderer::IResource&, Renderer::IResource&)
-	{
-		// TODO(co) Implement me
-	}
-
-
-	//[-------------------------------------------------------]
-	//[ Draw call                                             ]
-	//[-------------------------------------------------------]
-	void Direct3D9Renderer::drawEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
+	void Direct3D9Renderer::drawGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
 		// Sanity checks
 		RENDERER_ASSERT(mContext, nullptr != emulationData, "The Direct3D 9 emulation data must be valid")
@@ -8013,7 +7990,7 @@ namespace Direct3D9Renderer
 		#endif
 	}
 
-	void Direct3D9Renderer::drawIndexedEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
+	void Direct3D9Renderer::drawIndexedGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
 		// Sanity checks
 		RENDERER_ASSERT(mContext, nullptr != emulationData, "The Direct3D 9 emulation data must be valid")
@@ -8122,6 +8099,20 @@ namespace Direct3D9Renderer
 			// Reset the stream source frequency
 			FAILED_DEBUG_BREAK(mDirect3DDevice9->SetStreamSourceFreq(0, 1));
 		}
+	}
+
+
+	//[-------------------------------------------------------]
+	//[ Resource                                              ]
+	//[-------------------------------------------------------]
+	void Direct3D9Renderer::resolveMultisampleFramebuffer(Renderer::IRenderTarget&, Renderer::IFramebuffer&)
+	{
+		// TODO(co) Implement me
+	}
+
+	void Direct3D9Renderer::copyResource(Renderer::IResource&, Renderer::IResource&)
+	{
+		// TODO(co) Implement me
 	}
 
 
@@ -8445,6 +8436,7 @@ namespace Direct3D9Renderer
 			case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 			case Renderer::ResourceType::GEOMETRY_SHADER:
 			case Renderer::ResourceType::FRAGMENT_SHADER:
+			case Renderer::ResourceType::COMPUTE_SHADER:
 			default:
 				// Nothing we can map, set known return values
 				mappedSubresource.data		 = nullptr;
@@ -8509,6 +8501,7 @@ namespace Direct3D9Renderer
 			case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 			case Renderer::ResourceType::GEOMETRY_SHADER:
 			case Renderer::ResourceType::FRAGMENT_SHADER:
+			case Renderer::ResourceType::COMPUTE_SHADER:
 			default:
 				// Nothing we can unmap
 				break;
@@ -8547,7 +8540,7 @@ namespace Direct3D9Renderer
 	void Direct3D9Renderer::endScene()
 	{
 		// We need to forget about the currently set render target
-		omSetRenderTarget(nullptr);
+		setGraphicsRenderTarget(nullptr);
 
 		FAILED_DEBUG_BREAK(mDirect3DDevice9->EndScene());
 	}
@@ -8677,6 +8670,9 @@ namespace Direct3D9Renderer
 
 		// Is there support for fragment shaders (FS)?
 		mCapabilities.fragmentShader = true;
+
+		// Is there support for compute shaders (CS)?
+		mCapabilities.computeShader = false;
 
 		// We only target graphics hardware which also supports ATI1N and ATI2N, so no need to add this inside the capabilities
 		// -> The following is for debugging only, don't delete it

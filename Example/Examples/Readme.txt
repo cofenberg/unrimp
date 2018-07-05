@@ -98,6 +98,15 @@ Standalone renderer examples.
 		- Vertex shader (VS), tessellation control shader (TCS), tessellation evaluation shader (TES) and fragment shader (FS)
 		- Root signature
 		- Pipeline state object (PSO)
+	- "FirstComputeShader" demonstrates:
+		- Vertex buffer object (VBO)
+		- Vertex array object (VAO)
+		- 2D texture
+		- Sampler state object
+		- Vertex shader (VS), fragment shader (FS) and compute shader (CS)
+		- Root signature
+		- Pipeline state object (PSO)
+		- Framebuffer object (FBO) used for render to texture
 - Advanced
 	- "FirstGpgpu" demonstrates:
 		- Vertex buffer object (VBO)

@@ -302,9 +302,11 @@ namespace RendererToolkit
 			ELSE_IF_VALUE(TESSELLATION_EVALUATION)
 			ELSE_IF_VALUE(GEOMETRY)
 			ELSE_IF_VALUE(FRAGMENT)
+			ELSE_IF_VALUE(COMPUTE)
+			ELSE_IF_VALUE(ALL_GRAPHICS)
 			else
 			{
-				throw std::runtime_error("Shader visibility of property \"" + std::string(propertyName) + "\" must be \"ALL\", \"VERTEX\", \"TESSELLATION_CONTROL\", \"TESSELLATION_EVALUATION\", \"GEOMETRY\" or \"FRAGMENT\", but \"" + std::string(valueAsString) + "\" set");
+				throw std::runtime_error("Shader visibility of property \"" + std::string(propertyName) + "\" must be \"ALL\", \"VERTEX\", \"TESSELLATION_CONTROL\", \"TESSELLATION_EVALUATION\", \"GEOMETRY\", \"FRAGMENT\", \"COMPUTE\" or \"ALL_GRAPHICS\", but \"" + std::string(valueAsString) + "\" set");
 			}
 
 			// Undefine helper macros

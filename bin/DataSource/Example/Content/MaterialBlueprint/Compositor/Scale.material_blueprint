@@ -42,6 +42,7 @@
 				{
 					"BaseShaderRegisterName": "ColorMap",
 					"BaseShaderRegister": "0",
+					"ShaderVisibility": "ALL_GRAPHICS",
 					"ResourceType": "TEXTURE",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",

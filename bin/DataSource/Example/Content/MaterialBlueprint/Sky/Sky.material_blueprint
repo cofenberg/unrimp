@@ -86,6 +86,7 @@
 				{
 					"BaseShaderRegisterName": "PassUniformBuffer",
 					"BaseShaderRegister": "0",
+					"ShaderVisibility": "ALL_GRAPHICS",
 					"ResourceType": "UNIFORM_BUFFER",
 					"BufferUsage": "PASS",
 					"NumberOfElements": "1",

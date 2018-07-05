@@ -97,11 +97,11 @@ namespace RendererRuntime
 							currentWidth = Renderer::ITexture::getHalfSize(currentWidth);
 							currentHeight = Renderer::ITexture::getHalfSize(currentHeight);
 
-							// Set render target
-							Renderer::Command::SetRenderTarget::create(mCommandBuffer, mFramebuffersPtrs[mipmapIndex]);
+							// Set graphics render target
+							Renderer::Command::SetGraphicsRenderTarget::create(mCommandBuffer, mFramebuffersPtrs[mipmapIndex]);
 
-							// Set the viewport and scissor rectangle
-							Renderer::Command::SetViewportAndScissorRectangle::create(mCommandBuffer, 0, 0, currentWidth, currentHeight);
+							// Set the graphics viewport and scissor rectangle
+							Renderer::Command::SetGraphicsViewportAndScissorRectangle::create(mCommandBuffer, 0, 0, currentWidth, currentHeight);
 
 							// Restrict fetches only to previous depth texture mipmap level
 							Renderer::Command::SetTextureMinimumMaximumMipmapIndex::create(mCommandBuffer, *texture, mipmapIndex - 1, mipmapIndex - 1);

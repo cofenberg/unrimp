@@ -358,17 +358,17 @@ void FirstMultipleSwapChains::onDrawRequest()
 						// Scoped debug event
 						COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Draw into the main swap chain")
 
-						// Set the render target to render into
-						Renderer::Command::SetRenderTarget::create(mCommandBuffer, mainRenderTarget);
+						// Set the graphics render target to render into
+						Renderer::Command::SetGraphicsRenderTarget::create(mCommandBuffer, mainRenderTarget);
 
-						{ // Set the viewport
+						{ // Set the graphics viewport
 							// Get the render target with and height
 							uint32_t width  = 1;
 							uint32_t height = 1;
 							mainRenderTarget->getWidthAndHeight(width, height);
 
-							// Set the viewport and scissor rectangle
-							Renderer::Command::SetViewportAndScissorRectangle::create(mCommandBuffer, 0, 0, width, height);
+							// Set the graphics viewport and scissor rectangle
+							Renderer::Command::SetGraphicsViewportAndScissorRectangle::create(mCommandBuffer, 0, 0, width, height);
 						}
 
 						// Draw into the main swap chain
@@ -401,10 +401,10 @@ void FirstMultipleSwapChains::onDrawRequest()
 				// Scoped debug event
 				COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Render to the swap chain created in this example")
 
-				// Set the render target to render into
-				Renderer::Command::SetRenderTarget::create(mCommandBuffer, mSwapChain);
+				// Set the graphics render target to render into
+				Renderer::Command::SetGraphicsRenderTarget::create(mCommandBuffer, mSwapChain);
 
-				{ // Set the viewport
+				{ // Set the graphics viewport
 					// Please note that for some graphics APIs its really important that the viewport
 					// is inside the bounds of the currently used render target
 					// -> For Direct3D 10 and Direct3D 11 TODO(co)(Check OpenGL and OpenGL ES 3 behaviour) it's OK
@@ -421,8 +421,8 @@ void FirstMultipleSwapChains::onDrawRequest()
 					uint32_t height = 1;
 					mSwapChain->getWidthAndHeight(width, height);
 
-					// Set the viewport and scissor rectangle
-					Renderer::Command::SetViewportAndScissorRectangle::create(mCommandBuffer, 0, 0, width, height);
+					// Set the graphics viewport and scissor rectangle
+					Renderer::Command::SetGraphicsViewportAndScissorRectangle::create(mCommandBuffer, 0, 0, width, height);
 				}
 
 				// Draw into the swap chain created in this example
@@ -462,18 +462,18 @@ void FirstMultipleSwapChains::fillCommandBuffer(const float color[4], Renderer::
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)
 
-	// Clear the color buffer of the current render target with the provided color, do also clear the depth buffer
-	Renderer::Command::Clear::create(commandBuffer, Renderer::ClearFlag::COLOR_DEPTH, color);
+	// Clear the graphics color buffer of the current render target with the provided color, do also clear the depth buffer
+	Renderer::Command::ClearGraphics::create(commandBuffer, Renderer::ClearFlag::COLOR_DEPTH, color);
 
 	// Set the used graphics root signature
 	Renderer::Command::SetGraphicsRootSignature::create(commandBuffer, mRootSignature);
 
-	// Set the used pipeline state object (PSO)
-	Renderer::Command::SetPipelineState::create(commandBuffer, mPipelineState);
+	// Set the used graphics pipeline state object (PSO)
+	Renderer::Command::SetGraphicsPipelineState::create(commandBuffer, mPipelineState);
 
 	// Input assembly (IA): Set the used vertex array
-	Renderer::Command::SetVertexArray::create(commandBuffer, mVertexArray);
+	Renderer::Command::SetGraphicsVertexArray::create(commandBuffer, mVertexArray);
 
 	// Render the specified geometric primitive, based on an array of vertices
-	Renderer::Command::Draw::create(commandBuffer, 3);
+	Renderer::Command::DrawGraphics::create(commandBuffer, 3);
 }

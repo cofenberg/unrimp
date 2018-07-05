@@ -1557,6 +1557,12 @@ struct ID3D11PixelShader : public ID3D11DeviceChild
 };
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
+struct ID3D11ComputeShader : public ID3D11DeviceChild
+{
+	// Nothing here
+};
+
+// "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
 struct ID3D11Resource : public ID3D11DeviceChild
 {
 	public:
@@ -2035,41 +2041,33 @@ namespace Direct3D11Renderer
 		}
 
 		//[-------------------------------------------------------]
-		//[ States                                                ]
+		//[ Graphics                                              ]
 		//[-------------------------------------------------------]
 		void setGraphicsRootSignature(Renderer::IRootSignature* rootSignature);
+		void setGraphicsPipelineState(Renderer::IPipelineState* graphicsPipelineState);
 		void setGraphicsResourceGroup(uint32_t rootParameterIndex, Renderer::IResourceGroup* resourceGroup);
-		void setPipelineState(Renderer::IPipelineState* pipelineState);
+		void setGraphicsVertexArray(Renderer::IVertexArray* vertexArray);															// Input-assembler (IA) stage
+		void setGraphicsViewports(uint32_t numberOfViewports, const Renderer::Viewport* viewports);									// Rasterizer (RS) stage
+		void setGraphicsScissorRectangles(uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles);	// Rasterizer (RS) stage
+		void setGraphicsRenderTarget(Renderer::IRenderTarget* renderTarget);														// Output-merger (OM) stage
+		void clearGraphics(uint32_t flags, const float color[4], float z, uint32_t stencil);
+		void drawGraphics(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
+		void drawGraphicsAgs(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
+		void drawGraphicsNvApi(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
+		void drawGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
+		void drawIndexedGraphics(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
+		void drawIndexedGraphicsAgs(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
+		void drawIndexedGraphicsNvApi(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
+		void drawIndexedGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		//[-------------------------------------------------------]
-		//[ Input-assembler (IA) stage                            ]
+		//[ Compute                                               ]
 		//[-------------------------------------------------------]
-		void iaSetVertexArray(Renderer::IVertexArray* vertexArray);
+		void dispatchCompute(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ);
 		//[-------------------------------------------------------]
-		//[ Rasterizer (RS) stage                                 ]
+		//[ Resource                                              ]
 		//[-------------------------------------------------------]
-		void rsSetViewports(uint32_t numberOfViewports, const Renderer::Viewport* viewports);
-		void rsSetScissorRectangles(uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles);
-		//[-------------------------------------------------------]
-		//[ Output-merger (OM) stage                              ]
-		//[-------------------------------------------------------]
-		void omSetRenderTarget(Renderer::IRenderTarget* renderTarget);
-		//[-------------------------------------------------------]
-		//[ Operations                                            ]
-		//[-------------------------------------------------------]
-		void clear(uint32_t flags, const float color[4], float z, uint32_t stencil);
 		void resolveMultisampleFramebuffer(Renderer::IRenderTarget& destinationRenderTarget, Renderer::IFramebuffer& sourceMultisampleFramebuffer);
 		void copyResource(Renderer::IResource& destinationResource, Renderer::IResource& sourceResource);
-		//[-------------------------------------------------------]
-		//[ Draw call                                             ]
-		//[-------------------------------------------------------]
-		void draw(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
-		void drawAgs(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
-		void drawNvApi(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
-		void drawEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
-		void drawIndexed(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
-		void drawIndexedAgs(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
-		void drawIndexedNvApi(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
-		void drawIndexedEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		//[-------------------------------------------------------]
 		//[ Debug                                                 ]
 		//[-------------------------------------------------------]
@@ -7593,7 +7591,7 @@ namespace Direct3D11Renderer
 				// In case this swap chain is the current render target, we have to unset it before continuing
 				if (this == renderTargetBackup)
 				{
-					direct3D11Renderer.omSetRenderTarget(nullptr);
+					direct3D11Renderer.setGraphicsRenderTarget(nullptr);
 				}
 				else
 				{
@@ -7628,7 +7626,7 @@ namespace Direct3D11Renderer
 					// If required, restore the previously set render target
 					if (nullptr != renderTargetBackup)
 					{
-						direct3D11Renderer.omSetRenderTarget(renderTargetBackup);
+						direct3D11Renderer.setGraphicsRenderTarget(renderTargetBackup);
 					}
 				}
 				else
@@ -7946,6 +7944,7 @@ namespace Direct3D11Renderer
 						case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 						case Renderer::ResourceType::GEOMETRY_SHADER:
 						case Renderer::ResourceType::FRAGMENT_SHADER:
+						case Renderer::ResourceType::COMPUTE_SHADER:
 						default:
 							RENDERER_LOG(direct3D11Renderer.getContext(), CRITICAL, "The type of the given color texture at index %d is not supported by the Direct3D 11 renderer backend", colorTexture - mColorTextures)
 							*d3d11RenderTargetView = nullptr;
@@ -8035,6 +8034,7 @@ namespace Direct3D11Renderer
 					case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Renderer::ResourceType::GEOMETRY_SHADER:
 					case Renderer::ResourceType::FRAGMENT_SHADER:
+					case Renderer::ResourceType::COMPUTE_SHADER:
 					default:
 						RENDERER_LOG(direct3D11Renderer.getContext(), CRITICAL, "The type of the given depth stencil texture is not supported by the Direct3D 11 renderer backend")
 						break;
@@ -9075,6 +9075,158 @@ namespace Direct3D11Renderer
 
 
 	//[-------------------------------------------------------]
+	//[ Direct3D11Renderer/Shader/ComputeShaderHlsl.h         ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    HLSL compute shader (CS) class
+	*/
+	class ComputeShaderHlsl final : public Renderer::IComputeShader
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor for creating a compute shader from shader bytecode
+		*
+		*  @param[in] direct3D11Renderer
+		*    Owner Direct3D 11 renderer instance
+		*  @param[in] shaderBytecode
+		*    Shader bytecode
+		*/
+		ComputeShaderHlsl(Direct3D11Renderer& direct3D11Renderer, const Renderer::ShaderBytecode& shaderBytecode) :
+			IComputeShader(direct3D11Renderer),
+			mD3D11ComputeShader(nullptr)
+		{
+			// Create the Direct3D 11 compute shader
+			FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateComputeShader(shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes(), nullptr, &mD3D11ComputeShader));
+
+			// Don't assign a default name to the resource for debugging purposes, Direct3D 11 automatically sets a decent default name
+		}
+
+		/**
+		*  @brief
+		*    Constructor for creating a compute shader from shader source code
+		*
+		*  @param[in] direct3D11Renderer
+		*    Owner Direct3D 11 renderer instance
+		*  @param[in] sourceCode
+		*    Shader ASCII source code, must be valid
+		*/
+		ComputeShaderHlsl(Direct3D11Renderer& direct3D11Renderer, const char* sourceCode, Renderer::IShaderLanguage::OptimizationLevel optimizationLevel, Renderer::ShaderBytecode* shaderBytecode = nullptr) :
+			IComputeShader(direct3D11Renderer),
+			mD3D11ComputeShader(nullptr)
+		{
+			// Create the Direct3D 11 binary large object for the compute shader
+			ID3DBlob* d3dBlob = loadShaderFromSourcecode(direct3D11Renderer.getContext(), "cs_5_0", sourceCode, nullptr, optimizationLevel);
+			if (nullptr != d3dBlob)
+			{
+				// Create the Direct3D 11 compute shader
+				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateComputeShader(d3dBlob->GetBufferPointer(), d3dBlob->GetBufferSize(), nullptr, &mD3D11ComputeShader));
+
+				// Return shader bytecode, if requested do to so
+				if (nullptr != shaderBytecode)
+				{
+					shaderBytecode->setBytecodeCopy(static_cast<uint32_t>(d3dBlob->GetBufferSize()), static_cast<uint8_t*>(d3dBlob->GetBufferPointer()));
+				}
+
+				// Release the Direct3D 11 shader binary large object
+				d3dBlob->Release();
+			}
+
+			// Don't assign a default name to the resource for debugging purposes, Direct3D 11 automatically sets a decent default name
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~ComputeShaderHlsl() override
+		{
+			// Release the Direct3D 11 compute shader
+			if (nullptr != mD3D11ComputeShader)
+			{
+				mD3D11ComputeShader->Release();
+			}
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D 11 compute shader
+		*
+		*  @return
+		*    Direct3D 11 compute shader, can be a null pointer on error, do not release the returned instance unless you added an own reference to it
+		*/
+		inline ID3D11ComputeShader* getD3D11ComputeShader() const
+		{
+			return mD3D11ComputeShader;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		#ifdef RENDERER_DEBUG
+			virtual void setDebugName(const char* name) override
+			{
+				// Valid Direct3D 11 compute shader?
+				if (nullptr != mD3D11ComputeShader)
+				{
+					// Set the debug name
+					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
+					FAILED_DEBUG_BREAK(mD3D11ComputeShader->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D11ComputeShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
+				}
+			}
+		#endif
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IShader methods              ]
+	//[-------------------------------------------------------]
+	public:
+		inline virtual const char* getShaderLanguageName() const override
+		{
+			return ::detail::HLSL_NAME;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), ComputeShaderHlsl, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit ComputeShaderHlsl(const ComputeShaderHlsl& source) = delete;
+		ComputeShaderHlsl& operator =(const ComputeShaderHlsl& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		ID3D11ComputeShader* mD3D11ComputeShader;	///< Direct3D 11 compute shader, can be a null pointer
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ Direct3D11Renderer/Shader/ProgramHlsl.h               ]
 	//[-------------------------------------------------------]
 	/**
@@ -9393,6 +9545,18 @@ namespace Direct3D11Renderer
 		{
 			// There's no need to check for "Renderer::Capabilities::fragmentShader", we know there's fragment shader support
 			return RENDERER_NEW(getRenderer().getContext(), FragmentShaderHlsl)(static_cast<Direct3D11Renderer&>(getRenderer()), shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode);
+		}
+
+		inline virtual Renderer::IComputeShader* createComputeShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
+		{
+			// There's no need to check for "Renderer::Capabilities::computeShader", we know there's compute shader support
+			return RENDERER_NEW(getRenderer().getContext(), ComputeShaderHlsl)(static_cast<Direct3D11Renderer&>(getRenderer()), shaderBytecode);
+		}
+
+		inline virtual Renderer::IComputeShader* createComputeShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		{
+			// There's no need to check for "Renderer::Capabilities::computeShader", we know there's compute shader support
+			return RENDERER_NEW(getRenderer().getContext(), ComputeShaderHlsl)(static_cast<Direct3D11Renderer&>(getRenderer()), shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode);
 		}
 
 		virtual Renderer::IProgram* createProgram(MAYBE_UNUSED const Renderer::IRootSignature& rootSignature, MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
@@ -9823,12 +9987,18 @@ namespace
 			}
 
 			//[-------------------------------------------------------]
-			//[ Graphics root                                         ]
+			//[ Graphics                                              ]
 			//[-------------------------------------------------------]
 			void SetGraphicsRootSignature(const void* data, Renderer::IRenderer& renderer)
 			{
 				const Renderer::Command::SetGraphicsRootSignature* realData = static_cast<const Renderer::Command::SetGraphicsRootSignature*>(data);
 				static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).setGraphicsRootSignature(realData->rootSignature);
+			}
+
+			void SetGraphicsPipelineState(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::SetGraphicsPipelineState* realData = static_cast<const Renderer::Command::SetGraphicsPipelineState*>(data);
+				static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).setGraphicsPipelineState(realData->graphicsPipelineState);
 			}
 
 			void SetGraphicsResourceGroup(const void* data, Renderer::IRenderer& renderer)
@@ -9837,148 +10007,125 @@ namespace
 				static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).setGraphicsResourceGroup(realData->rootParameterIndex, realData->resourceGroup);
 			}
 
-			//[-------------------------------------------------------]
-			//[ States                                                ]
-			//[-------------------------------------------------------]
-			void SetPipelineState(const void* data, Renderer::IRenderer& renderer)
+			void SetGraphicsVertexArray(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::SetPipelineState* realData = static_cast<const Renderer::Command::SetPipelineState*>(data);
-				static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).setPipelineState(realData->pipelineState);
+				// Input-assembler (IA) stage
+				const Renderer::Command::SetGraphicsVertexArray* realData = static_cast<const Renderer::Command::SetGraphicsVertexArray*>(data);
+				static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).setGraphicsVertexArray(realData->vertexArray);
 			}
 
-			//[-------------------------------------------------------]
-			//[ Input-assembler (IA) stage                            ]
-			//[-------------------------------------------------------]
-			void SetVertexArray(const void* data, Renderer::IRenderer& renderer)
+			void SetGraphicsViewports(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::SetVertexArray* realData = static_cast<const Renderer::Command::SetVertexArray*>(data);
-				static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).iaSetVertexArray(realData->vertexArray);
+				// Rasterizer (RS) stage
+				const Renderer::Command::SetGraphicsViewports* realData = static_cast<const Renderer::Command::SetGraphicsViewports*>(data);
+				static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).setGraphicsViewports(realData->numberOfViewports, (nullptr != realData->viewports) ? realData->viewports : reinterpret_cast<const Renderer::Viewport*>(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData)));
 			}
 
-			//[-------------------------------------------------------]
-			//[ Rasterizer (RS) stage                                 ]
-			//[-------------------------------------------------------]
-			void SetViewports(const void* data, Renderer::IRenderer& renderer)
+			void SetGraphicsScissorRectangles(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::SetViewports* realData = static_cast<const Renderer::Command::SetViewports*>(data);
-				static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).rsSetViewports(realData->numberOfViewports, (nullptr != realData->viewports) ? realData->viewports : reinterpret_cast<const Renderer::Viewport*>(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData)));
+				// Rasterizer (RS) stage
+				const Renderer::Command::SetGraphicsScissorRectangles* realData = static_cast<const Renderer::Command::SetGraphicsScissorRectangles*>(data);
+				static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).setGraphicsScissorRectangles(realData->numberOfScissorRectangles, (nullptr != realData->scissorRectangles) ? realData->scissorRectangles : reinterpret_cast<const Renderer::ScissorRectangle*>(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData)));
 			}
 
-			void SetScissorRectangles(const void* data, Renderer::IRenderer& renderer)
+			void SetGraphicsRenderTarget(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::SetScissorRectangles* realData = static_cast<const Renderer::Command::SetScissorRectangles*>(data);
-				static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).rsSetScissorRectangles(realData->numberOfScissorRectangles, (nullptr != realData->scissorRectangles) ? realData->scissorRectangles : reinterpret_cast<const Renderer::ScissorRectangle*>(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData)));
+				// Output-merger (OM) stage
+				const Renderer::Command::SetGraphicsRenderTarget* realData = static_cast<const Renderer::Command::SetGraphicsRenderTarget*>(data);
+				static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).setGraphicsRenderTarget(realData->renderTarget);
 			}
 
-			//[-------------------------------------------------------]
-			//[ Output-merger (OM) stage                              ]
-			//[-------------------------------------------------------]
-			void SetRenderTarget(const void* data, Renderer::IRenderer& renderer)
+			void ClearGraphics(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::SetRenderTarget* realData = static_cast<const Renderer::Command::SetRenderTarget*>(data);
-				static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).omSetRenderTarget(realData->renderTarget);
+				const Renderer::Command::ClearGraphics* realData = static_cast<const Renderer::Command::ClearGraphics*>(data);
+				static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).clearGraphics(realData->flags, realData->color, realData->z, realData->stencil);
 			}
 
-			//[-------------------------------------------------------]
-			//[ Operations                                            ]
-			//[-------------------------------------------------------]
-			void Clear(const void* data, Renderer::IRenderer& renderer)
+			void DrawGraphics(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::Clear* realData = static_cast<const Renderer::Command::Clear*>(data);
-				static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).clear(realData->flags, realData->color, realData->z, realData->stencil);
-			}
-
-			void ResolveMultisampleFramebuffer(const void* data, Renderer::IRenderer& renderer)
-			{
-				const Renderer::Command::ResolveMultisampleFramebuffer* realData = static_cast<const Renderer::Command::ResolveMultisampleFramebuffer*>(data);
-				static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).resolveMultisampleFramebuffer(*realData->destinationRenderTarget, *realData->sourceMultisampleFramebuffer);
-			}
-
-			void CopyResource(const void* data, Renderer::IRenderer& renderer)
-			{
-				const Renderer::Command::CopyResource* realData = static_cast<const Renderer::Command::CopyResource*>(data);
-				static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).copyResource(*realData->destinationResource, *realData->sourceResource);
-			}
-
-			//[-------------------------------------------------------]
-			//[ Draw call                                             ]
-			//[-------------------------------------------------------]
-			void Draw(const void* data, Renderer::IRenderer& renderer)
-			{
-				const Renderer::Command::Draw* realData = static_cast<const Renderer::Command::Draw*>(data);
+				const Renderer::Command::DrawGraphics* realData = static_cast<const Renderer::Command::DrawGraphics*>(data);
 				if (nullptr != realData->indirectBuffer)
 				{
-					static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).draw(*realData->indirectBuffer, realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).drawGraphics(*realData->indirectBuffer, realData->indirectBufferOffset, realData->numberOfDraws);
 				}
 				else
 				{
-					static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).drawEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).drawGraphicsEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
 				}
 			}
 
-			void DrawAgs(const void* data, Renderer::IRenderer& renderer)
+			void DrawGraphicsAgs(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::Draw* realData = static_cast<const Renderer::Command::Draw*>(data);
+				const Renderer::Command::DrawGraphics* realData = static_cast<const Renderer::Command::DrawGraphics*>(data);
 				if (nullptr != realData->indirectBuffer)
 				{
-					static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).drawAgs(*realData->indirectBuffer, realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).drawGraphicsAgs(*realData->indirectBuffer, realData->indirectBufferOffset, realData->numberOfDraws);
 				}
 				else
 				{
-					static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).drawEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).drawGraphicsEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
 				}
 			}
 
-			void DrawNvApi(const void* data, Renderer::IRenderer& renderer)
+			void DrawGraphicsNvApi(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::Draw* realData = static_cast<const Renderer::Command::Draw*>(data);
+				const Renderer::Command::DrawGraphics* realData = static_cast<const Renderer::Command::DrawGraphics*>(data);
 				if (nullptr != realData->indirectBuffer)
 				{
-					static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).drawNvApi(*realData->indirectBuffer, realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).drawGraphicsNvApi(*realData->indirectBuffer, realData->indirectBufferOffset, realData->numberOfDraws);
 				}
 				else
 				{
-					static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).drawEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).drawGraphicsEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
 				}
 			}
 
-			void DrawIndexed(const void* data, Renderer::IRenderer& renderer)
+			void DrawIndexedGraphics(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::Draw* realData = static_cast<const Renderer::Command::Draw*>(data);
+				const Renderer::Command::DrawIndexedGraphics* realData = static_cast<const Renderer::Command::DrawIndexedGraphics*>(data);
 				if (nullptr != realData->indirectBuffer)
 				{
-					static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).drawIndexed(*realData->indirectBuffer, realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).drawIndexedGraphics(*realData->indirectBuffer, realData->indirectBufferOffset, realData->numberOfDraws);
 				}
 				else
 				{
-					static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).drawIndexedEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).drawIndexedGraphicsEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
 				}
 			}
 
-			void DrawIndexedAgs(const void* data, Renderer::IRenderer& renderer)
+			void DrawIndexedGraphicsAgs(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::Draw* realData = static_cast<const Renderer::Command::Draw*>(data);
+				const Renderer::Command::DrawIndexedGraphics* realData = static_cast<const Renderer::Command::DrawIndexedGraphics*>(data);
 				if (nullptr != realData->indirectBuffer)
 				{
-					static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).drawIndexedAgs(*realData->indirectBuffer, realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).drawIndexedGraphicsAgs(*realData->indirectBuffer, realData->indirectBufferOffset, realData->numberOfDraws);
 				}
 				else
 				{
-					static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).drawIndexedEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).drawIndexedGraphicsEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
 				}
 			}
 
-			void DrawIndexedNvApi(const void* data, Renderer::IRenderer& renderer)
+			void DrawIndexedGraphicsNvApi(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::Draw* realData = static_cast<const Renderer::Command::Draw*>(data);
+				const Renderer::Command::DrawIndexedGraphics* realData = static_cast<const Renderer::Command::DrawIndexedGraphics*>(data);
 				if (nullptr != realData->indirectBuffer)
 				{
-					static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).drawIndexedNvApi(*realData->indirectBuffer, realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).drawIndexedGraphicsNvApi(*realData->indirectBuffer, realData->indirectBufferOffset, realData->numberOfDraws);
 				}
 				else
 				{
-					static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).drawIndexedEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).drawIndexedGraphicsEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
 				}
+			}
+
+			//[-------------------------------------------------------]
+			//[ Compute                                               ]
+			//[-------------------------------------------------------]
+			void DispatchCompute(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::DispatchCompute* realData = static_cast<const Renderer::Command::DispatchCompute*>(data);
+				static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).dispatchCompute(realData->groupCountX, realData->groupCountY, realData->groupCountZ);
 			}
 
 			//[-------------------------------------------------------]
@@ -9995,6 +10142,18 @@ namespace
 				{
 					RENDERER_LOG(static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).getContext(), CRITICAL, "Unsupported Direct3D 11 texture resource type")
 				}
+			}
+
+			void ResolveMultisampleFramebuffer(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::ResolveMultisampleFramebuffer* realData = static_cast<const Renderer::Command::ResolveMultisampleFramebuffer*>(data);
+				static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).resolveMultisampleFramebuffer(*realData->destinationRenderTarget, *realData->sourceMultisampleFramebuffer);
+			}
+
+			void CopyResource(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::CopyResource* realData = static_cast<const Renderer::Command::CopyResource*>(data);
+				static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).copyResource(*realData->destinationResource, *realData->sourceResource);
 			}
 
 			//[-------------------------------------------------------]
@@ -10039,27 +10198,23 @@ namespace
 		{
 			// Command buffer
 			&BackendDispatch::ExecuteCommandBuffer,
-			// Graphics root
+			// Graphics
 			&BackendDispatch::SetGraphicsRootSignature,
+			&BackendDispatch::SetGraphicsPipelineState,
 			&BackendDispatch::SetGraphicsResourceGroup,
-			// States
-			&BackendDispatch::SetPipelineState,
-			// Input-assembler (IA) stage
-			&BackendDispatch::SetVertexArray,
-			// Rasterizer (RS) stage
-			&BackendDispatch::SetViewports,
-			&BackendDispatch::SetScissorRectangles,
-			// Output-merger (OM) stage
-			&BackendDispatch::SetRenderTarget,
-			// Operations
-			&BackendDispatch::Clear,
-			&BackendDispatch::ResolveMultisampleFramebuffer,
-			&BackendDispatch::CopyResource,
-			// Draw call
-			&BackendDispatch::Draw,
-			&BackendDispatch::DrawIndexed,
+			&BackendDispatch::SetGraphicsVertexArray,		// Input-assembler (IA) stage
+			&BackendDispatch::SetGraphicsViewports,			// Rasterizer (RS) stage
+			&BackendDispatch::SetGraphicsScissorRectangles,	// Rasterizer (RS) stage
+			&BackendDispatch::SetGraphicsRenderTarget,		// Output-merger (OM) stage
+			&BackendDispatch::ClearGraphics,
+			&BackendDispatch::DrawGraphics,
+			&BackendDispatch::DrawIndexedGraphics,
+			// Compute
+			&BackendDispatch::DispatchCompute,
 			// Resource
 			&BackendDispatch::SetTextureMinimumMaximumMipmapIndex,
+			&BackendDispatch::ResolveMultisampleFramebuffer,
+			&BackendDispatch::CopyResource,
 			// Debug
 			&BackendDispatch::SetDebugMarker,
 			&BackendDispatch::BeginDebugEvent,
@@ -10130,13 +10285,13 @@ namespace Direct3D11Renderer
 			// Update dispatch draw function pointers, if needed
 			if (nullptr != agsContext)
 			{
-				detail::DISPATCH_FUNCTIONS[Renderer::CommandDispatchFunctionIndex::Draw] = &detail::BackendDispatch::DrawAgs;
-				detail::DISPATCH_FUNCTIONS[Renderer::CommandDispatchFunctionIndex::DrawIndexed] = &detail::BackendDispatch::DrawIndexedAgs;
+				detail::DISPATCH_FUNCTIONS[Renderer::CommandDispatchFunctionIndex::DrawGraphics] = &detail::BackendDispatch::DrawGraphicsAgs;
+				detail::DISPATCH_FUNCTIONS[Renderer::CommandDispatchFunctionIndex::DrawIndexedGraphics] = &detail::BackendDispatch::DrawIndexedGraphicsAgs;
 			}
 			else
 			{
-				detail::DISPATCH_FUNCTIONS[Renderer::CommandDispatchFunctionIndex::Draw] = (nullptr != NvAPI_D3D11_MultiDrawInstancedIndirect) ? &detail::BackendDispatch::DrawNvApi : &detail::BackendDispatch::Draw;
-				detail::DISPATCH_FUNCTIONS[Renderer::CommandDispatchFunctionIndex::DrawIndexed] = (nullptr != NvAPI_D3D11_MultiDrawIndexedInstancedIndirect) ? &detail::BackendDispatch::DrawIndexedNvApi : &detail::BackendDispatch::DrawIndexed;
+				detail::DISPATCH_FUNCTIONS[Renderer::CommandDispatchFunctionIndex::DrawGraphics] = (nullptr != NvAPI_D3D11_MultiDrawInstancedIndirect) ? &detail::BackendDispatch::DrawGraphicsNvApi : &detail::BackendDispatch::DrawGraphics;
+				detail::DISPATCH_FUNCTIONS[Renderer::CommandDispatchFunctionIndex::DrawIndexedGraphics] = (nullptr != NvAPI_D3D11_MultiDrawIndexedInstancedIndirect) ? &detail::BackendDispatch::DrawIndexedGraphicsNvApi : &detail::BackendDispatch::DrawIndexedGraphics;
 			}
 
 			// Is there a valid Direct3D 11 device and device context?
@@ -10306,7 +10461,7 @@ namespace Direct3D11Renderer
 
 
 	//[-------------------------------------------------------]
-	//[ States                                                ]
+	//[ Graphics                                              ]
 	//[-------------------------------------------------------]
 	void Direct3D11Renderer::setGraphicsRootSignature(Renderer::IRootSignature* rootSignature)
 	{
@@ -10321,6 +10476,31 @@ namespace Direct3D11Renderer
 
 			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
 			DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *rootSignature)
+		}
+	}
+
+	void Direct3D11Renderer::setGraphicsPipelineState(Renderer::IPipelineState* graphicsPipelineState)
+	{
+		if (nullptr != graphicsPipelineState)
+		{
+			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *graphicsPipelineState)
+
+			// Set primitive topology
+			// -> The "Renderer::PrimitiveTopology" values directly map to Direct3D 9 & 10 & 11 constants, do not change them
+			const PipelineState* direct3D11PipelineState = static_cast<const PipelineState*>(graphicsPipelineState);
+			if (mD3D11PrimitiveTopology != direct3D11PipelineState->getD3D11PrimitiveTopology())
+			{
+				mD3D11PrimitiveTopology = direct3D11PipelineState->getD3D11PrimitiveTopology();
+				mD3D11DeviceContext->IASetPrimitiveTopology(mD3D11PrimitiveTopology);
+			}
+
+			// Set pipeline state
+			direct3D11PipelineState->bindPipelineState();
+		}
+		else
+		{
+			// TODO(co) Handle this situation?
 		}
 	}
 
@@ -10387,6 +10567,7 @@ namespace Direct3D11Renderer
 								mD3D11DeviceContext->DSSetConstantBuffers(startSlot, 1, &d3d11Buffers);
 								mD3D11DeviceContext->GSSetConstantBuffers(startSlot, 1, &d3d11Buffers);
 								mD3D11DeviceContext->PSSetConstantBuffers(startSlot, 1, &d3d11Buffers);
+								mD3D11DeviceContext->CSSetConstantBuffers(startSlot, 1, &d3d11Buffers);
 								break;
 
 							case Renderer::ShaderVisibility::VERTEX:
@@ -10409,6 +10590,18 @@ namespace Direct3D11Renderer
 
 							case Renderer::ShaderVisibility::FRAGMENT:
 								// "pixel shader" in Direct3D terminology
+								mD3D11DeviceContext->PSSetConstantBuffers(startSlot, 1, &d3d11Buffers);
+								break;
+
+							case Renderer::ShaderVisibility::COMPUTE:
+								mD3D11DeviceContext->CSSetConstantBuffers(startSlot, 1, &d3d11Buffers);
+								break;
+
+							case Renderer::ShaderVisibility::ALL_GRAPHICS:
+								mD3D11DeviceContext->VSSetConstantBuffers(startSlot, 1, &d3d11Buffers);
+								mD3D11DeviceContext->HSSetConstantBuffers(startSlot, 1, &d3d11Buffers);
+								mD3D11DeviceContext->DSSetConstantBuffers(startSlot, 1, &d3d11Buffers);
+								mD3D11DeviceContext->GSSetConstantBuffers(startSlot, 1, &d3d11Buffers);
 								mD3D11DeviceContext->PSSetConstantBuffers(startSlot, 1, &d3d11Buffers);
 								break;
 						}
@@ -10467,6 +10660,7 @@ namespace Direct3D11Renderer
 							case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 							case Renderer::ResourceType::GEOMETRY_SHADER:
 							case Renderer::ResourceType::FRAGMENT_SHADER:
+							case Renderer::ResourceType::COMPUTE_SHADER:
 								RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 11 renderer backend resource type")
 								break;
 						}
@@ -10479,6 +10673,7 @@ namespace Direct3D11Renderer
 								mD3D11DeviceContext->DSSetShaderResources(startSlot, 1, &d3d11ShaderResourceView);
 								mD3D11DeviceContext->GSSetShaderResources(startSlot, 1, &d3d11ShaderResourceView);
 								mD3D11DeviceContext->PSSetShaderResources(startSlot, 1, &d3d11ShaderResourceView);
+								mD3D11DeviceContext->CSSetShaderResources(startSlot, 1, &d3d11ShaderResourceView);
 								break;
 
 							case Renderer::ShaderVisibility::VERTEX:
@@ -10501,6 +10696,18 @@ namespace Direct3D11Renderer
 
 							case Renderer::ShaderVisibility::FRAGMENT:
 								// "pixel shader" in Direct3D terminology
+								mD3D11DeviceContext->PSSetShaderResources(startSlot, 1, &d3d11ShaderResourceView);
+								break;
+
+							case Renderer::ShaderVisibility::COMPUTE:
+								mD3D11DeviceContext->CSSetShaderResources(startSlot, 1, &d3d11ShaderResourceView);
+								break;
+
+							case Renderer::ShaderVisibility::ALL_GRAPHICS:
+								mD3D11DeviceContext->VSSetShaderResources(startSlot, 1, &d3d11ShaderResourceView);
+								mD3D11DeviceContext->HSSetShaderResources(startSlot, 1, &d3d11ShaderResourceView);
+								mD3D11DeviceContext->DSSetShaderResources(startSlot, 1, &d3d11ShaderResourceView);
+								mD3D11DeviceContext->GSSetShaderResources(startSlot, 1, &d3d11ShaderResourceView);
 								mD3D11DeviceContext->PSSetShaderResources(startSlot, 1, &d3d11ShaderResourceView);
 								break;
 						}
@@ -10519,6 +10726,7 @@ namespace Direct3D11Renderer
 								mD3D11DeviceContext->DSSetSamplers(startSlot, 1, &d3d11SamplerState);
 								mD3D11DeviceContext->GSSetSamplers(startSlot, 1, &d3d11SamplerState);
 								mD3D11DeviceContext->PSSetSamplers(startSlot, 1, &d3d11SamplerState);
+								mD3D11DeviceContext->CSSetSamplers(startSlot, 1, &d3d11SamplerState);
 								break;
 
 							case Renderer::ShaderVisibility::VERTEX:
@@ -10541,6 +10749,18 @@ namespace Direct3D11Renderer
 
 							case Renderer::ShaderVisibility::FRAGMENT:
 								// "pixel shader" in Direct3D terminology
+								mD3D11DeviceContext->PSSetSamplers(startSlot, 1, &d3d11SamplerState);
+								break;
+
+							case Renderer::ShaderVisibility::COMPUTE:
+								mD3D11DeviceContext->CSSetSamplers(startSlot, 1, &d3d11SamplerState);
+								break;
+
+							case Renderer::ShaderVisibility::ALL_GRAPHICS:
+								mD3D11DeviceContext->VSSetSamplers(startSlot, 1, &d3d11SamplerState);
+								mD3D11DeviceContext->HSSetSamplers(startSlot, 1, &d3d11SamplerState);
+								mD3D11DeviceContext->DSSetSamplers(startSlot, 1, &d3d11SamplerState);
+								mD3D11DeviceContext->GSSetSamplers(startSlot, 1, &d3d11SamplerState);
 								mD3D11DeviceContext->PSSetSamplers(startSlot, 1, &d3d11SamplerState);
 								break;
 						}
@@ -10563,6 +10783,7 @@ namespace Direct3D11Renderer
 					case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Renderer::ResourceType::GEOMETRY_SHADER:
 					case Renderer::ResourceType::FRAGMENT_SHADER:
+					case Renderer::ResourceType::COMPUTE_SHADER:
 						RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 11 renderer backend resource type")
 						break;
 				}
@@ -10574,37 +10795,9 @@ namespace Direct3D11Renderer
 		}
 	}
 
-	void Direct3D11Renderer::setPipelineState(Renderer::IPipelineState* pipelineState)
+	void Direct3D11Renderer::setGraphicsVertexArray(Renderer::IVertexArray* vertexArray)
 	{
-		if (nullptr != pipelineState)
-		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
-			DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *pipelineState)
-
-			// Set primitive topology
-			// -> The "Renderer::PrimitiveTopology" values directly map to Direct3D 9 & 10 & 11 constants, do not change them
-			const PipelineState* direct3D11PipelineState = static_cast<const PipelineState*>(pipelineState);
-			if (mD3D11PrimitiveTopology != direct3D11PipelineState->getD3D11PrimitiveTopology())
-			{
-				mD3D11PrimitiveTopology = direct3D11PipelineState->getD3D11PrimitiveTopology();
-				mD3D11DeviceContext->IASetPrimitiveTopology(mD3D11PrimitiveTopology);
-			}
-
-			// Set pipeline state
-			direct3D11PipelineState->bindPipelineState();
-		}
-		else
-		{
-			// TODO(co) Handle this situation?
-		}
-	}
-
-
-	//[-------------------------------------------------------]
-	//[ Input-assembler (IA) stage                            ]
-	//[-------------------------------------------------------]
-	void Direct3D11Renderer::iaSetVertexArray(Renderer::IVertexArray* vertexArray)
-	{
+		// Input-assembler (IA) stage
 		if (nullptr != vertexArray)
 		{
 			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
@@ -10625,12 +10818,10 @@ namespace Direct3D11Renderer
 		}
 	}
 
-
-	//[-------------------------------------------------------]
-	//[ Rasterizer (RS) stage                                 ]
-	//[-------------------------------------------------------]
-	void Direct3D11Renderer::rsSetViewports(uint32_t numberOfViewports, const Renderer::Viewport* viewports)
+	void Direct3D11Renderer::setGraphicsViewports(uint32_t numberOfViewports, const Renderer::Viewport* viewports)
 	{
+		// Rasterizer (RS) stage
+
 		// Sanity check
 		RENDERER_ASSERT(mContext, numberOfViewports > 0 && nullptr != viewports, "Invalid Direct3D 11 rasterizer state viewports")
 
@@ -10640,8 +10831,10 @@ namespace Direct3D11Renderer
 		mD3D11DeviceContext->RSSetViewports(numberOfViewports, reinterpret_cast<const D3D11_VIEWPORT*>(viewports));
 	}
 
-	void Direct3D11Renderer::rsSetScissorRectangles(uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles)
+	void Direct3D11Renderer::setGraphicsScissorRectangles(uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles)
 	{
+		// Rasterizer (RS) stage
+
 		// Sanity check
 		RENDERER_ASSERT(mContext, numberOfScissorRectangles > 0 && nullptr != scissorRectangles, "Invalid Direct3D 11 rasterizer state scissor rectangles")
 
@@ -10651,12 +10844,10 @@ namespace Direct3D11Renderer
 		mD3D11DeviceContext->RSSetScissorRects(numberOfScissorRectangles, reinterpret_cast<const D3D11_RECT*>(scissorRectangles));
 	}
 
-
-	//[-------------------------------------------------------]
-	//[ Output-merger (OM) stage                              ]
-	//[-------------------------------------------------------]
-	void Direct3D11Renderer::omSetRenderTarget(Renderer::IRenderTarget* renderTarget)
+	void Direct3D11Renderer::setGraphicsRenderTarget(Renderer::IRenderTarget* renderTarget)
 	{
+		// Output-merger (OM) stage
+
 		// New render target?
 		if (mRenderTarget != renderTarget)
 		{
@@ -10732,6 +10923,7 @@ namespace Direct3D11Renderer
 					case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Renderer::ResourceType::GEOMETRY_SHADER:
 					case Renderer::ResourceType::FRAGMENT_SHADER:
+					case Renderer::ResourceType::COMPUTE_SHADER:
 					default:
 						// Not handled in here
 						break;
@@ -10759,11 +10951,7 @@ namespace Direct3D11Renderer
 		}
 	}
 
-
-	//[-------------------------------------------------------]
-	//[ Operations                                            ]
-	//[-------------------------------------------------------]
-	void Direct3D11Renderer::clear(uint32_t flags, const float color[4], float z, uint32_t stencil)
+	void Direct3D11Renderer::clearGraphics(uint32_t flags, const float color[4], float z, uint32_t stencil)
 	{
 		// Unlike Direct3D 9, OpenGL or OpenGL ES 3, Direct3D 11 clears a given render target view and not the currently bound
 
@@ -10865,6 +11053,7 @@ namespace Direct3D11Renderer
 				case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 				case Renderer::ResourceType::GEOMETRY_SHADER:
 				case Renderer::ResourceType::FRAGMENT_SHADER:
+				case Renderer::ResourceType::COMPUTE_SHADER:
 				default:
 					// Not handled in here
 					break;
@@ -10879,6 +11068,285 @@ namespace Direct3D11Renderer
 		RENDERER_END_DEBUG_EVENT(this)
 	}
 
+	void Direct3D11Renderer::drawGraphics(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
+	{
+		// Sanity check
+		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of Direct3D 11 draws must not be zero")
+
+		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
+
+		// Draw indirect
+		ID3D11Buffer* d3D11Buffer = static_cast<const IndirectBuffer&>(indirectBuffer).getD3D11Buffer();
+		if (1 == numberOfDraws)
+		{
+			mD3D11DeviceContext->DrawInstancedIndirect(d3D11Buffer, indirectBufferOffset);
+		}
+		else if (numberOfDraws > 1)
+		{
+			// Emulate multi-draw-indirect
+			#ifdef RENDERER_DEBUG
+				if (nullptr != mD3DUserDefinedAnnotation)
+				{
+					mD3DUserDefinedAnnotation->BeginEvent(L"Multi-draw-indirect emulation");
+				}
+			#endif
+			for (uint32_t i = 0; i < numberOfDraws; ++i)
+			{
+				mD3D11DeviceContext->DrawInstancedIndirect(d3D11Buffer, indirectBufferOffset);
+				indirectBufferOffset += sizeof(Renderer::DrawInstancedArguments);
+			}
+			#ifdef RENDERER_DEBUG
+				if (nullptr != mD3DUserDefinedAnnotation)
+				{
+					mD3DUserDefinedAnnotation->EndEvent();
+				}
+			#endif
+		}
+	}
+
+	void Direct3D11Renderer::drawGraphicsAgs(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
+	{
+		// Sanity check
+		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of Direct3D 11 draws must not be zero")
+		RENDERER_ASSERT(mContext, nullptr != agsDriverExtensionsDX11_MultiDrawInstancedIndirect, "Direct3D 11: AMD AGS function \"agsDriverExtensionsDX11_MultiDrawInstancedIndirect()\" not found")
+
+		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
+
+		// Draw indirect
+		ID3D11Buffer* d3D11Buffer = static_cast<const IndirectBuffer&>(indirectBuffer).getD3D11Buffer();
+		if (1 == numberOfDraws)
+		{
+			mD3D11DeviceContext->DrawInstancedIndirect(d3D11Buffer, indirectBufferOffset);
+		}
+		else if (numberOfDraws > 1)
+		{
+			// AMD: "agsDriverExtensionsDX11_MultiDrawInstancedIndirect()" - https://gpuopen-librariesandsdks.github.io/ags/group__mdi.html
+			agsDriverExtensionsDX11_MultiDrawInstancedIndirect(mDirect3D11RuntimeLinking->getAgsContext(), numberOfDraws, d3D11Buffer, indirectBufferOffset, sizeof(Renderer::DrawInstancedArguments));
+		}
+	}
+
+	void Direct3D11Renderer::drawGraphicsNvApi(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
+	{
+		// Sanity check
+		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of Direct3D 11 draws must not be zero")
+		RENDERER_ASSERT(mContext, nullptr != NvAPI_D3D11_MultiDrawInstancedIndirect, "Direct3D 11: NvAPI function \"NvAPI_D3D11_MultiDrawInstancedIndirect()\" not found")
+
+		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
+
+		// Draw indirect
+		ID3D11Buffer* d3D11Buffer = static_cast<const IndirectBuffer&>(indirectBuffer).getD3D11Buffer();
+		if (1 == numberOfDraws)
+		{
+			mD3D11DeviceContext->DrawInstancedIndirect(d3D11Buffer, indirectBufferOffset);
+		}
+		else if (numberOfDraws > 1)
+		{
+			// NVIDIA: "NvAPI_D3D11_MultiDrawInstancedIndirect()" - http://docs.nvidia.com/gameworks/content/gameworkslibrary/coresdk/nvapi/group__dx.html#gaf417228a716d10efcb29fa592795f160
+			NvAPI_D3D11_MultiDrawInstancedIndirect(mD3D11DeviceContext, numberOfDraws, d3D11Buffer, indirectBufferOffset, sizeof(Renderer::DrawInstancedArguments));
+		}
+	}
+
+	void Direct3D11Renderer::drawGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
+	{
+		// Sanity checks
+		RENDERER_ASSERT(mContext, nullptr != emulationData, "The Direct3D 11 emulation data must be valid")
+		RENDERER_ASSERT(mContext, numberOfDraws > 0, "The number of Direct3D 11 draws must not be zero")
+
+		// TODO(co) Currently no buffer overflow check due to lack of interface provided data
+		emulationData += indirectBufferOffset;
+
+		// Emit the draw calls
+		#ifdef RENDERER_DEBUG
+			if (nullptr != mD3DUserDefinedAnnotation && numberOfDraws > 1)
+			{
+				mD3DUserDefinedAnnotation->BeginEvent(L"Multi-draw-indirect emulation");
+			}
+		#endif
+		for (uint32_t i = 0; i < numberOfDraws; ++i)
+		{
+			const Renderer::DrawInstancedArguments& drawInstancedArguments = *reinterpret_cast<const Renderer::DrawInstancedArguments*>(emulationData);
+
+			// Draw
+			if (drawInstancedArguments.instanceCount > 1 || drawInstancedArguments.startInstanceLocation > 0)
+			{
+				// With instancing
+				mD3D11DeviceContext->DrawInstanced(
+					drawInstancedArguments.vertexCountPerInstance,	// Vertex count per instance (UINT)
+					drawInstancedArguments.instanceCount,			// Instance count (UINT)
+					drawInstancedArguments.startVertexLocation,		// Start vertex location (UINT)
+					drawInstancedArguments.startInstanceLocation	// Start instance location (UINT)
+				);
+			}
+			else
+			{
+				// Without instancing
+				mD3D11DeviceContext->Draw(
+					drawInstancedArguments.vertexCountPerInstance,	// Vertex count (UINT)
+					drawInstancedArguments.startVertexLocation		// Start index location (UINT)
+				);
+			}
+
+			// Advance
+			emulationData += sizeof(Renderer::DrawInstancedArguments);
+		}
+		#ifdef RENDERER_DEBUG
+			if (nullptr != mD3DUserDefinedAnnotation && numberOfDraws > 1)
+			{
+				mD3DUserDefinedAnnotation->EndEvent();
+			}
+		#endif
+	}
+
+	void Direct3D11Renderer::drawIndexedGraphics(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
+	{
+		// Sanity checks
+		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of Direct3D 11 draws must not be zero")
+
+		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
+
+		// Draw indirect
+		ID3D11Buffer* d3D11Buffer = static_cast<const IndirectBuffer&>(indirectBuffer).getD3D11Buffer();
+		if (1 == numberOfDraws)
+		{
+			mD3D11DeviceContext->DrawIndexedInstancedIndirect(d3D11Buffer, indirectBufferOffset);
+		}
+		else if (numberOfDraws > 1)
+		{
+			// Emulate multi-draw-indirect
+			#ifdef RENDERER_DEBUG
+				if (nullptr != mD3DUserDefinedAnnotation)
+				{
+					mD3DUserDefinedAnnotation->BeginEvent(L"Multi-indexed-draw-indirect emulation");
+				}
+			#endif
+			for (uint32_t i = 0; i < numberOfDraws; ++i)
+			{
+				mD3D11DeviceContext->DrawIndexedInstancedIndirect(d3D11Buffer, indirectBufferOffset);
+				indirectBufferOffset += sizeof(Renderer::DrawIndexedInstancedArguments);
+			}
+			#ifdef RENDERER_DEBUG
+				if (nullptr != mD3DUserDefinedAnnotation)
+				{
+					mD3DUserDefinedAnnotation->EndEvent();
+				}
+			#endif
+		}
+	}
+
+	void Direct3D11Renderer::drawIndexedGraphicsAgs(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
+	{
+		// Sanity checks
+		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of Direct3D 11 draws must not be zero")
+		RENDERER_ASSERT(mContext, nullptr != agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect, "Direct3D 11: NvAPI function \"agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect()\" not found")
+
+		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
+
+		// Draw indirect
+		ID3D11Buffer* d3D11Buffer = static_cast<const IndirectBuffer&>(indirectBuffer).getD3D11Buffer();
+		if (1 == numberOfDraws)
+		{
+			mD3D11DeviceContext->DrawIndexedInstancedIndirect(d3D11Buffer, indirectBufferOffset);
+		}
+		else if (numberOfDraws > 1)
+		{
+			// AMD: "agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect()" - https://gpuopen-librariesandsdks.github.io/ags/group__mdi.html
+			agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect(mDirect3D11RuntimeLinking->getAgsContext(), numberOfDraws, d3D11Buffer, indirectBufferOffset, sizeof(Renderer::DrawIndexedInstancedArguments));
+		}
+	}
+
+	void Direct3D11Renderer::drawIndexedGraphicsNvApi(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
+	{
+		// Sanity checks
+		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of Direct3D 11 draws must not be zero")
+		RENDERER_ASSERT(mContext, nullptr != NvAPI_D3D11_MultiDrawIndexedInstancedIndirect, "Direct3D 11: NvAPI function \"NvAPI_D3D11_MultiDrawIndexedInstancedIndirect()\" not found")
+
+		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
+
+		// Draw indirect
+		ID3D11Buffer* d3D11Buffer = static_cast<const IndirectBuffer&>(indirectBuffer).getD3D11Buffer();
+		if (1 == numberOfDraws)
+		{
+			mD3D11DeviceContext->DrawIndexedInstancedIndirect(d3D11Buffer, indirectBufferOffset);
+		}
+		else if (numberOfDraws > 1)
+		{
+			// NVIDIA: "NvAPI_D3D11_MultiDrawIndexedInstancedIndirect()" - http://docs.nvidia.com/gameworks/content/gameworkslibrary/coresdk/nvapi/group__dx.html#ga04cbd1b776a391e45d38377bd3156f9e
+			NvAPI_D3D11_MultiDrawIndexedInstancedIndirect(mD3D11DeviceContext, numberOfDraws, d3D11Buffer, indirectBufferOffset, sizeof(Renderer::DrawIndexedInstancedArguments));
+		}
+	}
+
+	void Direct3D11Renderer::drawIndexedGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
+	{
+		// Sanity checks
+		RENDERER_ASSERT(mContext, nullptr != emulationData, "The Direct3D 11 emulation data must be valid")
+		RENDERER_ASSERT(mContext, numberOfDraws > 0, "The number of Direct3D 11 draws must not be zero")
+
+		// TODO(co) Currently no buffer overflow check due to lack of interface provided data
+		emulationData += indirectBufferOffset;
+
+		// Emit the draw calls
+		#ifdef RENDERER_DEBUG
+			if (nullptr != mD3DUserDefinedAnnotation && numberOfDraws > 1)
+			{
+				mD3DUserDefinedAnnotation->BeginEvent(L"Multi-indexed-draw-indirect emulation");
+			}
+		#endif
+		for (uint32_t i = 0; i < numberOfDraws; ++i)
+		{
+			const Renderer::DrawIndexedInstancedArguments& drawIndexedInstancedArguments = *reinterpret_cast<const Renderer::DrawIndexedInstancedArguments*>(emulationData);
+
+			// Draw
+			if (drawIndexedInstancedArguments.instanceCount > 1 || drawIndexedInstancedArguments.startInstanceLocation > 0)
+			{
+				// With instancing
+				mD3D11DeviceContext->DrawIndexedInstanced(
+					drawIndexedInstancedArguments.indexCountPerInstance,	// Index count per instance (UINT)
+					drawIndexedInstancedArguments.instanceCount,			// Instance count (UINT)
+					drawIndexedInstancedArguments.startIndexLocation,		// Start index location (UINT)
+					drawIndexedInstancedArguments.baseVertexLocation,		// Base vertex location (INT)
+					drawIndexedInstancedArguments.startInstanceLocation		// Start instance location (UINT)
+				);
+			}
+			else
+			{
+				// Without instancing
+				mD3D11DeviceContext->DrawIndexed(
+					drawIndexedInstancedArguments.indexCountPerInstance,	// Index count (UINT)
+					drawIndexedInstancedArguments.startIndexLocation,		// Start index location (UINT)
+					drawIndexedInstancedArguments.baseVertexLocation		// Base vertex location (INT)
+				);
+			}
+
+			// Advance
+			emulationData += sizeof(Renderer::DrawIndexedInstancedArguments);
+		}
+		#ifdef RENDERER_DEBUG
+			if (nullptr != mD3DUserDefinedAnnotation && numberOfDraws > 1)
+			{
+				mD3DUserDefinedAnnotation->EndEvent();
+			}
+		#endif
+	}
+
+
+	//[-------------------------------------------------------]
+	//[ Compute                                               ]
+	//[-------------------------------------------------------]
+	void Direct3D11Renderer::dispatchCompute(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
+	{
+		mD3D11DeviceContext->Dispatch(groupCountX, groupCountY, groupCountZ);
+	}
+
+
+	//[-------------------------------------------------------]
+	//[ Resource                                              ]
+	//[-------------------------------------------------------]
 	void Direct3D11Renderer::resolveMultisampleFramebuffer(Renderer::IRenderTarget& destinationRenderTarget, Renderer::IFramebuffer& sourceMultisampleFramebuffer)
 	{
 		// Security check: Are the given resources owned by this renderer? (calls "return" in case of a mismatch)
@@ -10953,6 +11421,7 @@ namespace Direct3D11Renderer
 			case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 			case Renderer::ResourceType::GEOMETRY_SHADER:
 			case Renderer::ResourceType::FRAGMENT_SHADER:
+			case Renderer::ResourceType::COMPUTE_SHADER:
 			default:
 				// Not handled in here
 				break;
@@ -11008,280 +11477,11 @@ namespace Direct3D11Renderer
 			case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 			case Renderer::ResourceType::GEOMETRY_SHADER:
 			case Renderer::ResourceType::FRAGMENT_SHADER:
+			case Renderer::ResourceType::COMPUTE_SHADER:
 			default:
 				// Not handled in here
 				break;
 		}
-	}
-
-
-	//[-------------------------------------------------------]
-	//[ Draw call                                             ]
-	//[-------------------------------------------------------]
-	void Direct3D11Renderer::draw(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
-	{
-		// Sanity check
-		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of Direct3D 11 draws must not be zero")
-
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
-		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
-
-		// Draw indirect
-		ID3D11Buffer* d3D11Buffer = static_cast<const IndirectBuffer&>(indirectBuffer).getD3D11Buffer();
-		if (1 == numberOfDraws)
-		{
-			mD3D11DeviceContext->DrawInstancedIndirect(d3D11Buffer, indirectBufferOffset);
-		}
-		else if (numberOfDraws > 1)
-		{
-			// Emulate multi-draw-indirect
-			#ifdef RENDERER_DEBUG
-				if (nullptr != mD3DUserDefinedAnnotation)
-				{
-					mD3DUserDefinedAnnotation->BeginEvent(L"Multi-draw-indirect emulation");
-				}
-			#endif
-			for (uint32_t i = 0; i < numberOfDraws; ++i)
-			{
-				mD3D11DeviceContext->DrawInstancedIndirect(d3D11Buffer, indirectBufferOffset);
-				indirectBufferOffset += sizeof(Renderer::DrawInstancedArguments);
-			}
-			#ifdef RENDERER_DEBUG
-				if (nullptr != mD3DUserDefinedAnnotation)
-				{
-					mD3DUserDefinedAnnotation->EndEvent();
-				}
-			#endif
-		}
-	}
-
-	void Direct3D11Renderer::drawAgs(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
-	{
-		// Sanity check
-		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of Direct3D 11 draws must not be zero")
-		RENDERER_ASSERT(mContext, nullptr != agsDriverExtensionsDX11_MultiDrawInstancedIndirect, "Direct3D 11: AMD AGS function \"agsDriverExtensionsDX11_MultiDrawInstancedIndirect()\" not found")
-
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
-		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
-
-		// Draw indirect
-		ID3D11Buffer* d3D11Buffer = static_cast<const IndirectBuffer&>(indirectBuffer).getD3D11Buffer();
-		if (1 == numberOfDraws)
-		{
-			mD3D11DeviceContext->DrawInstancedIndirect(d3D11Buffer, indirectBufferOffset);
-		}
-		else if (numberOfDraws > 1)
-		{
-			// AMD: "agsDriverExtensionsDX11_MultiDrawInstancedIndirect()" - https://gpuopen-librariesandsdks.github.io/ags/group__mdi.html
-			agsDriverExtensionsDX11_MultiDrawInstancedIndirect(mDirect3D11RuntimeLinking->getAgsContext(), numberOfDraws, d3D11Buffer, indirectBufferOffset, sizeof(Renderer::DrawInstancedArguments));
-		}
-	}
-
-	void Direct3D11Renderer::drawNvApi(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
-	{
-		// Sanity check
-		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of Direct3D 11 draws must not be zero")
-		RENDERER_ASSERT(mContext, nullptr != NvAPI_D3D11_MultiDrawInstancedIndirect, "Direct3D 11: NvAPI function \"NvAPI_D3D11_MultiDrawInstancedIndirect()\" not found")
-
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
-		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
-
-		// Draw indirect
-		ID3D11Buffer* d3D11Buffer = static_cast<const IndirectBuffer&>(indirectBuffer).getD3D11Buffer();
-		if (1 == numberOfDraws)
-		{
-			mD3D11DeviceContext->DrawInstancedIndirect(d3D11Buffer, indirectBufferOffset);
-		}
-		else if (numberOfDraws > 1)
-		{
-			// NVIDIA: "NvAPI_D3D11_MultiDrawInstancedIndirect()" - http://docs.nvidia.com/gameworks/content/gameworkslibrary/coresdk/nvapi/group__dx.html#gaf417228a716d10efcb29fa592795f160
-			NvAPI_D3D11_MultiDrawInstancedIndirect(mD3D11DeviceContext, numberOfDraws, d3D11Buffer, indirectBufferOffset, sizeof(Renderer::DrawInstancedArguments));
-		}
-	}
-
-	void Direct3D11Renderer::drawEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
-	{
-		// Sanity checks
-		RENDERER_ASSERT(mContext, nullptr != emulationData, "The Direct3D 11 emulation data must be valid")
-		RENDERER_ASSERT(mContext, numberOfDraws > 0, "The number of Direct3D 11 draws must not be zero")
-
-		// TODO(co) Currently no buffer overflow check due to lack of interface provided data
-		emulationData += indirectBufferOffset;
-
-		// Emit the draw calls
-		#ifdef RENDERER_DEBUG
-			if (nullptr != mD3DUserDefinedAnnotation && numberOfDraws > 1)
-			{
-				mD3DUserDefinedAnnotation->BeginEvent(L"Multi-draw-indirect emulation");
-			}
-		#endif
-		for (uint32_t i = 0; i < numberOfDraws; ++i)
-		{
-			const Renderer::DrawInstancedArguments& drawInstancedArguments = *reinterpret_cast<const Renderer::DrawInstancedArguments*>(emulationData);
-
-			// Draw
-			if (drawInstancedArguments.instanceCount > 1 || drawInstancedArguments.startInstanceLocation > 0)
-			{
-				// With instancing
-				mD3D11DeviceContext->DrawInstanced(
-					drawInstancedArguments.vertexCountPerInstance,	// Vertex count per instance (UINT)
-					drawInstancedArguments.instanceCount,			// Instance count (UINT)
-					drawInstancedArguments.startVertexLocation,		// Start vertex location (UINT)
-					drawInstancedArguments.startInstanceLocation	// Start instance location (UINT)
-				);
-			}
-			else
-			{
-				// Without instancing
-				mD3D11DeviceContext->Draw(
-					drawInstancedArguments.vertexCountPerInstance,	// Vertex count (UINT)
-					drawInstancedArguments.startVertexLocation		// Start index location (UINT)
-				);
-			}
-
-			// Advance
-			emulationData += sizeof(Renderer::DrawInstancedArguments);
-		}
-		#ifdef RENDERER_DEBUG
-			if (nullptr != mD3DUserDefinedAnnotation && numberOfDraws > 1)
-			{
-				mD3DUserDefinedAnnotation->EndEvent();
-			}
-		#endif
-	}
-
-	void Direct3D11Renderer::drawIndexed(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
-	{
-		// Sanity checks
-		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of Direct3D 11 draws must not be zero")
-
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
-		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
-
-		// Draw indirect
-		ID3D11Buffer* d3D11Buffer = static_cast<const IndirectBuffer&>(indirectBuffer).getD3D11Buffer();
-		if (1 == numberOfDraws)
-		{
-			mD3D11DeviceContext->DrawIndexedInstancedIndirect(d3D11Buffer, indirectBufferOffset);
-		}
-		else if (numberOfDraws > 1)
-		{
-			// Emulate multi-draw-indirect
-			#ifdef RENDERER_DEBUG
-				if (nullptr != mD3DUserDefinedAnnotation)
-				{
-					mD3DUserDefinedAnnotation->BeginEvent(L"Multi-indexed-draw-indirect emulation");
-				}
-			#endif
-			for (uint32_t i = 0; i < numberOfDraws; ++i)
-			{
-				mD3D11DeviceContext->DrawIndexedInstancedIndirect(d3D11Buffer, indirectBufferOffset);
-				indirectBufferOffset += sizeof(Renderer::DrawIndexedInstancedArguments);
-			}
-			#ifdef RENDERER_DEBUG
-				if (nullptr != mD3DUserDefinedAnnotation)
-				{
-					mD3DUserDefinedAnnotation->EndEvent();
-				}
-			#endif
-		}
-	}
-
-	void Direct3D11Renderer::drawIndexedAgs(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
-	{
-		// Sanity checks
-		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of Direct3D 11 draws must not be zero")
-		RENDERER_ASSERT(mContext, nullptr != agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect, "Direct3D 11: NvAPI function \"agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect()\" not found")
-
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
-		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
-
-		// Draw indirect
-		ID3D11Buffer* d3D11Buffer = static_cast<const IndirectBuffer&>(indirectBuffer).getD3D11Buffer();
-		if (1 == numberOfDraws)
-		{
-			mD3D11DeviceContext->DrawIndexedInstancedIndirect(d3D11Buffer, indirectBufferOffset);
-		}
-		else if (numberOfDraws > 1)
-		{
-			// AMD: "agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect()" - https://gpuopen-librariesandsdks.github.io/ags/group__mdi.html
-			agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect(mDirect3D11RuntimeLinking->getAgsContext(), numberOfDraws, d3D11Buffer, indirectBufferOffset, sizeof(Renderer::DrawIndexedInstancedArguments));
-		}
-	}
-
-	void Direct3D11Renderer::drawIndexedNvApi(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
-	{
-		// Sanity checks
-		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of Direct3D 11 draws must not be zero")
-		RENDERER_ASSERT(mContext, nullptr != NvAPI_D3D11_MultiDrawIndexedInstancedIndirect, "Direct3D 11: NvAPI function \"NvAPI_D3D11_MultiDrawIndexedInstancedIndirect()\" not found")
-
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
-		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
-
-		// Draw indirect
-		ID3D11Buffer* d3D11Buffer = static_cast<const IndirectBuffer&>(indirectBuffer).getD3D11Buffer();
-		if (1 == numberOfDraws)
-		{
-			mD3D11DeviceContext->DrawIndexedInstancedIndirect(d3D11Buffer, indirectBufferOffset);
-		}
-		else if (numberOfDraws > 1)
-		{
-			// NVIDIA: "NvAPI_D3D11_MultiDrawIndexedInstancedIndirect()" - http://docs.nvidia.com/gameworks/content/gameworkslibrary/coresdk/nvapi/group__dx.html#ga04cbd1b776a391e45d38377bd3156f9e
-			NvAPI_D3D11_MultiDrawIndexedInstancedIndirect(mD3D11DeviceContext, numberOfDraws, d3D11Buffer, indirectBufferOffset, sizeof(Renderer::DrawIndexedInstancedArguments));
-		}
-	}
-
-	void Direct3D11Renderer::drawIndexedEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
-	{
-		// Sanity checks
-		RENDERER_ASSERT(mContext, nullptr != emulationData, "The Direct3D 11 emulation data must be valid")
-		RENDERER_ASSERT(mContext, numberOfDraws > 0, "The number of Direct3D 11 draws must not be zero")
-
-		// TODO(co) Currently no buffer overflow check due to lack of interface provided data
-		emulationData += indirectBufferOffset;
-
-		// Emit the draw calls
-		#ifdef RENDERER_DEBUG
-			if (nullptr != mD3DUserDefinedAnnotation && numberOfDraws > 1)
-			{
-				mD3DUserDefinedAnnotation->BeginEvent(L"Multi-indexed-draw-indirect emulation");
-			}
-		#endif
-		for (uint32_t i = 0; i < numberOfDraws; ++i)
-		{
-			const Renderer::DrawIndexedInstancedArguments& drawIndexedInstancedArguments = *reinterpret_cast<const Renderer::DrawIndexedInstancedArguments*>(emulationData);
-
-			// Draw
-			if (drawIndexedInstancedArguments.instanceCount > 1 || drawIndexedInstancedArguments.startInstanceLocation > 0)
-			{
-				// With instancing
-				mD3D11DeviceContext->DrawIndexedInstanced(
-					drawIndexedInstancedArguments.indexCountPerInstance,	// Index count per instance (UINT)
-					drawIndexedInstancedArguments.instanceCount,			// Instance count (UINT)
-					drawIndexedInstancedArguments.startIndexLocation,		// Start index location (UINT)
-					drawIndexedInstancedArguments.baseVertexLocation,		// Base vertex location (INT)
-					drawIndexedInstancedArguments.startInstanceLocation		// Start instance location (UINT)
-				);
-			}
-			else
-			{
-				// Without instancing
-				mD3D11DeviceContext->DrawIndexed(
-					drawIndexedInstancedArguments.indexCountPerInstance,	// Index count (UINT)
-					drawIndexedInstancedArguments.startIndexLocation,		// Start index location (UINT)
-					drawIndexedInstancedArguments.baseVertexLocation		// Base vertex location (INT)
-				);
-			}
-
-			// Advance
-			emulationData += sizeof(Renderer::DrawIndexedInstancedArguments);
-		}
-		#ifdef RENDERER_DEBUG
-			if (nullptr != mD3DUserDefinedAnnotation && numberOfDraws > 1)
-			{
-				mD3DUserDefinedAnnotation->EndEvent();
-			}
-		#endif
 	}
 
 
@@ -11504,6 +11704,7 @@ namespace Direct3D11Renderer
 			case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 			case Renderer::ResourceType::GEOMETRY_SHADER:
 			case Renderer::ResourceType::FRAGMENT_SHADER:
+			case Renderer::ResourceType::COMPUTE_SHADER:
 			default:
 				// Nothing we can map, set known return values
 				mappedSubresource.data		 = nullptr;
@@ -11582,6 +11783,7 @@ namespace Direct3D11Renderer
 			case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 			case Renderer::ResourceType::GEOMETRY_SHADER:
 			case Renderer::ResourceType::FRAGMENT_SHADER:
+			case Renderer::ResourceType::COMPUTE_SHADER:
 			default:
 				// Nothing we can unmap
 				break;
@@ -11626,7 +11828,7 @@ namespace Direct3D11Renderer
 	void Direct3D11Renderer::endScene()
 	{
 		// We need to forget about the currently set render target
-		omSetRenderTarget(nullptr);
+		setGraphicsRenderTarget(nullptr);
 	}
 
 
@@ -11972,6 +12174,9 @@ namespace Direct3D11Renderer
 
 		// Is there support for fragment shaders (FS)?
 		mCapabilities.fragmentShader = true;
+
+		// Is there support for compute shaders (CS)?
+		mCapabilities.computeShader = true;
 	}
 
 	void Direct3D11Renderer::setProgram(Renderer::IProgram* program)

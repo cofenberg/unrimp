@@ -352,11 +352,11 @@ namespace RendererRuntime
 						{
 							compositorContextData.mCurrentlyBoundMaterialBlueprintResource = materialBlueprintResource;
 
-							// Set the used pipeline state object (PSO)
-							Renderer::Command::SetPipelineState::create(commandBuffer, pipelineStatePtr);
+							// Set the used graphics pipeline state object (PSO)
+							Renderer::Command::SetGraphicsPipelineState::create(commandBuffer, pipelineStatePtr);
 
 							// Setup input assembly (IA): Set the used vertex array
-							Renderer::Command::SetVertexArray::create(commandBuffer, renderable.getVertexArrayPtr());
+							Renderer::Command::SetGraphicsVertexArray::create(commandBuffer, renderable.getVertexArrayPtr());
 
 							{ // Fill the pass buffer manager
 								PassBufferManager* passBufferManager = materialBlueprintResource->getPassBufferManager();
@@ -394,11 +394,11 @@ namespace RendererRuntime
 								// Fill indirect buffer
 								if (renderable.getDrawIndexed())
 								{
-									Renderer::Command::DrawIndexed::create(commandBuffer, renderable.getNumberOfIndices(), instanceCount * renderable.getInstanceCount(), renderable.getStartIndexLocation(), 0,  startInstanceLocation);
+									Renderer::Command::DrawIndexedGraphics::create(commandBuffer, renderable.getNumberOfIndices(), instanceCount * renderable.getInstanceCount(), renderable.getStartIndexLocation(), 0,  startInstanceLocation);
 								}
 								else
 								{
-									Renderer::Command::Draw::create(commandBuffer, renderable.getNumberOfIndices(), instanceCount * renderable.getInstanceCount(), renderable.getStartIndexLocation(), startInstanceLocation);
+									Renderer::Command::DrawGraphics::create(commandBuffer, renderable.getNumberOfIndices(), instanceCount * renderable.getInstanceCount(), renderable.getStartIndexLocation(), startInstanceLocation);
 								}
 							}
 						}
@@ -478,11 +478,11 @@ namespace RendererRuntime
 									Renderer::IPipelineStatePtr pipelineStatePtr = materialBlueprintResource->getPipelineStateCacheManager().getPipelineStateCacheByCombination(materialTechnique->getSerializedPipelineStateHash(), mScratchOptimizedShaderProperties, false);
 									if (nullptr != pipelineStatePtr)
 									{
-										// Set the used pipeline state object (PSO)
+										// Set the used graphics pipeline state object (PSO)
 										if (currentPipelineState != pipelineStatePtr)
 										{
 											currentPipelineState = pipelineStatePtr;
-											Renderer::Command::SetPipelineState::create(mScratchCommandBuffer, currentPipelineState);
+											Renderer::Command::SetGraphicsPipelineState::create(mScratchCommandBuffer, currentPipelineState);
 										}
 
 										{ // Setup input assembly (IA): Set the used vertex array
@@ -491,7 +491,7 @@ namespace RendererRuntime
 											{
 												vertexArraySet = true;
 												currentVertexArray = vertexArrayPtr;
-												Renderer::Command::SetVertexArray::create(mScratchCommandBuffer, currentVertexArray);
+												Renderer::Command::SetGraphicsVertexArray::create(mScratchCommandBuffer, currentVertexArray);
 											}
 										}
 
@@ -552,13 +552,13 @@ namespace RendererRuntime
 											{
 												if (currentNumberOfDraws)
 												{
-													Renderer::Command::DrawIndexed::create(commandBuffer, *indirectBuffer, currentDrawIndirectBufferOffset, currentNumberOfDraws);
+													Renderer::Command::DrawIndexedGraphics::create(commandBuffer, *indirectBuffer, currentDrawIndirectBufferOffset, currentNumberOfDraws);
 													currentNumberOfDraws = 0;
 												}
 											}
 											else if (currentNumberOfDraws)
 											{
-												Renderer::Command::Draw::create(commandBuffer, *indirectBuffer, currentDrawIndirectBufferOffset, currentNumberOfDraws);
+												Renderer::Command::DrawGraphics::create(commandBuffer, *indirectBuffer, currentDrawIndirectBufferOffset, currentNumberOfDraws);
 												currentNumberOfDraws = 0;
 											}
 											currentDrawIndirectBufferOffset = indirectBufferOffset;
@@ -621,11 +621,11 @@ namespace RendererRuntime
 			{
 				if (currentDrawIndexed)
 				{
-					Renderer::Command::DrawIndexed::create(commandBuffer, *indirectBuffer, currentDrawIndirectBufferOffset, currentNumberOfDraws);
+					Renderer::Command::DrawIndexedGraphics::create(commandBuffer, *indirectBuffer, currentDrawIndirectBufferOffset, currentNumberOfDraws);
 				}
 				else
 				{
-					Renderer::Command::Draw::create(commandBuffer, *indirectBuffer, currentDrawIndirectBufferOffset, currentNumberOfDraws);
+					Renderer::Command::DrawGraphics::create(commandBuffer, *indirectBuffer, currentDrawIndirectBufferOffset, currentNumberOfDraws);
 				}
 			}
 		}

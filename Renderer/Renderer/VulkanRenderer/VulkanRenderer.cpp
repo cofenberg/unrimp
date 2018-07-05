@@ -1498,6 +1498,10 @@ namespace
 				{
 					shLanguage = EShLangFragment;
 				}
+				else if ((vkShaderStageFlagBits & VK_SHADER_STAGE_COMPUTE_BIT) != 0)
+				{
+					shLanguage = EShLangCompute;
+				}
 				else
 				{
 					RENDERER_ASSERT(context, false, "Invalid Vulkan shader stage flag bits")
@@ -1688,37 +1692,29 @@ namespace VulkanRenderer
 		}
 
 		//[-------------------------------------------------------]
-		//[ States                                                ]
+		//[ Graphics                                              ]
 		//[-------------------------------------------------------]
 		void setGraphicsRootSignature(Renderer::IRootSignature* rootSignature);
+		void setGraphicsPipelineState(Renderer::IPipelineState* graphicsPipelineState);
 		void setGraphicsResourceGroup(uint32_t rootParameterIndex, Renderer::IResourceGroup* resourceGroup);
-		void setPipelineState(Renderer::IPipelineState* pipelineState);
+		void setGraphicsVertexArray(Renderer::IVertexArray* vertexArray);															// Input-assembler (IA) stage
+		void setGraphicsViewports(uint32_t numberOfViewports, const Renderer::Viewport* viewports);									// Rasterizer (RS) stage
+		void setGraphicsScissorRectangles(uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles);	// Rasterizer (RS) stage
+		void setGraphicsRenderTarget(Renderer::IRenderTarget* renderTarget);														// Output-merger (OM) stage
+		void clearGraphics(uint32_t flags, const float color[4], float z, uint32_t stencil);
+		void drawGraphics(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
+		void drawGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
+		void drawIndexedGraphics(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
+		void drawIndexedGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		//[-------------------------------------------------------]
-		//[ Input-assembler (IA) stage                            ]
+		//[ Compute                                               ]
 		//[-------------------------------------------------------]
-		void iaSetVertexArray(Renderer::IVertexArray* vertexArray);
+		void dispatchCompute(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ);
 		//[-------------------------------------------------------]
-		//[ Rasterizer (RS) stage                                 ]
+		//[ Resource                                              ]
 		//[-------------------------------------------------------]
-		void rsSetViewports(uint32_t numberOfViewports, const Renderer::Viewport* viewports);
-		void rsSetScissorRectangles(uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles);
-		//[-------------------------------------------------------]
-		//[ Output-merger (OM) stage                              ]
-		//[-------------------------------------------------------]
-		void omSetRenderTarget(Renderer::IRenderTarget* renderTarget);
-		//[-------------------------------------------------------]
-		//[ Operations                                            ]
-		//[-------------------------------------------------------]
-		void clear(uint32_t flags, const float color[4], float z, uint32_t stencil);
 		void resolveMultisampleFramebuffer(Renderer::IRenderTarget& destinationRenderTarget, Renderer::IFramebuffer& sourceMultisampleFramebuffer);
 		void copyResource(Renderer::IResource& destinationResource, Renderer::IResource& sourceResource);
-		//[-------------------------------------------------------]
-		//[ Draw call                                             ]
-		//[-------------------------------------------------------]
-		void draw(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
-		void drawEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
-		void drawIndexed(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
-		void drawIndexedEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		//[-------------------------------------------------------]
 		//[ Debug                                                 ]
 		//[-------------------------------------------------------]
@@ -1798,7 +1794,7 @@ namespace VulkanRenderer
 		*  @brief
 		*    Unset the currently used vertex array
 		*/
-		void iaUnsetVertexArray();
+		void unsetGraphicsVertexArray();
 
 		/**
 		*  @brief
@@ -4113,7 +4109,7 @@ namespace VulkanRenderer
 							switch (descriptorRange->shaderVisibility)
 							{
 								case Renderer::ShaderVisibility::ALL:
-									vkShaderStageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
+									vkShaderStageFlags = VK_SHADER_STAGE_ALL;
 									break;
 
 								case Renderer::ShaderVisibility::VERTEX:
@@ -4134,6 +4130,14 @@ namespace VulkanRenderer
 
 								case Renderer::ShaderVisibility::FRAGMENT:
 									vkShaderStageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+									break;
+
+								case Renderer::ShaderVisibility::COMPUTE:
+									vkShaderStageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+									break;
+
+								case Renderer::ShaderVisibility::ALL_GRAPHICS:
+									vkShaderStageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
 									break;
 							}
 
@@ -7298,6 +7302,7 @@ namespace VulkanRenderer
 						case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 						case Renderer::ResourceType::GEOMETRY_SHADER:
 						case Renderer::ResourceType::FRAGMENT_SHADER:
+						case Renderer::ResourceType::COMPUTE_SHADER:
 						default:
 							// Nothing here
 							break;
@@ -7367,6 +7372,7 @@ namespace VulkanRenderer
 					case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Renderer::ResourceType::GEOMETRY_SHADER:
 					case Renderer::ResourceType::FRAGMENT_SHADER:
+					case Renderer::ResourceType::COMPUTE_SHADER:
 					default:
 						// Nothing here
 						break;
@@ -8038,7 +8044,7 @@ namespace VulkanRenderer
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    GLSL fragment shader ("pixel shader" in Direct3D terminology) class
+	*    GLSL fragment shader (FS, "pixel shader" in Direct3D terminology) class
 	*/
 	class FragmentShaderGlsl final : public Renderer::IFragmentShader
 	{
@@ -8139,6 +8145,126 @@ namespace VulkanRenderer
 	private:
 		explicit FragmentShaderGlsl(const FragmentShaderGlsl& source) = delete;
 		FragmentShaderGlsl& operator =(const FragmentShaderGlsl& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		VkShaderModule mVkShaderModule;	///< Vulkan shader module, destroy it if you no longer need it
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ VulkanRenderer/Shader/ComputeShaderGlsl.h             ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    GLSL compute shader (CS) class
+	*/
+	class ComputeShaderGlsl final : public Renderer::IComputeShader
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor for creating a compute shader from shader bytecode
+		*
+		*  @param[in] vulkanRenderer
+		*    Owner Vulkan renderer instance
+		*  @param[in] shaderBytecode
+		*    Shader bytecode
+		*/
+		ComputeShaderGlsl(VulkanRenderer& vulkanRenderer, const Renderer::ShaderBytecode& shaderBytecode) :
+			IComputeShader(vulkanRenderer),
+			mVkShaderModule(::detail::createVkShaderModuleFromBytecode(vulkanRenderer.getContext(), vulkanRenderer.getVkAllocationCallbacks(), vulkanRenderer.getVulkanContext().getVkDevice(), shaderBytecode))
+		{
+			SET_DEFAULT_DEBUG_NAME	// setDebugName("");
+		}
+
+		/**
+		*  @brief
+		*    Constructor for creating a compute shader from shader source code
+		*
+		*  @param[in] vulkanRenderer
+		*    Owner Vulkan renderer instance
+		*  @param[in] sourceCode
+		*    Shader ASCII source code, must be valid
+		*/
+		ComputeShaderGlsl(VulkanRenderer& vulkanRenderer, const char* sourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) :
+			IComputeShader(vulkanRenderer),
+			mVkShaderModule(::detail::createVkShaderModuleFromSourceCode(vulkanRenderer.getContext(), vulkanRenderer.getVkAllocationCallbacks(), vulkanRenderer.getVulkanContext().getVkDevice(), VK_SHADER_STAGE_COMPUTE_BIT, sourceCode, shaderBytecode))
+		{
+			SET_DEFAULT_DEBUG_NAME	// setDebugName("");
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~ComputeShaderGlsl() override
+		{
+			if (VK_NULL_HANDLE != mVkShaderModule)
+			{
+				const VulkanRenderer& vulkanRenderer = static_cast<VulkanRenderer&>(getRenderer());
+				vkDestroyShaderModule(vulkanRenderer.getVulkanContext().getVkDevice(), mVkShaderModule, vulkanRenderer.getVkAllocationCallbacks());
+			}
+		}
+
+		/**
+		*  @brief
+		*    Return the Vulkan shader module
+		*
+		*  @return
+		*    The Vulkan shader module
+		*/
+		inline VkShaderModule getVkShaderModule() const
+		{
+			return mVkShaderModule;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		DEFINE_SET_DEBUG_NAME_SHADER_MODULE()
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IShader methods              ]
+	//[-------------------------------------------------------]
+	public:
+		inline virtual const char* getShaderLanguageName() const override
+		{
+			return ::detail::GLSL_NAME;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), ComputeShaderGlsl, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit ComputeShaderGlsl(const ComputeShaderGlsl& source) = delete;
+		ComputeShaderGlsl& operator =(const ComputeShaderGlsl& source) = delete;
 
 
 	//[-------------------------------------------------------]
@@ -8451,6 +8577,16 @@ namespace VulkanRenderer
 		inline virtual Renderer::IFragmentShader* createFragmentShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), FragmentShaderGlsl)(static_cast<VulkanRenderer&>(getRenderer()), shaderSourceCode.sourceCode, shaderBytecode);
+		}
+
+		inline virtual Renderer::IComputeShader* createComputeShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
+		{
+			return RENDERER_NEW(getRenderer().getContext(), ComputeShaderGlsl)(static_cast<VulkanRenderer&>(getRenderer()), shaderBytecode);
+		}
+
+		inline virtual Renderer::IComputeShader* createComputeShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		{
+			return RENDERER_NEW(getRenderer().getContext(), ComputeShaderGlsl)(static_cast<VulkanRenderer&>(getRenderer()), shaderSourceCode.sourceCode, shaderBytecode);
 		}
 
 		virtual Renderer::IProgram* createProgram(const Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
@@ -9090,6 +9226,7 @@ namespace VulkanRenderer
 							case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 							case Renderer::ResourceType::GEOMETRY_SHADER:
 							case Renderer::ResourceType::FRAGMENT_SHADER:
+							case Renderer::ResourceType::COMPUTE_SHADER:
 								RENDERER_LOG(vulkanRenderer.getContext(), CRITICAL, "Invalid Vulkan renderer backend resource type")
 								break;
 						}
@@ -9143,6 +9280,7 @@ namespace VulkanRenderer
 					case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Renderer::ResourceType::GEOMETRY_SHADER:
 					case Renderer::ResourceType::FRAGMENT_SHADER:
+					case Renderer::ResourceType::COMPUTE_SHADER:
 						RENDERER_LOG(vulkanRenderer.getContext(), CRITICAL, "Invalid Vulkan renderer backend resource type")
 						break;
 				}
@@ -9338,12 +9476,18 @@ namespace
 			}
 
 			//[-------------------------------------------------------]
-			//[ Graphics root                                         ]
+			//[ Graphics states                                       ]
 			//[-------------------------------------------------------]
 			void SetGraphicsRootSignature(const void* data, Renderer::IRenderer& renderer)
 			{
 				const Renderer::Command::SetGraphicsRootSignature* realData = static_cast<const Renderer::Command::SetGraphicsRootSignature*>(data);
 				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).setGraphicsRootSignature(realData->rootSignature);
+			}
+
+			void SetGraphicsPipelineState(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::SetGraphicsPipelineState* realData = static_cast<const Renderer::Command::SetGraphicsPipelineState*>(data);
+				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).setGraphicsPipelineState(realData->graphicsPipelineState);
 			}
 
 			void SetGraphicsResourceGroup(const void* data, Renderer::IRenderer& renderer)
@@ -9352,96 +9496,73 @@ namespace
 				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).setGraphicsResourceGroup(realData->rootParameterIndex, realData->resourceGroup);
 			}
 
-			//[-------------------------------------------------------]
-			//[ States                                                ]
-			//[-------------------------------------------------------]
-			void SetPipelineState(const void* data, Renderer::IRenderer& renderer)
+			void SetGraphicsVertexArray(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::SetPipelineState* realData = static_cast<const Renderer::Command::SetPipelineState*>(data);
-				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).setPipelineState(realData->pipelineState);
+				// Input-assembler (IA) stage
+				const Renderer::Command::SetGraphicsVertexArray* realData = static_cast<const Renderer::Command::SetGraphicsVertexArray*>(data);
+				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).setGraphicsVertexArray(realData->vertexArray);
 			}
 
-			//[-------------------------------------------------------]
-			//[ Input-assembler (IA) stage                            ]
-			//[-------------------------------------------------------]
-			void SetVertexArray(const void* data, Renderer::IRenderer& renderer)
+			void SetGraphicsViewports(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::SetVertexArray* realData = static_cast<const Renderer::Command::SetVertexArray*>(data);
-				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).iaSetVertexArray(realData->vertexArray);
+				// Rasterizer (RS) stage
+				const Renderer::Command::SetGraphicsViewports* realData = static_cast<const Renderer::Command::SetGraphicsViewports*>(data);
+				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).setGraphicsViewports(realData->numberOfViewports, (nullptr != realData->viewports) ? realData->viewports : reinterpret_cast<const Renderer::Viewport*>(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData)));
 			}
 
-			//[-------------------------------------------------------]
-			//[ Rasterizer (RS) stage                                 ]
-			//[-------------------------------------------------------]
-			void SetViewports(const void* data, Renderer::IRenderer& renderer)
+			void SetGraphicsScissorRectangles(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::SetViewports* realData = static_cast<const Renderer::Command::SetViewports*>(data);
-				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).rsSetViewports(realData->numberOfViewports, (nullptr != realData->viewports) ? realData->viewports : reinterpret_cast<const Renderer::Viewport*>(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData)));
+				// Rasterizer (RS) stage
+				const Renderer::Command::SetGraphicsScissorRectangles* realData = static_cast<const Renderer::Command::SetGraphicsScissorRectangles*>(data);
+				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).setGraphicsScissorRectangles(realData->numberOfScissorRectangles, (nullptr != realData->scissorRectangles) ? realData->scissorRectangles : reinterpret_cast<const Renderer::ScissorRectangle*>(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData)));
 			}
 
-			void SetScissorRectangles(const void* data, Renderer::IRenderer& renderer)
+			void SetGraphicsRenderTarget(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::SetScissorRectangles* realData = static_cast<const Renderer::Command::SetScissorRectangles*>(data);
-				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).rsSetScissorRectangles(realData->numberOfScissorRectangles, (nullptr != realData->scissorRectangles) ? realData->scissorRectangles : reinterpret_cast<const Renderer::ScissorRectangle*>(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData)));
+				// Output-merger (OM) stage
+				const Renderer::Command::SetGraphicsRenderTarget* realData = static_cast<const Renderer::Command::SetGraphicsRenderTarget*>(data);
+				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).setGraphicsRenderTarget(realData->renderTarget);
 			}
 
-			//[-------------------------------------------------------]
-			//[ Output-merger (OM) stage                              ]
-			//[-------------------------------------------------------]
-			void SetRenderTarget(const void* data, Renderer::IRenderer& renderer)
+			void ClearGraphics(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::SetRenderTarget* realData = static_cast<const Renderer::Command::SetRenderTarget*>(data);
-				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).omSetRenderTarget(realData->renderTarget);
+				const Renderer::Command::ClearGraphics* realData = static_cast<const Renderer::Command::ClearGraphics*>(data);
+				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).clearGraphics(realData->flags, realData->color, realData->z, realData->stencil);
 			}
 
-			//[-------------------------------------------------------]
-			//[ Operations                                            ]
-			//[-------------------------------------------------------]
-			void Clear(const void* data, Renderer::IRenderer& renderer)
+			void DrawGraphics(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::Clear* realData = static_cast<const Renderer::Command::Clear*>(data);
-				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).clear(realData->flags, realData->color, realData->z, realData->stencil);
-			}
-
-			void ResolveMultisampleFramebuffer(const void* data, Renderer::IRenderer& renderer)
-			{
-				const Renderer::Command::ResolveMultisampleFramebuffer* realData = static_cast<const Renderer::Command::ResolveMultisampleFramebuffer*>(data);
-				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).resolveMultisampleFramebuffer(*realData->destinationRenderTarget, *realData->sourceMultisampleFramebuffer);
-			}
-
-			void CopyResource(const void* data, Renderer::IRenderer& renderer)
-			{
-				const Renderer::Command::CopyResource* realData = static_cast<const Renderer::Command::CopyResource*>(data);
-				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).copyResource(*realData->destinationResource, *realData->sourceResource);
-			}
-
-			//[-------------------------------------------------------]
-			//[ Draw call                                             ]
-			//[-------------------------------------------------------]
-			void Draw(const void* data, Renderer::IRenderer& renderer)
-			{
-				const Renderer::Command::Draw* realData = static_cast<const Renderer::Command::Draw*>(data);
+				const Renderer::Command::DrawGraphics* realData = static_cast<const Renderer::Command::DrawGraphics*>(data);
 				if (nullptr != realData->indirectBuffer)
 				{
-					static_cast<VulkanRenderer::VulkanRenderer&>(renderer).draw(*realData->indirectBuffer, realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<VulkanRenderer::VulkanRenderer&>(renderer).drawGraphics(*realData->indirectBuffer, realData->indirectBufferOffset, realData->numberOfDraws);
 				}
 				else
 				{
-					static_cast<VulkanRenderer::VulkanRenderer&>(renderer).drawEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<VulkanRenderer::VulkanRenderer&>(renderer).drawGraphicsEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
 				}
 			}
 
-			void DrawIndexed(const void* data, Renderer::IRenderer& renderer)
+			void DrawIndexedGraphics(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::Draw* realData = static_cast<const Renderer::Command::Draw*>(data);
+				const Renderer::Command::DrawIndexedGraphics* realData = static_cast<const Renderer::Command::DrawIndexedGraphics*>(data);
 				if (nullptr != realData->indirectBuffer)
 				{
-					static_cast<VulkanRenderer::VulkanRenderer&>(renderer).drawIndexed(*realData->indirectBuffer, realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<VulkanRenderer::VulkanRenderer&>(renderer).drawIndexedGraphics(*realData->indirectBuffer, realData->indirectBufferOffset, realData->numberOfDraws);
 				}
 				else
 				{
-					static_cast<VulkanRenderer::VulkanRenderer&>(renderer).drawIndexedEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<VulkanRenderer::VulkanRenderer&>(renderer).drawIndexedGraphicsEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
 				}
+			}
+
+			//[-------------------------------------------------------]
+			//[ Compute                                               ]
+			//[-------------------------------------------------------]
+			void DispatchCompute(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::DispatchCompute* realData = static_cast<const Renderer::Command::DispatchCompute*>(data);
+				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).dispatchCompute(realData->groupCountX, realData->groupCountY, realData->groupCountZ);
 			}
 
 			//[-------------------------------------------------------]
@@ -9458,6 +9579,18 @@ namespace
 				{
 					RENDERER_LOG(static_cast<VulkanRenderer::VulkanRenderer&>(renderer).getContext(), CRITICAL, "Unsupported Vulkan texture resource type")
 				}
+			}
+
+			void ResolveMultisampleFramebuffer(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::ResolveMultisampleFramebuffer* realData = static_cast<const Renderer::Command::ResolveMultisampleFramebuffer*>(data);
+				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).resolveMultisampleFramebuffer(*realData->destinationRenderTarget, *realData->sourceMultisampleFramebuffer);
+			}
+
+			void CopyResource(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::CopyResource* realData = static_cast<const Renderer::Command::CopyResource*>(data);
+				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).copyResource(*realData->destinationResource, *realData->sourceResource);
 			}
 
 			//[-------------------------------------------------------]
@@ -9532,27 +9665,23 @@ namespace
 		{
 			// Command buffer
 			&BackendDispatch::ExecuteCommandBuffer,
-			// Graphics root
+			// Graphics
 			&BackendDispatch::SetGraphicsRootSignature,
+			&BackendDispatch::SetGraphicsPipelineState,
 			&BackendDispatch::SetGraphicsResourceGroup,
-			// States
-			&BackendDispatch::SetPipelineState,
-			// Input-assembler (IA) stage
-			&BackendDispatch::SetVertexArray,
-			// Rasterizer (RS) stage
-			&BackendDispatch::SetViewports,
-			&BackendDispatch::SetScissorRectangles,
-			// Output-merger (OM) stage
-			&BackendDispatch::SetRenderTarget,
-			// Operations
-			&BackendDispatch::Clear,
-			&BackendDispatch::ResolveMultisampleFramebuffer,
-			&BackendDispatch::CopyResource,
-			// Draw call
-			&BackendDispatch::Draw,
-			&BackendDispatch::DrawIndexed,
+			&BackendDispatch::SetGraphicsVertexArray,		// Input-assembler (IA) stage
+			&BackendDispatch::SetGraphicsViewports,			// Rasterizer (RS) stage
+			&BackendDispatch::SetGraphicsScissorRectangles,	// Rasterizer (RS) stage
+			&BackendDispatch::SetGraphicsRenderTarget,		// Output-merger (OM) stage
+			&BackendDispatch::ClearGraphics,
+			&BackendDispatch::DrawGraphics,
+			&BackendDispatch::DrawIndexedGraphics,
+			// Compute
+			&BackendDispatch::DispatchCompute,
 			// Resource
 			&BackendDispatch::SetTextureMinimumMaximumMipmapIndex,
+			&BackendDispatch::ResolveMultisampleFramebuffer,
+			&BackendDispatch::CopyResource,
 			// Debug
 			&BackendDispatch::SetDebugMarker,
 			&BackendDispatch::BeginDebugEvent,
@@ -9628,7 +9757,7 @@ namespace VulkanRenderer
 		// Set no vertex array reference, in case we have one
 		if (nullptr != mVertexArray)
 		{
-			iaSetVertexArray(nullptr);
+			setGraphicsVertexArray(nullptr);
 		}
 
 		// Release instances
@@ -9686,7 +9815,7 @@ namespace VulkanRenderer
 
 
 	//[-------------------------------------------------------]
-	//[ States                                                ]
+	//[ Graphics                                              ]
 	//[-------------------------------------------------------]
 	void VulkanRenderer::setGraphicsRootSignature(Renderer::IRootSignature* rootSignature)
 	{
@@ -9701,6 +9830,22 @@ namespace VulkanRenderer
 
 			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
 			VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *rootSignature)
+		}
+	}
+
+	void VulkanRenderer::setGraphicsPipelineState(Renderer::IPipelineState* graphicsPipelineState)
+	{
+		if (nullptr != graphicsPipelineState)
+		{
+			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *graphicsPipelineState)
+
+			// Bind Vulkan pipeline
+			vkCmdBindPipeline(getVulkanContext().getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<PipelineState*>(graphicsPipelineState)->getVkPipeline());
+		}
+		else
+		{
+			// TODO(co) Handle this situation?
 		}
 	}
 
@@ -9752,28 +9897,10 @@ namespace VulkanRenderer
 		}
 	}
 
-	void VulkanRenderer::setPipelineState(Renderer::IPipelineState* pipelineState)
+	void VulkanRenderer::setGraphicsVertexArray(Renderer::IVertexArray* vertexArray)
 	{
-		if (nullptr != pipelineState)
-		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
-			VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *pipelineState)
+		// Input-assembler (IA) stage
 
-			// Bind Vulkan pipeline
-			vkCmdBindPipeline(getVulkanContext().getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<PipelineState*>(pipelineState)->getVkPipeline());
-		}
-		else
-		{
-			// TODO(co) Handle this situation?
-		}
-	}
-
-
-	//[-------------------------------------------------------]
-	//[ Input-assembler (IA) stage                            ]
-	//[-------------------------------------------------------]
-	void VulkanRenderer::iaSetVertexArray(Renderer::IVertexArray* vertexArray)
-	{
 		// New vertex array?
 		if (mVertexArray != vertexArray)
 		{
@@ -9784,7 +9911,7 @@ namespace VulkanRenderer
 				VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *vertexArray)
 
 				// Unset the currently used vertex array
-				iaUnsetVertexArray();
+				unsetGraphicsVertexArray();
 
 				// Set new vertex array and add a reference to it
 				mVertexArray = static_cast<VertexArray*>(vertexArray);
@@ -9796,17 +9923,15 @@ namespace VulkanRenderer
 			else
 			{
 				// Unset the currently used vertex array
-				iaUnsetVertexArray();
+				unsetGraphicsVertexArray();
 			}
 		}
 	}
 
-
-	//[-------------------------------------------------------]
-	//[ Rasterizer (RS) stage                                 ]
-	//[-------------------------------------------------------]
-	void VulkanRenderer::rsSetViewports(MAYBE_UNUSED uint32_t numberOfViewports, const Renderer::Viewport* viewports)
+	void VulkanRenderer::setGraphicsViewports(MAYBE_UNUSED uint32_t numberOfViewports, const Renderer::Viewport* viewports)
 	{
+		// Rasterizer (RS) stage
+
 		// Sanity check
 		RENDERER_ASSERT(mContext, numberOfViewports > 0 && nullptr != viewports, "Invalid Vulkan rasterizer state viewports")
 
@@ -9820,8 +9945,10 @@ namespace VulkanRenderer
 		vkCmdSetViewport(getVulkanContext().getVkCommandBuffer(), 0, 1, &vkViewport);
 	}
 
-	void VulkanRenderer::rsSetScissorRectangles(MAYBE_UNUSED uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles)
+	void VulkanRenderer::setGraphicsScissorRectangles(MAYBE_UNUSED uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles)
 	{
+		// Rasterizer (RS) stage
+
 		// Sanity check
 		RENDERER_ASSERT(mContext, numberOfScissorRectangles > 0 && nullptr != scissorRectangles, "Invalid Vulkan rasterizer state scissor rectangles")
 
@@ -9835,12 +9962,10 @@ namespace VulkanRenderer
 		vkCmdSetScissor(getVulkanContext().getVkCommandBuffer(), 0, 1, &vkRect2D);
 	}
 
-
-	//[-------------------------------------------------------]
-	//[ Output-merger (OM) stage                              ]
-	//[-------------------------------------------------------]
-	void VulkanRenderer::omSetRenderTarget(Renderer::IRenderTarget* renderTarget)
+	void VulkanRenderer::setGraphicsRenderTarget(Renderer::IRenderTarget* renderTarget)
 	{
+		// Output-merger (OM) stage
+
 		// New render target?
 		if (mRenderTarget != renderTarget)
 		{
@@ -9887,11 +10012,7 @@ namespace VulkanRenderer
 		}
 	}
 
-
-	//[-------------------------------------------------------]
-	//[ Operations                                            ]
-	//[-------------------------------------------------------]
-	void VulkanRenderer::clear(uint32_t flags, const float color[4], float z, uint32_t stencil)
+	void VulkanRenderer::clearGraphics(uint32_t flags, const float color[4], float z, uint32_t stencil)
 	{
 		// Sanity check
 		RENDERER_ASSERT(mContext, nullptr != mRenderTarget, "Can't execute Vulkan clear command without a render target set")
@@ -9916,21 +10037,7 @@ namespace VulkanRenderer
 		}
 	}
 
-	void VulkanRenderer::resolveMultisampleFramebuffer(Renderer::IRenderTarget&, Renderer::IFramebuffer&)
-	{
-		// TODO(co) Implement me
-	}
-
-	void VulkanRenderer::copyResource(Renderer::IResource&, Renderer::IResource&)
-	{
-		// TODO(co) Implement me
-	}
-
-
-	//[-------------------------------------------------------]
-	//[ Draw call                                             ]
-	//[-------------------------------------------------------]
-	void VulkanRenderer::draw(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
+	void VulkanRenderer::drawGraphics(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
 		// Sanity check
 		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of Vulkan draws must not be zero")
@@ -9949,7 +10056,7 @@ namespace VulkanRenderer
 		vkCmdDrawIndirect(getVulkanContext().getVkCommandBuffer(), static_cast<const IndirectBuffer&>(indirectBuffer).getVkBuffer(), indirectBufferOffset, numberOfDraws, sizeof(VkDrawIndirectCommand));
 	}
 
-	void VulkanRenderer::drawEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
+	void VulkanRenderer::drawGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
 		// Sanity checks
 		RENDERER_ASSERT(mContext, nullptr != emulationData, "The Vulkan emulation data must be valid")
@@ -9988,7 +10095,7 @@ namespace VulkanRenderer
 		#endif
 	}
 
-	void VulkanRenderer::drawIndexed(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
+	void VulkanRenderer::drawIndexedGraphics(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
 		// Sanity checks
 		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of Vulkan draws must not be zero")
@@ -10008,7 +10115,7 @@ namespace VulkanRenderer
 		vkCmdDrawIndexedIndirect(getVulkanContext().getVkCommandBuffer(), static_cast<const IndirectBuffer&>(indirectBuffer).getVkBuffer(), indirectBufferOffset, numberOfDraws, sizeof(VkDrawIndexedIndirectCommand));
 	}
 
-	void VulkanRenderer::drawIndexedEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
+	void VulkanRenderer::drawIndexedGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
 		// Sanity checks
 		RENDERER_ASSERT(mContext, nullptr != emulationData, "The Vulkan emulation data must be valid")
@@ -10046,6 +10153,29 @@ namespace VulkanRenderer
 				endDebugEvent();
 			}
 		#endif
+	}
+
+
+	//[-------------------------------------------------------]
+	//[ Compute                                               ]
+	//[-------------------------------------------------------]
+	void VulkanRenderer::dispatchCompute(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
+	{
+		vkCmdDispatch(getVulkanContext().getVkCommandBuffer(), groupCountX, groupCountY, groupCountZ);
+	}
+
+
+	//[-------------------------------------------------------]
+	//[ Resource                                              ]
+	//[-------------------------------------------------------]
+	void VulkanRenderer::resolveMultisampleFramebuffer(Renderer::IRenderTarget&, Renderer::IFramebuffer&)
+	{
+		// TODO(co) Implement me
+	}
+
+	void VulkanRenderer::copyResource(Renderer::IResource&, Renderer::IResource&)
+	{
+		// TODO(co) Implement me
 	}
 
 
@@ -10309,6 +10439,7 @@ namespace VulkanRenderer
 			case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 			case Renderer::ResourceType::GEOMETRY_SHADER:
 			case Renderer::ResourceType::FRAGMENT_SHADER:
+			case Renderer::ResourceType::COMPUTE_SHADER:
 			default:
 				// Nothing we can map, set known return values
 				mappedSubresource.data		 = nullptr;
@@ -10425,6 +10556,7 @@ namespace VulkanRenderer
 			case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 			case Renderer::ResourceType::GEOMETRY_SHADER:
 			case Renderer::ResourceType::FRAGMENT_SHADER:
+			case Renderer::ResourceType::COMPUTE_SHADER:
 			default:
 				// Nothing we can unmap
 				break;
@@ -10482,10 +10614,10 @@ namespace VulkanRenderer
 	void VulkanRenderer::endScene()
 	{
 		// We need to forget about the currently set render target
-		omSetRenderTarget(nullptr);
+		setGraphicsRenderTarget(nullptr);
 
 		// We need to forget about the currently set vertex array
-		iaUnsetVertexArray();
+		unsetGraphicsVertexArray();
 
 		// End Vulkan command buffer
 		if (vkEndCommandBuffer(getVulkanContext().getVkCommandBuffer()) != VK_SUCCESS)
@@ -10606,9 +10738,12 @@ namespace VulkanRenderer
 
 		// Is there support for fragment shaders (FS)?
 		mCapabilities.fragmentShader = true;
+
+		// Is there support for compute shaders (CS)?
+		mCapabilities.computeShader = true;
 	}
 
-	void VulkanRenderer::iaUnsetVertexArray()
+	void VulkanRenderer::unsetGraphicsVertexArray()
 	{
 		// Release the currently used vertex array reference, in case we have one
 		if (nullptr != mVertexArray)
@@ -10669,6 +10804,7 @@ namespace VulkanRenderer
 			case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 			case Renderer::ResourceType::GEOMETRY_SHADER:
 			case Renderer::ResourceType::FRAGMENT_SHADER:
+			case Renderer::ResourceType::COMPUTE_SHADER:
 			default:
 				// Not handled in here
 				break;

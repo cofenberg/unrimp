@@ -176,35 +176,27 @@ namespace NullRenderer
 		virtual ~NullRenderer() override;
 
 		//[-------------------------------------------------------]
-		//[ States                                                ]
+		//[ Graphics                                              ]
 		//[-------------------------------------------------------]
 		void setGraphicsRootSignature(Renderer::IRootSignature* rootSignature);
+		void setGraphicsPipelineState(Renderer::IPipelineState* graphicsPipelineState);
 		void setGraphicsResourceGroup(uint32_t rootParameterIndex, Renderer::IResourceGroup* resourceGroup);
-		void setPipelineState(Renderer::IPipelineState* pipelineState);
+		void setGraphicsVertexArray(Renderer::IVertexArray* vertexArray);															// Input-assembler (IA) stage
+		void setGraphicsViewports(uint32_t numberOfViewports, const Renderer::Viewport* viewports);									// Rasterizer (RS) stage
+		void setGraphicsScissorRectangles(uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles);	// Rasterizer (RS) stage
+		void setGraphicsRenderTarget(Renderer::IRenderTarget* renderTarget);														// Output-merger (OM) stage
+		void clearGraphics(uint32_t flags, const float color[4], float z, uint32_t stencil);
+		void drawGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
+		void drawIndexedGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		//[-------------------------------------------------------]
-		//[ Input-assembler (IA) stage                            ]
+		//[ Compute                                               ]
 		//[-------------------------------------------------------]
-		void iaSetVertexArray(Renderer::IVertexArray* vertexArray);
+		void dispatchCompute(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ);
 		//[-------------------------------------------------------]
-		//[ Rasterizer (RS) stage                                 ]
+		//[ Resource                                              ]
 		//[-------------------------------------------------------]
-		void rsSetViewports(uint32_t numberOfViewports, const Renderer::Viewport* viewports);
-		void rsSetScissorRectangles(uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles);
-		//[-------------------------------------------------------]
-		//[ Output-merger (OM) stage                              ]
-		//[-------------------------------------------------------]
-		void omSetRenderTarget(Renderer::IRenderTarget* renderTarget);
-		//[-------------------------------------------------------]
-		//[ Operations                                            ]
-		//[-------------------------------------------------------]
-		void clear(uint32_t flags, const float color[4], float z, uint32_t stencil);
 		void resolveMultisampleFramebuffer(Renderer::IRenderTarget& destinationRenderTarget, Renderer::IFramebuffer& sourceMultisampleFramebuffer);
 		void copyResource(Renderer::IResource& destinationResource, Renderer::IResource& sourceResource);
-		//[-------------------------------------------------------]
-		//[ Draw call                                             ]
-		//[-------------------------------------------------------]
-		void drawEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
-		void drawIndexedEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		//[-------------------------------------------------------]
 		//[ Debug                                                 ]
 		//[-------------------------------------------------------]
@@ -2208,6 +2200,73 @@ namespace NullRenderer
 
 
 	//[-------------------------------------------------------]
+	//[ NullRenderer/Shader/ComputeShader.h                   ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Null compute shader class (CS)
+	*/
+	class ComputeShader final : public Renderer::IComputeShader
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] nullRenderer
+		*    Owner null renderer instance
+		*/
+		inline explicit ComputeShader(NullRenderer& nullRenderer) :
+			IComputeShader(nullRenderer)
+		{}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~ComputeShader() override
+		{}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IShader methods              ]
+	//[-------------------------------------------------------]
+	public:
+		inline virtual const char* getShaderLanguageName() const override
+		{
+			return ::detail::NULL_NAME;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), ComputeShader, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit ComputeShader(const ComputeShader& source) = delete;
+		ComputeShader& operator =(const ComputeShader& source) = delete;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ NullRenderer/Shader/Program.h                         ]
 	//[-------------------------------------------------------]
 	/**
@@ -2406,6 +2465,18 @@ namespace NullRenderer
 		{
 			// There's no need to check for "Renderer::Capabilities::fragmentShader", we know there's fragment shader support
 			return RENDERER_NEW(getRenderer().getContext(), FragmentShader)(static_cast<NullRenderer&>(getRenderer()));
+		}
+
+		inline virtual Renderer::IComputeShader* createComputeShaderFromBytecode(MAYBE_UNUSED const Renderer::ShaderBytecode& shaderBytecode) override
+		{
+			// There's no need to check for "Renderer::Capabilities::computeShader", we know there's compute shader support
+			return RENDERER_NEW(getRenderer().getContext(), ComputeShader)(static_cast<NullRenderer&>(getRenderer()));
+		}
+
+		inline virtual Renderer::IComputeShader* createComputeShaderFromSourceCode(MAYBE_UNUSED const Renderer::ShaderSourceCode& shaderSourceCode, MAYBE_UNUSED Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		{
+			// There's no need to check for "Renderer::Capabilities::computeShader", we know there's compute shader support
+			return RENDERER_NEW(getRenderer().getContext(), ComputeShader)(static_cast<NullRenderer&>(getRenderer()));
 		}
 
 		virtual Renderer::IProgram* createProgram(MAYBE_UNUSED const Renderer::IRootSignature& rootSignature, MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
@@ -2607,12 +2678,18 @@ namespace
 			}
 
 			//[-------------------------------------------------------]
-			//[ Graphics root                                         ]
+			//[ Graphics                                              ]
 			//[-------------------------------------------------------]
 			void SetGraphicsRootSignature(const void* data, Renderer::IRenderer& renderer)
 			{
 				const Renderer::Command::SetGraphicsRootSignature* realData = static_cast<const Renderer::Command::SetGraphicsRootSignature*>(data);
 				static_cast<NullRenderer::NullRenderer&>(renderer).setGraphicsRootSignature(realData->rootSignature);
+			}
+
+			void SetGraphicsPipelineState(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::SetGraphicsPipelineState* realData = static_cast<const Renderer::Command::SetGraphicsPipelineState*>(data);
+				static_cast<NullRenderer::NullRenderer&>(renderer).setGraphicsPipelineState(realData->graphicsPipelineState);
 			}
 
 			void SetGraphicsResourceGroup(const void* data, Renderer::IRenderer& renderer)
@@ -2621,56 +2698,82 @@ namespace
 				static_cast<NullRenderer::NullRenderer&>(renderer).setGraphicsResourceGroup(realData->rootParameterIndex, realData->resourceGroup);
 			}
 
-			//[-------------------------------------------------------]
-			//[ States                                                ]
-			//[-------------------------------------------------------]
-			void SetPipelineState(const void* data, Renderer::IRenderer& renderer)
+			void SetGraphicsVertexArray(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::SetPipelineState* realData = static_cast<const Renderer::Command::SetPipelineState*>(data);
-				static_cast<NullRenderer::NullRenderer&>(renderer).setPipelineState(realData->pipelineState);
+				// Input-assembler (IA) stage
+				const Renderer::Command::SetGraphicsVertexArray* realData = static_cast<const Renderer::Command::SetGraphicsVertexArray*>(data);
+				static_cast<NullRenderer::NullRenderer&>(renderer).setGraphicsVertexArray(realData->vertexArray);
+			}
+
+			void SetGraphicsViewports(const void* data, Renderer::IRenderer& renderer)
+			{
+				// Rasterizer (RS) stage
+				const Renderer::Command::SetGraphicsViewports* realData = static_cast<const Renderer::Command::SetGraphicsViewports*>(data);
+				static_cast<NullRenderer::NullRenderer&>(renderer).setGraphicsViewports(realData->numberOfViewports, (nullptr != realData->viewports) ? realData->viewports : reinterpret_cast<const Renderer::Viewport*>(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData)));
+			}
+
+			void SetGraphicsScissorRectangles(const void* data, Renderer::IRenderer& renderer)
+			{
+				// Rasterizer (RS) stage
+				const Renderer::Command::SetGraphicsScissorRectangles* realData = static_cast<const Renderer::Command::SetGraphicsScissorRectangles*>(data);
+				static_cast<NullRenderer::NullRenderer&>(renderer).setGraphicsScissorRectangles(realData->numberOfScissorRectangles, (nullptr != realData->scissorRectangles) ? realData->scissorRectangles : reinterpret_cast<const Renderer::ScissorRectangle*>(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData)));
+			}
+
+			void SetGraphicsRenderTarget(const void* data, Renderer::IRenderer& renderer)
+			{
+				// Output-merger (OM) stage
+				const Renderer::Command::SetGraphicsRenderTarget* realData = static_cast<const Renderer::Command::SetGraphicsRenderTarget*>(data);
+				static_cast<NullRenderer::NullRenderer&>(renderer).setGraphicsRenderTarget(realData->renderTarget);
+			}
+
+			void ClearGraphics(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::ClearGraphics* realData = static_cast<const Renderer::Command::ClearGraphics*>(data);
+				static_cast<NullRenderer::NullRenderer&>(renderer).clearGraphics(realData->flags, realData->color, realData->z, realData->stencil);
+			}
+
+			void DrawGraphics(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::DrawGraphics* realData = static_cast<const Renderer::Command::DrawGraphics*>(data);
+				if (nullptr != realData->indirectBuffer)
+				{
+					// No resource owner security check in here, we only support emulated indirect buffer
+					static_cast<NullRenderer::NullRenderer&>(renderer).drawGraphicsEmulated(realData->indirectBuffer->getEmulationData(), realData->indirectBufferOffset, realData->numberOfDraws);
+				}
+				else
+				{
+					static_cast<NullRenderer::NullRenderer&>(renderer).drawGraphicsEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
+				}
+			}
+
+			void DrawIndexedGraphics(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::DrawIndexedGraphics* realData = static_cast<const Renderer::Command::DrawIndexedGraphics*>(data);
+				if (nullptr != realData->indirectBuffer)
+				{
+					// No resource owner security check in here, we only support emulated indirect buffer
+					static_cast<NullRenderer::NullRenderer&>(renderer).drawIndexedGraphicsEmulated(realData->indirectBuffer->getEmulationData(), realData->indirectBufferOffset, realData->numberOfDraws);
+				}
+				else
+				{
+					static_cast<NullRenderer::NullRenderer&>(renderer).drawIndexedGraphicsEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
+				}
 			}
 
 			//[-------------------------------------------------------]
-			//[ Input-assembler (IA) stage                            ]
+			//[ Compute                                               ]
 			//[-------------------------------------------------------]
-			void SetVertexArray(const void* data, Renderer::IRenderer& renderer)
+			void DispatchCompute(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::SetVertexArray* realData = static_cast<const Renderer::Command::SetVertexArray*>(data);
-				static_cast<NullRenderer::NullRenderer&>(renderer).iaSetVertexArray(realData->vertexArray);
+				const Renderer::Command::DispatchCompute* realData = static_cast<const Renderer::Command::DispatchCompute*>(data);
+				static_cast<NullRenderer::NullRenderer&>(renderer).dispatchCompute(realData->groupCountX, realData->groupCountY, realData->groupCountZ);
 			}
 
 			//[-------------------------------------------------------]
-			//[ Rasterizer (RS) stage                                 ]
+			//[ Resource                                              ]
 			//[-------------------------------------------------------]
-			void SetViewports(const void* data, Renderer::IRenderer& renderer)
-			{
-				const Renderer::Command::SetViewports* realData = static_cast<const Renderer::Command::SetViewports*>(data);
-				static_cast<NullRenderer::NullRenderer&>(renderer).rsSetViewports(realData->numberOfViewports, (nullptr != realData->viewports) ? realData->viewports : reinterpret_cast<const Renderer::Viewport*>(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData)));
-			}
-
-			void SetScissorRectangles(const void* data, Renderer::IRenderer& renderer)
-			{
-				const Renderer::Command::SetScissorRectangles* realData = static_cast<const Renderer::Command::SetScissorRectangles*>(data);
-				static_cast<NullRenderer::NullRenderer&>(renderer).rsSetScissorRectangles(realData->numberOfScissorRectangles, (nullptr != realData->scissorRectangles) ? realData->scissorRectangles : reinterpret_cast<const Renderer::ScissorRectangle*>(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData)));
-			}
-
-			//[-------------------------------------------------------]
-			//[ Output-merger (OM) stage                              ]
-			//[-------------------------------------------------------]
-			void SetRenderTarget(const void* data, Renderer::IRenderer& renderer)
-			{
-				const Renderer::Command::SetRenderTarget* realData = static_cast<const Renderer::Command::SetRenderTarget*>(data);
-				static_cast<NullRenderer::NullRenderer&>(renderer).omSetRenderTarget(realData->renderTarget);
-			}
-
-			//[-------------------------------------------------------]
-			//[ Operations                                            ]
-			//[-------------------------------------------------------]
-			void Clear(const void* data, Renderer::IRenderer& renderer)
-			{
-				const Renderer::Command::Clear* realData = static_cast<const Renderer::Command::Clear*>(data);
-				static_cast<NullRenderer::NullRenderer&>(renderer).clear(realData->flags, realData->color, realData->z, realData->stencil);
-			}
+			void SetTextureMinimumMaximumMipmapIndex(const void*, Renderer::IRenderer&)
+			{}
 
 			void ResolveMultisampleFramebuffer(const void* data, Renderer::IRenderer& renderer)
 			{
@@ -2683,43 +2786,6 @@ namespace
 				const Renderer::Command::CopyResource* realData = static_cast<const Renderer::Command::CopyResource*>(data);
 				static_cast<NullRenderer::NullRenderer&>(renderer).copyResource(*realData->destinationResource, *realData->sourceResource);
 			}
-
-			//[-------------------------------------------------------]
-			//[ Draw call                                             ]
-			//[-------------------------------------------------------]
-			void Draw(const void* data, Renderer::IRenderer& renderer)
-			{
-				const Renderer::Command::Draw* realData = static_cast<const Renderer::Command::Draw*>(data);
-				if (nullptr != realData->indirectBuffer)
-				{
-					// No resource owner security check in here, we only support emulated indirect buffer
-					static_cast<NullRenderer::NullRenderer&>(renderer).drawEmulated(realData->indirectBuffer->getEmulationData(), realData->indirectBufferOffset, realData->numberOfDraws);
-				}
-				else
-				{
-					static_cast<NullRenderer::NullRenderer&>(renderer).drawEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
-				}
-			}
-
-			void DrawIndexed(const void* data, Renderer::IRenderer& renderer)
-			{
-				const Renderer::Command::Draw* realData = static_cast<const Renderer::Command::Draw*>(data);
-				if (nullptr != realData->indirectBuffer)
-				{
-					// No resource owner security check in here, we only support emulated indirect buffer
-					static_cast<NullRenderer::NullRenderer&>(renderer).drawIndexedEmulated(realData->indirectBuffer->getEmulationData(), realData->indirectBufferOffset, realData->numberOfDraws);
-				}
-				else
-				{
-					static_cast<NullRenderer::NullRenderer&>(renderer).drawIndexedEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
-				}
-			}
-
-			//[-------------------------------------------------------]
-			//[ Resource                                              ]
-			//[-------------------------------------------------------]
-			void SetTextureMinimumMaximumMipmapIndex(const void*, Renderer::IRenderer&)
-			{}
 
 			//[-------------------------------------------------------]
 			//[ Debug                                                 ]
@@ -2763,27 +2829,23 @@ namespace
 		{
 			// Command buffer
 			&BackendDispatch::ExecuteCommandBuffer,
-			// Graphics root
+			// Graphics
 			&BackendDispatch::SetGraphicsRootSignature,
+			&BackendDispatch::SetGraphicsPipelineState,
 			&BackendDispatch::SetGraphicsResourceGroup,
-			// States
-			&BackendDispatch::SetPipelineState,
-			// Input-assembler (IA) stage
-			&BackendDispatch::SetVertexArray,
-			// Rasterizer (RS) stage
-			&BackendDispatch::SetViewports,
-			&BackendDispatch::SetScissorRectangles,
-			// Output-merger (OM) stage
-			&BackendDispatch::SetRenderTarget,
-			// Operations
-			&BackendDispatch::Clear,
-			&BackendDispatch::ResolveMultisampleFramebuffer,
-			&BackendDispatch::CopyResource,
-			// Draw call
-			&BackendDispatch::Draw,
-			&BackendDispatch::DrawIndexed,
+			&BackendDispatch::SetGraphicsVertexArray,		// Input-assembler (IA) stage
+			&BackendDispatch::SetGraphicsViewports,			// Rasterizer (RS) stage
+			&BackendDispatch::SetGraphicsScissorRectangles,	// Rasterizer (RS) stage
+			&BackendDispatch::SetGraphicsRenderTarget,		// Output-merger (OM) stage
+			&BackendDispatch::ClearGraphics,
+			&BackendDispatch::DrawGraphics,
+			&BackendDispatch::DrawIndexedGraphics,
+			// Compute
+			&BackendDispatch::DispatchCompute,
 			// Resource
 			&BackendDispatch::SetTextureMinimumMaximumMipmapIndex,
+			&BackendDispatch::ResolveMultisampleFramebuffer,
+			&BackendDispatch::CopyResource,
 			// Debug
 			&BackendDispatch::SetDebugMarker,
 			&BackendDispatch::BeginDebugEvent,
@@ -2865,7 +2927,7 @@ namespace NullRenderer
 
 
 	//[-------------------------------------------------------]
-	//[ States                                                ]
+	//[ Graphics                                              ]
 	//[-------------------------------------------------------]
 	void NullRenderer::setGraphicsRootSignature(Renderer::IRootSignature* rootSignature)
 	{
@@ -2880,6 +2942,19 @@ namespace NullRenderer
 
 			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
 			NULLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *rootSignature)
+		}
+	}
+
+	void NullRenderer::setGraphicsPipelineState(Renderer::IPipelineState* graphicsPipelineState)
+	{
+		if (nullptr != graphicsPipelineState)
+		{
+			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			NULLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *graphicsPipelineState)
+		}
+		else
+		{
+			// TODO(co) Handle this situation?
 		}
 	}
 
@@ -2926,25 +3001,10 @@ namespace NullRenderer
 		}
 	}
 
-	void NullRenderer::setPipelineState(Renderer::IPipelineState* pipelineState)
+	void NullRenderer::setGraphicsVertexArray(Renderer::IVertexArray* vertexArray)
 	{
-		if (nullptr != pipelineState)
-		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
-			NULLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *pipelineState)
-		}
-		else
-		{
-			// TODO(co) Handle this situation?
-		}
-	}
+		// Input-assembler (IA) stage
 
-
-	//[-------------------------------------------------------]
-	//[ Input-assembler (IA) stage                            ]
-	//[-------------------------------------------------------]
-	void NullRenderer::iaSetVertexArray(Renderer::IVertexArray* vertexArray)
-	{
 		// Nothing here, the following is just for debugging
 		if (nullptr != vertexArray)
 		{
@@ -2953,28 +3013,26 @@ namespace NullRenderer
 		}
 	}
 
-
-	//[-------------------------------------------------------]
-	//[ Rasterizer (RS) stage                                 ]
-	//[-------------------------------------------------------]
-	void NullRenderer::rsSetViewports(MAYBE_UNUSED uint32_t numberOfViewports, MAYBE_UNUSED const Renderer::Viewport* viewports)
+	void NullRenderer::setGraphicsViewports(MAYBE_UNUSED uint32_t numberOfViewports, MAYBE_UNUSED const Renderer::Viewport* viewports)
 	{
+		// Rasterizer (RS) stage
+
 		// Sanity check
 		RENDERER_ASSERT(mContext, numberOfViewports > 0 && nullptr != viewports, "Invalid null rasterizer state viewports")
 	}
 
-	void NullRenderer::rsSetScissorRectangles(MAYBE_UNUSED uint32_t numberOfScissorRectangles, MAYBE_UNUSED const Renderer::ScissorRectangle* scissorRectangles)
+	void NullRenderer::setGraphicsScissorRectangles(MAYBE_UNUSED uint32_t numberOfScissorRectangles, MAYBE_UNUSED const Renderer::ScissorRectangle* scissorRectangles)
 	{
+		// Rasterizer (RS) stage
+
 		// Sanity check
 		RENDERER_ASSERT(mContext, numberOfScissorRectangles > 0 && nullptr != scissorRectangles, "Invalid null rasterizer state scissor rectangles")
 	}
 
-
-	//[-------------------------------------------------------]
-	//[ Output-merger (OM) stage                              ]
-	//[-------------------------------------------------------]
-	void NullRenderer::omSetRenderTarget(Renderer::IRenderTarget* renderTarget)
+	void NullRenderer::setGraphicsRenderTarget(Renderer::IRenderTarget* renderTarget)
 	{
+		// Output-merger (OM) stage
+
 		// New render target?
 		if (mRenderTarget != renderTarget)
 		{
@@ -3010,37 +3068,40 @@ namespace NullRenderer
 		}
 	}
 
-
-	//[-------------------------------------------------------]
-	//[ Operations                                            ]
-	//[-------------------------------------------------------]
-	void NullRenderer::clear(uint32_t, const float [4], float, uint32_t)
+	void NullRenderer::clearGraphics(uint32_t, const float [4], float, uint32_t)
 	{}
 
+	void NullRenderer::drawGraphicsEmulated(MAYBE_UNUSED const uint8_t* emulationData, uint32_t, MAYBE_UNUSED uint32_t numberOfDraws)
+	{
+		// Sanity checks
+		RENDERER_ASSERT(mContext, nullptr != emulationData, "The null emulation data must be valid")
+		RENDERER_ASSERT(mContext, numberOfDraws > 0, "The number of null draws must not be zero")
+	}
+
+	void NullRenderer::drawIndexedGraphicsEmulated(MAYBE_UNUSED const uint8_t* emulationData, uint32_t, MAYBE_UNUSED uint32_t numberOfDraws)
+	{
+		// Sanity checks
+		RENDERER_ASSERT(mContext, nullptr != emulationData, "The null emulation data must be valid")
+		RENDERER_ASSERT(mContext, numberOfDraws > 0, "The number of null draws must not be zero")
+	}
+
+
+	//[-------------------------------------------------------]
+	//[ Compute                                               ]
+	//[-------------------------------------------------------]
+	void NullRenderer::dispatchCompute(uint32_t, uint32_t, uint32_t)
+	{}
+
+
+	//[-------------------------------------------------------]
+	//[ Resource                                              ]
+	//[-------------------------------------------------------]
 	void NullRenderer::resolveMultisampleFramebuffer(Renderer::IRenderTarget&, Renderer::IFramebuffer&)
 	{}
 
 	void NullRenderer::copyResource(Renderer::IResource&, Renderer::IResource&)
 	{
 		// TODO(co) Implement me
-	}
-
-
-	//[-------------------------------------------------------]
-	//[ Draw call                                             ]
-	//[-------------------------------------------------------]
-	void NullRenderer::drawEmulated(MAYBE_UNUSED const uint8_t* emulationData, uint32_t, MAYBE_UNUSED uint32_t numberOfDraws)
-	{
-		// Sanity checks
-		RENDERER_ASSERT(mContext, nullptr != emulationData, "The null emulation data must be valid")
-		RENDERER_ASSERT(mContext, numberOfDraws > 0, "The number of null draws must not be zero")
-	}
-
-	void NullRenderer::drawIndexedEmulated(MAYBE_UNUSED const uint8_t* emulationData, uint32_t, MAYBE_UNUSED uint32_t numberOfDraws)
-	{
-		// Sanity checks
-		RENDERER_ASSERT(mContext, nullptr != emulationData, "The null emulation data must be valid")
-		RENDERER_ASSERT(mContext, numberOfDraws > 0, "The number of null draws must not be zero")
 	}
 
 
@@ -3261,7 +3322,7 @@ namespace NullRenderer
 	void NullRenderer::endScene()
 	{
 		// We need to forget about the currently set render target
-		omSetRenderTarget(nullptr);
+		setGraphicsRenderTarget(nullptr);
 	}
 
 
@@ -3356,6 +3417,9 @@ namespace NullRenderer
 
 		// Is there support for fragment shaders (FS)?
 		mCapabilities.fragmentShader = true;
+
+		// Is there support for compute shaders (CS)?
+		mCapabilities.computeShader = true;
 	}
 
 

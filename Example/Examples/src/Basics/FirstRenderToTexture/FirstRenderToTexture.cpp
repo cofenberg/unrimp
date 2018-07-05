@@ -223,37 +223,37 @@ void FirstRenderToTexture::fillCommandBuffer()
 		// there would be no point in constantly updating texture content
 		// without having any real change.
 
-		// Set the render target to render into
-		Renderer::Command::SetRenderTarget::create(mCommandBuffer, mFramebuffer);
+		// Set the graphics render target to render into
+		Renderer::Command::SetGraphicsRenderTarget::create(mCommandBuffer, mFramebuffer);
 
-		// Clear the color buffer of the current render target with green
-		Renderer::Command::Clear::create(mCommandBuffer, Renderer::ClearFlag::COLOR, Color4::GREEN);
+		// Clear the graphics color buffer of the current render target with green
+		Renderer::Command::ClearGraphics::create(mCommandBuffer, Renderer::ClearFlag::COLOR, Color4::GREEN);
 
-		// Restore main swap chain as current render target
-		Renderer::Command::SetRenderTarget::create(mCommandBuffer, getMainRenderTarget());
+		// Restore graphics main swap chain as current render target
+		Renderer::Command::SetGraphicsRenderTarget::create(mCommandBuffer, getMainRenderTarget());
 	}
 
 	{ // Use the render to texture result
 		// Scoped debug event
 		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Use the render to texture result")
 
-		// Clear the color buffer of the current render target with gray, do also clear the depth buffer
-		Renderer::Command::Clear::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
+		// Clear the graphics color buffer of the current render target with gray, do also clear the depth buffer
+		Renderer::Command::ClearGraphics::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
 
 		// Set the used graphics root signature
 		Renderer::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
 
-		// Set the used pipeline state object (PSO)
-		Renderer::Command::SetPipelineState::create(mCommandBuffer, mPipelineState);
+		// Set the used graphics pipeline state object (PSO)
+		Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mPipelineState);
 
-		// Set resource groups
+		// Set graphics resource groups
 		Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 0, mTextureGroup);
 		Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 1, mSamplerStateGroup);
 
 		// Input assembly (IA): Set the used vertex array
-		Renderer::Command::SetVertexArray::create(mCommandBuffer, mVertexArray);
+		Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArray);
 
 		// Render the specified geometric primitive, based on an array of vertices
-		Renderer::Command::Draw::create(mCommandBuffer, 3);
+		Renderer::Command::DrawGraphics::create(mCommandBuffer, 3);
 	}
 }

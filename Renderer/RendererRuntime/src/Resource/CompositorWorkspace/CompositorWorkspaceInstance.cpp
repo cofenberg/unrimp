@@ -224,12 +224,12 @@ namespace RendererRuntime
 					// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
 					RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(mRendererRuntime.getContext(), mCommandBuffer)
 
-					// Set the current render target
-					Renderer::Command::SetRenderTarget::create(mCommandBuffer, &renderTarget);
+					// Set the current graphics render target
+					Renderer::Command::SetGraphicsRenderTarget::create(mCommandBuffer, &renderTarget);
 
-					// Set the viewport and scissor rectangle
+					// Set the graphics viewport and scissor rectangle
 					// -> Since Direct3D 12 is command list based, the viewport and scissor rectangle must be set in every draw call to work with all supported renderer APIs
-					Renderer::Command::SetViewportAndScissorRectangle::create(mCommandBuffer, 0, 0, renderTargetWidth, renderTargetHeight);
+					Renderer::Command::SetGraphicsViewportAndScissorRectangle::create(mCommandBuffer, 0, 0, renderTargetWidth, renderTargetHeight);
 
 					{ // Fill command buffer
 						Renderer::IRenderTarget* currentRenderTarget = &renderTarget;

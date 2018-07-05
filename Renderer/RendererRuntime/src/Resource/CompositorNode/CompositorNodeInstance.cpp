@@ -66,7 +66,7 @@ namespace RendererRuntime
 			if ((!compositorResourcePass.getSkipFirstExecution() || compositorInstancePass->mNumberOfExecutionRequests > 0) &&
 				(isInvalid(compositorResourcePass.getNumberOfExecutions()) || compositorInstancePass->mNumberOfExecutionRequests < compositorResourcePass.getNumberOfExecutions()))
 			{
-				{ // Set the current render target
+				{ // Set the current graphics render target
 					Renderer::IRenderTarget* newRenderTarget = compositorInstancePass->getRenderTarget();
 					if (nullptr == newRenderTarget)
 					{
@@ -76,17 +76,17 @@ namespace RendererRuntime
 					if (newRenderTarget != currentRenderTarget)
 					{
 						currentRenderTarget = newRenderTarget;
-						Renderer::Command::SetRenderTarget::create(commandBuffer, currentRenderTarget);
+						Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, currentRenderTarget);
 					}
 
-					{ // Set the viewport and scissor rectangle
+					{ // Set the graphics viewport and scissor rectangle
 						// Get the window size
 						uint32_t width  = 1;
 						uint32_t height = 1;
 						currentRenderTarget->getWidthAndHeight(width, height);
 
-						// Set the viewport and scissor rectangle
-						Renderer::Command::SetViewportAndScissorRectangle::create(commandBuffer, 0, 0, width, height, compositorResourcePass.getMinimumDepth(), compositorResourcePass.getMaximumDepth());
+						// Set the graphics viewport and scissor rectangle
+						Renderer::Command::SetGraphicsViewportAndScissorRectangle::create(commandBuffer, 0, 0, width, height, compositorResourcePass.getMinimumDepth(), compositorResourcePass.getMaximumDepth());
 					}
 				}
 

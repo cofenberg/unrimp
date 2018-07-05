@@ -281,15 +281,15 @@ namespace RendererRuntime
 					// Scoped debug event
 					RENDERER_SCOPED_PROFILER_EVENT(rendererRuntime.getContext(), commandBuffer, "Render shadow casters")
 
-					// Set render target
-					Renderer::Command::SetRenderTarget::create(commandBuffer, mDepthFramebufferPtr);
+					// Set graphics render target
+					Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mDepthFramebufferPtr);
 
-					// Set the viewport and scissor rectangle
-					Renderer::Command::SetViewportAndScissorRectangle::create(commandBuffer, 0, 0, shadowMapSize, shadowMapSize);
+					// Set the graphics viewport and scissor rectangle
+					Renderer::Command::SetGraphicsViewportAndScissorRectangle::create(commandBuffer, 0, 0, shadowMapSize, shadowMapSize);
 
-					{ // Clear the depth buffer of the current render target
+					{ // Clear the graphics depth buffer of the current render target
 						const float color[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-						Renderer::Command::Clear::create(commandBuffer, Renderer::ClearFlag::DEPTH, color);
+						Renderer::Command::ClearGraphics::create(commandBuffer, Renderer::ClearFlag::DEPTH, color);
 					}
 
 					// Render shadow casters
@@ -356,7 +356,7 @@ namespace RendererRuntime
 						const uint8_t INTERMEDIATE_CASCADE_INDEX = 3;
 						assert(nullptr != mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX]);
 						RENDERER_SCOPED_PROFILER_EVENT(rendererRuntime.getContext(), commandBuffer, "Depth to exponential variance")
-						Renderer::Command::SetRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX]);
+						Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX]);
 						mDepthToExponentialVarianceCompositorInstancePassQuad->onFillCommandBuffer(*mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX], shadowCompositorContextData, commandBuffer);
 						mDepthToExponentialVarianceCompositorInstancePassQuad->onPostCommandBufferExecution();
 					}
@@ -364,7 +364,7 @@ namespace RendererRuntime
 					{ // Horizontal blur
 						mPassData.shadowFilterSize = filterSizeX;
 						RENDERER_SCOPED_PROFILER_EVENT(rendererRuntime.getContext(), commandBuffer, "Horizontal blur")
-						Renderer::Command::SetRenderTarget::create(commandBuffer, mIntermediateFramebufferPtr);
+						Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mIntermediateFramebufferPtr);
 						mHorizontalBlurCompositorInstancePassQuad->onFillCommandBuffer(*mIntermediateFramebufferPtr, shadowCompositorContextData, commandBuffer);
 						mHorizontalBlurCompositorInstancePassQuad->onPostCommandBufferExecution();
 					}
@@ -373,7 +373,7 @@ namespace RendererRuntime
 						mPassData.shadowFilterSize = filterSizeY;
 						assert(nullptr != mVarianceFramebufferPtr[cascadeIndex]);
 						RENDERER_SCOPED_PROFILER_EVENT(rendererRuntime.getContext(), commandBuffer, "Vertical blur")
-						Renderer::Command::SetRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[cascadeIndex]);
+						Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[cascadeIndex]);
 						mVerticalBlurCompositorInstancePassQuad->onFillCommandBuffer(*mVarianceFramebufferPtr[cascadeIndex], shadowCompositorContextData, commandBuffer);
 						mVerticalBlurCompositorInstancePassQuad->onPostCommandBufferExecution();
 					}
@@ -383,15 +383,15 @@ namespace RendererRuntime
 					// Execute compositor instance pass quad
 					RENDERER_SCOPED_PROFILER_EVENT(rendererRuntime.getContext(), commandBuffer, "Depth to exponential variance")
 					assert(nullptr != mVarianceFramebufferPtr[cascadeIndex]);
-					Renderer::Command::SetRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[cascadeIndex]);
+					Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[cascadeIndex]);
 					mDepthToExponentialVarianceCompositorInstancePassQuad->onFillCommandBuffer(*mVarianceFramebufferPtr[cascadeIndex], shadowCompositorContextData, commandBuffer);
 					mDepthToExponentialVarianceCompositorInstancePassQuad->onPostCommandBufferExecution();
 				}
 			}
 
-			// Reset to previous render target
+			// Reset to previous graphics render target
 			// TODO(co) Get rid of this
-			Renderer::Command::SetRenderTarget::create(commandBuffer, &const_cast<Renderer::IRenderTarget&>(renderTarget));
+			Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, &const_cast<Renderer::IRenderTarget&>(renderTarget));
 		}
 		else
 		{

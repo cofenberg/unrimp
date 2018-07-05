@@ -83,6 +83,7 @@
 				{
 					"BaseShaderRegisterName": "PassUniformBuffer",
 					"BaseShaderRegister": "0",
+					"ShaderVisibility": "ALL_GRAPHICS",
 					"ResourceType": "UNIFORM_BUFFER",
 					"BufferUsage": "PASS",
 					"NumberOfElements": "1",
@@ -244,6 +245,7 @@
 				{
 					"BaseShaderRegisterName": "HeightMap",
 					"BaseShaderRegister": "1",
+					"ShaderVisibility": "ALL_GRAPHICS",
 					"ResourceType": "TEXTURE",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
@@ -282,6 +284,7 @@
 				{
 					"BaseShaderRegisterName": "SamplerLinear",
 					"BaseShaderRegister": "1",
+					"ShaderVisibility": "ALL_GRAPHICS",
 					"ResourceType": "SAMPLER_STATE",
 					"AddressU": "WRAP",
 					"AddressV": "WRAP"
@@ -290,6 +293,7 @@
 				{
 					"BaseShaderRegisterName": "SamplerLinearClamp",
 					"BaseShaderRegister": "2",
+					"ShaderVisibility": "ALL_GRAPHICS",
 					"ResourceType": "SAMPLER_STATE",
 					"AddressU": "CLAMP",
 					"AddressV": "CLAMP",

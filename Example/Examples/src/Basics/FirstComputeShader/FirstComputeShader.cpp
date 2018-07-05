@@ -21,7 +21,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "Basics/FirstTexture/FirstTexture.h"
+#include "Basics/FirstComputeShader/FirstComputeShader.h"
 #include "Framework/Color4.h"
 
 // Disable warnings in external headers, we can't fix them
@@ -33,14 +33,11 @@ PRAGMA_WARNING_PUSH
 	#include <glm/glm.hpp>
 PRAGMA_WARNING_POP
 
-#include <float.h> // For FLT_MAX
-#include <stdlib.h> // For rand()
-
 
 //[-------------------------------------------------------]
 //[ Public virtual IApplication methods                   ]
 //[-------------------------------------------------------]
-void FirstTexture::onInitialization()
+void FirstComputeShader::onInitialization()
 {
 	// Get and check the renderer instance
 	Renderer::IRendererPtr renderer(getRenderer());
@@ -50,105 +47,51 @@ void FirstTexture::onInitialization()
 		mBufferManager = renderer->createBufferManager();
 		mTextureManager = renderer->createTextureManager();
 
-		{ // Create the root signature
-			Renderer::DescriptorRangeBuilder ranges[4];
-			ranges[0].initialize(Renderer::DescriptorRangeType::SRV, 1, 0, "GradientMap", Renderer::ShaderVisibility::FRAGMENT);
-			ranges[1].initialize(Renderer::DescriptorRangeType::SRV, 1, 1, "AlbedoMap", Renderer::ShaderVisibility::FRAGMENT);
-			ranges[2].initializeSampler(1, 0, Renderer::ShaderVisibility::FRAGMENT);
-			ranges[3].initializeSampler(1, 1, Renderer::ShaderVisibility::FRAGMENT);
+		{ // Create the graphics root signature
+			Renderer::DescriptorRangeBuilder ranges[2];
+			ranges[0].initialize(Renderer::DescriptorRangeType::SRV, 1, 0, "AlbedoMap", Renderer::ShaderVisibility::FRAGMENT);
+			ranges[1].initializeSampler(1, 0, Renderer::ShaderVisibility::FRAGMENT);
 
 			Renderer::RootParameterBuilder rootParameters[2];
-			rootParameters[0].initializeAsDescriptorTable(2, &ranges[0]);
-			rootParameters[1].initializeAsDescriptorTable(2, &ranges[2]);
+			rootParameters[0].initializeAsDescriptorTable(1, &ranges[0]);
+			rootParameters[1].initializeAsDescriptorTable(1, &ranges[1]);
 
 			// Setup
 			Renderer::RootSignatureBuilder rootSignature;
 			rootSignature.initialize(static_cast<uint32_t>(glm::countof(rootParameters)), rootParameters, 0, nullptr, Renderer::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 			// Create the instance
-			mRootSignature = renderer->createRootSignature(rootSignature);
+			mGraphicsRootSignature = renderer->createRootSignature(rootSignature);
 		}
 
 		// Create sampler state and wrap it into a resource group instance
-		Renderer::ISamplerState* linearSamplerResource = nullptr;
-		Renderer::ISamplerState* pointSamplerResource = nullptr;
+		Renderer::IResource* samplerStateResource = nullptr;
 		{
-			// Create the sampler resources
 			Renderer::SamplerState samplerState = Renderer::ISamplerState::getDefaultSamplerState();
-			samplerState.addressU = Renderer::TextureAddressMode::WRAP;
-			samplerState.addressV = Renderer::TextureAddressMode::WRAP;
-			linearSamplerResource = renderer->createSamplerState(samplerState);
-			samplerState.filter = Renderer::FilterMode::MIN_MAG_MIP_POINT;
-			pointSamplerResource = renderer->createSamplerState(samplerState);
-
-			// Create the resource group
-			Renderer::IResource* resources[2] = { linearSamplerResource, pointSamplerResource };
-			mSamplerStateGroup = mRootSignature->createResourceGroup(1, static_cast<uint32_t>(glm::countof(resources)), resources);
+			samplerState.maxLOD = 0.0f;
+			samplerStateResource = renderer->createSamplerState(samplerState);
+			mSamplerStateGroup = mGraphicsRootSignature->createResourceGroup(1, 1, &samplerStateResource);
 		}
 
-		{ // Create the texture group
-			Renderer::IResource* resources[2];
+		{ // Texture resource related
+			// Create the texture instance, but without providing texture data (we use the texture as render target)
+			// -> Use the "Renderer::TextureFlag::RENDER_TARGET"-flag to mark this texture as a render target
+			// -> Required for Vulkan, Direct3D 9, Direct3D 10, Direct3D 11 and Direct3D 12
+			// -> Not required for OpenGL and OpenGL ES 3
+			// -> The optimized texture clear value is a Direct3D 12 related option
+			const Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::Enum::R8G8B8A8;
+			Renderer::ITexture* texture2D = mTextureManager->createTexture2D(16, 16, textureFormat, nullptr, Renderer::TextureFlag::RENDER_TARGET, Renderer::TextureUsage::DEFAULT, 1, reinterpret_cast<const Renderer::OptimizedTextureClearValue*>(&Color4::GREEN));
 
-			{ // Create the 1D texture
-				static constexpr uint32_t TEXTURE_WIDTH   = 256;
-				static constexpr uint32_t TEXEL_ELEMENTS  = 1;
-				static constexpr uint32_t NUMBER_OF_BYTES = TEXTURE_WIDTH;
-				uint8_t data[NUMBER_OF_BYTES];
-
-				// Fill the texture data with a color gradient
-				for (uint32_t n = 0; n < NUMBER_OF_BYTES; n += TEXEL_ELEMENTS)
-				{
-					data[n] = static_cast<uint8_t>(n);
-				}
-
-				// Create the texture instance
-				resources[0] = mTextureManager->createTexture1D(TEXTURE_WIDTH, Renderer::TextureFormat::R8, data, Renderer::TextureFlag::GENERATE_MIPMAPS);
+			{ // Create texture group
+				Renderer::IResource* resource = texture2D;
+				Renderer::ISamplerState* samplerState = static_cast<Renderer::ISamplerState*>(samplerStateResource);
+				mTextureGroup = mGraphicsRootSignature->createResourceGroup(0, 1, &resource, &samplerState);
 			}
 
-			{ // Create the 2D texture
-				static constexpr uint32_t TEXTURE_WIDTH   = 64;
-				static constexpr uint32_t TEXTURE_HEIGHT  = 64;
-				static constexpr uint32_t TEXEL_ELEMENTS  = 4;
-				static constexpr uint32_t NUMBER_OF_BYTES = TEXTURE_WIDTH * TEXTURE_HEIGHT * TEXEL_ELEMENTS;
-				uint8_t data[NUMBER_OF_BYTES];
-
-				{ // Fill the texture data with a defective checkboard
-					const uint32_t rowPitch   = TEXTURE_WIDTH * TEXEL_ELEMENTS;
-					const uint32_t cellPitch  = rowPitch >> 3;		// The width of a cell in the checkboard texture
-					const uint32_t cellHeight = TEXTURE_WIDTH >> 3;	// The height of a cell in the checkerboard texture
-					for (uint32_t n = 0; n < NUMBER_OF_BYTES; n += TEXEL_ELEMENTS)
-					{
-						const uint32_t x = n % rowPitch;
-						const uint32_t y = n / rowPitch;
-						const uint32_t i = x / cellPitch;
-						const uint32_t j = y / cellHeight;
-
-						if (i % 2 == j % 2)
-						{
-							// Black
-							data[n + 0] = 0;	// R
-							data[n + 1] = 0;	// G
-							data[n + 2] = 0;	// B
-							data[n + 3] = 255;	// A
-						}
-						else
-						{
-							// Add some color fun instead of just boring white
-							data[n + 0] = static_cast<uint8_t>(rand() % 255);	// R
-							data[n + 1] = static_cast<uint8_t>(rand() % 255);	// G
-							data[n + 2] = static_cast<uint8_t>(rand() % 255);	// B
-							data[n + 3] = static_cast<uint8_t>(rand() % 255);	// A
-						}
-					}
-				}
-
-				// Create the texture instance
-				resources[1] = mTextureManager->createTexture2D(TEXTURE_WIDTH, TEXTURE_HEIGHT, Renderer::TextureFormat::R8G8B8A8, data, Renderer::TextureFlag::GENERATE_MIPMAPS);
+			{ // Create the framebuffer object (FBO) instance
+				const Renderer::FramebufferAttachment colorFramebufferAttachment(texture2D);
+				mFramebuffer = renderer->createFramebuffer(*renderer->createRenderPass(1, &textureFormat), &colorFramebufferAttachment);
 			}
-
-			// Create the texture group
-			Renderer::ISamplerState* samplerStates[2] = { linearSamplerResource, pointSamplerResource };
-			mTextureGroup = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(glm::countof(resources)), resources, samplerStates);
 		}
 
 		// Vertex input layout
@@ -190,7 +133,7 @@ void FirstTexture::onInitialization()
 			mVertexArray = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(glm::countof(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
 		}
 
-		// Decide which shader language should be used (for example "GLSL" or "HLSL")
+		// Create the program: Decide which shader language should be used (for example "GLSL" or "HLSL")
 		Renderer::IShaderLanguagePtr shaderLanguage(renderer->getShaderLanguage());
 		if (nullptr != shaderLanguage)
 		{
@@ -200,25 +143,29 @@ void FirstTexture::onInitialization()
 				// Get the shader source code (outsourced to keep an overview)
 				const char* vertexShaderSourceCode = nullptr;
 				const char* fragmentShaderSourceCode = nullptr;
-				#include "FirstTexture_GLSL_450.h"	// For Vulkan
-				#include "FirstTexture_GLSL_410.h"	// macOS 10.11 only supports OpenGL 4.1 hence it's our OpenGL minimum
-				#include "FirstTexture_GLSL_ES3.h"
-				#include "FirstTexture_HLSL_D3D9.h"
-				#include "FirstTexture_HLSL_D3D10_D3D11_D3D12.h"
-				#include "FirstTexture_Null.h"
+				const char* computeShaderSourceCode = nullptr;
+				#include "FirstComputeShader_GLSL_450.h"	// For Vulkan
+				#include "FirstComputeShader_GLSL_430.h"	// macOS 10.11 only supports OpenGL 4.1 and hence can't be supported by this example
+				#include "FirstComputeShader_HLSL_D3D11_D3D12.h"
+				#include "FirstComputeShader_Null.h"
 
 				// Create the program
 				program = shaderLanguage->createProgram(
-					*mRootSignature,
+					*mGraphicsRootSignature,
 					vertexAttributes,
 					shaderLanguage->createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode),
 					shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
+
+				// TODO(co) Compute shader support is work-in-progress
+				Renderer::IComputeShader* computeShader = shaderLanguage->createComputeShaderFromSourceCode(computeShaderSourceCode);
+				// TODO(co) mComputePipelineState = renderer->createComputePipelineState(*mComputeRootSignature, *computeShader);
+				computeShader->releaseReference();
 			}
 
-			// Create the pipeline state object (PSO)
+			// Create the graphics pipeline state object (PSO)
 			if (nullptr != program)
 			{
-				mPipelineState = renderer->createPipelineState(Renderer::PipelineStateBuilder(mRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass()));
+				mGraphicsPipelineState = renderer->createPipelineState(Renderer::PipelineStateBuilder(mGraphicsRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass()));
 			}
 		}
 
@@ -227,20 +174,21 @@ void FirstTexture::onInitialization()
 	}
 }
 
-void FirstTexture::onDeinitialization()
+void FirstComputeShader::onDeinitialization()
 {
 	// Release the used resources
 	mVertexArray = nullptr;
-	mPipelineState = nullptr;
+	mGraphicsPipelineState = nullptr;
 	mSamplerStateGroup = nullptr;
 	mTextureGroup = nullptr;
-	mRootSignature = nullptr;
+	mFramebuffer = nullptr;
+	mGraphicsRootSignature = nullptr;
 	mCommandBuffer.clear();
 	mTextureManager = nullptr;
 	mBufferManager = nullptr;
 }
 
-void FirstTexture::onDraw()
+void FirstComputeShader::onDraw()
 {
 	// Get and check the renderer instance
 	Renderer::IRendererPtr renderer(getRenderer());
@@ -255,35 +203,77 @@ void FirstTexture::onDraw()
 //[-------------------------------------------------------]
 //[ Private methods                                       ]
 //[-------------------------------------------------------]
-void FirstTexture::fillCommandBuffer()
+void FirstComputeShader::fillCommandBuffer()
 {
 	// Sanity checks
+	assert(nullptr != getRenderer());
+	assert(nullptr != getMainRenderTarget());
 	assert(mCommandBuffer.isEmpty());
-	assert(nullptr != mRootSignature);
+	assert(nullptr != mGraphicsRootSignature);
+	assert(nullptr != mFramebuffer);
 	assert(nullptr != mTextureGroup);
 	assert(nullptr != mSamplerStateGroup);
-	assert(nullptr != mPipelineState);
+	assert(nullptr != mGraphicsPipelineState);
 	assert(nullptr != mVertexArray);
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
 
-	// Clear the graphics color buffer of the current render target with gray, do also clear the depth buffer
-	Renderer::Command::ClearGraphics::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
+	{ // Render to texture
+		// Scoped debug event
+		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Render to texture")
 
-	// Set the used graphics root signature
-	Renderer::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
+		// This in here is of course just an example. In a real application
+		// there would be no point in constantly updating texture content
+		// without having any real change.
 
-	// Set the used graphics pipeline state object (PSO)
-	Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mPipelineState);
+		// Set the graphics render target to render into
+		Renderer::Command::SetGraphicsRenderTarget::create(mCommandBuffer, mFramebuffer);
 
-	// Set graphics resource groups
-	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 0, mTextureGroup);
-	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 1, mSamplerStateGroup);
+		// Clear the graphics color buffer of the current render target with green
+		Renderer::Command::ClearGraphics::create(mCommandBuffer, Renderer::ClearFlag::COLOR, Color4::GREEN);
 
-	// Input assembly (IA): Set the used vertex array
-	Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArray);
+		// Restore graphics main swap chain as current render target
+		Renderer::Command::SetGraphicsRenderTarget::create(mCommandBuffer, getMainRenderTarget());
+	}
 
-	// Render the specified geometric primitive, based on an array of vertices
-	Renderer::Command::DrawGraphics::create(mCommandBuffer, 3);
+	{ // Use the render to texture result for compute
+		// Scoped debug event
+		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Use the render to texture result for compute")
+
+		// TODO(co) Compute shader support is work-in-progress
+		// SetComputeRootSignature
+		// SetComputePipelineState
+		// SetComputeResourceGroup
+
+		// Dispatch compute call
+		Renderer::Command::DispatchCompute::create(mCommandBuffer, 1, 1, 1);
+
+		// TODO(co) Compute shader support is work-in-progress
+		// SetMemoryBarrier
+	}
+
+	{ // Use the compute result
+		// Scoped debug event
+		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Use the compute result")
+
+		// Clear the graphics color buffer of the current render target with gray, do also clear the depth buffer
+		Renderer::Command::ClearGraphics::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
+
+		// Set the used graphics root signature
+		Renderer::Command::SetGraphicsRootSignature::create(mCommandBuffer, mGraphicsRootSignature);
+
+		// Set the used graphics pipeline state object (PSO)
+		Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineState);
+
+		// Set graphics resource groups
+		Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 0, mTextureGroup);
+		Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 1, mSamplerStateGroup);
+
+		// Input assembly (IA): Set the used vertex array
+		Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArray);
+
+		// Render the specified geometric primitive, based on an array of vertices
+		Renderer::Command::DrawGraphics::create(mCommandBuffer, 3);
+	}
 }

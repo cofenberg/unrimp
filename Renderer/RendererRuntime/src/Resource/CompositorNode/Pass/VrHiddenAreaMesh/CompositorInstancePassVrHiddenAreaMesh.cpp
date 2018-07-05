@@ -195,14 +195,14 @@
 					// Set the used graphics root signature
 					Renderer::Command::SetGraphicsRootSignature::create(commandBuffer, mRootSignature);
 
-					// Set the used pipeline state object (PSO)
-					Renderer::Command::SetPipelineState::create(commandBuffer, mPipelineState);
+					// Set the used graphics pipeline state object (PSO)
+					Renderer::Command::SetGraphicsPipelineState::create(commandBuffer, mPipelineState);
 
 					// Setup input assembly (IA): Set the used vertex array
-					Renderer::Command::SetVertexArray::create(commandBuffer, mVertexArrayPtr);
+					Renderer::Command::SetGraphicsVertexArray::create(commandBuffer, mVertexArrayPtr);
 
 					// Render the specified geometric primitive, based on an array of vertices
-					Renderer::Command::Draw::create(commandBuffer, mNumberOfTriangles * 3);
+					Renderer::Command::DrawGraphics::create(commandBuffer, mNumberOfTriangles * 3);
 				}
 
 

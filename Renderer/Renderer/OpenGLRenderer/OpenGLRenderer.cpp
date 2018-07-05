@@ -509,6 +509,9 @@ FNDEF_EX(glPatchParameteri,	PFNGLPATCHPARAMETERIPROC);
 // GL_ARB_geometry_shader4
 FNDEF_EX(glProgramParameteriARB,	PFNGLPROGRAMPARAMETERIARBPROC);
 
+// GL_ARB_compute_shader
+FNDEF_EX(glDispatchCompute,	PFNGLDISPATCHCOMPUTEPROC);
+
 // GL_ARB_draw_instanced
 FNDEF_EX(glDrawArraysInstancedARB,		PFNGLDRAWARRAYSINSTANCEDARBPROC);
 FNDEF_EX(glDrawElementsInstancedARB,	PFNGLDRAWELEMENTSINSTANCEDARBPROC);
@@ -1139,6 +1142,10 @@ namespace
 					case GL_FRAGMENT_SHADER_ARB:
 						shLanguage = EShLangFragment;
 						break;
+
+					case GL_COMPUTE_SHADER:
+						shLanguage = EShLangCompute;
+						break;
 				}
 				glslang::TShader shader(shLanguage);
 				shader.setEnvInput(glslang::EShSourceGlsl, shLanguage, glslang::EShClientOpenGL, glslVersion);
@@ -1352,37 +1359,29 @@ namespace OpenGLRenderer
 		}
 
 		//[-------------------------------------------------------]
-		//[ States                                                ]
+		//[ Graphics                                              ]
 		//[-------------------------------------------------------]
 		void setGraphicsRootSignature(Renderer::IRootSignature* rootSignature);
+		void setGraphicsPipelineState(Renderer::IPipelineState* graphicsPipelineState);
 		void setGraphicsResourceGroup(uint32_t rootParameterIndex, Renderer::IResourceGroup* resourceGroup);
-		void setPipelineState(Renderer::IPipelineState* pipelineState);
+		void setGraphicsVertexArray(Renderer::IVertexArray* vertexArray);															// Input-assembler (IA) stage
+		void setGraphicsViewports(uint32_t numberOfViewports, const Renderer::Viewport* viewports);									// Rasterizer (RS) stage
+		void setGraphicsScissorRectangles(uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles);	// Rasterizer (RS) stage
+		void setGraphicsRenderTarget(Renderer::IRenderTarget* renderTarget);														// Output-merger (OM) stage
+		void clearGraphics(uint32_t flags, const float color[4], float z, uint32_t stencil);
+		void drawGraphics(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
+		void drawGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
+		void drawIndexedGraphics(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
+		void drawIndexedGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		//[-------------------------------------------------------]
-		//[ Input-assembler (IA) stage                            ]
+		//[ Compute                                               ]
 		//[-------------------------------------------------------]
-		void iaSetVertexArray(Renderer::IVertexArray* vertexArray);
+		void dispatchCompute(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ);
 		//[-------------------------------------------------------]
-		//[ Rasterizer (RS) stage                                 ]
+		//[ Resource                                              ]
 		//[-------------------------------------------------------]
-		void rsSetViewports(uint32_t numberOfViewports, const Renderer::Viewport* viewports);
-		void rsSetScissorRectangles(uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles);
-		//[-------------------------------------------------------]
-		//[ Output-merger (OM) stage                              ]
-		//[-------------------------------------------------------]
-		void omSetRenderTarget(Renderer::IRenderTarget* renderTarget);
-		//[-------------------------------------------------------]
-		//[ Operations                                            ]
-		//[-------------------------------------------------------]
-		void clear(uint32_t flags, const float color[4], float z, uint32_t stencil);
 		void resolveMultisampleFramebuffer(Renderer::IRenderTarget& destinationRenderTarget, Renderer::IFramebuffer& sourceMultisampleFramebuffer);
 		void copyResource(Renderer::IResource& destinationResource, Renderer::IResource& sourceResource);
-		//[-------------------------------------------------------]
-		//[ Draw call                                             ]
-		//[-------------------------------------------------------]
-		void draw(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
-		void drawEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
-		void drawIndexed(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
-		void drawIndexedEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		//[-------------------------------------------------------]
 		//[ Debug                                                 ]
 		//[-------------------------------------------------------]
@@ -1488,7 +1487,7 @@ namespace OpenGLRenderer
 		*  @brief
 		*    Unset the currently used vertex array
 		*/
-		void iaUnsetVertexArray();
+		void unsetGraphicsVertexArray();
 
 		/**
 		*  @brief
@@ -1522,7 +1521,7 @@ namespace OpenGLRenderer
 		GLuint					   mOpenGLCopyResourceFramebuffer;	///< OpenGL framebuffer ("container" object, not shared between OpenGL contexts) used by "OpenGLRenderer::OpenGLRenderer::copyResource()" if the "GL_ARB_copy_image"-extension isn't available, can be zero if no resource is allocated
 		GLuint					   mDefaultOpenGLVertexArray;		///< Default OpenGL vertex array ("container" object, not shared between OpenGL contexts) to enable attribute-less rendering, can be zero if no resource is allocated
 		// States
-		PipelineState* mPipelineState;	///< Currently set pipeline state (we keep a reference to it), can be a null pointer
+		PipelineState* mGraphicsPipelineState;	///< Currently set graphics pipeline state (we keep a reference to it), can be a null pointer
 		// Input-assembler (IA) stage
 		VertexArray* mVertexArray;				///< Currently set vertex array (we keep a reference to it), can be a null pointer
 		GLenum		 mOpenGLPrimitiveTopology;	///< OpenGL primitive topology describing the type of primitive to render
@@ -1993,6 +1992,11 @@ namespace OpenGLRenderer
 			return mGL_ARB_fragment_shader;
 		}
 
+		inline bool isGL_ARB_compute_shader() const
+		{
+			return mGL_ARB_compute_shader;
+		}
+
 		inline bool isGL_ARB_draw_instanced() const
 		{
 			return mGL_ARB_draw_instanced;
@@ -2246,6 +2250,7 @@ namespace OpenGLRenderer
 			mGL_ARB_tessellation_shader			= false;
 			mGL_ARB_geometry_shader4			= false;
 			mGL_ARB_fragment_shader				= false;
+			mGL_ARB_compute_shader				= false;
 			mGL_ARB_draw_instanced				= false;
 			mGL_ARB_base_instance				= false;
 			mGL_ARB_instanced_arrays			= false;
@@ -2725,9 +2730,6 @@ namespace OpenGLRenderer
 				mGL_ARB_tessellation_shader = result;
 			}
 
-			// GL_ARB_fragment_shader
-			mGL_ARB_fragment_shader = isSupported("GL_ARB_fragment_shader");
-
 			// GL_ARB_geometry_shader4
 			// TODO(sw) This extension was promoted to core feature but heavily modified source: https://www.khronos.org/opengl/wiki/History_of_OpenGL#OpenGL_3.2_.282009.29
 			// TODO(sw) But this extension doesn't show up with mesa 3D either with an old OpenGL context (max OpenGL 3.3) or with an profile context (with OpenGL 4.3)
@@ -2738,6 +2740,19 @@ namespace OpenGLRenderer
 				bool result = true;	// Success by default
 				IMPORT_FUNC(glProgramParameteriARB)
 				mGL_ARB_geometry_shader4 = result;
+			}
+
+			// GL_ARB_fragment_shader
+			mGL_ARB_fragment_shader = isSupported("GL_ARB_fragment_shader");
+
+			// GL_ARB_compute_shader
+			mGL_ARB_compute_shader = isSupported("GL_ARB_compute_shader");
+			if (mGL_ARB_compute_shader)
+			{
+				// Load the entry points
+				bool result = true;	// Success by default
+				IMPORT_FUNC(glDispatchCompute)
+				mGL_ARB_compute_shader = result;
 			}
 
 			// GL_ARB_draw_instanced
@@ -2974,6 +2989,7 @@ namespace OpenGLRenderer
 		bool mGL_ARB_tessellation_shader;
 		bool mGL_ARB_geometry_shader4;
 		bool mGL_ARB_fragment_shader;
+		bool mGL_ARB_compute_shader;
 		bool mGL_ARB_draw_instanced;
 		bool mGL_ARB_base_instance;
 		bool mGL_ARB_instanced_arrays;
@@ -11645,6 +11661,7 @@ namespace OpenGLRenderer
 						case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 						case Renderer::ResourceType::GEOMETRY_SHADER:
 						case Renderer::ResourceType::FRAGMENT_SHADER:
+						case Renderer::ResourceType::COMPUTE_SHADER:
 						default:
 							// Nothing here
 							break;
@@ -11711,6 +11728,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Renderer::ResourceType::GEOMETRY_SHADER:
 					case Renderer::ResourceType::FRAGMENT_SHADER:
+					case Renderer::ResourceType::COMPUTE_SHADER:
 					default:
 						// Nothing here
 						break;
@@ -11874,6 +11892,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Renderer::ResourceType::GEOMETRY_SHADER:
 					case Renderer::ResourceType::FRAGMENT_SHADER:
+					case Renderer::ResourceType::COMPUTE_SHADER:
 					default:
 						RENDERER_LOG(openGLRenderer.getContext(), CRITICAL, "The type of the given color texture at index %ld is not supported by the OpenGL renderer backend", colorFramebufferAttachment - colorFramebufferAttachments)
 						break;
@@ -11946,6 +11965,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Renderer::ResourceType::GEOMETRY_SHADER:
 					case Renderer::ResourceType::FRAGMENT_SHADER:
+					case Renderer::ResourceType::COMPUTE_SHADER:
 					default:
 						RENDERER_LOG(openGLRenderer.getContext(), CRITICAL, "OpenGL error: The type of the given depth stencil texture is not supported by the OpenGL renderer backend")
 						break;
@@ -12200,6 +12220,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Renderer::ResourceType::GEOMETRY_SHADER:
 					case Renderer::ResourceType::FRAGMENT_SHADER:
+					case Renderer::ResourceType::COMPUTE_SHADER:
 					default:
 						RENDERER_LOG(openGLRenderer.getContext(), CRITICAL, "The type of the given color texture at index %ld is not supported by the OpenGL renderer backend", colorFramebufferAttachment - colorFramebufferAttachments)
 						break;
@@ -12286,6 +12307,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Renderer::ResourceType::GEOMETRY_SHADER:
 					case Renderer::ResourceType::FRAGMENT_SHADER:
+					case Renderer::ResourceType::COMPUTE_SHADER:
 					default:
 						RENDERER_LOG(openGLRenderer.getContext(), CRITICAL, "The type of the given depth stencil texture is not supported by the OpenGL renderer backend")
 						break;
@@ -12888,7 +12910,7 @@ namespace OpenGLRenderer
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    Monolithic fragment shader ("pixel shader" in Direct3D terminology) class
+	*    Monolithic fragment shader (FS, "pixel shader" in Direct3D terminology) class
 	*/
 	class FragmentShaderMonolithic final : public Renderer::IFragmentShader
 	{
@@ -12978,6 +13000,115 @@ namespace OpenGLRenderer
 	private:
 		explicit FragmentShaderMonolithic(const FragmentShaderMonolithic& source) = delete;
 		FragmentShaderMonolithic& operator =(const FragmentShaderMonolithic& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		GLuint mOpenGLShader;	///< OpenGL shader, can be zero if no resource is allocated
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ OpenGLRenderer/Shader/Monolithic/ComputeShaderMonolithic.h ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Monolithic compute shader (CS) class
+	*/
+	class ComputeShaderMonolithic final : public Renderer::IComputeShader
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor for creating a compute shader from shader source code
+		*
+		*  @param[in] openGLRenderer
+		*    Owner OpenGL renderer instance
+		*  @param[in] sourceCode
+		*    Shader ASCII source code, must be valid
+		*/
+		inline ComputeShaderMonolithic(OpenGLRenderer& openGLRenderer, const char* sourceCode) :
+			IComputeShader(static_cast<Renderer::IRenderer&>(openGLRenderer)),
+			mOpenGLShader(::detail::loadShaderFromSourcecode(openGLRenderer.getContext(), GL_COMPUTE_SHADER, sourceCode))
+		{}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~ComputeShaderMonolithic() override
+		{
+			// Destroy the OpenGL shader
+			// -> Silently ignores 0's and names that do not correspond to existing buffer objects
+			glDeleteObjectARB(mOpenGLShader);
+		}
+
+		/**
+		*  @brief
+		*    Return the OpenGL shader
+		*
+		*  @return
+		*    The OpenGL shader, can be zero if no resource is allocated, do not destroy the returned resource
+		*/
+		inline GLuint getOpenGLShader() const
+		{
+			return mOpenGLShader;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		#ifdef RENDERER_DEBUG
+			virtual void setDebugName(const char* name) override
+			{
+				// Valid OpenGL shader and "GL_KHR_debug"-extension available?
+				if (0 != mOpenGLShader && static_cast<OpenGLRenderer&>(getRenderer()).getExtensions().isGL_KHR_debug())
+				{
+					glObjectLabel(GL_SHADER, mOpenGLShader, -1, name);
+				}
+			}
+		#endif
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IShader methods              ]
+	//[-------------------------------------------------------]
+	public:
+		inline virtual const char* getShaderLanguageName() const override
+		{
+			return ::detail::GLSL_NAME;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), ComputeShaderMonolithic, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit ComputeShaderMonolithic(const ComputeShaderMonolithic& source) = delete;
+		ComputeShaderMonolithic& operator =(const ComputeShaderMonolithic& source) = delete;
 
 
 	//[-------------------------------------------------------]
@@ -13808,6 +13939,29 @@ namespace OpenGLRenderer
 			}
 		}
 
+		inline virtual Renderer::IComputeShader* createComputeShaderFromBytecode(const Renderer::ShaderBytecode&) override
+		{
+			// Error!
+			RENDERER_ASSERT(getRenderer().getContext(), false, "Monolithic shaders have no shader bytecode, only a monolithic program bytecode")
+			return nullptr;
+		}
+
+		virtual Renderer::IComputeShader* createComputeShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, MAYBE_UNUSED Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		{
+			// Check whether or not there's compute shader support
+			// -> Monolithic shaders have no shader bytecode, only a monolithic program bytecode
+			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(getRenderer());
+			if (openGLRenderer.getExtensions().isGL_ARB_compute_shader())
+			{
+				return RENDERER_NEW(getRenderer().getContext(), ComputeShaderMonolithic)(openGLRenderer, shaderSourceCode.sourceCode);
+			}
+			else
+			{
+				// Error! There's no compute shader support!
+				return nullptr;
+			}
+		}
+
 		virtual Renderer::IProgram* createProgram(const Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
 		{
 			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(getRenderer());
@@ -14465,7 +14619,7 @@ namespace OpenGLRenderer
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    Separate fragment shader ("pixel shader" in Direct3D terminology) class
+	*    Separate fragment shader (FS, "pixel shader" in Direct3D terminology) class
 	*/
 	class FragmentShaderSeparate final : public Renderer::IFragmentShader
 	{
@@ -14590,6 +14744,135 @@ namespace OpenGLRenderer
 
 
 	//[-------------------------------------------------------]
+	//[ OpenGLRenderer/Shader/Separate/ComputeShaderSeparate.h ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Separate compute shader (CS) class
+	*/
+	class ComputeShaderSeparate final : public Renderer::IComputeShader
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor for creating a compute shader from shader bytecode
+		*
+		*  @param[in] openGLRenderer
+		*    Owner OpenGL renderer instance
+		*  @param[in] shaderBytecode
+		*    Shader bytecode
+		*/
+		inline ComputeShaderSeparate(OpenGLRenderer& openGLRenderer, const Renderer::ShaderBytecode& shaderBytecode) :
+			IComputeShader(static_cast<Renderer::IRenderer&>(openGLRenderer)),
+			mOpenGLShaderProgram(::detail::loadShaderProgramFromBytecode(openGLRenderer.getContext(), GL_COMPUTE_SHADER, shaderBytecode))
+		{}
+
+		/**
+		*  @brief
+		*    Constructor for creating a compute shader from shader source code
+		*
+		*  @param[in] openGLRenderer
+		*    Owner OpenGL renderer instance
+		*  @param[in] sourceCode
+		*    Shader ASCII source code, must be valid
+		*/
+		inline ComputeShaderSeparate(OpenGLRenderer& openGLRenderer, const char* sourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) :
+			IComputeShader(static_cast<Renderer::IRenderer&>(openGLRenderer)),
+			mOpenGLShaderProgram(::detail::loadShaderProgramFromSourceCode(openGLRenderer.getContext(), GL_COMPUTE_SHADER, sourceCode))
+		{
+			// Return shader bytecode, if requested do to so
+			if (nullptr != shaderBytecode)
+			{
+				::detail::shaderSourceCodeToShaderBytecode(openGLRenderer.getContext(), GL_COMPUTE_SHADER, sourceCode, *shaderBytecode);
+			}
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~ComputeShaderSeparate() override
+		{
+			// Destroy the OpenGL shader program
+			// -> Silently ignores 0's and names that do not correspond to existing buffer objects
+			glDeleteProgram(mOpenGLShaderProgram);
+		}
+
+		/**
+		*  @brief
+		*    Return the OpenGL shader program
+		*
+		*  @return
+		*    The OpenGL shader program, can be zero if no resource is allocated, do not destroy the returned resource
+		*/
+		inline GLuint getOpenGLShaderProgram() const
+		{
+			return mOpenGLShaderProgram;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		#ifdef RENDERER_DEBUG
+			virtual void setDebugName(const char* name) override
+			{
+				// Valid OpenGL shader program and "GL_KHR_debug"-extension available?
+				if (0 != mOpenGLShaderProgram && static_cast<OpenGLRenderer&>(getRenderer()).getExtensions().isGL_KHR_debug())
+				{
+					glObjectLabel(GL_PROGRAM, mOpenGLShaderProgram, -1, name);
+				}
+			}
+		#endif
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IShader methods              ]
+	//[-------------------------------------------------------]
+	public:
+		inline virtual const char* getShaderLanguageName() const override
+		{
+			return ::detail::GLSL_NAME;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), ComputeShaderSeparate, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit ComputeShaderSeparate(const ComputeShaderSeparate& source) = delete;
+		ComputeShaderSeparate& operator =(const ComputeShaderSeparate& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		GLuint mOpenGLShaderProgram;	///< OpenGL shader program, can be zero if no resource is allocated
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ OpenGLRenderer/Shader/Separate/ProgramSeparate.h      ]
 	//[-------------------------------------------------------]
 	/**
@@ -14697,6 +14980,7 @@ namespace OpenGLRenderer
 								switch (descriptorRange.shaderVisibility)
 								{
 									case Renderer::ShaderVisibility::ALL:
+									case Renderer::ShaderVisibility::ALL_GRAPHICS:
 										BIND_UNIFORM_BLOCK(mVertexShaderSeparate)
 										BIND_UNIFORM_BLOCK(mTessellationControlShaderSeparate)
 										BIND_UNIFORM_BLOCK(mTessellationEvaluationShaderSeparate)
@@ -14722,6 +15006,10 @@ namespace OpenGLRenderer
 
 									case Renderer::ShaderVisibility::FRAGMENT:
 										BIND_UNIFORM_BLOCK(mFragmentShaderSeparate)
+										break;
+
+									case Renderer::ShaderVisibility::COMPUTE:
+										RENDERER_LOG(openGLRenderer.getContext(), CRITICAL, "Invalid OpenGL compute shader visibility")
 										break;
 								}
 								#undef BIND_UNIFORM_BLOCK
@@ -14733,6 +15021,7 @@ namespace OpenGLRenderer
 								switch (descriptorRange.shaderVisibility)
 								{
 									case Renderer::ShaderVisibility::ALL:
+									case Renderer::ShaderVisibility::ALL_GRAPHICS:
 										BIND_UNIFORM_LOCATION(mVertexShaderSeparate)
 										BIND_UNIFORM_LOCATION(mTessellationControlShaderSeparate)
 										BIND_UNIFORM_LOCATION(mTessellationEvaluationShaderSeparate)
@@ -14758,6 +15047,10 @@ namespace OpenGLRenderer
 
 									case Renderer::ShaderVisibility::FRAGMENT:
 										BIND_UNIFORM_LOCATION(mFragmentShaderSeparate)
+										break;
+
+									case Renderer::ShaderVisibility::COMPUTE:
+										RENDERER_LOG(openGLRenderer.getContext(), CRITICAL, "Invalid OpenGL compute shader visibility")
 										break;
 								}
 								#undef BIND_UNIFORM_LOCATION
@@ -15441,6 +15734,38 @@ namespace OpenGLRenderer
 			}
 		}
 
+		virtual Renderer::IComputeShader* createComputeShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
+		{
+			// Check whether or not there's compute shader support
+			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(getRenderer());
+			const Extensions& extensions = openGLRenderer.getExtensions();
+			if (extensions.isGL_ARB_compute_shader() && extensions.isGL_ARB_gl_spirv())
+			{
+				return RENDERER_NEW(getRenderer().getContext(), ComputeShaderSeparate)(openGLRenderer, shaderBytecode);
+			}
+			else
+			{
+				// Error! There's no compute shader support or no decent shader bytecode support!
+				return nullptr;
+			}
+		}
+
+		virtual Renderer::IComputeShader* createComputeShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		{
+			// Check whether or not there's compute shader support
+			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(getRenderer());
+			const Extensions& extensions = openGLRenderer.getExtensions();
+			if (extensions.isGL_ARB_compute_shader())
+			{
+				return RENDERER_NEW(getRenderer().getContext(), ComputeShaderSeparate)(openGLRenderer, shaderSourceCode.sourceCode, extensions.isGL_ARB_gl_spirv() ? shaderBytecode : nullptr);
+			}
+			else
+			{
+				// Error! There's no compute shader support!
+				return nullptr;
+			}
+		}
+
 		virtual Renderer::IProgram* createProgram(const Renderer::IRootSignature& rootSignature, MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
 		{
 			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(getRenderer());
@@ -15843,12 +16168,18 @@ namespace
 			}
 
 			//[-------------------------------------------------------]
-			//[ Graphics root                                         ]
+			//[ Graphics                                              ]
 			//[-------------------------------------------------------]
 			void SetGraphicsRootSignature(const void* data, Renderer::IRenderer& renderer)
 			{
 				const Renderer::Command::SetGraphicsRootSignature* realData = static_cast<const Renderer::Command::SetGraphicsRootSignature*>(data);
 				static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).setGraphicsRootSignature(realData->rootSignature);
+			}
+
+			void SetGraphicsPipelineState(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::SetGraphicsPipelineState* realData = static_cast<const Renderer::Command::SetGraphicsPipelineState*>(data);
+				static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).setGraphicsPipelineState(realData->graphicsPipelineState);
 			}
 
 			void SetGraphicsResourceGroup(const void* data, Renderer::IRenderer& renderer)
@@ -15857,96 +16188,73 @@ namespace
 				static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).setGraphicsResourceGroup(realData->rootParameterIndex, realData->resourceGroup);
 			}
 
-			//[-------------------------------------------------------]
-			//[ States                                                ]
-			//[-------------------------------------------------------]
-			void SetPipelineState(const void* data, Renderer::IRenderer& renderer)
+			void SetGraphicsVertexArray(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::SetPipelineState* realData = static_cast<const Renderer::Command::SetPipelineState*>(data);
-				static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).setPipelineState(realData->pipelineState);
+				// Input-assembler (IA) stage
+				const Renderer::Command::SetGraphicsVertexArray* realData = static_cast<const Renderer::Command::SetGraphicsVertexArray*>(data);
+				static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).setGraphicsVertexArray(realData->vertexArray);
 			}
 
-			//[-------------------------------------------------------]
-			//[ Input-assembler (IA) stage                            ]
-			//[-------------------------------------------------------]
-			void SetVertexArray(const void* data, Renderer::IRenderer& renderer)
+			void SetGraphicsViewports(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::SetVertexArray* realData = static_cast<const Renderer::Command::SetVertexArray*>(data);
-				static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).iaSetVertexArray(realData->vertexArray);
+				// Rasterizer (RS) stage
+				const Renderer::Command::SetGraphicsViewports* realData = static_cast<const Renderer::Command::SetGraphicsViewports*>(data);
+				static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).setGraphicsViewports(realData->numberOfViewports, (nullptr != realData->viewports) ? realData->viewports : reinterpret_cast<const Renderer::Viewport*>(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData)));
 			}
 
-			//[-------------------------------------------------------]
-			//[ Rasterizer (RS) stage                                 ]
-			//[-------------------------------------------------------]
-			void SetViewports(const void* data, Renderer::IRenderer& renderer)
+			void SetGraphicsScissorRectangles(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::SetViewports* realData = static_cast<const Renderer::Command::SetViewports*>(data);
-				static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).rsSetViewports(realData->numberOfViewports, (nullptr != realData->viewports) ? realData->viewports : reinterpret_cast<const Renderer::Viewport*>(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData)));
+				// Rasterizer (RS) stage
+				const Renderer::Command::SetGraphicsScissorRectangles* realData = static_cast<const Renderer::Command::SetGraphicsScissorRectangles*>(data);
+				static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).setGraphicsScissorRectangles(realData->numberOfScissorRectangles, (nullptr != realData->scissorRectangles) ? realData->scissorRectangles : reinterpret_cast<const Renderer::ScissorRectangle*>(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData)));
 			}
 
-			void SetScissorRectangles(const void* data, Renderer::IRenderer& renderer)
+			void SetGraphicsRenderTarget(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::SetScissorRectangles* realData = static_cast<const Renderer::Command::SetScissorRectangles*>(data);
-				static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).rsSetScissorRectangles(realData->numberOfScissorRectangles, (nullptr != realData->scissorRectangles) ? realData->scissorRectangles : reinterpret_cast<const Renderer::ScissorRectangle*>(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData)));
+				// Output-merger (OM) stage
+				const Renderer::Command::SetGraphicsRenderTarget* realData = static_cast<const Renderer::Command::SetGraphicsRenderTarget*>(data);
+				static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).setGraphicsRenderTarget(realData->renderTarget);
 			}
 
-			//[-------------------------------------------------------]
-			//[ Output-merger (OM) stage                              ]
-			//[-------------------------------------------------------]
-			void SetRenderTarget(const void* data, Renderer::IRenderer& renderer)
+			void ClearGraphics(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::SetRenderTarget* realData = static_cast<const Renderer::Command::SetRenderTarget*>(data);
-				static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).omSetRenderTarget(realData->renderTarget);
+				const Renderer::Command::ClearGraphics* realData = static_cast<const Renderer::Command::ClearGraphics*>(data);
+				static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).clearGraphics(realData->flags, realData->color, realData->z, realData->stencil);
 			}
 
-			//[-------------------------------------------------------]
-			//[ Operations                                            ]
-			//[-------------------------------------------------------]
-			void Clear(const void* data, Renderer::IRenderer& renderer)
+			void DrawGraphics(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::Clear* realData = static_cast<const Renderer::Command::Clear*>(data);
-				static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).clear(realData->flags, realData->color, realData->z, realData->stencil);
-			}
-
-			void ResolveMultisampleFramebuffer(const void* data, Renderer::IRenderer& renderer)
-			{
-				const Renderer::Command::ResolveMultisampleFramebuffer* realData = static_cast<const Renderer::Command::ResolveMultisampleFramebuffer*>(data);
-				static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).resolveMultisampleFramebuffer(*realData->destinationRenderTarget, *realData->sourceMultisampleFramebuffer);
-			}
-
-			void CopyResource(const void* data, Renderer::IRenderer& renderer)
-			{
-				const Renderer::Command::CopyResource* realData = static_cast<const Renderer::Command::CopyResource*>(data);
-				static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).copyResource(*realData->destinationResource, *realData->sourceResource);
-			}
-
-			//[-------------------------------------------------------]
-			//[ Draw call                                             ]
-			//[-------------------------------------------------------]
-			void Draw(const void* data, Renderer::IRenderer& renderer)
-			{
-				const Renderer::Command::Draw* realData = static_cast<const Renderer::Command::Draw*>(data);
+				const Renderer::Command::DrawGraphics* realData = static_cast<const Renderer::Command::DrawGraphics*>(data);
 				if (nullptr != realData->indirectBuffer)
 				{
-					static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).draw(*realData->indirectBuffer, realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).drawGraphics(*realData->indirectBuffer, realData->indirectBufferOffset, realData->numberOfDraws);
 				}
 				else
 				{
-					static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).drawEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).drawGraphicsEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
 				}
 			}
 
-			void DrawIndexed(const void* data, Renderer::IRenderer& renderer)
+			void DrawIndexedGraphics(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::Draw* realData = static_cast<const Renderer::Command::Draw*>(data);
+				const Renderer::Command::DrawIndexedGraphics* realData = static_cast<const Renderer::Command::DrawIndexedGraphics*>(data);
 				if (nullptr != realData->indirectBuffer)
 				{
-					static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).drawIndexed(*realData->indirectBuffer, realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).drawIndexedGraphics(*realData->indirectBuffer, realData->indirectBufferOffset, realData->numberOfDraws);
 				}
 				else
 				{
-					static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).drawIndexedEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).drawIndexedGraphicsEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
 				}
+			}
+
+			//[-------------------------------------------------------]
+			//[ Compute                                               ]
+			//[-------------------------------------------------------]
+			void DispatchCompute(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::DispatchCompute* realData = static_cast<const Renderer::Command::DispatchCompute*>(data);
+				static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).dispatchCompute(realData->groupCountX, realData->groupCountY, realData->groupCountZ);
 			}
 
 			//[-------------------------------------------------------]
@@ -15963,6 +16271,18 @@ namespace
 				{
 					RENDERER_LOG(static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).getContext(), CRITICAL, "Unsupported OpenGL texture resource type")
 				}
+			}
+
+			void ResolveMultisampleFramebuffer(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::ResolveMultisampleFramebuffer* realData = static_cast<const Renderer::Command::ResolveMultisampleFramebuffer*>(data);
+				static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).resolveMultisampleFramebuffer(*realData->destinationRenderTarget, *realData->sourceMultisampleFramebuffer);
+			}
+
+			void CopyResource(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::CopyResource* realData = static_cast<const Renderer::Command::CopyResource*>(data);
+				static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).copyResource(*realData->destinationResource, *realData->sourceResource);
 			}
 
 			//[-------------------------------------------------------]
@@ -16013,27 +16333,23 @@ namespace
 		{
 			// Command buffer
 			&BackendDispatch::ExecuteCommandBuffer,
-			// Graphics root
+			// Graphics
 			&BackendDispatch::SetGraphicsRootSignature,
+			&BackendDispatch::SetGraphicsPipelineState,
 			&BackendDispatch::SetGraphicsResourceGroup,
-			// States
-			&BackendDispatch::SetPipelineState,
-			// Input-assembler (IA) stage
-			&BackendDispatch::SetVertexArray,
-			// Rasterizer (RS) stage
-			&BackendDispatch::SetViewports,
-			&BackendDispatch::SetScissorRectangles,
-			// Output-merger (OM) stage
-			&BackendDispatch::SetRenderTarget,
-			// Operations
-			&BackendDispatch::Clear,
-			&BackendDispatch::ResolveMultisampleFramebuffer,
-			&BackendDispatch::CopyResource,
-			// Draw call
-			&BackendDispatch::Draw,
-			&BackendDispatch::DrawIndexed,
+			&BackendDispatch::SetGraphicsVertexArray,		// Input-assembler (IA) stage
+			&BackendDispatch::SetGraphicsViewports,			// Rasterizer (RS) stage
+			&BackendDispatch::SetGraphicsScissorRectangles,	// Rasterizer (RS) stage
+			&BackendDispatch::SetGraphicsRenderTarget,		// Output-merger (OM) stage
+			&BackendDispatch::ClearGraphics,
+			&BackendDispatch::DrawGraphics,
+			&BackendDispatch::DrawIndexedGraphics,
+			// Compute
+			&BackendDispatch::DispatchCompute,
 			// Resource
 			&BackendDispatch::SetTextureMinimumMaximumMipmapIndex,
+			&BackendDispatch::ResolveMultisampleFramebuffer,
+			&BackendDispatch::CopyResource,
 			// Debug
 			&BackendDispatch::SetDebugMarker,
 			&BackendDispatch::BeginDebugEvent,
@@ -16069,7 +16385,7 @@ namespace OpenGLRenderer
 		mOpenGLCopyResourceFramebuffer(0),
 		mDefaultOpenGLVertexArray(0),
 		// States
-		mPipelineState(nullptr),
+		mGraphicsPipelineState(nullptr),
 		// Input-assembler (IA) stage
 		mVertexArray(nullptr),
 		mOpenGLPrimitiveTopology(0xFFFF),	// Unknown default setting
@@ -16154,16 +16470,16 @@ namespace OpenGLRenderer
 
 	OpenGLRenderer::~OpenGLRenderer()
 	{
-		// Set no pipeline state reference, in case we have one
-		if (nullptr != mPipelineState)
+		// Set no graphics pipeline state reference, in case we have one
+		if (nullptr != mGraphicsPipelineState)
 		{
-			setPipelineState(nullptr);
+			setGraphicsPipelineState(nullptr);
 		}
 
 		// Set no vertex array reference, in case we have one
 		if (nullptr != mVertexArray)
 		{
-			iaSetVertexArray(nullptr);
+			setGraphicsVertexArray(nullptr);
 		}
 
 		// Release instances
@@ -16232,7 +16548,7 @@ namespace OpenGLRenderer
 
 
 	//[-------------------------------------------------------]
-	//[ States                                                ]
+	//[ Graphics                                              ]
 	//[-------------------------------------------------------]
 	void OpenGLRenderer::setGraphicsRootSignature(Renderer::IRootSignature* rootSignature)
 	{
@@ -16247,6 +16563,44 @@ namespace OpenGLRenderer
 
 			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
 			OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *rootSignature)
+		}
+	}
+
+	void OpenGLRenderer::setGraphicsPipelineState(Renderer::IPipelineState* graphicsPipelineState)
+	{
+		if (mGraphicsPipelineState != graphicsPipelineState)
+		{
+			if (nullptr != graphicsPipelineState)
+			{
+				// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+				OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *graphicsPipelineState)
+
+				// Set new graphics pipeline state and add a reference to it
+				if (nullptr != mGraphicsPipelineState)
+				{
+					mGraphicsPipelineState->releaseReference();
+				}
+				mGraphicsPipelineState = static_cast<PipelineState*>(graphicsPipelineState);
+				mGraphicsPipelineState->addReference();
+
+				// Set OpenGL primitive topology
+				mOpenGLPrimitiveTopology = mGraphicsPipelineState->getOpenGLPrimitiveTopology();
+				const int newNumberOfVerticesPerPatch = mGraphicsPipelineState->getNumberOfVerticesPerPatch();
+				if (0 != newNumberOfVerticesPerPatch && mNumberOfVerticesPerPatch != newNumberOfVerticesPerPatch)
+				{
+					mNumberOfVerticesPerPatch = newNumberOfVerticesPerPatch;
+					glPatchParameteri(GL_PATCH_VERTICES, mNumberOfVerticesPerPatch);
+				}
+
+				// Set graphics pipeline state
+				mGraphicsPipelineState->bindPipelineState();
+			}
+			else if (nullptr != mGraphicsPipelineState)
+			{
+				// TODO(co) Handle this situation by resetting OpenGL states?
+				mGraphicsPipelineState->releaseReference();
+				mGraphicsPipelineState = nullptr;
+			}
 		}
 	}
 
@@ -16430,6 +16784,7 @@ namespace OpenGLRenderer
 								case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 								case Renderer::ResourceType::GEOMETRY_SHADER:
 								case Renderer::ResourceType::FRAGMENT_SHADER:
+								case Renderer::ResourceType::COMPUTE_SHADER:
 									RENDERER_LOG(mContext, CRITICAL, "Invalid OpenGL renderer backend resource type")
 									break;
 							}
@@ -16547,6 +16902,7 @@ namespace OpenGLRenderer
 									case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 									case Renderer::ResourceType::GEOMETRY_SHADER:
 									case Renderer::ResourceType::FRAGMENT_SHADER:
+									case Renderer::ResourceType::COMPUTE_SHADER:
 										RENDERER_LOG(mContext, CRITICAL, "Invalid OpenGL renderer backend resource type")
 										break;
 								}
@@ -16607,6 +16963,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Renderer::ResourceType::GEOMETRY_SHADER:
 					case Renderer::ResourceType::FRAGMENT_SHADER:
+					case Renderer::ResourceType::COMPUTE_SHADER:
 						RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 11 renderer backend resource type")
 						break;
 				}
@@ -16618,50 +16975,10 @@ namespace OpenGLRenderer
 		}
 	}
 
-	void OpenGLRenderer::setPipelineState(Renderer::IPipelineState* pipelineState)
+	void OpenGLRenderer::setGraphicsVertexArray(Renderer::IVertexArray* vertexArray)
 	{
-		if (mPipelineState != pipelineState)
-		{
-			if (nullptr != pipelineState)
-			{
-				// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
-				OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *pipelineState)
+		// Input-assembler (IA) stage
 
-				// Set new pipeline state and add a reference to it
-				if (nullptr != mPipelineState)
-				{
-					mPipelineState->releaseReference();
-				}
-				mPipelineState = static_cast<PipelineState*>(pipelineState);
-				mPipelineState->addReference();
-
-				// Set OpenGL primitive topology
-				mOpenGLPrimitiveTopology = mPipelineState->getOpenGLPrimitiveTopology();
-				const int newNumberOfVerticesPerPatch = mPipelineState->getNumberOfVerticesPerPatch();
-				if (0 != newNumberOfVerticesPerPatch && mNumberOfVerticesPerPatch != newNumberOfVerticesPerPatch)
-				{
-					mNumberOfVerticesPerPatch = newNumberOfVerticesPerPatch;
-					glPatchParameteri(GL_PATCH_VERTICES, mNumberOfVerticesPerPatch);
-				}
-
-				// Set pipeline state
-				mPipelineState->bindPipelineState();
-			}
-			else if (nullptr != mPipelineState)
-			{
-				// TODO(co) Handle this situation by resetting OpenGL states?
-				mPipelineState->releaseReference();
-				mPipelineState = nullptr;
-			}
-		}
-	}
-
-
-	//[-------------------------------------------------------]
-	//[ Input-assembler (IA) stage                            ]
-	//[-------------------------------------------------------]
-	void OpenGLRenderer::iaSetVertexArray(Renderer::IVertexArray* vertexArray)
-	{
 		// New vertex array?
 		if (mVertexArray != vertexArray)
 		{
@@ -16672,7 +16989,7 @@ namespace OpenGLRenderer
 				OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *vertexArray)
 
 				// Unset the currently used vertex array
-				iaUnsetVertexArray();
+				unsetGraphicsVertexArray();
 
 				// Set new vertex array and add a reference to it
 				mVertexArray = static_cast<VertexArray*>(vertexArray);
@@ -16695,17 +17012,15 @@ namespace OpenGLRenderer
 			else
 			{
 				// Unset the currently used vertex array
-				iaUnsetVertexArray();
+				unsetGraphicsVertexArray();
 			}
 		}
 	}
 
-
-	//[-------------------------------------------------------]
-	//[ Rasterizer (RS) stage                                 ]
-	//[-------------------------------------------------------]
-	void OpenGLRenderer::rsSetViewports(MAYBE_UNUSED uint32_t numberOfViewports, const Renderer::Viewport* viewports)
+	void OpenGLRenderer::setGraphicsViewports(MAYBE_UNUSED uint32_t numberOfViewports, const Renderer::Viewport* viewports)
 	{
+		// Rasterizer (RS) stage
+
 		// Sanity check
 		RENDERER_ASSERT(mContext, numberOfViewports > 0 && nullptr != viewports, "Invalid OpenGL rasterizer state viewports")
 
@@ -16722,15 +17037,17 @@ namespace OpenGLRenderer
 		}
 
 		// Set the OpenGL viewport
-		// TODO(co) "GL_ARB_viewport_array" support ("OpenGLRenderer::rsSetViewports()")
+		// TODO(co) "GL_ARB_viewport_array" support ("OpenGLRenderer::setGraphicsViewports()")
 		// TODO(co) Check for "numberOfViewports" out of range or are the debug events good enough?
 		RENDERER_ASSERT(mContext, numberOfViewports <= 1, "OpenGL supports only one viewport")
 		glViewport(static_cast<GLint>(viewports->topLeftX), static_cast<GLint>(renderTargetHeight - viewports->topLeftY - viewports->height), static_cast<GLsizei>(viewports->width), static_cast<GLsizei>(viewports->height));
 		glDepthRange(static_cast<GLclampf>(viewports->minDepth), static_cast<GLclampf>(viewports->maxDepth));
 	}
 
-	void OpenGLRenderer::rsSetScissorRectangles(MAYBE_UNUSED uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles)
+	void OpenGLRenderer::setGraphicsScissorRectangles(MAYBE_UNUSED uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles)
 	{
+		// Rasterizer (RS) stage
+
 		// Sanity check
 		RENDERER_ASSERT(mContext, numberOfScissorRectangles > 0 && nullptr != scissorRectangles, "Invalid OpenGL rasterizer state scissor rectangles")
 
@@ -16747,7 +17064,7 @@ namespace OpenGLRenderer
 		}
 
 		// Set the OpenGL scissor rectangle
-		// TODO(co) "GL_ARB_viewport_array" support ("OpenGLRenderer::rsSetViewports()")
+		// TODO(co) "GL_ARB_viewport_array" support ("OpenGLRenderer::setGraphicsViewports()")
 		// TODO(co) Check for "numberOfViewports" out of range or are the debug events good enough?
 		RENDERER_ASSERT(mContext, numberOfScissorRectangles <= 1, "OpenGL supports only one scissor rectangle")
 		const GLsizei width  = scissorRectangles->bottomRightX - scissorRectangles->topLeftX;
@@ -16755,12 +17072,10 @@ namespace OpenGLRenderer
 		glScissor(static_cast<GLint>(scissorRectangles->topLeftX), static_cast<GLint>(renderTargetHeight - scissorRectangles->topLeftY - height), width, height);
 	}
 
-
-	//[-------------------------------------------------------]
-	//[ Output-merger (OM) stage                              ]
-	//[-------------------------------------------------------]
-	void OpenGLRenderer::omSetRenderTarget(Renderer::IRenderTarget* renderTarget)
+	void OpenGLRenderer::setGraphicsRenderTarget(Renderer::IRenderTarget* renderTarget)
 	{
+		// Output-merger (OM) stage
+
 		// New render target?
 		if (mRenderTarget != renderTarget)
 		{
@@ -16871,6 +17186,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Renderer::ResourceType::GEOMETRY_SHADER:
 					case Renderer::ResourceType::FRAGMENT_SHADER:
+					case Renderer::ResourceType::COMPUTE_SHADER:
 					default:
 						// Not handled in here
 						break;
@@ -16909,11 +17225,7 @@ namespace OpenGLRenderer
 		}
 	}
 
-
-	//[-------------------------------------------------------]
-	//[ Operations                                            ]
-	//[-------------------------------------------------------]
-	void OpenGLRenderer::clear(uint32_t flags, const float color[4], float z, uint32_t stencil)
+	void OpenGLRenderer::clearGraphics(uint32_t flags, const float color[4], float z, uint32_t stencil)
 	{
 		// Get API flags
 		uint32_t flagsApi = 0;
@@ -16941,7 +17253,7 @@ namespace OpenGLRenderer
 			if (flags & Renderer::ClearFlag::DEPTH)
 			{
 				glClearDepth(z);
-				if (nullptr != mPipelineState && Renderer::DepthWriteMask::ALL != mPipelineState->getDepthStencilState().depthWriteMask)
+				if (nullptr != mGraphicsPipelineState && Renderer::DepthWriteMask::ALL != mGraphicsPipelineState->getDepthStencilState().depthWriteMask)
 				{
 					glDepthMask(GL_TRUE);
 				}
@@ -16955,7 +17267,7 @@ namespace OpenGLRenderer
 			// -> We have to compensate the OpenGL behaviour in here
 
 			// Disable OpenGL scissor test, in case it's not disabled, yet
-			if (nullptr != mPipelineState && mPipelineState->getRasterizerState().scissorEnable)
+			if (nullptr != mGraphicsPipelineState && mGraphicsPipelineState->getRasterizerState().scissorEnable)
 			{
 				glDisable(GL_SCISSOR_TEST);
 			}
@@ -16964,183 +17276,18 @@ namespace OpenGLRenderer
 			glClear(flagsApi);
 
 			// Restore the previously set OpenGL states
-			if (nullptr != mPipelineState && mPipelineState->getRasterizerState().scissorEnable)
+			if (nullptr != mGraphicsPipelineState && mGraphicsPipelineState->getRasterizerState().scissorEnable)
 			{
 				glEnable(GL_SCISSOR_TEST);
 			}
-			if ((flags & Renderer::ClearFlag::DEPTH) && nullptr != mPipelineState && Renderer::DepthWriteMask::ALL != mPipelineState->getDepthStencilState().depthWriteMask)
+			if ((flags & Renderer::ClearFlag::DEPTH) && nullptr != mGraphicsPipelineState && Renderer::DepthWriteMask::ALL != mGraphicsPipelineState->getDepthStencilState().depthWriteMask)
 			{
 				glDepthMask(GL_FALSE);
 			}
 		}
 	}
 
-	void OpenGLRenderer::resolveMultisampleFramebuffer(Renderer::IRenderTarget& destinationRenderTarget, Renderer::IFramebuffer& sourceMultisampleFramebuffer)
-	{
-		// Security check: Are the given resources owned by this renderer? (calls "return" in case of a mismatch)
-		OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, destinationRenderTarget)
-		OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, sourceMultisampleFramebuffer)
-
-		// Evaluate the render target type
-		switch (destinationRenderTarget.getResourceType())
-		{
-			case Renderer::ResourceType::SWAP_CHAIN:
-			{
-				// Get the OpenGL swap chain instance
-				// TODO(co) Implement me, not that important in practice so not directly implemented
-				// SwapChain& swapChain = static_cast<SwapChain&>(destinationRenderTarget);
-				break;
-			}
-
-			case Renderer::ResourceType::FRAMEBUFFER:
-			{
-				// Get the OpenGL framebuffer instances
-				const Framebuffer& openGLDestinationFramebuffer = static_cast<const Framebuffer&>(destinationRenderTarget);
-				const Framebuffer& openGLSourceMultisampleFramebuffer = static_cast<const Framebuffer&>(sourceMultisampleFramebuffer);
-
-				// Get the width and height of the destination and source framebuffer
-				uint32_t destinationWidth = 1;
-				uint32_t destinationHeight = 1;
-				openGLDestinationFramebuffer.getWidthAndHeight(destinationWidth, destinationHeight);
-				uint32_t sourceWidth = 1;
-				uint32_t sourceHeight = 1;
-				openGLSourceMultisampleFramebuffer.getWidthAndHeight(sourceWidth, sourceHeight);
-
-				// Resolve multisample
-				glBindFramebuffer(GL_READ_FRAMEBUFFER, openGLSourceMultisampleFramebuffer.getOpenGLFramebuffer());
-				glBindFramebuffer(GL_DRAW_FRAMEBUFFER, openGLDestinationFramebuffer.getOpenGLFramebuffer());
-				glBlitFramebuffer(
-					0, 0, static_cast<GLint>(sourceWidth), static_cast<GLint>(sourceHeight),			// Source
-					0, 0, static_cast<GLint>(destinationWidth), static_cast<GLint>(destinationHeight),	// Destination
-					GL_COLOR_BUFFER_BIT, GL_NEAREST);
-				break;
-			}
-
-			case Renderer::ResourceType::ROOT_SIGNATURE:
-			case Renderer::ResourceType::RESOURCE_GROUP:
-			case Renderer::ResourceType::PROGRAM:
-			case Renderer::ResourceType::VERTEX_ARRAY:
-			case Renderer::ResourceType::RENDER_PASS:
-			case Renderer::ResourceType::INDEX_BUFFER:
-			case Renderer::ResourceType::VERTEX_BUFFER:
-			case Renderer::ResourceType::UNIFORM_BUFFER:
-			case Renderer::ResourceType::TEXTURE_BUFFER:
-			case Renderer::ResourceType::INDIRECT_BUFFER:
-			case Renderer::ResourceType::TEXTURE_1D:
-			case Renderer::ResourceType::TEXTURE_2D:
-			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
-			case Renderer::ResourceType::TEXTURE_3D:
-			case Renderer::ResourceType::TEXTURE_CUBE:
-			case Renderer::ResourceType::PIPELINE_STATE:
-			case Renderer::ResourceType::SAMPLER_STATE:
-			case Renderer::ResourceType::VERTEX_SHADER:
-			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
-			case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
-			case Renderer::ResourceType::GEOMETRY_SHADER:
-			case Renderer::ResourceType::FRAGMENT_SHADER:
-			default:
-				// Not handled in here
-				break;
-		}
-	}
-
-	void OpenGLRenderer::copyResource(Renderer::IResource& destinationResource, Renderer::IResource& sourceResource)
-	{
-		// Security check: Are the given resources owned by this renderer? (calls "return" in case of a mismatch)
-		OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, destinationResource)
-		OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, sourceResource)
-
-		// Evaluate the render target type
-		switch (destinationResource.getResourceType())
-		{
-			case Renderer::ResourceType::TEXTURE_2D:
-				if (sourceResource.getResourceType() == Renderer::ResourceType::TEXTURE_2D)
-				{
-					// Get the OpenGL texture 2D instances
-					const Texture2D& openGlDestinationTexture2D = static_cast<const Texture2D&>(destinationResource);
-					const Texture2D& openGlSourceTexture2D = static_cast<const Texture2D&>(sourceResource);
-					RENDERER_ASSERT(mContext, openGlDestinationTexture2D.getWidth() == openGlSourceTexture2D.getWidth(), "OpenGL source and destination width must be identical for resource copy")
-					RENDERER_ASSERT(mContext, openGlDestinationTexture2D.getHeight() == openGlSourceTexture2D.getHeight(), "OpenGL source and destination height must be identical for resource copy")
-
-					// Copy resource, but only the top-level mipmap
-					const GLsizei width = static_cast<GLsizei>(openGlDestinationTexture2D.getWidth());
-					const GLsizei height = static_cast<GLsizei>(openGlDestinationTexture2D.getHeight());
-					if (mExtensions->isGL_ARB_copy_image())
-					{
-						glCopyImageSubData(openGlSourceTexture2D.getOpenGLTexture(), GL_TEXTURE_2D, 0, 0, 0, 0,
-										   openGlDestinationTexture2D.getOpenGLTexture(), GL_TEXTURE_2D, 0, 0, 0, 0,
-										   width, height, 1);
-					}
-					else
-					{
-						#ifdef RENDERER_OPENGL_STATE_CLEANUP
-							// Backup the currently bound OpenGL framebuffer
-							GLint openGLFramebufferBackup = 0;
-							glGetIntegerv(GL_FRAMEBUFFER_BINDING, &openGLFramebufferBackup);
-						#endif
-
-						// Copy resource by using a framebuffer, but only the top-level mipmap
-						if (0 == mOpenGLCopyResourceFramebuffer)
-						{
-							glGenFramebuffers(1, &mOpenGLCopyResourceFramebuffer);
-						}
-						glBindFramebuffer(GL_FRAMEBUFFER, mOpenGLCopyResourceFramebuffer);
-						glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, openGlSourceTexture2D.getOpenGLTexture(), 0);
-						glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, openGlDestinationTexture2D.getOpenGLTexture(), 0);
-						static constexpr GLenum OPENGL_DRAW_BUFFER[1] =
-						{
-							GL_COLOR_ATTACHMENT1
-						};
-						glDrawBuffersARB(1, OPENGL_DRAW_BUFFER);	// We could use "glDrawBuffer(GL_COLOR_ATTACHMENT1);", but then we would also have to get the "glDrawBuffer()" function pointer, avoid OpenGL function overkill
-						glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
-						#ifdef RENDERER_OPENGL_STATE_CLEANUP
-							// Be polite and restore the previous bound OpenGL framebuffer
-							glBindFramebuffer(GL_FRAMEBUFFER, static_cast<GLuint>(openGLFramebufferBackup));
-						#endif
-					}
-				}
-				else
-				{
-					// Error!
-					RENDERER_ASSERT(mContext, false, "Failed to copy OpenGL resource")
-				}
-				break;
-
-			case Renderer::ResourceType::ROOT_SIGNATURE:
-			case Renderer::ResourceType::RESOURCE_GROUP:
-			case Renderer::ResourceType::PROGRAM:
-			case Renderer::ResourceType::VERTEX_ARRAY:
-			case Renderer::ResourceType::RENDER_PASS:
-			case Renderer::ResourceType::SWAP_CHAIN:
-			case Renderer::ResourceType::FRAMEBUFFER:
-			case Renderer::ResourceType::INDEX_BUFFER:
-			case Renderer::ResourceType::VERTEX_BUFFER:
-			case Renderer::ResourceType::UNIFORM_BUFFER:
-			case Renderer::ResourceType::TEXTURE_BUFFER:
-			case Renderer::ResourceType::INDIRECT_BUFFER:
-			case Renderer::ResourceType::TEXTURE_1D:
-			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
-			case Renderer::ResourceType::TEXTURE_3D:
-			case Renderer::ResourceType::TEXTURE_CUBE:
-			case Renderer::ResourceType::PIPELINE_STATE:
-			case Renderer::ResourceType::SAMPLER_STATE:
-			case Renderer::ResourceType::VERTEX_SHADER:
-			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
-			case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
-			case Renderer::ResourceType::GEOMETRY_SHADER:
-			case Renderer::ResourceType::FRAGMENT_SHADER:
-			default:
-				// Not handled in here
-				break;
-		}
-	}
-
-
-	//[-------------------------------------------------------]
-	//[ Draw call                                             ]
-	//[-------------------------------------------------------]
-	void OpenGLRenderer::draw(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
+	void OpenGLRenderer::drawGraphics(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
 		// Sanity check
 		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of OpenGL draws must not be zero")
@@ -17190,7 +17337,7 @@ namespace OpenGLRenderer
 		}
 	}
 
-	void OpenGLRenderer::drawEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
+	void OpenGLRenderer::drawGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
 		// Sanity checks
 		RENDERER_ASSERT(mContext, nullptr != emulationData, "The OpenGL emulation data must be valid")
@@ -17241,7 +17388,7 @@ namespace OpenGLRenderer
 		#endif
 	}
 
-	void OpenGLRenderer::drawIndexed(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
+	void OpenGLRenderer::drawIndexedGraphics(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
 		// Sanity checks
 		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of OpenGL draws must not be zero")
@@ -17293,7 +17440,7 @@ namespace OpenGLRenderer
 		}
 	}
 
-	void OpenGLRenderer::drawIndexedEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
+	void OpenGLRenderer::drawIndexedGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
 		// Sanity checks
 		RENDERER_ASSERT(mContext, nullptr != emulationData, "The OpenGL emulation data must be valid")
@@ -17387,6 +17534,186 @@ namespace OpenGLRenderer
 				endDebugEvent();
 			}
 		#endif
+	}
+
+
+	//[-------------------------------------------------------]
+	//[ Compute                                               ]
+	//[-------------------------------------------------------]
+	void OpenGLRenderer::dispatchCompute(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
+	{
+		// "GL_ARB_compute_shader"-extension required
+		if (mExtensions->isGL_ARB_compute_shader())
+		{
+			glDispatchCompute(groupCountX, groupCountY, groupCountZ);
+		}
+	}
+
+
+	//[-------------------------------------------------------]
+	//[ Resource                                              ]
+	//[-------------------------------------------------------]
+	void OpenGLRenderer::resolveMultisampleFramebuffer(Renderer::IRenderTarget& destinationRenderTarget, Renderer::IFramebuffer& sourceMultisampleFramebuffer)
+	{
+		// Security check: Are the given resources owned by this renderer? (calls "return" in case of a mismatch)
+		OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, destinationRenderTarget)
+		OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, sourceMultisampleFramebuffer)
+
+		// Evaluate the render target type
+		switch (destinationRenderTarget.getResourceType())
+		{
+			case Renderer::ResourceType::SWAP_CHAIN:
+			{
+				// Get the OpenGL swap chain instance
+				// TODO(co) Implement me, not that important in practice so not directly implemented
+				// SwapChain& swapChain = static_cast<SwapChain&>(destinationRenderTarget);
+				break;
+			}
+
+			case Renderer::ResourceType::FRAMEBUFFER:
+			{
+				// Get the OpenGL framebuffer instances
+				const Framebuffer& openGLDestinationFramebuffer = static_cast<const Framebuffer&>(destinationRenderTarget);
+				const Framebuffer& openGLSourceMultisampleFramebuffer = static_cast<const Framebuffer&>(sourceMultisampleFramebuffer);
+
+				// Get the width and height of the destination and source framebuffer
+				uint32_t destinationWidth = 1;
+				uint32_t destinationHeight = 1;
+				openGLDestinationFramebuffer.getWidthAndHeight(destinationWidth, destinationHeight);
+				uint32_t sourceWidth = 1;
+				uint32_t sourceHeight = 1;
+				openGLSourceMultisampleFramebuffer.getWidthAndHeight(sourceWidth, sourceHeight);
+
+				// Resolve multisample
+				glBindFramebuffer(GL_READ_FRAMEBUFFER, openGLSourceMultisampleFramebuffer.getOpenGLFramebuffer());
+				glBindFramebuffer(GL_DRAW_FRAMEBUFFER, openGLDestinationFramebuffer.getOpenGLFramebuffer());
+				glBlitFramebuffer(
+					0, 0, static_cast<GLint>(sourceWidth), static_cast<GLint>(sourceHeight),			// Source
+					0, 0, static_cast<GLint>(destinationWidth), static_cast<GLint>(destinationHeight),	// Destination
+					GL_COLOR_BUFFER_BIT, GL_NEAREST);
+				break;
+			}
+
+			case Renderer::ResourceType::ROOT_SIGNATURE:
+			case Renderer::ResourceType::RESOURCE_GROUP:
+			case Renderer::ResourceType::PROGRAM:
+			case Renderer::ResourceType::VERTEX_ARRAY:
+			case Renderer::ResourceType::RENDER_PASS:
+			case Renderer::ResourceType::INDEX_BUFFER:
+			case Renderer::ResourceType::VERTEX_BUFFER:
+			case Renderer::ResourceType::UNIFORM_BUFFER:
+			case Renderer::ResourceType::TEXTURE_BUFFER:
+			case Renderer::ResourceType::INDIRECT_BUFFER:
+			case Renderer::ResourceType::TEXTURE_1D:
+			case Renderer::ResourceType::TEXTURE_2D:
+			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
+			case Renderer::ResourceType::TEXTURE_3D:
+			case Renderer::ResourceType::TEXTURE_CUBE:
+			case Renderer::ResourceType::PIPELINE_STATE:
+			case Renderer::ResourceType::SAMPLER_STATE:
+			case Renderer::ResourceType::VERTEX_SHADER:
+			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
+			case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
+			case Renderer::ResourceType::GEOMETRY_SHADER:
+			case Renderer::ResourceType::FRAGMENT_SHADER:
+			case Renderer::ResourceType::COMPUTE_SHADER:
+			default:
+				// Not handled in here
+				break;
+		}
+	}
+
+	void OpenGLRenderer::copyResource(Renderer::IResource& destinationResource, Renderer::IResource& sourceResource)
+	{
+		// Security check: Are the given resources owned by this renderer? (calls "return" in case of a mismatch)
+		OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, destinationResource)
+		OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, sourceResource)
+
+		// Evaluate the render target type
+		switch (destinationResource.getResourceType())
+		{
+			case Renderer::ResourceType::TEXTURE_2D:
+				if (sourceResource.getResourceType() == Renderer::ResourceType::TEXTURE_2D)
+				{
+					// Get the OpenGL texture 2D instances
+					const Texture2D& openGlDestinationTexture2D = static_cast<const Texture2D&>(destinationResource);
+					const Texture2D& openGlSourceTexture2D = static_cast<const Texture2D&>(sourceResource);
+					RENDERER_ASSERT(mContext, openGlDestinationTexture2D.getWidth() == openGlSourceTexture2D.getWidth(), "OpenGL source and destination width must be identical for resource copy")
+					RENDERER_ASSERT(mContext, openGlDestinationTexture2D.getHeight() == openGlSourceTexture2D.getHeight(), "OpenGL source and destination height must be identical for resource copy")
+
+					// Copy resource, but only the top-level mipmap
+					const GLsizei width = static_cast<GLsizei>(openGlDestinationTexture2D.getWidth());
+					const GLsizei height = static_cast<GLsizei>(openGlDestinationTexture2D.getHeight());
+					if (mExtensions->isGL_ARB_copy_image())
+					{
+						glCopyImageSubData(openGlSourceTexture2D.getOpenGLTexture(), GL_TEXTURE_2D, 0, 0, 0, 0,
+										   openGlDestinationTexture2D.getOpenGLTexture(), GL_TEXTURE_2D, 0, 0, 0, 0,
+										   width, height, 1);
+					}
+					else
+					{
+						#ifdef RENDERER_OPENGL_STATE_CLEANUP
+							// Backup the currently bound OpenGL framebuffer
+							GLint openGLFramebufferBackup = 0;
+							glGetIntegerv(GL_FRAMEBUFFER_BINDING, &openGLFramebufferBackup);
+						#endif
+
+						// Copy resource by using a framebuffer, but only the top-level mipmap
+						if (0 == mOpenGLCopyResourceFramebuffer)
+						{
+							glGenFramebuffers(1, &mOpenGLCopyResourceFramebuffer);
+						}
+						glBindFramebuffer(GL_FRAMEBUFFER, mOpenGLCopyResourceFramebuffer);
+						glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, openGlSourceTexture2D.getOpenGLTexture(), 0);
+						glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, openGlDestinationTexture2D.getOpenGLTexture(), 0);
+						static constexpr GLenum OPENGL_DRAW_BUFFER[1] =
+						{
+							GL_COLOR_ATTACHMENT1
+						};
+						glDrawBuffersARB(1, OPENGL_DRAW_BUFFER);	// We could use "glDrawBuffer(GL_COLOR_ATTACHMENT1);", but then we would also have to get the "glDrawBuffer()" function pointer, avoid OpenGL function overkill
+						glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+						#ifdef RENDERER_OPENGL_STATE_CLEANUP
+							// Be polite and restore the previous bound OpenGL framebuffer
+							glBindFramebuffer(GL_FRAMEBUFFER, static_cast<GLuint>(openGLFramebufferBackup));
+						#endif
+					}
+				}
+				else
+				{
+					// Error!
+					RENDERER_ASSERT(mContext, false, "Failed to copy OpenGL resource")
+				}
+				break;
+
+			case Renderer::ResourceType::ROOT_SIGNATURE:
+			case Renderer::ResourceType::RESOURCE_GROUP:
+			case Renderer::ResourceType::PROGRAM:
+			case Renderer::ResourceType::VERTEX_ARRAY:
+			case Renderer::ResourceType::RENDER_PASS:
+			case Renderer::ResourceType::SWAP_CHAIN:
+			case Renderer::ResourceType::FRAMEBUFFER:
+			case Renderer::ResourceType::INDEX_BUFFER:
+			case Renderer::ResourceType::VERTEX_BUFFER:
+			case Renderer::ResourceType::UNIFORM_BUFFER:
+			case Renderer::ResourceType::TEXTURE_BUFFER:
+			case Renderer::ResourceType::INDIRECT_BUFFER:
+			case Renderer::ResourceType::TEXTURE_1D:
+			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
+			case Renderer::ResourceType::TEXTURE_3D:
+			case Renderer::ResourceType::TEXTURE_CUBE:
+			case Renderer::ResourceType::PIPELINE_STATE:
+			case Renderer::ResourceType::SAMPLER_STATE:
+			case Renderer::ResourceType::VERTEX_SHADER:
+			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
+			case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
+			case Renderer::ResourceType::GEOMETRY_SHADER:
+			case Renderer::ResourceType::FRAGMENT_SHADER:
+			case Renderer::ResourceType::COMPUTE_SHADER:
+			default:
+				// Not handled in here
+				break;
+		}
 	}
 
 
@@ -17732,6 +18059,7 @@ namespace OpenGLRenderer
 			case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 			case Renderer::ResourceType::GEOMETRY_SHADER:
 			case Renderer::ResourceType::FRAGMENT_SHADER:
+			case Renderer::ResourceType::COMPUTE_SHADER:
 			default:
 				// Nothing we can map, set known return values
 				mappedSubresource.data		 = nullptr;
@@ -17893,6 +18221,7 @@ namespace OpenGLRenderer
 			case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 			case Renderer::ResourceType::GEOMETRY_SHADER:
 			case Renderer::ResourceType::FRAGMENT_SHADER:
+			case Renderer::ResourceType::COMPUTE_SHADER:
 			default:
 				// Nothing we can unmap
 				break;
@@ -17934,10 +18263,10 @@ namespace OpenGLRenderer
 	void OpenGLRenderer::endScene()
 	{
 		// We need to forget about the currently set render target
-		omSetRenderTarget(nullptr);
+		setGraphicsRenderTarget(nullptr);
 
 		// We need to forget about the currently set vertex array
-		iaUnsetVertexArray();
+		unsetGraphicsVertexArray();
 	}
 
 
@@ -18102,7 +18431,7 @@ namespace OpenGLRenderer
 		mCapabilities.preferredSwapChainDepthStencilTextureFormat = Renderer::TextureFormat::Enum::D32_FLOAT;
 
 		// Maximum number of viewports (always at least 1)
-		// TODO(co) "GL_ARB_viewport_array" support ("OpenGLRenderer::rsSetViewports()")
+		// TODO(co) "GL_ARB_viewport_array" support ("OpenGLRenderer::setGraphicsViewports()")
 		mCapabilities.maximumNumberOfViewports = 1;	// TODO(co) GL_ARB_viewport_array
 
 		// Maximum number of simultaneous render targets (if <1 render to texture is not supported, "GL_ARB_draw_buffers" required)
@@ -18239,9 +18568,12 @@ namespace OpenGLRenderer
 
 		// Is there support for fragment shaders (FS)?
 		mCapabilities.fragmentShader = mExtensions->isGL_ARB_fragment_shader();
+
+		// Is there support for compute shaders (CS)?
+		mCapabilities.computeShader = mExtensions->isGL_ARB_compute_shader();
 	}
 
-	void OpenGLRenderer::iaUnsetVertexArray()
+	void OpenGLRenderer::unsetGraphicsVertexArray()
 	{
 		// Release the currently used vertex array reference, in case we have one
 		if (nullptr != mVertexArray)

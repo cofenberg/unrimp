@@ -338,6 +338,7 @@ namespace Renderer
 			class ITessellationEvaluationShader;
 			class IGeometryShader;
 			class IFragmentShader;
+			class IComputeShader;
 }
 
 
@@ -1147,7 +1148,8 @@ namespace Renderer
 		TESSELLATION_CONTROL_SHADER	   = 20,	///< Tessellation control shader (TCS, "hull shader" in Direct3D terminology)
 		TESSELLATION_EVALUATION_SHADER = 21,	///< Tessellation evaluation shader (TES, "domain shader" in Direct3D terminology)
 		GEOMETRY_SHADER				   = 22,	///< Geometry shader (GS)
-		FRAGMENT_SHADER				   = 23		///< Fragment shader (FS, "pixel shader" in Direct3D terminology)
+		FRAGMENT_SHADER				   = 23,	///< Fragment shader (FS, "pixel shader" in Direct3D terminology)
+		COMPUTE_SHADER				   = 24		///< Compute shader (CS)
 	};
 
 
@@ -1287,7 +1289,10 @@ namespace Renderer
 		TESSELLATION_CONTROL    = 2,
 		TESSELLATION_EVALUATION = 3,
 		GEOMETRY                = 4,
-		FRAGMENT                = 5
+		FRAGMENT                = 5,
+		// The rest is not part of "D3D12_SHADER_VISIBILITY"
+		COMPUTE                 = 6,
+		ALL_GRAPHICS            = 7
 	};
 
 	/**
@@ -2690,7 +2695,7 @@ namespace Renderer
 	*    - This also means that "int" is used over "bool" because in Direct3D it's defined this way
 	*    - If you want to know how the default values were chosen, have a look into the "Renderer::RasterizerStateBuilder::getDefaultRasterizerState()"-implementation
 	*    - Lookout! In Direct3D 12 the scissor test can't be deactivated and hence one always needs to set a valid scissor rectangle.
-	*      Use the convenience "Renderer::Command::SetViewportAndScissorRectangle"-command if possible to not walk into this Direct3D 12 trap.
+	*      Use the convenience "Renderer::Command::SetGraphicsViewportAndScissorRectangle"-command if possible to not walk into this Direct3D 12 trap.
 	*
 	*  @see
 	*    - "D3D12_RASTERIZER_DESC"-documentation for details
@@ -3557,6 +3562,8 @@ namespace Renderer
 		uint32_t			maximumNumberOfGsOutputVertices;				///< Maximum number of vertices a geometry shader (GS) can emit (usually 0 for no geometry shader support or 1024)
 		// Fragment-shader (FS) stage
 		bool				fragmentShader;									///< Is there support for fragment shaders (FS)?
+		// Compute-shader (CS)
+		bool				computeShader;									///< Is there support for compute shaders (CS)?
 
 	// Public methods
 	public:
@@ -3588,7 +3595,8 @@ namespace Renderer
 			vertexShader(false),
 			maximumNumberOfPatchVertices(0),
 			maximumNumberOfGsOutputVertices(0),
-			fragmentShader(false)
+			fragmentShader(false),
+			computeShader(false)
 		{}
 
 		/**
@@ -3679,6 +3687,8 @@ namespace Renderer
 			std::atomic<uint32_t> numberOfCreatedGeometryShaders;				///< Number of created geometry shader (GS) instances
 			std::atomic<uint32_t> currentNumberOfFragmentShaders;				///< Current number of fragment shader (FS, "pixel shader" in Direct3D terminology) instances
 			std::atomic<uint32_t> numberOfCreatedFragmentShaders;				///< Number of created fragment shader (FS, "pixel shader" in Direct3D terminology) instances
+			std::atomic<uint32_t> currentNumberOfComputeShaders;				///< Current number of compute shader (CS) instances
+			std::atomic<uint32_t> numberOfCreatedComputeShaders;				///< Number of created compute shader (CS) instances
 
 		// Public methods
 		public:
@@ -3739,7 +3749,9 @@ namespace Renderer
 				currentNumberOfGeometryShaders(0),
 				numberOfCreatedGeometryShaders(0),
 				currentNumberOfFragmentShaders(0),
-				numberOfCreatedFragmentShaders(0)
+				numberOfCreatedFragmentShaders(0),
+				currentNumberOfComputeShaders(0),
+				numberOfCreatedComputeShaders(0)
 			{}
 
 			/**
@@ -3791,7 +3803,8 @@ namespace Renderer
 						currentNumberOfTessellationControlShaders +
 						currentNumberOfTessellationEvaluationShaders +
 						currentNumberOfGeometryShaders +
-						currentNumberOfFragmentShaders;
+						currentNumberOfFragmentShaders +
+						currentNumberOfComputeShaders;
 			}
 
 			/**
@@ -3844,6 +3857,7 @@ namespace Renderer
 				RENDERER_LOG(context, INFORMATION, "Tessellation evaluation shaders: %d", currentNumberOfTessellationEvaluationShaders.load())
 				RENDERER_LOG(context, INFORMATION, "Geometry shaders: %d", currentNumberOfGeometryShaders.load())
 				RENDERER_LOG(context, INFORMATION, "Fragment shaders: %d", currentNumberOfFragmentShaders.load())
+				RENDERER_LOG(context, INFORMATION, "Compute shaders: %d", currentNumberOfComputeShaders.load())
 
 				// End
 				RENDERER_LOG(context, INFORMATION, "***************************************************")
@@ -3911,6 +3925,7 @@ namespace Renderer
 		friend class ITessellationEvaluationShader;
 		friend class IGeometryShader;
 		friend class IFragmentShader;
+		friend class IComputeShader;
 
 	// Public methods
 	public:
@@ -4755,6 +4770,43 @@ namespace Renderer
 		*    - "Renderer::IShaderLanguage::createVertexShader()" for more information
 		*/
 		virtual IFragmentShader* createFragmentShaderFromSourceCode(const ShaderSourceCode& shaderSourceCode, ShaderBytecode* shaderBytecode = nullptr) = 0;
+
+		/**
+		*  @brief
+		*    Create a compute shader from shader bytecode
+		*
+		*  @param[in] shaderBytecode
+		*    Shader bytecode
+		*
+		*  @return
+		*    The created compute shader, a null pointer on error. Release the returned instance if you no longer need it.
+		*
+		*  @note
+		*    - Only supported if "Renderer::Capabilities::computeShader" is "true"
+		*    - The data the given pointers are pointing to is internally copied and you have to free your memory if you no longer need it
+		*/
+		virtual IComputeShader* createComputeShaderFromBytecode(const ShaderBytecode& shaderBytecode) = 0;
+
+		/**
+		*  @brief
+		*    Create a compute shader from shader source code
+		*
+		*  @param[in] shaderSourceCode
+		*    Shader source code
+		*  @param[out] shaderBytecode
+		*    If not a null pointer, receives the shader bytecode in case the used renderer API supports this feature
+		*
+		*  @return
+		*    The created compute shader, a null pointer on error. Release the returned instance if you no longer need it.
+		*
+		*  @note
+		*    - Only supported if "Renderer::Capabilities::computeShader" is "true"
+		*    - The data the given pointers are pointing to is internally copied and you have to free your memory if you no longer need it
+		*
+		*  @see
+		*    - "Renderer::IShaderLanguage::createVertexShader()" for more information
+		*/
+		virtual IComputeShader* createComputeShaderFromSourceCode(const ShaderSourceCode& shaderSourceCode, ShaderBytecode* shaderBytecode = nullptr) = 0;
 
 		/**
 		*  @brief
@@ -7537,33 +7589,86 @@ namespace Renderer
 
 
 	//[-------------------------------------------------------]
+	//[ Renderer/Shader/IComputeShader.h                      ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Abstract compute shader (CS) interface
+	*/
+	class IComputeShader : public IShader
+	{
+
+	// Public methods
+	public:
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~IComputeShader() override
+		{
+			#ifdef RENDERER_STATISTICS
+				// Update the statistics
+				--getRenderer().getStatistics().currentNumberOfComputeShaders;
+			#endif
+		}
+
+	// Protected methods
+	protected:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] renderer
+		*    Owner renderer instance
+		*/
+		inline explicit IComputeShader(IRenderer& renderer) :
+			IShader(ResourceType::COMPUTE_SHADER, renderer)
+		{
+			#ifdef RENDERER_STATISTICS
+				// Update the statistics
+				++getRenderer().getStatistics().numberOfCreatedComputeShaders;
+				++getRenderer().getStatistics().currentNumberOfComputeShaders;
+			#endif
+		}
+
+		explicit IComputeShader(const IComputeShader& source) = delete;
+		IComputeShader& operator =(const IComputeShader& source) = delete;
+
+	};
+
+	typedef SmartRefCount<IComputeShader> IComputeShaderPtr;
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ Renderer/Buffer/CommandBuffer.h                       ]
 	//[-------------------------------------------------------]
 	enum CommandDispatchFunctionIndex : uint8_t
 	{
 		// Command buffer
 		ExecuteCommandBuffer = 0,
-		// Graphics root
+		// Graphics
 		SetGraphicsRootSignature,
+		SetGraphicsPipelineState,
 		SetGraphicsResourceGroup,
-		// States
-		SetPipelineState,
-		// Input-assembler (IA) stage
-		SetVertexArray,
-		// Rasterizer (RS) stage
-		SetViewports,
-		SetScissorRectangles,
-		// Output-merger (OM) stage
-		SetRenderTarget,
-		// Operations
-		Clear,
+		SetGraphicsVertexArray,			// Input-assembler (IA) stage
+		SetGraphicsViewports,			// Rasterizer (RS) stage
+		SetGraphicsScissorRectangles,	// Rasterizer (RS) stage
+		SetGraphicsRenderTarget,		// Output-merger (OM) stage
+		ClearGraphics,
+		DrawGraphics,
+		DrawIndexedGraphics,
+		// Compute
+		// SetComputeRootSignature,	// TODO(co) Compute shader support is work-in-progress
+		// SetComputePipelineState,	// TODO(co) Compute shader support is work-in-progress
+		// SetComputeResourceGroup,	// TODO(co) Compute shader support is work-in-progress
+		DispatchCompute,
+		// Resource
+		// SetMemoryBarrier,	// TODO(co) Compute shader support is work-in-progress
+		SetTextureMinimumMaximumMipmapIndex,
 		ResolveMultisampleFramebuffer,
 		CopyResource,
-		// Draw call
-		Draw,
-		DrawIndexed,
-		// Resource
-		SetTextureMinimumMaximumMipmapIndex,
 		// Debug
 		SetDebugMarker,
 		BeginDebugEvent,
@@ -7978,7 +8083,7 @@ namespace Renderer
 		};
 
 		//[-------------------------------------------------------]
-		//[ Graphics root                                         ]
+		//[ Graphics                                              ]
 		//[-------------------------------------------------------]
 		/**
 		*  @brief
@@ -8002,6 +8107,30 @@ namespace Renderer
 			IRootSignature* rootSignature;
 			// Static data
 			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetGraphicsRootSignature;
+		};
+
+		/**
+		*  @brief
+		*    Set the used graphics pipeline state
+		*
+		*  @param[in] graphicsPipelineState
+		*    Graphics pipeline state to use, can be an null pointer (default: "nullptr")
+		*/
+		struct SetGraphicsPipelineState final
+		{
+			// Static methods
+			static inline void create(CommandBuffer& commandBuffer, IPipelineState* graphicsPipelineState)
+			{
+				*commandBuffer.addCommand<SetGraphicsPipelineState>() = SetGraphicsPipelineState(graphicsPipelineState);
+			}
+			// Constructor
+			inline SetGraphicsPipelineState(IPipelineState* _graphicsPipelineState) :
+				graphicsPipelineState(_graphicsPipelineState)
+			{}
+			// Data
+			IPipelineState* graphicsPipelineState;
+			// Static data
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetGraphicsPipelineState;
 		};
 
 		/**
@@ -8032,66 +8161,33 @@ namespace Renderer
 			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetGraphicsResourceGroup;
 		};
 
-		//[-------------------------------------------------------]
-		//[ States                                                ]
-		//[-------------------------------------------------------]
 		/**
 		*  @brief
-		*    Set the used pipeline state
-		*
-		*  @param[in] pipelineState
-		*    Pipeline state to use, can be an null pointer (default: "nullptr")
-		*/
-		struct SetPipelineState final
-		{
-			// Static methods
-			static inline void create(CommandBuffer& commandBuffer, IPipelineState* pipelineState)
-			{
-				*commandBuffer.addCommand<SetPipelineState>() = SetPipelineState(pipelineState);
-			}
-			// Constructor
-			inline SetPipelineState(IPipelineState* _pipelineState) :
-				pipelineState(_pipelineState)
-			{}
-			// Data
-			IPipelineState* pipelineState;
-			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetPipelineState;
-		};
-
-		//[-------------------------------------------------------]
-		//[ Input-assembler (IA) stage                            ]
-		//[-------------------------------------------------------]
-		/**
-		*  @brief
-		*    Set the used vertex array
+		*    Set the used vertex array, input-assembler (IA) stage
 		*
 		*  @param[in] vertexArray
 		*    Vertex array to use, can be an null pointer (default: "nullptr")
 		*/
-		struct SetVertexArray final
+		struct SetGraphicsVertexArray final
 		{
 			// Static methods
 			static inline void create(CommandBuffer& commandBuffer, IVertexArray* vertexArray)
 			{
-				*commandBuffer.addCommand<SetVertexArray>() = SetVertexArray(vertexArray);
+				*commandBuffer.addCommand<SetGraphicsVertexArray>() = SetGraphicsVertexArray(vertexArray);
 			}
 			// Constructor
-			inline SetVertexArray(IVertexArray* _vertexArray) :
+			inline SetGraphicsVertexArray(IVertexArray* _vertexArray) :
 				vertexArray(_vertexArray)
 			{}
 			// Data
 			IVertexArray* vertexArray;
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetVertexArray;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetGraphicsVertexArray;
 		};
 
-		//[-------------------------------------------------------]
-		//[ Rasterizer (RS) stage                                 ]
-		//[-------------------------------------------------------]
 		/**
 		*  @brief
-		*    Set the viewports
+		*    Set the graphics viewports, rasterizer (RS) stage
 		*
 		*  @param[in] numberOfViewports
 		*    Number of viewports, if <1 nothing happens, must be <="Renderer::Capabilities::maximumNumberOfViewports"
@@ -8101,21 +8197,21 @@ namespace Renderer
 		*  @note
 		*    - The current viewport(s) does not affect the clear operation
 		*    - Lookout! In Direct3D 12 the scissor test can't be deactivated and hence one always needs to set a valid scissor rectangle.
-		*      Use the convenience "Renderer::Command::SetViewportAndScissorRectangle"-command if possible to not walk into this Direct3D 12 trap.
+		*      Use the convenience "Renderer::Command::SetGraphicsViewportAndScissorRectangle"-command if possible to not walk into this Direct3D 12 trap.
 		*/
-		struct SetViewports final
+		struct SetGraphicsViewports final
 		{
 			// Static methods
 			static inline void create(CommandBuffer& commandBuffer, uint32_t numberOfViewports, const Viewport* viewports)
 			{
-				*commandBuffer.addCommand<SetViewports>() = SetViewports(numberOfViewports, viewports);
+				*commandBuffer.addCommand<SetGraphicsViewports>() = SetGraphicsViewports(numberOfViewports, viewports);
 			}
 			static inline void create(CommandBuffer& commandBuffer, uint32_t topLeftX, uint32_t topLeftY, uint32_t width, uint32_t height, float minimumDepth = 0.0f, float maximumDepth = 1.0f)
 			{
-				SetViewports* setViewportsCommand = commandBuffer.addCommand<SetViewports>(sizeof(Viewport));
+				SetGraphicsViewports* setGraphicsViewportsCommand = commandBuffer.addCommand<SetGraphicsViewports>(sizeof(Viewport));
 
 				// Set command data
-				Viewport* viewport = reinterpret_cast<Viewport*>(CommandPacketHelper::getAuxiliaryMemory(setViewportsCommand));
+				Viewport* viewport = reinterpret_cast<Viewport*>(CommandPacketHelper::getAuxiliaryMemory(setGraphicsViewportsCommand));
 				viewport->topLeftX = static_cast<float>(topLeftX);
 				viewport->topLeftY = static_cast<float>(topLeftY);
 				viewport->width	   = static_cast<float>(width);
@@ -8124,11 +8220,11 @@ namespace Renderer
 				viewport->maxDepth = maximumDepth;
 
 				// Finalize command
-				setViewportsCommand->numberOfViewports = 1;
-				setViewportsCommand->viewports		   = nullptr;
+				setGraphicsViewportsCommand->numberOfViewports = 1;
+				setGraphicsViewportsCommand->viewports		   = nullptr;
 			}
 			// Constructor
-			inline SetViewports(uint32_t _numberOfViewports, const Viewport* _viewports) :
+			inline SetGraphicsViewports(uint32_t _numberOfViewports, const Viewport* _viewports) :
 				numberOfViewports(_numberOfViewports),
 				viewports(_viewports)
 			{}
@@ -8136,12 +8232,12 @@ namespace Renderer
 			uint32_t		numberOfViewports;
 			const Viewport* viewports;	///< If null pointer, command auxiliary memory is used instead
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetViewports;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetGraphicsViewports;
 		};
 
 		/**
 		*  @brief
-		*    Set the scissor rectangles
+		*    Set the graphics scissor rectangles, rasterizer (RS) stage
 		*
 		*  @param[in] numberOfScissorRectangles
 		*    Number of scissor rectangles, if <1 nothing happens, must be <="Renderer::Capabilities::maximumNumberOfViewports"
@@ -8152,30 +8248,30 @@ namespace Renderer
 		*    - Scissor rectangles are only used when "Renderer::RasterizerState::scissorEnable" is true
 		*    - The current scissor rectangle(s) does not affect the clear operation
 		*/
-		struct SetScissorRectangles final
+		struct SetGraphicsScissorRectangles final
 		{
 			// Static methods
 			static inline void create(CommandBuffer& commandBuffer, uint32_t numberOfScissorRectangles, const ScissorRectangle* scissorRectangles)
 			{
-				*commandBuffer.addCommand<SetScissorRectangles>() = SetScissorRectangles(numberOfScissorRectangles, scissorRectangles);
+				*commandBuffer.addCommand<SetGraphicsScissorRectangles>() = SetGraphicsScissorRectangles(numberOfScissorRectangles, scissorRectangles);
 			}
 			static inline void create(CommandBuffer& commandBuffer, long topLeftX, long topLeftY, long bottomRightX, long bottomRightY)
 			{
-				SetScissorRectangles* setScissorRectanglesCommand = commandBuffer.addCommand<SetScissorRectangles>(sizeof(ScissorRectangle));
+				SetGraphicsScissorRectangles* setGraphicsScissorRectanglesCommand = commandBuffer.addCommand<SetGraphicsScissorRectangles>(sizeof(ScissorRectangle));
 
 				// Set command data
-				ScissorRectangle* scissorRectangle = reinterpret_cast<ScissorRectangle*>(CommandPacketHelper::getAuxiliaryMemory(setScissorRectanglesCommand));
+				ScissorRectangle* scissorRectangle = reinterpret_cast<ScissorRectangle*>(CommandPacketHelper::getAuxiliaryMemory(setGraphicsScissorRectanglesCommand));
 				scissorRectangle->topLeftX	   = topLeftX;
 				scissorRectangle->topLeftY	   = topLeftY;
 				scissorRectangle->bottomRightX = bottomRightX;
 				scissorRectangle->bottomRightY = bottomRightY;
 
 				// Finalize command
-				setScissorRectanglesCommand->numberOfScissorRectangles = 1;
-				setScissorRectanglesCommand->scissorRectangles		   = nullptr;
+				setGraphicsScissorRectanglesCommand->numberOfScissorRectangles = 1;
+				setGraphicsScissorRectanglesCommand->scissorRectangles		   = nullptr;
 			}
 			// Constructor
-			inline SetScissorRectangles(uint32_t _numberOfScissorRectangles, const ScissorRectangle* _scissorRectangles) :
+			inline SetGraphicsScissorRectangles(uint32_t _numberOfScissorRectangles, const ScissorRectangle* _scissorRectangles) :
 				numberOfScissorRectangles(_numberOfScissorRectangles),
 				scissorRectangles(_scissorRectangles)
 			{}
@@ -8183,12 +8279,12 @@ namespace Renderer
 			uint32_t				numberOfScissorRectangles;
 			const ScissorRectangle* scissorRectangles;	///< If null pointer, command auxiliary memory is used instead
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetScissorRectangles;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetGraphicsScissorRectangles;
 		};
 
 		/**
 		*  @brief
-		*    Set viewport and scissor rectangle (convenience method)
+		*    Set graphics viewport and scissor rectangle (convenience method)
 		*
 		*  @param[in] topLeftX
 		*    Top left x
@@ -8205,54 +8301,48 @@ namespace Renderer
 		*
 		*  @note
 		*    - Lookout! In Direct3D 12 the scissor test can't be deactivated and hence one always needs to set a valid scissor rectangle.
-		*      Use the convenience "Renderer::Command::SetViewportAndScissorRectangle"-command if possible to not walk into this Direct3D 12 trap.
+		*      Use the convenience "Renderer::Command::SetGraphicsViewportAndScissorRectangle"-command if possible to not walk into this Direct3D 12 trap.
 		*/
-		struct SetViewportAndScissorRectangle final
+		struct SetGraphicsViewportAndScissorRectangle final
 		{
 			// Static methods
 			static inline void create(CommandBuffer& commandBuffer, uint32_t topLeftX, uint32_t topLeftY, uint32_t width, uint32_t height, float minimumDepth = 0.0f, float maximumDepth = 1.0f)
 			{
-				// Set the viewport
-				SetViewports::create(commandBuffer, topLeftX, topLeftY, width, height, minimumDepth, maximumDepth);
+				// Set the graphics viewport
+				SetGraphicsViewports::create(commandBuffer, topLeftX, topLeftY, width, height, minimumDepth, maximumDepth);
 
-				// Set the scissor rectangle
-				SetScissorRectangles::create(commandBuffer, static_cast<long>(topLeftX), static_cast<long>(topLeftY), static_cast<long>(topLeftX + width), static_cast<long>(topLeftY + height));
+				// Set the graphics scissor rectangle
+				SetGraphicsScissorRectangles::create(commandBuffer, static_cast<long>(topLeftX), static_cast<long>(topLeftY), static_cast<long>(topLeftX + width), static_cast<long>(topLeftY + height));
 			}
 		};
 
-		//[-------------------------------------------------------]
-		//[ Output-merger (OM) stage                              ]
-		//[-------------------------------------------------------]
 		/**
 		*  @brief
-		*    Set the render target to render into
+		*    Set the graphics render target to render into, output-merger (OM) stage
 		*
 		*  @param[in] renderTarget
 		*    Render target to render into by binding it to the output-merger state, can be an null pointer to render into the primary window
 		*/
-		struct SetRenderTarget final
+		struct SetGraphicsRenderTarget final
 		{
 			// Static methods
 			static inline void create(CommandBuffer& commandBuffer, IRenderTarget* renderTarget)
 			{
-				*commandBuffer.addCommand<SetRenderTarget>() = SetRenderTarget(renderTarget);
+				*commandBuffer.addCommand<SetGraphicsRenderTarget>() = SetGraphicsRenderTarget(renderTarget);
 			}
 			// Constructor
-			inline SetRenderTarget(IRenderTarget* _renderTarget) :
+			inline SetGraphicsRenderTarget(IRenderTarget* _renderTarget) :
 				renderTarget(_renderTarget)
 			{}
 			// Data
 			IRenderTarget* renderTarget;
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetRenderTarget;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetGraphicsRenderTarget;
 		};
 
-		//[-------------------------------------------------------]
-		//[ Operations                                            ]
-		//[-------------------------------------------------------]
 		/**
 		*  @brief
-		*    Clears the viewport to a specified RGBA color, clears the depth buffer,
+		*    Clears the graphics viewport to a specified RGBA color, clears the depth buffer,
 		*    and erases the stencil buffer
 		*
 		*  @param[in] flags
@@ -8270,20 +8360,20 @@ namespace Renderer
 		*    0 through 2^n–1, where n is the bit depth of the stencil buffer.
 		*
 		*  @note
-		*    - The current viewport(s) (see "Renderer::IRenderer::rsSetViewports()") does not affect the clear operation
-		*    - The current scissor rectangle(s) (see "Renderer::IRenderer::rsSetScissorRectangles()") does not affect the clear operation
+		*    - The current viewport(s) (see "Renderer::Command::SetGraphicsViewports()") does not affect the clear operation
+		*    - The current scissor rectangle(s) (see "Renderer::Command::SetGraphicsScissorRectangles()") does not affect the clear operation
 		*    - In case there are multiple active render targets, all render targets are cleared
 		*/
-		struct Clear final
+		struct ClearGraphics final
 		{
 			// Static methods
 			// -> z = 0 instead of 1 due to usage of Reversed-Z (see e.g. https://developer.nvidia.com/content/depth-precision-visualized and https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/)
 			static inline void create(CommandBuffer& commandBuffer, uint32_t flags, const float color[4], float z = 0.0f, uint32_t stencil = 0)
 			{
-				*commandBuffer.addCommand<Clear>() = Clear(flags, color, z, stencil);
+				*commandBuffer.addCommand<ClearGraphics>() = ClearGraphics(flags, color, z, stencil);
 			}
 			// Constructor
-			inline Clear(uint32_t _flags, const float _color[4], float _z, uint32_t _stencil) :
+			inline ClearGraphics(uint32_t _flags, const float _color[4], float _z, uint32_t _stencil) :
 				flags(_flags),
 				color{_color[0], _color[1], _color[2], _color[3]},
 				z(_z),
@@ -8295,7 +8385,186 @@ namespace Renderer
 			float	 z;
 			uint32_t stencil;
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::Clear;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::ClearGraphics;
+		};
+
+		/**
+		*  @brief
+		*    Render the specified geometric primitive, based on an array of vertices instancing and indirect draw
+		*
+		*  @param[in] indirectBuffer
+		*    Indirect buffer to use, the indirect buffer must contain at least "numberOfDraws" instances of "Renderer::DrawInstancedArguments" starting at "indirectBufferOffset"
+		*  @param[in] indirectBufferOffset
+		*    Indirect buffer offset
+		*  @param[in] numberOfDraws
+		*    Number of draws, can be 0
+		*
+		*  @note
+		*    - Draw instanced is a shader model 4 feature, only supported if "Renderer::Capabilities::drawInstanced" is true
+		*    - In Direct3D 9, instanced arrays with hardware support is only possible when drawing indexed primitives, see
+		*      "Efficiently Drawing Multiple Instances of Geometry (Direct3D 9)"-article at MSDN: http://msdn.microsoft.com/en-us/library/windows/desktop/bb173349%28v=vs.85%29.aspx#Drawing_Non_Indexed_Geometry
+		*    - Fails if no vertex array is set
+		*    - If the multi-draw indirect feature is not supported this parameter, multiple draw calls are emitted
+		*    - If the draw indirect feature is not supported, a software indirect buffer is used and multiple draw calls are emitted
+		*/
+		struct DrawGraphics final
+		{
+			// Static methods
+			static inline void create(CommandBuffer& commandBuffer, const IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1)
+			{
+				*commandBuffer.addCommand<DrawGraphics>() = DrawGraphics(indirectBuffer, indirectBufferOffset, numberOfDraws);
+			}
+			static inline void create(CommandBuffer& commandBuffer, uint32_t vertexCountPerInstance, uint32_t instanceCount = 1, uint32_t startVertexLocation = 0, uint32_t startInstanceLocation = 0)
+			{
+				DrawGraphics* drawCommand = commandBuffer.addCommand<DrawGraphics>(sizeof(DrawInstancedArguments));
+
+				// Set command data: The command packet auxiliary memory contains an "Renderer::DrawInstancedArguments"-instance
+				const DrawInstancedArguments drawInstancedArguments(vertexCountPerInstance, instanceCount, startVertexLocation, startInstanceLocation);
+				memcpy(CommandPacketHelper::getAuxiliaryMemory(drawCommand), &drawInstancedArguments, sizeof(DrawInstancedArguments));
+
+				// Finalize command
+				drawCommand->indirectBuffer		  = nullptr;
+				drawCommand->indirectBufferOffset = 0;
+				drawCommand->numberOfDraws		  = 1;
+			}
+			// Constructor
+			inline DrawGraphics(const IIndirectBuffer& _indirectBuffer, uint32_t _indirectBufferOffset, uint32_t _numberOfDraws) :
+				indirectBuffer(&_indirectBuffer),
+				indirectBufferOffset(_indirectBufferOffset),
+				numberOfDraws(_numberOfDraws)
+			{}
+			// Data
+			const IIndirectBuffer* indirectBuffer;	///< If null pointer, command auxiliary memory is used instead
+			uint32_t			   indirectBufferOffset;
+			uint32_t			   numberOfDraws;
+			// Static data
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::DrawGraphics;
+		};
+
+		/**
+		*  @brief
+		*    Render the specified geometric primitive, based on indexing into an array of vertices, instancing and indirect draw
+		*
+		*  @param[in] indirectBuffer
+		*    Indirect buffer to use, the indirect buffer must contain at least "numberOfDraws" instances of "Renderer::DrawIndexedInstancedArguments" starting at bindirectBufferOffset"
+		*  @param[in] indirectBufferOffset
+		*    Indirect buffer offset
+		*  @param[in] numberOfDraws
+		*    Number of draws, can be 0
+		*
+		*  @note
+		*    - Instanced arrays is a shader model 3 feature, only supported if "Renderer::Capabilities::instancedArrays" is true
+		*    - Draw instanced is a shader model 4 feature, only supported if "Renderer::Capabilities::drawInstanced" is true
+		*    - This method draws indexed primitives from the current set of data input streams
+		*    - Fails if no index and/or vertex array is set
+		*    - If the multi-draw indirect feature is not supported this parameter, multiple draw calls are emitted
+		*    - If the draw indirect feature is not supported, a software indirect buffer is used and multiple draw calls are emitted
+		*/
+		struct DrawIndexedGraphics final
+		{
+			// Static methods
+			static inline void create(CommandBuffer& commandBuffer, const IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1)
+			{
+				*commandBuffer.addCommand<DrawIndexedGraphics>() = DrawIndexedGraphics(indirectBuffer, indirectBufferOffset, numberOfDraws);
+			}
+			static inline void create(CommandBuffer& commandBuffer, uint32_t indexCountPerInstance, uint32_t instanceCount = 1, uint32_t startIndexLocation = 0, int32_t baseVertexLocation = 0, uint32_t startInstanceLocation = 0)
+			{
+				DrawIndexedGraphics* drawCommand = commandBuffer.addCommand<DrawIndexedGraphics>(sizeof(DrawIndexedInstancedArguments));
+
+				// Set command data: The command packet auxiliary memory contains an "Renderer::DrawIndexedInstancedArguments"-instance
+				const DrawIndexedInstancedArguments drawIndexedInstancedArguments(indexCountPerInstance, instanceCount, startIndexLocation, baseVertexLocation, startInstanceLocation);
+				memcpy(CommandPacketHelper::getAuxiliaryMemory(drawCommand), &drawIndexedInstancedArguments, sizeof(DrawIndexedInstancedArguments));
+
+				// Finalize command
+				drawCommand->indirectBuffer		  = nullptr;
+				drawCommand->indirectBufferOffset = 0;
+				drawCommand->numberOfDraws		  = 1;
+			}
+			// Constructor
+			inline DrawIndexedGraphics(const IIndirectBuffer& _indirectBuffer, uint32_t _indirectBufferOffset, uint32_t _numberOfDraws) :
+				indirectBuffer(&_indirectBuffer),
+				indirectBufferOffset(_indirectBufferOffset),
+				numberOfDraws(_numberOfDraws)
+			{}
+			// Data
+			const IIndirectBuffer* indirectBuffer;	///< If null pointer, command auxiliary memory is used instead
+			uint32_t			   indirectBufferOffset;
+			uint32_t			   numberOfDraws;
+			// Static data
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::DrawIndexedGraphics;
+		};
+
+		//[-------------------------------------------------------]
+		//[ Compute                                               ]
+		//[-------------------------------------------------------]
+		/**
+		*  @brief
+		*    Compute dispatch call
+		*
+		*  @param[in] groupCountX
+		*    Number of local workgroups to dispatch in the X dimension
+		*  @param[in] groupCountY
+		*    Number of local workgroups to dispatch in the Y dimension
+		*  @param[in] groupCountZ
+		*    Number of local workgroups to dispatch in the Z dimension
+		*
+		*  @note
+		*    - Only supported if "Renderer::Capabilities::computeShader" is true
+		*/
+		struct DispatchCompute final
+		{
+			// Static methods
+			static inline void create(CommandBuffer& commandBuffer, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
+			{
+				*commandBuffer.addCommand<DispatchCompute>() = DispatchCompute(groupCountX, groupCountY, groupCountZ);
+			}
+			// Constructor
+			inline DispatchCompute(uint32_t _groupCountX, uint32_t _groupCountY, uint32_t _groupCountZ) :
+				groupCountX(_groupCountX),
+				groupCountY(_groupCountY),
+				groupCountZ(_groupCountZ)
+			{}
+			// Data
+			uint32_t groupCountX;
+			uint32_t groupCountY;
+			uint32_t groupCountZ;
+			// Static data
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::DispatchCompute;
+		};
+
+		//[-------------------------------------------------------]
+		//[ Resource                                              ]
+		//[-------------------------------------------------------]
+		/**
+		*  @brief
+		*    Set texture minimum maximum mipmap index
+		*
+		*  @param[in] texture
+		*    Texture to set the minimum maximum mipmap index of
+		*  @param[in] minimumMipmapIndex
+		*    Minimum mipmap index, the most detailed mipmap, also known as base mipmap, 0 by default
+		*  @param[in] maximumMipmapIndex
+		*    Maximum mipmap index, the least detailed mipmap, <number of mipmaps> by default
+		*/
+		struct SetTextureMinimumMaximumMipmapIndex final
+		{
+			// Static methods
+			static inline void create(CommandBuffer& commandBuffer, ITexture& texture, uint32_t minimumMipmapIndex, uint32_t maximumMipmapIndex)
+			{
+				*commandBuffer.addCommand<SetTextureMinimumMaximumMipmapIndex>() = SetTextureMinimumMaximumMipmapIndex(texture, minimumMipmapIndex, maximumMipmapIndex);
+			}
+			// Constructor
+			inline SetTextureMinimumMaximumMipmapIndex(ITexture& _texture, uint32_t _minimumMipmapIndex, uint32_t _maximumMipmapIndex) :
+				texture(&_texture),
+				minimumMipmapIndex(_minimumMipmapIndex),
+				maximumMipmapIndex(_maximumMipmapIndex)
+			{}
+			// Data
+			ITexture* texture;
+			uint32_t  minimumMipmapIndex;
+			uint32_t  maximumMipmapIndex;
+			// Static data
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetTextureMinimumMaximumMipmapIndex;
 		};
 
 		/**
@@ -8352,150 +8621,6 @@ namespace Renderer
 			IResource* sourceResource;
 			// Static data
 			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::CopyResource;
-		};
-
-		//[-------------------------------------------------------]
-		//[ Draw call                                             ]
-		//[-------------------------------------------------------]
-		/**
-		*  @brief
-		*    Render the specified geometric primitive, based on an array of vertices instancing and indirect draw
-		*
-		*  @param[in] indirectBuffer
-		*    Indirect buffer to use, the indirect buffer must contain at least "numberOfDraws" instances of "Renderer::DrawInstancedArguments" starting at "indirectBufferOffset"
-		*  @param[in] indirectBufferOffset
-		*    Indirect buffer offset
-		*  @param[in] numberOfDraws
-		*    Number of draws, can be 0
-		*
-		*  @note
-		*    - Draw instanced is a shader model 4 feature, only supported if "Renderer::Capabilities::drawInstanced" is true
-		*    - In Direct3D 9, instanced arrays with hardware support is only possible when drawing indexed primitives, see
-		*      "Efficiently Drawing Multiple Instances of Geometry (Direct3D 9)"-article at MSDN: http://msdn.microsoft.com/en-us/library/windows/desktop/bb173349%28v=vs.85%29.aspx#Drawing_Non_Indexed_Geometry
-		*    - Fails if no vertex array is set
-		*    - If the multi-draw indirect feature is not supported this parameter, multiple draw calls are emitted
-		*    - If the draw indirect feature is not supported, a software indirect buffer is used and multiple draw calls are emitted
-		*/
-		struct Draw final
-		{
-			// Static methods
-			static inline void create(CommandBuffer& commandBuffer, const IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1)
-			{
-				*commandBuffer.addCommand<Draw>() = Draw(indirectBuffer, indirectBufferOffset, numberOfDraws);
-			}
-			static inline void create(CommandBuffer& commandBuffer, uint32_t vertexCountPerInstance, uint32_t instanceCount = 1, uint32_t startVertexLocation = 0, uint32_t startInstanceLocation = 0)
-			{
-				Draw* drawCommand = commandBuffer.addCommand<Draw>(sizeof(DrawInstancedArguments));
-
-				// Set command data: The command packet auxiliary memory contains an "Renderer::DrawInstancedArguments"-instance
-				const DrawInstancedArguments drawInstancedArguments(vertexCountPerInstance, instanceCount, startVertexLocation, startInstanceLocation);
-				memcpy(CommandPacketHelper::getAuxiliaryMemory(drawCommand), &drawInstancedArguments, sizeof(DrawInstancedArguments));
-
-				// Finalize command
-				drawCommand->indirectBuffer		  = nullptr;
-				drawCommand->indirectBufferOffset = 0;
-				drawCommand->numberOfDraws		  = 1;
-			}
-			// Constructor
-			inline Draw(const IIndirectBuffer& _indirectBuffer, uint32_t _indirectBufferOffset, uint32_t _numberOfDraws) :
-				indirectBuffer(&_indirectBuffer),
-				indirectBufferOffset(_indirectBufferOffset),
-				numberOfDraws(_numberOfDraws)
-			{}
-			// Data
-			const IIndirectBuffer* indirectBuffer;	///< If null pointer, command auxiliary memory is used instead
-			uint32_t			   indirectBufferOffset;
-			uint32_t			   numberOfDraws;
-			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::Draw;
-		};
-
-		/**
-		*  @brief
-		*    Render the specified geometric primitive, based on indexing into an array of vertices, instancing and indirect draw
-		*
-		*  @param[in] indirectBuffer
-		*    Indirect buffer to use, the indirect buffer must contain at least "numberOfDraws" instances of "Renderer::DrawIndexedInstancedArguments" starting at bindirectBufferOffset"
-		*  @param[in] indirectBufferOffset
-		*    Indirect buffer offset
-		*  @param[in] numberOfDraws
-		*    Number of draws, can be 0
-		*
-		*  @note
-		*    - Instanced arrays is a shader model 3 feature, only supported if "Renderer::Capabilities::instancedArrays" is true
-		*    - Draw instanced is a shader model 4 feature, only supported if "Renderer::Capabilities::drawInstanced" is true
-		*    - This method draws indexed primitives from the current set of data input streams
-		*    - Fails if no index and/or vertex array is set
-		*    - If the multi-draw indirect feature is not supported this parameter, multiple draw calls are emitted
-		*    - If the draw indirect feature is not supported, a software indirect buffer is used and multiple draw calls are emitted
-		*/
-		struct DrawIndexed final
-		{
-			// Static methods
-			static inline void create(CommandBuffer& commandBuffer, const IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1)
-			{
-				*commandBuffer.addCommand<DrawIndexed>() = DrawIndexed(indirectBuffer, indirectBufferOffset, numberOfDraws);
-			}
-			static inline void create(CommandBuffer& commandBuffer, uint32_t indexCountPerInstance, uint32_t instanceCount = 1, uint32_t startIndexLocation = 0, int32_t baseVertexLocation = 0, uint32_t startInstanceLocation = 0)
-			{
-				DrawIndexed* drawCommand = commandBuffer.addCommand<DrawIndexed>(sizeof(DrawIndexedInstancedArguments));
-
-				// Set command data: The command packet auxiliary memory contains an "Renderer::DrawIndexedInstancedArguments"-instance
-				const DrawIndexedInstancedArguments drawIndexedInstancedArguments(indexCountPerInstance, instanceCount, startIndexLocation, baseVertexLocation, startInstanceLocation);
-				memcpy(CommandPacketHelper::getAuxiliaryMemory(drawCommand), &drawIndexedInstancedArguments, sizeof(DrawIndexedInstancedArguments));
-
-				// Finalize command
-				drawCommand->indirectBuffer		  = nullptr;
-				drawCommand->indirectBufferOffset = 0;
-				drawCommand->numberOfDraws		  = 1;
-			}
-			// Constructor
-			inline DrawIndexed(const IIndirectBuffer& _indirectBuffer, uint32_t _indirectBufferOffset, uint32_t _numberOfDraws) :
-				indirectBuffer(&_indirectBuffer),
-				indirectBufferOffset(_indirectBufferOffset),
-				numberOfDraws(_numberOfDraws)
-			{}
-			// Data
-			const IIndirectBuffer* indirectBuffer;	///< If null pointer, command auxiliary memory is used instead
-			uint32_t			   indirectBufferOffset;
-			uint32_t			   numberOfDraws;
-			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::DrawIndexed;
-		};
-
-		//[-------------------------------------------------------]
-		//[ Resource                                              ]
-		//[-------------------------------------------------------]
-		/**
-		*  @brief
-		*    Set texture minimum maximum mipmap index
-		*
-		*  @param[in] texture
-		*    Texture to set the minimum maximum mipmap index of
-		*  @param[in] minimumMipmapIndex
-		*    Minimum mipmap index, the most detailed mipmap, also known as base mipmap, 0 by default
-		*  @param[in] maximumMipmapIndex
-		*    Maximum mipmap index, the least detailed mipmap, <number of mipmaps> by default
-		*/
-		struct SetTextureMinimumMaximumMipmapIndex final
-		{
-			// Static methods
-			static inline void create(CommandBuffer& commandBuffer, ITexture& texture, uint32_t minimumMipmapIndex, uint32_t maximumMipmapIndex)
-			{
-				*commandBuffer.addCommand<SetTextureMinimumMaximumMipmapIndex>() = SetTextureMinimumMaximumMipmapIndex(texture, minimumMipmapIndex, maximumMipmapIndex);
-			}
-			// Constructor
-			inline SetTextureMinimumMaximumMipmapIndex(ITexture& _texture, uint32_t _minimumMipmapIndex, uint32_t _maximumMipmapIndex) :
-				texture(&_texture),
-				minimumMipmapIndex(_minimumMipmapIndex),
-				maximumMipmapIndex(_maximumMipmapIndex)
-			{}
-			// Data
-			ITexture* texture;
-			uint32_t  minimumMipmapIndex;
-			uint32_t  maximumMipmapIndex;
-			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetTextureMinimumMaximumMipmapIndex;
 		};
 
 		//[-------------------------------------------------------]

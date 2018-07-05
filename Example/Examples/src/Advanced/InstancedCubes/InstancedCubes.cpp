@@ -221,8 +221,8 @@ void InstancedCubes::onDraw()
 	Renderer::IRendererPtr renderer(getRenderer());
 	if (nullptr != renderer)
 	{
-		// Clear the color buffer of the current render target with gray, do also clear the depth buffer
-		Renderer::Command::Clear::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
+		// Clear the graphics color buffer of the current render target with gray, do also clear the depth buffer
+		Renderer::Command::ClearGraphics::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
 
 		// Draw the cubes
 		if (nullptr != mCubeRenderer)

@@ -254,8 +254,8 @@ void VertexBuffer::fillCommandBuffer()
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
 
-	// Clear the color buffer of the current render target with gray, do also clear the depth buffer
-	Renderer::Command::Clear::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
+	// Clear the graphics color buffer of the current render target with gray, do also clear the depth buffer
+	Renderer::Command::ClearGraphics::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
 
 	// Set the used graphics root signature
 	Renderer::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
@@ -266,14 +266,14 @@ void VertexBuffer::fillCommandBuffer()
 		// Scoped debug event
 		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Draw using one VBO")
 
-		// Set the used pipeline state object (PSO)
-		Renderer::Command::SetPipelineState::create(mCommandBuffer, mPipelineStateVBO);
+		// Set the used graphics pipeline state object (PSO)
+		Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mPipelineStateVBO);
 
 		// Input assembly (IA): Set the used vertex array
-		Renderer::Command::SetVertexArray::create(mCommandBuffer, mVertexArrayVBO);
+		Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArrayVBO);
 
 		// Render the specified geometric primitive, based on an array of vertices
-		Renderer::Command::Draw::create(mCommandBuffer, 3);
+		Renderer::Command::DrawGraphics::create(mCommandBuffer, 3);
 	}
 
 	// Second upper triangle using multiple vertex buffer object (VBO)
@@ -282,13 +282,13 @@ void VertexBuffer::fillCommandBuffer()
 		// Scoped debug event
 		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Draw using multiple VBOs")
 
-		// Set the used pipeline state object (PSO)
-		Renderer::Command::SetPipelineState::create(mCommandBuffer, mPipelineStateVBOs);
+		// Set the used graphics pipeline state object (PSO)
+		Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mPipelineStateVBOs);
 
 		// Input assembly (IA): Set the used vertex array
-		Renderer::Command::SetVertexArray::create(mCommandBuffer, mVertexArrayVBOs);
+		Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArrayVBOs);
 
 		// Render the specified geometric primitive, based on an array of vertices
-		Renderer::Command::Draw::create(mCommandBuffer, 3);
+		Renderer::Command::DrawGraphics::create(mCommandBuffer, 3);
 	}
 }

@@ -282,21 +282,21 @@ void IcosahedronTessellation::fillCommandBuffer()
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
 
-	// Clear the color buffer of the current render target with gray, do also clear the depth buffer
-	Renderer::Command::Clear::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
+	// Clear the graphics color buffer of the current render target with gray, do also clear the depth buffer
+	Renderer::Command::ClearGraphics::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
 
 	// Set the used graphics root signature
 	Renderer::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
 
-	// Set the used pipeline state object (PSO)
-	Renderer::Command::SetPipelineState::create(mCommandBuffer, mPipelineState);
+	// Set the used graphics pipeline state object (PSO)
+	Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mPipelineState);
 
-	// Set resource groups
+	// Set graphics resource groups
 	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 0, mUniformBufferGroup);
 
 	// Input assembly (IA): Set the used vertex array
-	Renderer::Command::SetVertexArray::create(mCommandBuffer, mVertexArray);
+	Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArray);
 
 	// Render the specified geometric primitive, based on indexing into an array of vertices
-	Renderer::Command::DrawIndexed::create(mCommandBuffer, 60);
+	Renderer::Command::DrawIndexedGraphics::create(mCommandBuffer, 60);
 }

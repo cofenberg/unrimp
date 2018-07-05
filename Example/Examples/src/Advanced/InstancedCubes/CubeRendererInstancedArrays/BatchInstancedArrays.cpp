@@ -131,13 +131,13 @@ void BatchInstancedArrays::fillCommandBuffer(Renderer::CommandBuffer& commandBuf
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)
 
-	// Set the used pipeline state object (PSO)
-	Renderer::Command::SetPipelineState::create(commandBuffer, mPipelineState);
+	// Set the used graphics pipeline state object (PSO)
+	Renderer::Command::SetGraphicsPipelineState::create(commandBuffer, mPipelineState);
 
 	// Setup input assembly (IA): Set the used vertex array
-	Renderer::Command::SetVertexArray::create(commandBuffer, mVertexArray);
+	Renderer::Command::SetGraphicsVertexArray::create(commandBuffer, mVertexArray);
 
 	// Use instancing in order to draw multiple cubes with just a single draw call
 	// -> Draw calls are one of the most expensive rendering, avoid them if possible
-	Renderer::Command::DrawIndexed::create(commandBuffer, 36, mNumberOfCubeInstances);
+	Renderer::Command::DrawIndexedGraphics::create(commandBuffer, 36, mNumberOfCubeInstances);
 }

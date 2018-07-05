@@ -791,35 +791,23 @@ namespace OpenGLES3Renderer
 		}
 
 		//[-------------------------------------------------------]
-		//[ States                                                ]
+		//[ Graphics                                              ]
 		//[-------------------------------------------------------]
 		void setGraphicsRootSignature(Renderer::IRootSignature* rootSignature);
+		void setGraphicsPipelineState(Renderer::IPipelineState* graphicsPipelineState);
 		void setGraphicsResourceGroup(uint32_t rootParameterIndex, Renderer::IResourceGroup* resourceGroup);
-		void setPipelineState(Renderer::IPipelineState* pipelineState);
+		void setGraphicsVertexArray(Renderer::IVertexArray* vertexArray);															// Input-assembler (IA) stage
+		void setGraphicsViewports(uint32_t numberOfViewports, const Renderer::Viewport* viewports);									// Rasterizer (RS) stage
+		void setGraphicsScissorRectangles(uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles);	// Rasterizer (RS) stage
+		void setGraphicsRenderTarget(Renderer::IRenderTarget* renderTarget);														// Output-merger (OM) stage
+		void clearGraphics(uint32_t flags, const float color[4], float z, uint32_t stencil);
+		void drawGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
+		void drawIndexedGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		//[-------------------------------------------------------]
-		//[ Input-assembler (IA) stage                            ]
+		//[ Resource                                              ]
 		//[-------------------------------------------------------]
-		void iaSetVertexArray(Renderer::IVertexArray* vertexArray);
-		//[-------------------------------------------------------]
-		//[ Rasterizer (RS) stage                                 ]
-		//[-------------------------------------------------------]
-		void rsSetViewports(uint32_t numberOfViewports, const Renderer::Viewport* viewports);
-		void rsSetScissorRectangles(uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles);
-		//[-------------------------------------------------------]
-		//[ Output-merger (OM) stage                              ]
-		//[-------------------------------------------------------]
-		void omSetRenderTarget(Renderer::IRenderTarget* renderTarget);
-		//[-------------------------------------------------------]
-		//[ Operations                                            ]
-		//[-------------------------------------------------------]
-		void clear(uint32_t flags, const float color[4], float z, uint32_t stencil);
 		void resolveMultisampleFramebuffer(Renderer::IRenderTarget& destinationRenderTarget, Renderer::IFramebuffer& sourceMultisampleFramebuffer);
 		void copyResource(Renderer::IResource& destinationResource, Renderer::IResource& sourceResource);
-		//[-------------------------------------------------------]
-		//[ Draw call                                             ]
-		//[-------------------------------------------------------]
-		void drawEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
-		void drawIndexedEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		//[-------------------------------------------------------]
 		//[ Debug                                                 ]
 		//[-------------------------------------------------------]
@@ -951,7 +939,7 @@ namespace OpenGLES3Renderer
 		GLuint					   mOpenGLES3CopyResourceFramebuffer;	///< OpenGL ES 3 framebuffer ("container" object, not shared between OpenGL ES 3 contexts) used by "OpenGLES3Renderer::OpenGLES3Renderer::copyResource()", can be zero if no resource is allocated
 		GLuint					   mDefaultOpenGLES3VertexArray;		///< Default OpenGL ES 3 vertex array ("container" object, not shared between OpenGL contexts) to enable attribute-less rendering, can be zero if no resource is allocated
 		// States
-		PipelineState* mPipelineState;	///< Currently set pipeline state (we keep a reference to it), can be a null pointer
+		PipelineState* mGraphicsPipelineState;	///< Currently set graphics pipeline state (we keep a reference to it), can be a null pointer
 		// Input-assembler (IA) stage
 		VertexArray* mVertexArray;					///< Currently set vertex array (we keep a reference to it), can be a null pointer
 		GLenum		 mOpenGLES3PrimitiveTopology;	///< OpenGL ES 3 primitive topology describing the type of primitive to render
@@ -7150,6 +7138,7 @@ namespace OpenGLES3Renderer
 						case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 						case Renderer::ResourceType::GEOMETRY_SHADER:
 						case Renderer::ResourceType::FRAGMENT_SHADER:
+						case Renderer::ResourceType::COMPUTE_SHADER:
 						default:
 							RENDERER_LOG(openGLES3Renderer.getContext(), CRITICAL, "The type of the given color texture at index %ld is not supported by the OpenGL ES 3 renderer backend", colorTexture - mColorTextures)
 							break;
@@ -7222,6 +7211,7 @@ namespace OpenGLES3Renderer
 					case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Renderer::ResourceType::GEOMETRY_SHADER:
 					case Renderer::ResourceType::FRAGMENT_SHADER:
+					case Renderer::ResourceType::COMPUTE_SHADER:
 					default:
 						RENDERER_LOG(openGLES3Renderer.getContext(), CRITICAL, "The type of the given depth stencil texture is not supported by the OpenGL ES 3 renderer backend")
 						break;
@@ -8283,6 +8273,19 @@ namespace OpenGLES3Renderer
 			return RENDERER_NEW(getRenderer().getContext(), FragmentShaderGlsl)(static_cast<OpenGLES3Renderer&>(getRenderer()), shaderSourceCode.sourceCode);
 		}
 
+		inline virtual Renderer::IComputeShader* createComputeShaderFromBytecode(const Renderer::ShaderBytecode&) override
+		{
+			// Error!
+			RENDERER_ASSERT(getRenderer().getContext(), false, "Monolithic shaders have no shader bytecode, only a monolithic program bytecode")
+			return nullptr;
+		}
+
+		inline virtual Renderer::IComputeShader* createComputeShaderFromSourceCode(const Renderer::ShaderSourceCode&, Renderer::ShaderBytecode* = nullptr) override
+		{
+			// Error! OpenGL ES 3 has no compute shader support.
+			return nullptr;
+		}
+
 		virtual Renderer::IProgram* createProgram(const Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
 		{
 			// A shader can be a null pointer, but if it's not the shader and program language must match!
@@ -8579,12 +8582,18 @@ namespace
 			}
 
 			//[-------------------------------------------------------]
-			//[ Graphics root                                         ]
+			//[ Graphics                                              ]
 			//[-------------------------------------------------------]
 			void SetGraphicsRootSignature(const void* data, Renderer::IRenderer& renderer)
 			{
 				const Renderer::Command::SetGraphicsRootSignature* realData = static_cast<const Renderer::Command::SetGraphicsRootSignature*>(data);
 				static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).setGraphicsRootSignature(realData->rootSignature);
+			}
+
+			void SetGraphicsPipelineState(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::SetGraphicsPipelineState* realData = static_cast<const Renderer::Command::SetGraphicsPipelineState*>(data);
+				static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).setGraphicsPipelineState(realData->graphicsPipelineState);
 			}
 
 			void SetGraphicsResourceGroup(const void* data, Renderer::IRenderer& renderer)
@@ -8593,98 +8602,74 @@ namespace
 				static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).setGraphicsResourceGroup(realData->rootParameterIndex, realData->resourceGroup);
 			}
 
-			//[-------------------------------------------------------]
-			//[ States                                                ]
-			//[-------------------------------------------------------]
-			void SetPipelineState(const void* data, Renderer::IRenderer& renderer)
+			void SetGraphicsVertexArray(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::SetPipelineState* realData = static_cast<const Renderer::Command::SetPipelineState*>(data);
-				static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).setPipelineState(realData->pipelineState);
+				// Input-assembler (IA) stage
+				const Renderer::Command::SetGraphicsVertexArray* realData = static_cast<const Renderer::Command::SetGraphicsVertexArray*>(data);
+				static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).setGraphicsVertexArray(realData->vertexArray);
 			}
 
-			//[-------------------------------------------------------]
-			//[ Input-assembler (IA) stage                            ]
-			//[-------------------------------------------------------]
-			void SetVertexArray(const void* data, Renderer::IRenderer& renderer)
+			void SetGraphicsViewports(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::SetVertexArray* realData = static_cast<const Renderer::Command::SetVertexArray*>(data);
-				static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).iaSetVertexArray(realData->vertexArray);
+				// Rasterizer (RS) stage
+				const Renderer::Command::SetGraphicsViewports* realData = static_cast<const Renderer::Command::SetGraphicsViewports*>(data);
+				static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).setGraphicsViewports(realData->numberOfViewports, (nullptr != realData->viewports) ? realData->viewports : reinterpret_cast<const Renderer::Viewport*>(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData)));
 			}
 
-			//[-------------------------------------------------------]
-			//[ Rasterizer (RS) stage                                 ]
-			//[-------------------------------------------------------]
-			void SetViewports(const void* data, Renderer::IRenderer& renderer)
+			void SetGraphicsScissorRectangles(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::SetViewports* realData = static_cast<const Renderer::Command::SetViewports*>(data);
-				static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).rsSetViewports(realData->numberOfViewports, (nullptr != realData->viewports) ? realData->viewports : reinterpret_cast<const Renderer::Viewport*>(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData)));
+				// Rasterizer (RS) stage
+				const Renderer::Command::SetGraphicsScissorRectangles* realData = static_cast<const Renderer::Command::SetGraphicsScissorRectangles*>(data);
+				static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).setGraphicsScissorRectangles(realData->numberOfScissorRectangles, (nullptr != realData->scissorRectangles) ? realData->scissorRectangles : reinterpret_cast<const Renderer::ScissorRectangle*>(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData)));
 			}
 
-			void SetScissorRectangles(const void* data, Renderer::IRenderer& renderer)
+			void SetGraphicsRenderTarget(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::SetScissorRectangles* realData = static_cast<const Renderer::Command::SetScissorRectangles*>(data);
-				static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).rsSetScissorRectangles(realData->numberOfScissorRectangles, (nullptr != realData->scissorRectangles) ? realData->scissorRectangles : reinterpret_cast<const Renderer::ScissorRectangle*>(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData)));
+				// Output-merger (OM) stage
+				const Renderer::Command::SetGraphicsRenderTarget* realData = static_cast<const Renderer::Command::SetGraphicsRenderTarget*>(data);
+				static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).setGraphicsRenderTarget(realData->renderTarget);
 			}
 
-			//[-------------------------------------------------------]
-			//[ Output-merger (OM) stage                              ]
-			//[-------------------------------------------------------]
-			void SetRenderTarget(const void* data, Renderer::IRenderer& renderer)
+			void ClearGraphics(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::SetRenderTarget* realData = static_cast<const Renderer::Command::SetRenderTarget*>(data);
-				static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).omSetRenderTarget(realData->renderTarget);
+				const Renderer::Command::ClearGraphics* realData = static_cast<const Renderer::Command::ClearGraphics*>(data);
+				static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).clearGraphics(realData->flags, realData->color, realData->z, realData->stencil);
 			}
 
-			//[-------------------------------------------------------]
-			//[ Operations                                            ]
-			//[-------------------------------------------------------]
-			void Clear(const void* data, Renderer::IRenderer& renderer)
+			void DrawGraphics(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::Clear* realData = static_cast<const Renderer::Command::Clear*>(data);
-				static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).clear(realData->flags, realData->color, realData->z, realData->stencil);
-			}
-
-			void ResolveMultisampleFramebuffer(const void* data, Renderer::IRenderer& renderer)
-			{
-				const Renderer::Command::ResolveMultisampleFramebuffer* realData = static_cast<const Renderer::Command::ResolveMultisampleFramebuffer*>(data);
-				static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).resolveMultisampleFramebuffer(*realData->destinationRenderTarget, *realData->sourceMultisampleFramebuffer);
-			}
-
-			void CopyResource(const void* data, Renderer::IRenderer& renderer)
-			{
-				const Renderer::Command::CopyResource* realData = static_cast<const Renderer::Command::CopyResource*>(data);
-				static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).copyResource(*realData->destinationResource, *realData->sourceResource);
-			}
-
-			//[-------------------------------------------------------]
-			//[ Draw call                                             ]
-			//[-------------------------------------------------------]
-			void Draw(const void* data, Renderer::IRenderer& renderer)
-			{
-				const Renderer::Command::Draw* realData = static_cast<const Renderer::Command::Draw*>(data);
+				const Renderer::Command::DrawGraphics* realData = static_cast<const Renderer::Command::DrawGraphics*>(data);
 				if (nullptr != realData->indirectBuffer)
 				{
 					// No resource owner security check in here, we only support emulated indirect buffer
-					static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).drawEmulated(realData->indirectBuffer->getEmulationData(), realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).drawGraphicsEmulated(realData->indirectBuffer->getEmulationData(), realData->indirectBufferOffset, realData->numberOfDraws);
 				}
 				else
 				{
-					static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).drawEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).drawGraphicsEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
 				}
 			}
 
-			void DrawIndexed(const void* data, Renderer::IRenderer& renderer)
+			void DrawIndexedGraphics(const void* data, Renderer::IRenderer& renderer)
 			{
-				const Renderer::Command::Draw* realData = static_cast<const Renderer::Command::Draw*>(data);
+				const Renderer::Command::DrawIndexedGraphics* realData = static_cast<const Renderer::Command::DrawIndexedGraphics*>(data);
 				if (nullptr != realData->indirectBuffer)
 				{
 					// No resource owner security check in here, we only support emulated indirect buffer
-					static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).drawIndexedEmulated(realData->indirectBuffer->getEmulationData(), realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).drawIndexedGraphicsEmulated(realData->indirectBuffer->getEmulationData(), realData->indirectBufferOffset, realData->numberOfDraws);
 				}
 				else
 				{
-					static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).drawIndexedEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).drawIndexedGraphicsEmulated(Renderer::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
 				}
+			}
+
+			//[-------------------------------------------------------]
+			//[ Compute                                               ]
+			//[-------------------------------------------------------]
+			void DispatchCompute(const void*, Renderer::IRenderer& renderer)
+			{
+				RENDERER_LOG(static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).getContext(), CRITICAL, "OpenGL ES 3 doesn't support compute dispatch")
 			}
 
 			//[-------------------------------------------------------]
@@ -8701,6 +8686,18 @@ namespace
 				{
 					RENDERER_LOG(static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).getContext(), CRITICAL, "Unsupported OpenGL ES 3 texture resource type")
 				}
+			}
+
+			void ResolveMultisampleFramebuffer(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::ResolveMultisampleFramebuffer* realData = static_cast<const Renderer::Command::ResolveMultisampleFramebuffer*>(data);
+				static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).resolveMultisampleFramebuffer(*realData->destinationRenderTarget, *realData->sourceMultisampleFramebuffer);
+			}
+
+			void CopyResource(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::CopyResource* realData = static_cast<const Renderer::Command::CopyResource*>(data);
+				static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).copyResource(*realData->destinationResource, *realData->sourceResource);
 			}
 
 			//[-------------------------------------------------------]
@@ -8751,27 +8748,23 @@ namespace
 		{
 			// Command buffer
 			&BackendDispatch::ExecuteCommandBuffer,
-			// Graphics root
+			// Graphics
 			&BackendDispatch::SetGraphicsRootSignature,
+			&BackendDispatch::SetGraphicsPipelineState,
 			&BackendDispatch::SetGraphicsResourceGroup,
-			// States
-			&BackendDispatch::SetPipelineState,
-			// Input-assembler (IA) stage
-			&BackendDispatch::SetVertexArray,
-			// Rasterizer (RS) stage
-			&BackendDispatch::SetViewports,
-			&BackendDispatch::SetScissorRectangles,
-			// Output-merger (OM) stage
-			&BackendDispatch::SetRenderTarget,
-			// Operations
-			&BackendDispatch::Clear,
-			&BackendDispatch::ResolveMultisampleFramebuffer,
-			&BackendDispatch::CopyResource,
-			// Draw call
-			&BackendDispatch::Draw,
-			&BackendDispatch::DrawIndexed,
+			&BackendDispatch::SetGraphicsVertexArray,		// Input-assembler (IA) stage
+			&BackendDispatch::SetGraphicsViewports,			// Rasterizer (RS) stage
+			&BackendDispatch::SetGraphicsScissorRectangles,	// Rasterizer (RS) stage
+			&BackendDispatch::SetGraphicsRenderTarget,		// Output-merger (OM) stage
+			&BackendDispatch::ClearGraphics,
+			&BackendDispatch::DrawGraphics,
+			&BackendDispatch::DrawIndexedGraphics,
+			// Compute
+			&BackendDispatch::DispatchCompute,
 			// Resource
 			&BackendDispatch::SetTextureMinimumMaximumMipmapIndex,
+			&BackendDispatch::ResolveMultisampleFramebuffer,
+			&BackendDispatch::CopyResource,
 			// Debug
 			&BackendDispatch::SetDebugMarker,
 			&BackendDispatch::BeginDebugEvent,
@@ -8805,7 +8798,7 @@ namespace OpenGLES3Renderer
 		mOpenGLES3CopyResourceFramebuffer(0),
 		mDefaultOpenGLES3VertexArray(0),
 		// States
-		mPipelineState(nullptr),
+		mGraphicsPipelineState(nullptr),
 		// Input-assembler (IA) stage
 		mVertexArray(nullptr),
 		mOpenGLES3PrimitiveTopology(0xFFFF),	// Unknown default setting
@@ -8859,10 +8852,10 @@ namespace OpenGLES3Renderer
 
 	OpenGLES3Renderer::~OpenGLES3Renderer()
 	{
-		// Set no pipeline state reference, in case we have one
-		if (nullptr != mPipelineState)
+		// Set no graphics pipeline state reference, in case we have one
+		if (nullptr != mGraphicsPipelineState)
 		{
-			setPipelineState(nullptr);
+			setGraphicsPipelineState(nullptr);
 		}
 
 		// Release instances
@@ -8888,7 +8881,7 @@ namespace OpenGLES3Renderer
 		// Set no vertex array reference, in case we have one
 		if (nullptr != mVertexArray)
 		{
-			iaSetVertexArray(nullptr);
+			setGraphicsVertexArray(nullptr);
 		}
 
 		// Destroy the OpenGL ES 3 default vertex array
@@ -8935,7 +8928,7 @@ namespace OpenGLES3Renderer
 
 
 	//[-------------------------------------------------------]
-	//[ States                                                ]
+	//[ Graphics states                                       ]
 	//[-------------------------------------------------------]
 	void OpenGLES3Renderer::setGraphicsRootSignature(Renderer::IRootSignature* rootSignature)
 	{
@@ -8950,6 +8943,36 @@ namespace OpenGLES3Renderer
 
 			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
 			OPENGLES3RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *rootSignature)
+		}
+	}
+
+	void OpenGLES3Renderer::setGraphicsPipelineState(Renderer::IPipelineState* graphicsPipelineState)
+	{
+		if (mGraphicsPipelineState != graphicsPipelineState)
+		{
+			if (nullptr != graphicsPipelineState)
+			{
+				// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+				OPENGLES3RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *graphicsPipelineState)
+
+				// Set new graphics pipeline state and add a reference to it
+				if (nullptr != mGraphicsPipelineState)
+				{
+					mGraphicsPipelineState->releaseReference();
+				}
+				mGraphicsPipelineState = static_cast<PipelineState*>(graphicsPipelineState);
+				mGraphicsPipelineState->addReference();
+
+				// Set graphics pipeline state
+				mOpenGLES3PrimitiveTopology = mGraphicsPipelineState->getOpenGLES3PrimitiveTopology();
+				mGraphicsPipelineState->bindPipelineState();
+			}
+			else if (nullptr != mGraphicsPipelineState)
+			{
+				// TODO(co) Handle this situation by resetting OpenGL states?
+				mGraphicsPipelineState->releaseReference();
+				mGraphicsPipelineState = nullptr;
+			}
 		}
 	}
 
@@ -9039,6 +9062,7 @@ namespace OpenGLES3Renderer
 						{
 							// In OpenGL ES 3, all shaders share the same texture units
 							case Renderer::ShaderVisibility::ALL:
+							case Renderer::ShaderVisibility::ALL_GRAPHICS:
 							case Renderer::ShaderVisibility::VERTEX:
 							case Renderer::ShaderVisibility::FRAGMENT:
 							{
@@ -9111,6 +9135,10 @@ namespace OpenGLES3Renderer
 							case Renderer::ShaderVisibility::GEOMETRY:
 								RENDERER_LOG(mContext, CRITICAL, "OpenGL ES 3 has no geometry shader support")
 								break;
+
+							case Renderer::ShaderVisibility::COMPUTE:
+								RENDERER_LOG(mContext, CRITICAL, "OpenGL ES 3 has no compute shader support")
+								break;
 						}
 						break;
 					}
@@ -9135,6 +9163,7 @@ namespace OpenGLES3Renderer
 					case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Renderer::ResourceType::GEOMETRY_SHADER:
 					case Renderer::ResourceType::FRAGMENT_SHADER:
+					case Renderer::ResourceType::COMPUTE_SHADER:
 						RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 11 renderer backend resource type")
 						break;
 				}
@@ -9146,42 +9175,10 @@ namespace OpenGLES3Renderer
 		}
 	}
 
-	void OpenGLES3Renderer::setPipelineState(Renderer::IPipelineState* pipelineState)
+	void OpenGLES3Renderer::setGraphicsVertexArray(Renderer::IVertexArray* vertexArray)
 	{
-		if (mPipelineState != pipelineState)
-		{
-			if (nullptr != pipelineState)
-			{
-				// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
-				OPENGLES3RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *pipelineState)
+		// Input-assembler (IA) stage
 
-				// Set new pipeline state and add a reference to it
-				if (nullptr != mPipelineState)
-				{
-					mPipelineState->releaseReference();
-				}
-				mPipelineState = static_cast<PipelineState*>(pipelineState);
-				mPipelineState->addReference();
-
-				// Set pipeline state
-				mOpenGLES3PrimitiveTopology = mPipelineState->getOpenGLES3PrimitiveTopology();
-				mPipelineState->bindPipelineState();
-			}
-			else if (nullptr != mPipelineState)
-			{
-				// TODO(co) Handle this situation by resetting OpenGL states?
-				mPipelineState->releaseReference();
-				mPipelineState = nullptr;
-			}
-		}
-	}
-
-
-	//[-------------------------------------------------------]
-	//[ Input-assembler (IA) stage                            ]
-	//[-------------------------------------------------------]
-	void OpenGLES3Renderer::iaSetVertexArray(Renderer::IVertexArray* vertexArray)
-	{
 		// New vertex array?
 		if (mVertexArray != vertexArray)
 		{
@@ -9219,12 +9216,10 @@ namespace OpenGLES3Renderer
 		}
 	}
 
-
-	//[-------------------------------------------------------]
-	//[ Rasterizer (RS) stage                                 ]
-	//[-------------------------------------------------------]
-	void OpenGLES3Renderer::rsSetViewports(MAYBE_UNUSED uint32_t numberOfViewports, const Renderer::Viewport* viewports)
+	void OpenGLES3Renderer::setGraphicsViewports(MAYBE_UNUSED uint32_t numberOfViewports, const Renderer::Viewport* viewports)
 	{
+		// Rasterizer (RS) stage
+
 		// Sanity check
 		RENDERER_ASSERT(mContext, numberOfViewports > 0 && nullptr != viewports, "Invalid OpenGL ES 3 rasterizer state viewports")
 
@@ -9247,8 +9242,10 @@ namespace OpenGLES3Renderer
 		glDepthRangef(static_cast<GLclampf>(viewports->minDepth), static_cast<GLclampf>(viewports->maxDepth));
 	}
 
-	void OpenGLES3Renderer::rsSetScissorRectangles(MAYBE_UNUSED uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles)
+	void OpenGLES3Renderer::setGraphicsScissorRectangles(MAYBE_UNUSED uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles)
 	{
+		// Rasterizer (RS) stage
+
 		// Sanity check
 		RENDERER_ASSERT(mContext, numberOfScissorRectangles > 0 && nullptr != scissorRectangles, "Invalid OpenGL ES 3 rasterizer state scissor rectangles")
 
@@ -9271,12 +9268,10 @@ namespace OpenGLES3Renderer
 		glScissor(static_cast<GLint>(scissorRectangles->topLeftX), static_cast<GLint>(renderTargetHeight - scissorRectangles->topLeftY - height), width, height);
 	}
 
-
-	//[-------------------------------------------------------]
-	//[ Output-merger (OM) stage                              ]
-	//[-------------------------------------------------------]
-	void OpenGLES3Renderer::omSetRenderTarget(Renderer::IRenderTarget* renderTarget)
+	void OpenGLES3Renderer::setGraphicsRenderTarget(Renderer::IRenderTarget* renderTarget)
 	{
+		// Output-merger (OM) stage
+
 		// New render target?
 		if (mRenderTarget != renderTarget)
 		{
@@ -9372,6 +9367,7 @@ namespace OpenGLES3Renderer
 					case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Renderer::ResourceType::GEOMETRY_SHADER:
 					case Renderer::ResourceType::FRAGMENT_SHADER:
+					case Renderer::ResourceType::COMPUTE_SHADER:
 					default:
 						// Not handled in here
 						break;
@@ -9410,11 +9406,7 @@ namespace OpenGLES3Renderer
 		}
 	}
 
-
-	//[-------------------------------------------------------]
-	//[ Operations                                            ]
-	//[-------------------------------------------------------]
-	void OpenGLES3Renderer::clear(uint32_t flags, const float color[4], float z, uint32_t stencil)
+	void OpenGLES3Renderer::clearGraphics(uint32_t flags, const float color[4], float z, uint32_t stencil)
 	{
 		// Get API flags
 		uint32_t flagsApi = 0;
@@ -9442,7 +9434,7 @@ namespace OpenGLES3Renderer
 			if (flags & Renderer::ClearFlag::DEPTH)
 			{
 				glClearDepthf(z);
-				if (nullptr != mPipelineState && Renderer::DepthWriteMask::ALL != mPipelineState->getDepthStencilState().depthWriteMask)
+				if (nullptr != mGraphicsPipelineState && Renderer::DepthWriteMask::ALL != mGraphicsPipelineState->getDepthStencilState().depthWriteMask)
 				{
 					glDepthMask(GL_TRUE);
 				}
@@ -9456,7 +9448,7 @@ namespace OpenGLES3Renderer
 			// -> We have to compensate the OpenGL ES 3 behaviour in here
 
 			// Disable OpenGL ES 3 scissor test, in case it's not disabled, yet
-			if (nullptr != mPipelineState && mPipelineState->getRasterizerState().scissorEnable)
+			if (nullptr != mGraphicsPipelineState && mGraphicsPipelineState->getRasterizerState().scissorEnable)
 			{
 				glDisable(GL_SCISSOR_TEST);
 			}
@@ -9465,109 +9457,18 @@ namespace OpenGLES3Renderer
 			glClear(flagsApi);
 
 			// Restore the previously set OpenGL ES 3 states
-			if (nullptr != mPipelineState && mPipelineState->getRasterizerState().scissorEnable)
+			if (nullptr != mGraphicsPipelineState && mGraphicsPipelineState->getRasterizerState().scissorEnable)
 			{
 				glEnable(GL_SCISSOR_TEST);
 			}
-			if ((flags & Renderer::ClearFlag::DEPTH) && nullptr != mPipelineState && Renderer::DepthWriteMask::ALL != mPipelineState->getDepthStencilState().depthWriteMask)
+			if ((flags & Renderer::ClearFlag::DEPTH) && nullptr != mGraphicsPipelineState && Renderer::DepthWriteMask::ALL != mGraphicsPipelineState->getDepthStencilState().depthWriteMask)
 			{
 				glDepthMask(GL_FALSE);
 			}
 		}
 	}
 
-	void OpenGLES3Renderer::resolveMultisampleFramebuffer(Renderer::IRenderTarget&, Renderer::IFramebuffer&)
-	{
-		// TODO(co) Implement me
-	}
-
-	void OpenGLES3Renderer::copyResource(Renderer::IResource& destinationResource, Renderer::IResource& sourceResource)
-	{
-		// Security check: Are the given resources owned by this renderer? (calls "return" in case of a mismatch)
-		OPENGLES3RENDERER_RENDERERMATCHCHECK_ASSERT(*this, destinationResource)
-		OPENGLES3RENDERER_RENDERERMATCHCHECK_ASSERT(*this, sourceResource)
-
-		// Evaluate the render target type
-		switch (destinationResource.getResourceType())
-		{
-			case Renderer::ResourceType::TEXTURE_2D:
-				if (sourceResource.getResourceType() == Renderer::ResourceType::TEXTURE_2D)
-				{
-					// Get the OpenGL ES 3 texture 2D instances
-					const Texture2D& openGlEs3DestinationTexture2D = static_cast<const Texture2D&>(destinationResource);
-					const Texture2D& openGlEs3SourceTexture2D = static_cast<const Texture2D&>(sourceResource);
-					RENDERER_ASSERT(mContext, openGlEs3DestinationTexture2D.getWidth() == openGlEs3SourceTexture2D.getWidth(), "OpenGL source and destination width must be identical for resource copy")
-					RENDERER_ASSERT(mContext, openGlEs3DestinationTexture2D.getHeight() == openGlEs3SourceTexture2D.getHeight(), "OpenGL source and destination height must be identical for resource copy")
-
-					#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
-						// Backup the currently bound OpenGL ES 3 framebuffer
-						GLint openGLES3FramebufferBackup = 0;
-						glGetIntegerv(GL_FRAMEBUFFER_BINDING, &openGLES3FramebufferBackup);
-					#endif
-
-					// Copy resource by using a framebuffer, but only the top-level mipmap
-					const GLint width = static_cast<GLint>(openGlEs3DestinationTexture2D.getWidth());
-					const GLint height = static_cast<GLint>(openGlEs3DestinationTexture2D.getHeight());
-					if (0 == mOpenGLES3CopyResourceFramebuffer)
-					{
-						glGenFramebuffers(1, &mOpenGLES3CopyResourceFramebuffer);
-					}
-					glBindFramebuffer(GL_FRAMEBUFFER, mOpenGLES3CopyResourceFramebuffer);
-					glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, openGlEs3SourceTexture2D.getOpenGLES3Texture(), 0);
-					glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, openGlEs3DestinationTexture2D.getOpenGLES3Texture(), 0);
-					static constexpr GLenum OPENGL_DRAW_BUFFER[1] =
-					{
-						GL_COLOR_ATTACHMENT1
-					};
-					glDrawBuffers(1, OPENGL_DRAW_BUFFER);
-					glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
-					#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
-						// Be polite and restore the previous bound OpenGL ES 3 framebuffer
-						glBindFramebuffer(GL_FRAMEBUFFER, static_cast<GLuint>(openGLES3FramebufferBackup));
-					#endif
-				}
-				else
-				{
-					// Error!
-					RENDERER_ASSERT(mContext, false, "Failed to copy OpenGL ES 3 resource")
-				}
-				break;
-
-			case Renderer::ResourceType::ROOT_SIGNATURE:
-			case Renderer::ResourceType::RESOURCE_GROUP:
-			case Renderer::ResourceType::PROGRAM:
-			case Renderer::ResourceType::VERTEX_ARRAY:
-			case Renderer::ResourceType::RENDER_PASS:
-			case Renderer::ResourceType::SWAP_CHAIN:
-			case Renderer::ResourceType::FRAMEBUFFER:
-			case Renderer::ResourceType::INDEX_BUFFER:
-			case Renderer::ResourceType::VERTEX_BUFFER:
-			case Renderer::ResourceType::UNIFORM_BUFFER:
-			case Renderer::ResourceType::TEXTURE_BUFFER:
-			case Renderer::ResourceType::INDIRECT_BUFFER:
-			case Renderer::ResourceType::TEXTURE_1D:
-			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
-			case Renderer::ResourceType::TEXTURE_3D:
-			case Renderer::ResourceType::TEXTURE_CUBE:
-			case Renderer::ResourceType::PIPELINE_STATE:
-			case Renderer::ResourceType::SAMPLER_STATE:
-			case Renderer::ResourceType::VERTEX_SHADER:
-			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
-			case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
-			case Renderer::ResourceType::GEOMETRY_SHADER:
-			case Renderer::ResourceType::FRAGMENT_SHADER:
-			default:
-				// Not handled in here
-				break;
-		}
-	}
-
-
-	//[-------------------------------------------------------]
-	//[ Draw call                                             ]
-	//[-------------------------------------------------------]
-	void OpenGLES3Renderer::drawEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
+	void OpenGLES3Renderer::drawGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
 		// Sanity checks
 		RENDERER_ASSERT(mContext, nullptr != emulationData, "The OpenGL ES 3 emulation data must be valid")
@@ -9618,7 +9519,7 @@ namespace OpenGLES3Renderer
 		#endif
 	}
 
-	void OpenGLES3Renderer::drawIndexedEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
+	void OpenGLES3Renderer::drawIndexedGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
 		// Sanity checks
 		RENDERER_ASSERT(mContext, nullptr != emulationData, "The OpenGL ES 3 emulation data must be valid")
@@ -9711,6 +9612,98 @@ namespace OpenGLES3Renderer
 				endDebugEvent();
 			}
 		#endif
+	}
+
+
+	//[-------------------------------------------------------]
+	//[ Resource                                              ]
+	//[-------------------------------------------------------]
+	void OpenGLES3Renderer::resolveMultisampleFramebuffer(Renderer::IRenderTarget&, Renderer::IFramebuffer&)
+	{
+		// TODO(co) Implement me
+	}
+
+	void OpenGLES3Renderer::copyResource(Renderer::IResource& destinationResource, Renderer::IResource& sourceResource)
+	{
+		// Security check: Are the given resources owned by this renderer? (calls "return" in case of a mismatch)
+		OPENGLES3RENDERER_RENDERERMATCHCHECK_ASSERT(*this, destinationResource)
+		OPENGLES3RENDERER_RENDERERMATCHCHECK_ASSERT(*this, sourceResource)
+
+		// Evaluate the render target type
+		switch (destinationResource.getResourceType())
+		{
+			case Renderer::ResourceType::TEXTURE_2D:
+				if (sourceResource.getResourceType() == Renderer::ResourceType::TEXTURE_2D)
+				{
+					// Get the OpenGL ES 3 texture 2D instances
+					const Texture2D& openGlEs3DestinationTexture2D = static_cast<const Texture2D&>(destinationResource);
+					const Texture2D& openGlEs3SourceTexture2D = static_cast<const Texture2D&>(sourceResource);
+					RENDERER_ASSERT(mContext, openGlEs3DestinationTexture2D.getWidth() == openGlEs3SourceTexture2D.getWidth(), "OpenGL source and destination width must be identical for resource copy")
+					RENDERER_ASSERT(mContext, openGlEs3DestinationTexture2D.getHeight() == openGlEs3SourceTexture2D.getHeight(), "OpenGL source and destination height must be identical for resource copy")
+
+					#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
+						// Backup the currently bound OpenGL ES 3 framebuffer
+						GLint openGLES3FramebufferBackup = 0;
+						glGetIntegerv(GL_FRAMEBUFFER_BINDING, &openGLES3FramebufferBackup);
+					#endif
+
+					// Copy resource by using a framebuffer, but only the top-level mipmap
+					const GLint width = static_cast<GLint>(openGlEs3DestinationTexture2D.getWidth());
+					const GLint height = static_cast<GLint>(openGlEs3DestinationTexture2D.getHeight());
+					if (0 == mOpenGLES3CopyResourceFramebuffer)
+					{
+						glGenFramebuffers(1, &mOpenGLES3CopyResourceFramebuffer);
+					}
+					glBindFramebuffer(GL_FRAMEBUFFER, mOpenGLES3CopyResourceFramebuffer);
+					glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, openGlEs3SourceTexture2D.getOpenGLES3Texture(), 0);
+					glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, openGlEs3DestinationTexture2D.getOpenGLES3Texture(), 0);
+					static constexpr GLenum OPENGL_DRAW_BUFFER[1] =
+					{
+						GL_COLOR_ATTACHMENT1
+					};
+					glDrawBuffers(1, OPENGL_DRAW_BUFFER);
+					glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+					#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
+						// Be polite and restore the previous bound OpenGL ES 3 framebuffer
+						glBindFramebuffer(GL_FRAMEBUFFER, static_cast<GLuint>(openGLES3FramebufferBackup));
+					#endif
+				}
+				else
+				{
+					// Error!
+					RENDERER_ASSERT(mContext, false, "Failed to copy OpenGL ES 3 resource")
+				}
+				break;
+
+			case Renderer::ResourceType::ROOT_SIGNATURE:
+			case Renderer::ResourceType::RESOURCE_GROUP:
+			case Renderer::ResourceType::PROGRAM:
+			case Renderer::ResourceType::VERTEX_ARRAY:
+			case Renderer::ResourceType::RENDER_PASS:
+			case Renderer::ResourceType::SWAP_CHAIN:
+			case Renderer::ResourceType::FRAMEBUFFER:
+			case Renderer::ResourceType::INDEX_BUFFER:
+			case Renderer::ResourceType::VERTEX_BUFFER:
+			case Renderer::ResourceType::UNIFORM_BUFFER:
+			case Renderer::ResourceType::TEXTURE_BUFFER:
+			case Renderer::ResourceType::INDIRECT_BUFFER:
+			case Renderer::ResourceType::TEXTURE_1D:
+			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
+			case Renderer::ResourceType::TEXTURE_3D:
+			case Renderer::ResourceType::TEXTURE_CUBE:
+			case Renderer::ResourceType::PIPELINE_STATE:
+			case Renderer::ResourceType::SAMPLER_STATE:
+			case Renderer::ResourceType::VERTEX_SHADER:
+			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
+			case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
+			case Renderer::ResourceType::GEOMETRY_SHADER:
+			case Renderer::ResourceType::FRAGMENT_SHADER:
+			case Renderer::ResourceType::COMPUTE_SHADER:
+			default:
+				// Not handled in here
+				break;
+		}
 	}
 
 
@@ -10002,6 +9995,7 @@ namespace OpenGLES3Renderer
 			case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 			case Renderer::ResourceType::GEOMETRY_SHADER:
 			case Renderer::ResourceType::FRAGMENT_SHADER:
+			case Renderer::ResourceType::COMPUTE_SHADER:
 			default:
 				// Nothing we can map, set known return values
 				mappedSubresource.data		 = nullptr;
@@ -10108,6 +10102,7 @@ namespace OpenGLES3Renderer
 			case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 			case Renderer::ResourceType::GEOMETRY_SHADER:
 			case Renderer::ResourceType::FRAGMENT_SHADER:
+			case Renderer::ResourceType::COMPUTE_SHADER:
 			default:
 				// Nothing we can unmap
 				break;
@@ -10149,10 +10144,10 @@ namespace OpenGLES3Renderer
 	void OpenGLES3Renderer::endScene()
 	{
 		// We need to forget about the currently set render target
-		omSetRenderTarget(nullptr);
+		setGraphicsRenderTarget(nullptr);
 
 		// We need to forget about the currently set vertex array
-		iaSetVertexArray(nullptr);
+		setGraphicsVertexArray(nullptr);
 	}
 
 
@@ -10410,6 +10405,9 @@ namespace OpenGLES3Renderer
 
 		// Is there support for fragment shaders (FS)?
 		mCapabilities.fragmentShader = true;
+
+		// Is there support for compute shaders (CS)?
+		mCapabilities.computeShader = false;
 	}
 
 	void OpenGLES3Renderer::setProgram(Renderer::IProgram* program)

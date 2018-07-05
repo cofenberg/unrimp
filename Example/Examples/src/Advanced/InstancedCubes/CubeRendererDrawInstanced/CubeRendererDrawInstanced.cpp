@@ -476,7 +476,7 @@ void CubeRendererDrawInstanced::fillReusableCommandBuffer()
 	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 2, mSamplerStateGroup);
 
 	// Input assembly (IA): Set the used vertex array
-	Renderer::Command::SetVertexArray::create(mCommandBuffer, mVertexArray);
+	Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArray);
 
 	// Draw the batches
 	if (nullptr != mBatches)

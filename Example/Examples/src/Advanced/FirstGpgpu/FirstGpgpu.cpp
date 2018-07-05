@@ -307,11 +307,11 @@ void FirstGpgpu::fillCommandBufferContentGeneration()
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT(mCommandBufferContentGeneration, "Generate the content of the 2D texture to process later on")
 
-	// Set the render target to render into
-	Renderer::Command::SetRenderTarget::create(mCommandBufferContentGeneration, mFramebuffer[0]);
+	// Set the graphics render target to render into
+	Renderer::Command::SetGraphicsRenderTarget::create(mCommandBufferContentGeneration, mFramebuffer[0]);
 
-	// Clear the color buffer of the current render target with blue
-	Renderer::Command::Clear::create(mCommandBufferContentGeneration, Renderer::ClearFlag::COLOR, Color4::BLUE);
+	// Clear the graphics color buffer of the current render target with blue
+	Renderer::Command::ClearGraphics::create(mCommandBufferContentGeneration, Renderer::ClearFlag::COLOR, Color4::BLUE);
 
 	// Set the used graphics root signature
 	Renderer::Command::SetGraphicsRootSignature::create(mCommandBufferContentGeneration, mRootSignature);
@@ -326,18 +326,18 @@ void FirstGpgpu::fillCommandBufferContentGeneration()
 			renderTarget->getWidthAndHeight(width, height);
 		}
 
-		// Set the viewport and scissor rectangle
-		Renderer::Command::SetViewportAndScissorRectangle::create(mCommandBufferContentGeneration, 0, 0, width, height);
+		// Set the graphics viewport and scissor rectangle
+		Renderer::Command::SetGraphicsViewportAndScissorRectangle::create(mCommandBufferContentGeneration, 0, 0, width, height);
 	}
 
-	// Set the used pipeline state object (PSO)
-	Renderer::Command::SetPipelineState::create(mCommandBufferContentGeneration, mPipelineStateContentGeneration);
+	// Set the used graphics pipeline state object (PSO)
+	Renderer::Command::SetGraphicsPipelineState::create(mCommandBufferContentGeneration, mPipelineStateContentGeneration);
 
 	// Input assembly (IA): Set the used vertex array
-	Renderer::Command::SetVertexArray::create(mCommandBufferContentGeneration, mVertexArrayContentGeneration);
+	Renderer::Command::SetGraphicsVertexArray::create(mCommandBufferContentGeneration, mVertexArrayContentGeneration);
 
 	// Render the specified geometric primitive, based on indexing into an array of vertices
-	Renderer::Command::Draw::create(mCommandBufferContentGeneration, 3);
+	Renderer::Command::DrawGraphics::create(mCommandBufferContentGeneration, 3);
 }
 
 void FirstGpgpu::fillCommandBufferContentProcessing()
@@ -354,26 +354,26 @@ void FirstGpgpu::fillCommandBufferContentProcessing()
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT(mCommandBufferContentProcessing, "Content processing")
 
-	// Set the render target to render into
-	Renderer::Command::SetRenderTarget::create(mCommandBufferContentProcessing, mFramebuffer[1]);
+	// Set the graphics render target to render into
+	Renderer::Command::SetGraphicsRenderTarget::create(mCommandBufferContentProcessing, mFramebuffer[1]);
 
 	// We don't need to clear the current render target because our fullscreen quad covers the full screen
 
 	// Set the used graphics root signature
 	Renderer::Command::SetGraphicsRootSignature::create(mCommandBufferContentProcessing, mRootSignature);
 
-	// Set the used pipeline state object (PSO)
-	Renderer::Command::SetPipelineState::create(mCommandBufferContentProcessing, mPipelineStateContentProcessing);
+	// Set the used graphics pipeline state object (PSO)
+	Renderer::Command::SetGraphicsPipelineState::create(mCommandBufferContentProcessing, mPipelineStateContentProcessing);
 
-	// Set resource groups
+	// Set graphics resource groups
 	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBufferContentProcessing, 0, mTextureGroup);
 	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBufferContentProcessing, 1, mSamplerStateGroup);
 
 	// Input assembly (IA): Set the used vertex array
-	Renderer::Command::SetVertexArray::create(mCommandBufferContentProcessing, mVertexArrayContentProcessing);
+	Renderer::Command::SetGraphicsVertexArray::create(mCommandBufferContentProcessing, mVertexArrayContentProcessing);
 
 	// Render the specified geometric primitive, based on indexing into an array of vertices
-	Renderer::Command::Draw::create(mCommandBufferContentProcessing, 4);
+	Renderer::Command::DrawGraphics::create(mCommandBufferContentProcessing, 4);
 }
 
 void FirstGpgpu::onDoJob()

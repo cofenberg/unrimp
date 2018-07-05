@@ -369,20 +369,26 @@ namespace RendererRuntime
 					// Print the number of emitted command functions
 					static constexpr const char* commandFunction[Renderer::CommandDispatchFunctionIndex::NumberOfFunctions] =
 					{
+						// Command buffer
 						"ExecuteCommandBuffer",
+						// Graphics
 						"SetGraphicsRootSignature",
+						"SetGraphicsPipelineState",
 						"SetGraphicsResourceGroup",
-						"SetPipelineState",
-						"SetVertexArray",
-						"SetViewports",
-						"SetScissorRectangles",
-						"SetRenderTarget",
-						"Clear",
+						"SetGraphicsVertexArray",
+						"SetGraphicsViewports",
+						"SetGraphicsScissorRectangles",
+						"SetGraphicsRenderTarget",
+						"ClearGraphics",
+						"DrawGraphics",
+						"DrawIndexedGraphics",
+						// Compute
+						"DispatchCompute",
+						// Resource
+						"SetTextureMinimumMaximumMipmapIndex",
 						"ResolveMultisampleFramebuffer",
 						"CopyResource",
-						"Draw",
-						"DrawIndexed",
-						"SetTextureMinimumMaximumMipmapIndex",
+						// Debug
 						"SetDebugMarker",
 						"BeginDebugEvent",
 						"EndDebugEvent"

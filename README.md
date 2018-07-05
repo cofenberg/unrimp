@@ -74,6 +74,7 @@ Renderer API and Backends
 		- Tessellation evaluation shader (TES, "domain shader" in Direct3D terminology)
 		- Geometry shader (GS)
 		- Fragment shader (FS, "pixel shader" in Direct3D terminology)
+		- Compute shader (CS)
 	- Shader data sources
 		- Shader bytecode (aka shader microcode, binary large object (BLOB))
 			- Vulkan and OpenGL: SPIR-V support for cross-platform vendor and GPU driver independent shader bytecodes
@@ -229,6 +230,7 @@ Terminology and Acronyms
 	- Tessellation evaluation shader (TES), "domain shader" in Direct3D terminology
 	- Geometry shader (GS)
 	- Fragment shader (FS), "pixel shader" in Direct3D terminology
+	- Compute shader (CS)
 	- Uniform buffer view (UBV)
 	- Shader resource view (SRV)
 	- Unordered access view (UAV)

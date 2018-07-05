@@ -35,6 +35,7 @@
 	#include "src/Basics/FirstInstancing/FirstInstancing.cpp"
 	#include "src/Basics/FirstGeometryShader/FirstGeometryShader.cpp"
 	#include "src/Basics/FirstTessellation/FirstTessellation.cpp"
+	#include "src/Basics/FirstComputeShader/FirstComputeShader.cpp"
 
 // Advanced
 	#include "src/Advanced/FirstGpgpu/FirstGpgpu.cpp"

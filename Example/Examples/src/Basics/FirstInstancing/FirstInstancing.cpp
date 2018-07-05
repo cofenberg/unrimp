@@ -285,8 +285,8 @@ void FirstInstancing::fillCommandBuffer()
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
 
-	// Clear the color buffer of the current render target with gray, do also clear the depth buffer
-	Renderer::Command::Clear::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
+	// Clear the graphics color buffer of the current render target with gray, do also clear the depth buffer
+	Renderer::Command::ClearGraphics::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
 
 	// Set the used graphics root signature
 	Renderer::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
@@ -297,17 +297,17 @@ void FirstInstancing::fillCommandBuffer()
 		// Scoped debug event
 		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Draw using instanced arrays")
 
-		// Set the used pipeline state object (PSO)
-		Renderer::Command::SetPipelineState::create(mCommandBuffer, mPipelineStateInstancedArrays);
+		// Set the used graphics pipeline state object (PSO)
+		Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mPipelineStateInstancedArrays);
 
 		// Input assembly (IA): Set the used vertex array
-		Renderer::Command::SetVertexArray::create(mCommandBuffer, mVertexArrayInstancedArrays);
+		Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArrayInstancedArrays);
 
 		// Render the specified geometric primitive, based on an array of vertices
 		// -> In this example, we only draw a simple triangle and therefore usually do not need an index buffer
 		// -> In Direct3D 9, instanced arrays with hardware support is only possible when drawing indexed primitives, see
 		//    "Efficiently Drawing Multiple Instances of Geometry (Direct3D 9)"-article at MSDN: http://msdn.microsoft.com/en-us/library/windows/desktop/bb173349%28v=vs.85%29.aspx#Drawing_Non_Indexed_Geometry
-		Renderer::Command::DrawIndexed::create(mCommandBuffer, 3, 2);
+		Renderer::Command::DrawIndexedGraphics::create(mCommandBuffer, 3, 2);
 	}
 
 	// Right side (blue): Draw instanced (shader model 4 feature, build in shader variable holding the current instance ID)
@@ -316,13 +316,13 @@ void FirstInstancing::fillCommandBuffer()
 		// Scoped debug event
 		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Draw instanced")
 
-		// Set the used pipeline state object (PSO)
-		Renderer::Command::SetPipelineState::create(mCommandBuffer, mPipelineStateDrawInstanced);
+		// Set the used graphics pipeline state object (PSO)
+		Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mPipelineStateDrawInstanced);
 
 		// Input assembly (IA): Set the used vertex array
-		Renderer::Command::SetVertexArray::create(mCommandBuffer, mVertexArrayDrawInstanced);
+		Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArrayDrawInstanced);
 
 		// Render the specified geometric primitive, based on an array of vertices
-		Renderer::Command::Draw::create(mCommandBuffer, 3, 2);
+		Renderer::Command::DrawGraphics::create(mCommandBuffer, 3, 2);
 	}
 }
