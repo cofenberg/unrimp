@@ -91,6 +91,7 @@ namespace RendererRuntime
 	*  @note
 	*    - Automatic handling of packing rules for uniform variables (see "Reference for HLSL - Shader Models vs Shader Profiles - Shader Model 4 - Packing Rules for Constant Variables" at https://msdn.microsoft.com/en-us/library/windows/desktop/bb509632%28v=vs.85%29.aspx )
 	*    - When writing new material blueprint resources, you might want to take the packing rules for uniform variables into account for an efficient data layout
+	*    - Can be a graphics or compute material blueprint (never both)
 	*/
 	class MaterialBlueprintResource final : public IResource
 	{
@@ -290,14 +291,14 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Return the pipeline state
+		*    Return the graphics pipeline state
 		*
 		*  @return
-		*    The pipeline state
+		*    The graphics pipeline state
 		*/
-		inline const Renderer::PipelineState& getPipelineState() const
+		inline const Renderer::GraphicsPipelineState& getGraphicsPipelineState() const
 		{
-			return mPipelineState;
+			return mGraphicsPipelineState;
 		}
 
 		/**
@@ -535,14 +536,14 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		PipelineStateCacheManager			 mPipelineStateCacheManager;
-		MaterialProperties					 mMaterialProperties;
-		ShaderProperties					 mVisualImportanceOfShaderProperties;		///< Every shader property known to the material blueprint has a visual importance entry in here
-		ShaderProperties					 mMaximumIntegerValueOfShaderProperties;	///< The maximum integer value (inclusive) of a shader property
-		Renderer::IRootSignaturePtr			 mRootSignaturePtr;							///< Root signature, can be a null pointer
-		Renderer::PipelineState				 mPipelineState;
-		VertexAttributesResourceId			 mVertexAttributesResourceId;
-		ShaderBlueprintResourceId			 mShaderBlueprintResourceId[NUMBER_OF_SHADER_TYPES];
+		PipelineStateCacheManager		mPipelineStateCacheManager;
+		MaterialProperties				mMaterialProperties;
+		ShaderProperties				mVisualImportanceOfShaderProperties;	///< Every shader property known to the material blueprint has a visual importance entry in here
+		ShaderProperties				mMaximumIntegerValueOfShaderProperties;	///< The maximum integer value (inclusive) of a shader property
+		Renderer::IRootSignaturePtr		mRootSignaturePtr;						///< Root signature, can be a null pointer
+		Renderer::GraphicsPipelineState	mGraphicsPipelineState;
+		VertexAttributesResourceId		mVertexAttributesResourceId;
+		ShaderBlueprintResourceId		mShaderBlueprintResourceId[NUMBER_OF_SHADER_TYPES];
 		// Resource
 		UniformBuffers mUniformBuffers;
 		TextureBuffers mTextureBuffers;

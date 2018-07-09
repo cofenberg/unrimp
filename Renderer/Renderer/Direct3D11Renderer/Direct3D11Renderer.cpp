@@ -1967,7 +1967,7 @@ namespace Direct3D11Renderer
 	//[-------------------------------------------------------]
 	//[ Friends                                               ]
 	//[-------------------------------------------------------]
-		friend class PipelineState;
+		friend class GraphicsPipelineState;
 
 
 	//[-------------------------------------------------------]
@@ -2044,7 +2044,7 @@ namespace Direct3D11Renderer
 		//[ Graphics                                              ]
 		//[-------------------------------------------------------]
 		void setGraphicsRootSignature(Renderer::IRootSignature* rootSignature);
-		void setGraphicsPipelineState(Renderer::IPipelineState* graphicsPipelineState);
+		void setGraphicsPipelineState(Renderer::IGraphicsPipelineState* graphicsPipelineState);
 		void setGraphicsResourceGroup(uint32_t rootParameterIndex, Renderer::IResourceGroup* resourceGroup);
 		void setGraphicsVertexArray(Renderer::IVertexArray* vertexArray);															// Input-assembler (IA) stage
 		void setGraphicsViewports(uint32_t numberOfViewports, const Renderer::Viewport* viewports);									// Rasterizer (RS) stage
@@ -2109,7 +2109,7 @@ namespace Direct3D11Renderer
 		virtual Renderer::IBufferManager* createBufferManager() override;
 		virtual Renderer::ITextureManager* createTextureManager() override;
 		virtual Renderer::IRootSignature* createRootSignature(const Renderer::RootSignature& rootSignature) override;
-		virtual Renderer::IPipelineState* createPipelineState(const Renderer::PipelineState& pipelineState) override;
+		virtual Renderer::IGraphicsPipelineState* createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState) override;
 		virtual Renderer::ISamplerState* createSamplerState(const Renderer::SamplerState& samplerState) override;
 		//[-------------------------------------------------------]
 		//[ Resource handling                                     ]
@@ -7937,7 +7937,7 @@ namespace Direct3D11Renderer
 						case Renderer::ResourceType::TEXTURE_1D:
 						case Renderer::ResourceType::TEXTURE_3D:
 						case Renderer::ResourceType::TEXTURE_CUBE:
-						case Renderer::ResourceType::PIPELINE_STATE:
+						case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 						case Renderer::ResourceType::SAMPLER_STATE:
 						case Renderer::ResourceType::VERTEX_SHADER:
 						case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -8027,7 +8027,7 @@ namespace Direct3D11Renderer
 					case Renderer::ResourceType::TEXTURE_1D:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
-					case Renderer::ResourceType::PIPELINE_STATE:
+					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Renderer::ResourceType::SAMPLER_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -9648,13 +9648,13 @@ namespace Direct3D11Renderer
 
 
 	//[-------------------------------------------------------]
-	//[ Direct3D11Renderer/State/PipelineState.h              ]
+	//[ Direct3D11Renderer/State/GraphicsPipelineState.h      ]
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    Direct3D 11 pipeline state class
+	*    Direct3D 11 graphics pipeline state class
 	*/
-	class PipelineState final : public Renderer::IPipelineState
+	class GraphicsPipelineState final : public Renderer::IGraphicsPipelineState
 	{
 
 
@@ -9668,19 +9668,19 @@ namespace Direct3D11Renderer
 		*
 		*  @param[in] direct3D11Renderer
 		*    Owner Direct3D 11 renderer instance
-		*  @param[in] pipelineState
-		*    Pipeline state to use
+		*  @param[in] graphicsPipelineState
+		*    Graphics pipeline state to use
 		*/
-		PipelineState(Direct3D11Renderer& direct3D11Renderer, const Renderer::PipelineState& pipelineState) :
-			IPipelineState(direct3D11Renderer),
-			mProgram(pipelineState.program),
-			mRenderPass(pipelineState.renderPass),
+		GraphicsPipelineState(Direct3D11Renderer& direct3D11Renderer, const Renderer::GraphicsPipelineState& graphicsPipelineState) :
+			IGraphicsPipelineState(direct3D11Renderer),
+			mProgram(graphicsPipelineState.program),
+			mRenderPass(graphicsPipelineState.renderPass),
 			mD3D11DeviceContext(direct3D11Renderer.getD3D11DeviceContext()),
-			mD3D11PrimitiveTopology(static_cast<D3D11_PRIMITIVE_TOPOLOGY>(pipelineState.primitiveTopology)),
+			mD3D11PrimitiveTopology(static_cast<D3D11_PRIMITIVE_TOPOLOGY>(graphicsPipelineState.primitiveTopology)),
 			mD3D11InputLayout(nullptr),
-			mRasterizerState(direct3D11Renderer, pipelineState.rasterizerState),
-			mDepthStencilState(direct3D11Renderer, pipelineState.depthStencilState),
-			mBlendState(direct3D11Renderer, pipelineState.blendState)
+			mRasterizerState(direct3D11Renderer, graphicsPipelineState.rasterizerState),
+			mDepthStencilState(direct3D11Renderer, graphicsPipelineState.depthStencilState),
+			mBlendState(direct3D11Renderer, graphicsPipelineState.blendState)
 		{
 			// Acquire our Direct3D 11 device context reference
 			mD3D11DeviceContext->AddRef();
@@ -9690,7 +9690,7 @@ namespace Direct3D11Renderer
 			mRenderPass->addReference();
 
 			// Create Direct3D 11 input element descriptions with support for attribute-less rendering
-			const uint32_t numberOfAttributes = pipelineState.vertexAttributes.numberOfAttributes;
+			const uint32_t numberOfAttributes = graphicsPipelineState.vertexAttributes.numberOfAttributes;
 			if (numberOfAttributes > 0)
 			{
 				const VertexShaderHlsl* vertexShaderHlsl = static_cast<ProgramHlsl*>(mProgram)->getVertexShaderHlsl();
@@ -9699,7 +9699,7 @@ namespace Direct3D11Renderer
 					ID3DBlob* d3dBlobVertexShader = vertexShaderHlsl->getD3DBlobVertexShader();
 					if (nullptr != d3dBlobVertexShader)
 					{
-						const Renderer::VertexAttribute* attributes = pipelineState.vertexAttributes.attributes;
+						const Renderer::VertexAttribute* attributes = graphicsPipelineState.vertexAttributes.attributes;
 
 						// TODO(co) We could manage in here without new/delete when using a fixed maximum supported number of elements
 						const Renderer::Context& context = direct3D11Renderer.getContext();
@@ -9737,13 +9737,13 @@ namespace Direct3D11Renderer
 				}
 				else
 				{
-					RENDERER_LOG(direct3D11Renderer.getContext(), CRITICAL, "Failed to create the Direct3D 11 pipeline stage input layout because there's no vertex shader")
+					RENDERER_LOG(direct3D11Renderer.getContext(), CRITICAL, "Failed to create the Direct3D 11 graphics pipeline stage input layout because there's no vertex shader")
 				}
 			}
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RENDERER_DEBUG
-				setDebugName("Pipeline state");
+				setDebugName("Graphics pipeline state");
 			#endif
 		}
 
@@ -9751,7 +9751,7 @@ namespace Direct3D11Renderer
 		*  @brief
 		*    Destructor
 		*/
-		virtual ~PipelineState() override
+		virtual ~GraphicsPipelineState() override
 		{
 			// Release the program and render pass reference
 			mProgram->releaseReference();
@@ -9793,9 +9793,9 @@ namespace Direct3D11Renderer
 
 		/**
 		*  @brief
-		*    Bind the pipeline state
+		*    Bind the graphics pipeline state
 		*/
-		void bindPipelineState() const
+		void bindGraphicsPipelineState() const
 		{
 			// Set the Direct3D 11 input layout
 			if (nullptr != mD3D11InputLayout)
@@ -9842,7 +9842,7 @@ namespace Direct3D11Renderer
 	protected:
 		inline virtual void selfDestruct() override
 		{
-			RENDERER_DELETE(getRenderer().getContext(), PipelineState, this);
+			RENDERER_DELETE(getRenderer().getContext(), GraphicsPipelineState, this);
 		}
 
 
@@ -9850,8 +9850,8 @@ namespace Direct3D11Renderer
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		explicit PipelineState(const PipelineState& source) = delete;
-		PipelineState& operator =(const PipelineState& source) = delete;
+		explicit GraphicsPipelineState(const GraphicsPipelineState& source) = delete;
+		GraphicsPipelineState& operator =(const GraphicsPipelineState& source) = delete;
 
 
 	//[-------------------------------------------------------]
@@ -10479,7 +10479,7 @@ namespace Direct3D11Renderer
 		}
 	}
 
-	void Direct3D11Renderer::setGraphicsPipelineState(Renderer::IPipelineState* graphicsPipelineState)
+	void Direct3D11Renderer::setGraphicsPipelineState(Renderer::IGraphicsPipelineState* graphicsPipelineState)
 	{
 		if (nullptr != graphicsPipelineState)
 		{
@@ -10488,15 +10488,15 @@ namespace Direct3D11Renderer
 
 			// Set primitive topology
 			// -> The "Renderer::PrimitiveTopology" values directly map to Direct3D 9 & 10 & 11 constants, do not change them
-			const PipelineState* direct3D11PipelineState = static_cast<const PipelineState*>(graphicsPipelineState);
-			if (mD3D11PrimitiveTopology != direct3D11PipelineState->getD3D11PrimitiveTopology())
+			const GraphicsPipelineState* direct3D11GraphicsPipelineState = static_cast<const GraphicsPipelineState*>(graphicsPipelineState);
+			if (mD3D11PrimitiveTopology != direct3D11GraphicsPipelineState->getD3D11PrimitiveTopology())
 			{
-				mD3D11PrimitiveTopology = direct3D11PipelineState->getD3D11PrimitiveTopology();
+				mD3D11PrimitiveTopology = direct3D11GraphicsPipelineState->getD3D11PrimitiveTopology();
 				mD3D11DeviceContext->IASetPrimitiveTopology(mD3D11PrimitiveTopology);
 			}
 
-			// Set pipeline state
-			direct3D11PipelineState->bindPipelineState();
+			// Set graphics pipeline state
+			direct3D11GraphicsPipelineState->bindGraphicsPipelineState();
 		}
 		else
 		{
@@ -10653,7 +10653,7 @@ namespace Direct3D11Renderer
 							case Renderer::ResourceType::VERTEX_BUFFER:
 							case Renderer::ResourceType::UNIFORM_BUFFER:
 							case Renderer::ResourceType::INDIRECT_BUFFER:
-							case Renderer::ResourceType::PIPELINE_STATE:
+							case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 							case Renderer::ResourceType::SAMPLER_STATE:
 							case Renderer::ResourceType::VERTEX_SHADER:
 							case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -10777,7 +10777,7 @@ namespace Direct3D11Renderer
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
-					case Renderer::ResourceType::PIPELINE_STATE:
+					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
 					case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
@@ -10916,7 +10916,7 @@ namespace Direct3D11Renderer
 					case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
-					case Renderer::ResourceType::PIPELINE_STATE:
+					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Renderer::ResourceType::SAMPLER_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -11046,7 +11046,7 @@ namespace Direct3D11Renderer
 				case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 				case Renderer::ResourceType::TEXTURE_3D:
 				case Renderer::ResourceType::TEXTURE_CUBE:
-				case Renderer::ResourceType::PIPELINE_STATE:
+				case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 				case Renderer::ResourceType::SAMPLER_STATE:
 				case Renderer::ResourceType::VERTEX_SHADER:
 				case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -11414,7 +11414,7 @@ namespace Direct3D11Renderer
 			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 			case Renderer::ResourceType::TEXTURE_3D:
 			case Renderer::ResourceType::TEXTURE_CUBE:
-			case Renderer::ResourceType::PIPELINE_STATE:
+			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 			case Renderer::ResourceType::SAMPLER_STATE:
 			case Renderer::ResourceType::VERTEX_SHADER:
 			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -11470,7 +11470,7 @@ namespace Direct3D11Renderer
 			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 			case Renderer::ResourceType::TEXTURE_3D:
 			case Renderer::ResourceType::TEXTURE_CUBE:
-			case Renderer::ResourceType::PIPELINE_STATE:
+			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 			case Renderer::ResourceType::SAMPLER_STATE:
 			case Renderer::ResourceType::VERTEX_SHADER:
 			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -11630,9 +11630,9 @@ namespace Direct3D11Renderer
 		return RENDERER_NEW(mContext, RootSignature)(*this, rootSignature);
 	}
 
-	Renderer::IPipelineState* Direct3D11Renderer::createPipelineState(const Renderer::PipelineState& pipelineState)
+	Renderer::IGraphicsPipelineState* Direct3D11Renderer::createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState)
 	{
-		return RENDERER_NEW(mContext, PipelineState)(*this, pipelineState);
+		return RENDERER_NEW(mContext, GraphicsPipelineState)(*this, graphicsPipelineState);
 	}
 
 	Renderer::ISamplerState* Direct3D11Renderer::createSamplerState(const Renderer::SamplerState& samplerState)
@@ -11697,7 +11697,7 @@ namespace Direct3D11Renderer
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::SWAP_CHAIN:
 			case Renderer::ResourceType::FRAMEBUFFER:
-			case Renderer::ResourceType::PIPELINE_STATE:
+			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 			case Renderer::ResourceType::SAMPLER_STATE:
 			case Renderer::ResourceType::VERTEX_SHADER:
 			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -11776,7 +11776,7 @@ namespace Direct3D11Renderer
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::SWAP_CHAIN:
 			case Renderer::ResourceType::FRAMEBUFFER:
-			case Renderer::ResourceType::PIPELINE_STATE:
+			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 			case Renderer::ResourceType::SAMPLER_STATE:
 			case Renderer::ResourceType::VERTEX_SHADER:
 			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:

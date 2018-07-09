@@ -69,9 +69,9 @@ namespace RendererRuntime
 			STATIC,						///< Static property is used for fixed build in values which usually don't change during runtime (for example hard wired material blueprint textures, hard wired uniform buffer element values or static material properties which the renderer should ignore)
 			SHADER_UNIFORM,				///< Dynamic property is considered to change regularly and hence will be handled as shader uniform managed in a combined uniform buffer
 			SHADER_COMBINATION,			///< Static property is considered to not change regularly and results in shader combinations
-			RASTERIZER_STATE,			///< Pipeline rasterizer state, property is considered to not change regularly
-			DEPTH_STENCIL_STATE,		///< Pipeline depth stencil state, property is considered to not change regularly
-			BLEND_STATE,				///< Pipeline blend state, property is considered to not change regularly
+			RASTERIZER_STATE,			///< Graphics pipeline rasterizer state, property is considered to not change regularly
+			DEPTH_STENCIL_STATE,		///< Graphics pipeline depth stencil state, property is considered to not change regularly
+			BLEND_STATE,				///< Graphics pipeline blend state, property is considered to not change regularly
 			SAMPLER_STATE,				///< Sampler state, property is considered to not change regularly
 			TEXTURE_REFERENCE,			///< Property is a texture asset reference, property is considered to not change regularly
 			GLOBAL_REFERENCE,			///< Property is a global material property reference

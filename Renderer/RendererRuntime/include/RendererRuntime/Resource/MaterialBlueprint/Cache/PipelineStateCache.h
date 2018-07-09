@@ -80,14 +80,14 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Return pipeline state object
+		*    Return graphics pipeline state object
 		*
 		*  @return
-		*    The pipeline state object
+		*    The graphics pipeline state object
 		*/
-		inline Renderer::IPipelineStatePtr getPipelineStateObjectPtr() const
+		inline Renderer::IGraphicsPipelineStatePtr getGraphicsPipelineStateObjectPtr() const
 		{
-			return mPipelineStateObjectPtr;
+			return mGraphicsPipelineStateObjectPtr;
 		}
 
 		/**
@@ -127,9 +127,9 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		PipelineStateSignature		mPipelineStateSignature;
-		Renderer::IPipelineStatePtr	mPipelineStateObjectPtr;
-		bool						mIsUsingFallback;			///< If "true", this pipeline state cache is currently using fallback data because it's in asynchronous compilation
+		PipelineStateSignature				mPipelineStateSignature;
+		Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineStateObjectPtr;
+		bool								mIsUsingFallback;					///< If "true", this pipeline state cache is currently using fallback data because it's in asynchronous compilation
 
 
 	};

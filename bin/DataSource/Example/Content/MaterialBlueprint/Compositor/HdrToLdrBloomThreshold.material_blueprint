@@ -43,7 +43,7 @@
 				"Description": "2D luminance map"
 			}
 		},
-		"PipelineState":
+		"GraphicsPipelineState":
 		{
 			"VertexAttributes": "$ProjectName/VertexAttributes/Default/Null.asset",
 			"ShaderBlueprints":

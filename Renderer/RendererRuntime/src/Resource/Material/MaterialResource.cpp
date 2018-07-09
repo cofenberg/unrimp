@@ -245,10 +245,10 @@ namespace RendererRuntime
 				case MaterialProperty::Usage::RASTERIZER_STATE:
 				case MaterialProperty::Usage::DEPTH_STENCIL_STATE:
 				case MaterialProperty::Usage::BLEND_STATE:
-					// TODO(co) Optimization: The calculation of the FNV1a hash of "Renderer::SerializedPipelineState" is pretty fast, but maybe it makes sense to schedule the calculation in case many material properties are changed in a row?
+					// TODO(co) Optimization: The calculation of the FNV1a hash of "Renderer::SerializedGraphicsPipelineState" is pretty fast, but maybe it makes sense to schedule the calculation in case many material properties are changed in a row?
 					for (MaterialTechnique* materialTechnique : mSortedMaterialTechniqueVector)
 					{
-						materialTechnique->calculateSerializedPipelineStateHash();
+						materialTechnique->calculateSerializedGraphicsPipelineStateHash();
 					}
 					break;
 

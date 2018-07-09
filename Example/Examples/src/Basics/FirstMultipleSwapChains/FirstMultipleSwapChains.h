@@ -44,7 +44,7 @@
 *    - Vertex array object (VAO)
 *    - Vertex shader (VS) and fragment shader (FS)
 *    - Root signature
-*    - Pipeline state object (PSO)
+*    - Graphics pipeline state object (PSO)
 *    - Multiple swap chains
 *
 *  @note
@@ -119,13 +119,13 @@ private:
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
-	ExampleBase					mExampleBaseDummy;
-	Renderer::IBufferManagerPtr	mBufferManager;		///< Buffer manager, can be a null pointer
-	Renderer::CommandBuffer		mCommandBuffer;		///< Command buffer
-	Renderer::IRootSignaturePtr	mRootSignature;		///< Root signature, can be a null pointer
-	Renderer::IPipelineStatePtr	mPipelineState;		///< Pipeline state object (PSO), can be a null pointer
-	Renderer::IVertexArrayPtr	mVertexArray;		///< Vertex array object (VAO), can be a null pointer
-	Renderer::ISwapChainPtr		mSwapChain;			///< Swap chain, can be a null pointer
+	ExampleBase							mExampleBaseDummy;
+	Renderer::IBufferManagerPtr			mBufferManager;			///< Buffer manager, can be a null pointer
+	Renderer::CommandBuffer				mCommandBuffer;			///< Command buffer
+	Renderer::IRootSignaturePtr			mRootSignature;			///< Root signature, can be a null pointer
+	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineState;	///< Graphics pipeline state object (PSO), can be a null pointer
+	Renderer::IVertexArrayPtr			mVertexArray;			///< Vertex array object (VAO), can be a null pointer
+	Renderer::ISwapChainPtr				mSwapChain;				///< Swap chain, can be a null pointer
 
 
 };

@@ -125,11 +125,11 @@ void FirstTriangle::onInitialization()
 				RENDERER_SET_RESOURCE_DEBUG_NAME(program, "Triangle program")
 			}
 
-			// Create the pipeline state object (PSO)
+			// Create the graphics pipeline state object (PSO)
 			if (nullptr != program)
 			{
-				mPipelineState = renderer->createPipelineState(Renderer::PipelineStateBuilder(mRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass()));
-				RENDERER_SET_RESOURCE_DEBUG_NAME(mPipelineState, "Triangle PSO")
+				mGraphicsPipelineState = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass()));
+				RENDERER_SET_RESOURCE_DEBUG_NAME(mGraphicsPipelineState, "Triangle PSO")
 			}
 		}
 
@@ -142,7 +142,7 @@ void FirstTriangle::onDeinitialization()
 {
 	// Release the used resources
 	mVertexArray = nullptr;
-	mPipelineState = nullptr;
+	mGraphicsPipelineState = nullptr;
 	mRootSignature = nullptr;
 	mCommandBuffer.clear();
 	mBufferManager = nullptr;
@@ -168,7 +168,7 @@ void FirstTriangle::fillCommandBuffer()
 	// Sanity checks
 	assert(mCommandBuffer.isEmpty());
 	assert(nullptr != mRootSignature);
-	assert(nullptr != mPipelineState);
+	assert(nullptr != mGraphicsPipelineState);
 	assert(nullptr != mVertexArray);
 
 	// Scoped debug event
@@ -181,7 +181,7 @@ void FirstTriangle::fillCommandBuffer()
 	Renderer::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
 
 	// Set the used graphics pipeline state object (PSO)
-	Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mPipelineState);
+	Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineState);
 
 	// Input assembly (IA): Set the used vertex array
 	Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArray);

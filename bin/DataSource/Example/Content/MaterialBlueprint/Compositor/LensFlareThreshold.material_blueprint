@@ -36,7 +36,7 @@
 				"Description": "2D color map"
 			}
 		},
-		"PipelineState":
+		"GraphicsPipelineState":
 		{
 			"VertexAttributes": "$ProjectName/VertexAttributes/Default/Null.asset",
 			"ShaderBlueprints":

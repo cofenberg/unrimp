@@ -105,7 +105,7 @@ namespace RendererRuntime
 
 			// Tell the pipeline state cache about the real compiled pipeline state object
 			PipelineStateCache& pipelineStateCache = compilerRequest.pipelineStateCache;
-			pipelineStateCache.mPipelineStateObjectPtr = compilerRequest.pipelineStateObject;
+			pipelineStateCache.mGraphicsPipelineStateObjectPtr = static_cast<Renderer::IGraphicsPipelineState*>(compilerRequest.pipelineStateObject);
 			pipelineStateCache.mIsUsingFallback = false;
 			assert(0 != mNumberOfInFlightCompilerRequests);
 			--mNumberOfInFlightCompilerRequests;
@@ -160,7 +160,7 @@ namespace RendererRuntime
 			Renderer::IProgramPtr programPtr = programCache->getProgramPtr();
 			if (nullptr != programPtr)
 			{
-				pipelineStateCache.mPipelineStateObjectPtr = createPipelineState(materialBlueprintResource, pipelineStateSignature.getSerializedPipelineStateHash(), *programPtr);
+				pipelineStateCache.mGraphicsPipelineStateObjectPtr = createGraphicsPipelineState(materialBlueprintResource, pipelineStateSignature.getSerializedGraphicsPipelineStateHash(), *programPtr);
 			}
 		}
 	}
@@ -387,8 +387,8 @@ namespace RendererRuntime
 								static_cast<Renderer::IFragmentShader*>(shaders[static_cast<int>(ShaderType::Fragment)]));
 							RENDERER_SET_RESOURCE_DEBUG_NAME(program, "Pipeline state compiler")
 
-							// Create the pipeline state object (PSO)
-							compilerRequest.pipelineStateObject = createPipelineState(materialBlueprintResource, pipelineStateSignature.getSerializedPipelineStateHash(), *program);
+							// Create the graphics pipeline state object (PSO)
+							compilerRequest.pipelineStateObject = createGraphicsPipelineState(materialBlueprintResource, pipelineStateSignature.getSerializedGraphicsPipelineStateHash(), *program);
 
 							{ // Program cache entry
 								ProgramCacheManager& programCacheManager = materialBlueprintResource.getPipelineStateCacheManager().getProgramCacheManager();
@@ -421,30 +421,30 @@ namespace RendererRuntime
 		}
 	}
 
-	Renderer::IPipelineState* PipelineStateCompiler::createPipelineState(const RendererRuntime::MaterialBlueprintResource& materialBlueprintResource, uint32_t serializedPipelineStateHash, Renderer::IProgram& program) const
+	Renderer::IGraphicsPipelineState* PipelineStateCompiler::createGraphicsPipelineState(const RendererRuntime::MaterialBlueprintResource& materialBlueprintResource, uint32_t serializedGraphicsPipelineStateHash, Renderer::IProgram& program) const
 	{
-		// Start with the pipeline state of the material blueprint resource, then copy over serialized pipeline state
-		Renderer::PipelineState pipelineState = materialBlueprintResource.getPipelineState();
-		materialBlueprintResource.getResourceManager<RendererRuntime::MaterialBlueprintResourceManager>().applySerializedPipelineState(serializedPipelineStateHash, pipelineState);
+		// Start with the graphics pipeline state of the material blueprint resource, then copy over serialized graphics pipeline state
+		Renderer::GraphicsPipelineState graphicsPipelineState = materialBlueprintResource.getGraphicsPipelineState();
+		materialBlueprintResource.getResourceManager<RendererRuntime::MaterialBlueprintResourceManager>().applySerializedGraphicsPipelineState(serializedGraphicsPipelineStateHash, graphicsPipelineState);
 
 		// Setup the dynamic part of the pipeline state
 		const RendererRuntime::IRendererRuntime& rendererRuntime = materialBlueprintResource.getResourceManager<RendererRuntime::MaterialBlueprintResourceManager>().getRendererRuntime();
 		Renderer::IRootSignaturePtr rootSignaturePtr = materialBlueprintResource.getRootSignaturePtr();
-		pipelineState.rootSignature	   = rootSignaturePtr;
-		pipelineState.program		   = &program;
-		pipelineState.vertexAttributes = rendererRuntime.getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes();
+		graphicsPipelineState.rootSignature	   = rootSignaturePtr;
+		graphicsPipelineState.program		   = &program;
+		graphicsPipelineState.vertexAttributes = rendererRuntime.getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes();
 
 		{ // TODO(co) Render pass related update, the render pass in here is currently just a dummy so the debug compositor works
 			Renderer::IRenderer& renderer = rootSignaturePtr->getRenderer();
-			pipelineState.renderPass = renderer.createRenderPass(1, &renderer.getCapabilities().preferredSwapChainColorTextureFormat, renderer.getCapabilities().preferredSwapChainDepthStencilTextureFormat);
+			graphicsPipelineState.renderPass = renderer.createRenderPass(1, &renderer.getCapabilities().preferredSwapChainColorTextureFormat, renderer.getCapabilities().preferredSwapChainDepthStencilTextureFormat);
 		}
 
-		// Create the pipeline state object (PSO)
-		Renderer::IPipelineState* pipelineStateResource = rootSignaturePtr->getRenderer().createPipelineState(pipelineState);
-		RENDERER_SET_RESOURCE_DEBUG_NAME(pipelineStateResource, "Pipeline state compiler")
+		// Create the graphics pipeline state object (PSO)
+		Renderer::IGraphicsPipelineState* graphicsPipelineStateResource = rootSignaturePtr->getRenderer().createGraphicsPipelineState(graphicsPipelineState);
+		RENDERER_SET_RESOURCE_DEBUG_NAME(graphicsPipelineStateResource, "Graphics pipeline state compiler")
 
 		// Done
-		return pipelineStateResource;
+		return graphicsPipelineStateResource;
 	}
 
 

@@ -73,7 +73,7 @@ namespace RendererRuntime
 		MaterialBufferSlot(materialResource),
 		mMaterialTechniqueId(materialTechniqueId),
 		mMaterialBlueprintResourceId(materialBlueprintResourceId),
-		mSerializedPipelineStateHash(getInvalid<uint32_t>())
+		mSerializedGraphicsPipelineStateHash(getInvalid<uint32_t>())
 	{
 		MaterialBufferManager* materialBufferManager = getMaterialBufferManager();
 		if (nullptr != materialBufferManager)
@@ -81,8 +81,8 @@ namespace RendererRuntime
 			materialBufferManager->requestSlot(*this);
 		}
 
-		// Calculate FNV1a hash of "Renderer::SerializedPipelineState"
-		calculateSerializedPipelineStateHash();
+		// Calculate FNV1a hash of "Renderer::SerializedGraphicsPipelineState"
+		calculateSerializedGraphicsPipelineStateHash();
 	}
 
 	MaterialTechnique::~MaterialTechnique()
@@ -253,13 +253,13 @@ namespace RendererRuntime
 		return (nullptr != materialBlueprintResource) ? materialBlueprintResource->getMaterialBufferManager() : nullptr;
 	}
 
-	void MaterialTechnique::calculateSerializedPipelineStateHash()
+	void MaterialTechnique::calculateSerializedGraphicsPipelineStateHash()
 	{
 		const MaterialBlueprintResource* materialBlueprintResource = getMaterialResourceManager().getRendererRuntime().getMaterialBlueprintResourceManager().tryGetById(mMaterialBlueprintResourceId);
 		if (nullptr != materialBlueprintResource)
 		{
-			// Start with the pipeline state of the material blueprint resource
-			Renderer::SerializedPipelineState serializedPipelineState = materialBlueprintResource->getPipelineState();
+			// Start with the graphics pipeline state of the material blueprint resource
+			Renderer::SerializedGraphicsPipelineState serializedGraphicsPipelineState = materialBlueprintResource->getGraphicsPipelineState();
 
 			// Apply material properties
 			// -> Renderer toolkit counterpart is "RendererToolkit::JsonMaterialBlueprintHelper::readPipelineStateObject()"
@@ -285,7 +285,7 @@ namespace RendererRuntime
 							// TODO(co) Implement all rasterizer state properties
 							if (materialProperty.getMaterialPropertyId() == ::detail::CullMode)
 							{
-								serializedPipelineState.rasterizerState.cullMode = materialProperty.getCullModeValue();
+								serializedGraphicsPipelineState.rasterizerState.cullMode = materialProperty.getCullModeValue();
 							}
 							break;
 
@@ -297,7 +297,7 @@ namespace RendererRuntime
 							// TODO(co) Implement all blend state properties
 							if (materialProperty.getMaterialPropertyId() == ::detail::AlphaToCoverageEnable)
 							{
-								serializedPipelineState.blendState.alphaToCoverageEnable = materialProperty.getBooleanValue();
+								serializedGraphicsPipelineState.blendState.alphaToCoverageEnable = materialProperty.getBooleanValue();
 							}
 							break;
 
@@ -315,15 +315,15 @@ namespace RendererRuntime
 				}
 			}
 
-			// Calculate the FNV1a hash of "Renderer::SerializedPipelineState"
-			mSerializedPipelineStateHash = Math::calculateFNV1a32(reinterpret_cast<const uint8_t*>(&serializedPipelineState), sizeof(Renderer::SerializedPipelineState));
+			// Calculate the FNV1a hash of "Renderer::SerializedGraphicsPipelineState"
+			mSerializedGraphicsPipelineStateHash = Math::calculateFNV1a32(reinterpret_cast<const uint8_t*>(&serializedGraphicsPipelineState), sizeof(Renderer::SerializedGraphicsPipelineState));
 
-			// Register the FNV1a hash of "Renderer::SerializedPipelineState" inside the material blueprint resource manager so it's sufficient to pass around the tiny hash instead the over 400 bytes full serialized pipeline state
-			getMaterialResourceManager().getRendererRuntime().getMaterialBlueprintResourceManager().addSerializedPipelineState(mSerializedPipelineStateHash, serializedPipelineState);
+			// Register the FNV1a hash of "Renderer::SerializedGraphicsPipelineState" inside the material blueprint resource manager so it's sufficient to pass around the tiny hash instead the over 400 bytes full serialized pipeline state
+			getMaterialResourceManager().getRendererRuntime().getMaterialBlueprintResourceManager().addSerializedGraphicsPipelineState(mSerializedGraphicsPipelineStateHash, serializedGraphicsPipelineState);
 		}
 		else
 		{
-			setInvalid(mSerializedPipelineStateHash);
+			setInvalid(mSerializedGraphicsPipelineStateHash);
 		}
 	}
 

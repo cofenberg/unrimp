@@ -3362,7 +3362,7 @@ namespace Direct3D12Renderer
 		//[ Graphics                                              ]
 		//[-------------------------------------------------------]
 		void setGraphicsRootSignature(Renderer::IRootSignature* rootSignature);
-		void setGraphicsPipelineState(Renderer::IPipelineState* graphicsPipelineState);
+		void setGraphicsPipelineState(Renderer::IGraphicsPipelineState* graphicsPipelineState);
 		void setGraphicsResourceGroup(uint32_t rootParameterIndex, Renderer::IResourceGroup* resourceGroup);
 		void setGraphicsVertexArray(Renderer::IVertexArray* vertexArray);															// Input-assembler (IA) stage
 		void setGraphicsViewports(uint32_t numberOfViewports, const Renderer::Viewport* viewports);									// Rasterizer (RS) stage
@@ -3421,7 +3421,7 @@ namespace Direct3D12Renderer
 		virtual Renderer::IBufferManager* createBufferManager() override;
 		virtual Renderer::ITextureManager* createTextureManager() override;
 		virtual Renderer::IRootSignature* createRootSignature(const Renderer::RootSignature& rootSignature) override;
-		virtual Renderer::IPipelineState* createPipelineState(const Renderer::PipelineState& pipelineState) override;
+		virtual Renderer::IGraphicsPipelineState* createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState) override;
 		virtual Renderer::ISamplerState* createSamplerState(const Renderer::SamplerState& samplerState) override;
 		//[-------------------------------------------------------]
 		//[ Resource handling                                     ]
@@ -8065,7 +8065,7 @@ namespace Direct3D12Renderer
 						case Renderer::ResourceType::TEXTURE_1D:
 						case Renderer::ResourceType::TEXTURE_3D:
 						case Renderer::ResourceType::TEXTURE_CUBE:
-						case Renderer::ResourceType::PIPELINE_STATE:
+						case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 						case Renderer::ResourceType::SAMPLER_STATE:
 						case Renderer::ResourceType::VERTEX_SHADER:
 						case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -8162,7 +8162,7 @@ namespace Direct3D12Renderer
 					case Renderer::ResourceType::TEXTURE_1D:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
-					case Renderer::ResourceType::PIPELINE_STATE:
+					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Renderer::ResourceType::SAMPLER_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -9552,13 +9552,13 @@ namespace Direct3D12Renderer
 
 
 	//[-------------------------------------------------------]
-	//[ Direct3D12Renderer/State/PipelineState.h              ]
+	//[ Direct3D12Renderer/State/GraphicsPipelineState.h      ]
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    Direct3D 12 pipeline state class
+	*    Direct3D 12 graphics pipeline state class
 	*/
-	class PipelineState final : public Renderer::IPipelineState
+	class GraphicsPipelineState final : public Renderer::IGraphicsPipelineState
 	{
 
 
@@ -9572,16 +9572,16 @@ namespace Direct3D12Renderer
 		*
 		*  @param[in] direct3D12Renderer
 		*    Owner Direct3D 12 renderer instance
-		*  @param[in] pipelineState
-		*    Pipeline state to use
+		*  @param[in] graphicsPipelineState
+		*    Graphics pipeline state to use
 		*/
-		PipelineState(Direct3D12Renderer& direct3D12Renderer, const Renderer::PipelineState& pipelineState) :
-			IPipelineState(direct3D12Renderer),
-			mD3D12PrimitiveTopology(static_cast<D3D12_PRIMITIVE_TOPOLOGY>(pipelineState.primitiveTopology)),
-			mD3D12PipelineState(nullptr),
-			mRootSignature(pipelineState.rootSignature),
-			mProgram(pipelineState.program),
-			mRenderPass(pipelineState.renderPass)
+		GraphicsPipelineState(Direct3D12Renderer& direct3D12Renderer, const Renderer::GraphicsPipelineState& graphicsPipelineState) :
+			IGraphicsPipelineState(direct3D12Renderer),
+			mD3D12PrimitiveTopology(static_cast<D3D12_PRIMITIVE_TOPOLOGY>(graphicsPipelineState.primitiveTopology)),
+			mD3D12GraphicsPipelineState(nullptr),
+			mRootSignature(graphicsPipelineState.rootSignature),
+			mProgram(graphicsPipelineState.program),
+			mRenderPass(graphicsPipelineState.renderPass)
 		{
 			// Add a reference to the given root signature, program and render pass
 			mRootSignature->addReference();
@@ -9591,7 +9591,7 @@ namespace Direct3D12Renderer
 			// Define the vertex input layout
 			// -> No dynamic allocations/deallocations in here, a fixed maximum number of supported attributes must be sufficient
 			static constexpr uint32_t MAXIMUM_NUMBER_OF_ATTRIBUTES = 16;	// 16 elements per vertex are already pretty many
-			uint32_t numberOfVertexAttributes = pipelineState.vertexAttributes.numberOfAttributes;
+			uint32_t numberOfVertexAttributes = graphicsPipelineState.vertexAttributes.numberOfAttributes;
 			if (numberOfVertexAttributes > MAXIMUM_NUMBER_OF_ATTRIBUTES)
 			{
 				RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Too many vertex attributes (%d) provided. The limit of the Direct3D 12 renderer backend is %d.", numberOfVertexAttributes, MAXIMUM_NUMBER_OF_ATTRIBUTES)
@@ -9600,7 +9600,7 @@ namespace Direct3D12Renderer
 			D3D12_INPUT_ELEMENT_DESC d3d12InputElementDescs[MAXIMUM_NUMBER_OF_ATTRIBUTES];
 			for (uint32_t vertexAttribute = 0; vertexAttribute < numberOfVertexAttributes; ++vertexAttribute)
 			{
-				const Renderer::VertexAttribute& currentVertexAttribute = pipelineState.vertexAttributes.attributes[vertexAttribute];
+				const Renderer::VertexAttribute& currentVertexAttribute = graphicsPipelineState.vertexAttributes.attributes[vertexAttribute];
 				D3D12_INPUT_ELEMENT_DESC& d3d12InputElementDesc = d3d12InputElementDescs[vertexAttribute];
 
 				d3d12InputElementDesc.SemanticName		= currentVertexAttribute.semanticName;
@@ -9669,26 +9669,26 @@ namespace Direct3D12Renderer
 					}
 				}
 			}
-			d3d12GraphicsPipelineState.PrimitiveTopologyType = static_cast<D3D12_PRIMITIVE_TOPOLOGY_TYPE>(pipelineState.primitiveTopologyType);
-			memcpy(&d3d12GraphicsPipelineState.RasterizerState, &pipelineState.rasterizerState, sizeof(D3D12_RASTERIZER_DESC));
-			memcpy(&d3d12GraphicsPipelineState.DepthStencilState, &pipelineState.depthStencilState, sizeof(D3D12_DEPTH_STENCIL_DESC));
+			d3d12GraphicsPipelineState.PrimitiveTopologyType = static_cast<D3D12_PRIMITIVE_TOPOLOGY_TYPE>(graphicsPipelineState.primitiveTopologyType);
+			memcpy(&d3d12GraphicsPipelineState.RasterizerState, &graphicsPipelineState.rasterizerState, sizeof(D3D12_RASTERIZER_DESC));
+			memcpy(&d3d12GraphicsPipelineState.DepthStencilState, &graphicsPipelineState.depthStencilState, sizeof(D3D12_DEPTH_STENCIL_DESC));
 			d3d12GraphicsPipelineState.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 			d3d12GraphicsPipelineState.SampleMask = UINT_MAX;
-			d3d12GraphicsPipelineState.NumRenderTargets = pipelineState.numberOfRenderTargets;
-			for (uint32_t i = 0; i < pipelineState.numberOfRenderTargets; ++i)
+			d3d12GraphicsPipelineState.NumRenderTargets = graphicsPipelineState.numberOfRenderTargets;
+			for (uint32_t i = 0; i < graphicsPipelineState.numberOfRenderTargets; ++i)
 			{
-				d3d12GraphicsPipelineState.RTVFormats[i] = Mapping::getDirect3D12Format(pipelineState.renderTargetViewFormats[i]);
+				d3d12GraphicsPipelineState.RTVFormats[i] = Mapping::getDirect3D12Format(graphicsPipelineState.renderTargetViewFormats[i]);
 			}
-			d3d12GraphicsPipelineState.DSVFormat = Mapping::getDirect3D12Format(pipelineState.depthStencilViewFormat);
+			d3d12GraphicsPipelineState.DSVFormat = Mapping::getDirect3D12Format(graphicsPipelineState.depthStencilViewFormat);
 			d3d12GraphicsPipelineState.SampleDesc.Count = 1;
-			if (FAILED(direct3D12Renderer.getD3D12Device()->CreateGraphicsPipelineState(&d3d12GraphicsPipelineState, IID_PPV_ARGS(&mD3D12PipelineState))))
+			if (FAILED(direct3D12Renderer.getD3D12Device()->CreateGraphicsPipelineState(&d3d12GraphicsPipelineState, IID_PPV_ARGS(&mD3D12GraphicsPipelineState))))
 			{
-				RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Failed to create the Direct3D 12 pipeline state object")
+				RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Failed to create the Direct3D 12 graphics pipeline state object")
 			}
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RENDERER_DEBUG
-				setDebugName("Pipeline state");
+				setDebugName("Graphics pipeline state");
 			#endif
 		}
 
@@ -9696,12 +9696,12 @@ namespace Direct3D12Renderer
 		*  @brief
 		*    Destructor
 		*/
-		virtual ~PipelineState() override
+		virtual ~GraphicsPipelineState() override
 		{
-			// Release the Direct3D 12 pipeline state
-			if (nullptr != mD3D12PipelineState)
+			// Release the Direct3D 12 graphics pipeline state
+			if (nullptr != mD3D12GraphicsPipelineState)
 			{
-				mD3D12PipelineState->Release();
+				mD3D12GraphicsPipelineState->Release();
 			}
 
 			// Release the root signature, program and render pass reference
@@ -9724,14 +9724,14 @@ namespace Direct3D12Renderer
 
 		/**
 		*  @brief
-		*    Return the Direct3D 12 pipeline state
+		*    Return the Direct3D 12 graphics pipeline state
 		*
 		*  @return
-		*    The Direct3D 12 pipeline state, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*    The Direct3D 12 graphics pipeline state, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D12PipelineState *getD3D12PipelineState() const
+		inline ID3D12PipelineState *getD3D12GraphicsPipelineState() const
 		{
-			return mD3D12PipelineState;
+			return mD3D12GraphicsPipelineState;
 		}
 
 
@@ -9742,13 +9742,13 @@ namespace Direct3D12Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 12 pipeline state?
-				if (nullptr != mD3D12PipelineState)
+				// Valid Direct3D 12 graphics pipeline state?
+				if (nullptr != mD3D12GraphicsPipelineState)
 				{
 					// Set the debug name
 					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-					FAILED_DEBUG_BREAK(mD3D12PipelineState->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D12PipelineState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
+					FAILED_DEBUG_BREAK(mD3D12GraphicsPipelineState->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D12GraphicsPipelineState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
 			}
 		#endif
@@ -9760,7 +9760,7 @@ namespace Direct3D12Renderer
 	protected:
 		inline virtual void selfDestruct() override
 		{
-			RENDERER_DELETE(getRenderer().getContext(), PipelineState, this);
+			RENDERER_DELETE(getRenderer().getContext(), GraphicsPipelineState, this);
 		}
 
 
@@ -9768,8 +9768,8 @@ namespace Direct3D12Renderer
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		explicit PipelineState(const PipelineState& source) = delete;
-		PipelineState& operator =(const PipelineState& source) = delete;
+		explicit GraphicsPipelineState(const GraphicsPipelineState& source) = delete;
+		GraphicsPipelineState& operator =(const GraphicsPipelineState& source) = delete;
 
 
 	//[-------------------------------------------------------]
@@ -9777,7 +9777,7 @@ namespace Direct3D12Renderer
 	//[-------------------------------------------------------]
 	private:
 		D3D12_PRIMITIVE_TOPOLOGY  mD3D12PrimitiveTopology;
-		ID3D12PipelineState*	  mD3D12PipelineState;	///< Direct3D 12 pipeline state, can be a null pointer
+		ID3D12PipelineState*	  mD3D12GraphicsPipelineState;	///< Direct3D 12 graphics pipeline state, can be a null pointer
 		Renderer::IRootSignature* mRootSignature;
 		Renderer::IProgram*		  mProgram;
 		Renderer::IRenderPass*	  mRenderPass;
@@ -10255,7 +10255,7 @@ namespace Direct3D12Renderer
 		}
 	}
 
-	void Direct3D12Renderer::setGraphicsPipelineState(Renderer::IPipelineState* graphicsPipelineState)
+	void Direct3D12Renderer::setGraphicsPipelineState(Renderer::IGraphicsPipelineState* graphicsPipelineState)
 	{
 		if (nullptr != graphicsPipelineState)
 		{
@@ -10264,15 +10264,15 @@ namespace Direct3D12Renderer
 
 			// Set primitive topology
 			// -> The "Renderer::PrimitiveTopology" values directly map to Direct3D 9 & 10 & 11 && 12 constants, do not change them
-			const PipelineState* direct3D12PipelineState = static_cast<const PipelineState*>(graphicsPipelineState);
-			if (mD3D12PrimitiveTopology != direct3D12PipelineState->getD3D12PrimitiveTopology())
+			const GraphicsPipelineState* direct3D12GraphicsPipelineState = static_cast<const GraphicsPipelineState*>(graphicsPipelineState);
+			if (mD3D12PrimitiveTopology != direct3D12GraphicsPipelineState->getD3D12PrimitiveTopology())
 			{
-				mD3D12PrimitiveTopology = direct3D12PipelineState->getD3D12PrimitiveTopology();
+				mD3D12PrimitiveTopology = direct3D12GraphicsPipelineState->getD3D12PrimitiveTopology();
 				mD3D12GraphicsCommandList->IASetPrimitiveTopology(mD3D12PrimitiveTopology);
 			}
 
 			// Set graphics pipeline state
-			mD3D12GraphicsCommandList->SetPipelineState(static_cast<PipelineState*>(graphicsPipelineState)->getD3D12PipelineState());
+			mD3D12GraphicsCommandList->SetPipelineState(static_cast<GraphicsPipelineState*>(graphicsPipelineState)->getD3D12GraphicsPipelineState());
 		}
 		else
 		{
@@ -10402,7 +10402,7 @@ namespace Direct3D12Renderer
 				case Renderer::ResourceType::VERTEX_BUFFER:
 				case Renderer::ResourceType::TEXTURE_BUFFER:
 				case Renderer::ResourceType::INDIRECT_BUFFER:
-				case Renderer::ResourceType::PIPELINE_STATE:
+				case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 				case Renderer::ResourceType::VERTEX_SHADER:
 				case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
 				case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
@@ -10533,7 +10533,7 @@ namespace Direct3D12Renderer
 					case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
-					case Renderer::ResourceType::PIPELINE_STATE:
+					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Renderer::ResourceType::SAMPLER_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -10640,7 +10640,7 @@ namespace Direct3D12Renderer
 					case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
-					case Renderer::ResourceType::PIPELINE_STATE:
+					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Renderer::ResourceType::SAMPLER_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -10759,7 +10759,7 @@ namespace Direct3D12Renderer
 				case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 				case Renderer::ResourceType::TEXTURE_3D:
 				case Renderer::ResourceType::TEXTURE_CUBE:
-				case Renderer::ResourceType::PIPELINE_STATE:
+				case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 				case Renderer::ResourceType::SAMPLER_STATE:
 				case Renderer::ResourceType::VERTEX_SHADER:
 				case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -11026,9 +11026,9 @@ namespace Direct3D12Renderer
 		return RENDERER_NEW(mContext, RootSignature)(*this, rootSignature);
 	}
 
-	Renderer::IPipelineState* Direct3D12Renderer::createPipelineState(const Renderer::PipelineState& pipelineState)
+	Renderer::IGraphicsPipelineState* Direct3D12Renderer::createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState)
 	{
-		return RENDERER_NEW(mContext, PipelineState)(*this, pipelineState);
+		return RENDERER_NEW(mContext, GraphicsPipelineState)(*this, graphicsPipelineState);
 	}
 
 	Renderer::ISamplerState* Direct3D12Renderer::createSamplerState(const Renderer::SamplerState& samplerState)

@@ -112,6 +112,7 @@ namespace RendererRuntime
 	*
 	*  @note
 	*    - One pipeline state cache manager per material blueprint instance
+	*    - Can be a graphics or compute pipeline state cache (never both)
 	*
 	*  @todo
 	*    - TODO(co) For Vulkan, DirectX 12 and Apple Metal the pipeline state object instance will be managed in here
@@ -157,19 +158,19 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Request a pipeline state cache instance by combination
+		*    Request a graphics pipeline state cache instance by combination
 		*
-		*  @param[in] serializedPipelineStateHash
-		*    FNV1a hash of "Renderer::SerializedPipelineState"
+		*  @param[in] serializeGraphicsdPipelineStateHash
+		*    FNV1a hash of "Renderer::SerializedGraphicsPipelineState"
 		*  @param[in] shaderProperties
 		*    Shader properties to use
 		*  @param[in] allowEmergencySynchronousCompilation
 		*    Allow emergency synchronous compilation if no fallback could be found? This will result in a runtime hiccup instead of graphics artifacts.
 		*
 		*  @return
-		*    The requested pipeline state cache instance, null pointer on error, do not destroy the instance
+		*    The requested graphics pipeline state cache instance, null pointer on error, do not destroy the instance
 		*/
-		Renderer::IPipelineStatePtr getPipelineStateCacheByCombination(uint32_t serializedPipelineStateHash, const ShaderProperties& shaderProperties, bool allowEmergencySynchronousCompilation);
+		Renderer::IGraphicsPipelineStatePtr getGraphicsPipelineStateCacheByCombination(uint32_t serializedGraphicsPipelineStateHash, const ShaderProperties& shaderProperties, bool allowEmergencySynchronousCompilation);
 
 		/**
 		*  @brief

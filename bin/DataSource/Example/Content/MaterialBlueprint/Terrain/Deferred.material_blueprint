@@ -65,7 +65,7 @@
 				"Description": "Desired pixels per triangle edge"
 			}
 		},
-		"PipelineState":
+		"GraphicsPipelineState":
 		{
 			"VertexAttributes": "$ProjectName/VertexAttributes/Default/Terrain.asset",
 			"ShaderBlueprints":

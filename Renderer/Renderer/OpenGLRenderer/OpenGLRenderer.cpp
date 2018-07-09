@@ -142,10 +142,10 @@ namespace OpenGLRenderer
 {
 	class Extensions;
 	class VertexArray;
-	class PipelineState;
 	class RootSignature;
 	class IOpenGLContext;
 	class OpenGLRuntimeLinking;
+	class GraphicsPipelineState;
 }
 
 
@@ -1297,7 +1297,7 @@ namespace OpenGLRenderer
 	//[-------------------------------------------------------]
 	//[ Friends                                               ]
 	//[-------------------------------------------------------]
-		friend class PipelineState;
+		friend class GraphicsPipelineState;
 
 
 	//[-------------------------------------------------------]
@@ -1362,7 +1362,7 @@ namespace OpenGLRenderer
 		//[ Graphics                                              ]
 		//[-------------------------------------------------------]
 		void setGraphicsRootSignature(Renderer::IRootSignature* rootSignature);
-		void setGraphicsPipelineState(Renderer::IPipelineState* graphicsPipelineState);
+		void setGraphicsPipelineState(Renderer::IGraphicsPipelineState* graphicsPipelineState);
 		void setGraphicsResourceGroup(uint32_t rootParameterIndex, Renderer::IResourceGroup* resourceGroup);
 		void setGraphicsVertexArray(Renderer::IVertexArray* vertexArray);															// Input-assembler (IA) stage
 		void setGraphicsViewports(uint32_t numberOfViewports, const Renderer::Viewport* viewports);									// Rasterizer (RS) stage
@@ -1414,7 +1414,7 @@ namespace OpenGLRenderer
 		virtual Renderer::IBufferManager* createBufferManager() override;
 		virtual Renderer::ITextureManager* createTextureManager() override;
 		virtual Renderer::IRootSignature* createRootSignature(const Renderer::RootSignature& rootSignature) override;
-		virtual Renderer::IPipelineState* createPipelineState(const Renderer::PipelineState& pipelineState) override;
+		virtual Renderer::IGraphicsPipelineState* createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState) override;
 		virtual Renderer::ISamplerState* createSamplerState(const Renderer::SamplerState& samplerState) override;
 		//[-------------------------------------------------------]
 		//[ Resource handling                                     ]
@@ -1521,7 +1521,7 @@ namespace OpenGLRenderer
 		GLuint					   mOpenGLCopyResourceFramebuffer;	///< OpenGL framebuffer ("container" object, not shared between OpenGL contexts) used by "OpenGLRenderer::OpenGLRenderer::copyResource()" if the "GL_ARB_copy_image"-extension isn't available, can be zero if no resource is allocated
 		GLuint					   mDefaultOpenGLVertexArray;		///< Default OpenGL vertex array ("container" object, not shared between OpenGL contexts) to enable attribute-less rendering, can be zero if no resource is allocated
 		// States
-		PipelineState* mGraphicsPipelineState;	///< Currently set graphics pipeline state (we keep a reference to it), can be a null pointer
+		GraphicsPipelineState* mGraphicsPipelineState;	///< Currently set graphics pipeline state (we keep a reference to it), can be a null pointer
 		// Input-assembler (IA) stage
 		VertexArray* mVertexArray;				///< Currently set vertex array (we keep a reference to it), can be a null pointer
 		GLenum		 mOpenGLPrimitiveTopology;	///< OpenGL primitive topology describing the type of primitive to render
@@ -11654,7 +11654,7 @@ namespace OpenGLRenderer
 						case Renderer::ResourceType::TEXTURE_1D:
 						case Renderer::ResourceType::TEXTURE_3D:
 						case Renderer::ResourceType::TEXTURE_CUBE:
-						case Renderer::ResourceType::PIPELINE_STATE:
+						case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 						case Renderer::ResourceType::SAMPLER_STATE:
 						case Renderer::ResourceType::VERTEX_SHADER:
 						case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -11721,7 +11721,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::TEXTURE_1D:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
-					case Renderer::ResourceType::PIPELINE_STATE:
+					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Renderer::ResourceType::SAMPLER_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -11885,7 +11885,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::TEXTURE_1D:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
-					case Renderer::ResourceType::PIPELINE_STATE:
+					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Renderer::ResourceType::SAMPLER_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -11958,7 +11958,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::TEXTURE_1D:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
-					case Renderer::ResourceType::PIPELINE_STATE:
+					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Renderer::ResourceType::SAMPLER_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -12213,7 +12213,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::TEXTURE_1D:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
-					case Renderer::ResourceType::PIPELINE_STATE:
+					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Renderer::ResourceType::SAMPLER_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -12300,7 +12300,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::TEXTURE_1D:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
-					case Renderer::ResourceType::PIPELINE_STATE:
+					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Renderer::ResourceType::SAMPLER_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -15864,13 +15864,13 @@ namespace OpenGLRenderer
 
 
 	//[-------------------------------------------------------]
-	//[ OpenGLRenderer/State/PipelineState.h                  ]
+	//[ OpenGLRenderer/State/GraphicsPipelineState.h          ]
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    OpenGL pipeline state class
+	*    OpenGL graphics pipeline state class
 	*/
-	class PipelineState final : public Renderer::IPipelineState
+	class GraphicsPipelineState final : public Renderer::IGraphicsPipelineState
 	{
 
 
@@ -15884,27 +15884,27 @@ namespace OpenGLRenderer
 		*
 		*  @param[in] openGLRenderer
 		*    Owner OpenGL renderer instance
-		*  @param[in] pipelineState
-		*    Pipeline state to use
+		*  @param[in] graphicsPipelineState
+		*    Graphics pipeline state to use
 		*/
-		PipelineState(OpenGLRenderer& openGLRenderer, const Renderer::PipelineState& pipelineState) :
-			IPipelineState(openGLRenderer),
+		GraphicsPipelineState(OpenGLRenderer& openGLRenderer, const Renderer::GraphicsPipelineState& graphicsPipelineState) :
+			IGraphicsPipelineState(openGLRenderer),
 			mOpenGLPrimitiveTopology(0xFFFF),	// Unknown default setting
 			mNumberOfVerticesPerPatch(0),
-			mProgram(pipelineState.program),
-			mRenderPass(pipelineState.renderPass),
-			mRasterizerState(pipelineState.rasterizerState),
-			mDepthStencilState(pipelineState.depthStencilState),
-			mBlendState(pipelineState.blendState)
+			mProgram(graphicsPipelineState.program),
+			mRenderPass(graphicsPipelineState.renderPass),
+			mRasterizerState(graphicsPipelineState.rasterizerState),
+			mDepthStencilState(graphicsPipelineState.depthStencilState),
+			mBlendState(graphicsPipelineState.blendState)
 		{
 			// Tessellation support: Up to 32 vertices per patch are supported "Renderer::PrimitiveTopology::PATCH_LIST_1" ... "Renderer::PrimitiveTopology::PATCH_LIST_32"
-			if (pipelineState.primitiveTopology >= Renderer::PrimitiveTopology::PATCH_LIST_1)
+			if (graphicsPipelineState.primitiveTopology >= Renderer::PrimitiveTopology::PATCH_LIST_1)
 			{
 				// Use tessellation
 
 				// Get number of vertices that will be used to make up a single patch primitive
 				// -> There's no need to check for the "GL_ARB_tessellation_shader" extension, it's there if "Renderer::Capabilities::maximumNumberOfPatchVertices" is not 0
-				const int numberOfVerticesPerPatch = static_cast<int>(pipelineState.primitiveTopology) - static_cast<int>(Renderer::PrimitiveTopology::PATCH_LIST_1) + 1;
+				const int numberOfVerticesPerPatch = static_cast<int>(graphicsPipelineState.primitiveTopology) - static_cast<int>(Renderer::PrimitiveTopology::PATCH_LIST_1) + 1;
 				if (numberOfVerticesPerPatch <= static_cast<int>(openGLRenderer.getCapabilities().maximumNumberOfPatchVertices))
 				{
 					// Set number of vertices that will be used to make up a single patch primitive
@@ -15924,7 +15924,7 @@ namespace OpenGLRenderer
 				// Do not use tessellation
 
 				// Map and backup the set OpenGL primitive topology
-				mOpenGLPrimitiveTopology = Mapping::getOpenGLType(pipelineState.primitiveTopology);
+				mOpenGLPrimitiveTopology = Mapping::getOpenGLType(graphicsPipelineState.primitiveTopology);
 			}
 
 			// Add a reference to the given program and render pass
@@ -15936,7 +15936,7 @@ namespace OpenGLRenderer
 		*  @brief
 		*    Destructor
 		*/
-		virtual ~PipelineState() override
+		virtual ~GraphicsPipelineState() override
 		{
 			// Release the program and render pass reference
 			mProgram->releaseReference();
@@ -15969,9 +15969,9 @@ namespace OpenGLRenderer
 
 		/**
 		*  @brief
-		*    Bind the pipeline state
+		*    Bind the graphics pipeline state
 		*/
-		void bindPipelineState() const
+		void bindGraphicsPipelineState() const
 		{
 			static_cast<OpenGLRenderer&>(getRenderer()).setProgram(mProgram);
 
@@ -16010,7 +16010,7 @@ namespace OpenGLRenderer
 	protected:
 		inline virtual void selfDestruct() override
 		{
-			RENDERER_DELETE(getRenderer().getContext(), PipelineState, this);
+			RENDERER_DELETE(getRenderer().getContext(), GraphicsPipelineState, this);
 		}
 
 
@@ -16018,8 +16018,8 @@ namespace OpenGLRenderer
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		explicit PipelineState(const PipelineState& source) = delete;
-		PipelineState& operator =(const PipelineState& source) = delete;
+		explicit GraphicsPipelineState(const GraphicsPipelineState& source) = delete;
+		GraphicsPipelineState& operator =(const GraphicsPipelineState& source) = delete;
 
 
 	//[-------------------------------------------------------]
@@ -16566,7 +16566,7 @@ namespace OpenGLRenderer
 		}
 	}
 
-	void OpenGLRenderer::setGraphicsPipelineState(Renderer::IPipelineState* graphicsPipelineState)
+	void OpenGLRenderer::setGraphicsPipelineState(Renderer::IGraphicsPipelineState* graphicsPipelineState)
 	{
 		if (mGraphicsPipelineState != graphicsPipelineState)
 		{
@@ -16580,7 +16580,7 @@ namespace OpenGLRenderer
 				{
 					mGraphicsPipelineState->releaseReference();
 				}
-				mGraphicsPipelineState = static_cast<PipelineState*>(graphicsPipelineState);
+				mGraphicsPipelineState = static_cast<GraphicsPipelineState*>(graphicsPipelineState);
 				mGraphicsPipelineState->addReference();
 
 				// Set OpenGL primitive topology
@@ -16593,7 +16593,7 @@ namespace OpenGLRenderer
 				}
 
 				// Set graphics pipeline state
-				mGraphicsPipelineState->bindPipelineState();
+				mGraphicsPipelineState->bindGraphicsPipelineState();
 			}
 			else if (nullptr != mGraphicsPipelineState)
 			{
@@ -16777,7 +16777,7 @@ namespace OpenGLRenderer
 								case Renderer::ResourceType::VERTEX_BUFFER:
 								case Renderer::ResourceType::UNIFORM_BUFFER:
 								case Renderer::ResourceType::INDIRECT_BUFFER:
-								case Renderer::ResourceType::PIPELINE_STATE:
+								case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 								case Renderer::ResourceType::SAMPLER_STATE:
 								case Renderer::ResourceType::VERTEX_SHADER:
 								case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -16895,7 +16895,7 @@ namespace OpenGLRenderer
 									case Renderer::ResourceType::VERTEX_BUFFER:
 									case Renderer::ResourceType::UNIFORM_BUFFER:
 									case Renderer::ResourceType::INDIRECT_BUFFER:
-									case Renderer::ResourceType::PIPELINE_STATE:
+									case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 									case Renderer::ResourceType::SAMPLER_STATE:
 									case Renderer::ResourceType::VERTEX_SHADER:
 									case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -16957,7 +16957,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
-					case Renderer::ResourceType::PIPELINE_STATE:
+					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
 					case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
@@ -17179,7 +17179,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
-					case Renderer::ResourceType::PIPELINE_STATE:
+					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Renderer::ResourceType::SAMPLER_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -17609,7 +17609,7 @@ namespace OpenGLRenderer
 			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 			case Renderer::ResourceType::TEXTURE_3D:
 			case Renderer::ResourceType::TEXTURE_CUBE:
-			case Renderer::ResourceType::PIPELINE_STATE:
+			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 			case Renderer::ResourceType::SAMPLER_STATE:
 			case Renderer::ResourceType::VERTEX_SHADER:
 			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -17702,7 +17702,7 @@ namespace OpenGLRenderer
 			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 			case Renderer::ResourceType::TEXTURE_3D:
 			case Renderer::ResourceType::TEXTURE_CUBE:
-			case Renderer::ResourceType::PIPELINE_STATE:
+			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 			case Renderer::ResourceType::SAMPLER_STATE:
 			case Renderer::ResourceType::VERTEX_SHADER:
 			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -17921,9 +17921,9 @@ namespace OpenGLRenderer
 		return RENDERER_NEW(mContext, RootSignature)(*this, rootSignature);
 	}
 
-	Renderer::IPipelineState* OpenGLRenderer::createPipelineState(const Renderer::PipelineState& pipelineState)
+	Renderer::IGraphicsPipelineState* OpenGLRenderer::createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState)
 	{
-		return RENDERER_NEW(mContext, PipelineState)(*this, pipelineState);
+		return RENDERER_NEW(mContext, GraphicsPipelineState)(*this, graphicsPipelineState);
 	}
 
 	Renderer::ISamplerState* OpenGLRenderer::createSamplerState(const Renderer::SamplerState& samplerState)
@@ -18052,7 +18052,7 @@ namespace OpenGLRenderer
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::SWAP_CHAIN:
 			case Renderer::ResourceType::FRAMEBUFFER:
-			case Renderer::ResourceType::PIPELINE_STATE:
+			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 			case Renderer::ResourceType::SAMPLER_STATE:
 			case Renderer::ResourceType::VERTEX_SHADER:
 			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -18214,7 +18214,7 @@ namespace OpenGLRenderer
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::SWAP_CHAIN:
 			case Renderer::ResourceType::FRAMEBUFFER:
-			case Renderer::ResourceType::PIPELINE_STATE:
+			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 			case Renderer::ResourceType::SAMPLER_STATE:
 			case Renderer::ResourceType::VERTEX_SHADER:
 			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:

@@ -179,7 +179,7 @@ namespace NullRenderer
 		//[ Graphics                                              ]
 		//[-------------------------------------------------------]
 		void setGraphicsRootSignature(Renderer::IRootSignature* rootSignature);
-		void setGraphicsPipelineState(Renderer::IPipelineState* graphicsPipelineState);
+		void setGraphicsPipelineState(Renderer::IGraphicsPipelineState* graphicsPipelineState);
 		void setGraphicsResourceGroup(uint32_t rootParameterIndex, Renderer::IResourceGroup* resourceGroup);
 		void setGraphicsVertexArray(Renderer::IVertexArray* vertexArray);															// Input-assembler (IA) stage
 		void setGraphicsViewports(uint32_t numberOfViewports, const Renderer::Viewport* viewports);									// Rasterizer (RS) stage
@@ -229,7 +229,7 @@ namespace NullRenderer
 		virtual Renderer::IBufferManager* createBufferManager() override;
 		virtual Renderer::ITextureManager* createTextureManager() override;
 		virtual Renderer::IRootSignature* createRootSignature(const Renderer::RootSignature& rootSignature) override;
-		virtual Renderer::IPipelineState* createPipelineState(const Renderer::PipelineState& pipelineState) override;
+		virtual Renderer::IGraphicsPipelineState* createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState) override;
 		virtual Renderer::ISamplerState* createSamplerState(const Renderer::SamplerState& samplerState) override;
 		//[-------------------------------------------------------]
 		//[ Resource handling                                     ]
@@ -2567,13 +2567,13 @@ namespace NullRenderer
 
 
 	//[-------------------------------------------------------]
-	//[ NullRenderer/State/PipelineState.h                    ]
+	//[ NullRenderer/State/GraphicsPipelineState.h            ]
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    Null pipeline state class
+	*    Null graphics pipeline state class
 	*/
-	class PipelineState final : public Renderer::IPipelineState
+	class GraphicsPipelineState final : public Renderer::IGraphicsPipelineState
 	{
 
 
@@ -2587,13 +2587,13 @@ namespace NullRenderer
 		*
 		*  @param[in] nullRenderer
 		*    Owner null renderer instance
-		*  @param[in] pipelineState
-		*    Pipeline state to use
+		*  @param[in] graphicsPipelineState
+		*    Graphics pipeline state to use
 		*/
-		PipelineState(NullRenderer& nullRenderer, const Renderer::PipelineState& pipelineState) :
-			IPipelineState(nullRenderer),
-			mProgram(pipelineState.program),
-			mRenderPass(pipelineState.renderPass)
+		GraphicsPipelineState(NullRenderer& nullRenderer, const Renderer::GraphicsPipelineState& graphicsPipelineState) :
+			IGraphicsPipelineState(nullRenderer),
+			mProgram(graphicsPipelineState.program),
+			mRenderPass(graphicsPipelineState.renderPass)
 		{
 			// Add a reference to the given program and render pass
 			mProgram->addReference();
@@ -2604,7 +2604,7 @@ namespace NullRenderer
 		*  @brief
 		*    Destructor
 		*/
-		virtual ~PipelineState() override
+		virtual ~GraphicsPipelineState() override
 		{
 			// Release the program reference and render pass
 			mProgram->releaseReference();
@@ -2618,7 +2618,7 @@ namespace NullRenderer
 	protected:
 		inline virtual void selfDestruct() override
 		{
-			RENDERER_DELETE(getRenderer().getContext(), PipelineState, this);
+			RENDERER_DELETE(getRenderer().getContext(), GraphicsPipelineState, this);
 		}
 
 
@@ -2626,8 +2626,8 @@ namespace NullRenderer
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		explicit PipelineState(const PipelineState& source) = delete;
-		PipelineState& operator =(const PipelineState& source) = delete;
+		explicit GraphicsPipelineState(const GraphicsPipelineState& source) = delete;
+		GraphicsPipelineState& operator =(const GraphicsPipelineState& source) = delete;
 
 
 	//[-------------------------------------------------------]
@@ -2945,7 +2945,7 @@ namespace NullRenderer
 		}
 	}
 
-	void NullRenderer::setGraphicsPipelineState(Renderer::IPipelineState* graphicsPipelineState)
+	void NullRenderer::setGraphicsPipelineState(Renderer::IGraphicsPipelineState* graphicsPipelineState)
 	{
 		if (nullptr != graphicsPipelineState)
 		{
@@ -3264,9 +3264,9 @@ namespace NullRenderer
 		return RENDERER_NEW(mContext, RootSignature)(*this, rootSignature);
 	}
 
-	Renderer::IPipelineState* NullRenderer::createPipelineState(const Renderer::PipelineState& pipelineState)
+	Renderer::IGraphicsPipelineState* NullRenderer::createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState)
 	{
-		return RENDERER_NEW(mContext, PipelineState)(*this, pipelineState);
+		return RENDERER_NEW(mContext, GraphicsPipelineState)(*this, graphicsPipelineState);
 	}
 
 	Renderer::ISamplerState* NullRenderer::createSamplerState(const Renderer::SamplerState &)

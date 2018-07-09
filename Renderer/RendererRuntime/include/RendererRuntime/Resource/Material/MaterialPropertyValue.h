@@ -94,18 +94,18 @@ namespace RendererRuntime
 			FLOAT_4,							///< Float value with four components
 			FLOAT_3_3,							///< Float value with nine components, declaration property only
 			FLOAT_4_4,							///< Float value with sixteen components, declaration property only
-			// For pipeline rasterizer state property usage
-			FILL_MODE,							///< Pipeline rasterizer state fill mode with possible values: "WIREFRAME", "SOLID"
-			CULL_MODE,							///< Pipeline rasterizer state cull mode with possible values: "NONE", "FRONT", "BACK"
-			CONSERVATIVE_RASTERIZATION_MODE,	///< Pipeline rasterizer state conservative rasterization mode with possible values: "OFF", "ON"
-			// For pipeline depth stencil state property usage
-			DEPTH_WRITE_MASK,					///< Pipeline depth stencil state depth write mask with possible values: "ZERO", "ALL"
-			STENCIL_OP,							///< Pipeline depth stencil state stencil function with possible values: "KEEP", "ZERO", "REPLACE", "INCR_SAT", "DECR_SAT", "INVERT", "INCREASE", "DECREASE"
-			// For pipeline depth stencil state and sampler state property usage
-			COMPARISON_FUNC,					///< Pipeline depth stencil state and sampler state comparison function with possible values: "NEVER", "LESS", "EQUAL", "LESS_EQUAL", "GREATER", "NOT_EQUAL", "GREATER_EQUAL", "ALWAYS"
-			// For pipeline blend state property usage
-			BLEND,								///< Pipeline blend state blend with possible values: "ZERO", "ONE", "SRC_COLOR", "INV_SRC_COLOR", "SRC_ALPHA", "INV_SRC_ALPHA", "DEST_ALPHA", "INV_DEST_ALPHA", "DEST_COLOR", "INV_DEST_COLOR", "SRC_ALPHA_SAT", "BLEND_FACTOR", "INV_BLEND_FACTOR", "SRC_1_COLOR", "INV_SRC_1_COLOR", "SRC_1_ALPHA", "INV_SRC_1_ALPHA"
-			BLEND_OP,							///< Pipeline blend state blend operation with possible values: "ADD", "SUBTRACT", "REV_SUBTRACT", "MIN", "MAX"
+			// For graphics pipeline rasterizer state property usage
+			FILL_MODE,							///< Graphics pipeline rasterizer state fill mode with possible values: "WIREFRAME", "SOLID"
+			CULL_MODE,							///< Graphics pipeline rasterizer state cull mode with possible values: "NONE", "FRONT", "BACK"
+			CONSERVATIVE_RASTERIZATION_MODE,	///< Graphics pipeline rasterizer state conservative rasterization mode with possible values: "OFF", "ON"
+			// For graphics pipeline depth stencil state property usage
+			DEPTH_WRITE_MASK,					///< Graphics pipeline depth stencil state depth write mask with possible values: "ZERO", "ALL"
+			STENCIL_OP,							///< Graphics pipeline depth stencil state stencil function with possible values: "KEEP", "ZERO", "REPLACE", "INCR_SAT", "DECR_SAT", "INVERT", "INCREASE", "DECREASE"
+			// For graphics pipeline depth stencil state and sampler state property usage
+			COMPARISON_FUNC,					///< Graphics pipeline depth stencil state and sampler state comparison function with possible values: "NEVER", "LESS", "EQUAL", "LESS_EQUAL", "GREATER", "NOT_EQUAL", "GREATER_EQUAL", "ALWAYS"
+			// For graphics pipeline blend state property usage
+			BLEND,								///< Graphics pipeline blend state blend with possible values: "ZERO", "ONE", "SRC_COLOR", "INV_SRC_COLOR", "SRC_ALPHA", "INV_SRC_ALPHA", "DEST_ALPHA", "INV_DEST_ALPHA", "DEST_COLOR", "INV_DEST_COLOR", "SRC_ALPHA_SAT", "BLEND_FACTOR", "INV_BLEND_FACTOR", "SRC_1_COLOR", "INV_SRC_1_COLOR", "SRC_1_ALPHA", "INV_SRC_1_ALPHA"
+			BLEND_OP,							///< Graphics pipeline blend state blend operation with possible values: "ADD", "SUBTRACT", "REV_SUBTRACT", "MIN", "MAX"
 			// For sampler state property usage
 			FILTER_MODE,						///< Sampler state filter mode with possible values: "MIN_MAG_MIP_POINT", "MIN_MAG_POINT_MIP_LINEAR", "MIN_POINT_MAG_LINEAR_MIP_POINT", "MIN_POINT_MAG_MIP_LINEAR", "MIN_LINEAR_MAG_MIP_POINT", "MIN_LINEAR_MAG_POINT_MIP_LINEAR", "MIN_MAG_LINEAR_MIP_POINT", "MIN_MAG_MIP_LINEAR", "ANISOTROPIC", "COMPARISON_MIN_MAG_MIP_POINT", "COMPARISON_MIN_MAG_POINT_MIP_LINEAR", "COMPARISON_MIN_POINT_MAG_LINEAR_MIP_POINT", "COMPARISON_MIN_POINT_MAG_MIP_LINEAR", "COMPARISON_MIN_LINEAR_MAG_MIP_POINT", "COMPARISON_MIN_LINEAR_MAG_POINT_MIP_LINEAR", "COMPARISON_MIN_MAG_LINEAR_MIP_POINT", "COMPARISON_MIN_MAG_MIP_LINEAR", "COMPARISON_ANISOTROPIC", "UNKNOWN"
 			TEXTURE_ADDRESS_MODE,				///< Sampler state texture address mode with possible values: "WRAP", "MIRROR", "CLAMP", "BORDER", "MIRROR_ONCE"
@@ -289,7 +289,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		// For pipeline rasterizer state property usage
+		// For graphics pipeline rasterizer state property usage
 		static inline MaterialPropertyValue fromFillMode(Renderer::FillMode value)
 		{
 			MaterialPropertyValue materialPropertyValue;
@@ -314,7 +314,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		// For pipeline depth stencil state property usage
+		// For graphics pipeline depth stencil state property usage
 		static inline MaterialPropertyValue fromDepthWriteMask(Renderer::DepthWriteMask value)
 		{
 			MaterialPropertyValue materialPropertyValue;
@@ -331,7 +331,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		// For pipeline depth stencil state and sampler state property usage
+		// For graphics pipeline depth stencil state and sampler state property usage
 		static inline MaterialPropertyValue fromComparisonFunc(Renderer::ComparisonFunc value)
 		{
 			MaterialPropertyValue materialPropertyValue;
@@ -340,7 +340,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		// // For pipeline blend state property usage
+		// For graphics pipeline blend state property usage
 		static inline MaterialPropertyValue fromBlend(Renderer::Blend value)
 		{
 			MaterialPropertyValue materialPropertyValue;
@@ -483,7 +483,7 @@ namespace RendererRuntime
 		// inline const float* getFloat3_3Value() const;	// Declaration property only
 		// inline const float* getFloat4_4Value() const;	// Declaration property only
 
-		// For pipeline rasterizer state property usage
+		// For graphics pipeline rasterizer state property usage
 		inline Renderer::FillMode getFillModeValue() const
 		{
 			assert(ValueType::FILL_MODE == mValueType);
@@ -502,7 +502,7 @@ namespace RendererRuntime
 			return mValue.ConservativeRasterizationMode;
 		}
 
-		// For pipeline depth stencil state property usage
+		// For graphics pipeline depth stencil state property usage
 		inline Renderer::DepthWriteMask getDepthWriteMaskValue() const
 		{
 			assert(ValueType::DEPTH_WRITE_MASK == mValueType);
@@ -515,14 +515,14 @@ namespace RendererRuntime
 			return mValue.StencilOp;
 		}
 
-		// For pipeline depth stencil state and sampler state property usage
+		// For graphics pipeline depth stencil state and sampler state property usage
 		inline Renderer::ComparisonFunc getComparisonFuncValue() const
 		{
 			assert(ValueType::COMPARISON_FUNC == mValueType);
 			return mValue.ComparisonFunc;
 		}
 
-		// // For pipeline blend state property usage
+		// For graphics pipeline blend state property usage
 		inline Renderer::Blend getBlendValue() const
 		{
 			assert(ValueType::BLEND == mValueType);
@@ -596,16 +596,16 @@ namespace RendererRuntime
 			float											  Float4[4];
 			// float										  Float3_3[9];	// Declaration property only
 			// float										  Float4_4[16];	// Declaration property only
-			// For pipeline rasterizer state property usage
+			// For graphics pipeline rasterizer state property usage
 			Renderer::FillMode								  FillMode;
 			Renderer::CullMode								  CullMode;
 			Renderer::ConservativeRasterizationMode			  ConservativeRasterizationMode;
-			// For pipeline depth stencil state property usage
+			// For graphics pipeline depth stencil state property usage
 			Renderer::DepthWriteMask						  DepthWriteMask;
 			Renderer::StencilOp								  StencilOp;
-			// For pipeline depth stencil state and sampler state property usage
+			// For graphics pipeline depth stencil state and sampler state property usage
 			Renderer::ComparisonFunc						  ComparisonFunc;
-			// // For pipeline blend state property usage
+			// // For graphics pipeline blend state property usage
 			Renderer::Blend									  Blend;
 			Renderer::BlendOp								  BlendOp;
 			// For sampler state property usage

@@ -1618,7 +1618,7 @@ namespace VulkanRenderer
 	//[-------------------------------------------------------]
 	//[ Friends                                               ]
 	//[-------------------------------------------------------]
-		friend class PipelineState;
+		friend class GraphicsPipelineState;
 
 
 	//[-------------------------------------------------------]
@@ -1695,7 +1695,7 @@ namespace VulkanRenderer
 		//[ Graphics                                              ]
 		//[-------------------------------------------------------]
 		void setGraphicsRootSignature(Renderer::IRootSignature* rootSignature);
-		void setGraphicsPipelineState(Renderer::IPipelineState* graphicsPipelineState);
+		void setGraphicsPipelineState(Renderer::IGraphicsPipelineState* graphicsPipelineState);
 		void setGraphicsResourceGroup(uint32_t rootParameterIndex, Renderer::IResourceGroup* resourceGroup);
 		void setGraphicsVertexArray(Renderer::IVertexArray* vertexArray);															// Input-assembler (IA) stage
 		void setGraphicsViewports(uint32_t numberOfViewports, const Renderer::Viewport* viewports);									// Rasterizer (RS) stage
@@ -1747,7 +1747,7 @@ namespace VulkanRenderer
 		virtual Renderer::IBufferManager* createBufferManager() override;
 		virtual Renderer::ITextureManager* createTextureManager() override;
 		virtual Renderer::IRootSignature* createRootSignature(const Renderer::RootSignature& rootSignature) override;
-		virtual Renderer::IPipelineState* createPipelineState(const Renderer::PipelineState& pipelineState) override;
+		virtual Renderer::IGraphicsPipelineState* createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState) override;
 		virtual Renderer::ISamplerState* createSamplerState(const Renderer::SamplerState& samplerState) override;
 		//[-------------------------------------------------------]
 		//[ Resource handling                                     ]
@@ -7295,7 +7295,7 @@ namespace VulkanRenderer
 						case Renderer::ResourceType::TEXTURE_1D:
 						case Renderer::ResourceType::TEXTURE_3D:
 						case Renderer::ResourceType::TEXTURE_CUBE:
-						case Renderer::ResourceType::PIPELINE_STATE:
+						case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 						case Renderer::ResourceType::SAMPLER_STATE:
 						case Renderer::ResourceType::VERTEX_SHADER:
 						case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -7365,7 +7365,7 @@ namespace VulkanRenderer
 					case Renderer::ResourceType::TEXTURE_1D:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
-					case Renderer::ResourceType::PIPELINE_STATE:
+					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Renderer::ResourceType::SAMPLER_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -8679,13 +8679,13 @@ namespace VulkanRenderer
 
 
 	//[-------------------------------------------------------]
-	//[ VulkanRenderer/State/PipelineState.h                  ]
+	//[ VulkanRenderer/State/GraphicsPipelineState.h          ]
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    Vulkan pipeline state class
+	*    Vulkan graphics pipeline state class
 	*/
-	class PipelineState final : public Renderer::IPipelineState
+	class GraphicsPipelineState final : public Renderer::IGraphicsPipelineState
 	{
 
 
@@ -8699,13 +8699,13 @@ namespace VulkanRenderer
 		*
 		*  @param[in] vulkanRenderer
 		*    Owner Vulkan renderer instance
-		*  @param[in] pipelineState
-		*    Pipeline state to use
+		*  @param[in] graphicsPipelineState
+		*    Graphics pipeline state to use
 		*/
-		PipelineState(VulkanRenderer& vulkanRenderer, const Renderer::PipelineState& pipelineState) :
-			IPipelineState(vulkanRenderer),
-			mProgram(pipelineState.program),
-			mRenderPass(pipelineState.renderPass),
+		GraphicsPipelineState(VulkanRenderer& vulkanRenderer, const Renderer::GraphicsPipelineState& graphicsPipelineState) :
+			IGraphicsPipelineState(vulkanRenderer),
+			mProgram(graphicsPipelineState.program),
+			mRenderPass(graphicsPipelineState.renderPass),
 			mVkPipeline(VK_NULL_HANDLE)
 		{
 			// Add a reference to the given program and render pass
@@ -8713,8 +8713,8 @@ namespace VulkanRenderer
 			mRenderPass->addReference();
 
 			// Sanity checks
-			RENDERER_ASSERT(vulkanRenderer.getContext(), nullptr != pipelineState.rootSignature, "Invalid Vulkan root signature")
-			RENDERER_ASSERT(vulkanRenderer.getContext(), nullptr != pipelineState.renderPass, "Invalid Vulkan render pass")
+			RENDERER_ASSERT(vulkanRenderer.getContext(), nullptr != graphicsPipelineState.rootSignature, "Invalid Vulkan root signature")
+			RENDERER_ASSERT(vulkanRenderer.getContext(), nullptr != graphicsPipelineState.renderPass, "Invalid Vulkan render pass")
 
 			// Our pipeline state needs to be independent of concrete render targets, so we're using dynamic viewport ("VK_DYNAMIC_STATE_VIEWPORT") and scissor ("VK_DYNAMIC_STATE_SCISSOR") states
 			static constexpr uint32_t width  = 42;
@@ -8745,12 +8745,12 @@ namespace VulkanRenderer
 			}
 
 			// Vertex attributes
-			const uint32_t numberOfAttributes = pipelineState.vertexAttributes.numberOfAttributes;
+			const uint32_t numberOfAttributes = graphicsPipelineState.vertexAttributes.numberOfAttributes;
 			std::vector<VkVertexInputBindingDescription> vkVertexInputBindingDescriptions;
 			std::vector<VkVertexInputAttributeDescription> vkVertexInputAttributeDescriptions(numberOfAttributes);
 			for (uint32_t attribute = 0; attribute < numberOfAttributes; ++attribute)
 			{
-				const Renderer::VertexAttribute* attributes = &pipelineState.vertexAttributes.attributes[attribute];
+				const Renderer::VertexAttribute* attributes = &graphicsPipelineState.vertexAttributes.attributes[attribute];
 				const uint32_t inputSlot = attributes->inputSlot;
 
 				{ // Map to Vulkan vertex input binding description
@@ -8787,11 +8787,11 @@ namespace VulkanRenderer
 			};
 			const VkPipelineInputAssemblyStateCreateInfo vkPipelineInputAssemblyStateCreateInfo =
 			{
-				VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,	// sType (VkStructureType)
-				nullptr,														// pNext (const void*)
-				0,																// flags (VkPipelineInputAssemblyStateCreateFlags)
-				Mapping::getVulkanType(pipelineState.primitiveTopology),		// topology (VkPrimitiveTopology)
-				VK_FALSE														// primitiveRestartEnable (VkBool32)
+				VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,		// sType (VkStructureType)
+				nullptr,															// pNext (const void*)
+				0,																	// flags (VkPipelineInputAssemblyStateCreateFlags)
+				Mapping::getVulkanType(graphicsPipelineState.primitiveTopology),	// topology (VkPrimitiveTopology)
+				VK_FALSE															// primitiveRestartEnable (VkBool32)
 			};
 			const VkViewport vkViewport =
 			{
@@ -8815,10 +8815,10 @@ namespace VulkanRenderer
 			};
 			const VkPipelineTessellationStateCreateInfo vkPipelineTessellationStateCreateInfo =
 			{
-				VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO,																																							// sType (VkStructureType)
-				nullptr,																																																			// pNext (const void*)
-				0,																																																					// flags (VkPipelineTessellationStateCreateFlags)
-				(pipelineState.primitiveTopology >= Renderer::PrimitiveTopology::PATCH_LIST_1) ? static_cast<uint32_t>(pipelineState.primitiveTopology) - static_cast<uint32_t>(Renderer::PrimitiveTopology::PATCH_LIST_1) + 1 : 1	// patchControlPoints (uint32_t)
+				VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO,																																											// sType (VkStructureType)
+				nullptr,																																																							// pNext (const void*)
+				0,																																																									// flags (VkPipelineTessellationStateCreateFlags)
+				(graphicsPipelineState.primitiveTopology >= Renderer::PrimitiveTopology::PATCH_LIST_1) ? static_cast<uint32_t>(graphicsPipelineState.primitiveTopology) - static_cast<uint32_t>(Renderer::PrimitiveTopology::PATCH_LIST_1) + 1 : 1	// patchControlPoints (uint32_t)
 			};
 			const VkPipelineViewportStateCreateInfo vkPipelineViewportStateCreateInfo =
 			{
@@ -8830,26 +8830,26 @@ namespace VulkanRenderer
 				1,														// scissorCount (uint32_t)
 				&scissorVkRect2D										// pScissors (const VkRect2D*)
 			};
-			const float depthBias = static_cast<float>(pipelineState.rasterizerState.depthBias);
-			const float depthBiasClamp = pipelineState.rasterizerState.depthBiasClamp;
-			const float slopeScaledDepthBias = pipelineState.rasterizerState.slopeScaledDepthBias;
+			const float depthBias = static_cast<float>(graphicsPipelineState.rasterizerState.depthBias);
+			const float depthBiasClamp = graphicsPipelineState.rasterizerState.depthBiasClamp;
+			const float slopeScaledDepthBias = graphicsPipelineState.rasterizerState.slopeScaledDepthBias;
 			const VkPipelineRasterizationStateCreateInfo vkPipelineRasterizationStateCreateInfo =
 			{
-				VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,																	// sType (VkStructureType)
-				nullptr,																													// pNext (const void*)
-				0,																															// flags (VkPipelineRasterizationStateCreateFlags)
-				static_cast<VkBool32>(pipelineState.rasterizerState.depthClipEnable),														// depthClampEnable (VkBool32)
-				VK_FALSE,																													// rasterizerDiscardEnable (VkBool32)
-				(Renderer::FillMode::WIREFRAME == pipelineState.rasterizerState.fillMode) ? VK_POLYGON_MODE_LINE : VK_POLYGON_MODE_FILL,	// polygonMode (VkPolygonMode)
-				static_cast<VkCullModeFlags>(static_cast<int>(pipelineState.rasterizerState.cullMode) - 1),									// cullMode (VkCullModeFlags)
-				(1 == pipelineState.rasterizerState.frontCounterClockwise) ? VK_FRONT_FACE_COUNTER_CLOCKWISE : VK_FRONT_FACE_CLOCKWISE,		// frontFace (VkFrontFace)
-				static_cast<VkBool32>(0.0f != depthBias || 0.0f != depthBiasClamp || 0.0f != slopeScaledDepthBias),							// depthBiasEnable (VkBool32)
-				depthBias,																													// depthBiasConstantFactor (float)
-				depthBiasClamp,																												// depthBiasClamp (float)
-				slopeScaledDepthBias,																										// depthBiasSlopeFactor (float)
-				1.0f																														// lineWidth (float)
+				VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,																			// sType (VkStructureType)
+				nullptr,																															// pNext (const void*)
+				0,																																	// flags (VkPipelineRasterizationStateCreateFlags)
+				static_cast<VkBool32>(graphicsPipelineState.rasterizerState.depthClipEnable),														// depthClampEnable (VkBool32)
+				VK_FALSE,																															// rasterizerDiscardEnable (VkBool32)
+				(Renderer::FillMode::WIREFRAME == graphicsPipelineState.rasterizerState.fillMode) ? VK_POLYGON_MODE_LINE : VK_POLYGON_MODE_FILL,	// polygonMode (VkPolygonMode)
+				static_cast<VkCullModeFlags>(static_cast<int>(graphicsPipelineState.rasterizerState.cullMode) - 1),									// cullMode (VkCullModeFlags)
+				(1 == graphicsPipelineState.rasterizerState.frontCounterClockwise) ? VK_FRONT_FACE_COUNTER_CLOCKWISE : VK_FRONT_FACE_CLOCKWISE,		// frontFace (VkFrontFace)
+				static_cast<VkBool32>(0.0f != depthBias || 0.0f != depthBiasClamp || 0.0f != slopeScaledDepthBias),									// depthBiasEnable (VkBool32)
+				depthBias,																															// depthBiasConstantFactor (float)
+				depthBiasClamp,																														// depthBiasClamp (float)
+				slopeScaledDepthBias,																												// depthBiasSlopeFactor (float)
+				1.0f																																// lineWidth (float)
 			};
-			const RenderPass* renderPass = static_cast<const RenderPass*>(pipelineState.renderPass);
+			const RenderPass* renderPass = static_cast<const RenderPass*>(graphicsPipelineState.renderPass);
 			const VkPipelineMultisampleStateCreateInfo vkPipelineMultisampleStateCreateInfo =
 			{
 				VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,	// sType (VkStructureType)
@@ -8864,42 +8864,42 @@ namespace VulkanRenderer
 			};
 			const VkPipelineDepthStencilStateCreateInfo vkPipelineDepthStencilStateCreateInfo =
 			{
-				VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,												// sType (VkStructureType)
-				nullptr,																								// pNext (const void*)
-				0,																										// flags (VkPipelineDepthStencilStateCreateFlags)
-				static_cast<VkBool32>(0 != pipelineState.depthStencilState.depthEnable),								// depthTestEnable (VkBool32)
-				static_cast<VkBool32>(Renderer::DepthWriteMask::ALL == pipelineState.depthStencilState.depthWriteMask),	// depthWriteEnable (VkBool32)
-				Mapping::getVulkanComparisonFunc(pipelineState.depthStencilState.depthFunc),							// depthCompareOp (VkCompareOp)
-				VK_FALSE,																								// depthBoundsTestEnable (VkBool32)
-				static_cast<VkBool32>(0 != pipelineState.depthStencilState.stencilEnable),								// stencilTestEnable (VkBool32)
+				VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,														// sType (VkStructureType)
+				nullptr,																										// pNext (const void*)
+				0,																												// flags (VkPipelineDepthStencilStateCreateFlags)
+				static_cast<VkBool32>(0 != graphicsPipelineState.depthStencilState.depthEnable),								// depthTestEnable (VkBool32)
+				static_cast<VkBool32>(Renderer::DepthWriteMask::ALL == graphicsPipelineState.depthStencilState.depthWriteMask),	// depthWriteEnable (VkBool32)
+				Mapping::getVulkanComparisonFunc(graphicsPipelineState.depthStencilState.depthFunc),							// depthCompareOp (VkCompareOp)
+				VK_FALSE,																										// depthBoundsTestEnable (VkBool32)
+				static_cast<VkBool32>(0 != graphicsPipelineState.depthStencilState.stencilEnable),								// stencilTestEnable (VkBool32)
 				{ // front (VkStencilOpState)
-					VK_STENCIL_OP_KEEP,																					// failOp (VkStencilOp)
-					VK_STENCIL_OP_KEEP,																					// passOp (VkStencilOp)
-					VK_STENCIL_OP_KEEP,																					// depthFailOp (VkStencilOp)
-					VK_COMPARE_OP_NEVER,																				// compareOp (VkCompareOp)
-					0,																									// compareMask (uint32_t)
-					0,																									// writeMask (uint32_t)
-					0																									// reference (uint32_t)
+					VK_STENCIL_OP_KEEP,																							// failOp (VkStencilOp)
+					VK_STENCIL_OP_KEEP,																							// passOp (VkStencilOp)
+					VK_STENCIL_OP_KEEP,																							// depthFailOp (VkStencilOp)
+					VK_COMPARE_OP_NEVER,																						// compareOp (VkCompareOp)
+					0,																											// compareMask (uint32_t)
+					0,																											// writeMask (uint32_t)
+					0																											// reference (uint32_t)
 				},
 				{ // back (VkStencilOpState)
-					VK_STENCIL_OP_KEEP,																					// failOp (VkStencilOp)
-					VK_STENCIL_OP_KEEP,																					// passOp (VkStencilOp)
-					VK_STENCIL_OP_KEEP,																					// depthFailOp (VkStencilOp)
-					VK_COMPARE_OP_NEVER,																				// compareOp (VkCompareOp)
-					0,																									// compareMask (uint32_t)
-					0,																									// writeMask (uint32_t)
-					0																									// reference (uint32_t)
+					VK_STENCIL_OP_KEEP,																							// failOp (VkStencilOp)
+					VK_STENCIL_OP_KEEP,																							// passOp (VkStencilOp)
+					VK_STENCIL_OP_KEEP,																							// depthFailOp (VkStencilOp)
+					VK_COMPARE_OP_NEVER,																						// compareOp (VkCompareOp)
+					0,																											// compareMask (uint32_t)
+					0,																											// writeMask (uint32_t)
+					0																											// reference (uint32_t)
 				},
-				0.0f,																									// minDepthBounds (float)
-				1.0f																									// maxDepthBounds (float)
+				0.0f,																											// minDepthBounds (float)
+				1.0f																											// maxDepthBounds (float)
 			};
 			const uint32_t numberOfColorAttachments = renderPass->getNumberOfColorAttachments();
 			RENDERER_ASSERT(vulkanRenderer.getContext(), numberOfColorAttachments < 8, "Invalid number of Vulkan color attachments")
-			RENDERER_ASSERT(vulkanRenderer.getContext(), numberOfColorAttachments == pipelineState.numberOfRenderTargets, "Invalid number of Vulkan color attachments")
+			RENDERER_ASSERT(vulkanRenderer.getContext(), numberOfColorAttachments == graphicsPipelineState.numberOfRenderTargets, "Invalid number of Vulkan color attachments")
 			std::array<VkPipelineColorBlendAttachmentState, 8> vkPipelineColorBlendAttachmentStates;
 			for (uint8_t i = 0; i < numberOfColorAttachments; ++i)
 			{
-				const Renderer::RenderTargetBlendDesc& renderTargetBlendDesc = pipelineState.blendState.renderTarget[i];
+				const Renderer::RenderTargetBlendDesc& renderTargetBlendDesc = graphicsPipelineState.blendState.renderTarget[i];
 				VkPipelineColorBlendAttachmentState& vkPipelineColorBlendAttachmentState = vkPipelineColorBlendAttachmentStates[i];
 				vkPipelineColorBlendAttachmentState.blendEnable			= static_cast<VkBool32>(renderTargetBlendDesc.blendEnable);				// blendEnable (VkBool32)
 				vkPipelineColorBlendAttachmentState.srcColorBlendFactor	= Mapping::getVulkanBlendFactor(renderTargetBlendDesc.srcBlend);		// srcColorBlendFactor (VkBlendFactor)
@@ -8936,25 +8936,25 @@ namespace VulkanRenderer
 			};
 			const VkGraphicsPipelineCreateInfo vkGraphicsPipelineCreateInfo =
 			{
-				VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,										// sType (VkStructureType)
-				nullptr,																				// pNext (const void*)
-				0,																						// flags (VkPipelineCreateFlags)
-				stageCount,																				// stageCount (uint32_t)
-				vkPipelineShaderStageCreateInfos.data(),												// pStages (const VkPipelineShaderStageCreateInfo*)
-				&vkPipelineVertexInputStateCreateInfo,													// pVertexInputState (const VkPipelineVertexInputStateCreateInfo*)
-				&vkPipelineInputAssemblyStateCreateInfo,												// pInputAssemblyState (const VkPipelineInputAssemblyStateCreateInfo*)
-				&vkPipelineTessellationStateCreateInfo,													// pTessellationState (const VkPipelineTessellationStateCreateInfo*)
-				&vkPipelineViewportStateCreateInfo,														// pViewportState (const VkPipelineViewportStateCreateInfo*)
-				&vkPipelineRasterizationStateCreateInfo,												// pRasterizationState (const VkPipelineRasterizationStateCreateInfo*)
-				&vkPipelineMultisampleStateCreateInfo,													// pMultisampleState (const VkPipelineMultisampleStateCreateInfo*)
-				&vkPipelineDepthStencilStateCreateInfo,													// pDepthStencilState (const VkPipelineDepthStencilStateCreateInfo*)
-				&vkPipelineColorBlendStateCreateInfo,													// pColorBlendState (const VkPipelineColorBlendStateCreateInfo*)
-				&vkPipelineDynamicStateCreateInfo,														// pDynamicState (const VkPipelineDynamicStateCreateInfo*)
-				static_cast<const RootSignature*>(pipelineState.rootSignature)->getVkPipelineLayout(),	// layout (VkPipelineLayout)
-				renderPass->getVkRenderPass(),															// renderPass (VkRenderPass)
-				0,																						// subpass (uint32_t)
-				VK_NULL_HANDLE,																			// basePipelineHandle (VkPipeline)
-				0																						// basePipelineIndex (int32_t)
+				VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,												// sType (VkStructureType)
+				nullptr,																						// pNext (const void*)
+				0,																								// flags (VkPipelineCreateFlags)
+				stageCount,																						// stageCount (uint32_t)
+				vkPipelineShaderStageCreateInfos.data(),														// pStages (const VkPipelineShaderStageCreateInfo*)
+				&vkPipelineVertexInputStateCreateInfo,															// pVertexInputState (const VkPipelineVertexInputStateCreateInfo*)
+				&vkPipelineInputAssemblyStateCreateInfo,														// pInputAssemblyState (const VkPipelineInputAssemblyStateCreateInfo*)
+				&vkPipelineTessellationStateCreateInfo,															// pTessellationState (const VkPipelineTessellationStateCreateInfo*)
+				&vkPipelineViewportStateCreateInfo,																// pViewportState (const VkPipelineViewportStateCreateInfo*)
+				&vkPipelineRasterizationStateCreateInfo,														// pRasterizationState (const VkPipelineRasterizationStateCreateInfo*)
+				&vkPipelineMultisampleStateCreateInfo,															// pMultisampleState (const VkPipelineMultisampleStateCreateInfo*)
+				&vkPipelineDepthStencilStateCreateInfo,															// pDepthStencilState (const VkPipelineDepthStencilStateCreateInfo*)
+				&vkPipelineColorBlendStateCreateInfo,															// pColorBlendState (const VkPipelineColorBlendStateCreateInfo*)
+				&vkPipelineDynamicStateCreateInfo,																// pDynamicState (const VkPipelineDynamicStateCreateInfo*)
+				static_cast<const RootSignature*>(graphicsPipelineState.rootSignature)->getVkPipelineLayout(),	// layout (VkPipelineLayout)
+				renderPass->getVkRenderPass(),																	// renderPass (VkRenderPass)
+				0,																								// subpass (uint32_t)
+				VK_NULL_HANDLE,																					// basePipelineHandle (VkPipeline)
+				0																								// basePipelineIndex (int32_t)
 			};
 			if (vkCreateGraphicsPipelines(vulkanRenderer.getVulkanContext().getVkDevice(), VK_NULL_HANDLE, 1, &vkGraphicsPipelineCreateInfo, vulkanRenderer.getVkAllocationCallbacks(), &mVkPipeline) != VK_SUCCESS)
 			{
@@ -8970,7 +8970,7 @@ namespace VulkanRenderer
 		*  @brief
 		*    Destructor
 		*/
-		virtual ~PipelineState() override
+		virtual ~GraphicsPipelineState() override
 		{
 			// Destroy the Vulkan graphics pipeline
 			if (VK_NULL_HANDLE != mVkPipeline)
@@ -9018,7 +9018,7 @@ namespace VulkanRenderer
 	protected:
 		inline virtual void selfDestruct() override
 		{
-			RENDERER_DELETE(getRenderer().getContext(), PipelineState, this);
+			RENDERER_DELETE(getRenderer().getContext(), GraphicsPipelineState, this);
 		}
 
 
@@ -9026,8 +9026,8 @@ namespace VulkanRenderer
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		explicit PipelineState(const PipelineState& source) = delete;
-		PipelineState& operator =(const PipelineState& source) = delete;
+		explicit GraphicsPipelineState(const GraphicsPipelineState& source) = delete;
+		GraphicsPipelineState& operator =(const GraphicsPipelineState& source) = delete;
 
 
 	//[-------------------------------------------------------]
@@ -9219,7 +9219,7 @@ namespace VulkanRenderer
 							case Renderer::ResourceType::UNIFORM_BUFFER:
 							case Renderer::ResourceType::INDIRECT_BUFFER:
 							case Renderer::ResourceType::TEXTURE_BUFFER:
-							case Renderer::ResourceType::PIPELINE_STATE:
+							case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 							case Renderer::ResourceType::SAMPLER_STATE:
 							case Renderer::ResourceType::VERTEX_SHADER:
 							case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -9274,7 +9274,7 @@ namespace VulkanRenderer
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
-					case Renderer::ResourceType::PIPELINE_STATE:
+					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
 					case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
@@ -9833,15 +9833,15 @@ namespace VulkanRenderer
 		}
 	}
 
-	void VulkanRenderer::setGraphicsPipelineState(Renderer::IPipelineState* graphicsPipelineState)
+	void VulkanRenderer::setGraphicsPipelineState(Renderer::IGraphicsPipelineState* graphicsPipelineState)
 	{
 		if (nullptr != graphicsPipelineState)
 		{
 			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
 			VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *graphicsPipelineState)
 
-			// Bind Vulkan pipeline
-			vkCmdBindPipeline(getVulkanContext().getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<PipelineState*>(graphicsPipelineState)->getVkPipeline());
+			// Bind Vulkan graphics pipeline
+			vkCmdBindPipeline(getVulkanContext().getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<GraphicsPipelineState*>(graphicsPipelineState)->getVkPipeline());
 		}
 		else
 		{
@@ -10341,9 +10341,9 @@ namespace VulkanRenderer
 		return RENDERER_NEW(mContext, RootSignature)(*this, rootSignature);
 	}
 
-	Renderer::IPipelineState* VulkanRenderer::createPipelineState(const Renderer::PipelineState& pipelineState)
+	Renderer::IGraphicsPipelineState* VulkanRenderer::createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState)
 	{
-		return RENDERER_NEW(mContext, PipelineState)(*this, pipelineState);
+		return RENDERER_NEW(mContext, GraphicsPipelineState)(*this, graphicsPipelineState);
 	}
 
 	Renderer::ISamplerState* VulkanRenderer::createSamplerState(const Renderer::SamplerState& samplerState)
@@ -10432,7 +10432,7 @@ namespace VulkanRenderer
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::SWAP_CHAIN:
 			case Renderer::ResourceType::FRAMEBUFFER:
-			case Renderer::ResourceType::PIPELINE_STATE:
+			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 			case Renderer::ResourceType::SAMPLER_STATE:
 			case Renderer::ResourceType::VERTEX_SHADER:
 			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -10549,7 +10549,7 @@ namespace VulkanRenderer
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::SWAP_CHAIN:
 			case Renderer::ResourceType::FRAMEBUFFER:
-			case Renderer::ResourceType::PIPELINE_STATE:
+			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 			case Renderer::ResourceType::SAMPLER_STATE:
 			case Renderer::ResourceType::VERTEX_SHADER:
 			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -10797,7 +10797,7 @@ namespace VulkanRenderer
 			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 			case Renderer::ResourceType::TEXTURE_3D:
 			case Renderer::ResourceType::TEXTURE_CUBE:
-			case Renderer::ResourceType::PIPELINE_STATE:
+			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 			case Renderer::ResourceType::SAMPLER_STATE:
 			case Renderer::ResourceType::VERTEX_SHADER:
 			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:

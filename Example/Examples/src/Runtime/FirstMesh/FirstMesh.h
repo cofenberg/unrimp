@@ -61,7 +61,7 @@ namespace RendererRuntime
 *    - Sampler state object
 *    - Vertex shader (VS) and fragment shader (FS)
 *    - Root signature
-*    - Pipeline state object (PSO)
+*    - Graphics pipeline state object (PSO)
 *    - Blinn-Phong shading
 *    - Albedo, normal, roughness and emissive mapping
 *    - Optimization: Cache data to not bother the renderer API to much
@@ -128,7 +128,7 @@ private:
 	Renderer::CommandBuffer				  mCommandBuffer;			///< Command buffer
 	Renderer::IRootSignaturePtr			  mRootSignature;			///< Root signature, can be a null pointer
 	Renderer::IUniformBufferPtr			  mUniformBuffer;			///< Uniform buffer object (UBO), can be a null pointer
-	Renderer::IPipelineStatePtr			  mPipelineState;			///< Pipeline state object (PSO), can be a null pointer
+	Renderer::IGraphicsPipelineStatePtr	  mGraphicsPipelineState;	///< Graphics pipeline state object (PSO), can be a null pointer
 	Renderer::IProgramPtr				  mProgram;					///< Program, can be a null pointer
 	RendererRuntime::MeshResourceId		  mMeshResourceId;			///< Mesh resource ID, can be set to invalid value
 	RendererRuntime::TextureResourceId	  m_argb_nxaTextureResourceId;

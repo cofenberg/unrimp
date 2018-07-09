@@ -47,7 +47,7 @@
 *    - Sampler state object
 *    - Vertex shader (VS), fragment shader (FS) and compute shader (CS)
 *    - Root signature
-*    - Pipeline state object (PSO)
+*    - Graphics pipeline state object (PSO)
 *    - Framebuffer object (FBO) used for render to texture
 */
 class FirstComputeShader final : public ExampleBase
@@ -98,15 +98,15 @@ private:
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
-	Renderer::IBufferManagerPtr  mBufferManager;			///< Buffer manager, can be a null pointer
-	Renderer::ITextureManagerPtr mTextureManager;			///< Texture manager, can be a null pointer
-	Renderer::CommandBuffer		 mCommandBuffer;			///< Command buffer
-	Renderer::IRootSignaturePtr	 mGraphicsRootSignature;	///< Graphics root signature, can be a null pointer
-	Renderer::IFramebufferPtr	 mFramebuffer;				///< Framebuffer object (FBO), can be a null pointer
-	Renderer::IResourceGroupPtr	 mTextureGroup;				///< Texture group, can be a null pointer
-	Renderer::IResourceGroupPtr	 mSamplerStateGroup;		///< Sampler state resource group, can be a null pointer
-	Renderer::IPipelineStatePtr  mGraphicsPipelineState;	///< Graphics pipeline state object (PSO), can be a null pointer
-	Renderer::IVertexArrayPtr	 mVertexArray;				///< Vertex array object (VAO), can be a null pointer
+	Renderer::IBufferManagerPtr			mBufferManager;			///< Buffer manager, can be a null pointer
+	Renderer::ITextureManagerPtr		mTextureManager;		///< Texture manager, can be a null pointer
+	Renderer::CommandBuffer				mCommandBuffer;			///< Command buffer
+	Renderer::IRootSignaturePtr			mGraphicsRootSignature;	///< Graphics root signature, can be a null pointer
+	Renderer::IFramebufferPtr			mFramebuffer;			///< Framebuffer object (FBO), can be a null pointer
+	Renderer::IResourceGroupPtr			mTextureGroup;			///< Texture group, can be a null pointer
+	Renderer::IResourceGroupPtr			mSamplerStateGroup;		///< Sampler state resource group, can be a null pointer
+	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineState;	///< Graphics pipeline state object (PSO), can be a null pointer
+	Renderer::IVertexArrayPtr			mVertexArray;			///< Vertex array object (VAO), can be a null pointer
 
 
 };

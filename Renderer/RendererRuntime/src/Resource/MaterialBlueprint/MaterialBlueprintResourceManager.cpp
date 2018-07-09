@@ -281,7 +281,7 @@ namespace RendererRuntime
 								{
 									materialBufferManager->requestSlot(*materialTechnique);
 								}
-								materialTechnique->calculateSerializedPipelineStateHash();
+								materialTechnique->calculateSerializedGraphicsPipelineStateHash();
 							}
 						}
 					}
@@ -359,23 +359,23 @@ namespace RendererRuntime
 		::detail::defaultMaterialBlueprintResourceListener.clear();
 	}
 
-	void MaterialBlueprintResourceManager::addSerializedPipelineState(uint32_t serializedPipelineStateHash, const Renderer::SerializedPipelineState& serializedPipelineState)
+	void MaterialBlueprintResourceManager::addSerializedGraphicsPipelineState(uint32_t serializedGraphicsPipelineStateHash, const Renderer::SerializedGraphicsPipelineState& serializedGraphicsPipelineState)
 	{
-		std::lock_guard<std::mutex> serializedPipelineStatesMutexLock(mSerializedPipelineStatesMutex);
-		SerializedPipelineStates::iterator iterator = mSerializedPipelineStates.find(serializedPipelineStateHash);
-		if (iterator == mSerializedPipelineStates.cend())
+		std::lock_guard<std::mutex> serializedGraphicsPipelineStatesMutexLock(mSerializedGraphicsPipelineStatesMutex);
+		SerializedGraphicsPipelineStates::iterator iterator = mSerializedGraphicsPipelineStates.find(serializedGraphicsPipelineStateHash);
+		if (iterator == mSerializedGraphicsPipelineStates.cend())
 		{
-			mSerializedPipelineStates.emplace(serializedPipelineStateHash, serializedPipelineState);
+			mSerializedGraphicsPipelineStates.emplace(serializedGraphicsPipelineStateHash, serializedGraphicsPipelineState);
 		}
 	}
 
-	void MaterialBlueprintResourceManager::applySerializedPipelineState(uint32_t serializedPipelineStateHash, Renderer::PipelineState& pipelineState)
+	void MaterialBlueprintResourceManager::applySerializedGraphicsPipelineState(uint32_t serializedGraphicsPipelineStateHash, Renderer::GraphicsPipelineState& graphicsPipelineState)
 	{
-		std::lock_guard<std::mutex> serializedPipelineStatesMutexLock(mSerializedPipelineStatesMutex);
-		RendererRuntime::MaterialBlueprintResourceManager::SerializedPipelineStates::const_iterator iterator = mSerializedPipelineStates.find(serializedPipelineStateHash);
-		if (iterator != mSerializedPipelineStates.cend())
+		std::lock_guard<std::mutex> serializedGraphicsPipelineStatesMutexLock(mSerializedGraphicsPipelineStatesMutex);
+		RendererRuntime::MaterialBlueprintResourceManager::SerializedGraphicsPipelineStates::const_iterator iterator = mSerializedGraphicsPipelineStates.find(serializedGraphicsPipelineStateHash);
+		if (iterator != mSerializedGraphicsPipelineStates.cend())
 		{
-			static_cast<Renderer::SerializedPipelineState&>(pipelineState) = iterator->second;
+			static_cast<Renderer::SerializedGraphicsPipelineState&>(graphicsPipelineState) = iterator->second;
 		}
 		else
 		{

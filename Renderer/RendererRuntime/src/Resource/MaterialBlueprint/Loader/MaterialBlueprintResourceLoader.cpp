@@ -180,12 +180,12 @@ namespace RendererRuntime
 			// Read in the shader blueprints
 			mMemoryFile.read(&mShaderBlueprintAssetId, sizeof(AssetId) * NUMBER_OF_SHADER_TYPES);
 
-			// Read in the pipeline state
-			mMemoryFile.read(&mMaterialBlueprintResource->mPipelineState, sizeof(Renderer::SerializedPipelineState));
-			mMaterialBlueprintResource->mPipelineState.rootSignature = nullptr;
-			mMaterialBlueprintResource->mPipelineState.program = nullptr;
-			mMaterialBlueprintResource->mPipelineState.vertexAttributes.numberOfAttributes = 0;
-			mMaterialBlueprintResource->mPipelineState.vertexAttributes.attributes = nullptr;
+			// Read in the graphics pipeline state
+			mMemoryFile.read(&mMaterialBlueprintResource->mGraphicsPipelineState, sizeof(Renderer::SerializedGraphicsPipelineState));
+			mMaterialBlueprintResource->mGraphicsPipelineState.rootSignature = nullptr;
+			mMaterialBlueprintResource->mGraphicsPipelineState.program = nullptr;
+			mMaterialBlueprintResource->mGraphicsPipelineState.vertexAttributes.numberOfAttributes = 0;
+			mMaterialBlueprintResource->mGraphicsPipelineState.vertexAttributes.attributes = nullptr;
 		}
 
 		{ // Read in the uniform buffers

@@ -215,10 +215,10 @@ void FirstTexture::onInitialization()
 					shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 			}
 
-			// Create the pipeline state object (PSO)
+			// Create the graphics pipeline state object (PSO)
 			if (nullptr != program)
 			{
-				mPipelineState = renderer->createPipelineState(Renderer::PipelineStateBuilder(mRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass()));
+				mGraphicsPipelineState = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass()));
 			}
 		}
 
@@ -231,7 +231,7 @@ void FirstTexture::onDeinitialization()
 {
 	// Release the used resources
 	mVertexArray = nullptr;
-	mPipelineState = nullptr;
+	mGraphicsPipelineState = nullptr;
 	mSamplerStateGroup = nullptr;
 	mTextureGroup = nullptr;
 	mRootSignature = nullptr;
@@ -262,7 +262,7 @@ void FirstTexture::fillCommandBuffer()
 	assert(nullptr != mRootSignature);
 	assert(nullptr != mTextureGroup);
 	assert(nullptr != mSamplerStateGroup);
-	assert(nullptr != mPipelineState);
+	assert(nullptr != mGraphicsPipelineState);
 	assert(nullptr != mVertexArray);
 
 	// Scoped debug event
@@ -275,7 +275,7 @@ void FirstTexture::fillCommandBuffer()
 	Renderer::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
 
 	// Set the used graphics pipeline state object (PSO)
-	Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mPipelineState);
+	Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineState);
 
 	// Set graphics resource groups
 	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 0, mTextureGroup);

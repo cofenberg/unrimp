@@ -91,7 +91,7 @@ Renderer API and Backends
 	- Command buffer mandatory by design, not just build on top
 - Textures: 1D, 2D, 2D array, 3D, cube
 - State objects with mapping to API specific settings during creation, not runtime
-	- Pipeline state object (PSO) which directly maps to Direct3D 12, other backends internally subdivide into
+	- Graphics pipeline state object (PSO) which directly maps to Direct3D 12, other backends internally subdivide into
 		- Rasterizer state object (rasterizer stage (RS))
 		- Depth stencil state object (output-merger (OM) stage)
 		- Blend state object (output-merger (OM) stage)
@@ -224,7 +224,7 @@ Terminology and Acronyms
 	- Texture buffer object (TBO)
 	- Sampler state object (SO)
 	- Root signature (Direct3D terminology) = pipeline layout in Vulkan terminology
-	- Pipeline state object (PSO)
+	- Pipeline state object (PSO, there's a graphics PSO and a compute PSO)
 	- Vertex shader (VS)
 	- Tessellation control shader (TCS), "hull shader" in Direct3D terminology
 	- Tessellation evaluation shader (TES), "domain shader" in Direct3D terminology

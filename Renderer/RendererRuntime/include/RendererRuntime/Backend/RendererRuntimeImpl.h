@@ -38,19 +38,6 @@ PRAGMA_WARNING_POP
 
 
 //[-------------------------------------------------------]
-//[ Forward declarations                                  ]
-//[-------------------------------------------------------]
-namespace Renderer
-{
-	class IVertexArray;
-	class ISamplerState;
-	class IRootSignature;
-	class IUniformBuffer;
-	class IPipelineState;
-}
-
-
-//[-------------------------------------------------------]
 //[ Namespace                                             ]
 //[-------------------------------------------------------]
 namespace RendererRuntime

@@ -45,7 +45,7 @@
 *    - Vertex array object (VAO)
 *    - Vertex shader (VS) and fragment shader (FS)
 *    - Root signature
-*    - Pipeline state object (PSO)
+*    - Graphics pipeline state object (PSO)
 *    - Debug methods: When using Direct3D <11.1, those methods map to the Direct3D 9 PIX functions
 *      (D3DPERF_* functions, also works directly within VisualStudio 2017 out-of-the-box)
 */
@@ -90,11 +90,11 @@ public:
 //[ Protected data                                        ]
 //[-------------------------------------------------------]
 protected:
-	Renderer::IBufferManagerPtr	mBufferManager;	///< Buffer manager, can be a null pointer
-	Renderer::CommandBuffer		mCommandBuffer;	///< Command buffer
-	Renderer::IRootSignaturePtr	mRootSignature;	///< Root signature, can be a null pointer
-	Renderer::IPipelineStatePtr	mPipelineState;	///< Pipeline state object (PSO), can be a null pointer
-	Renderer::IVertexArrayPtr	mVertexArray;	///< Vertex array object (VAO), can be a null pointer
+	Renderer::IBufferManagerPtr			mBufferManager;			///< Buffer manager, can be a null pointer
+	Renderer::CommandBuffer				mCommandBuffer;			///< Command buffer
+	Renderer::IRootSignaturePtr			mRootSignature;			///< Root signature, can be a null pointer
+	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineState;	///< Graphics pipeline state object (PSO), can be a null pointer
+	Renderer::IVertexArrayPtr			mVertexArray;			///< Vertex array object (VAO), can be a null pointer
 
 
 //[-------------------------------------------------------]

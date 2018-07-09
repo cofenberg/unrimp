@@ -169,16 +169,16 @@
 							RENDERER_SET_RESOURCE_DEBUG_NAME(program, "Compositor instance pass VR hidden area mesh program")
 						}
 
-						// Create the pipeline state object (PSO)
+						// Create the graphics pipeline state object (PSO)
 						if (nullptr != program)
 						{
 							// TODO(co) Render pass related update, the render pass in here is currently just a dummy so the debug compositor works
 							Renderer::IRenderPass* renderPass = renderer.createRenderPass(1, &renderer.getCapabilities().preferredSwapChainColorTextureFormat, renderer.getCapabilities().preferredSwapChainDepthStencilTextureFormat);
 
-							Renderer::PipelineState pipelineState = Renderer::PipelineStateBuilder(mRootSignature, program, vertexAttributes, *renderPass);
-							pipelineState.rasterizerState.cullMode = Renderer::CullMode::NONE;
-							mPipelineState = renderer.createPipelineState(pipelineState);
-							RENDERER_SET_RESOURCE_DEBUG_NAME(mPipelineState, "Compositor instance pass VR hidden area mesh PSO")
+							Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(mRootSignature, program, vertexAttributes, *renderPass);
+							graphicsPipelineState.rasterizerState.cullMode = Renderer::CullMode::NONE;
+							mGraphicsPipelineState = renderer.createGraphicsPipelineState(graphicsPipelineState);
+							RENDERER_SET_RESOURCE_DEBUG_NAME(mGraphicsPipelineState, "Compositor instance pass VR hidden area mesh PSO")
 						}
 					}
 				}
@@ -187,7 +187,7 @@
 				{
 					mRootSignature->releaseReference();
 					mVertexArrayPtr->releaseReference();
-					mPipelineState->releaseReference();
+					mGraphicsPipelineState->releaseReference();
 				}
 
 				void onFillCommandBuffer(Renderer::CommandBuffer& commandBuffer)
@@ -196,7 +196,7 @@
 					Renderer::Command::SetGraphicsRootSignature::create(commandBuffer, mRootSignature);
 
 					// Set the used graphics pipeline state object (PSO)
-					Renderer::Command::SetGraphicsPipelineState::create(commandBuffer, mPipelineState);
+					Renderer::Command::SetGraphicsPipelineState::create(commandBuffer, mGraphicsPipelineState);
 
 					// Setup input assembly (IA): Set the used vertex array
 					Renderer::Command::SetGraphicsVertexArray::create(commandBuffer, mVertexArrayPtr);
@@ -228,10 +228,10 @@
 			//[ Private data                                          ]
 			//[-------------------------------------------------------]
 			private:
-				Renderer::IRootSignaturePtr	mRootSignature;
-				Renderer::IVertexArrayPtr	mVertexArrayPtr;
-				uint32_t					mNumberOfTriangles;
-				Renderer::IPipelineStatePtr	mPipelineState;	// TODO(co) As soon as we support stencil in here, instance might need different pipeline states
+				Renderer::IRootSignaturePtr			mRootSignature;
+				Renderer::IVertexArrayPtr			mVertexArrayPtr;
+				uint32_t							mNumberOfTriangles;
+				Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineState;	// TODO(co) As soon as we support stencil in here, instance might need different graphics pipeline states
 
 
 			};

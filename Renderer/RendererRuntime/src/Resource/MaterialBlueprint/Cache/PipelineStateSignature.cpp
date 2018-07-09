@@ -93,7 +93,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	PipelineStateSignature::PipelineStateSignature(const PipelineStateSignature& pipelineStateSignature) :
 		mMaterialBlueprintResourceId(pipelineStateSignature.mMaterialBlueprintResourceId),
-		mSerializedPipelineStateHash(pipelineStateSignature.mSerializedPipelineStateHash),
+		mSerializedGraphicsPipelineStateHash(pipelineStateSignature.mSerializedGraphicsPipelineStateHash),
 		mShaderProperties(pipelineStateSignature.mShaderProperties),
 		mPipelineStateSignatureId(pipelineStateSignature.mPipelineStateSignatureId),
 		mShaderCombinationId{getInvalid<ShaderCombinationId>(), getInvalid<ShaderCombinationId>(), getInvalid<ShaderCombinationId>(), getInvalid<ShaderCombinationId>(), getInvalid<ShaderCombinationId>()}
@@ -107,7 +107,7 @@ namespace RendererRuntime
 	PipelineStateSignature& PipelineStateSignature::operator=(const PipelineStateSignature& pipelineStateSignature)
 	{
 		mMaterialBlueprintResourceId = pipelineStateSignature.mMaterialBlueprintResourceId;
-		mSerializedPipelineStateHash = pipelineStateSignature.mSerializedPipelineStateHash;
+		mSerializedGraphicsPipelineStateHash = pipelineStateSignature.mSerializedGraphicsPipelineStateHash;
 		mShaderProperties = pipelineStateSignature.mShaderProperties;
 		mPipelineStateSignatureId = pipelineStateSignature.mPipelineStateSignatureId;
 		for (uint8_t i = 0; i < NUMBER_OF_SHADER_TYPES; ++i)
@@ -121,10 +121,10 @@ namespace RendererRuntime
 
 	void PipelineStateSignature::set(const MaterialBlueprintResource& materialBlueprintResource, uint32_t serializedPipelineStateHash, const ShaderProperties& shaderProperties)
 	{
-		mMaterialBlueprintResourceId = materialBlueprintResource.getId();
-		mSerializedPipelineStateHash = serializedPipelineStateHash;
-		mShaderProperties			 = shaderProperties;
-		mPipelineStateSignatureId	 = Math::FNV1a_INITIAL_HASH_32;
+		mMaterialBlueprintResourceId		 = materialBlueprintResource.getId();
+		mSerializedGraphicsPipelineStateHash = serializedPipelineStateHash;
+		mShaderProperties					 = shaderProperties;
+		mPipelineStateSignatureId			 = Math::FNV1a_INITIAL_HASH_32;
 		for (uint8_t i = 0; i < NUMBER_OF_SHADER_TYPES; ++i)
 		{
 			mShaderCombinationId[i] = getInvalid<ShaderCombinationId>();
@@ -132,7 +132,7 @@ namespace RendererRuntime
 
 		// Incorporate primitive hashes
 		mPipelineStateSignatureId = Math::calculateFNV1a32(reinterpret_cast<const uint8_t*>(&mMaterialBlueprintResourceId), sizeof(uint32_t), mPipelineStateSignatureId);
-		mPipelineStateSignatureId = Math::calculateFNV1a32(reinterpret_cast<const uint8_t*>(&mSerializedPipelineStateHash), sizeof(uint32_t), mPipelineStateSignatureId);
+		mPipelineStateSignatureId = Math::calculateFNV1a32(reinterpret_cast<const uint8_t*>(&mSerializedGraphicsPipelineStateHash), sizeof(uint32_t), mPipelineStateSignatureId);
 
 		// Incorporate shader related hashes
 		const ShaderBlueprintResourceManager& shaderBlueprintResourceManager = materialBlueprintResource.getResourceManager<MaterialBlueprintResourceManager>().getRendererRuntime().getShaderBlueprintResourceManager();

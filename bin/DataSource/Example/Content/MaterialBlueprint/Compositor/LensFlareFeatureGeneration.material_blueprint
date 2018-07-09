@@ -63,7 +63,7 @@
 				"Description": "1D lens color map"
 			}
 		},
-		"PipelineState":
+		"GraphicsPipelineState":
 		{
 			"VertexAttributes": "$ProjectName/VertexAttributes/Default/Null.asset",
 			"ShaderBlueprints":

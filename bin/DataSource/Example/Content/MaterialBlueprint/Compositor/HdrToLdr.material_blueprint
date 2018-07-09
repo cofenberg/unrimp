@@ -78,7 +78,7 @@
 				"Description": "2D lens star map for diffraction starburst, only used of the lens flare map is used"
 			}
 		},
-		"PipelineState":
+		"GraphicsPipelineState":
 		{
 			"VertexAttributes": "$ProjectName/VertexAttributes/Default/Null.asset",
 			"ShaderBlueprints":

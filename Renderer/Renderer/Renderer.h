@@ -330,7 +330,7 @@ namespace Renderer
 			class ITexture3D;
 			class ITextureCube;
 		class IState;
-			class IPipelineState;
+			class IGraphicsPipelineState;
 			class ISamplerState;
 		class IShader;
 			class IVertexShader;
@@ -1141,7 +1141,8 @@ namespace Renderer
 		TEXTURE_3D					   = 15,	///< Texture 3D
 		TEXTURE_CUBE				   = 16,	///< Texture cube
 		// IState
-		PIPELINE_STATE				   = 17,	///< Pipeline state (PSO)
+			// IPipelineState
+			GRAPHICS_PIPELINE_STATE	   = 17,	///< Graphics pipeline state (PSO)
 		SAMPLER_STATE				   = 18,	///< Sampler state
 		// IShader
 		VERTEX_SHADER				   = 19,	///< Vertex shader (VS)
@@ -2941,7 +2942,7 @@ namespace Renderer
 
 	/**
 	*  @brief
-	*    Primitive topology type specifying how the pipeline interprets geometry or hull shader input primitives
+	*    Primitive topology type specifying how the graphics pipeline interprets geometry or hull shader input primitives
 	*
 	*  @note
 	*    - These constants directly map to Direct3D 12 constants, do not change them
@@ -2960,12 +2961,12 @@ namespace Renderer
 
 	/**
 	*  @brief
-	*    Pipeline state
+	*    Graphics pipeline state
 	*/
-	struct SerializedPipelineState
+	struct SerializedGraphicsPipelineState
 	{
 		PrimitiveTopology	  primitiveTopology;			///< Input-assembler (IA) stage: Primitive topology used for draw calls
-		PrimitiveTopologyType primitiveTopologyType;		///< The primitive topology type specifies how the pipeline interprets geometry or hull shader input primitives
+		PrimitiveTopologyType primitiveTopologyType;		///< The primitive topology type specifies how the graphics pipeline interprets geometry or hull shader input primitives
 		RasterizerState		  rasterizerState;				///< Rasterizer state
 		DepthStencilState	  depthStencilState;			///< Depth stencil state
 		BlendState			  blendState;					///< Blend state
@@ -2973,25 +2974,25 @@ namespace Renderer
 		TextureFormat::Enum	  renderTargetViewFormats[8];	///< Render target view formats
 		TextureFormat::Enum	  depthStencilViewFormat;		///< Depth stencil view formats
 	};
-	struct PipelineState : public SerializedPipelineState
+	struct GraphicsPipelineState : public SerializedGraphicsPipelineState
 	{
-		IRootSignature*  rootSignature;		///< Root signature (pipeline state instances keep a reference to the root signature), must be valid
-		IProgram*		 program;			///< Program used by the pipeline state (pipeline state instances keep a reference to the program), must be valid
+		IRootSignature*  rootSignature;		///< Root signature (graphics pipeline state instances keep a reference to the root signature), must be valid
+		IProgram*		 program;			///< Program used by the graphics pipeline state (graphics pipeline state instances keep a reference to the program), must be valid
 		VertexAttributes vertexAttributes;	///< Vertex attributes
-		IRenderPass*	 renderPass;		///< Render pass, the pipeline state keeps a reference
+		IRenderPass*	 renderPass;		///< Render pass, the graphics pipeline state keeps a reference
 	};
-	struct PipelineStateBuilder final : public PipelineState
+	struct GraphicsPipelineStateBuilder final : public GraphicsPipelineState
 	{
-		inline PipelineStateBuilder()
+		inline GraphicsPipelineStateBuilder()
 		{
-			// "PipelineState"-part
+			// "GraphicsPipelineState"-part
 			rootSignature						= nullptr;
 			program								= nullptr;
 			vertexAttributes.numberOfAttributes	= 0;
 			vertexAttributes.attributes			= nullptr;
 			renderPass							= nullptr;
 
-			// "SerializedPipelineState"-part
+			// "SerializedGraphicsPipelineState"-part
 			primitiveTopology					= PrimitiveTopology::TRIANGLE_LIST;
 			primitiveTopologyType				= PrimitiveTopologyType::TRIANGLE;
 			rasterizerState						= RasterizerStateBuilder::getDefaultRasterizerState();
@@ -3009,15 +3010,15 @@ namespace Renderer
 			depthStencilViewFormat				= TextureFormat::D32_FLOAT;
 		}
 
-		inline PipelineStateBuilder(IRootSignature* _rootSignature, IProgram* _program, const VertexAttributes& _vertexAttributes, IRenderPass& _renderPass)
+		inline GraphicsPipelineStateBuilder(IRootSignature* _rootSignature, IProgram* _program, const VertexAttributes& _vertexAttributes, IRenderPass& _renderPass)
 		{
-			// "PipelineState"-part
+			// "GraphicsPipelineState"-part
 			rootSignature				= _rootSignature;
 			program						= _program;
 			vertexAttributes			= _vertexAttributes;
 			renderPass					= &_renderPass;
 
-			// "SerializedPipelineState"-part
+			// "SerializedGraphicsPipelineState"-part
 			primitiveTopology			= PrimitiveTopology::TRIANGLE_LIST;
 			primitiveTopologyType		= PrimitiveTopologyType::TRIANGLE;
 			rasterizerState				= RasterizerStateBuilder::getDefaultRasterizerState();
@@ -3672,8 +3673,8 @@ namespace Renderer
 			std::atomic<uint32_t> currentNumberOfTextureCubes;					///< Current number of texture cube instances
 			std::atomic<uint32_t> numberOfCreatedTextureCubes;					///< Number of created texture cube instances
 			// IState
-			std::atomic<uint32_t> currentNumberOfPipelineStates;				///< Current number of pipeline state (PSO) instances
-			std::atomic<uint32_t> numberOfCreatedPipelineStates;				///< Number of created pipeline state (PSO) instances
+			std::atomic<uint32_t> currentNumberOfGraphicsPipelineStates;		///< Current number of graphics pipeline state (PSO) instances
+			std::atomic<uint32_t> numberOfCreatedGraphicsPipelineStates;		///< Number of created graphics pipeline state (PSO) instances
 			std::atomic<uint32_t> currentNumberOfSamplerStates;					///< Current number of sampler state instances
 			std::atomic<uint32_t> numberOfCreatedSamplerStates;					///< Number of created sampler state instances
 			// IShader
@@ -3735,8 +3736,8 @@ namespace Renderer
 				currentNumberOfTextureCubes(0),
 				numberOfCreatedTextureCubes(0),
 				// IState
-				currentNumberOfPipelineStates(0),
-				numberOfCreatedPipelineStates(0),
+				currentNumberOfGraphicsPipelineStates(0),
+				numberOfCreatedGraphicsPipelineStates(0),
 				currentNumberOfSamplerStates(0),
 				numberOfCreatedSamplerStates(0),
 				// IShader
@@ -3796,7 +3797,7 @@ namespace Renderer
 						currentNumberOfTexture3Ds +
 						currentNumberOfTextureCubes +
 						// IState
-						currentNumberOfPipelineStates +
+						currentNumberOfGraphicsPipelineStates +
 						currentNumberOfSamplerStates +
 						// IShader
 						currentNumberOfVertexShaders +
@@ -3848,7 +3849,7 @@ namespace Renderer
 				RENDERER_LOG(context, INFORMATION, "Cube textures: %d", currentNumberOfTextureCubes.load())
 
 				// IState
-				RENDERER_LOG(context, INFORMATION, "Pipeline states: %d", currentNumberOfPipelineStates.load())
+				RENDERER_LOG(context, INFORMATION, "Graphics pipeline states: %d", currentNumberOfGraphicsPipelineStates.load())
 				RENDERER_LOG(context, INFORMATION, "Sampler states: %d", currentNumberOfSamplerStates.load())
 
 				// IShader
@@ -3918,7 +3919,7 @@ namespace Renderer
 		friend class ITexture2DArray;
 		friend class ITexture3D;
 		friend class ITextureCube;
-		friend class IPipelineState;
+		friend class IGraphicsPipelineState;
 		friend class ISamplerState;
 		friend class IVertexShader;
 		friend class ITessellationControlShader;
@@ -4180,15 +4181,15 @@ namespace Renderer
 
 		/**
 		*  @brief
-		*    Create a pipeline state instance
+		*    Create a graphics pipeline state instance
 		*
-		*  @param[in] pipelineState
-		*    Pipeline state to use
+		*  @param[in] graphicsPipelineState
+		*    Graphics pipeline state to use
 		*
 		*  @return
-		*    The pipeline state instance, null pointer on error. Release the returned instance if you no longer need it.
+		*    The graphics pipeline state instance, null pointer on error. Release the returned instance if you no longer need it.
 		*/
-		virtual IPipelineState* createPipelineState(const PipelineState& pipelineState) = 0;
+		virtual IGraphicsPipelineState* createGraphicsPipelineState(const GraphicsPipelineState& graphicsPipelineState) = 0;
 
 		/**
 		*  @brief
@@ -7127,10 +7128,54 @@ namespace Renderer
 		*    Destructor
 		*/
 		inline virtual ~IPipelineState() override
+		{}
+
+	// Protected methods
+	protected:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] resourceType
+		*    The resource type
+		*  @param[in] renderer
+		*    Owner renderer instance
+		*/
+		inline explicit IPipelineState(ResourceType resourceType, IRenderer& renderer) :
+			IState(resourceType, renderer)
+		{}
+
+		explicit IPipelineState(const IPipelineState& source) = delete;
+		IPipelineState& operator =(const IPipelineState& source) = delete;
+
+	};
+
+	typedef SmartRefCount<IPipelineState> IPipelineStatePtr;
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ Renderer/State/IGraphicsPipelineState.h               ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Abstract graphics pipeline state interface
+	*/
+	class IGraphicsPipelineState : public IPipelineState
+	{
+
+	// Public methods
+	public:
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~IGraphicsPipelineState() override
 		{
 			#ifdef RENDERER_STATISTICS
 				// Update the statistics
-				--getRenderer().getStatistics().currentNumberOfPipelineStates;
+				--getRenderer().getStatistics().currentNumberOfGraphicsPipelineStates;
 			#endif
 		}
 
@@ -7143,22 +7188,22 @@ namespace Renderer
 		*  @param[in] renderer
 		*    Owner renderer instance
 		*/
-		inline explicit IPipelineState(IRenderer& renderer) :
-			IState(ResourceType::PIPELINE_STATE, renderer)
+		inline explicit IGraphicsPipelineState(IRenderer& renderer) :
+			IPipelineState(ResourceType::GRAPHICS_PIPELINE_STATE, renderer)
 		{
 			#ifdef RENDERER_STATISTICS
 				// Update the statistics
-				++getRenderer().getStatistics().numberOfCreatedPipelineStates;
-				++getRenderer().getStatistics().currentNumberOfPipelineStates;
+				++getRenderer().getStatistics().numberOfCreatedGraphicsPipelineStates;
+				++getRenderer().getStatistics().currentNumberOfGraphicsPipelineStates;
 			#endif
 		}
 
-		explicit IPipelineState(const IPipelineState& source) = delete;
-		IPipelineState& operator =(const IPipelineState& source) = delete;
+		explicit IGraphicsPipelineState(const IGraphicsPipelineState& source) = delete;
+		IGraphicsPipelineState& operator =(const IGraphicsPipelineState& source) = delete;
 
 	};
 
-	typedef SmartRefCount<IPipelineState> IPipelineStatePtr;
+	typedef SmartRefCount<IGraphicsPipelineState> IGraphicsPipelineStatePtr;
 
 
 
@@ -8119,16 +8164,16 @@ namespace Renderer
 		struct SetGraphicsPipelineState final
 		{
 			// Static methods
-			static inline void create(CommandBuffer& commandBuffer, IPipelineState* graphicsPipelineState)
+			static inline void create(CommandBuffer& commandBuffer, IGraphicsPipelineState* graphicsPipelineState)
 			{
 				*commandBuffer.addCommand<SetGraphicsPipelineState>() = SetGraphicsPipelineState(graphicsPipelineState);
 			}
 			// Constructor
-			inline SetGraphicsPipelineState(IPipelineState* _graphicsPipelineState) :
+			inline SetGraphicsPipelineState(IGraphicsPipelineState* _graphicsPipelineState) :
 				graphicsPipelineState(_graphicsPipelineState)
 			{}
 			// Data
-			IPipelineState* graphicsPipelineState;
+			IGraphicsPipelineState* graphicsPipelineState;
 			// Static data
 			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetGraphicsPipelineState;
 		};

@@ -50,7 +50,7 @@
 				"RangeStep": "0.05"
 			}
 		},
-		"PipelineState":
+		"GraphicsPipelineState":
 		{
 			"VertexAttributes": "$ProjectName/VertexAttributes/Default/Mesh.asset",
 			"ShaderBlueprints":

@@ -23,7 +23,7 @@
 				"Description": "2D background map"
 			}
 		},
-		"PipelineState":
+		"GraphicsPipelineState":
 		{
 			"VertexAttributes": "$ProjectName/VertexAttributes/Default/DebugGui.asset",
 			"ShaderBlueprints":

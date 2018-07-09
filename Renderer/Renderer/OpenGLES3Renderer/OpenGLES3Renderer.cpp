@@ -110,8 +110,8 @@ namespace OpenGLES3Renderer
 	class VertexArray;
 	class IExtensions;
 	class RootSignature;
-	class PipelineState;
 	class IOpenGLES3Context;
+	class GraphicsPipelineState;
 }
 
 
@@ -753,7 +753,7 @@ namespace OpenGLES3Renderer
 	//[-------------------------------------------------------]
 	//[ Friends                                               ]
 	//[-------------------------------------------------------]
-		friend class PipelineState;
+		friend class GraphicsPipelineState;
 
 
 	//[-------------------------------------------------------]
@@ -794,7 +794,7 @@ namespace OpenGLES3Renderer
 		//[ Graphics                                              ]
 		//[-------------------------------------------------------]
 		void setGraphicsRootSignature(Renderer::IRootSignature* rootSignature);
-		void setGraphicsPipelineState(Renderer::IPipelineState* graphicsPipelineState);
+		void setGraphicsPipelineState(Renderer::IGraphicsPipelineState* graphicsPipelineState);
 		void setGraphicsResourceGroup(uint32_t rootParameterIndex, Renderer::IResourceGroup* resourceGroup);
 		void setGraphicsVertexArray(Renderer::IVertexArray* vertexArray);															// Input-assembler (IA) stage
 		void setGraphicsViewports(uint32_t numberOfViewports, const Renderer::Viewport* viewports);									// Rasterizer (RS) stage
@@ -840,7 +840,7 @@ namespace OpenGLES3Renderer
 		virtual Renderer::IBufferManager* createBufferManager() override;
 		virtual Renderer::ITextureManager* createTextureManager() override;
 		virtual Renderer::IRootSignature* createRootSignature(const Renderer::RootSignature& rootSignature) override;
-		virtual Renderer::IPipelineState* createPipelineState(const Renderer::PipelineState& pipelineState) override;
+		virtual Renderer::IGraphicsPipelineState* createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState) override;
 		virtual Renderer::ISamplerState* createSamplerState(const Renderer::SamplerState& samplerState) override;
 		//[-------------------------------------------------------]
 		//[ Resource handling                                     ]
@@ -939,7 +939,7 @@ namespace OpenGLES3Renderer
 		GLuint					   mOpenGLES3CopyResourceFramebuffer;	///< OpenGL ES 3 framebuffer ("container" object, not shared between OpenGL ES 3 contexts) used by "OpenGLES3Renderer::OpenGLES3Renderer::copyResource()", can be zero if no resource is allocated
 		GLuint					   mDefaultOpenGLES3VertexArray;		///< Default OpenGL ES 3 vertex array ("container" object, not shared between OpenGL contexts) to enable attribute-less rendering, can be zero if no resource is allocated
 		// States
-		PipelineState* mGraphicsPipelineState;	///< Currently set graphics pipeline state (we keep a reference to it), can be a null pointer
+		GraphicsPipelineState* mGraphicsPipelineState;	///< Currently set graphics pipeline state (we keep a reference to it), can be a null pointer
 		// Input-assembler (IA) stage
 		VertexArray* mVertexArray;					///< Currently set vertex array (we keep a reference to it), can be a null pointer
 		GLenum		 mOpenGLES3PrimitiveTopology;	///< OpenGL ES 3 primitive topology describing the type of primitive to render
@@ -7131,7 +7131,7 @@ namespace OpenGLES3Renderer
 						case Renderer::ResourceType::TEXTURE_1D:
 						case Renderer::ResourceType::TEXTURE_3D:
 						case Renderer::ResourceType::TEXTURE_CUBE:
-						case Renderer::ResourceType::PIPELINE_STATE:
+						case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 						case Renderer::ResourceType::SAMPLER_STATE:
 						case Renderer::ResourceType::VERTEX_SHADER:
 						case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -7204,7 +7204,7 @@ namespace OpenGLES3Renderer
 					case Renderer::ResourceType::TEXTURE_1D:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
-					case Renderer::ResourceType::PIPELINE_STATE:
+					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Renderer::ResourceType::SAMPLER_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -8360,13 +8360,13 @@ namespace OpenGLES3Renderer
 
 
 	//[-------------------------------------------------------]
-	//[ OpenGLES3Renderer/State/PipelineState.h               ]
+	//[ OpenGLES3Renderer/State/GraphicsPipelineState.h       ]
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    OpenGL ES 3 pipeline state class
+	*    OpenGL ES 3 graphics pipeline state class
 	*/
-	class PipelineState final : public Renderer::IPipelineState
+	class GraphicsPipelineState final : public Renderer::IGraphicsPipelineState
 	{
 
 
@@ -8380,17 +8380,17 @@ namespace OpenGLES3Renderer
 		*
 		*  @param[in] openGLES3Renderer
 		*    Owner OpenGL ES 3 renderer instance
-		*  @param[in] pipelineState
-		*    Pipeline state to use
+		*  @param[in] graphicsPipelineState
+		*    Graphics pipeline state to use
 		*/
-		PipelineState(OpenGLES3Renderer& openGLES3Renderer, const Renderer::PipelineState& pipelineState) :
-			IPipelineState(openGLES3Renderer),
-			mOpenGLES3PrimitiveTopology(Mapping::getOpenGLES3Type(pipelineState.primitiveTopology)),
-			mProgram(pipelineState.program),
-			mRenderPass(pipelineState.renderPass),
-			mRasterizerState(pipelineState.rasterizerState),
-			mDepthStencilState(pipelineState.depthStencilState),
-			mBlendState(pipelineState.blendState)
+		GraphicsPipelineState(OpenGLES3Renderer& openGLES3Renderer, const Renderer::GraphicsPipelineState& graphicsPipelineState) :
+			IGraphicsPipelineState(openGLES3Renderer),
+			mOpenGLES3PrimitiveTopology(Mapping::getOpenGLES3Type(graphicsPipelineState.primitiveTopology)),
+			mProgram(graphicsPipelineState.program),
+			mRenderPass(graphicsPipelineState.renderPass),
+			mRasterizerState(graphicsPipelineState.rasterizerState),
+			mDepthStencilState(graphicsPipelineState.depthStencilState),
+			mBlendState(graphicsPipelineState.blendState)
 		{
 			// Add a reference to the given program and render pass
 			mProgram->addReference();
@@ -8401,7 +8401,7 @@ namespace OpenGLES3Renderer
 		*  @brief
 		*    Destructor
 		*/
-		virtual ~PipelineState() override
+		virtual ~GraphicsPipelineState() override
 		{
 			// Release the program and render pass reference
 			mProgram->releaseReference();
@@ -8422,9 +8422,9 @@ namespace OpenGLES3Renderer
 
 		/**
 		*  @brief
-		*    Bind the pipeline state
+		*    Bind the graphics pipeline state
 		*/
-		void bindPipelineState() const
+		void bindGraphicsPipelineState() const
 		{
 			static_cast<OpenGLES3Renderer&>(getRenderer()).setProgram(mProgram);
 
@@ -8463,7 +8463,7 @@ namespace OpenGLES3Renderer
 	protected:
 		inline virtual void selfDestruct() override
 		{
-			RENDERER_DELETE(getRenderer().getContext(), PipelineState, this);
+			RENDERER_DELETE(getRenderer().getContext(), GraphicsPipelineState, this);
 		}
 
 
@@ -8471,8 +8471,8 @@ namespace OpenGLES3Renderer
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		explicit PipelineState(const PipelineState& source) = delete;
-		PipelineState& operator =(const PipelineState& source) = delete;
+		explicit GraphicsPipelineState(const GraphicsPipelineState& source) = delete;
+		GraphicsPipelineState& operator =(const GraphicsPipelineState& source) = delete;
 
 
 	//[-------------------------------------------------------]
@@ -8946,7 +8946,7 @@ namespace OpenGLES3Renderer
 		}
 	}
 
-	void OpenGLES3Renderer::setGraphicsPipelineState(Renderer::IPipelineState* graphicsPipelineState)
+	void OpenGLES3Renderer::setGraphicsPipelineState(Renderer::IGraphicsPipelineState* graphicsPipelineState)
 	{
 		if (mGraphicsPipelineState != graphicsPipelineState)
 		{
@@ -8960,12 +8960,12 @@ namespace OpenGLES3Renderer
 				{
 					mGraphicsPipelineState->releaseReference();
 				}
-				mGraphicsPipelineState = static_cast<PipelineState*>(graphicsPipelineState);
+				mGraphicsPipelineState = static_cast<GraphicsPipelineState*>(graphicsPipelineState);
 				mGraphicsPipelineState->addReference();
 
 				// Set graphics pipeline state
 				mOpenGLES3PrimitiveTopology = mGraphicsPipelineState->getOpenGLES3PrimitiveTopology();
-				mGraphicsPipelineState->bindPipelineState();
+				mGraphicsPipelineState->bindGraphicsPipelineState();
 			}
 			else if (nullptr != mGraphicsPipelineState)
 			{
@@ -9157,7 +9157,7 @@ namespace OpenGLES3Renderer
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
-					case Renderer::ResourceType::PIPELINE_STATE:
+					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
 					case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
@@ -9360,7 +9360,7 @@ namespace OpenGLES3Renderer
 					case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
-					case Renderer::ResourceType::PIPELINE_STATE:
+					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Renderer::ResourceType::SAMPLER_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -9692,7 +9692,7 @@ namespace OpenGLES3Renderer
 			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 			case Renderer::ResourceType::TEXTURE_3D:
 			case Renderer::ResourceType::TEXTURE_CUBE:
-			case Renderer::ResourceType::PIPELINE_STATE:
+			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 			case Renderer::ResourceType::SAMPLER_STATE:
 			case Renderer::ResourceType::VERTEX_SHADER:
 			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -9856,9 +9856,9 @@ namespace OpenGLES3Renderer
 		return RENDERER_NEW(mContext, RootSignature)(*this, rootSignature);
 	}
 
-	Renderer::IPipelineState* OpenGLES3Renderer::createPipelineState(const Renderer::PipelineState& pipelineState)
+	Renderer::IGraphicsPipelineState* OpenGLES3Renderer::createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState)
 	{
-		return RENDERER_NEW(mContext, PipelineState)(*this, pipelineState);
+		return RENDERER_NEW(mContext, GraphicsPipelineState)(*this, graphicsPipelineState);
 	}
 
 	Renderer::ISamplerState* OpenGLES3Renderer::createSamplerState(const Renderer::SamplerState& samplerState)
@@ -9988,7 +9988,7 @@ namespace OpenGLES3Renderer
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::SWAP_CHAIN:
 			case Renderer::ResourceType::FRAMEBUFFER:
-			case Renderer::ResourceType::PIPELINE_STATE:
+			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 			case Renderer::ResourceType::SAMPLER_STATE:
 			case Renderer::ResourceType::VERTEX_SHADER:
 			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -10095,7 +10095,7 @@ namespace OpenGLES3Renderer
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::SWAP_CHAIN:
 			case Renderer::ResourceType::FRAMEBUFFER:
-			case Renderer::ResourceType::PIPELINE_STATE:
+			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 			case Renderer::ResourceType::SAMPLER_STATE:
 			case Renderer::ResourceType::VERTEX_SHADER:
 			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:

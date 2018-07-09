@@ -185,14 +185,14 @@ void VertexBuffer::onInitialization()
 					shaderLanguage->createVertexShaderFromSourceCode(vertexAttributesVBO, vertexShaderSourceCode),
 					shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 
-				// Create the pipeline state objects (PSO)
+				// Create the graphics pipeline state objects (PSO)
 				if (nullptr != program)
 				{
-					mPipelineStateVBO = renderer->createPipelineState(Renderer::PipelineStateBuilder(mRootSignature, program, vertexAttributesVBO, getMainRenderTarget()->getRenderPass()));
+					mGraphicsPipelineStateVBO = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, program, vertexAttributesVBO, getMainRenderTarget()->getRenderPass()));
 				}
 			}
 
-			{ // Create pipeline state objects (PSO) using multiple vertex buffer object (VBO)
+			{ // Create graphics pipeline state objects (PSO) using multiple vertex buffer object (VBO)
 				// Create the program
 				Renderer::IProgramPtr program;
 				program = shaderLanguage->createProgram(
@@ -201,10 +201,10 @@ void VertexBuffer::onInitialization()
 					shaderLanguage->createVertexShaderFromSourceCode(vertexAttributesVBOs, vertexShaderSourceCode),
 					shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 
-				// Create the pipeline state objects (PSO)
+				// Create the graphics pipeline state objects (PSO)
 				if (nullptr != program)
 				{
-					mPipelineStateVBOs = renderer->createPipelineState(Renderer::PipelineStateBuilder(mRootSignature, program, vertexAttributesVBOs, getMainRenderTarget()->getRenderPass()));
+					mGraphicsPipelineStateVBOs = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, program, vertexAttributesVBOs, getMainRenderTarget()->getRenderPass()));
 				}
 			}
 		}
@@ -217,10 +217,10 @@ void VertexBuffer::onInitialization()
 void VertexBuffer::onDeinitialization()
 {
 	// Release the used resources
-	mPipelineStateVBOs = nullptr;
+	mGraphicsPipelineStateVBOs = nullptr;
 	mVertexArrayVBOs = nullptr;
 	mVertexArrayVBO = nullptr;
-	mPipelineStateVBO = nullptr;
+	mGraphicsPipelineStateVBO = nullptr;
 	mRootSignature = nullptr;
 	mCommandBuffer.clear();
 	mBufferManager = nullptr;
@@ -246,9 +246,9 @@ void VertexBuffer::fillCommandBuffer()
 	// Sanity checks
 	assert(mCommandBuffer.isEmpty());
 	assert(nullptr != mRootSignature);
-	assert(nullptr != mPipelineStateVBO);
+	assert(nullptr != mGraphicsPipelineStateVBO);
 	assert(nullptr != mVertexArrayVBO);
-	assert(nullptr != mPipelineStateVBOs);
+	assert(nullptr != mGraphicsPipelineStateVBOs);
 	assert(nullptr != mVertexArrayVBOs);
 
 	// Scoped debug event
@@ -261,13 +261,13 @@ void VertexBuffer::fillCommandBuffer()
 	Renderer::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
 
 	// First lower triangle using one vertex buffer object (VBO)
-	if (nullptr != mPipelineStateVBO)
+	if (nullptr != mGraphicsPipelineStateVBO)
 	{
 		// Scoped debug event
 		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Draw using one VBO")
 
 		// Set the used graphics pipeline state object (PSO)
-		Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mPipelineStateVBO);
+		Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineStateVBO);
 
 		// Input assembly (IA): Set the used vertex array
 		Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArrayVBO);
@@ -277,13 +277,13 @@ void VertexBuffer::fillCommandBuffer()
 	}
 
 	// Second upper triangle using multiple vertex buffer object (VBO)
-	if (nullptr != mPipelineStateVBOs)
+	if (nullptr != mGraphicsPipelineStateVBOs)
 	{
 		// Scoped debug event
 		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Draw using multiple VBOs")
 
 		// Set the used graphics pipeline state object (PSO)
-		Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mPipelineStateVBOs);
+		Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineStateVBOs);
 
 		// Input assembly (IA): Set the used vertex array
 		Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArrayVBOs);

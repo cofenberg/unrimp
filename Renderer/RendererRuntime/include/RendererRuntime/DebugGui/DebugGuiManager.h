@@ -171,20 +171,20 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		IRendererRuntime&			mRendererRuntime;		///< Renderer runtime instance, do not destroy the instance
-		ImGuiContext*				mImGuiContext;			///< ImGui context, always valid
-		std::string					mAbsoluteIniFilename;	///< Absolute UTF-8 ImGui ini-filename, class member since ImGui just keeps a pointer to this string instance
-		std::string					mAbsoluteLogFilename;	///< Absolute UTF-8 ImGui log-filename, class member since ImGui just keeps a pointer to this string instance
-		bool						mIsRunning;				///< The debug GUI manager will be initialized lazy when "RendererRuntime::DebugGuiManager::newFrame()" is called for the first time
-		Renderer::ITexture2DPtr		mTexture2D;
+		IRendererRuntime&		mRendererRuntime;		///< Renderer runtime instance, do not destroy the instance
+		ImGuiContext*			mImGuiContext;			///< ImGui context, always valid
+		std::string				mAbsoluteIniFilename;	///< Absolute UTF-8 ImGui ini-filename, class member since ImGui just keeps a pointer to this string instance
+		std::string				mAbsoluteLogFilename;	///< Absolute UTF-8 ImGui log-filename, class member since ImGui just keeps a pointer to this string instance
+		bool					mIsRunning;				///< The debug GUI manager will be initialized lazy when "RendererRuntime::DebugGuiManager::newFrame()" is called for the first time
+		Renderer::ITexture2DPtr	mTexture2D;
 		// Fixed build in renderer configuration resources
-		Renderer::IRootSignaturePtr	mRootSignature;
-		Renderer::IProgramPtr		mProgram;
-		Renderer::IPipelineStatePtr	mPipelineState;
-		Renderer::IUniformBufferPtr	mVertexShaderUniformBuffer;
-		Renderer::handle			mObjectSpaceToClipSpaceMatrixUniformHandle;
-		Renderer::IResourceGroupPtr	mResourceGroup;		///< Resource group, can be a null pointer
-		Renderer::IResourceGroupPtr	mSamplerStateGroup;	///< Sampler state resource group, can be a null pointer
+		Renderer::IRootSignaturePtr			mRootSignature;
+		Renderer::IProgramPtr				mProgram;
+		Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineState;
+		Renderer::IUniformBufferPtr			mVertexShaderUniformBuffer;
+		Renderer::handle					mObjectSpaceToClipSpaceMatrixUniformHandle;
+		Renderer::IResourceGroupPtr			mResourceGroup;		///< Resource group, can be a null pointer
+		Renderer::IResourceGroupPtr			mSamplerStateGroup;	///< Sampler state resource group, can be a null pointer
 		// Vertex and index buffer
 		Renderer::IVertexBufferPtr	mVertexBufferPtr;
 		uint32_t					mNumberOfAllocatedVertices;

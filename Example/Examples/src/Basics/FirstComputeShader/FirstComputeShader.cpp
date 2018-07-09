@@ -165,7 +165,7 @@ void FirstComputeShader::onInitialization()
 			// Create the graphics pipeline state object (PSO)
 			if (nullptr != program)
 			{
-				mGraphicsPipelineState = renderer->createPipelineState(Renderer::PipelineStateBuilder(mGraphicsRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass()));
+				mGraphicsPipelineState = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mGraphicsRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass()));
 			}
 		}
 

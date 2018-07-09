@@ -81,7 +81,7 @@ namespace RendererRuntime
 
 					// Record reusable command buffer
 					// TODO(co) Optimization: Make this hot-reloading ready and also listen to other critical compositor setting changes like number of multisamples, when done we can fill the following command buffer once and then just reuse it
-					// TODO(co) There's certainly room for command buffer optimization here (e.g. the pipeline state stays the same)
+					// TODO(co) There's certainly room for command buffer optimization here (e.g. the graphics pipeline state stays the same)
 					mCommandBuffer.clear();
 					if (!mFramebuffersPtrs.empty())
 					{

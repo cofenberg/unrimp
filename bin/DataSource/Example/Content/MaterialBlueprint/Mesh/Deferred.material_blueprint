@@ -121,7 +121,7 @@
 				"Description": "Material emissive intensity, has only an effect if there's an emissive map"
 			}
 		},
-		"PipelineState":
+		"GraphicsPipelineState":
 		{
 			"VertexAttributes": "$ProjectName/VertexAttributes/Default/Mesh.asset",
 			"ShaderBlueprints":

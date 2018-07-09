@@ -347,13 +347,13 @@ namespace RendererRuntime
 						// TODO(co) Gather shader properties (later on we cache as much as possible of this work inside the renderable)
 						::detail::gatherShaderProperties(*materialResource, *materialBlueprintResource, globalMaterialProperties, renderable, singlePassStereoInstancing, mScratchShaderProperties, mScratchOptimizedShaderProperties);
 
-						Renderer::IPipelineStatePtr pipelineStatePtr = materialBlueprintResource->getPipelineStateCacheManager().getPipelineStateCacheByCombination(materialTechnique->getSerializedPipelineStateHash(), mScratchOptimizedShaderProperties, false);
-						if (nullptr != pipelineStatePtr)
+						Renderer::IGraphicsPipelineStatePtr graphicsPipelineStatePtr = materialBlueprintResource->getPipelineStateCacheManager().getGraphicsPipelineStateCacheByCombination(materialTechnique->getSerializedGraphicsPipelineStateHash(), mScratchOptimizedShaderProperties, false);
+						if (nullptr != graphicsPipelineStatePtr)
 						{
 							compositorContextData.mCurrentlyBoundMaterialBlueprintResource = materialBlueprintResource;
 
 							// Set the used graphics pipeline state object (PSO)
-							Renderer::Command::SetGraphicsPipelineState::create(commandBuffer, pipelineStatePtr);
+							Renderer::Command::SetGraphicsPipelineState::create(commandBuffer, graphicsPipelineStatePtr);
 
 							// Setup input assembly (IA): Set the used vertex array
 							Renderer::Command::SetGraphicsVertexArray::create(commandBuffer, renderable.getVertexArrayPtr());
@@ -411,7 +411,7 @@ namespace RendererRuntime
 			// Track currently bound renderer resources and states to void generating redundant commands
 			bool vertexArraySet = false;
 			Renderer::IVertexArray* currentVertexArray = nullptr;
-			Renderer::IPipelineState* currentPipelineState = nullptr;
+			Renderer::IGraphicsPipelineState* currentGraphicsPipelineState = nullptr;
 
 			// We try to minimize state changes across multiple render queue fill command buffer calls, but while doing so we still need to take into account
 			// that pass data like world space to clip space transform might have been changed and needs to be updated inside the pass uniform buffer
@@ -475,14 +475,14 @@ namespace RendererRuntime
 									// TODO(co) Gather shader properties (later on we cache as much as possible of this work inside the renderable)
 									::detail::gatherShaderProperties(*materialResource, *materialBlueprintResource, globalMaterialProperties, renderable, singlePassStereoInstancing, mScratchShaderProperties, mScratchOptimizedShaderProperties);
 
-									Renderer::IPipelineStatePtr pipelineStatePtr = materialBlueprintResource->getPipelineStateCacheManager().getPipelineStateCacheByCombination(materialTechnique->getSerializedPipelineStateHash(), mScratchOptimizedShaderProperties, false);
-									if (nullptr != pipelineStatePtr)
+									Renderer::IGraphicsPipelineStatePtr graphicsPipelineStatePtr = materialBlueprintResource->getPipelineStateCacheManager().getGraphicsPipelineStateCacheByCombination(materialTechnique->getSerializedGraphicsPipelineStateHash(), mScratchOptimizedShaderProperties, false);
+									if (nullptr != graphicsPipelineStatePtr)
 									{
 										// Set the used graphics pipeline state object (PSO)
-										if (currentPipelineState != pipelineStatePtr)
+										if (currentGraphicsPipelineState != graphicsPipelineStatePtr)
 										{
-											currentPipelineState = pipelineStatePtr;
-											Renderer::Command::SetGraphicsPipelineState::create(mScratchCommandBuffer, currentPipelineState);
+											currentGraphicsPipelineState = graphicsPipelineStatePtr;
+											Renderer::Command::SetGraphicsPipelineState::create(mScratchCommandBuffer, currentGraphicsPipelineState);
 										}
 
 										{ // Setup input assembly (IA): Set the used vertex array

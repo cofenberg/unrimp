@@ -172,17 +172,17 @@ void FirstMultipleRenderTargets::onInitialization()
 					program = shaderLanguage->createProgram(*mRootSignature, vertexAttributes, vertexShader, shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 				}
 
-				// Create the pipeline state objects (PSO)
+				// Create the graphics pipeline state objects (PSO)
 				if (nullptr != programMultipleRenderTargets && nullptr != program)
 				{
 					{
-						Renderer::PipelineState pipelineState = Renderer::PipelineStateBuilder(mRootSignature, programMultipleRenderTargets, vertexAttributes, mFramebuffer->getRenderPass());
-						pipelineState.numberOfRenderTargets = NUMBER_OF_TEXTURES;
-						pipelineState.depthStencilState.depthEnable = 0;
-						pipelineState.depthStencilViewFormat = Renderer::TextureFormat::UNKNOWN;
-						mPipelineStateMultipleRenderTargets = renderer->createPipelineState(pipelineState);
+						Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(mRootSignature, programMultipleRenderTargets, vertexAttributes, mFramebuffer->getRenderPass());
+						graphicsPipelineState.numberOfRenderTargets = NUMBER_OF_TEXTURES;
+						graphicsPipelineState.depthStencilState.depthEnable = 0;
+						graphicsPipelineState.depthStencilViewFormat = Renderer::TextureFormat::UNKNOWN;
+						mGraphicsPipelineStateMultipleRenderTargets = renderer->createGraphicsPipelineState(graphicsPipelineState);
 					}
-					mPipelineState = renderer->createPipelineState(Renderer::PipelineStateBuilder(mRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass()));
+					mGraphicsPipelineState = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass()));
 				}
 			}
 		}
@@ -201,8 +201,8 @@ void FirstMultipleRenderTargets::onDeinitialization()
 {
 	// Release the used resources
 	mVertexArray = nullptr;
-	mPipelineState = nullptr;
-	mPipelineStateMultipleRenderTargets = nullptr;
+	mGraphicsPipelineState = nullptr;
+	mGraphicsPipelineStateMultipleRenderTargets = nullptr;
 	mSamplerStateGroup = nullptr;
 	mTextureGroup = nullptr;
 	mFramebuffer = nullptr;
@@ -237,8 +237,8 @@ void FirstMultipleRenderTargets::fillCommandBuffer()
 	assert(nullptr != mFramebuffer);
 	assert(nullptr != mTextureGroup);
 	assert(nullptr != mSamplerStateGroup);
-	assert(nullptr != mPipelineStateMultipleRenderTargets);
-	assert(nullptr != mPipelineState);
+	assert(nullptr != mGraphicsPipelineStateMultipleRenderTargets);
+	assert(nullptr != mGraphicsPipelineState);
 	assert(nullptr != mVertexArray);
 
 	// Scoped debug event
@@ -265,7 +265,7 @@ void FirstMultipleRenderTargets::fillCommandBuffer()
 		Renderer::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
 
 		// Set the used graphics pipeline state object (PSO)
-		Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mPipelineStateMultipleRenderTargets);
+		Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineStateMultipleRenderTargets);
 
 		// Input assembly (IA): Set the used vertex array
 		Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArray);
@@ -302,7 +302,7 @@ void FirstMultipleRenderTargets::fillCommandBuffer()
 		Renderer::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
 
 		// Set the used graphics pipeline state object (PSO)
-		Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mPipelineState);
+		Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineState);
 
 		// Set graphics resource groups
 		Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 0, mTextureGroup);

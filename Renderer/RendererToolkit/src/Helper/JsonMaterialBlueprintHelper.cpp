@@ -884,15 +884,15 @@ namespace RendererToolkit
 		}
 	}
 
-	void JsonMaterialBlueprintHelper::readPipelineStateObject(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValuePipelineState, RendererRuntime::IFile& file, const RendererRuntime::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector)
+	void JsonMaterialBlueprintHelper::readGraphicsPipelineStateObject(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValueGraphicsPipelineState, RendererRuntime::IFile& file, const RendererRuntime::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector)
 	{
 		{ // Vertex attributes asset ID
-			const RendererRuntime::AssetId vertexAttributesAssetId = StringHelper::getAssetIdByString(rapidJsonValuePipelineState["VertexAttributes"].GetString(), input);
+			const RendererRuntime::AssetId vertexAttributesAssetId = StringHelper::getAssetIdByString(rapidJsonValueGraphicsPipelineState["VertexAttributes"].GetString(), input);
 			file.write(&vertexAttributesAssetId, sizeof(RendererRuntime::AssetId));
 		}
 
 		{ // Shader blueprints
-			const rapidjson::Value& rapidJsonValueShaderBlueprints = rapidJsonValuePipelineState["ShaderBlueprints"];
+			const rapidjson::Value& rapidJsonValueShaderBlueprints = rapidJsonValueGraphicsPipelineState["ShaderBlueprints"];
 
 			RendererRuntime::AssetId shaderBlueprintAssetId[RendererRuntime::NUMBER_OF_SHADER_TYPES];
 			memset(shaderBlueprintAssetId, static_cast<int>(RendererRuntime::getInvalid<RendererRuntime::AssetId>()), sizeof(RendererRuntime::AssetId) * RendererRuntime::NUMBER_OF_SHADER_TYPES);
@@ -907,17 +907,17 @@ namespace RendererToolkit
 		}
 
 		// Start with the default settings
-		Renderer::PipelineState pipelineState = Renderer::PipelineStateBuilder();
+		Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder();
 
 		// Optional primitive topology
-		optionalPrimitiveTopology(rapidJsonValuePipelineState, "PrimitiveTopology", pipelineState.primitiveTopology);
-		pipelineState.primitiveTopologyType = getPrimitiveTopologyTypeByPrimitiveTopology(pipelineState.primitiveTopology);
+		optionalPrimitiveTopology(rapidJsonValueGraphicsPipelineState, "PrimitiveTopology", graphicsPipelineState.primitiveTopology);
+		graphicsPipelineState.primitiveTopologyType = getPrimitiveTopologyTypeByPrimitiveTopology(graphicsPipelineState.primitiveTopology);
 
 		// Optional rasterizer state
-		if (rapidJsonValuePipelineState.HasMember("RasterizerState"))
+		if (rapidJsonValueGraphicsPipelineState.HasMember("RasterizerState"))
 		{
-			const rapidjson::Value& rapidJsonValueRasterizerState = rapidJsonValuePipelineState["RasterizerState"];
-			Renderer::RasterizerState& rasterizerState = pipelineState.rasterizerState;
+			const rapidjson::Value& rapidJsonValueRasterizerState = rapidJsonValueGraphicsPipelineState["RasterizerState"];
+			Renderer::RasterizerState& rasterizerState = graphicsPipelineState.rasterizerState;
 
 			// The optional properties
 			JsonMaterialHelper::optionalFillModeProperty(rapidJsonValueRasterizerState, "FillMode", rasterizerState.fillMode, &sortedMaterialPropertyVector);
@@ -935,10 +935,10 @@ namespace RendererToolkit
 		}
 
 		// Optional depth stencil state
-		if (rapidJsonValuePipelineState.HasMember("DepthStencilState"))
+		if (rapidJsonValueGraphicsPipelineState.HasMember("DepthStencilState"))
 		{
-			const rapidjson::Value& rapidJsonValueDepthStencilState = rapidJsonValuePipelineState["DepthStencilState"];
-			Renderer::DepthStencilState& depthStencilState = pipelineState.depthStencilState;
+			const rapidjson::Value& rapidJsonValueDepthStencilState = rapidJsonValueGraphicsPipelineState["DepthStencilState"];
+			Renderer::DepthStencilState& depthStencilState = graphicsPipelineState.depthStencilState;
 
 			// The optional properties
 			JsonHelper::optionalBooleanProperty(rapidJsonValueDepthStencilState, "DepthEnable", depthStencilState.depthEnable);
@@ -971,10 +971,10 @@ namespace RendererToolkit
 		}
 
 		// Optional blend state
-		if (rapidJsonValuePipelineState.HasMember("BlendState"))
+		if (rapidJsonValueGraphicsPipelineState.HasMember("BlendState"))
 		{
-			const rapidjson::Value& rapidJsonValueBlendState = rapidJsonValuePipelineState["BlendState"];
-			Renderer::BlendState& blendState = pipelineState.blendState;
+			const rapidjson::Value& rapidJsonValueBlendState = rapidJsonValueGraphicsPipelineState["BlendState"];
+			Renderer::BlendState& blendState = graphicsPipelineState.blendState;
 
 			// The optional properties
 			JsonHelper::optionalBooleanProperty(rapidJsonValueBlendState, "AlphaToCoverageEnable", blendState.alphaToCoverageEnable, RendererRuntime::MaterialProperty::Usage::BLEND_STATE, &sortedMaterialPropertyVector);
@@ -1011,8 +1011,8 @@ namespace RendererToolkit
 			}
 		}
 
-		// Write down the pipeline state object (PSO)
-		file.write(&pipelineState, sizeof(Renderer::SerializedPipelineState));
+		// Write down the graphics pipeline state object (PSO)
+		file.write(&graphicsPipelineState, sizeof(Renderer::SerializedGraphicsPipelineState));
 	}
 
 	void JsonMaterialBlueprintHelper::readUniformBuffersByResourceGroups(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValueResourceGroups, RendererRuntime::IFile& file)

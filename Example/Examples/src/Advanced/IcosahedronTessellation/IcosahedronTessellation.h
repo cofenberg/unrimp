@@ -45,7 +45,7 @@
 *    - Vertex array object (VAO)
 *    - Index buffer object (IBO)
 *    - Root signature
-*    - Pipeline state object (PSO)
+*    - Graphics pipeline state object (PSO)
 *    - Uniform buffer object (UBO)
 *    - Vertex shader (VS), tessellation control shader (TCS), tessellation evaluation shader (TES), geometry shader (GS) and fragment shader (FS)
 */
@@ -99,15 +99,15 @@ private:
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
-	Renderer::IBufferManagerPtr	mBufferManager;				///< Buffer manager, can be a null pointer
-	Renderer::CommandBuffer		mCommandBuffer;				///< Command buffer
-	Renderer::IRootSignaturePtr	mRootSignature;				///< Root signature, can be a null pointer
-	Renderer::IUniformBufferPtr	mUniformBufferDynamicTcs;	///< Dynamic tessellation control shader uniform buffer object (UBO), can be a null pointer
-	Renderer::IResourceGroupPtr	mUniformBufferGroup;		///< Uniform buffer group, can be a null pointer
-	Renderer::IPipelineStatePtr	mPipelineState;				///< Pipeline state object (PSO), can be a null pointer
-	Renderer::IVertexArrayPtr	mVertexArray;				///< Vertex array object (VAO), can be a null pointer
-	float						mTessellationLevelOuter;	///< Outer tessellation level
-	float						mTessellationLevelInner;	///< Inner tessellation level
+	Renderer::IBufferManagerPtr			mBufferManager;				///< Buffer manager, can be a null pointer
+	Renderer::CommandBuffer				mCommandBuffer;				///< Command buffer
+	Renderer::IRootSignaturePtr			mRootSignature;				///< Root signature, can be a null pointer
+	Renderer::IUniformBufferPtr			mUniformBufferDynamicTcs;	///< Dynamic tessellation control shader uniform buffer object (UBO), can be a null pointer
+	Renderer::IResourceGroupPtr			mUniformBufferGroup;		///< Uniform buffer group, can be a null pointer
+	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineState;		///< Graphics pipeline state object (PSO), can be a null pointer
+	Renderer::IVertexArrayPtr			mVertexArray;				///< Vertex array object (VAO), can be a null pointer
+	float								mTessellationLevelOuter;	///< Outer tessellation level
+	float								mTessellationLevelInner;	///< Inner tessellation level
 
 
 };

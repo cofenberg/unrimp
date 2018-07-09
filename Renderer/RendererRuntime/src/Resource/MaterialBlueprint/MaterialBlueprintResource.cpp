@@ -398,9 +398,9 @@ namespace RendererRuntime
 					}
 				}
 
-				// Create the current pipeline state cache instances for the material blueprint
-				const Renderer::IPipelineStatePtr pipelineStatePtr = mPipelineStateCacheManager.getPipelineStateCacheByCombination(getInvalid<uint32_t>(), shaderProperties, true);
-				assert(nullptr != pipelineStatePtr);	// TODO(co) Decent error handling
+				// Create the current graphics pipeline state cache instances for the material blueprint
+				const Renderer::IGraphicsPipelineStatePtr graphicsPipelineStatePtr = mPipelineStateCacheManager.getGraphicsPipelineStateCacheByCombination(getInvalid<uint32_t>(), shaderProperties, true);
+				assert(nullptr != graphicsPipelineStatePtr);	// TODO(co) Decent error handling
 			}
 			while (shaderCombinationIterator.iterate());
 		}
@@ -412,7 +412,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	MaterialBlueprintResource::MaterialBlueprintResource() :
 		mPipelineStateCacheManager(*this),
-		mPipelineState(Renderer::PipelineStateBuilder()),
+		mGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder()),
 		mVertexAttributesResourceId(getInvalid<ShaderBlueprintResourceId>()),
 		mPassUniformBuffer(nullptr),
 		mMaterialUniformBuffer(nullptr),
@@ -433,15 +433,15 @@ namespace RendererRuntime
 
 		// TODO(co) Sanity checks
 		/*
-		PipelineStateCacheManager			 mPipelineStateCacheManager;
-		MaterialProperties					 mMaterialProperties;
-		ShaderProperties					 mVisualImportanceOfShaderProperties;	///< Every shader property known to the material blueprint has a visual importance entry in here
-		ShaderProperties					 mMaximumIntegerValueOfShaderProperties;
-		Renderer::VertexAttributes			 mVertexAttributes;
-		Renderer::IRootSignaturePtr			 mRootSignaturePtr;						///< Root signature, can be a null pointer
-		Renderer::PipelineState				 mPipelineState;
-		VertexAttributesResourceId			 mVertexAttributesResourceId;
-		ShaderBlueprintResourceId			 mShaderBlueprintResourceId[NUMBER_OF_SHADER_TYPES];
+		PipelineStateCacheManager		mPipelineStateCacheManager;
+		MaterialProperties				mMaterialProperties;
+		ShaderProperties				mVisualImportanceOfShaderProperties;	///< Every shader property known to the material blueprint has a visual importance entry in here
+		ShaderProperties				mMaximumIntegerValueOfShaderProperties;
+		Renderer::VertexAttributes		mVertexAttributes;
+		Renderer::IRootSignaturePtr		mRootSignaturePtr;						///< Root signature, can be a null pointer
+		Renderer::GraphicsPipelineState	mGraphicsPipelineState;
+		VertexAttributesResourceId		mVertexAttributesResourceId;
+		ShaderBlueprintResourceId		mShaderBlueprintResourceId[NUMBER_OF_SHADER_TYPES];
 		// Resource
 		UniformBuffers mUniformBuffers;
 		SamplerStates  mSamplerStates;

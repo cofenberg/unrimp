@@ -81,7 +81,7 @@ namespace RendererRuntime
 		*/
 		inline PipelineStateSignature() :
 			mMaterialBlueprintResourceId(getInvalid<MaterialBlueprintResourceId>()),
-			mSerializedPipelineStateHash(getInvalid<uint32_t>()),
+			mSerializedGraphicsPipelineStateHash(getInvalid<uint32_t>()),
 			mPipelineStateSignatureId(getInvalid<PipelineStateSignatureId>()),
 			mShaderCombinationId{getInvalid<ShaderCombinationId>(), getInvalid<ShaderCombinationId>(), getInvalid<ShaderCombinationId>(), getInvalid<ShaderCombinationId>(), getInvalid<ShaderCombinationId>()}
 		{
@@ -94,14 +94,14 @@ namespace RendererRuntime
 		*
 		*  @param[in] materialBlueprintResource
 		*    Material blueprint resource to use
-		*  @param[in] serializedPipelineStateHash
-		*    FNV1a hash of "Renderer::SerializedPipelineState"
+		*  @param[in] serializedGraphicsPipelineStateHash
+		*    FNV1a hash of "Renderer::SerializedGraphicsPipelineState"
 		*  @param[in] shaderProperties
 		*    Shader properties to use, you should ensure that this shader properties are already optimized by using e.g. "RendererRuntime::MaterialBlueprintResource::optimizeShaderProperties()"
 		*/
-		inline PipelineStateSignature(const MaterialBlueprintResource& materialBlueprintResource, uint32_t serializedPipelineStateHash, const ShaderProperties& shaderProperties)
+		inline PipelineStateSignature(const MaterialBlueprintResource& materialBlueprintResource, uint32_t serializedGraphicsPipelineStateHash, const ShaderProperties& shaderProperties)
 		{
-			set(materialBlueprintResource, serializedPipelineStateHash, shaderProperties);
+			set(materialBlueprintResource, serializedGraphicsPipelineStateHash, shaderProperties);
 		}
 
 		/**
@@ -134,12 +134,12 @@ namespace RendererRuntime
 		*
 		*  @param[in] materialBlueprintResource
 		*    Material blueprint resource to use
-		*  @param[in] serializedPipelineStateHash
-		*    FNV1a hash of "Renderer::SerializedPipelineState"
+		*  @param[in] serializedGraphicsPipelineStateHash
+		*    FNV1a hash of "Renderer::SerializedGraphicsPipelineState"
 		*  @param[in] shaderProperties
 		*    Shader properties to use, you should ensure that this shader properties are already optimized by using e.g. "RendererRuntime::MaterialBlueprintResource::optimizeShaderProperties()"
 		*/
-		void set(const MaterialBlueprintResource& materialBlueprintResource, uint32_t serializedPipelineStateHash, const ShaderProperties& shaderProperties);
+		void set(const MaterialBlueprintResource& materialBlueprintResource, uint32_t serializedGraphicsPipelineStateHash, const ShaderProperties& shaderProperties);
 
 		//[-------------------------------------------------------]
 		//[ Getter for input data                                 ]
@@ -149,9 +149,9 @@ namespace RendererRuntime
 			return mMaterialBlueprintResourceId;
 		}
 
-		inline uint32_t getSerializedPipelineStateHash() const
+		inline uint32_t getSerializedGraphicsPipelineStateHash() const
 		{
-			return mSerializedPipelineStateHash;
+			return mSerializedGraphicsPipelineStateHash;
 		}
 
 		inline const ShaderProperties& getShaderProperties() const
@@ -179,7 +179,7 @@ namespace RendererRuntime
 	private:
 		// Input data
 		MaterialBlueprintResourceId	mMaterialBlueprintResourceId;
-		uint32_t					mSerializedPipelineStateHash;
+		uint32_t					mSerializedGraphicsPipelineStateHash;
 		ShaderProperties			mShaderProperties;
 		// Derived data
 		PipelineStateSignatureId mPipelineStateSignatureId;

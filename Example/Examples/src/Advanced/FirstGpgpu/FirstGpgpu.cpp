@@ -252,19 +252,19 @@ void FirstGpgpu::onInitialization()
 			programContentProcessing = shaderLanguage->createProgram(*mRootSignature, vertexAttributes, vertexShader, shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode_ContentProcessing));
 		}
 
-		// Create the pipeline state objects (PSO)
+		// Create the graphics pipeline state objects (PSO)
 		if (nullptr != programContentGeneration && nullptr != programContentProcessing)
 		{
 			{ // Content generation
-				Renderer::PipelineState pipelineState = Renderer::PipelineStateBuilder(mRootSignature, programContentGeneration, vertexAttributes, mFramebuffer[0]->getRenderPass());
-				pipelineState.depthStencilState.depthEnable = false;
-				mPipelineStateContentGeneration = mRenderer->createPipelineState(pipelineState);
+				Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(mRootSignature, programContentGeneration, vertexAttributes, mFramebuffer[0]->getRenderPass());
+				graphicsPipelineState.depthStencilState.depthEnable = false;
+				mGraphicsPipelineStateContentGeneration = mRenderer->createGraphicsPipelineState(graphicsPipelineState);
 			}
 			{ // Content processing
-				Renderer::PipelineState pipelineState = Renderer::PipelineStateBuilder(mRootSignature, programContentProcessing, vertexAttributes, mFramebuffer[0]->getRenderPass());
-				pipelineState.primitiveTopology = Renderer::PrimitiveTopology::TRIANGLE_STRIP;
-				pipelineState.depthStencilState.depthEnable = false;
-				mPipelineStateContentProcessing = mRenderer->createPipelineState(pipelineState);
+				Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(mRootSignature, programContentProcessing, vertexAttributes, mFramebuffer[0]->getRenderPass());
+				graphicsPipelineState.primitiveTopology = Renderer::PrimitiveTopology::TRIANGLE_STRIP;
+				graphicsPipelineState.depthStencilState.depthEnable = false;
+				mGraphicsPipelineStateContentProcessing = mRenderer->createGraphicsPipelineState(graphicsPipelineState);
 			}
 		}
 	}
@@ -280,9 +280,9 @@ void FirstGpgpu::onDeinitialization()
 	mCommandBufferContentGeneration.clear();
 	mCommandBufferContentProcessing.clear();
 	mVertexArrayContentProcessing = nullptr;
-	mPipelineStateContentProcessing = nullptr;
+	mGraphicsPipelineStateContentProcessing = nullptr;
 	mVertexArrayContentGeneration = nullptr;
-	mPipelineStateContentGeneration = nullptr;
+	mGraphicsPipelineStateContentGeneration = nullptr;
 	mSamplerStateGroup = nullptr;
 	mTextureGroup = nullptr;
 	mRootSignature = nullptr;
@@ -300,7 +300,7 @@ void FirstGpgpu::fillCommandBufferContentGeneration()
 	// Sanity checks
 	assert(nullptr != mFramebuffer[0]);
 	assert(nullptr != mRootSignature);
-	assert(nullptr != mPipelineStateContentGeneration);
+	assert(nullptr != mGraphicsPipelineStateContentGeneration);
 	assert(nullptr != mVertexArrayContentGeneration);
 	assert(mCommandBufferContentGeneration.isEmpty());
 
@@ -331,7 +331,7 @@ void FirstGpgpu::fillCommandBufferContentGeneration()
 	}
 
 	// Set the used graphics pipeline state object (PSO)
-	Renderer::Command::SetGraphicsPipelineState::create(mCommandBufferContentGeneration, mPipelineStateContentGeneration);
+	Renderer::Command::SetGraphicsPipelineState::create(mCommandBufferContentGeneration, mGraphicsPipelineStateContentGeneration);
 
 	// Input assembly (IA): Set the used vertex array
 	Renderer::Command::SetGraphicsVertexArray::create(mCommandBufferContentGeneration, mVertexArrayContentGeneration);
@@ -345,7 +345,7 @@ void FirstGpgpu::fillCommandBufferContentProcessing()
 	// Sanity checks
 	assert(nullptr != mFramebuffer[1]);
 	assert(nullptr != mRootSignature);
-	assert(nullptr != mPipelineStateContentProcessing);
+	assert(nullptr != mGraphicsPipelineStateContentProcessing);
 	assert(nullptr != mTextureGroup);
 	assert(nullptr != mSamplerStateGroup);
 	assert(nullptr != mTexture2D[0]);
@@ -363,7 +363,7 @@ void FirstGpgpu::fillCommandBufferContentProcessing()
 	Renderer::Command::SetGraphicsRootSignature::create(mCommandBufferContentProcessing, mRootSignature);
 
 	// Set the used graphics pipeline state object (PSO)
-	Renderer::Command::SetGraphicsPipelineState::create(mCommandBufferContentProcessing, mPipelineStateContentProcessing);
+	Renderer::Command::SetGraphicsPipelineState::create(mCommandBufferContentProcessing, mGraphicsPipelineStateContentProcessing);
 
 	// Set graphics resource groups
 	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBufferContentProcessing, 0, mTextureGroup);

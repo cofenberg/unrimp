@@ -46,7 +46,7 @@
 				"Description": "RGB channel = Albedo map ('_a'-postfix), A channel = x component of normal map ('_n'-postfix)"
 			}
 		},
-		"PipelineState":
+		"GraphicsPipelineState":
 		{
 			"VertexAttributes": "$ProjectName/VertexAttributes/Default/Mesh.asset",
 			"ShaderBlueprints":

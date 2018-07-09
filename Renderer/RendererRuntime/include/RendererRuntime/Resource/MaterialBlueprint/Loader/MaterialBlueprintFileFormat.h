@@ -43,7 +43,7 @@ namespace RendererRuntime
 	// - Material blueprint properties
 	// - Visual importance of shader properties
 	// - Root signature
-	// - Pipeline state object (PSO)
+	// - Graphics pipeline state object (PSO)
 	//   - Shader blueprints, rasterization state etc.
 	// - Resources
 	//   - Uniform buffers

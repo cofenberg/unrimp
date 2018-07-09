@@ -60,7 +60,7 @@
 				"Description": "Fallback value in case there's no wind speed global material property"
 			}
 		},
-		"PipelineState":
+		"GraphicsPipelineState":
 		{
 			"VertexAttributes": "$ProjectName/VertexAttributes/Default/Position.asset",
 			"ShaderBlueprints":

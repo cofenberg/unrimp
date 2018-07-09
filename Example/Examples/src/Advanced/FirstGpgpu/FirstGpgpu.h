@@ -55,7 +55,7 @@ class ExampleRunner;
 *    - Sampler state object
 *    - Vertex shader (VS) and fragment shader (FS)
 *    - Root signature
-*    - Pipeline state object (PSO)
+*    - Graphics pipeline state object (PSO)
 *    - Framebuffer object (FBO) used for render to texture
 *    - General Purpose Computation on Graphics Processing Unit (GPGPU) by using the renderer interface and shaders without having any output window
 */
@@ -167,13 +167,13 @@ private:
 	Renderer::IResourceGroupPtr	 mTextureGroup;			///< Texture group, can be a null pointer
 	Renderer::IResourceGroupPtr	 mSamplerStateGroup;	///< Sampler state resource group, can be a null pointer
 	// Content generation
-	Renderer::IPipelineStatePtr  mPipelineStateContentGeneration;	///< Pipeline state object (PSO) for content generation, can be a null pointer
-	Renderer::IVertexArrayPtr    mVertexArrayContentGeneration;		///< Vertex array object (VAO) for content generation, can be a null pointer
-	Renderer::CommandBuffer		 mCommandBufferContentGeneration;	///< Command buffer for content generation
+	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineStateContentGeneration;	///< Graphics pipeline state object (PSO) for content generation, can be a null pointer
+	Renderer::IVertexArrayPtr			mVertexArrayContentGeneration;				///< Vertex array object (VAO) for content generation, can be a null pointer
+	Renderer::CommandBuffer				mCommandBufferContentGeneration;			///< Command buffer for content generation
 	// Content processing
-	Renderer::IPipelineStatePtr  mPipelineStateContentProcessing;	///< Pipeline state object (PSO) for content processing, can be a null pointer
-	Renderer::IVertexArrayPtr    mVertexArrayContentProcessing;		///< Vertex array object (VAO) for content processing, can be a null pointer
-	Renderer::CommandBuffer		 mCommandBufferContentProcessing;	///< Command buffer for content processing
+	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineStateContentProcessing;	///< Graphics pipeline state object (PSO) for content processing, can be a null pointer
+	Renderer::IVertexArrayPtr			mVertexArrayContentProcessing;				///< Vertex array object (VAO) for content processing, can be a null pointer
+	Renderer::CommandBuffer				mCommandBufferContentProcessing;			///< Command buffer for content processing
 
 
 };

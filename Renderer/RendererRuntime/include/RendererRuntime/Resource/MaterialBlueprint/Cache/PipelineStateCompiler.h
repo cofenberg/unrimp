@@ -57,6 +57,7 @@ namespace Renderer
 {
 	class IProgram;
 	class IPipelineState;
+	class IGraphicsPipelineState;
 }
 namespace RendererRuntime
 {
@@ -195,7 +196,7 @@ namespace RendererRuntime
 		void flushQueue(std::mutex& mutex, const CompilerRequests& compilerRequests);
 		void builderThreadWorker();
 		void compilerThreadWorker();
-		Renderer::IPipelineState* createPipelineState(const RendererRuntime::MaterialBlueprintResource& materialBlueprintResource, uint32_t serializedPipelineStateHash, Renderer::IProgram& program) const;
+		Renderer::IGraphicsPipelineState* createGraphicsPipelineState(const RendererRuntime::MaterialBlueprintResource& materialBlueprintResource, uint32_t serializedGraphicsPipelineStateHash, Renderer::IProgram& program) const;
 
 
 	//[-------------------------------------------------------]

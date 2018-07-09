@@ -203,10 +203,10 @@ void FirstMultipleSwapChains::onInitialization()
 					shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 			}
 
-			// Create the pipeline state object (PSO)
+			// Create the graphics pipeline state object (PSO)
 			if (nullptr != program)
 			{
-				mPipelineState = renderer->createPipelineState(Renderer::PipelineStateBuilder(mRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass()));
+				mGraphicsPipelineState = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass()));
 			}
 		}
 
@@ -319,7 +319,7 @@ void FirstMultipleSwapChains::onDeinitialization()
 		mSwapChain = nullptr;
 	}
 	mVertexArray = nullptr;
-	mPipelineState = nullptr;
+	mGraphicsPipelineState = nullptr;
 	mRootSignature = nullptr;
 	mCommandBuffer.clear();
 	mBufferManager = nullptr;
@@ -332,7 +332,7 @@ void FirstMultipleSwapChains::onDrawRequest()
 {
 	// Get and check the renderer instance
 	Renderer::IRendererPtr renderer(getRenderer());
-	if (nullptr != renderer && nullptr != mPipelineState)
+	if (nullptr != renderer && nullptr != mGraphicsPipelineState)
 	{
 		// Usually you draw into a swap chain when getting informed by the OS that the
 		// used native OS window requests a redraw of it's content. In order to avoid
@@ -456,7 +456,7 @@ void FirstMultipleSwapChains::fillCommandBuffer(const float color[4], Renderer::
 {
 	// Sanity checks
 	assert(nullptr != mRootSignature);
-	assert(nullptr != mPipelineState);
+	assert(nullptr != mGraphicsPipelineState);
 	assert(nullptr != mVertexArray);
 
 	// Scoped debug event
@@ -469,7 +469,7 @@ void FirstMultipleSwapChains::fillCommandBuffer(const float color[4], Renderer::
 	Renderer::Command::SetGraphicsRootSignature::create(commandBuffer, mRootSignature);
 
 	// Set the used graphics pipeline state object (PSO)
-	Renderer::Command::SetGraphicsPipelineState::create(commandBuffer, mPipelineState);
+	Renderer::Command::SetGraphicsPipelineState::create(commandBuffer, mGraphicsPipelineState);
 
 	// Input assembly (IA): Set the used vertex array
 	Renderer::Command::SetGraphicsVertexArray::create(commandBuffer, mVertexArray);

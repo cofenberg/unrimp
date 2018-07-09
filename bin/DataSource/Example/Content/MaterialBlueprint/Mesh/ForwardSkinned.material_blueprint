@@ -173,7 +173,7 @@
 				"VisualImportance": "MANDATORY"
 			}
 		},
-		"PipelineState":
+		"GraphicsPipelineState":
 		{
 			"VertexAttributes": "$ProjectName/VertexAttributes/Default/SkinnedMesh.asset",
 			"ShaderBlueprints":

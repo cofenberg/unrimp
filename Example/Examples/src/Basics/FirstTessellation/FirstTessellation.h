@@ -44,7 +44,7 @@
 *    - Vertex buffer object (VBO)
 *    - Vertex array object (VAO)
 *    - Root signature
-*    - Pipeline state object (PSO)
+*    - Graphics pipeline state object (PSO)
 *    - Vertex shader (VS), tessellation control shader (TCS), tessellation evaluation shader (TES) and fragment shader (FS)
 */
 class FirstTessellation final : public ExampleBase
@@ -95,11 +95,11 @@ private:
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
-	Renderer::IBufferManagerPtr	mBufferManager;	///< Buffer manager, can be a null pointer
-	Renderer::CommandBuffer		mCommandBuffer;	///< Command buffer
-	Renderer::IRootSignaturePtr	mRootSignature;	///< Root signature, can be a null pointer
-	Renderer::IPipelineStatePtr	mPipelineState;	///< Pipeline state object (PSO), can be a null pointer
-	Renderer::IVertexArrayPtr	mVertexArray;	///< Vertex array object (VAO), can be a null pointer
+	Renderer::IBufferManagerPtr			mBufferManager;			///< Buffer manager, can be a null pointer
+	Renderer::CommandBuffer				mCommandBuffer;			///< Command buffer
+	Renderer::IRootSignaturePtr			mRootSignature;			///< Root signature, can be a null pointer
+	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineState;	///< Graphics pipeline state object (PSO), can be a null pointer
+	Renderer::IVertexArrayPtr			mVertexArray;			///< Vertex array object (VAO), can be a null pointer
 
 
 };

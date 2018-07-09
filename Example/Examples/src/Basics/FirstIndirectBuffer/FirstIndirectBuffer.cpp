@@ -74,7 +74,7 @@ void FirstIndirectBuffer::fillCommandBuffer()
 	// Sanity checks
 	assert(mCommandBuffer.isEmpty());
 	assert(nullptr != mRootSignature);
-	assert(nullptr != mPipelineState);
+	assert(nullptr != mGraphicsPipelineState);
 	assert(nullptr != mVertexArray);
 	assert(nullptr != mIndirectBuffer);
 
@@ -88,7 +88,7 @@ void FirstIndirectBuffer::fillCommandBuffer()
 	Renderer::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
 
 	// Set the used graphics pipeline state object (PSO)
-	Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mPipelineState);
+	Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineState);
 
 	// Input assembly (IA): Set the used vertex array
 	Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArray);

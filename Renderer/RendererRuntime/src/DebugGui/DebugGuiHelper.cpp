@@ -422,7 +422,7 @@ namespace RendererRuntime
 						ImGui::Text("2D texture arrays: %d", statistics.currentNumberOfTexture2DArrays.load());
 						ImGui::Text("3D textures: %d", statistics.currentNumberOfTexture3Ds.load());
 						ImGui::Text("Cubes textures: %d", statistics.currentNumberOfTextureCubes.load());
-						ImGui::Text("Pipeline states: %d", statistics.currentNumberOfPipelineStates.load());
+						ImGui::Text("Graphics pipeline states: %d", statistics.currentNumberOfGraphicsPipelineStates.load());
 						ImGui::Text("Sampler states: %d", statistics.currentNumberOfSamplerStates.load());
 						ImGui::Text("Vertex shaders: %d", statistics.currentNumberOfVertexShaders.load());
 						ImGui::Text("Tessellation control shaders: %d", statistics.currentNumberOfTessellationControlShaders.load());

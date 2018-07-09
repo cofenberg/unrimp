@@ -162,10 +162,10 @@ void FirstInstancing::onInitialization()
 						shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 				}
 
-				// Create the pipeline state object (PSO)
+				// Create the graphics pipeline state object (PSO)
 				if (nullptr != program)
 				{
-					mPipelineStateInstancedArrays = renderer->createPipelineState(Renderer::PipelineStateBuilder(mRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass()));
+					mGraphicsPipelineStateInstancedArrays = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass()));
 				}
 			}
 
@@ -231,10 +231,10 @@ void FirstInstancing::onInitialization()
 						shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 				}
 
-				// Create the pipeline state object (PSO)
+				// Create the graphics pipeline state object (PSO)
 				if (nullptr != program)
 				{
-					mPipelineStateDrawInstanced = renderer->createPipelineState(Renderer::PipelineStateBuilder(mRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass()));
+					mGraphicsPipelineStateDrawInstanced = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass()));
 				}
 			}
 		}
@@ -248,9 +248,9 @@ void FirstInstancing::onDeinitialization()
 {
 	// Release the used resources
 	mVertexArrayDrawInstanced = nullptr;
-	mPipelineStateDrawInstanced = nullptr;
+	mGraphicsPipelineStateDrawInstanced = nullptr;
 	mVertexArrayInstancedArrays = nullptr;
-	mPipelineStateInstancedArrays = nullptr;
+	mGraphicsPipelineStateInstancedArrays = nullptr;
 	mRootSignature = nullptr;
 	mCommandBuffer.clear();
 	mBufferManager = nullptr;
@@ -277,9 +277,9 @@ void FirstInstancing::fillCommandBuffer()
 	assert(nullptr != getRenderer());
 	assert(mCommandBuffer.isEmpty());
 	assert(nullptr != mRootSignature);
-	assert(nullptr != mPipelineStateInstancedArrays);
+	assert(nullptr != mGraphicsPipelineStateInstancedArrays);
 	assert(nullptr != mVertexArrayInstancedArrays);
-	assert(!getRenderer()->getCapabilities().drawInstanced || nullptr != mPipelineStateDrawInstanced);
+	assert(!getRenderer()->getCapabilities().drawInstanced || nullptr != mGraphicsPipelineStateDrawInstanced);
 	assert(!getRenderer()->getCapabilities().drawInstanced || nullptr != mVertexArrayDrawInstanced);
 
 	// Scoped debug event
@@ -298,7 +298,7 @@ void FirstInstancing::fillCommandBuffer()
 		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Draw using instanced arrays")
 
 		// Set the used graphics pipeline state object (PSO)
-		Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mPipelineStateInstancedArrays);
+		Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineStateInstancedArrays);
 
 		// Input assembly (IA): Set the used vertex array
 		Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArrayInstancedArrays);
@@ -317,7 +317,7 @@ void FirstInstancing::fillCommandBuffer()
 		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Draw instanced")
 
 		// Set the used graphics pipeline state object (PSO)
-		Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mPipelineStateDrawInstanced);
+		Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineStateDrawInstanced);
 
 		// Input assembly (IA): Set the used vertex array
 		Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArrayDrawInstanced);

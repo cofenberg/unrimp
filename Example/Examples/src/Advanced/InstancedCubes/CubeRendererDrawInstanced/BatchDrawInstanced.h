@@ -111,10 +111,10 @@ private:
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
-	Renderer::IRendererPtr		mRenderer;				///< Owner renderer instance, can be a null pointer
-	uint32_t					mNumberOfCubeInstances;	///< Number of cube instances
-	Renderer::IResourceGroupPtr	mTextureBufferGroup;	///< Texture buffer group with per instance data (used via vertex texture fetch), each entry can contain a null pointer
-	Renderer::IPipelineStatePtr	mPipelineState;			///< Pipeline state object (PSO), can be a null pointer
+	Renderer::IRendererPtr				mRenderer;				///< Owner renderer instance, can be a null pointer
+	uint32_t							mNumberOfCubeInstances;	///< Number of cube instances
+	Renderer::IResourceGroupPtr			mTextureBufferGroup;	///< Texture buffer group with per instance data (used via vertex texture fetch), each entry can contain a null pointer
+	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineState;	///< Graphics pipeline state object (PSO), can be a null pointer
 
 
 };

@@ -364,7 +364,7 @@ namespace RendererRuntime
 				Renderer::Command::SetGraphicsRootSignature::create(commandBuffer, mRootSignature);
 
 				// Set the used graphics pipeline state object (PSO)
-				Renderer::Command::SetGraphicsPipelineState::create(commandBuffer, mPipelineState);
+				Renderer::Command::SetGraphicsPipelineState::create(commandBuffer, mGraphicsPipelineState);
 
 				// Set graphics resource groups
 				Renderer::Command::SetGraphicsResourceGroup::create(commandBuffer, 0, mResourceGroup);
@@ -533,7 +533,7 @@ namespace RendererRuntime
 		Renderer::IShaderLanguage* shaderLanguage = renderer.getShaderLanguage();
 		if (nullptr != shaderLanguage)
 		{
-			{ // Create the pipeline state instance
+			{ // Create the graphics pipeline state instance
 				{ // Create the program
 					// Get the shader source code (outsourced to keep an overview)
 					const char* vertexShaderSourceCode = nullptr;
@@ -560,23 +560,23 @@ namespace RendererRuntime
 					RENDERER_SET_RESOURCE_DEBUG_NAME(mProgram, "Debug GUI")
 				}
 
-				// Create the pipeline state object (PSO)
+				// Create the graphics pipeline state object (PSO)
 				if (nullptr != mProgram)
 				{
 					// TODO(co) Render pass related update, the render pass in here is currently just a dummy so the debug compositor works
 					Renderer::IRenderPass* renderPass = renderer.createRenderPass(1, &renderer.getCapabilities().preferredSwapChainColorTextureFormat, renderer.getCapabilities().preferredSwapChainDepthStencilTextureFormat);
 
-					Renderer::PipelineState pipelineState = Renderer::PipelineStateBuilder(mRootSignature, mProgram, ::detail::VertexAttributes, *renderPass);
-					pipelineState.rasterizerState.cullMode				   = Renderer::CullMode::NONE;
-					pipelineState.rasterizerState.scissorEnable			   = 1;
-					pipelineState.depthStencilState.depthEnable			   = false;
-					pipelineState.depthStencilState.depthWriteMask		   = Renderer::DepthWriteMask::ZERO;
-					pipelineState.blendState.renderTarget[0].blendEnable   = true;
-					pipelineState.blendState.renderTarget[0].srcBlend	   = Renderer::Blend::SRC_ALPHA;
-					pipelineState.blendState.renderTarget[0].destBlend	   = Renderer::Blend::INV_SRC_ALPHA;
-					pipelineState.blendState.renderTarget[0].srcBlendAlpha = Renderer::Blend::INV_SRC_ALPHA;
-					mPipelineState = renderer.createPipelineState(pipelineState);
-					RENDERER_SET_RESOURCE_DEBUG_NAME(mPipelineState, "Debug GUI")
+					Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(mRootSignature, mProgram, ::detail::VertexAttributes, *renderPass);
+					graphicsPipelineState.rasterizerState.cullMode				   = Renderer::CullMode::NONE;
+					graphicsPipelineState.rasterizerState.scissorEnable			   = 1;
+					graphicsPipelineState.depthStencilState.depthEnable			   = false;
+					graphicsPipelineState.depthStencilState.depthWriteMask		   = Renderer::DepthWriteMask::ZERO;
+					graphicsPipelineState.blendState.renderTarget[0].blendEnable   = true;
+					graphicsPipelineState.blendState.renderTarget[0].srcBlend	   = Renderer::Blend::SRC_ALPHA;
+					graphicsPipelineState.blendState.renderTarget[0].destBlend	   = Renderer::Blend::INV_SRC_ALPHA;
+					graphicsPipelineState.blendState.renderTarget[0].srcBlendAlpha = Renderer::Blend::INV_SRC_ALPHA;
+					mGraphicsPipelineState = renderer.createGraphicsPipelineState(graphicsPipelineState);
+					RENDERER_SET_RESOURCE_DEBUG_NAME(mGraphicsPipelineState, "Debug GUI")
 				}
 			}
 		}

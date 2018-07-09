@@ -117,12 +117,12 @@ void BatchInstancedArrays::initialize(Renderer::IBufferManager& bufferManager, R
 		delete [] data;
 	}
 
-	{ // Create the pipeline state object (PSO)
-		Renderer::PipelineState pipelineState = Renderer::PipelineStateBuilder(&rootSignature, &program, vertexAttributes, renderPass);
-		pipelineState.blendState.renderTarget[0].blendEnable = alphaBlending;
-		pipelineState.blendState.renderTarget[0].srcBlend    = Renderer::Blend::SRC_ALPHA;
-		pipelineState.blendState.renderTarget[0].destBlend   = Renderer::Blend::ONE;
-		mPipelineState = mRenderer->createPipelineState(pipelineState);
+	{ // Create the graphics pipeline state object (PSO)
+		Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(&rootSignature, &program, vertexAttributes, renderPass);
+		graphicsPipelineState.blendState.renderTarget[0].blendEnable = alphaBlending;
+		graphicsPipelineState.blendState.renderTarget[0].srcBlend    = Renderer::Blend::SRC_ALPHA;
+		graphicsPipelineState.blendState.renderTarget[0].destBlend   = Renderer::Blend::ONE;
+		mGraphicsPipelineState = mRenderer->createGraphicsPipelineState(graphicsPipelineState);
 	}
 }
 
@@ -132,7 +132,7 @@ void BatchInstancedArrays::fillCommandBuffer(Renderer::CommandBuffer& commandBuf
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)
 
 	// Set the used graphics pipeline state object (PSO)
-	Renderer::Command::SetGraphicsPipelineState::create(commandBuffer, mPipelineState);
+	Renderer::Command::SetGraphicsPipelineState::create(commandBuffer, mGraphicsPipelineState);
 
 	// Setup input assembly (IA): Set the used vertex array
 	Renderer::Command::SetGraphicsVertexArray::create(commandBuffer, mVertexArray);

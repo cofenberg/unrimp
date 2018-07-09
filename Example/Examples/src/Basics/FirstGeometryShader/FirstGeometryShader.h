@@ -45,7 +45,7 @@
 *    - Vertex array object (VAO)
 *    - Vertex shader (VS), geometry shader (GS) and fragment shader (FS)
 *    - Root signature
-*    - Pipeline state object (PSO)
+*    - Graphics pipeline state object (PSO)
 *    - Attribute-less rendering (aka "drawing without data")
 */
 class FirstGeometryShader final : public ExampleBase
@@ -96,10 +96,10 @@ private:
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
-	Renderer::IBufferManagerPtr	mBufferManager;	///< Buffer manager, can be a null pointer
-	Renderer::CommandBuffer		mCommandBuffer;	///< Command buffer
-	Renderer::IRootSignaturePtr	mRootSignature;	///< Root signature, can be a null pointer
-	Renderer::IPipelineStatePtr	mPipelineState;	///< Pipeline state object (PSO), can be a null pointer
+	Renderer::IBufferManagerPtr			mBufferManager;			///< Buffer manager, can be a null pointer
+	Renderer::CommandBuffer				mCommandBuffer;			///< Command buffer
+	Renderer::IRootSignaturePtr			mRootSignature;			///< Root signature, can be a null pointer
+	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineState;	///< Graphics pipeline state object (PSO), can be a null pointer
 
 
 };

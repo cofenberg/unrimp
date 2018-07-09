@@ -210,13 +210,13 @@ void IcosahedronTessellation::onInitialization()
 					shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 			}
 
-			// Create the pipeline state object (PSO)
+			// Create the graphics pipeline state object (PSO)
 			if (nullptr != program)
 			{
-				Renderer::PipelineState pipelineState = Renderer::PipelineStateBuilder(mRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass());
-				pipelineState.primitiveTopology = Renderer::PrimitiveTopology::PATCH_LIST_3;	// Patch list with 3 vertices per patch (tessellation relevant topology type) - "Renderer::PrimitiveTopology::TriangleList" used for tessellation
-				pipelineState.primitiveTopologyType = Renderer::PrimitiveTopologyType::PATCH;
-				mPipelineState = renderer->createPipelineState(pipelineState);
+				Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(mRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass());
+				graphicsPipelineState.primitiveTopology = Renderer::PrimitiveTopology::PATCH_LIST_3;	// Patch list with 3 vertices per patch (tessellation relevant topology type) - "Renderer::PrimitiveTopology::TriangleList" used for tessellation
+				graphicsPipelineState.primitiveTopologyType = Renderer::PrimitiveTopologyType::PATCH;
+				mGraphicsPipelineState = renderer->createGraphicsPipelineState(graphicsPipelineState);
 			}
 		}
 
@@ -229,7 +229,7 @@ void IcosahedronTessellation::onDeinitialization()
 {
 	// Release the used resources
 	mVertexArray = nullptr;
-	mPipelineState = nullptr;
+	mGraphicsPipelineState = nullptr;
 	mUniformBufferGroup = nullptr;
 	mUniformBufferDynamicTcs = nullptr;
 	mRootSignature = nullptr;
@@ -276,7 +276,7 @@ void IcosahedronTessellation::fillCommandBuffer()
 	assert(nullptr != mRootSignature);
 	assert(nullptr != mUniformBufferDynamicTcs);
 	assert(nullptr != mUniformBufferGroup);
-	assert(nullptr != mPipelineState);
+	assert(nullptr != mGraphicsPipelineState);
 	assert(nullptr != mVertexArray);
 
 	// Scoped debug event
@@ -289,7 +289,7 @@ void IcosahedronTessellation::fillCommandBuffer()
 	Renderer::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
 
 	// Set the used graphics pipeline state object (PSO)
-	Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mPipelineState);
+	Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineState);
 
 	// Set graphics resource groups
 	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 0, mUniformBufferGroup);

@@ -77,13 +77,13 @@ void FirstGeometryShader::onInitialization()
 					shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 			}
 
-			// Create the pipeline state object (PSO)
+			// Create the graphics pipeline state object (PSO)
 			if (nullptr != program)
 			{
-				Renderer::PipelineState pipelineState = Renderer::PipelineStateBuilder(mRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass());
-				pipelineState.primitiveTopology = Renderer::PrimitiveTopology::POINT_LIST;
-				pipelineState.primitiveTopologyType = Renderer::PrimitiveTopologyType::POINT;
-				mPipelineState = renderer->createPipelineState(pipelineState);
+				Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(mRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass());
+				graphicsPipelineState.primitiveTopology = Renderer::PrimitiveTopology::POINT_LIST;
+				graphicsPipelineState.primitiveTopologyType = Renderer::PrimitiveTopologyType::POINT;
+				mGraphicsPipelineState = renderer->createGraphicsPipelineState(graphicsPipelineState);
 			}
 		}
 
@@ -95,7 +95,7 @@ void FirstGeometryShader::onInitialization()
 void FirstGeometryShader::onDeinitialization()
 {
 	// Release the used resources
-	mPipelineState = nullptr;
+	mGraphicsPipelineState = nullptr;
 	mRootSignature = nullptr;
 	mCommandBuffer.clear();
 	mBufferManager = nullptr;
@@ -121,7 +121,7 @@ void FirstGeometryShader::fillCommandBuffer()
 	// Sanity checks
 	assert(mCommandBuffer.isEmpty());
 	assert(nullptr != mRootSignature);
-	assert(nullptr != mPipelineState);
+	assert(nullptr != mGraphicsPipelineState);
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
@@ -133,7 +133,7 @@ void FirstGeometryShader::fillCommandBuffer()
 	Renderer::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
 
 	// Set the used graphics pipeline state object (PSO)
-	Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mPipelineState);
+	Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineState);
 
 	// Render the specified geometric primitive, based on an array of vertices
 	// -> Emit a single point in order to generate a draw call, the geometry shader does the rest

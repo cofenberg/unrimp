@@ -131,7 +131,7 @@
 				"Description": "Contrast (x-value) and brightness (y-value)"
 			}
 		},
-		"PipelineState":
+		"GraphicsPipelineState":
 		{
 			"VertexAttributes": "$ProjectName/VertexAttributes/Default/Null.asset",
 			"ShaderBlueprints":

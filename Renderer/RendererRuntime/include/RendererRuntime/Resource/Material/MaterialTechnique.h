@@ -157,14 +157,14 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Return the FNV1a hash of "Renderer::SerializedPipelineState"
+		*    Return the FNV1a hash of "Renderer::SerializedGraphicsPipelineState"
 		*
 		*  @return
-		*    The FNV1a hash of "Renderer::SerializedPipelineState"
+		*    The FNV1a hash of "Renderer::SerializedGraphicsPipelineState"
 		*/
-		inline uint32_t getSerializedPipelineStateHash() const
+		inline uint32_t getSerializedGraphicsPipelineStateHash() const
 		{
-			return mSerializedPipelineStateHash;
+			return mSerializedGraphicsPipelineStateHash;
 		}
 
 		/**
@@ -213,9 +213,9 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Calculate FNV1a hash of "Renderer::SerializedPipelineState"
+		*    Calculate FNV1a hash of "Renderer::SerializedGraphicsPipelineState"
 		*/
-		void calculateSerializedPipelineStateHash();
+		void calculateSerializedGraphicsPipelineStateHash();
 
 		/**
 		*  @brief
@@ -228,11 +228,11 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		MaterialTechniqueId			mMaterialTechniqueId;			///< Material technique ID
-		MaterialBlueprintResourceId	mMaterialBlueprintResourceId;	///< Material blueprint resource ID, can be set to invalid value
+		MaterialTechniqueId			mMaterialTechniqueId;					///< Material technique ID
+		MaterialBlueprintResourceId	mMaterialBlueprintResourceId;			///< Material blueprint resource ID, can be set to invalid value
 		Textures					mTextures;
-		uint32_t					mSerializedPipelineStateHash;	///< FNV1a hash of "Renderer::SerializedPipelineState"
-		Renderer::IResourceGroupPtr	mTextureResourceGroup;			///< Texture resource group, can be a null pointer
+		uint32_t					mSerializedGraphicsPipelineStateHash;	///< FNV1a hash of "Renderer::SerializedGraphicsPipelineState"
+		Renderer::IResourceGroupPtr	mTextureResourceGroup;					///< Texture resource group, can be a null pointer
 
 
 	};

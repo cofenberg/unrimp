@@ -86,15 +86,15 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 		friend class RendererRuntimeImpl;
 		friend class IResource;				// Needed so that inside this classes an static_cast<CompositorNodeResourceManager*>(IResourceManager*) works
-		friend class MaterialTechnique;		// Needs to be able to call "RendererRuntime::MaterialBlueprintResourceManager::addSerializedPipelineState()"
-		friend class PipelineStateCompiler;	// Needs to be able to call "RendererRuntime::MaterialBlueprintResourceManager::applySerializedPipelineState()"
+		friend class MaterialTechnique;		// Needs to be able to call "RendererRuntime::MaterialBlueprintResourceManager::addSerializedGraphicsPipelineState()"
+		friend class PipelineStateCompiler;	// Needs to be able to call "RendererRuntime::MaterialBlueprintResourceManager::applySerializedGraphicsPipelineState()"
 
 
 	//[-------------------------------------------------------]
 	//[ Public definitions                                    ]
 	//[-------------------------------------------------------]
 	public:
-		typedef std::unordered_map<uint32_t, Renderer::SerializedPipelineState> SerializedPipelineStates;	///< Key = FNV1a hash of "Renderer::SerializedPipelineState"
+		typedef std::unordered_map<uint32_t, Renderer::SerializedGraphicsPipelineState> SerializedGraphicsPipelineStates;	///< Key = FNV1a hash of "Renderer::SerializedGraphicsPipelineState"
 
 
 	//[-------------------------------------------------------]
@@ -227,8 +227,8 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Pipeline state object cache                           ]
 		//[-------------------------------------------------------]
-		void addSerializedPipelineState(uint32_t serializedPipelineStateHash, const Renderer::SerializedPipelineState& serializedPipelineState);
-		void applySerializedPipelineState(uint32_t serializedPipelineStateHash, Renderer::PipelineState& pipelineState);
+		void addSerializedGraphicsPipelineState(uint32_t serializedGraphicsPipelineStateHash, const Renderer::SerializedGraphicsPipelineState& serializedGraphicsPipelineState);
+		void applySerializedGraphicsPipelineState(uint32_t serializedGraphicsPipelineStateHash, Renderer::GraphicsPipelineState& graphicsPipelineState);
 		void clearPipelineStateObjectCache();
 		void loadPipelineStateObjectCache(IFile& file);
 		bool doesPipelineStateObjectCacheNeedSaving() const;
@@ -239,17 +239,17 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		IRendererRuntime&					mRendererRuntime;					///< Renderer runtime instance, do not destroy the instance
-		bool								mCreateInitialPipelineStateCaches;	///< Create initial pipeline state caches after a material blueprint has been loaded?
-		IMaterialBlueprintResourceListener*	mMaterialBlueprintResourceListener;	///< Material blueprint resource listener, always valid, do not destroy the instance
-		MaterialProperties					mGlobalMaterialProperties;			///< Global material properties
-		Renderer::FilterMode				mDefaultTextureFilterMode;			///< Default texture filter mode
-		uint8_t								mDefaultMaximumTextureAnisotropy;	///< Default maximum texture anisotropy
-		std::mutex							mSerializedPipelineStatesMutex;		///< "RendererRuntime::PipelineStateCompiler" is running asynchronous, hence we need to synchronize the serialized pipeline states access
-		SerializedPipelineStates			mSerializedPipelineStates;			///< Serialized pipeline states
-		InstanceBufferManager*				mInstanceBufferManager;				///< Instance buffer manager, always valid in a sane none-legacy environment
-		IndirectBufferManager*				mIndirectBufferManager;				///< Indirect buffer manager, always valid in a sane none-legacy environment
-		LightBufferManager*					mLightBufferManager;				///< Light buffer manager, always valid in a sane none-legacy environment
+		IRendererRuntime&					mRendererRuntime;							///< Renderer runtime instance, do not destroy the instance
+		bool								mCreateInitialPipelineStateCaches;			///< Create initial pipeline state caches after a material blueprint has been loaded?
+		IMaterialBlueprintResourceListener*	mMaterialBlueprintResourceListener;			///< Material blueprint resource listener, always valid, do not destroy the instance
+		MaterialProperties					mGlobalMaterialProperties;					///< Global material properties
+		Renderer::FilterMode				mDefaultTextureFilterMode;					///< Default texture filter mode
+		uint8_t								mDefaultMaximumTextureAnisotropy;			///< Default maximum texture anisotropy
+		std::mutex							mSerializedGraphicsPipelineStatesMutex;		///< "RendererRuntime::PipelineStateCompiler" is running asynchronous, hence we need to synchronize the serialized graphics pipeline states access
+		SerializedGraphicsPipelineStates	mSerializedGraphicsPipelineStates;			///< Serialized pipeline states
+		InstanceBufferManager*				mInstanceBufferManager;						///< Instance buffer manager, always valid in a sane none-legacy environment
+		IndirectBufferManager*				mIndirectBufferManager;						///< Indirect buffer manager, always valid in a sane none-legacy environment
+		LightBufferManager*					mLightBufferManager;						///< Light buffer manager, always valid in a sane none-legacy environment
 
 		// Internal resource manager implementation
 		ResourceManagerTemplate<MaterialBlueprintResource, MaterialBlueprintResourceLoader, MaterialBlueprintResourceId, 64>* mInternalResourceManager;

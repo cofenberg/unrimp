@@ -179,8 +179,8 @@ void FirstMesh::onInitialization()
 			// Is there a valid program?
 			if (nullptr != program)
 			{
-				// Create the pipeline state object (PSO)
-				mPipelineState = renderer->createPipelineState(Renderer::PipelineStateBuilder(mRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass()));
+				// Create the graphics pipeline state object (PSO)
+				mGraphicsPipelineState = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass()));
 
 				// Optimization: Cached data to not bother the renderer API too much
 				if (nullptr == mUniformBuffer)
@@ -215,8 +215,8 @@ void FirstMesh::onDeinitialization()
 	RendererRuntime::setInvalid(m_hr_rg_mb_nyaTextureResourceId);
 	RendererRuntime::setInvalid(m_argb_nxaTextureResourceId);
 	RendererRuntime::setInvalid(mMeshResourceId);
-	mProgram	   = nullptr;
-	mPipelineState = nullptr;
+	mProgram = nullptr;
+	mGraphicsPipelineState = nullptr;
 	mUniformBuffer = nullptr;
 	mRootSignature = nullptr;
 	mCommandBuffer.clear();
@@ -263,7 +263,7 @@ void FirstMesh::onDraw()
 
 	// Get and check the renderer instance
 	Renderer::IRendererPtr renderer(getRenderer());
-	if (nullptr != renderer && nullptr != mPipelineState)
+	if (nullptr != renderer && nullptr != mGraphicsPipelineState)
 	{
 		// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
 		RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(rendererRuntime->getContext(), mCommandBuffer)
@@ -291,7 +291,7 @@ void FirstMesh::onDraw()
 		Renderer::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
 
 		// Set the used graphics pipeline state object (PSO)
-		Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mPipelineState);
+		Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineState);
 
 		// Set graphics resource groups
 		Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 0, mResourceGroup);
