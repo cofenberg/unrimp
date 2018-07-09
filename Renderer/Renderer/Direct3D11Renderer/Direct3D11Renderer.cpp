@@ -2110,6 +2110,7 @@ namespace Direct3D11Renderer
 		virtual Renderer::ITextureManager* createTextureManager() override;
 		virtual Renderer::IRootSignature* createRootSignature(const Renderer::RootSignature& rootSignature) override;
 		virtual Renderer::IGraphicsPipelineState* createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState) override;
+		virtual Renderer::IComputePipelineState* createComputePipelineState(Renderer::IRootSignature& rootSignature, Renderer::IComputeShader& computeShader) override;
 		virtual Renderer::ISamplerState* createSamplerState(const Renderer::SamplerState& samplerState) override;
 		//[-------------------------------------------------------]
 		//[ Resource handling                                     ]
@@ -7938,6 +7939,7 @@ namespace Direct3D11Renderer
 						case Renderer::ResourceType::TEXTURE_3D:
 						case Renderer::ResourceType::TEXTURE_CUBE:
 						case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+						case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 						case Renderer::ResourceType::SAMPLER_STATE:
 						case Renderer::ResourceType::VERTEX_SHADER:
 						case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -8028,6 +8030,7 @@ namespace Direct3D11Renderer
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+					case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Renderer::ResourceType::SAMPLER_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -9873,6 +9876,99 @@ namespace Direct3D11Renderer
 
 
 
+	//[-------------------------------------------------------]
+	//[ Direct3D11Renderer/State/ComputePipelineState.h       ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Direct3D 11 compute pipeline state class
+	*/
+	class ComputePipelineState final : public Renderer::IComputePipelineState
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] direct3D11Renderer
+		*    Owner Direct3D 11 renderer instance
+		*  @param[in] computeShader
+		*    Compute shader to use
+		*/
+		ComputePipelineState(Direct3D11Renderer& direct3D11Renderer, Renderer::IComputeShader& computeShader) :
+			IComputePipelineState(direct3D11Renderer),
+			mD3D11ComputeShader(static_cast<ComputeShaderHlsl&>(computeShader).getD3D11ComputeShader())
+		{
+			// Ensure a correct reference counter behaviour
+			if (nullptr != mD3D11ComputeShader)
+			{
+				mD3D11ComputeShader->AddRef();
+			}
+			computeShader.addReference();
+			computeShader.releaseReference();
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~ComputePipelineState() override
+		{
+			// Release the Direct3D 11 compute shader
+			if (nullptr != mD3D11ComputeShader)
+			{
+				mD3D11ComputeShader->Release();
+			}
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D 11 compute shader
+		*
+		*  @return
+		*    Direct3D 11 compute shader, can be a null pointer on error, do not release the returned instance unless you added an own reference to it
+		*/
+		inline ID3D11ComputeShader* getD3D11ComputeShader() const
+		{
+			return mD3D11ComputeShader;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), ComputePipelineState, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit ComputePipelineState(const ComputePipelineState& source) = delete;
+		ComputePipelineState& operator =(const ComputePipelineState& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		ID3D11ComputeShader* mD3D11ComputeShader;	///< Direct3D 11 compute shader, can be a null pointer
+
+
+	};
+
+
+
+
 //[-------------------------------------------------------]
 //[ Namespace                                             ]
 //[-------------------------------------------------------]
@@ -10654,6 +10750,7 @@ namespace Direct3D11Renderer
 							case Renderer::ResourceType::UNIFORM_BUFFER:
 							case Renderer::ResourceType::INDIRECT_BUFFER:
 							case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+							case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 							case Renderer::ResourceType::SAMPLER_STATE:
 							case Renderer::ResourceType::VERTEX_SHADER:
 							case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -10778,6 +10875,7 @@ namespace Direct3D11Renderer
 					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+					case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
 					case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
@@ -10917,6 +11015,7 @@ namespace Direct3D11Renderer
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+					case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Renderer::ResourceType::SAMPLER_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -11047,6 +11146,7 @@ namespace Direct3D11Renderer
 				case Renderer::ResourceType::TEXTURE_3D:
 				case Renderer::ResourceType::TEXTURE_CUBE:
 				case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+				case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 				case Renderer::ResourceType::SAMPLER_STATE:
 				case Renderer::ResourceType::VERTEX_SHADER:
 				case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -11415,6 +11515,7 @@ namespace Direct3D11Renderer
 			case Renderer::ResourceType::TEXTURE_3D:
 			case Renderer::ResourceType::TEXTURE_CUBE:
 			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+			case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 			case Renderer::ResourceType::SAMPLER_STATE:
 			case Renderer::ResourceType::VERTEX_SHADER:
 			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -11471,6 +11572,7 @@ namespace Direct3D11Renderer
 			case Renderer::ResourceType::TEXTURE_3D:
 			case Renderer::ResourceType::TEXTURE_CUBE:
 			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+			case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 			case Renderer::ResourceType::SAMPLER_STATE:
 			case Renderer::ResourceType::VERTEX_SHADER:
 			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -11635,6 +11737,20 @@ namespace Direct3D11Renderer
 		return RENDERER_NEW(mContext, GraphicsPipelineState)(*this, graphicsPipelineState);
 	}
 
+	Renderer::IComputePipelineState* Direct3D11Renderer::createComputePipelineState(Renderer::IRootSignature& rootSignature, Renderer::IComputeShader& computeShader)
+	{
+		// Sanity checks
+		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, rootSignature)
+		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, computeShader)
+
+		// Ensure a correct reference counter behaviour
+		rootSignature.addReference();
+		rootSignature.releaseReference();
+
+		// Create compute pipeline state
+		return RENDERER_NEW(mContext, ComputePipelineState)(*this, computeShader);
+	}
+
 	Renderer::ISamplerState* Direct3D11Renderer::createSamplerState(const Renderer::SamplerState& samplerState)
 	{
 		return RENDERER_NEW(mContext, SamplerState)(*this, samplerState);
@@ -11698,6 +11814,7 @@ namespace Direct3D11Renderer
 			case Renderer::ResourceType::SWAP_CHAIN:
 			case Renderer::ResourceType::FRAMEBUFFER:
 			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+			case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 			case Renderer::ResourceType::SAMPLER_STATE:
 			case Renderer::ResourceType::VERTEX_SHADER:
 			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -11777,6 +11894,7 @@ namespace Direct3D11Renderer
 			case Renderer::ResourceType::SWAP_CHAIN:
 			case Renderer::ResourceType::FRAMEBUFFER:
 			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+			case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 			case Renderer::ResourceType::SAMPLER_STATE:
 			case Renderer::ResourceType::VERTEX_SHADER:
 			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:

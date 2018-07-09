@@ -230,6 +230,7 @@ namespace NullRenderer
 		virtual Renderer::ITextureManager* createTextureManager() override;
 		virtual Renderer::IRootSignature* createRootSignature(const Renderer::RootSignature& rootSignature) override;
 		virtual Renderer::IGraphicsPipelineState* createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState) override;
+		virtual Renderer::IComputePipelineState* createComputePipelineState(Renderer::IRootSignature& rootSignature, Renderer::IComputeShader& computeShader) override;
 		virtual Renderer::ISamplerState* createSamplerState(const Renderer::SamplerState& samplerState) override;
 		//[-------------------------------------------------------]
 		//[ Resource handling                                     ]
@@ -2643,6 +2644,85 @@ namespace NullRenderer
 
 
 
+	//[-------------------------------------------------------]
+	//[ NullRenderer/State/ComputePipelineState.h             ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Null compute pipeline state class
+	*/
+	class ComputePipelineState final : public Renderer::IComputePipelineState
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] nullRenderer
+		*    Owner null renderer instance
+		*  @param[in] rootSignature
+		*    Root signature to use
+		*  @param[in] computeShader
+		*    Compute shader to use
+		*/
+		ComputePipelineState(NullRenderer& nullRenderer, Renderer::IRootSignature& rootSignature, Renderer::IComputeShader& computeShader) :
+			IComputePipelineState(nullRenderer),
+			mRootSignature(rootSignature),
+			mComputeShader(computeShader)
+		{
+			// Add a reference to the given root signature and compute shader
+			rootSignature.addReference();
+			computeShader.addReference();
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~ComputePipelineState() override
+		{
+			// Release the root signature and compute shader reference
+			mRootSignature.releaseReference();
+			mComputeShader.releaseReference();
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), ComputePipelineState, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit ComputePipelineState(const ComputePipelineState& source) = delete;
+		ComputePipelineState& operator =(const ComputePipelineState& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		Renderer::IRootSignature& mRootSignature;
+		Renderer::IComputeShader& mComputeShader;
+
+
+	};
+
+
+
+
 //[-------------------------------------------------------]
 //[ Namespace                                             ]
 //[-------------------------------------------------------]
@@ -3267,6 +3347,16 @@ namespace NullRenderer
 	Renderer::IGraphicsPipelineState* NullRenderer::createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState)
 	{
 		return RENDERER_NEW(mContext, GraphicsPipelineState)(*this, graphicsPipelineState);
+	}
+
+	Renderer::IComputePipelineState* NullRenderer::createComputePipelineState(Renderer::IRootSignature& rootSignature, Renderer::IComputeShader& computeShader)
+	{
+		// Sanity checks
+		NULLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, rootSignature)
+		NULLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, computeShader)
+
+		// Create the compute pipeline state
+		return RENDERER_NEW(mContext, ComputePipelineState)(*this, rootSignature, computeShader);
 	}
 
 	Renderer::ISamplerState* NullRenderer::createSamplerState(const Renderer::SamplerState &)

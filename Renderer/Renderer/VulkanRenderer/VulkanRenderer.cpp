@@ -1748,6 +1748,7 @@ namespace VulkanRenderer
 		virtual Renderer::ITextureManager* createTextureManager() override;
 		virtual Renderer::IRootSignature* createRootSignature(const Renderer::RootSignature& rootSignature) override;
 		virtual Renderer::IGraphicsPipelineState* createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState) override;
+		virtual Renderer::IComputePipelineState* createComputePipelineState(Renderer::IRootSignature& rootSignature, Renderer::IComputeShader& computeShader) override;
 		virtual Renderer::ISamplerState* createSamplerState(const Renderer::SamplerState& samplerState) override;
 		//[-------------------------------------------------------]
 		//[ Resource handling                                     ]
@@ -7296,6 +7297,7 @@ namespace VulkanRenderer
 						case Renderer::ResourceType::TEXTURE_3D:
 						case Renderer::ResourceType::TEXTURE_CUBE:
 						case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+						case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 						case Renderer::ResourceType::SAMPLER_STATE:
 						case Renderer::ResourceType::VERTEX_SHADER:
 						case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -7366,6 +7368,7 @@ namespace VulkanRenderer
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+					case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Renderer::ResourceType::SAMPLER_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -8704,17 +8707,19 @@ namespace VulkanRenderer
 		*/
 		GraphicsPipelineState(VulkanRenderer& vulkanRenderer, const Renderer::GraphicsPipelineState& graphicsPipelineState) :
 			IGraphicsPipelineState(vulkanRenderer),
+			mRootSignature(graphicsPipelineState.rootSignature),
 			mProgram(graphicsPipelineState.program),
 			mRenderPass(graphicsPipelineState.renderPass),
 			mVkPipeline(VK_NULL_HANDLE)
 		{
-			// Add a reference to the given program and render pass
+			// Add a reference to the given root signature, program and render pass
+			mRootSignature->addReference();
 			mProgram->addReference();
 			mRenderPass->addReference();
 
 			// Sanity checks
-			RENDERER_ASSERT(vulkanRenderer.getContext(), nullptr != graphicsPipelineState.rootSignature, "Invalid Vulkan root signature")
-			RENDERER_ASSERT(vulkanRenderer.getContext(), nullptr != graphicsPipelineState.renderPass, "Invalid Vulkan render pass")
+			RENDERER_ASSERT(vulkanRenderer.getContext(), nullptr != mRootSignature, "Invalid Vulkan root signature")
+			RENDERER_ASSERT(vulkanRenderer.getContext(), nullptr != mRenderPass, "Invalid Vulkan render pass")
 
 			// Our pipeline state needs to be independent of concrete render targets, so we're using dynamic viewport ("VK_DYNAMIC_STATE_VIEWPORT") and scissor ("VK_DYNAMIC_STATE_SCISSOR") states
 			static constexpr uint32_t width  = 42;
@@ -8849,7 +8854,7 @@ namespace VulkanRenderer
 				slopeScaledDepthBias,																												// depthBiasSlopeFactor (float)
 				1.0f																																// lineWidth (float)
 			};
-			const RenderPass* renderPass = static_cast<const RenderPass*>(graphicsPipelineState.renderPass);
+			const RenderPass* renderPass = static_cast<const RenderPass*>(mRenderPass);
 			const VkPipelineMultisampleStateCreateInfo vkPipelineMultisampleStateCreateInfo =
 			{
 				VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,	// sType (VkStructureType)
@@ -8936,25 +8941,25 @@ namespace VulkanRenderer
 			};
 			const VkGraphicsPipelineCreateInfo vkGraphicsPipelineCreateInfo =
 			{
-				VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,												// sType (VkStructureType)
-				nullptr,																						// pNext (const void*)
-				0,																								// flags (VkPipelineCreateFlags)
-				stageCount,																						// stageCount (uint32_t)
-				vkPipelineShaderStageCreateInfos.data(),														// pStages (const VkPipelineShaderStageCreateInfo*)
-				&vkPipelineVertexInputStateCreateInfo,															// pVertexInputState (const VkPipelineVertexInputStateCreateInfo*)
-				&vkPipelineInputAssemblyStateCreateInfo,														// pInputAssemblyState (const VkPipelineInputAssemblyStateCreateInfo*)
-				&vkPipelineTessellationStateCreateInfo,															// pTessellationState (const VkPipelineTessellationStateCreateInfo*)
-				&vkPipelineViewportStateCreateInfo,																// pViewportState (const VkPipelineViewportStateCreateInfo*)
-				&vkPipelineRasterizationStateCreateInfo,														// pRasterizationState (const VkPipelineRasterizationStateCreateInfo*)
-				&vkPipelineMultisampleStateCreateInfo,															// pMultisampleState (const VkPipelineMultisampleStateCreateInfo*)
-				&vkPipelineDepthStencilStateCreateInfo,															// pDepthStencilState (const VkPipelineDepthStencilStateCreateInfo*)
-				&vkPipelineColorBlendStateCreateInfo,															// pColorBlendState (const VkPipelineColorBlendStateCreateInfo*)
-				&vkPipelineDynamicStateCreateInfo,																// pDynamicState (const VkPipelineDynamicStateCreateInfo*)
-				static_cast<const RootSignature*>(graphicsPipelineState.rootSignature)->getVkPipelineLayout(),	// layout (VkPipelineLayout)
-				renderPass->getVkRenderPass(),																	// renderPass (VkRenderPass)
-				0,																								// subpass (uint32_t)
-				VK_NULL_HANDLE,																					// basePipelineHandle (VkPipeline)
-				0																								// basePipelineIndex (int32_t)
+				VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,					// sType (VkStructureType)
+				nullptr,															// pNext (const void*)
+				0,																	// flags (VkPipelineCreateFlags)
+				stageCount,															// stageCount (uint32_t)
+				vkPipelineShaderStageCreateInfos.data(),							// pStages (const VkPipelineShaderStageCreateInfo*)
+				&vkPipelineVertexInputStateCreateInfo,								// pVertexInputState (const VkPipelineVertexInputStateCreateInfo*)
+				&vkPipelineInputAssemblyStateCreateInfo,							// pInputAssemblyState (const VkPipelineInputAssemblyStateCreateInfo*)
+				&vkPipelineTessellationStateCreateInfo,								// pTessellationState (const VkPipelineTessellationStateCreateInfo*)
+				&vkPipelineViewportStateCreateInfo,									// pViewportState (const VkPipelineViewportStateCreateInfo*)
+				&vkPipelineRasterizationStateCreateInfo,							// pRasterizationState (const VkPipelineRasterizationStateCreateInfo*)
+				&vkPipelineMultisampleStateCreateInfo,								// pMultisampleState (const VkPipelineMultisampleStateCreateInfo*)
+				&vkPipelineDepthStencilStateCreateInfo,								// pDepthStencilState (const VkPipelineDepthStencilStateCreateInfo*)
+				&vkPipelineColorBlendStateCreateInfo,								// pColorBlendState (const VkPipelineColorBlendStateCreateInfo*)
+				&vkPipelineDynamicStateCreateInfo,									// pDynamicState (const VkPipelineDynamicStateCreateInfo*)
+				static_cast<RootSignature*>(mRootSignature)->getVkPipelineLayout(),	// layout (VkPipelineLayout)
+				renderPass->getVkRenderPass(),										// renderPass (VkRenderPass)
+				0,																	// subpass (uint32_t)
+				VK_NULL_HANDLE,														// basePipelineHandle (VkPipeline)
+				0																	// basePipelineIndex (int32_t)
 			};
 			if (vkCreateGraphicsPipelines(vulkanRenderer.getVulkanContext().getVkDevice(), VK_NULL_HANDLE, 1, &vkGraphicsPipelineCreateInfo, vulkanRenderer.getVkAllocationCallbacks(), &mVkPipeline) != VK_SUCCESS)
 			{
@@ -8979,7 +8984,8 @@ namespace VulkanRenderer
 				vkDestroyPipeline(vulkanRenderer.getVulkanContext().getVkDevice(), mVkPipeline, vulkanRenderer.getVkAllocationCallbacks());
 			}
 
-			// Release the program and render pass reference
+			// Release the root signature, program and render pass reference
+			mRootSignature->releaseReference();
 			mProgram->releaseReference();
 			mRenderPass->releaseReference();
 		}
@@ -9034,9 +9040,153 @@ namespace VulkanRenderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		Renderer::IProgram*    mProgram;
-		Renderer::IRenderPass* mRenderPass;
-		VkPipeline			   mVkPipeline;	///< The Vulkan graphics pipeline
+		Renderer::IRootSignature* mRootSignature;
+		Renderer::IProgram*		  mProgram;
+		Renderer::IRenderPass*    mRenderPass;
+		VkPipeline				  mVkPipeline;	///< The Vulkan graphics pipeline
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ VulkanRenderer/State/ComputePipelineState.h           ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Vulkan compute pipeline state class
+	*/
+	class ComputePipelineState final : public Renderer::IComputePipelineState
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] vulkanRenderer
+		*    Owner Vulkan renderer instance
+		*  @param[in] rootSignature
+		*    Root signature to use
+		*  @param[in] computeShader
+		*    Compute shader to use
+		*/
+		ComputePipelineState(VulkanRenderer& vulkanRenderer, Renderer::IRootSignature& rootSignature, Renderer::IComputeShader& computeShader) :
+			IComputePipelineState(vulkanRenderer),
+			mRootSignature(rootSignature),
+			mComputeShader(computeShader),
+			mVkPipeline(VK_NULL_HANDLE)
+		{
+			// Add a reference to the given root signature and compute shader
+			rootSignature.addReference();
+			computeShader.addReference();
+
+			// Create the Vulkan compute pipeline
+			const VkComputePipelineCreateInfo vkComputePipelineCreateInfo =
+			{
+				VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO,							// sType (VkStructureType)
+				nullptr,																// pNext (const void*)
+				0,																		// flags (VkPipelineCreateFlags)
+				{																		// stage (VkPipelineShaderStageCreateInfo)
+					VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,				// sType (VkStructureType)
+					nullptr,															// pNext (const void*)
+					0,																	// flags (VkPipelineShaderStageCreateFlags)
+					VK_SHADER_STAGE_COMPUTE_BIT,										// stage (VkShaderStageFlagBits)
+					static_cast<ComputeShaderGlsl&>(computeShader).getVkShaderModule(),	// module (VkShaderModule)
+					"main",																// pName (const char*)
+					nullptr																// pSpecializationInfo (const VkSpecializationInfo*)
+				},
+				static_cast<RootSignature&>(rootSignature).getVkPipelineLayout(),		// layout (VkPipelineLayout)
+				VK_NULL_HANDLE,															// basePipelineHandle (VkPipeline)
+				0																		// basePipelineIndex (int32_t)
+			};
+			if (vkCreateComputePipelines(vulkanRenderer.getVulkanContext().getVkDevice(), VK_NULL_HANDLE, 1, &vkComputePipelineCreateInfo, vulkanRenderer.getVkAllocationCallbacks(), &mVkPipeline) != VK_SUCCESS)
+			{
+				RENDERER_LOG(vulkanRenderer.getContext(), CRITICAL, "Failed to create the Vulkan compute pipeline")
+			}
+			else
+			{
+				SET_DEFAULT_DEBUG_NAME	// setDebugName("");
+			}
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~ComputePipelineState() override
+		{
+			// Destroy the Vulkan compute pipeline
+			if (VK_NULL_HANDLE != mVkPipeline)
+			{
+				const VulkanRenderer& vulkanRenderer = static_cast<VulkanRenderer&>(getRenderer());
+				vkDestroyPipeline(vulkanRenderer.getVulkanContext().getVkDevice(), mVkPipeline, vulkanRenderer.getVkAllocationCallbacks());
+			}
+
+			// Release the root signature and compute shader reference
+			mRootSignature.releaseReference();
+			mComputeShader.releaseReference();
+		}
+
+		/**
+		*  @brief
+		*    Return the Vulkan compute pipeline
+		*
+		*  @return
+		*    The Vulkan compute pipeline
+		*/
+		inline VkPipeline getVkPipeline() const
+		{
+			return mVkPipeline;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		#ifdef RENDERER_DEBUG
+			virtual void setDebugName(const char* name) override
+			{
+				if (nullptr != vkDebugMarkerSetObjectNameEXT)
+				{
+					Helper::setDebugObjectName(static_cast<const VulkanRenderer&>(getRenderer()).getVulkanContext().getVkDevice(), VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT, (uint64_t)mVkPipeline, name);
+				}
+			}
+		#endif
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), ComputePipelineState, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit ComputePipelineState(const ComputePipelineState& source) = delete;
+		ComputePipelineState& operator =(const ComputePipelineState& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		Renderer::IRootSignature& mRootSignature;
+		Renderer::IComputeShader& mComputeShader;
+		VkPipeline				  mVkPipeline;		///< The Vulkan compute pipeline
 
 
 	};
@@ -9220,6 +9370,7 @@ namespace VulkanRenderer
 							case Renderer::ResourceType::INDIRECT_BUFFER:
 							case Renderer::ResourceType::TEXTURE_BUFFER:
 							case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+							case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 							case Renderer::ResourceType::SAMPLER_STATE:
 							case Renderer::ResourceType::VERTEX_SHADER:
 							case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -9275,6 +9426,7 @@ namespace VulkanRenderer
 					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+					case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
 					case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
@@ -10346,6 +10498,16 @@ namespace VulkanRenderer
 		return RENDERER_NEW(mContext, GraphicsPipelineState)(*this, graphicsPipelineState);
 	}
 
+	Renderer::IComputePipelineState* VulkanRenderer::createComputePipelineState(Renderer::IRootSignature& rootSignature, Renderer::IComputeShader& computeShader)
+	{
+		// Sanity checks
+		VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, rootSignature)
+		VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, computeShader)
+
+		// Create the compute pipeline state
+		return RENDERER_NEW(mContext, ComputePipelineState)(*this, rootSignature, computeShader);
+	}
+
 	Renderer::ISamplerState* VulkanRenderer::createSamplerState(const Renderer::SamplerState& samplerState)
 	{
 		return RENDERER_NEW(mContext, SamplerState)(*this, samplerState);
@@ -10433,6 +10595,7 @@ namespace VulkanRenderer
 			case Renderer::ResourceType::SWAP_CHAIN:
 			case Renderer::ResourceType::FRAMEBUFFER:
 			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+			case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 			case Renderer::ResourceType::SAMPLER_STATE:
 			case Renderer::ResourceType::VERTEX_SHADER:
 			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -10550,6 +10713,7 @@ namespace VulkanRenderer
 			case Renderer::ResourceType::SWAP_CHAIN:
 			case Renderer::ResourceType::FRAMEBUFFER:
 			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+			case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 			case Renderer::ResourceType::SAMPLER_STATE:
 			case Renderer::ResourceType::VERTEX_SHADER:
 			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -10798,6 +10962,7 @@ namespace VulkanRenderer
 			case Renderer::ResourceType::TEXTURE_3D:
 			case Renderer::ResourceType::TEXTURE_CUBE:
 			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+			case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 			case Renderer::ResourceType::SAMPLER_STATE:
 			case Renderer::ResourceType::VERTEX_SHADER:
 			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:

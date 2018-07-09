@@ -24,12 +24,9 @@
 *
 *  @remarks
 *    == Description ==
-*    Please note that this is a 100% interface project resulting in no binary at all. The one and only goal of this project is to offer unified renderer interfaces for multiple graphics APIs like OpenGL or Direct3D. Features like resource loading, font rendering or even rendering of complex scenes is out of the scope of this project.
+*    Please note that this is a 100% interface project resulting in no binary at all. The one and only goal of this project is to offer unified renderer interfaces for multiple graphics APIs like Vulkan, OpenGL or Direct3D 11. Features like resource loading, font rendering or even rendering of complex scenes is out of the scope of this project.
 *
-*    In order to make it easier to use the renderer, the optional comfort header "Renderer.h" puts everything together within a single header without any additional header inclusion. When writing interfaces for other languages like C# or Pascal, you might want to port this header instead of the more complex individual headers.
-*
-*    == Dependencies ==
-*    None.
+*    In order to make it easier to use the renderer, the header "Renderer.h" puts everything together within a single header without any additional third party dependencies.
 *
 *    == Preprocessor Definitions ==
 *    - Set "_WIN32" as preprocessor definition when building for Microsoft Windows
@@ -330,7 +327,9 @@ namespace Renderer
 			class ITexture3D;
 			class ITextureCube;
 		class IState;
-			class IGraphicsPipelineState;
+			class IPipelineState;
+				class IGraphicsPipelineState;
+				class IComputePipelineState;
 			class ISamplerState;
 		class IShader;
 			class IVertexShader;
@@ -1143,14 +1142,15 @@ namespace Renderer
 		// IState
 			// IPipelineState
 			GRAPHICS_PIPELINE_STATE	   = 17,	///< Graphics pipeline state (PSO)
-		SAMPLER_STATE				   = 18,	///< Sampler state
+			COMPUTE_PIPELINE_STATE	   = 18,	///< Compute pipeline state (PSO)
+		SAMPLER_STATE				   = 19,	///< Sampler state
 		// IShader
-		VERTEX_SHADER				   = 19,	///< Vertex shader (VS)
-		TESSELLATION_CONTROL_SHADER	   = 20,	///< Tessellation control shader (TCS, "hull shader" in Direct3D terminology)
-		TESSELLATION_EVALUATION_SHADER = 21,	///< Tessellation evaluation shader (TES, "domain shader" in Direct3D terminology)
-		GEOMETRY_SHADER				   = 22,	///< Geometry shader (GS)
-		FRAGMENT_SHADER				   = 23,	///< Fragment shader (FS, "pixel shader" in Direct3D terminology)
-		COMPUTE_SHADER				   = 24		///< Compute shader (CS)
+		VERTEX_SHADER				   = 20,	///< Vertex shader (VS)
+		TESSELLATION_CONTROL_SHADER	   = 21,	///< Tessellation control shader (TCS, "hull shader" in Direct3D terminology)
+		TESSELLATION_EVALUATION_SHADER = 22,	///< Tessellation evaluation shader (TES, "domain shader" in Direct3D terminology)
+		GEOMETRY_SHADER				   = 23,	///< Geometry shader (GS)
+		FRAGMENT_SHADER				   = 24,	///< Fragment shader (FS, "pixel shader" in Direct3D terminology)
+		COMPUTE_SHADER				   = 25		///< Compute shader (CS)
 	};
 
 
@@ -3675,6 +3675,8 @@ namespace Renderer
 			// IState
 			std::atomic<uint32_t> currentNumberOfGraphicsPipelineStates;		///< Current number of graphics pipeline state (PSO) instances
 			std::atomic<uint32_t> numberOfCreatedGraphicsPipelineStates;		///< Number of created graphics pipeline state (PSO) instances
+			std::atomic<uint32_t> currentNumberOfComputePipelineStates;			///< Current number of compute pipeline state (PSO) instances
+			std::atomic<uint32_t> numberOfCreatedComputePipelineStates;			///< Number of created compute pipeline state (PSO) instances
 			std::atomic<uint32_t> currentNumberOfSamplerStates;					///< Current number of sampler state instances
 			std::atomic<uint32_t> numberOfCreatedSamplerStates;					///< Number of created sampler state instances
 			// IShader
@@ -3738,6 +3740,8 @@ namespace Renderer
 				// IState
 				currentNumberOfGraphicsPipelineStates(0),
 				numberOfCreatedGraphicsPipelineStates(0),
+				currentNumberOfComputePipelineStates(0),
+				numberOfCreatedComputePipelineStates(0),
 				currentNumberOfSamplerStates(0),
 				numberOfCreatedSamplerStates(0),
 				// IShader
@@ -3798,6 +3802,7 @@ namespace Renderer
 						currentNumberOfTextureCubes +
 						// IState
 						currentNumberOfGraphicsPipelineStates +
+						currentNumberOfComputePipelineStates +
 						currentNumberOfSamplerStates +
 						// IShader
 						currentNumberOfVertexShaders +
@@ -3850,6 +3855,7 @@ namespace Renderer
 
 				// IState
 				RENDERER_LOG(context, INFORMATION, "Graphics pipeline states: %d", currentNumberOfGraphicsPipelineStates.load())
+				RENDERER_LOG(context, INFORMATION, "Compute pipeline states: %d", currentNumberOfComputePipelineStates.load())
 				RENDERER_LOG(context, INFORMATION, "Sampler states: %d", currentNumberOfSamplerStates.load())
 
 				// IShader
@@ -3920,6 +3926,7 @@ namespace Renderer
 		friend class ITexture3D;
 		friend class ITextureCube;
 		friend class IGraphicsPipelineState;
+		friend class IComputePipelineState;
 		friend class ISamplerState;
 		friend class IVertexShader;
 		friend class ITessellationControlShader;
@@ -4190,6 +4197,20 @@ namespace Renderer
 		*    The graphics pipeline state instance, null pointer on error. Release the returned instance if you no longer need it.
 		*/
 		virtual IGraphicsPipelineState* createGraphicsPipelineState(const GraphicsPipelineState& graphicsPipelineState) = 0;
+
+		/**
+		*  @brief
+		*    Create a compute pipeline state instance
+		*
+		*  @param[in] rootSignature
+		*    Root signature (compute pipeline state instances keep a reference to the root signature)
+		*  @param[in] computeShader
+		*    Compute shader used by the compute pipeline state (compute pipeline state instances keep a reference to the program)
+		*
+		*  @return
+		*    The compute pipeline state instance, null pointer on error. Release the returned instance if you no longer need it.
+		*/
+		virtual IComputePipelineState* createComputePipelineState(IRootSignature& rootSignature, IComputeShader& computeShader) = 0;
 
 		/**
 		*  @brief
@@ -7204,6 +7225,59 @@ namespace Renderer
 	};
 
 	typedef SmartRefCount<IGraphicsPipelineState> IGraphicsPipelineStatePtr;
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ Renderer/State/IComputePipelineState.h                ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Abstract compute pipeline state interface
+	*/
+	class IComputePipelineState : public IPipelineState
+	{
+
+	// Public methods
+	public:
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~IComputePipelineState() override
+		{
+			#ifdef RENDERER_STATISTICS
+				// Update the statistics
+				--getRenderer().getStatistics().currentNumberOfComputePipelineStates;
+			#endif
+		}
+
+	// Protected methods
+	protected:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] renderer
+		*    Owner renderer instance
+		*/
+		inline explicit IComputePipelineState(IRenderer& renderer) :
+			IPipelineState(ResourceType::COMPUTE_PIPELINE_STATE, renderer)
+		{
+			#ifdef RENDERER_STATISTICS
+				// Update the statistics
+				++getRenderer().getStatistics().numberOfCreatedComputePipelineStates;
+				++getRenderer().getStatistics().currentNumberOfComputePipelineStates;
+			#endif
+		}
+
+		explicit IComputePipelineState(const IComputePipelineState& source) = delete;
+		IGraphicsPipelineState& operator =(const IComputePipelineState& source) = delete;
+
+	};
+
+	typedef SmartRefCount<IComputePipelineState> IComputePipelineStatePtr;
 
 
 

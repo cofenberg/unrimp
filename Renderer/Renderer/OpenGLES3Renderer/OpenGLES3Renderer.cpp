@@ -841,6 +841,7 @@ namespace OpenGLES3Renderer
 		virtual Renderer::ITextureManager* createTextureManager() override;
 		virtual Renderer::IRootSignature* createRootSignature(const Renderer::RootSignature& rootSignature) override;
 		virtual Renderer::IGraphicsPipelineState* createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState) override;
+		virtual Renderer::IComputePipelineState* createComputePipelineState(Renderer::IRootSignature& rootSignature, Renderer::IComputeShader& computeShader) override;
 		virtual Renderer::ISamplerState* createSamplerState(const Renderer::SamplerState& samplerState) override;
 		//[-------------------------------------------------------]
 		//[ Resource handling                                     ]
@@ -7132,6 +7133,7 @@ namespace OpenGLES3Renderer
 						case Renderer::ResourceType::TEXTURE_3D:
 						case Renderer::ResourceType::TEXTURE_CUBE:
 						case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+						case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 						case Renderer::ResourceType::SAMPLER_STATE:
 						case Renderer::ResourceType::VERTEX_SHADER:
 						case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -7205,6 +7207,7 @@ namespace OpenGLES3Renderer
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+					case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Renderer::ResourceType::SAMPLER_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -9158,13 +9161,14 @@ namespace OpenGLES3Renderer
 					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+					case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
 					case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Renderer::ResourceType::GEOMETRY_SHADER:
 					case Renderer::ResourceType::FRAGMENT_SHADER:
 					case Renderer::ResourceType::COMPUTE_SHADER:
-						RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 11 renderer backend resource type")
+						RENDERER_LOG(mContext, CRITICAL, "Invalid OpenGL ES 3 renderer backend resource type")
 						break;
 				}
 			}
@@ -9361,6 +9365,7 @@ namespace OpenGLES3Renderer
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+					case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Renderer::ResourceType::SAMPLER_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -9693,6 +9698,7 @@ namespace OpenGLES3Renderer
 			case Renderer::ResourceType::TEXTURE_3D:
 			case Renderer::ResourceType::TEXTURE_CUBE:
 			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+			case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 			case Renderer::ResourceType::SAMPLER_STATE:
 			case Renderer::ResourceType::VERTEX_SHADER:
 			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -9861,6 +9867,22 @@ namespace OpenGLES3Renderer
 		return RENDERER_NEW(mContext, GraphicsPipelineState)(*this, graphicsPipelineState);
 	}
 
+	Renderer::IComputePipelineState* OpenGLES3Renderer::createComputePipelineState(Renderer::IRootSignature& rootSignature, Renderer::IComputeShader& computeShader)
+	{
+		// Sanity checks
+		OPENGLES3RENDERER_RENDERERMATCHCHECK_ASSERT(*this, rootSignature)
+		OPENGLES3RENDERER_RENDERERMATCHCHECK_ASSERT(*this, computeShader)
+
+		// Ensure a correct reference counter behaviour
+		rootSignature.addReference();
+		rootSignature.releaseReference();
+		computeShader.addReference();
+		computeShader.releaseReference();
+
+		// Error! OpenGL ES 3 has no compute shader support.
+		return nullptr;
+	}
+
 	Renderer::ISamplerState* OpenGLES3Renderer::createSamplerState(const Renderer::SamplerState& samplerState)
 	{
 		return RENDERER_NEW(mContext, SamplerState)(*this, samplerState);
@@ -9989,6 +10011,7 @@ namespace OpenGLES3Renderer
 			case Renderer::ResourceType::SWAP_CHAIN:
 			case Renderer::ResourceType::FRAMEBUFFER:
 			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+			case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 			case Renderer::ResourceType::SAMPLER_STATE:
 			case Renderer::ResourceType::VERTEX_SHADER:
 			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -10096,6 +10119,7 @@ namespace OpenGLES3Renderer
 			case Renderer::ResourceType::SWAP_CHAIN:
 			case Renderer::ResourceType::FRAMEBUFFER:
 			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+			case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 			case Renderer::ResourceType::SAMPLER_STATE:
 			case Renderer::ResourceType::VERTEX_SHADER:
 			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:

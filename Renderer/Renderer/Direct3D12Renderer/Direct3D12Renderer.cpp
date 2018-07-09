@@ -1729,6 +1729,16 @@ typedef struct D3D12_GRAPHICS_PIPELINE_STATE_DESC
 	D3D12_PIPELINE_STATE_FLAGS Flags;
 } D3D12_GRAPHICS_PIPELINE_STATE_DESC;
 
+// "Microsoft Windows 10 SDK" -> "10.0.10240.0" -> "D3D12.h"
+typedef struct D3D12_COMPUTE_PIPELINE_STATE_DESC
+{
+	ID3D12RootSignature *pRootSignature;
+	D3D12_SHADER_BYTECODE CS;
+	UINT NodeMask;
+	D3D12_CACHED_PIPELINE_STATE CachedPSO;
+	D3D12_PIPELINE_STATE_FLAGS Flags;
+} D3D12_COMPUTE_PIPELINE_STATE_DESC;
+
 #ifdef RENDERER_DEBUG
 	// "Microsoft Windows 10 SDK" -> "10.0.10240.0" -> "d3d12sdklayers.h"
 	typedef enum D3D12_DEBUG_FEATURE
@@ -3422,6 +3432,7 @@ namespace Direct3D12Renderer
 		virtual Renderer::ITextureManager* createTextureManager() override;
 		virtual Renderer::IRootSignature* createRootSignature(const Renderer::RootSignature& rootSignature) override;
 		virtual Renderer::IGraphicsPipelineState* createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState) override;
+		virtual Renderer::IComputePipelineState* createComputePipelineState(Renderer::IRootSignature& rootSignature, Renderer::IComputeShader& computeShader) override;
 		virtual Renderer::ISamplerState* createSamplerState(const Renderer::SamplerState& samplerState) override;
 		//[-------------------------------------------------------]
 		//[ Resource handling                                     ]
@@ -8066,6 +8077,7 @@ namespace Direct3D12Renderer
 						case Renderer::ResourceType::TEXTURE_3D:
 						case Renderer::ResourceType::TEXTURE_CUBE:
 						case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+						case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 						case Renderer::ResourceType::SAMPLER_STATE:
 						case Renderer::ResourceType::VERTEX_SHADER:
 						case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -8163,6 +8175,7 @@ namespace Direct3D12Renderer
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+					case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Renderer::ResourceType::SAMPLER_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -9788,6 +9801,141 @@ namespace Direct3D12Renderer
 
 
 
+	//[-------------------------------------------------------]
+	//[ Direct3D12Renderer/State/ComputePipelineState.h       ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Direct3D 12 compute pipeline state class
+	*/
+	class ComputePipelineState final : public Renderer::IComputePipelineState
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] direct3D12Renderer
+		*    Owner Direct3D 12 renderer instance
+		*  @param[in] rootSignature
+		*    Root signature shader to use
+		*  @param[in] computeShader
+		*    Compute shader to use
+		*/
+		ComputePipelineState(Direct3D12Renderer& direct3D12Renderer, Renderer::IRootSignature& rootSignature, Renderer::IComputeShader& computeShader) :
+			IComputePipelineState(direct3D12Renderer),
+			mD3D12ComputePipelineState(nullptr),
+			mRootSignature(rootSignature),
+			mComputeShader(computeShader)
+		{
+			// Add a reference to the given root signature and compute shader
+			rootSignature.addReference();
+			computeShader.addReference();
+
+			// Describe and create the compute pipeline state object (PSO)
+			D3D12_COMPUTE_PIPELINE_STATE_DESC d3d12ComputePipelineState = {};
+			d3d12ComputePipelineState.pRootSignature = static_cast<RootSignature&>(rootSignature).getD3D12RootSignature();
+			{ // Set compute shader
+				ID3DBlob* d3dBlobComputeShader = static_cast<ComputeShaderHlsl&>(computeShader).getD3DBlobComputeShader();
+				d3d12ComputePipelineState.CS = { reinterpret_cast<UINT8*>(d3dBlobComputeShader->GetBufferPointer()), d3dBlobComputeShader->GetBufferSize() };
+			}
+			if (FAILED(direct3D12Renderer.getD3D12Device()->CreateComputePipelineState(&d3d12ComputePipelineState, IID_PPV_ARGS(&mD3D12ComputePipelineState))))
+			{
+				RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Failed to create the Direct3D 12 compute pipeline state object")
+			}
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RENDERER_DEBUG
+				setDebugName("Compute pipeline state");
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~ComputePipelineState() override
+		{
+			// Release the Direct3D 12 compute pipeline state
+			if (nullptr != mD3D12ComputePipelineState)
+			{
+				mD3D12ComputePipelineState->Release();
+			}
+
+			// Release the root signature and compute shader reference
+			mRootSignature.releaseReference();
+			mComputeShader.releaseReference();
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D 12 compute pipeline state
+		*
+		*  @return
+		*    The Direct3D 12 compute pipeline state, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*/
+		inline ID3D12PipelineState* getD3D12ComputePipelineState() const
+		{
+			return mD3D12ComputePipelineState;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		#ifdef RENDERER_DEBUG
+			virtual void setDebugName(const char* name) override
+			{
+				// Valid Direct3D 12 compute pipeline state?
+				if (nullptr != mD3D12ComputePipelineState)
+				{
+					// Set the debug name
+					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
+					FAILED_DEBUG_BREAK(mD3D12ComputePipelineState->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D12ComputePipelineState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
+				}
+			}
+		#endif
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), ComputePipelineState, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit ComputePipelineState(const ComputePipelineState& source) = delete;
+		ComputePipelineState& operator =(const ComputePipelineState& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		ID3D12PipelineState*	  mD3D12ComputePipelineState;	///< Direct3D 12 compute pipeline state, can be a null pointer
+		Renderer::IRootSignature& mRootSignature;
+		Renderer::IComputeShader& mComputeShader;
+
+
+	};
+
+
+
+
 //[-------------------------------------------------------]
 //[ Namespace                                             ]
 //[-------------------------------------------------------]
@@ -10403,6 +10551,7 @@ namespace Direct3D12Renderer
 				case Renderer::ResourceType::TEXTURE_BUFFER:
 				case Renderer::ResourceType::INDIRECT_BUFFER:
 				case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+				case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 				case Renderer::ResourceType::VERTEX_SHADER:
 				case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
 				case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
@@ -10534,6 +10683,7 @@ namespace Direct3D12Renderer
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+					case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Renderer::ResourceType::SAMPLER_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -10641,6 +10791,7 @@ namespace Direct3D12Renderer
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+					case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Renderer::ResourceType::SAMPLER_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -10760,6 +10911,7 @@ namespace Direct3D12Renderer
 				case Renderer::ResourceType::TEXTURE_3D:
 				case Renderer::ResourceType::TEXTURE_CUBE:
 				case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+				case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 				case Renderer::ResourceType::SAMPLER_STATE:
 				case Renderer::ResourceType::VERTEX_SHADER:
 				case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -11029,6 +11181,16 @@ namespace Direct3D12Renderer
 	Renderer::IGraphicsPipelineState* Direct3D12Renderer::createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState)
 	{
 		return RENDERER_NEW(mContext, GraphicsPipelineState)(*this, graphicsPipelineState);
+	}
+
+	Renderer::IComputePipelineState* Direct3D12Renderer::createComputePipelineState(Renderer::IRootSignature& rootSignature, Renderer::IComputeShader& computeShader)
+	{
+		// Sanity checks
+		DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, rootSignature)
+		DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, computeShader)
+
+		// Create the compute pipeline state
+		return RENDERER_NEW(mContext, ComputePipelineState)(*this, rootSignature, computeShader);
 	}
 
 	Renderer::ISamplerState* Direct3D12Renderer::createSamplerState(const Renderer::SamplerState& samplerState)

@@ -64,6 +64,24 @@ void FirstComputeShader::onInitialization()
 			mGraphicsRootSignature = renderer->createRootSignature(rootSignature);
 		}
 
+		{ // Create the compute root signature
+			Renderer::DescriptorRangeBuilder ranges[2];
+			ranges[0].initialize(Renderer::DescriptorRangeType::SRV, 1, 0, "AlbedoMap", Renderer::ShaderVisibility::FRAGMENT);
+			ranges[1].initializeSampler(1, 0, Renderer::ShaderVisibility::FRAGMENT);
+			// TODO(co) Compute shader support is work-in-progress: UAV
+
+			Renderer::RootParameterBuilder rootParameters[2];
+			rootParameters[0].initializeAsDescriptorTable(1, &ranges[0]);
+			rootParameters[1].initializeAsDescriptorTable(1, &ranges[1]);
+
+			// Setup
+			Renderer::RootSignatureBuilder rootSignature;
+			rootSignature.initialize(static_cast<uint32_t>(glm::countof(rootParameters)), rootParameters, 0, nullptr, Renderer::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+			// Create the instance
+			mComputeRootSignature = renderer->createRootSignature(rootSignature);
+		}
+
 		// Create sampler state and wrap it into a resource group instance
 		Renderer::IResource* samplerStateResource = nullptr;
 		{
@@ -156,10 +174,8 @@ void FirstComputeShader::onInitialization()
 					shaderLanguage->createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode),
 					shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 
-				// TODO(co) Compute shader support is work-in-progress
-				Renderer::IComputeShader* computeShader = shaderLanguage->createComputeShaderFromSourceCode(computeShaderSourceCode);
-				// TODO(co) mComputePipelineState = renderer->createComputePipelineState(*mComputeRootSignature, *computeShader);
-				computeShader->releaseReference();
+				// Create the compute pipeline state object (PSO)
+				mComputePipelineState = renderer->createComputePipelineState(*mComputeRootSignature, *shaderLanguage->createComputeShaderFromSourceCode(computeShaderSourceCode));
 			}
 
 			// Create the graphics pipeline state object (PSO)
@@ -178,10 +194,12 @@ void FirstComputeShader::onDeinitialization()
 {
 	// Release the used resources
 	mVertexArray = nullptr;
+	mComputePipelineState = nullptr;
 	mGraphicsPipelineState = nullptr;
 	mSamplerStateGroup = nullptr;
 	mTextureGroup = nullptr;
 	mFramebuffer = nullptr;
+	mComputeRootSignature = nullptr;
 	mGraphicsRootSignature = nullptr;
 	mCommandBuffer.clear();
 	mTextureManager = nullptr;
@@ -210,10 +228,12 @@ void FirstComputeShader::fillCommandBuffer()
 	assert(nullptr != getMainRenderTarget());
 	assert(mCommandBuffer.isEmpty());
 	assert(nullptr != mGraphicsRootSignature);
+	assert(nullptr != mComputeRootSignature);
 	assert(nullptr != mFramebuffer);
 	assert(nullptr != mTextureGroup);
 	assert(nullptr != mSamplerStateGroup);
 	assert(nullptr != mGraphicsPipelineState);
+	assert(nullptr != mComputePipelineState);
 	assert(nullptr != mVertexArray);
 
 	// Scoped debug event
@@ -242,8 +262,14 @@ void FirstComputeShader::fillCommandBuffer()
 		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Use the render to texture result for compute")
 
 		// TODO(co) Compute shader support is work-in-progress
-		// SetComputeRootSignature
-		// SetComputePipelineState
+		// Set the used compute root signature
+		// Renderer::Command::SetComputeRootSignature::create(mCommandBuffer, mComputeRootSignature);
+
+		// TODO(co) Compute shader support is work-in-progress
+		// Set the used compute pipeline state object (PSO)
+		// Renderer::Command::SetComputePipelineState::create(mCommandBuffer, mComputePipelineState);
+
+		// TODO(co) Compute shader support is work-in-progress
 		// SetComputeResourceGroup
 
 		// Dispatch compute call

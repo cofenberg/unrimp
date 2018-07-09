@@ -1415,6 +1415,7 @@ namespace OpenGLRenderer
 		virtual Renderer::ITextureManager* createTextureManager() override;
 		virtual Renderer::IRootSignature* createRootSignature(const Renderer::RootSignature& rootSignature) override;
 		virtual Renderer::IGraphicsPipelineState* createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState) override;
+		virtual Renderer::IComputePipelineState* createComputePipelineState(Renderer::IRootSignature& rootSignature, Renderer::IComputeShader& computeShader) override;
 		virtual Renderer::ISamplerState* createSamplerState(const Renderer::SamplerState& samplerState) override;
 		//[-------------------------------------------------------]
 		//[ Resource handling                                     ]
@@ -11655,6 +11656,7 @@ namespace OpenGLRenderer
 						case Renderer::ResourceType::TEXTURE_3D:
 						case Renderer::ResourceType::TEXTURE_CUBE:
 						case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+						case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 						case Renderer::ResourceType::SAMPLER_STATE:
 						case Renderer::ResourceType::VERTEX_SHADER:
 						case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -11722,6 +11724,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+					case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Renderer::ResourceType::SAMPLER_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -11886,6 +11889,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+					case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Renderer::ResourceType::SAMPLER_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -11959,6 +11963,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+					case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Renderer::ResourceType::SAMPLER_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -12214,6 +12219,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+					case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Renderer::ResourceType::SAMPLER_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -12301,6 +12307,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+					case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Renderer::ResourceType::SAMPLER_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -13770,6 +13777,237 @@ namespace OpenGLRenderer
 	private:
 		explicit ProgramMonolithicDsa(const ProgramMonolithicDsa& source) = delete;
 		ProgramMonolithicDsa& operator =(const ProgramMonolithicDsa& source) = delete;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ OpenGLRenderer/Shader/Monolithic/ComputePipelineStateMonolithic.h  ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Monolithic compute pipeline state class
+	*/
+	class ComputePipelineStateMonolithic : public Renderer::IComputePipelineState
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] openGLRenderer
+		*    Owner OpenGL renderer instance
+		*  @param[in] rootSignature
+		*    Root signature
+		*  @param[in] computeShaderMonolithic
+		*    Compute shader the compute pipeline state is using
+		*
+		*  @note
+		*    - The compute pipeline state keeps a reference to the provided compute shader and releases it when no longer required
+		*/
+		ComputePipelineStateMonolithic(OpenGLRenderer& openGLRenderer, const Renderer::IRootSignature& rootSignature, ComputeShaderMonolithic& computeShaderMonolithic) :
+			IComputePipelineState(openGLRenderer),
+			mOpenGLProgram(glCreateProgramObjectARB())
+		{
+			// Attach the compute shader to the program
+			// -> We don't need to keep a reference to the shader, to add and release at once to ensure a nice behaviour
+			computeShaderMonolithic.addReference();
+			glAttachObjectARB(mOpenGLProgram, computeShaderMonolithic.getOpenGLShader());
+			computeShaderMonolithic.releaseReference();
+
+			// Link the program
+			glLinkProgramARB(mOpenGLProgram);
+
+			// Check the link status
+			GLint linked = GL_FALSE;
+			glGetObjectParameterivARB(mOpenGLProgram, GL_OBJECT_LINK_STATUS_ARB, &linked);
+			if (GL_TRUE == linked)
+			{
+				// We're not using "glBindFragDataLocation()", else the user would have to provide us with additional OpenGL-only specific information
+				// -> Use modern GLSL:
+				//    "layout(location = 0) out vec4 ColorOutput0;"
+				//    "layout(location = 1) out vec4 ColorOutput1;"
+				// -> Use legacy GLSL if necessary:
+				//    "gl_FragData[0] = vec4(1.0f, 0.0f, 0.0f, 0.0f);"
+				//    "gl_FragData[1] = vec4(0.0f, 0.0f, 1.0f, 0.0f);"
+
+				// The actual locations assigned to uniform variables are not known until the program object is linked successfully
+				// -> So we have to build a root signature parameter index -> uniform location mapping here
+				const Renderer::RootSignature& rootSignatureData = static_cast<const RootSignature&>(rootSignature).getRootSignature();
+				const uint32_t numberOfRootParameters = rootSignatureData.numberOfParameters;
+				uint32_t uniformBlockBindingIndex = 0;
+				for (uint32_t rootParameterIndex = 0; rootParameterIndex < numberOfRootParameters; ++rootParameterIndex)
+				{
+					const Renderer::RootParameter& rootParameter = rootSignatureData.parameters[rootParameterIndex];
+					if (Renderer::RootParameterType::DESCRIPTOR_TABLE == rootParameter.parameterType)
+					{
+						RENDERER_ASSERT(openGLRenderer.getContext(), nullptr != reinterpret_cast<const Renderer::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges), "Invalid OpenGL descriptor ranges")
+						const uint32_t numberOfDescriptorRanges = rootParameter.descriptorTable.numberOfDescriptorRanges;
+						for (uint32_t descriptorRangeIndex = 0; descriptorRangeIndex < numberOfDescriptorRanges; ++descriptorRangeIndex)
+						{
+							const Renderer::DescriptorRange& descriptorRange = reinterpret_cast<const Renderer::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges)[descriptorRangeIndex];
+
+							// Ignore sampler range types in here (OpenGL handles samplers in a different way then Direct3D 10>=)
+							if (Renderer::DescriptorRangeType::UBV == descriptorRange.rangeType)
+							{
+								// Explicit binding points ("layout(binding = 0)" in GLSL shader) requires OpenGL 4.2 or the "GL_ARB_explicit_uniform_location"-extension,
+								// for backward compatibility, ask for the uniform block index
+								const GLuint uniformBlockIndex = glGetUniformBlockIndex(mOpenGLProgram, descriptorRange.baseShaderRegisterName);
+								if (GL_INVALID_INDEX != uniformBlockIndex)
+								{
+									// Associate the uniform block with the given binding point
+									glUniformBlockBinding(mOpenGLProgram, uniformBlockIndex, uniformBlockBindingIndex);
+									++uniformBlockBindingIndex;
+								}
+							}
+							else if (Renderer::DescriptorRangeType::SAMPLER != descriptorRange.rangeType)
+							{
+								const GLint uniformLocation = glGetUniformLocationARB(mOpenGLProgram, descriptorRange.baseShaderRegisterName);
+								if (uniformLocation >= 0)
+								{
+									// OpenGL/GLSL is not automatically assigning texture units to samplers, so, we have to take over this job
+									// -> When using OpenGL or OpenGL ES 3 this is required
+									// -> OpenGL 4.2 or the "GL_ARB_explicit_uniform_location"-extension supports explicit binding points ("layout(binding = 0)"
+									//    in GLSL shader) , for backward compatibility we don't use it in here
+									// -> When using Direct3D 9, 10, 11 or 12, the texture unit
+									//    to use is usually defined directly within the shader by using the "register"-keyword
+									// -> Use the "GL_ARB_direct_state_access" or "GL_EXT_direct_state_access" extension if possible to not change OpenGL states
+									if (nullptr != glProgramUniform1i)
+									{
+										glProgramUniform1i(mOpenGLProgram, uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
+									}
+									else if (nullptr != glProgramUniform1iEXT)
+									{
+										glProgramUniform1iEXT(mOpenGLProgram, uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
+									}
+									else
+									{
+										// TODO(co) There's room for binding API call related optimization in here (will certainly be no huge overall efficiency gain)
+										#ifdef RENDERER_OPENGL_STATE_CLEANUP
+											// Backup the currently used OpenGL program
+											GLint openGLProgramBackup = 0;
+											glGetIntegerv(GL_CURRENT_PROGRAM, &openGLProgramBackup);
+											if (static_cast<GLuint>(openGLProgramBackup) == mOpenGLProgram)
+											{
+												// Set uniform, please note that for this our program must be the currently used one
+												glUniform1iARB(uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
+											}
+											else
+											{
+												// Set uniform, please note that for this our program must be the currently used one
+												glUseProgramObjectARB(mOpenGLProgram);
+												glUniform1iARB(uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
+
+												// Be polite and restore the previous used OpenGL program
+												glUseProgramObjectARB(static_cast<GLhandleARB>(openGLProgramBackup));
+											}
+										#else
+											glUseProgramObjectARB(mOpenGLProgram);
+											glUniform1iARB(uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
+										#endif
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			else
+			{
+				// Error, program link failed!
+
+				// Get the length of the information (including a null termination)
+				GLint informationLength = 0;
+				glGetObjectParameterivARB(mOpenGLProgram, GL_OBJECT_INFO_LOG_LENGTH_ARB, &informationLength);
+				if (informationLength > 1)
+				{
+					// Allocate memory for the information
+					const Renderer::Context& context = openGLRenderer.getContext();
+					char* informationLog = RENDERER_MALLOC_TYPED(context, char, informationLength);
+
+					// Get the information
+					glGetInfoLogARB(mOpenGLProgram, informationLength, nullptr, informationLog);
+
+					// Output the debug string
+					RENDERER_LOG(context, CRITICAL, informationLog)
+
+					// Cleanup information memory
+					RENDERER_FREE(context, informationLog);
+				}
+			}
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~ComputePipelineStateMonolithic() override
+		{
+			// Destroy the OpenGL program
+			// -> A value of 0 for program will be silently ignored
+			glDeleteObjectARB(mOpenGLProgram);
+		}
+
+		/**
+		*  @brief
+		*    Return the OpenGL program
+		*
+		*  @return
+		*    The OpenGL program, can be zero if no resource is allocated, do not destroy the returned resource
+		*/
+		inline GLuint getOpenGLProgram() const
+		{
+			return mOpenGLProgram;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		#ifdef RENDERER_DEBUG
+			virtual void setDebugName(const char* name) override
+			{
+				// Valid OpenGL program and "GL_KHR_debug"-extension available?
+				if (0 != mOpenGLProgram && static_cast<OpenGLRenderer&>(getRenderer()).getExtensions().isGL_KHR_debug())
+				{
+					glObjectLabel(GL_PROGRAM, mOpenGLProgram, -1, name);
+				}
+			}
+		#endif
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), ComputePipelineStateMonolithic, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected data                                        ]
+	//[-------------------------------------------------------]
+	protected:
+		GLuint mOpenGLProgram;	///< OpenGL program, can be zero if no resource is allocated
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit ComputePipelineStateMonolithic(const ComputePipelineStateMonolithic& source) = delete;
+		ComputePipelineStateMonolithic& operator =(const ComputePipelineStateMonolithic& source) = delete;
 
 
 	};
@@ -15512,6 +15750,270 @@ namespace OpenGLRenderer
 
 
 	//[-------------------------------------------------------]
+	//[ OpenGLRenderer/Shader/Separate/ComputePipelineStateSeparate.h ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Separate compute pipeline state class
+	*/
+	class ComputePipelineStateSeparate : public Renderer::IComputePipelineState
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] openGLRenderer
+		*    Owner OpenGL renderer instance
+		*  @param[in] rootSignature
+		*    Root signature
+		*  @param[in] computeShaderSeparate
+		*    Compute shader the compute pipeline state is using
+		*
+		*  @note
+		*    - The compute pipeline state keeps a reference to the provided compute shader and releases it when no longer required
+		*/
+		ComputePipelineStateSeparate(OpenGLRenderer& openGLRenderer, const Renderer::IRootSignature& rootSignature, ComputeShaderSeparate& computeShaderSeparate) :
+			IComputePipelineState(openGLRenderer),
+			mOpenGLProgramPipeline(0),
+			mComputeShaderSeparate(computeShaderSeparate)
+		{
+			// Create the OpenGL program pipeline
+			glGenProgramPipelines(1, &mOpenGLProgramPipeline);
+
+			// If the "GL_ARB_direct_state_access" nor "GL_EXT_direct_state_access" extension is available, we need to change OpenGL states during resource creation (nasty thing)
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
+				// Backup the currently used OpenGL program pipeline
+				GLint openGLProgramPipelineBackup = 0;
+			#endif
+			if (nullptr == glProgramUniform1i && nullptr == glProgramUniform1iEXT)
+			{
+				#ifdef RENDERER_OPENGL_STATE_CLEANUP
+					glGetIntegerv(GL_PROGRAM_PIPELINE_BINDING, &openGLProgramPipelineBackup);
+				#endif
+				glBindProgramPipeline(mOpenGLProgramPipeline);
+			}
+
+			// Add reference to the provided compute shader
+			computeShaderSeparate.addReference();
+			glUseProgramStages(mOpenGLProgramPipeline, GL_COMPUTE_SHADER_BIT, computeShaderSeparate.getOpenGLShaderProgram());
+
+			// Validate program pipeline
+			glValidateProgramPipeline(mOpenGLProgramPipeline);
+			GLint validateStatus = 0;
+			glGetProgramPipelineiv(mOpenGLProgramPipeline, GL_VALIDATE_STATUS, &validateStatus);
+			if (GL_TRUE == validateStatus)
+			{
+				// We're not using "glBindFragDataLocation()", else the user would have to provide us with additional OpenGL-only specific information
+				// -> Use modern GLSL:
+				//    "layout(location = 0) out vec4 ColorOutput0;"
+				//    "layout(location = 1) out vec4 ColorOutput1;"
+				// -> Use legacy GLSL if necessary:
+				//    "gl_FragData[0] = vec4(1.0f, 0.0f, 0.0f, 0.0f);"
+				//    "gl_FragData[1] = vec4(0.0f, 0.0f, 1.0f, 0.0f);"
+
+				// The actual locations assigned to uniform variables are not known until the program object is linked successfully
+				// -> So we have to build a root signature parameter index -> uniform location mapping here
+				const Renderer::RootSignature& rootSignatureData = static_cast<const RootSignature&>(rootSignature).getRootSignature();
+				const uint32_t numberOfRootParameters = rootSignatureData.numberOfParameters;
+				uint32_t uniformBlockBindingIndex = 0;
+				for (uint32_t rootParameterIndex = 0; rootParameterIndex < numberOfRootParameters; ++rootParameterIndex)
+				{
+					const Renderer::RootParameter& rootParameter = rootSignatureData.parameters[rootParameterIndex];
+					if (Renderer::RootParameterType::DESCRIPTOR_TABLE == rootParameter.parameterType)
+					{
+						RENDERER_ASSERT(openGLRenderer.getContext(), nullptr != reinterpret_cast<const Renderer::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges), "Invalid OpenGL descriptor ranges")
+						const uint32_t numberOfDescriptorRanges = rootParameter.descriptorTable.numberOfDescriptorRanges;
+						for (uint32_t descriptorRangeIndex = 0; descriptorRangeIndex < numberOfDescriptorRanges; ++descriptorRangeIndex)
+						{
+							const Renderer::DescriptorRange& descriptorRange = reinterpret_cast<const Renderer::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges)[descriptorRangeIndex];
+
+							// Ignore sampler range types in here (OpenGL handles samplers in a different way then Direct3D 10>=)
+							if (Renderer::DescriptorRangeType::UBV == descriptorRange.rangeType)
+							{
+								switch (descriptorRange.shaderVisibility)
+								{
+									case Renderer::ShaderVisibility::ALL_GRAPHICS:
+										RENDERER_LOG(openGLRenderer.getContext(), CRITICAL, "Invalid OpenGL all graphics shader visibility")
+										break;
+
+									case Renderer::ShaderVisibility::VERTEX:
+										RENDERER_LOG(openGLRenderer.getContext(), CRITICAL, "Invalid OpenGL vertex shader visibility")
+										break;
+
+									case Renderer::ShaderVisibility::TESSELLATION_CONTROL:
+										RENDERER_LOG(openGLRenderer.getContext(), CRITICAL, "Invalid OpenGL tessellation control shader visibility")
+										break;
+
+									case Renderer::ShaderVisibility::TESSELLATION_EVALUATION:
+										RENDERER_LOG(openGLRenderer.getContext(), CRITICAL, "Invalid OpenGL tessellation evaluation shader visibility")
+										break;
+
+									case Renderer::ShaderVisibility::GEOMETRY:
+										RENDERER_LOG(openGLRenderer.getContext(), CRITICAL, "Invalid OpenGL geometry shader visibility")
+										break;
+
+									case Renderer::ShaderVisibility::FRAGMENT:
+										RENDERER_LOG(openGLRenderer.getContext(), CRITICAL, "Invalid OpenGL fragment shader visibility")
+										break;
+
+									case Renderer::ShaderVisibility::ALL:
+									case Renderer::ShaderVisibility::COMPUTE:
+										::detail::bindUniformBlock(descriptorRange, mComputeShaderSeparate.getOpenGLShaderProgram(), uniformBlockBindingIndex);
+										break;
+								}
+								++uniformBlockBindingIndex;
+							}
+							else if (Renderer::DescriptorRangeType::SAMPLER != descriptorRange.rangeType)
+							{
+								switch (descriptorRange.shaderVisibility)
+								{
+									case Renderer::ShaderVisibility::ALL_GRAPHICS:
+										RENDERER_LOG(openGLRenderer.getContext(), CRITICAL, "Invalid OpenGL all graphics shader visibility")
+										break;
+
+									case Renderer::ShaderVisibility::VERTEX:
+										RENDERER_LOG(openGLRenderer.getContext(), CRITICAL, "Invalid OpenGL vertex shader visibility")
+										break;
+
+									case Renderer::ShaderVisibility::TESSELLATION_CONTROL:
+										RENDERER_LOG(openGLRenderer.getContext(), CRITICAL, "Invalid OpenGL tessellation control shader visibility")
+										break;
+
+									case Renderer::ShaderVisibility::TESSELLATION_EVALUATION:
+										RENDERER_LOG(openGLRenderer.getContext(), CRITICAL, "Invalid OpenGL tessellation evaluation shader visibility")
+										break;
+
+									case Renderer::ShaderVisibility::GEOMETRY:
+										RENDERER_LOG(openGLRenderer.getContext(), CRITICAL, "Invalid OpenGL geometry shader visibility")
+										break;
+
+									case Renderer::ShaderVisibility::FRAGMENT:
+										RENDERER_LOG(openGLRenderer.getContext(), CRITICAL, "Invalid OpenGL fragment shader visibility")
+										break;
+
+									case Renderer::ShaderVisibility::ALL:
+									case Renderer::ShaderVisibility::COMPUTE:
+										::detail::bindUniformLocation(descriptorRange, mOpenGLProgramPipeline, mComputeShaderSeparate.getOpenGLShaderProgram());
+										break;
+								}
+							}
+						}
+					}
+				}
+			}
+			else
+			{
+				// Error, program pipeline validation failed!
+
+				// Get the length of the information (including a null termination)
+				GLint informationLength = 0;
+				glGetProgramPipelineiv(mOpenGLProgramPipeline, GL_INFO_LOG_LENGTH, &informationLength);
+				if (informationLength > 1)
+				{
+					// Allocate memory for the information
+					const Renderer::Context& context = openGLRenderer.getContext();
+					char* informationLog = RENDERER_MALLOC_TYPED(context, char, informationLength);
+
+					// Get the information
+					glGetProgramPipelineInfoLog(mOpenGLProgramPipeline, informationLength, nullptr, informationLog);
+
+					// Output the debug string
+					RENDERER_LOG(context, CRITICAL, informationLog)
+
+					// Cleanup information memory
+					RENDERER_FREE(context, informationLog);
+				}
+			}
+
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
+				// Be polite and restore the previous used OpenGL program pipeline
+				if (nullptr == glProgramUniform1i && nullptr == glProgramUniform1iEXT)
+				{
+					glBindProgramPipeline(static_cast<GLuint>(openGLProgramPipelineBackup));
+				}
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~ComputePipelineStateSeparate() override
+		{
+			// Destroy the OpenGL program pipeline
+			glDeleteProgramPipelines(1, &mOpenGLProgramPipeline);
+
+			// Release the compute shader reference
+			mComputeShaderSeparate.releaseReference();
+		}
+
+		/**
+		*  @brief
+		*    Return the OpenGL program pipeline
+		*
+		*  @return
+		*    The OpenGL program pipeline, can be zero if no resource is allocated, do not destroy the returned resource
+		*/
+		inline GLuint getOpenGLProgramPipeline() const
+		{
+			return mOpenGLProgramPipeline;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		#ifdef RENDERER_DEBUG
+			virtual void setDebugName(const char* name) override
+			{
+				// Valid OpenGL program pipeline and "GL_KHR_debug"-extension available?
+				if (0 != mOpenGLProgramPipeline && static_cast<OpenGLRenderer&>(getRenderer()).getExtensions().isGL_KHR_debug())
+				{
+					glObjectLabel(GL_PROGRAM_PIPELINE, mOpenGLProgramPipeline, -1, name);
+				}
+			}
+		#endif
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), ComputePipelineStateSeparate, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected data                                        ]
+	//[-------------------------------------------------------]
+	protected:
+		GLuint				   mOpenGLProgramPipeline;	///< OpenGL program pipeline ("container" object, not shared between OpenGL contexts), can be zero if no resource is allocated
+		ComputeShaderSeparate& mComputeShaderSeparate;	///< Compute shader the compute pipeline state is using (we keep a reference to it)
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit ComputePipelineStateSeparate(const ComputePipelineStateSeparate& source) = delete;
+		ComputePipelineStateSeparate& operator =(const ComputePipelineStateSeparate& source) = delete;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ OpenGLRenderer/Shader/Separate/ShaderLanguageSeparate.h ]
 	//[-------------------------------------------------------]
 	/**
@@ -16778,6 +17280,7 @@ namespace OpenGLRenderer
 								case Renderer::ResourceType::UNIFORM_BUFFER:
 								case Renderer::ResourceType::INDIRECT_BUFFER:
 								case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+								case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 								case Renderer::ResourceType::SAMPLER_STATE:
 								case Renderer::ResourceType::VERTEX_SHADER:
 								case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -16896,6 +17399,7 @@ namespace OpenGLRenderer
 									case Renderer::ResourceType::UNIFORM_BUFFER:
 									case Renderer::ResourceType::INDIRECT_BUFFER:
 									case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+									case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 									case Renderer::ResourceType::SAMPLER_STATE:
 									case Renderer::ResourceType::VERTEX_SHADER:
 									case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -16958,6 +17462,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+					case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
 					case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
@@ -17180,6 +17685,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+					case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Renderer::ResourceType::SAMPLER_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
 					case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -17610,6 +18116,7 @@ namespace OpenGLRenderer
 			case Renderer::ResourceType::TEXTURE_3D:
 			case Renderer::ResourceType::TEXTURE_CUBE:
 			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+			case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 			case Renderer::ResourceType::SAMPLER_STATE:
 			case Renderer::ResourceType::VERTEX_SHADER:
 			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -17703,6 +18210,7 @@ namespace OpenGLRenderer
 			case Renderer::ResourceType::TEXTURE_3D:
 			case Renderer::ResourceType::TEXTURE_CUBE:
 			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+			case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 			case Renderer::ResourceType::SAMPLER_STATE:
 			case Renderer::ResourceType::VERTEX_SHADER:
 			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -17926,6 +18434,29 @@ namespace OpenGLRenderer
 		return RENDERER_NEW(mContext, GraphicsPipelineState)(*this, graphicsPipelineState);
 	}
 
+	Renderer::IComputePipelineState* OpenGLRenderer::createComputePipelineState(Renderer::IRootSignature& rootSignature, Renderer::IComputeShader& computeShader)
+	{
+		// Sanity checks
+		OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, rootSignature)
+		OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, computeShader)
+
+		// Create the compute pipeline state
+		// -> Prefer "GL_ARB_separate_shader_objects" over "GL_ARB_shader_objects"
+		if (mExtensions->isGL_ARB_separate_shader_objects())
+		{
+			return RENDERER_NEW(mContext, ComputePipelineStateSeparate)(*this, rootSignature, static_cast<ComputeShaderSeparate&>(computeShader));
+		}
+		else if (mExtensions->isGL_ARB_shader_objects())
+		{
+			return RENDERER_NEW(mContext, ComputePipelineStateMonolithic)(*this, rootSignature, static_cast<ComputeShaderMonolithic&>(computeShader));
+		}
+		else
+		{
+			// Error!
+			return nullptr;
+		}
+	}
+
 	Renderer::ISamplerState* OpenGLRenderer::createSamplerState(const Renderer::SamplerState& samplerState)
 	{
 		// Is "GL_ARB_sampler_objects" there?
@@ -18053,6 +18584,7 @@ namespace OpenGLRenderer
 			case Renderer::ResourceType::SWAP_CHAIN:
 			case Renderer::ResourceType::FRAMEBUFFER:
 			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+			case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 			case Renderer::ResourceType::SAMPLER_STATE:
 			case Renderer::ResourceType::VERTEX_SHADER:
 			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
@@ -18215,6 +18747,7 @@ namespace OpenGLRenderer
 			case Renderer::ResourceType::SWAP_CHAIN:
 			case Renderer::ResourceType::FRAMEBUFFER:
 			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+			case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 			case Renderer::ResourceType::SAMPLER_STATE:
 			case Renderer::ResourceType::VERTEX_SHADER:
 			case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:

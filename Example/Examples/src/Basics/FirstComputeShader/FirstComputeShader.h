@@ -102,10 +102,12 @@ private:
 	Renderer::ITextureManagerPtr		mTextureManager;		///< Texture manager, can be a null pointer
 	Renderer::CommandBuffer				mCommandBuffer;			///< Command buffer
 	Renderer::IRootSignaturePtr			mGraphicsRootSignature;	///< Graphics root signature, can be a null pointer
+	Renderer::IRootSignaturePtr			mComputeRootSignature;	///< Compute root signature, can be a null pointer
 	Renderer::IFramebufferPtr			mFramebuffer;			///< Framebuffer object (FBO), can be a null pointer
 	Renderer::IResourceGroupPtr			mTextureGroup;			///< Texture group, can be a null pointer
 	Renderer::IResourceGroupPtr			mSamplerStateGroup;		///< Sampler state resource group, can be a null pointer
 	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineState;	///< Graphics pipeline state object (PSO), can be a null pointer
+	Renderer::IComputePipelineStatePtr	mComputePipelineState;	///< Compute pipeline state object (PSO), can be a null pointer
 	Renderer::IVertexArrayPtr			mVertexArray;			///< Vertex array object (VAO), can be a null pointer
 
 
