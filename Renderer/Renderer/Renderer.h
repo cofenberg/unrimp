@@ -7779,9 +7779,9 @@ namespace Renderer
 		DrawGraphics,
 		DrawIndexedGraphics,
 		// Compute
-		// SetComputeRootSignature,	// TODO(co) Compute shader support is work-in-progress
-		// SetComputePipelineState,	// TODO(co) Compute shader support is work-in-progress
-		// SetComputeResourceGroup,	// TODO(co) Compute shader support is work-in-progress
+		SetComputeRootSignature,
+		SetComputePipelineState,
+		SetComputeResourceGroup,
 		DispatchCompute,
 		// Resource
 		// SetMemoryBarrier,	// TODO(co) Compute shader support is work-in-progress
@@ -8616,6 +8616,91 @@ namespace Renderer
 		//[-------------------------------------------------------]
 		//[ Compute                                               ]
 		//[-------------------------------------------------------]
+		/**
+		*  @brief
+		*    Set the used compute root signature
+		*
+		*  @param[in] rootSignature
+		*    Compute root signature to use, can be an null pointer (default: "nullptr")
+		*
+		*  @note
+		*    - Only supported if "Renderer::Capabilities::computeShader" is true
+		*/
+		struct SetComputeRootSignature final
+		{
+			// Static methods
+			static inline void create(CommandBuffer& commandBuffer, IRootSignature* rootSignature)
+			{
+				*commandBuffer.addCommand<SetComputeRootSignature>() = SetComputeRootSignature(rootSignature);
+			}
+			// Constructor
+			inline SetComputeRootSignature(IRootSignature* _rootSignature) :
+				rootSignature(_rootSignature)
+			{}
+			// Data
+			IRootSignature* rootSignature;
+			// Static data
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetComputeRootSignature;
+		};
+
+		/**
+		*  @brief
+		*    Set the used compute pipeline state
+		*
+		*  @param[in] computePipelineState
+		*    Compute pipeline state to use, can be an null pointer (default: "nullptr")
+		*
+		*  @note
+		*    - Only supported if "Renderer::Capabilities::computeShader" is true
+		*/
+		struct SetComputePipelineState final
+		{
+			// Static methods
+			static inline void create(CommandBuffer& commandBuffer, IComputePipelineState* computePipelineState)
+			{
+				*commandBuffer.addCommand<SetComputePipelineState>() = SetComputePipelineState(computePipelineState);
+			}
+			// Constructor
+			inline SetComputePipelineState(IComputePipelineState* _computePipelineState) :
+				computePipelineState(_computePipelineState)
+			{}
+			// Data
+			IComputePipelineState* computePipelineState;
+			// Static data
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetComputePipelineState;
+		};
+
+		/**
+		*  @brief
+		*    Set a compute resource group
+		*
+		*  @param[in] rootParameterIndex
+		*    The root parameter index number for binding
+		*  @param[in] resourceGroup
+		*    Resource group to set
+		*
+		*  @note
+		*    - Only supported if "Renderer::Capabilities::computeShader" is true
+		*/
+		struct SetComputeResourceGroup final
+		{
+			// Static methods
+			static inline void create(CommandBuffer& commandBuffer, uint32_t rootParameterIndex, IResourceGroup* resourceGroup)
+			{
+				*commandBuffer.addCommand<SetComputeResourceGroup>() = SetComputeResourceGroup(rootParameterIndex, resourceGroup);
+			}
+			// Constructor
+			inline SetComputeResourceGroup(uint32_t _rootParameterIndex, IResourceGroup* _resourceGroup) :
+				rootParameterIndex(_rootParameterIndex),
+				resourceGroup(_resourceGroup)
+			{}
+			// Data
+			uint32_t		rootParameterIndex;
+			IResourceGroup*	resourceGroup;
+			// Static data
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetComputeResourceGroup;
+		};
+
 		/**
 		*  @brief
 		*    Compute dispatch call

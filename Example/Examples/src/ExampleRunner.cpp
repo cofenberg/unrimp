@@ -38,7 +38,7 @@
 #endif
 #include "Basics/FirstInstancing/FirstInstancing.h"
 #include "Basics/FirstGeometryShader/FirstGeometryShader.h"
-#include "Basics/FirstTessellation/FirstTessellation.h"
+#include "Basics/FirstTessellationShader/FirstTessellationShader.h"
 #include "Basics/FirstComputeShader/FirstComputeShader.h"
 // Advanced
 #include "Advanced/FirstGpgpu/FirstGpgpu.h"
@@ -114,7 +114,7 @@ ExampleRunner::ExampleRunner() :
 	#endif
 	addExample("FirstInstancing",				&runRenderExample<FirstInstancing>,				supportsAllRenderer);
 	addExample("FirstGeometryShader",			&runRenderExample<FirstGeometryShader>,			onlyShaderModel4Plus);
-	addExample("FirstTessellation",				&runRenderExample<FirstTessellation>,			onlyShaderModel5Plus);
+	addExample("FirstTessellationShader",		&runRenderExample<FirstTessellationShader>,		onlyShaderModel5Plus);
 	addExample("FirstComputeShader",			&runRenderExample<FirstComputeShader>,			onlyShaderModel5Plus);
 
 	// Advanced

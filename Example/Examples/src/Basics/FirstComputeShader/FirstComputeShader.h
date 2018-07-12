@@ -37,7 +37,7 @@
 //[-------------------------------------------------------]
 /**
 *  @brief
-*    A first compute shader (CS) example
+*    A first compute shader (CS, suited e.g. for General Purpose Computation on Graphics Processing Unit (GPGPU)) example
 *
 *  @remarks
 *    Demonstrates:

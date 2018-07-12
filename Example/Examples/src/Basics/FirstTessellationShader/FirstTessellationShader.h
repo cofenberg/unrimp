@@ -37,7 +37,7 @@
 //[-------------------------------------------------------]
 /**
 *  @brief
-*    First tessellation example
+*    First tessellation shader example
 *
 *  @remarks
 *    Demonstrates:
@@ -47,7 +47,7 @@
 *    - Graphics pipeline state object (PSO)
 *    - Vertex shader (VS), tessellation control shader (TCS), tessellation evaluation shader (TES) and fragment shader (FS)
 */
-class FirstTessellation final : public ExampleBase
+class FirstTessellationShader final : public ExampleBase
 {
 
 
@@ -59,7 +59,7 @@ public:
 	*  @brief
 	*    Constructor
 	*/
-	inline FirstTessellation()
+	inline FirstTessellationShader()
 	{
 		// Nothing here
 	}
@@ -68,7 +68,7 @@ public:
 	*  @brief
 	*    Destructor
 	*/
-	inline virtual ~FirstTessellation() override
+	inline virtual ~FirstTessellationShader() override
 	{
 		// The resources are released within "onDeinitialization()"
 		// Nothing here

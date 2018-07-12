@@ -21,7 +21,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "Basics/FirstTessellation/FirstTessellation.h"
+#include "Basics/FirstTessellationShader/FirstTessellationShader.h"
 #include "Framework/Color4.h"
 
 // Disable warnings in external headers, we can't fix them
@@ -37,7 +37,7 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Public virtual IApplication methods                   ]
 //[-------------------------------------------------------]
-void FirstTessellation::onInitialization()
+void FirstTessellationShader::onInitialization()
 {
 	// Get and check the renderer instance
 	// -> Uniform buffer object (UBO, "constant buffer" in Direct3D terminology) supported?
@@ -108,10 +108,10 @@ void FirstTessellation::onInitialization()
 				const char* tessellationControlShaderSourceCode = nullptr;
 				const char* tessellationEvaluationShaderSourceCode = nullptr;
 				const char* fragmentShaderSourceCode = nullptr;
-				#include "FirstTessellation_GLSL_450.h"	// For Vulkan
-				#include "FirstTessellation_GLSL_410.h"	// macOS 10.11 only supports OpenGL 4.1 hence it's our OpenGL minimum
-				#include "FirstTessellation_HLSL_D3D11_D3D12.h"
-				#include "FirstTessellation_Null.h"
+				#include "FirstTessellationShader_GLSL_450.h"	// For Vulkan
+				#include "FirstTessellationShader_GLSL_410.h"	// macOS 10.11 only supports OpenGL 4.1 hence it's our OpenGL minimum
+				#include "FirstTessellationShader_HLSL_D3D11_D3D12.h"
+				#include "FirstTessellationShader_Null.h"
 
 				// Create the program
 				program = shaderLanguage->createProgram(
@@ -139,7 +139,7 @@ void FirstTessellation::onInitialization()
 	}
 }
 
-void FirstTessellation::onDeinitialization()
+void FirstTessellationShader::onDeinitialization()
 {
 	// Release the used resources
 	mVertexArray = nullptr;
@@ -149,7 +149,7 @@ void FirstTessellation::onDeinitialization()
 	mBufferManager = nullptr;
 }
 
-void FirstTessellation::onDraw()
+void FirstTessellationShader::onDraw()
 {
 	// Get and check the renderer instance
 	Renderer::IRendererPtr renderer(getRenderer());
@@ -164,7 +164,7 @@ void FirstTessellation::onDraw()
 //[-------------------------------------------------------]
 //[ Private methods                                       ]
 //[-------------------------------------------------------]
-void FirstTessellation::fillCommandBuffer()
+void FirstTessellationShader::fillCommandBuffer()
 {
 	// Sanity checks
 	assert(mCommandBuffer.isEmpty());

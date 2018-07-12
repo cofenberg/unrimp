@@ -191,6 +191,9 @@ namespace NullRenderer
 		//[-------------------------------------------------------]
 		//[ Compute                                               ]
 		//[-------------------------------------------------------]
+		void setComputeRootSignature(Renderer::IRootSignature* rootSignature);
+		void setComputePipelineState(Renderer::IComputePipelineState* computePipelineState);
+		void setComputeResourceGroup(uint32_t rootParameterIndex, Renderer::IResourceGroup* resourceGroup);
 		void dispatchCompute(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ);
 		//[-------------------------------------------------------]
 		//[ Resource                                              ]
@@ -278,6 +281,7 @@ namespace NullRenderer
 		Renderer::IShaderLanguage* mShaderLanguage;			///< Null shader language instance (we keep a reference to it), can be a null pointer
 		Renderer::IRenderTarget*   mRenderTarget;			///< Currently set render target (we keep a reference to it), can be a null pointer
 		RootSignature*			   mGraphicsRootSignature;	///< Currently set graphics root signature (we keep a reference to it), can be a null pointer
+		RootSignature*			   mComputeRootSignature;	///< Currently set compute root signature (we keep a reference to it), can be a null pointer
 
 
 	};
@@ -2843,6 +2847,24 @@ namespace
 			//[-------------------------------------------------------]
 			//[ Compute                                               ]
 			//[-------------------------------------------------------]
+			void SetComputeRootSignature(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::SetComputeRootSignature* realData = static_cast<const Renderer::Command::SetComputeRootSignature*>(data);
+				static_cast<NullRenderer::NullRenderer&>(renderer).setComputeRootSignature(realData->rootSignature);
+			}
+
+			void SetComputePipelineState(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::SetComputePipelineState* realData = static_cast<const Renderer::Command::SetComputePipelineState*>(data);
+				static_cast<NullRenderer::NullRenderer&>(renderer).setComputePipelineState(realData->computePipelineState);
+			}
+
+			void SetComputeResourceGroup(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::SetComputeResourceGroup* realData = static_cast<const Renderer::Command::SetComputeResourceGroup*>(data);
+				static_cast<NullRenderer::NullRenderer&>(renderer).setComputeResourceGroup(realData->rootParameterIndex, realData->resourceGroup);
+			}
+
 			void DispatchCompute(const void* data, Renderer::IRenderer& renderer)
 			{
 				const Renderer::Command::DispatchCompute* realData = static_cast<const Renderer::Command::DispatchCompute*>(data);
@@ -2921,6 +2943,9 @@ namespace
 			&BackendDispatch::DrawGraphics,
 			&BackendDispatch::DrawIndexedGraphics,
 			// Compute
+			&BackendDispatch::SetComputeRootSignature,
+			&BackendDispatch::SetComputePipelineState,
+			&BackendDispatch::SetComputeResourceGroup,
 			&BackendDispatch::DispatchCompute,
 			// Resource
 			&BackendDispatch::SetTextureMinimumMaximumMipmapIndex,
@@ -2956,7 +2981,8 @@ namespace NullRenderer
 		IRenderer(Renderer::NameId::NULL_DUMMY, context),
 		mShaderLanguage(nullptr),
 		mRenderTarget(nullptr),
-		mGraphicsRootSignature(nullptr)
+		mGraphicsRootSignature(nullptr),
+		mComputeRootSignature(nullptr)
 	{
 		// Initialize the capabilities
 		initializeCapabilities();
@@ -2974,6 +3000,11 @@ namespace NullRenderer
 		{
 			mGraphicsRootSignature->releaseReference();
 			mGraphicsRootSignature = nullptr;
+		}
+		if (nullptr != mComputeRootSignature)
+		{
+			mComputeRootSignature->releaseReference();
+			mComputeRootSignature = nullptr;
 		}
 
 		#ifdef RENDERER_STATISTICS
@@ -3169,6 +3200,78 @@ namespace NullRenderer
 	//[-------------------------------------------------------]
 	//[ Compute                                               ]
 	//[-------------------------------------------------------]
+	void NullRenderer::setComputeRootSignature(Renderer::IRootSignature* rootSignature)
+	{
+		if (nullptr != mComputeRootSignature)
+		{
+			mComputeRootSignature->releaseReference();
+		}
+		mComputeRootSignature = static_cast<RootSignature*>(rootSignature);
+		if (nullptr != mComputeRootSignature)
+		{
+			mComputeRootSignature->addReference();
+
+			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			NULLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *rootSignature)
+		}
+	}
+
+	void NullRenderer::setComputePipelineState(Renderer::IComputePipelineState* computePipelineState)
+	{
+		if (nullptr != computePipelineState)
+		{
+			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			NULLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *computePipelineState)
+		}
+		else
+		{
+			// TODO(co) Handle this situation?
+		}
+	}
+
+	void NullRenderer::setComputeResourceGroup(MAYBE_UNUSED uint32_t rootParameterIndex, Renderer::IResourceGroup* resourceGroup)
+	{
+		// Security checks
+		#ifdef RENDERER_DEBUG
+		{
+			if (nullptr == mComputeRootSignature)
+			{
+				RENDERER_LOG(mContext, CRITICAL, "No null renderer backend compute root signature set")
+				return;
+			}
+			const Renderer::RootSignature& rootSignature = mComputeRootSignature->getRootSignature();
+			if (rootParameterIndex >= rootSignature.numberOfParameters)
+			{
+				RENDERER_LOG(mContext, CRITICAL, "The null renderer backend root parameter index is out of bounds")
+				return;
+			}
+			const Renderer::RootParameter& rootParameter = rootSignature.parameters[rootParameterIndex];
+			if (Renderer::RootParameterType::DESCRIPTOR_TABLE != rootParameter.parameterType)
+			{
+				RENDERER_LOG(mContext, CRITICAL, "The null renderer backend root parameter index doesn't reference a descriptor table")
+				return;
+			}
+			if (nullptr == reinterpret_cast<const Renderer::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges))
+			{
+				RENDERER_LOG(mContext, CRITICAL, "The null renderer backend descriptor ranges is a null pointer")
+				return;
+			}
+		}
+		#endif
+
+		if (nullptr != resourceGroup)
+		{
+			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			NULLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *resourceGroup)
+
+			// TODO(co) Some additional resource type root signature security checks in debug build?
+		}
+		else
+		{
+			// TODO(co) Handle this situation?
+		}
+	}
+
 	void NullRenderer::dispatchCompute(uint32_t, uint32_t, uint32_t)
 	{}
 

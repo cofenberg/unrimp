@@ -45,7 +45,7 @@ class ExampleRunner;
 //[-------------------------------------------------------]
 /**
 *  @brief
-*    A first example showing how to use do General Purpose Computation on Graphics Processing Unit (GPGPU) by using the renderer interface and shaders without having any output window
+*    A first example showing how to use do General Purpose Computation on Graphics Processing Unit (GPGPU) by using the renderer interface and shaders without having any output window (also known as headless rendering)
 *
 *  @remarks
 *    Demonstrates:

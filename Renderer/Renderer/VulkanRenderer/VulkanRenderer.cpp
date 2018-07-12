@@ -1709,6 +1709,9 @@ namespace VulkanRenderer
 		//[-------------------------------------------------------]
 		//[ Compute                                               ]
 		//[-------------------------------------------------------]
+		void setComputeRootSignature(Renderer::IRootSignature* rootSignature);
+		void setComputePipelineState(Renderer::IComputePipelineState* computePipelineState);
+		void setComputeResourceGroup(uint32_t rootParameterIndex, Renderer::IResourceGroup* resourceGroup);
 		void dispatchCompute(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ);
 		//[-------------------------------------------------------]
 		//[ Resource                                              ]
@@ -1813,6 +1816,7 @@ namespace VulkanRenderer
 		VulkanContext*				mVulkanContext;				///< Vulkan context instance, always valid
 		Renderer::IShaderLanguage*	mShaderLanguageGlsl;		///< GLSL shader language instance (we keep a reference to it), can be a null pointer
 		RootSignature*				mGraphicsRootSignature;		///< Currently set graphics root signature (we keep a reference to it), can be a null pointer
+		RootSignature*				mComputeRootSignature;		///< Currently set compute root signature (we keep a reference to it), can be a null pointer
 		Renderer::ISamplerState*	mDefaultSamplerState;		///< Default rasterizer state (we keep a reference to it), can be a null pointer
 		bool						mInsideVulkanRenderPass;	///< Some Vulkan commands like "vkCmdClearColorImage()" can only be executed outside a Vulkan render pass, so need to delay starting a Vulkan render pass
 		VkClearValues				mVkClearValues;
@@ -9711,6 +9715,24 @@ namespace
 			//[-------------------------------------------------------]
 			//[ Compute                                               ]
 			//[-------------------------------------------------------]
+			void SetComputeRootSignature(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::SetComputeRootSignature* realData = static_cast<const Renderer::Command::SetComputeRootSignature*>(data);
+				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).setComputeRootSignature(realData->rootSignature);
+			}
+
+			void SetComputePipelineState(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::SetComputePipelineState* realData = static_cast<const Renderer::Command::SetComputePipelineState*>(data);
+				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).setComputePipelineState(realData->computePipelineState);
+			}
+
+			void SetComputeResourceGroup(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::SetComputeResourceGroup* realData = static_cast<const Renderer::Command::SetComputeResourceGroup*>(data);
+				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).setComputeResourceGroup(realData->rootParameterIndex, realData->resourceGroup);
+			}
+
 			void DispatchCompute(const void* data, Renderer::IRenderer& renderer)
 			{
 				const Renderer::Command::DispatchCompute* realData = static_cast<const Renderer::Command::DispatchCompute*>(data);
@@ -9829,6 +9851,9 @@ namespace
 			&BackendDispatch::DrawGraphics,
 			&BackendDispatch::DrawIndexedGraphics,
 			// Compute
+			&BackendDispatch::SetComputeRootSignature,
+			&BackendDispatch::SetComputePipelineState,
+			&BackendDispatch::SetComputeResourceGroup,
 			&BackendDispatch::DispatchCompute,
 			// Resource
 			&BackendDispatch::SetTextureMinimumMaximumMipmapIndex,
@@ -9865,6 +9890,7 @@ namespace VulkanRenderer
 		mVulkanContext(nullptr),
 		mShaderLanguageGlsl(nullptr),
 		mGraphicsRootSignature(nullptr),
+		mComputeRootSignature(nullptr),
 		mDefaultSamplerState(nullptr),
 		mInsideVulkanRenderPass(false),
 		mVkClearValues{},
@@ -9924,10 +9950,14 @@ namespace VulkanRenderer
 			mDefaultSamplerState = nullptr;
 		}
 
-		// Release the graphics root signature instance, in case we have one
+		// Release the graphics and compute root signature instance, in case we have one
 		if (nullptr != mGraphicsRootSignature)
 		{
 			mGraphicsRootSignature->releaseReference();
+		}
+		if (nullptr != mComputeRootSignature)
+		{
+			mComputeRootSignature->releaseReference();
 		}
 
 		#ifdef RENDERER_STATISTICS
@@ -10311,6 +10341,86 @@ namespace VulkanRenderer
 	//[-------------------------------------------------------]
 	//[ Compute                                               ]
 	//[-------------------------------------------------------]
+	void VulkanRenderer::setComputeRootSignature(Renderer::IRootSignature* rootSignature)
+	{
+		if (nullptr != mComputeRootSignature)
+		{
+			mComputeRootSignature->releaseReference();
+		}
+		mComputeRootSignature = static_cast<RootSignature*>(rootSignature);
+		if (nullptr != mComputeRootSignature)
+		{
+			mComputeRootSignature->addReference();
+
+			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *rootSignature)
+		}
+	}
+
+	void VulkanRenderer::setComputePipelineState(Renderer::IComputePipelineState* computePipelineState)
+	{
+		if (nullptr != computePipelineState)
+		{
+			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *computePipelineState)
+
+			// Bind Vulkan compute pipeline
+			vkCmdBindPipeline(getVulkanContext().getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, static_cast<ComputePipelineState*>(computePipelineState)->getVkPipeline());
+		}
+		else
+		{
+			// TODO(co) Handle this situation?
+		}
+	}
+
+	void VulkanRenderer::setComputeResourceGroup(uint32_t rootParameterIndex, Renderer::IResourceGroup* resourceGroup)
+	{
+		// Security checks
+		#ifdef RENDERER_DEBUG
+		{
+			if (nullptr == mComputeRootSignature)
+			{
+				RENDERER_LOG(mContext, CRITICAL, "No Vulkan renderer backend compute root signature set")
+				return;
+			}
+			const Renderer::RootSignature& rootSignature = mComputeRootSignature->getRootSignature();
+			if (rootParameterIndex >= rootSignature.numberOfParameters)
+			{
+				RENDERER_LOG(mContext, CRITICAL, "The Vulkan renderer backend root parameter index is out of bounds")
+				return;
+			}
+			const Renderer::RootParameter& rootParameter = rootSignature.parameters[rootParameterIndex];
+			if (Renderer::RootParameterType::DESCRIPTOR_TABLE != rootParameter.parameterType)
+			{
+				RENDERER_LOG(mContext, CRITICAL, "The Vulkan renderer backend root parameter index doesn't reference a descriptor table")
+				return;
+			}
+			if (nullptr == reinterpret_cast<const Renderer::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges))
+			{
+				RENDERER_LOG(mContext, CRITICAL, "The Vulkan renderer backend descriptor ranges is a null pointer")
+				return;
+			}
+		}
+		#endif
+
+		if (nullptr != resourceGroup)
+		{
+			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *resourceGroup)
+
+			// Bind Vulkan descriptor set
+			const VkDescriptorSet vkDescriptorSet = static_cast<ResourceGroup*>(resourceGroup)->getVkDescriptorSet();
+			if (VK_NULL_HANDLE != vkDescriptorSet)
+			{
+				vkCmdBindDescriptorSets(getVulkanContext().getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, mComputeRootSignature->getVkPipelineLayout(), rootParameterIndex, 1, &vkDescriptorSet, 0, nullptr);
+			}
+		}
+		else
+		{
+			// TODO(co) Handle this situation?
+		}
+	}
+
 	void VulkanRenderer::dispatchCompute(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
 	{
 		vkCmdDispatch(getVulkanContext().getVkCommandBuffer(), groupCountX, groupCountY, groupCountZ);

@@ -188,6 +188,7 @@ Examples (just some high level keywords)
 - [Custom resolved MSAA for antialiased deferred rendering and temporal anti-aliasing](https://mynameismjp.wordpress.com/2012/10/28/msaa-resolve-filters/)
 - [Dynamic rain accumulated water in a hole/cracks with puddle and rain drops](https://seblagarde.wordpress.com/2013/04/14/water-drop-3b-physically-based-wet-surfaces/)
 - Gaussian blur, used to e.g. blur the transparent ImGui background
+- General Purpose Computation on Graphics Processing Unit (GPGPU)
 - High dynamic range (HDR) rendering with adaptive luminance
 - Tangent space BC5/3DC/ATI2N stored normal maps
 - Distortion which can e.g. be used for heat haze

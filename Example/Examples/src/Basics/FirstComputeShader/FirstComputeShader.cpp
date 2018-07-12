@@ -261,13 +261,11 @@ void FirstComputeShader::fillCommandBuffer()
 		// Scoped debug event
 		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Use the render to texture result for compute")
 
-		// TODO(co) Compute shader support is work-in-progress
 		// Set the used compute root signature
-		// Renderer::Command::SetComputeRootSignature::create(mCommandBuffer, mComputeRootSignature);
+		Renderer::Command::SetComputeRootSignature::create(mCommandBuffer, mComputeRootSignature);
 
-		// TODO(co) Compute shader support is work-in-progress
 		// Set the used compute pipeline state object (PSO)
-		// Renderer::Command::SetComputePipelineState::create(mCommandBuffer, mComputePipelineState);
+		Renderer::Command::SetComputePipelineState::create(mCommandBuffer, mComputePipelineState);
 
 		// TODO(co) Compute shader support is work-in-progress
 		// SetComputeResourceGroup

@@ -3384,6 +3384,9 @@ namespace Direct3D12Renderer
 		//[-------------------------------------------------------]
 		//[ Compute                                               ]
 		//[-------------------------------------------------------]
+		void setComputeRootSignature(Renderer::IRootSignature* rootSignature);
+		void setComputePipelineState(Renderer::IComputePipelineState* computePipelineState);
+		void setComputeResourceGroup(uint32_t rootParameterIndex, Renderer::IResourceGroup* resourceGroup);
 		void dispatchCompute(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ);
 		//[-------------------------------------------------------]
 		//[ Resource                                              ]
@@ -10058,6 +10061,24 @@ namespace
 			//[-------------------------------------------------------]
 			//[ Compute                                               ]
 			//[-------------------------------------------------------]
+			void SetComputeRootSignature(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::SetComputeRootSignature* realData = static_cast<const Renderer::Command::SetComputeRootSignature*>(data);
+				static_cast<Direct3D12Renderer::Direct3D12Renderer&>(renderer).setComputeRootSignature(realData->rootSignature);
+			}
+
+			void SetComputePipelineState(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::SetComputePipelineState* realData = static_cast<const Renderer::Command::SetComputePipelineState*>(data);
+				static_cast<Direct3D12Renderer::Direct3D12Renderer&>(renderer).setComputePipelineState(realData->computePipelineState);
+			}
+
+			void SetComputeResourceGroup(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::SetComputeResourceGroup* realData = static_cast<const Renderer::Command::SetComputeResourceGroup*>(data);
+				static_cast<Direct3D12Renderer::Direct3D12Renderer&>(renderer).setComputeResourceGroup(realData->rootParameterIndex, realData->resourceGroup);
+			}
+
 			void DispatchCompute(const void* data, Renderer::IRenderer& renderer)
 			{
 				const Renderer::Command::DispatchCompute* realData = static_cast<const Renderer::Command::DispatchCompute*>(data);
@@ -10152,6 +10173,9 @@ namespace
 			&BackendDispatch::DrawGraphics,
 			&BackendDispatch::DrawIndexedGraphics,
 			// Compute
+			&BackendDispatch::SetComputeRootSignature,
+			&BackendDispatch::SetComputePipelineState,
+			&BackendDispatch::SetComputeResourceGroup,
 			&BackendDispatch::DispatchCompute,
 			// Resource
 			&BackendDispatch::SetTextureMinimumMaximumMipmapIndex,
@@ -10420,7 +10444,7 @@ namespace Direct3D12Renderer
 			}
 
 			// Set graphics pipeline state
-			mD3D12GraphicsCommandList->SetPipelineState(static_cast<GraphicsPipelineState*>(graphicsPipelineState)->getD3D12GraphicsPipelineState());
+			mD3D12GraphicsCommandList->SetPipelineState(direct3D12GraphicsPipelineState->getD3D12GraphicsPipelineState());
 		}
 		else
 		{
@@ -11018,6 +11042,44 @@ namespace Direct3D12Renderer
 	//[-------------------------------------------------------]
 	//[ Compute                                               ]
 	//[-------------------------------------------------------]
+	void Direct3D12Renderer::setComputeRootSignature(Renderer::IRootSignature* rootSignature)
+	{
+		if (nullptr != rootSignature)
+		{
+			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *rootSignature)
+
+			// Set compute root signature
+			mD3D12GraphicsCommandList->SetComputeRootSignature(static_cast<RootSignature*>(rootSignature)->getD3D12RootSignature());
+		}
+		else
+		{
+			// TODO(co) Handle this situation?
+		}
+	}
+
+	void Direct3D12Renderer::setComputePipelineState(Renderer::IComputePipelineState* computePipelineState)
+	{
+		if (nullptr != computePipelineState)
+		{
+			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *computePipelineState)
+
+			// Set compute pipeline state
+			mD3D12GraphicsCommandList->SetPipelineState(static_cast<ComputePipelineState*>(computePipelineState)->getD3D12ComputePipelineState());
+		}
+		else
+		{
+			// TODO(co) Handle this situation?
+		}
+	}
+
+	void Direct3D12Renderer::setComputeResourceGroup(uint32_t, Renderer::IResourceGroup*)
+	{
+		// TODO(co) Implement resource group
+		RENDERER_ASSERT(mContext, false, "Direct3D 12 setComputeResourceGroup() isn't implemented, yet")
+	}
+
 	void Direct3D12Renderer::dispatchCompute(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
 	{
 		mD3D12GraphicsCommandList->Dispatch(groupCountX, groupCountY, groupCountZ);

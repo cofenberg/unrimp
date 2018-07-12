@@ -383,6 +383,9 @@ namespace RendererRuntime
 						"DrawGraphics",
 						"DrawIndexedGraphics",
 						// Compute
+						"SetComputeRootSignature",
+						"SetComputePipelineState",
+						"SetComputeResourceGroup",
 						"DispatchCompute",
 						// Resource
 						"SetTextureMinimumMaximumMipmapIndex",

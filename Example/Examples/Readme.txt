@@ -92,7 +92,7 @@ Standalone renderer examples.
 		- Root signature
 		- Graphics pipeline state object (PSO)
 		- Attribute-less rendering (aka "drawing without data")
-	- "FirstTessellation" demonstrates:
+	- "FirstTessellationShader" demonstrates:
 		- Vertex buffer object (VBO)
 		- Vertex array object (VAO)
 		- Vertex shader (VS), tessellation control shader (TCS), tessellation evaluation shader (TES) and fragment shader (FS)
@@ -117,7 +117,7 @@ Standalone renderer examples.
 		- Root signature
 		- Graphics pipeline state object (PSO)
 		- Framebuffer object (FBO) used for render to texture
-		- General Purpose Computation on Graphics Processing Unit (GPGPU) by using the renderer interface and shaders without having any output window
+		- General Purpose Computation on Graphics Processing Unit (GPGPU) by using the renderer interface and shaders without having any output window (also known as headless rendering)
 	- "InstancedCubes" demonstrates:
 		- Vertex buffer object (VBO)
 		- Vertex array object (VAO)

@@ -7037,6 +7037,21 @@ namespace
 			//[-------------------------------------------------------]
 			//[ Compute                                               ]
 			//[-------------------------------------------------------]
+			void SetComputeRootSignature(const void*, Renderer::IRenderer& renderer)
+			{
+				RENDERER_LOG(static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).getContext(), CRITICAL, "Direct3D 9 doesn't support compute root signature")
+			}
+
+			void SetComputePipelineState(const void*, Renderer::IRenderer& renderer)
+			{
+				RENDERER_LOG(static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).getContext(), CRITICAL, "Direct3D 9 doesn't support compute pipeline state")
+			}
+
+			void SetComputeResourceGroup(const void*, Renderer::IRenderer& renderer)
+			{
+				RENDERER_LOG(static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).getContext(), CRITICAL, "Direct3D 9 doesn't support compute resource group")
+			}
+
 			void DispatchCompute(const void*, Renderer::IRenderer& renderer)
 			{
 				RENDERER_LOG(static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).getContext(), CRITICAL, "Direct3D 9 doesn't support compute dispatch")
@@ -7124,6 +7139,9 @@ namespace
 			&BackendDispatch::DrawGraphics,
 			&BackendDispatch::DrawIndexedGraphics,
 			// Compute
+			&BackendDispatch::SetComputeRootSignature,
+			&BackendDispatch::SetComputePipelineState,
+			&BackendDispatch::SetComputeResourceGroup,
 			&BackendDispatch::DispatchCompute,
 			// Resource
 			&BackendDispatch::SetTextureMinimumMaximumMipmapIndex,
