@@ -140,6 +140,7 @@ FirstScene::FirstScene() :
 	mSoftParticles(true),
 	mCurrentTextureFiltering(TextureFiltering::ANISOTROPIC_4),
 	mNumberOfTopTextureMipmapsToRemove(0),
+	mTerrainTessellatedTriangleWidth(16),
 	// Environment
 	mCloudsIntensity(1.0f),
 	mWindSpeed(0.01f),
@@ -280,8 +281,11 @@ void FirstScene::onUpdate()
 	{
 		{ // Tell the material blueprint resource manager about our global material properties
 			RendererRuntime::MaterialProperties& globalMaterialProperties = rendererRuntime->getMaterialBlueprintResourceManager().getGlobalMaterialProperties();
+			// Graphics
 			globalMaterialProperties.setPropertyById(STRING_ID("GlobalHighQualityLighting"), RendererRuntime::MaterialPropertyValue::fromBoolean(mHighQualityLighting));
 			globalMaterialProperties.setPropertyById(STRING_ID("GlobalSoftParticles"), RendererRuntime::MaterialPropertyValue::fromBoolean(mSoftParticles));
+			globalMaterialProperties.setPropertyById(STRING_ID("GlobalTessellatedTriangleWidth"), RendererRuntime::MaterialPropertyValue::fromFloat(static_cast<float>(mTerrainTessellatedTriangleWidth)));
+			// Environment
 			globalMaterialProperties.setPropertyById(STRING_ID("GlobalCloudsIntensity"), RendererRuntime::MaterialPropertyValue::fromFloat(mCloudsIntensity));
 			globalMaterialProperties.setPropertyById(STRING_ID("GlobalWindSpeed"), RendererRuntime::MaterialPropertyValue::fromFloat(mWindSpeed));
 			globalMaterialProperties.setPropertyById(STRING_ID("GlobalUseWetSurfaces"), RendererRuntime::MaterialPropertyValue::fromBoolean(mWetSurfaces[0] > 0.0f));
@@ -716,6 +720,11 @@ void FirstScene::createDebugGui(MAYBE_UNUSED Renderer::IRenderTarget& mainRender
 							ImGui::Combo("Texture filtering", &mCurrentTextureFiltering, items, static_cast<int>(glm::countof(items)));
 						}
 						ImGui::SliderInt("Mipmaps to Remove", &mNumberOfTopTextureMipmapsToRemove, 0, 8);
+						ImGui::SliderInt("Terrain Tessellated Triangle Width", &mTerrainTessellatedTriangleWidth, 0, 64);
+						if (ImGui::IsItemHovered())
+						{
+							ImGui::SetTooltip("Desired pixels per triangle edge, lower value increases tessellation and hence decreases the performance");
+						}
 						ImGui::EndMenu();
 					}
 

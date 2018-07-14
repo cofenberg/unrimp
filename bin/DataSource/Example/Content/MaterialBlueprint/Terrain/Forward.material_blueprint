@@ -69,16 +69,6 @@
 				"StepSize": "1.0 1.0 1.0",
 				"Description": "Terrain world space size"
 			},
-			"TessellatedTriangleWidth":
-			{
-				"Usage": "SHADER_UNIFORM",
-				"ValueType": "FLOAT",
-				"Value": "16.0",
-				"MinimumValue": "0.0",
-				"MaximumValue": "64.0",
-				"StepSize": "1.0",
-				"Description": "Desired pixels per triangle edge"
-			},
 			"UseWetSurfaces":
 			{
 				"Usage": "SHADER_COMBINATION",
@@ -86,6 +76,16 @@
 				"Value": "@GlobalUseWetSurfaces",
 				"Description": "Use wet surfaces?",
 				"VisualImportance": "100"
+			},
+			"GlobalTessellatedTriangleWidth":
+			{
+				"Usage": "GLOBAL_REFERENCE_FALLBACK",
+				"ValueType": "FLOAT",
+				"Value": "16.0",
+				"MinimumValue": "0.0",
+				"MaximumValue": "64.0",
+				"StepSize": "1.0",
+				"Description": "Fallback value in case there's no tessellated triangle width global material property. Desired pixels per triangle edge, lower value increases tessellation and hence decreases the performance."
 			},
 			"GlobalUseWetSurfaces":
 			{
@@ -280,9 +280,9 @@
 						},
 						"TessellatedTriangleWidth":
 						{
-							"Usage": "MATERIAL_REFERENCE",
+							"Usage": "GLOBAL_REFERENCE",
 							"ValueType": "FLOAT",
-							"Value": "@TessellatedTriangleWidth"
+							"Value": "@GlobalTessellatedTriangleWidth"
 						}
 					}
 				}
