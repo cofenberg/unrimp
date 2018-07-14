@@ -3209,11 +3209,10 @@ namespace Direct3D10Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 10 index buffer?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D10Buffer)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					RENDERER_DECORATED_DEBUG_NAME(name, detailedName, "IBO", 6);	// 6 = "IBO: " including terminating zero!
 					FAILED_DEBUG_BREAK(mD3D10Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D10Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
@@ -3349,11 +3348,10 @@ namespace Direct3D10Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 10 vertex buffer?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D10Buffer)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					RENDERER_DECORATED_DEBUG_NAME(name, detailedName, "VBO", 6);	// 6 = "VBO: " including terminating zero!
 					FAILED_DEBUG_BREAK(mD3D10Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D10Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
@@ -3689,11 +3687,10 @@ namespace Direct3D10Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 10 uniform buffer?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D10Buffer)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					RENDERER_DECORATED_DEBUG_NAME(name, detailedName, "UBO", 6);	// 6 = "UBO: " including terminating zero!
 					FAILED_DEBUG_BREAK(mD3D10Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D10Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
@@ -3759,22 +3756,30 @@ namespace Direct3D10Renderer
 		*    Texture buffer data format
 		*  @param[in] data
 		*    Texture buffer data, can be a null pointer (empty buffer)
+		*  @param[in] flags
+		*    Texture buffer flags, see "Renderer::TextureBufferFlag"
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		TextureBuffer(Direct3D10Renderer& direct3D10Renderer, uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
+		TextureBuffer(Direct3D10Renderer& direct3D10Renderer, uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
 			ITextureBuffer(direct3D10Renderer),
 			mD3D10Buffer(nullptr),
-			mD3D10ShaderResourceViewTexture(nullptr)
+			mD3D10ShaderResourceView(nullptr)
 		{
 			{ // Buffer part
 				// Direct3D 10 buffer description
 				D3D10_BUFFER_DESC d3d10BufferDesc;
 				d3d10BufferDesc.ByteWidth        = numberOfBytes;
 				d3d10BufferDesc.Usage            = Mapping::getDirect3D10UsageAndCPUAccessFlags(bufferUsage, d3d10BufferDesc.CPUAccessFlags);
-				d3d10BufferDesc.BindFlags        = D3D10_BIND_SHADER_RESOURCE;
+				d3d10BufferDesc.BindFlags        = 0;
 				//d3d10BufferDesc.CPUAccessFlags = <filled above>;
 				d3d10BufferDesc.MiscFlags        = 0;
+
+				// Set bind flags
+				if (flags & Renderer::TextureBufferFlag::SHADER_RESOURCE)
+				{
+					d3d10BufferDesc.BindFlags |= D3D10_BIND_SHADER_RESOURCE;
+				}
 
 				// Data given?
 				if (nullptr != data)
@@ -3795,7 +3800,9 @@ namespace Direct3D10Renderer
 				}
 			}
 
-			{ // Shader resource view part
+			// Shader resource view part
+			if (flags & Renderer::TextureBufferFlag::SHADER_RESOURCE)
+			{
 				// Direct3D 10 shader resource view description
 				D3D10_SHADER_RESOURCE_VIEW_DESC d3d10ShaderResourceViewDesc = {};
 				d3d10ShaderResourceViewDesc.Format				 = Mapping::getDirect3D10ShaderResourceViewFormat(textureFormat);
@@ -3804,7 +3811,7 @@ namespace Direct3D10Renderer
 				d3d10ShaderResourceViewDesc.Buffer.ElementWidth	 = numberOfBytes / Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat);
 
 				// Create the Direct3D 10 shader resource view instance
-				FAILED_DEBUG_BREAK(direct3D10Renderer.getD3D10Device()->CreateShaderResourceView(mD3D10Buffer, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceViewTexture));
+				FAILED_DEBUG_BREAK(direct3D10Renderer.getD3D10Device()->CreateShaderResourceView(mD3D10Buffer, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceView));
 			}
 
 			// Assign a default name to the resource for debugging purposes
@@ -3820,9 +3827,9 @@ namespace Direct3D10Renderer
 		virtual ~TextureBuffer() override
 		{
 			// Release the used resources
-			if (nullptr != mD3D10ShaderResourceViewTexture)
+			if (nullptr != mD3D10ShaderResourceView)
 			{
-				mD3D10ShaderResourceViewTexture->Release();
+				mD3D10ShaderResourceView->Release();
 			}
 			if (nullptr != mD3D10Buffer)
 			{
@@ -3851,7 +3858,7 @@ namespace Direct3D10Renderer
 		*/
 		inline ID3D10ShaderResourceView* getD3D10ShaderResourceView() const
 		{
-			return mD3D10ShaderResourceViewTexture;
+			return mD3D10ShaderResourceView;
 		}
 
 
@@ -3864,22 +3871,17 @@ namespace Direct3D10Renderer
 			{
 				RENDERER_DECORATED_DEBUG_NAME(name, detailedName, "TBO", 6);	// 6 = "TBO: " including terminating zero!
 
-				// Assign a debug name to the shader resource view
-				if (nullptr != mD3D10ShaderResourceViewTexture)
-				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-					FAILED_DEBUG_BREAK(mD3D10ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D10ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
-				}
-
-				// Assign a debug name to the texture buffer
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D10Buffer)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D10Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D10Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
+				}
+				if (nullptr != mD3D10ShaderResourceView)
+				{
+					FAILED_DEBUG_BREAK(mD3D10ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D10ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
 				}
 			}
 		#endif
@@ -3907,8 +3909,8 @@ namespace Direct3D10Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		ID3D10Buffer*			  mD3D10Buffer;						///< Direct3D texture buffer instance, can be a null pointer
-		ID3D10ShaderResourceView* mD3D10ShaderResourceViewTexture;	///< Direct3D 10 shader resource view, can be a null pointer
+		ID3D10Buffer*			  mD3D10Buffer;				///< Direct3D texture buffer instance, can be a null pointer
+		ID3D10ShaderResourceView* mD3D10ShaderResourceView;	///< Direct3D 10 shader resource view, can be a null pointer
 
 
 	};
@@ -4083,9 +4085,9 @@ namespace Direct3D10Renderer
 			return RENDERER_NEW(getRenderer().getContext(), UniformBuffer)(static_cast<Direct3D10Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
 		}
 
-		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
-			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<Direct3D10Renderer&>(getRenderer()), numberOfBytes, textureFormat, data, bufferUsage);
+			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<Direct3D10Renderer&>(getRenderer()), numberOfBytes, textureFormat, data, flags, bufferUsage);
 		}
 
 		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
@@ -4154,7 +4156,7 @@ namespace Direct3D10Renderer
 			mTextureFormat(textureFormat),
 			mGenerateMipmaps(false),
 			mD3D10Texture1D(nullptr),
-			mD3D10ShaderResourceViewTexture(nullptr)
+			mD3D10ShaderResourceView(nullptr)
 		{
 			// Sanity checks
 			RENDERER_ASSERT(direct3D10Renderer.getContext(), 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 10 texture parameters")
@@ -4178,11 +4180,15 @@ namespace Direct3D10Renderer
 			d3d10Texture1DDesc.ArraySize	  = 1;
 			d3d10Texture1DDesc.Format		  = Mapping::getDirect3D10ResourceFormat(textureFormat);
 			d3d10Texture1DDesc.Usage		  = static_cast<D3D10_USAGE>(textureUsage);	// These constants directly map to Direct3D constants, do not change them
-			d3d10Texture1DDesc.BindFlags	  = D3D10_BIND_SHADER_RESOURCE;
+			d3d10Texture1DDesc.BindFlags	  = 0;
 			d3d10Texture1DDesc.CPUAccessFlags = (Renderer::TextureUsage::DYNAMIC == textureUsage) ? D3D10_CPU_ACCESS_WRITE : 0u;
 			d3d10Texture1DDesc.MiscFlags	  = (generateMipmaps && (flags & Renderer::TextureFlag::RENDER_TARGET)) ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0u;
 
-			// Use this texture as render target?
+			// Set bind flags
+			if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+			{
+				d3d10Texture1DDesc.BindFlags |= D3D10_BIND_SHADER_RESOURCE;
+			}
 			if (flags & Renderer::TextureFlag::RENDER_TARGET)
 			{
 				if (isDepthFormat)
@@ -4267,7 +4273,7 @@ namespace Direct3D10Renderer
 				d3d10ShaderResourceViewDesc.Texture1D.MostDetailedMip = 0;
 
 				// Create the Direct3D 10 shader resource view instance
-				FAILED_DEBUG_BREAK(direct3D10Renderer.getD3D10Device()->CreateShaderResourceView(mD3D10Texture1D, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceViewTexture));
+				FAILED_DEBUG_BREAK(direct3D10Renderer.getD3D10Device()->CreateShaderResourceView(mD3D10Texture1D, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceView));
 			}
 
 			// Assign a default name to the resource for debugging purposes
@@ -4285,9 +4291,9 @@ namespace Direct3D10Renderer
 		*/
 		virtual ~Texture1D() override
 		{
-			if (nullptr != mD3D10ShaderResourceViewTexture)
+			if (nullptr != mD3D10ShaderResourceView)
 			{
-				mD3D10ShaderResourceViewTexture->Release();
+				mD3D10ShaderResourceView->Release();
 			}
 			if (nullptr != mD3D10Texture1D)
 			{
@@ -4344,7 +4350,7 @@ namespace Direct3D10Renderer
 		*/
 		inline ID3D10ShaderResourceView* getD3D10ShaderResourceView() const
 		{
-			return mD3D10ShaderResourceViewTexture;
+			return mD3D10ShaderResourceView;
 		}
 
 
@@ -4355,22 +4361,17 @@ namespace Direct3D10Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 10 shader resource view?
-				if (nullptr != mD3D10ShaderResourceViewTexture)
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
+				if (nullptr != mD3D10Texture1D)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-					FAILED_DEBUG_BREAK(mD3D10ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D10ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-
-					// Do also set the given debug name to the Direct3D 10 resource referenced by the Direct3D resource view
-					if (nullptr != mD3D10Texture1D)
-					{
-						// Set the debug name
-						// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-						FAILED_DEBUG_BREAK(mD3D10Texture1D->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-						FAILED_DEBUG_BREAK(mD3D10Texture1D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-					}
+					FAILED_DEBUG_BREAK(mD3D10Texture1D->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D10Texture1D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
+				}
+				if (nullptr != mD3D10ShaderResourceView)
+				{
+					FAILED_DEBUG_BREAK(mD3D10ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D10ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
 			}
 		#endif
@@ -4405,8 +4406,8 @@ namespace Direct3D10Renderer
 	private:
 		Renderer::TextureFormat::Enum mTextureFormat;
 		bool						  mGenerateMipmaps;
-		ID3D10Texture1D*			  mD3D10Texture1D;					///< Direct3D 10 texture 1D resource, can be a null pointer
-		ID3D10ShaderResourceView*	  mD3D10ShaderResourceViewTexture;	///< Direct3D 10 shader resource view, can be a null pointer
+		ID3D10Texture1D*			  mD3D10Texture1D;			///< Direct3D 10 texture 1D resource, can be a null pointer
+		ID3D10ShaderResourceView*	  mD3D10ShaderResourceView;	///< Direct3D 10 shader resource view, can be a null pointer
 
 
 	};
@@ -4456,7 +4457,7 @@ namespace Direct3D10Renderer
 			mNumberOfMultisamples(numberOfMultisamples),
 			mGenerateMipmaps(false),
 			mD3D10Texture2D(nullptr),
-			mD3D10ShaderResourceViewTexture(nullptr)
+			mD3D10ShaderResourceView(nullptr)
 		{
 			// Sanity checks
 			RENDERER_ASSERT(direct3D10Renderer.getContext(), numberOfMultisamples == 1 || numberOfMultisamples == 2 || numberOfMultisamples == 4 || numberOfMultisamples == 8, "Invalid Direct3D 10 texture parameters")
@@ -4488,11 +4489,15 @@ namespace Direct3D10Renderer
 			d3d10Texture2DDesc.SampleDesc.Count	  = numberOfMultisamples;
 			d3d10Texture2DDesc.SampleDesc.Quality = 0;
 			d3d10Texture2DDesc.Usage			  = static_cast<D3D10_USAGE>(textureUsage);	// These constants directly map to Direct3D constants, do not change them
-			d3d10Texture2DDesc.BindFlags		  = D3D10_BIND_SHADER_RESOURCE;
+			d3d10Texture2DDesc.BindFlags		  = 0;
 			d3d10Texture2DDesc.CPUAccessFlags	  = (Renderer::TextureUsage::DYNAMIC == textureUsage) ? D3D10_CPU_ACCESS_WRITE : 0u;
 			d3d10Texture2DDesc.MiscFlags		  = (generateMipmaps && (flags & Renderer::TextureFlag::RENDER_TARGET)) ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0u;
 
-			// Use this texture as render target?
+			// Set bind flags
+			if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+			{
+				d3d10Texture2DDesc.BindFlags |= D3D10_BIND_SHADER_RESOURCE;
+			}
 			if (flags & Renderer::TextureFlag::RENDER_TARGET)
 			{
 				if (isDepthFormat)
@@ -4578,7 +4583,7 @@ namespace Direct3D10Renderer
 				d3d10ShaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
 
 				// Create the Direct3D 10 shader resource view instance
-				FAILED_DEBUG_BREAK(direct3D10Renderer.getD3D10Device()->CreateShaderResourceView(mD3D10Texture2D, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceViewTexture));
+				FAILED_DEBUG_BREAK(direct3D10Renderer.getD3D10Device()->CreateShaderResourceView(mD3D10Texture2D, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceView));
 			}
 
 			// Assign a default name to the resource for debugging purposes
@@ -4596,9 +4601,9 @@ namespace Direct3D10Renderer
 		*/
 		virtual ~Texture2D() override
 		{
-			if (nullptr != mD3D10ShaderResourceViewTexture)
+			if (nullptr != mD3D10ShaderResourceView)
 			{
-				mD3D10ShaderResourceViewTexture->Release();
+				mD3D10ShaderResourceView->Release();
 			}
 			if (nullptr != mD3D10Texture2D)
 			{
@@ -4667,7 +4672,7 @@ namespace Direct3D10Renderer
 		*/
 		inline ID3D10ShaderResourceView* getD3D10ShaderResourceView() const
 		{
-			return mD3D10ShaderResourceViewTexture;
+			return mD3D10ShaderResourceView;
 		}
 
 		/**
@@ -4682,9 +4687,9 @@ namespace Direct3D10Renderer
 		void setMinimumMaximumMipmapIndex(uint32_t minimumMipmapIndex, uint32_t maximumMipmapIndex)
 		{
 			// Re-create the Direct3D 10 shader resource view instance
-			if (nullptr != mD3D10ShaderResourceViewTexture)
+			if (nullptr != mD3D10ShaderResourceView)
 			{
-				mD3D10ShaderResourceViewTexture->Release();
+				mD3D10ShaderResourceView->Release();
 			}
 			if (nullptr != mD3D10Texture2D)
 			{
@@ -4696,7 +4701,7 @@ namespace Direct3D10Renderer
 				d3d10ShaderResourceViewDesc.Texture2D.MostDetailedMip = minimumMipmapIndex;
 
 				// Create the Direct3D 10 shader resource view instance
-				FAILED_DEBUG_BREAK(static_cast<Direct3D10Renderer&>(getRenderer()).getD3D10Device()->CreateShaderResourceView(mD3D10Texture2D, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceViewTexture));
+				FAILED_DEBUG_BREAK(static_cast<Direct3D10Renderer&>(getRenderer()).getD3D10Device()->CreateShaderResourceView(mD3D10Texture2D, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceView));
 			}
 		}
 
@@ -4708,22 +4713,17 @@ namespace Direct3D10Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 10 shader resource view?
-				if (nullptr != mD3D10ShaderResourceViewTexture)
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
+				if (nullptr != mD3D10Texture2D)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-					FAILED_DEBUG_BREAK(mD3D10ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D10ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-
-					// Do also set the given debug name to the Direct3D 10 resource referenced by the Direct3D resource view
-					if (nullptr != mD3D10Texture2D)
-					{
-						// Set the debug name
-						// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-						FAILED_DEBUG_BREAK(mD3D10Texture2D->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-						FAILED_DEBUG_BREAK(mD3D10Texture2D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-					}
+					FAILED_DEBUG_BREAK(mD3D10Texture2D->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D10Texture2D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
+				}
+				if (nullptr != mD3D10ShaderResourceView)
+				{
+					FAILED_DEBUG_BREAK(mD3D10ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D10ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
 			}
 		#endif
@@ -4759,8 +4759,8 @@ namespace Direct3D10Renderer
 		Renderer::TextureFormat::Enum mTextureFormat;
 		uint8_t						  mNumberOfMultisamples;
 		bool						  mGenerateMipmaps;
-		ID3D10Texture2D*			  mD3D10Texture2D;					///< Direct3D 10 texture 2D resource, can be a null pointer
-		ID3D10ShaderResourceView*	  mD3D10ShaderResourceViewTexture;	///< Direct3D 10 shader resource view, can be a null pointer
+		ID3D10Texture2D*			  mD3D10Texture2D;			///< Direct3D 10 texture 2D resource, can be a null pointer
+		ID3D10ShaderResourceView*	  mD3D10ShaderResourceView;	///< Direct3D 10 shader resource view, can be a null pointer
 
 
 	};
@@ -4810,7 +4810,7 @@ namespace Direct3D10Renderer
 			mNumberOfMultisamples(1),	// TODO(co) Currently no MSAA support for 2D array textures
 			mGenerateMipmaps(false),
 			mD3D10Texture2D(nullptr),
-			mD3D10ShaderResourceViewTexture(nullptr)
+			mD3D10ShaderResourceView(nullptr)
 		{
 			// Sanity checks
 			RENDERER_ASSERT(direct3D10Renderer.getContext(), (flags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 10 render target textures can't be filled using provided data")
@@ -4836,11 +4836,15 @@ namespace Direct3D10Renderer
 			d3d10Texture2DDesc.SampleDesc.Count	  = 1;
 			d3d10Texture2DDesc.SampleDesc.Quality = 0;
 			d3d10Texture2DDesc.Usage			  = static_cast<D3D10_USAGE>(textureUsage);	// These constants directly map to Direct3D constants, do not change them
-			d3d10Texture2DDesc.BindFlags		  = D3D10_BIND_SHADER_RESOURCE;
+			d3d10Texture2DDesc.BindFlags		  = 0;
 			d3d10Texture2DDesc.CPUAccessFlags	  = (Renderer::TextureUsage::DYNAMIC == textureUsage) ? D3D10_CPU_ACCESS_WRITE : 0u;
 			d3d10Texture2DDesc.MiscFlags		  = mGenerateMipmaps ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0u;
 
-			// Use this texture as render target?
+			// Set bind flags
+			if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+			{
+				d3d10Texture2DDesc.BindFlags |= D3D10_BIND_SHADER_RESOURCE;
+			}
 			if (flags & Renderer::TextureFlag::RENDER_TARGET)
 			{
 				if (isDepthFormat)
@@ -4968,7 +4972,7 @@ namespace Direct3D10Renderer
 				d3d10ShaderResourceViewDesc.Texture2DArray.ArraySize		= numberOfSlices;
 
 				// Create the Direct3D 10 shader resource view instance
-				FAILED_DEBUG_BREAK(direct3D10Renderer.getD3D10Device()->CreateShaderResourceView(mD3D10Texture2D, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceViewTexture));
+				FAILED_DEBUG_BREAK(direct3D10Renderer.getD3D10Device()->CreateShaderResourceView(mD3D10Texture2D, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceView));
 			}
 
 			// Assign a default name to the resource for debugging purposes
@@ -4986,9 +4990,9 @@ namespace Direct3D10Renderer
 		*/
 		virtual ~Texture2DArray() override
 		{
-			if (nullptr != mD3D10ShaderResourceViewTexture)
+			if (nullptr != mD3D10ShaderResourceView)
 			{
-				mD3D10ShaderResourceViewTexture->Release();
+				mD3D10ShaderResourceView->Release();
 			}
 			if (nullptr != mD3D10Texture2D)
 			{
@@ -5057,7 +5061,7 @@ namespace Direct3D10Renderer
 		*/
 		inline ID3D10ShaderResourceView* getD3D10ShaderResourceView() const
 		{
-			return mD3D10ShaderResourceViewTexture;
+			return mD3D10ShaderResourceView;
 		}
 
 
@@ -5068,30 +5072,17 @@ namespace Direct3D10Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 10 shader resource view?
-				if (nullptr != mD3D10ShaderResourceViewTexture)
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
+				if (nullptr != mD3D10Texture2D)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-					FAILED_DEBUG_BREAK(mD3D10ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D10ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-
-					// Do also set the given debug name to the Direct3D 10 resource referenced by the Direct3D resource view
-					// -> In our use case, this resource is tightly coupled with the view
-					// -> In principle the user can assign another resource to the view, but our interface documentation
-					//    asks the user to not do so, so we ignore this situation when assigning the name
-					ID3D10Resource* d3d10Resource = nullptr;
-					mD3D10ShaderResourceViewTexture->GetResource(&d3d10Resource);
-					if (nullptr != d3d10Resource)
-					{
-						// Set the debug name
-						// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-						FAILED_DEBUG_BREAK(d3d10Resource->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-						FAILED_DEBUG_BREAK(d3d10Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-
-						// Release the Direct3D 10 resource instance
-						d3d10Resource->Release();
-					}
+					FAILED_DEBUG_BREAK(mD3D10Texture2D->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D10Texture2D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
+				}
+				if (nullptr != mD3D10ShaderResourceView)
+				{
+					FAILED_DEBUG_BREAK(mD3D10ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D10ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
 			}
 		#endif
@@ -5122,8 +5113,8 @@ namespace Direct3D10Renderer
 		Renderer::TextureFormat::Enum mTextureFormat;
 		uint8_t						  mNumberOfMultisamples;
 		bool						  mGenerateMipmaps;
-		ID3D10Texture2D*			  mD3D10Texture2D;					///< Direct3D 10 texture 2D resource, can be a null pointer
-		ID3D10ShaderResourceView*	  mD3D10ShaderResourceViewTexture;	///< Direct3D 10 shader resource view, can be a null pointer
+		ID3D10Texture2D*			  mD3D10Texture2D;			///< Direct3D 10 texture 2D resource, can be a null pointer
+		ID3D10ShaderResourceView*	  mD3D10ShaderResourceView;	///< Direct3D 10 shader resource view, can be a null pointer
 
 
 	};
@@ -5172,7 +5163,7 @@ namespace Direct3D10Renderer
 			mTextureFormat(textureFormat),
 			mGenerateMipmaps(false),
 			mD3D10Texture3D(nullptr),
-			mD3D10ShaderResourceViewTexture(nullptr)
+			mD3D10ShaderResourceView(nullptr)
 		{
 			// Sanity checks
 			RENDERER_ASSERT(direct3D10Renderer.getContext(), 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 10 texture parameters")
@@ -5197,11 +5188,15 @@ namespace Direct3D10Renderer
 			d3d10Texture3DDesc.MipLevels	  = (generateMipmaps ? 0u : numberOfMipmaps);	// 0 = Let Direct3D 10 allocate the complete mipmap chain for us
 			d3d10Texture3DDesc.Format		  = Mapping::getDirect3D10ResourceFormat(textureFormat);
 			d3d10Texture3DDesc.Usage		  = static_cast<D3D10_USAGE>(textureUsage);	// These constants directly map to Direct3D constants, do not change them
-			d3d10Texture3DDesc.BindFlags	  = D3D10_BIND_SHADER_RESOURCE;
+			d3d10Texture3DDesc.BindFlags	  = 0;
 			d3d10Texture3DDesc.CPUAccessFlags = (Renderer::TextureUsage::DYNAMIC == textureUsage) ? D3D10_CPU_ACCESS_WRITE : 0u;
 			d3d10Texture3DDesc.MiscFlags	  = (generateMipmaps && (flags & Renderer::TextureFlag::RENDER_TARGET)) ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0u;
 
-			// Use this texture as render target?
+			// Set bind flags
+			if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+			{
+				d3d10Texture3DDesc.BindFlags |= D3D10_BIND_SHADER_RESOURCE;
+			}
 			if (flags & Renderer::TextureFlag::RENDER_TARGET)
 			{
 				if (isDepthFormat)
@@ -5293,7 +5288,7 @@ namespace Direct3D10Renderer
 				d3d10ShaderResourceViewDesc.Texture3D.MostDetailedMip = 0;
 
 				// Create the Direct3D 10 shader resource view instance
-				FAILED_DEBUG_BREAK(direct3D10Renderer.getD3D10Device()->CreateShaderResourceView(mD3D10Texture3D, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceViewTexture));
+				FAILED_DEBUG_BREAK(direct3D10Renderer.getD3D10Device()->CreateShaderResourceView(mD3D10Texture3D, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceView));
 			}
 
 			// Assign a default name to the resource for debugging purposes
@@ -5311,9 +5306,9 @@ namespace Direct3D10Renderer
 		*/
 		virtual ~Texture3D() override
 		{
-			if (nullptr != mD3D10ShaderResourceViewTexture)
+			if (nullptr != mD3D10ShaderResourceView)
 			{
-				mD3D10ShaderResourceViewTexture->Release();
+				mD3D10ShaderResourceView->Release();
 			}
 			if (nullptr != mD3D10Texture3D)
 			{
@@ -5370,7 +5365,7 @@ namespace Direct3D10Renderer
 		*/
 		inline ID3D10ShaderResourceView* getD3D10ShaderResourceView() const
 		{
-			return mD3D10ShaderResourceViewTexture;
+			return mD3D10ShaderResourceView;
 		}
 
 
@@ -5381,22 +5376,17 @@ namespace Direct3D10Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 10 shader resource view?
-				if (nullptr != mD3D10ShaderResourceViewTexture)
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
+				if (nullptr != mD3D10Texture3D)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-					FAILED_DEBUG_BREAK(mD3D10ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D10ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-
-					// Do also set the given debug name to the Direct3D 10 resource referenced by the Direct3D resource view
-					if (nullptr != mD3D10Texture3D)
-					{
-						// Set the debug name
-						// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-						FAILED_DEBUG_BREAK(mD3D10Texture3D->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-						FAILED_DEBUG_BREAK(mD3D10Texture3D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-					}
+					FAILED_DEBUG_BREAK(mD3D10Texture3D->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D10Texture3D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
+				}
+				if (nullptr != mD3D10ShaderResourceView)
+				{
+					FAILED_DEBUG_BREAK(mD3D10ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D10ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
 			}
 		#endif
@@ -5431,8 +5421,8 @@ namespace Direct3D10Renderer
 	private:
 		Renderer::TextureFormat::Enum mTextureFormat;
 		bool						  mGenerateMipmaps;
-		ID3D10Texture3D*			  mD3D10Texture3D;					///< Direct3D 10 texture 3D resource, can be a null pointer
-		ID3D10ShaderResourceView*	  mD3D10ShaderResourceViewTexture;	///< Direct3D 10 shader resource view, can be a null pointer
+		ID3D10Texture3D*			  mD3D10Texture3D;			///< Direct3D 10 texture 3D resource, can be a null pointer
+		ID3D10ShaderResourceView*	  mD3D10ShaderResourceView;	///< Direct3D 10 shader resource view, can be a null pointer
 
 
 	};
@@ -5479,7 +5469,7 @@ namespace Direct3D10Renderer
 			mTextureFormat(textureFormat),
 			mGenerateMipmaps(false),
 			mD3D10TextureCube(nullptr),
-			mD3D10ShaderResourceViewTexture(nullptr)
+			mD3D10ShaderResourceView(nullptr)
 		{
 			static constexpr uint32_t NUMBER_OF_SLICES = 6;	// In Direct3D 10, a cube map is a 2D array texture with six slices
 
@@ -5506,11 +5496,15 @@ namespace Direct3D10Renderer
 			d3d10Texture2DDesc.SampleDesc.Count	  = 1;
 			d3d10Texture2DDesc.SampleDesc.Quality = 0;
 			d3d10Texture2DDesc.Usage			  = static_cast<D3D10_USAGE>(textureUsage);	// These constants directly map to Direct3D constants, do not change them
-			d3d10Texture2DDesc.BindFlags		  = D3D10_BIND_SHADER_RESOURCE;
+			d3d10Texture2DDesc.BindFlags		  = 0;
 			d3d10Texture2DDesc.CPUAccessFlags	  = (Renderer::TextureUsage::DYNAMIC == textureUsage) ? D3D10_CPU_ACCESS_WRITE : 0u;
 			d3d10Texture2DDesc.MiscFlags		  = (mGenerateMipmaps ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0u) | D3D10_RESOURCE_MISC_TEXTURECUBE;
 
-			// Use this texture as render target?
+			// Set bind flags
+			if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+			{
+				d3d10Texture2DDesc.BindFlags |= D3D10_BIND_SHADER_RESOURCE;
+			}
 			if (flags & Renderer::TextureFlag::RENDER_TARGET)
 			{
 				d3d10Texture2DDesc.BindFlags |= D3D10_BIND_RENDER_TARGET;
@@ -5622,7 +5616,7 @@ namespace Direct3D10Renderer
 				d3d10ShaderResourceViewDesc.TextureCube.MostDetailedMip	= 0;
 
 				// Create the Direct3D 10 shader resource view instance
-				FAILED_DEBUG_BREAK(direct3D10Renderer.getD3D10Device()->CreateShaderResourceView(mD3D10TextureCube, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceViewTexture));
+				FAILED_DEBUG_BREAK(direct3D10Renderer.getD3D10Device()->CreateShaderResourceView(mD3D10TextureCube, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceView));
 			}
 
 			// Assign a default name to the resource for debugging purposes
@@ -5640,9 +5634,9 @@ namespace Direct3D10Renderer
 		*/
 		virtual ~TextureCube() override
 		{
-			if (nullptr != mD3D10ShaderResourceViewTexture)
+			if (nullptr != mD3D10ShaderResourceView)
 			{
-				mD3D10ShaderResourceViewTexture->Release();
+				mD3D10ShaderResourceView->Release();
 			}
 			if (nullptr != mD3D10TextureCube)
 			{
@@ -5699,7 +5693,7 @@ namespace Direct3D10Renderer
 		*/
 		inline ID3D10ShaderResourceView* getD3D10ShaderResourceView() const
 		{
-			return mD3D10ShaderResourceViewTexture;
+			return mD3D10ShaderResourceView;
 		}
 
 
@@ -5710,22 +5704,17 @@ namespace Direct3D10Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 10 shader resource view?
-				if (nullptr != mD3D10ShaderResourceViewTexture)
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
+				if (nullptr != mD3D10TextureCube)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-					FAILED_DEBUG_BREAK(mD3D10ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D10ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-
-					// Do also set the given debug name to the Direct3D 10 resource referenced by the Direct3D resource view
-					if (nullptr != mD3D10TextureCube)
-					{
-						// Set the debug name
-						// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-						FAILED_DEBUG_BREAK(mD3D10TextureCube->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-						FAILED_DEBUG_BREAK(mD3D10TextureCube->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-					}
+					FAILED_DEBUG_BREAK(mD3D10TextureCube->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D10TextureCube->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
+				}
+				if (nullptr != mD3D10ShaderResourceView)
+				{
+					FAILED_DEBUG_BREAK(mD3D10ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D10ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
 			}
 		#endif
@@ -5760,8 +5749,8 @@ namespace Direct3D10Renderer
 	private:
 		Renderer::TextureFormat::Enum mTextureFormat;
 		bool						  mGenerateMipmaps;
-		ID3D10Texture2D*			  mD3D10TextureCube;				///< Direct3D 10 texture cube resource, can be a null pointer
-		ID3D10ShaderResourceView*	  mD3D10ShaderResourceViewTexture;	///< Direct3D 10 shader resource view, can be a null pointer
+		ID3D10Texture2D*			  mD3D10TextureCube;		///< Direct3D 10 texture cube resource, can be a null pointer
+		ID3D10ShaderResourceView*	  mD3D10ShaderResourceView;	///< Direct3D 10 shader resource view, can be a null pointer
 
 
 	};
@@ -5971,11 +5960,10 @@ namespace Direct3D10Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 10 sampler state?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D10SamplerState)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D10SamplerState->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D10SamplerState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
@@ -6134,11 +6122,10 @@ namespace Direct3D10Renderer
 			*/
 			void setDebugName(const char* name)
 			{
-				// Valid Direct3D 10 rasterizer state?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D10RasterizerState)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D10RasterizerState->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D10RasterizerState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
@@ -6233,11 +6220,10 @@ namespace Direct3D10Renderer
 			*/
 			void setDebugName(const char* name)
 			{
-				// Valid Direct3D 10 depth stencil state?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D10DepthStencilState)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D10DepthStencilState->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D10DepthStencilState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
@@ -6357,11 +6343,10 @@ namespace Direct3D10Renderer
 			*/
 			void setDebugName(const char* name)
 			{
-				// Valid Direct3D 10 blend state?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D10BlendState)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D10BlendState->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D10BlendState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
@@ -6757,29 +6742,20 @@ namespace Direct3D10Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Assign a debug name to the DXGI swap chain
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mDxgiSwapChain)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mDxgiSwapChain->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mDxgiSwapChain->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
-
-				// Assign a debug name to the Direct3D 10 render target view
 				if (nullptr != mD3D10RenderTargetView)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D10RenderTargetView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D10RenderTargetView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
-
-				// Assign a debug name to the Direct3D 10 depth stencil view
 				if (nullptr != mD3D10DepthStencilView)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D10DepthStencilView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D10DepthStencilView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
@@ -7713,11 +7689,10 @@ namespace Direct3D10Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 10 vertex shader?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D10VertexShader)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D10VertexShader->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D10VertexShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
@@ -7866,11 +7841,10 @@ namespace Direct3D10Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 10 geometry shader?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D10GeometryShader)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D10GeometryShader->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D10GeometryShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
@@ -8018,11 +7992,10 @@ namespace Direct3D10Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 10 pixel shader?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D10PixelShader)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D10PixelShader->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D10PixelShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
@@ -8603,11 +8576,10 @@ namespace Direct3D10Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 10 input layout?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D10InputLayout)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D10InputLayout->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D10InputLayout->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}

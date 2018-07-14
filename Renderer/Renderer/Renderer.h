@@ -1262,14 +1262,13 @@ namespace Renderer
 	*
 	*  @see
 	*    - "D3D12_DESCRIPTOR_RANGE_TYPE"-documentation for details
-	*    - "UBV" = "CBV"; we're using the OpenGL/Vulkan terminology of "uniform buffer" instead of "constant buffer" as DirectX does
 	*/
 	enum class DescriptorRangeType
 	{
-		SRV					  = 0,
-		UAV					  = SRV + 1,
-		UBV					  = UAV + 1,
-		SAMPLER				  = UBV + 1,
+		SRV					  = 0,				///< Shader resource view (SRV), in HLSL: "t<index>"-register
+		UAV					  = SRV + 1,		///< Unordered access view (UAV), in HLSL: "u<index>"-register
+		UBV					  = UAV + 1,		///< Uniform buffer view (UBV), in HLSL: "b<index>"-register, "UBV" = "CBV"; we're using the OpenGL/Vulkan terminology of "uniform buffer" instead of "constant buffer" as DirectX does
+		SAMPLER				  = UBV + 1,		///< In HLSL: "s<index>"-register
 		NUMBER_OF_RANGE_TYPES = SAMPLER + 1
 	};
 
@@ -1435,9 +1434,9 @@ namespace Renderer
 	{
 		DESCRIPTOR_TABLE = 0,
 		CONSTANTS_32BIT  = DESCRIPTOR_TABLE + 1,
-		UBV              = CONSTANTS_32BIT + 1,
-		SRV              = UBV + 1,
-		UAV              = SRV + 1
+		UBV              = CONSTANTS_32BIT + 1,		///< Uniform buffer view (UBV), in HLSL: "b<index>"-register, "UBV" = "CBV"; we're using the OpenGL/Vulkan terminology of "uniform buffer" instead of "constant buffer" as DirectX does
+		SRV              = UBV + 1,					///< Shader resource view (SRV), in HLSL: "t<index>"-register
+		UAV              = SRV + 1					///< Unordered access view (UAV), in HLSL: "u<index>"-register
 	};
 
 	/**
@@ -2144,9 +2143,11 @@ namespace Renderer
 	{
 		enum Enum
 		{
-			DATA_CONTAINS_MIPMAPS = 1 << 0,	///< The user provided data containing mipmaps from 0-n down to 1x1 linearly in memory
-			GENERATE_MIPMAPS      = 1 << 1,	///< Automatically generate mipmaps (avoid this if you can, will be ignored in case the "DATA_CONTAINS_MIPMAPS"-flag is set), for depth textures the mipmaps can only be allocated but not automatically be generated
-			RENDER_TARGET         = 1 << 2	///< This texture can be used as render target
+			SHADER_RESOURCE       = 1 << 0,	///< This texture can be used as shader resource (when using Direct3D 11 a shader resource view (SRV) will be generated)
+			UNORDERED_ACCESS      = 1 << 1,	///< This texture can be used for unordered access which is needed for compute shader read/write textures (when using Direct3D 11 a unordered access view (UAV) will be generated)
+			RENDER_TARGET         = 1 << 2,	///< This texture can be used as framebuffer object (FBO) attachment render target
+			DATA_CONTAINS_MIPMAPS = 1 << 3,	///< The user provided data containing mipmaps from 0-n down to 1x1 linearly in memory
+			GENERATE_MIPMAPS      = 1 << 4	///< Automatically generate mipmaps (avoid this if you can, will be ignored in case the "DATA_CONTAINS_MIPMAPS"-flag is set), for depth textures the mipmaps can only be allocated but not automatically be generated
 		};
 	};
 
@@ -2432,6 +2433,19 @@ namespace Renderer
 		DYNAMIC_DRAW = 0x88E8,	///< The data store contents will be respecified repeatedly by the application, and used many times as the source for OpenGL (drawing) commands. (also exists in OpenGL ES 3)
 		DYNAMIC_READ = 0x88E9,	///< The data store contents will be respecified repeatedly by reading data from the OpenGL, and queried many times by the application.
 		DYNAMIC_COPY = 0x88EA	///< The data store contents will be respecified repeatedly by reading data from the OpenGL, and used many times as the source for OpenGL (drawing) commands.
+	};
+
+	/**
+	*  @brief
+	*    Texture buffer flags
+	*/
+	struct TextureBufferFlag final
+	{
+		enum Enum
+		{
+			SHADER_RESOURCE  = 1 << 0,	///< This texture buffer can be used as shader resource (when using Direct3D 11 a shader resource view (SRV) will be generated)
+			UNORDERED_ACCESS = 1 << 1	///< This texture buffer can be used for unordered access which is needed for compute shader read/write texture buffers (when using Direct3D 11 a unordered access view (UAV) will be generated)
+		};
 	};
 
 
@@ -5747,6 +5761,8 @@ namespace Renderer
 		*    Texture buffer data format
 		*  @param[in] data
 		*    Texture buffer data, can be a null pointer (empty buffer), the data is internally copied and you have to free your memory if you no longer need it
+		*  @param[in] flags
+		*    Texture buffer flags, see "Renderer::TextureBufferFlag"
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*
@@ -5756,7 +5772,7 @@ namespace Renderer
 		*  @note
 		*    - Only supported if "Renderer::Capabilities::maximumTextureBufferSize" is not 0
 		*/
-		virtual ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, TextureFormat::Enum textureFormat, const void* data = nullptr, BufferUsage bufferUsage = BufferUsage::DYNAMIC_DRAW) = 0;
+		virtual ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, BufferUsage bufferUsage = BufferUsage::DYNAMIC_DRAW) = 0;
 
 		/**
 		*  @brief

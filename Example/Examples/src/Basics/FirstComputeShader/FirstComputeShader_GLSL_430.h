@@ -54,7 +54,7 @@ void main()
 //[ Fragment shader source code                           ]
 //[-------------------------------------------------------]
 // One fragment shader invocation per fragment
-fragmentShaderSourceCode = R"(#version 410 core	// OpenGL 4.1
+fragmentShaderSourceCode = R"(#version 430 core	// OpenGL 4.3
 
 // Attribute input/output
 in  vec2 TexCoord;		// Normalized texture coordinate as input
@@ -75,16 +75,24 @@ void main()
 //[-------------------------------------------------------]
 //[ Compute shader source code                            ]
 //[-------------------------------------------------------]
-computeShaderSourceCode = R"(#version 410 core	// OpenGL 4.1
-TODO(co)
-
-// Attribute input/output
-
+computeShaderSourceCode = R"(#version 430 core	// OpenGL 4.3
 // Uniforms
+layout(binding = 0)					 uniform sampler2D InputTextureMap;
+layout(binding = 1, rgba8) writeonly uniform image2D   OutputTextureMap;
 
 // Programs
+layout (local_size_x = 16, local_size_y = 16) in;
 void main()
 {
+	// Fetch input texel
+	vec4 color = texelFetch(InputTextureMap, ivec2(gl_GlobalInvocationID.xy), 0);
+
+	// Modify color
+	color.g *= 1.0f - (float(gl_GlobalInvocationID.x) / 16.0f);
+	color.g *= 1.0f - (float(gl_GlobalInvocationID.y) / 16.0f);
+
+	// Output texel
+	imageStore(OutputTextureMap, ivec2(gl_GlobalInvocationID.xy), color);
 }
 )";
 

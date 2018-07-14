@@ -94,7 +94,7 @@ void FirstMultipleRenderTargets::onInitialization()
 				for (uint32_t i = 0; i < NUMBER_OF_TEXTURES; ++i)
 				{
 					textureFormats[i] = Renderer::TextureFormat::R8G8B8A8;
-					textureResource[i] = colorFramebufferAttachments[i].texture = mTextureManager->createTexture2D(TEXTURE_SIZE, TEXTURE_SIZE, textureFormats[i], nullptr, Renderer::TextureFlag::RENDER_TARGET, Renderer::TextureUsage::DEFAULT, 1, reinterpret_cast<const Renderer::OptimizedTextureClearValue*>(&Color4::BLACK));
+					textureResource[i] = colorFramebufferAttachments[i].texture = mTextureManager->createTexture2D(TEXTURE_SIZE, TEXTURE_SIZE, textureFormats[i], nullptr, Renderer::TextureFlag::SHADER_RESOURCE | Renderer::TextureFlag::RENDER_TARGET, Renderer::TextureUsage::DEFAULT, 1, reinterpret_cast<const Renderer::OptimizedTextureClearValue*>(&Color4::BLACK));
 					samplerStates[i] = static_cast<Renderer::ISamplerState*>(samplerStateResource);
 				}
 

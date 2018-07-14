@@ -1209,6 +1209,86 @@ struct D3D11_SHADER_RESOURCE_VIEW_DESC
 };
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
+typedef enum D3D11_UAV_DIMENSION
+{
+	D3D11_UAV_DIMENSION_UNKNOWN			= 0,
+	D3D11_UAV_DIMENSION_BUFFER			= 1,
+	D3D11_UAV_DIMENSION_TEXTURE1D		= 2,
+	D3D11_UAV_DIMENSION_TEXTURE1DARRAY	= 3,
+	D3D11_UAV_DIMENSION_TEXTURE2D		= 4,
+	D3D11_UAV_DIMENSION_TEXTURE2DARRAY	= 5,
+	D3D11_UAV_DIMENSION_TEXTURE3D		= 8
+} D3D11_UAV_DIMENSION;
+
+// "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
+typedef enum D3D11_BUFFER_UAV_FLAG
+{
+	D3D11_BUFFER_UAV_FLAG_RAW		= 0x1,
+	D3D11_BUFFER_UAV_FLAG_APPEND	= 0x2,
+	D3D11_BUFFER_UAV_FLAG_COUNTER	= 0x4
+} D3D11_BUFFER_UAV_FLAG;
+
+// "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
+typedef struct D3D11_BUFFER_UAV
+{
+	UINT FirstElement;
+	UINT NumElements;
+	UINT Flags;
+} D3D11_BUFFER_UAV;
+
+// "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
+typedef struct D3D11_TEX1D_UAV
+{
+	UINT MipSlice;
+} D3D11_TEX1D_UAV;
+
+// "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
+typedef struct D3D11_TEX1D_ARRAY_UAV
+{
+	UINT MipSlice;
+	UINT FirstArraySlice;
+	UINT ArraySize;
+} D3D11_TEX1D_ARRAY_UAV;
+
+// "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
+typedef struct D3D11_TEX2D_UAV
+{
+	UINT MipSlice;
+} D3D11_TEX2D_UAV;
+
+// "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
+typedef struct D3D11_TEX2D_ARRAY_UAV
+{
+	UINT MipSlice;
+	UINT FirstArraySlice;
+	UINT ArraySize;
+} D3D11_TEX2D_ARRAY_UAV;
+
+// "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
+typedef struct D3D11_TEX3D_UAV
+{
+	UINT MipSlice;
+	UINT FirstWSlice;
+	UINT WSize;
+} D3D11_TEX3D_UAV;
+
+// "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
+typedef struct D3D11_UNORDERED_ACCESS_VIEW_DESC
+{
+	DXGI_FORMAT Format;
+	D3D11_UAV_DIMENSION ViewDimension;
+	union
+	{
+		D3D11_BUFFER_UAV Buffer;
+		D3D11_TEX1D_UAV Texture1D;
+		D3D11_TEX1D_ARRAY_UAV Texture1DArray;
+		D3D11_TEX2D_UAV Texture2D;
+		D3D11_TEX2D_ARRAY_UAV Texture2DArray;
+		D3D11_TEX3D_UAV Texture3D;
+	};
+} D3D11_UNORDERED_ACCESS_VIEW_DESC;
+
+// "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
 struct D3D11_DEPTH_STENCIL_VIEW_DESC
 {
 	DXGI_FORMAT Format;
@@ -1614,6 +1694,13 @@ struct ID3D11ShaderResourceView : public ID3D11View
 {
 	public:
 		virtual void STDMETHODCALLTYPE GetDesc(__out D3D11_SHADER_RESOURCE_VIEW_DESC *pDesc) = 0;
+};
+
+// "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
+struct ID3D11UnorderedAccessView : public ID3D11View
+{
+	public:
+		virtual void STDMETHODCALLTYPE GetDesc(__out D3D11_UNORDERED_ACCESS_VIEW_DESC *pDesc) = 0;
 };
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
@@ -3778,11 +3865,10 @@ namespace Direct3D11Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 11 index buffer?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D11Buffer)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					RENDERER_DECORATED_DEBUG_NAME(name, detailedName, "IBO", 6);	// 6 = "IBO: " including terminating zero
 					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
@@ -3919,11 +4005,10 @@ namespace Direct3D11Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 11 vertex buffer?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D11Buffer)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					RENDERER_DECORATED_DEBUG_NAME(name, detailedName, "VBO", 6);	// 6 = "VBO: " including terminating zero
 					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
@@ -4260,11 +4345,10 @@ namespace Direct3D11Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 11 uniform buffer?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D11Buffer)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					RENDERER_DECORATED_DEBUG_NAME(name, detailedName, "UBO", 6);	// 6 = "UBO: " including terminating zero
 					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
@@ -4330,23 +4414,36 @@ namespace Direct3D11Renderer
 		*    Texture buffer data format
 		*  @param[in] data
 		*    Texture buffer data, can be a null pointer (empty buffer)
+		*  @param[in] flags
+		*    Texture buffer flags, see "Renderer::TextureBufferFlag"
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		TextureBuffer(Direct3D11Renderer& direct3D11Renderer, uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
+		TextureBuffer(Direct3D11Renderer& direct3D11Renderer, uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
 			ITextureBuffer(direct3D11Renderer),
 			mD3D11Buffer(nullptr),
-			mD3D11ShaderResourceViewTexture(nullptr)
+			mD3D11ShaderResourceView(nullptr),
+			mD3D11UnorderedAccessView(nullptr)
 		{
 			{ // Buffer part
 				// Direct3D 11 buffer description
 				D3D11_BUFFER_DESC d3d11BufferDesc;
 				d3d11BufferDesc.ByteWidth           = numberOfBytes;
 				d3d11BufferDesc.Usage               = Mapping::getDirect3D11UsageAndCPUAccessFlags(bufferUsage, d3d11BufferDesc.CPUAccessFlags);
-				d3d11BufferDesc.BindFlags           = D3D11_BIND_SHADER_RESOURCE;
+				d3d11BufferDesc.BindFlags           = 0;
 				//d3d11BufferDesc.CPUAccessFlags    = <filled above>;
 				d3d11BufferDesc.MiscFlags           = 0;
 				d3d11BufferDesc.StructureByteStride = 0;
+
+				// Set bind flags
+				if (flags & Renderer::TextureBufferFlag::SHADER_RESOURCE)
+				{
+					d3d11BufferDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
+				}
+				if (flags & Renderer::TextureBufferFlag::UNORDERED_ACCESS)
+				{
+					d3d11BufferDesc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
+				}
 
 				// Data given?
 				if (nullptr != data)
@@ -4367,7 +4464,9 @@ namespace Direct3D11Renderer
 				}
 			}
 
-			{ // Shader resource view part
+			// Create the Direct3D 11 shader resource view instance
+			if (flags & Renderer::TextureBufferFlag::SHADER_RESOURCE)
+			{
 				// Direct3D 11 shader resource view description
 				D3D11_SHADER_RESOURCE_VIEW_DESC d3d11ShaderResourceViewDesc = {};
 				d3d11ShaderResourceViewDesc.Format				 = Mapping::getDirect3D11ResourceFormat(textureFormat);
@@ -4376,7 +4475,21 @@ namespace Direct3D11Renderer
 				d3d11ShaderResourceViewDesc.Buffer.ElementWidth	 = numberOfBytes / Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat);
 
 				// Create the Direct3D 11 shader resource view instance
-				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateShaderResourceView(mD3D11Buffer, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceViewTexture));
+				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateShaderResourceView(mD3D11Buffer, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView));
+			}
+
+			// Create the Direct3D 11 unordered access view instance
+			if (flags & Renderer::TextureBufferFlag::UNORDERED_ACCESS)
+			{
+				// Direct3D 11 unordered access view description
+				D3D11_UNORDERED_ACCESS_VIEW_DESC d3d11UnorderedAccessViewDesc = {};
+				d3d11UnorderedAccessViewDesc.Format				= Mapping::getDirect3D11ShaderResourceViewFormat(textureFormat);
+				d3d11UnorderedAccessViewDesc.ViewDimension		= D3D11_UAV_DIMENSION_BUFFER;
+				d3d11UnorderedAccessViewDesc.Buffer.NumElements = numberOfBytes / Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat);
+				d3d11UnorderedAccessViewDesc.Buffer.Flags		= 0;	// TODO(co) Compute shader: D3D11_BUFFER_UAV_FLAG_RAW - D3D11_BUFFER_UAV_FLAG_APPEND - D3D11_BUFFER_UAV_FLAG_COUNTER
+
+				// Create the Direct3D 11 unordered access view instance
+				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateUnorderedAccessView(mD3D11Buffer, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
 			}
 
 			// Assign a default name to the resource for debugging purposes
@@ -4392,10 +4505,15 @@ namespace Direct3D11Renderer
 		virtual ~TextureBuffer() override
 		{
 			// Release the used resources
-			if (nullptr != mD3D11ShaderResourceViewTexture)
+			if (nullptr != mD3D11ShaderResourceView)
 			{
-				mD3D11ShaderResourceViewTexture->Release();
-				mD3D11ShaderResourceViewTexture = nullptr;
+				mD3D11ShaderResourceView->Release();
+				mD3D11ShaderResourceView = nullptr;
+			}
+			if (nullptr != mD3D11UnorderedAccessView)
+			{
+				mD3D11UnorderedAccessView->Release();
+				mD3D11UnorderedAccessView = nullptr;
 			}
 			if (nullptr != mD3D11Buffer)
 			{
@@ -4425,7 +4543,23 @@ namespace Direct3D11Renderer
 		*/
 		inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
 		{
-			return mD3D11ShaderResourceViewTexture;
+			return mD3D11ShaderResourceView;
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D unordered access view instance
+		*
+		*  @return
+		*    The Direct3D unordered access view instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*
+		*  @note
+		*    - It's not recommended to manipulate the returned Direct3D 11 resource
+		*      view by e.g. assigning another Direct3D 11 resource to it
+		*/
+		inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
+		{
+			return mD3D11UnorderedAccessView;
 		}
 
 
@@ -4438,22 +4572,22 @@ namespace Direct3D11Renderer
 			{
 				RENDERER_DECORATED_DEBUG_NAME(name, detailedName, "TBO", 6);	// 6 = "TBO: " including terminating zero
 
-				// Assign a debug name to the shader resource view
-				if (nullptr != mD3D11ShaderResourceViewTexture)
-				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
-				}
-
-				// Assign a debug name to the texture buffer
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D11Buffer)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
+				}
+				if (nullptr != mD3D11ShaderResourceView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
+				}
+				if (nullptr != mD3D11UnorderedAccessView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
 				}
 			}
 		#endif
@@ -4481,8 +4615,9 @@ namespace Direct3D11Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		ID3D11Buffer*			  mD3D11Buffer;						///< Direct3D texture buffer instance, can be a null pointer
-		ID3D11ShaderResourceView* mD3D11ShaderResourceViewTexture;	///< Direct3D 11 shader resource view, can be a null pointer
+		ID3D11Buffer*			   mD3D11Buffer;				///< Direct3D texture buffer instance, can be a null pointer
+		ID3D11ShaderResourceView*  mD3D11ShaderResourceView;	///< Direct3D 11 shader resource view, can be a null pointer
+		ID3D11UnorderedAccessView* mD3D11UnorderedAccessView;	///< Direct3D 11 unordered access view, can be a null pointer
 
 
 	};
@@ -4528,7 +4663,7 @@ namespace Direct3D11Renderer
 				D3D11_BUFFER_DESC d3d11BufferDesc;
 				d3d11BufferDesc.ByteWidth			= numberOfBytes;
 				d3d11BufferDesc.Usage				= D3D11_USAGE_DEFAULT;
-				d3d11BufferDesc.BindFlags			= D3D11_BIND_UNORDERED_ACCESS;
+				d3d11BufferDesc.BindFlags			= 0;
 				d3d11BufferDesc.CPUAccessFlags		= 0;
 				d3d11BufferDesc.MiscFlags			= D3D11_RESOURCE_MISC_DRAWINDIRECT_ARGS;
 				d3d11BufferDesc.StructureByteStride	= 0;
@@ -4635,18 +4770,15 @@ namespace Direct3D11Renderer
 			{
 				RENDERER_DECORATED_DEBUG_NAME(name, detailedName, "IndirectBufferObject", 23);	// 23 = "IndirectBufferObject: " including terminating zero
 
-				// Assign a debug name to the indirect buffer
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D11Buffer)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
 				}
 				if (nullptr != mStagingD3D11Buffer)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mStagingD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mStagingD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
 				}
@@ -4754,9 +4886,9 @@ namespace Direct3D11Renderer
 			return RENDERER_NEW(getRenderer().getContext(), UniformBuffer)(static_cast<Direct3D11Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
 		}
 
-		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
-			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<Direct3D11Renderer&>(getRenderer()), numberOfBytes, textureFormat, data, bufferUsage);
+			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<Direct3D11Renderer&>(getRenderer()), numberOfBytes, textureFormat, data, flags, bufferUsage);
 		}
 
 		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
@@ -4825,7 +4957,8 @@ namespace Direct3D11Renderer
 			mTextureFormat(textureFormat),
 			mGenerateMipmaps(false),
 			mD3D11Texture1D(nullptr),
-			mD3D11ShaderResourceViewTexture(nullptr)
+			mD3D11ShaderResourceView(nullptr),
+			mD3D11UnorderedAccessView(nullptr)
 		{
 			// Sanity checks
 			RENDERER_ASSERT(direct3D11Renderer.getContext(), 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 11 texture parameters")
@@ -4849,11 +4982,15 @@ namespace Direct3D11Renderer
 			d3d11Texture1DDesc.ArraySize	  = 1;
 			d3d11Texture1DDesc.Format		  = Mapping::getDirect3D11ResourceFormat(textureFormat);
 			d3d11Texture1DDesc.Usage		  = static_cast<D3D11_USAGE>(textureUsage);	// These constants directly map to Direct3D constants, do not change them
-			d3d11Texture1DDesc.BindFlags	  = D3D11_BIND_SHADER_RESOURCE;
+			d3d11Texture1DDesc.BindFlags	  = 0;
 			d3d11Texture1DDesc.CPUAccessFlags = (Renderer::TextureUsage::DYNAMIC == textureUsage) ? D3D11_CPU_ACCESS_WRITE : 0u;
 			d3d11Texture1DDesc.MiscFlags	  = mGenerateMipmaps ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0u;
 
-			// Use this texture as render target?
+			// Set bind flags
+			if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+			{
+				d3d11Texture1DDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
+			}
 			if (flags & Renderer::TextureFlag::RENDER_TARGET)
 			{
 				if (isDepthFormat)
@@ -4864,6 +5001,10 @@ namespace Direct3D11Renderer
 				{
 					d3d11Texture1DDesc.BindFlags |= D3D11_BIND_RENDER_TARGET;
 				}
+			}
+			if (flags & Renderer::TextureFlag::UNORDERED_ACCESS)
+			{
+				d3d11Texture1DDesc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
 			}
 
 			// Create the Direct3D 11 1D texture instance
@@ -4927,18 +5068,33 @@ namespace Direct3D11Renderer
 				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture1D(&d3d11Texture1DDesc, nullptr, &mD3D11Texture1D));
 			}
 
-			// Create the Direct3D 11 shader resource view instance
+			// Create requested views
 			if (nullptr != mD3D11Texture1D)
 			{
-				// Direct3D 11 shader resource view description
-				D3D11_SHADER_RESOURCE_VIEW_DESC d3d11ShaderResourceViewDesc = {};
-				d3d11ShaderResourceViewDesc.Format					  = Mapping::getDirect3D11ShaderResourceViewFormat(textureFormat);
-				d3d11ShaderResourceViewDesc.ViewDimension			  = D3D11_SRV_DIMENSION_TEXTURE1D;
-				d3d11ShaderResourceViewDesc.Texture1D.MipLevels		  = numberOfMipmaps;
-				d3d11ShaderResourceViewDesc.Texture1D.MostDetailedMip = 0;
-
 				// Create the Direct3D 11 shader resource view instance
-				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateShaderResourceView(mD3D11Texture1D, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceViewTexture));
+				if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+				{
+					// Direct3D 11 shader resource view description
+					D3D11_SHADER_RESOURCE_VIEW_DESC d3d11ShaderResourceViewDesc = {};
+					d3d11ShaderResourceViewDesc.Format				= Mapping::getDirect3D11ShaderResourceViewFormat(textureFormat);
+					d3d11ShaderResourceViewDesc.ViewDimension		= D3D11_SRV_DIMENSION_TEXTURE1D;
+					d3d11ShaderResourceViewDesc.Texture1D.MipLevels = numberOfMipmaps;
+
+					// Create the Direct3D 11 shader resource view instance
+					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateShaderResourceView(mD3D11Texture1D, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView));
+				}
+
+				// Create the Direct3D 11 unordered access view instance
+				if (flags & Renderer::TextureFlag::UNORDERED_ACCESS)
+				{
+					// Direct3D 11 unordered access view description
+					D3D11_UNORDERED_ACCESS_VIEW_DESC d3d11UnorderedAccessViewDesc = {};
+					d3d11UnorderedAccessViewDesc.Format		   = Mapping::getDirect3D11ShaderResourceViewFormat(textureFormat);
+					d3d11UnorderedAccessViewDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE1D;
+
+					// Create the Direct3D 11 unordered access view instance
+					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateUnorderedAccessView(mD3D11Texture1D, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
+				}
 			}
 
 			// Assign a default name to the resource for debugging purposes
@@ -4956,9 +5112,13 @@ namespace Direct3D11Renderer
 		*/
 		virtual ~Texture1D() override
 		{
-			if (nullptr != mD3D11ShaderResourceViewTexture)
+			if (nullptr != mD3D11ShaderResourceView)
 			{
-				mD3D11ShaderResourceViewTexture->Release();
+				mD3D11ShaderResourceView->Release();
+			}
+			if (nullptr != mD3D11UnorderedAccessView)
+			{
+				mD3D11UnorderedAccessView->Release();
 			}
 			if (nullptr != mD3D11Texture1D)
 			{
@@ -5015,7 +5175,23 @@ namespace Direct3D11Renderer
 		*/
 		inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
 		{
-			return mD3D11ShaderResourceViewTexture;
+			return mD3D11ShaderResourceView;
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D unordered access view instance
+		*
+		*  @return
+		*    The Direct3D unordered access view instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*
+		*  @note
+		*    - It's not recommended to manipulate the returned Direct3D 11 resource
+		*      view by e.g. assigning another Direct3D 11 resource to it
+		*/
+		inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
+		{
+			return mD3D11UnorderedAccessView;
 		}
 
 
@@ -5026,22 +5202,22 @@ namespace Direct3D11Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 11 shader resource view?
-				if (nullptr != mD3D11ShaderResourceViewTexture)
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
+				if (nullptr != mD3D11Texture1D)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-
-					// Do also set the given debug name to the Direct3D 11 resource referenced by the Direct3D resource view
-					if (nullptr != mD3D11Texture1D)
-					{
-						// Set the debug name
-						// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-						FAILED_DEBUG_BREAK(mD3D11Texture1D->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-						FAILED_DEBUG_BREAK(mD3D11Texture1D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-					}
+					FAILED_DEBUG_BREAK(mD3D11Texture1D->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D11Texture1D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
+				}
+				if (nullptr != mD3D11ShaderResourceView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
+				}
+				if (nullptr != mD3D11UnorderedAccessView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
 			}
 		#endif
@@ -5076,8 +5252,9 @@ namespace Direct3D11Renderer
 	private:
 		Renderer::TextureFormat::Enum  mTextureFormat;
 		bool						   mGenerateMipmaps;
-		ID3D11Texture1D*			   mD3D11Texture1D;					///< Direct3D 11 texture 1D resource, can be a null pointer
-		ID3D11ShaderResourceView*	   mD3D11ShaderResourceViewTexture;	///< Direct3D 11 shader resource view, can be a null pointer
+		ID3D11Texture1D*			   mD3D11Texture1D;				///< Direct3D 11 texture 1D resource, can be a null pointer
+		ID3D11ShaderResourceView*	   mD3D11ShaderResourceView;	///< Direct3D 11 shader resource view, can be a null pointer
+		ID3D11UnorderedAccessView*	   mD3D11UnorderedAccessView;	///< Direct3D 11 unordered access view, can be a null pointer
 
 
 	};
@@ -5127,7 +5304,8 @@ namespace Direct3D11Renderer
 			mNumberOfMultisamples(numberOfMultisamples),
 			mGenerateMipmaps(false),
 			mD3D11Texture2D(nullptr),
-			mD3D11ShaderResourceViewTexture(nullptr)
+			mD3D11ShaderResourceView(nullptr),
+			mD3D11UnorderedAccessView(nullptr)
 		{
 			// Sanity checks
 			RENDERER_ASSERT(direct3D11Renderer.getContext(), numberOfMultisamples == 1 || numberOfMultisamples == 2 || numberOfMultisamples == 4 || numberOfMultisamples == 8, "Invalid Direct3D 11 texture parameters")
@@ -5159,11 +5337,15 @@ namespace Direct3D11Renderer
 			d3d11Texture2DDesc.SampleDesc.Count	  = numberOfMultisamples;
 			d3d11Texture2DDesc.SampleDesc.Quality = 0;
 			d3d11Texture2DDesc.Usage			  = static_cast<D3D11_USAGE>(textureUsage);	// These constants directly map to Direct3D constants, do not change them
-			d3d11Texture2DDesc.BindFlags		  = D3D11_BIND_SHADER_RESOURCE;
+			d3d11Texture2DDesc.BindFlags		  = 0;
 			d3d11Texture2DDesc.CPUAccessFlags	  = (Renderer::TextureUsage::DYNAMIC == textureUsage) ? D3D11_CPU_ACCESS_WRITE : 0u;
 			d3d11Texture2DDesc.MiscFlags		  = mGenerateMipmaps ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0u;
 
-			// Use this texture as render target?
+			// Set bind flags
+			if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+			{
+				d3d11Texture2DDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
+			}
 			if (flags & Renderer::TextureFlag::RENDER_TARGET)
 			{
 				if (isDepthFormat)
@@ -5174,6 +5356,10 @@ namespace Direct3D11Renderer
 				{
 					d3d11Texture2DDesc.BindFlags |= D3D11_BIND_RENDER_TARGET;
 				}
+			}
+			if (flags & Renderer::TextureFlag::UNORDERED_ACCESS)
+			{
+				d3d11Texture2DDesc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
 			}
 
 			// Create the Direct3D 11 2D texture instance
@@ -5238,18 +5424,33 @@ namespace Direct3D11Renderer
 				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, nullptr, &mD3D11Texture2D));
 			}
 
-			// Create the Direct3D 11 shader resource view instance
+			// Create requested views
 			if (nullptr != mD3D11Texture2D)
 			{
-				// Direct3D 11 shader resource view description
-				D3D11_SHADER_RESOURCE_VIEW_DESC d3d11ShaderResourceViewDesc = {};
-				d3d11ShaderResourceViewDesc.Format					  = Mapping::getDirect3D11ShaderResourceViewFormat(textureFormat);
-				d3d11ShaderResourceViewDesc.ViewDimension			  = (numberOfMultisamples > 1) ? D3D11_SRV_DIMENSION_TEXTURE2DMS : D3D11_SRV_DIMENSION_TEXTURE2D;
-				d3d11ShaderResourceViewDesc.Texture2D.MipLevels		  = numberOfMipmaps;
-				d3d11ShaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
-
 				// Create the Direct3D 11 shader resource view instance
-				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateShaderResourceView(mD3D11Texture2D, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceViewTexture));
+				if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+				{
+					// Direct3D 11 shader resource view description
+					D3D11_SHADER_RESOURCE_VIEW_DESC d3d11ShaderResourceViewDesc = {};
+					d3d11ShaderResourceViewDesc.Format				= Mapping::getDirect3D11ShaderResourceViewFormat(textureFormat);
+					d3d11ShaderResourceViewDesc.ViewDimension		= (numberOfMultisamples > 1) ? D3D11_SRV_DIMENSION_TEXTURE2DMS : D3D11_SRV_DIMENSION_TEXTURE2D;
+					d3d11ShaderResourceViewDesc.Texture2D.MipLevels	= numberOfMipmaps;
+
+					// Create the Direct3D 11 shader resource view instance
+					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateShaderResourceView(mD3D11Texture2D, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView));
+				}
+
+				// Create the Direct3D 11 unordered access view instance
+				if (flags & Renderer::TextureFlag::UNORDERED_ACCESS)
+				{
+					// Direct3D 11 unordered access view description
+					D3D11_UNORDERED_ACCESS_VIEW_DESC d3d11UnorderedAccessViewDesc = {};
+					d3d11UnorderedAccessViewDesc.Format		   = Mapping::getDirect3D11ShaderResourceViewFormat(textureFormat);
+					d3d11UnorderedAccessViewDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2D;
+
+					// Create the Direct3D 11 unordered access view instance
+					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateUnorderedAccessView(mD3D11Texture2D, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
+				}
 			}
 
 			// Assign a default name to the resource for debugging purposes
@@ -5267,9 +5468,13 @@ namespace Direct3D11Renderer
 		*/
 		virtual ~Texture2D() override
 		{
-			if (nullptr != mD3D11ShaderResourceViewTexture)
+			if (nullptr != mD3D11ShaderResourceView)
 			{
-				mD3D11ShaderResourceViewTexture->Release();
+				mD3D11ShaderResourceView->Release();
+			}
+			if (nullptr != mD3D11UnorderedAccessView)
+			{
+				mD3D11UnorderedAccessView->Release();
 			}
 			if (nullptr != mD3D11Texture2D)
 			{
@@ -5338,7 +5543,23 @@ namespace Direct3D11Renderer
 		*/
 		inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
 		{
-			return mD3D11ShaderResourceViewTexture;
+			return mD3D11ShaderResourceView;
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D unordered access view instance
+		*
+		*  @return
+		*    The Direct3D unordered access view instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*
+		*  @note
+		*    - It's not recommended to manipulate the returned Direct3D 11 resource
+		*      view by e.g. assigning another Direct3D 11 resource to it
+		*/
+		inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
+		{
+			return mD3D11UnorderedAccessView;
 		}
 
 		/**
@@ -5353,9 +5574,9 @@ namespace Direct3D11Renderer
 		void setMinimumMaximumMipmapIndex(uint32_t minimumMipmapIndex, uint32_t maximumMipmapIndex)
 		{
 			// Re-create the Direct3D 11 shader resource view instance
-			if (nullptr != mD3D11ShaderResourceViewTexture)
+			if (nullptr != mD3D11ShaderResourceView)
 			{
-				mD3D11ShaderResourceViewTexture->Release();
+				mD3D11ShaderResourceView->Release();
 			}
 			if (nullptr != mD3D11Texture2D)
 			{
@@ -5367,7 +5588,7 @@ namespace Direct3D11Renderer
 				d3d11ShaderResourceViewDesc.Texture2D.MostDetailedMip = minimumMipmapIndex;
 
 				// Create the Direct3D 11 shader resource view instance
-				FAILED_DEBUG_BREAK(static_cast<Direct3D11Renderer&>(getRenderer()).getD3D11Device()->CreateShaderResourceView(mD3D11Texture2D, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceViewTexture));
+				FAILED_DEBUG_BREAK(static_cast<Direct3D11Renderer&>(getRenderer()).getD3D11Device()->CreateShaderResourceView(mD3D11Texture2D, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView));
 			}
 		}
 
@@ -5379,22 +5600,22 @@ namespace Direct3D11Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 11 shader resource view?
-				if (nullptr != mD3D11ShaderResourceViewTexture)
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
+				if (nullptr != mD3D11Texture2D)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-
-					// Do also set the given debug name to the Direct3D 11 resource referenced by the Direct3D resource view
-					if (nullptr != mD3D11Texture2D)
-					{
-						// Set the debug name
-						// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-						FAILED_DEBUG_BREAK(mD3D11Texture2D->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-						FAILED_DEBUG_BREAK(mD3D11Texture2D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-					}
+					FAILED_DEBUG_BREAK(mD3D11Texture2D->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D11Texture2D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
+				}
+				if (nullptr != mD3D11ShaderResourceView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
+				}
+				if (nullptr != mD3D11UnorderedAccessView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
 			}
 		#endif
@@ -5430,8 +5651,9 @@ namespace Direct3D11Renderer
 		Renderer::TextureFormat::Enum  mTextureFormat;
 		uint8_t						   mNumberOfMultisamples;
 		bool						   mGenerateMipmaps;
-		ID3D11Texture2D*			   mD3D11Texture2D;					///< Direct3D 11 texture 2D resource, can be a null pointer
-		ID3D11ShaderResourceView*	   mD3D11ShaderResourceViewTexture;	///< Direct3D 11 shader resource view, can be a null pointer
+		ID3D11Texture2D*			   mD3D11Texture2D;				///< Direct3D 11 texture 2D resource, can be a null pointer
+		ID3D11ShaderResourceView*	   mD3D11ShaderResourceView;	///< Direct3D 11 shader resource view, can be a null pointer
+		ID3D11UnorderedAccessView*	   mD3D11UnorderedAccessView;	///< Direct3D 11 unordered access view, can be a null pointer
 
 
 	};
@@ -5481,7 +5703,8 @@ namespace Direct3D11Renderer
 			mNumberOfMultisamples(1),	// TODO(co) Currently no MSAA support for 2D array textures
 			mGenerateMipmaps(false),
 			mD3D11Texture2D(nullptr),
-			mD3D11ShaderResourceViewTexture(nullptr)
+			mD3D11ShaderResourceView(nullptr),
+			mD3D11UnorderedAccessView(nullptr)
 		{
 			// Sanity checks
 			RENDERER_ASSERT(direct3D11Renderer.getContext(), (flags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 11 render target textures can't be filled using provided data")
@@ -5507,11 +5730,15 @@ namespace Direct3D11Renderer
 			d3d11Texture2DDesc.SampleDesc.Count	  = 1;
 			d3d11Texture2DDesc.SampleDesc.Quality = 0;
 			d3d11Texture2DDesc.Usage			  = static_cast<D3D11_USAGE>(textureUsage);	// These constants directly map to Direct3D constants, do not change them
-			d3d11Texture2DDesc.BindFlags		  = D3D11_BIND_SHADER_RESOURCE;
+			d3d11Texture2DDesc.BindFlags		  = 0;
 			d3d11Texture2DDesc.CPUAccessFlags	  = (Renderer::TextureUsage::DYNAMIC == textureUsage) ? D3D11_CPU_ACCESS_WRITE : 0u;
 			d3d11Texture2DDesc.MiscFlags		  = mGenerateMipmaps ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0u;
 
-			// Use this texture as render target?
+			// Set bind flags
+			if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+			{
+				d3d11Texture2DDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
+			}
 			if (flags & Renderer::TextureFlag::RENDER_TARGET)
 			{
 				if (isDepthFormat)
@@ -5522,6 +5749,10 @@ namespace Direct3D11Renderer
 				{
 					d3d11Texture2DDesc.BindFlags |= D3D11_BIND_RENDER_TARGET;
 				}
+			}
+			if (flags & Renderer::TextureFlag::UNORDERED_ACCESS)
+			{
+				d3d11Texture2DDesc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
 			}
 
 			// Create the Direct3D 11 2D texture instance
@@ -5627,20 +5858,35 @@ namespace Direct3D11Renderer
 				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, nullptr, &mD3D11Texture2D));
 			}
 
-			// Create the Direct3D 11 shader resource view instance
+			// Create requested views
 			if (nullptr != mD3D11Texture2D)
 			{
-				// Direct3D 11 shader resource view description
-				D3D11_SHADER_RESOURCE_VIEW_DESC d3d11ShaderResourceViewDesc = {};
-				d3d11ShaderResourceViewDesc.Format							= Mapping::getDirect3D11ShaderResourceViewFormat(textureFormat);
-				d3d11ShaderResourceViewDesc.ViewDimension					= D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
-				d3d11ShaderResourceViewDesc.Texture2DArray.MostDetailedMip	= 0;
-				d3d11ShaderResourceViewDesc.Texture2DArray.MipLevels		= numberOfMipmaps;
-				d3d11ShaderResourceViewDesc.Texture2DArray.FirstArraySlice	= 0;
-				d3d11ShaderResourceViewDesc.Texture2DArray.ArraySize		= numberOfSlices;
-
 				// Create the Direct3D 11 shader resource view instance
-				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateShaderResourceView(mD3D11Texture2D, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceViewTexture));
+				if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+				{
+					// Direct3D 11 shader resource view description
+					D3D11_SHADER_RESOURCE_VIEW_DESC d3d11ShaderResourceViewDesc = {};
+					d3d11ShaderResourceViewDesc.Format					 = Mapping::getDirect3D11ShaderResourceViewFormat(textureFormat);
+					d3d11ShaderResourceViewDesc.ViewDimension			 = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+					d3d11ShaderResourceViewDesc.Texture2DArray.MipLevels = numberOfMipmaps;
+					d3d11ShaderResourceViewDesc.Texture2DArray.ArraySize = numberOfSlices;
+
+					// Create the Direct3D 11 shader resource view instance
+					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateShaderResourceView(mD3D11Texture2D, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView));
+				}
+
+				// Create the Direct3D 11 unordered access view instance
+				if (flags & Renderer::TextureFlag::UNORDERED_ACCESS)
+				{
+					// Direct3D 11 unordered access view description
+					D3D11_UNORDERED_ACCESS_VIEW_DESC d3d11UnorderedAccessViewDesc = {};
+					d3d11UnorderedAccessViewDesc.Format					  = Mapping::getDirect3D11ShaderResourceViewFormat(textureFormat);
+					d3d11UnorderedAccessViewDesc.ViewDimension			  = D3D11_UAV_DIMENSION_TEXTURE2DARRAY;
+					d3d11UnorderedAccessViewDesc.Texture2DArray.ArraySize = numberOfSlices;
+
+					// Create the Direct3D 11 unordered access view instance
+					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateUnorderedAccessView(mD3D11Texture2D, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
+				}
 			}
 
 			// Assign a default name to the resource for debugging purposes
@@ -5658,9 +5904,13 @@ namespace Direct3D11Renderer
 		*/
 		virtual ~Texture2DArray() override
 		{
-			if (nullptr != mD3D11ShaderResourceViewTexture)
+			if (nullptr != mD3D11ShaderResourceView)
 			{
-				mD3D11ShaderResourceViewTexture->Release();
+				mD3D11ShaderResourceView->Release();
+			}
+			if (nullptr != mD3D11UnorderedAccessView)
+			{
+				mD3D11UnorderedAccessView->Release();
 			}
 			if (nullptr != mD3D11Texture2D)
 			{
@@ -5729,7 +5979,23 @@ namespace Direct3D11Renderer
 		*/
 		inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
 		{
-			return mD3D11ShaderResourceViewTexture;
+			return mD3D11ShaderResourceView;
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D unordered access view instance
+		*
+		*  @return
+		*    The Direct3D unordered access view instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*
+		*  @note
+		*    - It's not recommended to manipulate the returned Direct3D 11 resource
+		*      view by e.g. assigning another Direct3D 11 resource to it
+		*/
+		inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
+		{
+			return mD3D11UnorderedAccessView;
 		}
 
 
@@ -5740,30 +6006,22 @@ namespace Direct3D11Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 11 shader resource view?
-				if (nullptr != mD3D11ShaderResourceViewTexture)
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
+				if (nullptr != mD3D11Texture2D)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-
-					// Do also set the given debug name to the Direct3D 11 resource referenced by the Direct3D resource view
-					// -> In our use case, this resource is tightly coupled with the view
-					// -> In principle the user can assign another resource to the view, but our interface documentation
-					//    asks the user to not do so, so we ignore this situation when assigning the name
-					ID3D11Resource* d3d11Resource = nullptr;
-					mD3D11ShaderResourceViewTexture->GetResource(&d3d11Resource);
-					if (nullptr != d3d11Resource)
-					{
-						// Set the debug name
-						// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-						FAILED_DEBUG_BREAK(d3d11Resource->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-						FAILED_DEBUG_BREAK(d3d11Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-
-						// Release the Direct3D 11 resource instance
-						d3d11Resource->Release();
-					}
+					FAILED_DEBUG_BREAK(mD3D11Texture2D->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D11Texture2D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
+				}
+				if (nullptr != mD3D11ShaderResourceView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
+				}
+				if (nullptr != mD3D11UnorderedAccessView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
 			}
 		#endif
@@ -5794,8 +6052,9 @@ namespace Direct3D11Renderer
 		Renderer::TextureFormat::Enum  mTextureFormat;
 		uint8_t						   mNumberOfMultisamples;
 		bool						   mGenerateMipmaps;
-		ID3D11Texture2D*			   mD3D11Texture2D;					///< Direct3D 11 texture 2D resource, can be a null pointer
-		ID3D11ShaderResourceView*	   mD3D11ShaderResourceViewTexture;	///< Direct3D 11 shader resource view, can be a null pointer
+		ID3D11Texture2D*			   mD3D11Texture2D;				///< Direct3D 11 texture 2D resource, can be a null pointer
+		ID3D11ShaderResourceView*	   mD3D11ShaderResourceView;	///< Direct3D 11 shader resource view, can be a null pointer
+		ID3D11UnorderedAccessView*	   mD3D11UnorderedAccessView;	///< Direct3D 11 unordered access view, can be a null pointer
 
 
 	};
@@ -5844,7 +6103,8 @@ namespace Direct3D11Renderer
 			mTextureFormat(textureFormat),
 			mGenerateMipmaps(false),
 			mD3D11Texture3D(nullptr),
-			mD3D11ShaderResourceViewTexture(nullptr)
+			mD3D11ShaderResourceView(nullptr),
+			mD3D11UnorderedAccessView(nullptr)
 		{
 			// Sanity checks
 			RENDERER_ASSERT(direct3D11Renderer.getContext(), 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 11 texture parameters")
@@ -5869,11 +6129,15 @@ namespace Direct3D11Renderer
 			d3d11Texture3DDesc.MipLevels	  = (generateMipmaps ? 0u : numberOfMipmaps);	// 0 = Let Direct3D 11 allocate the complete mipmap chain for us
 			d3d11Texture3DDesc.Format		  = Mapping::getDirect3D11ResourceFormat(textureFormat);
 			d3d11Texture3DDesc.Usage		  = static_cast<D3D11_USAGE>(textureUsage);	// These constants directly map to Direct3D constants, do not change them
-			d3d11Texture3DDesc.BindFlags	  = D3D11_BIND_SHADER_RESOURCE;
+			d3d11Texture3DDesc.BindFlags	  = 0;
 			d3d11Texture3DDesc.CPUAccessFlags = (Renderer::TextureUsage::DYNAMIC == textureUsage) ? D3D11_CPU_ACCESS_WRITE : 0u;
 			d3d11Texture3DDesc.MiscFlags	  = mGenerateMipmaps ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0u;
 
-			// Use this texture as render target?
+			// Set bind flags
+			if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+			{
+				d3d11Texture3DDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
+			}
 			if (flags & Renderer::TextureFlag::RENDER_TARGET)
 			{
 				if (isDepthFormat)
@@ -5884,6 +6148,10 @@ namespace Direct3D11Renderer
 				{
 					d3d11Texture3DDesc.BindFlags |= D3D11_BIND_RENDER_TARGET;
 				}
+			}
+			if (flags & Renderer::TextureFlag::UNORDERED_ACCESS)
+			{
+				d3d11Texture3DDesc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
 			}
 
 			// Create the Direct3D 11 3D texture instance
@@ -5954,18 +6222,34 @@ namespace Direct3D11Renderer
 				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture3D(&d3d11Texture3DDesc, nullptr, &mD3D11Texture3D));
 			}
 
-			// Create the Direct3D 11 shader resource view instance
+			// Create requested views
 			if (nullptr != mD3D11Texture3D)
 			{
-				// Direct3D 11 shader resource view description
-				D3D11_SHADER_RESOURCE_VIEW_DESC d3d11ShaderResourceViewDesc = {};
-				d3d11ShaderResourceViewDesc.Format					  = Mapping::getDirect3D11ShaderResourceViewFormat(textureFormat);
-				d3d11ShaderResourceViewDesc.ViewDimension			  = D3D11_SRV_DIMENSION_TEXTURE3D;
-				d3d11ShaderResourceViewDesc.Texture3D.MipLevels		  = numberOfMipmaps;
-				d3d11ShaderResourceViewDesc.Texture3D.MostDetailedMip = 0;
-
 				// Create the Direct3D 11 shader resource view instance
-				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateShaderResourceView(mD3D11Texture3D, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceViewTexture));
+				if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+				{
+					// Direct3D 11 shader resource view description
+					D3D11_SHADER_RESOURCE_VIEW_DESC d3d11ShaderResourceViewDesc = {};
+					d3d11ShaderResourceViewDesc.Format				= Mapping::getDirect3D11ShaderResourceViewFormat(textureFormat);
+					d3d11ShaderResourceViewDesc.ViewDimension		= D3D11_SRV_DIMENSION_TEXTURE3D;
+					d3d11ShaderResourceViewDesc.Texture3D.MipLevels	= numberOfMipmaps;
+
+					// Create the Direct3D 11 shader resource view instance
+					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateShaderResourceView(mD3D11Texture3D, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView));
+				}
+
+				// Create the Direct3D 11 unordered access view instance
+				if (flags & Renderer::TextureFlag::UNORDERED_ACCESS)
+				{
+					// Direct3D 11 unordered access view description
+					D3D11_UNORDERED_ACCESS_VIEW_DESC d3d11UnorderedAccessViewDesc = {};
+					d3d11UnorderedAccessViewDesc.Format			 = Mapping::getDirect3D11ShaderResourceViewFormat(textureFormat);
+					d3d11UnorderedAccessViewDesc.ViewDimension	 = D3D11_UAV_DIMENSION_TEXTURE3D;
+					d3d11UnorderedAccessViewDesc.Texture3D.WSize = depth;
+
+					// Create the Direct3D 11 unordered access view instance
+					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateUnorderedAccessView(mD3D11Texture3D, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
+				}
 			}
 
 			// Assign a default name to the resource for debugging purposes
@@ -5983,9 +6267,13 @@ namespace Direct3D11Renderer
 		*/
 		virtual ~Texture3D() override
 		{
-			if (nullptr != mD3D11ShaderResourceViewTexture)
+			if (nullptr != mD3D11ShaderResourceView)
 			{
-				mD3D11ShaderResourceViewTexture->Release();
+				mD3D11ShaderResourceView->Release();
+			}
+			if (nullptr != mD3D11UnorderedAccessView)
+			{
+				mD3D11UnorderedAccessView->Release();
 			}
 			if (nullptr != mD3D11Texture3D)
 			{
@@ -6042,7 +6330,23 @@ namespace Direct3D11Renderer
 		*/
 		inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
 		{
-			return mD3D11ShaderResourceViewTexture;
+			return mD3D11ShaderResourceView;
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D unordered access view instance
+		*
+		*  @return
+		*    The Direct3D unordered access view instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*
+		*  @note
+		*    - It's not recommended to manipulate the returned Direct3D 11 resource
+		*      view by e.g. assigning another Direct3D 11 resource to it
+		*/
+		inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
+		{
+			return mD3D11UnorderedAccessView;
 		}
 
 
@@ -6053,22 +6357,22 @@ namespace Direct3D11Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 11 shader resource view?
-				if (nullptr != mD3D11ShaderResourceViewTexture)
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
+				if (nullptr != mD3D11Texture3D)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-
-					// Do also set the given debug name to the Direct3D 11 resource referenced by the Direct3D resource view
-					if (nullptr != mD3D11Texture3D)
-					{
-						// Set the debug name
-						// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-						FAILED_DEBUG_BREAK(mD3D11Texture3D->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-						FAILED_DEBUG_BREAK(mD3D11Texture3D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-					}
+					FAILED_DEBUG_BREAK(mD3D11Texture3D->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D11Texture3D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
+				}
+				if (nullptr != mD3D11ShaderResourceView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
+				}
+				if (nullptr != mD3D11UnorderedAccessView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
 			}
 		#endif
@@ -6103,8 +6407,9 @@ namespace Direct3D11Renderer
 	private:
 		Renderer::TextureFormat::Enum mTextureFormat;
 		bool						  mGenerateMipmaps;
-		ID3D11Texture3D*			  mD3D11Texture3D;					///< Direct3D 11 texture 3D resource, can be a null pointer
-		ID3D11ShaderResourceView*	  mD3D11ShaderResourceViewTexture;	///< Direct3D 11 shader resource view, can be a null pointer
+		ID3D11Texture3D*			  mD3D11Texture3D;				///< Direct3D 11 texture 3D resource, can be a null pointer
+		ID3D11ShaderResourceView*	  mD3D11ShaderResourceView;		///< Direct3D 11 shader resource view, can be a null pointer
+		ID3D11UnorderedAccessView*	  mD3D11UnorderedAccessView;	///< Direct3D 11 unordered access view, can be a null pointer
 
 
 	};
@@ -6151,7 +6456,8 @@ namespace Direct3D11Renderer
 			mTextureFormat(textureFormat),
 			mGenerateMipmaps(false),
 			mD3D11TextureCube(nullptr),
-			mD3D11ShaderResourceViewTexture(nullptr)
+			mD3D11ShaderResourceView(nullptr),
+			mD3D11UnorderedAccessView(nullptr)
 		{
 			static constexpr uint32_t NUMBER_OF_SLICES = 6;	// In Direct3D 11, a cube map is a 2D array texture with six slices
 
@@ -6178,14 +6484,22 @@ namespace Direct3D11Renderer
 			d3d11Texture2DDesc.SampleDesc.Count	  = 1;
 			d3d11Texture2DDesc.SampleDesc.Quality = 0;
 			d3d11Texture2DDesc.Usage			  = static_cast<D3D11_USAGE>(textureUsage);	// These constants directly map to Direct3D constants, do not change them
-			d3d11Texture2DDesc.BindFlags		  = D3D11_BIND_SHADER_RESOURCE;
+			d3d11Texture2DDesc.BindFlags		  = 0;
 			d3d11Texture2DDesc.CPUAccessFlags	  = (Renderer::TextureUsage::DYNAMIC == textureUsage) ? D3D11_CPU_ACCESS_WRITE : 0u;
 			d3d11Texture2DDesc.MiscFlags		  = (mGenerateMipmaps ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0u) | D3D11_RESOURCE_MISC_TEXTURECUBE;
 
-			// Use this texture as render target?
+			// Set bind flags
+			if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+			{
+				d3d11Texture2DDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
+			}
 			if (flags & Renderer::TextureFlag::RENDER_TARGET)
 			{
 				d3d11Texture2DDesc.BindFlags |= D3D11_BIND_RENDER_TARGET;
+			}
+			if (flags & Renderer::TextureFlag::UNORDERED_ACCESS)
+			{
+				d3d11Texture2DDesc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
 			}
 
 			// Create the Direct3D 11 2D texture instance
@@ -6284,18 +6598,35 @@ namespace Direct3D11Renderer
 				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, nullptr, &mD3D11TextureCube));
 			}
 
-			// Create the Direct3D 11 shader resource view instance
+			// Create requested views
 			if (nullptr != mD3D11TextureCube)
 			{
-				// Direct3D 11 shader resource view description
-				D3D11_SHADER_RESOURCE_VIEW_DESC d3d11ShaderResourceViewDesc = {};
-				d3d11ShaderResourceViewDesc.Format						= Mapping::getDirect3D11ShaderResourceViewFormat(textureFormat);
-				d3d11ShaderResourceViewDesc.ViewDimension				= D3D11_SRV_DIMENSION_TEXTURECUBE;
-				d3d11ShaderResourceViewDesc.TextureCube.MipLevels		= numberOfMipmaps;
-				d3d11ShaderResourceViewDesc.TextureCube.MostDetailedMip	= 0;
-
 				// Create the Direct3D 11 shader resource view instance
-				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateShaderResourceView(mD3D11TextureCube, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceViewTexture));
+				if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+				{
+					// Direct3D 11 shader resource view description
+					D3D11_SHADER_RESOURCE_VIEW_DESC d3d11ShaderResourceViewDesc = {};
+					d3d11ShaderResourceViewDesc.Format						= Mapping::getDirect3D11ShaderResourceViewFormat(textureFormat);
+					d3d11ShaderResourceViewDesc.ViewDimension				= D3D11_SRV_DIMENSION_TEXTURECUBE;
+					d3d11ShaderResourceViewDesc.TextureCube.MipLevels		= numberOfMipmaps;
+					d3d11ShaderResourceViewDesc.TextureCube.MostDetailedMip	= 0;
+
+					// Create the Direct3D 11 shader resource view instance
+					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateShaderResourceView(mD3D11TextureCube, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView));
+				}
+
+				// Create the Direct3D 11 unordered access view instance
+				if (flags & Renderer::TextureFlag::UNORDERED_ACCESS)
+				{
+					// Direct3D 11 unordered access view description
+					D3D11_UNORDERED_ACCESS_VIEW_DESC d3d11UnorderedAccessViewDesc = {};
+					d3d11UnorderedAccessViewDesc.Format					  = Mapping::getDirect3D11ShaderResourceViewFormat(textureFormat);
+					d3d11UnorderedAccessViewDesc.ViewDimension			  = D3D11_UAV_DIMENSION_TEXTURE2DARRAY;
+					d3d11UnorderedAccessViewDesc.Texture2DArray.ArraySize = NUMBER_OF_SLICES;
+
+					// Create the Direct3D 11 unordered access view instance
+					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateUnorderedAccessView(mD3D11TextureCube, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
+				}
 			}
 
 			// Assign a default name to the resource for debugging purposes
@@ -6313,9 +6644,13 @@ namespace Direct3D11Renderer
 		*/
 		virtual ~TextureCube() override
 		{
-			if (nullptr != mD3D11ShaderResourceViewTexture)
+			if (nullptr != mD3D11ShaderResourceView)
 			{
-				mD3D11ShaderResourceViewTexture->Release();
+				mD3D11ShaderResourceView->Release();
+			}
+			if (nullptr != mD3D11UnorderedAccessView)
+			{
+				mD3D11UnorderedAccessView->Release();
 			}
 			if (nullptr != mD3D11TextureCube)
 			{
@@ -6372,7 +6707,23 @@ namespace Direct3D11Renderer
 		*/
 		inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
 		{
-			return mD3D11ShaderResourceViewTexture;
+			return mD3D11ShaderResourceView;
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D unordered access view instance
+		*
+		*  @return
+		*    The Direct3D unordered access view instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*
+		*  @note
+		*    - It's not recommended to manipulate the returned Direct3D 11 resource
+		*      view by e.g. assigning another Direct3D 11 resource to it
+		*/
+		inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
+		{
+			return mD3D11UnorderedAccessView;
 		}
 
 
@@ -6383,22 +6734,22 @@ namespace Direct3D11Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 11 shader resource view?
-				if (nullptr != mD3D11ShaderResourceViewTexture)
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
+				if (nullptr != mD3D11TextureCube)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-
-					// Do also set the given debug name to the Direct3D 11 resource referenced by the Direct3D resource view
-					if (nullptr != mD3D11TextureCube)
-					{
-						// Set the debug name
-						// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-						FAILED_DEBUG_BREAK(mD3D11TextureCube->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-						FAILED_DEBUG_BREAK(mD3D11TextureCube->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-					}
+					FAILED_DEBUG_BREAK(mD3D11TextureCube->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D11TextureCube->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
+				}
+				if (nullptr != mD3D11ShaderResourceView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
+				}
+				if (nullptr != mD3D11UnorderedAccessView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
 			}
 		#endif
@@ -6433,8 +6784,9 @@ namespace Direct3D11Renderer
 	private:
 		Renderer::TextureFormat::Enum mTextureFormat;
 		bool						  mGenerateMipmaps;
-		ID3D11Texture2D*			  mD3D11TextureCube;				///< Direct3D 11 texture cube resource, can be a null pointer
-		ID3D11ShaderResourceView*	  mD3D11ShaderResourceViewTexture;	///< Direct3D 11 shader resource view, can be a null pointer
+		ID3D11Texture2D*			  mD3D11TextureCube;			///< Direct3D 11 texture cube resource, can be a null pointer
+		ID3D11ShaderResourceView*	  mD3D11ShaderResourceView;		///< Direct3D 11 shader resource view, can be a null pointer
+		ID3D11UnorderedAccessView*	  mD3D11UnorderedAccessView;	///< Direct3D 11 unordered access view, can be a null pointer
 
 
 	};
@@ -6644,11 +6996,10 @@ namespace Direct3D11Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 11 sampler state?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D11SamplerState)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D11SamplerState->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D11SamplerState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
@@ -6807,11 +7158,10 @@ namespace Direct3D11Renderer
 			*/
 			void setDebugName(const char* name)
 			{
-				// Valid Direct3D 11 rasterizer state?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D11RasterizerState)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D11RasterizerState->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D11RasterizerState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
@@ -6906,11 +7256,10 @@ namespace Direct3D11Renderer
 			*/
 			void setDebugName(const char* name)
 			{
-				// Valid Direct3D 11 depth stencil state?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D11DepthStencilState)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D11DepthStencilState->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D11DepthStencilState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
@@ -7005,11 +7354,10 @@ namespace Direct3D11Renderer
 			*/
 			void setDebugName(const char* name)
 			{
-				// Valid Direct3D 11 blend state?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D11BlendState)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D11BlendState->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D11BlendState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
@@ -7453,29 +7801,20 @@ namespace Direct3D11Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Assign a debug name to the DXGI swap chain
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mDxgiSwapChain)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mDxgiSwapChain->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mDxgiSwapChain->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
-
-				// Assign a debug name to the Direct3D 11 render target view
 				if (nullptr != mD3D11RenderTargetView)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D11RenderTargetView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D11RenderTargetView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
-
-				// Assign a debug name to the Direct3D 11 depth stencil view
 				if (nullptr != mD3D11DepthStencilView)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D11DepthStencilView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D11DepthStencilView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
@@ -8421,11 +8760,10 @@ namespace Direct3D11Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 11 vertex shader?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D11VertexShader)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D11VertexShader->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D11VertexShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
@@ -8574,11 +8912,10 @@ namespace Direct3D11Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 11 hull shader?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D11HullShader)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D11HullShader->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D11HullShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
@@ -8726,11 +9063,10 @@ namespace Direct3D11Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 11 domain shader?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D11DomainShader)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D11DomainShader->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D11DomainShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
@@ -8878,11 +9214,10 @@ namespace Direct3D11Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 11 geometry shader?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D11GeometryShader)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D11GeometryShader->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D11GeometryShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
@@ -9030,11 +9365,10 @@ namespace Direct3D11Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 11 pixel shader?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D11PixelShader)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D11PixelShader->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D11PixelShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
@@ -9182,11 +9516,10 @@ namespace Direct3D11Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 11 compute shader?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D11ComputeShader)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D11ComputeShader->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D11ComputeShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
@@ -9832,11 +10165,10 @@ namespace Direct3D11Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 11 input layout?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D11InputLayout)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D11InputLayout->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D11InputLayout->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
@@ -11025,6 +11357,10 @@ namespace Direct3D11Renderer
 						const Framebuffer* framebuffer = static_cast<Framebuffer*>(mRenderTarget);
 
 						// Set the Direct3D 11 render targets
+						{ // TODO(co) Compute shader: "D3D11 WARNING: ID3D11DeviceContext::OMSetRenderTargets[AndUnorderedAccessViews]: Forcing CS shader resource slot 0 to NULL. [ STATE_SETTING WARNING #2097316: DEVICE_CSSETSHADERRESOURCES_HAZARD]"
+							ID3D11ShaderResourceView* d3d11ShaderResourceView = nullptr;
+							mD3D11DeviceContext->CSSetShaderResources(0, 1, &d3d11ShaderResourceView);
+						}
 						mD3D11DeviceContext->OMSetRenderTargets(framebuffer->getNumberOfColorTextures(), framebuffer->getD3D11RenderTargetViews(), framebuffer->getD3D11DepthStencilView());
 						break;
 					}
@@ -11601,86 +11937,190 @@ namespace Direct3D11Renderer
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
 					{
-						ID3D11ShaderResourceView* d3d11ShaderResourceView = nullptr;
-						switch (resourceType)
+						switch (descriptorRange.rangeType)
 						{
-							case Renderer::ResourceType::TEXTURE_BUFFER:
-								d3d11ShaderResourceView = static_cast<const TextureBuffer*>(resource)->getD3D11ShaderResourceView();
-								break;
+							case Renderer::DescriptorRangeType::SRV:
+							{
+								ID3D11ShaderResourceView* d3d11ShaderResourceView = nullptr;
+								switch (resourceType)
+								{
+									case Renderer::ResourceType::TEXTURE_BUFFER:
+										d3d11ShaderResourceView = static_cast<const TextureBuffer*>(resource)->getD3D11ShaderResourceView();
+										break;
 
-							case Renderer::ResourceType::TEXTURE_1D:
-								d3d11ShaderResourceView = static_cast<const Texture1D*>(resource)->getD3D11ShaderResourceView();
-								break;
+									case Renderer::ResourceType::TEXTURE_1D:
+										d3d11ShaderResourceView = static_cast<const Texture1D*>(resource)->getD3D11ShaderResourceView();
+										break;
 
-							case Renderer::ResourceType::TEXTURE_2D:
-								d3d11ShaderResourceView = static_cast<const Texture2D*>(resource)->getD3D11ShaderResourceView();
-								break;
+									case Renderer::ResourceType::TEXTURE_2D:
+										d3d11ShaderResourceView = static_cast<const Texture2D*>(resource)->getD3D11ShaderResourceView();
+										break;
 
-							case Renderer::ResourceType::TEXTURE_2D_ARRAY:
-								d3d11ShaderResourceView = static_cast<const Texture2DArray*>(resource)->getD3D11ShaderResourceView();
-								break;
+									case Renderer::ResourceType::TEXTURE_2D_ARRAY:
+										d3d11ShaderResourceView = static_cast<const Texture2DArray*>(resource)->getD3D11ShaderResourceView();
+										break;
 
-							case Renderer::ResourceType::TEXTURE_3D:
-								d3d11ShaderResourceView = static_cast<const Texture3D*>(resource)->getD3D11ShaderResourceView();
-								break;
+									case Renderer::ResourceType::TEXTURE_3D:
+										d3d11ShaderResourceView = static_cast<const Texture3D*>(resource)->getD3D11ShaderResourceView();
+										break;
 
-							case Renderer::ResourceType::TEXTURE_CUBE:
-								d3d11ShaderResourceView = static_cast<const TextureCube*>(resource)->getD3D11ShaderResourceView();
-								break;
+									case Renderer::ResourceType::TEXTURE_CUBE:
+										d3d11ShaderResourceView = static_cast<const TextureCube*>(resource)->getD3D11ShaderResourceView();
+										break;
 
-							case Renderer::ResourceType::ROOT_SIGNATURE:
-							case Renderer::ResourceType::RESOURCE_GROUP:
-							case Renderer::ResourceType::PROGRAM:
-							case Renderer::ResourceType::VERTEX_ARRAY:
-							case Renderer::ResourceType::RENDER_PASS:
-							case Renderer::ResourceType::SWAP_CHAIN:
-							case Renderer::ResourceType::FRAMEBUFFER:
-							case Renderer::ResourceType::INDEX_BUFFER:
-							case Renderer::ResourceType::VERTEX_BUFFER:
-							case Renderer::ResourceType::UNIFORM_BUFFER:
-							case Renderer::ResourceType::INDIRECT_BUFFER:
-							case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
-							case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
-							case Renderer::ResourceType::SAMPLER_STATE:
-							case Renderer::ResourceType::VERTEX_SHADER:
-							case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
-							case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
-							case Renderer::ResourceType::GEOMETRY_SHADER:
-							case Renderer::ResourceType::FRAGMENT_SHADER:
-							case Renderer::ResourceType::COMPUTE_SHADER:
-								RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 11 renderer backend resource type")
-								break;
-						}
-						const UINT startSlot = descriptorRange.baseShaderRegister;
-						switch (descriptorRange.shaderVisibility)
-						{
-							case Renderer::ShaderVisibility::VERTEX:
-								RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 11 vertex shader visibility")
-								break;
+									case Renderer::ResourceType::ROOT_SIGNATURE:
+									case Renderer::ResourceType::RESOURCE_GROUP:
+									case Renderer::ResourceType::PROGRAM:
+									case Renderer::ResourceType::VERTEX_ARRAY:
+									case Renderer::ResourceType::RENDER_PASS:
+									case Renderer::ResourceType::SWAP_CHAIN:
+									case Renderer::ResourceType::FRAMEBUFFER:
+									case Renderer::ResourceType::INDEX_BUFFER:
+									case Renderer::ResourceType::VERTEX_BUFFER:
+									case Renderer::ResourceType::UNIFORM_BUFFER:
+									case Renderer::ResourceType::INDIRECT_BUFFER:
+									case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+									case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
+									case Renderer::ResourceType::SAMPLER_STATE:
+									case Renderer::ResourceType::VERTEX_SHADER:
+									case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
+									case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
+									case Renderer::ResourceType::GEOMETRY_SHADER:
+									case Renderer::ResourceType::FRAGMENT_SHADER:
+									case Renderer::ResourceType::COMPUTE_SHADER:
+										RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 11 renderer backend resource type")
+										break;
+								}
+								const UINT startSlot = descriptorRange.baseShaderRegister;
+								switch (descriptorRange.shaderVisibility)
+								{
+									case Renderer::ShaderVisibility::VERTEX:
+										RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 11 vertex shader visibility")
+										break;
 
-							case Renderer::ShaderVisibility::TESSELLATION_CONTROL:
-								RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 11 tessellation control shader visibility")
-								break;
+									case Renderer::ShaderVisibility::TESSELLATION_CONTROL:
+										RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 11 tessellation control shader visibility")
+										break;
 
-							case Renderer::ShaderVisibility::TESSELLATION_EVALUATION:
-								RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 11 tessellation evaluation shader visibility")
-								break;
+									case Renderer::ShaderVisibility::TESSELLATION_EVALUATION:
+										RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 11 tessellation evaluation shader visibility")
+										break;
 
-							case Renderer::ShaderVisibility::GEOMETRY:
-								RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 11 geometry shader visibility")
-								break;
+									case Renderer::ShaderVisibility::GEOMETRY:
+										RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 11 geometry shader visibility")
+										break;
 
-							case Renderer::ShaderVisibility::FRAGMENT:
-								RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 11 fragment shader visibility")
-								break;
+									case Renderer::ShaderVisibility::FRAGMENT:
+										RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 11 fragment shader visibility")
+										break;
 
-							case Renderer::ShaderVisibility::ALL:
-							case Renderer::ShaderVisibility::COMPUTE:
-								mD3D11DeviceContext->CSSetShaderResources(startSlot, 1, &d3d11ShaderResourceView);
-								break;
+									case Renderer::ShaderVisibility::ALL:
+									case Renderer::ShaderVisibility::COMPUTE:
+										mD3D11DeviceContext->CSSetShaderResources(startSlot, 1, &d3d11ShaderResourceView);
+										break;
 
-							case Renderer::ShaderVisibility::ALL_GRAPHICS:
-								RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 11 all graphics shader visibility")
+									case Renderer::ShaderVisibility::ALL_GRAPHICS:
+										RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 11 all graphics shader visibility")
+										break;
+								}
+								break;
+							}
+
+							case Renderer::DescriptorRangeType::UAV:
+							{
+								ID3D11UnorderedAccessView* d3d11UnorderedAccessView = nullptr;
+								switch (resourceType)
+								{
+									case Renderer::ResourceType::TEXTURE_BUFFER:
+										d3d11UnorderedAccessView = static_cast<const TextureBuffer*>(resource)->getD3D11UnorderedAccessView();
+										break;
+
+									case Renderer::ResourceType::TEXTURE_1D:
+										d3d11UnorderedAccessView = static_cast<const Texture1D*>(resource)->getD3D11UnorderedAccessView();
+										break;
+
+									case Renderer::ResourceType::TEXTURE_2D:
+										d3d11UnorderedAccessView = static_cast<const Texture2D*>(resource)->getD3D11UnorderedAccessView();
+										break;
+
+									case Renderer::ResourceType::TEXTURE_2D_ARRAY:
+										d3d11UnorderedAccessView = static_cast<const Texture2DArray*>(resource)->getD3D11UnorderedAccessView();
+										break;
+
+									case Renderer::ResourceType::TEXTURE_3D:
+										d3d11UnorderedAccessView = static_cast<const Texture3D*>(resource)->getD3D11UnorderedAccessView();
+										break;
+
+									case Renderer::ResourceType::TEXTURE_CUBE:
+										d3d11UnorderedAccessView = static_cast<const TextureCube*>(resource)->getD3D11UnorderedAccessView();
+										break;
+
+									case Renderer::ResourceType::ROOT_SIGNATURE:
+									case Renderer::ResourceType::RESOURCE_GROUP:
+									case Renderer::ResourceType::PROGRAM:
+									case Renderer::ResourceType::VERTEX_ARRAY:
+									case Renderer::ResourceType::RENDER_PASS:
+									case Renderer::ResourceType::SWAP_CHAIN:
+									case Renderer::ResourceType::FRAMEBUFFER:
+									case Renderer::ResourceType::INDEX_BUFFER:
+									case Renderer::ResourceType::VERTEX_BUFFER:
+									case Renderer::ResourceType::UNIFORM_BUFFER:
+									case Renderer::ResourceType::INDIRECT_BUFFER:
+									case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+									case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
+									case Renderer::ResourceType::SAMPLER_STATE:
+									case Renderer::ResourceType::VERTEX_SHADER:
+									case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
+									case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
+									case Renderer::ResourceType::GEOMETRY_SHADER:
+									case Renderer::ResourceType::FRAGMENT_SHADER:
+									case Renderer::ResourceType::COMPUTE_SHADER:
+										RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 11 renderer backend resource type")
+										break;
+								}
+								const UINT startSlot = descriptorRange.baseShaderRegister;
+								switch (descriptorRange.shaderVisibility)
+								{
+									case Renderer::ShaderVisibility::VERTEX:
+										RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 11 vertex shader visibility")
+										break;
+
+									case Renderer::ShaderVisibility::TESSELLATION_CONTROL:
+										RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 11 tessellation control shader visibility")
+										break;
+
+									case Renderer::ShaderVisibility::TESSELLATION_EVALUATION:
+										RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 11 tessellation evaluation shader visibility")
+										break;
+
+									case Renderer::ShaderVisibility::GEOMETRY:
+										RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 11 geometry shader visibility")
+										break;
+
+									case Renderer::ShaderVisibility::FRAGMENT:
+										RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 11 fragment shader visibility")
+										break;
+
+									case Renderer::ShaderVisibility::ALL:
+									case Renderer::ShaderVisibility::COMPUTE:
+										{ // TODO(co) Compute shader: "D3D11 WARNING: ID3D11DeviceContext::OMSetRenderTargets[AndUnorderedAccessViews]: Forcing CS shader resource slot 0 to NULL. [ STATE_SETTING WARNING #2097316: DEVICE_CSSETSHADERRESOURCES_HAZARD]"
+											ID3D11ShaderResourceView* d3d11ShaderResourceView = nullptr;
+											mD3D11DeviceContext->PSSetShaderResources(0, 1, &d3d11ShaderResourceView);
+										}
+										mD3D11DeviceContext->CSSetUnorderedAccessViews(startSlot, 1, &d3d11UnorderedAccessView, nullptr);
+										break;
+
+									case Renderer::ShaderVisibility::ALL_GRAPHICS:
+										RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 11 all graphics shader visibility")
+										break;
+								}
+								break;
+							}
+
+							case Renderer::DescriptorRangeType::UBV:
+							case Renderer::DescriptorRangeType::SAMPLER:
+							case Renderer::DescriptorRangeType::NUMBER_OF_RANGE_TYPES:
+								RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 11 descriptor range type")
 								break;
 						}
 						break;
@@ -11756,6 +12196,10 @@ namespace Direct3D11Renderer
 	void Direct3D11Renderer::dispatchCompute(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
 	{
 		mD3D11DeviceContext->Dispatch(groupCountX, groupCountY, groupCountZ);
+		{ // TODO(co) Compute shader: "D3D11 WARNING: ID3D11DeviceContext::OMSetRenderTargets[AndUnorderedAccessViews]: Forcing CS shader resource slot 0 to NULL. [ STATE_SETTING WARNING #2097316: DEVICE_CSSETSHADERRESOURCES_HAZARD]"
+			ID3D11UnorderedAccessView* d3d11UnorderedAccessView = nullptr;
+			mD3D11DeviceContext->CSSetUnorderedAccessViews(0, 1, &d3d11UnorderedAccessView, nullptr);
+		}
 	}
 
 

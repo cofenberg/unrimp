@@ -3451,7 +3451,7 @@ namespace Direct3D9Renderer
 			return nullptr;
 		}
 
-		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t, Renderer::TextureFormat::Enum, const void*, Renderer::BufferUsage) override
+		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t, Renderer::TextureFormat::Enum, const void*, uint32_t, Renderer::BufferUsage) override
 		{
 			// Direct3D 9 has no texture buffer support
 			return nullptr;

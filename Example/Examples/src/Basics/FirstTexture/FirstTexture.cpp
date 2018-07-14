@@ -102,7 +102,7 @@ void FirstTexture::onInitialization()
 				}
 
 				// Create the texture instance
-				resources[0] = mTextureManager->createTexture1D(TEXTURE_WIDTH, Renderer::TextureFormat::R8, data, Renderer::TextureFlag::GENERATE_MIPMAPS);
+				resources[0] = mTextureManager->createTexture1D(TEXTURE_WIDTH, Renderer::TextureFormat::R8, data, Renderer::TextureFlag::GENERATE_MIPMAPS | Renderer::TextureFlag::SHADER_RESOURCE);
 			}
 
 			{ // Create the 2D texture
@@ -143,7 +143,7 @@ void FirstTexture::onInitialization()
 				}
 
 				// Create the texture instance
-				resources[1] = mTextureManager->createTexture2D(TEXTURE_WIDTH, TEXTURE_HEIGHT, Renderer::TextureFormat::R8G8B8A8, data, Renderer::TextureFlag::GENERATE_MIPMAPS);
+				resources[1] = mTextureManager->createTexture2D(TEXTURE_WIDTH, TEXTURE_HEIGHT, Renderer::TextureFormat::R8G8B8A8, data, Renderer::TextureFlag::GENERATE_MIPMAPS | Renderer::TextureFlag::SHADER_RESOURCE);
 			}
 
 			// Create the texture group

@@ -40,7 +40,10 @@
 *    A first compute shader (CS, suited e.g. for General Purpose Computation on Graphics Processing Unit (GPGPU)) example
 *
 *  @remarks
-*    Demonstrates:
+*    Demonstrates compute shader use-cases:
+*    - Texture image processing
+*
+*    Demonstrates infrastructure usage:
 *    - Vertex buffer object (VBO)
 *    - Vertex array object (VAO)
 *    - 2D texture
@@ -98,17 +101,18 @@ private:
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
-	Renderer::IBufferManagerPtr			mBufferManager;			///< Buffer manager, can be a null pointer
-	Renderer::ITextureManagerPtr		mTextureManager;		///< Texture manager, can be a null pointer
-	Renderer::CommandBuffer				mCommandBuffer;			///< Command buffer
-	Renderer::IRootSignaturePtr			mGraphicsRootSignature;	///< Graphics root signature, can be a null pointer
-	Renderer::IRootSignaturePtr			mComputeRootSignature;	///< Compute root signature, can be a null pointer
-	Renderer::IFramebufferPtr			mFramebuffer;			///< Framebuffer object (FBO), can be a null pointer
-	Renderer::IResourceGroupPtr			mTextureGroup;			///< Texture group, can be a null pointer
-	Renderer::IResourceGroupPtr			mSamplerStateGroup;		///< Sampler state resource group, can be a null pointer
-	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineState;	///< Graphics pipeline state object (PSO), can be a null pointer
-	Renderer::IComputePipelineStatePtr	mComputePipelineState;	///< Compute pipeline state object (PSO), can be a null pointer
-	Renderer::IVertexArrayPtr			mVertexArray;			///< Vertex array object (VAO), can be a null pointer
+	Renderer::IBufferManagerPtr			mBufferManager;				///< Buffer manager, can be a null pointer
+	Renderer::ITextureManagerPtr		mTextureManager;			///< Texture manager, can be a null pointer
+	Renderer::CommandBuffer				mCommandBuffer;				///< Command buffer
+	Renderer::IRootSignaturePtr			mGraphicsRootSignature;		///< Graphics root signature, can be a null pointer
+	Renderer::IRootSignaturePtr			mComputeRootSignature;		///< Compute root signature, can be a null pointer
+	Renderer::IFramebufferPtr			mFramebuffer;				///< Graphics framebuffer object (FBO), can be a null pointer
+	Renderer::IResourceGroupPtr			mComputeTextureGroup;		///< Compute texture group, can be a null pointer
+	Renderer::IResourceGroupPtr			mGraphicsTextureGroup;		///< Graphics texture group, can be a null pointer
+	Renderer::IResourceGroupPtr			mGraphicsSamplerStateGroup;	///< Graphics sampler state resource group, can be a null pointer
+	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineState;		///< Graphics pipeline state object (PSO), can be a null pointer
+	Renderer::IComputePipelineStatePtr	mComputePipelineState;		///< Compute pipeline state object (PSO), can be a null pointer
+	Renderer::IVertexArrayPtr			mVertexArray;				///< Graphics vertex array object (VAO), can be a null pointer
 
 
 };

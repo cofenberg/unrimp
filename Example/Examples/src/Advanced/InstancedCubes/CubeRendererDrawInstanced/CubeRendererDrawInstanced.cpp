@@ -196,7 +196,7 @@ CubeRendererDrawInstanced::CubeRendererDrawInstanced(Renderer::IRenderer& render
 		// -> By using 2D array textures together with OpenGL/Direct3D 11 instancing we get a handy implementation
 		// -> This limits of course the cross platform support, fallback solutions might be a good idea in productive code
 		// -> A fallback is not really required in our example situation because we're using draw instanced which already requires a more modern graphics card
-		mTexture2DArray = mTextureManager->createTexture2DArray(TEXTURE_WIDTH, TEXTURE_HEIGHT, mNumberOfTextures, Renderer::TextureFormat::R8G8B8A8, data, Renderer::TextureFlag::GENERATE_MIPMAPS);
+		mTexture2DArray = mTextureManager->createTexture2DArray(TEXTURE_WIDTH, TEXTURE_HEIGHT, mNumberOfTextures, Renderer::TextureFormat::R8G8B8A8, data, Renderer::TextureFlag::GENERATE_MIPMAPS | Renderer::TextureFlag::SHADER_RESOURCE);
 
 		// Free texture memory
 		delete [] data;

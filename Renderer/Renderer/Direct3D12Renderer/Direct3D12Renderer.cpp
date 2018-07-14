@@ -4391,11 +4391,10 @@ namespace Direct3D12Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 12 root signature?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D12RootSignature)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					mD3D12RootSignature->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr);
 					mD3D12RootSignature->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name);
 				}
@@ -4583,11 +4582,10 @@ namespace Direct3D12Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 12 index buffer?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D12Resource)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					RENDERER_DECORATED_DEBUG_NAME(name, detailedName, "IBO", 6);	// 6 = "IBO: " including terminating zero!
 					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
@@ -4756,11 +4754,10 @@ namespace Direct3D12Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 12 vertex buffer?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D12Resource)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					RENDERER_DECORATED_DEBUG_NAME(name, detailedName, "VBO", 6);	// 6 = "VBO: " including terminating zero!
 					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
@@ -5110,18 +5107,15 @@ namespace Direct3D12Renderer
 			{
 				RENDERER_DECORATED_DEBUG_NAME(name, detailedName, "UBO", 6);	// 6 = "UBO: " including terminating zero!
 
-				// Valid Direct3D 12 uniform buffer?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D12Resource)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
 				}
 				if (nullptr != mD3D12DescriptorHeap)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D12DescriptorHeap->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D12DescriptorHeap->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
 				}
@@ -5307,20 +5301,15 @@ namespace Direct3D12Renderer
 				/*
 				RENDERER_DECORATED_DEBUG_NAME(name, detailedName, "TBO", 6);	// 6 = "TBO: " including terminating zero!
 
-				// Assign a debug name to the shader resource view
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D12ShaderResourceViewTexture)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D12ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D12ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
 				}
-
-				// Assign a debug name to the texture buffer
 				if (nullptr != mD3D12Buffer)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D12Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D12Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
 				}
@@ -5534,20 +5523,15 @@ namespace Direct3D12Renderer
 				/*
 				RENDERER_DECORATED_DEBUG_NAME(name, detailedName, "IndirectBufferObject", 23);	// 23 = "IndirectBufferObject: " including terminating zero
 
-				// Assign a debug name to the shader resource view
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D12ShaderResourceViewIndirect)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D12ShaderResourceViewIndirect->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D12ShaderResourceViewIndirect->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
 				}
-
-				// Assign a debug name to the Indirect buffer
 				if (nullptr != mD3D12Buffer)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D12Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D12Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
 				}
@@ -5661,7 +5645,7 @@ namespace Direct3D12Renderer
 			return RENDERER_NEW(getRenderer().getContext(), UniformBuffer)(static_cast<Direct3D12Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
 		}
 
-		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<Direct3D12Renderer&>(getRenderer()), numberOfBytes, textureFormat, data, bufferUsage);
 		}
@@ -5801,17 +5785,15 @@ namespace Direct3D12Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D12Resource)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
 				if (nullptr != mD3D12DescriptorHeap)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D12DescriptorHeap->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D12DescriptorHeap->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
@@ -6143,17 +6125,15 @@ namespace Direct3D12Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D12Resource)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
 				if (nullptr != mD3D12DescriptorHeap)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D12DescriptorHeap->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D12DescriptorHeap->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
@@ -6564,17 +6544,15 @@ namespace Direct3D12Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D12Resource)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr);
 					mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name);
 				}
 				if (nullptr != mD3D12DescriptorHeap)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					mD3D12DescriptorHeap->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr);
 					mD3D12DescriptorHeap->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name);
 				}
@@ -6722,17 +6700,15 @@ namespace Direct3D12Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D12Resource)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr);
 					mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name);
 				}
 				if (nullptr != mD3D12DescriptorHeap)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					mD3D12DescriptorHeap->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr);
 					mD3D12DescriptorHeap->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name);
 				}
@@ -6995,11 +6971,10 @@ namespace Direct3D12Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 12 sampler state?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D12DescriptorHeap)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D12DescriptorHeap->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D12DescriptorHeap->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
@@ -9758,11 +9733,10 @@ namespace Direct3D12Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 12 graphics pipeline state?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D12GraphicsPipelineState)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D12GraphicsPipelineState->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D12GraphicsPipelineState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
@@ -9895,11 +9869,10 @@ namespace Direct3D12Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid Direct3D 12 compute pipeline state?
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D12ComputePipelineState)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 					FAILED_DEBUG_BREAK(mD3D12ComputePipelineState->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D12ComputePipelineState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}

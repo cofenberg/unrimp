@@ -66,17 +66,16 @@ void FirstComputeShader::onInitialization()
 
 		{ // Create the compute root signature
 			Renderer::DescriptorRangeBuilder ranges[2];
-			ranges[0].initialize(Renderer::DescriptorRangeType::SRV, 1, 0, "AlbedoMap", Renderer::ShaderVisibility::FRAGMENT);
-			ranges[1].initializeSampler(1, 0, Renderer::ShaderVisibility::FRAGMENT);
-			// TODO(co) Compute shader support is work-in-progress: UAV
+			ranges[0].initialize(Renderer::DescriptorRangeType::SRV, 1, 0, "InputTextureMap", Renderer::ShaderVisibility::COMPUTE);
+			// TODO(co) Compute shader: Get rid of the OpenGL/Direct3D 11 variation here
+			ranges[1].initialize(Renderer::DescriptorRangeType::UAV, 1, (renderer->getNameId() == Renderer::NameId::OPENGL) ? 1u : 0u, "OutputTextureMap", Renderer::ShaderVisibility::COMPUTE);
 
-			Renderer::RootParameterBuilder rootParameters[2];
-			rootParameters[0].initializeAsDescriptorTable(1, &ranges[0]);
-			rootParameters[1].initializeAsDescriptorTable(1, &ranges[1]);
+			Renderer::RootParameterBuilder rootParameters[1];
+			rootParameters[0].initializeAsDescriptorTable(2, &ranges[0]);
 
 			// Setup
 			Renderer::RootSignatureBuilder rootSignature;
-			rootSignature.initialize(static_cast<uint32_t>(glm::countof(rootParameters)), rootParameters, 0, nullptr, Renderer::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+			rootSignature.initialize(static_cast<uint32_t>(glm::countof(rootParameters)), rootParameters, 0, nullptr, Renderer::RootSignatureFlags::NONE);
 
 			// Create the instance
 			mComputeRootSignature = renderer->createRootSignature(rootSignature);
@@ -88,7 +87,7 @@ void FirstComputeShader::onInitialization()
 			Renderer::SamplerState samplerState = Renderer::ISamplerState::getDefaultSamplerState();
 			samplerState.maxLOD = 0.0f;
 			samplerStateResource = renderer->createSamplerState(samplerState);
-			mSamplerStateGroup = mGraphicsRootSignature->createResourceGroup(1, 1, &samplerStateResource);
+			mGraphicsSamplerStateGroup = mGraphicsRootSignature->createResourceGroup(1, 1, &samplerStateResource);
 		}
 
 		{ // Texture resource related
@@ -98,17 +97,23 @@ void FirstComputeShader::onInitialization()
 			// -> Not required for OpenGL and OpenGL ES 3
 			// -> The optimized texture clear value is a Direct3D 12 related option
 			const Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::Enum::R8G8B8A8;
-			Renderer::ITexture* texture2D = mTextureManager->createTexture2D(16, 16, textureFormat, nullptr, Renderer::TextureFlag::RENDER_TARGET, Renderer::TextureUsage::DEFAULT, 1, reinterpret_cast<const Renderer::OptimizedTextureClearValue*>(&Color4::GREEN));
-
-			{ // Create texture group
-				Renderer::IResource* resource = texture2D;
-				Renderer::ISamplerState* samplerState = static_cast<Renderer::ISamplerState*>(samplerStateResource);
-				mTextureGroup = mGraphicsRootSignature->createResourceGroup(0, 1, &resource, &samplerState);
-			}
+			Renderer::ITexture* graphicsWrittenTexture2D = mTextureManager->createTexture2D(16, 16, textureFormat, nullptr, Renderer::TextureFlag::SHADER_RESOURCE | Renderer::TextureFlag::RENDER_TARGET, Renderer::TextureUsage::DEFAULT, 1, reinterpret_cast<const Renderer::OptimizedTextureClearValue*>(&Color4::GREEN));
+			Renderer::ITexture* computeWrittenTexture2D = mTextureManager->createTexture2D(16, 16, textureFormat, nullptr, Renderer::TextureFlag::SHADER_RESOURCE | Renderer::TextureFlag::UNORDERED_ACCESS, Renderer::TextureUsage::DEFAULT, 1, reinterpret_cast<const Renderer::OptimizedTextureClearValue*>(&Color4::GREEN));
 
 			{ // Create the framebuffer object (FBO) instance
-				const Renderer::FramebufferAttachment colorFramebufferAttachment(texture2D);
+				const Renderer::FramebufferAttachment colorFramebufferAttachment(graphicsWrittenTexture2D);
 				mFramebuffer = renderer->createFramebuffer(*renderer->createRenderPass(1, &textureFormat), &colorFramebufferAttachment);
+			}
+
+			{ // Create compute texture group
+				Renderer::IResource* resources[2] = { graphicsWrittenTexture2D, computeWrittenTexture2D };
+				mComputeTextureGroup = mComputeRootSignature->createResourceGroup(0, static_cast<uint32_t>(glm::countof(resources)), resources, nullptr);
+			}
+
+			{ // Create graphics texture group
+				Renderer::IResource* resource = computeWrittenTexture2D;
+				Renderer::ISamplerState* samplerState = static_cast<Renderer::ISamplerState*>(samplerStateResource);
+				mGraphicsTextureGroup = mGraphicsRootSignature->createResourceGroup(0, 1, &resource, &samplerState);
 			}
 		}
 
@@ -196,8 +201,9 @@ void FirstComputeShader::onDeinitialization()
 	mVertexArray = nullptr;
 	mComputePipelineState = nullptr;
 	mGraphicsPipelineState = nullptr;
-	mSamplerStateGroup = nullptr;
-	mTextureGroup = nullptr;
+	mGraphicsSamplerStateGroup = nullptr;
+	mGraphicsTextureGroup = nullptr;
+	mComputeTextureGroup = nullptr;
 	mFramebuffer = nullptr;
 	mComputeRootSignature = nullptr;
 	mGraphicsRootSignature = nullptr;
@@ -230,8 +236,9 @@ void FirstComputeShader::fillCommandBuffer()
 	assert(nullptr != mGraphicsRootSignature);
 	assert(nullptr != mComputeRootSignature);
 	assert(nullptr != mFramebuffer);
-	assert(nullptr != mTextureGroup);
-	assert(nullptr != mSamplerStateGroup);
+	assert(nullptr != mComputeTextureGroup);
+	assert(nullptr != mGraphicsTextureGroup);
+	assert(nullptr != mGraphicsSamplerStateGroup);
 	assert(nullptr != mGraphicsPipelineState);
 	assert(nullptr != mComputePipelineState);
 	assert(nullptr != mVertexArray);
@@ -239,7 +246,7 @@ void FirstComputeShader::fillCommandBuffer()
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
 
-	{ // Render to texture
+	{ // Graphics: Render to texture
 		// Scoped debug event
 		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Render to texture")
 
@@ -257,7 +264,7 @@ void FirstComputeShader::fillCommandBuffer()
 		Renderer::Command::SetGraphicsRenderTarget::create(mCommandBuffer, getMainRenderTarget());
 	}
 
-	{ // Use the render to texture result for compute
+	{ // Compute: Use the graphics render to texture result for compute
 		// Scoped debug event
 		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Use the render to texture result for compute")
 
@@ -267,8 +274,8 @@ void FirstComputeShader::fillCommandBuffer()
 		// Set the used compute pipeline state object (PSO)
 		Renderer::Command::SetComputePipelineState::create(mCommandBuffer, mComputePipelineState);
 
-		// TODO(co) Compute shader support is work-in-progress
-		// SetComputeResourceGroup
+		// Set compute resource groups
+		Renderer::Command::SetComputeResourceGroup::create(mCommandBuffer, 0, mComputeTextureGroup);
 
 		// Dispatch compute call
 		Renderer::Command::DispatchCompute::create(mCommandBuffer, 1, 1, 1);
@@ -277,7 +284,7 @@ void FirstComputeShader::fillCommandBuffer()
 		// SetMemoryBarrier
 	}
 
-	{ // Use the compute result
+	{ // Graphics: Use the compute result for graphics
 		// Scoped debug event
 		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Use the compute result")
 
@@ -291,8 +298,8 @@ void FirstComputeShader::fillCommandBuffer()
 		Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineState);
 
 		// Set graphics resource groups
-		Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 0, mTextureGroup);
-		Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 1, mSamplerStateGroup);
+		Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 0, mGraphicsTextureGroup);
+		Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 1, mGraphicsSamplerStateGroup);
 
 		// Input assembly (IA): Set the used vertex array
 		Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArray);

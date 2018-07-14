@@ -431,7 +431,7 @@ namespace RendererRuntime
 			ImGui::GetIO().Fonts->GetTexDataAsAlpha8(&pixels, &width, &height);
 
 			// Upload texture to renderer
-			mTexture2D = mRendererRuntime.getTextureManager().createTexture2D(static_cast<uint32_t>(width), static_cast<uint32_t>(height), Renderer::TextureFormat::R8, pixels, Renderer::TextureFlag::GENERATE_MIPMAPS);
+			mTexture2D = mRendererRuntime.getTextureManager().createTexture2D(static_cast<uint32_t>(width), static_cast<uint32_t>(height), Renderer::TextureFormat::R8, pixels, Renderer::TextureFlag::GENERATE_MIPMAPS | Renderer::TextureFlag::SHADER_RESOURCE);
 			RENDERER_SET_RESOURCE_DEBUG_NAME(mTexture2D, "Debug 2D GUI glyph texture atlas")
 
 			// Tell the texture resource manager about our render target texture so it can be referenced inside e.g. compositor nodes

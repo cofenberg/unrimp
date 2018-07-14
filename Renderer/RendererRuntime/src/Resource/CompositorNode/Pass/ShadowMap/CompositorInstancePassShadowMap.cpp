@@ -451,7 +451,7 @@ namespace RendererRuntime
 
 			{ // Depth shadow map
 				const Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::D32_FLOAT;
-				Renderer::ITexture* texture = rendererRuntime.getTextureManager().createTexture2D(shadowMapSize, shadowMapSize, textureFormat, nullptr, Renderer::TextureFlag::RENDER_TARGET, Renderer::TextureUsage::DEFAULT, numberOfShadowMultisamples);
+				Renderer::ITexture* texture = rendererRuntime.getTextureManager().createTexture2D(shadowMapSize, shadowMapSize, textureFormat, nullptr, Renderer::TextureFlag::SHADER_RESOURCE | Renderer::TextureFlag::RENDER_TARGET, Renderer::TextureUsage::DEFAULT, numberOfShadowMultisamples);
 				RENDERER_SET_RESOURCE_DEBUG_NAME(texture, "Compositor instance pass depth shadow map")
 
 				// Create the framebuffer object (FBO) instance
@@ -473,7 +473,7 @@ namespace RendererRuntime
 
 			{ // Variance shadow map
 				const Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F;
-				Renderer::ITexture* texture = rendererRuntime.getTextureManager().createTexture2DArray(shadowMapSize, shadowMapSize, numberOfShadowCascades, textureFormat, nullptr, Renderer::TextureFlag::RENDER_TARGET);
+				Renderer::ITexture* texture = rendererRuntime.getTextureManager().createTexture2DArray(shadowMapSize, shadowMapSize, numberOfShadowCascades, textureFormat, nullptr, Renderer::TextureFlag::SHADER_RESOURCE | Renderer::TextureFlag::RENDER_TARGET);
 				RENDERER_SET_RESOURCE_DEBUG_NAME(texture, "Compositor instance pass variance shadow map")
 
 				// Create the framebuffer object (FBO) instances
@@ -495,7 +495,7 @@ namespace RendererRuntime
 
 			{ // Intermediate depth blur shadow map
 				const Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F;
-				Renderer::ITexture* texture = rendererRuntime.getTextureManager().createTexture2D(shadowMapSize, shadowMapSize, textureFormat, nullptr, Renderer::TextureFlag::RENDER_TARGET);
+				Renderer::ITexture* texture = rendererRuntime.getTextureManager().createTexture2D(shadowMapSize, shadowMapSize, textureFormat, nullptr, Renderer::TextureFlag::SHADER_RESOURCE | Renderer::TextureFlag::RENDER_TARGET);
 				RENDERER_SET_RESOURCE_DEBUG_NAME(texture, "Compositor instance pass intermediate depth blur shadow map")
 
 				// Create the framebuffer object (FBO) instance

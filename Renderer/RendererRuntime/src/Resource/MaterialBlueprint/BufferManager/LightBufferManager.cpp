@@ -99,13 +99,13 @@ namespace RendererRuntime
 	{
 		// Create texture buffer instance
 		mTextureScratchBuffer.resize(std::min(mRendererRuntime.getRenderer().getCapabilities().maximumTextureBufferSize, ::detail::LIGHT_DEFAULT_TEXTURE_BUFFER_NUMBER_OF_BYTES));
-		mTextureBuffer = mRendererRuntime.getBufferManager().createTextureBuffer(static_cast<uint32_t>(mTextureScratchBuffer.size()), Renderer::TextureFormat::R32G32B32A32F, nullptr, Renderer::BufferUsage::DYNAMIC_DRAW);
+		mTextureBuffer = mRendererRuntime.getBufferManager().createTextureBuffer(static_cast<uint32_t>(mTextureScratchBuffer.size()), Renderer::TextureFormat::R32G32B32A32F, nullptr, Renderer::TextureBufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::DYNAMIC_DRAW);
 		RENDERER_SET_RESOURCE_DEBUG_NAME(mTextureBuffer, "Light buffer manager")
 		mTextureBuffer->addReference();
 
 		{ // Create the clusters 3D texture resource
 			// Create the renderer texture resource
-			Renderer::ITexturePtr texturePtr(mRendererRuntime.getTextureManager().createTexture3D(::detail::CLUSTER_X, ::detail::CLUSTER_Y, ::detail::CLUSTER_Z, Renderer::TextureFormat::R32_UINT, nullptr, 0, Renderer::TextureUsage::DYNAMIC));
+			Renderer::ITexturePtr texturePtr(mRendererRuntime.getTextureManager().createTexture3D(::detail::CLUSTER_X, ::detail::CLUSTER_Y, ::detail::CLUSTER_Z, Renderer::TextureFormat::R32_UINT, nullptr, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::DYNAMIC));
 			RENDERER_SET_RESOURCE_DEBUG_NAME(texturePtr, "Clusters 3D texture resource")
 
 			// Create dynamic texture asset

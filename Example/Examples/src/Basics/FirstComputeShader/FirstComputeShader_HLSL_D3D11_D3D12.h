@@ -73,22 +73,23 @@ float4 main(float4 Position : SV_POSITION, float2 TexCoord : TEXCOORD0) : SV_TAR
 //[ Compute shader source code                            ]
 //[-------------------------------------------------------]
 computeShaderSourceCode = R"(
-// Attribute input/output
-struct BufferType
-{
-	int i;
-	float f;
-};
-StructuredBuffer<BufferType> Buffer0 : register(t0);
-StructuredBuffer<BufferType> Buffer1 : register(t1);
-RWStructuredBuffer<BufferType> BufferOut : register(u0);
+// Uniforms
+Texture2D<float4>   InputTextureMap  : register(t0);
+RWTexture2D<float4> OutputTextureMap : register(u0);
 
 // Programs
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void main(uint3 dispatchThreadId : SV_DispatchThreadID)
 {
-	BufferOut[dispatchThreadId.x].i = Buffer0[dispatchThreadId.x].i + Buffer1[dispatchThreadId.x].i;
-	BufferOut[dispatchThreadId.x].f = Buffer0[dispatchThreadId.x].f + Buffer1[dispatchThreadId.x].f;
+	// Fetch input texel
+	float4 color = InputTextureMap.Load(dispatchThreadId);
+
+	// Modify color
+	color.g *= 1.0f - (float(dispatchThreadId.x) / 16.0f);
+	color.g *= 1.0f - (float(dispatchThreadId.y) / 16.0f);
+
+	// Output texel
+	OutputTextureMap[dispatchThreadId.xy] = color;
 }
 )";
 

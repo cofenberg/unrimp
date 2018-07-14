@@ -682,20 +682,21 @@ namespace RendererRuntime
 	Renderer::ITexture* DdsTextureResourceLoader::createRendererTexture()
 	{
 		Renderer::ITexture* texture = nullptr;
+		const uint32_t flags = (mDataContainsMipmaps ? (Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS | Renderer::TextureFlag::SHADER_RESOURCE) : Renderer::TextureFlag::SHADER_RESOURCE);
 		if (1 == mWidth || 1 == mHeight)
 		{
 			// 1D texture
-			texture = mRendererRuntime.getTextureManager().createTexture1D((1 == mWidth) ? mHeight : mWidth, static_cast<Renderer::TextureFormat::Enum>(mTextureFormat), mImageData, mDataContainsMipmaps ? Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS : 0u, Renderer::TextureUsage::IMMUTABLE);
+			texture = mRendererRuntime.getTextureManager().createTexture1D((1 == mWidth) ? mHeight : mWidth, static_cast<Renderer::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Renderer::TextureUsage::IMMUTABLE);
 		}
 		else if (mDepth > 1)
 		{
 			// 3D texture
-			texture = mRendererRuntime.getTextureManager().createTexture3D(mWidth, mHeight, mDepth, static_cast<Renderer::TextureFormat::Enum>(mTextureFormat), mImageData, mDataContainsMipmaps ? Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS : 0u, Renderer::TextureUsage::IMMUTABLE);
+			texture = mRendererRuntime.getTextureManager().createTexture3D(mWidth, mHeight, mDepth, static_cast<Renderer::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Renderer::TextureUsage::IMMUTABLE);
 		}
 		else
 		{
 			// 2D texture
-			texture = mRendererRuntime.getTextureManager().createTexture2D(mWidth, mHeight, static_cast<Renderer::TextureFormat::Enum>(mTextureFormat), mImageData, mDataContainsMipmaps ? Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS : 0u, Renderer::TextureUsage::IMMUTABLE);
+			texture = mRendererRuntime.getTextureManager().createTexture2D(mWidth, mHeight, static_cast<Renderer::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Renderer::TextureUsage::IMMUTABLE);
 		}
 		RENDERER_SET_RESOURCE_DEBUG_NAME(texture, getAsset().virtualFilename)
 		return texture;

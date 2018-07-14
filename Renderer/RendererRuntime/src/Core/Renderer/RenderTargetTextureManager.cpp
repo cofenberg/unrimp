@@ -183,7 +183,7 @@ namespace RendererRuntime
 					}
 
 					// Get texture flags
-					uint32_t textureFlags = Renderer::TextureFlag::RENDER_TARGET;
+					uint32_t textureFlags = (Renderer::TextureFlag::SHADER_RESOURCE | Renderer::TextureFlag::RENDER_TARGET);
 					if (renderTargetTextureSignature.getGenerateMipmaps())
 					{
 						textureFlags |= Renderer::TextureFlag::GENERATE_MIPMAPS;

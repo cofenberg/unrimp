@@ -3709,7 +3709,10 @@ namespace VulkanRenderer
 			}
 
 			// Create the Vulkan image view
-			createVkImageView(vulkanRenderer, vkImage, vkImageViewType, numberOfMipmaps, layerCount, vkFormat, vkImageAspectFlags, vkImageView);
+			if ((flags & Renderer::TextureFlag::SHADER_RESOURCE) != 0 || (flags & Renderer::TextureFlag::RENDER_TARGET) != 0 || (flags & Renderer::TextureFlag::UNORDERED_ACCESS) != 0)
+			{
+				createVkImageView(vulkanRenderer, vkImage, vkImageViewType, numberOfMipmaps, layerCount, vkFormat, vkImageAspectFlags, vkImageView);
+			}
 
 			// Upload all mipmaps
 			if (nullptr != data)
@@ -4968,10 +4971,12 @@ namespace VulkanRenderer
 		*    Texture buffer data format
 		*  @param[in] data
 		*    Texture buffer data, can be a null pointer (empty buffer)
+		*  @param[in] flags
+		*    Texture buffer flags, see "Renderer::TextureBufferFlag"
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		TextureBuffer(VulkanRenderer& vulkanRenderer, uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
+		TextureBuffer(VulkanRenderer& vulkanRenderer, uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
 			ITextureBuffer(vulkanRenderer),
 			mVkBuffer(VK_NULL_HANDLE),
 			mVkDeviceMemory(VK_NULL_HANDLE),
@@ -4980,20 +4985,25 @@ namespace VulkanRenderer
 			Helper::createAndAllocateVkBuffer(vulkanRenderer, VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, numberOfBytes, data, mVkBuffer, mVkDeviceMemory);
 
 			// Create Vulkan buffer view
-			const VkBufferViewCreateInfo vkBufferViewCreateInfo =
+			if ((flags & Renderer::TextureBufferFlag::SHADER_RESOURCE) != 0 || (flags & Renderer::TextureBufferFlag::UNORDERED_ACCESS) != 0)
 			{
-				VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO,	// sType (VkStructureType)
-				nullptr,									// pNext (const void*)
-				0,											// flags (VkBufferViewCreateFlags)
-				mVkBuffer,									// buffer (VkBuffer)
-				Mapping::getVulkanFormat(textureFormat),	// format (VkFormat)
-				0,											// offset (VkDeviceSize)
-				VK_WHOLE_SIZE								// range (VkDeviceSize)
-			};
-			if (vkCreateBufferView(vulkanRenderer.getVulkanContext().getVkDevice(), &vkBufferViewCreateInfo, vulkanRenderer.getVkAllocationCallbacks(), &mVkBufferView) != VK_SUCCESS)
-			{
-				RENDERER_LOG(vulkanRenderer.getContext(), CRITICAL, "Failed to create the Vulkan buffer view")
+				const VkBufferViewCreateInfo vkBufferViewCreateInfo =
+				{
+					VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO,	// sType (VkStructureType)
+					nullptr,									// pNext (const void*)
+					0,											// flags (VkBufferViewCreateFlags)
+					mVkBuffer,									// buffer (VkBuffer)
+					Mapping::getVulkanFormat(textureFormat),	// format (VkFormat)
+					0,											// offset (VkDeviceSize)
+					VK_WHOLE_SIZE								// range (VkDeviceSize)
+				};
+				if (vkCreateBufferView(vulkanRenderer.getVulkanContext().getVkDevice(), &vkBufferViewCreateInfo, vulkanRenderer.getVkAllocationCallbacks(), &mVkBufferView) != VK_SUCCESS)
+				{
+					RENDERER_LOG(vulkanRenderer.getContext(), CRITICAL, "Failed to create the Vulkan buffer view")
+				}
 			}
+
+			// Set debug name
 			SET_DEFAULT_DEBUG_NAME	// setDebugName("");
 		}
 
@@ -5275,9 +5285,9 @@ namespace VulkanRenderer
 			return RENDERER_NEW(getRenderer().getContext(), UniformBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
 		}
 
-		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
-			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, textureFormat, data, bufferUsage);
+			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, textureFormat, data, flags, bufferUsage);
 		}
 
 		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
