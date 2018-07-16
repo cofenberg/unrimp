@@ -107,7 +107,7 @@ namespace RendererRuntime
 			if (mFreeIndirectBuffers.empty())
 			{
 				// Create new indirect buffer instance
-				Renderer::IIndirectBuffer* rendererIndirectBuffer = mRendererRuntime.getBufferManager().createIndirectBuffer(mMaximumIndirectBufferSize, nullptr, Renderer::BufferUsage::DYNAMIC_DRAW);
+				Renderer::IIndirectBuffer* rendererIndirectBuffer = mRendererRuntime.getBufferManager().createIndirectBuffer(mMaximumIndirectBufferSize, nullptr, Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS, Renderer::BufferUsage::DYNAMIC_DRAW);
 				RENDERER_SET_RESOURCE_DEBUG_NAME(rendererIndirectBuffer, "Indirect buffer manager")
 				mUsedIndirectBuffers.emplace_back(rendererIndirectBuffer);
 			}

@@ -1712,7 +1712,6 @@ namespace VulkanRenderer
 		void setComputeRootSignature(Renderer::IRootSignature* rootSignature);
 		void setComputePipelineState(Renderer::IComputePipelineState* computePipelineState);
 		void setComputeResourceGroup(uint32_t rootParameterIndex, Renderer::IResourceGroup* resourceGroup);
-		void dispatchCompute(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ);
 		//[-------------------------------------------------------]
 		//[ Resource                                              ]
 		//[-------------------------------------------------------]
@@ -5133,15 +5132,28 @@ namespace VulkanRenderer
 		*    Number of bytes within the indirect buffer, must be valid
 		*  @param[in] data
 		*    Indirect buffer data, can be a null pointer (empty buffer)
+		*  @param[in] flags
+		*    Indirect buffer flags, see "Renderer::IndirectBufferFlag"
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		IndirectBuffer(VulkanRenderer& vulkanRenderer, uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
+		IndirectBuffer(VulkanRenderer& vulkanRenderer, uint32_t numberOfBytes, const void* data = nullptr, uint32_t flags = 0, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
 			IIndirectBuffer(vulkanRenderer),
 			mVkBuffer(VK_NULL_HANDLE),
 			mVkDeviceMemory(VK_NULL_HANDLE)
 		{
-			Helper::createAndAllocateVkBuffer(vulkanRenderer, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, numberOfBytes, data, mVkBuffer, mVkDeviceMemory);
+			// Sanity checks
+			RENDERER_ASSERT(vulkanRenderer.getContext(), (flags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) != 0 || (flags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) != 0, "Invalid Vulkan flags, indirect buffer element type specification \"DRAW_INSTANCED_ARGUMENTS\" or \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" is missing")
+			RENDERER_ASSERT(vulkanRenderer.getContext(), (flags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawInstancedArguments)) == 0, "Vulkan indirect buffer element type flags specification is \"DRAW_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
+			RENDERER_ASSERT(vulkanRenderer.getContext(), (flags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawIndexedInstancedArguments)) == 0, "Vulkan indirect buffer element type flags specification is \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
+
+			// Create indirect buffer
+			int vkBufferUsageFlagBits = VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
+			if (flags & Renderer::IndirectBufferFlag::UNORDERED_ACCESS)
+			{
+				vkBufferUsageFlagBits |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+			}
+			Helper::createAndAllocateVkBuffer(vulkanRenderer, static_cast<VkBufferUsageFlagBits>(vkBufferUsageFlagBits), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, numberOfBytes, data, mVkBuffer, mVkDeviceMemory);
 			SET_DEFAULT_DEBUG_NAME	// setDebugName("");
 		}
 
@@ -5290,9 +5302,9 @@ namespace VulkanRenderer
 			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, textureFormat, data, flags, bufferUsage);
 		}
 
-		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t flags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
-			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
+			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, data, flags, bufferUsage);
 		}
 
 
@@ -9320,6 +9332,31 @@ namespace VulkanRenderer
 						break;
 					}
 
+					case Renderer::ResourceType::INDIRECT_BUFFER:
+					{
+						const VkDescriptorBufferInfo vkDescriptorBufferInfo =
+						{
+							static_cast<IndirectBuffer*>(resource)->getVkBuffer(),	// buffer (VkBuffer)
+							0,														// offset (VkDeviceSize)
+							VK_WHOLE_SIZE											// range (VkDeviceSize)
+						};
+						const VkWriteDescriptorSet vkWriteDescriptorSet =
+						{
+							VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,		// sType (VkStructureType)
+							nullptr,									// pNext (const void*)
+							mVkDescriptorSet,							// dstSet (VkDescriptorSet)
+							resourceIndex,								// dstBinding (uint32_t)
+							0,											// dstArrayElement (uint32_t)
+							1,											// descriptorCount (uint32_t)
+							VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,			// descriptorType (VkDescriptorType)
+							nullptr,									// pImageInfo (const VkDescriptorImageInfo*)
+							&vkDescriptorBufferInfo,					// pBufferInfo (const VkDescriptorBufferInfo*)
+							nullptr										// pTexelBufferView (const VkBufferView*)
+						};
+						vkUpdateDescriptorSets(vkDevice, 1, &vkWriteDescriptorSet, 0, nullptr);
+						break;
+					}
+
 					case Renderer::ResourceType::TEXTURE_1D:
 					case Renderer::ResourceType::TEXTURE_2D:
 					case Renderer::ResourceType::TEXTURE_2D_ARRAY:
@@ -9437,7 +9474,6 @@ namespace VulkanRenderer
 					case Renderer::ResourceType::FRAMEBUFFER:
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
-					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:
@@ -9745,7 +9781,7 @@ namespace
 			void DispatchCompute(const void* data, Renderer::IRenderer& renderer)
 			{
 				const Renderer::Command::DispatchCompute* realData = static_cast<const Renderer::Command::DispatchCompute*>(data);
-				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).dispatchCompute(realData->groupCountX, realData->groupCountY, realData->groupCountZ);
+				vkCmdDispatch(static_cast<VulkanRenderer::VulkanRenderer&>(renderer).getVulkanContext().getVkCommandBuffer(), realData->groupCountX, realData->groupCountY, realData->groupCountZ);
 			}
 
 			//[-------------------------------------------------------]
@@ -10428,11 +10464,6 @@ namespace VulkanRenderer
 		{
 			// TODO(co) Handle this situation?
 		}
-	}
-
-	void VulkanRenderer::dispatchCompute(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
-	{
-		vkCmdDispatch(getVulkanContext().getVkCommandBuffer(), groupCountX, groupCountY, groupCountZ);
 	}
 
 

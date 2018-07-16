@@ -76,9 +76,22 @@ void main()
 //[ Compute shader source code                            ]
 //[-------------------------------------------------------]
 computeShaderSourceCode = R"(#version 450 core	// OpenGL 4.5
+// Same layout as "Renderer::DrawInstancedArguments"
+struct DrawInstancedArguments
+{
+	uint vertexCountPerInstance;
+	uint instanceCount;
+	uint startVertexLocation;
+	uint startInstanceLocation;
+};
+
 // Uniforms
-layout(binding = 0)					 uniform sampler2D InputTextureMap;
-layout(binding = 1, rgba8) writeonly uniform image2D   OutputTextureMap;
+layout(binding = 0)					  uniform sampler2D InputTextureMap;
+layout(binding = 1, rgba8)	writeonly uniform image2D   OutputTextureMap;
+layout(binding = 2, std430) writeonly		  buffer    OutputIndirectBuffer
+{
+	DrawInstancedArguments drawInstancedArguments;
+};
 
 // Programs
 layout (local_size_x = 16, local_size_y = 16) in;
@@ -93,6 +106,15 @@ void main()
 
 	// Output texel
 	imageStore(OutputTextureMap, ivec2(gl_GlobalInvocationID.xy), color);
+
+	// Output draw call
+	if (0 == gl_GlobalInvocationID.x && 0 == gl_GlobalInvocationID.y && 0 == gl_GlobalInvocationID.z)
+	{
+		drawInstancedArguments.vertexCountPerInstance = 3;
+		drawInstancedArguments.instanceCount		  = 1;
+		drawInstancedArguments.startVertexLocation    = 0;
+		drawInstancedArguments.startInstanceLocation  = 0;
+	}
 }
 )";
 

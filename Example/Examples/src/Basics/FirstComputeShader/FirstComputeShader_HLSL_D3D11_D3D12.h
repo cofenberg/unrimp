@@ -74,8 +74,9 @@ float4 main(float4 Position : SV_POSITION, float2 TexCoord : TEXCOORD0) : SV_TAR
 //[-------------------------------------------------------]
 computeShaderSourceCode = R"(
 // Uniforms
-Texture2D<float4>   InputTextureMap  : register(t0);
-RWTexture2D<float4> OutputTextureMap : register(u0);
+Texture2D<float4>   InputTextureMap		 : register(t0);
+RWTexture2D<float4> OutputTextureMap	 : register(u0);
+RWBuffer<uint>		OutputIndirectBuffer : register(u1);
 
 // Programs
 [numthreads(16, 16, 1)]
@@ -90,6 +91,17 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID)
 
 	// Output texel
 	OutputTextureMap[dispatchThreadId.xy] = color;
+
+	// Output draw call
+	if (0 == dispatchThreadId.x && 0 == dispatchThreadId.y && 0 == dispatchThreadId.z)
+	{
+		// Using a structured indirect buffer would be handy inside shader source codes, sadly this isn't possible with Direct3D 11 and will result in the following error:
+		// "D3D11 ERROR: ID3D11Device::CreateBuffer: A resource cannot created with both D3D11_RESOURCE_MISC_DRAWINDIRECT_ARGS and D3D11_RESOURCE_MISC_BUFFER_STRUCTURED. [ STATE_CREATION ERROR #68: CREATEBUFFER_INVALIDMISCFLAGS]"
+		OutputIndirectBuffer[0] = 3;	// Renderer::DrawInstancedArguments::vertexCountPerInstance
+		OutputIndirectBuffer[1] = 1;	// Renderer::DrawInstancedArguments::instanceCount
+		OutputIndirectBuffer[2] = 0;	// Renderer::DrawInstancedArguments::startVertexLocation
+		OutputIndirectBuffer[3] = 0;	// Renderer::DrawInstancedArguments::startInstanceLocation
+	}
 }
 )";
 

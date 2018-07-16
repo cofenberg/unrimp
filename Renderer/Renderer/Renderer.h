@@ -2143,8 +2143,8 @@ namespace Renderer
 	{
 		enum Enum
 		{
-			SHADER_RESOURCE       = 1 << 0,	///< This texture can be used as shader resource (when using Direct3D 11 a shader resource view (SRV) will be generated)
-			UNORDERED_ACCESS      = 1 << 1,	///< This texture can be used for unordered access which is needed for compute shader read/write textures (when using Direct3D 11 a unordered access view (UAV) will be generated)
+			UNORDERED_ACCESS      = 1 << 0,	///< This texture can be used for unordered access which is needed for compute shader read/write textures (when using Direct3D 11 a unordered access view (UAV) will be generated)
+			SHADER_RESOURCE       = 1 << 1,	///< This texture can be used as shader resource (when using Direct3D 11 a shader resource view (SRV) will be generated)
 			RENDER_TARGET         = 1 << 2,	///< This texture can be used as framebuffer object (FBO) attachment render target
 			DATA_CONTAINS_MIPMAPS = 1 << 3,	///< The user provided data containing mipmaps from 0-n down to 1x1 linearly in memory
 			GENERATE_MIPMAPS      = 1 << 4	///< Automatically generate mipmaps (avoid this if you can, will be ignored in case the "DATA_CONTAINS_MIPMAPS"-flag is set), for depth textures the mipmaps can only be allocated but not automatically be generated
@@ -2443,8 +2443,22 @@ namespace Renderer
 	{
 		enum Enum
 		{
-			SHADER_RESOURCE  = 1 << 0,	///< This texture buffer can be used as shader resource (when using Direct3D 11 a shader resource view (SRV) will be generated)
-			UNORDERED_ACCESS = 1 << 1	///< This texture buffer can be used for unordered access which is needed for compute shader read/write texture buffers (when using Direct3D 11 a unordered access view (UAV) will be generated)
+			UNORDERED_ACCESS = 1 << 0,	///< This texture buffer can be used for unordered access which is needed for compute shader read/write texture buffers (when using Direct3D 11 a unordered access view (UAV) will be generated)
+			SHADER_RESOURCE  = 1 << 0	///< This texture buffer can be used as shader resource (when using Direct3D 11 a shader resource view (SRV) will be generated)
+		};
+	};
+
+	/**
+	*  @brief
+	*    Indirect buffer flags
+	*/
+	struct IndirectBufferFlag final
+	{
+		enum Enum
+		{
+			UNORDERED_ACCESS				 = 1 << 0,	///< This indirect buffer can be used for unordered access which is needed for compute shader read/write indirect buffers (when using Direct3D 11 a unordered access view (UAV) will be generated)
+			DRAW_INSTANCED_ARGUMENTS		 = 1 << 1,	///< This indirect buffer contains "Renderer::DrawInstancedArguments" as elements
+			DRAW_INDEXED_INSTANCED_ARGUMENTS = 1 << 2	///< This indirect buffer contains "Renderer::DrawIndexedInstancedArguments" as elements
 		};
 	};
 
@@ -5782,6 +5796,8 @@ namespace Renderer
 		*    Number of bytes within the indirect buffer, must be valid
 		*  @param[in] data
 		*    Indirect buffer data, can be a null pointer (empty buffer), the data is internally copied and you have to free your memory if you no longer need it
+		*  @param[in] flags
+		*    Indirect buffer flags, see "Renderer::IndirectBufferFlag"
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*
@@ -5791,7 +5807,7 @@ namespace Renderer
 		*  @note
 		*    - Only supported if "Renderer::Capabilities::maximumIndirectBufferSize" is >0
 		*/
-		virtual IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, BufferUsage bufferUsage = BufferUsage::DYNAMIC_DRAW) = 0;
+		virtual IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t flags = 0, BufferUsage bufferUsage = BufferUsage::DYNAMIC_DRAW) = 0;
 
 	// Protected methods
 	protected:

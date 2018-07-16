@@ -65,13 +65,15 @@ void FirstComputeShader::onInitialization()
 		}
 
 		{ // Create the compute root signature
-			Renderer::DescriptorRangeBuilder ranges[2];
+			Renderer::DescriptorRangeBuilder ranges[3];
 			ranges[0].initialize(Renderer::DescriptorRangeType::SRV, 1, 0, "InputTextureMap", Renderer::ShaderVisibility::COMPUTE);
 			// TODO(co) Compute shader: Get rid of the OpenGL/Direct3D 11 variation here
-			ranges[1].initialize(Renderer::DescriptorRangeType::UAV, 1, (renderer->getNameId() == Renderer::NameId::OPENGL) ? 1u : 0u, "OutputTextureMap", Renderer::ShaderVisibility::COMPUTE);
+			const uint32_t offset = (renderer->getNameId() == Renderer::NameId::VULKAN || renderer->getNameId() == Renderer::NameId::OPENGL) ? 1u : 0u;
+			ranges[1].initialize(Renderer::DescriptorRangeType::UAV, 1, 0u + offset, "OutputTextureMap", Renderer::ShaderVisibility::COMPUTE);
+			ranges[2].initialize(Renderer::DescriptorRangeType::UAV, 1, 1u + offset, "OutputIndirectBuffer", Renderer::ShaderVisibility::COMPUTE);
 
 			Renderer::RootParameterBuilder rootParameters[1];
-			rootParameters[0].initializeAsDescriptorTable(2, &ranges[0]);
+			rootParameters[0].initializeAsDescriptorTable(3, &ranges[0]);
 
 			// Setup
 			Renderer::RootSignatureBuilder rootSignature;
@@ -90,6 +92,9 @@ void FirstComputeShader::onInitialization()
 			mGraphicsSamplerStateGroup = mGraphicsRootSignature->createResourceGroup(1, 1, &samplerStateResource);
 		}
 
+		// Create the indirect buffer which will by filled by a compute shader
+		mIndirectBuffer = mBufferManager->createIndirectBuffer(sizeof(Renderer::DrawInstancedArguments), nullptr, Renderer::IndirectBufferFlag::UNORDERED_ACCESS | Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS, Renderer::BufferUsage::STATIC_DRAW);
+
 		{ // Texture resource related
 			// Create the texture instance, but without providing texture data (we use the texture as render target)
 			// -> Use the "Renderer::TextureFlag::RENDER_TARGET"-flag to mark this texture as a render target
@@ -106,7 +111,7 @@ void FirstComputeShader::onInitialization()
 			}
 
 			{ // Create compute texture group
-				Renderer::IResource* resources[2] = { graphicsWrittenTexture2D, computeWrittenTexture2D };
+				Renderer::IResource* resources[3] = { graphicsWrittenTexture2D, computeWrittenTexture2D, mIndirectBuffer };
 				mComputeTextureGroup = mComputeRootSignature->createResourceGroup(0, static_cast<uint32_t>(glm::countof(resources)), resources, nullptr);
 			}
 
@@ -198,6 +203,7 @@ void FirstComputeShader::onInitialization()
 void FirstComputeShader::onDeinitialization()
 {
 	// Release the used resources
+	mIndirectBuffer = nullptr;
 	mVertexArray = nullptr;
 	mComputePipelineState = nullptr;
 	mGraphicsPipelineState = nullptr;
@@ -242,6 +248,7 @@ void FirstComputeShader::fillCommandBuffer()
 	assert(nullptr != mGraphicsPipelineState);
 	assert(nullptr != mComputePipelineState);
 	assert(nullptr != mVertexArray);
+	assert(nullptr != mIndirectBuffer);
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
@@ -305,6 +312,6 @@ void FirstComputeShader::fillCommandBuffer()
 		Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArray);
 
 		// Render the specified geometric primitive, based on an array of vertices
-		Renderer::Command::DrawGraphics::create(mCommandBuffer, 3);
+		Renderer::Command::DrawGraphics::create(mCommandBuffer, *mIndirectBuffer);
 	}
 }

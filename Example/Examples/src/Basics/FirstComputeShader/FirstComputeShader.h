@@ -42,10 +42,12 @@
 *  @remarks
 *    Demonstrates compute shader use-cases:
 *    - Texture image processing
+*    - Multi-draw indirect buffer written by a compute shader
 *
 *    Demonstrates infrastructure usage:
 *    - Vertex buffer object (VBO)
 *    - Vertex array object (VAO)
+*    - Indirect buffer
 *    - 2D texture
 *    - Sampler state object
 *    - Vertex shader (VS), fragment shader (FS) and compute shader (CS)
@@ -113,6 +115,7 @@ private:
 	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineState;		///< Graphics pipeline state object (PSO), can be a null pointer
 	Renderer::IComputePipelineStatePtr	mComputePipelineState;		///< Compute pipeline state object (PSO), can be a null pointer
 	Renderer::IVertexArrayPtr			mVertexArray;				///< Graphics vertex array object (VAO), can be a null pointer
+	Renderer::IIndirectBufferPtr		mIndirectBuffer;			///< Graphics indirect buffer, can be a null pointer
 
 
 };
