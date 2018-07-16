@@ -9397,29 +9397,28 @@ namespace VulkanRenderer
 						}
 
 						// Get the sampler state
-						RENDERER_ASSERT(vulkanRenderer.getContext(), nullptr != mSamplerStates, "Invalid Vulkan sampler states")
-						const SamplerState* samplerState = static_cast<const SamplerState*>(mSamplerStates[resourceIndex]);
-						RENDERER_ASSERT(vulkanRenderer.getContext(), nullptr != samplerState, "Invalid Vulkan sampler states")
+						const SamplerState* samplerState = (nullptr != mSamplerStates) ? static_cast<const SamplerState*>(mSamplerStates[resourceIndex]) : nullptr;
+						RENDERER_ASSERT(vulkanRenderer.getContext(), nullptr == mSamplerStates || nullptr != samplerState, "Invalid Vulkan sampler states")
 
 						// Update Vulkan descriptor sets
 						const VkDescriptorImageInfo vkDescriptorImageInfo =
 						{
-							samplerState->getVkSampler(),	// sampler (VkSampler)
-							vkImageView,					// imageView (VkImageView)
-							vkImageLayout					// imageLayout (VkImageLayout)
+							(nullptr != samplerState) ? samplerState->getVkSampler() : VK_NULL_HANDLE,	// sampler (VkSampler)
+							vkImageView,																// imageView (VkImageView)
+							vkImageLayout																// imageLayout (VkImageLayout)
 						};
 						const VkWriteDescriptorSet vkWriteDescriptorSet =
 						{
-							VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,		// sType (VkStructureType)
-							nullptr,									// pNext (const void*)
-							mVkDescriptorSet,							// dstSet (VkDescriptorSet)
-							resourceIndex,								// dstBinding (uint32_t)
-							0,											// dstArrayElement (uint32_t)
-							1,											// descriptorCount (uint32_t)
-							VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,	// descriptorType (VkDescriptorType)
-							&vkDescriptorImageInfo,						// pImageInfo (const VkDescriptorImageInfo*)
-							nullptr,									// pBufferInfo (const VkDescriptorBufferInfo*)
-							nullptr										// pTexelBufferView (const VkBufferView*)
+							VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,																		// sType (VkStructureType)
+							nullptr,																									// pNext (const void*)
+							mVkDescriptorSet,																							// dstSet (VkDescriptorSet)
+							resourceIndex,																								// dstBinding (uint32_t)
+							0,																											// dstArrayElement (uint32_t)
+							1,																											// descriptorCount (uint32_t)
+							(nullptr != samplerState) ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER : VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,	// descriptorType (VkDescriptorType)
+							&vkDescriptorImageInfo,																						// pImageInfo (const VkDescriptorImageInfo*)
+							nullptr,																									// pBufferInfo (const VkDescriptorBufferInfo*)
+							nullptr																										// pTexelBufferView (const VkBufferView*)
 						};
 						vkUpdateDescriptorSets(vkDevice, 1, &vkWriteDescriptorSet, 0, nullptr);
 						break;

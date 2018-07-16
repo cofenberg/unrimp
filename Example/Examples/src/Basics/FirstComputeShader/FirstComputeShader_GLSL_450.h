@@ -76,15 +76,23 @@ void main()
 //[ Compute shader source code                            ]
 //[-------------------------------------------------------]
 computeShaderSourceCode = R"(#version 450 core	// OpenGL 4.5
-TODO(co)
-
-// Attribute input/output
-
 // Uniforms
+layout(binding = 0)					 uniform sampler2D InputTextureMap;
+layout(binding = 1, rgba8) writeonly uniform image2D   OutputTextureMap;
 
 // Programs
+layout (local_size_x = 16, local_size_y = 16) in;
 void main()
 {
+	// Fetch input texel
+	vec4 color = texelFetch(InputTextureMap, ivec2(gl_GlobalInvocationID.xy), 0);
+
+	// Modify color
+	color.g *= 1.0f - (float(gl_GlobalInvocationID.x) / 16.0f);
+	color.g *= 1.0f - (float(gl_GlobalInvocationID.y) / 16.0f);
+
+	// Output texel
+	imageStore(OutputTextureMap, ivec2(gl_GlobalInvocationID.xy), color);
 }
 )";
 
