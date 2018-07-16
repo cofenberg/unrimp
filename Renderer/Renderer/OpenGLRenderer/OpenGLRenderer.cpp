@@ -6540,6 +6540,18 @@ namespace OpenGLRenderer
 			return mOpenGLTexture;
 		}
 
+		/**
+		*  @brief
+		*    Return the OpenGL internal format
+		*
+		*  @return
+		*    The OpenGL internal format
+		*/
+		inline GLuint getOpenGLInternalFormat() const
+		{
+			return mOpenGLInternalFormat;
+		}
+
 
 	//[-------------------------------------------------------]
 	//[ Public virtual Renderer::IResource methods            ]
@@ -6584,11 +6596,14 @@ namespace OpenGLRenderer
 		*
 		*  @param[in] openGLRenderer
 		*    Owner OpenGL renderer instance
+		*  @param[in] textureFormat
+		*    Texture buffer data format
 		*/
-		inline explicit TextureBuffer(OpenGLRenderer& openGLRenderer) :
+		inline explicit TextureBuffer(OpenGLRenderer& openGLRenderer, Renderer::TextureFormat::Enum textureFormat) :
 			ITextureBuffer(static_cast<Renderer::IRenderer&>(openGLRenderer)),
 			mOpenGLTextureBuffer(0),
-			mOpenGLTexture(0)
+			mOpenGLTexture(0),
+			mOpenGLInternalFormat(Mapping::getOpenGLInternalFormat(textureFormat))
 		{}
 
 
@@ -6598,6 +6613,7 @@ namespace OpenGLRenderer
 	protected:
 		GLuint mOpenGLTextureBuffer;	///< OpenGL texture buffer, can be zero if no resource is allocated
 		GLuint mOpenGLTexture;			///< OpenGL texture, can be zero if no resource is allocated
+		GLuint mOpenGLInternalFormat;	///< OpenGL internal format
 
 
 	//[-------------------------------------------------------]
@@ -6644,7 +6660,7 @@ namespace OpenGLRenderer
 		*    Indication of the buffer usage
 		*/
 		TextureBufferBind(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
-			TextureBuffer(openGLRenderer)
+			TextureBuffer(openGLRenderer, textureFormat)
 		{
 			{ // Buffer part
 				#ifdef RENDERER_OPENGL_STATE_CLEANUP
@@ -6681,7 +6697,7 @@ namespace OpenGLRenderer
 				glBindTexture(GL_TEXTURE_BUFFER_ARB, mOpenGLTexture);
 
 				// Attaches the storage for the buffer object to the active buffer texture
-				glTexBufferARB(GL_TEXTURE_BUFFER_ARB, Mapping::getOpenGLInternalFormat(textureFormat), mOpenGLTextureBuffer);
+				glTexBufferARB(GL_TEXTURE_BUFFER_ARB, mOpenGLInternalFormat, mOpenGLTextureBuffer);
 
 				#ifdef RENDERER_OPENGL_STATE_CLEANUP
 					// Be polite and restore the previous bound OpenGL texture
@@ -6742,7 +6758,7 @@ namespace OpenGLRenderer
 		*    Indication of the buffer usage
 		*/
 		TextureBufferDsa(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
-			TextureBuffer(openGLRenderer)
+			TextureBuffer(openGLRenderer, textureFormat)
 		{
 			if (openGLRenderer.getExtensions().isGL_ARB_direct_state_access())
 			{
@@ -6760,7 +6776,7 @@ namespace OpenGLRenderer
 					glCreateTextures(GL_TEXTURE_BUFFER_ARB, 1, &mOpenGLTexture);
 
 					// Attach the storage for the buffer object to the buffer texture
-					glTextureBuffer(mOpenGLTexture, Mapping::getOpenGLInternalFormat(textureFormat), mOpenGLTextureBuffer);
+					glTextureBuffer(mOpenGLTexture, mOpenGLInternalFormat, mOpenGLTextureBuffer);
 				}
 			}
 			else
@@ -6788,7 +6804,7 @@ namespace OpenGLRenderer
 
 					// Attaches the storage for the buffer object to the active buffer texture
 					// -> Sadly, there's no direct state access (DSA) function defined for this in "GL_EXT_direct_state_access"
-					glTexBufferARB(GL_TEXTURE_BUFFER_ARB, Mapping::getOpenGLInternalFormat(textureFormat), mOpenGLTextureBuffer);
+					glTexBufferARB(GL_TEXTURE_BUFFER_ARB, mOpenGLInternalFormat, mOpenGLTextureBuffer);
 
 					#ifdef RENDERER_OPENGL_STATE_CLEANUP
 						// Be polite and restore the previous bound OpenGL texture
@@ -7334,6 +7350,18 @@ namespace OpenGLRenderer
 
 		/**
 		*  @brief
+		*    Return the OpenGL internal format
+		*
+		*  @return
+		*    The OpenGL internal format
+		*/
+		inline GLuint getOpenGLInternalFormat() const
+		{
+			return mOpenGLInternalFormat;
+		}
+
+		/**
+		*  @brief
 		*    Return whether or not mipmaps should be generated automatically
 		*
 		*  @return
@@ -7388,10 +7416,13 @@ namespace OpenGLRenderer
 		*    Owner OpenGL renderer instance
 		*  @param[in] width
 		*    The width of the texture
+		*  @param[in] textureFormat
+		*    Texture format
 		*/
-		inline Texture1D(OpenGLRenderer& openGLRenderer, uint32_t width) :
+		inline Texture1D(OpenGLRenderer& openGLRenderer, uint32_t width, Renderer::TextureFormat::Enum textureFormat) :
 			ITexture1D(static_cast<Renderer::IRenderer&>(openGLRenderer), width),
 			mOpenGLTexture(0),
+			mOpenGLInternalFormat(Mapping::getOpenGLInternalFormat(textureFormat)),
 			mGenerateMipmaps(false)
 		{}
 
@@ -7400,7 +7431,8 @@ namespace OpenGLRenderer
 	//[ Protected data                                        ]
 	//[-------------------------------------------------------]
 	protected:
-		GLuint mOpenGLTexture;	///< OpenGL texture, can be zero if no resource is allocated
+		GLuint mOpenGLTexture;			///< OpenGL texture, can be zero if no resource is allocated
+		GLuint mOpenGLInternalFormat;	///< OpenGL internal format
 		bool   mGenerateMipmaps;
 
 
@@ -7448,7 +7480,7 @@ namespace OpenGLRenderer
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*/
 		Texture1DBind(OpenGLRenderer& openGLRenderer, uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags) :
-			Texture1D(openGLRenderer, width)
+			Texture1D(openGLRenderer, width, textureFormat)
 		{
 			// Sanity checks
 			RENDERER_ASSERT(openGLRenderer.getContext(), 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL texture parameters")
@@ -7486,12 +7518,11 @@ namespace OpenGLRenderer
 				if (dataContainsMipmaps)
 				{
 					// Upload all mipmaps
-					const uint32_t internalFormat = Mapping::getOpenGLInternalFormat(textureFormat);
 					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
 					{
 						// Upload the current mipmap
 						const GLsizei numberOfBytesPerSlice = static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1));
-						glCompressedTexImage1DARB(GL_TEXTURE_1D, static_cast<GLint>(mipmap), internalFormat, static_cast<GLsizei>(width), 0, numberOfBytesPerSlice, data);
+						glCompressedTexImage1DARB(GL_TEXTURE_1D, static_cast<GLint>(mipmap), mOpenGLInternalFormat, static_cast<GLsizei>(width), 0, numberOfBytesPerSlice, data);
 
 						// Move on to the next mipmap and ensure the size is always at least 1
 						data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
@@ -7501,7 +7532,7 @@ namespace OpenGLRenderer
 				else
 				{
 					// The user only provided us with the base texture, no mipmaps
-					glCompressedTexImage1DARB(GL_TEXTURE_1D, 0, Mapping::getOpenGLInternalFormat(textureFormat), static_cast<GLsizei>(width), 0, static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1)), data);
+					glCompressedTexImage1DARB(GL_TEXTURE_1D, 0, mOpenGLInternalFormat, static_cast<GLsizei>(width), 0, static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1)), data);
 				}
 			}
 			else
@@ -7512,14 +7543,13 @@ namespace OpenGLRenderer
 				if (dataContainsMipmaps)
 				{
 					// Upload all mipmaps
-					const GLint internalFormat = static_cast<GLint>(Mapping::getOpenGLInternalFormat(textureFormat));
 					const uint32_t format = Mapping::getOpenGLFormat(textureFormat);
 					const uint32_t type = Mapping::getOpenGLType(textureFormat);
 					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
 					{
 						// Upload the current mipmap
 						const GLsizei numberOfBytesPerSlice = static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1));
-						glTexImage1D(GL_TEXTURE_1D, static_cast<GLint>(mipmap), internalFormat, static_cast<GLsizei>(width), 0, format, type, data);
+						glTexImage1D(GL_TEXTURE_1D, static_cast<GLint>(mipmap), static_cast<GLint>(mOpenGLInternalFormat), static_cast<GLsizei>(width), 0, format, type, data);
 
 						// Move on to the next mipmap and ensure the size is always at least 1
 						data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
@@ -7529,7 +7559,7 @@ namespace OpenGLRenderer
 				else
 				{
 					// The user only provided us with the base texture, no mipmaps
-					glTexImage1D(GL_TEXTURE_1D, 0, static_cast<GLint>(Mapping::getOpenGLInternalFormat(textureFormat)), static_cast<GLsizei>(width), 0, Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
+					glTexImage1D(GL_TEXTURE_1D, 0, static_cast<GLint>(mOpenGLInternalFormat), static_cast<GLsizei>(width), 0, Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
 				}
 			}
 
@@ -7606,7 +7636,7 @@ namespace OpenGLRenderer
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*/
 		Texture1DDsa(OpenGLRenderer& openGLRenderer, uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags) :
-			Texture1D(openGLRenderer, width)
+			Texture1D(openGLRenderer, width, textureFormat)
 		{
 			// Sanity checks
 			RENDERER_ASSERT(openGLRenderer.getContext(), 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL texture parameters")
@@ -7649,7 +7679,7 @@ namespace OpenGLRenderer
 					// Allocate storage for all levels
 					if (isArbDsa)
 					{
-						glTextureStorage1D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), Mapping::getOpenGLInternalFormat(textureFormat), static_cast<GLsizei>(width));
+						glTextureStorage1D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width));
 					}
 
 					// Upload all mipmaps
@@ -7679,7 +7709,7 @@ namespace OpenGLRenderer
 					if (isArbDsa)
 					{
 						// Allocate storage for all levels
-						glTextureStorage1D(mOpenGLTexture, 1, Mapping::getOpenGLInternalFormat(textureFormat), static_cast<GLsizei>(width));
+						glTextureStorage1D(mOpenGLTexture, 1, mOpenGLInternalFormat, static_cast<GLsizei>(width));
 						if (nullptr != data)
 						{
 							glCompressedTextureSubImage1D(mOpenGLTexture, 0, 0, static_cast<GLsizei>(width), Mapping::getOpenGLFormat(textureFormat), static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1)), data);
@@ -7687,7 +7717,7 @@ namespace OpenGLRenderer
 					}
 					else
 					{
-						glCompressedTextureImage1DEXT(mOpenGLTexture, GL_TEXTURE_1D, 0, Mapping::getOpenGLInternalFormat(textureFormat), static_cast<GLsizei>(width), 0, static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1)), data);
+						glCompressedTextureImage1DEXT(mOpenGLTexture, GL_TEXTURE_1D, 0, mOpenGLInternalFormat, static_cast<GLsizei>(width), 0, static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1)), data);
 					}
 				}
 			}
@@ -7701,11 +7731,10 @@ namespace OpenGLRenderer
 					// Allocate storage for all levels
 					if (isArbDsa)
 					{
-						glTextureStorage1D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), Mapping::getOpenGLInternalFormat(textureFormat), static_cast<GLsizei>(width));
+						glTextureStorage1D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width));
 					}
 
 					// Upload all mipmaps
-					const GLint internalFormat = static_cast<GLint>(Mapping::getOpenGLInternalFormat(textureFormat));
 					const uint32_t format = Mapping::getOpenGLFormat(textureFormat);
 					const uint32_t type = Mapping::getOpenGLType(textureFormat);
 					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
@@ -7719,7 +7748,7 @@ namespace OpenGLRenderer
 						}
 						else
 						{
-							glTextureImage1DEXT(mOpenGLTexture, GL_TEXTURE_1D, static_cast<GLint>(mipmap), internalFormat, static_cast<GLsizei>(width), 0, format, type, data);
+							glTextureImage1DEXT(mOpenGLTexture, GL_TEXTURE_1D, static_cast<GLint>(mipmap), static_cast<GLint>(mOpenGLInternalFormat), static_cast<GLsizei>(width), 0, format, type, data);
 						}
 
 						// Move on to the next mipmap and ensure the size is always at least 1
@@ -7733,7 +7762,7 @@ namespace OpenGLRenderer
 					if (isArbDsa)
 					{
 						// Allocate storage for all levels
-						glTextureStorage1D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), Mapping::getOpenGLInternalFormat(textureFormat), static_cast<GLsizei>(width));
+						glTextureStorage1D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width));
 						if (nullptr != data)
 						{
 							glTextureSubImage1D(mOpenGLTexture, 0, 0, static_cast<GLsizei>(width), Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
@@ -7741,7 +7770,7 @@ namespace OpenGLRenderer
 					}
 					else
 					{
-						glTextureImage1DEXT(mOpenGLTexture, GL_TEXTURE_1D, 0, static_cast<GLint>(Mapping::getOpenGLInternalFormat(textureFormat)), static_cast<GLsizei>(width), 0, Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
+						glTextureImage1DEXT(mOpenGLTexture, GL_TEXTURE_1D, 0, static_cast<GLint>(mOpenGLInternalFormat), static_cast<GLsizei>(width), 0, Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
 					}
 				}
 			}
@@ -7860,6 +7889,18 @@ namespace OpenGLRenderer
 
 		/**
 		*  @brief
+		*    Return the OpenGL internal format
+		*
+		*  @return
+		*    The OpenGL internal format
+		*/
+		inline GLuint getOpenGLInternalFormat() const
+		{
+			return mOpenGLInternalFormat;
+		}
+
+		/**
+		*  @brief
 		*    Return whether or not mipmaps should be generated automatically
 		*
 		*  @return
@@ -7932,13 +7973,16 @@ namespace OpenGLRenderer
 		*    The width of the texture
 		*  @param[in] height
 		*    The height of the texture
+		*  @param[in] textureFormat
+		*    Texture format
 		*  @param[in] numberOfMultisamples
 		*    The number of multisamples per pixel (valid values: 1, 2, 4, 8)
 		*/
-		inline Texture2D(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, uint8_t numberOfMultisamples) :
+		inline Texture2D(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, uint8_t numberOfMultisamples) :
 			ITexture2D(static_cast<Renderer::IRenderer&>(openGLRenderer), width, height),
 			mNumberOfMultisamples(numberOfMultisamples),
 			mOpenGLTexture(0),
+			mOpenGLInternalFormat(Mapping::getOpenGLInternalFormat(textureFormat)),
 			mGenerateMipmaps(false)
 		{}
 
@@ -7949,6 +7993,7 @@ namespace OpenGLRenderer
 	protected:
 		uint8_t mNumberOfMultisamples;	///< The number of multisamples per pixel (valid values: 1, 2, 4, 8)
 		GLuint  mOpenGLTexture;			///< OpenGL texture, can be zero if no resource is allocated
+		GLuint  mOpenGLInternalFormat;	///< OpenGL internal format
 		bool	mGenerateMipmaps;
 
 
@@ -8000,7 +8045,7 @@ namespace OpenGLRenderer
 		*    The number of multisamples per pixel (valid values: 1, 2, 4, 8)
 		*/
 		Texture2DBind(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags, uint8_t numberOfMultisamples) :
-			Texture2D(openGLRenderer, width, height, numberOfMultisamples)
+			Texture2D(openGLRenderer, width, height, textureFormat, numberOfMultisamples)
 		{
 			// Sanity checks
 			RENDERER_ASSERT(openGLRenderer.getContext(), numberOfMultisamples == 1 || numberOfMultisamples == 2 || numberOfMultisamples == 4 || numberOfMultisamples == 8, "Invalid OpenGL texture parameters")
@@ -8027,7 +8072,7 @@ namespace OpenGLRenderer
 				glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, mOpenGLTexture);
 
 				// Define the texture
-				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, numberOfMultisamples, Mapping::getOpenGLInternalFormat(textureFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), GL_TRUE);
+				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, numberOfMultisamples, mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), GL_TRUE);
 
 				#ifdef RENDERER_OPENGL_STATE_CLEANUP
 					// Be polite and restore the previous bound OpenGL texture
@@ -8065,12 +8110,11 @@ namespace OpenGLRenderer
 					if (dataContainsMipmaps)
 					{
 						// Upload all mipmaps
-						const uint32_t internalFormat = Mapping::getOpenGLInternalFormat(textureFormat);
 						for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
 						{
 							// Upload the current mipmap
 							const GLsizei numberOfBytesPerSlice = static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height));
-							glCompressedTexImage2DARB(GL_TEXTURE_2D, static_cast<GLint>(mipmap), internalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, numberOfBytesPerSlice, data);
+							glCompressedTexImage2DARB(GL_TEXTURE_2D, static_cast<GLint>(mipmap), mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, numberOfBytesPerSlice, data);
 
 							// Move on to the next mipmap and ensure the size is always at least 1x1
 							data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
@@ -8081,7 +8125,7 @@ namespace OpenGLRenderer
 					else
 					{
 						// The user only provided us with the base texture, no mipmaps
-						glCompressedTexImage2DARB(GL_TEXTURE_2D, 0, Mapping::getOpenGLInternalFormat(textureFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height)), data);
+						glCompressedTexImage2DARB(GL_TEXTURE_2D, 0, mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height)), data);
 					}
 				}
 				else
@@ -8092,14 +8136,13 @@ namespace OpenGLRenderer
 					if (dataContainsMipmaps)
 					{
 						// Upload all mipmaps
-						const GLint internalFormat = static_cast<GLint>(Mapping::getOpenGLInternalFormat(textureFormat));
 						const uint32_t format = Mapping::getOpenGLFormat(textureFormat);
 						const uint32_t type = Mapping::getOpenGLType(textureFormat);
 						for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
 						{
 							// Upload the current mipmap
 							const GLsizei numberOfBytesPerSlice = static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height));
-							glTexImage2D(GL_TEXTURE_2D, static_cast<GLint>(mipmap), internalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, format, type, data);
+							glTexImage2D(GL_TEXTURE_2D, static_cast<GLint>(mipmap), static_cast<GLint>(mOpenGLInternalFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, format, type, data);
 
 							// Move on to the next mipmap and ensure the size is always at least 1x1
 							data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
@@ -8110,7 +8153,7 @@ namespace OpenGLRenderer
 					else
 					{
 						// The user only provided us with the base texture, no mipmaps
-						glTexImage2D(GL_TEXTURE_2D, 0, static_cast<GLint>(Mapping::getOpenGLInternalFormat(textureFormat)), static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
+						glTexImage2D(GL_TEXTURE_2D, 0, static_cast<GLint>(mOpenGLInternalFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
 					}
 				}
 
@@ -8224,7 +8267,7 @@ namespace OpenGLRenderer
 		*    The number of multisamples per pixel (valid values: 1, 2, 4, 8)
 		*/
 		Texture2DDsa(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags, uint8_t numberOfMultisamples) :
-			Texture2D(openGLRenderer, width, height, numberOfMultisamples)
+			Texture2D(openGLRenderer, width, height, textureFormat, numberOfMultisamples)
 		{
 			// Sanity checks
 			RENDERER_ASSERT(openGLRenderer.getContext(), numberOfMultisamples == 1 || numberOfMultisamples == 2 || numberOfMultisamples == 4 || numberOfMultisamples == 8, "Invalid OpenGL texture parameters")
@@ -8245,7 +8288,7 @@ namespace OpenGLRenderer
 					glCreateTextures(GL_TEXTURE_2D_MULTISAMPLE, 1, &mOpenGLTexture);
 
 					// Define the texture
-					glTextureStorage2DMultisample(mOpenGLTexture, numberOfMultisamples, Mapping::getOpenGLInternalFormat(textureFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), GL_TRUE);
+					glTextureStorage2DMultisample(mOpenGLTexture, numberOfMultisamples, mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), GL_TRUE);
 				}
 				else
 				{
@@ -8263,7 +8306,7 @@ namespace OpenGLRenderer
 
 					// Define the texture
 					// -> Sadly, there's no direct state access (DSA) function defined for this in "GL_EXT_direct_state_access"
-					glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, numberOfMultisamples, Mapping::getOpenGLInternalFormat(textureFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), GL_TRUE);
+					glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, numberOfMultisamples, mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), GL_TRUE);
 
 					#ifdef RENDERER_OPENGL_STATE_CLEANUP
 						// Be polite and restore the previous bound OpenGL texture
@@ -8308,7 +8351,7 @@ namespace OpenGLRenderer
 						// Allocate storage for all levels
 						if (isArbDsa)
 						{
-							glTextureStorage2D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), Mapping::getOpenGLInternalFormat(textureFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height));
+							glTextureStorage2D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
 						}
 
 						// Upload all mipmaps
@@ -8339,7 +8382,7 @@ namespace OpenGLRenderer
 						if (isArbDsa)
 						{
 							// Allocate storage for all levels
-							glTextureStorage2D(mOpenGLTexture, 1, Mapping::getOpenGLInternalFormat(textureFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height));
+							glTextureStorage2D(mOpenGLTexture, 1, mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
 							if (nullptr != data)
 							{
 								glCompressedTextureSubImage2D(mOpenGLTexture, 0, 0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height), Mapping::getOpenGLFormat(textureFormat), static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height)), data);
@@ -8347,7 +8390,7 @@ namespace OpenGLRenderer
 						}
 						else
 						{
-							glCompressedTextureImage2DEXT(mOpenGLTexture, GL_TEXTURE_2D, 0, Mapping::getOpenGLInternalFormat(textureFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height)), data);
+							glCompressedTextureImage2DEXT(mOpenGLTexture, GL_TEXTURE_2D, 0, mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height)), data);
 						}
 					}
 				}
@@ -8361,11 +8404,10 @@ namespace OpenGLRenderer
 						// Allocate storage for all levels
 						if (isArbDsa)
 						{
-							glTextureStorage2D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), Mapping::getOpenGLInternalFormat(textureFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height));
+							glTextureStorage2D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
 						}
 
 						// Upload all mipmaps
-						const GLint internalFormat = static_cast<GLint>(Mapping::getOpenGLInternalFormat(textureFormat));
 						const uint32_t format = Mapping::getOpenGLFormat(textureFormat);
 						const uint32_t type = Mapping::getOpenGLType(textureFormat);
 						for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
@@ -8379,7 +8421,7 @@ namespace OpenGLRenderer
 							}
 							else
 							{
-								glTextureImage2DEXT(mOpenGLTexture, GL_TEXTURE_2D, static_cast<GLint>(mipmap), internalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, format, type, data);
+								glTextureImage2DEXT(mOpenGLTexture, GL_TEXTURE_2D, static_cast<GLint>(mipmap), static_cast<GLint>(mOpenGLInternalFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, format, type, data);
 							}
 
 							// Move on to the next mipmap and ensure the size is always at least 1x1
@@ -8394,7 +8436,7 @@ namespace OpenGLRenderer
 						if (isArbDsa)
 						{
 							// Allocate storage for all levels
-							glTextureStorage2D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), Mapping::getOpenGLInternalFormat(textureFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height));
+							glTextureStorage2D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
 							if (nullptr != data)
 							{
 								glTextureSubImage2D(mOpenGLTexture, 0, 0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height), Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
@@ -8402,7 +8444,7 @@ namespace OpenGLRenderer
 						}
 						else
 						{
-							glTextureImage2DEXT(mOpenGLTexture, GL_TEXTURE_2D, 0, static_cast<GLint>(Mapping::getOpenGLInternalFormat(textureFormat)), static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
+							glTextureImage2DEXT(mOpenGLTexture, GL_TEXTURE_2D, 0, static_cast<GLint>(mOpenGLInternalFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
 						}
 					}
 				}
@@ -8540,6 +8582,18 @@ namespace OpenGLRenderer
 			return mOpenGLTexture;
 		}
 
+		/**
+		*  @brief
+		*    Return the OpenGL internal format
+		*
+		*  @return
+		*    The OpenGL internal format
+		*/
+		inline GLuint getOpenGLInternalFormat() const
+		{
+			return mOpenGLInternalFormat;
+		}
+
 
 	//[-------------------------------------------------------]
 	//[ Public virtual Renderer::IResource methods            ]
@@ -8583,11 +8637,14 @@ namespace OpenGLRenderer
 		*    The height of the texture
 		*  @param[in] numberOfSlices
 		*    The number of slices
+		*  @param[in] textureFormat
+		*    Texture format
 		*/
-		inline Texture2DArray(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, uint32_t numberOfSlices) :
+		inline Texture2DArray(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat) :
 			ITexture2DArray(static_cast<Renderer::IRenderer&>(openGLRenderer), width, height, numberOfSlices),
 			mNumberOfMultisamples(1),	// TODO(co) Currently no MSAA support for 2D array textures
-			mOpenGLTexture(0)
+			mOpenGLTexture(0),
+			mOpenGLInternalFormat(Mapping::getOpenGLInternalFormat(textureFormat))
 		{}
 
 
@@ -8597,6 +8654,7 @@ namespace OpenGLRenderer
 	protected:
 		uint8_t mNumberOfMultisamples;	///< The number of multisamples per pixel (valid values: 1, 2, 4, 8)
 		GLuint  mOpenGLTexture;			///< OpenGL texture, can be zero if no resource is allocated
+		GLuint  mOpenGLInternalFormat;	///< OpenGL internal format
 
 
 	//[-------------------------------------------------------]
@@ -8647,7 +8705,7 @@ namespace OpenGLRenderer
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*/
 		Texture2DArrayBind(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags) :
-			Texture2DArray(openGLRenderer, width, height, numberOfSlices)
+			Texture2DArray(openGLRenderer, width, height, numberOfSlices, textureFormat)
 		{
 			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently set alignment
@@ -8675,7 +8733,7 @@ namespace OpenGLRenderer
 			//   etc.
 
 			// Upload the base map of the texture (mipmaps are automatically created as soon as the base map is changed)
-			glTexImage3DEXT(GL_TEXTURE_2D_ARRAY_EXT, 0, Mapping::getOpenGLInternalFormat(textureFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(numberOfSlices), 0, Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
+			glTexImage3DEXT(GL_TEXTURE_2D_ARRAY_EXT, 0, mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(numberOfSlices), 0, Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
 
 			// Build mipmaps automatically on the GPU? (or GPU driver)
 			if ((flags & Renderer::TextureFlag::GENERATE_MIPMAPS) && openGLRenderer.getExtensions().isGL_ARB_framebuffer_object())
@@ -8754,7 +8812,7 @@ namespace OpenGLRenderer
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*/
 		Texture2DArrayDsa(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags) :
-			Texture2DArray(openGLRenderer, width, height, numberOfSlices)
+			Texture2DArray(openGLRenderer, width, height, numberOfSlices, textureFormat)
 		{
 			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently set alignment
@@ -8793,7 +8851,7 @@ namespace OpenGLRenderer
 			// Upload the base map of the texture (mipmaps are automatically created as soon as the base map is changed)
 			if (isArbDsa)
 			{
-				glTextureStorage3D(mOpenGLTexture, 1, Mapping::getOpenGLInternalFormat(textureFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(numberOfSlices));
+				glTextureStorage3D(mOpenGLTexture, 1, mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(numberOfSlices));
 				if (nullptr != data)
 				{
 					glTextureSubImage3D(mOpenGLTexture, 0, 0, 0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(numberOfSlices), Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
@@ -8801,7 +8859,7 @@ namespace OpenGLRenderer
 			}
 			else
 			{
-				glTextureImage3DEXT(mOpenGLTexture, GL_TEXTURE_2D_ARRAY_EXT, 0, static_cast<GLint>(Mapping::getOpenGLInternalFormat(textureFormat)), static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(numberOfSlices), 0, Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
+				glTextureImage3DEXT(mOpenGLTexture, GL_TEXTURE_2D_ARRAY_EXT, 0, static_cast<GLint>(mOpenGLInternalFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(numberOfSlices), 0, Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
 			}
 
 			// Build mipmaps automatically on the GPU? (or GPU driver)
@@ -8895,6 +8953,18 @@ namespace OpenGLRenderer
 
 		/**
 		*  @brief
+		*    Return the OpenGL texture
+		*
+		*  @return
+		*    The OpenGL texture, can be zero if no resource is allocated, do not destroy the returned resource
+		*/
+		inline GLuint getOpenGLTexture() const
+		{
+			return mOpenGLTexture;
+		}
+
+		/**
+		*  @brief
 		*    Return the texture format
 		*
 		*  @return
@@ -8907,14 +8977,14 @@ namespace OpenGLRenderer
 
 		/**
 		*  @brief
-		*    Return the OpenGL texture
+		*    Return the OpenGL internal format
 		*
 		*  @return
-		*    The OpenGL texture, can be zero if no resource is allocated, do not destroy the returned resource
+		*    The OpenGL internal format
 		*/
-		inline GLuint getOpenGLTexture() const
+		inline GLuint getOpenGLInternalFormat() const
 		{
-			return mOpenGLTexture;
+			return mOpenGLInternalFormat;
 		}
 
 		/**
@@ -8994,8 +9064,9 @@ namespace OpenGLRenderer
 		*/
 		inline Texture3D(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat) :
 			ITexture3D(static_cast<Renderer::IRenderer&>(openGLRenderer), width, height, depth),
-			mTextureFormat(textureFormat),
 			mOpenGLTexture(0),
+			mTextureFormat(textureFormat),
+			mOpenGLInternalFormat(Mapping::getOpenGLInternalFormat(textureFormat)),
 			mOpenGLPixelUnpackBuffer(0),
 			mGenerateMipmaps(false)
 		{}
@@ -9005,8 +9076,9 @@ namespace OpenGLRenderer
 	//[ Protected data                                        ]
 	//[-------------------------------------------------------]
 	protected:
-		Renderer::TextureFormat::Enum mTextureFormat;
 		GLuint						  mOpenGLTexture;			///< OpenGL texture, can be zero if no resource is allocated
+		Renderer::TextureFormat::Enum mTextureFormat;
+		GLuint						  mOpenGLInternalFormat;	///< OpenGL internal format
 		GLuint						  mOpenGLPixelUnpackBuffer;	///< OpenGL pixel unpack buffer for dynamic textures, can be zero if no resource is allocated
 		bool						  mGenerateMipmaps;
 
@@ -9131,12 +9203,11 @@ namespace OpenGLRenderer
 					//   etc.
 
 					// Upload all mipmaps
-					const uint32_t internalFormat = Mapping::getOpenGLInternalFormat(textureFormat);
 					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
 					{
 						// Upload the current mipmap
 						const GLsizei numberOfBytesPerMipmap = static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height) * depth);
-						glCompressedTexImage3DARB(GL_TEXTURE_3D, static_cast<GLint>(mipmap), internalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(depth), 0, numberOfBytesPerMipmap, data);
+						glCompressedTexImage3DARB(GL_TEXTURE_3D, static_cast<GLint>(mipmap), mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(depth), 0, numberOfBytesPerMipmap, data);
 
 						// Move on to the next mipmap and ensure the size is always at least 1x1x1
 						data = static_cast<const uint8_t*>(data) + numberOfBytesPerMipmap;
@@ -9148,7 +9219,7 @@ namespace OpenGLRenderer
 				else
 				{
 					// The user only provided us with the base texture, no mipmaps
-					glCompressedTexImage3DARB(GL_TEXTURE_3D, 0, Mapping::getOpenGLInternalFormat(textureFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(depth), 0, static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height)), data);
+					glCompressedTexImage3DARB(GL_TEXTURE_3D, 0, mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(depth), 0, static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height)), data);
 				}
 			}
 			else
@@ -9164,14 +9235,13 @@ namespace OpenGLRenderer
 					//   etc.
 
 					// Upload all mipmaps
-					const GLenum internalFormat = static_cast<GLenum>(Mapping::getOpenGLInternalFormat(textureFormat));
 					const uint32_t format = Mapping::getOpenGLFormat(textureFormat);
 					const uint32_t type = Mapping::getOpenGLType(textureFormat);
 					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
 					{
 						// Upload the current mipmap
 						const GLsizei numberOfBytesPerMipmap = static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height) * depth);
-						glTexImage3DEXT(GL_TEXTURE_3D, static_cast<GLint>(mipmap), internalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(depth), 0, format, type, data);
+						glTexImage3DEXT(GL_TEXTURE_3D, static_cast<GLint>(mipmap), mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(depth), 0, format, type, data);
 
 						// Move on to the next mipmap and ensure the size is always at least 1x1x1
 						data = static_cast<const uint8_t*>(data) + numberOfBytesPerMipmap;
@@ -9183,7 +9253,7 @@ namespace OpenGLRenderer
 				else
 				{
 					// The user only provided us with the base texture, no mipmaps
-					glTexImage3DEXT(GL_TEXTURE_3D, 0, static_cast<GLenum>(Mapping::getOpenGLInternalFormat(textureFormat)), static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(depth), 0, Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
+					glTexImage3DEXT(GL_TEXTURE_3D, 0, static_cast<GLenum>(mOpenGLInternalFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(depth), 0, Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
 				}
 			}
 
@@ -9325,7 +9395,7 @@ namespace OpenGLRenderer
 					// Allocate storage for all levels
 					if (isArbDsa)
 					{
-						glTextureStorage3D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), Mapping::getOpenGLInternalFormat(textureFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(depth));
+						glTextureStorage3D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(depth));
 					}
 
 					// Upload all mipmaps
@@ -9357,7 +9427,7 @@ namespace OpenGLRenderer
 					if (isArbDsa)
 					{
 						// Allocate storage for all levels
-						glTextureStorage3D(mOpenGLTexture, 1, Mapping::getOpenGLInternalFormat(textureFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(depth));
+						glTextureStorage3D(mOpenGLTexture, 1, mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(depth));
 						if (nullptr != data)
 						{
 							glCompressedTextureSubImage3D(mOpenGLTexture, 0, 0, 0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(depth), Mapping::getOpenGLFormat(textureFormat), static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height)), data);
@@ -9365,7 +9435,7 @@ namespace OpenGLRenderer
 					}
 					else
 					{
-						glCompressedTextureImage3DEXT(mOpenGLTexture, GL_TEXTURE_3D, 0, Mapping::getOpenGLInternalFormat(textureFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(depth), 0, static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height)), data);
+						glCompressedTextureImage3DEXT(mOpenGLTexture, GL_TEXTURE_3D, 0, mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(depth), 0, static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height)), data);
 					}
 				}
 			}
@@ -9384,11 +9454,10 @@ namespace OpenGLRenderer
 					// Allocate storage for all levels
 					if (isArbDsa)
 					{
-						glTextureStorage3D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), Mapping::getOpenGLInternalFormat(textureFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(height));
+						glTextureStorage3D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(height));
 					}
 
 					// Upload all mipmaps
-					const GLint internalFormat = static_cast<GLint>(Mapping::getOpenGLInternalFormat(textureFormat));
 					const uint32_t format = Mapping::getOpenGLFormat(textureFormat);
 					const uint32_t type = Mapping::getOpenGLType(textureFormat);
 					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
@@ -9402,7 +9471,7 @@ namespace OpenGLRenderer
 						}
 						else
 						{
-							glTextureImage3DEXT(mOpenGLTexture, GL_TEXTURE_3D, static_cast<GLint>(mipmap), internalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(depth), 0, format, type, data);
+							glTextureImage3DEXT(mOpenGLTexture, GL_TEXTURE_3D, static_cast<GLint>(mipmap), static_cast<GLint>(mOpenGLInternalFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(depth), 0, format, type, data);
 						}
 
 						// Move on to the next mipmap and ensure the size is always at least 1x1x1
@@ -9418,7 +9487,7 @@ namespace OpenGLRenderer
 					if (isArbDsa)
 					{
 						// Allocate storage for all levels
-						glTextureStorage3D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), Mapping::getOpenGLInternalFormat(textureFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(depth));
+						glTextureStorage3D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(depth));
 						if (nullptr != data)
 						{
 							glTextureSubImage3D(mOpenGLTexture, 0, 0, 0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(depth), Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
@@ -9426,7 +9495,7 @@ namespace OpenGLRenderer
 					}
 					else
 					{
-						glTextureImage3DEXT(mOpenGLTexture, GL_TEXTURE_3D, 0, static_cast<GLint>(Mapping::getOpenGLInternalFormat(textureFormat)), static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(depth), 0, Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
+						glTextureImage3DEXT(mOpenGLTexture, GL_TEXTURE_3D, 0, static_cast<GLint>(mOpenGLInternalFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(depth), 0, Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
 					}
 				}
 			}
@@ -9533,6 +9602,18 @@ namespace OpenGLRenderer
 
 		/**
 		*  @brief
+		*    Return the OpenGL internal format
+		*
+		*  @return
+		*    The OpenGL internal format
+		*/
+		inline GLuint getOpenGLInternalFormat() const
+		{
+			return mOpenGLInternalFormat;
+		}
+
+		/**
+		*  @brief
 		*    Return whether or not mipmaps should be generated automatically
 		*
 		*  @return
@@ -9589,10 +9670,13 @@ namespace OpenGLRenderer
 		*    The width of the texture
 		*  @param[in] height
 		*    The height of the texture
+		*  @param[in] textureFormat
+		*    Texture format
 		*/
-		inline TextureCube(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height) :
+		inline TextureCube(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat) :
 			ITextureCube(static_cast<Renderer::IRenderer&>(openGLRenderer), width, height),
 			mOpenGLTexture(0),
+			mOpenGLInternalFormat(Mapping::getOpenGLInternalFormat(textureFormat)),
 			mGenerateMipmaps(false)
 		{}
 
@@ -9601,7 +9685,8 @@ namespace OpenGLRenderer
 	//[ Protected data                                        ]
 	//[-------------------------------------------------------]
 	protected:
-		GLuint mOpenGLTexture;	///< OpenGL texture, can be zero if no resource is allocated
+		GLuint mOpenGLTexture;			///< OpenGL texture, can be zero if no resource is allocated
+		GLuint mOpenGLInternalFormat;	///< OpenGL internal format
 		bool   mGenerateMipmaps;
 
 
@@ -9651,7 +9736,7 @@ namespace OpenGLRenderer
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*/
 		TextureCubeBind(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags) :
-			TextureCube(openGLRenderer, width, height)
+			TextureCube(openGLRenderer, width, height, textureFormat)
 		{
 			// Sanity checks
 			RENDERER_ASSERT(openGLRenderer.getContext(), 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL texture parameters")
@@ -9694,14 +9779,13 @@ namespace OpenGLRenderer
 					//   etc.
 
 					// Upload all mipmaps of all faces
-					const uint32_t internalFormat = Mapping::getOpenGLInternalFormat(textureFormat);
 					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
 					{
 						const GLsizei numberOfBytesPerSlice = static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height));
 						for (uint32_t face = 0; face < 6; ++face)
 						{
 							// Upload the current face
-							glCompressedTexImage2DARB(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, static_cast<GLint>(mipmap), internalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, numberOfBytesPerSlice, data);
+							glCompressedTexImage2DARB(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, static_cast<GLint>(mipmap), mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, numberOfBytesPerSlice, data);
 
 							// Move on to the next face
 							data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
@@ -9716,10 +9800,9 @@ namespace OpenGLRenderer
 				{
 					// The user only provided us with the base texture, no mipmaps
 					const uint32_t numberOfBytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
-					const uint32_t openGLInternalFormat = Mapping::getOpenGLInternalFormat(textureFormat);
 					for (uint32_t face = 0; face < 6; ++face)
 					{
-						glCompressedTexImage2DARB(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, openGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, static_cast<GLsizei>(numberOfBytesPerSlice), data);
+						glCompressedTexImage2DARB(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, static_cast<GLsizei>(numberOfBytesPerSlice), data);
 						data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
 					}
 				}
@@ -9737,7 +9820,6 @@ namespace OpenGLRenderer
 					//   etc.
 
 					// Upload all mipmaps of all faces
-					const GLint internalFormat = static_cast<GLint>(Mapping::getOpenGLInternalFormat(textureFormat));
 					const uint32_t format = Mapping::getOpenGLFormat(textureFormat);
 					const uint32_t type = Mapping::getOpenGLType(textureFormat);
 					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
@@ -9746,7 +9828,7 @@ namespace OpenGLRenderer
 						for (uint32_t face = 0; face < 6; ++face)
 						{
 							// Upload the current face
-							glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, static_cast<GLint>(mipmap), internalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, format, type, data);
+							glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, static_cast<GLint>(mipmap), static_cast<GLint>(mOpenGLInternalFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, format, type, data);
 
 							// Move on to the next face
 							data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
@@ -9761,12 +9843,11 @@ namespace OpenGLRenderer
 				{
 					// The user only provided us with the base texture, no mipmaps
 					const uint32_t numberOfBytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
-					const GLint openGLInternalFormat = static_cast<GLint>(Mapping::getOpenGLInternalFormat(textureFormat));
 					const uint32_t openGLFormat = Mapping::getOpenGLFormat(textureFormat);
 					const uint32_t openGLType = Mapping::getOpenGLType(textureFormat);
 					for (uint32_t face = 0; face < 6; ++face)
 					{
-						glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, openGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, openGLFormat, openGLType, data);
+						glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, static_cast<GLint>(mOpenGLInternalFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, openGLFormat, openGLType, data);
 						data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
 					}
 				}
@@ -9847,7 +9928,7 @@ namespace OpenGLRenderer
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*/
 		TextureCubeDsa(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags) :
-			TextureCube(openGLRenderer, width, height)
+			TextureCube(openGLRenderer, width, height, textureFormat)
 		{
 			// Sanity checks
 			RENDERER_ASSERT(openGLRenderer.getContext(), 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL texture parameters")
@@ -9895,7 +9976,7 @@ namespace OpenGLRenderer
 					// Allocate storage for all levels
 					if (isArbDsa)
 					{
-						glTextureStorage2D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), Mapping::getOpenGLInternalFormat(textureFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height));
+						glTextureStorage2D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
 					}
 
 					// Data layout: The renderer interface provides: CRN and KTX files are organized in mip-major order, like this:
@@ -9941,7 +10022,7 @@ namespace OpenGLRenderer
 					if (isArbDsa)
 					{
 						// Allocate storage for all levels
-						glTextureStorage2D(mOpenGLTexture, 1, Mapping::getOpenGLInternalFormat(textureFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height));
+						glTextureStorage2D(mOpenGLTexture, 1, mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
 						if (nullptr != data)
 						{
 							glCompressedTextureSubImage3D(mOpenGLTexture, 0, 0, 0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 6, Mapping::getOpenGLFormat(textureFormat), static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height)) * 6, data);
@@ -9950,11 +10031,10 @@ namespace OpenGLRenderer
 					else
 					{
 						const GLsizei numberOfBytesPerSlice = static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height));
-						const uint32_t openGLInternalFormat = Mapping::getOpenGLInternalFormat(textureFormat);
 						for (uint32_t face = 0; face < 6; ++face)
 						{
 							// Upload the current face
-							glCompressedTextureImage2DEXT(mOpenGLTexture, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, openGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, numberOfBytesPerSlice, data);
+							glCompressedTextureImage2DEXT(mOpenGLTexture, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, numberOfBytesPerSlice, data);
 
 							// Move on to the next face
 							data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
@@ -9977,11 +10057,10 @@ namespace OpenGLRenderer
 					// Allocate storage for all levels
 					if (isArbDsa)
 					{
-						glTextureStorage2D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), Mapping::getOpenGLInternalFormat(textureFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height));
+						glTextureStorage2D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
 					}
 
 					// Upload all mipmaps of all faces
-					const GLint internalFormat = static_cast<GLint>(Mapping::getOpenGLInternalFormat(textureFormat));
 					const uint32_t format = Mapping::getOpenGLFormat(textureFormat);
 					const uint32_t type = Mapping::getOpenGLType(textureFormat);
 					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
@@ -9997,7 +10076,7 @@ namespace OpenGLRenderer
 							}
 							else
 							{
-								glTextureImage2DEXT(mOpenGLTexture, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, static_cast<GLint>(mipmap), internalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, format, type, data);
+								glTextureImage2DEXT(mOpenGLTexture, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, static_cast<GLint>(mipmap), static_cast<GLint>(mOpenGLInternalFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, format, type, data);
 							}
 
 							// Move on to the next face
@@ -10015,7 +10094,7 @@ namespace OpenGLRenderer
 					if (isArbDsa)
 					{
 						// Allocate storage for all levels
-						glTextureStorage2D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), Mapping::getOpenGLInternalFormat(textureFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height));
+						glTextureStorage2D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
 						if (nullptr != data)
 						{
 							glTextureSubImage3D(mOpenGLTexture, 0, 0, 0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 6, Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
@@ -10024,12 +10103,11 @@ namespace OpenGLRenderer
 					else
 					{
 						const uint32_t numberOfBytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
-						const GLint openGLInternalFormat = static_cast<GLint>(Mapping::getOpenGLInternalFormat(textureFormat));
 						const uint32_t openGLFormat = Mapping::getOpenGLFormat(textureFormat);
 						const uint32_t openGLType = Mapping::getOpenGLType(textureFormat);
 						for (uint32_t face = 0; face < 6; ++face)
 						{
-							glTextureImage2DEXT(mOpenGLTexture, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, openGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, openGLFormat, openGLType, data);
+							glTextureImage2DEXT(mOpenGLTexture, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, static_cast<GLint>(mOpenGLInternalFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, openGLFormat, openGLType, data);
 							data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
 						}
 					}
@@ -19363,93 +19441,46 @@ namespace OpenGLRenderer
 									switch (resourceType)
 									{
 										case Renderer::ResourceType::TEXTURE_BUFFER:
-											// TODO(co) Implement me
-											/*
-											if (isArbDsa)
-											{
-												glBindTextureUnit(unit, static_cast<TextureBuffer*>(resource)->getOpenGLTexture());
-											}
-											else
-											{
-												// "GL_TEXTURE0_ARB" is the first texture unit, while the unit we received is zero based
-												glBindMultiTextureEXT(GL_TEXTURE0_ARB + unit, GL_TEXTURE_BUFFER_ARB, static_cast<TextureBuffer*>(resource)->getOpenGLTexture());
-											}
-											*/
+										{
+											const TextureBuffer* textureBuffer = static_cast<TextureBuffer*>(resource);
+											glBindImageTextureEXT(unit, textureBuffer->getOpenGLTexture(), 0, GL_FALSE, 0, GL_WRITE_ONLY, static_cast<GLint>(textureBuffer->getOpenGLInternalFormat()));
 											break;
+										}
 
 										case Renderer::ResourceType::TEXTURE_1D:
-											/*
-											if (isArbDsa)
-											{
-												glBindTextureUnit(unit, static_cast<Texture1D*>(resource)->getOpenGLTexture());
-											}
-											else
-											{
-												// "GL_TEXTURE0_ARB" is the first texture unit, while the unit we received is zero based
-												const Texture1D* texture1D = static_cast<Texture1D*>(resource);
-												glBindMultiTextureEXT(GL_TEXTURE0_ARB + unit, GL_TEXTURE_1D, texture1D->getOpenGLTexture());
-											}
-											*/
+										{
+											const Texture1D* texture1D = static_cast<Texture1D*>(resource);
+											glBindImageTextureEXT(unit, texture1D->getOpenGLTexture(), 0, GL_FALSE, 0, GL_WRITE_ONLY, static_cast<GLint>(texture1D->getOpenGLInternalFormat()));
 											break;
+										}
 
 										case Renderer::ResourceType::TEXTURE_2D:
 										{
-											// TODO(co) Compute shader support is work-in-progress
-											// typedef void (APIENTRYP PFNGLBINDIMAGETEXTUREEXTPROC) (GLuint index, GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum access, GLint format);
-											// const Texture2D* texture2D = static_cast<Texture2D*>(resource);
-											// Mapping::getOpenGLInternalFormat(text)
-											// glBindImageTextureEXT(unit, texture2D->getOpenGLTexture(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
-											glBindImageTextureEXT(unit, static_cast<Texture2D*>(resource)->getOpenGLTexture(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
+											const Texture2D* texture2D = static_cast<Texture2D*>(resource);
+											glBindImageTextureEXT(unit, texture2D->getOpenGLTexture(), 0, GL_FALSE, 0, GL_WRITE_ONLY, static_cast<GLint>(texture2D->getOpenGLInternalFormat()));
 											break;
 										}
 
 										case Renderer::ResourceType::TEXTURE_2D_ARRAY:
-											// TODO(co) Implement me
-											/*
-											// No texture 2D array extension check required, if we in here we already know it must exist
-											if (isArbDsa)
-											{
-												glBindTextureUnit(unit, static_cast<Texture2DArray*>(resource)->getOpenGLTexture());
-											}
-											else
-											{
-												// "GL_TEXTURE0_ARB" is the first texture unit, while the unit we received is zero based
-												glBindMultiTextureEXT(GL_TEXTURE0_ARB + unit, GL_TEXTURE_2D_ARRAY_EXT, static_cast<Texture2DArray*>(resource)->getOpenGLTexture());
-											}
-											*/
+										{
+											const Texture2DArray* texture2DArray = static_cast<Texture2DArray*>(resource);
+											glBindImageTextureEXT(unit, texture2DArray->getOpenGLTexture(), 0, GL_FALSE, 0, GL_WRITE_ONLY, static_cast<GLint>(texture2DArray->getOpenGLInternalFormat()));
 											break;
+										}
 
 										case Renderer::ResourceType::TEXTURE_3D:
-											// TODO(co) Implement me
-											/*
-											if (isArbDsa)
-											{
-												glBindTextureUnit(unit, static_cast<Texture3D*>(resource)->getOpenGLTexture());
-											}
-											else
-											{
-												// "GL_TEXTURE0_ARB" is the first texture unit, while the unit we received is zero based
-												const Texture3D* texture3D = static_cast<Texture3D*>(resource);
-												glBindMultiTextureEXT(GL_TEXTURE0_ARB + unit, GL_TEXTURE_3D, texture3D->getOpenGLTexture());
-											}
-											*/
+										{
+											const Texture3D* texture3D = static_cast<Texture3D*>(resource);
+											glBindImageTextureEXT(unit, texture3D->getOpenGLTexture(), 0, GL_FALSE, 0, GL_WRITE_ONLY, static_cast<GLint>(texture3D->getOpenGLInternalFormat()));
 											break;
+										}
 
 										case Renderer::ResourceType::TEXTURE_CUBE:
-											// TODO(co) Implement me
-											/*
-											if (isArbDsa)
-											{
-												glBindTextureUnit(unit, static_cast<TextureCube*>(resource)->getOpenGLTexture());
-											}
-											else
-											{
-												// "GL_TEXTURE0_ARB" is the first texture unit, while the unit we received is zero based
-												const TextureCube* textureCube = static_cast<TextureCube*>(resource);
-												glBindMultiTextureEXT(GL_TEXTURE0_ARB + unit, GL_TEXTURE_CUBE_MAP, textureCube->getOpenGLTexture());
-											}
-											*/
+										{
+											const TextureCube* textureCube = static_cast<TextureCube*>(resource);
+											glBindImageTextureEXT(unit, textureCube->getOpenGLTexture(), 0, GL_FALSE, 0, GL_WRITE_ONLY, static_cast<GLint>(textureCube->getOpenGLInternalFormat()));
 											break;
+										}
 
 										case Renderer::ResourceType::ROOT_SIGNATURE:
 										case Renderer::ResourceType::RESOURCE_GROUP:
