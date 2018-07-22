@@ -242,7 +242,7 @@ CubeRendererDrawInstanced::CubeRendererDrawInstanced(Renderer::IRenderer& render
 			-0.5f,  0.5f,  0.5f,		1.0f, 1.0f,		-1.0f, 0.0f, 0.0f,	// 22
 			-0.5f,  0.5f, -0.5f,		0.0f, 1.0f,		-1.0f, 0.0f, 0.0f	// 23
 		};
-		Renderer::IVertexBufferPtr vertexBuffer(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION, Renderer::BufferUsage::STATIC_DRAW));
+		Renderer::IVertexBufferPtr vertexBuffer(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION, 0, Renderer::BufferUsage::STATIC_DRAW));
 
 		// Create the index buffer object (IBO)
 		static constexpr uint16_t INDICES[] =
@@ -266,7 +266,7 @@ CubeRendererDrawInstanced::CubeRendererDrawInstanced(Renderer::IRenderer& render
 			21, 20, 22,		// 10
 			23, 22, 20		// 11
 		};
-		Renderer::IIndexBuffer* indexBuffer = mBufferManager->createIndexBuffer(sizeof(INDICES), Renderer::IndexBufferFormat::UNSIGNED_SHORT, INDICES, Renderer::BufferUsage::STATIC_DRAW);
+		Renderer::IIndexBuffer* indexBuffer = mBufferManager->createIndexBuffer(sizeof(INDICES), Renderer::IndexBufferFormat::UNSIGNED_SHORT, INDICES, 0, Renderer::BufferUsage::STATIC_DRAW);
 
 		// Create vertex array object (VAO)
 		// -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)
@@ -292,12 +292,12 @@ CubeRendererDrawInstanced::CubeRendererDrawInstanced(Renderer::IRenderer& render
 				-1.2803299f,	-0.97915620f,	-0.58038759f,	-0.57922798f,
 				 0.0f,			 0.0f,			 9.8198195f,	 10.0f
 			};
-			mUniformBufferStaticVs = mBufferManager->createUniformBuffer(sizeof(MVP), MVP, Renderer::BufferUsage::STATIC_DRAW);
+			mUniformBufferStaticVs = mBufferManager->createUniformBuffer(sizeof(MVP), MVP, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::STATIC_DRAW);
 		}
 
 		// Create dynamic uniform buffers
-		mUniformBufferDynamicVs = mBufferManager->createUniformBuffer(sizeof(float) * 2, nullptr, Renderer::BufferUsage::DYNAMIC_DRAW);
-		mUniformBufferDynamicFs = mBufferManager->createUniformBuffer(sizeof(float) * 3, nullptr, Renderer::BufferUsage::DYNAMIC_DRAW);
+		mUniformBufferDynamicVs = mBufferManager->createUniformBuffer(sizeof(float) * 2, nullptr, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::DYNAMIC_DRAW);
+		mUniformBufferDynamicFs = mBufferManager->createUniformBuffer(sizeof(float) * 3, nullptr, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::DYNAMIC_DRAW);
 	}
 
 	{ // Create resource group

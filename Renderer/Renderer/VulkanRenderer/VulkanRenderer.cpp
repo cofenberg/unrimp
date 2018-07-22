@@ -4099,8 +4099,10 @@ namespace VulkanRenderer
 									++numberOfUniformTexelBuffers;
 									break;
 
+								case Renderer::ResourceType::INDEX_BUFFER:
+								case Renderer::ResourceType::VERTEX_BUFFER:
 								case Renderer::ResourceType::INDIRECT_BUFFER:
-									RENDERER_ASSERT(vulkanRenderer.getContext(), Renderer::DescriptorRangeType::UAV == descriptorRange->rangeType, "Vulkan renderer backend: Invalid descriptor range type")
+									RENDERER_ASSERT(vulkanRenderer.getContext(), Renderer::DescriptorRangeType::SRV == descriptorRange->rangeType || Renderer::DescriptorRangeType::UAV == descriptorRange->rangeType, "Vulkan renderer backend: Invalid descriptor range type")
 									vkDescriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 									++numberOfIndirectBuffers;
 									break;
@@ -4135,8 +4137,6 @@ namespace VulkanRenderer
 								case Renderer::ResourceType::RENDER_PASS:
 								case Renderer::ResourceType::SWAP_CHAIN:
 								case Renderer::ResourceType::FRAMEBUFFER:
-								case Renderer::ResourceType::INDEX_BUFFER:
-								case Renderer::ResourceType::VERTEX_BUFFER:
 								case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 								case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 								case Renderer::ResourceType::VERTEX_SHADER:
@@ -5026,12 +5026,12 @@ namespace VulkanRenderer
 		*    Texture buffer data format
 		*  @param[in] data
 		*    Texture buffer data, can be a null pointer (empty buffer)
-		*  @param[in] flags
-		*    Texture buffer flags, see "Renderer::TextureBufferFlag"
+		*  @param[in] bufferFlags
+		*    Buffer flags, see "Renderer::BufferFlag"
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		TextureBuffer(VulkanRenderer& vulkanRenderer, uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
+		TextureBuffer(VulkanRenderer& vulkanRenderer, uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t bufferFlags = 0, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
 			ITextureBuffer(vulkanRenderer),
 			mVkBuffer(VK_NULL_HANDLE),
 			mVkDeviceMemory(VK_NULL_HANDLE),
@@ -5040,7 +5040,7 @@ namespace VulkanRenderer
 			Helper::createAndAllocateVkBuffer(vulkanRenderer, VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, numberOfBytes, data, mVkBuffer, mVkDeviceMemory);
 
 			// Create Vulkan buffer view
-			if ((flags & Renderer::TextureBufferFlag::SHADER_RESOURCE) != 0 || (flags & Renderer::TextureBufferFlag::UNORDERED_ACCESS) != 0)
+			if ((bufferFlags & Renderer::BufferFlag::SHADER_RESOURCE) != 0 || (bufferFlags & Renderer::BufferFlag::UNORDERED_ACCESS) != 0)
 			{
 				const VkBufferViewCreateInfo vkBufferViewCreateInfo =
 				{
@@ -5188,24 +5188,24 @@ namespace VulkanRenderer
 		*    Number of bytes within the indirect buffer, must be valid
 		*  @param[in] data
 		*    Indirect buffer data, can be a null pointer (empty buffer)
-		*  @param[in] flags
+		*  @param[in] indirectBufferFlags
 		*    Indirect buffer flags, see "Renderer::IndirectBufferFlag"
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		IndirectBuffer(VulkanRenderer& vulkanRenderer, uint32_t numberOfBytes, const void* data = nullptr, uint32_t flags = 0, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
+		IndirectBuffer(VulkanRenderer& vulkanRenderer, uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
 			IIndirectBuffer(vulkanRenderer),
 			mVkBuffer(VK_NULL_HANDLE),
 			mVkDeviceMemory(VK_NULL_HANDLE)
 		{
 			// Sanity checks
-			RENDERER_ASSERT(vulkanRenderer.getContext(), (flags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) != 0 || (flags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) != 0, "Invalid Vulkan flags, indirect buffer element type specification \"DRAW_INSTANCED_ARGUMENTS\" or \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" is missing")
-			RENDERER_ASSERT(vulkanRenderer.getContext(), (flags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawInstancedArguments)) == 0, "Vulkan indirect buffer element type flags specification is \"DRAW_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
-			RENDERER_ASSERT(vulkanRenderer.getContext(), (flags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawIndexedInstancedArguments)) == 0, "Vulkan indirect buffer element type flags specification is \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
+			RENDERER_ASSERT(vulkanRenderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) != 0 || (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) != 0, "Invalid Vulkan flags, indirect buffer element type specification \"DRAW_INSTANCED_ARGUMENTS\" or \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" is missing")
+			RENDERER_ASSERT(vulkanRenderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawInstancedArguments)) == 0, "Vulkan indirect buffer element type flags specification is \"DRAW_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
+			RENDERER_ASSERT(vulkanRenderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawIndexedInstancedArguments)) == 0, "Vulkan indirect buffer element type flags specification is \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
 
 			// Create indirect buffer
 			int vkBufferUsageFlagBits = VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
-			if (flags & Renderer::IndirectBufferFlag::UNORDERED_ACCESS)
+			if (indirectBufferFlags & Renderer::IndirectBufferFlag::UNORDERED_ACCESS)
 			{
 				vkBufferUsageFlagBits |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 			}
@@ -5333,12 +5333,12 @@ namespace VulkanRenderer
 	//[ Public virtual Renderer::IBufferManager methods       ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), VertexBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
 		}
 
-		inline virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, Renderer::IndexBufferFormat::Enum indexBufferFormat, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, Renderer::IndexBufferFormat::Enum indexBufferFormat, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), IndexBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, indexBufferFormat, data, bufferUsage);
 		}
@@ -5348,19 +5348,19 @@ namespace VulkanRenderer
 			return RENDERER_NEW(getRenderer().getContext(), VertexArray)(static_cast<VulkanRenderer&>(getRenderer()), vertexAttributes, numberOfVertexBuffers, vertexBuffers, static_cast<IndexBuffer*>(indexBuffer));
 		}
 
-		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), UniformBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
 		}
 
-		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
-			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, textureFormat, data, flags, bufferUsage);
+			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, textureFormat, data, bufferFlags, bufferUsage);
 		}
 
-		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t flags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
-			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, data, flags, bufferUsage);
+			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, data, indirectBufferFlags, bufferUsage);
 		}
 
 
@@ -9343,6 +9343,56 @@ namespace VulkanRenderer
 				const Renderer::ResourceType resourceType = resource->getResourceType();
 				switch (resourceType)
 				{
+					case Renderer::ResourceType::INDEX_BUFFER:
+					{
+						const VkDescriptorBufferInfo vkDescriptorBufferInfo =
+						{
+							static_cast<IndexBuffer*>(resource)->getVkBuffer(),	// buffer (VkBuffer)
+							0,													// offset (VkDeviceSize)
+							VK_WHOLE_SIZE										// range (VkDeviceSize)
+						};
+						const VkWriteDescriptorSet vkWriteDescriptorSet =
+						{
+							VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,		// sType (VkStructureType)
+							nullptr,									// pNext (const void*)
+							mVkDescriptorSet,							// dstSet (VkDescriptorSet)
+							resourceIndex,								// dstBinding (uint32_t)
+							0,											// dstArrayElement (uint32_t)
+							1,											// descriptorCount (uint32_t)
+							VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,			// descriptorType (VkDescriptorType)
+							nullptr,									// pImageInfo (const VkDescriptorImageInfo*)
+							&vkDescriptorBufferInfo,					// pBufferInfo (const VkDescriptorBufferInfo*)
+							nullptr										// pTexelBufferView (const VkBufferView*)
+						};
+						vkUpdateDescriptorSets(vkDevice, 1, &vkWriteDescriptorSet, 0, nullptr);
+						break;
+					}
+
+					case Renderer::ResourceType::VERTEX_BUFFER:
+					{
+						const VkDescriptorBufferInfo vkDescriptorBufferInfo =
+						{
+							static_cast<VertexBuffer*>(resource)->getVkBuffer(),	// buffer (VkBuffer)
+							0,														// offset (VkDeviceSize)
+							VK_WHOLE_SIZE											// range (VkDeviceSize)
+						};
+						const VkWriteDescriptorSet vkWriteDescriptorSet =
+						{
+							VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,		// sType (VkStructureType)
+							nullptr,									// pNext (const void*)
+							mVkDescriptorSet,							// dstSet (VkDescriptorSet)
+							resourceIndex,								// dstBinding (uint32_t)
+							0,											// dstArrayElement (uint32_t)
+							1,											// descriptorCount (uint32_t)
+							VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,			// descriptorType (VkDescriptorType)
+							nullptr,									// pImageInfo (const VkDescriptorImageInfo*)
+							&vkDescriptorBufferInfo,					// pBufferInfo (const VkDescriptorBufferInfo*)
+							nullptr										// pTexelBufferView (const VkBufferView*)
+						};
+						vkUpdateDescriptorSets(vkDevice, 1, &vkWriteDescriptorSet, 0, nullptr);
+						break;
+					}
+
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					{
 						const VkDescriptorBufferInfo vkDescriptorBufferInfo =
@@ -9528,8 +9578,6 @@ namespace VulkanRenderer
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::SWAP_CHAIN:
 					case Renderer::ResourceType::FRAMEBUFFER:
-					case Renderer::ResourceType::INDEX_BUFFER:
-					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:

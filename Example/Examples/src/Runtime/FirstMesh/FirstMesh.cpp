@@ -103,7 +103,7 @@ void FirstMesh::onInitialization()
 			// -> Direct3D 10, 11 and 12 do not support individual uniforms
 			// -> The renderer is just a light weight abstraction layer, so we need to handle the differences
 			// -> Allocate enough memory for two 4x4 floating point matrices
-			mUniformBuffer = rendererRuntime->getBufferManager().createUniformBuffer(2 * 4 * 4 * sizeof(float), nullptr, Renderer::BufferUsage::DYNAMIC_DRAW);
+			mUniformBuffer = rendererRuntime->getBufferManager().createUniformBuffer(2 * 4 * 4 * sizeof(float), nullptr, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::DYNAMIC_DRAW);
 
 			// Vertex input layout
 			static constexpr Renderer::VertexAttribute vertexAttributesLayout[] =

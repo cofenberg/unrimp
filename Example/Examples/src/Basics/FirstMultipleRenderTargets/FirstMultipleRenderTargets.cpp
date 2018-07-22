@@ -132,7 +132,7 @@ void FirstMultipleRenderTargets::onInitialization()
 					 1.0f, 0.0f,	// 1			   .   .
 					-0.5f, 0.0f		// 2			  2.......1
 				};
-				Renderer::IVertexBufferPtr vertexBuffer(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION, Renderer::BufferUsage::STATIC_DRAW));
+				Renderer::IVertexBufferPtr vertexBuffer(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION, 0, Renderer::BufferUsage::STATIC_DRAW));
 
 				// Create vertex array object (VAO)
 				// -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)

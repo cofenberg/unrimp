@@ -125,7 +125,7 @@
 						}
 
 						// Create the vertex buffer object (VBO)
-						Renderer::IVertexBufferPtr vertexBuffer(bufferManager.createVertexBuffer(numberOfBytes, temporaryMemory, Renderer::BufferUsage::STATIC_DRAW));
+						Renderer::IVertexBufferPtr vertexBuffer(bufferManager.createVertexBuffer(numberOfBytes, temporaryMemory, 0, Renderer::BufferUsage::STATIC_DRAW));
 						RENDERER_SET_RESOURCE_DEBUG_NAME(vertexBuffer, "Compositor instance pass VR hidden area mesh")
 
 						// Create vertex array object (VAO)

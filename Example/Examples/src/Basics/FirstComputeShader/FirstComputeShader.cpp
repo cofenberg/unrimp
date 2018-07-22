@@ -65,15 +65,20 @@ void FirstComputeShader::onInitialization()
 		}
 
 		{ // Create the compute root signature
-			Renderer::DescriptorRangeBuilder ranges[3];
-			ranges[0].initialize(Renderer::ResourceType::TEXTURE_2D,	  0,		   "InputTextureMap",	   Renderer::ShaderVisibility::COMPUTE);
+			Renderer::DescriptorRangeBuilder ranges[6];
+			// Input
+			ranges[0].initialize(Renderer::ResourceType::TEXTURE_2D,	  0,		   "InputTexture2D",	   Renderer::ShaderVisibility::COMPUTE);
+			ranges[1].initialize(Renderer::ResourceType::VERTEX_BUFFER,   1,		   "InputVertexBuffer",    Renderer::ShaderVisibility::COMPUTE);
+			ranges[2].initialize(Renderer::ResourceType::INDIRECT_BUFFER, 2,		   "InputIndirectBuffer",  Renderer::ShaderVisibility::COMPUTE);
+			// Output
 			// TODO(co) Compute shader: Get rid of the OpenGL/Direct3D 11 variation here
-			const uint32_t offset = (renderer->getNameId() == Renderer::NameId::VULKAN || renderer->getNameId() == Renderer::NameId::OPENGL) ? 1u : 0u;
-			ranges[1].initialize(Renderer::ResourceType::TEXTURE_2D,	  0u + offset, "OutputTextureMap",	   Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
-			ranges[2].initialize(Renderer::ResourceType::INDIRECT_BUFFER, 1u + offset, "OutputIndirectBuffer", Renderer::ShaderVisibility::COMPUTE);
+			const uint32_t offset = (renderer->getNameId() == Renderer::NameId::VULKAN || renderer->getNameId() == Renderer::NameId::OPENGL) ? 3u : 0u;
+			ranges[3].initialize(Renderer::ResourceType::TEXTURE_2D,	  0u + offset, "OutputTexture2D",	   Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
+			ranges[4].initialize(Renderer::ResourceType::VERTEX_BUFFER,   1u + offset, "OutputVertexBuffer",   Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
+			ranges[5].initialize(Renderer::ResourceType::INDIRECT_BUFFER, 2u + offset, "OutputIndirectBuffer", Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
 
 			Renderer::RootParameterBuilder rootParameters[1];
-			rootParameters[0].initializeAsDescriptorTable(3, &ranges[0]);
+			rootParameters[0].initializeAsDescriptorTable(6, &ranges[0]);
 
 			// Setup
 			Renderer::RootSignatureBuilder rootSignature;
@@ -92,34 +97,20 @@ void FirstComputeShader::onInitialization()
 			mGraphicsSamplerStateGroup = mGraphicsRootSignature->createResourceGroup(1, 1, &samplerStateResource);
 		}
 
-		// Create the indirect buffer which will by filled by a compute shader
-		mIndirectBuffer = mBufferManager->createIndirectBuffer(sizeof(Renderer::DrawInstancedArguments), nullptr, Renderer::IndirectBufferFlag::UNORDERED_ACCESS | Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS, Renderer::BufferUsage::STATIC_DRAW);
-
-		{ // Texture resource related
-			// Create the texture instance, but without providing texture data (we use the texture as render target)
-			// -> Use the "Renderer::TextureFlag::RENDER_TARGET"-flag to mark this texture as a render target
-			// -> Required for Vulkan, Direct3D 9, Direct3D 10, Direct3D 11 and Direct3D 12
-			// -> Not required for OpenGL and OpenGL ES 3
-			// -> The optimized texture clear value is a Direct3D 12 related option
-			const Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::Enum::R8G8B8A8;
-			Renderer::ITexture* graphicsWrittenTexture2D = mTextureManager->createTexture2D(16, 16, textureFormat, nullptr, Renderer::TextureFlag::SHADER_RESOURCE | Renderer::TextureFlag::RENDER_TARGET, Renderer::TextureUsage::DEFAULT, 1, reinterpret_cast<const Renderer::OptimizedTextureClearValue*>(&Color4::GREEN));
-			Renderer::ITexture* computeWrittenTexture2D = mTextureManager->createTexture2D(16, 16, textureFormat, nullptr, Renderer::TextureFlag::SHADER_RESOURCE | Renderer::TextureFlag::UNORDERED_ACCESS, Renderer::TextureUsage::DEFAULT, 1, reinterpret_cast<const Renderer::OptimizedTextureClearValue*>(&Color4::GREEN));
-
-			{ // Create the framebuffer object (FBO) instance
-				const Renderer::FramebufferAttachment colorFramebufferAttachment(graphicsWrittenTexture2D);
-				mFramebuffer = renderer->createFramebuffer(*renderer->createRenderPass(1, &textureFormat), &colorFramebufferAttachment);
+		{ // Indirect buffer
+			{ // Create the indirect buffer which will be read by a compute shader
+				const Renderer::DrawInstancedArguments drawInstancedArguments =
+				{
+					3,	// vertexCountPerInstance (uint32_t)
+					1,	// instanceCount (uint32_t)
+					0,	// startVertexLocation (uint32_t)
+					0	// startInstanceLocation (uint32_t)
+				};
+				mComputeInputIndirectBuffer = mBufferManager->createIndirectBuffer(sizeof(Renderer::DrawInstancedArguments), &drawInstancedArguments, Renderer::IndirectBufferFlag::SHADER_RESOURCE | Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS, Renderer::BufferUsage::STATIC_DRAW);
 			}
 
-			{ // Create compute texture group
-				Renderer::IResource* resources[3] = { graphicsWrittenTexture2D, computeWrittenTexture2D, mIndirectBuffer };
-				mComputeTextureGroup = mComputeRootSignature->createResourceGroup(0, static_cast<uint32_t>(glm::countof(resources)), resources, nullptr);
-			}
-
-			{ // Create graphics texture group
-				Renderer::IResource* resource = computeWrittenTexture2D;
-				Renderer::ISamplerState* samplerState = static_cast<Renderer::ISamplerState*>(samplerStateResource);
-				mGraphicsTextureGroup = mGraphicsRootSignature->createResourceGroup(0, 1, &resource, &samplerState);
-			}
+			// Create the indirect buffer which will be filled by a compute shader
+			mComputeOutputIndirectBuffer = mBufferManager->createIndirectBuffer(sizeof(Renderer::DrawInstancedArguments), nullptr, Renderer::IndirectBufferFlag::UNORDERED_ACCESS | Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS, Renderer::BufferUsage::STATIC_DRAW);
 		}
 
 		// Vertex input layout
@@ -149,7 +140,8 @@ void FirstComputeShader::onInitialization()
 				 1.0f, 0.0f,	// 1			   .   .
 				-0.5f, 0.0f		// 2			  2.......1
 			};
-			Renderer::IVertexBufferPtr vertexBuffer(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION, Renderer::BufferUsage::STATIC_DRAW));
+			mComputeInputVertexBuffer = mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::STATIC_DRAW);
+			mComputeOutputVertexBuffer = mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), nullptr, Renderer::BufferFlag::UNORDERED_ACCESS, Renderer::BufferUsage::STATIC_DRAW);
 
 			// Create vertex array object (VAO)
 			// -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)
@@ -157,8 +149,40 @@ void FirstComputeShader::onInitialization()
 			// -> When the vertex array object (VAO) is destroyed, it automatically decreases the
 			//    reference of the used vertex buffer objects (VBO). If the reference counter of a
 			//    vertex buffer object (VBO) reaches zero, it's automatically destroyed.
-			const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
+			const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { mComputeOutputVertexBuffer };
 			mVertexArray = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(glm::countof(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
+		}
+
+		{ // Texture resource related
+			// Create the texture instance, but without providing texture data (we use the texture as render target)
+			// -> Use the "Renderer::TextureFlag::RENDER_TARGET"-flag to mark this texture as a render target
+			// -> Required for Vulkan, Direct3D 9, Direct3D 10, Direct3D 11 and Direct3D 12
+			// -> Not required for OpenGL and OpenGL ES 3
+			// -> The optimized texture clear value is a Direct3D 12 related option
+			const Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::Enum::R8G8B8A8;
+			Renderer::ITexture* computeInputTexture2D = mTextureManager->createTexture2D(16, 16, textureFormat, nullptr, Renderer::TextureFlag::SHADER_RESOURCE | Renderer::TextureFlag::RENDER_TARGET, Renderer::TextureUsage::DEFAULT, 1, reinterpret_cast<const Renderer::OptimizedTextureClearValue*>(&Color4::GREEN));
+			Renderer::ITexture* computeOutputTexture2D = mTextureManager->createTexture2D(16, 16, textureFormat, nullptr, Renderer::TextureFlag::SHADER_RESOURCE | Renderer::TextureFlag::UNORDERED_ACCESS, Renderer::TextureUsage::DEFAULT, 1, reinterpret_cast<const Renderer::OptimizedTextureClearValue*>(&Color4::GREEN));
+
+			{ // Create the framebuffer object (FBO) instance
+				const Renderer::FramebufferAttachment colorFramebufferAttachment(computeInputTexture2D);
+				mFramebuffer = renderer->createFramebuffer(*renderer->createRenderPass(1, &textureFormat), &colorFramebufferAttachment);
+			}
+
+			{ // Create compute texture group
+				Renderer::IResource* resources[6] = {
+					// Input
+					computeInputTexture2D, mComputeInputVertexBuffer, mComputeInputIndirectBuffer,
+					// Output
+					computeOutputTexture2D, mComputeOutputVertexBuffer, mComputeOutputIndirectBuffer
+				};
+				mComputeTextureGroup = mComputeRootSignature->createResourceGroup(0, static_cast<uint32_t>(glm::countof(resources)), resources, nullptr);
+			}
+
+			{ // Create graphics texture group
+				Renderer::IResource* resource = computeOutputTexture2D;
+				Renderer::ISamplerState* samplerState = static_cast<Renderer::ISamplerState*>(samplerStateResource);
+				mGraphicsTextureGroup = mGraphicsRootSignature->createResourceGroup(0, 1, &resource, &samplerState);
+			}
 		}
 
 		// Create the program: Decide which shader language should be used (for example "GLSL" or "HLSL")
@@ -203,8 +227,11 @@ void FirstComputeShader::onInitialization()
 void FirstComputeShader::onDeinitialization()
 {
 	// Release the used resources
-	mIndirectBuffer = nullptr;
+	mComputeOutputIndirectBuffer = nullptr;
+	mComputeInputIndirectBuffer = nullptr;
 	mVertexArray = nullptr;
+	mComputeOutputVertexBuffer = nullptr;
+	mComputeInputVertexBuffer = nullptr;
 	mComputePipelineState = nullptr;
 	mGraphicsPipelineState = nullptr;
 	mGraphicsSamplerStateGroup = nullptr;
@@ -247,8 +274,11 @@ void FirstComputeShader::fillCommandBuffer()
 	assert(nullptr != mGraphicsSamplerStateGroup);
 	assert(nullptr != mGraphicsPipelineState);
 	assert(nullptr != mComputePipelineState);
+	assert(nullptr != mComputeInputVertexBuffer);
+	assert(nullptr != mComputeOutputVertexBuffer);
 	assert(nullptr != mVertexArray);
-	assert(nullptr != mIndirectBuffer);
+	assert(nullptr != mComputeOutputIndirectBuffer);
+	assert(nullptr != mComputeInputIndirectBuffer);
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
@@ -286,9 +316,6 @@ void FirstComputeShader::fillCommandBuffer()
 
 		// Dispatch compute call
 		Renderer::Command::DispatchCompute::create(mCommandBuffer, 1, 1, 1);
-
-		// TODO(co) Compute shader support is work-in-progress
-		// SetMemoryBarrier
 	}
 
 	{ // Graphics: Use the compute result for graphics
@@ -312,6 +339,6 @@ void FirstComputeShader::fillCommandBuffer()
 		Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArray);
 
 		// Render the specified geometric primitive, based on an array of vertices
-		Renderer::Command::DrawGraphics::create(mCommandBuffer, *mIndirectBuffer);
+		Renderer::Command::DrawGraphics::create(mCommandBuffer, *mComputeOutputIndirectBuffer);
 	}
 }

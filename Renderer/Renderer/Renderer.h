@@ -1342,12 +1342,11 @@ namespace Renderer
 						range.rangeType = DescriptorRangeType::UBV;
 						break;
 
+					case ResourceType::INDEX_BUFFER:
+					case ResourceType::VERTEX_BUFFER:
 					case ResourceType::TEXTURE_BUFFER:
-						range.rangeType = DescriptorRangeType::SRV;
-						break;
-
 					case ResourceType::INDIRECT_BUFFER:
-						range.rangeType = DescriptorRangeType::UAV;
+						range.rangeType = DescriptorRangeType::SRV;
 						break;
 
 					case ResourceType::TEXTURE_1D:
@@ -1369,8 +1368,6 @@ namespace Renderer
 					case ResourceType::RENDER_PASS:
 					case ResourceType::SWAP_CHAIN:
 					case ResourceType::FRAMEBUFFER:
-					case ResourceType::INDEX_BUFFER:
-					case ResourceType::VERTEX_BUFFER:
 					case ResourceType::GRAPHICS_PIPELINE_STATE:
 					case ResourceType::COMPUTE_PIPELINE_STATE:
 					case ResourceType::VERTEX_SHADER:
@@ -2472,6 +2469,34 @@ namespace Renderer
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
+	*    Buffer flags
+	*/
+	struct BufferFlag final
+	{
+		enum Enum
+		{
+			UNORDERED_ACCESS = 1 << 0,	///< This buffer can be used for unordered access which is needed for compute shader read/write buffers (when using Direct3D 11 a unordered access view (UAV) will be generated)
+			SHADER_RESOURCE  = 1 << 1	///< This buffer can be used as shader resource (when using Direct3D 11 a shader resource view (SRV) will be generated)
+		};
+	};
+
+	/**
+	*  @brief
+	*    Indirect buffer flags
+	*/
+	struct IndirectBufferFlag final
+	{
+		enum Enum
+		{
+			UNORDERED_ACCESS				 = 1 << 0,	///< This indirect buffer can be used for unordered access which is needed for compute shader read/write indirect buffers (when using Direct3D 11 a unordered access view (UAV) will be generated)
+			SHADER_RESOURCE					 = 1 << 1,	///< This indirect buffer can be used as shader resource (when using Direct3D 11 a shader resource view (SRV) will be generated)
+			DRAW_INSTANCED_ARGUMENTS		 = 1 << 2,	///< This indirect buffer contains "Renderer::DrawInstancedArguments" as elements
+			DRAW_INDEXED_INSTANCED_ARGUMENTS = 1 << 3	///< This indirect buffer contains "Renderer::DrawIndexedInstancedArguments" as elements
+		};
+	};
+
+	/**
+	*  @brief
 	*    Buffer usage indication
 	*
 	*  @note
@@ -2491,33 +2516,6 @@ namespace Renderer
 		DYNAMIC_DRAW = 0x88E8,	///< The data store contents will be respecified repeatedly by the application, and used many times as the source for OpenGL (drawing) commands. (also exists in OpenGL ES 3)
 		DYNAMIC_READ = 0x88E9,	///< The data store contents will be respecified repeatedly by reading data from the OpenGL, and queried many times by the application.
 		DYNAMIC_COPY = 0x88EA	///< The data store contents will be respecified repeatedly by reading data from the OpenGL, and used many times as the source for OpenGL (drawing) commands.
-	};
-
-	/**
-	*  @brief
-	*    Texture buffer flags
-	*/
-	struct TextureBufferFlag final
-	{
-		enum Enum
-		{
-			UNORDERED_ACCESS = 1 << 0,	///< This texture buffer can be used for unordered access which is needed for compute shader read/write texture buffers (when using Direct3D 11 a unordered access view (UAV) will be generated)
-			SHADER_RESOURCE  = 1 << 1	///< This texture buffer can be used as shader resource (when using Direct3D 11 a shader resource view (SRV) will be generated)
-		};
-	};
-
-	/**
-	*  @brief
-	*    Indirect buffer flags
-	*/
-	struct IndirectBufferFlag final
-	{
-		enum Enum
-		{
-			UNORDERED_ACCESS				 = 1 << 0,	///< This indirect buffer can be used for unordered access which is needed for compute shader read/write indirect buffers (when using Direct3D 11 a unordered access view (UAV) will be generated)
-			DRAW_INSTANCED_ARGUMENTS		 = 1 << 1,	///< This indirect buffer contains "Renderer::DrawInstancedArguments" as elements
-			DRAW_INDEXED_INSTANCED_ARGUMENTS = 1 << 2	///< This indirect buffer contains "Renderer::DrawIndexedInstancedArguments" as elements
-		};
 	};
 
 
@@ -5755,13 +5753,15 @@ namespace Renderer
 		*    Number of bytes within the vertex buffer, must be valid
 		*  @param[in] data
 		*    Vertex buffer data, can be a null pointer (empty buffer), the data is internally copied and you have to free your memory if you no longer need it
+		*  @param[in] bufferFlags
+		*    Buffer flags, see "Renderer::BufferFlag"
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*
 		*  @return
 		*    The created VBO instance, null pointer on error. Release the returned instance if you no longer need it.
 		*/
-		virtual IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, BufferUsage bufferUsage = BufferUsage::DYNAMIC_DRAW) = 0;
+		virtual IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, BufferUsage bufferUsage = BufferUsage::DYNAMIC_DRAW) = 0;
 
 		/**
 		*  @brief
@@ -5773,13 +5773,15 @@ namespace Renderer
 		*    Index buffer data format
 		*  @param[in] data
 		*    Index buffer data, can be a null pointer (empty buffer), the data is internally copied and you have to free your memory if you no longer need it
+		*  @param[in] bufferFlags
+		*    Buffer flags, see "Renderer::BufferFlag"
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*
 		*  @return
 		*    The created IBO instance, null pointer on error. Release the returned instance if you no longer need it.
 		*/
-		virtual IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, IndexBufferFormat::Enum indexBufferFormat, const void* data = nullptr, BufferUsage bufferUsage = BufferUsage::DYNAMIC_DRAW) = 0;
+		virtual IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, IndexBufferFormat::Enum indexBufferFormat, const void* data = nullptr, uint32_t bufferFlags = 0, BufferUsage bufferUsage = BufferUsage::DYNAMIC_DRAW) = 0;
 
 		/**
 		*  @brief
@@ -5812,6 +5814,8 @@ namespace Renderer
 		*    Number of bytes within the uniform buffer, must be valid
 		*  @param[in] data
 		*    Uniform buffer data, can be a null pointer (empty buffer), the data is internally copied and you have to free your memory if you no longer need it
+		*  @param[in] bufferFlags
+		*    Buffer flags, see "Renderer::BufferFlag"
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*
@@ -5821,7 +5825,7 @@ namespace Renderer
 		*  @note
 		*    - Only supported if "Renderer::Capabilities::maximumUniformBufferSize" is >0
 		*/
-		virtual IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, BufferUsage bufferUsage = BufferUsage::DYNAMIC_DRAW) = 0;
+		virtual IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, BufferUsage bufferUsage = BufferUsage::DYNAMIC_DRAW) = 0;
 
 		/**
 		*  @brief
@@ -5833,8 +5837,8 @@ namespace Renderer
 		*    Texture buffer data format
 		*  @param[in] data
 		*    Texture buffer data, can be a null pointer (empty buffer), the data is internally copied and you have to free your memory if you no longer need it
-		*  @param[in] flags
-		*    Texture buffer flags, see "Renderer::TextureBufferFlag"
+		*  @param[in] bufferFlags
+		*    Buffer flags, see "Renderer::BufferFlag"
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*
@@ -5844,7 +5848,7 @@ namespace Renderer
 		*  @note
 		*    - Only supported if "Renderer::Capabilities::maximumTextureBufferSize" is not 0
 		*/
-		virtual ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, BufferUsage bufferUsage = BufferUsage::DYNAMIC_DRAW) = 0;
+		virtual ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t bufferFlags = 0, BufferUsage bufferUsage = BufferUsage::DYNAMIC_DRAW) = 0;
 
 		/**
 		*  @brief
@@ -5854,7 +5858,7 @@ namespace Renderer
 		*    Number of bytes within the indirect buffer, must be valid
 		*  @param[in] data
 		*    Indirect buffer data, can be a null pointer (empty buffer), the data is internally copied and you have to free your memory if you no longer need it
-		*  @param[in] flags
+		*  @param[in] indirectBufferFlags
 		*    Indirect buffer flags, see "Renderer::IndirectBufferFlag"
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
@@ -5865,7 +5869,7 @@ namespace Renderer
 		*  @note
 		*    - Only supported if "Renderer::Capabilities::maximumIndirectBufferSize" is >0
 		*/
-		virtual IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t flags = 0, BufferUsage bufferUsage = BufferUsage::DYNAMIC_DRAW) = 0;
+		virtual IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, BufferUsage bufferUsage = BufferUsage::DYNAMIC_DRAW) = 0;
 
 	// Protected methods
 	protected:
@@ -7874,7 +7878,6 @@ namespace Renderer
 		SetComputeResourceGroup,
 		DispatchCompute,
 		// Resource
-		// SetMemoryBarrier,	// TODO(co) Compute shader support is work-in-progress
 		SetTextureMinimumMaximumMipmapIndex,
 		ResolveMultisampleFramebuffer,
 		CopyResource,

@@ -103,19 +103,22 @@ private:
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
-	Renderer::IBufferManagerPtr			mBufferManager;				///< Buffer manager, can be a null pointer
-	Renderer::ITextureManagerPtr		mTextureManager;			///< Texture manager, can be a null pointer
-	Renderer::CommandBuffer				mCommandBuffer;				///< Command buffer
-	Renderer::IRootSignaturePtr			mGraphicsRootSignature;		///< Graphics root signature, can be a null pointer
-	Renderer::IRootSignaturePtr			mComputeRootSignature;		///< Compute root signature, can be a null pointer
-	Renderer::IFramebufferPtr			mFramebuffer;				///< Graphics framebuffer object (FBO), can be a null pointer
-	Renderer::IResourceGroupPtr			mComputeTextureGroup;		///< Compute texture group, can be a null pointer
-	Renderer::IResourceGroupPtr			mGraphicsTextureGroup;		///< Graphics texture group, can be a null pointer
-	Renderer::IResourceGroupPtr			mGraphicsSamplerStateGroup;	///< Graphics sampler state resource group, can be a null pointer
-	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineState;		///< Graphics pipeline state object (PSO), can be a null pointer
-	Renderer::IComputePipelineStatePtr	mComputePipelineState;		///< Compute pipeline state object (PSO), can be a null pointer
-	Renderer::IVertexArrayPtr			mVertexArray;				///< Graphics vertex array object (VAO), can be a null pointer
-	Renderer::IIndirectBufferPtr		mIndirectBuffer;			///< Graphics indirect buffer, can be a null pointer
+	Renderer::IBufferManagerPtr			mBufferManager;					///< Buffer manager, can be a null pointer
+	Renderer::ITextureManagerPtr		mTextureManager;				///< Texture manager, can be a null pointer
+	Renderer::CommandBuffer				mCommandBuffer;					///< Command buffer
+	Renderer::IRootSignaturePtr			mGraphicsRootSignature;			///< Graphics root signature, can be a null pointer
+	Renderer::IRootSignaturePtr			mComputeRootSignature;			///< Compute root signature, can be a null pointer
+	Renderer::IFramebufferPtr			mFramebuffer;					///< Graphics framebuffer object (FBO), can be a null pointer
+	Renderer::IResourceGroupPtr			mComputeTextureGroup;			///< Compute texture group, can be a null pointer
+	Renderer::IResourceGroupPtr			mGraphicsTextureGroup;			///< Graphics texture group, can be a null pointer
+	Renderer::IResourceGroupPtr			mGraphicsSamplerStateGroup;		///< Graphics sampler state resource group, can be a null pointer
+	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineState;			///< Graphics pipeline state object (PSO), can be a null pointer
+	Renderer::IComputePipelineStatePtr	mComputePipelineState;			///< Compute pipeline state object (PSO), can be a null pointer
+	Renderer::IVertexBufferPtr			mComputeInputVertexBuffer;		///< Graphics vertex buffer object (VBO) read by compute shader, can be a null pointer
+	Renderer::IVertexBufferPtr			mComputeOutputVertexBuffer;		///< Graphics vertex buffer object (VBO) written by compute shader, can be a null pointer
+	Renderer::IVertexArrayPtr			mVertexArray;					///< Graphics vertex array object (VAO), can be a null pointer
+	Renderer::IIndirectBufferPtr		mComputeInputIndirectBuffer;	///< Graphics indirect buffer read by compute shader, can be a null pointer
+	Renderer::IIndirectBufferPtr		mComputeOutputIndirectBuffer;	///< Graphics indirect buffer written by compute shader, can be a null pointer
 
 
 };

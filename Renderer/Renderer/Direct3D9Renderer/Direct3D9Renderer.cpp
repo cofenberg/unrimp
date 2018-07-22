@@ -3306,18 +3306,18 @@ namespace Direct3D9Renderer
 		*    Number of bytes within the indirect buffer, must be valid
 		*  @param[in] data
 		*    Indirect buffer data, can be a null pointer (empty buffer)
-		*  @param[in] flags
+		*  @param[in] indirectBufferFlags
 		*    Indirect buffer flags, see "Renderer::IndirectBufferFlag"
 		*/
-		IndirectBuffer(Direct3D9Renderer& direct3D9Renderer, uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t flags = 0) :
+		IndirectBuffer(Direct3D9Renderer& direct3D9Renderer, uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t indirectBufferFlags = 0) :
 			IIndirectBuffer(direct3D9Renderer),
 			mNumberOfBytes(numberOfBytes),
 			mData(nullptr)
 		{
 			// Sanity checks
-			RENDERER_ASSERT(direct3D9Renderer.getContext(), (flags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) != 0 || (flags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) != 0, "Invalid Direct3D 9 flags, indirect buffer element type specification \"DRAW_INSTANCED_ARGUMENTS\" or \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" is missing")
-			RENDERER_ASSERT(direct3D9Renderer.getContext(), (flags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawInstancedArguments)) == 0, "Direct3D 9 indirect buffer element type flags specification is \"DRAW_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
-			RENDERER_ASSERT(direct3D9Renderer.getContext(), (flags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawIndexedInstancedArguments)) == 0, "Direct3D 9 indirect buffer element type flags specification is \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
+			RENDERER_ASSERT(direct3D9Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) != 0 || (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) != 0, "Invalid Direct3D 9 flags, indirect buffer element type specification \"DRAW_INSTANCED_ARGUMENTS\" or \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" is missing")
+			RENDERER_ASSERT(direct3D9Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawInstancedArguments)) == 0, "Direct3D 9 indirect buffer element type flags specification is \"DRAW_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
+			RENDERER_ASSERT(direct3D9Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawIndexedInstancedArguments)) == 0, "Direct3D 9 indirect buffer element type flags specification is \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
 
 			// Copy data
 			if (mNumberOfBytes > 0)
@@ -3435,13 +3435,13 @@ namespace Direct3D9Renderer
 	//[ Public virtual Renderer::IBufferManager methods       ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
 			// TODO(co) Security checks
 			return RENDERER_NEW(getRenderer().getContext(), VertexBuffer)(static_cast<Direct3D9Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
 		}
 
-		inline virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, Renderer::IndexBufferFormat::Enum indexBufferFormat, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, Renderer::IndexBufferFormat::Enum indexBufferFormat, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
 			// TODO(co) Security checks
 			return RENDERER_NEW(getRenderer().getContext(), IndexBuffer)(static_cast<Direct3D9Renderer&>(getRenderer()), numberOfBytes, indexBufferFormat, data, bufferUsage);
@@ -3453,7 +3453,7 @@ namespace Direct3D9Renderer
 			return RENDERER_NEW(getRenderer().getContext(), VertexArray)(static_cast<Direct3D9Renderer&>(getRenderer()), vertexAttributes, numberOfVertexBuffers, vertexBuffers, static_cast<IndexBuffer*>(indexBuffer));
 		}
 
-		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t, const void*, Renderer::BufferUsage) override
+		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t, const void*, uint32_t, Renderer::BufferUsage) override
 		{
 			// Error! Direct3D 9 has no uniform buffer support.
 			return nullptr;
@@ -3465,9 +3465,9 @@ namespace Direct3D9Renderer
 			return nullptr;
 		}
 
-		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t flags = 0, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
-			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<Direct3D9Renderer&>(getRenderer()), numberOfBytes, data, flags);
+			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<Direct3D9Renderer&>(getRenderer()), numberOfBytes, data, indirectBufferFlags);
 		}
 
 

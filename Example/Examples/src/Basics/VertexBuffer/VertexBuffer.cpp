@@ -130,7 +130,7 @@ void VertexBuffer::onInitialization()
 				 1.0f, 0.0f,	0.0f, 1.0f, 0.0f,	// 1			   .   .
 				-0.5f, 0.0f,	0.0f, 0.0f, 1.0f	// 2			  2.......1
 			};
-			Renderer::IVertexBufferPtr vertexBufferPositionColor(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION_COLOR), VERTEX_POSITION_COLOR, Renderer::BufferUsage::STATIC_DRAW));
+			Renderer::IVertexBufferPtr vertexBufferPositionColor(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION_COLOR), VERTEX_POSITION_COLOR, 0, Renderer::BufferUsage::STATIC_DRAW));
 
 			// Create vertex array object (VAO)
 			const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBufferPositionColor };
@@ -146,7 +146,7 @@ void VertexBuffer::onInitialization()
 				0.0f, 1.0f, 0.0f,	// 1			   .   .
 				0.0f, 0.0f, 1.0f	// 2			  	2
 			};
-			Renderer::IVertexBufferPtr vertexBufferColor(mBufferManager->createVertexBuffer(sizeof(VERTEX_COLOR), VERTEX_COLOR, Renderer::BufferUsage::STATIC_DRAW));
+			Renderer::IVertexBufferPtr vertexBufferColor(mBufferManager->createVertexBuffer(sizeof(VERTEX_COLOR), VERTEX_COLOR, 0, Renderer::BufferUsage::STATIC_DRAW));
 
 			// Create the vertex buffer object (VBO) holding position data
 			// -> Clip space vertex positions, left/bottom is (-1,-1) and right/top is (1,1)
@@ -156,7 +156,7 @@ void VertexBuffer::onInitialization()
 				 1.0f,  0.0f,	// 1			   .   .
 				 0.0f, -1.0f	// 2			  	2
 			};
-			Renderer::IVertexBufferPtr vertexBufferPosition(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION, Renderer::BufferUsage::STATIC_DRAW));
+			Renderer::IVertexBufferPtr vertexBufferPosition(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION, 0, Renderer::BufferUsage::STATIC_DRAW));
 
 			// Create vertex array object (VAO)
 			const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBufferPosition, vertexBufferColor };

@@ -112,7 +112,7 @@ void FirstInstancing::onInitialization()
 						 0.0f, 0.0f,	// 1				 .    .
 						-1.0f, 0.0f		// 2			  2.......1
 					};
-					Renderer::IVertexBufferPtr vertexBufferPosition(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION, Renderer::BufferUsage::STATIC_DRAW));
+					Renderer::IVertexBufferPtr vertexBufferPosition(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION, 0, Renderer::BufferUsage::STATIC_DRAW));
 
 					// Create the per-instance-data vertex buffer object (VBO)
 					// -> Simple instance ID in order to keep it similar to the "draw instanced" version on the right side (blue)
@@ -120,7 +120,7 @@ void FirstInstancing::onInitialization()
 					{
 						0.0f, 1.0f
 					};
-					Renderer::IVertexBufferPtr vertexBufferInstanceId(mBufferManager->createVertexBuffer(sizeof(INSTANCE_ID), INSTANCE_ID, Renderer::BufferUsage::STATIC_DRAW));
+					Renderer::IVertexBufferPtr vertexBufferInstanceId(mBufferManager->createVertexBuffer(sizeof(INSTANCE_ID), INSTANCE_ID, 0, Renderer::BufferUsage::STATIC_DRAW));
 
 					// Create the index buffer object (IBO)
 					// -> In this example, we only draw a simple triangle and therefore usually do not need an index buffer
@@ -130,7 +130,7 @@ void FirstInstancing::onInitialization()
 					{
 						0, 1, 2
 					};
-					Renderer::IIndexBuffer* indexBufferInstancedArrays = mBufferManager->createIndexBuffer(sizeof(INDICES), Renderer::IndexBufferFormat::UNSIGNED_SHORT, INDICES, Renderer::BufferUsage::STATIC_DRAW);
+					Renderer::IIndexBuffer* indexBufferInstancedArrays = mBufferManager->createIndexBuffer(sizeof(INDICES), Renderer::IndexBufferFormat::UNSIGNED_SHORT, INDICES, 0, Renderer::BufferUsage::STATIC_DRAW);
 
 					// Create vertex array object (VAO)
 					// -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)
@@ -199,7 +199,7 @@ void FirstInstancing::onInitialization()
 						1.0f, 0.0f,	// 1			  .    .
 						0.0f, 0.0f	// 2			  2.......1
 					};
-					Renderer::IVertexBufferPtr vertexBuffer(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION, Renderer::BufferUsage::STATIC_DRAW));
+					Renderer::IVertexBufferPtr vertexBuffer(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION, 0, Renderer::BufferUsage::STATIC_DRAW));
 
 					// Create vertex array object (VAO)
 					// -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)

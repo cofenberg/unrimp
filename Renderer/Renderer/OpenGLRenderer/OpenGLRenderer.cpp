@@ -7130,7 +7130,7 @@ namespace OpenGLRenderer
 	//[ Public virtual Renderer::IBufferManager methods       ]
 	//[-------------------------------------------------------]
 	public:
-		virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
 			// "GL_ARB_vertex_buffer_object" required
 			if (mExtensions->isGL_ARB_vertex_buffer_object())
@@ -7154,7 +7154,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, Renderer::IndexBufferFormat::Enum indexBufferFormat, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, Renderer::IndexBufferFormat::Enum indexBufferFormat, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
 			// "GL_ARB_vertex_buffer_object" required
 			if (mExtensions->isGL_ARB_vertex_buffer_object())
@@ -7207,7 +7207,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
 			// "GL_ARB_uniform_buffer_object" required
 			if (mExtensions->isGL_ARB_uniform_buffer_object())
@@ -7255,12 +7255,12 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t flags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t indirectBufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
 			// Sanity checks
-			RENDERER_ASSERT(getRenderer().getContext(), (flags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) != 0 || (flags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) != 0, "Invalid OpenGL flags, indirect buffer element type specification \"DRAW_INSTANCED_ARGUMENTS\" or \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" is missing")
-			RENDERER_ASSERT(getRenderer().getContext(), (flags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawInstancedArguments)) == 0, "OpenGL indirect buffer element type flags specification is \"DRAW_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
-			RENDERER_ASSERT(getRenderer().getContext(), (flags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawIndexedInstancedArguments)) == 0, "OpenGL indirect buffer element type flags specification is \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
+			RENDERER_ASSERT(getRenderer().getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) != 0 || (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) != 0, "Invalid OpenGL flags, indirect buffer element type specification \"DRAW_INSTANCED_ARGUMENTS\" or \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" is missing")
+			RENDERER_ASSERT(getRenderer().getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawInstancedArguments)) == 0, "OpenGL indirect buffer element type flags specification is \"DRAW_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
+			RENDERER_ASSERT(getRenderer().getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawIndexedInstancedArguments)) == 0, "OpenGL indirect buffer element type flags specification is \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
 
 			// "GL_ARB_draw_indirect" required
 			if (mExtensions->isGL_ARB_draw_indirect())
@@ -19523,9 +19523,43 @@ namespace OpenGLRenderer
 						break;
 					}
 
+					case Renderer::ResourceType::INDEX_BUFFER:
+					{
+						RENDERER_ASSERT(mContext, Renderer::DescriptorRangeType::SRV == descriptorRange.rangeType || Renderer::DescriptorRangeType::UAV == descriptorRange.rangeType, "OpenGL index buffer must bound at SRV or UAV descriptor range type")
+						RENDERER_ASSERT(mContext, Renderer::ShaderVisibility::ALL == descriptorRange.shaderVisibility || Renderer::ShaderVisibility::COMPUTE == descriptorRange.shaderVisibility, "OpenGL descriptor range shader visibility must be \"ALL\" or \"COMPUTE\"")
+
+						// "GL_ARB_uniform_buffer_object" required
+						if (mExtensions->isGL_ARB_uniform_buffer_object())
+						{
+							// "glBindBufferBase()" unit parameter is zero based so we can simply use the value we received
+							const GLuint index = descriptorRange.baseShaderRegister;
+
+							// Attach the buffer to the given SSBO binding point
+							glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, static_cast<IndexBuffer*>(resource)->getOpenGLElementArrayBuffer());
+						}
+						break;
+					}
+
+					case Renderer::ResourceType::VERTEX_BUFFER:
+					{
+						RENDERER_ASSERT(mContext, Renderer::DescriptorRangeType::SRV == descriptorRange.rangeType || Renderer::DescriptorRangeType::UAV == descriptorRange.rangeType, "OpenGL vertex buffer must bound at SRV or UAV descriptor range type")
+						RENDERER_ASSERT(mContext, Renderer::ShaderVisibility::ALL == descriptorRange.shaderVisibility || Renderer::ShaderVisibility::COMPUTE == descriptorRange.shaderVisibility, "OpenGL descriptor range shader visibility must be \"ALL\" or \"COMPUTE\"")
+
+						// "GL_ARB_uniform_buffer_object" required
+						if (mExtensions->isGL_ARB_uniform_buffer_object())
+						{
+							// "glBindBufferBase()" unit parameter is zero based so we can simply use the value we received
+							const GLuint index = descriptorRange.baseShaderRegister;
+
+							// Attach the buffer to the given SSBO binding point
+							glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, static_cast<VertexBuffer*>(resource)->getOpenGLArrayBuffer());
+						}
+						break;
+					}
+
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					{
-						RENDERER_ASSERT(mContext, Renderer::DescriptorRangeType::UAV == descriptorRange.rangeType, "OpenGL indirect buffer must bound at UAV descriptor range type")
+						RENDERER_ASSERT(mContext, Renderer::DescriptorRangeType::SRV == descriptorRange.rangeType || Renderer::DescriptorRangeType::UAV == descriptorRange.rangeType, "OpenGL indirect buffer must bound at SRV or UAV descriptor range type")
 						RENDERER_ASSERT(mContext, Renderer::ShaderVisibility::ALL == descriptorRange.shaderVisibility || Renderer::ShaderVisibility::COMPUTE == descriptorRange.shaderVisibility, "OpenGL descriptor range shader visibility must be \"ALL\" or \"COMPUTE\"")
 
 						// "GL_ARB_uniform_buffer_object" required
@@ -19551,8 +19585,6 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::SWAP_CHAIN:
 					case Renderer::ResourceType::FRAMEBUFFER:
-					case Renderer::ResourceType::INDEX_BUFFER:
-					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:

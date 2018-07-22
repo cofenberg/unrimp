@@ -339,12 +339,12 @@ namespace RendererRuntime
 		if (mCurrentInstanceBufferIndex >= mInstanceBuffers.size())
 		{
 			// Create uniform buffer instance
-			Renderer::IUniformBuffer* uniformBuffer = bufferManager.createUniformBuffer(mMaximumUniformBufferSize, nullptr, Renderer::BufferUsage::DYNAMIC_DRAW);
+			Renderer::IUniformBuffer* uniformBuffer = bufferManager.createUniformBuffer(mMaximumUniformBufferSize, nullptr, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::DYNAMIC_DRAW);
 			RENDERER_SET_RESOURCE_DEBUG_NAME(uniformBuffer, "Instance buffer manager")
 			uniformBuffer->addReference();
 
 			// Create texture buffer instance
-			Renderer::ITextureBuffer* textureBuffer = bufferManager.createTextureBuffer(mMaximumTextureBufferSize, Renderer::TextureFormat::R32G32B32A32F, nullptr, Renderer::TextureBufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::DYNAMIC_DRAW);
+			Renderer::ITextureBuffer* textureBuffer = bufferManager.createTextureBuffer(mMaximumTextureBufferSize, Renderer::TextureFormat::R32G32B32A32F, nullptr, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::DYNAMIC_DRAW);
 			RENDERER_SET_RESOURCE_DEBUG_NAME(textureBuffer, "Instance buffer manager")
 			textureBuffer->addReference();
 

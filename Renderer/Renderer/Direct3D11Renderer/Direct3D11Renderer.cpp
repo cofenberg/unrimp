@@ -1112,6 +1112,12 @@ struct D3D11_BUFFER_SRV
 };
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
+typedef enum D3D11_BUFFEREX_SRV_FLAG
+{
+	D3D11_BUFFEREX_SRV_FLAG_RAW = 0x1
+} D3D11_BUFFEREX_SRV_FLAG;
+
+// "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
 struct D3D11_TEX1D_SRV
 {
 	UINT MostDetailedMip;
@@ -3768,13 +3774,17 @@ namespace Direct3D11Renderer
 		*    Index buffer data format
 		*  @param[in] data
 		*    Index buffer data, can be a null pointer (empty buffer)
+		*  @param[in] bufferFlags
+		*    Buffer flags, see "Renderer::BufferFlag"
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		IndexBuffer(Direct3D11Renderer& direct3D11Renderer, uint32_t numberOfBytes, Renderer::IndexBufferFormat::Enum indexBufferFormat, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
+		IndexBuffer(Direct3D11Renderer& direct3D11Renderer, uint32_t numberOfBytes, Renderer::IndexBufferFormat::Enum indexBufferFormat, const void* data = nullptr, uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
 			IIndexBuffer(direct3D11Renderer),
 			mD3D11Buffer(nullptr),
-			mDXGIFormat(DXGI_FORMAT_UNKNOWN)
+			mDXGIFormat(DXGI_FORMAT_UNKNOWN),
+			mD3D11ShaderResourceView(nullptr),
+			mD3D11UnorderedAccessView(nullptr)
 		{
 			// "Renderer::IndexBufferFormat::UnsignedChar" is not supported by Direct3D 11
 			// -> See "Input assembler index buffer resources" ("D3D11_FORMAT_SUPPORT_IA_INDEX_BUFFER"): https://msdn.microsoft.com/en-us/library/windows/desktop/ff471325%28v=vs.85%29.aspx
@@ -3796,6 +3806,16 @@ namespace Direct3D11Renderer
 				d3d11BufferDesc.MiscFlags           = 0;
 				d3d11BufferDesc.StructureByteStride = 0;
 
+				// Set bind flags
+				if (bufferFlags & Renderer::IndirectBufferFlag::SHADER_RESOURCE)
+				{
+					d3d11BufferDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
+				}
+				if (bufferFlags & Renderer::IndirectBufferFlag::UNORDERED_ACCESS)
+				{
+					d3d11BufferDesc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
+				}
+
 				// Data given?
 				if (nullptr != data)
 				{
@@ -3813,6 +3833,34 @@ namespace Direct3D11Renderer
 					// Create the Direct3D 11 index buffer
 					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, nullptr, &mD3D11Buffer));
 				}
+
+				// Create the Direct3D 11 shader resource view instance
+				if (bufferFlags & Renderer::IndirectBufferFlag::SHADER_RESOURCE)
+				{
+					// Direct3D 11 shader resource view description
+					D3D11_SHADER_RESOURCE_VIEW_DESC d3d11ShaderResourceViewDesc = {};
+					d3d11ShaderResourceViewDesc.Format				 = mDXGIFormat;
+					d3d11ShaderResourceViewDesc.ViewDimension		 = D3D11_SRV_DIMENSION_BUFFER;
+					d3d11ShaderResourceViewDesc.Buffer.ElementOffset = 0;
+					d3d11ShaderResourceViewDesc.Buffer.ElementWidth	 = numberOfBytes / Renderer::IndexBufferFormat::getNumberOfBytesPerElement(indexBufferFormat);
+
+					// Create the Direct3D 11 shader resource view instance
+					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateShaderResourceView(mD3D11Buffer, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView));
+				}
+
+				// Create the Direct3D 11 unordered access view instance
+				if (bufferFlags & Renderer::IndirectBufferFlag::UNORDERED_ACCESS)
+				{
+					// Direct3D 11 unordered access view description
+					D3D11_UNORDERED_ACCESS_VIEW_DESC d3d11UnorderedAccessViewDesc = {};
+					d3d11UnorderedAccessViewDesc.Format				= mDXGIFormat;
+					d3d11UnorderedAccessViewDesc.ViewDimension		= D3D11_UAV_DIMENSION_BUFFER;
+					d3d11UnorderedAccessViewDesc.Buffer.NumElements = numberOfBytes / Renderer::IndexBufferFormat::getNumberOfBytesPerElement(indexBufferFormat);
+					d3d11UnorderedAccessViewDesc.Buffer.Flags		= 0;	// TODO(co) Compute shader: D3D11_BUFFER_UAV_FLAG_RAW - D3D11_BUFFER_UAV_FLAG_APPEND - D3D11_BUFFER_UAV_FLAG_COUNTER
+
+					// Create the Direct3D 11 unordered access view instance
+					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateUnorderedAccessView(mD3D11Buffer, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
+				}
 			}
 
 			// Assign a default name to the resource for debugging purposes
@@ -3827,6 +3875,16 @@ namespace Direct3D11Renderer
 		*/
 		virtual ~IndexBuffer() override
 		{
+			if (nullptr != mD3D11ShaderResourceView)
+			{
+				mD3D11ShaderResourceView->Release();
+				mD3D11ShaderResourceView = nullptr;
+			}
+			if (nullptr != mD3D11UnorderedAccessView)
+			{
+				mD3D11UnorderedAccessView->Release();
+				mD3D11UnorderedAccessView = nullptr;
+			}
 			if (nullptr != mD3D11Buffer)
 			{
 				mD3D11Buffer->Release();
@@ -3857,6 +3915,34 @@ namespace Direct3D11Renderer
 			return mDXGIFormat;
 		}
 
+		/**
+		*  @brief
+		*    Return the Direct3D shader resource view instance
+		*
+		*  @return
+		*    The Direct3D shader resource view instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*/
+		inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
+		{
+			return mD3D11ShaderResourceView;
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D unordered access view instance
+		*
+		*  @return
+		*    The Direct3D unordered access view instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*
+		*  @note
+		*    - It's not recommended to manipulate the returned Direct3D 11 resource
+		*      view by e.g. assigning another Direct3D 11 resource to it
+		*/
+		inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
+		{
+			return mD3D11UnorderedAccessView;
+		}
+
 
 	//[-------------------------------------------------------]
 	//[ Public virtual Renderer::IResource methods            ]
@@ -3865,13 +3951,24 @@ namespace Direct3D11Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
+				RENDERER_DECORATED_DEBUG_NAME(name, detailedName, "IBO", 6);	// 6 = "IBO: " including terminating zero
+
 				// Set the debug name
 				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D11Buffer)
 				{
-					RENDERER_DECORATED_DEBUG_NAME(name, detailedName, "IBO", 6);	// 6 = "IBO: " including terminating zero
 					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
+				}
+				if (nullptr != mD3D11ShaderResourceView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
+				}
+				if (nullptr != mD3D11UnorderedAccessView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
 				}
 			}
 		#endif
@@ -3899,8 +3996,10 @@ namespace Direct3D11Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		ID3D11Buffer* mD3D11Buffer;	///< Direct3D index buffer instance, can be a null pointer
-		DXGI_FORMAT	  mDXGIFormat;	///< DXGI index buffer data format
+		ID3D11Buffer*			   mD3D11Buffer;				///< Direct3D index buffer instance, can be a null pointer
+		DXGI_FORMAT				   mDXGIFormat;					///< DXGI index buffer data format
+		ID3D11ShaderResourceView*  mD3D11ShaderResourceView;	///< Direct3D 11 shader resource view, can be a null pointer
+		ID3D11UnorderedAccessView* mD3D11UnorderedAccessView;	///< Direct3D 11 unordered access view, can be a null pointer
 
 
 	};
@@ -3933,12 +4032,16 @@ namespace Direct3D11Renderer
 		*    Number of bytes within the vertex buffer, must be valid
 		*  @param[in] data
 		*    Vertex buffer data, can be a null pointer (empty buffer)
+		*  @param[in] bufferFlags
+		*    Buffer flags, see "Renderer::BufferFlag"
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		VertexBuffer(Direct3D11Renderer& direct3D11Renderer, uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
+		VertexBuffer(Direct3D11Renderer& direct3D11Renderer, uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
 			IVertexBuffer(direct3D11Renderer),
-			mD3D11Buffer(nullptr)
+			mD3D11Buffer(nullptr),
+			mD3D11ShaderResourceView(nullptr),
+			mD3D11UnorderedAccessView(nullptr)
 		{
 			// Direct3D 11 buffer description
 			D3D11_BUFFER_DESC d3d11BufferDesc;
@@ -3948,6 +4051,22 @@ namespace Direct3D11Renderer
 			//d3d11BufferDesc.CPUAccessFlags    = <filled above>;
 			d3d11BufferDesc.MiscFlags           = 0;
 			d3d11BufferDesc.StructureByteStride = 0;
+
+			// Set bind flags
+			// -> Using a structured vertex buffer would be handy inside shader source codes, sadly this isn't possible with Direct3D 11 and will result in the following error:
+			//    D3D11 ERROR: ID3D11Device::CreateBuffer: Buffers created with D3D11_RESOURCE_MISC_BUFFER_STRUCTURED cannot specify any of the following listed bind flags.  The following BindFlags bits (0x9) are set: D3D11_BIND_VERTEX_BUFFER (1), D3D11_BIND_INDEX_BUFFER (0), D3D11_BIND_CONSTANT_BUFFER (0), D3D11_BIND_STREAM_OUTPUT (0), D3D11_BIND_RENDER_TARGET (0), or D3D11_BIND_DEPTH_STENCIL (0). [ STATE_CREATION ERROR #68: CREATEBUFFER_INVALIDMISCFLAGS]
+			if (bufferFlags & Renderer::IndirectBufferFlag::SHADER_RESOURCE)
+			{
+				d3d11BufferDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
+				d3d11BufferDesc.MiscFlags  = D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
+			}
+			if (bufferFlags & Renderer::IndirectBufferFlag::UNORDERED_ACCESS)
+			{
+				d3d11BufferDesc.Usage			= D3D11_USAGE_DEFAULT;
+				d3d11BufferDesc.BindFlags	   |= D3D11_BIND_UNORDERED_ACCESS;
+				d3d11BufferDesc.CPUAccessFlags  = 0;
+				d3d11BufferDesc.MiscFlags       = D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
+			}
 
 			// Data given?
 			if (nullptr != data)
@@ -3967,6 +4086,36 @@ namespace Direct3D11Renderer
 				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, nullptr, &mD3D11Buffer));
 			}
 
+			// Create the Direct3D 11 shader resource view instance
+			if (bufferFlags & Renderer::IndirectBufferFlag::SHADER_RESOURCE)
+			{
+				// Direct3D 11 shader resource view description
+				D3D11_SHADER_RESOURCE_VIEW_DESC d3d11ShaderResourceViewDesc = {};
+				d3d11ShaderResourceViewDesc.Format				 = DXGI_FORMAT_R32_TYPELESS;
+				d3d11ShaderResourceViewDesc.ViewDimension		 = D3D11_SRV_DIMENSION_BUFFEREX;
+				d3d11ShaderResourceViewDesc.BufferEx.NumElements = numberOfBytes / sizeof(uint32_t);
+				d3d11ShaderResourceViewDesc.BufferEx.Flags		 = D3D11_BUFFEREX_SRV_FLAG_RAW;
+
+				// Create the Direct3D 11 shader resource view instance
+				// -> HLSL usage example: "ByteAddressBuffer InputVertexBuffer : register(t0);"
+				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateShaderResourceView(mD3D11Buffer, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView));
+			}
+
+			// Create the Direct3D 11 unordered access view instance
+			if (bufferFlags & Renderer::IndirectBufferFlag::UNORDERED_ACCESS)
+			{
+				// Direct3D 11 unordered access view description
+				D3D11_UNORDERED_ACCESS_VIEW_DESC d3d11UnorderedAccessViewDesc = {};
+				d3d11UnorderedAccessViewDesc.Format				= DXGI_FORMAT_R32_TYPELESS;
+				d3d11UnorderedAccessViewDesc.ViewDimension		= D3D11_UAV_DIMENSION_BUFFER;
+				d3d11UnorderedAccessViewDesc.Buffer.NumElements = numberOfBytes / sizeof(uint32_t);
+				d3d11UnorderedAccessViewDesc.Buffer.Flags		= D3D11_BUFFER_UAV_FLAG_RAW;	// TODO(co) Compute shader: D3D11_BUFFER_UAV_FLAG_RAW - D3D11_BUFFER_UAV_FLAG_APPEND - D3D11_BUFFER_UAV_FLAG_COUNTER
+
+				// Create the Direct3D 11 unordered access view instance
+				// -> HLSL usage example: "RWByteAddressBuffer OutputVertexBuffer : register(u0);"
+				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateUnorderedAccessView(mD3D11Buffer, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
+			}
+
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RENDERER_DEBUG
 				setDebugName("");
@@ -3979,6 +4128,16 @@ namespace Direct3D11Renderer
 		*/
 		virtual ~VertexBuffer() override
 		{
+			if (nullptr != mD3D11ShaderResourceView)
+			{
+				mD3D11ShaderResourceView->Release();
+				mD3D11ShaderResourceView = nullptr;
+			}
+			if (nullptr != mD3D11UnorderedAccessView)
+			{
+				mD3D11UnorderedAccessView->Release();
+				mD3D11UnorderedAccessView = nullptr;
+			}
 			if (nullptr != mD3D11Buffer)
 			{
 				mD3D11Buffer->Release();
@@ -3997,6 +4156,34 @@ namespace Direct3D11Renderer
 			return mD3D11Buffer;
 		}
 
+		/**
+		*  @brief
+		*    Return the Direct3D shader resource view instance
+		*
+		*  @return
+		*    The Direct3D shader resource view instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*/
+		inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
+		{
+			return mD3D11ShaderResourceView;
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D unordered access view instance
+		*
+		*  @return
+		*    The Direct3D unordered access view instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*
+		*  @note
+		*    - It's not recommended to manipulate the returned Direct3D 11 resource
+		*      view by e.g. assigning another Direct3D 11 resource to it
+		*/
+		inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
+		{
+			return mD3D11UnorderedAccessView;
+		}
+
 
 	//[-------------------------------------------------------]
 	//[ Public virtual Renderer::IResource methods            ]
@@ -4005,13 +4192,24 @@ namespace Direct3D11Renderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
+				RENDERER_DECORATED_DEBUG_NAME(name, detailedName, "VBO", 6);	// 6 = "VBO: " including terminating zero
+
 				// Set the debug name
 				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
 				if (nullptr != mD3D11Buffer)
 				{
-					RENDERER_DECORATED_DEBUG_NAME(name, detailedName, "VBO", 6);	// 6 = "VBO: " including terminating zero
 					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
+				}
+				if (nullptr != mD3D11ShaderResourceView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
+				}
+				if (nullptr != mD3D11UnorderedAccessView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
 				}
 			}
 		#endif
@@ -4039,7 +4237,9 @@ namespace Direct3D11Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		ID3D11Buffer* mD3D11Buffer;	///< Direct3D vertex buffer instance, can be a null pointer
+		ID3D11Buffer*			   mD3D11Buffer;				///< Direct3D vertex buffer instance, can be a null pointer
+		ID3D11ShaderResourceView*  mD3D11ShaderResourceView;	///< Direct3D 11 shader resource view, can be a null pointer
+		ID3D11UnorderedAccessView* mD3D11UnorderedAccessView;	///< Direct3D 11 unordered access view, can be a null pointer
 
 
 	};
@@ -4178,6 +4378,11 @@ namespace Direct3D11Renderer
 			// Set the Direct3D 11 vertex buffers
 			if (nullptr != mD3D11Buffers)
 			{
+				{ // TODO(co) Work in progress: Compute shader writing into vertex buffer: "D3D11 WARNING: ID3D11DeviceContext::IASetVertexBuffers: Resource being set to Vertex Buffer slot 0 is still bound on output! Forcing to NULL. [ STATE_SETTING WARNING #1: DEVICE_IASETVERTEXBUFFERS_HAZARD]"
+					ID3D11UnorderedAccessView* d3d11UnorderedAccessView = nullptr;
+					mD3D11DeviceContext->CSSetUnorderedAccessViews(1, 1, &d3d11UnorderedAccessView, nullptr);
+				}
+
 				// Just make a single API call
 				mD3D11DeviceContext->IASetVertexBuffers(0, mNumberOfSlots, mD3D11Buffers, mStrides, mOffsets);
 			}
@@ -4414,12 +4619,12 @@ namespace Direct3D11Renderer
 		*    Texture buffer data format
 		*  @param[in] data
 		*    Texture buffer data, can be a null pointer (empty buffer)
-		*  @param[in] flags
-		*    Texture buffer flags, see "Renderer::TextureBufferFlag"
+		*  @param[in] bufferFlags
+		*    Buffer flags, see "Renderer::BufferFlag"
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		TextureBuffer(Direct3D11Renderer& direct3D11Renderer, uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
+		TextureBuffer(Direct3D11Renderer& direct3D11Renderer, uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
 			ITextureBuffer(direct3D11Renderer),
 			mD3D11Buffer(nullptr),
 			mD3D11ShaderResourceView(nullptr),
@@ -4436,11 +4641,11 @@ namespace Direct3D11Renderer
 				d3d11BufferDesc.StructureByteStride = 0;
 
 				// Set bind flags
-				if (flags & Renderer::TextureBufferFlag::SHADER_RESOURCE)
+				if (bufferFlags & Renderer::BufferFlag::SHADER_RESOURCE)
 				{
 					d3d11BufferDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
 				}
-				if (flags & Renderer::TextureBufferFlag::UNORDERED_ACCESS)
+				if (bufferFlags & Renderer::BufferFlag::UNORDERED_ACCESS)
 				{
 					d3d11BufferDesc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
 				}
@@ -4465,7 +4670,7 @@ namespace Direct3D11Renderer
 			}
 
 			// Create the Direct3D 11 shader resource view instance
-			if (flags & Renderer::TextureBufferFlag::SHADER_RESOURCE)
+			if (bufferFlags & Renderer::BufferFlag::SHADER_RESOURCE)
 			{
 				// Direct3D 11 shader resource view description
 				D3D11_SHADER_RESOURCE_VIEW_DESC d3d11ShaderResourceViewDesc = {};
@@ -4479,7 +4684,7 @@ namespace Direct3D11Renderer
 			}
 
 			// Create the Direct3D 11 unordered access view instance
-			if (flags & Renderer::TextureBufferFlag::UNORDERED_ACCESS)
+			if (bufferFlags & Renderer::BufferFlag::UNORDERED_ACCESS)
 			{
 				// Direct3D 11 unordered access view description
 				D3D11_UNORDERED_ACCESS_VIEW_DESC d3d11UnorderedAccessViewDesc = {};
@@ -4650,21 +4855,22 @@ namespace Direct3D11Renderer
 		*    Number of bytes within the indirect buffer, must be valid
 		*  @param[in] data
 		*    Indirect buffer data, can be a null pointer (empty buffer)
-		*  @param[in] flags
+		*  @param[in] indirectBufferFlags
 		*    Indirect buffer flags, see "Renderer::IndirectBufferFlag"
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		IndirectBuffer(Direct3D11Renderer& direct3D11Renderer, uint32_t numberOfBytes, const void* data = nullptr, uint32_t flags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
+		IndirectBuffer(Direct3D11Renderer& direct3D11Renderer, uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
 			IIndirectBuffer(direct3D11Renderer),
 			mD3D11Buffer(nullptr),
 			mStagingD3D11Buffer(nullptr),
+			mD3D11ShaderResourceView(nullptr),
 			mD3D11UnorderedAccessView(nullptr)
 		{
 			// Sanity checks
-			RENDERER_ASSERT(direct3D11Renderer.getContext(), (flags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) != 0 || (flags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) != 0, "Invalid Direct3D 11 flags, indirect buffer element type specification \"DRAW_INSTANCED_ARGUMENTS\" or \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" is missing")
-			RENDERER_ASSERT(direct3D11Renderer.getContext(), (flags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawInstancedArguments)) == 0, "Direct3D 11 indirect buffer element type flags specification is \"DRAW_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
-			RENDERER_ASSERT(direct3D11Renderer.getContext(), (flags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawIndexedInstancedArguments)) == 0, "Direct3D 11 indirect buffer element type flags specification is \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
+			RENDERER_ASSERT(direct3D11Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) != 0 || (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) != 0, "Invalid Direct3D 11 flags, indirect buffer element type specification \"DRAW_INSTANCED_ARGUMENTS\" or \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" is missing")
+			RENDERER_ASSERT(direct3D11Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawInstancedArguments)) == 0, "Direct3D 11 indirect buffer element type flags specification is \"DRAW_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
+			RENDERER_ASSERT(direct3D11Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawIndexedInstancedArguments)) == 0, "Direct3D 11 indirect buffer element type flags specification is \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
 
 			{ // Buffer part: Indirect buffers can't be mapped in Direct3D 11 since considered to be exclusively written by GPU
 				// Direct3D 11 buffer description
@@ -4677,14 +4883,17 @@ namespace Direct3D11Renderer
 				d3d11BufferDesc.StructureByteStride	= 0;
 
 				// Set bind flags
-				if (flags & Renderer::IndirectBufferFlag::UNORDERED_ACCESS)
+				// -> Using a structured indirect buffer would be handy inside shader source codes, sadly this isn't possible with Direct3D 11 and will result in the following error:
+				//    "D3D11 ERROR: ID3D11Device::CreateBuffer: A resource cannot created with both D3D11_RESOURCE_MISC_DRAWINDIRECT_ARGS and D3D11_RESOURCE_MISC_BUFFER_STRUCTURED. [ STATE_CREATION ERROR #68: CREATEBUFFER_INVALIDMISCFLAGS]"
+				//    d3d11BufferDesc.MiscFlags |= D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+				//    d3d11BufferDesc.StructureByteStride = (flags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) ? sizeof(Renderer::DrawInstancedArguments) : sizeof(Renderer::DrawIndexedInstancedArguments);
+				if (indirectBufferFlags & Renderer::IndirectBufferFlag::SHADER_RESOURCE)
+				{
+					d3d11BufferDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
+				}
+				if (indirectBufferFlags & Renderer::IndirectBufferFlag::UNORDERED_ACCESS)
 				{
 					d3d11BufferDesc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
-
-					// Using a structured indirect buffer would be handy inside shader source codes, sadly this isn't possible with Direct3D 11 and will result in the following error:
-					// "D3D11 ERROR: ID3D11Device::CreateBuffer: A resource cannot created with both D3D11_RESOURCE_MISC_DRAWINDIRECT_ARGS and D3D11_RESOURCE_MISC_BUFFER_STRUCTURED. [ STATE_CREATION ERROR #68: CREATEBUFFER_INVALIDMISCFLAGS]"
-					// d3d11BufferDesc.MiscFlags |= D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
-					// d3d11BufferDesc.StructureByteStride = (flags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) ? sizeof(Renderer::DrawInstancedArguments) : sizeof(Renderer::DrawIndexedInstancedArguments);
 				}
 
 				// Data given?
@@ -4737,8 +4946,22 @@ namespace Direct3D11Renderer
 				}
 			}
 
+			// Create the Direct3D 11 shader resource view instance
+			if (indirectBufferFlags & Renderer::IndirectBufferFlag::SHADER_RESOURCE)
+			{
+				// Direct3D 11 shader resource view description
+				D3D11_SHADER_RESOURCE_VIEW_DESC d3d11ShaderResourceViewDesc = {};
+				d3d11ShaderResourceViewDesc.Format				 = DXGI_FORMAT_R32_UINT;
+				d3d11ShaderResourceViewDesc.ViewDimension		 = D3D11_SRV_DIMENSION_BUFFER;
+				d3d11ShaderResourceViewDesc.Buffer.ElementOffset = 0;
+				d3d11ShaderResourceViewDesc.Buffer.ElementWidth	 = numberOfBytes / sizeof(uint32_t);
+
+				// Create the Direct3D 11 shader resource view instance
+				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateShaderResourceView(mD3D11Buffer, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView));
+			}
+
 			// Create the Direct3D 11 unordered access view instance
-			if (flags & Renderer::IndirectBufferFlag::UNORDERED_ACCESS)
+			if (indirectBufferFlags & Renderer::IndirectBufferFlag::UNORDERED_ACCESS)
 			{
 				// Direct3D 11 unordered access view description
 				D3D11_UNORDERED_ACCESS_VIEW_DESC d3d11UnorderedAccessViewDesc = {};
@@ -4764,6 +4987,11 @@ namespace Direct3D11Renderer
 		virtual ~IndirectBuffer() override
 		{
 			// Release the used resources
+			if (nullptr != mD3D11ShaderResourceView)
+			{
+				mD3D11ShaderResourceView->Release();
+				mD3D11ShaderResourceView = nullptr;
+			}
 			if (nullptr != mD3D11UnorderedAccessView)
 			{
 				mD3D11UnorderedAccessView->Release();
@@ -4796,6 +5024,18 @@ namespace Direct3D11Renderer
 		inline ID3D11Buffer* getStagingD3D11Buffer() const
 		{
 			return mStagingD3D11Buffer;
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D shader resource view instance
+		*
+		*  @return
+		*    The Direct3D shader resource view instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*/
+		inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
+		{
+			return mD3D11ShaderResourceView;
 		}
 
 		/**
@@ -4835,6 +5075,11 @@ namespace Direct3D11Renderer
 				{
 					FAILED_DEBUG_BREAK(mStagingD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mStagingD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
+				}
+				if (nullptr != mD3D11ShaderResourceView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
 				}
 				if (nullptr != mD3D11UnorderedAccessView)
 				{
@@ -4879,6 +5124,7 @@ namespace Direct3D11Renderer
 	private:
 		ID3D11Buffer*			   mD3D11Buffer;				///< Direct3D indirect buffer instance, can be a null pointer
 		ID3D11Buffer*			   mStagingD3D11Buffer;			///< Staging Direct3D indirect buffer instance, can be a null pointer
+		ID3D11ShaderResourceView*  mD3D11ShaderResourceView;	///< Direct3D 11 shader resource view, can be a null pointer
 		ID3D11UnorderedAccessView* mD3D11UnorderedAccessView;	///< Direct3D 11 unordered access view, can be a null pointer
 
 
@@ -4925,14 +5171,14 @@ namespace Direct3D11Renderer
 	//[ Public virtual Renderer::IBufferManager methods       ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
-			return RENDERER_NEW(getRenderer().getContext(), VertexBuffer)(static_cast<Direct3D11Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
+			return RENDERER_NEW(getRenderer().getContext(), VertexBuffer)(static_cast<Direct3D11Renderer&>(getRenderer()), numberOfBytes, data, bufferFlags, bufferUsage);
 		}
 
-		inline virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, Renderer::IndexBufferFormat::Enum indexBufferFormat, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, Renderer::IndexBufferFormat::Enum indexBufferFormat, const void* data = nullptr, uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
-			return RENDERER_NEW(getRenderer().getContext(), IndexBuffer)(static_cast<Direct3D11Renderer&>(getRenderer()), numberOfBytes, indexBufferFormat, data, bufferUsage);
+			return RENDERER_NEW(getRenderer().getContext(), IndexBuffer)(static_cast<Direct3D11Renderer&>(getRenderer()), numberOfBytes, indexBufferFormat, data, bufferFlags, bufferUsage);
 		}
 
 		inline virtual Renderer::IVertexArray* createVertexArray(const Renderer::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Renderer::VertexArrayVertexBuffer* vertexBuffers, Renderer::IIndexBuffer* indexBuffer = nullptr) override
@@ -4941,19 +5187,19 @@ namespace Direct3D11Renderer
 			return RENDERER_NEW(getRenderer().getContext(), VertexArray)(static_cast<Direct3D11Renderer&>(getRenderer()), vertexAttributes, numberOfVertexBuffers, vertexBuffers, static_cast<IndexBuffer*>(indexBuffer));
 		}
 
-		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), UniformBuffer)(static_cast<Direct3D11Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
 		}
 
-		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
-			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<Direct3D11Renderer&>(getRenderer()), numberOfBytes, textureFormat, data, flags, bufferUsage);
+			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<Direct3D11Renderer&>(getRenderer()), numberOfBytes, textureFormat, data, bufferFlags, bufferUsage);
 		}
 
-		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t flags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
-			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<Direct3D11Renderer&>(getRenderer()), numberOfBytes, data, flags, bufferUsage);
+			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<Direct3D11Renderer&>(getRenderer()), numberOfBytes, data, indirectBufferFlags, bufferUsage);
 		}
 
 
@@ -12186,12 +12432,62 @@ namespace Direct3D11Renderer
 						break;
 					}
 
+					case Renderer::ResourceType::INDEX_BUFFER:
+					{
+						RENDERER_ASSERT(mContext, Renderer::DescriptorRangeType::SRV == descriptorRange.rangeType || Renderer::DescriptorRangeType::UAV == descriptorRange.rangeType, "Direct3D 11 index buffer must bound at SRV or UAV descriptor range type")
+						RENDERER_ASSERT(mContext, Renderer::ShaderVisibility::ALL == descriptorRange.shaderVisibility || Renderer::ShaderVisibility::COMPUTE == descriptorRange.shaderVisibility, "Direct3D 11 descriptor range shader visibility must be \"ALL\" or \"COMPUTE\"")
+						if (Renderer::DescriptorRangeType::SRV == descriptorRange.rangeType)
+						{
+							ID3D11ShaderResourceView* d3d11ShaderResourceView = static_cast<const IndexBuffer*>(resource)->getD3D11ShaderResourceView();
+							mD3D11DeviceContext->CSSetShaderResources(descriptorRange.baseShaderRegister, 1, &d3d11ShaderResourceView);
+						}
+						else
+						{
+							ID3D11UnorderedAccessView* d3d11UnorderedAccessView = static_cast<const IndexBuffer*>(resource)->getD3D11UnorderedAccessView();
+							mD3D11DeviceContext->CSSetUnorderedAccessViews(descriptorRange.baseShaderRegister, 1, &d3d11UnorderedAccessView, nullptr);
+						}
+						break;
+					}
+
+					case Renderer::ResourceType::VERTEX_BUFFER:
+					{
+						RENDERER_ASSERT(mContext, Renderer::DescriptorRangeType::SRV == descriptorRange.rangeType || Renderer::DescriptorRangeType::UAV == descriptorRange.rangeType, "Direct3D 11 vertex buffer must bound at SRV or UAV descriptor range type")
+						RENDERER_ASSERT(mContext, Renderer::ShaderVisibility::ALL == descriptorRange.shaderVisibility || Renderer::ShaderVisibility::COMPUTE == descriptorRange.shaderVisibility, "Direct3D 11 descriptor range shader visibility must be \"ALL\" or \"COMPUTE\"")
+						if (Renderer::DescriptorRangeType::SRV == descriptorRange.rangeType)
+						{
+							ID3D11ShaderResourceView* d3d11ShaderResourceView = static_cast<const VertexBuffer*>(resource)->getD3D11ShaderResourceView();
+							mD3D11DeviceContext->CSSetShaderResources(descriptorRange.baseShaderRegister, 1, &d3d11ShaderResourceView);
+						}
+						else
+						{
+							// TODO(co) Work in progress: Compute shader writing into vertex buffer
+							// "
+							// D3D11 WARNING: ID3D11DeviceContext::CSSetUnorderedAccessViews: Resource being set to CS UnorderedAccessView slot 1 is still bound on input! [ STATE_SETTING WARNING #2097354: DEVICE_CSSETUNORDEREDACCESSVIEWS_HAZARD]
+							// D3D11 WARNING: ID3D11DeviceContext::CSSetUnorderedAccessViews: Forcing Vertex Buffer slot 0 to NULL. [ STATE_SETTING WARNING #1: DEVICE_IASETVERTEXBUFFERS_HAZARD]
+							// "
+							mD3D11DeviceContext->IASetVertexBuffers(0, 0, nullptr, nullptr, nullptr);
+
+							// Set UAV
+							ID3D11UnorderedAccessView* d3d11UnorderedAccessView = static_cast<const VertexBuffer*>(resource)->getD3D11UnorderedAccessView();
+							mD3D11DeviceContext->CSSetUnorderedAccessViews(descriptorRange.baseShaderRegister, 1, &d3d11UnorderedAccessView, nullptr);
+						}
+						break;
+					}
+
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					{
-						RENDERER_ASSERT(mContext, Renderer::DescriptorRangeType::UAV == descriptorRange.rangeType, "Direct3D 11 indirect buffer must bound at UAV descriptor range type")
+						RENDERER_ASSERT(mContext, Renderer::DescriptorRangeType::SRV == descriptorRange.rangeType || Renderer::DescriptorRangeType::UAV == descriptorRange.rangeType, "Direct3D 11 indirect buffer must bound at SRV or UAV descriptor range type")
 						RENDERER_ASSERT(mContext, Renderer::ShaderVisibility::ALL == descriptorRange.shaderVisibility || Renderer::ShaderVisibility::COMPUTE == descriptorRange.shaderVisibility, "Direct3D 11 descriptor range shader visibility must be \"ALL\" or \"COMPUTE\"")
-						ID3D11UnorderedAccessView* d3d11UnorderedAccessView = static_cast<const IndirectBuffer*>(resource)->getD3D11UnorderedAccessView();
-						mD3D11DeviceContext->CSSetUnorderedAccessViews(descriptorRange.baseShaderRegister, 1, &d3d11UnorderedAccessView, nullptr);
+						if (Renderer::DescriptorRangeType::SRV == descriptorRange.rangeType)
+						{
+							ID3D11ShaderResourceView* d3d11ShaderResourceView = static_cast<const IndirectBuffer*>(resource)->getD3D11ShaderResourceView();
+							mD3D11DeviceContext->CSSetShaderResources(descriptorRange.baseShaderRegister, 1, &d3d11ShaderResourceView);
+						}
+						else
+						{
+							ID3D11UnorderedAccessView* d3d11UnorderedAccessView = static_cast<const IndirectBuffer*>(resource)->getD3D11UnorderedAccessView();
+							mD3D11DeviceContext->CSSetUnorderedAccessViews(descriptorRange.baseShaderRegister, 1, &d3d11UnorderedAccessView, nullptr);
+						}
 						break;
 					}
 
@@ -12240,8 +12536,6 @@ namespace Direct3D11Renderer
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::SWAP_CHAIN:
 					case Renderer::ResourceType::FRAMEBUFFER:
-					case Renderer::ResourceType::INDEX_BUFFER:
-					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Renderer::ResourceType::VERTEX_SHADER:

@@ -3756,12 +3756,12 @@ namespace Direct3D10Renderer
 		*    Texture buffer data format
 		*  @param[in] data
 		*    Texture buffer data, can be a null pointer (empty buffer)
-		*  @param[in] flags
-		*    Texture buffer flags, see "Renderer::TextureBufferFlag"
+		*  @param[in] bufferFlags
+		*    Buffer flags, see "Renderer::BufferFlag"
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		TextureBuffer(Direct3D10Renderer& direct3D10Renderer, uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
+		TextureBuffer(Direct3D10Renderer& direct3D10Renderer, uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
 			ITextureBuffer(direct3D10Renderer),
 			mD3D10Buffer(nullptr),
 			mD3D10ShaderResourceView(nullptr)
@@ -3776,7 +3776,7 @@ namespace Direct3D10Renderer
 				d3d10BufferDesc.MiscFlags        = 0;
 
 				// Set bind flags
-				if (flags & Renderer::TextureBufferFlag::SHADER_RESOURCE)
+				if (bufferFlags & Renderer::BufferFlag::SHADER_RESOURCE)
 				{
 					d3d10BufferDesc.BindFlags |= D3D10_BIND_SHADER_RESOURCE;
 				}
@@ -3801,7 +3801,7 @@ namespace Direct3D10Renderer
 			}
 
 			// Shader resource view part
-			if (flags & Renderer::TextureBufferFlag::SHADER_RESOURCE)
+			if (bufferFlags & Renderer::BufferFlag::SHADER_RESOURCE)
 			{
 				// Direct3D 10 shader resource view description
 				D3D10_SHADER_RESOURCE_VIEW_DESC d3d10ShaderResourceViewDesc = {};
@@ -3943,18 +3943,18 @@ namespace Direct3D10Renderer
 		*    Number of bytes within the indirect buffer, must be valid
 		*  @param[in] data
 		*    Indirect buffer data, can be a null pointer (empty buffer)
-		*  @param[in] flags
+		*  @param[in] indirectBufferFlags
 		*    Indirect buffer flags, see "Renderer::IndirectBufferFlag"
 		*/
-		IndirectBuffer(Direct3D10Renderer& direct3D10Renderer, uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t flags = 0) :
+		IndirectBuffer(Direct3D10Renderer& direct3D10Renderer, uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t indirectBufferFlags = 0) :
 			IIndirectBuffer(direct3D10Renderer),
 			mNumberOfBytes(numberOfBytes),
 			mData(nullptr)
 		{
 			// Sanity checks
-			RENDERER_ASSERT(direct3D10Renderer.getContext(), (flags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) != 0 || (flags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) != 0, "Invalid Direct3D 10 flags, indirect buffer element type specification \"DRAW_INSTANCED_ARGUMENTS\" or \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" is missing")
-			RENDERER_ASSERT(direct3D10Renderer.getContext(), (flags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawInstancedArguments)) == 0, "Direct3D 10 indirect buffer element type flags specification is \"DRAW_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
-			RENDERER_ASSERT(direct3D10Renderer.getContext(), (flags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawIndexedInstancedArguments)) == 0, "Direct3D 10 indirect buffer element type flags specification is \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
+			RENDERER_ASSERT(direct3D10Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) != 0 || (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) != 0, "Invalid Direct3D 10 flags, indirect buffer element type specification \"DRAW_INSTANCED_ARGUMENTS\" or \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" is missing")
+			RENDERER_ASSERT(direct3D10Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawInstancedArguments)) == 0, "Direct3D 10 indirect buffer element type flags specification is \"DRAW_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
+			RENDERER_ASSERT(direct3D10Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawIndexedInstancedArguments)) == 0, "Direct3D 10 indirect buffer element type flags specification is \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
 
 			// Copy data
 			if (mNumberOfBytes > 0)
@@ -4072,12 +4072,12 @@ namespace Direct3D10Renderer
 	//[ Public virtual Renderer::IBufferManager methods       ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), VertexBuffer)(static_cast<Direct3D10Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
 		}
 
-		inline virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, Renderer::IndexBufferFormat::Enum indexBufferFormat, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, Renderer::IndexBufferFormat::Enum indexBufferFormat, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), IndexBuffer)(static_cast<Direct3D10Renderer&>(getRenderer()), numberOfBytes, indexBufferFormat, data, bufferUsage);
 		}
@@ -4088,19 +4088,19 @@ namespace Direct3D10Renderer
 			return RENDERER_NEW(getRenderer().getContext(), VertexArray)(static_cast<Direct3D10Renderer&>(getRenderer()), vertexAttributes, numberOfVertexBuffers, vertexBuffers, static_cast<IndexBuffer*>(indexBuffer));
 		}
 
-		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), UniformBuffer)(static_cast<Direct3D10Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
 		}
 
-		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
-			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<Direct3D10Renderer&>(getRenderer()), numberOfBytes, textureFormat, data, flags, bufferUsage);
+			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<Direct3D10Renderer&>(getRenderer()), numberOfBytes, textureFormat, data, bufferFlags, bufferUsage);
 		}
 
-		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t flags = 0, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
-			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<Direct3D10Renderer&>(getRenderer()), numberOfBytes, data, flags);
+			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<Direct3D10Renderer&>(getRenderer()), numberOfBytes, data, indirectBufferFlags);
 		}
 
 

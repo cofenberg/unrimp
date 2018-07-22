@@ -76,6 +76,11 @@ void main()
 //[ Compute shader source code                            ]
 //[-------------------------------------------------------]
 computeShaderSourceCode = R"(#version 450 core	// OpenGL 4.5
+struct Vertex
+{
+	vec2 position;
+};
+
 // Same layout as "Renderer::DrawInstancedArguments"
 struct DrawInstancedArguments
 {
@@ -85,12 +90,26 @@ struct DrawInstancedArguments
 	uint startInstanceLocation;
 };
 
-// Uniforms
-layout(binding = 0)					  uniform sampler2D InputTextureMap;
-layout(binding = 1, rgba8)	writeonly uniform image2D   OutputTextureMap;
-layout(binding = 2, std430) writeonly		  buffer    OutputIndirectBuffer
+// Input
+layout(binding = 0)					  uniform sampler2D InputTexture2D;
+layout(binding = 1, std430) readonly		  buffer    InputVertexBuffer
 {
-	DrawInstancedArguments drawInstancedArguments;
+	Vertex inputVertices[3];
+};
+layout(binding = 2, std430) readonly		  buffer    InputIndirectBuffer
+{
+	DrawInstancedArguments inputDrawInstancedArguments;
+};
+
+// Output
+layout(binding = 3, rgba8)	writeonly uniform image2D OutputTexture2D;
+layout(binding = 4, std430) writeonly		  buffer  OutputVertexBuffer
+{
+	Vertex outputVertices[3];
+};
+layout(binding = 5, std430) writeonly		  buffer  OutputIndirectBuffer
+{
+	DrawInstancedArguments outputDrawInstancedArguments;
 };
 
 // Programs
@@ -98,22 +117,26 @@ layout (local_size_x = 16, local_size_y = 16) in;
 void main()
 {
 	// Fetch input texel
-	vec4 color = texelFetch(InputTextureMap, ivec2(gl_GlobalInvocationID.xy), 0);
+	vec4 color = texelFetch(InputTexture2D, ivec2(gl_GlobalInvocationID.xy), 0);
 
 	// Modify color
 	color.g *= 1.0f - (float(gl_GlobalInvocationID.x) / 16.0f);
 	color.g *= 1.0f - (float(gl_GlobalInvocationID.y) / 16.0f);
 
 	// Output texel
-	imageStore(OutputTextureMap, ivec2(gl_GlobalInvocationID.xy), color);
+	imageStore(OutputTexture2D, ivec2(gl_GlobalInvocationID.xy), color);
 
-	// Output draw call
+	// Output buffer
 	if (0 == gl_GlobalInvocationID.x && 0 == gl_GlobalInvocationID.y && 0 == gl_GlobalInvocationID.z)
 	{
-		drawInstancedArguments.vertexCountPerInstance = 3;
-		drawInstancedArguments.instanceCount		  = 1;
-		drawInstancedArguments.startVertexLocation    = 0;
-		drawInstancedArguments.startInstanceLocation  = 0;
+		// Output vertices
+		for (int i = 0; i < 3; ++i)
+		{
+			outputVertices[i] = inputVertices[i];
+		}
+
+		// Output draw call
+		outputDrawInstancedArguments = inputDrawInstancedArguments;
 	}
 }
 )";
