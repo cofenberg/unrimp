@@ -112,10 +112,10 @@
 			{
 				"0":
 				{
+					"ResourceType": "UNIFORM_BUFFER",
 					"BaseShaderRegisterName": "PassUniformBuffer",
 					"BaseShaderRegister": "0",
 					"ShaderVisibility": "ALL_GRAPHICS",
-					"ResourceType": "UNIFORM_BUFFER",
 					"BufferUsage": "PASS",
 					"NumberOfElements": "1",
 					"ElementProperties":
@@ -187,10 +187,10 @@
 			{
 				"0":
 				{
+					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "NormalMap",
 					"BaseShaderRegister": "0",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "TEXTURE",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@NormalMap",
@@ -200,10 +200,10 @@
 				},
 				"1":
 				{
+					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "VelocityMap",
 					"BaseShaderRegister": "1",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "TEXTURE",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@VelocityMap",
@@ -213,10 +213,10 @@
 				},
 				"2":
 				{
+					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "DepthMap",
 					"BaseShaderRegister": "2",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "TEXTURE",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@DepthMap",
@@ -228,10 +228,10 @@
 			{
 				"0":
 				{
+					"ResourceType": "SAMPLER_STATE",
 					"BaseShaderRegisterName": "SamplerPointClamp",
 					"BaseShaderRegister": "0",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "SAMPLER_STATE",
 					"Filter": "MIN_MAG_MIP_POINT",
 					"MaxAnisotropy": "1"
 				}

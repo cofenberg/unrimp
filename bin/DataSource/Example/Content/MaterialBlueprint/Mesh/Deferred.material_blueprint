@@ -144,10 +144,10 @@
 			{
 				"0":
 				{
+					"ResourceType": "UNIFORM_BUFFER",
 					"BaseShaderRegisterName": "PassUniformBuffer",
 					"BaseShaderRegister": "0",
 					"ShaderVisibility": "ALL_GRAPHICS",
-					"ResourceType": "UNIFORM_BUFFER",
 					"BufferUsage": "PASS",
 					"NumberOfElements": "1",
 					"ElementProperties":
@@ -189,10 +189,10 @@
 			{
 				"0":
 				{
+					"ResourceType": "UNIFORM_BUFFER",
 					"BaseShaderRegisterName": "MaterialUniformBuffer",
 					"BaseShaderRegister": "1",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "UNIFORM_BUFFER",
 					"BufferUsage": "MATERIAL",
 					"NumberOfElements": "2",
 					"ElementProperties":
@@ -234,10 +234,10 @@
 			{
 				"0":
 				{
+					"ResourceType": "UNIFORM_BUFFER",
 					"BaseShaderRegisterName": "InstanceUniformBuffer",
 					"BaseShaderRegister": "2",
 					"ShaderVisibility": "VERTEX",
-					"ResourceType": "UNIFORM_BUFFER",
 					"BufferUsage": "INSTANCE",
 					"NumberOfElements": "1",
 					"ElementProperties":
@@ -252,11 +252,11 @@
 				},
 				"1":
 				{
+					"ResourceType": "TEXTURE_BUFFER",
 					"ValueType": "FLOAT_4",
 					"BaseShaderRegisterName": "InstanceTextureBuffer",
 					"BaseShaderRegister": "0",
 					"ShaderVisibility": "VERTEX",
-					"ResourceType": "TEXTURE_BUFFER",
 					"BufferUsage": "INSTANCE",
 					"Value": "@POSITION_ROTATION_SCALE"
 				}
@@ -265,10 +265,10 @@
 			{
 				"0":
 				{
+					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "_argb_nxa",
 					"BaseShaderRegister": "1",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "TEXTURE",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@_argb_nxa",
@@ -278,10 +278,10 @@
 				},
 				"1":
 				{
+					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "_hr_rg_mb_nya",
 					"BaseShaderRegister": "2",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "TEXTURE",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@_hr_rg_mb_nya",
@@ -290,10 +290,10 @@
 				},
 				"2":
 				{
+					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "AlphaMap",
 					"BaseShaderRegister": "3",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "TEXTURE",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@AlphaMap",
@@ -302,10 +302,10 @@
 				},
 				"3":
 				{
+					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "EmissiveMap",
 					"BaseShaderRegister": "4",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "TEXTURE",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@EmissiveMap",
@@ -318,10 +318,10 @@
 			{
 				"0":
 				{
+					"ResourceType": "SAMPLER_STATE",
 					"BaseShaderRegisterName": "SamplerLinear",
 					"BaseShaderRegister": "0",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "SAMPLER_STATE",
 					"AddressU": "WRAP",
 					"AddressV": "WRAP"
 				}

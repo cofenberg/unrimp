@@ -77,10 +77,10 @@
 			{
 				"0":
 				{
+					"ResourceType": "UNIFORM_BUFFER",
 					"BaseShaderRegisterName": "PassUniformBuffer",
 					"BaseShaderRegister": "0",
 					"ShaderVisibility": "ALL_GRAPHICS",
-					"ResourceType": "UNIFORM_BUFFER",
 					"BufferUsage": "PASS",
 					"NumberOfElements": "1",
 					"ElementProperties":
@@ -134,10 +134,10 @@
 			{
 				"0":
 				{
+					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "NormalMap",
 					"BaseShaderRegister": "0",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "TEXTURE",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@NormalMap",
@@ -147,10 +147,10 @@
 				},
 				"1":
 				{
+					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "DepthMap",
 					"BaseShaderRegister": "1",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "TEXTURE",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@DepthMap",
@@ -160,10 +160,10 @@
 				},
 				"2":
 				{
+					"ResourceType": "TEXTURE_1D",
 					"BaseShaderRegisterName": "SsaoSampleKernelMap",
 					"BaseShaderRegister": "2",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "TEXTURE",
 					"Usage": "STATIC",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "Unrimp/Texture/DynamicByCode/SsaoSampleKernel",
@@ -174,10 +174,10 @@
 				},
 				"3":
 				{
+					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "SsaoNoise4x4Map",
 					"BaseShaderRegister": "3",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "TEXTURE",
 					"Usage": "STATIC",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "Unrimp/Texture/DynamicByCode/SsaoNoise4x4",
@@ -191,20 +191,20 @@
 			{
 				"0":
 				{
+					"ResourceType": "SAMPLER_STATE",
 					"BaseShaderRegisterName": "SamplerPointClamp",
 					"BaseShaderRegister": "0",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "SAMPLER_STATE",
 					"Filter": "MIN_MAG_MIP_POINT",
 					"MaxAnisotropy": "1",
 					"MaxLOD": "0.0"
 				},
 				"1":
 				{
+					"ResourceType": "SAMPLER_STATE",
 					"BaseShaderRegisterName": "SamplerPointWrap",
 					"BaseShaderRegister": "1",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "SAMPLER_STATE",
 					"Filter": "MIN_MAG_MIP_POINT",
 					"AddressU": "WRAP",
 					"AddressV": "WRAP",

@@ -1265,11 +1265,11 @@ namespace Renderer
 	*/
 	enum class DescriptorRangeType
 	{
-		SRV					  = 0,				///< Shader resource view (SRV), in HLSL: "t<index>"-register
-		UAV					  = SRV + 1,		///< Unordered access view (UAV), in HLSL: "u<index>"-register
-		UBV					  = UAV + 1,		///< Uniform buffer view (UBV), in HLSL: "b<index>"-register, "UBV" = "CBV"; we're using the OpenGL/Vulkan terminology of "uniform buffer" instead of "constant buffer" as DirectX does
-		SAMPLER				  = UBV + 1,		///< In HLSL: "s<index>"-register
-		NUMBER_OF_RANGE_TYPES = SAMPLER + 1
+		SRV					  = 0,			///< Shader resource view (SRV), in HLSL: "t<index>"-register
+		UAV					  = SRV + 1,	///< Unordered access view (UAV), in HLSL: "u<index>"-register
+		UBV					  = UAV + 1,	///< Uniform buffer view (UBV), in HLSL: "b<index>"-register, "UBV" = "CBV"; we're using the OpenGL/Vulkan terminology of "uniform buffer" instead of "constant buffer" as DirectX does
+		SAMPLER				  = UBV + 1,	///< In HLSL: "s<index>"-register
+		NUMBER_OF_RANGE_TYPES = SAMPLER + 1	///< Number of range type, invalid descriptor range type
 	};
 
 	/**
@@ -1313,66 +1313,124 @@ namespace Renderer
 		uint32_t			registerSpace;
 		uint32_t			offsetInDescriptorsFromTableStart;
 
-		// The rest is not part of "D3D12_DESCRIPTOR_RANGE" and was added to support OpenGL and Direct3D 9 as well
+		// The rest is not part of "D3D12_DESCRIPTOR_RANGE" and was added to support Vulkan, OpenGL and Direct3D 9 as well
 		static constexpr uint32_t NAME_LENGTH = 32;
 		char					  baseShaderRegisterName[NAME_LENGTH];	///< When not using explicit binding locations (OpenGL ES 3, legacy GLSL profiles)
 		ShaderVisibility		  shaderVisibility;
+		ResourceType			  resourceType;
 	};
 	struct DescriptorRangeBuilder final : public DescriptorRange
 	{
 		static constexpr uint32_t OFFSET_APPEND = 0xffffffff;
 		static inline void initialize(
 			DescriptorRange& range,
-			DescriptorRangeType _rangeType,
-			uint32_t _numberOfDescriptors,
+			ResourceType _resourceType,
 			uint32_t _baseShaderRegister,
 			const char _baseShaderRegisterName[NAME_LENGTH],
 			ShaderVisibility _shaderVisibility,
+			DescriptorRangeType _rangeType =  DescriptorRangeType::NUMBER_OF_RANGE_TYPES,	// Automatically determine the descriptor range type basing on the resource type
+			uint32_t _numberOfDescriptors = 1,
 			uint32_t _registerSpace = 0,
 			uint32_t _offsetInDescriptorsFromTableStart = OFFSET_APPEND)
 		{
-			range.rangeType = _rangeType;
+			if (DescriptorRangeType::NUMBER_OF_RANGE_TYPES == _rangeType)
+			{
+				// Automatically determine the descriptor range type basing on the resource type
+				switch (_resourceType)
+				{
+					case ResourceType::UNIFORM_BUFFER:
+						range.rangeType = DescriptorRangeType::UBV;
+						break;
+
+					case ResourceType::TEXTURE_BUFFER:
+						range.rangeType = DescriptorRangeType::SRV;
+						break;
+
+					case ResourceType::INDIRECT_BUFFER:
+						range.rangeType = DescriptorRangeType::UAV;
+						break;
+
+					case ResourceType::TEXTURE_1D:
+					case ResourceType::TEXTURE_2D:
+					case ResourceType::TEXTURE_2D_ARRAY:
+					case ResourceType::TEXTURE_3D:
+					case ResourceType::TEXTURE_CUBE:
+						range.rangeType = DescriptorRangeType::SRV;
+						break;
+
+					case ResourceType::SAMPLER_STATE:
+						range.rangeType = DescriptorRangeType::SAMPLER;
+						break;
+
+					case ResourceType::ROOT_SIGNATURE:
+					case ResourceType::RESOURCE_GROUP:
+					case ResourceType::PROGRAM:
+					case ResourceType::VERTEX_ARRAY:
+					case ResourceType::RENDER_PASS:
+					case ResourceType::SWAP_CHAIN:
+					case ResourceType::FRAMEBUFFER:
+					case ResourceType::INDEX_BUFFER:
+					case ResourceType::VERTEX_BUFFER:
+					case ResourceType::GRAPHICS_PIPELINE_STATE:
+					case ResourceType::COMPUTE_PIPELINE_STATE:
+					case ResourceType::VERTEX_SHADER:
+					case ResourceType::TESSELLATION_CONTROL_SHADER:
+					case ResourceType::TESSELLATION_EVALUATION_SHADER:
+					case ResourceType::GEOMETRY_SHADER:
+					case ResourceType::FRAGMENT_SHADER:
+					case ResourceType::COMPUTE_SHADER:
+						ASSERT(false);	// Invalid resource type
+						break;
+				}
+			}
+			else
+			{
+				range.rangeType = _rangeType;
+			}
 			range.numberOfDescriptors = _numberOfDescriptors;
 			range.baseShaderRegister = _baseShaderRegister;
 			range.registerSpace = _registerSpace;
 			range.offsetInDescriptorsFromTableStart = _offsetInDescriptorsFromTableStart;
 			strcpy(range.baseShaderRegisterName, _baseShaderRegisterName);
 			range.shaderVisibility = _shaderVisibility;
+			range.resourceType = _resourceType;
 		}
 		inline DescriptorRangeBuilder()
 		{}
 		inline explicit DescriptorRangeBuilder(const DescriptorRangeBuilder&)
 		{}
 		inline DescriptorRangeBuilder(
-			DescriptorRangeType _rangeType,
-			uint32_t _numberOfDescriptors,
+			ResourceType _resourceType,
 			uint32_t _baseShaderRegister,
 			const char _baseShaderRegisterName[NAME_LENGTH],
 			ShaderVisibility _shaderVisibility,
+			DescriptorRangeType _rangeType = DescriptorRangeType::NUMBER_OF_RANGE_TYPES,	// Automatically determine the descriptor range type basing on the resource type
+			uint32_t _numberOfDescriptors = 1,
 			uint32_t _registerSpace = 0,
 			uint32_t _offsetInDescriptorsFromTableStart = OFFSET_APPEND)
 		{
-			initialize(_rangeType, _numberOfDescriptors, _baseShaderRegister, _baseShaderRegisterName, _shaderVisibility, _registerSpace, _offsetInDescriptorsFromTableStart);
+			initialize(_resourceType, _baseShaderRegister, _baseShaderRegisterName, _shaderVisibility, _rangeType, _numberOfDescriptors, _registerSpace, _offsetInDescriptorsFromTableStart);
 		}
 		inline void initializeSampler(
-			uint32_t _numberOfDescriptors,
 			uint32_t _baseShaderRegister,
 			ShaderVisibility _shaderVisibility,
+			uint32_t _numberOfDescriptors = 1,
 			uint32_t _registerSpace = 0,
 			uint32_t _offsetInDescriptorsFromTableStart = OFFSET_APPEND)
 		{
-			initialize(*this, DescriptorRangeType::SAMPLER, _numberOfDescriptors, _baseShaderRegister, "", _shaderVisibility, _registerSpace, _offsetInDescriptorsFromTableStart);
+			initialize(*this, Renderer::ResourceType::SAMPLER_STATE, _baseShaderRegister, "", _shaderVisibility, DescriptorRangeType::SAMPLER, _numberOfDescriptors, _registerSpace, _offsetInDescriptorsFromTableStart);
 		}
 		inline void initialize(
-			DescriptorRangeType _rangeType,
-			uint32_t _numberOfDescriptors,
+			ResourceType _resourceType,
 			uint32_t _baseShaderRegister,
 			const char _baseShaderRegisterName[NAME_LENGTH],
 			ShaderVisibility _shaderVisibility,
+			DescriptorRangeType _rangeType = DescriptorRangeType::NUMBER_OF_RANGE_TYPES,	// Automatically determine the descriptor range type basing on the resource type
+			uint32_t _numberOfDescriptors = 1,
 			uint32_t _registerSpace = 0,
 			uint32_t _offsetInDescriptorsFromTableStart = OFFSET_APPEND)
 		{
-			initialize(*this, _rangeType, _numberOfDescriptors, _baseShaderRegister, _baseShaderRegisterName, _shaderVisibility, _registerSpace, _offsetInDescriptorsFromTableStart);
+			initialize(*this, _resourceType, _baseShaderRegister, _baseShaderRegisterName, _shaderVisibility, _rangeType, _numberOfDescriptors, _registerSpace, _offsetInDescriptorsFromTableStart);
 		}
 	};
 
@@ -2444,7 +2502,7 @@ namespace Renderer
 		enum Enum
 		{
 			UNORDERED_ACCESS = 1 << 0,	///< This texture buffer can be used for unordered access which is needed for compute shader read/write texture buffers (when using Direct3D 11 a unordered access view (UAV) will be generated)
-			SHADER_RESOURCE  = 1 << 0	///< This texture buffer can be used as shader resource (when using Direct3D 11 a shader resource view (SRV) will be generated)
+			SHADER_RESOURCE  = 1 << 1	///< This texture buffer can be used as shader resource (when using Direct3D 11 a shader resource view (SRV) will be generated)
 		};
 	};
 

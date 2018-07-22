@@ -4060,6 +4060,8 @@ namespace VulkanRenderer
 			uint32_t numberOfCombinedImageSamplers = 0;	// "VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER"
 			uint32_t numberOfUniformBuffers = 0;		// "VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER"
 			uint32_t numberOfUniformTexelBuffers = 0;	// "VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER"
+			uint32_t numberOfStorageImage = 0;			// "VK_DESCRIPTOR_TYPE_STORAGE_IMAGE"
+			uint32_t numberOfIndirectBuffers = 0;		// "VK_DESCRIPTOR_TYPE_STORAGE_BUFFER"
 			if (numberOfRootParameters > 0)
 			{
 				// Fill the Vulkan descriptor set layout bindings
@@ -4083,31 +4085,67 @@ namespace VulkanRenderer
 						{
 							// Evaluate parameter type
 							VkDescriptorType vkDescriptorType = VK_DESCRIPTOR_TYPE_MAX_ENUM;
-							switch (descriptorRange->rangeType)
+							switch (descriptorRange->resourceType)
 							{
-								case Renderer::DescriptorRangeType::SRV:
-									vkDescriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-									++numberOfCombinedImageSamplers;
-									break;
-
-								case Renderer::DescriptorRangeType::UAV:
-									// TODO(co) Usage of "UAV" is just a temporary hack
-									// RENDERER_LOG(vulkanRenderer.getContext(), CRITICAL, "Vulkan renderer backend: \"Renderer::DescriptorRangeType::UAV\" is currently no supported descriptor range type")
-									vkDescriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
-									++numberOfUniformTexelBuffers;
-									break;
-
-								case Renderer::DescriptorRangeType::UBV:
+								case Renderer::ResourceType::UNIFORM_BUFFER:
+									RENDERER_ASSERT(vulkanRenderer.getContext(), Renderer::DescriptorRangeType::UBV == descriptorRange->rangeType, "Vulkan renderer backend: Invalid descriptor range type")
 									vkDescriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 									++numberOfUniformBuffers;
 									break;
 
-								case Renderer::DescriptorRangeType::SAMPLER:
-									// Nothing here due to usage of "VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER"
+								case Renderer::ResourceType::TEXTURE_BUFFER:
+									RENDERER_ASSERT(vulkanRenderer.getContext(), Renderer::DescriptorRangeType::SRV == descriptorRange->rangeType, "Vulkan renderer backend: Invalid descriptor range type")
+									vkDescriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
+									++numberOfUniformTexelBuffers;
 									break;
 
-								case Renderer::DescriptorRangeType::NUMBER_OF_RANGE_TYPES:
-									RENDERER_LOG(vulkanRenderer.getContext(), CRITICAL, "Vulkan renderer backend: \"Renderer::DescriptorRangeType::NUMBER_OF_RANGE_TYPES\" is no valid descriptor range type")
+								case Renderer::ResourceType::INDIRECT_BUFFER:
+									RENDERER_ASSERT(vulkanRenderer.getContext(), Renderer::DescriptorRangeType::UAV == descriptorRange->rangeType, "Vulkan renderer backend: Invalid descriptor range type")
+									vkDescriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+									++numberOfIndirectBuffers;
+									break;
+
+								case Renderer::ResourceType::TEXTURE_1D:
+								case Renderer::ResourceType::TEXTURE_2D:
+								case Renderer::ResourceType::TEXTURE_2D_ARRAY:
+								case Renderer::ResourceType::TEXTURE_3D:
+								case Renderer::ResourceType::TEXTURE_CUBE:
+									RENDERER_ASSERT(vulkanRenderer.getContext(), Renderer::DescriptorRangeType::SRV == descriptorRange->rangeType || Renderer::DescriptorRangeType::UAV == descriptorRange->rangeType, "Vulkan renderer backend: Invalid descriptor range type")
+									if (Renderer::DescriptorRangeType::SRV == descriptorRange->rangeType)
+									{
+										vkDescriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+										++numberOfCombinedImageSamplers;
+									}
+									else
+									{
+										vkDescriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+										++numberOfStorageImage;
+									}
+									break;
+
+								case Renderer::ResourceType::SAMPLER_STATE:
+									// Nothing here due to usage of "VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER"
+									RENDERER_ASSERT(vulkanRenderer.getContext(), Renderer::DescriptorRangeType::SAMPLER == descriptorRange->rangeType, "Vulkan renderer backend: Invalid descriptor range type")
+									break;
+
+								case Renderer::ResourceType::ROOT_SIGNATURE:
+								case Renderer::ResourceType::RESOURCE_GROUP:
+								case Renderer::ResourceType::PROGRAM:
+								case Renderer::ResourceType::VERTEX_ARRAY:
+								case Renderer::ResourceType::RENDER_PASS:
+								case Renderer::ResourceType::SWAP_CHAIN:
+								case Renderer::ResourceType::FRAMEBUFFER:
+								case Renderer::ResourceType::INDEX_BUFFER:
+								case Renderer::ResourceType::VERTEX_BUFFER:
+								case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+								case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
+								case Renderer::ResourceType::VERTEX_SHADER:
+								case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
+								case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
+								case Renderer::ResourceType::GEOMETRY_SHADER:
+								case Renderer::ResourceType::FRAGMENT_SHADER:
+								case Renderer::ResourceType::COMPUTE_SHADER:
+									RENDERER_ASSERT(vulkanRenderer.getContext(), false, "Vulkan renderer backend: Invalid resource type")
 									break;
 							}
 
@@ -4230,6 +4268,24 @@ namespace VulkanRenderer
 					VkDescriptorPoolSize& vkDescriptorPoolSize = vkDescriptorPoolSizes[numberOfVkDescriptorPoolSizes];
 					vkDescriptorPoolSize.type			 = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;	// type (VkDescriptorType)
 					vkDescriptorPoolSize.descriptorCount = maxSets * numberOfUniformTexelBuffers;	// descriptorCount (uint32_t)
+					++numberOfVkDescriptorPoolSizes;
+				}
+
+				// "VK_DESCRIPTOR_TYPE_STORAGE_IMAGE"
+				if (numberOfStorageImage > 0)
+				{
+					VkDescriptorPoolSize& vkDescriptorPoolSize = vkDescriptorPoolSizes[numberOfVkDescriptorPoolSizes];
+					vkDescriptorPoolSize.type			 = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;	// type (VkDescriptorType)
+					vkDescriptorPoolSize.descriptorCount = maxSets * numberOfStorageImage;		// descriptorCount (uint32_t)
+					++numberOfVkDescriptorPoolSizes;
+				}
+
+				// "VK_DESCRIPTOR_TYPE_STORAGE_BUFFER"
+				if (numberOfIndirectBuffers > 0)
+				{
+					VkDescriptorPoolSize& vkDescriptorPoolSize = vkDescriptorPoolSizes[numberOfVkDescriptorPoolSizes];
+					vkDescriptorPoolSize.type			 = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;	// type (VkDescriptorType)
+					vkDescriptorPoolSize.descriptorCount = maxSets * numberOfIndirectBuffers;	// descriptorCount (uint32_t)
 					++numberOfVkDescriptorPoolSizes;
 				}
 

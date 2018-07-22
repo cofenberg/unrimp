@@ -92,10 +92,10 @@
 			{
 				"0":
 				{
+					"ResourceType": "UNIFORM_BUFFER",
 					"BaseShaderRegisterName": "PassUniformBuffer",
 					"BaseShaderRegister": "0",
 					"ShaderVisibility": "ALL_GRAPHICS",
-					"ResourceType": "UNIFORM_BUFFER",
 					"BufferUsage": "PASS",
 					"NumberOfElements": "1",
 					"ElementProperties":
@@ -161,10 +161,10 @@
 			{
 				"0":
 				{
+					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "ColorMap",
 					"BaseShaderRegister": "0",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "TEXTURE",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@ColorMap",
@@ -174,10 +174,10 @@
 				},
 				"1":
 				{
+					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "DepthMap",
 					"BaseShaderRegister": "1",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "TEXTURE",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@DepthMap",
@@ -187,10 +187,10 @@
 				},
 				"2":
 				{
+					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "ScreenSpaceAmbientOcclusionMap",
 					"BaseShaderRegister": "2",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "TEXTURE",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@ScreenSpaceAmbientOcclusionMap",
@@ -200,10 +200,10 @@
 				},
 				"3":
 				{
+					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "DistortionMap",
 					"BaseShaderRegister": "3",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "TEXTURE",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@DistortionMap",
@@ -213,10 +213,10 @@
 				},
 				"4":
 				{
+					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "VolumetricLightMap",
 					"BaseShaderRegister": "4",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "TEXTURE",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@VolumetricLightMap",
@@ -229,19 +229,19 @@
 			{
 				"0":
 				{
+					"ResourceType": "SAMPLER_STATE",
 					"BaseShaderRegisterName": "SamplerPointClamp",
 					"BaseShaderRegister": "0",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "SAMPLER_STATE",
 					"Filter": "MIN_MAG_MIP_POINT",
 					"MaxAnisotropy": "1"
 				},
 				"1":
 				{
+					"ResourceType": "SAMPLER_STATE",
 					"BaseShaderRegisterName": "SamplerLinearClamp",
 					"BaseShaderRegister": "1",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "SAMPLER_STATE",
 					"MaxAnisotropy": "1"
 				}
 			}

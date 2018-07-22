@@ -58,10 +58,10 @@
 			{
 				"0":
 				{
+					"ResourceType": "UNIFORM_BUFFER",
 					"BaseShaderRegisterName": "PassUniformBuffer",
 					"BaseShaderRegister": "0",
 					"ShaderVisibility": "VERTEX",
-					"ResourceType": "UNIFORM_BUFFER",
 					"BufferUsage": "PASS",
 					"NumberOfElements": "1",
 					"ElementProperties":
@@ -79,10 +79,10 @@
 			{
 				"0":
 				{
+					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "GlyphMap",
 					"BaseShaderRegister": "0",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "TEXTURE",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@GlyphMap",
@@ -91,10 +91,10 @@
 				},
 				"1":
 				{
+					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "BackgroundMap",
 					"BaseShaderRegister": "1",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "TEXTURE",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@BackgroundMap",
@@ -107,19 +107,19 @@
 			{
 				"0":
 				{
+					"ResourceType": "SAMPLER_STATE",
 					"BaseShaderRegisterName": "GlyphSampler",
 					"BaseShaderRegister": "0",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "SAMPLER_STATE",
 					"Filter": "MIN_MAG_MIP_LINEAR",
 					"MaxAnisotropy": "1"
 				},
 				"1":
 				{
+					"ResourceType": "SAMPLER_STATE",
 					"BaseShaderRegisterName": "BackgroundSampler",
 					"BaseShaderRegister": "1",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "SAMPLER_STATE",
 					"Filter": "MIN_MAG_LINEAR_MIP_POINT",
 					"MaxAnisotropy": "1",
 					"MaxLOD": "0.0"

@@ -49,8 +49,8 @@ void FirstComputeShader::onInitialization()
 
 		{ // Create the graphics root signature
 			Renderer::DescriptorRangeBuilder ranges[2];
-			ranges[0].initialize(Renderer::DescriptorRangeType::SRV, 1, 0, "AlbedoMap", Renderer::ShaderVisibility::FRAGMENT);
-			ranges[1].initializeSampler(1, 0, Renderer::ShaderVisibility::FRAGMENT);
+			ranges[0].initialize(Renderer::ResourceType::TEXTURE_2D, 0, "AlbedoMap", Renderer::ShaderVisibility::FRAGMENT);
+			ranges[1].initializeSampler(0, Renderer::ShaderVisibility::FRAGMENT);
 
 			Renderer::RootParameterBuilder rootParameters[2];
 			rootParameters[0].initializeAsDescriptorTable(1, &ranges[0]);
@@ -66,11 +66,11 @@ void FirstComputeShader::onInitialization()
 
 		{ // Create the compute root signature
 			Renderer::DescriptorRangeBuilder ranges[3];
-			ranges[0].initialize(Renderer::DescriptorRangeType::SRV, 1, 0, "InputTextureMap", Renderer::ShaderVisibility::COMPUTE);
+			ranges[0].initialize(Renderer::ResourceType::TEXTURE_2D,	  0,		   "InputTextureMap",	   Renderer::ShaderVisibility::COMPUTE);
 			// TODO(co) Compute shader: Get rid of the OpenGL/Direct3D 11 variation here
 			const uint32_t offset = (renderer->getNameId() == Renderer::NameId::VULKAN || renderer->getNameId() == Renderer::NameId::OPENGL) ? 1u : 0u;
-			ranges[1].initialize(Renderer::DescriptorRangeType::UAV, 1, 0u + offset, "OutputTextureMap", Renderer::ShaderVisibility::COMPUTE);
-			ranges[2].initialize(Renderer::DescriptorRangeType::UAV, 1, 1u + offset, "OutputIndirectBuffer", Renderer::ShaderVisibility::COMPUTE);
+			ranges[1].initialize(Renderer::ResourceType::TEXTURE_2D,	  0u + offset, "OutputTextureMap",	   Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
+			ranges[2].initialize(Renderer::ResourceType::INDIRECT_BUFFER, 1u + offset, "OutputIndirectBuffer", Renderer::ShaderVisibility::COMPUTE);
 
 			Renderer::RootParameterBuilder rootParameters[1];
 			rootParameters[0].initializeAsDescriptorTable(3, &ranges[0]);

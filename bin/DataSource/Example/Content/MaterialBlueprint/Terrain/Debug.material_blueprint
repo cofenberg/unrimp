@@ -81,10 +81,10 @@
 			{
 				"0":
 				{
+					"ResourceType": "UNIFORM_BUFFER",
 					"BaseShaderRegisterName": "PassUniformBuffer",
 					"BaseShaderRegister": "0",
 					"ShaderVisibility": "ALL_GRAPHICS",
-					"ResourceType": "UNIFORM_BUFFER",
 					"BufferUsage": "PASS",
 					"NumberOfElements": "1",
 					"ElementProperties":
@@ -230,11 +230,11 @@
 			{
 				"0":
 				{
+					"ResourceType": "TEXTURE_BUFFER",
 					"ValueType": "FLOAT_4",
 					"BaseShaderRegisterName": "LightTextureBuffer",
 					"BaseShaderRegister": "0",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "TEXTURE_BUFFER",
 					"BufferUsage": "LIGHT",
 					"Value": "@LIGHT"
 				}
@@ -243,10 +243,10 @@
 			{
 				"0":
 				{
+					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "HeightMap",
 					"BaseShaderRegister": "1",
 					"ShaderVisibility": "ALL_GRAPHICS",
-					"ResourceType": "TEXTURE",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@HeightMap",
@@ -255,10 +255,10 @@
 				},
 				"1":
 				{
+					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "_argb_nxa",
 					"BaseShaderRegister": "2",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "TEXTURE",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@_argb_nxa",
@@ -272,29 +272,29 @@
 			{
 				"0":
 				{
+					"ResourceType": "SAMPLER_STATE",
 					"BaseShaderRegisterName": "SamplerPoint",
 					"BaseShaderRegister": "0",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "SAMPLER_STATE",
 					"Filter": "MIN_MAG_MIP_POINT",
 					"MaxAnisotropy": "1",
 					"MaxLOD": "0.0"
 				},
 				"1":
 				{
+					"ResourceType": "SAMPLER_STATE",
 					"BaseShaderRegisterName": "SamplerLinear",
 					"BaseShaderRegister": "1",
 					"ShaderVisibility": "ALL_GRAPHICS",
-					"ResourceType": "SAMPLER_STATE",
 					"AddressU": "WRAP",
 					"AddressV": "WRAP"
 				},
 				"2":
 				{
+					"ResourceType": "SAMPLER_STATE",
 					"BaseShaderRegisterName": "SamplerLinearClamp",
 					"BaseShaderRegister": "2",
 					"ShaderVisibility": "ALL_GRAPHICS",
-					"ResourceType": "SAMPLER_STATE",
 					"AddressU": "CLAMP",
 					"AddressV": "CLAMP",
 					"AddressW": "CLAMP"

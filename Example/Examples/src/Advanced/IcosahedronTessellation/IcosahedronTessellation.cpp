@@ -57,10 +57,10 @@ void IcosahedronTessellation::onInitialization()
 		{ // Create the root signature
 			// Setup
 			Renderer::DescriptorRangeBuilder ranges[4];
-			ranges[0].initialize(Renderer::DescriptorRangeType::UBV, 1, 0, "UniformBlockDynamicTcs", Renderer::ShaderVisibility::TESSELLATION_CONTROL);
-			ranges[1].initialize(Renderer::DescriptorRangeType::UBV, 1, 0, "UniformBlockStaticTes", Renderer::ShaderVisibility::TESSELLATION_EVALUATION);
-			ranges[2].initialize(Renderer::DescriptorRangeType::UBV, 1, 0, "UniformBlockStaticGs", Renderer::ShaderVisibility::GEOMETRY);
-			ranges[3].initialize(Renderer::DescriptorRangeType::UBV, 1, 0, "UniformBlockStaticFs", Renderer::ShaderVisibility::FRAGMENT);
+			ranges[0].initialize(Renderer::ResourceType::UNIFORM_BUFFER, 0, "UniformBlockDynamicTcs", Renderer::ShaderVisibility::TESSELLATION_CONTROL);
+			ranges[1].initialize(Renderer::ResourceType::UNIFORM_BUFFER, 0, "UniformBlockStaticTes",  Renderer::ShaderVisibility::TESSELLATION_EVALUATION);
+			ranges[2].initialize(Renderer::ResourceType::UNIFORM_BUFFER, 0, "UniformBlockStaticGs",   Renderer::ShaderVisibility::GEOMETRY);
+			ranges[3].initialize(Renderer::ResourceType::UNIFORM_BUFFER, 0, "UniformBlockStaticFs",   Renderer::ShaderVisibility::FRAGMENT);
 
 			Renderer::RootParameterBuilder rootParameters[1];
 			rootParameters[0].initializeAsDescriptorTable(4, &ranges[0]);

@@ -84,10 +84,10 @@
 			{
 				"0":
 				{
+					"ResourceType": "UNIFORM_BUFFER",
 					"BaseShaderRegisterName": "PassUniformBuffer",
 					"BaseShaderRegister": "0",
 					"ShaderVisibility": "ALL_GRAPHICS",
-					"ResourceType": "UNIFORM_BUFFER",
 					"BufferUsage": "PASS",
 					"NumberOfElements": "1",
 					"ElementProperties":
@@ -165,10 +165,10 @@
 			{
 				"0":
 				{
+					"ResourceType": "TEXTURE_CUBE",
 					"BaseShaderRegisterName": "EnvironmentCubeMap",
 					"BaseShaderRegister": "0",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "TEXTURE",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@EnvironmentCubeMap",
@@ -178,10 +178,10 @@
 				},
 				"1":
 				{
+					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "CloudsMap",
 					"BaseShaderRegister": "1",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "TEXTURE",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@CloudsMap",
@@ -194,17 +194,17 @@
 			{
 				"0":
 				{
+					"ResourceType": "SAMPLER_STATE",
 					"BaseShaderRegisterName": "SamplerLinearClamp",
 					"BaseShaderRegister": "0",
-					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "SAMPLER_STATE"
+					"ShaderVisibility": "FRAGMENT"
 				},
 				"1":
 				{
+					"ResourceType": "SAMPLER_STATE",
 					"BaseShaderRegisterName": "SamplerLinearWrap",
 					"BaseShaderRegister": "1",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "SAMPLER_STATE",
 					"AddressU": "WRAP",
 					"AddressV": "WRAP",
 					"AddressW": "WRAP"

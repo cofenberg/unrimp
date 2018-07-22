@@ -52,10 +52,10 @@ void FirstTexture::onInitialization()
 
 		{ // Create the root signature
 			Renderer::DescriptorRangeBuilder ranges[4];
-			ranges[0].initialize(Renderer::DescriptorRangeType::SRV, 1, 0, "GradientMap", Renderer::ShaderVisibility::FRAGMENT);
-			ranges[1].initialize(Renderer::DescriptorRangeType::SRV, 1, 1, "AlbedoMap", Renderer::ShaderVisibility::FRAGMENT);
-			ranges[2].initializeSampler(1, 0, Renderer::ShaderVisibility::FRAGMENT);
-			ranges[3].initializeSampler(1, 1, Renderer::ShaderVisibility::FRAGMENT);
+			ranges[0].initialize(Renderer::ResourceType::TEXTURE_1D, 0, "GradientMap", Renderer::ShaderVisibility::FRAGMENT);
+			ranges[1].initialize(Renderer::ResourceType::TEXTURE_2D, 1, "AlbedoMap",   Renderer::ShaderVisibility::FRAGMENT);
+			ranges[2].initializeSampler(0, Renderer::ShaderVisibility::FRAGMENT);
+			ranges[3].initializeSampler(1, Renderer::ShaderVisibility::FRAGMENT);
 
 			Renderer::RootParameterBuilder rootParameters[2];
 			rootParameters[0].initializeAsDescriptorTable(2, &ranges[0]);

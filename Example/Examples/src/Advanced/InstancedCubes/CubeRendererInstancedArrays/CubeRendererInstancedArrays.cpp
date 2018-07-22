@@ -156,11 +156,11 @@ CubeRendererInstancedArrays::CubeRendererInstancedArrays(Renderer::IRenderer& re
 
 	{ // Create the root signature
 		Renderer::DescriptorRangeBuilder ranges[5];
-		ranges[0].initialize(Renderer::DescriptorRangeType::UBV, 1, 0, "UniformBlockStaticVs", Renderer::ShaderVisibility::VERTEX);
-		ranges[1].initialize(Renderer::DescriptorRangeType::UBV, 1, 1, "UniformBlockDynamicVs", Renderer::ShaderVisibility::VERTEX);
-		ranges[2].initialize(Renderer::DescriptorRangeType::SRV, 1, 0, "AlbedoMap", Renderer::ShaderVisibility::FRAGMENT);
-		ranges[3].initialize(Renderer::DescriptorRangeType::UBV, 1, 0, "UniformBlockDynamicFs", Renderer::ShaderVisibility::FRAGMENT);
-		ranges[4].initializeSampler(1, 0, Renderer::ShaderVisibility::FRAGMENT);
+		ranges[0].initialize(Renderer::ResourceType::UNIFORM_BUFFER, 0, "UniformBlockStaticVs",  Renderer::ShaderVisibility::VERTEX);
+		ranges[1].initialize(Renderer::ResourceType::UNIFORM_BUFFER, 1, "UniformBlockDynamicVs", Renderer::ShaderVisibility::VERTEX);
+		ranges[2].initialize(Renderer::ResourceType::TEXTURE_2D,	 0, "AlbedoMap",			 Renderer::ShaderVisibility::FRAGMENT);
+		ranges[3].initialize(Renderer::ResourceType::UNIFORM_BUFFER, 0, "UniformBlockDynamicFs", Renderer::ShaderVisibility::FRAGMENT);
+		ranges[4].initializeSampler(0, Renderer::ShaderVisibility::FRAGMENT);
 
 		Renderer::RootParameterBuilder rootParameters[2];
 		rootParameters[0].initializeAsDescriptorTable(4, &ranges[0]);

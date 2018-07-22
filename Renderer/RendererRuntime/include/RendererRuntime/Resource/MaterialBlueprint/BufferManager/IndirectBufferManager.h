@@ -157,7 +157,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	private:
 		const IRendererRuntime& mRendererRuntime;
-		const uint32_t			mMaximumIndirectBufferSize;	///< Maximum indirect buffer size in bytes
+		uint32_t				mMaximumIndirectBufferSize;	///< Maximum indirect buffer size in bytes
 		IndirectBuffers			mFreeIndirectBuffers;
 		IndirectBuffers			mUsedIndirectBuffers;
 		IndirectBuffer*			mCurrentIndirectBuffer;		///< Currently filled indirect buffer, can be a null pointer, don't destroy the instance since it's just a reference

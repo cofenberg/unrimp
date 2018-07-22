@@ -66,7 +66,8 @@ namespace RendererRuntime
 		mCurrentIndirectBuffer(nullptr),
 		mPreviouslyRequestedNumberOfBytes(0)
 	{
-		// Nothing here
+		// The maximum indirect buffer size must be a multiple of "Renderer::DrawIndexedInstancedArguments"
+		mMaximumIndirectBufferSize -= (mMaximumIndirectBufferSize % sizeof(Renderer::DrawIndexedInstancedArguments));
 	}
 
 	IndirectBufferManager::~IndirectBufferManager()

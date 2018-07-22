@@ -512,9 +512,9 @@ namespace RendererRuntime
 		{ // Create the root signature instance
 			// Create the root signature
 			Renderer::DescriptorRangeBuilder ranges[3];
-			ranges[0].initialize(Renderer::DescriptorRangeType::UBV, 1, 0, "UniformBlockDynamicVs", Renderer::ShaderVisibility::VERTEX);
-			ranges[1].initialize(Renderer::DescriptorRangeType::SRV, 1, 0, "GlyphMap", Renderer::ShaderVisibility::FRAGMENT);
-			ranges[2].initializeSampler(1, 0, Renderer::ShaderVisibility::FRAGMENT);
+			ranges[0].initialize(Renderer::ResourceType::UNIFORM_BUFFER, 0, "UniformBlockDynamicVs", Renderer::ShaderVisibility::VERTEX);
+			ranges[1].initialize(Renderer::ResourceType::TEXTURE_2D,	 0, "GlyphMap",				 Renderer::ShaderVisibility::FRAGMENT);
+			ranges[2].initializeSampler(0, Renderer::ShaderVisibility::FRAGMENT);
 
 			Renderer::RootParameterBuilder rootParameters[2];
 			rootParameters[0].initializeAsDescriptorTable(2, &ranges[0]);

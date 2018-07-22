@@ -149,6 +149,57 @@ namespace
 			return static_cast<uint32_t>((strncmp(instructionAsString, "@counter(", 7) == 0) ? executeCounterInstruction(instructionAsString, shaderProperties) : std::atoi(instructionAsString));
 		}
 
+		Renderer::ResourceType mandatoryResourceType(const rapidjson::Value& rapidJsonValue)
+		{
+			const rapidjson::Value& rapidJsonValueUsage = rapidJsonValue["ResourceType"];
+			const char* valueAsString = rapidJsonValueUsage.GetString();
+			const rapidjson::SizeType valueStringLength = rapidJsonValueUsage.GetStringLength();
+			Renderer::ResourceType resourceType = Renderer::ResourceType::ROOT_SIGNATURE;
+
+			// Define helper macros
+			#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) resourceType = Renderer::ResourceType::name;
+			#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) resourceType = Renderer::ResourceType::name;
+
+			// Evaluate value
+			IF_VALUE(ROOT_SIGNATURE)
+			ELSE_IF_VALUE(RESOURCE_GROUP)
+			ELSE_IF_VALUE(PROGRAM)
+			ELSE_IF_VALUE(VERTEX_ARRAY)
+			ELSE_IF_VALUE(RENDER_PASS)
+			ELSE_IF_VALUE(SWAP_CHAIN)
+			ELSE_IF_VALUE(FRAMEBUFFER)
+			ELSE_IF_VALUE(INDEX_BUFFER)
+			ELSE_IF_VALUE(VERTEX_BUFFER)
+			ELSE_IF_VALUE(UNIFORM_BUFFER)
+			ELSE_IF_VALUE(TEXTURE_BUFFER)
+			ELSE_IF_VALUE(INDIRECT_BUFFER)
+			ELSE_IF_VALUE(TEXTURE_1D)
+			ELSE_IF_VALUE(TEXTURE_2D)
+			ELSE_IF_VALUE(TEXTURE_2D_ARRAY)
+			ELSE_IF_VALUE(TEXTURE_3D)
+			ELSE_IF_VALUE(TEXTURE_CUBE)
+			ELSE_IF_VALUE(GRAPHICS_PIPELINE_STATE)
+			ELSE_IF_VALUE(COMPUTE_PIPELINE_STATE)
+			ELSE_IF_VALUE(SAMPLER_STATE)
+			ELSE_IF_VALUE(VERTEX_SHADER)
+			ELSE_IF_VALUE(TESSELLATION_CONTROL_SHADER)
+			ELSE_IF_VALUE(TESSELLATION_EVALUATION_SHADER)
+			ELSE_IF_VALUE(GEOMETRY_SHADER)
+			ELSE_IF_VALUE(FRAGMENT_SHADER)
+			ELSE_IF_VALUE(COMPUTE_SHADER)
+			else
+			{
+				throw std::runtime_error("Invalid resource type \"" + std::string(valueAsString) + '\"');
+			}
+
+			// Undefine helper macros
+			#undef IF_VALUE
+			#undef ELSE_IF_VALUE
+
+			// Done
+			return resourceType;
+		}
+
 
 //[-------------------------------------------------------]
 //[ Anonymous detail namespace                            ]
@@ -671,27 +722,48 @@ namespace RendererToolkit
 						const rapidjson::Value& rapidJsonValue = rapidJsonMemberIteratorResource->value;
 						Renderer::DescriptorRange descriptorRange;
 
-						{ // Mandatory range type
-							const rapidjson::Value& rapidJsonValueResourceType = rapidJsonValue["ResourceType"];
-							const char* resourceTypeAsString = rapidJsonValueResourceType.GetString();
+						{ // Mandatory resource and range type
+							// Resource type
+							descriptorRange.resourceType = ::detail::mandatoryResourceType(rapidJsonValue);
 
-							// Define helper macros
-							#define IF_VALUE(name, rangeTypeValue)			 if (strcmp(resourceTypeAsString, name) == 0) descriptorRange.rangeType = Renderer::DescriptorRangeType::rangeTypeValue;
-							#define ELSE_IF_VALUE(name, rangeTypeValue) else if (strcmp(resourceTypeAsString, name) == 0) descriptorRange.rangeType = Renderer::DescriptorRangeType::rangeTypeValue;
+							// Define helper macro
+							#define CASE_VALUE(name, rangeTypeValue) case Renderer::ResourceType::name: descriptorRange.rangeType = Renderer::DescriptorRangeType::rangeTypeValue; break;
+							#define CASE(name) case Renderer::ResourceType::name:
 
 							// Evaluate value
-							IF_VALUE("UNIFORM_BUFFER", UBV)
-							ELSE_IF_VALUE("TEXTURE_BUFFER", UAV)	// TODO(co) Usage of "UAV" is just a temporary hack", also search for other "UAV"-places
-							ELSE_IF_VALUE("SAMPLER_STATE", SAMPLER)
-							ELSE_IF_VALUE("TEXTURE", SRV)
-							else
+							switch (descriptorRange.resourceType)
 							{
-								throw std::runtime_error("Invalid resource type \"" + std::string(resourceTypeAsString) + "\", must be \"UniformBuffer\", \"TextureBuffer\", \"SamplerState\" or \"Texture\"");
+								CASE_VALUE(UNIFORM_BUFFER,	 UBV)
+								CASE_VALUE(TEXTURE_BUFFER,	 SRV)
+								CASE_VALUE(TEXTURE_1D,		 SRV)
+								CASE_VALUE(TEXTURE_2D,		 SRV)
+								CASE_VALUE(TEXTURE_2D_ARRAY, SRV)
+								CASE_VALUE(TEXTURE_3D,		 SRV)
+								CASE_VALUE(TEXTURE_CUBE,	 SRV)
+								CASE_VALUE(SAMPLER_STATE,	 SAMPLER)
+								CASE(ROOT_SIGNATURE)
+								CASE(RESOURCE_GROUP)
+								CASE(PROGRAM)
+								CASE(VERTEX_ARRAY)
+								CASE(RENDER_PASS)
+								CASE(SWAP_CHAIN)
+								CASE(FRAMEBUFFER)
+								CASE(INDEX_BUFFER)
+								CASE(VERTEX_BUFFER)
+								CASE(INDIRECT_BUFFER)
+								CASE(GRAPHICS_PIPELINE_STATE)
+								CASE(COMPUTE_PIPELINE_STATE)
+								CASE(VERTEX_SHADER)
+								CASE(TESSELLATION_CONTROL_SHADER)
+								CASE(TESSELLATION_EVALUATION_SHADER)
+								CASE(GEOMETRY_SHADER)
+								CASE(FRAGMENT_SHADER)
+								CASE(COMPUTE_SHADER)
+									throw std::runtime_error("Invalid resource type \"" + std::string(rapidJsonValue["ResourceType"].GetString()) + "\", must be \"UNIFORM_BUFFER\", \"TEXTURE_BUFFER\", \"TEXTURE_1D\", \"TEXTURE_2D\", \"TEXTURE_2D_ARRAY\", \"TEXTURE_3D\", \"TEXTURE_CUBE\" or \"SAMPLER_STATE\"");
 							}
 
-							// Undefine helper macros
-							#undef IF_VALUE
-							#undef ELSE_IF_VALUE
+							// Undefine helper macro
+							#undef CASE_VALUE
 						}
 
 						// Fixed number of descriptors is always one
@@ -1282,7 +1354,7 @@ namespace RendererToolkit
 	void JsonMaterialBlueprintHelper::readTexturesByResourceGroups(const IAssetCompiler::Input& input, const RendererRuntime::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector, const rapidjson::Value& rapidJsonValueResourceGroups, const SamplerBaseShaderRegisterNameToIndex& samplerBaseShaderRegisterNameToIndex, RendererRuntime::IFile& file)
 	{
 		// Iterate through all resource groups, we're only interested in the following resource parameters
-		// - "ResourceType" = "TEXTURE"
+		// - "ResourceType" = "TEXTURE_1D", "TEXTURE_2D", "TEXTURE_2D_ARRAY", "TEXTURE_3D", "TEXTURE_CUBE"
 		// - "BufferUsage"
 		// - "ValueType"
 		// - "Value"
@@ -1310,7 +1382,12 @@ namespace RendererToolkit
 
 				// We're only interested in texture resource types
 				const rapidjson::Value& rapidJsonValue = rapidJsonMemberIteratorResource->value;
-				if (strcmp(rapidJsonValue["ResourceType"].GetString(), "TEXTURE") == 0)
+				const char* resourceTypeAsString = rapidJsonValue["ResourceType"].GetString();
+				if (strcmp(resourceTypeAsString, "TEXTURE_1D") == 0 ||
+					strcmp(resourceTypeAsString, "TEXTURE_2D") == 0 ||
+					strcmp(resourceTypeAsString, "TEXTURE_2D_ARRAY") == 0 ||
+					strcmp(resourceTypeAsString, "TEXTURE_3D") == 0 ||
+					strcmp(resourceTypeAsString, "TEXTURE_CUBE") == 0)
 				{
 					// Mandatory root parameter index
 					const uint32_t rootParameterIndex = static_cast<uint32_t>(resourceGroupIndex);

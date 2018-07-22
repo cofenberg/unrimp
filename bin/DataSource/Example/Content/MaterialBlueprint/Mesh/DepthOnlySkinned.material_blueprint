@@ -78,10 +78,10 @@
 			{
 				"0":
 				{
+					"ResourceType": "UNIFORM_BUFFER",
 					"BaseShaderRegisterName": "PassUniformBuffer",
 					"BaseShaderRegister": "0",
 					"ShaderVisibility": "VERTEX",
-					"ResourceType": "UNIFORM_BUFFER",
 					"BufferUsage": "PASS",
 					"NumberOfElements": "1",
 					"ElementProperties":
@@ -99,10 +99,10 @@
 			{
 				"0":
 				{
+					"ResourceType": "UNIFORM_BUFFER",
 					"BaseShaderRegisterName": "MaterialUniformBuffer",
 					"BaseShaderRegister": "1",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "UNIFORM_BUFFER",
 					"BufferUsage": "MATERIAL",
 					"NumberOfElements": "2",
 					"ElementProperties":
@@ -120,10 +120,10 @@
 			{
 				"0":
 				{
+					"ResourceType": "UNIFORM_BUFFER",
 					"BaseShaderRegisterName": "InstanceUniformBuffer",
 					"BaseShaderRegister": "2",
 					"ShaderVisibility": "VERTEX",
-					"ResourceType": "UNIFORM_BUFFER",
 					"BufferUsage": "INSTANCE",
 					"NumberOfElements": "1",
 					"ElementProperties":
@@ -138,11 +138,11 @@
 				},
 				"1":
 				{
+					"ResourceType": "TEXTURE_BUFFER",
 					"ValueType": "FLOAT_4",
 					"BaseShaderRegisterName": "InstanceTextureBuffer",
 					"BaseShaderRegister": "0",
 					"ShaderVisibility": "VERTEX",
-					"ResourceType": "TEXTURE_BUFFER",
 					"BufferUsage": "INSTANCE",
 					"Value": "@POSITION_ROTATION_SCALE"
 				}
@@ -151,10 +151,10 @@
 			{
 				"0":
 				{
+					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "AlphaMap",
 					"BaseShaderRegister": "1",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "TEXTURE",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@AlphaMap",
@@ -166,10 +166,10 @@
 			{
 				"0":
 				{
+					"ResourceType": "SAMPLER_STATE",
 					"BaseShaderRegisterName": "SamplerLinear",
 					"BaseShaderRegister": "0",
 					"ShaderVisibility": "FRAGMENT",
-					"ResourceType": "SAMPLER_STATE",
 					"AddressU": "WRAP",
 					"AddressV": "WRAP"
 				}
