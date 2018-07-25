@@ -76,15 +76,20 @@ computeShaderSourceCode = R"(
 // Input
 Texture2D<float4>	InputTexture2D		 : register(t0);
 ByteAddressBuffer	InputVertexBuffer	 : register(t1);
-tbuffer				InputIndirectBuffer  : register(t2)
+tbuffer				InputIndexBuffer	 : register(t2)
 {
-	uint inputIndirectBuffer[4];
+	uint inputIndexBuffer[3];
+};
+tbuffer				InputIndirectBuffer  : register(t3)
+{
+	uint inputIndirectBuffer[5];
 };
 
 // Output
 RWTexture2D<float4> OutputTexture2D		 : register(u0);
 RWByteAddressBuffer OutputVertexBuffer   : register(u1);
-RWBuffer<uint>		OutputIndirectBuffer : register(u2);
+RWBuffer<uint>		OutputIndexBuffer    : register(u2);
+RWBuffer<uint>		OutputIndirectBuffer : register(u3);
 
 // Programs
 [numthreads(16, 16, 1)]
@@ -106,19 +111,26 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID)
 		// Output vertices
 		// -> Using a structured vertex buffer would be handy inside shader source codes, sadly this isn't possible with Direct3D 11 and will result in the following error:
 		//    D3D11 ERROR: ID3D11Device::CreateBuffer: Buffers created with D3D11_RESOURCE_MISC_BUFFER_STRUCTURED cannot specify any of the following listed bind flags.  The following BindFlags bits (0x9) are set: D3D11_BIND_VERTEX_BUFFER (1), D3D11_BIND_INDEX_BUFFER (0), D3D11_BIND_CONSTANT_BUFFER (0), D3D11_BIND_STREAM_OUTPUT (0), D3D11_BIND_RENDER_TARGET (0), or D3D11_BIND_DEPTH_STENCIL (0). [ STATE_CREATION ERROR #68: CREATEBUFFER_INVALIDMISCFLAGS]
-		for (int i = 0; i < 3; ++i)
+		for (int vertexIndex = 0; vertexIndex < 3; ++vertexIndex)
 		{
-			float2 position = asfloat(InputVertexBuffer.Load2(i * 8));
-			OutputVertexBuffer.Store2(i * 8, asuint(position));
+			float2 position = asfloat(InputVertexBuffer.Load2(vertexIndex * 8));
+			OutputVertexBuffer.Store2(vertexIndex * 8, asuint(position));
+		}
+
+		// Output indices
+		for (int indexIndex = 0; indexIndex < 3; ++indexIndex)
+		{
+			OutputIndexBuffer[indexIndex] = inputIndexBuffer[indexIndex];
 		}
 
 		// Output draw call
 		// -> Using a structured indirect buffer would be handy inside shader source codes, sadly this isn't possible with Direct3D 11 and will result in the following error:
 		//    "D3D11 ERROR: ID3D11Device::CreateBuffer: A resource cannot created with both D3D11_RESOURCE_MISC_DRAWINDIRECT_ARGS and D3D11_RESOURCE_MISC_BUFFER_STRUCTURED. [ STATE_CREATION ERROR #68: CREATEBUFFER_INVALIDMISCFLAGS]"
-		OutputIndirectBuffer[0] = inputIndirectBuffer[0];	// Renderer::DrawInstancedArguments::vertexCountPerInstance
-		OutputIndirectBuffer[1] = inputIndirectBuffer[1];	// Renderer::DrawInstancedArguments::instanceCount
-		OutputIndirectBuffer[2] = inputIndirectBuffer[2];	// Renderer::DrawInstancedArguments::startVertexLocation
-		OutputIndirectBuffer[3] = inputIndirectBuffer[3];	// Renderer::DrawInstancedArguments::startInstanceLocation
+		OutputIndirectBuffer[0] = inputIndirectBuffer[0];	// Renderer::DrawIndexedInstancedArguments::indexCountPerInstance
+		OutputIndirectBuffer[1] = inputIndirectBuffer[1];	// Renderer::DrawIndexedInstancedArguments::instanceCount
+		OutputIndirectBuffer[2] = inputIndirectBuffer[2];	// Renderer::DrawIndexedInstancedArguments::startIndexLocation
+		OutputIndirectBuffer[3] = inputIndirectBuffer[3];	// Renderer::DrawIndexedInstancedArguments::baseVertexLocation
+		OutputIndirectBuffer[4] = inputIndirectBuffer[4];	// Renderer::DrawIndexedInstancedArguments::startInstanceLocation
 	}
 }
 )";

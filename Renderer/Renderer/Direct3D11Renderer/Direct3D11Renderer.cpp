@@ -3813,7 +3813,9 @@ namespace Direct3D11Renderer
 				}
 				if (bufferFlags & Renderer::IndirectBufferFlag::UNORDERED_ACCESS)
 				{
-					d3d11BufferDesc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
+					d3d11BufferDesc.Usage			= D3D11_USAGE_DEFAULT;
+					d3d11BufferDesc.BindFlags	   |= D3D11_BIND_UNORDERED_ACCESS;
+					d3d11BufferDesc.CPUAccessFlags  = 0;
 				}
 
 				// Data given?
@@ -4396,6 +4398,11 @@ namespace Direct3D11Renderer
 			// -> In case of no index buffer we don't set null indices, there's not really a point in it
 			if (nullptr != mIndexBuffer)
 			{
+				{ // TODO(co) Work in progress: Compute shader writing into vertex buffer: "D3D11 WARNING: ID3D11DeviceContext::IASetIndexBuffer: Resource being set to Index Buffer is still bound on output! Forcing to NULL. [ STATE_SETTING WARNING #2: DEVICE_IASETINDEXBUFFER_HAZARD]"
+					ID3D11UnorderedAccessView* d3d11UnorderedAccessView = nullptr;
+					mD3D11DeviceContext->CSSetUnorderedAccessViews(2, 1, &d3d11UnorderedAccessView, nullptr);
+				}
+
 				// Set the Direct3D 11 indices
 				mD3D11DeviceContext->IASetIndexBuffer(mIndexBuffer->getD3D11Buffer(), static_cast<DXGI_FORMAT>(mIndexBuffer->getDXGIFormat()), 0);
 			}
@@ -12443,6 +12450,9 @@ namespace Direct3D11Renderer
 						}
 						else
 						{
+							// TODO(co) Work in progress: Compute shader writing into index buffer
+							mD3D11DeviceContext->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
+
 							ID3D11UnorderedAccessView* d3d11UnorderedAccessView = static_cast<const IndexBuffer*>(resource)->getD3D11UnorderedAccessView();
 							mD3D11DeviceContext->CSSetUnorderedAccessViews(descriptorRange.baseShaderRegister, 1, &d3d11UnorderedAccessView, nullptr);
 						}

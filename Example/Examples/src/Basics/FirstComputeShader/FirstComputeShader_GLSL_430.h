@@ -81,12 +81,13 @@ struct Vertex
 	vec2 position;
 };
 
-// Same layout as "Renderer::DrawInstancedArguments"
-struct DrawInstancedArguments
+// Same layout as "Renderer::DrawIndexedInstancedArguments"
+struct DrawIndexedInstancedArguments
 {
-	uint vertexCountPerInstance;
+	uint indexCountPerInstance;
 	uint instanceCount;
-	uint startVertexLocation;
+	uint startIndexLocation;
+	uint baseVertexLocation;
 	uint startInstanceLocation;
 };
 
@@ -96,20 +97,28 @@ layout(binding = 1, std430) readonly		  buffer    InputVertexBuffer
 {
 	Vertex inputVertices[3];
 };
-layout(binding = 2, std430) readonly		  buffer    InputIndirectBuffer
+layout(binding = 2, std430) readonly		  buffer    InputIndexBuffer
 {
-	DrawInstancedArguments inputDrawInstancedArguments;
+	uint inputIndices[3];
+};
+layout(binding = 3, std430) readonly		  buffer    InputIndirectBuffer
+{
+	DrawIndexedInstancedArguments inputDrawIndexedInstancedArguments;
 };
 
 // Output
-layout(binding = 3, rgba8)	writeonly uniform image2D OutputTexture2D;
-layout(binding = 4, std430) writeonly		  buffer  OutputVertexBuffer
+layout(binding = 4, rgba8)	writeonly uniform image2D OutputTexture2D;
+layout(binding = 5, std430) writeonly		  buffer  OutputVertexBuffer
 {
 	Vertex outputVertices[3];
 };
-layout(binding = 5, std430) writeonly		  buffer  OutputIndirectBuffer
+layout(binding = 6, std430) writeonly		  buffer  OutputIndexBuffer
 {
-	DrawInstancedArguments outputDrawInstancedArguments;
+	uint outputIndices[3];
+};
+layout(binding = 7, std430) writeonly		  buffer  OutputIndirectBuffer
+{
+	DrawIndexedInstancedArguments outputDrawIndexedInstancedArguments;
 };
 
 // Programs
@@ -130,13 +139,19 @@ void main()
 	if (0 == gl_GlobalInvocationID.x && 0 == gl_GlobalInvocationID.y && 0 == gl_GlobalInvocationID.z)
 	{
 		// Output vertices
-		for (int i = 0; i < 3; ++i)
+		for (int vertexIndex = 0; vertexIndex < 3; ++vertexIndex)
 		{
-			outputVertices[i] = inputVertices[i];
+			outputVertices[vertexIndex] = inputVertices[vertexIndex];
+		}
+
+		// Output indices
+		for (int indexIndex = 0; indexIndex < 3; ++indexIndex)
+		{
+			outputIndices[indexIndex] = inputIndices[indexIndex];
 		}
 
 		// Output draw call
-		outputDrawInstancedArguments = inputDrawInstancedArguments;
+		outputDrawIndexedInstancedArguments = inputDrawIndexedInstancedArguments;
 	}
 }
 )";

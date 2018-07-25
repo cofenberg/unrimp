@@ -65,20 +65,22 @@ void FirstComputeShader::onInitialization()
 		}
 
 		{ // Create the compute root signature
-			Renderer::DescriptorRangeBuilder ranges[6];
+			Renderer::DescriptorRangeBuilder ranges[8];
 			// Input
 			ranges[0].initialize(Renderer::ResourceType::TEXTURE_2D,	  0,		   "InputTexture2D",	   Renderer::ShaderVisibility::COMPUTE);
 			ranges[1].initialize(Renderer::ResourceType::VERTEX_BUFFER,   1,		   "InputVertexBuffer",    Renderer::ShaderVisibility::COMPUTE);
-			ranges[2].initialize(Renderer::ResourceType::INDIRECT_BUFFER, 2,		   "InputIndirectBuffer",  Renderer::ShaderVisibility::COMPUTE);
+			ranges[2].initialize(Renderer::ResourceType::INDEX_BUFFER,    2,		   "InputIndexBuffer",     Renderer::ShaderVisibility::COMPUTE);
+			ranges[3].initialize(Renderer::ResourceType::INDIRECT_BUFFER, 3,		   "InputIndirectBuffer",  Renderer::ShaderVisibility::COMPUTE);
 			// Output
 			// TODO(co) Compute shader: Get rid of the OpenGL/Direct3D 11 variation here
-			const uint32_t offset = (renderer->getNameId() == Renderer::NameId::VULKAN || renderer->getNameId() == Renderer::NameId::OPENGL) ? 3u : 0u;
-			ranges[3].initialize(Renderer::ResourceType::TEXTURE_2D,	  0u + offset, "OutputTexture2D",	   Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
-			ranges[4].initialize(Renderer::ResourceType::VERTEX_BUFFER,   1u + offset, "OutputVertexBuffer",   Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
-			ranges[5].initialize(Renderer::ResourceType::INDIRECT_BUFFER, 2u + offset, "OutputIndirectBuffer", Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
+			const uint32_t offset = (renderer->getNameId() == Renderer::NameId::VULKAN || renderer->getNameId() == Renderer::NameId::OPENGL) ? 4u : 0u;
+			ranges[4].initialize(Renderer::ResourceType::TEXTURE_2D,	  0u + offset, "OutputTexture2D",	   Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
+			ranges[5].initialize(Renderer::ResourceType::VERTEX_BUFFER,   1u + offset, "OutputVertexBuffer",   Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
+			ranges[6].initialize(Renderer::ResourceType::INDEX_BUFFER,    2u + offset, "OutputIndexBuffer",    Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
+			ranges[7].initialize(Renderer::ResourceType::INDIRECT_BUFFER, 3u + offset, "OutputIndirectBuffer", Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
 
 			Renderer::RootParameterBuilder rootParameters[1];
-			rootParameters[0].initializeAsDescriptorTable(6, &ranges[0]);
+			rootParameters[0].initializeAsDescriptorTable(8, &ranges[0]);
 
 			// Setup
 			Renderer::RootSignatureBuilder rootSignature;
@@ -99,18 +101,19 @@ void FirstComputeShader::onInitialization()
 
 		{ // Indirect buffer
 			{ // Create the indirect buffer which will be read by a compute shader
-				const Renderer::DrawInstancedArguments drawInstancedArguments =
+				const Renderer::DrawIndexedInstancedArguments drawIndexedInstancedArguments =
 				{
-					3,	// vertexCountPerInstance (uint32_t)
-					1,	// instanceCount (uint32_t)
-					0,	// startVertexLocation (uint32_t)
-					0	// startInstanceLocation (uint32_t)
+					3, // indexCountPerInstance (uint32_t)
+					1, // instanceCount (uint32_t)
+					0, // startIndexLocation (uint32_t)
+					0, // baseVertexLocation (int32_t)
+					0  // startInstanceLocation (uint32_t)
 				};
-				mComputeInputIndirectBuffer = mBufferManager->createIndirectBuffer(sizeof(Renderer::DrawInstancedArguments), &drawInstancedArguments, Renderer::IndirectBufferFlag::SHADER_RESOURCE | Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS, Renderer::BufferUsage::STATIC_DRAW);
+				mComputeInputIndirectBuffer = mBufferManager->createIndirectBuffer(sizeof(Renderer::DrawIndexedInstancedArguments), &drawIndexedInstancedArguments, Renderer::IndirectBufferFlag::SHADER_RESOURCE | Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS, Renderer::BufferUsage::STATIC_DRAW);
 			}
 
 			// Create the indirect buffer which will be filled by a compute shader
-			mComputeOutputIndirectBuffer = mBufferManager->createIndirectBuffer(sizeof(Renderer::DrawInstancedArguments), nullptr, Renderer::IndirectBufferFlag::UNORDERED_ACCESS | Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS, Renderer::BufferUsage::STATIC_DRAW);
+			mComputeOutputIndirectBuffer = mBufferManager->createIndirectBuffer(sizeof(Renderer::DrawIndexedInstancedArguments), nullptr, Renderer::IndirectBufferFlag::UNORDERED_ACCESS | Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS, Renderer::BufferUsage::STATIC_DRAW);
 		}
 
 		// Vertex input layout
@@ -142,18 +145,28 @@ void FirstComputeShader::onInitialization()
 			};
 			mComputeInputVertexBuffer = mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::STATIC_DRAW);
 			mComputeOutputVertexBuffer = mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), nullptr, Renderer::BufferFlag::UNORDERED_ACCESS, Renderer::BufferUsage::STATIC_DRAW);
-
-			// Create vertex array object (VAO)
-			// -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)
-			// -> This means that there's no need to keep an own vertex buffer object (VBO) reference
-			// -> When the vertex array object (VAO) is destroyed, it automatically decreases the
-			//    reference of the used vertex buffer objects (VBO). If the reference counter of a
-			//    vertex buffer object (VBO) reaches zero, it's automatically destroyed.
-			const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { mComputeOutputVertexBuffer };
-			mVertexArray = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(glm::countof(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
 		}
 
-		{ // Texture resource related
+		{ // Create the index buffer object (IBO)
+			static constexpr uint32_t INDICES[] =
+			{
+				0, 1, 2
+			};
+			mComputeInputIndexBuffer = mBufferManager->createIndexBuffer(sizeof(INDICES), Renderer::IndexBufferFormat::UNSIGNED_INT, INDICES, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::STATIC_DRAW);
+			mComputeOutputIndexBuffer = mBufferManager->createIndexBuffer(sizeof(INDICES), Renderer::IndexBufferFormat::UNSIGNED_INT, nullptr, Renderer::BufferFlag::UNORDERED_ACCESS, Renderer::BufferUsage::STATIC_DRAW);
+		}
+
+		{ // Create vertex array object (VAO)
+		  // -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)
+		  // -> This means that there's no need to keep an own vertex buffer object (VBO) reference
+		  // -> When the vertex array object (VAO) is destroyed, it automatically decreases the
+		  //    reference of the used vertex buffer objects (VBO). If the reference counter of a
+		  //    vertex buffer object (VBO) reaches zero, it's automatically destroyed.
+			const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { mComputeOutputVertexBuffer };
+			mVertexArray = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(glm::countof(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, mComputeOutputIndexBuffer);
+		}
+
+		{ // Resource group related
 			// Create the texture instance, but without providing texture data (we use the texture as render target)
 			// -> Use the "Renderer::TextureFlag::RENDER_TARGET"-flag to mark this texture as a render target
 			// -> Required for Vulkan, Direct3D 9, Direct3D 10, Direct3D 11 and Direct3D 12
@@ -169,11 +182,11 @@ void FirstComputeShader::onInitialization()
 			}
 
 			{ // Create compute texture group
-				Renderer::IResource* resources[6] = {
+				Renderer::IResource* resources[8] = {
 					// Input
-					computeInputTexture2D, mComputeInputVertexBuffer, mComputeInputIndirectBuffer,
+					computeInputTexture2D, mComputeInputVertexBuffer, mComputeInputIndexBuffer, mComputeInputIndirectBuffer,
 					// Output
-					computeOutputTexture2D, mComputeOutputVertexBuffer, mComputeOutputIndirectBuffer
+					computeOutputTexture2D, mComputeOutputVertexBuffer, mComputeOutputIndexBuffer, mComputeOutputIndirectBuffer
 				};
 				mComputeTextureGroup = mComputeRootSignature->createResourceGroup(0, static_cast<uint32_t>(glm::countof(resources)), resources, nullptr);
 			}
@@ -230,6 +243,8 @@ void FirstComputeShader::onDeinitialization()
 	mComputeOutputIndirectBuffer = nullptr;
 	mComputeInputIndirectBuffer = nullptr;
 	mVertexArray = nullptr;
+	mComputeOutputIndexBuffer = nullptr;
+	mComputeInputIndexBuffer = nullptr;
 	mComputeOutputVertexBuffer = nullptr;
 	mComputeInputVertexBuffer = nullptr;
 	mComputePipelineState = nullptr;
@@ -276,6 +291,8 @@ void FirstComputeShader::fillCommandBuffer()
 	assert(nullptr != mComputePipelineState);
 	assert(nullptr != mComputeInputVertexBuffer);
 	assert(nullptr != mComputeOutputVertexBuffer);
+	assert(nullptr != mComputeInputIndexBuffer);
+	assert(nullptr != mComputeOutputIndexBuffer);
 	assert(nullptr != mVertexArray);
 	assert(nullptr != mComputeOutputIndirectBuffer);
 	assert(nullptr != mComputeInputIndirectBuffer);
@@ -338,7 +355,7 @@ void FirstComputeShader::fillCommandBuffer()
 		// Input assembly (IA): Set the used vertex array
 		Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArray);
 
-		// Render the specified geometric primitive, based on an array of vertices
-		Renderer::Command::DrawGraphics::create(mCommandBuffer, *mComputeOutputIndirectBuffer);
+		// Render the specified geometric primitive, based on indexing into an array of vertices
+		Renderer::Command::DrawIndexedGraphics::create(mCommandBuffer, *mComputeOutputIndirectBuffer);
 	}
 }
