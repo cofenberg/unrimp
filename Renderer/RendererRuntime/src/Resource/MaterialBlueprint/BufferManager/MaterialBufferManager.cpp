@@ -300,7 +300,7 @@ namespace RendererRuntime
 	//[ Public RendererRuntime::MaterialBufferManager::BufferPool methods ]
 	//[-------------------------------------------------------]
 	MaterialBufferManager::BufferPool::BufferPool(uint32_t bufferSize, uint32_t slotsPerPool, Renderer::IBufferManager& bufferManager, const MaterialBlueprintResource& materialBlueprintResource) :
-		uniformBuffer(bufferManager.createUniformBuffer(bufferSize, nullptr, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::DYNAMIC_DRAW)),
+		uniformBuffer(bufferManager.createUniformBuffer(bufferSize, nullptr, Renderer::BufferUsage::DYNAMIC_DRAW)),
 		resourceGroup(nullptr)
 	{
 		RENDERER_SET_RESOURCE_DEBUG_NAME(uniformBuffer, "Material buffer manager")

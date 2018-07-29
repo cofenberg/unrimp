@@ -1130,9 +1130,9 @@ namespace Renderer
 		// IBuffer
 		INDEX_BUFFER				   = 7,		///< Index buffer object (IBO, input-assembler (IA) stage)
 		VERTEX_BUFFER				   = 8,		///< Vertex buffer object (VBO, input-assembler (IA) stage)
-		UNIFORM_BUFFER				   = 9,		///< Uniform buffer object (UBO, "constant buffer" in Direct3D terminology)
-		TEXTURE_BUFFER				   = 10,	///< Texture buffer object (TBO)
-		INDIRECT_BUFFER				   = 11,	///< Indirect buffer object
+		TEXTURE_BUFFER				   = 9,		///< Texture buffer object (TBO)
+		INDIRECT_BUFFER				   = 10,	///< Indirect buffer object
+		UNIFORM_BUFFER				   = 11,	///< Uniform buffer object (UBO, "constant buffer" in Direct3D terminology)
 		// ITexture
 		TEXTURE_1D					   = 12,	///< Texture 1D
 		TEXTURE_2D					   = 13,	///< Texture 2D
@@ -1338,15 +1338,15 @@ namespace Renderer
 				// Automatically determine the descriptor range type basing on the resource type
 				switch (_resourceType)
 				{
-					case ResourceType::UNIFORM_BUFFER:
-						range.rangeType = DescriptorRangeType::UBV;
-						break;
-
 					case ResourceType::INDEX_BUFFER:
 					case ResourceType::VERTEX_BUFFER:
 					case ResourceType::TEXTURE_BUFFER:
 					case ResourceType::INDIRECT_BUFFER:
 						range.rangeType = DescriptorRangeType::SRV;
+						break;
+
+					case ResourceType::UNIFORM_BUFFER:
+						range.rangeType = DescriptorRangeType::UBV;
 						break;
 
 					case ResourceType::TEXTURE_1D:
@@ -5814,8 +5814,6 @@ namespace Renderer
 		*    Number of bytes within the uniform buffer, must be valid
 		*  @param[in] data
 		*    Uniform buffer data, can be a null pointer (empty buffer), the data is internally copied and you have to free your memory if you no longer need it
-		*  @param[in] bufferFlags
-		*    Buffer flags, see "Renderer::BufferFlag"
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*
@@ -5824,8 +5822,9 @@ namespace Renderer
 		*
 		*  @note
 		*    - Only supported if "Renderer::Capabilities::maximumUniformBufferSize" is >0
+		*    - There are no buffer flags by intent since an uniform buffer can't be used for unordered access and as a consequence an uniform buffer must always used as shader resource to not be pointless
 		*/
-		virtual IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, BufferUsage bufferUsage = BufferUsage::DYNAMIC_DRAW) = 0;
+		virtual IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, BufferUsage bufferUsage = BufferUsage::DYNAMIC_DRAW) = 0;
 
 		/**
 		*  @brief
@@ -6391,7 +6390,7 @@ namespace Renderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer, the data is internally copied and you have to free your memory if you no longer need it
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
@@ -6402,7 +6401,7 @@ namespace Renderer
 		*  @note
 		*    - The following texture data layout is expected: Mip0, Mip1, Mip2, Mip3 ...
 		*/
-		virtual ITexture1D* createTexture1D(uint32_t width, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT) = 0;
+		virtual ITexture1D* createTexture1D(uint32_t width, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT) = 0;
 
 		/**
 		*  @brief
@@ -6416,7 +6415,7 @@ namespace Renderer
 		*    Texture data format
 		*  @param[in] data
 		*    Texture data, can be a null pointer, the data is internally copied and you have to free your memory if you no longer need it
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
@@ -6431,7 +6430,7 @@ namespace Renderer
 		*  @note
 		*    - The following texture data layout is expected: Mip0, Mip1, Mip2, Mip3 ...
 		*/
-		virtual ITexture2D* createTexture2D(uint32_t width, uint32_t height, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, const OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) = 0;
+		virtual ITexture2D* createTexture2D(uint32_t width, uint32_t height, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, const OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) = 0;
 
 		/**
 		*  @brief
@@ -6447,7 +6446,7 @@ namespace Renderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer, the data is internally copied and you have to free your memory if you no longer need it
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
@@ -6465,7 +6464,7 @@ namespace Renderer
 		*  @note
 		*    - Only supported if "Renderer::Capabilities::maximumNumberOf2DTextureArraySlices" is not 0
 		*/
-		virtual ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT) = 0;
+		virtual ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT) = 0;
 
 		/**
 		*  @brief
@@ -6481,7 +6480,7 @@ namespace Renderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer, the data is internally copied and you have to free your memory if you no longer need it
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
@@ -6495,7 +6494,7 @@ namespace Renderer
 		*    - Mip1: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
 		*    (DDS-texture layout is using face-major order)
 		*/
-		virtual ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT) = 0;
+		virtual ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT) = 0;
 
 		/**
 		*  @brief
@@ -6509,7 +6508,7 @@ namespace Renderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer, the data is internally copied and you have to free your memory if you no longer need it
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
@@ -6523,7 +6522,7 @@ namespace Renderer
 		*    - Mip1: Face0, Face1, Face2, Face3, Face4, Face5
 		*    (DDS-texture layout is using face-major order)
 		*/
-		virtual ITextureCube* createTextureCube(uint32_t width, uint32_t height, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT) = 0;
+		virtual ITextureCube* createTextureCube(uint32_t width, uint32_t height, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT) = 0;
 
 	// Protected methods
 	protected:
@@ -8557,7 +8556,7 @@ namespace Renderer
 		*    Clears the graphics viewport to a specified RGBA color, clears the depth buffer,
 		*    and erases the stencil buffer
 		*
-		*  @param[in] flags
+		*  @param[in] clearFlags
 		*    Flags that indicate what should be cleared. This parameter can be any
 		*    combination of the following flags, but at least one flag must be used:
 		*    "Renderer::ClearFlag::COLOR", "Renderer::ClearFlag::DEPTH" and "Renderer::ClearFlag::STENCIL, see "Renderer::ClearFlag"-flags
@@ -8580,19 +8579,19 @@ namespace Renderer
 		{
 			// Static methods
 			// -> z = 0 instead of 1 due to usage of Reversed-Z (see e.g. https://developer.nvidia.com/content/depth-precision-visualized and https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/)
-			static inline void create(CommandBuffer& commandBuffer, uint32_t flags, const float color[4], float z = 0.0f, uint32_t stencil = 0)
+			static inline void create(CommandBuffer& commandBuffer, uint32_t clearFlags, const float color[4], float z = 0.0f, uint32_t stencil = 0)
 			{
-				*commandBuffer.addCommand<ClearGraphics>() = ClearGraphics(flags, color, z, stencil);
+				*commandBuffer.addCommand<ClearGraphics>() = ClearGraphics(clearFlags, color, z, stencil);
 			}
 			// Constructor
-			inline ClearGraphics(uint32_t _flags, const float _color[4], float _z, uint32_t _stencil) :
-				flags(_flags),
+			inline ClearGraphics(uint32_t _clearFlags, const float _color[4], float _z, uint32_t _stencil) :
+				clearFlags(_clearFlags),
 				color{_color[0], _color[1], _color[2], _color[3]},
 				z(_z),
 				stencil(_stencil)
 			{}
 			// Data
-			uint32_t flags;
+			uint32_t clearFlags;
 			float	 color[4];
 			float	 z;
 			uint32_t stencil;

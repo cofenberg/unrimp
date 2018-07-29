@@ -48,6 +48,7 @@
 *    - Vertex buffer object (VBO)
 *    - Index buffer object (IBO)
 *    - Vertex array object (VAO)
+*    - Uniform buffer object (UBO)
 *    - Indirect buffer
 *    - 2D texture
 *    - Sampler state object
@@ -115,13 +116,14 @@ private:
 	Renderer::IResourceGroupPtr			mGraphicsSamplerStateGroup;		///< Graphics sampler state resource group, can be a null pointer
 	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineState;			///< Graphics pipeline state object (PSO), can be a null pointer
 	Renderer::IComputePipelineStatePtr	mComputePipelineState;			///< Compute pipeline state object (PSO), can be a null pointer
-	Renderer::IVertexBufferPtr			mComputeInputVertexBuffer;		///< Graphics vertex buffer object (VBO) read by compute shader, can be a null pointer
-	Renderer::IVertexBufferPtr			mComputeOutputVertexBuffer;		///< Graphics vertex buffer object (VBO) written by compute shader, can be a null pointer
 	Renderer::IIndexBufferPtr			mComputeInputIndexBuffer;		///< Graphics index buffer object (IBO) read by compute shader, can be a null pointer
 	Renderer::IIndexBufferPtr			mComputeOutputIndexBuffer;		///< Graphics index buffer object (IBO) written by compute shader, can be a null pointer
+	Renderer::IVertexBufferPtr			mComputeInputVertexBuffer;		///< Graphics vertex buffer object (VBO) read by compute shader, can be a null pointer
+	Renderer::IVertexBufferPtr			mComputeOutputVertexBuffer;		///< Graphics vertex buffer object (VBO) written by compute shader, can be a null pointer
 	Renderer::IVertexArrayPtr			mVertexArray;					///< Graphics vertex array object (VAO), can be a null pointer
 	Renderer::IIndirectBufferPtr		mComputeInputIndirectBuffer;	///< Graphics indirect buffer read by compute shader, can be a null pointer
 	Renderer::IIndirectBufferPtr		mComputeOutputIndirectBuffer;	///< Graphics indirect buffer written by compute shader, can be a null pointer
+	Renderer::IUniformBufferPtr			mComputeInputUniformBuffer;		///< Graphics uniform buffer (UBO) read by compute shader, can be a null pointer
 
 
 };

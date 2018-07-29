@@ -170,9 +170,9 @@ namespace
 			ELSE_IF_VALUE(FRAMEBUFFER)
 			ELSE_IF_VALUE(INDEX_BUFFER)
 			ELSE_IF_VALUE(VERTEX_BUFFER)
-			ELSE_IF_VALUE(UNIFORM_BUFFER)
 			ELSE_IF_VALUE(TEXTURE_BUFFER)
 			ELSE_IF_VALUE(INDIRECT_BUFFER)
+			ELSE_IF_VALUE(UNIFORM_BUFFER)
 			ELSE_IF_VALUE(TEXTURE_1D)
 			ELSE_IF_VALUE(TEXTURE_2D)
 			ELSE_IF_VALUE(TEXTURE_2D_ARRAY)
@@ -733,8 +733,8 @@ namespace RendererToolkit
 							// Evaluate value
 							switch (descriptorRange.resourceType)
 							{
-								CASE_VALUE(UNIFORM_BUFFER,	 UBV)
 								CASE_VALUE(TEXTURE_BUFFER,	 SRV)
+								CASE_VALUE(UNIFORM_BUFFER,	 UBV)
 								CASE_VALUE(TEXTURE_1D,		 SRV)
 								CASE_VALUE(TEXTURE_2D,		 SRV)
 								CASE_VALUE(TEXTURE_2D_ARRAY, SRV)
@@ -759,7 +759,7 @@ namespace RendererToolkit
 								CASE(GEOMETRY_SHADER)
 								CASE(FRAGMENT_SHADER)
 								CASE(COMPUTE_SHADER)
-									throw std::runtime_error("Invalid resource type \"" + std::string(rapidJsonValue["ResourceType"].GetString()) + "\", must be \"UNIFORM_BUFFER\", \"TEXTURE_BUFFER\", \"TEXTURE_1D\", \"TEXTURE_2D\", \"TEXTURE_2D_ARRAY\", \"TEXTURE_3D\", \"TEXTURE_CUBE\" or \"SAMPLER_STATE\"");
+									throw std::runtime_error("Invalid resource type \"" + std::string(rapidJsonValue["ResourceType"].GetString()) + "\", must be \"TEXTURE_BUFFER\", \"UNIFORM_BUFFER\", \"TEXTURE_1D\", \"TEXTURE_2D\", \"TEXTURE_2D_ARRAY\", \"TEXTURE_3D\", \"TEXTURE_CUBE\" or \"SAMPLER_STATE\"");
 							}
 
 							// Undefine helper macro

@@ -991,6 +991,12 @@ namespace
 				return VK_FALSE;
 			}
 
+			// TODO(co) File "unrimp\renderer\renderer\vulkanrenderer\vulkanrenderer.cpp" | Line 1029 | Critical: Vulkan debug report callback: Object type: "VK_DEBUG_REPORT_OBJECT_TYPE_INSTANCE_EXT" Object: "4963848" Location: "0" Message code: "0" Layer prefix: "Loader Message" Message: "loader_create_device_chain: Failed to find 'vkGetInstanceProcAddr' in layer C:\Program Files (x86)\Steam\.\SteamOverlayVulkanLayer.dll.  Skipping layer." 
+			if (VK_DEBUG_REPORT_OBJECT_TYPE_INSTANCE_EXT == objectType && object && 0 == location && 0 == messageCode && nullptr != strstr(pMessage, "SteamOverlayVulkanLayer.dll"))
+			{
+				return VK_FALSE;
+			}
+
 			// Get log message type
 			// -> Vulkan is using a flags combination, map it to our log message type enumeration
 			Renderer::ILog::Type type = Renderer::ILog::Type::TRACE;
@@ -1701,7 +1707,7 @@ namespace VulkanRenderer
 		void setGraphicsViewports(uint32_t numberOfViewports, const Renderer::Viewport* viewports);									// Rasterizer (RS) stage
 		void setGraphicsScissorRectangles(uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles);	// Rasterizer (RS) stage
 		void setGraphicsRenderTarget(Renderer::IRenderTarget* renderTarget);														// Output-merger (OM) stage
-		void clearGraphics(uint32_t flags, const float color[4], float z, uint32_t stencil);
+		void clearGraphics(uint32_t clearFlags, const float color[4], float z, uint32_t stencil);
 		void drawGraphics(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		void drawGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		void drawIndexedGraphics(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
@@ -3641,19 +3647,40 @@ namespace VulkanRenderer
 		//[-------------------------------------------------------]
 		//[ Image                                                 ]
 		//[-------------------------------------------------------]
+		static VkImageLayout getVkImageLayoutByTextureFlags(uint32_t textureFlags)
+		{
+			if (textureFlags & Renderer::TextureFlag::RENDER_TARGET)
+			{
+				return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			}
+			else if (textureFlags & Renderer::TextureFlag::UNORDERED_ACCESS)
+			{
+				return VK_IMAGE_LAYOUT_GENERAL;
+			}
+			return VK_IMAGE_LAYOUT_PREINITIALIZED;
+		}
+
 		// TODO(co) Trivial implementation to have something to start with. Need to use more clever memory management and stating buffers later on.
-		static VkFormat createAndFillVkImage(const VulkanRenderer& vulkanRenderer, VkImageType vkImageType, VkImageViewType vkImageViewType, const VkExtent3D& vkExtent3D, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags, uint8_t numberOfMultisamples, VkImage& vkImage, VkDeviceMemory& vkDeviceMemory, VkImageView& vkImageView)
+		static VkFormat createAndFillVkImage(const VulkanRenderer& vulkanRenderer, VkImageType vkImageType, VkImageViewType vkImageViewType, const VkExtent3D& vkExtent3D, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, uint8_t numberOfMultisamples, VkImage& vkImage, VkDeviceMemory& vkDeviceMemory, VkImageView& vkImageView)
 		{
 			// Calculate the number of mipmaps
-			const bool dataContainsMipmaps = (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
-			const bool generateMipmaps = (!dataContainsMipmaps && (flags & Renderer::TextureFlag::GENERATE_MIPMAPS));
+			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
+			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? Renderer::ITexture::getNumberOfMipmaps(vkExtent3D.width, vkExtent3D.height) : 1;
 
 			// Get Vulkan image usage flags
-			RENDERER_ASSERT(vulkanRenderer.getContext(), (flags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Vulkan render target textures can't be filled using provided data")
+			RENDERER_ASSERT(vulkanRenderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Vulkan render target textures can't be filled using provided data")
 			const bool isDepthTextureFormat = Renderer::TextureFormat::isDepth(textureFormat);
-			VkImageUsageFlags vkImageUsageFlags = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-			if (flags & Renderer::TextureFlag::RENDER_TARGET)
+			VkImageUsageFlags vkImageUsageFlags = VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+			if (textureFlags & Renderer::TextureFlag::SHADER_RESOURCE)
+			{
+				vkImageUsageFlags |= VK_IMAGE_USAGE_SAMPLED_BIT;
+			}
+			if (textureFlags & Renderer::TextureFlag::UNORDERED_ACCESS)
+			{
+				vkImageUsageFlags |= VK_IMAGE_USAGE_STORAGE_BIT;
+			}
+			if (textureFlags & Renderer::TextureFlag::RENDER_TARGET)
 			{
 				if (isDepthTextureFormat)
 				{
@@ -3708,7 +3735,7 @@ namespace VulkanRenderer
 			}
 
 			// Create the Vulkan image view
-			if ((flags & Renderer::TextureFlag::SHADER_RESOURCE) != 0 || (flags & Renderer::TextureFlag::RENDER_TARGET) != 0 || (flags & Renderer::TextureFlag::UNORDERED_ACCESS) != 0)
+			if ((textureFlags & Renderer::TextureFlag::SHADER_RESOURCE) != 0 || (textureFlags & Renderer::TextureFlag::RENDER_TARGET) != 0 || (textureFlags & Renderer::TextureFlag::UNORDERED_ACCESS) != 0)
 			{
 				createVkImageView(vulkanRenderer, vkImage, vkImageViewType, numberOfMipmaps, layerCount, vkFormat, vkImageAspectFlags, vkImageView);
 			}
@@ -4057,11 +4084,11 @@ namespace VulkanRenderer
 			// Create the Vulkan descriptor set layout
 			const VkDevice vkDevice = vulkanRenderer.getVulkanContext().getVkDevice();
 			VkDescriptorSetLayouts vkDescriptorSetLayouts;
-			uint32_t numberOfCombinedImageSamplers = 0;	// "VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER"
-			uint32_t numberOfUniformBuffers = 0;		// "VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER"
 			uint32_t numberOfUniformTexelBuffers = 0;	// "VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER"
 			uint32_t numberOfStorageImage = 0;			// "VK_DESCRIPTOR_TYPE_STORAGE_IMAGE"
 			uint32_t numberOfIndirectBuffers = 0;		// "VK_DESCRIPTOR_TYPE_STORAGE_BUFFER"
+			uint32_t numberOfUniformBuffers = 0;		// "VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER"
+			uint32_t numberOfCombinedImageSamplers = 0;	// "VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER"
 			if (numberOfRootParameters > 0)
 			{
 				// Fill the Vulkan descriptor set layout bindings
@@ -4087,12 +4114,6 @@ namespace VulkanRenderer
 							VkDescriptorType vkDescriptorType = VK_DESCRIPTOR_TYPE_MAX_ENUM;
 							switch (descriptorRange->resourceType)
 							{
-								case Renderer::ResourceType::UNIFORM_BUFFER:
-									RENDERER_ASSERT(vulkanRenderer.getContext(), Renderer::DescriptorRangeType::UBV == descriptorRange->rangeType, "Vulkan renderer backend: Invalid descriptor range type")
-									vkDescriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-									++numberOfUniformBuffers;
-									break;
-
 								case Renderer::ResourceType::TEXTURE_BUFFER:
 									RENDERER_ASSERT(vulkanRenderer.getContext(), Renderer::DescriptorRangeType::SRV == descriptorRange->rangeType, "Vulkan renderer backend: Invalid descriptor range type")
 									vkDescriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
@@ -4105,6 +4126,12 @@ namespace VulkanRenderer
 									RENDERER_ASSERT(vulkanRenderer.getContext(), Renderer::DescriptorRangeType::SRV == descriptorRange->rangeType || Renderer::DescriptorRangeType::UAV == descriptorRange->rangeType, "Vulkan renderer backend: Invalid descriptor range type")
 									vkDescriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 									++numberOfIndirectBuffers;
+									break;
+
+								case Renderer::ResourceType::UNIFORM_BUFFER:
+									RENDERER_ASSERT(vulkanRenderer.getContext(), Renderer::DescriptorRangeType::UBV == descriptorRange->rangeType || Renderer::DescriptorRangeType::UAV == descriptorRange->rangeType, "Vulkan renderer backend: Invalid descriptor range type")
+									vkDescriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+									++numberOfUniformBuffers;
 									break;
 
 								case Renderer::ResourceType::TEXTURE_1D:
@@ -4253,21 +4280,21 @@ namespace VulkanRenderer
 					++numberOfVkDescriptorPoolSizes;
 				}
 
-				// "VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER"
-				if (numberOfUniformBuffers > 0)
-				{
-					VkDescriptorPoolSize& vkDescriptorPoolSize = vkDescriptorPoolSizes[numberOfVkDescriptorPoolSizes];
-					vkDescriptorPoolSize.type			 = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;	// type (VkDescriptorType)
-					vkDescriptorPoolSize.descriptorCount = maxSets * numberOfUniformBuffers;	// descriptorCount (uint32_t)
-					++numberOfVkDescriptorPoolSizes;
-				}
-
 				// "VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER"
 				if (numberOfUniformTexelBuffers > 0)
 				{
 					VkDescriptorPoolSize& vkDescriptorPoolSize = vkDescriptorPoolSizes[numberOfVkDescriptorPoolSizes];
 					vkDescriptorPoolSize.type			 = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;	// type (VkDescriptorType)
 					vkDescriptorPoolSize.descriptorCount = maxSets * numberOfUniformTexelBuffers;	// descriptorCount (uint32_t)
+					++numberOfVkDescriptorPoolSizes;
+				}
+
+				// "VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER"
+				if (numberOfUniformBuffers > 0)
+				{
+					VkDescriptorPoolSize& vkDescriptorPoolSize = vkDescriptorPoolSizes[numberOfVkDescriptorPoolSizes];
+					vkDescriptorPoolSize.type			 = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;	// type (VkDescriptorType)
+					vkDescriptorPoolSize.descriptorCount = maxSets * numberOfUniformBuffers;	// descriptorCount (uint32_t)
 					++numberOfVkDescriptorPoolSizes;
 				}
 
@@ -4490,16 +4517,23 @@ namespace VulkanRenderer
 		*    Index buffer data format
 		*  @param[in] data
 		*    Index buffer data, can be a null pointer (empty buffer)
+		*  @param[in] bufferFlags
+		*    Buffer flags, see "Renderer::BufferFlag"
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		IndexBuffer(VulkanRenderer& vulkanRenderer, uint32_t numberOfBytes, Renderer::IndexBufferFormat::Enum indexBufferFormat, const void* data = nullptr, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
+		IndexBuffer(VulkanRenderer& vulkanRenderer, uint32_t numberOfBytes, Renderer::IndexBufferFormat::Enum indexBufferFormat, const void* data = nullptr, uint32_t bufferFlags = 0, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
 			IIndexBuffer(vulkanRenderer),
 			mVkIndexType(Mapping::getVulkanType(vulkanRenderer.getContext(), indexBufferFormat)),
 			mVkBuffer(VK_NULL_HANDLE),
 			mVkDeviceMemory(VK_NULL_HANDLE)
 		{
-			Helper::createAndAllocateVkBuffer(vulkanRenderer, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, numberOfBytes, data, mVkBuffer, mVkDeviceMemory);
+			int vkBufferUsageFlagBits = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+			if ((bufferFlags & Renderer::BufferFlag::UNORDERED_ACCESS) != 0 || (bufferFlags & Renderer::BufferFlag::SHADER_RESOURCE) != 0)
+			{
+				vkBufferUsageFlagBits |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+			}
+			Helper::createAndAllocateVkBuffer(vulkanRenderer, static_cast<VkBufferUsageFlagBits>(vkBufferUsageFlagBits), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, numberOfBytes, data, mVkBuffer, mVkDeviceMemory);
 			SET_DEFAULT_DEBUG_NAME	// setDebugName("");
 		}
 
@@ -4613,15 +4647,22 @@ namespace VulkanRenderer
 		*    Number of bytes within the vertex buffer, must be valid
 		*  @param[in] data
 		*    Vertex buffer data, can be a null pointer (empty buffer)
+		*  @param[in] bufferFlags
+		*    Buffer flags, see "Renderer::BufferFlag"
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		VertexBuffer(VulkanRenderer& vulkanRenderer, uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
+		VertexBuffer(VulkanRenderer& vulkanRenderer, uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
 			IVertexBuffer(vulkanRenderer),
 			mVkBuffer(VK_NULL_HANDLE),
 			mVkDeviceMemory(VK_NULL_HANDLE)
 		{
-			Helper::createAndAllocateVkBuffer(vulkanRenderer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, numberOfBytes, data, mVkBuffer, mVkDeviceMemory);
+			int vkBufferUsageFlagBits = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+			if ((bufferFlags & Renderer::BufferFlag::UNORDERED_ACCESS) != 0 || (bufferFlags & Renderer::BufferFlag::SHADER_RESOURCE) != 0)
+			{
+				vkBufferUsageFlagBits |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+			}
+			Helper::createAndAllocateVkBuffer(vulkanRenderer, static_cast<VkBufferUsageFlagBits>(vkBufferUsageFlagBits), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, numberOfBytes, data, mVkBuffer, mVkDeviceMemory);
 			SET_DEFAULT_DEBUG_NAME	// setDebugName("");
 		}
 
@@ -4923,7 +4964,7 @@ namespace VulkanRenderer
 			mVkBuffer(VK_NULL_HANDLE),
 			mVkDeviceMemory(VK_NULL_HANDLE)
 		{
-			Helper::createAndAllocateVkBuffer(vulkanRenderer, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, numberOfBytes, data, mVkBuffer, mVkDeviceMemory);
+			Helper::createAndAllocateVkBuffer(vulkanRenderer, static_cast<VkBufferUsageFlagBits>(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, numberOfBytes, data, mVkBuffer, mVkDeviceMemory);
 			SET_DEFAULT_DEBUG_NAME	// setDebugName("");
 		}
 
@@ -5205,7 +5246,7 @@ namespace VulkanRenderer
 
 			// Create indirect buffer
 			int vkBufferUsageFlagBits = VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
-			if (indirectBufferFlags & Renderer::IndirectBufferFlag::UNORDERED_ACCESS)
+			if ((indirectBufferFlags & Renderer::IndirectBufferFlag::UNORDERED_ACCESS) != 0 || (indirectBufferFlags & Renderer::IndirectBufferFlag::SHADER_RESOURCE) != 0)
 			{
 				vkBufferUsageFlagBits |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 			}
@@ -5333,14 +5374,14 @@ namespace VulkanRenderer
 	//[ Public virtual Renderer::IBufferManager methods       ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
-			return RENDERER_NEW(getRenderer().getContext(), VertexBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
+			return RENDERER_NEW(getRenderer().getContext(), VertexBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, data, bufferFlags, bufferUsage);
 		}
 
-		inline virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, Renderer::IndexBufferFormat::Enum indexBufferFormat, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, Renderer::IndexBufferFormat::Enum indexBufferFormat, const void* data = nullptr, uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
-			return RENDERER_NEW(getRenderer().getContext(), IndexBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, indexBufferFormat, data, bufferUsage);
+			return RENDERER_NEW(getRenderer().getContext(), IndexBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, indexBufferFormat, data, bufferFlags, bufferUsage);
 		}
 
 		inline virtual Renderer::IVertexArray* createVertexArray(const Renderer::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Renderer::VertexArrayVertexBuffer* vertexBuffers, Renderer::IIndexBuffer* indexBuffer = nullptr) override
@@ -5348,8 +5389,15 @@ namespace VulkanRenderer
 			return RENDERER_NEW(getRenderer().getContext(), VertexArray)(static_cast<VulkanRenderer&>(getRenderer()), vertexAttributes, numberOfVertexBuffers, vertexBuffers, static_cast<IndexBuffer*>(indexBuffer));
 		}
 
-		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
+			// Don't remove this reminder comment block: There are no buffer flags by intent since an uniform buffer can't be used for unordered access and as a consequence an uniform buffer must always used as shader resource to not be pointless
+			// -> Inside GLSL "layout(binding = 0, std140) writeonly uniform OutputUniformBuffer" will result in the GLSL compiler error "Failed to parse the GLSL shader source code: ERROR: 0:85: 'assign' :  l-value required "anon@6" (can't modify a uniform)"
+			// -> Inside GLSL "layout(binding = 0, std430) writeonly buffer  OutputUniformBuffer" will work in OpenGL but will fail in Vulkan with "Vulkan debug report callback: Object type: "VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT" Object: "0" Location: "0" Message code: "13" Layer prefix: "Validation" Message: "Object: VK_NULL_HANDLE (Type = 0) | Type mismatch on descriptor slot 0.0 (used as type `ptr to uniform struct of (vec4 of float32)`) but descriptor of type VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER""
+			// RENDERER_ASSERT(getRenderer().getContext(), (bufferFlags & Renderer::BufferFlag::UNORDERED_ACCESS) == 0, "Invalid Vulkan buffer flags, uniform buffer can't be used for unordered access")
+			// RENDERER_ASSERT(getRenderer().getContext(), (bufferFlags & Renderer::BufferFlag::SHADER_RESOURCE) != 0, "Invalid Vulkan buffer flags, uniform buffer must be used as shader resource")
+
+			// Create the uniform buffer
 			return RENDERER_NEW(getRenderer().getContext(), UniformBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
 		}
 
@@ -5414,17 +5462,17 @@ namespace VulkanRenderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*/
-		Texture1D(VulkanRenderer& vulkanRenderer, uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags) :
+		Texture1D(VulkanRenderer& vulkanRenderer, uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags) :
 			ITexture1D(vulkanRenderer, width),
 			mVkImage(VK_NULL_HANDLE),
-			mVkImageLayout((flags & Renderer::TextureFlag::RENDER_TARGET) ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_PREINITIALIZED),
+			mVkImageLayout(Helper::getVkImageLayoutByTextureFlags(textureFlags)),
 			mVkDeviceMemory(VK_NULL_HANDLE),
 			mVkImageView(VK_NULL_HANDLE)
 		{
-			Helper::createAndFillVkImage(vulkanRenderer, VK_IMAGE_TYPE_1D, VK_IMAGE_VIEW_TYPE_1D, { width, 1, 1 }, textureFormat, data, flags, 1, mVkImage, mVkDeviceMemory, mVkImageView);
+			Helper::createAndFillVkImage(vulkanRenderer, VK_IMAGE_TYPE_1D, VK_IMAGE_VIEW_TYPE_1D, { width, 1, 1 }, textureFormat, data, textureFlags, 1, mVkImage, mVkDeviceMemory, mVkImageView);
 			SET_DEFAULT_DEBUG_NAME	// setDebugName("");
 		}
 
@@ -5552,19 +5600,19 @@ namespace VulkanRenderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*  @param[in] numberOfMultisamples
 		*    The number of multisamples per pixel (valid values: 1, 2, 4, 8)
 		*/
-		Texture2D(VulkanRenderer& vulkanRenderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags, uint8_t numberOfMultisamples) :
+		Texture2D(VulkanRenderer& vulkanRenderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, uint8_t numberOfMultisamples) :
 			ITexture2D(vulkanRenderer, width, height),
 			mVrVulkanTextureData{},
-			mVkImageLayout((flags & Renderer::TextureFlag::RENDER_TARGET) ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_PREINITIALIZED),
+			mVkImageLayout(Helper::getVkImageLayoutByTextureFlags(textureFlags)),
 			mVkDeviceMemory(VK_NULL_HANDLE),
 			mVkImageView(VK_NULL_HANDLE)
 		{
-			mVrVulkanTextureData.m_nFormat = Helper::createAndFillVkImage(vulkanRenderer, VK_IMAGE_TYPE_2D, VK_IMAGE_VIEW_TYPE_2D, { width, height, 1 }, textureFormat, data, flags, numberOfMultisamples, mVrVulkanTextureData.m_nImage, mVkDeviceMemory, mVkImageView);
+			mVrVulkanTextureData.m_nFormat = Helper::createAndFillVkImage(vulkanRenderer, VK_IMAGE_TYPE_2D, VK_IMAGE_VIEW_TYPE_2D, { width, height, 1 }, textureFormat, data, textureFlags, numberOfMultisamples, mVrVulkanTextureData.m_nImage, mVkDeviceMemory, mVkImageView);
 			SET_DEFAULT_DEBUG_NAME	// setDebugName("");
 
 			// Fill the rest of the "VRVulkanTextureData_t"-structure
@@ -5734,16 +5782,16 @@ namespace VulkanRenderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*/
-		Texture2DArray(VulkanRenderer& vulkanRenderer, uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags) :
+		Texture2DArray(VulkanRenderer& vulkanRenderer, uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags) :
 			ITexture2DArray(vulkanRenderer, width, height, numberOfSlices),
 			mVkImage(VK_NULL_HANDLE),
-			mVkImageLayout((flags & Renderer::TextureFlag::RENDER_TARGET) ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_PREINITIALIZED),
+			mVkImageLayout(Helper::getVkImageLayoutByTextureFlags(textureFlags)),
 			mVkDeviceMemory(VK_NULL_HANDLE),
 			mVkImageView(VK_NULL_HANDLE),
-			mVkFormat(Helper::createAndFillVkImage(vulkanRenderer, VK_IMAGE_TYPE_2D, VK_IMAGE_VIEW_TYPE_2D_ARRAY, { width, height, numberOfSlices }, textureFormat, data, flags, 1, mVkImage, mVkDeviceMemory, mVkImageView))
+			mVkFormat(Helper::createAndFillVkImage(vulkanRenderer, VK_IMAGE_TYPE_2D, VK_IMAGE_VIEW_TYPE_2D_ARRAY, { width, height, numberOfSlices }, textureFormat, data, textureFlags, 1, mVkImage, mVkDeviceMemory, mVkImageView))
 		{
 			SET_DEFAULT_DEBUG_NAME	// setDebugName("");
 		}
@@ -5866,17 +5914,17 @@ namespace VulkanRenderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*/
-		Texture3D(VulkanRenderer& vulkanRenderer, uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags) :
+		Texture3D(VulkanRenderer& vulkanRenderer, uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags) :
 			ITexture3D(vulkanRenderer, width, height, depth),
 			mVkImage(VK_NULL_HANDLE),
-			mVkImageLayout((flags & Renderer::TextureFlag::RENDER_TARGET) ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_PREINITIALIZED),
+			mVkImageLayout(Helper::getVkImageLayoutByTextureFlags(textureFlags)),
 			mVkDeviceMemory(VK_NULL_HANDLE),
 			mVkImageView(VK_NULL_HANDLE)
 		{
-			Helper::createAndFillVkImage(vulkanRenderer, VK_IMAGE_TYPE_3D, VK_IMAGE_VIEW_TYPE_3D, { width, height, depth }, textureFormat, data, flags, 1, mVkImage, mVkDeviceMemory, mVkImageView);
+			Helper::createAndFillVkImage(vulkanRenderer, VK_IMAGE_TYPE_3D, VK_IMAGE_VIEW_TYPE_3D, { width, height, depth }, textureFormat, data, textureFlags, 1, mVkImage, mVkDeviceMemory, mVkImageView);
 			SET_DEFAULT_DEBUG_NAME	// setDebugName("");
 		}
 
@@ -5983,17 +6031,17 @@ namespace VulkanRenderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*/
-		TextureCube(VulkanRenderer& vulkanRenderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags) :
+		TextureCube(VulkanRenderer& vulkanRenderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags) :
 			ITextureCube(vulkanRenderer, width, height),
 			mVkImage(VK_NULL_HANDLE),
-			mVkImageLayout((flags & Renderer::TextureFlag::RENDER_TARGET) ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_PREINITIALIZED),
+			mVkImageLayout(Helper::getVkImageLayoutByTextureFlags(textureFlags)),
 			mVkDeviceMemory(VK_NULL_HANDLE),
 			mVkImageView(VK_NULL_HANDLE)
 		{
-			Helper::createAndFillVkImage(vulkanRenderer, VK_IMAGE_TYPE_2D, VK_IMAGE_VIEW_TYPE_CUBE, { width, height, 6 }, textureFormat, data, flags, 1, mVkImage, mVkDeviceMemory, mVkImageView);
+			Helper::createAndFillVkImage(vulkanRenderer, VK_IMAGE_TYPE_2D, VK_IMAGE_VIEW_TYPE_CUBE, { width, height, 6 }, textureFormat, data, textureFlags, 1, mVkImage, mVkDeviceMemory, mVkImageView);
 			SET_DEFAULT_DEBUG_NAME	// setDebugName("");
 		}
 
@@ -6109,14 +6157,14 @@ namespace VulkanRenderer
 	//[ Public virtual Renderer::ITextureManager methods      ]
 	//[-------------------------------------------------------]
 	public:
-		virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, Vulkan has no texture usage indication
 
 			// Check whether or not the given texture dimension is valid
 			if (width > 0)
 			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture1D)(static_cast<VulkanRenderer&>(getRenderer()), width, textureFormat, data, flags);
+				return RENDERER_NEW(getRenderer().getContext(), Texture1D)(static_cast<VulkanRenderer&>(getRenderer()), width, textureFormat, data, textureFlags);
 			}
 			else
 			{
@@ -6124,14 +6172,14 @@ namespace VulkanRenderer
 			}
 		}
 
-		virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, MAYBE_UNUSED const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
+		virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, MAYBE_UNUSED const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, Vulkan has no texture usage indication
 
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0)
 			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture2D)(static_cast<VulkanRenderer&>(getRenderer()), width, height, textureFormat, data, flags, numberOfMultisamples);
+				return RENDERER_NEW(getRenderer().getContext(), Texture2D)(static_cast<VulkanRenderer&>(getRenderer()), width, height, textureFormat, data, textureFlags, numberOfMultisamples);
 			}
 			else
 			{
@@ -6139,14 +6187,14 @@ namespace VulkanRenderer
 			}
 		}
 
-		virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, Vulkan has no texture usage indication
 
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0 && numberOfSlices > 0)
 			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture2DArray)(static_cast<VulkanRenderer&>(getRenderer()), width, height, numberOfSlices, textureFormat, data, flags);
+				return RENDERER_NEW(getRenderer().getContext(), Texture2DArray)(static_cast<VulkanRenderer&>(getRenderer()), width, height, numberOfSlices, textureFormat, data, textureFlags);
 			}
 			else
 			{
@@ -6154,14 +6202,14 @@ namespace VulkanRenderer
 			}
 		}
 
-		virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, Vulkan has no texture usage indication
 
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0 && depth > 0)
 			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture3D)(static_cast<VulkanRenderer&>(getRenderer()), width, height, depth, textureFormat, data, flags);
+				return RENDERER_NEW(getRenderer().getContext(), Texture3D)(static_cast<VulkanRenderer&>(getRenderer()), width, height, depth, textureFormat, data, textureFlags);
 			}
 			else
 			{
@@ -6169,14 +6217,14 @@ namespace VulkanRenderer
 			}
 		}
 
-		virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, Vulkan has no texture usage indication
 
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0)
 			{
-				return RENDERER_NEW(getRenderer().getContext(), TextureCube)(static_cast<VulkanRenderer&>(getRenderer()), width, height, textureFormat, data, flags);
+				return RENDERER_NEW(getRenderer().getContext(), TextureCube)(static_cast<VulkanRenderer&>(getRenderer()), width, height, textureFormat, data, textureFlags);
 			}
 			else
 			{
@@ -7219,7 +7267,8 @@ namespace VulkanRenderer
 				const VulkanRenderer& vulkanRenderer = static_cast<VulkanRenderer&>(getRenderer());
 				Helper::createAndAllocateVkImage(vulkanRenderer, 0, VK_IMAGE_TYPE_2D, { vkExtent2D.width, vkExtent2D.height, 1 }, 1, 1, mDepthVkFormat, static_cast<RenderPass&>(getRenderPass()).getVkSampleCountFlagBits(), VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mDepthVkImage, mDepthVkDeviceMemory);
 				Helper::createVkImageView(vulkanRenderer, mDepthVkImage, VK_IMAGE_VIEW_TYPE_2D, 1, 1, mDepthVkFormat, VK_IMAGE_ASPECT_DEPTH_BIT, mDepthVkImageView);
-				Helper::transitionVkImageLayout(vulkanRenderer, mDepthVkImage, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+				// TODO(co) File "unrimp\renderer\renderer\vulkanrenderer\vulkanrenderer.cpp" | Line 1036 | Critical: Vulkan debug report callback: Object type: "VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT" Object: "103612336" Location: "0" Message code: "461375810" Layer prefix: "Validation" Message: " [ VUID-vkCmdPipelineBarrier-pMemoryBarriers-01185 ] Object: 0x62cffb0 (Type = 6) | vkCmdPipelineBarrier(): pImageMemBarriers[0].dstAccessMask (0x600) is not supported by dstStageMask (0x1). The spec valid usage text states 'Each element of pMemoryBarriers, pBufferMemoryBarriers and pImageMemoryBarriers must not have any access flag included in its dstAccessMask member if that bit is not supported by any of the pipeline stages in dstStageMask, as specified in the table of supported access types.' (https://www.khronos.org/registry/vulkan/specs/1.0/html/vkspec.html#VUID-vkCmdPipelineBarrier-pMemoryBarriers-01185)" 
+				//Helper::transitionVkImageLayout(vulkanRenderer, mDepthVkImage, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 			}
 		}
 
@@ -7372,9 +7421,9 @@ namespace VulkanRenderer
 						case Renderer::ResourceType::FRAMEBUFFER:
 						case Renderer::ResourceType::INDEX_BUFFER:
 						case Renderer::ResourceType::VERTEX_BUFFER:
-						case Renderer::ResourceType::UNIFORM_BUFFER:
 						case Renderer::ResourceType::TEXTURE_BUFFER:
 						case Renderer::ResourceType::INDIRECT_BUFFER:
+						case Renderer::ResourceType::UNIFORM_BUFFER:
 						case Renderer::ResourceType::TEXTURE_1D:
 						case Renderer::ResourceType::TEXTURE_3D:
 						case Renderer::ResourceType::TEXTURE_CUBE:
@@ -7443,9 +7492,9 @@ namespace VulkanRenderer
 					case Renderer::ResourceType::FRAMEBUFFER:
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
-					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
+					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
@@ -9393,31 +9442,6 @@ namespace VulkanRenderer
 						break;
 					}
 
-					case Renderer::ResourceType::UNIFORM_BUFFER:
-					{
-						const VkDescriptorBufferInfo vkDescriptorBufferInfo =
-						{
-							static_cast<UniformBuffer*>(resource)->getVkBuffer(),	// buffer (VkBuffer)
-							0,														// offset (VkDeviceSize)
-							VK_WHOLE_SIZE											// range (VkDeviceSize)
-						};
-						const VkWriteDescriptorSet vkWriteDescriptorSet =
-						{
-							VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,	// sType (VkStructureType)
-							nullptr,								// pNext (const void*)
-							mVkDescriptorSet,						// dstSet (VkDescriptorSet)
-							resourceIndex,							// dstBinding (uint32_t)
-							0,										// dstArrayElement (uint32_t)
-							1,										// descriptorCount (uint32_t)
-							VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,		// descriptorType (VkDescriptorType)
-							nullptr,								// pImageInfo (const VkDescriptorImageInfo*)
-							&vkDescriptorBufferInfo,				// pBufferInfo (const VkDescriptorBufferInfo*)
-							nullptr									// pTexelBufferView (const VkBufferView*)
-						};
-						vkUpdateDescriptorSets(vkDevice, 1, &vkWriteDescriptorSet, 0, nullptr);
-						break;
-					}
-
 					case Renderer::ResourceType::TEXTURE_BUFFER:
 					{
 						const VkBufferView vkBufferView = static_cast<TextureBuffer*>(resource)->getVkBufferView();
@@ -9458,6 +9482,31 @@ namespace VulkanRenderer
 							nullptr,									// pImageInfo (const VkDescriptorImageInfo*)
 							&vkDescriptorBufferInfo,					// pBufferInfo (const VkDescriptorBufferInfo*)
 							nullptr										// pTexelBufferView (const VkBufferView*)
+						};
+						vkUpdateDescriptorSets(vkDevice, 1, &vkWriteDescriptorSet, 0, nullptr);
+						break;
+					}
+
+					case Renderer::ResourceType::UNIFORM_BUFFER:
+					{
+						const VkDescriptorBufferInfo vkDescriptorBufferInfo =
+						{
+							static_cast<UniformBuffer*>(resource)->getVkBuffer(),	// buffer (VkBuffer)
+							0,														// offset (VkDeviceSize)
+							VK_WHOLE_SIZE											// range (VkDeviceSize)
+						};
+						const VkWriteDescriptorSet vkWriteDescriptorSet =
+						{
+							VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,	// sType (VkStructureType)
+							nullptr,								// pNext (const void*)
+							mVkDescriptorSet,						// dstSet (VkDescriptorSet)
+							resourceIndex,							// dstBinding (uint32_t)
+							0,										// dstArrayElement (uint32_t)
+							1,										// descriptorCount (uint32_t)
+							VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,		// descriptorType (VkDescriptorType)
+							nullptr,								// pImageInfo (const VkDescriptorImageInfo*)
+							&vkDescriptorBufferInfo,				// pBufferInfo (const VkDescriptorBufferInfo*)
+							nullptr									// pTexelBufferView (const VkBufferView*)
 						};
 						vkUpdateDescriptorSets(vkDevice, 1, &vkWriteDescriptorSet, 0, nullptr);
 						break;
@@ -9523,9 +9572,9 @@ namespace VulkanRenderer
 							case Renderer::ResourceType::FRAMEBUFFER:
 							case Renderer::ResourceType::INDEX_BUFFER:
 							case Renderer::ResourceType::VERTEX_BUFFER:
-							case Renderer::ResourceType::UNIFORM_BUFFER:
 							case Renderer::ResourceType::INDIRECT_BUFFER:
 							case Renderer::ResourceType::TEXTURE_BUFFER:
+							case Renderer::ResourceType::UNIFORM_BUFFER:
 							case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 							case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 							case Renderer::ResourceType::SAMPLER_STATE:
@@ -9541,7 +9590,6 @@ namespace VulkanRenderer
 
 						// Get the sampler state
 						const SamplerState* samplerState = (nullptr != mSamplerStates) ? static_cast<const SamplerState*>(mSamplerStates[resourceIndex]) : nullptr;
-						RENDERER_ASSERT(vulkanRenderer.getContext(), nullptr == mSamplerStates || nullptr != samplerState, "Invalid Vulkan sampler states")
 
 						// Update Vulkan descriptor sets
 						const VkDescriptorImageInfo vkDescriptorImageInfo =
@@ -9558,7 +9606,7 @@ namespace VulkanRenderer
 							resourceIndex,																								// dstBinding (uint32_t)
 							0,																											// dstArrayElement (uint32_t)
 							1,																											// descriptorCount (uint32_t)
-							(nullptr != samplerState) ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER : VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,	// descriptorType (VkDescriptorType)
+							(nullptr != samplerState) ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER : VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,	// descriptorType (VkDescriptorType)
 							&vkDescriptorImageInfo,																						// pImageInfo (const VkDescriptorImageInfo*)
 							nullptr,																									// pBufferInfo (const VkDescriptorBufferInfo*)
 							nullptr																										// pTexelBufferView (const VkBufferView*)
@@ -9832,7 +9880,7 @@ namespace
 			void ClearGraphics(const void* data, Renderer::IRenderer& renderer)
 			{
 				const Renderer::Command::ClearGraphics* realData = static_cast<const Renderer::Command::ClearGraphics*>(data);
-				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).clearGraphics(realData->flags, realData->color, realData->z, realData->stencil);
+				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).clearGraphics(realData->clearFlags, realData->color, realData->z, realData->stencil);
 			}
 
 			void DrawGraphics(const void* data, Renderer::IRenderer& renderer)
@@ -10343,7 +10391,7 @@ namespace VulkanRenderer
 		}
 	}
 
-	void VulkanRenderer::clearGraphics(uint32_t flags, const float color[4], float z, uint32_t stencil)
+	void VulkanRenderer::clearGraphics(uint32_t clearFlags, const float color[4], float z, uint32_t stencil)
 	{
 		// Sanity check
 		RENDERER_ASSERT(mContext, nullptr != mRenderTarget, "Can't execute Vulkan clear command without a render target set")
@@ -10352,7 +10400,7 @@ namespace VulkanRenderer
 		// Clear color
 		const uint32_t numberOfColorAttachments = static_cast<const RenderPass&>(mRenderTarget->getRenderPass()).getNumberOfColorAttachments();
 		RENDERER_ASSERT(mContext, numberOfColorAttachments < 8, "Vulkan only supports 7 render pass color attachments")
-		if (flags & Renderer::ClearFlag::COLOR)
+		if (clearFlags & Renderer::ClearFlag::COLOR)
 		{
 			for (uint32_t i = 0; i < numberOfColorAttachments; ++i)
 			{
@@ -10361,7 +10409,7 @@ namespace VulkanRenderer
 		}
 
 		// Clear depth stencil
-		if ((flags & Renderer::ClearFlag::DEPTH) || (flags & Renderer::ClearFlag::STENCIL))
+		if ((clearFlags & Renderer::ClearFlag::DEPTH) || (clearFlags & Renderer::ClearFlag::STENCIL))
 		{
 			mVkClearValues[numberOfColorAttachments].depthStencil.depth = z;
 			mVkClearValues[numberOfColorAttachments].depthStencil.stencil = stencil;
@@ -10790,13 +10838,6 @@ namespace VulkanRenderer
 				return (vkMapMemory(getVulkanContext().getVkDevice(), static_cast<VertexBuffer&>(resource).getVkDeviceMemory(), 0, VK_WHOLE_SIZE, 0, &mappedSubresource.data) == VK_SUCCESS);
 			}
 
-			case Renderer::ResourceType::UNIFORM_BUFFER:
-			{
-				mappedSubresource.rowPitch   = 0;
-				mappedSubresource.depthPitch = 0;
-				return (vkMapMemory(getVulkanContext().getVkDevice(), static_cast<UniformBuffer&>(resource).getVkDeviceMemory(), 0, VK_WHOLE_SIZE, 0, &mappedSubresource.data) == VK_SUCCESS);
-			}
-
 			case Renderer::ResourceType::TEXTURE_BUFFER:
 			{
 				mappedSubresource.rowPitch   = 0;
@@ -10809,6 +10850,13 @@ namespace VulkanRenderer
 				mappedSubresource.rowPitch   = 0;
 				mappedSubresource.depthPitch = 0;
 				return (vkMapMemory(getVulkanContext().getVkDevice(), static_cast<IndirectBuffer&>(resource).getVkDeviceMemory(), 0, VK_WHOLE_SIZE, 0, &mappedSubresource.data) == VK_SUCCESS);
+			}
+
+			case Renderer::ResourceType::UNIFORM_BUFFER:
+			{
+				mappedSubresource.rowPitch   = 0;
+				mappedSubresource.depthPitch = 0;
+				return (vkMapMemory(getVulkanContext().getVkDevice(), static_cast<UniformBuffer&>(resource).getVkDeviceMemory(), 0, VK_WHOLE_SIZE, 0, &mappedSubresource.data) == VK_SUCCESS);
 			}
 
 			case Renderer::ResourceType::TEXTURE_1D:
@@ -10885,12 +10933,6 @@ namespace VulkanRenderer
 				break;
 			}
 
-			case Renderer::ResourceType::UNIFORM_BUFFER:
-			{
-				vkUnmapMemory(getVulkanContext().getVkDevice(), static_cast<UniformBuffer&>(resource).getVkDeviceMemory());
-				break;
-			}
-
 			case Renderer::ResourceType::TEXTURE_BUFFER:
 			{
 				vkUnmapMemory(getVulkanContext().getVkDevice(), static_cast<TextureBuffer&>(resource).getVkDeviceMemory());
@@ -10900,6 +10942,12 @@ namespace VulkanRenderer
 			case Renderer::ResourceType::INDIRECT_BUFFER:
 			{
 				vkUnmapMemory(getVulkanContext().getVkDevice(), static_cast<IndirectBuffer&>(resource).getVkDeviceMemory());
+				break;
+			}
+
+			case Renderer::ResourceType::UNIFORM_BUFFER:
+			{
+				vkUnmapMemory(getVulkanContext().getVkDevice(), static_cast<UniformBuffer&>(resource).getVkDeviceMemory());
 				break;
 			}
 
@@ -11207,9 +11255,9 @@ namespace VulkanRenderer
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::INDEX_BUFFER:
 			case Renderer::ResourceType::VERTEX_BUFFER:
-			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_BUFFER:
 			case Renderer::ResourceType::INDIRECT_BUFFER:
+			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_1D:
 			case Renderer::ResourceType::TEXTURE_2D:
 			case Renderer::ResourceType::TEXTURE_2D_ARRAY:

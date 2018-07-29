@@ -1456,7 +1456,7 @@ namespace Direct3D9Renderer
 		void setGraphicsViewports(uint32_t numberOfViewports, const Renderer::Viewport* viewports);									// Rasterizer (RS) stage
 		void setGraphicsScissorRectangles(uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles);	// Rasterizer (RS) stage
 		void setGraphicsRenderTarget(Renderer::IRenderTarget* renderTarget);														// Output-merger (OM) stage
-		void clearGraphics(uint32_t flags, const float color[4], float z, uint32_t stencil);
+		void clearGraphics(uint32_t clearFlags, const float color[4], float z, uint32_t stencil);
 		void drawGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		void drawIndexedGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		//[-------------------------------------------------------]
@@ -3453,7 +3453,7 @@ namespace Direct3D9Renderer
 			return RENDERER_NEW(getRenderer().getContext(), VertexArray)(static_cast<Direct3D9Renderer&>(getRenderer()), vertexAttributes, numberOfVertexBuffers, vertexBuffers, static_cast<IndexBuffer*>(indexBuffer));
 		}
 
-		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t, const void*, uint32_t, Renderer::BufferUsage) override
+		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t, const void*, Renderer::BufferUsage) override
 		{
 			// Error! Direct3D 9 has no uniform buffer support.
 			return nullptr;
@@ -3521,24 +3521,24 @@ namespace Direct3D9Renderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		Texture1D(Direct3D9Renderer& direct3D9Renderer, uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) :
+		Texture1D(Direct3D9Renderer& direct3D9Renderer, uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) :
 			ITexture1D(direct3D9Renderer, width),
 			mDirect3DTexture9(nullptr)
 		{
 			// Sanity checks
-			RENDERER_ASSERT(direct3D9Renderer.getContext(), 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 9 texture parameters")
+			RENDERER_ASSERT(direct3D9Renderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 9 texture parameters")
 
 			// Begin debug event
 			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D9Renderer)
 
 			// Get the Direct3D 9 usage indication
 			// TODO(co) Add "Renderer::TextureFlag::GENERATE_MIPMAPS" support for render target textures
-			DWORD direct3D9Usage = (flags & Renderer::TextureFlag::GENERATE_MIPMAPS) ? D3DUSAGE_AUTOGENMIPMAP : 0u;
+			DWORD direct3D9Usage = (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS) ? D3DUSAGE_AUTOGENMIPMAP : 0u;
 			switch (textureUsage)
 			{
 				case Renderer::TextureUsage::DYNAMIC:
@@ -3555,7 +3555,7 @@ namespace Direct3D9Renderer
 			}
 
 			// Use this texture as render target?
-			if (flags & Renderer::TextureFlag::RENDER_TARGET)
+			if (textureFlags & Renderer::TextureFlag::RENDER_TARGET)
 			{
 				RENDERER_ASSERT(direct3D9Renderer.getContext(), nullptr == data, "Direct3D 9 render target textures can't be filled using provided data")
 				direct3D9Usage |= D3DUSAGE_RENDERTARGET;
@@ -3570,7 +3570,7 @@ namespace Direct3D9Renderer
 				// Upload the texture data
 
 				// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
-				if (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS)
+				if (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS)
 				{
 					// Calculate the number of mipmaps
 					const uint32_t numberOfMipmaps = getNumberOfMipmaps(width);
@@ -3749,24 +3749,24 @@ namespace Direct3D9Renderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		Texture2D(Direct3D9Renderer& direct3D9Renderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) :
+		Texture2D(Direct3D9Renderer& direct3D9Renderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) :
 			ITexture2D(direct3D9Renderer, width, height),
 			mDirect3DTexture9(nullptr)
 		{
 			// Sanity checks
-			RENDERER_ASSERT(direct3D9Renderer.getContext(), 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 9 texture parameters")
+			RENDERER_ASSERT(direct3D9Renderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 9 texture parameters")
 
 			// Begin debug event
 			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D9Renderer)
 
 			// Get the Direct3D 9 usage indication
 			// TODO(co) Add "Renderer::TextureFlag::GENERATE_MIPMAPS" support for render target textures
-			DWORD direct3D9Usage = (flags & Renderer::TextureFlag::GENERATE_MIPMAPS) ? D3DUSAGE_AUTOGENMIPMAP : 0u;
+			DWORD direct3D9Usage = (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS) ? D3DUSAGE_AUTOGENMIPMAP : 0u;
 			switch (textureUsage)
 			{
 				case Renderer::TextureUsage::DYNAMIC:
@@ -3783,7 +3783,7 @@ namespace Direct3D9Renderer
 			}
 
 			// Use this texture as render target?
-			if (flags & Renderer::TextureFlag::RENDER_TARGET)
+			if (textureFlags & Renderer::TextureFlag::RENDER_TARGET)
 			{
 				RENDERER_ASSERT(direct3D9Renderer.getContext(), nullptr == data, "Direct3D 9 render target textures can't be filled using provided data")
 				direct3D9Usage |= D3DUSAGE_RENDERTARGET;
@@ -3798,7 +3798,7 @@ namespace Direct3D9Renderer
 				// Upload the texture data
 
 				// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
-				if (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS)
+				if (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS)
 				{
 					// Calculate the number of mipmaps
 					const uint32_t numberOfMipmaps = getNumberOfMipmaps(width, height);
@@ -3994,26 +3994,26 @@ namespace Direct3D9Renderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		Texture3D(Direct3D9Renderer& direct3D9Renderer, uint32_t width, uint32_t height, uint32_t depth, MAYBE_UNUSED Renderer::TextureFormat::Enum textureFormat, MAYBE_UNUSED const void* data, MAYBE_UNUSED uint32_t flags, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) :
+		Texture3D(Direct3D9Renderer& direct3D9Renderer, uint32_t width, uint32_t height, uint32_t depth, MAYBE_UNUSED Renderer::TextureFormat::Enum textureFormat, MAYBE_UNUSED const void* data, MAYBE_UNUSED uint32_t textureFlags, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) :
 			ITexture3D(direct3D9Renderer, width, height, depth),
 			mDirect3DTexture9(nullptr)
 		{
 			// TODO(co) Implement Direct3D 9 volume texture
 			/*
 			// Sanity checks
-			RENDERER_ASSERT(direct3D9Renderer.getContext(), 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 9 texture parameters")
+			RENDERER_ASSERT(direct3D9Renderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 9 texture parameters")
 
 			// Begin debug event
 			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D9Renderer)
 
 			// Get the Direct3D 9 usage indication
 			// TODO(co) Add "Renderer::TextureFlag::GENERATE_MIPMAPS" support for render target textures
-			DWORD direct3D9Usage = (flags & Renderer::TextureFlag::GENERATE_MIPMAPS) ? D3DUSAGE_AUTOGENMIPMAP : 0u;
+			DWORD direct3D9Usage = (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS) ? D3DUSAGE_AUTOGENMIPMAP : 0u;
 			switch (textureUsage)
 			{
 				case Renderer::TextureUsage::DYNAMIC:
@@ -4030,7 +4030,7 @@ namespace Direct3D9Renderer
 			}
 
 			// Use this texture as render target?
-			if (flags & Renderer::TextureFlag::RENDER_TARGET)
+			if (textureFlags & Renderer::TextureFlag::RENDER_TARGET)
 			{
 				RENDERER_ASSERT(direct3D9Renderer.getContext(), nullptr == data, "Direct3D 9 render target textures can't be filled using provided data")
 				direct3D9Usage |= D3DUSAGE_RENDERTARGET;
@@ -4045,7 +4045,7 @@ namespace Direct3D9Renderer
 				// Upload the texture data
 
 				// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
-				if (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS)
+				if (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS)
 				{
 					// Calculate the number of mipmaps
 					const uint32_t numberOfMipmaps = getNumberOfMipmaps(width, height, depth);
@@ -4226,26 +4226,26 @@ namespace Direct3D9Renderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		TextureCube(Direct3D9Renderer& direct3D9Renderer, uint32_t width, uint32_t height, MAYBE_UNUSED Renderer::TextureFormat::Enum textureFormat, MAYBE_UNUSED const void* data, MAYBE_UNUSED uint32_t flags, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) :
+		TextureCube(Direct3D9Renderer& direct3D9Renderer, uint32_t width, uint32_t height, MAYBE_UNUSED Renderer::TextureFormat::Enum textureFormat, MAYBE_UNUSED const void* data, MAYBE_UNUSED uint32_t textureFlags, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) :
 			ITextureCube(direct3D9Renderer, width, height),
 			mDirect3DTexture9(nullptr)
 		{
 			// TODO(co) Implement Direct3D 9 cube texture
 			/*
 			// Sanity checks
-			RENDERER_ASSERT(direct3D9Renderer.getContext(), 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 9 texture parameters")
+			RENDERER_ASSERT(direct3D9Renderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 9 texture parameters")
 
 			// Begin debug event
 			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D9Renderer)
 
 			// Get the Direct3D 9 usage indication
 			// TODO(co) Add "Renderer::TextureFlag::GENERATE_MIPMAPS" support for render target textures
-			DWORD direct3D9Usage = (flags & Renderer::TextureFlag::GENERATE_MIPMAPS) ? D3DUSAGE_AUTOGENMIPMAP : 0u;
+			DWORD direct3D9Usage = (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS) ? D3DUSAGE_AUTOGENMIPMAP : 0u;
 			switch (textureUsage)
 			{
 				case Renderer::TextureUsage::DYNAMIC:
@@ -4262,7 +4262,7 @@ namespace Direct3D9Renderer
 			}
 
 			// Use this texture as render target?
-			if (flags & Renderer::TextureFlag::RENDER_TARGET)
+			if (textureFlags & Renderer::TextureFlag::RENDER_TARGET)
 			{
 				RENDERER_ASSERT(direct3D9Renderer.getContext(), nullptr == data, "Direct3D 9 render target textures can't be filled using provided data")
 				direct3D9Usage |= D3DUSAGE_RENDERTARGET;
@@ -4277,7 +4277,7 @@ namespace Direct3D9Renderer
 				// Upload the texture data
 
 				// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
-				if (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS)
+				if (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS)
 				{
 					// Calculate the number of mipmaps
 					const uint32_t numberOfMipmaps = getNumberOfMipmaps(width, height);
@@ -4467,12 +4467,12 @@ namespace Direct3D9Renderer
 	//[ Public virtual Renderer::ITextureManager methods      ]
 	//[-------------------------------------------------------]
 	public:
-		virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0)
 			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture1D)(static_cast<Direct3D9Renderer&>(getRenderer()), width, textureFormat, data, flags, textureUsage);
+				return RENDERER_NEW(getRenderer().getContext(), Texture1D)(static_cast<Direct3D9Renderer&>(getRenderer()), width, textureFormat, data, textureFlags, textureUsage);
 			}
 			else
 			{
@@ -4480,12 +4480,12 @@ namespace Direct3D9Renderer
 			}
 		}
 
-		virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, MAYBE_UNUSED uint8_t numberOfMultisamples = 1, MAYBE_UNUSED const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
+		virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, MAYBE_UNUSED uint8_t numberOfMultisamples = 1, MAYBE_UNUSED const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0)
 			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture2D)(static_cast<Direct3D9Renderer&>(getRenderer()), width, height, textureFormat, data, flags, textureUsage);
+				return RENDERER_NEW(getRenderer().getContext(), Texture2D)(static_cast<Direct3D9Renderer&>(getRenderer()), width, height, textureFormat, data, textureFlags, textureUsage);
 			}
 			else
 			{
@@ -4493,18 +4493,18 @@ namespace Direct3D9Renderer
 			}
 		}
 
-		virtual Renderer::ITexture2DArray* createTexture2DArray(MAYBE_UNUSED uint32_t width, MAYBE_UNUSED uint32_t height, MAYBE_UNUSED uint32_t numberOfSlices, MAYBE_UNUSED Renderer::TextureFormat::Enum textureFormat, MAYBE_UNUSED const void* data = nullptr, MAYBE_UNUSED uint32_t flags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture2DArray* createTexture2DArray(MAYBE_UNUSED uint32_t width, MAYBE_UNUSED uint32_t height, MAYBE_UNUSED uint32_t numberOfSlices, MAYBE_UNUSED Renderer::TextureFormat::Enum textureFormat, MAYBE_UNUSED const void* data = nullptr, MAYBE_UNUSED uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// Direct3D 9 has no 2D texture arrays
 			return nullptr;
 		}
 
-		virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0 && depth > 0)
 			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture3D)(static_cast<Direct3D9Renderer&>(getRenderer()), width, height, depth, textureFormat, data, flags, textureUsage);
+				return RENDERER_NEW(getRenderer().getContext(), Texture3D)(static_cast<Direct3D9Renderer&>(getRenderer()), width, height, depth, textureFormat, data, textureFlags, textureUsage);
 			}
 			else
 			{
@@ -4512,12 +4512,12 @@ namespace Direct3D9Renderer
 			}
 		}
 
-		virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0)
 			{
-				return RENDERER_NEW(getRenderer().getContext(), TextureCube)(static_cast<Direct3D9Renderer&>(getRenderer()), width, height, textureFormat, data, flags, textureUsage);
+				return RENDERER_NEW(getRenderer().getContext(), TextureCube)(static_cast<Direct3D9Renderer&>(getRenderer()), width, height, textureFormat, data, textureFlags, textureUsage);
 			}
 			else
 			{
@@ -5704,9 +5704,9 @@ namespace Direct3D9Renderer
 						case Renderer::ResourceType::FRAMEBUFFER:
 						case Renderer::ResourceType::INDEX_BUFFER:
 						case Renderer::ResourceType::VERTEX_BUFFER:
-						case Renderer::ResourceType::UNIFORM_BUFFER:
 						case Renderer::ResourceType::TEXTURE_BUFFER:
 						case Renderer::ResourceType::INDIRECT_BUFFER:
+						case Renderer::ResourceType::UNIFORM_BUFFER:
 						case Renderer::ResourceType::TEXTURE_1D:
 						case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 						case Renderer::ResourceType::TEXTURE_3D:
@@ -5763,9 +5763,9 @@ namespace Direct3D9Renderer
 					case Renderer::ResourceType::FRAMEBUFFER:
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
-					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
+					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
 					case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
@@ -7011,7 +7011,7 @@ namespace
 			void ClearGraphics(const void* data, Renderer::IRenderer& renderer)
 			{
 				const Renderer::Command::ClearGraphics* realData = static_cast<const Renderer::Command::ClearGraphics*>(data);
-				static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).clearGraphics(realData->flags, realData->color, realData->z, realData->stencil);
+				static_cast<Direct3D9Renderer::Direct3D9Renderer&>(renderer).clearGraphics(realData->clearFlags, realData->color, realData->z, realData->stencil);
 			}
 
 			void DrawGraphics(const void* data, Renderer::IRenderer& renderer)
@@ -7431,12 +7431,12 @@ namespace Direct3D9Renderer
 				const Renderer::ResourceType resourceType = resource->getResourceType();
 				switch (resourceType)
 				{
-					case Renderer::ResourceType::UNIFORM_BUFFER:
-						RENDERER_LOG(mContext, CRITICAL, "Direct3D 9 has no uniform buffer support")
-						break;
-
 					case Renderer::ResourceType::TEXTURE_BUFFER:
 						RENDERER_LOG(mContext, CRITICAL, "Direct3D 9 has no texture buffer support")
+						break;
+
+					case Renderer::ResourceType::UNIFORM_BUFFER:
+						RENDERER_LOG(mContext, CRITICAL, "Direct3D 9 has no uniform buffer support")
 						break;
 
 					case Renderer::ResourceType::TEXTURE_1D:
@@ -7482,8 +7482,8 @@ namespace Direct3D9Renderer
 							case Renderer::ResourceType::FRAMEBUFFER:
 							case Renderer::ResourceType::INDEX_BUFFER:
 							case Renderer::ResourceType::VERTEX_BUFFER:
-							case Renderer::ResourceType::UNIFORM_BUFFER:
 							case Renderer::ResourceType::INDIRECT_BUFFER:
+							case Renderer::ResourceType::UNIFORM_BUFFER:
 							case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 							case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 							case Renderer::ResourceType::VERTEX_SHADER:
@@ -7777,9 +7777,9 @@ namespace Direct3D9Renderer
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
-					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
+					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
 					case Renderer::ResourceType::TEXTURE_2D:
 					case Renderer::ResourceType::TEXTURE_2D_ARRAY:
@@ -7827,7 +7827,7 @@ namespace Direct3D9Renderer
 		}
 	}
 
-	void Direct3D9Renderer::clearGraphics(uint32_t flags, const float color[4], float z, uint32_t stencil)
+	void Direct3D9Renderer::clearGraphics(uint32_t clearFlags, const float color[4], float z, uint32_t stencil)
 	{
 		// Begin debug event
 		RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(this)
@@ -7891,22 +7891,22 @@ namespace Direct3D9Renderer
 		FAILED_DEBUG_BREAK(mDirect3DDevice9->SetRenderState(D3DRS_SCISSORTESTENABLE, 0));
 
 		// Get API flags
-		uint32_t flagsAPI = 0;
-		if (flags & Renderer::ClearFlag::COLOR)
+		uint32_t flagsApi = 0;
+		if (clearFlags & Renderer::ClearFlag::COLOR)
 		{
-			flagsAPI |= D3DCLEAR_TARGET;
+			flagsApi |= D3DCLEAR_TARGET;
 		}
-		if (flags & Renderer::ClearFlag::DEPTH)
+		if (clearFlags & Renderer::ClearFlag::DEPTH)
 		{
-			flagsAPI |= D3DCLEAR_ZBUFFER;
+			flagsApi |= D3DCLEAR_ZBUFFER;
 		}
-		if (flags & Renderer::ClearFlag::STENCIL)
+		if (clearFlags & Renderer::ClearFlag::STENCIL)
 		{
-			flagsAPI |= D3DCLEAR_STENCIL;
+			flagsApi |= D3DCLEAR_STENCIL;
 		}
 
 		// Clear
-		FAILED_DEBUG_BREAK(mDirect3DDevice9->Clear(0, nullptr, flagsAPI, D3DCOLOR_COLORVALUE(normalizedColor[0], normalizedColor[1], normalizedColor[2], normalizedColor[3]), z, stencil));
+		FAILED_DEBUG_BREAK(mDirect3DDevice9->Clear(0, nullptr, flagsApi, D3DCOLOR_COLORVALUE(normalizedColor[0], normalizedColor[1], normalizedColor[2], normalizedColor[3]), z, stencil));
 
 		// Restore the previously set Direct3D 9 viewport
 		FAILED_DEBUG_BREAK(mDirect3DDevice9->SetViewport(&direct3D9ViewportBackup));
@@ -8474,8 +8474,8 @@ namespace Direct3D9Renderer
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::SWAP_CHAIN:
 			case Renderer::ResourceType::FRAMEBUFFER:
-			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_BUFFER:
+			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 			case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
@@ -8540,8 +8540,8 @@ namespace Direct3D9Renderer
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::SWAP_CHAIN:
 			case Renderer::ResourceType::FRAMEBUFFER:
-			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_BUFFER:
+			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 			case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:

@@ -1824,12 +1824,17 @@ typedef enum D3D11_MESSAGE_SEVERITY
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11SDKLayers.h" -> But only the few definitions we need
 typedef enum D3D11_MESSAGE_ID
 {
-	D3D11_MESSAGE_ID_DEVICE_OMSETRENDERTARGETS_HAZARD	= 9,
-	D3D11_MESSAGE_ID_DEVICE_VSSETSHADERRESOURCES_HAZARD	= 3,
-	D3D11_MESSAGE_ID_DEVICE_GSSETSHADERRESOURCES_HAZARD	= 5,
-	D3D11_MESSAGE_ID_DEVICE_PSSETSHADERRESOURCES_HAZARD	= 7,
-	D3D11_MESSAGE_ID_DEVICE_HSSETSHADERRESOURCES_HAZARD	= 2097173,
-	D3D11_MESSAGE_ID_DEVICE_DSSETSHADERRESOURCES_HAZARD	= 2097189
+	D3D11_MESSAGE_ID_UNKNOWN								 = 0,
+	D3D11_MESSAGE_ID_DEVICE_IASETVERTEXBUFFERS_HAZARD		 = 1,
+	D3D11_MESSAGE_ID_DEVICE_IASETINDEXBUFFER_HAZARD			 = 2,
+	D3D11_MESSAGE_ID_DEVICE_OMSETRENDERTARGETS_HAZARD		 = 9,
+	D3D11_MESSAGE_ID_DEVICE_VSSETSHADERRESOURCES_HAZARD		 = 3,
+	D3D11_MESSAGE_ID_DEVICE_GSSETSHADERRESOURCES_HAZARD		 = 5,
+	D3D11_MESSAGE_ID_DEVICE_PSSETSHADERRESOURCES_HAZARD		 = 7,
+	D3D11_MESSAGE_ID_DEVICE_HSSETSHADERRESOURCES_HAZARD		 = 2097173,
+	D3D11_MESSAGE_ID_DEVICE_DSSETSHADERRESOURCES_HAZARD		 = 2097189,
+	D3D11_MESSAGE_ID_DEVICE_CSSETSHADERRESOURCES_HAZARD		 = 2097316,
+	D3D11_MESSAGE_ID_DEVICE_CSSETUNORDEREDACCESSVIEWS_HAZARD = 2097354
 } D3D11_MESSAGE_ID;
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11SDKLayers.h"
@@ -4382,7 +4387,7 @@ namespace Direct3D11Renderer
 			{
 				{ // TODO(co) Work in progress: Compute shader writing into vertex buffer: "D3D11 WARNING: ID3D11DeviceContext::IASetVertexBuffers: Resource being set to Vertex Buffer slot 0 is still bound on output! Forcing to NULL. [ STATE_SETTING WARNING #1: DEVICE_IASETVERTEXBUFFERS_HAZARD]"
 					ID3D11UnorderedAccessView* d3d11UnorderedAccessView = nullptr;
-					mD3D11DeviceContext->CSSetUnorderedAccessViews(1, 1, &d3d11UnorderedAccessView, nullptr);
+					mD3D11DeviceContext->CSSetUnorderedAccessViews(2, 1, &d3d11UnorderedAccessView, nullptr);
 				}
 
 				// Just make a single API call
@@ -4400,7 +4405,7 @@ namespace Direct3D11Renderer
 			{
 				{ // TODO(co) Work in progress: Compute shader writing into vertex buffer: "D3D11 WARNING: ID3D11DeviceContext::IASetIndexBuffer: Resource being set to Index Buffer is still bound on output! Forcing to NULL. [ STATE_SETTING WARNING #2: DEVICE_IASETINDEXBUFFER_HAZARD]"
 					ID3D11UnorderedAccessView* d3d11UnorderedAccessView = nullptr;
-					mD3D11DeviceContext->CSSetUnorderedAccessViews(2, 1, &d3d11UnorderedAccessView, nullptr);
+					mD3D11DeviceContext->CSSetUnorderedAccessViews(1, 1, &d3d11UnorderedAccessView, nullptr);
 				}
 
 				// Set the Direct3D 11 indices
@@ -5194,8 +5199,14 @@ namespace Direct3D11Renderer
 			return RENDERER_NEW(getRenderer().getContext(), VertexArray)(static_cast<Direct3D11Renderer&>(getRenderer()), vertexAttributes, numberOfVertexBuffers, vertexBuffers, static_cast<IndexBuffer*>(indexBuffer));
 		}
 
-		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
+			// Don't remove this reminder comment block: There are no buffer flags by intent since an uniform buffer can't be used for unordered access and as a consequence an uniform buffer must always used as shader resource to not be pointless
+			// -> "Bind a buffer as a constant buffer to a shader stage; this flag may NOT be combined with any other bind flag." - https://docs.microsoft.com/en-us/windows/desktop/api/d3d11/ne-d3d11-d3d11_bind_flag
+			// RENDERER_ASSERT(getRenderer().getContext(), (bufferFlags & Renderer::BufferFlag::UNORDERED_ACCESS) == 0, "Invalid Direct3D 11 buffer flags, uniform buffer can't be used for unordered access")
+			// RENDERER_ASSERT(getRenderer().getContext(), (bufferFlags & Renderer::BufferFlag::SHADER_RESOURCE) != 0, "Invalid Direct3D 11 buffer flags, uniform buffer must be used as shader resource")
+
+			// Create the uniform buffer
 			return RENDERER_NEW(getRenderer().getContext(), UniformBuffer)(static_cast<Direct3D11Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
 		}
 
@@ -5260,12 +5271,12 @@ namespace Direct3D11Renderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		Texture1D(Direct3D11Renderer& direct3D11Renderer, uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags, Renderer::TextureUsage textureUsage) :
+		Texture1D(Direct3D11Renderer& direct3D11Renderer, uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Renderer::TextureUsage textureUsage) :
 			ITexture1D(direct3D11Renderer, width),
 			mTextureFormat(textureFormat),
 			mGenerateMipmaps(false),
@@ -5274,19 +5285,19 @@ namespace Direct3D11Renderer
 			mD3D11UnorderedAccessView(nullptr)
 		{
 			// Sanity checks
-			RENDERER_ASSERT(direct3D11Renderer.getContext(), 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 11 texture parameters")
-			RENDERER_ASSERT(direct3D11Renderer.getContext(), (flags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 11 render target textures can't be filled using provided data")
+			RENDERER_ASSERT(direct3D11Renderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 11 texture parameters")
+			RENDERER_ASSERT(direct3D11Renderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 11 render target textures can't be filled using provided data")
 
 			// Begin debug event
 			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D11Renderer)
 
 			// Calculate the number of mipmaps
-			const bool dataContainsMipmaps = (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
-			const bool generateMipmaps = (!dataContainsMipmaps && (flags & Renderer::TextureFlag::GENERATE_MIPMAPS));
+			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
+			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			RENDERER_ASSERT(direct3D11Renderer.getContext(), Renderer::TextureUsage::IMMUTABLE != textureUsage || !generateMipmaps, "Direct3D 11 immutable texture usage can't be combined with automatic mipmap generation")
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width) : 1;
 			const bool isDepthFormat = Renderer::TextureFormat::isDepth(textureFormat);
-			mGenerateMipmaps = (generateMipmaps && (flags & Renderer::TextureFlag::RENDER_TARGET) && !isDepthFormat);
+			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET) && !isDepthFormat);
 
 			// Direct3D 11 1D texture description
 			D3D11_TEXTURE1D_DESC d3d11Texture1DDesc;
@@ -5300,11 +5311,11 @@ namespace Direct3D11Renderer
 			d3d11Texture1DDesc.MiscFlags	  = mGenerateMipmaps ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0u;
 
 			// Set bind flags
-			if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+			if (textureFlags & Renderer::TextureFlag::SHADER_RESOURCE)
 			{
 				d3d11Texture1DDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
 			}
-			if (flags & Renderer::TextureFlag::RENDER_TARGET)
+			if (textureFlags & Renderer::TextureFlag::RENDER_TARGET)
 			{
 				if (isDepthFormat)
 				{
@@ -5315,7 +5326,7 @@ namespace Direct3D11Renderer
 					d3d11Texture1DDesc.BindFlags |= D3D11_BIND_RENDER_TARGET;
 				}
 			}
-			if (flags & Renderer::TextureFlag::UNORDERED_ACCESS)
+			if (textureFlags & Renderer::TextureFlag::UNORDERED_ACCESS)
 			{
 				d3d11Texture1DDesc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
 			}
@@ -5385,7 +5396,7 @@ namespace Direct3D11Renderer
 			if (nullptr != mD3D11Texture1D)
 			{
 				// Create the Direct3D 11 shader resource view instance
-				if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+				if (textureFlags & Renderer::TextureFlag::SHADER_RESOURCE)
 				{
 					// Direct3D 11 shader resource view description
 					D3D11_SHADER_RESOURCE_VIEW_DESC d3d11ShaderResourceViewDesc = {};
@@ -5398,7 +5409,7 @@ namespace Direct3D11Renderer
 				}
 
 				// Create the Direct3D 11 unordered access view instance
-				if (flags & Renderer::TextureFlag::UNORDERED_ACCESS)
+				if (textureFlags & Renderer::TextureFlag::UNORDERED_ACCESS)
 				{
 					// Direct3D 11 unordered access view description
 					D3D11_UNORDERED_ACCESS_VIEW_DESC d3d11UnorderedAccessViewDesc = {};
@@ -5604,14 +5615,14 @@ namespace Direct3D11Renderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*  @param[in] numberOfMultisamples
 		*    The number of multisamples per pixel (valid values: 1, 2, 4, 6, 8)
 		*/
-		Texture2D(Direct3D11Renderer& direct3D11Renderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags, Renderer::TextureUsage textureUsage, uint8_t numberOfMultisamples) :
+		Texture2D(Direct3D11Renderer& direct3D11Renderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Renderer::TextureUsage textureUsage, uint8_t numberOfMultisamples) :
 			ITexture2D(direct3D11Renderer, width, height),
 			mTextureFormat(textureFormat),
 			mNumberOfMultisamples(numberOfMultisamples),
@@ -5623,22 +5634,22 @@ namespace Direct3D11Renderer
 			// Sanity checks
 			RENDERER_ASSERT(direct3D11Renderer.getContext(), numberOfMultisamples == 1 || numberOfMultisamples == 2 || numberOfMultisamples == 4 || numberOfMultisamples == 8, "Invalid Direct3D 11 texture parameters")
 			RENDERER_ASSERT(direct3D11Renderer.getContext(), numberOfMultisamples == 1 || nullptr == data, "Invalid Direct3D 11 texture parameters")
-			RENDERER_ASSERT(direct3D11Renderer.getContext(), numberOfMultisamples == 1 || 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS), "Invalid Direct3D 11 texture parameters")
-			RENDERER_ASSERT(direct3D11Renderer.getContext(), numberOfMultisamples == 1 || 0 == (flags & Renderer::TextureFlag::GENERATE_MIPMAPS), "Invalid Direct3D 11 texture parameters")
-			RENDERER_ASSERT(direct3D11Renderer.getContext(), numberOfMultisamples == 1 || 0 != (flags & Renderer::TextureFlag::RENDER_TARGET), "Invalid Direct3D 11 texture parameters")
-			RENDERER_ASSERT(direct3D11Renderer.getContext(), 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 11 texture parameters")
-			RENDERER_ASSERT(direct3D11Renderer.getContext(), (flags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 11 render target textures can't be filled using provided data")
+			RENDERER_ASSERT(direct3D11Renderer.getContext(), numberOfMultisamples == 1 || 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS), "Invalid Direct3D 11 texture parameters")
+			RENDERER_ASSERT(direct3D11Renderer.getContext(), numberOfMultisamples == 1 || 0 == (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS), "Invalid Direct3D 11 texture parameters")
+			RENDERER_ASSERT(direct3D11Renderer.getContext(), numberOfMultisamples == 1 || 0 != (textureFlags & Renderer::TextureFlag::RENDER_TARGET), "Invalid Direct3D 11 texture parameters")
+			RENDERER_ASSERT(direct3D11Renderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 11 texture parameters")
+			RENDERER_ASSERT(direct3D11Renderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 11 render target textures can't be filled using provided data")
 
 			// Begin debug event
 			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D11Renderer)
 
 			// Calculate the number of mipmaps
-			const bool dataContainsMipmaps = (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
-			const bool generateMipmaps = (!dataContainsMipmaps && (flags & Renderer::TextureFlag::GENERATE_MIPMAPS));
+			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
+			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			RENDERER_ASSERT(direct3D11Renderer.getContext(), Renderer::TextureUsage::IMMUTABLE != textureUsage || !generateMipmaps, "Direct3D 11 immutable texture usage can't be combined with automatic mipmap generation")
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height) : 1;
 			const bool isDepthFormat = Renderer::TextureFormat::isDepth(textureFormat);
-			mGenerateMipmaps = (generateMipmaps && (flags & Renderer::TextureFlag::RENDER_TARGET) && !isDepthFormat);
+			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET) && !isDepthFormat);
 
 			// Direct3D 11 2D texture description
 			D3D11_TEXTURE2D_DESC d3d11Texture2DDesc;
@@ -5655,11 +5666,11 @@ namespace Direct3D11Renderer
 			d3d11Texture2DDesc.MiscFlags		  = mGenerateMipmaps ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0u;
 
 			// Set bind flags
-			if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+			if (textureFlags & Renderer::TextureFlag::SHADER_RESOURCE)
 			{
 				d3d11Texture2DDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
 			}
-			if (flags & Renderer::TextureFlag::RENDER_TARGET)
+			if (textureFlags & Renderer::TextureFlag::RENDER_TARGET)
 			{
 				if (isDepthFormat)
 				{
@@ -5670,7 +5681,7 @@ namespace Direct3D11Renderer
 					d3d11Texture2DDesc.BindFlags |= D3D11_BIND_RENDER_TARGET;
 				}
 			}
-			if (flags & Renderer::TextureFlag::UNORDERED_ACCESS)
+			if (textureFlags & Renderer::TextureFlag::UNORDERED_ACCESS)
 			{
 				d3d11Texture2DDesc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
 			}
@@ -5741,7 +5752,7 @@ namespace Direct3D11Renderer
 			if (nullptr != mD3D11Texture2D)
 			{
 				// Create the Direct3D 11 shader resource view instance
-				if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+				if (textureFlags & Renderer::TextureFlag::SHADER_RESOURCE)
 				{
 					// Direct3D 11 shader resource view description
 					D3D11_SHADER_RESOURCE_VIEW_DESC d3d11ShaderResourceViewDesc = {};
@@ -5754,7 +5765,7 @@ namespace Direct3D11Renderer
 				}
 
 				// Create the Direct3D 11 unordered access view instance
-				if (flags & Renderer::TextureFlag::UNORDERED_ACCESS)
+				if (textureFlags & Renderer::TextureFlag::UNORDERED_ACCESS)
 				{
 					// Direct3D 11 unordered access view description
 					D3D11_UNORDERED_ACCESS_VIEW_DESC d3d11UnorderedAccessViewDesc = {};
@@ -6005,12 +6016,12 @@ namespace Direct3D11Renderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		Texture2DArray(Direct3D11Renderer& direct3D11Renderer, uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) :
+		Texture2DArray(Direct3D11Renderer& direct3D11Renderer, uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) :
 			ITexture2DArray(direct3D11Renderer, width, height, numberOfSlices),
 			mTextureFormat(textureFormat),
 			mNumberOfMultisamples(1),	// TODO(co) Currently no MSAA support for 2D array textures
@@ -6020,18 +6031,18 @@ namespace Direct3D11Renderer
 			mD3D11UnorderedAccessView(nullptr)
 		{
 			// Sanity checks
-			RENDERER_ASSERT(direct3D11Renderer.getContext(), (flags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 11 render target textures can't be filled using provided data")
+			RENDERER_ASSERT(direct3D11Renderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 11 render target textures can't be filled using provided data")
 
 			// Begin debug event
 			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D11Renderer)
 
 			// Calculate the number of mipmaps
-			const bool dataContainsMipmaps = (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
-			const bool generateMipmaps = (!dataContainsMipmaps && (flags & Renderer::TextureFlag::GENERATE_MIPMAPS));
+			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
+			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			RENDERER_ASSERT(direct3D11Renderer.getContext(), Renderer::TextureUsage::IMMUTABLE != textureUsage || !generateMipmaps, "Direct3D 11 immutable texture usage can't be combined with automatic mipmap generation")
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height) : 1;
 			const bool isDepthFormat = Renderer::TextureFormat::isDepth(textureFormat);
-			mGenerateMipmaps = (generateMipmaps && (flags & Renderer::TextureFlag::RENDER_TARGET) && !isDepthFormat);
+			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET) && !isDepthFormat);
 
 			// Direct3D 11 2D array texture description
 			D3D11_TEXTURE2D_DESC d3d11Texture2DDesc;
@@ -6048,11 +6059,11 @@ namespace Direct3D11Renderer
 			d3d11Texture2DDesc.MiscFlags		  = mGenerateMipmaps ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0u;
 
 			// Set bind flags
-			if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+			if (textureFlags & Renderer::TextureFlag::SHADER_RESOURCE)
 			{
 				d3d11Texture2DDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
 			}
-			if (flags & Renderer::TextureFlag::RENDER_TARGET)
+			if (textureFlags & Renderer::TextureFlag::RENDER_TARGET)
 			{
 				if (isDepthFormat)
 				{
@@ -6063,7 +6074,7 @@ namespace Direct3D11Renderer
 					d3d11Texture2DDesc.BindFlags |= D3D11_BIND_RENDER_TARGET;
 				}
 			}
-			if (flags & Renderer::TextureFlag::UNORDERED_ACCESS)
+			if (textureFlags & Renderer::TextureFlag::UNORDERED_ACCESS)
 			{
 				d3d11Texture2DDesc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
 			}
@@ -6175,7 +6186,7 @@ namespace Direct3D11Renderer
 			if (nullptr != mD3D11Texture2D)
 			{
 				// Create the Direct3D 11 shader resource view instance
-				if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+				if (textureFlags & Renderer::TextureFlag::SHADER_RESOURCE)
 				{
 					// Direct3D 11 shader resource view description
 					D3D11_SHADER_RESOURCE_VIEW_DESC d3d11ShaderResourceViewDesc = {};
@@ -6189,7 +6200,7 @@ namespace Direct3D11Renderer
 				}
 
 				// Create the Direct3D 11 unordered access view instance
-				if (flags & Renderer::TextureFlag::UNORDERED_ACCESS)
+				if (textureFlags & Renderer::TextureFlag::UNORDERED_ACCESS)
 				{
 					// Direct3D 11 unordered access view description
 					D3D11_UNORDERED_ACCESS_VIEW_DESC d3d11UnorderedAccessViewDesc = {};
@@ -6406,12 +6417,12 @@ namespace Direct3D11Renderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		Texture3D(Direct3D11Renderer& direct3D11Renderer, uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags, Renderer::TextureUsage textureUsage) :
+		Texture3D(Direct3D11Renderer& direct3D11Renderer, uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Renderer::TextureUsage textureUsage) :
 			ITexture3D(direct3D11Renderer, width, height, depth),
 			mTextureFormat(textureFormat),
 			mGenerateMipmaps(false),
@@ -6420,19 +6431,19 @@ namespace Direct3D11Renderer
 			mD3D11UnorderedAccessView(nullptr)
 		{
 			// Sanity checks
-			RENDERER_ASSERT(direct3D11Renderer.getContext(), 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 11 texture parameters")
-			RENDERER_ASSERT(direct3D11Renderer.getContext(), (flags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 11 render target textures can't be filled using provided data")
+			RENDERER_ASSERT(direct3D11Renderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 11 texture parameters")
+			RENDERER_ASSERT(direct3D11Renderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 11 render target textures can't be filled using provided data")
 
 			// Begin debug event
 			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D11Renderer)
 
 			// Calculate the number of mipmaps
-			const bool dataContainsMipmaps = (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
-			const bool generateMipmaps = (!dataContainsMipmaps && (flags & Renderer::TextureFlag::GENERATE_MIPMAPS));
+			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
+			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			RENDERER_ASSERT(direct3D11Renderer.getContext(), Renderer::TextureUsage::IMMUTABLE != textureUsage || !generateMipmaps, "Direct3D 11 immutable texture usage can't be combined with automatic mipmap generation")
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height, depth) : 1;
 			const bool isDepthFormat = Renderer::TextureFormat::isDepth(textureFormat);
-			mGenerateMipmaps = (generateMipmaps && (flags & Renderer::TextureFlag::RENDER_TARGET) && !isDepthFormat);
+			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET) && !isDepthFormat);
 
 			// Direct3D 11 3D texture description
 			D3D11_TEXTURE3D_DESC d3d11Texture3DDesc;
@@ -6447,11 +6458,11 @@ namespace Direct3D11Renderer
 			d3d11Texture3DDesc.MiscFlags	  = mGenerateMipmaps ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0u;
 
 			// Set bind flags
-			if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+			if (textureFlags & Renderer::TextureFlag::SHADER_RESOURCE)
 			{
 				d3d11Texture3DDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
 			}
-			if (flags & Renderer::TextureFlag::RENDER_TARGET)
+			if (textureFlags & Renderer::TextureFlag::RENDER_TARGET)
 			{
 				if (isDepthFormat)
 				{
@@ -6462,7 +6473,7 @@ namespace Direct3D11Renderer
 					d3d11Texture3DDesc.BindFlags |= D3D11_BIND_RENDER_TARGET;
 				}
 			}
-			if (flags & Renderer::TextureFlag::UNORDERED_ACCESS)
+			if (textureFlags & Renderer::TextureFlag::UNORDERED_ACCESS)
 			{
 				d3d11Texture3DDesc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
 			}
@@ -6539,7 +6550,7 @@ namespace Direct3D11Renderer
 			if (nullptr != mD3D11Texture3D)
 			{
 				// Create the Direct3D 11 shader resource view instance
-				if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+				if (textureFlags & Renderer::TextureFlag::SHADER_RESOURCE)
 				{
 					// Direct3D 11 shader resource view description
 					D3D11_SHADER_RESOURCE_VIEW_DESC d3d11ShaderResourceViewDesc = {};
@@ -6552,7 +6563,7 @@ namespace Direct3D11Renderer
 				}
 
 				// Create the Direct3D 11 unordered access view instance
-				if (flags & Renderer::TextureFlag::UNORDERED_ACCESS)
+				if (textureFlags & Renderer::TextureFlag::UNORDERED_ACCESS)
 				{
 					// Direct3D 11 unordered access view description
 					D3D11_UNORDERED_ACCESS_VIEW_DESC d3d11UnorderedAccessViewDesc = {};
@@ -6759,12 +6770,12 @@ namespace Direct3D11Renderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		TextureCube(Direct3D11Renderer& direct3D11Renderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags, Renderer::TextureUsage textureUsage) :
+		TextureCube(Direct3D11Renderer& direct3D11Renderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Renderer::TextureUsage textureUsage) :
 			ITextureCube(direct3D11Renderer, width, height),
 			mTextureFormat(textureFormat),
 			mGenerateMipmaps(false),
@@ -6775,17 +6786,17 @@ namespace Direct3D11Renderer
 			static constexpr uint32_t NUMBER_OF_SLICES = 6;	// In Direct3D 11, a cube map is a 2D array texture with six slices
 
 			// Sanity checks
-			RENDERER_ASSERT(direct3D11Renderer.getContext(), (flags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 11 render target textures can't be filled using provided data")
+			RENDERER_ASSERT(direct3D11Renderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 11 render target textures can't be filled using provided data")
 
 			// Begin debug event
 			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D11Renderer)
 
 			// Calculate the number of mipmaps
-			const bool dataContainsMipmaps = (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
-			const bool generateMipmaps = (!dataContainsMipmaps && (flags & Renderer::TextureFlag::GENERATE_MIPMAPS));
+			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
+			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			RENDERER_ASSERT(direct3D11Renderer.getContext(), Renderer::TextureUsage::IMMUTABLE != textureUsage || !generateMipmaps, "Direct3D 11 immutable texture usage can't be combined with automatic mipmap generation")
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height) : 1;
-			mGenerateMipmaps = (generateMipmaps && (flags & Renderer::TextureFlag::RENDER_TARGET));
+			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET));
 
 			// Direct3D 11 2D array texture description
 			D3D11_TEXTURE2D_DESC d3d11Texture2DDesc;
@@ -6802,15 +6813,15 @@ namespace Direct3D11Renderer
 			d3d11Texture2DDesc.MiscFlags		  = (mGenerateMipmaps ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0u) | D3D11_RESOURCE_MISC_TEXTURECUBE;
 
 			// Set bind flags
-			if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+			if (textureFlags & Renderer::TextureFlag::SHADER_RESOURCE)
 			{
 				d3d11Texture2DDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
 			}
-			if (flags & Renderer::TextureFlag::RENDER_TARGET)
+			if (textureFlags & Renderer::TextureFlag::RENDER_TARGET)
 			{
 				d3d11Texture2DDesc.BindFlags |= D3D11_BIND_RENDER_TARGET;
 			}
-			if (flags & Renderer::TextureFlag::UNORDERED_ACCESS)
+			if (textureFlags & Renderer::TextureFlag::UNORDERED_ACCESS)
 			{
 				d3d11Texture2DDesc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
 			}
@@ -6915,7 +6926,7 @@ namespace Direct3D11Renderer
 			if (nullptr != mD3D11TextureCube)
 			{
 				// Create the Direct3D 11 shader resource view instance
-				if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+				if (textureFlags & Renderer::TextureFlag::SHADER_RESOURCE)
 				{
 					// Direct3D 11 shader resource view description
 					D3D11_SHADER_RESOURCE_VIEW_DESC d3d11ShaderResourceViewDesc = {};
@@ -6929,7 +6940,7 @@ namespace Direct3D11Renderer
 				}
 
 				// Create the Direct3D 11 unordered access view instance
-				if (flags & Renderer::TextureFlag::UNORDERED_ACCESS)
+				if (textureFlags & Renderer::TextureFlag::UNORDERED_ACCESS)
 				{
 					// Direct3D 11 unordered access view description
 					D3D11_UNORDERED_ACCESS_VIEW_DESC d3d11UnorderedAccessViewDesc = {};
@@ -7145,12 +7156,12 @@ namespace Direct3D11Renderer
 	//[ Public virtual Renderer::ITextureManager methods      ]
 	//[-------------------------------------------------------]
 	public:
-		virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0)
 			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture1D)(static_cast<Direct3D11Renderer&>(getRenderer()), width, textureFormat, data, flags, textureUsage);
+				return RENDERER_NEW(getRenderer().getContext(), Texture1D)(static_cast<Direct3D11Renderer&>(getRenderer()), width, textureFormat, data, textureFlags, textureUsage);
 			}
 			else
 			{
@@ -7158,12 +7169,12 @@ namespace Direct3D11Renderer
 			}
 		}
 
-		virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, MAYBE_UNUSED const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
+		virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, MAYBE_UNUSED const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0)
 			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture2D)(static_cast<Direct3D11Renderer&>(getRenderer()), width, height, textureFormat, data, flags, textureUsage, numberOfMultisamples);
+				return RENDERER_NEW(getRenderer().getContext(), Texture2D)(static_cast<Direct3D11Renderer&>(getRenderer()), width, height, textureFormat, data, textureFlags, textureUsage, numberOfMultisamples);
 			}
 			else
 			{
@@ -7171,12 +7182,12 @@ namespace Direct3D11Renderer
 			}
 		}
 
-		virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0 && numberOfSlices > 0)
 			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture2DArray)(static_cast<Direct3D11Renderer&>(getRenderer()), width, height, numberOfSlices, textureFormat, data, flags, textureUsage);
+				return RENDERER_NEW(getRenderer().getContext(), Texture2DArray)(static_cast<Direct3D11Renderer&>(getRenderer()), width, height, numberOfSlices, textureFormat, data, textureFlags, textureUsage);
 			}
 			else
 			{
@@ -7184,12 +7195,12 @@ namespace Direct3D11Renderer
 			}
 		}
 
-		virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0 && depth > 0)
 			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture3D)(static_cast<Direct3D11Renderer&>(getRenderer()), width, height, depth, textureFormat, data, flags, textureUsage);
+				return RENDERER_NEW(getRenderer().getContext(), Texture3D)(static_cast<Direct3D11Renderer&>(getRenderer()), width, height, depth, textureFormat, data, textureFlags, textureUsage);
 			}
 			else
 			{
@@ -7197,12 +7208,12 @@ namespace Direct3D11Renderer
 			}
 		}
 
-		virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0)
 			{
-				return RENDERER_NEW(getRenderer().getContext(), TextureCube)(static_cast<Direct3D11Renderer&>(getRenderer()), width, height, textureFormat, data, flags, textureUsage);
+				return RENDERER_NEW(getRenderer().getContext(), TextureCube)(static_cast<Direct3D11Renderer&>(getRenderer()), width, height, textureFormat, data, textureFlags, textureUsage);
 			}
 			else
 			{
@@ -8589,9 +8600,9 @@ namespace Direct3D11Renderer
 						case Renderer::ResourceType::FRAMEBUFFER:
 						case Renderer::ResourceType::INDEX_BUFFER:
 						case Renderer::ResourceType::VERTEX_BUFFER:
-						case Renderer::ResourceType::UNIFORM_BUFFER:
 						case Renderer::ResourceType::TEXTURE_BUFFER:
 						case Renderer::ResourceType::INDIRECT_BUFFER:
+						case Renderer::ResourceType::UNIFORM_BUFFER:
 						case Renderer::ResourceType::TEXTURE_1D:
 						case Renderer::ResourceType::TEXTURE_3D:
 						case Renderer::ResourceType::TEXTURE_CUBE:
@@ -8680,9 +8691,9 @@ namespace Direct3D11Renderer
 					case Renderer::ResourceType::FRAMEBUFFER:
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
-					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
+					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
@@ -10784,7 +10795,7 @@ namespace
 			void ClearGraphics(const void* data, Renderer::IRenderer& renderer)
 			{
 				const Renderer::Command::ClearGraphics* realData = static_cast<const Renderer::Command::ClearGraphics*>(data);
-				static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).clearGraphics(realData->flags, realData->color, realData->z, realData->stencil);
+				static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).clearGraphics(realData->clearFlags, realData->color, realData->z, realData->stencil);
 			}
 
 			void DrawGraphics(const void* data, Renderer::IRenderer& renderer)
@@ -11096,12 +11107,16 @@ namespace Direct3D11Renderer
 							// like the best solution considering the alternatives even if suppressing warnings is not always the best idea.
 							D3D11_MESSAGE_ID d3d11MessageIds[] =
 							{
+								D3D11_MESSAGE_ID_DEVICE_IASETVERTEXBUFFERS_HAZARD,
+								D3D11_MESSAGE_ID_DEVICE_IASETINDEXBUFFER_HAZARD,
 								D3D11_MESSAGE_ID_DEVICE_OMSETRENDERTARGETS_HAZARD,
 								D3D11_MESSAGE_ID_DEVICE_VSSETSHADERRESOURCES_HAZARD,
 								D3D11_MESSAGE_ID_DEVICE_GSSETSHADERRESOURCES_HAZARD,
 								D3D11_MESSAGE_ID_DEVICE_PSSETSHADERRESOURCES_HAZARD,
 								D3D11_MESSAGE_ID_DEVICE_HSSETSHADERRESOURCES_HAZARD,
-								D3D11_MESSAGE_ID_DEVICE_DSSETSHADERRESOURCES_HAZARD
+								D3D11_MESSAGE_ID_DEVICE_DSSETSHADERRESOURCES_HAZARD,
+								D3D11_MESSAGE_ID_DEVICE_CSSETSHADERRESOURCES_HAZARD,
+								D3D11_MESSAGE_ID_DEVICE_CSSETUNORDEREDACCESSVIEWS_HAZARD
 							};
 							D3D11_INFO_QUEUE_FILTER d3d11InfoQueueFilter = {};
 							d3d11InfoQueueFilter.DenyList.NumIDs = _countof(d3d11MessageIds);
@@ -11424,8 +11439,8 @@ namespace Direct3D11Renderer
 							case Renderer::ResourceType::FRAMEBUFFER:
 							case Renderer::ResourceType::INDEX_BUFFER:
 							case Renderer::ResourceType::VERTEX_BUFFER:
-							case Renderer::ResourceType::UNIFORM_BUFFER:
 							case Renderer::ResourceType::INDIRECT_BUFFER:
+							case Renderer::ResourceType::UNIFORM_BUFFER:
 							case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 							case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 							case Renderer::ResourceType::SAMPLER_STATE:
@@ -11670,10 +11685,6 @@ namespace Direct3D11Renderer
 						const Framebuffer* framebuffer = static_cast<Framebuffer*>(mRenderTarget);
 
 						// Set the Direct3D 11 render targets
-						{ // TODO(co) Compute shader: "D3D11 WARNING: ID3D11DeviceContext::OMSetRenderTargets[AndUnorderedAccessViews]: Forcing CS shader resource slot 0 to NULL. [ STATE_SETTING WARNING #2097316: DEVICE_CSSETSHADERRESOURCES_HAZARD]"
-							ID3D11ShaderResourceView* d3d11ShaderResourceView = nullptr;
-							mD3D11DeviceContext->CSSetShaderResources(0, 1, &d3d11ShaderResourceView);
-						}
 						mD3D11DeviceContext->OMSetRenderTargets(framebuffer->getNumberOfColorTextures(), framebuffer->getD3D11RenderTargetViews(), framebuffer->getD3D11DepthStencilView());
 						break;
 					}
@@ -11685,9 +11696,9 @@ namespace Direct3D11Renderer
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
-					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
+					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
 					case Renderer::ResourceType::TEXTURE_2D:
 					case Renderer::ResourceType::TEXTURE_2D_ARRAY:
@@ -11729,7 +11740,7 @@ namespace Direct3D11Renderer
 		}
 	}
 
-	void Direct3D11Renderer::clearGraphics(uint32_t flags, const float color[4], float z, uint32_t stencil)
+	void Direct3D11Renderer::clearGraphics(uint32_t clearFlags, const float color[4], float z, uint32_t stencil)
 	{
 		// Unlike Direct3D 9, OpenGL or OpenGL ES 3, Direct3D 11 clears a given render target view and not the currently bound
 
@@ -11748,7 +11759,7 @@ namespace Direct3D11Renderer
 					SwapChain* swapChain = static_cast<SwapChain*>(mRenderTarget);
 
 					// Clear the Direct3D 11 render target view?
-					if (flags & Renderer::ClearFlag::COLOR)
+					if (clearFlags & Renderer::ClearFlag::COLOR)
 					{
 						mD3D11DeviceContext->ClearRenderTargetView(swapChain->getD3D11RenderTargetView(), color);
 					}
@@ -11757,8 +11768,8 @@ namespace Direct3D11Renderer
 					if (nullptr != swapChain->getD3D11DepthStencilView())
 					{
 						// Get the Direct3D 11 clear flags
-						UINT direct3D11ClearFlags = (flags & Renderer::ClearFlag::DEPTH) ? D3D11_CLEAR_DEPTH : 0u;
-						if (flags & Renderer::ClearFlag::STENCIL)
+						UINT direct3D11ClearFlags = (clearFlags & Renderer::ClearFlag::DEPTH) ? D3D11_CLEAR_DEPTH : 0u;
+						if (clearFlags & Renderer::ClearFlag::STENCIL)
 						{
 							direct3D11ClearFlags |= D3D11_CLEAR_STENCIL;
 						}
@@ -11777,7 +11788,7 @@ namespace Direct3D11Renderer
 					Framebuffer* framebuffer = static_cast<Framebuffer*>(mRenderTarget);
 
 					// Clear all Direct3D 11 render target views?
-					if (flags & Renderer::ClearFlag::COLOR)
+					if (clearFlags & Renderer::ClearFlag::COLOR)
 					{
 						// Loop through all Direct3D 11 render target views
 						ID3D11RenderTargetView** d3d11RenderTargetViewsEnd = framebuffer->getD3D11RenderTargetViews() + framebuffer->getNumberOfColorTextures();
@@ -11795,8 +11806,8 @@ namespace Direct3D11Renderer
 					if (nullptr != framebuffer->getD3D11DepthStencilView())
 					{
 						// Get the Direct3D 11 clear flags
-						UINT direct3D11ClearFlags = (flags & Renderer::ClearFlag::DEPTH) ? D3D11_CLEAR_DEPTH : 0u;
-						if (flags & Renderer::ClearFlag::STENCIL)
+						UINT direct3D11ClearFlags = (clearFlags & Renderer::ClearFlag::DEPTH) ? D3D11_CLEAR_DEPTH : 0u;
+						if (clearFlags & Renderer::ClearFlag::STENCIL)
 						{
 							direct3D11ClearFlags |= D3D11_CLEAR_STENCIL;
 						}
@@ -11816,9 +11827,9 @@ namespace Direct3D11Renderer
 				case Renderer::ResourceType::RENDER_PASS:
 				case Renderer::ResourceType::INDEX_BUFFER:
 				case Renderer::ResourceType::VERTEX_BUFFER:
-				case Renderer::ResourceType::UNIFORM_BUFFER:
 				case Renderer::ResourceType::TEXTURE_BUFFER:
 				case Renderer::ResourceType::INDIRECT_BUFFER:
+				case Renderer::ResourceType::UNIFORM_BUFFER:
 				case Renderer::ResourceType::TEXTURE_1D:
 				case Renderer::ResourceType::TEXTURE_2D:
 				case Renderer::ResourceType::TEXTURE_2D_ARRAY:
@@ -12290,8 +12301,8 @@ namespace Direct3D11Renderer
 									case Renderer::ResourceType::FRAMEBUFFER:
 									case Renderer::ResourceType::INDEX_BUFFER:
 									case Renderer::ResourceType::VERTEX_BUFFER:
-									case Renderer::ResourceType::UNIFORM_BUFFER:
 									case Renderer::ResourceType::INDIRECT_BUFFER:
+									case Renderer::ResourceType::UNIFORM_BUFFER:
 									case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 									case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 									case Renderer::ResourceType::SAMPLER_STATE:
@@ -12377,8 +12388,8 @@ namespace Direct3D11Renderer
 									case Renderer::ResourceType::FRAMEBUFFER:
 									case Renderer::ResourceType::INDEX_BUFFER:
 									case Renderer::ResourceType::VERTEX_BUFFER:
-									case Renderer::ResourceType::UNIFORM_BUFFER:
 									case Renderer::ResourceType::INDIRECT_BUFFER:
+									case Renderer::ResourceType::UNIFORM_BUFFER:
 									case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 									case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 									case Renderer::ResourceType::SAMPLER_STATE:
@@ -12416,10 +12427,6 @@ namespace Direct3D11Renderer
 
 									case Renderer::ShaderVisibility::ALL:
 									case Renderer::ShaderVisibility::COMPUTE:
-										{ // TODO(co) Compute shader: "D3D11 WARNING: ID3D11DeviceContext::OMSetRenderTargets[AndUnorderedAccessViews]: Forcing CS shader resource slot 0 to NULL. [ STATE_SETTING WARNING #2097316: DEVICE_CSSETSHADERRESOURCES_HAZARD]"
-											ID3D11ShaderResourceView* d3d11ShaderResourceView = nullptr;
-											mD3D11DeviceContext->PSSetShaderResources(0, 1, &d3d11ShaderResourceView);
-										}
 										mD3D11DeviceContext->CSSetUnorderedAccessViews(startSlot, 1, &d3d11UnorderedAccessView, nullptr);
 										break;
 
@@ -12450,9 +12457,6 @@ namespace Direct3D11Renderer
 						}
 						else
 						{
-							// TODO(co) Work in progress: Compute shader writing into index buffer
-							mD3D11DeviceContext->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
-
 							ID3D11UnorderedAccessView* d3d11UnorderedAccessView = static_cast<const IndexBuffer*>(resource)->getD3D11UnorderedAccessView();
 							mD3D11DeviceContext->CSSetUnorderedAccessViews(descriptorRange.baseShaderRegister, 1, &d3d11UnorderedAccessView, nullptr);
 						}
@@ -12470,13 +12474,6 @@ namespace Direct3D11Renderer
 						}
 						else
 						{
-							// TODO(co) Work in progress: Compute shader writing into vertex buffer
-							// "
-							// D3D11 WARNING: ID3D11DeviceContext::CSSetUnorderedAccessViews: Resource being set to CS UnorderedAccessView slot 1 is still bound on input! [ STATE_SETTING WARNING #2097354: DEVICE_CSSETUNORDEREDACCESSVIEWS_HAZARD]
-							// D3D11 WARNING: ID3D11DeviceContext::CSSetUnorderedAccessViews: Forcing Vertex Buffer slot 0 to NULL. [ STATE_SETTING WARNING #1: DEVICE_IASETVERTEXBUFFERS_HAZARD]
-							// "
-							mD3D11DeviceContext->IASetVertexBuffers(0, 0, nullptr, nullptr, nullptr);
-
 							// Set UAV
 							ID3D11UnorderedAccessView* d3d11UnorderedAccessView = static_cast<const VertexBuffer*>(resource)->getD3D11UnorderedAccessView();
 							mD3D11DeviceContext->CSSetUnorderedAccessViews(descriptorRange.baseShaderRegister, 1, &d3d11UnorderedAccessView, nullptr);
@@ -12637,9 +12634,9 @@ namespace Direct3D11Renderer
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::INDEX_BUFFER:
 			case Renderer::ResourceType::VERTEX_BUFFER:
-			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_BUFFER:
 			case Renderer::ResourceType::INDIRECT_BUFFER:
+			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_1D:
 			case Renderer::ResourceType::TEXTURE_2D:
 			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
@@ -12695,9 +12692,9 @@ namespace Direct3D11Renderer
 			case Renderer::ResourceType::FRAMEBUFFER:
 			case Renderer::ResourceType::INDEX_BUFFER:
 			case Renderer::ResourceType::VERTEX_BUFFER:
-			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_BUFFER:
 			case Renderer::ResourceType::INDIRECT_BUFFER:
+			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_1D:
 			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 			case Renderer::ResourceType::TEXTURE_3D:
@@ -12922,14 +12919,14 @@ namespace Direct3D11Renderer
 			case Renderer::ResourceType::VERTEX_BUFFER:
 				return (S_OK == mD3D11DeviceContext->Map(static_cast<VertexBuffer&>(resource).getD3D11Buffer(), subresource, static_cast<D3D11_MAP>(mapType), mapFlags, reinterpret_cast<D3D11_MAPPED_SUBRESOURCE*>(&mappedSubresource)));
 
-			case Renderer::ResourceType::UNIFORM_BUFFER:
-				return (S_OK == mD3D11DeviceContext->Map(static_cast<UniformBuffer&>(resource).getD3D11Buffer(), subresource, static_cast<D3D11_MAP>(mapType), mapFlags, reinterpret_cast<D3D11_MAPPED_SUBRESOURCE*>(&mappedSubresource)));
-
 			case Renderer::ResourceType::TEXTURE_BUFFER:
 				return (S_OK == mD3D11DeviceContext->Map(static_cast<TextureBuffer&>(resource).getD3D11Buffer(), subresource, static_cast<D3D11_MAP>(mapType), mapFlags, reinterpret_cast<D3D11_MAPPED_SUBRESOURCE*>(&mappedSubresource)));
 
 			case Renderer::ResourceType::INDIRECT_BUFFER:
 				return (S_OK == mD3D11DeviceContext->Map(static_cast<IndirectBuffer&>(resource).getStagingD3D11Buffer(), subresource, static_cast<D3D11_MAP>(mapType), mapFlags, reinterpret_cast<D3D11_MAPPED_SUBRESOURCE*>(&mappedSubresource)));
+
+			case Renderer::ResourceType::UNIFORM_BUFFER:
+				return (S_OK == mD3D11DeviceContext->Map(static_cast<UniformBuffer&>(resource).getD3D11Buffer(), subresource, static_cast<D3D11_MAP>(mapType), mapFlags, reinterpret_cast<D3D11_MAPPED_SUBRESOURCE*>(&mappedSubresource)));
 
 			TEXTURE_RESOURCE(Renderer::ResourceType::TEXTURE_1D, Texture1D)
 			TEXTURE_RESOURCE(Renderer::ResourceType::TEXTURE_2D, Texture2D)
@@ -12994,10 +12991,6 @@ namespace Direct3D11Renderer
 				mD3D11DeviceContext->Unmap(static_cast<VertexBuffer&>(resource).getD3D11Buffer(), subresource);
 				break;
 
-			case Renderer::ResourceType::UNIFORM_BUFFER:
-				mD3D11DeviceContext->Unmap(static_cast<UniformBuffer&>(resource).getD3D11Buffer(), subresource);
-				break;
-
 			case Renderer::ResourceType::TEXTURE_BUFFER:
 				mD3D11DeviceContext->Unmap(static_cast<TextureBuffer&>(resource).getD3D11Buffer(), subresource);
 				break;
@@ -13010,6 +13003,10 @@ namespace Direct3D11Renderer
 				mD3D11DeviceContext->CopyResource(indirectBuffer.getD3D11Buffer(), stagingD3D11Buffer);
 				break;
 			}
+
+			case Renderer::ResourceType::UNIFORM_BUFFER:
+				mD3D11DeviceContext->Unmap(static_cast<UniformBuffer&>(resource).getD3D11Buffer(), subresource);
+				break;
 
 			TEXTURE_RESOURCE(Renderer::ResourceType::TEXTURE_1D, Texture1D)
 			TEXTURE_RESOURCE(Renderer::ResourceType::TEXTURE_2D, Texture2D)

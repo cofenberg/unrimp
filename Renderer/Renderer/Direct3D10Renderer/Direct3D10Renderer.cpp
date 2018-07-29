@@ -1808,7 +1808,7 @@ namespace Direct3D10Renderer
 		void setGraphicsViewports(uint32_t numberOfViewports, const Renderer::Viewport* viewports);									// Rasterizer (RS) stage
 		void setGraphicsScissorRectangles(uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles);	// Rasterizer (RS) stage
 		void setGraphicsRenderTarget(Renderer::IRenderTarget* renderTarget);														// Output-merger (OM) stage
-		void clearGraphics(uint32_t flags, const float color[4], float z, uint32_t stencil);
+		void clearGraphics(uint32_t clearFlags, const float color[4], float z, uint32_t stencil);
 		void drawGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		void drawIndexedGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		//[-------------------------------------------------------]
@@ -4088,8 +4088,14 @@ namespace Direct3D10Renderer
 			return RENDERER_NEW(getRenderer().getContext(), VertexArray)(static_cast<Direct3D10Renderer&>(getRenderer()), vertexAttributes, numberOfVertexBuffers, vertexBuffers, static_cast<IndexBuffer*>(indexBuffer));
 		}
 
-		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
+			// Don't remove this reminder comment block: There are no buffer flags by intent since an uniform buffer can't be used for unordered access and as a consequence an uniform buffer must always used as shader resource to not be pointless
+			// -> "Bind a buffer as a constant buffer to a shader stage; this flag may NOT be combined with any other bind flag." - https://docs.microsoft.com/en-us/windows/desktop/api/d3d11/ne-d3d11-d3d11_bind_flag
+			// RENDERER_ASSERT(getRenderer().getContext(), (bufferFlags & Renderer::BufferFlag::UNORDERED_ACCESS) == 0, "Invalid Direct3D 10 buffer flags, uniform buffer can't be used for unordered access")
+			// RENDERER_ASSERT(getRenderer().getContext(), (bufferFlags & Renderer::BufferFlag::SHADER_RESOURCE) != 0, "Invalid Direct3D 10 buffer flags, uniform buffer must be used as shader resource")
+
+			// Create the uniform buffer
 			return RENDERER_NEW(getRenderer().getContext(), UniformBuffer)(static_cast<Direct3D10Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
 		}
 
@@ -4154,12 +4160,12 @@ namespace Direct3D10Renderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		Texture1D(Direct3D10Renderer& direct3D10Renderer, uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags, Renderer::TextureUsage textureUsage) :
+		Texture1D(Direct3D10Renderer& direct3D10Renderer, uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Renderer::TextureUsage textureUsage) :
 			ITexture1D(direct3D10Renderer, width),
 			mTextureFormat(textureFormat),
 			mGenerateMipmaps(false),
@@ -4167,19 +4173,19 @@ namespace Direct3D10Renderer
 			mD3D10ShaderResourceView(nullptr)
 		{
 			// Sanity checks
-			RENDERER_ASSERT(direct3D10Renderer.getContext(), 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 10 texture parameters")
-			RENDERER_ASSERT(direct3D10Renderer.getContext(), (flags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 10 render target textures can't be filled using provided data")
+			RENDERER_ASSERT(direct3D10Renderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 10 texture parameters")
+			RENDERER_ASSERT(direct3D10Renderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 10 render target textures can't be filled using provided data")
 
 			// Begin debug event
 			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D10Renderer)
 
 			// Calculate the number of mipmaps
-			const bool dataContainsMipmaps = (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
-			const bool generateMipmaps = (!dataContainsMipmaps && (flags & Renderer::TextureFlag::GENERATE_MIPMAPS));
+			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
+			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			RENDERER_ASSERT(direct3D10Renderer.getContext(), Renderer::TextureUsage::IMMUTABLE != textureUsage || !generateMipmaps, "Direct3D 10 immutable texture usage can't be combined with automatic mipmap generation")
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width) : 1;
 			const bool isDepthFormat = Renderer::TextureFormat::isDepth(textureFormat);
-			mGenerateMipmaps = (generateMipmaps && (flags & Renderer::TextureFlag::RENDER_TARGET) && !isDepthFormat);
+			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET) && !isDepthFormat);
 
 			// Direct3D 10 1D texture description
 			D3D10_TEXTURE1D_DESC d3d10Texture1DDesc;
@@ -4190,14 +4196,14 @@ namespace Direct3D10Renderer
 			d3d10Texture1DDesc.Usage		  = static_cast<D3D10_USAGE>(textureUsage);	// These constants directly map to Direct3D constants, do not change them
 			d3d10Texture1DDesc.BindFlags	  = 0;
 			d3d10Texture1DDesc.CPUAccessFlags = (Renderer::TextureUsage::DYNAMIC == textureUsage) ? D3D10_CPU_ACCESS_WRITE : 0u;
-			d3d10Texture1DDesc.MiscFlags	  = (generateMipmaps && (flags & Renderer::TextureFlag::RENDER_TARGET)) ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0u;
+			d3d10Texture1DDesc.MiscFlags	  = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET)) ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0u;
 
 			// Set bind flags
-			if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+			if (textureFlags & Renderer::TextureFlag::SHADER_RESOURCE)
 			{
 				d3d10Texture1DDesc.BindFlags |= D3D10_BIND_SHADER_RESOURCE;
 			}
-			if (flags & Renderer::TextureFlag::RENDER_TARGET)
+			if (textureFlags & Renderer::TextureFlag::RENDER_TARGET)
 			{
 				if (isDepthFormat)
 				{
@@ -4452,14 +4458,14 @@ namespace Direct3D10Renderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*  @param[in] numberOfMultisamples
 		*    The number of multisamples per pixel (valid values: 1, 2, 4, 6, 8)
 		*/
-		Texture2D(Direct3D10Renderer& direct3D10Renderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags, Renderer::TextureUsage textureUsage, uint8_t numberOfMultisamples) :
+		Texture2D(Direct3D10Renderer& direct3D10Renderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Renderer::TextureUsage textureUsage, uint8_t numberOfMultisamples) :
 			ITexture2D(direct3D10Renderer, width, height),
 			mTextureFormat(textureFormat),
 			mNumberOfMultisamples(numberOfMultisamples),
@@ -4470,22 +4476,22 @@ namespace Direct3D10Renderer
 			// Sanity checks
 			RENDERER_ASSERT(direct3D10Renderer.getContext(), numberOfMultisamples == 1 || numberOfMultisamples == 2 || numberOfMultisamples == 4 || numberOfMultisamples == 8, "Invalid Direct3D 10 texture parameters")
 			RENDERER_ASSERT(direct3D10Renderer.getContext(), numberOfMultisamples == 1 || nullptr == data, "Invalid Direct3D 10 texture parameters")
-			RENDERER_ASSERT(direct3D10Renderer.getContext(), numberOfMultisamples == 1 || 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS), "Invalid Direct3D 10 texture parameters")
-			RENDERER_ASSERT(direct3D10Renderer.getContext(), numberOfMultisamples == 1 || 0 == (flags & Renderer::TextureFlag::GENERATE_MIPMAPS), "Invalid Direct3D 10 texture parameters")
-			RENDERER_ASSERT(direct3D10Renderer.getContext(), numberOfMultisamples == 1 || 0 != (flags & Renderer::TextureFlag::RENDER_TARGET), "Invalid Direct3D 10 texture parameters")
-			RENDERER_ASSERT(direct3D10Renderer.getContext(), 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 10 texture parameters")
-			RENDERER_ASSERT(direct3D10Renderer.getContext(), (flags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 10 render target textures can't be filled using provided data")
+			RENDERER_ASSERT(direct3D10Renderer.getContext(), numberOfMultisamples == 1 || 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS), "Invalid Direct3D 10 texture parameters")
+			RENDERER_ASSERT(direct3D10Renderer.getContext(), numberOfMultisamples == 1 || 0 == (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS), "Invalid Direct3D 10 texture parameters")
+			RENDERER_ASSERT(direct3D10Renderer.getContext(), numberOfMultisamples == 1 || 0 != (textureFlags & Renderer::TextureFlag::RENDER_TARGET), "Invalid Direct3D 10 texture parameters")
+			RENDERER_ASSERT(direct3D10Renderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 10 texture parameters")
+			RENDERER_ASSERT(direct3D10Renderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 10 render target textures can't be filled using provided data")
 
 			// Begin debug event
 			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D10Renderer)
 
 			// Calculate the number of mipmaps
-			const bool dataContainsMipmaps = (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
-			const bool generateMipmaps = (!dataContainsMipmaps && (flags & Renderer::TextureFlag::GENERATE_MIPMAPS));
+			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
+			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			RENDERER_ASSERT(direct3D10Renderer.getContext(), Renderer::TextureUsage::IMMUTABLE != textureUsage || !generateMipmaps, "Direct3D 10 immutable texture usage can't be combined with automatic mipmap generation")
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height) : 1;
 			const bool isDepthFormat = Renderer::TextureFormat::isDepth(textureFormat);
-			mGenerateMipmaps = (generateMipmaps && (flags & Renderer::TextureFlag::RENDER_TARGET) && !isDepthFormat);
+			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET) && !isDepthFormat);
 
 			// Direct3D 10 2D texture description
 			D3D10_TEXTURE2D_DESC d3d10Texture2DDesc;
@@ -4499,14 +4505,14 @@ namespace Direct3D10Renderer
 			d3d10Texture2DDesc.Usage			  = static_cast<D3D10_USAGE>(textureUsage);	// These constants directly map to Direct3D constants, do not change them
 			d3d10Texture2DDesc.BindFlags		  = 0;
 			d3d10Texture2DDesc.CPUAccessFlags	  = (Renderer::TextureUsage::DYNAMIC == textureUsage) ? D3D10_CPU_ACCESS_WRITE : 0u;
-			d3d10Texture2DDesc.MiscFlags		  = (generateMipmaps && (flags & Renderer::TextureFlag::RENDER_TARGET)) ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0u;
+			d3d10Texture2DDesc.MiscFlags		  = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET)) ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0u;
 
 			// Set bind flags
-			if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+			if (textureFlags & Renderer::TextureFlag::SHADER_RESOURCE)
 			{
 				d3d10Texture2DDesc.BindFlags |= D3D10_BIND_SHADER_RESOURCE;
 			}
-			if (flags & Renderer::TextureFlag::RENDER_TARGET)
+			if (textureFlags & Renderer::TextureFlag::RENDER_TARGET)
 			{
 				if (isDepthFormat)
 				{
@@ -4807,12 +4813,12 @@ namespace Direct3D10Renderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		Texture2DArray(Direct3D10Renderer& direct3D10Renderer, uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) :
+		Texture2DArray(Direct3D10Renderer& direct3D10Renderer, uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) :
 			ITexture2DArray(direct3D10Renderer, width, height, numberOfSlices),
 			mTextureFormat(textureFormat),
 			mNumberOfMultisamples(1),	// TODO(co) Currently no MSAA support for 2D array textures
@@ -4821,18 +4827,18 @@ namespace Direct3D10Renderer
 			mD3D10ShaderResourceView(nullptr)
 		{
 			// Sanity checks
-			RENDERER_ASSERT(direct3D10Renderer.getContext(), (flags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 10 render target textures can't be filled using provided data")
+			RENDERER_ASSERT(direct3D10Renderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 10 render target textures can't be filled using provided data")
 
 			// Begin debug event
 			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D10Renderer)
 
 			// Calculate the number of mipmaps
-			const bool dataContainsMipmaps = (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
-			const bool generateMipmaps = (!dataContainsMipmaps && (flags & Renderer::TextureFlag::GENERATE_MIPMAPS));
+			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
+			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			RENDERER_ASSERT(direct3D10Renderer.getContext(), Renderer::TextureUsage::IMMUTABLE != textureUsage || !generateMipmaps, "Direct3D 10 immutable texture usage can't be combined with automatic mipmap generation")
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height) : 1;
 			const bool isDepthFormat = Renderer::TextureFormat::isDepth(textureFormat);
-			mGenerateMipmaps = (generateMipmaps && (flags & Renderer::TextureFlag::RENDER_TARGET) && !isDepthFormat);
+			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET) && !isDepthFormat);
 
 			// Direct3D 10 2D array texture description
 			D3D10_TEXTURE2D_DESC d3d10Texture2DDesc;
@@ -4849,11 +4855,11 @@ namespace Direct3D10Renderer
 			d3d10Texture2DDesc.MiscFlags		  = mGenerateMipmaps ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0u;
 
 			// Set bind flags
-			if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+			if (textureFlags & Renderer::TextureFlag::SHADER_RESOURCE)
 			{
 				d3d10Texture2DDesc.BindFlags |= D3D10_BIND_SHADER_RESOURCE;
 			}
-			if (flags & Renderer::TextureFlag::RENDER_TARGET)
+			if (textureFlags & Renderer::TextureFlag::RENDER_TARGET)
 			{
 				if (isDepthFormat)
 				{
@@ -5161,12 +5167,12 @@ namespace Direct3D10Renderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		Texture3D(Direct3D10Renderer& direct3D10Renderer, uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags, Renderer::TextureUsage textureUsage) :
+		Texture3D(Direct3D10Renderer& direct3D10Renderer, uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Renderer::TextureUsage textureUsage) :
 			ITexture3D(direct3D10Renderer, width, height, depth),
 			mTextureFormat(textureFormat),
 			mGenerateMipmaps(false),
@@ -5174,19 +5180,19 @@ namespace Direct3D10Renderer
 			mD3D10ShaderResourceView(nullptr)
 		{
 			// Sanity checks
-			RENDERER_ASSERT(direct3D10Renderer.getContext(), 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 10 texture parameters")
-			RENDERER_ASSERT(direct3D10Renderer.getContext(), (flags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 10 render target textures can't be filled using provided data")
+			RENDERER_ASSERT(direct3D10Renderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 10 texture parameters")
+			RENDERER_ASSERT(direct3D10Renderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 10 render target textures can't be filled using provided data")
 
 			// Begin debug event
 			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D10Renderer)
 
 			// Calculate the number of mipmaps
-			const bool dataContainsMipmaps = (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
-			const bool generateMipmaps = (!dataContainsMipmaps && (flags & Renderer::TextureFlag::GENERATE_MIPMAPS));
+			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
+			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			RENDERER_ASSERT(direct3D10Renderer.getContext(), Renderer::TextureUsage::IMMUTABLE != textureUsage || !generateMipmaps, "Direct3D 10 immutable texture usage can't be combined with automatic mipmap generation")
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height, depth) : 1;
 			const bool isDepthFormat = Renderer::TextureFormat::isDepth(textureFormat);
-			mGenerateMipmaps = (generateMipmaps && (flags & Renderer::TextureFlag::RENDER_TARGET) && !isDepthFormat);
+			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET) && !isDepthFormat);
 
 			// Direct3D 10 3D texture description
 			D3D10_TEXTURE3D_DESC d3d10Texture3DDesc;
@@ -5198,14 +5204,14 @@ namespace Direct3D10Renderer
 			d3d10Texture3DDesc.Usage		  = static_cast<D3D10_USAGE>(textureUsage);	// These constants directly map to Direct3D constants, do not change them
 			d3d10Texture3DDesc.BindFlags	  = 0;
 			d3d10Texture3DDesc.CPUAccessFlags = (Renderer::TextureUsage::DYNAMIC == textureUsage) ? D3D10_CPU_ACCESS_WRITE : 0u;
-			d3d10Texture3DDesc.MiscFlags	  = (generateMipmaps && (flags & Renderer::TextureFlag::RENDER_TARGET)) ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0u;
+			d3d10Texture3DDesc.MiscFlags	  = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET)) ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0u;
 
 			// Set bind flags
-			if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+			if (textureFlags & Renderer::TextureFlag::SHADER_RESOURCE)
 			{
 				d3d10Texture3DDesc.BindFlags |= D3D10_BIND_SHADER_RESOURCE;
 			}
-			if (flags & Renderer::TextureFlag::RENDER_TARGET)
+			if (textureFlags & Renderer::TextureFlag::RENDER_TARGET)
 			{
 				if (isDepthFormat)
 				{
@@ -5467,12 +5473,12 @@ namespace Direct3D10Renderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		TextureCube(Direct3D10Renderer& direct3D10Renderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags, Renderer::TextureUsage textureUsage) :
+		TextureCube(Direct3D10Renderer& direct3D10Renderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Renderer::TextureUsage textureUsage) :
 			ITextureCube(direct3D10Renderer, width, height),
 			mTextureFormat(textureFormat),
 			mGenerateMipmaps(false),
@@ -5482,17 +5488,17 @@ namespace Direct3D10Renderer
 			static constexpr uint32_t NUMBER_OF_SLICES = 6;	// In Direct3D 10, a cube map is a 2D array texture with six slices
 
 			// Sanity checks
-			RENDERER_ASSERT(direct3D10Renderer.getContext(), (flags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 10 render target textures can't be filled using provided data")
+			RENDERER_ASSERT(direct3D10Renderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 10 render target textures can't be filled using provided data")
 
 			// Begin debug event
 			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D10Renderer)
 
 			// Calculate the number of mipmaps
-			const bool dataContainsMipmaps = (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
-			const bool generateMipmaps = (!dataContainsMipmaps && (flags & Renderer::TextureFlag::GENERATE_MIPMAPS));
+			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
+			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			RENDERER_ASSERT(direct3D10Renderer.getContext(), Renderer::TextureUsage::IMMUTABLE != textureUsage || !generateMipmaps, "Direct3D 10 immutable texture usage can't be combined with automatic mipmap generation")
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height) : 1;
-			mGenerateMipmaps = (generateMipmaps && (flags & Renderer::TextureFlag::RENDER_TARGET));
+			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET));
 
 			// Direct3D 10 2D array texture description
 			D3D10_TEXTURE2D_DESC d3d10Texture2DDesc;
@@ -5509,11 +5515,11 @@ namespace Direct3D10Renderer
 			d3d10Texture2DDesc.MiscFlags		  = (mGenerateMipmaps ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0u) | D3D10_RESOURCE_MISC_TEXTURECUBE;
 
 			// Set bind flags
-			if (flags & Renderer::TextureFlag::SHADER_RESOURCE)
+			if (textureFlags & Renderer::TextureFlag::SHADER_RESOURCE)
 			{
 				d3d10Texture2DDesc.BindFlags |= D3D10_BIND_SHADER_RESOURCE;
 			}
-			if (flags & Renderer::TextureFlag::RENDER_TARGET)
+			if (textureFlags & Renderer::TextureFlag::RENDER_TARGET)
 			{
 				d3d10Texture2DDesc.BindFlags |= D3D10_BIND_RENDER_TARGET;
 			}
@@ -5804,12 +5810,12 @@ namespace Direct3D10Renderer
 	//[ Public virtual Renderer::ITextureManager methods      ]
 	//[-------------------------------------------------------]
 	public:
-		virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0)
 			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture1D)(static_cast<Direct3D10Renderer&>(getRenderer()), width, textureFormat, data, flags, textureUsage);
+				return RENDERER_NEW(getRenderer().getContext(), Texture1D)(static_cast<Direct3D10Renderer&>(getRenderer()), width, textureFormat, data, textureFlags, textureUsage);
 			}
 			else
 			{
@@ -5817,12 +5823,12 @@ namespace Direct3D10Renderer
 			}
 		}
 
-		virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, MAYBE_UNUSED const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
+		virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, MAYBE_UNUSED const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0)
 			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture2D)(static_cast<Direct3D10Renderer&>(getRenderer()), width, height, textureFormat, data, flags, textureUsage, numberOfMultisamples);
+				return RENDERER_NEW(getRenderer().getContext(), Texture2D)(static_cast<Direct3D10Renderer&>(getRenderer()), width, height, textureFormat, data, textureFlags, textureUsage, numberOfMultisamples);
 			}
 			else
 			{
@@ -5830,12 +5836,12 @@ namespace Direct3D10Renderer
 			}
 		}
 
-		virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0 && numberOfSlices > 0)
 			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture2DArray)(static_cast<Direct3D10Renderer&>(getRenderer()), width, height, numberOfSlices, textureFormat, data, flags, textureUsage);
+				return RENDERER_NEW(getRenderer().getContext(), Texture2DArray)(static_cast<Direct3D10Renderer&>(getRenderer()), width, height, numberOfSlices, textureFormat, data, textureFlags, textureUsage);
 			}
 			else
 			{
@@ -5843,12 +5849,12 @@ namespace Direct3D10Renderer
 			}
 		}
 
-		virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0 && depth > 0)
 			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture3D)(static_cast<Direct3D10Renderer&>(getRenderer()), width, height, depth, textureFormat, data, flags, textureUsage);
+				return RENDERER_NEW(getRenderer().getContext(), Texture3D)(static_cast<Direct3D10Renderer&>(getRenderer()), width, height, depth, textureFormat, data, textureFlags, textureUsage);
 			}
 			else
 			{
@@ -5856,12 +5862,12 @@ namespace Direct3D10Renderer
 			}
 		}
 
-		virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0)
 			{
-				return RENDERER_NEW(getRenderer().getContext(), TextureCube)(static_cast<Direct3D10Renderer&>(getRenderer()), width, height, textureFormat, data, flags, textureUsage);
+				return RENDERER_NEW(getRenderer().getContext(), TextureCube)(static_cast<Direct3D10Renderer&>(getRenderer()), width, height, textureFormat, data, textureFlags, textureUsage);
 			}
 			else
 			{
@@ -7213,9 +7219,9 @@ namespace Direct3D10Renderer
 						case Renderer::ResourceType::FRAMEBUFFER:
 						case Renderer::ResourceType::INDEX_BUFFER:
 						case Renderer::ResourceType::VERTEX_BUFFER:
-						case Renderer::ResourceType::UNIFORM_BUFFER:
 						case Renderer::ResourceType::TEXTURE_BUFFER:
 						case Renderer::ResourceType::INDIRECT_BUFFER:
+						case Renderer::ResourceType::UNIFORM_BUFFER:
 						case Renderer::ResourceType::TEXTURE_1D:
 						case Renderer::ResourceType::TEXTURE_3D:
 						case Renderer::ResourceType::TEXTURE_CUBE:
@@ -7304,9 +7310,9 @@ namespace Direct3D10Renderer
 					case Renderer::ResourceType::FRAMEBUFFER:
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
-					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
+					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
@@ -8744,7 +8750,7 @@ namespace
 			void ClearGraphics(const void* data, Renderer::IRenderer& renderer)
 			{
 				const Renderer::Command::ClearGraphics* realData = static_cast<const Renderer::Command::ClearGraphics*>(data);
-				static_cast<Direct3D10Renderer::Direct3D10Renderer&>(renderer).clearGraphics(realData->flags, realData->color, realData->z, realData->stencil);
+				static_cast<Direct3D10Renderer::Direct3D10Renderer&>(renderer).clearGraphics(realData->clearFlags, realData->color, realData->z, realData->stencil);
 			}
 
 			void DrawGraphics(const void* data, Renderer::IRenderer& renderer)
@@ -9274,8 +9280,8 @@ namespace Direct3D10Renderer
 							case Renderer::ResourceType::FRAMEBUFFER:
 							case Renderer::ResourceType::INDEX_BUFFER:
 							case Renderer::ResourceType::VERTEX_BUFFER:
-							case Renderer::ResourceType::UNIFORM_BUFFER:
 							case Renderer::ResourceType::INDIRECT_BUFFER:
+							case Renderer::ResourceType::UNIFORM_BUFFER:
 							case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 							case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 							case Renderer::ResourceType::SAMPLER_STATE:
@@ -9532,9 +9538,9 @@ namespace Direct3D10Renderer
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
-					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
+					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
 					case Renderer::ResourceType::TEXTURE_2D:
 					case Renderer::ResourceType::TEXTURE_2D_ARRAY:
@@ -9576,7 +9582,7 @@ namespace Direct3D10Renderer
 		}
 	}
 
-	void Direct3D10Renderer::clearGraphics(uint32_t flags, const float color[4], float z, uint32_t stencil)
+	void Direct3D10Renderer::clearGraphics(uint32_t clearFlags, const float color[4], float z, uint32_t stencil)
 	{
 		// Unlike Direct3D 9, OpenGL or OpenGL ES 3, Direct3D 10 clears a given render target view and not the currently bound
 
@@ -9595,7 +9601,7 @@ namespace Direct3D10Renderer
 					SwapChain* swapChain = static_cast<SwapChain*>(mRenderTarget);
 
 					// Clear the Direct3D 10 render target view?
-					if (flags & Renderer::ClearFlag::COLOR)
+					if (clearFlags & Renderer::ClearFlag::COLOR)
 					{
 						mD3D10Device->ClearRenderTargetView(swapChain->getD3D10RenderTargetView(), color);
 					}
@@ -9604,8 +9610,8 @@ namespace Direct3D10Renderer
 					if (nullptr != swapChain->getD3D10DepthStencilView())
 					{
 						// Get the Direct3D 10 clear flags
-						UINT direct3D10ClearFlags = (flags & Renderer::ClearFlag::DEPTH) ? D3D10_CLEAR_DEPTH : 0u;
-						if (flags & Renderer::ClearFlag::STENCIL)
+						UINT direct3D10ClearFlags = (clearFlags & Renderer::ClearFlag::DEPTH) ? D3D10_CLEAR_DEPTH : 0u;
+						if (clearFlags & Renderer::ClearFlag::STENCIL)
 						{
 							direct3D10ClearFlags |= D3D10_CLEAR_STENCIL;
 						}
@@ -9624,7 +9630,7 @@ namespace Direct3D10Renderer
 					Framebuffer* framebuffer = static_cast<Framebuffer*>(mRenderTarget);
 
 					// Clear all Direct3D 10 render target views?
-					if (flags & Renderer::ClearFlag::COLOR)
+					if (clearFlags & Renderer::ClearFlag::COLOR)
 					{
 						// Loop through all Direct3D 10 render target views
 						ID3D10RenderTargetView** d3d10RenderTargetViewsEnd = framebuffer->getD3D10RenderTargetViews() + framebuffer->getNumberOfColorTextures();
@@ -9642,8 +9648,8 @@ namespace Direct3D10Renderer
 					if (nullptr != framebuffer->getD3D10DepthStencilView())
 					{
 						// Get the Direct3D 10 clear flags
-						UINT direct3D10ClearFlags = (flags & Renderer::ClearFlag::DEPTH) ? D3D10_CLEAR_DEPTH : 0u;
-						if (flags & Renderer::ClearFlag::STENCIL)
+						UINT direct3D10ClearFlags = (clearFlags & Renderer::ClearFlag::DEPTH) ? D3D10_CLEAR_DEPTH : 0u;
+						if (clearFlags & Renderer::ClearFlag::STENCIL)
 						{
 							direct3D10ClearFlags |= D3D10_CLEAR_STENCIL;
 						}
@@ -9663,9 +9669,9 @@ namespace Direct3D10Renderer
 				case Renderer::ResourceType::RENDER_PASS:
 				case Renderer::ResourceType::INDEX_BUFFER:
 				case Renderer::ResourceType::VERTEX_BUFFER:
-				case Renderer::ResourceType::UNIFORM_BUFFER:
 				case Renderer::ResourceType::TEXTURE_BUFFER:
 				case Renderer::ResourceType::INDIRECT_BUFFER:
+				case Renderer::ResourceType::UNIFORM_BUFFER:
 				case Renderer::ResourceType::TEXTURE_1D:
 				case Renderer::ResourceType::TEXTURE_2D:
 				case Renderer::ResourceType::TEXTURE_2D_ARRAY:
@@ -9861,9 +9867,9 @@ namespace Direct3D10Renderer
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::INDEX_BUFFER:
 			case Renderer::ResourceType::VERTEX_BUFFER:
-			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_BUFFER:
 			case Renderer::ResourceType::INDIRECT_BUFFER:
+			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_1D:
 			case Renderer::ResourceType::TEXTURE_2D:
 			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
@@ -9919,9 +9925,9 @@ namespace Direct3D10Renderer
 			case Renderer::ResourceType::FRAMEBUFFER:
 			case Renderer::ResourceType::INDEX_BUFFER:
 			case Renderer::ResourceType::VERTEX_BUFFER:
-			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_BUFFER:
 			case Renderer::ResourceType::INDIRECT_BUFFER:
+			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_1D:
 			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 			case Renderer::ResourceType::TEXTURE_3D:
@@ -10194,11 +10200,6 @@ namespace Direct3D10Renderer
 				mappedSubresource.depthPitch = 0;
 				return (S_OK == static_cast<VertexBuffer&>(resource).getD3D10Buffer()->Map(static_cast<D3D10_MAP>(mapType), mapFlags, &mappedSubresource.data));
 
-			case Renderer::ResourceType::UNIFORM_BUFFER:
-				mappedSubresource.rowPitch   = 0;
-				mappedSubresource.depthPitch = 0;
-				return (S_OK == static_cast<UniformBuffer&>(resource).getD3D10Buffer()->Map(static_cast<D3D10_MAP>(mapType), mapFlags, &mappedSubresource.data));
-
 			case Renderer::ResourceType::TEXTURE_BUFFER:
 				mappedSubresource.rowPitch   = 0;
 				mappedSubresource.depthPitch = 0;
@@ -10209,6 +10210,11 @@ namespace Direct3D10Renderer
 				mappedSubresource.rowPitch   = 0;
 				mappedSubresource.depthPitch = 0;
 				return true;
+
+			case Renderer::ResourceType::UNIFORM_BUFFER:
+				mappedSubresource.rowPitch   = 0;
+				mappedSubresource.depthPitch = 0;
+				return (S_OK == static_cast<UniformBuffer&>(resource).getD3D10Buffer()->Map(static_cast<D3D10_MAP>(mapType), mapFlags, &mappedSubresource.data));
 
 			case Renderer::ResourceType::TEXTURE_1D:
 				// TODO(co) Implement Direct3D 10 1D texture
@@ -10281,16 +10287,16 @@ namespace Direct3D10Renderer
 				static_cast<VertexBuffer&>(resource).getD3D10Buffer()->Unmap();
 				break;
 
-			case Renderer::ResourceType::UNIFORM_BUFFER:
-				static_cast<UniformBuffer&>(resource).getD3D10Buffer()->Unmap();
-				break;
-
 			case Renderer::ResourceType::TEXTURE_BUFFER:
 				static_cast<TextureBuffer&>(resource).getD3D10Buffer()->Unmap();
 				break;
 
 			case Renderer::ResourceType::INDIRECT_BUFFER:
 				// Nothing here, it's a software emulated indirect buffer
+				break;
+
+			case Renderer::ResourceType::UNIFORM_BUFFER:
+				static_cast<UniformBuffer&>(resource).getD3D10Buffer()->Unmap();
 				break;
 
 			case Renderer::ResourceType::TEXTURE_1D:

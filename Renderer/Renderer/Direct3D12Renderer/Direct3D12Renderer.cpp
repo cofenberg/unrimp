@@ -3378,7 +3378,7 @@ namespace Direct3D12Renderer
 		void setGraphicsViewports(uint32_t numberOfViewports, const Renderer::Viewport* viewports);									// Rasterizer (RS) stage
 		void setGraphicsScissorRectangles(uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles);	// Rasterizer (RS) stage
 		void setGraphicsRenderTarget(Renderer::IRenderTarget* renderTarget);														// Output-merger (OM) stage
-		void clearGraphics(uint32_t flags, const float color[4], float z, uint32_t stencil);
+		void clearGraphics(uint32_t clearFlags, const float color[4], float z, uint32_t stencil);
 		void drawGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		void drawIndexedGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		//[-------------------------------------------------------]
@@ -5647,8 +5647,13 @@ namespace Direct3D12Renderer
 			return RENDERER_NEW(getRenderer().getContext(), VertexArray)(static_cast<Direct3D12Renderer&>(getRenderer()), vertexAttributes, numberOfVertexBuffers, vertexBuffers, static_cast<IndexBuffer*>(indexBuffer));
 		}
 
-		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
+			// Don't remove this reminder comment block: There are no buffer flags by intent since an uniform buffer can't be used for unordered access and as a consequence an uniform buffer must always used as shader resource to not be pointless
+			// RENDERER_ASSERT(getRenderer().getContext(), (bufferFlags & Renderer::BufferFlag::UNORDERED_ACCESS) == 0, "Invalid Direct3D 12 buffer flags, uniform buffer can't be used for unordered access")
+			// RENDERER_ASSERT(getRenderer().getContext(), (bufferFlags & Renderer::BufferFlag::SHADER_RESOURCE) != 0, "Invalid Direct3D 12 buffer flags, uniform buffer must be used as shader resource")
+
+			// Create the uniform buffer
 			return RENDERER_NEW(getRenderer().getContext(), UniformBuffer)(static_cast<Direct3D12Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
 		}
 
@@ -5713,12 +5718,12 @@ namespace Direct3D12Renderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		Texture1D(Direct3D12Renderer& direct3D12Renderer, uint32_t width, Renderer::TextureFormat::Enum textureFormat, MAYBE_UNUSED const void* data, MAYBE_UNUSED uint32_t flags, MAYBE_UNUSED Renderer::TextureUsage textureUsage) :
+		Texture1D(Direct3D12Renderer& direct3D12Renderer, uint32_t width, Renderer::TextureFormat::Enum textureFormat, MAYBE_UNUSED const void* data, MAYBE_UNUSED uint32_t textureFlags, MAYBE_UNUSED Renderer::TextureUsage textureUsage) :
 			ITexture1D(direct3D12Renderer, width),
 			mDxgiFormat(Mapping::getDirect3D12Format(textureFormat)),
 			mD3D12Resource(nullptr),
@@ -5869,7 +5874,7 @@ namespace Direct3D12Renderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
@@ -5878,7 +5883,7 @@ namespace Direct3D12Renderer
 		*  @param[in] optimizedTextureClearValue
 		*    Optional optimized texture clear value
 		*/
-		Texture2D(Direct3D12Renderer& direct3D12Renderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags, MAYBE_UNUSED Renderer::TextureUsage textureUsage, uint8_t numberOfMultisamples, const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue) :
+		Texture2D(Direct3D12Renderer& direct3D12Renderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, MAYBE_UNUSED Renderer::TextureUsage textureUsage, uint8_t numberOfMultisamples, const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue) :
 			ITexture2D(direct3D12Renderer, width, height),
 			mDxgiFormat(Mapping::getDirect3D12Format(textureFormat)),
 			mD3D12Resource(nullptr),
@@ -5887,11 +5892,11 @@ namespace Direct3D12Renderer
 			// Sanity checks
 			RENDERER_ASSERT(direct3D12Renderer.getContext(), numberOfMultisamples == 1 || numberOfMultisamples == 2 || numberOfMultisamples == 4 || numberOfMultisamples == 8, "Invalid Direct3D 12 texture parameters")
 			RENDERER_ASSERT(direct3D12Renderer.getContext(), numberOfMultisamples == 1 || nullptr == data, "Invalid Direct3D 12 texture parameters")
-			RENDERER_ASSERT(direct3D12Renderer.getContext(), numberOfMultisamples == 1 || 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS), "Invalid Direct3D 12 texture parameters")
-			RENDERER_ASSERT(direct3D12Renderer.getContext(), numberOfMultisamples == 1 || 0 == (flags & Renderer::TextureFlag::GENERATE_MIPMAPS), "Invalid Direct3D 12 texture parameters")
-			RENDERER_ASSERT(direct3D12Renderer.getContext(), numberOfMultisamples == 1 || 0 != (flags & Renderer::TextureFlag::RENDER_TARGET), "Invalid Direct3D 12 texture parameters")
-			RENDERER_ASSERT(direct3D12Renderer.getContext(), 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 12 texture parameters")
-			RENDERER_ASSERT(direct3D12Renderer.getContext(), (flags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 12 render target textures can't be filled using provided data")
+			RENDERER_ASSERT(direct3D12Renderer.getContext(), numberOfMultisamples == 1 || 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS), "Invalid Direct3D 12 texture parameters")
+			RENDERER_ASSERT(direct3D12Renderer.getContext(), numberOfMultisamples == 1 || 0 == (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS), "Invalid Direct3D 12 texture parameters")
+			RENDERER_ASSERT(direct3D12Renderer.getContext(), numberOfMultisamples == 1 || 0 != (textureFlags & Renderer::TextureFlag::RENDER_TARGET), "Invalid Direct3D 12 texture parameters")
+			RENDERER_ASSERT(direct3D12Renderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 12 texture parameters")
+			RENDERER_ASSERT(direct3D12Renderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 12 render target textures can't be filled using provided data")
 
 			// Begin debug event
 			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D12Renderer)
@@ -5902,8 +5907,8 @@ namespace Direct3D12Renderer
 			// TODO(co) Add "Renderer::TextureFlag::GENERATE_MIPMAPS" support, also for render target textures
 
 			// Calculate the number of mipmaps
-			const bool dataContainsMipmaps = (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
-			const bool generateMipmaps = (!dataContainsMipmaps && (flags & Renderer::TextureFlag::GENERATE_MIPMAPS));
+			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
+			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height) : 1;
 
 			// Describe and create a texture 2D
@@ -5912,7 +5917,7 @@ namespace Direct3D12Renderer
 			d3d12ResourceDesc.Format = static_cast<DXGI_FORMAT>(mDxgiFormat);
 			d3d12ResourceDesc.Width = width;
 			d3d12ResourceDesc.Height = height;
-			d3d12ResourceDesc.Flags = (flags & Renderer::TextureFlag::RENDER_TARGET) ? D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET : D3D12_RESOURCE_FLAG_NONE;
+			d3d12ResourceDesc.Flags = (textureFlags & Renderer::TextureFlag::RENDER_TARGET) ? D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET : D3D12_RESOURCE_FLAG_NONE;
 			d3d12ResourceDesc.DepthOrArraySize = 1;
 			d3d12ResourceDesc.SampleDesc.Count = numberOfMultisamples;
 			d3d12ResourceDesc.SampleDesc.Quality = 0;
@@ -5933,7 +5938,7 @@ namespace Direct3D12Renderer
 				D3D12_HEAP_FLAG_NONE,
 				&d3d12ResourceDesc,
 				D3D12_RESOURCE_STATE_GENERIC_READ,
-				(flags & Renderer::TextureFlag::RENDER_TARGET) ? &depthOptimizedClearValue : nullptr,	// Avoid: "Direct3D 12 error: Failed to create texture 2D resourceD3D12 ERROR: ID3D12Device::CreateCommittedResource: pOptimizedClearValue must be NULL when D3D12_RESOURCE_DESC::Dimension is not D3D12_RESOURCE_DIMENSION_BUFFER and neither D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET nor D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL are set in D3D12_RESOURCE_DESC::Flags. [ STATE_CREATION ERROR #815: CREATERESOURCE_INVALIDCLEARVALUE]"
+				(textureFlags & Renderer::TextureFlag::RENDER_TARGET) ? &depthOptimizedClearValue : nullptr,	// Avoid: "Direct3D 12 error: Failed to create texture 2D resourceD3D12 ERROR: ID3D12Device::CreateCommittedResource: pOptimizedClearValue must be NULL when D3D12_RESOURCE_DESC::Dimension is not D3D12_RESOURCE_DIMENSION_BUFFER and neither D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET nor D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL are set in D3D12_RESOURCE_DESC::Flags. [ STATE_CREATION ERROR #815: CREATERESOURCE_INVALIDCLEARVALUE]"
 				IID_PPV_ARGS(&mD3D12Resource))))
 			/*
 			const CD3DX12_HEAP_PROPERTIES d3d12XHeapProperties(D3D12_HEAP_TYPE_DEFAULT);
@@ -6211,12 +6216,12 @@ namespace Direct3D12Renderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		Texture2DArray(Direct3D12Renderer& direct3D12Renderer, uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, MAYBE_UNUSED const void* data, MAYBE_UNUSED uint32_t flags, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) :
+		Texture2DArray(Direct3D12Renderer& direct3D12Renderer, uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, MAYBE_UNUSED const void* data, MAYBE_UNUSED uint32_t textureFlags, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) :
 			ITexture2DArray(direct3D12Renderer, width, height, numberOfSlices),
 			mDxgiFormat(Mapping::getDirect3D12Format(textureFormat)),
 			mD3D12Resource(nullptr)
@@ -6225,13 +6230,13 @@ namespace Direct3D12Renderer
 			// TODO(co) Direct3D 12 update
 			/*
 			// Sanity checks
-			RENDERER_ASSERT(direct3D12Renderer.getContext(), (flags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 12 render target textures can't be filled using provided data")
+			RENDERER_ASSERT(direct3D12Renderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 12 render target textures can't be filled using provided data")
 
 			// Begin debug event
 			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D12Renderer)
 
 			// Generate mipmaps?
-			const bool mipmaps = (flags & Renderer::TextureFlag::GENERATE_MIPMAPS) != 0;
+			const bool mipmaps = (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS) != 0;
 
 			// Direct3D 12 2D array texture description
 			D3D12_TEXTURE2D_DESC d3d12Texture2DDesc;
@@ -6248,7 +6253,7 @@ namespace Direct3D12Renderer
 			d3d12Texture2DDesc.MiscFlags		  = 0;
 
 			// Use this texture as render target?
-			if (flags & Renderer::TextureFlag::RENDER_TARGET)
+			if (textureFlags & Renderer::TextureFlag::RENDER_TARGET)
 			{
 				d3d12Texture2DDesc.BindFlags |= D3D12_BIND_RENDER_TARGET;
 			}
@@ -6472,12 +6477,12 @@ namespace Direct3D12Renderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		Texture3D(Direct3D12Renderer& direct3D12Renderer, uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, MAYBE_UNUSED const void* data, MAYBE_UNUSED uint32_t flags, MAYBE_UNUSED Renderer::TextureUsage textureUsage) :
+		Texture3D(Direct3D12Renderer& direct3D12Renderer, uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, MAYBE_UNUSED const void* data, MAYBE_UNUSED uint32_t textureFlags, MAYBE_UNUSED Renderer::TextureUsage textureUsage) :
 			ITexture3D(direct3D12Renderer, width, height, depth),
 			mDxgiFormat(Mapping::getDirect3D12Format(textureFormat)),
 			mD3D12Resource(nullptr),
@@ -6628,12 +6633,12 @@ namespace Direct3D12Renderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		TextureCube(Direct3D12Renderer& direct3D12Renderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, MAYBE_UNUSED const void* data, MAYBE_UNUSED uint32_t flags, MAYBE_UNUSED Renderer::TextureUsage textureUsage) :
+		TextureCube(Direct3D12Renderer& direct3D12Renderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, MAYBE_UNUSED const void* data, MAYBE_UNUSED uint32_t textureFlags, MAYBE_UNUSED Renderer::TextureUsage textureUsage) :
 			ITextureCube(direct3D12Renderer, width, height),
 			mDxgiFormat(Mapping::getDirect3D12Format(textureFormat)),
 			mD3D12Resource(nullptr),
@@ -6793,12 +6798,12 @@ namespace Direct3D12Renderer
 	//[ Public virtual Renderer::ITextureManager methods      ]
 	//[-------------------------------------------------------]
 	public:
-		virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0)
 			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture1D)(static_cast<Direct3D12Renderer&>(getRenderer()), width, textureFormat, data, flags, textureUsage);
+				return RENDERER_NEW(getRenderer().getContext(), Texture1D)(static_cast<Direct3D12Renderer&>(getRenderer()), width, textureFormat, data, textureFlags, textureUsage);
 			}
 			else
 			{
@@ -6806,12 +6811,12 @@ namespace Direct3D12Renderer
 			}
 		}
 
-		virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
+		virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0)
 			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture2D)(static_cast<Direct3D12Renderer&>(getRenderer()), width, height, textureFormat, data, flags, textureUsage, numberOfMultisamples, optimizedTextureClearValue);
+				return RENDERER_NEW(getRenderer().getContext(), Texture2D)(static_cast<Direct3D12Renderer&>(getRenderer()), width, height, textureFormat, data, textureFlags, textureUsage, numberOfMultisamples, optimizedTextureClearValue);
 			}
 			else
 			{
@@ -6819,12 +6824,12 @@ namespace Direct3D12Renderer
 			}
 		}
 
-		virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0 && numberOfSlices > 0)
 			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture2DArray)(static_cast<Direct3D12Renderer&>(getRenderer()), width, height, numberOfSlices, textureFormat, data, flags, textureUsage);
+				return RENDERER_NEW(getRenderer().getContext(), Texture2DArray)(static_cast<Direct3D12Renderer&>(getRenderer()), width, height, numberOfSlices, textureFormat, data, textureFlags, textureUsage);
 			}
 			else
 			{
@@ -6832,12 +6837,12 @@ namespace Direct3D12Renderer
 			}
 		}
 
-		virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0 && depth > 0)
 			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture3D)(static_cast<Direct3D12Renderer&>(getRenderer()), width, height, depth, textureFormat, data, flags, textureUsage);
+				return RENDERER_NEW(getRenderer().getContext(), Texture3D)(static_cast<Direct3D12Renderer&>(getRenderer()), width, height, depth, textureFormat, data, textureFlags, textureUsage);
 			}
 			else
 			{
@@ -6845,12 +6850,12 @@ namespace Direct3D12Renderer
 			}
 		}
 
-		virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0)
 			{
-				return RENDERER_NEW(getRenderer().getContext(), TextureCube)(static_cast<Direct3D12Renderer&>(getRenderer()), width, height, textureFormat, data, flags, textureUsage);
+				return RENDERER_NEW(getRenderer().getContext(), TextureCube)(static_cast<Direct3D12Renderer&>(getRenderer()), width, height, textureFormat, data, textureFlags, textureUsage);
 			}
 			else
 			{
@@ -8055,9 +8060,9 @@ namespace Direct3D12Renderer
 						case Renderer::ResourceType::FRAMEBUFFER:
 						case Renderer::ResourceType::INDEX_BUFFER:
 						case Renderer::ResourceType::VERTEX_BUFFER:
-						case Renderer::ResourceType::UNIFORM_BUFFER:
 						case Renderer::ResourceType::TEXTURE_BUFFER:
 						case Renderer::ResourceType::INDIRECT_BUFFER:
+						case Renderer::ResourceType::UNIFORM_BUFFER:
 						case Renderer::ResourceType::TEXTURE_1D:
 						case Renderer::ResourceType::TEXTURE_3D:
 						case Renderer::ResourceType::TEXTURE_CUBE:
@@ -8153,9 +8158,9 @@ namespace Direct3D12Renderer
 					case Renderer::ResourceType::FRAMEBUFFER:
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
-					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
+					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
@@ -10005,7 +10010,7 @@ namespace
 			void ClearGraphics(const void* data, Renderer::IRenderer& renderer)
 			{
 				const Renderer::Command::ClearGraphics* realData = static_cast<const Renderer::Command::ClearGraphics*>(data);
-				static_cast<Direct3D12Renderer::Direct3D12Renderer&>(renderer).clearGraphics(realData->flags, realData->color, realData->z, realData->stencil);
+				static_cast<Direct3D12Renderer::Direct3D12Renderer&>(renderer).clearGraphics(realData->clearFlags, realData->color, realData->z, realData->stencil);
 			}
 
 			void DrawGraphics(const void* data, Renderer::IRenderer& renderer)
@@ -10678,9 +10683,9 @@ namespace Direct3D12Renderer
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
-					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
+					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
 					case Renderer::ResourceType::TEXTURE_2D:
 					case Renderer::ResourceType::TEXTURE_2D_ARRAY:
@@ -10786,9 +10791,9 @@ namespace Direct3D12Renderer
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
-					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
+					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
 					case Renderer::ResourceType::TEXTURE_2D:
 					case Renderer::ResourceType::TEXTURE_2D_ARRAY:
@@ -10815,7 +10820,7 @@ namespace Direct3D12Renderer
 		}
 	}
 
-	void Direct3D12Renderer::clearGraphics(uint32_t flags, const float color[4], float z, uint32_t stencil)
+	void Direct3D12Renderer::clearGraphics(uint32_t clearFlags, const float color[4], float z, uint32_t stencil)
 	{
 		// Unlike Direct3D 9, OpenGL or OpenGL ES 3, Direct3D 12 clears a given render target view and not the currently bound
 		// -> No resource transition required in here, it's handled inside "Direct3D12Renderer::omSetRenderTarget()"
@@ -10835,7 +10840,7 @@ namespace Direct3D12Renderer
 					SwapChain* swapChain = static_cast<SwapChain*>(mRenderTarget);
 
 					// Clear the Direct3D 12 render target view?
-					if (flags & Renderer::ClearFlag::COLOR)
+					if (clearFlags & Renderer::ClearFlag::COLOR)
 					{
 						CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(swapChain->getD3D12DescriptorHeapRenderTargetView()->GetCPUDescriptorHandleForHeapStart(), static_cast<INT>(swapChain->getBackD3D12ResourceRenderTargetFrameIndex()), swapChain->getRenderTargetViewDescriptorSize());
 						mD3D12GraphicsCommandList->ClearRenderTargetView(rtvHandle, color, 0, nullptr);
@@ -10846,8 +10851,8 @@ namespace Direct3D12Renderer
 					if (nullptr != d3d12DescriptorHeapDepthStencilView)
 					{
 						// Get the Direct3D 12 clear flags
-						UINT direct3D12ClearFlags = (flags & Renderer::ClearFlag::DEPTH) ? D3D12_CLEAR_FLAG_DEPTH : 0u;
-						if (flags & Renderer::ClearFlag::STENCIL)
+						UINT direct3D12ClearFlags = (clearFlags & Renderer::ClearFlag::DEPTH) ? D3D12_CLEAR_FLAG_DEPTH : 0u;
+						if (clearFlags & Renderer::ClearFlag::STENCIL)
 						{
 							direct3D12ClearFlags |= D3D12_CLEAR_FLAG_STENCIL;
 						}
@@ -10866,7 +10871,7 @@ namespace Direct3D12Renderer
 					Framebuffer* framebuffer = static_cast<Framebuffer*>(mRenderTarget);
 
 					// Clear all Direct3D 12 render target views?
-					if (flags & Renderer::ClearFlag::COLOR)
+					if (clearFlags & Renderer::ClearFlag::COLOR)
 					{
 						// Loop through all Direct3D 12 render target views
 						ID3D12DescriptorHeap **d3d12DescriptorHeapRenderTargetViews = framebuffer->getD3D12DescriptorHeapRenderTargetViews() + framebuffer->getNumberOfColorTextures();
@@ -10885,8 +10890,8 @@ namespace Direct3D12Renderer
 					if (nullptr != d3d12DescriptorHeapDepthStencilView)
 					{
 						// Get the Direct3D 12 clear flags
-						UINT direct3D12ClearFlags = (flags & Renderer::ClearFlag::DEPTH) ? D3D12_CLEAR_FLAG_DEPTH : 0u;
-						if (flags & Renderer::ClearFlag::STENCIL)
+						UINT direct3D12ClearFlags = (clearFlags & Renderer::ClearFlag::DEPTH) ? D3D12_CLEAR_FLAG_DEPTH : 0u;
+						if (clearFlags & Renderer::ClearFlag::STENCIL)
 						{
 							direct3D12ClearFlags |= D3D12_CLEAR_FLAG_STENCIL;
 						}
@@ -10906,9 +10911,9 @@ namespace Direct3D12Renderer
 				case Renderer::ResourceType::RENDER_PASS:
 				case Renderer::ResourceType::INDEX_BUFFER:
 				case Renderer::ResourceType::VERTEX_BUFFER:
-				case Renderer::ResourceType::UNIFORM_BUFFER:
 				case Renderer::ResourceType::TEXTURE_BUFFER:
 				case Renderer::ResourceType::INDIRECT_BUFFER:
+				case Renderer::ResourceType::UNIFORM_BUFFER:
 				case Renderer::ResourceType::TEXTURE_1D:
 				case Renderer::ResourceType::TEXTURE_2D:
 				case Renderer::ResourceType::TEXTURE_2D_ARRAY:
@@ -11260,11 +11265,11 @@ namespace Direct3D12Renderer
 			case Renderer::ResourceType::VERTEX_BUFFER:
 				return (S_OK == mD3D12DeviceContext->Map(static_cast<VertexBuffer&>(resource).getD3D12Buffer(), subresource, static_cast<D3D12_MAP>(mapType), mapFlags, reinterpret_cast<D3D12_MAPPED_SUBRESOURCE*>(&mappedSubresource)));
 
-			case Renderer::ResourceType::UNIFORM_BUFFER:
-				return (S_OK == mD3D12DeviceContext->Map(static_cast<UniformBuffer&>(resource).getD3D12Buffer(), subresource, static_cast<D3D12_MAP>(mapType), mapFlags, reinterpret_cast<D3D12_MAPPED_SUBRESOURCE*>(&mappedSubresource)));
-
 			case Renderer::ResourceType::TEXTURE_BUFFER:
 				return (S_OK == mD3D12DeviceContext->Map(static_cast<TextureBuffer&>(resource).getD3D12Buffer(), subresource, static_cast<D3D12_MAP>(mapType), mapFlags, reinterpret_cast<D3D12_MAPPED_SUBRESOURCE*>(&mappedSubresource)));
+
+			case Renderer::ResourceType::UNIFORM_BUFFER:
+				return (S_OK == mD3D12DeviceContext->Map(static_cast<UniformBuffer&>(resource).getD3D12Buffer(), subresource, static_cast<D3D12_MAP>(mapType), mapFlags, reinterpret_cast<D3D12_MAPPED_SUBRESOURCE*>(&mappedSubresource)));
 
 			case Renderer::ResourceType::TEXTURE_2D:
 			{
@@ -11358,12 +11363,12 @@ namespace Direct3D12Renderer
 				mD3D12DeviceContext->Unmap(static_cast<VertexBuffer&>(resource).getD3D12Buffer(), subresource);
 				break;
 
-			case Renderer::ResourceType::UNIFORM_BUFFER:
-				mD3D12DeviceContext->Unmap(static_cast<UniformBuffer&>(resource).getD3D12Buffer(), subresource);
-				break;
-
 			case Renderer::ResourceType::TEXTURE_BUFFER:
 				mD3D12DeviceContext->Unmap(static_cast<TextureBuffer&>(resource).getD3D12Buffer(), subresource);
+				break;
+
+			case Renderer::ResourceType::UNIFORM_BUFFER:
+				mD3D12DeviceContext->Unmap(static_cast<UniformBuffer&>(resource).getD3D12Buffer(), subresource);
 				break;
 
 			case Renderer::ResourceType::TEXTURE_2D:

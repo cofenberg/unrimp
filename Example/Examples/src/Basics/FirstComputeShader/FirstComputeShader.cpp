@@ -48,13 +48,14 @@ void FirstComputeShader::onInitialization()
 		mTextureManager = renderer->createTextureManager();
 
 		{ // Create the graphics root signature
-			Renderer::DescriptorRangeBuilder ranges[2];
+			Renderer::DescriptorRangeBuilder ranges[3];
 			ranges[0].initialize(Renderer::ResourceType::TEXTURE_2D, 0, "AlbedoMap", Renderer::ShaderVisibility::FRAGMENT);
-			ranges[1].initializeSampler(0, Renderer::ShaderVisibility::FRAGMENT);
+			ranges[1].initialize(Renderer::ResourceType::UNIFORM_BUFFER, 1, "UniformBuffer", Renderer::ShaderVisibility::FRAGMENT);
+			ranges[2].initializeSampler(0, Renderer::ShaderVisibility::FRAGMENT);
 
 			Renderer::RootParameterBuilder rootParameters[2];
-			rootParameters[0].initializeAsDescriptorTable(1, &ranges[0]);
-			rootParameters[1].initializeAsDescriptorTable(1, &ranges[1]);
+			rootParameters[0].initializeAsDescriptorTable(2, &ranges[0]);
+			rootParameters[1].initializeAsDescriptorTable(1, &ranges[2]);
 
 			// Setup
 			Renderer::RootSignatureBuilder rootSignature;
@@ -65,22 +66,23 @@ void FirstComputeShader::onInitialization()
 		}
 
 		{ // Create the compute root signature
-			Renderer::DescriptorRangeBuilder ranges[8];
+			Renderer::DescriptorRangeBuilder ranges[9];
 			// Input
 			ranges[0].initialize(Renderer::ResourceType::TEXTURE_2D,	  0,		   "InputTexture2D",	   Renderer::ShaderVisibility::COMPUTE);
-			ranges[1].initialize(Renderer::ResourceType::VERTEX_BUFFER,   1,		   "InputVertexBuffer",    Renderer::ShaderVisibility::COMPUTE);
-			ranges[2].initialize(Renderer::ResourceType::INDEX_BUFFER,    2,		   "InputIndexBuffer",     Renderer::ShaderVisibility::COMPUTE);
+			ranges[1].initialize(Renderer::ResourceType::INDEX_BUFFER,    1,		   "InputIndexBuffer",     Renderer::ShaderVisibility::COMPUTE);
+			ranges[2].initialize(Renderer::ResourceType::VERTEX_BUFFER,   2,		   "InputVertexBuffer",    Renderer::ShaderVisibility::COMPUTE);
 			ranges[3].initialize(Renderer::ResourceType::INDIRECT_BUFFER, 3,		   "InputIndirectBuffer",  Renderer::ShaderVisibility::COMPUTE);
+			ranges[4].initialize(Renderer::ResourceType::UNIFORM_BUFFER,  0,		   "InputUniformBuffer",   Renderer::ShaderVisibility::COMPUTE);
 			// Output
 			// TODO(co) Compute shader: Get rid of the OpenGL/Direct3D 11 variation here
-			const uint32_t offset = (renderer->getNameId() == Renderer::NameId::VULKAN || renderer->getNameId() == Renderer::NameId::OPENGL) ? 4u : 0u;
-			ranges[4].initialize(Renderer::ResourceType::TEXTURE_2D,	  0u + offset, "OutputTexture2D",	   Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
-			ranges[5].initialize(Renderer::ResourceType::VERTEX_BUFFER,   1u + offset, "OutputVertexBuffer",   Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
-			ranges[6].initialize(Renderer::ResourceType::INDEX_BUFFER,    2u + offset, "OutputIndexBuffer",    Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
-			ranges[7].initialize(Renderer::ResourceType::INDIRECT_BUFFER, 3u + offset, "OutputIndirectBuffer", Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
+			const uint32_t offset = (renderer->getNameId() == Renderer::NameId::VULKAN || renderer->getNameId() == Renderer::NameId::OPENGL) ? 5u : 0u;
+			ranges[5].initialize(Renderer::ResourceType::TEXTURE_2D,	  0u + offset, "OutputTexture2D",	   Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
+			ranges[6].initialize(Renderer::ResourceType::INDEX_BUFFER,    1u + offset, "OutputIndexBuffer",    Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
+			ranges[7].initialize(Renderer::ResourceType::VERTEX_BUFFER,   2u + offset, "OutputVertexBuffer",   Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
+			ranges[8].initialize(Renderer::ResourceType::INDIRECT_BUFFER, 3u + offset, "OutputIndirectBuffer", Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
 
 			Renderer::RootParameterBuilder rootParameters[1];
-			rootParameters[0].initializeAsDescriptorTable(8, &ranges[0]);
+			rootParameters[0].initializeAsDescriptorTable(9, &ranges[0]);
 
 			// Setup
 			Renderer::RootSignatureBuilder rootSignature;
@@ -134,6 +136,15 @@ void FirstComputeShader::onInitialization()
 		};
 		const Renderer::VertexAttributes vertexAttributes(static_cast<uint32_t>(glm::countof(vertexAttributesLayout)), vertexAttributesLayout);
 
+		{ // Create the index buffer object (IBO)
+			static constexpr uint32_t INDICES[] =
+			{
+				0, 1, 2
+			};
+			mComputeInputIndexBuffer = mBufferManager->createIndexBuffer(sizeof(INDICES), Renderer::IndexBufferFormat::UNSIGNED_INT, INDICES, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::STATIC_DRAW);
+			mComputeOutputIndexBuffer = mBufferManager->createIndexBuffer(sizeof(INDICES), Renderer::IndexBufferFormat::UNSIGNED_INT, nullptr, Renderer::BufferFlag::UNORDERED_ACCESS, Renderer::BufferUsage::STATIC_DRAW);
+		}
+
 		{ // Create vertex array object (VAO)
 			// Create the vertex buffer object (VBO)
 			// -> Clip space vertex positions, left/bottom is (-1,-1) and right/top is (1,1)
@@ -147,15 +158,6 @@ void FirstComputeShader::onInitialization()
 			mComputeOutputVertexBuffer = mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), nullptr, Renderer::BufferFlag::UNORDERED_ACCESS, Renderer::BufferUsage::STATIC_DRAW);
 		}
 
-		{ // Create the index buffer object (IBO)
-			static constexpr uint32_t INDICES[] =
-			{
-				0, 1, 2
-			};
-			mComputeInputIndexBuffer = mBufferManager->createIndexBuffer(sizeof(INDICES), Renderer::IndexBufferFormat::UNSIGNED_INT, INDICES, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::STATIC_DRAW);
-			mComputeOutputIndexBuffer = mBufferManager->createIndexBuffer(sizeof(INDICES), Renderer::IndexBufferFormat::UNSIGNED_INT, nullptr, Renderer::BufferFlag::UNORDERED_ACCESS, Renderer::BufferUsage::STATIC_DRAW);
-		}
-
 		{ // Create vertex array object (VAO)
 		  // -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)
 		  // -> This means that there's no need to keep an own vertex buffer object (VBO) reference
@@ -164,6 +166,11 @@ void FirstComputeShader::onInitialization()
 		  //    vertex buffer object (VBO) reaches zero, it's automatically destroyed.
 			const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { mComputeOutputVertexBuffer };
 			mVertexArray = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(glm::countof(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, mComputeOutputIndexBuffer);
+		}
+
+		{ // Create the uniform buffer which will be read by a compute shader
+			const float rgbaColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+			mComputeInputUniformBuffer = mBufferManager->createUniformBuffer(sizeof(float) * 4, rgbaColor, Renderer::BufferUsage::STATIC_DRAW);
 		}
 
 		{ // Resource group related
@@ -182,19 +189,25 @@ void FirstComputeShader::onInitialization()
 			}
 
 			{ // Create compute texture group
-				Renderer::IResource* resources[8] = {
+				Renderer::IResource* resources[9] = {
 					// Input
-					computeInputTexture2D, mComputeInputVertexBuffer, mComputeInputIndexBuffer, mComputeInputIndirectBuffer,
+					computeInputTexture2D, mComputeInputIndexBuffer, mComputeInputVertexBuffer, mComputeInputIndirectBuffer, mComputeInputUniformBuffer,
 					// Output
-					computeOutputTexture2D, mComputeOutputVertexBuffer, mComputeOutputIndexBuffer, mComputeOutputIndirectBuffer
+					computeOutputTexture2D, mComputeOutputIndexBuffer, mComputeOutputVertexBuffer, mComputeOutputIndirectBuffer
 				};
-				mComputeTextureGroup = mComputeRootSignature->createResourceGroup(0, static_cast<uint32_t>(glm::countof(resources)), resources, nullptr);
+				Renderer::ISamplerState* samplerStates[9] = {
+					// Input
+					static_cast<Renderer::ISamplerState*>(samplerStateResource), nullptr, nullptr, nullptr, nullptr,
+					// Output
+					nullptr, nullptr, nullptr, nullptr
+				};
+				mComputeTextureGroup = mComputeRootSignature->createResourceGroup(0, static_cast<uint32_t>(glm::countof(resources)), resources, samplerStates);
 			}
 
 			{ // Create graphics texture group
-				Renderer::IResource* resource = computeOutputTexture2D;
-				Renderer::ISamplerState* samplerState = static_cast<Renderer::ISamplerState*>(samplerStateResource);
-				mGraphicsTextureGroup = mGraphicsRootSignature->createResourceGroup(0, 1, &resource, &samplerState);
+				Renderer::IResource* resources[2] = { computeOutputTexture2D, mComputeInputUniformBuffer };
+				Renderer::ISamplerState* samplerStates[2] = { static_cast<Renderer::ISamplerState*>(samplerStateResource), nullptr };
+				mGraphicsTextureGroup = mGraphicsRootSignature->createResourceGroup(0, static_cast<uint32_t>(glm::countof(resources)), resources, samplerStates);
 			}
 		}
 
@@ -240,13 +253,14 @@ void FirstComputeShader::onInitialization()
 void FirstComputeShader::onDeinitialization()
 {
 	// Release the used resources
+	mComputeInputUniformBuffer = nullptr;
 	mComputeOutputIndirectBuffer = nullptr;
 	mComputeInputIndirectBuffer = nullptr;
 	mVertexArray = nullptr;
-	mComputeOutputIndexBuffer = nullptr;
-	mComputeInputIndexBuffer = nullptr;
 	mComputeOutputVertexBuffer = nullptr;
 	mComputeInputVertexBuffer = nullptr;
+	mComputeOutputIndexBuffer = nullptr;
+	mComputeInputIndexBuffer = nullptr;
 	mComputePipelineState = nullptr;
 	mGraphicsPipelineState = nullptr;
 	mGraphicsSamplerStateGroup = nullptr;
@@ -289,13 +303,14 @@ void FirstComputeShader::fillCommandBuffer()
 	assert(nullptr != mGraphicsSamplerStateGroup);
 	assert(nullptr != mGraphicsPipelineState);
 	assert(nullptr != mComputePipelineState);
-	assert(nullptr != mComputeInputVertexBuffer);
-	assert(nullptr != mComputeOutputVertexBuffer);
 	assert(nullptr != mComputeInputIndexBuffer);
 	assert(nullptr != mComputeOutputIndexBuffer);
+	assert(nullptr != mComputeInputVertexBuffer);
+	assert(nullptr != mComputeOutputVertexBuffer);
 	assert(nullptr != mVertexArray);
 	assert(nullptr != mComputeOutputIndirectBuffer);
 	assert(nullptr != mComputeInputIndirectBuffer);
+	assert(nullptr != mComputeInputUniformBuffer);
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)

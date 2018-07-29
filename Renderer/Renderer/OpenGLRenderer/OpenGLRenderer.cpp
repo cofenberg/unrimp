@@ -1376,7 +1376,7 @@ namespace OpenGLRenderer
 		void setGraphicsViewports(uint32_t numberOfViewports, const Renderer::Viewport* viewports);									// Rasterizer (RS) stage
 		void setGraphicsScissorRectangles(uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles);	// Rasterizer (RS) stage
 		void setGraphicsRenderTarget(Renderer::IRenderTarget* renderTarget);														// Output-merger (OM) stage
-		void clearGraphics(uint32_t flags, const float color[4], float z, uint32_t stencil);
+		void clearGraphics(uint32_t clearFlags, const float color[4], float z, uint32_t stencil);
 		void drawGraphics(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		void drawGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		void drawIndexedGraphics(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
@@ -7207,11 +7207,17 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
 		{
 			// "GL_ARB_uniform_buffer_object" required
 			if (mExtensions->isGL_ARB_uniform_buffer_object())
 			{
+				// Don't remove this reminder comment block: There are no buffer flags by intent since an uniform buffer can't be used for unordered access and as a consequence an uniform buffer must always used as shader resource to not be pointless
+				// -> Inside GLSL "layout(binding = 0, std140) writeonly uniform OutputUniformBuffer" will result in the GLSL compiler error "Failed to parse the GLSL shader source code: ERROR: 0:85: 'assign' :  l-value required "anon@6" (can't modify a uniform)"
+				// -> Inside GLSL "layout(binding = 0, std430) writeonly buffer  OutputUniformBuffer" will work in OpenGL but will fail in Vulkan with "Vulkan debug report callback: Object type: "VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT" Object: "0" Location: "0" Message code: "13" Layer prefix: "Validation" Message: "Object: VK_NULL_HANDLE (Type = 0) | Type mismatch on descriptor slot 0.0 (used as type `ptr to uniform struct of (vec4 of float32)`) but descriptor of type VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER""
+				// RENDERER_ASSERT(getRenderer().getContext(), (bufferFlags & Renderer::BufferFlag::UNORDERED_ACCESS) == 0, "Invalid OpenGL buffer flags, uniform buffer can't be used for unordered access")
+				// RENDERER_ASSERT(getRenderer().getContext(), (bufferFlags & Renderer::BufferFlag::SHADER_RESOURCE) != 0, "Invalid OpenGL buffer flags, uniform buffer must be used as shader resource")
+
 				// Is "GL_EXT_direct_state_access" there?
 				if (mExtensions->isGL_EXT_direct_state_access() || mExtensions->isGL_ARB_direct_state_access())
 				{
@@ -7481,15 +7487,15 @@ namespace OpenGLRenderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*/
-		Texture1DBind(OpenGLRenderer& openGLRenderer, uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags) :
+		Texture1DBind(OpenGLRenderer& openGLRenderer, uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags) :
 			Texture1D(openGLRenderer, width, textureFormat)
 		{
 			// Sanity checks
-			RENDERER_ASSERT(openGLRenderer.getContext(), 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL texture parameters")
-			RENDERER_ASSERT(openGLRenderer.getContext(), (flags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "OpenGL render target textures can't be filled using provided data")
+			RENDERER_ASSERT(openGLRenderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL texture parameters")
+			RENDERER_ASSERT(openGLRenderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "OpenGL render target textures can't be filled using provided data")
 
 			// Create the OpenGL texture instance
 			glGenTextures(1, &mOpenGLTexture);
@@ -7508,10 +7514,10 @@ namespace OpenGLRenderer
 			glPixelStorei(GL_UNPACK_ALIGNMENT, (Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat) & 3) ? 1 : 4);
 
 			// Calculate the number of mipmaps
-			const bool dataContainsMipmaps = (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
-			const bool generateMipmaps = (!dataContainsMipmaps && (flags & Renderer::TextureFlag::GENERATE_MIPMAPS));
+			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
+			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width) : 1;
-			mGenerateMipmaps = (generateMipmaps && (flags & Renderer::TextureFlag::RENDER_TARGET));
+			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET));
 
 			// Make this OpenGL texture instance to the currently used one
 			glBindTexture(GL_TEXTURE_1D, mOpenGLTexture);
@@ -7569,7 +7575,7 @@ namespace OpenGLRenderer
 			}
 
 			// Build mipmaps automatically on the GPU? (or GPU driver)
-			if ((flags & Renderer::TextureFlag::GENERATE_MIPMAPS) && openGLRenderer.getExtensions().isGL_ARB_framebuffer_object())
+			if ((textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS) && openGLRenderer.getExtensions().isGL_ARB_framebuffer_object())
 			{
 				glGenerateMipmap(GL_TEXTURE_1D);
 				glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
@@ -7637,15 +7643,15 @@ namespace OpenGLRenderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*/
-		Texture1DDsa(OpenGLRenderer& openGLRenderer, uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags) :
+		Texture1DDsa(OpenGLRenderer& openGLRenderer, uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags) :
 			Texture1D(openGLRenderer, width, textureFormat)
 		{
 			// Sanity checks
-			RENDERER_ASSERT(openGLRenderer.getContext(), 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL texture parameters")
-			RENDERER_ASSERT(openGLRenderer.getContext(), (flags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "OpenGL render target textures can't be filled using provided data")
+			RENDERER_ASSERT(openGLRenderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL texture parameters")
+			RENDERER_ASSERT(openGLRenderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "OpenGL render target textures can't be filled using provided data")
 
 			// Multisample texture?
 			const bool isArbDsa = openGLRenderer.getExtensions().isGL_ARB_direct_state_access();
@@ -7660,10 +7666,10 @@ namespace OpenGLRenderer
 			glPixelStorei(GL_UNPACK_ALIGNMENT, (Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat) & 3) ? 1 : 4);
 
 			// Calculate the number of mipmaps
-			const bool dataContainsMipmaps = (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
-			const bool generateMipmaps = (!dataContainsMipmaps && (flags & Renderer::TextureFlag::GENERATE_MIPMAPS));
+			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
+			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width) : 1;
-			mGenerateMipmaps = (generateMipmaps && (flags & Renderer::TextureFlag::RENDER_TARGET));
+			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET));
 
 			// Create the OpenGL texture instance
 			if (isArbDsa)
@@ -7781,7 +7787,7 @@ namespace OpenGLRenderer
 			}
 
 			// Build mipmaps automatically on the GPU? (or GPU driver)
-			if (flags & Renderer::TextureFlag::GENERATE_MIPMAPS)
+			if (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS)
 			{
 				if (isArbDsa)
 				{
@@ -8044,22 +8050,22 @@ namespace OpenGLRenderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*  @param[in] numberOfMultisamples
 		*    The number of multisamples per pixel (valid values: 1, 2, 4, 8)
 		*/
-		Texture2DBind(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags, uint8_t numberOfMultisamples) :
+		Texture2DBind(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, uint8_t numberOfMultisamples) :
 			Texture2D(openGLRenderer, width, height, textureFormat, numberOfMultisamples)
 		{
 			// Sanity checks
 			RENDERER_ASSERT(openGLRenderer.getContext(), numberOfMultisamples == 1 || numberOfMultisamples == 2 || numberOfMultisamples == 4 || numberOfMultisamples == 8, "Invalid OpenGL texture parameters")
 			RENDERER_ASSERT(openGLRenderer.getContext(), numberOfMultisamples == 1 || nullptr == data, "Invalid OpenGL texture parameters")
-			RENDERER_ASSERT(openGLRenderer.getContext(), numberOfMultisamples == 1 || 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS), "Invalid OpenGL texture parameters")
-			RENDERER_ASSERT(openGLRenderer.getContext(), numberOfMultisamples == 1 || 0 == (flags & Renderer::TextureFlag::GENERATE_MIPMAPS), "Invalid OpenGL texture parameters")
-			RENDERER_ASSERT(openGLRenderer.getContext(), numberOfMultisamples == 1 || 0 != (flags & Renderer::TextureFlag::RENDER_TARGET), "Invalid OpenGL texture parameters")
-			RENDERER_ASSERT(openGLRenderer.getContext(), 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL texture parameters")
-			RENDERER_ASSERT(openGLRenderer.getContext(), (flags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "OpenGL render target textures can't be filled using provided data")
+			RENDERER_ASSERT(openGLRenderer.getContext(), numberOfMultisamples == 1 || 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS), "Invalid OpenGL texture parameters")
+			RENDERER_ASSERT(openGLRenderer.getContext(), numberOfMultisamples == 1 || 0 == (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS), "Invalid OpenGL texture parameters")
+			RENDERER_ASSERT(openGLRenderer.getContext(), numberOfMultisamples == 1 || 0 != (textureFlags & Renderer::TextureFlag::RENDER_TARGET), "Invalid OpenGL texture parameters")
+			RENDERER_ASSERT(openGLRenderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL texture parameters")
+			RENDERER_ASSERT(openGLRenderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "OpenGL render target textures can't be filled using provided data")
 
 			// Create the OpenGL texture instance
 			glGenTextures(1, &mOpenGLTexture);
@@ -8100,10 +8106,10 @@ namespace OpenGLRenderer
 				glPixelStorei(GL_UNPACK_ALIGNMENT, (Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat) & 3) ? 1 : 4);
 
 				// Calculate the number of mipmaps
-				const bool dataContainsMipmaps = (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
-				const bool generateMipmaps = (!dataContainsMipmaps && (flags & Renderer::TextureFlag::GENERATE_MIPMAPS));
+				const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
+				const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 				const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height) : 1;
-				mGenerateMipmaps = (generateMipmaps && (flags & Renderer::TextureFlag::RENDER_TARGET));
+				mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET));
 
 				// Make this OpenGL texture instance to the currently used one
 				glBindTexture(GL_TEXTURE_2D, mOpenGLTexture);
@@ -8163,7 +8169,7 @@ namespace OpenGLRenderer
 				}
 
 				// Build mipmaps automatically on the GPU? (or GPU driver)
-				if ((flags & Renderer::TextureFlag::GENERATE_MIPMAPS) && openGLRenderer.getExtensions().isGL_ARB_framebuffer_object())
+				if ((textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS) && openGLRenderer.getExtensions().isGL_ARB_framebuffer_object())
 				{
 					glGenerateMipmap(GL_TEXTURE_2D);
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
@@ -8266,22 +8272,22 @@ namespace OpenGLRenderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*  @param[in] numberOfMultisamples
 		*    The number of multisamples per pixel (valid values: 1, 2, 4, 8)
 		*/
-		Texture2DDsa(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags, uint8_t numberOfMultisamples) :
+		Texture2DDsa(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, uint8_t numberOfMultisamples) :
 			Texture2D(openGLRenderer, width, height, textureFormat, numberOfMultisamples)
 		{
 			// Sanity checks
 			RENDERER_ASSERT(openGLRenderer.getContext(), numberOfMultisamples == 1 || numberOfMultisamples == 2 || numberOfMultisamples == 4 || numberOfMultisamples == 8, "Invalid OpenGL texture parameters")
 			RENDERER_ASSERT(openGLRenderer.getContext(), numberOfMultisamples == 1 || nullptr == data, "Invalid OpenGL texture parameters")
-			RENDERER_ASSERT(openGLRenderer.getContext(), numberOfMultisamples == 1 || 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS), "Invalid OpenGL texture parameters")
-			RENDERER_ASSERT(openGLRenderer.getContext(), numberOfMultisamples == 1 || 0 == (flags & Renderer::TextureFlag::GENERATE_MIPMAPS), "Invalid OpenGL texture parameters")
-			RENDERER_ASSERT(openGLRenderer.getContext(), numberOfMultisamples == 1 || 0 != (flags & Renderer::TextureFlag::RENDER_TARGET), "Invalid OpenGL texture parameters")
-			RENDERER_ASSERT(openGLRenderer.getContext(), 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL texture parameters")
-			RENDERER_ASSERT(openGLRenderer.getContext(), (flags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "OpenGL render target textures can't be filled using provided data")
+			RENDERER_ASSERT(openGLRenderer.getContext(), numberOfMultisamples == 1 || 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS), "Invalid OpenGL texture parameters")
+			RENDERER_ASSERT(openGLRenderer.getContext(), numberOfMultisamples == 1 || 0 == (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS), "Invalid OpenGL texture parameters")
+			RENDERER_ASSERT(openGLRenderer.getContext(), numberOfMultisamples == 1 || 0 != (textureFlags & Renderer::TextureFlag::RENDER_TARGET), "Invalid OpenGL texture parameters")
+			RENDERER_ASSERT(openGLRenderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL texture parameters")
+			RENDERER_ASSERT(openGLRenderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "OpenGL render target textures can't be filled using provided data")
 
 			// Multisample texture?
 			const bool isArbDsa = openGLRenderer.getExtensions().isGL_ARB_direct_state_access();
@@ -8331,11 +8337,11 @@ namespace OpenGLRenderer
 				glPixelStorei(GL_UNPACK_ALIGNMENT, (Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat) & 3) ? 1 : 4);
 
 				// Calculate the number of mipmaps
-				const bool dataContainsMipmaps = (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
-				const bool generateMipmaps = (!dataContainsMipmaps && (flags & Renderer::TextureFlag::GENERATE_MIPMAPS));
+				const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
+				const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 				const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height) : 1;
 				const bool isDepthFormat = Renderer::TextureFormat::isDepth(textureFormat);
-				mGenerateMipmaps = (generateMipmaps && (flags & Renderer::TextureFlag::RENDER_TARGET) && !isDepthFormat);
+				mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET) && !isDepthFormat);
 
 				// Create the OpenGL texture instance
 				if (isArbDsa)
@@ -8455,7 +8461,7 @@ namespace OpenGLRenderer
 				}
 
 				// Build mipmaps automatically on the GPU? (or GPU driver)
-				if (flags & Renderer::TextureFlag::GENERATE_MIPMAPS)
+				if (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS)
 				{
 					if (isArbDsa)
 					{
@@ -8706,10 +8712,10 @@ namespace OpenGLRenderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*/
-		Texture2DArrayBind(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags) :
+		Texture2DArrayBind(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags) :
 			Texture2DArray(openGLRenderer, width, height, numberOfSlices, textureFormat)
 		{
 			#ifdef RENDERER_OPENGL_STATE_CLEANUP
@@ -8741,7 +8747,7 @@ namespace OpenGLRenderer
 			glTexImage3DEXT(GL_TEXTURE_2D_ARRAY_EXT, 0, mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(numberOfSlices), 0, Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
 
 			// Build mipmaps automatically on the GPU? (or GPU driver)
-			if ((flags & Renderer::TextureFlag::GENERATE_MIPMAPS) && openGLRenderer.getExtensions().isGL_ARB_framebuffer_object())
+			if ((textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS) && openGLRenderer.getExtensions().isGL_ARB_framebuffer_object())
 			{
 				glGenerateMipmap(GL_TEXTURE_2D_ARRAY_EXT);
 				glTexParameteri(GL_TEXTURE_2D_ARRAY_EXT, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
@@ -8813,10 +8819,10 @@ namespace OpenGLRenderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*/
-		Texture2DArrayDsa(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags) :
+		Texture2DArrayDsa(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags) :
 			Texture2DArray(openGLRenderer, width, height, numberOfSlices, textureFormat)
 		{
 			#ifdef RENDERER_OPENGL_STATE_CLEANUP
@@ -8834,7 +8840,7 @@ namespace OpenGLRenderer
 				//			- "InstancedCubes"-example -> "CubeRendereDrawInstanced"
 				//		    - AMD 290X Radeon software version 17.7.2 as well as with GeForce 980m 384.94
 				//		    - Windows 10 x64
-				const bool isArbDsa = (openGLRenderer.getExtensions().isGL_ARB_direct_state_access() && (flags & Renderer::TextureFlag::GENERATE_MIPMAPS) == 0);
+				const bool isArbDsa = (openGLRenderer.getExtensions().isGL_ARB_direct_state_access() && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS) == 0);
 			#else
 				const bool isArbDsa = openGLRenderer.getExtensions().isGL_ARB_direct_state_access();
 			#endif
@@ -8868,7 +8874,7 @@ namespace OpenGLRenderer
 			}
 
 			// Build mipmaps automatically on the GPU? (or GPU driver)
-			if (flags & Renderer::TextureFlag::GENERATE_MIPMAPS)
+			if (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS)
 			{
 				if (isArbDsa)
 				{
@@ -9132,17 +9138,17 @@ namespace OpenGLRenderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		Texture3DBind(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags, Renderer::TextureUsage textureUsage) :
+		Texture3DBind(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Renderer::TextureUsage textureUsage) :
 			Texture3D(openGLRenderer, width, height, depth, textureFormat)
 		{
 			// Sanity checks
-			RENDERER_ASSERT(openGLRenderer.getContext(), 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL texture parameters")
-			RENDERER_ASSERT(openGLRenderer.getContext(), (flags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "OpenGL render target textures can't be filled using provided data")
+			RENDERER_ASSERT(openGLRenderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL texture parameters")
+			RENDERER_ASSERT(openGLRenderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "OpenGL render target textures can't be filled using provided data")
 
 			// Create the OpenGL texture instance
 			glGenTextures(1, &mOpenGLTexture);
@@ -9187,11 +9193,11 @@ namespace OpenGLRenderer
 			}
 
 			// Calculate the number of mipmaps
-			const bool dataContainsMipmaps = (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
-			const bool generateMipmaps = (!dataContainsMipmaps && (flags & Renderer::TextureFlag::GENERATE_MIPMAPS));
+			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
+			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			RENDERER_ASSERT(openGLRenderer.getContext(), Renderer::TextureUsage::IMMUTABLE != textureUsage || !generateMipmaps, "OpenGL immutable texture usage can't be combined with automatic mipmap generation")
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height, depth) : 1;
-			mGenerateMipmaps = (generateMipmaps && (flags & Renderer::TextureFlag::RENDER_TARGET));
+			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET));
 
 			// Make this OpenGL texture instance to the currently used one
 			glBindTexture(GL_TEXTURE_3D, mOpenGLTexture);
@@ -9263,7 +9269,7 @@ namespace OpenGLRenderer
 			}
 
 			// Build mipmaps automatically on the GPU? (or GPU driver)
-			if ((flags & Renderer::TextureFlag::GENERATE_MIPMAPS) && openGLRenderer.getExtensions().isGL_ARB_framebuffer_object())
+			if ((textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS) && openGLRenderer.getExtensions().isGL_ARB_framebuffer_object())
 			{
 				glGenerateMipmap(GL_TEXTURE_3D);
 				glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
@@ -9335,17 +9341,17 @@ namespace OpenGLRenderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		Texture3DDsa(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags, Renderer::TextureUsage textureUsage) :
+		Texture3DDsa(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Renderer::TextureUsage textureUsage) :
 			Texture3D(openGLRenderer, width, height, depth, textureFormat)
 		{
 			// Sanity checks
-			RENDERER_ASSERT(openGLRenderer.getContext(), 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL texture parameters")
-			RENDERER_ASSERT(openGLRenderer.getContext(), (flags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "OpenGL render target textures can't be filled using provided data")
+			RENDERER_ASSERT(openGLRenderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL texture parameters")
+			RENDERER_ASSERT(openGLRenderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "OpenGL render target textures can't be filled using provided data")
 
 			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently set alignment
@@ -9369,11 +9375,11 @@ namespace OpenGLRenderer
 			}
 
 			// Calculate the number of mipmaps
-			const bool dataContainsMipmaps = (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
-			const bool generateMipmaps = (!dataContainsMipmaps && (flags & Renderer::TextureFlag::GENERATE_MIPMAPS));
+			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
+			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			RENDERER_ASSERT(openGLRenderer.getContext(), Renderer::TextureUsage::IMMUTABLE != textureUsage || !generateMipmaps, "OpenGL immutable texture usage can't be combined with automatic mipmap generation")
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height, depth) : 1;
-			mGenerateMipmaps = (generateMipmaps && (flags & Renderer::TextureFlag::RENDER_TARGET));
+			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET));
 
 			// Create the OpenGL texture instance
 			const bool isArbDsa = openGLRenderer.getExtensions().isGL_ARB_direct_state_access();
@@ -9506,7 +9512,7 @@ namespace OpenGLRenderer
 			}
 
 			// Build mipmaps automatically on the GPU? (or GPU driver)
-			if (flags & Renderer::TextureFlag::GENERATE_MIPMAPS)
+			if (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS)
 			{
 				if (isArbDsa)
 				{
@@ -9737,15 +9743,15 @@ namespace OpenGLRenderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*/
-		TextureCubeBind(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags) :
+		TextureCubeBind(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags) :
 			TextureCube(openGLRenderer, width, height, textureFormat)
 		{
 			// Sanity checks
-			RENDERER_ASSERT(openGLRenderer.getContext(), 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL texture parameters")
-			RENDERER_ASSERT(openGLRenderer.getContext(), (flags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "OpenGL render target textures can't be filled using provided data")
+			RENDERER_ASSERT(openGLRenderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL texture parameters")
+			RENDERER_ASSERT(openGLRenderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "OpenGL render target textures can't be filled using provided data")
 
 			// Create the OpenGL texture instance
 			glGenTextures(1, &mOpenGLTexture);
@@ -9764,10 +9770,10 @@ namespace OpenGLRenderer
 			glPixelStorei(GL_UNPACK_ALIGNMENT, (Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat) & 3) ? 1 : 4);
 
 			// Calculate the number of mipmaps
-			const bool dataContainsMipmaps = (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
-			const bool generateMipmaps = (!dataContainsMipmaps && (flags & Renderer::TextureFlag::GENERATE_MIPMAPS));
+			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
+			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height) : 1;
-			mGenerateMipmaps = (generateMipmaps && (flags & Renderer::TextureFlag::RENDER_TARGET));
+			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET));
 
 			// Make this OpenGL texture instance to the currently used one
 			glBindTexture(GL_TEXTURE_CUBE_MAP, mOpenGLTexture);
@@ -9859,7 +9865,7 @@ namespace OpenGLRenderer
 			}
 
 			// Build mipmaps automatically on the GPU? (or GPU driver)
-			if ((flags & Renderer::TextureFlag::GENERATE_MIPMAPS) && openGLRenderer.getExtensions().isGL_ARB_framebuffer_object())
+			if ((textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS) && openGLRenderer.getExtensions().isGL_ARB_framebuffer_object())
 			{
 				glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
@@ -9929,15 +9935,15 @@ namespace OpenGLRenderer
 		*    Texture format
 		*  @param[in] data
 		*    Texture data, can be a null pointer
-		*  @param[in] flags
+		*  @param[in] textureFlags
 		*    Texture flags, see "Renderer::TextureFlag::Enum"
 		*/
-		TextureCubeDsa(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t flags) :
+		TextureCubeDsa(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags) :
 			TextureCube(openGLRenderer, width, height, textureFormat)
 		{
 			// Sanity checks
-			RENDERER_ASSERT(openGLRenderer.getContext(), 0 == (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL texture parameters")
-			RENDERER_ASSERT(openGLRenderer.getContext(), (flags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "OpenGL render target textures can't be filled using provided data")
+			RENDERER_ASSERT(openGLRenderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL texture parameters")
+			RENDERER_ASSERT(openGLRenderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "OpenGL render target textures can't be filled using provided data")
 
 			#ifdef RENDERER_OPENGL_STATE_CLEANUP
 				// Backup the currently set alignment
@@ -9949,10 +9955,10 @@ namespace OpenGLRenderer
 			glPixelStorei(GL_UNPACK_ALIGNMENT, (Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat) & 3) ? 1 : 4);
 
 			// Calculate the number of mipmaps
-			const bool dataContainsMipmaps = (flags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
-			const bool generateMipmaps = (!dataContainsMipmaps && (flags & Renderer::TextureFlag::GENERATE_MIPMAPS));
+			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
+			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height) : 1;
-			mGenerateMipmaps = (generateMipmaps && (flags & Renderer::TextureFlag::RENDER_TARGET));
+			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET));
 
 			// Create the OpenGL texture instance
 			// TODO(co) "GL_ARB_direct_state_access" AMD graphics card driver bug ahead
@@ -10120,7 +10126,7 @@ namespace OpenGLRenderer
 			}
 
 			// Build mipmaps automatically on the GPU? (or GPU driver)
-			if (flags & Renderer::TextureFlag::GENERATE_MIPMAPS)
+			if (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS)
 			{
 				if (isArbDsa)
 				{
@@ -10220,7 +10226,7 @@ namespace OpenGLRenderer
 	//[ Public virtual Renderer::ITextureManager methods      ]
 	//[-------------------------------------------------------]
 	public:
-		virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, OpenGL has no texture usage indication
 
@@ -10231,12 +10237,12 @@ namespace OpenGLRenderer
 				if (mExtensions->isGL_EXT_direct_state_access() || mExtensions->isGL_ARB_direct_state_access())
 				{
 					// Effective direct state access (DSA)
-					return RENDERER_NEW(getRenderer().getContext(), Texture1DDsa)(static_cast<OpenGLRenderer&>(getRenderer()), width, textureFormat, data, flags);
+					return RENDERER_NEW(getRenderer().getContext(), Texture1DDsa)(static_cast<OpenGLRenderer&>(getRenderer()), width, textureFormat, data, textureFlags);
 				}
 				else
 				{
 					// Traditional bind version
-					return RENDERER_NEW(getRenderer().getContext(), Texture1DBind)(static_cast<OpenGLRenderer&>(getRenderer()), width, textureFormat, data, flags);
+					return RENDERER_NEW(getRenderer().getContext(), Texture1DBind)(static_cast<OpenGLRenderer&>(getRenderer()), width, textureFormat, data, textureFlags);
 				}
 			}
 			else
@@ -10245,7 +10251,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, MAYBE_UNUSED const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
+		virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, MAYBE_UNUSED const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, OpenGL has no texture usage indication
 
@@ -10256,12 +10262,12 @@ namespace OpenGLRenderer
 				if (mExtensions->isGL_EXT_direct_state_access() || mExtensions->isGL_ARB_direct_state_access())
 				{
 					// Effective direct state access (DSA)
-					return RENDERER_NEW(getRenderer().getContext(), Texture2DDsa)(static_cast<OpenGLRenderer&>(getRenderer()), width, height, textureFormat, data, flags, numberOfMultisamples);
+					return RENDERER_NEW(getRenderer().getContext(), Texture2DDsa)(static_cast<OpenGLRenderer&>(getRenderer()), width, height, textureFormat, data, textureFlags, numberOfMultisamples);
 				}
 				else
 				{
 					// Traditional bind version
-					return RENDERER_NEW(getRenderer().getContext(), Texture2DBind)(static_cast<OpenGLRenderer&>(getRenderer()), width, height, textureFormat, data, flags, numberOfMultisamples);
+					return RENDERER_NEW(getRenderer().getContext(), Texture2DBind)(static_cast<OpenGLRenderer&>(getRenderer()), width, height, textureFormat, data, textureFlags, numberOfMultisamples);
 				}
 			}
 			else
@@ -10270,7 +10276,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, OpenGL has no texture usage indication
 
@@ -10281,12 +10287,12 @@ namespace OpenGLRenderer
 				if (mExtensions->isGL_EXT_direct_state_access() || mExtensions->isGL_ARB_direct_state_access())
 				{
 					// Effective direct state access (DSA)
-					return RENDERER_NEW(getRenderer().getContext(), Texture2DArrayDsa)(static_cast<OpenGLRenderer&>(getRenderer()), width, height, numberOfSlices, textureFormat, data, flags);
+					return RENDERER_NEW(getRenderer().getContext(), Texture2DArrayDsa)(static_cast<OpenGLRenderer&>(getRenderer()), width, height, numberOfSlices, textureFormat, data, textureFlags);
 				}
 				else
 				{
 					// Traditional bind version
-					return RENDERER_NEW(getRenderer().getContext(), Texture2DArrayBind)(static_cast<OpenGLRenderer&>(getRenderer()), width, height, numberOfSlices, textureFormat, data, flags);
+					return RENDERER_NEW(getRenderer().getContext(), Texture2DArrayBind)(static_cast<OpenGLRenderer&>(getRenderer()), width, height, numberOfSlices, textureFormat, data, textureFlags);
 				}
 			}
 			else
@@ -10295,7 +10301,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, OpenGL has no texture usage indication
 
@@ -10306,12 +10312,12 @@ namespace OpenGLRenderer
 				if (mExtensions->isGL_EXT_direct_state_access() || mExtensions->isGL_ARB_direct_state_access())
 				{
 					// Effective direct state access (DSA)
-					return RENDERER_NEW(getRenderer().getContext(), Texture3DDsa)(static_cast<OpenGLRenderer&>(getRenderer()), width, height, depth, textureFormat, data, flags, textureUsage);
+					return RENDERER_NEW(getRenderer().getContext(), Texture3DDsa)(static_cast<OpenGLRenderer&>(getRenderer()), width, height, depth, textureFormat, data, textureFlags, textureUsage);
 				}
 				else
 				{
 					// Traditional bind version
-					return RENDERER_NEW(getRenderer().getContext(), Texture3DBind)(static_cast<OpenGLRenderer&>(getRenderer()), width, height, depth, textureFormat, data, flags, textureUsage);
+					return RENDERER_NEW(getRenderer().getContext(), Texture3DBind)(static_cast<OpenGLRenderer&>(getRenderer()), width, height, depth, textureFormat, data, textureFlags, textureUsage);
 				}
 			}
 			else
@@ -10320,7 +10326,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t flags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, OpenGL has no texture usage indication
 
@@ -10331,12 +10337,12 @@ namespace OpenGLRenderer
 				if (mExtensions->isGL_EXT_direct_state_access() || mExtensions->isGL_ARB_direct_state_access())
 				{
 					// Effective direct state access (DSA)
-					return RENDERER_NEW(getRenderer().getContext(), TextureCubeDsa)(static_cast<OpenGLRenderer&>(getRenderer()), width, height, textureFormat, data, flags);
+					return RENDERER_NEW(getRenderer().getContext(), TextureCubeDsa)(static_cast<OpenGLRenderer&>(getRenderer()), width, height, textureFormat, data, textureFlags);
 				}
 				else
 				{
 					// Traditional bind version
-					return RENDERER_NEW(getRenderer().getContext(), TextureCubeBind)(static_cast<OpenGLRenderer&>(getRenderer()), width, height, textureFormat, data, flags);
+					return RENDERER_NEW(getRenderer().getContext(), TextureCubeBind)(static_cast<OpenGLRenderer&>(getRenderer()), width, height, textureFormat, data, textureFlags);
 				}
 			}
 			else
@@ -11785,9 +11791,9 @@ namespace OpenGLRenderer
 						case Renderer::ResourceType::FRAMEBUFFER:
 						case Renderer::ResourceType::INDEX_BUFFER:
 						case Renderer::ResourceType::VERTEX_BUFFER:
-						case Renderer::ResourceType::UNIFORM_BUFFER:
 						case Renderer::ResourceType::TEXTURE_BUFFER:
 						case Renderer::ResourceType::INDIRECT_BUFFER:
+						case Renderer::ResourceType::UNIFORM_BUFFER:
 						case Renderer::ResourceType::TEXTURE_1D:
 						case Renderer::ResourceType::TEXTURE_3D:
 						case Renderer::ResourceType::TEXTURE_CUBE:
@@ -11853,9 +11859,9 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::FRAMEBUFFER:
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
-					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
+					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
@@ -12018,9 +12024,9 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::FRAMEBUFFER:
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
-					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
+					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
@@ -12092,9 +12098,9 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::FRAMEBUFFER:
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
-					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
+					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
@@ -12348,9 +12354,9 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::FRAMEBUFFER:
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
-					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
+					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
@@ -12436,9 +12442,9 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::FRAMEBUFFER:
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
-					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
+					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
@@ -16917,7 +16923,7 @@ namespace
 			void ClearGraphics(const void* data, Renderer::IRenderer& renderer)
 			{
 				const Renderer::Command::ClearGraphics* realData = static_cast<const Renderer::Command::ClearGraphics*>(data);
-				static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).clearGraphics(realData->flags, realData->color, realData->z, realData->stencil);
+				static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).clearGraphics(realData->clearFlags, realData->color, realData->z, realData->stencil);
 			}
 
 			void DrawGraphics(const void* data, Renderer::IRenderer& renderer)
@@ -17571,9 +17577,9 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
-					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
+					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
 					case Renderer::ResourceType::TEXTURE_2D:
 					case Renderer::ResourceType::TEXTURE_2D_ARRAY:
@@ -17626,19 +17632,19 @@ namespace OpenGLRenderer
 		}
 	}
 
-	void OpenGLRenderer::clearGraphics(uint32_t flags, const float color[4], float z, uint32_t stencil)
+	void OpenGLRenderer::clearGraphics(uint32_t clearFlags, const float color[4], float z, uint32_t stencil)
 	{
 		// Get API flags
 		uint32_t flagsApi = 0;
-		if (flags & Renderer::ClearFlag::COLOR)
+		if (clearFlags & Renderer::ClearFlag::COLOR)
 		{
 			flagsApi |= GL_COLOR_BUFFER_BIT;
 		}
-		if (flags & Renderer::ClearFlag::DEPTH)
+		if (clearFlags & Renderer::ClearFlag::DEPTH)
 		{
 			flagsApi |= GL_DEPTH_BUFFER_BIT;
 		}
-		if (flags & Renderer::ClearFlag::STENCIL)
+		if (clearFlags & Renderer::ClearFlag::STENCIL)
 		{
 			flagsApi |= GL_STENCIL_BUFFER_BIT;
 		}
@@ -17647,11 +17653,11 @@ namespace OpenGLRenderer
 		if (0 != flagsApi)
 		{
 			// Set clear settings
-			if (flags & Renderer::ClearFlag::COLOR)
+			if (clearFlags & Renderer::ClearFlag::COLOR)
 			{
 				glClearColor(color[0], color[1], color[2], color[3]);
 			}
-			if (flags & Renderer::ClearFlag::DEPTH)
+			if (clearFlags & Renderer::ClearFlag::DEPTH)
 			{
 				glClearDepth(z);
 				if (nullptr != mGraphicsPipelineState && Renderer::DepthWriteMask::ALL != mGraphicsPipelineState->getDepthStencilState().depthWriteMask)
@@ -17659,7 +17665,7 @@ namespace OpenGLRenderer
 					glDepthMask(GL_TRUE);
 				}
 			}
-			if (flags & Renderer::ClearFlag::STENCIL)
+			if (clearFlags & Renderer::ClearFlag::STENCIL)
 			{
 				glClearStencil(static_cast<GLint>(stencil));
 			}
@@ -17681,7 +17687,7 @@ namespace OpenGLRenderer
 			{
 				glEnable(GL_SCISSOR_TEST);
 			}
-			if ((flags & Renderer::ClearFlag::DEPTH) && nullptr != mGraphicsPipelineState && Renderer::DepthWriteMask::ALL != mGraphicsPipelineState->getDepthStencilState().depthWriteMask)
+			if ((clearFlags & Renderer::ClearFlag::DEPTH) && nullptr != mGraphicsPipelineState && Renderer::DepthWriteMask::ALL != mGraphicsPipelineState->getDepthStencilState().depthWriteMask)
 			{
 				glDepthMask(GL_FALSE);
 			}
@@ -18093,9 +18099,9 @@ namespace OpenGLRenderer
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::INDEX_BUFFER:
 			case Renderer::ResourceType::VERTEX_BUFFER:
-			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_BUFFER:
 			case Renderer::ResourceType::INDIRECT_BUFFER:
+			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_1D:
 			case Renderer::ResourceType::TEXTURE_2D:
 			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
@@ -18188,9 +18194,9 @@ namespace OpenGLRenderer
 			case Renderer::ResourceType::FRAMEBUFFER:
 			case Renderer::ResourceType::INDEX_BUFFER:
 			case Renderer::ResourceType::VERTEX_BUFFER:
-			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_BUFFER:
 			case Renderer::ResourceType::INDIRECT_BUFFER:
+			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_1D:
 			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 			case Renderer::ResourceType::TEXTURE_3D:
@@ -18480,14 +18486,14 @@ namespace OpenGLRenderer
 			case Renderer::ResourceType::VERTEX_BUFFER:
 				return ::detail::mapBuffer(mContext, *mExtensions, GL_ARRAY_BUFFER_ARB, GL_ARRAY_BUFFER_BINDING_ARB, static_cast<VertexBuffer&>(resource).getOpenGLArrayBuffer(), mapType, mappedSubresource);
 
-			case Renderer::ResourceType::UNIFORM_BUFFER:
-				return ::detail::mapBuffer(mContext, *mExtensions, GL_UNIFORM_BUFFER, GL_UNIFORM_BUFFER_BINDING, static_cast<UniformBuffer&>(resource).getOpenGLUniformBuffer(), mapType, mappedSubresource);
-
 			case Renderer::ResourceType::TEXTURE_BUFFER:
 				return ::detail::mapBuffer(mContext, *mExtensions, GL_TEXTURE_BUFFER_ARB, GL_TEXTURE_BINDING_BUFFER_ARB, static_cast<TextureBuffer&>(resource).getOpenGLTextureBuffer(), mapType, mappedSubresource);
 
 			case Renderer::ResourceType::INDIRECT_BUFFER:
 				return ::detail::mapBuffer(mContext, *mExtensions, GL_DRAW_INDIRECT_BUFFER, GL_DRAW_INDIRECT_BUFFER_BINDING, static_cast<IndirectBuffer&>(resource).getOpenGLIndirectBuffer(), mapType, mappedSubresource);
+
+			case Renderer::ResourceType::UNIFORM_BUFFER:
+				return ::detail::mapBuffer(mContext, *mExtensions, GL_UNIFORM_BUFFER, GL_UNIFORM_BUFFER_BINDING, static_cast<UniformBuffer&>(resource).getOpenGLUniformBuffer(), mapType, mappedSubresource);
 
 			case Renderer::ResourceType::TEXTURE_1D:
 			{
@@ -18602,16 +18608,16 @@ namespace OpenGLRenderer
 				::detail::unmapBuffer(*mExtensions, GL_ARRAY_BUFFER_ARB, GL_ARRAY_BUFFER_BINDING_ARB, static_cast<VertexBuffer&>(resource).getOpenGLArrayBuffer());
 				break;
 
-			case Renderer::ResourceType::UNIFORM_BUFFER:
-				::detail::unmapBuffer(*mExtensions, GL_UNIFORM_BUFFER, GL_UNIFORM_BUFFER_BINDING, static_cast<UniformBuffer&>(resource).getOpenGLUniformBuffer());
-				break;
-
 			case Renderer::ResourceType::TEXTURE_BUFFER:
 				::detail::unmapBuffer(*mExtensions, GL_TEXTURE_BUFFER_ARB, GL_TEXTURE_BINDING_BUFFER_ARB, static_cast<TextureBuffer&>(resource).getOpenGLTextureBuffer());
 				break;
 
 			case Renderer::ResourceType::INDIRECT_BUFFER:
 				::detail::unmapBuffer(*mExtensions, GL_DRAW_INDIRECT_BUFFER, GL_DRAW_INDIRECT_BUFFER_BINDING, static_cast<IndirectBuffer&>(resource).getOpenGLIndirectBuffer());
+				break;
+
+			case Renderer::ResourceType::UNIFORM_BUFFER:
+				::detail::unmapBuffer(*mExtensions, GL_UNIFORM_BUFFER, GL_UNIFORM_BUFFER_BINDING, static_cast<UniformBuffer&>(resource).getOpenGLUniformBuffer());
 				break;
 
 			case Renderer::ResourceType::TEXTURE_1D:
@@ -19148,6 +19154,7 @@ namespace OpenGLRenderer
 							// Attach the buffer to the given UBO binding point
 							// -> Explicit binding points ("layout(binding = 0)" in GLSL shader) requires OpenGL 4.2 or the "GL_ARB_explicit_uniform_location"-extension
 							// -> Direct3D 10 and Direct3D 11 have explicit binding points
+							RENDERER_ASSERT(mContext, Renderer::DescriptorRangeType::UBV == descriptorRange.rangeType, "OpenGL uniform buffer must bound at UBV descriptor range type")
 							RENDERER_ASSERT(mContext, nullptr != openGLResourceGroup->getResourceIndexToUniformBlockBindingIndex(), "Invalid OpenGL resource index to uniform block binding index")
 							glBindBufferBase(GL_UNIFORM_BUFFER, openGLResourceGroup->getResourceIndexToUniformBlockBindingIndex()[resourceIndex], static_cast<UniformBuffer*>(resource)->getOpenGLUniformBuffer());
 						}
@@ -19264,8 +19271,8 @@ namespace OpenGLRenderer
 										case Renderer::ResourceType::FRAMEBUFFER:
 										case Renderer::ResourceType::INDEX_BUFFER:
 										case Renderer::ResourceType::VERTEX_BUFFER:
-										case Renderer::ResourceType::UNIFORM_BUFFER:
 										case Renderer::ResourceType::INDIRECT_BUFFER:
+										case Renderer::ResourceType::UNIFORM_BUFFER:
 										case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 										case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 										case Renderer::ResourceType::SAMPLER_STATE:
@@ -19382,8 +19389,8 @@ namespace OpenGLRenderer
 											case Renderer::ResourceType::FRAMEBUFFER:
 											case Renderer::ResourceType::INDEX_BUFFER:
 											case Renderer::ResourceType::VERTEX_BUFFER:
-											case Renderer::ResourceType::UNIFORM_BUFFER:
 											case Renderer::ResourceType::INDIRECT_BUFFER:
+											case Renderer::ResourceType::UNIFORM_BUFFER:
 											case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 											case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 											case Renderer::ResourceType::SAMPLER_STATE:
@@ -19496,8 +19503,8 @@ namespace OpenGLRenderer
 										case Renderer::ResourceType::FRAMEBUFFER:
 										case Renderer::ResourceType::INDEX_BUFFER:
 										case Renderer::ResourceType::VERTEX_BUFFER:
-										case Renderer::ResourceType::UNIFORM_BUFFER:
 										case Renderer::ResourceType::INDIRECT_BUFFER:
+										case Renderer::ResourceType::UNIFORM_BUFFER:
 										case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 										case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
 										case Renderer::ResourceType::SAMPLER_STATE:
