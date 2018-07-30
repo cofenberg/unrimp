@@ -48,13 +48,14 @@ void FirstComputeShader::onInitialization()
 		mTextureManager = renderer->createTextureManager();
 
 		{ // Create the graphics root signature
-			Renderer::DescriptorRangeBuilder ranges[3];
-			ranges[0].initialize(Renderer::ResourceType::TEXTURE_2D, 0, "AlbedoMap", Renderer::ShaderVisibility::FRAGMENT);
-			ranges[1].initialize(Renderer::ResourceType::UNIFORM_BUFFER, 1, "UniformBuffer", Renderer::ShaderVisibility::FRAGMENT);
-			ranges[2].initializeSampler(0, Renderer::ShaderVisibility::FRAGMENT);
+			Renderer::DescriptorRangeBuilder ranges[4];
+			ranges[0].initialize(Renderer::ResourceType::TEXTURE_BUFFER, 0, "InputTextureBuffer", Renderer::ShaderVisibility::VERTEX);
+			ranges[1].initialize(Renderer::ResourceType::TEXTURE_2D,	 1, "AlbedoMap",		  Renderer::ShaderVisibility::FRAGMENT);
+			ranges[2].initialize(Renderer::ResourceType::UNIFORM_BUFFER, 0, "UniformBuffer",	  Renderer::ShaderVisibility::FRAGMENT);
+			ranges[3].initializeSampler(0, Renderer::ShaderVisibility::FRAGMENT);
 
 			Renderer::RootParameterBuilder rootParameters[2];
-			rootParameters[0].initializeAsDescriptorTable(2, &ranges[0]);
+			rootParameters[0].initializeAsDescriptorTable(3, &ranges[0]);
 			rootParameters[1].initializeAsDescriptorTable(1, &ranges[2]);
 
 			// Setup
@@ -66,23 +67,25 @@ void FirstComputeShader::onInitialization()
 		}
 
 		{ // Create the compute root signature
-			Renderer::DescriptorRangeBuilder ranges[9];
+			Renderer::DescriptorRangeBuilder ranges[11];
 			// Input
-			ranges[0].initialize(Renderer::ResourceType::TEXTURE_2D,	  0,		   "InputTexture2D",	   Renderer::ShaderVisibility::COMPUTE);
-			ranges[1].initialize(Renderer::ResourceType::INDEX_BUFFER,    1,		   "InputIndexBuffer",     Renderer::ShaderVisibility::COMPUTE);
-			ranges[2].initialize(Renderer::ResourceType::VERTEX_BUFFER,   2,		   "InputVertexBuffer",    Renderer::ShaderVisibility::COMPUTE);
-			ranges[3].initialize(Renderer::ResourceType::INDIRECT_BUFFER, 3,		   "InputIndirectBuffer",  Renderer::ShaderVisibility::COMPUTE);
-			ranges[4].initialize(Renderer::ResourceType::UNIFORM_BUFFER,  0,		   "InputUniformBuffer",   Renderer::ShaderVisibility::COMPUTE);
+			ranges[0]. initialize(Renderer::ResourceType::TEXTURE_2D,	   0,		   "InputTexture2D",	   Renderer::ShaderVisibility::COMPUTE);
+			ranges[1]. initialize(Renderer::ResourceType::INDEX_BUFFER,    1,		   "InputIndexBuffer",     Renderer::ShaderVisibility::COMPUTE);
+			ranges[2]. initialize(Renderer::ResourceType::VERTEX_BUFFER,   2,		   "InputVertexBuffer",    Renderer::ShaderVisibility::COMPUTE);
+			ranges[3]. initialize(Renderer::ResourceType::TEXTURE_BUFFER,  3,		   "InputTextureBuffer",   Renderer::ShaderVisibility::COMPUTE);
+			ranges[4]. initialize(Renderer::ResourceType::INDIRECT_BUFFER, 4,		   "InputIndirectBuffer",  Renderer::ShaderVisibility::COMPUTE);
+			ranges[5]. initialize(Renderer::ResourceType::UNIFORM_BUFFER,  0,		   "InputUniformBuffer",   Renderer::ShaderVisibility::COMPUTE);
 			// Output
 			// TODO(co) Compute shader: Get rid of the OpenGL/Direct3D 11 variation here
-			const uint32_t offset = (renderer->getNameId() == Renderer::NameId::VULKAN || renderer->getNameId() == Renderer::NameId::OPENGL) ? 5u : 0u;
-			ranges[5].initialize(Renderer::ResourceType::TEXTURE_2D,	  0u + offset, "OutputTexture2D",	   Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
-			ranges[6].initialize(Renderer::ResourceType::INDEX_BUFFER,    1u + offset, "OutputIndexBuffer",    Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
-			ranges[7].initialize(Renderer::ResourceType::VERTEX_BUFFER,   2u + offset, "OutputVertexBuffer",   Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
-			ranges[8].initialize(Renderer::ResourceType::INDIRECT_BUFFER, 3u + offset, "OutputIndirectBuffer", Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
+			const uint32_t offset = (renderer->getNameId() == Renderer::NameId::VULKAN || renderer->getNameId() == Renderer::NameId::OPENGL) ? 6u : 0u;
+			ranges[6]. initialize(Renderer::ResourceType::TEXTURE_2D,	   0u + offset, "OutputTexture2D",	    Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
+			ranges[7]. initialize(Renderer::ResourceType::INDEX_BUFFER,    1u + offset, "OutputIndexBuffer",    Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
+			ranges[8]. initialize(Renderer::ResourceType::VERTEX_BUFFER,   2u + offset, "OutputVertexBuffer",   Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
+			ranges[9]. initialize(Renderer::ResourceType::TEXTURE_BUFFER,  3u + offset, "OutputTextureBuffer",  Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
+			ranges[10].initialize(Renderer::ResourceType::INDIRECT_BUFFER, 4u + offset, "OutputIndirectBuffer", Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
 
 			Renderer::RootParameterBuilder rootParameters[1];
-			rootParameters[0].initializeAsDescriptorTable(9, &ranges[0]);
+			rootParameters[0].initializeAsDescriptorTable(11, &ranges[0]);
 
 			// Setup
 			Renderer::RootSignatureBuilder rootSignature;
@@ -99,6 +102,21 @@ void FirstComputeShader::onInitialization()
 			samplerState.maxLOD = 0.0f;
 			samplerStateResource = renderer->createSamplerState(samplerState);
 			mGraphicsSamplerStateGroup = mGraphicsRootSignature->createResourceGroup(1, 1, &samplerStateResource);
+		}
+
+		{ // Texture buffer
+			static constexpr float VERTEX_POSITION_OFFSET[] =
+			{								// Vertex ID	Triangle on screen
+				0.5f, -0.5f, 0.0f, 0.0f,	// 0				0
+				0.5f, -0.5f, 0.0f, 0.0f,	// 1			   .   .
+				0.5f, -0.5f, 0.0f, 0.0f,	// 2			  2.......1
+			};
+
+			// Create the texture buffer which will be read by a compute shader
+			mComputeInputTextureBuffer = mBufferManager->createTextureBuffer(sizeof(VERTEX_POSITION_OFFSET), Renderer::TextureFormat::R32G32B32A32F, VERTEX_POSITION_OFFSET, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::STATIC_DRAW);
+
+			// Create the texture buffer which will be filled by a compute shader
+			mComputeOutputTextureBuffer = mBufferManager->createTextureBuffer(sizeof(VERTEX_POSITION_OFFSET), Renderer::TextureFormat::R32G32B32A32F, nullptr, Renderer::BufferFlag::UNORDERED_ACCESS | Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::STATIC_DRAW);
 		}
 
 		{ // Indirect buffer
@@ -169,8 +187,8 @@ void FirstComputeShader::onInitialization()
 		}
 
 		{ // Create the uniform buffer which will be read by a compute shader
-			const float rgbaColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-			mComputeInputUniformBuffer = mBufferManager->createUniformBuffer(sizeof(float) * 4, rgbaColor, Renderer::BufferUsage::STATIC_DRAW);
+			static constexpr float RGBA_COLOR[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+			mComputeInputUniformBuffer = mBufferManager->createUniformBuffer(sizeof(RGBA_COLOR), RGBA_COLOR, Renderer::BufferUsage::STATIC_DRAW);
 		}
 
 		{ // Resource group related
@@ -189,24 +207,24 @@ void FirstComputeShader::onInitialization()
 			}
 
 			{ // Create compute texture group
-				Renderer::IResource* resources[9] = {
+				Renderer::IResource* resources[11] = {
 					// Input
-					computeInputTexture2D, mComputeInputIndexBuffer, mComputeInputVertexBuffer, mComputeInputIndirectBuffer, mComputeInputUniformBuffer,
+					computeInputTexture2D, mComputeInputIndexBuffer, mComputeInputVertexBuffer, mComputeInputTextureBuffer, mComputeInputIndirectBuffer, mComputeInputUniformBuffer,
 					// Output
-					computeOutputTexture2D, mComputeOutputIndexBuffer, mComputeOutputVertexBuffer, mComputeOutputIndirectBuffer
+					computeOutputTexture2D, mComputeOutputIndexBuffer, mComputeOutputVertexBuffer, mComputeOutputTextureBuffer, mComputeOutputIndirectBuffer
 				};
-				Renderer::ISamplerState* samplerStates[9] = {
+				Renderer::ISamplerState* samplerStates[11] = {
 					// Input
-					static_cast<Renderer::ISamplerState*>(samplerStateResource), nullptr, nullptr, nullptr, nullptr,
+					static_cast<Renderer::ISamplerState*>(samplerStateResource), nullptr, nullptr, nullptr, nullptr, nullptr,
 					// Output
-					nullptr, nullptr, nullptr, nullptr
+					nullptr, nullptr, nullptr, nullptr, nullptr
 				};
 				mComputeTextureGroup = mComputeRootSignature->createResourceGroup(0, static_cast<uint32_t>(glm::countof(resources)), resources, samplerStates);
 			}
 
 			{ // Create graphics texture group
-				Renderer::IResource* resources[2] = { computeOutputTexture2D, mComputeInputUniformBuffer };
-				Renderer::ISamplerState* samplerStates[2] = { static_cast<Renderer::ISamplerState*>(samplerStateResource), nullptr };
+				Renderer::IResource* resources[3] = { mComputeOutputTextureBuffer, computeOutputTexture2D, mComputeInputUniformBuffer };
+				Renderer::ISamplerState* samplerStates[3] = { nullptr, static_cast<Renderer::ISamplerState*>(samplerStateResource), nullptr };
 				mGraphicsTextureGroup = mGraphicsRootSignature->createResourceGroup(0, static_cast<uint32_t>(glm::countof(resources)), resources, samplerStates);
 			}
 		}
@@ -256,6 +274,8 @@ void FirstComputeShader::onDeinitialization()
 	mComputeInputUniformBuffer = nullptr;
 	mComputeOutputIndirectBuffer = nullptr;
 	mComputeInputIndirectBuffer = nullptr;
+	mComputeOutputTextureBuffer = nullptr;
+	mComputeInputTextureBuffer = nullptr;
 	mVertexArray = nullptr;
 	mComputeOutputVertexBuffer = nullptr;
 	mComputeInputVertexBuffer = nullptr;
@@ -308,6 +328,8 @@ void FirstComputeShader::fillCommandBuffer()
 	assert(nullptr != mComputeInputVertexBuffer);
 	assert(nullptr != mComputeOutputVertexBuffer);
 	assert(nullptr != mVertexArray);
+	assert(nullptr != mComputeOutputTextureBuffer);
+	assert(nullptr != mComputeInputTextureBuffer);
 	assert(nullptr != mComputeOutputIndirectBuffer);
 	assert(nullptr != mComputeInputIndirectBuffer);
 	assert(nullptr != mComputeInputUniformBuffer);

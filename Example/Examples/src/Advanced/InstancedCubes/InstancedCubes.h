@@ -53,11 +53,11 @@ class ICubeRenderer;
 *
 *  @remarks
 *    Demonstrates:
+*    - Index buffer object (IBO)
 *    - Vertex buffer object (VBO)
 *    - Vertex array object (VAO)
-*    - Index buffer object (IBO)
-*    - Uniform buffer object (UBO)
 *    - Texture buffer object (TBO)
+*    - Uniform buffer object (UBO)
 *    - 2D texture
 *    - 2D texture array
 *    - Sampler state object

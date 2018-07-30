@@ -45,11 +45,12 @@
 *    - Multi-draw indirect buffer written by a compute shader
 *
 *    Demonstrates infrastructure usage:
-*    - Vertex buffer object (VBO)
 *    - Index buffer object (IBO)
+*    - Vertex buffer object (VBO)
 *    - Vertex array object (VAO)
-*    - Uniform buffer object (UBO)
+*    - Texture buffer object (TBO)
 *    - Indirect buffer
+*    - Uniform buffer object (UBO)
 *    - 2D texture
 *    - Sampler state object
 *    - Vertex shader (VS), fragment shader (FS) and compute shader (CS)
@@ -121,6 +122,8 @@ private:
 	Renderer::IVertexBufferPtr			mComputeInputVertexBuffer;		///< Graphics vertex buffer object (VBO) read by compute shader, can be a null pointer
 	Renderer::IVertexBufferPtr			mComputeOutputVertexBuffer;		///< Graphics vertex buffer object (VBO) written by compute shader, can be a null pointer
 	Renderer::IVertexArrayPtr			mVertexArray;					///< Graphics vertex array object (VAO), can be a null pointer
+	Renderer::ITextureBufferPtr			mComputeInputTextureBuffer;		///< Graphics texture buffer (TBO) read by compute shader, can be a null pointer
+	Renderer::ITextureBufferPtr			mComputeOutputTextureBuffer;	///< Graphics texture buffer (TBO) written by compute shader, can be a null pointer
 	Renderer::IIndirectBufferPtr		mComputeInputIndirectBuffer;	///< Graphics indirect buffer read by compute shader, can be a null pointer
 	Renderer::IIndirectBufferPtr		mComputeOutputIndirectBuffer;	///< Graphics indirect buffer written by compute shader, can be a null pointer
 	Renderer::IUniformBufferPtr			mComputeInputUniformBuffer;		///< Graphics uniform buffer (UBO) read by compute shader, can be a null pointer

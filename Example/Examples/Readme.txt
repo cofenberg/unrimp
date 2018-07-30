@@ -77,9 +77,9 @@ Standalone renderer examples.
 		- Graphics pipeline state object (PSO)
 		- Multiple swap chains
 	- "FirstInstancing" demonstrates:
+		- Index buffer object (IBO)
 		- Vertex buffer object (VBO)
 		- Vertex array object (VAO)
-		- Index buffer object (IBO)
 		- Vertex shader (VS) and fragment shader (FS)
 		- Root signature
 		- Graphics pipeline state object (PSO)
@@ -99,13 +99,17 @@ Standalone renderer examples.
 		- Root signature
 		- Graphics pipeline state object (PSO)
 	- "FirstComputeShader" demonstrates:
+		- Index buffer object (IBO)
 		- Vertex buffer object (VBO)
 		- Vertex array object (VAO)
+		- Texture buffer object (TBO)
+		- Indirect buffer
+		- Uniform buffer object (UBO)
 		- 2D texture
 		- Sampler state object
 		- Vertex shader (VS), fragment shader (FS) and compute shader (CS)
 		- Root signature
-		- Graphics and compute pipeline state object (PSO)
+		- Graphics pipeline state object (PSO)
 		- Framebuffer object (FBO) used for render to texture
 - Advanced
 	- "FirstGpgpu" demonstrates:
@@ -119,11 +123,11 @@ Standalone renderer examples.
 		- Framebuffer object (FBO) used for render to texture
 		- General Purpose Computation on Graphics Processing Unit (GPGPU) by using the renderer interface and shaders without having any output window (also known as headless rendering)
 	- "InstancedCubes" demonstrates:
+		- Index buffer object (IBO)
 		- Vertex buffer object (VBO)
 		- Vertex array object (VAO)
-		- Index buffer object (IBO)
-		- Uniform buffer object (UBO)
 		- Texture buffer object (TBO)
+		- Uniform buffer object (UBO)
 		- 2D texture
 		- 2D texture array
 		- Sampler state object
@@ -133,9 +137,9 @@ Standalone renderer examples.
 		- Instanced arrays (shader model 3 feature, vertex array element advancing per-instance instead of per-vertex)
 		- Draw instanced (shader model 4 feature, build in shader variable holding the current instance ID)
 	- "IcosahedronTessellation" demonstrates:
+		- Index buffer object (IBO)
 		- Vertex buffer object (VBO)
 		- Vertex array object (VAO)
-		- Index buffer object (IBO)
 		- Uniform buffer object (UBO)
 		- Vertex shader (VS), tessellation control shader (TCS), tessellation evaluation shader (TES), geometry shader (GS) and fragment shader (FS)
 		- Root signature
@@ -144,11 +148,11 @@ Standalone renderer examples.
 	- "ImGuiExampleSelector"demonstrates:
 		- ImGui usage to select the example to start
 	- "FirstMesh" demonstrates:
+		- Index buffer object (IBO)
 		- Vertex buffer object (VBO)
 		- Vertex array object (VAO)
-		- Index buffer object (IBO)
-		- Uniform buffer object (UBO)
 		- Texture buffer object (TBO)
+		- Uniform buffer object (UBO)
 		- Sampler state object
 		- Vertex shader (VS) and fragment shader (FS)
 		- Root signature

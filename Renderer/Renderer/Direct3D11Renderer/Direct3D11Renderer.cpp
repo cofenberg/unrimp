@@ -4659,7 +4659,9 @@ namespace Direct3D11Renderer
 				}
 				if (bufferFlags & Renderer::BufferFlag::UNORDERED_ACCESS)
 				{
-					d3d11BufferDesc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
+					d3d11BufferDesc.Usage			= D3D11_USAGE_DEFAULT;
+					d3d11BufferDesc.BindFlags	   |= D3D11_BIND_UNORDERED_ACCESS;
+					d3d11BufferDesc.CPUAccessFlags  = 0;
 				}
 
 				// Data given?
@@ -12568,6 +12570,10 @@ namespace Direct3D11Renderer
 		{ // TODO(co) Compute shader: "D3D11 WARNING: ID3D11DeviceContext::OMSetRenderTargets[AndUnorderedAccessViews]: Forcing CS shader resource slot 0 to NULL. [ STATE_SETTING WARNING #2097316: DEVICE_CSSETSHADERRESOURCES_HAZARD]"
 			ID3D11UnorderedAccessView* d3d11UnorderedAccessView = nullptr;
 			mD3D11DeviceContext->CSSetUnorderedAccessViews(0, 1, &d3d11UnorderedAccessView, nullptr);
+			mD3D11DeviceContext->CSSetUnorderedAccessViews(1, 1, &d3d11UnorderedAccessView, nullptr);
+			mD3D11DeviceContext->CSSetUnorderedAccessViews(2, 1, &d3d11UnorderedAccessView, nullptr);
+			mD3D11DeviceContext->CSSetUnorderedAccessViews(3, 1, &d3d11UnorderedAccessView, nullptr);
+			mD3D11DeviceContext->CSSetUnorderedAccessViews(4, 1, &d3d11UnorderedAccessView, nullptr);
 		}
 	}
 

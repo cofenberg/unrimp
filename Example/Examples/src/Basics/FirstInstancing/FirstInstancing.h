@@ -41,9 +41,9 @@
 *
 *  @remarks
 *    Demonstrates:
+*    - Index buffer object (IBO)
 *    - Vertex buffer object (VBO)
 *    - Vertex array object (VAO)
-*    - Index buffer object (IBO)
 *    - Vertex shader (VS) and fragment shader (FS)
 *    - Root signature
 *    - Graphics pipeline state object (PSO)

@@ -1391,6 +1391,7 @@ namespace Renderer
 			strcpy(range.baseShaderRegisterName, _baseShaderRegisterName);
 			range.shaderVisibility = _shaderVisibility;
 			range.resourceType = _resourceType;
+			ASSERT((ResourceType::UNIFORM_BUFFER != range.resourceType || DescriptorRangeType::UAV != range.rangeType) && "Uniform buffer doesn't support UAV");
 		}
 		inline DescriptorRangeBuilder()
 		{}

@@ -53,11 +53,11 @@ namespace RendererRuntime
 *
 *  @remarks
 *    Demonstrates:
+*    - Index buffer object (IBO)
 *    - Vertex buffer object (VBO)
 *    - Vertex array object (VAO)
-*    - Index buffer object (IBO)
-*    - Uniform buffer object (UBO)
 *    - Texture buffer object (TBO)
+*    - Uniform buffer object (UBO)
 *    - Sampler state object
 *    - Vertex shader (VS) and fragment shader (FS)
 *    - Root signature

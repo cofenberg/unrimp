@@ -40,11 +40,14 @@ layout(location = 0) out gl_PerVertex
 };
 layout(location = 1) out vec2 TexCoord;	// Normalized texture coordinate as output
 
+// Uniforms
+layout(binding = 0) uniform samplerBuffer InputTextureBuffer;
+
 // Programs
 void main()
 {
 	// Pass through the clip space vertex position, left/bottom is (-1,-1) and right/top is (1,1)
-	gl_Position = vec4(Position, 0.5, 1.0);
+	gl_Position = vec4(Position + texelFetch(InputTextureBuffer, gl_VertexIndex).xy, 0.5, 1.0);
 	TexCoord = Position.xy;
 }
 )";
@@ -61,17 +64,17 @@ layout(location = 1) in  vec2 TexCoord;		// Normalized texture coordinate as inp
 layout(location = 0) out vec4 OutputColor;	// Output variable for fragment color
 
 // Uniforms
-layout(set = 0, binding = 0) uniform sampler2D AlbedoMap;
-layout(set = 0, binding = 1, std140) uniform UniformBuffer
+layout(set = 0, binding = 1) uniform sampler2D AlbedoMap;
+layout(set = 0, binding = 2, std140) uniform UniformBuffer
 {
-	vec4 inputColor;
+	vec4 inputColorUniform;
 };
 
 // Programs
 void main()
 {
 	// Fetch the texel at the given texture coordinate and return its color
-	OutputColor = texture(AlbedoMap, TexCoord) * inputColor;
+	OutputColor = texture(AlbedoMap, TexCoord) * inputColorUniform;
 }
 )";
 
@@ -96,35 +99,37 @@ struct DrawIndexedInstancedArguments
 };
 
 // Input
-layout(binding = 0)					  uniform sampler2D InputTexture2D;
-layout(binding = 1, std430) readonly		  buffer    InputIndexBuffer
+layout(binding = 0) uniform sampler2D InputTexture2D;
+layout(binding = 1, std430) readonly buffer InputIndexBuffer
 {
 	uint inputIndices[3];
 };
-layout(binding = 2, std430) readonly		  buffer    InputVertexBuffer
+layout(binding = 2, std430) readonly buffer InputVertexBuffer
 {
 	Vertex inputVertices[3];
 };
-layout(binding = 3, std430) readonly		  buffer    InputIndirectBuffer
+layout(binding = 3) uniform samplerBuffer InputTextureBuffer;
+layout(binding = 4, std430) readonly buffer InputIndirectBuffer
 {
 	DrawIndexedInstancedArguments inputDrawIndexedInstancedArguments;
 };
-layout(binding = 4, std140)					  uniform    InputUniformBuffer
+layout(binding = 5, std140) uniform InputUniformBuffer
 {
-	vec4 inputColor;
+	vec4 inputColorUniform;
 };
 
 // Output
-layout(binding = 5, rgba8)	writeonly uniform image2D OutputTexture2D;
-layout(binding = 6, std430) writeonly		  buffer  OutputIndexBuffer
+layout(binding = 6, rgba8) writeonly uniform image2D OutputTexture2D;
+layout(binding = 7, std430) writeonly buffer OutputIndexBuffer
 {
 	uint outputIndices[3];
 };
-layout(binding = 7, std430) writeonly		  buffer  OutputVertexBuffer
+layout(binding = 8, std430) writeonly buffer OutputVertexBuffer
 {
 	Vertex outputVertices[3];
 };
-layout(binding = 8, std430) writeonly		  buffer  OutputIndirectBuffer
+layout(binding = 9, rgba32f) writeonly uniform imageBuffer OutputTextureBuffer;
+layout(binding = 10, std430) writeonly buffer OutputIndirectBuffer
 {
 	DrawIndexedInstancedArguments outputDrawIndexedInstancedArguments;
 };
@@ -134,7 +139,7 @@ layout (local_size_x = 16, local_size_y = 16) in;
 void main()
 {
 	// Fetch input texel
-	vec4 color = texelFetch(InputTexture2D, ivec2(gl_GlobalInvocationID.xy), 0) * inputColor;
+	vec4 color = texelFetch(InputTexture2D, ivec2(gl_GlobalInvocationID.xy), 0) * inputColorUniform;
 
 	// Modify color
 	color.g *= 1.0f - (float(gl_GlobalInvocationID.x) / 16.0f);
@@ -146,22 +151,28 @@ void main()
 	// Output buffer
 	if (0 == gl_GlobalInvocationID.x && 0 == gl_GlobalInvocationID.y && 0 == gl_GlobalInvocationID.z)
 	{
-		// Output indices
-		for (int indexIndex = 0; indexIndex < 3; ++indexIndex)
+		// Output index buffer values
+		for (int indexBufferIndex = 0; indexBufferIndex < 3; ++indexBufferIndex)
 		{
-			outputIndices[indexIndex] = inputIndices[indexIndex];
+			outputIndices[indexBufferIndex] = inputIndices[indexBufferIndex];
 		}
 
-		// Output vertices
-		for (int vertexIndex = 0; vertexIndex < 3; ++vertexIndex)
+		// Output vertex buffer values
+		for (int vertexBufferIndex = 0; vertexBufferIndex < 3; ++vertexBufferIndex)
 		{
-			outputVertices[vertexIndex] = inputVertices[vertexIndex];
+			outputVertices[vertexBufferIndex] = inputVertices[vertexBufferIndex];
 		}
 
-		// Output draw call
+		// Output texture buffer values
+		for (int textureBufferIndex = 0; textureBufferIndex < 3; ++textureBufferIndex)
+		{
+			imageStore(OutputTextureBuffer, textureBufferIndex, texelFetch(InputTextureBuffer, textureBufferIndex));
+		}
+
+		// Output indirect buffer values (draw calls)
 		outputDrawIndexedInstancedArguments = inputDrawIndexedInstancedArguments;
 
-		// Output uniform not possible by design
+		// Output uniform buffer not possible by design
 	}
 }
 )";

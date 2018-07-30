@@ -38,12 +38,19 @@ struct VS_OUTPUT
 	float2 TexCoord : TEXCOORD0;	// Normalized texture coordinate as output
 };
 
+// Uniforms
+tbuffer InputTextureBuffer : register(t0)
+{
+	float4 inputPositionOffset[3];
+};
+
 // Programs
-VS_OUTPUT main(float2 Position : POSITION)	// Clip space vertex position as input, left/bottom is (-1,-1) and right/top is (1,1)
+VS_OUTPUT main(float2 Position : POSITION,	// Clip space vertex position as input, left/bottom is (-1,-1) and right/top is (1,1)
+			   uint   VertexId : SV_VERTEXID)
 {
 	// Pass through the clip space vertex position, left/bottom is (-1,-1) and right/top is (1,1)
 	VS_OUTPUT output;
-	output.Position = float4(Position, 0.5f, 1.0f);
+	output.Position = float4(Position + inputPositionOffset[VertexId].xy, 0.5f, 1.0f);
 	output.TexCoord = Position.xy;
 	return output;
 }
@@ -58,13 +65,17 @@ VS_OUTPUT main(float2 Position : POSITION)	// Clip space vertex position as inpu
 fragmentShaderSourceCode = R"(
 // Uniforms
 SamplerState SamplerLinear : register(s0);
-Texture2D AlbedoMap : register(t0);
+Texture2D AlbedoMap : register(t1);
+cbuffer InputUniformBuffer : register(b0)
+{
+	float4 inputColorUniform;
+}
 
 // Programs
 float4 main(float4 Position : SV_POSITION, float2 TexCoord : TEXCOORD0) : SV_TARGET
 {
 	// Fetch the texel at the given texture coordinate and return its color
-	return AlbedoMap.Sample(SamplerLinear, TexCoord);
+	return AlbedoMap.Sample(SamplerLinear, TexCoord) * inputColorUniform;
 }
 )";
 
@@ -80,27 +91,32 @@ tbuffer				InputIndexBuffer	 : register(t1)
 	uint inputIndexBuffer[3];
 };
 ByteAddressBuffer	InputVertexBuffer	 : register(t2);
-tbuffer				InputIndirectBuffer  : register(t3)
+tbuffer				InputTextureBuffer   : register(t3)
+{
+	float4 inputPositionOffset[3];
+};
+tbuffer				InputIndirectBuffer  : register(t4)
 {
 	uint inputIndirectBuffer[5];
 };
 cbuffer				InputUniformBuffer	 : register(b0)
 {
-	float4 inputColor;
+	float4 inputColorUniform;
 }
 
 // Output
-RWTexture2D<float4> OutputTexture2D		 : register(u0);
+RWTexture2D<float4>	OutputTexture2D		 : register(u0);
 RWBuffer<uint>		OutputIndexBuffer    : register(u1);
-RWByteAddressBuffer OutputVertexBuffer   : register(u2);
-RWBuffer<uint>		OutputIndirectBuffer : register(u3);
+RWByteAddressBuffer	OutputVertexBuffer   : register(u2);
+RWBuffer<float4>	OutputTextureBuffer  : register(u3);
+RWBuffer<uint>		OutputIndirectBuffer : register(u4);
 
 // Programs
 [numthreads(16, 16, 1)]
 void main(uint3 dispatchThreadId : SV_DispatchThreadID)
 {
 	// Fetch input texel
-	float4 color = InputTexture2D.Load(dispatchThreadId) * inputColor;
+	float4 color = InputTexture2D.Load(dispatchThreadId) * inputColorUniform;
 
 	// Modify color
 	color.g *= 1.0f - (float(dispatchThreadId.x) / 16.0f);
@@ -112,22 +128,28 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID)
 	// Output buffer
 	if (0 == dispatchThreadId.x && 0 == dispatchThreadId.y && 0 == dispatchThreadId.z)
 	{
-		// Output indices
-		for (int indexIndex = 0; indexIndex < 3; ++indexIndex)
+		// Output index buffer values
+		for (int indexBufferIndex = 0; indexBufferIndex < 3; ++indexBufferIndex)
 		{
-			OutputIndexBuffer[indexIndex] = inputIndexBuffer[indexIndex];
+			OutputIndexBuffer[indexBufferIndex] = inputIndexBuffer[indexBufferIndex];
 		}
 
-		// Output vertices
+		// Output vertex buffer values
 		// -> Using a structured vertex buffer would be handy inside shader source codes, sadly this isn't possible with Direct3D 11 and will result in the following error:
 		//    D3D11 ERROR: ID3D11Device::CreateBuffer: Buffers created with D3D11_RESOURCE_MISC_BUFFER_STRUCTURED cannot specify any of the following listed bind flags.  The following BindFlags bits (0x9) are set: D3D11_BIND_VERTEX_BUFFER (1), D3D11_BIND_INDEX_BUFFER (0), D3D11_BIND_CONSTANT_BUFFER (0), D3D11_BIND_STREAM_OUTPUT (0), D3D11_BIND_RENDER_TARGET (0), or D3D11_BIND_DEPTH_STENCIL (0). [ STATE_CREATION ERROR #68: CREATEBUFFER_INVALIDMISCFLAGS]
-		for (int vertexIndex = 0; vertexIndex < 3; ++vertexIndex)
+		for (int vertexBufferIndex = 0; vertexBufferIndex < 3; ++vertexBufferIndex)
 		{
-			float2 position = asfloat(InputVertexBuffer.Load2(vertexIndex * 8));
-			OutputVertexBuffer.Store2(vertexIndex * 8, asuint(position));
+			float2 position = asfloat(InputVertexBuffer.Load2(vertexBufferIndex * 8));
+			OutputVertexBuffer.Store2(vertexBufferIndex * 8, asuint(position));
 		}
 
-		// Output draw call
+		// Output texture buffer values
+		for (int textureBufferIndex = 0; textureBufferIndex < 3; ++textureBufferIndex)
+		{
+			OutputTextureBuffer[textureBufferIndex] = inputPositionOffset[textureBufferIndex];
+		}
+
+		// Output indirect buffer values (draw calls)
 		// -> Using a structured indirect buffer would be handy inside shader source codes, sadly this isn't possible with Direct3D 11 and will result in the following error:
 		//    "D3D11 ERROR: ID3D11Device::CreateBuffer: A resource cannot created with both D3D11_RESOURCE_MISC_DRAWINDIRECT_ARGS and D3D11_RESOURCE_MISC_BUFFER_STRUCTURED. [ STATE_CREATION ERROR #68: CREATEBUFFER_INVALIDMISCFLAGS]"
 		OutputIndirectBuffer[0] = inputIndirectBuffer[0];	// Renderer::DrawIndexedInstancedArguments::indexCountPerInstance
@@ -136,7 +158,7 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID)
 		OutputIndirectBuffer[3] = inputIndirectBuffer[3];	// Renderer::DrawIndexedInstancedArguments::baseVertexLocation
 		OutputIndirectBuffer[4] = inputIndirectBuffer[4];	// Renderer::DrawIndexedInstancedArguments::startInstanceLocation
 
-		// Output uniform not possible by design
+		// Output uniform buffer not possible by design
 	}
 }
 )";

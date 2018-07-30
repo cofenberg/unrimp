@@ -4085,6 +4085,7 @@ namespace VulkanRenderer
 			const VkDevice vkDevice = vulkanRenderer.getVulkanContext().getVkDevice();
 			VkDescriptorSetLayouts vkDescriptorSetLayouts;
 			uint32_t numberOfUniformTexelBuffers = 0;	// "VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER"
+			uint32_t numberOfStorageTexelBuffers = 0;	// "VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER"
 			uint32_t numberOfStorageImage = 0;			// "VK_DESCRIPTOR_TYPE_STORAGE_IMAGE"
 			uint32_t numberOfIndirectBuffers = 0;		// "VK_DESCRIPTOR_TYPE_STORAGE_BUFFER"
 			uint32_t numberOfUniformBuffers = 0;		// "VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER"
@@ -4115,9 +4116,17 @@ namespace VulkanRenderer
 							switch (descriptorRange->resourceType)
 							{
 								case Renderer::ResourceType::TEXTURE_BUFFER:
-									RENDERER_ASSERT(vulkanRenderer.getContext(), Renderer::DescriptorRangeType::SRV == descriptorRange->rangeType, "Vulkan renderer backend: Invalid descriptor range type")
-									vkDescriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
-									++numberOfUniformTexelBuffers;
+									RENDERER_ASSERT(vulkanRenderer.getContext(), Renderer::DescriptorRangeType::SRV == descriptorRange->rangeType || Renderer::DescriptorRangeType::UAV == descriptorRange->rangeType, "Vulkan renderer backend: Invalid descriptor range type")
+									if (Renderer::DescriptorRangeType::SRV == descriptorRange->rangeType)
+									{
+										vkDescriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
+										++numberOfUniformTexelBuffers;
+									}
+									else
+									{
+										vkDescriptorType = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
+										++numberOfStorageTexelBuffers;
+									}
 									break;
 
 								case Renderer::ResourceType::INDEX_BUFFER:
@@ -4286,6 +4295,15 @@ namespace VulkanRenderer
 					VkDescriptorPoolSize& vkDescriptorPoolSize = vkDescriptorPoolSizes[numberOfVkDescriptorPoolSizes];
 					vkDescriptorPoolSize.type			 = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;	// type (VkDescriptorType)
 					vkDescriptorPoolSize.descriptorCount = maxSets * numberOfUniformTexelBuffers;	// descriptorCount (uint32_t)
+					++numberOfVkDescriptorPoolSizes;
+				}
+
+				// "VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER"
+				if (numberOfStorageTexelBuffers > 0)
+				{
+					VkDescriptorPoolSize& vkDescriptorPoolSize = vkDescriptorPoolSizes[numberOfVkDescriptorPoolSizes];
+					vkDescriptorPoolSize.type			 = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;	// type (VkDescriptorType)
+					vkDescriptorPoolSize.descriptorCount = maxSets * numberOfStorageTexelBuffers;	// descriptorCount (uint32_t)
 					++numberOfVkDescriptorPoolSizes;
 				}
 
@@ -5078,7 +5096,16 @@ namespace VulkanRenderer
 			mVkDeviceMemory(VK_NULL_HANDLE),
 			mVkBufferView(VK_NULL_HANDLE)
 		{
-			Helper::createAndAllocateVkBuffer(vulkanRenderer, VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, numberOfBytes, data, mVkBuffer, mVkDeviceMemory);
+			uint32_t vkBufferUsageFlagBits = 0;
+			if (bufferFlags & Renderer::BufferFlag::SHADER_RESOURCE)
+			{
+				vkBufferUsageFlagBits |= VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT;
+			}
+			if (bufferFlags & Renderer::BufferFlag::UNORDERED_ACCESS)
+			{
+				vkBufferUsageFlagBits |= VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT;
+			}
+			Helper::createAndAllocateVkBuffer(vulkanRenderer, static_cast<VkBufferUsageFlagBits>(vkBufferUsageFlagBits), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, numberOfBytes, data, mVkBuffer, mVkDeviceMemory);
 
 			// Create Vulkan buffer view
 			if ((bufferFlags & Renderer::BufferFlag::SHADER_RESOURCE) != 0 || (bufferFlags & Renderer::BufferFlag::UNORDERED_ACCESS) != 0)
@@ -9346,6 +9373,8 @@ namespace VulkanRenderer
 		*
 		*  @param[in] rootSignature
 		*    Root signature
+		*  @param[in] rootParameterIndex
+		*    Root parameter index
 		*  @param[in] vkDescriptorSet
 		*    Wrapped Vulkan descriptor set
 		*  @param[in] numberOfResources
@@ -9355,7 +9384,7 @@ namespace VulkanRenderer
 		*  @param[in] samplerStates
 		*    If not a null pointer at least "numberOfResources" sampler state pointers, must be valid if there's at least one texture resource, the resource group will keep a reference to the sampler states
 		*/
-		ResourceGroup(RootSignature& rootSignature, VkDescriptorSet vkDescriptorSet, uint32_t numberOfResources, Renderer::IResource** resources, Renderer::ISamplerState** samplerStates) :
+		ResourceGroup(RootSignature& rootSignature, uint32_t rootParameterIndex, VkDescriptorSet vkDescriptorSet, uint32_t numberOfResources, Renderer::IResource** resources, Renderer::ISamplerState** samplerStates) :
 			IResourceGroup(static_cast<VulkanRenderer&>(rootSignature.getRenderer())),
 			mRootSignature(rootSignature),
 			mVkDescriptorSet(vkDescriptorSet),
@@ -9444,19 +9473,21 @@ namespace VulkanRenderer
 
 					case Renderer::ResourceType::TEXTURE_BUFFER:
 					{
+						const Renderer::DescriptorRange& descriptorRange = reinterpret_cast<const Renderer::DescriptorRange*>(rootSignature.getRootSignature().parameters[rootParameterIndex].descriptorTable.descriptorRanges)[resourceIndex];
+						RENDERER_ASSERT(vulkanRenderer.getContext(), Renderer::DescriptorRangeType::SRV == descriptorRange.rangeType || Renderer::DescriptorRangeType::UAV == descriptorRange.rangeType, "Vulkan texture buffer must bound at SRV or UAV descriptor range type")
 						const VkBufferView vkBufferView = static_cast<TextureBuffer*>(resource)->getVkBufferView();
 						const VkWriteDescriptorSet vkWriteDescriptorSet =
 						{
-							VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,		// sType (VkStructureType)
-							nullptr,									// pNext (const void*)
-							mVkDescriptorSet,							// dstSet (VkDescriptorSet)
-							resourceIndex,								// dstBinding (uint32_t)
-							0,											// dstArrayElement (uint32_t)
-							1,											// descriptorCount (uint32_t)
-							VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER,	// descriptorType (VkDescriptorType)
-							nullptr,									// pImageInfo (const VkDescriptorImageInfo*)
-							nullptr,									// pBufferInfo (const VkDescriptorBufferInfo*)
-							&vkBufferView								// pTexelBufferView (const VkBufferView*)
+							VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,																													// sType (VkStructureType)
+							nullptr,																																				// pNext (const void*)
+							mVkDescriptorSet,																																		// dstSet (VkDescriptorSet)
+							resourceIndex,																																			// dstBinding (uint32_t)
+							0,																																						// dstArrayElement (uint32_t)
+							1,																																						// descriptorCount (uint32_t)
+							(Renderer::DescriptorRangeType::SRV == descriptorRange.rangeType) ? VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER : VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER,	// descriptorType (VkDescriptorType)
+							nullptr,																																				// pImageInfo (const VkDescriptorImageInfo*)
+							nullptr,																																				// pBufferInfo (const VkDescriptorBufferInfo*)
+							&vkBufferView																																			// pTexelBufferView (const VkBufferView*)
 						};
 						vkUpdateDescriptorSets(vkDevice, 1, &vkWriteDescriptorSet, 0, nullptr);
 						break;
@@ -9766,7 +9797,7 @@ namespace VulkanRenderer
 		}
 
 		// Create resource group
-		return RENDERER_NEW(context, ResourceGroup)(*this, vkDescriptorSet, numberOfResources, resources, samplerStates);
+		return RENDERER_NEW(context, ResourceGroup)(*this, rootParameterIndex, vkDescriptorSet, numberOfResources, resources, samplerStates);
 	}
 
 
