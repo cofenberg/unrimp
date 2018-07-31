@@ -49,14 +49,14 @@ void FirstComputeShader::onInitialization()
 
 		{ // Create the graphics root signature
 			Renderer::DescriptorRangeBuilder ranges[4];
-			ranges[0].initialize(Renderer::ResourceType::TEXTURE_BUFFER, 0, "InputTextureBuffer", Renderer::ShaderVisibility::VERTEX);
-			ranges[1].initialize(Renderer::ResourceType::TEXTURE_2D,	 1, "AlbedoMap",		  Renderer::ShaderVisibility::FRAGMENT);
-			ranges[2].initialize(Renderer::ResourceType::UNIFORM_BUFFER, 0, "UniformBuffer",	  Renderer::ShaderVisibility::FRAGMENT);
+			ranges[0].initialize(Renderer::ResourceType::UNIFORM_BUFFER, 0, "UniformBuffer",	  Renderer::ShaderVisibility::FRAGMENT);
+			ranges[1].initialize(Renderer::ResourceType::TEXTURE_BUFFER, 0, "InputTextureBuffer", Renderer::ShaderVisibility::VERTEX);
+			ranges[2].initialize(Renderer::ResourceType::TEXTURE_2D,	 1, "AlbedoMap",		  Renderer::ShaderVisibility::FRAGMENT);
 			ranges[3].initializeSampler(0, Renderer::ShaderVisibility::FRAGMENT);
 
 			Renderer::RootParameterBuilder rootParameters[2];
 			rootParameters[0].initializeAsDescriptorTable(3, &ranges[0]);
-			rootParameters[1].initializeAsDescriptorTable(1, &ranges[2]);
+			rootParameters[1].initializeAsDescriptorTable(1, &ranges[3]);
 
 			// Setup
 			Renderer::RootSignatureBuilder rootSignature;
@@ -66,33 +66,51 @@ void FirstComputeShader::onInitialization()
 			mGraphicsRootSignature = renderer->createRootSignature(rootSignature);
 		}
 
-		{ // Create the compute root signature
-			Renderer::DescriptorRangeBuilder ranges[11];
+		{ // Create the first compute root signature
+			Renderer::DescriptorRangeBuilder ranges[7];
 			// Input
-			ranges[0]. initialize(Renderer::ResourceType::TEXTURE_2D,	   0,		   "InputTexture2D",	   Renderer::ShaderVisibility::COMPUTE);
-			ranges[1]. initialize(Renderer::ResourceType::INDEX_BUFFER,    1,		   "InputIndexBuffer",     Renderer::ShaderVisibility::COMPUTE);
-			ranges[2]. initialize(Renderer::ResourceType::VERTEX_BUFFER,   2,		   "InputVertexBuffer",    Renderer::ShaderVisibility::COMPUTE);
-			ranges[3]. initialize(Renderer::ResourceType::TEXTURE_BUFFER,  3,		   "InputTextureBuffer",   Renderer::ShaderVisibility::COMPUTE);
-			ranges[4]. initialize(Renderer::ResourceType::INDIRECT_BUFFER, 4,		   "InputIndirectBuffer",  Renderer::ShaderVisibility::COMPUTE);
-			ranges[5]. initialize(Renderer::ResourceType::UNIFORM_BUFFER,  0,		   "InputUniformBuffer",   Renderer::ShaderVisibility::COMPUTE);
+			ranges[0].initialize(Renderer::ResourceType::TEXTURE_2D,	  0,			"InputTexture2D",	  Renderer::ShaderVisibility::COMPUTE);
+			ranges[1].initialize(Renderer::ResourceType::INDEX_BUFFER,    1,			"InputIndexBuffer",	  Renderer::ShaderVisibility::COMPUTE);
+			ranges[2].initialize(Renderer::ResourceType::VERTEX_BUFFER,   2,			"InputVertexBuffer",  Renderer::ShaderVisibility::COMPUTE);
+			ranges[3].initialize(Renderer::ResourceType::UNIFORM_BUFFER,  0,			"InputUniformBuffer", Renderer::ShaderVisibility::COMPUTE);
 			// Output
 			// TODO(co) Compute shader: Get rid of the OpenGL/Direct3D 11 variation here
-			const uint32_t offset = (renderer->getNameId() == Renderer::NameId::VULKAN || renderer->getNameId() == Renderer::NameId::OPENGL) ? 6u : 0u;
-			ranges[6]. initialize(Renderer::ResourceType::TEXTURE_2D,	   0u + offset, "OutputTexture2D",	    Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
-			ranges[7]. initialize(Renderer::ResourceType::INDEX_BUFFER,    1u + offset, "OutputIndexBuffer",    Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
-			ranges[8]. initialize(Renderer::ResourceType::VERTEX_BUFFER,   2u + offset, "OutputVertexBuffer",   Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
-			ranges[9]. initialize(Renderer::ResourceType::TEXTURE_BUFFER,  3u + offset, "OutputTextureBuffer",  Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
-			ranges[10].initialize(Renderer::ResourceType::INDIRECT_BUFFER, 4u + offset, "OutputIndirectBuffer", Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
+			const uint32_t offset = (renderer->getNameId() == Renderer::NameId::VULKAN || renderer->getNameId() == Renderer::NameId::OPENGL) ? 4u : 0u;
+			ranges[4].initialize(Renderer::ResourceType::TEXTURE_2D,	  0u + offset, "OutputTexture2D",	  Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
+			ranges[5].initialize(Renderer::ResourceType::INDEX_BUFFER,    1u + offset, "OutputIndexBuffer",	  Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
+			ranges[6].initialize(Renderer::ResourceType::VERTEX_BUFFER,   2u + offset, "OutputVertexBuffer",  Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
 
 			Renderer::RootParameterBuilder rootParameters[1];
-			rootParameters[0].initializeAsDescriptorTable(11, &ranges[0]);
+			rootParameters[0].initializeAsDescriptorTable(7, &ranges[0]);
 
 			// Setup
 			Renderer::RootSignatureBuilder rootSignature;
 			rootSignature.initialize(static_cast<uint32_t>(glm::countof(rootParameters)), rootParameters, 0, nullptr, Renderer::RootSignatureFlags::NONE);
 
 			// Create the instance
-			mComputeRootSignature = renderer->createRootSignature(rootSignature);
+			mComputeRootSignature1 = renderer->createRootSignature(rootSignature);
+		}
+
+		{ // Create the second compute root signature
+			Renderer::DescriptorRangeBuilder ranges[4];
+			// Input
+			ranges[0].initialize(Renderer::ResourceType::TEXTURE_BUFFER,  0,		   "InputTextureBuffer",   Renderer::ShaderVisibility::COMPUTE);
+			ranges[1].initialize(Renderer::ResourceType::INDIRECT_BUFFER, 1,		   "InputIndirectBuffer",  Renderer::ShaderVisibility::COMPUTE);
+			// Output
+			// TODO(co) Compute shader: Get rid of the OpenGL/Direct3D 11 variation here
+			const uint32_t offset = (renderer->getNameId() == Renderer::NameId::VULKAN || renderer->getNameId() == Renderer::NameId::OPENGL) ? 2u : 0u;
+			ranges[2].initialize(Renderer::ResourceType::TEXTURE_BUFFER,  0u + offset, "OutputTextureBuffer",  Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
+			ranges[3].initialize(Renderer::ResourceType::INDIRECT_BUFFER, 1u + offset, "OutputIndirectBuffer", Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
+
+			Renderer::RootParameterBuilder rootParameters[1];
+			rootParameters[0].initializeAsDescriptorTable(4, &ranges[0]);
+
+			// Setup
+			Renderer::RootSignatureBuilder rootSignature;
+			rootSignature.initialize(static_cast<uint32_t>(glm::countof(rootParameters)), rootParameters, 0, nullptr, Renderer::RootSignatureFlags::NONE);
+
+			// Create the instance
+			mComputeRootSignature2 = renderer->createRootSignature(rootSignature);
 		}
 
 		// Create sampler state and wrap it into a resource group instance
@@ -206,26 +224,36 @@ void FirstComputeShader::onInitialization()
 				mFramebuffer = renderer->createFramebuffer(*renderer->createRenderPass(1, &textureFormat), &colorFramebufferAttachment);
 			}
 
-			{ // Create compute texture group
-				Renderer::IResource* resources[11] = {
+			{ // Create first compute resource group
+				Renderer::IResource* resources[7] = {
 					// Input
-					computeInputTexture2D, mComputeInputIndexBuffer, mComputeInputVertexBuffer, mComputeInputTextureBuffer, mComputeInputIndirectBuffer, mComputeInputUniformBuffer,
+					computeInputTexture2D, mComputeInputIndexBuffer, mComputeInputVertexBuffer, mComputeInputUniformBuffer,
 					// Output
-					computeOutputTexture2D, mComputeOutputIndexBuffer, mComputeOutputVertexBuffer, mComputeOutputTextureBuffer, mComputeOutputIndirectBuffer
+					computeOutputTexture2D, mComputeOutputIndexBuffer, mComputeOutputVertexBuffer
 				};
-				Renderer::ISamplerState* samplerStates[11] = {
+				Renderer::ISamplerState* samplerStates[7] = {
 					// Input
-					static_cast<Renderer::ISamplerState*>(samplerStateResource), nullptr, nullptr, nullptr, nullptr, nullptr,
+					static_cast<Renderer::ISamplerState*>(samplerStateResource), nullptr, nullptr, nullptr,
 					// Output
-					nullptr, nullptr, nullptr, nullptr, nullptr
+					nullptr, nullptr, nullptr
 				};
-				mComputeTextureGroup = mComputeRootSignature->createResourceGroup(0, static_cast<uint32_t>(glm::countof(resources)), resources, samplerStates);
+				mComputeResourceGroup1 = mComputeRootSignature1->createResourceGroup(0, static_cast<uint32_t>(glm::countof(resources)), resources, samplerStates);
 			}
 
-			{ // Create graphics texture group
-				Renderer::IResource* resources[3] = { mComputeOutputTextureBuffer, computeOutputTexture2D, mComputeInputUniformBuffer };
-				Renderer::ISamplerState* samplerStates[3] = { nullptr, static_cast<Renderer::ISamplerState*>(samplerStateResource), nullptr };
-				mGraphicsTextureGroup = mGraphicsRootSignature->createResourceGroup(0, static_cast<uint32_t>(glm::countof(resources)), resources, samplerStates);
+			{ // Create second compute resource group
+				Renderer::IResource* resources[4] = {
+					// Input
+					mComputeInputTextureBuffer, mComputeInputIndirectBuffer,
+					// Output
+					mComputeOutputTextureBuffer, mComputeOutputIndirectBuffer
+				};
+				mComputeResourceGroup2 = mComputeRootSignature2->createResourceGroup(0, static_cast<uint32_t>(glm::countof(resources)), resources, nullptr);
+			}
+
+			{ // Create graphics resource group
+				Renderer::IResource* resources[3] = { mComputeInputUniformBuffer, mComputeOutputTextureBuffer, computeOutputTexture2D };
+				Renderer::ISamplerState* samplerStates[3] = { nullptr, nullptr, static_cast<Renderer::ISamplerState*>(samplerStateResource) };
+				mGraphicsResourceGroup = mGraphicsRootSignature->createResourceGroup(0, static_cast<uint32_t>(glm::countof(resources)), resources, samplerStates);
 			}
 		}
 
@@ -239,7 +267,8 @@ void FirstComputeShader::onInitialization()
 				// Get the shader source code (outsourced to keep an overview)
 				const char* vertexShaderSourceCode = nullptr;
 				const char* fragmentShaderSourceCode = nullptr;
-				const char* computeShaderSourceCode = nullptr;
+				const char* computeShaderSourceCode1 = nullptr;
+				const char* computeShaderSourceCode2 = nullptr;
 				#include "FirstComputeShader_GLSL_450.h"	// For Vulkan
 				#include "FirstComputeShader_GLSL_430.h"	// macOS 10.11 only supports OpenGL 4.1 and hence can't be supported by this example
 				#include "FirstComputeShader_HLSL_D3D11_D3D12.h"
@@ -252,8 +281,9 @@ void FirstComputeShader::onInitialization()
 					shaderLanguage->createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode),
 					shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 
-				// Create the compute pipeline state object (PSO)
-				mComputePipelineState = renderer->createComputePipelineState(*mComputeRootSignature, *shaderLanguage->createComputeShaderFromSourceCode(computeShaderSourceCode));
+				// Create the compute pipeline state objects (PSO)
+				mComputePipelineState1 = renderer->createComputePipelineState(*mComputeRootSignature1, *shaderLanguage->createComputeShaderFromSourceCode(computeShaderSourceCode1));
+				mComputePipelineState2 = renderer->createComputePipelineState(*mComputeRootSignature2, *shaderLanguage->createComputeShaderFromSourceCode(computeShaderSourceCode2));
 			}
 
 			// Create the graphics pipeline state object (PSO)
@@ -281,13 +311,16 @@ void FirstComputeShader::onDeinitialization()
 	mComputeInputVertexBuffer = nullptr;
 	mComputeOutputIndexBuffer = nullptr;
 	mComputeInputIndexBuffer = nullptr;
-	mComputePipelineState = nullptr;
+	mComputePipelineState2 = nullptr;
+	mComputePipelineState1 = nullptr;
 	mGraphicsPipelineState = nullptr;
 	mGraphicsSamplerStateGroup = nullptr;
-	mGraphicsTextureGroup = nullptr;
-	mComputeTextureGroup = nullptr;
+	mGraphicsResourceGroup = nullptr;
+	mComputeResourceGroup2 = nullptr;
+	mComputeResourceGroup1 = nullptr;
 	mFramebuffer = nullptr;
-	mComputeRootSignature = nullptr;
+	mComputeRootSignature2 = nullptr;
+	mComputeRootSignature1 = nullptr;
 	mGraphicsRootSignature = nullptr;
 	mCommandBuffer.clear();
 	mTextureManager = nullptr;
@@ -316,13 +349,16 @@ void FirstComputeShader::fillCommandBuffer()
 	assert(nullptr != getMainRenderTarget());
 	assert(mCommandBuffer.isEmpty());
 	assert(nullptr != mGraphicsRootSignature);
-	assert(nullptr != mComputeRootSignature);
+	assert(nullptr != mComputeRootSignature1);
+	assert(nullptr != mComputeRootSignature2);
 	assert(nullptr != mFramebuffer);
-	assert(nullptr != mComputeTextureGroup);
-	assert(nullptr != mGraphicsTextureGroup);
+	assert(nullptr != mComputeResourceGroup1);
+	assert(nullptr != mComputeResourceGroup2);
+	assert(nullptr != mGraphicsResourceGroup);
 	assert(nullptr != mGraphicsSamplerStateGroup);
 	assert(nullptr != mGraphicsPipelineState);
-	assert(nullptr != mComputePipelineState);
+	assert(nullptr != mComputePipelineState1);
+	assert(nullptr != mComputePipelineState2);
 	assert(nullptr != mComputeInputIndexBuffer);
 	assert(nullptr != mComputeOutputIndexBuffer);
 	assert(nullptr != mComputeInputVertexBuffer);
@@ -360,15 +396,21 @@ void FirstComputeShader::fillCommandBuffer()
 		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Use the render to texture result for compute")
 
 		// Set the used compute root signature
-		Renderer::Command::SetComputeRootSignature::create(mCommandBuffer, mComputeRootSignature);
+		Renderer::Command::SetComputeRootSignature::create(mCommandBuffer, mComputeRootSignature1);
 
 		// Set the used compute pipeline state object (PSO)
-		Renderer::Command::SetComputePipelineState::create(mCommandBuffer, mComputePipelineState);
+		Renderer::Command::SetComputePipelineState::create(mCommandBuffer, mComputePipelineState1);
 
 		// Set compute resource groups
-		Renderer::Command::SetComputeResourceGroup::create(mCommandBuffer, 0, mComputeTextureGroup);
+		Renderer::Command::SetComputeResourceGroup::create(mCommandBuffer, 0, mComputeResourceGroup1);
 
 		// Dispatch compute call
+		Renderer::Command::DispatchCompute::create(mCommandBuffer, 1, 1, 1);
+
+		// Repeat everything for the second compute shader
+		Renderer::Command::SetComputeRootSignature::create(mCommandBuffer, mComputeRootSignature2);
+		Renderer::Command::SetComputePipelineState::create(mCommandBuffer, mComputePipelineState2);
+		Renderer::Command::SetComputeResourceGroup::create(mCommandBuffer, 0, mComputeResourceGroup2);
 		Renderer::Command::DispatchCompute::create(mCommandBuffer, 1, 1, 1);
 	}
 
@@ -386,7 +428,7 @@ void FirstComputeShader::fillCommandBuffer()
 		Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineState);
 
 		// Set graphics resource groups
-		Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 0, mGraphicsTextureGroup);
+		Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 0, mGraphicsResourceGroup);
 		Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 1, mGraphicsSamplerStateGroup);
 
 		// Input assembly (IA): Set the used vertex array

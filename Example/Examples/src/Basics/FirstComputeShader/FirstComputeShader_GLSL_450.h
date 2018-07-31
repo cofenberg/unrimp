@@ -41,7 +41,7 @@ layout(location = 0) out gl_PerVertex
 layout(location = 1) out vec2 TexCoord;	// Normalized texture coordinate as output
 
 // Uniforms
-layout(binding = 0) uniform samplerBuffer InputTextureBuffer;
+layout(binding = 1) uniform samplerBuffer InputTextureBuffer;
 
 // Programs
 void main()
@@ -64,11 +64,11 @@ layout(location = 1) in  vec2 TexCoord;		// Normalized texture coordinate as inp
 layout(location = 0) out vec4 OutputColor;	// Output variable for fragment color
 
 // Uniforms
-layout(set = 0, binding = 1) uniform sampler2D AlbedoMap;
-layout(set = 0, binding = 2, std140) uniform UniformBuffer
+layout(set = 0, binding = 0, std140) uniform UniformBuffer
 {
 	vec4 inputColorUniform;
 };
+layout(set = 0, binding = 2) uniform sampler2D AlbedoMap;
 
 // Programs
 void main()
@@ -82,20 +82,10 @@ void main()
 //[-------------------------------------------------------]
 //[ Compute shader source code                            ]
 //[-------------------------------------------------------]
-computeShaderSourceCode = R"(#version 450 core	// OpenGL 4.5
+computeShaderSourceCode1 = R"(#version 450 core	// OpenGL 4.5
 struct Vertex
 {
 	vec2 position;
-};
-
-// Same layout as "Renderer::DrawIndexedInstancedArguments"
-struct DrawIndexedInstancedArguments
-{
-	uint indexCountPerInstance;
-	uint instanceCount;
-	uint startIndexLocation;
-	uint baseVertexLocation;
-	uint startInstanceLocation;
 };
 
 // Input
@@ -108,30 +98,20 @@ layout(binding = 2, std430) readonly buffer InputVertexBuffer
 {
 	Vertex inputVertices[3];
 };
-layout(binding = 3) uniform samplerBuffer InputTextureBuffer;
-layout(binding = 4, std430) readonly buffer InputIndirectBuffer
-{
-	DrawIndexedInstancedArguments inputDrawIndexedInstancedArguments;
-};
-layout(binding = 5, std140) uniform InputUniformBuffer
+layout(binding = 3, std140) uniform InputUniformBuffer
 {
 	vec4 inputColorUniform;
 };
 
 // Output
-layout(binding = 6, rgba8) writeonly uniform image2D OutputTexture2D;
-layout(binding = 7, std430) writeonly buffer OutputIndexBuffer
+layout(binding = 4, rgba8) writeonly uniform image2D OutputTexture2D;
+layout(binding = 5, std430) writeonly buffer OutputIndexBuffer
 {
 	uint outputIndices[3];
 };
-layout(binding = 8, std430) writeonly buffer OutputVertexBuffer
+layout(binding = 6, std430) writeonly buffer OutputVertexBuffer
 {
 	Vertex outputVertices[3];
-};
-layout(binding = 9, rgba32f) writeonly uniform imageBuffer OutputTextureBuffer;
-layout(binding = 10, std430) writeonly buffer OutputIndirectBuffer
-{
-	DrawIndexedInstancedArguments outputDrawIndexedInstancedArguments;
 };
 
 // Programs
@@ -163,6 +143,43 @@ void main()
 			outputVertices[vertexBufferIndex] = inputVertices[vertexBufferIndex];
 		}
 
+		// Output uniform buffer not possible by design
+	}
+}
+)";
+
+computeShaderSourceCode2 = R"(#version 450 core	// OpenGL 4.5
+// Same layout as "Renderer::DrawIndexedInstancedArguments"
+struct DrawIndexedInstancedArguments
+{
+	uint indexCountPerInstance;
+	uint instanceCount;
+	uint startIndexLocation;
+	uint baseVertexLocation;
+	uint startInstanceLocation;
+};
+
+// Input
+layout(binding = 0) uniform samplerBuffer InputTextureBuffer;
+layout(binding = 1, std430) readonly buffer InputIndirectBuffer
+{
+	DrawIndexedInstancedArguments inputDrawIndexedInstancedArguments;
+};
+
+// Output
+layout(binding = 2, rgba32f) writeonly uniform imageBuffer OutputTextureBuffer;
+layout(binding = 3, std430) writeonly buffer OutputIndirectBuffer
+{
+	DrawIndexedInstancedArguments outputDrawIndexedInstancedArguments;
+};
+
+// Programs
+layout (local_size_x = 1, local_size_y = 1) in;
+void main()
+{
+	// Output buffer
+	if (0 == gl_GlobalInvocationID.x && 0 == gl_GlobalInvocationID.y && 0 == gl_GlobalInvocationID.z)
+	{
 		// Output texture buffer values
 		for (int textureBufferIndex = 0; textureBufferIndex < 3; ++textureBufferIndex)
 		{
@@ -171,8 +188,6 @@ void main()
 
 		// Output indirect buffer values (draw calls)
 		outputDrawIndexedInstancedArguments = inputDrawIndexedInstancedArguments;
-
-		// Output uniform buffer not possible by design
 	}
 }
 )";

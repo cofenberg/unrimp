@@ -64,12 +64,12 @@ VS_OUTPUT main(float2 Position : POSITION,	// Clip space vertex position as inpu
 // "pixel shader" in Direct3D terminology
 fragmentShaderSourceCode = R"(
 // Uniforms
-SamplerState SamplerLinear : register(s0);
-Texture2D AlbedoMap : register(t1);
 cbuffer InputUniformBuffer : register(b0)
 {
 	float4 inputColorUniform;
 }
+SamplerState SamplerLinear : register(s0);
+Texture2D AlbedoMap : register(t1);
 
 // Programs
 float4 main(float4 Position : SV_POSITION, float2 TexCoord : TEXCOORD0) : SV_TARGET
@@ -83,7 +83,7 @@ float4 main(float4 Position : SV_POSITION, float2 TexCoord : TEXCOORD0) : SV_TAR
 //[-------------------------------------------------------]
 //[ Compute shader source code                            ]
 //[-------------------------------------------------------]
-computeShaderSourceCode = R"(
+computeShaderSourceCode1 = R"(
 // Input
 Texture2D<float4>	InputTexture2D		 : register(t0);
 tbuffer				InputIndexBuffer	 : register(t1)
@@ -91,14 +91,6 @@ tbuffer				InputIndexBuffer	 : register(t1)
 	uint inputIndexBuffer[3];
 };
 ByteAddressBuffer	InputVertexBuffer	 : register(t2);
-tbuffer				InputTextureBuffer   : register(t3)
-{
-	float4 inputPositionOffset[3];
-};
-tbuffer				InputIndirectBuffer  : register(t4)
-{
-	uint inputIndirectBuffer[5];
-};
 cbuffer				InputUniformBuffer	 : register(b0)
 {
 	float4 inputColorUniform;
@@ -108,8 +100,6 @@ cbuffer				InputUniformBuffer	 : register(b0)
 RWTexture2D<float4>	OutputTexture2D		 : register(u0);
 RWBuffer<uint>		OutputIndexBuffer    : register(u1);
 RWByteAddressBuffer	OutputVertexBuffer   : register(u2);
-RWBuffer<float4>	OutputTextureBuffer  : register(u3);
-RWBuffer<uint>		OutputIndirectBuffer : register(u4);
 
 // Programs
 [numthreads(16, 16, 1)]
@@ -143,6 +133,33 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID)
 			OutputVertexBuffer.Store2(vertexBufferIndex * 8, asuint(position));
 		}
 
+		// Output uniform buffer not possible by design
+	}
+}
+)";
+
+computeShaderSourceCode2 = R"(
+// Input
+tbuffer			 InputTextureBuffer   : register(t0)
+{
+	float4 inputPositionOffset[3];
+};
+tbuffer			 InputIndirectBuffer  : register(t1)
+{
+	uint inputIndirectBuffer[5];
+};
+
+// Output
+RWBuffer<float4> OutputTextureBuffer  : register(u0);
+RWBuffer<uint>	 OutputIndirectBuffer : register(u1);
+
+// Programs
+[numthreads(1, 1, 1)]
+void main(uint3 dispatchThreadId : SV_DispatchThreadID)
+{
+	// Output buffer
+	if (0 == dispatchThreadId.x && 0 == dispatchThreadId.y && 0 == dispatchThreadId.z)
+	{
 		// Output texture buffer values
 		for (int textureBufferIndex = 0; textureBufferIndex < 3; ++textureBufferIndex)
 		{
@@ -157,8 +174,6 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID)
 		OutputIndirectBuffer[2] = inputIndirectBuffer[2];	// Renderer::DrawIndexedInstancedArguments::startIndexLocation
 		OutputIndirectBuffer[3] = inputIndirectBuffer[3];	// Renderer::DrawIndexedInstancedArguments::baseVertexLocation
 		OutputIndirectBuffer[4] = inputIndirectBuffer[4];	// Renderer::DrawIndexedInstancedArguments::startInstanceLocation
-
-		// Output uniform buffer not possible by design
 	}
 }
 )";

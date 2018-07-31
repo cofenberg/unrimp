@@ -57,6 +57,9 @@
 *    - Root signature
 *    - Graphics pipeline state object (PSO)
 *    - Framebuffer object (FBO) used for render to texture
+*
+*  @note
+*    - The compute shader had to be split due to OpenGL number of binding point limitations
 */
 class FirstComputeShader final : public ExampleBase
 {
@@ -110,13 +113,16 @@ private:
 	Renderer::ITextureManagerPtr		mTextureManager;				///< Texture manager, can be a null pointer
 	Renderer::CommandBuffer				mCommandBuffer;					///< Command buffer
 	Renderer::IRootSignaturePtr			mGraphicsRootSignature;			///< Graphics root signature, can be a null pointer
-	Renderer::IRootSignaturePtr			mComputeRootSignature;			///< Compute root signature, can be a null pointer
+	Renderer::IRootSignaturePtr			mComputeRootSignature1;			///< First compute root signature, can be a null pointer
+	Renderer::IRootSignaturePtr			mComputeRootSignature2;			///< Second compute root signature, can be a null pointer
 	Renderer::IFramebufferPtr			mFramebuffer;					///< Graphics framebuffer object (FBO), can be a null pointer
-	Renderer::IResourceGroupPtr			mComputeTextureGroup;			///< Compute texture group, can be a null pointer
-	Renderer::IResourceGroupPtr			mGraphicsTextureGroup;			///< Graphics texture group, can be a null pointer
+	Renderer::IResourceGroupPtr			mComputeResourceGroup1;			///< First compute resource group, can be a null pointer
+	Renderer::IResourceGroupPtr			mComputeResourceGroup2;			///< Second compute resource group, can be a null pointer
+	Renderer::IResourceGroupPtr			mGraphicsResourceGroup;			///< Graphics resource group, can be a null pointer
 	Renderer::IResourceGroupPtr			mGraphicsSamplerStateGroup;		///< Graphics sampler state resource group, can be a null pointer
 	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineState;			///< Graphics pipeline state object (PSO), can be a null pointer
-	Renderer::IComputePipelineStatePtr	mComputePipelineState;			///< Compute pipeline state object (PSO), can be a null pointer
+	Renderer::IComputePipelineStatePtr	mComputePipelineState1;			///< First compute pipeline state object (PSO), can be a null pointer
+	Renderer::IComputePipelineStatePtr	mComputePipelineState2;			///< Second compute pipeline state object (PSO), can be a null pointer
 	Renderer::IIndexBufferPtr			mComputeInputIndexBuffer;		///< Graphics index buffer object (IBO) read by compute shader, can be a null pointer
 	Renderer::IIndexBufferPtr			mComputeOutputIndexBuffer;		///< Graphics index buffer object (IBO) written by compute shader, can be a null pointer
 	Renderer::IVertexBufferPtr			mComputeInputVertexBuffer;		///< Graphics vertex buffer object (VBO) read by compute shader, can be a null pointer

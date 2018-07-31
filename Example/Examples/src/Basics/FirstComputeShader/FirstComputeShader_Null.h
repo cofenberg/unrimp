@@ -21,7 +21,7 @@
 #ifdef RENDERER_NULL
 	if (renderer->getNameId() == Renderer::NameId::NULL_DUMMY)
 	{
-		vertexShaderSourceCode = fragmentShaderSourceCode = computeShaderSourceCode = "42";
+		vertexShaderSourceCode = fragmentShaderSourceCode = computeShaderSourceCode1 = computeShaderSourceCode2 = "42";
 	}
 	else
 #endif
