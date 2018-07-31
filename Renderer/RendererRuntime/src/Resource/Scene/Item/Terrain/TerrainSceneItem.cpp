@@ -219,7 +219,7 @@ namespace RendererRuntime
 		assert(::detail::NUMBER_OF_INDICES == index);
 
 		// Create the index buffer object (IBO)
-		mIndexBufferPtr = bufferManager.createIndexBuffer(sizeof(uint16_t) * ::detail::NUMBER_OF_INDICES, indices, 0, Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::UNSIGNED_SHORT);
+		mIndexBufferPtr = bufferManager.createIndexBuffer(sizeof(uint16_t) * ::detail::NUMBER_OF_INDICES, indices);
 		RENDERER_SET_RESOURCE_DEBUG_NAME(mIndexBufferPtr, "Terrain tile ring")
 	}
 
@@ -319,7 +319,7 @@ namespace RendererRuntime
 			assert(index == numberOfTiles);
 
 			// Create the vertex buffer object (VBO)
-			vertexBuffer = bufferManager.createVertexBuffer(sizeof(::detail::InstanceData) * numberOfTiles, vertexBufferData, 0, Renderer::BufferUsage::STATIC_DRAW);
+			vertexBuffer = bufferManager.createVertexBuffer(sizeof(::detail::InstanceData) * numberOfTiles, vertexBufferData);
 			RENDERER_SET_RESOURCE_DEBUG_NAME(vertexBuffer, "Terrain tile ring")
 
 			// Destroy temporary vertex buffer data

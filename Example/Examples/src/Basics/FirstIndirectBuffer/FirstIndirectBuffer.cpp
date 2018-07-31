@@ -47,7 +47,7 @@ void FirstIndirectBuffer::onInitialization()
 				0,	// startVertexLocation (uint32_t)
 				0	// startInstanceLocation (uint32_t)
 			};
-			mIndirectBuffer = mBufferManager->createIndirectBuffer(sizeof(Renderer::DrawInstancedArguments), &drawInstancedArguments, Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS, Renderer::BufferUsage::STATIC_DRAW);
+			mIndirectBuffer = mBufferManager->createIndirectBuffer(sizeof(Renderer::DrawInstancedArguments), &drawInstancedArguments, Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS);
 		}
 
 		// Since we're always submitting the same commands to the renderer, we can fill the command buffer once during initialization and then reuse it multiple times during runtime

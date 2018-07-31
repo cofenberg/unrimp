@@ -168,7 +168,7 @@ namespace RendererRuntime
 				}
 			};
 			Renderer::IBufferManager& bufferManager = getSceneResource().getRendererRuntime().getBufferManager();
-			Renderer::IVertexBufferPtr vertexBuffer(bufferManager.createVertexBuffer(sizeof(ParticleData) * mMaximumNumberOfParticles, particlesData, 0, Renderer::BufferUsage::STATIC_DRAW));
+			Renderer::IVertexBufferPtr vertexBuffer(bufferManager.createVertexBuffer(sizeof(ParticleData) * mMaximumNumberOfParticles, particlesData));
 			RENDERER_SET_RESOURCE_DEBUG_NAME(vertexBuffer, "Particles VBO")
 
 			// Create vertex array object (VAO)

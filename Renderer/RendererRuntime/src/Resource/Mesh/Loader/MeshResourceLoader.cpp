@@ -258,7 +258,7 @@ namespace RendererRuntime
 	Renderer::IVertexArray* MeshResourceLoader::createVertexArray() const
 	{
 		// Create the vertex buffer object (VBO)
-		Renderer::IVertexBufferPtr vertexBuffer(mBufferManager.createVertexBuffer(mNumberOfUsedVertexBufferDataBytes, mVertexBufferData, 0, Renderer::BufferUsage::STATIC_DRAW));
+		Renderer::IVertexBufferPtr vertexBuffer(mBufferManager.createVertexBuffer(mNumberOfUsedVertexBufferDataBytes, mVertexBufferData));
 		RENDERER_SET_RESOURCE_DEBUG_NAME(vertexBuffer, getAsset().virtualFilename)
 
 		// Create the index buffer object (IBO)

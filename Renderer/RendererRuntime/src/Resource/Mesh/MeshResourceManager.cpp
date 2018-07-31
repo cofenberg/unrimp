@@ -135,7 +135,7 @@ namespace RendererRuntime
 		{
 			drawIds[i] = i;
 		}
-		mDrawIdVertexBufferPtr = rendererRuntime.getBufferManager().createVertexBuffer(sizeof(drawIds), drawIds, 0, Renderer::BufferUsage::STATIC_DRAW);
+		mDrawIdVertexBufferPtr = rendererRuntime.getBufferManager().createVertexBuffer(sizeof(drawIds), drawIds);
 		RENDERER_SET_RESOURCE_DEBUG_NAME(mDrawIdVertexBufferPtr, "Draw ID VBO")
 	}
 

@@ -5705,12 +5705,12 @@ namespace Renderer
 	*
 	*  @remarks
 	*    The buffer manager is responsible for managing fine granular instances of
-	*    - Vertex buffer object ("Renderer::IVertexBuffer")
 	*    - Index buffer object ("Renderer::IIndexBuffer")
+	*    - Vertex buffer object ("Renderer::IVertexBuffer")
 	*    - Vertex array object ("Renderer::IVertexArray")
-	*    - Uniform buffer object ("Renderer::IUniformBuffer")
 	*    - Texture buffer object ("Renderer::ITextureBuffer")
 	*    - Indirect buffer object ("Renderer::IIndirectBuffer")
+	*    - Uniform buffer object ("Renderer::IUniformBuffer")
 	*
 	*    Implementations are free to implement a naive 1:1 mapping of a resource to an renderer API resource.
 	*    For AZDO ("Almost Zero Driver Overhead") implementations might allocate a few big renderer API resources
@@ -5762,7 +5762,7 @@ namespace Renderer
 		*  @return
 		*    The created VBO instance, null pointer on error. Release the returned instance if you no longer need it.
 		*/
-		virtual IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, BufferUsage bufferUsage = BufferUsage::DYNAMIC_DRAW) = 0;
+		virtual IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, BufferUsage bufferUsage = BufferUsage::STATIC_DRAW) = 0;
 
 		/**
 		*  @brief
@@ -5782,7 +5782,7 @@ namespace Renderer
 		*  @return
 		*    The created IBO instance, null pointer on error. Release the returned instance if you no longer need it.
 		*/
-		virtual IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, BufferUsage bufferUsage = BufferUsage::DYNAMIC_DRAW, IndexBufferFormat::Enum indexBufferFormat = IndexBufferFormat::UNSIGNED_INT) = 0;
+		virtual IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, BufferUsage bufferUsage = BufferUsage::STATIC_DRAW, IndexBufferFormat::Enum indexBufferFormat = IndexBufferFormat::UNSIGNED_SHORT) = 0;
 
 		/**
 		*  @brief
@@ -5825,7 +5825,7 @@ namespace Renderer
 		*    - Only supported if "Renderer::Capabilities::maximumUniformBufferSize" is >0
 		*    - There are no buffer flags by intent since an uniform buffer can't be used for unordered access and as a consequence an uniform buffer must always used as shader resource to not be pointless
 		*/
-		virtual IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, BufferUsage bufferUsage = BufferUsage::DYNAMIC_DRAW) = 0;
+		virtual IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, BufferUsage bufferUsage = BufferUsage::STATIC_DRAW) = 0;
 
 		/**
 		*  @brief
@@ -5848,7 +5848,7 @@ namespace Renderer
 		*  @note
 		*    - Only supported if "Renderer::Capabilities::maximumTextureBufferSize" is not 0
 		*/
-		virtual ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, BufferUsage bufferUsage = BufferUsage::DYNAMIC_DRAW, TextureFormat::Enum textureFormat = TextureFormat::R32G32B32A32F) = 0;
+		virtual ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = BufferFlag::SHADER_RESOURCE, BufferUsage bufferUsage = BufferUsage::STATIC_DRAW, TextureFormat::Enum textureFormat = TextureFormat::R32G32B32A32F) = 0;
 
 		/**
 		*  @brief
@@ -5869,7 +5869,7 @@ namespace Renderer
 		*  @note
 		*    - Only supported if "Renderer::Capabilities::maximumIndirectBufferSize" is >0
 		*/
-		virtual IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, BufferUsage bufferUsage = BufferUsage::DYNAMIC_DRAW) = 0;
+		virtual IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, BufferUsage bufferUsage = BufferUsage::STATIC_DRAW) = 0;
 
 	// Protected methods
 	protected:

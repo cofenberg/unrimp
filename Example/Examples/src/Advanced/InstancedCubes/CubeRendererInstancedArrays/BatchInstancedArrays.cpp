@@ -101,7 +101,7 @@ void BatchInstancedArrays::initialize(Renderer::IBufferManager& bufferManager, R
 		}
 
 		// Create the vertex buffer object (VBO) instance containing the per-instance-data
-		Renderer::IVertexBuffer *vertexBufferPerInstanceData = bufferManager.createVertexBuffer(sizeof(float) * numberOfElements, data, 0, Renderer::BufferUsage::STATIC_DRAW);
+		Renderer::IVertexBuffer *vertexBufferPerInstanceData = bufferManager.createVertexBuffer(sizeof(float) * numberOfElements, data);
 
 		{ // Create vertex array object (VAO)
 			// -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)

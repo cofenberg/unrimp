@@ -78,7 +78,7 @@ namespace
 				-1.0f, -1.0f, -1.0f,
 				 1.0f, -1.0f,- 1.0f
 			};
-			Renderer::IVertexBufferPtr vertexBuffer(bufferManager.createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION, 0, Renderer::BufferUsage::STATIC_DRAW));
+			Renderer::IVertexBufferPtr vertexBuffer(bufferManager.createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION));
 			RENDERER_SET_RESOURCE_DEBUG_NAME(vertexBuffer, "Sky")
 
 			// Create the index buffer object (IBO)
@@ -91,7 +91,7 @@ namespace
 				5, 4, 1, 1, 0, 5,	// Top
 				3, 2, 7, 7, 6, 3	// Bottom
 			};
-			Renderer::IIndexBuffer* indexBuffer = bufferManager.createIndexBuffer(sizeof(INDICES), INDICES, 0, Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::UNSIGNED_SHORT);
+			Renderer::IIndexBuffer* indexBuffer = bufferManager.createIndexBuffer(sizeof(INDICES), INDICES);
 			RENDERER_SET_RESOURCE_DEBUG_NAME(indexBuffer, "Sky")
 
 			// Create vertex array object (VAO)

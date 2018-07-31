@@ -131,10 +131,10 @@ void FirstComputeShader::onInitialization()
 			};
 
 			// Create the texture buffer which will be read by a compute shader
-			mComputeInputTextureBuffer = mBufferManager->createTextureBuffer(sizeof(VERTEX_POSITION_OFFSET), VERTEX_POSITION_OFFSET, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::STATIC_DRAW, Renderer::TextureFormat::R32G32B32A32F);
+			mComputeInputTextureBuffer = mBufferManager->createTextureBuffer(sizeof(VERTEX_POSITION_OFFSET), VERTEX_POSITION_OFFSET);
 
 			// Create the texture buffer which will be filled by a compute shader
-			mComputeOutputTextureBuffer = mBufferManager->createTextureBuffer(sizeof(VERTEX_POSITION_OFFSET), nullptr, Renderer::BufferFlag::UNORDERED_ACCESS | Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::STATIC_DRAW, Renderer::TextureFormat::R32G32B32A32F);
+			mComputeOutputTextureBuffer = mBufferManager->createTextureBuffer(sizeof(VERTEX_POSITION_OFFSET), nullptr, Renderer::BufferFlag::UNORDERED_ACCESS | Renderer::BufferFlag::SHADER_RESOURCE);
 		}
 
 		{ // Indirect buffer
@@ -147,11 +147,11 @@ void FirstComputeShader::onInitialization()
 					0, // baseVertexLocation (int32_t)
 					0  // startInstanceLocation (uint32_t)
 				};
-				mComputeInputIndirectBuffer = mBufferManager->createIndirectBuffer(sizeof(Renderer::DrawIndexedInstancedArguments), &drawIndexedInstancedArguments, Renderer::IndirectBufferFlag::SHADER_RESOURCE | Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS, Renderer::BufferUsage::STATIC_DRAW);
+				mComputeInputIndirectBuffer = mBufferManager->createIndirectBuffer(sizeof(Renderer::DrawIndexedInstancedArguments), &drawIndexedInstancedArguments, Renderer::IndirectBufferFlag::SHADER_RESOURCE | Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS);
 			}
 
 			// Create the indirect buffer which will be filled by a compute shader
-			mComputeOutputIndirectBuffer = mBufferManager->createIndirectBuffer(sizeof(Renderer::DrawIndexedInstancedArguments), nullptr, Renderer::IndirectBufferFlag::UNORDERED_ACCESS | Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS, Renderer::BufferUsage::STATIC_DRAW);
+			mComputeOutputIndirectBuffer = mBufferManager->createIndirectBuffer(sizeof(Renderer::DrawIndexedInstancedArguments), nullptr, Renderer::IndirectBufferFlag::UNORDERED_ACCESS | Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS);
 		}
 
 		// Vertex input layout
@@ -173,12 +173,12 @@ void FirstComputeShader::onInitialization()
 		const Renderer::VertexAttributes vertexAttributes(static_cast<uint32_t>(glm::countof(vertexAttributesLayout)), vertexAttributesLayout);
 
 		{ // Create the index buffer object (IBO)
-			static constexpr uint32_t INDICES[] =
+			static constexpr uint16_t INDICES[] =
 			{
 				0, 1, 2
 			};
-			mComputeInputIndexBuffer = mBufferManager->createIndexBuffer(sizeof(INDICES), INDICES, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::UNSIGNED_INT);
-			mComputeOutputIndexBuffer = mBufferManager->createIndexBuffer(sizeof(INDICES), nullptr, Renderer::BufferFlag::UNORDERED_ACCESS, Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::UNSIGNED_INT);
+			mComputeInputIndexBuffer = mBufferManager->createIndexBuffer(sizeof(INDICES), INDICES, Renderer::BufferFlag::SHADER_RESOURCE);
+			mComputeOutputIndexBuffer = mBufferManager->createIndexBuffer(sizeof(INDICES), nullptr, Renderer::BufferFlag::UNORDERED_ACCESS);
 		}
 
 		{ // Create vertex array object (VAO)
@@ -190,8 +190,8 @@ void FirstComputeShader::onInitialization()
 				 1.0f, 0.0f,	// 1			   .   .
 				-0.5f, 0.0f		// 2			  2.......1
 			};
-			mComputeInputVertexBuffer = mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::STATIC_DRAW);
-			mComputeOutputVertexBuffer = mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), nullptr, Renderer::BufferFlag::UNORDERED_ACCESS, Renderer::BufferUsage::STATIC_DRAW);
+			mComputeInputVertexBuffer = mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION, Renderer::BufferFlag::SHADER_RESOURCE);
+			mComputeOutputVertexBuffer = mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), nullptr, Renderer::BufferFlag::UNORDERED_ACCESS);
 		}
 
 		{ // Create vertex array object (VAO)
@@ -206,7 +206,7 @@ void FirstComputeShader::onInitialization()
 
 		{ // Create the uniform buffer which will be read by a compute shader
 			static constexpr float RGBA_COLOR[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-			mComputeInputUniformBuffer = mBufferManager->createUniformBuffer(sizeof(RGBA_COLOR), RGBA_COLOR, Renderer::BufferUsage::STATIC_DRAW);
+			mComputeInputUniformBuffer = mBufferManager->createUniformBuffer(sizeof(RGBA_COLOR), RGBA_COLOR);
 		}
 
 		{ // Resource group related

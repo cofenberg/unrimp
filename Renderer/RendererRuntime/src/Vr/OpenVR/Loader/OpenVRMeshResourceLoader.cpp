@@ -377,11 +377,11 @@ namespace RendererRuntime
 		Renderer::IBufferManager& bufferManager = mRendererRuntime.getBufferManager();
 
 		// Create the vertex buffer
-		Renderer::IVertexBuffer* vertexBuffer = bufferManager.createVertexBuffer(static_cast<uint32_t>(mVertexBufferData.size()), mVertexBufferData.data(), 0, Renderer::BufferUsage::STATIC_DRAW);
+		Renderer::IVertexBuffer* vertexBuffer = bufferManager.createVertexBuffer(static_cast<uint32_t>(mVertexBufferData.size()), mVertexBufferData.data());
 		RENDERER_SET_RESOURCE_DEBUG_NAME(vertexBuffer, getRenderModelName().c_str())
 
 		// Create the index buffer
-		Renderer::IIndexBuffer* indexBuffer = bufferManager.createIndexBuffer(static_cast<uint32_t>(mIndexBufferData.size() * sizeof(uint16_t)), mIndexBufferData.data(), 0, Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::UNSIGNED_SHORT);
+		Renderer::IIndexBuffer* indexBuffer = bufferManager.createIndexBuffer(static_cast<uint32_t>(mIndexBufferData.size() * sizeof(uint16_t)), mIndexBufferData.data());
 		RENDERER_SET_RESOURCE_DEBUG_NAME(indexBuffer, getRenderModelName().c_str())
 
 		// Create vertex array object (VAO)
