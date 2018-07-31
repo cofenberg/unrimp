@@ -2083,6 +2083,11 @@ namespace OpenGLRenderer
 			return mGL_ARB_texture_storage;
 		}
 
+		inline bool isGL_ARB_shader_storage_buffer_object() const
+		{
+			return mGL_ARB_shader_storage_buffer_object;
+		}
+
 		inline bool isGL_ARB_copy_image() const
 		{
 			return mGL_ARB_copy_image;
@@ -2260,51 +2265,52 @@ namespace OpenGLRenderer
 
 			// Extensions
 			// WGL (Windows only)
-			mWGL_ARB_extensions_string			= false;
-			mWGL_EXT_swap_control				= false;
-			mWGL_EXT_swap_control_tear			= false;
+			mWGL_ARB_extensions_string			 = false;
+			mWGL_EXT_swap_control				 = false;
+			mWGL_EXT_swap_control_tear			 = false;
 			// EXT
-			mGL_EXT_texture_lod_bias			= false;
-			mGL_EXT_texture_filter_anisotropic	= false;
-			mGL_EXT_texture_array				= false;
-			mGL_EXT_texture3D					= false;
-			mGL_EXT_direct_state_access			= false;
-			mGL_EXT_shader_image_load_store		= false;
+			mGL_EXT_texture_lod_bias			 = false;
+			mGL_EXT_texture_filter_anisotropic	 = false;
+			mGL_EXT_texture_array				 = false;
+			mGL_EXT_texture3D					 = false;
+			mGL_EXT_direct_state_access			 = false;
+			mGL_EXT_shader_image_load_store		 = false;
 			// KHR
-			mGL_KHR_debug						= false;
+			mGL_KHR_debug						 = false;
 			// ARB
-			mGL_ARB_framebuffer_object			= false;
-			mGL_ARB_multitexture				= false;
-			mGL_ARB_texture_multisample			= false;
-			mGL_ARB_vertex_buffer_object		= false;
-			mGL_ARB_texture_compression			= false;
-			mGL_ARB_vertex_program				= false;
-			mGL_ARB_fragment_program			= false;
-			mGL_ARB_draw_buffers				= false;
-			mGL_ARB_shader_objects				= false;
-			mGL_ARB_separate_shader_objects		= false;
-			mGL_ARB_get_program_binary			= false;
-			mGL_ARB_uniform_buffer_object		= false;
-			mGL_ARB_texture_buffer_object		= false;
-			mGL_ARB_draw_indirect				= false;
-			mGL_ARB_multi_draw_indirect			= false;
-			mGL_ARB_vertex_shader				= false;
-			mGL_ARB_tessellation_shader			= false;
-			mGL_ARB_geometry_shader4			= false;
-			mGL_ARB_fragment_shader				= false;
-			mGL_ARB_compute_shader				= false;
-			mGL_ARB_draw_instanced				= false;
-			mGL_ARB_base_instance				= false;
-			mGL_ARB_instanced_arrays			= false;
-			mGL_ARB_vertex_array_object			= false;
-			mGL_ARB_sampler_objects				= false;
-			mGL_ARB_draw_elements_base_vertex	= false;
-			mGL_ARB_debug_output				= false;
-			mGL_ARB_direct_state_access			= false;
-			mGL_ARB_texture_storage				= false;
-			mGL_ARB_copy_image					= false;
-			mGL_ARB_gl_spirv					= false;
-			mGL_ARB_clip_control				= false;
+			mGL_ARB_framebuffer_object			 = false;
+			mGL_ARB_multitexture				 = false;
+			mGL_ARB_texture_multisample			 = false;
+			mGL_ARB_vertex_buffer_object		 = false;
+			mGL_ARB_texture_compression			 = false;
+			mGL_ARB_vertex_program				 = false;
+			mGL_ARB_fragment_program			 = false;
+			mGL_ARB_draw_buffers				 = false;
+			mGL_ARB_shader_objects				 = false;
+			mGL_ARB_separate_shader_objects		 = false;
+			mGL_ARB_get_program_binary			 = false;
+			mGL_ARB_uniform_buffer_object		 = false;
+			mGL_ARB_texture_buffer_object		 = false;
+			mGL_ARB_draw_indirect				 = false;
+			mGL_ARB_multi_draw_indirect			 = false;
+			mGL_ARB_vertex_shader				 = false;
+			mGL_ARB_tessellation_shader			 = false;
+			mGL_ARB_geometry_shader4			 = false;
+			mGL_ARB_fragment_shader				 = false;
+			mGL_ARB_compute_shader				 = false;
+			mGL_ARB_draw_instanced				 = false;
+			mGL_ARB_base_instance				 = false;
+			mGL_ARB_instanced_arrays			 = false;
+			mGL_ARB_vertex_array_object			 = false;
+			mGL_ARB_sampler_objects				 = false;
+			mGL_ARB_draw_elements_base_vertex	 = false;
+			mGL_ARB_debug_output				 = false;
+			mGL_ARB_direct_state_access			 = false;
+			mGL_ARB_texture_storage				 = false;
+			mGL_ARB_shader_storage_buffer_object = false;
+			mGL_ARB_copy_image					 = false;
+			mGL_ARB_gl_spirv					 = false;
+			mGL_ARB_clip_control				 = false;
 		}
 
 		/**
@@ -2950,6 +2956,9 @@ namespace OpenGLRenderer
 				mGL_ARB_texture_storage = result;
 			}
 
+			// GL_ARB_shader_storage_buffer_object - Is core since OpenGL 4.3
+			mGL_ARB_shader_storage_buffer_object = isSupported("GL_ARB_shader_storage_buffer_object");
+
 			// GL_ARB_copy_image - Is core since OpenGL 4.3
 			mGL_ARB_copy_image = isSupported("GL_ARB_copy_image");
 			if (mGL_ARB_copy_image)
@@ -3053,6 +3062,7 @@ namespace OpenGLRenderer
 		bool mGL_ARB_debug_output;
 		bool mGL_ARB_direct_state_access;
 		bool mGL_ARB_texture_storage;
+		bool mGL_ARB_shader_storage_buffer_object;
 		bool mGL_ARB_copy_image;
 		bool mGL_ARB_gl_spirv;
 		bool mGL_ARB_clip_control;
@@ -6349,7 +6359,7 @@ namespace OpenGLRenderer
 		*  @param[in] textureFormat
 		*    Texture buffer data format
 		*/
-		inline explicit TextureBuffer(OpenGLRenderer& openGLRenderer, Renderer::TextureFormat::Enum textureFormat) :
+		inline TextureBuffer(OpenGLRenderer& openGLRenderer, Renderer::TextureFormat::Enum textureFormat) :
 			ITextureBuffer(static_cast<Renderer::IRenderer&>(openGLRenderer)),
 			mOpenGLTextureBuffer(0),
 			mOpenGLTexture(0),
@@ -6372,256 +6382,6 @@ namespace OpenGLRenderer
 	private:
 		explicit TextureBuffer(const TextureBuffer& source) = delete;
 		TextureBuffer& operator =(const TextureBuffer& source) = delete;
-
-
-	};
-
-
-
-
-	//[-------------------------------------------------------]
-	//[ OpenGLRenderer/Buffer/UniformBuffer.h                 ]
-	//[-------------------------------------------------------]
-	/**
-	*  @brief
-	*    Abstract OpenGL uniform buffer object (UBO, "constant buffer" in Direct3D terminology) interface
-	*/
-	class UniformBuffer : public Renderer::IUniformBuffer
-	{
-
-
-	//[-------------------------------------------------------]
-	//[ Public methods                                        ]
-	//[-------------------------------------------------------]
-	public:
-		/**
-		*  @brief
-		*    Destructor
-		*/
-		inline virtual ~UniformBuffer() override
-		{
-			// Destroy the OpenGL uniform buffer
-			// -> Silently ignores 0's and names that do not correspond to existing buffer objects
-			glDeleteBuffersARB(1, &mOpenGLUniformBuffer);
-		}
-
-		/**
-		*  @brief
-		*    Return the OpenGL uniform buffer instance
-		*
-		*  @return
-		*    The OpenGL uniform buffer instance, can be zero if no resource is allocated, do not destroy the returned resource
-		*/
-		inline GLuint getOpenGLUniformBuffer() const
-		{
-			return mOpenGLUniformBuffer;
-		}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual Renderer::IResource methods            ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RENDERER_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Valid OpenGL uniform buffer and "GL_KHR_debug"-extension available?
-				if (0 != mOpenGLUniformBuffer && static_cast<OpenGLRenderer&>(getRenderer()).getExtensions().isGL_KHR_debug())
-				{
-					glObjectLabel(GL_BUFFER, mOpenGLUniformBuffer, -1, name);
-				}
-			}
-		#endif
-
-
-	//[-------------------------------------------------------]
-	//[ Protected virtual Renderer::RefCount methods          ]
-	//[-------------------------------------------------------]
-	protected:
-		inline virtual void selfDestruct() override
-		{
-			RENDERER_DELETE(getRenderer().getContext(), UniformBuffer, this);
-		}
-
-
-	//[-------------------------------------------------------]
-	//[ Protected methods                                     ]
-	//[-------------------------------------------------------]
-	protected:
-		/**
-		*  @brief
-		*    Constructor
-		*
-		*  @param[in] openGLRenderer
-		*    Owner OpenGL renderer instance
-		*/
-		inline explicit UniformBuffer(OpenGLRenderer& openGLRenderer) :
-			IUniformBuffer(static_cast<Renderer::IRenderer&>(openGLRenderer)),
-			mOpenGLUniformBuffer(0)
-		{}
-
-
-	//[-------------------------------------------------------]
-	//[ Protected data                                        ]
-	//[-------------------------------------------------------]
-	protected:
-		GLuint mOpenGLUniformBuffer;	///< OpenGL uniform buffer, can be zero if no resource is allocated
-
-
-	//[-------------------------------------------------------]
-	//[ Private methods                                       ]
-	//[-------------------------------------------------------]
-	private:
-		explicit UniformBuffer(const UniformBuffer& source) = delete;
-		UniformBuffer& operator =(const UniformBuffer& source) = delete;
-
-
-	};
-
-
-
-
-	//[-------------------------------------------------------]
-	//[ OpenGLRenderer/Buffer/UniformBufferBind.h             ]
-	//[-------------------------------------------------------]
-	/**
-	*  @brief
-	*    OpenGL uniform buffer object (UBO, "constant buffer" in Direct3D terminology) class, traditional bind version
-	*/
-	class UniformBufferBind final : public UniformBuffer
-	{
-
-
-	//[-------------------------------------------------------]
-	//[ Public methods                                        ]
-	//[-------------------------------------------------------]
-	public:
-		/**
-		*  @brief
-		*    Constructor
-		*
-		*  @param[in] openGLRenderer
-		*    Owner OpenGL renderer instance
-		*  @param[in] numberOfBytes
-		*    Number of bytes within the uniform buffer, must be valid
-		*  @param[in] data
-		*    Uniform buffer data, can be a null pointer (empty buffer)
-		*  @param[in] bufferUsage
-		*    Indication of the buffer usage
-		*/
-		UniformBufferBind(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage) :
-			UniformBuffer(openGLRenderer)
-		{
-			// TODO(co) Review OpenGL uniform buffer alignment topic
-
-			#ifdef RENDERER_OPENGL_STATE_CLEANUP
-				// Backup the currently bound OpenGL uniform buffer
-				GLint openGLUniformBufferBackup = 0;
-				glGetIntegerv(GL_UNIFORM_BUFFER_BINDING, &openGLUniformBufferBackup);
-			#endif
-
-			// Create the OpenGL uniform buffer
-			glGenBuffersARB(1, &mOpenGLUniformBuffer);
-
-			// Bind this OpenGL uniform buffer and upload the data
-			// -> Usage: These constants directly map to GL_ARB_vertex_buffer_object and OpenGL ES 3 constants, do not change them
-			glBindBufferARB(GL_UNIFORM_BUFFER, mOpenGLUniformBuffer);
-			glBufferDataARB(GL_UNIFORM_BUFFER, static_cast<GLsizeiptrARB>(numberOfBytes), data, static_cast<GLenum>(bufferUsage));
-
-			#ifdef RENDERER_OPENGL_STATE_CLEANUP
-				// Be polite and restore the previous bound OpenGL uniform buffer
-				glBindBufferARB(GL_UNIFORM_BUFFER, static_cast<GLuint>(openGLUniformBufferBackup));
-			#endif
-		}
-
-		/**
-		*  @brief
-		*    Destructor
-		*/
-		inline virtual ~UniformBufferBind() override
-		{}
-
-
-	//[-------------------------------------------------------]
-	//[ Private methods                                       ]
-	//[-------------------------------------------------------]
-	private:
-		explicit UniformBufferBind(const UniformBufferBind& source) = delete;
-		UniformBufferBind& operator =(const UniformBufferBind& source) = delete;
-
-
-	};
-
-
-
-
-	//[-------------------------------------------------------]
-	//[ OpenGLRenderer/Buffer/UniformBufferDsa.h              ]
-	//[-------------------------------------------------------]
-	/**
-	*  @brief
-	*    OpenGL uniform buffer object (UBO, "constant buffer" in Direct3D terminology) class, effective direct state access (DSA)
-	*/
-	class UniformBufferDsa final : public UniformBuffer
-	{
-
-
-	//[-------------------------------------------------------]
-	//[ Public methods                                        ]
-	//[-------------------------------------------------------]
-	public:
-		/**
-		*  @brief
-		*    Constructor
-		*
-		*  @param[in] openGLRenderer
-		*    Owner OpenGL renderer instance
-		*  @param[in] numberOfBytes
-		*    Number of bytes within the uniform buffer, must be valid
-		*  @param[in] data
-		*    Uniform buffer data, can be a null pointer (empty buffer)
-		*  @param[in] bufferUsage
-		*    Indication of the buffer usage
-		*/
-		UniformBufferDsa(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage) :
-			UniformBuffer(openGLRenderer)
-		{
-			// TODO(co) Review OpenGL uniform buffer alignment topic
-
-			if (openGLRenderer.getExtensions().isGL_ARB_direct_state_access())
-			{
-				// Create the OpenGL uniform buffer
-				glCreateBuffers(1, &mOpenGLUniformBuffer);
-
-				// Upload the data
-				// -> Usage: These constants directly map to "GL_ARB_vertex_buffer_object" and OpenGL ES 3 constants, do not change them
-				glNamedBufferData(mOpenGLUniformBuffer, static_cast<GLsizeiptr>(numberOfBytes), data, static_cast<GLenum>(bufferUsage));
-			}
-			else
-			{
-				// Create the OpenGL uniform buffer
-				glGenBuffersARB(1, &mOpenGLUniformBuffer);
-
-				// Upload the data
-				// -> Usage: These constants directly map to "GL_ARB_vertex_buffer_object" and OpenGL ES 3 constants, do not change them
-				glNamedBufferDataEXT(mOpenGLUniformBuffer, static_cast<GLsizeiptr>(numberOfBytes), data, static_cast<GLenum>(bufferUsage));
-			}
-		}
-
-		/**
-		*  @brief
-		*    Destructor
-		*/
-		inline virtual ~UniformBufferDsa() override
-		{}
-
-
-	//[-------------------------------------------------------]
-	//[ Private methods                                       ]
-	//[-------------------------------------------------------]
-	private:
-		explicit UniformBufferDsa(const UniformBufferDsa& source) = delete;
-		UniformBufferDsa& operator =(const UniformBufferDsa& source) = delete;
 
 
 	};
@@ -6732,7 +6492,7 @@ namespace OpenGLRenderer
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    OpenGL texture buffer object (UBO, "constant buffer" in Direct3D terminology) class, effective direct state access (DSA)
+	*    OpenGL texture buffer object (TBO) class, effective direct state access (DSA)
 	*/
 	class TextureBufferDsa final : public TextureBuffer
 	{
@@ -6828,6 +6588,257 @@ namespace OpenGLRenderer
 	private:
 		explicit TextureBufferDsa(const TextureBufferDsa& source) = delete;
 		TextureBufferDsa& operator =(const TextureBufferDsa& source) = delete;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ OpenGLRenderer/Buffer/StructuredBuffer.h              ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Abstract OpenGL structured buffer object interface
+	*/
+	class StructuredBuffer : public Renderer::IStructuredBuffer
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~StructuredBuffer() override
+		{
+			// Destroy the OpenGL structured buffer
+			// -> Silently ignores 0's and names that do not correspond to existing buffer objects
+			glDeleteBuffersARB(1, &mOpenGLStructuredBuffer);
+		}
+
+		/**
+		*  @brief
+		*    Return the OpenGL structured buffer instance
+		*
+		*  @return
+		*    The OpenGL structured buffer instance, can be zero if no resource is allocated, do not destroy the returned resource
+		*/
+		inline GLuint getOpenGLStructuredBuffer() const
+		{
+			return mOpenGLStructuredBuffer;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		#ifdef RENDERER_DEBUG
+			virtual void setDebugName(const char* name) override
+			{
+				// "GL_KHR_debug"-extension available?
+				if (0 != mOpenGLStructuredBuffer && static_cast<OpenGLRenderer&>(getRenderer()).getExtensions().isGL_KHR_debug())
+				{
+					glObjectLabel(GL_BUFFER, mOpenGLStructuredBuffer, -1, name);
+				}
+			}
+		#endif
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), StructuredBuffer, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected methods                                     ]
+	//[-------------------------------------------------------]
+	protected:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] openGLRenderer
+		*    Owner OpenGL renderer instance
+		*/
+		inline StructuredBuffer(OpenGLRenderer& openGLRenderer) :
+			IStructuredBuffer(static_cast<Renderer::IRenderer&>(openGLRenderer)),
+			mOpenGLStructuredBuffer(0)
+		{}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected data                                        ]
+	//[-------------------------------------------------------]
+	protected:
+		GLuint mOpenGLStructuredBuffer;	///< OpenGL structured buffer, can be zero if no resource is allocated
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit StructuredBuffer(const StructuredBuffer& source) = delete;
+		StructuredBuffer& operator =(const StructuredBuffer& source) = delete;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ OpenGLRenderer/Buffer/StructuredBufferBind.h          ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    OpenGL structured buffer object class, traditional bind version
+	*/
+	class StructuredBufferBind final : public StructuredBuffer
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] openGLRenderer
+		*    Owner OpenGL renderer instance
+		*  @param[in] numberOfBytes
+		*    Number of bytes within the structured buffer, must be valid
+		*  @param[in] data
+		*    Structured buffer data, can be a null pointer (empty buffer)
+		*  @param[in] bufferUsage
+		*    Indication of the buffer usage
+		*  @param[in] numberOfStructureBytes
+		*    Number of structure bytes
+		*/
+		StructuredBufferBind(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage, MAYBE_UNUSED uint32_t numberOfStructureBytes) :
+			StructuredBuffer(openGLRenderer)
+		{
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
+				// Backup the currently bound OpenGL structured buffer
+				GLint openGLStructuredBufferBackup = 0;
+				glGetIntegerv(GL_SHADER_STORAGE_BUFFER_BINDING, &openGLStructuredBufferBackup);
+			#endif
+
+			// Create the OpenGL structured buffer
+			glGenBuffersARB(1, &mOpenGLStructuredBuffer);
+
+			// Bind this OpenGL structured buffer and upload the data
+			// -> Usage: These constants directly map to "GL_ARB_vertex_buffer_object" and OpenGL ES 3 constants, do not change them
+			glBindBufferARB(GL_SHADER_STORAGE_BUFFER, mOpenGLStructuredBuffer);
+			glBufferDataARB(GL_SHADER_STORAGE_BUFFER, static_cast<GLsizeiptrARB>(numberOfBytes), data, static_cast<GLenum>(bufferUsage));
+
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
+				// Be polite and restore the previous bound OpenGL structured buffer
+				glBindBufferARB(GL_SHADER_STORAGE_BUFFER, static_cast<GLuint>(openGLStructuredBufferBackup));
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~StructuredBufferBind() override
+		{}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit StructuredBufferBind(const StructuredBufferBind& source) = delete;
+		StructuredBufferBind& operator =(const StructuredBufferBind& source) = delete;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ OpenGLRenderer/Buffer/StructuredBufferDsa.h           ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    OpenGL structured buffer object class, effective direct state access (DSA)
+	*/
+	class StructuredBufferDsa final : public StructuredBuffer
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] openGLRenderer
+		*    Owner OpenGL renderer instance
+		*  @param[in] numberOfBytes
+		*    Number of bytes within the structured buffer, must be valid
+		*  @param[in] data
+		*    Structured buffer data, can be a null pointer (empty buffer)
+		*  @param[in] bufferUsage
+		*    Indication of the buffer usage
+		*  @param[in] numberOfStructureBytes
+		*    Number of structure bytes
+		*/
+		StructuredBufferDsa(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage, MAYBE_UNUSED uint32_t numberOfStructureBytes) :
+			StructuredBuffer(openGLRenderer)
+		{
+			if (openGLRenderer.getExtensions().isGL_ARB_direct_state_access())
+			{
+				// Create the OpenGL structured buffer
+				glCreateBuffers(1, &mOpenGLStructuredBuffer);
+
+				// Upload the data
+				// -> Usage: These constants directly map to "GL_ARB_vertex_buffer_object" and OpenGL ES 3 constants, do not change them
+				glNamedBufferData(mOpenGLStructuredBuffer, static_cast<GLsizeiptr>(numberOfBytes), data, static_cast<GLenum>(bufferUsage));
+			}
+			else
+			{
+				// Create the OpenGL structured buffer
+				glGenBuffersARB(1, &mOpenGLStructuredBuffer);
+
+				// Buffer part
+				// -> Upload the data
+				// -> Usage: These constants directly map to "GL_ARB_vertex_buffer_object" and OpenGL ES 3 constants, do not change them
+				glNamedBufferDataEXT(mOpenGLStructuredBuffer, static_cast<GLsizeiptr>(numberOfBytes), data, static_cast<GLenum>(bufferUsage));
+			}
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~StructuredBufferDsa() override
+		{}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit StructuredBufferDsa(const StructuredBufferDsa& source) = delete;
+		StructuredBufferDsa& operator =(const StructuredBufferDsa& source) = delete;
 
 
 	};
@@ -7092,6 +7103,256 @@ namespace OpenGLRenderer
 
 
 	//[-------------------------------------------------------]
+	//[ OpenGLRenderer/Buffer/UniformBuffer.h                 ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Abstract OpenGL uniform buffer object (UBO, "constant buffer" in Direct3D terminology) interface
+	*/
+	class UniformBuffer : public Renderer::IUniformBuffer
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~UniformBuffer() override
+		{
+			// Destroy the OpenGL uniform buffer
+			// -> Silently ignores 0's and names that do not correspond to existing buffer objects
+			glDeleteBuffersARB(1, &mOpenGLUniformBuffer);
+		}
+
+		/**
+		*  @brief
+		*    Return the OpenGL uniform buffer instance
+		*
+		*  @return
+		*    The OpenGL uniform buffer instance, can be zero if no resource is allocated, do not destroy the returned resource
+		*/
+		inline GLuint getOpenGLUniformBuffer() const
+		{
+			return mOpenGLUniformBuffer;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		#ifdef RENDERER_DEBUG
+			virtual void setDebugName(const char* name) override
+			{
+				// Valid OpenGL uniform buffer and "GL_KHR_debug"-extension available?
+				if (0 != mOpenGLUniformBuffer && static_cast<OpenGLRenderer&>(getRenderer()).getExtensions().isGL_KHR_debug())
+				{
+					glObjectLabel(GL_BUFFER, mOpenGLUniformBuffer, -1, name);
+				}
+			}
+		#endif
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), UniformBuffer, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected methods                                     ]
+	//[-------------------------------------------------------]
+	protected:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] openGLRenderer
+		*    Owner OpenGL renderer instance
+		*/
+		inline explicit UniformBuffer(OpenGLRenderer& openGLRenderer) :
+			IUniformBuffer(static_cast<Renderer::IRenderer&>(openGLRenderer)),
+			mOpenGLUniformBuffer(0)
+		{}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected data                                        ]
+	//[-------------------------------------------------------]
+	protected:
+		GLuint mOpenGLUniformBuffer;	///< OpenGL uniform buffer, can be zero if no resource is allocated
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit UniformBuffer(const UniformBuffer& source) = delete;
+		UniformBuffer& operator =(const UniformBuffer& source) = delete;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ OpenGLRenderer/Buffer/UniformBufferBind.h             ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    OpenGL uniform buffer object (UBO, "constant buffer" in Direct3D terminology) class, traditional bind version
+	*/
+	class UniformBufferBind final : public UniformBuffer
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] openGLRenderer
+		*    Owner OpenGL renderer instance
+		*  @param[in] numberOfBytes
+		*    Number of bytes within the uniform buffer, must be valid
+		*  @param[in] data
+		*    Uniform buffer data, can be a null pointer (empty buffer)
+		*  @param[in] bufferUsage
+		*    Indication of the buffer usage
+		*/
+		UniformBufferBind(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage) :
+			UniformBuffer(openGLRenderer)
+		{
+			// TODO(co) Review OpenGL uniform buffer alignment topic
+
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
+				// Backup the currently bound OpenGL uniform buffer
+				GLint openGLUniformBufferBackup = 0;
+				glGetIntegerv(GL_UNIFORM_BUFFER_BINDING, &openGLUniformBufferBackup);
+			#endif
+
+			// Create the OpenGL uniform buffer
+			glGenBuffersARB(1, &mOpenGLUniformBuffer);
+
+			// Bind this OpenGL uniform buffer and upload the data
+			// -> Usage: These constants directly map to GL_ARB_vertex_buffer_object and OpenGL ES 3 constants, do not change them
+			glBindBufferARB(GL_UNIFORM_BUFFER, mOpenGLUniformBuffer);
+			glBufferDataARB(GL_UNIFORM_BUFFER, static_cast<GLsizeiptrARB>(numberOfBytes), data, static_cast<GLenum>(bufferUsage));
+
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
+				// Be polite and restore the previous bound OpenGL uniform buffer
+				glBindBufferARB(GL_UNIFORM_BUFFER, static_cast<GLuint>(openGLUniformBufferBackup));
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~UniformBufferBind() override
+		{}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit UniformBufferBind(const UniformBufferBind& source) = delete;
+		UniformBufferBind& operator =(const UniformBufferBind& source) = delete;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ OpenGLRenderer/Buffer/UniformBufferDsa.h              ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    OpenGL uniform buffer object (UBO, "constant buffer" in Direct3D terminology) class, effective direct state access (DSA)
+	*/
+	class UniformBufferDsa final : public UniformBuffer
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] openGLRenderer
+		*    Owner OpenGL renderer instance
+		*  @param[in] numberOfBytes
+		*    Number of bytes within the uniform buffer, must be valid
+		*  @param[in] data
+		*    Uniform buffer data, can be a null pointer (empty buffer)
+		*  @param[in] bufferUsage
+		*    Indication of the buffer usage
+		*/
+		UniformBufferDsa(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage) :
+			UniformBuffer(openGLRenderer)
+		{
+			// TODO(co) Review OpenGL uniform buffer alignment topic
+
+			if (openGLRenderer.getExtensions().isGL_ARB_direct_state_access())
+			{
+				// Create the OpenGL uniform buffer
+				glCreateBuffers(1, &mOpenGLUniformBuffer);
+
+				// Upload the data
+				// -> Usage: These constants directly map to "GL_ARB_vertex_buffer_object" and OpenGL ES 3 constants, do not change them
+				glNamedBufferData(mOpenGLUniformBuffer, static_cast<GLsizeiptr>(numberOfBytes), data, static_cast<GLenum>(bufferUsage));
+			}
+			else
+			{
+				// Create the OpenGL uniform buffer
+				glGenBuffersARB(1, &mOpenGLUniformBuffer);
+
+				// Upload the data
+				// -> Usage: These constants directly map to "GL_ARB_vertex_buffer_object" and OpenGL ES 3 constants, do not change them
+				glNamedBufferDataEXT(mOpenGLUniformBuffer, static_cast<GLsizeiptr>(numberOfBytes), data, static_cast<GLenum>(bufferUsage));
+			}
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~UniformBufferDsa() override
+		{}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit UniformBufferDsa(const UniformBufferDsa& source) = delete;
+		UniformBufferDsa& operator =(const UniformBufferDsa& source) = delete;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ OpenGLRenderer/Buffer/BufferManager.h                 ]
 	//[-------------------------------------------------------]
 	/**
@@ -7222,6 +7483,30 @@ namespace OpenGLRenderer
 				{
 					// Traditional bind version
 					return RENDERER_NEW(getRenderer().getContext(), TextureBufferBind)(static_cast<OpenGLRenderer&>(getRenderer()), numberOfBytes, data, bufferUsage, textureFormat);
+				}
+			}
+			else
+			{
+				// Error!
+				return nullptr;
+			}
+		}
+
+		virtual Renderer::IStructuredBuffer* createStructuredBuffer(uint32_t numberOfBytes, const void* data, MAYBE_UNUSED uint32_t bufferFlags, Renderer::BufferUsage bufferUsage, uint32_t numberOfStructureBytes) override
+		{
+			// "GL_ARB_shader_storage_buffer_object" required
+			if (mExtensions->isGL_ARB_shader_storage_buffer_object())
+			{
+				// Is "GL_EXT_direct_state_access" there?
+				if (mExtensions->isGL_EXT_direct_state_access() || mExtensions->isGL_ARB_direct_state_access())
+				{
+					// Effective direct state access (DSA)
+					return RENDERER_NEW(getRenderer().getContext(), StructuredBufferDsa)(static_cast<OpenGLRenderer&>(getRenderer()), numberOfBytes, data, bufferUsage, numberOfStructureBytes);
+				}
+				else
+				{
+					// Traditional bind version
+					return RENDERER_NEW(getRenderer().getContext(), StructuredBufferBind)(static_cast<OpenGLRenderer&>(getRenderer()), numberOfBytes, data, bufferUsage, numberOfStructureBytes);
 				}
 			}
 			else
@@ -11793,6 +12078,7 @@ namespace OpenGLRenderer
 						case Renderer::ResourceType::INDEX_BUFFER:
 						case Renderer::ResourceType::VERTEX_BUFFER:
 						case Renderer::ResourceType::TEXTURE_BUFFER:
+						case Renderer::ResourceType::STRUCTURED_BUFFER:
 						case Renderer::ResourceType::INDIRECT_BUFFER:
 						case Renderer::ResourceType::UNIFORM_BUFFER:
 						case Renderer::ResourceType::TEXTURE_1D:
@@ -11861,6 +12147,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
+					case Renderer::ResourceType::STRUCTURED_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
@@ -12026,6 +12313,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
+					case Renderer::ResourceType::STRUCTURED_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
@@ -12100,6 +12388,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
+					case Renderer::ResourceType::STRUCTURED_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
@@ -12356,6 +12645,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
+					case Renderer::ResourceType::STRUCTURED_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
@@ -12444,6 +12734,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
+					case Renderer::ResourceType::STRUCTURED_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
@@ -17579,6 +17870,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
+					case Renderer::ResourceType::STRUCTURED_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
@@ -18101,6 +18393,7 @@ namespace OpenGLRenderer
 			case Renderer::ResourceType::INDEX_BUFFER:
 			case Renderer::ResourceType::VERTEX_BUFFER:
 			case Renderer::ResourceType::TEXTURE_BUFFER:
+			case Renderer::ResourceType::STRUCTURED_BUFFER:
 			case Renderer::ResourceType::INDIRECT_BUFFER:
 			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_1D:
@@ -18196,6 +18489,7 @@ namespace OpenGLRenderer
 			case Renderer::ResourceType::INDEX_BUFFER:
 			case Renderer::ResourceType::VERTEX_BUFFER:
 			case Renderer::ResourceType::TEXTURE_BUFFER:
+			case Renderer::ResourceType::STRUCTURED_BUFFER:
 			case Renderer::ResourceType::INDIRECT_BUFFER:
 			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_1D:
@@ -18490,6 +18784,9 @@ namespace OpenGLRenderer
 			case Renderer::ResourceType::TEXTURE_BUFFER:
 				return ::detail::mapBuffer(mContext, *mExtensions, GL_TEXTURE_BUFFER_ARB, GL_TEXTURE_BINDING_BUFFER_ARB, static_cast<TextureBuffer&>(resource).getOpenGLTextureBuffer(), mapType, mappedSubresource);
 
+			case Renderer::ResourceType::STRUCTURED_BUFFER:
+				return ::detail::mapBuffer(mContext, *mExtensions, GL_TEXTURE_BUFFER_ARB, GL_TEXTURE_BINDING_BUFFER_ARB, static_cast<StructuredBuffer&>(resource).getOpenGLStructuredBuffer(), mapType, mappedSubresource);
+
 			case Renderer::ResourceType::INDIRECT_BUFFER:
 				return ::detail::mapBuffer(mContext, *mExtensions, GL_DRAW_INDIRECT_BUFFER, GL_DRAW_INDIRECT_BUFFER_BINDING, static_cast<IndirectBuffer&>(resource).getOpenGLIndirectBuffer(), mapType, mappedSubresource);
 
@@ -18611,6 +18908,10 @@ namespace OpenGLRenderer
 
 			case Renderer::ResourceType::TEXTURE_BUFFER:
 				::detail::unmapBuffer(*mExtensions, GL_TEXTURE_BUFFER_ARB, GL_TEXTURE_BINDING_BUFFER_ARB, static_cast<TextureBuffer&>(resource).getOpenGLTextureBuffer());
+				break;
+
+			case Renderer::ResourceType::STRUCTURED_BUFFER:
+				::detail::unmapBuffer(*mExtensions, GL_TEXTURE_BUFFER_ARB, GL_TEXTURE_BINDING_BUFFER_ARB, static_cast<StructuredBuffer&>(resource).getOpenGLStructuredBuffer());
 				break;
 
 			case Renderer::ResourceType::INDIRECT_BUFFER:
@@ -18998,6 +19299,17 @@ namespace OpenGLRenderer
 			mCapabilities.maximumTextureBufferSize = 0;
 		}
 
+		// Maximum structured buffer size in bytes
+		if (mExtensions->isGL_ARB_shader_storage_buffer_object())
+		{
+			glGetIntegerv(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &openGLValue);
+			mCapabilities.maximumStructuredBufferSize = static_cast<uint32_t>(openGLValue);
+		}
+		else
+		{
+			mCapabilities.maximumStructuredBufferSize = 0;
+		}
+
 		// Maximum indirect buffer size in bytes
 		if (mExtensions->isGL_ARB_draw_indirect())
 		{
@@ -19148,19 +19460,6 @@ namespace OpenGLRenderer
 				const Renderer::ResourceType resourceType = resource->getResourceType();
 				switch (resourceType)
 				{
-					case Renderer::ResourceType::UNIFORM_BUFFER:
-						// "GL_ARB_uniform_buffer_object" required
-						if (mExtensions->isGL_ARB_uniform_buffer_object())
-						{
-							// Attach the buffer to the given UBO binding point
-							// -> Explicit binding points ("layout(binding = 0)" in GLSL shader) requires OpenGL 4.2 or the "GL_ARB_explicit_uniform_location"-extension
-							// -> Direct3D 10 and Direct3D 11 have explicit binding points
-							RENDERER_ASSERT(mContext, Renderer::DescriptorRangeType::UBV == descriptorRange.rangeType, "OpenGL uniform buffer must bound at UBV descriptor range type")
-							RENDERER_ASSERT(mContext, nullptr != openGLResourceGroup->getResourceIndexToUniformBlockBindingIndex(), "Invalid OpenGL resource index to uniform block binding index")
-							glBindBufferBase(GL_UNIFORM_BUFFER, openGLResourceGroup->getResourceIndexToUniformBlockBindingIndex()[resourceIndex], static_cast<UniformBuffer*>(resource)->getOpenGLUniformBuffer());
-						}
-						break;
-
 					case Renderer::ResourceType::TEXTURE_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
 					case Renderer::ResourceType::TEXTURE_2D:
@@ -19272,6 +19571,7 @@ namespace OpenGLRenderer
 										case Renderer::ResourceType::FRAMEBUFFER:
 										case Renderer::ResourceType::INDEX_BUFFER:
 										case Renderer::ResourceType::VERTEX_BUFFER:
+										case Renderer::ResourceType::STRUCTURED_BUFFER:
 										case Renderer::ResourceType::INDIRECT_BUFFER:
 										case Renderer::ResourceType::UNIFORM_BUFFER:
 										case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -19390,6 +19690,7 @@ namespace OpenGLRenderer
 											case Renderer::ResourceType::FRAMEBUFFER:
 											case Renderer::ResourceType::INDEX_BUFFER:
 											case Renderer::ResourceType::VERTEX_BUFFER:
+											case Renderer::ResourceType::STRUCTURED_BUFFER:
 											case Renderer::ResourceType::INDIRECT_BUFFER:
 											case Renderer::ResourceType::UNIFORM_BUFFER:
 											case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -19504,6 +19805,7 @@ namespace OpenGLRenderer
 										case Renderer::ResourceType::FRAMEBUFFER:
 										case Renderer::ResourceType::INDEX_BUFFER:
 										case Renderer::ResourceType::VERTEX_BUFFER:
+										case Renderer::ResourceType::STRUCTURED_BUFFER:
 										case Renderer::ResourceType::INDIRECT_BUFFER:
 										case Renderer::ResourceType::UNIFORM_BUFFER:
 										case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -19565,6 +19867,22 @@ namespace OpenGLRenderer
 						break;
 					}
 
+					case Renderer::ResourceType::STRUCTURED_BUFFER:
+					{
+						RENDERER_ASSERT(mContext, Renderer::DescriptorRangeType::SRV == descriptorRange.rangeType || Renderer::DescriptorRangeType::UAV == descriptorRange.rangeType, "OpenGL structured buffer must bound at SRV or UAV descriptor range type")
+
+						// "GL_ARB_uniform_buffer_object" required
+						if (mExtensions->isGL_ARB_uniform_buffer_object())
+						{
+							// "glBindBufferBase()" unit parameter is zero based so we can simply use the value we received
+							const GLuint index = descriptorRange.baseShaderRegister;
+
+							// Attach the buffer to the given SSBO binding point
+							glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, static_cast<StructuredBuffer*>(resource)->getOpenGLStructuredBuffer());
+						}
+						break;
+					}
+
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					{
 						RENDERER_ASSERT(mContext, Renderer::DescriptorRangeType::SRV == descriptorRange.rangeType || Renderer::DescriptorRangeType::UAV == descriptorRange.rangeType, "OpenGL indirect buffer must bound at SRV or UAV descriptor range type")
@@ -19581,6 +19899,19 @@ namespace OpenGLRenderer
 						}
 						break;
 					}
+
+					case Renderer::ResourceType::UNIFORM_BUFFER:
+						// "GL_ARB_uniform_buffer_object" required
+						if (mExtensions->isGL_ARB_uniform_buffer_object())
+						{
+							// Attach the buffer to the given UBO binding point
+							// -> Explicit binding points ("layout(binding = 0)" in GLSL shader) requires OpenGL 4.2 or the "GL_ARB_explicit_uniform_location"-extension
+							// -> Direct3D 10 and Direct3D 11 have explicit binding points
+							RENDERER_ASSERT(mContext, Renderer::DescriptorRangeType::UBV == descriptorRange.rangeType, "OpenGL uniform buffer must bound at UBV descriptor range type")
+							RENDERER_ASSERT(mContext, nullptr != openGLResourceGroup->getResourceIndexToUniformBlockBindingIndex(), "Invalid OpenGL resource index to uniform block binding index")
+							glBindBufferBase(GL_UNIFORM_BUFFER, openGLResourceGroup->getResourceIndexToUniformBlockBindingIndex()[resourceIndex], static_cast<UniformBuffer*>(resource)->getOpenGLUniformBuffer());
+						}
+						break;
 
 					case Renderer::ResourceType::SAMPLER_STATE:
 						// Unlike Direct3D >=10, OpenGL directly attaches the sampler settings to the texture (unless the sampler object extension is used)

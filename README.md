@@ -85,9 +85,10 @@ Renderer API and Backends
 	- Vertex array object (VAO, input-assembler (IA) stage) with support for multiple vertex streams
 		- Vertex buffer object (VBO, input-assembler (IA) stage)
 		- Index buffer object (IBO, input-assembler (IA) stage)
+	- Texture buffer object (TBO)
+	- Structured buffer object
 	- Indirect buffer object with optional internal emulation, draw methods always use an indirect buffer to have an unified draw call API
 	- Uniform buffer object (UBO, "constant buffer" in Direct3D terminology)
-	- Texture buffer object (TBO)
 	- Command buffer mandatory by design, not just build on top
 - Textures: 1D, 2D, 2D array, 3D, cube
 - State objects with mapping to API specific settings during creation, not runtime

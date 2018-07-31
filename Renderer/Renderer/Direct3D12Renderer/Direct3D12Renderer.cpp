@@ -5160,6 +5160,201 @@ namespace Direct3D12Renderer
 
 
 	//[-------------------------------------------------------]
+	//[ Direct3D12Renderer/Buffer/StructuredBuffer.h          ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Direct3D 12 structured buffer object class
+	*/
+	class StructuredBuffer final : public Renderer::IStructuredBuffer
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] direct3D12Renderer
+		*    Owner Direct3D 12 renderer instance
+		*  @param[in] numberOfBytes
+		*    Number of bytes within the structured buffer, must be valid
+		*  @param[in] data
+		*    Structured buffer data, can be a null pointer (empty buffer)
+		*  @param[in] bufferUsage
+		*    Indication of the buffer usage
+		*  @param[in] numberOfStructureBytes
+		*    Number of structure bytes
+		*/
+		StructuredBuffer(Direct3D12Renderer& direct3D12Renderer, MAYBE_UNUSED uint32_t numberOfBytes, MAYBE_UNUSED const void* data, MAYBE_UNUSED Renderer::BufferUsage bufferUsage, MAYBE_UNUSED uint32_t numberOfStructureBytes) :
+			IStructuredBuffer(direct3D12Renderer)
+			// TODO(co) Direct3D 12 update
+		//	mD3D12Buffer(nullptr),
+		//	mD3D12ShaderResourceViewTexture(nullptr)
+		{
+			// TODO(co) Direct3D 12 update
+			/*
+			{ // Buffer part
+				// Direct3D 12 buffer description
+				D3D12_BUFFER_DESC d3d12BufferDesc;
+				d3d12BufferDesc.ByteWidth           = numberOfBytes;
+				d3d12BufferDesc.Usage               = Mapping::getDirect3D12UsageAndCPUAccessFlags(bufferUsage, d3d12BufferDesc.CPUAccessFlags);
+				d3d12BufferDesc.BindFlags           = D3D12_BIND_SHADER_RESOURCE;
+				//d3d12BufferDesc.CPUAccessFlags    = <filled above>;
+				d3d12BufferDesc.MiscFlags           = 0;
+				d3d12BufferDesc.StructureByteStride = 0;
+
+				// Data given?
+				if (nullptr != data)
+				{
+					// Direct3D 12 subresource data
+					D3D12_SUBRESOURCE_DATA d3d12SubresourceData;
+					d3d12SubresourceData.pSysMem          = data;
+					d3d12SubresourceData.SysMemPitch      = 0;
+					d3d12SubresourceData.SysMemSlicePitch = 0;
+
+					// Create the Direct3D 12 constant buffer
+					FAILED_DEBUG_BREAK(direct3D12Renderer.getD3D12Device()->CreateBuffer(&d3d12BufferDesc, &d3d12SubresourceData, &mD3D12Buffer));
+				}
+				else
+				{
+					// Create the Direct3D 12 constant buffer
+					FAILED_DEBUG_BREAK(direct3D12Renderer.getD3D12Device()->CreateBuffer(&d3d12BufferDesc, nullptr, &mD3D12Buffer));
+				}
+			}
+
+			{ // Shader resource view part
+				// Direct3D 12 shader resource view description
+				D3D12_SHADER_RESOURCE_VIEW_DESC d3d12ShaderResourceViewDesc = {};
+				d3d12ShaderResourceViewDesc.Format				 = Mapping::getDirect3D12Format(textureFormat);
+				d3d12ShaderResourceViewDesc.ViewDimension		 = D3D12_SRV_DIMENSION_BUFFER;
+				d3d12ShaderResourceViewDesc.Buffer.ElementOffset = 0;
+				d3d12ShaderResourceViewDesc.Buffer.ElementWidth	 = numberOfBytes / Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat);
+
+				// Create the Direct3D 12 shader resource view instance
+				FAILED_DEBUG_BREAK(direct3D12Renderer.getD3D12Device()->CreateShaderResourceView(mD3D12Buffer, &d3d12ShaderResourceViewDesc, &mD3D12ShaderResourceViewTexture));
+			}
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RENDERER_DEBUG
+				setDebugName("");
+			#endif
+			*/
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~StructuredBuffer() override
+		{
+			// TODO(co) Direct3D 12 update
+			/*
+			// Release the used resources
+			if (nullptr != mD3D12ShaderResourceViewTexture)
+			{
+				mD3D12ShaderResourceViewTexture->Release();
+				mD3D12ShaderResourceViewTexture = nullptr;
+			}
+			if (nullptr != mD3D12Buffer)
+			{
+				mD3D12Buffer->Release();
+				mD3D12Buffer = nullptr;
+			}
+			*/
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D structured buffer instance
+		*
+		*  @return
+		*    The Direct3D structured buffer instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*/
+		// TODO(co) Direct3D 12 update
+		//inline ID3D12Buffer *getD3D12Buffer() const
+		//{
+		//	return mD3D12Buffer;
+		//}
+
+		/**
+		*  @brief
+		*    Return the Direct3D shader resource view instance
+		*
+		*  @return
+		*    The Direct3D shader resource view instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*/
+		// TODO(co) Direct3D 12 update
+		//inline ID3D12ShaderResourceView *getD3D12ShaderResourceView() const
+		//{
+		//	return mD3D12ShaderResourceViewTexture;
+		//}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		#ifdef RENDERER_DEBUG
+			virtual void setDebugName(const char*) override
+			{
+				// TODO(co) Direct3D 12 update
+				/*
+				RENDERER_DECORATED_DEBUG_NAME(name, detailedName, "TBO", 6);	// 6 = "TBO: " including terminating zero!
+
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
+				if (nullptr != mD3D12ShaderResourceViewTexture)
+				{
+					FAILED_DEBUG_BREAK(mD3D12ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D12ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
+				}
+				if (nullptr != mD3D12Buffer)
+				{
+					FAILED_DEBUG_BREAK(mD3D12Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D12Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
+				}
+			*/
+			}
+		#endif
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), StructuredBuffer, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit StructuredBuffer(const StructuredBuffer& source) = delete;
+		StructuredBuffer& operator =(const StructuredBuffer& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		// TODO(co) Direct3D 12 update
+		//ID3D12Buffer			 *mD3D12Buffer;						///< Direct3D texture buffer instance, can be a null pointer
+		//ID3D12ShaderResourceView *mD3D12ShaderResourceViewTexture;	///< Direct3D 12 shader resource view, can be a null pointer
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ Direct3D12Renderer/Buffer/IndirectBuffer.h            ]
 	//[-------------------------------------------------------]
 	/**
@@ -5651,6 +5846,11 @@ namespace Direct3D12Renderer
 		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t = Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<Direct3D12Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage, textureFormat);
+		}
+
+		inline virtual Renderer::IStructuredBuffer* createStructuredBuffer(uint32_t numberOfBytes, const void* data, MAYBE_UNUSED uint32_t bufferFlags, Renderer::BufferUsage bufferUsage, uint32_t numberOfStructureBytes) override
+		{
+			return RENDERER_NEW(getRenderer().getContext(), StructuredBuffer)(static_cast<Direct3D12Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage, numberOfStructureBytes);
 		}
 
 		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
@@ -8062,6 +8262,7 @@ namespace Direct3D12Renderer
 						case Renderer::ResourceType::INDEX_BUFFER:
 						case Renderer::ResourceType::VERTEX_BUFFER:
 						case Renderer::ResourceType::TEXTURE_BUFFER:
+						case Renderer::ResourceType::STRUCTURED_BUFFER:
 						case Renderer::ResourceType::INDIRECT_BUFFER:
 						case Renderer::ResourceType::UNIFORM_BUFFER:
 						case Renderer::ResourceType::TEXTURE_1D:
@@ -8160,6 +8361,7 @@ namespace Direct3D12Renderer
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
+					case Renderer::ResourceType::STRUCTURED_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
@@ -10559,6 +10761,7 @@ namespace Direct3D12Renderer
 				case Renderer::ResourceType::INDEX_BUFFER:
 				case Renderer::ResourceType::VERTEX_BUFFER:
 				case Renderer::ResourceType::TEXTURE_BUFFER:
+				case Renderer::ResourceType::STRUCTURED_BUFFER:
 				case Renderer::ResourceType::INDIRECT_BUFFER:
 				case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 				case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
@@ -10685,6 +10888,7 @@ namespace Direct3D12Renderer
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
+					case Renderer::ResourceType::STRUCTURED_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
@@ -10793,6 +10997,7 @@ namespace Direct3D12Renderer
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
+					case Renderer::ResourceType::STRUCTURED_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
@@ -10913,6 +11118,7 @@ namespace Direct3D12Renderer
 				case Renderer::ResourceType::INDEX_BUFFER:
 				case Renderer::ResourceType::VERTEX_BUFFER:
 				case Renderer::ResourceType::TEXTURE_BUFFER:
+				case Renderer::ResourceType::STRUCTURED_BUFFER:
 				case Renderer::ResourceType::INDIRECT_BUFFER:
 				case Renderer::ResourceType::UNIFORM_BUFFER:
 				case Renderer::ResourceType::TEXTURE_1D:
@@ -11269,6 +11475,9 @@ namespace Direct3D12Renderer
 			case Renderer::ResourceType::TEXTURE_BUFFER:
 				return (S_OK == mD3D12DeviceContext->Map(static_cast<TextureBuffer&>(resource).getD3D12Buffer(), subresource, static_cast<D3D12_MAP>(mapType), mapFlags, reinterpret_cast<D3D12_MAPPED_SUBRESOURCE*>(&mappedSubresource)));
 
+			case Renderer::ResourceType::STRUCTURED_BUFFER:
+				return (S_OK == mD3D12DeviceContext->Map(static_cast<StructuredBuffer&>(resource).getD3D12Buffer(), subresource, static_cast<D3D12_MAP>(mapType), mapFlags, reinterpret_cast<D3D12_MAPPED_SUBRESOURCE*>(&mappedSubresource)));
+
 			case Renderer::ResourceType::UNIFORM_BUFFER:
 				return (S_OK == mD3D12DeviceContext->Map(static_cast<UniformBuffer&>(resource).getD3D12Buffer(), subresource, static_cast<D3D12_MAP>(mapType), mapFlags, reinterpret_cast<D3D12_MAPPED_SUBRESOURCE*>(&mappedSubresource)));
 
@@ -11366,6 +11575,10 @@ namespace Direct3D12Renderer
 
 			case Renderer::ResourceType::TEXTURE_BUFFER:
 				mD3D12DeviceContext->Unmap(static_cast<TextureBuffer&>(resource).getD3D12Buffer(), subresource);
+				break;
+
+			case Renderer::ResourceType::STRUCTURED_BUFFER:
+				mD3D12DeviceContext->Unmap(static_cast<StructuredBuffer&>(resource).getD3D12Buffer(), subresource);
 				break;
 
 			case Renderer::ResourceType::UNIFORM_BUFFER:
@@ -11595,7 +11808,7 @@ namespace Direct3D12Renderer
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 0;
 
 				// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
-				mCapabilities.maximumTextureBufferSize = 0;
+				mCapabilities.maximumTextureBufferSize = mCapabilities.maximumStructuredBufferSize = 0;
 
 				// Maximum indirect buffer size in bytes
 				mCapabilities.maximumIndirectBufferSize = 64 * 1024;	// 64 KiB
@@ -11633,7 +11846,7 @@ namespace Direct3D12Renderer
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 0;
 
 				// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
-				mCapabilities.maximumTextureBufferSize = 0;
+				mCapabilities.maximumTextureBufferSize = mCapabilities.maximumStructuredBufferSize = 0;
 
 				// Maximum indirect buffer size in bytes
 				mCapabilities.maximumIndirectBufferSize = 64 * 1024;	// 64 KiB
@@ -11671,7 +11884,7 @@ namespace Direct3D12Renderer
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 0;
 
 				// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
-				mCapabilities.maximumTextureBufferSize = 0;
+				mCapabilities.maximumTextureBufferSize = mCapabilities.maximumStructuredBufferSize = 0;
 
 				// Maximum indirect buffer size in bytes
 				mCapabilities.maximumIndirectBufferSize = 64 * 1024;	// 64 KiB
@@ -11713,7 +11926,7 @@ namespace Direct3D12Renderer
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 512;
 
 				// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
-				mCapabilities.maximumTextureBufferSize = 128 * 1024 * 1024;	// TODO(co) http://msdn.microsoft.com/en-us/library/ff476876%28v=vs.85%29.aspx does not mention the texture buffer? Currently the OpenGL 3 minimum is used: 128 MiB.
+				mCapabilities.maximumTextureBufferSize = mCapabilities.maximumStructuredBufferSize = 128 * 1024 * 1024;	// TODO(co) http://msdn.microsoft.com/en-us/library/ff476876%28v=vs.85%29.aspx does not mention the texture buffer? Currently the OpenGL 3 minimum is used: 128 MiB.
 
 				// Maximum indirect buffer size in bytes
 				mCapabilities.maximumIndirectBufferSize = 64 * 1024;	// 64 KiB
@@ -11755,7 +11968,7 @@ namespace Direct3D12Renderer
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 512;
 
 				// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
-				mCapabilities.maximumTextureBufferSize = 128 * 1024 * 1024;	// TODO(co) http://msdn.microsoft.com/en-us/library/ff476876%28v=vs.85%29.aspx does not mention the texture buffer? Currently the OpenGL 3 minimum is used: 128 MiB.
+				mCapabilities.maximumTextureBufferSize = mCapabilities.maximumStructuredBufferSize = 128 * 1024 * 1024;	// TODO(co) http://msdn.microsoft.com/en-us/library/ff476876%28v=vs.85%29.aspx does not mention the texture buffer? Currently the OpenGL 3 minimum is used: 128 MiB.
 
 				// Maximum indirect buffer size in bytes
 				mCapabilities.maximumIndirectBufferSize = 64 * 1024;	// 64 KiB
@@ -11798,7 +12011,7 @@ namespace Direct3D12Renderer
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 512;
 
 				// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
-				mCapabilities.maximumTextureBufferSize = 128 * 1024 * 1024;	// TODO(co) http://msdn.microsoft.com/en-us/library/ff476876%28v=vs.85%29.aspx does not mention the texture buffer? Currently the OpenGL 3 minimum is used: 128 MiB.
+				mCapabilities.maximumTextureBufferSize = mCapabilities.maximumStructuredBufferSize = 128 * 1024 * 1024;	// TODO(co) http://msdn.microsoft.com/en-us/library/ff476876%28v=vs.85%29.aspx does not mention the texture buffer? Currently the OpenGL 3 minimum is used: 128 MiB.
 
 				// Maximum number of multisamples (always at least 1, usually 8)
 				mCapabilities.maximumNumberOfMultisamples = 8;

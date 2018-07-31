@@ -317,6 +317,7 @@ namespace Renderer
 			class IIndexBuffer;
 			class IVertexBuffer;
 			class ITextureBuffer;
+			class IStructuredBuffer;
 			class IIndirectBuffer;
 			class IUniformBuffer;
 		class ITextureManager;
@@ -1131,26 +1132,27 @@ namespace Renderer
 		INDEX_BUFFER				   = 7,		///< Index buffer object (IBO, input-assembler (IA) stage)
 		VERTEX_BUFFER				   = 8,		///< Vertex buffer object (VBO, input-assembler (IA) stage)
 		TEXTURE_BUFFER				   = 9,		///< Texture buffer object (TBO)
-		INDIRECT_BUFFER				   = 10,	///< Indirect buffer object
-		UNIFORM_BUFFER				   = 11,	///< Uniform buffer object (UBO, "constant buffer" in Direct3D terminology)
+		STRUCTURED_BUFFER			   = 10,	///< Structured buffer object
+		INDIRECT_BUFFER				   = 11,	///< Indirect buffer object
+		UNIFORM_BUFFER				   = 12,	///< Uniform buffer object (UBO, "constant buffer" in Direct3D terminology)
 		// ITexture
-		TEXTURE_1D					   = 12,	///< Texture 1D
-		TEXTURE_2D					   = 13,	///< Texture 2D
-		TEXTURE_2D_ARRAY			   = 14,	///< Texture 2D array
-		TEXTURE_3D					   = 15,	///< Texture 3D
-		TEXTURE_CUBE				   = 16,	///< Texture cube
+		TEXTURE_1D					   = 13,	///< Texture 1D
+		TEXTURE_2D					   = 14,	///< Texture 2D
+		TEXTURE_2D_ARRAY			   = 15,	///< Texture 2D array
+		TEXTURE_3D					   = 16,	///< Texture 3D
+		TEXTURE_CUBE				   = 17,	///< Texture cube
 		// IState
 			// IPipelineState
-			GRAPHICS_PIPELINE_STATE	   = 17,	///< Graphics pipeline state (PSO)
-			COMPUTE_PIPELINE_STATE	   = 18,	///< Compute pipeline state (PSO)
-		SAMPLER_STATE				   = 19,	///< Sampler state
+			GRAPHICS_PIPELINE_STATE	   = 18,	///< Graphics pipeline state (PSO)
+			COMPUTE_PIPELINE_STATE	   = 19,	///< Compute pipeline state (PSO)
+		SAMPLER_STATE				   = 20,	///< Sampler state
 		// IShader
-		VERTEX_SHADER				   = 20,	///< Vertex shader (VS)
-		TESSELLATION_CONTROL_SHADER	   = 21,	///< Tessellation control shader (TCS, "hull shader" in Direct3D terminology)
-		TESSELLATION_EVALUATION_SHADER = 22,	///< Tessellation evaluation shader (TES, "domain shader" in Direct3D terminology)
-		GEOMETRY_SHADER				   = 23,	///< Geometry shader (GS)
-		FRAGMENT_SHADER				   = 24,	///< Fragment shader (FS, "pixel shader" in Direct3D terminology)
-		COMPUTE_SHADER				   = 25		///< Compute shader (CS)
+		VERTEX_SHADER				   = 21,	///< Vertex shader (VS)
+		TESSELLATION_CONTROL_SHADER	   = 22,	///< Tessellation control shader (TCS, "hull shader" in Direct3D terminology)
+		TESSELLATION_EVALUATION_SHADER = 23,	///< Tessellation evaluation shader (TES, "domain shader" in Direct3D terminology)
+		GEOMETRY_SHADER				   = 24,	///< Geometry shader (GS)
+		FRAGMENT_SHADER				   = 25,	///< Fragment shader (FS, "pixel shader" in Direct3D terminology)
+		COMPUTE_SHADER				   = 26		///< Compute shader (CS)
 	};
 
 
@@ -1341,6 +1343,7 @@ namespace Renderer
 					case ResourceType::INDEX_BUFFER:
 					case ResourceType::VERTEX_BUFFER:
 					case ResourceType::TEXTURE_BUFFER:
+					case ResourceType::STRUCTURED_BUFFER:
 					case ResourceType::INDIRECT_BUFFER:
 						range.rangeType = DescriptorRangeType::SRV;
 						break;
@@ -3628,6 +3631,7 @@ namespace Renderer
 		uint32_t			maximumTextureDimension;						///< Maximum texture dimension (usually 2048, 4096, 8192 or 16384)
 		uint32_t			maximumNumberOf2DTextureArraySlices;			///< Maximum number of 2D texture array slices (usually 512 up to 8192, in case there's no support for 2D texture arrays it's 0)
 		uint32_t			maximumTextureBufferSize;						///< Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
+		uint32_t			maximumStructuredBufferSize;					///< Maximum structured buffer size in bytes (>65536, typically much larger than that of one-dimensional texture, in case there's no support for structured buffer it's 0)
 		uint32_t			maximumIndirectBufferSize;						///< Maximum indirect buffer size in bytes
 		uint32_t			maximumUniformBufferSize;						///< Maximum uniform buffer (UBO) size in bytes (usually at least 4096 *16 bytes, in case there's no support for uniform buffer it's 0)
 		uint8_t				maximumNumberOfMultisamples;					///< Maximum number of multisamples (always at least 1, usually 8)
@@ -3742,6 +3746,8 @@ namespace Renderer
 			std::atomic<uint32_t> numberOfCreatedVertexBuffers;					///< Number of created vertex buffer object (VBO, input-assembler (IA) stage) instances
 			std::atomic<uint32_t> currentNumberOfTextureBuffers;				///< Current number of texture buffer object (TBO) instances
 			std::atomic<uint32_t> numberOfCreatedTextureBuffers;				///< Number of created texture buffer object (TBO) instances
+			std::atomic<uint32_t> currentNumberOfStructuredBuffers;				///< Current number of structured buffer object instances
+			std::atomic<uint32_t> numberOfCreatedStructuredBuffers;				///< Number of created structured buffer object instances
 			std::atomic<uint32_t> currentNumberOfIndirectBuffers;				///< Current number of indirect buffer object instances
 			std::atomic<uint32_t> numberOfCreatedIndirectBuffers;				///< Number of created indirect buffer object instances
 			std::atomic<uint32_t> currentNumberOfUniformBuffers;				///< Current number of uniform buffer object (UBO, "constant buffer" in Direct3D terminology) instances
@@ -3807,6 +3813,8 @@ namespace Renderer
 				numberOfCreatedVertexBuffers(0),
 				currentNumberOfTextureBuffers(0),
 				numberOfCreatedTextureBuffers(0),
+				currentNumberOfStructuredBuffers(0),
+				numberOfCreatedStructuredBuffers(0),
 				currentNumberOfIndirectBuffers(0),
 				numberOfCreatedIndirectBuffers(0),
 				currentNumberOfUniformBuffers(0),
@@ -3877,6 +3885,7 @@ namespace Renderer
 						currentNumberOfIndexBuffers +
 						currentNumberOfVertexBuffers +
 						currentNumberOfTextureBuffers +
+						currentNumberOfStructuredBuffers +
 						currentNumberOfIndirectBuffers +
 						currentNumberOfUniformBuffers +
 						// ITexture
@@ -3928,6 +3937,7 @@ namespace Renderer
 				RENDERER_LOG(context, INFORMATION, "Index buffers: %d", currentNumberOfIndexBuffers.load())
 				RENDERER_LOG(context, INFORMATION, "Vertex buffers: %d", currentNumberOfVertexBuffers.load())
 				RENDERER_LOG(context, INFORMATION, "Texture buffers: %d", currentNumberOfTextureBuffers.load())
+				RENDERER_LOG(context, INFORMATION, "Structured buffers: %d", currentNumberOfStructuredBuffers.load())
 				RENDERER_LOG(context, INFORMATION, "Indirect buffers: %d", currentNumberOfIndirectBuffers.load())
 				RENDERER_LOG(context, INFORMATION, "Uniform buffers: %d", currentNumberOfUniformBuffers.load())
 
@@ -4003,6 +4013,7 @@ namespace Renderer
 		friend class IIndexBuffer;
 		friend class IVertexBuffer;
 		friend class ITextureBuffer;
+		friend class IStructuredBuffer;
 		friend class IIndirectBuffer;
 		friend class IUniformBuffer;
 		friend class ITexture1D;
@@ -5709,6 +5720,7 @@ namespace Renderer
 	*    - Vertex buffer object ("Renderer::IVertexBuffer")
 	*    - Vertex array object ("Renderer::IVertexArray")
 	*    - Texture buffer object ("Renderer::ITextureBuffer")
+	*    - Structured buffer object ("Renderer::IStructuredBuffer")
 	*    - Indirect buffer object ("Renderer::IIndirectBuffer")
 	*    - Uniform buffer object ("Renderer::IUniformBuffer")
 	*
@@ -5829,6 +5841,29 @@ namespace Renderer
 		*    - Only supported if "Renderer::Capabilities::maximumTextureBufferSize" is not 0
 		*/
 		virtual ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = BufferFlag::SHADER_RESOURCE, BufferUsage bufferUsage = BufferUsage::STATIC_DRAW, TextureFormat::Enum textureFormat = TextureFormat::R32G32B32A32F) = 0;
+
+		/**
+		*  @brief
+		*    Create an structured buffer object instance
+		*
+		*  @param[in] numberOfBytes
+		*    Number of bytes within the structured buffer, must be valid
+		*  @param[in] data
+		*    Structured buffer data, can be a null pointer (empty buffer), the data is internally copied and you have to free your memory if you no longer need it
+		*  @param[in] bufferFlags
+		*    Buffer flags, see "Renderer::BufferFlag"
+		*  @param[in] bufferUsage
+		*    Indication of the buffer usage
+		*  @param[in] numberOfStructureBytes
+		*    Number of structure bytes
+		*
+		*  @return
+		*    The created structured buffer instance, null pointer on error. Release the returned instance if you no longer need it.
+		*
+		*  @note
+		*    - Only supported if "Renderer::Capabilities::maximumStructuredBufferSize" is not 0
+		*/
+		virtual IStructuredBuffer* createStructuredBuffer(uint32_t numberOfBytes, const void* data, uint32_t bufferFlags, BufferUsage bufferUsage, uint32_t numberOfStructureBytes) = 0;
 
 		/**
 		*  @brief
@@ -6187,6 +6222,75 @@ namespace Renderer
 	};
 
 	typedef SmartRefCount<ITextureBuffer> ITextureBufferPtr;
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ Renderer/Buffer/IStructuredBuffer.h                   ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Abstract structured buffer object interface; array of structured data
+	*
+	*  @remarks
+	*    General usage hint
+	*      - Maximum size:                 128MByte (or more)
+	*      - Memory access pattern:        Random access
+	*      - Memory storage:               Global texture memory which is considered to be slower than local memory
+	*    OpenGL - Shader Storage Buffer Object (SSBO) - https://www.khronos.org/opengl/wiki/Shader_Storage_Buffer_Object
+	*      - Core in version:              4.6
+	*      - Adopted into core in version: 4.3
+	*      - ARB extension:                GL_ARB_shader_storage_buffer_object
+	*    Direct3D - "New Resource Types"-documentation - https://docs.microsoft.com/en-gb/windows/desktop/direct3d11/direct3d-11-advanced-stages-cs-resources
+	*      - Direct3D version:             11
+	*      - Shader model:                 5
+	*
+	*  @note
+	*    - "Understanding Structured Buffer Performance" by Evan Hart, posted Apr 17 2015 at 11:33AM - https://developer.nvidia.com/content/understanding-structured-buffer-performance
+	*/
+	class IStructuredBuffer : public IBuffer
+	{
+
+	// Public methods
+	public:
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~IStructuredBuffer() override
+		{
+			#ifdef RENDERER_STATISTICS
+				// Update the statistics
+				--getRenderer().getStatistics().currentNumberOfStructuredBuffers;
+			#endif
+		}
+
+	// Protected methods
+	protected:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] renderer
+		*    Owner renderer instance
+		*/
+		inline explicit IStructuredBuffer(IRenderer& renderer) :
+			IBuffer(ResourceType::STRUCTURED_BUFFER, renderer)
+		{
+			#ifdef RENDERER_STATISTICS
+				// Update the statistics
+				++getRenderer().getStatistics().numberOfCreatedStructuredBuffers;
+				++getRenderer().getStatistics().currentNumberOfStructuredBuffers;
+			#endif
+		}
+
+		explicit IStructuredBuffer(const IStructuredBuffer& source) = delete;
+		IStructuredBuffer& operator =(const IStructuredBuffer& source) = delete;
+
+	};
+
+	typedef SmartRefCount<IStructuredBuffer> IStructuredBufferPtr;
 
 
 

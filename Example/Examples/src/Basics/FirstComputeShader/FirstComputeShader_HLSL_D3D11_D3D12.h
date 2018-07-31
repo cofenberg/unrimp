@@ -31,6 +31,12 @@ if (renderer->getNameId() == Renderer::NameId::DIRECT3D10 || renderer->getNameId
 //[-------------------------------------------------------]
 // One vertex shader invocation per vertex
 vertexShaderSourceCode = R"(
+struct Vertex
+{
+	float2 position;
+	float2 padding;
+};
+
 // Attribute input/output
 struct VS_OUTPUT
 {
@@ -43,6 +49,7 @@ tbuffer InputTextureBuffer : register(t0)
 {
 	float4 inputPositionOffset[3];
 };
+StructuredBuffer<Vertex> InputStructuredBuffer : register(t1);
 
 // Programs
 VS_OUTPUT main(float2 Position : POSITION,	// Clip space vertex position as input, left/bottom is (-1,-1) and right/top is (1,1)
@@ -50,7 +57,7 @@ VS_OUTPUT main(float2 Position : POSITION,	// Clip space vertex position as inpu
 {
 	// Pass through the clip space vertex position, left/bottom is (-1,-1) and right/top is (1,1)
 	VS_OUTPUT output;
-	output.Position = float4(Position + inputPositionOffset[VertexId].xy, 0.5f, 1.0f);
+	output.Position = float4(Position + inputPositionOffset[VertexId].xy + InputStructuredBuffer[VertexId].position, 0.5f, 1.0f);
 	output.TexCoord = Position.xy;
 	return output;
 }
@@ -139,19 +146,27 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID)
 )";
 
 computeShaderSourceCode2 = R"(
+struct Vertex
+{
+	float2 position;
+	float2 padding;
+};
+
 // Input
-tbuffer			 InputTextureBuffer   : register(t0)
+tbuffer					 InputTextureBuffer    : register(t0)
 {
 	float4 inputPositionOffset[3];
 };
-tbuffer			 InputIndirectBuffer  : register(t1)
+StructuredBuffer<Vertex> InputStructuredBuffer : register(t1);
+tbuffer					 InputIndirectBuffer   : register(t2)
 {
 	uint inputIndirectBuffer[5];
 };
 
 // Output
-RWBuffer<float4> OutputTextureBuffer  : register(u0);
-RWBuffer<uint>	 OutputIndirectBuffer : register(u1);
+RWBuffer<float4>		   OutputTextureBuffer    : register(u0);
+RWStructuredBuffer<Vertex> OutputStructuredBuffer : register(u1);
+RWBuffer<uint>			   OutputIndirectBuffer   : register(u2);
 
 // Programs
 [numthreads(1, 1, 1)]
@@ -164,6 +179,12 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID)
 		for (int textureBufferIndex = 0; textureBufferIndex < 3; ++textureBufferIndex)
 		{
 			OutputTextureBuffer[textureBufferIndex] = inputPositionOffset[textureBufferIndex];
+		}
+
+		// Output structured buffer values
+		for (int structuredBufferIndex = 0; structuredBufferIndex < 3; ++structuredBufferIndex)
+		{
+			OutputStructuredBuffer[structuredBufferIndex] = InputStructuredBuffer[structuredBufferIndex];
 		}
 
 		// Output indirect buffer values (draw calls)

@@ -4094,6 +4094,12 @@ namespace Direct3D10Renderer
 			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<Direct3D10Renderer&>(getRenderer()), numberOfBytes, data, bufferFlags, bufferUsage, textureFormat);
 		}
 
+		inline virtual Renderer::IStructuredBuffer* createStructuredBuffer(uint32_t, const void*, uint32_t, Renderer::BufferUsage, uint32_t) override
+		{
+			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 10 doesn't support structured buffer")
+			return nullptr;
+		}
+
 		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<Direct3D10Renderer&>(getRenderer()), numberOfBytes, data, indirectBufferFlags);
@@ -7221,6 +7227,7 @@ namespace Direct3D10Renderer
 						case Renderer::ResourceType::INDEX_BUFFER:
 						case Renderer::ResourceType::VERTEX_BUFFER:
 						case Renderer::ResourceType::TEXTURE_BUFFER:
+						case Renderer::ResourceType::STRUCTURED_BUFFER:
 						case Renderer::ResourceType::INDIRECT_BUFFER:
 						case Renderer::ResourceType::UNIFORM_BUFFER:
 						case Renderer::ResourceType::TEXTURE_1D:
@@ -7312,6 +7319,7 @@ namespace Direct3D10Renderer
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
+					case Renderer::ResourceType::STRUCTURED_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
@@ -9215,11 +9223,11 @@ namespace Direct3D10Renderer
 								break;
 
 							case Renderer::ShaderVisibility::TESSELLATION_CONTROL:
-								RENDERER_LOG(mContext, CRITICAL, "Direct3D 10 has no tessellation control shader support (hull shader in Direct3D terminology)")
+								RENDERER_ASSERT(mContext, false, "Direct3D 10 has no tessellation control shader support (hull shader in Direct3D terminology)")
 								break;
 
 							case Renderer::ShaderVisibility::TESSELLATION_EVALUATION:
-								RENDERER_LOG(mContext, CRITICAL, "Direct3D 10 has no tessellation evaluation shader support (domain shader in Direct3D terminology)")
+								RENDERER_ASSERT(mContext, false, "Direct3D 10 has no tessellation evaluation shader support (domain shader in Direct3D terminology)")
 								break;
 
 							case Renderer::ShaderVisibility::GEOMETRY:
@@ -9232,13 +9240,14 @@ namespace Direct3D10Renderer
 								break;
 
 							case Renderer::ShaderVisibility::COMPUTE:
-								// Direct3D 10 has no compute shader support
+								RENDERER_ASSERT(mContext, false, "Direct3D 10 has no compute shader support")
 								break;
 						}
 						break;
 					}
 
 					case Renderer::ResourceType::TEXTURE_BUFFER:
+					case Renderer::ResourceType::STRUCTURED_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
 					case Renderer::ResourceType::TEXTURE_2D:
 					case Renderer::ResourceType::TEXTURE_2D_ARRAY:
@@ -9250,6 +9259,10 @@ namespace Direct3D10Renderer
 						{
 							case Renderer::ResourceType::TEXTURE_BUFFER:
 								d3d10ShaderResourceView = static_cast<const TextureBuffer*>(resource)->getD3D10ShaderResourceView();
+								break;
+
+							case Renderer::ResourceType::STRUCTURED_BUFFER:
+								RENDERER_ASSERT(mContext, false, "Direct3D 10 has no structured buffer support")
 								break;
 
 							case Renderer::ResourceType::TEXTURE_1D:
@@ -9292,7 +9305,7 @@ namespace Direct3D10Renderer
 							case Renderer::ResourceType::GEOMETRY_SHADER:
 							case Renderer::ResourceType::FRAGMENT_SHADER:
 							case Renderer::ResourceType::COMPUTE_SHADER:
-								RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 10 renderer backend resource type")
+								RENDERER_ASSERT(mContext, false, "Invalid Direct3D 10 renderer backend resource type")
 								break;
 						}
 						const UINT startSlot = descriptorRange.baseShaderRegister;
@@ -9313,11 +9326,11 @@ namespace Direct3D10Renderer
 								break;
 
 							case Renderer::ShaderVisibility::TESSELLATION_CONTROL:
-								RENDERER_LOG(mContext, CRITICAL, "Direct3D 10 has no tessellation control shader support (hull shader in Direct3D terminology)")
+								RENDERER_ASSERT(mContext, false, "Direct3D 10 has no tessellation control shader support (hull shader in Direct3D terminology)")
 								break;
 
 							case Renderer::ShaderVisibility::TESSELLATION_EVALUATION:
-								RENDERER_LOG(mContext, CRITICAL, "Direct3D 10 has no tessellation evaluation shader support (domain shader in Direct3D terminology)")
+								RENDERER_ASSERT(mContext, false, "Direct3D 10 has no tessellation evaluation shader support (domain shader in Direct3D terminology)")
 								break;
 
 							case Renderer::ShaderVisibility::GEOMETRY:
@@ -9330,7 +9343,7 @@ namespace Direct3D10Renderer
 								break;
 
 							case Renderer::ShaderVisibility::COMPUTE:
-								// Direct3D 10 has no compute shader support
+								RENDERER_ASSERT(mContext, false, "Direct3D 10 has no compute shader support")
 								break;
 						}
 						break;
@@ -9357,11 +9370,11 @@ namespace Direct3D10Renderer
 								break;
 
 							case Renderer::ShaderVisibility::TESSELLATION_CONTROL:
-								RENDERER_LOG(mContext, CRITICAL, "Direct3D 10 has no tessellation control shader support (hull shader in Direct3D terminology)")
+								RENDERER_ASSERT(mContext, false, "Direct3D 10 has no tessellation control shader support (hull shader in Direct3D terminology)")
 								break;
 
 							case Renderer::ShaderVisibility::TESSELLATION_EVALUATION:
-								RENDERER_LOG(mContext, CRITICAL, "Direct3D 10 has no tessellation evaluation shader support (domain shader in Direct3D terminology)")
+								RENDERER_ASSERT(mContext, false, "Direct3D 10 has no tessellation evaluation shader support (domain shader in Direct3D terminology)")
 								break;
 
 							case Renderer::ShaderVisibility::GEOMETRY:
@@ -9374,7 +9387,7 @@ namespace Direct3D10Renderer
 								break;
 
 							case Renderer::ShaderVisibility::COMPUTE:
-								// Direct3D 10 has no compute shader support
+								RENDERER_ASSERT(mContext, false, "Direct3D 10 has no compute shader support")
 								break;
 						}
 						break;
@@ -9398,7 +9411,7 @@ namespace Direct3D10Renderer
 					case Renderer::ResourceType::GEOMETRY_SHADER:
 					case Renderer::ResourceType::FRAGMENT_SHADER:
 					case Renderer::ResourceType::COMPUTE_SHADER:
-						RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 10 renderer backend resource type")
+						RENDERER_ASSERT(mContext, false, "Invalid Direct3D 10 renderer backend resource type")
 						break;
 				}
 			}
@@ -9540,6 +9553,7 @@ namespace Direct3D10Renderer
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
+					case Renderer::ResourceType::STRUCTURED_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
@@ -9671,6 +9685,7 @@ namespace Direct3D10Renderer
 				case Renderer::ResourceType::INDEX_BUFFER:
 				case Renderer::ResourceType::VERTEX_BUFFER:
 				case Renderer::ResourceType::TEXTURE_BUFFER:
+				case Renderer::ResourceType::STRUCTURED_BUFFER:
 				case Renderer::ResourceType::INDIRECT_BUFFER:
 				case Renderer::ResourceType::UNIFORM_BUFFER:
 				case Renderer::ResourceType::TEXTURE_1D:
@@ -9869,6 +9884,7 @@ namespace Direct3D10Renderer
 			case Renderer::ResourceType::INDEX_BUFFER:
 			case Renderer::ResourceType::VERTEX_BUFFER:
 			case Renderer::ResourceType::TEXTURE_BUFFER:
+			case Renderer::ResourceType::STRUCTURED_BUFFER:
 			case Renderer::ResourceType::INDIRECT_BUFFER:
 			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_1D:
@@ -9927,6 +9943,7 @@ namespace Direct3D10Renderer
 			case Renderer::ResourceType::INDEX_BUFFER:
 			case Renderer::ResourceType::VERTEX_BUFFER:
 			case Renderer::ResourceType::TEXTURE_BUFFER:
+			case Renderer::ResourceType::STRUCTURED_BUFFER:
 			case Renderer::ResourceType::INDIRECT_BUFFER:
 			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_1D:
@@ -10206,6 +10223,10 @@ namespace Direct3D10Renderer
 				mappedSubresource.depthPitch = 0;
 				return (S_OK == static_cast<TextureBuffer&>(resource).getD3D10Buffer()->Map(static_cast<D3D10_MAP>(mapType), mapFlags, &mappedSubresource.data));
 
+			case Renderer::ResourceType::STRUCTURED_BUFFER:
+				RENDERER_ASSERT(mContext, false, "Direct3D 10 has no structured buffer support")
+				return false;
+
 			case Renderer::ResourceType::INDIRECT_BUFFER:
 				mappedSubresource.data		 = static_cast<IndirectBuffer&>(resource).getWritableEmulationData();
 				mappedSubresource.rowPitch   = 0;
@@ -10290,6 +10311,10 @@ namespace Direct3D10Renderer
 
 			case Renderer::ResourceType::TEXTURE_BUFFER:
 				static_cast<TextureBuffer&>(resource).getD3D10Buffer()->Unmap();
+				break;
+
+			case Renderer::ResourceType::STRUCTURED_BUFFER:
+				RENDERER_ASSERT(mContext, false, "Direct3D 10 has no structured buffer support")
 				break;
 
 			case Renderer::ResourceType::INDIRECT_BUFFER:
@@ -10466,6 +10491,9 @@ namespace Direct3D10Renderer
 
 		// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
 		mCapabilities.maximumTextureBufferSize = 128 * 1024 * 1024;	// TODO(co) http://msdn.microsoft.com/en-us/library/cc308052%28VS.85%29.aspx does not mention the texture buffer? Figure out the correct size! Currently the OpenGL 3 minimum is used: 128 MiB.
+
+		// Direct3D 10 doesn't support structured buffer
+		mCapabilities.maximumStructuredBufferSize = 0;
 
 		// Maximum indirect buffer size in bytes
 		// -> DirectX 10 has no indirect buffer

@@ -103,6 +103,7 @@ Standalone renderer examples.
 		- Vertex buffer object (VBO)
 		- Vertex array object (VAO)
 		- Texture buffer object (TBO)
+		- Structured buffer object
 		- Indirect buffer
 		- Uniform buffer object (UBO)
 		- 2D texture

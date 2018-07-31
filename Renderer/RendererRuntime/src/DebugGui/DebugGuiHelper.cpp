@@ -418,6 +418,7 @@ namespace RendererRuntime
 						ImGui::Text("Index buffers: %d", statistics.currentNumberOfIndexBuffers.load());
 						ImGui::Text("Vertex buffers: %d", statistics.currentNumberOfVertexBuffers.load());
 						ImGui::Text("Texture buffers: %d", statistics.currentNumberOfTextureBuffers.load());
+						ImGui::Text("Structured buffers: %d", statistics.currentNumberOfStructuredBuffers.load());
 						ImGui::Text("Indirect buffers: %d", statistics.currentNumberOfIndirectBuffers.load());
 						ImGui::Text("Uniform buffers: %d", statistics.currentNumberOfUniformBuffers.load());
 						ImGui::Text("1D textures: %d", statistics.currentNumberOfTexture1Ds.load());

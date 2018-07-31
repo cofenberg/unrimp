@@ -806,6 +806,63 @@ namespace NullRenderer
 
 
 	//[-------------------------------------------------------]
+	//[ NullRenderer/Buffer/StructuredBuffer.h                ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Null structured buffer object class
+	*/
+	class StructuredBuffer final : public Renderer::IStructuredBuffer
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] nullRenderer
+		*    Owner null renderer instance
+		*/
+		inline explicit StructuredBuffer(NullRenderer& nullRenderer) :
+			IStructuredBuffer(nullRenderer)
+		{}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~StructuredBuffer() override
+		{}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), StructuredBuffer, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit StructuredBuffer(const StructuredBuffer& source) = delete;
+		StructuredBuffer& operator =(const StructuredBuffer& source) = delete;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ NullRenderer/Buffer/IndirectBuffer.h                  ]
 	//[-------------------------------------------------------]
 	/**
@@ -1003,6 +1060,11 @@ namespace NullRenderer
 		inline virtual Renderer::ITextureBuffer* createTextureBuffer(MAYBE_UNUSED uint32_t numberOfBytes, MAYBE_UNUSED const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = Renderer::BufferFlag::SHADER_RESOURCE, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, MAYBE_UNUSED Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<NullRenderer&>(getRenderer()));
+		}
+
+		inline virtual Renderer::IStructuredBuffer* createStructuredBuffer(MAYBE_UNUSED uint32_t numberOfBytes, MAYBE_UNUSED const void* data, MAYBE_UNUSED uint32_t bufferFlags, MAYBE_UNUSED Renderer::BufferUsage bufferUsage, MAYBE_UNUSED uint32_t numberOfStructureBytes) override
+		{
+			return RENDERER_NEW(getRenderer().getContext(), StructuredBuffer)(static_cast<NullRenderer&>(getRenderer()));
 		}
 
 		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(MAYBE_UNUSED uint32_t numberOfBytes, MAYBE_UNUSED const void* data = nullptr, MAYBE_UNUSED uint32_t indirectBufferFlags = 0, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
@@ -3574,7 +3636,7 @@ namespace NullRenderer
 		mCapabilities.maximumNumberOf2DTextureArraySlices = 42;
 
 		// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
-		mCapabilities.maximumTextureBufferSize = 42;
+		mCapabilities.maximumTextureBufferSize = mCapabilities.maximumStructuredBufferSize = 42;
 
 		// Maximum indirect buffer size in bytes
 		mCapabilities.maximumIndirectBufferSize = 64 * 1024;	// 64 KiB

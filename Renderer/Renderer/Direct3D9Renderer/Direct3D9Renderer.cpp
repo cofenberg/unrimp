@@ -3456,7 +3456,13 @@ namespace Direct3D9Renderer
 
 		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t, const void*, uint32_t, Renderer::BufferUsage, Renderer::TextureFormat::Enum) override
 		{
-			// Direct3D 9 has no texture buffer support
+			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 9 doesn't support texture buffer")
+			return nullptr;
+		}
+
+		inline virtual Renderer::IStructuredBuffer* createStructuredBuffer(uint32_t, const void*, uint32_t, Renderer::BufferUsage, uint32_t) override
+		{
+			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 9 doesn't support structured buffer")
 			return nullptr;
 		}
 
@@ -3467,7 +3473,7 @@ namespace Direct3D9Renderer
 
 		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t, const void*, Renderer::BufferUsage) override
 		{
-			// Error! Direct3D 9 has no uniform buffer support.
+			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 9 doesn't support uniform buffer")
 			return nullptr;
 		}
 
@@ -5706,6 +5712,7 @@ namespace Direct3D9Renderer
 						case Renderer::ResourceType::INDEX_BUFFER:
 						case Renderer::ResourceType::VERTEX_BUFFER:
 						case Renderer::ResourceType::TEXTURE_BUFFER:
+						case Renderer::ResourceType::STRUCTURED_BUFFER:
 						case Renderer::ResourceType::INDIRECT_BUFFER:
 						case Renderer::ResourceType::UNIFORM_BUFFER:
 						case Renderer::ResourceType::TEXTURE_1D:
@@ -5765,6 +5772,7 @@ namespace Direct3D9Renderer
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
+					case Renderer::ResourceType::STRUCTURED_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
@@ -7436,6 +7444,10 @@ namespace Direct3D9Renderer
 						RENDERER_LOG(mContext, CRITICAL, "Direct3D 9 has no texture buffer support")
 						break;
 
+					case Renderer::ResourceType::STRUCTURED_BUFFER:
+						RENDERER_LOG(mContext, CRITICAL, "Direct3D 9 has no structured buffer support")
+						break;
+
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 						RENDERER_LOG(mContext, CRITICAL, "Direct3D 9 has no uniform buffer support")
 						break;
@@ -7473,6 +7485,7 @@ namespace Direct3D9Renderer
 								break;
 
 							case Renderer::ResourceType::TEXTURE_BUFFER:
+							case Renderer::ResourceType::STRUCTURED_BUFFER:
 							case Renderer::ResourceType::SAMPLER_STATE:
 							case Renderer::ResourceType::ROOT_SIGNATURE:
 							case Renderer::ResourceType::RESOURCE_GROUP:
@@ -7779,6 +7792,7 @@ namespace Direct3D9Renderer
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
+					case Renderer::ResourceType::STRUCTURED_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
@@ -8476,6 +8490,7 @@ namespace Direct3D9Renderer
 			case Renderer::ResourceType::SWAP_CHAIN:
 			case Renderer::ResourceType::FRAMEBUFFER:
 			case Renderer::ResourceType::TEXTURE_BUFFER:
+			case Renderer::ResourceType::STRUCTURED_BUFFER:
 			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -8542,6 +8557,7 @@ namespace Direct3D9Renderer
 			case Renderer::ResourceType::SWAP_CHAIN:
 			case Renderer::ResourceType::FRAMEBUFFER:
 			case Renderer::ResourceType::TEXTURE_BUFFER:
+			case Renderer::ResourceType::STRUCTURED_BUFFER:
 			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -8675,6 +8691,9 @@ namespace Direct3D9Renderer
 
 		// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
 		mCapabilities.maximumTextureBufferSize = 0;
+
+		// Direct3D 9 doesn't support structured buffer
+		mCapabilities.maximumStructuredBufferSize = 0;
 
 		// Maximum indirect buffer size in bytes
 		mCapabilities.maximumIndirectBufferSize = 64 * 1024;	// 64 KiB

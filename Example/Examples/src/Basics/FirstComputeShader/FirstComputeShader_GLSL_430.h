@@ -31,6 +31,11 @@ if (renderer->getNameId() == Renderer::NameId::OPENGL)
 //[-------------------------------------------------------]
 // One vertex shader invocation per vertex
 vertexShaderSourceCode = R"(#version 430 core	// OpenGL 4.3
+struct Vertex
+{
+	vec2 position;
+	vec2 padding;
+};
 
 // Attribute input/output
 in  vec2 Position;	// Clip space vertex position as input, left/bottom is (-1,-1) and right/top is (1,1)
@@ -42,12 +47,16 @@ out vec2 TexCoord;	// Normalized texture coordinate as output
 
 // Uniforms
 layout(binding = 1) uniform samplerBuffer InputTextureBuffer;
+layout(std430, binding = 2) readonly buffer InputStructuredBuffer
+{
+	Vertex inputStructuredBufferVertex[];
+};
 
 // Programs
 void main()
 {
 	// Pass through the clip space vertex position, left/bottom is (-1,-1) and right/top is (1,1)
-	gl_Position = vec4(Position + texelFetch(InputTextureBuffer, gl_VertexID).xy, 0.5, 1.0);
+	gl_Position = vec4(Position + texelFetch(InputTextureBuffer, gl_VertexID).xy + inputStructuredBufferVertex[gl_VertexID].position, 0.5f, 1.0f);
 	TexCoord = Position.xy;
 }
 )";
@@ -64,11 +73,11 @@ in  vec2 TexCoord;		// Normalized texture coordinate as input
 out vec4 OutputColor;	// Output variable for fragment color
 
 // Uniforms
-layout(binding = 0, std140) uniform UniformBuffer
+layout(std140, binding = 0) uniform UniformBuffer
 {
 	vec4 inputColorUniform;
 };
-layout(binding = 2) uniform sampler2D AlbedoMap;
+layout(binding = 3) uniform sampler2D AlbedoMap;
 
 // Programs
 void main()
@@ -90,26 +99,26 @@ struct Vertex
 
 // Input
 layout(binding = 0) uniform sampler2D InputTexture2D;
-layout(binding = 1, std430) readonly buffer InputIndexBuffer
+layout(std430, binding = 1) readonly buffer InputIndexBuffer
 {
 	uint inputIndices[3];
 };
-layout(binding = 2, std430) readonly buffer InputVertexBuffer
+layout(std430, binding = 2) readonly buffer InputVertexBuffer
 {
 	Vertex inputVertices[3];
 };
-layout(binding = 3, std140) uniform InputUniformBuffer
+layout(std140, binding = 3) uniform InputUniformBuffer
 {
 	vec4 inputColorUniform;
 };
 
 // Output
-layout(binding = 4, rgba8) writeonly uniform image2D OutputTexture2D;
-layout(binding = 5, std430) writeonly buffer OutputIndexBuffer
+layout(rgba8, binding = 4) writeonly uniform image2D OutputTexture2D;
+layout(std430, binding = 5) writeonly buffer OutputIndexBuffer
 {
 	uint outputIndices[3];
 };
-layout(binding = 6, std430) writeonly buffer OutputVertexBuffer
+layout(std430, binding = 6) writeonly buffer OutputVertexBuffer
 {
 	Vertex outputVertices[3];
 };
@@ -149,6 +158,12 @@ void main()
 )";
 
 computeShaderSourceCode2 = R"(#version 430 core	// OpenGL 4.3
+struct Vertex
+{
+	vec2 position;
+	vec2 padding;
+};
+
 // Same layout as "Renderer::DrawIndexedInstancedArguments"
 struct DrawIndexedInstancedArguments
 {
@@ -161,14 +176,22 @@ struct DrawIndexedInstancedArguments
 
 // Input
 layout(binding = 0) uniform samplerBuffer InputTextureBuffer;
-layout(binding = 1, std430) readonly buffer InputIndirectBuffer
+layout(std430, binding = 1) readonly buffer InputStructuredBuffer
+{
+	Vertex inputStructuredBufferVertex[];
+};
+layout(std430, binding = 2) readonly buffer InputIndirectBuffer
 {
 	DrawIndexedInstancedArguments inputDrawIndexedInstancedArguments;
 };
 
 // Output
-layout(binding = 2, rgba32f) writeonly uniform imageBuffer OutputTextureBuffer;
-layout(binding = 3, std430) writeonly buffer OutputIndirectBuffer
+layout(rgba32f, binding = 3) writeonly uniform imageBuffer OutputTextureBuffer;
+layout(std430, binding = 4) writeonly buffer OutputStructuredBuffer
+{
+	Vertex outputStructuredBufferVertex[];
+};
+layout(std430, binding = 5) writeonly buffer OutputIndirectBuffer
 {
 	DrawIndexedInstancedArguments outputDrawIndexedInstancedArguments;
 };
@@ -184,6 +207,12 @@ void main()
 		for (int textureBufferIndex = 0; textureBufferIndex < 3; ++textureBufferIndex)
 		{
 			imageStore(OutputTextureBuffer, textureBufferIndex, texelFetch(InputTextureBuffer, textureBufferIndex));
+		}
+
+		// Output structured buffer values
+		for (int structuredBufferIndex = 0; structuredBufferIndex < 3; ++structuredBufferIndex)
+		{
+			outputStructuredBufferVertex[structuredBufferIndex] = inputStructuredBufferVertex[structuredBufferIndex];
 		}
 
 		// Output indirect buffer values (draw calls)

@@ -4804,6 +4804,12 @@ namespace OpenGLES3Renderer
 			return nullptr;
 		}
 
+		virtual Renderer::IStructuredBuffer* createStructuredBuffer(MAYBE_UNUSED uint32_t numberOfBytes, MAYBE_UNUSED const void* data, MAYBE_UNUSED uint32_t bufferFlags, MAYBE_UNUSED Renderer::BufferUsage bufferUsage, MAYBE_UNUSED uint32_t numberOfStructureBytes) override
+		{
+			// TODO(co) Add OpenGL ES structured buffer support ("GL_EXT_buffer_storage"-extension)
+			return nullptr;
+		}
+
 		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<OpenGLES3Renderer&>(getRenderer()), numberOfBytes, data, indirectBufferFlags);
@@ -7143,6 +7149,7 @@ namespace OpenGLES3Renderer
 						case Renderer::ResourceType::INDEX_BUFFER:
 						case Renderer::ResourceType::VERTEX_BUFFER:
 						case Renderer::ResourceType::TEXTURE_BUFFER:
+						case Renderer::ResourceType::STRUCTURED_BUFFER:
 						case Renderer::ResourceType::INDIRECT_BUFFER:
 						case Renderer::ResourceType::UNIFORM_BUFFER:
 						case Renderer::ResourceType::TEXTURE_1D:
@@ -7217,6 +7224,7 @@ namespace OpenGLES3Renderer
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
+					case Renderer::ResourceType::STRUCTURED_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
@@ -9081,6 +9089,10 @@ namespace OpenGLES3Renderer
 							break;
 						}
 
+					case Renderer::ResourceType::STRUCTURED_BUFFER:
+						// TODO(co) Add OpenGL ES structured buffer support ("GL_EXT_buffer_storage"-extension)
+						break;
+
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 						// Attach the buffer to the given UBO binding point
 						// -> Explicit binding points ("layout(binding = 0)" in GLSL shader) requires OpenGL 4.2 or the "GL_ARB_explicit_uniform_location"-extension
@@ -9391,6 +9403,7 @@ namespace OpenGLES3Renderer
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
+					case Renderer::ResourceType::STRUCTURED_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
@@ -9725,6 +9738,7 @@ namespace OpenGLES3Renderer
 			case Renderer::ResourceType::INDEX_BUFFER:
 			case Renderer::ResourceType::VERTEX_BUFFER:
 			case Renderer::ResourceType::TEXTURE_BUFFER:
+			case Renderer::ResourceType::STRUCTURED_BUFFER:
 			case Renderer::ResourceType::INDIRECT_BUFFER:
 			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_1D:
@@ -9949,6 +9963,12 @@ namespace OpenGLES3Renderer
 				return ::detail::mapBuffer(mContext, GL_TEXTURE_BUFFER_EXT, GL_TEXTURE_BINDING_BUFFER_EXT, textureBuffer.getOpenGLES3TextureBuffer(), textureBuffer.getBufferSize(), mapType, mappedSubresource);
 			}
 
+			case Renderer::ResourceType::STRUCTURED_BUFFER:
+			{
+				// TODO(co) Add OpenGL ES structured buffer support ("GL_EXT_buffer_storage"-extension)
+				return false;
+			}
+
 			case Renderer::ResourceType::INDIRECT_BUFFER:
 				mappedSubresource.data		 = static_cast<IndirectBuffer&>(resource).getWritableEmulationData();
 				mappedSubresource.rowPitch   = 0;
@@ -10079,6 +10099,10 @@ namespace OpenGLES3Renderer
 
 			case Renderer::ResourceType::TEXTURE_BUFFER:
 				::detail::unmapBuffer(GL_TEXTURE_BUFFER_EXT, GL_TEXTURE_BINDING_BUFFER_EXT, static_cast<TextureBuffer&>(resource).getOpenGLES3TextureBuffer());
+				break;
+
+			case Renderer::ResourceType::STRUCTURED_BUFFER:
+				// TODO(co) Add OpenGL ES structured buffer support ("GL_EXT_buffer_storage"-extension)
 				break;
 
 			case Renderer::ResourceType::INDIRECT_BUFFER:
@@ -10406,6 +10430,9 @@ namespace OpenGLES3Renderer
 			// We can only emulate the "Renderer::TextureFormat::R32G32B32A32F" texture format using an uniform buffer
 			mCapabilities.maximumTextureBufferSize = sizeof(float) * 4 * 4096;	// 64 KiB
 		}
+
+		// TODO(co) Add OpenGL ES structured buffer support ("GL_EXT_buffer_storage"-extension)
+		mCapabilities.maximumStructuredBufferSize = 0;
 
 		// Maximum indirect buffer size in bytes
 		mCapabilities.maximumIndirectBufferSize = 64 * 1024;	// 64 KiB

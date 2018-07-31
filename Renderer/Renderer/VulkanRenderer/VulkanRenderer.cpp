@@ -4087,7 +4087,7 @@ namespace VulkanRenderer
 			uint32_t numberOfUniformTexelBuffers = 0;	// "VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER"
 			uint32_t numberOfStorageTexelBuffers = 0;	// "VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER"
 			uint32_t numberOfStorageImage = 0;			// "VK_DESCRIPTOR_TYPE_STORAGE_IMAGE"
-			uint32_t numberOfIndirectBuffers = 0;		// "VK_DESCRIPTOR_TYPE_STORAGE_BUFFER"
+			uint32_t numberOfStorageBuffers = 0;		// "VK_DESCRIPTOR_TYPE_STORAGE_BUFFER"
 			uint32_t numberOfUniformBuffers = 0;		// "VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER"
 			uint32_t numberOfCombinedImageSamplers = 0;	// "VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER"
 			if (numberOfRootParameters > 0)
@@ -4131,10 +4131,11 @@ namespace VulkanRenderer
 
 								case Renderer::ResourceType::INDEX_BUFFER:
 								case Renderer::ResourceType::VERTEX_BUFFER:
+								case Renderer::ResourceType::STRUCTURED_BUFFER:
 								case Renderer::ResourceType::INDIRECT_BUFFER:
 									RENDERER_ASSERT(vulkanRenderer.getContext(), Renderer::DescriptorRangeType::SRV == descriptorRange->rangeType || Renderer::DescriptorRangeType::UAV == descriptorRange->rangeType, "Vulkan renderer backend: Invalid descriptor range type")
 									vkDescriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-									++numberOfIndirectBuffers;
+									++numberOfStorageBuffers;
 									break;
 
 								case Renderer::ResourceType::UNIFORM_BUFFER:
@@ -4326,11 +4327,11 @@ namespace VulkanRenderer
 				}
 
 				// "VK_DESCRIPTOR_TYPE_STORAGE_BUFFER"
-				if (numberOfIndirectBuffers > 0)
+				if (numberOfStorageBuffers > 0)
 				{
 					VkDescriptorPoolSize& vkDescriptorPoolSize = vkDescriptorPoolSizes[numberOfVkDescriptorPoolSizes];
 					vkDescriptorPoolSize.type			 = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;	// type (VkDescriptorType)
-					vkDescriptorPoolSize.descriptorCount = maxSets * numberOfIndirectBuffers;	// descriptorCount (uint32_t)
+					vkDescriptorPoolSize.descriptorCount = maxSets * numberOfStorageBuffers;	// descriptorCount (uint32_t)
 					++numberOfVkDescriptorPoolSizes;
 				}
 
@@ -5123,6 +5124,127 @@ namespace VulkanRenderer
 
 
 	//[-------------------------------------------------------]
+	//[ VulkanRenderer/StructuredBuffer.h                     ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Vulkan structured buffer object interface
+	*/
+	class StructuredBuffer final : public Renderer::IStructuredBuffer
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] vulkanRenderer
+		*    Owner Vulkan renderer instance
+		*  @param[in] numberOfBytes
+		*    Number of bytes within the structured buffer, must be valid
+		*  @param[in] data
+		*    Structured buffer data, can be a null pointer (empty buffer)
+		*  @param[in] bufferUsage
+		*    Indication of the buffer usage
+		*  @param[in] numberOfStructureBytes
+		*    Number of structure bytes
+		*/
+		StructuredBuffer(VulkanRenderer& vulkanRenderer, uint32_t numberOfBytes, const void* data, MAYBE_UNUSED Renderer::BufferUsage bufferUsage, MAYBE_UNUSED uint32_t numberOfStructureBytes) :
+			IStructuredBuffer(vulkanRenderer),
+			mVkBuffer(VK_NULL_HANDLE),
+			mVkDeviceMemory(VK_NULL_HANDLE)
+		{
+			Helper::createAndAllocateVkBuffer(vulkanRenderer, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, numberOfBytes, data, mVkBuffer, mVkDeviceMemory);
+			SET_DEFAULT_DEBUG_NAME	// setDebugName("");
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~StructuredBuffer() override
+		{
+			Helper::destroyAndFreeVkBuffer(static_cast<const VulkanRenderer&>(getRenderer()), mVkBuffer, mVkDeviceMemory);
+		}
+
+		/**
+		*  @brief
+		*    Return the Vulkan structured buffer
+		*
+		*  @return
+		*    The Vulkan structured buffer
+		*/
+		inline VkBuffer getVkBuffer() const
+		{
+			return mVkBuffer;
+		}
+
+		/**
+		*  @brief
+		*    Return the Vulkan device memory
+		*
+		*  @return
+		*    The Vulkan device memory
+		*/
+		inline VkDeviceMemory getVkDeviceMemory() const
+		{
+			return mVkDeviceMemory;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		#ifdef RENDERER_DEBUG
+			virtual void setDebugName(const char* name) override
+			{
+				if (nullptr != vkDebugMarkerSetObjectNameEXT)
+				{
+					const VkDevice vkDevice = static_cast<const VulkanRenderer&>(getRenderer()).getVulkanContext().getVkDevice();
+					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT, (uint64_t)mVkBuffer, name);
+					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT, (uint64_t)mVkDeviceMemory, name);
+				}
+			}
+		#endif
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), StructuredBuffer, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit StructuredBuffer(const StructuredBuffer& source) = delete;
+		StructuredBuffer& operator =(const StructuredBuffer& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		VkBuffer	   mVkBuffer;		///< Vulkan uniform texel buffer
+		VkDeviceMemory mVkDeviceMemory;	///< Vulkan uniform texel memory
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ VulkanRenderer/IndirectBuffer.h                       ]
 	//[-------------------------------------------------------]
 	/**
@@ -5420,6 +5542,11 @@ namespace VulkanRenderer
 		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, data, bufferFlags, bufferUsage, textureFormat);
+		}
+
+		inline virtual Renderer::IStructuredBuffer* createStructuredBuffer(uint32_t numberOfBytes, const void* data, MAYBE_UNUSED uint32_t bufferFlags, Renderer::BufferUsage bufferUsage, uint32_t numberOfStructureBytes) override
+		{
+			return RENDERER_NEW(getRenderer().getContext(), StructuredBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, data, bufferUsage, numberOfStructureBytes);
 		}
 
 		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
@@ -7450,6 +7577,7 @@ namespace VulkanRenderer
 						case Renderer::ResourceType::INDEX_BUFFER:
 						case Renderer::ResourceType::VERTEX_BUFFER:
 						case Renderer::ResourceType::TEXTURE_BUFFER:
+						case Renderer::ResourceType::STRUCTURED_BUFFER:
 						case Renderer::ResourceType::INDIRECT_BUFFER:
 						case Renderer::ResourceType::UNIFORM_BUFFER:
 						case Renderer::ResourceType::TEXTURE_1D:
@@ -7521,6 +7649,7 @@ namespace VulkanRenderer
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
+					case Renderer::ResourceType::STRUCTURED_BUFFER:
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
@@ -9494,6 +9623,33 @@ namespace VulkanRenderer
 						break;
 					}
 
+					case Renderer::ResourceType::STRUCTURED_BUFFER:
+					{
+						const Renderer::DescriptorRange& descriptorRange = reinterpret_cast<const Renderer::DescriptorRange*>(rootSignature.getRootSignature().parameters[rootParameterIndex].descriptorTable.descriptorRanges)[resourceIndex];
+						RENDERER_ASSERT(vulkanRenderer.getContext(), Renderer::DescriptorRangeType::SRV == descriptorRange.rangeType || Renderer::DescriptorRangeType::UAV == descriptorRange.rangeType, "Vulkan structured buffer must bound at SRV or UAV descriptor range type")
+						const VkDescriptorBufferInfo vkDescriptorBufferInfo =
+						{
+							static_cast<StructuredBuffer*>(resource)->getVkBuffer(),	// buffer (VkBuffer)
+							0,															// offset (VkDeviceSize)
+							VK_WHOLE_SIZE												// range (VkDeviceSize)
+						};
+						const VkWriteDescriptorSet vkWriteDescriptorSet =
+						{
+							VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,	// sType (VkStructureType)
+							nullptr,								// pNext (const void*)
+							mVkDescriptorSet,						// dstSet (VkDescriptorSet)
+							resourceIndex,							// dstBinding (uint32_t)
+							0,										// dstArrayElement (uint32_t)
+							1,										// descriptorCount (uint32_t)
+							VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,		// descriptorType (VkDescriptorType)
+							nullptr,								// pImageInfo (const VkDescriptorImageInfo*)
+							&vkDescriptorBufferInfo,				// pBufferInfo (const VkDescriptorBufferInfo*)
+							nullptr									// pTexelBufferView (const VkBufferView*)
+						};
+						vkUpdateDescriptorSets(vkDevice, 1, &vkWriteDescriptorSet, 0, nullptr);
+						break;
+					}
+
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					{
 						const VkDescriptorBufferInfo vkDescriptorBufferInfo =
@@ -9606,6 +9762,7 @@ namespace VulkanRenderer
 							case Renderer::ResourceType::VERTEX_BUFFER:
 							case Renderer::ResourceType::INDIRECT_BUFFER:
 							case Renderer::ResourceType::TEXTURE_BUFFER:
+							case Renderer::ResourceType::STRUCTURED_BUFFER:
 							case Renderer::ResourceType::UNIFORM_BUFFER:
 							case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 							case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
@@ -10877,6 +11034,13 @@ namespace VulkanRenderer
 				return (vkMapMemory(getVulkanContext().getVkDevice(), static_cast<TextureBuffer&>(resource).getVkDeviceMemory(), 0, VK_WHOLE_SIZE, 0, &mappedSubresource.data) == VK_SUCCESS);
 			}
 
+			case Renderer::ResourceType::STRUCTURED_BUFFER:
+			{
+				mappedSubresource.rowPitch   = 0;
+				mappedSubresource.depthPitch = 0;
+				return (vkMapMemory(getVulkanContext().getVkDevice(), static_cast<StructuredBuffer&>(resource).getVkDeviceMemory(), 0, VK_WHOLE_SIZE, 0, &mappedSubresource.data) == VK_SUCCESS);
+			}
+
 			case Renderer::ResourceType::INDIRECT_BUFFER:
 			{
 				mappedSubresource.rowPitch   = 0;
@@ -10968,6 +11132,12 @@ namespace VulkanRenderer
 			case Renderer::ResourceType::TEXTURE_BUFFER:
 			{
 				vkUnmapMemory(getVulkanContext().getVkDevice(), static_cast<TextureBuffer&>(resource).getVkDeviceMemory());
+				break;
+			}
+
+			case Renderer::ResourceType::STRUCTURED_BUFFER:
+			{
+				vkUnmapMemory(getVulkanContext().getVkDevice(), static_cast<StructuredBuffer&>(resource).getVkDeviceMemory());
 				break;
 			}
 
@@ -11185,7 +11355,7 @@ namespace VulkanRenderer
 			mCapabilities.maximumNumberOf2DTextureArraySlices = 512;
 
 			// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
-			mCapabilities.maximumTextureBufferSize = 128 * 1024 * 1024;	// TODO(co) http://msdn.microsoft.com/en-us/library/ff476876%28v=vs.85%29.aspx does not mention the texture buffer? Currently the OpenGL 3 minimum is used: 128 MiB.
+			mCapabilities.maximumTextureBufferSize = mCapabilities.maximumStructuredBufferSize = 128 * 1024 * 1024;	// TODO(co) http://msdn.microsoft.com/en-us/library/ff476876%28v=vs.85%29.aspx does not mention the texture buffer? Currently the OpenGL 3 minimum is used: 128 MiB.
 
 			// Maximum indirect buffer size in bytes
 			mCapabilities.maximumIndirectBufferSize = 64 * 1024;	// 64 KiB
@@ -11288,6 +11458,7 @@ namespace VulkanRenderer
 			case Renderer::ResourceType::INDEX_BUFFER:
 			case Renderer::ResourceType::VERTEX_BUFFER:
 			case Renderer::ResourceType::TEXTURE_BUFFER:
+			case Renderer::ResourceType::STRUCTURED_BUFFER:
 			case Renderer::ResourceType::INDIRECT_BUFFER:
 			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_1D:

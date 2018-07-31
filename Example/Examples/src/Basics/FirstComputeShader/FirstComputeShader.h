@@ -49,6 +49,7 @@
 *    - Vertex buffer object (VBO)
 *    - Vertex array object (VAO)
 *    - Texture buffer object (TBO)
+*    - Structured buffer object
 *    - Indirect buffer
 *    - Uniform buffer object (UBO)
 *    - 2D texture
@@ -130,6 +131,8 @@ private:
 	Renderer::IVertexArrayPtr			mVertexArray;					///< Graphics vertex array object (VAO), can be a null pointer
 	Renderer::ITextureBufferPtr			mComputeInputTextureBuffer;		///< Graphics texture buffer (TBO) read by compute shader, can be a null pointer
 	Renderer::ITextureBufferPtr			mComputeOutputTextureBuffer;	///< Graphics texture buffer (TBO) written by compute shader, can be a null pointer
+	Renderer::IStructuredBufferPtr		mComputeInputStructuredBuffer;	///< Graphics structured buffer read by compute shader, can be a null pointer
+	Renderer::IStructuredBufferPtr		mComputeOutputStructuredBuffer;	///< Graphics structured buffer written by compute shader, can be a null pointer
 	Renderer::IIndirectBufferPtr		mComputeInputIndirectBuffer;	///< Graphics indirect buffer read by compute shader, can be a null pointer
 	Renderer::IIndirectBufferPtr		mComputeOutputIndirectBuffer;	///< Graphics indirect buffer written by compute shader, can be a null pointer
 	Renderer::IUniformBufferPtr			mComputeInputUniformBuffer;		///< Graphics uniform buffer (UBO) read by compute shader, can be a null pointer
