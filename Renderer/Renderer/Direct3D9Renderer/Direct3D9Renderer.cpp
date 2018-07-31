@@ -2847,14 +2847,14 @@ namespace Direct3D9Renderer
 		*    Owner Direct3D 9 renderer instance
 		*  @param[in] numberOfBytes
 		*    Number of bytes within the index buffer, must be valid
-		*  @param[in] indexBufferFormat
-		*    Index buffer data format
 		*  @param[in] data
 		*    Index buffer data, can be a null pointer (empty buffer)
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
+		*  @param[in] indexBufferFormat
+		*    Index buffer data format
 		*/
-		IndexBuffer(Direct3D9Renderer& direct3D9Renderer, uint32_t numberOfBytes, Renderer::IndexBufferFormat::Enum indexBufferFormat, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
+		IndexBuffer(Direct3D9Renderer& direct3D9Renderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage, Renderer::IndexBufferFormat::Enum indexBufferFormat) :
 			IIndexBuffer(direct3D9Renderer),
 			mDirect3DIndexBuffer9(nullptr)
 		{
@@ -2989,7 +2989,7 @@ namespace Direct3D9Renderer
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		VertexBuffer(Direct3D9Renderer& direct3D9Renderer, uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
+		VertexBuffer(Direct3D9Renderer& direct3D9Renderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage) :
 			IVertexBuffer(direct3D9Renderer),
 			mDirect3DVertexBuffer9(nullptr)
 		{
@@ -3309,7 +3309,7 @@ namespace Direct3D9Renderer
 		*  @param[in] indirectBufferFlags
 		*    Indirect buffer flags, see "Renderer::IndirectBufferFlag"
 		*/
-		IndirectBuffer(Direct3D9Renderer& direct3D9Renderer, uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t indirectBufferFlags = 0) :
+		IndirectBuffer(Direct3D9Renderer& direct3D9Renderer, uint32_t numberOfBytes, const void* data, MAYBE_UNUSED uint32_t indirectBufferFlags) :
 			IIndirectBuffer(direct3D9Renderer),
 			mNumberOfBytes(numberOfBytes),
 			mData(nullptr)
@@ -3442,10 +3442,10 @@ namespace Direct3D9Renderer
 			return RENDERER_NEW(getRenderer().getContext(), VertexBuffer)(static_cast<Direct3D9Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
 		}
 
-		inline virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, Renderer::IndexBufferFormat::Enum indexBufferFormat, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW, Renderer::IndexBufferFormat::Enum indexBufferFormat = Renderer::IndexBufferFormat::UNSIGNED_INT) override
 		{
 			// TODO(co) Security checks
-			return RENDERER_NEW(getRenderer().getContext(), IndexBuffer)(static_cast<Direct3D9Renderer&>(getRenderer()), numberOfBytes, indexBufferFormat, data, bufferUsage);
+			return RENDERER_NEW(getRenderer().getContext(), IndexBuffer)(static_cast<Direct3D9Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage, indexBufferFormat);
 		}
 
 		inline virtual Renderer::IVertexArray* createVertexArray(const Renderer::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Renderer::VertexArrayVertexBuffer* vertexBuffers, Renderer::IIndexBuffer* indexBuffer = nullptr) override
@@ -3460,7 +3460,7 @@ namespace Direct3D9Renderer
 			return nullptr;
 		}
 
-		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t, Renderer::TextureFormat::Enum, const void*, uint32_t, Renderer::BufferUsage) override
+		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t, const void*, uint32_t, Renderer::BufferUsage, Renderer::TextureFormat::Enum) override
 		{
 			// Direct3D 9 has no texture buffer support
 			return nullptr;

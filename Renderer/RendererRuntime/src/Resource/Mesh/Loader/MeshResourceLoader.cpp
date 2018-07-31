@@ -262,7 +262,7 @@ namespace RendererRuntime
 		RENDERER_SET_RESOURCE_DEBUG_NAME(vertexBuffer, getAsset().virtualFilename)
 
 		// Create the index buffer object (IBO)
-		Renderer::IIndexBuffer* indexBuffer = mBufferManager.createIndexBuffer(mNumberOfUsedIndexBufferDataBytes, static_cast<Renderer::IndexBufferFormat::Enum>(mIndexBufferFormat), mIndexBufferData, 0, Renderer::BufferUsage::STATIC_DRAW);
+		Renderer::IIndexBuffer* indexBuffer = mBufferManager.createIndexBuffer(mNumberOfUsedIndexBufferDataBytes, mIndexBufferData, 0, Renderer::BufferUsage::STATIC_DRAW, static_cast<Renderer::IndexBufferFormat::Enum>(mIndexBufferFormat));
 		RENDERER_SET_RESOURCE_DEBUG_NAME(indexBuffer, getAsset().virtualFilename)
 
 		// Create vertex array object (VAO)

@@ -5076,14 +5076,14 @@ namespace OpenGLRenderer
 		*    Owner OpenGL renderer instance
 		*  @param[in] numberOfBytes
 		*    Number of bytes within the index buffer, must be valid
-		*  @param[in] indexBufferFormat
-		*    Index buffer data format
 		*  @param[in] data
 		*    Index buffer data, can be a null pointer (empty buffer)
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
+		*  @param[in] indexBufferFormat
+		*    Index buffer data format
 		*/
-		IndexBufferBind(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, Renderer::IndexBufferFormat::Enum indexBufferFormat, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
+		IndexBufferBind(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage, Renderer::IndexBufferFormat::Enum indexBufferFormat) :
 			IndexBuffer(openGLRenderer, indexBufferFormat)
 		{
 			#ifdef RENDERER_OPENGL_STATE_CLEANUP
@@ -5150,14 +5150,14 @@ namespace OpenGLRenderer
 		*    Owner OpenGL renderer instance
 		*  @param[in] numberOfBytes
 		*    Number of bytes within the index buffer, must be valid
-		*  @param[in] indexBufferFormat
-		*    Index buffer data format
 		*  @param[in] data
 		*    Index buffer data, can be a null pointer (empty buffer)
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
+		*  @param[in] indexBufferFormat
+		*    Index buffer data format
 		*/
-		IndexBufferDsa(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, Renderer::IndexBufferFormat::Enum indexBufferFormat, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
+		IndexBufferDsa(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage, Renderer::IndexBufferFormat::Enum indexBufferFormat) :
 			IndexBuffer(openGLRenderer, indexBufferFormat)
 		{
 			if (openGLRenderer.getExtensions().isGL_ARB_direct_state_access())
@@ -5331,7 +5331,7 @@ namespace OpenGLRenderer
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		VertexBufferBind(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
+		VertexBufferBind(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage) :
 			VertexBuffer(openGLRenderer)
 		{
 			#ifdef RENDERER_OPENGL_STATE_CLEANUP
@@ -5403,7 +5403,7 @@ namespace OpenGLRenderer
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		VertexBufferDsa(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
+		VertexBufferDsa(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage) :
 			VertexBuffer(openGLRenderer)
 		{
 			if (openGLRenderer.getExtensions().isGL_ARB_direct_state_access())
@@ -6366,7 +6366,7 @@ namespace OpenGLRenderer
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		UniformBufferBind(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
+		UniformBufferBind(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage) :
 			UniformBuffer(openGLRenderer)
 		{
 			// TODO(co) Review OpenGL uniform buffer alignment topic
@@ -6440,7 +6440,7 @@ namespace OpenGLRenderer
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		UniformBufferDsa(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
+		UniformBufferDsa(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage) :
 			UniformBuffer(openGLRenderer)
 		{
 			// TODO(co) Review OpenGL uniform buffer alignment topic
@@ -6652,14 +6652,14 @@ namespace OpenGLRenderer
 		*    Owner OpenGL renderer instance
 		*  @param[in] numberOfBytes
 		*    Number of bytes within the texture buffer, must be valid
-		*  @param[in] textureFormat
-		*    Texture buffer data format
 		*  @param[in] data
 		*    Texture buffer data, can be a null pointer (empty buffer)
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
+		*  @param[in] textureFormat
+		*    Texture buffer data format
 		*/
-		TextureBufferBind(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
+		TextureBufferBind(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage, Renderer::TextureFormat::Enum textureFormat) :
 			TextureBuffer(openGLRenderer, textureFormat)
 		{
 			{ // Buffer part
@@ -6750,14 +6750,14 @@ namespace OpenGLRenderer
 		*    Owner OpenGL renderer instance
 		*  @param[in] numberOfBytes
 		*    Number of bytes within the texture buffer, must be valid
-		*  @param[in] textureFormat
-		*    Texture buffer data format
 		*  @param[in] data
 		*    Texture buffer data, can be a null pointer (empty buffer)
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
+		*  @param[in] textureFormat
+		*    Texture buffer data format
 		*/
-		TextureBufferDsa(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
+		TextureBufferDsa(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage, Renderer::TextureFormat::Enum textureFormat) :
 			TextureBuffer(openGLRenderer, textureFormat)
 		{
 			if (openGLRenderer.getExtensions().isGL_ARB_direct_state_access())
@@ -6975,7 +6975,7 @@ namespace OpenGLRenderer
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		IndirectBufferBind(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
+		IndirectBufferBind(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage) :
 			IndirectBuffer(openGLRenderer)
 		{
 			#ifdef RENDERER_OPENGL_STATE_CLEANUP
@@ -7047,7 +7047,7 @@ namespace OpenGLRenderer
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		IndirectBufferDsa(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
+		IndirectBufferDsa(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage) :
 			IndirectBuffer(openGLRenderer)
 		{
 			if (openGLRenderer.getExtensions().isGL_ARB_direct_state_access())
@@ -7154,7 +7154,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, Renderer::IndexBufferFormat::Enum indexBufferFormat, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW, Renderer::IndexBufferFormat::Enum indexBufferFormat = Renderer::IndexBufferFormat::UNSIGNED_INT) override
 		{
 			// "GL_ARB_vertex_buffer_object" required
 			if (mExtensions->isGL_ARB_vertex_buffer_object())
@@ -7163,12 +7163,12 @@ namespace OpenGLRenderer
 				if (mExtensions->isGL_EXT_direct_state_access() || mExtensions->isGL_ARB_direct_state_access())
 				{
 					// Effective direct state access (DSA)
-					return RENDERER_NEW(getRenderer().getContext(), IndexBufferDsa)(static_cast<OpenGLRenderer&>(getRenderer()), numberOfBytes, indexBufferFormat, data, bufferUsage);
+					return RENDERER_NEW(getRenderer().getContext(), IndexBufferDsa)(static_cast<OpenGLRenderer&>(getRenderer()), numberOfBytes, data, bufferUsage, indexBufferFormat);
 				}
 				else
 				{
 					// Traditional bind version
-					return RENDERER_NEW(getRenderer().getContext(), IndexBufferBind)(static_cast<OpenGLRenderer&>(getRenderer()), numberOfBytes, indexBufferFormat, data, bufferUsage);
+					return RENDERER_NEW(getRenderer().getContext(), IndexBufferBind)(static_cast<OpenGLRenderer&>(getRenderer()), numberOfBytes, data, bufferUsage, indexBufferFormat);
 				}
 			}
 			else
@@ -7237,7 +7237,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW, Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F) override
 		{
 			// "GL_ARB_texture_buffer_object" required
 			if (mExtensions->isGL_ARB_texture_buffer_object())
@@ -7246,12 +7246,12 @@ namespace OpenGLRenderer
 				if (mExtensions->isGL_EXT_direct_state_access() || mExtensions->isGL_ARB_direct_state_access())
 				{
 					// Effective direct state access (DSA)
-					return RENDERER_NEW(getRenderer().getContext(), TextureBufferDsa)(static_cast<OpenGLRenderer&>(getRenderer()), numberOfBytes, textureFormat, data, bufferUsage);
+					return RENDERER_NEW(getRenderer().getContext(), TextureBufferDsa)(static_cast<OpenGLRenderer&>(getRenderer()), numberOfBytes, data, bufferUsage, textureFormat);
 				}
 				else
 				{
 					// Traditional bind version
-					return RENDERER_NEW(getRenderer().getContext(), TextureBufferBind)(static_cast<OpenGLRenderer&>(getRenderer()), numberOfBytes, textureFormat, data, bufferUsage);
+					return RENDERER_NEW(getRenderer().getContext(), TextureBufferBind)(static_cast<OpenGLRenderer&>(getRenderer()), numberOfBytes, data, bufferUsage, textureFormat);
 				}
 			}
 			else

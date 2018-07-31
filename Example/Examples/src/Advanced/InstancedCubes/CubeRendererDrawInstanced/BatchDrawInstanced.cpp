@@ -101,7 +101,7 @@ void BatchDrawInstanced::initialize(Renderer::IBufferManager& bufferManager, Ren
 		}
 
 		{ // Create the texture buffer instance and wrap it into a resource group instance
-			Renderer::IResource* resource = bufferManager.createTextureBuffer(sizeof(float) * numberOfElements, Renderer::TextureFormat::R32G32B32A32F, data, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::STATIC_DRAW);
+			Renderer::IResource* resource = bufferManager.createTextureBuffer(sizeof(float) * numberOfElements, data, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::STATIC_DRAW, Renderer::TextureFormat::R32G32B32A32F);
 			mTextureBufferGroup = rootSignature.createResourceGroup(1, 1, &resource);
 		}
 

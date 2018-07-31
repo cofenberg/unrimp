@@ -219,7 +219,7 @@ namespace RendererRuntime
 		assert(::detail::NUMBER_OF_INDICES == index);
 
 		// Create the index buffer object (IBO)
-		mIndexBufferPtr = bufferManager.createIndexBuffer(sizeof(uint16_t) * ::detail::NUMBER_OF_INDICES, Renderer::IndexBufferFormat::UNSIGNED_SHORT, indices, 0, Renderer::BufferUsage::STATIC_DRAW);
+		mIndexBufferPtr = bufferManager.createIndexBuffer(sizeof(uint16_t) * ::detail::NUMBER_OF_INDICES, indices, 0, Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::UNSIGNED_SHORT);
 		RENDERER_SET_RESOURCE_DEBUG_NAME(mIndexBufferPtr, "Terrain tile ring")
 	}
 

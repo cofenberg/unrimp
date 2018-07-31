@@ -130,7 +130,7 @@ void FirstInstancing::onInitialization()
 					{
 						0, 1, 2
 					};
-					Renderer::IIndexBuffer* indexBufferInstancedArrays = mBufferManager->createIndexBuffer(sizeof(INDICES), Renderer::IndexBufferFormat::UNSIGNED_SHORT, INDICES, 0, Renderer::BufferUsage::STATIC_DRAW);
+					Renderer::IIndexBuffer* indexBufferInstancedArrays = mBufferManager->createIndexBuffer(sizeof(INDICES), INDICES, 0, Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::UNSIGNED_SHORT);
 
 					// Create vertex array object (VAO)
 					// -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)

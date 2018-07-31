@@ -131,10 +131,10 @@ void FirstComputeShader::onInitialization()
 			};
 
 			// Create the texture buffer which will be read by a compute shader
-			mComputeInputTextureBuffer = mBufferManager->createTextureBuffer(sizeof(VERTEX_POSITION_OFFSET), Renderer::TextureFormat::R32G32B32A32F, VERTEX_POSITION_OFFSET, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::STATIC_DRAW);
+			mComputeInputTextureBuffer = mBufferManager->createTextureBuffer(sizeof(VERTEX_POSITION_OFFSET), VERTEX_POSITION_OFFSET, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::STATIC_DRAW, Renderer::TextureFormat::R32G32B32A32F);
 
 			// Create the texture buffer which will be filled by a compute shader
-			mComputeOutputTextureBuffer = mBufferManager->createTextureBuffer(sizeof(VERTEX_POSITION_OFFSET), Renderer::TextureFormat::R32G32B32A32F, nullptr, Renderer::BufferFlag::UNORDERED_ACCESS | Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::STATIC_DRAW);
+			mComputeOutputTextureBuffer = mBufferManager->createTextureBuffer(sizeof(VERTEX_POSITION_OFFSET), nullptr, Renderer::BufferFlag::UNORDERED_ACCESS | Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::STATIC_DRAW, Renderer::TextureFormat::R32G32B32A32F);
 		}
 
 		{ // Indirect buffer
@@ -177,8 +177,8 @@ void FirstComputeShader::onInitialization()
 			{
 				0, 1, 2
 			};
-			mComputeInputIndexBuffer = mBufferManager->createIndexBuffer(sizeof(INDICES), Renderer::IndexBufferFormat::UNSIGNED_INT, INDICES, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::STATIC_DRAW);
-			mComputeOutputIndexBuffer = mBufferManager->createIndexBuffer(sizeof(INDICES), Renderer::IndexBufferFormat::UNSIGNED_INT, nullptr, Renderer::BufferFlag::UNORDERED_ACCESS, Renderer::BufferUsage::STATIC_DRAW);
+			mComputeInputIndexBuffer = mBufferManager->createIndexBuffer(sizeof(INDICES), INDICES, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::UNSIGNED_INT);
+			mComputeOutputIndexBuffer = mBufferManager->createIndexBuffer(sizeof(INDICES), nullptr, Renderer::BufferFlag::UNORDERED_ACCESS, Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::UNSIGNED_INT);
 		}
 
 		{ // Create vertex array object (VAO)

@@ -91,7 +91,7 @@ namespace
 				5, 4, 1, 1, 0, 5,	// Top
 				3, 2, 7, 7, 6, 3	// Bottom
 			};
-			Renderer::IIndexBuffer* indexBuffer = bufferManager.createIndexBuffer(sizeof(INDICES), Renderer::IndexBufferFormat::UNSIGNED_SHORT, INDICES, 0, Renderer::BufferUsage::STATIC_DRAW);
+			Renderer::IIndexBuffer* indexBuffer = bufferManager.createIndexBuffer(sizeof(INDICES), INDICES, 0, Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::UNSIGNED_SHORT);
 			RENDERER_SET_RESOURCE_DEBUG_NAME(indexBuffer, "Sky")
 
 			// Create vertex array object (VAO)

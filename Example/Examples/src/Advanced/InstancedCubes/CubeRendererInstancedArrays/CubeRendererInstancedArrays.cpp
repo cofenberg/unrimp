@@ -337,7 +337,7 @@ CubeRendererInstancedArrays::CubeRendererInstancedArrays(Renderer::IRenderer& re
 			21, 20, 22,		// 10
 			23, 22, 20		// 11
 		};
-		mIndexBuffer = mBufferManager->createIndexBuffer(sizeof(INDICES), Renderer::IndexBufferFormat::UNSIGNED_SHORT, INDICES, 0, Renderer::BufferUsage::STATIC_DRAW);
+		mIndexBuffer = mBufferManager->createIndexBuffer(sizeof(INDICES), INDICES, 0, Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::UNSIGNED_SHORT);
 	}
 }
 

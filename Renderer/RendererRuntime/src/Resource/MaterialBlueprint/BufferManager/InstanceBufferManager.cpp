@@ -344,7 +344,7 @@ namespace RendererRuntime
 			uniformBuffer->addReference();
 
 			// Create texture buffer instance
-			Renderer::ITextureBuffer* textureBuffer = bufferManager.createTextureBuffer(mMaximumTextureBufferSize, Renderer::TextureFormat::R32G32B32A32F, nullptr, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::DYNAMIC_DRAW);
+			Renderer::ITextureBuffer* textureBuffer = bufferManager.createTextureBuffer(mMaximumTextureBufferSize, nullptr, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::DYNAMIC_DRAW, Renderer::TextureFormat::R32G32B32A32F);
 			RENDERER_SET_RESOURCE_DEBUG_NAME(textureBuffer, "Instance buffer manager")
 			textureBuffer->addReference();
 

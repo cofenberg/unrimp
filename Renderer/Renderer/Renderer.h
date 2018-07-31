@@ -5770,19 +5770,19 @@ namespace Renderer
 		*
 		*  @param[in] numberOfBytes
 		*    Number of bytes within the index buffer, must be valid
-		*  @param[in] indexBufferFormat
-		*    Index buffer data format
 		*  @param[in] data
 		*    Index buffer data, can be a null pointer (empty buffer), the data is internally copied and you have to free your memory if you no longer need it
 		*  @param[in] bufferFlags
 		*    Buffer flags, see "Renderer::BufferFlag"
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
+		*  @param[in] indexBufferFormat
+		*    Index buffer data format
 		*
 		*  @return
 		*    The created IBO instance, null pointer on error. Release the returned instance if you no longer need it.
 		*/
-		virtual IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, IndexBufferFormat::Enum indexBufferFormat, const void* data = nullptr, uint32_t bufferFlags = 0, BufferUsage bufferUsage = BufferUsage::DYNAMIC_DRAW) = 0;
+		virtual IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, BufferUsage bufferUsage = BufferUsage::DYNAMIC_DRAW, IndexBufferFormat::Enum indexBufferFormat = IndexBufferFormat::UNSIGNED_INT) = 0;
 
 		/**
 		*  @brief
@@ -5833,14 +5833,14 @@ namespace Renderer
 		*
 		*  @param[in] numberOfBytes
 		*    Number of bytes within the texture buffer, must be valid
-		*  @param[in] textureFormat
-		*    Texture buffer data format
 		*  @param[in] data
 		*    Texture buffer data, can be a null pointer (empty buffer), the data is internally copied and you have to free your memory if you no longer need it
 		*  @param[in] bufferFlags
 		*    Buffer flags, see "Renderer::BufferFlag"
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
+		*  @param[in] textureFormat
+		*    Texture buffer data format
 		*
 		*  @return
 		*    The created TBO instance, null pointer on error. Release the returned instance if you no longer need it.
@@ -5848,7 +5848,7 @@ namespace Renderer
 		*  @note
 		*    - Only supported if "Renderer::Capabilities::maximumTextureBufferSize" is not 0
 		*/
-		virtual ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t bufferFlags = 0, BufferUsage bufferUsage = BufferUsage::DYNAMIC_DRAW) = 0;
+		virtual ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, BufferUsage bufferUsage = BufferUsage::DYNAMIC_DRAW, TextureFormat::Enum textureFormat = TextureFormat::R32G32B32A32F) = 0;
 
 		/**
 		*  @brief

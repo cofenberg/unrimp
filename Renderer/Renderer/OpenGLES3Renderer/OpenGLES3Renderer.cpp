@@ -3659,14 +3659,14 @@ namespace OpenGLES3Renderer
 		*    Owner OpenGL ES 3 renderer instance
 		*  @param[in] numberOfBytes
 		*    Number of bytes within the index buffer, must be valid
-		*  @param[in] indexBufferFormat
-		*    Index buffer data format
 		*  @param[in] data
 		*    Index buffer data, can be a null pointer (empty buffer)
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
+		*  @param[in] indexBufferFormat
+		*    Index buffer data format
 		*/
-		IndexBuffer(OpenGLES3Renderer& openGLES3Renderer, uint32_t numberOfBytes, Renderer::IndexBufferFormat::Enum indexBufferFormat, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
+		IndexBuffer(OpenGLES3Renderer& openGLES3Renderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage, Renderer::IndexBufferFormat::Enum indexBufferFormat) :
 			IIndexBuffer(openGLES3Renderer),
 			mOpenGLES3ElementArrayBuffer(0),
 			mOpenGLES3Type(GL_UNSIGNED_SHORT),
@@ -3834,7 +3834,7 @@ namespace OpenGLES3Renderer
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		VertexBuffer(OpenGLES3Renderer& openGLES3Renderer, uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
+		VertexBuffer(OpenGLES3Renderer& openGLES3Renderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage) :
 			IVertexBuffer(openGLES3Renderer),
 			mOpenGLES3ArrayBuffer(0),
 			mBufferSize(numberOfBytes)
@@ -4469,14 +4469,14 @@ namespace OpenGLES3Renderer
 		*    Owner OpenGL ES 3 renderer instance
 		*  @param[in] numberOfBytes
 		*    Number of bytes within the texture buffer, must be valid
-		*  @param[in] textureFormat
-		*    Texture buffer data format
 		*  @param[in] data
 		*    Texture buffer data, can be a null pointer (empty buffer)
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
+		*  @param[in] textureFormat
+		*    Texture buffer data format
 		*/
-		TextureBufferBind(OpenGLES3Renderer& openGLES3Renderer, uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
+		TextureBufferBind(OpenGLES3Renderer& openGLES3Renderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage, Renderer::TextureFormat::Enum textureFormat) :
 			TextureBuffer(openGLES3Renderer, numberOfBytes)
 		{
 			{ // Buffer part
@@ -4561,14 +4561,14 @@ namespace OpenGLES3Renderer
 		*    Owner OpenGL ES 3 renderer instance
 		*  @param[in] numberOfBytes
 		*    Number of bytes within the texture buffer, must be valid
-		*  @param[in] textureFormat
-		*    Texture buffer data format
 		*  @param[in] data
 		*    Texture buffer data, can be a null pointer (empty buffer)
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
+		*  @param[in] textureFormat
+		*    Texture buffer data format
 		*/
-		TextureBufferBindEmulation(OpenGLES3Renderer& openGLES3Renderer, uint32_t numberOfBytes, MAYBE_UNUSED Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) :
+		TextureBufferBindEmulation(OpenGLES3Renderer& openGLES3Renderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage, MAYBE_UNUSED Renderer::TextureFormat::Enum textureFormat) :
 			TextureBuffer(openGLES3Renderer, numberOfBytes)
 		{
 			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
@@ -4639,7 +4639,7 @@ namespace OpenGLES3Renderer
 		*  @param[in] indirectBufferFlags
 		*    Indirect buffer flags, see "Renderer::IndirectBufferFlag"
 		*/
-		IndirectBuffer(OpenGLES3Renderer& openGLES3Renderer, uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t indirectBufferFlags = 0) :
+		IndirectBuffer(OpenGLES3Renderer& openGLES3Renderer, uint32_t numberOfBytes, const void* data, MAYBE_UNUSED uint32_t indirectBufferFlags) :
 			IIndirectBuffer(openGLES3Renderer),
 			mNumberOfBytes(numberOfBytes),
 			mData(nullptr)
@@ -4772,9 +4772,9 @@ namespace OpenGLES3Renderer
 			return RENDERER_NEW(getRenderer().getContext(), VertexBuffer)(static_cast<OpenGLES3Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
 		}
 
-		inline virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, Renderer::IndexBufferFormat::Enum indexBufferFormat, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW, Renderer::IndexBufferFormat::Enum indexBufferFormat = Renderer::IndexBufferFormat::UNSIGNED_INT) override
 		{
-			return RENDERER_NEW(getRenderer().getContext(), IndexBuffer)(static_cast<OpenGLES3Renderer&>(getRenderer()), numberOfBytes, indexBufferFormat, data, bufferUsage);
+			return RENDERER_NEW(getRenderer().getContext(), IndexBuffer)(static_cast<OpenGLES3Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage, indexBufferFormat);
 		}
 
 		inline virtual Renderer::IVertexArray* createVertexArray(const Renderer::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Renderer::VertexArrayVertexBuffer* vertexBuffers, Renderer::IIndexBuffer* indexBuffer = nullptr) override
@@ -4796,20 +4796,20 @@ namespace OpenGLES3Renderer
 			return RENDERER_NEW(getRenderer().getContext(), UniformBuffer)(static_cast<OpenGLES3Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
 		}
 
-		virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW, Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F) override
 		{
 			// Is "GL_EXT_texture_buffer" there?
 			if (mExtensions->isGL_EXT_texture_buffer())
 			{
 				// TODO(co) Add security check: Is the given resource one of the currently used renderer?
-				return RENDERER_NEW(getRenderer().getContext(), TextureBufferBind)(static_cast<OpenGLES3Renderer&>(getRenderer()), numberOfBytes, textureFormat, data, bufferUsage);
+				return RENDERER_NEW(getRenderer().getContext(), TextureBufferBind)(static_cast<OpenGLES3Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage, textureFormat);
 			}
 
 			// We can only emulate the "Renderer::TextureFormat::R32G32B32A32F" texture format using an uniform buffer
 			else if (Renderer::TextureFormat::R32G32B32A32F == textureFormat)
 			{
 				// TODO(co) Add security check: Is the given resource one of the currently used renderer?
-				return RENDERER_NEW(getRenderer().getContext(), TextureBufferBindEmulation)(static_cast<OpenGLES3Renderer&>(getRenderer()), numberOfBytes, textureFormat, data, bufferUsage);
+				return RENDERER_NEW(getRenderer().getContext(), TextureBufferBindEmulation)(static_cast<OpenGLES3Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage, textureFormat);
 			}
 
 			// Error!

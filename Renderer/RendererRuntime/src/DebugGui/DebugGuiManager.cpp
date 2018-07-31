@@ -232,7 +232,7 @@ namespace RendererRuntime
 				if (nullptr == mIndexBufferPtr || mNumberOfAllocatedIndices < static_cast<uint32_t>(imDrawData->TotalIdxCount))
 				{
 					mNumberOfAllocatedIndices = static_cast<uint32_t>(imDrawData->TotalIdxCount + 10000);	// Add some reserve to reduce reallocations
-					mIndexBufferPtr = bufferManager.createIndexBuffer(mNumberOfAllocatedIndices * sizeof(ImDrawIdx), Renderer::IndexBufferFormat::UNSIGNED_SHORT, nullptr, 0, Renderer::BufferUsage::DYNAMIC_DRAW);
+					mIndexBufferPtr = bufferManager.createIndexBuffer(mNumberOfAllocatedIndices * sizeof(ImDrawIdx), nullptr, 0, Renderer::BufferUsage::DYNAMIC_DRAW, Renderer::IndexBufferFormat::UNSIGNED_SHORT);
 					RENDERER_SET_RESOURCE_DEBUG_NAME(mIndexBufferPtr, "Debug GUI")
 					mVertexArrayPtr = nullptr;
 				}

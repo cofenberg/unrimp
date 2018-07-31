@@ -972,7 +972,7 @@ namespace NullRenderer
 			return RENDERER_NEW(getRenderer().getContext(), VertexBuffer)(static_cast<NullRenderer&>(getRenderer()));
 		}
 
-		inline virtual Renderer::IIndexBuffer* createIndexBuffer(MAYBE_UNUSED uint32_t numberOfBytes, MAYBE_UNUSED Renderer::IndexBufferFormat::Enum indexBufferFormat, MAYBE_UNUSED const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::IIndexBuffer* createIndexBuffer(MAYBE_UNUSED uint32_t numberOfBytes, MAYBE_UNUSED const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW, MAYBE_UNUSED Renderer::IndexBufferFormat::Enum indexBufferFormat = Renderer::IndexBufferFormat::UNSIGNED_INT) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), IndexBuffer)(static_cast<NullRenderer&>(getRenderer()));
 		}
@@ -1010,7 +1010,7 @@ namespace NullRenderer
 			return RENDERER_NEW(getRenderer().getContext(), UniformBuffer)(static_cast<NullRenderer&>(getRenderer()));
 		}
 
-		inline virtual Renderer::ITextureBuffer* createTextureBuffer(MAYBE_UNUSED uint32_t numberOfBytes, MAYBE_UNUSED Renderer::TextureFormat::Enum textureFormat, MAYBE_UNUSED const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW) override
+		inline virtual Renderer::ITextureBuffer* createTextureBuffer(MAYBE_UNUSED uint32_t numberOfBytes, MAYBE_UNUSED const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::DYNAMIC_DRAW, MAYBE_UNUSED Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<NullRenderer&>(getRenderer()));
 		}

@@ -136,7 +136,7 @@ void IcosahedronTessellation::onInitialization()
 				9, 10,  5,	// 18
 				10,  6, 1	// 19
 			};
-			Renderer::IIndexBuffer* indexBuffer = mBufferManager->createIndexBuffer(sizeof(INDICES), Renderer::IndexBufferFormat::UNSIGNED_SHORT, INDICES, 0, Renderer::BufferUsage::STATIC_DRAW);
+			Renderer::IIndexBuffer* indexBuffer = mBufferManager->createIndexBuffer(sizeof(INDICES), INDICES, 0, Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::UNSIGNED_SHORT);
 
 			// Create vertex array object (VAO)
 			// -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)
