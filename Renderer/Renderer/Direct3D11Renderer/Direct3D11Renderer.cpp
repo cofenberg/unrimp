@@ -4453,158 +4453,6 @@ namespace Direct3D11Renderer
 
 
 	//[-------------------------------------------------------]
-	//[ Direct3D11Renderer/Buffer/UniformBuffer.h             ]
-	//[-------------------------------------------------------]
-	/**
-	*  @brief
-	*    Direct3D 11 uniform buffer object (UBO, "constant buffer" in Direct3D terminology) interface
-	*/
-	class UniformBuffer final : public Renderer::IUniformBuffer
-	{
-
-
-	//[-------------------------------------------------------]
-	//[ Public methods                                        ]
-	//[-------------------------------------------------------]
-	public:
-		/**
-		*  @brief
-		*    Constructor
-		*
-		*  @param[in] direct3D11Renderer
-		*    Owner Direct3D 11 renderer instance
-		*  @param[in] numberOfBytes
-		*    Number of bytes within the uniform buffer, must be valid
-		*  @param[in] data
-		*    Uniform buffer data, can be a null pointer (empty buffer)
-		*  @param[in] bufferUsage
-		*    Indication of the buffer usage
-		*/
-		UniformBuffer(Direct3D11Renderer& direct3D11Renderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage) :
-			Renderer::IUniformBuffer(direct3D11Renderer),
-			mD3D11Buffer(nullptr)
-		{
-			{ // Sanity check
-				// Check the given number of bytes, if we don't do this we might get told
-				//   "... the ByteWidth (value = <x>) must be a multiple of 16 and be less than or equal to 65536"
-				// by Direct3D 11
-				const uint32_t leftOverBytes = (numberOfBytes % 16);
-				if (0 != leftOverBytes)
-				{
-					// Fix the byte alignment, no assert because other renderer APIs have another alignment (DirectX 12 e.g. 256)
-					numberOfBytes += 16 - (numberOfBytes % 16);
-				}
-			}
-
-			// Direct3D 11 buffer description
-			D3D11_BUFFER_DESC d3d11BufferDesc;
-			d3d11BufferDesc.ByteWidth           = numberOfBytes;
-			d3d11BufferDesc.Usage               = Mapping::getDirect3D11UsageAndCPUAccessFlags(bufferUsage, d3d11BufferDesc.CPUAccessFlags);
-			d3d11BufferDesc.BindFlags           = D3D11_BIND_CONSTANT_BUFFER;
-			//d3d11BufferDescd3d11BufferDesc.CPUAccessFlags    = <filled above>;
-			d3d11BufferDesc.MiscFlags           = 0;
-			d3d11BufferDesc.StructureByteStride = 0;
-
-			// Data given?
-			if (nullptr != data)
-			{
-				// Direct3D 11 subresource data
-				D3D11_SUBRESOURCE_DATA d3d11SubresourceData;
-				d3d11SubresourceData.pSysMem          = data;
-				d3d11SubresourceData.SysMemPitch      = 0;
-				d3d11SubresourceData.SysMemSlicePitch = 0;
-
-				// Create the Direct3D 11 constant buffer
-				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, &d3d11SubresourceData, &mD3D11Buffer));
-			}
-			else
-			{
-				// Create the Direct3D 11 constant buffer
-				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, nullptr, &mD3D11Buffer));
-			}
-
-			// Assign a default name to the resource for debugging purposes
-			#ifdef RENDERER_DEBUG
-				setDebugName("");
-			#endif
-		}
-
-		/**
-		*  @brief
-		*    Destructor
-		*/
-		virtual ~UniformBuffer() override
-		{
-			// Release the Direct3D 11 constant buffer
-			if (nullptr != mD3D11Buffer)
-			{
-				mD3D11Buffer->Release();
-			}
-		}
-
-		/**
-		*  @brief
-		*    Return the Direct3D 11 constant buffer instance
-		*
-		*  @return
-		*    The Direct3D 11 constant buffer instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
-		*/
-		inline ID3D11Buffer* getD3D11Buffer() const
-		{
-			return mD3D11Buffer;
-		}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual Renderer::IResource methods            ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RENDERER_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Set the debug name
-				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D11Buffer)
-				{
-					RENDERER_DECORATED_DEBUG_NAME(name, detailedName, "UBO", 6);	// 6 = "UBO: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
-				}
-			}
-		#endif
-
-
-	//[-------------------------------------------------------]
-	//[ Protected virtual Renderer::RefCount methods          ]
-	//[-------------------------------------------------------]
-	protected:
-		inline virtual void selfDestruct() override
-		{
-			RENDERER_DELETE(getRenderer().getContext(), UniformBuffer, this);
-		}
-
-
-	//[-------------------------------------------------------]
-	//[ Private methods                                       ]
-	//[-------------------------------------------------------]
-	private:
-		explicit UniformBuffer(const UniformBuffer& source) = delete;
-		UniformBuffer& operator =(const UniformBuffer& source) = delete;
-
-
-	//[-------------------------------------------------------]
-	//[ Private data                                          ]
-	//[-------------------------------------------------------]
-	private:
-		ID3D11Buffer* mD3D11Buffer;	///< Direct3D 11 constant buffer instance, can be a null pointer
-
-
-	};
-
-
-
-
-	//[-------------------------------------------------------]
 	//[ Direct3D11Renderer/Buffer/TextureBuffer.h             ]
 	//[-------------------------------------------------------]
 	/**
@@ -5149,6 +4997,158 @@ namespace Direct3D11Renderer
 
 
 	//[-------------------------------------------------------]
+	//[ Direct3D11Renderer/Buffer/UniformBuffer.h             ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Direct3D 11 uniform buffer object (UBO, "constant buffer" in Direct3D terminology) interface
+	*/
+	class UniformBuffer final : public Renderer::IUniformBuffer
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] direct3D11Renderer
+		*    Owner Direct3D 11 renderer instance
+		*  @param[in] numberOfBytes
+		*    Number of bytes within the uniform buffer, must be valid
+		*  @param[in] data
+		*    Uniform buffer data, can be a null pointer (empty buffer)
+		*  @param[in] bufferUsage
+		*    Indication of the buffer usage
+		*/
+		UniformBuffer(Direct3D11Renderer& direct3D11Renderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage) :
+			Renderer::IUniformBuffer(direct3D11Renderer),
+			mD3D11Buffer(nullptr)
+		{
+			{ // Sanity check
+				// Check the given number of bytes, if we don't do this we might get told
+				//   "... the ByteWidth (value = <x>) must be a multiple of 16 and be less than or equal to 65536"
+				// by Direct3D 11
+				const uint32_t leftOverBytes = (numberOfBytes % 16);
+				if (0 != leftOverBytes)
+				{
+					// Fix the byte alignment, no assert because other renderer APIs have another alignment (DirectX 12 e.g. 256)
+					numberOfBytes += 16 - (numberOfBytes % 16);
+				}
+			}
+
+			// Direct3D 11 buffer description
+			D3D11_BUFFER_DESC d3d11BufferDesc;
+			d3d11BufferDesc.ByteWidth           = numberOfBytes;
+			d3d11BufferDesc.Usage               = Mapping::getDirect3D11UsageAndCPUAccessFlags(bufferUsage, d3d11BufferDesc.CPUAccessFlags);
+			d3d11BufferDesc.BindFlags           = D3D11_BIND_CONSTANT_BUFFER;
+			//d3d11BufferDescd3d11BufferDesc.CPUAccessFlags    = <filled above>;
+			d3d11BufferDesc.MiscFlags           = 0;
+			d3d11BufferDesc.StructureByteStride = 0;
+
+			// Data given?
+			if (nullptr != data)
+			{
+				// Direct3D 11 subresource data
+				D3D11_SUBRESOURCE_DATA d3d11SubresourceData;
+				d3d11SubresourceData.pSysMem          = data;
+				d3d11SubresourceData.SysMemPitch      = 0;
+				d3d11SubresourceData.SysMemSlicePitch = 0;
+
+				// Create the Direct3D 11 constant buffer
+				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, &d3d11SubresourceData, &mD3D11Buffer));
+			}
+			else
+			{
+				// Create the Direct3D 11 constant buffer
+				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, nullptr, &mD3D11Buffer));
+			}
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RENDERER_DEBUG
+				setDebugName("");
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~UniformBuffer() override
+		{
+			// Release the Direct3D 11 constant buffer
+			if (nullptr != mD3D11Buffer)
+			{
+				mD3D11Buffer->Release();
+			}
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D 11 constant buffer instance
+		*
+		*  @return
+		*    The Direct3D 11 constant buffer instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*/
+		inline ID3D11Buffer* getD3D11Buffer() const
+		{
+			return mD3D11Buffer;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		#ifdef RENDERER_DEBUG
+			virtual void setDebugName(const char* name) override
+			{
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
+				if (nullptr != mD3D11Buffer)
+				{
+					RENDERER_DECORATED_DEBUG_NAME(name, detailedName, "UBO", 6);	// 6 = "UBO: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
+				}
+			}
+		#endif
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), UniformBuffer, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit UniformBuffer(const UniformBuffer& source) = delete;
+		UniformBuffer& operator =(const UniformBuffer& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		ID3D11Buffer* mD3D11Buffer;	///< Direct3D 11 constant buffer instance, can be a null pointer
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ Direct3D11Renderer/Buffer/BufferManager.h             ]
 	//[-------------------------------------------------------]
 	/**
@@ -5202,6 +5202,16 @@ namespace Direct3D11Renderer
 			return RENDERER_NEW(getRenderer().getContext(), VertexArray)(static_cast<Direct3D11Renderer&>(getRenderer()), vertexAttributes, numberOfVertexBuffers, vertexBuffers, static_cast<IndexBuffer*>(indexBuffer));
 		}
 
+		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F) override
+		{
+			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<Direct3D11Renderer&>(getRenderer()), numberOfBytes, data, bufferFlags, bufferUsage, textureFormat);
+		}
+
+		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		{
+			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<Direct3D11Renderer&>(getRenderer()), numberOfBytes, data, indirectBufferFlags, bufferUsage);
+		}
+
 		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			// Don't remove this reminder comment block: There are no buffer flags by intent since an uniform buffer can't be used for unordered access and as a consequence an uniform buffer must always used as shader resource to not be pointless
@@ -5211,16 +5221,6 @@ namespace Direct3D11Renderer
 
 			// Create the uniform buffer
 			return RENDERER_NEW(getRenderer().getContext(), UniformBuffer)(static_cast<Direct3D11Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
-		}
-
-		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F) override
-		{
-			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<Direct3D11Renderer&>(getRenderer()), numberOfBytes, data, bufferFlags, bufferUsage, textureFormat);
-		}
-
-		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
-		{
-			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<Direct3D11Renderer&>(getRenderer()), numberOfBytes, data, indirectBufferFlags, bufferUsage);
 		}
 
 

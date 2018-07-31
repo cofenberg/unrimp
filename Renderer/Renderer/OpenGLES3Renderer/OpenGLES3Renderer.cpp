@@ -4174,137 +4174,6 @@ namespace OpenGLES3Renderer
 
 
 	//[-------------------------------------------------------]
-	//[ OpenGLES3Renderer/Buffer/UniformBuffer.h              ]
-	//[-------------------------------------------------------]
-	/**
-	*  @brief
-	*    Abstract OpenGL ES uniform buffer object (UBO, "constant buffer" in Direct3D terminology) interface
-	*/
-	class UniformBuffer final : public Renderer::IUniformBuffer
-	{
-
-
-	//[-------------------------------------------------------]
-	//[ Public methods                                        ]
-	//[-------------------------------------------------------]
-	public:
-		/**
-		*  @brief
-		*    Constructor
-		*
-		*  @param[in] openGLES3Renderer
-		*    Owner OpenGL ES3 renderer instance
-		*  @param[in] numberOfBytes
-		*    Number of bytes within the uniform buffer, must be valid
-		*  @param[in] data
-		*    Uniform buffer data, can be a null pointer (empty buffer)
-		*  @param[in] bufferUsage
-		*    Indication of the buffer usage
-		*/
-		UniformBuffer(OpenGLES3Renderer& openGLES3Renderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage) :
-			IUniformBuffer(static_cast<Renderer::IRenderer&>(openGLES3Renderer)),
-			mOpenGLES3UniformBuffer(0),
-			mBufferSize(numberOfBytes)
-		{
-			// Create the OpenGL ES 3 uniform buffer
-			glGenBuffers(1, &mOpenGLES3UniformBuffer);
-
-			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
-				// Backup the currently bound OpenGL ES 3 uniform buffer
-				GLint openGLES3UniformBufferBackup = 0;
-				glGetIntegerv(GL_UNIFORM_BUFFER_BINDING, &openGLES3UniformBufferBackup);
-			#endif
-
-			// TODO(co) Review OpenGL ES 3 uniform buffer alignment topic
-
-			// Bind this OpenGL ES 3 uniform buffer and upload the data
-			glBindBuffer(GL_UNIFORM_BUFFER, mOpenGLES3UniformBuffer);
-			// -> Usage: These constants directly map to GL_EXT_vertex_buffer_object and OpenGL ES 3 constants, do not change them
-			glBufferData(GL_UNIFORM_BUFFER, static_cast<GLsizeiptr>(numberOfBytes), data, static_cast<GLenum>(bufferUsage));
-
-			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
-				// Be polite and restore the previous bound OpenGL ES 3 uniform buffer
-				glBindBuffer(GL_UNIFORM_BUFFER, static_cast<GLuint>(openGLES3UniformBufferBackup));
-			#endif
-		}
-
-		/**
-		*  @brief
-		*    Destructor
-		*/
-		inline virtual ~UniformBuffer() override
-		{
-			// Destroy the OpenGL ES 3 uniform buffer
-			// -> Silently ignores 0's and names that do not correspond to existing buffer objects
-			glDeleteBuffers(1, &mOpenGLES3UniformBuffer);
-		}
-
-		/**
-		*  @brief
-		*    Return the OpenGL ES 3 uniform buffer instance
-		*
-		*  @return
-		*    The OpenGL ES 3 uniform buffer instance, can be zero if no resource is allocated, do not destroy the returned resource
-		*/
-		inline GLuint getOpenGLES3UniformBuffer() const
-		{
-			return mOpenGLES3UniformBuffer;
-		}
-
-		inline uint32_t getBufferSize() const
-		{
-			return mBufferSize;
-		}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual Renderer::IResource methods            ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RENDERER_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Valid OpenGL ES 3 uniform buffer and "GL_KHR_debug"-extension available?
-				if (0 != mOpenGLES3UniformBuffer && static_cast<OpenGLES3Renderer&>(getRenderer()).getOpenGLES3Context().getExtensions().isGL_KHR_debug())
-				{
-					glObjectLabelKHR(GL_BUFFER_KHR, mOpenGLES3UniformBuffer, -1, name);
-				}
-			}
-		#endif
-
-
-	//[-------------------------------------------------------]
-	//[ Protected virtual Renderer::RefCount methods          ]
-	//[-------------------------------------------------------]
-	protected:
-		inline virtual void selfDestruct() override
-		{
-			RENDERER_DELETE(getRenderer().getContext(), UniformBuffer, this);
-		}
-
-
-	//[-------------------------------------------------------]
-	//[ Private methods                                       ]
-	//[-------------------------------------------------------]
-	private:
-		explicit UniformBuffer(const UniformBuffer& source) = delete;
-		UniformBuffer& operator =(const UniformBuffer& source) = delete;
-
-
-	//[-------------------------------------------------------]
-	//[ Private data                                          ]
-	//[-------------------------------------------------------]
-	private:
-		GLuint	 mOpenGLES3UniformBuffer;	///< OpenGL ES 3 uniform buffer, can be zero if no resource is allocated
-		uint32_t mBufferSize;				///< Holds the size of the buffer
-
-
-	};
-
-
-
-
-	//[-------------------------------------------------------]
 	//[ OpenGLES3Renderer/Buffer/TextureBuffer.h              ]
 	//[-------------------------------------------------------]
 	/**
@@ -4729,6 +4598,137 @@ namespace OpenGLES3Renderer
 
 
 	//[-------------------------------------------------------]
+	//[ OpenGLES3Renderer/Buffer/UniformBuffer.h              ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Abstract OpenGL ES uniform buffer object (UBO, "constant buffer" in Direct3D terminology) interface
+	*/
+	class UniformBuffer final : public Renderer::IUniformBuffer
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] openGLES3Renderer
+		*    Owner OpenGL ES3 renderer instance
+		*  @param[in] numberOfBytes
+		*    Number of bytes within the uniform buffer, must be valid
+		*  @param[in] data
+		*    Uniform buffer data, can be a null pointer (empty buffer)
+		*  @param[in] bufferUsage
+		*    Indication of the buffer usage
+		*/
+		UniformBuffer(OpenGLES3Renderer& openGLES3Renderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage) :
+			IUniformBuffer(static_cast<Renderer::IRenderer&>(openGLES3Renderer)),
+			mOpenGLES3UniformBuffer(0),
+			mBufferSize(numberOfBytes)
+		{
+			// Create the OpenGL ES 3 uniform buffer
+			glGenBuffers(1, &mOpenGLES3UniformBuffer);
+
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
+				// Backup the currently bound OpenGL ES 3 uniform buffer
+				GLint openGLES3UniformBufferBackup = 0;
+				glGetIntegerv(GL_UNIFORM_BUFFER_BINDING, &openGLES3UniformBufferBackup);
+			#endif
+
+			// TODO(co) Review OpenGL ES 3 uniform buffer alignment topic
+
+			// Bind this OpenGL ES 3 uniform buffer and upload the data
+			glBindBuffer(GL_UNIFORM_BUFFER, mOpenGLES3UniformBuffer);
+			// -> Usage: These constants directly map to GL_EXT_vertex_buffer_object and OpenGL ES 3 constants, do not change them
+			glBufferData(GL_UNIFORM_BUFFER, static_cast<GLsizeiptr>(numberOfBytes), data, static_cast<GLenum>(bufferUsage));
+
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
+				// Be polite and restore the previous bound OpenGL ES 3 uniform buffer
+				glBindBuffer(GL_UNIFORM_BUFFER, static_cast<GLuint>(openGLES3UniformBufferBackup));
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~UniformBuffer() override
+		{
+			// Destroy the OpenGL ES 3 uniform buffer
+			// -> Silently ignores 0's and names that do not correspond to existing buffer objects
+			glDeleteBuffers(1, &mOpenGLES3UniformBuffer);
+		}
+
+		/**
+		*  @brief
+		*    Return the OpenGL ES 3 uniform buffer instance
+		*
+		*  @return
+		*    The OpenGL ES 3 uniform buffer instance, can be zero if no resource is allocated, do not destroy the returned resource
+		*/
+		inline GLuint getOpenGLES3UniformBuffer() const
+		{
+			return mOpenGLES3UniformBuffer;
+		}
+
+		inline uint32_t getBufferSize() const
+		{
+			return mBufferSize;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		#ifdef RENDERER_DEBUG
+			virtual void setDebugName(const char* name) override
+			{
+				// Valid OpenGL ES 3 uniform buffer and "GL_KHR_debug"-extension available?
+				if (0 != mOpenGLES3UniformBuffer && static_cast<OpenGLES3Renderer&>(getRenderer()).getOpenGLES3Context().getExtensions().isGL_KHR_debug())
+				{
+					glObjectLabelKHR(GL_BUFFER_KHR, mOpenGLES3UniformBuffer, -1, name);
+				}
+			}
+		#endif
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), UniformBuffer, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit UniformBuffer(const UniformBuffer& source) = delete;
+		UniformBuffer& operator =(const UniformBuffer& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		GLuint	 mOpenGLES3UniformBuffer;	///< OpenGL ES 3 uniform buffer, can be zero if no resource is allocated
+		uint32_t mBufferSize;				///< Holds the size of the buffer
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ OpenGLES3Renderer/Buffer/BufferManager.h              ]
 	//[-------------------------------------------------------]
 	/**
@@ -4784,18 +4784,6 @@ namespace OpenGLES3Renderer
 			return RENDERER_NEW(getRenderer().getContext(), VertexArray)(static_cast<OpenGLES3Renderer&>(getRenderer()), vertexAttributes, numberOfVertexBuffers, vertexBuffers, static_cast<IndexBuffer*>(indexBuffer));
 		}
 
-		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
-		{
-			// Don't remove this reminder comment block: There are no buffer flags by intent since an uniform buffer can't be used for unordered access and as a consequence an uniform buffer must always used as shader resource to not be pointless
-			// -> Inside GLSL "layout(binding = 0, std140) writeonly uniform OutputUniformBuffer" will result in the GLSL compiler error "Failed to parse the GLSL shader source code: ERROR: 0:85: 'assign' :  l-value required "anon@6" (can't modify a uniform)"
-			// -> Inside GLSL "layout(binding = 0, std430) writeonly buffer  OutputUniformBuffer" will work in OpenGL but will fail in Vulkan with "Vulkan debug report callback: Object type: "VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT" Object: "0" Location: "0" Message code: "13" Layer prefix: "Validation" Message: "Object: VK_NULL_HANDLE (Type = 0) | Type mismatch on descriptor slot 0.0 (used as type `ptr to uniform struct of (vec4 of float32)`) but descriptor of type VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER""
-			// RENDERER_ASSERT(getRenderer().getContext(), (bufferFlags & Renderer::BufferFlag::UNORDERED_ACCESS) == 0, "Invalid OpenGL ES 3 buffer flags, uniform buffer can't be used for unordered access")
-			// RENDERER_ASSERT(getRenderer().getContext(), (bufferFlags & Renderer::BufferFlag::SHADER_RESOURCE) != 0, "Invalid OpenGL ES 3 buffer flags, uniform buffer must be used as shader resource")
-
-			// Create the uniform buffer
-			return RENDERER_NEW(getRenderer().getContext(), UniformBuffer)(static_cast<OpenGLES3Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
-		}
-
 		virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t = Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F) override
 		{
 			// Is "GL_EXT_texture_buffer" there?
@@ -4819,6 +4807,18 @@ namespace OpenGLES3Renderer
 		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<OpenGLES3Renderer&>(getRenderer()), numberOfBytes, data, indirectBufferFlags);
+		}
+
+		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		{
+			// Don't remove this reminder comment block: There are no buffer flags by intent since an uniform buffer can't be used for unordered access and as a consequence an uniform buffer must always used as shader resource to not be pointless
+			// -> Inside GLSL "layout(binding = 0, std140) writeonly uniform OutputUniformBuffer" will result in the GLSL compiler error "Failed to parse the GLSL shader source code: ERROR: 0:85: 'assign' :  l-value required "anon@6" (can't modify a uniform)"
+			// -> Inside GLSL "layout(binding = 0, std430) writeonly buffer  OutputUniformBuffer" will work in OpenGL but will fail in Vulkan with "Vulkan debug report callback: Object type: "VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT" Object: "0" Location: "0" Message code: "13" Layer prefix: "Validation" Message: "Object: VK_NULL_HANDLE (Type = 0) | Type mismatch on descriptor slot 0.0 (used as type `ptr to uniform struct of (vec4 of float32)`) but descriptor of type VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER""
+			// RENDERER_ASSERT(getRenderer().getContext(), (bufferFlags & Renderer::BufferFlag::UNORDERED_ACCESS) == 0, "Invalid OpenGL ES 3 buffer flags, uniform buffer can't be used for unordered access")
+			// RENDERER_ASSERT(getRenderer().getContext(), (bufferFlags & Renderer::BufferFlag::SHADER_RESOURCE) != 0, "Invalid OpenGL ES 3 buffer flags, uniform buffer must be used as shader resource")
+
+			// Create the uniform buffer
+			return RENDERER_NEW(getRenderer().getContext(), UniformBuffer)(static_cast<OpenGLES3Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
 		}
 
 

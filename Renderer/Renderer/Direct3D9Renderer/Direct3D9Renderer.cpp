@@ -3454,12 +3454,6 @@ namespace Direct3D9Renderer
 			return RENDERER_NEW(getRenderer().getContext(), VertexArray)(static_cast<Direct3D9Renderer&>(getRenderer()), vertexAttributes, numberOfVertexBuffers, vertexBuffers, static_cast<IndexBuffer*>(indexBuffer));
 		}
 
-		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t, const void*, Renderer::BufferUsage) override
-		{
-			// Error! Direct3D 9 has no uniform buffer support.
-			return nullptr;
-		}
-
 		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t, const void*, uint32_t, Renderer::BufferUsage, Renderer::TextureFormat::Enum) override
 		{
 			// Direct3D 9 has no texture buffer support
@@ -3469,6 +3463,12 @@ namespace Direct3D9Renderer
 		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<Direct3D9Renderer&>(getRenderer()), numberOfBytes, data, indirectBufferFlags);
+		}
+
+		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t, const void*, Renderer::BufferUsage) override
+		{
+			// Error! Direct3D 9 has no uniform buffer support.
+			return nullptr;
 		}
 
 
@@ -8673,14 +8673,14 @@ namespace Direct3D9Renderer
 		// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 		mCapabilities.maximumNumberOf2DTextureArraySlices = 0;
 
-		// Maximum uniform buffer (UBO) size in bytes (usually at least 4096 * 16 bytes, in case there's no support for uniform buffer it's 0)
-		mCapabilities.maximumUniformBufferSize = 0;
-
 		// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
 		mCapabilities.maximumTextureBufferSize = 0;
 
 		// Maximum indirect buffer size in bytes
 		mCapabilities.maximumIndirectBufferSize = 64 * 1024;	// 64 KiB
+
+		// Maximum uniform buffer (UBO) size in bytes (usually at least 4096 * 16 bytes, in case there's no support for uniform buffer it's 0)
+		mCapabilities.maximumUniformBufferSize = 0;
 
 		// Maximum number of multisamples (always at least 1, usually 8)
 		mCapabilities.maximumNumberOfMultisamples = 1;	// Don't want to support the legacy DirectX 9 multisample support

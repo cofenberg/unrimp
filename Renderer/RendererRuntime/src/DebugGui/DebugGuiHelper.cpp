@@ -413,13 +413,13 @@ namespace RendererRuntime
 						ImGui::Text("Programs: %d", statistics.currentNumberOfPrograms.load());
 						ImGui::Text("Vertex arrays: %d", statistics.currentNumberOfVertexArrays.load());
 						ImGui::Text("Render passes: %d", statistics.currentNumberOfRenderPasses.load());
-						ImGui::Text("Swap shains: %d", statistics.currentNumberOfSwapChains.load());
+						ImGui::Text("Swap chains: %d", statistics.currentNumberOfSwapChains.load());
 						ImGui::Text("Framebuffers: %d", statistics.currentNumberOfFramebuffers.load());
 						ImGui::Text("Index buffers: %d", statistics.currentNumberOfIndexBuffers.load());
 						ImGui::Text("Vertex buffers: %d", statistics.currentNumberOfVertexBuffers.load());
-						ImGui::Text("Uniform buffers: %d", statistics.currentNumberOfUniformBuffers.load());
 						ImGui::Text("Texture buffers: %d", statistics.currentNumberOfTextureBuffers.load());
 						ImGui::Text("Indirect buffers: %d", statistics.currentNumberOfIndirectBuffers.load());
+						ImGui::Text("Uniform buffers: %d", statistics.currentNumberOfUniformBuffers.load());
 						ImGui::Text("1D textures: %d", statistics.currentNumberOfTexture1Ds.load());
 						ImGui::Text("2D textures: %d", statistics.currentNumberOfTexture2Ds.load());
 						ImGui::Text("2D texture arrays: %d", statistics.currentNumberOfTexture2DArrays.load());

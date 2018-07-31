@@ -6237,6 +6237,149 @@ namespace OpenGLRenderer
 
 
 	//[-------------------------------------------------------]
+	//[ OpenGLRenderer/Buffer/TextureBuffer.h                 ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Abstract OpenGL texture buffer object (TBO) interface
+	*/
+	class TextureBuffer : public Renderer::ITextureBuffer
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~TextureBuffer() override
+		{
+			// Destroy the OpenGL texture instance
+			// -> Silently ignores 0's and names that do not correspond to existing textures
+			glDeleteTextures(1, &mOpenGLTexture);
+
+			// Destroy the OpenGL texture buffer
+			// -> Silently ignores 0's and names that do not correspond to existing buffer objects
+			glDeleteBuffersARB(1, &mOpenGLTextureBuffer);
+		}
+
+		/**
+		*  @brief
+		*    Return the OpenGL texture buffer instance
+		*
+		*  @return
+		*    The OpenGL texture buffer instance, can be zero if no resource is allocated, do not destroy the returned resource
+		*/
+		inline GLuint getOpenGLTextureBuffer() const
+		{
+			return mOpenGLTextureBuffer;
+		}
+
+		/**
+		*  @brief
+		*    Return the OpenGL texture instance
+		*
+		*  @return
+		*    The OpenGL texture instance, can be zero if no resource is allocated
+		*/
+		inline GLuint getOpenGLTexture() const
+		{
+			return mOpenGLTexture;
+		}
+
+		/**
+		*  @brief
+		*    Return the OpenGL internal format
+		*
+		*  @return
+		*    The OpenGL internal format
+		*/
+		inline GLuint getOpenGLInternalFormat() const
+		{
+			return mOpenGLInternalFormat;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		#ifdef RENDERER_DEBUG
+			virtual void setDebugName(const char* name) override
+			{
+				// "GL_KHR_debug"-extension available?
+				if (static_cast<OpenGLRenderer&>(getRenderer()).getExtensions().isGL_KHR_debug())
+				{
+					if (0 != mOpenGLTexture)
+					{
+						glObjectLabel(GL_TEXTURE, mOpenGLTexture, -1, name);
+					}
+					if (0 != mOpenGLTextureBuffer)
+					{
+						glObjectLabel(GL_BUFFER, mOpenGLTextureBuffer, -1, name);
+					}
+				}
+			}
+		#endif
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), TextureBuffer, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected methods                                     ]
+	//[-------------------------------------------------------]
+	protected:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] openGLRenderer
+		*    Owner OpenGL renderer instance
+		*  @param[in] textureFormat
+		*    Texture buffer data format
+		*/
+		inline explicit TextureBuffer(OpenGLRenderer& openGLRenderer, Renderer::TextureFormat::Enum textureFormat) :
+			ITextureBuffer(static_cast<Renderer::IRenderer&>(openGLRenderer)),
+			mOpenGLTextureBuffer(0),
+			mOpenGLTexture(0),
+			mOpenGLInternalFormat(Mapping::getOpenGLInternalFormat(textureFormat))
+		{}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected data                                        ]
+	//[-------------------------------------------------------]
+	protected:
+		GLuint mOpenGLTextureBuffer;	///< OpenGL texture buffer, can be zero if no resource is allocated
+		GLuint mOpenGLTexture;			///< OpenGL texture, can be zero if no resource is allocated
+		GLuint mOpenGLInternalFormat;	///< OpenGL internal format
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit TextureBuffer(const TextureBuffer& source) = delete;
+		TextureBuffer& operator =(const TextureBuffer& source) = delete;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ OpenGLRenderer/Buffer/UniformBuffer.h                 ]
 	//[-------------------------------------------------------]
 	/**
@@ -6479,149 +6622,6 @@ namespace OpenGLRenderer
 	private:
 		explicit UniformBufferDsa(const UniformBufferDsa& source) = delete;
 		UniformBufferDsa& operator =(const UniformBufferDsa& source) = delete;
-
-
-	};
-
-
-
-
-	//[-------------------------------------------------------]
-	//[ OpenGLRenderer/Buffer/TextureBuffer.h                 ]
-	//[-------------------------------------------------------]
-	/**
-	*  @brief
-	*    Abstract OpenGL texture buffer object (TBO) interface
-	*/
-	class TextureBuffer : public Renderer::ITextureBuffer
-	{
-
-
-	//[-------------------------------------------------------]
-	//[ Public methods                                        ]
-	//[-------------------------------------------------------]
-	public:
-		/**
-		*  @brief
-		*    Destructor
-		*/
-		virtual ~TextureBuffer() override
-		{
-			// Destroy the OpenGL texture instance
-			// -> Silently ignores 0's and names that do not correspond to existing textures
-			glDeleteTextures(1, &mOpenGLTexture);
-
-			// Destroy the OpenGL texture buffer
-			// -> Silently ignores 0's and names that do not correspond to existing buffer objects
-			glDeleteBuffersARB(1, &mOpenGLTextureBuffer);
-		}
-
-		/**
-		*  @brief
-		*    Return the OpenGL texture buffer instance
-		*
-		*  @return
-		*    The OpenGL texture buffer instance, can be zero if no resource is allocated, do not destroy the returned resource
-		*/
-		inline GLuint getOpenGLTextureBuffer() const
-		{
-			return mOpenGLTextureBuffer;
-		}
-
-		/**
-		*  @brief
-		*    Return the OpenGL texture instance
-		*
-		*  @return
-		*    The OpenGL texture instance, can be zero if no resource is allocated
-		*/
-		inline GLuint getOpenGLTexture() const
-		{
-			return mOpenGLTexture;
-		}
-
-		/**
-		*  @brief
-		*    Return the OpenGL internal format
-		*
-		*  @return
-		*    The OpenGL internal format
-		*/
-		inline GLuint getOpenGLInternalFormat() const
-		{
-			return mOpenGLInternalFormat;
-		}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual Renderer::IResource methods            ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RENDERER_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// "GL_KHR_debug"-extension available?
-				if (static_cast<OpenGLRenderer&>(getRenderer()).getExtensions().isGL_KHR_debug())
-				{
-					if (0 != mOpenGLTexture)
-					{
-						glObjectLabel(GL_TEXTURE, mOpenGLTexture, -1, name);
-					}
-					if (0 != mOpenGLTextureBuffer)
-					{
-						glObjectLabel(GL_BUFFER, mOpenGLTextureBuffer, -1, name);
-					}
-				}
-			}
-		#endif
-
-
-	//[-------------------------------------------------------]
-	//[ Protected virtual Renderer::RefCount methods          ]
-	//[-------------------------------------------------------]
-	protected:
-		inline virtual void selfDestruct() override
-		{
-			RENDERER_DELETE(getRenderer().getContext(), TextureBuffer, this);
-		}
-
-
-	//[-------------------------------------------------------]
-	//[ Protected methods                                     ]
-	//[-------------------------------------------------------]
-	protected:
-		/**
-		*  @brief
-		*    Constructor
-		*
-		*  @param[in] openGLRenderer
-		*    Owner OpenGL renderer instance
-		*  @param[in] textureFormat
-		*    Texture buffer data format
-		*/
-		inline explicit TextureBuffer(OpenGLRenderer& openGLRenderer, Renderer::TextureFormat::Enum textureFormat) :
-			ITextureBuffer(static_cast<Renderer::IRenderer&>(openGLRenderer)),
-			mOpenGLTextureBuffer(0),
-			mOpenGLTexture(0),
-			mOpenGLInternalFormat(Mapping::getOpenGLInternalFormat(textureFormat))
-		{}
-
-
-	//[-------------------------------------------------------]
-	//[ Protected data                                        ]
-	//[-------------------------------------------------------]
-	protected:
-		GLuint mOpenGLTextureBuffer;	///< OpenGL texture buffer, can be zero if no resource is allocated
-		GLuint mOpenGLTexture;			///< OpenGL texture, can be zero if no resource is allocated
-		GLuint mOpenGLInternalFormat;	///< OpenGL internal format
-
-
-	//[-------------------------------------------------------]
-	//[ Private methods                                       ]
-	//[-------------------------------------------------------]
-	private:
-		explicit TextureBuffer(const TextureBuffer& source) = delete;
-		TextureBuffer& operator =(const TextureBuffer& source) = delete;
 
 
 	};
@@ -7207,6 +7207,30 @@ namespace OpenGLRenderer
 			}
 		}
 
+		virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t = Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F) override
+		{
+			// "GL_ARB_texture_buffer_object" required
+			if (mExtensions->isGL_ARB_texture_buffer_object())
+			{
+				// Is "GL_EXT_direct_state_access" there?
+				if (mExtensions->isGL_EXT_direct_state_access() || mExtensions->isGL_ARB_direct_state_access())
+				{
+					// Effective direct state access (DSA)
+					return RENDERER_NEW(getRenderer().getContext(), TextureBufferDsa)(static_cast<OpenGLRenderer&>(getRenderer()), numberOfBytes, data, bufferUsage, textureFormat);
+				}
+				else
+				{
+					// Traditional bind version
+					return RENDERER_NEW(getRenderer().getContext(), TextureBufferBind)(static_cast<OpenGLRenderer&>(getRenderer()), numberOfBytes, data, bufferUsage, textureFormat);
+				}
+			}
+			else
+			{
+				// Error!
+				return nullptr;
+			}
+		}
+
 		virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			// "GL_ARB_uniform_buffer_object" required
@@ -7228,30 +7252,6 @@ namespace OpenGLRenderer
 				{
 					// Traditional bind version
 					return RENDERER_NEW(getRenderer().getContext(), UniformBufferBind)(static_cast<OpenGLRenderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
-				}
-			}
-			else
-			{
-				// Error!
-				return nullptr;
-			}
-		}
-
-		virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t = Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F) override
-		{
-			// "GL_ARB_texture_buffer_object" required
-			if (mExtensions->isGL_ARB_texture_buffer_object())
-			{
-				// Is "GL_EXT_direct_state_access" there?
-				if (mExtensions->isGL_EXT_direct_state_access() || mExtensions->isGL_ARB_direct_state_access())
-				{
-					// Effective direct state access (DSA)
-					return RENDERER_NEW(getRenderer().getContext(), TextureBufferDsa)(static_cast<OpenGLRenderer&>(getRenderer()), numberOfBytes, data, bufferUsage, textureFormat);
-				}
-				else
-				{
-					// Traditional bind version
-					return RENDERER_NEW(getRenderer().getContext(), TextureBufferBind)(static_cast<OpenGLRenderer&>(getRenderer()), numberOfBytes, data, bufferUsage, textureFormat);
 				}
 			}
 			else
@@ -18987,17 +18987,6 @@ namespace OpenGLRenderer
 			mCapabilities.maximumNumberOf2DTextureArraySlices = 0;
 		}
 
-		// Maximum uniform buffer (UBO) size in bytes (usually at least 4096 * 16 bytes, in case there's no support for uniform buffer it's 0)
-		if (mExtensions->isGL_ARB_uniform_buffer_object())
-		{
-			glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &openGLValue);
-			mCapabilities.maximumUniformBufferSize = static_cast<uint32_t>(openGLValue);
-		}
-		else
-		{
-			mCapabilities.maximumUniformBufferSize = 0;
-		}
-
 		// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
 		if (mExtensions->isGL_ARB_texture_buffer_object())
 		{
@@ -19018,6 +19007,17 @@ namespace OpenGLRenderer
 		else
 		{
 			mCapabilities.maximumIndirectBufferSize = 64 * 1024;	// 64 KiB
+		}
+
+		// Maximum uniform buffer (UBO) size in bytes (usually at least 4096 * 16 bytes, in case there's no support for uniform buffer it's 0)
+		if (mExtensions->isGL_ARB_uniform_buffer_object())
+		{
+			glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &openGLValue);
+			mCapabilities.maximumUniformBufferSize = static_cast<uint32_t>(openGLValue);
+		}
+		else
+		{
+			mCapabilities.maximumUniformBufferSize = 0;
 		}
 
 		// Maximum number of multisamples (always at least 1, usually 8)

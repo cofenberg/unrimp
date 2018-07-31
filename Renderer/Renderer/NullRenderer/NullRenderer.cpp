@@ -749,63 +749,6 @@ namespace NullRenderer
 
 
 	//[-------------------------------------------------------]
-	//[ NullRenderer/Buffer/UniformBuffer.h                   ]
-	//[-------------------------------------------------------]
-	/**
-	*  @brief
-	*    Null uniform buffer object (UBO, "constant buffer" in Direct3D terminology) class
-	*/
-	class UniformBuffer final : public Renderer::IUniformBuffer
-	{
-
-
-	//[-------------------------------------------------------]
-	//[ Public methods                                        ]
-	//[-------------------------------------------------------]
-	public:
-		/**
-		*  @brief
-		*    Constructor
-		*
-		*  @param[in] nullRenderer
-		*    Owner null renderer instance
-		*/
-		inline explicit UniformBuffer(NullRenderer& nullRenderer) :
-			IUniformBuffer(nullRenderer)
-		{}
-
-		/**
-		*  @brief
-		*    Destructor
-		*/
-		inline virtual ~UniformBuffer() override
-		{}
-
-
-	//[-------------------------------------------------------]
-	//[ Protected virtual Renderer::RefCount methods          ]
-	//[-------------------------------------------------------]
-	protected:
-		inline virtual void selfDestruct() override
-		{
-			RENDERER_DELETE(getRenderer().getContext(), UniformBuffer, this);
-		}
-
-
-	//[-------------------------------------------------------]
-	//[ Private methods                                       ]
-	//[-------------------------------------------------------]
-	private:
-		explicit UniformBuffer(const UniformBuffer& source) = delete;
-		UniformBuffer& operator =(const UniformBuffer& source) = delete;
-
-
-	};
-
-
-
-
-	//[-------------------------------------------------------]
 	//[ NullRenderer/Buffer/TextureBuffer.h                   ]
 	//[-------------------------------------------------------]
 	/**
@@ -930,6 +873,63 @@ namespace NullRenderer
 
 
 	//[-------------------------------------------------------]
+	//[ NullRenderer/Buffer/UniformBuffer.h                   ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Null uniform buffer object (UBO, "constant buffer" in Direct3D terminology) class
+	*/
+	class UniformBuffer final : public Renderer::IUniformBuffer
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] nullRenderer
+		*    Owner null renderer instance
+		*/
+		inline explicit UniformBuffer(NullRenderer& nullRenderer) :
+			IUniformBuffer(nullRenderer)
+		{}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~UniformBuffer() override
+		{}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), UniformBuffer, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit UniformBuffer(const UniformBuffer& source) = delete;
+		UniformBuffer& operator =(const UniformBuffer& source) = delete;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ NullRenderer/Buffer/BufferManager.h                   ]
 	//[-------------------------------------------------------]
 	/**
@@ -1000,16 +1000,6 @@ namespace NullRenderer
 			return RENDERER_NEW(getRenderer().getContext(), VertexArray)(static_cast<NullRenderer&>(getRenderer()));
 		}
 
-		inline virtual Renderer::IUniformBuffer* createUniformBuffer(MAYBE_UNUSED uint32_t numberOfBytes, MAYBE_UNUSED const void* data = nullptr, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
-		{
-			// Don't remove this reminder comment block: There are no buffer flags by intent since an uniform buffer can't be used for unordered access and as a consequence an uniform buffer must always used as shader resource to not be pointless
-			// RENDERER_ASSERT(getRenderer().getContext(), (bufferFlags & Renderer::BufferFlag::UNORDERED_ACCESS) == 0, "Invalid null buffer flags, uniform buffer can't be used for unordered access")
-			// RENDERER_ASSERT(getRenderer().getContext(), (bufferFlags & Renderer::BufferFlag::SHADER_RESOURCE) != 0, "Invalid null buffer flags, uniform buffer must be used as shader resource")
-
-			// Create the uniform buffer
-			return RENDERER_NEW(getRenderer().getContext(), UniformBuffer)(static_cast<NullRenderer&>(getRenderer()));
-		}
-
 		inline virtual Renderer::ITextureBuffer* createTextureBuffer(MAYBE_UNUSED uint32_t numberOfBytes, MAYBE_UNUSED const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = Renderer::BufferFlag::SHADER_RESOURCE, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, MAYBE_UNUSED Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<NullRenderer&>(getRenderer()));
@@ -1025,6 +1015,16 @@ namespace NullRenderer
 
 			// Create indirect buffer
 			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<NullRenderer&>(getRenderer()));
+		}
+
+		inline virtual Renderer::IUniformBuffer* createUniformBuffer(MAYBE_UNUSED uint32_t numberOfBytes, MAYBE_UNUSED const void* data = nullptr, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		{
+			// Don't remove this reminder comment block: There are no buffer flags by intent since an uniform buffer can't be used for unordered access and as a consequence an uniform buffer must always used as shader resource to not be pointless
+			// RENDERER_ASSERT(getRenderer().getContext(), (bufferFlags & Renderer::BufferFlag::UNORDERED_ACCESS) == 0, "Invalid null buffer flags, uniform buffer can't be used for unordered access")
+			// RENDERER_ASSERT(getRenderer().getContext(), (bufferFlags & Renderer::BufferFlag::SHADER_RESOURCE) != 0, "Invalid null buffer flags, uniform buffer must be used as shader resource")
+
+			// Create the uniform buffer
+			return RENDERER_NEW(getRenderer().getContext(), UniformBuffer)(static_cast<NullRenderer&>(getRenderer()));
 		}
 
 
@@ -3573,16 +3573,16 @@ namespace NullRenderer
 		// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 		mCapabilities.maximumNumberOf2DTextureArraySlices = 42;
 
-		// Maximum uniform buffer (UBO) size in bytes (usually at least 4096 * 16 bytes, in case there's no support for uniform buffer it's 0)
-		// -> Let's use the DirectX 11 value: See https://msdn.microsoft.com/en-us/library/windows/desktop/ff819065(v=vs.85).aspx - "Resource Limits (Direct3D 11)" - "Number of elements in a constant buffer D3D11_REQ_CONSTANT_BUFFER_ELEMENT_COUNT (4096)"
-		// -> One element = float4 = 16 bytes
-		mCapabilities.maximumUniformBufferSize = 4096 * 16;
-
 		// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
 		mCapabilities.maximumTextureBufferSize = 42;
 
 		// Maximum indirect buffer size in bytes
 		mCapabilities.maximumIndirectBufferSize = 64 * 1024;	// 64 KiB
+
+		// Maximum uniform buffer (UBO) size in bytes (usually at least 4096 * 16 bytes, in case there's no support for uniform buffer it's 0)
+		// -> Let's use the DirectX 11 value: See https://msdn.microsoft.com/en-us/library/windows/desktop/ff819065(v=vs.85).aspx - "Resource Limits (Direct3D 11)" - "Number of elements in a constant buffer D3D11_REQ_CONSTANT_BUFFER_ELEMENT_COUNT (4096)"
+		// -> One element = float4 = 16 bytes
+		mCapabilities.maximumUniformBufferSize = 4096 * 16;
 
 		// Maximum number of multisamples (always at least 1, usually 8)
 		mCapabilities.maximumNumberOfMultisamples = 1;

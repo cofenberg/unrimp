@@ -316,9 +316,9 @@ namespace Renderer
 		class IBuffer;
 			class IIndexBuffer;
 			class IVertexBuffer;
-			class IUniformBuffer;
 			class ITextureBuffer;
 			class IIndirectBuffer;
+			class IUniformBuffer;
 		class ITextureManager;
 		class ITexture;
 			class ITexture1D;
@@ -3627,9 +3627,9 @@ namespace Renderer
 		uint32_t			maximumNumberOfSimultaneousRenderTargets;		///< Maximum number of simultaneous render targets (if <1 render to texture is not supported)
 		uint32_t			maximumTextureDimension;						///< Maximum texture dimension (usually 2048, 4096, 8192 or 16384)
 		uint32_t			maximumNumberOf2DTextureArraySlices;			///< Maximum number of 2D texture array slices (usually 512 up to 8192, in case there's no support for 2D texture arrays it's 0)
-		uint32_t			maximumUniformBufferSize;						///< Maximum uniform buffer (UBO) size in bytes (usually at least 4096 *16 bytes, in case there's no support for uniform buffer it's 0)
 		uint32_t			maximumTextureBufferSize;						///< Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
 		uint32_t			maximumIndirectBufferSize;						///< Maximum indirect buffer size in bytes
+		uint32_t			maximumUniformBufferSize;						///< Maximum uniform buffer (UBO) size in bytes (usually at least 4096 *16 bytes, in case there's no support for uniform buffer it's 0)
 		uint8_t				maximumNumberOfMultisamples;					///< Maximum number of multisamples (always at least 1, usually 8)
 		uint8_t				maximumAnisotropy;								///< Maximum anisotropy (always at least 1, usually 16)
 		bool				upperLeftOrigin;								///< Upper left origin (true for Vulkan, Direct3D, OpenGL with "GL_ARB_clip_control"-extension)
@@ -3665,9 +3665,9 @@ namespace Renderer
 			maximumNumberOfSimultaneousRenderTargets(0),
 			maximumTextureDimension(0),
 			maximumNumberOf2DTextureArraySlices(0),
-			maximumUniformBufferSize(0),
 			maximumTextureBufferSize(0),
 			maximumIndirectBufferSize(0),
+			maximumUniformBufferSize(0),
 			maximumNumberOfMultisamples(1),
 			maximumAnisotropy(1),
 			upperLeftOrigin(true),
@@ -3740,12 +3740,12 @@ namespace Renderer
 			std::atomic<uint32_t> numberOfCreatedIndexBuffers;					///< Number of created index buffer object (IBO, input-assembler (IA) stage) instances
 			std::atomic<uint32_t> currentNumberOfVertexBuffers;					///< Current number of vertex buffer object (VBO, input-assembler (IA) stage) instances
 			std::atomic<uint32_t> numberOfCreatedVertexBuffers;					///< Number of created vertex buffer object (VBO, input-assembler (IA) stage) instances
-			std::atomic<uint32_t> currentNumberOfUniformBuffers;				///< Current number of uniform buffer object (UBO, "constant buffer" in Direct3D terminology) instances
-			std::atomic<uint32_t> numberOfCreatedUniformBuffers;				///< Number of created uniform buffer object (UBO, "constant buffer" in Direct3D terminology) instances
 			std::atomic<uint32_t> currentNumberOfTextureBuffers;				///< Current number of texture buffer object (TBO) instances
 			std::atomic<uint32_t> numberOfCreatedTextureBuffers;				///< Number of created texture buffer object (TBO) instances
 			std::atomic<uint32_t> currentNumberOfIndirectBuffers;				///< Current number of indirect buffer object instances
 			std::atomic<uint32_t> numberOfCreatedIndirectBuffers;				///< Number of created indirect buffer object instances
+			std::atomic<uint32_t> currentNumberOfUniformBuffers;				///< Current number of uniform buffer object (UBO, "constant buffer" in Direct3D terminology) instances
+			std::atomic<uint32_t> numberOfCreatedUniformBuffers;				///< Number of created uniform buffer object (UBO, "constant buffer" in Direct3D terminology) instances
 			// ITexture
 			std::atomic<uint32_t> currentNumberOfTexture1Ds;					///< Current number of texture 1D instances
 			std::atomic<uint32_t> numberOfCreatedTexture1Ds;					///< Number of created texture 1D instances
@@ -3805,12 +3805,12 @@ namespace Renderer
 				numberOfCreatedIndexBuffers(0),
 				currentNumberOfVertexBuffers(0),
 				numberOfCreatedVertexBuffers(0),
-				currentNumberOfUniformBuffers(0),
-				numberOfCreatedUniformBuffers(0),
 				currentNumberOfTextureBuffers(0),
 				numberOfCreatedTextureBuffers(0),
 				currentNumberOfIndirectBuffers(0),
 				numberOfCreatedIndirectBuffers(0),
+				currentNumberOfUniformBuffers(0),
+				numberOfCreatedUniformBuffers(0),
 				// ITexture
 				currentNumberOfTexture1Ds(0),
 				numberOfCreatedTexture1Ds(0),
@@ -3876,9 +3876,9 @@ namespace Renderer
 						// IBuffer
 						currentNumberOfIndexBuffers +
 						currentNumberOfVertexBuffers +
-						currentNumberOfUniformBuffers +
 						currentNumberOfTextureBuffers +
 						currentNumberOfIndirectBuffers +
+						currentNumberOfUniformBuffers +
 						// ITexture
 						currentNumberOfTexture1Ds +
 						currentNumberOfTexture2Ds +
@@ -3927,9 +3927,9 @@ namespace Renderer
 				// IBuffer
 				RENDERER_LOG(context, INFORMATION, "Index buffers: %d", currentNumberOfIndexBuffers.load())
 				RENDERER_LOG(context, INFORMATION, "Vertex buffers: %d", currentNumberOfVertexBuffers.load())
-				RENDERER_LOG(context, INFORMATION, "Uniform buffers: %d", currentNumberOfUniformBuffers.load())
 				RENDERER_LOG(context, INFORMATION, "Texture buffers: %d", currentNumberOfTextureBuffers.load())
 				RENDERER_LOG(context, INFORMATION, "Indirect buffers: %d", currentNumberOfIndirectBuffers.load())
+				RENDERER_LOG(context, INFORMATION, "Uniform buffers: %d", currentNumberOfUniformBuffers.load())
 
 				// ITexture
 				RENDERER_LOG(context, INFORMATION, "1D textures: %d", currentNumberOfTexture1Ds.load())
@@ -4002,9 +4002,9 @@ namespace Renderer
 		friend class IFramebuffer;
 		friend class IIndexBuffer;
 		friend class IVertexBuffer;
-		friend class IUniformBuffer;
 		friend class ITextureBuffer;
 		friend class IIndirectBuffer;
+		friend class IUniformBuffer;
 		friend class ITexture1D;
 		friend class ITexture2D;
 		friend class ITexture2DArray;
@@ -5809,26 +5809,6 @@ namespace Renderer
 
 		/**
 		*  @brief
-		*    Create an uniform buffer object (UBO, "constant buffer" in Direct3D terminology) instance
-		*
-		*  @param[in] numberOfBytes
-		*    Number of bytes within the uniform buffer, must be valid
-		*  @param[in] data
-		*    Uniform buffer data, can be a null pointer (empty buffer), the data is internally copied and you have to free your memory if you no longer need it
-		*  @param[in] bufferUsage
-		*    Indication of the buffer usage
-		*
-		*  @return
-		*    The created UBO instance, null pointer on error. Release the returned instance if you no longer need it.
-		*
-		*  @note
-		*    - Only supported if "Renderer::Capabilities::maximumUniformBufferSize" is >0
-		*    - There are no buffer flags by intent since an uniform buffer can't be used for unordered access and as a consequence an uniform buffer must always used as shader resource to not be pointless
-		*/
-		virtual IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, BufferUsage bufferUsage = BufferUsage::STATIC_DRAW) = 0;
-
-		/**
-		*  @brief
 		*    Create an texture buffer object (TBO) instance
 		*
 		*  @param[in] numberOfBytes
@@ -5870,6 +5850,26 @@ namespace Renderer
 		*    - Only supported if "Renderer::Capabilities::maximumIndirectBufferSize" is >0
 		*/
 		virtual IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, BufferUsage bufferUsage = BufferUsage::STATIC_DRAW) = 0;
+
+		/**
+		*  @brief
+		*    Create an uniform buffer object (UBO, "constant buffer" in Direct3D terminology) instance
+		*
+		*  @param[in] numberOfBytes
+		*    Number of bytes within the uniform buffer, must be valid
+		*  @param[in] data
+		*    Uniform buffer data, can be a null pointer (empty buffer), the data is internally copied and you have to free your memory if you no longer need it
+		*  @param[in] bufferUsage
+		*    Indication of the buffer usage
+		*
+		*  @return
+		*    The created UBO instance, null pointer on error. Release the returned instance if you no longer need it.
+		*
+		*  @note
+		*    - Only supported if "Renderer::Capabilities::maximumUniformBufferSize" is >0
+		*    - There are no buffer flags by intent since an uniform buffer can't be used for unordered access and as a consequence an uniform buffer must always used as shader resource to not be pointless
+		*/
+		virtual IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, BufferUsage bufferUsage = BufferUsage::STATIC_DRAW) = 0;
 
 	// Protected methods
 	protected:
@@ -6125,83 +6125,17 @@ namespace Renderer
 
 
 	//[-------------------------------------------------------]
-	//[ Renderer/Buffer/IUniformBuffer.h                      ]
-	//[-------------------------------------------------------]
-	/**
-	*  @brief
-	*    Abstract uniform buffer object (UBO, "constant buffer" in Direct3D terminology) interface
-	*
-	*  @remarks
-	*    General usage hint
-	*      - Maximum size:                 64KByte (or more)
-	*      - Memory access pattern:        Coherent access
-	*      - Memory storage:               Usually local memory
-	*    OpenGL - http://www.opengl.org/wiki/Uniform_Buffer_Object
-	*      - Core in version:              4.2
-	*      - Adopted into core in version: 3.1
-	*      - ARB extension:                GL_ARB_Uniform_Buffer_Object
-	*    Direct3D - "Shader Constants"-documentation - http://msdn.microsoft.com/en-us/library/windows/desktop/bb509581%28v=vs.85%29.aspx
-	*      - Direct3D version:             10 and 11
-	*      - Shader model:                 4
-	*/
-	class IUniformBuffer : public IBuffer
-	{
-
-	// Public methods
-	public:
-		/**
-		*  @brief
-		*    Destructor
-		*/
-		inline virtual ~IUniformBuffer() override
-		{
-			#ifdef RENDERER_STATISTICS
-				// Update the statistics
-				--getRenderer().getStatistics().currentNumberOfUniformBuffers;
-			#endif
-		}
-
-	// Protected methods
-	protected:
-		/**
-		*  @brief
-		*    Constructor
-		*
-		*  @param[in] renderer
-		*    Owner renderer instance
-		*/
-		inline explicit IUniformBuffer(IRenderer& renderer) :
-			IBuffer(ResourceType::UNIFORM_BUFFER, renderer)
-		{
-			#ifdef RENDERER_STATISTICS
-				// Update the statistics
-				++getRenderer().getStatistics().numberOfCreatedUniformBuffers;
-				++getRenderer().getStatistics().currentNumberOfUniformBuffers;
-			#endif
-		}
-
-		explicit IUniformBuffer(const IUniformBuffer& source) = delete;
-		IUniformBuffer& operator =(const IUniformBuffer& source) = delete;
-
-	};
-
-	typedef SmartRefCount<IUniformBuffer> IUniformBufferPtr;
-
-
-
-
-	//[-------------------------------------------------------]
 	//[ Renderer/Buffer/ITextureBuffer.h                      ]
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    Abstract texture buffer object (TBO) interface
+	*    Abstract texture buffer object (TBO) interface; array of homogeneous data
 	*
 	*  @remarks
 	*    General usage hint
 	*      - Maximum size:                 128MByte (or more)
 	*      - Memory access pattern:        Random access
-	*      - Memory storage:               Global texture memory
+	*      - Memory storage:               Global texture memory which is considered to be slower than local memory
 	*    OpenGL - http://www.opengl.org/wiki/Buffer_Texture
 	*      - Core in version:              4.2
 	*      - Adopted into core in version: 3.0
@@ -6262,7 +6196,7 @@ namespace Renderer
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    Abstract indirect buffer object interface
+	*    Abstract indirect buffer object interface; array of draw call data
 	*
 	*  @note
 	*    - Contains instances of "Renderer::DrawInstancedArguments" and "Renderer::DrawIndexedInstancedArguments"
@@ -6333,6 +6267,72 @@ namespace Renderer
 	};
 
 	typedef SmartRefCount<IIndirectBuffer> IIndirectBufferPtr;
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ Renderer/Buffer/IUniformBuffer.h                      ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Abstract uniform buffer object (UBO, "constant buffer" in Direct3D terminology) interface; read only structured buffer
+	*
+	*  @remarks
+	*    General usage hint
+	*      - Maximum size:                 64KByte (or more)
+	*      - Memory access pattern:        Coherent access
+	*      - Memory storage:               Usually local memory which is considered to be faster than global memory
+	*    OpenGL - http://www.opengl.org/wiki/Uniform_Buffer_Object
+	*      - Core in version:              4.2
+	*      - Adopted into core in version: 3.1
+	*      - ARB extension:                GL_ARB_Uniform_Buffer_Object
+	*    Direct3D - "Shader Constants"-documentation - http://msdn.microsoft.com/en-us/library/windows/desktop/bb509581%28v=vs.85%29.aspx
+	*      - Direct3D version:             10 and 11
+	*      - Shader model:                 4
+	*/
+	class IUniformBuffer : public IBuffer
+	{
+
+	// Public methods
+	public:
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~IUniformBuffer() override
+		{
+			#ifdef RENDERER_STATISTICS
+				// Update the statistics
+				--getRenderer().getStatistics().currentNumberOfUniformBuffers;
+			#endif
+		}
+
+	// Protected methods
+	protected:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] renderer
+		*    Owner renderer instance
+		*/
+		inline explicit IUniformBuffer(IRenderer& renderer) :
+			IBuffer(ResourceType::UNIFORM_BUFFER, renderer)
+		{
+			#ifdef RENDERER_STATISTICS
+				// Update the statistics
+				++getRenderer().getStatistics().numberOfCreatedUniformBuffers;
+				++getRenderer().getStatistics().currentNumberOfUniformBuffers;
+			#endif
+		}
+
+		explicit IUniformBuffer(const IUniformBuffer& source) = delete;
+		IUniformBuffer& operator =(const IUniformBuffer& source) = delete;
+
+	};
+
+	typedef SmartRefCount<IUniformBuffer> IUniformBufferPtr;
 
 
 

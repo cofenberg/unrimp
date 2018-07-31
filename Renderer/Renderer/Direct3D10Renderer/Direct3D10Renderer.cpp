@@ -3579,157 +3579,6 @@ namespace Direct3D10Renderer
 
 
 	//[-------------------------------------------------------]
-	//[ Direct3D10Renderer/Buffer/UniformBuffer.h             ]
-	//[-------------------------------------------------------]
-	/**
-	*  @brief
-	*    Direct3D 10 uniform buffer object (UBO, "constant buffer" in Direct3D terminology) interface
-	*/
-	class UniformBuffer final : public Renderer::IUniformBuffer
-	{
-
-
-	//[-------------------------------------------------------]
-	//[ Public methods                                        ]
-	//[-------------------------------------------------------]
-	public:
-		/**
-		*  @brief
-		*    Constructor
-		*
-		*  @param[in] direct3D10Renderer
-		*    Owner Direct3D 10 renderer instance
-		*  @param[in] numberOfBytes
-		*    Number of bytes within the uniform buffer, must be valid
-		*  @param[in] data
-		*    Uniform buffer data, can be a null pointer (empty buffer)
-		*  @param[in] bufferUsage
-		*    Indication of the buffer usage
-		*/
-		UniformBuffer(Direct3D10Renderer& direct3D10Renderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage) :
-			Renderer::IUniformBuffer(direct3D10Renderer),
-			mD3D10Buffer(nullptr)
-		{
-			{ // Sanity check
-				// Check the given number of bytes, if we don't do this we might get told
-				//   "... the ByteWidth (value = <x>) must be a multiple of 16 and be less than or equal to 65536"
-				// by Direct3D 10
-				const uint32_t leftOverBytes = (numberOfBytes % 16);
-				if (0 != leftOverBytes)
-				{
-					// Fix the byte alignment, no assert because other renderer APIs have another alignment (DirectX 12 e.g. 256)
-					numberOfBytes += 16 - (numberOfBytes % 16);
-				}
-			}
-
-			// Direct3D 10 buffer description
-			D3D10_BUFFER_DESC d3d10BufferDesc;
-			d3d10BufferDesc.ByteWidth		 = numberOfBytes;
-			d3d10BufferDesc.Usage			 = Mapping::getDirect3D10UsageAndCPUAccessFlags(bufferUsage, d3d10BufferDesc.CPUAccessFlags);
-			d3d10BufferDesc.BindFlags		 = D3D10_BIND_CONSTANT_BUFFER;
-			//d3d10BufferDesc.CPUAccessFlags = <filled above>;
-			d3d10BufferDesc.MiscFlags		 = 0;
-
-			// Data given?
-			if (nullptr != data)
-			{
-				// Direct3D 10 subresource data
-				D3D10_SUBRESOURCE_DATA d3d10SubresourceData;
-				d3d10SubresourceData.pSysMem          = data;
-				d3d10SubresourceData.SysMemPitch      = 0;
-				d3d10SubresourceData.SysMemSlicePitch = 0;
-
-				// Create the Direct3D 10 constant buffer
-				FAILED_DEBUG_BREAK(direct3D10Renderer.getD3D10Device()->CreateBuffer(&d3d10BufferDesc, &d3d10SubresourceData, &mD3D10Buffer));
-			}
-			else
-			{
-				// Create the Direct3D 10 constant buffer
-				FAILED_DEBUG_BREAK(direct3D10Renderer.getD3D10Device()->CreateBuffer(&d3d10BufferDesc, nullptr, &mD3D10Buffer));
-			}
-
-			// Assign a default name to the resource for debugging purposes
-			#ifdef RENDERER_DEBUG
-				setDebugName("");
-			#endif
-		}
-
-		/**
-		*  @brief
-		*    Destructor
-		*/
-		virtual ~UniformBuffer() override
-		{
-			// Release the Direct3D 10 constant buffer
-			if (nullptr != mD3D10Buffer)
-			{
-				mD3D10Buffer->Release();
-			}
-		}
-
-		/**
-		*  @brief
-		*    Return the Direct3D 10 constant buffer instance
-		*
-		*  @return
-		*    The Direct3D 10 constant buffer instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
-		*/
-		inline ID3D10Buffer* getD3D10Buffer() const
-		{
-			return mD3D10Buffer;
-		}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual Renderer::IResource methods            ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RENDERER_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Set the debug name
-				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D10Buffer)
-				{
-					RENDERER_DECORATED_DEBUG_NAME(name, detailedName, "UBO", 6);	// 6 = "UBO: " including terminating zero!
-					FAILED_DEBUG_BREAK(mD3D10Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D10Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
-				}
-			}
-		#endif
-
-
-	//[-------------------------------------------------------]
-	//[ Protected virtual Renderer::RefCount methods          ]
-	//[-------------------------------------------------------]
-	protected:
-		inline virtual void selfDestruct() override
-		{
-			RENDERER_DELETE(getRenderer().getContext(), UniformBuffer, this);
-		}
-
-
-	//[-------------------------------------------------------]
-	//[ Private methods                                       ]
-	//[-------------------------------------------------------]
-	private:
-		explicit UniformBuffer(const UniformBuffer& source) = delete;
-		UniformBuffer& operator =(const UniformBuffer& source) = delete;
-
-
-	//[-------------------------------------------------------]
-	//[ Private data                                          ]
-	//[-------------------------------------------------------]
-	private:
-		ID3D10Buffer* mD3D10Buffer;	///< Direct3D 10 constant buffer instance, can be a null pointer
-
-
-	};
-
-
-
-
-	//[-------------------------------------------------------]
 	//[ Direct3D10Renderer/Buffer/TextureBuffer.h             ]
 	//[-------------------------------------------------------]
 	/**
@@ -4036,6 +3885,157 @@ namespace Direct3D10Renderer
 
 
 	//[-------------------------------------------------------]
+	//[ Direct3D10Renderer/Buffer/UniformBuffer.h             ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Direct3D 10 uniform buffer object (UBO, "constant buffer" in Direct3D terminology) interface
+	*/
+	class UniformBuffer final : public Renderer::IUniformBuffer
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] direct3D10Renderer
+		*    Owner Direct3D 10 renderer instance
+		*  @param[in] numberOfBytes
+		*    Number of bytes within the uniform buffer, must be valid
+		*  @param[in] data
+		*    Uniform buffer data, can be a null pointer (empty buffer)
+		*  @param[in] bufferUsage
+		*    Indication of the buffer usage
+		*/
+		UniformBuffer(Direct3D10Renderer& direct3D10Renderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage) :
+			Renderer::IUniformBuffer(direct3D10Renderer),
+			mD3D10Buffer(nullptr)
+		{
+			{ // Sanity check
+				// Check the given number of bytes, if we don't do this we might get told
+				//   "... the ByteWidth (value = <x>) must be a multiple of 16 and be less than or equal to 65536"
+				// by Direct3D 10
+				const uint32_t leftOverBytes = (numberOfBytes % 16);
+				if (0 != leftOverBytes)
+				{
+					// Fix the byte alignment, no assert because other renderer APIs have another alignment (DirectX 12 e.g. 256)
+					numberOfBytes += 16 - (numberOfBytes % 16);
+				}
+			}
+
+			// Direct3D 10 buffer description
+			D3D10_BUFFER_DESC d3d10BufferDesc;
+			d3d10BufferDesc.ByteWidth		 = numberOfBytes;
+			d3d10BufferDesc.Usage			 = Mapping::getDirect3D10UsageAndCPUAccessFlags(bufferUsage, d3d10BufferDesc.CPUAccessFlags);
+			d3d10BufferDesc.BindFlags		 = D3D10_BIND_CONSTANT_BUFFER;
+			//d3d10BufferDesc.CPUAccessFlags = <filled above>;
+			d3d10BufferDesc.MiscFlags		 = 0;
+
+			// Data given?
+			if (nullptr != data)
+			{
+				// Direct3D 10 subresource data
+				D3D10_SUBRESOURCE_DATA d3d10SubresourceData;
+				d3d10SubresourceData.pSysMem          = data;
+				d3d10SubresourceData.SysMemPitch      = 0;
+				d3d10SubresourceData.SysMemSlicePitch = 0;
+
+				// Create the Direct3D 10 constant buffer
+				FAILED_DEBUG_BREAK(direct3D10Renderer.getD3D10Device()->CreateBuffer(&d3d10BufferDesc, &d3d10SubresourceData, &mD3D10Buffer));
+			}
+			else
+			{
+				// Create the Direct3D 10 constant buffer
+				FAILED_DEBUG_BREAK(direct3D10Renderer.getD3D10Device()->CreateBuffer(&d3d10BufferDesc, nullptr, &mD3D10Buffer));
+			}
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RENDERER_DEBUG
+				setDebugName("");
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~UniformBuffer() override
+		{
+			// Release the Direct3D 10 constant buffer
+			if (nullptr != mD3D10Buffer)
+			{
+				mD3D10Buffer->Release();
+			}
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D 10 constant buffer instance
+		*
+		*  @return
+		*    The Direct3D 10 constant buffer instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*/
+		inline ID3D10Buffer* getD3D10Buffer() const
+		{
+			return mD3D10Buffer;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		#ifdef RENDERER_DEBUG
+			virtual void setDebugName(const char* name) override
+			{
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
+				if (nullptr != mD3D10Buffer)
+				{
+					RENDERER_DECORATED_DEBUG_NAME(name, detailedName, "UBO", 6);	// 6 = "UBO: " including terminating zero!
+					FAILED_DEBUG_BREAK(mD3D10Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D10Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
+				}
+			}
+		#endif
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), UniformBuffer, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit UniformBuffer(const UniformBuffer& source) = delete;
+		UniformBuffer& operator =(const UniformBuffer& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		ID3D10Buffer* mD3D10Buffer;	///< Direct3D 10 constant buffer instance, can be a null pointer
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ Direct3D10Renderer/Buffer/BufferManager.h             ]
 	//[-------------------------------------------------------]
 	/**
@@ -4089,6 +4089,16 @@ namespace Direct3D10Renderer
 			return RENDERER_NEW(getRenderer().getContext(), VertexArray)(static_cast<Direct3D10Renderer&>(getRenderer()), vertexAttributes, numberOfVertexBuffers, vertexBuffers, static_cast<IndexBuffer*>(indexBuffer));
 		}
 
+		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F) override
+		{
+			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<Direct3D10Renderer&>(getRenderer()), numberOfBytes, data, bufferFlags, bufferUsage, textureFormat);
+		}
+
+		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		{
+			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<Direct3D10Renderer&>(getRenderer()), numberOfBytes, data, indirectBufferFlags);
+		}
+
 		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			// Don't remove this reminder comment block: There are no buffer flags by intent since an uniform buffer can't be used for unordered access and as a consequence an uniform buffer must always used as shader resource to not be pointless
@@ -4098,16 +4108,6 @@ namespace Direct3D10Renderer
 
 			// Create the uniform buffer
 			return RENDERER_NEW(getRenderer().getContext(), UniformBuffer)(static_cast<Direct3D10Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
-		}
-
-		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F) override
-		{
-			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<Direct3D10Renderer&>(getRenderer()), numberOfBytes, data, bufferFlags, bufferUsage, textureFormat);
-		}
-
-		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
-		{
-			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<Direct3D10Renderer&>(getRenderer()), numberOfBytes, data, indirectBufferFlags);
 		}
 
 
@@ -10464,17 +10464,17 @@ namespace Direct3D10Renderer
 		// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 		mCapabilities.maximumNumberOf2DTextureArraySlices = 512;
 
-		// Maximum uniform buffer (UBO) size in bytes (usually at least 4096 * 16 bytes, in case there's no support for uniform buffer it's 0)
-		// -> See https://msdn.microsoft.com/en-us/library/windows/desktop/cc308052(v=vs.85).aspx - "Resource Limits (Direct3D 10)" - "Number of elements in a constant buffer 4096"
-		// -> One element = float4 = 16 bytes
-		mCapabilities.maximumUniformBufferSize = 4096 * 16;
-
 		// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
 		mCapabilities.maximumTextureBufferSize = 128 * 1024 * 1024;	// TODO(co) http://msdn.microsoft.com/en-us/library/cc308052%28VS.85%29.aspx does not mention the texture buffer? Figure out the correct size! Currently the OpenGL 3 minimum is used: 128 MiB.
 
 		// Maximum indirect buffer size in bytes
 		// -> DirectX 10 has no indirect buffer
 		mCapabilities.maximumIndirectBufferSize = 64 * 1024;	// 64 KiB
+
+		// Maximum uniform buffer (UBO) size in bytes (usually at least 4096 * 16 bytes, in case there's no support for uniform buffer it's 0)
+		// -> See https://msdn.microsoft.com/en-us/library/windows/desktop/cc308052(v=vs.85).aspx - "Resource Limits (Direct3D 10)" - "Number of elements in a constant buffer 4096"
+		// -> One element = float4 = 16 bytes
+		mCapabilities.maximumUniformBufferSize = 4096 * 16;
 
 		// Maximum number of multisamples (always at least 1, usually 8)
 		// TODO(co) Currently Direct3D 10 instead of Direct3D 10.1 is used causing

@@ -4950,115 +4950,6 @@ namespace VulkanRenderer
 
 
 	//[-------------------------------------------------------]
-	//[ VulkanRenderer/UniformBuffer.h                        ]
-	//[-------------------------------------------------------]
-	/**
-	*  @brief
-	*    Vulkan uniform buffer object (UBO, "constant buffer" in Direct3D terminology) interface
-	*/
-	class UniformBuffer final : public Renderer::IUniformBuffer
-	{
-
-
-	//[-------------------------------------------------------]
-	//[ Public methods                                        ]
-	//[-------------------------------------------------------]
-	public:
-		/**
-		*  @brief
-		*    Constructor
-		*
-		*  @param[in] vulkanRenderer
-		*    Owner Vulkan renderer instance
-		*  @param[in] numberOfBytes
-		*    Number of bytes within the uniform buffer, must be valid
-		*  @param[in] data
-		*    Uniform buffer data, can be a null pointer (empty buffer)
-		*  @param[in] bufferUsage
-		*    Indication of the buffer usage
-		*/
-		UniformBuffer(VulkanRenderer& vulkanRenderer, uint32_t numberOfBytes, const void* data, MAYBE_UNUSED Renderer::BufferUsage bufferUsage) :
-			IUniformBuffer(vulkanRenderer),
-			mVkBuffer(VK_NULL_HANDLE),
-			mVkDeviceMemory(VK_NULL_HANDLE)
-		{
-			Helper::createAndAllocateVkBuffer(vulkanRenderer, static_cast<VkBufferUsageFlagBits>(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, numberOfBytes, data, mVkBuffer, mVkDeviceMemory);
-			SET_DEFAULT_DEBUG_NAME	// setDebugName("");
-		}
-
-		/**
-		*  @brief
-		*    Destructor
-		*/
-		inline virtual ~UniformBuffer() override
-		{
-			Helper::destroyAndFreeVkBuffer(static_cast<const VulkanRenderer&>(getRenderer()), mVkBuffer, mVkDeviceMemory);
-		}
-
-		/**
-		*  @brief
-		*    Return the Vulkan uniform buffer
-		*
-		*  @return
-		*    The Vulkan uniform buffer
-		*/
-		inline VkBuffer getVkBuffer() const
-		{
-			return mVkBuffer;
-		}
-
-		/**
-		*  @brief
-		*    Return the Vulkan device memory
-		*
-		*  @return
-		*    The Vulkan device memory
-		*/
-		inline VkDeviceMemory getVkDeviceMemory() const
-		{
-			return mVkDeviceMemory;
-		}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual Renderer::IResource methods            ]
-	//[-------------------------------------------------------]
-	public:
-		DEFINE_SET_DEBUG_NAME_VKBUFFER_VKDEVICEMEMORY("UBO", 6)
-
-
-	//[-------------------------------------------------------]
-	//[ Protected virtual Renderer::RefCount methods          ]
-	//[-------------------------------------------------------]
-	protected:
-		inline virtual void selfDestruct() override
-		{
-			RENDERER_DELETE(getRenderer().getContext(), UniformBuffer, this);
-		}
-
-
-	//[-------------------------------------------------------]
-	//[ Private methods                                       ]
-	//[-------------------------------------------------------]
-	private:
-		explicit UniformBuffer(const UniformBuffer& source) = delete;
-		UniformBuffer& operator =(const UniformBuffer& source) = delete;
-
-
-	//[-------------------------------------------------------]
-	//[ Private data                                          ]
-	//[-------------------------------------------------------]
-	private:
-		VkBuffer	   mVkBuffer;		///< Vulkan uniform buffer
-		VkDeviceMemory mVkDeviceMemory;	///< Vulkan uniform memory
-
-
-	};
-
-
-
-
-	//[-------------------------------------------------------]
 	//[ VulkanRenderer/TextureBuffer.h                        ]
 	//[-------------------------------------------------------]
 	/**
@@ -5365,6 +5256,115 @@ namespace VulkanRenderer
 
 
 	//[-------------------------------------------------------]
+	//[ VulkanRenderer/UniformBuffer.h                        ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Vulkan uniform buffer object (UBO, "constant buffer" in Direct3D terminology) interface
+	*/
+	class UniformBuffer final : public Renderer::IUniformBuffer
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] vulkanRenderer
+		*    Owner Vulkan renderer instance
+		*  @param[in] numberOfBytes
+		*    Number of bytes within the uniform buffer, must be valid
+		*  @param[in] data
+		*    Uniform buffer data, can be a null pointer (empty buffer)
+		*  @param[in] bufferUsage
+		*    Indication of the buffer usage
+		*/
+		UniformBuffer(VulkanRenderer& vulkanRenderer, uint32_t numberOfBytes, const void* data, MAYBE_UNUSED Renderer::BufferUsage bufferUsage) :
+			IUniformBuffer(vulkanRenderer),
+			mVkBuffer(VK_NULL_HANDLE),
+			mVkDeviceMemory(VK_NULL_HANDLE)
+		{
+			Helper::createAndAllocateVkBuffer(vulkanRenderer, static_cast<VkBufferUsageFlagBits>(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, numberOfBytes, data, mVkBuffer, mVkDeviceMemory);
+			SET_DEFAULT_DEBUG_NAME	// setDebugName("");
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~UniformBuffer() override
+		{
+			Helper::destroyAndFreeVkBuffer(static_cast<const VulkanRenderer&>(getRenderer()), mVkBuffer, mVkDeviceMemory);
+		}
+
+		/**
+		*  @brief
+		*    Return the Vulkan uniform buffer
+		*
+		*  @return
+		*    The Vulkan uniform buffer
+		*/
+		inline VkBuffer getVkBuffer() const
+		{
+			return mVkBuffer;
+		}
+
+		/**
+		*  @brief
+		*    Return the Vulkan device memory
+		*
+		*  @return
+		*    The Vulkan device memory
+		*/
+		inline VkDeviceMemory getVkDeviceMemory() const
+		{
+			return mVkDeviceMemory;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		DEFINE_SET_DEBUG_NAME_VKBUFFER_VKDEVICEMEMORY("UBO", 6)
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), UniformBuffer, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit UniformBuffer(const UniformBuffer& source) = delete;
+		UniformBuffer& operator =(const UniformBuffer& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		VkBuffer	   mVkBuffer;		///< Vulkan uniform buffer
+		VkDeviceMemory mVkDeviceMemory;	///< Vulkan uniform memory
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ VulkanRenderer/BufferManager.h                        ]
 	//[-------------------------------------------------------]
 	/**
@@ -5417,6 +5417,16 @@ namespace VulkanRenderer
 			return RENDERER_NEW(getRenderer().getContext(), VertexArray)(static_cast<VulkanRenderer&>(getRenderer()), vertexAttributes, numberOfVertexBuffers, vertexBuffers, static_cast<IndexBuffer*>(indexBuffer));
 		}
 
+		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F) override
+		{
+			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, data, bufferFlags, bufferUsage, textureFormat);
+		}
+
+		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		{
+			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, data, indirectBufferFlags, bufferUsage);
+		}
+
 		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			// Don't remove this reminder comment block: There are no buffer flags by intent since an uniform buffer can't be used for unordered access and as a consequence an uniform buffer must always used as shader resource to not be pointless
@@ -5427,16 +5437,6 @@ namespace VulkanRenderer
 
 			// Create the uniform buffer
 			return RENDERER_NEW(getRenderer().getContext(), UniformBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
-		}
-
-		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F) override
-		{
-			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, data, bufferFlags, bufferUsage, textureFormat);
-		}
-
-		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
-		{
-			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, data, indirectBufferFlags, bufferUsage);
 		}
 
 
