@@ -2491,8 +2491,8 @@ namespace Renderer
 		{
 			UNORDERED_ACCESS				 = 1 << 0,	///< This indirect buffer can be used for unordered access which is needed for compute shader read/write indirect buffers (when using Direct3D 11 a unordered access view (UAV) will be generated)
 			SHADER_RESOURCE					 = 1 << 1,	///< This indirect buffer can be used as shader resource (when using Direct3D 11 a shader resource view (SRV) will be generated)
-			DRAW_INSTANCED_ARGUMENTS		 = 1 << 2,	///< This indirect buffer contains "Renderer::DrawInstancedArguments" as elements
-			DRAW_INDEXED_INSTANCED_ARGUMENTS = 1 << 3	///< This indirect buffer contains "Renderer::DrawIndexedInstancedArguments" as elements
+			DRAW_INSTANCED_ARGUMENTS		 = 1 << 2,	///< This indirect buffer contains "Renderer::DrawInstancedArguments" as elements, if "Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS" is set it's invalid to have "Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS" set as well
+			DRAW_INDEXED_INSTANCED_ARGUMENTS = 1 << 3	///< This indirect buffer contains "Renderer::DrawIndexedInstancedArguments" as elements, if "Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS" is set it's invalid to have "Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS" set as well
 		};
 	};
 
@@ -5864,7 +5864,7 @@ namespace Renderer
 		*    Indication of the buffer usage
 		*
 		*  @return
-		*    The created UBO instance, null pointer on error. Release the returned instance if you no longer need it.
+		*    The created indirect buffer instance, null pointer on error. Release the returned instance if you no longer need it.
 		*
 		*  @note
 		*    - Only supported if "Renderer::Capabilities::maximumIndirectBufferSize" is >0
