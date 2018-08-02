@@ -7470,6 +7470,9 @@ namespace OpenGLRenderer
 
 		virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t = Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F) override
 		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), (numberOfBytes % Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat)) == 0, "The OpenGL texture buffer size must be a multiple of the selected texture format bytes per texel")
+
 			// "GL_ARB_texture_buffer_object" required
 			if (mExtensions->isGL_ARB_texture_buffer_object())
 			{
@@ -7494,6 +7497,10 @@ namespace OpenGLRenderer
 
 		virtual Renderer::IStructuredBuffer* createStructuredBuffer(uint32_t numberOfBytes, const void* data, MAYBE_UNUSED uint32_t bufferFlags, Renderer::BufferUsage bufferUsage, uint32_t numberOfStructureBytes) override
 		{
+			// Sanity checks
+			RENDERER_ASSERT(getRenderer().getContext(), (numberOfBytes % numberOfStructureBytes) == 0, "The OpenGL structured buffer size must be a multiple of the given number of structure bytes")
+			RENDERER_ASSERT(getRenderer().getContext(), (numberOfBytes % (sizeof(float) * 4)) == 0, "Performance: The OpenGL structured buffer should be aligned to a 128-bit stride, see \"Understanding Structured Buffer Performance\" by Evan Hart, posted Apr 17 2015 at 11:33AM - https://developer.nvidia.com/content/understanding-structured-buffer-performance")
+
 			// "GL_ARB_shader_storage_buffer_object" required
 			if (mExtensions->isGL_ARB_shader_storage_buffer_object())
 			{

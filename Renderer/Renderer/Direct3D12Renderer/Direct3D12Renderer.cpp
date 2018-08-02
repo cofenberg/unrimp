@@ -4994,12 +4994,15 @@ namespace Direct3D12Renderer
 		*  @param[in] textureFormat
 		*    Texture buffer data format
 		*/
-		TextureBuffer(Direct3D12Renderer& direct3D12Renderer, MAYBE_UNUSED uint32_t numberOfBytes, MAYBE_UNUSED const void* data, MAYBE_UNUSED Renderer::BufferUsage bufferUsage, MAYBE_UNUSED Renderer::TextureFormat::Enum textureFormatS) :
+		TextureBuffer(Direct3D12Renderer& direct3D12Renderer, MAYBE_UNUSED uint32_t numberOfBytes, MAYBE_UNUSED const void* data, MAYBE_UNUSED Renderer::BufferUsage bufferUsage, MAYBE_UNUSED Renderer::TextureFormat::Enum textureFormat) :
 			ITextureBuffer(direct3D12Renderer)
 			// TODO(co) Direct3D 12 update
 		//	mD3D12Buffer(nullptr),
 		//	mD3D12ShaderResourceViewTexture(nullptr)
 		{
+			// Sanity check
+			RENDERER_ASSERT(direct3D12Renderer.getContext(), (numberOfBytes % Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat)) == 0, "The Direct3D 12 texture buffer size must be a multiple of the selected texture format bytes per texel")
+
 			// TODO(co) Direct3D 12 update
 			/*
 			{ // Buffer part
@@ -5195,6 +5198,10 @@ namespace Direct3D12Renderer
 		//	mD3D12Buffer(nullptr),
 		//	mD3D12ShaderResourceViewTexture(nullptr)
 		{
+			// Sanity checks
+			RENDERER_ASSERT(direct3D12Renderer.getContext(), (numberOfBytes % numberOfStructureBytes) == 0, "The Direct3D 12 structured buffer size must be a multiple of the given number of structure bytes")
+			RENDERER_ASSERT(direct3D12Renderer.getContext(), (numberOfBytes % (sizeof(float) * 4)) == 0, "Performance: The Direct3D 12 structured buffer should be aligned to a 128-bit stride, see \"Understanding Structured Buffer Performance\" by Evan Hart, posted Apr 17 2015 at 11:33AM - https://developer.nvidia.com/content/understanding-structured-buffer-performance")
+
 			// TODO(co) Direct3D 12 update
 			/*
 			{ // Buffer part

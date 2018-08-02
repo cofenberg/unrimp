@@ -4988,6 +4988,10 @@ namespace VulkanRenderer
 			mVkDeviceMemory(VK_NULL_HANDLE),
 			mVkBufferView(VK_NULL_HANDLE)
 		{
+			// Sanity check
+			RENDERER_ASSERT(vulkanRenderer.getContext(), (numberOfBytes % Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat)) == 0, "The Vulkan texture buffer size must be a multiple of the selected texture format bytes per texel")
+
+			// Create the texture buffer
 			uint32_t vkBufferUsageFlagBits = 0;
 			if (bufferFlags & Renderer::BufferFlag::SHADER_RESOURCE)
 			{
@@ -5158,6 +5162,11 @@ namespace VulkanRenderer
 			mVkBuffer(VK_NULL_HANDLE),
 			mVkDeviceMemory(VK_NULL_HANDLE)
 		{
+			// Sanity checks
+			RENDERER_ASSERT(vulkanRenderer.getContext(), (numberOfBytes % numberOfStructureBytes) == 0, "The Vulkan structured buffer size must be a multiple of the given number of structure bytes")
+			RENDERER_ASSERT(vulkanRenderer.getContext(), (numberOfBytes % (sizeof(float) * 4)) == 0, "Performance: The Vulkan structured buffer should be aligned to a 128-bit stride, see \"Understanding Structured Buffer Performance\" by Evan Hart, posted Apr 17 2015 at 11:33AM - https://developer.nvidia.com/content/understanding-structured-buffer-performance")
+
+			// Create the structured buffer
 			Helper::createAndAllocateVkBuffer(vulkanRenderer, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, numberOfBytes, data, mVkBuffer, mVkDeviceMemory);
 			SET_DEFAULT_DEBUG_NAME	// setDebugName("");
 		}

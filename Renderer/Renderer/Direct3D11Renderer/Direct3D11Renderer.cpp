@@ -4489,6 +4489,9 @@ namespace Direct3D11Renderer
 			mD3D11ShaderResourceView(nullptr),
 			mD3D11UnorderedAccessView(nullptr)
 		{
+			// Sanity check
+			RENDERER_ASSERT(direct3D11Renderer.getContext(), (numberOfBytes % Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat)) == 0, "The Direct3D 11 texture buffer size must be a multiple of the selected texture format bytes per texel")
+
 			{ // Buffer part
 				// Direct3D 11 buffer description
 				D3D11_BUFFER_DESC d3d11BufferDesc;
@@ -4728,6 +4731,10 @@ namespace Direct3D11Renderer
 			mD3D11ShaderResourceView(nullptr),
 			mD3D11UnorderedAccessView(nullptr)
 		{
+			// Sanity checks
+			RENDERER_ASSERT(direct3D11Renderer.getContext(), (numberOfBytes % numberOfStructureBytes) == 0, "The Direct3D 11 structured buffer size must be a multiple of the given number of structure bytes")
+			RENDERER_ASSERT(direct3D11Renderer.getContext(), (numberOfBytes % (sizeof(float) * 4)) == 0, "Performance: The Direct3D 11 structured buffer should be aligned to a 128-bit stride, see \"Understanding Structured Buffer Performance\" by Evan Hart, posted Apr 17 2015 at 11:33AM - https://developer.nvidia.com/content/understanding-structured-buffer-performance")
+
 			{ // Buffer part
 				// Direct3D 11 buffer description
 				D3D11_BUFFER_DESC d3d11BufferDesc;

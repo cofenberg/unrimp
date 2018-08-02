@@ -1059,11 +1059,20 @@ namespace NullRenderer
 
 		inline virtual Renderer::ITextureBuffer* createTextureBuffer(MAYBE_UNUSED uint32_t numberOfBytes, MAYBE_UNUSED const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = Renderer::BufferFlag::SHADER_RESOURCE, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, MAYBE_UNUSED Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F) override
 		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), (numberOfBytes % Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat)) == 0, "The null texture buffer size must be a multiple of the selected texture format bytes per texel")
+
+			// Create the texture buffer
 			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<NullRenderer&>(getRenderer()));
 		}
 
 		inline virtual Renderer::IStructuredBuffer* createStructuredBuffer(MAYBE_UNUSED uint32_t numberOfBytes, MAYBE_UNUSED const void* data, MAYBE_UNUSED uint32_t bufferFlags, MAYBE_UNUSED Renderer::BufferUsage bufferUsage, MAYBE_UNUSED uint32_t numberOfStructureBytes) override
 		{
+			// Sanity checks
+			RENDERER_ASSERT(getRenderer().getContext(), (numberOfBytes % numberOfStructureBytes) == 0, "The null structured buffer size must be a multiple of the given number of structure bytes")
+			RENDERER_ASSERT(getRenderer().getContext(), (numberOfBytes % (sizeof(float) * 4)) == 0, "Performance: The null structured buffer should be aligned to a 128-bit stride, see \"Understanding Structured Buffer Performance\" by Evan Hart, posted Apr 17 2015 at 11:33AM - https://developer.nvidia.com/content/understanding-structured-buffer-performance")
+
+			// Create the structured buffer
 			return RENDERER_NEW(getRenderer().getContext(), StructuredBuffer)(static_cast<NullRenderer&>(getRenderer()));
 		}
 

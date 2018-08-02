@@ -3615,6 +3615,9 @@ namespace Direct3D10Renderer
 			mD3D10Buffer(nullptr),
 			mD3D10ShaderResourceView(nullptr)
 		{
+			// Sanity check
+			RENDERER_ASSERT(direct3D10Renderer.getContext(), (numberOfBytes % Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat)) == 0, "The Direct3D 10 texture buffer size must be a multiple of the selected texture format bytes per texel")
+
 			{ // Buffer part
 				// Direct3D 10 buffer description
 				D3D10_BUFFER_DESC d3d10BufferDesc;
