@@ -6247,7 +6247,10 @@ namespace Renderer
 	*      - Shader model:                 5
 	*
 	*  @note
-	*    - "Understanding Structured Buffer Performance" by Evan Hart, posted Apr 17 2015 at 11:33AM - https://developer.nvidia.com/content/understanding-structured-buffer-performance
+	*    - There's no support for Direct3D 11 style "append" or "counter" structured buffer by intent since neither OpenGL nor Vulkan support something similar, use atomic shader intrinsics instead
+	*    - Structured performance tip: "Structured buffer, 128-bit stride, coherent access patterns, and under 64 KB of data = Use uniform buffer instead" - "How About Constant Buffers?" by Evan Hart, posted May 04 2015 at 11:34AM - https://developer.nvidia.com/content/how-about-constant-buffers
+	*    - Structured performance tip: "Use 128-bit stride" -- "Understanding Structured Buffer Performance" by Evan Hart, posted Apr 17 2015 at 11:33AM - https://developer.nvidia.com/content/understanding-structured-buffer-performance
+	*    - Structured performance tip: "Redundancy and Latency in Structured Buffer Use" by Evan Hart, posted Apr 30 2015 at 06:15PM - https://developer.nvidia.com/content/redundancy-and-latency-structured-buffer-use
 	*/
 	class IStructuredBuffer : public IBuffer
 	{
@@ -6394,6 +6397,9 @@ namespace Renderer
 	*    Direct3D - "Shader Constants"-documentation - http://msdn.microsoft.com/en-us/library/windows/desktop/bb509581%28v=vs.85%29.aspx
 	*      - Direct3D version:             10 and 11
 	*      - Shader model:                 4
+	*
+	*  @note
+	*    - Structured performance tip: "Constant Buffers without Constant Pain" by Holger Gruen, posted Jan 14 2015 at 10:38AM - https://developer.nvidia.com/content/constant-buffers-without-constant-pain-0
 	*/
 	class IUniformBuffer : public IBuffer
 	{

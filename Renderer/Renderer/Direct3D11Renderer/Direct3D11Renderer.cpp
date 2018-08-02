@@ -3862,7 +3862,6 @@ namespace Direct3D11Renderer
 					d3d11UnorderedAccessViewDesc.Format				= mDXGIFormat;
 					d3d11UnorderedAccessViewDesc.ViewDimension		= D3D11_UAV_DIMENSION_BUFFER;
 					d3d11UnorderedAccessViewDesc.Buffer.NumElements = numberOfBytes / Renderer::IndexBufferFormat::getNumberOfBytesPerElement(indexBufferFormat);
-					d3d11UnorderedAccessViewDesc.Buffer.Flags		= 0;	// TODO(co) Compute shader: D3D11_BUFFER_UAV_FLAG_RAW - D3D11_BUFFER_UAV_FLAG_APPEND - D3D11_BUFFER_UAV_FLAG_COUNTER
 
 					// Create the Direct3D 11 unordered access view instance
 					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateUnorderedAccessView(mD3D11Buffer, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
@@ -4115,7 +4114,7 @@ namespace Direct3D11Renderer
 				d3d11UnorderedAccessViewDesc.Format				= DXGI_FORMAT_R32_TYPELESS;
 				d3d11UnorderedAccessViewDesc.ViewDimension		= D3D11_UAV_DIMENSION_BUFFER;
 				d3d11UnorderedAccessViewDesc.Buffer.NumElements = numberOfBytes / sizeof(uint32_t);
-				d3d11UnorderedAccessViewDesc.Buffer.Flags		= D3D11_BUFFER_UAV_FLAG_RAW;	// TODO(co) Compute shader: D3D11_BUFFER_UAV_FLAG_RAW - D3D11_BUFFER_UAV_FLAG_APPEND - D3D11_BUFFER_UAV_FLAG_COUNTER
+				d3d11UnorderedAccessViewDesc.Buffer.Flags		= D3D11_BUFFER_UAV_FLAG_RAW;
 
 				// Create the Direct3D 11 unordered access view instance
 				// -> HLSL usage example: "RWByteAddressBuffer OutputVertexBuffer : register(u0);"
@@ -4554,7 +4553,6 @@ namespace Direct3D11Renderer
 				d3d11UnorderedAccessViewDesc.Format				= Mapping::getDirect3D11ShaderResourceViewFormat(textureFormat);
 				d3d11UnorderedAccessViewDesc.ViewDimension		= D3D11_UAV_DIMENSION_BUFFER;
 				d3d11UnorderedAccessViewDesc.Buffer.NumElements = numberOfBytes / Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat);
-				d3d11UnorderedAccessViewDesc.Buffer.Flags		= 0;	// TODO(co) Compute shader: D3D11_BUFFER_UAV_FLAG_RAW - D3D11_BUFFER_UAV_FLAG_APPEND - D3D11_BUFFER_UAV_FLAG_COUNTER
 
 				// Create the Direct3D 11 unordered access view instance
 				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateUnorderedAccessView(mD3D11Buffer, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
@@ -4793,11 +4791,11 @@ namespace Direct3D11Renderer
 			if (bufferFlags & Renderer::BufferFlag::UNORDERED_ACCESS)
 			{
 				// Direct3D 11 unordered access view description
+				// -> There's no support for Direct3D 11 style "append" ("D3D11_BUFFER_UAV_FLAG_APPEND") or "counter" ("D3D11_BUFFER_UAV_FLAG_COUNTER") structured buffer by intent since neither OpenGL nor Vulkan support something similar, use atomic shader intrinsics instead
 				D3D11_UNORDERED_ACCESS_VIEW_DESC d3d11UnorderedAccessViewDesc = {};
 				d3d11UnorderedAccessViewDesc.Format				= DXGI_FORMAT_UNKNOWN;
 				d3d11UnorderedAccessViewDesc.ViewDimension		= D3D11_UAV_DIMENSION_BUFFER;
 				d3d11UnorderedAccessViewDesc.Buffer.NumElements	= numberOfBytes / numberOfStructureBytes;
-				d3d11UnorderedAccessViewDesc.Buffer.Flags		= 0;	// TODO(co) Compute shader: D3D11_BUFFER_UAV_FLAG_RAW - D3D11_BUFFER_UAV_FLAG_APPEND - D3D11_BUFFER_UAV_FLAG_COUNTER
 
 				// Create the Direct3D 11 unordered access view instance
 				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateUnorderedAccessView(mD3D11Buffer, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
@@ -5074,7 +5072,6 @@ namespace Direct3D11Renderer
 				d3d11UnorderedAccessViewDesc.Format				= DXGI_FORMAT_R32_UINT;
 				d3d11UnorderedAccessViewDesc.ViewDimension		= D3D11_UAV_DIMENSION_BUFFER;
 				d3d11UnorderedAccessViewDesc.Buffer.NumElements = numberOfBytes / sizeof(uint32_t);
-				d3d11UnorderedAccessViewDesc.Buffer.Flags		= 0;	// TODO(co) Compute shader: D3D11_BUFFER_UAV_FLAG_RAW - D3D11_BUFFER_UAV_FLAG_APPEND - D3D11_BUFFER_UAV_FLAG_COUNTER
 
 				// Create the Direct3D 11 unordered access view instance
 				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateUnorderedAccessView(mD3D11Buffer, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
