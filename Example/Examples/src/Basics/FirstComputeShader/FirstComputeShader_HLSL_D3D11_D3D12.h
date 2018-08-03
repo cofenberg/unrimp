@@ -169,7 +169,7 @@ RWStructuredBuffer<Vertex> OutputStructuredBuffer : register(u1);
 RWBuffer<uint>			   OutputIndirectBuffer   : register(u2);
 
 // Programs
-[numthreads(1, 1, 1)]
+[numthreads(3, 1, 1)]
 void main(uint3 dispatchThreadId : SV_DispatchThreadID)
 {
 	// Output buffer
@@ -190,12 +190,22 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID)
 		// Output indirect buffer values (draw calls)
 		// -> Using a structured indirect buffer would be handy inside shader source codes, sadly this isn't possible with Direct3D 11 and will result in the following error:
 		//    "D3D11 ERROR: ID3D11Device::CreateBuffer: A resource cannot created with both D3D11_RESOURCE_MISC_DRAWINDIRECT_ARGS and D3D11_RESOURCE_MISC_BUFFER_STRUCTURED. [ STATE_CREATION ERROR #68: CREATEBUFFER_INVALIDMISCFLAGS]"
-		OutputIndirectBuffer[0] = inputIndirectBuffer[0];	// Renderer::DrawIndexedInstancedArguments::indexCountPerInstance
+	//	OutputIndirectBuffer[0] = inputIndirectBuffer[0];	// Renderer::DrawIndexedInstancedArguments::indexCountPerInstance	- Filled by compute shader via atomics counting
 		OutputIndirectBuffer[1] = inputIndirectBuffer[1];	// Renderer::DrawIndexedInstancedArguments::instanceCount
 		OutputIndirectBuffer[2] = inputIndirectBuffer[2];	// Renderer::DrawIndexedInstancedArguments::startIndexLocation
 		OutputIndirectBuffer[3] = inputIndirectBuffer[3];	// Renderer::DrawIndexedInstancedArguments::baseVertexLocation
 		OutputIndirectBuffer[4] = inputIndirectBuffer[4];	// Renderer::DrawIndexedInstancedArguments::startInstanceLocation
 	}
+
+	// Atomics for counting usage example
+	// -> Change '[numthreads(3, 1, 1)]' into '[numthreads(2, 1, 1)]' and if the triangle is gone you know the counter reset worked
+	if (0 == dispatchThreadId.x)
+	{
+		// Reset the counter on first invocation
+		uint originalValue;
+		InterlockedExchange(OutputIndirectBuffer[0], 0, originalValue);
+	}
+	InterlockedAdd(OutputIndirectBuffer[0], 1);
 }
 )";
 

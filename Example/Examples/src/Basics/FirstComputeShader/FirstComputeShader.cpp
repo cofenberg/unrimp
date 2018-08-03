@@ -166,7 +166,7 @@ void FirstComputeShader::onInitialization()
 			{ // Create the indirect buffer which will be read by a compute shader
 				const Renderer::DrawIndexedInstancedArguments drawIndexedInstancedArguments =
 				{
-					3, // indexCountPerInstance (uint32_t)
+					0, // indexCountPerInstance (uint32_t)	- Filled by compute shader via atomics counting
 					1, // instanceCount (uint32_t)
 					0, // startIndexLocation (uint32_t)
 					0, // baseVertexLocation (int32_t)

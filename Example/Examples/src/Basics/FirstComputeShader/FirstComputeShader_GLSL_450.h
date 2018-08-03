@@ -197,7 +197,7 @@ layout(std430, set = 0, binding = 5) writeonly buffer OutputIndirectBuffer
 };
 
 // Programs
-layout (local_size_x = 1, local_size_y = 1) in;
+layout (local_size_x = 3, local_size_y = 1) in;
 void main()
 {
 	// Output buffer
@@ -216,8 +216,21 @@ void main()
 		}
 
 		// Output indirect buffer values (draw calls)
-		outputDrawIndexedInstancedArguments = inputDrawIndexedInstancedArguments;
+		// outputDrawIndexedInstancedArguments.indexCountPerInstance = inputDrawIndexedInstancedArguments.indexCountPerInstance;	- Filled by compute shader via atomics counting
+		outputDrawIndexedInstancedArguments.instanceCount		  = inputDrawIndexedInstancedArguments.instanceCount;
+		outputDrawIndexedInstancedArguments.startIndexLocation	  = inputDrawIndexedInstancedArguments.startIndexLocation;
+		outputDrawIndexedInstancedArguments.baseVertexLocation	  = inputDrawIndexedInstancedArguments.baseVertexLocation;
+		outputDrawIndexedInstancedArguments.startInstanceLocation = inputDrawIndexedInstancedArguments.startInstanceLocation;
 	}
+
+	// Atomics for counting usage example
+	// -> Change 'layout (local_size_x = 3, local_size_y = 1) in;' into 'layout (local_size_x = 1, local_size_y = 1) in;' and if the triangle is gone you know the counter reset worked
+	if (0 == gl_GlobalInvocationID.x)
+	{
+		// Reset the counter on first invocation
+		atomicExchange(outputDrawIndexedInstancedArguments.indexCountPerInstance, 0);
+	}
+	atomicAdd(outputDrawIndexedInstancedArguments.indexCountPerInstance, 1);
 }
 )";
 
