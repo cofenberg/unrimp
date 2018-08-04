@@ -48,12 +48,12 @@ struct PassDataStruct
 	float4x4 ViewSpaceToClipSpaceMatrix;
 	float4   HosekWilkieSkyCoefficients1[4];
 	float4   HosekWilkieSkyCoefficients2[4];
+	float4	 WindDirectionStrength;
 	float3   WorldSpaceSunlightDirection;
 	float    GlobalTimeInSeconds;
-	float2   ViewportSize;
-	float	 CloudsIntensity;
-	float	 WindSpeed;
 	float3   SunlightColor;
+	float	 CloudsIntensity;
+	float2   ViewportSize;
 };
 UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
 	PassDataStruct PassData;
@@ -160,9 +160,9 @@ MAIN_BEGIN
 				texCoord.xz = normalize(texCoord).xz;
 				float horizonFade = SATURATE(pow(abs(texCoord.y), 1.0f));
 				float sunIntensity = (1.0f - PassData.WorldSpaceSunlightDirection.y) * SATURATE(dot(PassData.WorldSpaceSunlightDirection, MAIN_INPUT(TexCoordVS)));
-				float speed = PassData.GlobalTimeInSeconds * PassData.WindSpeed;
-				float cloudsIntensity = PassData.CloudsIntensity * horizonFade * SAMPLE_2D(CloudsMap, SamplerLinearWrap, texCoord.xz + float2(0.1f, 0.3f) * speed).r;
-				cloudsIntensity *= horizonFade * SAMPLE_2D(CloudsMap, SamplerLinearWrap, texCoord.xz + float2(0.35f, 0.45f) * speed).r;
+				float strength = PassData.GlobalTimeInSeconds * PassData.WindDirectionStrength.w;
+				float cloudsIntensity = PassData.CloudsIntensity * horizonFade * SAMPLE_2D(CloudsMap, SamplerLinearWrap, texCoord.xz + float2(0.1f, 0.3f) * strength).r;
+				cloudsIntensity *= horizonFade * SAMPLE_2D(CloudsMap, SamplerLinearWrap, texCoord.xz + float2(0.35f, 0.45f) * strength).r;
 
 				// Color mixing basing on Shadertoy "Canyon" by Inigo Quilez ( https://www.shadertoy.com/view/MdBGzG )
 				float3 cloudsColor = LERP(float3(0.4f, 0.5f, 0.6f), float3(1.3f, 0.6f, 0.4f), pow(sunIntensity, 2.0f)) * (0.5f + 0.5f * cloudsIntensity);

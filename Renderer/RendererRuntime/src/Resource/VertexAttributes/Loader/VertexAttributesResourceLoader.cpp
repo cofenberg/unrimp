@@ -24,6 +24,7 @@
 #include "RendererRuntime/Resource/VertexAttributes/Loader/VertexAttributesResourceLoader.h"
 #include "RendererRuntime/Resource/VertexAttributes/Loader/VertexAttributesFileFormat.h"
 #include "RendererRuntime/Resource/VertexAttributes/VertexAttributesResource.h"
+#include "RendererRuntime/Resource/Scene/Item/Grass/GrassSceneItem.h"
 #include "RendererRuntime/Resource/Scene/Item/Terrain/TerrainSceneItem.h"
 #include "RendererRuntime/Resource/Scene/Item/Particles/ParticlesSceneItem.h"
 #include "RendererRuntime/Resource/Mesh/MeshResource.h"
@@ -148,6 +149,10 @@ namespace RendererRuntime
 		else if (STRING_ID("Example/VertexAttributes/Default/Particles") == getAsset().assetId)
 		{
 			mVertexAttributesResource->mVertexAttributes = Renderer::VertexAttributes(ParticlesSceneItem::VERTEX_ATTRIBUTES.numberOfAttributes, ParticlesSceneItem::VERTEX_ATTRIBUTES.attributes);
+		}
+		else if (STRING_ID("Example/VertexAttributes/Default/Grass") == getAsset().assetId)
+		{
+			mVertexAttributesResource->mVertexAttributes = Renderer::VertexAttributes(GrassSceneItem::VERTEX_ATTRIBUTES.numberOfAttributes, GrassSceneItem::VERTEX_ATTRIBUTES.attributes);
 		}
 		else if (STRING_ID("Example/VertexAttributes/Default/Terrain") == getAsset().assetId)
 		{

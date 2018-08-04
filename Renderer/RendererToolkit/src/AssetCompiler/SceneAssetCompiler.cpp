@@ -34,9 +34,10 @@
 #include <RendererRuntime/Core/File/MemoryFile.h>
 #include <RendererRuntime/Core/File/FileSystemHelper.h>
 #include <RendererRuntime/Resource/Scene/Item/Sky/SkySceneItem.h>
+#include <RendererRuntime/Resource/Scene/Item/Grass/GrassSceneItem.h>
+#include <RendererRuntime/Resource/Scene/Item/Terrain/TerrainSceneItem.h>
 #include <RendererRuntime/Resource/Scene/Item/Camera/CameraSceneItem.h>
 #include <RendererRuntime/Resource/Scene/Item/Light/SunlightSceneItem.h>
-#include <RendererRuntime/Resource/Scene/Item/Terrain/TerrainSceneItem.h>
 #include <RendererRuntime/Resource/Scene/Item/Particles/ParticlesSceneItem.h>
 #include <RendererRuntime/Resource/Scene/Item/Mesh/SkeletonMeshSceneItem.h>
 #include <RendererRuntime/Resource/Scene/Loader/SceneFileFormat.h>
@@ -315,6 +316,7 @@ namespace RendererToolkit
 									}
 
 									case RendererRuntime::SkySceneItem::TYPE_ID:
+									case RendererRuntime::GrassSceneItem::TYPE_ID:
 									case RendererRuntime::TerrainSceneItem::TYPE_ID:
 									case RendererRuntime::ParticlesSceneItem::TYPE_ID:
 										::detail::fillSortedMaterialPropertyVector(input, rapidJsonValueItem, sortedMaterialPropertyVector);
@@ -460,6 +462,21 @@ namespace RendererToolkit
 
 											// Write down
 											memoryFile.write(&skyItem, sizeof(RendererRuntime::v1Scene::SkyItem));
+											if (!sortedMaterialPropertyVector.empty())
+											{
+												// Write down all material properties
+												memoryFile.write(sortedMaterialPropertyVector.data(), sizeof(RendererRuntime::MaterialProperty) * sortedMaterialPropertyVector.size());
+											}
+											break;
+										}
+
+										case RendererRuntime::GrassSceneItem::TYPE_ID:
+										{
+											RendererRuntime::v1Scene::GrassItem grassItem;
+											::detail::readMaterialSceneItem(input, sortedMaterialPropertyVector, rapidJsonValueItem, grassItem);
+
+											// Write down
+											memoryFile.write(&grassItem, sizeof(RendererRuntime::v1Scene::GrassItem));
 											if (!sortedMaterialPropertyVector.empty())
 											{
 												// Write down all material properties

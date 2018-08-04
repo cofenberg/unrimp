@@ -23,9 +23,10 @@
 //[-------------------------------------------------------]
 #include "RendererRuntime/Resource/Scene/Factory/SceneFactory.h"
 #include "RendererRuntime/Resource/Scene/Item/Sky/SkySceneItem.h"
+#include "RendererRuntime/Resource/Scene/Item/Grass/GrassSceneItem.h"
+#include "RendererRuntime/Resource/Scene/Item/Terrain/TerrainSceneItem.h"
 #include "RendererRuntime/Resource/Scene/Item/Camera/CameraSceneItem.h"
 #include "RendererRuntime/Resource/Scene/Item/Light/SunlightSceneItem.h"
-#include "RendererRuntime/Resource/Scene/Item/Terrain/TerrainSceneItem.h"
 #include "RendererRuntime/Resource/Scene/Item/Particles/ParticlesSceneItem.h"
 #include "RendererRuntime/Resource/Scene/Item/Mesh/SkeletonMeshSceneItem.h"
 
@@ -57,6 +58,7 @@ namespace RendererRuntime
 			CASE_VALUE(CameraSceneItem)
 			CASE_VALUE(SunlightSceneItem)
 			CASE_VALUE(SkySceneItem)
+			CASE_VALUE(GrassSceneItem)
 			CASE_VALUE(TerrainSceneItem)
 		}
 

@@ -127,8 +127,7 @@ namespace RendererRuntime
 		assert(isValid(parentMaterialResourceId));
 
 		// Each material user instance must have its own material resource since material property values might vary
-		const IRendererRuntime& rendererRuntime = getSceneResource().getRendererRuntime();
-		MaterialResourceManager& materialResourceManager = rendererRuntime.getMaterialResourceManager();
+		MaterialResourceManager& materialResourceManager = getSceneResource().getRendererRuntime().getMaterialResourceManager();
 		mMaterialResourceId = materialResourceManager.createMaterialResourceByCloning(parentMaterialResourceId);
 
 		{ // Set material properties

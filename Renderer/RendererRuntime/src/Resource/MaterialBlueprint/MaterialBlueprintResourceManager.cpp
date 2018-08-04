@@ -295,6 +295,10 @@ namespace RendererRuntime
 	{
 		const TimeManager& timeManager = mRendererRuntime.getTimeManager();
 		mGlobalMaterialProperties.setPropertyById(STRING_ID("GlobalPastSecondsSinceLastFrame"), MaterialPropertyValue::fromFloat(timeManager.getPastSecondsSinceLastFrame()));
+		{ // Set previous global time in seconds
+			const MaterialProperty* materialProperty = mGlobalMaterialProperties.getPropertyById(STRING_ID("GlobalTimeInSeconds"));
+			mGlobalMaterialProperties.setPropertyById(STRING_ID("PreviousGlobalTimeInSeconds"), (nullptr != materialProperty) ? *materialProperty : MaterialPropertyValue::fromFloat(timeManager.getGlobalTimeInSeconds()));
+		}
 		mGlobalMaterialProperties.setPropertyById(STRING_ID("GlobalTimeInSeconds"), MaterialPropertyValue::fromFloat(timeManager.getGlobalTimeInSeconds()));
 	}
 

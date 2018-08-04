@@ -287,7 +287,7 @@ void FirstScene::onUpdate()
 			globalMaterialProperties.setPropertyById(STRING_ID("GlobalTessellatedTriangleWidth"), RendererRuntime::MaterialPropertyValue::fromFloat(static_cast<float>(mTerrainTessellatedTriangleWidth)));
 			// Environment
 			globalMaterialProperties.setPropertyById(STRING_ID("GlobalCloudsIntensity"), RendererRuntime::MaterialPropertyValue::fromFloat(mCloudsIntensity));
-			globalMaterialProperties.setPropertyById(STRING_ID("GlobalWindSpeed"), RendererRuntime::MaterialPropertyValue::fromFloat(mWindSpeed));
+			globalMaterialProperties.setPropertyById(STRING_ID("GlobalWindDirectionStrength"), RendererRuntime::MaterialPropertyValue::fromFloat4(1.0f, 0.0f, 0.0f, mWindSpeed));
 			globalMaterialProperties.setPropertyById(STRING_ID("GlobalUseWetSurfaces"), RendererRuntime::MaterialPropertyValue::fromBoolean(mWetSurfaces[0] > 0.0f));
 			globalMaterialProperties.setPropertyById(STRING_ID("GlobalWetSurfaces"), RendererRuntime::MaterialPropertyValue::fromFloat4(mWetSurfaces));
 		}

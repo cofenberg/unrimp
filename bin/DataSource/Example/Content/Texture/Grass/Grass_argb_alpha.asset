@@ -1,0 +1,26 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"AssetMetadata":
+		{
+			"AssetType": "Texture",
+			"AssetCategory": "Grass",
+			"Copyright": "Copied from https://github.com/turanszkij/WickedEngine/blob/master/models/Sample/textures/grassbb.png"
+		},
+		"TextureAssetCompiler":
+		{
+			"TextureSemantic": "PACKED_CHANNELS",
+			"TextureChannelPacking": "_argb_alpha",
+			"InputFiles":
+			{
+				"ALBEDO_MAP": "Grass_argb.png",
+				"ALPHA_MAP": "Grass_alpha.png"
+			}
+		}
+	}
+}

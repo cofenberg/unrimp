@@ -124,6 +124,7 @@
 #include "src/Resource/Scene/Item/Particles/ParticlesSceneItem.cpp"
 #include "src/Resource/Scene/Item/Sky/HosekWilkieSky.cpp"
 #include "src/Resource/Scene/Item/Sky/SkySceneItem.cpp"
+#include "src/Resource/Scene/Item/Grass/GrassSceneItem.cpp"
 #include "src/Resource/Scene/Item/Terrain/TerrainSceneItem.cpp"
 #include "src/Resource/Scene/Loader/SceneResourceLoader.cpp"
 #include "src/Resource/ShaderBlueprint/ShaderBlueprintResourceManager.cpp"

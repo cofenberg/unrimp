@@ -23,53 +23,75 @@
 //[-------------------------------------------------------]
 @includepiece($ProjectName/ShaderPiece/Core.asset)
 	@insertpiece(SetCrossPlatformSettings)
+@includepiece($ProjectName/ShaderPiece/MotionBlur.asset)
 
 
 //[-------------------------------------------------------]
 //[ Input / output                                        ]
 //[-------------------------------------------------------]
 // Attribute input / output
-INPUT_BEGIN_VERTEX
-	INPUT_VERTEX_POSITION(0, float3, Position)	// Object space vertex position
-INPUT_END_VERTEX
-OUTPUT_BEGIN_VERTEX
-	OUTPUT_TEXTURE_COORDINATE(1, float3, TexCoordVS,				  0)	// Texture coordinate
-	OUTPUT_TEXTURE_COORDINATE(2, float3, PreviousClipSpacePositionVS, 1)	// Previous clip space position
-	OUTPUT_POSITION			 (0)											// Clip space vertex position as output, left/bottom is (-1,-1) and right/top is (1,1)
-OUTPUT_END_VERTEX
+INPUT_BEGIN
+	INPUT_TEXTURE_COORDINATE(1, float3, TexCoordDepthVS,			 0)	// xy = texture coordinate, z = grass depth
+	INPUT_TEXTURE_COORDINATE(2, float4, ColorVS,					 1)	// Color
+	INPUT_TEXTURE_COORDINATE(3, float3, PreviousClipSpacePositionVS, 2)	// Previous clip space position
+	INPUT_TEXTURE_COORDINATE(4, float3, ViewSpaceNormalVS,			 3)	// View space normal
+	DECLARE_FRAGMENT_POSITION
+INPUT_END
+OUTPUT_BEGIN
+	OUTPUT_COLOR(0)	// rgb = albedo color, a = alpha
+	OUTPUT_COLOR(1)	// rgb = view space normal, a = roughness
+	OUTPUT_COLOR(2)	// rg  = screen space velocity
+OUTPUT_END
 
 // Uniform buffers
 struct PassDataStruct
 {
-	float4x4 WorldSpaceToViewSpaceMatrix;
+	float4x4 WorldSpaceToViewSpaceMatrix[2];
+	float4x4 ViewSpaceToClipSpaceMatrix[2];
 	float4x4 PreviousWorldSpaceToViewSpaceMatrix;
-	float4x4 ViewSpaceToClipSpaceMatrix;
-	float4   HosekWilkieSkyCoefficients1[4];
-	float4   HosekWilkieSkyCoefficients2[4];
-	float4	 WindDirectionStrength;
-	float3   WorldSpaceSunlightDirection;
-	float    GlobalTimeInSeconds;
-	float3   SunlightColor;
-	float	 CloudsIntensity;
+	float4	 WorldSpaceToViewSpaceQuaternion;
+	float4	 WindDirectionStrength;	// xyz = normalized wind direction vector, w = wind strength
 	float2   ViewportSize;
+	float2   InverseViewportSize;
+	float2	 ProjectionParameters;
+	float    GlobalTimeInSeconds;
+	float    PreviousGlobalTimeInSeconds;
+	float	 GrassWindHeightFactor;
 };
 UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
 	PassDataStruct PassData;
 UNIFORM_BUFFER_END
 
+// Textures
+TEXTURE_2D(1, 0, _argb_alpha, 0)
+TEXTURE_2D(1, 1, DepthMap, 1)	// TODO(co) Light and shadow
+
+// Samplers
+SAMPLER_STATE(2, 0, SamplerLinear, 0)
+SAMPLER_STATE(2, 1, SamplerPointClamp, 1)	// TODO(co) Light and shadow
+
 
 //[-------------------------------------------------------]
 //[ Main                                                  ]
 //[-------------------------------------------------------]
-MAIN_BEGIN_VERTEX
-	// Rotate into view-space, centered on the camera
-	float3 viewSpacePosition = (MATRIX_MUL(CAST_TO(PassData.WorldSpaceToViewSpaceMatrix, float3x3), MAIN_INPUT(Position))).xyz;
-	float3 previousPiewSpacePosition = (MATRIX_MUL(CAST_TO(PassData.PreviousWorldSpaceToViewSpaceMatrix, float3x3), MAIN_INPUT(Position))).xyz;
+MAIN_BEGIN
+	// Fetch texel
+	float4 color = SAMPLE_2D(_argb_alpha, SamplerLinear, MAIN_INPUT(TexCoordDepthVS).xy);
 
-	// Transform to clip-space
-	MAIN_OUTPUT_POSITION = MATRIX_MUL(PassData.ViewSpaceToClipSpaceMatrix, float4(viewSpacePosition, 1.0f));
-	MAIN_OUTPUT(PreviousClipSpacePositionVS) = MATRIX_MUL(PassData.ViewSpaceToClipSpaceMatrix, float4(previousPiewSpacePosition, 1.0f)).xyw;
+	// Apply grass color
+	color *= MAIN_INPUT(ColorVS);
 
-	// Pass through the object space position as texture coordinate
-	MAIN_OUTPUT(TexCoordVS) = MAIN_INPUT(Position);
-MAIN_END_VERTEX(MAIN_OUTPUT_POSITION)
+	// TODO(co) Light and shadow
+
+	// TODO(co)
+	float3 viewSpaceNormal = MAIN_INPUT(ViewSpaceNormalVS);
+	float roughness = 0.5f;
+
+	// Calculate screen space velocity
+	@insertpiece(DefineCalculateScreenSpaceVelocity)
+
+	// Done
+	MAIN_OUTPUT_COLOR(0) = color;
+	MAIN_OUTPUT_COLOR(1) = float4(viewSpaceNormal, roughness);
+	MAIN_OUTPUT_COLOR(2) = float4(velocity.x, velocity.y, 0.0f, 0.0f);
+MAIN_END

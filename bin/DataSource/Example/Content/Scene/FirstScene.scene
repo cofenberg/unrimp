@@ -48,6 +48,14 @@
 							"WorldPosition": "1000.0 -43.1 400.0",
 							"WorldSize": "4096.0 200.0 4096.0"
 						}
+					},
+					"GrassSceneItem":
+					{
+						"Material": "$ProjectName/Material/Base/Grass.asset",
+						"SetMaterialProperties":
+						{
+							"_argb_alpha": "$ProjectName/Texture/Grass/Grass_argb_alpha.asset"
+						}
 					}
 				}
 			},

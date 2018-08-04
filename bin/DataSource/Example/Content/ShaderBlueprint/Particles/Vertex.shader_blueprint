@@ -58,25 +58,27 @@ UNIFORM_BUFFER_END
 //[ Main                                                  ]
 //[-------------------------------------------------------]
 MAIN_BEGIN_VERTEX
-	// TODO(co) Just a test, later on controlled by particle data
-	float particleRotation = PassData.GlobalTimeInSeconds;
+	// Six vertices per particle, particle index = instance index
+	float3 VERTICES[6];
+	VERTICES[0] = float3(-1.0f, -1.0f, 0.0f);	// 0
+	VERTICES[1] = float3( 1.0f, -1.0f, 0.0f);	// 1
+	VERTICES[2] = float3(-1.0f,  1.0f, 0.0f);	// 2
+	VERTICES[3] = float3(-1.0f,  1.0f, 0.0f);	// 3
+	VERTICES[4] = float3( 1.0f, -1.0f, 0.0f);	// 4
+	VERTICES[5] = float3( 1.0f,  1.0f, 0.0f);	// 5
 
 	// Get view space vertex position and texture coordinate
-	// -> Six vertices per particle, particle index = instance index
-	float3 BILLBOARD[6];
-	BILLBOARD[0] = float3(-1.0f, -1.0f, 0.0f);	// 0
-	BILLBOARD[1] = float3( 1.0f, -1.0f, 0.0f);	// 1
-	BILLBOARD[2] = float3(-1.0f,  1.0f, 0.0f);	// 2
-	BILLBOARD[3] = float3(-1.0f,  1.0f, 0.0f);	// 3
-	BILLBOARD[4] = float3( 1.0f, -1.0f, 0.0f);	// 4
-	BILLBOARD[5] = float3( 1.0f,  1.0f, 0.0f);	// 5
-	float3 viewSpacePosition = BILLBOARD[MAIN_INPUT_VERTEX_ID];
+	float3 viewSpacePosition = VERTICES[MAIN_INPUT_VERTEX_ID];
 	float2 uv = viewSpacePosition.xy * float2(0.5f, 0.5f) + float2(0.5f, 0.5f);
 
-	// Rotate the billboard clockwise
-	float2x2 rotationMatrix = ROW_MATRIX_2x2(float2(cos(particleRotation), -sin(particleRotation)),
-											 float2(sin(particleRotation),  cos(particleRotation)));
-	viewSpacePosition.xy = MATRIX_MUL(viewSpacePosition.xy, rotationMatrix);
+	{ // Rotate the billboard clockwise
+		// TODO(co) Just a test, later on controlled by particle data
+		float particleRotation = PassData.GlobalTimeInSeconds;
+
+		float2x2 rotationMatrix = ROW_MATRIX_2x2(float2(cos(particleRotation), -sin(particleRotation)),
+												 float2(sin(particleRotation),  cos(particleRotation)));
+		viewSpacePosition.xy = MATRIX_MUL(viewSpacePosition.xy, rotationMatrix);
+	}
 
 	// Scale the billboard
 	viewSpacePosition *= MAIN_INPUT(PositionSize).w;
