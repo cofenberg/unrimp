@@ -28,8 +28,7 @@
 //[ Includes                                              ]
 //[-------------------------------------------------------]
 #include "RendererRuntime/Core/Manager.h"
-#include "RendererRuntime/Core/Platform/PlatformTypes.h"
-#include "RendererRuntime/Resource/ShaderBlueprint/ShaderType.h"
+#include "RendererRuntime/Resource/ShaderBlueprint/GraphicsShaderType.h"
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -51,8 +50,9 @@ namespace RendererRuntime
 {
 	class IFile;
 	class ShaderCache;
-	class PipelineStateSignature;
 	class MaterialBlueprintResource;
+	class ComputePipelineStateSignature;
+	class GraphicsPipelineStateSignature;
 	class ShaderBlueprintResourceManager;
 }
 
@@ -79,7 +79,7 @@ namespace RendererRuntime
 	*    Shader cache manager
 	*
 	*  @see
-	*    - See "RendererRuntime::PipelineStateCacheManager" for additional information
+	*    - See "RendererRuntime::GraphicsPipelineStateCacheManager" and "RendererRuntime::ComputePipelineStateCacheManager" for additional information
 	*/
 	class ShaderCacheManager final : private Manager
 	{
@@ -89,7 +89,8 @@ namespace RendererRuntime
 	//[ Friends                                               ]
 	//[-------------------------------------------------------]
 		friend class ShaderBlueprintResourceManager;	// Is creating and using a shader cache manager instance
-		friend class PipelineStateCompiler;				// Is tightly interacting with the shader cache manager
+		friend class GraphicsPipelineStateCompiler;		// Is tightly interacting with the shader cache manager
+		friend class ComputePipelineStateCompiler;		// Is tightly interacting with the shader cache manager
 
 
 	//[-------------------------------------------------------]
@@ -110,21 +111,37 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Get shader cache by pipeline state signature and shader type; synchronous processing
+		*    Get shader cache by graphics pipeline state signature and shader type; synchronous processing
 		*
-		*  @param[in] pipelineStateSignature
-		*    Pipeline state signature to use
+		*  @param[in] graphicsPipelineStateSignature
+		*    Graphics pipeline state signature to use
 		*  @param[in] materialBlueprintResource
 		*    Material blueprint resource
 		*  @param[in] shaderLanguage
 		*    Shader language
-		*  @param[in] shaderType
-		*    Shader type
+		*  @param[in] graphicsShaderType
+		*    Graphics shader type
 		*
 		*  @return
 		*    The shader cache, null pointer on error
 		*/
-		ShaderCache* getShaderCache(const PipelineStateSignature& pipelineStateSignature, const MaterialBlueprintResource& materialBlueprintResource, Renderer::IShaderLanguage& shaderLanguage, ShaderType shaderType);
+		ShaderCache* getGraphicsShaderCache(const GraphicsPipelineStateSignature& graphicsPipelineStateSignature, const MaterialBlueprintResource& materialBlueprintResource, Renderer::IShaderLanguage& shaderLanguage, GraphicsShaderType graphicsShaderType);
+
+		/**
+		*  @brief
+		*    Get shader cache by compute pipeline state signature and shader type; synchronous processing
+		*
+		*  @param[in] computePipelineStateSignature
+		*    Compute pipeline state signature to use
+		*  @param[in] materialBlueprintResource
+		*    Material blueprint resource
+		*  @param[in] shaderLanguage
+		*    Shader language
+		*
+		*  @return
+		*    The shader cache, null pointer on error
+		*/
+		ShaderCache* getComputeShaderCache(const ComputePipelineStateSignature& computePipelineStateSignature, const MaterialBlueprintResource& materialBlueprintResource, Renderer::IShaderLanguage& shaderLanguage);
 
 
 	//[-------------------------------------------------------]
@@ -175,7 +192,7 @@ namespace RendererRuntime
 		ShaderCacheByShaderCacheId		mShaderCacheByShaderCacheId;		///< Manages the shader cache instances
 		ShaderCacheByShaderSourceCodeId	mShaderCacheByShaderSourceCodeId;	///< Shader source code ID to shader cache ID mapping
 		bool							mCacheNeedsSaving;					///< "true" if a cache needs saving due to changes during runtime, else "false"
-		std::mutex						mMutex;								///< Mutex due to "RendererRuntime::PipelineStateCompiler" interaction, no too fine granular lock/unlock required because usually it's only asynchronous or synchronous processing, not both at one and the same time
+		std::mutex						mMutex;								///< Mutex due to "RendererRuntime::GraphicsPipelineStateCompiler" and "RendererRuntime::ComputePipelineStateCompiler" interaction, no too fine granular lock/unlock required because usually it's only asynchronous or synchronous processing, not both at one and the same time
 
 
 	};

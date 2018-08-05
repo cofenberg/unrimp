@@ -29,9 +29,10 @@
 //[-------------------------------------------------------]
 #include "RendererRuntime/Resource/Detail/IResource.h"
 #include "RendererRuntime/Resource/Material/MaterialProperties.h"
-#include "RendererRuntime/Resource/ShaderBlueprint/ShaderType.h"
+#include "RendererRuntime/Resource/ShaderBlueprint/GraphicsShaderType.h"
 #include "RendererRuntime/Resource/ShaderBlueprint/Cache/ShaderProperties.h"
-#include "RendererRuntime/Resource/MaterialBlueprint/Cache/PipelineStateCacheManager.h"
+#include "RendererRuntime/Resource/MaterialBlueprint/Cache/GraphicsPipelineStateCacheManager.h"
+#include "RendererRuntime/Resource/MaterialBlueprint/Cache/ComputePipelineStateCacheManager.h"
 
 #include <Renderer/Renderer.h>
 
@@ -91,7 +92,7 @@ namespace RendererRuntime
 	*  @note
 	*    - Automatic handling of packing rules for uniform variables (see "Reference for HLSL - Shader Models vs Shader Profiles - Shader Model 4 - Packing Rules for Constant Variables" at https://msdn.microsoft.com/en-us/library/windows/desktop/bb509632%28v=vs.85%29.aspx )
 	*    - When writing new material blueprint resources, you might want to take the packing rules for uniform variables into account for an efficient data layout
-	*    - Can be a graphics or compute material blueprint (never both)
+	*    - A material blueprint can have a compute or a graphics pipeline state, but never both at one and the same time
 	*/
 	class MaterialBlueprintResource final : public IResource
 	{
@@ -211,14 +212,26 @@ namespace RendererRuntime
 	public:
 		/**
 		*  @brief
-		*    Return the pipeline state cache manager
+		*    Return the graphics pipeline state cache manager
 		*
 		*  @return
-		*    The pipeline state cache manager
+		*    The graphics pipeline state cache manager
 		*/
-		inline PipelineStateCacheManager& getPipelineStateCacheManager()
+		inline GraphicsPipelineStateCacheManager& getGraphicsPipelineStateCacheManager()
 		{
-			return mPipelineStateCacheManager;
+			return mGraphicsPipelineStateCacheManager;
+		}
+
+		/**
+		*  @brief
+		*    Return the compute pipeline state cache manager
+		*
+		*  @return
+		*    The compute pipeline state cache manager
+		*/
+		inline ComputePipelineStateCacheManager& getComputePipelineStateCacheManager()
+		{
+			return mComputePipelineStateCacheManager;
 		}
 
 		/**
@@ -289,6 +302,9 @@ namespace RendererRuntime
 			return mRootSignaturePtr;
 		}
 
+		//[-------------------------------------------------------]
+		//[ Graphics pipeline state                               ]
+		//[-------------------------------------------------------]
 		/**
 		*  @brief
 		*    Return the graphics pipeline state
@@ -315,14 +331,35 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Return a shader blueprint resource ID
+		*    Return a graphics shader blueprint resource ID
+		*
+		*  @param[in] graphicsShaderType
+		*    Graphics shader type
 		*
 		*  @return
-		*    The requested shader blueprint resource ID, can be invalid
+		*    The requested graphics shader blueprint resource ID, can be invalid
 		*/
-		inline ShaderBlueprintResourceId getShaderBlueprintResourceId(ShaderType shaderType) const
+		inline ShaderBlueprintResourceId getGraphicsShaderBlueprintResourceId(GraphicsShaderType graphicsShaderType) const
 		{
-			return mShaderBlueprintResourceId[static_cast<uint8_t>(shaderType)];
+			return mGraphicsShaderBlueprintResourceId[static_cast<uint8_t>(graphicsShaderType)];
+		}
+
+		//[-------------------------------------------------------]
+		//[ Compute pipeline state                                ]
+		//[-------------------------------------------------------]
+		/**
+		*  @brief
+		*    Return the compute shader blueprint resource ID
+		*
+		*  @return
+		*    The requested compute shader blueprint resource ID, can be invalid
+		*
+		*  @note
+		*    - If a material blueprint resource has a valid compute shader blueprint resource ID there's no graphics pipeline
+		*/
+		inline ShaderBlueprintResourceId getComputeShaderBlueprintResourceId() const
+		{
+			return mComputeShaderBlueprintResourceId;
 		}
 
 		//[-------------------------------------------------------]
@@ -483,7 +520,7 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Create pipeline state cache instances for this material blueprint
+		*    Create graphics and compute pipeline state cache instances for this material blueprint
 		*
 		*  @param[in] mandatoryOnly
 		*    Do only create mandatory combinations?
@@ -536,14 +573,18 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		PipelineStateCacheManager		mPipelineStateCacheManager;
-		MaterialProperties				mMaterialProperties;
-		ShaderProperties				mVisualImportanceOfShaderProperties;	///< Every shader property known to the material blueprint has a visual importance entry in here
-		ShaderProperties				mMaximumIntegerValueOfShaderProperties;	///< The maximum integer value (inclusive) of a shader property
-		Renderer::IRootSignaturePtr		mRootSignaturePtr;						///< Root signature, can be a null pointer
+		GraphicsPipelineStateCacheManager mGraphicsPipelineStateCacheManager;
+		ComputePipelineStateCacheManager  mComputePipelineStateCacheManager;
+		MaterialProperties				  mMaterialProperties;
+		ShaderProperties				  mVisualImportanceOfShaderProperties;		///< Every shader property known to the material blueprint has a visual importance entry in here
+		ShaderProperties				  mMaximumIntegerValueOfShaderProperties;	///< The maximum integer value (inclusive) of a shader property
+		Renderer::IRootSignaturePtr		  mRootSignaturePtr;						///< Root signature, can be a null pointer
+		// Graphics pipeline state
 		Renderer::GraphicsPipelineState	mGraphicsPipelineState;
 		VertexAttributesResourceId		mVertexAttributesResourceId;
-		ShaderBlueprintResourceId		mShaderBlueprintResourceId[NUMBER_OF_SHADER_TYPES];
+		ShaderBlueprintResourceId		mGraphicsShaderBlueprintResourceId[NUMBER_OF_GRAPHICS_SHADER_TYPES];
+		// Compute pipeline state
+		ShaderBlueprintResourceId mComputeShaderBlueprintResourceId;
 		// Resource
 		UniformBuffers mUniformBuffers;
 		TextureBuffers mTextureBuffers;

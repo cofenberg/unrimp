@@ -144,8 +144,8 @@
 					Renderer::IShaderLanguagePtr shaderLanguage(renderer.getShaderLanguage());
 					if (nullptr != shaderLanguage)
 					{
-						// Create the program
-						Renderer::IProgramPtr program;
+						// Create the graphics program
+						Renderer::IGraphicsProgramPtr graphicsProgram;
 						{
 							// Get the shader source code (outsourced to keep an overview)
 							const char* vertexShaderSourceCode = nullptr;
@@ -164,18 +164,18 @@
 							Renderer::IFragmentShader* fragmentShader = shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode);
 							RENDERER_SET_RESOURCE_DEBUG_NAME(fragmentShader, "Compositor instance pass VR hidden area mesh FS")
 
-							// Create the program
-							program = shaderLanguage->createProgram(*mRootSignature, vertexAttributes, vertexShader, fragmentShader);
-							RENDERER_SET_RESOURCE_DEBUG_NAME(program, "Compositor instance pass VR hidden area mesh program")
+							// Create the graphics program
+							graphicsProgram = shaderLanguage->createGraphicsProgram(*mRootSignature, vertexAttributes, vertexShader, fragmentShader);
+							RENDERER_SET_RESOURCE_DEBUG_NAME(graphicsProgram, "Compositor instance pass VR hidden area mesh graphics program")
 						}
 
 						// Create the graphics pipeline state object (PSO)
-						if (nullptr != program)
+						if (nullptr != graphicsProgram)
 						{
 							// TODO(co) Render pass related update, the render pass in here is currently just a dummy so the debug compositor works
 							Renderer::IRenderPass* renderPass = renderer.createRenderPass(1, &renderer.getCapabilities().preferredSwapChainColorTextureFormat, renderer.getCapabilities().preferredSwapChainDepthStencilTextureFormat);
 
-							Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(mRootSignature, program, vertexAttributes, *renderPass);
+							Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, *renderPass);
 							graphicsPipelineState.rasterizerState.cullMode = Renderer::CullMode::NONE;
 							mGraphicsPipelineState = renderer.createGraphicsPipelineState(graphicsPipelineState);
 							RENDERER_SET_RESOURCE_DEBUG_NAME(mGraphicsPipelineState, "Compositor instance pass VR hidden area mesh PSO")

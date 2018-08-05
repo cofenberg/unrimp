@@ -171,11 +171,11 @@ namespace RendererRuntime
 							assert(nullptr != colorRenderTargetTextureSignature);
 							if (0 == usedNumberOfMultisamples)
 							{
-								usedNumberOfMultisamples = colorRenderTargetTextureSignature->getAllowMultisample() ? numberOfMultisamples : 1u;
+								usedNumberOfMultisamples = ((colorRenderTargetTextureSignature->getFlags() & RenderTargetTextureSignature::Flag::ALLOW_MULTISAMPLE) != 0) ? numberOfMultisamples : 1u;
 							}
 							else
 							{
-								assert(1 == usedNumberOfMultisamples || colorRenderTargetTextureSignature->getAllowMultisample());
+								assert(1 == usedNumberOfMultisamples || ((colorRenderTargetTextureSignature->getFlags() & RenderTargetTextureSignature::Flag::ALLOW_MULTISAMPLE) != 0));
 							}
 							colorTextureFormats[i] = colorRenderTargetTextureSignature->getTextureFormat();
 						}
@@ -188,11 +188,11 @@ namespace RendererRuntime
 						{
 							if (0 == usedNumberOfMultisamples)
 							{
-								usedNumberOfMultisamples = depthStencilRenderTargetTextureSignature->getAllowMultisample() ? numberOfMultisamples : 1u;
+								usedNumberOfMultisamples = ((depthStencilRenderTargetTextureSignature->getFlags() & RenderTargetTextureSignature::Flag::ALLOW_MULTISAMPLE) != 0) ? numberOfMultisamples : 1u;
 							}
 							else
 							{
-								assert(1 == usedNumberOfMultisamples || depthStencilRenderTargetTextureSignature->getAllowMultisample());
+								assert(1 == usedNumberOfMultisamples || ((depthStencilRenderTargetTextureSignature->getFlags() & RenderTargetTextureSignature::Flag::ALLOW_MULTISAMPLE) != 0));
 							}
 						}
 						const Renderer::TextureFormat::Enum depthStencilTextureFormat = (nullptr != depthStencilRenderTargetTextureSignature) ? depthStencilRenderTargetTextureSignature->getTextureFormat() : Renderer::TextureFormat::Enum::UNKNOWN;

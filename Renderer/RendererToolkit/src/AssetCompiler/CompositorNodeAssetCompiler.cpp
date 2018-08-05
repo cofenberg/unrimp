@@ -34,8 +34,8 @@
 #include <RendererRuntime/Core/File/FileSystemHelper.h>
 #include <RendererRuntime/Resource/Material/MaterialResourceManager.h>
 #include <RendererRuntime/Resource/CompositorNode/Loader/CompositorNodeFileFormat.h>
-#include <RendererRuntime/Resource/CompositorNode/Pass/Quad/CompositorResourcePassQuad.h>
 #include <RendererRuntime/Resource/CompositorNode/Pass/Copy/CompositorResourcePassCopy.h>
+#include <RendererRuntime/Resource/CompositorNode/Pass/Compute/CompositorResourcePassCompute.h>
 #include <RendererRuntime/Resource/CompositorNode/Pass/GenerateMipmaps/CompositorResourcePassGenerateMipmaps.h>
 #include <RendererRuntime/Resource/CompositorNode/Pass/Clear/CompositorResourcePassClear.h>
 #include <RendererRuntime/Resource/CompositorNode/Pass/DebugGui/CompositorResourcePassDebugGui.h>
@@ -141,34 +141,34 @@ namespace
 			}
 		}
 
-		void readPassQuad(const RendererToolkit::IAssetCompiler::Input& input, const RendererRuntime::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector, const rapidjson::Value& rapidJsonValuePass, bool materialDefinitionMandatory, RendererRuntime::v1CompositorNode::PassQuad& passQuad)
+		void readPassCompute(const RendererToolkit::IAssetCompiler::Input& input, const RendererRuntime::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector, const rapidjson::Value& rapidJsonValuePass, bool materialDefinitionMandatory, RendererRuntime::v1CompositorNode::PassCompute& passCompute)
 		{
 			// Set data
 			RendererRuntime::AssetId materialAssetId;
 			RendererRuntime::AssetId materialBlueprintAssetId;
 			RendererToolkit::JsonHelper::optionalCompiledAssetId(input, rapidJsonValuePass, "Material", materialAssetId);
-			RendererToolkit::JsonHelper::optionalStringIdProperty(rapidJsonValuePass, "MaterialTechnique", passQuad.materialTechniqueId);
+			RendererToolkit::JsonHelper::optionalStringIdProperty(rapidJsonValuePass, "MaterialTechnique", passCompute.materialTechniqueId);
 			RendererToolkit::JsonHelper::optionalCompiledAssetId(input, rapidJsonValuePass, "MaterialBlueprint", materialBlueprintAssetId);
-			passQuad.materialAssetId = materialAssetId;
-			passQuad.materialBlueprintAssetId = materialBlueprintAssetId;
-			passQuad.numberOfMaterialProperties = static_cast<uint32_t>(sortedMaterialPropertyVector.size());
+			passCompute.materialAssetId = materialAssetId;
+			passCompute.materialBlueprintAssetId = materialBlueprintAssetId;
+			passCompute.numberOfMaterialProperties = static_cast<uint32_t>(sortedMaterialPropertyVector.size());
 
 			// Sanity checks
-			if (materialDefinitionMandatory && RendererRuntime::isInvalid(passQuad.materialAssetId) && RendererRuntime::isInvalid(passQuad.materialBlueprintAssetId))
+			if (materialDefinitionMandatory && RendererRuntime::isInvalid(passCompute.materialAssetId) && RendererRuntime::isInvalid(passCompute.materialBlueprintAssetId))
 			{
 				throw std::runtime_error("Material asset ID or material blueprint asset ID must be defined");
 			}
-			if (RendererRuntime::isValid(passQuad.materialAssetId) && RendererRuntime::isValid(passQuad.materialBlueprintAssetId))
+			if (RendererRuntime::isValid(passCompute.materialAssetId) && RendererRuntime::isValid(passCompute.materialBlueprintAssetId))
 			{
 				throw std::runtime_error("Material asset ID is defined, but material blueprint asset ID is defined as well. Only one asset ID is allowed.");
 			}
-			if (RendererRuntime::isValid(passQuad.materialAssetId) && RendererRuntime::isInvalid(passQuad.materialTechniqueId))
+			if (RendererRuntime::isValid(passCompute.materialAssetId) && RendererRuntime::isInvalid(passCompute.materialTechniqueId))
 			{
 				throw std::runtime_error("Material asset ID is defined, but material technique is not defined");
 			}
-			if (RendererRuntime::isValid(passQuad.materialBlueprintAssetId) && RendererRuntime::isInvalid(passQuad.materialTechniqueId))
+			if (RendererRuntime::isValid(passCompute.materialBlueprintAssetId) && RendererRuntime::isInvalid(passCompute.materialTechniqueId))
 			{
-				passQuad.materialTechniqueId = RendererRuntime::MaterialResourceManager::DEFAULT_MATERIAL_TECHNIQUE_ID;
+				passCompute.materialTechniqueId = RendererRuntime::MaterialResourceManager::DEFAULT_MATERIAL_TECHNIQUE_ID;
 			}
 		}
 
@@ -320,9 +320,9 @@ namespace
 								numberOfBytes = sizeof(RendererRuntime::v1CompositorNode::PassGenerateMipmaps);
 								break;
 
-							case RendererRuntime::CompositorResourcePassQuad::TYPE_ID:
+							case RendererRuntime::CompositorResourcePassCompute::TYPE_ID:
 								fillSortedMaterialPropertyVector(input, renderTargetTextureAssetIds, rapidJsonMemberIteratorPasses->value, sortedMaterialPropertyVector);
-								numberOfBytes = static_cast<uint32_t>(sizeof(RendererRuntime::v1CompositorNode::PassQuad) + sizeof(RendererRuntime::MaterialProperty) * sortedMaterialPropertyVector.size());
+								numberOfBytes = static_cast<uint32_t>(sizeof(RendererRuntime::v1CompositorNode::PassCompute) + sizeof(RendererRuntime::MaterialProperty) * sortedMaterialPropertyVector.size());
 								break;
 
 							case RendererRuntime::CompositorResourcePassDebugGui::TYPE_ID:
@@ -456,14 +456,14 @@ namespace
 									break;
 								}
 
-								case RendererRuntime::CompositorResourcePassQuad::TYPE_ID:
+								case RendererRuntime::CompositorResourcePassCompute::TYPE_ID:
 								{
-									RendererRuntime::v1CompositorNode::PassQuad passQuad;
-									readPass(rapidJsonValuePass, passQuad);
-									readPassQuad(input, sortedMaterialPropertyVector, rapidJsonValuePass, true, passQuad);
+									RendererRuntime::v1CompositorNode::PassCompute passCompute;
+									readPass(rapidJsonValuePass, passCompute);
+									readPassCompute(input, sortedMaterialPropertyVector, rapidJsonValuePass, true, passCompute);
 
 									// Write down
-									file.write(&passQuad, sizeof(RendererRuntime::v1CompositorNode::PassQuad));
+									file.write(&passCompute, sizeof(RendererRuntime::v1CompositorNode::PassCompute));
 									if (!sortedMaterialPropertyVector.empty())
 									{
 										// Write down all material properties
@@ -477,7 +477,7 @@ namespace
 									// The material definition is not mandatory for the debug GUI, if nothing is defined the fixed build in renderer configuration resources will be used instead
 									RendererRuntime::v1CompositorNode::PassDebugGui passDebugGui;
 									readPass(rapidJsonValuePass, passDebugGui);
-									readPassQuad(input, sortedMaterialPropertyVector, rapidJsonValuePass, false, passDebugGui);
+									readPassCompute(input, sortedMaterialPropertyVector, rapidJsonValuePass, false, passDebugGui);
 
 									// Write down
 									file.write(&passDebugGui, sizeof(RendererRuntime::v1CompositorNode::PassDebugGui));
@@ -491,6 +491,51 @@ namespace
 							}
 						}
 					}
+				}
+			}
+		}
+
+		void optionalRenderTargetTexturesFlagsProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, uint8_t& flags)
+		{
+			if (rapidJsonValue.HasMember(propertyName))
+			{
+				flags = 0;
+				std::vector<std::string> flagsAsString;
+				RendererToolkit::StringHelper::splitString(rapidJsonValue[propertyName].GetString(), '|', flagsAsString);
+				if (!flagsAsString.empty())
+				{
+					// Define helper macros
+					#define IF_VALUE(name)			 if (flagAsString == #name) value = RendererRuntime::RenderTargetTextureSignature::Flag::name;
+					#define ELSE_IF_VALUE(name) else if (flagAsString == #name) value = RendererRuntime::RenderTargetTextureSignature::Flag::name;
+
+					// Evaluate flags
+					const size_t numberOfFlags = flagsAsString.size();
+					for (size_t i = 0; i < numberOfFlags; ++i)
+					{
+						// Get flag as string
+						std::string flagAsString = flagsAsString[i];
+						RendererToolkit::StringHelper::trimWhitespaceCharacters(flagAsString);
+
+						// Evaluate value
+						uint8_t value = 0;
+						IF_VALUE(UNORDERED_ACCESS)
+						ELSE_IF_VALUE(SHADER_RESOURCE)
+						ELSE_IF_VALUE(RENDER_TARGET)
+						ELSE_IF_VALUE(ALLOW_MULTISAMPLE)
+						ELSE_IF_VALUE(GENERATE_MIPMAPS)
+						ELSE_IF_VALUE(ALLOW_RESOLUTION_SCALE)
+						else
+						{
+							throw std::runtime_error('\"' + std::string(propertyName) + "\" doesn't know the flag " + flagAsString + ". Must be \"UNORDERED_ACCESS\", \"SHADER_RESOURCE\", \"RENDER_TARGET\", \"ALLOW_MULTISAMPLE\", \"GENERATE_MIPMAPS\" or \"ALLOW_RESOLUTION_SCALE\".");
+						}
+
+						// Apply value
+						flags |= value;
+					}
+
+					// Undefine helper macros
+					#undef IF_VALUE
+					#undef ELSE_IF_VALUE
 				}
 			}
 		}
@@ -589,6 +634,7 @@ namespace RendererToolkit
 
 				// Write down the compositor render target textures
 				std::unordered_set<uint32_t> renderTargetTextureAssetIds = input.defaultTextureAssetIds;
+				std::unordered_map<uint32_t, RendererRuntime::RenderTargetTextureSignature> renderTargetTextureSignatures;
 				if (rapidJsonValueCompositorNodeAsset.HasMember("RenderTargetTextures"))
 				{
 					const rapidjson::Value& rapidJsonValueRenderTargetTextures = rapidJsonValueCompositorNodeAsset["RenderTargetTextures"];
@@ -606,21 +652,17 @@ namespace RendererToolkit
 							// Texture format
 							const Renderer::TextureFormat::Enum textureFormat = JsonHelper::mandatoryTextureFormat(rapidJsonValueRenderTargetTexture);
 
-							// Allow multisample?
-							bool allowMultisample = false;
-							JsonHelper::optionalBooleanProperty(rapidJsonValueRenderTargetTexture, "AllowMultisample", allowMultisample);
-
-							// Generate mipmaps?
-							bool generateMipmaps = false;
-							JsonHelper::optionalBooleanProperty(rapidJsonValueRenderTargetTexture, "GenerateMipmaps", generateMipmaps);
-
-							// Allow resolution scale?
-							bool allowResolutionScale = true;
-							if (RendererRuntime::isValid(width) && RendererRuntime::isValid(height) && rapidJsonValueRenderTargetTexture.HasMember("AllowResolutionScale"))
+							// Flags
+							uint8_t flags = (RendererRuntime::RenderTargetTextureSignature::Flag::SHADER_RESOURCE | RendererRuntime::RenderTargetTextureSignature::Flag::RENDER_TARGET);
+							if (RendererRuntime::isInvalid(width) || RendererRuntime::isInvalid(height))
 							{
-								throw std::runtime_error(std::string("Render target texture \"") + rapidJsonMemberIteratorRenderTargetTextures->name.GetString() + "\" has a fixed defined width and height, usage of \"AllowResolutionScale\" is not allowed for this use-case");
+								flags |= RendererRuntime::RenderTargetTextureSignature::Flag::ALLOW_RESOLUTION_SCALE;
 							}
-							JsonHelper::optionalBooleanProperty(rapidJsonValueRenderTargetTexture, "AllowResolutionScale", allowResolutionScale);
+							::detail::optionalRenderTargetTexturesFlagsProperty(rapidJsonValueRenderTargetTexture, "Flags", flags);
+							if (RendererRuntime::isValid(width) && RendererRuntime::isValid(height) && (flags & RendererRuntime::RenderTargetTextureSignature::Flag::ALLOW_RESOLUTION_SCALE) != 0)
+							{
+								throw std::runtime_error(std::string("Render target texture \"") + rapidJsonMemberIteratorRenderTargetTextures->name.GetString() + "\" has a fixed defined width and height, usage of \"ALLOW_RESOLUTION_SCALE\" flag is not allowed for this use-case");
+							}
 
 							// Width scale
 							float widthScale = 1.0f;
@@ -656,7 +698,8 @@ namespace RendererToolkit
 
 							// Write render target texture signature
 							// TODO(co) Add sanity checks to be able to detect editing errors (compressed formats are not supported nor unknown formats, check for name conflicts with channels, unused render target textures etc.)
-							renderTargetTexture.renderTargetTextureSignature = RendererRuntime::RenderTargetTextureSignature(width, height, textureFormat, allowMultisample, generateMipmaps, allowResolutionScale, widthScale, heightScale);
+							renderTargetTexture.renderTargetTextureSignature = RendererRuntime::RenderTargetTextureSignature(width, height, textureFormat, flags, widthScale, heightScale);
+							renderTargetTextureSignatures.emplace(renderTargetTexture.assetId, renderTargetTexture.renderTargetTextureSignature);
 						}
 						memoryFile.write(&renderTargetTexture, sizeof(RendererRuntime::v1CompositorNode::RenderTargetTexture));
 
@@ -698,6 +741,10 @@ namespace RendererToolkit
 									{
 										throw std::runtime_error(std::string("Color texture \"") + rapidJsonValueFramebufferColorAttachment["ColorTexture"].GetString() + "\" at index " + std::to_string(i) + " of framebuffer \"" + rapidJsonMemberIteratorFramebuffers->name.GetString() + "\" is unknown");
 									}
+									if ((renderTargetTextureSignatures.find(textureAssetId)->second.getFlags() & RendererRuntime::RenderTargetTextureSignature::Flag::RENDER_TARGET) == 0)
+									{
+										throw std::runtime_error(std::string("Color texture \"") + rapidJsonValueFramebufferColorAttachment["ColorTexture"].GetString() + "\" at index " + std::to_string(i) + " of framebuffer \"" + rapidJsonMemberIteratorFramebuffers->name.GetString() + "\" has no \"RENDER_TARGET\" flag set");
+									}
 									colorFramebufferSignatureAttachment.textureAssetId = textureAssetId;
 									JsonHelper::optionalIntegerProperty(rapidJsonValueFramebufferColorAttachment, "MipmapIndex", colorFramebufferSignatureAttachment.mipmapIndex);
 									JsonHelper::optionalIntegerProperty(rapidJsonValueFramebufferColorAttachment, "LayerIndex", colorFramebufferSignatureAttachment.layerIndex);
@@ -714,6 +761,10 @@ namespace RendererToolkit
 									if (RendererRuntime::isValid(textureAssetId) && renderTargetTextureAssetIds.find(textureAssetId) == renderTargetTextureAssetIds.end())
 									{
 										throw std::runtime_error(std::string("Color texture \"") + rapidJsonValueFramebufferColorTextures[i].GetString() + "\" at index " + std::to_string(i) + " of framebuffer \"" + rapidJsonMemberIteratorFramebuffers->name.GetString() + "\" is unknown");
+									}
+									if ((renderTargetTextureSignatures.find(textureAssetId)->second.getFlags() & RendererRuntime::RenderTargetTextureSignature::Flag::RENDER_TARGET) == 0)
+									{
+										throw std::runtime_error(std::string("Color texture \"") + rapidJsonValueFramebufferColorTextures[i].GetString() + "\" at index " + std::to_string(i) + " of framebuffer \"" + rapidJsonMemberIteratorFramebuffers->name.GetString() + "\" has no \"RENDER_TARGET\" flag set");
 									}
 									colorFramebufferSignatureAttachments[i].textureAssetId = textureAssetId;
 								}
@@ -743,6 +794,10 @@ namespace RendererToolkit
 							if (RendererRuntime::isValid(depthStencilTextureAssetId) && renderTargetTextureAssetIds.find(depthStencilTextureAssetId) == renderTargetTextureAssetIds.end())
 							{
 								throw std::runtime_error(std::string("Depth stencil texture \"") + rapidJsonValueFramebuffer["DepthStencilTexture"].GetString() + "\" of framebuffer \"" + rapidJsonMemberIteratorFramebuffers->name.GetString() + "\" is unknown");
+							}
+							if ((renderTargetTextureSignatures.find(depthStencilTextureAssetId)->second.getFlags() & RendererRuntime::RenderTargetTextureSignature::Flag::RENDER_TARGET) == 0)
+							{
+								throw std::runtime_error(std::string("Depth stencil texture \"") + rapidJsonValueFramebuffer["DepthStencilTexture"].GetString() + "\" of framebuffer \"" + rapidJsonMemberIteratorFramebuffers->name.GetString() + "\" has no \"RENDER_TARGET\" flag set");
 							}
 
 							// Write framebuffer signature

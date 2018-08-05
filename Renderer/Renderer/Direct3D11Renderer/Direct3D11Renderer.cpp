@@ -2269,12 +2269,12 @@ namespace Direct3D11Renderer
 
 		/**
 		*  @brief
-		*    Set program
+		*    Set graphics program
 		*
-		*  @param[in] program
-		*    Program to set
+		*  @param[in] graphicsProgram
+		*    Graphics program to set
 		*/
-		void setProgram(Renderer::IProgram* program);
+		void setGraphicsProgram(Renderer::IGraphicsProgram* graphicsProgram);
 
 
 	//[-------------------------------------------------------]
@@ -8841,7 +8841,7 @@ namespace Direct3D11Renderer
 
 						case Renderer::ResourceType::ROOT_SIGNATURE:
 						case Renderer::ResourceType::RESOURCE_GROUP:
-						case Renderer::ResourceType::PROGRAM:
+						case Renderer::ResourceType::GRAPHICS_PROGRAM:
 						case Renderer::ResourceType::VERTEX_ARRAY:
 						case Renderer::ResourceType::RENDER_PASS:
 						case Renderer::ResourceType::SWAP_CHAIN:
@@ -8933,7 +8933,7 @@ namespace Direct3D11Renderer
 
 					case Renderer::ResourceType::ROOT_SIGNATURE:
 					case Renderer::ResourceType::RESOURCE_GROUP:
-					case Renderer::ResourceType::PROGRAM:
+					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::SWAP_CHAIN:
@@ -10142,13 +10142,13 @@ namespace Direct3D11Renderer
 
 
 	//[-------------------------------------------------------]
-	//[ Direct3D11Renderer/Shader/ProgramHlsl.h               ]
+	//[ Direct3D11Renderer/Shader/GraphicsProgramHlsl.h       ]
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    HLSL program class
+	*    HLSL graphics program class
 	*/
-	class ProgramHlsl final : public Renderer::IProgram
+	class GraphicsProgramHlsl final : public Renderer::IGraphicsProgram
 	{
 
 
@@ -10163,21 +10163,21 @@ namespace Direct3D11Renderer
 		*  @param[in] direct3D11Renderer
 		*    Owner Direct3D 11 renderer instance
 		*  @param[in] vertexShaderHlsl
-		*    Vertex shader the program is using, can be a null pointer
+		*    Vertex shader the graphics program is using, can be a null pointer
 		*  @param[in] tessellationControlShaderHlsl
-		*    Tessellation control shader the program is using, can be a null pointer
+		*    Tessellation control shader the graphics program is using, can be a null pointer
 		*  @param[in] tessellationEvaluationShaderHlsl
-		*    Tessellation evaluation shader the program is using, can be a null pointer
+		*    Tessellation evaluation shader the graphics program is using, can be a null pointer
 		*  @param[in] geometryShaderHlsl
-		*    Geometry shader the program is using, can be a null pointer
+		*    Geometry shader the graphics program is using, can be a null pointer
 		*  @param[in] fragmentShaderHlsl
-		*    Fragment shader the program is using, can be a null pointer
+		*    Fragment shader the graphics program is using, can be a null pointer
 		*
 		*  @note
-		*    - The program keeps a reference to the provided shaders and releases it when no longer required
+		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
 		*/
-		ProgramHlsl(Direct3D11Renderer& direct3D11Renderer, VertexShaderHlsl* vertexShaderHlsl, TessellationControlShaderHlsl* tessellationControlShaderHlsl, TessellationEvaluationShaderHlsl* tessellationEvaluationShaderHlsl, GeometryShaderHlsl* geometryShaderHlsl, FragmentShaderHlsl* fragmentShaderHlsl) :
-			IProgram(direct3D11Renderer),
+		GraphicsProgramHlsl(Direct3D11Renderer& direct3D11Renderer, VertexShaderHlsl* vertexShaderHlsl, TessellationControlShaderHlsl* tessellationControlShaderHlsl, TessellationEvaluationShaderHlsl* tessellationEvaluationShaderHlsl, GeometryShaderHlsl* geometryShaderHlsl, FragmentShaderHlsl* fragmentShaderHlsl) :
+			IGraphicsProgram(direct3D11Renderer),
 			mVertexShaderHlsl(vertexShaderHlsl),
 			mTessellationControlShaderHlsl(tessellationControlShaderHlsl),
 			mTessellationEvaluationShaderHlsl(tessellationEvaluationShaderHlsl),
@@ -10211,7 +10211,7 @@ namespace Direct3D11Renderer
 		*  @brief
 		*    Destructor
 		*/
-		virtual ~ProgramHlsl() override
+		virtual ~GraphicsProgramHlsl() override
 		{
 			// Release the shader references
 			if (nullptr != mVertexShaderHlsl)
@@ -10238,10 +10238,10 @@ namespace Direct3D11Renderer
 
 		/**
 		*  @brief
-		*    Return the HLSL vertex shader the program is using
+		*    Return the HLSL vertex shader the graphics program is using
 		*
 		*  @return
-		*    The HLSL vertex shader the program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*    The HLSL vertex shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
 		inline VertexShaderHlsl* getVertexShaderHlsl() const
 		{
@@ -10250,10 +10250,10 @@ namespace Direct3D11Renderer
 
 		/**
 		*  @brief
-		*    Return the HLSL tessellation control shader the program is using
+		*    Return the HLSL tessellation control shader the graphics program is using
 		*
 		*  @return
-		*    The HLSL tessellation control shader the program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*    The HLSL tessellation control shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
 		inline TessellationControlShaderHlsl* getTessellationControlShaderHlsl() const
 		{
@@ -10262,10 +10262,10 @@ namespace Direct3D11Renderer
 
 		/**
 		*  @brief
-		*    Return the HLSL tessellation evaluation shader the program is using
+		*    Return the HLSL tessellation evaluation shader the graphics program is using
 		*
 		*  @return
-		*    The HLSL tessellation evaluation shader the program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*    The HLSL tessellation evaluation shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
 		inline TessellationEvaluationShaderHlsl* getTessellationEvaluationShaderHlsl() const
 		{
@@ -10274,10 +10274,10 @@ namespace Direct3D11Renderer
 
 		/**
 		*  @brief
-		*    Return the HLSL geometry shader the program is using
+		*    Return the HLSL geometry shader the graphics program is using
 		*
 		*  @return
-		*    The HLSL geometry shader the program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*    The HLSL geometry shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
 		inline GeometryShaderHlsl* getGeometryShaderHlsl() const
 		{
@@ -10286,10 +10286,10 @@ namespace Direct3D11Renderer
 
 		/**
 		*  @brief
-		*    Return the HLSL fragment shader the program is using
+		*    Return the HLSL fragment shader the graphics program is using
 		*
 		*  @return
-		*    The HLSL fragment shader the program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*    The HLSL fragment shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
 		inline FragmentShaderHlsl* getFragmentShaderHlsl() const
 		{
@@ -10304,7 +10304,7 @@ namespace Direct3D11Renderer
 		#ifdef RENDERER_DEBUG
 			inline virtual void setDebugName(const char*) override
 			{
-				// In here we could assign the given debug name to all shaders assigned to the program,
+				// In here we could assign the given debug name to all shaders assigned to the graphics program,
 				// but this might end up within a naming chaos due to overwriting possible already set
 				// names... don't do this...
 			}
@@ -10317,7 +10317,7 @@ namespace Direct3D11Renderer
 	protected:
 		inline virtual void selfDestruct() override
 		{
-			RENDERER_DELETE(getRenderer().getContext(), ProgramHlsl, this);
+			RENDERER_DELETE(getRenderer().getContext(), GraphicsProgramHlsl, this);
 		}
 
 
@@ -10325,19 +10325,19 @@ namespace Direct3D11Renderer
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		explicit ProgramHlsl(const ProgramHlsl& source) = delete;
-		ProgramHlsl& operator =(const ProgramHlsl& source) = delete;
+		explicit GraphicsProgramHlsl(const GraphicsProgramHlsl& source) = delete;
+		GraphicsProgramHlsl& operator =(const GraphicsProgramHlsl& source) = delete;
 
 
 	//[-------------------------------------------------------]
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		VertexShaderHlsl*				  mVertexShaderHlsl;					///< Vertex shader the program is using (we keep a reference to it), can be a null pointer
-		TessellationControlShaderHlsl*	  mTessellationControlShaderHlsl;		///< Tessellation control shader the program is using (we keep a reference to it), can be a null pointer
-		TessellationEvaluationShaderHlsl* mTessellationEvaluationShaderHlsl;	///< Tessellation evaluation shader the program is using (we keep a reference to it), can be a null pointer
-		GeometryShaderHlsl*				  mGeometryShaderHlsl;					///< Geometry shader the program is using (we keep a reference to it), can be a null pointer
-		FragmentShaderHlsl*				  mFragmentShaderHlsl;					///< Fragment shader the program is using (we keep a reference to it), can be a null pointer
+		VertexShaderHlsl*				  mVertexShaderHlsl;					///< Vertex shader the graphics program is using (we keep a reference to it), can be a null pointer
+		TessellationControlShaderHlsl*	  mTessellationControlShaderHlsl;		///< Tessellation control shader the graphics program is using (we keep a reference to it), can be a null pointer
+		TessellationEvaluationShaderHlsl* mTessellationEvaluationShaderHlsl;	///< Tessellation evaluation shader the graphics program is using (we keep a reference to it), can be a null pointer
+		GeometryShaderHlsl*				  mGeometryShaderHlsl;					///< Geometry shader the graphics program is using (we keep a reference to it), can be a null pointer
+		FragmentShaderHlsl*				  mFragmentShaderHlsl;					///< Fragment shader the graphics program is using (we keep a reference to it), can be a null pointer
 
 
 	};
@@ -10474,9 +10474,9 @@ namespace Direct3D11Renderer
 			return RENDERER_NEW(getRenderer().getContext(), ComputeShaderHlsl)(static_cast<Direct3D11Renderer&>(getRenderer()), shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode);
 		}
 
-		virtual Renderer::IProgram* createProgram(MAYBE_UNUSED const Renderer::IRootSignature& rootSignature, MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
+		virtual Renderer::IGraphicsProgram* createGraphicsProgram(MAYBE_UNUSED const Renderer::IRootSignature& rootSignature, MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
 		{
-			// A shader can be a null pointer, but if it's not the shader and program language must match!
+			// A shader can be a null pointer, but if it's not the shader and graphics program language must match!
 			// -> Optimization: Comparing the shader language name by directly comparing the pointer address of
 			//    the name is safe because we know that we always reference to one and the same name address
 			// TODO(co) Add security check: Is the given resource one of the currently used renderer?
@@ -10502,8 +10502,8 @@ namespace Direct3D11Renderer
 			}
 			else
 			{
-				// Create the program
-				return RENDERER_NEW(getRenderer().getContext(), ProgramHlsl)(static_cast<Direct3D11Renderer&>(getRenderer()), static_cast<VertexShaderHlsl*>(vertexShader), static_cast<TessellationControlShaderHlsl*>(tessellationControlShader), static_cast<TessellationEvaluationShaderHlsl*>(tessellationEvaluationShader), static_cast<GeometryShaderHlsl*>(geometryShader), static_cast<FragmentShaderHlsl*>(fragmentShader));
+				// Create the graphics program
+				return RENDERER_NEW(getRenderer().getContext(), GraphicsProgramHlsl)(static_cast<Direct3D11Renderer&>(getRenderer()), static_cast<VertexShaderHlsl*>(vertexShader), static_cast<TessellationControlShaderHlsl*>(tessellationControlShader), static_cast<TessellationEvaluationShaderHlsl*>(tessellationEvaluationShader), static_cast<GeometryShaderHlsl*>(geometryShader), static_cast<FragmentShaderHlsl*>(fragmentShader));
 			}
 
 			// Error! Shader language mismatch!
@@ -10588,7 +10588,7 @@ namespace Direct3D11Renderer
 		*/
 		GraphicsPipelineState(Direct3D11Renderer& direct3D11Renderer, const Renderer::GraphicsPipelineState& graphicsPipelineState) :
 			IGraphicsPipelineState(direct3D11Renderer),
-			mProgram(graphicsPipelineState.program),
+			mGraphicsProgram(graphicsPipelineState.graphicsProgram),
 			mRenderPass(graphicsPipelineState.renderPass),
 			mD3D11DeviceContext(direct3D11Renderer.getD3D11DeviceContext()),
 			mD3D11PrimitiveTopology(static_cast<D3D11_PRIMITIVE_TOPOLOGY>(graphicsPipelineState.primitiveTopology)),
@@ -10600,15 +10600,15 @@ namespace Direct3D11Renderer
 			// Acquire our Direct3D 11 device context reference
 			mD3D11DeviceContext->AddRef();
 
-			// Add a reference to the given program and render pass
-			mProgram->addReference();
+			// Add a reference to the given graphics program and render pass
+			mGraphicsProgram->addReference();
 			mRenderPass->addReference();
 
 			// Create Direct3D 11 input element descriptions with support for attribute-less rendering
 			const uint32_t numberOfAttributes = graphicsPipelineState.vertexAttributes.numberOfAttributes;
 			if (numberOfAttributes > 0)
 			{
-				const VertexShaderHlsl* vertexShaderHlsl = static_cast<ProgramHlsl*>(mProgram)->getVertexShaderHlsl();
+				const VertexShaderHlsl* vertexShaderHlsl = static_cast<GraphicsProgramHlsl*>(mGraphicsProgram)->getVertexShaderHlsl();
 				if (nullptr != vertexShaderHlsl)
 				{
 					ID3DBlob* d3dBlobVertexShader = vertexShaderHlsl->getD3DBlobVertexShader();
@@ -10668,8 +10668,8 @@ namespace Direct3D11Renderer
 		*/
 		virtual ~GraphicsPipelineState() override
 		{
-			// Release the program and render pass reference
-			mProgram->releaseReference();
+			// Release the graphics program and render pass reference
+			mGraphicsProgram->releaseReference();
 			mRenderPass->releaseReference();
 
 			// Release the Direct3D 11 input layout
@@ -10718,8 +10718,8 @@ namespace Direct3D11Renderer
 				mD3D11DeviceContext->IASetInputLayout(mD3D11InputLayout);
 			}
 
-			// Set the program
-			static_cast<Direct3D11Renderer&>(getRenderer()).setProgram(mProgram);
+			// Set the graphics program
+			static_cast<Direct3D11Renderer&>(getRenderer()).setGraphicsProgram(mGraphicsProgram);
 
 			// Set the Direct3D 11 rasterizer state
 			mD3D11DeviceContext->RSSetState(mRasterizerState.getD3D11RasterizerState());
@@ -10772,14 +10772,14 @@ namespace Direct3D11Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		Renderer::IProgram*		 mProgram;
-		Renderer::IRenderPass*	 mRenderPass;
-		ID3D11DeviceContext*	 mD3D11DeviceContext;	///< The Direct3D 11 device context instance (we keep a reference to it), null pointer on horrible error (so we don't check)
-		D3D11_PRIMITIVE_TOPOLOGY mD3D11PrimitiveTopology;
-		ID3D11InputLayout*		 mD3D11InputLayout;		///< Direct3D 11 input layout, can be a null pointer
-		RasterizerState			 mRasterizerState;
-		DepthStencilState		 mDepthStencilState;
-		BlendState				 mBlendState;
+		Renderer::IGraphicsProgram*	mGraphicsProgram;
+		Renderer::IRenderPass*		mRenderPass;
+		ID3D11DeviceContext*		mD3D11DeviceContext;	///< The Direct3D 11 device context instance (we keep a reference to it), null pointer on horrible error (so we don't check)
+		D3D11_PRIMITIVE_TOPOLOGY	mD3D11PrimitiveTopology;
+		ID3D11InputLayout*			mD3D11InputLayout;		///< Direct3D 11 input layout, can be a null pointer
+		RasterizerState				mRasterizerState;
+		DepthStencilState			mDepthStencilState;
+		BlendState					mBlendState;
 
 
 	};
@@ -11687,7 +11687,7 @@ namespace Direct3D11Renderer
 
 							case Renderer::ResourceType::ROOT_SIGNATURE:
 							case Renderer::ResourceType::RESOURCE_GROUP:
-							case Renderer::ResourceType::PROGRAM:
+							case Renderer::ResourceType::GRAPHICS_PROGRAM:
 							case Renderer::ResourceType::VERTEX_ARRAY:
 							case Renderer::ResourceType::RENDER_PASS:
 							case Renderer::ResourceType::SWAP_CHAIN:
@@ -11811,7 +11811,7 @@ namespace Direct3D11Renderer
 
 					case Renderer::ResourceType::ROOT_SIGNATURE:
 					case Renderer::ResourceType::RESOURCE_GROUP:
-					case Renderer::ResourceType::PROGRAM:
+					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::SWAP_CHAIN:
@@ -11946,7 +11946,7 @@ namespace Direct3D11Renderer
 
 					case Renderer::ResourceType::ROOT_SIGNATURE:
 					case Renderer::ResourceType::RESOURCE_GROUP:
-					case Renderer::ResourceType::PROGRAM:
+					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::INDEX_BUFFER:
@@ -12078,7 +12078,7 @@ namespace Direct3D11Renderer
 
 				case Renderer::ResourceType::ROOT_SIGNATURE:
 				case Renderer::ResourceType::RESOURCE_GROUP:
-				case Renderer::ResourceType::PROGRAM:
+				case Renderer::ResourceType::GRAPHICS_PROGRAM:
 				case Renderer::ResourceType::VERTEX_ARRAY:
 				case Renderer::ResourceType::RENDER_PASS:
 				case Renderer::ResourceType::INDEX_BUFFER:
@@ -12556,7 +12556,7 @@ namespace Direct3D11Renderer
 
 									case Renderer::ResourceType::ROOT_SIGNATURE:
 									case Renderer::ResourceType::RESOURCE_GROUP:
-									case Renderer::ResourceType::PROGRAM:
+									case Renderer::ResourceType::GRAPHICS_PROGRAM:
 									case Renderer::ResourceType::VERTEX_ARRAY:
 									case Renderer::ResourceType::RENDER_PASS:
 									case Renderer::ResourceType::SWAP_CHAIN:
@@ -12647,7 +12647,7 @@ namespace Direct3D11Renderer
 
 									case Renderer::ResourceType::ROOT_SIGNATURE:
 									case Renderer::ResourceType::RESOURCE_GROUP:
-									case Renderer::ResourceType::PROGRAM:
+									case Renderer::ResourceType::GRAPHICS_PROGRAM:
 									case Renderer::ResourceType::VERTEX_ARRAY:
 									case Renderer::ResourceType::RENDER_PASS:
 									case Renderer::ResourceType::SWAP_CHAIN:
@@ -12804,7 +12804,7 @@ namespace Direct3D11Renderer
 
 					case Renderer::ResourceType::ROOT_SIGNATURE:
 					case Renderer::ResourceType::RESOURCE_GROUP:
-					case Renderer::ResourceType::PROGRAM:
+					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::SWAP_CHAIN:
@@ -12899,7 +12899,7 @@ namespace Direct3D11Renderer
 
 			case Renderer::ResourceType::ROOT_SIGNATURE:
 			case Renderer::ResourceType::RESOURCE_GROUP:
-			case Renderer::ResourceType::PROGRAM:
+			case Renderer::ResourceType::GRAPHICS_PROGRAM:
 			case Renderer::ResourceType::VERTEX_ARRAY:
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::INDEX_BUFFER:
@@ -12956,7 +12956,7 @@ namespace Direct3D11Renderer
 
 			case Renderer::ResourceType::ROOT_SIGNATURE:
 			case Renderer::ResourceType::RESOURCE_GROUP:
-			case Renderer::ResourceType::PROGRAM:
+			case Renderer::ResourceType::GRAPHICS_PROGRAM:
 			case Renderer::ResourceType::VERTEX_ARRAY:
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::SWAP_CHAIN:
@@ -13211,7 +13211,7 @@ namespace Direct3D11Renderer
 
 			case Renderer::ResourceType::ROOT_SIGNATURE:
 			case Renderer::ResourceType::RESOURCE_GROUP:
-			case Renderer::ResourceType::PROGRAM:
+			case Renderer::ResourceType::GRAPHICS_PROGRAM:
 			case Renderer::ResourceType::VERTEX_ARRAY:
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::SWAP_CHAIN:
@@ -13295,7 +13295,7 @@ namespace Direct3D11Renderer
 
 			case Renderer::ResourceType::ROOT_SIGNATURE:
 			case Renderer::ResourceType::RESOURCE_GROUP:
-			case Renderer::ResourceType::PROGRAM:
+			case Renderer::ResourceType::GRAPHICS_PROGRAM:
 			case Renderer::ResourceType::VERTEX_ARRAY:
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::SWAP_CHAIN:
@@ -13704,23 +13704,23 @@ namespace Direct3D11Renderer
 		mCapabilities.computeShader = true;
 	}
 
-	void Direct3D11Renderer::setProgram(Renderer::IProgram* program)
+	void Direct3D11Renderer::setGraphicsProgram(Renderer::IGraphicsProgram* graphicsProgram)
 	{
 		// Begin debug event
 		RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(this)
 
-		if (nullptr != program)
+		if (nullptr != graphicsProgram)
 		{
 			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
-			DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *program)
+			DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *graphicsProgram)
 
 			// Get shaders
-			const ProgramHlsl*					    programHlsl						 = static_cast<ProgramHlsl*>(program);
-			const VertexShaderHlsl*				    vertexShaderHlsl				 = programHlsl->getVertexShaderHlsl();
-			const TessellationControlShaderHlsl*	tessellationControlShaderHlsl	 = programHlsl->getTessellationControlShaderHlsl();
-			const TessellationEvaluationShaderHlsl* tessellationEvaluationShaderHlsl = programHlsl->getTessellationEvaluationShaderHlsl();
-			const GeometryShaderHlsl*			    geometryShaderHlsl				 = programHlsl->getGeometryShaderHlsl();
-			const FragmentShaderHlsl*			    fragmentShaderHlsl				 = programHlsl->getFragmentShaderHlsl();
+			const GraphicsProgramHlsl*			    graphicsProgramHlsl				 = static_cast<GraphicsProgramHlsl*>(graphicsProgram);
+			const VertexShaderHlsl*				    vertexShaderHlsl				 = graphicsProgramHlsl->getVertexShaderHlsl();
+			const TessellationControlShaderHlsl*	tessellationControlShaderHlsl	 = graphicsProgramHlsl->getTessellationControlShaderHlsl();
+			const TessellationEvaluationShaderHlsl* tessellationEvaluationShaderHlsl = graphicsProgramHlsl->getTessellationEvaluationShaderHlsl();
+			const GeometryShaderHlsl*			    geometryShaderHlsl				 = graphicsProgramHlsl->getGeometryShaderHlsl();
+			const FragmentShaderHlsl*			    fragmentShaderHlsl				 = graphicsProgramHlsl->getFragmentShaderHlsl();
 			ID3D11VertexShader*   d3d11VertexShader   = (nullptr != vertexShaderHlsl)				  ? vertexShaderHlsl->getD3D11VertexShader()				 : nullptr;
 			ID3D11HullShader*     d3d11HullShader     = (nullptr != tessellationControlShaderHlsl)	  ? tessellationControlShaderHlsl->getD3D11HullShader()		 : nullptr;
 			ID3D11DomainShader*   d3d11DomainShader   = (nullptr != tessellationEvaluationShaderHlsl) ? tessellationEvaluationShaderHlsl->getD3D11DomainShader() : nullptr;

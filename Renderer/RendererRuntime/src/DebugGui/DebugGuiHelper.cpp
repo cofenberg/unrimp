@@ -410,7 +410,7 @@ namespace RendererRuntime
 					{
 						ImGui::Text("Root signatures: %d", statistics.currentNumberOfRootSignatures.load());
 						ImGui::Text("Resource groups: %d", statistics.currentNumberOfResourceGroups.load());
-						ImGui::Text("Programs: %d", statistics.currentNumberOfPrograms.load());
+						ImGui::Text("Graphics programs: %d", statistics.currentNumberOfGraphicsPrograms.load());
 						ImGui::Text("Vertex arrays: %d", statistics.currentNumberOfVertexArrays.load());
 						ImGui::Text("Render passes: %d", statistics.currentNumberOfRenderPasses.load());
 						ImGui::Text("Swap chains: %d", statistics.currentNumberOfSwapChains.load());
@@ -427,12 +427,14 @@ namespace RendererRuntime
 						ImGui::Text("3D textures: %d", statistics.currentNumberOfTexture3Ds.load());
 						ImGui::Text("Cubes textures: %d", statistics.currentNumberOfTextureCubes.load());
 						ImGui::Text("Graphics pipeline states: %d", statistics.currentNumberOfGraphicsPipelineStates.load());
+						ImGui::Text("Compute pipeline states: %d", statistics.currentNumberOfComputePipelineStates.load());
 						ImGui::Text("Sampler states: %d", statistics.currentNumberOfSamplerStates.load());
 						ImGui::Text("Vertex shaders: %d", statistics.currentNumberOfVertexShaders.load());
 						ImGui::Text("Tessellation control shaders: %d", statistics.currentNumberOfTessellationControlShaders.load());
 						ImGui::Text("Tessellation evaluation shaders: %d", statistics.currentNumberOfTessellationEvaluationShaders.load());
 						ImGui::Text("Geometry shaders: %d", statistics.currentNumberOfGeometryShaders.load());
 						ImGui::Text("Fragment shaders: %d", statistics.currentNumberOfFragmentShaders.load());
+						ImGui::Text("Compute shaders: %d", statistics.currentNumberOfComputeShaders.load());
 						ImGui::TreePop();
 					}
 				#endif

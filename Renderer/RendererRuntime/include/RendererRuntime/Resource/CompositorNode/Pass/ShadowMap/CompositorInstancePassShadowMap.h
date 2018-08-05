@@ -44,8 +44,8 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 namespace RendererRuntime
 {
-	class CompositorResourcePassQuad;
-	class CompositorInstancePassQuad;
+	class CompositorResourcePassCompute;
+	class CompositorInstancePassCompute;
 	class CompositorResourcePassShadowMap;
 }
 
@@ -137,19 +137,19 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		PassData					mPassData;
-		Renderer::IFramebufferPtr	mDepthFramebufferPtr;
-		Renderer::IFramebufferPtr	mVarianceFramebufferPtr[CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES];
-		Renderer::IFramebufferPtr	mIntermediateFramebufferPtr;
-		TextureResourceId			mDepthTextureResourceId;
-		TextureResourceId			mVarianceTextureResourceId;
-		TextureResourceId			mIntermediateDepthBlurTextureResourceId;
-		CompositorResourcePassQuad* mDepthToExponentialVarianceCompositorResourcePassQuad;
-		CompositorInstancePassQuad* mDepthToExponentialVarianceCompositorInstancePassQuad;
-		CompositorResourcePassQuad* mHorizontalBlurCompositorResourcePassQuad;
-		CompositorInstancePassQuad* mHorizontalBlurCompositorInstancePassQuad;
-		CompositorResourcePassQuad* mVerticalBlurCompositorResourcePassQuad;
-		CompositorInstancePassQuad* mVerticalBlurCompositorInstancePassQuad;
+		PassData					   mPassData;
+		Renderer::IFramebufferPtr	   mDepthFramebufferPtr;
+		Renderer::IFramebufferPtr	   mVarianceFramebufferPtr[CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES];
+		Renderer::IFramebufferPtr	   mIntermediateFramebufferPtr;
+		TextureResourceId			   mDepthTextureResourceId;
+		TextureResourceId			   mVarianceTextureResourceId;
+		TextureResourceId			   mIntermediateDepthBlurTextureResourceId;
+		CompositorResourcePassCompute* mDepthToExponentialVarianceCompositorResourcePassCompute;
+		CompositorInstancePassCompute* mDepthToExponentialVarianceCompositorInstancePassCompute;
+		CompositorResourcePassCompute* mHorizontalBlurCompositorResourcePassCompute;
+		CompositorInstancePassCompute* mHorizontalBlurCompositorInstancePassCompute;
+		CompositorResourcePassCompute* mVerticalBlurCompositorResourcePassCompute;
+		CompositorInstancePassCompute* mVerticalBlurCompositorInstancePassCompute;
 
 
 	};

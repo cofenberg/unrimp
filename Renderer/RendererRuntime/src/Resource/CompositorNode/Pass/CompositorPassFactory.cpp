@@ -26,8 +26,8 @@
 #include "RendererRuntime/Resource/CompositorNode/Pass/Clear/CompositorInstancePassClear.h"
 #include "RendererRuntime/Resource/CompositorNode/Pass/VrHiddenAreaMesh/CompositorResourcePassVrHiddenAreaMesh.h"
 #include "RendererRuntime/Resource/CompositorNode/Pass/VrHiddenAreaMesh/CompositorInstancePassVrHiddenAreaMesh.h"
-#include "RendererRuntime/Resource/CompositorNode/Pass/Quad/CompositorResourcePassQuad.h"
-#include "RendererRuntime/Resource/CompositorNode/Pass/Quad/CompositorInstancePassQuad.h"
+#include "RendererRuntime/Resource/CompositorNode/Pass/Compute/CompositorResourcePassCompute.h"
+#include "RendererRuntime/Resource/CompositorNode/Pass/Compute/CompositorInstancePassCompute.h"
 #include "RendererRuntime/Resource/CompositorNode/Pass/Copy/CompositorResourcePassCopy.h"
 #include "RendererRuntime/Resource/CompositorNode/Pass/Copy/CompositorInstancePassCopy.h"
 #include "RendererRuntime/Resource/CompositorNode/Pass/GenerateMipmaps/CompositorResourcePassGenerateMipmaps.h"
@@ -67,7 +67,7 @@ namespace RendererRuntime
 			CASE_VALUE(CompositorResourcePassResolveMultisample)
 			CASE_VALUE(CompositorResourcePassCopy)
 			CASE_VALUE(CompositorResourcePassGenerateMipmaps)
-			CASE_VALUE(CompositorResourcePassQuad)
+			CASE_VALUE(CompositorResourcePassCompute)
 			CASE_VALUE(CompositorResourcePassDebugGui)
 		}
 
@@ -95,7 +95,7 @@ namespace RendererRuntime
 			CASE_VALUE(CompositorResourcePassResolveMultisample, CompositorInstancePassResolveMultisample)
 			CASE_VALUE(CompositorResourcePassCopy,				 CompositorInstancePassCopy)
 			CASE_VALUE(CompositorResourcePassGenerateMipmaps,	 CompositorInstancePassGenerateMipmaps)
-			CASE_VALUE(CompositorResourcePassQuad,				 CompositorInstancePassQuad)
+			CASE_VALUE(CompositorResourcePassCompute,			 CompositorInstancePassCompute)
 			CASE_VALUE(CompositorResourcePassDebugGui,			 CompositorInstancePassDebugGui)
 		}
 

@@ -45,16 +45,16 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
-	ShaderCache* ShaderCacheManager::getShaderCache(const PipelineStateSignature& pipelineStateSignature, const MaterialBlueprintResource& materialBlueprintResource, Renderer::IShaderLanguage& shaderLanguage, ShaderType shaderType)
+	ShaderCache* ShaderCacheManager::getGraphicsShaderCache(const GraphicsPipelineStateSignature& graphicsPipelineStateSignature, const MaterialBlueprintResource& materialBlueprintResource, Renderer::IShaderLanguage& shaderLanguage, GraphicsShaderType graphicsShaderType)
 	{
 		ShaderCache* shaderCache = nullptr;
 
 		// Get the shader blueprint resource ID
-		const ShaderBlueprintResourceId shaderBlueprintResourceId = materialBlueprintResource.getShaderBlueprintResourceId(shaderType);
+		const ShaderBlueprintResourceId shaderBlueprintResourceId = materialBlueprintResource.getGraphicsShaderBlueprintResourceId(graphicsShaderType);
 		if (isValid(shaderBlueprintResourceId))
 		{
 			// Get the shader cache identifier, often but not always identical to the shader combination ID
-			const ShaderCacheId shaderCacheId = pipelineStateSignature.getShaderCombinationId(shaderType);
+			const ShaderCacheId shaderCacheId = graphicsPipelineStateSignature.getShaderCombinationId(graphicsShaderType);
 
 			// Does the shader cache already exist?
 			std::unique_lock<std::mutex> mutexLock(mMutex);
@@ -71,29 +71,29 @@ namespace RendererRuntime
 				if (nullptr == shaderCache->mShaderPtr.getPointer())
 				{
 					assert((0 != shaderCache->mShaderBytecode.getNumberOfBytes()) && "A shader cache must always have a valid shader bytecode, else it's a pointless shader cache");
-					switch (shaderType)
+					switch (graphicsShaderType)
 					{
-						case ShaderType::Vertex:
+						case GraphicsShaderType::Vertex:
 						{
 							const Renderer::VertexAttributes& vertexAttributes = mShaderBlueprintResourceManager.getRendererRuntime().getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes();
 							shaderCache->mShaderPtr = shaderLanguage.createVertexShaderFromBytecode(vertexAttributes, shaderCache->mShaderBytecode);
 							break;
 						}
 
-						case ShaderType::TessellationControl:
+						case GraphicsShaderType::TessellationControl:
 							shaderCache->mShaderPtr = shaderLanguage.createTessellationControlShaderFromBytecode(shaderCache->mShaderBytecode);
 							break;
 
-						case ShaderType::TessellationEvaluation:
+						case GraphicsShaderType::TessellationEvaluation:
 							shaderCache->mShaderPtr = shaderLanguage.createTessellationEvaluationShaderFromBytecode(shaderCache->mShaderBytecode);
 							break;
 
-						case ShaderType::Geometry:
-							// TODO(co) "RendererRuntime::ShaderCacheManager::getShaderCache()" needs to provide additional geometry shader information
+						case GraphicsShaderType::Geometry:
+							// TODO(co) "RendererRuntime::ShaderCacheManager::getGraphicsShaderCache()" needs to provide additional geometry shader information
 							// shaderCache->mShaderPtr = shaderLanguage.createGeometryShaderFromBytecode(shaderCache->mShaderBytecode);
 							break;
 
-						case ShaderType::Fragment:
+						case GraphicsShaderType::Fragment:
 							shaderCache->mShaderPtr = shaderLanguage.createFragmentShaderFromBytecode(shaderCache->mShaderBytecode);
 							break;
 					}
@@ -101,7 +101,7 @@ namespace RendererRuntime
 			}
 			else
 			{
-				// Try to create the new program cache instance
+				// Try to create the new graphics shader cache instance
 				const ShaderBlueprintResource* shaderBlueprintResource = mShaderBlueprintResourceManager.tryGetById(shaderBlueprintResourceId);
 				if (nullptr != shaderBlueprintResource)
 				{
@@ -109,7 +109,7 @@ namespace RendererRuntime
 					const IRendererRuntime& rendererRuntime = mShaderBlueprintResourceManager.getRendererRuntime();
 					ShaderBuilder shaderBuilder(rendererRuntime.getRenderer().getContext());
 					ShaderBuilder::BuildShader buildShader;
-					shaderBuilder.createSourceCode(rendererRuntime.getShaderPieceResourceManager(), *shaderBlueprintResource, pipelineStateSignature.getShaderProperties(), buildShader);
+					shaderBuilder.createSourceCode(rendererRuntime.getShaderPieceResourceManager(), *shaderBlueprintResource, graphicsPipelineStateSignature.getShaderProperties(), buildShader);
 					std::string& sourceCode = buildShader.sourceCode;
 					if (sourceCode.empty())
 					{
@@ -143,32 +143,137 @@ namespace RendererRuntime
 							shaderCache = new ShaderCache(shaderCacheId);
 							shaderCache->mAssetIds = buildShader.assetIds;
 							shaderCache->mCombinedAssetFileHashes = buildShader.combinedAssetFileHashes;
-							switch (shaderType)
+							switch (graphicsShaderType)
 							{
-								case ShaderType::Vertex:
+								case GraphicsShaderType::Vertex:
 								{
 									const Renderer::VertexAttributes& vertexAttributes = mShaderBlueprintResourceManager.getRendererRuntime().getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes();
 									shader = shaderLanguage.createVertexShaderFromSourceCode(vertexAttributes, sourceCode.c_str(), &shaderCache->mShaderBytecode);
 									break;
 								}
 
-								case ShaderType::TessellationControl:
+								case GraphicsShaderType::TessellationControl:
 									shader = shaderLanguage.createTessellationControlShaderFromSourceCode(sourceCode.c_str(), &shaderCache->mShaderBytecode);
 									break;
 
-								case ShaderType::TessellationEvaluation:
+								case GraphicsShaderType::TessellationEvaluation:
 									shader = shaderLanguage.createTessellationEvaluationShaderFromSourceCode(sourceCode.c_str(), &shaderCache->mShaderBytecode);
 									break;
 
-								case ShaderType::Geometry:
+								case GraphicsShaderType::Geometry:
 									// TODO(co) "RendererRuntime::ShaderCacheManager::getShaderCache()" needs to provide additional geometry shader information
 									// shader = shaderLanguage.createGeometryShaderFromSourceCode(sourceCode.c_str(), &shaderCache->mShaderBytecode);
 									break;
 
-								case ShaderType::Fragment:
+								case GraphicsShaderType::Fragment:
 									shader = shaderLanguage.createFragmentShaderFromSourceCode(sourceCode.c_str(), &shaderCache->mShaderBytecode);
 									break;
 							}
+
+							// Create the new shader cache instance
+							if (nullptr != shader)
+							{
+								RENDERER_SET_RESOURCE_DEBUG_NAME(shader, shaderBlueprintAsset.virtualFilename)
+								assert((!shaderLanguage.getRenderer().getCapabilities().shaderBytecode || 0 != shaderCache->mShaderBytecode.getNumberOfBytes()) && "Invalid shader bytecode received from renderer implementation");
+								shaderCache->mShaderPtr = shader;
+								mShaderCacheByShaderCacheId.emplace(shaderCacheId, shaderCache);
+								mShaderCacheByShaderSourceCodeId.emplace(shaderSourceCodeId, shaderCacheId);
+								mCacheNeedsSaving = true;
+							}
+							else
+							{
+								// TODO(co) Error handling
+								delete shaderCache;
+								assert(false);
+							}
+						}
+					}
+				}
+				else
+				{
+					// TODO(co) Error handling
+					assert(false);
+				}
+			}
+		}
+
+		// Done
+		return shaderCache;
+	}
+
+	ShaderCache* ShaderCacheManager::getComputeShaderCache(const ComputePipelineStateSignature& computePipelineStateSignature, const MaterialBlueprintResource& materialBlueprintResource, Renderer::IShaderLanguage& shaderLanguage)
+	{
+		ShaderCache* shaderCache = nullptr;
+
+		// Get the shader blueprint resource ID
+		const ShaderBlueprintResourceId shaderBlueprintResourceId = materialBlueprintResource.getComputeShaderBlueprintResourceId();
+		if (isValid(shaderBlueprintResourceId))
+		{
+			// Get the shader cache identifier, often but not always identical to the shader combination ID
+			const ShaderCacheId shaderCacheId = computePipelineStateSignature.getShaderCombinationId();
+
+			// Does the shader cache already exist?
+			std::unique_lock<std::mutex> mutexLock(mMutex);
+			ShaderCacheByShaderCacheId::const_iterator shaderCacheIdIterator = mShaderCacheByShaderCacheId.find(shaderCacheId);
+			if (shaderCacheIdIterator != mShaderCacheByShaderCacheId.cend())
+			{
+				shaderCache = shaderCacheIdIterator->second;
+				if (nullptr != shaderCache->getMasterShaderCache())
+				{
+					shaderCache = shaderCache->getMasterShaderCache();
+				}
+
+				// Create renderer shader instance using the shader bytecode, if necessary
+				if (nullptr == shaderCache->mShaderPtr.getPointer())
+				{
+					assert((0 != shaderCache->mShaderBytecode.getNumberOfBytes()) && "A shader cache must always have a valid shader bytecode, else it's a pointless shader cache");
+					shaderCache->mShaderPtr = shaderLanguage.createComputeShaderFromBytecode(shaderCache->mShaderBytecode);
+				}
+			}
+			else
+			{
+				// Try to create the new compute shader cache instance
+				const ShaderBlueprintResource* shaderBlueprintResource = mShaderBlueprintResourceManager.tryGetById(shaderBlueprintResourceId);
+				if (nullptr != shaderBlueprintResource)
+				{
+					// Build the shader source code
+					const IRendererRuntime& rendererRuntime = mShaderBlueprintResourceManager.getRendererRuntime();
+					ShaderBuilder shaderBuilder(rendererRuntime.getRenderer().getContext());
+					ShaderBuilder::BuildShader buildShader;
+					shaderBuilder.createSourceCode(rendererRuntime.getShaderPieceResourceManager(), *shaderBlueprintResource, computePipelineStateSignature.getShaderProperties(), buildShader);
+					std::string& sourceCode = buildShader.sourceCode;
+					if (sourceCode.empty())
+					{
+						// TODO(co) Error handling
+						assert(false);
+					}
+					else
+					{
+						// Add the virtual filename of the shader blueprint asset as first shader source code line to make shader debugging easier
+						const AssetManager& assetManager = rendererRuntime.getAssetManager();
+						const Asset& shaderBlueprintAsset = assetManager.getAssetByAssetId(shaderBlueprintResource->getAssetId());
+						sourceCode = std::string("// ") + shaderBlueprintAsset.virtualFilename + '\n' + sourceCode;
+
+						// Generate the shader source code ID
+						// -> Especially in complex shaders, there are situations where different shader combinations result in one and the same shader source code
+						// -> Shader compilation is considered to be expensive, so we need to be pretty sure that we really need to perform this heavy work
+						const ShaderSourceCodeId shaderSourceCodeId = Math::calculateFNV1a32(reinterpret_cast<const uint8_t*>(sourceCode.c_str()), static_cast<uint32_t>(sourceCode.size()));
+						ShaderCacheByShaderSourceCodeId::const_iterator shaderSourceCodeIdIterator = mShaderCacheByShaderSourceCodeId.find(shaderSourceCodeId);
+						if (shaderSourceCodeIdIterator != mShaderCacheByShaderSourceCodeId.cend())
+						{
+							// Reuse already existing shader instance
+							// -> We still have to create a shader cache instance so we don't need to build the shader source code again next time
+							shaderCache = new ShaderCache(shaderCacheId, mShaderCacheByShaderCacheId.find(shaderSourceCodeIdIterator->second)->second);
+							mShaderCacheByShaderCacheId.emplace(shaderCacheId, shaderCache);
+							mCacheNeedsSaving = true;
+						}
+						else
+						{
+							// Create the shader instance
+							shaderCache = new ShaderCache(shaderCacheId);
+							shaderCache->mAssetIds = buildShader.assetIds;
+							shaderCache->mCombinedAssetFileHashes = buildShader.combinedAssetFileHashes;
+							Renderer::IShader* shader = shaderLanguage.createComputeShaderFromSourceCode(sourceCode.c_str(), &shaderCache->mShaderBytecode);
 
 							// Create the new shader cache instance
 							if (nullptr != shader)

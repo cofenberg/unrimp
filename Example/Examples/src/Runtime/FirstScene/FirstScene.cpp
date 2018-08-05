@@ -54,7 +54,8 @@
 #include <RendererRuntime/Resource/CompositorNode/Pass/ICompositorInstancePass.h>
 #include <RendererRuntime/Resource/CompositorWorkspace/CompositorWorkspaceInstance.h>
 #include <RendererRuntime/Resource/CompositorNode/Pass/DebugGui/CompositorResourcePassDebugGui.h>
-#include <RendererRuntime/Resource/MaterialBlueprint/Cache/PipelineStateCompiler.h>
+#include <RendererRuntime/Resource/MaterialBlueprint/Cache/GraphicsPipelineStateCompiler.h>
+#include <RendererRuntime/Resource/MaterialBlueprint/Cache/ComputePipelineStateCompiler.h>
 #include <RendererRuntime/Resource/MaterialBlueprint/MaterialBlueprintResourceManager.h>
 #include <RendererRuntime/Resource/Material/MaterialResourceManager.h>
 #include <RendererRuntime/Resource/Material/MaterialResource.h>
@@ -676,7 +677,7 @@ void FirstScene::createDebugGui(MAYBE_UNUSED Renderer::IRenderTarget& mainRender
 								ImGui::Text("Resource Streamer: %s", idle ? "Idle" : "Busy");
 							ImGui::PopStyleColor();
 						}
-						ImGui::Text("Pipeline State Compiler: %s", (0 == rendererRuntime->getPipelineStateCompiler().getNumberOfInFlightCompilerRequests()) ? "Idle" : "Busy");
+						ImGui::Text("Pipeline State Compiler: %s", (0 == rendererRuntime->getGraphicsPipelineStateCompiler().getNumberOfInFlightCompilerRequests() && 0 == rendererRuntime->getComputePipelineStateCompiler().getNumberOfInFlightCompilerRequests()) ? "Idle" : "Busy");
 					ImGui::PopStyleColor();
 					if (ImGui::Button("Log"))
 					{

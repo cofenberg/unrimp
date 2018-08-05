@@ -78,8 +78,8 @@ public:
 	*    Vertex buffer object (VBO) containing the mesh data to use
 	*  @param[in] indexBuffer
 	*    Index buffer object (IBO) to use
-	*  @param[in] program
-	*    Program used for rendering
+	*  @param[in] graphicsProgram
+	*    Graphics program used for rendering
 	*  @param[in] renderPass
 	*    Render pass used for rendering
 	*  @param[in] numberOfCubeInstances
@@ -91,7 +91,7 @@ public:
 	*  @param[in] sceneRadius
 	*    Scene radius
 	*/
-	void initialize(Renderer::IBufferManager& bufferManager, Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexBuffer& vertexBuffer, Renderer::IIndexBuffer& indexBuffer, Renderer::IProgram& program, Renderer::IRenderPass& renderPass, uint32_t numberOfCubeInstances, bool alphaBlending, uint32_t numberOfTextures, uint32_t sceneRadius);
+	void initialize(Renderer::IBufferManager& bufferManager, Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexBuffer& vertexBuffer, Renderer::IIndexBuffer& indexBuffer, Renderer::IGraphicsProgram& graphicsProgram, Renderer::IRenderPass& renderPass, uint32_t numberOfCubeInstances, bool alphaBlending, uint32_t numberOfTextures, uint32_t sceneRadius);
 
 	/**
 	*  @brief

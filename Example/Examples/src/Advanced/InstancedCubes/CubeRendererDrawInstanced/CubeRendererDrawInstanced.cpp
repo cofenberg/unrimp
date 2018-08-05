@@ -282,7 +282,7 @@ CubeRendererDrawInstanced::CubeRendererDrawInstanced(Renderer::IRenderer& render
 	// -> If they are there, we really want to use them (performance and ease of use)
 	if (mRenderer->getCapabilities().maximumUniformBufferSize > 0)
 	{
-		{ // Create and set constant program uniform buffer at once
+		{ // Create and set constant graphics program uniform buffer at once
 			// TODO(co) Ugly fixed hacked in model-view-projection matrix
 			// TODO(co) OpenGL matrix, Direct3D has minor differences within the projection matrix we have to compensate
 			static constexpr float MVP[] =
@@ -306,7 +306,7 @@ CubeRendererDrawInstanced::CubeRendererDrawInstanced(Renderer::IRenderer& render
 		mResourceGroup = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(glm::countof(resources)), resources, samplerStates);
 	}
 
-	// Create the program: Decide which shader language should be used (for example "GLSL" or "HLSL")
+	// Create the graphics program: Decide which shader language should be used (for example "GLSL" or "HLSL")
 	Renderer::IShaderLanguagePtr shaderLanguage(mRenderer->getShaderLanguage());
 	if (nullptr != shaderLanguage)
 	{
@@ -319,8 +319,8 @@ CubeRendererDrawInstanced::CubeRendererDrawInstanced(Renderer::IRenderer& render
 		#include "CubeRendererDrawInstanced_GLSL_ES3.h"
 		#include "CubeRendererDrawInstanced_Null.h"
 
-		// Create the program
-		mProgram = shaderLanguage->createProgram(
+		// Create the graphics program
+		mGraphicsProgram = shaderLanguage->createGraphicsProgram(
 			*mRootSignature,
 			detail::CubeRendererDrawInstancedVertexAttributes,
 			shaderLanguage->createVertexShaderFromSourceCode(detail::CubeRendererDrawInstancedVertexAttributes, vertexShaderSourceCode),
@@ -369,7 +369,7 @@ void CubeRendererDrawInstanced::setNumberOfCubes(uint32_t numberOfCubes)
 	for (int remaningNumberOfCubes = static_cast<int>(numberOfSolidCubes); batch < lastBatch; ++batch, remaningNumberOfCubes -= mMaximumNumberOfInstancesPerBatch)
 	{
 		const uint32_t currentNumberOfCubes = (remaningNumberOfCubes > static_cast<int>(mMaximumNumberOfInstancesPerBatch)) ? mMaximumNumberOfInstancesPerBatch : remaningNumberOfCubes;
-		batch->initialize(*mBufferManager, *mRootSignature, detail::CubeRendererDrawInstancedVertexAttributes, *mProgram, mRenderPass, currentNumberOfCubes, false, mNumberOfTextures, mSceneRadius);
+		batch->initialize(*mBufferManager, *mRootSignature, detail::CubeRendererDrawInstancedVertexAttributes, *mGraphicsProgram, mRenderPass, currentNumberOfCubes, false, mNumberOfTextures, mSceneRadius);
 	}
 
 	// Initialize the transparent batches
@@ -378,7 +378,7 @@ void CubeRendererDrawInstanced::setNumberOfCubes(uint32_t numberOfCubes)
 	for (int remaningNumberOfCubes = static_cast<int>(numberOfTransparentCubes); batch < lastBatch; ++batch, remaningNumberOfCubes -= mMaximumNumberOfInstancesPerBatch)
 	{
 		const uint32_t currentNumberOfCubes = (remaningNumberOfCubes > static_cast<int>(mMaximumNumberOfInstancesPerBatch)) ? mMaximumNumberOfInstancesPerBatch : remaningNumberOfCubes;
-		batch->initialize(*mBufferManager, *mRootSignature, detail::CubeRendererDrawInstancedVertexAttributes, *mProgram, mRenderPass, currentNumberOfCubes, true, mNumberOfTextures, mSceneRadius);
+		batch->initialize(*mBufferManager, *mRootSignature, detail::CubeRendererDrawInstancedVertexAttributes, *mGraphicsProgram, mRenderPass, currentNumberOfCubes, true, mNumberOfTextures, mSceneRadius);
 	}
 
 	// Since we're always submitting the same commands to the renderer, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
@@ -389,9 +389,9 @@ void CubeRendererDrawInstanced::setNumberOfCubes(uint32_t numberOfCubes)
 void CubeRendererDrawInstanced::fillCommandBuffer(float globalTimer, float globalScale, float lightPositionX, float lightPositionY, float lightPositionZ, Renderer::CommandBuffer& commandBuffer)
 {
 	// Sanity checks
-	assert(nullptr != mProgram);
+	assert(nullptr != mGraphicsProgram);
 
-	{ // Update program uniform data
+	{ // Update graphics program uniform data
 		// Some counting timer, we don't want to touch the buffers on the GPU
 		const float timerAndGlobalScale[] = { globalTimer, globalScale };
 
@@ -416,16 +416,16 @@ void CubeRendererDrawInstanced::fillCommandBuffer(float globalTimer, float globa
 		}
 		else
 		{
-			// Set individual program uniforms
+			// Set individual graphics program uniforms
 			// -> Using uniform buffers (aka constant buffers in Direct3D) would be more efficient, but Direct3D 9 doesn't support it (neither does e.g. OpenGL ES 3.0)
 			// -> To keep it simple in here, I just use a less efficient string to identity the uniform (does not really hurt in here)
 			// TODO(co) Update
-			// mProgram->setUniform2fv(mProgram->getUniformHandle("TimerAndGlobalScale"), timerAndGlobalScale);
-			// mProgram->setUniform3fv(mProgram->getUniformHandle("LightPosition"), lightPosition);
+			// mGraphicsProgram->setUniform2fv(mGraphicsProgram->getUniformHandle("TimerAndGlobalScale"), timerAndGlobalScale);
+			// mGraphicsProgram->setUniform3fv(mGraphicsProgram->getUniformHandle("LightPosition"), lightPosition);
 		}
 	}
 
-	// Set constant program uniform
+	// Set constant graphics program uniform
 	if (nullptr == mUniformBufferStaticVs)
 	{
 		// TODO(co) Ugly fixed hacked in model-view-projection matrix
@@ -440,7 +440,7 @@ void CubeRendererDrawInstanced::fillCommandBuffer(float globalTimer, float globa
 
 		// There's no uniform buffer: We have to set individual uniforms
 		// TODO(co) Update
-		// mProgram->setUniform4fv(mProgram->getUniformHandle("MVP"), MVP);
+		// mGraphicsProgram->setUniform4fv(mGraphicsProgram->getUniformHandle("MVP"), MVP);
 	}
 
 	// Execute pre-recorded command buffer

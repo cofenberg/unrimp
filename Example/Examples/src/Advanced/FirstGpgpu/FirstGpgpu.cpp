@@ -225,13 +225,13 @@ void FirstGpgpu::onInitialization()
 		mVertexArrayContentProcessing = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(glm::countof(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
 	}
 
-	// Create the programs: Decide which shader language should be used (for example "GLSL" or "HLSL")
+	// Create the graphics programs: Decide which shader language should be used (for example "GLSL" or "HLSL")
 	Renderer::IShaderLanguagePtr shaderLanguage(mRenderer->getShaderLanguage());
 	if (nullptr != shaderLanguage)
 	{
-		// Create the programs
-		Renderer::IProgramPtr programContentGeneration;
-		Renderer::IProgramPtr programContentProcessing;
+		// Create the graphics programs
+		Renderer::IGraphicsProgramPtr graphicsProgramContentGeneration;
+		Renderer::IGraphicsProgramPtr graphicsProgramContentProcessing;
 		{
 			// Get the shader source code (outsourced to keep an overview)
 			const char* vertexShaderSourceCode = nullptr;
@@ -243,25 +243,25 @@ void FirstGpgpu::onInitialization()
 			#include "FirstGpgpu_HLSL_D3D10_D3D11_D3D12.h"
 			#include "FirstGpgpu_Null.h"
 
-			// In order to keep this example simple and to show that it's possible, we use the same vertex shader for both programs
+			// In order to keep this example simple and to show that it's possible, we use the same vertex shader for both graphics programs
 			// -> Depending on the used graphics API and whether or not the shader compiler & linker is clever,
 			//    the unused texture coordinate might get optimized out
 			// -> In a real world application you shouldn't rely on shader compiler & linker behaviour assumptions
 			Renderer::IVertexShaderPtr vertexShader(shaderLanguage->createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode));
-			programContentGeneration = shaderLanguage->createProgram(*mRootSignature, vertexAttributes, vertexShader, shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode_ContentGeneration));
-			programContentProcessing = shaderLanguage->createProgram(*mRootSignature, vertexAttributes, vertexShader, shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode_ContentProcessing));
+			graphicsProgramContentGeneration = shaderLanguage->createGraphicsProgram(*mRootSignature, vertexAttributes, vertexShader, shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode_ContentGeneration));
+			graphicsProgramContentProcessing = shaderLanguage->createGraphicsProgram(*mRootSignature, vertexAttributes, vertexShader, shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode_ContentProcessing));
 		}
 
 		// Create the graphics pipeline state objects (PSO)
-		if (nullptr != programContentGeneration && nullptr != programContentProcessing)
+		if (nullptr != graphicsProgramContentGeneration && nullptr != graphicsProgramContentProcessing)
 		{
 			{ // Content generation
-				Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(mRootSignature, programContentGeneration, vertexAttributes, mFramebuffer[0]->getRenderPass());
+				Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgramContentGeneration, vertexAttributes, mFramebuffer[0]->getRenderPass());
 				graphicsPipelineState.depthStencilState.depthEnable = false;
 				mGraphicsPipelineStateContentGeneration = mRenderer->createGraphicsPipelineState(graphicsPipelineState);
 			}
 			{ // Content processing
-				Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(mRootSignature, programContentProcessing, vertexAttributes, mFramebuffer[0]->getRenderPass());
+				Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgramContentProcessing, vertexAttributes, mFramebuffer[0]->getRenderPass());
 				graphicsPipelineState.primitiveTopology = Renderer::PrimitiveTopology::TRIANGLE_STRIP;
 				graphicsPipelineState.depthStencilState.depthEnable = false;
 				mGraphicsPipelineStateContentProcessing = mRenderer->createGraphicsPipelineState(graphicsPipelineState);

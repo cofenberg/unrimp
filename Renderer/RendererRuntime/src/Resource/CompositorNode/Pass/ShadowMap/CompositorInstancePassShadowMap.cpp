@@ -22,8 +22,8 @@
 //[ Includes                                              ]
 //[-------------------------------------------------------]
 #include "RendererRuntime/Resource/CompositorNode/Pass/ShadowMap/CompositorInstancePassShadowMap.h"
-#include "RendererRuntime/Resource/CompositorNode/Pass/Quad/CompositorInstancePassQuad.h"
-#include "RendererRuntime/Resource/CompositorNode/Pass/Quad/CompositorResourcePassQuad.h"
+#include "RendererRuntime/Resource/CompositorNode/Pass/Compute/CompositorInstancePassCompute.h"
+#include "RendererRuntime/Resource/CompositorNode/Pass/Compute/CompositorResourcePassCompute.h"
 #include "RendererRuntime/Resource/CompositorNode/CompositorNodeInstance.h"
 #include "RendererRuntime/Resource/CompositorWorkspace/CompositorContextData.h"
 #include "RendererRuntime/Resource/Texture/TextureResourceManager.h"
@@ -352,21 +352,21 @@ namespace RendererRuntime
 				const float filterSizeY = std::max(shadowFilterSize * cascadeScale.y, 1.0f);
 				if (filterSizeX > 1.0f || filterSizeY > 1.0f)
 				{
-					{ // Execute compositor instance pass quad, use cascade index three as intermediate render target
+					{ // Execute compositor instance pass compute, use cascade index three as intermediate render target
 						const uint8_t INTERMEDIATE_CASCADE_INDEX = 3;
 						assert(nullptr != mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX]);
 						RENDERER_SCOPED_PROFILER_EVENT(rendererRuntime.getContext(), commandBuffer, "Depth to exponential variance")
 						Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX]);
-						mDepthToExponentialVarianceCompositorInstancePassQuad->onFillCommandBuffer(*mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX], shadowCompositorContextData, commandBuffer);
-						mDepthToExponentialVarianceCompositorInstancePassQuad->onPostCommandBufferExecution();
+						mDepthToExponentialVarianceCompositorInstancePassCompute->onFillCommandBuffer(*mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX], shadowCompositorContextData, commandBuffer);
+						mDepthToExponentialVarianceCompositorInstancePassCompute->onPostCommandBufferExecution();
 					}
 
 					{ // Horizontal blur
 						mPassData.shadowFilterSize = filterSizeX;
 						RENDERER_SCOPED_PROFILER_EVENT(rendererRuntime.getContext(), commandBuffer, "Horizontal blur")
 						Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mIntermediateFramebufferPtr);
-						mHorizontalBlurCompositorInstancePassQuad->onFillCommandBuffer(*mIntermediateFramebufferPtr, shadowCompositorContextData, commandBuffer);
-						mHorizontalBlurCompositorInstancePassQuad->onPostCommandBufferExecution();
+						mHorizontalBlurCompositorInstancePassCompute->onFillCommandBuffer(*mIntermediateFramebufferPtr, shadowCompositorContextData, commandBuffer);
+						mHorizontalBlurCompositorInstancePassCompute->onPostCommandBufferExecution();
 					}
 
 					{ // Vertical blur
@@ -374,18 +374,18 @@ namespace RendererRuntime
 						assert(nullptr != mVarianceFramebufferPtr[cascadeIndex]);
 						RENDERER_SCOPED_PROFILER_EVENT(rendererRuntime.getContext(), commandBuffer, "Vertical blur")
 						Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[cascadeIndex]);
-						mVerticalBlurCompositorInstancePassQuad->onFillCommandBuffer(*mVarianceFramebufferPtr[cascadeIndex], shadowCompositorContextData, commandBuffer);
-						mVerticalBlurCompositorInstancePassQuad->onPostCommandBufferExecution();
+						mVerticalBlurCompositorInstancePassCompute->onFillCommandBuffer(*mVarianceFramebufferPtr[cascadeIndex], shadowCompositorContextData, commandBuffer);
+						mVerticalBlurCompositorInstancePassCompute->onPostCommandBufferExecution();
 					}
 				}
 				else
 				{
-					// Execute compositor instance pass quad
+					// Execute compositor instance pass compute
 					RENDERER_SCOPED_PROFILER_EVENT(rendererRuntime.getContext(), commandBuffer, "Depth to exponential variance")
 					assert(nullptr != mVarianceFramebufferPtr[cascadeIndex]);
 					Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[cascadeIndex]);
-					mDepthToExponentialVarianceCompositorInstancePassQuad->onFillCommandBuffer(*mVarianceFramebufferPtr[cascadeIndex], shadowCompositorContextData, commandBuffer);
-					mDepthToExponentialVarianceCompositorInstancePassQuad->onPostCommandBufferExecution();
+					mDepthToExponentialVarianceCompositorInstancePassCompute->onFillCommandBuffer(*mVarianceFramebufferPtr[cascadeIndex], shadowCompositorContextData, commandBuffer);
+					mDepthToExponentialVarianceCompositorInstancePassCompute->onPostCommandBufferExecution();
 				}
 			}
 
@@ -409,12 +409,12 @@ namespace RendererRuntime
 		mDepthTextureResourceId(getInvalid<TextureResourceId>()),
 		mVarianceTextureResourceId(getInvalid<TextureResourceId>()),
 		mIntermediateDepthBlurTextureResourceId(getInvalid<TextureResourceId>()),
-		mDepthToExponentialVarianceCompositorResourcePassQuad(nullptr),
-		mDepthToExponentialVarianceCompositorInstancePassQuad(nullptr),
-		mHorizontalBlurCompositorResourcePassQuad(nullptr),
-		mHorizontalBlurCompositorInstancePassQuad(nullptr),
-		mVerticalBlurCompositorResourcePassQuad(nullptr),
-		mVerticalBlurCompositorInstancePassQuad(nullptr)
+		mDepthToExponentialVarianceCompositorResourcePassCompute(nullptr),
+		mDepthToExponentialVarianceCompositorInstancePassCompute(nullptr),
+		mHorizontalBlurCompositorResourcePassCompute(nullptr),
+		mHorizontalBlurCompositorInstancePassCompute(nullptr),
+		mVerticalBlurCompositorResourcePassCompute(nullptr),
+		mVerticalBlurCompositorInstancePassCompute(nullptr)
 	{
 		mPassData.shadowMatrix = Math::MAT4_IDENTITY;
 		for (int i = 0; i < CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES; ++i)
@@ -467,8 +467,8 @@ namespace RendererRuntime
 				MaterialProperties materialProperties;
 				materialProperties.setPropertyById(STRING_ID("DepthMap"), MaterialPropertyValue::fromTextureAssetId(::detail::DEPTH_SHADOW_MAP_TEXTURE_ASSET_ID), MaterialProperty::Usage::UNKNOWN, true);
 				materialProperties.setPropertyById(STRING_ID("NumberOfMultisamples"), MaterialPropertyValue::fromInteger((numberOfShadowMultisamples == 1) ? 0 : numberOfShadowMultisamples), MaterialProperty::Usage::UNKNOWN, true);
-				mDepthToExponentialVarianceCompositorResourcePassQuad = new CompositorResourcePassQuad(compositorResourcePassShadowMap.getCompositorTarget(), compositorResourcePassShadowMap.getDepthToExponentialVarianceMaterialBlueprintAssetId(), materialProperties);
-				mDepthToExponentialVarianceCompositorInstancePassQuad = new CompositorInstancePassQuad(*mDepthToExponentialVarianceCompositorResourcePassQuad, getCompositorNodeInstance());
+				mDepthToExponentialVarianceCompositorResourcePassCompute = new CompositorResourcePassCompute(compositorResourcePassShadowMap.getCompositorTarget(), compositorResourcePassShadowMap.getDepthToExponentialVarianceMaterialBlueprintAssetId(), materialProperties);
+				mDepthToExponentialVarianceCompositorInstancePassCompute = new CompositorInstancePassCompute(*mDepthToExponentialVarianceCompositorResourcePassCompute, getCompositorNodeInstance());
 			}
 
 			{ // Variance shadow map
@@ -511,16 +511,16 @@ namespace RendererRuntime
 				MaterialProperties materialProperties;
 				materialProperties.setPropertyById(STRING_ID("VerticalBlur"), MaterialPropertyValue::fromBoolean(false), MaterialProperty::Usage::UNKNOWN, true);
 				materialProperties.setPropertyById(STRING_ID("ColorMap"), MaterialPropertyValue::fromTextureAssetId(assetId), MaterialProperty::Usage::UNKNOWN, true);
-				mHorizontalBlurCompositorResourcePassQuad = new CompositorResourcePassQuad(compositorResourcePassShadowMap.getCompositorTarget(), compositorResourcePassShadowMap.getBlurMaterialBlueprintAssetId(), materialProperties);
-				mHorizontalBlurCompositorInstancePassQuad = new CompositorInstancePassQuad(*mHorizontalBlurCompositorResourcePassQuad, getCompositorNodeInstance());
+				mHorizontalBlurCompositorResourcePassCompute = new CompositorResourcePassCompute(compositorResourcePassShadowMap.getCompositorTarget(), compositorResourcePassShadowMap.getBlurMaterialBlueprintAssetId(), materialProperties);
+				mHorizontalBlurCompositorInstancePassCompute = new CompositorInstancePassCompute(*mHorizontalBlurCompositorResourcePassCompute, getCompositorNodeInstance());
 			}
 
 			{ // Vertical blur
 				MaterialProperties materialProperties;
 				materialProperties.setPropertyById(STRING_ID("VerticalBlur"), MaterialPropertyValue::fromBoolean(true), MaterialProperty::Usage::UNKNOWN, true);
 				materialProperties.setPropertyById(STRING_ID("ColorMap"), MaterialPropertyValue::fromTextureAssetId(::detail::INTERMEDIATE_DEPTH_BLUR_SHADOW_MAP_TEXTURE_ASSET_ID), MaterialProperty::Usage::UNKNOWN, true);
-				mVerticalBlurCompositorResourcePassQuad = new CompositorResourcePassQuad(compositorResourcePassShadowMap.getCompositorTarget(), compositorResourcePassShadowMap.getBlurMaterialBlueprintAssetId(), materialProperties);
-				mVerticalBlurCompositorInstancePassQuad = new CompositorInstancePassQuad(*mVerticalBlurCompositorResourcePassQuad, getCompositorNodeInstance());
+				mVerticalBlurCompositorResourcePassCompute = new CompositorResourcePassCompute(compositorResourcePassShadowMap.getCompositorTarget(), compositorResourcePassShadowMap.getBlurMaterialBlueprintAssetId(), materialProperties);
+				mVerticalBlurCompositorInstancePassCompute = new CompositorInstancePassCompute(*mVerticalBlurCompositorResourcePassCompute, getCompositorNodeInstance());
 			}
 		}
 		else
@@ -535,22 +535,22 @@ namespace RendererRuntime
 		assert(isValid(mDepthTextureResourceId) && isValid(mVarianceTextureResourceId) && isValid(mIntermediateDepthBlurTextureResourceId) && nullptr != mDepthFramebufferPtr);
 
 		// Depth to exponential variance
-		delete mDepthToExponentialVarianceCompositorInstancePassQuad;
-		mDepthToExponentialVarianceCompositorInstancePassQuad = nullptr;
-		delete mDepthToExponentialVarianceCompositorResourcePassQuad;
-		mDepthToExponentialVarianceCompositorResourcePassQuad = nullptr;
+		delete mDepthToExponentialVarianceCompositorInstancePassCompute;
+		mDepthToExponentialVarianceCompositorInstancePassCompute = nullptr;
+		delete mDepthToExponentialVarianceCompositorResourcePassCompute;
+		mDepthToExponentialVarianceCompositorResourcePassCompute = nullptr;
 
 		// Horizontal blur
-		delete mHorizontalBlurCompositorResourcePassQuad;
-		mHorizontalBlurCompositorResourcePassQuad = nullptr;
-		delete mHorizontalBlurCompositorInstancePassQuad;
-		mHorizontalBlurCompositorInstancePassQuad = nullptr;
+		delete mHorizontalBlurCompositorResourcePassCompute;
+		mHorizontalBlurCompositorResourcePassCompute = nullptr;
+		delete mHorizontalBlurCompositorInstancePassCompute;
+		mHorizontalBlurCompositorInstancePassCompute = nullptr;
 
 		// Vertical blur
-		delete mVerticalBlurCompositorResourcePassQuad;
-		mVerticalBlurCompositorResourcePassQuad = nullptr;
-		delete mVerticalBlurCompositorInstancePassQuad;
-		mVerticalBlurCompositorInstancePassQuad = nullptr;
+		delete mVerticalBlurCompositorResourcePassCompute;
+		mVerticalBlurCompositorResourcePassCompute = nullptr;
+		delete mVerticalBlurCompositorInstancePassCompute;
+		mVerticalBlurCompositorInstancePassCompute = nullptr;
 
 		// Release the framebuffers and other renderer resources referenced by the framebuffers
 		mDepthFramebufferPtr = nullptr;

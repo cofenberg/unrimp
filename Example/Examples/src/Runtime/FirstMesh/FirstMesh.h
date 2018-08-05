@@ -129,7 +129,7 @@ private:
 	Renderer::IRootSignaturePtr			  mRootSignature;			///< Root signature, can be a null pointer
 	Renderer::IUniformBufferPtr			  mUniformBuffer;			///< Uniform buffer object (UBO), can be a null pointer
 	Renderer::IGraphicsPipelineStatePtr	  mGraphicsPipelineState;	///< Graphics pipeline state object (PSO), can be a null pointer
-	Renderer::IProgramPtr				  mProgram;					///< Program, can be a null pointer
+	Renderer::IGraphicsProgramPtr		  mGraphicsProgram;			///< Graphics program, can be a null pointer
 	RendererRuntime::MeshResourceId		  mMeshResourceId;			///< Mesh resource ID, can be set to invalid value
 	RendererRuntime::TextureResourceId	  m_argb_nxaTextureResourceId;
 	RendererRuntime::TextureResourceId	  m_hr_rg_mb_nyaTextureResourceId;

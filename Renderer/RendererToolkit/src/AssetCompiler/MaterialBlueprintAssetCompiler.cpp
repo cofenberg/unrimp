@@ -269,8 +269,17 @@ namespace RendererToolkit
 				// Root signature
 				JsonMaterialBlueprintHelper::readRootSignatureByResourceGroups(rapidJsonValueResourceGroups, memoryFile);
 
-				// Graphics pipeline state object (PSO)
-				JsonMaterialBlueprintHelper::readGraphicsPipelineStateObject(input, rapidJsonValueMaterialBlueprintAsset["GraphicsPipelineState"], memoryFile, sortedMaterialPropertyVector);
+				// A material blueprint can have a compute or a graphics pipeline state, but never both at one and the same time
+				if (rapidJsonValueMaterialBlueprintAsset.HasMember("ComputePipelineState"))
+				{
+					// Compute pipeline state object (PSO)
+					JsonMaterialBlueprintHelper::readComputePipelineStateObject(input, rapidJsonValueMaterialBlueprintAsset["ComputePipelineState"], memoryFile);
+				}
+				else
+				{
+					// Graphics pipeline state object (PSO)
+					JsonMaterialBlueprintHelper::readGraphicsPipelineStateObject(input, rapidJsonValueMaterialBlueprintAsset["GraphicsPipelineState"], memoryFile, sortedMaterialPropertyVector);
+				}
 
 				{ // Resources
 					// Uniform buffers

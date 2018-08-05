@@ -185,8 +185,8 @@ void IcosahedronTessellation::onInitialization()
 		Renderer::IShaderLanguagePtr shaderLanguage(renderer->getShaderLanguage());
 		if (nullptr != shaderLanguage)
 		{
-			// Create the program
-			Renderer::IProgramPtr program;
+			// Create the graphics program
+			Renderer::IGraphicsProgramPtr graphicsProgram;
 			{
 				// Get the shader source code (outsourced to keep an overview)
 				const char* vertexShaderSourceCode = nullptr;
@@ -199,8 +199,8 @@ void IcosahedronTessellation::onInitialization()
 				#include "IcosahedronTessellation_HLSL_D3D11_D3D12.h"
 				#include "IcosahedronTessellation_Null.h"
 
-				// Create the program
-				program = shaderLanguage->createProgram(
+				// Create the graphics program
+				graphicsProgram = shaderLanguage->createGraphicsProgram(
 					*mRootSignature,
 					vertexAttributes,
 					shaderLanguage->createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode),
@@ -211,9 +211,9 @@ void IcosahedronTessellation::onInitialization()
 			}
 
 			// Create the graphics pipeline state object (PSO)
-			if (nullptr != program)
+			if (nullptr != graphicsProgram)
 			{
-				Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(mRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass());
+				Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass());
 				graphicsPipelineState.primitiveTopology = Renderer::PrimitiveTopology::PATCH_LIST_3;	// Patch list with 3 vertices per patch (tessellation relevant topology type) - "Renderer::PrimitiveTopology::TriangleList" used for tessellation
 				graphicsPipelineState.primitiveTopologyType = Renderer::PrimitiveTopologyType::PATCH;
 				mGraphicsPipelineState = renderer->createGraphicsPipelineState(graphicsPipelineState);

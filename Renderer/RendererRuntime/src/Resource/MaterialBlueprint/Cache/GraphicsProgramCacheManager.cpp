@@ -21,8 +21,8 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/Resource/MaterialBlueprint/Cache/ProgramCacheManager.h"
-#include "RendererRuntime/Resource/MaterialBlueprint/Cache/ProgramCache.h"
+#include "RendererRuntime/Resource/MaterialBlueprint/Cache/GraphicsProgramCacheManager.h"
+#include "RendererRuntime/Resource/MaterialBlueprint/Cache/GraphicsProgramCache.h"
 #include "RendererRuntime/Resource/MaterialBlueprint/MaterialBlueprintResourceManager.h"
 #include "RendererRuntime/Resource/MaterialBlueprint/MaterialBlueprintResource.h"
 #include "RendererRuntime/Resource/ShaderBlueprint/Cache/ShaderCache.h"
@@ -43,41 +43,41 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public static methods                                 ]
 	//[-------------------------------------------------------]
-	ProgramCacheId ProgramCacheManager::generateProgramCacheId(const PipelineStateSignature& pipelineStateSignature)
+	GraphicsProgramCacheId GraphicsProgramCacheManager::generateGraphicsProgramCacheId(const GraphicsPipelineStateSignature& graphicsPipelineStateSignature)
 	{
-		ProgramCacheId programCacheId = Math::FNV1a_INITIAL_HASH_32;
-		for (uint8_t i = 0; i < NUMBER_OF_SHADER_TYPES; ++i)
+		GraphicsProgramCacheId graphicsProgramCacheId = Math::FNV1a_INITIAL_HASH_32;
+		for (uint8_t i = 0; i < NUMBER_OF_GRAPHICS_SHADER_TYPES; ++i)
 		{
-			const ShaderCombinationId shaderCombinationId = pipelineStateSignature.getShaderCombinationId(static_cast<ShaderType>(i));
+			const ShaderCombinationId shaderCombinationId = graphicsPipelineStateSignature.getShaderCombinationId(static_cast<GraphicsShaderType>(i));
 			if (isValid(shaderCombinationId))
 			{
-				programCacheId = Math::calculateFNV1a32(reinterpret_cast<const uint8_t*>(&shaderCombinationId), sizeof(ShaderCombinationId), programCacheId);
+				graphicsProgramCacheId = Math::calculateFNV1a32(reinterpret_cast<const uint8_t*>(&shaderCombinationId), sizeof(ShaderCombinationId), graphicsProgramCacheId);
 			}
 		}
 
 		// Done
-		return programCacheId;
+		return graphicsProgramCacheId;
 	}
 
 
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
-	ProgramCache* ProgramCacheManager::getProgramCacheByPipelineStateSignature(const PipelineStateSignature& pipelineStateSignature)
+	GraphicsProgramCache* GraphicsProgramCacheManager::getGraphicsProgramCacheByGraphicsPipelineStateSignature(const GraphicsPipelineStateSignature& graphicsPipelineStateSignature)
 	{
-		// Does the program cache already exist?
-		ProgramCache* programCache = nullptr;
-		const ProgramCacheId programCacheId = generateProgramCacheId(pipelineStateSignature);
+		// Does the graphics program cache already exist?
+		GraphicsProgramCache* graphicsProgramCache = nullptr;
+		const GraphicsProgramCacheId graphicsProgramCacheId = generateGraphicsProgramCacheId(graphicsPipelineStateSignature);
 		std::unique_lock<std::mutex> mutexLock(mMutex);
-		ProgramCacheById::const_iterator iterator = mProgramCacheById.find(programCacheId);
-		if (iterator != mProgramCacheById.cend())
+		GraphicsProgramCacheById::const_iterator iterator = mGraphicsProgramCacheById.find(graphicsProgramCacheId);
+		if (iterator != mGraphicsProgramCacheById.cend())
 		{
-			programCache = iterator->second;
+			graphicsProgramCache = iterator->second;
 		}
 		else
 		{
 			// Create the renderer program: Decide which shader language should be used (for example "GLSL" or "HLSL")
-			const MaterialBlueprintResource& materialBlueprintResource = mPipelineStateCacheManager.getMaterialBlueprintResource();
+			const MaterialBlueprintResource& materialBlueprintResource = mGraphicsPipelineStateCacheManager.getMaterialBlueprintResource();
 			const Renderer::IRootSignaturePtr rootSignaturePtr = materialBlueprintResource.getRootSignaturePtr();
 			Renderer::IShaderLanguagePtr shaderLanguage(rootSignaturePtr->getRenderer().getShaderLanguage());
 			if (nullptr != shaderLanguage)
@@ -86,10 +86,10 @@ namespace RendererRuntime
 
 				// Create the shaders
 				ShaderCacheManager& shaderCacheManager = rendererRuntime.getShaderBlueprintResourceManager().getShaderCacheManager();
-				Renderer::IShader* shaders[NUMBER_OF_SHADER_TYPES] = {};
-				for (uint8_t i = 0; i < NUMBER_OF_SHADER_TYPES; ++i)
+				Renderer::IShader* shaders[NUMBER_OF_GRAPHICS_SHADER_TYPES] = {};
+				for (uint8_t i = 0; i < NUMBER_OF_GRAPHICS_SHADER_TYPES; ++i)
 				{
-					ShaderCache* shaderCache = shaderCacheManager.getShaderCache(pipelineStateSignature, materialBlueprintResource, *shaderLanguage, static_cast<ShaderType>(i));
+					ShaderCache* shaderCache = shaderCacheManager.getGraphicsShaderCache(graphicsPipelineStateSignature, materialBlueprintResource, *shaderLanguage, static_cast<GraphicsShaderType>(i));
 					if (nullptr != shaderCache)
 					{
 						shaders[i] = shaderCache->getShaderPtr();
@@ -100,21 +100,21 @@ namespace RendererRuntime
 					}
 				}
 
-				// Create the program
-				Renderer::IProgram* program = shaderLanguage->createProgram(*rootSignaturePtr,
+				// Create the graphics program
+				Renderer::IGraphicsProgram* graphicsProgram = shaderLanguage->createGraphicsProgram(*rootSignaturePtr,
 					rendererRuntime.getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes(),
-					static_cast<Renderer::IVertexShader*>(shaders[static_cast<int>(ShaderType::Vertex)]),
-					static_cast<Renderer::ITessellationControlShader*>(shaders[static_cast<int>(ShaderType::TessellationControl)]),
-					static_cast<Renderer::ITessellationEvaluationShader*>(shaders[static_cast<int>(ShaderType::TessellationEvaluation)]),
-					static_cast<Renderer::IGeometryShader*>(shaders[static_cast<int>(ShaderType::Geometry)]),
-					static_cast<Renderer::IFragmentShader*>(shaders[static_cast<int>(ShaderType::Fragment)]));
-				RENDERER_SET_RESOURCE_DEBUG_NAME(program, "Program cache manager")
+					static_cast<Renderer::IVertexShader*>(shaders[static_cast<int>(GraphicsShaderType::Vertex)]),
+					static_cast<Renderer::ITessellationControlShader*>(shaders[static_cast<int>(GraphicsShaderType::TessellationControl)]),
+					static_cast<Renderer::ITessellationEvaluationShader*>(shaders[static_cast<int>(GraphicsShaderType::TessellationEvaluation)]),
+					static_cast<Renderer::IGeometryShader*>(shaders[static_cast<int>(GraphicsShaderType::Geometry)]),
+					static_cast<Renderer::IFragmentShader*>(shaders[static_cast<int>(GraphicsShaderType::Fragment)]));
+				RENDERER_SET_RESOURCE_DEBUG_NAME(graphicsProgram, "Graphics program cache manager")
 
-				// Create the new program cache instance
-				if (nullptr != program)
+				// Create the new graphics program cache instance
+				if (nullptr != graphicsProgram)
 				{
-					programCache = new ProgramCache(programCacheId, *program);
-					mProgramCacheById.emplace(programCacheId, programCache);
+					graphicsProgramCache = new GraphicsProgramCache(graphicsProgramCacheId, *graphicsProgram);
+					mGraphicsProgramCacheById.emplace(graphicsProgramCacheId, graphicsProgramCache);
 				}
 				else
 				{
@@ -125,17 +125,17 @@ namespace RendererRuntime
 		}
 
 		// Done
-		return programCache;
+		return graphicsProgramCache;
 	}
 
-	void ProgramCacheManager::clearCache()
+	void GraphicsProgramCacheManager::clearCache()
 	{
 		std::unique_lock<std::mutex> mutexLock(mMutex);
-		for (auto& programCacheElement : mProgramCacheById)
+		for (auto& graphicsProgramCacheElement : mGraphicsProgramCacheById)
 		{
-			delete programCacheElement.second;
+			delete graphicsProgramCacheElement.second;
 		}
-		mProgramCacheById.clear();
+		mGraphicsProgramCacheById.clear();
 	}
 
 

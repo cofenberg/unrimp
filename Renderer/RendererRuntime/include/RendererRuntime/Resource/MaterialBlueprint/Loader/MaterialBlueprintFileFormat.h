@@ -43,8 +43,12 @@ namespace RendererRuntime
 	// - Material blueprint properties
 	// - Visual importance of shader properties
 	// - Root signature
-	// - Graphics pipeline state object (PSO)
-	//   - Shader blueprints, rasterization state etc.
+	// - Pipeline state: A material blueprint can have a compute or a graphics pipeline state, but never both at one and the same time
+	//   - Compute pipeline state object (PSO)
+	//     - Compute shader blueprint
+	//   - Graphics pipeline state object (PSO)
+	//     - Graphics shader blueprints
+	//     - Rasterization state etc.
 	// - Resources
 	//   - Uniform buffers
 	//   - Texture buffers
@@ -58,7 +62,7 @@ namespace RendererRuntime
 		//[ Definitions                                           ]
 		//[-------------------------------------------------------]
 		static constexpr uint32_t FORMAT_TYPE	 = STRING_ID("MaterialBlueprint");
-		static constexpr uint32_t FORMAT_VERSION = 9;
+		static constexpr uint32_t FORMAT_VERSION = 10;
 
 		#pragma pack(push)
 		#pragma pack(1)

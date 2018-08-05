@@ -27,7 +27,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/Resource/ShaderBlueprint/ShaderType.h"
+#include "RendererRuntime/Resource/ShaderBlueprint/GraphicsShaderType.h"
 #include "RendererRuntime/Resource/Detail/IResourceLoader.h"
 #include "RendererRuntime/Core/GetInvalid.h"
 #include "RendererRuntime/Core/File/MemoryFile.h"
@@ -117,12 +117,14 @@ namespace RendererRuntime
 			mMaximumNumberOfRootParameters(0),
 			mMaximumNumberOfDescriptorRanges(0),
 			mVertexAttributesAssetId(getInvalid<AssetId>()),
+			mGraphicsShaderBlueprintAssetId{getInvalid<AssetId>(), getInvalid<AssetId>(), getInvalid<AssetId>(), getInvalid<AssetId>(), getInvalid<AssetId>()},
+			mComputeShaderBlueprintAssetId(getInvalid<AssetId>()),
 			mMaximumNumberOfMaterialBlueprintSamplerStates(0),
 			mMaterialBlueprintSamplerStates(nullptr),
 			mMaximumNumberOfMaterialBlueprintTextures(0),
 			mMaterialBlueprintTextures(nullptr)
 		{
-			memset(mShaderBlueprintAssetId, static_cast<int>(getInvalid<AssetId>()), sizeof(AssetId) * NUMBER_OF_SHADER_TYPES);
+			// Nothing here
 		}
 
 		virtual ~MaterialBlueprintResourceLoader() override;
@@ -147,9 +149,12 @@ namespace RendererRuntime
 		std::vector<Renderer::DescriptorRange> mDescriptorRanges;
 		Renderer::RootSignature				   mRootSignature;
 
-		// Temporary data: Vertex attributes and shader blueprints
+		// Temporary data for graphics pipeline state: Vertex attributes and graphics shader blueprints
 		AssetId mVertexAttributesAssetId;
-		AssetId mShaderBlueprintAssetId[NUMBER_OF_SHADER_TYPES];
+		AssetId mGraphicsShaderBlueprintAssetId[NUMBER_OF_GRAPHICS_SHADER_TYPES];
+
+		// Temporary data for compute pipeline state: Compute shader blueprint
+		AssetId mComputeShaderBlueprintAssetId;
 
 		// Temporary data: Sampler states
 		uint32_t						   mMaximumNumberOfMaterialBlueprintSamplerStates;

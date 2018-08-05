@@ -41,10 +41,10 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Public methods                                        ]
 //[-------------------------------------------------------]
-void BatchInstancedArrays::initialize(Renderer::IBufferManager& bufferManager, Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexBuffer& vertexBuffer, Renderer::IIndexBuffer& indexBuffer, Renderer::IProgram& program, Renderer::IRenderPass& renderPass, uint32_t numberOfCubeInstances, bool alphaBlending, uint32_t numberOfTextures, uint32_t sceneRadius)
+void BatchInstancedArrays::initialize(Renderer::IBufferManager& bufferManager, Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexBuffer& vertexBuffer, Renderer::IIndexBuffer& indexBuffer, Renderer::IGraphicsProgram& graphicsProgram, Renderer::IRenderPass& renderPass, uint32_t numberOfCubeInstances, bool alphaBlending, uint32_t numberOfTextures, uint32_t sceneRadius)
 {
 	// Set owner renderer instance
-	mRenderer = &program.getRenderer();
+	mRenderer = &graphicsProgram.getRenderer();
 
 	// Release previous data if required
 	mVertexArray = nullptr;
@@ -118,7 +118,7 @@ void BatchInstancedArrays::initialize(Renderer::IBufferManager& bufferManager, R
 	}
 
 	{ // Create the graphics pipeline state object (PSO)
-		Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(&rootSignature, &program, vertexAttributes, renderPass);
+		Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(&rootSignature, &graphicsProgram, vertexAttributes, renderPass);
 		graphicsPipelineState.blendState.renderTarget[0].blendEnable = alphaBlending;
 		graphicsPipelineState.blendState.renderTarget[0].srcBlend    = Renderer::Blend::SRC_ALPHA;
 		graphicsPipelineState.blendState.renderTarget[0].destBlend   = Renderer::Blend::ONE;

@@ -27,7 +27,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/Resource/CompositorNode/Pass/Quad/CompositorResourcePassQuad.h"
+#include "RendererRuntime/Resource/CompositorNode/Pass/Compute/CompositorResourcePassCompute.h"
 
 
 //[-------------------------------------------------------]
@@ -47,7 +47,7 @@ namespace RendererRuntime
 	*  @note
 	*    - It's highly recommended to only render the debug GUI into the main render target, for example the swap chain of an operation system window
 	*/
-	class CompositorResourcePassDebugGui final : public CompositorResourcePassQuad
+	class CompositorResourcePassDebugGui final : public CompositorResourcePassCompute
 	{
 
 
@@ -79,7 +79,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	private:
 		inline explicit CompositorResourcePassDebugGui(const CompositorTarget& compositorTarget) :
-			CompositorResourcePassQuad(compositorTarget, false)
+			CompositorResourcePassCompute(compositorTarget, false)
 		{
 			// Nothing here
 		}

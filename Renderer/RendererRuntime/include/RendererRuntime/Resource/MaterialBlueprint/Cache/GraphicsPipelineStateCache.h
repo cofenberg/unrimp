@@ -27,18 +27,9 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/Resource/MaterialBlueprint/Cache/PipelineStateSignature.h"
+#include "RendererRuntime/Resource/MaterialBlueprint/Cache/GraphicsPipelineStateSignature.h"
 
 #include <Renderer/Renderer.h>
-
-
-//[-------------------------------------------------------]
-//[ Forward declarations                                  ]
-//[-------------------------------------------------------]
-namespace RendererRuntime
-{
-	class PipelineStateCacheManager;
-}
 
 
 //[-------------------------------------------------------]
@@ -51,15 +42,15 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Classes                                               ]
 	//[-------------------------------------------------------]
-	class PipelineStateCache final
+	class GraphicsPipelineStateCache final
 	{
 
 
 	//[-------------------------------------------------------]
 	//[ Friends                                               ]
 	//[-------------------------------------------------------]
-		friend class PipelineStateCompiler;		// Needs to be able to set "mPipelineStateObjectPtr"
-		friend class PipelineStateCacheManager;	// Is creating and managing pipeline state cache instances
+		friend class GraphicsPipelineStateCompiler;		// Needs to be able to set "mGraphicsPipelineStateObjectPtr"
+		friend class GraphicsPipelineStateCacheManager;	// Is creating and managing graphics pipeline state cache instances
 
 
 	//[-------------------------------------------------------]
@@ -68,14 +59,14 @@ namespace RendererRuntime
 	public:
 		/**
 		*  @brief
-		*    Return the pipeline state signature of the cache
+		*    Return the graphics pipeline state signature of the cache
 		*
 		*  @return
-		*    The pipeline state signature of the cache
+		*    The graphics pipeline state signature of the cache
 		*/
-		inline const PipelineStateSignature& getPipelineStateSignature() const
+		inline const GraphicsPipelineStateSignature& getGraphicsPipelineStateSignature() const
 		{
-			return mPipelineStateSignature;
+			return mGraphicsPipelineStateSignature;
 		}
 
 		/**
@@ -92,10 +83,10 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Return whether or not the pipeline state cache is currently using fallback data due to asynchronous compilation
+		*    Return whether or not the graphics pipeline state cache is currently using fallback data due to asynchronous compilation
 		*
 		*  @return
-		*    If "true", this pipeline state cache is currently using fallback data because it's in asynchronous compilation
+		*    If "true", this graphics pipeline state cache is currently using fallback data because it's in asynchronous compilation
 		*/
 		inline bool isUsingFallback() const
 		{
@@ -107,29 +98,29 @@ namespace RendererRuntime
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		inline explicit PipelineStateCache(const PipelineStateSignature& pipelineStateSignature) :
-			mPipelineStateSignature(pipelineStateSignature),
+		inline explicit GraphicsPipelineStateCache(const GraphicsPipelineStateSignature& graphicsPipelineStateSignature) :
+			mGraphicsPipelineStateSignature(graphicsPipelineStateSignature),
 			mIsUsingFallback(false)
 		{
 			// Nothing here
 		}
 
-		inline ~PipelineStateCache()
+		inline ~GraphicsPipelineStateCache()
 		{
 			// Nothing here
 		}
 
-		explicit PipelineStateCache(const PipelineStateCache&) = delete;
-		PipelineStateCache& operator=(const PipelineStateCache&) = delete;
+		explicit GraphicsPipelineStateCache(const GraphicsPipelineStateCache&) = delete;
+		GraphicsPipelineStateCache& operator=(const GraphicsPipelineStateCache&) = delete;
 
 
 	//[-------------------------------------------------------]
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		PipelineStateSignature				mPipelineStateSignature;
+		GraphicsPipelineStateSignature		mGraphicsPipelineStateSignature;
 		Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineStateObjectPtr;
-		bool								mIsUsingFallback;					///< If "true", this pipeline state cache is currently using fallback data because it's in asynchronous compilation
+		bool								mIsUsingFallback;					///< If "true", this graphics pipeline state cache is currently using fallback data because it's in asynchronous compilation
 
 
 	};

@@ -100,8 +100,8 @@ void FirstTriangle::onInitialization()
 		Renderer::IShaderLanguagePtr shaderLanguage(renderer->getShaderLanguage());
 		if (nullptr != shaderLanguage)
 		{
-			// Create the program
-			Renderer::IProgramPtr program;
+			// Create the graphics program
+			Renderer::IGraphicsProgramPtr graphicsProgram;
 			{
 				// Get the shader source code (outsourced to keep an overview)
 				const char* vertexShaderSourceCode = nullptr;
@@ -120,15 +120,15 @@ void FirstTriangle::onInitialization()
 				Renderer::IFragmentShader* fragmentShader = shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode);
 				RENDERER_SET_RESOURCE_DEBUG_NAME(fragmentShader, "Triangle FS")
 
-				// Create the program
-				program = shaderLanguage->createProgram(*mRootSignature, vertexAttributes, vertexShader, fragmentShader);
-				RENDERER_SET_RESOURCE_DEBUG_NAME(program, "Triangle program")
+				// Create the graphics program
+				graphicsProgram = shaderLanguage->createGraphicsProgram(*mRootSignature, vertexAttributes, vertexShader, fragmentShader);
+				RENDERER_SET_RESOURCE_DEBUG_NAME(graphicsProgram, "Triangle graphics program")
 			}
 
 			// Create the graphics pipeline state object (PSO)
-			if (nullptr != program)
+			if (nullptr != graphicsProgram)
 			{
-				mGraphicsPipelineState = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass()));
+				mGraphicsPipelineState = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass()));
 				RENDERER_SET_RESOURCE_DEBUG_NAME(mGraphicsPipelineState, "Triangle PSO")
 			}
 		}

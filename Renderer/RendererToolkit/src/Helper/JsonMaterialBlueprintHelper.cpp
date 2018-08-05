@@ -163,7 +163,7 @@ namespace
 			// Evaluate value
 			IF_VALUE(ROOT_SIGNATURE)
 			ELSE_IF_VALUE(RESOURCE_GROUP)
-			ELSE_IF_VALUE(PROGRAM)
+			ELSE_IF_VALUE(GRAPHICS_PROGRAM)
 			ELSE_IF_VALUE(VERTEX_ARRAY)
 			ELSE_IF_VALUE(RENDER_PASS)
 			ELSE_IF_VALUE(SWAP_CHAIN)
@@ -743,7 +743,7 @@ namespace RendererToolkit
 								CASE_VALUE(SAMPLER_STATE,	 SAMPLER)
 								CASE(ROOT_SIGNATURE)
 								CASE(RESOURCE_GROUP)
-								CASE(PROGRAM)
+								CASE(GRAPHICS_PROGRAM)
 								CASE(VERTEX_ARRAY)
 								CASE(RENDER_PASS)
 								CASE(SWAP_CHAIN)
@@ -957,8 +957,20 @@ namespace RendererToolkit
 		}
 	}
 
+	void JsonMaterialBlueprintHelper::readComputePipelineStateObject(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValueComputePipelineState, RendererRuntime::IFile& file)
+	{
+		RendererRuntime::AssetId computeShaderBlueprintAssetId = RendererRuntime::getInvalid<RendererRuntime::AssetId>();
+		JsonHelper::optionalCompiledAssetId(input, rapidJsonValueComputePipelineState, "ComputeShaderBlueprint", computeShaderBlueprintAssetId);
+		file.write(&computeShaderBlueprintAssetId, sizeof(RendererRuntime::AssetId));
+	}
+
 	void JsonMaterialBlueprintHelper::readGraphicsPipelineStateObject(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValueGraphicsPipelineState, RendererRuntime::IFile& file, const RendererRuntime::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector)
 	{
+		{ // No compute shader blueprint, this way the loaded knows there's a graphics pipeline state
+			const RendererRuntime::AssetId computeShaderBlueprintAssetId = RendererRuntime::getInvalid<RendererRuntime::AssetId>();
+			file.write(&computeShaderBlueprintAssetId, sizeof(RendererRuntime::AssetId));
+		}
+
 		{ // Vertex attributes asset ID
 			const RendererRuntime::AssetId vertexAttributesAssetId = StringHelper::getAssetIdByString(rapidJsonValueGraphicsPipelineState["VertexAttributes"].GetString(), input);
 			file.write(&vertexAttributesAssetId, sizeof(RendererRuntime::AssetId));
@@ -967,16 +979,16 @@ namespace RendererToolkit
 		{ // Shader blueprints
 			const rapidjson::Value& rapidJsonValueShaderBlueprints = rapidJsonValueGraphicsPipelineState["ShaderBlueprints"];
 
-			RendererRuntime::AssetId shaderBlueprintAssetId[RendererRuntime::NUMBER_OF_SHADER_TYPES];
-			memset(shaderBlueprintAssetId, static_cast<int>(RendererRuntime::getInvalid<RendererRuntime::AssetId>()), sizeof(RendererRuntime::AssetId) * RendererRuntime::NUMBER_OF_SHADER_TYPES);
-			shaderBlueprintAssetId[static_cast<uint8_t>(RendererRuntime::ShaderType::Vertex)] = JsonHelper::getCompiledAssetId(input, rapidJsonValueShaderBlueprints, "VertexShaderBlueprint");
-			JsonHelper::optionalCompiledAssetId(input, rapidJsonValueShaderBlueprints, "TessellationControlShaderBlueprint", shaderBlueprintAssetId[static_cast<uint8_t>(RendererRuntime::ShaderType::TessellationControl)]);
-			JsonHelper::optionalCompiledAssetId(input, rapidJsonValueShaderBlueprints, "TessellationEvaluationShaderBlueprint", shaderBlueprintAssetId[static_cast<uint8_t>(RendererRuntime::ShaderType::TessellationEvaluation)]);
-			JsonHelper::optionalCompiledAssetId(input, rapidJsonValueShaderBlueprints, "GeometryShaderBlueprint", shaderBlueprintAssetId[static_cast<uint8_t>(RendererRuntime::ShaderType::Geometry)]);
-			JsonHelper::optionalCompiledAssetId(input, rapidJsonValueShaderBlueprints, "FragmentShaderBlueprint", shaderBlueprintAssetId[static_cast<uint8_t>(RendererRuntime::ShaderType::Fragment)]);
+			RendererRuntime::AssetId shaderBlueprintAssetId[RendererRuntime::NUMBER_OF_GRAPHICS_SHADER_TYPES];
+			memset(shaderBlueprintAssetId, static_cast<int>(RendererRuntime::getInvalid<RendererRuntime::AssetId>()), sizeof(RendererRuntime::AssetId) * RendererRuntime::NUMBER_OF_GRAPHICS_SHADER_TYPES);
+			shaderBlueprintAssetId[static_cast<uint8_t>(RendererRuntime::GraphicsShaderType::Vertex)] = JsonHelper::getCompiledAssetId(input, rapidJsonValueShaderBlueprints, "VertexShaderBlueprint");
+			JsonHelper::optionalCompiledAssetId(input, rapidJsonValueShaderBlueprints, "TessellationControlShaderBlueprint", shaderBlueprintAssetId[static_cast<uint8_t>(RendererRuntime::GraphicsShaderType::TessellationControl)]);
+			JsonHelper::optionalCompiledAssetId(input, rapidJsonValueShaderBlueprints, "TessellationEvaluationShaderBlueprint", shaderBlueprintAssetId[static_cast<uint8_t>(RendererRuntime::GraphicsShaderType::TessellationEvaluation)]);
+			JsonHelper::optionalCompiledAssetId(input, rapidJsonValueShaderBlueprints, "GeometryShaderBlueprint", shaderBlueprintAssetId[static_cast<uint8_t>(RendererRuntime::GraphicsShaderType::Geometry)]);
+			JsonHelper::optionalCompiledAssetId(input, rapidJsonValueShaderBlueprints, "FragmentShaderBlueprint", shaderBlueprintAssetId[static_cast<uint8_t>(RendererRuntime::GraphicsShaderType::Fragment)]);
 
 			// Write down the shader blueprints
-			file.write(&shaderBlueprintAssetId, sizeof(RendererRuntime::AssetId) * RendererRuntime::NUMBER_OF_SHADER_TYPES);
+			file.write(&shaderBlueprintAssetId, sizeof(RendererRuntime::AssetId) * RendererRuntime::NUMBER_OF_GRAPHICS_SHADER_TYPES);
 		}
 
 		// Start with the default settings

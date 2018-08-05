@@ -1551,12 +1551,12 @@ namespace Direct3D9Renderer
 
 		/**
 		*  @brief
-		*    Set program
+		*    Set graphics program
 		*
-		*  @param[in] program
-		*    Program to set
+		*  @param[in] graphicsProgram
+		*    Graphics program to set
 		*/
-		void setProgram(Renderer::IProgram* program);
+		void setGraphicsProgram(Renderer::IGraphicsProgram* graphicsProgram);
 
 
 	//[-------------------------------------------------------]
@@ -5704,7 +5704,7 @@ namespace Direct3D9Renderer
 
 						case Renderer::ResourceType::ROOT_SIGNATURE:
 						case Renderer::ResourceType::RESOURCE_GROUP:
-						case Renderer::ResourceType::PROGRAM:
+						case Renderer::ResourceType::GRAPHICS_PROGRAM:
 						case Renderer::ResourceType::VERTEX_ARRAY:
 						case Renderer::ResourceType::RENDER_PASS:
 						case Renderer::ResourceType::SWAP_CHAIN:
@@ -5764,7 +5764,7 @@ namespace Direct3D9Renderer
 
 					case Renderer::ResourceType::ROOT_SIGNATURE:
 					case Renderer::ResourceType::RESOURCE_GROUP:
-					case Renderer::ResourceType::PROGRAM:
+					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::SWAP_CHAIN:
@@ -6281,13 +6281,13 @@ namespace Direct3D9Renderer
 
 
 	//[-------------------------------------------------------]
-	//[ Direct3D9Renderer/Shader/ProgramHlsl.h                ]
+	//[ Direct3D9Renderer/Shader/GraphicsProgramHlsl.h        ]
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    HLSL program class
+	*    HLSL graphics program class
 	*/
-	class ProgramHlsl final : public Renderer::IProgram
+	class GraphicsProgramHlsl final : public Renderer::IGraphicsProgram
 	{
 
 
@@ -6302,15 +6302,15 @@ namespace Direct3D9Renderer
 		*  @param[in] direct3D9Renderer
 		*    Owner Direct3D 9 renderer instance
 		*  @param[in] vertexShaderHlsl
-		*    Vertex shader the program is using, can be a null pointer
+		*    Vertex shader the graphics program is using, can be a null pointer
 		*  @param[in] fragmentShaderHlsl
-		*    Fragment shader the program is using, can be a null pointer
+		*    Fragment shader the graphics program is using, can be a null pointer
 		*
 		*  @note
-		*    - The program keeps a reference to the provided shaders and releases it when no longer required
+		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
 		*/
-		ProgramHlsl(Direct3D9Renderer& direct3D9Renderer, VertexShaderHlsl* vertexShaderHlsl, FragmentShaderHlsl* fragmentShaderHlsl) :
-			IProgram(direct3D9Renderer),
+		GraphicsProgramHlsl(Direct3D9Renderer& direct3D9Renderer, VertexShaderHlsl* vertexShaderHlsl, FragmentShaderHlsl* fragmentShaderHlsl) :
+			IGraphicsProgram(direct3D9Renderer),
 			mDirect3D9Renderer(&direct3D9Renderer),
 			mVertexShaderHlsl(vertexShaderHlsl),
 			mFragmentShaderHlsl(fragmentShaderHlsl),
@@ -6369,7 +6369,7 @@ namespace Direct3D9Renderer
 		*  @brief
 		*    Destructor
 		*/
-		virtual ~ProgramHlsl() override
+		virtual ~GraphicsProgramHlsl() override
 		{
 			// Release the Direct3D 9 constant table
 			if (nullptr != mD3DXConstantTable)
@@ -6396,10 +6396,10 @@ namespace Direct3D9Renderer
 
 		/**
 		*  @brief
-		*    Return the HLSL vertex shader the program is using
+		*    Return the HLSL vertex shader the graphics program is using
 		*
 		*  @return
-		*    The HLSL vertex shader the program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*    The HLSL vertex shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
 		inline VertexShaderHlsl* getVertexShaderHlsl() const
 		{
@@ -6408,10 +6408,10 @@ namespace Direct3D9Renderer
 
 		/**
 		*  @brief
-		*    Return the HLSL fragment shader the program is using
+		*    Return the HLSL fragment shader the graphics program is using
 		*
 		*  @return
-		*    The HLSL fragment shader the program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*    The HLSL fragment shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
 		inline FragmentShaderHlsl* getFragmentShaderHlsl() const
 		{
@@ -6426,7 +6426,7 @@ namespace Direct3D9Renderer
 		#ifdef RENDERER_DEBUG
 			inline virtual void setDebugName(const char*) override
 			{
-				// In here we could assign the given debug name to all shaders assigned to the program,
+				// In here we could assign the given debug name to all shaders assigned to the graphics program,
 				// but this might end up within a naming chaos due to overwriting possible already set
 				// names... don't do this...
 			}
@@ -6434,7 +6434,7 @@ namespace Direct3D9Renderer
 
 
 	//[-------------------------------------------------------]
-	//[ Public virtual Renderer::IProgram methods             ]
+	//[ Public virtual Renderer::IGraphicsProgram methods     ]
 	//[-------------------------------------------------------]
 	public:
 		virtual Renderer::handle getUniformHandle(const char* uniformName) override
@@ -6523,7 +6523,7 @@ namespace Direct3D9Renderer
 	protected:
 		inline virtual void selfDestruct() override
 		{
-			RENDERER_DELETE(getRenderer().getContext(), ProgramHlsl, this);
+			RENDERER_DELETE(getRenderer().getContext(), GraphicsProgramHlsl, this);
 		}
 
 
@@ -6531,8 +6531,8 @@ namespace Direct3D9Renderer
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		explicit ProgramHlsl(const ProgramHlsl& source) = delete;
-		ProgramHlsl& operator =(const ProgramHlsl& source) = delete;
+		explicit GraphicsProgramHlsl(const GraphicsProgramHlsl& source) = delete;
+		GraphicsProgramHlsl& operator =(const GraphicsProgramHlsl& source) = delete;
 
 
 	//[-------------------------------------------------------]
@@ -6540,8 +6540,8 @@ namespace Direct3D9Renderer
 	//[-------------------------------------------------------]
 	private:
 		Direct3D9Renderer*  mDirect3D9Renderer;		///< Owner Direct3D 9 renderer instance, always valid
-		VertexShaderHlsl*   mVertexShaderHlsl;		///< Vertex shader the program is using (we keep a reference to it), can be a null pointer
-		FragmentShaderHlsl* mFragmentShaderHlsl;	///< Fragment shader the program is using (we keep a reference to it), can be a null pointer
+		VertexShaderHlsl*   mVertexShaderHlsl;		///< Vertex shader the graphics program is using (we keep a reference to it), can be a null pointer
+		FragmentShaderHlsl* mFragmentShaderHlsl;	///< Fragment shader the graphics program is using (we keep a reference to it), can be a null pointer
 		IDirect3DDevice9*   mDirect3DDevice9;		///< The Direct3D 9 device instance (we keep a reference to it), can be a null pointer
 		ID3DXConstantTable* mD3DXConstantTable;		/**< The Direct3D 9 constant table instance (we keep a reference to it), null pointer on horrible error (so we don't check).
 														 I noticed that as soon as working with "D3DXHANDLE", we no longer need to make a difference between vertex/pixel shaders.
@@ -6668,9 +6668,9 @@ namespace Direct3D9Renderer
 			return nullptr;
 		}
 
-		virtual Renderer::IProgram* createProgram(MAYBE_UNUSED const Renderer::IRootSignature& rootSignature, MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
+		virtual Renderer::IGraphicsProgram* createGraphicsProgram(MAYBE_UNUSED const Renderer::IRootSignature& rootSignature, MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
 		{
-			// A shader can be a null pointer, but if it's not the shader and program language must match!
+			// A shader can be a null pointer, but if it's not the shader and graphics program language must match!
 			// -> Optimization: Comparing the shader language name by directly comparing the pointer address of
 			//    the name is safe because we know that we always reference to one and the same name address
 			// TODO(co) Add security check: Is the given resource one of the currently used renderer?
@@ -6696,8 +6696,8 @@ namespace Direct3D9Renderer
 			}
 			else
 			{
-				// Create the program
-				return RENDERER_NEW(getRenderer().getContext(), ProgramHlsl)(static_cast<Direct3D9Renderer&>(getRenderer()), static_cast<VertexShaderHlsl*>(vertexShader), static_cast<FragmentShaderHlsl*>(fragmentShader));
+				// Create the graphics program
+				return RENDERER_NEW(getRenderer().getContext(), GraphicsProgramHlsl)(static_cast<Direct3D9Renderer&>(getRenderer()), static_cast<VertexShaderHlsl*>(vertexShader), static_cast<FragmentShaderHlsl*>(fragmentShader));
 			}
 
 			// Error! Shader language mismatch!
@@ -6769,7 +6769,7 @@ namespace Direct3D9Renderer
 			IGraphicsPipelineState(direct3D9Renderer),
 			mDirect3DDevice9(direct3D9Renderer.getDirect3DDevice9()),
 			mPrimitiveTopology(graphicsPipelineState.primitiveTopology),
-			mProgram(graphicsPipelineState.program),
+			mGraphicsProgram(graphicsPipelineState.graphicsProgram),
 			mRenderPass(graphicsPipelineState.renderPass),
 			mDirect3DVertexDeclaration9(nullptr),
 			mRasterizerState(graphicsPipelineState.rasterizerState),
@@ -6779,8 +6779,8 @@ namespace Direct3D9Renderer
 			// Acquire our Direct3D 9 device reference
 			mDirect3DDevice9->AddRef();
 
-			// Add a reference to the given program and render pass
-			mProgram->addReference();
+			// Add a reference to the given graphics program and render pass
+			mGraphicsProgram->addReference();
 			mRenderPass->addReference();
 
 			{ // Create Direct3D 9 vertex elements
@@ -6824,8 +6824,8 @@ namespace Direct3D9Renderer
 		*/
 		virtual ~GraphicsPipelineState() override
 		{
-			// Release the program reference and render pass
-			mProgram->releaseReference();
+			// Release the graphics program reference and render pass
+			mGraphicsProgram->releaseReference();
 			mRenderPass->releaseReference();
 
 			// Release the Direct3D 9 vertex declaration
@@ -6871,8 +6871,8 @@ namespace Direct3D9Renderer
 			// Set the Direct3D 9 vertex declaration
 			FAILED_DEBUG_BREAK(mDirect3DDevice9->SetVertexDeclaration(mDirect3DVertexDeclaration9));
 
-			// Set the program
-			static_cast<Direct3D9Renderer&>(getRenderer()).setProgram(mProgram);
+			// Set the graphics program
+			static_cast<Direct3D9Renderer&>(getRenderer()).setGraphicsProgram(mGraphicsProgram);
 
 			// Set the Direct3D 9 rasterizer state
 			mRasterizerState.setDirect3D9RasterizerStates(*mDirect3DDevice9);
@@ -6921,7 +6921,7 @@ namespace Direct3D9Renderer
 	private:
 		IDirect3DDevice9*			 mDirect3DDevice9;				///< The Direct3D 9 device instance (we keep a reference to it), null pointer on horrible error (so we don't check)
 		Renderer::PrimitiveTopology  mPrimitiveTopology;
-		Renderer::IProgram*			 mProgram;
+		Renderer::IGraphicsProgram*	 mGraphicsProgram;
 		Renderer::IRenderPass*		 mRenderPass;
 		IDirect3DVertexDeclaration9* mDirect3DVertexDeclaration9;	///< Direct3D 9 vertex declaration instance, can be a null pointer
 		RasterizerState				 mRasterizerState;
@@ -7489,7 +7489,7 @@ namespace Direct3D9Renderer
 							case Renderer::ResourceType::SAMPLER_STATE:
 							case Renderer::ResourceType::ROOT_SIGNATURE:
 							case Renderer::ResourceType::RESOURCE_GROUP:
-							case Renderer::ResourceType::PROGRAM:
+							case Renderer::ResourceType::GRAPHICS_PROGRAM:
 							case Renderer::ResourceType::VERTEX_ARRAY:
 							case Renderer::ResourceType::RENDER_PASS:
 							case Renderer::ResourceType::SWAP_CHAIN:
@@ -7622,7 +7622,7 @@ namespace Direct3D9Renderer
 
 					case Renderer::ResourceType::ROOT_SIGNATURE:
 					case Renderer::ResourceType::RESOURCE_GROUP:
-					case Renderer::ResourceType::PROGRAM:
+					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::SWAP_CHAIN:
@@ -7786,7 +7786,7 @@ namespace Direct3D9Renderer
 
 					case Renderer::ResourceType::ROOT_SIGNATURE:
 					case Renderer::ResourceType::RESOURCE_GROUP:
-					case Renderer::ResourceType::PROGRAM:
+					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::INDEX_BUFFER:
@@ -8484,7 +8484,7 @@ namespace Direct3D9Renderer
 
 			case Renderer::ResourceType::ROOT_SIGNATURE:
 			case Renderer::ResourceType::RESOURCE_GROUP:
-			case Renderer::ResourceType::PROGRAM:
+			case Renderer::ResourceType::GRAPHICS_PROGRAM:
 			case Renderer::ResourceType::VERTEX_ARRAY:
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::SWAP_CHAIN:
@@ -8551,7 +8551,7 @@ namespace Direct3D9Renderer
 
 			case Renderer::ResourceType::ROOT_SIGNATURE:
 			case Renderer::ResourceType::RESOURCE_GROUP:
-			case Renderer::ResourceType::PROGRAM:
+			case Renderer::ResourceType::GRAPHICS_PROGRAM:
 			case Renderer::ResourceType::VERTEX_ARRAY:
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::SWAP_CHAIN:
@@ -8763,22 +8763,22 @@ namespace Direct3D9Renderer
 		#endif
 	}
 
-	void Direct3D9Renderer::setProgram(Renderer::IProgram* program)
+	void Direct3D9Renderer::setGraphicsProgram(Renderer::IGraphicsProgram* graphicsProgram)
 	{
 		// Begin debug event
 		RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(this)
 
-		if (nullptr != program)
+		if (nullptr != graphicsProgram)
 		{
 			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
-			DIRECT3D9RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *program)
+			DIRECT3D9RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *graphicsProgram)
 
 			// Get shaders
-			const ProgramHlsl*		  programHlsl			= static_cast<ProgramHlsl*>(program);
-			const VertexShaderHlsl*	  vertexShaderHlsl		= programHlsl->getVertexShaderHlsl();
-			const FragmentShaderHlsl* fragmentShaderHlsl	= programHlsl->getFragmentShaderHlsl();
-			IDirect3DVertexShader9*   direct3DVertexShader9 = vertexShaderHlsl  ? vertexShaderHlsl->getDirect3DVertexShader9()  : nullptr;
-			IDirect3DPixelShader9*    direct3DPixelShader9  = fragmentShaderHlsl ? fragmentShaderHlsl->getDirect3DPixelShader9() : nullptr;
+			const GraphicsProgramHlsl* graphicsProgramHlsl	 = static_cast<GraphicsProgramHlsl*>(graphicsProgram);
+			const VertexShaderHlsl*	   vertexShaderHlsl		 = graphicsProgramHlsl->getVertexShaderHlsl();
+			const FragmentShaderHlsl*  fragmentShaderHlsl	 = graphicsProgramHlsl->getFragmentShaderHlsl();
+			IDirect3DVertexShader9*    direct3DVertexShader9 = vertexShaderHlsl  ? vertexShaderHlsl->getDirect3DVertexShader9()  : nullptr;
+			IDirect3DPixelShader9*     direct3DPixelShader9  = fragmentShaderHlsl ? fragmentShaderHlsl->getDirect3DPixelShader9() : nullptr;
 
 			// Set shaders
 			if (mDirect3DVertexShader9 != direct3DVertexShader9)

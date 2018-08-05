@@ -27,19 +27,8 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/Resource/IResourceListener.h"
-#include "RendererRuntime/Resource/CompositorNode/Pass/ICompositorInstancePass.h"
-#include "RendererRuntime/RenderQueue/RenderableManager.h"
-#include "RendererRuntime/RenderQueue/RenderQueue.h"
-
-
-//[-------------------------------------------------------]
-//[ Forward declarations                                  ]
-//[-------------------------------------------------------]
-namespace RendererRuntime
-{
-	class CompositorResourcePassQuad;
-}
+#include "RendererRuntime/Resource/Material/MaterialProperties.h"
+#include "RendererRuntime/Resource/CompositorNode/Pass/ICompositorResourcePass.h"
 
 
 //[-------------------------------------------------------]
@@ -52,7 +41,8 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Global definitions                                    ]
 	//[-------------------------------------------------------]
-	typedef uint32_t MaterialResourceId;	///< POD material resource identifier
+	typedef StringId AssetId;				///< Asset identifier, internally just a POD "uint32_t", string ID scheme is "<project name>/<asset type>/<asset category>/<asset name>"
+	typedef StringId MaterialTechniqueId;	///< Material technique identifier, internally just a POD "uint32_t", result of hashing the material technique name
 
 
 	//[-------------------------------------------------------]
@@ -60,15 +50,15 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    Compositor instance pass quad
+	*    Compositor resource pass compute
 	*
 	*  @remarks
-	*    Using a screen covering triangle as discussed at e.g.
-	*    - https://web.archive.org/web/20140719063725/http://www.altdev.co/2011/08/08/interesting-vertex-shader-trick/
-	*    - "Vertex Shader Tricks by Bill Bilodeau - AMD at GDC14" - http://de.slideshare.net/DevCentralAMD/vertex-shader-tricks-bill-bilodeau
-	*    - Attribute-less rendering: "Rendering a Screen Covering Triangle in OpenGL (with no buffers)" - https://rauwendaal.net/2014/06/14/rendering-a-screen-covering-triangle-in-opengl/
+	*    A compositor resource pass compute instance is using a material resource for compute rendering. This material resource
+	*    can be defined by providing an material asset ID. Since compositor material blueprints are usually highly
+	*    specialized for a certain task, it would be annoying to have to define a material asset for each and every
+	*    compositor material. So, it's also supported to define a material blueprint asset directly.
 	*/
-	class CompositorInstancePassQuad : public ICompositorInstancePass, public IResourceListener
+	class CompositorResourcePassCompute : public ICompositorResourcePass
 	{
 
 
@@ -79,60 +69,92 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
+	//[ Public definitions                                    ]
+	//[-------------------------------------------------------]
+	public:
+		static constexpr uint32_t TYPE_ID = STRING_ID("Compute");
+
+
+	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		CompositorInstancePassQuad(const CompositorResourcePassQuad& compositorResourcePassQuad, const CompositorNodeInstance& compositorNodeInstance);
-		virtual ~CompositorInstancePassQuad() override;
+		CompositorResourcePassCompute(const CompositorTarget& compositorTarget, AssetId materialBlueprintAssetId, const MaterialProperties& materialProperties);
 
-		inline MaterialResourceId getMaterialResourceId() const
+		inline virtual ~CompositorResourcePassCompute() override
 		{
-			return mMaterialResourceId;
+			// Nothing here
+		}
+
+		inline bool isMaterialDefinitionMandatory() const
+		{
+			return mMaterialDefinitionMandatory;
+		}
+
+		inline AssetId getMaterialAssetId() const
+		{
+			return mMaterialAssetId;
+		}
+
+		inline MaterialTechniqueId getMaterialTechniqueId() const
+		{
+			return mMaterialTechniqueId;
+		}
+
+		inline AssetId getMaterialBlueprintAssetId() const
+		{
+			return mMaterialBlueprintAssetId;
+		}
+
+		inline const MaterialProperties& getMaterialProperties() const
+		{
+			return mMaterialProperties;
 		}
 
 
 	//[-------------------------------------------------------]
-	//[ Public virtual RendererRuntime::ICompositorInstancePass methods ]
+	//[ Public virtual RendererRuntime::ICompositorResourcePass methods ]
 	//[-------------------------------------------------------]
 	public:
-		virtual void onFillCommandBuffer(const Renderer::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer) override;
-
-		inline virtual void onPostCommandBufferExecution() override
+		inline virtual CompositorPassTypeId getTypeId() const override
 		{
-			// Directly clear the render queue as soon as the frame rendering has been finished to avoid evil dangling pointers
-			mRenderQueue.clear();
+			return TYPE_ID;
 		}
 
-
-	//[-------------------------------------------------------]
-	//[ Protected virtual RendererRuntime::IResourceListener methods ]
-	//[-------------------------------------------------------]
-	protected:
-		virtual void onLoadingStateChange(const IResource& resource) override;
-
-
-	//[-------------------------------------------------------]
-	//[ Protected virtual RendererRuntime::CompositorInstancePassQuad methods ]
-	//[-------------------------------------------------------]
-	protected:
-		virtual void createMaterialResource(MaterialResourceId parentMaterialResourceId);
+		virtual void deserialize(uint32_t numberOfBytes, const uint8_t* data) override;
 
 
 	//[-------------------------------------------------------]
 	//[ Protected methods                                     ]
 	//[-------------------------------------------------------]
 	protected:
-		explicit CompositorInstancePassQuad(const CompositorInstancePassQuad&) = delete;
-		CompositorInstancePassQuad& operator=(const CompositorInstancePassQuad&) = delete;
+		inline explicit CompositorResourcePassCompute(const CompositorTarget& compositorTarget) :
+			ICompositorResourcePass(compositorTarget),
+			mMaterialDefinitionMandatory(true)
+		{
+			// Nothing here
+		}
+
+		inline CompositorResourcePassCompute(const CompositorTarget& compositorTarget, bool materialDefinitionMandatory) :
+			ICompositorResourcePass(compositorTarget),
+			mMaterialDefinitionMandatory(materialDefinitionMandatory)
+		{
+			// Nothing here
+		}
+
+		explicit CompositorResourcePassCompute(const CompositorResourcePassCompute&) = delete;
+		CompositorResourcePassCompute& operator=(const CompositorResourcePassCompute&) = delete;
 
 
 	//[-------------------------------------------------------]
-	//[ Protected data                                        ]
+	//[ Private data                                          ]
 	//[-------------------------------------------------------]
-	protected:
-		RenderQueue		   mRenderQueue;
-		MaterialResourceId mMaterialResourceId;
-		RenderableManager  mRenderableManager;
+	private:
+		bool				mMaterialDefinitionMandatory;
+		AssetId				mMaterialAssetId;			///< If material blueprint asset ID is set, material asset ID must be invalid
+		MaterialTechniqueId	mMaterialTechniqueId;		///< Must always be valid
+		AssetId				mMaterialBlueprintAssetId;	///< If material asset ID is set, material blueprint asset ID must be invalid
+		MaterialProperties	mMaterialProperties;
 
 
 	};

@@ -912,12 +912,12 @@ namespace OpenGLES3Renderer
 
 		/**
 		*  @brief
-		*    Set program
+		*    Set graphics program
 		*
-		*  @param[in] program
-		*    Program to set
+		*  @param[in] graphicsProgram
+		*    Graphics program to set
 		*/
-		void setProgram(Renderer::IProgram* program);
+		void setGraphicsProgram(Renderer::IGraphicsProgram* graphicsProgram);
 
 		/**
 		*  @brief
@@ -7148,7 +7148,7 @@ namespace OpenGLES3Renderer
 
 						case Renderer::ResourceType::ROOT_SIGNATURE:
 						case Renderer::ResourceType::RESOURCE_GROUP:
-						case Renderer::ResourceType::PROGRAM:
+						case Renderer::ResourceType::GRAPHICS_PROGRAM:
 						case Renderer::ResourceType::VERTEX_ARRAY:
 						case Renderer::ResourceType::RENDER_PASS:
 						case Renderer::ResourceType::SWAP_CHAIN:
@@ -7223,7 +7223,7 @@ namespace OpenGLES3Renderer
 
 					case Renderer::ResourceType::ROOT_SIGNATURE:
 					case Renderer::ResourceType::RESOURCE_GROUP:
-					case Renderer::ResourceType::PROGRAM:
+					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::SWAP_CHAIN:
@@ -7720,13 +7720,13 @@ namespace OpenGLES3Renderer
 
 
 	//[-------------------------------------------------------]
-	//[ OpenGLES3Renderer/Shader/ProgramGlsl.h                ]
+	//[ OpenGLES3Renderer/Shader/GraphicsProgramGlsl.h        ]
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    GLSL program class
+	*    GLSL graphics program class
 	*/
-	class ProgramGlsl final : public Renderer::IProgram
+	class GraphicsProgramGlsl final : public Renderer::IGraphicsProgram
 	{
 
 
@@ -7745,15 +7745,15 @@ namespace OpenGLES3Renderer
 		*  @param[in] vertexAttributes
 		*    Vertex attributes ("vertex declaration" in Direct3D 9 terminology, "input layout" in Direct3D 10 & 11 terminology)
 		*  @param[in] vertexShaderGlsl
-		*    Vertex shader the program is using, can be a null pointer
+		*    Vertex shader the graphics program is using, can be a null pointer
 		*  @param[in] fragmentShaderGlsl
-		*    Fragment shader the program is using, can be a null pointer
+		*    Fragment shader the graphics program is using, can be a null pointer
 		*
 		*  @note
-		*    - The program keeps a reference to the provided shaders and releases it when no longer required
+		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
 		*/
-		ProgramGlsl(OpenGLES3Renderer& openGLES3Renderer, const Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, VertexShaderGlsl* vertexShaderGlsl, FragmentShaderGlsl* fragmentShaderGlsl) :
-			IProgram(openGLES3Renderer),
+		GraphicsProgramGlsl(OpenGLES3Renderer& openGLES3Renderer, const Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, VertexShaderGlsl* vertexShaderGlsl, FragmentShaderGlsl* fragmentShaderGlsl) :
+			IGraphicsProgram(openGLES3Renderer),
 			mNumberOfRootSignatureParameters(0),
 			mOpenGLES3Program(0),
 			mDrawIdUniformLocation(-1)
@@ -7918,7 +7918,7 @@ namespace OpenGLES3Renderer
 		*  @brief
 		*    Destructor
 		*/
-		inline virtual ~ProgramGlsl() override
+		inline virtual ~GraphicsProgramGlsl() override
 		{
 			// Destroy the OpenGL ES 3 program
 			// -> A value of 0 for program will be silently ignored
@@ -7967,7 +7967,7 @@ namespace OpenGLES3Renderer
 
 
 	//[-------------------------------------------------------]
-	//[ Public virtual Renderer::IProgram methods             ]
+	//[ Public virtual Renderer::IGraphicsProgram methods     ]
 	//[-------------------------------------------------------]
 	public:
 		inline virtual Renderer::handle getUniformHandle(const char* uniformName) override
@@ -8171,7 +8171,7 @@ namespace OpenGLES3Renderer
 	protected:
 		inline virtual void selfDestruct() override
 		{
-			RENDERER_DELETE(getRenderer().getContext(), ProgramGlsl, this);
+			RENDERER_DELETE(getRenderer().getContext(), GraphicsProgramGlsl, this);
 		}
 
 
@@ -8179,8 +8179,8 @@ namespace OpenGLES3Renderer
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		explicit ProgramGlsl(const ProgramGlsl& source) = delete;
-		ProgramGlsl& operator =(const ProgramGlsl& source) = delete;
+		explicit GraphicsProgramGlsl(const GraphicsProgramGlsl& source) = delete;
+		GraphicsProgramGlsl& operator =(const GraphicsProgramGlsl& source) = delete;
 
 
 	//[-------------------------------------------------------]
@@ -8320,9 +8320,9 @@ namespace OpenGLES3Renderer
 			return nullptr;
 		}
 
-		virtual Renderer::IProgram* createProgram(const Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
+		virtual Renderer::IGraphicsProgram* createGraphicsProgram(const Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
 		{
-			// A shader can be a null pointer, but if it's not the shader and program language must match!
+			// A shader can be a null pointer, but if it's not the shader and graphics program language must match!
 			// -> Optimization: Comparing the shader language name by directly comparing the pointer address of
 			//    the name is safe because we know that we always reference to one and the same name address
 			// TODO(co) Add security check: Is the given resource one of the currently used renderer?
@@ -8348,8 +8348,8 @@ namespace OpenGLES3Renderer
 			}
 			else
 			{
-				// Create the program
-				return RENDERER_NEW(getRenderer().getContext(), ProgramGlsl)(static_cast<OpenGLES3Renderer&>(getRenderer()), rootSignature, vertexAttributes, static_cast<VertexShaderGlsl*>(vertexShader), static_cast<FragmentShaderGlsl*>(fragmentShader));
+				// Create the graphics program
+				return RENDERER_NEW(getRenderer().getContext(), GraphicsProgramGlsl)(static_cast<OpenGLES3Renderer&>(getRenderer()), rootSignature, vertexAttributes, static_cast<VertexShaderGlsl*>(vertexShader), static_cast<FragmentShaderGlsl*>(fragmentShader));
 			}
 
 			// Error! Shader language mismatch!
@@ -8420,14 +8420,14 @@ namespace OpenGLES3Renderer
 		GraphicsPipelineState(OpenGLES3Renderer& openGLES3Renderer, const Renderer::GraphicsPipelineState& graphicsPipelineState) :
 			IGraphicsPipelineState(openGLES3Renderer),
 			mOpenGLES3PrimitiveTopology(Mapping::getOpenGLES3Type(graphicsPipelineState.primitiveTopology)),
-			mProgram(graphicsPipelineState.program),
+			mGraphicsProgram(graphicsPipelineState.graphicsProgram),
 			mRenderPass(graphicsPipelineState.renderPass),
 			mRasterizerState(graphicsPipelineState.rasterizerState),
 			mDepthStencilState(graphicsPipelineState.depthStencilState),
 			mBlendState(graphicsPipelineState.blendState)
 		{
-			// Add a reference to the given program and render pass
-			mProgram->addReference();
+			// Add a reference to the given graphics program and render pass
+			mGraphicsProgram->addReference();
 			mRenderPass->addReference();
 		}
 
@@ -8437,8 +8437,8 @@ namespace OpenGLES3Renderer
 		*/
 		virtual ~GraphicsPipelineState() override
 		{
-			// Release the program and render pass reference
-			mProgram->releaseReference();
+			// Release the graphics program and render pass reference
+			mGraphicsProgram->releaseReference();
 			mRenderPass->releaseReference();
 		}
 
@@ -8460,7 +8460,7 @@ namespace OpenGLES3Renderer
 		*/
 		void bindGraphicsPipelineState() const
 		{
-			static_cast<OpenGLES3Renderer&>(getRenderer()).setProgram(mProgram);
+			static_cast<OpenGLES3Renderer&>(getRenderer()).setGraphicsProgram(mGraphicsProgram);
 
 			// Set the OpenGL ES 3 rasterizer state
 			mRasterizerState.setOpenGLES3RasterizerStates();
@@ -8513,12 +8513,12 @@ namespace OpenGLES3Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		GLenum				   mOpenGLES3PrimitiveTopology;	///< OpenGL ES 3 primitive topology describing the type of primitive to render
-		Renderer::IProgram*    mProgram;
-		Renderer::IRenderPass* mRenderPass;
-		RasterizerState		   mRasterizerState;
-		DepthStencilState	   mDepthStencilState;
-		BlendState			   mBlendState;
+		GLenum						mOpenGLES3PrimitiveTopology;	///< OpenGL ES 3 primitive topology describing the type of primitive to render
+		Renderer::IGraphicsProgram*	mGraphicsProgram;
+		Renderer::IRenderPass*		mRenderPass;
+		RasterizerState				mRasterizerState;
+		DepthStencilState			mDepthStencilState;
+		BlendState					mBlendState;
 
 
 	};
@@ -9205,7 +9205,7 @@ namespace OpenGLES3Renderer
 
 					case Renderer::ResourceType::ROOT_SIGNATURE:
 					case Renderer::ResourceType::RESOURCE_GROUP:
-					case Renderer::ResourceType::PROGRAM:
+					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::SWAP_CHAIN:
@@ -9404,7 +9404,7 @@ namespace OpenGLES3Renderer
 
 					case Renderer::ResourceType::ROOT_SIGNATURE:
 					case Renderer::ResourceType::RESOURCE_GROUP:
-					case Renderer::ResourceType::PROGRAM:
+					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::INDEX_BUFFER:
@@ -9737,7 +9737,7 @@ namespace OpenGLES3Renderer
 
 			case Renderer::ResourceType::ROOT_SIGNATURE:
 			case Renderer::ResourceType::RESOURCE_GROUP:
-			case Renderer::ResourceType::PROGRAM:
+			case Renderer::ResourceType::GRAPHICS_PROGRAM:
 			case Renderer::ResourceType::VERTEX_ARRAY:
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::SWAP_CHAIN:
@@ -10066,7 +10066,7 @@ namespace OpenGLES3Renderer
 
 			case Renderer::ResourceType::ROOT_SIGNATURE:
 			case Renderer::ResourceType::RESOURCE_GROUP:
-			case Renderer::ResourceType::PROGRAM:
+			case Renderer::ResourceType::GRAPHICS_PROGRAM:
 			case Renderer::ResourceType::VERTEX_ARRAY:
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::SWAP_CHAIN:
@@ -10178,7 +10178,7 @@ namespace OpenGLES3Renderer
 
 			case Renderer::ResourceType::ROOT_SIGNATURE:
 			case Renderer::ResourceType::RESOURCE_GROUP:
-			case Renderer::ResourceType::PROGRAM:
+			case Renderer::ResourceType::GRAPHICS_PROGRAM:
 			case Renderer::ResourceType::VERTEX_ARRAY:
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::SWAP_CHAIN:
@@ -10502,20 +10502,20 @@ namespace OpenGLES3Renderer
 		mCapabilities.computeShader = false;
 	}
 
-	void OpenGLES3Renderer::setProgram(Renderer::IProgram* program)
+	void OpenGLES3Renderer::setGraphicsProgram(Renderer::IGraphicsProgram* graphicsProgram)
 	{
-		if (nullptr != program)
+		if (nullptr != graphicsProgram)
 		{
 			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
-			OPENGLES3RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *program)
+			OPENGLES3RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *graphicsProgram)
 
-			// Bind the program, if required
-			const ProgramGlsl* programGlsl = static_cast<ProgramGlsl*>(program);
-			const uint32_t openGLES3Program = programGlsl->getOpenGLES3Program();
+			// Bind the graphics program, if required
+			const GraphicsProgramGlsl* graphicsProgramGlsl = static_cast<GraphicsProgramGlsl*>(graphicsProgram);
+			const uint32_t openGLES3Program = graphicsProgramGlsl->getOpenGLES3Program();
 			if (openGLES3Program != mOpenGLES3Program)
 			{
 				mOpenGLES3Program = openGLES3Program;
-				mDrawIdUniformLocation = programGlsl->getDrawIdUniformLocation();
+				mDrawIdUniformLocation = graphicsProgramGlsl->getDrawIdUniformLocation();
 				mCurrentStartInstanceLocation = ~0u;
 				glUseProgram(mOpenGLES3Program);
 			}

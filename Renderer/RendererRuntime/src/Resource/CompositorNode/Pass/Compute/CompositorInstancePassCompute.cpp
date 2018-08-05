@@ -21,8 +21,8 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/Resource/CompositorNode/Pass/Quad/CompositorInstancePassQuad.h"
-#include "RendererRuntime/Resource/CompositorNode/Pass/Quad/CompositorResourcePassQuad.h"
+#include "RendererRuntime/Resource/CompositorNode/Pass/Compute/CompositorInstancePassCompute.h"
+#include "RendererRuntime/Resource/CompositorNode/Pass/Compute/CompositorResourcePassCompute.h"
 #include "RendererRuntime/Resource/CompositorNode/CompositorNodeInstance.h"
 #include "RendererRuntime/Resource/CompositorWorkspace/CompositorWorkspaceInstance.h"
 #include "RendererRuntime/Resource/MaterialBlueprint/MaterialBlueprintResourceManager.h"
@@ -42,47 +42,47 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
-	CompositorInstancePassQuad::CompositorInstancePassQuad(const CompositorResourcePassQuad& compositorResourcePassQuad, const CompositorNodeInstance& compositorNodeInstance) :
-		ICompositorInstancePass(compositorResourcePassQuad, compositorNodeInstance),
+	CompositorInstancePassCompute::CompositorInstancePassCompute(const CompositorResourcePassCompute& compositorResourcePassCompute, const CompositorNodeInstance& compositorNodeInstance) :
+		ICompositorInstancePass(compositorResourcePassCompute, compositorNodeInstance),
 		mRenderQueue(compositorNodeInstance.getCompositorWorkspaceInstance().getRendererRuntime().getMaterialBlueprintResourceManager().getIndirectBufferManager(), 0, 0, false, false),
 		mMaterialResourceId(getInvalid<MaterialResourceId>())
 	{
 		// Sanity checks
-		assert(!compositorResourcePassQuad.isMaterialDefinitionMandatory() || isValid(compositorResourcePassQuad.getMaterialAssetId()) || isValid(compositorResourcePassQuad.getMaterialBlueprintAssetId()));
-		assert(!(isValid(compositorResourcePassQuad.getMaterialAssetId()) && isValid(compositorResourcePassQuad.getMaterialBlueprintAssetId())));
+		assert(!compositorResourcePassCompute.isMaterialDefinitionMandatory() || isValid(compositorResourcePassCompute.getMaterialAssetId()) || isValid(compositorResourcePassCompute.getMaterialBlueprintAssetId()));
+		assert(!(isValid(compositorResourcePassCompute.getMaterialAssetId()) && isValid(compositorResourcePassCompute.getMaterialBlueprintAssetId())));
 
-		// Get parent material resource ID and initiate creating the compositor instance pass quad material resource
+		// Get parent material resource ID and initiate creating the compositor instance pass compute material resource
 		MaterialResourceManager& materialResourceManager = compositorNodeInstance.getCompositorWorkspaceInstance().getRendererRuntime().getMaterialResourceManager();
-		if (isValid(compositorResourcePassQuad.getMaterialAssetId()))
+		if (isValid(compositorResourcePassCompute.getMaterialAssetId()))
 		{
 			// Get or load material resource
 			MaterialResourceId materialResourceId = getInvalid<MaterialResourceId>();
-			materialResourceManager.loadMaterialResourceByAssetId(compositorResourcePassQuad.getMaterialAssetId(), materialResourceId, this);
+			materialResourceManager.loadMaterialResourceByAssetId(compositorResourcePassCompute.getMaterialAssetId(), materialResourceId, this);
 		}
 		else
 		{
 			// Get or load material blueprint resource
-			const AssetId materialBlueprintAssetId = compositorResourcePassQuad.getMaterialBlueprintAssetId();
+			const AssetId materialBlueprintAssetId = compositorResourcePassCompute.getMaterialBlueprintAssetId();
 			if (isValid(materialBlueprintAssetId))
 			{
 				MaterialResourceId parentMaterialResourceId = materialResourceManager.getMaterialResourceIdByAssetId(materialBlueprintAssetId);
 				if (isInvalid(parentMaterialResourceId))
 				{
-					parentMaterialResourceId = materialResourceManager.createMaterialResourceByAssetId(materialBlueprintAssetId, materialBlueprintAssetId, compositorResourcePassQuad.getMaterialTechniqueId());
+					parentMaterialResourceId = materialResourceManager.createMaterialResourceByAssetId(materialBlueprintAssetId, materialBlueprintAssetId, compositorResourcePassCompute.getMaterialTechniqueId());
 				}
 				createMaterialResource(parentMaterialResourceId);
 			}
 		}
 	}
 
-	CompositorInstancePassQuad::~CompositorInstancePassQuad()
+	CompositorInstancePassCompute::~CompositorInstancePassCompute()
 	{
 		if (isValid(mMaterialResourceId))
 		{
 			// Clear the renderable manager
 			mRenderableManager.getRenderables().clear();
 
-			// Destroy the material resource the compositor instance pass quad created
+			// Destroy the material resource the compositor instance pass compute created
 			getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getMaterialResourceManager().destroyMaterialResource(mMaterialResourceId);
 		}
 	}
@@ -91,7 +91,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public virtual RendererRuntime::ICompositorInstancePass methods ]
 	//[-------------------------------------------------------]
-	void CompositorInstancePassQuad::onFillCommandBuffer(const Renderer::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
+	void CompositorInstancePassCompute::onFillCommandBuffer(const Renderer::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
 	{
 		if (!mRenderableManager.getRenderables().empty())
 		{
@@ -102,7 +102,7 @@ namespace RendererRuntime
 			mRenderQueue.addRenderablesFromRenderableManager(mRenderableManager);
 			if (mRenderQueue.getNumberOfDrawCalls() > 0)
 			{
-				mRenderQueue.fillCommandBuffer(renderTarget, static_cast<const CompositorResourcePassQuad&>(getCompositorResourcePass()).getMaterialTechniqueId(), compositorContextData, commandBuffer);
+				mRenderQueue.fillCommandBuffer(renderTarget, static_cast<const CompositorResourcePassCompute&>(getCompositorResourcePass()).getMaterialTechniqueId(), compositorContextData, commandBuffer);
 			}
 		}
 	}
@@ -111,7 +111,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::IResourceListener methods ]
 	//[-------------------------------------------------------]
-	void CompositorInstancePassQuad::onLoadingStateChange(const IResource& resource)
+	void CompositorInstancePassCompute::onLoadingStateChange(const IResource& resource)
 	{
 		assert(resource.getId() == mMaterialResourceId);
 		createMaterialResource(resource.getId());
@@ -119,21 +119,21 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
-	//[ Protected virtual RendererRuntime::CompositorInstancePassQuad methods ]
+	//[ Protected virtual RendererRuntime::CompositorInstancePassCompute methods ]
 	//[-------------------------------------------------------]
-	void CompositorInstancePassQuad::createMaterialResource(MaterialResourceId parentMaterialResourceId)
+	void CompositorInstancePassCompute::createMaterialResource(MaterialResourceId parentMaterialResourceId)
 	{
 		// Sanity checks
 		assert(isInvalid(mMaterialResourceId));
 		assert(isValid(parentMaterialResourceId));
 
-		// Each compositor instance pass quad must have its own material resource since material property values might vary
+		// Each compositor instance pass compute must have its own material resource since material property values might vary
 		const IRendererRuntime& rendererRuntime = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime();
 		MaterialResourceManager& materialResourceManager = rendererRuntime.getMaterialResourceManager();
 		mMaterialResourceId = materialResourceManager.createMaterialResourceByCloning(parentMaterialResourceId);
 
-		{ // Set compositor resource pass quad material properties
-			const MaterialProperties::SortedPropertyVector& sortedPropertyVector = static_cast<const CompositorResourcePassQuad&>(getCompositorResourcePass()).getMaterialProperties().getSortedPropertyVector();
+		{ // Set compositor resource pass compute material properties
+			const MaterialProperties::SortedPropertyVector& sortedPropertyVector = static_cast<const CompositorResourcePassCompute&>(getCompositorResourcePass()).getMaterialProperties().getSortedPropertyVector();
 			if (!sortedPropertyVector.empty())
 			{
 				MaterialResource& materialResource = materialResourceManager.getById(mMaterialResourceId);

@@ -173,17 +173,23 @@ namespace RendererRuntime
 			}
 		}
 
-		{ // Read in the pipeline state
+		// A material blueprint can have a compute or a graphics pipeline state, but never both at one and the same time
+		// -> Read in the compute pipeline state: Read in the compute shader blueprint
+		mMemoryFile.read(&mComputeShaderBlueprintAssetId, sizeof(AssetId));
+
+		// Read in the graphics pipeline state in case there's no compute pipeline state
+		if (isInvalid(mComputeShaderBlueprintAssetId))
+		{
 			// Read vertex attributes asset ID
 			mMemoryFile.read(&mVertexAttributesAssetId, sizeof(AssetId));
 
 			// Read in the shader blueprints
-			mMemoryFile.read(&mShaderBlueprintAssetId, sizeof(AssetId) * NUMBER_OF_SHADER_TYPES);
+			mMemoryFile.read(&mGraphicsShaderBlueprintAssetId, sizeof(AssetId) * NUMBER_OF_GRAPHICS_SHADER_TYPES);
 
 			// Read in the graphics pipeline state
 			mMemoryFile.read(&mMaterialBlueprintResource->mGraphicsPipelineState, sizeof(Renderer::SerializedGraphicsPipelineState));
 			mMaterialBlueprintResource->mGraphicsPipelineState.rootSignature = nullptr;
-			mMaterialBlueprintResource->mGraphicsPipelineState.program = nullptr;
+			mMaterialBlueprintResource->mGraphicsPipelineState.graphicsProgram = nullptr;
 			mMaterialBlueprintResource->mGraphicsPipelineState.vertexAttributes.numberOfAttributes = 0;
 			mMaterialBlueprintResource->mGraphicsPipelineState.vertexAttributes.attributes = nullptr;
 		}
@@ -282,14 +288,25 @@ namespace RendererRuntime
 		mMaterialBlueprintResource->mRootSignaturePtr = renderer.createRootSignature(mRootSignature);
 		RENDERER_SET_RESOURCE_DEBUG_NAME(mMaterialBlueprintResource->mRootSignaturePtr, getAsset().virtualFilename)
 
-		// Get the used vertex attributes resource
-		mRendererRuntime.getVertexAttributesResourceManager().loadVertexAttributesResourceByAssetId(mVertexAttributesAssetId, mMaterialBlueprintResource->mVertexAttributesResourceId);
+		{ // Graphics pipeline state
+			// Get the used vertex attributes resource
+			mRendererRuntime.getVertexAttributesResourceManager().loadVertexAttributesResourceByAssetId(mVertexAttributesAssetId, mMaterialBlueprintResource->mVertexAttributesResourceId);
 
-		{ // Get the used shader blueprint resources
-			ShaderBlueprintResourceManager& shaderBlueprintResourceManager = mRendererRuntime.getShaderBlueprintResourceManager();
-			for (uint8_t i = 0; i < NUMBER_OF_SHADER_TYPES; ++i)
-			{
-				shaderBlueprintResourceManager.loadShaderBlueprintResourceByAssetId(mShaderBlueprintAssetId[i], mMaterialBlueprintResource->mShaderBlueprintResourceId[i]);
+			{ // Get the used shader blueprint resources
+				ShaderBlueprintResourceManager& shaderBlueprintResourceManager = mRendererRuntime.getShaderBlueprintResourceManager();
+				if (isValid(mComputeShaderBlueprintAssetId))
+				{
+					// The material blueprint is using a compute pipeline state
+					shaderBlueprintResourceManager.loadShaderBlueprintResourceByAssetId(mComputeShaderBlueprintAssetId, mMaterialBlueprintResource->mComputeShaderBlueprintResourceId);
+				}
+				else
+				{
+					// The material blueprint is using a graphics pipeline state
+					for (uint8_t i = 0; i < NUMBER_OF_GRAPHICS_SHADER_TYPES; ++i)
+					{
+						shaderBlueprintResourceManager.loadShaderBlueprintResourceByAssetId(mGraphicsShaderBlueprintAssetId[i], mMaterialBlueprintResource->mGraphicsShaderBlueprintResourceId[i]);
+					}
+				}
 			}
 		}
 
@@ -429,13 +446,27 @@ namespace RendererRuntime
 
 		// We only demand that all referenced shader blueprint resources are loaded, not yet loaded texture resources can be handled during runtime
 		const ShaderBlueprintResourceManager& shaderBlueprintResourceManager = mRendererRuntime.getShaderBlueprintResourceManager();
-		for (uint8_t i = 0; i < NUMBER_OF_SHADER_TYPES; ++i)
+		if (isValid(mComputeShaderBlueprintAssetId))
 		{
-			const ShaderBlueprintResourceId shaderBlueprintResourceId = mMaterialBlueprintResource->mShaderBlueprintResourceId[i];
+			// The material blueprint is using a compute pipeline state
+			const ShaderBlueprintResourceId shaderBlueprintResourceId = mMaterialBlueprintResource->mComputeShaderBlueprintResourceId;
 			if (isValid(shaderBlueprintResourceId) && IResource::LoadingState::LOADED != shaderBlueprintResourceManager.getResourceByResourceId(shaderBlueprintResourceId).getLoadingState())
 			{
 				// Not fully loaded
 				return false;
+			}
+		}
+		else
+		{
+			// The material blueprint is using a graphics pipeline state
+			for (uint8_t i = 0; i < NUMBER_OF_GRAPHICS_SHADER_TYPES; ++i)
+			{
+				const ShaderBlueprintResourceId shaderBlueprintResourceId = mMaterialBlueprintResource->mGraphicsShaderBlueprintResourceId[i];
+				if (isValid(shaderBlueprintResourceId) && IResource::LoadingState::LOADED != shaderBlueprintResourceManager.getResourceByResourceId(shaderBlueprintResourceId).getLoadingState())
+				{
+					// Not fully loaded
+					return false;
+				}
 			}
 		}
 

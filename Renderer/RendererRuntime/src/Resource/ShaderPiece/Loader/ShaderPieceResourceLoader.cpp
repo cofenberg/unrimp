@@ -95,24 +95,39 @@ namespace RendererRuntime
 			for (uint32_t i = 0; i < numberOfElements; ++i)
 			{
 				MaterialBlueprintResource& materialBlueprintResource = materialBlueprintResourceManager.getByIndex(i);
-				for (uint8_t shaderType = 0; shaderType < NUMBER_OF_SHADER_TYPES; ++shaderType)
+				ShaderBlueprintResourceId shaderBlueprintResourceId = materialBlueprintResource.getComputeShaderBlueprintResourceId();
+				if (isValid(shaderBlueprintResourceId))
 				{
-					const ShaderBlueprintResourceId shaderBlueprintResourceId = materialBlueprintResource.getShaderBlueprintResourceId(static_cast<ShaderType>(shaderType));
-					if (isValid(shaderBlueprintResourceId))
+					// Compute pipeline state object (PSO)
+					const ShaderBlueprintResource::IncludeShaderPieceResourceIds& includeShaderPieceResourceIds = shaderBlueprintResourceManager.getById(shaderBlueprintResourceId).getIncludeShaderPieceResourceIds();
+					if (std::find(includeShaderPieceResourceIds.cbegin(), includeShaderPieceResourceIds.cend(), shaderPieceResourceId) != includeShaderPieceResourceIds.cend())
 					{
-						const ShaderBlueprintResource::IncludeShaderPieceResourceIds& includeShaderPieceResourceIds = shaderBlueprintResourceManager.getById(shaderBlueprintResourceId).getIncludeShaderPieceResourceIds();
-						if (std::find(includeShaderPieceResourceIds.cbegin(), includeShaderPieceResourceIds.cend(), shaderPieceResourceId) != includeShaderPieceResourceIds.cend())
+						materialBlueprintResourcePointers.insert(&materialBlueprintResource);
+					}
+				}
+				else
+				{
+					// Graphics pipeline state object (PSO)
+					for (uint8_t graphicsShaderType = 0; graphicsShaderType < NUMBER_OF_GRAPHICS_SHADER_TYPES; ++graphicsShaderType)
+					{
+						shaderBlueprintResourceId = materialBlueprintResource.getGraphicsShaderBlueprintResourceId(static_cast<GraphicsShaderType>(graphicsShaderType));
+						if (isValid(shaderBlueprintResourceId))
 						{
-							materialBlueprintResourcePointers.insert(&materialBlueprintResource);
-							break;
+							const ShaderBlueprintResource::IncludeShaderPieceResourceIds& includeShaderPieceResourceIds = shaderBlueprintResourceManager.getById(shaderBlueprintResourceId).getIncludeShaderPieceResourceIds();
+							if (std::find(includeShaderPieceResourceIds.cbegin(), includeShaderPieceResourceIds.cend(), shaderPieceResourceId) != includeShaderPieceResourceIds.cend())
+							{
+								materialBlueprintResourcePointers.insert(&materialBlueprintResource);
+								break;
+							}
 						}
 					}
 				}
 			}
 			for (MaterialBlueprintResource* materialBlueprintResource : materialBlueprintResourcePointers)
 			{
-				materialBlueprintResource->getPipelineStateCacheManager().clearCache();
-				materialBlueprintResource->getPipelineStateCacheManager().getProgramCacheManager().clearCache();
+				materialBlueprintResource->getGraphicsPipelineStateCacheManager().clearCache();
+				materialBlueprintResource->getGraphicsPipelineStateCacheManager().getGraphicsProgramCacheManager().clearCache();
+				materialBlueprintResource->getComputePipelineStateCacheManager().clearCache();
 			}
 
 			// TODO(co) Do only clear the influenced shader cache entries

@@ -158,7 +158,7 @@ namespace RendererRuntime
 				AssetId materialBlueprintAssetId;
 			};
 
-			struct PassQuad : public Pass
+			struct PassCompute : public Pass
 			{
 				AssetId				materialAssetId;				///< If material blueprint asset ID is set, material asset ID must be invalid
 				MaterialTechniqueId	materialTechniqueId;			///< Must always be valid
@@ -167,7 +167,7 @@ namespace RendererRuntime
 			};
 
 			// The material definition is not mandatory for the debug GUI, if nothing is defined the fixed build in renderer configuration resources will be used instead
-			struct PassDebugGui final : public PassQuad
+			struct PassDebugGui final : public PassCompute
 			{
 			};
 		#pragma pack(pop)

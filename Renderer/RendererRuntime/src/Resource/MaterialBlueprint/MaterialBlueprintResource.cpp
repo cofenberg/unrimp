@@ -398,9 +398,17 @@ namespace RendererRuntime
 					}
 				}
 
-				// Create the current graphics pipeline state cache instances for the material blueprint
-				const Renderer::IGraphicsPipelineStatePtr graphicsPipelineStatePtr = mPipelineStateCacheManager.getGraphicsPipelineStateCacheByCombination(getInvalid<uint32_t>(), shaderProperties, true);
-				assert(nullptr != graphicsPipelineStatePtr);	// TODO(co) Decent error handling
+				// Create the current pipeline state cache instances for the material blueprint
+				if (isValid(mComputeShaderBlueprintResourceId))
+				{
+					const Renderer::IComputePipelineStatePtr computePipelineStatePtr = mComputePipelineStateCacheManager.getComputePipelineStateCacheByCombination(shaderProperties, true);
+					assert(nullptr != computePipelineStatePtr);	// TODO(co) Decent error handling
+				}
+				else
+				{
+					const Renderer::IGraphicsPipelineStatePtr graphicsPipelineStatePtr = mGraphicsPipelineStateCacheManager.getGraphicsPipelineStateCacheByCombination(getInvalid<uint32_t>(), shaderProperties, true);
+					assert(nullptr != graphicsPipelineStatePtr);	// TODO(co) Decent error handling
+				}
 			}
 			while (shaderCombinationIterator.iterate());
 		}
@@ -411,9 +419,12 @@ namespace RendererRuntime
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	MaterialBlueprintResource::MaterialBlueprintResource() :
-		mPipelineStateCacheManager(*this),
+		mGraphicsPipelineStateCacheManager(*this),
+		mComputePipelineStateCacheManager(*this),
 		mGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder()),
-		mVertexAttributesResourceId(getInvalid<ShaderBlueprintResourceId>()),
+		mVertexAttributesResourceId(getInvalid<VertexAttributesResourceId>()),
+		mGraphicsShaderBlueprintResourceId{getInvalid<ShaderBlueprintResourceId>(), getInvalid<ShaderBlueprintResourceId>(), getInvalid<ShaderBlueprintResourceId>(), getInvalid<ShaderBlueprintResourceId>(), getInvalid<ShaderBlueprintResourceId>()},
+		mComputeShaderBlueprintResourceId(getInvalid<ShaderBlueprintResourceId>()),
 		mPassUniformBuffer(nullptr),
 		mMaterialUniformBuffer(nullptr),
 		mInstanceUniformBuffer(nullptr),
@@ -422,7 +433,7 @@ namespace RendererRuntime
 		mPassBufferManager(nullptr),
 		mMaterialBufferManager(nullptr)
 	{
-		memset(mShaderBlueprintResourceId, static_cast<int>(getInvalid<ShaderBlueprintResourceId>()), sizeof(ShaderBlueprintResourceId) * NUMBER_OF_SHADER_TYPES);
+		// Nothing here
 	}
 
 	MaterialBlueprintResource::~MaterialBlueprintResource()
@@ -433,15 +444,17 @@ namespace RendererRuntime
 
 		// TODO(co) Sanity checks
 		/*
-		PipelineStateCacheManager		mPipelineStateCacheManager;
-		MaterialProperties				mMaterialProperties;
-		ShaderProperties				mVisualImportanceOfShaderProperties;	///< Every shader property known to the material blueprint has a visual importance entry in here
-		ShaderProperties				mMaximumIntegerValueOfShaderProperties;
-		Renderer::VertexAttributes		mVertexAttributes;
-		Renderer::IRootSignaturePtr		mRootSignaturePtr;						///< Root signature, can be a null pointer
+		GraphicsPipelineStateCacheManager mGraphicsPipelineStateCacheManager;
+		ComputePipelineStateCacheManager  mComputePipelineStateCacheManager;
+		MaterialProperties				  mMaterialProperties;
+		ShaderProperties				  mVisualImportanceOfShaderProperties;	///< Every shader property known to the material blueprint has a visual importance entry in here
+		ShaderProperties				  mMaximumIntegerValueOfShaderProperties;
+		// Graphics pipeline state
 		Renderer::GraphicsPipelineState	mGraphicsPipelineState;
 		VertexAttributesResourceId		mVertexAttributesResourceId;
-		ShaderBlueprintResourceId		mShaderBlueprintResourceId[NUMBER_OF_SHADER_TYPES];
+		ShaderBlueprintResourceId		mGraphicsShaderBlueprintResourceId[NUMBER_OF_GRAPHICS_SHADER_TYPES];
+		// Compute pipeline state
+		ShaderBlueprintResourceId		mComputeShaderBlueprintResourceId;
 		// Resource
 		UniformBuffers mUniformBuffers;
 		SamplerStates  mSamplerStates;
@@ -519,7 +532,8 @@ namespace RendererRuntime
 	{
 		// TODO(co) Reset everything
 		setInvalid(mVertexAttributesResourceId);
-		memset(mShaderBlueprintResourceId, static_cast<int>(getInvalid<ShaderBlueprintResourceId>()), sizeof(ShaderBlueprintResourceId) * NUMBER_OF_SHADER_TYPES);
+		memset(mGraphicsShaderBlueprintResourceId, static_cast<int>(getInvalid<ShaderBlueprintResourceId>()), sizeof(ShaderBlueprintResourceId) * NUMBER_OF_GRAPHICS_SHADER_TYPES);
+		setInvalid(mComputeShaderBlueprintResourceId);
 
 		// Call base implementation
 		IResource::deinitializeElement();

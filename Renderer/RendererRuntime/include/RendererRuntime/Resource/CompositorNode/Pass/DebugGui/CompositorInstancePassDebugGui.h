@@ -27,7 +27,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/Resource/CompositorNode/Pass/Quad/CompositorInstancePassQuad.h"
+#include "RendererRuntime/Resource/CompositorNode/Pass/Compute/CompositorInstancePassCompute.h"
 
 
 //[-------------------------------------------------------]
@@ -49,7 +49,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Classes                                               ]
 	//[-------------------------------------------------------]
-	class CompositorInstancePassDebugGui final : public CompositorInstancePassQuad
+	class CompositorInstancePassDebugGui final : public CompositorInstancePassCompute
 	{
 
 
@@ -67,7 +67,7 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
-	//[ Protected virtual RendererRuntime::CompositorInstancePassQuad methods ]
+	//[ Protected virtual RendererRuntime::CompositorInstancePassCompute methods ]
 	//[-------------------------------------------------------]
 	protected:
 		virtual void createMaterialResource(MaterialResourceId parentMaterialResourceId) override;

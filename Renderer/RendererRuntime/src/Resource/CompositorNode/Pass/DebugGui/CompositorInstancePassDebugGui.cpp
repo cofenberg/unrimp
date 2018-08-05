@@ -83,12 +83,12 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
-	//[ Protected virtual RendererRuntime::CompositorInstancePassQuad methods ]
+	//[ Protected virtual RendererRuntime::CompositorInstancePassCompute methods ]
 	//[-------------------------------------------------------]
 	void CompositorInstancePassDebugGui::createMaterialResource(MaterialResourceId parentMaterialResourceId)
 	{
 		// Call the base implementation
-		CompositorInstancePassQuad::createMaterialResource(parentMaterialResourceId);
+		CompositorInstancePassCompute::createMaterialResource(parentMaterialResourceId);
 
 		// Inside this compositor pass implementation, the renderable only exists to set the material blueprint
 		mRenderableManager.getRenderables()[0].setNumberOfIndices(0);
@@ -99,7 +99,7 @@ namespace RendererRuntime
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	CompositorInstancePassDebugGui::CompositorInstancePassDebugGui(const CompositorResourcePassDebugGui& compositorResourcePassDebugGui, const CompositorNodeInstance& compositorNodeInstance) :
-		CompositorInstancePassQuad(compositorResourcePassDebugGui, compositorNodeInstance)
+		CompositorInstancePassCompute(compositorResourcePassDebugGui, compositorNodeInstance)
 	{
 		// Inside this compositor pass implementation, the renderable only exists to set the material blueprint
 		RenderableManager::Renderables& renderables = mRenderableManager.getRenderables();

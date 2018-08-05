@@ -179,7 +179,7 @@ namespace RendererRuntime
 		Renderer::ITexture2DPtr	mTexture2D;
 		// Fixed build in renderer configuration resources
 		Renderer::IRootSignaturePtr			mRootSignature;
-		Renderer::IProgramPtr				mProgram;
+		Renderer::IGraphicsProgramPtr		mGraphicsProgram;
 		Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineState;
 		Renderer::IUniformBufferPtr			mVertexShaderUniformBuffer;
 		Renderer::handle					mObjectSpaceToClipSpaceMatrixUniformHandle;

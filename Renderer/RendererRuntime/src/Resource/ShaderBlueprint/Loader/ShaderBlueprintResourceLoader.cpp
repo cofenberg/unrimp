@@ -140,19 +140,33 @@ namespace RendererRuntime
 			for (uint32_t i = 0; i < numberOfElements; ++i)
 			{
 				MaterialBlueprintResource& materialBlueprintResource = materialBlueprintResourceManager.getByIndex(i);
-				for (uint8_t shaderType = 0; shaderType < NUMBER_OF_SHADER_TYPES; ++shaderType)
+				ShaderBlueprintResourceId shaderBlueprintResourceId = materialBlueprintResource.getComputeShaderBlueprintResourceId();
+				if (isValid(shaderBlueprintResourceId))
 				{
-					if (materialBlueprintResource.getShaderBlueprintResourceId(static_cast<ShaderType>(shaderType)) == shaderBlueprintResourceId)
+					// Compute pipeline state object (PSO)
+					if (shaderBlueprintResourceId == shaderBlueprintResourceId)
 					{
 						materialBlueprintResourcePointers.insert(&materialBlueprintResource);
-						break;
+					}
+				}
+				else
+				{
+					// Graphics pipeline state object (PSO)
+					for (uint8_t graphicsShaderType = 0; graphicsShaderType < NUMBER_OF_GRAPHICS_SHADER_TYPES; ++graphicsShaderType)
+					{
+						if (materialBlueprintResource.getGraphicsShaderBlueprintResourceId(static_cast<GraphicsShaderType>(graphicsShaderType)) == shaderBlueprintResourceId)
+						{
+							materialBlueprintResourcePointers.insert(&materialBlueprintResource);
+							break;
+						}
 					}
 				}
 			}
 			for (MaterialBlueprintResource* materialBlueprintResource : materialBlueprintResourcePointers)
 			{
-				materialBlueprintResource->getPipelineStateCacheManager().clearCache();
-				materialBlueprintResource->getPipelineStateCacheManager().getProgramCacheManager().clearCache();
+				materialBlueprintResource->getGraphicsPipelineStateCacheManager().clearCache();
+				materialBlueprintResource->getGraphicsPipelineStateCacheManager().getGraphicsProgramCacheManager().clearCache();
+				materialBlueprintResource->getComputePipelineStateCacheManager().clearCache();
 			}
 
 			// TODO(co) Do only clear the influenced shader cache entries

@@ -1518,10 +1518,10 @@ namespace OpenGLRenderer
 		*  @brief
 		*    Set OpenGL graphics program
 		*
-		*  @param[in] program
-		*    Program to set
+		*  @param[in] graphicsProgram
+		*    Graphics program to set
 		*/
-		void setOpenGLGraphicsProgram(Renderer::IProgram* program);
+		void setOpenGLGraphicsProgram(Renderer::IGraphicsProgram* graphicsProgram);
 
 		/**
 		*  @brief
@@ -12077,7 +12077,7 @@ namespace OpenGLRenderer
 
 						case Renderer::ResourceType::ROOT_SIGNATURE:
 						case Renderer::ResourceType::RESOURCE_GROUP:
-						case Renderer::ResourceType::PROGRAM:
+						case Renderer::ResourceType::GRAPHICS_PROGRAM:
 						case Renderer::ResourceType::VERTEX_ARRAY:
 						case Renderer::ResourceType::RENDER_PASS:
 						case Renderer::ResourceType::SWAP_CHAIN:
@@ -12146,7 +12146,7 @@ namespace OpenGLRenderer
 
 					case Renderer::ResourceType::ROOT_SIGNATURE:
 					case Renderer::ResourceType::RESOURCE_GROUP:
-					case Renderer::ResourceType::PROGRAM:
+					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::SWAP_CHAIN:
@@ -12312,7 +12312,7 @@ namespace OpenGLRenderer
 
 					case Renderer::ResourceType::ROOT_SIGNATURE:
 					case Renderer::ResourceType::RESOURCE_GROUP:
-					case Renderer::ResourceType::PROGRAM:
+					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::SWAP_CHAIN:
@@ -12387,7 +12387,7 @@ namespace OpenGLRenderer
 
 					case Renderer::ResourceType::ROOT_SIGNATURE:
 					case Renderer::ResourceType::RESOURCE_GROUP:
-					case Renderer::ResourceType::PROGRAM:
+					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::SWAP_CHAIN:
@@ -12644,7 +12644,7 @@ namespace OpenGLRenderer
 
 					case Renderer::ResourceType::ROOT_SIGNATURE:
 					case Renderer::ResourceType::RESOURCE_GROUP:
-					case Renderer::ResourceType::PROGRAM:
+					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::SWAP_CHAIN:
@@ -12733,7 +12733,7 @@ namespace OpenGLRenderer
 
 					case Renderer::ResourceType::ROOT_SIGNATURE:
 					case Renderer::ResourceType::RESOURCE_GROUP:
-					case Renderer::ResourceType::PROGRAM:
+					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::SWAP_CHAIN:
@@ -13572,13 +13572,13 @@ namespace OpenGLRenderer
 
 
 	//[-------------------------------------------------------]
-	//[ OpenGLRenderer/Shader/Monolithic/ProgramMonolithic.h  ]
+	//[ OpenGLRenderer/Shader/Monolithic/GraphicsProgramMonolithic.h ]
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    Monolithic program class
+	*    Monolithic graphics program class
 	*/
-	class ProgramMonolithic : public Renderer::IProgram
+	class GraphicsProgramMonolithic : public Renderer::IGraphicsProgram
 	{
 
 
@@ -13597,21 +13597,21 @@ namespace OpenGLRenderer
 		*  @param[in] vertexAttributes
 		*    Vertex attributes ("vertex declaration" in Direct3D 9 terminology, "input layout" in Direct3D 10 & 11 terminology)
 		*  @param[in] vertexShaderMonolithic
-		*    Vertex shader the program is using, can be a null pointer
+		*    Vertex shader the graphics program is using, can be a null pointer
 		*  @param[in] tessellationControlShaderMonolithic
-		*    Tessellation control shader the program is using, can be a null pointer
+		*    Tessellation control shader the graphics program is using, can be a null pointer
 		*  @param[in] tessellationEvaluationShaderMonolithic
-		*    Tessellation evaluation shader the program is using, can be a null pointer
+		*    Tessellation evaluation shader the graphics program is using, can be a null pointer
 		*  @param[in] geometryShaderMonolithic
-		*    Geometry shader the program is using, can be a null pointer
+		*    Geometry shader the graphics program is using, can be a null pointer
 		*  @param[in] fragmentShaderMonolithic
-		*    Fragment shader the program is using, can be a null pointer
+		*    Fragment shader the graphics program is using, can be a null pointer
 		*
 		*  @note
-		*    - The program keeps a reference to the provided shaders and releases it when no longer required
+		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
 		*/
-		ProgramMonolithic(OpenGLRenderer& openGLRenderer, const Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, VertexShaderMonolithic* vertexShaderMonolithic, TessellationControlShaderMonolithic* tessellationControlShaderMonolithic, TessellationEvaluationShaderMonolithic* tessellationEvaluationShaderMonolithic, GeometryShaderMonolithic* geometryShaderMonolithic, FragmentShaderMonolithic* fragmentShaderMonolithic) :
-			IProgram(openGLRenderer),
+		GraphicsProgramMonolithic(OpenGLRenderer& openGLRenderer, const Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, VertexShaderMonolithic* vertexShaderMonolithic, TessellationControlShaderMonolithic* tessellationControlShaderMonolithic, TessellationEvaluationShaderMonolithic* tessellationEvaluationShaderMonolithic, GeometryShaderMonolithic* geometryShaderMonolithic, FragmentShaderMonolithic* fragmentShaderMonolithic) :
+			IGraphicsProgram(openGLRenderer),
 			mOpenGLProgram(glCreateProgramObjectARB()),
 			mDrawIdUniformLocation(-1)
 		{
@@ -13807,7 +13807,7 @@ namespace OpenGLRenderer
 		*  @brief
 		*    Destructor
 		*/
-		inline virtual ~ProgramMonolithic() override
+		inline virtual ~GraphicsProgramMonolithic() override
 		{
 			// Destroy the OpenGL program
 			// -> A value of 0 for program will be silently ignored
@@ -13856,7 +13856,7 @@ namespace OpenGLRenderer
 
 
 	//[-------------------------------------------------------]
-	//[ Public virtual Renderer::IProgram methods             ]
+	//[ Public virtual Renderer::IGraphicsProgram methods     ]
 	//[-------------------------------------------------------]
 	public:
 		virtual Renderer::handle getUniformHandle(const char* uniformName) override
@@ -14053,7 +14053,7 @@ namespace OpenGLRenderer
 	protected:
 		inline virtual void selfDestruct() override
 		{
-			RENDERER_DELETE(getRenderer().getContext(), ProgramMonolithic, this);
+			RENDERER_DELETE(getRenderer().getContext(), GraphicsProgramMonolithic, this);
 		}
 
 
@@ -14068,8 +14068,8 @@ namespace OpenGLRenderer
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		explicit ProgramMonolithic(const ProgramMonolithic& source) = delete;
-		ProgramMonolithic& operator =(const ProgramMonolithic& source) = delete;
+		explicit GraphicsProgramMonolithic(const GraphicsProgramMonolithic& source) = delete;
+		GraphicsProgramMonolithic& operator =(const GraphicsProgramMonolithic& source) = delete;
 
 
 	//[-------------------------------------------------------]
@@ -14085,13 +14085,13 @@ namespace OpenGLRenderer
 
 
 	//[-------------------------------------------------------]
-	//[ OpenGLRenderer/Shader/Monolithic/ProgramMonolithicDsa.h ]
+	//[ OpenGLRenderer/Shader/Monolithic/GraphicsProgramMonolithicDsa.h ]
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    Monolithic program class, effective direct state access (DSA)
+	*    Monolithic graphics program class, effective direct state access (DSA)
 	*/
-	class ProgramMonolithicDsa final : public ProgramMonolithic
+	class GraphicsProgramMonolithicDsa final : public GraphicsProgramMonolithic
 	{
 
 
@@ -14110,33 +14110,33 @@ namespace OpenGLRenderer
 		*  @param[in] vertexAttributes
 		*    Vertex attributes ("vertex declaration" in Direct3D 9 terminology, "input layout" in Direct3D 10 & 11 terminology)
 		*  @param[in] vertexShaderMonolithic
-		*    Vertex shader the program is using, can be a null pointer
+		*    Vertex shader the graphics program is using, can be a null pointer
 		*  @param[in] tessellationControlShaderMonolithic
-		*    Tessellation control shader the program is using, can be a null pointer
+		*    Tessellation control shader the graphics program is using, can be a null pointer
 		*  @param[in] tessellationEvaluationShaderMonolithic
-		*    Tessellation evaluation shader the program is using, can be a null pointer
+		*    Tessellation evaluation shader the graphics program is using, can be a null pointer
 		*  @param[in] geometryShaderMonolithic
-		*    Geometry shader the program is using, can be a null pointer
+		*    Geometry shader the graphics program is using, can be a null pointer
 		*  @param[in] fragmentShaderMonolithic
-		*    Fragment shader the program is using, can be a null pointer
+		*    Fragment shader the graphics program is using, can be a null pointer
 		*
 		*  @note
-		*    - The program keeps a reference to the provided shaders and releases it when no longer required
+		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
 		*/
-		inline ProgramMonolithicDsa(OpenGLRenderer& openGLRenderer, const Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, VertexShaderMonolithic* vertexShaderMonolithic, TessellationControlShaderMonolithic* tessellationControlShaderMonolithic, TessellationEvaluationShaderMonolithic* tessellationEvaluationShaderMonolithic, GeometryShaderMonolithic* geometryShaderMonolithic, FragmentShaderMonolithic* fragmentShaderMonolithic) :
-			ProgramMonolithic(openGLRenderer, rootSignature, vertexAttributes, vertexShaderMonolithic, tessellationControlShaderMonolithic, tessellationEvaluationShaderMonolithic, geometryShaderMonolithic, fragmentShaderMonolithic)
+		inline GraphicsProgramMonolithicDsa(OpenGLRenderer& openGLRenderer, const Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, VertexShaderMonolithic* vertexShaderMonolithic, TessellationControlShaderMonolithic* tessellationControlShaderMonolithic, TessellationEvaluationShaderMonolithic* tessellationEvaluationShaderMonolithic, GeometryShaderMonolithic* geometryShaderMonolithic, FragmentShaderMonolithic* fragmentShaderMonolithic) :
+			GraphicsProgramMonolithic(openGLRenderer, rootSignature, vertexAttributes, vertexShaderMonolithic, tessellationControlShaderMonolithic, tessellationEvaluationShaderMonolithic, geometryShaderMonolithic, fragmentShaderMonolithic)
 		{}
 
 		/**
 		*  @brief
 		*    Destructor
 		*/
-		inline virtual ~ProgramMonolithicDsa() override
+		inline virtual ~GraphicsProgramMonolithicDsa() override
 		{}
 
 
 	//[-------------------------------------------------------]
-	//[ Public virtual Renderer::IProgram methods             ]
+	//[ Public virtual Renderer::IGraphicsProgram methods     ]
 	//[-------------------------------------------------------]
 	public:
 		virtual void setUniform1f(Renderer::handle uniformHandle, float value) override
@@ -14216,8 +14216,8 @@ namespace OpenGLRenderer
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		explicit ProgramMonolithicDsa(const ProgramMonolithicDsa& source) = delete;
-		ProgramMonolithicDsa& operator =(const ProgramMonolithicDsa& source) = delete;
+		explicit GraphicsProgramMonolithicDsa(const GraphicsProgramMonolithicDsa& source) = delete;
+		GraphicsProgramMonolithicDsa& operator =(const GraphicsProgramMonolithicDsa& source) = delete;
 
 
 	};
@@ -14688,11 +14688,11 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::IProgram* createProgram(const Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
+		virtual Renderer::IGraphicsProgram* createGraphicsProgram(const Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
 		{
 			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(getRenderer());
 
-			// A shader can be a null pointer, but if it's not the shader and program language must match!
+			// A shader can be a null pointer, but if it's not the shader and graphics program language must match!
 			// -> Optimization: Comparing the shader language name by directly comparing the pointer address of
 			//    the name is safe because we know that we always reference to one and the same name address
 			// TODO(co) Add security check: Is the given resource one of the currently used renderer?
@@ -14721,12 +14721,12 @@ namespace OpenGLRenderer
 			else if (openGLRenderer.getExtensions().isGL_EXT_direct_state_access() || openGLRenderer.getExtensions().isGL_ARB_direct_state_access())
 			{
 				// Effective direct state access (DSA)
-				return RENDERER_NEW(getRenderer().getContext(), ProgramMonolithicDsa)(openGLRenderer, rootSignature, vertexAttributes, static_cast<VertexShaderMonolithic*>(vertexShader), static_cast<TessellationControlShaderMonolithic*>(tessellationControlShader), static_cast<TessellationEvaluationShaderMonolithic*>(tessellationEvaluationShader), static_cast<GeometryShaderMonolithic*>(geometryShader), static_cast<FragmentShaderMonolithic*>(fragmentShader));
+				return RENDERER_NEW(getRenderer().getContext(), GraphicsProgramMonolithicDsa)(openGLRenderer, rootSignature, vertexAttributes, static_cast<VertexShaderMonolithic*>(vertexShader), static_cast<TessellationControlShaderMonolithic*>(tessellationControlShader), static_cast<TessellationEvaluationShaderMonolithic*>(tessellationEvaluationShader), static_cast<GeometryShaderMonolithic*>(geometryShader), static_cast<FragmentShaderMonolithic*>(fragmentShader));
 			}
 			else
 			{
 				// Traditional bind version
-				return RENDERER_NEW(getRenderer().getContext(), ProgramMonolithic)(openGLRenderer, rootSignature, vertexAttributes, static_cast<VertexShaderMonolithic*>(vertexShader), static_cast<TessellationControlShaderMonolithic*>(tessellationControlShader), static_cast<TessellationEvaluationShaderMonolithic*>(tessellationEvaluationShader), static_cast<GeometryShaderMonolithic*>(geometryShader), static_cast<FragmentShaderMonolithic*>(fragmentShader));
+				return RENDERER_NEW(getRenderer().getContext(), GraphicsProgramMonolithic)(openGLRenderer, rootSignature, vertexAttributes, static_cast<VertexShaderMonolithic*>(vertexShader), static_cast<TessellationControlShaderMonolithic*>(tessellationControlShader), static_cast<TessellationEvaluationShaderMonolithic*>(tessellationEvaluationShader), static_cast<GeometryShaderMonolithic*>(geometryShader), static_cast<FragmentShaderMonolithic*>(fragmentShader));
 			}
 
 			// Error! Shader language mismatch!
@@ -15599,13 +15599,13 @@ namespace OpenGLRenderer
 
 
 	//[-------------------------------------------------------]
-	//[ OpenGLRenderer/Shader/Separate/ProgramSeparate.h      ]
+	//[ OpenGLRenderer/Shader/Separate/GraphicsProgramSeparate.h ]
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    Separate program class
+	*    Separate graphics program class
 	*/
-	class ProgramSeparate : public Renderer::IProgram
+	class GraphicsProgramSeparate : public Renderer::IGraphicsProgram
 	{
 
 
@@ -15622,21 +15622,21 @@ namespace OpenGLRenderer
 		*  @param[in] rootSignature
 		*    Root signature
 		*  @param[in] vertexShaderSeparate
-		*    Vertex shader the program is using, can be a null pointer
+		*    Vertex shader the graphics program is using, can be a null pointer
 		*  @param[in] tessellationControlShaderSeparate
-		*    Tessellation control shader the program is using, can be a null pointer
+		*    Tessellation control shader the graphics program is using, can be a null pointer
 		*  @param[in] tessellationEvaluationShaderSeparate
-		*    Tessellation evaluation shader the program is using, can be a null pointer
+		*    Tessellation evaluation shader the graphics program is using, can be a null pointer
 		*  @param[in] geometryShaderSeparate
-		*    Geometry shader the program is using, can be a null pointer
+		*    Geometry shader the graphics program is using, can be a null pointer
 		*  @param[in] fragmentShaderSeparate
-		*    Fragment shader the program is using, can be a null pointer
+		*    Fragment shader the graphics program is using, can be a null pointer
 		*
 		*  @note
-		*    - The program keeps a reference to the provided shaders and releases it when no longer required
+		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
 		*/
-		ProgramSeparate(OpenGLRenderer& openGLRenderer, const Renderer::IRootSignature& rootSignature, VertexShaderSeparate* vertexShaderSeparate, TessellationControlShaderSeparate* tessellationControlShaderSeparate, TessellationEvaluationShaderSeparate* tessellationEvaluationShaderSeparate, GeometryShaderSeparate* geometryShaderSeparate, FragmentShaderSeparate* fragmentShaderSeparate) :
-			IProgram(openGLRenderer),
+		GraphicsProgramSeparate(OpenGLRenderer& openGLRenderer, const Renderer::IRootSignature& rootSignature, VertexShaderSeparate* vertexShaderSeparate, TessellationControlShaderSeparate* tessellationControlShaderSeparate, TessellationEvaluationShaderSeparate* tessellationEvaluationShaderSeparate, GeometryShaderSeparate* geometryShaderSeparate, FragmentShaderSeparate* fragmentShaderSeparate) :
+			IGraphicsProgram(openGLRenderer),
 			mOpenGLProgramPipeline(0),
 			mVertexShaderSeparate(vertexShaderSeparate),
 			mTessellationControlShaderSeparate(tessellationControlShaderSeparate),
@@ -15822,7 +15822,7 @@ namespace OpenGLRenderer
 		*  @brief
 		*    Destructor
 		*/
-		virtual ~ProgramSeparate() override
+		virtual ~GraphicsProgramSeparate() override
 		{
 			// Destroy the OpenGL program pipeline
 			glDeleteProgramPipelines(1, &mOpenGLProgramPipeline);
@@ -15892,7 +15892,7 @@ namespace OpenGLRenderer
 
 
 	//[-------------------------------------------------------]
-	//[ Public virtual Renderer::IProgram methods             ]
+	//[ Public virtual Renderer::IGraphicsProgram methods     ]
 	//[-------------------------------------------------------]
 	public:
 		virtual Renderer::handle getUniformHandle(const char* uniformName) override
@@ -16069,7 +16069,7 @@ namespace OpenGLRenderer
 	protected:
 		inline virtual void selfDestruct() override
 		{
-			RENDERER_DELETE(getRenderer().getContext(), ProgramSeparate, this);
+			RENDERER_DELETE(getRenderer().getContext(), GraphicsProgramSeparate, this);
 		}
 
 
@@ -16089,8 +16089,8 @@ namespace OpenGLRenderer
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		explicit ProgramSeparate(const ProgramSeparate& source) = delete;
-		ProgramSeparate& operator =(const ProgramSeparate& source) = delete;
+		explicit GraphicsProgramSeparate(const GraphicsProgramSeparate& source) = delete;
+		GraphicsProgramSeparate& operator =(const GraphicsProgramSeparate& source) = delete;
 
 
 	};
@@ -16099,13 +16099,13 @@ namespace OpenGLRenderer
 
 
 	//[-------------------------------------------------------]
-	//[ OpenGLRenderer/Shader/Separate/ProgramSeparateDsa.h   ]
+	//[ OpenGLRenderer/Shader/Separate/GraphicsProgramSeparateDsa.h ]
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    Separate program class, effective direct state access (DSA)
+	*    Separate graphics program class, effective direct state access (DSA)
 	*/
-	class ProgramSeparateDsa final : public ProgramSeparate
+	class GraphicsProgramSeparateDsa final : public GraphicsProgramSeparate
 	{
 
 
@@ -16122,33 +16122,33 @@ namespace OpenGLRenderer
 		*  @param[in] rootSignature
 		*    Root signature
 		*  @param[in] vertexShaderSeparate
-		*    Vertex shader the program is using, can be a null pointer
+		*    Vertex shader the graphics program is using, can be a null pointer
 		*  @param[in] tessellationControlShaderSeparate
-		*    Tessellation control shader the program is using, can be a null pointer
+		*    Tessellation control shader the graphics program is using, can be a null pointer
 		*  @param[in] tessellationEvaluationShaderSeparate
-		*    Tessellation evaluation shader the program is using, can be a null pointer
+		*    Tessellation evaluation shader the graphics program is using, can be a null pointer
 		*  @param[in] geometryShaderSeparate
-		*    Geometry shader the program is using, can be a null pointer
+		*    Geometry shader the graphics program is using, can be a null pointer
 		*  @param[in] fragmentShaderSeparate
-		*    Fragment shader the program is using, can be a null pointer
+		*    Fragment shader the graphics program is using, can be a null pointer
 		*
 		*  @note
-		*    - The program keeps a reference to the provided shaders and releases it when no longer required
+		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
 		*/
-		inline ProgramSeparateDsa(OpenGLRenderer& openGLRenderer, const Renderer::IRootSignature& rootSignature, VertexShaderSeparate* vertexShaderSeparate, TessellationControlShaderSeparate* tessellationControlShaderSeparate, TessellationEvaluationShaderSeparate* tessellationEvaluationShaderSeparate, GeometryShaderSeparate* geometryShaderSeparate, FragmentShaderSeparate* fragmentShaderSeparate) :
-			ProgramSeparate(openGLRenderer, rootSignature, vertexShaderSeparate, tessellationControlShaderSeparate, tessellationEvaluationShaderSeparate, geometryShaderSeparate, fragmentShaderSeparate)
+		inline GraphicsProgramSeparateDsa(OpenGLRenderer& openGLRenderer, const Renderer::IRootSignature& rootSignature, VertexShaderSeparate* vertexShaderSeparate, TessellationControlShaderSeparate* tessellationControlShaderSeparate, TessellationEvaluationShaderSeparate* tessellationEvaluationShaderSeparate, GeometryShaderSeparate* geometryShaderSeparate, FragmentShaderSeparate* fragmentShaderSeparate) :
+			GraphicsProgramSeparate(openGLRenderer, rootSignature, vertexShaderSeparate, tessellationControlShaderSeparate, tessellationEvaluationShaderSeparate, geometryShaderSeparate, fragmentShaderSeparate)
 		{}
 
 		/**
 		*  @brief
 		*    Destructor
 		*/
-		inline virtual ~ProgramSeparateDsa() override
+		inline virtual ~GraphicsProgramSeparateDsa() override
 		{}
 
 
 	//[-------------------------------------------------------]
-	//[ Public virtual Renderer::IProgram methods             ]
+	//[ Public virtual Renderer::IGraphicsProgram methods     ]
 	//[-------------------------------------------------------]
 	public:
 		virtual void setUniform1f(Renderer::handle uniformHandle, float value) override
@@ -16228,8 +16228,8 @@ namespace OpenGLRenderer
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		explicit ProgramSeparateDsa(const ProgramSeparateDsa& source) = delete;
-		ProgramSeparateDsa& operator =(const ProgramSeparateDsa& source) = delete;
+		explicit GraphicsProgramSeparateDsa(const GraphicsProgramSeparateDsa& source) = delete;
+		GraphicsProgramSeparateDsa& operator =(const GraphicsProgramSeparateDsa& source) = delete;
 
 
 	};
@@ -16757,11 +16757,11 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::IProgram* createProgram(const Renderer::IRootSignature& rootSignature, MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
+		virtual Renderer::IGraphicsProgram* createGraphicsProgram(const Renderer::IRootSignature& rootSignature, MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
 		{
 			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(getRenderer());
 
-			// A shader can be a null pointer, but if it's not the shader and program language must match!
+			// A shader can be a null pointer, but if it's not the shader and graphics program language must match!
 			// -> Optimization: Comparing the shader language name by directly comparing the pointer address of
 			//    the name is safe because we know that we always reference to one and the same name address
 			// TODO(co) Add security check: Is the given resource one of the currently used renderer?
@@ -16790,12 +16790,12 @@ namespace OpenGLRenderer
 			else if (openGLRenderer.getExtensions().isGL_EXT_direct_state_access() || openGLRenderer.getExtensions().isGL_ARB_direct_state_access())
 			{
 				// Effective direct state access (DSA)
-				return RENDERER_NEW(getRenderer().getContext(), ProgramSeparateDsa)(openGLRenderer, rootSignature, static_cast<VertexShaderSeparate*>(vertexShader), static_cast<TessellationControlShaderSeparate*>(tessellationControlShader), static_cast<TessellationEvaluationShaderSeparate*>(tessellationEvaluationShader), static_cast<GeometryShaderSeparate*>(geometryShader), static_cast<FragmentShaderSeparate*>(fragmentShader));
+				return RENDERER_NEW(getRenderer().getContext(), GraphicsProgramSeparateDsa)(openGLRenderer, rootSignature, static_cast<VertexShaderSeparate*>(vertexShader), static_cast<TessellationControlShaderSeparate*>(tessellationControlShader), static_cast<TessellationEvaluationShaderSeparate*>(tessellationEvaluationShader), static_cast<GeometryShaderSeparate*>(geometryShader), static_cast<FragmentShaderSeparate*>(fragmentShader));
 			}
 			else
 			{
 				// Traditional bind version
-				return RENDERER_NEW(getRenderer().getContext(), ProgramSeparate)(openGLRenderer, rootSignature, static_cast<VertexShaderSeparate*>(vertexShader), static_cast<TessellationControlShaderSeparate*>(tessellationControlShader), static_cast<TessellationEvaluationShaderSeparate*>(tessellationEvaluationShader), static_cast<GeometryShaderSeparate*>(geometryShader), static_cast<FragmentShaderSeparate*>(fragmentShader));
+				return RENDERER_NEW(getRenderer().getContext(), GraphicsProgramSeparate)(openGLRenderer, rootSignature, static_cast<VertexShaderSeparate*>(vertexShader), static_cast<TessellationControlShaderSeparate*>(tessellationControlShader), static_cast<TessellationEvaluationShaderSeparate*>(tessellationEvaluationShader), static_cast<GeometryShaderSeparate*>(geometryShader), static_cast<FragmentShaderSeparate*>(fragmentShader));
 			}
 
 			// Error! Shader language mismatch!
@@ -16882,7 +16882,7 @@ namespace OpenGLRenderer
 			IGraphicsPipelineState(openGLRenderer),
 			mOpenGLPrimitiveTopology(0xFFFF),	// Unknown default setting
 			mNumberOfVerticesPerPatch(0),
-			mProgram(graphicsPipelineState.program),
+			mGraphicsProgram(graphicsPipelineState.graphicsProgram),
 			mRenderPass(graphicsPipelineState.renderPass),
 			mRasterizerState(graphicsPipelineState.rasterizerState),
 			mDepthStencilState(graphicsPipelineState.depthStencilState),
@@ -16918,8 +16918,8 @@ namespace OpenGLRenderer
 				mOpenGLPrimitiveTopology = Mapping::getOpenGLType(graphicsPipelineState.primitiveTopology);
 			}
 
-			// Add a reference to the given program and render pass
-			mProgram->addReference();
+			// Add a reference to the given graphics program and render pass
+			mGraphicsProgram->addReference();
 			mRenderPass->addReference();
 		}
 
@@ -16929,21 +16929,21 @@ namespace OpenGLRenderer
 		*/
 		virtual ~GraphicsPipelineState() override
 		{
-			// Release the program and render pass reference
-			mProgram->releaseReference();
+			// Release the graphics program and render pass reference
+			mGraphicsProgram->releaseReference();
 			mRenderPass->releaseReference();
 		}
 
 		/**
 		*  @brief
-		*    Return the program
+		*    Return the graphics program
 		*
 		*  @return
-		*    Program, always valid
+		*    Graphics program, always valid
 		*/
-		inline Renderer::IProgram* getProgram() const
+		inline Renderer::IGraphicsProgram* getGraphicsProgram() const
 		{
-			return mProgram;
+			return mGraphicsProgram;
 		}
 
 		/**
@@ -16976,7 +16976,7 @@ namespace OpenGLRenderer
 		*/
 		void bindGraphicsPipelineState() const
 		{
-			static_cast<OpenGLRenderer&>(getRenderer()).setOpenGLGraphicsProgram(mProgram);
+			static_cast<OpenGLRenderer&>(getRenderer()).setOpenGLGraphicsProgram(mGraphicsProgram);
 
 			// Set the OpenGL rasterizer state
 			mRasterizerState.setOpenGLRasterizerStates();
@@ -17029,13 +17029,13 @@ namespace OpenGLRenderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		GLenum				   mOpenGLPrimitiveTopology;	///< OpenGL primitive topology describing the type of primitive to render
-		GLint				   mNumberOfVerticesPerPatch;	///< Number of vertices per patch
-		Renderer::IProgram*	   mProgram;
-		Renderer::IRenderPass* mRenderPass;
-		RasterizerState		   mRasterizerState;
-		DepthStencilState	   mDepthStencilState;
-		BlendState			   mBlendState;
+		GLenum						mOpenGLPrimitiveTopology;	///< OpenGL primitive topology describing the type of primitive to render
+		GLint						mNumberOfVerticesPerPatch;	///< Number of vertices per patch
+		Renderer::IGraphicsProgram*	mGraphicsProgram;
+		Renderer::IRenderPass*		mRenderPass;
+		RasterizerState				mRasterizerState;
+		DepthStencilState			mDepthStencilState;
+		BlendState					mBlendState;
 
 
 	};
@@ -17642,7 +17642,7 @@ namespace OpenGLRenderer
 		{
 			// Set OpenGL graphics pipeline state
 			// -> This is necessary since OpenGL is using just a single current program, for graphics as well as compute
-			setOpenGLGraphicsProgram(mGraphicsPipelineState->getProgram());
+			setOpenGLGraphicsProgram(mGraphicsPipelineState->getGraphicsProgram());
 		}
 	}
 
@@ -17871,7 +17871,7 @@ namespace OpenGLRenderer
 
 					case Renderer::ResourceType::ROOT_SIGNATURE:
 					case Renderer::ResourceType::RESOURCE_GROUP:
-					case Renderer::ResourceType::PROGRAM:
+					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::INDEX_BUFFER:
@@ -18394,7 +18394,7 @@ namespace OpenGLRenderer
 
 			case Renderer::ResourceType::ROOT_SIGNATURE:
 			case Renderer::ResourceType::RESOURCE_GROUP:
-			case Renderer::ResourceType::PROGRAM:
+			case Renderer::ResourceType::GRAPHICS_PROGRAM:
 			case Renderer::ResourceType::VERTEX_ARRAY:
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::INDEX_BUFFER:
@@ -18488,7 +18488,7 @@ namespace OpenGLRenderer
 
 			case Renderer::ResourceType::ROOT_SIGNATURE:
 			case Renderer::ResourceType::RESOURCE_GROUP:
-			case Renderer::ResourceType::PROGRAM:
+			case Renderer::ResourceType::GRAPHICS_PROGRAM:
 			case Renderer::ResourceType::VERTEX_ARRAY:
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::SWAP_CHAIN:
@@ -18875,7 +18875,7 @@ namespace OpenGLRenderer
 
 			case Renderer::ResourceType::ROOT_SIGNATURE:
 			case Renderer::ResourceType::RESOURCE_GROUP:
-			case Renderer::ResourceType::PROGRAM:
+			case Renderer::ResourceType::GRAPHICS_PROGRAM:
 			case Renderer::ResourceType::VERTEX_ARRAY:
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::SWAP_CHAIN:
@@ -19042,7 +19042,7 @@ namespace OpenGLRenderer
 
 			case Renderer::ResourceType::ROOT_SIGNATURE:
 			case Renderer::ResourceType::RESOURCE_GROUP:
-			case Renderer::ResourceType::PROGRAM:
+			case Renderer::ResourceType::GRAPHICS_PROGRAM:
 			case Renderer::ResourceType::VERTEX_ARRAY:
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::SWAP_CHAIN:
@@ -19571,7 +19571,7 @@ namespace OpenGLRenderer
 
 										case Renderer::ResourceType::ROOT_SIGNATURE:
 										case Renderer::ResourceType::RESOURCE_GROUP:
-										case Renderer::ResourceType::PROGRAM:
+										case Renderer::ResourceType::GRAPHICS_PROGRAM:
 										case Renderer::ResourceType::VERTEX_ARRAY:
 										case Renderer::ResourceType::RENDER_PASS:
 										case Renderer::ResourceType::SWAP_CHAIN:
@@ -19690,7 +19690,7 @@ namespace OpenGLRenderer
 
 											case Renderer::ResourceType::ROOT_SIGNATURE:
 											case Renderer::ResourceType::RESOURCE_GROUP:
-											case Renderer::ResourceType::PROGRAM:
+											case Renderer::ResourceType::GRAPHICS_PROGRAM:
 											case Renderer::ResourceType::VERTEX_ARRAY:
 											case Renderer::ResourceType::RENDER_PASS:
 											case Renderer::ResourceType::SWAP_CHAIN:
@@ -19805,7 +19805,7 @@ namespace OpenGLRenderer
 
 										case Renderer::ResourceType::ROOT_SIGNATURE:
 										case Renderer::ResourceType::RESOURCE_GROUP:
-										case Renderer::ResourceType::PROGRAM:
+										case Renderer::ResourceType::GRAPHICS_PROGRAM:
 										case Renderer::ResourceType::VERTEX_ARRAY:
 										case Renderer::ResourceType::RENDER_PASS:
 										case Renderer::ResourceType::SWAP_CHAIN:
@@ -19926,7 +19926,7 @@ namespace OpenGLRenderer
 
 					case Renderer::ResourceType::ROOT_SIGNATURE:
 					case Renderer::ResourceType::RESOURCE_GROUP:
-					case Renderer::ResourceType::PROGRAM:
+					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::SWAP_CHAIN:
@@ -19950,24 +19950,24 @@ namespace OpenGLRenderer
 		}
 	}
 
-	void OpenGLRenderer::setOpenGLGraphicsProgram(Renderer::IProgram* program)
+	void OpenGLRenderer::setOpenGLGraphicsProgram(Renderer::IGraphicsProgram* graphicsProgram)
 	{
-		if (nullptr != program)
+		if (nullptr != graphicsProgram)
 		{
 			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
-			OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *program)
+			OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *graphicsProgram)
 
 			// Prefer "GL_ARB_separate_shader_objects" over "GL_ARB_shader_objects"
 			if (mExtensions->isGL_ARB_separate_shader_objects())
 			{
-				// Bind the program pipeline, if required
-				ProgramSeparate* programSeparate = static_cast<ProgramSeparate*>(program);
-				const uint32_t openGLProgramPipeline = programSeparate->getOpenGLProgramPipeline();
+				// Bind the graphics program pipeline, if required
+				GraphicsProgramSeparate* graphicsProgramSeparate = static_cast<GraphicsProgramSeparate*>(graphicsProgram);
+				const uint32_t openGLProgramPipeline = graphicsProgramSeparate->getOpenGLProgramPipeline();
 				if (openGLProgramPipeline != mOpenGLProgramPipeline)
 				{
 					mOpenGLProgramPipeline = openGLProgramPipeline;
 					{ // Draw ID uniform location for "GL_ARB_base_instance"-emulation (see "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html)
-						const VertexShaderSeparate* vertexShaderSeparate = programSeparate->getVertexShaderSeparate();
+						const VertexShaderSeparate* vertexShaderSeparate = graphicsProgramSeparate->getVertexShaderSeparate();
 						if (nullptr != vertexShaderSeparate)
 						{
 							mOpenGLVertexProgram = vertexShaderSeparate->getOpenGLShaderProgram();
@@ -19985,13 +19985,13 @@ namespace OpenGLRenderer
 			}
 			else if (mExtensions->isGL_ARB_shader_objects())
 			{
-				// Bind the program, if required
-				const ProgramMonolithic* programMonolithic = static_cast<ProgramMonolithic*>(program);
-				const uint32_t openGLProgram = programMonolithic->getOpenGLProgram();
+				// Bind the graphics program, if required
+				const GraphicsProgramMonolithic* graphicsProgramMonolithic = static_cast<GraphicsProgramMonolithic*>(graphicsProgram);
+				const uint32_t openGLProgram = graphicsProgramMonolithic->getOpenGLProgram();
 				if (openGLProgram != mOpenGLProgram)
 				{
 					mOpenGLProgram = mOpenGLVertexProgram = openGLProgram;
-					mDrawIdUniformLocation = programMonolithic->getDrawIdUniformLocation();
+					mDrawIdUniformLocation = graphicsProgramMonolithic->getDrawIdUniformLocation();
 					mCurrentStartInstanceLocation = ~0u;
 					glUseProgramObjectARB(mOpenGLProgram);
 				}

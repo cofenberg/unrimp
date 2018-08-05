@@ -155,8 +155,8 @@ void FirstMesh::onInitialization()
 				mSamplerStateGroup = mRootSignature->createResourceGroup(1, 1, &samplerStateResource);
 			}
 
-			// Create the program
-			Renderer::IProgramPtr program;
+			// Create the graphics program
+			Renderer::IGraphicsProgramPtr graphicsProgram;
 			{
 				// Get the shader source code (outsourced to keep an overview)
 				const char* vertexShaderSourceCode = nullptr;
@@ -168,25 +168,25 @@ void FirstMesh::onInitialization()
 				#include "FirstMesh_HLSL_D3D10_D3D11_D3D12.h"
 				#include "FirstMesh_Null.h"
 
-				// Create the program
-				mProgram = program = shaderLanguage->createProgram(
+				// Create the graphics program
+				mGraphicsProgram = graphicsProgram = shaderLanguage->createGraphicsProgram(
 					*mRootSignature,
 					vertexAttributes,
 					shaderLanguage->createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode),
 					shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 			}
 
-			// Is there a valid program?
-			if (nullptr != program)
+			// Is there a valid graphics program?
+			if (nullptr != graphicsProgram)
 			{
 				// Create the graphics pipeline state object (PSO)
-				mGraphicsPipelineState = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass()));
+				mGraphicsPipelineState = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass()));
 
 				// Optimization: Cached data to not bother the renderer API too much
 				if (nullptr == mUniformBuffer)
 				{
-					mObjectSpaceToClipSpaceMatrixUniformHandle = program->getUniformHandle("ObjectSpaceToClipSpaceMatrix");
-					mObjectSpaceToViewSpaceMatrixUniformHandle = program->getUniformHandle("ObjectSpaceToViewSpaceMatrix");
+					mObjectSpaceToClipSpaceMatrixUniformHandle = graphicsProgram->getUniformHandle("ObjectSpaceToClipSpaceMatrix");
+					mObjectSpaceToViewSpaceMatrixUniformHandle = graphicsProgram->getUniformHandle("ObjectSpaceToViewSpaceMatrix");
 				}
 			}
 
@@ -215,7 +215,7 @@ void FirstMesh::onDeinitialization()
 	RendererRuntime::setInvalid(m_hr_rg_mb_nyaTextureResourceId);
 	RendererRuntime::setInvalid(m_argb_nxaTextureResourceId);
 	RendererRuntime::setInvalid(mMeshResourceId);
-	mProgram = nullptr;
+	mGraphicsProgram = nullptr;
 	mGraphicsPipelineState = nullptr;
 	mUniformBuffer = nullptr;
 	mRootSignature = nullptr;
@@ -335,8 +335,8 @@ void FirstMesh::onDraw()
 			{
 				// TODO(co) Not compatible with command buffer: This certainly is going to be removed, we need to implement internal uniform buffer emulation
 				// Set uniforms
-				mProgram->setUniformMatrix4fv(mObjectSpaceToClipSpaceMatrixUniformHandle, glm::value_ptr(objectSpaceToClipSpace));
-				mProgram->setUniformMatrix3fv(mObjectSpaceToViewSpaceMatrixUniformHandle, glm::value_ptr(glm::mat3(objectSpaceToViewSpace)));
+				mGraphicsProgram->setUniformMatrix4fv(mObjectSpaceToClipSpaceMatrixUniformHandle, glm::value_ptr(objectSpaceToClipSpace));
+				mGraphicsProgram->setUniformMatrix3fv(mObjectSpaceToViewSpaceMatrixUniformHandle, glm::value_ptr(glm::mat3(objectSpaceToViewSpace)));
 			}
 		}
 

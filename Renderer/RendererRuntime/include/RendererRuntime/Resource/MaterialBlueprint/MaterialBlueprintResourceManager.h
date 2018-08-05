@@ -85,9 +85,9 @@ namespace RendererRuntime
 	//[ Friends                                               ]
 	//[-------------------------------------------------------]
 		friend class RendererRuntimeImpl;
-		friend class IResource;				// Needed so that inside this classes an static_cast<CompositorNodeResourceManager*>(IResourceManager*) works
-		friend class MaterialTechnique;		// Needs to be able to call "RendererRuntime::MaterialBlueprintResourceManager::addSerializedGraphicsPipelineState()"
-		friend class PipelineStateCompiler;	// Needs to be able to call "RendererRuntime::MaterialBlueprintResourceManager::applySerializedGraphicsPipelineState()"
+		friend class IResource;						// Needed so that inside this classes an static_cast<CompositorNodeResourceManager*>(IResourceManager*) works
+		friend class MaterialTechnique;				// Needs to be able to call "RendererRuntime::MaterialBlueprintResourceManager::addSerializedGraphicsPipelineState()"
+		friend class GraphicsPipelineStateCompiler;	// Needs to be able to call "RendererRuntime::MaterialBlueprintResourceManager::applySerializedGraphicsPipelineState()"
 
 
 	//[-------------------------------------------------------]
@@ -241,12 +241,12 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	private:
 		IRendererRuntime&					mRendererRuntime;							///< Renderer runtime instance, do not destroy the instance
-		bool								mCreateInitialPipelineStateCaches;			///< Create initial pipeline state caches after a material blueprint has been loaded?
+		bool								mCreateInitialPipelineStateCaches;			///< Create initial graphics and compute pipeline state caches after a material blueprint has been loaded?
 		IMaterialBlueprintResourceListener*	mMaterialBlueprintResourceListener;			///< Material blueprint resource listener, always valid, do not destroy the instance
 		MaterialProperties					mGlobalMaterialProperties;					///< Global material properties
 		Renderer::FilterMode				mDefaultTextureFilterMode;					///< Default texture filter mode
 		uint8_t								mDefaultMaximumTextureAnisotropy;			///< Default maximum texture anisotropy
-		std::mutex							mSerializedGraphicsPipelineStatesMutex;		///< "RendererRuntime::PipelineStateCompiler" is running asynchronous, hence we need to synchronize the serialized graphics pipeline states access
+		std::mutex							mSerializedGraphicsPipelineStatesMutex;		///< "RendererRuntime::GraphicsPipelineStateCompiler" is running asynchronous, hence we need to synchronize the serialized graphics pipeline states access
 		SerializedGraphicsPipelineStates	mSerializedGraphicsPipelineStates;			///< Serialized pipeline states
 		InstanceBufferManager*				mInstanceBufferManager;						///< Instance buffer manager, always valid in a sane none-legacy environment
 		IndirectBufferManager*				mIndirectBufferManager;						///< Indirect buffer manager, always valid in a sane none-legacy environment

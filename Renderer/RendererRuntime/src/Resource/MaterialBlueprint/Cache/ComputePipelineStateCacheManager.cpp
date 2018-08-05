@@ -21,9 +21,9 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/Resource/MaterialBlueprint/Cache/PipelineStateCacheManager.h"
-#include "RendererRuntime/Resource/MaterialBlueprint/Cache/PipelineStateCompiler.h"
-#include "RendererRuntime/Resource/MaterialBlueprint/Cache/PipelineStateCache.h"
+#include "RendererRuntime/Resource/MaterialBlueprint/Cache/ComputePipelineStateCacheManager.h"
+#include "RendererRuntime/Resource/MaterialBlueprint/Cache/ComputePipelineStateCompiler.h"
+#include "RendererRuntime/Resource/MaterialBlueprint/Cache/ComputePipelineStateCache.h"
 #include "RendererRuntime/Resource/MaterialBlueprint/MaterialBlueprintResourceManager.h"
 #include "RendererRuntime/Resource/MaterialBlueprint/MaterialBlueprintResource.h"
 #include "RendererRuntime/IRendererRuntime.h"
@@ -39,28 +39,28 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
-	Renderer::IGraphicsPipelineStatePtr PipelineStateCacheManager::getGraphicsPipelineStateCacheByCombination(uint32_t serializedGraphicsPipelineStateHash, const ShaderProperties& shaderProperties, bool allowEmergencySynchronousCompilation)
+	Renderer::IComputePipelineStatePtr ComputePipelineStateCacheManager::getComputePipelineStateCacheByCombination(const ShaderProperties& shaderProperties, bool allowEmergencySynchronousCompilation)
 	{
 		// TODO(co) Asserts whether or not e.g. the material resource is using the owning material resource blueprint
 		assert(IResource::LoadingState::LOADED == mMaterialBlueprintResource.getLoadingState());
 
-		// Generate the pipeline state signature
-		mTemporaryPipelineStateSignature.set(mMaterialBlueprintResource, serializedGraphicsPipelineStateHash, shaderProperties);
+		// Generate the compute pipeline state signature
+		mTemporaryComputePipelineStateSignature.set(mMaterialBlueprintResource, shaderProperties);
 		{
-			PipelineStateCacheByPipelineStateSignatureId::const_iterator iterator = mPipelineStateCacheByPipelineStateSignatureId.find(mTemporaryPipelineStateSignature.getPipelineStateSignatureId());
-			if (iterator != mPipelineStateCacheByPipelineStateSignatureId.cend())
+			ComputePipelineStateCacheByComputePipelineStateSignatureId::const_iterator iterator = mComputePipelineStateCacheByComputePipelineStateSignatureId.find(mTemporaryComputePipelineStateSignature.getComputePipelineStateSignatureId());
+			if (iterator != mComputePipelineStateCacheByComputePipelineStateSignatureId.cend())
 			{
 				// There's already a pipeline state cache for the pipeline state signature ID
 				// -> We don't care whether or not the pipeline state cache is currently using fallback data due to asynchronous complication
-				return iterator->second->getGraphicsPipelineStateObjectPtr();
+				return iterator->second->getComputePipelineStateObjectPtr();
 			}
 		}
 
 		// Fallback: OK, the pipeline state signature is unknown and we now have to perform more complex and time consuming work. So first, check whether or not this work
 		// should be performed asynchronous (usually the case). If asynchronous, we need to return a fallback pipeline state cache while the pipeline state compiler is working.
-		PipelineStateCache* fallbackPipelineStateCache = nullptr;
-		PipelineStateCompiler& pipelineStateCompiler = mMaterialBlueprintResource.getResourceManager<MaterialBlueprintResourceManager>().getRendererRuntime().getPipelineStateCompiler();
-		if (pipelineStateCompiler.isAsynchronousCompilationEnabled())
+		ComputePipelineStateCache* fallbackComputePipelineStateCache = nullptr;
+		ComputePipelineStateCompiler& computePipelineStateCompiler = mMaterialBlueprintResource.getResourceManager<MaterialBlueprintResourceManager>().getRendererRuntime().getComputePipelineStateCompiler();
+		if (computePipelineStateCompiler.isAsynchronousCompilationEnabled())
 		{
 			// Asynchronous
 
@@ -70,7 +70,7 @@ namespace RendererRuntime
 			// Start with the full shader properties and then clear one shader property after another
 			ShaderProperties fallbackShaderProperties(shaderProperties);	// TODO(co) Optimization: There are allocations for vector involved in here, we might want to get rid of this
 			ShaderProperties::SortedPropertyVector& sortedFallbackPropertyVector = fallbackShaderProperties.getSortedPropertyVector();
-			while (nullptr == fallbackPipelineStateCache && !sortedFallbackPropertyVector.empty())
+			while (nullptr == fallbackComputePipelineStateCache && !sortedFallbackPropertyVector.empty())
 			{
 				{ // Remove a fallback shader property
 					// Find the most useless shader property, we're going to sacrifice it
@@ -112,63 +112,63 @@ namespace RendererRuntime
 					sortedFallbackPropertyVector.erase(worstHitShaderPropertyIterator);
 				}
 
-				// Generate the current fallback pipeline state signature
-				PipelineStateSignature fallbackPipelineStateSignature(mMaterialBlueprintResource, serializedGraphicsPipelineStateHash, fallbackShaderProperties);	// TODO(co) Optimization: There are allocations for vector and map involved in here, we might want to get rid of those
-				PipelineStateCacheByPipelineStateSignatureId::const_iterator iterator = mPipelineStateCacheByPipelineStateSignatureId.find(fallbackPipelineStateSignature.getPipelineStateSignatureId());
-				if (iterator != mPipelineStateCacheByPipelineStateSignatureId.cend())
+				// Generate the current fallback compute pipeline state signature
+				ComputePipelineStateSignature fallbackComputePipelineStateSignature(mMaterialBlueprintResource, fallbackShaderProperties);	// TODO(co) Optimization: There are allocations for vector and map involved in here, we might want to get rid of those
+				ComputePipelineStateCacheByComputePipelineStateSignatureId::const_iterator iterator = mComputePipelineStateCacheByComputePipelineStateSignatureId.find(fallbackComputePipelineStateSignature.getComputePipelineStateSignatureId());
+				if (iterator != mComputePipelineStateCacheByComputePipelineStateSignatureId.cend())
 				{
-					// We don't care whether or not the pipeline state cache is currently using fallback data due to asynchronous complication
-					fallbackPipelineStateCache = iterator->second;
+					// We don't care whether or not the compute pipeline state cache is currently using fallback data due to asynchronous complication
+					fallbackComputePipelineStateCache = iterator->second;
 				}
 			}
 
-			// If we're here and still not having any fallback pipeline state cache we'll end up with a runtime hiccup, we don't want that
-			// -> Kids, don't try this at home: We'll trade the runtime hiccup against a nasty major graphics artifact. If we're in luck no one
+			// If we're here and still not having any fallback compute pipeline state cache we'll end up with a runtime hiccup, we don't want that
+			// -> Kids, don't try this at home: We'll trade the runtime hiccup against a nasty major compute artifact. If we're in luck no one
 			//    will notice it, depends on the situation. A runtime hiccup on the other hand will always be notable. So this trade in here
 			//    might not involve our first born.
-			if (!allowEmergencySynchronousCompilation && nullptr == fallbackPipelineStateCache)
+			if (!allowEmergencySynchronousCompilation && nullptr == fallbackComputePipelineStateCache)
 			{
 				// TODO(co) Optimization: There are allocations for vector and map involved in here, we might want to get rid of those
 				fallbackShaderProperties.clear();
-				PipelineStateCacheByPipelineStateSignatureId::const_iterator iterator = mPipelineStateCacheByPipelineStateSignatureId.find(PipelineStateSignature(mMaterialBlueprintResource, serializedGraphicsPipelineStateHash, fallbackShaderProperties).getPipelineStateSignatureId());
-				if (iterator != mPipelineStateCacheByPipelineStateSignatureId.cend())
+				ComputePipelineStateCacheByComputePipelineStateSignatureId::const_iterator iterator = mComputePipelineStateCacheByComputePipelineStateSignatureId.find(ComputePipelineStateSignature(mMaterialBlueprintResource, fallbackShaderProperties).getComputePipelineStateSignatureId());
+				if (iterator != mComputePipelineStateCacheByComputePipelineStateSignatureId.cend())
 				{
-					// We don't care whether or not the pipeline state cache is currently using fallback data due to asynchronous complication
-					fallbackPipelineStateCache = iterator->second;
+					// We don't care whether or not the compute pipeline state cache is currently using fallback data due to asynchronous complication
+					fallbackComputePipelineStateCache = iterator->second;
 				}
 			}
 		}
 
-		// Create the new pipeline state cache instance
-		PipelineStateCache* pipelineStateCache = new PipelineStateCache(mTemporaryPipelineStateSignature);
-		mPipelineStateCacheByPipelineStateSignatureId.emplace(mTemporaryPipelineStateSignature.getPipelineStateSignatureId(), pipelineStateCache);
+		// Create the new compute pipeline state cache instance
+		ComputePipelineStateCache* computePipelineStateCache = new ComputePipelineStateCache(mTemporaryComputePipelineStateSignature);
+		mComputePipelineStateCacheByComputePipelineStateSignatureId.emplace(mTemporaryComputePipelineStateSignature.getComputePipelineStateSignatureId(), computePipelineStateCache);
 
-		// If we've got a fallback pipeline state cache then commit the asynchronous pipeline state compiler request now, else we must proceed synchronous (risk of notable runtime hiccups)
-		if (nullptr != fallbackPipelineStateCache)
+		// If we've got a fallback compute pipeline state cache then commit the asynchronous pipeline state compiler request now, else we must proceed synchronous (risk of notable runtime hiccups)
+		if (nullptr != fallbackComputePipelineStateCache)
 		{
 			// Asynchronous, the light side
-			pipelineStateCache->mGraphicsPipelineStateObjectPtr = fallbackPipelineStateCache->mGraphicsPipelineStateObjectPtr;
-			pipelineStateCache->mIsUsingFallback = true;
-			pipelineStateCompiler.addAsynchronousCompilerRequest(*pipelineStateCache);
+			computePipelineStateCache->mComputePipelineStateObjectPtr = fallbackComputePipelineStateCache->mComputePipelineStateObjectPtr;
+			computePipelineStateCache->mIsUsingFallback = true;
+			computePipelineStateCompiler.addAsynchronousCompilerRequest(*computePipelineStateCache);
 		}
 		else
 		{
 			// Synchronous, the dark side
-			pipelineStateCompiler.instantSynchronousCompilerRequest(mMaterialBlueprintResource, *pipelineStateCache);
+			computePipelineStateCompiler.instantSynchronousCompilerRequest(mMaterialBlueprintResource, *computePipelineStateCache);
 		}
 
 		// Done
 		// TODO(co) Mark material cache as dirty
-		return pipelineStateCache->getGraphicsPipelineStateObjectPtr();
+		return computePipelineStateCache->getComputePipelineStateObjectPtr();
 	}
 
-	void PipelineStateCacheManager::clearCache()
+	void ComputePipelineStateCacheManager::clearCache()
 	{
-		for (auto& pipelineStateCacheElement : mPipelineStateCacheByPipelineStateSignatureId)
+		for (auto& computePipelineStateCacheElement : mComputePipelineStateCacheByComputePipelineStateSignatureId)
 		{
-			delete pipelineStateCacheElement.second;
+			delete computePipelineStateCacheElement.second;
 		}
-		mPipelineStateCacheByPipelineStateSignatureId.clear();
+		mComputePipelineStateCacheByComputePipelineStateSignatureId.clear();
 	}
 
 

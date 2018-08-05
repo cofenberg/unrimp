@@ -44,9 +44,9 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 namespace RendererRuntime
 {
-	class ProgramCache;
-	class PipelineStateSignature;
-	class PipelineStateCacheManager;
+	class GraphicsProgramCache;
+	class GraphicsPipelineStateSignature;
+	class GraphicsPipelineStateCacheManager;
 }
 
 
@@ -60,7 +60,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Global definitions                                    ]
 	//[-------------------------------------------------------]
-	typedef uint32_t ProgramCacheId;	///< Program cache identifier, result of hashing the shader combination IDs of the referenced shaders
+	typedef uint32_t GraphicsProgramCacheId;	///< Graphics program cache identifier, result of hashing the shader combination IDs of the referenced shaders
 
 
 	//[-------------------------------------------------------]
@@ -68,20 +68,20 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	/*
 	*  @brief
-	*    Program cache manager
+	*    Graphics program cache manager
 	*
 	*  @see
-	*    - See "RendererRuntime::PipelineStateCacheManager" for additional information
+	*    - See "RendererRuntime::GraphicsPipelineStateCacheManager" for additional information
 	*/
-	class ProgramCacheManager final : private Manager
+	class GraphicsProgramCacheManager final : private Manager
 	{
 
 
 	//[-------------------------------------------------------]
 	//[ Friends                                               ]
 	//[-------------------------------------------------------]
-		friend class PipelineStateCacheManager;	// Is creating and using a program cache manager instance
-		friend class PipelineStateCompiler;		// Is tightly interacting with the program cache manager
+		friend class GraphicsPipelineStateCacheManager;	// Is creating and using a graphics program cache manager instance
+		friend class GraphicsPipelineStateCompiler;		// Is tightly interacting with the graphics program cache manager
 
 
 	//[-------------------------------------------------------]
@@ -90,15 +90,15 @@ namespace RendererRuntime
 	public:
 		/**
 		*  @brief
-		*    Generate a program cache ID by using a provided pipeline state signature
+		*    Generate a graphics program cache ID by using a provided graphics pipeline state signature
 		*
-		*  @param[in] pipelineStateSignature
-		*    Pipeline state signature to use
+		*  @param[in] graphicsPipelineStateSignature
+		*    Graphics pipeline state signature to use
 		*
 		*  @return
-		*    The program cache ID
+		*    The graphics program cache ID
 		*/
-		static ProgramCacheId generateProgramCacheId(const PipelineStateSignature& pipelineStateSignature);
+		static GraphicsProgramCacheId generateGraphicsProgramCacheId(const GraphicsPipelineStateSignature& graphicsPipelineStateSignature);
 
 
 	//[-------------------------------------------------------]
@@ -107,31 +107,31 @@ namespace RendererRuntime
 	public:
 		/**
 		*  @brief
-		*    Return the owner pipeline state cache manager
+		*    Return the owner graphics pipeline state cache manager
 		*
 		*  @return
-		*    The owner pipeline state cache manager
+		*    The owner graphics pipeline state cache manager
 		*/
-		inline PipelineStateCacheManager& getPipelineStateCacheManager() const
+		inline GraphicsPipelineStateCacheManager& getGraphicsPipelineStateCacheManager() const
 		{
-			return mPipelineStateCacheManager;
+			return mGraphicsPipelineStateCacheManager;
 		}
 
 		/**
 		*  @brief
-		*    Get program cache by pipeline state signature; synchronous processing
+		*    Get graphics program cache by graphics pipeline state signature; synchronous processing
 		*
-		*  @param[in] pipelineStateSignature
-		*    Pipeline state signature to use
+		*  @param[in] graphicsPipelineStateSignature
+		*    Graphics pipeline state signature to use
 		*
 		*  @return
-		*    The program cache, null pointer on error
+		*    The graphics program cache, null pointer on error
 		*/
-		ProgramCache* getProgramCacheByPipelineStateSignature(const PipelineStateSignature& pipelineStateSignature);
+		GraphicsProgramCache* getGraphicsProgramCacheByGraphicsPipelineStateSignature(const GraphicsPipelineStateSignature& graphicsPipelineStateSignature);
 
 		/**
 		*  @brief
-		*    Clear the program cache manager
+		*    Clear the graphics program cache manager
 		*/
 		void clearCache();
 
@@ -140,35 +140,35 @@ namespace RendererRuntime
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		inline explicit ProgramCacheManager(PipelineStateCacheManager& pipelineStateCacheManager) :
-			mPipelineStateCacheManager(pipelineStateCacheManager)
+		inline explicit GraphicsProgramCacheManager(GraphicsPipelineStateCacheManager& graphicsPipelineStateCacheManager) :
+			mGraphicsPipelineStateCacheManager(graphicsPipelineStateCacheManager)
 		{
 			// Nothing here
 		}
 
-		inline ~ProgramCacheManager()
+		inline ~GraphicsProgramCacheManager()
 		{
 			clearCache();
 		}
 
-		explicit ProgramCacheManager(const ProgramCacheManager&) = delete;
-		ProgramCacheManager& operator=(const ProgramCacheManager&) = delete;
+		explicit GraphicsProgramCacheManager(const GraphicsProgramCacheManager&) = delete;
+		GraphicsProgramCacheManager& operator=(const GraphicsProgramCacheManager&) = delete;
 
 
 	//[-------------------------------------------------------]
 	//[ Private definitions                                   ]
 	//[-------------------------------------------------------]
 	private:
-		typedef std::unordered_map<ProgramCacheId, ProgramCache*> ProgramCacheById;
+		typedef std::unordered_map<GraphicsProgramCacheId, GraphicsProgramCache*> GraphicsProgramCacheById;
 
 
 	//[-------------------------------------------------------]
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		PipelineStateCacheManager& mPipelineStateCacheManager;	///< Owner pipeline state cache manager
-		ProgramCacheById		   mProgramCacheById;
-		std::mutex				   mMutex;						///< Mutex due to "RendererRuntime::PipelineStateCompiler" interaction, no too fine granular lock/unlock required because usually it's only asynchronous or synchronous processing, not both at one and the same time
+		GraphicsPipelineStateCacheManager& mGraphicsPipelineStateCacheManager;	///< Owner graphics pipeline state cache manager
+		GraphicsProgramCacheById		   mGraphicsProgramCacheById;
+		std::mutex						   mMutex;								///< Mutex due to "RendererRuntime::GraphicsPipelineStateCompiler" interaction, no too fine granular lock/unlock required because usually it's only asynchronous or synchronous processing, not both at one and the same time
 
 
 	};

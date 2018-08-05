@@ -347,7 +347,7 @@ namespace RendererRuntime
 						// TODO(co) Gather shader properties (later on we cache as much as possible of this work inside the renderable)
 						::detail::gatherShaderProperties(*materialResource, *materialBlueprintResource, globalMaterialProperties, renderable, singlePassStereoInstancing, mScratchShaderProperties, mScratchOptimizedShaderProperties);
 
-						Renderer::IGraphicsPipelineStatePtr graphicsPipelineStatePtr = materialBlueprintResource->getPipelineStateCacheManager().getGraphicsPipelineStateCacheByCombination(materialTechnique->getSerializedGraphicsPipelineStateHash(), mScratchOptimizedShaderProperties, false);
+						Renderer::IGraphicsPipelineStatePtr graphicsPipelineStatePtr = materialBlueprintResource->getGraphicsPipelineStateCacheManager().getGraphicsPipelineStateCacheByCombination(materialTechnique->getSerializedGraphicsPipelineStateHash(), mScratchOptimizedShaderProperties, false);
 						if (nullptr != graphicsPipelineStatePtr)
 						{
 							compositorContextData.mCurrentlyBoundMaterialBlueprintResource = materialBlueprintResource;
@@ -475,7 +475,7 @@ namespace RendererRuntime
 									// TODO(co) Gather shader properties (later on we cache as much as possible of this work inside the renderable)
 									::detail::gatherShaderProperties(*materialResource, *materialBlueprintResource, globalMaterialProperties, renderable, singlePassStereoInstancing, mScratchShaderProperties, mScratchOptimizedShaderProperties);
 
-									Renderer::IGraphicsPipelineStatePtr graphicsPipelineStatePtr = materialBlueprintResource->getPipelineStateCacheManager().getGraphicsPipelineStateCacheByCombination(materialTechnique->getSerializedGraphicsPipelineStateHash(), mScratchOptimizedShaderProperties, false);
+									Renderer::IGraphicsPipelineStatePtr graphicsPipelineStatePtr = materialBlueprintResource->getGraphicsPipelineStateCacheManager().getGraphicsPipelineStateCacheByCombination(materialTechnique->getSerializedGraphicsPipelineStateHash(), mScratchOptimizedShaderProperties, false);
 									if (nullptr != graphicsPipelineStatePtr)
 									{
 										// Set the used graphics pipeline state object (PSO)

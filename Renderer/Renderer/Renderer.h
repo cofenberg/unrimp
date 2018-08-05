@@ -303,7 +303,7 @@ namespace Renderer
 	class IResource;
 		class IRootSignature;
 		class IResourceGroup;
-		class IProgram;
+		class IGraphicsProgram;
 		class IVertexArray;
 		class IRenderPass;
 		class IRenderTarget;
@@ -1122,7 +1122,7 @@ namespace Renderer
 	{
 		ROOT_SIGNATURE				   = 0,		///< Root signature
 		RESOURCE_GROUP				   = 1,		///< Resource group
-		PROGRAM						   = 2,		///< Program, "Renderer::IShader"-related
+		GRAPHICS_PROGRAM			   = 2,		///< Graphics program, "Renderer::IShader"-related
 		VERTEX_ARRAY				   = 3,		///< Vertex array object (VAO, input-assembler (IA) stage), "Renderer::IBuffer"-related
 		RENDER_PASS					   = 4,		///< Render pass
 		// IRenderTarget
@@ -1366,7 +1366,7 @@ namespace Renderer
 
 					case ResourceType::ROOT_SIGNATURE:
 					case ResourceType::RESOURCE_GROUP:
-					case ResourceType::PROGRAM:
+					case ResourceType::GRAPHICS_PROGRAM:
 					case ResourceType::VERTEX_ARRAY:
 					case ResourceType::RENDER_PASS:
 					case ResourceType::SWAP_CHAIN:
@@ -3064,10 +3064,10 @@ namespace Renderer
 	};
 	struct GraphicsPipelineState : public SerializedGraphicsPipelineState
 	{
-		IRootSignature*  rootSignature;		///< Root signature (graphics pipeline state instances keep a reference to the root signature), must be valid
-		IProgram*		 program;			///< Program used by the graphics pipeline state (graphics pipeline state instances keep a reference to the program), must be valid
-		VertexAttributes vertexAttributes;	///< Vertex attributes
-		IRenderPass*	 renderPass;		///< Render pass, the graphics pipeline state keeps a reference
+		IRootSignature*   rootSignature;	///< Root signature (graphics pipeline state instances keep a reference to the root signature), must be valid
+		IGraphicsProgram* graphicsProgram;	///< Graphics program used by the graphics pipeline state (graphics pipeline state instances keep a reference to the graphics program), must be valid
+		VertexAttributes  vertexAttributes;	///< Vertex attributes
+		IRenderPass*	  renderPass;		///< Render pass, the graphics pipeline state keeps a reference
 	};
 	struct GraphicsPipelineStateBuilder final : public GraphicsPipelineState
 	{
@@ -3075,7 +3075,7 @@ namespace Renderer
 		{
 			// "GraphicsPipelineState"-part
 			rootSignature						= nullptr;
-			program								= nullptr;
+			graphicsProgram						= nullptr;
 			vertexAttributes.numberOfAttributes	= 0;
 			vertexAttributes.attributes			= nullptr;
 			renderPass							= nullptr;
@@ -3098,11 +3098,11 @@ namespace Renderer
 			depthStencilViewFormat				= TextureFormat::D32_FLOAT;
 		}
 
-		inline GraphicsPipelineStateBuilder(IRootSignature* _rootSignature, IProgram* _program, const VertexAttributes& _vertexAttributes, IRenderPass& _renderPass)
+		inline GraphicsPipelineStateBuilder(IRootSignature* _rootSignature, IGraphicsProgram* _graphicsProgram, const VertexAttributes& _vertexAttributes, IRenderPass& _renderPass)
 		{
 			// "GraphicsPipelineState"-part
 			rootSignature				= _rootSignature;
-			program						= _program;
+			graphicsProgram				= _graphicsProgram;
 			vertexAttributes			= _vertexAttributes;
 			renderPass					= &_renderPass;
 
@@ -3728,8 +3728,8 @@ namespace Renderer
 			std::atomic<uint32_t> numberOfCreatedRootSignatures;				///< Number of created root signature instances
 			std::atomic<uint32_t> currentNumberOfResourceGroups;				///< Current number of resource group instances
 			std::atomic<uint32_t> numberOfCreatedResourceGroups;				///< Number of created resource group instances
-			std::atomic<uint32_t> currentNumberOfPrograms;						///< Current number of program instances
-			std::atomic<uint32_t> numberOfCreatedPrograms;						///< Number of created program instances
+			std::atomic<uint32_t> currentNumberOfGraphicsPrograms;				///< Current number of graphics program instances
+			std::atomic<uint32_t> numberOfCreatedGraphicsPrograms;				///< Number of created graphics program instances
 			std::atomic<uint32_t> currentNumberOfVertexArrays;					///< Current number of vertex array object (VAO, input-assembler (IA) stage) instances
 			std::atomic<uint32_t> numberOfCreatedVertexArrays;					///< Number of created vertex array object (VAO, input-assembler (IA) stage) instances
 			std::atomic<uint32_t> currentNumberOfRenderPasses;					///< Current number of render pass instances
@@ -3795,8 +3795,8 @@ namespace Renderer
 				numberOfCreatedRootSignatures(0),
 				currentNumberOfResourceGroups(0),
 				numberOfCreatedResourceGroups(0),
-				currentNumberOfPrograms(0),
-				numberOfCreatedPrograms(0),
+				currentNumberOfGraphicsPrograms(0),
+				numberOfCreatedGraphicsPrograms(0),
 				currentNumberOfVertexArrays(0),
 				numberOfCreatedVertexArrays(0),
 				currentNumberOfRenderPasses(0),
@@ -3875,7 +3875,7 @@ namespace Renderer
 				// Calculate the current number of resource instances
 				return	currentNumberOfRootSignatures +
 						currentNumberOfResourceGroups +
-						currentNumberOfPrograms +
+						currentNumberOfGraphicsPrograms +
 						currentNumberOfVertexArrays +
 						currentNumberOfRenderPasses +
 						// IRenderTarget
@@ -3925,7 +3925,7 @@ namespace Renderer
 				// Misc
 				RENDERER_LOG(context, INFORMATION, "Root signatures: %d", currentNumberOfRootSignatures.load())
 				RENDERER_LOG(context, INFORMATION, "Resource groups: %d", currentNumberOfResourceGroups.load())
-				RENDERER_LOG(context, INFORMATION, "Programs: %d", currentNumberOfPrograms.load())
+				RENDERER_LOG(context, INFORMATION, "Graphics programs: %d", currentNumberOfGraphicsPrograms.load())
 				RENDERER_LOG(context, INFORMATION, "Vertex arrays: %d", currentNumberOfVertexArrays.load())
 				RENDERER_LOG(context, INFORMATION, "Render passes: %d", currentNumberOfRenderPasses.load())
 
@@ -4005,7 +4005,7 @@ namespace Renderer
 	// Friends for none constant statistics access
 		friend class IRootSignature;
 		friend class IResourceGroup;
-		friend class IProgram;
+		friend class IGraphicsProgram;
 		friend class IVertexArray;
 		friend class IRenderPass;
 		friend class ISwapChain;
@@ -4301,7 +4301,7 @@ namespace Renderer
 		*  @param[in] rootSignature
 		*    Root signature (compute pipeline state instances keep a reference to the root signature)
 		*  @param[in] computeShader
-		*    Compute shader used by the compute pipeline state (compute pipeline state instances keep a reference to the program)
+		*    Compute shader used by the compute pipeline state (compute pipeline state instances keep a reference to the shader)
 		*
 		*  @return
 		*    The compute pipeline state instance, null pointer on error. Release the returned instance if you no longer need it.
@@ -4544,89 +4544,89 @@ namespace Renderer
 
 		/**
 		*  @brief
-		*    Create a program and assigns a vertex and fragment shader to it
+		*    Create a graphics program and assigns a vertex and fragment shader to it
 		*
 		*  @param[in] rootSignature
 		*    Root signature
 		*  @param[in] vertexAttributes
 		*    Vertex attributes ("vertex declaration" in Direct3D 9 terminology, "input layout" in Direct3D 10 & 11 terminology)
 		*  @param[in] vertexShader
-		*    Vertex shader the program is using, can be a null pointer, vertex shader and program language must match!
+		*    Vertex shader the graphics program is using, can be a null pointer, vertex shader and graphics program language must match!
 		*  @param[in] fragmentShader
-		*    Fragment shader the program is using, can be a null pointer, fragment shader and program language must match!
+		*    Fragment shader the graphics program is using, can be a null pointer, fragment shader and graphics program language must match!
 		*
 		*  @return
-		*    The created program, a null pointer on error. Release the returned instance if you no longer need it.
+		*    The created graphics program, a null pointer on error. Release the returned instance if you no longer need it.
 		*
 		*  @note
-		*    - The program keeps a reference to the provided shaders and releases it when no longer required
-		*    - It's valid that a program implementation is adding a reference and releasing it again at once
+		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
+		*    - It's valid that a graphics program implementation is adding a reference and releasing it again at once
 		*      (this means that in the case of not having any more references, a shader might get destroyed when calling this method)
 		*    - Comfort method
 		*/
-		inline IProgram* createProgram(const IRootSignature& rootSignature, const VertexAttributes& vertexAttributes, IVertexShader* vertexShader, IFragmentShader* fragmentShader)
+		inline IGraphicsProgram* createGraphicsProgram(const IRootSignature& rootSignature, const VertexAttributes& vertexAttributes, IVertexShader* vertexShader, IFragmentShader* fragmentShader)
 		{
-			return createProgram(rootSignature, vertexAttributes, vertexShader, nullptr, nullptr, nullptr, fragmentShader);
+			return createGraphicsProgram(rootSignature, vertexAttributes, vertexShader, nullptr, nullptr, nullptr, fragmentShader);
 		}
 
 		/**
 		*  @brief
-		*    Create a program and assigns a vertex, geometry and fragment shader to it
+		*    Create a graphics program and assigns a vertex, geometry and fragment shader to it
 		*
 		*  @param[in] rootSignature
 		*    Root signature
 		*  @param[in] vertexAttributes
 		*    Vertex attributes ("vertex declaration" in Direct3D 9 terminology, "input layout" in Direct3D 10 & 11 terminology)
 		*  @param[in] vertexShader
-		*    Vertex shader the program is using, can be a null pointer, vertex shader and program language must match!
+		*    Vertex shader the graphics program is using, can be a null pointer, vertex shader and graphics program language must match!
 		*  @param[in] geometryShader
-		*    Geometry shader the program is using, can be a null pointer, geometry shader and program language must match!
+		*    Geometry shader the graphics program is using, can be a null pointer, geometry shader and graphics program language must match!
 		*  @param[in] fragmentShader
-		*    Fragment shader the program is using, can be a null pointer, fragment shader and program language must match!
+		*    Fragment shader the graphics program is using, can be a null pointer, fragment shader and graphics program language must match!
 		*
 		*  @return
-		*    The created program, a null pointer on error. Release the returned instance if you no longer need it.
+		*    The created graphics program, a null pointer on error. Release the returned instance if you no longer need it.
 		*
 		*  @note
-		*    - The program keeps a reference to the provided shaders and releases it when no longer required
-		*    - It's valid that a program implementation is adding a reference and releasing it again at once
+		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
+		*    - It's valid that a graphics program implementation is adding a reference and releasing it again at once
 		*      (this means that in the case of not having any more references, a shader might get destroyed when calling this method)
 		*    - Comfort method
 		*/
-		inline IProgram* createProgram(const IRootSignature& rootSignature, const VertexAttributes& vertexAttributes, IVertexShader* vertexShader, IGeometryShader* geometryShader, IFragmentShader* fragmentShader)
+		inline IGraphicsProgram* createGraphicsProgram(const IRootSignature& rootSignature, const VertexAttributes& vertexAttributes, IVertexShader* vertexShader, IGeometryShader* geometryShader, IFragmentShader* fragmentShader)
 		{
-			return createProgram(rootSignature, vertexAttributes, vertexShader, nullptr, nullptr, geometryShader, fragmentShader);
+			return createGraphicsProgram(rootSignature, vertexAttributes, vertexShader, nullptr, nullptr, geometryShader, fragmentShader);
 		}
 
 		/**
 		*  @brief
-		*    Create a program and assigns a vertex, tessellation control, tessellation evaluation and fragment shader to it
+		*    Create a graphics program and assigns a vertex, tessellation control, tessellation evaluation and fragment shader to it
 		*
 		*  @param[in] rootSignature
 		*    Root signature
 		*  @param[in] vertexAttributes
 		*    Vertex attributes ("vertex declaration" in Direct3D 9 terminology, "input layout" in Direct3D 10 & 11 terminology)
 		*  @param[in] vertexShader
-		*    Vertex shader the program is using, can be a null pointer, vertex shader and program language must match!
+		*    Vertex shader the graphics program is using, can be a null pointer, vertex shader and graphics program language must match!
 		*  @param[in] tessellationControlShader
-		*    Tessellation control shader the program is using, can be a null pointer, tessellation control shader and program language must match!
+		*    Tessellation control shader the graphics program is using, can be a null pointer, tessellation control shader and graphics program language must match!
 		*  @param[in] tessellationEvaluationShader
-		*    Tessellation evaluation shader the program is using, can be a null pointer, tessellation evaluation shader and program language must match!
+		*    Tessellation evaluation shader the graphics program is using, can be a null pointer, tessellation evaluation shader and graphics program language must match!
 		*  @param[in] fragmentShader
-		*    Fragment shader the program is using, can be a null pointer, fragment shader and program language must match!
+		*    Fragment shader the graphics program is using, can be a null pointer, fragment shader and graphics program language must match!
 		*
 		*  @return
-		*    The created program, a null pointer on error. Release the returned instance if you no longer need it.
+		*    The created graphics program, a null pointer on error. Release the returned instance if you no longer need it.
 		*
 		*  @note
-		*    - The program keeps a reference to the provided shaders and releases it when no longer required
-		*    - It's valid that a program implementation is adding a reference and releasing it again at once
+		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
+		*    - It's valid that a graphics program implementation is adding a reference and releasing it again at once
 		*      (this means that in the case of not having any more references, a shader might get destroyed when calling this method)
 		*    - Comfort method
 		*/
-		inline IProgram* createProgram(const IRootSignature& rootSignature, const VertexAttributes& vertexAttributes, IVertexShader* vertexShader, ITessellationControlShader* tessellationControlShader, ITessellationEvaluationShader* tessellationEvaluationShader, IFragmentShader* fragmentShader)
+		inline IGraphicsProgram* createGraphicsProgram(const IRootSignature& rootSignature, const VertexAttributes& vertexAttributes, IVertexShader* vertexShader, ITessellationControlShader* tessellationControlShader, ITessellationEvaluationShader* tessellationEvaluationShader, IFragmentShader* fragmentShader)
 		{
-			return createProgram(rootSignature, vertexAttributes, vertexShader, tessellationControlShader, tessellationEvaluationShader, nullptr, fragmentShader);
+			return createGraphicsProgram(rootSignature, vertexAttributes, vertexShader, tessellationControlShader, tessellationEvaluationShader, nullptr, fragmentShader);
 		}
 
 	// Public virtual Renderer::IShaderLanguage methods
@@ -4710,7 +4710,7 @@ namespace Renderer
 		*     400              4.0               Tessellation control ("Hull"-Shader in Direct3D 11) and evaluation ("Domain"-Shader in Direct3D 11) shaders added
 		*     410              4.1
 		*     420              4.2               Equivalent to Direct3D Shader Model 5.0 (Direct3D version 11)
-		*  #version must occur before any other statement in the program as stated within:
+		*  #version must occur before any other statement in the graphics program as stated within:
 		*    "The OpenGL® Shading Language - Language Version: 3.30 - Document Revision: 6 - 11-Mar-2010" Page 15
 		*      "The #version directive must occur in a shader before anything else, except for comments and white space."
 		*  ... sadly, this time NVIDIA (driver: "266.58 WHQL") is not implementing the specification in detail and while on AMD/ATI drivers ("AMD Catalyst™ 11.3")
@@ -4928,33 +4928,33 @@ namespace Renderer
 
 		/**
 		*  @brief
-		*    Create a program and assigns a vertex, tessellation control, tessellation evaluation, geometry and fragment shader to it
+		*    Create a graphics program and assigns a vertex, tessellation control, tessellation evaluation, geometry and fragment shader to it
 		*
 		*  @param[in] rootSignature
 		*    Root signature
 		*  @param[in] vertexAttributes
 		*    Vertex attributes ("vertex declaration" in Direct3D 9 terminology, "input layout" in Direct3D 10 & 11 terminology)
 		*  @param[in] vertexShader
-		*    Vertex shader the program is using, can be a null pointer, vertex shader and program language must match!
+		*    Vertex shader the graphics program is using, can be a null pointer, vertex shader and graphics program language must match!
 		*  @param[in] tessellationControlShader
-		*    Tessellation control shader the program is using, can be a null pointer, tessellation control shader and program language must match!
+		*    Tessellation control shader the graphics program is using, can be a null pointer, tessellation control shader and graphics program language must match!
 		*  @param[in] tessellationEvaluationShader
-		*    Tessellation evaluation shader the program is using, can be a null pointer, tessellation evaluation shader and program language must match!
+		*    Tessellation evaluation shader the graphics program is using, can be a null pointer, tessellation evaluation shader and graphics program language must match!
 		*  @param[in] geometryShader
-		*    Geometry shader the program is using, can be a null pointer, geometry shader and program language must match!
+		*    Geometry shader the graphics program is using, can be a null pointer, geometry shader and graphics program language must match!
 		*  @param[in] fragmentShader
-		*    Fragment shader the program is using, can be a null pointer, fragment shader and program language must match!
+		*    Fragment shader the graphics program is using, can be a null pointer, fragment shader and graphics program language must match!
 		*
 		*  @return
-		*    The created program, a null pointer on error. Release the returned instance if you no longer need it.
+		*    The created graphics program, a null pointer on error. Release the returned instance if you no longer need it.
 		*
 		*  @note
-		*    - The program keeps a reference to the provided shaders and releases it when no longer required,
+		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required,
 		*      so it's safe to directly hand over a fresh created resource without releasing it manually
-		*    - It's valid that a program implementation is adding a reference and releasing it again at once
+		*    - It's valid that a graphics program implementation is adding a reference and releasing it again at once
 		*      (this means that in the case of not having any more references, a shader might get destroyed when calling this method)
 		*/
-		virtual IProgram* createProgram(const IRootSignature& rootSignature, const VertexAttributes& vertexAttributes, IVertexShader* vertexShader, ITessellationControlShader* tessellationControlShader, ITessellationEvaluationShader* tessellationEvaluationShader, IGeometryShader* geometryShader, IFragmentShader* fragmentShader) = 0;
+		virtual IGraphicsProgram* createGraphicsProgram(const IRootSignature& rootSignature, const VertexAttributes& vertexAttributes, IVertexShader* vertexShader, ITessellationControlShader* tessellationControlShader, ITessellationEvaluationShader* tessellationEvaluationShader, IGeometryShader* geometryShader, IFragmentShader* fragmentShader) = 0;
 
 	// Protected methods
 	protected:
@@ -5251,13 +5251,13 @@ namespace Renderer
 
 
 	//[-------------------------------------------------------]
-	//[ Renderer/Shader/IProgram.h                            ]
+	//[ Renderer/Shader/IGraphicsProgram.h                    ]
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    Abstract program interface
+	*    Abstract graphics program interface
 	*/
-	class IProgram : public IResource
+	class IGraphicsProgram : public IResource
 	{
 
 	// Public methods
@@ -5266,15 +5266,15 @@ namespace Renderer
 		*  @brief
 		*    Destructor
 		*/
-		inline virtual ~IProgram() override
+		inline virtual ~IGraphicsProgram() override
 		{
 			#ifdef RENDERER_STATISTICS
 				// Update the statistics
-				--getRenderer().getStatistics().currentNumberOfPrograms;
+				--getRenderer().getStatistics().currentNumberOfGraphicsPrograms;
 			#endif
 		}
 
-	// Public virtual Renderer::IProgram methods
+	// Public virtual Renderer::IGraphicsProgram methods
 	public:
 		// TODO(co) Cleanup
 		inline virtual handle getUniformHandle(MAYBE_UNUSED const char* uniformName)
@@ -5312,22 +5312,22 @@ namespace Renderer
 		*  @param[in] renderer
 		*    Owner renderer instance
 		*/
-		inline explicit IProgram(IRenderer& renderer) :
-			IResource(ResourceType::PROGRAM, renderer)
+		inline explicit IGraphicsProgram(IRenderer& renderer) :
+			IResource(ResourceType::GRAPHICS_PROGRAM, renderer)
 		{
 			#ifdef RENDERER_STATISTICS
 				// Update the statistics
-				++getRenderer().getStatistics().numberOfCreatedPrograms;
-				++getRenderer().getStatistics().currentNumberOfPrograms;
+				++getRenderer().getStatistics().numberOfCreatedGraphicsPrograms;
+				++getRenderer().getStatistics().currentNumberOfGraphicsPrograms;
 			#endif
 		}
 
-		explicit IProgram(const IProgram& source) = delete;
-		IProgram& operator =(const IProgram& source) = delete;
+		explicit IGraphicsProgram(const IGraphicsProgram& source) = delete;
+		IGraphicsProgram& operator =(const IGraphicsProgram& source) = delete;
 
 	};
 
-	typedef SmartRefCount<IProgram> IProgramPtr;
+	typedef SmartRefCount<IGraphicsProgram> IGraphicsProgramPtr;
 
 
 

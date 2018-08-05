@@ -21,7 +21,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/Resource/CompositorNode/Pass/Quad/CompositorResourcePassQuad.h"
+#include "RendererRuntime/Resource/CompositorNode/Pass/Compute/CompositorResourcePassCompute.h"
 #include "RendererRuntime/Resource/CompositorNode/Loader/CompositorNodeFileFormat.h"
 #include "RendererRuntime/Resource/Material/MaterialResourceManager.h"
 
@@ -36,7 +36,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
-	CompositorResourcePassQuad::CompositorResourcePassQuad(const CompositorTarget& compositorTarget, AssetId materialBlueprintAssetId, const MaterialProperties& materialProperties) :
+	CompositorResourcePassCompute::CompositorResourcePassCompute(const CompositorTarget& compositorTarget, AssetId materialBlueprintAssetId, const MaterialProperties& materialProperties) :
 		ICompositorResourcePass(compositorTarget),
 		mMaterialDefinitionMandatory(true),
 		mMaterialTechniqueId(MaterialResourceManager::DEFAULT_MATERIAL_TECHNIQUE_ID),
@@ -50,26 +50,26 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public virtual RendererRuntime::ICompositorResourcePass methods ]
 	//[-------------------------------------------------------]
-	void CompositorResourcePassQuad::deserialize(MAYBE_UNUSED uint32_t numberOfBytes, const uint8_t* data)
+	void CompositorResourcePassCompute::deserialize(MAYBE_UNUSED uint32_t numberOfBytes, const uint8_t* data)
 	{
 		// Sanity check
-		assert(sizeof(v1CompositorNode::PassQuad) <= numberOfBytes);
+		assert(sizeof(v1CompositorNode::PassCompute) <= numberOfBytes);
 
 		// Call the base implementation
 		ICompositorResourcePass::deserialize(sizeof(v1CompositorNode::Pass), data);
 
 		// Read data
-		const v1CompositorNode::PassQuad* passQuad = reinterpret_cast<const v1CompositorNode::PassQuad*>(data);
-		assert(sizeof(v1CompositorNode::PassQuad) + sizeof(MaterialProperty) * passQuad->numberOfMaterialProperties == numberOfBytes);
-		mMaterialAssetId = passQuad->materialAssetId;
-		mMaterialTechniqueId = passQuad->materialTechniqueId;
-		mMaterialBlueprintAssetId = passQuad->materialBlueprintAssetId;
+		const v1CompositorNode::PassCompute* passCompute = reinterpret_cast<const v1CompositorNode::PassCompute*>(data);
+		assert(sizeof(v1CompositorNode::PassCompute) + sizeof(MaterialProperty) * passCompute->numberOfMaterialProperties == numberOfBytes);
+		mMaterialAssetId = passCompute->materialAssetId;
+		mMaterialTechniqueId = passCompute->materialTechniqueId;
+		mMaterialBlueprintAssetId = passCompute->materialBlueprintAssetId;
 
 		{ // Read material properties
 			// TODO(co) Get rid of the evil const-cast
 			MaterialProperties::SortedPropertyVector& sortedPropertyVector = const_cast<MaterialProperties::SortedPropertyVector&>(mMaterialProperties.getSortedPropertyVector());
-			sortedPropertyVector.resize(passQuad->numberOfMaterialProperties);
-			memcpy(reinterpret_cast<char*>(sortedPropertyVector.data()), data + sizeof(v1CompositorNode::PassQuad), sizeof(MaterialProperty) * passQuad->numberOfMaterialProperties);
+			sortedPropertyVector.resize(passCompute->numberOfMaterialProperties);
+			memcpy(reinterpret_cast<char*>(sortedPropertyVector.data()), data + sizeof(v1CompositorNode::PassCompute), sizeof(MaterialProperty) * passCompute->numberOfMaterialProperties);
 		}
 
 		// Sanity checks

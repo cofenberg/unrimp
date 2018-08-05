@@ -355,7 +355,7 @@ namespace RendererRuntime
 				else
 				{
 					// TODO(co) Not compatible with command buffer: This certainly is going to be removed, we need to implement internal uniform buffer emulation
-					mProgram->setUniformMatrix4fv(mObjectSpaceToClipSpaceMatrixUniformHandle, &objectSpaceToClipSpaceMatrix[0][0]);
+					mGraphicsProgram->setUniformMatrix4fv(mObjectSpaceToClipSpaceMatrixUniformHandle, &objectSpaceToClipSpaceMatrix[0][0]);
 				}
 			}
 
@@ -534,7 +534,7 @@ namespace RendererRuntime
 		if (nullptr != shaderLanguage)
 		{
 			{ // Create the graphics pipeline state instance
-				{ // Create the program
+				{ // Create the graphics program
 					// Get the shader source code (outsourced to keep an overview)
 					const char* vertexShaderSourceCode = nullptr;
 					const char* fragmentShaderSourceCode = nullptr;
@@ -551,22 +551,22 @@ namespace RendererRuntime
 					Renderer::IFragmentShader* fragmentShader = shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode);
 					RENDERER_SET_RESOURCE_DEBUG_NAME(fragmentShader, "Debug GUI")
 
-					// Create the program
-					mProgram = shaderLanguage->createProgram(
+					// Create the graphics program
+					mGraphicsProgram = shaderLanguage->createGraphicsProgram(
 						*mRootSignature,
 						::detail::VertexAttributes,
 						vertexShader,
 						fragmentShader);
-					RENDERER_SET_RESOURCE_DEBUG_NAME(mProgram, "Debug GUI")
+					RENDERER_SET_RESOURCE_DEBUG_NAME(mGraphicsProgram, "Debug GUI")
 				}
 
 				// Create the graphics pipeline state object (PSO)
-				if (nullptr != mProgram)
+				if (nullptr != mGraphicsProgram)
 				{
 					// TODO(co) Render pass related update, the render pass in here is currently just a dummy so the debug compositor works
 					Renderer::IRenderPass* renderPass = renderer.createRenderPass(1, &renderer.getCapabilities().preferredSwapChainColorTextureFormat, renderer.getCapabilities().preferredSwapChainDepthStencilTextureFormat);
 
-					Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(mRootSignature, mProgram, ::detail::VertexAttributes, *renderPass);
+					Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(mRootSignature, mGraphicsProgram, ::detail::VertexAttributes, *renderPass);
 					graphicsPipelineState.rasterizerState.cullMode				   = Renderer::CullMode::NONE;
 					graphicsPipelineState.rasterizerState.scissorEnable			   = 1;
 					graphicsPipelineState.depthStencilState.depthEnable			   = false;
@@ -587,9 +587,9 @@ namespace RendererRuntime
 			mVertexShaderUniformBuffer = mRendererRuntime.getBufferManager().createUniformBuffer(sizeof(float) * 4 * 4, nullptr, Renderer::BufferUsage::DYNAMIC_DRAW);
 			RENDERER_SET_RESOURCE_DEBUG_NAME(mVertexShaderUniformBuffer, "Debug GUI")
 		}
-		else if (nullptr != mProgram)
+		else if (nullptr != mGraphicsProgram)
 		{
-			mObjectSpaceToClipSpaceMatrixUniformHandle = mProgram->getUniformHandle("ObjectSpaceToClipSpaceMatrix");
+			mObjectSpaceToClipSpaceMatrixUniformHandle = mGraphicsProgram->getUniformHandle("ObjectSpaceToClipSpaceMatrix");
 		}
 
 		// Create sampler state instance and wrap it into a resource group instance

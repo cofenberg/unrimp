@@ -26,29 +26,29 @@
 			{
 				"Description": "GBuffer 0: rgb = albedo color, a = alpha unused (required for blend operations)",
 				"TextureFormat": "R8G8B8A8",
-				"AllowMultisample": "TRUE"
+				"Flags": "SHADER_RESOURCE | RENDER_TARGET | ALLOW_MULTISAMPLE | ALLOW_RESOLUTION_SCALE"
 			},
 			"Example/Texture/Dynamic/MultisampleGBufferRenderTarget1":
 			{
 				"Description": "GBuffer 1: rgb = view space normal, a = roughness",
 				"TextureFormat": "R16G16B16A16F",
-				"AllowMultisample": "TRUE"
+				"Flags": "SHADER_RESOURCE | RENDER_TARGET | ALLOW_MULTISAMPLE | ALLOW_RESOLUTION_SCALE"
 			},
 			"Example/Texture/Dynamic/MultisampleGBufferRenderTarget2":
 			{
 				"Description": "GBuffer 2: rgb = emissive color, a = metallic",
 				"TextureFormat": "R16G16B16A16F",
-				"AllowMultisample": "TRUE"
+				"Flags": "SHADER_RESOURCE | RENDER_TARGET | ALLOW_MULTISAMPLE | ALLOW_RESOLUTION_SCALE"
 			},
 			"Example/Texture/Dynamic/MultisampleVelocityRenderTarget":
 			{
 				"TextureFormat": "R16G16_SNORM",
-				"AllowMultisample": "TRUE"
+				"Flags": "SHADER_RESOURCE | RENDER_TARGET | ALLOW_MULTISAMPLE | ALLOW_RESOLUTION_SCALE"
 			},
 			"Example/Texture/Dynamic/MultisampleDepthStencilRenderTarget":
 			{
 				"TextureFormat": "D32_FLOAT",
-				"AllowMultisample": "TRUE"
+				"Flags": "SHADER_RESOURCE | RENDER_TARGET | ALLOW_MULTISAMPLE | ALLOW_RESOLUTION_SCALE"
 			},
 			"Example/Texture/Dynamic/DepthStencilRenderTarget":
 			{
@@ -58,7 +58,7 @@
 			{
 				"Description": "Hierarchical depth buffer (aka Hi-Z map or HZB), useful for GPU occlusion culling, screen space reflections as well as using the second depth buffer mipmap for e.g. a half-sized volumetric light/fog bilateral upsampling",
 				"TextureFormat": "D32_FLOAT",
-				"GenerateMipmaps": "TRUE"
+				"Flags": "SHADER_RESOURCE | RENDER_TARGET | GENERATE_MIPMAPS | ALLOW_RESOLUTION_SCALE"
 			},
 			"Example/Texture/Dynamic/ScreenSpaceAmbientOcclusionRenderTarget":
 			{
@@ -97,7 +97,7 @@
 				"Width": "1024",
 				"Height": "1024",
 				"TextureFormat": "R32_FLOAT",
-				"GenerateMipmaps": "TRUE"
+				"Flags": "SHADER_RESOURCE | RENDER_TARGET | GENERATE_MIPMAPS"
 			},
 			"Example/Texture/Dynamic/PreviousLuminanceRenderTarget":
 			{
@@ -158,25 +158,25 @@
 			"Example/Texture/Dynamic/GaussianBlurDownscale2ColorRenderTarget":
 			{
 				"TextureFormat": "R11G11B10F",
-				"AllowResolutionScale": "FALSE",
+				"Flags": "SHADER_RESOURCE | RENDER_TARGET",
 				"Scale": "0.5"
 			},
 			"Example/Texture/Dynamic/GaussianBlurDownscale4ColorRenderTarget":
 			{
 				"TextureFormat": "R11G11B10F",
-				"AllowResolutionScale": "FALSE",
+				"Flags": "SHADER_RESOURCE | RENDER_TARGET",
 				"Scale": "0.25"
 			},
 			"Example/Texture/Dynamic/GaussianBlurRenderTarget0":
 			{
 				"TextureFormat": "R11G11B10F",
-				"AllowResolutionScale": "FALSE",
+				"Flags": "SHADER_RESOURCE | RENDER_TARGET",
 				"Scale": "0.25"
 			},
 			"Example/Texture/Dynamic/GaussianBlurRenderTarget1":
 			{
 				"TextureFormat": "R11G11B10F",
-				"AllowResolutionScale": "FALSE",
+				"Flags": "SHADER_RESOURCE | RENDER_TARGET",
 				"Scale": "0.25"
 			}
 		},
@@ -356,7 +356,7 @@
 			},
 			"MsaaResolveDepthFramebuffer":
 			{
-				"Quad":
+				"Compute":
 				{
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/MsaaResolveDepth.asset",
 					"SetMaterialProperties":
@@ -383,7 +383,7 @@
 			},
 			"ScreenSpaceAmbientOcclusionFramebuffer":
 			{
-				"Quad":
+				"Compute":
 				{
 					"Description": "Screen space ambient occlusion (SSAO) generation",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/ScreenSpaceAmbientOcclusionGeneration.asset",
@@ -396,7 +396,7 @@
 			},
 			"BlurredScreenSpaceAmbientOcclusionFramebuffer":
 			{
-				"Quad":
+				"Compute":
 				{
 					"Description": "Screen space ambient occlusion (SSAO) blur",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/ScreenSpaceAmbientOcclusionBlur.asset",
@@ -423,7 +423,7 @@
 			},
 			"VolumetricLightFramebuffer":
 			{
-				"Quad":
+				"Compute":
 				{
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/VolumetricLight.asset",
 					"SetMaterialProperties":
@@ -435,7 +435,7 @@
 			},
 			"ScreenSpaceReflectionRayTracingFramebuffer":
 			{
-				"Quad":
+				"Compute":
 				{
 					"SkipFirstExecution": "TRUE",
 					"Description": "Screen space reflection (SSR) ray tracing",
@@ -455,7 +455,7 @@
 					"NumberOfExecutions": "1",
 					"Flags": "COLOR"
 				},
-				"Quad":
+				"Compute":
 				{
 					"SkipFirstExecution": "TRUE",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Reflection.asset",
@@ -474,7 +474,7 @@
 				{
 					"Flags": "COLOR"
 				},
-				"Quad":
+				"Compute":
 				{
 					"Description": "Composite deferred data",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Deferred.asset",
@@ -513,7 +513,7 @@
 			},
 			"LuminanceFramebuffer":
 			{
-				"Quad":
+				"Compute":
 				{
 					"Description": "Calculate luminance. The mipmaps are generated automatically after the next render target change.",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/CalculateLuminance.asset",
@@ -535,7 +535,7 @@
 			},
 			"AdaptiveLuminanceFramebuffer":
 			{
-				"Quad":
+				"Compute":
 				{
 					"SkipFirstExecution": "TRUE",
 					"Description": "Slowly adjusts the scene luminance based on the previous scene luminance. Skip the first execution since there's no valid previous adaptive luminance available in this situation.",
@@ -546,7 +546,7 @@
 						"PreviousLuminanceMap": "Example/Texture/Dynamic/PreviousLuminanceRenderTarget"
 					}
 				},
-				"Quad":
+				"Compute":
 				{
 					"NumberOfExecutions": "1",
 					"Description": "During the first execution there's no valid previous adaptive luminance available, so use the just calculated luminance as previous luminance.",
@@ -560,7 +560,7 @@
 			},
 			"GaussianBlurDownscale2Framebuffer":
 			{
-				"Quad":
+				"Compute":
 				{
 					"Description": "Downscale",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
@@ -572,7 +572,7 @@
 			},
 			"GaussianBlurDownscale4Framebuffer":
 			{
-				"Quad":
+				"Compute":
 				{
 					"Description": "Downscale",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
@@ -586,7 +586,7 @@
 			{
 				"GaussianBlurFramebuffer0":
 				{
-					"Quad":
+					"Compute":
 					{
 						"Description": "Vertical Gaussian blur",
 						"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/GaussianBlur.asset",
@@ -599,7 +599,7 @@
 				},
 				"GaussianBlurFramebuffer1":
 				{
-					"Quad":
+					"Compute":
 					{
 						"Description": "Horizontal Gaussian blur",
 						"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/GaussianBlur.asset",
@@ -613,7 +613,7 @@
 			},
 			"GaussianBlurDownscale2Framebuffer":
 			{
-				"Quad":
+				"Compute":
 				{
 					"Description": "Upscale",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
@@ -625,7 +625,7 @@
 			},
 			"HdrFramebuffer1":
 			{
-				"Quad":
+				"Compute":
 				{
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/DepthOfField.asset",
 					"SetMaterialProperties":
@@ -638,7 +638,7 @@
 			},
 			"HdrFramebuffer0":
 			{
-				"Quad":
+				"Compute":
 				{
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/MotionBlur.asset",
 					"SetMaterialProperties":
@@ -650,7 +650,7 @@
 			},
 			"BloomFramebuffer":
 			{
-				"Quad":
+				"Compute":
 				{
 					"Description": "Bloom pass: Use a lower exposure to produce a value suitable for a bloom pass",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/HdrToLdrBloomThreshold.asset",
@@ -663,7 +663,7 @@
 			},
 			"BloomDownscale2Framebuffer":
 			{
-				"Quad":
+				"Compute":
 				{
 					"Description": "Bloom pass: Downscale",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
@@ -675,7 +675,7 @@
 			},
 			"BloomDownscale4Framebuffer":
 			{
-				"Quad":
+				"Compute":
 				{
 					"Description": "Bloom pass: Downscale",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
@@ -687,7 +687,7 @@
 			},
 			"BloomDownscale8Framebuffer":
 			{
-				"Quad":
+				"Compute":
 				{
 					"Description": "Bloom pass: Downscale",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
@@ -701,7 +701,7 @@
 			{
 				"BloomDownscale8GaussianBlurTemporaryFramebuffer":
 				{
-					"Quad":
+					"Compute":
 					{
 						"Description": "Bloom pass: Vertical Gaussian blur",
 						"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/GaussianBlur.asset",
@@ -714,7 +714,7 @@
 				},
 				"BloomDownscale8Framebuffer":
 				{
-					"Quad":
+					"Compute":
 					{
 						"Description": "Bloom pass: Horizontal Gaussian blur",
 						"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/GaussianBlur.asset",
@@ -728,7 +728,7 @@
 			},
 			"BloomDownscale4Framebuffer":
 			{
-				"Quad":
+				"Compute":
 				{
 					"Description": "Bloom pass: Upscale",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
@@ -740,7 +740,7 @@
 			},
 			"BloomDownscale2Framebuffer":
 			{
-				"Quad":
+				"Compute":
 				{
 					"Description": "Bloom pass: Upscale",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
@@ -752,7 +752,7 @@
 			},
 			"BloomFramebuffer":
 			{
-				"Quad":
+				"Compute":
 				{
 					"Description": "Lens flare pass: Use a lower exposure to produce a value suitable for a lens flare pass",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/LensFlareThreshold.asset",
@@ -764,7 +764,7 @@
 			},
 			"LensFlareFramebuffer":
 			{
-				"Quad":
+				"Compute":
 				{
 					"Description": "Lens flare pass: Feature generation",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/LensFlareFeatureGeneration.asset",
@@ -776,7 +776,7 @@
 			},
 			"BloomFramebuffer":
 			{
-				"Quad":
+				"Compute":
 				{
 					"Description": "Lens flare pass: Vertical Gaussian blur",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/GaussianBlur.asset",
@@ -789,7 +789,7 @@
 			},
 			"LensFlareFramebuffer":
 			{
-				"Quad":
+				"Compute":
 				{
 					"Description": "Lens flare pass: Horizontal Gaussian blur",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/GaussianBlur.asset",
@@ -802,7 +802,7 @@
 			},
 			"LdrFramebuffer0":
 			{
-				"Quad":
+				"Compute":
 				{
 					"Description": "HDR to LDR",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/HdrToLdr.asset",
@@ -817,7 +817,7 @@
 			},
 			"OutputRenderTarget":
 			{
-				"Quad":
+				"Compute":
 				{
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Final.asset",
 					"SetMaterialProperties":

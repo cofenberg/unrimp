@@ -1903,12 +1903,12 @@ namespace Direct3D10Renderer
 
 		/**
 		*  @brief
-		*    Set program
+		*    Set graphics program
 		*
-		*  @param[in] program
-		*    Program to set
+		*  @param[in] graphicsProgram
+		*    Graphics program to set
 		*/
-		void setProgram(Renderer::IProgram* program);
+		void setGraphicsProgram(Renderer::IGraphicsProgram* graphicsProgram);
 
 
 	//[-------------------------------------------------------]
@@ -7222,7 +7222,7 @@ namespace Direct3D10Renderer
 
 						case Renderer::ResourceType::ROOT_SIGNATURE:
 						case Renderer::ResourceType::RESOURCE_GROUP:
-						case Renderer::ResourceType::PROGRAM:
+						case Renderer::ResourceType::GRAPHICS_PROGRAM:
 						case Renderer::ResourceType::VERTEX_ARRAY:
 						case Renderer::ResourceType::RENDER_PASS:
 						case Renderer::ResourceType::SWAP_CHAIN:
@@ -7314,7 +7314,7 @@ namespace Direct3D10Renderer
 
 					case Renderer::ResourceType::ROOT_SIGNATURE:
 					case Renderer::ResourceType::RESOURCE_GROUP:
-					case Renderer::ResourceType::PROGRAM:
+					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::SWAP_CHAIN:
@@ -8070,13 +8070,13 @@ namespace Direct3D10Renderer
 
 
 	//[-------------------------------------------------------]
-	//[ Direct3D10Renderer/Shader/ProgramHlsl.h               ]
+	//[ Direct3D10Renderer/Shader/GraphicsProgramHlsl.h       ]
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    HLSL program class
+	*    HLSL graphics program class
 	*/
-	class ProgramHlsl final : public Renderer::IProgram
+	class GraphicsProgramHlsl final : public Renderer::IGraphicsProgram
 	{
 
 
@@ -8091,17 +8091,17 @@ namespace Direct3D10Renderer
 		*  @param[in] direct3D10Renderer
 		*    Owner Direct3D 10 renderer instance
 		*  @param[in] vertexShaderHlsl
-		*    Vertex shader the program is using, can be a null pointer
+		*    Vertex shader the graphics program is using, can be a null pointer
 		*  @param[in] geometryShaderHlsl
-		*    Geometry shader the program is using, can be a null pointer
+		*    Geometry shader the graphics program is using, can be a null pointer
 		*  @param[in] fragmentShaderHlsl
-		*    Fragment shader the program is using, can be a null pointer
+		*    Fragment shader the graphics program is using, can be a null pointer
 		*
 		*  @note
-		*    - The program keeps a reference to the provided shaders and releases it when no longer required
+		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
 		*/
-		ProgramHlsl(Direct3D10Renderer& direct3D10Renderer, VertexShaderHlsl* vertexShaderHlsl, GeometryShaderHlsl* geometryShaderHlsl, FragmentShaderHlsl* fragmentShaderHlsl) :
-			IProgram(direct3D10Renderer),
+		GraphicsProgramHlsl(Direct3D10Renderer& direct3D10Renderer, VertexShaderHlsl* vertexShaderHlsl, GeometryShaderHlsl* geometryShaderHlsl, FragmentShaderHlsl* fragmentShaderHlsl) :
+			IGraphicsProgram(direct3D10Renderer),
 			mDirect3D10Renderer(&direct3D10Renderer),
 			mVertexShaderHlsl(vertexShaderHlsl),
 			mGeometryShaderHlsl(geometryShaderHlsl),
@@ -8126,7 +8126,7 @@ namespace Direct3D10Renderer
 		*  @brief
 		*    Destructor
 		*/
-		virtual ~ProgramHlsl() override
+		virtual ~GraphicsProgramHlsl() override
 		{
 			// Release the shader references
 			if (nullptr != mVertexShaderHlsl)
@@ -8145,10 +8145,10 @@ namespace Direct3D10Renderer
 
 		/**
 		*  @brief
-		*    Return the HLSL vertex shader the program is using
+		*    Return the HLSL vertex shader the graphics program is using
 		*
 		*  @return
-		*    The HLSL vertex shader the program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*    The HLSL vertex shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
 		inline VertexShaderHlsl* getVertexShaderHlsl() const
 		{
@@ -8157,10 +8157,10 @@ namespace Direct3D10Renderer
 
 		/**
 		*  @brief
-		*    Return the HLSL geometry shader the program is using
+		*    Return the HLSL geometry shader the graphics program is using
 		*
 		*  @return
-		*    The HLSL geometry shader the program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*    The HLSL geometry shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
 		inline GeometryShaderHlsl* getGeometryShaderHlsl() const
 		{
@@ -8169,10 +8169,10 @@ namespace Direct3D10Renderer
 
 		/**
 		*  @brief
-		*    Return the HLSL fragment shader the program is using
+		*    Return the HLSL fragment shader the graphics program is using
 		*
 		*  @return
-		*    The HLSL fragment shader the program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*    The HLSL fragment shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
 		inline FragmentShaderHlsl* getFragmentShaderHlsl() const
 		{
@@ -8187,7 +8187,7 @@ namespace Direct3D10Renderer
 		#ifdef RENDERER_DEBUG
 			inline virtual void setDebugName(const char*) override
 			{
-				// In here we could assign the given debug name to all shaders assigned to the program,
+				// In here we could assign the given debug name to all shaders assigned to the graphics program,
 				// but this might end up within a naming chaos due to overwriting possible already set
 				// names... don't do this...
 			}
@@ -8200,7 +8200,7 @@ namespace Direct3D10Renderer
 	protected:
 		inline virtual void selfDestruct() override
 		{
-			RENDERER_DELETE(getRenderer().getContext(), ProgramHlsl, this);
+			RENDERER_DELETE(getRenderer().getContext(), GraphicsProgramHlsl, this);
 		}
 
 
@@ -8208,8 +8208,8 @@ namespace Direct3D10Renderer
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		explicit ProgramHlsl(const ProgramHlsl& source) = delete;
-		ProgramHlsl& operator =(const ProgramHlsl& source) = delete;
+		explicit GraphicsProgramHlsl(const GraphicsProgramHlsl& source) = delete;
+		GraphicsProgramHlsl& operator =(const GraphicsProgramHlsl& source) = delete;
 
 
 	//[-------------------------------------------------------]
@@ -8217,9 +8217,9 @@ namespace Direct3D10Renderer
 	//[-------------------------------------------------------]
 	private:
 		Direct3D10Renderer* mDirect3D10Renderer;	///< Owner Direct3D 10 renderer instance, always valid
-		VertexShaderHlsl*   mVertexShaderHlsl;		///< Vertex shader the program is using (we keep a reference to it), can be a null pointer
-		GeometryShaderHlsl* mGeometryShaderHlsl;	///< Geometry shader the program is using (we keep a reference to it), can be a null pointer
-		FragmentShaderHlsl* mFragmentShaderHlsl;	///< Fragment shader the program is using (we keep a reference to it), can be a null pointer
+		VertexShaderHlsl*   mVertexShaderHlsl;		///< Vertex shader the graphics program is using (we keep a reference to it), can be a null pointer
+		GeometryShaderHlsl* mGeometryShaderHlsl;	///< Geometry shader the graphics program is using (we keep a reference to it), can be a null pointer
+		FragmentShaderHlsl* mFragmentShaderHlsl;	///< Fragment shader the graphics program is using (we keep a reference to it), can be a null pointer
 
 
 	};
@@ -8348,9 +8348,9 @@ namespace Direct3D10Renderer
 			return nullptr;
 		}
 
-		virtual Renderer::IProgram* createProgram(MAYBE_UNUSED const Renderer::IRootSignature& rootSignature, MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
+		virtual Renderer::IGraphicsProgram* createGraphicsProgram(MAYBE_UNUSED const Renderer::IRootSignature& rootSignature, MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
 		{
-			// A shader can be a null pointer, but if it's not the shader and program language must match!
+			// A shader can be a null pointer, but if it's not the shader and graphics program language must match!
 			// -> Optimization: Comparing the shader language name by directly comparing the pointer address of
 			//    the name is safe because we know that we always reference to one and the same name address
 			// TODO(co) Add security check: Is the given resource one of the currently used renderer?
@@ -8376,8 +8376,8 @@ namespace Direct3D10Renderer
 			}
 			else
 			{
-				// Create the program
-				return RENDERER_NEW(getRenderer().getContext(), ProgramHlsl)(static_cast<Direct3D10Renderer&>(getRenderer()), static_cast<VertexShaderHlsl*>(vertexShader), static_cast<GeometryShaderHlsl*>(geometryShader), static_cast<FragmentShaderHlsl*>(fragmentShader));
+				// Create the graphics program
+				return RENDERER_NEW(getRenderer().getContext(), GraphicsProgramHlsl)(static_cast<Direct3D10Renderer&>(getRenderer()), static_cast<VertexShaderHlsl*>(vertexShader), static_cast<GeometryShaderHlsl*>(geometryShader), static_cast<FragmentShaderHlsl*>(fragmentShader));
 			}
 
 			// Error! Shader language mismatch!
@@ -8454,7 +8454,7 @@ namespace Direct3D10Renderer
 			IGraphicsPipelineState(direct3D10Renderer),
 			mD3D10Device(direct3D10Renderer.getD3D10Device()),
 			mD3D10PrimitiveTopology(static_cast<D3D10_PRIMITIVE_TOPOLOGY>(graphicsPipelineState.primitiveTopology)),
-			mProgram(graphicsPipelineState.program),
+			mGraphicsProgram(graphicsPipelineState.graphicsProgram),
 			mRenderPass(graphicsPipelineState.renderPass),
 			mD3D10InputLayout(nullptr),
 			mRasterizerState(direct3D10Renderer, graphicsPipelineState.rasterizerState),
@@ -8464,15 +8464,15 @@ namespace Direct3D10Renderer
 			// Acquire our Direct3D 10 device reference
 			mD3D10Device->AddRef();
 
-			// Add a reference to the given program and render pass
-			mProgram->addReference();
+			// Add a reference to the given graphics program and render pass
+			mGraphicsProgram->addReference();
 			mRenderPass->addReference();
 
 			// Create Direct3D 10 input element descriptions with support for attribute-less rendering
 			const uint32_t numberOfAttributes = graphicsPipelineState.vertexAttributes.numberOfAttributes;
 			if (numberOfAttributes > 0)
 			{
-				const VertexShaderHlsl* vertexShaderHlsl = static_cast<ProgramHlsl*>(mProgram)->getVertexShaderHlsl();
+				const VertexShaderHlsl* vertexShaderHlsl = static_cast<GraphicsProgramHlsl*>(mGraphicsProgram)->getVertexShaderHlsl();
 				if (nullptr != vertexShaderHlsl)
 				{
 					const Renderer::VertexAttribute* attributes = graphicsPipelineState.vertexAttributes.attributes;
@@ -8531,8 +8531,8 @@ namespace Direct3D10Renderer
 		*/
 		virtual ~GraphicsPipelineState() override
 		{
-			// Release the program and render pass reference
-			mProgram->releaseReference();
+			// Release the graphics program and render pass reference
+			mGraphicsProgram->releaseReference();
 			mRenderPass->releaseReference();
 
 			// Release the Direct3D 10 input layout
@@ -8581,8 +8581,8 @@ namespace Direct3D10Renderer
 				mD3D10Device->IASetInputLayout(mD3D10InputLayout);
 			}
 
-			// Set the program
-			static_cast<Direct3D10Renderer&>(getRenderer()).setProgram(mProgram);
+			// Set the graphics program
+			static_cast<Direct3D10Renderer&>(getRenderer()).setGraphicsProgram(mGraphicsProgram);
 
 			// Set the Direct3D 10 rasterizer state
 			mD3D10Device->RSSetState(mRasterizerState.getD3D10RasterizerState());
@@ -8635,14 +8635,14 @@ namespace Direct3D10Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		ID3D10Device*			 mD3D10Device;				///< The Direct3D 10 device context instance (we keep a reference to it), null pointer on horrible error (so we don't check)
-		D3D10_PRIMITIVE_TOPOLOGY mD3D10PrimitiveTopology;
-		Renderer::IProgram*		 mProgram;
-		Renderer::IRenderPass*   mRenderPass;
-		ID3D10InputLayout*		 mD3D10InputLayout;			///< Direct3D 10 input layout, can be a null pointer
-		RasterizerState			 mRasterizerState;
-		DepthStencilState		 mDepthStencilState;
-		BlendState				 mBlendState;
+		ID3D10Device*				mD3D10Device;				///< The Direct3D 10 device context instance (we keep a reference to it), null pointer on horrible error (so we don't check)
+		D3D10_PRIMITIVE_TOPOLOGY	mD3D10PrimitiveTopology;
+		Renderer::IGraphicsProgram*	mGraphicsProgram;
+		Renderer::IRenderPass*		mRenderPass;
+		ID3D10InputLayout*			mD3D10InputLayout;			///< Direct3D 10 input layout, can be a null pointer
+		RasterizerState				mRasterizerState;
+		DepthStencilState			mDepthStencilState;
+		BlendState					mBlendState;
 
 
 	};
@@ -9290,7 +9290,7 @@ namespace Direct3D10Renderer
 
 							case Renderer::ResourceType::ROOT_SIGNATURE:
 							case Renderer::ResourceType::RESOURCE_GROUP:
-							case Renderer::ResourceType::PROGRAM:
+							case Renderer::ResourceType::GRAPHICS_PROGRAM:
 							case Renderer::ResourceType::VERTEX_ARRAY:
 							case Renderer::ResourceType::RENDER_PASS:
 							case Renderer::ResourceType::SWAP_CHAIN:
@@ -9398,7 +9398,7 @@ namespace Direct3D10Renderer
 
 					case Renderer::ResourceType::ROOT_SIGNATURE:
 					case Renderer::ResourceType::RESOURCE_GROUP:
-					case Renderer::ResourceType::PROGRAM:
+					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::SWAP_CHAIN:
@@ -9550,7 +9550,7 @@ namespace Direct3D10Renderer
 
 					case Renderer::ResourceType::ROOT_SIGNATURE:
 					case Renderer::ResourceType::RESOURCE_GROUP:
-					case Renderer::ResourceType::PROGRAM:
+					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::INDEX_BUFFER:
@@ -9682,7 +9682,7 @@ namespace Direct3D10Renderer
 
 				case Renderer::ResourceType::ROOT_SIGNATURE:
 				case Renderer::ResourceType::RESOURCE_GROUP:
-				case Renderer::ResourceType::PROGRAM:
+				case Renderer::ResourceType::GRAPHICS_PROGRAM:
 				case Renderer::ResourceType::VERTEX_ARRAY:
 				case Renderer::ResourceType::RENDER_PASS:
 				case Renderer::ResourceType::INDEX_BUFFER:
@@ -9881,7 +9881,7 @@ namespace Direct3D10Renderer
 
 			case Renderer::ResourceType::ROOT_SIGNATURE:
 			case Renderer::ResourceType::RESOURCE_GROUP:
-			case Renderer::ResourceType::PROGRAM:
+			case Renderer::ResourceType::GRAPHICS_PROGRAM:
 			case Renderer::ResourceType::VERTEX_ARRAY:
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::INDEX_BUFFER:
@@ -9938,7 +9938,7 @@ namespace Direct3D10Renderer
 
 			case Renderer::ResourceType::ROOT_SIGNATURE:
 			case Renderer::ResourceType::RESOURCE_GROUP:
-			case Renderer::ResourceType::PROGRAM:
+			case Renderer::ResourceType::GRAPHICS_PROGRAM:
 			case Renderer::ResourceType::VERTEX_ARRAY:
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::SWAP_CHAIN:
@@ -10255,7 +10255,7 @@ namespace Direct3D10Renderer
 
 			case Renderer::ResourceType::ROOT_SIGNATURE:
 			case Renderer::ResourceType::RESOURCE_GROUP:
-			case Renderer::ResourceType::PROGRAM:
+			case Renderer::ResourceType::GRAPHICS_PROGRAM:
 			case Renderer::ResourceType::VERTEX_ARRAY:
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::SWAP_CHAIN:
@@ -10342,7 +10342,7 @@ namespace Direct3D10Renderer
 
 			case Renderer::ResourceType::ROOT_SIGNATURE:
 			case Renderer::ResourceType::RESOURCE_GROUP:
-			case Renderer::ResourceType::PROGRAM:
+			case Renderer::ResourceType::GRAPHICS_PROGRAM:
 			case Renderer::ResourceType::VERTEX_ARRAY:
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::SWAP_CHAIN:
@@ -10555,24 +10555,24 @@ namespace Direct3D10Renderer
 		mCapabilities.computeShader = false;
 	}
 
-	void Direct3D10Renderer::setProgram(Renderer::IProgram* program)
+	void Direct3D10Renderer::setGraphicsProgram(Renderer::IGraphicsProgram* graphicsProgram)
 	{
 		// Begin debug event
 		RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(this)
 
-		if (nullptr != program)
+		if (nullptr != graphicsProgram)
 		{
 			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
-			DIRECT3D10RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *program)
+			DIRECT3D10RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *graphicsProgram)
 
 			// Get shaders
-			const ProgramHlsl*		  programHlsl		  = static_cast<ProgramHlsl*>(program);
-			const VertexShaderHlsl*   vertexShaderHlsl	  = programHlsl->getVertexShaderHlsl();
-			const GeometryShaderHlsl* geometryShaderHlsl  = programHlsl->getGeometryShaderHlsl();
-			const FragmentShaderHlsl* fragmentShaderHlsl  = programHlsl->getFragmentShaderHlsl();
-			ID3D10VertexShader*		  d3d10VertexShader   = (nullptr != vertexShaderHlsl)	? vertexShaderHlsl->getD3D10VertexShader()	   : nullptr;
-			ID3D10GeometryShader*	  d3d10GeometryShader = (nullptr != geometryShaderHlsl) ? geometryShaderHlsl->getD3D10GeometryShader() : nullptr;
-			ID3D10PixelShader*		  d3d10PixelShader    = (nullptr != fragmentShaderHlsl) ? fragmentShaderHlsl->getD3D10PixelShader()	   : nullptr;
+			const GraphicsProgramHlsl* graphicsProgramHlsl = static_cast<GraphicsProgramHlsl*>(graphicsProgram);
+			const VertexShaderHlsl*	   vertexShaderHlsl	   = graphicsProgramHlsl->getVertexShaderHlsl();
+			const GeometryShaderHlsl*  geometryShaderHlsl  = graphicsProgramHlsl->getGeometryShaderHlsl();
+			const FragmentShaderHlsl*  fragmentShaderHlsl  = graphicsProgramHlsl->getFragmentShaderHlsl();
+			ID3D10VertexShader*		   d3d10VertexShader   = (nullptr != vertexShaderHlsl)	? vertexShaderHlsl->getD3D10VertexShader()	   : nullptr;
+			ID3D10GeometryShader*	   d3d10GeometryShader = (nullptr != geometryShaderHlsl) ? geometryShaderHlsl->getD3D10GeometryShader() : nullptr;
+			ID3D10PixelShader*		   d3d10PixelShader    = (nullptr != fragmentShaderHlsl) ? fragmentShaderHlsl->getD3D10PixelShader()	   : nullptr;
 
 			// Set shaders
 			if (mD3d10VertexShader != d3d10VertexShader)

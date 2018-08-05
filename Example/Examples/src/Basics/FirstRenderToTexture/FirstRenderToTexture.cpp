@@ -133,12 +133,12 @@ void FirstRenderToTexture::onInitialization()
 			mVertexArray = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(glm::countof(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
 		}
 
-		// Create the program: Decide which shader language should be used (for example "GLSL" or "HLSL")
+		// Create the graphics program: Decide which shader language should be used (for example "GLSL" or "HLSL")
 		Renderer::IShaderLanguagePtr shaderLanguage(renderer->getShaderLanguage());
 		if (nullptr != shaderLanguage)
 		{
-			// Create the program
-			Renderer::IProgramPtr program;
+			// Create the graphics program
+			Renderer::IGraphicsProgramPtr graphicsProgram;
 			{
 				// Get the shader source code (outsourced to keep an overview)
 				const char* vertexShaderSourceCode = nullptr;
@@ -150,8 +150,8 @@ void FirstRenderToTexture::onInitialization()
 				#include "FirstRenderToTexture_HLSL_D3D10_D3D11_D3D12.h"
 				#include "FirstRenderToTexture_Null.h"
 
-				// Create the program
-				program = shaderLanguage->createProgram(
+				// Create the graphics program
+				graphicsProgram = shaderLanguage->createGraphicsProgram(
 					*mRootSignature,
 					vertexAttributes,
 					shaderLanguage->createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode),
@@ -159,9 +159,9 @@ void FirstRenderToTexture::onInitialization()
 			}
 
 			// Create the graphics pipeline state object (PSO)
-			if (nullptr != program)
+			if (nullptr != graphicsProgram)
 			{
-				mGraphicsPipelineState = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass()));
+				mGraphicsPipelineState = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass()));
 			}
 		}
 

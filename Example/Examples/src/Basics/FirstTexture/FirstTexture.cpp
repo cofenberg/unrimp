@@ -194,8 +194,8 @@ void FirstTexture::onInitialization()
 		Renderer::IShaderLanguagePtr shaderLanguage(renderer->getShaderLanguage());
 		if (nullptr != shaderLanguage)
 		{
-			// Create the program
-			Renderer::IProgramPtr program;
+			// Create the graphics program
+			Renderer::IGraphicsProgramPtr graphicsProgram;
 			{
 				// Get the shader source code (outsourced to keep an overview)
 				const char* vertexShaderSourceCode = nullptr;
@@ -207,8 +207,8 @@ void FirstTexture::onInitialization()
 				#include "FirstTexture_HLSL_D3D10_D3D11_D3D12.h"
 				#include "FirstTexture_Null.h"
 
-				// Create the program
-				program = shaderLanguage->createProgram(
+				// Create the graphics program
+				graphicsProgram = shaderLanguage->createGraphicsProgram(
 					*mRootSignature,
 					vertexAttributes,
 					shaderLanguage->createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode),
@@ -216,9 +216,9 @@ void FirstTexture::onInitialization()
 			}
 
 			// Create the graphics pipeline state object (PSO)
-			if (nullptr != program)
+			if (nullptr != graphicsProgram)
 			{
-				mGraphicsPipelineState = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass()));
+				mGraphicsPipelineState = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass()));
 			}
 		}
 

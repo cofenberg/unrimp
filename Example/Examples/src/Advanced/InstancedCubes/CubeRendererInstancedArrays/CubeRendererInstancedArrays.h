@@ -100,26 +100,26 @@ private:
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
-	Renderer::IRendererPtr		 mRenderer;							///< Renderer instance to use, always valid
-	Renderer::IRenderPass&		 mRenderPass;						///< Render pass to use, always valid
-	Renderer::IBufferManagerPtr	 mBufferManager;					///< Buffer manager, can be a null pointer
-	Renderer::ITextureManagerPtr mTextureManager;					///< Texture manager, can be a null pointer
-	Renderer::CommandBuffer		 mCommandBuffer;					///< Command buffer which is recorded once and then used multiple times
-	uint32_t					 mNumberOfTextures;					///< Number of textures
-	uint32_t					 mSceneRadius;						///< Scene radius
-	uint32_t					 mMaximumNumberOfInstancesPerBatch;	///< Maximum number of instances per batch
-	Renderer::IRootSignaturePtr	 mRootSignature;					///< Root signature, can be a null pointer
-	Renderer::ITexture2DPtr		 mTexture2D;						///< 2D texture, can be a null pointer
-	Renderer::IUniformBufferPtr	 mUniformBufferStaticVs;			///< Static vertex shader uniform buffer object (UBO), can be a null pointer
-	Renderer::IUniformBufferPtr	 mUniformBufferDynamicVs;			///< Dynamic vertex shader uniform buffer object (UBO), can be a null pointer
-	Renderer::IUniformBufferPtr	 mUniformBufferDynamicFs;			///< Dynamic fragment shader uniform buffer object (UBO), can be a null pointer
-	Renderer::IResourceGroupPtr	 mResourceGroup;					///< Resource group, can be a null pointer
-	Renderer::IResourceGroupPtr	 mSamplerStateGroup;				///< Sampler state resource group, can be a null pointer
-	Renderer::IProgramPtr		 mProgram;							///< Program, can be a null pointer
-	Renderer::IVertexBufferPtr	 mVertexBuffer;						///< Vertex buffer object (VBO), can be a null pointer
-	Renderer::IIndexBufferPtr	 mIndexBuffer;						///< Index buffer object (IBO), can be a null pointer
-	uint32_t					 mNumberOfBatches;					///< Current number of batches
-	BatchInstancedArrays*		 mBatches;							///< Batches, can be a null pointer
+	Renderer::IRendererPtr		  mRenderer;							///< Renderer instance to use, always valid
+	Renderer::IRenderPass&		  mRenderPass;							///< Render pass to use, always valid
+	Renderer::IBufferManagerPtr	  mBufferManager;						///< Buffer manager, can be a null pointer
+	Renderer::ITextureManagerPtr  mTextureManager;						///< Texture manager, can be a null pointer
+	Renderer::CommandBuffer		  mCommandBuffer;						///< Command buffer which is recorded once and then used multiple times
+	uint32_t					  mNumberOfTextures;					///< Number of textures
+	uint32_t					  mSceneRadius;							///< Scene radius
+	uint32_t					  mMaximumNumberOfInstancesPerBatch;	///< Maximum number of instances per batch
+	Renderer::IRootSignaturePtr	  mRootSignature;						///< Root signature, can be a null pointer
+	Renderer::ITexture2DPtr		  mTexture2D;							///< 2D texture, can be a null pointer
+	Renderer::IUniformBufferPtr	  mUniformBufferStaticVs;				///< Static vertex shader uniform buffer object (UBO), can be a null pointer
+	Renderer::IUniformBufferPtr	  mUniformBufferDynamicVs;				///< Dynamic vertex shader uniform buffer object (UBO), can be a null pointer
+	Renderer::IUniformBufferPtr	  mUniformBufferDynamicFs;				///< Dynamic fragment shader uniform buffer object (UBO), can be a null pointer
+	Renderer::IResourceGroupPtr	  mResourceGroup;						///< Resource group, can be a null pointer
+	Renderer::IResourceGroupPtr	  mSamplerStateGroup;					///< Sampler state resource group, can be a null pointer
+	Renderer::IGraphicsProgramPtr mGraphicsProgram;						///< Graphics program, can be a null pointer
+	Renderer::IVertexBufferPtr	  mVertexBuffer;						///< Vertex buffer object (VBO), can be a null pointer
+	Renderer::IIndexBufferPtr	  mIndexBuffer;							///< Index buffer object (IBO), can be a null pointer
+	uint32_t					  mNumberOfBatches;						///< Current number of batches
+	BatchInstancedArrays*		  mBatches;								///< Batches, can be a null pointer
 
 
 };

@@ -27,10 +27,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/Core/GetInvalid.h"
 #include "RendererRuntime/Resource/ShaderBlueprint/Cache/ShaderProperties.h"
-
-#include <Renderer/Renderer.h>
 
 
 //[-------------------------------------------------------]
@@ -52,9 +49,9 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Global definitions                                    ]
 	//[-------------------------------------------------------]
-	typedef uint32_t MaterialBlueprintResourceId;	///< POD material blueprint resource identifier
-	typedef uint32_t PipelineStateSignatureId;		///< Pipeline state signature identifier, result of hashing the referenced shaders as well as other pipeline state properties
-	typedef uint32_t ShaderCombinationId;			///< Shader combination identifier, result of hashing the shader combination generating shader blueprint resource, shader properties and dynamic shader pieces
+	typedef uint32_t MaterialBlueprintResourceId;		///< POD material blueprint resource identifier
+	typedef uint32_t ComputePipelineStateSignatureId;	///< Compute pipeline state signature identifier, result of hashing the referenced shaders as well as other pipeline state properties
+	typedef uint32_t ShaderCombinationId;				///< Shader combination identifier, result of hashing the shader combination generating shader blueprint resource, shader properties and dynamic shader pieces
 
 
 	//[-------------------------------------------------------]
@@ -62,12 +59,12 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    Pipeline state signature
+	*    Compute pipeline state signature
 	*
 	*  @see
-	*    - See "RendererRuntime::PipelineStateCacheManager" for additional information
+	*    - See "RendererRuntime::ComputePipelineStateCacheManager" for additional information
 	*/
-	class PipelineStateSignature final
+	class ComputePipelineStateSignature final
 	{
 
 
@@ -79,11 +76,10 @@ namespace RendererRuntime
 		*  @brief
 		*    Default constructor
 		*/
-		inline PipelineStateSignature() :
+		inline ComputePipelineStateSignature() :
 			mMaterialBlueprintResourceId(getInvalid<MaterialBlueprintResourceId>()),
-			mSerializedGraphicsPipelineStateHash(getInvalid<uint32_t>()),
-			mPipelineStateSignatureId(getInvalid<PipelineStateSignatureId>()),
-			mShaderCombinationId{getInvalid<ShaderCombinationId>(), getInvalid<ShaderCombinationId>(), getInvalid<ShaderCombinationId>(), getInvalid<ShaderCombinationId>(), getInvalid<ShaderCombinationId>()}
+			mComputePipelineStateSignatureId(getInvalid<ComputePipelineStateSignatureId>()),
+			mShaderCombinationId(getInvalid<ShaderCombinationId>())
 		{
 			// Nothing here
 		}
@@ -94,30 +90,28 @@ namespace RendererRuntime
 		*
 		*  @param[in] materialBlueprintResource
 		*    Material blueprint resource to use
-		*  @param[in] serializedGraphicsPipelineStateHash
-		*    FNV1a hash of "Renderer::SerializedGraphicsPipelineState"
 		*  @param[in] shaderProperties
 		*    Shader properties to use, you should ensure that this shader properties are already optimized by using e.g. "RendererRuntime::MaterialBlueprintResource::optimizeShaderProperties()"
 		*/
-		inline PipelineStateSignature(const MaterialBlueprintResource& materialBlueprintResource, uint32_t serializedGraphicsPipelineStateHash, const ShaderProperties& shaderProperties)
+		inline ComputePipelineStateSignature(const MaterialBlueprintResource& materialBlueprintResource, const ShaderProperties& shaderProperties)
 		{
-			set(materialBlueprintResource, serializedGraphicsPipelineStateHash, shaderProperties);
+			set(materialBlueprintResource, shaderProperties);
 		}
 
 		/**
 		*  @brief
 		*    Copy constructor
 		*
-		*  @param[in] pipelineStateSignature
-		*    Pipeline state signature to copy from
+		*  @param[in] computePipelineStateSignature
+		*    Compute pipeline state signature to copy from
 		*/
-		explicit PipelineStateSignature(const PipelineStateSignature& pipelineStateSignature);
+		explicit ComputePipelineStateSignature(const ComputePipelineStateSignature& computePipelineStateSignature);
 
 		/**
 		*  @brief
 		*    Destructor
 		*/
-		inline ~PipelineStateSignature()
+		inline ~ComputePipelineStateSignature()
 		{
 			// Nothing here
 		}
@@ -126,7 +120,7 @@ namespace RendererRuntime
 		*  @brief
 		*    Copy operator
 		*/
-		PipelineStateSignature& operator=(const PipelineStateSignature& pipelineStateSignature);
+		ComputePipelineStateSignature& operator=(const ComputePipelineStateSignature& computePipelineStateSignature);
 
 		/**
 		*  @brief
@@ -134,12 +128,10 @@ namespace RendererRuntime
 		*
 		*  @param[in] materialBlueprintResource
 		*    Material blueprint resource to use
-		*  @param[in] serializedGraphicsPipelineStateHash
-		*    FNV1a hash of "Renderer::SerializedGraphicsPipelineState"
 		*  @param[in] shaderProperties
 		*    Shader properties to use, you should ensure that this shader properties are already optimized by using e.g. "RendererRuntime::MaterialBlueprintResource::optimizeShaderProperties()"
 		*/
-		void set(const MaterialBlueprintResource& materialBlueprintResource, uint32_t serializedGraphicsPipelineStateHash, const ShaderProperties& shaderProperties);
+		void set(const MaterialBlueprintResource& materialBlueprintResource, const ShaderProperties& shaderProperties);
 
 		//[-------------------------------------------------------]
 		//[ Getter for input data                                 ]
@@ -147,11 +139,6 @@ namespace RendererRuntime
 		inline MaterialBlueprintResourceId getMaterialBlueprintResourceId() const
 		{
 			return mMaterialBlueprintResourceId;
-		}
-
-		inline uint32_t getSerializedGraphicsPipelineStateHash() const
-		{
-			return mSerializedGraphicsPipelineStateHash;
 		}
 
 		inline const ShaderProperties& getShaderProperties() const
@@ -162,14 +149,14 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Getter for derived data                               ]
 		//[-------------------------------------------------------]
-		inline PipelineStateSignatureId getPipelineStateSignatureId() const
+		inline ComputePipelineStateSignatureId getComputePipelineStateSignatureId() const
 		{
-			return mPipelineStateSignatureId;
+			return mComputePipelineStateSignatureId;
 		}
 
-		inline ShaderCombinationId getShaderCombinationId(ShaderType shaderType) const
+		inline ShaderCombinationId getShaderCombinationId() const
 		{
-			return mShaderCombinationId[static_cast<uint8_t>(shaderType)];
+			return mShaderCombinationId;
 		}
 
 
@@ -179,11 +166,10 @@ namespace RendererRuntime
 	private:
 		// Input data
 		MaterialBlueprintResourceId	mMaterialBlueprintResourceId;
-		uint32_t					mSerializedGraphicsPipelineStateHash;
 		ShaderProperties			mShaderProperties;
 		// Derived data
-		PipelineStateSignatureId mPipelineStateSignatureId;
-		ShaderCombinationId		 mShaderCombinationId[NUMBER_OF_SHADER_TYPES];
+		ComputePipelineStateSignatureId	mComputePipelineStateSignatureId;
+		ShaderCombinationId				mShaderCombinationId;
 
 
 	};

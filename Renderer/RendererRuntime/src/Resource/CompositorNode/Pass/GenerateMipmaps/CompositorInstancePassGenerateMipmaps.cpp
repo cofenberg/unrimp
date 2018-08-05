@@ -23,8 +23,8 @@
 //[-------------------------------------------------------]
 #include "RendererRuntime/Resource/CompositorNode/Pass/GenerateMipmaps/CompositorInstancePassGenerateMipmaps.h"
 #include "RendererRuntime/Resource/CompositorNode/Pass/GenerateMipmaps/CompositorResourcePassGenerateMipmaps.h"
-#include "RendererRuntime/Resource/CompositorNode/Pass/Quad/CompositorInstancePassQuad.h"
-#include "RendererRuntime/Resource/CompositorNode/Pass/Quad/CompositorResourcePassQuad.h"
+#include "RendererRuntime/Resource/CompositorNode/Pass/Compute/CompositorInstancePassCompute.h"
+#include "RendererRuntime/Resource/CompositorNode/Pass/Compute/CompositorResourcePassCompute.h"
 #include "RendererRuntime/Resource/CompositorNode/CompositorNodeInstance.h"
 #include "RendererRuntime/Resource/CompositorWorkspace/CompositorWorkspaceInstance.h"
 #include "RendererRuntime/Resource/CompositorWorkspace/CompositorContextData.h"
@@ -106,10 +106,10 @@ namespace RendererRuntime
 							// Restrict fetches only to previous depth texture mipmap level
 							Renderer::Command::SetTextureMinimumMaximumMipmapIndex::create(mCommandBuffer, *texture, mipmapIndex - 1, mipmapIndex - 1);
 
-							// Draw full-screen quad
+							// Execute the compute pass
 							CompositorContextData localCompositorContextData(compositorContextData.getCompositorWorkspaceInstance(), nullptr);
-							mCompositorInstancePassQuad->onFillCommandBuffer(*mFramebuffersPtrs[mipmapIndex], localCompositorContextData, mCommandBuffer);
-							mCompositorInstancePassQuad->onPostCommandBufferExecution();
+							mCompositorInstancePassCompute->onFillCommandBuffer(*mFramebuffersPtrs[mipmapIndex], localCompositorContextData, mCommandBuffer);
+							mCompositorInstancePassCompute->onPostCommandBufferExecution();
 						}
 
 						// Reset mipmap level range for the depth texture
@@ -140,26 +140,26 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	CompositorInstancePassGenerateMipmaps::CompositorInstancePassGenerateMipmaps(const CompositorResourcePassGenerateMipmaps& compositorResourcePassGenerateMipmaps, const CompositorNodeInstance& compositorNodeInstance) :
 		ICompositorInstancePass(compositorResourcePassGenerateMipmaps, compositorNodeInstance),
-		mCompositorResourcePassQuad(nullptr),
-		mCompositorInstancePassQuad(nullptr),
+		mCompositorResourcePassCompute(nullptr),
+		mCompositorInstancePassCompute(nullptr),
 		mRenderTargetWidth(getInvalid<uint32_t>()),
 		mRenderTargetHeight(getInvalid<uint32_t>())
 	{
-		// Create compositor pass quad
+		// Create compositor pass compute
 		MaterialProperties materialProperties;
-		mCompositorResourcePassQuad = new CompositorResourcePassQuad(compositorResourcePassGenerateMipmaps.getCompositorTarget(), compositorResourcePassGenerateMipmaps.getMaterialBlueprintAssetId(), materialProperties);
-		mCompositorInstancePassQuad = new CompositorInstancePassQuad(*mCompositorResourcePassQuad, getCompositorNodeInstance());
+		mCompositorResourcePassCompute = new CompositorResourcePassCompute(compositorResourcePassGenerateMipmaps.getCompositorTarget(), compositorResourcePassGenerateMipmaps.getMaterialBlueprintAssetId(), materialProperties);
+		mCompositorInstancePassCompute = new CompositorInstancePassCompute(*mCompositorResourcePassCompute, getCompositorNodeInstance());
 		// TODO(co) Make this more generic
-		getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getMaterialResourceManager().getById(mCompositorInstancePassQuad->getMaterialResourceId()).setPropertyById(STRING_ID("DepthMap"), MaterialPropertyValue::fromTextureAssetId(compositorResourcePassGenerateMipmaps.getDepthTextureAssetId()));
+		getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getMaterialResourceManager().getById(mCompositorInstancePassCompute->getMaterialResourceId()).setPropertyById(STRING_ID("DepthMap"), MaterialPropertyValue::fromTextureAssetId(compositorResourcePassGenerateMipmaps.getDepthTextureAssetId()));
 	}
 
 	CompositorInstancePassGenerateMipmaps::~CompositorInstancePassGenerateMipmaps()
 	{
-		// Destroy compositor pass quad
-		delete mCompositorInstancePassQuad;
-		mCompositorInstancePassQuad = nullptr;
-		delete mCompositorResourcePassQuad;
-		mCompositorResourcePassQuad = nullptr;
+		// Destroy compositor pass compute
+		delete mCompositorInstancePassCompute;
+		mCompositorInstancePassCompute = nullptr;
+		delete mCompositorResourcePassCompute;
+		mCompositorResourcePassCompute = nullptr;
 	}
 
 

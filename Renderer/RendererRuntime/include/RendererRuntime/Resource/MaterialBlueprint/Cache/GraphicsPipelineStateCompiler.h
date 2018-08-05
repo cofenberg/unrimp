@@ -27,7 +27,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/Resource/ShaderBlueprint/ShaderType.h"
+#include "RendererRuntime/Resource/ShaderBlueprint/GraphicsShaderType.h"
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -55,16 +55,15 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 namespace Renderer
 {
-	class IProgram;
-	class IPipelineState;
+	class IGraphicsProgram;
 	class IGraphicsPipelineState;
 }
 namespace RendererRuntime
 {
 	class ShaderCache;
 	class IRendererRuntime;
-	class PipelineStateCache;
 	class MaterialBlueprintResource;
+	class GraphicsPipelineStateCache;
 }
 
 
@@ -80,18 +79,18 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    Pipeline state compiler class
+	*    Graphics pipeline state compiler class
 	*
 	*  @remarks
-	*    A pipeline state must master the following stages in order to archive the inner wisdom:
+	*    A graphics pipeline state must master the following stages in order to archive the inner wisdom:
 	*    1. Asynchronous shader building
 	*    2. Asynchronous shader compilation
 	*    3. Synchronous renderer backend dispatch TODO(co) Asynchronous renderer backend dispatch if supported by the renderer API
 	*
 	*  @note
-	*    - Takes care of asynchronous pipeline state compilation
+	*    - Takes care of asynchronous graphics pipeline state compilation
 	*/
-	class PipelineStateCompiler final
+	class GraphicsPipelineStateCompiler final
 	{
 
 
@@ -99,7 +98,7 @@ namespace RendererRuntime
 	//[ Friends                                               ]
 	//[-------------------------------------------------------]
 		friend class RendererRuntimeImpl;
-		friend class PipelineStateCacheManager;	// Only the pipeline state cache manager is allowed to commit compiler requests
+		friend class GraphicsPipelineStateCacheManager;	// Only the graphics pipeline state cache manager is allowed to commit compiler requests
 
 
 	//[-------------------------------------------------------]
@@ -151,26 +150,26 @@ namespace RendererRuntime
 		struct CompilerRequest final
 		{
 			// Input
-			PipelineStateCache& pipelineStateCache;
+			GraphicsPipelineStateCache&		  graphicsPipelineStateCache;
 			// Internal
-			ShaderCache*			  shaderCache[NUMBER_OF_SHADER_TYPES];
-			std::string				  shaderSourceCode[NUMBER_OF_SHADER_TYPES];
-			Renderer::IPipelineState* pipelineStateObject;
+			ShaderCache*					  shaderCache[NUMBER_OF_GRAPHICS_SHADER_TYPES];
+			std::string						  shaderSourceCode[NUMBER_OF_GRAPHICS_SHADER_TYPES];
+			Renderer::IGraphicsPipelineState* graphicsPipelineStateObject;
 
-			inline explicit CompilerRequest(PipelineStateCache& _pipelineStateCache) :
-				pipelineStateCache(_pipelineStateCache),
-				pipelineStateObject(nullptr)
+			inline explicit CompilerRequest(GraphicsPipelineStateCache& _graphicsPipelineStateCache) :
+				graphicsPipelineStateCache(_graphicsPipelineStateCache),
+				graphicsPipelineStateObject(nullptr)
 			{
-				for (uint8_t i = 0; i < NUMBER_OF_SHADER_TYPES; ++i)
+				for (uint8_t i = 0; i < NUMBER_OF_GRAPHICS_SHADER_TYPES; ++i)
 				{
 					shaderCache[i] = nullptr;
 				}
 			}
 			inline explicit CompilerRequest(const CompilerRequest& compilerRequest) :
-				pipelineStateCache(compilerRequest.pipelineStateCache),
-				pipelineStateObject(compilerRequest.pipelineStateObject)
+				graphicsPipelineStateCache(compilerRequest.graphicsPipelineStateCache),
+				graphicsPipelineStateObject(compilerRequest.graphicsPipelineStateObject)
 			{
-				for (uint8_t i = 0; i < NUMBER_OF_SHADER_TYPES; ++i)
+				for (uint8_t i = 0; i < NUMBER_OF_GRAPHICS_SHADER_TYPES; ++i)
 				{
 					shaderCache[i]		= compilerRequest.shaderCache[i];
 					shaderSourceCode[i] = compilerRequest.shaderSourceCode[i];
@@ -187,16 +186,16 @@ namespace RendererRuntime
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		explicit PipelineStateCompiler(IRendererRuntime& rendererRuntime);
-		explicit PipelineStateCompiler(const PipelineStateCompiler&) = delete;
-		~PipelineStateCompiler();
-		PipelineStateCompiler& operator=(const PipelineStateCompiler&) = delete;
-		void addAsynchronousCompilerRequest(PipelineStateCache& pipelineStateCache);
-		void instantSynchronousCompilerRequest(MaterialBlueprintResource& materialBlueprintResource, PipelineStateCache& pipelineStateCache);
+		explicit GraphicsPipelineStateCompiler(IRendererRuntime& rendererRuntime);
+		explicit GraphicsPipelineStateCompiler(const GraphicsPipelineStateCompiler&) = delete;
+		~GraphicsPipelineStateCompiler();
+		GraphicsPipelineStateCompiler& operator=(const GraphicsPipelineStateCompiler&) = delete;
+		void addAsynchronousCompilerRequest(GraphicsPipelineStateCache& graphicsPipelineStateCache);
+		void instantSynchronousCompilerRequest(MaterialBlueprintResource& materialBlueprintResource, GraphicsPipelineStateCache& graphicsPipelineStateCache);
 		void flushQueue(std::mutex& mutex, const CompilerRequests& compilerRequests);
 		void builderThreadWorker();
 		void compilerThreadWorker();
-		Renderer::IGraphicsPipelineState* createGraphicsPipelineState(const RendererRuntime::MaterialBlueprintResource& materialBlueprintResource, uint32_t serializedGraphicsPipelineStateHash, Renderer::IProgram& program) const;
+		Renderer::IGraphicsPipelineState* createGraphicsPipelineState(const RendererRuntime::MaterialBlueprintResource& materialBlueprintResource, uint32_t serializedGraphicsPipelineStateHash, Renderer::IGraphicsProgram& graphicsProgram) const;
 
 
 	//[-------------------------------------------------------]

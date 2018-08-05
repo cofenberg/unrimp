@@ -160,7 +160,7 @@ namespace RendererRuntime
 						uint32_t renderTargetWidth = 1;
 						uint32_t renderTargetHeight = 1;
 						renderTarget.getWidthAndHeight(renderTargetWidth, renderTargetHeight);
-						if (!renderTargetTextureSignature.getAllowResolutionScale())
+						if ((renderTargetTextureSignature.getFlags() & RenderTargetTextureSignature::Flag::ALLOW_RESOLUTION_SCALE) == 0)
 						{
 							resolutionScale = 1.0f;
 						}
@@ -183,8 +183,20 @@ namespace RendererRuntime
 					}
 
 					// Get texture flags
-					uint32_t textureFlags = (Renderer::TextureFlag::SHADER_RESOURCE | Renderer::TextureFlag::RENDER_TARGET);
-					if (renderTargetTextureSignature.getGenerateMipmaps())
+					uint32_t textureFlags = 0;
+					if ((renderTargetTextureSignature.getFlags() & RenderTargetTextureSignature::Flag::UNORDERED_ACCESS) != 0)
+					{
+						textureFlags |= Renderer::TextureFlag::UNORDERED_ACCESS;
+					}
+					if ((renderTargetTextureSignature.getFlags() & RenderTargetTextureSignature::Flag::SHADER_RESOURCE) != 0)
+					{
+						textureFlags |= Renderer::TextureFlag::SHADER_RESOURCE;
+					}
+					if ((renderTargetTextureSignature.getFlags() & RenderTargetTextureSignature::Flag::RENDER_TARGET) != 0)
+					{
+						textureFlags |= Renderer::TextureFlag::RENDER_TARGET;
+					}
+					if ((renderTargetTextureSignature.getFlags() & RenderTargetTextureSignature::Flag::GENERATE_MIPMAPS) != 0)
 					{
 						textureFlags |= Renderer::TextureFlag::GENERATE_MIPMAPS;
 					}
@@ -194,7 +206,7 @@ namespace RendererRuntime
 					// -> Required for Vulkan, Direct3D 9, Direct3D 10, Direct3D 11 and Direct3D 12
 					// -> Not required for OpenGL and OpenGL ES 3
 					// -> The optimized texture clear value is a Direct3D 12 related option
-					renderTargetTextureElement.texture = mRendererRuntime.getTextureManager().createTexture2D(width, height, renderTargetTextureSignature.getTextureFormat(), nullptr, textureFlags, Renderer::TextureUsage::DEFAULT, renderTargetTextureSignature.getAllowMultisample() ? numberOfMultisamples : 1u);
+					renderTargetTextureElement.texture = mRendererRuntime.getTextureManager().createTexture2D(width, height, renderTargetTextureSignature.getTextureFormat(), nullptr, textureFlags, Renderer::TextureUsage::DEFAULT, ((renderTargetTextureSignature.getFlags() & RenderTargetTextureSignature::Flag::ALLOW_MULTISAMPLE) != 0) ? numberOfMultisamples : 1u);
 					RENDERER_SET_RESOURCE_DEBUG_NAME(renderTargetTextureElement.texture, "Render target texture manager")
 					renderTargetTextureElement.texture->addReference();
 

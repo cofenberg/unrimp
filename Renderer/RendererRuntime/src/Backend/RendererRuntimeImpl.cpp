@@ -36,7 +36,8 @@
 #include "RendererRuntime/Resource/VertexAttributes/VertexAttributesResourceManager.h"
 #include "RendererRuntime/Resource/Texture/TextureResourceManager.h"
 #include "RendererRuntime/Resource/MaterialBlueprint/MaterialBlueprintResourceManager.h"
-#include "RendererRuntime/Resource/MaterialBlueprint/Cache/PipelineStateCompiler.h"
+#include "RendererRuntime/Resource/MaterialBlueprint/Cache/GraphicsPipelineStateCompiler.h"
+#include "RendererRuntime/Resource/MaterialBlueprint/Cache/ComputePipelineStateCompiler.h"
 #include "RendererRuntime/Resource/MaterialBlueprint/BufferManager/LightBufferManager.h"
 #include "RendererRuntime/Resource/MaterialBlueprint/Listener/MaterialBlueprintResourceListener.h"
 #include "RendererRuntime/Resource/Material/MaterialResourceManager.h"
@@ -213,7 +214,8 @@ namespace RendererRuntime
 		mResourceManagers.push_back(mCompositorWorkspaceResourceManager);
 
 		// Misc
-		mPipelineStateCompiler = new PipelineStateCompiler(*this);
+		mGraphicsPipelineStateCompiler = new GraphicsPipelineStateCompiler(*this);
+		mComputePipelineStateCompiler = new ComputePipelineStateCompiler(*this);
 
 		// Create the optional manager instances
 		#ifdef RENDERER_RUNTIME_IMGUI
@@ -251,7 +253,8 @@ namespace RendererRuntime
 		#endif
 
 		// Destroy miscellaneous
-		delete mPipelineStateCompiler;
+		delete mGraphicsPipelineStateCompiler;
+		delete mComputePipelineStateCompiler;
 
 		{ // Destroy the resource manager instances in reverse order
 			const int numberOfResourceManagers = static_cast<int>(mResourceManagers.size());
@@ -313,7 +316,8 @@ namespace RendererRuntime
 		}
 
 		// Pipeline state compiler and resource streamer update
-		mPipelineStateCompiler->dispatch();
+		mGraphicsPipelineStateCompiler->dispatch();
+		mComputePipelineStateCompiler->dispatch();
 		mResourceStreamer->dispatch();
 
 		// Inform the individual resource manager instances

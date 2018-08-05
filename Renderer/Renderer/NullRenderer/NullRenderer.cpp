@@ -2355,13 +2355,13 @@ namespace NullRenderer
 
 
 	//[-------------------------------------------------------]
-	//[ NullRenderer/Shader/Program.h                         ]
+	//[ NullRenderer/Shader/GraphicsProgram.h                 ]
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    Null program class
+	*    Null graphics program class
 	*/
-	class Program final : public Renderer::IProgram
+	class GraphicsProgram final : public Renderer::IGraphicsProgram
 	{
 
 
@@ -2376,21 +2376,21 @@ namespace NullRenderer
 		*  @param[in] nullRenderer
 		*    Owner null renderer instance
 		*  @param[in] vertexShader
-		*    Vertex shader the program is using, can be a null pointer
+		*    Vertex shader the graphics program is using, can be a null pointer
 		*  @param[in] tessellationControlShader
-		*    Tessellation control shader the program is using, can be a null pointer
+		*    Tessellation control shader the graphics program is using, can be a null pointer
 		*  @param[in] tessellationEvaluationShader
-		*    Tessellation evaluation shader the program is using, can be a null pointer
+		*    Tessellation evaluation shader the graphics program is using, can be a null pointer
 		*  @param[in] geometryShader
-		*    Geometry shader the program is using, can be a null pointer
+		*    Geometry shader the graphics program is using, can be a null pointer
 		*  @param[in] fragmentShader
-		*    Fragment shader the program is using, can be a null pointer
+		*    Fragment shader the graphics program is using, can be a null pointer
 		*
 		*  @note
-		*    - The program keeps a reference to the provided shaders and releases it when no longer required
+		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
 		*/
-		Program(NullRenderer& nullRenderer, VertexShader* vertexShader, TessellationControlShader* tessellationControlShader, TessellationEvaluationShader* tessellationEvaluationShader, GeometryShader* geometryShader, FragmentShader* fragmentShader) :
-			IProgram(nullRenderer)
+		GraphicsProgram(NullRenderer& nullRenderer, VertexShader* vertexShader, TessellationControlShader* tessellationControlShader, TessellationEvaluationShader* tessellationEvaluationShader, GeometryShader* geometryShader, FragmentShader* fragmentShader) :
+			IGraphicsProgram(nullRenderer)
 		{
 			// We don't keep a reference to the shaders in here
 			// -> Ensure a correct reference counter behaviour
@@ -2425,7 +2425,7 @@ namespace NullRenderer
 		*  @brief
 		*    Destructor
 		*/
-		inline virtual ~Program() override
+		inline virtual ~GraphicsProgram() override
 		{}
 
 
@@ -2435,7 +2435,7 @@ namespace NullRenderer
 	protected:
 		inline virtual void selfDestruct() override
 		{
-			RENDERER_DELETE(getRenderer().getContext(), Program, this);
+			RENDERER_DELETE(getRenderer().getContext(), GraphicsProgram, this);
 		}
 
 
@@ -2443,8 +2443,8 @@ namespace NullRenderer
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		explicit Program(const Program& source) = delete;
-		Program& operator =(const Program& source) = delete;
+		explicit GraphicsProgram(const GraphicsProgram& source) = delete;
+		GraphicsProgram& operator =(const GraphicsProgram& source) = delete;
 
 
 	};
@@ -2567,9 +2567,9 @@ namespace NullRenderer
 			return RENDERER_NEW(getRenderer().getContext(), ComputeShader)(static_cast<NullRenderer&>(getRenderer()));
 		}
 
-		virtual Renderer::IProgram* createProgram(MAYBE_UNUSED const Renderer::IRootSignature& rootSignature, MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
+		virtual Renderer::IGraphicsProgram* createGraphicsProgram(MAYBE_UNUSED const Renderer::IRootSignature& rootSignature, MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
 		{
-			// A shader can be a null pointer, but if it's not the shader and program language must match!
+			// A shader can be a null pointer, but if it's not the shader and graphics program language must match!
 			// -> Optimization: Comparing the shader language name by directly comparing the pointer address of
 			//    the name is safe because we know that we always reference to one and the same name address
 			// TODO(co) Add security check: Is the given resource one of the currently used renderer?
@@ -2595,7 +2595,7 @@ namespace NullRenderer
 			}
 			else
 			{
-				return RENDERER_NEW(getRenderer().getContext(), Program)(static_cast<NullRenderer&>(getRenderer()), static_cast<VertexShader*>(vertexShader), static_cast<TessellationControlShader*>(tessellationControlShader), static_cast<TessellationEvaluationShader*>(tessellationEvaluationShader), static_cast<GeometryShader*>(geometryShader), static_cast<FragmentShader*>(fragmentShader));
+				return RENDERER_NEW(getRenderer().getContext(), GraphicsProgram)(static_cast<NullRenderer&>(getRenderer()), static_cast<VertexShader*>(vertexShader), static_cast<TessellationControlShader*>(tessellationControlShader), static_cast<TessellationEvaluationShader*>(tessellationEvaluationShader), static_cast<GeometryShader*>(geometryShader), static_cast<FragmentShader*>(fragmentShader));
 			}
 
 			// Error! Shader language mismatch!
@@ -2680,11 +2680,11 @@ namespace NullRenderer
 		*/
 		GraphicsPipelineState(NullRenderer& nullRenderer, const Renderer::GraphicsPipelineState& graphicsPipelineState) :
 			IGraphicsPipelineState(nullRenderer),
-			mProgram(graphicsPipelineState.program),
+			mGraphicsProgram(graphicsPipelineState.graphicsProgram),
 			mRenderPass(graphicsPipelineState.renderPass)
 		{
-			// Add a reference to the given program and render pass
-			mProgram->addReference();
+			// Add a reference to the given graphics program and render pass
+			mGraphicsProgram->addReference();
 			mRenderPass->addReference();
 		}
 
@@ -2694,8 +2694,8 @@ namespace NullRenderer
 		*/
 		virtual ~GraphicsPipelineState() override
 		{
-			// Release the program reference and render pass
-			mProgram->releaseReference();
+			// Release the graphics program reference and render pass
+			mGraphicsProgram->releaseReference();
 			mRenderPass->releaseReference();
 		}
 
@@ -2722,8 +2722,8 @@ namespace NullRenderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		Renderer::IProgram*	   mProgram;
-		Renderer::IRenderPass* mRenderPass;
+		Renderer::IGraphicsProgram*	mGraphicsProgram;
+		Renderer::IRenderPass*		mRenderPass;
 
 
 	};

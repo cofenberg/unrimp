@@ -177,34 +177,34 @@ void VertexBuffer::onInitialization()
 			#include "VertexBuffer_Null.h"
 
 			{ // Create pipeline state objects (PSO) using one vertex buffer object (VBO)
-				// Create the program
-				Renderer::IProgramPtr program;
-				program = shaderLanguage->createProgram(
+				// Create the graphics program
+				Renderer::IGraphicsProgramPtr graphicsProgram;
+				graphicsProgram = shaderLanguage->createGraphicsProgram(
 					*mRootSignature,
 					vertexAttributesVBO,
 					shaderLanguage->createVertexShaderFromSourceCode(vertexAttributesVBO, vertexShaderSourceCode),
 					shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 
 				// Create the graphics pipeline state objects (PSO)
-				if (nullptr != program)
+				if (nullptr != graphicsProgram)
 				{
-					mGraphicsPipelineStateVBO = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, program, vertexAttributesVBO, getMainRenderTarget()->getRenderPass()));
+					mGraphicsPipelineStateVBO = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributesVBO, getMainRenderTarget()->getRenderPass()));
 				}
 			}
 
 			{ // Create graphics pipeline state objects (PSO) using multiple vertex buffer object (VBO)
-				// Create the program
-				Renderer::IProgramPtr program;
-				program = shaderLanguage->createProgram(
+				// Create the graphics program
+				Renderer::IGraphicsProgramPtr graphicsProgram;
+				graphicsProgram = shaderLanguage->createGraphicsProgram(
 					*mRootSignature,
 					vertexAttributesVBOs,
 					shaderLanguage->createVertexShaderFromSourceCode(vertexAttributesVBOs, vertexShaderSourceCode),
 					shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 
 				// Create the graphics pipeline state objects (PSO)
-				if (nullptr != program)
+				if (nullptr != graphicsProgram)
 				{
-					mGraphicsPipelineStateVBOs = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, program, vertexAttributesVBOs, getMainRenderTarget()->getRenderPass()));
+					mGraphicsPipelineStateVBOs = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributesVBOs, getMainRenderTarget()->getRenderPass()));
 				}
 			}
 		}

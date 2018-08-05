@@ -52,12 +52,12 @@ void FirstGeometryShader::onInitialization()
 		// Vertex input layout
 		const Renderer::VertexAttributes vertexAttributes(0, nullptr);
 
-		// Create the program: Decide which shader language should be used (for example "GLSL" or "HLSL")
+		// Create the graphics program: Decide which shader language should be used (for example "GLSL" or "HLSL")
 		Renderer::IShaderLanguagePtr shaderLanguage(renderer->getShaderLanguage());
 		if (nullptr != shaderLanguage)
 		{
-			// Create the program
-			Renderer::IProgramPtr program;
+			// Create the graphics program
+			Renderer::IGraphicsProgramPtr graphicsProgram;
 			{
 				// Get the shader source code (outsourced to keep an overview)
 				const char* vertexShaderSourceCode = nullptr;
@@ -68,8 +68,8 @@ void FirstGeometryShader::onInitialization()
 				#include "FirstGeometryShader_HLSL_D3D10_D3D11_D3D12.h"
 				#include "FirstGeometryShader_Null.h"
 
-				// Create the program
-				program = shaderLanguage->createProgram(
+				// Create the graphics program
+				graphicsProgram = shaderLanguage->createGraphicsProgram(
 					*mRootSignature,
 					vertexAttributes,
 					shaderLanguage->createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode),
@@ -78,9 +78,9 @@ void FirstGeometryShader::onInitialization()
 			}
 
 			// Create the graphics pipeline state object (PSO)
-			if (nullptr != program)
+			if (nullptr != graphicsProgram)
 			{
-				Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(mRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass());
+				Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass());
 				graphicsPipelineState.primitiveTopology = Renderer::PrimitiveTopology::POINT_LIST;
 				graphicsPipelineState.primitiveTopologyType = Renderer::PrimitiveTopologyType::POINT;
 				mGraphicsPipelineState = renderer->createGraphicsPipelineState(graphicsPipelineState);

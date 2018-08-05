@@ -39,8 +39,8 @@
 //[-------------------------------------------------------]
 namespace RendererRuntime
 {
-	class CompositorResourcePassQuad;
-	class CompositorInstancePassQuad;
+	class CompositorResourcePassCompute;
+	class CompositorInstancePassCompute;
 	class CompositorResourcePassGenerateMipmaps;
 }
 
@@ -93,12 +93,12 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		Renderer::CommandBuffer		mCommandBuffer;
-		CompositorResourcePassQuad* mCompositorResourcePassQuad;
-		CompositorInstancePassQuad* mCompositorInstancePassQuad;
-		uint32_t					mRenderTargetWidth;
-		uint32_t					mRenderTargetHeight;
-		FramebufferPtrs				mFramebuffersPtrs;
+		Renderer::CommandBuffer		   mCommandBuffer;
+		CompositorResourcePassCompute* mCompositorResourcePassCompute;
+		CompositorInstancePassCompute* mCompositorInstancePassCompute;
+		uint32_t					   mRenderTargetWidth;
+		uint32_t					   mRenderTargetHeight;
+		FramebufferPtrs				   mFramebuffersPtrs;
 
 
 	};

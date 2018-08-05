@@ -58,12 +58,13 @@ namespace RendererRuntime
 	class IResourceManager;
 	class MeshResourceManager;
 	class SceneResourceManager;
-	class PipelineStateCompiler;
 	class TextureResourceManager;
 	class MaterialResourceManager;
 	class SkeletonResourceManager;
 	class RendererResourceManager;
 	class ShaderPieceResourceManager;
+	class ComputePipelineStateCompiler;
+	class GraphicsPipelineStateCompiler;
 	class CompositorNodeResourceManager;
 	class ShaderBlueprintResourceManager;
 	class VertexAttributesResourceManager;
@@ -412,14 +413,26 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		/**
 		*  @brief
-		*    Return the pipeline state compiler instance
+		*    Return the graphics pipeline state compiler instance
 		*
 		*  @return
-		*    The pipeline state compiler instance, do not release the returned instance
+		*    The graphics pipeline state compiler instance, do not release the returned instance
 		*/
-		inline PipelineStateCompiler& getPipelineStateCompiler() const
+		inline GraphicsPipelineStateCompiler& getGraphicsPipelineStateCompiler() const
 		{
-			return *mPipelineStateCompiler;
+			return *mGraphicsPipelineStateCompiler;
+		}
+
+		/**
+		*  @brief
+		*    Return the compute pipeline state compiler instance
+		*
+		*  @return
+		*    The compute pipeline state compiler instance, do not release the returned instance
+		*/
+		inline ComputePipelineStateCompiler& getComputePipelineStateCompiler() const
+		{
+			return *mComputePipelineStateCompiler;
 		}
 
 		//[-------------------------------------------------------]
@@ -523,7 +536,8 @@ namespace RendererRuntime
 			mCompositorNodeResourceManager(nullptr),
 			mCompositorWorkspaceResourceManager(nullptr),
 			// Misc
-			mPipelineStateCompiler(nullptr)
+			mGraphicsPipelineStateCompiler(nullptr),
+			mComputePipelineStateCompiler(nullptr)
 			// Optional
 			#ifdef RENDERER_RUNTIME_IMGUI
 				, mDebugGuiManager(nullptr)
@@ -569,7 +583,8 @@ namespace RendererRuntime
 		CompositorWorkspaceResourceManager*	mCompositorWorkspaceResourceManager;
 		ResourceManagers					mResourceManagers;
 		// Misc
-		PipelineStateCompiler* mPipelineStateCompiler;
+		GraphicsPipelineStateCompiler* mGraphicsPipelineStateCompiler;
+		ComputePipelineStateCompiler*  mComputePipelineStateCompiler;
 		// Optional
 		#ifdef RENDERER_RUNTIME_IMGUI
 			DebugGuiManager* mDebugGuiManager;

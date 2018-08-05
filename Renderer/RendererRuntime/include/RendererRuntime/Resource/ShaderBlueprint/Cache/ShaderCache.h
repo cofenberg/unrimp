@@ -66,8 +66,9 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Friends                                               ]
 	//[-------------------------------------------------------]
-		friend class ShaderCacheManager;	// Is creating and managing shader cache instances
-		friend class PipelineStateCompiler;	// Is creating shader cache instances
+		friend class ShaderCacheManager;			// Is creating and managing shader cache instances
+		friend class GraphicsPipelineStateCompiler;	// Is creating shader cache instances
+		friend class ComputePipelineStateCompiler;	// Is creating shader cache instances
 
 
 	//[-------------------------------------------------------]

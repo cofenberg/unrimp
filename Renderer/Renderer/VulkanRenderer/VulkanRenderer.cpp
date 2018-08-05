@@ -4169,7 +4169,7 @@ namespace VulkanRenderer
 
 								case Renderer::ResourceType::ROOT_SIGNATURE:
 								case Renderer::ResourceType::RESOURCE_GROUP:
-								case Renderer::ResourceType::PROGRAM:
+								case Renderer::ResourceType::GRAPHICS_PROGRAM:
 								case Renderer::ResourceType::VERTEX_ARRAY:
 								case Renderer::ResourceType::RENDER_PASS:
 								case Renderer::ResourceType::SWAP_CHAIN:
@@ -7578,7 +7578,7 @@ namespace VulkanRenderer
 
 						case Renderer::ResourceType::ROOT_SIGNATURE:
 						case Renderer::ResourceType::RESOURCE_GROUP:
-						case Renderer::ResourceType::PROGRAM:
+						case Renderer::ResourceType::GRAPHICS_PROGRAM:
 						case Renderer::ResourceType::VERTEX_ARRAY:
 						case Renderer::ResourceType::RENDER_PASS:
 						case Renderer::ResourceType::SWAP_CHAIN:
@@ -7650,7 +7650,7 @@ namespace VulkanRenderer
 
 					case Renderer::ResourceType::ROOT_SIGNATURE:
 					case Renderer::ResourceType::RESOURCE_GROUP:
-					case Renderer::ResourceType::PROGRAM:
+					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::SWAP_CHAIN:
@@ -8580,13 +8580,13 @@ namespace VulkanRenderer
 
 
 	//[-------------------------------------------------------]
-	//[ VulkanRenderer/Shader/ProgramGlsl.h                   ]
+	//[ VulkanRenderer/Shader/GraphicsProgramGlsl.h           ]
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    GLSL program class
+	*    GLSL graphics program class
 	*/
-	class ProgramGlsl final : public Renderer::IProgram
+	class GraphicsProgramGlsl final : public Renderer::IGraphicsProgram
 	{
 
 
@@ -8605,22 +8605,22 @@ namespace VulkanRenderer
 		*  @param[in] vertexAttributes
 		*    Vertex attributes ("vertex declaration" in Direct3D 9 terminology, "input layout" in Direct3D 10 & 11 terminology)
 		*  @param[in] vertexShaderGlsl
-		*    Vertex shader the program is using, can be a null pointer
+		*    Vertex shader the graphics program is using, can be a null pointer
 		*  @param[in] tessellationControlShaderGlsl
-		*    Tessellation control shader the program is using, can be a null pointer
+		*    Tessellation control shader the graphics program is using, can be a null pointer
 		*  @param[in] tessellationEvaluationShaderGlsl
-		*    Tessellation evaluation shader the program is using, can be a null pointer
+		*    Tessellation evaluation shader the graphics program is using, can be a null pointer
 		*  @param[in] geometryShaderGlsl
-		*    Geometry shader the program is using, can be a null pointer
+		*    Geometry shader the graphics program is using, can be a null pointer
 		*  @param[in] fragmentShaderGlsl
-		*    Fragment shader the program is using, can be a null pointer
+		*    Fragment shader the graphics program is using, can be a null pointer
 		*
 		*  @note
-		*    - The program keeps a reference to the provided shaders and releases it when no longer required
+		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
 		*/
 		// TODO(co) Remove unused parameters
-		ProgramGlsl(VulkanRenderer& vulkanRenderer, MAYBE_UNUSED const Renderer::IRootSignature& rootSignature, MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, VertexShaderGlsl *vertexShaderGlsl, TessellationControlShaderGlsl *tessellationControlShaderGlsl, TessellationEvaluationShaderGlsl *tessellationEvaluationShaderGlsl, GeometryShaderGlsl *geometryShaderGlsl, FragmentShaderGlsl *fragmentShaderGlsl) :
-			IProgram(vulkanRenderer),
+		GraphicsProgramGlsl(VulkanRenderer& vulkanRenderer, MAYBE_UNUSED const Renderer::IRootSignature& rootSignature, MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, VertexShaderGlsl *vertexShaderGlsl, TessellationControlShaderGlsl *tessellationControlShaderGlsl, TessellationEvaluationShaderGlsl *tessellationEvaluationShaderGlsl, GeometryShaderGlsl *geometryShaderGlsl, FragmentShaderGlsl *fragmentShaderGlsl) :
+			IGraphicsProgram(vulkanRenderer),
 			mVertexShaderGlsl(vertexShaderGlsl),
 			mTessellationControlShaderGlsl(tessellationControlShaderGlsl),
 			mTessellationEvaluationShaderGlsl(tessellationEvaluationShaderGlsl),
@@ -8654,7 +8654,7 @@ namespace VulkanRenderer
 		*  @brief
 		*    Destructor
 		*/
-		virtual ~ProgramGlsl() override
+		virtual ~GraphicsProgramGlsl() override
 		{
 			// Release the shader references
 			if (nullptr != mVertexShaderGlsl)
@@ -8681,10 +8681,10 @@ namespace VulkanRenderer
 
 		/**
 		*  @brief
-		*    Return the GLSL vertex shader the program is using
+		*    Return the GLSL vertex shader the graphics program is using
 		*
 		*  @return
-		*    The GLSL vertex shader the program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*    The GLSL vertex shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
 		inline VertexShaderGlsl* getVertexShaderGlsl() const
 		{
@@ -8693,10 +8693,10 @@ namespace VulkanRenderer
 
 		/**
 		*  @brief
-		*    Return the GLSL tessellation control shader the program is using
+		*    Return the GLSL tessellation control shader the graphics program is using
 		*
 		*  @return
-		*    The GLSL tessellation control shader the program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*    The GLSL tessellation control shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
 		inline TessellationControlShaderGlsl* getTessellationControlShaderGlsl() const
 		{
@@ -8705,10 +8705,10 @@ namespace VulkanRenderer
 
 		/**
 		*  @brief
-		*    Return the GLSL tessellation evaluation shader the program is using
+		*    Return the GLSL tessellation evaluation shader the graphics program is using
 		*
 		*  @return
-		*    The GLSL tessellation evaluation shader the program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*    The GLSL tessellation evaluation shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
 		inline TessellationEvaluationShaderGlsl* getTessellationEvaluationShaderGlsl() const
 		{
@@ -8717,10 +8717,10 @@ namespace VulkanRenderer
 
 		/**
 		*  @brief
-		*    Return the GLSL geometry shader the program is using
+		*    Return the GLSL geometry shader the graphics program is using
 		*
 		*  @return
-		*    The GLSL geometry shader the program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*    The GLSL geometry shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
 		inline GeometryShaderGlsl* getGeometryShaderGlsl() const
 		{
@@ -8729,10 +8729,10 @@ namespace VulkanRenderer
 
 		/**
 		*  @brief
-		*    Return the GLSL fragment shader the program is using
+		*    Return the GLSL fragment shader the graphics program is using
 		*
 		*  @return
-		*    The GLSL fragment shader the program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*    The GLSL fragment shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
 		inline FragmentShaderGlsl* getFragmentShaderGlsl() const
 		{
@@ -8746,7 +8746,7 @@ namespace VulkanRenderer
 	protected:
 		inline virtual void selfDestruct() override
 		{
-			RENDERER_DELETE(getRenderer().getContext(), ProgramGlsl, this);
+			RENDERER_DELETE(getRenderer().getContext(), GraphicsProgramGlsl, this);
 		}
 
 
@@ -8754,19 +8754,19 @@ namespace VulkanRenderer
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		explicit ProgramGlsl(const ProgramGlsl& source) = delete;
-		ProgramGlsl& operator =(const ProgramGlsl& source) = delete;
+		explicit GraphicsProgramGlsl(const GraphicsProgramGlsl& source) = delete;
+		GraphicsProgramGlsl& operator =(const GraphicsProgramGlsl& source) = delete;
 
 
 	//[-------------------------------------------------------]
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		VertexShaderGlsl*				  mVertexShaderGlsl;					///< Vertex shader the program is using (we keep a reference to it), can be a null pointer
-		TessellationControlShaderGlsl*	  mTessellationControlShaderGlsl;		///< Tessellation control shader the program is using (we keep a reference to it), can be a null pointer
-		TessellationEvaluationShaderGlsl* mTessellationEvaluationShaderGlsl;	///< Tessellation evaluation shader the program is using (we keep a reference to it), can be a null pointer
-		GeometryShaderGlsl*				  mGeometryShaderGlsl;					///< Geometry shader the program is using (we keep a reference to it), can be a null pointer
-		FragmentShaderGlsl*				  mFragmentShaderGlsl;					///< Fragment shader the program is using (we keep a reference to it), can be a null pointer
+		VertexShaderGlsl*				  mVertexShaderGlsl;					///< Vertex shader the graphics program is using (we keep a reference to it), can be a null pointer
+		TessellationControlShaderGlsl*	  mTessellationControlShaderGlsl;		///< Tessellation control shader the graphics program is using (we keep a reference to it), can be a null pointer
+		TessellationEvaluationShaderGlsl* mTessellationEvaluationShaderGlsl;	///< Tessellation evaluation shader the graphics program is using (we keep a reference to it), can be a null pointer
+		GeometryShaderGlsl*				  mGeometryShaderGlsl;					///< Geometry shader the graphics program is using (we keep a reference to it), can be a null pointer
+		FragmentShaderGlsl*				  mFragmentShaderGlsl;					///< Fragment shader the graphics program is using (we keep a reference to it), can be a null pointer
 
 
 	};
@@ -8889,11 +8889,11 @@ namespace VulkanRenderer
 			return RENDERER_NEW(getRenderer().getContext(), ComputeShaderGlsl)(static_cast<VulkanRenderer&>(getRenderer()), shaderSourceCode.sourceCode, shaderBytecode);
 		}
 
-		virtual Renderer::IProgram* createProgram(const Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
+		virtual Renderer::IGraphicsProgram* createGraphicsProgram(const Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
 		{
 			VulkanRenderer& vulkanRenderer = static_cast<VulkanRenderer&>(getRenderer());
 
-			// A shader can be a null pointer, but if it's not the shader and program language must match!
+			// A shader can be a null pointer, but if it's not the shader and graphics program language must match!
 			// -> Optimization: Comparing the shader language name by directly comparing the pointer address of
 			//    the name is safe because we know that we always reference to one and the same name address
 			// TODO(co) Add security check: Is the given resource one of the currently used renderer?
@@ -8919,7 +8919,7 @@ namespace VulkanRenderer
 			}
 			else
 			{
-				return RENDERER_NEW(getRenderer().getContext(), ProgramGlsl)(vulkanRenderer, rootSignature, vertexAttributes, static_cast<VertexShaderGlsl*>(vertexShader), static_cast<TessellationControlShaderGlsl*>(tessellationControlShader), static_cast<TessellationEvaluationShaderGlsl*>(tessellationEvaluationShader), static_cast<GeometryShaderGlsl*>(geometryShader), static_cast<FragmentShaderGlsl*>(fragmentShader));
+				return RENDERER_NEW(getRenderer().getContext(), GraphicsProgramGlsl)(vulkanRenderer, rootSignature, vertexAttributes, static_cast<VertexShaderGlsl*>(vertexShader), static_cast<TessellationControlShaderGlsl*>(tessellationControlShader), static_cast<TessellationEvaluationShaderGlsl*>(tessellationEvaluationShader), static_cast<GeometryShaderGlsl*>(geometryShader), static_cast<FragmentShaderGlsl*>(fragmentShader));
 			}
 
 			// Error! Shader language mismatch!
@@ -9005,13 +9005,13 @@ namespace VulkanRenderer
 		GraphicsPipelineState(VulkanRenderer& vulkanRenderer, const Renderer::GraphicsPipelineState& graphicsPipelineState) :
 			IGraphicsPipelineState(vulkanRenderer),
 			mRootSignature(graphicsPipelineState.rootSignature),
-			mProgram(graphicsPipelineState.program),
+			mGraphicsProgram(graphicsPipelineState.graphicsProgram),
 			mRenderPass(graphicsPipelineState.renderPass),
 			mVkPipeline(VK_NULL_HANDLE)
 		{
-			// Add a reference to the given root signature, program and render pass
+			// Add a reference to the given root signature, graphics program and render pass
 			mRootSignature->addReference();
-			mProgram->addReference();
+			mGraphicsProgram->addReference();
 			mRenderPass->addReference();
 
 			// Sanity checks
@@ -9023,7 +9023,7 @@ namespace VulkanRenderer
 			static constexpr uint32_t height = 42;
 
 			// Shaders
-			ProgramGlsl* programGlsl = static_cast<ProgramGlsl*>(mProgram);
+			GraphicsProgramGlsl* graphicsProgramGlsl = static_cast<GraphicsProgramGlsl*>(mGraphicsProgram);
 			uint32_t stageCount = 0;
 			::detail::VkPipelineShaderStageCreateInfos vkPipelineShaderStageCreateInfos;
 			{
@@ -9036,11 +9036,11 @@ namespace VulkanRenderer
 					}
 
 				// Shader stages
-				SHADER_STAGE(VK_SHADER_STAGE_VERTEX_BIT,				  programGlsl->getVertexShaderGlsl())
-				SHADER_STAGE(VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,	  programGlsl->getTessellationControlShaderGlsl())
-				SHADER_STAGE(VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, programGlsl->getTessellationEvaluationShaderGlsl())
-				SHADER_STAGE(VK_SHADER_STAGE_GEOMETRY_BIT,				  programGlsl->getGeometryShaderGlsl())
-				SHADER_STAGE(VK_SHADER_STAGE_FRAGMENT_BIT,				  programGlsl->getFragmentShaderGlsl())
+				SHADER_STAGE(VK_SHADER_STAGE_VERTEX_BIT,				  graphicsProgramGlsl->getVertexShaderGlsl())
+				SHADER_STAGE(VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,	  graphicsProgramGlsl->getTessellationControlShaderGlsl())
+				SHADER_STAGE(VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, graphicsProgramGlsl->getTessellationEvaluationShaderGlsl())
+				SHADER_STAGE(VK_SHADER_STAGE_GEOMETRY_BIT,				  graphicsProgramGlsl->getGeometryShaderGlsl())
+				SHADER_STAGE(VK_SHADER_STAGE_FRAGMENT_BIT,				  graphicsProgramGlsl->getFragmentShaderGlsl())
 
 				// Undefine helper macro
 				#undef SHADER_STAGE
@@ -9281,9 +9281,9 @@ namespace VulkanRenderer
 				vkDestroyPipeline(vulkanRenderer.getVulkanContext().getVkDevice(), mVkPipeline, vulkanRenderer.getVkAllocationCallbacks());
 			}
 
-			// Release the root signature, program and render pass reference
+			// Release the root signature, graphics program and render pass reference
 			mRootSignature->releaseReference();
-			mProgram->releaseReference();
+			mGraphicsProgram->releaseReference();
 			mRenderPass->releaseReference();
 		}
 
@@ -9337,10 +9337,10 @@ namespace VulkanRenderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		Renderer::IRootSignature* mRootSignature;
-		Renderer::IProgram*		  mProgram;
-		Renderer::IRenderPass*    mRenderPass;
-		VkPipeline				  mVkPipeline;	///< The Vulkan graphics pipeline
+		Renderer::IRootSignature*	mRootSignature;
+		Renderer::IGraphicsProgram*	mGraphicsProgram;
+		Renderer::IRenderPass*		mRenderPass;
+		VkPipeline					mVkPipeline;	///< The Vulkan graphics pipeline
 
 
 	};
@@ -9634,7 +9634,7 @@ namespace VulkanRenderer
 
 					case Renderer::ResourceType::STRUCTURED_BUFFER:
 					{
-						const Renderer::DescriptorRange& descriptorRange = reinterpret_cast<const Renderer::DescriptorRange*>(rootSignature.getRootSignature().parameters[rootParameterIndex].descriptorTable.descriptorRanges)[resourceIndex];
+						MAYBE_UNUSED const Renderer::DescriptorRange& descriptorRange = reinterpret_cast<const Renderer::DescriptorRange*>(rootSignature.getRootSignature().parameters[rootParameterIndex].descriptorTable.descriptorRanges)[resourceIndex];
 						RENDERER_ASSERT(vulkanRenderer.getContext(), Renderer::DescriptorRangeType::SRV == descriptorRange.rangeType || Renderer::DescriptorRangeType::UAV == descriptorRange.rangeType, "Vulkan structured buffer must bound at SRV or UAV descriptor range type")
 						const VkDescriptorBufferInfo vkDescriptorBufferInfo =
 						{
@@ -9762,7 +9762,7 @@ namespace VulkanRenderer
 
 							case Renderer::ResourceType::ROOT_SIGNATURE:
 							case Renderer::ResourceType::RESOURCE_GROUP:
-							case Renderer::ResourceType::PROGRAM:
+							case Renderer::ResourceType::GRAPHICS_PROGRAM:
 							case Renderer::ResourceType::VERTEX_ARRAY:
 							case Renderer::ResourceType::RENDER_PASS:
 							case Renderer::ResourceType::SWAP_CHAIN:
@@ -9819,7 +9819,7 @@ namespace VulkanRenderer
 
 					case Renderer::ResourceType::ROOT_SIGNATURE:
 					case Renderer::ResourceType::RESOURCE_GROUP:
-					case Renderer::ResourceType::PROGRAM:
+					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
 					case Renderer::ResourceType::SWAP_CHAIN:
@@ -11096,7 +11096,7 @@ namespace VulkanRenderer
 
 			case Renderer::ResourceType::ROOT_SIGNATURE:
 			case Renderer::ResourceType::RESOURCE_GROUP:
-			case Renderer::ResourceType::PROGRAM:
+			case Renderer::ResourceType::GRAPHICS_PROGRAM:
 			case Renderer::ResourceType::VERTEX_ARRAY:
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::SWAP_CHAIN:
@@ -11220,7 +11220,7 @@ namespace VulkanRenderer
 
 			case Renderer::ResourceType::ROOT_SIGNATURE:
 			case Renderer::ResourceType::RESOURCE_GROUP:
-			case Renderer::ResourceType::PROGRAM:
+			case Renderer::ResourceType::GRAPHICS_PROGRAM:
 			case Renderer::ResourceType::VERTEX_ARRAY:
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::SWAP_CHAIN:
@@ -11461,7 +11461,7 @@ namespace VulkanRenderer
 
 			case Renderer::ResourceType::ROOT_SIGNATURE:
 			case Renderer::ResourceType::RESOURCE_GROUP:
-			case Renderer::ResourceType::PROGRAM:
+			case Renderer::ResourceType::GRAPHICS_PROGRAM:
 			case Renderer::ResourceType::VERTEX_ARRAY:
 			case Renderer::ResourceType::RENDER_PASS:
 			case Renderer::ResourceType::INDEX_BUFFER:

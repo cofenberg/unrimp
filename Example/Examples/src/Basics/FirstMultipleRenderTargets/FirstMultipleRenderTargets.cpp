@@ -144,13 +144,13 @@ void FirstMultipleRenderTargets::onInitialization()
 				mVertexArray = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(glm::countof(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
 			}
 
-			// Create the programs: Decide which shader language should be used (for example "GLSL" or "HLSL")
+			// Create the graphics programs: Decide which shader language should be used (for example "GLSL" or "HLSL")
 			Renderer::IShaderLanguagePtr shaderLanguage(renderer->getShaderLanguage());
 			if (nullptr != shaderLanguage)
 			{
-				// Create the programs
-				Renderer::IProgramPtr programMultipleRenderTargets;
-				Renderer::IProgramPtr program;
+				// Create the graphics programs
+				Renderer::IGraphicsProgramPtr graphicsProgramMultipleRenderTargets;
+				Renderer::IGraphicsProgramPtr graphicsProgram;
 				{
 					// Get the shader source code (outsourced to keep an overview)
 					const char* vertexShaderSourceCode = nullptr;
@@ -163,26 +163,26 @@ void FirstMultipleRenderTargets::onInitialization()
 					#include "FirstMultipleRenderTargets_HLSL_D3D10_D3D11_D3D12.h"
 					#include "FirstMultipleRenderTargets_Null.h"
 
-					// In order to keep this example simple and to show that it's possible, we use the same vertex shader for both programs
+					// In order to keep this example simple and to show that it's possible, we use the same vertex shader for both graphics programs
 					// -> Depending on the used graphics API and whether or not the shader compiler & linker is clever,
 					//    the unused texture coordinate might get optimized out
 					// -> In a real world application you shouldn't rely on shader compiler & linker behaviour assumptions
 					Renderer::IVertexShaderPtr vertexShader(shaderLanguage->createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode));
-					programMultipleRenderTargets = shaderLanguage->createProgram(*mRootSignature, vertexAttributes, vertexShader, shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode_MultipleRenderTargets));
-					program = shaderLanguage->createProgram(*mRootSignature, vertexAttributes, vertexShader, shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
+					graphicsProgramMultipleRenderTargets = shaderLanguage->createGraphicsProgram(*mRootSignature, vertexAttributes, vertexShader, shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode_MultipleRenderTargets));
+					graphicsProgram = shaderLanguage->createGraphicsProgram(*mRootSignature, vertexAttributes, vertexShader, shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 				}
 
 				// Create the graphics pipeline state objects (PSO)
-				if (nullptr != programMultipleRenderTargets && nullptr != program)
+				if (nullptr != graphicsProgramMultipleRenderTargets && nullptr != graphicsProgram)
 				{
 					{
-						Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(mRootSignature, programMultipleRenderTargets, vertexAttributes, mFramebuffer->getRenderPass());
+						Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgramMultipleRenderTargets, vertexAttributes, mFramebuffer->getRenderPass());
 						graphicsPipelineState.numberOfRenderTargets = NUMBER_OF_TEXTURES;
 						graphicsPipelineState.depthStencilState.depthEnable = 0;
 						graphicsPipelineState.depthStencilViewFormat = Renderer::TextureFormat::UNKNOWN;
 						mGraphicsPipelineStateMultipleRenderTargets = renderer->createGraphicsPipelineState(graphicsPipelineState);
 					}
-					mGraphicsPipelineState = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass()));
+					mGraphicsPipelineState = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass()));
 				}
 			}
 		}

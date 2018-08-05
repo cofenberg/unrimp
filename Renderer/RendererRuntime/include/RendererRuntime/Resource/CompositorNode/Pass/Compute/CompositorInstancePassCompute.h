@@ -27,8 +27,19 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/Resource/Material/MaterialProperties.h"
-#include "RendererRuntime/Resource/CompositorNode/Pass/ICompositorResourcePass.h"
+#include "RendererRuntime/Resource/IResourceListener.h"
+#include "RendererRuntime/Resource/CompositorNode/Pass/ICompositorInstancePass.h"
+#include "RendererRuntime/RenderQueue/RenderableManager.h"
+#include "RendererRuntime/RenderQueue/RenderQueue.h"
+
+
+//[-------------------------------------------------------]
+//[ Forward declarations                                  ]
+//[-------------------------------------------------------]
+namespace RendererRuntime
+{
+	class CompositorResourcePassCompute;
+}
 
 
 //[-------------------------------------------------------]
@@ -41,8 +52,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Global definitions                                    ]
 	//[-------------------------------------------------------]
-	typedef StringId AssetId;				///< Asset identifier, internally just a POD "uint32_t", string ID scheme is "<project name>/<asset type>/<asset category>/<asset name>"
-	typedef StringId MaterialTechniqueId;	///< Material technique identifier, internally just a POD "uint32_t", result of hashing the material technique name
+	typedef uint32_t MaterialResourceId;	///< POD material resource identifier
 
 
 	//[-------------------------------------------------------]
@@ -50,15 +60,15 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    Compositor resource pass quad
+	*    Compositor instance pass compute via compute or graphics pipeline state
 	*
 	*  @remarks
-	*    A compositor resource pass quad instance is using a material resource for rendering. This material resource
-	*    can be defined by providing an material asset ID. Since compositor material blueprints are usually highly
-	*    specialized for a certain task, it would be annoying to have to define a material asset for each and every
-	*    compositor material. So, it's also supported to define a material blueprint asset directly.
+	*    Graphics material blueprint: Using a screen covering triangle as discussed at e.g.
+	*    - https://web.archive.org/web/20140719063725/http://www.altdev.co/2011/08/08/interesting-vertex-shader-trick/
+	*    - "Vertex Shader Tricks by Bill Bilodeau - AMD at GDC14" - http://de.slideshare.net/DevCentralAMD/vertex-shader-tricks-bill-bilodeau
+	*    - Attribute-less rendering: "Rendering a Screen Covering Triangle in OpenGL (with no buffers)" - https://rauwendaal.net/2014/06/14/rendering-a-screen-covering-triangle-in-opengl/
 	*/
-	class CompositorResourcePassQuad : public ICompositorResourcePass
+	class CompositorInstancePassCompute : public ICompositorInstancePass, public IResourceListener
 	{
 
 
@@ -69,92 +79,60 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
-	//[ Public definitions                                    ]
-	//[-------------------------------------------------------]
-	public:
-		static constexpr uint32_t TYPE_ID = STRING_ID("Quad");
-
-
-	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		CompositorResourcePassQuad(const CompositorTarget& compositorTarget, AssetId materialBlueprintAssetId, const MaterialProperties& materialProperties);
+		CompositorInstancePassCompute(const CompositorResourcePassCompute& compositorResourcePassCompute, const CompositorNodeInstance& compositorNodeInstance);
+		virtual ~CompositorInstancePassCompute() override;
 
-		inline virtual ~CompositorResourcePassQuad() override
+		inline MaterialResourceId getMaterialResourceId() const
 		{
-			// Nothing here
-		}
-
-		inline bool isMaterialDefinitionMandatory() const
-		{
-			return mMaterialDefinitionMandatory;
-		}
-
-		inline AssetId getMaterialAssetId() const
-		{
-			return mMaterialAssetId;
-		}
-
-		inline MaterialTechniqueId getMaterialTechniqueId() const
-		{
-			return mMaterialTechniqueId;
-		}
-
-		inline AssetId getMaterialBlueprintAssetId() const
-		{
-			return mMaterialBlueprintAssetId;
-		}
-
-		inline const MaterialProperties& getMaterialProperties() const
-		{
-			return mMaterialProperties;
+			return mMaterialResourceId;
 		}
 
 
 	//[-------------------------------------------------------]
-	//[ Public virtual RendererRuntime::ICompositorResourcePass methods ]
+	//[ Public virtual RendererRuntime::ICompositorInstancePass methods ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual CompositorPassTypeId getTypeId() const override
+		virtual void onFillCommandBuffer(const Renderer::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer) override;
+
+		inline virtual void onPostCommandBufferExecution() override
 		{
-			return TYPE_ID;
+			// Directly clear the render queue as soon as the frame rendering has been finished to avoid evil dangling pointers
+			mRenderQueue.clear();
 		}
 
-		virtual void deserialize(uint32_t numberOfBytes, const uint8_t* data) override;
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual RendererRuntime::IResourceListener methods ]
+	//[-------------------------------------------------------]
+	protected:
+		virtual void onLoadingStateChange(const IResource& resource) override;
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual RendererRuntime::CompositorInstancePassCompute methods ]
+	//[-------------------------------------------------------]
+	protected:
+		virtual void createMaterialResource(MaterialResourceId parentMaterialResourceId);
 
 
 	//[-------------------------------------------------------]
 	//[ Protected methods                                     ]
 	//[-------------------------------------------------------]
 	protected:
-		inline explicit CompositorResourcePassQuad(const CompositorTarget& compositorTarget) :
-			ICompositorResourcePass(compositorTarget),
-			mMaterialDefinitionMandatory(true)
-		{
-			// Nothing here
-		}
-
-		inline CompositorResourcePassQuad(const CompositorTarget& compositorTarget, bool materialDefinitionMandatory) :
-			ICompositorResourcePass(compositorTarget),
-			mMaterialDefinitionMandatory(materialDefinitionMandatory)
-		{
-			// Nothing here
-		}
-
-		explicit CompositorResourcePassQuad(const CompositorResourcePassQuad&) = delete;
-		CompositorResourcePassQuad& operator=(const CompositorResourcePassQuad&) = delete;
+		explicit CompositorInstancePassCompute(const CompositorInstancePassCompute&) = delete;
+		CompositorInstancePassCompute& operator=(const CompositorInstancePassCompute&) = delete;
 
 
 	//[-------------------------------------------------------]
-	//[ Private data                                          ]
+	//[ Protected data                                        ]
 	//[-------------------------------------------------------]
-	private:
-		bool				mMaterialDefinitionMandatory;
-		AssetId				mMaterialAssetId;			///< If material blueprint asset ID is set, material asset ID must be invalid
-		MaterialTechniqueId	mMaterialTechniqueId;		///< Must always be valid
-		AssetId				mMaterialBlueprintAssetId;	///< If material asset ID is set, material blueprint asset ID must be invalid
-		MaterialProperties	mMaterialProperties;
+	protected:
+		RenderQueue		   mRenderQueue;
+		MaterialResourceId mMaterialResourceId;
+		RenderableManager  mRenderableManager;
 
 
 	};

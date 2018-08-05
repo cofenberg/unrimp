@@ -142,8 +142,8 @@ void FirstInstancing::onInitialization()
 					mVertexArrayInstancedArrays = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(glm::countof(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBufferInstancedArrays);
 				}
 
-				// Create the program
-				Renderer::IProgramPtr program;
+				// Create the graphics program
+				Renderer::IGraphicsProgramPtr graphicsProgram;
 				{
 					// Get the shader source code (outsourced to keep an overview)
 					const char* vertexShaderSourceCode = nullptr;
@@ -154,8 +154,8 @@ void FirstInstancing::onInitialization()
 					#include "FirstInstancing_InstancedArrays_HLSL_D3D9_D3D10_D3D11_D3D12.h"
 					#include "FirstInstancing_InstancedArrays_Null.h"
 
-					// Create the program
-					program = shaderLanguage->createProgram(
+					// Create the graphics program
+					graphicsProgram = shaderLanguage->createGraphicsProgram(
 						*mRootSignature,
 						vertexAttributes,
 						shaderLanguage->createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode),
@@ -163,9 +163,9 @@ void FirstInstancing::onInitialization()
 				}
 
 				// Create the graphics pipeline state object (PSO)
-				if (nullptr != program)
+				if (nullptr != graphicsProgram)
 				{
-					mGraphicsPipelineStateInstancedArrays = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass()));
+					mGraphicsPipelineStateInstancedArrays = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass()));
 				}
 			}
 
@@ -211,8 +211,8 @@ void FirstInstancing::onInitialization()
 					mVertexArrayDrawInstanced = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(glm::countof(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
 				}
 
-				// Create the program
-				Renderer::IProgramPtr program;
+				// Create the graphics program
+				Renderer::IGraphicsProgramPtr graphicsProgram;
 				{
 					// Get the shader source code (outsourced to keep an overview)
 					const char* vertexShaderSourceCode = nullptr;
@@ -223,8 +223,8 @@ void FirstInstancing::onInitialization()
 					#include "FirstInstancing_DrawInstanced_HLSL_D3D10_D3D11_D3D12.h"
 					#include "FirstInstancing_DrawInstanced_Null.h"
 
-					// Create the program
-					program = shaderLanguage->createProgram(
+					// Create the graphics program
+					graphicsProgram = shaderLanguage->createGraphicsProgram(
 						*mRootSignature,
 						vertexAttributes,
 						shaderLanguage->createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode),
@@ -232,9 +232,9 @@ void FirstInstancing::onInitialization()
 				}
 
 				// Create the graphics pipeline state object (PSO)
-				if (nullptr != program)
+				if (nullptr != graphicsProgram)
 				{
-					mGraphicsPipelineStateDrawInstanced = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, program, vertexAttributes, getMainRenderTarget()->getRenderPass()));
+					mGraphicsPipelineStateDrawInstanced = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass()));
 				}
 			}
 		}

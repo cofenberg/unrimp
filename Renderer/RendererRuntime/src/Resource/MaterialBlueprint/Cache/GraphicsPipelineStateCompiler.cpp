@@ -21,9 +21,9 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/Resource/MaterialBlueprint/Cache/PipelineStateCompiler.h"
-#include "RendererRuntime/Resource/MaterialBlueprint/Cache/PipelineStateCache.h"
-#include "RendererRuntime/Resource/MaterialBlueprint/Cache/ProgramCache.h"
+#include "RendererRuntime/Resource/MaterialBlueprint/Cache/GraphicsPipelineStateCompiler.h"
+#include "RendererRuntime/Resource/MaterialBlueprint/Cache/GraphicsPipelineStateCache.h"
+#include "RendererRuntime/Resource/MaterialBlueprint/Cache/GraphicsProgramCache.h"
 #include "RendererRuntime/Resource/MaterialBlueprint/MaterialBlueprintResourceManager.h"
 #include "RendererRuntime/Resource/MaterialBlueprint/MaterialBlueprintResource.h"
 #include "RendererRuntime/Resource/ShaderBlueprint/Cache/ShaderBuilder.h"
@@ -38,7 +38,7 @@
 
 
 // Disable warnings
-// TODO(co) See "RendererRuntime::PipelineStateCompiler::PipelineStateCompiler()": How the heck should we avoid such a situation without using complicated solutions like a pointer to an instance? (= more individual allocations/deallocations)
+// TODO(co) See "RendererRuntime::GraphicsPipelineStateCompiler::GraphicsPipelineStateCompiler()": How the heck should we avoid such a situation without using complicated solutions like a pointer to an instance? (= more individual allocations/deallocations)
 PRAGMA_WARNING_DISABLE_MSVC(4355)	// warning C4355: 'this': used in base member initializer list
 
 
@@ -52,7 +52,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
-	void PipelineStateCompiler::setAsynchronousCompilationEnabled(bool enabled)
+	void GraphicsPipelineStateCompiler::setAsynchronousCompilationEnabled(bool enabled)
 	{
 		// State change?
 		if (mAsynchronousCompilationEnabled != enabled)
@@ -67,7 +67,7 @@ namespace RendererRuntime
 		}
 	}
 
-	void PipelineStateCompiler::setNumberOfCompilerThreads(uint32_t numberOfCompilerThreads)
+	void GraphicsPipelineStateCompiler::setNumberOfCompilerThreads(uint32_t numberOfCompilerThreads)
 	{
 		if (mNumberOfCompilerThreads != numberOfCompilerThreads)
 		{
@@ -86,12 +86,12 @@ namespace RendererRuntime
 			mShutdownCompilerThread = false;
 			for (uint32_t i = 0; i < mNumberOfCompilerThreads; ++i)
 			{
-				mCompilerThreads.push_back(std::thread(&PipelineStateCompiler::compilerThreadWorker, this));
+				mCompilerThreads.push_back(std::thread(&GraphicsPipelineStateCompiler::compilerThreadWorker, this));
 			}
 		}
 	}
 
-	void PipelineStateCompiler::dispatch()
+	void GraphicsPipelineStateCompiler::dispatch()
 	{
 		// Synchronous dispatch
 		// TODO(co) Add maximum dispatch time budget
@@ -103,10 +103,10 @@ namespace RendererRuntime
 			CompilerRequest compilerRequest(mDispatchQueue.back());
 			mDispatchQueue.pop_back();
 
-			// Tell the pipeline state cache about the real compiled pipeline state object
-			PipelineStateCache& pipelineStateCache = compilerRequest.pipelineStateCache;
-			pipelineStateCache.mGraphicsPipelineStateObjectPtr = static_cast<Renderer::IGraphicsPipelineState*>(compilerRequest.pipelineStateObject);
-			pipelineStateCache.mIsUsingFallback = false;
+			// Tell the graphics pipeline state cache about the real compiled graphics pipeline state object
+			GraphicsPipelineStateCache& graphicsPipelineStateCache = compilerRequest.graphicsPipelineStateCache;
+			graphicsPipelineStateCache.mGraphicsPipelineStateObjectPtr = compilerRequest.graphicsPipelineStateObject;
+			graphicsPipelineStateCache.mIsUsingFallback = false;
 			assert(0 != mNumberOfInFlightCompilerRequests);
 			--mNumberOfInFlightCompilerRequests;
 		}
@@ -116,20 +116,20 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
-	PipelineStateCompiler::PipelineStateCompiler(IRendererRuntime& rendererRuntime) :
+	GraphicsPipelineStateCompiler::GraphicsPipelineStateCompiler(IRendererRuntime& rendererRuntime) :
 		mRendererRuntime(rendererRuntime),
 		mAsynchronousCompilationEnabled(false),
 		mNumberOfCompilerThreads(0),
 		mNumberOfInFlightCompilerRequests(0),
 		mShutdownBuilderThread(false),
-		mBuilderThread(&PipelineStateCompiler::builderThreadWorker, this),
+		mBuilderThread(&GraphicsPipelineStateCompiler::builderThreadWorker, this),
 		mShutdownCompilerThread(false)
 	{
 		// Create and start the threads
 		setNumberOfCompilerThreads(2);
 	}
 
-	PipelineStateCompiler::~PipelineStateCompiler()
+	GraphicsPipelineStateCompiler::~GraphicsPipelineStateCompiler()
 	{
 		// Builder thread shutdown
 		mShutdownBuilderThread = true;
@@ -140,32 +140,32 @@ namespace RendererRuntime
 		setNumberOfCompilerThreads(0);
 	}
 
-	void PipelineStateCompiler::addAsynchronousCompilerRequest(PipelineStateCache& pipelineStateCache)
+	void GraphicsPipelineStateCompiler::addAsynchronousCompilerRequest(GraphicsPipelineStateCache& graphicsPipelineStateCache)
 	{
 		// Push the load request into the builder queue
 		++mNumberOfInFlightCompilerRequests;
 		std::unique_lock<std::mutex> builderMutexLock(mBuilderMutex);
-		mBuilderQueue.emplace_back(CompilerRequest(pipelineStateCache));
+		mBuilderQueue.emplace_back(CompilerRequest(graphicsPipelineStateCache));
 		builderMutexLock.unlock();
 		mBuilderConditionVariable.notify_one();
 	}
 
-	void PipelineStateCompiler::instantSynchronousCompilerRequest(MaterialBlueprintResource& materialBlueprintResource, PipelineStateCache& pipelineStateCache)
+	void GraphicsPipelineStateCompiler::instantSynchronousCompilerRequest(MaterialBlueprintResource& materialBlueprintResource, GraphicsPipelineStateCache& graphicsPipelineStateCache)
 	{
-		// Get the program cache; synchronous processing
-		const PipelineStateSignature& pipelineStateSignature = pipelineStateCache.getPipelineStateSignature();
-		const ProgramCache* programCache = materialBlueprintResource.getPipelineStateCacheManager().getProgramCacheManager().getProgramCacheByPipelineStateSignature(pipelineStateSignature);
-		if (nullptr != programCache)
+		// Get the graphics program cache; synchronous processing
+		const GraphicsPipelineStateSignature& graphicsPipelineStateSignature = graphicsPipelineStateCache.getGraphicsPipelineStateSignature();
+		const GraphicsProgramCache* graphicsProgramCache = materialBlueprintResource.getGraphicsPipelineStateCacheManager().getGraphicsProgramCacheManager().getGraphicsProgramCacheByGraphicsPipelineStateSignature(graphicsPipelineStateSignature);
+		if (nullptr != graphicsProgramCache)
 		{
-			Renderer::IProgramPtr programPtr = programCache->getProgramPtr();
-			if (nullptr != programPtr)
+			Renderer::IGraphicsProgramPtr graphicsProgramPtr = graphicsProgramCache->getGraphicsProgramPtr();
+			if (nullptr != graphicsProgramPtr)
 			{
-				pipelineStateCache.mGraphicsPipelineStateObjectPtr = createGraphicsPipelineState(materialBlueprintResource, pipelineStateSignature.getSerializedGraphicsPipelineStateHash(), *programPtr);
+				graphicsPipelineStateCache.mGraphicsPipelineStateObjectPtr = createGraphicsPipelineState(materialBlueprintResource, graphicsPipelineStateSignature.getSerializedGraphicsPipelineStateHash(), *graphicsProgramPtr);
 			}
 		}
 	}
 
-	void PipelineStateCompiler::flushQueue(std::mutex& mutex, const CompilerRequests& compilerRequests)
+	void GraphicsPipelineStateCompiler::flushQueue(std::mutex& mutex, const CompilerRequests& compilerRequests)
 	{
 		bool everythingFlushed = false;
 		do
@@ -185,7 +185,7 @@ namespace RendererRuntime
 		} while (!everythingFlushed);
 	}
 
-	void PipelineStateCompiler::builderThreadWorker()
+	void GraphicsPipelineStateCompiler::builderThreadWorker()
 	{
 		const MaterialBlueprintResourceManager& materialBlueprintResourceManager = mRendererRuntime.getMaterialBlueprintResourceManager();
 		ShaderBlueprintResourceManager& shaderBlueprintResourceManager = mRendererRuntime.getShaderBlueprintResourceManager();
@@ -207,18 +207,18 @@ namespace RendererRuntime
 				builderMutexLock.unlock();
 
 				{ // Do the work: Building the shader source code for the required combination
-					const PipelineStateSignature& pipelineStateSignature = compilerRequest.pipelineStateCache.getPipelineStateSignature();
-					const MaterialBlueprintResource& materialBlueprintResource = materialBlueprintResourceManager.getById(pipelineStateSignature.getMaterialBlueprintResourceId());
+					const GraphicsPipelineStateSignature& graphicsPipelineStateSignature = compilerRequest.graphicsPipelineStateCache.getGraphicsPipelineStateSignature();
+					const MaterialBlueprintResource& materialBlueprintResource = materialBlueprintResourceManager.getById(graphicsPipelineStateSignature.getMaterialBlueprintResourceId());
 
-					for (uint8_t i = 0; i < NUMBER_OF_SHADER_TYPES; ++i)
+					for (uint8_t i = 0; i < NUMBER_OF_GRAPHICS_SHADER_TYPES; ++i)
 					{
 						// Get the shader blueprint resource ID
-						const ShaderType shaderType = static_cast<ShaderType>(i);
-						const ShaderBlueprintResourceId shaderBlueprintResourceId = materialBlueprintResource.getShaderBlueprintResourceId(shaderType);
+						const GraphicsShaderType graphicsShaderType = static_cast<GraphicsShaderType>(i);
+						const ShaderBlueprintResourceId shaderBlueprintResourceId = materialBlueprintResource.getGraphicsShaderBlueprintResourceId(graphicsShaderType);
 						if (isValid(shaderBlueprintResourceId))
 						{
 							// Get the shader cache identifier, often but not always identical to the shader combination ID
-							const ShaderCacheId shaderCacheId = pipelineStateSignature.getShaderCombinationId(shaderType);
+							const ShaderCacheId shaderCacheId = graphicsPipelineStateSignature.getShaderCombinationId(graphicsShaderType);
 
 							// Does the shader cache already exist?
 							ShaderCache* shaderCache = nullptr;
@@ -230,13 +230,13 @@ namespace RendererRuntime
 							}
 							else
 							{
-								// Try to create the new program cache instance
+								// Try to create the new graphics shader cache instance
 								const ShaderBlueprintResource* shaderBlueprintResource = shaderBlueprintResourceManager.tryGetById(shaderBlueprintResourceId);
 								if (nullptr != shaderBlueprintResource)
 								{
 									// Build the shader source code
 									ShaderBuilder::BuildShader buildShader;
-									shaderBuilder.createSourceCode(shaderPieceResourceManager, *shaderBlueprintResource, pipelineStateSignature.getShaderProperties(), buildShader);
+									shaderBuilder.createSourceCode(shaderPieceResourceManager, *shaderBlueprintResource, graphicsPipelineStateSignature.getShaderProperties(), buildShader);
 									const std::string& sourceCode = buildShader.sourceCode;
 									if (sourceCode.empty())
 									{
@@ -293,7 +293,7 @@ namespace RendererRuntime
 		}
 	}
 
-	void PipelineStateCompiler::compilerThreadWorker()
+	void GraphicsPipelineStateCompiler::compilerThreadWorker()
 	{
 		Renderer::IShaderLanguagePtr shaderLanguage(mRendererRuntime.getRenderer().getShaderLanguage());
 		if (nullptr != shaderLanguage)
@@ -314,8 +314,8 @@ namespace RendererRuntime
 
 					// Do the work: Compiling the shader source code it in order to get the shader bytecode
 					bool needToWaitForShaderCache = false;
-					Renderer::IShader* shaders[NUMBER_OF_SHADER_TYPES] = {};
-					for (uint8_t i = 0; i < NUMBER_OF_SHADER_TYPES && !needToWaitForShaderCache; ++i)
+					Renderer::IShader* shaders[NUMBER_OF_GRAPHICS_SHADER_TYPES] = {};
+					for (uint8_t i = 0; i < NUMBER_OF_GRAPHICS_SHADER_TYPES && !needToWaitForShaderCache; ++i)
 					{
 						ShaderCache* shaderCache = compilerRequest.shaderCache[i];
 						if (nullptr != shaderCache)
@@ -335,30 +335,30 @@ namespace RendererRuntime
 								{
 									// Create the shader instance
 									Renderer::IShader* shader = nullptr;
-									switch (static_cast<ShaderType>(i))
+									switch (static_cast<GraphicsShaderType>(i))
 									{
-										case ShaderType::Vertex:
+										case GraphicsShaderType::Vertex:
 										{
-											const MaterialBlueprintResource& materialBlueprintResource = materialBlueprintResourceManager.getById(compilerRequest.pipelineStateCache.getPipelineStateSignature().getMaterialBlueprintResourceId());
+											const MaterialBlueprintResource& materialBlueprintResource = materialBlueprintResourceManager.getById(compilerRequest.graphicsPipelineStateCache.getGraphicsPipelineStateSignature().getMaterialBlueprintResourceId());
 											const Renderer::VertexAttributes& vertexAttributes = mRendererRuntime.getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes();
 											shader = shaderLanguage->createVertexShaderFromSourceCode(vertexAttributes, shaderSourceCode.c_str());
 											break;
 										}
 
-										case ShaderType::TessellationControl:
+										case GraphicsShaderType::TessellationControl:
 											shader = shaderLanguage->createTessellationControlShaderFromSourceCode(shaderSourceCode.c_str());
 											break;
 
-										case ShaderType::TessellationEvaluation:
+										case GraphicsShaderType::TessellationEvaluation:
 											shader = shaderLanguage->createTessellationEvaluationShaderFromSourceCode(shaderSourceCode.c_str());
 											break;
 
-										case ShaderType::Geometry:
-											// TODO(co) "RendererRuntime::ShaderCacheManager::getShaderCache()" needs to provide additional geometry shader information
+										case GraphicsShaderType::Geometry:
+											// TODO(co) "RendererRuntime::ShaderCacheManager::getGraphicsShaderCache()" needs to provide additional geometry shader information
 											// shader = shaderLanguage->createGeometryShaderFromSourceCode(shaderSourceCode.c_str());
 											break;
 
-										case ShaderType::Fragment:
+										case GraphicsShaderType::Fragment:
 											shader = shaderLanguage->createFragmentShaderFromSourceCode(shaderSourceCode.c_str());
 											break;
 									}
@@ -373,29 +373,29 @@ namespace RendererRuntime
 					// Are all required shader caches ready for rumble?
 					if (!needToWaitForShaderCache)
 					{
-						{ // Create the pipeline state object (PSO)
-							const PipelineStateSignature& pipelineStateSignature = compilerRequest.pipelineStateCache.getPipelineStateSignature();
-							MaterialBlueprintResource& materialBlueprintResource = materialBlueprintResourceManager.getById(pipelineStateSignature.getMaterialBlueprintResourceId());
+						{ // Create the graphics pipeline state object (PSO)
+							const GraphicsPipelineStateSignature& graphicsPipelineStateSignature = compilerRequest.graphicsPipelineStateCache.getGraphicsPipelineStateSignature();
+							MaterialBlueprintResource& materialBlueprintResource = materialBlueprintResourceManager.getById(graphicsPipelineStateSignature.getMaterialBlueprintResourceId());
 
-							// Create the program
-							Renderer::IProgram* program = shaderLanguage->createProgram(*materialBlueprintResource.getRootSignaturePtr(),
+							// Create the graphics program
+							Renderer::IGraphicsProgram* graphicsProgram = shaderLanguage->createGraphicsProgram(*materialBlueprintResource.getRootSignaturePtr(),
 								mRendererRuntime.getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes(),
-								static_cast<Renderer::IVertexShader*>(shaders[static_cast<int>(ShaderType::Vertex)]),
-								static_cast<Renderer::ITessellationControlShader*>(shaders[static_cast<int>(ShaderType::TessellationControl)]),
-								static_cast<Renderer::ITessellationEvaluationShader*>(shaders[static_cast<int>(ShaderType::TessellationEvaluation)]),
-								static_cast<Renderer::IGeometryShader*>(shaders[static_cast<int>(ShaderType::Geometry)]),
-								static_cast<Renderer::IFragmentShader*>(shaders[static_cast<int>(ShaderType::Fragment)]));
-							RENDERER_SET_RESOURCE_DEBUG_NAME(program, "Pipeline state compiler")
+								static_cast<Renderer::IVertexShader*>(shaders[static_cast<int>(GraphicsShaderType::Vertex)]),
+								static_cast<Renderer::ITessellationControlShader*>(shaders[static_cast<int>(GraphicsShaderType::TessellationControl)]),
+								static_cast<Renderer::ITessellationEvaluationShader*>(shaders[static_cast<int>(GraphicsShaderType::TessellationEvaluation)]),
+								static_cast<Renderer::IGeometryShader*>(shaders[static_cast<int>(GraphicsShaderType::Geometry)]),
+								static_cast<Renderer::IFragmentShader*>(shaders[static_cast<int>(GraphicsShaderType::Fragment)]));
+							RENDERER_SET_RESOURCE_DEBUG_NAME(graphicsProgram, "Graphics pipeline state compiler")
 
 							// Create the graphics pipeline state object (PSO)
-							compilerRequest.pipelineStateObject = createGraphicsPipelineState(materialBlueprintResource, pipelineStateSignature.getSerializedGraphicsPipelineStateHash(), *program);
+							compilerRequest.graphicsPipelineStateObject = createGraphicsPipelineState(materialBlueprintResource, graphicsPipelineStateSignature.getSerializedGraphicsPipelineStateHash(), *graphicsProgram);
 
-							{ // Program cache entry
-								ProgramCacheManager& programCacheManager = materialBlueprintResource.getPipelineStateCacheManager().getProgramCacheManager();
-								const ProgramCacheId programCacheId = ProgramCacheManager::generateProgramCacheId(pipelineStateSignature);
-								std::unique_lock<std::mutex> mutexLock(programCacheManager.mMutex);
-								assert(programCacheManager.mProgramCacheById.find(programCacheId) == programCacheManager.mProgramCacheById.cend());	// TODO(co) Error handling
-								programCacheManager.mProgramCacheById.emplace(programCacheId, new ProgramCache(programCacheId, *program));
+							{ // Graphics program cache entry
+								GraphicsProgramCacheManager& graphicsProgramCacheManager = materialBlueprintResource.getGraphicsPipelineStateCacheManager().getGraphicsProgramCacheManager();
+								const GraphicsProgramCacheId graphicsProgramCacheId = GraphicsProgramCacheManager::generateGraphicsProgramCacheId(graphicsPipelineStateSignature);
+								std::unique_lock<std::mutex> mutexLock(graphicsProgramCacheManager.mMutex);
+								assert(graphicsProgramCacheManager.mGraphicsProgramCacheById.find(graphicsProgramCacheId) == graphicsProgramCacheManager.mGraphicsProgramCacheById.cend());	// TODO(co) Error handling
+								graphicsProgramCacheManager.mGraphicsProgramCacheById.emplace(graphicsProgramCacheId, new GraphicsProgramCache(graphicsProgramCacheId, *graphicsProgram));
 							}
 						}
 
@@ -421,7 +421,7 @@ namespace RendererRuntime
 		}
 	}
 
-	Renderer::IGraphicsPipelineState* PipelineStateCompiler::createGraphicsPipelineState(const RendererRuntime::MaterialBlueprintResource& materialBlueprintResource, uint32_t serializedGraphicsPipelineStateHash, Renderer::IProgram& program) const
+	Renderer::IGraphicsPipelineState* GraphicsPipelineStateCompiler::createGraphicsPipelineState(const RendererRuntime::MaterialBlueprintResource& materialBlueprintResource, uint32_t serializedGraphicsPipelineStateHash, Renderer::IGraphicsProgram& graphicsProgram) const
 	{
 		// Start with the graphics pipeline state of the material blueprint resource, then copy over serialized graphics pipeline state
 		Renderer::GraphicsPipelineState graphicsPipelineState = materialBlueprintResource.getGraphicsPipelineState();
@@ -431,7 +431,7 @@ namespace RendererRuntime
 		const RendererRuntime::IRendererRuntime& rendererRuntime = materialBlueprintResource.getResourceManager<RendererRuntime::MaterialBlueprintResourceManager>().getRendererRuntime();
 		Renderer::IRootSignaturePtr rootSignaturePtr = materialBlueprintResource.getRootSignaturePtr();
 		graphicsPipelineState.rootSignature	   = rootSignaturePtr;
-		graphicsPipelineState.program		   = &program;
+		graphicsPipelineState.graphicsProgram  = &graphicsProgram;
 		graphicsPipelineState.vertexAttributes = rendererRuntime.getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes();
 
 		{ // TODO(co) Render pass related update, the render pass in here is currently just a dummy so the debug compositor works
