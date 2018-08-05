@@ -120,7 +120,7 @@ namespace RendererRuntime
 	private:
 		RenderableManager		  mRenderableManager;			///< Renderable manager
 		uint32_t				  mMaximumNumberOfParticles;	///< Maximum number of particles
-		Renderer::IVertexArrayPtr mParticlesVertexArrayPtr;		///< Vertex array holding the data of the individual particles
+		Renderer::IVertexArrayPtr mVertexArrayPtr;				///< Vertex array holding the data of the individual particles
 
 
 	};

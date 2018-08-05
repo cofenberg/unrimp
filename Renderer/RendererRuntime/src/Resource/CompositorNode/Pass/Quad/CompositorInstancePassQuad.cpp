@@ -148,7 +148,7 @@ namespace RendererRuntime
 		}
 
 		// Setup renderable manager using attribute-less rendering
-		mRenderableManager.getRenderables().emplace_back(mRenderableManager, Renderer::IVertexArrayPtr(), false, 0, 3, materialResourceManager, mMaterialResourceId, getInvalid<SkeletonResourceId>());
+		mRenderableManager.getRenderables().emplace_back(mRenderableManager, Renderer::IVertexArrayPtr(), materialResourceManager, mMaterialResourceId, getInvalid<SkeletonResourceId>(), false, 0, 3);
 	}
 
 

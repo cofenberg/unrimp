@@ -156,7 +156,7 @@ namespace RendererRuntime
 		::detail::VertexArrayPtr->addReference();
 
 		// Setup renderable manager
-		mRenderableManager.getRenderables().emplace_back(mRenderableManager, ::detail::VertexArrayPtr, true, 0, 36, rendererRuntime.getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>());
+		mRenderableManager.getRenderables().emplace_back(mRenderableManager, ::detail::VertexArrayPtr, rendererRuntime.getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>(), true, 0, 36);
 		mRenderableManager.updateCachedRenderablesData();
 	}
 

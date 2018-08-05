@@ -546,7 +546,8 @@ namespace RendererRuntime
 										const uint32_t startInstanceLocation = (nullptr != instanceUniformBuffer) ? instanceBufferManager.fillBuffer(*materialBlueprintResource, materialBlueprintResource->getPassBufferManager(), *instanceUniformBuffer, renderable, *materialTechnique, mScratchCommandBuffer) : 0;
 
 										// Emit draw command, if necessary
-										if (renderable.getDrawIndexed() != currentDrawIndexed || !mScratchCommandBuffer.isEmpty())
+										const Renderer::IIndirectBufferPtr renderableIndirectBufferPtr = renderable.getIndirectBufferPtr();
+										if (renderable.getDrawIndexed() != currentDrawIndexed || !mScratchCommandBuffer.isEmpty() || nullptr != renderableIndirectBufferPtr)
 										{
 											if (currentDrawIndexed)
 											{
@@ -571,8 +572,20 @@ namespace RendererRuntime
 										}
 
 										// Render the specified geometric primitive, based on indexing into an array of vertices
-										// -> Please note that it's valid that there are no indices, for example "RendererRuntime::CompositorInstancePassDebugGui" is using the render queue only to set the material resource blueprint
-										if (0 != renderable.getNumberOfIndices())
+										if (nullptr != renderableIndirectBufferPtr)
+										{
+											// Use a given indirect buffer which content is e.g. filled by a compute shader
+											if (renderable.getDrawIndexed())
+											{
+												Renderer::Command::DrawIndexedGraphics::create(commandBuffer, *renderableIndirectBufferPtr, renderable.getIndirectBufferOffset(), renderable.getNumberOfDraws());
+											}
+											else
+											{
+												Renderer::Command::DrawGraphics::create(commandBuffer, *renderableIndirectBufferPtr, renderable.getIndirectBufferOffset(), renderable.getNumberOfDraws());
+											}
+										}
+										// Please note that it's valid that there are no indices, for example "RendererRuntime::CompositorInstancePassDebugGui" is using the render queue only to set the material resource blueprint
+										else if (0 != renderable.getNumberOfIndices())
 										{
 											// Sanity checks
 											assert(nullptr != indirectBuffer);

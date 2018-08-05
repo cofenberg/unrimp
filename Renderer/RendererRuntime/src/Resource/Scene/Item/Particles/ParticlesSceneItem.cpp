@@ -117,7 +117,7 @@ namespace RendererRuntime
 	void ParticlesSceneItem::onMaterialResourceCreated()
 	{
 		// Setup renderable manager: Six vertices per particle, particle index = instance index
-		mRenderableManager.getRenderables().emplace_back(mRenderableManager, mParticlesVertexArrayPtr, false, 0, 6, getSceneResource().getRendererRuntime().getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>(), mMaximumNumberOfParticles);
+		mRenderableManager.getRenderables().emplace_back(mRenderableManager, mVertexArrayPtr, getSceneResource().getRendererRuntime().getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>(), false, 0, 6, mMaximumNumberOfParticles);
 		mRenderableManager.updateCachedRenderablesData();
 	}
 
@@ -178,8 +178,8 @@ namespace RendererRuntime
 			//    reference of the used vertex buffer objects (VBO). If the reference counter of a
 			//    vertex buffer object (VBO) reaches zero, it's automatically destroyed.
 			const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
-			mParticlesVertexArrayPtr = bufferManager.createVertexArray(VERTEX_ATTRIBUTES, static_cast<uint32_t>(glm::countof(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
-			RENDERER_SET_RESOURCE_DEBUG_NAME(mParticlesVertexArrayPtr, "Particles VAO")
+			mVertexArrayPtr = bufferManager.createVertexArray(VERTEX_ATTRIBUTES, static_cast<uint32_t>(glm::countof(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
+			RENDERER_SET_RESOURCE_DEBUG_NAME(mVertexArrayPtr, "Particles VAO")
 		}
 	}
 

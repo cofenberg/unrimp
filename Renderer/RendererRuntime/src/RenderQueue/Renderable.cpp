@@ -67,9 +67,9 @@ namespace RendererRuntime
 		mRenderableManager(::detail::NullRenderableManager),
 		mStartIndexLocation(0),
 		mNumberOfIndices(0),
+		mInstanceCount(1),
 		mMaterialResourceId(getInvalid<MaterialResourceId>()),
 		mSkeletonResourceId(getInvalid<SkeletonResourceId>()),
-		mInstanceCount(1),
 		mDrawIndexed(false),
 		// Cached material data
 		mRenderQueueIndex(0),
@@ -81,7 +81,7 @@ namespace RendererRuntime
 		// Nothing here
 	}
 
-	Renderable::Renderable(RenderableManager& renderableManager, const Renderer::IVertexArrayPtr& vertexArrayPtr, bool drawIndexed, uint32_t startIndexLocation, uint32_t numberOfIndices, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, uint32_t instanceCount) :
+	Renderable::Renderable(RenderableManager& renderableManager, const Renderer::IVertexArrayPtr& vertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, uint32_t startIndexLocation, uint32_t numberOfIndices, uint32_t instanceCount) :
 		// Derived data
 		mSortingKey(getInvalid<uint64_t>()),
 		// Data
@@ -89,9 +89,39 @@ namespace RendererRuntime
 		mVertexArrayPtr(vertexArrayPtr),
 		mStartIndexLocation(startIndexLocation),
 		mNumberOfIndices(numberOfIndices),
+		mInstanceCount(instanceCount),
 		mMaterialResourceId(getInvalid<MaterialResourceId>()),
 		mSkeletonResourceId(skeletonResourceId),
-		mInstanceCount(instanceCount),
+		mDrawIndexed(drawIndexed),
+		// Cached material data
+		mRenderQueueIndex(0),
+		mCastShadows(false),
+		// Internal data
+		mMaterialResourceManager(nullptr),
+		mMaterialResourceAttachmentIndex(getInvalid<int>())
+	{
+		if (isValid(materialResourceId))
+		{
+			setMaterialResourceId(materialResourceManager, materialResourceId);
+		}
+		else
+		{
+			calculateSortingKey();
+		}
+	}
+
+	Renderable::Renderable(RenderableManager& renderableManager, const Renderer::IVertexArrayPtr& vertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, const Renderer::IIndirectBufferPtr& indirectBufferPtr, uint32_t indirectBufferOffset, uint32_t numberOfDraws) :
+		// Derived data
+		mSortingKey(getInvalid<uint64_t>()),
+		// Data
+		mRenderableManager(renderableManager),
+		mVertexArrayPtr(vertexArrayPtr),
+		mIndirectBufferPtr(indirectBufferPtr),
+		mIndirectBufferOffset(indirectBufferOffset),	// Indirect buffer used
+		mNumberOfIndices(~0u),							// Invalid since read from the indirect buffer
+		mNumberOfDraws(numberOfDraws),					// Indirect buffer used
+		mMaterialResourceId(getInvalid<MaterialResourceId>()),
+		mSkeletonResourceId(skeletonResourceId),
 		mDrawIndexed(drawIndexed),
 		// Cached material data
 		mRenderQueueIndex(0),

@@ -116,8 +116,8 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void GrassSceneItem::onMaterialResourceCreated()
 	{
-		// Setup renderable manager: Twelve vertices per grass (two quads), grass index = instance index
-		mRenderableManager.getRenderables().emplace_back(mRenderableManager, mGrassVertexArrayPtr, false, 0, 12, getSceneResource().getRendererRuntime().getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>(), mMaximumNumberOfGrass);
+		// Setup renderable manager
+		mRenderableManager.getRenderables().emplace_back(mRenderableManager, mVertexArrayPtr, getSceneResource().getRendererRuntime().getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>(), false, mIndirectBufferPtr);
 		mRenderableManager.updateCachedRenderablesData();
 	}
 
@@ -158,8 +158,20 @@ namespace RendererRuntime
 			//    reference of the used vertex buffer objects (VBO). If the reference counter of a
 			//    vertex buffer object (VBO) reaches zero, it's automatically destroyed.
 			const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
-			mGrassVertexArrayPtr = bufferManager.createVertexArray(VERTEX_ATTRIBUTES, static_cast<uint32_t>(glm::countof(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
-			RENDERER_SET_RESOURCE_DEBUG_NAME(mGrassVertexArrayPtr, "Grass VAO")
+			mVertexArrayPtr = bufferManager.createVertexArray(VERTEX_ATTRIBUTES, static_cast<uint32_t>(glm::countof(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
+			RENDERER_SET_RESOURCE_DEBUG_NAME(mVertexArrayPtr, "Grass VAO")
+
+			{ // Create the indirect buffer: Twelve vertices per grass (two quads), grass index = instance index
+				const Renderer::DrawInstancedArguments drawInstancedArguments =
+				{
+					12,						// vertexCountPerInstance (uint32_t)
+					mMaximumNumberOfGrass,	// instanceCount (uint32_t)
+					0,						// startVertexLocation (uint32_t)
+					0						// startInstanceLocation (uint32_t)
+				};
+				mIndirectBufferPtr = bufferManager.createIndirectBuffer(sizeof(Renderer::DrawInstancedArguments), &drawInstancedArguments, Renderer::IndirectBufferFlag::UNORDERED_ACCESS | Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS);
+				RENDERER_SET_RESOURCE_DEBUG_NAME(mIndirectBufferPtr, "Grass indirect buffer")
+			}
 		}
 	}
 

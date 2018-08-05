@@ -118,9 +118,10 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		RenderableManager		  mRenderableManager;		///< Renderable manager
-		uint32_t				  mMaximumNumberOfGrass;	///< Maximum number of grass
-		Renderer::IVertexArrayPtr mGrassVertexArrayPtr;		///< Vertex array holding the data of the individual grass
+		RenderableManager			 mRenderableManager;	///< Renderable manager
+		uint32_t					 mMaximumNumberOfGrass;	///< Maximum number of grass
+		Renderer::IVertexArrayPtr	 mVertexArrayPtr;		///< Vertex array holding the data of the individual grass
+		Renderer::IIndirectBufferPtr mIndirectBufferPtr;	///< Indirect buffer holding data related to the current grass "Renderer::DrawInstancedArguments" draw call
 
 
 	};

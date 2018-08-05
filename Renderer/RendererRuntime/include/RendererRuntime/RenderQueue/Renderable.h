@@ -81,7 +81,8 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	public:
 		RENDERERRUNTIME_API_EXPORT Renderable();
-		RENDERERRUNTIME_API_EXPORT Renderable(RenderableManager& renderableManager, const Renderer::IVertexArrayPtr& vertexArrayPtr, bool drawIndexed, uint32_t startIndexLocation, uint32_t numberOfIndices, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, uint32_t instanceCount = 1);
+		RENDERERRUNTIME_API_EXPORT Renderable(RenderableManager& renderableManager, const Renderer::IVertexArrayPtr& vertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, uint32_t startIndexLocation, uint32_t numberOfIndices, uint32_t instanceCount = 1);
+		RENDERERRUNTIME_API_EXPORT Renderable(RenderableManager& renderableManager, const Renderer::IVertexArrayPtr& vertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, const Renderer::IIndirectBufferPtr& indirectBufferPtr, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 
 		inline ~Renderable()
 		{
@@ -115,6 +116,17 @@ namespace RendererRuntime
 			calculateSortingKey();
 		}
 
+		inline Renderer::IIndirectBufferPtr getIndirectBufferPtr() const
+		{
+			return mIndirectBufferPtr;
+		}
+
+		inline void setIndirectBufferPtr(const Renderer::IIndirectBufferPtr& indirectBufferPtr)
+		{
+			mIndirectBufferPtr = indirectBufferPtr;
+			calculateSortingKey();
+		}
+
 		inline bool getDrawIndexed() const
 		{
 			return mDrawIndexed;
@@ -135,6 +147,16 @@ namespace RendererRuntime
 			mStartIndexLocation = startIndexLocation;
 		}
 
+		inline uint32_t getIndirectBufferOffset() const
+		{
+			return mIndirectBufferOffset;
+		}
+
+		inline void setIndirectBufferOffset(uint32_t indirectBufferOffset)
+		{
+			mIndirectBufferOffset = indirectBufferOffset;
+		}
+
 		inline uint32_t getNumberOfIndices() const
 		{
 			return mNumberOfIndices;
@@ -143,6 +165,26 @@ namespace RendererRuntime
 		inline void setNumberOfIndices(uint32_t numberOfIndices)
 		{
 			mNumberOfIndices = numberOfIndices;
+		}
+
+		inline uint32_t getInstanceCount() const
+		{
+			return mInstanceCount;
+		}
+
+		inline void setInstanceCount(uint32_t instanceCount)
+		{
+			mInstanceCount = instanceCount;
+		}
+
+		inline uint32_t getNumberOfDraws() const
+		{
+			return mNumberOfDraws;
+		}
+
+		inline void setNumberOfDraws(uint32_t numberOfDraws)
+		{
+			mNumberOfDraws = numberOfDraws;
 		}
 
 		inline MaterialResourceId getMaterialResourceId() const
@@ -166,16 +208,6 @@ namespace RendererRuntime
 		inline void setSkeletonResourceId(SkeletonResourceId skeletonResourceId)
 		{
 			mSkeletonResourceId = skeletonResourceId;
-		}
-
-		inline uint32_t getInstanceCount() const
-		{
-			return mInstanceCount;
-		}
-
-		inline void setInstanceCount(uint32_t instanceCount)
-		{
-			mInstanceCount = instanceCount;
 		}
 
 		//[-------------------------------------------------------]
@@ -209,12 +241,21 @@ namespace RendererRuntime
 		uint64_t						mSortingKey;			///< The sorting key is directly calculated after data change, no lazy evaluation since it's changed rarely but requested often (no branching)
 		// Data
 		RenderableManager&				mRenderableManager;
-		Renderer::IVertexArrayPtr		mVertexArrayPtr;		///< Vertex array object (VAO), can be a null pointer
-		uint32_t						mStartIndexLocation;
-		uint32_t						mNumberOfIndices;
+		Renderer::IVertexArrayPtr		mVertexArrayPtr;		///< Optional vertex array object (VAO), can be a null pointer
+		Renderer::IIndirectBufferPtr	mIndirectBufferPtr;		///< Optional indirect buffer, can be a null pointer
+		union
+		{
+			uint32_t					mStartIndexLocation;	///< Used in case there's no indirect buffer
+			uint32_t					mIndirectBufferOffset;	///< Used in case there's an indirect buffer
+		};
+		uint32_t						mNumberOfIndices;		///< If there's an indirect buffer set, this value is unused
+		union
+		{
+			uint32_t					mInstanceCount;			///< Used in case there's no indirect buffer
+			uint32_t					mNumberOfDraws;			///< Used in case there's an indirect buffer
+		};
 		MaterialResourceId				mMaterialResourceId;
 		SkeletonResourceId				mSkeletonResourceId;
-		uint32_t						mInstanceCount;
 		bool							mDrawIndexed;			///< Placed at this location due to padding
 		// Cached material data
 		uint8_t							mRenderQueueIndex;

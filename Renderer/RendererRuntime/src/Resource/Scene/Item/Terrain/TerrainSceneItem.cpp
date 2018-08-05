@@ -154,7 +154,7 @@ namespace RendererRuntime
 			for (int i = 0; i != mNumberOfTerrainTileRings; ++i)
 			{
 				const TerrainTileRing& terrainTileRing = mTerrainTileRings[i];
-				renderables.emplace_back(mRenderableManager, terrainTileRing.vertexArrayPtr, true, 0, ::detail::NUMBER_OF_INDICES, rendererRuntime.getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>(), terrainTileRing.numberOfTiles);
+				renderables.emplace_back(mRenderableManager, terrainTileRing.vertexArrayPtr, rendererRuntime.getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>(), true, 0, ::detail::NUMBER_OF_INDICES, terrainTileRing.numberOfTiles);
 			}
 			mRenderableManager.updateCachedRenderablesData();
 		}
