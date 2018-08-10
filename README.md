@@ -249,8 +249,8 @@ Microsoft Windows: First Example Kickoff
 ======
 - [Open Visual Studio 2017 and select "File -> Open -> CMake..." -> "unrimp/CMakeLists.txt"](https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studio/)
 - Build "Windows_x64_Shared" project settings
-- Compile the runtime assets by starting "unrimp/bin/Windows_x64_Shared/ExampleProjectCompiler.exe"
-- Run "unrimp/bin/Windows_x64_Shared/Examples.exe" (is using default command line arguments "unrimp/bin/Windows_x64_Shared/Examples.exe ImGuiExampleSelector -r Direct3D11")
+- Compile the runtime assets by starting "unrimp/Binary/Windows_x64_Shared/ExampleProjectCompiler.exe"
+- Run "unrimp/Binary/Windows_x64_Shared/Examples.exe" (is using default command line arguments "unrimp/Binary/Windows_x64_Shared/Examples.exe ImGuiExampleSelector -r Direct3D11")
 - Modify ["launch.vs.json"](https://github.com/Microsoft/vscode-cpptools/blob/master/launch.md) to change the Visual Studio application launch options, e.g. to start the "FirstScene"-example by default
 
 
@@ -293,7 +293,7 @@ Useful Microsoft Windows Developer Tools
 - Checking external dependencies of exe and dll: [Dependency Walker](http://www.dependencywalker.com/)
 - Texture handling related: [Compressonator](https://github.com/GPUOpen-Tools/Compressonator)
 - When shipping a product, use a static build and e.g. [UPX](https://upx.github.io/) to get executables even more compact on end-user-systems
-- OpenGL ES 3 development: PowerVR (SDK 2017 R2 or newer) works well. [Copy "libEGL.dll" and "libGLESv2.dll" from e.g. "<Installation>/PowerVR_Graphics/PowerVR_Tools/PVRVFrame/Library/Windows_x86_32" e.g. into "unrimp/bin/Windows_x86d_Shared".](https://www.imgtec.com/blog/5-easy-steps-to-add-pvrtrace-libraries-to-your-own-opengl-es-application/)
+- OpenGL ES 3 development: PowerVR (SDK 2017 R2 or newer) works well. [Copy "libEGL.dll" and "libGLESv2.dll" from e.g. "<Installation>/PowerVR_Graphics/PowerVR_Tools/PVRVFrame/Library/Windows_x86_32" e.g. into "unrimp/Binary/Windows_x86d_Shared".](https://www.imgtec.com/blog/5-easy-steps-to-add-pvrtrace-libraries-to-your-own-opengl-es-application/)
 - ["Visual Studio Spell Checker"](https://marketplace.visualstudio.com/items?itemName=EWoodruff.VisualStudioSpellCheckerVS2017andLater) extension to reduce the risk automatically detectable typos get into APIs were they might stay forever
 
 

@@ -469,11 +469,11 @@ namespace RendererRuntime
 
 		inline virtual std::string mapVirtualToAbsoluteFilename(FileMode fileMode, VirtualFilename virtualFilename) const override
 		{
-			// Figure out where in the search path a file resides (e.g. "LocalData/DebugGui/UnrimpDebugGuiLayout.ini" -> "c:/MyProject/bin/LocalData")
+			// Figure out where in the search path a file resides (e.g. "LocalData/DebugGui/UnrimpDebugGuiLayout.ini" -> "c:/MyProject/Binary/LocalData")
 			const char* realDirectory = PHYSFS_getRealDir(virtualFilename);
 			if (nullptr != realDirectory)
 			{
-				// Determine a mounted archive mount point (e.g. "c:/MyProject/bin/LocalData" -> "LocalData")
+				// Determine a mounted archive mount point (e.g. "c:/MyProject/Binary/LocalData" -> "LocalData")
 				const char* mountPoint = PHYSFS_getMountPoint(realDirectory);
 				if (nullptr == mountPoint)
 				{
@@ -487,7 +487,7 @@ namespace RendererRuntime
 					if (std::string::npos != index)
 					{
 						// Now that we have all information we need, transform the given virtual filename into an absolute filename
-						// -> Example: The virtual filename "LocalData/DebugGui/UnrimpDebugGuiLayout.ini" will result in the absolute filename "c:/MyProject/bin/LocalData/DebugGui/UnrimpDebugGuiLayout.ini"
+						// -> Example: The virtual filename "LocalData/DebugGui/UnrimpDebugGuiLayout.ini" will result in the absolute filename "c:/MyProject/Binary/LocalData/DebugGui/UnrimpDebugGuiLayout.ini"
 						std::string absoluteFilename = virtualFilename;
 						absoluteFilename.erase(index, strlen(mountPoint));	// Example: "LocalData/DebugGui/UnrimpDebugGuiLayout.ini" to "DebugGui/UnrimpDebugGuiLayout.ini"
 						absoluteFilename = FileSystemHelper::lexicallyNormal(std::string(realDirectory) + '/' + absoluteFilename).generic_string();
@@ -502,7 +502,7 @@ namespace RendererRuntime
 			else if (FileMode::WRITE == fileMode)
 			{
 				// Get the absolute filename of the directory a newly created file would be in
-				// -> Example: The virtual filename "LocalData/DebugGui/UnrimpDebugGuiLayout.ini" will result in the absolute directory name "c:/MyProject/bin/LocalData/DebugGui"
+				// -> Example: The virtual filename "LocalData/DebugGui/UnrimpDebugGuiLayout.ini" will result in the absolute directory name "c:/MyProject/Binary/LocalData/DebugGui"
 				const std_filesystem::path path(virtualFilename);
 				const std::string absoluteDirectoryName = mapVirtualToAbsoluteFilename(fileMode, path.parent_path().generic_string().c_str());
 				if (!absoluteDirectoryName.empty())

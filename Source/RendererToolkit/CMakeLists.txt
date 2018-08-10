@@ -41,7 +41,7 @@ include_directories(${CMAKE_SOURCE_DIR}/External/mikktspace/include)
 include_directories(${CMAKE_SOURCE_DIR}/External/glm/include)
 include_directories(${CMAKE_SOURCE_DIR}/External/RapidJSON/include)
 include_directories(${CMAKE_SOURCE_DIR}/External/SimpleFileWatcher/src)
-link_directories(${CMAKE_SOURCE_DIR}/lib/${OS_ARCHITECTURE})
+link_directories(${CMAKE_SOURCE_DIR}/Library/${OS_ARCHITECTURE})
 
 
 ##################################################
@@ -187,7 +187,7 @@ endif()
 ##################################################
 ## Post build
 ##################################################
-add_custom_command(TARGET RendererToolkit COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBRARY_PREFIX}RendererToolkit${LIBRARY_SUFFIX}" ${OUTPUT_LIB_BIN_DIRECTORY})
+add_custom_command(TARGET RendererToolkit COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBRARY_PREFIX}RendererToolkit${LIBRARY_SUFFIX}" ${OUTPUT_LIBRARY_BINARY_DIRECTORY})
 if(WIN32 AND SHARED_LIBRARY)
-	add_custom_command(TARGET RendererToolkit COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/RendererToolkit.lib" ${OUTPUT_LIB_DIRECTORY})
+	add_custom_command(TARGET RendererToolkit COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/RendererToolkit.lib" ${OUTPUT_LIBRARY_DIRECTORY})
 endif()

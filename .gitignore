@@ -1,7 +1,3 @@
 /.vs
-/include
-/lib
-*.kdev4
-# ignore all in bin folder except the DataSource subfolder
-/bin/*
-!/bin/DataSource
+/Binary
+/Library

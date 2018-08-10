@@ -84,12 +84,12 @@ namespace RendererRuntime
 	*    - Virtual filenames are constructed in way which is compatible to asset IDs and supports modding: "<mount point = project name>/<asset type>/<asset category>/<asset name>.<file extension>"
 	*
 	*    For the Unrimp examples were using the following directory structure
-	*    - "<root directory>/bin/x64_static"
-	*    - "<root directory>/bin/DataPc"
-	*      - "<root directory>/bin/DataPc/<Project>/<Asset Package>/<Asset Type>/<Asset Category>/<Asset Filename>"
-	*    - "<root directory>/bin/LocalData"
+	*    - "<root directory>/Binary/Windows_x64_Static"
+	*    - "<root directory>/Binary/DataPc"
+	*      - "<root directory>/Binary/DataPc/<Project>/<Asset Package>/<Asset Type>/<Asset Category>/<Asset Filename>"
+	*    - "<root directory>/Binary/LocalData"
 	*    -> For end-user products, you might want to choose a local user data directory
-	*    -> In here we assume that the current directory has not been changed and still points to the directory the running executable is in (e.g. "<root directory>/bin/x64_static")
+	*    -> In here we assume that the current directory has not been changed and still points to the directory the running executable is in (e.g. "<root directory>/Binary/Windows_x64_Static")
 	*
 	*  @note
 	*    - Also known as virtual file system (VFS)

@@ -38,7 +38,7 @@ unrimp_replace_cmake_cxx_flags(/GR /GR-)
 ## Includes
 ##################################################
 include_directories(${CMAKE_SOURCE_DIR}/Source)
-link_directories(${CMAKE_SOURCE_DIR}/External/Windows_${ARCHITECTURE}/AGS_SDK/lib)
+link_directories(${CMAKE_SOURCE_DIR}/External/Windows_${ARCHITECTURE}/AGS_SDK/Library)
 
 
 ##################################################
@@ -59,12 +59,12 @@ endif()
 ##################################################
 ## Post build
 ##################################################
-add_custom_command(TARGET Direct3D11Renderer COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBRARY_PREFIX}Direct3D11Renderer${LIBRARY_SUFFIX}" ${OUTPUT_LIB_BIN_DIRECTORY})
+add_custom_command(TARGET Direct3D11Renderer COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBRARY_PREFIX}Direct3D11Renderer${LIBRARY_SUFFIX}" ${OUTPUT_LIBRARY_BINARY_DIRECTORY})
 if(SHARED_LIBRARY)
-	add_custom_command(TARGET Direct3D11Renderer COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/Direct3D11Renderer.lib" ${OUTPUT_LIB_DIRECTORY})
+	add_custom_command(TARGET Direct3D11Renderer COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/Direct3D11Renderer.lib" ${OUTPUT_LIBRARY_DIRECTORY})
 endif()
 
 # Copy AMD AGS dll (for debug builds there are no static AMD AGS libraries available)
 if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
-	add_custom_command(TARGET Direct3D11Renderer COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/External/Windows_${ARCHITECTURE}/AGS_SDK/bin/amd_ags_${ARCHITECTURE}.dll" ${OUTPUT_BIN_DIRECTORY})
+	add_custom_command(TARGET Direct3D11Renderer COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/External/Windows_${ARCHITECTURE}/AGS_SDK/Binary/amd_ags_${ARCHITECTURE}.dll" ${OUTPUT_BINARY_DIRECTORY})
 endif()

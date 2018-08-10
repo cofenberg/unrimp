@@ -58,7 +58,7 @@ endif()
 ##################################################
 ## Post build
 ##################################################
-add_custom_command(TARGET Direct3D9Renderer COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBRARY_PREFIX}Direct3D9Renderer${LIBRARY_SUFFIX}" ${OUTPUT_LIB_BIN_DIRECTORY})
+add_custom_command(TARGET Direct3D9Renderer COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBRARY_PREFIX}Direct3D9Renderer${LIBRARY_SUFFIX}" ${OUTPUT_LIBRARY_BINARY_DIRECTORY})
 if(SHARED_LIBRARY)
-	add_custom_command(TARGET Direct3D9Renderer COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/Direct3D9Renderer.lib" ${OUTPUT_LIB_DIRECTORY})
+	add_custom_command(TARGET Direct3D9Renderer COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/Direct3D9Renderer.lib" ${OUTPUT_LIBRARY_DIRECTORY})
 endif()

@@ -38,7 +38,7 @@ unrimp_add_conditional_renderer_definitions()
 ##################################################
 include_directories(${CMAKE_SOURCE_DIR}/Example/Source)
 include_directories(${CMAKE_SOURCE_DIR}/Source)
-link_directories(${CMAKE_SOURCE_DIR}/lib/${OS_ARCHITECTURE})
+link_directories(${CMAKE_SOURCE_DIR}/Library/${OS_ARCHITECTURE})
 
 
 ##################################################
@@ -62,7 +62,7 @@ if(NOT SHARED_LIBRARY)
 		set_target_properties(ExampleProjectCompiler PROPERTIES COMPILE_DEFINITIONS "_CONSOLE")
 
 		# Set Visual Studio debugger working directory (see https://stackoverflow.com/a/42973332 )
-		set_target_properties(ExampleProjectCompiler PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/${OS_ARCHITECTURE}/")
+		set_target_properties(ExampleProjectCompiler PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/Binary/${OS_ARCHITECTURE}/")
 	else()
 		add_executable(ExampleProjectCompiler ${SOURCE_CODES})
 	endif()
@@ -83,7 +83,7 @@ if(SHARED_LIBRARY)
 		set_target_properties(ExampleProjectCompiler PROPERTIES COMPILE_DEFINITIONS "_CONSOLE")
 
 		# Set Visual Studio debugger working directory (see https://stackoverflow.com/a/42973332 )
-		set_target_properties(ExampleProjectCompiler PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/${OS_ARCHITECTURE}/")
+		set_target_properties(ExampleProjectCompiler PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/Binary/${OS_ARCHITECTURE}/")
 	else()
 		add_executable(ExampleProjectCompiler ${SOURCE_CODES})
 		target_link_libraries(ExampleProjectCompiler RendererRuntime stdc++fs)
@@ -96,4 +96,4 @@ endif()
 ##################################################
 ## Post build
 ##################################################
-add_custom_command(TARGET ExampleProjectCompiler COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/ExampleProjectCompiler${CMAKE_EXECUTABLE_SUFFIX}" ${OUTPUT_BIN_DIRECTORY})
+add_custom_command(TARGET ExampleProjectCompiler COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/ExampleProjectCompiler${CMAKE_EXECUTABLE_SUFFIX}" ${OUTPUT_BINARY_DIRECTORY})

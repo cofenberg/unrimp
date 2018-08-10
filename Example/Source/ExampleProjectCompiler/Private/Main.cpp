@@ -50,8 +50,8 @@ int programEntryPoint(const CommandLineArguments& commandLineArguments)
 		RendererToolkit::IProject* project = rendererToolkit->createProject();
 		try
 		{
-			// Load project: Shippable executable binaries are inside e.g. "unrimp/bin/Windows_x64_Shared" while development data source is located
-			// at "unrimp/Example/DataSource/Example" and the resulting compiled/baked data ends up inside e.g. "unrimp/bin/DataPc/Example"
+			// Load project: Shippable executable binaries are inside e.g. "unrimp/Binary/Windows_x64_Shared" while development data source is located
+			// at "unrimp/Example/DataSource/Example" and the resulting compiled/baked data ends up inside e.g. "unrimp/Binary/DataPc/Example"
 			project->load("../../Example/DataSource/Example");
 
 			if (commandLineArguments.getArguments().empty())
