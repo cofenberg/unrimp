@@ -40,14 +40,14 @@ void FirstIndirectBuffer::onInitialization()
 	if (nullptr != renderer)
 	{
 		{ // Create the indirect buffer
-			const Renderer::DrawInstancedArguments drawInstancedArguments =
+			const Renderer::DrawArguments drawArguments =
 			{
 				3,	// vertexCountPerInstance (uint32_t)
 				1,	// instanceCount (uint32_t)
 				0,	// startVertexLocation (uint32_t)
 				0	// startInstanceLocation (uint32_t)
 			};
-			mIndirectBuffer = mBufferManager->createIndirectBuffer(sizeof(Renderer::DrawInstancedArguments), &drawInstancedArguments, Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS);
+			mIndirectBuffer = mBufferManager->createIndirectBuffer(sizeof(Renderer::DrawArguments), &drawArguments, Renderer::IndirectBufferFlag::DRAW_ARGUMENTS);
 		}
 
 		// Since we're always submitting the same commands to the renderer, we can fill the command buffer once during initialization and then reuse it multiple times during runtime

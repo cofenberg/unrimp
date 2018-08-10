@@ -117,7 +117,7 @@ namespace RendererRuntime
 
 		inline uint32_t getNumberOfDrawCalls() const
 		{
-			return mNumberOfNullDrawCalls + mNumberOfDrawIndexedInstancedCalls + mNumberOfDrawInstancedCalls;
+			return mNumberOfNullDrawCalls + mNumberOfDrawIndexedCalls + mNumberOfDrawCalls;
 		}
 
 		inline uint8_t getMinimumRenderQueueIndex() const
@@ -183,8 +183,8 @@ namespace RendererRuntime
 		IndirectBufferManager&	mIndirectBufferManager;		///< Indirect buffer manager instance, we don't own the instance so don't delete it
 		Queues					mQueues;
 		uint32_t				mNumberOfNullDrawCalls;
-		uint32_t				mNumberOfDrawIndexedInstancedCalls;
-		uint32_t				mNumberOfDrawInstancedCalls;
+		uint32_t				mNumberOfDrawIndexedCalls;
+		uint32_t				mNumberOfDrawCalls;
 		uint8_t					mMinimumRenderQueueIndex;	///< Inclusive
 		uint8_t					mMaximumRenderQueueIndex;	///< Inclusive
 		bool					mTransparentPass;

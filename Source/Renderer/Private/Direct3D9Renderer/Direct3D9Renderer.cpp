@@ -3315,10 +3315,10 @@ namespace Direct3D9Renderer
 			mData(nullptr)
 		{
 			// Sanity checks
-			RENDERER_ASSERT(direct3D9Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) != 0 || (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) != 0, "Invalid Direct3D 9 flags, indirect buffer element type specification \"DRAW_INSTANCED_ARGUMENTS\" or \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" is missing")
-			RENDERER_ASSERT(direct3D9Renderer.getContext(), !((indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) != 0 && (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) != 0), "Invalid Direct3D 9 flags, indirect buffer element type specification \"DRAW_INSTANCED_ARGUMENTS\" or \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" must be set, but not both at one and the same time")
-			RENDERER_ASSERT(direct3D9Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawInstancedArguments)) == 0, "Direct3D 9 indirect buffer element type flags specification is \"DRAW_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
-			RENDERER_ASSERT(direct3D9Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawIndexedInstancedArguments)) == 0, "Direct3D 9 indirect buffer element type flags specification is \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
+			RENDERER_ASSERT(direct3D9Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_ARGUMENTS) != 0 || (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS) != 0, "Invalid Direct3D 9 flags, indirect buffer element type specification \"DRAW_ARGUMENTS\" or \"DRAW_INDEXED_ARGUMENTS\" is missing")
+			RENDERER_ASSERT(direct3D9Renderer.getContext(), !((indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_ARGUMENTS) != 0 && (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS) != 0), "Invalid Direct3D 9 flags, indirect buffer element type specification \"DRAW_ARGUMENTS\" or \"DRAW_INDEXED_ARGUMENTS\" must be set, but not both at one and the same time")
+			RENDERER_ASSERT(direct3D9Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawArguments)) == 0, "Direct3D 9 indirect buffer element type flags specification is \"DRAW_ARGUMENTS\" but the given number of bytes don't align to this")
+			RENDERER_ASSERT(direct3D9Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawIndexedArguments)) == 0, "Direct3D 9 indirect buffer element type flags specification is \"DRAW_INDEXED_ARGUMENTS\" but the given number of bytes don't align to this")
 
 			// Copy data
 			if (mNumberOfBytes > 0)
@@ -7951,14 +7951,14 @@ namespace Direct3D9Renderer
 		#endif
 		for (uint32_t i = 0; i < numberOfDraws; ++i)
 		{
-			const Renderer::DrawInstancedArguments& drawInstancedArguments = *reinterpret_cast<const Renderer::DrawInstancedArguments*>(emulationData);
+			const Renderer::DrawArguments& drawArguments = *reinterpret_cast<const Renderer::DrawArguments*>(emulationData);
 
 			// No instancing supported here
 			// -> In Direct3D 9, instanced arrays is only possible when drawing indexed primitives, see
 			//    "Efficiently Drawing Multiple Instances of Geometry (Direct3D 9)"-article at MSDN: http://msdn.microsoft.com/en-us/library/windows/desktop/bb173349%28v=vs.85%29.aspx#Drawing_Non_Indexed_Geometry
 			// -> This document states that this is not supported by hardware acceleration on any device, and it's long winded anyway
-			RENDERER_ASSERT(mContext, 1 == drawInstancedArguments.instanceCount, "Direct3D 9 instance count must be one")
-			RENDERER_ASSERT(mContext, 0 == drawInstancedArguments.startInstanceLocation, "Direct3D 9 start instance location must be zero")
+			RENDERER_ASSERT(mContext, 1 == drawArguments.instanceCount, "Direct3D 9 instance count must be one")
+			RENDERER_ASSERT(mContext, 0 == drawArguments.startInstanceLocation, "Direct3D 9 start instance location must be zero")
 
 			{ // Draw
 				// Get number of primitives
@@ -7966,23 +7966,23 @@ namespace Direct3D9Renderer
 				switch (mPrimitiveTopology)
 				{
 					case Renderer::PrimitiveTopology::POINT_LIST:
-						primitiveCount = drawInstancedArguments.vertexCountPerInstance;
+						primitiveCount = drawArguments.vertexCountPerInstance;
 						break;
 
 					case Renderer::PrimitiveTopology::LINE_LIST:
-						primitiveCount = drawInstancedArguments.vertexCountPerInstance - 1;
+						primitiveCount = drawArguments.vertexCountPerInstance - 1;
 						break;
 
 					case Renderer::PrimitiveTopology::LINE_STRIP:
-						primitiveCount = drawInstancedArguments.vertexCountPerInstance - 1;
+						primitiveCount = drawArguments.vertexCountPerInstance - 1;
 						break;
 
 					case Renderer::PrimitiveTopology::TRIANGLE_LIST:
-						primitiveCount = drawInstancedArguments.vertexCountPerInstance / 3;
+						primitiveCount = drawArguments.vertexCountPerInstance / 3;
 						break;
 
 					case Renderer::PrimitiveTopology::TRIANGLE_STRIP:
-						primitiveCount = drawInstancedArguments.vertexCountPerInstance - 2;
+						primitiveCount = drawArguments.vertexCountPerInstance - 2;
 						break;
 
 					case Renderer::PrimitiveTopology::UNKNOWN:
@@ -8023,11 +8023,11 @@ namespace Direct3D9Renderer
 				}
 
 				// The "Renderer::PrimitiveTopology" values directly map to Direct3D 9 & 10 & 11 constants, do not change them
-				FAILED_DEBUG_BREAK(mDirect3DDevice9->DrawPrimitive(static_cast<D3DPRIMITIVETYPE>(mPrimitiveTopology), drawInstancedArguments.startVertexLocation, primitiveCount));
+				FAILED_DEBUG_BREAK(mDirect3DDevice9->DrawPrimitive(static_cast<D3DPRIMITIVETYPE>(mPrimitiveTopology), drawArguments.startVertexLocation, primitiveCount));
 			}
 
 			// Advance
-			emulationData += sizeof(Renderer::DrawInstancedArguments);
+			emulationData += sizeof(Renderer::DrawArguments);
 		}
 		#ifdef RENDERER_DEBUG
 			if (numberOfDraws > 1)
@@ -8058,13 +8058,13 @@ namespace Direct3D9Renderer
 			#endif
 			for (uint32_t i = 0; i < numberOfDraws; ++i)
 			{
-				const Renderer::DrawIndexedInstancedArguments& drawIndexedInstancedArguments = *reinterpret_cast<const Renderer::DrawIndexedInstancedArguments*>(emulationData);
-				RENDERER_ASSERT(mContext, 0 == drawIndexedInstancedArguments.startInstanceLocation, "Start instance location isn't supported by Direct3D 9")	// Not supported by Direct3D 9
+				const Renderer::DrawIndexedArguments& drawIndexedArguments = *reinterpret_cast<const Renderer::DrawIndexedArguments*>(emulationData);
+				RENDERER_ASSERT(mContext, 0 == drawIndexedArguments.startInstanceLocation, "Start instance location isn't supported by Direct3D 9")	// Not supported by Direct3D 9
 
 				// The "Efficiently Drawing Multiple Instances of Geometry (Direct3D 9)"-article at MSDN http://msdn.microsoft.com/en-us/library/windows/desktop/bb173349%28v=vs.85%29.aspx#Drawing_Non_Indexed_Geometry
 				// states: "Note that D3DSTREAMSOURCE_INDEXEDDATA and the number of instances to draw must always be set in stream zero."
 				// -> "D3DSTREAMSOURCE_INSTANCEDATA" is set within "Direct3D9Renderer::VertexArray::enableDirect3DVertexDeclarationAndStreamSource()"
-				FAILED_DEBUG_BREAK(mDirect3DDevice9->SetStreamSourceFreq(0, D3DSTREAMSOURCE_INDEXEDDATA | drawIndexedInstancedArguments.instanceCount));
+				FAILED_DEBUG_BREAK(mDirect3DDevice9->SetStreamSourceFreq(0, D3DSTREAMSOURCE_INDEXEDDATA | drawIndexedArguments.instanceCount));
 
 				{ // Draw
 					// Get number of primitives
@@ -8072,23 +8072,23 @@ namespace Direct3D9Renderer
 					switch (mPrimitiveTopology)
 					{
 						case Renderer::PrimitiveTopology::POINT_LIST:
-							primitiveCount = drawIndexedInstancedArguments.indexCountPerInstance;
+							primitiveCount = drawIndexedArguments.indexCountPerInstance;
 							break;
 
 						case Renderer::PrimitiveTopology::LINE_LIST:
-							primitiveCount = drawIndexedInstancedArguments.indexCountPerInstance - 1;
+							primitiveCount = drawIndexedArguments.indexCountPerInstance - 1;
 							break;
 
 						case Renderer::PrimitiveTopology::LINE_STRIP:
-							primitiveCount = drawIndexedInstancedArguments.indexCountPerInstance - 1;
+							primitiveCount = drawIndexedArguments.indexCountPerInstance - 1;
 							break;
 
 						case Renderer::PrimitiveTopology::TRIANGLE_LIST:
-							primitiveCount = drawIndexedInstancedArguments.indexCountPerInstance / 3;
+							primitiveCount = drawIndexedArguments.indexCountPerInstance / 3;
 							break;
 
 						case Renderer::PrimitiveTopology::TRIANGLE_STRIP:
-							primitiveCount = drawIndexedInstancedArguments.indexCountPerInstance - 2;
+							primitiveCount = drawIndexedArguments.indexCountPerInstance - 2;
 							break;
 
 						case Renderer::PrimitiveTopology::UNKNOWN:
@@ -8129,12 +8129,12 @@ namespace Direct3D9Renderer
 					}
 
 					// The "Renderer::PrimitiveTopology" values directly map to Direct3D 9 & 10 & 11 constants, do not change them
-					const UINT numberOfVertices = drawIndexedInstancedArguments.indexCountPerInstance * 3;	// TODO(co) Review "numberOfVertices", might be wrong
-					FAILED_DEBUG_BREAK(mDirect3DDevice9->DrawIndexedPrimitive(static_cast<D3DPRIMITIVETYPE>(mPrimitiveTopology), static_cast<INT>(drawIndexedInstancedArguments.baseVertexLocation), 0, numberOfVertices, drawIndexedInstancedArguments.startIndexLocation, primitiveCount));
+					const UINT numberOfVertices = drawIndexedArguments.indexCountPerInstance * 3;	// TODO(co) Review "numberOfVertices", might be wrong
+					FAILED_DEBUG_BREAK(mDirect3DDevice9->DrawIndexedPrimitive(static_cast<D3DPRIMITIVETYPE>(mPrimitiveTopology), static_cast<INT>(drawIndexedArguments.baseVertexLocation), 0, numberOfVertices, drawIndexedArguments.startIndexLocation, primitiveCount));
 				}
 
 				// Advance
-				emulationData += sizeof(Renderer::DrawIndexedInstancedArguments);
+				emulationData += sizeof(Renderer::DrawIndexedArguments);
 			}
 			#ifdef RENDERER_DEBUG
 				if (numberOfDraws > 1)

@@ -7556,10 +7556,10 @@ namespace OpenGLRenderer
 		virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t indirectBufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			// Sanity checks
-			RENDERER_ASSERT(getRenderer().getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) != 0 || (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) != 0, "Invalid OpenGL flags, indirect buffer element type specification \"DRAW_INSTANCED_ARGUMENTS\" or \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" is missing")
-			RENDERER_ASSERT(getRenderer().getContext(), !((indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) != 0 && (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) != 0), "Invalid OpenGL flags, indirect buffer element type specification \"DRAW_INSTANCED_ARGUMENTS\" or \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" must be set, but not both at one and the same time")
-			RENDERER_ASSERT(getRenderer().getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawInstancedArguments)) == 0, "OpenGL indirect buffer element type flags specification is \"DRAW_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
-			RENDERER_ASSERT(getRenderer().getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawIndexedInstancedArguments)) == 0, "OpenGL indirect buffer element type flags specification is \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
+			RENDERER_ASSERT(getRenderer().getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_ARGUMENTS) != 0 || (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS) != 0, "Invalid OpenGL flags, indirect buffer element type specification \"DRAW_ARGUMENTS\" or \"DRAW_INDEXED_ARGUMENTS\" is missing")
+			RENDERER_ASSERT(getRenderer().getContext(), !((indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_ARGUMENTS) != 0 && (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS) != 0), "Invalid OpenGL flags, indirect buffer element type specification \"DRAW_ARGUMENTS\" or \"DRAW_INDEXED_ARGUMENTS\" must be set, but not both at one and the same time")
+			RENDERER_ASSERT(getRenderer().getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawArguments)) == 0, "OpenGL indirect buffer element type flags specification is \"DRAW_ARGUMENTS\" but the given number of bytes don't align to this")
+			RENDERER_ASSERT(getRenderer().getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawIndexedArguments)) == 0, "OpenGL indirect buffer element type flags specification is \"DRAW_INDEXED_ARGUMENTS\" but the given number of bytes don't align to this")
 
 			// "GL_ARB_draw_indirect" required
 			if (mExtensions->isGL_ARB_draw_indirect())
@@ -18035,7 +18035,7 @@ namespace OpenGLRenderer
 				for (uint32_t i = 0; i < numberOfDraws; ++i)
 				{
 					glDrawArraysIndirect(mOpenGLPrimitiveTopology, reinterpret_cast<void*>(static_cast<uintptr_t>(indirectBufferOffset)));
-					indirectBufferOffset += sizeof(Renderer::DrawInstancedArguments);
+					indirectBufferOffset += sizeof(Renderer::DrawArguments);
 				}
 				#ifdef RENDERER_DEBUG
 					endDebugEvent();
@@ -18063,29 +18063,29 @@ namespace OpenGLRenderer
 		#endif
 		for (uint32_t i = 0; i < numberOfDraws; ++i)
 		{
-			const Renderer::DrawInstancedArguments& drawInstancedArguments = *reinterpret_cast<const Renderer::DrawInstancedArguments*>(emulationData);
-			updateGL_ARB_base_instanceEmulation(drawInstancedArguments.startInstanceLocation);
+			const Renderer::DrawArguments& drawArguments = *reinterpret_cast<const Renderer::DrawArguments*>(emulationData);
+			updateGL_ARB_base_instanceEmulation(drawArguments.startInstanceLocation);
 
 			// Draw and advance
-			if ((drawInstancedArguments.instanceCount > 1 && mExtensions->isGL_ARB_draw_instanced()) || (drawInstancedArguments.startInstanceLocation > 0 && mExtensions->isGL_ARB_base_instance()))
+			if ((drawArguments.instanceCount > 1 && mExtensions->isGL_ARB_draw_instanced()) || (drawArguments.startInstanceLocation > 0 && mExtensions->isGL_ARB_base_instance()))
 			{
 				// With instancing
-				if (drawInstancedArguments.startInstanceLocation > 0 && mExtensions->isGL_ARB_base_instance())
+				if (drawArguments.startInstanceLocation > 0 && mExtensions->isGL_ARB_base_instance())
 				{
-					glDrawArraysInstancedBaseInstance(mOpenGLPrimitiveTopology, static_cast<GLint>(drawInstancedArguments.startVertexLocation), static_cast<GLsizei>(drawInstancedArguments.vertexCountPerInstance), static_cast<GLsizei>(drawInstancedArguments.instanceCount), drawInstancedArguments.startInstanceLocation);
+					glDrawArraysInstancedBaseInstance(mOpenGLPrimitiveTopology, static_cast<GLint>(drawArguments.startVertexLocation), static_cast<GLsizei>(drawArguments.vertexCountPerInstance), static_cast<GLsizei>(drawArguments.instanceCount), drawArguments.startInstanceLocation);
 				}
 				else
 				{
-					glDrawArraysInstancedARB(mOpenGLPrimitiveTopology, static_cast<GLint>(drawInstancedArguments.startVertexLocation), static_cast<GLsizei>(drawInstancedArguments.vertexCountPerInstance), static_cast<GLsizei>(drawInstancedArguments.instanceCount));
+					glDrawArraysInstancedARB(mOpenGLPrimitiveTopology, static_cast<GLint>(drawArguments.startVertexLocation), static_cast<GLsizei>(drawArguments.vertexCountPerInstance), static_cast<GLsizei>(drawArguments.instanceCount));
 				}
 			}
 			else
 			{
 				// Without instancing
-				RENDERER_ASSERT(mContext, drawInstancedArguments.instanceCount <= 1, "Invalid OpenGL instance count")
-				glDrawArrays(mOpenGLPrimitiveTopology, static_cast<GLint>(drawInstancedArguments.startVertexLocation), static_cast<GLsizei>(drawInstancedArguments.vertexCountPerInstance));
+				RENDERER_ASSERT(mContext, drawArguments.instanceCount <= 1, "Invalid OpenGL instance count")
+				glDrawArrays(mOpenGLPrimitiveTopology, static_cast<GLint>(drawArguments.startVertexLocation), static_cast<GLsizei>(drawArguments.vertexCountPerInstance));
 			}
-			emulationData += sizeof(Renderer::DrawInstancedArguments);
+			emulationData += sizeof(Renderer::DrawArguments);
 		}
 		#ifdef RENDERER_DEBUG
 			if (numberOfDraws > 1)
@@ -18138,7 +18138,7 @@ namespace OpenGLRenderer
 				for (uint32_t i = 0; i < numberOfDraws; ++i)
 				{
 					glDrawElementsIndirect(mOpenGLPrimitiveTopology, openGLType, reinterpret_cast<void*>(static_cast<uintptr_t>(indirectBufferOffset)));
-					indirectBufferOffset += sizeof(Renderer::DrawIndexedInstancedArguments);
+					indirectBufferOffset += sizeof(Renderer::DrawIndexedArguments);
 				}
 				#ifdef RENDERER_DEBUG
 					endDebugEvent();
@@ -18168,27 +18168,27 @@ namespace OpenGLRenderer
 		IndexBuffer* indexBuffer = mVertexArray->getIndexBuffer();
 		for (uint32_t i = 0; i < numberOfDraws; ++i)
 		{
-			const Renderer::DrawIndexedInstancedArguments& drawIndexedInstancedArguments = *reinterpret_cast<const Renderer::DrawIndexedInstancedArguments*>(emulationData);
-			updateGL_ARB_base_instanceEmulation(drawIndexedInstancedArguments.startInstanceLocation);
+			const Renderer::DrawIndexedArguments& drawIndexedArguments = *reinterpret_cast<const Renderer::DrawIndexedArguments*>(emulationData);
+			updateGL_ARB_base_instanceEmulation(drawIndexedArguments.startInstanceLocation);
 
 			// Draw and advance
-			if ((drawIndexedInstancedArguments.instanceCount > 1 && mExtensions->isGL_ARB_draw_instanced()) || (drawIndexedInstancedArguments.startInstanceLocation > 0 && mExtensions->isGL_ARB_base_instance()))
+			if ((drawIndexedArguments.instanceCount > 1 && mExtensions->isGL_ARB_draw_instanced()) || (drawIndexedArguments.startInstanceLocation > 0 && mExtensions->isGL_ARB_base_instance()))
 			{
 				// With instancing
-				if (drawIndexedInstancedArguments.baseVertexLocation > 0)
+				if (drawIndexedArguments.baseVertexLocation > 0)
 				{
 					// Use start instance location?
-					if (drawIndexedInstancedArguments.startInstanceLocation > 0 && mExtensions->isGL_ARB_base_instance())
+					if (drawIndexedArguments.startInstanceLocation > 0 && mExtensions->isGL_ARB_base_instance())
 					{
 						// Draw with base vertex location and start instance location
-						glDrawElementsInstancedBaseVertexBaseInstance(mOpenGLPrimitiveTopology, static_cast<GLsizei>(drawIndexedInstancedArguments.indexCountPerInstance), indexBuffer->getOpenGLType(), reinterpret_cast<void*>(static_cast<uintptr_t>(drawIndexedInstancedArguments.startIndexLocation * indexBuffer->getIndexSizeInBytes())), static_cast<GLsizei>(drawIndexedInstancedArguments.instanceCount), static_cast<GLint>(drawIndexedInstancedArguments.baseVertexLocation), drawIndexedInstancedArguments.startInstanceLocation);
+						glDrawElementsInstancedBaseVertexBaseInstance(mOpenGLPrimitiveTopology, static_cast<GLsizei>(drawIndexedArguments.indexCountPerInstance), indexBuffer->getOpenGLType(), reinterpret_cast<void*>(static_cast<uintptr_t>(drawIndexedArguments.startIndexLocation * indexBuffer->getIndexSizeInBytes())), static_cast<GLsizei>(drawIndexedArguments.instanceCount), static_cast<GLint>(drawIndexedArguments.baseVertexLocation), drawIndexedArguments.startInstanceLocation);
 					}
 
 					// Is the "GL_ARB_draw_elements_base_vertex" extension there?
 					else if (mExtensions->isGL_ARB_draw_elements_base_vertex())
 					{
 						// Draw with base vertex location
-						glDrawElementsInstancedBaseVertex(mOpenGLPrimitiveTopology, static_cast<GLsizei>(drawIndexedInstancedArguments.indexCountPerInstance), indexBuffer->getOpenGLType(), reinterpret_cast<void*>(static_cast<uintptr_t>(drawIndexedInstancedArguments.startIndexLocation * indexBuffer->getIndexSizeInBytes())), static_cast<GLsizei>(drawIndexedInstancedArguments.instanceCount), static_cast<GLint>(drawIndexedInstancedArguments.baseVertexLocation));
+						glDrawElementsInstancedBaseVertex(mOpenGLPrimitiveTopology, static_cast<GLsizei>(drawIndexedArguments.indexCountPerInstance), indexBuffer->getOpenGLType(), reinterpret_cast<void*>(static_cast<uintptr_t>(drawIndexedArguments.startIndexLocation * indexBuffer->getIndexSizeInBytes())), static_cast<GLsizei>(drawIndexedArguments.instanceCount), static_cast<GLint>(drawIndexedArguments.baseVertexLocation));
 					}
 					else
 					{
@@ -18196,30 +18196,30 @@ namespace OpenGLRenderer
 						RENDERER_ASSERT(mContext, false, "Failed to OpenGL draw indexed emulated")
 					}
 				}
-				else if (drawIndexedInstancedArguments.startInstanceLocation > 0 && mExtensions->isGL_ARB_base_instance())
+				else if (drawIndexedArguments.startInstanceLocation > 0 && mExtensions->isGL_ARB_base_instance())
 				{
 					// Draw without base vertex location and with start instance location
-					glDrawElementsInstancedBaseInstance(mOpenGLPrimitiveTopology, static_cast<GLsizei>(drawIndexedInstancedArguments.indexCountPerInstance), indexBuffer->getOpenGLType(), reinterpret_cast<void*>(static_cast<uintptr_t>(drawIndexedInstancedArguments.startIndexLocation * indexBuffer->getIndexSizeInBytes())), static_cast<GLsizei>(drawIndexedInstancedArguments.instanceCount), drawIndexedInstancedArguments.startInstanceLocation);
+					glDrawElementsInstancedBaseInstance(mOpenGLPrimitiveTopology, static_cast<GLsizei>(drawIndexedArguments.indexCountPerInstance), indexBuffer->getOpenGLType(), reinterpret_cast<void*>(static_cast<uintptr_t>(drawIndexedArguments.startIndexLocation * indexBuffer->getIndexSizeInBytes())), static_cast<GLsizei>(drawIndexedArguments.instanceCount), drawIndexedArguments.startInstanceLocation);
 				}
 				else
 				{
 					// Draw without base vertex location
-					glDrawElementsInstancedARB(mOpenGLPrimitiveTopology, static_cast<GLsizei>(drawIndexedInstancedArguments.indexCountPerInstance), indexBuffer->getOpenGLType(), reinterpret_cast<void*>(static_cast<uintptr_t>(drawIndexedInstancedArguments.startIndexLocation * indexBuffer->getIndexSizeInBytes())), static_cast<GLsizei>(drawIndexedInstancedArguments.instanceCount));
+					glDrawElementsInstancedARB(mOpenGLPrimitiveTopology, static_cast<GLsizei>(drawIndexedArguments.indexCountPerInstance), indexBuffer->getOpenGLType(), reinterpret_cast<void*>(static_cast<uintptr_t>(drawIndexedArguments.startIndexLocation * indexBuffer->getIndexSizeInBytes())), static_cast<GLsizei>(drawIndexedArguments.instanceCount));
 				}
 			}
 			else
 			{
 				// Without instancing
-				RENDERER_ASSERT(mContext, drawIndexedInstancedArguments.instanceCount <= 1, "Invalid OpenGL instance count")
+				RENDERER_ASSERT(mContext, drawIndexedArguments.instanceCount <= 1, "Invalid OpenGL instance count")
 
 				// Use base vertex location?
-				if (drawIndexedInstancedArguments.baseVertexLocation > 0)
+				if (drawIndexedArguments.baseVertexLocation > 0)
 				{
 					// Is the "GL_ARB_draw_elements_base_vertex" extension there?
 					if (mExtensions->isGL_ARB_draw_elements_base_vertex())
 					{
 						// Draw with base vertex location
-						glDrawElementsBaseVertex(mOpenGLPrimitiveTopology, static_cast<GLsizei>(drawIndexedInstancedArguments.indexCountPerInstance), indexBuffer->getOpenGLType(), reinterpret_cast<void*>(static_cast<uintptr_t>(drawIndexedInstancedArguments.startIndexLocation * indexBuffer->getIndexSizeInBytes())), static_cast<GLint>(drawIndexedInstancedArguments.baseVertexLocation));
+						glDrawElementsBaseVertex(mOpenGLPrimitiveTopology, static_cast<GLsizei>(drawIndexedArguments.indexCountPerInstance), indexBuffer->getOpenGLType(), reinterpret_cast<void*>(static_cast<uintptr_t>(drawIndexedArguments.startIndexLocation * indexBuffer->getIndexSizeInBytes())), static_cast<GLint>(drawIndexedArguments.baseVertexLocation));
 					}
 					else
 					{
@@ -18230,10 +18230,10 @@ namespace OpenGLRenderer
 				else
 				{
 					// Draw without base vertex location
-					glDrawElements(mOpenGLPrimitiveTopology, static_cast<GLsizei>(drawIndexedInstancedArguments.indexCountPerInstance), indexBuffer->getOpenGLType(), reinterpret_cast<void*>(static_cast<uintptr_t>(drawIndexedInstancedArguments.startIndexLocation * indexBuffer->getIndexSizeInBytes())));
+					glDrawElements(mOpenGLPrimitiveTopology, static_cast<GLsizei>(drawIndexedArguments.indexCountPerInstance), indexBuffer->getOpenGLType(), reinterpret_cast<void*>(static_cast<uintptr_t>(drawIndexedArguments.startIndexLocation * indexBuffer->getIndexSizeInBytes())));
 				}
 			}
-			emulationData += sizeof(Renderer::DrawIndexedInstancedArguments);
+			emulationData += sizeof(Renderer::DrawIndexedArguments);
 		}
 		#ifdef RENDERER_DEBUG
 			if (numberOfDraws > 1)

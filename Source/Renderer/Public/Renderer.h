@@ -2492,10 +2492,10 @@ namespace Renderer
 	{
 		enum Enum
 		{
-			UNORDERED_ACCESS				 = 1 << 0,	///< This indirect buffer can be used for unordered access which is needed for compute shader read/write indirect buffers (when using Direct3D 11 a unordered access view (UAV) will be generated)
-			SHADER_RESOURCE					 = 1 << 1,	///< This indirect buffer can be used as shader resource (when using Direct3D 11 a shader resource view (SRV) will be generated)
-			DRAW_INSTANCED_ARGUMENTS		 = 1 << 2,	///< This indirect buffer contains "Renderer::DrawInstancedArguments" as elements, if "Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS" is set it's invalid to have "Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS" set as well
-			DRAW_INDEXED_INSTANCED_ARGUMENTS = 1 << 3	///< This indirect buffer contains "Renderer::DrawIndexedInstancedArguments" as elements, if "Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS" is set it's invalid to have "Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS" set as well
+			UNORDERED_ACCESS	   = 1 << 0,	///< This indirect buffer can be used for unordered access which is needed for compute shader read/write indirect buffers (when using Direct3D 11 a unordered access view (UAV) will be generated)
+			SHADER_RESOURCE		   = 1 << 1,	///< This indirect buffer can be used as shader resource (when using Direct3D 11 a shader resource view (SRV) will be generated)
+			DRAW_ARGUMENTS		   = 1 << 2,	///< This indirect buffer contains "Renderer::DrawArguments" as elements, if "Renderer::IndirectBufferFlag::DRAW_ARGUMENTS" is set it's invalid to have "Renderer::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS" set as well
+			DRAW_INDEXED_ARGUMENTS = 1 << 3		///< This indirect buffer contains "Renderer::DrawIndexedArguments" as elements, if "Renderer::IndirectBufferFlag::DRAW_ARGUMENTS" is set it's invalid to have "Renderer::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS" set as well
 		};
 	};
 
@@ -2663,7 +2663,6 @@ namespace Renderer
 	*    Draw instanced arguments
 	*
 	*  @note
-	*    - Draw indirect counterpart of "Renderer::IRenderer::drawInstanced()"-method stored inside an "Renderer::IIndirectBuffer"-instance
 	*    - This structure directly maps to Direct3D 12, DirectX 11, Vulkan, Metal and OpenGL, do not change it
 	*    - Direct3D 12: "D3D12_DRAW_ARGUMENTS"
 	*    - Direct3D 11: No structure documentation found, only indications that same arguments and order as "ID3D11DeviceContext::DrawInstanced()"
@@ -2674,13 +2673,13 @@ namespace Renderer
 	*  @see
 	*    - "D3D12_DRAW_ARGUMENTS"-documentation for details
 	*/
-	struct DrawInstancedArguments final
+	struct DrawArguments final
 	{
 		uint32_t vertexCountPerInstance;
 		uint32_t instanceCount;
 		uint32_t startVertexLocation;
 		uint32_t startInstanceLocation;
-		inline DrawInstancedArguments(uint32_t _vertexCountPerInstance, uint32_t _instanceCount = 1, uint32_t _startVertexLocation = 0, uint32_t _startInstanceLocation = 0) :
+		inline DrawArguments(uint32_t _vertexCountPerInstance, uint32_t _instanceCount = 1, uint32_t _startVertexLocation = 0, uint32_t _startInstanceLocation = 0) :
 			vertexCountPerInstance(_vertexCountPerInstance),
 			instanceCount(_instanceCount),
 			startVertexLocation(_startVertexLocation),
@@ -2693,7 +2692,6 @@ namespace Renderer
 	*    Draw indexed instanced arguments
 	*
 	*  @note
-	*    - Draw indirect counterpart of "Renderer::IRenderer::drawIndexedInstanced()"-method stored inside an "Renderer::IIndirectBuffer"-instance
 	*    - This structure directly maps to Direct3D 12, DirectX 11, Vulkan, Metal and OpenGL, do not change it
 	*    - Direct3D 12: "D3D12_DRAW_INDEXED_ARGUMENTS"
 	*    - Direct3D 11: No structure documentation found, only indications that same arguments and order as "ID3D11DeviceContext::DrawIndexedInstanced()"
@@ -2704,14 +2702,14 @@ namespace Renderer
 	*  @see
 	*    - "D3D12_DRAW_INDEXED_ARGUMENTS"-documentation for details
 	*/
-	struct DrawIndexedInstancedArguments final
+	struct DrawIndexedArguments final
 	{
 		uint32_t indexCountPerInstance;
 		uint32_t instanceCount;
 		uint32_t startIndexLocation;
 		int32_t  baseVertexLocation;
 		uint32_t startInstanceLocation;
-		inline DrawIndexedInstancedArguments(uint32_t _indexCountPerInstance, uint32_t _instanceCount = 1, uint32_t _startIndexLocation = 0, int32_t _baseVertexLocation = 0, uint32_t _startInstanceLocation = 0) :
+		inline DrawIndexedArguments(uint32_t _indexCountPerInstance, uint32_t _instanceCount = 1, uint32_t _startIndexLocation = 0, int32_t _baseVertexLocation = 0, uint32_t _startInstanceLocation = 0) :
 			indexCountPerInstance(_indexCountPerInstance),
 			instanceCount(_instanceCount),
 			startIndexLocation(_startIndexLocation),
@@ -6306,7 +6304,7 @@ namespace Renderer
 	*    Abstract indirect buffer object interface; array of draw call data
 	*
 	*  @note
-	*    - Contains instances of "Renderer::DrawInstancedArguments" and "Renderer::DrawIndexedInstancedArguments"
+	*    - Contains instances of "Renderer::DrawArguments" and "Renderer::DrawIndexedArguments"
 	*    - Indirect buffers where originally introduced to be able to let the GPU have some more control over draw commands,
 	*      but with the introduction of multi indirect draw it became also interesting for reducing renderer API overhead (AZDO ("Almost Zero Driver Overhead"))
 	*/
@@ -8715,7 +8713,7 @@ namespace Renderer
 		*    Render the specified geometric primitive, based on an array of vertices instancing and indirect draw
 		*
 		*  @param[in] indirectBuffer
-		*    Indirect buffer to use, the indirect buffer must contain at least "numberOfDraws" instances of "Renderer::DrawInstancedArguments" starting at "indirectBufferOffset"
+		*    Indirect buffer to use, the indirect buffer must contain at least "numberOfDraws" instances of "Renderer::DrawArguments" starting at "indirectBufferOffset"
 		*  @param[in] indirectBufferOffset
 		*    Indirect buffer offset
 		*  @param[in] numberOfDraws
@@ -8738,11 +8736,11 @@ namespace Renderer
 			}
 			static inline void create(CommandBuffer& commandBuffer, uint32_t vertexCountPerInstance, uint32_t instanceCount = 1, uint32_t startVertexLocation = 0, uint32_t startInstanceLocation = 0)
 			{
-				DrawGraphics* drawCommand = commandBuffer.addCommand<DrawGraphics>(sizeof(DrawInstancedArguments));
+				DrawGraphics* drawCommand = commandBuffer.addCommand<DrawGraphics>(sizeof(DrawArguments));
 
-				// Set command data: The command packet auxiliary memory contains an "Renderer::DrawInstancedArguments"-instance
-				const DrawInstancedArguments drawInstancedArguments(vertexCountPerInstance, instanceCount, startVertexLocation, startInstanceLocation);
-				memcpy(CommandPacketHelper::getAuxiliaryMemory(drawCommand), &drawInstancedArguments, sizeof(DrawInstancedArguments));
+				// Set command data: The command packet auxiliary memory contains an "Renderer::DrawArguments"-instance
+				const DrawArguments drawArguments(vertexCountPerInstance, instanceCount, startVertexLocation, startInstanceLocation);
+				memcpy(CommandPacketHelper::getAuxiliaryMemory(drawCommand), &drawArguments, sizeof(DrawArguments));
 
 				// Finalize command
 				drawCommand->indirectBuffer		  = nullptr;
@@ -8768,7 +8766,7 @@ namespace Renderer
 		*    Render the specified geometric primitive, based on indexing into an array of vertices, instancing and indirect draw
 		*
 		*  @param[in] indirectBuffer
-		*    Indirect buffer to use, the indirect buffer must contain at least "numberOfDraws" instances of "Renderer::DrawIndexedInstancedArguments" starting at bindirectBufferOffset"
+		*    Indirect buffer to use, the indirect buffer must contain at least "numberOfDraws" instances of "Renderer::DrawIndexedArguments" starting at bindirectBufferOffset"
 		*  @param[in] indirectBufferOffset
 		*    Indirect buffer offset
 		*  @param[in] numberOfDraws
@@ -8791,11 +8789,11 @@ namespace Renderer
 			}
 			static inline void create(CommandBuffer& commandBuffer, uint32_t indexCountPerInstance, uint32_t instanceCount = 1, uint32_t startIndexLocation = 0, int32_t baseVertexLocation = 0, uint32_t startInstanceLocation = 0)
 			{
-				DrawIndexedGraphics* drawCommand = commandBuffer.addCommand<DrawIndexedGraphics>(sizeof(DrawIndexedInstancedArguments));
+				DrawIndexedGraphics* drawCommand = commandBuffer.addCommand<DrawIndexedGraphics>(sizeof(DrawIndexedArguments));
 
-				// Set command data: The command packet auxiliary memory contains an "Renderer::DrawIndexedInstancedArguments"-instance
-				const DrawIndexedInstancedArguments drawIndexedInstancedArguments(indexCountPerInstance, instanceCount, startIndexLocation, baseVertexLocation, startInstanceLocation);
-				memcpy(CommandPacketHelper::getAuxiliaryMemory(drawCommand), &drawIndexedInstancedArguments, sizeof(DrawIndexedInstancedArguments));
+				// Set command data: The command packet auxiliary memory contains an "Renderer::DrawIndexedArguments"-instance
+				const DrawIndexedArguments drawIndexedArguments(indexCountPerInstance, instanceCount, startIndexLocation, baseVertexLocation, startInstanceLocation);
+				memcpy(CommandPacketHelper::getAuxiliaryMemory(drawCommand), &drawIndexedArguments, sizeof(DrawIndexedArguments));
 
 				// Finalize command
 				drawCommand->indirectBuffer		  = nullptr;

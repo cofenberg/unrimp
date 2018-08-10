@@ -164,8 +164,8 @@ struct Vertex
 	vec2 padding;
 };
 
-// Same layout as "Renderer::DrawIndexedInstancedArguments"
-struct DrawIndexedInstancedArguments
+// Same layout as "Renderer::DrawIndexedArguments"
+struct DrawIndexedArguments
 {
 	uint indexCountPerInstance;
 	uint instanceCount;
@@ -182,7 +182,7 @@ layout(std430, binding = 1) readonly buffer InputStructuredBuffer
 };
 layout(std430, binding = 2) readonly buffer InputIndirectBuffer
 {
-	DrawIndexedInstancedArguments inputDrawIndexedInstancedArguments;
+	DrawIndexedArguments inputDrawIndexedArguments;
 };
 
 // Output
@@ -193,7 +193,7 @@ layout(std430, binding = 4) writeonly buffer OutputStructuredBuffer
 };
 layout(std430, binding = 5) writeonly buffer OutputIndirectBuffer
 {
-	DrawIndexedInstancedArguments outputDrawIndexedInstancedArguments;
+	DrawIndexedArguments outputDrawIndexedArguments;
 };
 
 // Programs
@@ -216,11 +216,11 @@ void main()
 		}
 
 		// Output indirect buffer values (draw calls)
-		// outputDrawIndexedInstancedArguments.indexCountPerInstance = inputDrawIndexedInstancedArguments.indexCountPerInstance;	- Filled by compute shader via atomics counting
-		outputDrawIndexedInstancedArguments.instanceCount		  = inputDrawIndexedInstancedArguments.instanceCount;
-		outputDrawIndexedInstancedArguments.startIndexLocation	  = inputDrawIndexedInstancedArguments.startIndexLocation;
-		outputDrawIndexedInstancedArguments.baseVertexLocation	  = inputDrawIndexedInstancedArguments.baseVertexLocation;
-		outputDrawIndexedInstancedArguments.startInstanceLocation = inputDrawIndexedInstancedArguments.startInstanceLocation;
+		// outputDrawIndexedArguments.indexCountPerInstance = inputDrawIndexedArguments.indexCountPerInstance;	- Filled by compute shader via atomics counting
+		outputDrawIndexedArguments.instanceCount		 = inputDrawIndexedArguments.instanceCount;
+		outputDrawIndexedArguments.startIndexLocation	 = inputDrawIndexedArguments.startIndexLocation;
+		outputDrawIndexedArguments.baseVertexLocation	 = inputDrawIndexedArguments.baseVertexLocation;
+		outputDrawIndexedArguments.startInstanceLocation = inputDrawIndexedArguments.startInstanceLocation;
 
 		// Output uniform buffer not possible by design
 	}
@@ -230,9 +230,9 @@ void main()
 	if (0 == gl_GlobalInvocationID.x)
 	{
 		// Reset the counter on first invocation
-		atomicExchange(outputDrawIndexedInstancedArguments.indexCountPerInstance, 0);
+		atomicExchange(outputDrawIndexedArguments.indexCountPerInstance, 0);
 	}
-	atomicAdd(outputDrawIndexedInstancedArguments.indexCountPerInstance, 1);
+	atomicAdd(outputDrawIndexedArguments.indexCountPerInstance, 1);
 }
 )";
 

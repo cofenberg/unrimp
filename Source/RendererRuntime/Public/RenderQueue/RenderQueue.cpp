@@ -235,8 +235,8 @@ namespace RendererRuntime
 		mRendererRuntime(indirectBufferManager.getRendererRuntime()),
 		mIndirectBufferManager(indirectBufferManager),
 		mNumberOfNullDrawCalls(0),
-		mNumberOfDrawIndexedInstancedCalls(0),
-		mNumberOfDrawInstancedCalls(0),
+		mNumberOfDrawIndexedCalls(0),
+		mNumberOfDrawCalls(0),
 		mMinimumRenderQueueIndex(minimumRenderQueueIndex),
 		mMaximumRenderQueueIndex(maximumRenderQueueIndex),
 		mTransparentPass(transparentPass),
@@ -255,7 +255,7 @@ namespace RendererRuntime
 				queue.queuedRenderables.clear();
 				queue.sorted = false;
 			}
-			mNumberOfNullDrawCalls = mNumberOfDrawIndexedInstancedCalls = mNumberOfDrawInstancedCalls = 0;
+			mNumberOfNullDrawCalls = mNumberOfDrawIndexedCalls = mNumberOfDrawCalls = 0;
 		}
 	}
 
@@ -293,11 +293,11 @@ namespace RendererRuntime
 					{
 						if (renderable.getDrawIndexed())
 						{
-							++mNumberOfDrawIndexedInstancedCalls;
+							++mNumberOfDrawIndexedCalls;
 						}
 						else
 						{
-							++mNumberOfDrawInstancedCalls;
+							++mNumberOfDrawCalls;
 						}
 					}
 					else
@@ -421,9 +421,9 @@ namespace RendererRuntime
 			Renderer::IIndirectBuffer* indirectBuffer = nullptr;
 			uint32_t indirectBufferOffset = 0;
 			uint8_t* indirectBufferData = nullptr;
-			if (mNumberOfDrawIndexedInstancedCalls > 0 || mNumberOfDrawInstancedCalls > 0 )
+			if (mNumberOfDrawIndexedCalls > 0 || mNumberOfDrawCalls > 0 )
 			{
-				IndirectBufferManager::IndirectBuffer* managedIndirectBuffer = mIndirectBufferManager.getIndirectBuffer(sizeof(Renderer::DrawIndexedInstancedArguments) * mNumberOfDrawIndexedInstancedCalls + sizeof(Renderer::DrawInstancedArguments) * mNumberOfDrawInstancedCalls);
+				IndirectBufferManager::IndirectBuffer* managedIndirectBuffer = mIndirectBufferManager.getIndirectBuffer(sizeof(Renderer::DrawIndexedArguments) * mNumberOfDrawIndexedCalls + sizeof(Renderer::DrawArguments) * mNumberOfDrawCalls);
 				assert(nullptr != managedIndirectBuffer);
 				indirectBuffer		 = managedIndirectBuffer->indirectBuffer;
 				indirectBufferOffset = managedIndirectBuffer->indirectBufferOffset;
@@ -595,28 +595,28 @@ namespace RendererRuntime
 											if (renderable.getDrawIndexed())
 											{
 												// Fill indirect buffer
-												Renderer::DrawIndexedInstancedArguments* drawIndexedInstancedArguments = reinterpret_cast<Renderer::DrawIndexedInstancedArguments*>(indirectBufferData + indirectBufferOffset);
-												drawIndexedInstancedArguments->indexCountPerInstance = renderable.getNumberOfIndices();
-												drawIndexedInstancedArguments->instanceCount		 = instanceCount * renderable.getInstanceCount();
-												drawIndexedInstancedArguments->startIndexLocation	 = renderable.getStartIndexLocation();
-												drawIndexedInstancedArguments->baseVertexLocation	 = 0;
-												drawIndexedInstancedArguments->startInstanceLocation = startInstanceLocation;
+												Renderer::DrawIndexedArguments* drawIndexedArguments = reinterpret_cast<Renderer::DrawIndexedArguments*>(indirectBufferData + indirectBufferOffset);
+												drawIndexedArguments->indexCountPerInstance	= renderable.getNumberOfIndices();
+												drawIndexedArguments->instanceCount			= instanceCount * renderable.getInstanceCount();
+												drawIndexedArguments->startIndexLocation	= renderable.getStartIndexLocation();
+												drawIndexedArguments->baseVertexLocation	= 0;
+												drawIndexedArguments->startInstanceLocation	= startInstanceLocation;
 
 												// Advance indirect buffer offset
-												indirectBufferOffset += sizeof(Renderer::DrawIndexedInstancedArguments);
+												indirectBufferOffset += sizeof(Renderer::DrawIndexedArguments);
 												currentDrawIndexed = true;
 											}
 											else
 											{
 												// Fill indirect buffer
-												Renderer::DrawInstancedArguments* drawInstancedArguments = reinterpret_cast<Renderer::DrawInstancedArguments*>(indirectBufferData + indirectBufferOffset);
-												drawInstancedArguments->vertexCountPerInstance = renderable.getNumberOfIndices();
-												drawInstancedArguments->instanceCount		   = instanceCount * renderable.getInstanceCount();
-												drawInstancedArguments->startVertexLocation	   = renderable.getStartIndexLocation();
-												drawInstancedArguments->startInstanceLocation  = startInstanceLocation;
+												Renderer::DrawArguments* drawArguments = reinterpret_cast<Renderer::DrawArguments*>(indirectBufferData + indirectBufferOffset);
+												drawArguments->vertexCountPerInstance = renderable.getNumberOfIndices();
+												drawArguments->instanceCount		  = instanceCount * renderable.getInstanceCount();
+												drawArguments->startVertexLocation	  = renderable.getStartIndexLocation();
+												drawArguments->startInstanceLocation  = startInstanceLocation;
 
 												// Advance indirect buffer offset
-												indirectBufferOffset += sizeof(Renderer::DrawInstancedArguments);
+												indirectBufferOffset += sizeof(Renderer::DrawArguments);
 												currentDrawIndexed = false;
 											}
 											++currentNumberOfDraws;

@@ -3804,10 +3804,10 @@ namespace Direct3D10Renderer
 			mData(nullptr)
 		{
 			// Sanity checks
-			RENDERER_ASSERT(direct3D10Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) != 0 || (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) != 0, "Invalid Direct3D 10 flags, indirect buffer element type specification \"DRAW_INSTANCED_ARGUMENTS\" or \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" is missing")
-			RENDERER_ASSERT(direct3D10Renderer.getContext(), !((indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) != 0 && (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) != 0), "Invalid Direct3D 10 flags, indirect buffer element type specification \"DRAW_INSTANCED_ARGUMENTS\" or \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" must be set, but not both at one and the same time")
-			RENDERER_ASSERT(direct3D10Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawInstancedArguments)) == 0, "Direct3D 10 indirect buffer element type flags specification is \"DRAW_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
-			RENDERER_ASSERT(direct3D10Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawIndexedInstancedArguments)) == 0, "Direct3D 10 indirect buffer element type flags specification is \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
+			RENDERER_ASSERT(direct3D10Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_ARGUMENTS) != 0 || (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS) != 0, "Invalid Direct3D 10 flags, indirect buffer element type specification \"DRAW_ARGUMENTS\" or \"DRAW_INDEXED_ARGUMENTS\" is missing")
+			RENDERER_ASSERT(direct3D10Renderer.getContext(), !((indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_ARGUMENTS) != 0 && (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS) != 0), "Invalid Direct3D 10 flags, indirect buffer element type specification \"DRAW_ARGUMENTS\" or \"DRAW_INDEXED_ARGUMENTS\" must be set, but not both at one and the same time")
+			RENDERER_ASSERT(direct3D10Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawArguments)) == 0, "Direct3D 10 indirect buffer element type flags specification is \"DRAW_ARGUMENTS\" but the given number of bytes don't align to this")
+			RENDERER_ASSERT(direct3D10Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawIndexedArguments)) == 0, "Direct3D 10 indirect buffer element type flags specification is \"DRAW_INDEXED_ARGUMENTS\" but the given number of bytes don't align to this")
 
 			// Copy data
 			if (mNumberOfBytes > 0)
@@ -9737,30 +9737,30 @@ namespace Direct3D10Renderer
 		#endif
 		for (uint32_t i = 0; i < numberOfDraws; ++i)
 		{
-			const Renderer::DrawInstancedArguments& drawInstancedArguments = *reinterpret_cast<const Renderer::DrawInstancedArguments*>(emulationData);
+			const Renderer::DrawArguments& drawArguments = *reinterpret_cast<const Renderer::DrawArguments*>(emulationData);
 
 			// Draw
-			if (drawInstancedArguments.instanceCount > 1 || drawInstancedArguments.startInstanceLocation > 0)
+			if (drawArguments.instanceCount > 1 || drawArguments.startInstanceLocation > 0)
 			{
 				// With instancing
 				mD3D10Device->DrawInstanced(
-					drawInstancedArguments.vertexCountPerInstance,	// Vertex count per instance (UINT)
-					drawInstancedArguments.instanceCount,			// Instance count (UINT)
-					drawInstancedArguments.startVertexLocation,		// Start vertex location (UINT)
-					drawInstancedArguments.startInstanceLocation	// Start instance location (UINT)
+					drawArguments.vertexCountPerInstance,	// Vertex count per instance (UINT)
+					drawArguments.instanceCount,			// Instance count (UINT)
+					drawArguments.startVertexLocation,		// Start vertex location (UINT)
+					drawArguments.startInstanceLocation		// Start instance location (UINT)
 				);
 			}
 			else
 			{
 				// Without instancing
 				mD3D10Device->Draw(
-					drawInstancedArguments.vertexCountPerInstance,	// Vertex count (UINT)
-					drawInstancedArguments.startVertexLocation		// Start index location (UINT)
+					drawArguments.vertexCountPerInstance,	// Vertex count (UINT)
+					drawArguments.startVertexLocation		// Start index location (UINT)
 				);
 			}
 
 			// Advance
-			emulationData += sizeof(Renderer::DrawInstancedArguments);
+			emulationData += sizeof(Renderer::DrawArguments);
 		}
 		#ifdef RENDERER_DEBUG
 			if (numberOfDraws > 1)
@@ -9788,32 +9788,32 @@ namespace Direct3D10Renderer
 		#endif
 		for (uint32_t i = 0; i < numberOfDraws; ++i)
 		{
-			const Renderer::DrawIndexedInstancedArguments& drawIndexedInstancedArguments = *reinterpret_cast<const Renderer::DrawIndexedInstancedArguments*>(emulationData);
+			const Renderer::DrawIndexedArguments& drawIndexedArguments = *reinterpret_cast<const Renderer::DrawIndexedArguments*>(emulationData);
 
 			// Draw
-			if (drawIndexedInstancedArguments.instanceCount > 1 || drawIndexedInstancedArguments.startInstanceLocation > 0)
+			if (drawIndexedArguments.instanceCount > 1 || drawIndexedArguments.startInstanceLocation > 0)
 			{
 				// With instancing
 				mD3D10Device->DrawIndexedInstanced(
-					drawIndexedInstancedArguments.indexCountPerInstance,	// Index count per instance (UINT)
-					drawIndexedInstancedArguments.instanceCount,			// Instance count (UINT)
-					drawIndexedInstancedArguments.startIndexLocation,		// Start index location (UINT)
-					drawIndexedInstancedArguments.baseVertexLocation,		// Base vertex location (INT)
-					drawIndexedInstancedArguments.startInstanceLocation		// Start instance location (UINT)
+					drawIndexedArguments.indexCountPerInstance,	// Index count per instance (UINT)
+					drawIndexedArguments.instanceCount,			// Instance count (UINT)
+					drawIndexedArguments.startIndexLocation,	// Start index location (UINT)
+					drawIndexedArguments.baseVertexLocation,	// Base vertex location (INT)
+					drawIndexedArguments.startInstanceLocation	// Start instance location (UINT)
 				);
 			}
 			else
 			{
 				// Without instancing
 				mD3D10Device->DrawIndexed(
-					drawIndexedInstancedArguments.indexCountPerInstance,	// Index count (UINT)
-					drawIndexedInstancedArguments.startIndexLocation,		// Start index location (UINT)
-					drawIndexedInstancedArguments.baseVertexLocation		// Base vertex location (INT)
+					drawIndexedArguments.indexCountPerInstance,	// Index count (UINT)
+					drawIndexedArguments.startIndexLocation,	// Start index location (UINT)
+					drawIndexedArguments.baseVertexLocation		// Base vertex location (INT)
 				);
 			}
 
 			// Advance
-			emulationData += sizeof(Renderer::DrawIndexedInstancedArguments);
+			emulationData += sizeof(Renderer::DrawIndexedArguments);
 		}
 		#ifdef RENDERER_DEBUG
 			if (numberOfDraws > 1)

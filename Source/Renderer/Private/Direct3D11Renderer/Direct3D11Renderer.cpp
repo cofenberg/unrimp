@@ -4972,10 +4972,10 @@ namespace Direct3D11Renderer
 			mD3D11UnorderedAccessView(nullptr)
 		{
 			// Sanity checks
-			RENDERER_ASSERT(direct3D11Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) != 0 || (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) != 0, "Invalid Direct3D 11 flags, indirect buffer element type specification \"DRAW_INSTANCED_ARGUMENTS\" or \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" is missing")
-			RENDERER_ASSERT(direct3D11Renderer.getContext(), !((indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) != 0 && (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) != 0), "Invalid Direct3D 11 flags, indirect buffer element type specification \"DRAW_INSTANCED_ARGUMENTS\" or \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" must be set, but not both at one and the same time")
-			RENDERER_ASSERT(direct3D11Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawInstancedArguments)) == 0, "Direct3D 11 indirect buffer element type flags specification is \"DRAW_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
-			RENDERER_ASSERT(direct3D11Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawIndexedInstancedArguments)) == 0, "Direct3D 11 indirect buffer element type flags specification is \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
+			RENDERER_ASSERT(direct3D11Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_ARGUMENTS) != 0 || (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS) != 0, "Invalid Direct3D 11 flags, indirect buffer element type specification \"DRAW_ARGUMENTS\" or \"DRAW_INDEXED_ARGUMENTS\" is missing")
+			RENDERER_ASSERT(direct3D11Renderer.getContext(), !((indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_ARGUMENTS) != 0 && (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS) != 0), "Invalid Direct3D 11 flags, indirect buffer element type specification \"DRAW_ARGUMENTS\" or \"DRAW_INDEXED_ARGUMENTS\" must be set, but not both at one and the same time")
+			RENDERER_ASSERT(direct3D11Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawArguments)) == 0, "Direct3D 11 indirect buffer element type flags specification is \"DRAW_ARGUMENTS\" but the given number of bytes don't align to this")
+			RENDERER_ASSERT(direct3D11Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawIndexedArguments)) == 0, "Direct3D 11 indirect buffer element type flags specification is \"DRAW_INDEXED_ARGUMENTS\" but the given number of bytes don't align to this")
 
 			{ // Buffer part: Indirect buffers can't be mapped in Direct3D 11 since considered to be exclusively written by GPU
 				// Direct3D 11 buffer description
@@ -4991,7 +4991,7 @@ namespace Direct3D11Renderer
 				// -> Using a structured indirect buffer would be handy inside shader source codes, sadly this isn't possible with Direct3D 11 and will result in the following error:
 				//    "D3D11 ERROR: ID3D11Device::CreateBuffer: A resource cannot created with both D3D11_RESOURCE_MISC_DRAWINDIRECT_ARGS and D3D11_RESOURCE_MISC_BUFFER_STRUCTURED. [ STATE_CREATION ERROR #68: CREATEBUFFER_INVALIDMISCFLAGS]"
 				//    d3d11BufferDesc.MiscFlags |= D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
-				//    d3d11BufferDesc.StructureByteStride = (flags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) ? sizeof(Renderer::DrawInstancedArguments) : sizeof(Renderer::DrawIndexedInstancedArguments);
+				//    d3d11BufferDesc.StructureByteStride = (flags & Renderer::IndirectBufferFlag::DRAW_ARGUMENTS) ? sizeof(Renderer::DrawArguments) : sizeof(Renderer::DrawIndexedArguments);
 				if (indirectBufferFlags & Renderer::IndirectBufferFlag::SHADER_RESOURCE)
 				{
 					d3d11BufferDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
@@ -12141,7 +12141,7 @@ namespace Direct3D11Renderer
 			for (uint32_t i = 0; i < numberOfDraws; ++i)
 			{
 				mD3D11DeviceContext->DrawInstancedIndirect(d3D11Buffer, indirectBufferOffset);
-				indirectBufferOffset += sizeof(Renderer::DrawInstancedArguments);
+				indirectBufferOffset += sizeof(Renderer::DrawArguments);
 			}
 			#ifdef RENDERER_DEBUG
 				if (nullptr != mD3DUserDefinedAnnotation)
@@ -12170,7 +12170,7 @@ namespace Direct3D11Renderer
 		else if (numberOfDraws > 1)
 		{
 			// AMD: "agsDriverExtensionsDX11_MultiDrawInstancedIndirect()" - https://gpuopen-librariesandsdks.github.io/ags/group__mdi.html
-			agsDriverExtensionsDX11_MultiDrawInstancedIndirect(mDirect3D11RuntimeLinking->getAgsContext(), numberOfDraws, d3D11Buffer, indirectBufferOffset, sizeof(Renderer::DrawInstancedArguments));
+			agsDriverExtensionsDX11_MultiDrawInstancedIndirect(mDirect3D11RuntimeLinking->getAgsContext(), numberOfDraws, d3D11Buffer, indirectBufferOffset, sizeof(Renderer::DrawArguments));
 		}
 	}
 
@@ -12192,7 +12192,7 @@ namespace Direct3D11Renderer
 		else if (numberOfDraws > 1)
 		{
 			// NVIDIA: "NvAPI_D3D11_MultiDrawInstancedIndirect()" - http://docs.nvidia.com/gameworks/content/gameworkslibrary/coresdk/nvapi/group__dx.html#gaf417228a716d10efcb29fa592795f160
-			NvAPI_D3D11_MultiDrawInstancedIndirect(mD3D11DeviceContext, numberOfDraws, d3D11Buffer, indirectBufferOffset, sizeof(Renderer::DrawInstancedArguments));
+			NvAPI_D3D11_MultiDrawInstancedIndirect(mD3D11DeviceContext, numberOfDraws, d3D11Buffer, indirectBufferOffset, sizeof(Renderer::DrawArguments));
 		}
 	}
 
@@ -12214,30 +12214,30 @@ namespace Direct3D11Renderer
 		#endif
 		for (uint32_t i = 0; i < numberOfDraws; ++i)
 		{
-			const Renderer::DrawInstancedArguments& drawInstancedArguments = *reinterpret_cast<const Renderer::DrawInstancedArguments*>(emulationData);
+			const Renderer::DrawArguments& drawArguments = *reinterpret_cast<const Renderer::DrawArguments*>(emulationData);
 
 			// Draw
-			if (drawInstancedArguments.instanceCount > 1 || drawInstancedArguments.startInstanceLocation > 0)
+			if (drawArguments.instanceCount > 1 || drawArguments.startInstanceLocation > 0)
 			{
 				// With instancing
 				mD3D11DeviceContext->DrawInstanced(
-					drawInstancedArguments.vertexCountPerInstance,	// Vertex count per instance (UINT)
-					drawInstancedArguments.instanceCount,			// Instance count (UINT)
-					drawInstancedArguments.startVertexLocation,		// Start vertex location (UINT)
-					drawInstancedArguments.startInstanceLocation	// Start instance location (UINT)
+					drawArguments.vertexCountPerInstance,	// Vertex count per instance (UINT)
+					drawArguments.instanceCount,			// Instance count (UINT)
+					drawArguments.startVertexLocation,		// Start vertex location (UINT)
+					drawArguments.startInstanceLocation		// Start instance location (UINT)
 				);
 			}
 			else
 			{
 				// Without instancing
 				mD3D11DeviceContext->Draw(
-					drawInstancedArguments.vertexCountPerInstance,	// Vertex count (UINT)
-					drawInstancedArguments.startVertexLocation		// Start index location (UINT)
+					drawArguments.vertexCountPerInstance,	// Vertex count (UINT)
+					drawArguments.startVertexLocation		// Start index location (UINT)
 				);
 			}
 
 			// Advance
-			emulationData += sizeof(Renderer::DrawInstancedArguments);
+			emulationData += sizeof(Renderer::DrawArguments);
 		}
 		#ifdef RENDERER_DEBUG
 			if (nullptr != mD3DUserDefinedAnnotation && numberOfDraws > 1)
@@ -12273,7 +12273,7 @@ namespace Direct3D11Renderer
 			for (uint32_t i = 0; i < numberOfDraws; ++i)
 			{
 				mD3D11DeviceContext->DrawIndexedInstancedIndirect(d3D11Buffer, indirectBufferOffset);
-				indirectBufferOffset += sizeof(Renderer::DrawIndexedInstancedArguments);
+				indirectBufferOffset += sizeof(Renderer::DrawIndexedArguments);
 			}
 			#ifdef RENDERER_DEBUG
 				if (nullptr != mD3DUserDefinedAnnotation)
@@ -12302,7 +12302,7 @@ namespace Direct3D11Renderer
 		else if (numberOfDraws > 1)
 		{
 			// AMD: "agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect()" - https://gpuopen-librariesandsdks.github.io/ags/group__mdi.html
-			agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect(mDirect3D11RuntimeLinking->getAgsContext(), numberOfDraws, d3D11Buffer, indirectBufferOffset, sizeof(Renderer::DrawIndexedInstancedArguments));
+			agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect(mDirect3D11RuntimeLinking->getAgsContext(), numberOfDraws, d3D11Buffer, indirectBufferOffset, sizeof(Renderer::DrawIndexedArguments));
 		}
 	}
 
@@ -12324,7 +12324,7 @@ namespace Direct3D11Renderer
 		else if (numberOfDraws > 1)
 		{
 			// NVIDIA: "NvAPI_D3D11_MultiDrawIndexedInstancedIndirect()" - http://docs.nvidia.com/gameworks/content/gameworkslibrary/coresdk/nvapi/group__dx.html#ga04cbd1b776a391e45d38377bd3156f9e
-			NvAPI_D3D11_MultiDrawIndexedInstancedIndirect(mD3D11DeviceContext, numberOfDraws, d3D11Buffer, indirectBufferOffset, sizeof(Renderer::DrawIndexedInstancedArguments));
+			NvAPI_D3D11_MultiDrawIndexedInstancedIndirect(mD3D11DeviceContext, numberOfDraws, d3D11Buffer, indirectBufferOffset, sizeof(Renderer::DrawIndexedArguments));
 		}
 	}
 
@@ -12346,32 +12346,32 @@ namespace Direct3D11Renderer
 		#endif
 		for (uint32_t i = 0; i < numberOfDraws; ++i)
 		{
-			const Renderer::DrawIndexedInstancedArguments& drawIndexedInstancedArguments = *reinterpret_cast<const Renderer::DrawIndexedInstancedArguments*>(emulationData);
+			const Renderer::DrawIndexedArguments& drawIndexedArguments = *reinterpret_cast<const Renderer::DrawIndexedArguments*>(emulationData);
 
 			// Draw
-			if (drawIndexedInstancedArguments.instanceCount > 1 || drawIndexedInstancedArguments.startInstanceLocation > 0)
+			if (drawIndexedArguments.instanceCount > 1 || drawIndexedArguments.startInstanceLocation > 0)
 			{
 				// With instancing
 				mD3D11DeviceContext->DrawIndexedInstanced(
-					drawIndexedInstancedArguments.indexCountPerInstance,	// Index count per instance (UINT)
-					drawIndexedInstancedArguments.instanceCount,			// Instance count (UINT)
-					drawIndexedInstancedArguments.startIndexLocation,		// Start index location (UINT)
-					drawIndexedInstancedArguments.baseVertexLocation,		// Base vertex location (INT)
-					drawIndexedInstancedArguments.startInstanceLocation		// Start instance location (UINT)
+					drawIndexedArguments.indexCountPerInstance,	// Index count per instance (UINT)
+					drawIndexedArguments.instanceCount,			// Instance count (UINT)
+					drawIndexedArguments.startIndexLocation,	// Start index location (UINT)
+					drawIndexedArguments.baseVertexLocation,	// Base vertex location (INT)
+					drawIndexedArguments.startInstanceLocation	// Start instance location (UINT)
 				);
 			}
 			else
 			{
 				// Without instancing
 				mD3D11DeviceContext->DrawIndexed(
-					drawIndexedInstancedArguments.indexCountPerInstance,	// Index count (UINT)
-					drawIndexedInstancedArguments.startIndexLocation,		// Start index location (UINT)
-					drawIndexedInstancedArguments.baseVertexLocation		// Base vertex location (INT)
+					drawIndexedArguments.indexCountPerInstance,	// Index count (UINT)
+					drawIndexedArguments.startIndexLocation,	// Start index location (UINT)
+					drawIndexedArguments.baseVertexLocation		// Base vertex location (INT)
 				);
 			}
 
 			// Advance
-			emulationData += sizeof(Renderer::DrawIndexedInstancedArguments);
+			emulationData += sizeof(Renderer::DrawIndexedArguments);
 		}
 		#ifdef RENDERER_DEBUG
 			if (nullptr != mD3DUserDefinedAnnotation && numberOfDraws > 1)

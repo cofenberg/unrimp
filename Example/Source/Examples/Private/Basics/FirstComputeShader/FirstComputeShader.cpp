@@ -164,7 +164,7 @@ void FirstComputeShader::onInitialization()
 
 		{ // Indirect buffer
 			{ // Create the indirect buffer which will be read by a compute shader
-				const Renderer::DrawIndexedInstancedArguments drawIndexedInstancedArguments =
+				const Renderer::DrawIndexedArguments drawIndexedArguments =
 				{
 					0, // indexCountPerInstance (uint32_t)	- Filled by compute shader via atomics counting
 					1, // instanceCount (uint32_t)
@@ -172,11 +172,11 @@ void FirstComputeShader::onInitialization()
 					0, // baseVertexLocation (int32_t)
 					0  // startInstanceLocation (uint32_t)
 				};
-				mComputeInputIndirectBuffer = mBufferManager->createIndirectBuffer(sizeof(Renderer::DrawIndexedInstancedArguments), &drawIndexedInstancedArguments, Renderer::IndirectBufferFlag::SHADER_RESOURCE | Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS);
+				mComputeInputIndirectBuffer = mBufferManager->createIndirectBuffer(sizeof(Renderer::DrawIndexedArguments), &drawIndexedArguments, Renderer::IndirectBufferFlag::SHADER_RESOURCE | Renderer::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS);
 			}
 
 			// Create the indirect buffer which will be filled by a compute shader
-			mComputeOutputIndirectBuffer = mBufferManager->createIndirectBuffer(sizeof(Renderer::DrawIndexedInstancedArguments), nullptr, Renderer::IndirectBufferFlag::UNORDERED_ACCESS | Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS);
+			mComputeOutputIndirectBuffer = mBufferManager->createIndirectBuffer(sizeof(Renderer::DrawIndexedArguments), nullptr, Renderer::IndirectBufferFlag::UNORDERED_ACCESS | Renderer::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS);
 		}
 
 		// Vertex input layout

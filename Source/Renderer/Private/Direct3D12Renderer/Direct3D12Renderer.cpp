@@ -5400,10 +5400,10 @@ namespace Direct3D12Renderer
 		//	mD3D12ShaderResourceViewIndirect(nullptr)
 		{
 			// Sanity checks
-			RENDERER_ASSERT(direct3D12Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) != 0 || (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) != 0, "Invalid Direct3D 12 flags, indirect buffer element type specification \"DRAW_INSTANCED_ARGUMENTS\" or \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" is missing")
-			RENDERER_ASSERT(direct3D12Renderer.getContext(), !((indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) != 0 && (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) != 0), "Invalid Direct3D 12 flags, indirect buffer element type specification \"DRAW_INSTANCED_ARGUMENTS\" or \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" must be set, but not both at one and the same time")
-			RENDERER_ASSERT(direct3D12Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawInstancedArguments)) == 0, "Direct3D 12 indirect buffer element type flags specification is \"DRAW_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
-			RENDERER_ASSERT(direct3D12Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_INSTANCED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawIndexedInstancedArguments)) == 0, "Direct3D 12 indirect buffer element type flags specification is \"DRAW_INDEXED_INSTANCED_ARGUMENTS\" but the given number of bytes don't align to this")
+			RENDERER_ASSERT(direct3D12Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_ARGUMENTS) != 0 || (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS) != 0, "Invalid Direct3D 12 flags, indirect buffer element type specification \"DRAW_ARGUMENTS\" or \"DRAW_INDEXED_ARGUMENTS\" is missing")
+			RENDERER_ASSERT(direct3D12Renderer.getContext(), !((indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_ARGUMENTS) != 0 && (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS) != 0), "Invalid Direct3D 12 flags, indirect buffer element type specification \"DRAW_ARGUMENTS\" or \"DRAW_INDEXED_ARGUMENTS\" must be set, but not both at one and the same time")
+			RENDERER_ASSERT(direct3D12Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawArguments)) == 0, "Direct3D 12 indirect buffer element type flags specification is \"DRAW_ARGUMENTS\" but the given number of bytes don't align to this")
+			RENDERER_ASSERT(direct3D12Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawIndexedArguments)) == 0, "Direct3D 12 indirect buffer element type flags specification is \"DRAW_INDEXED_ARGUMENTS\" but the given number of bytes don't align to this")
 
 			// TODO(co) Direct3D 12 update
 			if (mNumberOfBytes > 0)
@@ -11175,18 +11175,18 @@ namespace Direct3D12Renderer
 		#endif
 		for (uint32_t i = 0; i < numberOfDraws; ++i)
 		{
-			const Renderer::DrawInstancedArguments& drawInstancedArguments = *reinterpret_cast<const Renderer::DrawInstancedArguments*>(emulationData);
+			const Renderer::DrawArguments& drawArguments = *reinterpret_cast<const Renderer::DrawArguments*>(emulationData);
 
 			// Draw
 			mD3D12GraphicsCommandList->DrawInstanced(
-				drawInstancedArguments.vertexCountPerInstance,	// Vertex count per instance (UINT)
-				drawInstancedArguments.instanceCount,			// Instance count (UINT)
-				drawInstancedArguments.startVertexLocation,		// Start vertex location (UINT)
-				drawInstancedArguments.startInstanceLocation	// Start instance location (UINT)
+				drawArguments.vertexCountPerInstance,	// Vertex count per instance (UINT)
+				drawArguments.instanceCount,			// Instance count (UINT)
+				drawArguments.startVertexLocation,		// Start vertex location (UINT)
+				drawArguments.startInstanceLocation		// Start instance location (UINT)
 			);
 
 			// Advance
-			emulationData += sizeof(Renderer::DrawInstancedArguments);
+			emulationData += sizeof(Renderer::DrawArguments);
 		}
 		#ifdef RENDERER_DEBUG
 			if (numberOfDraws > 1)
@@ -11215,19 +11215,19 @@ namespace Direct3D12Renderer
 		#endif
 		for (uint32_t i = 0; i < numberOfDraws; ++i)
 		{
-			const Renderer::DrawIndexedInstancedArguments& drawIndexedInstancedArguments = *reinterpret_cast<const Renderer::DrawIndexedInstancedArguments*>(emulationData);
+			const Renderer::DrawIndexedArguments& drawIndexedArguments = *reinterpret_cast<const Renderer::DrawIndexedArguments*>(emulationData);
 
 			// Draw
 			mD3D12GraphicsCommandList->DrawIndexedInstanced(
-				drawIndexedInstancedArguments.indexCountPerInstance,	// Index count per instance (UINT)
-				drawIndexedInstancedArguments.instanceCount,			// Instance count (UINT)
-				drawIndexedInstancedArguments.startIndexLocation,		// Start index location (UINT)
-				drawIndexedInstancedArguments.baseVertexLocation,		// Base vertex location (INT)
-				drawIndexedInstancedArguments.startInstanceLocation		// Start instance location (UINT)
+				drawIndexedArguments.indexCountPerInstance,	// Index count per instance (UINT)
+				drawIndexedArguments.instanceCount,			// Instance count (UINT)
+				drawIndexedArguments.startIndexLocation,	// Start index location (UINT)
+				drawIndexedArguments.baseVertexLocation,	// Base vertex location (INT)
+				drawIndexedArguments.startInstanceLocation	// Start instance location (UINT)
 			);
 
 			// Advance
-			emulationData += sizeof(Renderer::DrawIndexedInstancedArguments);
+			emulationData += sizeof(Renderer::DrawIndexedArguments);
 		}
 		#ifdef RENDERER_DEBUG
 			if (numberOfDraws > 1)
