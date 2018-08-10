@@ -142,7 +142,9 @@ void IApplicationRendererRuntime::onInitialization()
 						{
 							try
 							{
-								mProject->load("../DataSource/Example");
+								// Load project: Shippable executable binaries are inside e.g. "unrimp/bin/Windows_x64_Shared" while development data source is located
+								// at "unrimp/Example/DataSource/Example" and the resulting compiled/baked data ends up inside e.g. "unrimp/bin/DataPc/Example"
+								mProject->load("../../Example/DataSource/Example");
 								mProject->startupAssetMonitor(*rendererRuntime, rendererIsOpenGLES ? "OpenGLES3_300" : "Direct3D11_50");
 							}
 							catch (const std::exception& e)
