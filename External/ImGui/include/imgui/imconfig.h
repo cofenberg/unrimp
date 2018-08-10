@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "RendererRuntime/Core/Platform/PlatformTypes.h"
+#include "RendererRuntime/Public/Core/Platform/PlatformTypes.h"
 
 //---- Define assertion handler. Defaults to calling assert().
 //#define IM_ASSERT(_EXPR)  MyAssert(_EXPR)

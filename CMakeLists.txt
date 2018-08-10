@@ -369,10 +369,10 @@ endif()
 ##################################################
 ## Subdirectories
 ##################################################
-add_subdirectory(Renderer)
+add_subdirectory(Source)
 if(EXAMPLES)
-	add_subdirectory(Example/Examples)
+	add_subdirectory(Example/Source/Examples)
 endif()
 if(EXAMPLE_PROJECT_COMPILER AND RENDERER_RUNTIME AND RENDERER_TOOLKIT)
-	add_subdirectory(Example/ExampleProjectCompiler)
+	add_subdirectory(Example/Source/ExampleProjectCompiler)
 endif()
