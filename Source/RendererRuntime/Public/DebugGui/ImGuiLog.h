@@ -35,8 +35,6 @@
 
 #include <imgui/imgui.h>
 
-#include <vector>
-
 
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]

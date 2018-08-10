@@ -32,8 +32,6 @@
 
 #include <Renderer/Public/Renderer.h>
 
-#include <cassert>
-
 
 //[-------------------------------------------------------]
 //[ Namespace                                             ]

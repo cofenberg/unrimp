@@ -27,7 +27,6 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/Public/Core/Platform/PlatformTypes.h"
 #include "RendererRuntime/Public/Core/File/IFile.h"
 #include "RendererRuntime/Public/Core/File/IFileManager.h"
 #include "RendererRuntime/Public/Core/File/FileSystemHelper.h"

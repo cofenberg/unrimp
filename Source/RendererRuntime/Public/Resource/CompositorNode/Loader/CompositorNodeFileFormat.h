@@ -27,7 +27,6 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/Public/Core/StringId.h"
 #include "RendererRuntime/Public/Core/Renderer/FramebufferSignature.h"
 #include "RendererRuntime/Public/Core/Renderer/RenderTargetTextureSignature.h"
 

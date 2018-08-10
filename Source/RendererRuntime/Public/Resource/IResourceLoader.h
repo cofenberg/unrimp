@@ -30,8 +30,6 @@
 #include "RendererRuntime/Public/Core/Loader.h"
 #include "RendererRuntime/Public/Asset/Asset.h"
 
-#include <cassert>
-
 
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
