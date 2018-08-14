@@ -2418,9 +2418,9 @@ namespace Direct3D11Renderer
 		AGS_ADL_FAILURE
 	};
 	#ifdef DYNAMIC_AMD_AGS
-		#define FNDEF_AMD_AGS(retType, funcName, args) retType (WINAPI *funcPtr_##funcName) args
+		#define FNDEF_AMD_AGS(retType, funcName, args) retType (WINAPIV *funcPtr_##funcName) args
 	#else
-		#define FNDEF_AMD_AGS(retType, funcName, args) retType WINAPI funcName args
+		#define FNDEF_AMD_AGS(retType, funcName, args) retType WINAPIV funcName args
 	#endif
 	FNDEF_AMD_AGS(AGSReturnCode,	agsInit,													(AGSContext** context, const AGSConfiguration* config, AGSGPUInfo* gpuInfo));
 	FNDEF_AMD_AGS(AGSReturnCode,	agsDeInit,													(AGSContext* context));
