@@ -3668,6 +3668,7 @@ namespace Renderer
 			maximumTextureDimension(0),
 			maximumNumberOf2DTextureArraySlices(0),
 			maximumTextureBufferSize(0),
+			maximumStructuredBufferSize(0),
 			maximumIndirectBufferSize(0),
 			maximumUniformBufferSize(0),
 			maximumNumberOfMultisamples(1),
