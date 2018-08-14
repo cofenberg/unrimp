@@ -193,6 +193,7 @@ if(WIN32)
 	# - "Warning Level"						= "EnableAllWarnings (/Wall)"
 	# - "Treat Warnings As Error"			= "Yes (/WX)""
 	# - "Multi-processor Compilation"		= "Yes (/MP)""
+	# - "Just My Code"						= "/JMC" (see https://blogs.msdn.microsoft.com/vcblog/2018/06/29/announcing-jmc-stepping-in-visual-studio/ )
 	# - "Enable Enhanced Instruction Set"	= "Advanced Vector Extensions 2 (/arch:AVX2)"
 	# - Enable/disable warnings
 	add_definitions(-D "_HAS_ITERATOR_DEBUGGING=0" -D "_SECURE_SCL=0")
@@ -208,8 +209,8 @@ if(WIN32)
 		"C5045" # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified - https://blogs.msdn.microsoft.com/vcblog/2018/04/20/spectre-diagnostic-in-visual-studio-2017-version-15-7-preview-4/
 		)
 	string(REPLACE "C" " -wd" MSVC_DISABLED_WARNINGS_STR ${MSVC_DISABLED_WARNINGS_LIST})
-	set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -Wall -WX /MP ${MSVC_DISABLED_WARNINGS_STR}")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -WX /MP ${MSVC_DISABLED_WARNINGS_STR}")
+	set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -Wall -WX /MP /JMC ${MSVC_DISABLED_WARNINGS_STR}")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -WX /MP /JMC ${MSVC_DISABLED_WARNINGS_STR}")
 	if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
 		# Used debug build options:
 		# - "Debug Information Format" = "Program Database for Edit And Continue (/ZI)"
