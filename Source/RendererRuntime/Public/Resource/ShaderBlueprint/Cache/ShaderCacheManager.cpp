@@ -289,6 +289,7 @@ namespace RendererRuntime
 							{
 								// TODO(co) Error handling
 								delete shaderCache;
+								shaderCache = nullptr;
 								assert(false);
 							}
 						}

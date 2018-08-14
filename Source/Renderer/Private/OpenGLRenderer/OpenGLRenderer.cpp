@@ -6671,7 +6671,7 @@ namespace OpenGLRenderer
 		*  @param[in] openGLRenderer
 		*    Owner OpenGL renderer instance
 		*/
-		inline StructuredBuffer(OpenGLRenderer& openGLRenderer) :
+		inline explicit StructuredBuffer(OpenGLRenderer& openGLRenderer) :
 			IStructuredBuffer(static_cast<Renderer::IRenderer&>(openGLRenderer)),
 			mOpenGLStructuredBuffer(0)
 		{}
@@ -14247,7 +14247,7 @@ namespace OpenGLRenderer
 		*  @param[in] openGLRenderer
 		*    Owner OpenGL renderer instance
 		*/
-		ComputePipelineState(OpenGLRenderer& openGLRenderer) :
+		inline explicit ComputePipelineState(OpenGLRenderer& openGLRenderer) :
 			IComputePipelineState(openGLRenderer)
 		{}
 
