@@ -14,7 +14,7 @@
 		},
 		"MaterialBlueprintAssetCompiler":
 		{
-			"InputFile": "Grass.material_blueprint"
+			"InputFile": "Deferred.material_blueprint"
 		}
 	}
 }

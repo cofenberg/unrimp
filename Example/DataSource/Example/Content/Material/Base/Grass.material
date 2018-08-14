@@ -8,10 +8,10 @@
 	{
 		"Techniques":
 		{
-			"Default": "$ProjectName/MaterialBlueprint/Grass/Grass.asset",
-			"Debug": "$ProjectName/MaterialBlueprint/Grass/Grass.asset",
-			"Forward": "$ProjectName/MaterialBlueprint/Grass/Grass.asset",
-			"Deferred": "$ProjectName/MaterialBlueprint/Grass/Grass.asset"
+			"Default": "$ProjectName/MaterialBlueprint/Grass/Debug.asset",
+			"Debug": "$ProjectName/MaterialBlueprint/Grass/Debug.asset",
+			"Forward": "$ProjectName/MaterialBlueprint/Grass/Forward.asset",
+			"Deferred": "$ProjectName/MaterialBlueprint/Grass/Deferred.asset"
 		}
 	}
 }

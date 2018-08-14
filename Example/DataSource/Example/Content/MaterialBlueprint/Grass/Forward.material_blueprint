@@ -38,7 +38,7 @@
 			"ShaderBlueprints":
 			{
 				"VertexShaderBlueprint": "$ProjectName/ShaderBlueprint/Grass/Vertex.asset",
-				"FragmentShaderBlueprint": "$ProjectName/ShaderBlueprint/Grass/Fragment.asset"
+				"FragmentShaderBlueprint": "$ProjectName/ShaderBlueprint/Grass/ForwardFragment.asset"
 			},
 			"RasterizerState":
 			{
