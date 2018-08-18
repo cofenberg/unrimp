@@ -8,6 +8,20 @@
 	{
 		"Properties":
 		{
+			"LocalComputeSize":
+			{
+				"Usage": "STATIC",
+				"ValueType": "INTEGER_3",
+				"Value": "32 32 1",
+				"Description": "Fixed build in material property for the compute shader local size (also known as number of threads). Must be identical to in-shader values."
+			},
+			"GlobalComputeSize":
+			{
+				"Usage": "STATIC",
+				"ValueType": "INTEGER_3",
+				"Value": "1192 815 1",
+				"Description": "Fixed build in material property for the compute shader global size TODO(co) Must be flexible, in this use-case the size can be read from 'OutputTexture2D'"
+			},
 			"ToneMapKeyValue":
 			{
 				"Usage": "SHADER_UNIFORM",
@@ -76,25 +90,18 @@
 				"ValueType": "TEXTURE_ASSET_ID",
 				"Value": "$ProjectName/Texture/Compositor/LensStar.asset",
 				"Description": "2D lens star map for diffraction starburst, only used of the lens flare map is used"
+			},
+			"OutputTexture2D":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+				"Description": "Output texture 2D"
 			}
 		},
-		"GraphicsPipelineState":
+		"ComputePipelineState":
 		{
-			"VertexAttributes": "$ProjectName/VertexAttributes/Default/Null.asset",
-			"ShaderBlueprints":
-			{
-				"VertexShaderBlueprint": "$ProjectName/ShaderBlueprint/Compositor/PositionTextureCoordinateVertex.asset",
-				"FragmentShaderBlueprint": "$ProjectName/ShaderBlueprint/Compositor/HdrToLdrFragment.asset"
-			},
-			"RasterizerState":
-			{
-				"CullMode": "NONE"
-			},
-			"DepthStencilState":
-			{
-				"DepthEnable": "FALSE",
-				"DepthWriteMask": "ZERO"
-			}
+			"ComputeShaderBlueprint": "$ProjectName/ShaderBlueprint/Compositor/HdrToLdrFragment.asset"
 		},
 		"ResourceGroups":
 		{
@@ -105,7 +112,6 @@
 					"ResourceType": "UNIFORM_BUFFER",
 					"BaseShaderRegisterName": "PassUniformBuffer",
 					"BaseShaderRegister": "0",
-					"ShaderVisibility": "FRAGMENT",
 					"BufferUsage": "PASS",
 					"NumberOfElements": "1",
 					"ElementProperties":
@@ -115,6 +121,12 @@
 							"Usage": "PASS_REFERENCE",
 							"ValueType": "FLOAT_4_4",
 							"Value": "@LENS_STAR_MATRIX"
+						},
+						"GlobalComputeSize":
+						{
+							"Usage": "MATERIAL_REFERENCE",
+							"ValueType": "INTEGER_3",
+							"Value": "@GlobalComputeSize"
 						},
 						"ToneMapKeyValue":
 						{
@@ -138,33 +150,28 @@
 					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "ColorMap",
 					"BaseShaderRegister": "0",
-					"ShaderVisibility": "FRAGMENT",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@ColorMap",
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/WhiteMap2D",
-					"MipmapsUsed": "FALSE",
-					"SamplerStateBaseShaderRegisterName": "SamplerPoint"
+					"MipmapsUsed": "FALSE"
 				},
 				"1":
 				{
 					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "LuminanceMap",
 					"BaseShaderRegister": "1",
-					"ShaderVisibility": "FRAGMENT",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@LuminanceMap",
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/WhiteMap2D",
-					"MipmapsUsed": "FALSE",
-					"SamplerStateBaseShaderRegisterName": "SamplerPoint"
+					"MipmapsUsed": "FALSE"
 				},
 				"2":
 				{
 					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "BloomMap",
 					"BaseShaderRegister": "2",
-					"ShaderVisibility": "FRAGMENT",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@BloomMap",
@@ -177,7 +184,6 @@
 					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "DirtyLensMap",
 					"BaseShaderRegister": "3",
-					"ShaderVisibility": "FRAGMENT",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@DirtyLensMap",
@@ -191,7 +197,6 @@
 					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "LensFlareMap",
 					"BaseShaderRegister": "4",
-					"ShaderVisibility": "FRAGMENT",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@LensFlareMap",
@@ -204,7 +209,6 @@
 					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "LensStarMap",
 					"BaseShaderRegister": "5",
-					"ShaderVisibility": "FRAGMENT",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@LensStarMap",
@@ -212,6 +216,17 @@
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/WhiteMap2D",
 					"MipmapsUsed": "FALSE",
 					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
+				},
+				"6":
+				{
+					"ResourceType": "TEXTURE_2D",
+					"DescriptorRangeType": "UAV",
+					"BaseShaderRegisterName": "OutputTexture2D",
+					"BaseShaderRegister": "6",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@OutputTexture2D",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D"
 				}
 			},
 			"2":
@@ -219,19 +234,8 @@
 				"0":
 				{
 					"ResourceType": "SAMPLER_STATE",
-					"BaseShaderRegisterName": "SamplerPoint",
-					"BaseShaderRegister": "0",
-					"ShaderVisibility": "FRAGMENT",
-					"Filter": "MIN_MAG_MIP_POINT",
-					"MaxAnisotropy": "1",
-					"MaxLOD": "0.0"
-				},
-				"1":
-				{
-					"ResourceType": "SAMPLER_STATE",
 					"BaseShaderRegisterName": "SamplerLinear",
-					"BaseShaderRegister": "1",
-					"ShaderVisibility": "FRAGMENT",
+					"BaseShaderRegister": "0",
 					"Filter": "MIN_MAG_LINEAR_MIP_POINT",
 					"MaxAnisotropy": "1",
 					"MaxLOD": "0.0"

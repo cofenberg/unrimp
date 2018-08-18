@@ -141,14 +141,25 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Bind the light buffer manager into the given commando buffer
+		*    Bind the light buffer manager into the given graphics command buffer
 		*
 		*  @param[in] materialBlueprintResource
-		*    Material blueprint resource
+		*    Graphics material blueprint resource
 		*  @param[out] commandBuffer
 		*    Command buffer to fill
 		*/
-		void fillCommandBuffer(const MaterialBlueprintResource& materialBlueprintResource, Renderer::CommandBuffer& commandBuffer);
+		void fillGraphicsCommandBuffer(const MaterialBlueprintResource& materialBlueprintResource, Renderer::CommandBuffer& commandBuffer);
+
+		/**
+		*  @brief
+		*    Bind the light buffer manager into the given compute command buffer
+		*
+		*  @param[in] materialBlueprintResource
+		*    Compute material blueprint resource
+		*  @param[out] commandBuffer
+		*    Command buffer to fill
+		*/
+		void fillComputeCommandBuffer(const MaterialBlueprintResource& materialBlueprintResource, Renderer::CommandBuffer& commandBuffer);
 
 		/**
 		*  @brief

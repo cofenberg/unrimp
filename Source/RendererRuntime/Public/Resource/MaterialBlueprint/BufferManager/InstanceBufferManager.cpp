@@ -107,8 +107,9 @@ namespace RendererRuntime
 
 	void InstanceBufferManager::startupBufferFilling(const MaterialBlueprintResource& materialBlueprintResource, Renderer::CommandBuffer& commandBuffer)
 	{
-		// Sanity check
+		// Sanity checks
 		assert(nullptr != mCurrentInstanceBuffer);
+		assert(isInvalid(materialBlueprintResource.getComputeShaderBlueprintResourceId()));
 
 		// Map the current instance buffer
 		mapCurrentInstanceBuffer();
@@ -132,7 +133,7 @@ namespace RendererRuntime
 				mCurrentInstanceBuffer->resourceGroup->addReference();
 			}
 
-			// Set resource group
+			// Set graphics resource group
 			Renderer::Command::SetGraphicsResourceGroup::create(commandBuffer, instanceUniformBuffer->rootParameterIndex, mCurrentInstanceBuffer->resourceGroup);
 		}
 	}

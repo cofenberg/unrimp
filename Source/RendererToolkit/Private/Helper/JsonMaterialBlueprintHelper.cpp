@@ -29,6 +29,7 @@
 
 #include <RendererRuntime/Public/Core/File/IFile.h>
 #include <RendererRuntime/Public/Core/File/FileSystemHelper.h>
+#include <RendererRuntime/Public/Resource/Material/MaterialResource.h>
 #include <RendererRuntime/Public/Resource/ShaderBlueprint/Cache/ShaderProperties.h>
 #include <RendererRuntime/Public/Resource/MaterialBlueprint/Loader/MaterialBlueprintFileFormat.h>
 
@@ -198,6 +199,34 @@ namespace
 
 			// Done
 			return resourceType;
+		}
+
+		void optionalDescriptorRangeType(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::DescriptorRangeType& value)
+		{
+			if (rapidJsonValue.HasMember(propertyName))
+			{
+				const rapidjson::Value& rapidJsonValueUsage = rapidJsonValue[propertyName];
+				const char* valueAsString = rapidJsonValueUsage.GetString();
+				const rapidjson::SizeType valueStringLength = rapidJsonValueUsage.GetStringLength();
+
+				// Define helper macros
+				#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::DescriptorRangeType::name;
+				#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::DescriptorRangeType::name;
+
+				// Evaluate value
+				IF_VALUE(SRV)
+				ELSE_IF_VALUE(UAV)
+				ELSE_IF_VALUE(UBV)
+				ELSE_IF_VALUE(SAMPLER)
+				else
+				{
+					throw std::runtime_error("Descriptor range type of property \"" + std::string(propertyName) + "\" must be \"SRV\", \"UAV\", \"UBV\" or \"SAMPLER\", but \"" + std::string(valueAsString) + "\" set");
+				}
+
+				// Undefine helper macros
+				#undef IF_VALUE
+				#undef ELSE_IF_VALUE
+			}
 		}
 
 
@@ -687,7 +716,7 @@ namespace RendererToolkit
 		return RendererRuntime::MaterialPropertyValue::fromBoolean(false);
 	}
 
-	void JsonMaterialBlueprintHelper::readRootSignatureByResourceGroups(const rapidjson::Value& rapidJsonValueResourceGroups, RendererRuntime::IFile& file)
+	void JsonMaterialBlueprintHelper::readRootSignatureByResourceGroups(const rapidjson::Value& rapidJsonValueResourceGroups, RendererRuntime::IFile& file, bool isComputeMaterialBlueprint)
 	{
 		// First: Collect everything we need instead of directly writing it down using an inefficient data layout
 		std::vector<Renderer::RootParameterData> rootParameters;
@@ -726,45 +755,94 @@ namespace RendererToolkit
 							// Resource type
 							descriptorRange.resourceType = ::detail::mandatoryResourceType(rapidJsonValue);
 
-							// Define helper macro
-							#define CASE_VALUE(name, rangeTypeValue) case Renderer::ResourceType::name: descriptorRange.rangeType = Renderer::DescriptorRangeType::rangeTypeValue; break;
-							#define CASE(name) case Renderer::ResourceType::name:
+							{ // Get descriptor range type default value basing on the resource type
+								// Define helper macro
+								#define CASE_VALUE(name, rangeTypeValue) case Renderer::ResourceType::name: descriptorRange.rangeType = Renderer::DescriptorRangeType::rangeTypeValue; break;
+								#define CASE(name) case Renderer::ResourceType::name:
 
-							// Evaluate value
-							switch (descriptorRange.resourceType)
-							{
-								CASE_VALUE(TEXTURE_BUFFER,	 SRV)
-								CASE_VALUE(UNIFORM_BUFFER,	 UBV)
-								CASE_VALUE(TEXTURE_1D,		 SRV)
-								CASE_VALUE(TEXTURE_2D,		 SRV)
-								CASE_VALUE(TEXTURE_2D_ARRAY, SRV)
-								CASE_VALUE(TEXTURE_3D,		 SRV)
-								CASE_VALUE(TEXTURE_CUBE,	 SRV)
-								CASE_VALUE(SAMPLER_STATE,	 SAMPLER)
-								CASE(ROOT_SIGNATURE)
-								CASE(RESOURCE_GROUP)
-								CASE(GRAPHICS_PROGRAM)
-								CASE(VERTEX_ARRAY)
-								CASE(RENDER_PASS)
-								CASE(SWAP_CHAIN)
-								CASE(FRAMEBUFFER)
-								CASE(INDEX_BUFFER)
-								CASE(VERTEX_BUFFER)
-								CASE(STRUCTURED_BUFFER)
-								CASE(INDIRECT_BUFFER)
-								CASE(GRAPHICS_PIPELINE_STATE)
-								CASE(COMPUTE_PIPELINE_STATE)
-								CASE(VERTEX_SHADER)
-								CASE(TESSELLATION_CONTROL_SHADER)
-								CASE(TESSELLATION_EVALUATION_SHADER)
-								CASE(GEOMETRY_SHADER)
-								CASE(FRAGMENT_SHADER)
-								CASE(COMPUTE_SHADER)
-									throw std::runtime_error("Invalid resource type \"" + std::string(rapidJsonValue["ResourceType"].GetString()) + "\", must be \"TEXTURE_BUFFER\", \"UNIFORM_BUFFER\", \"TEXTURE_1D\", \"TEXTURE_2D\", \"TEXTURE_2D_ARRAY\", \"TEXTURE_3D\", \"TEXTURE_CUBE\" or \"SAMPLER_STATE\"");
+								// Evaluate value
+								switch (descriptorRange.resourceType)
+								{
+									CASE_VALUE(TEXTURE_BUFFER,	 SRV)
+									CASE_VALUE(UNIFORM_BUFFER,	 UBV)
+									CASE_VALUE(TEXTURE_1D,		 SRV)
+									CASE_VALUE(TEXTURE_2D,		 SRV)
+									CASE_VALUE(TEXTURE_2D_ARRAY, SRV)
+									CASE_VALUE(TEXTURE_3D,		 SRV)
+									CASE_VALUE(TEXTURE_CUBE,	 SRV)
+									CASE_VALUE(SAMPLER_STATE,	 SAMPLER)
+									CASE(ROOT_SIGNATURE)
+									CASE(RESOURCE_GROUP)
+									CASE(GRAPHICS_PROGRAM)
+									CASE(VERTEX_ARRAY)
+									CASE(RENDER_PASS)
+									CASE(SWAP_CHAIN)
+									CASE(FRAMEBUFFER)
+									CASE(INDEX_BUFFER)
+									CASE(VERTEX_BUFFER)
+									CASE(STRUCTURED_BUFFER)
+									CASE(INDIRECT_BUFFER)
+									CASE(GRAPHICS_PIPELINE_STATE)
+									CASE(COMPUTE_PIPELINE_STATE)
+									CASE(VERTEX_SHADER)
+									CASE(TESSELLATION_CONTROL_SHADER)
+									CASE(TESSELLATION_EVALUATION_SHADER)
+									CASE(GEOMETRY_SHADER)
+									CASE(FRAGMENT_SHADER)
+									CASE(COMPUTE_SHADER)
+										throw std::runtime_error("Invalid resource type \"" + std::string(rapidJsonValue["ResourceType"].GetString()) + "\", must be \"TEXTURE_BUFFER\", \"UNIFORM_BUFFER\", \"TEXTURE_1D\", \"TEXTURE_2D\", \"TEXTURE_2D_ARRAY\", \"TEXTURE_3D\", \"TEXTURE_CUBE\" or \"SAMPLER_STATE\"");
+								}
+
+								// Undefine helper macro
+								#undef CASE_VALUE
 							}
 
-							// Undefine helper macro
-							#undef CASE_VALUE
+							// Descriptor range type and sanity check
+							::detail::optionalDescriptorRangeType(rapidJsonValue, "DescriptorRangeType", descriptorRange.rangeType);
+							switch (descriptorRange.rangeType)
+							{
+								case Renderer::DescriptorRangeType::SRV:
+									if (Renderer::ResourceType::TEXTURE_BUFFER != descriptorRange.resourceType &&
+										Renderer::ResourceType::TEXTURE_1D != descriptorRange.resourceType &&
+										Renderer::ResourceType::TEXTURE_2D != descriptorRange.resourceType &&
+										Renderer::ResourceType::TEXTURE_2D_ARRAY != descriptorRange.resourceType &&
+										Renderer::ResourceType::TEXTURE_3D != descriptorRange.resourceType &&
+										Renderer::ResourceType::TEXTURE_CUBE != descriptorRange.resourceType)
+									{
+										throw std::runtime_error("Descriptor range type \"SRV\" is only possible for the resource type \"TEXTURE_BUFFER\", \"TEXTURE_1D\", \"TEXTURE_2D\", \"TEXTURE_2D_ARRAY\", \"TEXTURE_3D\" and \"TEXTURE_CUBE\"");
+									}
+									break;
+
+								case Renderer::DescriptorRangeType::UAV:
+									if (Renderer::ResourceType::TEXTURE_BUFFER != descriptorRange.resourceType &&
+										Renderer::ResourceType::TEXTURE_1D != descriptorRange.resourceType &&
+										Renderer::ResourceType::TEXTURE_2D != descriptorRange.resourceType &&
+										Renderer::ResourceType::TEXTURE_2D_ARRAY != descriptorRange.resourceType &&
+										Renderer::ResourceType::TEXTURE_3D != descriptorRange.resourceType &&
+										Renderer::ResourceType::TEXTURE_CUBE != descriptorRange.resourceType)
+									{
+										throw std::runtime_error("Descriptor range type \"UAV\" is only possible for the resource type \"TEXTURE_BUFFER\", \"TEXTURE_1D\", \"TEXTURE_2D\", \"TEXTURE_2D_ARRAY\", \"TEXTURE_3D\" and \"TEXTURE_CUBE\"");
+									}
+									break;
+
+								case Renderer::DescriptorRangeType::UBV:
+									if (Renderer::ResourceType::UNIFORM_BUFFER != descriptorRange.resourceType)
+									{
+										throw std::runtime_error("Descriptor range type \"UBV\" is only possible for the resource type \"UNIFORM_BUFFER\"");
+									}
+									break;
+
+								case Renderer::DescriptorRangeType::SAMPLER:
+									if (Renderer::ResourceType::SAMPLER_STATE != descriptorRange.resourceType)
+									{
+										throw std::runtime_error("Descriptor range type \"SAMPLER\" is only possible for the resource type \"SAMPLER_STATE\"");
+									}
+									break;
+
+								case Renderer::DescriptorRangeType::NUMBER_OF_RANGE_TYPES:
+									// Impossible to end up in here
+									break;
+							}
 						}
 
 						// Fixed number of descriptors is always one
@@ -784,8 +862,13 @@ namespace RendererToolkit
 						JsonHelper::optionalStringProperty(rapidJsonValue, "BaseShaderRegisterName", descriptorRange.baseShaderRegisterName, Renderer::DescriptorRange::NAME_LENGTH);
 
 						// Optional shader visibility
-						descriptorRange.shaderVisibility = Renderer::ShaderVisibility::ALL;
+						descriptorRange.shaderVisibility = isComputeMaterialBlueprint ? Renderer::ShaderVisibility::COMPUTE : Renderer::ShaderVisibility::ALL;
 						optionalShaderVisibilityProperty(rapidJsonValue, "ShaderVisibility", descriptorRange.shaderVisibility);
+						if (isComputeMaterialBlueprint && Renderer::ShaderVisibility::COMPUTE != descriptorRange.shaderVisibility)
+						{
+							// Remember, the renderer toolkit isn't error tolerant at all by intent, so don't soften this
+							throw std::runtime_error("For compute material blueprints, only compute shader visibility is valid");
+						}
 
 						// Add the descriptor range
 						descriptorRanges.push_back(descriptorRange);
@@ -957,8 +1040,30 @@ namespace RendererToolkit
 		}
 	}
 
-	void JsonMaterialBlueprintHelper::readComputePipelineStateObject(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValueComputePipelineState, RendererRuntime::IFile& file)
+	void JsonMaterialBlueprintHelper::readComputePipelineStateObject(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValueComputePipelineState, RendererRuntime::IFile& file, const RendererRuntime::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector)
 	{
+		{ // Sanity check
+			RendererRuntime::MaterialProperties::SortedPropertyVector::const_iterator iterator = std::lower_bound(sortedMaterialPropertyVector.cbegin(), sortedMaterialPropertyVector.cend(), RendererRuntime::MaterialResource::LOCAL_COMPUTE_SIZE_PROPERTY_ID, RendererRuntime::detail::OrderByMaterialPropertyId());
+			if (iterator == sortedMaterialPropertyVector.end() || iterator->getMaterialPropertyId() != RendererRuntime::MaterialResource::LOCAL_COMPUTE_SIZE_PROPERTY_ID)
+			{
+				throw std::runtime_error("Compute material blueprints need the fixed build in material property \"LocalComputeSize\" for the compute shader local size (also known as number of threads)");
+			}
+			if (iterator->getValueType() != RendererRuntime::MaterialPropertyValue::ValueType::INTEGER_3)
+			{
+				throw std::runtime_error("Compute material blueprint fixed build in material property \"LocalComputeSize\" for the compute shader local size (also known as number of threads) value type must be \"INTEGER_3\"");
+			}
+			const int* integer3Value = iterator->getInteger3Value();
+			if (integer3Value[0] <= 0 || integer3Value[1] <= 0 || integer3Value[2] <= 0)
+			{
+				throw std::runtime_error("Compute material blueprint fixed build in material property \"LocalComputeSize\" for the compute shader local size (also known as number of threads) must be greater or equal to one");
+			}
+			if (iterator->getUsage() != RendererRuntime::MaterialProperty::Usage::STATIC)
+			{
+				throw std::runtime_error("Compute material blueprint fixed build in material property \"LocalComputeSize\" for the compute shader local size (also known as number of threads) usage must be \"SHADER_COMBINATION\"");
+			}
+		}
+
+		// Read compute pipeline state object
 		RendererRuntime::AssetId computeShaderBlueprintAssetId = RendererRuntime::getInvalid<RendererRuntime::AssetId>();
 		JsonHelper::optionalCompiledAssetId(input, rapidJsonValueComputePipelineState, "ComputeShaderBlueprint", computeShaderBlueprintAssetId);
 		file.write(&computeShaderBlueprintAssetId, sizeof(RendererRuntime::AssetId));

@@ -44,7 +44,7 @@ void CompositorInstancePassFirst::onFillCommandBuffer(const Renderer::IRenderTar
 		RendererRuntime::DebugGuiManager& debugGuiManager = compositorWorkspaceInstance.getRendererRuntime().getDebugGuiManager();
 		debugGuiManager.newFrame(*compositorWorkspaceInstance.getExecutionRenderTarget());	// We know that the render target must be valid if we're in here
 		RendererRuntime::DebugGuiHelper::drawText("42", 100.0f, 100.0f);
-		debugGuiManager.fillCommandBufferUsingFixedBuildInRendererConfiguration(commandBuffer);
+		debugGuiManager.fillGraphicsCommandBufferUsingFixedBuildInRendererConfiguration(commandBuffer);
 	#else
 		assert(false && "ImGui support is disabled");
 	#endif

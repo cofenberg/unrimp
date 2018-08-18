@@ -6610,37 +6610,37 @@ namespace Direct3D9Renderer
 
 		inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromBytecode(MAYBE_UNUSED const Renderer::ShaderBytecode& shaderBytecode) override
 		{
-			// Error! Direct3D 9 has no tessellation control shader support.
+			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 9 has no tessellation control shader support")
 			return nullptr;
 		}
 
 		inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromSourceCode(MAYBE_UNUSED const Renderer::ShaderSourceCode& shaderSourceCode, MAYBE_UNUSED Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
-			// Error! Direct3D 9 has no tessellation control shader support.
+			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 9 has no tessellation control shader support")
 			return nullptr;
 		}
 
 		inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode(MAYBE_UNUSED const Renderer::ShaderBytecode& shaderBytecode) override
 		{
-			// Error! Direct3D 9 has no tessellation evaluation shader support.
+			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 9 has no tessellation evaluation shader support")
 			return nullptr;
 		}
 
 		inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode(MAYBE_UNUSED const Renderer::ShaderSourceCode& shaderSourceCode, MAYBE_UNUSED Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
-			// Error! Direct3D 9 has no tessellation evaluation shader support.
+			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 9 has no tessellation evaluation shader support")
 			return nullptr;
 		}
 
 		inline virtual Renderer::IGeometryShader* createGeometryShaderFromBytecode(MAYBE_UNUSED const Renderer::ShaderBytecode& shaderBytecode, MAYBE_UNUSED Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, MAYBE_UNUSED Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, MAYBE_UNUSED uint32_t numberOfOutputVertices) override
 		{
-			// Error! Direct3D 9 has no geometry shader support.
+			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 9 has no geometry shader support")
 			return nullptr;
 		}
 
 		inline virtual Renderer::IGeometryShader* createGeometryShaderFromSourceCode(MAYBE_UNUSED const Renderer::ShaderSourceCode& shaderSourceCode, MAYBE_UNUSED Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, MAYBE_UNUSED Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, MAYBE_UNUSED uint32_t numberOfOutputVertices, MAYBE_UNUSED Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
-			// Error! Direct3D 9 has no geometry shader support.
+			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 9 has no geometry shader support")
 			return nullptr;
 		}
 
@@ -6658,63 +6658,31 @@ namespace Direct3D9Renderer
 
 		inline virtual Renderer::IComputeShader* createComputeShaderFromBytecode(const Renderer::ShaderBytecode&) override
 		{
-			// Error! Direct3D 9 has no compute shader support.
+			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 9 has no compute shader support")
 			return nullptr;
 		}
 
 		inline virtual Renderer::IComputeShader* createComputeShaderFromSourceCode(const Renderer::ShaderSourceCode&, Renderer::ShaderBytecode* = nullptr) override
 		{
-			// Error! Direct3D 9 has no compute shader support.
+			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 9 has no compute shader support")
 			return nullptr;
 		}
 
-		virtual Renderer::IGraphicsProgram* createGraphicsProgram(MAYBE_UNUSED const Renderer::IRootSignature& rootSignature, MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
+		virtual Renderer::IGraphicsProgram* createGraphicsProgram(MAYBE_UNUSED const Renderer::IRootSignature& rootSignature, MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, MAYBE_UNUSED Renderer::IVertexShader* vertexShader, MAYBE_UNUSED Renderer::ITessellationControlShader* tessellationControlShader, MAYBE_UNUSED Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, MAYBE_UNUSED Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
 		{
-			// A shader can be a null pointer, but if it's not the shader and graphics program language must match!
+			// Sanity checks
+			// -> A shader can be a null pointer, but if it's not the shader and graphics program language must match!
 			// -> Optimization: Comparing the shader language name by directly comparing the pointer address of
 			//    the name is safe because we know that we always reference to one and the same name address
 			// TODO(co) Add security check: Is the given resource one of the currently used renderer?
-			if (nullptr != vertexShader && vertexShader->getShaderLanguageName() != ::detail::HLSL_NAME)
-			{
-				// Error! Vertex shader language mismatch!
-			}
-			else if (nullptr != tessellationControlShader)
-			{
-				// Error! Direct3D 9 has no tessellation control shader support.
-			}
-			else if (nullptr != tessellationEvaluationShader)
-			{
-				// Error! Direct3D 9 has no tessellation evaluation shader support.
-			}
-			else if (nullptr != geometryShader)
-			{
-				// Error! Direct3D 9 has no geometry shader support.
-			}
-			else if (nullptr != fragmentShader && fragmentShader->getShaderLanguageName() != ::detail::HLSL_NAME)
-			{
-				// Error! Fragment shader language mismatch!
-			}
-			else
-			{
-				// Create the graphics program
-				return RENDERER_NEW(getRenderer().getContext(), GraphicsProgramHlsl)(static_cast<Direct3D9Renderer&>(getRenderer()), static_cast<VertexShaderHlsl*>(vertexShader), static_cast<FragmentShaderHlsl*>(fragmentShader));
-			}
+			RENDERER_ASSERT(getRenderer().getContext(), nullptr == vertexShader || vertexShader->getShaderLanguageName() == ::detail::HLSL_NAME, "Direct3D 9 vertex shader language mismatch")
+			RENDERER_ASSERT(getRenderer().getContext(), nullptr == tessellationControlShader, "Direct3D 9 has no tessellation control shader support")
+			RENDERER_ASSERT(getRenderer().getContext(), nullptr == tessellationEvaluationShader, "Direct3D 9 has no tessellation evaluation shader support")
+			RENDERER_ASSERT(getRenderer().getContext(), nullptr == geometryShader, "Direct3D 9 has no geometry shader support")
+			RENDERER_ASSERT(getRenderer().getContext(), nullptr == fragmentShader || fragmentShader->getShaderLanguageName() == ::detail::HLSL_NAME, "Direct3D 9 fragment shader language mismatch")
 
-			// Error! Shader language mismatch!
-			// -> Ensure a correct reference counter behaviour, even in the situation of an error
-			if (nullptr != vertexShader)
-			{
-				vertexShader->addReference();
-				vertexShader->releaseReference();
-			}
-			if (nullptr != fragmentShader)
-			{
-				fragmentShader->addReference();
-				fragmentShader->releaseReference();
-			}
-
-			// Error!
-			return nullptr;
+			// Create the graphics program
+			return RENDERER_NEW(getRenderer().getContext(), GraphicsProgramHlsl)(static_cast<Direct3D9Renderer&>(getRenderer()), static_cast<VertexShaderHlsl*>(vertexShader), static_cast<FragmentShaderHlsl*>(fragmentShader));
 		}
 
 

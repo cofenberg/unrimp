@@ -150,12 +150,21 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Bind the currently used pass buffer into the given commando buffer
+		*    Bind the currently used pass buffer into the given graphics command buffer
 		*
 		*  @param[out] commandBuffer
 		*    Command buffer to fill
 		*/
-		void fillCommandBuffer(Renderer::CommandBuffer& commandBuffer) const;
+		void fillGraphicsCommandBuffer(Renderer::CommandBuffer& commandBuffer) const;
+
+		/**
+		*  @brief
+		*    Bind the currently used pass buffer into the given compute command buffer
+		*
+		*  @param[out] commandBuffer
+		*    Command buffer to fill
+		*/
+		void fillComputeCommandBuffer(Renderer::CommandBuffer& commandBuffer) const;
 
 		/**
 		*  @brief

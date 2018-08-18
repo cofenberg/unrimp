@@ -85,6 +85,7 @@
 		#define MAIN_BEGIN_TESSELLATION_CONTROL_PATCH(numberOfInputControlPoints) SHADER_OUTPUT_PATCH mainPerPatchInvocation(SHADER_INPUT_PATCH ShaderInputPatch, InputPatch<SHADER_INPUT, numberOfInputControlPoints> ShaderInput) { SHADER_OUTPUT_PATCH shaderOutputPatch;
 		#define MAIN_BEGIN_TESSELLATION_CONTROL(numberOfInputControlPoints, numberOfOutputControlPoints) [outputcontrolpoints(numberOfOutputControlPoints)] [patchconstantfunc("mainPerPatchInvocation")] SHADER_OUTPUT main(SHADER_INPUT_CONTROL_POINT ShaderInputControlPoint, InputPatch<SHADER_INPUT, numberOfInputControlPoints> ShaderInput) { SHADER_OUTPUT shaderOutput;
 		#define MAIN_BEGIN_TESSELLATION_EVALUATION(numberOfInputControlPoints) SHADER_OUTPUT main(SHADER_INPUT_PATCH ShaderInputPatch, const OutputPatch<SHADER_INPUT, numberOfInputControlPoints> ShaderInput) { SHADER_OUTPUT shaderOutput;
+		#define MAIN_BEGIN_COMPUTE(localSizeX, localSizeY, localSizeZ) [numthreads(localSizeX, localSizeY, localSizeZ)] void main(SHADER_INPUT ShaderInput) {
 			#define MAIN_INPUT(name) ShaderInput.name
 			#define MAIN_INPUT_ARRAY(name, index) ShaderInput[index].name
 			#define MAIN_INPUT_VERTEX_ID ShaderInput.vertexId
@@ -170,6 +171,9 @@
 		}
 		#define GET_TEXTURE_CUBE_SIZE(textureObject, mipmapIndex) getDirect3DTextureCubeSize(textureObject, mipmapIndex)
 
+		// Texture unordered access
+		#define RW_TEXTURE_2D(resourceGroupIndex, resourceIndex, name, registerIndex, format, access) RWTexture2D<float4> name : register(u##registerIndex);
+
 		// Sampler
 		#define SAMPLER_STATE(resourceGroupIndex, resourceIndex, name, registerIndex) SamplerState name : register(s##registerIndex);
 		#define SAMPLER_COMPARISON_STATE(resourceGroupIndex, resourceIndex, name, registerIndex) SamplerComparisonState name : register(s##registerIndex);
@@ -188,10 +192,11 @@
 		#define SAMPLE_DEPTH_2D_LOD(textureObject, samplerObject, coordinate) REVERSED_Z(textureObject.SampleLevel(samplerObject, coordinate.xy, coordinate.w).r)
 		#define SAMPLE_DEPTH_2D_MS(textureObject, coordinate, sampleIndex) REVERSED_Z(textureObject.Load(coordinate, sampleIndex).r)
 
-		// Load/fetch
+		// Load/fetch/store (unordered access)
 		#define TEXTURE_FETCH_2D(name, texelIndex) name.Load(texelIndex)
 		#define TEXTURE_FETCH_ARRAY(name, texelIndex) name.Load(texelIndex)
 		#define TEXTURE_FETCH_3D(name, texelIndex) name.Load(texelIndex)
+		#define IMAGE_STORE(name, texelIndex, data) name[texelIndex] = data
 
 		// Fragment shader only
 		#define DECLARE_FRAGMENT_POSITION float4 FragmentPosition : SV_POSITION;
@@ -212,6 +217,10 @@
 			#define DECLARE_COVERAGE_MASK uint CoverageMask : SV_COVERAGE;
 			#define COVERAGE_MASK ShaderInput.CoverageMask
 		@end
+
+		// Compute shader only
+		#define DECLARE_GLOBAL_INVOCATION_ID uint3 DispatchThreadId : SV_DispatchThreadID;
+		#define GLOBAL_INVOCATION_ID ShaderInput.DispatchThreadId
 
 		// Compiler hints
 		#define UNROLL_HINT [unroll]
@@ -296,6 +305,7 @@
 		#define MAIN_BEGIN_TESSELLATION_CONTROL_PATCH(numberOfInputControlPoints) void mainPerPatchInvocation() {
 		#define MAIN_BEGIN_TESSELLATION_CONTROL(numberOfInputControlPoints, numberOfOutputControlPoints) layout(vertices = numberOfOutputControlPoints) out; void main() { if (0 == gl_InvocationID) { mainPerPatchInvocation(); }
 		#define MAIN_BEGIN_TESSELLATION_EVALUATION(numberOfInputControlPoints) void main() {
+		#define MAIN_BEGIN_COMPUTE(localSizeX, localSizeY, localSizeZ) layout (local_size_x = localSizeX, local_size_y = localSizeY, local_size_z = localSizeZ) in; void main() {
 			#define MAIN_INPUT(name) name
 			#define MAIN_INPUT_ARRAY(name, index) name[index]
 			#define MAIN_INPUT_VERTEX_ID uint(gl_VertexIndex)						// "gl_VertexIndex" is equivalent to OpenGL's "gl_VertexID"
@@ -357,6 +367,9 @@
 		#define GET_TEXTURE_2D_SIZE(textureObject, mipmapIndex) textureSize(textureObject, mipmapIndex)
 		#define GET_TEXTURE_CUBE_SIZE(textureObject, mipmapIndex) textureSize(textureObject, mipmapIndex)
 
+		// Texture unordered access
+		#define RW_TEXTURE_2D(resourceGroupIndex, resourceIndex, name, registerIndex, format, access) layout(format, set = resourceGroupIndex, binding = resourceIndex) access uniform image2D name;
+
 		// Sampler
 		#define SAMPLER_STATE(resourceGroupIndex, resourceIndex, name, registerIndex) int name = registerIndex;	// We need something to pass into functions
 		#define SAMPLER_COMPARISON_STATE(resourceGroupIndex, resourceIndex, name, registerIndex)
@@ -389,6 +402,10 @@
 		#define DECLARE_COVERAGE_MASK
 		#define COVERAGE_MASK gl_SampleMaskIn[0]
 
+		// Compute shader only
+		#define DECLARE_GLOBAL_INVOCATION_ID
+		#define GLOBAL_INVOCATION_ID gl_GlobalInvocationID	// "uvec3"-type, 3 components vector of unsigned integer numbers
+
 		// Compiler hints
 		#define UNROLL_HINT
 		#define FLATTEN_HINT
@@ -410,10 +427,11 @@
 		#define uint3 uvec3
 		#define uint4 uvec4
 
-		// Load/fetch
+		// Load/fetch/store (unordered access)
 		#define TEXTURE_FETCH_2D(name, texelIndex) texelFetch(name, texelIndex.xy, texelIndex.z)
 		#define TEXTURE_FETCH_ARRAY(name, texelIndex) texelFetch(name, texelIndex.xyz, texelIndex.w)
 		#define TEXTURE_FETCH_3D(name, texelIndex) texelFetch(name, texelIndex.xyz, texelIndex.w)
+		#define IMAGE_STORE(name, texelIndex, data) imageStore(name, texelIndex, data)
 
 		// HLSL math functions
 		#define rsqrt(x) inversesqrt(x)
@@ -431,7 +449,9 @@
 // -> If the "GL_ARB_clip_control"-extension isn't available: Right-handed coordinate system with clip space depth value range -1..1
 @property(OpenGL)
 	@piece(SetCrossPlatformSettings)
-		#version 410 core	// This is what Mac OS X 10.11 and similar support, no fancy 420, no "#extension GL_ARB_shading_language_420pack : enable" and hence no "layout(binding)" usage possible (no problem, we're using material blueprints with a root signature)
+		// TODO(co) OpenGL GLSL 430 instead of 410 for e.g. "GL_ARB_shader_image_load_store" build in support. Apply dropped OpenGL support so we can probably drop Apple support. If at once point Unrimp should run on Apple hardware, we probably will use MoltenVK for Vulkan (yet another renderer API Metal just for Apple hardware is probably to much work for a spare time project).
+		// #version 410 core	// This is what Mac OS X 10.11 and similar support, no fancy 420, no "#extension GL_ARB_shading_language_420pack : enable" and hence no "layout(binding)" usage possible (no problem, we're using material blueprints with a root signature)
+		#version 430 core
 
 		// Hack to speed up shader compilation, see e.g.
 		// - https://www.gamedev.net/forums/topic/663243-slow-shader-compile-time-when-using-large-arrays/
@@ -494,6 +514,7 @@
 		#define MAIN_BEGIN_TESSELLATION_CONTROL_PATCH(numberOfInputControlPoints) void mainPerPatchInvocation() {
 		#define MAIN_BEGIN_TESSELLATION_CONTROL(numberOfInputControlPoints, numberOfOutputControlPoints) layout(vertices = numberOfOutputControlPoints) out; void main() { if (0 == gl_InvocationID) { mainPerPatchInvocation(); }
 		#define MAIN_BEGIN_TESSELLATION_EVALUATION(numberOfInputControlPoints) void main() {
+		#define MAIN_BEGIN_COMPUTE(localSizeX, localSizeY, localSizeZ) layout (local_size_x = localSizeX, local_size_y = localSizeY, local_size_z = localSizeZ) in; void main() {
 			#define MAIN_INPUT(name) name
 			#define MAIN_INPUT_ARRAY(name, index) name[index]
 			#define MAIN_INPUT_VERTEX_ID uint(gl_VertexID)
@@ -551,6 +572,9 @@
 		#define GET_TEXTURE_2D_SIZE(textureObject, mipmapIndex) textureSize(textureObject, mipmapIndex)
 		#define GET_TEXTURE_CUBE_SIZE(textureObject, mipmapIndex) textureSize(textureObject, mipmapIndex)
 
+		// Texture unordered access
+		#define RW_TEXTURE_2D(resourceGroupIndex, resourceIndex, name, registerIndex, format, access) layout(format) access uniform image2D name;
+
 		// Sampler
 		#define SAMPLER_STATE(resourceGroupIndex, resourceIndex, name, registerIndex) int name = registerIndex;	// We need something to pass into functions
 		#define SAMPLER_COMPARISON_STATE(resourceGroupIndex, resourceIndex, name, registerIndex)
@@ -589,6 +613,10 @@
 		#define DECLARE_COVERAGE_MASK
 		#define COVERAGE_MASK gl_SampleMaskIn[0]
 
+		// Compute shader only
+		#define DECLARE_GLOBAL_INVOCATION_ID
+		#define GLOBAL_INVOCATION_ID gl_GlobalInvocationID	// "uvec3"-type, 3 components vector of unsigned integer numbers
+
 		// Compiler hints
 		#define UNROLL_HINT
 		#define FLATTEN_HINT
@@ -610,10 +638,11 @@
 		#define uint3 uvec3
 		#define uint4 uvec4
 
-		// Load/fetch
+		// Load/fetch/store (unordered access)
 		#define TEXTURE_FETCH_2D(name, texelIndex) texelFetch(name, texelIndex.xy, texelIndex.z)
 		#define TEXTURE_FETCH_ARRAY(name, texelIndex) texelFetch(name, texelIndex.xyz, texelIndex.w)
 		#define TEXTURE_FETCH_3D(name, texelIndex) texelFetch(name, texelIndex.xyz, texelIndex.w)
+		#define IMAGE_STORE(name, texelIndex, data) imageStore(name, texelIndex, data)
 
 		// HLSL math functions
 		#define rsqrt(x) inversesqrt(x)
@@ -697,6 +726,7 @@
 		#define MAIN_BEGIN_TESSELLATION_CONTROL_PATCH(numberOfInputControlPoints) void mainPerPatchInvocation() {
 		#define MAIN_BEGIN_TESSELLATION_CONTROL(numberOfInputControlPoints, numberOfOutputControlPoints) layout(vertices = numberOfOutputControlPoints) out; void main() { if (0 == gl_InvocationID) { mainPerPatchInvocation(); }
 		#define MAIN_BEGIN_TESSELLATION_EVALUATION(numberOfInputControlPoints) void main() {
+		#define MAIN_BEGIN_COMPUTE(localSizeX, localSizeY, localSizeZ) layout (local_size_x = localSizeX, local_size_y = localSizeY, local_size_z = localSizeZ) in; void main() {
 			#define MAIN_INPUT(name) name
 			#define MAIN_INPUT_ARRAY(name, index) name[index]
 			#define MAIN_INPUT_VERTEX_ID uint(gl_VertexID)
@@ -757,6 +787,9 @@
 		#define GET_TEXTURE_2D_SIZE(textureObject, mipmapIndex) textureSize(textureObject, mipmapIndex)
 		#define GET_TEXTURE_CUBE_SIZE(textureObject, mipmapIndex) textureSize(textureObject, mipmapIndex)
 
+		// Texture unordered access
+		#define RW_TEXTURE_2D(resourceGroupIndex, resourceIndex, name, registerIndex, format, access) layout(format) access uniform image2D name;
+
 		// Sampler
 		#define SAMPLER_STATE(resourceGroupIndex, resourceIndex, name, registerIndex) int name = registerIndex;	// We need something to pass into functions
 		#define SAMPLER_COMPARISON_STATE(resourceGroupIndex, resourceIndex, name, registerIndex)
@@ -795,6 +828,10 @@
 		#define DECLARE_COVERAGE_MASK
 		#define COVERAGE_MASK 0u	// OpenGL ES shading language version 3.20 needed
 
+		// Compute shader only
+		#define DECLARE_GLOBAL_INVOCATION_ID
+		#define GLOBAL_INVOCATION_ID gl_GlobalInvocationID	// "uvec3"-type, 3 components vector of unsigned integer numbers
+
 		// Compiler hints
 		#define UNROLL_HINT
 		#define FLATTEN_HINT
@@ -816,10 +853,11 @@
 		#define uint3 uvec3
 		#define uint4 uvec4
 
-		// Load/fetch
+		// Load/fetch/store (unordered access)
 		#define TEXTURE_FETCH_2D(name, texelIndex) texelFetch(name, texelIndex.xy, texelIndex.z)
 		#define TEXTURE_FETCH_ARRAY(name, texelIndex) texelFetch(name, texelIndex.xyz, texelIndex.w)
 		#define TEXTURE_FETCH_3D(name, texelIndex) texelFetch(name, texelIndex.xyz, texelIndex.w)
+		#define IMAGE_STORE(name, texelIndex, data) imageStore(name, texelIndex, data)
 
 		// HLSL math functions
 		#define rsqrt(x) inversesqrt(x)

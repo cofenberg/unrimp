@@ -9678,66 +9678,19 @@ namespace Direct3D12Renderer
 
 		virtual Renderer::IGraphicsProgram* createGraphicsProgram(MAYBE_UNUSED const Renderer::IRootSignature& rootSignature, MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
 		{
-			// A shader can be a null pointer, but if it's not the shader and graphics program language must match!
+			// Sanity checks
+			// -> A shader can be a null pointer, but if it's not the shader and graphics program language must match!
 			// -> Optimization: Comparing the shader language name by directly comparing the pointer address of
 			//    the name is safe because we know that we always reference to one and the same name address
 			// TODO(co) Add security check: Is the given resource one of the currently used renderer?
-			if (nullptr != vertexShader && vertexShader->getShaderLanguageName() != ::detail::HLSL_NAME)
-			{
-				// Error! Vertex shader language mismatch!
-			}
-			else if (nullptr != tessellationControlShader && tessellationControlShader->getShaderLanguageName() != ::detail::HLSL_NAME)
-			{
-				// Error! Tessellation control shader language mismatch!
-			}
-			else if (nullptr != tessellationEvaluationShader && tessellationEvaluationShader->getShaderLanguageName() != ::detail::HLSL_NAME)
-			{
-				// Error! Tessellation evaluation shader language mismatch!
-			}
-			else if (nullptr != geometryShader && geometryShader->getShaderLanguageName() != ::detail::HLSL_NAME)
-			{
-				// Error! Geometry shader language mismatch!
-			}
-			else if (nullptr != fragmentShader && fragmentShader->getShaderLanguageName() != ::detail::HLSL_NAME)
-			{
-				// Error! Fragment shader language mismatch!
-			}
-			else
-			{
-				// Create the graphics program
-				return RENDERER_NEW(getRenderer().getContext(), GraphicsProgramHlsl)(static_cast<Direct3D12Renderer&>(getRenderer()), static_cast<VertexShaderHlsl*>(vertexShader), static_cast<TessellationControlShaderHlsl*>(tessellationControlShader), static_cast<TessellationEvaluationShaderHlsl*>(tessellationEvaluationShader), static_cast<GeometryShaderHlsl*>(geometryShader), static_cast<FragmentShaderHlsl*>(fragmentShader));
-			}
+			RENDERER_ASSERT(getRenderer().getContext(), nullptr == vertexShader || vertexShader->getShaderLanguageName() == ::detail::HLSL_NAME, "Direct3D 12 vertex shader language mismatch")
+			RENDERER_ASSERT(getRenderer().getContext(), nullptr == tessellationControlShader || tessellationControlShader->getShaderLanguageName() == ::detail::HLSL_NAME, "Direct3D 12 tessellation control shader language mismatch")
+			RENDERER_ASSERT(getRenderer().getContext(), nullptr == tessellationEvaluationShader || tessellationEvaluationShader->getShaderLanguageName() == ::detail::HLSL_NAME, "Direct3D 12 tessellation evaluation shader language mismatch")
+			RENDERER_ASSERT(getRenderer().getContext(), nullptr == geometryShader || geometryShader->getShaderLanguageName() == ::detail::HLSL_NAME, "Direct3D 12 geometry shader language mismatch")
+			RENDERER_ASSERT(getRenderer().getContext(), nullptr == fragmentShader || fragmentShader->getShaderLanguageName() == ::detail::HLSL_NAME, "Direct3D 12 fragment shader language mismatch")
 
-			// Error! Shader language mismatch!
-			// -> Ensure a correct reference counter behaviour, even in the situation of an error
-			if (nullptr != vertexShader)
-			{
-				vertexShader->addReference();
-				vertexShader->releaseReference();
-			}
-			if (nullptr != tessellationControlShader)
-			{
-				tessellationControlShader->addReference();
-				tessellationControlShader->releaseReference();
-			}
-			if (nullptr != tessellationEvaluationShader)
-			{
-				tessellationEvaluationShader->addReference();
-				tessellationEvaluationShader->releaseReference();
-			}
-			if (nullptr != geometryShader)
-			{
-				geometryShader->addReference();
-				geometryShader->releaseReference();
-			}
-			if (nullptr != fragmentShader)
-			{
-				fragmentShader->addReference();
-				fragmentShader->releaseReference();
-			}
-
-			// Error!
-			return nullptr;
+			// Create the graphics program
+			return RENDERER_NEW(getRenderer().getContext(), GraphicsProgramHlsl)(static_cast<Direct3D12Renderer&>(getRenderer()), static_cast<VertexShaderHlsl*>(vertexShader), static_cast<TessellationControlShaderHlsl*>(tessellationControlShader), static_cast<TessellationEvaluationShaderHlsl*>(tessellationEvaluationShader), static_cast<GeometryShaderHlsl*>(geometryShader), static_cast<FragmentShaderHlsl*>(fragmentShader));
 		}
 
 

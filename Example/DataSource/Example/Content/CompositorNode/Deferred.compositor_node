@@ -149,7 +149,8 @@
 			},
 			"Example/Texture/Dynamic/LdrColorRenderTarget0":
 			{
-				"TextureFormat": "R8G8B8A8"
+				"TextureFormat": "R8G8B8A8",
+				"Flags": "SHADER_RESOURCE | UNORDERED_ACCESS"
 			},
 			"Example/Texture/Dynamic/LdrColorRenderTarget1":
 			{
@@ -282,10 +283,6 @@
 			"LensFlareFramebuffer":
 			{
 				"ColorTextures": [ "Example/Texture/Dynamic/LensFlareColorRenderTarget" ]
-			},
-			"LdrFramebuffer0":
-			{
-				"ColorTextures": [ "Example/Texture/Dynamic/LdrColorRenderTarget0" ]
 			},
 			"LdrFramebuffer1":
 			{
@@ -800,7 +797,7 @@
 					}
 				}
 			},
-			"LdrFramebuffer0":
+			"":
 			{
 				"Compute":
 				{
@@ -811,7 +808,8 @@
 						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget0",
 						"LuminanceMap": "Example/Texture/Dynamic/AdaptiveLuminanceRenderTarget",
 						"BloomMap": "Example/Texture/Dynamic/BloomDownscale2ColorRenderTarget",
-						"LensFlareMap": "Example/Texture/Dynamic/LensFlareColorRenderTarget"
+						"LensFlareMap": "Example/Texture/Dynamic/LensFlareColorRenderTarget",
+						"OutputTexture2D": "Example/Texture/Dynamic/LdrColorRenderTarget0"
 					}
 				}
 			},

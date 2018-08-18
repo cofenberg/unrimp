@@ -271,12 +271,21 @@ namespace
 					const rapidjson::Value& rapidJsonValuePasses = rapidJsonValueTarget;	// A render target only contains passes, keep this variable to make the content more clear
 
 					{ // Write down the compositor resource node target
-					  // -> Render target might be compositor channel (external interconnection) or compositor framebuffer (node internal processing)
-						const uint32_t id = RendererRuntime::StringId::calculateFNV(targetName.c_str());
 						RendererRuntime::v1CompositorNode::Target target;
-						target.compositorChannelId	   = (compositorChannelIds.find(id) != compositorChannelIds.end()) ? id : RendererRuntime::getInvalid<uint32_t>();
-						target.compositorFramebufferId = (compositorFramebufferIds.find(id) != compositorFramebufferIds.end()) ? id : RendererRuntime::getInvalid<uint32_t>();
-						target.numberOfPasses		   = rapidJsonValuePasses.MemberCount();
+						if (targetName.empty())
+						{
+							// There's no render target, which is valid in case e.g. compute shaders are used inside passes
+							target.compositorChannelId	   = RendererRuntime::getInvalid<RendererRuntime::CompositorChannelId>();
+							target.compositorFramebufferId = RendererRuntime::getInvalid<RendererRuntime::CompositorFramebufferId>();
+						}
+						else
+						{
+							// Render target might be compositor channel (external interconnection) or compositor framebuffer (node internal processing)
+							const uint32_t id = RendererRuntime::StringId::calculateFNV(targetName.c_str());
+							target.compositorChannelId	   = (compositorChannelIds.find(id) != compositorChannelIds.end()) ? id : RendererRuntime::getInvalid<uint32_t>();
+							target.compositorFramebufferId = (compositorFramebufferIds.find(id) != compositorFramebufferIds.end()) ? id : RendererRuntime::getInvalid<uint32_t>();
+						}
+						target.numberOfPasses = rapidJsonValuePasses.MemberCount();
 						file.write(&target, sizeof(RendererRuntime::v1CompositorNode::Target));
 					}
 

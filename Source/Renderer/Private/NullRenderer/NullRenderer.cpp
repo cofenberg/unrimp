@@ -2569,65 +2569,19 @@ namespace NullRenderer
 
 		virtual Renderer::IGraphicsProgram* createGraphicsProgram(MAYBE_UNUSED const Renderer::IRootSignature& rootSignature, MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
 		{
-			// A shader can be a null pointer, but if it's not the shader and graphics program language must match!
+			// Sanity checks
+			// -> A shader can be a null pointer, but if it's not the shader and graphics program language must match!
 			// -> Optimization: Comparing the shader language name by directly comparing the pointer address of
 			//    the name is safe because we know that we always reference to one and the same name address
 			// TODO(co) Add security check: Is the given resource one of the currently used renderer?
-			if (nullptr != vertexShader && vertexShader->getShaderLanguageName() != ::detail::NULL_NAME)
-			{
-				// Error! Vertex shader language mismatch!
-			}
-			else if (nullptr != tessellationControlShader && tessellationControlShader->getShaderLanguageName() != ::detail::NULL_NAME)
-			{
-				// Error! Tessellation control shader language mismatch!
-			}
-			else if (nullptr != tessellationEvaluationShader && tessellationEvaluationShader->getShaderLanguageName() != ::detail::NULL_NAME)
-			{
-				// Error! Tessellation evaluation shader language mismatch!
-			}
-			else if (nullptr != geometryShader && geometryShader->getShaderLanguageName() != ::detail::NULL_NAME)
-			{
-				// Error! Geometry shader language mismatch!
-			}
-			else if (nullptr != fragmentShader && fragmentShader->getShaderLanguageName() != ::detail::NULL_NAME)
-			{
-				// Error! Fragment shader language mismatch!
-			}
-			else
-			{
-				return RENDERER_NEW(getRenderer().getContext(), GraphicsProgram)(static_cast<NullRenderer&>(getRenderer()), static_cast<VertexShader*>(vertexShader), static_cast<TessellationControlShader*>(tessellationControlShader), static_cast<TessellationEvaluationShader*>(tessellationEvaluationShader), static_cast<GeometryShader*>(geometryShader), static_cast<FragmentShader*>(fragmentShader));
-			}
+			RENDERER_ASSERT(getRenderer().getContext(), nullptr == vertexShader || vertexShader->getShaderLanguageName() == ::detail::NULL_NAME, "Null vertex shader language mismatch")
+			RENDERER_ASSERT(getRenderer().getContext(), nullptr == tessellationControlShader || tessellationControlShader->getShaderLanguageName() == ::detail::NULL_NAME, "Null tessellation control shader language mismatch")
+			RENDERER_ASSERT(getRenderer().getContext(), nullptr == tessellationEvaluationShader || tessellationEvaluationShader->getShaderLanguageName() == ::detail::NULL_NAME, "Null tessellation evaluation shader language mismatch")
+			RENDERER_ASSERT(getRenderer().getContext(), nullptr == geometryShader || geometryShader->getShaderLanguageName() == ::detail::NULL_NAME, "Null geometry shader language mismatch")
+			RENDERER_ASSERT(getRenderer().getContext(), nullptr == fragmentShader || fragmentShader->getShaderLanguageName() == ::detail::NULL_NAME, "Null fragment shader language mismatch")
 
-			// Error! Shader language mismatch!
-			// -> Ensure a correct reference counter behaviour, even in the situation of an error
-			if (nullptr != vertexShader)
-			{
-				vertexShader->addReference();
-				vertexShader->releaseReference();
-			}
-			if (nullptr != tessellationControlShader)
-			{
-				tessellationControlShader->addReference();
-				tessellationControlShader->releaseReference();
-			}
-			if (nullptr != tessellationEvaluationShader)
-			{
-				tessellationEvaluationShader->addReference();
-				tessellationEvaluationShader->releaseReference();
-			}
-			if (nullptr != geometryShader)
-			{
-				geometryShader->addReference();
-				geometryShader->releaseReference();
-			}
-			if (nullptr != fragmentShader)
-			{
-				fragmentShader->addReference();
-				fragmentShader->releaseReference();
-			}
-
-			// Error!
-			return nullptr;
+			// Create the graphics program
+			return RENDERER_NEW(getRenderer().getContext(), GraphicsProgram)(static_cast<NullRenderer&>(getRenderer()), static_cast<VertexShader*>(vertexShader), static_cast<TessellationControlShader*>(tessellationControlShader), static_cast<TessellationEvaluationShader*>(tessellationEvaluationShader), static_cast<GeometryShader*>(geometryShader), static_cast<FragmentShader*>(fragmentShader));
 		}
 
 

@@ -129,8 +129,11 @@ namespace RendererRuntime
 		fillClusters3DTexture(sceneResource, commandBuffer);
 	}
 
-	void LightBufferManager::fillCommandBuffer(const MaterialBlueprintResource& materialBlueprintResource, Renderer::CommandBuffer& commandBuffer)
+	void LightBufferManager::fillGraphicsCommandBuffer(const MaterialBlueprintResource& materialBlueprintResource, Renderer::CommandBuffer& commandBuffer)
 	{
+		// Sanity check
+		assert(isInvalid(materialBlueprintResource.getComputeShaderBlueprintResourceId()));
+
 		// Light texture buffer
 		const MaterialBlueprintResource::TextureBuffer* lightTextureBuffer = materialBlueprintResource.getLightTextureBuffer();
 		if (nullptr != lightTextureBuffer)
@@ -147,8 +150,34 @@ namespace RendererRuntime
 				mResourceGroup->addReference();
 			}
 
-			// Set resource group
+			// Set graphics resource group
 			Renderer::Command::SetGraphicsResourceGroup::create(commandBuffer, lightTextureBuffer->rootParameterIndex, mResourceGroup);
+		}
+	}
+
+	void LightBufferManager::fillComputeCommandBuffer(const MaterialBlueprintResource& materialBlueprintResource, Renderer::CommandBuffer& commandBuffer)
+	{
+		// Sanity check
+		assert(isValid(materialBlueprintResource.getComputeShaderBlueprintResourceId()));
+
+		// Light texture buffer
+		const MaterialBlueprintResource::TextureBuffer* lightTextureBuffer = materialBlueprintResource.getLightTextureBuffer();
+		if (nullptr != lightTextureBuffer)
+		{
+			// TODO(co) We probably need to move the light buffer manager into the material blueprint resource
+			// Create resource group instance, if needed
+			if (nullptr == mResourceGroup)
+			{
+				// TODO(co) We probably should put the clusters 3D texture resource into the light buffer manager resource group as well
+				// Renderer::IResource* resources[2] = { mTextureBuffer, mRendererRuntime.getTextureResourceManager().getById(mClusters3DTextureResourceId).getTexture() };
+				Renderer::IResource* resources[1] = { mTextureBuffer };
+				mResourceGroup = materialBlueprintResource.getRootSignaturePtr()->createResourceGroup(lightTextureBuffer->rootParameterIndex, static_cast<uint32_t>(glm::countof(resources)), resources);
+				RENDERER_SET_RESOURCE_DEBUG_NAME(mResourceGroup, "Light buffer manager resource group")
+				mResourceGroup->addReference();
+			}
+
+			// Set compute resource group
+			Renderer::Command::SetComputeResourceGroup::create(commandBuffer, lightTextureBuffer->rootParameterIndex, mResourceGroup);
 		}
 	}
 

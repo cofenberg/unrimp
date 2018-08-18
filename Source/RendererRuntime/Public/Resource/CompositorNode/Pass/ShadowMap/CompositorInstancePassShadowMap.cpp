@@ -307,7 +307,7 @@ namespace RendererRuntime
 					}
 					if (mRenderQueue.getNumberOfDrawCalls() > 0)
 					{
-						mRenderQueue.fillCommandBuffer(renderTarget, static_cast<const CompositorResourcePassScene&>(getCompositorResourcePass()).getMaterialTechniqueId(), shadowCompositorContextData, commandBuffer);
+						mRenderQueue.fillGraphicsCommandBuffer(renderTarget, static_cast<const CompositorResourcePassScene&>(getCompositorResourcePass()).getMaterialTechniqueId(), shadowCompositorContextData, commandBuffer);
 						mRenderQueue.clear();
 					}
 				}

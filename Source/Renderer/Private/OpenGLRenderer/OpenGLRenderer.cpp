@@ -1127,7 +1127,9 @@ namespace
 
 				// GLSL to intermediate
 				// -> OpenGL 4.1 (the best OpenGL version Mac OS X 10.11 supports, so lowest version we have to support)
-				const int glslVersion = 410;
+				// TODO(co) OpenGL GLSL 430 instead of 410 for e.g. "GL_ARB_shader_image_load_store" build in support. Apply dropped OpenGL support so we can probably drop Apple support. If at once point Unrimp should run on Apple hardware, we probably will use MoltenVK for Vulkan (yet another renderer API Metal just for Apple hardware is probably to much work for a spare time project).
+				// const int glslVersion = 410;
+				const int glslVersion = 430;
 				EShLanguage shLanguage = EShLangCount;
 				switch (shaderType)
 				{
@@ -14549,7 +14551,7 @@ namespace OpenGLRenderer
 		inline virtual Renderer::IVertexShader* createVertexShaderFromBytecode(const Renderer::VertexAttributes&, const Renderer::ShaderBytecode&) override
 		{
 			// Error!
-			RENDERER_ASSERT(getRenderer().getContext(), false, "Monolithic shaders have no shader bytecode, only a monolithic program bytecode")
+			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
@@ -14572,7 +14574,7 @@ namespace OpenGLRenderer
 		inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromBytecode(const Renderer::ShaderBytecode&) override
 		{
 			// Error!
-			RENDERER_ASSERT(getRenderer().getContext(), false, "Monolithic shaders have no shader bytecode, only a monolithic program bytecode")
+			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
@@ -14595,7 +14597,7 @@ namespace OpenGLRenderer
 		inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode(const Renderer::ShaderBytecode&) override
 		{
 			// Error!
-			RENDERER_ASSERT(getRenderer().getContext(), false, "Monolithic shaders have no shader bytecode, only a monolithic program bytecode")
+			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
@@ -14618,7 +14620,7 @@ namespace OpenGLRenderer
 		inline virtual Renderer::IGeometryShader* createGeometryShaderFromBytecode(const Renderer::ShaderBytecode&, Renderer::GsInputPrimitiveTopology, Renderer::GsOutputPrimitiveTopology, uint32_t) override
 		{
 			// Error!
-			RENDERER_ASSERT(getRenderer().getContext(), false, "Monolithic shaders have no shader bytecode, only a monolithic program bytecode")
+			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
@@ -14645,7 +14647,7 @@ namespace OpenGLRenderer
 		inline virtual Renderer::IFragmentShader* createFragmentShaderFromBytecode(const Renderer::ShaderBytecode&) override
 		{
 			// Error!
-			RENDERER_ASSERT(getRenderer().getContext(), false, "Monolithic shaders have no shader bytecode, only a monolithic program bytecode")
+			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
@@ -14668,7 +14670,7 @@ namespace OpenGLRenderer
 		inline virtual Renderer::IComputeShader* createComputeShaderFromBytecode(const Renderer::ShaderBytecode&) override
 		{
 			// Error!
-			RENDERER_ASSERT(getRenderer().getContext(), false, "Monolithic shaders have no shader bytecode, only a monolithic program bytecode")
+			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
@@ -14690,35 +14692,20 @@ namespace OpenGLRenderer
 
 		virtual Renderer::IGraphicsProgram* createGraphicsProgram(const Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
 		{
-			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(getRenderer());
-
-			// A shader can be a null pointer, but if it's not the shader and graphics program language must match!
+			// Sanity checks
+			// -> A shader can be a null pointer, but if it's not the shader and graphics program language must match!
 			// -> Optimization: Comparing the shader language name by directly comparing the pointer address of
 			//    the name is safe because we know that we always reference to one and the same name address
 			// TODO(co) Add security check: Is the given resource one of the currently used renderer?
-			if (nullptr != vertexShader && vertexShader->getShaderLanguageName() != ::detail::GLSL_NAME)
-			{
-				// Error! Vertex shader language mismatch!
-			}
-			else if (nullptr != tessellationControlShader && tessellationControlShader->getShaderLanguageName() != ::detail::GLSL_NAME)
-			{
-				// Error! Tessellation control shader language mismatch!
-			}
-			else if (nullptr != tessellationEvaluationShader && tessellationEvaluationShader->getShaderLanguageName() != ::detail::GLSL_NAME)
-			{
-				// Error! Tessellation evaluation shader language mismatch!
-			}
-			else if (nullptr != geometryShader && geometryShader->getShaderLanguageName() != ::detail::GLSL_NAME)
-			{
-				// Error! Geometry shader language mismatch!
-			}
-			else if (nullptr != fragmentShader && fragmentShader->getShaderLanguageName() != ::detail::GLSL_NAME)
-			{
-				// Error! Fragment shader language mismatch!
-			}
+			RENDERER_ASSERT(getRenderer().getContext(), nullptr == vertexShader || vertexShader->getShaderLanguageName() == ::detail::GLSL_NAME, "OpenGL vertex shader language mismatch")
+			RENDERER_ASSERT(getRenderer().getContext(), nullptr == tessellationControlShader || tessellationControlShader->getShaderLanguageName() == ::detail::GLSL_NAME, "OpenGL tessellation control shader language mismatch")
+			RENDERER_ASSERT(getRenderer().getContext(), nullptr == tessellationEvaluationShader || tessellationEvaluationShader->getShaderLanguageName() == ::detail::GLSL_NAME, "OpenGL tessellation evaluation shader language mismatch")
+			RENDERER_ASSERT(getRenderer().getContext(), nullptr == geometryShader || geometryShader->getShaderLanguageName() == ::detail::GLSL_NAME, "OpenGL geometry shader language mismatch")
+			RENDERER_ASSERT(getRenderer().getContext(), nullptr == fragmentShader || fragmentShader->getShaderLanguageName() == ::detail::GLSL_NAME, "OpenGL fragment shader language mismatch")
 
-			// Is "GL_EXT_direct_state_access" there?
-			else if (openGLRenderer.getExtensions().isGL_EXT_direct_state_access() || openGLRenderer.getExtensions().isGL_ARB_direct_state_access())
+			// Create the graphics program: Is "GL_EXT_direct_state_access" there?
+			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(getRenderer());
+			if (openGLRenderer.getExtensions().isGL_EXT_direct_state_access() || openGLRenderer.getExtensions().isGL_ARB_direct_state_access())
 			{
 				// Effective direct state access (DSA)
 				return RENDERER_NEW(getRenderer().getContext(), GraphicsProgramMonolithicDsa)(openGLRenderer, rootSignature, vertexAttributes, static_cast<VertexShaderMonolithic*>(vertexShader), static_cast<TessellationControlShaderMonolithic*>(tessellationControlShader), static_cast<TessellationEvaluationShaderMonolithic*>(tessellationEvaluationShader), static_cast<GeometryShaderMonolithic*>(geometryShader), static_cast<FragmentShaderMonolithic*>(fragmentShader));
@@ -14728,37 +14715,6 @@ namespace OpenGLRenderer
 				// Traditional bind version
 				return RENDERER_NEW(getRenderer().getContext(), GraphicsProgramMonolithic)(openGLRenderer, rootSignature, vertexAttributes, static_cast<VertexShaderMonolithic*>(vertexShader), static_cast<TessellationControlShaderMonolithic*>(tessellationControlShader), static_cast<TessellationEvaluationShaderMonolithic*>(tessellationEvaluationShader), static_cast<GeometryShaderMonolithic*>(geometryShader), static_cast<FragmentShaderMonolithic*>(fragmentShader));
 			}
-
-			// Error! Shader language mismatch!
-			// -> Ensure a correct reference counter behaviour, even in the situation of an error
-			if (nullptr != vertexShader)
-			{
-				vertexShader->addReference();
-				vertexShader->releaseReference();
-			}
-			if (nullptr != tessellationControlShader)
-			{
-				tessellationControlShader->addReference();
-				tessellationControlShader->releaseReference();
-			}
-			if (nullptr != tessellationEvaluationShader)
-			{
-				tessellationEvaluationShader->addReference();
-				tessellationEvaluationShader->releaseReference();
-			}
-			if (nullptr != geometryShader)
-			{
-				geometryShader->addReference();
-				geometryShader->releaseReference();
-			}
-			if (nullptr != fragmentShader)
-			{
-				fragmentShader->addReference();
-				fragmentShader->releaseReference();
-			}
-
-			// Error!
-			return nullptr;
 		}
 
 

@@ -30,16 +30,14 @@
 //[-------------------------------------------------------]
 // Attribute input / output
 INPUT_BEGIN
-	INPUT_TEXTURE_COORDINATE(1, float2, TexCoordVS, 0)	// Texture coordinate
+	DECLARE_GLOBAL_INVOCATION_ID
 INPUT_END
-OUTPUT_BEGIN
-	OUTPUT_COLOR(0)
-OUTPUT_END
 
 // Uniform buffers
 struct PassDataStruct
 {
 	float4x4 LensStarMatrix;
+	uint3	 GlobalComputeSize;
 	float 	 ToneMapKeyValue;	// Used by "CalculateExposedColor()"
 	float 	 BloomIntensity;
 };
@@ -56,10 +54,10 @@ TEXTURE_2D(1, 3, DirtyLensMap, 3)
 	TEXTURE_2D(1, 4, LensFlareMap, 4)
 	TEXTURE_2D(1, 5, LensStarMap, 5)
 @end
+RW_TEXTURE_2D(1, 6, OutputTexture2D, 6, rgba8, writeonly)
 
 // Samplers
-SAMPLER_STATE(2, 0, SamplerPoint, 0)
-SAMPLER_STATE(2, 1, SamplerLinear, 1)
+SAMPLER_STATE(2, 0, SamplerLinear, 0)
 
 
 //[-------------------------------------------------------]
@@ -91,35 +89,39 @@ float3 ToneMap(float3 color, float averageLuminance, float threshold, out float 
 //[-------------------------------------------------------]
 //[ Main                                                  ]
 //[-------------------------------------------------------]
-MAIN_BEGIN
-	float4 textureCoordinate = float4(MAIN_INPUT(TexCoordVS), 0.0f, 0.0f);
-	float4 color = SAMPLE_2D_LOD(ColorMap, SamplerPoint, textureCoordinate);
-	float averageLuminance = SAMPLE_2D_LOD(LuminanceMap, SamplerPoint, float4(0.5f, 0.5f, 0.0f, 0.0f)).r;
-
-	// Get dirty lens value
-	float3 dirtyLens = SAMPLE_2D_LOD(DirtyLensMap, SamplerLinear, textureCoordinate).rgb;
-
-	{ // Tone map
-		float exposure = 0.0f;
-		color.rgb = ToneMap(color.rgb, averageLuminance, 0.0f, exposure);
-	}
-
-	@property(UseLensFlareMap)
+MAIN_BEGIN_COMPUTE(32, 32, 1)
+	// Compute dispatch is using groups of a multiple of the local size, ensure we don't access ouf of global compute size which musn't be a multiple of the local size and hence might be smaller
+	if (GLOBAL_INVOCATION_ID.x < PassData.GlobalComputeSize.x && GLOBAL_INVOCATION_ID.y < PassData.GlobalComputeSize.y)
 	{
-		// Apply the lens flare with dirty lens
-		float lensFlareIntensity = 0.1f;
-		float3 lensFlare = SAMPLE_2D_LOD(LensFlareMap, SamplerLinear, textureCoordinate).rgb;
-		float2 lensStarTexcoord = (MATRIX_MUL(float3(MAIN_INPUT(TexCoordVS), 1.0f), CAST_TO(PassData.LensStarMatrix, float3x3))).xy;
-		color.rgb += lensFlare * lensFlareIntensity;
-		color.rgb += lensFlare * SAMPLE_2D_LOD(LensStarMap, SamplerLinear, float4(lensStarTexcoord, 0.0f, 0.0f)).rgb * 10.0f;
-	}
-	@end
+		float4 textureCoordinate = float4(CAST_TO(GLOBAL_INVOCATION_ID.xy, float2) / CAST_TO(PassData.GlobalComputeSize.xy, float2), 0.0f, 0.0f);
+		float4 color = TEXTURE_FETCH_2D(ColorMap, CAST_TO(GLOBAL_INVOCATION_ID, int3));
+		float averageLuminance = TEXTURE_FETCH_2D(LuminanceMap, int3(0, 0, 0)).r;
 
-	{ // Apply the bloom with dirty lens
-		float3 bloom = SAMPLE_2D_LOD(BloomMap, SamplerLinear, textureCoordinate).rgb;
-		color.rgb += bloom * PassData.BloomIntensity + bloom * PassData.BloomIntensity * dirtyLens;
-	}
+		// Get dirty lens value
+		float3 dirtyLens = SAMPLE_2D_LOD(DirtyLensMap, SamplerLinear, textureCoordinate).rgb;
 
-	// Done, ensure we're in a 0..1 range
-	MAIN_OUTPUT_COLOR(0) = float4(SATURATE(color.rgb), color.a);
-MAIN_END
+		{ // Tone map
+			float exposure = 0.0f;
+			color.rgb = ToneMap(color.rgb, averageLuminance, 0.0f, exposure);
+		}
+
+		@property(UseLensFlareMap)
+		{
+			// Apply the lens flare with dirty lens
+			float lensFlareIntensity = 0.1f;
+			float3 lensFlare = SAMPLE_2D_LOD(LensFlareMap, SamplerLinear, textureCoordinate).rgb;
+			float2 lensStarTexcoord = (MATRIX_MUL(float3(textureCoordinate.xy, 1.0f), CAST_TO(PassData.LensStarMatrix, float3x3))).xy;
+			color.rgb += lensFlare * lensFlareIntensity;
+			color.rgb += lensFlare * SAMPLE_2D_LOD(LensStarMap, SamplerLinear, float4(lensStarTexcoord, 0.0f, 0.0f)).rgb * 10.0f;
+		}
+		@end
+
+		{ // Apply the bloom with dirty lens
+			float3 bloom = SAMPLE_2D_LOD(BloomMap, SamplerLinear, textureCoordinate).rgb;
+			color.rgb += bloom * PassData.BloomIntensity + bloom * PassData.BloomIntensity * dirtyLens;
+		}
+
+		// Done, ensure we're in a 0..1 range
+		IMAGE_STORE(OutputTexture2D, CAST_TO(GLOBAL_INVOCATION_ID.xy, int2), float4(SATURATE(color.rgb), color.a));
+	}
+MAIN_END_NO_OUTPUT

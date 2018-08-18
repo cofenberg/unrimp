@@ -257,7 +257,7 @@ namespace RendererRuntime
 		}
 	}
 
-	void MaterialBlueprintResource::fillCommandBuffer(Renderer::CommandBuffer& commandBuffer)
+	void MaterialBlueprintResource::fillGraphicsCommandBuffer(Renderer::CommandBuffer& commandBuffer)
 	{
 		// Set the used graphics root signature
 		Renderer::Command::SetGraphicsRootSignature::create(commandBuffer, mRootSignaturePtr);
@@ -265,7 +265,7 @@ namespace RendererRuntime
 		// Bind pass buffer manager, if required
 		if (nullptr != mPassBufferManager)
 		{
-			mPassBufferManager->fillCommandBuffer(commandBuffer);
+			mPassBufferManager->fillGraphicsCommandBuffer(commandBuffer);
 		}
 
 		// Set our sampler states
@@ -286,14 +286,54 @@ namespace RendererRuntime
 				RENDERER_SET_RESOURCE_DEBUG_NAME(mSamplerStateGroup, "Material blueprint")
 			}
 
-			// Set resource group
+			// Set graphics resource group
 			Renderer::Command::SetGraphicsResourceGroup::create(commandBuffer, mSamplerStates[0].rootParameterIndex, mSamplerStateGroup);
 		}
 
-		// It's valid if a material blueprint resource doesn't contain a material uniform buffer (usually the case for compositor material blueprint resources)
+		// It's valid if a graphics material blueprint resource doesn't contain a material uniform buffer (usually the case for compositor material blueprint resources)
 		if (nullptr != mMaterialBufferManager)
 		{
-			mMaterialBufferManager->resetLastBoundPool();
+			mMaterialBufferManager->resetLastGraphicsBoundPool();
+		}
+	}
+
+	void MaterialBlueprintResource::fillComputeCommandBuffer(Renderer::CommandBuffer& commandBuffer)
+	{
+		// Set the used compute root signature
+		Renderer::Command::SetComputeRootSignature::create(commandBuffer, mRootSignaturePtr);
+
+		// Bind pass buffer manager, if required
+		if (nullptr != mPassBufferManager)
+		{
+			mPassBufferManager->fillComputeCommandBuffer(commandBuffer);
+		}
+
+		// Set our sampler states
+		if (!mSamplerStates.empty())
+		{
+			// Create sampler resource group, if needed
+			if (nullptr == mSamplerStateGroup)
+			{
+				std::vector<Renderer::IResource*> resources;
+				const size_t numberOfSamplerStates = mSamplerStates.size();
+				resources.resize(numberOfSamplerStates);
+				for (size_t i = 0; i < numberOfSamplerStates; ++i)
+				{
+					resources[i] = mSamplerStates[i].samplerStatePtr;
+				}
+				// TODO(co) All sampler states need to be inside the same resource group, this needs to be guaranteed by design
+				mSamplerStateGroup = mRootSignaturePtr->createResourceGroup(mSamplerStates[0].rootParameterIndex, static_cast<uint32_t>(numberOfSamplerStates), resources.data());
+				RENDERER_SET_RESOURCE_DEBUG_NAME(mSamplerStateGroup, "Material blueprint")
+			}
+
+			// Set compute resource group
+			Renderer::Command::SetComputeResourceGroup::create(commandBuffer, mSamplerStates[0].rootParameterIndex, mSamplerStateGroup);
+		}
+
+		// It's valid if a compute material blueprint resource doesn't contain a material uniform buffer (usually the case for compositor material blueprint resources)
+		if (nullptr != mMaterialBufferManager)
+		{
+			mMaterialBufferManager->resetLastComputeBoundPool();
 		}
 	}
 

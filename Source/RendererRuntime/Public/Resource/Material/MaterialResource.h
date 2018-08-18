@@ -87,8 +87,10 @@ namespace RendererRuntime
 		typedef std::vector<MaterialTechnique*> SortedMaterialTechniqueVector;
 
 		// Fixed build in material properties
-		static constexpr uint32_t RENDER_QUEUE_INDEX_PROPERTY_ID = STRING_ID("RenderQueueIndex");	///< "RenderQueueIndex", value type = "INTEGER", usage = "STATIC", value range = [0, 255]
-		static constexpr uint32_t CAST_SHADOWS_PROPERTY_ID		 = STRING_ID("CastShadows");		///< "CastShadows", value type = "BOOLEAN", usage = "STATIC"
+		static constexpr uint32_t RENDER_QUEUE_INDEX_PROPERTY_ID  = STRING_ID("RenderQueueIndex");	///< "RenderQueueIndex", value type = "INTEGER", usage = "STATIC", value range = [0, 255]
+		static constexpr uint32_t CAST_SHADOWS_PROPERTY_ID		  = STRING_ID("CastShadows");		///< "CastShadows", value type = "BOOLEAN", usage = "STATIC"
+		static constexpr uint32_t LOCAL_COMPUTE_SIZE_PROPERTY_ID  = STRING_ID("LocalComputeSize");	///< "LocalComputeSize", value type = "INTEGER_3", usage = "STATIC"
+		static constexpr uint32_t GLOBAL_COMPUTE_SIZE_PROPERTY_ID = STRING_ID("GlobalComputeSize");	///< "GlobalComputeSize", value type = "INTEGER_3", usage = "STATIC"
 
 
 	//[-------------------------------------------------------]

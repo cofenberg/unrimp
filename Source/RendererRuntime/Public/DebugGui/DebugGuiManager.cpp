@@ -280,7 +280,7 @@ namespace RendererRuntime
 		return mVertexArrayPtr;
 	}
 
-	void DebugGuiManager::fillCommandBuffer(Renderer::CommandBuffer& commandBuffer)
+	void DebugGuiManager::fillGraphicsCommandBuffer(Renderer::CommandBuffer& commandBuffer)
 	{
 		if (GImGui->Initialized)
 		{
@@ -317,7 +317,7 @@ namespace RendererRuntime
 		}
 	}
 
-	void DebugGuiManager::fillCommandBufferUsingFixedBuildInRendererConfiguration(Renderer::CommandBuffer& commandBuffer)
+	void DebugGuiManager::fillGraphicsCommandBufferUsingFixedBuildInRendererConfiguration(Renderer::CommandBuffer& commandBuffer)
 	{
 		if (GImGui->Initialized)
 		{
@@ -375,7 +375,7 @@ namespace RendererRuntime
 			Renderer::Command::SetGraphicsVertexArray::create(commandBuffer, getFillVertexArrayPtr());
 
 			// Render command lists
-			fillCommandBuffer(commandBuffer);
+			fillGraphicsCommandBuffer(commandBuffer);
 		}
 	}
 

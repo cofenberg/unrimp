@@ -205,11 +205,15 @@ void FirstScene::onInitialization()
 		}
 		#endif
 
-		// TODO(co) Remove this after the Vulkan renderer backend is fully up-and-running
-		if (rendererRuntime->getRenderer().getNameId() == Renderer::NameId::VULKAN)
+		// TODO(co) Remove this after the Vulkan renderer backend is fully up-and-running. Or better, add asset properties so one can e.g. add asset information regarding e.g. supported renderer backends.
+		const Renderer::NameId nameId = rendererRuntime->getRenderer().getNameId();
+		if (Renderer::NameId::VULKAN == nameId || Renderer::NameId::DIRECT3D10 == nameId || Renderer::NameId::DIRECT3D9 == nameId)
 		{
 			mCurrentCompositor = mInstancedCompositor = Compositor::DEBUG;
-			rendererRuntime->getMaterialBlueprintResourceManager().setCreateInitialPipelineStateCaches(false);
+			if (Renderer::NameId::VULKAN == nameId)
+			{
+				rendererRuntime->getMaterialBlueprintResourceManager().setCreateInitialPipelineStateCaches(false);
+			}
 		}
 
 		// Create the scene resource

@@ -169,7 +169,7 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Bind the material technique into the given commando buffer
+		*    Bind the graphics material technique into the given command buffer
 		*
 		*  @param[in] rendererRuntime
 		*    Renderer runtime to use
@@ -180,7 +180,22 @@ namespace RendererRuntime
 		*  @param[out] textureResourceGroup
 		*    Renderer texture resource group to set
 		*/
-		void fillCommandBuffer(const IRendererRuntime& rendererRuntime, Renderer::CommandBuffer& commandBuffer, uint32_t& textureResourceGroupRootParameterIndex, Renderer::IResourceGroup** textureResourceGroup);
+		void fillGraphicsCommandBuffer(const IRendererRuntime& rendererRuntime, Renderer::CommandBuffer& commandBuffer, uint32_t& textureResourceGroupRootParameterIndex, Renderer::IResourceGroup** textureResourceGroup);
+
+		/**
+		*  @brief
+		*    Bind the compute material technique into the given command buffer
+		*
+		*  @param[in] rendererRuntime
+		*    Renderer runtime to use
+		*  @param[out] commandBuffer
+		*    Command buffer to fill
+		*  @param[out] textureResourceGroupRootParameterIndex
+		*    Root parameter index to bind the texture resource group to, can be "RendererRuntime::getInvalid<uint32_t>()"
+		*  @param[out] textureResourceGroup
+		*    Renderer texture resource group to set
+		*/
+		void fillComputeCommandBuffer(const IRendererRuntime& rendererRuntime, Renderer::CommandBuffer& commandBuffer, uint32_t& textureResourceGroupRootParameterIndex, Renderer::IResourceGroup** textureResourceGroup);
 
 
 	//[-------------------------------------------------------]
@@ -222,6 +237,19 @@ namespace RendererRuntime
 		*    Schedule the material slot for shader uniform update
 		*/
 		void scheduleForShaderUniformUpdate();
+
+		/**
+		*  @brief
+		*    Bind the material technique into the given command buffer
+		*
+		*  @param[in] rendererRuntime
+		*    Renderer runtime to use
+		*  @param[out] textureResourceGroupRootParameterIndex
+		*    Root parameter index to bind the texture resource group to, can be "RendererRuntime::getInvalid<uint32_t>()"
+		*  @param[out] textureResourceGroup
+		*    Renderer texture resource group to set
+		*/
+		void fillCommandBuffer(const IRendererRuntime& rendererRuntime, uint32_t& textureResourceGroupRootParameterIndex, Renderer::IResourceGroup** textureResourceGroup);
 
 
 	//[-------------------------------------------------------]

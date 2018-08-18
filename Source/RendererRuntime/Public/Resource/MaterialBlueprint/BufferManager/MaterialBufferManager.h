@@ -119,20 +119,37 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Reset last bound pool and update the dirty slots
+		*    Reset last graphics bound pool and update the dirty slots
 		*/
-		void resetLastBoundPool();
+		void resetLastGraphicsBoundPool();
 
 		/**
 		*  @brief
-		*    Fill slot to command buffer
+		*    Reset last compute bound pool and update the dirty slots
+		*/
+		void resetLastComputeBoundPool();
+
+		/**
+		*  @brief
+		*    Fill slot to graphics command buffer
 		*
 		*  @param[in] materialBufferSlot
-		*    Slot to bind
+		*    Graphics material buffer slot to bind
 		*  @param[out] commandBuffer
 		*    Command buffer to fill
 		*/
-		void fillCommandBuffer(MaterialBufferSlot& materialBufferSlot, Renderer::CommandBuffer& commandBuffer);
+		void fillGraphicsCommandBuffer(MaterialBufferSlot& materialBufferSlot, Renderer::CommandBuffer& commandBuffer);
+
+		/**
+		*  @brief
+		*    Fill slot to compute command buffer
+		*
+		*  @param[in] materialBufferSlot
+		*    Compute material buffer slot to bind
+		*  @param[out] commandBuffer
+		*    Command buffer to fill
+		*/
+		void fillComputeCommandBuffer(MaterialBufferSlot& materialBufferSlot, Renderer::CommandBuffer& commandBuffer);
 
 
 	//[-------------------------------------------------------]
@@ -174,7 +191,8 @@ namespace RendererRuntime
 		uint32_t						 mBufferSize;
 		MaterialBufferSlots				 mDirtyMaterialBufferSlots;
 		MaterialBufferSlots				 mMaterialBufferSlots;
-		const BufferPool*				 mLastBoundPool;
+		const BufferPool*				 mLastGraphicsBoundPool;
+		const BufferPool*				 mLastComputeBoundPool;
 		ScratchBuffer					 mScratchBuffer;
 
 

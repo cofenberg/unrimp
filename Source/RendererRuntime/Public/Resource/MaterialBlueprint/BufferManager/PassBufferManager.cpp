@@ -200,7 +200,7 @@ namespace RendererRuntime
 		}
 	}
 
-	void PassBufferManager::fillCommandBuffer(Renderer::CommandBuffer& commandBuffer) const
+	void PassBufferManager::fillGraphicsCommandBuffer(Renderer::CommandBuffer& commandBuffer) const
 	{
 		// Set resource group
 		if (!mUniformBuffers.empty())
@@ -209,6 +209,19 @@ namespace RendererRuntime
 			if (nullptr != passUniformBuffer)
 			{
 				Renderer::Command::SetGraphicsResourceGroup::create(commandBuffer, passUniformBuffer->rootParameterIndex, mUniformBuffers[mCurrentUniformBufferIndex - 1].resourceGroup);
+			}
+		}
+	}
+
+	void PassBufferManager::fillComputeCommandBuffer(Renderer::CommandBuffer& commandBuffer) const
+	{
+		// Set resource group
+		if (!mUniformBuffers.empty())
+		{
+			const MaterialBlueprintResource::UniformBuffer* passUniformBuffer = mMaterialBlueprintResource.getPassUniformBuffer();
+			if (nullptr != passUniformBuffer)
+			{
+				Renderer::Command::SetComputeResourceGroup::create(commandBuffer, passUniformBuffer->rootParameterIndex, mUniformBuffers[mCurrentUniformBufferIndex - 1].resourceGroup);
 			}
 		}
 	}

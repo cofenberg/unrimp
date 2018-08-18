@@ -112,7 +112,7 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Fill the compositor pass into the given commando buffer
+		*    Fill the compositor pass into the given command buffer
 		*
 		*  @param[in] renderTarget
 		*    Render target to render into

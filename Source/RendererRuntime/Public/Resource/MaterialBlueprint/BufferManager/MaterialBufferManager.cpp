@@ -48,7 +48,8 @@ namespace RendererRuntime
 		mMaterialBlueprintResource(materialBlueprintResource),
 		mSlotsPerPool(0),
 		mBufferSize(0),
-		mLastBoundPool(nullptr)
+		mLastGraphicsBoundPool(nullptr),
+		mLastComputeBoundPool(nullptr)
 	{
 		const MaterialBlueprintResource::UniformBuffer* materialUniformBuffer = mMaterialBlueprintResource.getMaterialUniformBuffer();
 		assert(nullptr != materialUniformBuffer);
@@ -146,26 +147,49 @@ namespace RendererRuntime
 		}
 	}
 
-	void MaterialBufferManager::resetLastBoundPool()
+	void MaterialBufferManager::resetLastGraphicsBoundPool()
 	{
-		mLastBoundPool = nullptr;
+		mLastGraphicsBoundPool = nullptr;
 		if (!mDirtyMaterialBufferSlots.empty())
 		{
 			uploadDirtySlots();
 		}
 	}
 
-	void MaterialBufferManager::fillCommandBuffer(MaterialBufferSlot& materialBufferSlot, Renderer::CommandBuffer& commandBuffer)
+	void MaterialBufferManager::resetLastComputeBoundPool()
 	{
-		if (mLastBoundPool != materialBufferSlot.mAssignedMaterialPool)
+		mLastComputeBoundPool = nullptr;
+		if (!mDirtyMaterialBufferSlots.empty())
 		{
-			mLastBoundPool = static_cast<BufferPool*>(materialBufferSlot.mAssignedMaterialPool);
-			assert(nullptr != mLastBoundPool);
+			uploadDirtySlots();
+		}
+	}
+
+	void MaterialBufferManager::fillGraphicsCommandBuffer(MaterialBufferSlot& materialBufferSlot, Renderer::CommandBuffer& commandBuffer)
+	{
+		if (mLastGraphicsBoundPool != materialBufferSlot.mAssignedMaterialPool)
+		{
+			mLastGraphicsBoundPool = static_cast<BufferPool*>(materialBufferSlot.mAssignedMaterialPool);
+			assert(nullptr != mLastGraphicsBoundPool);
 
 			// Set resource group
 			const MaterialBlueprintResource::UniformBuffer* materialUniformBuffer = mMaterialBlueprintResource.getMaterialUniformBuffer();
 			assert(nullptr != materialUniformBuffer);
-			Renderer::Command::SetGraphicsResourceGroup::create(commandBuffer, materialUniformBuffer->rootParameterIndex, mLastBoundPool->resourceGroup);
+			Renderer::Command::SetGraphicsResourceGroup::create(commandBuffer, materialUniformBuffer->rootParameterIndex, mLastGraphicsBoundPool->resourceGroup);
+		}
+	}
+
+	void MaterialBufferManager::fillComputeCommandBuffer(MaterialBufferSlot& materialBufferSlot, Renderer::CommandBuffer& commandBuffer)
+	{
+		if (mLastComputeBoundPool != materialBufferSlot.mAssignedMaterialPool)
+		{
+			mLastComputeBoundPool = static_cast<BufferPool*>(materialBufferSlot.mAssignedMaterialPool);
+			assert(nullptr != mLastComputeBoundPool);
+
+			// Set resource group
+			const MaterialBlueprintResource::UniformBuffer* materialUniformBuffer = mMaterialBlueprintResource.getMaterialUniformBuffer();
+			assert(nullptr != materialUniformBuffer);
+			Renderer::Command::SetComputeResourceGroup::create(commandBuffer, materialUniformBuffer->rootParameterIndex, mLastComputeBoundPool->resourceGroup);
 		}
 	}
 

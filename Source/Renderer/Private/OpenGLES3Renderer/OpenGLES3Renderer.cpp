@@ -8243,7 +8243,7 @@ namespace OpenGLES3Renderer
 		inline virtual Renderer::IVertexShader* createVertexShaderFromBytecode(const Renderer::VertexAttributes&, const Renderer::ShaderBytecode&) override
 		{
 			// Error!
-			RENDERER_ASSERT(getRenderer().getContext(), false, "Monolithic shaders have no shader bytecode, only a monolithic program bytecode")
+			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL ES 3 monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
@@ -8257,46 +8257,46 @@ namespace OpenGLES3Renderer
 		inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromBytecode(const Renderer::ShaderBytecode&) override
 		{
 			// Error!
-			RENDERER_ASSERT(getRenderer().getContext(), false, "Monolithic shaders have no shader bytecode, only a monolithic program bytecode")
+			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL ES 3 monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
 		inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromSourceCode(const Renderer::ShaderSourceCode&, Renderer::ShaderBytecode*) override
 		{
-			// Error! OpenGL ES 3 has no tessellation control shader support.
+			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL ES 3 has no tessellation control shader support")
 			return nullptr;
 		}
 
 		inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode(const Renderer::ShaderBytecode&) override
 		{
 			// Error!
-			RENDERER_ASSERT(getRenderer().getContext(), false, "Monolithic shaders have no shader bytecode, only a monolithic program bytecode")
+			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL ES 3 monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
 		inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode(const Renderer::ShaderSourceCode&, Renderer::ShaderBytecode*) override
 		{
-			// Error! OpenGL ES 3 has no tessellation evaluation shader support.
+			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL ES 3 has no tessellation evaluation shader support")
 			return nullptr;
 		}
 
 		inline virtual Renderer::IGeometryShader* createGeometryShaderFromBytecode(const Renderer::ShaderBytecode&, Renderer::GsInputPrimitiveTopology, Renderer::GsOutputPrimitiveTopology, uint32_t) override
 		{
 			// Error!
-			RENDERER_ASSERT(getRenderer().getContext(), false, "Monolithic shaders have no shader bytecode, only a monolithic program bytecode")
+			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL ES 3 monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
 		inline virtual Renderer::IGeometryShader* createGeometryShaderFromSourceCode(const Renderer::ShaderSourceCode&, Renderer::GsInputPrimitiveTopology, Renderer::GsOutputPrimitiveTopology, uint32_t, Renderer::ShaderBytecode*) override
 		{
-			// Error! OpenGL ES 3 has no geometry shader support.
+			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL ES 3 has no geometry shader support")
 			return nullptr;
 		}
 
 		inline virtual Renderer::IFragmentShader* createFragmentShaderFromBytecode(const Renderer::ShaderBytecode&) override
 		{
 			// Error!
-			RENDERER_ASSERT(getRenderer().getContext(), false, "Monolithic shaders have no shader bytecode, only a monolithic program bytecode")
+			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL ES 3 monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
@@ -8310,63 +8310,31 @@ namespace OpenGLES3Renderer
 		inline virtual Renderer::IComputeShader* createComputeShaderFromBytecode(const Renderer::ShaderBytecode&) override
 		{
 			// Error!
-			RENDERER_ASSERT(getRenderer().getContext(), false, "Monolithic shaders have no shader bytecode, only a monolithic program bytecode")
+			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL ES 3 monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
 		inline virtual Renderer::IComputeShader* createComputeShaderFromSourceCode(const Renderer::ShaderSourceCode&, Renderer::ShaderBytecode* = nullptr) override
 		{
-			// Error! OpenGL ES 3 has no compute shader support.
+			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL ES 3 has no compute shader support")
 			return nullptr;
 		}
 
-		virtual Renderer::IGraphicsProgram* createGraphicsProgram(const Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
+		virtual Renderer::IGraphicsProgram* createGraphicsProgram(const Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, MAYBE_UNUSED Renderer::ITessellationControlShader* tessellationControlShader, MAYBE_UNUSED Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, MAYBE_UNUSED Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
 		{
-			// A shader can be a null pointer, but if it's not the shader and graphics program language must match!
+			// Sanity checks
+			// -> A shader can be a null pointer, but if it's not the shader and graphics program language must match!
 			// -> Optimization: Comparing the shader language name by directly comparing the pointer address of
 			//    the name is safe because we know that we always reference to one and the same name address
 			// TODO(co) Add security check: Is the given resource one of the currently used renderer?
-			if (nullptr != vertexShader && vertexShader->getShaderLanguageName() != ::detail::GLSLES_NAME)
-			{
-				// Error! Vertex shader language mismatch!
-			}
-			else if (nullptr != tessellationControlShader)
-			{
-				// Error! OpenGL ES 3 has no tessellation control shader support.
-			}
-			else if (nullptr != tessellationEvaluationShader)
-			{
-				// Error! OpenGL ES 3 has no tessellation evaluation shader support.
-			}
-			else if (nullptr != geometryShader)
-			{
-				// Error! OpenGL ES 3 has no geometry shader support.
-			}
-			else if (nullptr != fragmentShader && fragmentShader->getShaderLanguageName() != ::detail::GLSLES_NAME)
-			{
-				// Error! Fragment shader language mismatch!
-			}
-			else
-			{
-				// Create the graphics program
-				return RENDERER_NEW(getRenderer().getContext(), GraphicsProgramGlsl)(static_cast<OpenGLES3Renderer&>(getRenderer()), rootSignature, vertexAttributes, static_cast<VertexShaderGlsl*>(vertexShader), static_cast<FragmentShaderGlsl*>(fragmentShader));
-			}
+			RENDERER_ASSERT(getRenderer().getContext(), nullptr == vertexShader || vertexShader->getShaderLanguageName() == ::detail::GLSLES_NAME, "OpenGL ES 3 vertex shader language mismatch")
+			RENDERER_ASSERT(getRenderer().getContext(), nullptr == tessellationControlShader, "OpenGL ES 3 has no tessellation control shader support")
+			RENDERER_ASSERT(getRenderer().getContext(), nullptr == tessellationEvaluationShader, "OpenGL ES 3 has no tessellation evaluation shader support")
+			RENDERER_ASSERT(getRenderer().getContext(), nullptr == geometryShader, "OpenGL ES 3 has no geometry shader support")
+			RENDERER_ASSERT(getRenderer().getContext(), nullptr == fragmentShader || fragmentShader->getShaderLanguageName() == ::detail::GLSLES_NAME, "OpenGL ES 3 fragment shader language mismatch")
 
-			// Error! Shader language mismatch!
-			// -> Ensure a correct reference counter behaviour, even in the situation of an error
-			if (nullptr != vertexShader)
-			{
-				vertexShader->addReference();
-				vertexShader->releaseReference();
-			}
-			if (nullptr != fragmentShader)
-			{
-				fragmentShader->addReference();
-				fragmentShader->releaseReference();
-			}
-
-			// Error!
-			return nullptr;
+			// Create the graphics program
+			return RENDERER_NEW(getRenderer().getContext(), GraphicsProgramGlsl)(static_cast<OpenGLES3Renderer&>(getRenderer()), rootSignature, vertexAttributes, static_cast<VertexShaderGlsl*>(vertexShader), static_cast<FragmentShaderGlsl*>(fragmentShader));
 		}
 
 

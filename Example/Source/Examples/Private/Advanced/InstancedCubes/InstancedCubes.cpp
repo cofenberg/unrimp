@@ -263,7 +263,7 @@ void InstancedCubes::onDraw()
 					{
 						RendererRuntime::DebugGuiHelper::drawText("No cube renderer instance", 10.0f, 10.0f);
 					}
-					debugGuiManager.fillCommandBufferUsingFixedBuildInRendererConfiguration(mCommandBuffer);
+					debugGuiManager.fillGraphicsCommandBufferUsingFixedBuildInRendererConfiguration(mCommandBuffer);
 				}
 			}
 		#endif

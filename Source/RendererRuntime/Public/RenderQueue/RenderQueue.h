@@ -132,7 +132,8 @@ namespace RendererRuntime
 
 		void clear();
 		void addRenderablesFromRenderableManager(const RenderableManager& renderableManager, bool castShadows = false);
-		void fillCommandBuffer(const Renderer::IRenderTarget& renderTarget, MaterialTechniqueId materialTechniqueId, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer);
+		void fillGraphicsCommandBuffer(const Renderer::IRenderTarget& renderTarget, MaterialTechniqueId materialTechniqueId, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer);
+		void fillComputeCommandBuffer(const Renderer::IRenderTarget& renderTarget, MaterialTechniqueId materialTechniqueId, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer);
 
 
 	//[-------------------------------------------------------]

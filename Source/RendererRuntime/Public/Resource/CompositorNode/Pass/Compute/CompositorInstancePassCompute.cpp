@@ -44,6 +44,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	CompositorInstancePassCompute::CompositorInstancePassCompute(const CompositorResourcePassCompute& compositorResourcePassCompute, const CompositorNodeInstance& compositorNodeInstance) :
 		ICompositorInstancePass(compositorResourcePassCompute, compositorNodeInstance),
+		mComputeMaterialBlueprint(true),
 		mRenderQueue(compositorNodeInstance.getCompositorWorkspaceInstance().getRendererRuntime().getMaterialBlueprintResourceManager().getIndirectBufferManager(), 0, 0, false, false),
 		mMaterialResourceId(getInvalid<MaterialResourceId>())
 	{
@@ -93,16 +94,26 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void CompositorInstancePassCompute::onFillCommandBuffer(const Renderer::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
 	{
-		if (!mRenderableManager.getRenderables().empty())
+		if (isValid(mMaterialResourceId))
 		{
+			// Sanity check
+			assert(!mRenderableManager.getRenderables().empty());
+
 			// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
 			RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), commandBuffer)
 
-			// Fill command buffer
+			// Fill command buffer depending on graphics or compute material blueprint
 			mRenderQueue.addRenderablesFromRenderableManager(mRenderableManager);
 			if (mRenderQueue.getNumberOfDrawCalls() > 0)
 			{
-				mRenderQueue.fillCommandBuffer(renderTarget, static_cast<const CompositorResourcePassCompute&>(getCompositorResourcePass()).getMaterialTechniqueId(), compositorContextData, commandBuffer);
+				if (mComputeMaterialBlueprint)
+				{
+					mRenderQueue.fillComputeCommandBuffer(renderTarget, static_cast<const CompositorResourcePassCompute&>(getCompositorResourcePass()).getMaterialTechniqueId(), compositorContextData, commandBuffer);
+				}
+				else
+				{
+					mRenderQueue.fillGraphicsCommandBuffer(renderTarget, static_cast<const CompositorResourcePassCompute&>(getCompositorResourcePass()).getMaterialTechniqueId(), compositorContextData, commandBuffer);
+				}
 			}
 		}
 	}
@@ -132,11 +143,21 @@ namespace RendererRuntime
 		MaterialResourceManager& materialResourceManager = rendererRuntime.getMaterialResourceManager();
 		mMaterialResourceId = materialResourceManager.createMaterialResourceByCloning(parentMaterialResourceId);
 
+		// Graphics or compute material blueprint?
+		mComputeMaterialBlueprint = true;
+		MaterialResource& materialResource = materialResourceManager.getById(mMaterialResourceId);
+		{
+			const MaterialTechnique* materialTechnique = materialResource.getMaterialTechniqueById(MaterialResourceManager::DEFAULT_MATERIAL_TECHNIQUE_ID);
+			assert(nullptr != materialTechnique);
+			MaterialBlueprintResource* materialBlueprintResource = rendererRuntime.getMaterialBlueprintResourceManager().tryGetById(materialTechnique->getMaterialBlueprintResourceId());
+			assert(nullptr != materialBlueprintResource);
+			mComputeMaterialBlueprint = isValid(materialBlueprintResource->getComputeShaderBlueprintResourceId());
+		}
+
 		{ // Set compositor resource pass compute material properties
 			const MaterialProperties::SortedPropertyVector& sortedPropertyVector = static_cast<const CompositorResourcePassCompute&>(getCompositorResourcePass()).getMaterialProperties().getSortedPropertyVector();
 			if (!sortedPropertyVector.empty())
 			{
-				MaterialResource& materialResource = materialResourceManager.getById(mMaterialResourceId);
 				for (const MaterialProperty& materialProperty : sortedPropertyVector)
 				{
 					if (materialProperty.isOverwritten())

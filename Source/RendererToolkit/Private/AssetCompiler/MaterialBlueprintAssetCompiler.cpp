@@ -266,17 +266,24 @@ namespace RendererToolkit
 					memoryFile.write(maximumIntegerValueOfShaderPropertiesVector.data(), sizeof(RendererRuntime::ShaderProperties::Property) * maximumIntegerValueOfShaderPropertiesVector.size());
 				}
 
-				// Root signature
-				JsonMaterialBlueprintHelper::readRootSignatureByResourceGroups(rapidJsonValueResourceGroups, memoryFile);
-
 				// A material blueprint can have a compute or a graphics pipeline state, but never both at one and the same time
 				if (rapidJsonValueMaterialBlueprintAsset.HasMember("ComputePipelineState"))
 				{
+					// Compute material blueprint
+
+					// Root signature
+					JsonMaterialBlueprintHelper::readRootSignatureByResourceGroups(rapidJsonValueResourceGroups, memoryFile, true);
+
 					// Compute pipeline state object (PSO)
-					JsonMaterialBlueprintHelper::readComputePipelineStateObject(input, rapidJsonValueMaterialBlueprintAsset["ComputePipelineState"], memoryFile);
+					JsonMaterialBlueprintHelper::readComputePipelineStateObject(input, rapidJsonValueMaterialBlueprintAsset["ComputePipelineState"], memoryFile, sortedMaterialPropertyVector);
 				}
 				else
 				{
+					// Graphics material blueprint
+
+					// Root signature
+					JsonMaterialBlueprintHelper::readRootSignatureByResourceGroups(rapidJsonValueResourceGroups, memoryFile, false);
+
 					// Graphics pipeline state object (PSO)
 					JsonMaterialBlueprintHelper::readGraphicsPipelineStateObject(input, rapidJsonValueMaterialBlueprintAsset["GraphicsPipelineState"], memoryFile, sortedMaterialPropertyVector);
 				}

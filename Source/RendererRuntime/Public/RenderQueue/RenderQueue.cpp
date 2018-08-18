@@ -309,7 +309,7 @@ namespace RendererRuntime
 		}
 	}
 
-	void RenderQueue::fillCommandBuffer(const Renderer::IRenderTarget& renderTarget, MaterialTechniqueId materialTechniqueId, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
+	void RenderQueue::fillGraphicsCommandBuffer(const Renderer::IRenderTarget& renderTarget, MaterialTechniqueId materialTechniqueId, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
 	{
 		// Sanity check
 		assert((getNumberOfDrawCalls() > 0) && "Don't call the fill command buffer method if there's no work to be done");
@@ -366,19 +366,19 @@ namespace RendererRuntime
 								}
 							}
 
-							// Bind the material blueprint resource and instance and light buffer manager to the used renderer
-							materialBlueprintResource->fillCommandBuffer(commandBuffer);
+							// Bind the graphics material blueprint resource and instance and light buffer manager to the used renderer
+							materialBlueprintResource->fillGraphicsCommandBuffer(commandBuffer);
 							const MaterialBlueprintResource::UniformBuffer* instanceUniformBuffer = materialBlueprintResource->getInstanceUniformBuffer();
 							if (nullptr != instanceUniformBuffer)
 							{
 								instanceBufferManager.startupBufferFilling(*materialBlueprintResource, commandBuffer);
 							}
-							lightBufferManager.fillCommandBuffer(*materialBlueprintResource, commandBuffer);
+							lightBufferManager.fillGraphicsCommandBuffer(*materialBlueprintResource, commandBuffer);
 
 							// Cheap state change: Bind the material technique to the used renderer
 							uint32_t textureResourceGroupRootParameterIndex = getInvalid<uint32_t>();
 							Renderer::IResourceGroup* textureResourceGroup = nullptr;
-							materialTechnique->fillCommandBuffer(mRendererRuntime, commandBuffer, textureResourceGroupRootParameterIndex, &textureResourceGroup);
+							materialTechnique->fillGraphicsCommandBuffer(mRendererRuntime, commandBuffer, textureResourceGroupRootParameterIndex, &textureResourceGroup);
 							if (isValid(textureResourceGroupRootParameterIndex) && nullptr != textureResourceGroup)
 							{
 								Renderer::Command::SetGraphicsResourceGroup::create(commandBuffer, textureResourceGroupRootParameterIndex, textureResourceGroup);
@@ -408,6 +408,349 @@ namespace RendererRuntime
 		}
 		else
 		{
+			// Track currently bound renderer resources and states to void generating redundant commands
+			bool vertexArraySet = false;
+			Renderer::IVertexArray* currentVertexArray = nullptr;
+			Renderer::IGraphicsPipelineState* currentGraphicsPipelineState = nullptr;
+
+			// We try to minimize state changes across multiple render queue fill command buffer calls, but while doing so we still need to take into account
+			// that pass data like world space to clip space transform might have been changed and needs to be updated inside the pass uniform buffer
+			bool enforcePassBufferManagerFillBuffer = true;
+
+			// Get indirect buffer
+			Renderer::IIndirectBuffer* indirectBuffer = nullptr;
+			uint32_t indirectBufferOffset = 0;
+			uint8_t* indirectBufferData = nullptr;
+			if (mNumberOfDrawIndexedCalls > 0 || mNumberOfDrawCalls > 0 )
+			{
+				IndirectBufferManager::IndirectBuffer* managedIndirectBuffer = mIndirectBufferManager.getIndirectBuffer(sizeof(Renderer::DrawIndexedArguments) * mNumberOfDrawIndexedCalls + sizeof(Renderer::DrawArguments) * mNumberOfDrawCalls);
+				assert(nullptr != managedIndirectBuffer);
+				indirectBuffer		 = managedIndirectBuffer->indirectBuffer;
+				indirectBufferOffset = managedIndirectBuffer->indirectBufferOffset;
+				indirectBufferData   = managedIndirectBuffer->mappedData;
+			}
+
+			// For gathering multi-draw-indirect data
+			std::array<Renderer::IResourceGroup*, 16> currentSetGraphicsResourceGroup;	// TODO(co) Use maximum number of graphics resource groups here, 16 is considered a save number of root parameters
+			uint32_t currentDrawIndirectBufferOffset = indirectBufferOffset;
+			uint32_t currentNumberOfDraws = 0;
+			bool currentDrawIndexed = false;
+
+			for (Queue& queue : mQueues)
+			{
+				QueuedRenderables& queuedRenderables = queue.queuedRenderables;
+				if (!queuedRenderables.empty())
+				{
+					// Sort queued renderables
+					if (!queue.sorted && mDoSort)
+					{
+						// TODO(co) Exploit temporal coherence across frames then use insertion sorts as explained by L. Spiro in
+						// http://www.gamedev.net/topic/661114-temporal-coherence-and-render-queue-sorting/?view=findpost&p=5181408
+						// Keep a list of sorted indices from the previous frame (one per camera).
+						// If we have the sorted list "5, 1, 4, 3, 2, 0":
+						// * If it grew from last frame, append: 5, 1, 4, 3, 2, 0, 6, 7 and use insertion sort.
+						// * If it's the same, leave it as is, and use insertion sort just in case.
+						// * If it's shorter, reset the indices 0, 1, 2, 3, 4; probably use quicksort or other generic sort
+						// TODO(co) Use radix sort? ( https://www.quora.com/What-is-the-most-efficient-way-to-sort-a-million-32-bit-integers )
+						std::sort(queuedRenderables.begin(), queuedRenderables.end());
+						queue.sorted = true;
+					}
+
+					// Inject queued renderables into the renderer
+					for (const QueuedRenderable& queuedRenderable : queuedRenderables)
+					{
+						assert(nullptr != queuedRenderable.renderable);
+						const Renderable& renderable = *queuedRenderable.renderable;
+
+						// Material resource
+						const MaterialResource* materialResource = materialResourceManager.tryGetById(renderable.getMaterialResourceId());
+						if (nullptr != materialResource)
+						{
+							MaterialTechnique* materialTechnique = materialResource->getMaterialTechniqueById(materialTechniqueId);
+							if (nullptr != materialTechnique)
+							{
+								MaterialBlueprintResource* materialBlueprintResource = materialBlueprintResourceManager.tryGetById(materialTechnique->getMaterialBlueprintResourceId());
+								if (nullptr != materialBlueprintResource && IResource::LoadingState::LOADED == materialBlueprintResource->getLoadingState())
+								{
+									// TODO(co) Gather shader properties (later on we cache as much as possible of this work inside the renderable)
+									::detail::gatherShaderProperties(*materialResource, *materialBlueprintResource, globalMaterialProperties, renderable, singlePassStereoInstancing, mScratchShaderProperties, mScratchOptimizedShaderProperties);
+
+									Renderer::IGraphicsPipelineStatePtr graphicsPipelineStatePtr = materialBlueprintResource->getGraphicsPipelineStateCacheManager().getGraphicsPipelineStateCacheByCombination(materialTechnique->getSerializedGraphicsPipelineStateHash(), mScratchOptimizedShaderProperties, false);
+									if (nullptr != graphicsPipelineStatePtr)
+									{
+										// Set the used graphics pipeline state object (PSO)
+										if (currentGraphicsPipelineState != graphicsPipelineStatePtr)
+										{
+											currentGraphicsPipelineState = graphicsPipelineStatePtr;
+											Renderer::Command::SetGraphicsPipelineState::create(mScratchCommandBuffer, currentGraphicsPipelineState);
+										}
+
+										{ // Setup input assembly (IA): Set the used vertex array
+											Renderer::IVertexArrayPtr vertexArrayPtr = renderable.getVertexArrayPtr();
+											if (!vertexArraySet || currentVertexArray != vertexArrayPtr)
+											{
+												vertexArraySet = true;
+												currentVertexArray = vertexArrayPtr;
+												Renderer::Command::SetGraphicsVertexArray::create(mScratchCommandBuffer, currentVertexArray);
+											}
+										}
+
+										// Expensive state change: Handle material blueprint resource switches
+										// -> Render queue should be sorted by material blueprint resource first to reduce those expensive state changes
+										bool bindMaterialBlueprint = false;
+										PassBufferManager* passBufferManager = nullptr;
+										const MaterialBlueprintResource::UniformBuffer* instanceUniformBuffer = materialBlueprintResource->getInstanceUniformBuffer();
+										if (compositorContextData.mCurrentlyBoundMaterialBlueprintResource != materialBlueprintResource)
+										{
+											compositorContextData.mCurrentlyBoundMaterialBlueprintResource = materialBlueprintResource;
+											std::fill(currentSetGraphicsResourceGroup.begin(), currentSetGraphicsResourceGroup.end(), nullptr);
+											bindMaterialBlueprint = true;
+										}
+										if (bindMaterialBlueprint || enforcePassBufferManagerFillBuffer)
+										{
+											// Fill the pass buffer manager
+											passBufferManager = materialBlueprintResource->getPassBufferManager();
+											if (nullptr != passBufferManager)
+											{
+												passBufferManager->fillBuffer(renderTarget, compositorContextData, *materialResource);
+												enforcePassBufferManagerFillBuffer = false;
+											}
+										}
+										if (bindMaterialBlueprint)
+										{
+											// Bind the graphics material blueprint resource and instance and light buffer manager to the used renderer
+											materialBlueprintResource->fillGraphicsCommandBuffer(mScratchCommandBuffer);
+											if (nullptr != instanceUniformBuffer)
+											{
+												instanceBufferManager.startupBufferFilling(*materialBlueprintResource, mScratchCommandBuffer);
+											}
+											lightBufferManager.fillGraphicsCommandBuffer(*materialBlueprintResource, mScratchCommandBuffer);
+										}
+										else if (nullptr != passBufferManager)
+										{
+											// Bind pass buffer manager since we filled the buffer
+											passBufferManager->fillGraphicsCommandBuffer(mScratchCommandBuffer);
+										}
+
+										// Cheap state change: Bind the material technique to the used renderer
+										uint32_t textureResourceGroupRootParameterIndex = getInvalid<uint32_t>();
+										Renderer::IResourceGroup* textureResourceGroup = nullptr;
+										materialTechnique->fillGraphicsCommandBuffer(mRendererRuntime, mScratchCommandBuffer, textureResourceGroupRootParameterIndex, &textureResourceGroup);
+										if (isValid(textureResourceGroupRootParameterIndex) && nullptr != textureResourceGroup && currentSetGraphicsResourceGroup[textureResourceGroupRootParameterIndex] != textureResourceGroup)
+										{
+											currentSetGraphicsResourceGroup[textureResourceGroupRootParameterIndex] = textureResourceGroup;
+											Renderer::Command::SetGraphicsResourceGroup::create(mScratchCommandBuffer, textureResourceGroupRootParameterIndex, textureResourceGroup);
+										}
+
+										// Fill the instance buffer manager
+										const uint32_t startInstanceLocation = (nullptr != instanceUniformBuffer) ? instanceBufferManager.fillBuffer(*materialBlueprintResource, materialBlueprintResource->getPassBufferManager(), *instanceUniformBuffer, renderable, *materialTechnique, mScratchCommandBuffer) : 0;
+
+										// Emit draw command, if necessary
+										const Renderer::IIndirectBufferPtr renderableIndirectBufferPtr = renderable.getIndirectBufferPtr();
+										if (renderable.getDrawIndexed() != currentDrawIndexed || !mScratchCommandBuffer.isEmpty() || nullptr != renderableIndirectBufferPtr)
+										{
+											if (currentDrawIndexed)
+											{
+												if (currentNumberOfDraws)
+												{
+													Renderer::Command::DrawIndexedGraphics::create(commandBuffer, *indirectBuffer, currentDrawIndirectBufferOffset, currentNumberOfDraws);
+													currentNumberOfDraws = 0;
+												}
+											}
+											else if (currentNumberOfDraws)
+											{
+												Renderer::Command::DrawGraphics::create(commandBuffer, *indirectBuffer, currentDrawIndirectBufferOffset, currentNumberOfDraws);
+												currentNumberOfDraws = 0;
+											}
+											currentDrawIndirectBufferOffset = indirectBufferOffset;
+										}
+
+										// Inject scratch command buffer into the main command buffer
+										if (!mScratchCommandBuffer.isEmpty())
+										{
+											mScratchCommandBuffer.submitToCommandBufferAndClear(commandBuffer);
+										}
+
+										// Render the specified geometric primitive, based on indexing into an array of vertices
+										if (nullptr != renderableIndirectBufferPtr)
+										{
+											// Use a given indirect buffer which content is e.g. filled by a compute shader
+											if (renderable.getDrawIndexed())
+											{
+												Renderer::Command::DrawIndexedGraphics::create(commandBuffer, *renderableIndirectBufferPtr, renderable.getIndirectBufferOffset(), renderable.getNumberOfDraws());
+											}
+											else
+											{
+												Renderer::Command::DrawGraphics::create(commandBuffer, *renderableIndirectBufferPtr, renderable.getIndirectBufferOffset(), renderable.getNumberOfDraws());
+											}
+										}
+										// Please note that it's valid that there are no indices, for example "RendererRuntime::CompositorInstancePassDebugGui" is using the render queue only to set the material resource blueprint
+										else if (0 != renderable.getNumberOfIndices())
+										{
+											// Sanity checks
+											assert(nullptr != indirectBuffer);
+											assert(nullptr != indirectBufferData);
+
+											// Fill indirect buffer
+											if (renderable.getDrawIndexed())
+											{
+												// Fill indirect buffer
+												Renderer::DrawIndexedArguments* drawIndexedArguments = reinterpret_cast<Renderer::DrawIndexedArguments*>(indirectBufferData + indirectBufferOffset);
+												drawIndexedArguments->indexCountPerInstance	= renderable.getNumberOfIndices();
+												drawIndexedArguments->instanceCount			= instanceCount * renderable.getInstanceCount();
+												drawIndexedArguments->startIndexLocation	= renderable.getStartIndexLocation();
+												drawIndexedArguments->baseVertexLocation	= 0;
+												drawIndexedArguments->startInstanceLocation	= startInstanceLocation;
+
+												// Advance indirect buffer offset
+												indirectBufferOffset += sizeof(Renderer::DrawIndexedArguments);
+												currentDrawIndexed = true;
+											}
+											else
+											{
+												// Fill indirect buffer
+												Renderer::DrawArguments* drawArguments = reinterpret_cast<Renderer::DrawArguments*>(indirectBufferData + indirectBufferOffset);
+												drawArguments->vertexCountPerInstance = renderable.getNumberOfIndices();
+												drawArguments->instanceCount		  = instanceCount * renderable.getInstanceCount();
+												drawArguments->startVertexLocation	  = renderable.getStartIndexLocation();
+												drawArguments->startInstanceLocation  = startInstanceLocation;
+
+												// Advance indirect buffer offset
+												indirectBufferOffset += sizeof(Renderer::DrawArguments);
+												currentDrawIndexed = false;
+											}
+											++currentNumberOfDraws;
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			// Emit last open draw command, if necessary
+			if (currentNumberOfDraws)
+			{
+				if (currentDrawIndexed)
+				{
+					Renderer::Command::DrawIndexedGraphics::create(commandBuffer, *indirectBuffer, currentDrawIndirectBufferOffset, currentNumberOfDraws);
+				}
+				else
+				{
+					Renderer::Command::DrawGraphics::create(commandBuffer, *indirectBuffer, currentDrawIndirectBufferOffset, currentNumberOfDraws);
+				}
+			}
+		}
+	}
+
+	// TODO(co) The "RendererRuntime::RenderQueue::fillComputeCommandBuffer"-method is heavily work in progress
+	void RenderQueue::fillComputeCommandBuffer(const Renderer::IRenderTarget& renderTarget, MaterialTechniqueId materialTechniqueId, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
+	{
+		// Sanity check
+		assert((getNumberOfDrawCalls() > 0) && "Don't call the fill command buffer method if there's no work to be done");
+		assert(mScratchCommandBuffer.isEmpty() && "Scratch command buffer should be empty at this point in time");
+
+		// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
+		RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(mRendererRuntime.getContext(), commandBuffer)
+
+		// TODO(co) This is just a dummy implementation. For example automatic instancing has to be incorporated as well as more efficient buffer management.
+		const MaterialResourceManager& materialResourceManager = mRendererRuntime.getMaterialResourceManager();
+		const MaterialBlueprintResourceManager& materialBlueprintResourceManager = mRendererRuntime.getMaterialBlueprintResourceManager();
+		const MaterialProperties& globalMaterialProperties = materialBlueprintResourceManager.getGlobalMaterialProperties();
+		// InstanceBufferManager& instanceBufferManager = materialBlueprintResourceManager.getInstanceBufferManager();	// TODO(co) Think about compute instance buffer support
+		LightBufferManager& lightBufferManager = materialBlueprintResourceManager.getLightBufferManager();
+		const bool singlePassStereoInstancing = compositorContextData.getSinglePassStereoInstancing();
+
+		// Process all render queues
+		// -> When adding renderables from renderable manager we could build up a minimum/maximum used render queue index to sometimes reduce
+		//    the number of iterations. On the other hand, there are usually much more renderables added as iterations in here so this possible
+		//    optimization might be a fact a performance degeneration while at the same time increasing the code complexity. So, not implemented by intent.
+		if (mQueues.size() == 1 && mQueues[0].queuedRenderables.size() == 1)
+		{
+			// Material resource
+			const Renderable& renderable = *mQueues[0].queuedRenderables[0].renderable;
+			const MaterialResource* materialResource = materialResourceManager.tryGetById(renderable.getMaterialResourceId());
+			if (nullptr != materialResource)
+			{
+				MaterialTechnique* materialTechnique = materialResource->getMaterialTechniqueById(materialTechniqueId);
+				if (nullptr != materialTechnique)
+				{
+					MaterialBlueprintResource* materialBlueprintResource = materialBlueprintResourceManager.tryGetById(materialTechnique->getMaterialBlueprintResourceId());
+					if (nullptr != materialBlueprintResource && IResource::LoadingState::LOADED == materialBlueprintResource->getLoadingState())
+					{
+						// TODO(co) Gather shader properties (later on we cache as much as possible of this work inside the renderable)
+						::detail::gatherShaderProperties(*materialResource, *materialBlueprintResource, globalMaterialProperties, renderable, singlePassStereoInstancing, mScratchShaderProperties, mScratchOptimizedShaderProperties);
+
+						Renderer::IComputePipelineStatePtr computePipelineStatePtr = materialBlueprintResource->getComputePipelineStateCacheManager().getComputePipelineStateCacheByCombination(mScratchOptimizedShaderProperties, false);
+						if (nullptr != computePipelineStatePtr)
+						{
+							compositorContextData.mCurrentlyBoundMaterialBlueprintResource = materialBlueprintResource;
+
+							// Set the used compute pipeline state object (PSO)
+							Renderer::Command::SetComputePipelineState::create(commandBuffer, computePipelineStatePtr);
+
+							{ // Fill the pass buffer manager
+								PassBufferManager* passBufferManager = materialBlueprintResource->getPassBufferManager();
+								if (nullptr != passBufferManager)
+								{
+									passBufferManager->fillBuffer(renderTarget, compositorContextData, *materialResource);
+								}
+							}
+
+							// Bind the compute material blueprint resource and instance and light buffer manager to the used renderer
+							materialBlueprintResource->fillComputeCommandBuffer(commandBuffer);
+							const MaterialBlueprintResource::UniformBuffer* instanceUniformBuffer = materialBlueprintResource->getInstanceUniformBuffer();
+							if (nullptr != instanceUniformBuffer)
+							{
+								// TODO(co) Think about compute instance buffer support
+								assert(false);
+								// instanceBufferManager.startupBufferFilling(*materialBlueprintResource, commandBuffer);
+							}
+							lightBufferManager.fillComputeCommandBuffer(*materialBlueprintResource, commandBuffer);
+
+							// Cheap state change: Bind the material technique to the used renderer
+							uint32_t textureResourceGroupRootParameterIndex = getInvalid<uint32_t>();
+							Renderer::IResourceGroup* textureResourceGroup = nullptr;
+							materialTechnique->fillComputeCommandBuffer(mRendererRuntime, commandBuffer, textureResourceGroupRootParameterIndex, &textureResourceGroup);
+							if (isValid(textureResourceGroupRootParameterIndex) && nullptr != textureResourceGroup)
+							{
+								Renderer::Command::SetComputeResourceGroup::create(commandBuffer, textureResourceGroupRootParameterIndex, textureResourceGroup);
+							}
+
+							// Fill the instance buffer manager
+							// TODO(co) Think about compute instance buffer support
+							// MAYBE_UNUSED const uint32_t startInstanceLocation = (nullptr != instanceUniformBuffer) ? instanceBufferManager.fillBuffer(*materialBlueprintResource, materialBlueprintResource->getPassBufferManager(), *instanceUniformBuffer, renderable, *materialTechnique, commandBuffer) : 0;
+
+							{ // Dispatch compute
+								// Use mandatory fixed build in material property "LocalComputeSize" for the compute shader local size (also known as number of threads)
+								const MaterialProperty* materialProperty = materialResource->getPropertyById(MaterialResource::LOCAL_COMPUTE_SIZE_PROPERTY_ID);
+								assert(nullptr != materialProperty);
+								const int* localComputeSizeInteger3Value = materialProperty->getInteger3Value();
+
+								// Use mandatory fixed build in material property "GlobalComputeSize" for the compute shader global size
+								materialProperty = materialResource->getPropertyById(MaterialResource::GLOBAL_COMPUTE_SIZE_PROPERTY_ID);
+								assert(nullptr != materialProperty);
+								const int* globalComputeSizeInteger3Value = materialProperty->getInteger3Value();
+
+								// Determine group count
+								const uint32_t groupCountX = static_cast<uint32_t>(std::ceil(globalComputeSizeInteger3Value[0] / static_cast<float>(localComputeSizeInteger3Value[0])));
+								const uint32_t groupCountY = static_cast<uint32_t>(std::ceil(globalComputeSizeInteger3Value[1] / static_cast<float>(localComputeSizeInteger3Value[1])));
+								const uint32_t groupCountZ = static_cast<uint32_t>(std::ceil(globalComputeSizeInteger3Value[2] / static_cast<float>(localComputeSizeInteger3Value[2])));
+
+								// Dispatch compute
+								Renderer::Command::DispatchCompute::create(commandBuffer, groupCountX, groupCountY, groupCountZ);
+							}
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			// TODO(co)
+			assert(false);
+			/*
 			// Track currently bound renderer resources and states to void generating redundant commands
 			bool vertexArraySet = false;
 			Renderer::IVertexArray* currentVertexArray = nullptr;
@@ -641,6 +984,7 @@ namespace RendererRuntime
 					Renderer::Command::DrawGraphics::create(commandBuffer, *indirectBuffer, currentDrawIndirectBufferOffset, currentNumberOfDraws);
 				}
 			}
+			*/
 		}
 	}
 

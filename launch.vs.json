@@ -11,7 +11,7 @@
       "name": "CMakeLists.txt",
       "exe": "${workspaceRoot}\\Binary\\Windows_x86d_Shared\\Examples.exe",
       "currentDir": "${workspaceRoot}\\Binary\\Windows_x86d_Shared\\",
-      "args": [ "ImGuiExampleSelector -r Direct3D11" ]
+      "args": [ "" ]
     },
     // "Debug from Build Folder": "Examples.exe (Example\\Examples\\Examples.exe)"
     {

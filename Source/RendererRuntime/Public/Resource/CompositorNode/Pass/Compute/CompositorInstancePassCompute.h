@@ -67,6 +67,9 @@ namespace RendererRuntime
 	*    - https://web.archive.org/web/20140719063725/http://www.altdev.co/2011/08/08/interesting-vertex-shader-trick/
 	*    - "Vertex Shader Tricks by Bill Bilodeau - AMD at GDC14" - http://de.slideshare.net/DevCentralAMD/vertex-shader-tricks-bill-bilodeau
 	*    - Attribute-less rendering: "Rendering a Screen Covering Triangle in OpenGL (with no buffers)" - https://rauwendaal.net/2014/06/14/rendering-a-screen-covering-triangle-in-opengl/
+	*
+	*  @note
+	*    - A compute pipeline state has less overhead as a graphics pipeline state, for best performance try to stick to compute pipeline state
 	*/
 	class CompositorInstancePassCompute : public ICompositorInstancePass, public IResourceListener
 	{
@@ -130,6 +133,7 @@ namespace RendererRuntime
 	//[ Protected data                                        ]
 	//[-------------------------------------------------------]
 	protected:
+		bool			   mComputeMaterialBlueprint;	///< "true" if this compositor instance pass is using a compute material blueprint, if "false" a graphics material blueprint is used
 		RenderQueue		   mRenderQueue;
 		MaterialResourceId mMaterialResourceId;
 		RenderableManager  mRenderableManager;

@@ -55,7 +55,7 @@ void ImGuiExampleSelector::onDraw()
 				RendererRuntime::DebugGuiManager& debugGuiManager = rendererRuntime->getDebugGuiManager();
 				debugGuiManager.newFrame(*getMainRenderTarget());
 				createDebugGui();
-				debugGuiManager.fillCommandBufferUsingFixedBuildInRendererConfiguration(mCommandBuffer);
+				debugGuiManager.fillGraphicsCommandBufferUsingFixedBuildInRendererConfiguration(mCommandBuffer);
 			}
 		}
 

@@ -140,7 +140,7 @@ namespace RendererRuntime
 		return mTextures;
 	}
 
-	void MaterialTechnique::fillCommandBuffer(const IRendererRuntime& rendererRuntime, Renderer::CommandBuffer& commandBuffer, uint32_t& textureResourceGroupRootParameterIndex, Renderer::IResourceGroup** textureResourceGroup)
+	void MaterialTechnique::fillGraphicsCommandBuffer(const IRendererRuntime& rendererRuntime, Renderer::CommandBuffer& commandBuffer, uint32_t& textureResourceGroupRootParameterIndex, Renderer::IResourceGroup** textureResourceGroup)
 	{
 		// Sanity check
 		assert(isValid(mMaterialBlueprintResourceId));
@@ -150,87 +150,30 @@ namespace RendererRuntime
 			MaterialBufferManager* materialBufferManager = getMaterialBufferManager();
 			if (nullptr != materialBufferManager)
 			{
-				materialBufferManager->fillCommandBuffer(*this, commandBuffer);
+				materialBufferManager->fillGraphicsCommandBuffer(*this, commandBuffer);
 			}
 		}
 
 		// Set textures
-		const Textures& textures = getTextures(rendererRuntime);
-		if (textures.empty())
-		{
-			setInvalid(textureResourceGroupRootParameterIndex);
-			*textureResourceGroup = nullptr;
-		}
-		else
-		{
-			// Create texture resource group, if needed
-			if (nullptr == mTextureResourceGroup)
+		fillCommandBuffer(rendererRuntime, textureResourceGroupRootParameterIndex, textureResourceGroup);
+	}
+
+	void MaterialTechnique::fillComputeCommandBuffer(const IRendererRuntime& rendererRuntime, Renderer::CommandBuffer& commandBuffer, uint32_t& textureResourceGroupRootParameterIndex, Renderer::IResourceGroup** textureResourceGroup)
+	{
+		// Sanity check
+		assert(isValid(mMaterialBlueprintResourceId));
+		assert((nullptr != textureResourceGroup) && "The renderer texture resource group pointer must be valid");
+
+		{ // Bind the material buffer manager
+			MaterialBufferManager* materialBufferManager = getMaterialBufferManager();
+			if (nullptr != materialBufferManager)
 			{
-				// Check texture resources
-				const size_t numberOfTextures = textures.size();
-				const TextureResourceManager& textureResourceManager = rendererRuntime.getTextureResourceManager();
-				for (size_t i = 0; i < numberOfTextures; ++i)
-				{
-					// Due to background texture loading, some textures might not be ready, yet
-					// -> But even in this situation there should be a decent fallback texture in place
-					const Texture& texture = textures[i];
-					TextureResource* textureResource = textureResourceManager.tryGetById(texture.textureResourceId);
-					if (nullptr == textureResource)
-					{
-						// Maybe it's a dynamically created texture like a shadow map created by "RendererRuntime::CompositorInstancePassShadowMap"
-						// which might not have been ready yet when the material was originally loaded
-						textureResource = textureResourceManager.getTextureResourceByAssetId(texture.materialProperty.getTextureAssetIdValue());
-						if (nullptr != textureResource)
-						{
-							mTextures[i].textureResourceId = textureResource->getId();
-						}
-					}
-					if (nullptr != textureResource)
-					{
-						// We also need to get informed in case e.g. dynamic compositor textures get changed in order to update the texture resource group accordantly
-						textureResource->connectResourceListener(*this);
-					}
-				}
-
-				// Get material blueprint resource
-				const MaterialBlueprintResource* materialBlueprintResource = getMaterialResourceManager().getRendererRuntime().getMaterialBlueprintResourceManager().tryGetById(mMaterialBlueprintResourceId);
-				assert(nullptr != materialBlueprintResource);
-
-				// Create texture resource group
-				std::vector<Renderer::IResource*> textureResources;
-				std::vector<Renderer::ISamplerState*> samplerStates;
-				textureResources.resize(numberOfTextures);
-				samplerStates.resize(numberOfTextures);
-				const MaterialBlueprintResource::Textures& materialBlueprintResourceTextures = materialBlueprintResource->getTextures();
-				const MaterialBlueprintResource::SamplerStates& materialBlueprintResourceSamplerStates = materialBlueprintResource->getSamplerStates();
-				for (size_t i = 0; i < numberOfTextures; ++i)
-				{
-					// Set texture resource
-					TextureResource* textureResource = textureResourceManager.tryGetById(textures[i].textureResourceId);
-					assert(nullptr != textureResource);
-					textureResources[i] = textureResource->getTexture();
-					assert(nullptr != textureResources[i]);
-
-					// Set sampler state, if there's one (e.g. texel fetch instead of sampling might be used)
-					if (isValid(materialBlueprintResourceTextures[i].samplerStateIndex))
-					{
-						assert(materialBlueprintResourceTextures[i].samplerStateIndex < materialBlueprintResourceSamplerStates.size());
-						samplerStates[i] = materialBlueprintResourceSamplerStates[materialBlueprintResourceTextures[i].samplerStateIndex].samplerStatePtr;
-					}
-					else
-					{
-						samplerStates[i] = nullptr;
-					}
-				}
-				// TODO(co) All textures need to be inside the same resource group, this needs to be guaranteed by design
-				mTextureResourceGroup = rendererRuntime.getRendererResourceManager().createResourceGroup(*materialBlueprintResource->getRootSignaturePtr(), textures[0].rootParameterIndex, static_cast<uint32_t>(numberOfTextures), textureResources.data(), samplerStates.data());
-				RENDERER_SET_RESOURCE_DEBUG_NAME(mTextureResourceGroup, "Material technique")
+				materialBufferManager->fillComputeCommandBuffer(*this, commandBuffer);
 			}
-
-			// Tell the caller about the resource group
-			textureResourceGroupRootParameterIndex = textures[0].rootParameterIndex;
-			*textureResourceGroup = mTextureResourceGroup;
 		}
+
+		// Set textures
+		fillCommandBuffer(rendererRuntime, textureResourceGroupRootParameterIndex, textureResourceGroup);
 	}
 
 
@@ -333,6 +276,87 @@ namespace RendererRuntime
 		if (nullptr != materialBufferManager)
 		{
 			materialBufferManager->scheduleForUpdate(*this);
+		}
+	}
+
+	void MaterialTechnique::fillCommandBuffer(const IRendererRuntime& rendererRuntime, uint32_t& textureResourceGroupRootParameterIndex, Renderer::IResourceGroup** textureResourceGroup)
+	{
+		// Set textures
+		const Textures& textures = getTextures(rendererRuntime);
+		if (textures.empty())
+		{
+			setInvalid(textureResourceGroupRootParameterIndex);
+			*textureResourceGroup = nullptr;
+		}
+		else
+		{
+			// Create texture resource group, if needed
+			if (nullptr == mTextureResourceGroup)
+			{
+				// Check texture resources
+				const size_t numberOfTextures = textures.size();
+				const TextureResourceManager& textureResourceManager = rendererRuntime.getTextureResourceManager();
+				for (size_t i = 0; i < numberOfTextures; ++i)
+				{
+					// Due to background texture loading, some textures might not be ready, yet
+					// -> But even in this situation there should be a decent fallback texture in place
+					const Texture& texture = textures[i];
+					TextureResource* textureResource = textureResourceManager.tryGetById(texture.textureResourceId);
+					if (nullptr == textureResource)
+					{
+						// Maybe it's a dynamically created texture like a shadow map created by "RendererRuntime::CompositorInstancePassShadowMap"
+						// which might not have been ready yet when the material was originally loaded
+						textureResource = textureResourceManager.getTextureResourceByAssetId(texture.materialProperty.getTextureAssetIdValue());
+						if (nullptr != textureResource)
+						{
+							mTextures[i].textureResourceId = textureResource->getId();
+						}
+					}
+					if (nullptr != textureResource)
+					{
+						// We also need to get informed in case e.g. dynamic compositor textures get changed in order to update the texture resource group accordantly
+						textureResource->connectResourceListener(*this);
+					}
+				}
+
+				// Get material blueprint resource
+				const MaterialBlueprintResource* materialBlueprintResource = getMaterialResourceManager().getRendererRuntime().getMaterialBlueprintResourceManager().tryGetById(mMaterialBlueprintResourceId);
+				assert(nullptr != materialBlueprintResource);
+
+				// Create texture resource group
+				std::vector<Renderer::IResource*> textureResources;
+				std::vector<Renderer::ISamplerState*> samplerStates;
+				textureResources.resize(numberOfTextures);
+				samplerStates.resize(numberOfTextures);
+				const MaterialBlueprintResource::Textures& materialBlueprintResourceTextures = materialBlueprintResource->getTextures();
+				const MaterialBlueprintResource::SamplerStates& materialBlueprintResourceSamplerStates = materialBlueprintResource->getSamplerStates();
+				for (size_t i = 0; i < numberOfTextures; ++i)
+				{
+					// Set texture resource
+					TextureResource* textureResource = textureResourceManager.tryGetById(textures[i].textureResourceId);
+					assert(nullptr != textureResource);
+					textureResources[i] = textureResource->getTexture();
+					assert(nullptr != textureResources[i]);
+
+					// Set sampler state, if there's one (e.g. texel fetch instead of sampling might be used)
+					if (isValid(materialBlueprintResourceTextures[i].samplerStateIndex))
+					{
+						assert(materialBlueprintResourceTextures[i].samplerStateIndex < materialBlueprintResourceSamplerStates.size());
+						samplerStates[i] = materialBlueprintResourceSamplerStates[materialBlueprintResourceTextures[i].samplerStateIndex].samplerStatePtr;
+					}
+					else
+					{
+						samplerStates[i] = nullptr;
+					}
+				}
+				// TODO(co) All textures need to be inside the same resource group, this needs to be guaranteed by design
+				mTextureResourceGroup = rendererRuntime.getRendererResourceManager().createResourceGroup(*materialBlueprintResource->getRootSignaturePtr(), textures[0].rootParameterIndex, static_cast<uint32_t>(numberOfTextures), textureResources.data(), samplerStates.data());
+				RENDERER_SET_RESOURCE_DEBUG_NAME(mTextureResourceGroup, "Material technique")
+			}
+
+			// Tell the caller about the resource group
+			textureResourceGroupRootParameterIndex = textures[0].rootParameterIndex;
+			*textureResourceGroup = mTextureResourceGroup;
 		}
 	}
 

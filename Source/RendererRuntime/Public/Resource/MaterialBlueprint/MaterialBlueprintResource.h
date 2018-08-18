@@ -511,12 +511,21 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Bind the material blueprint resource into the given commando buffer
+		*    Bind the graphics material blueprint resource into the given command buffer
 		*
 		*  @param[out] commandBuffer
 		*    Command buffer to fill
 		*/
-		RENDERERRUNTIME_API_EXPORT void fillCommandBuffer(Renderer::CommandBuffer& commandBuffer);
+		RENDERERRUNTIME_API_EXPORT void fillGraphicsCommandBuffer(Renderer::CommandBuffer& commandBuffer);
+
+		/**
+		*  @brief
+		*    Bind the compute material blueprint resource into the given command buffer
+		*
+		*  @param[out] commandBuffer
+		*    Command buffer to fill
+		*/
+		RENDERERRUNTIME_API_EXPORT void fillComputeCommandBuffer(Renderer::CommandBuffer& commandBuffer);
 
 		/**
 		*  @brief

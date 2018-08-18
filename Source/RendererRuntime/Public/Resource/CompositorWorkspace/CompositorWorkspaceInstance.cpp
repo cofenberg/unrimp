@@ -435,18 +435,41 @@ namespace RendererRuntime
 	void CompositorWorkspaceInstance::createFramebuffersAndRenderTargetTextures(const Renderer::IRenderTarget& mainRenderTarget)
 	{
 		assert(!mFramebufferManagerInitialized);
-		FramebufferManager& framebufferManager = mRendererRuntime.getCompositorWorkspaceResourceManager().getFramebufferManager();
-		for (const CompositorNodeInstance* compositorNodeInstance : mSequentialCompositorNodeInstances)
-		{
-			for (ICompositorInstancePass* compositorInstancePass : compositorNodeInstance->mCompositorInstancePasses)
+		CompositorWorkspaceResourceManager& compositorWorkspaceResourceManager = mRendererRuntime.getCompositorWorkspaceResourceManager();
+
+		{ // Framebuffers
+			FramebufferManager& framebufferManager = compositorWorkspaceResourceManager.getFramebufferManager();
+			for (const CompositorNodeInstance* compositorNodeInstance : mSequentialCompositorNodeInstances)
 			{
-				const CompositorFramebufferId compositorFramebufferId = compositorInstancePass->getCompositorResourcePass().getCompositorTarget().getCompositorFramebufferId();
-				if (isValid(compositorFramebufferId))
+				for (ICompositorInstancePass* compositorInstancePass : compositorNodeInstance->mCompositorInstancePasses)
 				{
-					compositorInstancePass->mRenderTarget = framebufferManager.getFramebufferByCompositorFramebufferId(compositorFramebufferId, mainRenderTarget, mCurrentlyUsedNumberOfMultisamples, mResolutionScale);
+					const CompositorFramebufferId compositorFramebufferId = compositorInstancePass->getCompositorResourcePass().getCompositorTarget().getCompositorFramebufferId();
+					if (isValid(compositorFramebufferId))
+					{
+						compositorInstancePass->mRenderTarget = framebufferManager.getFramebufferByCompositorFramebufferId(compositorFramebufferId, mainRenderTarget, mCurrentlyUsedNumberOfMultisamples, mResolutionScale);
+					}
 				}
 			}
 		}
+
+		{ // Unordered access
+			RenderTargetTextureManager& renderTargetTextureManager = compositorWorkspaceResourceManager.getRenderTargetTextureManager();
+			const CompositorNodeResourceManager& compositorNodeResourceManager = mRendererRuntime.getCompositorNodeResourceManager();
+			for (const CompositorNodeInstance* compositorNodeInstance : mSequentialCompositorNodeInstances)
+			{
+				const CompositorNodeResource& compositorNodeResource = compositorNodeResourceManager.getById(compositorNodeInstance->getCompositorNodeResourceId());
+				for (const CompositorRenderTargetTexture& compositorRenderTargetTexture : compositorNodeResource.getRenderTargetTextures())
+				{
+					const RenderTargetTextureSignature& renderTargetTextureSignature = compositorRenderTargetTexture.getRenderTargetTextureSignature();
+					if ((renderTargetTextureSignature.getFlags() & RenderTargetTextureSignature::Flag::UNORDERED_ACCESS) != 0 &&
+						(renderTargetTextureSignature.getFlags() & RenderTargetTextureSignature::Flag::RENDER_TARGET) == 0)
+					{
+						renderTargetTextureManager.getTextureByAssetId(compositorRenderTargetTexture.getAssetId(), mainRenderTarget, mCurrentlyUsedNumberOfMultisamples, mResolutionScale, nullptr);
+					}
+				}
+			}
+		}
+
 		mFramebufferManagerInitialized = true;
 	}
 
