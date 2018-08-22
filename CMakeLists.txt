@@ -217,11 +217,13 @@ if(WIN32)
 		unrimp_replace_cmake_cxx_flags(/Zi /ZI)
 		unrimp_replace_cmake_cxx_flags(/RTC1 "")
 
+		# TODO(co) "Just My Code" = "/JMC" (see https://blogs.msdn.microsoft.com/vcblog/2018/06/29/announcing-jmc-stepping-in-visual-studio/ ) is currently disabled due to horrible observed performance
+		#          impact in Visual Studio 2017 15.8.1: In my scenario: 13.3 ms per frame without JMC and 21.5 ms per frame with JMC (major hotspot is "__CheckForDebuggerJustMyCode")
 		# Used options:
 		# - "Just My Code" = "/JMC" (see https://blogs.msdn.microsoft.com/vcblog/2018/06/29/announcing-jmc-stepping-in-visual-studio/ )
-		set(CompilerFlags "/JMC")
-		set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${CompilerFlags}")
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CompilerFlags}")
+		# set(CompilerFlags "/JMC")
+		# set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${CompilerFlags}")
+		# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CompilerFlags}")
 	else()
 		# Used release build options:
 		# - "Inline Function Expansion"			= "Any Suitable (/Ob2)"
