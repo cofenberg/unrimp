@@ -17,10 +17,10 @@
 			},
 			"GlobalComputeSize":
 			{
-				"Usage": "STATIC",
+				"Usage": "MATERIAL_REFERENCE",
 				"ValueType": "INTEGER_3",
-				"Value": "1192 815 1",
-				"Description": "Fixed build in material property for the compute shader global size TODO(co) Must be flexible, in this use-case the size can be read from 'OutputTexture2D'"
+				"Value": "@OutputTexture2D",
+				"Description": "Fixed build in material property for the compute shader global size, reads the size dynamically from the referenced texture asset"
 			},
 			"ToneMapKeyValue":
 			{

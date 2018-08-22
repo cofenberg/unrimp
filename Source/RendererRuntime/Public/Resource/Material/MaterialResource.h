@@ -87,10 +87,13 @@ namespace RendererRuntime
 		typedef std::vector<MaterialTechnique*> SortedMaterialTechniqueVector;
 
 		// Fixed build in material properties
-		static constexpr uint32_t RENDER_QUEUE_INDEX_PROPERTY_ID  = STRING_ID("RenderQueueIndex");	///< "RenderQueueIndex", value type = "INTEGER", usage = "STATIC", value range = [0, 255]
-		static constexpr uint32_t CAST_SHADOWS_PROPERTY_ID		  = STRING_ID("CastShadows");		///< "CastShadows", value type = "BOOLEAN", usage = "STATIC"
-		static constexpr uint32_t LOCAL_COMPUTE_SIZE_PROPERTY_ID  = STRING_ID("LocalComputeSize");	///< "LocalComputeSize", value type = "INTEGER_3", usage = "STATIC"
-		static constexpr uint32_t GLOBAL_COMPUTE_SIZE_PROPERTY_ID = STRING_ID("GlobalComputeSize");	///< "GlobalComputeSize", value type = "INTEGER_3", usage = "STATIC"
+		static constexpr uint32_t RENDER_QUEUE_INDEX_PROPERTY_ID  = STRING_ID("RenderQueueIndex");	///< "RenderQueueIndex", value type = "INTEGER" with usage = "STATIC" and value range = [0, 255]
+		static constexpr uint32_t CAST_SHADOWS_PROPERTY_ID		  = STRING_ID("CastShadows");		///< "CastShadows", value type = "BOOLEAN" with usage = "STATIC"
+		static constexpr uint32_t LOCAL_COMPUTE_SIZE_PROPERTY_ID  = STRING_ID("LocalComputeSize");	///< "LocalComputeSize", value type = "INTEGER_3" with usage = "STATIC" and value e.g. "32 32 1"
+		static constexpr uint32_t GLOBAL_COMPUTE_SIZE_PROPERTY_ID = STRING_ID("GlobalComputeSize");	/** "GlobalComputeSize":
+																										 - Static value example: value type = "INTEGER_3" with usage = "STATIC" and value e.g. "1920 1080 1"
+																										 - Dynamic value example: value type = "INTEGER_3" with usage = "MATERIAL_REFERENCE" and value e.g. "@OutputTexture2D" (while material property "OutputTexture2D" has value type = "TEXTURE_ASSET_ID" with usage = "TEXTURE_REFERENCE" and value e.g. "Unrimp/Texture/DynamicByCode/BlackMap2D"), results in texture size as value
+																									*/
 
 
 	//[-------------------------------------------------------]

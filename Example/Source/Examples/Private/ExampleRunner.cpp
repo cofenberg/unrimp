@@ -97,10 +97,10 @@ ExampleRunner::ExampleRunner() :
 	)
 {
 	// Sets of supported renderer backends
-	std::array<std::string, 8> supportsAllRenderer	   = {{"Null", "Vulkan", "OpenGL", "OpenGLES3", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"}};
-	std::array<std::string, 7> doesNotSupportOpenGLES3 = {{"Null", "Vulkan", "OpenGL", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"}};
-	std::array<std::string, 6> onlyShaderModel4Plus	   = {{"Null", "Vulkan", "OpenGL", "Direct3D10", "Direct3D11", "Direct3D12"}};
-	std::array<std::string, 5> onlyShaderModel5Plus    = {{"Null", "Vulkan", "OpenGL", "Direct3D11", "Direct3D12"}};
+	const std::array<std::string, 8> supportsAllRenderer	 = {{"Null", "Vulkan", "OpenGL", "OpenGLES3", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"}};
+	const std::array<std::string, 7> doesNotSupportOpenGLES3 = {{"Null", "Vulkan", "OpenGL", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"}};
+	const std::array<std::string, 6> onlyShaderModel4Plus	 = {{"Null", "Vulkan", "OpenGL", "Direct3D10", "Direct3D11", "Direct3D12"}};
+	const std::array<std::string, 5> onlyShaderModel5Plus    = {{"Null", "Vulkan", "OpenGL", "Direct3D11", "Direct3D12"}};
 
 	// Basics
 	addExample("FirstTriangle",					&runRenderExample<FirstTriangle>,				supportsAllRenderer);

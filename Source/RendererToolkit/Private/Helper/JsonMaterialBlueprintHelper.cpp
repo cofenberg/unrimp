@@ -966,7 +966,8 @@ namespace RendererToolkit
 					if (referenceAsString[0] == '@')
 					{
 						// Sanity check
-						if (!referencesAllowed)
+						// -> "GlobalComputeSize" is a fixed build in material property with known specialized processing during runtime, hence do always allow references in this special case
+						if (!referencesAllowed && RendererRuntime::MaterialResource::GLOBAL_COMPUTE_SIZE_PROPERTY_ID != materialPropertyId)
 						{
 							throw std::runtime_error("Material property \"" + std::string(rapidJsonMemberIterator->name.GetString()) + "\" with value \"" + std::string(referenceAsString) + "\" is using \"@\" to reference e.g. a material property value, but references aren't allowed in the current use-case");
 						}
@@ -1042,7 +1043,18 @@ namespace RendererToolkit
 
 	void JsonMaterialBlueprintHelper::readComputePipelineStateObject(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValueComputePipelineState, RendererRuntime::IFile& file, const RendererRuntime::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector)
 	{
-		{ // Sanity check
+		// Sanity check
+		{ // "LocalComputeSize"-property
+			/*
+			Static use case example:
+				"LocalComputeSize":
+				{
+					"Usage": "STATIC",
+					"ValueType": "INTEGER_3",
+					"Value": "32 32 1",
+					"Description": "Fixed build in material property for the compute shader local size (also known as number of threads). Must be identical to in-shader values."
+				}
+			*/
 			RendererRuntime::MaterialProperties::SortedPropertyVector::const_iterator iterator = std::lower_bound(sortedMaterialPropertyVector.cbegin(), sortedMaterialPropertyVector.cend(), RendererRuntime::MaterialResource::LOCAL_COMPUTE_SIZE_PROPERTY_ID, RendererRuntime::detail::OrderByMaterialPropertyId());
 			if (iterator == sortedMaterialPropertyVector.end() || iterator->getMaterialPropertyId() != RendererRuntime::MaterialResource::LOCAL_COMPUTE_SIZE_PROPERTY_ID)
 			{
@@ -1052,14 +1064,83 @@ namespace RendererToolkit
 			{
 				throw std::runtime_error("Compute material blueprint fixed build in material property \"LocalComputeSize\" for the compute shader local size (also known as number of threads) value type must be \"INTEGER_3\"");
 			}
+			if (iterator->getUsage() != RendererRuntime::MaterialProperty::Usage::STATIC)
+			{
+				throw std::runtime_error("Compute material blueprint fixed build in material property \"LocalComputeSize\" for the compute shader local size (also known as number of threads) usage must be \"STATIC\"");
+			}
 			const int* integer3Value = iterator->getInteger3Value();
 			if (integer3Value[0] <= 0 || integer3Value[1] <= 0 || integer3Value[2] <= 0)
 			{
 				throw std::runtime_error("Compute material blueprint fixed build in material property \"LocalComputeSize\" for the compute shader local size (also known as number of threads) must be greater or equal to one");
 			}
-			if (iterator->getUsage() != RendererRuntime::MaterialProperty::Usage::STATIC)
+		}
+		{ // "GlobalComputeSize"-property
+			/*
+			Static use case example:
+				"GlobalComputeSize":
+				{
+					"Usage": "STATIC",
+					"ValueType": "INTEGER_3",
+					"Value": "1920 1080 1",
+					"Description": "Fixed build in material property for the compute shader global size
+				},
+
+			Dynamic use case example:
+				"GlobalComputeSize":
+				{
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "INTEGER_3",
+					"Value": "@OutputTexture2D",
+					"Description": "Fixed build in material property for the compute shader global size"
+				},
+				"OutputTexture2D":
+				{
+					"Usage": "TEXTURE_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+					"Description": "Output texture 2D"
+				}
+			*/
+			RendererRuntime::MaterialProperties::SortedPropertyVector::const_iterator iterator = std::lower_bound(sortedMaterialPropertyVector.cbegin(), sortedMaterialPropertyVector.cend(), RendererRuntime::MaterialResource::GLOBAL_COMPUTE_SIZE_PROPERTY_ID, RendererRuntime::detail::OrderByMaterialPropertyId());
+			if (iterator == sortedMaterialPropertyVector.end() || iterator->getMaterialPropertyId() != RendererRuntime::MaterialResource::GLOBAL_COMPUTE_SIZE_PROPERTY_ID)
 			{
-				throw std::runtime_error("Compute material blueprint fixed build in material property \"LocalComputeSize\" for the compute shader local size (also known as number of threads) usage must be \"SHADER_COMBINATION\"");
+				throw std::runtime_error("Compute material blueprints need the fixed build in material property \"GlobalComputeSize\" for the compute shader global size");
+			}
+			if (iterator->getValueType() != RendererRuntime::MaterialPropertyValue::ValueType::INTEGER_3)
+			{
+				throw std::runtime_error("Compute material blueprint fixed build in material property \"GlobalComputeSize\" for the compute shader global size value type must be \"INTEGER_3\"");
+			}
+			if (iterator->getUsage() != RendererRuntime::MaterialProperty::Usage::STATIC && iterator->getUsage() != RendererRuntime::MaterialProperty::Usage::MATERIAL_REFERENCE)
+			{
+				throw std::runtime_error("Compute material blueprint fixed build in material property \"GlobalComputeSize\" for the compute shader global size usage must be \"STATIC\" or \"MATERIAL_REFERENCE\"");
+			}
+			if (iterator->getUsage() == RendererRuntime::MaterialProperty::Usage::STATIC)
+			{
+				// Static value
+				const int* integer3Value = iterator->getInteger3Value();
+				if (integer3Value[0] <= 0 || integer3Value[1] <= 0 || integer3Value[2] <= 0)
+				{
+					throw std::runtime_error("Compute material blueprint fixed build in material property \"GlobalComputeSize\" for the compute shader global size must be greater or equal to one");
+				}
+			}
+			else
+			{
+				// Material property reference
+				const RendererRuntime::MaterialPropertyId materialPropertyId = iterator->getReferenceValue();
+				RendererRuntime::MaterialProperties::SortedPropertyVector::const_iterator referenceIterator = std::lower_bound(sortedMaterialPropertyVector.cbegin(), sortedMaterialPropertyVector.cend(), materialPropertyId, RendererRuntime::detail::OrderByMaterialPropertyId());
+				if (referenceIterator == sortedMaterialPropertyVector.end() || referenceIterator->getMaterialPropertyId() != materialPropertyId)
+				{
+					throw std::runtime_error("Compute material blueprint fixed build in material property \"GlobalComputeSize\" is referencing an unknown material property");
+				}
+				if (referenceIterator->getValueType() != RendererRuntime::MaterialPropertyValue::ValueType::TEXTURE_ASSET_ID)
+				{
+					throw std::runtime_error("Compute material blueprint fixed build in material property \"GlobalComputeSize\" can only reference texture asset material properties with value type \"TEXTURE_ASSET_ID\"");
+				}
+				if (referenceIterator->getUsage() != RendererRuntime::MaterialProperty::Usage::TEXTURE_REFERENCE)
+				{
+					throw std::runtime_error("Compute material blueprint fixed build in material property \"GlobalComputeSize\" can only reference texture asset material properties with usage type \"TEXTURE_REFERENCE\"");
+				}
+				// No need to check the referenced material property value since this such checks are done when parsing the material properties
 			}
 		}
 

@@ -77,7 +77,7 @@ namespace RendererRuntime
 			GLOBAL_REFERENCE,			///< Property is a global material property reference
 			UNKNOWN_REFERENCE,			///< Property is an automatic unknown uniform buffer property reference
 			PASS_REFERENCE,				///< Property is an automatic pass uniform buffer property reference
-			MATERIAL_REFERENCE,			///< Property is a material uniform buffer property reference
+			MATERIAL_REFERENCE,			///< Property is a material property reference
 			INSTANCE_REFERENCE,			///< Property is an automatic instance uniform buffer property reference
 			GLOBAL_REFERENCE_FALLBACK	///< Property is a fallback for a none existing referenced global material property
 		};
