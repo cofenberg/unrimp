@@ -90,7 +90,8 @@
 			},
 			"Example/Texture/Dynamic/PreviousHdrColorRenderTarget":
 			{
-				"TextureFormat": "R11G11B10F"
+				"TextureFormat": "R11G11B10F",
+				"Flags": "SHADER_RESOURCE"
 			},
 			"Example/Texture/Dynamic/LuminanceRenderTarget":
 			{
@@ -103,7 +104,8 @@
 			{
 				"Width": "1",
 				"Height": "1",
-				"TextureFormat": "R32_FLOAT"
+				"TextureFormat": "R32_FLOAT",
+				"Flags": "SHADER_RESOURCE"
 			},
 			"Example/Texture/Dynamic/AdaptiveLuminanceRenderTarget":
 			{
@@ -239,17 +241,9 @@
 				"ColorTextures": [ "Example/Texture/Dynamic/HdrColorRenderTarget0" ],
 				"DepthStencilTexture": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget"
 			},
-			"PreviousHdrFramebuffer":
-			{
-				"ColorTextures": [ "Example/Texture/Dynamic/PreviousHdrColorRenderTarget" ]
-			},
 			"LuminanceFramebuffer":
 			{
 				"ColorTextures": [ "Example/Texture/Dynamic/LuminanceRenderTarget" ]
-			},
-			"PreviousLuminanceFramebuffer":
-			{
-				"ColorTextures": [ "Example/Texture/Dynamic/PreviousLuminanceRenderTarget" ]
 			},
 			"AdaptiveLuminanceFramebuffer":
 			{
@@ -302,7 +296,7 @@
 		},
 		"Targets":
 		{
-			"OutputRenderTarget":
+			"":
 			{
 				"ShadowMap":
 				{
@@ -503,7 +497,7 @@
 					"MaterialTechnique": "Transparent"
 				}
 			},
-			"PreviousHdrFramebuffer":
+			"":
 			{
 				"Copy":
 				{
@@ -525,7 +519,7 @@
 					}
 				}
 			},
-			"PreviousLuminanceFramebuffer":
+			"":
 			{
 				"Copy":
 				{
