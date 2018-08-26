@@ -10,11 +10,11 @@
 		{
 			"AssetType": "ShaderBlueprint",
 			"AssetCategory": "Compositor",
-			"Copyright": "Basing on 'SSAO Tutorial' from John Chapman http://john-chapman-graphics.blogspot.de/2013/01/ssao-tutorial.html"
+			"Copyright": "Copyright (c) 2012-2018 The Unrimp Team"
 		},
 		"ShaderBlueprintAssetCompiler":
 		{
-			"InputFile": "VolumetricLightBlurFragment.shader_blueprint"
+			"InputFile": "MotionBlurCompute.shader_blueprint"
 		}
 	}
 }

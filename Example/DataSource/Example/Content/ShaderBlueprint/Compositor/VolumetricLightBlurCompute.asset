@@ -14,7 +14,7 @@
 		},
 		"ShaderBlueprintAssetCompiler":
 		{
-			"InputFile": "ScreenSpaceAmbientOcclusionBlurFragment.shader_blueprint"
+			"InputFile": "VolumetricLightBlurCompute.shader_blueprint"
 		}
 	}
 }

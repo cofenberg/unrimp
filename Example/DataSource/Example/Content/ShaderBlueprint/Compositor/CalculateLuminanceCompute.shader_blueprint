@@ -30,47 +30,31 @@
 //[-------------------------------------------------------]
 // Attribute input / output
 INPUT_BEGIN
-	INPUT_TEXTURE_COORDINATE(1, float2, TexCoordVS, 0)	// Texture coordinate
+	DECLARE_GLOBAL_INVOCATION_ID
 INPUT_END
-OUTPUT_BEGIN
-	OUTPUT_COLOR(0)
-OUTPUT_END
-
-// Uniform buffers
-struct PassDataStruct
-{
-	float2 InverseViewportSize;
-};
-UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
-	PassDataStruct PassData;
-UNIFORM_BUFFER_END
 
 // Textures
-TEXTURE_2D(1, 0, ScreenSpaceAmbientOcclusionMap, 0)
+TEXTURE_2D(0, 0, ColorMap, 0)
+RW_TEXTURE_2D(0, 1, OutputTexture2D, 1, r32f, writeonly)
 
-// Samplers
-SAMPLER_STATE(2, 0, SamplerLinear, 0)
+
+//[-------------------------------------------------------]
+//[ Functions                                             ]
+//[-------------------------------------------------------]
+@includepiece($ProjectName/ShaderPiece/Color.asset)
+	@insertpiece(DefineColorToLuminance)
 
 
 //[-------------------------------------------------------]
 //[ Main                                                  ]
 //[-------------------------------------------------------]
-MAIN_BEGIN
-	int BLUR_SIZE = 4;
+MAIN_BEGIN_COMPUTE(32, 32, 1)
+	// Compute dispatch is using groups of a multiple of the local size, in here we don't need to ensure we don't access ouf of global compute size since our color map must be a multiple of the local size
+	float3 color = TEXTURE_FETCH_2D(ColorMap, CAST_TO(GLOBAL_INVOCATION_ID, int3)).rgb;
 
-	// Blur
-	float sum = 0.0f;
-	float2 hlim = float2(float(-BLUR_SIZE) * 0.5f + 0.5f, float(-BLUR_SIZE) * 0.5f + 0.5f);
-	for (int x = 0; x < BLUR_SIZE; ++x)
-	{
-		for (int y = 0; y < BLUR_SIZE; ++y)
-		{
-			float2 offset = (hlim + float2(float(x), float(y))) * PassData.InverseViewportSize;
-			sum += SAMPLE_2D_LOD(ScreenSpaceAmbientOcclusionMap, SamplerLinear, float4(MAIN_INPUT(TexCoordVS) + offset, 0.0f, 0.0f)).r;
-		}
-	}
-	float value = sum / float(BLUR_SIZE * BLUR_SIZE);
+	// Calculate the luminance using a weighted average
+	float luminance = log(max(ColorToLuminance(color), 0.00001f));
 
 	// Done
-	MAIN_OUTPUT_COLOR(0) = float4(value, value, value, value);
-MAIN_END
+	IMAGE_STORE(OutputTexture2D, CAST_TO(GLOBAL_INVOCATION_ID.xy, int2), float4(luminance, 1.0f, 1.0f, 1.0f));
+MAIN_END_NO_OUTPUT

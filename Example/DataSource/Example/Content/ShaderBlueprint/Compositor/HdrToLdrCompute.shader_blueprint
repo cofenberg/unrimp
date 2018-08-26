@@ -93,12 +93,12 @@ MAIN_BEGIN_COMPUTE(32, 32, 1)
 	// Compute dispatch is using groups of a multiple of the local size, ensure we don't access ouf of global compute size which musn't be a multiple of the local size and hence might be smaller
 	if (GLOBAL_INVOCATION_ID.x < PassData.GlobalComputeSize.x && GLOBAL_INVOCATION_ID.y < PassData.GlobalComputeSize.y)
 	{
-		float4 textureCoordinate = float4(CAST_TO(GLOBAL_INVOCATION_ID.xy, float2) / CAST_TO(PassData.GlobalComputeSize.xy, float2), 0.0f, 0.0f);
+		float4 texCoord = float4(CAST_TO(GLOBAL_INVOCATION_ID.xy, float2) / CAST_TO(PassData.GlobalComputeSize.xy, float2), 0.0f, 0.0f);
 		float4 color = TEXTURE_FETCH_2D(ColorMap, CAST_TO(GLOBAL_INVOCATION_ID, int3));
 		float averageLuminance = TEXTURE_FETCH_2D(LuminanceMap, int3(0, 0, 0)).r;
 
 		// Get dirty lens value
-		float3 dirtyLens = SAMPLE_2D_LOD(DirtyLensMap, SamplerLinear, textureCoordinate).rgb;
+		float3 dirtyLens = SAMPLE_2D_LOD(DirtyLensMap, SamplerLinear, texCoord).rgb;
 
 		{ // Tone map
 			float exposure = 0.0f;
@@ -109,15 +109,15 @@ MAIN_BEGIN_COMPUTE(32, 32, 1)
 		{
 			// Apply the lens flare with dirty lens
 			float lensFlareIntensity = 0.1f;
-			float3 lensFlare = SAMPLE_2D_LOD(LensFlareMap, SamplerLinear, textureCoordinate).rgb;
-			float2 lensStarTexcoord = (MATRIX_MUL(float3(textureCoordinate.xy, 1.0f), CAST_TO(PassData.LensStarMatrix, float3x3))).xy;
+			float3 lensFlare = SAMPLE_2D_LOD(LensFlareMap, SamplerLinear, texCoord).rgb;
+			float2 lensStarTexcoord = (MATRIX_MUL(float3(texCoord.xy, 1.0f), CAST_TO(PassData.LensStarMatrix, float3x3))).xy;
 			color.rgb += lensFlare * lensFlareIntensity;
 			color.rgb += lensFlare * SAMPLE_2D_LOD(LensStarMap, SamplerLinear, float4(lensStarTexcoord, 0.0f, 0.0f)).rgb * 10.0f;
 		}
 		@end
 
 		{ // Apply the bloom with dirty lens
-			float3 bloom = SAMPLE_2D_LOD(BloomMap, SamplerLinear, textureCoordinate).rgb;
+			float3 bloom = SAMPLE_2D_LOD(BloomMap, SamplerLinear, texCoord).rgb;
 			color.rgb += bloom * PassData.BloomIntensity + bloom * PassData.BloomIntensity * dirtyLens;
 		}
 

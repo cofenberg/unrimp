@@ -10,11 +10,11 @@
 		{
 			"AssetType": "ShaderBlueprint",
 			"AssetCategory": "Compositor",
-			"Copyright": "Copyright (c) 2012-2018 The Unrimp Team"
+			"Copyright": "Basing on 'SSAO Tutorial' from John Chapman http://john-chapman-graphics.blogspot.de/2013/01/ssao-tutorial.html"
 		},
 		"ShaderBlueprintAssetCompiler":
 		{
-			"InputFile": "MotionBlurFragment.shader_blueprint"
+			"InputFile": "ScreenSpaceAmbientOcclusionBlurCompute.shader_blueprint"
 		}
 	}
 }

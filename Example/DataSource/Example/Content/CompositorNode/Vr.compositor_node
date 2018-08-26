@@ -57,7 +57,7 @@
 				"Width": "1024",
 				"Height": "1024",
 				"TextureFormat": "R32_FLOAT",
-				"Flags": "SHADER_RESOURCE | RENDER_TARGET | GENERATE_MIPMAPS"
+				"Flags": "SHADER_RESOURCE | UNORDERED_ACCESS | GENERATE_MIPMAPS"
 			},
 			"Example/Texture/Dynamic/PreviousLuminanceRenderTarget":
 			{
@@ -140,10 +140,6 @@
 			{
 				"ColorTextures": [ "Example/Texture/Dynamic/HdrColorRenderTarget1" ],
 				"DepthStencilTexture": "Example/Texture/Dynamic/DepthStencilRenderTarget"
-			},
-			"LuminanceFramebuffer":
-			{
-				"ColorTextures": [ "Example/Texture/Dynamic/LuminanceRenderTarget" ]
 			},
 			"BloomFramebuffer":
 			{
@@ -293,7 +289,7 @@
 					"MaterialTechnique": "Transparent"
 				}
 			},
-			"LuminanceFramebuffer":
+			"":
 			{
 				"Compute":
 				{
@@ -302,12 +298,10 @@
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/CalculateLuminance.asset",
 					"SetMaterialProperties":
 					{
-						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget1"
+						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget1",
+						"OutputTexture2D": "Example/Texture/Dynamic/LuminanceRenderTarget"
 					}
-				}
-			},
-			"":
-			{
+				},
 				"Copy":
 				{
 					"Name": "Backup previous luminance",

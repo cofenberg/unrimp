@@ -30,35 +30,51 @@
 //[-------------------------------------------------------]
 // Attribute input / output
 INPUT_BEGIN
-	INPUT_TEXTURE_COORDINATE(1, float2, TexCoordVS, 0)	// Texture coordinate
+	DECLARE_GLOBAL_INVOCATION_ID
 INPUT_END
-OUTPUT_BEGIN
-	OUTPUT_COLOR(0)
-OUTPUT_END
+
+// Uniform buffers
+struct PassDataStruct
+{
+	uint3  GlobalComputeSize;
+	float2 InverseViewportSize;
+};
+UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
+	PassDataStruct PassData;
+UNIFORM_BUFFER_END
 
 // Textures
-TEXTURE_2D(0, 0, ColorMap, 0)
+TEXTURE_2D(1, 0, VolumetricLightMap, 0)
+RW_TEXTURE_2D(1, 1, OutputTexture2D, 1, r11f_g11f_b10f, writeonly)
 
 // Samplers
-SAMPLER_STATE(1, 0, SamplerLinear, 0)
-
-
-//[-------------------------------------------------------]
-//[ Functions                                             ]
-//[-------------------------------------------------------]
-@includepiece($ProjectName/ShaderPiece/Color.asset)
-	@insertpiece(DefineColorToLuminance)
+SAMPLER_STATE(2, 0, SamplerLinear, 0)
 
 
 //[-------------------------------------------------------]
 //[ Main                                                  ]
 //[-------------------------------------------------------]
-MAIN_BEGIN
-	float3 color = SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(MAIN_INPUT(TexCoordVS), 0.0f, 0.0f)).rgb;
+MAIN_BEGIN_COMPUTE(32, 32, 1)
+	// Compute dispatch is using groups of a multiple of the local size, ensure we don't access ouf of global compute size which musn't be a multiple of the local size and hence might be smaller
+	if (GLOBAL_INVOCATION_ID.x < PassData.GlobalComputeSize.x && GLOBAL_INVOCATION_ID.y < PassData.GlobalComputeSize.y)
+	{
+		int BLUR_SIZE = 4;
 
-	// Calculate the luminance using a weighted average
-	float luminance = log(max(ColorToLuminance(color), 0.00001f));
+		// Blur
+		float3 sum = float3(0.0f, 0.0f, 0.0f);
+		float2 hlim = float2(float(-BLUR_SIZE) * 0.5f + 0.5f, float(-BLUR_SIZE) * 0.5f + 0.5f);
+		float2 texCoord = CAST_TO(GLOBAL_INVOCATION_ID.xy, float2) / CAST_TO(PassData.GlobalComputeSize.xy, float2);
+		for (int x = 0; x < BLUR_SIZE; ++x)
+		{
+			for (int y = 0; y < BLUR_SIZE; ++y)
+			{
+				float2 offset = (hlim + float2(float(x), float(y))) * PassData.InverseViewportSize;
+				sum += SAMPLE_2D_LOD(VolumetricLightMap, SamplerLinear, float4(texCoord + offset, 0.0f, 0.0f)).rgb;
+			}
+		}
+		float3 value = sum / float(BLUR_SIZE * BLUR_SIZE);
 
-	// Done
-	MAIN_OUTPUT_COLOR(0) = float4(luminance, 1.0f, 1.0f, 1.0f);
-MAIN_END
+		// Done
+		IMAGE_STORE(OutputTexture2D, CAST_TO(GLOBAL_INVOCATION_ID.xy, int2), float4(value, 1.0f));
+	}
+MAIN_END_NO_OUTPUT

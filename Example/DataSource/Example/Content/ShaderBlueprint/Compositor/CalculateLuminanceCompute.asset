@@ -14,7 +14,7 @@
 		},
 		"ShaderBlueprintAssetCompiler":
 		{
-			"InputFile": "CalculateLuminanceFragment.shader_blueprint"
+			"InputFile": "CalculateLuminanceCompute.shader_blueprint"
 		}
 	}
 }
