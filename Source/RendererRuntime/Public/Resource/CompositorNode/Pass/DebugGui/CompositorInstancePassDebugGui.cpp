@@ -46,7 +46,7 @@ namespace RendererRuntime
 		#ifdef RENDERER_RUNTIME_IMGUI
 			// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
 			const IRendererRuntime& rendererRuntime = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime();
-			RENDERER_SCOPED_PROFILER_EVENT(rendererRuntime.getContext(), commandBuffer, "Debug GUI compositor pass")
+			RENDERER_SCOPED_PROFILER_EVENT_DYNAMIC(rendererRuntime.getContext(), commandBuffer, getCompositorResourcePass().getName())
 
 			// Fill command buffer
 			DebugGuiManager& debugGuiManager = rendererRuntime.getDebugGuiManager();

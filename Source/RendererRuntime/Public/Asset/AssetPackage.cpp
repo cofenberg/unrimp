@@ -77,11 +77,11 @@ namespace RendererRuntime
 	void AssetPackage::addAsset(MAYBE_UNUSED const Context& context, AssetId assetId, VirtualFilename virtualFilename)
 	{
 		RENDERER_ASSERT(context, nullptr == tryGetAssetByAssetId(assetId), "Renderer runtime asset ID is already used")
-		RENDERER_ASSERT(context, strlen(virtualFilename) <= Asset::MAXIMUM_ASSET_FILENAME_LENGTH, "The renderer runtime asset filename is too long")
+		RENDERER_ASSERT(context, strlen(virtualFilename) < Asset::MAXIMUM_ASSET_FILENAME_LENGTH, "The renderer runtime asset filename is too long")
 		SortedAssetVector::const_iterator iterator = std::lower_bound(mSortedAssetVector.cbegin(), mSortedAssetVector.cend(), assetId, ::detail::OrderByAssetId());
 		Asset& asset = *mSortedAssetVector.insert(iterator, Asset());
 		asset.assetId = assetId;
-		strncpy(asset.virtualFilename, virtualFilename, Asset::MAXIMUM_ASSET_FILENAME_LENGTH);
+		strncpy(asset.virtualFilename, virtualFilename, Asset::MAXIMUM_ASSET_FILENAME_LENGTH - 1);	// -1 not including the terminating zero
 	}
 
 	const Asset* AssetPackage::tryGetAssetByAssetId(AssetId assetId) const

@@ -687,7 +687,7 @@ namespace RendererToolkit
 				if (rapidJsonValue.HasMember(propertyName))
 				{
 					// Get the reference value as string
-					static constexpr uint32_t NAME_LENGTH = 128;
+					static constexpr uint32_t NAME_LENGTH = 127 + 1;	// +1 for the terminating zero
 					char referenceAsString[NAME_LENGTH] = {};
 					JsonHelper::optionalStringProperty(rapidJsonValue, propertyName, referenceAsString, NAME_LENGTH);
 
@@ -958,7 +958,7 @@ namespace RendererToolkit
 				if (RendererRuntime::MaterialProperty::isReferenceUsage(usage))
 				{
 					// Get the reference value as string
-					static constexpr uint32_t NAME_LENGTH = 128;
+					static constexpr uint32_t NAME_LENGTH = 127 + 1;	// +1 for the terminating zero
 					char referenceAsString[NAME_LENGTH] = {};
 					JsonHelper::optionalStringProperty(rapidJsonValueProperty, "Value", referenceAsString, NAME_LENGTH);
 
@@ -1440,7 +1440,7 @@ namespace RendererToolkit
 						const RendererRuntime::MaterialProperty::ValueType valueType = mandatoryMaterialPropertyValueType(rapidJsonValue);
 
 						// Get the reference value as string
-						static constexpr uint32_t NAME_LENGTH = 128;
+						static constexpr uint32_t NAME_LENGTH = 127 + 1;	// +1 for the terminating zero
 						char referenceAsString[NAME_LENGTH] = {};
 						JsonHelper::optionalStringProperty(rapidJsonValue, "Value", referenceAsString, NAME_LENGTH);
 

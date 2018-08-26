@@ -1311,12 +1311,12 @@ namespace Renderer
 	{
 		DescriptorRangeType rangeType;
 		uint32_t			numberOfDescriptors;
-		uint32_t			baseShaderRegister;						///< When using explicit binding locations
+		uint32_t			baseShaderRegister;	///< When using explicit binding locations
 		uint32_t			registerSpace;
 		uint32_t			offsetInDescriptorsFromTableStart;
 
 		// The rest is not part of "D3D12_DESCRIPTOR_RANGE" and was added to support Vulkan, OpenGL and Direct3D 9 as well
-		static constexpr uint32_t NAME_LENGTH = 32;
+		static constexpr uint32_t NAME_LENGTH = 31 + 1;	///< +1 for the terminating zero
 		char					  baseShaderRegisterName[NAME_LENGTH];	///< When not using explicit binding locations (OpenGL ES 3, legacy GLSL profiles)
 		ShaderVisibility		  shaderVisibility;
 		ResourceType			  resourceType;

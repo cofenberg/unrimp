@@ -100,7 +100,7 @@ namespace RendererRuntime
 			assert(!mRenderableManager.getRenderables().empty());
 
 			// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
-			RENDERER_SCOPED_PROFILER_EVENT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), commandBuffer, "Compute compositor pass")
+			RENDERER_SCOPED_PROFILER_EVENT_DYNAMIC(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), commandBuffer, getCompositorResourcePass().getName())
 
 			// Fill command buffer depending on graphics or compute material blueprint
 			mRenderQueue.addRenderablesFromRenderableManager(mRenderableManager);

@@ -564,9 +564,9 @@ namespace RendererToolkit
 			if (StringHelper::isSourceAssetIdAsString(virtualFilename))
 			{
 				// Sanity check
-				if (virtualFilename.length() > RendererRuntime::Asset::MAXIMUM_ASSET_FILENAME_LENGTH)
+				if (virtualFilename.length() >= RendererRuntime::Asset::MAXIMUM_ASSET_FILENAME_LENGTH)
 				{
-					const std::string message = "Asset filename \"" + virtualFilename + "\" is too long. Maximum allowed asset filename number of bytes is " + std::to_string(RendererRuntime::Asset::MAXIMUM_ASSET_FILENAME_LENGTH);
+					const std::string message = "Asset filename \"" + virtualFilename + "\" is too long. Maximum allowed asset filename number of bytes is " + std::to_string(RendererRuntime::Asset::MAXIMUM_ASSET_FILENAME_LENGTH - 1);	// -1 for not including the terminating zero
 					throw std::runtime_error(message);
 				}
 

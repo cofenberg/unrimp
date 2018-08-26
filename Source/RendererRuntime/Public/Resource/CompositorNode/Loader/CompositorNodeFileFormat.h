@@ -59,7 +59,7 @@ namespace RendererRuntime
 		//[ Definitions                                           ]
 		//[-------------------------------------------------------]
 		static constexpr uint32_t FORMAT_TYPE	 = STRING_ID("CompositorNode");
-		static constexpr uint32_t FORMAT_VERSION = 8;
+		static constexpr uint32_t FORMAT_VERSION = 9;
 
 		#pragma pack(push)
 		#pragma pack(1)
@@ -105,10 +105,13 @@ namespace RendererRuntime
 			// Keep this in sync with "RendererRuntime::ICompositorResourcePass::deserialize() -> PassData"
 			struct Pass
 			{
-				float	 minimumDepth		= 0.0f;
-				float	 maximumDepth		= 1.0f;
-				uint32_t numberOfExecutions	= RendererRuntime::getInvalid<uint32_t>();
-				bool	 skipFirstExecution	= false;
+				static constexpr uint32_t MAXIMUM_PASS_NAME_LENGTH = 63 + 1;	// +1 for the terminating zero
+
+				char	 name[MAXIMUM_PASS_NAME_LENGTH] = { "Compositor pass" };	///< Human readable ASCII pass name for debugging and profiling, contains terminating zero
+				float	 minimumDepth					= 0.0f;
+				float	 maximumDepth					= 1.0f;
+				uint32_t numberOfExecutions				= RendererRuntime::getInvalid<uint32_t>();
+				bool	 skipFirstExecution				= false;
 			};
 
 			struct PassClear final : public Pass

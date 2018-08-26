@@ -43,9 +43,9 @@ namespace RendererToolkit
 	{
 		// Sanity check
 		const std::string virtualFilename = assetIdAsString + std_filesystem::path(virtualOutputAssetFilename).extension().generic_string();
-		if (virtualFilename.size() > RendererRuntime::Asset::MAXIMUM_ASSET_FILENAME_LENGTH)
+		if (virtualFilename.size() >= RendererRuntime::Asset::MAXIMUM_ASSET_FILENAME_LENGTH)
 		{
-			throw std::runtime_error("The output asset filename \"" + virtualFilename + "\" exceeds the length limit of " + std::to_string(RendererRuntime::Asset::MAXIMUM_ASSET_FILENAME_LENGTH));
+			throw std::runtime_error("The output asset filename \"" + virtualFilename + "\" exceeds the length limit of " + std::to_string(RendererRuntime::Asset::MAXIMUM_ASSET_FILENAME_LENGTH - 1));	// -1 for not including terminating zero
 		}
 
 		// Output asset

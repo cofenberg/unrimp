@@ -315,8 +315,8 @@ namespace RendererRuntime
 		assert((getNumberOfDrawCalls() > 0) && "Don't call the fill command buffer method if there's no work to be done");
 		assert(mScratchCommandBuffer.isEmpty() && "Scratch command buffer should be empty at this point in time");
 
-		// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
-		RENDERER_SCOPED_PROFILER_EVENT(mRendererRuntime.getContext(), commandBuffer, "Graphics render queue")
+		// No combined scoped profiler CPU and GPU sample as well as renderer debug event command by intent, this is something the caller has to take care of
+		// RENDERER_SCOPED_PROFILER_EVENT(mRendererRuntime.getContext(), commandBuffer, "Graphics render queue")
 
 		// TODO(co) This is just a dummy implementation. For example automatic instancing has to be incorporated as well as more efficient buffer management.
 		const MaterialResourceManager& materialResourceManager = mRendererRuntime.getMaterialResourceManager();
@@ -651,8 +651,8 @@ namespace RendererRuntime
 		assert((getNumberOfDrawCalls() > 0) && "Don't call the fill command buffer method if there's no work to be done");
 		assert(mScratchCommandBuffer.isEmpty() && "Scratch command buffer should be empty at this point in time");
 
-		// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
-		RENDERER_SCOPED_PROFILER_EVENT(mRendererRuntime.getContext(), commandBuffer, "Compute render queue")
+		// No combined scoped profiler CPU and GPU sample as well as renderer debug event command by intent, this is something the caller has to take care of
+		// RENDERER_SCOPED_PROFILER_EVENT(mRendererRuntime.getContext(), commandBuffer, "Compute render queue")
 
 		// TODO(co) This is just a dummy implementation. For example automatic instancing has to be incorporated as well as more efficient buffer management.
 		const TextureResourceManager& textureResourceManager = mRendererRuntime.getTextureResourceManager();

@@ -199,6 +199,7 @@
 				},
 				"Compute":
 				{
+					"Name": "Generate reflection",
 					"SkipFirstExecution": "TRUE",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Reflection.asset",
 					"SetMaterialProperties":
@@ -223,21 +224,21 @@
 				},
 				"Scene":
 				{
-					"Description": "Render solid objects",
+					"Name": "Solid objects",
 					"MinimumRenderQueueIndex": "0",
 					"MaximumRenderQueueIndex": "253",
 					"MaterialTechnique": "Forward"
 				},
 				"Scene":
 				{
-					"Description": "Render terrain",
+					"Name": "Terrain",
 					"MinimumRenderQueueIndex": "253",
 					"MaximumRenderQueueIndex": "253",
 					"MaterialTechnique": "Forward"
 				},
 				"Scene":
 				{
-					"Description": "Render sky",
+					"Name": "Sky",
 					"MaximumDepth": "0.0",
 					"MinimumRenderQueueIndex": "254",
 					"MaximumRenderQueueIndex": "254",
@@ -255,6 +256,7 @@
 			{
 				"Compute":
 				{
+					"Name": "MSAA resolve",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/MsaaResolveDepth.asset",
 					"SetMaterialProperties":
 					{
@@ -266,6 +268,7 @@
 			{
 				"Copy":
 				{
+					"Name": "HZB depth map copy",
 					"Description": "Sadly even with read-only it's impossible to read from a depth map while it's bound as depth buffer, so we need a copy",
 					"DestinationTexture": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
 					"SourceTexture": "Example/Texture/Dynamic/DepthStencilRenderTarget"
@@ -275,7 +278,7 @@
 			{
 				"Compute":
 				{
-					"Description": "Composite forward data",
+					"Name": "Composite forward data",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Forward.asset",
 					"SetMaterialProperties":
 					{
@@ -289,7 +292,7 @@
 			{
 				"Scene":
 				{
-					"Description": "Render transparent objects",
+					"Name": "Transparent objects",
 					"MinimumRenderQueueIndex": "255",
 					"MaximumRenderQueueIndex": "255",
 					"TransparentPass": "TRUE",
@@ -300,6 +303,7 @@
 			{
 				"Compute":
 				{
+					"Name": "Calculate luminance",
 					"Description": "Calculate luminance. The mipmaps are generated automatically after the next render target change.",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/CalculateLuminance.asset",
 					"SetMaterialProperties":
@@ -312,8 +316,9 @@
 			{
 				"Copy":
 				{
-					"SkipFirstExecution": "TRUE",
+					"Name": "Backup previous luminance",
 					"Description": "Backup the adaptive luminance from the previous frame. Skip the first execution since there's no valid previous adaptive luminance available in this situation. The current compositor target isn't used for this.",
+					"SkipFirstExecution": "TRUE",
 					"DestinationTexture": "Example/Texture/Dynamic/PreviousLuminanceRenderTarget",
 					"SourceTexture": "Example/Texture/Dynamic/AdaptiveLuminanceRenderTarget"
 				}
@@ -322,8 +327,9 @@
 			{
 				"Compute":
 				{
-					"SkipFirstExecution": "TRUE",
+					"Name": "Adaptive luminance",
 					"Description": "Slowly adjusts the scene luminance based on the previous scene luminance. Skip the first execution since there's no valid previous adaptive luminance available in this situation.",
+					"SkipFirstExecution": "TRUE",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/AdaptiveLuminance.asset",
 					"SetMaterialProperties":
 					{
@@ -333,8 +339,9 @@
 				},
 				"Compute":
 				{
-					"NumberOfExecutions": "1",
+					"Name": "Adaptive luminance",
 					"Description": "During the first execution there's no valid previous adaptive luminance available, so use the just calculated luminance as previous luminance.",
+					"NumberOfExecutions": "1",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/AdaptiveLuminance.asset",
 					"SetMaterialProperties":
 					{
@@ -347,6 +354,7 @@
 			{
 				"Compute":
 				{
+					"Name": "Bloom threshold",
 					"Description": "Bloom pass: Use a lower exposure to produce a value suitable for a bloom pass",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/HdrToLdrBloomThreshold.asset",
 					"SetMaterialProperties":
@@ -360,7 +368,7 @@
 			{
 				"Compute":
 				{
-					"Description": "Bloom pass: Downscale",
+					"Name": "Bloom downscale",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
 					"SetMaterialProperties":
 					{
@@ -372,7 +380,7 @@
 			{
 				"Compute":
 				{
-					"Description": "Bloom pass: Downscale",
+					"Name": "Bloom downscale",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
 					"SetMaterialProperties":
 					{
@@ -384,7 +392,7 @@
 			{
 				"Compute":
 				{
-					"Description": "Bloom pass: Downscale",
+					"Name": "Bloom Downscale",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
 					"SetMaterialProperties":
 					{
@@ -398,6 +406,7 @@
 				{
 					"Compute":
 					{
+						"Name": "Bloom vertical blur",
 						"Description": "Bloom pass: Vertical Gaussian blur",
 						"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/GaussianBlur.asset",
 						"SetMaterialProperties":
@@ -411,6 +420,7 @@
 				{
 					"Compute":
 					{
+						"Name": "Bloom horizontal blur",
 						"Description": "Bloom pass: Horizontal Gaussian blur",
 						"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/GaussianBlur.asset",
 						"SetMaterialProperties":
@@ -425,7 +435,7 @@
 			{
 				"Compute":
 				{
-					"Description": "Bloom pass: Upscale",
+					"Name": "Bloom upscale",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
 					"SetMaterialProperties":
 					{
@@ -437,7 +447,7 @@
 			{
 				"Compute":
 				{
-					"Description": "Bloom pass: Upscale",
+					"Name": "Bloom upscale",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
 					"SetMaterialProperties":
 					{
@@ -449,7 +459,7 @@
 			{
 				"Compute":
 				{
-					"Description": "HDR to LDR",
+					"Name": "HDR to LDR",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/HdrToLdr.asset",
 					"SetMaterialProperties":
 					{
@@ -465,6 +475,7 @@
 			{
 				"Compute":
 				{
+					"Name": "Final",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Final.asset",
 					"SetMaterialProperties":
 					{

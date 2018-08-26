@@ -125,6 +125,7 @@ namespace
 		void readPass(const rapidjson::Value& rapidJsonValuePass, RendererRuntime::v1CompositorNode::Pass& pass)
 		{
 			// Read properties
+			RendererToolkit::JsonHelper::optionalStringProperty(rapidJsonValuePass, "Name", pass.name, RendererRuntime::v1CompositorNode::Pass::MAXIMUM_PASS_NAME_LENGTH);
 			RendererToolkit::JsonHelper::optionalFloatProperty(rapidJsonValuePass, "MinimumDepth", pass.minimumDepth);
 			RendererToolkit::JsonHelper::optionalFloatProperty(rapidJsonValuePass, "MaximumDepth", pass.maximumDepth);
 			RendererToolkit::JsonHelper::optionalIntegerProperty(rapidJsonValuePass, "NumberOfExecutions", pass.numberOfExecutions);
@@ -355,6 +356,7 @@ namespace
 								case RendererRuntime::CompositorResourcePassClear::TYPE_ID:
 								{
 									RendererRuntime::v1CompositorNode::PassClear passClear;
+									strcpy(passClear.name, "Clear compositor pass");
 									readPass(rapidJsonValuePass, passClear);
 
 									// Read properties
@@ -375,6 +377,7 @@ namespace
 								case RendererRuntime::CompositorResourcePassVrHiddenAreaMesh::TYPE_ID:
 								{
 									RendererRuntime::v1CompositorNode::PassVrHiddenAreaMesh passVrHiddenAreaMesh;
+									strcpy(passVrHiddenAreaMesh.name, "VR hidden area mesh compute pass");
 									readPass(rapidJsonValuePass, passVrHiddenAreaMesh);
 
 									// Read properties
@@ -401,6 +404,7 @@ namespace
 								case RendererRuntime::CompositorResourcePassScene::TYPE_ID:
 								{
 									RendererRuntime::v1CompositorNode::PassScene passScene;
+									strcpy(passScene.name, "Scene compositor pass");
 									readPass(rapidJsonValuePass, passScene);
 									readPassScene(rapidJsonValuePass, passScene);
 
@@ -412,6 +416,7 @@ namespace
 								case RendererRuntime::CompositorResourcePassShadowMap::TYPE_ID:
 								{
 									RendererRuntime::v1CompositorNode::PassShadowMap passShadowMap;
+									strcpy(passShadowMap.name, "Shadow map compositor pass");
 									readPass(rapidJsonValuePass, passShadowMap);
 									readPassScene(rapidJsonValuePass, passShadowMap);
 									RendererToolkit::JsonHelper::mandatoryAssetIdProperty(rapidJsonValuePass, "Texture", passShadowMap.textureAssetId);
@@ -427,6 +432,7 @@ namespace
 								case RendererRuntime::CompositorResourcePassResolveMultisample::TYPE_ID:
 								{
 									RendererRuntime::v1CompositorNode::PassResolveMultisample passResolveMultisample;
+									strcpy(passResolveMultisample.name, "Resolve multisample compositor pass");
 									readPass(rapidJsonValuePass, passResolveMultisample);
 									RendererToolkit::JsonHelper::mandatoryStringIdProperty(rapidJsonValuePass, "SourceMultisampleFramebuffer", passResolveMultisample.sourceMultisampleCompositorFramebufferId);
 									if (compositorFramebufferIds.find(passResolveMultisample.sourceMultisampleCompositorFramebufferId) == compositorFramebufferIds.end())
@@ -440,6 +446,7 @@ namespace
 								case RendererRuntime::CompositorResourcePassCopy::TYPE_ID:
 								{
 									RendererRuntime::v1CompositorNode::PassCopy passCopy;
+									strcpy(passCopy.name, "Copy compositor pass");
 									readPass(rapidJsonValuePass, passCopy);
 									RendererToolkit::JsonHelper::mandatoryStringIdProperty(rapidJsonValuePass, "DestinationTexture", passCopy.destinationTextureAssetId);
 									RendererToolkit::JsonHelper::mandatoryStringIdProperty(rapidJsonValuePass, "SourceTexture", passCopy.sourceTextureAssetId);
@@ -458,6 +465,7 @@ namespace
 								case RendererRuntime::CompositorResourcePassGenerateMipmaps::TYPE_ID:
 								{
 									RendererRuntime::v1CompositorNode::PassGenerateMipmaps passGenerateMipmaps;
+									strcpy(passGenerateMipmaps.name, "Generate mipmaps compositor pass");
 									readPass(rapidJsonValuePass, passGenerateMipmaps);
 									RendererToolkit::JsonHelper::mandatoryStringIdProperty(rapidJsonValuePass, "DepthTexture", passGenerateMipmaps.depthTextureAssetId);
 									passGenerateMipmaps.materialBlueprintAssetId = RendererToolkit::JsonHelper::getCompiledAssetId(input, rapidJsonValuePass, "MaterialBlueprint");
@@ -468,6 +476,7 @@ namespace
 								case RendererRuntime::CompositorResourcePassCompute::TYPE_ID:
 								{
 									RendererRuntime::v1CompositorNode::PassCompute passCompute;
+									strcpy(passCompute.name, "Compute compositor pass");
 									readPass(rapidJsonValuePass, passCompute);
 									readPassCompute(input, sortedMaterialPropertyVector, rapidJsonValuePass, true, passCompute);
 
@@ -485,6 +494,7 @@ namespace
 								{
 									// The material definition is not mandatory for the debug GUI, if nothing is defined the fixed build in renderer configuration resources will be used instead
 									RendererRuntime::v1CompositorNode::PassDebugGui passDebugGui;
+									strcpy(passDebugGui.name, "Debug GUI compositor pass");
 									readPass(rapidJsonValuePass, passDebugGui);
 									readPassCompute(input, sortedMaterialPropertyVector, rapidJsonValuePass, false, passDebugGui);
 

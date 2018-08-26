@@ -22,21 +22,21 @@
 				},
 				"Scene":
 				{
-					"Description": "Render solid objects",
+					"Name": "Solid objects",
 					"MinimumRenderQueueIndex": "0",
 					"MaximumRenderQueueIndex": "253",
 					"MaterialTechnique": "Debug"
 				},
 				"Scene":
 				{
-					"Description": "Render terrain",
+					"Name": "Terrain",
 					"MinimumRenderQueueIndex": "253",
 					"MaximumRenderQueueIndex": "253",
 					"MaterialTechnique": "Debug"
 				},
 				"Scene":
 				{
-					"Description": "Render sky",
+					"Name": "Sky",
 					"MaximumDepth": "0.0",
 					"MinimumRenderQueueIndex": "254",
 					"MaximumRenderQueueIndex": "254",

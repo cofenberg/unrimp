@@ -73,6 +73,13 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
+	//[ Public definitions                                    ]
+	//[-------------------------------------------------------]
+	public:
+		static constexpr uint32_t MAXIMUM_PASS_NAME_LENGTH = 63 + 1;	// +1 for the terminating zero
+
+
+	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
@@ -80,6 +87,18 @@ namespace RendererRuntime
 		{
 			return mCompositorTarget;
 		}
+
+		#ifdef RENDERER_RUNTIME_PROFILER
+			inline const char* getName() const
+			{
+				return mName;
+			}
+
+			inline void setName(const char* name)
+			{
+				strncpy(mName, name, MAXIMUM_PASS_NAME_LENGTH);
+			}
+		#endif
 
 		inline float getMinimumDepth() const
 		{
@@ -116,10 +135,11 @@ namespace RendererRuntime
 			#pragma pack(1)
 				struct PassData final
 				{
-					float	 minimumDepth		= 0.0f;
-					float	 maximumDepth		= 1.0f;
-					uint32_t numberOfExecutions	= RendererRuntime::getInvalid<uint32_t>();
-					bool	 skipFirstExecution	= false;
+					char	 name[MAXIMUM_PASS_NAME_LENGTH] = { "Compositor pass" };	///< Human readable ASCII pass name for debugging and profiling, contains terminating zero
+					float	 minimumDepth					= 0.0f;
+					float	 maximumDepth					= 1.0f;
+					uint32_t numberOfExecutions				= RendererRuntime::getInvalid<uint32_t>();
+					bool	 skipFirstExecution				= false;
 				};
 			#pragma pack(pop)
 
@@ -128,6 +148,9 @@ namespace RendererRuntime
 
 			// Read data
 			const PassData* pass = reinterpret_cast<const PassData*>(data);
+			#ifdef RENDERER_RUNTIME_PROFILER
+				strncpy(mName, pass->name, MAXIMUM_PASS_NAME_LENGTH);
+			#endif
 			mMinimumDepth		= pass->minimumDepth;
 			mMaximumDepth		= pass->maximumDepth;
 			mNumberOfExecutions = pass->numberOfExecutions;
@@ -163,6 +186,9 @@ namespace RendererRuntime
 	protected:
 		inline explicit ICompositorResourcePass(const CompositorTarget& compositorTarget) :
 			mCompositorTarget(compositorTarget),
+			#ifdef RENDERER_RUNTIME_PROFILER
+				mName{ "Compositor pass" },
+			#endif
 			mMinimumDepth(0.0f),
 			mMaximumDepth(1.0f),
 			mSkipFirstExecution(false),
@@ -185,6 +211,9 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	private:
 		const CompositorTarget& mCompositorTarget;
+		#ifdef RENDERER_RUNTIME_PROFILER
+			char				mName[MAXIMUM_PASS_NAME_LENGTH];	///< Human readable ASCII pass name for debugging and profiling, contains terminating zero
+		#endif
 		float					mMinimumDepth;
 		float					mMaximumDepth;
 		bool					mSkipFirstExecution;

@@ -163,7 +163,7 @@ namespace RendererRuntime
 
 			// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
 			const IRendererRuntime& rendererRuntime = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime();
-			RENDERER_SCOPED_PROFILER_EVENT(rendererRuntime.getContext(), commandBuffer, "Shadow map compositor pass")
+			RENDERER_SCOPED_PROFILER_EVENT_DYNAMIC(rendererRuntime.getContext(), commandBuffer, compositorResourcePassShadowMap.getName())
 
 			// Render the meshes to each cascade
 			// -> Shadows should never be rendered via single pass stereo instancing
@@ -355,7 +355,6 @@ namespace RendererRuntime
 					{ // Execute compositor instance pass compute, use cascade index three as intermediate render target
 						const uint8_t INTERMEDIATE_CASCADE_INDEX = 3;
 						assert(nullptr != mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX]);
-						RENDERER_SCOPED_PROFILER_EVENT(rendererRuntime.getContext(), commandBuffer, "Depth to exponential variance")
 						Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX]);
 						mDepthToExponentialVarianceCompositorInstancePassCompute->onFillCommandBuffer(*mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX], shadowCompositorContextData, commandBuffer);
 						mDepthToExponentialVarianceCompositorInstancePassCompute->onPostCommandBufferExecution();
@@ -363,7 +362,6 @@ namespace RendererRuntime
 
 					{ // Horizontal blur
 						mPassData.shadowFilterSize = filterSizeX;
-						RENDERER_SCOPED_PROFILER_EVENT(rendererRuntime.getContext(), commandBuffer, "Horizontal blur")
 						Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mIntermediateFramebufferPtr);
 						mHorizontalBlurCompositorInstancePassCompute->onFillCommandBuffer(*mIntermediateFramebufferPtr, shadowCompositorContextData, commandBuffer);
 						mHorizontalBlurCompositorInstancePassCompute->onPostCommandBufferExecution();
@@ -372,7 +370,6 @@ namespace RendererRuntime
 					{ // Vertical blur
 						mPassData.shadowFilterSize = filterSizeY;
 						assert(nullptr != mVarianceFramebufferPtr[cascadeIndex]);
-						RENDERER_SCOPED_PROFILER_EVENT(rendererRuntime.getContext(), commandBuffer, "Vertical blur")
 						Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[cascadeIndex]);
 						mVerticalBlurCompositorInstancePassCompute->onFillCommandBuffer(*mVarianceFramebufferPtr[cascadeIndex], shadowCompositorContextData, commandBuffer);
 						mVerticalBlurCompositorInstancePassCompute->onPostCommandBufferExecution();
@@ -381,7 +378,6 @@ namespace RendererRuntime
 				else
 				{
 					// Execute compositor instance pass compute
-					RENDERER_SCOPED_PROFILER_EVENT(rendererRuntime.getContext(), commandBuffer, "Depth to exponential variance")
 					assert(nullptr != mVarianceFramebufferPtr[cascadeIndex]);
 					Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[cascadeIndex]);
 					mDepthToExponentialVarianceCompositorInstancePassCompute->onFillCommandBuffer(*mVarianceFramebufferPtr[cascadeIndex], shadowCompositorContextData, commandBuffer);
@@ -468,6 +464,9 @@ namespace RendererRuntime
 				materialProperties.setPropertyById(STRING_ID("DepthMap"), MaterialPropertyValue::fromTextureAssetId(::detail::DEPTH_SHADOW_MAP_TEXTURE_ASSET_ID), MaterialProperty::Usage::UNKNOWN, true);
 				materialProperties.setPropertyById(STRING_ID("NumberOfMultisamples"), MaterialPropertyValue::fromInteger((numberOfShadowMultisamples == 1) ? 0 : numberOfShadowMultisamples), MaterialProperty::Usage::UNKNOWN, true);
 				mDepthToExponentialVarianceCompositorResourcePassCompute = new CompositorResourcePassCompute(compositorResourcePassShadowMap.getCompositorTarget(), compositorResourcePassShadowMap.getDepthToExponentialVarianceMaterialBlueprintAssetId(), materialProperties);
+				#ifdef RENDERER_RUNTIME_PROFILER
+					mDepthToExponentialVarianceCompositorResourcePassCompute->setName("Depth to exponential variance");
+				#endif
 				mDepthToExponentialVarianceCompositorInstancePassCompute = new CompositorInstancePassCompute(*mDepthToExponentialVarianceCompositorResourcePassCompute, getCompositorNodeInstance());
 			}
 
@@ -512,6 +511,9 @@ namespace RendererRuntime
 				materialProperties.setPropertyById(STRING_ID("VerticalBlur"), MaterialPropertyValue::fromBoolean(false), MaterialProperty::Usage::UNKNOWN, true);
 				materialProperties.setPropertyById(STRING_ID("ColorMap"), MaterialPropertyValue::fromTextureAssetId(assetId), MaterialProperty::Usage::UNKNOWN, true);
 				mHorizontalBlurCompositorResourcePassCompute = new CompositorResourcePassCompute(compositorResourcePassShadowMap.getCompositorTarget(), compositorResourcePassShadowMap.getBlurMaterialBlueprintAssetId(), materialProperties);
+				#ifdef RENDERER_RUNTIME_PROFILER
+					mHorizontalBlurCompositorResourcePassCompute->setName("Horizontal blur");
+				#endif
 				mHorizontalBlurCompositorInstancePassCompute = new CompositorInstancePassCompute(*mHorizontalBlurCompositorResourcePassCompute, getCompositorNodeInstance());
 			}
 
@@ -520,6 +522,9 @@ namespace RendererRuntime
 				materialProperties.setPropertyById(STRING_ID("VerticalBlur"), MaterialPropertyValue::fromBoolean(true), MaterialProperty::Usage::UNKNOWN, true);
 				materialProperties.setPropertyById(STRING_ID("ColorMap"), MaterialPropertyValue::fromTextureAssetId(::detail::INTERMEDIATE_DEPTH_BLUR_SHADOW_MAP_TEXTURE_ASSET_ID), MaterialProperty::Usage::UNKNOWN, true);
 				mVerticalBlurCompositorResourcePassCompute = new CompositorResourcePassCompute(compositorResourcePassShadowMap.getCompositorTarget(), compositorResourcePassShadowMap.getBlurMaterialBlueprintAssetId(), materialProperties);
+				#ifdef RENDERER_RUNTIME_PROFILER
+					mVerticalBlurCompositorResourcePassCompute->setName("Vertical blur");
+				#endif
 				mVerticalBlurCompositorInstancePassCompute = new CompositorInstancePassCompute(*mVerticalBlurCompositorResourcePassCompute, getCompositorNodeInstance());
 			}
 		}

@@ -86,7 +86,7 @@ namespace RendererRuntime
 					if (!mFramebuffersPtrs.empty())
 					{
 						// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
-						RENDERER_SCOPED_PROFILER_EVENT(rendererRuntime.getContext(), mCommandBuffer, "Generate mipmaps compositor pass")
+						RENDERER_SCOPED_PROFILER_EVENT_DYNAMIC(rendererRuntime.getContext(), mCommandBuffer, compositorResourcePassGenerateMipmaps.getName())
 
 						// Basing on "Hierarchical-Z map based occlusion culling" - "Hi-Z map construction" - http://rastergrid.com/blog/2010/10/hierarchical-z-map-based-occlusion-culling/
 						uint32_t currentWidth = renderTargetWidth;

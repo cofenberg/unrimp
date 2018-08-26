@@ -313,8 +313,9 @@
 			{
 				"Compute":
 				{
-					"SkipFirstExecution": "TRUE",
+					"Name": "SSR ray tracing",
 					"Description": "Screen space reflection (SSR) ray tracing",
+					"SkipFirstExecution": "TRUE",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/ScreenSpaceReflectionRayTracing.asset",
 					"SetMaterialProperties":
 					{
@@ -333,6 +334,7 @@
 				},
 				"Compute":
 				{
+					"Name": "Generate reflection",
 					"SkipFirstExecution": "TRUE",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Reflection.asset",
 					"SetMaterialProperties":
@@ -353,14 +355,14 @@
 				},
 				"Scene":
 				{
-					"Description": "Render solid objects",
+					"Name": "Solid objects",
 					"MinimumRenderQueueIndex": "0",
 					"MaximumRenderQueueIndex": "252",
 					"MaterialTechnique": "Forward"
 				},
 				"Scene":
 				{
-					"Description": "Render terrain",
+					"Name": "Terrain",
 					"MinimumRenderQueueIndex": "253",
 					"MaximumRenderQueueIndex": "253",
 					"MaterialTechnique": "Forward"
@@ -370,7 +372,7 @@
 			{
 				"Scene":
 				{
-					"Description": "Render sky",
+					"Name": "Sky",
 					"MaximumDepth": "0.0",
 					"MinimumRenderQueueIndex": "254",
 					"MaximumRenderQueueIndex": "254",
@@ -381,6 +383,7 @@
 			{
 				"Compute":
 				{
+					"Name": "MSAA resolve",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/MsaaResolve.asset",
 					"SetMaterialProperties":
 					{
@@ -395,6 +398,7 @@
 			{
 				"Copy":
 				{
+					"Name": "Backup color",
 					"DestinationTexture": "Example/Texture/Dynamic/PreviousHdrColorRenderTarget",
 					"SourceTexture": "Example/Texture/Dynamic/HdrColorRenderTarget0"
 				}
@@ -403,12 +407,14 @@
 			{
 				"Copy":
 				{
+					"Name": "HZB depth map copy",
 					"Description": "Sadly even with read-only it's impossible to read from a depth map while it's bound as depth buffer, so we need a copy",
 					"DestinationTexture": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
 					"SourceTexture": "Example/Texture/Dynamic/DepthStencilRenderTarget"
 				},
 				"GenerateMipmaps":
 				{
+					"Name": "Generate HZB mipmap chain",
 					"Description": "Generate the mipmap chain of the hierarchical depth buffer",
 					"DepthTexture": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/DepthGenerateMipmap.asset"
@@ -418,6 +424,7 @@
 			{
 				"Compute":
 				{
+					"Name": "Generate SSAO",
 					"Description": "Screen space ambient occlusion (SSAO) generation",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/ScreenSpaceAmbientOcclusionGeneration.asset",
 					"SetMaterialProperties":
@@ -431,6 +438,7 @@
 			{
 				"Compute":
 				{
+					"Name": "SSAO blur",
 					"Description": "Screen space ambient occlusion (SSAO) blur",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/ScreenSpaceAmbientOcclusionBlur.asset",
 					"SetMaterialProperties":
@@ -447,6 +455,7 @@
 				},
 				"Scene":
 				{
+					"Name": "Transparent distortion objects",
 					"Description": "Render transparent objects which contain distortion TODO(co) Currently everything transparent is rendered to have something to start with",
 					"MinimumRenderQueueIndex": "255",
 					"MaximumRenderQueueIndex": "255",
@@ -458,6 +467,7 @@
 			{
 				"Compute":
 				{
+					"Name": "Generate volumetric light",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/VolumetricLight.asset",
 					"SetMaterialProperties":
 					{
@@ -470,6 +480,7 @@
 			{
 				"Compute":
 				{
+					"Name": "Volumetric light blur",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/VolumetricLightBlur.asset",
 					"SetMaterialProperties":
 					{
@@ -481,7 +492,7 @@
 			{
 				"Compute":
 				{
-					"Description": "Composite forward data",
+					"Name": "Composite forward data",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Forward.asset",
 					"SetMaterialProperties":
 					{
@@ -497,7 +508,7 @@
 			{
 				"Scene":
 				{
-					"Description": "Render transparent objects",
+					"Name": "Transparent objects",
 					"MinimumRenderQueueIndex": "255",
 					"MaximumRenderQueueIndex": "255",
 					"TransparentPass": "TRUE",
@@ -508,6 +519,7 @@
 			{
 				"Compute":
 				{
+					"Name": "Calculate luminance",
 					"Description": "Calculate luminance. The mipmaps are generated automatically after the next render target change.",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/CalculateLuminance.asset",
 					"SetMaterialProperties":
@@ -520,8 +532,9 @@
 			{
 				"Copy":
 				{
-					"SkipFirstExecution": "TRUE",
+					"Name": "Backup previous luminance",
 					"Description": "Backup the adaptive luminance from the previous frame. Skip the first execution since there's no valid previous adaptive luminance available in this situation. The current compositor target isn't used for this.",
+					"SkipFirstExecution": "TRUE",
 					"DestinationTexture": "Example/Texture/Dynamic/PreviousLuminanceRenderTarget",
 					"SourceTexture": "Example/Texture/Dynamic/AdaptiveLuminanceRenderTarget"
 				}
@@ -530,8 +543,9 @@
 			{
 				"Compute":
 				{
-					"SkipFirstExecution": "TRUE",
+					"Name": "Adaptive luminance",
 					"Description": "Slowly adjusts the scene luminance based on the previous scene luminance. Skip the first execution since there's no valid previous adaptive luminance available in this situation.",
+					"SkipFirstExecution": "TRUE",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/AdaptiveLuminance.asset",
 					"SetMaterialProperties":
 					{
@@ -541,8 +555,9 @@
 				},
 				"Compute":
 				{
-					"NumberOfExecutions": "1",
+					"Name": "Adaptive luminance",
 					"Description": "During the first execution there's no valid previous adaptive luminance available, so use the just calculated luminance as previous luminance.",
+					"NumberOfExecutions": "1",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/AdaptiveLuminance.asset",
 					"SetMaterialProperties":
 					{
@@ -555,7 +570,7 @@
 			{
 				"Compute":
 				{
-					"Description": "Downscale",
+					"Name": "Blur downscale",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
 					"SetMaterialProperties":
 					{
@@ -567,7 +582,7 @@
 			{
 				"Compute":
 				{
-					"Description": "Downscale",
+					"Name": "Blur downscale",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
 					"SetMaterialProperties":
 					{
@@ -581,6 +596,7 @@
 				{
 					"Compute":
 					{
+						"Name": "Vertical blur",
 						"Description": "Vertical Gaussian blur",
 						"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/GaussianBlur.asset",
 						"SetMaterialProperties":
@@ -594,6 +610,7 @@
 				{
 					"Compute":
 					{
+						"Name": "Horizontal blur",
 						"Description": "Horizontal Gaussian blur",
 						"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/GaussianBlur.asset",
 						"SetMaterialProperties":
@@ -608,7 +625,7 @@
 			{
 				"Compute":
 				{
-					"Description": "Upscale",
+					"Name": "Blur upscale",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
 					"SetMaterialProperties":
 					{
@@ -620,6 +637,7 @@
 			{
 				"Compute":
 				{
+					"Name": "Depth of field",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/DepthOfField.asset",
 					"SetMaterialProperties":
 					{
@@ -633,6 +651,7 @@
 			{
 				"Compute":
 				{
+					"Name": "Motion blur",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/MotionBlur.asset",
 					"SetMaterialProperties":
 					{
@@ -645,6 +664,7 @@
 			{
 				"Compute":
 				{
+					"Name": "Bloom threshold",
 					"Description": "Bloom pass: Use a lower exposure to produce a value suitable for a bloom pass",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/HdrToLdrBloomThreshold.asset",
 					"SetMaterialProperties":
@@ -658,7 +678,7 @@
 			{
 				"Compute":
 				{
-					"Description": "Bloom pass: Downscale",
+					"Name": "Bloom downscale",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
 					"SetMaterialProperties":
 					{
@@ -670,7 +690,7 @@
 			{
 				"Compute":
 				{
-					"Description": "Bloom pass: Downscale",
+					"Name": "Bloom downscale",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
 					"SetMaterialProperties":
 					{
@@ -682,7 +702,7 @@
 			{
 				"Compute":
 				{
-					"Description": "Bloom pass: Downscale",
+					"Name": "Bloom downscale",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
 					"SetMaterialProperties":
 					{
@@ -696,6 +716,7 @@
 				{
 					"Compute":
 					{
+						"Name": "Bloom vertical blur",
 						"Description": "Bloom pass: Vertical Gaussian blur",
 						"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/GaussianBlur.asset",
 						"SetMaterialProperties":
@@ -709,6 +730,7 @@
 				{
 					"Compute":
 					{
+						"Name": "Bloom horizontal blur",
 						"Description": "Bloom pass: Horizontal Gaussian blur",
 						"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/GaussianBlur.asset",
 						"SetMaterialProperties":
@@ -723,7 +745,7 @@
 			{
 				"Compute":
 				{
-					"Description": "Bloom pass: Upscale",
+					"Name": "Bloom upscale",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
 					"SetMaterialProperties":
 					{
@@ -735,7 +757,7 @@
 			{
 				"Compute":
 				{
-					"Description": "Bloom pass: Upscale",
+					"Name": "Bloom upscale",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
 					"SetMaterialProperties":
 					{
@@ -747,6 +769,7 @@
 			{
 				"Compute":
 				{
+					"Name": "Lens flare threshold",
 					"Description": "Lens flare pass: Use a lower exposure to produce a value suitable for a lens flare pass",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/LensFlareThreshold.asset",
 					"SetMaterialProperties":
@@ -759,7 +782,7 @@
 			{
 				"Compute":
 				{
-					"Description": "Lens flare pass: Feature generation",
+					"Name": "Lens flare feature generation",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/LensFlareFeatureGeneration.asset",
 					"SetMaterialProperties":
 					{
@@ -771,6 +794,7 @@
 			{
 				"Compute":
 				{
+					"Name": "Lens flare vertical blur",
 					"Description": "Lens flare pass: Vertical Gaussian blur",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/GaussianBlur.asset",
 					"SetMaterialProperties":
@@ -784,6 +808,7 @@
 			{
 				"Compute":
 				{
+					"Name": "Lens flare horizontal blur",
 					"Description": "Lens flare pass: Horizontal Gaussian blur",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/GaussianBlur.asset",
 					"SetMaterialProperties":
@@ -797,7 +822,7 @@
 			{
 				"Compute":
 				{
-					"Description": "HDR to LDR",
+					"Name": "HDR to LDR",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/HdrToLdr.asset",
 					"SetMaterialProperties":
 					{
@@ -813,6 +838,7 @@
 			{
 				"Compute":
 				{
+					"Name": "Final",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Final.asset",
 					"SetMaterialProperties":
 					{
