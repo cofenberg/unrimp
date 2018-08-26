@@ -14,199 +14,426 @@
 #define CRN_NO_FUNCTION_DEFINITIONS
 #include "../inc/crnlib.h"
 
-namespace crnlib {
-const uint cTotalCompressionPhases = 25;
+namespace crnlib
+{
+   const uint cTotalCompressionPhases = 25;
 
-class dxt_hc {
- public:
-  dxt_hc();
-  ~dxt_hc();
+   class dxt_hc
+   {
+   public:
+      dxt_hc();
+      ~dxt_hc();
 
-  struct endpoint_indices_details {
-    union {
-      struct {
-        uint16 color;
-        uint16 alpha0;
-        uint16 alpha1;
+      struct pixel_chunk
+      {
+         pixel_chunk() { clear(); }
+
+         dxt_pixel_block m_blocks[cChunkBlockHeight][cChunkBlockWidth];
+
+         const color_quad_u8& operator() (uint cx, uint cy) const
+         {
+            CRNLIB_ASSERT((cx < cChunkPixelWidth) && (cy < cChunkPixelHeight));
+
+            return m_blocks[cy >> cBlockPixelHeightShift][cx >> cBlockPixelWidthShift].m_pixels
+                           [cy & (cBlockPixelHeight - 1)][cx & (cBlockPixelWidth - 1)];
+         }
+
+         color_quad_u8& operator() (uint cx, uint cy)
+         {
+            CRNLIB_ASSERT((cx < cChunkPixelWidth) && (cy < cChunkPixelHeight));
+
+            return m_blocks[cy >> cBlockPixelHeightShift][cx >> cBlockPixelWidthShift].m_pixels
+                           [cy & (cBlockPixelHeight - 1)][cx & (cBlockPixelWidth - 1)];
+         }
+
+         inline void clear()
+         {
+            utils::zero_object(*this);
+            m_weight = 1.0f;
+         }
+
+         float m_weight;
       };
-      uint16 component[3];
-    };
-    uint8 reference;
-    endpoint_indices_details() { utils::zero_object(*this); }
-  };
 
-  struct selector_indices_details {
-    union {
-      struct {
-        uint16 color;
-        uint16 alpha0;
-        uint16 alpha1;
+      typedef crnlib::vector<pixel_chunk> pixel_chunk_vec;
+
+      struct params
+      {
+         params() :
+            m_color_endpoint_codebook_size(3072),
+            m_color_selector_codebook_size(3072),
+            m_alpha_endpoint_codebook_size(3072),
+            m_alpha_selector_codebook_size(3072),
+            m_adaptive_tile_color_psnr_derating(2.0f), // was 3.4f
+            m_adaptive_tile_alpha_psnr_derating(2.0f),
+            m_adaptive_tile_color_alpha_weighting_ratio(3.0f),
+            m_num_levels(0),
+            m_format(cDXT1),
+            m_hierarchical(true),
+            m_perceptual(true),
+            m_debugging(false),
+            m_pProgress_func(NULL),
+            m_pProgress_func_data(NULL)
+         {
+            m_alpha_component_indices[0] = 3;
+            m_alpha_component_indices[1] = 0;
+
+            for (uint i = 0; i < cCRNMaxLevels; i++)
+            {
+               m_levels[i].m_first_chunk = 0;
+               m_levels[i].m_num_chunks = 0;
+            }
+         }
+
+         // Valid range for codebook sizes: [32,8192] (non-power of two values are okay)
+         uint        m_color_endpoint_codebook_size;
+         uint        m_color_selector_codebook_size;
+
+         uint        m_alpha_endpoint_codebook_size;
+         uint        m_alpha_selector_codebook_size;
+
+         // Higher values cause fewer 8x4, 4x8, and 4x4 blocks to be utilized less often (lower quality/smaller files).
+         // Lower values cause the encoder to use large tiles less often (better quality/larger files).
+         // Valid range: [0.0,100.0].
+         // A value of 0 will cause the encoder to only use tiles larger than 4x4 if doing so would incur to quality loss.
+         float       m_adaptive_tile_color_psnr_derating;
+
+         float       m_adaptive_tile_alpha_psnr_derating;
+
+         float       m_adaptive_tile_color_alpha_weighting_ratio;
+
+         uint        m_alpha_component_indices[2];
+
+         struct miplevel_desc
+         {
+            uint m_first_chunk;
+            uint m_num_chunks;
+         };
+         // The mip level data is optional!
+         miplevel_desc m_levels[cCRNMaxLevels];
+         uint        m_num_levels;
+
+         dxt_format  m_format;
+
+         // If m_hierarchical is false, only 4x4 blocks will be used by the encoder (leading to higher quality/larger files).
+         bool        m_hierarchical;
+
+         // If m_perceptual is true, perceptual color metrics will be used by the encoder.
+         bool        m_perceptual;
+
+         bool        m_debugging;
+
+         crn_progress_callback_func m_pProgress_func;
+         void*       m_pProgress_func_data;
       };
-      uint16 component[3];
-    };
-    selector_indices_details() { utils::zero_object(*this); }
-  };
 
-  struct tile_details {
-    crnlib::vector<color_quad_u8> pixels;
-    float weight;
-    vec<6, float> color_endpoint;
-    vec<2, float> alpha_endpoints[2];
-    uint16 cluster_indices[3];
-  };
-  crnlib::vector<tile_details> m_tiles;
-  uint m_num_tiles;
-  float m_color_derating[cCRNMaxLevels][8];
-  float m_alpha_derating[8];
-  float m_uint8_to_float[256];
+      void clear();
 
-  color_quad_u8 (*m_blocks)[16];
-  uint m_num_blocks;
-  crnlib::vector<float> m_block_weights;
-  crnlib::vector<uint8> m_block_encodings;
-  crnlib::vector<uint64> m_block_selectors[3];
-  crnlib::vector<uint32> m_color_selectors;
-  crnlib::vector<uint64> m_alpha_selectors;
-  crnlib::vector<bool> m_color_selectors_used;
-  crnlib::vector<bool> m_alpha_selectors_used;
-  crnlib::vector<uint> m_tile_indices;
-  crnlib::vector<endpoint_indices_details> m_endpoint_indices;
-  crnlib::vector<selector_indices_details> m_selector_indices;
+      // Main compression function
+      bool compress(const params& p, uint num_chunks, const pixel_chunk* pChunks, task_pool& task_pool);
 
-  struct params {
-    params()
-        : m_num_blocks(0),
-          m_num_levels(0),
-          m_num_faces(0),
-          m_format(cDXT1),
-          m_perceptual(true),
-          m_hierarchical(true),
-          m_color_endpoint_codebook_size(3072),
-          m_color_selector_codebook_size(3072),
-          m_alpha_endpoint_codebook_size(3072),
-          m_alpha_selector_codebook_size(3072),
-          m_adaptive_tile_color_psnr_derating(2.0f),
-          m_adaptive_tile_alpha_psnr_derating(2.0f),
-          m_adaptive_tile_color_alpha_weighting_ratio(3.0f),
-          m_debugging(false),
-          m_pProgress_func(0),
-          m_pProgress_func_data(0) {
-      m_alpha_component_indices[0] = 3;
-      m_alpha_component_indices[1] = 0;
-      for (uint i = 0; i < cCRNMaxLevels; i++) {
-        m_levels[i].m_first_block = 0;
-        m_levels[i].m_num_blocks = 0;
-        m_levels[i].m_block_width = 0;
-      }
-    }
+      // Output accessors
+      inline uint get_num_chunks() const { return m_num_chunks; }
 
-    uint m_num_blocks;
-    uint m_num_levels;
-    uint m_num_faces;
+      struct chunk_encoding
+      {
+         chunk_encoding() { utils::zero_object(*this); };
 
-    struct {
-      uint m_first_block;
-      uint m_num_blocks;
-      uint m_block_width;
-      float m_weight;
-    } m_levels[cCRNMaxLevels];
+         // Index into g_chunk_encodings.
+         uint8 m_encoding_index;
 
-    dxt_format m_format;
-    bool m_perceptual;
-    bool m_hierarchical;
+         // Number of tiles, endpoint indices.
+         uint8 m_num_tiles;
 
-    uint m_color_endpoint_codebook_size;
-    uint m_color_selector_codebook_size;
-    uint m_alpha_endpoint_codebook_size;
-    uint m_alpha_selector_codebook_size;
+         // Color, alpha0, alpha1
+         enum { cColorIndex = 0, cAlpha0Index = 1, cAlpha1Index = 2 };
+         uint16 m_endpoint_indices[3][cChunkMaxTiles];
+         uint16 m_selector_indices[3][cChunkBlockHeight][cChunkBlockWidth];   // [block_y][block_x]
+      };
 
-    float m_adaptive_tile_color_psnr_derating;
-    float m_adaptive_tile_alpha_psnr_derating;
-    float m_adaptive_tile_color_alpha_weighting_ratio;
-    uint m_alpha_component_indices[2];
+      typedef crnlib::vector<chunk_encoding> chunk_encoding_vec;
 
-    task_pool* m_pTask_pool;
-    bool m_debugging;
-    crn_progress_callback_func m_pProgress_func;
-    void* m_pProgress_func_data;
-  };
+      inline const chunk_encoding& get_chunk_encoding(uint chunk_index) const { return m_chunk_encoding[chunk_index]; }
+      inline const chunk_encoding_vec& get_chunk_encoding_vec() const { return m_chunk_encoding; }
 
-  void clear();
-  bool compress(
-    color_quad_u8 (*blocks)[16],
-    crnlib::vector<endpoint_indices_details>& endpoint_indices,
-    crnlib::vector<selector_indices_details>& selector_indices,
-    crnlib::vector<uint32>& color_endpoints,
-    crnlib::vector<uint32>& alpha_endpoints,
-    crnlib::vector<uint32>& color_selectors,
-    crnlib::vector<uint64>& alpha_selectors,
-    const params& p
-  );
+      struct selectors
+      {
+         selectors() { utils::zero_object(*this); }
 
- private:
-  params m_params;
+         uint8 m_selectors[cBlockPixelHeight][cBlockPixelWidth];
 
-  uint m_num_alpha_blocks;
-  bool m_has_color_blocks;
-  bool m_has_etc_color_blocks;
+         uint8 get_by_index(uint i) const { CRNLIB_ASSERT(i < (cBlockPixelWidth * cBlockPixelHeight)); const uint8* p = (const uint8*)m_selectors; return *(p + i); }
+         void set_by_index(uint i, uint v) { CRNLIB_ASSERT(i < (cBlockPixelWidth * cBlockPixelHeight)); uint8* p = (uint8*)m_selectors; *(p + i) = static_cast<uint8>(v); }
+      };
+      typedef crnlib::vector<selectors> selectors_vec;
 
-  enum {
-    cColor = 0,
-    cAlpha0 = 1,
-    cAlpha1 = 2,
-    cNumComps = 3
-  };
+      // Color endpoints
+      inline uint get_color_endpoint_codebook_size() const { return m_color_endpoints.size(); }
+      inline uint get_color_endpoint(uint codebook_index) const { return m_color_endpoints[codebook_index]; }
+      const crnlib::vector<uint>& get_color_endpoint_vec() const { return m_color_endpoints; }
 
-  struct color_cluster {
-    color_cluster() : first_endpoint(0), second_endpoint(0) {}
-    crnlib::vector<uint> blocks[3];
-    crnlib::vector<color_quad_u8> pixels;
-    uint first_endpoint;
-    uint second_endpoint;
-    color_quad_u8 color_values[4];
-  };
-  crnlib::vector<color_cluster> m_color_clusters;
+      // Color selectors
+      uint get_color_selector_codebook_size() const { return m_color_selectors.size(); }
+      const selectors& get_color_selectors(uint codebook_index) const { return m_color_selectors[codebook_index]; }
+      const crnlib::vector<selectors>& get_color_selectors_vec() const { return m_color_selectors; }
 
-  struct alpha_cluster {
-    alpha_cluster() : first_endpoint(0), second_endpoint(0) {}
-    crnlib::vector<uint> blocks[3];
-    crnlib::vector<color_quad_u8> pixels;
-    uint first_endpoint;
-    uint second_endpoint;
-    uint alpha_values[8];
-    bool refined_alpha;
-    uint refined_alpha_values[8];
-  };
-  crnlib::vector<alpha_cluster> m_alpha_clusters;
+      // Alpha endpoints
+      inline uint get_alpha_endpoint_codebook_size() const { return m_alpha_endpoints.size(); }
+      inline uint get_alpha_endpoint(uint codebook_index) const { return m_alpha_endpoints[codebook_index]; }
+      const crnlib::vector<uint>& get_alpha_endpoint_vec() const { return m_alpha_endpoints; }
 
-  crn_thread_id_t m_main_thread_id;
-  bool m_canceled;
-  task_pool* m_pTask_pool;
+      // Alpha selectors
+      uint get_alpha_selector_codebook_size() const { return m_alpha_selectors.size(); }
+      const selectors& get_alpha_selectors(uint codebook_index) const { return m_alpha_selectors[codebook_index]; }
+      const crnlib::vector<selectors>& get_alpha_selectors_vec() const { return m_alpha_selectors; }
 
-  int m_prev_phase_index;
-  int m_prev_percentage_complete;
+      // Debug images
+      const pixel_chunk_vec& get_compressed_chunk_pixels() const { return m_dbg_chunk_pixels; }
+      const pixel_chunk_vec& get_compressed_chunk_pixels_tile_vis() const { return m_dbg_chunk_pixels_tile_vis; }
+      const pixel_chunk_vec& get_compressed_chunk_pixels_color_quantized() const { return m_dbg_chunk_pixels_color_quantized; }
+      const pixel_chunk_vec& get_compressed_chunk_pixels_alpha_quantized() const { return m_dbg_chunk_pixels_alpha_quantized; }
+      const pixel_chunk_vec& get_compressed_chunk_pixels_final() const { return m_dbg_chunk_pixels_final; }
 
-  vec<6, float> palettize_color(color_quad_u8* pixels, uint pixels_count);
-  vec<2, float> palettize_alpha(color_quad_u8* pixels, uint pixels_count, uint comp_index);
-  void determine_tiles_task(uint64 data, void* pData_ptr);
-  void determine_tiles_task_etc(uint64 data, void* pData_ptr);
+      const pixel_chunk_vec& get_compressed_chunk_pixels_orig_color_selectors() const { return m_dbg_chunk_pixels_orig_color_selectors; }
+      const pixel_chunk_vec& get_compressed_chunk_pixels_quantized_color_selectors() const { return m_dbg_chunk_pixels_quantized_color_selectors; }
+      const pixel_chunk_vec& get_compressed_chunk_pixels_final_color_selectors() const { return m_dbg_chunk_pixels_final_color_selectors; }
 
-  void determine_color_endpoint_codebook_task(uint64 data, void* pData_ptr);
-  void determine_color_endpoint_codebook_task_etc(uint64 data, void* pData_ptr);
-  void determine_color_endpoint_clusters_task(uint64 data, void* pData_ptr);
-  void determine_color_endpoints();
+      const pixel_chunk_vec& get_compressed_chunk_pixels_orig_alpha_selectors() const { return m_dbg_chunk_pixels_orig_alpha_selectors; }
+      const pixel_chunk_vec& get_compressed_chunk_pixels_quantized_alpha_selectors() const { return m_dbg_chunk_pixels_quantized_alpha_selectors; }
+      const pixel_chunk_vec& get_compressed_chunk_pixels_final_alpha_selectors() const { return m_dbg_chunk_pixels_final_alpha_selectors; }
 
-  void determine_alpha_endpoint_codebook_task(uint64 data, void* pData_ptr);
-  void determine_alpha_endpoint_clusters_task(uint64 data, void* pData_ptr);
-  void determine_alpha_endpoints();
+      static void create_debug_image_from_chunks(uint num_chunks_x, uint num_chunks_y, const pixel_chunk_vec& chunks, const chunk_encoding_vec *pChunk_encodings, image_u8& img, bool serpentine_scan, int comp_index = -1);
 
-  void create_color_selector_codebook_task(uint64 data, void* pData_ptr);
-  void create_color_selector_codebook();
+   private:
+      params               m_params;
 
-  void create_alpha_selector_codebook_task(uint64 data, void* pData_ptr);
-  void create_alpha_selector_codebook();
+      uint                 m_num_chunks;
+      const pixel_chunk*   m_pChunks;
 
-  bool update_progress(uint phase_index, uint subphase_index, uint subphase_total);
-};
+      chunk_encoding_vec   m_chunk_encoding;
 
-}  // namespace crnlib
+      uint                 m_num_alpha_blocks; // 0, 1, or 2
+      bool                 m_has_color_blocks;
+      bool                 m_has_alpha0_blocks;
+      bool                 m_has_alpha1_blocks;
+
+      struct compressed_tile
+      {
+         uint m_endpoint_cluster_index;
+         uint m_first_endpoint;
+         uint m_second_endpoint;
+
+         uint8 m_selectors[cChunkPixelWidth * cChunkPixelHeight];
+
+         void set_selector(uint x, uint y, uint s)
+         {
+            CRNLIB_ASSERT((x < m_pixel_width) && (y < m_pixel_height));
+            m_selectors[x + y * m_pixel_width] = static_cast<uint8>(s);
+         }
+
+         uint get_selector(uint x, uint y) const
+         {
+            CRNLIB_ASSERT((x < m_pixel_width) && (y < m_pixel_height));
+            return m_selectors[x + y * m_pixel_width];
+         }
+
+         uint8 m_pixel_width;
+         uint8 m_pixel_height;
+
+         uint8 m_layout_index;
+
+         bool m_alpha_encoding;
+      };
+
+      struct compressed_chunk
+      {
+         compressed_chunk() { utils::zero_object(*this); }
+
+         uint8 m_encoding_index;
+
+         uint8 m_num_tiles;
+
+         compressed_tile m_tiles[cChunkMaxTiles];
+         compressed_tile m_quantized_tiles[cChunkMaxTiles];
+
+         uint16 m_endpoint_cluster_index[cChunkMaxTiles];
+         uint16 m_selector_cluster_index[cChunkBlockHeight][cChunkBlockWidth];
+      };
+
+      typedef crnlib::vector<compressed_chunk> compressed_chunk_vec;
+      enum
+      {
+         cColorChunks = 0,
+         cAlpha0Chunks = 1,
+         cAlpha1Chunks = 2,
+
+         cNumCompressedChunkVecs = 3
+      };
+      compressed_chunk_vec m_compressed_chunks[cNumCompressedChunkVecs];
+
+      volatile atomic32_t m_encoding_hist[cNumChunkEncodings];
+
+      atomic32_t m_total_tiles;
+
+      void compress_dxt1_block(
+         dxt1_endpoint_optimizer::results& results,
+         uint chunk_index, const image_u8& chunk, uint x_ofs, uint y_ofs, uint width, uint height,
+         uint8* pSelectors);
+
+      void compress_dxt5_block(
+         dxt5_endpoint_optimizer::results& results,
+         uint chunk_index, const image_u8& chunk, uint x_ofs, uint y_ofs, uint width, uint height, uint component_index,
+         uint8* pAlpha_selectors);
+
+      void determine_compressed_chunks_task(uint64 data, void* pData_ptr);
+      bool determine_compressed_chunks();
+
+      struct tile_cluster
+      {
+         tile_cluster() : m_first_endpoint(0), m_second_endpoint(0), m_error(0), m_alpha_encoding(false) { }
+
+         // first = chunk, second = tile
+         // if an alpha tile, second's upper 16 bits contains the alpha index (0 or 1)
+         crnlib::vector< std::pair<uint, uint> > m_tiles;
+
+         uint m_first_endpoint;
+         uint m_second_endpoint;
+         uint64 m_error;
+
+         bool m_alpha_encoding;
+      };
+
+      typedef crnlib::vector<tile_cluster> tile_cluster_vec;
+
+      tile_cluster_vec m_color_clusters;
+      tile_cluster_vec m_alpha_clusters;
+
+      selectors_vec m_color_selectors;
+      selectors_vec m_alpha_selectors;
+
+      // For each selector, this array indicates every chunk/tile/tile block that use this color selector.
+      struct block_id
+      {
+         block_id() { utils::zero_object(*this); }
+
+         block_id(uint chunk_index, uint alpha_index, uint tile_index, uint block_x, uint block_y) :
+            m_chunk_index(chunk_index), m_alpha_index((uint8)alpha_index), m_tile_index((uint8)tile_index), m_block_x((uint8)block_x), m_block_y((uint8)block_y) { }
+
+         uint m_chunk_index;
+         uint8 m_alpha_index;
+         uint8 m_tile_index;
+         uint8 m_block_x;
+         uint8 m_block_y;
+      };
+
+      typedef crnlib::vector< crnlib::vector< block_id > > chunk_blocks_using_selectors_vec;
+      chunk_blocks_using_selectors_vec m_chunk_blocks_using_color_selectors;
+      chunk_blocks_using_selectors_vec m_chunk_blocks_using_alpha_selectors; // second's upper 16 bits contain alpha index!
+
+      crnlib::vector<uint> m_color_endpoints;   // not valid until end, only for user access
+      crnlib::vector<uint> m_alpha_endpoints;   // not valid until end, only for user access
+
+      // Debugging
+      pixel_chunk_vec m_dbg_chunk_pixels;
+      pixel_chunk_vec m_dbg_chunk_pixels_tile_vis;
+      pixel_chunk_vec m_dbg_chunk_pixels_color_quantized;
+      pixel_chunk_vec m_dbg_chunk_pixels_alpha_quantized;
+
+      pixel_chunk_vec m_dbg_chunk_pixels_orig_color_selectors;
+      pixel_chunk_vec m_dbg_chunk_pixels_quantized_color_selectors;
+      pixel_chunk_vec m_dbg_chunk_pixels_final_color_selectors;
+
+      pixel_chunk_vec m_dbg_chunk_pixels_orig_alpha_selectors;
+      pixel_chunk_vec m_dbg_chunk_pixels_quantized_alpha_selectors;
+      pixel_chunk_vec m_dbg_chunk_pixels_final_alpha_selectors;
+
+      pixel_chunk_vec m_dbg_chunk_pixels_final;
+
+      crn_thread_id_t m_main_thread_id;
+      bool m_canceled;
+      task_pool* m_pTask_pool;
+
+      int m_prev_phase_index;
+      int m_prev_percentage_complete;
+
+      typedef vec<6, float> vec6F;
+      typedef vec<16, float> vec16F;
+      typedef tree_clusterizer<vec2F> vec2F_tree_vq;
+      typedef tree_clusterizer<vec6F> vec6F_tree_vq;
+      typedef tree_clusterizer<vec16F> vec16F_tree_vq;
+
+      struct assign_color_endpoint_clusters_state
+      {
+         CRNLIB_NO_COPY_OR_ASSIGNMENT_OP(assign_color_endpoint_clusters_state);
+
+         assign_color_endpoint_clusters_state(vec6F_tree_vq& vq, crnlib::vector< crnlib::vector<vec6F> >& training_vecs) :
+            m_vq(vq), m_training_vecs(training_vecs) { }
+
+         vec6F_tree_vq& m_vq;
+         crnlib::vector< crnlib::vector<vec6F> >& m_training_vecs;
+      };
+
+      struct create_selector_codebook_state
+      {
+         CRNLIB_NO_COPY_OR_ASSIGNMENT_OP(create_selector_codebook_state);
+
+         create_selector_codebook_state(dxt_hc& hc, bool alpha_blocks, uint comp_index_start, uint comp_index_end, vec16F_tree_vq& selector_vq, chunk_blocks_using_selectors_vec& chunk_blocks_using_selectors, selectors_vec& selectors_cb) :
+            m_hc(hc),
+            m_alpha_blocks(alpha_blocks),
+            m_comp_index_start(comp_index_start),
+            m_comp_index_end(comp_index_end),
+            m_selector_vq(selector_vq),
+            m_chunk_blocks_using_selectors(chunk_blocks_using_selectors),
+            m_selectors_cb(selectors_cb)
+         {
+         }
+
+         dxt_hc&                             m_hc;
+         bool                                m_alpha_blocks;
+         uint                                m_comp_index_start;
+         uint                                m_comp_index_end;
+         vec16F_tree_vq&                     m_selector_vq;
+         chunk_blocks_using_selectors_vec&   m_chunk_blocks_using_selectors;
+         selectors_vec&                      m_selectors_cb;
+
+         mutable spinlock                    m_chunk_blocks_using_selectors_lock;
+      };
+
+      void assign_color_endpoint_clusters_task(uint64 data, void* pData_ptr);
+      bool determine_color_endpoint_clusters();
+
+      struct determine_alpha_endpoint_clusters_state
+      {
+         vec2F_tree_vq m_vq;
+         crnlib::vector< crnlib::vector<vec2F> > m_training_vecs[2];
+      };
+
+      void determine_alpha_endpoint_clusters_task(uint64 data, void* pData_ptr);
+      bool determine_alpha_endpoint_clusters();
+
+      void determine_color_endpoint_codebook_task(uint64 data, void* pData_ptr);
+      bool determine_color_endpoint_codebook();
+
+      void determine_alpha_endpoint_codebook_task(uint64 data, void* pData_ptr);
+      bool determine_alpha_endpoint_codebook();
+
+      void create_quantized_debug_images();
+
+      void create_selector_codebook_task(uint64 data, void* pData_ptr);
+      bool create_selector_codebook(bool alpha_blocks);
+
+      bool refine_quantized_color_endpoints();
+      bool refine_quantized_color_selectors();
+      bool refine_quantized_alpha_endpoints();
+      bool refine_quantized_alpha_selectors();
+      void create_final_debug_image();
+      bool create_chunk_encodings();
+      bool update_progress(uint phase_index, uint subphase_index, uint subphase_total);
+      bool compress_internal(const params& p, uint num_chunks, const pixel_chunk* pChunks);
+   };
+
+   CRNLIB_DEFINE_BITWISE_COPYABLE(dxt_hc::pixel_chunk);
+   CRNLIB_DEFINE_BITWISE_COPYABLE(dxt_hc::chunk_encoding);
+   CRNLIB_DEFINE_BITWISE_COPYABLE(dxt_hc::selectors);
+
+} // namespace crnlib

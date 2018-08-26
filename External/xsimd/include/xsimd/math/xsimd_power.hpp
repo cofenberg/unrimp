@@ -62,15 +62,51 @@ namespace xsimd
      * ====================================================
      */
 
+    namespace detail
+    {
+        template <class B>
+        struct pow_kernel
+        {
+            static inline B compute(const B& x, const B& y)
+            {
+                using b_type = B;
+                auto negx = x < b_type(0.);
+                b_type z = exp(y * log(abs(x)));
+                z = select(is_odd(y) && negx, -z, z);
+                auto invalid = negx && !(is_flint(y) || isinf(y));
+                return select(invalid, nan<b_type>(), z);
+            }
+        };
+    }
+
     template <class T, std::size_t N>
     inline batch<T, N> pow(const batch<T, N>& x, const batch<T, N>& y)
     {
-        using b_type = batch<T, N>;
-        auto negx = x < b_type(0.);
-        b_type z = exp(y * log(abs(x)));
-        z = select(is_odd(y) && negx, -z, z);
-        auto invalid = negx && !(is_flint(y) || isinf(y));
-        return select(invalid, nan<b_type>(), z);
+        return detail::pow_kernel<batch<T, N>>::compute(x, y);
+    }
+
+    template <class T0, class T1>
+    inline typename std::enable_if<std::is_integral<T1>::value, T0>::type
+    pow(const T0& t0, const T1& t1)
+    {
+        T0 a = t0;
+        T1 b = t1;
+        bool const recip = b < 0;
+        T0 r{static_cast<T0>(1)};
+        while (1)
+        {
+            if (b & 1)
+            {
+                r *= a;
+            }
+            b /= 2;
+            if (b == 0)
+            {
+                break;
+            }
+            a *= a;
+        }
+        return recip ? 1 / r : r;
     }
 
     /***********************

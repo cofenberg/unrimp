@@ -57,3 +57,4 @@
 #include "src/lzma_LzmaDec.cpp"
 // utils
 #include "src/crn_checksum.cpp"
+#include "src/crn_zeng.cpp"

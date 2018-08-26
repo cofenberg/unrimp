@@ -4,7 +4,8 @@
 #include "crn_hash_map.h"
 #include "crn_rand.h"
 
-namespace crnlib {
+namespace crnlib
+{
 #if 0
    class counted_obj
    {
@@ -151,4 +152,4 @@ namespace crnlib {
    }
 #endif
 
-}  // namespace crnlib
+} // namespace crnlib

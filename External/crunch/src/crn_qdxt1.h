@@ -8,165 +8,178 @@
 #include "crn_threaded_clusterizer.h"
 #include "crn_dxt_image.h"
 
-namespace crnlib {
-struct qdxt1_params {
-  qdxt1_params() {
-    clear();
-  }
+namespace crnlib
+{
+   struct qdxt1_params
+   {
+      qdxt1_params()
+      {
+         clear();
+      }
 
-  void clear() {
-    m_quality_level = cMaxQuality;
-    m_dxt_quality = cCRNDXTQualityUber;
-    m_perceptual = true;
-    m_dxt1a_alpha_threshold = 0;
-    m_use_alpha_blocks = true;
-    m_pProgress_func = NULL;
-    m_pProgress_data = NULL;
-    m_num_mips = 0;
-    m_hierarchical = true;
-    utils::zero_object(m_mip_desc);
-    m_progress_start = 0;
-    m_progress_range = 100;
-  }
+      void clear()
+      {
+         m_quality_level = cMaxQuality;
+         m_dxt_quality = cCRNDXTQualityUber;
+         m_perceptual = true;
+         m_dxt1a_alpha_threshold = 0;
+         m_use_alpha_blocks = true;
+         m_pProgress_func = NULL;
+         m_pProgress_data = NULL;
+         m_num_mips = 0;
+         m_hierarchical = true;
+         utils::zero_object(m_mip_desc);
+         m_progress_start = 0;
+         m_progress_range = 100;
+      }
 
-  void init(const dxt_image::pack_params& pp, int quality_level, bool hierarchical) {
-    m_dxt_quality = pp.m_quality;
-    m_hierarchical = hierarchical;
-    m_perceptual = pp.m_perceptual;
-    m_use_alpha_blocks = pp.m_use_both_block_types;
-    m_quality_level = quality_level;
-    m_dxt1a_alpha_threshold = pp.m_dxt1a_alpha_threshold;
-  }
+      void init(const dxt_image::pack_params &pp, int quality_level, bool hierarchical)
+      {
+         m_dxt_quality = pp.m_quality;
+         m_hierarchical = hierarchical;
+         m_perceptual = pp.m_perceptual;
+         m_use_alpha_blocks = pp.m_use_both_block_types;
+         m_quality_level = quality_level;
+         m_dxt1a_alpha_threshold = pp.m_dxt1a_alpha_threshold;
+      }
 
-  enum { cMaxQuality = cCRNMaxQualityLevel };
-  uint m_quality_level;
+      enum { cMaxQuality = cCRNMaxQualityLevel };
+      uint m_quality_level;
 
-  uint m_dxt1a_alpha_threshold;
-  crn_dxt_quality m_dxt_quality;
-  bool m_perceptual;
-  bool m_use_alpha_blocks;
-  bool m_hierarchical;
+      uint m_dxt1a_alpha_threshold;
+      crn_dxt_quality m_dxt_quality;
+      bool m_perceptual;
+      bool m_use_alpha_blocks;
+      bool m_hierarchical;
 
-  struct mip_desc {
-    uint m_first_block;
-    uint m_block_width;
-    uint m_block_height;
-  };
+      struct mip_desc
+      {
+         uint m_first_block;
+         uint m_block_width;
+         uint m_block_height;
+      };
 
-  uint m_num_mips;
-  enum { cMaxMips = 128 };
-  mip_desc m_mip_desc[cMaxMips];
+      uint m_num_mips;
+      enum { cMaxMips = 128 };
+      mip_desc m_mip_desc[cMaxMips];
 
-  typedef bool (*progress_callback_func)(uint percentage_completed, void* pProgress_data);
-  progress_callback_func m_pProgress_func;
-  void* m_pProgress_data;
-  uint m_progress_start;
-  uint m_progress_range;
-};
+      typedef bool (*progress_callback_func)(uint percentage_completed, void* pProgress_data);
+      progress_callback_func m_pProgress_func;
+      void* m_pProgress_data;
+      uint m_progress_start;
+      uint m_progress_range;
+   };
 
-class qdxt1 {
-  CRNLIB_NO_COPY_OR_ASSIGNMENT_OP(qdxt1);
+   class qdxt1
+   {
+      CRNLIB_NO_COPY_OR_ASSIGNMENT_OP(qdxt1);
 
- public:
-  qdxt1(task_pool& task_pool);
-  ~qdxt1();
+   public:
+      qdxt1(task_pool& task_pool);
+      ~qdxt1();
 
-  void clear();
+      void clear();
 
-  bool init(uint n, const dxt_pixel_block* pBlocks, const qdxt1_params& params);
+      bool init(uint n, const dxt_pixel_block* pBlocks, const qdxt1_params& params);
 
-  uint get_num_blocks() const { return m_num_blocks; }
-  const dxt_pixel_block* get_blocks() const { return m_pBlocks; }
+      uint get_num_blocks() const { return m_num_blocks; }
+      const dxt_pixel_block* get_blocks() const { return m_pBlocks; }
 
-  bool pack(dxt1_block* pDst_elements, uint elements_per_block, const qdxt1_params& params, float quality_power_mul);
+      bool pack(dxt1_block* pDst_elements, uint elements_per_block, const qdxt1_params& params, float quality_power_mul);
 
- private:
-  task_pool* m_pTask_pool;
-  crn_thread_id_t m_main_thread_id;
-  bool m_canceled;
+   private:
+      task_pool*           m_pTask_pool;
+      crn_thread_id_t      m_main_thread_id;
+      bool                 m_canceled;
 
-  uint m_progress_start;
-  uint m_progress_range;
+      uint                 m_progress_start;
+      uint                 m_progress_range;
 
-  uint m_num_blocks;
-  const dxt_pixel_block* m_pBlocks;
+      uint                 m_num_blocks;
+      const dxt_pixel_block*   m_pBlocks;
 
-  dxt1_block* m_pDst_elements;
-  uint m_elements_per_block;
-  qdxt1_params m_params;
+      dxt1_block*          m_pDst_elements;
+      uint                 m_elements_per_block;
+      qdxt1_params         m_params;
 
-  uint m_max_selector_clusters;
+      uint                 m_max_selector_clusters;
 
-  int m_prev_percentage_complete;
+      int                  m_prev_percentage_complete;
 
-  typedef vec<6, float> vec6F;
-  typedef clusterizer<vec6F> vec6F_clusterizer;
-  vec6F_clusterizer m_endpoint_clusterizer;
+      typedef vec<6, float> vec6F;
+      typedef clusterizer<vec6F> vec6F_clusterizer;
+      vec6F_clusterizer    m_endpoint_clusterizer;
 
-  crnlib::vector<crnlib::vector<uint> > m_endpoint_cluster_indices;
+      crnlib::vector< crnlib::vector<uint> > m_endpoint_cluster_indices;
 
-  typedef vec<16, float> vec16F;
-  typedef threaded_clusterizer<vec16F> vec16F_clusterizer;
+      typedef vec<16, float> vec16F;
+      typedef threaded_clusterizer<vec16F> vec16F_clusterizer;
 
-  typedef vec16F_clusterizer::weighted_vec weighted_selector_vec;
-  typedef vec16F_clusterizer::weighted_vec_array weighted_selector_vec_array;
+      typedef vec16F_clusterizer::weighted_vec weighted_selector_vec;
+      typedef vec16F_clusterizer::weighted_vec_array weighted_selector_vec_array;
 
-  vec16F_clusterizer m_selector_clusterizer;
+      vec16F_clusterizer m_selector_clusterizer;
 
-  crnlib::vector<crnlib::vector<uint> > m_cached_selector_cluster_indices[qdxt1_params::cMaxQuality + 1];
+      crnlib::vector< crnlib::vector<uint> > m_cached_selector_cluster_indices[qdxt1_params::cMaxQuality + 1];
 
-  struct cluster_id {
-    cluster_id()
-        : m_hash(0) {
-    }
+      struct cluster_id
+      {
+         cluster_id() : m_hash(0)
+         {
 
-    cluster_id(const crnlib::vector<uint>& indices) {
-      set(indices);
-    }
+         }
 
-    void set(const crnlib::vector<uint>& indices) {
-      m_cells.resize(indices.size());
+         cluster_id(const crnlib::vector<uint>& indices)
+         {
+            set(indices);
+         }
 
-      for (uint i = 0; i < indices.size(); i++)
-        m_cells[i] = static_cast<uint32>(indices[i]);
+         void set(const crnlib::vector<uint>& indices)
+         {
+            m_cells.resize(indices.size());
 
-      std::sort(m_cells.begin(), m_cells.end());
+            for (uint i = 0; i < indices.size(); i++)
+               m_cells[i] = static_cast<uint32>(indices[i]);
 
-      m_hash = fast_hash(&m_cells[0], sizeof(m_cells[0]) * m_cells.size());
-    }
+            std::sort(m_cells.begin(), m_cells.end());
 
-    bool operator<(const cluster_id& rhs) const {
-      return m_cells < rhs.m_cells;
-    }
+            m_hash = fast_hash(&m_cells[0], sizeof(m_cells[0]) * m_cells.size());
+         }
 
-    bool operator==(const cluster_id& rhs) const {
-      if (m_hash != rhs.m_hash)
-        return false;
+         bool operator< (const cluster_id& rhs) const
+         {
+            return m_cells < rhs.m_cells;
+         }
 
-      return m_cells == rhs.m_cells;
-    }
+         bool operator== (const cluster_id& rhs) const
+         {
+            if (m_hash != rhs.m_hash)
+               return false;
 
-    crnlib::vector<uint32> m_cells;
+            return m_cells == rhs.m_cells;
+         }
 
-    size_t m_hash;
+         crnlib::vector<uint32> m_cells;
 
-    operator size_t() const { return m_hash; }
-  };
+         size_t m_hash;
 
-  typedef crnlib::hash_map<cluster_id, uint> cluster_hash;
-  cluster_hash m_cluster_hash;
-  spinlock m_cluster_hash_lock;
+         operator size_t() const { return m_hash; }
+      };
 
-  static bool generate_codebook_dummy_progress_callback(uint percentage_completed, void* pData);
-  static bool generate_codebook_progress_callback(uint percentage_completed, void* pData);
-  bool update_progress(uint value, uint max_value);
-  void pack_endpoints_task(uint64 data, void* pData_ptr);
-  void optimize_selectors_task(uint64 data, void* pData_ptr);
-  bool create_selector_clusters(uint max_selector_clusters, crnlib::vector<crnlib::vector<uint> >& selector_cluster_indices);
+      typedef crnlib::hash_map<cluster_id, uint> cluster_hash;
+      cluster_hash m_cluster_hash;
+      spinlock m_cluster_hash_lock;
 
-  inline dxt1_block& get_block(uint index) const { return m_pDst_elements[index * m_elements_per_block]; }
-};
+      static bool generate_codebook_dummy_progress_callback(uint percentage_completed, void* pData);
+      static bool generate_codebook_progress_callback(uint percentage_completed, void* pData);
+      bool update_progress(uint value, uint max_value);
+      void pack_endpoints_task(uint64 data, void* pData_ptr);
+      void optimize_selectors_task(uint64 data, void* pData_ptr);
+      bool create_selector_clusters(uint max_selector_clusters, crnlib::vector< crnlib::vector<uint> >& selector_cluster_indices);
 
-CRNLIB_DEFINE_BITWISE_MOVABLE(qdxt1::cluster_id);
+      inline dxt1_block& get_block(uint index) const { return m_pDst_elements[index * m_elements_per_block]; }
+   };
 
-}  // namespace crnlib
+   CRNLIB_DEFINE_BITWISE_MOVABLE(qdxt1::cluster_id);
+
+} // namespace crnlib

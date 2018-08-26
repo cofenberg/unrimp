@@ -62,6 +62,9 @@ PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_GCC("-Wunused-value")			// warning: expression result unused [-Wunused-value]
 	PRAGMA_WARNING_DISABLE_GCC("-Wunused-local-typedefs")	// warning: typedef ‘<x>’ locally defined but not used [-Wunused-value]
 	#include <crnlib.h>
+	#ifdef SHARED_LIBRARIES
+		#include <crn_decomp.h>
+	#endif
 	#include <dds_defs.h>
 	#include <../src/crn_texture_conversion.h>
 	#include <../src/crn_command_line_params.h>

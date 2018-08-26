@@ -3,180 +3,204 @@
 #pragma once
 #include "crn_data_stream.h"
 
-namespace crnlib {
-class dynamic_stream : public data_stream {
- public:
-  dynamic_stream(uint initial_size, const char* pName = "dynamic_stream", uint attribs = cDataStreamSeekable | cDataStreamWritable | cDataStreamReadable)
-      : data_stream(pName, attribs),
-        m_ofs(0) {
-    open(initial_size, pName, attribs);
-  }
-
-  dynamic_stream(const void* pBuf, uint size, const char* pName = "dynamic_stream", uint attribs = cDataStreamSeekable | cDataStreamWritable | cDataStreamReadable)
-      : data_stream(pName, attribs),
-        m_ofs(0) {
-    open(pBuf, size, pName, attribs);
-  }
-
-  dynamic_stream()
-      : data_stream(),
-        m_ofs(0) {
-    open();
-  }
-
-  virtual ~dynamic_stream() {
-  }
-
-  bool open(uint initial_size = 0, const char* pName = "dynamic_stream", uint attribs = cDataStreamSeekable | cDataStreamWritable | cDataStreamReadable) {
-    close();
-
-    m_opened = true;
-    m_buf.clear();
-    m_buf.resize(initial_size);
-    m_ofs = 0;
-    m_name.set(pName ? pName : "dynamic_stream");
-    m_attribs = static_cast<attribs_t>(attribs);
-    return true;
-  }
-
-  bool reopen(const char* pName, uint attribs) {
-    if (!m_opened) {
-      return open(0, pName, attribs);
-    }
-
-    m_name.set(pName ? pName : "dynamic_stream");
-    m_attribs = static_cast<attribs_t>(attribs);
-    return true;
-  }
-
-  bool open(const void* pBuf, uint size, const char* pName = "dynamic_stream", uint attribs = cDataStreamSeekable | cDataStreamWritable | cDataStreamReadable) {
-    if (!m_opened) {
-      m_opened = true;
-      m_buf.resize(size);
-      if (size) {
-        CRNLIB_ASSERT(pBuf);
-        memcpy(&m_buf[0], pBuf, size);
+namespace crnlib
+{
+   class dynamic_stream : public data_stream
+   {
+   public:
+      dynamic_stream(uint initial_size, const char* pName = "dynamic_stream", uint attribs = cDataStreamSeekable | cDataStreamWritable | cDataStreamReadable) :
+         data_stream(pName, attribs),
+         m_ofs(0)
+      {
+         open(initial_size, pName, attribs);
       }
-      m_ofs = 0;
-      m_name.set(pName ? pName : "dynamic_stream");
-      m_attribs = static_cast<attribs_t>(attribs);
-      return true;
-    }
 
-    return false;
-  }
+      dynamic_stream(const void* pBuf, uint size, const char* pName = "dynamic_stream", uint attribs = cDataStreamSeekable | cDataStreamWritable | cDataStreamReadable) :
+         data_stream(pName, attribs),
+         m_ofs(0)
+      {
+         open(pBuf, size, pName, attribs);
+      }
 
-  virtual bool close() {
-    if (m_opened) {
-      m_opened = false;
-      m_buf.clear();
-      m_ofs = 0;
-      return true;
-    }
+      dynamic_stream() :
+         data_stream(),
+         m_ofs(0)
+      {
+         open();
+      }
 
-    return false;
-  }
+      virtual ~dynamic_stream()
+      {
+      }
 
-  const crnlib::vector<uint8>& get_buf() const { return m_buf; }
-  crnlib::vector<uint8>& get_buf() { return m_buf; }
+      bool open(uint initial_size = 0, const char* pName = "dynamic_stream", uint attribs = cDataStreamSeekable | cDataStreamWritable | cDataStreamReadable)
+      {
+         close();
 
-  void reserve(uint size) {
-    if (m_opened) {
-      m_buf.reserve(size);
-    }
-  }
+         m_opened = true;
+         m_buf.clear();
+         m_buf.resize(initial_size);
+         m_ofs = 0;
+         m_name.set(pName ? pName : "dynamic_stream");
+         m_attribs = static_cast<attribs_t>(attribs);
+         return true;
+      }
 
-  virtual const void* get_ptr() const { return m_buf.empty() ? NULL : &m_buf[0]; }
+      bool reopen(const char* pName, uint attribs)
+      {
+         if (!m_opened)
+         {
+            return open(0, pName, attribs);
+         }
 
-  virtual uint read(void* pBuf, uint len) {
-    CRNLIB_ASSERT(pBuf && (len <= 0x7FFFFFFF));
+         m_name.set(pName ? pName : "dynamic_stream");
+         m_attribs = static_cast<attribs_t>(attribs);
+         return true;
+      }
 
-    if ((!m_opened) || (!is_readable()) || (!len))
-      return 0;
+      bool open(const void* pBuf, uint size, const char* pName = "dynamic_stream", uint attribs = cDataStreamSeekable | cDataStreamWritable | cDataStreamReadable)
+      {
+         if (!m_opened)
+         {
+            m_opened = true;
+            m_buf.resize(size);
+            if (size)
+            {
+               CRNLIB_ASSERT(pBuf);
+               memcpy(&m_buf[0], pBuf, size);
+            }
+            m_ofs = 0;
+            m_name.set(pName ? pName : "dynamic_stream");
+            m_attribs = static_cast<attribs_t>(attribs);
+            return true;
+         }
 
-    CRNLIB_ASSERT(m_ofs <= m_buf.size());
+         return false;
+      }
 
-    uint bytes_left = m_buf.size() - m_ofs;
+      virtual bool close()
+      {
+         if (m_opened)
+         {
+            m_opened = false;
+            m_buf.clear();
+            m_ofs = 0;
+            return true;
+         }
 
-    len = math::minimum<uint>(len, bytes_left);
+         return false;
+      }
 
-    if (len)
-      memcpy(pBuf, &m_buf[m_ofs], len);
+      const crnlib::vector<uint8>& get_buf() const { return m_buf; }
+            crnlib::vector<uint8>& get_buf()       { return m_buf; }
 
-    m_ofs += len;
+      void reserve(uint size)
+      {
+         if (m_opened)
+         {
+            m_buf.reserve(size);
+         }
+      }
 
-    return len;
-  }
+      virtual const void* get_ptr() const { return m_buf.empty() ? NULL : &m_buf[0]; }
 
-  virtual uint write(const void* pBuf, uint len) {
-    CRNLIB_ASSERT(pBuf && (len <= 0x7FFFFFFF));
+      virtual uint read(void* pBuf, uint len)
+      {
+         CRNLIB_ASSERT(pBuf && (len <= 0x7FFFFFFF));
 
-    if ((!m_opened) || (!is_writable()) || (!len))
-      return 0;
+         if ((!m_opened) || (!is_readable()) || (!len))
+            return 0;
 
-    CRNLIB_ASSERT(m_ofs <= m_buf.size());
+         CRNLIB_ASSERT(m_ofs <= m_buf.size());
 
-    uint new_ofs = m_ofs + len;
-    if (new_ofs > m_buf.size())
-      m_buf.resize(new_ofs);
+         uint bytes_left = m_buf.size() - m_ofs;
 
-    memcpy(&m_buf[m_ofs], pBuf, len);
-    m_ofs = new_ofs;
+         len = math::minimum<uint>(len, bytes_left);
 
-    return len;
-  }
+         if (len)
+            memcpy(pBuf, &m_buf[m_ofs], len);
 
-  virtual bool flush() {
-    if (!m_opened)
-      return false;
+         m_ofs += len;
 
-    return true;
-  }
+         return len;
+      }
 
-  virtual uint64 get_size() {
-    if (!m_opened)
-      return 0;
+      virtual uint write(const void* pBuf, uint len)
+      {
+         CRNLIB_ASSERT(pBuf && (len <= 0x7FFFFFFF));
 
-    return m_buf.size();
-  }
+         if ((!m_opened) || (!is_writable()) || (!len))
+            return 0;
 
-  virtual uint64 get_remaining() {
-    if (!m_opened)
-      return 0;
+         CRNLIB_ASSERT(m_ofs <= m_buf.size());
 
-    CRNLIB_ASSERT(m_ofs <= m_buf.size());
+         uint new_ofs = m_ofs + len;
+         if (new_ofs > m_buf.size())
+            m_buf.resize(new_ofs);
 
-    return m_buf.size() - m_ofs;
-  }
+         memcpy(&m_buf[m_ofs], pBuf, len);
+         m_ofs = new_ofs;
 
-  virtual uint64 get_ofs() {
-    if (!m_opened)
-      return 0;
+         return len;
+      }
 
-    return m_ofs;
-  }
+      virtual bool flush()
+      {
+         if (!m_opened)
+            return false;
 
-  virtual bool seek(int64 ofs, bool relative) {
-    if ((!m_opened) || (!is_seekable()))
-      return false;
+         return true;
+      }
 
-    int64 new_ofs = relative ? (m_ofs + ofs) : ofs;
+      virtual uint64 get_size()
+      {
+         if (!m_opened)
+            return 0;
 
-    if (new_ofs < 0)
-      return false;
-    else if (new_ofs > m_buf.size())
-      return false;
+         return m_buf.size();
+      }
 
-    m_ofs = static_cast<uint>(new_ofs);
+      virtual uint64 get_remaining()
+      {
+         if (!m_opened)
+            return 0;
 
-    post_seek();
+         CRNLIB_ASSERT(m_ofs <= m_buf.size());
 
-    return true;
-  }
+         return m_buf.size() - m_ofs;
+      }
 
- private:
-  crnlib::vector<uint8> m_buf;
-  uint m_ofs;
-};
+      virtual uint64 get_ofs()
+      {
+         if (!m_opened)
+            return 0;
 
-}  // namespace crnlib
+         return m_ofs;
+      }
+
+      virtual bool seek(int64 ofs, bool relative)
+      {
+         if ((!m_opened) || (!is_seekable()))
+            return false;
+
+         int64 new_ofs = relative ? (m_ofs + ofs) : ofs;
+
+         if (new_ofs < 0)
+            return false;
+         else if (new_ofs > m_buf.size())
+            return false;
+
+         m_ofs = static_cast<uint>(new_ofs);
+
+         post_seek();
+
+         return true;
+      }
+
+   private:
+      crnlib::vector<uint8>    m_buf;
+      uint                    m_ofs;
+   };
+
+} // namespace crnlib
+

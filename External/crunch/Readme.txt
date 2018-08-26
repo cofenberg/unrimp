@@ -1,4 +1,4 @@
-crunch (Latest commit c1d8e8da7145c90198d3035344dadc474fd176b3 - October 27, 2017)
+crunch (Latest commit 660322d3a611782202202ac00109fbd1a10d7602 - Juni 7, 2018)
 	"Advanced DXT texture compression and real-time transcoding library"
 - License: "ZLIB license"
 - Original online: https://github.com/BinomialLLC/crunch

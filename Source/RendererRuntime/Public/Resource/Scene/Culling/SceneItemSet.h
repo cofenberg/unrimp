@@ -30,6 +30,8 @@
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4100)	// warning C4100: 'address': unreferenced formal parameter
+	PRAGMA_WARNING_DISABLE_MSVC(4242)	// warning C4242: '=': conversion from 'int' to 'T', possible loss of data
+	PRAGMA_WARNING_DISABLE_MSVC(4244)	// warning C4244: '=': conversion from 'int' to 'T', possible loss of data
 	PRAGMA_WARNING_DISABLE_MSVC(4324)	// warning C4324: 'xsimd::hadd::<unnamed-tag>': structure was padded due to alignment specifier
 	PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: '=': conversion from 'uint32_t' to 'int32_t', signed/unsigned mismatch
 	PRAGMA_WARNING_DISABLE_MSVC(4464)	// warning C4464: relative include path contains '..'
