@@ -58,7 +58,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Friends                                               ]
 	//[-------------------------------------------------------]
-		friend class RenderQueue;	// Needs access to "mCurrentlyBoundMaterialBlueprintResource"
+		friend class RenderQueue;	// Needs access to "mCurrentlyBoundMaterialBlueprintResource" and "mGlobalComputeSize"
 
 
 	//[-------------------------------------------------------]
@@ -71,7 +71,8 @@ namespace RendererRuntime
 			mSinglePassStereoInstancing(false),
 			mLightSceneItem(nullptr),
 			mCompositorInstancePassShadowMap(nullptr),
-			mCurrentlyBoundMaterialBlueprintResource(nullptr)
+			mCurrentlyBoundMaterialBlueprintResource(nullptr),
+			mGlobalComputeSize{0, 0, 0}
 		{
 			// Nothing here
 		}
@@ -82,7 +83,8 @@ namespace RendererRuntime
 			mSinglePassStereoInstancing(singlePassStereoInstancing),
 			mLightSceneItem(lightSceneItem),
 			mCompositorInstancePassShadowMap(compositorInstancePassShadowMap),
-			mCurrentlyBoundMaterialBlueprintResource(nullptr)
+			mCurrentlyBoundMaterialBlueprintResource(nullptr),
+			mGlobalComputeSize{0, 0, 0}
 		{
 			// Nothing here
 		}
@@ -122,6 +124,11 @@ namespace RendererRuntime
 			mCurrentlyBoundMaterialBlueprintResource = nullptr;
 		}
 
+		inline uint32_t* getGlobalComputeSize() const
+		{
+			return mGlobalComputeSize;
+		}
+
 
 	//[-------------------------------------------------------]
 	//[ Private methods                                       ]
@@ -142,6 +149,7 @@ namespace RendererRuntime
 		const CompositorInstancePassShadowMap* mCompositorInstancePassShadowMap;
 		// Cached "RendererRuntime::RenderQueue" data to reduce the number of state changes across different render queue instances (beneficial for complex compositors with e.g. multiple Gaussian blur passes)
 		mutable MaterialBlueprintResource* mCurrentlyBoundMaterialBlueprintResource;
+		mutable uint32_t				   mGlobalComputeSize[3];
 
 
 	};

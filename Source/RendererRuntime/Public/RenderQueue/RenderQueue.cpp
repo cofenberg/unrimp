@@ -688,6 +688,117 @@ namespace RendererRuntime
 						{
 							compositorContextData.mCurrentlyBoundMaterialBlueprintResource = materialBlueprintResource;
 
+							// Determine group count for dispatch compute
+							uint32_t groupCountX = 0;
+							uint32_t groupCountY = 0;
+							uint32_t groupCountZ = 0;
+							{
+								// Use mandatory fixed build in material property "LocalComputeSize" for the compute shader local size (also known as number of threads)
+								const MaterialProperty* materialProperty = materialResource->getPropertyById(MaterialResource::LOCAL_COMPUTE_SIZE_PROPERTY_ID);
+								assert(nullptr != materialProperty);
+								assert(materialProperty->getUsage() == MaterialProperty::Usage::STATIC);
+								const int* localComputeSizeInteger3Value = materialProperty->getInteger3Value();
+
+								// Use mandatory fixed build in material property "GlobalComputeSize" for the compute shader global size
+								materialProperty = materialResource->getPropertyById(MaterialResource::GLOBAL_COMPUTE_SIZE_PROPERTY_ID);
+								assert(nullptr != materialProperty);
+								assert(materialProperty->getUsage() == MaterialProperty::Usage::STATIC || materialProperty->getUsage() == MaterialProperty::Usage::MATERIAL_REFERENCE);
+								compositorContextData.mGlobalComputeSize[0] = 1;
+								compositorContextData.mGlobalComputeSize[1] = 1;
+								compositorContextData.mGlobalComputeSize[2] = 1;
+								if (materialProperty->getUsage() == MaterialProperty::Usage::STATIC)
+								{
+									// Static value
+									const int* globalComputeSizeInteger3Value = materialProperty->getInteger3Value();
+									compositorContextData.mGlobalComputeSize[0] = static_cast<uint32_t>(globalComputeSizeInteger3Value[0]);
+									compositorContextData.mGlobalComputeSize[1] = static_cast<uint32_t>(globalComputeSizeInteger3Value[1]);
+									compositorContextData.mGlobalComputeSize[2] = static_cast<uint32_t>(globalComputeSizeInteger3Value[2]);
+								}
+								else
+								{
+									// Material property reference
+									const MaterialPropertyId materialPropertyId = materialProperty->getReferenceValue();
+									materialProperty = materialResource->getPropertyById(materialPropertyId);
+									assert(materialProperty->getValueType() == MaterialPropertyValue::ValueType::TEXTURE_ASSET_ID);
+									assert(materialProperty->getUsage() == MaterialProperty::Usage::TEXTURE_REFERENCE);
+									const TextureResource* textureResource = textureResourceManager.getTextureResourceByAssetId(materialProperty->getTextureAssetIdValue());
+									assert(nullptr != textureResource);
+									const Renderer::ITexture* texture = textureResource->getTexture();
+									assert(nullptr != texture);
+									switch (texture->getResourceType())
+									{
+										case Renderer::ResourceType::TEXTURE_1D:
+											compositorContextData.mGlobalComputeSize[0] = static_cast<const Renderer::ITexture1D*>(texture)->getWidth();
+											break;
+
+										case Renderer::ResourceType::TEXTURE_2D:
+										{
+											const Renderer::ITexture2D* texture2D = static_cast<const Renderer::ITexture2D*>(texture);
+											compositorContextData.mGlobalComputeSize[0] = texture2D->getWidth();
+											compositorContextData.mGlobalComputeSize[1] = texture2D->getHeight();
+											break;
+										}
+
+										case Renderer::ResourceType::TEXTURE_2D_ARRAY:
+										{
+											const Renderer::ITexture2DArray* texture2DArray = static_cast<const Renderer::ITexture2DArray*>(texture);
+											compositorContextData.mGlobalComputeSize[0] = texture2DArray->getWidth();
+											compositorContextData.mGlobalComputeSize[1] = texture2DArray->getHeight();
+											break;
+										}
+
+										case Renderer::ResourceType::TEXTURE_3D:
+										{
+											const Renderer::ITexture3D* texture3D = static_cast<const Renderer::ITexture3D*>(texture);
+											compositorContextData.mGlobalComputeSize[0] = texture3D->getWidth();
+											compositorContextData.mGlobalComputeSize[1] = texture3D->getHeight();
+											compositorContextData.mGlobalComputeSize[2] = texture3D->getDepth();
+											break;
+										}
+
+										case Renderer::ResourceType::TEXTURE_CUBE:
+										{
+											const Renderer::ITexture2D* texture2D = static_cast<const Renderer::ITexture2D*>(texture);
+											compositorContextData.mGlobalComputeSize[0] = texture2D->getWidth();
+											compositorContextData.mGlobalComputeSize[1] = texture2D->getHeight();
+											compositorContextData.mGlobalComputeSize[2] = 6;	// TODO(co) Or better 1?
+											break;
+										}
+
+										case Renderer::ResourceType::ROOT_SIGNATURE:
+										case Renderer::ResourceType::RESOURCE_GROUP:
+										case Renderer::ResourceType::GRAPHICS_PROGRAM:
+										case Renderer::ResourceType::VERTEX_ARRAY:
+										case Renderer::ResourceType::RENDER_PASS:
+										case Renderer::ResourceType::SWAP_CHAIN:
+										case Renderer::ResourceType::FRAMEBUFFER:
+										case Renderer::ResourceType::INDEX_BUFFER:
+										case Renderer::ResourceType::VERTEX_BUFFER:
+										case Renderer::ResourceType::TEXTURE_BUFFER:
+										case Renderer::ResourceType::STRUCTURED_BUFFER:
+										case Renderer::ResourceType::INDIRECT_BUFFER:
+										case Renderer::ResourceType::UNIFORM_BUFFER:
+										case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+										case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
+										case Renderer::ResourceType::SAMPLER_STATE:
+										case Renderer::ResourceType::VERTEX_SHADER:
+										case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
+										case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
+										case Renderer::ResourceType::GEOMETRY_SHADER:
+										case Renderer::ResourceType::FRAGMENT_SHADER:
+										case Renderer::ResourceType::COMPUTE_SHADER:
+										default:
+											assert(false);
+											break;
+									}
+								}
+
+								// Determine group count
+								groupCountX = static_cast<uint32_t>(std::ceil(compositorContextData.mGlobalComputeSize[0] / static_cast<float>(localComputeSizeInteger3Value[0])));
+								groupCountY = static_cast<uint32_t>(std::ceil(compositorContextData.mGlobalComputeSize[1] / static_cast<float>(localComputeSizeInteger3Value[1])));
+								groupCountZ = static_cast<uint32_t>(std::ceil(compositorContextData.mGlobalComputeSize[2] / static_cast<float>(localComputeSizeInteger3Value[2])));
+							}
+
 							// Set the used compute pipeline state object (PSO)
 							Renderer::Command::SetComputePipelineState::create(commandBuffer, computePipelineStatePtr);
 
@@ -723,115 +834,8 @@ namespace RendererRuntime
 							// TODO(co) Think about compute instance buffer support
 							// MAYBE_UNUSED const uint32_t startInstanceLocation = (nullptr != instanceUniformBuffer) ? instanceBufferManager.fillBuffer(*materialBlueprintResource, materialBlueprintResource->getPassBufferManager(), *instanceUniformBuffer, renderable, *materialTechnique, commandBuffer) : 0;
 
-							{ // Dispatch compute
-								// Use mandatory fixed build in material property "LocalComputeSize" for the compute shader local size (also known as number of threads)
-								const MaterialProperty* materialProperty = materialResource->getPropertyById(MaterialResource::LOCAL_COMPUTE_SIZE_PROPERTY_ID);
-								assert(nullptr != materialProperty);
-								assert(materialProperty->getUsage() == MaterialProperty::Usage::STATIC);
-								const int* localComputeSizeInteger3Value = materialProperty->getInteger3Value();
-
-								// Use mandatory fixed build in material property "GlobalComputeSize" for the compute shader global size
-								materialProperty = materialResource->getPropertyById(MaterialResource::GLOBAL_COMPUTE_SIZE_PROPERTY_ID);
-								assert(nullptr != materialProperty);
-								assert(materialProperty->getUsage() == MaterialProperty::Usage::STATIC || materialProperty->getUsage() == MaterialProperty::Usage::MATERIAL_REFERENCE);
-								uint32_t globalSizeX = 1;
-								uint32_t globalSizeY = 1;
-								uint32_t globalSizeZ = 1;
-								if (materialProperty->getUsage() == MaterialProperty::Usage::STATIC)
-								{
-									// Static value
-									const int* globalComputeSizeInteger3Value = materialProperty->getInteger3Value();
-									globalSizeX = static_cast<uint32_t>(globalComputeSizeInteger3Value[0]);
-									globalSizeY = static_cast<uint32_t>(globalComputeSizeInteger3Value[1]);
-									globalSizeZ = static_cast<uint32_t>(globalComputeSizeInteger3Value[2]);
-								}
-								else
-								{
-									// Material property reference
-									const MaterialPropertyId materialPropertyId = materialProperty->getReferenceValue();
-									materialProperty = materialResource->getPropertyById(materialPropertyId);
-									assert(materialProperty->getValueType() == MaterialPropertyValue::ValueType::TEXTURE_ASSET_ID);
-									assert(materialProperty->getUsage() == MaterialProperty::Usage::TEXTURE_REFERENCE);
-									const TextureResource* textureResource = textureResourceManager.getTextureResourceByAssetId(materialProperty->getTextureAssetIdValue());
-									assert(nullptr != textureResource);
-									const Renderer::ITexture* texture = textureResource->getTexture();
-									assert(nullptr != texture);
-									switch (texture->getResourceType())
-									{
-										case Renderer::ResourceType::TEXTURE_1D:
-											globalSizeX = static_cast<const Renderer::ITexture1D*>(texture)->getWidth();
-											break;
-
-										case Renderer::ResourceType::TEXTURE_2D:
-										{
-											const Renderer::ITexture2D* texture2D = static_cast<const Renderer::ITexture2D*>(texture);
-											globalSizeX = texture2D->getWidth();
-											globalSizeY = texture2D->getHeight();
-											break;
-										}
-
-										case Renderer::ResourceType::TEXTURE_2D_ARRAY:
-										{
-											const Renderer::ITexture2DArray* texture2DArray = static_cast<const Renderer::ITexture2DArray*>(texture);
-											globalSizeX = texture2DArray->getWidth();
-											globalSizeY = texture2DArray->getHeight();
-											break;
-										}
-
-										case Renderer::ResourceType::TEXTURE_3D:
-										{
-											const Renderer::ITexture3D* texture3D = static_cast<const Renderer::ITexture3D*>(texture);
-											globalSizeX = texture3D->getWidth();
-											globalSizeY = texture3D->getHeight();
-											globalSizeZ = texture3D->getDepth();
-											break;
-										}
-
-										case Renderer::ResourceType::TEXTURE_CUBE:
-										{
-											const Renderer::ITexture2D* texture2D = static_cast<const Renderer::ITexture2D*>(texture);
-											globalSizeX = texture2D->getWidth();
-											globalSizeY = texture2D->getHeight();
-											globalSizeZ = 6;	// TODO(co) Or better 1?
-											break;
-										}
-
-										case Renderer::ResourceType::ROOT_SIGNATURE:
-										case Renderer::ResourceType::RESOURCE_GROUP:
-										case Renderer::ResourceType::GRAPHICS_PROGRAM:
-										case Renderer::ResourceType::VERTEX_ARRAY:
-										case Renderer::ResourceType::RENDER_PASS:
-										case Renderer::ResourceType::SWAP_CHAIN:
-										case Renderer::ResourceType::FRAMEBUFFER:
-										case Renderer::ResourceType::INDEX_BUFFER:
-										case Renderer::ResourceType::VERTEX_BUFFER:
-										case Renderer::ResourceType::TEXTURE_BUFFER:
-										case Renderer::ResourceType::STRUCTURED_BUFFER:
-										case Renderer::ResourceType::INDIRECT_BUFFER:
-										case Renderer::ResourceType::UNIFORM_BUFFER:
-										case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
-										case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
-										case Renderer::ResourceType::SAMPLER_STATE:
-										case Renderer::ResourceType::VERTEX_SHADER:
-										case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
-										case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
-										case Renderer::ResourceType::GEOMETRY_SHADER:
-										case Renderer::ResourceType::FRAGMENT_SHADER:
-										case Renderer::ResourceType::COMPUTE_SHADER:
-										default:
-											assert(false);
-											break;
-									}
-								}
-
-								// Determine group count
-								const uint32_t groupCountX = static_cast<uint32_t>(std::ceil(globalSizeX / static_cast<float>(localComputeSizeInteger3Value[0])));
-								const uint32_t groupCountY = static_cast<uint32_t>(std::ceil(globalSizeY / static_cast<float>(localComputeSizeInteger3Value[1])));
-								const uint32_t groupCountZ = static_cast<uint32_t>(std::ceil(globalSizeZ / static_cast<float>(localComputeSizeInteger3Value[2])));
-
-								// Dispatch compute
-								Renderer::Command::DispatchCompute::create(commandBuffer, groupCountX, groupCountY, groupCountZ);
-							}
+							// Dispatch compute
+							Renderer::Command::DispatchCompute::create(commandBuffer, groupCountX, groupCountY, groupCountZ);
 						}
 					}
 				}

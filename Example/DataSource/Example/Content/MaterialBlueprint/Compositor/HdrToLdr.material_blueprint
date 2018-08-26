@@ -124,9 +124,9 @@
 						},
 						"GlobalComputeSize":
 						{
-							"Usage": "MATERIAL_REFERENCE",
+							"Usage": "PASS_REFERENCE",
 							"ValueType": "INTEGER_3",
-							"Value": "@GlobalComputeSize"
+							"Value": "@GLOBAL_COMPUTE_SIZE"
 						},
 						"ToneMapKeyValue":
 						{

@@ -91,6 +91,7 @@ namespace
 			DEFINE_CONSTANT(VIEW_SPACE_SUNLIGHT_DIRECTION)
 
 			// Pass data not influenced by single pass stereo rendering via instancing as described in "High Performance Stereo Rendering For VR", Timothy Wilson, San Diego, Virtual Reality Meetup
+			DEFINE_CONSTANT(GLOBAL_COMPUTE_SIZE)
 			DEFINE_CONSTANT(IMGUI_OBJECT_SPACE_TO_CLIP_SPACE_MATRIX)
 			DEFINE_CONSTANT(WORLD_SPACE_SUNLIGHT_DIRECTION)
 			DEFINE_CONSTANT(PROJECTION_PARAMETERS)
@@ -578,6 +579,13 @@ namespace RendererRuntime
 				assert(sizeof(float) * 3 == numberOfBytes);
 				const glm::vec3 viewSpaceSunlightDirection = glm::normalize(mPassData->worldSpaceToViewSpaceQuaternion[0] * getWorldSpaceSunlightDirection());	// Normalize shouldn't be necessary, but last chance here to correct rounding errors before the shader is using the normalized direction vector
 				memcpy(buffer, glm::value_ptr(viewSpaceSunlightDirection), numberOfBytes);
+				break;
+			}
+
+			case ::detail::GLOBAL_COMPUTE_SIZE:
+			{
+				assert(sizeof(int32_t) * 3 == numberOfBytes);
+				memcpy(buffer, mCompositorContextData->getGlobalComputeSize(), numberOfBytes);
 				break;
 			}
 
