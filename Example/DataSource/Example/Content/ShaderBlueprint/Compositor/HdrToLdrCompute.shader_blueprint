@@ -95,7 +95,7 @@ MAIN_BEGIN_COMPUTE(32, 32, 1)
 	{
 		float4 texCoord = float4(CAST_TO(GLOBAL_INVOCATION_ID.xy, float2) / CAST_TO(PassData.GlobalComputeSize.xy, float2), 0.0f, 0.0f);
 		float4 color = TEXTURE_FETCH_2D(ColorMap, CAST_TO(GLOBAL_INVOCATION_ID, int3));
-		float averageLuminance = TEXTURE_FETCH_2D(LuminanceMap, int3(0, 0, 0)).r;
+		float averageLuminance = TEXTURE_FETCH_2D(LuminanceMap, int3(0, 0, 0)).r;	// TODO(co) Possible optimization: Each thread group needs to fetch this value just once
 
 		// Get dirty lens value
 		float3 dirtyLens = SAMPLE_2D_LOD(DirtyLensMap, SamplerLinear, texCoord).rgb;

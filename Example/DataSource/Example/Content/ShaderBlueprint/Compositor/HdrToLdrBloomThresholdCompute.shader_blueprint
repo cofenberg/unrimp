@@ -30,11 +30,8 @@
 //[-------------------------------------------------------]
 // Attribute input / output
 INPUT_BEGIN
-	INPUT_TEXTURE_COORDINATE(1, float2, TexCoordVS, 0)	// Texture coordinate
+	DECLARE_GLOBAL_INVOCATION_ID
 INPUT_END
-OUTPUT_BEGIN
-	OUTPUT_COLOR(0)
-OUTPUT_END
 
 // Uniform buffers
 struct PassDataStruct
@@ -49,9 +46,10 @@ UNIFORM_BUFFER_END
 // Textures
 TEXTURE_2D(1, 0, ColorMap, 0)
 TEXTURE_2D(1, 1, LuminanceMap, 1)
+RW_TEXTURE_2D(1, 2, OutputTexture2D, 2, r11f_g11f_b10f, writeonly)
 
 // Samplers
-SAMPLER_STATE(2, 0, SamplerPoint, 0)
+SAMPLER_STATE(2, 0, SamplerLinear, 0)
 
 
 //[-------------------------------------------------------]
@@ -64,9 +62,11 @@ SAMPLER_STATE(2, 0, SamplerPoint, 0)
 //[-------------------------------------------------------]
 //[ Main                                                  ]
 //[-------------------------------------------------------]
-MAIN_BEGIN
-	float3 color = SAMPLE_2D_LOD(ColorMap, SamplerPoint, float4(MAIN_INPUT(TexCoordVS), 0.0f, 0.0f)).rgb;
-	float averageLuminance = SAMPLE_2D_LOD(LuminanceMap, SamplerPoint, float4(0.5f, 0.5f, 0.0f, 0.0f)).r;
+MAIN_BEGIN_COMPUTE(32, 32, 1)
+	// Compute dispatch is using groups of a multiple of the local size, in here we don't need to ensure we don't access ouf of global compute size since our color map must be a multiple of the local size
+	// -> 256 = fixed global compute size
+	float3 color = SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(CAST_TO(GLOBAL_INVOCATION_ID.xy, float2) / float2(256.0f, 256.0f), 0.0f, 0.0f)).rgb;
+	float averageLuminance = TEXTURE_FETCH_2D(LuminanceMap, int3(0, 0, 0)).r;	// TODO(co) Possible optimization: Each thread group needs to fetch this value just once
 
 	// Use a lower exposure to produce a value suitable for a bloom pass
 	// -> Tone map it to threshold
@@ -78,5 +78,5 @@ MAIN_BEGIN
 	}
 
 	// Done
-	MAIN_OUTPUT_COLOR(0) = float4(color, 1.0f);
-MAIN_END
+	IMAGE_STORE(OutputTexture2D, CAST_TO(GLOBAL_INVOCATION_ID.xy, int2), float4(color, 1.0f));
+MAIN_END_NO_OUTPUT

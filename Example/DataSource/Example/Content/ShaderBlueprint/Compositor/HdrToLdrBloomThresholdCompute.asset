@@ -15,7 +15,7 @@
 		},
 		"ShaderBlueprintAssetCompiler":
 		{
-			"InputFile": "HdrToLdrBloomThresholdFragment.shader_blueprint"
+			"InputFile": "HdrToLdrBloomThresholdCompute.shader_blueprint"
 		}
 	}
 }

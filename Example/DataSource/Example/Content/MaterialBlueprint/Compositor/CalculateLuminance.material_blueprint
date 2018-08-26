@@ -54,7 +54,8 @@
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@ColorMap",
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/WhiteMap2D",
-					"MipmapsUsed": "FALSE"
+					"MipmapsUsed": "FALSE",
+					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
 				},
 				"1":
 				{
@@ -66,6 +67,18 @@
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@OutputTexture2D",
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D"
+				}
+			},
+			"1":
+			{
+				"0":
+				{
+					"ResourceType": "SAMPLER_STATE",
+					"BaseShaderRegisterName": "SamplerLinear",
+					"BaseShaderRegister": "0",
+					"Filter": "MIN_MAG_LINEAR_MIP_POINT",
+					"MaxAnisotropy": "1",
+					"MaxLOD": "0.0"
 				}
 			}
 		}

@@ -37,6 +37,9 @@ INPUT_END
 TEXTURE_2D(0, 0, ColorMap, 0)
 RW_TEXTURE_2D(0, 1, OutputTexture2D, 1, r32f, writeonly)
 
+// Samplers
+SAMPLER_STATE(1, 0, SamplerLinear, 0)
+
 
 //[-------------------------------------------------------]
 //[ Functions                                             ]
@@ -50,7 +53,8 @@ RW_TEXTURE_2D(0, 1, OutputTexture2D, 1, r32f, writeonly)
 //[-------------------------------------------------------]
 MAIN_BEGIN_COMPUTE(32, 32, 1)
 	// Compute dispatch is using groups of a multiple of the local size, in here we don't need to ensure we don't access ouf of global compute size since our color map must be a multiple of the local size
-	float3 color = TEXTURE_FETCH_2D(ColorMap, CAST_TO(GLOBAL_INVOCATION_ID, int3)).rgb;
+	// -> 1024 = fixed global compute size
+	float3 color = SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(CAST_TO(GLOBAL_INVOCATION_ID.xy, float2) / float2(1024.0f, 1024.0f), 0.0f, 0.0f)).rgb;
 
 	// Calculate the luminance using a weighted average
 	float luminance = log(max(ColorToLuminance(color), 0.00001f));

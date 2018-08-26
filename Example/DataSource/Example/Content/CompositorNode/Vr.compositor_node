@@ -77,7 +77,8 @@
 			{
 				"TextureFormat": "R11G11B10F",
 				"Width": "256",
-				"Height": "256"
+				"Height": "256",
+				"Flags": "SHADER_RESOURCE | UNORDERED_ACCESS"
 			},
 			"Example/Texture/Dynamic/BloomDownscale2ColorRenderTarget":
 			{
@@ -140,10 +141,6 @@
 			{
 				"ColorTextures": [ "Example/Texture/Dynamic/HdrColorRenderTarget1" ],
 				"DepthStencilTexture": "Example/Texture/Dynamic/DepthStencilRenderTarget"
-			},
-			"BloomFramebuffer":
-			{
-				"ColorTextures": [ "Example/Texture/Dynamic/BloomColorRenderTarget" ]
 			},
 			"BloomDownscale2Framebuffer":
 			{
@@ -335,10 +332,7 @@
 						"FirstExecution": "TRUE",
 						"OutputTexture2D": "Example/Texture/Dynamic/AdaptiveLuminanceRenderTarget"
 					}
-				}
-			},
-			"BloomFramebuffer":
-			{
+				},
 				"Compute":
 				{
 					"Name": "Bloom threshold",
@@ -347,7 +341,8 @@
 					"SetMaterialProperties":
 					{
 						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget1",
-						"LuminanceMap": "Example/Texture/Dynamic/AdaptiveLuminanceRenderTarget"
+						"LuminanceMap": "Example/Texture/Dynamic/AdaptiveLuminanceRenderTarget",
+						"OutputTexture2D": "Example/Texture/Dynamic/BloomColorRenderTarget"
 					}
 				}
 			},
