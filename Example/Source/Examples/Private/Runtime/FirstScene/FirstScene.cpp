@@ -706,7 +706,7 @@ void FirstScene::createDebugGui(MAYBE_UNUSED Renderer::IRenderTarget& mainRender
 						if (rendererRuntime->getRenderer().getCapabilities().maximumNumberOfMultisamples > 1)
 						{
 							static constexpr const char* items[] = { "None", "2x", "4x", "8x" };
-							ImGui::Combo("MSAA", &mCurrentMsaa, items, static_cast<int>(glm::countof(items)));
+							ImGui::Combo("MSAA", &mCurrentMsaa, items, static_cast<int>(GLM_COUNTOF(items)));
 						}
 						ImGui::EndMenu();
 					}
@@ -716,13 +716,13 @@ void FirstScene::createDebugGui(MAYBE_UNUSED Renderer::IRenderTarget& mainRender
 					{
 						{
 							static constexpr const char* items[] = { "Debug", "Forward", "Deferred", "VR" };
-							ImGui::Combo("Compositor", &mCurrentCompositor, items, static_cast<int>(glm::countof(items)));
+							ImGui::Combo("Compositor", &mCurrentCompositor, items, static_cast<int>(GLM_COUNTOF(items)));
 						}
 						ImGui::Checkbox("High Quality Lighting", &mHighQualityLighting);
 						ImGui::Checkbox("Soft-Particles", &mSoftParticles);
 						{
 							static constexpr const char* items[] = { "Point", "Bilinear", "Trilinear", "2x Anisotropic", "4x Anisotropic", "8x Anisotropic", "16x Anisotropic" };
-							ImGui::Combo("Texture filtering", &mCurrentTextureFiltering, items, static_cast<int>(glm::countof(items)));
+							ImGui::Combo("Texture filtering", &mCurrentTextureFiltering, items, static_cast<int>(GLM_COUNTOF(items)));
 						}
 						ImGui::SliderInt("Mipmaps to Remove", &mNumberOfTopTextureMipmapsToRemove, 0, 8);
 						ImGui::SliderInt("Terrain Tessellated Triangle Width", &mTerrainTessellatedTriangleWidth, 0, 64);

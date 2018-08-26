@@ -128,7 +128,7 @@ namespace RendererRuntime
 			if (nullptr == mCurrentInstanceBuffer->resourceGroup)
 			{
 				Renderer::IResource* resources[2] = { mCurrentInstanceBuffer->uniformBuffer, mCurrentInstanceBuffer->textureBuffer };
-				mCurrentInstanceBuffer->resourceGroup = materialBlueprintResource.getRootSignaturePtr()->createResourceGroup(instanceUniformBuffer->rootParameterIndex, static_cast<uint32_t>(glm::countof(resources)), resources);
+				mCurrentInstanceBuffer->resourceGroup = materialBlueprintResource.getRootSignaturePtr()->createResourceGroup(instanceUniformBuffer->rootParameterIndex, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources);
 				RENDERER_SET_RESOURCE_DEBUG_NAME(mCurrentInstanceBuffer->resourceGroup, "Instance buffer manager")
 				mCurrentInstanceBuffer->resourceGroup->addReference();
 			}

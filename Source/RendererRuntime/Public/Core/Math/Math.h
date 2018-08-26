@@ -31,6 +31,7 @@
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
+	PRAGMA_WARNING_DISABLE_MSVC(4127)	// warning C4127: conditional expression is constant
 	PRAGMA_WARNING_DISABLE_MSVC(4201)	// warning C4201: nonstandard extension used: nameless struct/union
 	PRAGMA_WARNING_DISABLE_MSVC(4464)	// warning C4464: relative include path contains '..'
 	PRAGMA_WARNING_DISABLE_MSVC(4324)	// warning C4324: '<x>': structure was padded due to alignment specifier
@@ -81,19 +82,22 @@ namespace RendererRuntime
 		static constexpr uint32_t FNV1a_INITIAL_HASH_32 = 0xcbf29ce4u;
 		static constexpr uint64_t FNV1a_INITIAL_HASH_64 = 0xcbf29ce484222325u;
 		// "glm::vec3" constants
-		static constexpr glm::vec3 VEC3_ZERO		= glm::vec3(0.0f, 0.0f, 0.0f);	///< 0 0 0
-		static constexpr glm::vec3 VEC3_ONE			= glm::vec3(1.0f, 1.0f, 1.0f);	///< 1 1 1
-		static constexpr glm::vec3 VEC3_UNIT_X		= glm::vec3(1.0f, 0.0f, 0.0f);	///< 1 0 0
-		static constexpr glm::vec3 VEC3_RIGHT		= glm::vec3(1.0f, 0.0f, 0.0f);	///< 1 0 0; coordinate system axis terminology, don't remove
-		static constexpr glm::vec3 VEC3_UNIT_Y		= glm::vec3(0.0f, 1.0f, 0.0f);	///< 0 1 0
-		static constexpr glm::vec3 VEC3_UP			= glm::vec3(0.0f, 1.0f, 0.0f);	///< 0 1 0; coordinate system axis terminology, don't remove
-		static constexpr glm::vec3 VEC3_UNIT_Z		= glm::vec3(0.0f, 0.0f, 1.0f);	///< 0 0 1
-		static constexpr glm::vec3 VEC3_FORWARD		= glm::vec3(0.0f, 0.0f, 1.0f);	///< 0 0 1; coordinate system axis terminology, don't remove
+		static constexpr glm::vec3 VEC3_ZERO	= glm::vec3(0.0f, 0.0f, 0.0f);	///< 0 0 0
+		static constexpr glm::vec3 VEC3_ONE		= glm::vec3(1.0f, 1.0f, 1.0f);	///< 1 1 1
+		static constexpr glm::vec3 VEC3_UNIT_X	= glm::vec3(1.0f, 0.0f, 0.0f);	///< 1 0 0
+		static constexpr glm::vec3 VEC3_RIGHT	= glm::vec3(1.0f, 0.0f, 0.0f);	///< 1 0 0; coordinate system axis terminology, don't remove
+		static constexpr glm::vec3 VEC3_UNIT_Y	= glm::vec3(0.0f, 1.0f, 0.0f);	///< 0 1 0
+		static constexpr glm::vec3 VEC3_UP		= glm::vec3(0.0f, 1.0f, 0.0f);	///< 0 1 0; coordinate system axis terminology, don't remove
+		static constexpr glm::vec3 VEC3_UNIT_Z	= glm::vec3(0.0f, 0.0f, 1.0f);	///< 0 0 1
+		static constexpr glm::vec3 VEC3_FORWARD	= glm::vec3(0.0f, 0.0f, 1.0f);	///< 0 0 1; coordinate system axis terminology, don't remove
 		// "glm::vec4" constants
-		RENDERERRUNTIME_API_EXPORT static const glm::vec4 VEC4_ZERO;	///< 0 0 0 0
-		RENDERERRUNTIME_API_EXPORT static const glm::vec4 VEC4_ONE;		///< 1 1 1 1
+		static constexpr glm::vec4 VEC4_ZERO = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);	///< 0 0 0 0
+		static constexpr glm::vec4 VEC4_ONE  = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);	///< 1 1 1 1
 		// "glm::mat4" constants
-		RENDERERRUNTIME_API_EXPORT static const glm::mat4 MAT4_IDENTITY;
+		static constexpr glm::mat4 MAT4_IDENTITY = glm::mat4(1.0f, 0.0f, 0.0f, 0.0f,
+															 0.0f, 1.0f, 0.0f, 0.0f,
+															 0.0f, 0.0f, 1.0f, 0.0f,
+															 0.0f, 0.0f, 0.0f, 1.0f);
 		// "glm::quat" constants
 		static constexpr glm::quat QUAT_IDENTITY = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
 

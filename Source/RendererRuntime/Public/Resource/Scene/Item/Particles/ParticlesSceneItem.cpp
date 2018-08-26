@@ -86,7 +86,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public definitions                                    ]
 	//[-------------------------------------------------------]
-	const Renderer::VertexAttributes ParticlesSceneItem::VERTEX_ATTRIBUTES(static_cast<uint32_t>(glm::countof(::detail::ParticlesVertexAttributesLayout)), ::detail::ParticlesVertexAttributesLayout);
+	const Renderer::VertexAttributes ParticlesSceneItem::VERTEX_ATTRIBUTES(static_cast<uint32_t>(GLM_COUNTOF(::detail::ParticlesVertexAttributesLayout)), ::detail::ParticlesVertexAttributesLayout);
 
 
 	//[-------------------------------------------------------]
@@ -178,7 +178,7 @@ namespace RendererRuntime
 			//    reference of the used vertex buffer objects (VBO). If the reference counter of a
 			//    vertex buffer object (VBO) reaches zero, it's automatically destroyed.
 			const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
-			mVertexArrayPtr = bufferManager.createVertexArray(VERTEX_ATTRIBUTES, static_cast<uint32_t>(glm::countof(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
+			mVertexArrayPtr = bufferManager.createVertexArray(VERTEX_ATTRIBUTES, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
 			RENDERER_SET_RESOURCE_DEBUG_NAME(mVertexArrayPtr, "Particles VAO")
 		}
 	}

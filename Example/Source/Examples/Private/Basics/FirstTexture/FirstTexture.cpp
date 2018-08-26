@@ -26,6 +26,7 @@
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
+	PRAGMA_WARNING_DISABLE_MSVC(4127)	// warning C4127: conditional expression is constant
 	PRAGMA_WARNING_DISABLE_MSVC(4201)	// warning C4201: nonstandard extension used: nameless struct/union
 	PRAGMA_WARNING_DISABLE_MSVC(4464)	// warning C4464: relative include path contains '..'
 	PRAGMA_WARNING_DISABLE_MSVC(4324)	// warning C4324: '<x>': structure was padded due to alignment specifier
@@ -63,7 +64,7 @@ void FirstTexture::onInitialization()
 
 			// Setup
 			Renderer::RootSignatureBuilder rootSignature;
-			rootSignature.initialize(static_cast<uint32_t>(glm::countof(rootParameters)), rootParameters, 0, nullptr, Renderer::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+			rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Renderer::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 			// Create the instance
 			mRootSignature = renderer->createRootSignature(rootSignature);
@@ -83,7 +84,7 @@ void FirstTexture::onInitialization()
 
 			// Create the resource group
 			Renderer::IResource* resources[2] = { linearSamplerResource, pointSamplerResource };
-			mSamplerStateGroup = mRootSignature->createResourceGroup(1, static_cast<uint32_t>(glm::countof(resources)), resources);
+			mSamplerStateGroup = mRootSignature->createResourceGroup(1, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources);
 		}
 
 		{ // Create the texture group
@@ -148,7 +149,7 @@ void FirstTexture::onInitialization()
 
 			// Create the texture group
 			Renderer::ISamplerState* samplerStates[2] = { linearSamplerResource, pointSamplerResource };
-			mTextureGroup = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(glm::countof(resources)), resources, samplerStates);
+			mTextureGroup = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources, samplerStates);
 		}
 
 		// Vertex input layout
@@ -167,7 +168,7 @@ void FirstTexture::onInitialization()
 				0											// instancesPerElement (uint32_t)
 			}
 		};
-		const Renderer::VertexAttributes vertexAttributes(static_cast<uint32_t>(glm::countof(vertexAttributesLayout)), vertexAttributesLayout);
+		const Renderer::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
 
 		{ // Create vertex array object (VAO)
 			// Create the vertex buffer object (VBO)
@@ -187,7 +188,7 @@ void FirstTexture::onInitialization()
 			//    reference of the used vertex buffer objects (VBO). If the reference counter of a
 			//    vertex buffer object (VBO) reaches zero, it's automatically destroyed.
 			const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
-			mVertexArray = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(glm::countof(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
+			mVertexArray = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
 		}
 
 		// Decide which shader language should be used (for example "GLSL" or "HLSL")

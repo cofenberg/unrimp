@@ -63,7 +63,7 @@ namespace
 					0											// instancesPerElement (uint32_t)
 				}
 			};
-			const Renderer::VertexAttributes vertexAttributes(static_cast<uint32_t>(glm::countof(vertexAttributesLayout)), vertexAttributesLayout);
+			const Renderer::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
 
 			// Create the vertex buffer object (VBO)
 			// -> Clip space vertex positions, left/bottom is (-1,-1) and right/top is (1,1)
@@ -96,7 +96,7 @@ namespace
 
 			// Create vertex array object (VAO)
 			const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
-			Renderer::IVertexArray* vertexArray = bufferManager.createVertexArray(vertexAttributes, static_cast<uint32_t>(glm::countof(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBuffer);
+			Renderer::IVertexArray* vertexArray = bufferManager.createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBuffer);
 			RENDERER_SET_RESOURCE_DEBUG_NAME(vertexArray, "Sky")
 
 			// Done

@@ -37,7 +37,7 @@
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4464)	// warning C4464: relative include path contains '..'
-	#include <glm/detail/setup.hpp>	// For "glm::countof()"
+	#include <glm/detail/setup.hpp>	// For "GLM_COUNTOF()"
 PRAGMA_WARNING_POP
 
 
@@ -93,7 +93,7 @@ namespace
 				0													// instancesPerElement (uint32_t)
 			}
 		};
-		const Renderer::VertexAttributes VertexAttributes(static_cast<uint32_t>(glm::countof(VertexAttributesLayout)), VertexAttributesLayout);
+		const Renderer::VertexAttributes VertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(VertexAttributesLayout)), VertexAttributesLayout);
 
 
 		//[-------------------------------------------------------]
@@ -243,7 +243,7 @@ namespace RendererRuntime
 
 					// Create vertex array object (VAO)
 					const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { mVertexBufferPtr };
-					mVertexArrayPtr = bufferManager.createVertexArray(::detail::VertexAttributes, static_cast<uint32_t>(glm::countof(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, mIndexBufferPtr);
+					mVertexArrayPtr = bufferManager.createVertexArray(::detail::VertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, mIndexBufferPtr);
 					RENDERER_SET_RESOURCE_DEBUG_NAME(mVertexArrayPtr, "Debug GUI")
 				}
 
@@ -522,7 +522,7 @@ namespace RendererRuntime
 
 			// Setup
 			Renderer::RootSignatureBuilder rootSignature;
-			rootSignature.initialize(static_cast<uint32_t>(glm::countof(rootParameters)), rootParameters, 0, nullptr, Renderer::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+			rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Renderer::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 			// Create the instance
 			mRootSignature = renderer.createRootSignature(rootSignature);
@@ -606,7 +606,7 @@ namespace RendererRuntime
 		{ // Create resource group
 			Renderer::IResource* resources[2] = { mVertexShaderUniformBuffer, mTexture2D };
 			Renderer::ISamplerState* samplerStates[2] = { nullptr, static_cast<Renderer::ISamplerState*>(samplerStateResource) };
-			mResourceGroup = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(glm::countof(resources)), resources, samplerStates);
+			mResourceGroup = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources, samplerStates);
 		}
 	}
 

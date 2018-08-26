@@ -27,6 +27,7 @@
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
+	PRAGMA_WARNING_DISABLE_MSVC(4127)	// warning C4127: conditional expression is constant
 	PRAGMA_WARNING_DISABLE_MSVC(4201)	// warning C4201: nonstandard extension used: nameless struct/union
 	PRAGMA_WARNING_DISABLE_MSVC(4464)	// warning C4464: relative include path contains '..'
 	PRAGMA_WARNING_DISABLE_MSVC(4324)	// warning C4324: '<x>': structure was padded due to alignment specifier
@@ -110,7 +111,7 @@ void BatchInstancedArrays::initialize(Renderer::IBufferManager& bufferManager, R
 			//    reference of the used vertex buffer objects (VBO). If the reference counter of a
 			//    vertex buffer object (VBO) reaches zero, it's automatically destroyed.
 			const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { &vertexBuffer, vertexBufferPerInstanceData };
-			mVertexArray = bufferManager.createVertexArray(vertexAttributes, static_cast<uint32_t>(glm::countof(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, &indexBuffer);
+			mVertexArray = bufferManager.createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, &indexBuffer);
 		}
 
 		// Free local per instance data

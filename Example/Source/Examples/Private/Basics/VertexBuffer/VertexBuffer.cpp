@@ -26,6 +26,7 @@
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
+	PRAGMA_WARNING_DISABLE_MSVC(4127)	// warning C4127: conditional expression is constant
 	PRAGMA_WARNING_DISABLE_MSVC(4201)	// warning C4201: nonstandard extension used: nameless struct/union
 	PRAGMA_WARNING_DISABLE_MSVC(4464)	// warning C4464: relative include path contains '..'
 	PRAGMA_WARNING_DISABLE_MSVC(4324)	// warning C4324: '<x>': structure was padded due to alignment specifier
@@ -83,7 +84,7 @@ void VertexBuffer::onInitialization()
 				0											// instancesPerElement (uint32_t)
 			}
 		};
-		const Renderer::VertexAttributes vertexAttributesVBO(static_cast<uint32_t>(glm::countof(vertexAttributesLayoutVBO)), vertexAttributesLayoutVBO);
+		const Renderer::VertexAttributes vertexAttributesVBO(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayoutVBO)), vertexAttributesLayoutVBO);
 		static constexpr Renderer::VertexAttribute vertexAttributesLayoutVBOs[] =
 		{
 			{ // Attribute 0
@@ -111,7 +112,7 @@ void VertexBuffer::onInitialization()
 				0											// instancesPerElement (uint32_t)
 			}
 		};
-		const Renderer::VertexAttributes vertexAttributesVBOs(static_cast<uint32_t>(glm::countof(vertexAttributesLayoutVBOs)), vertexAttributesLayoutVBOs);
+		const Renderer::VertexAttributes vertexAttributesVBOs(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayoutVBOs)), vertexAttributesLayoutVBOs);
 
 		// Vertex array object (VAO)
 		// -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)
@@ -134,7 +135,7 @@ void VertexBuffer::onInitialization()
 
 			// Create vertex array object (VAO)
 			const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBufferPositionColor };
-			mVertexArrayVBO = mBufferManager->createVertexArray(vertexAttributesVBO, static_cast<uint32_t>(glm::countof(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
+			mVertexArrayVBO = mBufferManager->createVertexArray(vertexAttributesVBO, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
 		}
 
 		{ // Create vertex array object (VAO) using multiple vertex buffer object (VBO)
@@ -160,7 +161,7 @@ void VertexBuffer::onInitialization()
 
 			// Create vertex array object (VAO)
 			const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBufferPosition, vertexBufferColor };
-			mVertexArrayVBOs = mBufferManager->createVertexArray(vertexAttributesVBOs, static_cast<uint32_t>(glm::countof(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
+			mVertexArrayVBOs = mBufferManager->createVertexArray(vertexAttributesVBOs, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
 		}
 
 		// Decide which shader language should be used (for example "GLSL" or "HLSL")

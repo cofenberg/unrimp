@@ -246,17 +246,17 @@ void InstancedCubes::onDraw()
 						char text[128];
 
 						// Number of cubes
-						snprintf(text, glm::countof(text), "Number of cubes: %d", mNumberOfCubeInstances);
+						snprintf(text, GLM_COUNTOF(text), "Number of cubes: %d", mNumberOfCubeInstances);
 						RendererRuntime::DebugGuiHelper::drawText(text, 10.0f, 10.0f);
 
 						// Frames per second
-						snprintf(text, glm::countof(text), "Frames per second: %.2f", mFramesPerSecond);
+						snprintf(text, GLM_COUNTOF(text), "Frames per second: %.2f", mFramesPerSecond);
 						RendererRuntime::DebugGuiHelper::drawText(text, 10.0f, 40.0f);
 
 						// Cubes per second
 						// -> In every frame we draw n-cubes...
 						// -> TODO(co) This number can get huge... had over 1 million cubes with >25 FPS... million cubes at ~2.4 FPS...
-						snprintf(text, glm::countof(text), "Cubes per second: %u", static_cast<uint32_t>(mFramesPerSecond) * mNumberOfCubeInstances);
+						snprintf(text, GLM_COUNTOF(text), "Cubes per second: %u", static_cast<uint32_t>(mFramesPerSecond) * mNumberOfCubeInstances);
 						RendererRuntime::DebugGuiHelper::drawText(text, 10.0f, 70.0f);
 					}
 					else

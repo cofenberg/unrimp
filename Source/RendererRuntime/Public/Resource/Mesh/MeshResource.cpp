@@ -188,8 +188,8 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public definitions                                    ]
 	//[-------------------------------------------------------]
-	const Renderer::VertexAttributes MeshResource::VERTEX_ATTRIBUTES(static_cast<uint32_t>(glm::countof(::detail::StaticVertexAttributesLayout)), ::detail::StaticVertexAttributesLayout);
-	const Renderer::VertexAttributes MeshResource::SKINNED_VERTEX_ATTRIBUTES(static_cast<uint32_t>(glm::countof(::detail::SkinnedVertexAttributesLayout)), ::detail::SkinnedVertexAttributesLayout);
+	const Renderer::VertexAttributes MeshResource::VERTEX_ATTRIBUTES(static_cast<uint32_t>(GLM_COUNTOF(::detail::StaticVertexAttributesLayout)), ::detail::StaticVertexAttributesLayout);
+	const Renderer::VertexAttributes MeshResource::SKINNED_VERTEX_ATTRIBUTES(static_cast<uint32_t>(GLM_COUNTOF(::detail::SkinnedVertexAttributesLayout)), ::detail::SkinnedVertexAttributesLayout);
 
 
 //[-------------------------------------------------------]

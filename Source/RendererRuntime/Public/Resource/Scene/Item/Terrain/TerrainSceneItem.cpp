@@ -113,7 +113,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public definitions                                    ]
 	//[-------------------------------------------------------]
-	const Renderer::VertexAttributes TerrainSceneItem::VERTEX_ATTRIBUTES(static_cast<uint32_t>(glm::countof(::detail::TerrainVertexAttributesLayout)), ::detail::TerrainVertexAttributesLayout);
+	const Renderer::VertexAttributes TerrainSceneItem::VERTEX_ATTRIBUTES(static_cast<uint32_t>(GLM_COUNTOF(::detail::TerrainVertexAttributesLayout)), ::detail::TerrainVertexAttributesLayout);
 
 
 	//[-------------------------------------------------------]
@@ -328,7 +328,7 @@ namespace RendererRuntime
 
 		// Create vertex array object (VAO)
 		const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
-		terrainTileRing.vertexArrayPtr = bufferManager.createVertexArray(TerrainSceneItem::VERTEX_ATTRIBUTES, static_cast<uint32_t>(glm::countof(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, mIndexBufferPtr);
+		terrainTileRing.vertexArrayPtr = bufferManager.createVertexArray(TerrainSceneItem::VERTEX_ATTRIBUTES, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, mIndexBufferPtr);
 		RENDERER_SET_RESOURCE_DEBUG_NAME(terrainTileRing.vertexArrayPtr, "Terrain tile ring")
 	}
 

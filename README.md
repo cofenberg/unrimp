@@ -130,7 +130,7 @@ Renderer Runtime (e.g. "The Game")
 	- Resolution scale support
 - Scene as most top-level concept: Fancy-feature set kept simple because more complex applications / games usually add an entity-component-system
 - Render queue fed with generic renderables to decouple concrete constructs like meshes, particles, terrain etc. from the generic rendering
-- Using mathematics library [GLM](https://glm.g-truc.net/) with the C-preprocessor definitions "GLM_FORCE_RADIANS", "GLM_FORCE_LEFT_HANDED", "GLM_FORCE_DEPTH_ZERO_TO_ONE" and "GLM_ENABLE_EXPERIMENTAL"
+- Using mathematics library [GLM](https://glm.g-truc.net/)
 - Using [xsimd](https://github.com/QuantStack/xsimd) for SIMD intrinsics
 - Cache efficient SIMD multi-threaded frustum culling basing on ["The Implementation of Frustum Culling in Stingray"](http://bitsquid.blogspot.de/2016/10/the-implementation-of-frustum-culling.html)
 - [ImGui](https://github.com/ocornut/imgui) is used as debug GUI to be able to quickly add interactive GUI elements for debugging, prototyping or visualization

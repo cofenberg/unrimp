@@ -1,5 +1,4 @@
 /// @ref gtx_integer
-/// @file glm/gtx/integer.inl
 
 namespace glm
 {
@@ -66,7 +65,7 @@ namespace detail
 	// mod
 	GLM_FUNC_QUALIFIER int mod(int x, int y)
 	{
-		return x - y * (x / y);
+		return ((x % y) + y) % y;
 	}
 
 	// factorial (!12 max, integer only)

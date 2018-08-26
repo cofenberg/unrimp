@@ -49,11 +49,20 @@
 ///
 /// @ingroup core
 ///
-/// @defgroup gtc Stable extensions
+/// @defgroup ext Stable extensions
 ///
 /// @brief Additional features not specified by GLSL specification.
 ///
-/// GTC extensions aim to be stable.
+/// EXT extensions are fully tested and documented.
+///
+/// Even if it's highly unrecommended, it's possible to include all the extensions at once by
+/// including <glm/ext.hpp>. Otherwise, each extension needs to be included  a specific file.
+///
+/// @defgroup gtc Recommended extensions
+///
+/// @brief Additional features not specified by GLSL specification.
+///
+/// GTC extensions aim to be stable with tests and documentation.
 ///
 /// Even if it's highly unrecommended, it's possible to include all the extensions at once by
 /// including <glm/ext.hpp>. Otherwise, each extension needs to be included  a specific file.
@@ -88,11 +97,6 @@
 #include <limits>
 #include <cassert>
 #include "fwd.hpp"
-
-#if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_MESSAGE_CORE_INCLUDED_DISPLAYED)
-#	define GLM_MESSAGE_CORE_INCLUDED_DISPLAYED
-#	pragma message("GLM: Core library included")
-#endif//GLM_MESSAGES
 
 #include "vec2.hpp"
 #include "vec3.hpp"

@@ -36,19 +36,6 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
-	//[ Public definitions                                    ]
-	//[-------------------------------------------------------]
-	// "glm::vec4" constants
-	const glm::vec4 Math::VEC4_ZERO (0.0f, 0.0f, 0.0f, 0.0f);
-	const glm::vec4 Math::VEC4_ONE	(1.0f, 1.0f, 1.0f, 1.0f);
-	// "glm::mat4" constants
-	const glm::mat4 Math::MAT4_IDENTITY(1.0f, 0.0f, 0.0f, 0.0f,
-										0.0f, 1.0f, 0.0f, 0.0f,
-										0.0f, 0.0f, 1.0f, 0.0f,
-										0.0f, 0.0f, 0.0f, 1.0f);
-
-
-	//[-------------------------------------------------------]
 	//[ Public static methods                                 ]
 	//[-------------------------------------------------------]
 	glm::quat Math::calculateTangentFrameQuaternion(glm::mat3& tangentFrameMatrix)

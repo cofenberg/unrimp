@@ -90,7 +90,7 @@ namespace RendererRuntime
 					0											// instancesPerElement (uint32_t)
 				}
 			};
-			vertexAttributes.numberOfAttributes = static_cast<uint32_t>(glm::countof(vertexAttributesLayout));
+			vertexAttributes.numberOfAttributes = static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout));
 			vertexAttributes.attributes = vertexAttributesLayout;
 		}
 		else if (STRING_ID("Example/VertexAttributes/Default/DebugGui") == getAsset().assetId)
@@ -135,7 +135,7 @@ namespace RendererRuntime
 					0													// instancesPerElement (uint32_t)
 				}
 			};
-			vertexAttributes.numberOfAttributes = static_cast<uint32_t>(glm::countof(vertexAttributesLayout));
+			vertexAttributes.numberOfAttributes = static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout));
 			vertexAttributes.attributes = vertexAttributesLayout;
 		}
 		else if (STRING_ID("Example/VertexAttributes/Default/Mesh") == getAsset().assetId)

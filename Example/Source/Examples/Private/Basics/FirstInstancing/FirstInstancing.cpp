@@ -26,6 +26,7 @@
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
+	PRAGMA_WARNING_DISABLE_MSVC(4127)	// warning C4127: conditional expression is constant
 	PRAGMA_WARNING_DISABLE_MSVC(4201)	// warning C4201: nonstandard extension used: nameless struct/union
 	PRAGMA_WARNING_DISABLE_MSVC(4464)	// warning C4464: relative include path contains '..'
 	PRAGMA_WARNING_DISABLE_MSVC(4324)	// warning C4324: '<x>': structure was padded due to alignment specifier
@@ -101,7 +102,7 @@ void FirstInstancing::onInitialization()
 						1											// instancesPerElement (uint32_t)
 					}
 				};
-				const Renderer::VertexAttributes vertexAttributes(static_cast<uint32_t>(glm::countof(vertexAttributesLayout)), vertexAttributesLayout);
+				const Renderer::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
 
 				{ // Create vertex array object (VAO)
 					// Create the vertex buffer object (VBO)
@@ -139,7 +140,7 @@ void FirstInstancing::onInitialization()
 					//    reference of the used vertex buffer objects (VBO). If the reference counter of a
 					//    vertex buffer object (VBO) reaches zero, it's automatically destroyed.
 					const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBufferPosition, vertexBufferInstanceId, };
-					mVertexArrayInstancedArrays = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(glm::countof(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBufferInstancedArrays);
+					mVertexArrayInstancedArrays = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBufferInstancedArrays);
 				}
 
 				// Create the graphics program
@@ -188,7 +189,7 @@ void FirstInstancing::onInitialization()
 						0											// instancesPerElement (uint32_t)
 					}
 				};
-				const Renderer::VertexAttributes vertexAttributes(static_cast<uint32_t>(glm::countof(vertexAttributesLayout)), vertexAttributesLayout);
+				const Renderer::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
 
 				{ // Create vertex array object (VAO)
 					// Create the vertex buffer object (VBO)
@@ -208,7 +209,7 @@ void FirstInstancing::onInitialization()
 					//    reference of the used vertex buffer objects (VBO). If the reference counter of a
 					//    vertex buffer object (VBO) reaches zero, it's automatically destroyed.
 					const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
-					mVertexArrayDrawInstanced = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(glm::countof(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
+					mVertexArrayDrawInstanced = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
 				}
 
 				// Create the graphics program

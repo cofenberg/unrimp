@@ -57,7 +57,7 @@ namespace RendererRuntime
 		mPackedShaderData.nearClipDistance = lightItem->nearClipDistance;
 
 		// Sanity checks
-		assert(mPackedShaderData.color.r >= 0.0f && mPackedShaderData.color.g >= 0.0f && mPackedShaderData.color.b >= 0.0f);
+		assert(mPackedShaderData.color.x >= 0.0f && mPackedShaderData.color.y >= 0.0f && mPackedShaderData.color.z >= 0.0f);
 		assert(lightItem->lightType == LightType::DIRECTIONAL || mPackedShaderData.radius > 0.0f);
 		assert(lightItem->lightType != LightType::DIRECTIONAL || 0.0f == mPackedShaderData.radius);
 		assert(mInnerAngle >= 0.0f);

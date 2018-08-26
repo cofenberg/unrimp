@@ -732,9 +732,9 @@ namespace RendererToolkit
 			color *= ::detail::getRgbColorFromKelvin(kelvin);
 
 			// Done
-			value[0] = color.r;
-			value[1] = color.g;
-			value[2] = color.b;
+			value[0] = color.x;
+			value[1] = color.y;
+			value[2] = color.z;
 		}
 	}
 

@@ -26,6 +26,7 @@
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
+	PRAGMA_WARNING_DISABLE_MSVC(4127)	// warning C4127: conditional expression is constant
 	PRAGMA_WARNING_DISABLE_MSVC(4201)	// warning C4201: nonstandard extension used: nameless struct/union
 	PRAGMA_WARNING_DISABLE_MSVC(4464)	// warning C4464: relative include path contains '..'
 	PRAGMA_WARNING_DISABLE_MSVC(4324)	// warning C4324: '<x>': structure was padded due to alignment specifier
@@ -117,7 +118,7 @@ namespace
 				1											// instancesPerElement (uint32_t)
 			}
 		};
-		const Renderer::VertexAttributes CubeRendererInstancedArraysVertexAttributes(static_cast<uint32_t>(glm::countof(CubeRendererInstancedArraysVertexAttributesLayout)), CubeRendererInstancedArraysVertexAttributesLayout);
+		const Renderer::VertexAttributes CubeRendererInstancedArraysVertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(CubeRendererInstancedArraysVertexAttributesLayout)), CubeRendererInstancedArraysVertexAttributesLayout);
 
 
 //[-------------------------------------------------------]
@@ -168,7 +169,7 @@ CubeRendererInstancedArrays::CubeRendererInstancedArrays(Renderer::IRenderer& re
 
 		// Setup
 		Renderer::RootSignatureBuilder rootSignature;
-		rootSignature.initialize(static_cast<uint32_t>(glm::countof(rootParameters)), rootParameters, 0, nullptr, Renderer::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+		rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Renderer::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		// Create the instance
 		mRootSignature = mRenderer->createRootSignature(rootSignature);
@@ -251,7 +252,7 @@ CubeRendererInstancedArrays::CubeRendererInstancedArrays(Renderer::IRenderer& re
 	{ // Create resource group
 		Renderer::IResource* resources[4] = { mUniformBufferStaticVs, mUniformBufferDynamicVs, mTexture2D, mUniformBufferDynamicFs };
 		Renderer::ISamplerState* samplerStates[4] = { nullptr, nullptr, static_cast<Renderer::ISamplerState*>(samplerStateResource), nullptr };
-		mResourceGroup = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(glm::countof(resources)), resources, samplerStates);
+		mResourceGroup = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources, samplerStates);
 	}
 
 	// Create the graphics program: Decide which shader language should be used (for example "GLSL" or "HLSL")

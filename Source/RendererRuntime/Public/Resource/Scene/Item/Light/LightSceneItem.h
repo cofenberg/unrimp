@@ -31,6 +31,7 @@
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
+	PRAGMA_WARNING_DISABLE_MSVC(4127)	// warning C4127: conditional expression is constant
 	PRAGMA_WARNING_DISABLE_MSVC(4201)	// warning C4201: nonstandard extension used: nameless struct/union
 	PRAGMA_WARNING_DISABLE_MSVC(4464)	// warning C4464: relative include path contains '..'
 	PRAGMA_WARNING_DISABLE_MSVC(4324)	// warning C4324: '<x>': structure was padded due to alignment specifier
@@ -116,7 +117,7 @@ namespace RendererRuntime
 			mPackedShaderData.color = color;
 
 			// Sanity checks
-			assert(mPackedShaderData.color.r >= 0.0f && mPackedShaderData.color.g >= 0.0f && mPackedShaderData.color.b >= 0.0f);
+			assert(mPackedShaderData.color.x >= 0.0f && mPackedShaderData.color.y >= 0.0f && mPackedShaderData.color.z >= 0.0f);
 		}
 
 		inline float getRadius() const

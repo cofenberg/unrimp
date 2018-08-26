@@ -92,7 +92,7 @@ void FirstMesh::onInitialization()
 
 				// Setup
 				Renderer::RootSignatureBuilder rootSignature;
-				rootSignature.initialize(static_cast<uint32_t>(glm::countof(rootParameters)), rootParameters, 0, nullptr, Renderer::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+				rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Renderer::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 				// Create the instance
 				mRootSignature = renderer->createRootSignature(rootSignature);
@@ -145,7 +145,7 @@ void FirstMesh::onInitialization()
 					0											// instancesPerElement (uint32_t)
 				}
 			};
-			const Renderer::VertexAttributes vertexAttributes(static_cast<uint32_t>(glm::countof(vertexAttributesLayout)), vertexAttributesLayout);
+			const Renderer::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
 
 			{ // Create sampler state and wrap it into a resource group instance
 				Renderer::SamplerState samplerStateSettings = Renderer::ISamplerState::getDefaultSamplerState();
@@ -258,7 +258,7 @@ void FirstMesh::onDraw()
 		// Create resource group
 		Renderer::IResource* resources[4] = { mUniformBuffer, _argb_nxaTextureResource->getTexture(), _hr_rg_mb_nyaTextureResource->getTexture(), emissiveTextureResource->getTexture() };
 		Renderer::ISamplerState* samplerStates[4] = { nullptr, mSamplerStatePtr, mSamplerStatePtr, mSamplerStatePtr };
-		mResourceGroup = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(glm::countof(resources)), resources, samplerStates);
+		mResourceGroup = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources, samplerStates);
 	}
 
 	// Get and check the renderer instance
