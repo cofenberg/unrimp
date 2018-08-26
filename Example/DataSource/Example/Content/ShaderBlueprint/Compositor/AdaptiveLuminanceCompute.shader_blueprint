@@ -31,9 +31,6 @@
 // Attribute input / output
 INPUT_BEGIN
 INPUT_END
-OUTPUT_BEGIN
-	OUTPUT_COLOR(0)
-OUTPUT_END
 
 // Uniform buffers
 struct PassDataStruct
@@ -48,28 +45,26 @@ UNIFORM_BUFFER_END
 // Textures
 TEXTURE_2D(1, 0, CurrentLuminanceMap, 0)
 TEXTURE_2D(1, 1, PreviousLuminanceMap, 1)
-
-// Samplers
-SAMPLER_STATE(2, 0, SamplerPoint, 0)
+RW_TEXTURE_2D(1, 2, OutputTexture2D, 2, r32f, writeonly)
 
 
 //[-------------------------------------------------------]
 //[ Main                                                  ]
 //[-------------------------------------------------------]
-MAIN_BEGIN
-	float currentAverageLuminance = exp(SAMPLE_2D_LOD(CurrentLuminanceMap, SamplerPoint, float4(0.5f, 0.5f, 0.0f, 10.0f)).r);
+MAIN_BEGIN_COMPUTE(1, 1, 1)
+	float currentAverageLuminance = exp(TEXTURE_FETCH_2D(CurrentLuminanceMap, int3(0, 0, 0)).r);
 
 	// During the first execution there's no valid previous adaptive luminance available, so use the just calculated luminance as previous luminance
 	@property(FirstExecution)
 		float adaptiveLuminance = currentAverageLuminance;
 	@end
 	@property(!FirstExecution)
-		float previousAverageLuminance = SAMPLE_2D_LOD(PreviousLuminanceMap, SamplerPoint, float4(0.5f, 0.5f, 0.0f, 0.0f)).r;
+		float previousAverageLuminance = TEXTURE_FETCH_2D(PreviousLuminanceMap, int3(0, 0, 0)).r;
 
 		// Adapt the luminance using Pattanaik's technique
 		float adaptiveLuminance = previousAverageLuminance + (currentAverageLuminance - previousAverageLuminance) * (1.0f - exp(-PassData.PastSecondsSinceLastFrame * PassData.AdaptationRate));
 	@end
 
 	// Done
-	MAIN_OUTPUT_COLOR(0) = float4(adaptiveLuminance, 1.0f, 1.0f, 1.0f);
-MAIN_END
+	IMAGE_STORE(OutputTexture2D, int2(0, 0), float4(adaptiveLuminance, 1.0f, 1.0f, 1.0f));
+MAIN_END_NO_OUTPUT

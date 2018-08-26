@@ -101,7 +101,7 @@
 		},
 		"ComputePipelineState":
 		{
-			"ComputeShaderBlueprint": "$ProjectName/ShaderBlueprint/Compositor/HdrToLdrFragment.asset"
+			"ComputeShaderBlueprint": "$ProjectName/ShaderBlueprint/Compositor/HdrToLdrCompute.asset"
 		},
 		"ResourceGroups":
 		{

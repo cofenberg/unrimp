@@ -45,7 +45,7 @@ namespace RendererRuntime
 		mMaterialBlueprintResourceId(computePipelineStateSignature.mMaterialBlueprintResourceId),
 		mShaderProperties(computePipelineStateSignature.mShaderProperties),
 		mComputePipelineStateSignatureId(computePipelineStateSignature.mComputePipelineStateSignatureId),
-		mShaderCombinationId(getInvalid<ShaderCombinationId>())
+		mShaderCombinationId(computePipelineStateSignature.mShaderCombinationId)
 	{
 		// Nothing here
 	}

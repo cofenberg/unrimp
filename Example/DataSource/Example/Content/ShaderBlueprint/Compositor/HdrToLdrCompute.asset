@@ -14,7 +14,7 @@
 		},
 		"ShaderBlueprintAssetCompiler":
 		{
-			"InputFile": "HdrToLdrFragment.shader_blueprint"
+			"InputFile": "HdrToLdrCompute.shader_blueprint"
 		}
 	}
 }
