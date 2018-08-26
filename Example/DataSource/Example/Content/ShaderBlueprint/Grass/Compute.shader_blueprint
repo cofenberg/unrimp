@@ -28,6 +28,11 @@
 //[-------------------------------------------------------]
 //[ Input / output                                        ]
 //[-------------------------------------------------------]
+// Attribute input / output
+INPUT_BEGIN
+	DECLARE_GLOBAL_INVOCATION_ID
+INPUT_END
+
 // Uniform buffers
 struct PassDataStruct
 {
@@ -50,9 +55,6 @@ SAMPLER_STATE(2, 0, SamplerLinearClamp, 0)
 //[-------------------------------------------------------]
 //[ Main                                                  ]
 //[-------------------------------------------------------]
-// Programs
-[numthreads(3, 1, 1)]	// TODO(co) This must be API independent
-void main(uint3 dispatchThreadId : SV_DispatchThreadID)
-{
+MAIN_BEGIN_COMPUTE(3, 1, 1)
 	// TODO(co)
-}
+MAIN_END_NO_OUTPUT

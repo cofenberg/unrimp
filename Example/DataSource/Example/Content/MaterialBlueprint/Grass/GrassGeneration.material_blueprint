@@ -8,6 +8,20 @@
 	{
 		"Properties":
 		{
+			"LocalComputeSize":
+			{
+				"Usage": "STATIC",
+				"ValueType": "INTEGER_3",
+				"Value": "3 1 1",
+				"Description": "Fixed build in material property for the compute shader local size (also known as number of threads). Must be identical to in-shader values."
+			},
+			"GlobalComputeSize":
+			{
+				"Usage": "STATIC",
+				"ValueType": "INTEGER_3",
+				"Value": "3 1 1",
+				"Description": "Fixed build in material property for the compute shader global size"
+			},
 			"HeightMap":
 			{
 				"Usage": "TEXTURE_REFERENCE",
@@ -59,7 +73,6 @@
 					"ResourceType": "UNIFORM_BUFFER",
 					"BaseShaderRegisterName": "PassUniformBuffer",
 					"BaseShaderRegister": "0",
-					"ShaderVisibility": "ALL_GRAPHICS",
 					"BufferUsage": "PASS",
 					"NumberOfElements": "1",
 					"ElementProperties":
