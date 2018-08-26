@@ -452,7 +452,7 @@ namespace RendererRuntime
 			}
 		}
 
-		{ // Unordered access
+		{ // Textures not referenced by a framebuffer (e.g. used for unordered access or resource copy)
 			RenderTargetTextureManager& renderTargetTextureManager = compositorWorkspaceResourceManager.getRenderTargetTextureManager();
 			const CompositorNodeResourceManager& compositorNodeResourceManager = mRendererRuntime.getCompositorNodeResourceManager();
 			for (const CompositorNodeInstance* compositorNodeInstance : mSequentialCompositorNodeInstances)
@@ -461,8 +461,7 @@ namespace RendererRuntime
 				for (const CompositorRenderTargetTexture& compositorRenderTargetTexture : compositorNodeResource.getRenderTargetTextures())
 				{
 					const RenderTargetTextureSignature& renderTargetTextureSignature = compositorRenderTargetTexture.getRenderTargetTextureSignature();
-					if ((renderTargetTextureSignature.getFlags() & RenderTargetTextureSignature::Flag::UNORDERED_ACCESS) != 0 &&
-						(renderTargetTextureSignature.getFlags() & RenderTargetTextureSignature::Flag::RENDER_TARGET) == 0)
+					if ((renderTargetTextureSignature.getFlags() & RenderTargetTextureSignature::Flag::RENDER_TARGET) == 0)
 					{
 						renderTargetTextureManager.getTextureByAssetId(compositorRenderTargetTexture.getAssetId(), mainRenderTarget, mCurrentlyUsedNumberOfMultisamples, mResolutionScale, nullptr);
 					}

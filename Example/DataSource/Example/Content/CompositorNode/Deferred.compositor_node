@@ -205,11 +205,6 @@
 			{
 				"DepthStencilTexture": "Example/Texture/Dynamic/DepthStencilRenderTarget"
 			},
-			"HierarchicalDepthStencilRenderTargetFramebuffer":
-			{
-				"TODO": "Get rid of this, it must be possible to define compositor textures which aren't referenced by a framebuffer",
-				"DepthStencilTexture": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget"
-			},
 			"ScreenSpaceAmbientOcclusionFramebuffer":
 			{
 				"ColorTextures": [ "Example/Texture/Dynamic/ScreenSpaceAmbientOcclusionRenderTarget" ]
@@ -362,9 +357,8 @@
 					}
 				}
 			},
-			"HierarchicalDepthStencilRenderTargetFramebuffer":
+			"":
 			{
-				"TODO": "Get rid of this, it must be possible to define compositor textures which aren't referenced by a framebuffer",
 				"Copy":
 				{
 					"Description": "Sadly even with read-only it's impossible to read from a depth map while it's bound as depth buffer, so we need a copy",
