@@ -51,7 +51,7 @@ namespace RendererRuntime
 	void CompositorInstancePassScene::onFillCommandBuffer(const Renderer::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
 	{
 		// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
-		RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), commandBuffer)
+		RENDERER_SCOPED_PROFILER_EVENT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), commandBuffer, "Scene compositor pass")
 
 		// Fill command buffer
 		assert(nullptr != mRenderQueueIndexRange);

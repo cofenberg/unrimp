@@ -266,7 +266,7 @@ void FirstMesh::onDraw()
 	if (nullptr != renderer && nullptr != mGraphicsPipelineState)
 	{
 		// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
-		RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(rendererRuntime->getContext(), mCommandBuffer)
+		RENDERER_SCOPED_PROFILER_EVENT(rendererRuntime->getContext(), mCommandBuffer, "First mesh")
 
 		// Set the viewport and get the aspect ratio
 		float aspectRatio = 4.0f / 3.0f;

@@ -268,7 +268,7 @@ namespace RendererRuntime
 			if (nullptr != ::detail::g_MeshPtr)
 			{
 				// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
-				RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), commandBuffer)
+				RENDERER_SCOPED_PROFILER_EVENT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), commandBuffer, "VR hidden area mesh compute pass")
 
 				// Fill command buffer
 				compositorContextData.resetCurrentlyBoundMaterialBlueprintResource();

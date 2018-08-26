@@ -48,7 +48,7 @@ namespace RendererRuntime
 	void CompositorInstancePassClear::onFillCommandBuffer(const Renderer::IRenderTarget&, const CompositorContextData&, Renderer::CommandBuffer& commandBuffer)
 	{
 		// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
-		RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), commandBuffer)
+		RENDERER_SCOPED_PROFILER_EVENT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), commandBuffer, "Clear compositor pass")
 
 		// Push the clear graphics command
 		const CompositorResourcePassClear& compositorResourcePassClear = static_cast<const CompositorResourcePassClear&>(getCompositorResourcePass());

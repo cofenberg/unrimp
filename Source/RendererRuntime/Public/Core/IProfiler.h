@@ -301,6 +301,9 @@
 	*    Renderer context to ask for the profiler interface
 	*  @param[in] commandBuffer
 	*    Reference to the renderer instance to use
+	*
+	*  @note
+	*    - Often using this macro results in too long names which make things confusing to read, you might want to use "RENDERER_SCOPED_PROFILER_EVENT()" instead for explicit names
 	*/
 	#define RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(context, commandBuffer) RENDERER_SCOPED_PROFILER_EVENT(context, commandBuffer, __FUNCTION__)
 #else
@@ -368,4 +371,44 @@
 	*    Section name
 	*/
 	#define RENDERER_PROFILER_SCOPED_GPU_SAMPLE(context, name)
+
+	/**
+	*  @brief
+	*    Combined scoped profiler CPU and GPU sample as well as renderer debug event command and a constant name (more efficient)
+	*
+	*  @param[in] context
+	*    Renderer context to ask for the profiler interface
+	*  @param[in] commandBuffer
+	*    Reference to the renderer instance to use
+	*  @param[in] name
+	*    Section name
+	*/
+	#define RENDERER_SCOPED_PROFILER_EVENT(context, commandBuffer, name)
+
+	/**
+	*  @brief
+	*    Combined scoped profiler CPU and GPU sample as well as renderer debug event command and a dynamic name (less efficient)
+	*
+	*  @param[in] context
+	*    Renderer context to ask for the profiler interface
+	*  @param[in] commandBuffer
+	*    Reference to the renderer instance to use
+	*  @param[in] name
+	*    Section name
+	*/
+	#define RENDERER_SCOPED_PROFILER_EVENT_DYNAMIC(context, commandBuffer, name)
+
+	/**
+	*  @brief
+	*    Combined scoped profiler CPU and GPU sample as well as renderer debug event command, the current function name ("__FUNCTION__") as event name
+	*
+	*  @param[in] context
+	*    Renderer context to ask for the profiler interface
+	*  @param[in] commandBuffer
+	*    Reference to the renderer instance to use
+	*
+	*  @note
+	*    - Often using this macro results in too long names which make things confusing to read, you might want to use "RENDERER_SCOPED_PROFILER_EVENT()" instead for explicit names
+	*/
+	#define RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(context, commandBuffer)
 #endif

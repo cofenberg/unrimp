@@ -222,7 +222,7 @@ namespace RendererRuntime
 
 				{ // Scene rendering
 					// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
-					RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(mRendererRuntime.getContext(), mCommandBuffer)
+					RENDERER_SCOPED_PROFILER_EVENT(mRendererRuntime.getContext(), mCommandBuffer, "Compositor workspace")
 
 					// Set the current graphics render target
 					Renderer::Command::SetGraphicsRenderTarget::create(mCommandBuffer, &renderTarget);

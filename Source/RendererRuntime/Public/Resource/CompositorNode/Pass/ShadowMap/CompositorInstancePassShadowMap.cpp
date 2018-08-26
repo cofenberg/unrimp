@@ -163,7 +163,7 @@ namespace RendererRuntime
 
 			// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
 			const IRendererRuntime& rendererRuntime = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime();
-			RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(rendererRuntime.getContext(), commandBuffer)
+			RENDERER_SCOPED_PROFILER_EVENT(rendererRuntime.getContext(), commandBuffer, "Shadow map compositor pass")
 
 			// Render the meshes to each cascade
 			// -> Shadows should never be rendered via single pass stereo instancing

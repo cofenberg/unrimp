@@ -285,7 +285,7 @@ namespace RendererRuntime
 		if (GImGui->Initialized)
 		{
 			// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
-			RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(mRendererRuntime.getContext(), commandBuffer)
+			RENDERER_SCOPED_PROFILER_EVENT(mRendererRuntime.getContext(), commandBuffer, "Debug GUI")
 
 			// Render command lists
 			// -> There's no need to try to gather draw calls and batch them into multi-draw-indirect buffers, ImGui does already a pretty good job
@@ -322,7 +322,7 @@ namespace RendererRuntime
 		if (GImGui->Initialized)
 		{
 			// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
-			RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(mRendererRuntime.getContext(), commandBuffer)
+			RENDERER_SCOPED_PROFILER_EVENT(mRendererRuntime.getContext(), commandBuffer, "Fixed debug GUI")
 
 			// Create fixed build in renderer configuration resources, if required
 			if (nullptr == mRootSignature)

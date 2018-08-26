@@ -316,7 +316,7 @@ namespace RendererRuntime
 		assert(mScratchCommandBuffer.isEmpty() && "Scratch command buffer should be empty at this point in time");
 
 		// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
-		RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(mRendererRuntime.getContext(), commandBuffer)
+		RENDERER_SCOPED_PROFILER_EVENT(mRendererRuntime.getContext(), commandBuffer, "Graphics render queue")
 
 		// TODO(co) This is just a dummy implementation. For example automatic instancing has to be incorporated as well as more efficient buffer management.
 		const MaterialResourceManager& materialResourceManager = mRendererRuntime.getMaterialResourceManager();
@@ -652,7 +652,7 @@ namespace RendererRuntime
 		assert(mScratchCommandBuffer.isEmpty() && "Scratch command buffer should be empty at this point in time");
 
 		// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
-		RENDERER_SCOPED_PROFILER_EVENT_FUNCTION(mRendererRuntime.getContext(), commandBuffer)
+		RENDERER_SCOPED_PROFILER_EVENT(mRendererRuntime.getContext(), commandBuffer, "Compute render queue")
 
 		// TODO(co) This is just a dummy implementation. For example automatic instancing has to be incorporated as well as more efficient buffer management.
 		const TextureResourceManager& textureResourceManager = mRendererRuntime.getTextureResourceManager();
