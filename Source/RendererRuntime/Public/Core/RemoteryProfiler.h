@@ -100,8 +100,7 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		// TODO(co) Remotery GPU profiling: Disabled by default since it might take some shutdown time due to "rmt_UnbindOpenGL blocks indefinitely #112" - https://github.com/Celtoys/Remotery/issues/112
-		inline RemoteryProfiler(Renderer::IRenderer& renderer, MAYBE_UNUSED bool enableGpuProfiling = false) :
+		inline RemoteryProfiler(Renderer::IRenderer& renderer, MAYBE_UNUSED bool enableGpuProfiling = true) :
 			mRemotery(nullptr),
 			mUseD3D11(false),
 			mUseOpenGL(false)
