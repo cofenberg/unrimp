@@ -30,23 +30,35 @@
 //[-------------------------------------------------------]
 // Attribute input / output
 INPUT_BEGIN
-	INPUT_TEXTURE_COORDINATE(1, float2, TexCoordVS, 0)	// Texture coordinate
+	DECLARE_GLOBAL_INVOCATION_ID
 INPUT_END
-OUTPUT_BEGIN
-	OUTPUT_COLOR(0)
-OUTPUT_END
+
+// Uniform buffers
+struct PassDataStruct
+{
+	uint3 GlobalComputeSize;
+};
+UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
+	PassDataStruct PassData;
+UNIFORM_BUFFER_END
 
 // Textures
-TEXTURE_2D(0, 1, ColorMap, 0)
+TEXTURE_2D(1, 1, ColorMap, 0)
+RW_TEXTURE_2D(1, 1, OutputTexture2D, 1, r11f_g11f_b10f, writeonly)
 
 // Samplers
-SAMPLER_STATE(1, 0, SamplerLinear, 0)
+SAMPLER_STATE(2, 0, SamplerLinear, 0)
 
 
 //[-------------------------------------------------------]
 //[ Main                                                  ]
 //[-------------------------------------------------------]
-MAIN_BEGIN
-	// Using hardware bilinear filtering for upscaling or downscaling
-	MAIN_OUTPUT_COLOR(0) = SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(MAIN_INPUT(TexCoordVS), 0.0f, 0.0f));
-MAIN_END
+MAIN_BEGIN_COMPUTE(32, 32, 1)
+	// Compute dispatch is using groups of a multiple of the local size, ensure we don't access ouf of global compute size which musn't be a multiple of the local size and hence might be smaller
+	if (GLOBAL_INVOCATION_ID.x < PassData.GlobalComputeSize.x && GLOBAL_INVOCATION_ID.y < PassData.GlobalComputeSize.y)
+	{
+		// Using hardware bilinear filtering for upscaling or downscaling
+		float2 texCoord = CAST_TO(GLOBAL_INVOCATION_ID.xy, float2) / CAST_TO(PassData.GlobalComputeSize.xy, float2);
+		IMAGE_STORE(OutputTexture2D, CAST_TO(GLOBAL_INVOCATION_ID.xy, int2), SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(texCoord, 0.0f, 0.0f)));
+	}
+MAIN_END_NO_OUTPUT

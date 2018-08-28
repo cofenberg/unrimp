@@ -126,31 +126,36 @@
 			{
 				"TextureFormat": "R11G11B10F",
 				"Width": "128",
-				"Height": "128"
+				"Height": "128",
+				"Flags": "SHADER_RESOURCE | UNORDERED_ACCESS"
 			},
 			"Example/Texture/Dynamic/BloomDownscale4ColorRenderTarget":
 			{
 				"TextureFormat": "R11G11B10F",
 				"Width": "64",
-				"Height": "64"
+				"Height": "64",
+				"Flags": "SHADER_RESOURCE | UNORDERED_ACCESS"
 			},
 			"Example/Texture/Dynamic/BloomDownscale8ColorRenderTarget":
 			{
 				"TextureFormat": "R11G11B10F",
 				"Width": "32",
-				"Height": "32"
+				"Height": "32",
+				"Flags": "SHADER_RESOURCE | UNORDERED_ACCESS"
 			},
 			"Example/Texture/Dynamic/BloomDownscale8GaussianBlurTemporaryRenderTarget":
 			{
 				"TextureFormat": "R11G11B10F",
 				"Width": "32",
-				"Height": "32"
+				"Height": "32",
+				"Flags": "SHADER_RESOURCE | UNORDERED_ACCESS"
 			},
 			"Example/Texture/Dynamic/LensFlareColorRenderTarget":
 			{
 				"TextureFormat": "R11G11B10F",
 				"Width": "256",
-				"Height": "256"
+				"Height": "256",
+				"Flags": "SHADER_RESOURCE | UNORDERED_ACCESS | RENDER_TARGET"
 			},
 			"Example/Texture/Dynamic/LdrColorRenderTarget0":
 			{
@@ -160,25 +165,25 @@
 			"Example/Texture/Dynamic/GaussianBlurDownscale2ColorRenderTarget":
 			{
 				"TextureFormat": "R11G11B10F",
-				"Flags": "SHADER_RESOURCE | RENDER_TARGET | ALLOW_RESOLUTION_SCALE",
+				"Flags": "SHADER_RESOURCE | UNORDERED_ACCESS | ALLOW_RESOLUTION_SCALE",
 				"Scale": "0.5"
 			},
 			"Example/Texture/Dynamic/GaussianBlurDownscale4ColorRenderTarget":
 			{
 				"TextureFormat": "R11G11B10F",
-				"Flags": "SHADER_RESOURCE | RENDER_TARGET | ALLOW_RESOLUTION_SCALE",
+				"Flags": "SHADER_RESOURCE | UNORDERED_ACCESS | ALLOW_RESOLUTION_SCALE",
 				"Scale": "0.25"
 			},
 			"Example/Texture/Dynamic/GaussianBlurRenderTarget0":
 			{
 				"TextureFormat": "R11G11B10F",
-				"Flags": "SHADER_RESOURCE | RENDER_TARGET | ALLOW_RESOLUTION_SCALE",
+				"Flags": "SHADER_RESOURCE | UNORDERED_ACCESS | ALLOW_RESOLUTION_SCALE",
 				"Scale": "0.25"
 			},
 			"Example/Texture/Dynamic/GaussianBlurRenderTarget1":
 			{
 				"TextureFormat": "R11G11B10F",
-				"Flags": "SHADER_RESOURCE | RENDER_TARGET | ALLOW_RESOLUTION_SCALE",
+				"Flags": "SHADER_RESOURCE | UNORDERED_ACCESS | ALLOW_RESOLUTION_SCALE",
 				"Scale": "0.25"
 			}
 		},
@@ -241,41 +246,9 @@
 			{
 				"ColorTextures": [ "Example/Texture/Dynamic/BloomColorRenderTarget" ]
 			},
-			"BloomDownscale2Framebuffer":
-			{
-				"ColorTextures": [ "Example/Texture/Dynamic/BloomDownscale2ColorRenderTarget" ]
-			},
-			"BloomDownscale4Framebuffer":
-			{
-				"ColorTextures": [ "Example/Texture/Dynamic/BloomDownscale4ColorRenderTarget" ]
-			},
-			"BloomDownscale8Framebuffer":
-			{
-				"ColorTextures": [ "Example/Texture/Dynamic/BloomDownscale8ColorRenderTarget" ]
-			},
-			"BloomDownscale8GaussianBlurTemporaryFramebuffer":
-			{
-				"ColorTextures": [ "Example/Texture/Dynamic/BloomDownscale8GaussianBlurTemporaryRenderTarget" ]
-			},
 			"LensFlareFramebuffer":
 			{
 				"ColorTextures": [ "Example/Texture/Dynamic/LensFlareColorRenderTarget" ]
-			},
-			"GaussianBlurDownscale2Framebuffer":
-			{
-				"ColorTextures": [ "Example/Texture/Dynamic/GaussianBlurDownscale2ColorRenderTarget" ]
-			},
-			"GaussianBlurDownscale4Framebuffer":
-			{
-				"ColorTextures": [ "Example/Texture/Dynamic/GaussianBlurDownscale4ColorRenderTarget" ]
-			},
-			"GaussianBlurFramebuffer0":
-			{
-				"ColorTextures": [ "Example/Texture/Dynamic/GaussianBlurRenderTarget0" ]
-			},
-			"GaussianBlurFramebuffer1":
-			{
-				"ColorTextures": [ "Example/Texture/Dynamic/GaussianBlurRenderTarget1" ]
 			}
 		},
 		"Targets":
@@ -543,35 +516,31 @@
 						"FirstExecution": "TRUE",
 						"OutputTexture2D": "Example/Texture/Dynamic/AdaptiveLuminanceRenderTarget"
 					}
-				}
-			},
-			"GaussianBlurDownscale2Framebuffer":
-			{
+				},
 				"Compute":
 				{
 					"Name": "Blur downscale",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
 					"SetMaterialProperties":
 					{
-						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget1"
+						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget1",
+						"OutputTexture2D": "Example/Texture/Dynamic/GaussianBlurDownscale2ColorRenderTarget"
 					}
-				}
-			},
-			"GaussianBlurDownscale4Framebuffer":
-			{
+				},
 				"Compute":
 				{
 					"Name": "Blur downscale",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
 					"SetMaterialProperties":
 					{
-						"ColorMap": "Example/Texture/Dynamic/GaussianBlurDownscale2ColorRenderTarget"
+						"ColorMap": "Example/Texture/Dynamic/GaussianBlurDownscale2ColorRenderTarget",
+						"OutputTexture2D": "Example/Texture/Dynamic/GaussianBlurDownscale4ColorRenderTarget"
 					}
 				}
 			},
 			"@foreach(4, i)":
 			{
-				"GaussianBlurFramebuffer0":
+				"":
 				{
 					"Compute":
 					{
@@ -581,12 +550,10 @@
 						"SetMaterialProperties":
 						{
 							"VerticalBlur": "TRUE", 
-							"ColorMap": "Example/Texture/Dynamic/GaussianBlurDownscale4ColorRenderTarget"
+							"ColorMap": "Example/Texture/Dynamic/GaussianBlurDownscale4ColorRenderTarget",
+							"OutputTexture2D": "Example/Texture/Dynamic/GaussianBlurRenderTarget0"
 						}
-					}
-				},
-				"GaussianBlurFramebuffer1":
-				{
+					},
 					"Compute":
 					{
 						"Name": "Horizontal blur",
@@ -595,12 +562,13 @@
 						"SetMaterialProperties":
 						{
 							"VerticalBlur": "FALSE", 
-							"ColorMap": "Example/Texture/Dynamic/GaussianBlurRenderTarget0"
+							"ColorMap": "Example/Texture/Dynamic/GaussianBlurRenderTarget0",
+							"OutputTexture2D": "Example/Texture/Dynamic/GaussianBlurRenderTarget1"
 						}
 					}
 				}
 			},
-			"GaussianBlurDownscale2Framebuffer":
+			"":
 			{
 				"Compute":
 				{
@@ -608,7 +576,8 @@
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
 					"SetMaterialProperties":
 					{
-						"ColorMap": "Example/Texture/Dynamic/GaussianBlurRenderTarget1"
+						"ColorMap": "Example/Texture/Dynamic/GaussianBlurRenderTarget1",
+						"OutputTexture2D": "Example/Texture/Dynamic/GaussianBlurDownscale2ColorRenderTarget"
 					}
 				}
 			},
@@ -650,47 +619,41 @@
 						"LuminanceMap": "Example/Texture/Dynamic/AdaptiveLuminanceRenderTarget",
 						"OutputTexture2D": "Example/Texture/Dynamic/BloomColorRenderTarget"
 					}
-				}
-			},
-			"BloomDownscale2Framebuffer":
-			{
+				},
 				"Compute":
 				{
 					"Name": "Bloom downscale",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
 					"SetMaterialProperties":
 					{
-						"ColorMap": "Example/Texture/Dynamic/BloomColorRenderTarget"
+						"ColorMap": "Example/Texture/Dynamic/BloomColorRenderTarget",
+						"OutputTexture2D": "Example/Texture/Dynamic/BloomDownscale2ColorRenderTarget"
 					}
-				}
-			},
-			"BloomDownscale4Framebuffer":
-			{
+				},
 				"Compute":
 				{
 					"Name": "Bloom downscale",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
 					"SetMaterialProperties":
 					{
-						"ColorMap": "Example/Texture/Dynamic/BloomDownscale2ColorRenderTarget"
+						"ColorMap": "Example/Texture/Dynamic/BloomDownscale2ColorRenderTarget",
+						"OutputTexture2D": "Example/Texture/Dynamic/BloomDownscale4ColorRenderTarget"
 					}
-				}
-			},
-			"BloomDownscale8Framebuffer":
-			{
+				},
 				"Compute":
 				{
 					"Name": "Bloom downscale",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
 					"SetMaterialProperties":
 					{
-						"ColorMap": "Example/Texture/Dynamic/BloomDownscale4ColorRenderTarget"
+						"ColorMap": "Example/Texture/Dynamic/BloomDownscale4ColorRenderTarget",
+						"OutputTexture2D": "Example/Texture/Dynamic/BloomDownscale8ColorRenderTarget"
 					}
 				}
 			},
 			"@foreach(4, i)":
 			{
-				"BloomDownscale8GaussianBlurTemporaryFramebuffer":
+				"":
 				{
 					"Compute":
 					{
@@ -700,12 +663,10 @@
 						"SetMaterialProperties":
 						{
 							"VerticalBlur": "TRUE", 
-							"ColorMap": "Example/Texture/Dynamic/BloomDownscale8ColorRenderTarget"
+							"ColorMap": "Example/Texture/Dynamic/BloomDownscale8ColorRenderTarget",
+							"OutputTexture2D": "Example/Texture/Dynamic/BloomDownscale8GaussianBlurTemporaryRenderTarget"
 						}
-					}
-				},
-				"BloomDownscale8Framebuffer":
-				{
+					},
 					"Compute":
 					{
 						"Name": "Bloom horizontal blur",
@@ -714,12 +675,13 @@
 						"SetMaterialProperties":
 						{
 							"VerticalBlur": "FALSE", 
-							"ColorMap": "Example/Texture/Dynamic/BloomDownscale8GaussianBlurTemporaryRenderTarget"
+							"ColorMap": "Example/Texture/Dynamic/BloomDownscale8GaussianBlurTemporaryRenderTarget",
+							"OutputTexture2D": "Example/Texture/Dynamic/BloomDownscale8ColorRenderTarget"
 						}
 					}
 				}
 			},
-			"BloomDownscale4Framebuffer":
+			"":
 			{
 				"Compute":
 				{
@@ -727,19 +689,18 @@
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
 					"SetMaterialProperties":
 					{
-						"ColorMap": "Example/Texture/Dynamic/BloomDownscale8ColorRenderTarget"
+						"ColorMap": "Example/Texture/Dynamic/BloomDownscale8ColorRenderTarget",
+						"OutputTexture2D": "Example/Texture/Dynamic/BloomDownscale4ColorRenderTarget"
 					}
-				}
-			},
-			"BloomDownscale2Framebuffer":
-			{
+				},
 				"Compute":
 				{
 					"Name": "Bloom upscale",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Scale.asset",
 					"SetMaterialProperties":
 					{
-						"ColorMap": "Example/Texture/Dynamic/BloomDownscale4ColorRenderTarget"
+						"ColorMap": "Example/Texture/Dynamic/BloomDownscale4ColorRenderTarget",
+						"OutputTexture2D": "Example/Texture/Dynamic/BloomDownscale2ColorRenderTarget"
 					}
 				}
 			},
@@ -768,7 +729,7 @@
 					}
 				}
 			},
-			"BloomFramebuffer":
+			"":
 			{
 				"Compute":
 				{
@@ -778,12 +739,10 @@
 					"SetMaterialProperties":
 					{
 						"VerticalBlur": "TRUE", 
-						"ColorMap": "Example/Texture/Dynamic/LensFlareColorRenderTarget"
+						"ColorMap": "Example/Texture/Dynamic/LensFlareColorRenderTarget",
+						"OutputTexture2D": "Example/Texture/Dynamic/BloomColorRenderTarget"
 					}
-				}
-			},
-			"LensFlareFramebuffer":
-			{
+				},
 				"Compute":
 				{
 					"Name": "Lens flare horizontal blur",
@@ -792,12 +751,10 @@
 					"SetMaterialProperties":
 					{
 						"VerticalBlur": "FALSE", 
-						"ColorMap": "Example/Texture/Dynamic/BloomColorRenderTarget"
+						"ColorMap": "Example/Texture/Dynamic/BloomColorRenderTarget",
+						"OutputTexture2D": "Example/Texture/Dynamic/LensFlareColorRenderTarget"
 					}
-				}
-			},
-			"":
-			{
+				},
 				"Compute":
 				{
 					"Name": "HDR to LDR",
