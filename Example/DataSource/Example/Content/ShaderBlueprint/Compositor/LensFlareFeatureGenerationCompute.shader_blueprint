@@ -30,20 +30,16 @@
 //[-------------------------------------------------------]
 // Attribute input / output
 INPUT_BEGIN
-	INPUT_TEXTURE_COORDINATE(1, float2, TexCoordVS, 0)	// Texture coordinate
+	DECLARE_GLOBAL_INVOCATION_ID
 INPUT_END
-OUTPUT_BEGIN
-	OUTPUT_COLOR(0)
-OUTPUT_END
 
 // Uniform buffers
 struct PassDataStruct
 {
-	float2 InverseViewportSize;
-	int    NumberOfGhostSamples;
-	float  GhostDispersalFactor;
-	float  ChromaticDistortion;
-	float  HaloWidth;
+	int   NumberOfGhostSamples;
+	float GhostDispersalFactor;
+	float ChromaticDistortion;
+	float HaloWidth;
 };
 UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
 	PassDataStruct PassData;
@@ -52,6 +48,7 @@ UNIFORM_BUFFER_END
 // Textures
 TEXTURE_2D(1, 0, ColorMap, 0)
 TEXTURE_1D(1, 1, LensColorMap, 1)
+RW_TEXTURE_2D(1, 2, OutputTexture2D, 2, r11f_g11f_b10f, writeonly)
 
 // Samplers
 SAMPLER_STATE(2, 0, SamplerLinear, 0)
@@ -61,12 +58,12 @@ SAMPLER_STATE(2, 1, SamplerPoint, 1)
 //[-------------------------------------------------------]
 //[ Functions                                             ]
 //[-------------------------------------------------------]
-float3 GetDistortedTexture(float2 textureCoordinate, float2 direction, float3 distortion)
+float3 GetDistortedTexture(float2 texCoord, float2 direction, float3 distortion)
 {
 	return float3(
-		SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(textureCoordinate + direction * distortion.r, 0.0f, 0.0f)).r,
-		SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(textureCoordinate + direction * distortion.g, 0.0f, 0.0f)).g,
-		SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(textureCoordinate + direction * distortion.b, 0.0f, 0.0f)).b
+		SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(texCoord + direction * distortion.r, 0.0f, 0.0f)).r,
+		SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(texCoord + direction * distortion.g, 0.0f, 0.0f)).g,
+		SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(texCoord + direction * distortion.b, 0.0f, 0.0f)).b
 	);
 }
 
@@ -74,11 +71,13 @@ float3 GetDistortedTexture(float2 textureCoordinate, float2 direction, float3 di
 //[-------------------------------------------------------]
 //[ Main                                                  ]
 //[-------------------------------------------------------]
-MAIN_BEGIN
-	float2 textureCoordinate = MAIN_INPUT(TexCoordVS);
-	float2 texelSize = PassData.InverseViewportSize;
+MAIN_BEGIN_COMPUTE(32, 32, 1)
+	// Compute dispatch is using groups of a multiple of the local size, in here we don't need to ensure we don't access ouf of global compute size since our color map must be a multiple of the local size
+	// -> 256 = fixed global compute size
+	float2 texelSize = float2(1.0f, 1.0f) / float2(256.0f, 256.0f);
+	float2 texCoord = CAST_TO(GLOBAL_INVOCATION_ID.xy, float2) * texelSize;
 
-	float2 ghostVector = (float2(0.5f, 0.5f) - textureCoordinate) * PassData.GhostDispersalFactor;
+	float2 ghostVector = (float2(0.5f, 0.5f) - texCoord) * PassData.GhostDispersalFactor;
 	float2 normalizedGhostVector = normalize(ghostVector);
 	float2 haloVec = normalizedGhostVector * PassData.HaloWidth;
 
@@ -89,7 +88,7 @@ MAIN_BEGIN
 	float3 result = float3(0.0f, 0.0f, 0.0f);
 	for (int i = 0; i < PassData.NumberOfGhostSamples; ++i)
 	{
-		float2 offset = frac(textureCoordinate + ghostVector * float(i));
+		float2 offset = frac(texCoord + ghostVector * float(i));
 
 		// Linear falloff
 		float weight = SATURATE(length(float2(0.5f, 0.5f) - offset) / halfVectorLength);
@@ -99,13 +98,16 @@ MAIN_BEGIN
 	}
 
 	// Tint ghost
-	result *= SAMPLE_1D_LOD(LensColorMap, SamplerPoint, float4(length(float2(0.5f, 0.5f) - textureCoordinate) / halfVectorLength, 0.0f, 0.0f, 0.0f)).bgr;
+	result *= SAMPLE_1D_LOD(LensColorMap, SamplerPoint, float4(length(float2(0.5f, 0.5f) - texCoord) / halfVectorLength, 0.0f, 0.0f, 0.0f)).bgr;
 
 	// Sample halo
-	float weight = SATURATE(length(float2(0.5f, 0.5f) - frac(textureCoordinate + haloVec)) / halfVectorLength);
-	weight = pow(1.0f - weight, 10.0f);
-	result += GetDistortedTexture(frac(textureCoordinate + haloVec), normalize(ghostVector), distortion) * weight;
+	float weight = SATURATE(length(float2(0.5f, 0.5f) - frac(texCoord + haloVec)) / halfVectorLength);
+	if (1.0f > weight)
+	{
+		weight = pow(1.0f - weight, 10.0f);
+	}
+	result += GetDistortedTexture(frac(texCoord + haloVec), normalize(ghostVector), distortion) * weight;
 
 	// Done
-	MAIN_OUTPUT_COLOR(0) = float4(result, 1.0f);
-MAIN_END
+	IMAGE_STORE(OutputTexture2D, CAST_TO(GLOBAL_INVOCATION_ID.xy, int2), float4(result, 1.0f));
+MAIN_END_NO_OUTPUT

@@ -8,6 +8,20 @@
 	{
 		"Properties":
 		{
+			"LocalComputeSize":
+			{
+				"Usage": "STATIC",
+				"ValueType": "INTEGER_3",
+				"Value": "32 32 1",
+				"Description": "Fixed build in material property for the compute shader local size (also known as number of threads). Must be identical to in-shader values."
+			},
+			"GlobalComputeSize":
+			{
+				"Usage": "STATIC",
+				"ValueType": "INTEGER_3",
+				"Value": "256 256 1",
+				"Description": "Fixed build in material property for the compute shader global size"
+			},
 			"ColorScale":
 			{
 				"Usage": "SHADER_UNIFORM",
@@ -34,25 +48,18 @@
 				"ValueType": "TEXTURE_ASSET_ID",
 				"Value": "Unrimp/Texture/DynamicByCode/WhiteMap2D",
 				"Description": "2D color map"
+			},
+			"OutputTexture2D":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+				"Description": "Output texture 2D"
 			}
 		},
-		"GraphicsPipelineState":
+		"ComputePipelineState":
 		{
-			"VertexAttributes": "$ProjectName/VertexAttributes/Default/Null.asset",
-			"ShaderBlueprints":
-			{
-				"VertexShaderBlueprint": "$ProjectName/ShaderBlueprint/Compositor/PositionTextureCoordinateVertex.asset",
-				"FragmentShaderBlueprint": "$ProjectName/ShaderBlueprint/Compositor/LensFlareThresholdFragment.asset"
-			},
-			"RasterizerState":
-			{
-				"CullMode": "NONE"
-			},
-			"DepthStencilState":
-			{
-				"DepthEnable": "FALSE",
-				"DepthWriteMask": "ZERO"
-			}
+			"ComputeShaderBlueprint": "$ProjectName/ShaderBlueprint/Compositor/LensFlareThresholdCompute.asset"
 		},
 		"ResourceGroups":
 		{
@@ -63,7 +70,6 @@
 					"ResourceType": "UNIFORM_BUFFER",
 					"BaseShaderRegisterName": "PassUniformBuffer",
 					"BaseShaderRegister": "0",
-					"ShaderVisibility": "FRAGMENT",
 					"BufferUsage": "PASS",
 					"NumberOfElements": "1",
 					"ElementProperties":
@@ -90,13 +96,23 @@
 					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "ColorMap",
 					"BaseShaderRegister": "0",
-					"ShaderVisibility": "FRAGMENT",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@ColorMap",
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/WhiteMap2D",
 					"MipmapsUsed": "FALSE",
 					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
+				},
+				"1":
+				{
+					"ResourceType": "TEXTURE_2D",
+					"DescriptorRangeType": "UAV",
+					"BaseShaderRegisterName": "OutputTexture2D",
+					"BaseShaderRegister": "1",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@OutputTexture2D",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D"
 				}
 			},
 			"2":
@@ -106,7 +122,6 @@
 					"ResourceType": "SAMPLER_STATE",
 					"BaseShaderRegisterName": "SamplerLinear",
 					"BaseShaderRegister": "0",
-					"ShaderVisibility": "FRAGMENT",
 					"Filter": "MIN_MAG_LINEAR_MIP_POINT",
 					"MaxAnisotropy": "1",
 					"MaxLOD": "0.0"

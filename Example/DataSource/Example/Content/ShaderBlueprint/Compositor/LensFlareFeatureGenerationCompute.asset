@@ -15,7 +15,7 @@
 		},
 		"ShaderBlueprintAssetCompiler":
 		{
-			"InputFile": "LensFlareFeatureGenerationFragment.shader_blueprint"
+			"InputFile": "LensFlareFeatureGenerationCompute.shader_blueprint"
 		}
 	}
 }

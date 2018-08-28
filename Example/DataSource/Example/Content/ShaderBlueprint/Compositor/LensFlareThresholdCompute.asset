@@ -15,7 +15,7 @@
 		},
 		"ShaderBlueprintAssetCompiler":
 		{
-			"InputFile": "LensFlareThresholdFragment.shader_blueprint"
+			"InputFile": "LensFlareThresholdCompute.shader_blueprint"
 		}
 	}
 }

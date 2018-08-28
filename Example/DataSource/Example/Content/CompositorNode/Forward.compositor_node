@@ -120,7 +120,7 @@
 				"TextureFormat": "R11G11B10F",
 				"Width": "256",
 				"Height": "256",
-				"Flags": "SHADER_RESOURCE | UNORDERED_ACCESS | RENDER_TARGET"
+				"Flags": "SHADER_RESOURCE | UNORDERED_ACCESS"
 			},
 			"Example/Texture/Dynamic/BloomDownscale2ColorRenderTarget":
 			{
@@ -155,7 +155,7 @@
 				"TextureFormat": "R11G11B10F",
 				"Width": "256",
 				"Height": "256",
-				"Flags": "SHADER_RESOURCE | UNORDERED_ACCESS | RENDER_TARGET"
+				"Flags": "SHADER_RESOURCE | UNORDERED_ACCESS"
 			},
 			"Example/Texture/Dynamic/LdrColorRenderTarget0":
 			{
@@ -241,14 +241,6 @@
 			"VolumetricLightFramebuffer":
 			{
 				"ColorTextures": [ "Example/Texture/Dynamic/VolumetricLightRenderTarget" ]
-			},
-			"BloomFramebuffer":
-			{
-				"ColorTextures": [ "Example/Texture/Dynamic/BloomColorRenderTarget" ]
-			},
-			"LensFlareFramebuffer":
-			{
-				"ColorTextures": [ "Example/Texture/Dynamic/LensFlareColorRenderTarget" ]
 			}
 		},
 		"Targets":
@@ -702,10 +694,7 @@
 						"ColorMap": "Example/Texture/Dynamic/BloomDownscale4ColorRenderTarget",
 						"OutputTexture2D": "Example/Texture/Dynamic/BloomDownscale2ColorRenderTarget"
 					}
-				}
-			},
-			"BloomFramebuffer":
-			{
+				},
 				"Compute":
 				{
 					"Name": "Lens flare threshold",
@@ -713,24 +702,20 @@
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/LensFlareThreshold.asset",
 					"SetMaterialProperties":
 					{
-						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget1"
+						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget1",
+						"OutputTexture2D": "Example/Texture/Dynamic/BloomColorRenderTarget"
 					}
-				}
-			},
-			"LensFlareFramebuffer":
-			{
+				},
 				"Compute":
 				{
 					"Name": "Lens flare feature generation",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/LensFlareFeatureGeneration.asset",
 					"SetMaterialProperties":
 					{
-						"ColorMap": "Example/Texture/Dynamic/BloomColorRenderTarget"
+						"ColorMap": "Example/Texture/Dynamic/BloomColorRenderTarget",
+						"OutputTexture2D": "Example/Texture/Dynamic/LensFlareColorRenderTarget"
 					}
-				}
-			},
-			"":
-			{
+				},
 				"Compute":
 				{
 					"Name": "Lens flare vertical blur",
