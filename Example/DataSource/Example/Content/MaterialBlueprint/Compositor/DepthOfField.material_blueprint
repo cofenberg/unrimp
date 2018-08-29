@@ -120,12 +120,6 @@
 							"ValueType": "FLOAT",
 							"Value": "@NearBlurDepth"
 						},
-						"InverseViewportSize":
-						{
-							"Usage": "PASS_REFERENCE",
-							"ValueType": "FLOAT_2",
-							"Value": "@INVERSE_VIEWPORT_SIZE"
-						},
 						"ProjectionParameters":
 						{
 							"Usage": "PASS_REFERENCE",

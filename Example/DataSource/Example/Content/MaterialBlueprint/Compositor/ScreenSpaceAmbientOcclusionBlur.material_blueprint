@@ -59,12 +59,6 @@
 							"Usage": "PASS_REFERENCE",
 							"ValueType": "INTEGER_3",
 							"Value": "@GLOBAL_COMPUTE_SIZE"
-						},
-						"InverseViewportSize":
-						{
-							"Usage": "PASS_REFERENCE",
-							"ValueType": "FLOAT_2",
-							"Value": "@INVERSE_VIEWPORT_SIZE"
 						}
 					}
 				}
