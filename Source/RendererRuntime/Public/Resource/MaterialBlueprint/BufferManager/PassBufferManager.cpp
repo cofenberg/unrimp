@@ -74,9 +74,13 @@ namespace RendererRuntime
 		}
 	}
 
-	void PassBufferManager::fillBuffer(const Renderer::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, const MaterialResource& materialResource)
+	void PassBufferManager::fillBuffer(const Renderer::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, const MaterialResource& materialResource)
 	{
 		// Even if there's no pass uniform buffer, there must still be a pass buffer manager filling "RendererRuntime::PassBufferManager::PassData" which is used to fill the instances texture buffer
+
+		// Sanity checks: The render target to render into must be valid for graphics pipeline and must be a null pointer for compute pipeline
+		assert((isValid(mMaterialBlueprintResource.getComputeShaderBlueprintResourceId()) || nullptr != renderTarget) && "Graphics pipeline used but render target is invalid");
+		assert((isInvalid(mMaterialBlueprintResource.getComputeShaderBlueprintResourceId()) || nullptr == renderTarget) && "Compute pipeline used but render target is valid");
 
 		// Tell the material blueprint resource listener that we're about to fill a pass uniform buffer
 		IMaterialBlueprintResourceListener& materialBlueprintResourceListener = mMaterialBlueprintResourceManager.getMaterialBlueprintResourceListener();

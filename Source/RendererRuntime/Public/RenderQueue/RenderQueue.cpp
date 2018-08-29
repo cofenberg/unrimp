@@ -362,7 +362,7 @@ namespace RendererRuntime
 								PassBufferManager* passBufferManager = materialBlueprintResource->getPassBufferManager();
 								if (nullptr != passBufferManager)
 								{
-									passBufferManager->fillBuffer(renderTarget, compositorContextData, *materialResource);
+									passBufferManager->fillBuffer(&renderTarget, compositorContextData, *materialResource);
 								}
 							}
 
@@ -512,7 +512,7 @@ namespace RendererRuntime
 											passBufferManager = materialBlueprintResource->getPassBufferManager();
 											if (nullptr != passBufferManager)
 											{
-												passBufferManager->fillBuffer(renderTarget, compositorContextData, *materialResource);
+												passBufferManager->fillBuffer(&renderTarget, compositorContextData, *materialResource);
 												enforcePassBufferManagerFillBuffer = false;
 											}
 										}
@@ -645,7 +645,7 @@ namespace RendererRuntime
 	}
 
 	// TODO(co) The "RendererRuntime::RenderQueue::fillComputeCommandBuffer"-method is heavily work in progress
-	void RenderQueue::fillComputeCommandBuffer(const Renderer::IRenderTarget& renderTarget, MaterialTechniqueId materialTechniqueId, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
+	void RenderQueue::fillComputeCommandBuffer(MaterialTechniqueId materialTechniqueId, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
 	{
 		// Sanity check
 		assert((getNumberOfDrawCalls() > 0) && "Don't call the fill command buffer method if there's no work to be done");
@@ -806,7 +806,7 @@ namespace RendererRuntime
 								PassBufferManager* passBufferManager = materialBlueprintResource->getPassBufferManager();
 								if (nullptr != passBufferManager)
 								{
-									passBufferManager->fillBuffer(renderTarget, compositorContextData, *materialResource);
+									passBufferManager->fillBuffer(nullptr, compositorContextData, *materialResource);
 								}
 							}
 
@@ -950,7 +950,7 @@ namespace RendererRuntime
 											passBufferManager = materialBlueprintResource->getPassBufferManager();
 											if (nullptr != passBufferManager)
 											{
-												passBufferManager->fillBuffer(renderTarget, compositorContextData, *materialResource);
+												passBufferManager->fillBuffer(nullptr, compositorContextData, *materialResource);
 												enforcePassBufferManagerFillBuffer = false;
 											}
 										}

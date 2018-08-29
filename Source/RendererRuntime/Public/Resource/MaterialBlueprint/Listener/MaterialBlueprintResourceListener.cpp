@@ -77,29 +77,29 @@ namespace
 			DEFINE_CONSTANT(VIEW_SPACE_TO_WORLD_SPACE_MATRIX)
 			DEFINE_CONSTANT(WORLD_SPACE_TO_VIEW_SPACE_QUATERNION)
 			DEFINE_CONSTANT(VIEW_SPACE_TO_WORLD_SPACE_QUATERNION)
-			DEFINE_CONSTANT(WORLD_SPACE_TO_CLIP_SPACE_MATRIX)
-			DEFINE_CONSTANT(WORLD_SPACE_TO_CLIP_SPACE_MATRIX_2)
-			DEFINE_CONSTANT(PREVIOUS_WORLD_SPACE_TO_CLIP_SPACE_MATRIX)
+			DEFINE_CONSTANT(WORLD_SPACE_TO_CLIP_SPACE_MATRIX)			///< Only valid for graphics pipeline
+			DEFINE_CONSTANT(WORLD_SPACE_TO_CLIP_SPACE_MATRIX_2)			///< Only valid for graphics pipeline
+			DEFINE_CONSTANT(PREVIOUS_WORLD_SPACE_TO_CLIP_SPACE_MATRIX)	///< Only valid for graphics pipeline
 			DEFINE_CONSTANT(PREVIOUS_WORLD_SPACE_TO_VIEW_SPACE_MATRIX)
-			DEFINE_CONSTANT(VIEW_SPACE_TO_CLIP_SPACE_MATRIX)
-			DEFINE_CONSTANT(VIEW_SPACE_TO_CLIP_SPACE_MATRIX2)
-			DEFINE_CONSTANT(VIEW_SPACE_TO_TEXTURE_SPACE_MATRIX)
-			DEFINE_CONSTANT(CLIP_SPACE_TO_VIEW_SPACE_MATRIX)
-			DEFINE_CONSTANT(CLIP_SPACE_TO_WORLD_SPACE_MATRIX)
+			DEFINE_CONSTANT(VIEW_SPACE_TO_CLIP_SPACE_MATRIX)			///< Only valid for graphics pipeline
+			DEFINE_CONSTANT(VIEW_SPACE_TO_CLIP_SPACE_MATRIX2)			///< Only valid for graphics pipeline
+			DEFINE_CONSTANT(VIEW_SPACE_TO_TEXTURE_SPACE_MATRIX)			///< Only valid for graphics pipeline
+			DEFINE_CONSTANT(CLIP_SPACE_TO_VIEW_SPACE_MATRIX)			///< Only valid for graphics pipeline
+			DEFINE_CONSTANT(CLIP_SPACE_TO_WORLD_SPACE_MATRIX)			///< Only valid for graphics pipeline
 			DEFINE_CONSTANT(CAMERA_WORLD_SPACE_POSITION)
-			DEFINE_CONSTANT(VIEW_SPACE_FRUSTUM_CORNERS)
+			DEFINE_CONSTANT(VIEW_SPACE_FRUSTUM_CORNERS)					///< Only valid for graphics pipeline
 			DEFINE_CONSTANT(VIEW_SPACE_SUNLIGHT_DIRECTION)
 
 			// Pass data not influenced by single pass stereo rendering via instancing as described in "High Performance Stereo Rendering For VR", Timothy Wilson, San Diego, Virtual Reality Meetup
-			DEFINE_CONSTANT(GLOBAL_COMPUTE_SIZE)
+			DEFINE_CONSTANT(GLOBAL_COMPUTE_SIZE)						///< Only valid for compute pipeline
 			DEFINE_CONSTANT(IMGUI_OBJECT_SPACE_TO_CLIP_SPACE_MATRIX)
 			DEFINE_CONSTANT(WORLD_SPACE_SUNLIGHT_DIRECTION)
 			DEFINE_CONSTANT(PROJECTION_PARAMETERS)
 			DEFINE_CONSTANT(PROJECTION_PARAMETERS_REVERSED_Z)
 			DEFINE_CONSTANT(NEAR_FAR_Z)
 			DEFINE_CONSTANT(SUNLIGHT_COLOR)
-			DEFINE_CONSTANT(VIEWPORT_SIZE)
-			DEFINE_CONSTANT(INVERSE_VIEWPORT_SIZE)
+			DEFINE_CONSTANT(VIEWPORT_SIZE)								///< Only valid for graphics pipeline
+			DEFINE_CONSTANT(INVERSE_VIEWPORT_SIZE)						///< Only valid for graphics pipeline
 			DEFINE_CONSTANT(LIGHT_CLUSTERS_SCALE)
 			DEFINE_CONSTANT(LIGHT_CLUSTERS_BIAS)
 			DEFINE_CONSTANT(FULL_COVERAGE_MASK)
@@ -345,15 +345,36 @@ namespace RendererRuntime
 		textureResourceManager.destroyTextureResource(mSsaoNoiseTexture4x4ResourceId);
 	}
 
-	void MaterialBlueprintResourceListener::beginFillPass(IRendererRuntime& rendererRuntime, const Renderer::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, PassBufferManager::PassData& passData)
+	void MaterialBlueprintResourceListener::beginFillPass(IRendererRuntime& rendererRuntime, const Renderer::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, PassBufferManager::PassData& passData)
 	{
+		// Sanity checks: The render target to render into must be valid for graphics pipeline and must be a null pointer for compute pipeline
+		assert(compositorContextData.getCurrentlyBoundMaterialBlueprintResource() != nullptr);
+		assert((isValid(compositorContextData.getCurrentlyBoundMaterialBlueprintResource()->getComputeShaderBlueprintResourceId()) || nullptr != renderTarget) && "Graphics pipeline used but render target is invalid");
+		assert((isInvalid(compositorContextData.getCurrentlyBoundMaterialBlueprintResource()->getComputeShaderBlueprintResourceId()) || nullptr == renderTarget) && "Compute pipeline used but render target is valid");
+
 		// Remember the pass data memory address of the current scope
 		mRendererRuntime = &rendererRuntime;
 		mPassData = &passData;
 		mCompositorContextData = &compositorContextData;
 
 		// Get the render target with and height
-		renderTarget.getWidthAndHeight(mRenderTargetWidth, mRenderTargetHeight);
+		if (nullptr != renderTarget)
+		{
+			// Graphics pipeline
+			#ifdef _DEBUG
+				mIsComputePipeline = false;
+			#endif
+			renderTarget->getWidthAndHeight(mRenderTargetWidth, mRenderTargetHeight);
+		}
+		else
+		{
+			// Compute pipeline: Just a fallback render target width and height to not having things horrible broken in case of misuse or an error
+			#ifdef _DEBUG
+				mIsComputePipeline = true;
+			#endif
+			mRenderTargetWidth = compositorContextData.getGlobalComputeSize()[0];
+			mRenderTargetHeight = compositorContextData.getGlobalComputeSize()[1];
+		}
 		const bool singlePassStereoInstancing = mCompositorContextData->getSinglePassStereoInstancing();
 		const uint32_t renderTargetWidth = singlePassStereoInstancing ? (mRenderTargetWidth / 2) : mRenderTargetWidth;
 
@@ -464,17 +485,29 @@ namespace RendererRuntime
 				memcpy(buffer, glm::value_ptr(glm::inverse(mPassData->worldSpaceToViewSpaceQuaternion[0])), numberOfBytes);
 				break;
 
+			// Only valid for graphics pipeline
 			case ::detail::WORLD_SPACE_TO_CLIP_SPACE_MATRIX:
+				#ifdef _DEBUG
+					assert(!mIsComputePipeline && "\"WORLD_SPACE_TO_CLIP_SPACE_MATRIX\" is only valid for graphics pipeline");
+				#endif
 				assert(sizeof(float) * 4 * 4 == numberOfBytes);
 				memcpy(buffer, glm::value_ptr(mPassData->worldSpaceToClipSpaceMatrixReversedZ[0]), numberOfBytes);
 				break;
 
+			// Only valid for graphics pipeline
 			case ::detail::WORLD_SPACE_TO_CLIP_SPACE_MATRIX_2:
+				#ifdef _DEBUG
+					assert(!mIsComputePipeline && "\"WORLD_SPACE_TO_CLIP_SPACE_MATRIX_2\" is only valid for graphics pipeline");
+				#endif
 				assert(sizeof(float) * 4 * 4 == numberOfBytes);
 				memcpy(buffer, glm::value_ptr(mPassData->worldSpaceToClipSpaceMatrixReversedZ[1]), numberOfBytes);
 				break;
 
+			// Only valid for graphics pipeline
 			case ::detail::PREVIOUS_WORLD_SPACE_TO_CLIP_SPACE_MATRIX:
+				#ifdef _DEBUG
+					assert(!mIsComputePipeline && "\"PREVIOUS_WORLD_SPACE_TO_CLIP_SPACE_MATRIX\" is only valid for graphics pipeline");
+				#endif
 				assert(sizeof(float) * 4 * 4 == numberOfBytes);
 				memcpy(buffer, glm::value_ptr(mPassData->previousWorldSpaceToClipSpaceMatrixReversedZ[0]), numberOfBytes);
 				break;
@@ -484,27 +517,47 @@ namespace RendererRuntime
 				memcpy(buffer, glm::value_ptr(mPassData->previousWorldSpaceToViewSpaceMatrix[0]), numberOfBytes);
 				break;
 
+			// Only valid for graphics pipeline
 			case ::detail::VIEW_SPACE_TO_CLIP_SPACE_MATRIX:
+				#ifdef _DEBUG
+					assert(!mIsComputePipeline && "\"VIEW_SPACE_TO_CLIP_SPACE_MATRIX\" is only valid for graphics pipeline");
+				#endif
 				assert(sizeof(float) * 4 * 4 == numberOfBytes);
 				memcpy(buffer, glm::value_ptr(mPassData->viewSpaceToClipSpaceMatrixReversedZ[0]), numberOfBytes);
 				break;
 
+			// Only valid for graphics pipeline
 			case ::detail::VIEW_SPACE_TO_CLIP_SPACE_MATRIX2:
+				#ifdef _DEBUG
+					assert(!mIsComputePipeline && "\"VIEW_SPACE_TO_CLIP_SPACE_MATRIX2\" is only valid for graphics pipeline");
+				#endif
 				assert(sizeof(float) * 4 * 4 == numberOfBytes);
 				memcpy(buffer, glm::value_ptr(mPassData->viewSpaceToClipSpaceMatrixReversedZ[1]), numberOfBytes);
 				break;
 
+			// Only valid for graphics pipeline
 			case ::detail::VIEW_SPACE_TO_TEXTURE_SPACE_MATRIX:
+				#ifdef _DEBUG
+					assert(!mIsComputePipeline && "\"VIEW_SPACE_TO_TEXTURE_SPACE_MATRIX\" is only valid for graphics pipeline");
+				#endif
 				assert(sizeof(float) * 4 * 4 == numberOfBytes);
 				memcpy(buffer, glm::value_ptr(Math::getTextureScaleBiasMatrix(mRendererRuntime->getRenderer()) * mPassData->viewSpaceToClipSpaceMatrixReversedZ[0]), numberOfBytes);
 				break;
 
+			// Only valid for graphics pipeline
 			case ::detail::CLIP_SPACE_TO_VIEW_SPACE_MATRIX:
+				#ifdef _DEBUG
+					assert(!mIsComputePipeline && "\"CLIP_SPACE_TO_VIEW_SPACE_MATRIX\" is only valid for graphics pipeline");
+				#endif
 				assert(sizeof(float) * 4 * 4 == numberOfBytes);
 				memcpy(buffer, glm::value_ptr(glm::inverse(mPassData->viewSpaceToClipSpaceMatrixReversedZ[0])), numberOfBytes);
 				break;
 
+			// Only valid for graphics pipeline
 			case ::detail::CLIP_SPACE_TO_WORLD_SPACE_MATRIX:
+				#ifdef _DEBUG
+					assert(!mIsComputePipeline && "\"CLIP_SPACE_TO_WORLD_SPACE_MATRIX\" is only valid for graphics pipeline");
+				#endif
 				assert(sizeof(float) * 4 * 4 == numberOfBytes);
 				memcpy(buffer, glm::value_ptr(glm::inverse(mPassData->worldSpaceToClipSpaceMatrixReversedZ[0])), numberOfBytes);
 				break;
@@ -516,8 +569,12 @@ namespace RendererRuntime
 				memcpy(buffer, glm::value_ptr(glm::inverse(mPassData->worldSpaceToViewSpaceMatrix[0]) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0)), numberOfBytes);
 				break;
 
+			// Only valid for graphics pipeline
 			case ::detail::VIEW_SPACE_FRUSTUM_CORNERS:
 			{
+				#ifdef _DEBUG
+					assert(!mIsComputePipeline && "\"VIEW_SPACE_FRUSTUM_CORNERS\" is only valid for graphics pipeline");
+				#endif
 				assert(sizeof(float) * 4 * 4 == numberOfBytes);
 
 				// Coordinate system related adjustments
@@ -582,8 +639,12 @@ namespace RendererRuntime
 				break;
 			}
 
+			// Only valid for compute pipeline
 			case ::detail::GLOBAL_COMPUTE_SIZE:
 			{
+				#ifdef _DEBUG
+					assert(mIsComputePipeline && "\"GLOBAL_COMPUTE_SIZE\" is only valid for compute pipeline");
+				#endif
 				assert(sizeof(int32_t) * 3 == numberOfBytes);
 				memcpy(buffer, mCompositorContextData->getGlobalComputeSize(), numberOfBytes);
 				break;
@@ -661,8 +722,12 @@ namespace RendererRuntime
 				break;
 			}
 
+			// Only valid for graphics pipeline
 			case ::detail::VIEWPORT_SIZE:
 			{
+				#ifdef _DEBUG
+					assert(!mIsComputePipeline && "\"VIEWPORT_SIZE\" is only valid for graphics pipeline");
+				#endif
 				assert(sizeof(float) * 2 == numberOfBytes);
 				float* floatBuffer = reinterpret_cast<float*>(buffer);
 
@@ -673,8 +738,12 @@ namespace RendererRuntime
 				break;
 			}
 
+			// Only valid for graphics pipeline
 			case ::detail::INVERSE_VIEWPORT_SIZE:
 			{
+				#ifdef _DEBUG
+					assert(!mIsComputePipeline && "\"INVERSE_VIEWPORT_SIZE\" is only valid for graphics pipeline");
+				#endif
 				assert(sizeof(float) * 2 == numberOfBytes);
 				float* floatBuffer = reinterpret_cast<float*>(buffer);
 

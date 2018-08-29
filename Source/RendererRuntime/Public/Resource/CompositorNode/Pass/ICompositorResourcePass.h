@@ -88,15 +88,15 @@ namespace RendererRuntime
 			return mCompositorTarget;
 		}
 
-		#ifdef RENDERER_RUNTIME_PROFILER
-			inline const char* getName() const
+		#if defined(_DEBUG) || defined(RENDERER_RUNTIME_PROFILER)
+			inline const char* getDebugName() const
 			{
-				return mName;
+				return mDebugName;
 			}
 
-			inline void setName(const char* name)
+			inline void setDebugName(const char* debugName)
 			{
-				strncpy(mName, name, MAXIMUM_PASS_NAME_LENGTH);
+				strncpy(mDebugName, debugName, MAXIMUM_PASS_NAME_LENGTH);
 			}
 		#endif
 
@@ -148,8 +148,8 @@ namespace RendererRuntime
 
 			// Read data
 			const PassData* pass = reinterpret_cast<const PassData*>(data);
-			#ifdef RENDERER_RUNTIME_PROFILER
-				strncpy(mName, pass->name, MAXIMUM_PASS_NAME_LENGTH);
+			#if defined(_DEBUG) || defined(RENDERER_RUNTIME_PROFILER)
+				strncpy(mDebugName, pass->name, MAXIMUM_PASS_NAME_LENGTH);
 			#endif
 			mMinimumDepth		= pass->minimumDepth;
 			mMaximumDepth		= pass->maximumDepth;
@@ -186,8 +186,8 @@ namespace RendererRuntime
 	protected:
 		inline explicit ICompositorResourcePass(const CompositorTarget& compositorTarget) :
 			mCompositorTarget(compositorTarget),
-			#ifdef RENDERER_RUNTIME_PROFILER
-				mName{ "Compositor pass" },
+			#if defined(_DEBUG) || defined(RENDERER_RUNTIME_PROFILER)
+				mDebugName{ "Compositor pass" },
 			#endif
 			mMinimumDepth(0.0f),
 			mMaximumDepth(1.0f),
@@ -211,8 +211,8 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	private:
 		const CompositorTarget& mCompositorTarget;
-		#ifdef RENDERER_RUNTIME_PROFILER
-			char				mName[MAXIMUM_PASS_NAME_LENGTH];	///< Human readable ASCII pass name for debugging and profiling, contains terminating zero
+		#if defined(_DEBUG) || defined(RENDERER_RUNTIME_PROFILER)
+			char				mDebugName[MAXIMUM_PASS_NAME_LENGTH];	///< Human readable ASCII pass name for debugging and profiling, contains terminating zero
 		#endif
 		float					mMinimumDepth;
 		float					mMaximumDepth;

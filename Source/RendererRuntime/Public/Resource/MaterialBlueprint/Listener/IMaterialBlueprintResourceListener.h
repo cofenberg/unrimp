@@ -96,7 +96,7 @@ namespace RendererRuntime
 		virtual void onShutdown(const IRendererRuntime& rendererRuntime) = 0;	// Is no longer the currently used material blueprint resource listener
 		virtual void beginFillUnknown() = 0;
 		virtual bool fillUnknownValue(uint32_t referenceValue, uint8_t* buffer, uint32_t numberOfBytes) = 0;
-		virtual void beginFillPass(IRendererRuntime& rendererRuntime, const Renderer::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, PassBufferManager::PassData& passData) = 0;
+		virtual void beginFillPass(IRendererRuntime& rendererRuntime, const Renderer::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, PassBufferManager::PassData& passData) = 0;	// The render target to render into must be valid for graphics pipeline and must be a null pointer for compute pipeline
 		virtual bool fillPassValue(uint32_t referenceValue, uint8_t* buffer, uint32_t numberOfBytes) = 0;
 		virtual void beginFillMaterial() = 0;
 		virtual bool fillMaterialValue(uint32_t referenceValue, uint8_t* buffer, uint32_t numberOfBytes) = 0;

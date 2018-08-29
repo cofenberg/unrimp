@@ -268,7 +268,7 @@ namespace RendererRuntime
 			if (nullptr != ::detail::g_MeshPtr)
 			{
 				// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
-				RENDERER_SCOPED_PROFILER_EVENT_DYNAMIC(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), commandBuffer, getCompositorResourcePass().getName())
+				RENDERER_SCOPED_PROFILER_EVENT_DYNAMIC(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), commandBuffer, getCompositorResourcePass().getDebugName())
 
 				// Fill command buffer
 				compositorContextData.resetCurrentlyBoundMaterialBlueprintResource();

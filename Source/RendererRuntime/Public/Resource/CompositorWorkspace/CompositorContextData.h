@@ -124,6 +124,11 @@ namespace RendererRuntime
 			mCurrentlyBoundMaterialBlueprintResource = nullptr;
 		}
 
+		inline MaterialBlueprintResource* getCurrentlyBoundMaterialBlueprintResource() const
+		{
+			return mCurrentlyBoundMaterialBlueprintResource;
+		}
+
 		inline uint32_t* getGlobalComputeSize() const
 		{
 			return mGlobalComputeSize;

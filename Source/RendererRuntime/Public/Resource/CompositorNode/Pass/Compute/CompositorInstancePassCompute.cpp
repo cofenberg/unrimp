@@ -100,7 +100,7 @@ namespace RendererRuntime
 			assert(!mRenderableManager.getRenderables().empty());
 
 			// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
-			RENDERER_SCOPED_PROFILER_EVENT_DYNAMIC(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), commandBuffer, getCompositorResourcePass().getName())
+			RENDERER_SCOPED_PROFILER_EVENT_DYNAMIC(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), commandBuffer, getCompositorResourcePass().getDebugName())
 
 			// Fill command buffer depending on graphics or compute material blueprint
 			mRenderQueue.addRenderablesFromRenderableManager(mRenderableManager);
@@ -108,7 +108,7 @@ namespace RendererRuntime
 			{
 				if (mComputeMaterialBlueprint)
 				{
-					mRenderQueue.fillComputeCommandBuffer(renderTarget, static_cast<const CompositorResourcePassCompute&>(getCompositorResourcePass()).getMaterialTechniqueId(), compositorContextData, commandBuffer);
+					mRenderQueue.fillComputeCommandBuffer(static_cast<const CompositorResourcePassCompute&>(getCompositorResourcePass()).getMaterialTechniqueId(), compositorContextData, commandBuffer);
 				}
 				else
 				{

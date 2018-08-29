@@ -129,13 +129,13 @@ namespace RendererRuntime
 		*    Fill the pass buffer
 		*
 		*  @param[in] renderTarget
-		*    Render target to render into
+		*    Render target to render into, must be valid for graphics pipeline and must be a null pointer for compute pipeline
 		*  @param[in] compositorContextData
 		*    Compositor context data
 		*  @param[in] materialResource
 		*    Currently used material resource
 		*/
-		void fillBuffer(const Renderer::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, const MaterialResource& materialResource);
+		void fillBuffer(const Renderer::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, const MaterialResource& materialResource);
 
 		/**
 		*  @brief

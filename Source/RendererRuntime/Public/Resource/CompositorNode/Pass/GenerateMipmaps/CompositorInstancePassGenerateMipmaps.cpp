@@ -86,7 +86,7 @@ namespace RendererRuntime
 					if (!mFramebuffersPtrs.empty())
 					{
 						// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
-						RENDERER_SCOPED_PROFILER_EVENT_DYNAMIC(rendererRuntime.getContext(), mCommandBuffer, compositorResourcePassGenerateMipmaps.getName())
+						RENDERER_SCOPED_PROFILER_EVENT_DYNAMIC(rendererRuntime.getContext(), mCommandBuffer, compositorResourcePassGenerateMipmaps.getDebugName())
 
 						// Basing on "Hierarchical-Z map based occlusion culling" - "Hi-Z map construction" - http://rastergrid.com/blog/2010/10/hierarchical-z-map-based-occlusion-culling/
 						uint32_t currentWidth = renderTargetWidth;
@@ -148,6 +148,9 @@ namespace RendererRuntime
 		// Create compositor pass compute
 		MaterialProperties materialProperties;
 		mCompositorResourcePassCompute = new CompositorResourcePassCompute(compositorResourcePassGenerateMipmaps.getCompositorTarget(), compositorResourcePassGenerateMipmaps.getMaterialBlueprintAssetId(), materialProperties);
+		#if defined(_DEBUG) || defined(RENDERER_RUNTIME_PROFILER)
+			mCompositorResourcePassCompute->setDebugName("Generate mipmap");
+		#endif
 		mCompositorInstancePassCompute = new CompositorInstancePassCompute(*mCompositorResourcePassCompute, getCompositorNodeInstance());
 		// TODO(co) Make this more generic
 		getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getMaterialResourceManager().getById(mCompositorInstancePassCompute->getMaterialResourceId()).setPropertyById(STRING_ID("DepthMap"), MaterialPropertyValue::fromTextureAssetId(compositorResourcePassGenerateMipmaps.getDepthTextureAssetId()));

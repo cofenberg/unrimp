@@ -48,7 +48,7 @@ namespace RendererRuntime
 
 		// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
 		const IRendererRuntime& rendererRuntime = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime();
-		RENDERER_SCOPED_PROFILER_EVENT_DYNAMIC(rendererRuntime.getContext(), commandBuffer, compositorResourcePassCopy.getName())
+		RENDERER_SCOPED_PROFILER_EVENT_DYNAMIC(rendererRuntime.getContext(), commandBuffer, compositorResourcePassCopy.getDebugName())
 
 		// Get destination and source texture resources
 		// TODO(co) "RendererRuntime::TextureResourceManager::getTextureResourceByAssetId()" is considered to be inefficient, don't use it in here

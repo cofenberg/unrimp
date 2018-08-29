@@ -121,6 +121,9 @@ namespace RendererRuntime
 			mPreviousJitter(0.0f, 0.0f),
 			mPreviousNumberOfRenderedFrames(getInvalid<uint64_t>()),
 			mHosekWilkieSky(nullptr),
+			#ifdef _DEBUG
+				mIsComputePipeline(false),
+			#endif
 			mObjectSpaceToWorldSpaceTransform(nullptr),
 			mMaterialTechnique(nullptr)
 		{
@@ -177,7 +180,7 @@ namespace RendererRuntime
 			return false;
 		}
 
-		RENDERERRUNTIME_API_EXPORT virtual void beginFillPass(IRendererRuntime& rendererRuntime, const Renderer::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, PassBufferManager::PassData& passData) override;
+		RENDERERRUNTIME_API_EXPORT virtual void beginFillPass(IRendererRuntime& rendererRuntime, const Renderer::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, PassBufferManager::PassData& passData) override;
 		RENDERERRUNTIME_API_EXPORT virtual bool fillPassValue(uint32_t referenceValue, uint8_t* buffer, uint32_t numberOfBytes) override;
 
 		inline virtual void beginFillMaterial() override
@@ -234,6 +237,9 @@ namespace RendererRuntime
 		glm::vec2					 mPreviousJitter;
 		uint64_t					 mPreviousNumberOfRenderedFrames;
 		HosekWilkieSky*				 mHosekWilkieSky;
+		#ifdef _DEBUG
+			bool					 mIsComputePipeline;
+		#endif
 
 		// Instance
 		const Transform*   mObjectSpaceToWorldSpaceTransform;
