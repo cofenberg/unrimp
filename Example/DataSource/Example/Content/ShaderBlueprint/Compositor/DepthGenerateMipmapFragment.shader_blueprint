@@ -46,9 +46,6 @@ OUTPUT_END
 // Textures
 TEXTURE_2D(0, 0, DepthMap, 0)
 
-// Samplers
-SAMPLER_STATE(1, 0, SamplerPoint, 0)	// TODO(co) Remove this
-
 
 //[-------------------------------------------------------]
 //[ Main                                                  ]

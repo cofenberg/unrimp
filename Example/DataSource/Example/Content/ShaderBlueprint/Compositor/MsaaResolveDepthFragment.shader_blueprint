@@ -37,7 +37,6 @@
 //[-------------------------------------------------------]
 // Attribute input / output
 INPUT_BEGIN
-	INPUT_TEXTURE_COORDINATE(1, float2, TexCoordVS, 0)	// Texture coordinate
 	DECLARE_FRAGMENT_POSITION
 INPUT_END
 OUTPUT_BEGIN
@@ -51,9 +50,6 @@ OUTPUT_END
 @property(!NumberOfMultisamples)
 	TEXTURE_2D(0, 0, DepthMap, 0)
 @end
-
-// Samplers
-SAMPLER_STATE(1, 0, SamplerPoint, 0)
 
 
 //[-------------------------------------------------------]

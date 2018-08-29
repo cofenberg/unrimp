@@ -14,7 +14,7 @@
 		},
 		"ShaderBlueprintAssetCompiler":
 		{
-			"InputFile": "DepthOfFieldFragment.shader_blueprint"
+			"InputFile": "DepthOfFieldCompute.shader_blueprint"
 		}
 	}
 }

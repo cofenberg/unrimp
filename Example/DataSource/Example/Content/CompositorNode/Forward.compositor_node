@@ -55,7 +55,8 @@
 			},
 			"Example/Texture/Dynamic/HdrColorRenderTarget0":
 			{
-				"TextureFormat": "R11G11B10F"
+				"TextureFormat": "R11G11B10F",
+				"Flags": "SHADER_RESOURCE | UNORDERED_ACCESS | RENDER_TARGET | ALLOW_RESOLUTION_SCALE"
 			},
 			"Example/Texture/Dynamic/HdrColorRenderTarget1":
 			{
@@ -212,10 +213,6 @@
 				"ColorTextures": [ "Example/Texture/Dynamic/HdrColorRenderTarget0" ],
 				"DepthStencilTexture": "Example/Texture/Dynamic/DepthStencilRenderTarget"
 			},
-			"HdrFramebuffer0":
-			{
-				"ColorTextures": [ "Example/Texture/Dynamic/HdrColorRenderTarget0" ]
-			},
 			"HdrFramebuffer1":
 			{
 				"ColorTextures": [ "Example/Texture/Dynamic/HdrColorRenderTarget1" ]
@@ -360,7 +357,7 @@
 				"GenerateMipmaps":
 				{
 					"Name": "Generate HZB mipmap chain",
-					"Description": "Generate the mipmap chain of the hierarchical depth buffer",
+					"Description": "Generate the mipmap chain of the hierarchical depth buffer. Is using a graphics material blueprint instead of compute material blueprint since we're dealing with a depth buffer format which doesn't work that well with unordered access.",
 					"DepthTexture": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/DepthGenerateMipmap.asset"
 				}
@@ -571,10 +568,7 @@
 						"ColorMap": "Example/Texture/Dynamic/GaussianBlurRenderTarget1",
 						"OutputTexture2D": "Example/Texture/Dynamic/GaussianBlurDownscale2ColorRenderTarget"
 					}
-				}
-			},
-			"HdrFramebuffer0":
-			{
+				},
 				"Compute":
 				{
 					"Name": "Depth of field",
@@ -583,12 +577,10 @@
 					{
 						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget1",
 						"DepthMap": "Example/Texture/Dynamic/DepthStencilRenderTarget",
-						"BlurMap": "Example/Texture/Dynamic/GaussianBlurDownscale2ColorRenderTarget"
+						"BlurMap": "Example/Texture/Dynamic/GaussianBlurDownscale2ColorRenderTarget",
+						"OutputTexture2D": "Example/Texture/Dynamic/HdrColorRenderTarget0"
 					}
-				}
-			},
-			"":
-			{
+				},
 				"Compute":
 				{
 					"Name": "Motion blur",
@@ -759,6 +751,7 @@
 				"Compute":
 				{
 					"Name": "Final",
+					"Description": "Is using a graphics material blueprint instead of compute material blueprint in order to support rendering the final output directly into an operation system window",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/Final.asset",
 					"SetMaterialProperties":
 					{

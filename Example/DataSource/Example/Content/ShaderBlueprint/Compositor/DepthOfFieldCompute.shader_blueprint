@@ -30,18 +30,16 @@
 //[-------------------------------------------------------]
 // Attribute input / output
 INPUT_BEGIN
-	INPUT_TEXTURE_COORDINATE(1, float2, TexCoordVS, 0)	// Texture coordinate
+	DECLARE_GLOBAL_INVOCATION_ID
 INPUT_END
-OUTPUT_BEGIN
-	OUTPUT_COLOR(0)
-OUTPUT_END
 
 // Uniform buffers
 struct PassDataStruct
 {
+	uint3  GlobalComputeSize;
+	float  NearBlurDepth;
 	float2 InverseViewportSize;
 	float2 ProjectionParameters;
-	float  NearBlurDepth;
 	float  FocalPlaneDepth;
 	float  FarBlurDepth;
 	float  BlurrinessCutoff;	// Blurriness cutoff constant for objects behind the focal plane
@@ -54,6 +52,7 @@ UNIFORM_BUFFER_END
 TEXTURE_2D(1, 0, ColorMap, 0)
 TEXTURE_2D(1, 1, DepthMap, 1)
 TEXTURE_2D(1, 2, BlurMap, 2)	// Blurred low resolution version of the color map
+RW_TEXTURE_2D(1, 3, OutputTexture2D, 3, r11f_g11f_b10f, writeonly)
 
 // Samplers
 SAMPLER_STATE(2, 0, SamplerPointClamp, 0)
@@ -150,9 +149,13 @@ float4 CalculateSum(float2 textureCoordinate)
 //[-------------------------------------------------------]
 //[ Main                                                  ]
 //[-------------------------------------------------------]
-MAIN_BEGIN
-	float4 sum = CalculateSum(MAIN_INPUT(TexCoordVS));
+MAIN_BEGIN_COMPUTE(32, 32, 1)
+	// Compute dispatch is using groups of a multiple of the local size, ensure we don't access ouf of global compute size which musn't be a multiple of the local size and hence might be smaller
+	if (GLOBAL_INVOCATION_ID.x < PassData.GlobalComputeSize.x && GLOBAL_INVOCATION_ID.y < PassData.GlobalComputeSize.y)
+	{
+		float4 sum = CalculateSum(CAST_TO(GLOBAL_INVOCATION_ID.xy, float2) / CAST_TO(PassData.GlobalComputeSize.xy, float2));
 
-	// Done
-	MAIN_OUTPUT_COLOR(0) = float4(sum.rgb / sum.a, 1.0f);
-MAIN_END
+		// Done, ensure we're in a 0..1 range
+		IMAGE_STORE(OutputTexture2D, CAST_TO(GLOBAL_INVOCATION_ID.xy, int2), float4(sum.rgb / sum.a, 1.0f));
+	}
+MAIN_END_NO_OUTPUT

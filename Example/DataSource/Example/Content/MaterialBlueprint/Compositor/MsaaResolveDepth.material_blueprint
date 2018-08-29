@@ -31,7 +31,7 @@
 			"VertexAttributes": "$ProjectName/VertexAttributes/Default/Null.asset",
 			"ShaderBlueprints":
 			{
-				"VertexShaderBlueprint": "$ProjectName/ShaderBlueprint/Compositor/PositionTextureCoordinateVertex.asset",
+				"VertexShaderBlueprint": "$ProjectName/ShaderBlueprint/Compositor/PositionVertex.asset",
 				"FragmentShaderBlueprint": "$ProjectName/ShaderBlueprint/Compositor/MsaaResolveDepthFragment.asset"
 			},
 			"RasterizerState":
@@ -57,21 +57,7 @@
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@DepthMap",
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
-					"MipmapsUsed": "FALSE",
-					"SamplerStateBaseShaderRegisterName": "SamplerPoint"
-				}
-			},
-			"1":
-			{
-				"0":
-				{
-					"ResourceType": "SAMPLER_STATE",
-					"BaseShaderRegisterName": "SamplerPoint",
-					"BaseShaderRegister": "0",
-					"ShaderVisibility": "FRAGMENT",
-					"Filter": "MIN_MAG_MIP_POINT",
-					"MaxAnisotropy": "1",
-					"MaxLOD": "0.0"
+					"MipmapsUsed": "FALSE"
 				}
 			}
 		}
