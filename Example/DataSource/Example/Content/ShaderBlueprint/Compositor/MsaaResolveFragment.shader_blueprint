@@ -43,7 +43,6 @@
 //[-------------------------------------------------------]
 // Attribute input / output
 INPUT_BEGIN
-	INPUT_TEXTURE_COORDINATE(1, float2, TexCoordVS, 0)	// Texture coordinate
 	DECLARE_FRAGMENT_POSITION
 INPUT_END
 OUTPUT_BEGIN
@@ -73,9 +72,6 @@ UNIFORM_BUFFER_END
 	TEXTURE_2D(1, 2, VelocityMap, 2)
 @end
 TEXTURE_2D(1, 3, PreviousColorMap, 3)
-
-// Samplers
-SAMPLER_STATE(2, 0, SamplerPoint, 0)
 
 
 //[-------------------------------------------------------]

@@ -52,7 +52,7 @@
 			"VertexAttributes": "$ProjectName/VertexAttributes/Default/Null.asset",
 			"ShaderBlueprints":
 			{
-				"VertexShaderBlueprint": "$ProjectName/ShaderBlueprint/Compositor/PositionTextureCoordinateVertex.asset",
+				"VertexShaderBlueprint": "$ProjectName/ShaderBlueprint/Compositor/PositionVertex.asset",
 				"FragmentShaderBlueprint": "$ProjectName/ShaderBlueprint/Compositor/MsaaResolveFragment.asset"
 			},
 			"RasterizerState":
@@ -105,8 +105,7 @@
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@ColorMap",
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/WhiteMap2D",
-					"MipmapsUsed": "FALSE",
-					"SamplerStateBaseShaderRegisterName": "SamplerPoint"
+					"MipmapsUsed": "FALSE"
 				},
 				"1":
 				{
@@ -118,8 +117,7 @@
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@DepthMap",
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
-					"MipmapsUsed": "FALSE",
-					"SamplerStateBaseShaderRegisterName": "SamplerPoint"
+					"MipmapsUsed": "FALSE"
 				},
 				"2":
 				{
@@ -131,8 +129,7 @@
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@VelocityMap",
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
-					"MipmapsUsed": "FALSE",
-					"SamplerStateBaseShaderRegisterName": "SamplerPoint"
+					"MipmapsUsed": "FALSE"
 				},
 				"3":
 				{
@@ -144,21 +141,7 @@
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@PreviousColorMap",
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/WhiteMap2D",
-					"MipmapsUsed": "FALSE",
-					"SamplerStateBaseShaderRegisterName": "SamplerPoint"
-				}
-			},
-			"2":
-			{
-				"0":
-				{
-					"ResourceType": "SAMPLER_STATE",
-					"BaseShaderRegisterName": "SamplerPoint",
-					"BaseShaderRegister": "0",
-					"ShaderVisibility": "FRAGMENT",
-					"Filter": "MIN_MAG_MIP_POINT",
-					"MaxAnisotropy": "1",
-					"MaxLOD": "0.0"
+					"MipmapsUsed": "FALSE"
 				}
 			}
 		}

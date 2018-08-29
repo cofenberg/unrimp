@@ -329,6 +329,7 @@
 				"Compute":
 				{
 					"Name": "MSAA resolve",
+					"Description": "The MSAA resolve is using a graphics material blueprint instead of compute material blueprint since we're dealing with a depth buffer format which doesn't work that well with unordered access",
 					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Compositor/MsaaResolve.asset",
 					"SetMaterialProperties":
 					{
