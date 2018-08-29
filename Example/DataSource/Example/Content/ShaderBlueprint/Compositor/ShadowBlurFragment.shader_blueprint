@@ -69,8 +69,8 @@ float4 BlurSample(float2 screenPosition, float offset, float mapSize)
 	@property(!VerticalBlur)
 		float2 samplePosition = screenPosition;
 		samplePosition.x = clamp(screenPosition.x + offset, 0.0f, mapSize);
-		const float INTERMEDIATE_CASCADE_INDEX = 3.0f;
-		return TEXTURE_FETCH_ARRAY(ColorMap, int4(samplePosition, 3, 0)); 
+		const int INTERMEDIATE_CASCADE_INDEX = 3;
+		return TEXTURE_FETCH_ARRAY(ColorMap, int4(samplePosition, INTERMEDIATE_CASCADE_INDEX, 0)); 
 	@end
 }
 
