@@ -22,6 +22,7 @@
 //[ Includes                                              ]
 //[-------------------------------------------------------]
 #include "RendererRuntime/Public/Resource/CompositorNode/CompositorNodeInstance.h"
+#include "RendererRuntime/Public/Resource/CompositorNode/CompositorTarget.h"
 #include "RendererRuntime/Public/Resource/CompositorNode/Pass/ICompositorInstancePass.h"
 #include "RendererRuntime/Public/Resource/CompositorNode/Pass/ICompositorResourcePass.h"
 
@@ -58,7 +59,7 @@ namespace RendererRuntime
 
 	Renderer::IRenderTarget& CompositorNodeInstance::fillCommandBuffer(Renderer::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer) const
 	{
-		Renderer::IRenderTarget* currentRenderTarget = &renderTarget;
+		Renderer::IRenderTarget* currentRenderTarget = nullptr;
 		for (ICompositorInstancePass* compositorInstancePass : mCompositorInstancePasses)
 		{
 			// Check whether or not to execute the compositor pass instance
@@ -67,19 +68,18 @@ namespace RendererRuntime
 				(isInvalid(compositorResourcePass.getNumberOfExecutions()) || compositorInstancePass->mNumberOfExecutionRequests < compositorResourcePass.getNumberOfExecutions()))
 			{
 				{ // Set the current graphics render target
-					Renderer::IRenderTarget* newRenderTarget = compositorInstancePass->getRenderTarget();
-					if (nullptr == newRenderTarget)
-					{
-						// TODO(co) This in here is just a temporary solution
-						newRenderTarget = &renderTarget;
-					}
+					// TODO(co) For now: In case if it's a compositor channel ID (input/output node) use the given render target
+					Renderer::IRenderTarget* newRenderTarget = isValid(compositorResourcePass.getCompositorTarget().getCompositorChannelId()) ? &renderTarget : compositorInstancePass->getRenderTarget();
 					if (newRenderTarget != currentRenderTarget)
 					{
 						currentRenderTarget = newRenderTarget;
 						Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, currentRenderTarget);
 					}
 
-					{ // Set the graphics viewport and scissor rectangle
+					// Set the graphics viewport and scissor rectangle
+					// -> Can't be moved into the render target change branch above since a compositor resource pass might e.g. change the minimum depth
+					if (nullptr != currentRenderTarget)
+					{
 						// Get the window size
 						uint32_t width  = 1;
 						uint32_t height = 1;
@@ -91,7 +91,7 @@ namespace RendererRuntime
 				}
 
 				// Let the compositor instance pass fill the command buffer
-				compositorInstancePass->onFillCommandBuffer(*currentRenderTarget, compositorContextData, commandBuffer);
+				compositorInstancePass->onFillCommandBuffer(currentRenderTarget, compositorContextData, commandBuffer);
 			}
 
 			// Update the number of compositor instance pass execution requests and don't forget to avoid integer range overflow
@@ -101,8 +101,10 @@ namespace RendererRuntime
 			}
 		}
 
-		// Done
+		// Sanity check: At least for now a compositor node must end with a valid current render target
 		assert(nullptr != currentRenderTarget);
+
+		// Done
 		return *currentRenderTarget;
 	}
 

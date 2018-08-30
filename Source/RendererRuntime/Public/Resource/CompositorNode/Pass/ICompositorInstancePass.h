@@ -115,13 +115,13 @@ namespace RendererRuntime
 		*    Fill the compositor pass into the given command buffer
 		*
 		*  @param[in] renderTarget
-		*    Render target to render into
+		*    Render target to render into, can be a null pointer (e.g. for compute shader or resource copy compositor passes)
 		*  @param[in] compositorContextData
 		*    Compositor context data
 		*  @param[out] commandBuffer
 		*    Command buffer to fill
 		*/
-		virtual void onFillCommandBuffer(const Renderer::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer) = 0;
+		virtual void onFillCommandBuffer(const Renderer::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer) = 0;
 
 		/**
 		*  @brief

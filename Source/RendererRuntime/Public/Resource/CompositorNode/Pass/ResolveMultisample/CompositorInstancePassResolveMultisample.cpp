@@ -41,8 +41,11 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::ICompositorInstancePass methods ]
 	//[-------------------------------------------------------]
-	void CompositorInstancePassResolveMultisample::onFillCommandBuffer(const Renderer::IRenderTarget& renderTarget, const CompositorContextData&, Renderer::CommandBuffer& commandBuffer)
+	void CompositorInstancePassResolveMultisample::onFillCommandBuffer(const Renderer::IRenderTarget* renderTarget, const CompositorContextData&, Renderer::CommandBuffer& commandBuffer)
 	{
+		// Sanity check
+		assert((nullptr != renderTarget) && "The resolve multisample compositor instance pass needs a valid render target");
+
 		// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
 		const IRendererRuntime& rendererRuntime = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime();
 		RENDERER_SCOPED_PROFILER_EVENT_DYNAMIC(rendererRuntime.getContext(), commandBuffer, getCompositorResourcePass().getDebugName())
@@ -52,7 +55,7 @@ namespace RendererRuntime
 		if (nullptr != framebuffer)
 		{
 			// TODO(co) Get rid of the evil const-cast
-			Renderer::Command::ResolveMultisampleFramebuffer::create(commandBuffer, const_cast<Renderer::IRenderTarget&>(renderTarget), *framebuffer);
+			Renderer::Command::ResolveMultisampleFramebuffer::create(commandBuffer, const_cast<Renderer::IRenderTarget&>(*renderTarget), *framebuffer);
 		}
 		else
 		{

@@ -92,7 +92,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public virtual RendererRuntime::ICompositorInstancePass methods ]
 	//[-------------------------------------------------------]
-	void CompositorInstancePassCompute::onFillCommandBuffer(const Renderer::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
+	void CompositorInstancePassCompute::onFillCommandBuffer(const Renderer::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
 	{
 		if (isValid(mMaterialResourceId))
 		{
@@ -108,11 +108,19 @@ namespace RendererRuntime
 			{
 				if (mComputeMaterialBlueprint)
 				{
+					// Sanity check
+					assert((nullptr == renderTarget) && "The compute compositor instance pass needs an invalid render target in case a compute material blueprint is used");
+
+					// Fill command buffer using a compute material blueprint
 					mRenderQueue.fillComputeCommandBuffer(static_cast<const CompositorResourcePassCompute&>(getCompositorResourcePass()).getMaterialTechniqueId(), compositorContextData, commandBuffer);
 				}
 				else
 				{
-					mRenderQueue.fillGraphicsCommandBuffer(renderTarget, static_cast<const CompositorResourcePassCompute&>(getCompositorResourcePass()).getMaterialTechniqueId(), compositorContextData, commandBuffer);
+					// Sanity check
+					assert((nullptr != renderTarget) && "The compute compositor instance pass needs a valid render target in case a graphics material blueprint is used");
+
+					// Fill command buffer using a graphics material blueprint
+					mRenderQueue.fillGraphicsCommandBuffer(*renderTarget, static_cast<const CompositorResourcePassCompute&>(getCompositorResourcePass()).getMaterialTechniqueId(), compositorContextData, commandBuffer);
 				}
 			}
 		}

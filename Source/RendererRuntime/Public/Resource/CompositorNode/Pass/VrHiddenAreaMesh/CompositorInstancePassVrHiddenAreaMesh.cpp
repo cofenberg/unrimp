@@ -262,8 +262,11 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::ICompositorInstancePass methods ]
 	//[-------------------------------------------------------]
-	void CompositorInstancePassVrHiddenAreaMesh::onFillCommandBuffer(const Renderer::IRenderTarget&, MAYBE_UNUSED const CompositorContextData& compositorContextData, MAYBE_UNUSED Renderer::CommandBuffer& commandBuffer)
+	void CompositorInstancePassVrHiddenAreaMesh::onFillCommandBuffer(MAYBE_UNUSED const Renderer::IRenderTarget* renderTarget, MAYBE_UNUSED const CompositorContextData& compositorContextData, MAYBE_UNUSED Renderer::CommandBuffer& commandBuffer)
 	{
+		// Sanity check
+		assert((nullptr != renderTarget) && "The VR hidden area mesh compositor instance pass needs a valid render target");
+
 		#ifdef RENDERER_RUNTIME_OPENVR
 			if (nullptr != ::detail::g_MeshPtr)
 			{

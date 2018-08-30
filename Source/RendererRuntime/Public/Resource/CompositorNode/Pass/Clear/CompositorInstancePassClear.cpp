@@ -45,11 +45,13 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::ICompositorInstancePass methods ]
 	//[-------------------------------------------------------]
-	void CompositorInstancePassClear::onFillCommandBuffer(const Renderer::IRenderTarget&, const CompositorContextData&, Renderer::CommandBuffer& commandBuffer)
+	void CompositorInstancePassClear::onFillCommandBuffer(MAYBE_UNUSED const Renderer::IRenderTarget* renderTarget, const CompositorContextData&, Renderer::CommandBuffer& commandBuffer)
 	{
-		const CompositorResourcePassClear& compositorResourcePassClear = static_cast<const CompositorResourcePassClear&>(getCompositorResourcePass());
+		// Sanity check
+		assert((nullptr != renderTarget) && "The clear compositor instance pass needs a valid render target");
 
 		// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
+		const CompositorResourcePassClear& compositorResourcePassClear = static_cast<const CompositorResourcePassClear&>(getCompositorResourcePass());
 		RENDERER_SCOPED_PROFILER_EVENT_DYNAMIC(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), commandBuffer, compositorResourcePassClear.getDebugName())
 
 		// Push the clear graphics command

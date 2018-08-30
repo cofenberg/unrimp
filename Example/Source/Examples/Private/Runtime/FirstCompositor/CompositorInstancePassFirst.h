@@ -53,7 +53,7 @@ class CompositorInstancePassFirst final : public RendererRuntime::ICompositorIns
 //[ Protected virtual RendererRuntime::ICompositorInstancePass methods ]
 //[-------------------------------------------------------]
 protected:
-	virtual void onFillCommandBuffer(const Renderer::IRenderTarget& renderTarget, const RendererRuntime::CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer) override;
+	virtual void onFillCommandBuffer(const Renderer::IRenderTarget* renderTarget, const RendererRuntime::CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer) override;
 
 
 //[-------------------------------------------------------]

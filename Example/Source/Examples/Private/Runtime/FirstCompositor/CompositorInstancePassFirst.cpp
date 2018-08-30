@@ -36,8 +36,11 @@
 //[-------------------------------------------------------]
 //[ Protected virtual RendererRuntime::ICompositorInstancePass methods ]
 //[-------------------------------------------------------]
-void CompositorInstancePassFirst::onFillCommandBuffer(const Renderer::IRenderTarget&, const RendererRuntime::CompositorContextData&, MAYBE_UNUSED Renderer::CommandBuffer& commandBuffer)
+void CompositorInstancePassFirst::onFillCommandBuffer(MAYBE_UNUSED const Renderer::IRenderTarget* renderTarget, const RendererRuntime::CompositorContextData&, MAYBE_UNUSED Renderer::CommandBuffer& commandBuffer)
 {
+	// Sanity check
+	assert((nullptr != renderTarget) && "The first example compositor instance pass needs a valid render target");
+
 	// Well right now I'm not that creative and the purpose of this example is to show how to add custom compositor passes, so, draw a simple text
 	#ifdef RENDERER_RUNTIME_IMGUI
 		const RendererRuntime::CompositorWorkspaceInstance& compositorWorkspaceInstance = getCompositorNodeInstance().getCompositorWorkspaceInstance();

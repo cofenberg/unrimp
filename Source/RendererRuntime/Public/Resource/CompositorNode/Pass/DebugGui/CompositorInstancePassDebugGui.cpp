@@ -41,8 +41,11 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::ICompositorInstancePass methods ]
 	//[-------------------------------------------------------]
-	void CompositorInstancePassDebugGui::onFillCommandBuffer(MAYBE_UNUSED const Renderer::IRenderTarget& renderTarget, MAYBE_UNUSED const CompositorContextData& compositorContextData, MAYBE_UNUSED Renderer::CommandBuffer& commandBuffer)
+	void CompositorInstancePassDebugGui::onFillCommandBuffer(MAYBE_UNUSED const Renderer::IRenderTarget* renderTarget, MAYBE_UNUSED const CompositorContextData& compositorContextData, MAYBE_UNUSED Renderer::CommandBuffer& commandBuffer)
 	{
+		// Sanity check
+		assert((nullptr != renderTarget) && "The debug GUI compositor instance pass needs a valid render target");
+
 		#ifdef RENDERER_RUNTIME_IMGUI
 			// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
 			const IRendererRuntime& rendererRuntime = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime();
@@ -70,7 +73,7 @@ namespace RendererRuntime
 				mRenderQueue.addRenderablesFromRenderableManager(mRenderableManager);
 				if (mRenderQueue.getNumberOfDrawCalls() > 0)
 				{
-					mRenderQueue.fillGraphicsCommandBuffer(renderTarget, static_cast<const CompositorResourcePassDebugGui&>(getCompositorResourcePass()).getMaterialTechniqueId(), compositorContextData, commandBuffer);
+					mRenderQueue.fillGraphicsCommandBuffer(*renderTarget, static_cast<const CompositorResourcePassDebugGui&>(getCompositorResourcePass()).getMaterialTechniqueId(), compositorContextData, commandBuffer);
 				}
 
 				// Fill command buffer using custom graphics material blueprint resource

@@ -88,8 +88,12 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::ICompositorInstancePass methods ]
 	//[-------------------------------------------------------]
-	void CompositorInstancePassShadowMap::onFillCommandBuffer(const Renderer::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
+	void CompositorInstancePassShadowMap::onFillCommandBuffer(MAYBE_UNUSED const Renderer::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
 	{
+		// Sanity check
+		assert((nullptr == renderTarget) && "The shadow map compositor instance pass needs an invalid render target");
+
+		// Fill command buffer
 		const CameraSceneItem* cameraSceneItem = compositorContextData.getCameraSceneItem();
 		const LightSceneItem* lightSceneItem = compositorContextData.getLightSceneItem();
 		if (nullptr != mDepthFramebufferPtr && nullptr != cameraSceneItem && cameraSceneItem->getParentSceneNode() && nullptr != lightSceneItem && lightSceneItem->getParentSceneNode())
@@ -133,7 +137,9 @@ namespace RendererRuntime
 			// Coordinate system related adjustments
 			// -> Vulkan and Direct3D: Left-handed coordinate system with clip space depth value range 0..1
 			// -> OpenGL without "GL_ARB_clip_control"-extension: Right-handed coordinate system with clip space depth value range -1..1
-			const float nearZ = renderTarget.getRenderer().getCapabilities().zeroToOneClipZ ? 0.0f : -1.0f;
+			const CompositorWorkspaceInstance& compositorWorkspaceInstance = getCompositorNodeInstance().getCompositorWorkspaceInstance();
+			const IRendererRuntime& rendererRuntime = compositorWorkspaceInstance.getRendererRuntime();
+			const float nearZ = rendererRuntime.getRenderer().getCapabilities().zeroToOneClipZ ? 0.0f : -1.0f;
 
 			// Get the 8 points of the view frustum in world space
 			glm::vec4 worldSpaceFrustumCorners[8] =
@@ -152,7 +158,12 @@ namespace RendererRuntime
 			{
 				uint32_t renderTargetWidth = 0;
 				uint32_t renderTargetHeight = 0;
-				renderTarget.getWidthAndHeight(renderTargetWidth, renderTargetHeight);
+				assert((nullptr != compositorWorkspaceInstance.getExecutionRenderTarget()));
+				compositorWorkspaceInstance.getExecutionRenderTarget()->getWidthAndHeight(renderTargetWidth, renderTargetHeight);
+				if (compositorContextData.getSinglePassStereoInstancing())
+				{
+					renderTargetWidth /= 2;
+				}
 				const glm::mat4 worldSpaceToClipSpaceMatrix = cameraSceneItem->getViewSpaceToClipSpaceMatrix(static_cast<float>(renderTargetWidth) / renderTargetHeight) * cameraSceneItem->getWorldSpaceToViewSpaceMatrix();
 				const glm::mat4 clipSpaceToWorldSpaceMatrix = glm::inverse(worldSpaceToClipSpaceMatrix);
 				for (int i = 0; i < 8; ++i)
@@ -162,7 +173,6 @@ namespace RendererRuntime
 			}
 
 			// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
-			const IRendererRuntime& rendererRuntime = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime();
 			RENDERER_SCOPED_PROFILER_EVENT_DYNAMIC(rendererRuntime.getContext(), commandBuffer, compositorResourcePassShadowMap.getDebugName())
 
 			// Render the meshes to each cascade
@@ -307,7 +317,7 @@ namespace RendererRuntime
 					}
 					if (mRenderQueue.getNumberOfDrawCalls() > 0)
 					{
-						mRenderQueue.fillGraphicsCommandBuffer(renderTarget, static_cast<const CompositorResourcePassScene&>(getCompositorResourcePass()).getMaterialTechniqueId(), shadowCompositorContextData, commandBuffer);
+						mRenderQueue.fillGraphicsCommandBuffer(*mDepthFramebufferPtr, static_cast<const CompositorResourcePassScene&>(getCompositorResourcePass()).getMaterialTechniqueId(), shadowCompositorContextData, commandBuffer);
 						mRenderQueue.clear();
 					}
 				}
@@ -356,14 +366,14 @@ namespace RendererRuntime
 						const uint8_t INTERMEDIATE_CASCADE_INDEX = 3;
 						assert(nullptr != mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX]);
 						Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX]);
-						mDepthToExponentialVarianceCompositorInstancePassCompute->onFillCommandBuffer(*mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX], shadowCompositorContextData, commandBuffer);
+						mDepthToExponentialVarianceCompositorInstancePassCompute->onFillCommandBuffer(mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX], shadowCompositorContextData, commandBuffer);
 						mDepthToExponentialVarianceCompositorInstancePassCompute->onPostCommandBufferExecution();
 					}
 
 					{ // Horizontal blur
 						mPassData.shadowFilterSize = filterSizeX;
 						Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mIntermediateFramebufferPtr);
-						mHorizontalBlurCompositorInstancePassCompute->onFillCommandBuffer(*mIntermediateFramebufferPtr, shadowCompositorContextData, commandBuffer);
+						mHorizontalBlurCompositorInstancePassCompute->onFillCommandBuffer(mIntermediateFramebufferPtr, shadowCompositorContextData, commandBuffer);
 						mHorizontalBlurCompositorInstancePassCompute->onPostCommandBufferExecution();
 					}
 
@@ -371,7 +381,7 @@ namespace RendererRuntime
 						mPassData.shadowFilterSize = filterSizeY;
 						assert(nullptr != mVarianceFramebufferPtr[cascadeIndex]);
 						Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[cascadeIndex]);
-						mVerticalBlurCompositorInstancePassCompute->onFillCommandBuffer(*mVarianceFramebufferPtr[cascadeIndex], shadowCompositorContextData, commandBuffer);
+						mVerticalBlurCompositorInstancePassCompute->onFillCommandBuffer(mVarianceFramebufferPtr[cascadeIndex], shadowCompositorContextData, commandBuffer);
 						mVerticalBlurCompositorInstancePassCompute->onPostCommandBufferExecution();
 					}
 				}
@@ -380,14 +390,10 @@ namespace RendererRuntime
 					// Execute compositor instance pass compute
 					assert(nullptr != mVarianceFramebufferPtr[cascadeIndex]);
 					Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[cascadeIndex]);
-					mDepthToExponentialVarianceCompositorInstancePassCompute->onFillCommandBuffer(*mVarianceFramebufferPtr[cascadeIndex], shadowCompositorContextData, commandBuffer);
+					mDepthToExponentialVarianceCompositorInstancePassCompute->onFillCommandBuffer(mVarianceFramebufferPtr[cascadeIndex], shadowCompositorContextData, commandBuffer);
 					mDepthToExponentialVarianceCompositorInstancePassCompute->onPostCommandBufferExecution();
 				}
 			}
-
-			// Reset to previous graphics render target
-			// TODO(co) Get rid of this
-			Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, &const_cast<Renderer::IRenderTarget&>(renderTarget));
 		}
 		else
 		{

@@ -46,8 +46,11 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::ICompositorInstancePass methods ]
 	//[-------------------------------------------------------]
-	void CompositorInstancePassGenerateMipmaps::onFillCommandBuffer(const Renderer::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
+	void CompositorInstancePassGenerateMipmaps::onFillCommandBuffer(MAYBE_UNUSED const Renderer::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
 	{
+		// Sanity check
+		assert((nullptr == renderTarget) && "The generate mipmaps compositor instance pass needs an invalid render target");
+
 		{ // Record reusable command buffer, if necessary
 			const IRendererRuntime& rendererRuntime = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime();
 			const TextureResourceManager& textureResourceManager = rendererRuntime.getTextureResourceManager();
@@ -59,10 +62,13 @@ namespace RendererRuntime
 				Renderer::ITexture* texture = textureResource->getTexture();
 				if (nullptr != texture)
 				{
+					// Sanity check
+					assert((texture->getResourceType() == Renderer::ResourceType::TEXTURE_2D) && "The generate mipmaps compositor instance pass needs an 2D texture as depth texture");
+
 					// Render target size changed?
-					uint32_t renderTargetWidth = 0;
-					uint32_t renderTargetHeight = 0;
-					renderTarget.getWidthAndHeight(renderTargetWidth, renderTargetHeight);
+					Renderer::ITexture2D* texture2D = static_cast<Renderer::ITexture2D*>(texture);
+					const uint32_t renderTargetWidth = texture2D->getWidth();
+					const uint32_t renderTargetHeight = texture2D->getHeight();
 					const uint32_t numberOfMipmaps = Renderer::ITexture::getNumberOfMipmaps(renderTargetWidth, renderTargetHeight);
 					if (mRenderTargetWidth != renderTargetWidth || mRenderTargetHeight != renderTargetHeight)
 					{
@@ -108,7 +114,7 @@ namespace RendererRuntime
 
 							// Execute the compute pass
 							CompositorContextData localCompositorContextData(compositorContextData.getCompositorWorkspaceInstance(), nullptr);
-							mCompositorInstancePassCompute->onFillCommandBuffer(*mFramebuffersPtrs[mipmapIndex], localCompositorContextData, mCommandBuffer);
+							mCompositorInstancePassCompute->onFillCommandBuffer(mFramebuffersPtrs[mipmapIndex], localCompositorContextData, mCommandBuffer);
 							mCompositorInstancePassCompute->onPostCommandBufferExecution();
 						}
 
