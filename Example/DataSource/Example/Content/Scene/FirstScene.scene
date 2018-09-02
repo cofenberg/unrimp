@@ -31,7 +31,7 @@
 					},
 					"SkySceneItem":
 					{
-						"Material": "$ProjectName/Material/Base/Sky.asset",
+						"Material": "$ProjectName/Blueprint/Sky/M_Sky.asset",
 						"SetMaterialProperties":
 						{
 							"UseProceduralSky": "TRUE"
@@ -39,7 +39,7 @@
 					},
 					"TerrainSceneItem":
 					{
-						"Material": "$ProjectName/Material/Base/Terrain.asset",
+						"Material": "$ProjectName/Blueprint/Terrain/M_Terrain.asset",
 						"SetMaterialProperties":
 						{
 							"HeightMap": "$ProjectName/Texture/Terrain/Gonzales_h.asset",
@@ -51,7 +51,7 @@
 					},
 					"GrassSceneItem":
 					{
-						"Material": "$ProjectName/Material/Base/Grass.asset",
+						"Material": "$ProjectName/Blueprint/Grass/M_Grass.asset",
 						"SetMaterialProperties":
 						{
 							"_argb_alpha": "$ProjectName/Texture/Grass/Grass_argb_alpha.asset"
@@ -69,7 +69,7 @@
 				{
 					"MeshSceneItem":
 					{
-						"Mesh": "$ProjectName/Mesh/Imrod/Imrod.asset"
+						"Mesh": "$ProjectName/Mesh/Imrod/SM_Imrod.asset"
 					}
 				}
 			},
@@ -83,8 +83,8 @@
 				{
 					"MeshSceneItem":
 					{
-						"Mesh": "$ProjectName/Mesh/Imrod/Imrod.asset",
-						"SubMeshMaterials": [ "$ProjectName/Material/Sponza/bricks.asset", "$ProjectName/Material/Imrod/TransparentImrod.asset" ]
+						"Mesh": "$ProjectName/Mesh/Imrod/SM_Imrod.asset",
+						"SubMeshMaterials": [ "$ProjectName/Material/Sponza/bricks.asset", "$ProjectName/Mesh/Imrod/M_TransparentImrod.asset" ]
 					}
 				}
 			},
@@ -98,7 +98,7 @@
 				{
 					"MeshSceneItem":
 					{
-						"Mesh": "$ProjectName/Mesh/Imrod/Imrod.asset"
+						"Mesh": "$ProjectName/Mesh/Imrod/SM_Imrod.asset"
 					}
 				}
 			},
@@ -113,7 +113,7 @@
 				{
 					"MeshSceneItem":
 					{
-						"Mesh": "$ProjectName/Mesh/Imrod/Imrod.asset"
+						"Mesh": "$ProjectName/Mesh/Imrod/SM_Imrod.asset"
 					}
 				}
 			},
@@ -215,8 +215,8 @@
 				{
 					"SkeletonMeshSceneItem":
 					{
-						"Mesh": "$ProjectName/Mesh/Bob/Bob.asset",
-						"SkeletonAnimation": "$ProjectName/SkeletonAnimation/Bob/Bob.asset"
+						"Mesh": "$ProjectName/Mesh/Bob/SM_Bob.asset",
+						"SkeletonAnimation": "$ProjectName/Mesh/Bob/SA_Bob.asset"
 					}
 				}
 			},
@@ -275,7 +275,7 @@
 				{
 					"ParticlesSceneItem":
 					{
-						"Material": "$ProjectName/Material/Base/Particles.asset",
+						"Material": "$ProjectName/Blueprint/Particles/M_Particles.asset",
 						"SetMaterialProperties":
 						{
 							"_argb_alpha": "$ProjectName/Texture/Particles/Particles_argb_alpha.asset"

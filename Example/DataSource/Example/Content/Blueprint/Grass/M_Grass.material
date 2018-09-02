@@ -1,0 +1,17 @@
+{
+	"Format":
+	{
+		"Type": "MaterialAsset",
+		"Version": "1"
+	},
+	"MaterialAsset":
+	{
+		"Techniques":
+		{
+			"Default": "./MB_Debug.asset",
+			"Debug": "./MB_Debug.asset",
+			"Forward": "./MB_Forward.asset",
+			"Deferred": "./MB_Deferred.asset"
+		}
+	}
+}

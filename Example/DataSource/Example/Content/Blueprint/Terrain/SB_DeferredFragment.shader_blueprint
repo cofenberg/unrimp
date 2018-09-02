@@ -1,0 +1,154 @@
+/*********************************************************\
+ * Copyright (c) 2012-2018 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+//[-------------------------------------------------------]
+//[ Definitions                                           ]
+//[-------------------------------------------------------]
+@includepiece($ProjectName/ShaderPiece/Core.asset)
+	@insertpiece(SetCrossPlatformSettings)
+@includepiece($ProjectName/ShaderPiece/MotionBlur.asset)
+@includepiece(./SP_Terrain.asset)
+	@insertpiece(DefineTerrainPassDataStruct)
+
+ 
+//[-------------------------------------------------------]
+//[ Input / output                                        ]
+//[-------------------------------------------------------]
+// Attribute input / output
+INPUT_BEGIN
+	INPUT_TEXTURE_COORDINATE(1, float2, TexCoord, 					 0)	// Texture coordinate
+	INPUT_TEXTURE_COORDINATE(2, float3, PreviousClipSpacePositionVS, 1)	// Previous clip space position
+	INPUT_TEXTURE_COORDINATE(3, float3, WorldSpacePosition, 		 2)	// World space position
+	DECLARE_COVERAGE_MASK
+	DECLARE_FRAGMENT_POSITION
+INPUT_END
+OUTPUT_BEGIN
+	OUTPUT_COLOR(0)	// GBuffer 0: rgb = albedo color, a = alpha unused (required for blend operations)
+	OUTPUT_COLOR(1)	// GBuffer 1: rgb = view space normal, a = roughness
+	OUTPUT_COLOR(2)	// GBuffer 2: rgb = emissive color, a = metallic
+	OUTPUT_COLOR(3)	// 			  rg  = screen space velocity
+OUTPUT_END
+
+// Uniform buffers
+UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
+	TerrainPassDataStruct PassData;
+UNIFORM_BUFFER_END
+
+// Texture buffers
+TEXTURE_BUFFER(1, 0, float4, LightTextureBuffer, 0)	// "LIGHT"
+
+// Textures
+TEXTURE_2D(2, 1, _argb_nxa, 2)
+TEXTURE_2D(2, 2, _aor_rg_mb_nya, 3)
+
+// Samplers
+SAMPLER_STATE(3, 0, SamplerLinear, 0)
+SAMPLER_STATE(3, 1, SamplerLinearClamp, 1)
+
+
+//[-------------------------------------------------------]
+//[ Functions                                             ]
+//[-------------------------------------------------------]
+@includepiece($ProjectName/ShaderPiece/TangentFrame.asset)
+	@insertpiece(DefineGetTangentFrame)
+	@insertpiece(DefineUnpackTextureNormalXY)
+
+// TODO(co) Use this for the detail textures
+// The tri-planar texture mapping is basing on "Use Tri-Planar Texture Mapping for Better Terrain" - https://gamedevelopment.tutsplus.com/articles/use-tri-planar-texture-mapping-for-better-terrain--gamedev-13821
+float3 GetTriPlanarBlending(float3 worldSpaceNormal)
+{
+	float3 blending = abs(worldSpaceNormal);
+	blending = normalize(max(blending, 0.00001f));	// Force weights to sum to 1.0
+	float b = (blending.x + blending.y + blending.z);
+	blending /= float3(b, b, b);
+	return blending;
+}
+/*
+float4 SampleTriPlanar(in Texture2D<float4> textureMap, in SamplerState samplerState, in float3 worldSpacePosition, in float3 triPlanarBlending)
+{
+	// Sample the three planar projections
+	float4 xAxis = SAMPLE_2D(textureMap, samplerState, worldSpacePosition.yz);
+	float4 yAxis = SAMPLE_2D(textureMap, samplerState, worldSpacePosition.xz);
+	float4 zAxis = SAMPLE_2D(textureMap, samplerState, worldSpacePosition.xy);
+
+	// Blend the results of the three planar projections
+	return xAxis * triPlanarBlending.x + yAxis * triPlanarBlending.y + zAxis * triPlanarBlending.z;
+}
+*/
+
+// TODO(co) Use "Advanced Terrain Texture Splatting" by Andrey Mishkinis - https://www.gamedev.net/articles/programming/graphics/advanced-terrain-texture-splatting-r3287/
+/*
+float3 blend(float4 texture1, float a1, float4 texture2, float a2)
+{
+	float depth = 0.2f;
+	float ma = max(texture1.a + a1, texture2.a + a2) - depth;
+	float b1 = max(texture1.a + a1 - ma, 0.0f);
+	float b2 = max(texture2.a + a2 - ma, 0.0f);
+	return (texture1.rgb * b1 + texture2.rgb * b2) / (b1 + b2);
+}
+*/
+
+
+//[-------------------------------------------------------]
+//[ Main                                                  ]
+//[-------------------------------------------------------]
+MAIN_BEGIN
+	// Read channel packed texture data
+	// -> "_argb_nxa" = RGB channel = Albedo map ("_a"-postfix), A channel = x component of normal map ("_n"-postfix)
+	// -> "_aor_rg_mb_nya" = R channel = Ambient occlusion map ("_ao"-postfix), G channel = Roughness map ("_r"-postfix), B channel = Metallic map ("_m"-postfix), A channel = y component of normal map ("_n"-postfix)
+	float4 value_argb_nxa = SAMPLE_2D(_argb_nxa, SamplerLinearClamp, MAIN_INPUT(TexCoord));
+	float4 value_aor_rg_mb_nya = SAMPLE_2D(_aor_rg_mb_nya, SamplerLinearClamp, MAIN_INPUT(TexCoord));
+
+	// Get albedo, ambient occlusion, roughness and metallic
+	float3 albedo = value_argb_nxa.rgb;
+	float ambientOcclusion = value_aor_rg_mb_nya.r;
+	float roughness = value_aor_rg_mb_nya.g;
+	float metallic = value_aor_rg_mb_nya.b;
+
+	// Get the view space normal
+	float3 viewSpaceNormal = float3(0.0f, 0.0f, -1.0f);
+	{
+		// Transform the tangent space normal into view space
+		// -> We could use "Followup: Normal Mapping Without Precomputed Tangents" by Christian Schüler ( http://www.thetenthplanet.de/archives/1180 ), but the following simple solution is sufficient in here
+		float3 tangentSpaceNormal = UnpackTextureNormalXY(value_argb_nxa.a, value_aor_rg_mb_nya.a);
+		tangentSpaceNormal = float3(-tangentSpaceNormal.x, tangentSpaceNormal.z, -tangentSpaceNormal.y);
+		viewSpaceNormal = MultiplyQuaternionVector(PassData.WorldSpaceToViewSpaceQuaternion, tangentSpaceNormal);
+	}
+
+	// Derive data
+	float3 worldSpaceNormal = MultiplyQuaternionVector(PassData.ViewSpaceToWorldSpaceQuaternion, viewSpaceNormal);
+	float3 worldSpacePosition = MAIN_INPUT(WorldSpacePosition);
+	float3 worldSpaceIncident = normalize(PassData.CameraWorldSpacePosition - worldSpacePosition);
+	float3 viewSpaceIncident = MultiplyQuaternionVector(PassData.WorldSpaceToViewSpaceQuaternion, worldSpaceIncident);
+	float3 triPlanarBlending = GetTriPlanarBlending(worldSpaceNormal);	// TODO(co) Use this for the detail textures
+
+	// Complex pixel detection
+	// -> See "Antialiased Deferred Rendering" - https://docs.nvidia.com/gameworks/content/gameworkslibrary/graphicssamples/d3d_samples/antialiaseddeferredrendering.htm
+	float edgePixel = (COVERAGE_MASK != PassData.FullCoverageMask) ? 1.0f : 0.0f;
+
+	// Calculate screen space velocity
+	@insertpiece(DefineCalculateScreenSpaceVelocity)
+
+	// Done
+	MAIN_OUTPUT_COLOR(0) = float4(albedo * ambientOcclusion, edgePixel);
+	MAIN_OUTPUT_COLOR(1) = float4(viewSpaceNormal, roughness);
+	MAIN_OUTPUT_COLOR(2) = float4(0.0f, 0.0f, 0.0f, metallic);
+	MAIN_OUTPUT_COLOR(3) = float4(velocity.x, velocity.y, 0.0f, 0.0f);
+MAIN_END

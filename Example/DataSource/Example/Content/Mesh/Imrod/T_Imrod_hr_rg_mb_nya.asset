@@ -1,0 +1,27 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"AssetMetadata":
+		{
+			"AssetType": "Texture",
+			"AssetCategory": "Character",
+			"Copyright": "Imrod model and Imrod textures ( http://www.parkparkin.com/gallery/imrod_dw.html ) by Dmitry Parkin: http://www.parkparkin.com"
+		},
+		"TextureAssetCompiler":
+		{
+			"TextureSemantic": "PACKED_CHANNELS",
+			"TextureChannelPacking": "_hr_rg_mb_nya",
+			"InputFiles":
+			{
+				"ROUGHNESS_MAP": "T_Imrod_r.tga",
+				"NORMAL_MAP": "T_Imrod_n.tga"
+			},
+			"ToksvigSpecularAntiAliasing": "TRUE"
+		}
+	}
+}

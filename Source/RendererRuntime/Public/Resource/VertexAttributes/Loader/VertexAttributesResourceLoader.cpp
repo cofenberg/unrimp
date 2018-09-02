@@ -93,7 +93,7 @@ namespace RendererRuntime
 			vertexAttributes.numberOfAttributes = static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout));
 			vertexAttributes.attributes = vertexAttributesLayout;
 		}
-		else if (STRING_ID("Example/VertexAttributes/Default/DebugGui") == getAsset().assetId)
+		else if (STRING_ID("Example/VertexAttributes/DebugGui/VA_DebugGui") == getAsset().assetId)
 		{
 			Renderer::VertexAttributes& vertexAttributes = const_cast<Renderer::VertexAttributes&>(mVertexAttributesResource->mVertexAttributes);
 			static constexpr Renderer::VertexAttribute vertexAttributesLayout[] =
@@ -146,15 +146,15 @@ namespace RendererRuntime
 		{
 			mVertexAttributesResource->mVertexAttributes = Renderer::VertexAttributes(MeshResource::SKINNED_VERTEX_ATTRIBUTES.numberOfAttributes, MeshResource::SKINNED_VERTEX_ATTRIBUTES.attributes);
 		}
-		else if (STRING_ID("Example/VertexAttributes/Default/Particles") == getAsset().assetId)
+		else if (STRING_ID("Example/VertexAttributes/Particles/VA_Particles") == getAsset().assetId)
 		{
 			mVertexAttributesResource->mVertexAttributes = Renderer::VertexAttributes(ParticlesSceneItem::VERTEX_ATTRIBUTES.numberOfAttributes, ParticlesSceneItem::VERTEX_ATTRIBUTES.attributes);
 		}
-		else if (STRING_ID("Example/VertexAttributes/Default/Grass") == getAsset().assetId)
+		else if (STRING_ID("Example/VertexAttributes/Grass/VA_Grass") == getAsset().assetId)
 		{
 			mVertexAttributesResource->mVertexAttributes = Renderer::VertexAttributes(GrassSceneItem::VERTEX_ATTRIBUTES.numberOfAttributes, GrassSceneItem::VERTEX_ATTRIBUTES.attributes);
 		}
-		else if (STRING_ID("Example/VertexAttributes/Default/Terrain") == getAsset().assetId)
+		else if (STRING_ID("Example/VertexAttributes/Terrain/VA_Terrain") == getAsset().assetId)
 		{
 			mVertexAttributesResource->mVertexAttributes = Renderer::VertexAttributes(TerrainSceneItem::VERTEX_ATTRIBUTES.numberOfAttributes, TerrainSceneItem::VERTEX_ATTRIBUTES.attributes);
 		}

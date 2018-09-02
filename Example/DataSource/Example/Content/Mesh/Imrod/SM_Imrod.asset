@@ -1,0 +1,24 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"AssetMetadata":
+		{
+			"AssetType": "Mesh",
+			"AssetCategory": "Character",
+			"Copyright": "Imrod model and Imrod textures ( http://www.parkparkin.com/gallery/imrod_dw.html ) by Dmitry Parkin: http://www.parkparkin.com"
+		},
+		"MeshAssetCompiler":
+		{
+			"InputFile": "SM_Imrod.obj",
+			"MaterialNameToAssetId":
+			{
+				"DefaultMaterial": "./M_Imrod.asset"
+			}
+		}
+	}
+}

@@ -490,21 +490,24 @@ namespace RendererToolkit
 
 		// Read material blueprint asset compiler configuration
 		std::string materialBlueprintInputFile;
+		const RendererRuntime::IFileManager& fileManager = input.context.getFileManager();
 		const std::string& virtualMaterialBlueprintAssetFilename = input.sourceAssetIdToVirtualAssetFilename(materialBlueprintAssetId);
 		{
 			// Parse material blueprint asset JSON
 			rapidjson::Document rapidJsonDocumentMaterialBlueprintAsset;
-			JsonHelper::loadDocumentByFilename(input.context.getFileManager(), virtualMaterialBlueprintAssetFilename, "Asset", "1", rapidJsonDocumentMaterialBlueprintAsset);
+			JsonHelper::loadDocumentByFilename(fileManager, virtualMaterialBlueprintAssetFilename, "Asset", "1", rapidJsonDocumentMaterialBlueprintAsset);
 			materialBlueprintInputFile = rapidJsonDocumentMaterialBlueprintAsset["Asset"]["MaterialBlueprintAssetCompiler"]["InputFile"].GetString();
 		}
 
-		// Parse material blueprint JSON
-		const std::string virtualMaterialBlueprintFilename = std_filesystem::path(virtualMaterialBlueprintAssetFilename).parent_path().generic_string() + '/' + materialBlueprintInputFile;
+		// Parse material blueprint JSON with modified asset compiler input so relative texture asset IDs can be resolved correctly
+		const std::string virtualMaterialBlueprintDirectory = std_filesystem::path(virtualMaterialBlueprintAssetFilename).parent_path().generic_string();
+		const std::string virtualMaterialBlueprintFilename = virtualMaterialBlueprintDirectory + '/' + materialBlueprintInputFile;
 		rapidjson::Document rapidJsonDocument;
-		JsonHelper::loadDocumentByFilename(input.context.getFileManager(), virtualMaterialBlueprintFilename, "MaterialBlueprintAsset", "2", rapidJsonDocument);
+		JsonHelper::loadDocumentByFilename(fileManager, virtualMaterialBlueprintFilename, "MaterialBlueprintAsset", "2", rapidJsonDocument);
 		RendererRuntime::ShaderProperties visualImportanceOfShaderProperties;
 		RendererRuntime::ShaderProperties maximumIntegerValueOfShaderProperties;
-		readProperties(input, rapidJsonDocument["MaterialBlueprintAsset"]["Properties"], sortedMaterialPropertyVector, visualImportanceOfShaderProperties, maximumIntegerValueOfShaderProperties, true, true, false, materialPropertyIdToName);
+		const IAssetCompiler::Input materialBlueprintAssetInput(input.context, input.projectName, input.cacheManager, input.virtualAssetPackageInputDirectory, virtualMaterialBlueprintFilename, virtualMaterialBlueprintDirectory, input.virtualAssetOutputDirectory, input.sourceAssetIdToCompiledAssetId, input.compiledAssetIdToSourceAssetId, input.sourceAssetIdToVirtualFilename, input.defaultTextureAssetIds);
+		readProperties(materialBlueprintAssetInput, rapidJsonDocument["MaterialBlueprintAsset"]["Properties"], sortedMaterialPropertyVector, visualImportanceOfShaderProperties, maximumIntegerValueOfShaderProperties, true, true, false, materialPropertyIdToName);
 	}
 
 	RendererRuntime::MaterialPropertyValue JsonMaterialBlueprintHelper::mandatoryMaterialPropertyValue(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValue, const char* propertyName, const RendererRuntime::MaterialProperty::ValueType valueType)

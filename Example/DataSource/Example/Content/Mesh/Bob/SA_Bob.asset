@@ -1,0 +1,20 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"AssetMetadata":
+		{
+			"AssetType": "SkeletonAnimation",
+			"AssetCategory": "Character",
+			"Copyright": "Copyright © 2009 KatsBits - Ken Beyer (kat) - http://www.katsbits.com"
+		},
+		"SkeletonAnimationAssetCompiler":
+		{
+			"InputFile": "SA_Bob.md5anim"
+		}
+	}
+}

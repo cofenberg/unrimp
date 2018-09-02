@@ -761,7 +761,7 @@
 				},
 				"DebugGui":
 				{
-					"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Gui/Debug.asset",
+					"MaterialBlueprint": "$ProjectName/Blueprint/DebugGui/MB_Debug.asset",
 					"SetMaterialProperties":
 					{
 						"GlyphMap": "Unrimp/Texture/DynamicByCode/ImGuiGlyphMap2D",

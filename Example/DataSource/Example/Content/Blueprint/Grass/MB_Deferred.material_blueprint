@@ -1,0 +1,175 @@
+{
+	"Format":
+	{
+		"Type": "MaterialBlueprintAsset",
+		"Version": "2"
+	},
+	"MaterialBlueprintAsset":
+	{
+		"Properties":
+		{
+			"RenderQueueIndex":
+			{
+				"Usage": "STATIC",
+				"ValueType": "INTEGER",
+				"Value": "100",
+				"Description": "Fixed build in material property for the render queue index [0, 255]",
+				"MinimumIntegerValue": "0",
+				"MaximumIntegerValue": "255"
+			},
+			"_argb_alpha":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+				"Description": "RGB channel = Albedo map ('_a'-postfix), A channel = alpha ('_alpha'-postfix)"
+			},
+			"GlobalWindDirectionStrength":
+			{
+				"Usage": "GLOBAL_REFERENCE_FALLBACK",
+				"ValueType": "FLOAT_4",
+				"Value": "1.0 0.0 0.0 10.0",
+				"Description": "Fallback value in case there's no wind direction and strength global material property, xyz = normalized wind direction vector, w = wind strength"
+			}
+		},
+		"GraphicsPipelineState":
+		{
+			"VertexAttributes": "./VA_Grass.asset", 
+			"ShaderBlueprints":
+			{
+				"VertexShaderBlueprint": "./SB_Vertex.asset",
+				"FragmentShaderBlueprint": "./SB_DeferredFragment.asset"
+			},
+			"RasterizerState":
+			{
+				"CullMode": "NONE"
+			},
+			"BlendState":
+			{
+				"AlphaToCoverageEnable": "TRUE"
+			}
+		},
+		"ResourceGroups":
+		{
+			"0":
+			{
+				"0":
+				{
+					"ResourceType": "UNIFORM_BUFFER",
+					"BaseShaderRegisterName": "PassUniformBuffer",
+					"BaseShaderRegister": "0",
+					"ShaderVisibility": "ALL_GRAPHICS",
+					"BufferUsage": "PASS",
+					"NumberOfElements": "1",
+					"ElementProperties":
+					{
+						"WorldSpaceToViewSpaceMatrix":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4_4",
+							"Value": "@WORLD_SPACE_TO_VIEW_SPACE_MATRIX"
+						},
+						"WorldSpaceToViewSpaceMatrix2":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4_4",
+							"Value": "@WORLD_SPACE_TO_VIEW_SPACE_MATRIX2"
+						},
+						"ViewSpaceToClipSpaceMatrix":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4_4",
+							"Value": "@VIEW_SPACE_TO_CLIP_SPACE_MATRIX"
+						},
+						"ViewSpaceToClipSpaceMatrix2":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4_4",
+							"Value": "@VIEW_SPACE_TO_CLIP_SPACE_MATRIX2"
+						},
+						"PreviousWorldSpaceToViewSpaceMatrix":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4_4",
+							"Value": "@PREVIOUS_WORLD_SPACE_TO_VIEW_SPACE_MATRIX"
+						},
+						"WorldSpaceToViewSpaceQuaternion":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4",
+							"Value": "@WORLD_SPACE_TO_VIEW_SPACE_QUATERNION"
+						},
+						"WindDirectionStrength":
+						{
+							"Usage": "GLOBAL_REFERENCE",
+							"ValueType": "FLOAT_4",
+							"Value": "@GlobalWindDirectionStrength"
+						},
+						"ViewportSize":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_2",
+							"Value": "@VIEWPORT_SIZE"
+						},
+						"InverseViewportSize":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_2",
+							"Value": "@INVERSE_VIEWPORT_SIZE"
+						},
+						"ProjectionParameters":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_2",
+							"Value": "@PROJECTION_PARAMETERS"
+						},
+						"GlobalTimeInSeconds":
+						{
+							"Usage": "GLOBAL_REFERENCE",
+							"ValueType": "FLOAT",
+							"Value": "@GlobalTimeInSeconds"
+						},
+						"PreviousGlobalTimeInSeconds":
+						{
+							"Usage": "GLOBAL_REFERENCE",
+							"ValueType": "FLOAT",
+							"Value": "@PreviousGlobalTimeInSeconds"
+						},
+						"GrassWindHeightFactor":
+						{
+							"Usage": "STATIC",
+							"ValueType": "FLOAT",
+							"Value": "10.0"
+						}
+					}
+				}
+			},
+			"1":
+			{
+				"0":
+				{
+					"ResourceType": "TEXTURE_2D",
+					"BaseShaderRegisterName": "_argb_alpha",
+					"BaseShaderRegister": "0",
+					"ShaderVisibility": "FRAGMENT",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@_argb_alpha",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+					"RgbHardwareGammaCorrection": "TRUE",
+					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
+				}
+			},
+			"2":
+			{
+				"0":
+				{
+					"ResourceType": "SAMPLER_STATE",
+					"BaseShaderRegisterName": "SamplerLinear",
+					"BaseShaderRegister": "0",
+					"ShaderVisibility": "FRAGMENT"
+				}
+			}
+		}
+	}
+}

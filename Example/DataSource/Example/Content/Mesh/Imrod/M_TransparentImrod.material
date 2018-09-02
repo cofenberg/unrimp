@@ -1,0 +1,20 @@
+{
+	"Format":
+	{
+		"Type": "MaterialAsset",
+		"Version": "1"
+	},
+	"MaterialAsset":
+	{
+		"BaseMaterial": "$ProjectName/Material/Base/TransparentMesh.asset",
+		"Properties":
+		{
+			"Opacity": "0.6",
+			"_argb_nxa": "./T_Imrod_argb_nxa.asset",
+			"_hr_rg_mb_nya": "./T_Imrod_hr_rg_mb_nya.asset",
+			"UseEmissiveMap": "TRUE",
+			"EmissiveMap": "./T_Imrod_e.asset",
+			"EmissiveIntensity": "10.0"
+		}
+	}
+}

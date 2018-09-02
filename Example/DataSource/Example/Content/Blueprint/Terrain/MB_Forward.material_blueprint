@@ -1,0 +1,417 @@
+{
+	"Format":
+	{
+		"Type": "MaterialBlueprintAsset",
+		"Version": "2"
+	},
+	"MaterialBlueprintAsset":
+	{
+		"Properties":
+		{
+			"RenderQueueIndex":
+			{
+				"Usage": "STATIC",
+				"ValueType": "INTEGER",
+				"Value": "253",
+				"Description": "Fixed build in material property for the render queue index [0, 255]",
+				"MinimumIntegerValue": "0",
+				"MaximumIntegerValue": "255"
+			},
+			"HighQualityLighting":
+			{
+				"Usage": "SHADER_COMBINATION",
+				"ValueType": "GLOBAL_MATERIAL_PROPERTY_ID",
+				"Value": "@GlobalHighQualityLighting",
+				"Description": "If high quality lighting is true physically based shading (PBS) is used, else a cheaper lighting model is used instead",
+				"VisualImportance": "100"
+			},
+			"GlobalHighQualityLighting":
+			{
+				"Usage": "GLOBAL_REFERENCE_FALLBACK",
+				"ValueType": "BOOLEAN",
+				"Value": "TRUE",
+				"Description": "Fallback value in case there's no global high quality lighting global material property"
+			},
+			"HeightMap":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+				"Description": "Terrain height map"
+			},
+			"_argb_nxa":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "Unrimp/Texture/DynamicByCode/Identity_argb_nxa2D",
+				"Description": "Terrain data map, RGB channel = Albedo map ('_a'-postfix), A channel = x component of normal map ('_n'-postfix)"
+			},
+			"_aor_rg_mb_nya":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "Unrimp/Texture/DynamicByCode/Identity_hr_rg_mb_nya2D",
+				"Description": "Terrain data map, R channel = Ambient occlusion map ('_ao'-postfix), G channel = Roughness map ('_r'-postfix, aka specular F0, roughness = 1 - glossiness (= smoothness)), B channel = Metallic map ('_m'-postfix), A channel = y component of normal map ('_n'-postfix)"
+			},
+			"WorldPosition":
+			{
+				"Usage": "SHADER_UNIFORM",
+				"ValueType": "FLOAT_3",
+				"Value": "0 0 0",
+				"StepSize": "1.0 1.0 1.0",
+				"Description": "Terrain world space position center"
+			},
+			"WorldSize":
+			{
+				"Usage": "SHADER_UNIFORM",
+				"ValueType": "FLOAT_3",
+				"Value": "1 1 1",
+				"StepSize": "1.0 1.0 1.0",
+				"Description": "Terrain world space size"
+			},
+			"UseWetSurfaces":
+			{
+				"Usage": "SHADER_COMBINATION",
+				"ValueType": "GLOBAL_MATERIAL_PROPERTY_ID",
+				"Value": "@GlobalUseWetSurfaces",
+				"Description": "Use wet surfaces?",
+				"VisualImportance": "100"
+			},
+			"GlobalTessellatedTriangleWidth":
+			{
+				"Usage": "GLOBAL_REFERENCE_FALLBACK",
+				"ValueType": "FLOAT",
+				"Value": "16.0",
+				"MinimumValue": "0.0",
+				"MaximumValue": "64.0",
+				"StepSize": "1.0",
+				"Description": "Fallback value in case there's no tessellated triangle width global material property. Desired pixels per triangle edge, lower value increases tessellation and hence decreases the performance."
+			},
+			"GlobalUseWetSurfaces":
+			{
+				"Usage": "GLOBAL_REFERENCE_FALLBACK",
+				"ValueType": "BOOLEAN",
+				"Value": "FALSE",
+				"Description": "Fallback value in case there's no global use wet surfaces global material property"
+			},
+			"GlobalWetSurfaces":
+			{
+				"Usage": "GLOBAL_REFERENCE_FALLBACK",
+				"ValueType": "FLOAT_4",
+				"Value": "0.0 0.6 0.4 1.0",
+				"Description": "Fallback value in case there's no wet surfaces global material property, x=wet level, y=hole/cracks flood level, z=puddle flood level, w=rain intensity"
+			},
+			"GlobalAmbientColor":
+			{
+				"Usage": "GLOBAL_REFERENCE_FALLBACK",
+				"ValueType": "FLOAT_3",
+				"Value": "0.2 0.2 0.2",
+				"Description": "Fallback value in case there's no ambient color global material property"
+			}
+		},
+		"GraphicsPipelineState":
+		{
+			"VertexAttributes": "./VA_Terrain.asset",
+			"ShaderBlueprints":
+			{
+				"VertexShaderBlueprint": "./SB_Vertex.asset",
+				"TessellationControlShaderBlueprint": "./SB_TessellationControl.asset",
+				"TessellationEvaluationShaderBlueprint": "./SB_TessellationEvaluation.asset",
+				"FragmentShaderBlueprint": "./SB_ForwardFragment.asset"
+			},
+			"PrimitiveTopology": "PATCH_LIST_4",
+			"RasterizerState":
+			{
+				"CullMode": "FRONT",
+				"FillMode": "SOLID"
+			}
+		},
+		"ResourceGroups":
+		{
+			"0":
+			{
+				"0":
+				{
+					"ResourceType": "UNIFORM_BUFFER",
+					"BaseShaderRegisterName": "PassUniformBuffer",
+					"BaseShaderRegister": "0",
+					"ShaderVisibility": "ALL_GRAPHICS",
+					"BufferUsage": "PASS",
+					"NumberOfElements": "1",
+					"ElementProperties":
+					{
+						"WorldSpaceToClipSpaceMatrix":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4_4",
+							"Value": "@WORLD_SPACE_TO_CLIP_SPACE_MATRIX"
+						},
+						"WorldSpaceToViewSpaceMatrix":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4_4",
+							"Value": "@WORLD_SPACE_TO_VIEW_SPACE_MATRIX"
+						},
+						"PreviousWorldSpaceToViewSpaceMatrix":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4_4",
+							"Value": "@PREVIOUS_WORLD_SPACE_TO_VIEW_SPACE_MATRIX"
+						},
+						"ShadowMatrix":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4_4",
+							"Value": "@SHADOW_MATRIX"
+						},
+						"ShadowCascadeOffsets":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4_4",
+							"Value": "@SHADOW_CASCADE_OFFSETS"
+						},
+						"ShadowCascadeScales":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4_4",
+							"Value": "@SHADOW_CASCADE_SCALES"
+						},
+						"ShadowCascadeSplits":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4",
+							"Value": "@SHADOW_CASCADE_SPLITS"
+						},
+						"ViewSpaceToClipSpaceMatrix":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4_4",
+							"Value": "@VIEW_SPACE_TO_CLIP_SPACE_MATRIX"
+						},
+						"ViewSpaceToWorldSpaceQuaternion":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4",
+							"Value": "@VIEW_SPACE_TO_WORLD_SPACE_QUATERNION"
+						},
+						"WorldSpaceToViewSpaceQuaternion":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4",
+							"Value": "@WORLD_SPACE_TO_VIEW_SPACE_QUATERNION"
+						},
+						"WetSurfaces":
+						{
+							"Usage": "GLOBAL_REFERENCE",
+							"ValueType": "FLOAT_4",
+							"Value": "@GlobalWetSurfaces"
+						},
+						"ViewSpaceSunlightDirection":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_3",
+							"Value": "@VIEW_SPACE_SUNLIGHT_DIRECTION"
+						},
+						"WorldPosition":
+						{
+							"Usage": "MATERIAL_REFERENCE",
+							"ValueType": "FLOAT_3",
+							"Value": "@WorldPosition"
+						},
+						"GlobalTimeInSeconds":
+						{
+							"Usage": "GLOBAL_REFERENCE",
+							"ValueType": "FLOAT",
+							"Value": "@GlobalTimeInSeconds"
+						},
+						"WorldSize":
+						{
+							"Usage": "MATERIAL_REFERENCE",
+							"ValueType": "FLOAT_3",
+							"Value": "@WorldSize"
+						},
+						"AmbientColor":
+						{
+							"Usage": "GLOBAL_REFERENCE",
+							"ValueType": "FLOAT_3",
+							"Value": "@GlobalAmbientColor"
+						},
+						"SunlightColor":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_3",
+							"Value": "@SUNLIGHT_COLOR"
+						},
+						"CameraWorldSpacePosition":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_3",
+							"Value": "@CAMERA_WORLD_SPACE_POSITION"
+						},
+						"LightClustersScale":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_3",
+							"Value": "@LIGHT_CLUSTERS_SCALE"
+						},
+						"LightClustersBias":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_3",
+							"Value": "@LIGHT_CLUSTERS_BIAS"
+						},
+						"ViewportSize":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_2",
+							"Value": "@VIEWPORT_SIZE"
+						},
+						"ProjectionParametersReversedZ":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_2",
+							"Value": "@PROJECTION_PARAMETERS_REVERSED_Z"
+						},
+						"FullCoverageMask":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "INTEGER",
+							"Value": "@FULL_COVERAGE_MASK"
+						},
+						"TessellatedTriangleWidth":
+						{
+							"Usage": "GLOBAL_REFERENCE",
+							"ValueType": "FLOAT",
+							"Value": "@GlobalTessellatedTriangleWidth"
+						}
+					}
+				}
+			},
+			"1":
+			{
+				"0":
+				{
+					"ResourceType": "TEXTURE_BUFFER",
+					"ValueType": "FLOAT_4",
+					"BaseShaderRegisterName": "LightTextureBuffer",
+					"BaseShaderRegister": "0",
+					"ShaderVisibility": "FRAGMENT",
+					"BufferUsage": "LIGHT",
+					"Value": "@LIGHT"
+				}
+			},
+			"2":
+			{
+				"0":
+				{
+					"ResourceType": "TEXTURE_2D",
+					"BaseShaderRegisterName": "HeightMap",
+					"BaseShaderRegister": "1",
+					"ShaderVisibility": "ALL_GRAPHICS",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@HeightMap",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+					"SamplerStateBaseShaderRegisterName": "SamplerLinearClamp"
+				},
+				"1":
+				{
+					"ResourceType": "TEXTURE_2D",
+					"BaseShaderRegisterName": "_argb_nxa",
+					"BaseShaderRegister": "2",
+					"ShaderVisibility": "FRAGMENT",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@_argb_nxa",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/Identity_argb_nxa2D",
+					"RgbHardwareGammaCorrection": "TRUE",
+					"SamplerStateBaseShaderRegisterName": "SamplerLinearClamp"
+				},
+				"2":
+				{
+					"ResourceType": "TEXTURE_2D",
+					"BaseShaderRegisterName": "_aor_rg_mb_nya",
+					"BaseShaderRegister": "3",
+					"ShaderVisibility": "FRAGMENT",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@_aor_rg_mb_nya",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/Identity_hr_rg_mb_nya2D",
+					"SamplerStateBaseShaderRegisterName": "SamplerLinearClamp"
+				},
+				"3":
+				{
+					"ResourceType": "TEXTURE_2D_ARRAY",
+					"BaseShaderRegisterName": "ShadowMap",
+					"BaseShaderRegister": "4",
+					"ShaderVisibility": "FRAGMENT",
+					"Usage": "STATIC",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "Example/Texture/Dynamic/ShadowMapRenderTarget",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+					"MipmapsUsed": "FALSE",
+					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
+				},
+				"4":
+				{
+					"ResourceType": "TEXTURE_2D",
+					"BaseShaderRegisterName": "ReflectionMap",
+					"BaseShaderRegister": "5",
+					"ShaderVisibility": "FRAGMENT",
+					"Usage": "STATIC",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "Example/Texture/Dynamic/ReflectionRenderTarget",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+					"MipmapsUsed": "FALSE",
+					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
+				},
+				"5":
+				{
+					"ResourceType": "TEXTURE_3D",
+					"BaseShaderRegisterName": "LightClustersMap3D",
+					"BaseShaderRegister": "6",
+					"ShaderVisibility": "FRAGMENT",
+					"Usage": "STATIC",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "Unrimp/Texture/DynamicByCode/LightClustersMap3D",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/LightClustersMap3D"
+				},
+				"6":
+				{
+					"ResourceType": "TEXTURE_2D",
+					"BaseShaderRegisterName": "RippleMap",
+					"BaseShaderRegister": "7",
+					"ShaderVisibility": "FRAGMENT",
+					"Usage": "STATIC",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "$ProjectName/Texture/Compositor/Ripple.asset",
+					"FallbackTexture": "$ProjectName/Texture/Compositor/Ripple.asset",
+					"MipmapsUsed": "FALSE",
+					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
+				}
+			},
+			"3":
+			{
+				"0":
+				{
+					"ResourceType": "SAMPLER_STATE",
+					"BaseShaderRegisterName": "SamplerLinear",
+					"BaseShaderRegister": "0",
+					"ShaderVisibility": "ALL_GRAPHICS",
+					"AddressU": "WRAP",
+					"AddressV": "WRAP"
+				},
+				"1":
+				{
+					"ResourceType": "SAMPLER_STATE",
+					"BaseShaderRegisterName": "SamplerLinearClamp",
+					"BaseShaderRegister": "1",
+					"ShaderVisibility": "ALL_GRAPHICS",
+					"AddressU": "CLAMP",
+					"AddressV": "CLAMP",
+					"AddressW": "CLAMP"
+				}
+			}
+		}
+	}
+}

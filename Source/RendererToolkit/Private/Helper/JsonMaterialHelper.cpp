@@ -491,12 +491,21 @@ namespace RendererToolkit
 			std::unordered_map<uint32_t, std::string> materialTechniqueIdToName;	// Key = "RendererRuntime::MaterialTechniqueId"
 			for (rapidjson::Value::ConstMemberIterator rapidJsonMemberIteratorTechniques = rapidJsonValueTechniques.MemberBegin(); rapidJsonMemberIteratorTechniques != rapidJsonValueTechniques.MemberEnd(); ++rapidJsonMemberIteratorTechniques)
 			{
+				const std::string sourceAssetIdAsString = rapidJsonMemberIteratorTechniques->value.GetString();
+
 				// Add technique
 				RendererRuntime::v1Material::Technique technique;
 				technique.materialTechniqueId	   = RendererRuntime::StringId(rapidJsonMemberIteratorTechniques->name.GetString());
-				technique.materialBlueprintAssetId = StringHelper::getSourceAssetIdByString(rapidJsonMemberIteratorTechniques->value.GetString(), input);
+				technique.materialBlueprintAssetId = StringHelper::getSourceAssetIdByString(sourceAssetIdAsString, input);
 				techniques.push_back(technique);
 				materialTechniqueIdToName.emplace(technique.materialTechniqueId, rapidJsonMemberIteratorTechniques->name.GetString());
+
+				// Sanity check since later on we're not able to recover the original asset ID as string
+				SourceAssetIdToVirtualFilename::const_iterator iterator = input.sourceAssetIdToVirtualFilename.find(technique.materialBlueprintAssetId);
+				if (input.sourceAssetIdToVirtualFilename.cend() == iterator)
+				{
+					throw std::runtime_error("Failed to map source asset ID " + sourceAssetIdAsString + " to virtual asset filename");
+				}
 			}
 			std::sort(techniques.begin(), techniques.end(), detail::orderByMaterialTechniqueId);
 
@@ -560,11 +569,13 @@ namespace RendererToolkit
 		}
 
 		// Parse material JSON
-		const std::string virtualMaterialFilename = std_filesystem::path(virtualMaterialAssetFilename).parent_path().generic_string() + '/' + materialInputFile;
+		const std::string virtualMaterialDirectory = std_filesystem::path(virtualMaterialAssetFilename).parent_path().generic_string();
+		const std::string virtualMaterialFilename = virtualMaterialDirectory + '/' + materialInputFile;
 		rapidjson::Document rapidJsonDocument;
 		JsonHelper::loadDocumentByFilename(input.context.getFileManager(), virtualMaterialFilename, "MaterialAsset", "1", rapidJsonDocument);
 		std::vector<RendererRuntime::v1Material::Technique> temporaryTechniques;
-		getTechniquesAndPropertiesByMaterialAssetId(input, rapidJsonDocument, (nullptr != techniques) ? *techniques : temporaryTechniques, sortedMaterialPropertyVector);
+		const IAssetCompiler::Input materialAssetInput(input.context, input.projectName, input.cacheManager, input.virtualAssetPackageInputDirectory, virtualMaterialFilename, virtualMaterialDirectory, input.virtualAssetOutputDirectory, input.sourceAssetIdToCompiledAssetId, input.compiledAssetIdToSourceAssetId, input.sourceAssetIdToVirtualFilename, input.defaultTextureAssetIds);
+		getTechniquesAndPropertiesByMaterialAssetId(materialAssetInput, rapidJsonDocument, (nullptr != techniques) ? *techniques : temporaryTechniques, sortedMaterialPropertyVector);
 	}
 
 	void JsonMaterialHelper::getDependencyFiles(const IAssetCompiler::Input& input, const std::string& virtualInputFilename, std::vector<std::string>& virtualDependencyFilenames)
