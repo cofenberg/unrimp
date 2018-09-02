@@ -769,13 +769,17 @@ namespace RendererToolkit
 									const rapidjson::Value& rapidJsonValueFramebufferColorAttachment = rapidJsonValueFramebufferColorAttachments[i];
 									RendererRuntime::FramebufferSignatureAttachment& colorFramebufferSignatureAttachment = colorFramebufferSignatureAttachments[i];
 									const RendererRuntime::AssetId textureAssetId = StringHelper::getAssetIdByString(rapidJsonValueFramebufferColorAttachment["ColorTexture"].GetString());
-									if (RendererRuntime::isValid(textureAssetId) && renderTargetTextureAssetIds.find(textureAssetId) == renderTargetTextureAssetIds.end())
+									if (RendererRuntime::isValid(textureAssetId))
 									{
-										throw std::runtime_error(std::string("Color texture \"") + rapidJsonValueFramebufferColorAttachment["ColorTexture"].GetString() + "\" at index " + std::to_string(i) + " of framebuffer \"" + rapidJsonMemberIteratorFramebuffers->name.GetString() + "\" is unknown");
-									}
-									if ((renderTargetTextureSignatures.find(textureAssetId)->second.getFlags() & RendererRuntime::RenderTargetTextureSignature::Flag::RENDER_TARGET) == 0)
-									{
-										throw std::runtime_error(std::string("Color texture \"") + rapidJsonValueFramebufferColorAttachment["ColorTexture"].GetString() + "\" at index " + std::to_string(i) + " of framebuffer \"" + rapidJsonMemberIteratorFramebuffers->name.GetString() + "\" has no \"RENDER_TARGET\" flag set");
+										if (renderTargetTextureAssetIds.find(textureAssetId) == renderTargetTextureAssetIds.end())
+										{
+											throw std::runtime_error(std::string("Color texture \"") + rapidJsonValueFramebufferColorAttachment["ColorTexture"].GetString() + "\" at index " + std::to_string(i) + " of framebuffer \"" + rapidJsonMemberIteratorFramebuffers->name.GetString() + "\" is unknown");
+										}
+										assert(renderTargetTextureSignatures.find(textureAssetId) != renderTargetTextureSignatures.end());
+										if ((renderTargetTextureSignatures.find(textureAssetId)->second.getFlags() & RendererRuntime::RenderTargetTextureSignature::Flag::RENDER_TARGET) == 0)
+										{
+											throw std::runtime_error(std::string("Color texture \"") + rapidJsonValueFramebufferColorAttachment["ColorTexture"].GetString() + "\" at index " + std::to_string(i) + " of framebuffer \"" + rapidJsonMemberIteratorFramebuffers->name.GetString() + "\" has no \"RENDER_TARGET\" flag set");
+										}
 									}
 									colorFramebufferSignatureAttachment.textureAssetId = textureAssetId;
 									JsonHelper::optionalIntegerProperty(rapidJsonValueFramebufferColorAttachment, "MipmapIndex", colorFramebufferSignatureAttachment.mipmapIndex);
@@ -790,13 +794,17 @@ namespace RendererToolkit
 								for (uint8_t i = 0; i < numberOfColorFramebufferAttachments; ++i)
 								{
 									const RendererRuntime::AssetId textureAssetId = StringHelper::getAssetIdByString(rapidJsonValueFramebufferColorTextures[i].GetString());
-									if (RendererRuntime::isValid(textureAssetId) && renderTargetTextureAssetIds.find(textureAssetId) == renderTargetTextureAssetIds.end())
+									if (RendererRuntime::isValid(textureAssetId))
 									{
-										throw std::runtime_error(std::string("Color texture \"") + rapidJsonValueFramebufferColorTextures[i].GetString() + "\" at index " + std::to_string(i) + " of framebuffer \"" + rapidJsonMemberIteratorFramebuffers->name.GetString() + "\" is unknown");
-									}
-									if ((renderTargetTextureSignatures.find(textureAssetId)->second.getFlags() & RendererRuntime::RenderTargetTextureSignature::Flag::RENDER_TARGET) == 0)
-									{
-										throw std::runtime_error(std::string("Color texture \"") + rapidJsonValueFramebufferColorTextures[i].GetString() + "\" at index " + std::to_string(i) + " of framebuffer \"" + rapidJsonMemberIteratorFramebuffers->name.GetString() + "\" has no \"RENDER_TARGET\" flag set");
+										if (renderTargetTextureAssetIds.find(textureAssetId) == renderTargetTextureAssetIds.end())
+										{
+											throw std::runtime_error(std::string("Color texture \"") + rapidJsonValueFramebufferColorTextures[i].GetString() + "\" at index " + std::to_string(i) + " of framebuffer \"" + rapidJsonMemberIteratorFramebuffers->name.GetString() + "\" is unknown");
+										}
+										assert(renderTargetTextureSignatures.find(textureAssetId) != renderTargetTextureSignatures.end());
+										if ((renderTargetTextureSignatures.find(textureAssetId)->second.getFlags() & RendererRuntime::RenderTargetTextureSignature::Flag::RENDER_TARGET) == 0)
+										{
+											throw std::runtime_error(std::string("Color texture \"") + rapidJsonValueFramebufferColorTextures[i].GetString() + "\" at index " + std::to_string(i) + " of framebuffer \"" + rapidJsonMemberIteratorFramebuffers->name.GetString() + "\" has no \"RENDER_TARGET\" flag set");
+										}
 									}
 									colorFramebufferSignatureAttachments[i].textureAssetId = textureAssetId;
 								}
@@ -823,13 +831,17 @@ namespace RendererToolkit
 								depthStencilTextureAssetId = rapidJsonValueFramebuffer.HasMember("DepthStencilTexture") ? StringHelper::getAssetIdByString(rapidJsonValueFramebuffer["DepthStencilTexture"].GetString()) : RendererRuntime::getInvalid<RendererRuntime::AssetId>();
 							}
 							depthStencilFramebufferSignatureAttachment.textureAssetId = depthStencilTextureAssetId;
-							if (RendererRuntime::isValid(depthStencilTextureAssetId) && renderTargetTextureAssetIds.find(depthStencilTextureAssetId) == renderTargetTextureAssetIds.end())
+							if (RendererRuntime::isValid(depthStencilTextureAssetId))
 							{
-								throw std::runtime_error(std::string("Depth stencil texture \"") + rapidJsonValueFramebuffer["DepthStencilTexture"].GetString() + "\" of framebuffer \"" + rapidJsonMemberIteratorFramebuffers->name.GetString() + "\" is unknown");
-							}
-							if ((renderTargetTextureSignatures.find(depthStencilTextureAssetId)->second.getFlags() & RendererRuntime::RenderTargetTextureSignature::Flag::RENDER_TARGET) == 0)
-							{
-								throw std::runtime_error(std::string("Depth stencil texture \"") + rapidJsonValueFramebuffer["DepthStencilTexture"].GetString() + "\" of framebuffer \"" + rapidJsonMemberIteratorFramebuffers->name.GetString() + "\" has no \"RENDER_TARGET\" flag set");
+								if (renderTargetTextureAssetIds.find(depthStencilTextureAssetId) == renderTargetTextureAssetIds.end())
+								{
+									throw std::runtime_error(std::string("Depth stencil texture \"") + rapidJsonValueFramebuffer["DepthStencilTexture"].GetString() + "\" of framebuffer \"" + rapidJsonMemberIteratorFramebuffers->name.GetString() + "\" is unknown");
+								}
+								assert(renderTargetTextureSignatures.find(depthStencilTextureAssetId) != renderTargetTextureSignatures.end());
+								if ((renderTargetTextureSignatures.find(depthStencilTextureAssetId)->second.getFlags() & RendererRuntime::RenderTargetTextureSignature::Flag::RENDER_TARGET) == 0)
+								{
+									throw std::runtime_error(std::string("Depth stencil texture \"") + rapidJsonValueFramebuffer["DepthStencilTexture"].GetString() + "\" of framebuffer \"" + rapidJsonMemberIteratorFramebuffers->name.GetString() + "\" has no \"RENDER_TARGET\" flag set");
+								}
 							}
 
 							// Write framebuffer signature
