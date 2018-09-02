@@ -374,8 +374,7 @@
 					"Usage": "STATIC",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "Unrimp/Texture/DynamicByCode/LightClustersMap3D",
-					"FallbackTexture": "Unrimp/Texture/DynamicByCode/LightClustersMap3D",
-					"SamplerStateBaseShaderRegisterName": "SamplerPoint"
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/LightClustersMap3D"
 				},
 				"6":
 				{
@@ -396,27 +395,17 @@
 				"0":
 				{
 					"ResourceType": "SAMPLER_STATE",
-					"BaseShaderRegisterName": "SamplerPoint",
-					"BaseShaderRegister": "0",
-					"ShaderVisibility": "FRAGMENT",
-					"Filter": "MIN_MAG_MIP_POINT",
-					"MaxAnisotropy": "1",
-					"MaxLOD": "0.0"
-				},
-				"1":
-				{
-					"ResourceType": "SAMPLER_STATE",
 					"BaseShaderRegisterName": "SamplerLinear",
-					"BaseShaderRegister": "1",
+					"BaseShaderRegister": "0",
 					"ShaderVisibility": "ALL_GRAPHICS",
 					"AddressU": "WRAP",
 					"AddressV": "WRAP"
 				},
-				"2":
+				"1":
 				{
 					"ResourceType": "SAMPLER_STATE",
 					"BaseShaderRegisterName": "SamplerLinearClamp",
-					"BaseShaderRegister": "2",
+					"BaseShaderRegister": "1",
 					"ShaderVisibility": "ALL_GRAPHICS",
 					"AddressU": "CLAMP",
 					"AddressV": "CLAMP",

@@ -114,8 +114,7 @@ TEXTURE_2D(4, 4, _hr_rg_mb_nya, 6)	// R channel = Height map ("_h"-postfix), G c
 @end
 
 // Samplers
-SAMPLER_STATE(5, 0, SamplerPoint, 0)
-SAMPLER_STATE(5, 1, SamplerLinear, 1)
+SAMPLER_STATE(5, 0, SamplerLinear, 0)
 
 
 //[-------------------------------------------------------]

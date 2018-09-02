@@ -93,8 +93,7 @@ TEXTURE_3D_UINT(2, 9, LightClustersMap3D, 10)
 @end
 
 // Samplers
-SAMPLER_STATE(2, 0, SamplerPoint, 0)
-SAMPLER_STATE(2, 1, SamplerLinear, 1)
+SAMPLER_STATE(2, 0, SamplerLinear, 0)
 
 
 //[-------------------------------------------------------]
@@ -200,21 +199,21 @@ MAIN_BEGIN
 	// Get texture coordinate and apply distortion
 	float2 texCoord = MAIN_INPUT(TexCoordVS);
 	texCoord += SAMPLE_2D_LOD(DistortionMap, SamplerLinear, float4(texCoord, 0.0f, 0.0f)).rg;
+	int2 textureCoordinate = int2(texCoord * PassData.ViewportSize);
 
 	// Gather screen space ambient occlusion value
-	float screenSpaceAmbientOcclusion = SAMPLE_2D_LOD(ScreenSpaceAmbientOcclusionMap, SamplerPoint, float4(texCoord, 0.0f, 0.0f)).r;
+	float screenSpaceAmbientOcclusion = TEXTURE_FETCH_2D(ScreenSpaceAmbientOcclusionMap, int3(textureCoordinate, 0)).r;
 
 	// Gather volumetric light value
 	float3 volumetricLight = SAMPLE_2D_LOD(VolumetricLightMap, SamplerLinear, float4(texCoord, 0.0f, 0.0f)).rgb;
 
 	// Gather reflection color value
-	float3 reflectionColor = SAMPLE_2D(ReflectionMap, SamplerLinear, texCoord).rgb;
+	float3 reflectionColor = TEXTURE_FETCH_2D(ReflectionMap, int3(textureCoordinate, 0)).rgb;
 
 	// Calculate color by GBuffer
 	float3 color = float3(0.0f, 0.0f, 0.0f);
 	@property(NumberOfMultisamples)
 		// Custom MSAA resolve
-		int2 textureCoordinate = int2(texCoord * PassData.ViewportSize);
 		@foreach(NumberOfMultisamples, i, 0)
 		{
 			// Read GBuffer data
@@ -241,18 +240,16 @@ MAIN_BEGIN
 		color /= @value(NumberOfMultisamples);
 	@end
 	@property(!NumberOfMultisamples)
-		float4 textureCoordinate = float4(texCoord, 0.0f, 0.0f);
-
 		// Read GBuffer data
-		float4 gbuffer0Value = SAMPLE_2D_LOD(GBufferMap0, SamplerPoint, textureCoordinate);
+		float4 gbuffer0Value = TEXTURE_FETCH_2D(GBufferMap0, int3(textureCoordinate, 0));
 
 		// Read depth map value and check whether or not a depth value was written (depth = 1 = depth clear value)
-		float depth = SAMPLE_DEPTH_2D_LOD(DepthMap, SamplerPoint, textureCoordinate);
+		float depth = REVERSED_Z(TEXTURE_FETCH_2D(DepthMap, int3(textureCoordinate, 0)).r);
 		if (1.0f != depth)
 		{
 			// Read GBuffer data
-			float4 gbuffer1Value = SAMPLE_2D_LOD(GBufferMap1, SamplerPoint, textureCoordinate);
-			float4 gbuffer2Value = SAMPLE_2D_LOD(GBufferMap2, SamplerPoint, textureCoordinate);
+			float4 gbuffer1Value = TEXTURE_FETCH_2D(GBufferMap1, int3(textureCoordinate, 0));
+			float4 gbuffer2Value = TEXTURE_FETCH_2D(GBufferMap2, int3(textureCoordinate, 0));
 
 			// Calculate color by GBuffer
 			color = CalculateColorByGBuffer(viewRay, gbuffer0Value, gbuffer1Value, gbuffer2Value, depth, screenSpaceAmbientOcclusion, volumetricLight, reflectionColor);

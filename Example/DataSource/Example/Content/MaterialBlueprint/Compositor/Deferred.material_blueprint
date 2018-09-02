@@ -329,8 +329,7 @@
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@GBufferMap0",
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
-					"MipmapsUsed": "FALSE",
-					"SamplerStateBaseShaderRegisterName": "SamplerPoint"
+					"MipmapsUsed": "FALSE"
 				},
 				"1":
 				{
@@ -342,8 +341,7 @@
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@GBufferMap1",
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
-					"MipmapsUsed": "FALSE",
-					"SamplerStateBaseShaderRegisterName": "SamplerPoint"
+					"MipmapsUsed": "FALSE"
 				},
 				"2":
 				{
@@ -355,8 +353,7 @@
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@GBufferMap2",
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
-					"MipmapsUsed": "FALSE",
-					"SamplerStateBaseShaderRegisterName": "SamplerPoint"
+					"MipmapsUsed": "FALSE"
 				},
 				"3":
 				{
@@ -368,8 +365,7 @@
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@DepthMap",
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
-					"MipmapsUsed": "FALSE",
-					"SamplerStateBaseShaderRegisterName": "SamplerPoint"
+					"MipmapsUsed": "FALSE"
 				},
 				"4":
 				{
@@ -394,8 +390,7 @@
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@ScreenSpaceAmbientOcclusionMap",
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/WhiteMap2D",
-					"MipmapsUsed": "FALSE",
-					"SamplerStateBaseShaderRegisterName": "SamplerPoint"
+					"MipmapsUsed": "FALSE"
 				},
 				"6":
 				{
@@ -467,18 +462,8 @@
 				"0":
 				{
 					"ResourceType": "SAMPLER_STATE",
-					"BaseShaderRegisterName": "SamplerPoint",
-					"BaseShaderRegister": "0",
-					"ShaderVisibility": "FRAGMENT",
-					"Filter": "MIN_MAG_MIP_POINT",
-					"MaxAnisotropy": "1",
-					"MaxLOD": "0.0"
-				},
-				"1":
-				{
-					"ResourceType": "SAMPLER_STATE",
 					"BaseShaderRegisterName": "SamplerLinear",
-					"BaseShaderRegister": "1",
+					"BaseShaderRegister": "0",
 					"ShaderVisibility": "FRAGMENT",
 					"Filter": "MIN_MAG_MIP_LINEAR",
 					"AddressU": "WRAP",

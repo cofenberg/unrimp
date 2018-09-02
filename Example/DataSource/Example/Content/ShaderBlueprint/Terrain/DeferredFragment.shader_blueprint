@@ -59,9 +59,8 @@ TEXTURE_2D(2, 1, _argb_nxa, 2)
 TEXTURE_2D(2, 2, _aor_rg_mb_nya, 3)
 
 // Samplers
-SAMPLER_STATE(5, 0, SamplerPoint, 0)
-SAMPLER_STATE(3, 1, SamplerLinear, 1)
-SAMPLER_STATE(3, 2, SamplerLinearClamp, 2)
+SAMPLER_STATE(3, 0, SamplerLinear, 0)
+SAMPLER_STATE(3, 1, SamplerLinearClamp, 1)
 
 
 //[-------------------------------------------------------]

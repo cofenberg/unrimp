@@ -64,9 +64,8 @@ TEXTURE_3D_UINT(2, 5, LightClustersMap3D, 6)
 @end
 
 // Samplers
-SAMPLER_STATE(5, 0, SamplerPoint, 0)
-SAMPLER_STATE(3, 1, SamplerLinear, 1)
-SAMPLER_STATE(3, 2, SamplerLinearClamp, 2)
+SAMPLER_STATE(3, 0, SamplerLinear, 0)
+SAMPLER_STATE(3, 1, SamplerLinearClamp, 1)
 
 
 //[-------------------------------------------------------]

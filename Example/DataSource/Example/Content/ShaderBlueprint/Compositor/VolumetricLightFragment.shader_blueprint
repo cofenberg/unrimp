@@ -34,6 +34,7 @@
 INPUT_BEGIN
 	INPUT_TEXTURE_COORDINATE(1, float2, TexCoordVS, 0)	// Texture coordinate
 	INPUT_TEXTURE_COORDINATE(2, float3, ViewRayVS,  1)	// View space ray used for view space position reconstruction
+	DECLARE_FRAGMENT_POSITION
 INPUT_END
 OUTPUT_BEGIN
 	OUTPUT_COLOR(0)
@@ -74,8 +75,7 @@ TEXTURE_2D_ARRAY(2, 1, ShadowMap, 2)
 TEXTURE_3D_UINT(2, 2, LightClustersMap3D, 3)
 
 // Samplers
-SAMPLER_STATE(2, 0, SamplerPoint, 0)
-SAMPLER_STATE(2, 1, SamplerLinear, 1)
+SAMPLER_STATE(2, 0, SamplerLinear, 0)
 
 
 //[-------------------------------------------------------]
@@ -110,7 +110,7 @@ float CalculateMieScatter(float3 lightDirection, float3 cameraDirection)
 //[-------------------------------------------------------]
 MAIN_BEGIN
 	// Read depth map value, since we're rendering the volumetric light with half-size use the second mipmap
-	float depth = SAMPLE_DEPTH_2D_LOD(DepthMap, SamplerPoint, float4(MAIN_INPUT(TexCoordVS), 0.0f, 1.0f));
+	float depth = REVERSED_Z(TEXTURE_FETCH_2D(DepthMap, int3(int2(FRAGMENT_POSITION.xy), 1)).r);
 
 	// Get the normalized view ray
 	float3 viewRay = normalize(MAIN_INPUT(ViewRayVS));
