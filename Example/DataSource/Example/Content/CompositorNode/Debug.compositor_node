@@ -40,7 +40,7 @@
 					"MaximumDepth": "0.0",
 					"MinimumRenderQueueIndex": "254",
 					"MaximumRenderQueueIndex": "254",
-					"MaterialTechnique": "Default"
+					"MaterialTechnique": "Debug"
 				},
 				"DebugGui":
 				{

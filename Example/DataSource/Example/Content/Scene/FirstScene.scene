@@ -31,7 +31,7 @@
 					},
 					"SkySceneItem":
 					{
-						"MaterialBlueprint": "$ProjectName/MaterialBlueprint/Sky/Sky.asset",
+						"Material": "$ProjectName/Material/Base/Sky.asset",
 						"SetMaterialProperties":
 						{
 							"UseProceduralSky": "TRUE"

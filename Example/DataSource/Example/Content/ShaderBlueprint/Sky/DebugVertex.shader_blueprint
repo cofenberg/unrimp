@@ -23,50 +23,44 @@
 //[-------------------------------------------------------]
 @includepiece($ProjectName/ShaderPiece/Core.asset)
 	@insertpiece(SetCrossPlatformSettings)
-@includepiece($ProjectName/ShaderPiece/Terrain.asset)
-	@insertpiece(DefineTerrainPassDataStruct)
 
- 
+
 //[-------------------------------------------------------]
 //[ Input / output                                        ]
 //[-------------------------------------------------------]
 // Attribute input / output
-INPUT_BEGIN
-	INPUT_TEXTURE_COORDINATE(1, float2, TexCoord, 					 0)	// Texture coordinate
-	INPUT_TEXTURE_COORDINATE(2, float3, PreviousClipSpacePositionVS, 1)	// Previous clip space position
-	INPUT_TEXTURE_COORDINATE(3, float3, WorldSpacePosition, 		 2)	// World space position
-INPUT_END
-OUTPUT_BEGIN
-	OUTPUT_COLOR(0)	// rgb = albedo color, a = alpha
-OUTPUT_END
+INPUT_BEGIN_VERTEX
+	INPUT_VERTEX_POSITION(0, float3, Position)	// Object space vertex position
+INPUT_END_VERTEX
+OUTPUT_BEGIN_VERTEX
+	OUTPUT_TEXTURE_COORDINATE(1, float3, TexCoordVS, 0)	// Texture coordinate
+	OUTPUT_POSITION			 (0)						// Clip space vertex position as output, left/bottom is (-1,-1) and right/top is (1,1)
+OUTPUT_END_VERTEX
 
 // Uniform buffers
+struct PassDataStruct
+{
+	float4x4 WorldSpaceToViewSpaceMatrix;
+	float4x4 ViewSpaceToClipSpaceMatrix;
+	float4   HosekWilkieSkyCoefficients1[4];
+	float4   HosekWilkieSkyCoefficients2[4];
+	float3   WorldSpaceSunlightDirection;
+};
 UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
-	TerrainPassDataStruct PassData;
+	PassDataStruct PassData;
 UNIFORM_BUFFER_END
-
-// Textures
-TEXTURE_2D(2, 1, _argb_nxa, 2)
-
-// Samplers
-SAMPLER_STATE(3, 1, SamplerLinearClamp, 1)
-
-
-//[-------------------------------------------------------]
-//[ Functions                                             ]
-//[-------------------------------------------------------]
-@includepiece($ProjectName/ShaderPiece/Color.asset)
-	@insertpiece(DefineLinearSpaceToGammaSpace3)
 
 
 //[-------------------------------------------------------]
 //[ Main                                                  ]
 //[-------------------------------------------------------]
-MAIN_BEGIN
-	// Read channel packed texture data
-	// -> "_argb_nxa" = RGB channel = Albedo map ("_a"-postfix), A channel = x component of normal map ("_n"-postfix)
-	float3 color = LinearSpaceToGammaSpace3(SAMPLE_2D(_argb_nxa, SamplerLinearClamp, MAIN_INPUT(TexCoord)).rgb);
+MAIN_BEGIN_VERTEX
+	// Rotate into view-space, centered on the camera
+	float3 viewSpacePosition = (MATRIX_MUL(CAST_TO(PassData.WorldSpaceToViewSpaceMatrix, float3x3), MAIN_INPUT(Position))).xyz;
 
-	// Done
-	MAIN_OUTPUT_COLOR(0) = float4(color, 1.0f);
-MAIN_END
+	// Transform to clip-space
+	MAIN_OUTPUT_POSITION = MATRIX_MUL(PassData.ViewSpaceToClipSpaceMatrix, float4(viewSpacePosition, 1.0f));
+
+	// Pass through the object space position as texture coordinate
+	MAIN_OUTPUT(TexCoordVS) = MAIN_INPUT(Position);
+MAIN_END_VERTEX(MAIN_OUTPUT_POSITION)
