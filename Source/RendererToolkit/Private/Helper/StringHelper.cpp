@@ -116,7 +116,7 @@ namespace
 					if (index + 1 < endPosition)
 					{
 						const char nextCharacter = sourceCode[index + 1];
-						if ('/' == nextCharacter)
+						if ('/' == nextCharacter && index > 0 && (sourceCode[index - 1] == ' ' || sourceCode[index - 1] == '\t'))
 						{
 							// One-line-comment
 							index = sourceCode.find('\n', currentPosition);
@@ -177,7 +177,7 @@ namespace
 								break;
 							}
 						}
-						else if ('*' == nextCharacter)
+						else if ('*' == nextCharacter && index > 0 && (sourceCode[index - 1] == ' ' || sourceCode[index - 1] == '\t'))
 						{
 							// Block-comment
 							index = sourceCode.find("*/", currentPosition);
@@ -441,7 +441,7 @@ namespace RendererToolkit
 		}
 	}
 
-	void StringHelper::readSourceCodeWithStrippedCommentsByFilename(const RendererRuntime::IFileManager& fileManager, const std::string& virtualFilename, std::string& sourceCode)
+	void StringHelper::readStringWithStrippedCommentsByFilename(const RendererRuntime::IFileManager& fileManager, const std::string& virtualFilename, std::string& sourceCode)
 	{
 		// Read original source code
 		std::string originalSourceCode;

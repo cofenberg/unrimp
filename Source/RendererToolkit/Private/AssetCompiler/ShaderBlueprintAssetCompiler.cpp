@@ -187,7 +187,7 @@ namespace RendererToolkit
 			{ // Shader blueprint
 				// Get file size and file data
 				std::string sourceCode;
-				StringHelper::readSourceCodeWithStrippedCommentsByFilename(input.context.getFileManager(), virtualInputFilename, sourceCode);
+				StringHelper::readStringWithStrippedCommentsByFilename(input.context.getFileManager(), virtualInputFilename, sourceCode);
 				const std::size_t numberOfBytes = sourceCode.length();
 
 				// Sanity check
