@@ -1,0 +1,18 @@
+{
+	"Format":
+	{
+		"Type": "MaterialAsset",
+		"Version": "1"
+	},
+	"MaterialAsset":
+	{
+		"Techniques":
+		{
+			"Default": "./MB_DebugSkinned.asset",
+			"Debug": "./MB_DebugSkinned.asset",
+			"Forward": "./MB_ForwardSkinned.asset",
+			"Deferred": "./MB_DeferredSkinned.asset",
+			"DepthOnly": "./MB_DepthOnlySkinned.asset"
+		}
+	}
+}

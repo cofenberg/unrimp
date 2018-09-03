@@ -6,7 +6,7 @@
 	},
 	"MaterialAsset":
 	{
-		"BaseMaterial": "$ProjectName/Material/Base/SkinnedMesh.asset",
+		"BaseMaterial": "$ProjectName/Blueprint/Mesh/M_SkinnedMesh.asset",
 		"Properties":
 		{
 			"_argb_nxa": "./iron_grill_argb_nxa.asset"

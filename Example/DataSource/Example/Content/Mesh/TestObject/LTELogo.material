@@ -1,0 +1,17 @@
+{
+	"Format":
+	{
+		"Type": "MaterialAsset",
+		"Version": "1"
+	},
+	"MaterialAsset":
+	{
+		"BaseMaterial": "$ProjectName/Blueprint/Mesh/M_Mesh.asset",
+		"Properties":
+		{
+			"AlbedoColor": "0.25 0.25 0.25",
+			"Roughness": "0.8",
+			"Metallic": "1.0"
+		}
+	}
+}

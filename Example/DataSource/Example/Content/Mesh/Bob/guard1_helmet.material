@@ -6,7 +6,7 @@
 	},
 	"MaterialAsset":
 	{
-		"BaseMaterial": "$ProjectName/Material/Base/SkinnedMesh.asset",
+		"BaseMaterial": "$ProjectName/Blueprint/Mesh/M_SkinnedMesh.asset",
 		"Properties":
 		{
 			"CullMode": "NONE",

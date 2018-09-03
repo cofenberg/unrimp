@@ -138,11 +138,11 @@ namespace RendererRuntime
 			vertexAttributes.numberOfAttributes = static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout));
 			vertexAttributes.attributes = vertexAttributesLayout;
 		}
-		else if (STRING_ID("Example/VertexAttributes/Default/Mesh") == getAsset().assetId)
+		else if (STRING_ID("Example/VertexAttributes/Mesh/VA_Mesh") == getAsset().assetId)
 		{
 			mVertexAttributesResource->mVertexAttributes = Renderer::VertexAttributes(MeshResource::VERTEX_ATTRIBUTES.numberOfAttributes, MeshResource::VERTEX_ATTRIBUTES.attributes);
 		}
-		else if (STRING_ID("Example/VertexAttributes/Default/SkinnedMesh") == getAsset().assetId)
+		else if (STRING_ID("Example/VertexAttributes/Mesh/VA_SkinnedMesh") == getAsset().assetId)
 		{
 			mVertexAttributesResource->mVertexAttributes = Renderer::VertexAttributes(MeshResource::SKINNED_VERTEX_ATTRIBUTES.numberOfAttributes, MeshResource::SKINNED_VERTEX_ATTRIBUTES.attributes);
 		}

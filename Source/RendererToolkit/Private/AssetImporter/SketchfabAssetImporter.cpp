@@ -509,7 +509,7 @@ namespace
 			rapidjson::Document rapidJsonDocumentAsset(rapidjson::kObjectType);
 			rapidjson::Document::AllocatorType& rapidJsonAllocatorType = rapidJsonDocumentAsset.GetAllocator();
 			rapidjson::Value rapidJsonValueMaterialAsset(rapidjson::kObjectType);
-			const std::string baseMaterial = importerContext.hasSkeleton ? "$ProjectName/Material/Base/SkinnedMesh.asset" : "$ProjectName/Material/Base/Mesh.asset";
+			const std::string baseMaterial = importerContext.hasSkeleton ? "$ProjectName/Blueprint/Mesh/M_SkinnedMesh.asset" : "$ProjectName/Blueprint/Mesh/M_Mesh.asset";
 			const std::string relativeFilename_argb_nxa = "../" + TEXTURE_TYPE + '/' + materialName + "_argb_nxa" + ".asset";
 			const std::string relativeFilename_hr_rg_mb_nya = "../" + TEXTURE_TYPE + '/' + materialName + "_hr_rg_mb_nya" + ".asset";
 			const std::string relativeFilenameEmissiveMap = "../" + TEXTURE_TYPE + '/' + materialName + "_e" + ".asset";

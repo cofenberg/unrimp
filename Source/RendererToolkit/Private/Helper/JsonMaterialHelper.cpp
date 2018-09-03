@@ -613,7 +613,8 @@ namespace RendererToolkit
 				// Go down the rabbit hole recursively
 				try
 				{
-					getDependencyFiles(input, baseMaterialVirtualInputFilename, virtualDependencyFilenames);
+					const IAssetCompiler::Input materialAssetInput(input.context, input.projectName, input.cacheManager, input.virtualAssetPackageInputDirectory, baseMaterialVirtualInputFilename, std_filesystem::path(baseMaterialVirtualInputFilename).parent_path().generic_string(), input.virtualAssetOutputDirectory, input.sourceAssetIdToCompiledAssetId, input.compiledAssetIdToSourceAssetId, input.sourceAssetIdToVirtualFilename, input.defaultTextureAssetIds);
+					getDependencyFiles(materialAssetInput, baseMaterialVirtualInputFilename, virtualDependencyFilenames);
 				}
 				catch (const std::exception& e)
 				{
@@ -626,6 +627,11 @@ namespace RendererToolkit
 				for (rapidjson::Value::ConstMemberIterator rapidJsonMemberIteratorTechniques = rapidJsonValueTechniques.MemberBegin(); rapidJsonMemberIteratorTechniques != rapidJsonValueTechniques.MemberEnd(); ++rapidJsonMemberIteratorTechniques)
 				{
 					const RendererRuntime::AssetId materialBlueprintAssetId = StringHelper::getSourceAssetIdByString(rapidJsonMemberIteratorTechniques->value.GetString(), input);
+					SourceAssetIdToVirtualFilename::const_iterator iterator = input.sourceAssetIdToVirtualFilename.find(materialBlueprintAssetId);
+					if (input.sourceAssetIdToVirtualFilename.cend() == iterator)
+					{
+						throw std::runtime_error("Failed to map source asset ID " + std::string(rapidJsonMemberIteratorTechniques->value.GetString()) + " to virtual asset filename");
+					}
 					virtualDependencyFilenames.emplace_back(input.sourceAssetIdToVirtualAssetFilename(materialBlueprintAssetId));
 				}
 			}

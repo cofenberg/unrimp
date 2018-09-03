@@ -1,0 +1,16 @@
+{
+	"Format":
+	{
+		"Type": "MaterialAsset",
+		"Version": "1"
+	},
+	"MaterialAsset":
+	{
+		"BaseMaterial": "$ProjectName/Blueprint/Mesh/M_Mesh.asset",
+		"Properties":
+		{
+			"_argb_nxa": "./vase_hanging_argb_nxa.asset",
+			"_hr_rg_mb_nya": "./vase_hanging_hr_rg_mb_nya.asset"
+		}
+	}
+}

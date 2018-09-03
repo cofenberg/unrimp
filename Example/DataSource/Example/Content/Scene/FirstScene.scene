@@ -84,7 +84,7 @@
 					"MeshSceneItem":
 					{
 						"Mesh": "$ProjectName/Mesh/Imrod/SM_Imrod.asset",
-						"SubMeshMaterials": [ "$ProjectName/Material/Sponza/bricks.asset", "$ProjectName/Mesh/Imrod/M_TransparentImrod.asset" ]
+						"SubMeshMaterials": [ "$ProjectName/Mesh/Sponza/bricks.asset", "$ProjectName/Mesh/Imrod/M_TransparentImrod.asset" ]
 					}
 				}
 			},

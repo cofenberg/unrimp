@@ -6,6 +6,9 @@
 	},
 	"MaterialAsset":
 	{
-		"BaseMaterial": "$ProjectName/Blueprint/Mesh/M_Mesh.asset"
+		"Techniques":
+		{
+			"Transparent": "./MB_Transparent.asset"
+		}
 	}
 }
