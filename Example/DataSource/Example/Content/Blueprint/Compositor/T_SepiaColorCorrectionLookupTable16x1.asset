@@ -1,0 +1,21 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"AssetMetadata":
+		{
+			"AssetType": "Texture",
+			"AssetCategory": "Compositor",
+			"Description": "16x1 Sepia color correction lookup table"
+		},
+		"TextureAssetCompiler":
+		{
+			"TextureSemantic": "COLOR_CORRECTION_LOOKUP_TABLE",
+			"InputFile": "T_SepiaColorCorrectionLookupTable16x1.tga"
+		}
+	}
+}

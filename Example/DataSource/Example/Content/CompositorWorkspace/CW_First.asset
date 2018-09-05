@@ -1,0 +1,20 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"AssetMetadata":
+		{
+			"AssetType": "CompositorWorkspace",
+			"AssetCategory": "Default",
+			"Copyright": "Copyright (c) 2012-2018 The Unrimp Team"
+		},
+		"CompositorWorkspaceAssetCompiler":
+		{
+			"InputFile": "CW_First.compositor_workspace"
+		}
+	}
+}

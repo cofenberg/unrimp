@@ -1,0 +1,246 @@
+{
+	"Format":
+	{
+		"Type": "MaterialBlueprintAsset",
+		"Version": "2"
+	},
+	"MaterialBlueprintAsset":
+	{
+		"Properties":
+		{
+			"LocalComputeSize":
+			{
+				"Usage": "STATIC",
+				"ValueType": "INTEGER_3",
+				"Value": "32 32 1",
+				"Description": "Fixed build in material property for the compute shader local size (also known as number of threads). Must be identical to in-shader values."
+			},
+			"GlobalComputeSize":
+			{
+				"Usage": "MATERIAL_REFERENCE",
+				"ValueType": "INTEGER_3",
+				"Value": "@OutputTexture2D",
+				"Description": "Fixed build in material property for the compute shader global size, reads the size dynamically from the referenced texture asset"
+			},
+			"ToneMapKeyValue":
+			{
+				"Usage": "SHADER_UNIFORM",
+				"ValueType": "FLOAT",
+				"Value": "0.24",
+				"MinimumValue": "0.0",
+				"MaximumValue": "0.5",
+				"StepSize": "0.01",
+				"Description": "Auto-exposure key value; parameter that biases the result of the auto-exposure pass"
+			},
+			"BloomIntensity":
+			{
+				"Usage": "SHADER_UNIFORM",
+				"ValueType": "FLOAT",
+				"Value": "5.0",
+				"MinimumValue": "0.0",
+				"MaximumValue": "2.0",
+				"StepSize": "0.01",
+				"Description": "Scale factor applied to the bloom results when combined with tone-mapped result"
+			},
+			"ColorMap":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "Unrimp/Texture/DynamicByCode/WhiteMap2D",
+				"Description": "2D color map"
+			},
+			"LuminanceMap":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "Unrimp/Texture/DynamicByCode/WhiteMap2D",
+				"Description": "2D luminance map"
+			},
+			"BloomMap":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+				"Description": "2D bloom map"
+			},
+			"DirtyLensMap":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "./T_DirtyLens.asset",
+				"Description": "2D dirty lens map"
+			},
+			"UseLensFlareMap":
+			{
+				"Usage": "SHADER_COMBINATION",
+				"ValueType": "BOOLEAN",
+				"Value": "TRUE",
+				"Description": "Use lens flare map?"
+			},
+			"LensFlareMap":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+				"Description": "2D lens flare map"
+			},
+			"LensStarMap":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "./T_LensStar.asset",
+				"Description": "2D lens star map for diffraction starburst, only used of the lens flare map is used"
+			},
+			"OutputTexture2D":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+				"Description": "Output texture 2D"
+			}
+		},
+		"ComputePipelineState":
+		{
+			"ComputeShaderBlueprint": "./SB_HdrToLdrCompute.asset"
+		},
+		"ResourceGroups":
+		{
+			"0":
+			{
+				"0":
+				{
+					"ResourceType": "UNIFORM_BUFFER",
+					"BaseShaderRegisterName": "PassUniformBuffer",
+					"BaseShaderRegister": "0",
+					"BufferUsage": "PASS",
+					"NumberOfElements": "1",
+					"ElementProperties":
+					{
+						"LensStarMatrix":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4_4",
+							"Value": "@LENS_STAR_MATRIX"
+						},
+						"GlobalComputeSize":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "INTEGER_3",
+							"Value": "@GLOBAL_COMPUTE_SIZE"
+						},
+						"ToneMapKeyValue":
+						{
+							"Usage": "MATERIAL_REFERENCE",
+							"ValueType": "FLOAT",
+							"Value": "@ToneMapKeyValue"
+						},
+						"BloomIntensity":
+						{
+							"Usage": "MATERIAL_REFERENCE",
+							"ValueType": "FLOAT",
+							"Value": "@BloomIntensity"
+						}
+					}
+				}
+			},
+			"1":
+			{
+				"0":
+				{
+					"ResourceType": "TEXTURE_2D",
+					"BaseShaderRegisterName": "ColorMap",
+					"BaseShaderRegister": "0",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@ColorMap",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/WhiteMap2D",
+					"MipmapsUsed": "FALSE"
+				},
+				"1":
+				{
+					"ResourceType": "TEXTURE_2D",
+					"BaseShaderRegisterName": "LuminanceMap",
+					"BaseShaderRegister": "1",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@LuminanceMap",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/WhiteMap2D",
+					"MipmapsUsed": "FALSE"
+				},
+				"2":
+				{
+					"ResourceType": "TEXTURE_2D",
+					"BaseShaderRegisterName": "BloomMap",
+					"BaseShaderRegister": "2",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@BloomMap",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+					"MipmapsUsed": "FALSE",
+					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
+				},
+				"3":
+				{
+					"ResourceType": "TEXTURE_2D",
+					"BaseShaderRegisterName": "DirtyLensMap",
+					"BaseShaderRegister": "3",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@DirtyLensMap",
+					"RgbHardwareGammaCorrection": "TRUE",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/WhiteMap2D",
+					"MipmapsUsed": "FALSE",
+					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
+				},
+				"4":
+				{
+					"ResourceType": "TEXTURE_2D",
+					"BaseShaderRegisterName": "LensFlareMap",
+					"BaseShaderRegister": "4",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@LensFlareMap",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+					"MipmapsUsed": "FALSE",
+					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
+				},
+				"5":
+				{
+					"ResourceType": "TEXTURE_2D",
+					"BaseShaderRegisterName": "LensStarMap",
+					"BaseShaderRegister": "5",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@LensStarMap",
+					"RgbHardwareGammaCorrection": "TRUE",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/WhiteMap2D",
+					"MipmapsUsed": "FALSE",
+					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
+				},
+				"6":
+				{
+					"ResourceType": "TEXTURE_2D",
+					"DescriptorRangeType": "UAV",
+					"BaseShaderRegisterName": "OutputTexture2D",
+					"BaseShaderRegister": "6",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@OutputTexture2D",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D"
+				}
+			},
+			"2":
+			{
+				"0":
+				{
+					"ResourceType": "SAMPLER_STATE",
+					"BaseShaderRegisterName": "SamplerLinear",
+					"BaseShaderRegister": "0",
+					"Filter": "MIN_MAG_LINEAR_MIP_POINT",
+					"MaxAnisotropy": "1",
+					"MaxLOD": "0.0"
+				}
+			}
+		}
+	}
+}

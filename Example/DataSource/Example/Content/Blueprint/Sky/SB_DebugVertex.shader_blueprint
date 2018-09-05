@@ -21,7 +21,7 @@
 //[-------------------------------------------------------]
 //[ Definitions                                           ]
 //[-------------------------------------------------------]
-@includepiece($ProjectName/ShaderPiece/Core.asset)
+@includepiece(../SharedShaderPiece/SP_Core.asset)
 	@insertpiece(SetCrossPlatformSettings)
 
 

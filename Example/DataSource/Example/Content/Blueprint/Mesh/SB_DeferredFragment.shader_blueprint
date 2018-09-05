@@ -21,10 +21,10 @@
 //[-------------------------------------------------------]
 //[ Definitions                                           ]
 //[-------------------------------------------------------]
-@includepiece($ProjectName/ShaderPiece/Core.asset)
+@includepiece(../SharedShaderPiece/SP_Core.asset)
 	@insertpiece(SetCrossPlatformSettings)
-@includepiece($ProjectName/ShaderPiece/MotionBlur.asset)
-@includepiece($ProjectName/ShaderPiece/ComplexPixel.asset)
+@includepiece(../SharedShaderPiece/SP_MotionBlur.asset)
+@includepiece(./SP_ComplexPixel.asset)
 
 
 //[-------------------------------------------------------]
@@ -97,7 +97,7 @@ SAMPLER_STATE(4, 0, SamplerLinear, 0)
 //[-------------------------------------------------------]
 //[ Functions                                             ]
 //[-------------------------------------------------------]
-@includepiece($ProjectName/ShaderPiece/TangentFrame.asset)
+@includepiece(../SharedShaderPiece/SP_TangentFrame.asset)
 	@insertpiece(DefineUnpackTextureNormalXY)
 
 

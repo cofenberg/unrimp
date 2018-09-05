@@ -1,0 +1,20 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"AssetMetadata":
+		{
+			"AssetType": "ShaderPiece",
+			"AssetCategory": "Shared",
+			"Copyright": "Basing on https://mynameismjp.wordpress.com/2013/09/10/shadow-maps/ - https://github.com/TheRealMJP/Shadows"
+		},
+		"ShaderPieceAssetCompiler":
+		{
+			"InputFile": "SP_ExponentialShadow.shader_piece"
+		}
+	}
+}

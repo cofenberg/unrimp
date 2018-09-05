@@ -21,7 +21,7 @@
 //[-------------------------------------------------------]
 //[ Definitions                                           ]
 //[-------------------------------------------------------]
-@includepiece($ProjectName/ShaderPiece/Core.asset)
+@includepiece(../SharedShaderPiece/SP_Core.asset)
 	@insertpiece(SetCrossPlatformSettings)
 
 
@@ -65,7 +65,7 @@ UNIFORM_BUFFER_END
 //[-------------------------------------------------------]
 //[ Functions                                             ]
 //[-------------------------------------------------------]
-@includepiece($ProjectName/ShaderPiece/TangentFrame.asset)
+@includepiece(../SharedShaderPiece/SP_TangentFrame.asset)
 	@insertpiece(DefineGetTangentFrame)
 
 

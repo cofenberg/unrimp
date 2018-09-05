@@ -1,0 +1,21 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"AssetMetadata":
+		{
+			"AssetType": "Texture",
+			"AssetCategory": "Compositor",
+			"Copyright": "Free to use 'Dust particles on lens' by kerast from http://kerast.deviantart.com/art/Dust-particles-on-lens-461101707"
+		},
+		"TextureAssetCompiler":
+		{
+			"InputFile": "T_DirtyLens.png",
+			"CreateMipmaps": "FALSE"
+		}
+	}
+}

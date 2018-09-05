@@ -24,7 +24,7 @@
 //[-------------------------------------------------------]
 //[ Definitions                                           ]
 //[-------------------------------------------------------]
-@includepiece($ProjectName/ShaderPiece/Core.asset)
+@includepiece(../SharedShaderPiece/SP_Core.asset)
 	@insertpiece(SetCrossPlatformSettings)
 @includepiece(./SP_Skinning.asset)
 
@@ -75,7 +75,7 @@ TEXTURE_BUFFER(2, 1, float4, InstanceTextureBuffer, 0)	// "POSITION_ROTATION_SCA
 //[-------------------------------------------------------]
 //[ Functions                                             ]
 //[-------------------------------------------------------]
-@includepiece($ProjectName/ShaderPiece/TangentFrame.asset)
+@includepiece(../SharedShaderPiece/SP_TangentFrame.asset)
 	@insertpiece(DefineGetTangentFrame)
 
 

@@ -1,0 +1,167 @@
+/*********************************************************\
+ * Copyright (c) 2012-2018 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+//[-------------------------------------------------------]
+//[ Definitions                                           ]
+//[-------------------------------------------------------]
+@includepiece(../SharedShaderPiece/SP_Core.asset)
+	@insertpiece(SetCrossPlatformSettings)
+
+
+//[-------------------------------------------------------]
+//[ Input / output                                        ]
+//[-------------------------------------------------------]
+// Attribute input / output
+INPUT_BEGIN
+	INPUT_TEXTURE_COORDINATE(1, float2, TexCoordVS, 0)	// Texture coordinate
+	INPUT_TEXTURE_COORDINATE(2, float3, ViewRayVS,  1)	// View space ray used for view space position reconstruction
+INPUT_END
+OUTPUT_BEGIN
+	OUTPUT_COLOR(0)
+OUTPUT_END
+
+// Uniform buffers
+struct PassDataStruct
+{
+	float4   ViewSpaceFrustumCorners[4];
+	float4x4 ClipSpaceToViewSpaceMatrix;
+	float4x4 ViewSpaceToClipSpaceMatrix;
+	float2   InverseViewportSize;
+	float2   ProjectionParameters;
+	float	 Radius;
+	int		 SampleKernelSize;
+};
+UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
+	PassDataStruct PassData;
+UNIFORM_BUFFER_END
+
+// Textures
+@property(NumberOfMultisamples)
+	TEXTURE_2D_MS(1, 0, NormalMap, @value(NumberOfMultisamples), 0)	// Normal map: rgb = view space normal
+@end
+@property(!NumberOfMultisamples)
+	TEXTURE_2D(1, 0, NormalMap, 0)	// Normal map: rgb = view space normal
+@end
+TEXTURE_2D(1, 1, DepthMap, 1)
+TEXTURE_1D(1, 2, SsaoSampleKernelMap, 2)
+TEXTURE_2D(1, 3, SsaoNoise4x4Map, 3)
+
+// Samplers
+SAMPLER_STATE(2, 0, SamplerPointClamp, 0)
+SAMPLER_STATE(2, 1, SamplerPointWrap, 1)
+
+
+//[-------------------------------------------------------]
+//[ Functions                                             ]
+//[-------------------------------------------------------]
+@includepiece(../SharedShaderPiece/SP_Depth.asset)
+	@insertpiece(DefineGetLinearDepth)
+
+// Fade value with distance
+float farFade(float value, float2 fadeStartEnd, float linearDepth)
+{
+	float fadeRange = fadeStartEnd.x - fadeStartEnd.y;
+	float fade = 1 - ((linearDepth - fadeStartEnd.y) / fadeRange);
+	return (linearDepth > fadeStartEnd.x) ? 1.0 : ((linearDepth > fadeStartEnd.y) ? 1.0 - ((1.0 - value) * fade) : value);
+}
+
+float3 GetNormalFromNormalMap(float2 textureCoordinate, int sampleIndex)
+{
+	@property(NumberOfMultisamples)
+		return SAMPLE_2D_MS(NormalMap, int2(textureCoordinate * (1.0f / PassData.InverseViewportSize)), sampleIndex).xyz;
+	@end
+	@property(!NumberOfMultisamples)
+		return SAMPLE_2D_LOD(NormalMap, SamplerPointClamp, float4(textureCoordinate, 0.0f, 0.0f)).xyz;
+	@end
+}
+
+float CalculateOcclusion(float3 viewRay, float2 textureCoordinate, int sampleIndex)
+{
+	// Get depth and normal of the fragment
+	float depth = SAMPLE_DEPTH_2D_LOD(DepthMap, SamplerPointClamp, float4(textureCoordinate, 0.0f, 0.0f));
+	float originLinearDepth = GetLinearDepth(depth);
+	float3 normal = GetNormalFromNormalMap(textureCoordinate, sampleIndex);
+
+	// Scale the view ray by the ratio of the linear z value to the projected view ray
+	// -> For details see "The Danger Zone" - "Position From Depth 3: Back In The Habit" - "Written by MJPSeptember 5, 2010" - https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
+	float3 origin = viewRay * (GetLinearDepth(depth) / dot(float3(0.0f, 0.0f, 1.0f), viewRay));
+
+	// Construct a change-of-basis matrix to reorient the sample kernel along the origin's normal
+	// -> Using the Gram-Schmidt process to compute an orthogonal basis
+	float2 noiseScale = (1.0f / PassData.InverseViewportSize) / 4.0f;
+	float3 randomRotation = SAMPLE_2D_LOD(SsaoNoise4x4Map, SamplerPointWrap, float4(textureCoordinate * noiseScale, 0.0f, 0.0f)).xyz;
+	float3 tangent = normalize(randomRotation - normal * dot(randomRotation, normal));
+	float3 bitangent = cross(normal, tangent);
+	float3x3 tbn = ROW_MATRIX_3x3(tangent, bitangent, normal);
+
+	// Calculate occlusion
+	float occlusion = 0.0f;
+	for (int i = 0; i < PassData.SampleKernelSize; ++i)
+	{
+		// Rotate sample and get sample position in view space
+		float3 samplePosition = MATRIX_MUL(SAMPLE_1D_LOD(SsaoSampleKernelMap, SamplerPointClamp, float4(float(i) / float(PassData.SampleKernelSize), 0.0f, 0.0f, 0.0f)).xyz, tbn);
+		samplePosition = origin + samplePosition * PassData.Radius;
+
+		// Project sample position
+		float4 offset = float4(samplePosition, 1.0f);
+		offset = MATRIX_MUL(PassData.ViewSpaceToClipSpaceMatrix, offset);
+		offset /= offset.w;	// To normalized device space (NDC)
+		offset.xy = offset.xy * 0.5f + 0.5f;
+		@property(UpperLeftOrigin)
+			offset.y = 1.0f - offset.y;
+		@end
+		if (offset.x >= 0.0f && offset.y >= 0.0f && offset.x <= 1.0f && offset.y <= 1.0f)
+		{
+			// Compute occlusion based on the (scaled) Z difference
+			float linearSampleDepth = GetLinearDepth(SAMPLE_DEPTH_2D_LOD(DepthMap, SamplerPointClamp, float4(offset.xy, 0.0f, 0.0f)));
+			
+			// Range check & accumulates
+			float rangeCheck = (abs(originLinearDepth - linearSampleDepth) < PassData.Radius) ? 1.0 : 0.0;
+			occlusion += ((linearSampleDepth <= samplePosition.z) ? 1.0 : 0.0) * rangeCheck;
+		}
+	}
+	occlusion = 1.0f - (occlusion / float(PassData.SampleKernelSize));
+
+	// Increase SSAO strength to make it more visible
+	occlusion = pow(occlusion, 2.0f);
+
+	// Fade occlusion with distance to reduce visible precision artefacts
+	float2 ssaoFarFadeStart = float2(20.0f, 60.0f);	// TODO(co) We could expose this
+	occlusion = farFade(occlusion, ssaoFarFadeStart, originLinearDepth);
+
+	// Done
+	return occlusion;
+}
+
+
+//[-------------------------------------------------------]
+//[ Main                                                  ]
+//[-------------------------------------------------------]
+MAIN_BEGIN
+	// Get the normalized view ray
+	float3 viewRay = normalize(MAIN_INPUT(ViewRayVS));
+
+	// Calculate SSAO
+	// -> No complex pixel detection since it doesn't make a notable visual difference here
+	float sum = CalculateOcclusion(viewRay, MAIN_INPUT(TexCoordVS), 0);
+
+	// Done
+	MAIN_OUTPUT_COLOR(0) = float4(sum, sum, sum, sum);
+MAIN_END

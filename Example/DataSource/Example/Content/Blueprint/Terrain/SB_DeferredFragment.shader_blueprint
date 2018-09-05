@@ -21,9 +21,9 @@
 //[-------------------------------------------------------]
 //[ Definitions                                           ]
 //[-------------------------------------------------------]
-@includepiece($ProjectName/ShaderPiece/Core.asset)
+@includepiece(../SharedShaderPiece/SP_Core.asset)
 	@insertpiece(SetCrossPlatformSettings)
-@includepiece($ProjectName/ShaderPiece/MotionBlur.asset)
+@includepiece(../SharedShaderPiece/SP_MotionBlur.asset)
 @includepiece(./SP_Terrain.asset)
 	@insertpiece(DefineTerrainPassDataStruct)
 
@@ -66,7 +66,7 @@ SAMPLER_STATE(3, 1, SamplerLinearClamp, 1)
 //[-------------------------------------------------------]
 //[ Functions                                             ]
 //[-------------------------------------------------------]
-@includepiece($ProjectName/ShaderPiece/TangentFrame.asset)
+@includepiece(../SharedShaderPiece/SP_TangentFrame.asset)
 	@insertpiece(DefineGetTangentFrame)
 	@insertpiece(DefineUnpackTextureNormalXY)
 

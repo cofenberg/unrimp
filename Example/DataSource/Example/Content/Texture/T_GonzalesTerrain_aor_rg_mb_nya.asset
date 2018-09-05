@@ -1,0 +1,27 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"AssetMetadata":
+		{
+			"AssetType": "Texture",
+			"AssetCategory": "Terrain",
+			"Copyright": "Terrain data created by Marcel Gonzales - http://www.marcelgonzales.com/"
+		},
+		"TextureAssetCompiler":
+		{
+			"TextureSemantic": "PACKED_CHANNELS",
+			"TextureChannelPacking": "_aor_rg_mb_nya",
+			"InputFiles":
+			{
+				"AMBIENT_OCCLUSION_MAP": "T_GonzalesTerrain_ao.png",
+				"GLOSS_MAP": "T_GonzalesTerrain_r.png",
+				"NORMAL_MAP": "T_GonzalesTerrain_n.png"
+			}
+		}
+	}
+}

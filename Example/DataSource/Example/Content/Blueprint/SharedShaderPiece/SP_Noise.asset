@@ -1,0 +1,19 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"AssetMetadata":
+		{
+			"AssetType": "ShaderPiece",
+			"AssetCategory": "Shared"
+		},
+		"ShaderPieceAssetCompiler":
+		{
+			"InputFile": "SP_Noise.shader_piece"
+		}
+	}
+}

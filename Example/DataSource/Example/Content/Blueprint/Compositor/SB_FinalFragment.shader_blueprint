@@ -1,0 +1,200 @@
+/*********************************************************\
+ * Copyright (c) 2012-2018 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+//[-------------------------------------------------------]
+//[ Definitions                                           ]
+//[-------------------------------------------------------]
+@includepiece(../SharedShaderPiece/SP_Core.asset)
+	@insertpiece(SetCrossPlatformSettings)
+@includepiece(../SharedShaderPiece/SP_Color.asset)
+@includepiece(./SP_Fxaa.asset)
+	@property(Fxaa)
+		#define FXAA_PC				 1
+		@property(HLSL)
+			#define FXAA_HLSL_5		 1
+		@end
+		@property(GLSL || GLSLES)
+			#define FXAA_GLSL_130	 1
+		@end
+		#define FXAA_QUALITY__PRESET 39
+		#define FXAA_GREEN_AS_LUMA	 1
+		@insertpiece(FxaaFunction)
+	@end
+
+
+//[-------------------------------------------------------]
+//[ Input / output                                        ]
+//[-------------------------------------------------------]
+// Attribute input / output
+INPUT_BEGIN
+	INPUT_TEXTURE_COORDINATE(1, float2, TexCoordVS, 0)	// Texture coordinate
+INPUT_END
+OUTPUT_BEGIN
+	OUTPUT_COLOR(0)
+OUTPUT_END
+
+// Uniform buffers
+struct PassDataStruct
+{
+	float2 VignetteFalloffAmount;	// Vignette falloff (x-value) and vignette amount (y-value)
+	float2 ContrastBrightness;		// Contrast (x-value) and brightness (y-value)
+	float  SharpenIntensity;
+	float  FilmGrainIntensity;
+	float  ChromaticAberrationMaximumDistort;
+	int    ChromaticAberrationIterations;
+	float  GlobalTimeInSeconds;
+};
+UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
+	PassDataStruct PassData;
+UNIFORM_BUFFER_END
+
+// Textures
+TEXTURE_2D(1, 0, ColorMap, 0)
+TEXTURE_3D(1, 1, ColorCorrectionLookupTableMap, 1)
+
+// Samplers
+SAMPLER_STATE(2, 0, SamplerLinear, 0)
+
+
+//[-------------------------------------------------------]
+//[ Functions                                             ]
+//[-------------------------------------------------------]
+@property(FilmGrain)
+	@insertpiece(DefineColorToLuminance)
+	@insertpiece(DefineFilmGrain)
+@end
+@insertpiece(DefineScreenSpaceDither)
+@insertpiece(DefineGetBayerScreenSpaceDitherValue)
+
+@property(OldCrtEffect)
+	@includepiece(../SharedShaderPiece/SP_Noise.asset)
+		@insertpiece(DefineSimplexNoise2D)
+	@includepiece(./SP_OldCrtEffect.asset)
+		@insertpiece(DefineOldCrtEffect)
+@end
+
+@property(ChromaticAberration)
+	@insertpiece(DefineChromaticAberrationEffect)
+@end
+
+
+//[-------------------------------------------------------]
+//[ Main                                                  ]
+//[-------------------------------------------------------]
+MAIN_BEGIN
+	float4 color = float4(0.0f, 0.0f, 0.0f, 1.0f);
+
+	// The final compositor is rendered into the original render target which can be for example an operation system window
+	// -> In order to support dynamic resolution scale we need to ask the color map for the viewport size rather than the render target
+	float2 viewportSize = CAST_TO(GET_TEXTURE_2D_SIZE(ColorMap, 0), float2);
+
+	// Mutually exclusive since each effect is gathering multiple color map samples
+	// -> This isn't a real problem since the point of the effects is mutually exclusive as well sense wise
+	@property(OldCrtEffect)
+		@insertpiece(ApplyOldCrtEffect)
+	@end
+	@property(!OldCrtEffect)
+		// Fast Approximate Anti-Aliasing (FXAA)
+		@property(Fxaa)
+			// Shader language dependent texture handling
+			@property(HLSL)
+				FxaaTex fxaaTex;
+				fxaaTex.smpl = SamplerLinear;
+				fxaaTex.tex = ColorMap;
+			@end
+			@property(GLSL || GLSLES)
+				#define fxaaTex ColorMap
+			@end
+
+			// Set values to calculate the amount of anti aliasing applied
+			color = FxaaPixelShader(
+				MAIN_INPUT(TexCoordVS),				// pos
+				float4(0.0f, 0.0f, 0.0f, 0.0f),		// fxaaConsolePosPos (?)
+				fxaaTex,							// tex
+				fxaaTex,							// fxaaConsole360TexExpBiasNegOne
+				fxaaTex,							// fxaaConsole360TexExpBiasNegTwo
+				1.0f / viewportSize,				// fxaaQualityRcpFrame
+				float4(0.0f, 0.0f, 0.0f, 0.0f),		// fxaaConsoleRcpFrameOpt
+				float4(0.0f, 0.0f, 0.0f, 0.0f),		// fxaaConsoleRcpFrameOpt2
+				float4(0.0f, 0.0f, 0.0f, 0.0f),		// fxaaConsole360RcpFrameOpt2
+				0.75f,								// fxaaQualitySubpix
+				0.166f,								// fxaaQualityEdgeThreshold
+				0.0833f,							// fxaaQualityEdgeThresholdMin
+				0.0f,								// fxaaConsoleEdgeSharpness
+				0.0f,								// fxaaConsoleEdgeThreshold
+				0.0f,								// fxaaConsoleEdgeThresholdMin
+				float4(0.0f, 0.0f, 0.0f, 0.0f)		// fxaaConsole360ConstDir
+			);
+			color.w = 1.0f;
+		@end
+		@property(!Fxaa)
+			@property(Sharpen)
+			{
+				float2 inverseViewportSize = 1.0f / viewportSize;
+				float4 center = SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(MAIN_INPUT(TexCoordVS), 											   0.0f, 0.0f));
+				float4 top =	SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(MAIN_INPUT(TexCoordVS) + float2( 0.0f, -1.0f) * inverseViewportSize, 0.0f, 0.0f));
+				float4 left =	SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(MAIN_INPUT(TexCoordVS) + float2(-1.0f,  0.0f) * inverseViewportSize, 0.0f, 0.0f));
+				float4 right =	SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(MAIN_INPUT(TexCoordVS) + float2( 1.0f,  0.0f) * inverseViewportSize, 0.0f, 0.0f));
+				float4 bottom = SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(MAIN_INPUT(TexCoordVS) + float2( 0.0f,  1.0f) * inverseViewportSize, 0.0f, 0.0f));
+				color = SATURATE(center + (4 * center - top - bottom - left - right) * PassData.SharpenIntensity);
+			}
+			@end
+			@property(!Sharpen)
+				// Chromatic aberration
+				@property(ChromaticAberration)
+					@insertpiece(ApplyChromaticAberration)
+				@end
+				@property(!ChromaticAberration)
+					// Just get the boring color value
+					color = SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(MAIN_INPUT(TexCoordVS), 0.0f, 0.0f));
+				@end
+			@end
+		@end
+	@end
+
+	// Apply film grain
+	@property(FilmGrain)
+		color.rgb = ApplyFilmGrain(color.rgb, MAIN_INPUT(TexCoordVS), PassData.FilmGrainIntensity);
+	@end
+
+	// Apply screen space dither
+	color.rgb += ScreenSpaceDither(MAIN_INPUT(TexCoordVS) * viewportSize);
+
+	// Ensure we're in a 0..1 range
+	color = SATURATE(color);
+
+	{ // Apply 3D identity color correction lookup table (LUT)
+	  // - Basing on "GPU Gems 2" - "Chapter 24. Using Lookup Tables to Accelerate Color Transformations" by Jeremy Selan, Sony Pictures Imageworks - http://http.developer.nvidia.com/GPUGems2/gpugems2_chapter24.html
+	  // - A way for artists to create color correction lookup tables is described at https://docs.unrealengine.com/latest/INT/Engine/Rendering/PostProcessEffects/ColorGrading/
+	  // - Color correction lookup table size is 16
+	  // - We don't have a texel offset like in DirectX 9 which we need to take care of
+		float3 LUT_SIZE = float3(16.0f, 16.0f, 16.0f);
+		float3 LUT_OFFSET = 1.0f / (2.0f * LUT_SIZE);
+		color.rgb = SAMPLE_3D_LOD(ColorCorrectionLookupTableMap, SamplerLinear, float4(color.rgb + LUT_OFFSET, 0.0f)).rgb;
+	}
+
+	// Apply vignette
+	@property(Vignette)
+		color.rgb *= smoothstep(0.8f, PassData.VignetteFalloffAmount.x * 0.799f, distance(MAIN_INPUT(TexCoordVS), float2(0.5f, 0.5f)) * (PassData.VignetteFalloffAmount.y + PassData.VignetteFalloffAmount.x));
+	@end
+
+	// Apply contrast and brightness to the final color, leave alpha value unchanged
+	MAIN_OUTPUT_COLOR(0) = float4(pow(abs(color.rgb), float3(PassData.ContrastBrightness.x, PassData.ContrastBrightness.x, PassData.ContrastBrightness.x)) * float3(PassData.ContrastBrightness.y, PassData.ContrastBrightness.y, PassData.ContrastBrightness.y), color.a);
+MAIN_END

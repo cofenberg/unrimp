@@ -1,0 +1,121 @@
+/*********************************************************\
+ * Copyright (c) 2012-2018 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+//[-------------------------------------------------------]
+//[ Definitions                                           ]
+//[-------------------------------------------------------]
+@includepiece(../SharedShaderPiece/SP_Core.asset)
+	@insertpiece(SetCrossPlatformSettings)
+
+
+//[-------------------------------------------------------]
+//[ Input / output                                        ]
+//[-------------------------------------------------------]
+// Attribute input / output
+INPUT_BEGIN
+	DECLARE_GLOBAL_INVOCATION_ID
+INPUT_END
+
+// Uniform buffers
+struct PassDataStruct
+{
+	uint3 GlobalComputeSize;
+	float PastSecondsSinceLastFrame;
+	float Strength;
+	int   NumberOfSamples;
+};
+UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
+	PassDataStruct PassData;
+UNIFORM_BUFFER_END
+
+// Textures
+TEXTURE_2D(1, 0, ColorMap, 0)
+@property(NumberOfMultisamples)
+	TEXTURE_2D_MS(1, 1, VelocityMap, @value(NumberOfMultisamples), 1)
+@end
+@property(!NumberOfMultisamples)
+	TEXTURE_2D(1, 1, VelocityMap, 1)
+@end
+RW_TEXTURE_2D(1, 2, OutputTexture2D, 2, r11f_g11f_b10f, writeonly)
+
+
+//[-------------------------------------------------------]
+//[ Main                                                  ]
+//[-------------------------------------------------------]
+MAIN_BEGIN_COMPUTE(32, 32, 1)
+	// Compute dispatch is using groups of a multiple of the local size, ensure we don't access ouf of global compute size which musn't be a multiple of the local size and hence might be smaller
+	if (GLOBAL_INVOCATION_ID.x < PassData.GlobalComputeSize.x && GLOBAL_INVOCATION_ID.y < PassData.GlobalComputeSize.y)
+	{
+		int3 globalInvocationId = CAST_TO(GLOBAL_INVOCATION_ID, int3);
+		@property(NumberOfMultisamples)
+			// Complex pixel detection
+			float2 velocity = float2(0.0f, 0.0f);
+			if (0 != TEXTURE_FETCH_2D(ColorMap, globalInvocationId).a)
+			{
+				// Custom MSAA resolve
+				@foreach(NumberOfMultisamples, i, 0)
+				{
+					velocity += SAMPLE_2D_MS(VelocityMap, globalInvocationId.xy, @i).xy;
+				}
+				@end
+				velocity /= @value(NumberOfMultisamples);
+			}
+			else
+			{
+				velocity = SAMPLE_2D_MS(VelocityMap, globalInvocationId.xy, 0).xy;
+			}
+		@end
+		@property(!NumberOfMultisamples)
+			float2 velocity = TEXTURE_FETCH_2D(VelocityMap, globalInvocationId).xy;
+		@end
+
+		// Apply strength to velocity
+		velocity *= PassData.Strength;
+
+		// Apply timing to velocity
+		// -> "Motion Blur Tutorial" - "A sly problem" - "mblurScale = currentFps / targeFps" - http://john-chapman-graphics.blogspot.de/2013/01/what-is-motion-blur-motion-pictures-are.html
+		//    "... if the framerate goes up we increase the blur length, if it goes down we decrease the blur length. When I say "goes up" or "goes down" I mean "changes relative to the target framerate.""
+		const float TARGET_FPS = 60.0f;
+		velocity *= (1.0f / TARGET_FPS) / PassData.PastSecondsSinceLastFrame;
+
+		// Clamp to a maximum velocity: The maximum we can go without artifacts is 1.4f * PassData.NumberOfSamples... but we can fudge things a little
+		// -> Basing on https://mynameismjp.wordpress.com/the-museum/samples-tutorials-tools/motion-blur-sample/ and http://john-chapman-graphics.blogspot.de/2013/01/per-object-motion-blur.html
+		float2 maximumVelocity = float2(2.0f * float(PassData.NumberOfSamples), 2.0f * float(PassData.NumberOfSamples));
+		velocity = clamp(velocity, -maximumVelocity, maximumVelocity);
+		velocity *= PassData.GlobalComputeSize.xy;
+
+		// For each sample, sum up each sample's color in "sum" and then divide to average the color after all the samples are added
+		float4 sum = float4(0.0f, 0.0f, 0.0f, 0.0f);
+		for (int i = 0; i < PassData.NumberOfSamples; ++i)
+		{
+			// Sample texture in a new spot based on velocity vector and average it with the other samples
+			float2 sampleTexCoord = globalInvocationId.xy + (velocity * (float(i) / float(PassData.NumberOfSamples)));
+
+			// Clamp to border
+			sampleTexCoord = clamp(sampleTexCoord, float2(0.0f, 0.0f), CAST_TO(PassData.GlobalComputeSize.xy - uint2(1, 1), float2));
+
+			// Lookup the color at this new spot and add it with the other samples
+			sum += TEXTURE_FETCH_2D(ColorMap, int3(CAST_TO(sampleTexCoord, int2), 0));
+		}
+
+		// Return the average color of all the samples
+		IMAGE_STORE(OutputTexture2D, globalInvocationId.xy, float4(sum.rgb / float(PassData.NumberOfSamples), 1.0f));
+	}
+MAIN_END_NO_OUTPUT

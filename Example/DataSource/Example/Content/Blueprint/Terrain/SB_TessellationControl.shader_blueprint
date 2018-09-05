@@ -24,7 +24,7 @@
 //[-------------------------------------------------------]
 //[ Definitions                                           ]
 //[-------------------------------------------------------]
-@includepiece($ProjectName/ShaderPiece/Core.asset)
+@includepiece(../SharedShaderPiece/SP_Core.asset)
 	@insertpiece(SetCrossPlatformSettings)
 @includepiece(./SP_Terrain.asset)
 	@insertpiece(DefineTerrainPassDataStruct)
@@ -65,7 +65,7 @@ UNIFORM_BUFFER_END
 //[-------------------------------------------------------]
 // From shader piece "./SP_Terrain.asset"
 	@insertpiece(DefineWorldXZToHeightUV)
-@includepiece($ProjectName/ShaderPiece/TangentFrame.asset)
+@includepiece(../SharedShaderPiece/SP_TangentFrame.asset)
 	@insertpiece(DefineGetTangentFrame)
 
 bool IsInsideHeightMap(float2 worldXZ)

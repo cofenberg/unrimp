@@ -505,8 +505,8 @@
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "STATIC",
 					"ValueType": "TEXTURE_ASSET_ID",
-					"Value": "$ProjectName/Texture/Compositor/Ripple.asset",
-					"FallbackTexture": "$ProjectName/Texture/Compositor/Ripple.asset",
+					"Value": "../SharedTexture/T_Ripple.asset",
+					"FallbackTexture": "../SharedTexture/T_Ripple.asset",
 					"MipmapsUsed": "FALSE",
 					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
 				}

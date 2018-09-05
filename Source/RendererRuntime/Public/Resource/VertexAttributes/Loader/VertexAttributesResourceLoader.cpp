@@ -68,11 +68,11 @@ namespace RendererRuntime
 		mMemoryFile.read(&vertexAttributesHeader, sizeof(v1VertexAttributes::VertexAttributesHeader));
 
 		// TODO(co) Implement vertex attributes file format. This here is just a fixed build in dummy.
-		if (STRING_ID("Example/VertexAttributes/Default/Null") == getAsset().assetId)
+		if (STRING_ID("Example/VertexAttributes/Compositor/VA_Compositor") == getAsset().assetId)
 		{
 			mVertexAttributesResource->mVertexAttributes = Renderer::VertexAttributes(0, nullptr);
 		}
-		else if (STRING_ID("Example/VertexAttributes/Default/Position") == getAsset().assetId)
+		else if (STRING_ID("Example/VertexAttributes/Sky/VA_Sky") == getAsset().assetId)
 		{
 			Renderer::VertexAttributes& vertexAttributes = const_cast<Renderer::VertexAttributes&>(mVertexAttributesResource->mVertexAttributes);
 			static constexpr Renderer::VertexAttribute vertexAttributesLayout[] =

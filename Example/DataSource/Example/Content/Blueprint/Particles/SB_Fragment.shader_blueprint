@@ -21,7 +21,7 @@
 //[-------------------------------------------------------]
 //[ Definitions                                           ]
 //[-------------------------------------------------------]
-@includepiece($ProjectName/ShaderPiece/Core.asset)
+@includepiece(../SharedShaderPiece/SP_Core.asset)
 	@insertpiece(SetCrossPlatformSettings)
 
 
@@ -68,7 +68,7 @@ SAMPLER_STATE(2, 0, SamplerLinear, 0)
 //[ Functions                                             ]
 //[-------------------------------------------------------]
 @property(SoftParticles)
-	@includepiece($ProjectName/ShaderPiece/Depth.asset)
+	@includepiece(../SharedShaderPiece/SP_Depth.asset)
 		@insertpiece(DefineGetLinearDepth)
 @end
 

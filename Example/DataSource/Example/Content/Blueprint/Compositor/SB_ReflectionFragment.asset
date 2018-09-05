@@ -1,0 +1,19 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"AssetMetadata":
+		{
+			"AssetType": "ShaderBlueprint",
+			"AssetCategory": "Compositor"
+		},
+		"ShaderBlueprintAssetCompiler":
+		{
+			"InputFile": "SB_ReflectionFragment.shader_blueprint"
+		}
+	}
+}

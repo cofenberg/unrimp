@@ -1,0 +1,92 @@
+/*********************************************************\
+ * Copyright (c) 2012-2018 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+//[-------------------------------------------------------]
+//[ Definitions                                           ]
+//[-------------------------------------------------------]
+@includepiece(../SharedShaderPiece/SP_Core.asset)
+	@insertpiece(SetCrossPlatformSettings)
+
+
+//[-------------------------------------------------------]
+//[ Input / output                                        ]
+//[-------------------------------------------------------]
+// Attribute input / output
+INPUT_BEGIN
+	DECLARE_FRAGMENT_POSITION
+INPUT_END
+OUTPUT_BEGIN
+	OUTPUT_COLOR(0)
+OUTPUT_END
+
+// Uniform buffers
+struct PassDataStruct
+{
+	float3 CurrentShadowCascadeScale;
+};
+UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
+	PassDataStruct PassData;
+UNIFORM_BUFFER_END
+
+// Textures
+@property(NumberOfMultisamples)
+	TEXTURE_2D_MS(1, 0, DepthMap, @value(NumberOfMultisamples), 0)
+@end
+@property(!NumberOfMultisamples)
+	TEXTURE_2D(1, 0, DepthMap, 0)
+@end
+
+
+//[-------------------------------------------------------]
+//[ Functions                                             ]
+//[-------------------------------------------------------]
+@includepiece(../SharedShaderPiece/SP_ExponentialShadow.asset)
+	@insertpiece(DefineExponentialShadow)
+
+
+//[-------------------------------------------------------]
+//[ Main                                                  ]
+//[-------------------------------------------------------]
+MAIN_BEGIN
+	float2 exponents = GetEvsmExponents(PassData.CurrentShadowCascadeScale);
+
+	@property(NumberOfMultisamples)
+		float sampleWeight = 1.0f / float(@value(NumberOfMultisamples));
+		float4 average = float4(0.0f, 0.0f, 0.0f, 0.0f);
+
+		// Custom MSAA resolve
+		UNROLL_HINT
+		for (int i = 0; i < @value(NumberOfMultisamples); ++i)
+		{
+			// Convert to EVSM representation
+			float depth = REVERSED_Z(SAMPLE_2D_MS(DepthMap, int2(FRAGMENT_POSITION.xy), i).r);
+			float2 warpedDepth = WarpDepth(depth, exponents);
+			average += sampleWeight * float4(warpedDepth.xy, warpedDepth.xy * warpedDepth.xy);
+		}
+	@end
+	@property(!NumberOfMultisamples)
+		float depth = REVERSED_Z(TEXTURE_FETCH_2D(DepthMap, int3(int2(FRAGMENT_POSITION.xy), 0)).r);
+		float2 warpedDepth = WarpDepth(depth, exponents);
+		float4 average = float4(warpedDepth.xy, warpedDepth.xy * warpedDepth.xy);
+	@end
+
+	// Done
+	MAIN_OUTPUT_COLOR(0) = average;
+MAIN_END

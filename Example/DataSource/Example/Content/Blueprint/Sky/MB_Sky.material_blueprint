@@ -59,7 +59,7 @@
 		},
 		"GraphicsPipelineState":
 		{
-			"VertexAttributes": "$ProjectName/VertexAttributes/Default/Position.asset",
+			"VertexAttributes": "./VA_Sky.asset",
 			"ShaderBlueprints":
 			{
 				"VertexShaderBlueprint": "./SB_Vertex.asset",
