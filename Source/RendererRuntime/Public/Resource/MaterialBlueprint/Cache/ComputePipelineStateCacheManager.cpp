@@ -136,6 +136,12 @@ namespace RendererRuntime
 					// We don't care whether or not the compute pipeline state cache is currently using fallback data due to asynchronous complication
 					fallbackComputePipelineStateCache = iterator->second;
 				}
+				#ifdef _DEBUG
+					else
+					{
+						RENDERER_LOG(static_cast<const MaterialBlueprintResourceManager&>(mMaterialBlueprintResource.getResourceManager()).getRendererRuntime().getContext(), PERFORMANCE_WARNING, "Hiccup alert: Failed to find any fallback compute pipeline state cache, synchronous compilation instead of asynchronous compilation will be used resulting in a hiccup which might be notable")
+					}
+				#endif
 			}
 		}
 

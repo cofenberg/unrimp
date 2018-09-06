@@ -126,16 +126,22 @@ namespace RendererRuntime
 			// -> Kids, don't try this at home: We'll trade the runtime hiccup against a nasty major graphics artifact. If we're in luck no one
 			//    will notice it, depends on the situation. A runtime hiccup on the other hand will always be notable. So this trade in here
 			//    might not involve our first born.
-			if (!allowEmergencySynchronousCompilation && nullptr == fallbackGraphicsPipelineStateCache)
+			if (!allowEmergencySynchronousCompilation && nullptr == fallbackGraphicsPipelineStateCache && !mGraphicsPipelineStateCacheByGraphicsPipelineStateSignatureId.empty())
 			{
 				// TODO(co) Optimization: There are allocations for vector and map involved in here, we might want to get rid of those
 				fallbackShaderProperties.clear();
-				GraphicsPipelineStateCacheByGraphicsPipelineStateSignatureId::const_iterator iterator = mGraphicsPipelineStateCacheByGraphicsPipelineStateSignatureId.find(GraphicsPipelineStateSignature(mMaterialBlueprintResource, serializedGraphicsPipelineStateHash, fallbackShaderProperties).getGraphicsPipelineStateSignatureId());
+				GraphicsPipelineStateCacheByGraphicsPipelineStateSignatureId::const_iterator iterator = mGraphicsPipelineStateCacheByGraphicsPipelineStateSignatureId.find(GraphicsPipelineStateSignature(mMaterialBlueprintResource, mGraphicsPipelineStateCacheByGraphicsPipelineStateSignatureId.begin()->second->getGraphicsPipelineStateSignature().getSerializedGraphicsPipelineStateHash(), fallbackShaderProperties).getGraphicsPipelineStateSignatureId());
 				if (iterator != mGraphicsPipelineStateCacheByGraphicsPipelineStateSignatureId.cend())
 				{
 					// We don't care whether or not the graphics pipeline state cache is currently using fallback data due to asynchronous complication
 					fallbackGraphicsPipelineStateCache = iterator->second;
 				}
+				#ifdef _DEBUG
+					else
+					{
+						RENDERER_LOG(static_cast<const MaterialBlueprintResourceManager&>(mMaterialBlueprintResource.getResourceManager()).getRendererRuntime().getContext(), PERFORMANCE_WARNING, "Hiccup alert: Failed to find any fallback graphics pipeline state cache, synchronous compilation instead of asynchronous compilation will be used resulting in a hiccup which might be notable")
+					}
+				#endif
 			}
 		}
 

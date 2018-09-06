@@ -28,6 +28,7 @@
 //[ Includes                                              ]
 //[-------------------------------------------------------]
 #include "RendererRuntime/Public/Resource/ShaderBlueprint/GraphicsShaderType.h"
+#include "RendererRuntime/Public/Core/GetInvalid.h"
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -47,6 +48,7 @@ PRAGMA_WARNING_PUSH
 	#include <deque>
 	#include <mutex>
 	#include <thread>
+	#include <unordered_set>
 	#include <condition_variable>
 PRAGMA_WARNING_POP
 
@@ -73,6 +75,12 @@ namespace RendererRuntime
 //[-------------------------------------------------------]
 namespace RendererRuntime
 {
+
+
+	//[-------------------------------------------------------]
+	//[ Global definitions                                    ]
+	//[-------------------------------------------------------]
+	typedef uint32_t GraphicsProgramCacheId;	///< Graphics program cache identifier, result of hashing the shader combination IDs of the referenced shaders
 
 
 	//[-------------------------------------------------------]
@@ -153,12 +161,14 @@ namespace RendererRuntime
 			// Input
 			GraphicsPipelineStateCache&		  graphicsPipelineStateCache;
 			// Internal
+			GraphicsProgramCacheId			  graphicsProgramCacheId;
 			ShaderCache*					  shaderCache[NUMBER_OF_GRAPHICS_SHADER_TYPES];
 			std::string						  shaderSourceCode[NUMBER_OF_GRAPHICS_SHADER_TYPES];
 			Renderer::IGraphicsPipelineState* graphicsPipelineStateObject;
 
 			inline explicit CompilerRequest(GraphicsPipelineStateCache& _graphicsPipelineStateCache) :
 				graphicsPipelineStateCache(_graphicsPipelineStateCache),
+				graphicsProgramCacheId(getInvalid<GraphicsProgramCacheId>()),
 				graphicsPipelineStateObject(nullptr)
 			{
 				for (uint8_t i = 0; i < NUMBER_OF_GRAPHICS_SHADER_TYPES; ++i)
@@ -168,6 +178,7 @@ namespace RendererRuntime
 			}
 			inline explicit CompilerRequest(const CompilerRequest& compilerRequest) :
 				graphicsPipelineStateCache(compilerRequest.graphicsPipelineStateCache),
+				graphicsProgramCacheId(compilerRequest.graphicsProgramCacheId),
 				graphicsPipelineStateObject(compilerRequest.graphicsPipelineStateObject)
 			{
 				for (uint8_t i = 0; i < NUMBER_OF_GRAPHICS_SHADER_TYPES; ++i)
@@ -181,6 +192,7 @@ namespace RendererRuntime
 
 		typedef std::vector<std::thread> CompilerThreads;
 		typedef std::deque<CompilerRequest> CompilerRequests;
+		typedef std::unordered_set<GraphicsProgramCacheId> InFlightGraphicsProgramCaches;
 
 
 	//[-------------------------------------------------------]
@@ -203,10 +215,12 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		IRendererRuntime&	  mRendererRuntime;	///< Renderer runtime instance, do not destroy the instance
-		bool				  mAsynchronousCompilationEnabled;
-		uint32_t			  mNumberOfCompilerThreads;
-		std::atomic<uint32_t> mNumberOfInFlightCompilerRequests;
+		IRendererRuntime&			  mRendererRuntime;	///< Renderer runtime instance, do not destroy the instance
+		bool						  mAsynchronousCompilationEnabled;
+		uint32_t					  mNumberOfCompilerThreads;
+		std::atomic<uint32_t>		  mNumberOfInFlightCompilerRequests;
+		std::mutex					  mInFlightGraphicsProgramCachesMutex;
+		InFlightGraphicsProgramCaches mInFlightGraphicsProgramCaches;
 
 		// Asynchronous building (moderate cost)
 		std::atomic<bool>		mShutdownBuilderThread;

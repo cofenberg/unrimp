@@ -205,90 +205,146 @@ namespace RendererRuntime
 				CompilerRequest compilerRequest(mBuilderQueue.back());
 				mBuilderQueue.pop_back();
 				builderMutexLock.unlock();
+				bool pushToCompilerQueue = true;
+				bool needToWaitForGraphicsProgramCache = false;
 
 				{ // Do the work: Building the shader source code for the required combination
 					const GraphicsPipelineStateSignature& graphicsPipelineStateSignature = compilerRequest.graphicsPipelineStateCache.getGraphicsPipelineStateSignature();
-					const MaterialBlueprintResource& materialBlueprintResource = materialBlueprintResourceManager.getById(graphicsPipelineStateSignature.getMaterialBlueprintResourceId());
+					MaterialBlueprintResource& materialBlueprintResource = materialBlueprintResourceManager.getById(graphicsPipelineStateSignature.getMaterialBlueprintResourceId());
 
-					for (uint8_t i = 0; i < NUMBER_OF_GRAPHICS_SHADER_TYPES; ++i)
+					// First at all, check whether or not the graphics program cache entry we need already exists, if so we can take a shortcut and only have to care about creating the graphics pipeline state
+					GraphicsProgramCacheManager& graphicsProgramCacheManager = materialBlueprintResource.getGraphicsPipelineStateCacheManager().getGraphicsProgramCacheManager();
+					GraphicsProgramCacheId graphicsProgramCacheId = compilerRequest.graphicsProgramCacheId;
+					if (isInvalid(graphicsProgramCacheId))
 					{
-						// Get the shader blueprint resource ID
-						const GraphicsShaderType graphicsShaderType = static_cast<GraphicsShaderType>(i);
-						const ShaderBlueprintResourceId shaderBlueprintResourceId = materialBlueprintResource.getGraphicsShaderBlueprintResourceId(graphicsShaderType);
-						if (isValid(shaderBlueprintResourceId))
+						graphicsProgramCacheId = compilerRequest.graphicsProgramCacheId = GraphicsProgramCacheManager::generateGraphicsProgramCacheId(graphicsPipelineStateSignature);
+					}
+					{ // In flight graphics program caches handling
+						std::unique_lock<std::mutex> inFlightGraphicsProgramCachesMutexLock(mInFlightGraphicsProgramCachesMutex);
+						if (mInFlightGraphicsProgramCaches.find(graphicsProgramCacheId) != mInFlightGraphicsProgramCaches.end())
 						{
-							// Get the shader cache identifier, often but not always identical to the shader combination ID
-							const ShaderCacheId shaderCacheId = graphicsPipelineStateSignature.getShaderCombinationId(graphicsShaderType);
+							needToWaitForGraphicsProgramCache = true;
+						}
+					}
+					if (!needToWaitForGraphicsProgramCache)
+					{
+						std::unique_lock<std::mutex> graphicsProgramCacheManagerMutexLock(graphicsProgramCacheManager.mMutex);
+						const GraphicsProgramCacheManager::GraphicsProgramCacheById::const_iterator iterator = graphicsProgramCacheManager.mGraphicsProgramCacheById.find(graphicsProgramCacheId);
+						if (graphicsProgramCacheManager.mGraphicsProgramCacheById.cend() != iterator)
+						{
+							// Shortcut since the graphics program cache entry already exists: Just create the graphics pipeline state and be done with it
 
-							// Does the shader cache already exist?
-							ShaderCache* shaderCache = nullptr;
-							std::unique_lock<std::mutex> shaderCacheManagerMutexLock(shaderCacheManager.mMutex);
-							ShaderCacheManager::ShaderCacheByShaderCacheId::const_iterator shaderCacheIdIterator = shaderCacheManager.mShaderCacheByShaderCacheId.find(shaderCacheId);
-							if (shaderCacheIdIterator != shaderCacheManager.mShaderCacheByShaderCacheId.cend())
-							{
-								shaderCache = shaderCacheIdIterator->second;
+							// Create the graphics pipeline state object (PSO)
+							compilerRequest.graphicsPipelineStateObject = createGraphicsPipelineState(materialBlueprintResource, graphicsPipelineStateSignature.getSerializedGraphicsPipelineStateHash(), *iterator->second->getGraphicsProgramPtr());
+							pushToCompilerQueue = false;
+						}
+						else
+						{
+							// Build the shader source code for the required combination
+							graphicsProgramCacheManagerMutexLock.unlock();
+							{ // Graphics program cache is now in flight
+								std::unique_lock<std::mutex> inFlightGraphicsProgramCachesMutexLock(mInFlightGraphicsProgramCachesMutex);
+								mInFlightGraphicsProgramCaches.insert(graphicsProgramCacheId);
 							}
-							else
+							for (uint8_t i = 0; i < NUMBER_OF_GRAPHICS_SHADER_TYPES; ++i)
 							{
-								// Try to create the new graphics shader cache instance
-								const ShaderBlueprintResource* shaderBlueprintResource = shaderBlueprintResourceManager.tryGetById(shaderBlueprintResourceId);
-								if (nullptr != shaderBlueprintResource)
+								// Get the shader blueprint resource ID
+								const GraphicsShaderType graphicsShaderType = static_cast<GraphicsShaderType>(i);
+								const ShaderBlueprintResourceId shaderBlueprintResourceId = materialBlueprintResource.getGraphicsShaderBlueprintResourceId(graphicsShaderType);
+								if (isValid(shaderBlueprintResourceId))
 								{
-									// Build the shader source code
-									ShaderBuilder::BuildShader buildShader;
-									shaderBuilder.createSourceCode(shaderPieceResourceManager, *shaderBlueprintResource, graphicsPipelineStateSignature.getShaderProperties(), buildShader);
-									const std::string& sourceCode = buildShader.sourceCode;
-									if (sourceCode.empty())
+									// Get the shader cache identifier, often but not always identical to the shader combination ID
+									const ShaderCacheId shaderCacheId = graphicsPipelineStateSignature.getShaderCombinationId(graphicsShaderType);
+
+									// Does the shader cache already exist?
+									ShaderCache* shaderCache = nullptr;
+									std::unique_lock<std::mutex> shaderCacheManagerMutexLock(shaderCacheManager.mMutex);
+									ShaderCacheManager::ShaderCacheByShaderCacheId::const_iterator shaderCacheIdIterator = shaderCacheManager.mShaderCacheByShaderCacheId.find(shaderCacheId);
+									if (shaderCacheIdIterator != shaderCacheManager.mShaderCacheByShaderCacheId.cend())
 									{
-										// TODO(co) Error handling
-										assert(false);
+										shaderCache = shaderCacheIdIterator->second;
 									}
 									else
 									{
-										// Generate the shader source code ID
-										// -> Especially in complex shaders, there are situations where different shader combinations result in one and the same shader source code
-										// -> Shader compilation is considered to be expensive, so we need to be pretty sure that we really need to perform this heavy work
-										const ShaderSourceCodeId shaderSourceCodeId = Math::calculateFNV1a32(reinterpret_cast<const uint8_t*>(sourceCode.c_str()), static_cast<uint32_t>(sourceCode.size()));
-										ShaderCacheManager::ShaderCacheByShaderSourceCodeId::const_iterator shaderSourceCodeIdIterator = shaderCacheManager.mShaderCacheByShaderSourceCodeId.find(shaderSourceCodeId);
-										if (shaderSourceCodeIdIterator != shaderCacheManager.mShaderCacheByShaderSourceCodeId.cend())
+										// Try to create the new graphics shader cache instance
+										const ShaderBlueprintResource* shaderBlueprintResource = shaderBlueprintResourceManager.tryGetById(shaderBlueprintResourceId);
+										if (nullptr != shaderBlueprintResource)
 										{
-											// Reuse already existing shader instance
-											// -> We still have to create a shader cache instance so we don't need to build the shader source code again next time
-											shaderCache = new ShaderCache(shaderCacheId, shaderCacheManager.mShaderCacheByShaderCacheId.find(shaderSourceCodeIdIterator->second)->second);
-											shaderCacheManager.mShaderCacheByShaderCacheId.emplace(shaderCacheId, shaderCache);
+											// Build the shader source code
+											ShaderBuilder::BuildShader buildShader;
+											shaderBuilder.createSourceCode(shaderPieceResourceManager, *shaderBlueprintResource, graphicsPipelineStateSignature.getShaderProperties(), buildShader);
+											const std::string& sourceCode = buildShader.sourceCode;
+											if (sourceCode.empty())
+											{
+												// TODO(co) Error handling
+												assert(false);
+											}
+											else
+											{
+												// Generate the shader source code ID
+												// -> Especially in complex shaders, there are situations where different shader combinations result in one and the same shader source code
+												// -> Shader compilation is considered to be expensive, so we need to be pretty sure that we really need to perform this heavy work
+												const ShaderSourceCodeId shaderSourceCodeId = Math::calculateFNV1a32(reinterpret_cast<const uint8_t*>(sourceCode.c_str()), static_cast<uint32_t>(sourceCode.size()));
+												ShaderCacheManager::ShaderCacheByShaderSourceCodeId::const_iterator shaderSourceCodeIdIterator = shaderCacheManager.mShaderCacheByShaderSourceCodeId.find(shaderSourceCodeId);
+												if (shaderSourceCodeIdIterator != shaderCacheManager.mShaderCacheByShaderSourceCodeId.cend())
+												{
+													// Reuse already existing shader instance
+													// -> We still have to create a shader cache instance so we don't need to build the shader source code again next time
+													shaderCache = new ShaderCache(shaderCacheId, shaderCacheManager.mShaderCacheByShaderCacheId.find(shaderSourceCodeIdIterator->second)->second);
+													shaderCacheManager.mShaderCacheByShaderCacheId.emplace(shaderCacheId, shaderCache);
+												}
+												else
+												{
+													// Create the new shader cache instance
+													shaderCache = new ShaderCache(shaderCacheId);
+													shaderCache->mAssetIds = buildShader.assetIds;
+													shaderCache->mCombinedAssetFileHashes = buildShader.combinedAssetFileHashes;
+													shaderCacheManager.mShaderCacheByShaderCacheId.emplace(shaderCacheId, shaderCache);
+													shaderCacheManager.mShaderCacheByShaderSourceCodeId.emplace(shaderSourceCodeId, shaderCacheId);
+													compilerRequest.shaderSourceCode[i] = sourceCode;
+												}
+											}
 										}
 										else
 										{
-											// Create the new shader cache instance
-											shaderCache = new ShaderCache(shaderCacheId);
-											shaderCache->mAssetIds = buildShader.assetIds;
-											shaderCache->mCombinedAssetFileHashes = buildShader.combinedAssetFileHashes;
-											shaderCacheManager.mShaderCacheByShaderCacheId.emplace(shaderCacheId, shaderCache);
-											shaderCacheManager.mShaderCacheByShaderSourceCodeId.emplace(shaderSourceCodeId, shaderCacheId);
-											compilerRequest.shaderSourceCode[i] = sourceCode;
+											// TODO(co) Error handling
+											assert(false);
 										}
 									}
-								}
-								else
-								{
-									// TODO(co) Error handling
-									assert(false);
+									compilerRequest.shaderCache[i] = shaderCache;
 								}
 							}
-							compilerRequest.shaderCache[i] = shaderCache;
 						}
 					}
 				}
 
-				{ // Push the compiler request into the queue of the asynchronous shader compilation
-					std::unique_lock<std::mutex> compilerMutexLock(mCompilerMutex);
-					mCompilerQueue.emplace_back(compilerRequest);
-					compilerMutexLock.unlock();
-					mCompilerConditionVariable.notify_one();
+				// Push the compiler request into the correct queue
+				if (needToWaitForGraphicsProgramCache)
+				{
+					// Throw the fish back into the see
+					builderMutexLock.lock();
+					mBuilderQueue.emplace_front(compilerRequest);
 				}
+				else
+				{
+					if (pushToCompilerQueue)
+					{
+						// Push the compiler request into the queue of the asynchronous shader compilation
+						std::unique_lock<std::mutex> compilerMutexLock(mCompilerMutex);
+						mCompilerQueue.emplace_back(compilerRequest);
+						compilerMutexLock.unlock();
+						mCompilerConditionVariable.notify_one();
+					}
+					else
+					{
+						// Shortcut: Push the compiler request into the queue of the synchronous shader dispatch
+						std::lock_guard<std::mutex> dispatchMutexLock(mDispatchMutex);
+						mDispatchQueue.emplace_back(compilerRequest);
+					}
 
-				// We're ready for the next round
-				builderMutexLock.lock();
+					// We're ready for the next round
+					builderMutexLock.lock();
+				}
 			}
 		}
 	}
@@ -328,7 +384,7 @@ namespace RendererRuntime
 								if (shaderSourceCode.empty())
 								{
 									// We're not aware of any shader source code but we need a shader cache, so, there must be a shader cache master we need to wait for
-									assert(nullptr != shaderCache->getMasterShaderCache());
+									// assert(nullptr != shaderCache->getMasterShaderCache());	// No assert by intent
 									needToWaitForShaderCache = true;
 								}
 								else
@@ -341,25 +397,25 @@ namespace RendererRuntime
 										{
 											const MaterialBlueprintResource& materialBlueprintResource = materialBlueprintResourceManager.getById(compilerRequest.graphicsPipelineStateCache.getGraphicsPipelineStateSignature().getMaterialBlueprintResourceId());
 											const Renderer::VertexAttributes& vertexAttributes = mRendererRuntime.getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes();
-											shader = shaderLanguage->createVertexShaderFromSourceCode(vertexAttributes, shaderSourceCode.c_str());
+											shader = shaderLanguage->createVertexShaderFromSourceCode(vertexAttributes, shaderSourceCode.c_str(), &shaderCache->mShaderBytecode);
 											break;
 										}
 
 										case GraphicsShaderType::TessellationControl:
-											shader = shaderLanguage->createTessellationControlShaderFromSourceCode(shaderSourceCode.c_str());
+											shader = shaderLanguage->createTessellationControlShaderFromSourceCode(shaderSourceCode.c_str(), &shaderCache->mShaderBytecode);
 											break;
 
 										case GraphicsShaderType::TessellationEvaluation:
-											shader = shaderLanguage->createTessellationEvaluationShaderFromSourceCode(shaderSourceCode.c_str());
+											shader = shaderLanguage->createTessellationEvaluationShaderFromSourceCode(shaderSourceCode.c_str(), &shaderCache->mShaderBytecode);
 											break;
 
 										case GraphicsShaderType::Geometry:
 											// TODO(co) "RendererRuntime::ShaderCacheManager::getGraphicsShaderCache()" needs to provide additional geometry shader information
-											// shader = shaderLanguage->createGeometryShaderFromSourceCode(shaderSourceCode.c_str());
+											// shader = shaderLanguage->createGeometryShaderFromSourceCode(shaderSourceCode.c_str(), &shaderCache->mShaderBytecode);
 											break;
 
 										case GraphicsShaderType::Fragment:
-											shader = shaderLanguage->createFragmentShaderFromSourceCode(shaderSourceCode.c_str());
+											shader = shaderLanguage->createFragmentShaderFromSourceCode(shaderSourceCode.c_str(), &shaderCache->mShaderBytecode);
 											break;
 									}
 									assert(nullptr != shader);	// TODO(co) Error handling
@@ -392,10 +448,19 @@ namespace RendererRuntime
 
 							{ // Graphics program cache entry
 								GraphicsProgramCacheManager& graphicsProgramCacheManager = materialBlueprintResource.getGraphicsPipelineStateCacheManager().getGraphicsProgramCacheManager();
-								const GraphicsProgramCacheId graphicsProgramCacheId = GraphicsProgramCacheManager::generateGraphicsProgramCacheId(graphicsPipelineStateSignature);
+								const GraphicsProgramCacheId graphicsProgramCacheId = compilerRequest.graphicsProgramCacheId;
+								assert(isValid(graphicsProgramCacheId));
 								std::unique_lock<std::mutex> mutexLock(graphicsProgramCacheManager.mMutex);
 								assert(graphicsProgramCacheManager.mGraphicsProgramCacheById.find(graphicsProgramCacheId) == graphicsProgramCacheManager.mGraphicsProgramCacheById.cend());	// TODO(co) Error handling
 								graphicsProgramCacheManager.mGraphicsProgramCacheById.emplace(graphicsProgramCacheId, new GraphicsProgramCache(graphicsProgramCacheId, *graphicsProgram));
+
+								{ // The graphics program cache is no longer in flight
+									std::unique_lock<std::mutex> inFlightGraphicsProgramCachesMutexLock(mInFlightGraphicsProgramCachesMutex);
+									const InFlightGraphicsProgramCaches::const_iterator iterator = mInFlightGraphicsProgramCaches.find(graphicsProgramCacheId);
+									assert(mInFlightGraphicsProgramCaches.end() != iterator);
+									mInFlightGraphicsProgramCaches.erase(iterator);
+								}
+								mBuilderConditionVariable.notify_one();
 							}
 						}
 

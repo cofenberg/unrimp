@@ -325,13 +325,13 @@ namespace RendererRuntime
 							if (shaderSourceCode.empty())
 							{
 								// We're not aware of any shader source code but we need a shader cache, so, there must be a shader cache master we need to wait for
-								assert(nullptr != shaderCache->getMasterShaderCache());
+								// assert(nullptr != shaderCache->getMasterShaderCache());	// No assert by intent
 								needToWaitForShaderCache = true;
 							}
 							else
 							{
 								// Create the shader instance
-								shader = shaderLanguage->createComputeShaderFromSourceCode(shaderSourceCode.c_str());
+								shader = shaderLanguage->createComputeShaderFromSourceCode(shaderSourceCode.c_str(), &shaderCache->mShaderBytecode);
 								assert(nullptr != shader);	// TODO(co) Error handling
 								RENDERER_SET_RESOURCE_DEBUG_NAME(shader, "Compute pipeline state compiler")
 								shaderCache->mShaderPtr = shader;
