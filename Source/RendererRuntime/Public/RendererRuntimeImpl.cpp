@@ -359,9 +359,8 @@ namespace RendererRuntime
 	void RendererRuntimeImpl::savePipelineStateObjectCache()
 	{
 		// Do only save the pipeline state object cache if writing local data is allowed
-		if (mRenderer->getCapabilities().shaderBytecode &&
-			(mShaderBlueprintResourceManager->doesPipelineStateObjectCacheNeedSaving() || mMaterialBlueprintResourceManager->doesPipelineStateObjectCacheNeedSaving()) &&
-			nullptr != mFileManager->getLocalDataMountPoint())
+		// -> We only support saving material blueprint based shader bytecodes, creating shaders without material blueprint is supposed to be only used for debugging and tiny shaders which are compiled at the very beginning of rendering
+		if (mRenderer->getCapabilities().shaderBytecode && mShaderBlueprintResourceManager->doesPipelineStateObjectCacheNeedSaving() && mMaterialBlueprintResourceManager->doesPipelineStateObjectCacheNeedSaving() && nullptr != mFileManager->getLocalDataMountPoint())
 		{
 			MemoryFile memoryFile;
 			mShaderBlueprintResourceManager->savePipelineStateObjectCache(memoryFile);

@@ -2655,7 +2655,7 @@ namespace Direct3D11Renderer
 								const AGSConfiguration agsConfiguration = { &AmdAgsAllocCallback, &AmdAgsFreeCallback };
 								if (AGS_SUCCESS == agsInit(&mAgsContext, &agsConfiguration, nullptr))
 								{
-									RENDERER_LOG(mDirect3D11Renderer.getContext(), INFORMATION, "Direct3D 11: Successfully initialized AMD AGS")
+									RENDERER_LOG(mDirect3D11Renderer.getContext(), TRACE, "Direct3D 11: Successfully initialized AMD AGS")
 								}
 								else
 								{
@@ -2973,7 +2973,7 @@ namespace Direct3D11Renderer
 					const AGSConfiguration agsConfiguration = { &AmdAgsAllocCallback, &AmdAgsFreeCallback };
 					if (AGS_SUCCESS == agsInit(&mAgsContext, &agsConfiguration, nullptr))
 					{
-						RENDERER_LOG(mDirect3D11Renderer.getContext(), INFORMATION, "Direct3D 11: Successfully initialized AMD AGS")
+						RENDERER_LOG(mDirect3D11Renderer.getContext(), TRACE, "Direct3D 11: Successfully initialized AMD AGS")
 					}
 					else
 					{
@@ -3045,7 +3045,7 @@ namespace Direct3D11Renderer
 			{
 				if (nullptr != NvAPI_Initialize && 0 == NvAPI_Initialize())
 				{
-					RENDERER_LOG(mDirect3D11Renderer.getContext(), INFORMATION, "Direct3D 11: Successfully initialized NvAPI")
+					RENDERER_LOG(mDirect3D11Renderer.getContext(), TRACE, "Direct3D 11: Successfully initialized NvAPI")
 				}
 				else
 				{

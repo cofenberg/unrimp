@@ -551,7 +551,7 @@ namespace RendererRuntime
 	bool MaterialBlueprintResource::doesPipelineStateObjectCacheNeedSaving() const
 	{
 		// TODO(co) Implement me
-		return false;
+		return true;
 	}
 
 	void MaterialBlueprintResource::savePipelineStateObjectCache(IFile&)
