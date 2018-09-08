@@ -227,6 +227,21 @@ namespace
 			}
 		}
 
+		void checkSourceAssetIdAsStringProjectName(const std::string& sourceAssetIdAsString, const std::string& projectName)
+		{
+			const std::string::size_type position = sourceAssetIdAsString.find_first_of('/');
+			if (std::string::npos == position)
+			{
+				// Error!
+				throw std::runtime_error("Failed to locate the project name inside the source asset ID \"" + sourceAssetIdAsString + '\"');
+			}
+			if (sourceAssetIdAsString.substr(0, position) == projectName)
+			{
+				// Error!
+				throw std::runtime_error("Source asset ID \"" + sourceAssetIdAsString + "\" is using the fixed build in project name \"" + projectName + "\", please use \"${PROJECT_NAME}\" instead to reference source assets which are inside the same project as the currently complied source asset");
+			}
+		}
+
 
 //[-------------------------------------------------------]
 //[ Anonymous detail namespace                            ]
@@ -347,9 +362,12 @@ namespace RendererToolkit
 			}
 			else
 			{
-				// If there's a "$ProjectName", resolve it by the project name
+				// Sanity check
+				::detail::checkSourceAssetIdAsStringProjectName(sourceAssetIdAsString, input.projectName);
+
+				// If there's a "${PROJECT_NAME}", resolve it by the project name
 				std::string resolvedSourceAssetIdAsString = sourceAssetIdAsString;
-				replaceFirstString(resolvedSourceAssetIdAsString, "$ProjectName", input.projectName);
+				replaceFirstString(resolvedSourceAssetIdAsString, "${PROJECT_NAME}", input.projectName);
 				return RendererRuntime::StringId(resolvedSourceAssetIdAsString.c_str());
 			}
 		}
@@ -400,9 +418,12 @@ namespace RendererToolkit
 			}
 			else
 			{
-				// If there's a "$ProjectName", resolve it by the project name
+				// Sanity check
+				::detail::checkSourceAssetIdAsStringProjectName(assetIdAsString, input.projectName);
+
+				// If there's a "${PROJECT_NAME}", resolve it by the project name
 				std::string resolvedAssetIdAsString = assetIdAsString;
-				replaceFirstString(resolvedAssetIdAsString, "$ProjectName", input.projectName);
+				replaceFirstString(resolvedAssetIdAsString, "${PROJECT_NAME}", input.projectName);
 
 				// Relative to the asset package the asset is in
 				return input.getCompiledAssetIdBySourceAssetIdAsString(resolvedAssetIdAsString);

@@ -8,7 +8,7 @@
 	{
 		"Nodes":
 		{
-			"$ProjectName/CompositorNode/CN_Vr.asset":
+			"${PROJECT_NAME}/CompositorNode/CN_Vr.asset":
 			{
 			}
 		}

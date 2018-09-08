@@ -6,7 +6,7 @@
 	},
 	"MaterialAsset":
 	{
-		"BaseMaterial": "$ProjectName/Blueprint/Mesh/M_Mesh.asset",
+		"BaseMaterial": "${PROJECT_NAME}/Blueprint/Mesh/M_Mesh.asset",
 		"Properties":
 		{
 			"_argb_nxa": "./background_argb_nxa.asset",

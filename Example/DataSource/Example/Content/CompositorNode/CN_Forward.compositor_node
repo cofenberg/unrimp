@@ -250,8 +250,8 @@
 					"MaximumRenderQueueIndex": "253",
 					"MaterialTechnique": "DepthOnly",
 					"Texture": "Example/Texture/Dynamic/ShadowMapRenderTarget",
-					"DepthToExponentialVarianceMaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_DepthToExponentialVariance.asset",
-					"BlurMaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_ShadowBlur.asset"
+					"DepthToExponentialVarianceMaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_DepthToExponentialVariance.asset",
+					"BlurMaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_ShadowBlur.asset"
 				}
 			},
 			"ScreenSpaceReflectionRayTracingFramebuffer":
@@ -261,7 +261,7 @@
 					"Name": "SSR ray tracing",
 					"Description": "Screen space reflection (SSR) ray tracing",
 					"SkipFirstExecution": "TRUE",
-					"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_ScreenSpaceReflectionRayTracing.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_ScreenSpaceReflectionRayTracing.asset",
 					"SetMaterialProperties":
 					{
 						"UseTemporalReprojection": "FALSE",
@@ -281,7 +281,7 @@
 				{
 					"Name": "Generate reflection",
 					"SkipFirstExecution": "TRUE",
-					"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_Reflection.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_Reflection.asset",
 					"SetMaterialProperties":
 					{
 						"NormalMap": "Example/Texture/Dynamic/MultisampleNormalRenderTarget",
@@ -330,7 +330,7 @@
 				{
 					"Name": "MSAA resolve",
 					"Description": "The MSAA resolve is using a graphics material blueprint instead of compute material blueprint since we're dealing with a depth buffer format which doesn't work that well with unordered access",
-					"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_MsaaResolve.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_MsaaResolve.asset",
 					"SetMaterialProperties":
 					{
 						"ColorMap": "Example/Texture/Dynamic/HdrMultisampleColorRenderTarget",
@@ -360,7 +360,7 @@
 					"Name": "Generate HZB mipmap chain",
 					"Description": "Generate the mipmap chain of the hierarchical depth buffer. Is using a graphics material blueprint instead of compute material blueprint since we're dealing with a depth buffer format which doesn't work that well with unordered access.",
 					"DepthTexture": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
-					"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_DepthGenerateMipmap.asset"
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_DepthGenerateMipmap.asset"
 				}
 			},
 			"ScreenSpaceAmbientOcclusionFramebuffer":
@@ -369,7 +369,7 @@
 				{
 					"Name": "Generate SSAO",
 					"Description": "Screen space ambient occlusion (SSAO) generation",
-					"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_ScreenSpaceAmbientOcclusionGeneration.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_ScreenSpaceAmbientOcclusionGeneration.asset",
 					"SetMaterialProperties":
 					{
 						"NormalMap": "Example/Texture/Dynamic/MultisampleNormalRenderTarget",
@@ -383,7 +383,7 @@
 				{
 					"Name": "SSAO blur",
 					"Description": "Screen space ambient occlusion (SSAO) blur",
-					"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_ScreenSpaceAmbientOcclusionBlur.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_ScreenSpaceAmbientOcclusionBlur.asset",
 					"SetMaterialProperties":
 					{
 						"ScreenSpaceAmbientOcclusionMap": "Example/Texture/Dynamic/ScreenSpaceAmbientOcclusionRenderTarget",
@@ -412,7 +412,7 @@
 				"Compute":
 				{
 					"Name": "Generate volumetric light",
-					"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_VolumetricLight.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_VolumetricLight.asset",
 					"SetMaterialProperties":
 					{
 						"DepthMap": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
@@ -425,7 +425,7 @@
 				"Compute":
 				{
 					"Name": "Volumetric light blur",
-					"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_VolumetricLightBlur.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_VolumetricLightBlur.asset",
 					"SetMaterialProperties":
 					{
 						"VolumetricLightMap": "Example/Texture/Dynamic/VolumetricLightRenderTarget",
@@ -438,7 +438,7 @@
 				"Compute":
 				{
 					"Name": "Composite forward data",
-					"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_Forward.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_Forward.asset",
 					"SetMaterialProperties":
 					{
 						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget0",
@@ -466,7 +466,7 @@
 				{
 					"Name": "Calculate luminance",
 					"Description": "Calculate luminance. The mipmaps are generated automatically after the next render target change.",
-					"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_CalculateLuminance.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_CalculateLuminance.asset",
 					"SetMaterialProperties":
 					{
 						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget1",
@@ -486,7 +486,7 @@
 					"Name": "Adaptive luminance",
 					"Description": "Slowly adjusts the scene luminance based on the previous scene luminance. Skip the first execution since there's no valid previous adaptive luminance available in this situation.",
 					"SkipFirstExecution": "TRUE",
-					"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_AdaptiveLuminance.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_AdaptiveLuminance.asset",
 					"SetMaterialProperties":
 					{
 						"CurrentLuminanceMap": "Example/Texture/Dynamic/LuminanceRenderTarget",
@@ -499,7 +499,7 @@
 					"Name": "Adaptive luminance",
 					"Description": "During the first execution there's no valid previous adaptive luminance available, so use the just calculated luminance as previous luminance.",
 					"NumberOfExecutions": "1",
-					"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_AdaptiveLuminance.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_AdaptiveLuminance.asset",
 					"SetMaterialProperties":
 					{
 						"CurrentLuminanceMap": "Example/Texture/Dynamic/LuminanceRenderTarget",
@@ -510,7 +510,7 @@
 				"Compute":
 				{
 					"Name": "Blur downscale",
-					"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_Scale.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_Scale.asset",
 					"SetMaterialProperties":
 					{
 						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget1",
@@ -520,7 +520,7 @@
 				"Compute":
 				{
 					"Name": "Blur downscale",
-					"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_Scale.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_Scale.asset",
 					"SetMaterialProperties":
 					{
 						"ColorMap": "Example/Texture/Dynamic/GaussianBlurDownscale2ColorRenderTarget",
@@ -536,7 +536,7 @@
 					{
 						"Name": "Vertical blur",
 						"Description": "Vertical Gaussian blur",
-						"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_GaussianBlur.asset",
+						"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_GaussianBlur.asset",
 						"SetMaterialProperties":
 						{
 							"VerticalBlur": "TRUE", 
@@ -548,7 +548,7 @@
 					{
 						"Name": "Horizontal blur",
 						"Description": "Horizontal Gaussian blur",
-						"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_GaussianBlur.asset",
+						"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_GaussianBlur.asset",
 						"SetMaterialProperties":
 						{
 							"VerticalBlur": "FALSE", 
@@ -563,7 +563,7 @@
 				"Compute":
 				{
 					"Name": "Blur upscale",
-					"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_Scale.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_Scale.asset",
 					"SetMaterialProperties":
 					{
 						"ColorMap": "Example/Texture/Dynamic/GaussianBlurRenderTarget1",
@@ -573,7 +573,7 @@
 				"Compute":
 				{
 					"Name": "Depth of field",
-					"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_DepthOfField.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_DepthOfField.asset",
 					"SetMaterialProperties":
 					{
 						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget1",
@@ -585,7 +585,7 @@
 				"Compute":
 				{
 					"Name": "Motion blur",
-					"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_MotionBlur.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_MotionBlur.asset",
 					"SetMaterialProperties":
 					{
 						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget0",
@@ -597,7 +597,7 @@
 				{
 					"Name": "Bloom threshold",
 					"Description": "Bloom pass: Use a lower exposure to produce a value suitable for a bloom pass",
-					"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_HdrToLdrBloomThreshold.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_HdrToLdrBloomThreshold.asset",
 					"SetMaterialProperties":
 					{
 						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget1",
@@ -608,7 +608,7 @@
 				"Compute":
 				{
 					"Name": "Bloom downscale",
-					"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_Scale.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_Scale.asset",
 					"SetMaterialProperties":
 					{
 						"ColorMap": "Example/Texture/Dynamic/BloomColorRenderTarget",
@@ -618,7 +618,7 @@
 				"Compute":
 				{
 					"Name": "Bloom downscale",
-					"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_Scale.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_Scale.asset",
 					"SetMaterialProperties":
 					{
 						"ColorMap": "Example/Texture/Dynamic/BloomDownscale2ColorRenderTarget",
@@ -628,7 +628,7 @@
 				"Compute":
 				{
 					"Name": "Bloom downscale",
-					"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_Scale.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_Scale.asset",
 					"SetMaterialProperties":
 					{
 						"ColorMap": "Example/Texture/Dynamic/BloomDownscale4ColorRenderTarget",
@@ -644,7 +644,7 @@
 					{
 						"Name": "Bloom vertical blur",
 						"Description": "Bloom pass: Vertical Gaussian blur",
-						"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_GaussianBlur.asset",
+						"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_GaussianBlur.asset",
 						"SetMaterialProperties":
 						{
 							"VerticalBlur": "TRUE", 
@@ -656,7 +656,7 @@
 					{
 						"Name": "Bloom horizontal blur",
 						"Description": "Bloom pass: Horizontal Gaussian blur",
-						"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_GaussianBlur.asset",
+						"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_GaussianBlur.asset",
 						"SetMaterialProperties":
 						{
 							"VerticalBlur": "FALSE", 
@@ -671,7 +671,7 @@
 				"Compute":
 				{
 					"Name": "Bloom upscale",
-					"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_Scale.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_Scale.asset",
 					"SetMaterialProperties":
 					{
 						"ColorMap": "Example/Texture/Dynamic/BloomDownscale8ColorRenderTarget",
@@ -681,7 +681,7 @@
 				"Compute":
 				{
 					"Name": "Bloom upscale",
-					"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_Scale.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_Scale.asset",
 					"SetMaterialProperties":
 					{
 						"ColorMap": "Example/Texture/Dynamic/BloomDownscale4ColorRenderTarget",
@@ -692,7 +692,7 @@
 				{
 					"Name": "Lens flare threshold",
 					"Description": "Lens flare pass: Use a lower exposure to produce a value suitable for a lens flare pass",
-					"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_LensFlareThreshold.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_LensFlareThreshold.asset",
 					"SetMaterialProperties":
 					{
 						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget1",
@@ -702,7 +702,7 @@
 				"Compute":
 				{
 					"Name": "Lens flare feature generation",
-					"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_LensFlareFeatureGeneration.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_LensFlareFeatureGeneration.asset",
 					"SetMaterialProperties":
 					{
 						"ColorMap": "Example/Texture/Dynamic/BloomColorRenderTarget",
@@ -713,7 +713,7 @@
 				{
 					"Name": "Lens flare vertical blur",
 					"Description": "Lens flare pass: Vertical Gaussian blur",
-					"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_GaussianBlur.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_GaussianBlur.asset",
 					"SetMaterialProperties":
 					{
 						"VerticalBlur": "TRUE", 
@@ -725,7 +725,7 @@
 				{
 					"Name": "Lens flare horizontal blur",
 					"Description": "Lens flare pass: Horizontal Gaussian blur",
-					"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_GaussianBlur.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_GaussianBlur.asset",
 					"SetMaterialProperties":
 					{
 						"VerticalBlur": "FALSE", 
@@ -736,7 +736,7 @@
 				"Compute":
 				{
 					"Name": "HDR to LDR",
-					"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_HdrToLdr.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_HdrToLdr.asset",
 					"SetMaterialProperties":
 					{
 						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget1",
@@ -753,7 +753,7 @@
 				{
 					"Name": "Final",
 					"Description": "Is using a graphics material blueprint instead of compute material blueprint in order to support rendering the final output directly into an operation system window",
-					"MaterialBlueprint": "$ProjectName/Blueprint/Compositor/MB_Final.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_Final.asset",
 					"SetMaterialProperties":
 					{
 						"ColorMap": "Example/Texture/Dynamic/LdrColorRenderTarget0"
@@ -761,7 +761,7 @@
 				},
 				"DebugGui":
 				{
-					"MaterialBlueprint": "$ProjectName/Blueprint/DebugGui/MB_Debug.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/DebugGui/MB_Debug.asset",
 					"SetMaterialProperties":
 					{
 						"GlyphMap": "Unrimp/Texture/DynamicByCode/ImGuiGlyphMap2D",

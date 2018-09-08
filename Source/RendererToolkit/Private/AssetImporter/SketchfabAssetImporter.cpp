@@ -498,7 +498,7 @@ namespace
 					"Version": "1"
 				},
 				"MaterialAsset": {
-					"BaseMaterial": "$ProjectName/Material/Base/Mesh.asset",
+					"BaseMaterial": "${PROJECT_NAME}/Material/Base/Mesh.asset",
 					"Properties": {
 						"_argb_nxa": "../Texture/Spino_Body_argb_nxa.asset",
 						"_hr_rg_mb_nya": "../Texture/Spino_Body_hr_rg_mb_nya.asset"
@@ -509,7 +509,7 @@ namespace
 			rapidjson::Document rapidJsonDocumentAsset(rapidjson::kObjectType);
 			rapidjson::Document::AllocatorType& rapidJsonAllocatorType = rapidJsonDocumentAsset.GetAllocator();
 			rapidjson::Value rapidJsonValueMaterialAsset(rapidjson::kObjectType);
-			const std::string baseMaterial = importerContext.hasSkeleton ? "$ProjectName/Blueprint/Mesh/M_SkinnedMesh.asset" : "$ProjectName/Blueprint/Mesh/M_Mesh.asset";
+			const std::string baseMaterial = importerContext.hasSkeleton ? "${PROJECT_NAME}/Blueprint/Mesh/M_SkinnedMesh.asset" : "${PROJECT_NAME}/Blueprint/Mesh/M_Mesh.asset";
 			const std::string relativeFilename_argb_nxa = "../" + TEXTURE_TYPE + '/' + materialName + "_argb_nxa" + ".asset";
 			const std::string relativeFilename_hr_rg_mb_nya = "../" + TEXTURE_TYPE + '/' + materialName + "_hr_rg_mb_nya" + ".asset";
 			const std::string relativeFilenameEmissiveMap = "../" + TEXTURE_TYPE + '/' + materialName + "_e" + ".asset";

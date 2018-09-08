@@ -6,7 +6,7 @@
 	},
 	"MaterialAsset":
 	{
-		"BaseMaterial": "$ProjectName/Blueprint/Mesh/M_TransparentMesh.asset",
+		"BaseMaterial": "${PROJECT_NAME}/Blueprint/Mesh/M_TransparentMesh.asset",
 		"Properties":
 		{
 			"Opacity": "0.6",

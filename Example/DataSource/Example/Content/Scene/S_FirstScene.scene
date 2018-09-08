@@ -31,7 +31,7 @@
 					},
 					"SkySceneItem":
 					{
-						"Material": "$ProjectName/Blueprint/Sky/M_Sky.asset",
+						"Material": "${PROJECT_NAME}/Blueprint/Sky/M_Sky.asset",
 						"SetMaterialProperties":
 						{
 							"UseProceduralSky": "TRUE"
@@ -39,22 +39,22 @@
 					},
 					"TerrainSceneItem":
 					{
-						"Material": "$ProjectName/Blueprint/Terrain/M_Terrain.asset",
+						"Material": "${PROJECT_NAME}/Blueprint/Terrain/M_Terrain.asset",
 						"SetMaterialProperties":
 						{
-							"HeightMap": "$ProjectName/Texture/T_GonzalesTerrain_h.asset",
-							"_argb_nxa": "$ProjectName/Texture/T_GonzalesTerrain_argb_nxa.asset",
-							"_aor_rg_mb_nya": "$ProjectName/Texture/T_GonzalesTerrain_aor_rg_mb_nya.asset",
+							"HeightMap": "${PROJECT_NAME}/Texture/T_GonzalesTerrain_h.asset",
+							"_argb_nxa": "${PROJECT_NAME}/Texture/T_GonzalesTerrain_argb_nxa.asset",
+							"_aor_rg_mb_nya": "${PROJECT_NAME}/Texture/T_GonzalesTerrain_aor_rg_mb_nya.asset",
 							"WorldPosition": "1000.0 -43.1 400.0",
 							"WorldSize": "4096.0 200.0 4096.0"
 						}
 					},
 					"GrassSceneItem":
 					{
-						"Material": "$ProjectName/Blueprint/Grass/M_Grass.asset",
+						"Material": "${PROJECT_NAME}/Blueprint/Grass/M_Grass.asset",
 						"SetMaterialProperties":
 						{
-							"_argb_alpha": "$ProjectName/Texture/T_Grass_argb_alpha.asset"
+							"_argb_alpha": "${PROJECT_NAME}/Texture/T_Grass_argb_alpha.asset"
 						}
 					}
 				}
@@ -69,7 +69,7 @@
 				{
 					"MeshSceneItem":
 					{
-						"Mesh": "$ProjectName/Mesh/Imrod/SM_Imrod.asset"
+						"Mesh": "${PROJECT_NAME}/Mesh/Imrod/SM_Imrod.asset"
 					}
 				}
 			},
@@ -83,8 +83,8 @@
 				{
 					"MeshSceneItem":
 					{
-						"Mesh": "$ProjectName/Mesh/Imrod/SM_Imrod.asset",
-						"SubMeshMaterials": [ "$ProjectName/Mesh/Sponza/bricks.asset", "$ProjectName/Mesh/Imrod/M_TransparentImrod.asset" ]
+						"Mesh": "${PROJECT_NAME}/Mesh/Imrod/SM_Imrod.asset",
+						"SubMeshMaterials": [ "${PROJECT_NAME}/Mesh/Sponza/bricks.asset", "${PROJECT_NAME}/Mesh/Imrod/M_TransparentImrod.asset" ]
 					}
 				}
 			},
@@ -98,7 +98,7 @@
 				{
 					"MeshSceneItem":
 					{
-						"Mesh": "$ProjectName/Mesh/Imrod/SM_Imrod.asset"
+						"Mesh": "${PROJECT_NAME}/Mesh/Imrod/SM_Imrod.asset"
 					}
 				}
 			},
@@ -113,7 +113,7 @@
 				{
 					"MeshSceneItem":
 					{
-						"Mesh": "$ProjectName/Mesh/Imrod/SM_Imrod.asset"
+						"Mesh": "${PROJECT_NAME}/Mesh/Imrod/SM_Imrod.asset"
 					}
 				}
 			},
@@ -126,7 +126,7 @@
 				{
 					"MeshSceneItem":
 					{
-						"Mesh": "$ProjectName/Mesh/Sponza/sponza.asset"
+						"Mesh": "${PROJECT_NAME}/Mesh/Sponza/sponza.asset"
 					}
 				}
 			},
@@ -215,8 +215,8 @@
 				{
 					"SkeletonMeshSceneItem":
 					{
-						"Mesh": "$ProjectName/Mesh/Bob/SM_Bob.asset",
-						"SkeletonAnimation": "$ProjectName/Mesh/Bob/SA_Bob.asset"
+						"Mesh": "${PROJECT_NAME}/Mesh/Bob/SM_Bob.asset",
+						"SkeletonAnimation": "${PROJECT_NAME}/Mesh/Bob/SA_Bob.asset"
 					}
 				}
 			},
@@ -262,7 +262,7 @@
 				{
 					"MeshSceneItem":
 					{
-						"Mesh": "$ProjectName/Mesh/TestObject/testObj.asset"
+						"Mesh": "${PROJECT_NAME}/Mesh/TestObject/testObj.asset"
 					}
 				}
 			},
@@ -275,10 +275,10 @@
 				{
 					"ParticlesSceneItem":
 					{
-						"Material": "$ProjectName/Blueprint/Particles/M_Particles.asset",
+						"Material": "${PROJECT_NAME}/Blueprint/Particles/M_Particles.asset",
 						"SetMaterialProperties":
 						{
-							"_argb_alpha": "$ProjectName/Texture/T_Particles_argb_alpha.asset"
+							"_argb_alpha": "${PROJECT_NAME}/Texture/T_Particles_argb_alpha.asset"
 						}
 					}
 				}

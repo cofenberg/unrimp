@@ -297,7 +297,7 @@ Useful Microsoft Windows Developer Tools
 - ["Visual Studio Spell Checker"](https://marketplace.visualstudio.com/items?itemName=EWoodruff.VisualStudioSpellCheckerVS2017andLater) extension to reduce the risk automatically detectable typos get into APIs were they might stay forever
 
 
-Useful Asset Sources
+Useful Online Asset Data Sources
 ======
 - Realtime ready meshes with textures and a web-browser realtime preview: [Sketchfab](https://sketchfab.com/), search for downloadable
 - Realtime ready meshes with textures: [NVIDIA ORCA: Open Research Content Archive](https://developer.nvidia.com/orca)
@@ -307,6 +307,7 @@ Useful Asset Sources
 
 Asset Prefixes
 ======
+The asset prefixes are just used inside the Unrimp examples and are not fixed build in. Feel free to use other asset prefixes or no prefixes at all in your projects.
 - "CN" = "Compositor node"
 - "CW" = "Compositor workspace"
 - "M"  = "Material"
@@ -320,11 +321,28 @@ Asset Prefixes
 - "VA" = "Vertex attributes"
 
 
-Hints
+Asset References
 ======
 - Assets are referenced by using
-	- Source asset ID naming scheme ```"<name>.asset"```
+	- Renderer toolkit source asset ID naming scheme ```"<name>.asset"```
+		- Absolute: "${PROJECT_NAME}" inserts the name of the project the currently processed asset is in, only valid at the beginning of source asset IDs
+		- Relative: "./" uses the current directory the currently processed asset is in, only valid at the beginning of source asset IDs
+		- Relative: "../" switches into the parent directory the currently processed asset is in, only valid at the beginning of source asset IDs
 	- Compiled or runtime generated asset ID naming scheme ```"<project name>/<asset type>/<asset category>/<asset name>"```
+- Examples for asset references inside source assets
+	- Referencing a source asset inside the same project as the currently compiled source asset
+		- "${PROJECT_NAME}/Blueprint/Sky/M_Sky.asset": Referencing a source asset which is inside the same project as the currently compiled source asset
+		- "./MB_Debug.asset": Referencing a source asset which is inside the same directory as the currently compiled source asset
+		- "./MyDirectory/MB_Debug.asset": Referencing a source asset which is inside a sub-directory named "MyDirectory" which is inside same directory as the currently compiled source asset
+		- "../MB_Debug.asset": Referencing a source asset which is inside the parent directory of the directory the currently compiled source asset is in
+		- "../../MB_Debug.asset": Referencing a source asset which is inside the parent directory of the parent directory of the directory the currently compiled source asset is in
+		- "../../MyDirectory/MB_Debug.asset": Referencing a source asset which is inside sub-directory named "MyDirectory" which is inside the parent directory of the parent directory of the directory the currently compiled source asset is in
+	- "MyProject/Blueprint/Sky/M_Sky.asset": Referencing a source asset which is inside another project named "MyProject"
+	- "Unrimp/Texture/DynamicByCode/BlackMap2D": Referencing an asset which is dynamically created during runtime without having a compiled source asset
+
+
+Hints
+======
 - Error strategy
 	- Inside renderer toolkit: Exceptions in extreme, up to no error tolerance. If something smells odd, blame it to make it possible to detect problems as early as possible in the production pipeline.
 	- Inside renderer runtime: The show must go on. If the floor breaks, just keep smiling and continue dancing.
