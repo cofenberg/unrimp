@@ -425,11 +425,10 @@ namespace RendererToolkit
 
 	void ProjectImpl::compileAllAssets(const char* rendererTarget)
 	{
-		RendererRuntime::AssetPackage outputAssetPackage;
-
-		// Discover changed assets
 		const RendererRuntime::AssetPackage::SortedAssetVector& sortedAssetVector = mAssetPackage.getSortedAssetVector();
 		const size_t numberOfAssets = sortedAssetVector.size();
+
+		// Discover changed assets
 		std::vector<RendererRuntime::AssetId> changedAssetIds;
 		changedAssetIds.reserve(numberOfAssets);
 		RENDERER_LOG(mContext, INFORMATION, "Checking %u assets for changes", numberOfAssets)
@@ -446,18 +445,83 @@ namespace RendererToolkit
 		// Compile all changed assets
 		if (!changedAssetIds.empty())
 		{
-			for (size_t i = 0; i < numberOfAssets; ++i)
-			{
-				// TODO(co) Only compile assets if a change has been detected
-				RENDERER_LOG(mContext, INFORMATION, "Compiling asset %u of %u", i + 1, numberOfAssets)
-				const RendererRuntime::Asset& asset = sortedAssetVector[i];
-				compileAsset(asset, rendererTarget, outputAssetPackage);
+			const std::string virtualAssetPackageFilename = getRenderTargetDataRootDirectory(rendererTarget) + '/' + mProjectName + '/' + mAssetPackageDirectoryName + '/' + mAssetPackageDirectoryName + ".assets";
+			RendererRuntime::IFileManager& fileManager = mContext.getFileManager();
+			RendererRuntime::AssetPackage outputAssetPackage;
 
-				// Call "RendererRuntime::IRendererRuntime::reloadResourceByAssetId()" directly after an asset has been compiled to see changes as early as possible
-				if (nullptr != mProjectAssetMonitor)
+			{ // Try to load an already compiled asset package to speed up the asset compilation
+				// Do we need to mount a directory now? (e.g. "DataPc", "DataMobile" etc.)
+				const std::string renderTargetDataRootDirectory = getRenderTargetDataRootDirectory(rendererTarget);
+				if (fileManager.getMountPoint(renderTargetDataRootDirectory.c_str()) == nullptr)
 				{
-					RendererRuntime::AssetId sourceAssetId = asset.assetId;
-					if (std::find(changedAssetIds.cbegin(), changedAssetIds.cend(), sourceAssetId) != changedAssetIds.cend())
+					fileManager.mountDirectory((fileManager.getAbsoluteRootDirectory() + '/' + renderTargetDataRootDirectory).c_str(), renderTargetDataRootDirectory.c_str());
+				}
+
+				// Tell the memory mapped file about the LZ4 compressed data and decompress it at once
+				RendererRuntime::MemoryFile memoryFile;
+				if (memoryFile.loadLz4CompressedDataByVirtualFilename(RendererRuntime::v1AssetPackage::FORMAT_TYPE, RendererRuntime::v1AssetPackage::FORMAT_VERSION, fileManager, virtualAssetPackageFilename.c_str()))
+				{
+					memoryFile.decompress();
+
+					// Read in the asset package header
+					RendererRuntime::v1AssetPackage::AssetPackageHeader assetPackageHeader;
+					memoryFile.read(&assetPackageHeader, sizeof(RendererRuntime::v1AssetPackage::AssetPackageHeader));
+
+					// Sanity check
+					assert((assetPackageHeader.numberOfAssets > 0) && "Invalid empty asset package detected");
+
+					// Read in the asset package content in one single burst
+					RendererRuntime::AssetPackage::SortedAssetVector& sortedOutputAssetVector = outputAssetPackage.getWritableSortedAssetVector();
+					sortedOutputAssetVector.resize(assetPackageHeader.numberOfAssets);
+					memoryFile.read(sortedOutputAssetVector.data(), sizeof(RendererRuntime::Asset) * assetPackageHeader.numberOfAssets);
+				}
+			}
+
+			// Compile all changed assets
+			if (outputAssetPackage.getSortedAssetVector().empty())
+			{
+				// Slow path: Failed to load an already existing compiled asset package, we need to build a complete one
+				outputAssetPackage.getWritableSortedAssetVector().reserve(numberOfAssets);
+				for (size_t i = 0; i < numberOfAssets; ++i)
+				{
+					// Reminder: Assets might not be fully compiled but just collect needed information
+					RENDERER_LOG(mContext, INFORMATION, "Compiling asset %u of %u", i + 1, numberOfAssets)
+					const RendererRuntime::Asset& asset = sortedAssetVector[i];
+					compileAsset(asset, rendererTarget, outputAssetPackage);
+
+					// Call "RendererRuntime::IRendererRuntime::reloadResourceByAssetId()" directly after an asset has been compiled to see changes as early as possible
+					if (nullptr != mProjectAssetMonitor)
+					{
+						const RendererRuntime::AssetId sourceAssetId = asset.assetId;
+						if (std::find(changedAssetIds.cbegin(), changedAssetIds.cend(), sourceAssetId) != changedAssetIds.cend())
+						{
+							SourceAssetIdToCompiledAssetId::const_iterator iterator = mSourceAssetIdToCompiledAssetId.find(sourceAssetId);
+							if (iterator == mSourceAssetIdToCompiledAssetId.cend())
+							{
+								throw std::runtime_error(std::string("Source asset ID ") + std::to_string(sourceAssetId) + " is unknown");
+							}
+							mProjectAssetMonitor->mRendererRuntime.reloadResourceByAssetId(iterator->second);
+						}
+					}
+				}
+			}
+			else
+			{
+				// Fast path: We were able to load a previously compiled asset package and now only have to care about the changed assets
+				const size_t numberOfChangedAssets = changedAssetIds.size();
+				for (size_t i = 0; i < numberOfChangedAssets; ++i)
+				{
+					const RendererRuntime::AssetId sourceAssetId = changedAssetIds[i];
+					const RendererRuntime::Asset* asset = mAssetPackage.tryGetAssetByAssetId(sourceAssetId);
+					if (nullptr == asset)
+					{
+						throw std::runtime_error(std::string("Source asset ID ") + std::to_string(sourceAssetId) + " is unknown");
+					}
+					RENDERER_LOG(mContext, INFORMATION, "Compiling asset %u of %u", i + 1, numberOfChangedAssets)
+					compileAsset(*asset, rendererTarget, outputAssetPackage);
+
+					// Call "RendererRuntime::IRendererRuntime::reloadResourceByAssetId()" directly after an asset has been compiled to see changes as early as possible
+					if (nullptr != mProjectAssetMonitor)
 					{
 						SourceAssetIdToCompiledAssetId::const_iterator iterator = mSourceAssetIdToCompiledAssetId.find(sourceAssetId);
 						if (iterator == mSourceAssetIdToCompiledAssetId.cend())
@@ -490,7 +554,7 @@ namespace RendererToolkit
 				memoryFile.write(sortedOutputAssetVector.data(), sizeof(RendererRuntime::Asset) * sortedOutputAssetVector.size());
 
 				// Write LZ4 compressed output
-				memoryFile.writeLz4CompressedDataByVirtualFilename(STRING_ID("AssetPackage"), RendererRuntime::v1AssetPackage::FORMAT_VERSION, mContext.getFileManager(), (getRenderTargetDataRootDirectory(rendererTarget) + '/' + mProjectName + '/' + mAssetPackageDirectoryName + '/' + mAssetPackageDirectoryName + ".assets").c_str());
+				memoryFile.writeLz4CompressedDataByVirtualFilename(STRING_ID("AssetPackage"), RendererRuntime::v1AssetPackage::FORMAT_VERSION, fileManager, virtualAssetPackageFilename.c_str());
 			}
 		}
 

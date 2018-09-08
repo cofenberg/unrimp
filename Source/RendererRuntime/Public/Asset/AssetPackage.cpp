@@ -87,7 +87,7 @@ namespace RendererRuntime
 	const Asset* AssetPackage::tryGetAssetByAssetId(AssetId assetId) const
 	{
 		SortedAssetVector::const_iterator iterator = std::lower_bound(mSortedAssetVector.cbegin(), mSortedAssetVector.cend(), assetId, ::detail::OrderByAssetId());
-		return (iterator != mSortedAssetVector.end() && iterator->assetId == assetId) ? &(*iterator) : nullptr;
+		return (iterator != mSortedAssetVector.cend() && iterator->assetId == assetId) ? &(*iterator) : nullptr;
 	}
 
 	bool AssetPackage::validateIntegrity(const IFileManager& fileManager) const
@@ -103,6 +103,12 @@ namespace RendererRuntime
 
 		// Valid integrity
 		return true;
+	}
+
+	Asset* AssetPackage::tryGetWritableAssetByAssetId(AssetId assetId)
+	{
+		SortedAssetVector::iterator iterator = std::lower_bound(mSortedAssetVector.begin(), mSortedAssetVector.end(), assetId, ::detail::OrderByAssetId());
+		return (iterator != mSortedAssetVector.cend() && iterator->assetId == assetId) ? &(*iterator) : nullptr;
 	}
 
 

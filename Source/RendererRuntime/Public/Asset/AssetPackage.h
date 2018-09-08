@@ -136,6 +136,7 @@ namespace RendererRuntime
 		{
 			return mSortedAssetVector;
 		}
+		RENDERERRUNTIME_API_EXPORT Asset* tryGetWritableAssetByAssetId(AssetId assetId);
 
 
 	//[-------------------------------------------------------]

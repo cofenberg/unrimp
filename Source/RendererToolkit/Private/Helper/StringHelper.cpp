@@ -27,6 +27,7 @@ PRAGMA_WARNING_DISABLE_MSVC(4242)	// warning C4242: '=': conversion from 'int' t
 PRAGMA_WARNING_DISABLE_MSVC(4244)	// warning C4244: '=': conversion from 'int' to 'char', possible loss of data
 
 #include "RendererToolkit/Private/Helper/StringHelper.h"
+#include "RendererToolkit/Private/Context.h"
 
 #include <RendererRuntime/Public/Core/File/IFile.h>
 #include <RendererRuntime/Public/Core/File/IFileManager.h>
@@ -348,17 +349,17 @@ namespace RendererToolkit
 		if (isSourceAssetIdAsString(sourceAssetIdAsString))
 		{
 			// Source asset ID naming scheme "<name>.asset": Handle relative source asset references
+			std::string resolvedSourceAssetIdAsString;
 			if (sourceAssetIdAsString.length() >= 2 && sourceAssetIdAsString.substr(0, 2) == "./")
 			{
 				// "./" = This directory
-				return RendererRuntime::StringId((input.virtualAssetInputDirectory + '/' + sourceAssetIdAsString.substr(2)).c_str());
+				resolvedSourceAssetIdAsString = input.virtualAssetInputDirectory + '/' + sourceAssetIdAsString.substr(2);
 			}
 			else if (sourceAssetIdAsString.length() >= 3 && sourceAssetIdAsString.substr(0, 3) == "../")
 			{
 				// "../" = Parent directory
-				const std_filesystem::path resolvedAssetId = std_filesystem::path(input.virtualAssetInputDirectory + '/' + sourceAssetIdAsString);
-				const std_filesystem::path currentResolvedAssetId = RendererRuntime::FileSystemHelper::lexicallyNormal(resolvedAssetId);
-				return RendererRuntime::StringId(currentResolvedAssetId.generic_string().c_str());
+				// -> Stepping outside the content asset package results in a "file not found"
+				resolvedSourceAssetIdAsString = RendererRuntime::FileSystemHelper::lexicallyNormal(std_filesystem::path(input.virtualAssetInputDirectory + '/' + sourceAssetIdAsString)).generic_string();
 			}
 			else
 			{
@@ -366,10 +367,18 @@ namespace RendererToolkit
 				::detail::checkSourceAssetIdAsStringProjectName(sourceAssetIdAsString, input.projectName);
 
 				// If there's a "${PROJECT_NAME}", resolve it by the project name
-				std::string resolvedSourceAssetIdAsString = sourceAssetIdAsString;
+				resolvedSourceAssetIdAsString = sourceAssetIdAsString;
 				replaceFirstString(resolvedSourceAssetIdAsString, "${PROJECT_NAME}", input.projectName);
-				return RendererRuntime::StringId(resolvedSourceAssetIdAsString.c_str());
 			}
+
+			// Sanity check: Last chance to provide a human readable error message in case a none existing file is referenced
+			if (!input.context.getFileManager().doesFileExist(resolvedSourceAssetIdAsString.c_str()))
+			{
+				throw std::runtime_error("\"" + sourceAssetIdAsString + "\" is an invalid source asset ID since the referenced file doesn't exist");
+			}
+
+			// Return the string ID of the resolved source asset ID as string
+			return RendererRuntime::StringId(resolvedSourceAssetIdAsString.c_str());
 		}
 		else
 		{
@@ -412,9 +421,7 @@ namespace RendererToolkit
 			else if (assetIdAsString.length() >= 3 && assetIdAsString.substr(0, 3) == "../")
 			{
 				// "../" = Parent directory
-				const std_filesystem::path resolvedAssetId = std_filesystem::path((input.virtualAssetInputDirectory + '/' + assetIdAsString));
-				const std_filesystem::path currentResolvedAssetId = RendererRuntime::FileSystemHelper::lexicallyNormal(resolvedAssetId);
-				return input.getCompiledAssetIdBySourceAssetIdAsString(currentResolvedAssetId.generic_string());
+				return input.getCompiledAssetIdBySourceAssetIdAsString(RendererRuntime::FileSystemHelper::lexicallyNormal(std_filesystem::path((input.virtualAssetInputDirectory + '/' + assetIdAsString))).generic_string());
 			}
 			else
 			{

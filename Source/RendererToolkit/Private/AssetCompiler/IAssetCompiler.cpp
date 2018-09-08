@@ -48,12 +48,22 @@ namespace RendererToolkit
 			throw std::runtime_error("The output asset filename \"" + virtualFilename + "\" exceeds the length limit of " + std::to_string(RendererRuntime::Asset::MAXIMUM_ASSET_FILENAME_LENGTH - 1));	// -1 for not including terminating zero
 		}
 
-		// Output asset
+		// Append or update asset
 		RendererRuntime::Asset outputAsset;
 		outputAsset.assetId = StringHelper::getAssetIdByString(assetIdAsString.c_str());
 		outputAsset.fileHash = RendererRuntime::Math::calculateFileFNV1a64ByVirtualFilename(fileManager, virtualOutputAssetFilename.c_str());
-		strcpy(outputAsset.virtualFilename, virtualFilename.c_str());
-		outputAssetPackage.getWritableSortedAssetVector().push_back(outputAsset);
+		RendererRuntime::Asset* asset = outputAssetPackage.tryGetWritableAssetByAssetId(outputAsset.assetId);
+		if (nullptr != asset)
+		{
+			// Update asset, the file hash might have been changed
+			asset->fileHash = outputAsset.fileHash;
+		}
+		else
+		{
+			// Append asset
+			strcpy(outputAsset.virtualFilename, virtualFilename.c_str());
+			outputAssetPackage.getWritableSortedAssetVector().push_back(outputAsset);
+		}
 	}
 
 
