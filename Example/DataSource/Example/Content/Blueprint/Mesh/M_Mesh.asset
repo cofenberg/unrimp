@@ -14,7 +14,7 @@
 		},
 		"MaterialAssetCompiler":
 		{
-			"InputFile": "M_Mesh.material"
+			"InputFile": "./M_Mesh.material"
 		}
 	}
 }

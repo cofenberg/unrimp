@@ -14,7 +14,7 @@
 		},
 		"MaterialBlueprintAssetCompiler":
 		{
-			"InputFile": "MB_DepthGenerateMipmap.material_blueprint"
+			"InputFile": "./MB_DepthGenerateMipmap.material_blueprint"
 		}
 	}
 }

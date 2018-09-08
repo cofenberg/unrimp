@@ -14,7 +14,7 @@
 		},
 		"MaterialAssetCompiler":
 		{
-			"InputFile": "M_Grass.material"
+			"InputFile": "./M_Grass.material"
 		}
 	}
 }

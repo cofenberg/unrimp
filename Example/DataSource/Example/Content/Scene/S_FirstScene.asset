@@ -14,7 +14,7 @@
 		},
 		"SceneAssetCompiler":
 		{
-			"InputFile": "S_FirstScene.scene"
+			"InputFile": "./S_FirstScene.scene"
 		}
 	}
 }

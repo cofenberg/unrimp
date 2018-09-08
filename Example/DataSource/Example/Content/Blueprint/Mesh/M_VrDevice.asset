@@ -14,7 +14,7 @@
 		},
 		"MaterialAssetCompiler":
 		{
-			"InputFile": "M_VrDevice.material"
+			"InputFile": "./M_VrDevice.material"
 		}
 	}
 }

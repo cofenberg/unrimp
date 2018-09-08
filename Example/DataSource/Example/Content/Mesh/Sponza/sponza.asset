@@ -14,7 +14,7 @@
 		},
 		"MeshAssetCompiler":
 		{
-			"InputFile": "sponza.obj",
+			"InputFile": "./sponza.obj",
 			"MaterialNameToAssetId":
 			{
 				"arch": "./arch.asset",

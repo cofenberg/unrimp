@@ -14,7 +14,7 @@
 		},
 		"ShaderPieceAssetCompiler":
 		{
-			"InputFile": "SP_Core.shader_piece"
+			"InputFile": "./SP_Core.shader_piece"
 		}
 	}
 }

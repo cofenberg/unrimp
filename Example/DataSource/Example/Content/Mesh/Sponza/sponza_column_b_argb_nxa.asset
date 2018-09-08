@@ -18,8 +18,8 @@
 			"TextureChannelPacking": "_argb_nxa",
 			"InputFiles":
 			{
-				"ALBEDO_MAP": "Sponza_Column_b_diffuse.png",
-				"NORMAL_MAP": "Sponza_Column_b_normal.png"
+				"ALBEDO_MAP": "./Sponza_Column_b_diffuse.png",
+				"NORMAL_MAP": "./Sponza_Column_b_normal.png"
 			}
 		}
 	}

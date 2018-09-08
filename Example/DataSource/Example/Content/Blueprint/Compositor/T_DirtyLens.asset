@@ -14,7 +14,7 @@
 		},
 		"TextureAssetCompiler":
 		{
-			"InputFile": "T_DirtyLens.png",
+			"InputFile": "./T_DirtyLens.png",
 			"CreateMipmaps": "FALSE"
 		}
 	}

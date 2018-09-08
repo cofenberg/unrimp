@@ -14,7 +14,7 @@
 		},
 		"ShaderBlueprintAssetCompiler":
 		{
-			"InputFile": "SB_VolumetricLightBlurCompute.shader_blueprint"
+			"InputFile": "./SB_VolumetricLightBlurCompute.shader_blueprint"
 		}
 	}
 }

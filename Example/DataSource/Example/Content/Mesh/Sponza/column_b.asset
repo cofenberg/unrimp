@@ -14,7 +14,7 @@
 		},
 		"MaterialAssetCompiler":
 		{
-			"InputFile": "column_b.material"
+			"InputFile": "./column_b.material"
 		}
 	}
 }

@@ -14,7 +14,7 @@
 		},
 		"MaterialAssetCompiler":
 		{
-			"InputFile": "bricks.material"
+			"InputFile": "./bricks.material"
 		}
 	}
 }

@@ -14,7 +14,7 @@
 		},
 		"VertexAttributesAssetCompiler":
 		{
-			"InputFile": "VA_Grass.vertex_attributes"
+			"InputFile": "./VA_Grass.vertex_attributes"
 		}
 	}
 }

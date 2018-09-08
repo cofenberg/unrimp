@@ -496,7 +496,7 @@ namespace RendererToolkit
 			// Parse material blueprint asset JSON
 			rapidjson::Document rapidJsonDocumentMaterialBlueprintAsset;
 			JsonHelper::loadDocumentByFilename(fileManager, virtualMaterialBlueprintAssetFilename, "Asset", "1", rapidJsonDocumentMaterialBlueprintAsset);
-			materialBlueprintInputFile = rapidJsonDocumentMaterialBlueprintAsset["Asset"]["MaterialBlueprintAssetCompiler"]["InputFile"].GetString();
+			materialBlueprintInputFile = JsonHelper::getAssetInputFile(rapidJsonDocumentMaterialBlueprintAsset["Asset"]["MaterialBlueprintAssetCompiler"]);
 		}
 
 		// Parse material blueprint JSON with modified asset compiler input so relative texture asset IDs can be resolved correctly

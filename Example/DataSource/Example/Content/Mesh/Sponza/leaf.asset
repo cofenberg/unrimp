@@ -14,7 +14,7 @@
 		},
 		"MaterialAssetCompiler":
 		{
-			"InputFile": "leaf.material"
+			"InputFile": "./leaf.material"
 		}
 	}
 }

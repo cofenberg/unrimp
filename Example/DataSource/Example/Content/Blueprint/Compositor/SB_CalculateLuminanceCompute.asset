@@ -14,7 +14,7 @@
 		},
 		"ShaderBlueprintAssetCompiler":
 		{
-			"InputFile": "SB_CalculateLuminanceCompute.shader_blueprint"
+			"InputFile": "./SB_CalculateLuminanceCompute.shader_blueprint"
 		}
 	}
 }

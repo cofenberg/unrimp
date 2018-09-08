@@ -15,7 +15,7 @@
 		},
 		"CompositorWorkspaceAssetCompiler":
 		{
-			"InputFile": "CW_Deferred.compositor_workspace"
+			"InputFile": "./CW_Deferred.compositor_workspace"
 		}
 	}
 }

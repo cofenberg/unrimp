@@ -14,7 +14,7 @@
 		},
 		"ShaderBlueprintAssetCompiler":
 		{
-			"InputFile": "SB_TessellationControl.shader_blueprint"
+			"InputFile": "./SB_TessellationControl.shader_blueprint"
 		}
 	}
 }

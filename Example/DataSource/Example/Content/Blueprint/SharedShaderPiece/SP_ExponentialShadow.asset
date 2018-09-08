@@ -14,7 +14,7 @@
 		},
 		"ShaderPieceAssetCompiler":
 		{
-			"InputFile": "SP_ExponentialShadow.shader_piece"
+			"InputFile": "./SP_ExponentialShadow.shader_piece"
 		}
 	}
 }

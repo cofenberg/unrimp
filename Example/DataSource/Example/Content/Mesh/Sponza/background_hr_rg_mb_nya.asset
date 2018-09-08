@@ -18,8 +18,8 @@
 			"TextureChannelPacking": "_hr_rg_mb_nya",
 			"InputFiles":
 			{
-				"ROUGHNESS_MAP": "Background_Roughness.png",
-				"NORMAL_MAP": "Background_Normal.png"
+				"ROUGHNESS_MAP": "./Background_Roughness.png",
+				"NORMAL_MAP": "./Background_Normal.png"
 			}
 		}
 	}

@@ -13,7 +13,7 @@
 		},
 		"ShaderPieceAssetCompiler":
 		{
-			"InputFile": "SP_Noise.shader_piece"
+			"InputFile": "./SP_Noise.shader_piece"
 		}
 	}
 }

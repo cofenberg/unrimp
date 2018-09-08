@@ -18,9 +18,9 @@
 			"TextureChannelPacking": "_hr_rg_mb_nya",
 			"InputFiles":
 			{
-				"ROUGHNESS_MAP": "Sponza_FlagPole_roughness.png",
-				"METALLIC_MAP": "Sponza_FlagPole_metallic.png",
-				"NORMAL_MAP": "Sponza_FlagPole_normal.png"
+				"ROUGHNESS_MAP": "./Sponza_FlagPole_roughness.png",
+				"METALLIC_MAP": "./Sponza_FlagPole_metallic.png",
+				"NORMAL_MAP": "./Sponza_FlagPole_normal.png"
 			}
 		}
 	}

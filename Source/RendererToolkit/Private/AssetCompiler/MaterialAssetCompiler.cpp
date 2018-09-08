@@ -81,7 +81,7 @@ namespace RendererToolkit
 	{
 		// Read in dependency files
 		std::vector<std::string> virtualDependencyFilenames;
-		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + configuration.rapidJsonDocumentAsset["Asset"]["MaterialAssetCompiler"]["InputFile"].GetString();
+		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFile(configuration.rapidJsonDocumentAsset["Asset"]["MaterialAssetCompiler"]);
 		JsonMaterialHelper::getDependencyFiles(input, virtualInputFilename, virtualDependencyFilenames);
 		const std::string virtualOutputAssetFilename = input.virtualAssetOutputDirectory + '/' + std_filesystem::path(input.virtualAssetFilename).stem().generic_string() + ".material";
 
@@ -93,7 +93,7 @@ namespace RendererToolkit
 	{
 		// Get relevant data
 		const rapidjson::Value& rapidJsonValueAsset = configuration.rapidJsonDocumentAsset["Asset"];
-		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + rapidJsonValueAsset["MaterialAssetCompiler"]["InputFile"].GetString();
+		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFile(rapidJsonValueAsset["MaterialAssetCompiler"]);
 		const std::string assetName = std_filesystem::path(input.virtualAssetFilename).stem().generic_string();
 		const std::string virtualOutputAssetFilename = input.virtualAssetOutputDirectory + '/' + assetName + ".material";
 

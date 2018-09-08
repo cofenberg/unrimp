@@ -14,7 +14,7 @@
 		},
 		"ShaderPieceAssetCompiler":
 		{
-			"InputFile": "SP_WetSurfaces.shader_piece"
+			"InputFile": "./SP_WetSurfaces.shader_piece"
 		}
 	}
 }

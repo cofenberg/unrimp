@@ -14,7 +14,7 @@
 		},
 		"MaterialAssetCompiler":
 		{
-			"InputFile": "iron_grill.material"
+			"InputFile": "./iron_grill.material"
 		}
 	}
 }

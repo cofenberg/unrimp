@@ -15,7 +15,7 @@
 		"TextureAssetCompiler":
 		{
 			"TextureSemantic": "COLOR_CORRECTION_LOOKUP_TABLE",
-			"InputFile": "T_SepiaColorCorrectionLookupTable16x1.tga"
+			"InputFile": "./T_SepiaColorCorrectionLookupTable16x1.tga"
 		}
 	}
 }

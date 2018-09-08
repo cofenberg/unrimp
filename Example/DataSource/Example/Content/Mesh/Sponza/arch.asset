@@ -14,7 +14,7 @@
 		},
 		"MaterialAssetCompiler":
 		{
-			"InputFile": "arch.material"
+			"InputFile": "./arch.material"
 		}
 	}
 }

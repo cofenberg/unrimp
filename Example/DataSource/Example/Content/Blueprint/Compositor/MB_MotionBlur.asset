@@ -14,7 +14,7 @@
 		},
 		"MaterialBlueprintAssetCompiler":
 		{
-			"InputFile": "MB_MotionBlur.material_blueprint"
+			"InputFile": "./MB_MotionBlur.material_blueprint"
 		}
 	}
 }

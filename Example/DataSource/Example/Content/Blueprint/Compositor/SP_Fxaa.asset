@@ -15,7 +15,7 @@
 		},
 		"ShaderPieceAssetCompiler":
 		{
-			"InputFile": "SP_Fxaa.shader_piece"
+			"InputFile": "./SP_Fxaa.shader_piece"
 		}
 	}
 }

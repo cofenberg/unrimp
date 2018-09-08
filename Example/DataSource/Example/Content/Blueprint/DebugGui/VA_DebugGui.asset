@@ -14,7 +14,7 @@
 		},
 		"VertexAttributesAssetCompiler":
 		{
-			"InputFile": "VA_DebugGui.vertex_attributes"
+			"InputFile": "./VA_DebugGui.vertex_attributes"
 		}
 	}
 }

@@ -14,7 +14,7 @@
 		},
 		"MaterialAssetCompiler":
 		{
-			"InputFile": "M_Sky.material"
+			"InputFile": "./M_Sky.material"
 		}
 	}
 }

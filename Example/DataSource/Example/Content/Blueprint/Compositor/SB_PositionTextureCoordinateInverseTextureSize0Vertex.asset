@@ -14,7 +14,7 @@
 		},
 		"ShaderBlueprintAssetCompiler":
 		{
-			"InputFile": "SB_PositionTextureCoordinateInverseTextureSize0Vertex.shader_blueprint"
+			"InputFile": "./SB_PositionTextureCoordinateInverseTextureSize0Vertex.shader_blueprint"
 		}
 	}
 }

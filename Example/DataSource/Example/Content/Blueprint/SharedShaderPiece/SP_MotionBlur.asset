@@ -14,7 +14,7 @@
 		},
 		"ShaderPieceAssetCompiler":
 		{
-			"InputFile": "SP_MotionBlur.shader_piece"
+			"InputFile": "./SP_MotionBlur.shader_piece"
 		}
 	}
 }

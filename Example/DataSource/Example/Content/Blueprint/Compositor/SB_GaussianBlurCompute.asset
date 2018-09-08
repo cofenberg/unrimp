@@ -15,7 +15,7 @@
 		},
 		"ShaderBlueprintAssetCompiler":
 		{
-			"InputFile": "SB_GaussianBlurCompute.shader_blueprint"
+			"InputFile": "./SB_GaussianBlurCompute.shader_blueprint"
 		}
 	}
 }

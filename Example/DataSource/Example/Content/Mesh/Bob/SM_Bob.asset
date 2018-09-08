@@ -14,7 +14,7 @@
 		},
 		"MeshAssetCompiler":
 		{
-			"InputFile": "SM_Bob.md5mesh",
+			"InputFile": "./SM_Bob.md5mesh",
 			"MaterialNameToAssetId":
 			{
 				"guard1_body.png": "./guard1_body.asset",

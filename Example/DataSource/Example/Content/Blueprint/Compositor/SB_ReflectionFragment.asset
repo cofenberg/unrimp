@@ -13,7 +13,7 @@
 		},
 		"ShaderBlueprintAssetCompiler":
 		{
-			"InputFile": "SB_ReflectionFragment.shader_blueprint"
+			"InputFile": "./SB_ReflectionFragment.shader_blueprint"
 		}
 	}
 }

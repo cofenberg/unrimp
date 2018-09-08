@@ -14,7 +14,7 @@
 		},
 		"MaterialAssetCompiler":
 		{
-			"InputFile": "vase_round.material"
+			"InputFile": "./vase_round.material"
 		}
 	}
 }

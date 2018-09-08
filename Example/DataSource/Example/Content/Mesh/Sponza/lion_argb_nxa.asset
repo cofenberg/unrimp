@@ -18,8 +18,8 @@
 			"TextureChannelPacking": "_argb_nxa",
 			"InputFiles":
 			{
-				"ALBEDO_MAP": "Lion_Albedo.png",
-				"NORMAL_MAP": "Lion_Normal.png"
+				"ALBEDO_MAP": "./Lion_Albedo.png",
+				"NORMAL_MAP": "./Lion_Normal.png"
 			}
 		}
 	}

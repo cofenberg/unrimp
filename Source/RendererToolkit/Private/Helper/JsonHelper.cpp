@@ -375,6 +375,24 @@ namespace RendererToolkit
 		}
 	}
 
+	std::string JsonHelper::getAssetFile(const rapidjson::Value& rapidJsonValue)
+	{
+		// Asset input file must start with "./" = this directory, no variations allowed in this case
+		const std::string inputFile = rapidJsonValue.GetString();
+		if (inputFile.length() >= 2 && inputFile.substr(0, 2) == "./")
+		{
+			return inputFile.substr(2);
+		}
+
+		// Error!
+		throw std::runtime_error("Input files must start with \"./\" but \"" + inputFile + "\" given");
+	}
+
+	std::string JsonHelper::getAssetInputFile(const rapidjson::Value& rapidJsonValue, const std::string_view& valueName)
+	{
+		return getAssetFile(rapidJsonValue[valueName.data()]);
+	}
+
 	const RendererRuntime::MaterialProperty* JsonHelper::getMaterialPropertyOfUsageAndValueType(const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector, const std::string& valueAsString, RendererRuntime::MaterialProperty::Usage usage, RendererRuntime::MaterialPropertyValue::ValueType valueType)
 	{
 		// The character "@" is used to reference a material property value

@@ -18,8 +18,8 @@
 			"TextureChannelPacking": "_hr_rg_mb_nya",
 			"InputFiles":
 			{
-				"ROUGHNESS_MAP": "Sponza_Floor_roughness.png",
-				"NORMAL_MAP": "Sponza_Floor_normal.png"
+				"ROUGHNESS_MAP": "./Sponza_Floor_roughness.png",
+				"NORMAL_MAP": "./Sponza_Floor_normal.png"
 			}
 		}
 	}

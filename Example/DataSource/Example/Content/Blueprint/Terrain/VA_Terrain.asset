@@ -14,7 +14,7 @@
 		},
 		"VertexAttributesAssetCompiler":
 		{
-			"InputFile": "VA_Terrain.vertex_attributes"
+			"InputFile": "./VA_Terrain.vertex_attributes"
 		}
 	}
 }

@@ -14,7 +14,7 @@
 		},
 		"VertexAttributesAssetCompiler":
 		{
-			"InputFile": "VA_Mesh.vertex_attributes"
+			"InputFile": "./VA_Mesh.vertex_attributes"
 		}
 	}
 }

@@ -15,7 +15,7 @@
 		},
 		"CompositorWorkspaceAssetCompiler":
 		{
-			"InputFile": "CW_Vr.compositor_workspace"
+			"InputFile": "./CW_Vr.compositor_workspace"
 		}
 	}
 }

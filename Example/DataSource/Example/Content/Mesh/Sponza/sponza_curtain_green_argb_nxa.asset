@@ -18,8 +18,8 @@
 			"TextureChannelPacking": "_argb_nxa",
 			"InputFiles":
 			{
-				"ALBEDO_MAP": "Sponza_Curtain_Green_diffuse.png",
-				"NORMAL_MAP": "Sponza_Curtain_normal.png"
+				"ALBEDO_MAP": "./Sponza_Curtain_Green_diffuse.png",
+				"NORMAL_MAP": "./Sponza_Curtain_normal.png"
 			}
 		}
 	}

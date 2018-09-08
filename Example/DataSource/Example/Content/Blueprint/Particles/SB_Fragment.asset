@@ -14,7 +14,7 @@
 		},
 		"ShaderBlueprintAssetCompiler":
 		{
-			"InputFile": "SB_Fragment.shader_blueprint"
+			"InputFile": "./SB_Fragment.shader_blueprint"
 		}
 	}
 }

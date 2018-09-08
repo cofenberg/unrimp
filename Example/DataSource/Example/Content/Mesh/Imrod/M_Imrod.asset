@@ -14,7 +14,7 @@
 		},
 		"MaterialAssetCompiler":
 		{
-			"InputFile": "M_Imrod.material"
+			"InputFile": "./M_Imrod.material"
 		}
 	}
 }

@@ -14,7 +14,7 @@
 		},
 		"MeshAssetCompiler":
 		{
-			"InputFile": "SM_Imrod.obj",
+			"InputFile": "./SM_Imrod.obj",
 			"MaterialNameToAssetId":
 			{
 				"DefaultMaterial": "./M_Imrod.asset"

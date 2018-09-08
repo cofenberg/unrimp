@@ -18,8 +18,8 @@
 			"TextureChannelPacking": "_argb_nxa",
 			"InputFiles":
 			{
-				"ALBEDO_MAP": "Sponza_Fabric_Blue_diffuse.png",
-				"NORMAL_MAP": "Sponza_Fabric_normal.png"
+				"ALBEDO_MAP": "./Sponza_Fabric_Blue_diffuse.png",
+				"NORMAL_MAP": "./Sponza_Fabric_normal.png"
 			}
 		}
 	}

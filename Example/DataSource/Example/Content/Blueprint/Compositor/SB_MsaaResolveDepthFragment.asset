@@ -14,7 +14,7 @@
 		},
 		"ShaderBlueprintAssetCompiler":
 		{
-			"InputFile": "SB_MsaaResolveDepthFragment.shader_blueprint"
+			"InputFile": "./SB_MsaaResolveDepthFragment.shader_blueprint"
 		}
 	}
 }

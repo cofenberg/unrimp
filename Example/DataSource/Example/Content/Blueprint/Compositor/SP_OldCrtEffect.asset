@@ -14,7 +14,7 @@
 		},
 		"ShaderPieceAssetCompiler":
 		{
-			"InputFile": "SP_OldCrtEffect.shader_piece"
+			"InputFile": "./SP_OldCrtEffect.shader_piece"
 		}
 	}
 }

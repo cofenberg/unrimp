@@ -15,7 +15,7 @@
 		},
 		"CompositorNodeAssetCompiler":
 		{
-			"InputFile": "CN_Forward.compositor_node"
+			"InputFile": "./CN_Forward.compositor_node"
 		}
 	}
 }

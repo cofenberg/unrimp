@@ -14,7 +14,7 @@
 		},
 		"MaterialAssetCompiler":
 		{
-			"InputFile": "M_TransparentMesh.material"
+			"InputFile": "./M_TransparentMesh.material"
 		}
 	}
 }

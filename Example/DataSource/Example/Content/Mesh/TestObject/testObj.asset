@@ -14,7 +14,7 @@
 		},
 		"MeshAssetCompiler":
 		{
-			"InputFile": "testObj.obj",
+			"InputFile": "./testObj.obj",
 			"MaterialNameToAssetId":
 			{
 				"BackGroundMat": "./InnerMat.asset",

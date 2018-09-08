@@ -14,7 +14,7 @@
 		},
 		"ShaderPieceAssetCompiler":
 		{
-			"InputFile": "SP_TangentFrame.shader_piece"
+			"InputFile": "./SP_TangentFrame.shader_piece"
 		}
 	}
 }

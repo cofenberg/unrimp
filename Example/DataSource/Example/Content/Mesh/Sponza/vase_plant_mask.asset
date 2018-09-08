@@ -15,7 +15,7 @@
 		"TextureAssetCompiler":
 		{
 			"TextureSemantic": "ALPHA_MAP",
-			"InputFile": "vase_plant_mask.png"
+			"InputFile": "./vase_plant_mask.png"
 		}
 	}
 }

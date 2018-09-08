@@ -14,7 +14,7 @@
 		},
 		"MaterialAssetCompiler":
 		{
-			"InputFile": "guard1_helmet.material"
+			"InputFile": "./guard1_helmet.material"
 		}
 	}
 }

@@ -14,7 +14,7 @@
 		},
 		"MaterialAssetCompiler":
 		{
-			"InputFile": "roof.material"
+			"InputFile": "./roof.material"
 		}
 	}
 }

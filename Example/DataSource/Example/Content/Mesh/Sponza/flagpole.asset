@@ -14,7 +14,7 @@
 		},
 		"MaterialAssetCompiler":
 		{
-			"InputFile": "flagpole.material"
+			"InputFile": "./flagpole.material"
 		}
 	}
 }

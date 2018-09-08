@@ -14,7 +14,7 @@
 		},
 		"MaterialAssetCompiler":
 		{
-			"InputFile": "chain.material"
+			"InputFile": "./chain.material"
 		}
 	}
 }

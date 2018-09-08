@@ -14,7 +14,7 @@
 		},
 		"MaterialAssetCompiler":
 		{
-			"InputFile": "background.material"
+			"InputFile": "./background.material"
 		}
 	}
 }

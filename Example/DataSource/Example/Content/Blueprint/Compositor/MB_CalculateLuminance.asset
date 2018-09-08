@@ -14,7 +14,7 @@
 		},
 		"MaterialBlueprintAssetCompiler":
 		{
-			"InputFile": "MB_CalculateLuminance.material_blueprint"
+			"InputFile": "./MB_CalculateLuminance.material_blueprint"
 		}
 	}
 }

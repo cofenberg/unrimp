@@ -14,7 +14,7 @@
 		},
 		"MaterialBlueprintAssetCompiler":
 		{
-			"InputFile": "MB_VolumetricLight.material_blueprint"
+			"InputFile": "./MB_VolumetricLight.material_blueprint"
 		}
 	}
 }

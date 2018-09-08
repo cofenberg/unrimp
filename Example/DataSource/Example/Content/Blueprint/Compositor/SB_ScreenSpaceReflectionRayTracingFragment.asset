@@ -14,7 +14,7 @@
 		},
 		"ShaderBlueprintAssetCompiler":
 		{
-			"InputFile": "SB_ScreenSpaceReflectionRayTracingFragment.shader_blueprint"
+			"InputFile": "./SB_ScreenSpaceReflectionRayTracingFragment.shader_blueprint"
 		}
 	}
 }

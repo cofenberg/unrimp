@@ -14,7 +14,7 @@
 		},
 		"CompositorNodeAssetCompiler":
 		{
-			"InputFile": "CN_First.compositor_node"
+			"InputFile": "./CN_First.compositor_node"
 		}
 	}
 }

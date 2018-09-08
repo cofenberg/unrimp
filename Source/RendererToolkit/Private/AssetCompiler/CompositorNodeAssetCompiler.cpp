@@ -612,7 +612,7 @@ namespace RendererToolkit
 	bool CompositorNodeAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const
 	{
 		// Let the cache manager check whether or not the files have been changed in order to speed up later checks and to support dependency tracking
-		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + configuration.rapidJsonDocumentAsset["Asset"]["CompositorNodeAssetCompiler"]["InputFile"].GetString();
+		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFile(configuration.rapidJsonDocumentAsset["Asset"]["CompositorNodeAssetCompiler"]);
 		const std::string virtualOutputAssetFilename = input.virtualAssetOutputDirectory + '/' + std_filesystem::path(input.virtualAssetFilename).stem().generic_string() + ".compositor_node";
 		return input.cacheManager.checkIfFileIsModified(configuration.rendererTarget, input.virtualAssetFilename, {virtualInputFilename}, virtualOutputAssetFilename, RendererRuntime::v1CompositorNode::FORMAT_VERSION);
 	}
@@ -621,7 +621,7 @@ namespace RendererToolkit
 	{
 		// Get relevant data
 		const rapidjson::Value& rapidJsonValueAsset = configuration.rapidJsonDocumentAsset["Asset"];
-		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + rapidJsonValueAsset["CompositorNodeAssetCompiler"]["InputFile"].GetString();
+		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFile(rapidJsonValueAsset["CompositorNodeAssetCompiler"]);
 		const std::string assetName = std_filesystem::path(input.virtualAssetFilename).stem().generic_string();
 		const std::string virtualOutputAssetFilename = input.virtualAssetOutputDirectory + '/' + assetName + ".compositor_node";
 

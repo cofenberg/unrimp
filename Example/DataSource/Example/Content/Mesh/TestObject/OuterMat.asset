@@ -14,7 +14,7 @@
 		},
 		"MaterialAssetCompiler":
 		{
-			"InputFile": "OuterMat.material"
+			"InputFile": "./OuterMat.material"
 		}
 	}
 }

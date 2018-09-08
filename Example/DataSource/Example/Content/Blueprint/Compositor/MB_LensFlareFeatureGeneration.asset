@@ -15,7 +15,7 @@
 		},
 		"MaterialBlueprintAssetCompiler":
 		{
-			"InputFile": "MB_LensFlareFeatureGeneration.material_blueprint"
+			"InputFile": "./MB_LensFlareFeatureGeneration.material_blueprint"
 		}
 	}
 }

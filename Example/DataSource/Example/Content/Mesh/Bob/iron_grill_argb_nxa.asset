@@ -18,7 +18,7 @@
 			"TextureChannelPacking": "_argb_nxa",
 			"InputFiles":
 			{
-				"ALBEDO_MAP": "iron_grill_d.png"
+				"ALBEDO_MAP": "./iron_grill_d.png"
 			}
 		}
 	}

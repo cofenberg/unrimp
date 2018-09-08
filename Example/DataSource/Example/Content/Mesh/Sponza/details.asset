@@ -14,7 +14,7 @@
 		},
 		"MaterialAssetCompiler":
 		{
-			"InputFile": "details.material"
+			"InputFile": "./details.material"
 		}
 	}
 }

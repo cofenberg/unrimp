@@ -24,6 +24,7 @@
 #include "RendererToolkit/Private/AssetCompiler/SkeletonAssetCompiler.h"
 #include "RendererToolkit/Private/Helper/CacheManager.h"
 #include "RendererToolkit/Private/Helper/StringHelper.h"
+#include "RendererToolkit/Private/Helper/JsonHelper.h"
 #include "RendererToolkit/Private/Context.h"
 
 #include <RendererRuntime/Public/Asset/AssetPackage.h>
@@ -78,7 +79,7 @@ namespace RendererToolkit
 	bool SkeletonAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const
 	{
 		// Let the cache manager check whether or not the files have been changed in order to speed up later checks and to support dependency tracking
-		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + configuration.rapidJsonDocumentAsset["Asset"]["SkeletonAssetCompiler"]["InputFile"].GetString();
+		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFile(configuration.rapidJsonDocumentAsset["Asset"]["SkeletonAssetCompiler"]);
 		const std::string virtualOutputAssetFilename = input.virtualAssetOutputDirectory + '/' + std_filesystem::path(input.virtualAssetFilename).stem().generic_string() + ".skeleton";
 		return input.cacheManager.checkIfFileIsModified(configuration.rendererTarget, input.virtualAssetFilename, {virtualInputFilename}, virtualOutputAssetFilename, RendererRuntime::v1Skeleton::FORMAT_VERSION);
 	}
@@ -87,7 +88,7 @@ namespace RendererToolkit
 	{
 		// Get relevant data
 		const rapidjson::Value& rapidJsonValueAsset = configuration.rapidJsonDocumentAsset["Asset"];
-		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + rapidJsonValueAsset["SkeletonAssetCompiler"]["InputFile"].GetString();
+		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFile(rapidJsonValueAsset["SkeletonAssetCompiler"]);
 		const std::string assetName = std_filesystem::path(input.virtualAssetFilename).stem().generic_string();
 		const std::string virtualOutputAssetFilename = input.virtualAssetOutputDirectory + '/' + assetName + ".skeleton";
 

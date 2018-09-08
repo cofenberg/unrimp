@@ -14,7 +14,7 @@
 		},
 		"MaterialAssetCompiler":
 		{
-			"InputFile": "M_Terrain.material"
+			"InputFile": "./M_Terrain.material"
 		}
 	}
 }

@@ -14,7 +14,7 @@
 		},
 		"ShaderBlueprintAssetCompiler":
 		{
-			"InputFile": "SB_PositionTextureCoordinateVertexRay.shader_blueprint"
+			"InputFile": "./SB_PositionTextureCoordinateVertexRay.shader_blueprint"
 		}
 	}
 }

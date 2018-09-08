@@ -14,7 +14,7 @@
 		},
 		"SkeletonAnimationAssetCompiler":
 		{
-			"InputFile": "SA_Bob.md5anim"
+			"InputFile": "./SA_Bob.md5anim"
 		}
 	}
 }

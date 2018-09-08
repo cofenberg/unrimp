@@ -14,7 +14,7 @@
 		},
 		"MaterialAssetCompiler":
 		{
-			"InputFile": "ceiling.material"
+			"InputFile": "./ceiling.material"
 		}
 	}
 }

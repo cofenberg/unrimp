@@ -14,7 +14,7 @@
 		},
 		"MaterialBlueprintAssetCompiler":
 		{
-			"InputFile": "MB_HdrToLdrBloomThreshold.material_blueprint"
+			"InputFile": "./MB_HdrToLdrBloomThreshold.material_blueprint"
 		}
 	}
 }

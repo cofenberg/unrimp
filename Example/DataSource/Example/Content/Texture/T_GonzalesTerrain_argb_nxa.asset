@@ -18,8 +18,8 @@
 			"TextureChannelPacking": "_argb_nxa",
 			"InputFiles":
 			{
-				"ALBEDO_MAP": "T_GonzalesTerrain_a.png",
-				"NORMAL_MAP": "T_GonzalesTerrain_n.png"
+				"ALBEDO_MAP": "./T_GonzalesTerrain_a.png",
+				"NORMAL_MAP": "./T_GonzalesTerrain_n.png"
 			}
 		}
 	}

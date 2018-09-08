@@ -14,7 +14,7 @@
 		},
 		"MaterialBlueprintAssetCompiler":
 		{
-			"InputFile": "MB_GrassGeneration.material_blueprint"
+			"InputFile": "./MB_GrassGeneration.material_blueprint"
 		}
 	}
 }

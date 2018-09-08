@@ -14,7 +14,7 @@
 		},
 		"MaterialAssetCompiler":
 		{
-			"InputFile": "round_grill.material"
+			"InputFile": "./round_grill.material"
 		}
 	}
 }

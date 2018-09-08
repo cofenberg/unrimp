@@ -14,7 +14,7 @@
 		},
 		"MaterialAssetCompiler":
 		{
-			"InputFile": "vase_hanging.material"
+			"InputFile": "./vase_hanging.material"
 		}
 	}
 }

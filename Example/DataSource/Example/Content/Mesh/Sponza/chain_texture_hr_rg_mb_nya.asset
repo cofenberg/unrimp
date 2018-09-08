@@ -18,9 +18,9 @@
 			"TextureChannelPacking": "_hr_rg_mb_nya",
 			"InputFiles":
 			{
-				"ROUGHNESS_MAP": "ChainTexture_Roughness.png",
-				"METALLIC_MAP": "ChainTexture_Metallic.png",
-				"NORMAL_MAP": "ChainTexture_Normal.png"
+				"ROUGHNESS_MAP": "./ChainTexture_Roughness.png",
+				"METALLIC_MAP": "./ChainTexture_Metallic.png",
+				"NORMAL_MAP": "./ChainTexture_Normal.png"
 			}
 		}
 	}

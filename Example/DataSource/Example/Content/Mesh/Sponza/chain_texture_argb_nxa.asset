@@ -18,8 +18,8 @@
 			"TextureChannelPacking": "_argb_nxa",
 			"InputFiles":
 			{
-				"ALBEDO_MAP": "ChainTexture_Albedo.png",
-				"NORMAL_MAP": "ChainTexture_Normal.png"
+				"ALBEDO_MAP": "./ChainTexture_Albedo.png",
+				"NORMAL_MAP": "./ChainTexture_Normal.png"
 			}
 		}
 	}

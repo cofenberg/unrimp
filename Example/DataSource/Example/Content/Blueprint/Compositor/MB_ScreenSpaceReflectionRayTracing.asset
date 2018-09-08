@@ -15,7 +15,7 @@
 		},
 		"MaterialBlueprintAssetCompiler":
 		{
-			"InputFile": "MB_ScreenSpaceReflectionRayTracing.material_blueprint"
+			"InputFile": "./MB_ScreenSpaceReflectionRayTracing.material_blueprint"
 		}
 	}
 }

@@ -14,7 +14,7 @@
 		},
 		"ShaderBlueprintAssetCompiler":
 		{
-			"InputFile": "SB_ForwardVertex.shader_blueprint"
+			"InputFile": "./SB_ForwardVertex.shader_blueprint"
 		}
 	}
 }

@@ -15,7 +15,7 @@
 		"TextureAssetCompiler":
 		{
 			"Description": "Use dds file format to be able to save an uncompressed texture.",
-			"InputFile": "T_Ripple.png",
+			"InputFile": "./T_Ripple.png",
 			"FileFormat": "dds",
 			"CreateMipmaps": "FALSE",
 			"Compression": "FALSE"

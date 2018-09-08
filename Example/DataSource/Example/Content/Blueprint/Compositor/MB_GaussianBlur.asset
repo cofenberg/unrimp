@@ -15,7 +15,7 @@
 		},
 		"MaterialBlueprintAssetCompiler":
 		{
-			"InputFile": "MB_GaussianBlur.material_blueprint"
+			"InputFile": "./MB_GaussianBlur.material_blueprint"
 		}
 	}
 }

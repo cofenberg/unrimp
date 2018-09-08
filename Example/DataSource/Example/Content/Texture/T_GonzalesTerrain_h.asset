@@ -15,7 +15,7 @@
 		"TextureAssetCompiler":
 		{
 			"TextureSemantic": "TERRAIN_HEIGHT_MAP",
-			"InputFile": "T_GonzalesTerrain_h.png"
+			"InputFile": "./T_GonzalesTerrain_h.png"
 		}
 	}
 }

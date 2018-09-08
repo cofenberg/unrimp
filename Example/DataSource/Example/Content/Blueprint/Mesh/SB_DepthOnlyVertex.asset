@@ -14,7 +14,7 @@
 		},
 		"ShaderBlueprintAssetCompiler":
 		{
-			"InputFile": "SB_DepthOnlyVertex.shader_blueprint"
+			"InputFile": "./SB_DepthOnlyVertex.shader_blueprint"
 		}
 	}
 }

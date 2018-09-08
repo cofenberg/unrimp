@@ -18,8 +18,8 @@
 			"TextureChannelPacking": "_argb_nxa",
 			"InputFiles":
 			{
-				"ALBEDO_MAP": "VaseRound_diffuse.png",
-				"NORMAL_MAP": "VaseRound_normal.png"
+				"ALBEDO_MAP": "./VaseRound_diffuse.png",
+				"NORMAL_MAP": "./VaseRound_normal.png"
 			}
 		}
 	}

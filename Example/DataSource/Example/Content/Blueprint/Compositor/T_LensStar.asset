@@ -14,7 +14,7 @@
 		},
 		"TextureAssetCompiler":
 		{
-			"InputFile": "T_LensStar.tga",
+			"InputFile": "./T_LensStar.tga",
 			"CreateMipmaps": "FALSE"
 		}
 	}

@@ -14,7 +14,7 @@
 		},
 		"ShaderBlueprintAssetCompiler":
 		{
-			"InputFile": "SB_ShadowBlurFragment.shader_blueprint"
+			"InputFile": "./SB_ShadowBlurFragment.shader_blueprint"
 		}
 	}
 }

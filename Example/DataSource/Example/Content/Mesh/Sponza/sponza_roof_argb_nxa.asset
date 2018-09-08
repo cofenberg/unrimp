@@ -18,8 +18,8 @@
 			"TextureChannelPacking": "_argb_nxa",
 			"InputFiles":
 			{
-				"ALBEDO_MAP": "Sponza_Roof_diffuse.png",
-				"NORMAL_MAP": "Sponza_Roof_normal.png"
+				"ALBEDO_MAP": "./Sponza_Roof_diffuse.png",
+				"NORMAL_MAP": "./Sponza_Roof_normal.png"
 			}
 		}
 	}

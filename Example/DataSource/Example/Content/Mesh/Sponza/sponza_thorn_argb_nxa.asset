@@ -18,8 +18,8 @@
 			"TextureChannelPacking": "_argb_nxa",
 			"InputFiles":
 			{
-				"ALBEDO_MAP": "Sponza_Thorn_diffuse.png",
-				"NORMAL_MAP": "Sponza_Thorn_normal.png"
+				"ALBEDO_MAP": "./Sponza_Thorn_diffuse.png",
+				"NORMAL_MAP": "./Sponza_Thorn_normal.png"
 			}
 		}
 	}

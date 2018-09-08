@@ -18,8 +18,8 @@
 			"TextureChannelPacking": "_argb_nxa",
 			"InputFiles":
 			{
-				"ALBEDO_MAP": "T_Imrod_d.tga",
-				"NORMAL_MAP": "T_Imrod_n.tga"
+				"ALBEDO_MAP": "./T_Imrod_d.tga",
+				"NORMAL_MAP": "./T_Imrod_n.tga"
 			}
 		}
 	}

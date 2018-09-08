@@ -15,7 +15,7 @@
 		},
 		"CompositorNodeAssetCompiler":
 		{
-			"InputFile": "CN_Debug.compositor_node"
+			"InputFile": "./CN_Debug.compositor_node"
 		}
 	}
 }

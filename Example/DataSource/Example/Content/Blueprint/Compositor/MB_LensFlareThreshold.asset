@@ -15,7 +15,7 @@
 		},
 		"MaterialBlueprintAssetCompiler":
 		{
-			"InputFile": "MB_LensFlareThreshold.material_blueprint"
+			"InputFile": "./MB_LensFlareThreshold.material_blueprint"
 		}
 	}
 }

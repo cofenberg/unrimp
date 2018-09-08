@@ -14,7 +14,7 @@
 		},
 		"MaterialAssetCompiler":
 		{
-			"InputFile": "gi_flag.material"
+			"InputFile": "./gi_flag.material"
 		}
 	}
 }

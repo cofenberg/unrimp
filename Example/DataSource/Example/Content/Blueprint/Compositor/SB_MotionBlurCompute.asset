@@ -14,7 +14,7 @@
 		},
 		"ShaderBlueprintAssetCompiler":
 		{
-			"InputFile": "SB_MotionBlurCompute.shader_blueprint"
+			"InputFile": "./SB_MotionBlurCompute.shader_blueprint"
 		}
 	}
 }

@@ -18,7 +18,7 @@
 			"TextureChannelPacking": "_argb_nxa",
 			"InputFiles":
 			{
-				"ALBEDO_MAP": "guard1_helmet_d.png"
+				"ALBEDO_MAP": "./guard1_helmet_d.png"
 			}
 		}
 	}

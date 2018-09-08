@@ -14,7 +14,7 @@
 		},
 		"MaterialBlueprintAssetCompiler":
 		{
-			"InputFile": "MB_MsaaResolve.material_blueprint"
+			"InputFile": "./MB_MsaaResolve.material_blueprint"
 		}
 	}
 }

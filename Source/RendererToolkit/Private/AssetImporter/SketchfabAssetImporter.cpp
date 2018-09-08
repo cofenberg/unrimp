@@ -369,8 +369,8 @@ namespace
 						"TextureSemantic": "PACKED_CHANNELS",
 						"TextureChannelPacking": "_argb_nxa",
 						"InputFiles": {
-							"ALBEDO_MAP": "Spino_Body_D.tga.png",
-							"NORMAL_MAP": "Spino_Body_N.tga.png"
+							"ALBEDO_MAP": "./Spino_Body_D.tga.png",
+							"NORMAL_MAP": "./Spino_Body_N.tga.png"
 						}
 					}
 				}
@@ -401,7 +401,7 @@ namespace
 					#define ADD_MEMBER(semanticType) \
 						if (!textureFilenames[SemanticType::semanticType].empty()) \
 						{ \
-							rapidJsonValueInputFiles.AddMember(#semanticType, rapidjson::StringRef(textureFilenames[SemanticType::semanticType].c_str()), rapidJsonAllocatorType); \
+							rapidJsonValueInputFiles.AddMember(#semanticType, rapidjson::StringRef(("./" + textureFilenames[SemanticType::semanticType]).c_str()), rapidJsonAllocatorType); \
 						}
 
 					{ // Input files
@@ -442,7 +442,7 @@ namespace
 				{
 					// No texture channel packing
 					rapidJsonValueTextureAssetCompiler.AddMember("TextureSemantic", "EMISSIVE_MAP", rapidJsonAllocatorType);
-					rapidJsonValueTextureAssetCompiler.AddMember("InputFile", rapidjson::StringRef(textureFilenames[SemanticType::EMISSIVE_MAP].c_str()), rapidJsonAllocatorType);
+					rapidJsonValueTextureAssetCompiler.AddMember("InputFile", rapidjson::StringRef(("./" + textureFilenames[SemanticType::EMISSIVE_MAP]).c_str()), rapidJsonAllocatorType);
 				}
 				else
 				{
@@ -564,7 +564,7 @@ namespace
 						"AssetCategory": "Imported"
 					},
 					"MaterialAssetCompiler": {
-						"InputFile": "SpinosaurusBody.material"
+						"InputFile": "./SpinosaurusBody.material"
 					}
 				}
 			}
@@ -583,7 +583,7 @@ namespace
 
 			{ // Material asset compiler
 				rapidjson::Value rapidJsonValueMaterialAssetCompiler(rapidjson::kObjectType);
-				rapidJsonValueMaterialAssetCompiler.AddMember("InputFile", rapidjson::StringRef(filename.c_str()), rapidJsonAllocatorType);
+				rapidJsonValueMaterialAssetCompiler.AddMember("InputFile", rapidjson::StringRef(("./" + filename).c_str()), rapidJsonAllocatorType);
 				rapidJsonValueAsset.AddMember("MaterialAssetCompiler", rapidJsonValueMaterialAssetCompiler, rapidJsonAllocatorType);
 			}
 
@@ -721,7 +721,7 @@ namespace
 						"AssetCategory": "Imported"
 					},
 					"MeshAssetCompiler": {
-						"InputFile": "SpinosaurusAeg.obj",
+						"InputFile": "./SpinosaurusAeg.obj",
 						"MaterialNameToAssetId": {
 							"/Head": "../Material/SpinosaurusHead.asset",
 							"/Body": "../Material/SpinosaurusBody.asset"
@@ -743,7 +743,7 @@ namespace
 
 			{ // Mesh asset compiler
 				rapidjson::Value rapidJsonValueMeshAssetCompiler(rapidjson::kObjectType);
-				rapidJsonValueMeshAssetCompiler.AddMember("InputFile", rapidjson::StringRef(importerContext.meshFilename.c_str()), rapidJsonAllocatorType);
+				rapidJsonValueMeshAssetCompiler.AddMember("InputFile", rapidjson::StringRef(("./" + importerContext.meshFilename).c_str()), rapidJsonAllocatorType);
 
 				// Check whether or not it looks dangerous to use "aiProcess_RemoveRedundantMaterials"
 				// -> "Centaur" ( https://sketchfab.com/models/0d3f1b4a51144b7fbc4e2ff64d858413 ) for example has only identical dummy

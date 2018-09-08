@@ -15,7 +15,7 @@
 		"TextureAssetCompiler":
 		{
 			"TextureSemantic": "ALPHA_MAP",
-			"InputFile": "sponza_thorn_mask.png"
+			"InputFile": "./sponza_thorn_mask.png"
 		}
 	}
 }

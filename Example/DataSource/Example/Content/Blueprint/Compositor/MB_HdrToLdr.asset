@@ -14,7 +14,7 @@
 		},
 		"MaterialBlueprintAssetCompiler":
 		{
-			"InputFile": "MB_HdrToLdr.material_blueprint"
+			"InputFile": "./MB_HdrToLdr.material_blueprint"
 		}
 	}
 }

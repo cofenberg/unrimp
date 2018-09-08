@@ -15,7 +15,7 @@
 		},
 		"MaterialBlueprintAssetCompiler":
 		{
-			"InputFile": "MB_ScreenSpaceAmbientOcclusionGeneration.material_blueprint"
+			"InputFile": "./MB_ScreenSpaceAmbientOcclusionGeneration.material_blueprint"
 		}
 	}
 }

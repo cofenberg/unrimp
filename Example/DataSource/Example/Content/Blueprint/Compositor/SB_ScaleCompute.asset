@@ -15,7 +15,7 @@
 		},
 		"ShaderBlueprintAssetCompiler":
 		{
-			"InputFile": "SB_ScaleCompute.shader_blueprint"
+			"InputFile": "./SB_ScaleCompute.shader_blueprint"
 		}
 	}
 }

@@ -18,8 +18,8 @@
 			"TextureChannelPacking": "_argb_nxa",
 			"InputFiles":
 			{
-				"ALBEDO_MAP": "Background_Albedo.png",
-				"NORMAL_MAP": "Background_Normal.png"
+				"ALBEDO_MAP": "./Background_Albedo.png",
+				"NORMAL_MAP": "./Background_Normal.png"
 			}
 		}
 	}

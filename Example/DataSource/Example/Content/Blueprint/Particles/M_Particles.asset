@@ -14,7 +14,7 @@
 		},
 		"MaterialAssetCompiler":
 		{
-			"InputFile": "M_Particles.material"
+			"InputFile": "./M_Particles.material"
 		}
 	}
 }

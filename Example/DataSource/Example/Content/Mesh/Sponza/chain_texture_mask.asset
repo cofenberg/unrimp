@@ -15,7 +15,7 @@
 		"TextureAssetCompiler":
 		{
 			"TextureSemantic": "ALPHA_MAP",
-			"InputFile": "chain_texture_mask.png"
+			"InputFile": "./chain_texture_mask.png"
 		}
 	}
 }

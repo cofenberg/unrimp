@@ -14,7 +14,7 @@
 		},
 		"MaterialAssetCompiler":
 		{
-			"InputFile": "fabric_e.material"
+			"InputFile": "./fabric_e.material"
 		}
 	}
 }

@@ -757,7 +757,7 @@ namespace
 					{
 						if (getTextureSemanticByRapidJsonValue(rapidJsonMemberIteratorInputFile->name) == TextureSemantic::NORMAL_MAP)
 						{
-							return std::string(basePath) + rapidJsonMemberIteratorInputFile->value.GetString();
+							return basePath + RendererToolkit::JsonHelper::getAssetFile(rapidJsonMemberIteratorInputFile->value);
 						}
 					}
 				}
@@ -788,13 +788,14 @@ namespace
 						if (source.textureSemantic == textureSemantic || roughnessMapConversionNeeded)
 						{
 							textureSemanticFound = true;
+							const std::string value = RendererToolkit::JsonHelper::getAssetFile(rapidJsonMemberIteratorInputFile->value);
 
 							// Sanity check: There's either a roughness map or a gloss map, but never ever both
 							if (TextureSemantic::ROUGHNESS_MAP == textureSemantic || TextureSemantic::GLOSS_MAP == textureSemantic)
 							{
 								if (roughnessMapFoundAndProcessed)
 								{
-									throw std::runtime_error("Texture input file \"" + std::string(rapidJsonMemberIteratorInputFile->value.GetString()) + "\" with texture semantic \"" + std::string(rapidJsonMemberIteratorInputFile->name.GetString()) + "\": There's either a roughness map or a gloss map, but never ever both");
+									throw std::runtime_error("Texture input file \"" + value + "\" with texture semantic \"" + std::string(rapidJsonMemberIteratorInputFile->name.GetString()) + "\": There's either a roughness map or a gloss map, but never ever both");
 								}
 								roughnessMapFoundAndProcessed = true;
 							}
@@ -809,7 +810,7 @@ namespace
 
 							// Load Crunch mipmapped texture
 							crnlib::texture_conversion::convert_params crunchConvertParams;
-							load2DCrunchMipmappedTexture(fileManager, (std::string(basePath) + rapidJsonMemberIteratorInputFile->value.GetString()).c_str(), usedSourceNormalMapFilename.empty() ? nullptr : usedSourceNormalMapFilename.c_str(), source.crunchMipmappedTexture, crunchConvertParams);
+							load2DCrunchMipmappedTexture(fileManager, (basePath + value).c_str(), usedSourceNormalMapFilename.empty() ? nullptr : usedSourceNormalMapFilename.c_str(), source.crunchMipmappedTexture, crunchConvertParams);
 
 							{ // Sanity check: Ensure the number of channels matches
 								const crnlib::image_u8* crunchImage = source.crunchMipmappedTexture.get_level(0, 0)->get_image();
@@ -817,7 +818,7 @@ namespace
 								{
 									if (!crunchImage->is_component_valid(i))
 									{
-										throw std::runtime_error("Texture input file \"" + std::string(rapidJsonMemberIteratorInputFile->value.GetString()) + "\" has less channels then required by texture semantic \"" + std::string(rapidJsonMemberIteratorInputFile->name.GetString()) + '\"');
+										throw std::runtime_error("Texture input file \"" + value + "\" has less channels then required by texture semantic \"" + std::string(rapidJsonMemberIteratorInputFile->name.GetString()) + '\"');
 									}
 								}
 							}
@@ -828,7 +829,7 @@ namespace
 								// Sanity check
 								if (1 != source.numberOfChannels)
 								{
-									throw std::runtime_error("Texture input file \"" + std::string(rapidJsonMemberIteratorInputFile->value.GetString()) + "\" with texture semantic \"" + std::string(rapidJsonMemberIteratorInputFile->name.GetString()) + "\" must have exactly one channel");
+									throw std::runtime_error("Texture input file \"" + value + "\" with texture semantic \"" + std::string(rapidJsonMemberIteratorInputFile->name.GetString()) + "\" must have exactly one channel");
 								}
 
 								// Convert
@@ -1009,7 +1010,7 @@ namespace
 			filenames.reserve(6);
 			for (uint32_t faceIndex = 0; faceIndex < NUMBER_OF_FACES; ++faceIndex)
 			{
-				filenames.emplace_back(basePath + rapidJsonValueInputFiles[FACE_NAMES[faceIndex]].GetString());
+				filenames.emplace_back(basePath + RendererToolkit::JsonHelper::getAssetInputFile(rapidJsonValueInputFiles, FACE_NAMES[faceIndex]));
 			}
 			return filenames;
 		}
@@ -1077,7 +1078,7 @@ namespace
 				filenames.reserve(rapidJsonValueInputFiles.MemberCount());
 				for (rapidjson::Value::ConstMemberIterator rapidJsonMemberIteratorInputFile = rapidJsonValueInputFiles.MemberBegin(); rapidJsonMemberIteratorInputFile != rapidJsonValueInputFiles.MemberEnd(); ++rapidJsonMemberIteratorInputFile)
 				{
-					filenames.emplace_back(virtualInputAssetFilename + rapidJsonMemberIteratorInputFile->value.GetString());
+					filenames.emplace_back(virtualInputAssetFilename + RendererToolkit::JsonHelper::getAssetFile(rapidJsonMemberIteratorInputFile->value));
 				}
 				RendererToolkit::CacheManager::CacheEntries cacheEntriesCandidate;
 				if (input.cacheManager.needsToBeCompiled(configuration.rendererTarget, input.virtualAssetFilename, filenames, virtualOutputAssetFilename, TEXTURE_FORMAT_VERSION, cacheEntriesCandidate))
@@ -1569,7 +1570,7 @@ namespace RendererToolkit
 		std::string inputFile;
 		if (rapidJsonValueTextureAssetCompiler.HasMember("InputFile"))
 		{
-			inputFile = rapidJsonValueTextureAssetCompiler["InputFile"].GetString();
+			inputFile = JsonHelper::getAssetInputFile(rapidJsonValueTextureAssetCompiler);
 		}
 		::detail::TextureSemantic textureSemantic = ::detail::TextureSemantic::UNKNOWN;
 		::detail::optionalTextureSemanticProperty(rapidJsonValueTextureAssetCompiler, "TextureSemantic", textureSemantic);
@@ -1612,7 +1613,7 @@ namespace RendererToolkit
 			::detail::optionalTextureSemanticProperty(rapidJsonValueTextureAssetCompiler, "TextureSemantic", textureSemantic);
 			if (rapidJsonValueTextureAssetCompiler.HasMember("InputFile"))
 			{
-				inputFile = rapidJsonValueTextureAssetCompiler["InputFile"].GetString();
+				inputFile = JsonHelper::getAssetInputFile(rapidJsonValueTextureAssetCompiler);
 			}
 			if (rapidJsonValueTextureAssetCompiler.HasMember("FileFormat"))
 			{

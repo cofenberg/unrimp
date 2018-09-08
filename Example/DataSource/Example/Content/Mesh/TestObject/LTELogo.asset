@@ -14,7 +14,7 @@
 		},
 		"MaterialAssetCompiler":
 		{
-			"InputFile": "LTELogo.material"
+			"InputFile": "./LTELogo.material"
 		}
 	}
 }

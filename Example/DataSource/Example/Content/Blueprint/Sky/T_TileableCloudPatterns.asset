@@ -14,7 +14,7 @@
 		},
 		"TextureAssetCompiler":
 		{
-			"InputFile": "T_TileableCloudPatterns.png"
+			"InputFile": "./T_TileableCloudPatterns.png"
 		}
 	}
 }
