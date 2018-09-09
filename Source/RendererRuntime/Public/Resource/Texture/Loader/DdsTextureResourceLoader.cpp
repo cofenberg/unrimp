@@ -478,7 +478,7 @@ namespace RendererRuntime
 			{
 				if (mDepth > 1)
 				{
-					mTextureFormat = Renderer::TextureFormat::R8G8B8A8;
+					mTextureFormat = (8 == ddsHeader.ddpfPixelFormat.RGBBitCount) ? Renderer::TextureFormat::R8 : Renderer::TextureFormat::R8G8B8A8;
 				}
 				else
 				{

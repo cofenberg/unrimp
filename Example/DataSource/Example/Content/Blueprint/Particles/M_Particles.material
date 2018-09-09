@@ -8,7 +8,8 @@
 	{
 		"Techniques":
 		{
-			"Transparent": "./MB_Transparent.asset"
+			"Transparent": "./MB_Transparent.asset",
+			"Distortion": "./MB_Transparent.asset"
 		}
 	}
 }

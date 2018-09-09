@@ -34,6 +34,7 @@
 #include <RendererRuntime/Public/Core/File/MemoryFile.h>
 #include <RendererRuntime/Public/Core/File/FileSystemHelper.h>
 #include <RendererRuntime/Public/Resource/Scene/Item/Sky/SkySceneItem.h>
+#include <RendererRuntime/Public/Resource/Scene/Item/Volume/VolumeSceneItem.h>
 #include <RendererRuntime/Public/Resource/Scene/Item/Grass/GrassSceneItem.h>
 #include <RendererRuntime/Public/Resource/Scene/Item/Terrain/TerrainSceneItem.h>
 #include <RendererRuntime/Public/Resource/Scene/Item/Camera/CameraSceneItem.h>
@@ -316,6 +317,7 @@ namespace RendererToolkit
 									}
 
 									case RendererRuntime::SkySceneItem::TYPE_ID:
+									case RendererRuntime::VolumeSceneItem::TYPE_ID:
 									case RendererRuntime::GrassSceneItem::TYPE_ID:
 									case RendererRuntime::TerrainSceneItem::TYPE_ID:
 									case RendererRuntime::ParticlesSceneItem::TYPE_ID:
@@ -462,6 +464,21 @@ namespace RendererToolkit
 
 											// Write down
 											memoryFile.write(&skyItem, sizeof(RendererRuntime::v1Scene::SkyItem));
+											if (!sortedMaterialPropertyVector.empty())
+											{
+												// Write down all material properties
+												memoryFile.write(sortedMaterialPropertyVector.data(), sizeof(RendererRuntime::MaterialProperty) * sortedMaterialPropertyVector.size());
+											}
+											break;
+										}
+
+										case RendererRuntime::VolumeSceneItem::TYPE_ID:
+										{
+											RendererRuntime::v1Scene::VolumeItem volumeItem;
+											::detail::readMaterialSceneItem(input, sortedMaterialPropertyVector, rapidJsonValueItem, volumeItem);
+
+											// Write down
+											memoryFile.write(&volumeItem, sizeof(RendererRuntime::v1Scene::VolumeItem));
 											if (!sortedMaterialPropertyVector.empty())
 											{
 												// Write down all material properties

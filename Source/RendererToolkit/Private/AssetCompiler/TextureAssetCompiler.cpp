@@ -218,6 +218,7 @@ namespace
 			REFLECTION_CUBE_MAP,
 			COLOR_CORRECTION_LOOKUP_TABLE,
 			PACKED_CHANNELS,
+			VOLUME,			///< 3D volume data
 			UNKNOWN
 		};
 
@@ -440,7 +441,7 @@ namespace
 			}
 
 			// Handle DDS LZ4 compression
-			if (::detail::TextureSemantic::TERRAIN_HEIGHT_MAP == textureSemantic)
+			if (::detail::TextureSemantic::TERRAIN_HEIGHT_MAP == textureSemantic || ::detail::TextureSemantic::VOLUME == textureSemantic)
 			{
 				RendererToolkit::StringHelper::replaceFirstString(virtualOutputAssetFilename, ".dds", ".lz4dds");
 			}
@@ -471,6 +472,7 @@ namespace
 			ELSE_IF_VALUE(REFLECTION_CUBE_MAP)
 			ELSE_IF_VALUE(COLOR_CORRECTION_LOOKUP_TABLE)
 			ELSE_IF_VALUE(PACKED_CHANNELS)
+			ELSE_IF_VALUE(VOLUME)
 			else
 			{
 				throw std::runtime_error(std::string("Unknown texture semantic \"") + valueAsString + '\"');
@@ -1296,6 +1298,7 @@ namespace
 				case TextureSemantic::REFLECTION_CUBE_MAP:
 				case TextureSemantic::COLOR_CORRECTION_LOOKUP_TABLE:
 				case TextureSemantic::PACKED_CHANNELS:
+				case TextureSemantic::VOLUME:
 					// Nothing here, handled elsewhere
 					break;
 
@@ -1504,12 +1507,17 @@ namespace
 					ddsSurfaceDesc2.ddpfPixelFormat.dwRGBAlphaBitMask	= 0xFF000000;
 					ddsSurfaceDesc2.lPitch								= static_cast<crn_int32>((ddsSurfaceDesc2.dwWidth * ddsSurfaceDesc2.ddpfPixelFormat.dwRGBBitCount) >> 3);
 
-					// Write down the 3D destination texture
-					RendererRuntime::MemoryFile memoryFile(0, 4096);
-					memoryFile.write("DDS ", sizeof(uint32_t));
-					memoryFile.write(reinterpret_cast<const char*>(&ddsSurfaceDesc2), sizeof(crnlib::DDSURFACEDESC2));
-					memoryFile.write(pData, sizeof(stbi_us) * numberOfTexelsPerLayer);
-					memoryFile.writeLz4CompressedDataByVirtualFilename(RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_TYPE, RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_VERSION, fileManager, virtualDestinationFilename);
+					{ // Write down the 3D destination texture
+						RendererRuntime::MemoryFile memoryFile(0, 4096);
+						memoryFile.write("DDS ", sizeof(uint32_t));
+						memoryFile.write(reinterpret_cast<const char*>(&ddsSurfaceDesc2), sizeof(crnlib::DDSURFACEDESC2));
+						memoryFile.write(pData, sizeof(stbi_us) * numberOfTexelsPerLayer);
+						if (memoryFile.writeLz4CompressedDataByVirtualFilename(RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_TYPE, RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_VERSION, fileManager, virtualDestinationFilename))
+						{
+							stbi_image_free(pData);
+							throw std::runtime_error("Failed to write to destination file \"" + std::string(virtualDestinationFilename) + '\"');
+						}
+					}
 
 					// Free temporary memory
 					stbi_image_free(pData);
@@ -1523,6 +1531,99 @@ namespace
 			{
 				// Error! TODO(co) Handle
 				//throw std::runtime_error("Color correction lookup table must be RGB");
+			}
+		}
+
+		/**
+		*  @brief
+		*    Primitive texture compiler implementation for the "RAW" volume data file format (Lookout! You have to provide correct data type, width, height and depth loader parameters!)
+		*
+		*  @note
+		*    - Primitive chunk of a certain data type
+		*    - Lookout! This loader requires the user to provide correct loader parameters! (data type, width, height and depth)
+		*    - The image loader is only able to deal with the volumetric image data, not with volumetric specific additional information like voxel size
+		*/
+		void convertVolume(const RendererToolkit::IAssetCompiler::Configuration& configuration, RendererRuntime::IFileManager& fileManager, RendererRuntime::VirtualFilename virtualSourceFilename, RendererRuntime::VirtualFilename virtualDestinationFilename)
+		{
+			// Get and check the filename extension
+			std::string extension = std_filesystem::path(virtualSourceFilename).extension().generic_string();
+			RendererToolkit::StringHelper::toLowerCase(extension);
+			if (".raw" != extension)
+			{
+				throw std::runtime_error("Failed to convert volume " + std::string(virtualSourceFilename) + ": Only raw volume data is supported");
+			}
+
+			// Get the JSON asset object
+			const rapidjson::Value& rapidJsonValueAsset = configuration.rapidJsonDocumentAsset["Asset"];
+			const rapidjson::Value& rapidJsonValueTextureAssetCompiler = rapidJsonValueAsset["TextureAssetCompiler"];
+
+			// Get the JSON "RawVolume" object
+			if (!rapidJsonValueTextureAssetCompiler.HasMember("RawVolume"))
+			{
+				throw std::runtime_error("Failed to convert volume " + std::string(virtualSourceFilename) + ": \"RawVolume\" block is missing inside the texture asset JSON file");
+			}
+			const rapidjson::Value& rapidJsonValueRawVolume = rapidJsonValueTextureAssetCompiler["RawVolume"];
+			if (strcmp(rapidJsonValueRawVolume["Format"].GetString(), "UCHAR") != 0)
+			{
+				throw std::runtime_error("Failed to convert volume " + std::string(virtualSourceFilename) + ": Texture asset JSON file \"RawVolume\" format must be \"UCHAR\"");
+			}
+
+			// Get the resolution
+			uint32_t resolution[3] = { 0, 0, 0 };
+			{
+				std::vector<std::string> elements;
+				RendererToolkit::StringHelper::splitString(rapidJsonValueRawVolume["Resolution"].GetString(), ' ', elements);
+				if (elements.size() != 3)
+				{
+					throw std::runtime_error("Failed to convert volume " + std::string(virtualSourceFilename) + ": Texture asset JSON file \"RawVolume\" resolution needs three components");
+				}
+				for (uint32_t i = 0; i < 3; ++i)
+				{
+					resolution[i] = static_cast<uint32_t>(std::atoi(elements[i].c_str()));
+				}
+			}
+
+			// Read in the RAW volume data
+			const uint32_t rawVoumeDataNumberOfBytes = resolution[0] * resolution[1] * resolution[2];
+			std::vector<uint8_t> rawVoumeData;
+			{
+				RendererRuntime::IFile* file = fileManager.openFile(RendererRuntime::IFileManager::FileMode::READ, virtualSourceFilename);
+				if (nullptr == file)
+				{
+					throw std::runtime_error("Failed to open source file \"" + std::string(virtualSourceFilename) + '\"');
+				}
+				rawVoumeData.resize(rawVoumeDataNumberOfBytes);
+				file->read(rawVoumeData.data(), rawVoumeDataNumberOfBytes);
+				fileManager.closeFile(*file);
+			}
+
+			// Fill dds header ("PIXEL_FMT_A8R8G8B8" pixel format)
+			crnlib::DDSURFACEDESC2 ddsSurfaceDesc2 = {};
+			ddsSurfaceDesc2.dwSize								= sizeof(crnlib::DDSURFACEDESC2);
+			ddsSurfaceDesc2.dwFlags								= crnlib::DDSD_WIDTH | crnlib::DDSD_HEIGHT | crnlib::DDSD_DEPTH | crnlib::DDSD_PIXELFORMAT | crnlib::DDSD_CAPS | crnlib::DDSD_LINEARSIZE;
+			ddsSurfaceDesc2.dwHeight							= resolution[1];
+			ddsSurfaceDesc2.dwWidth								= resolution[0];
+			ddsSurfaceDesc2.dwBackBufferCount					= resolution[2];
+			ddsSurfaceDesc2.ddsCaps.dwCaps						= crnlib::DDSCAPS_TEXTURE | crnlib::DDSCAPS_COMPLEX;
+			ddsSurfaceDesc2.ddsCaps.dwCaps2						= crnlib::DDSCAPS2_VOLUME;
+			ddsSurfaceDesc2.ddpfPixelFormat.dwSize				= sizeof(crnlib::DDPIXELFORMAT);
+			ddsSurfaceDesc2.ddpfPixelFormat.dwFlags			   |= crnlib::DDPF_LUMINANCE;
+			ddsSurfaceDesc2.ddpfPixelFormat.dwRGBBitCount		= 8;
+			ddsSurfaceDesc2.ddpfPixelFormat.dwRBitMask			= 0xFF0000;
+			ddsSurfaceDesc2.ddpfPixelFormat.dwGBitMask			= 0x00FF00;
+			ddsSurfaceDesc2.ddpfPixelFormat.dwBBitMask			= 0x0000FF;
+			ddsSurfaceDesc2.ddpfPixelFormat.dwRGBAlphaBitMask	= 0xFF000000;
+			ddsSurfaceDesc2.lPitch								= static_cast<crn_int32>((ddsSurfaceDesc2.dwWidth * ddsSurfaceDesc2.ddpfPixelFormat.dwRGBBitCount) >> 3);
+
+			{ // Write down the 3D destination texture
+				RendererRuntime::MemoryFile memoryFile(0, 4096);
+				memoryFile.write("DDS ", sizeof(uint32_t));
+				memoryFile.write(reinterpret_cast<const char*>(&ddsSurfaceDesc2), sizeof(crnlib::DDSURFACEDESC2));
+				memoryFile.write(rawVoumeData.data(), rawVoumeDataNumberOfBytes);
+				if (!memoryFile.writeLz4CompressedDataByVirtualFilename(RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_TYPE, RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_VERSION, fileManager, virtualDestinationFilename))
+				{
+					throw std::runtime_error("Failed to write to destination file \"" + std::string(virtualDestinationFilename) + '\"');
+				}
 			}
 		}
 
@@ -1579,7 +1680,7 @@ namespace RendererToolkit
 		{
 			assetFileFormat = rapidJsonValueTextureAssetCompiler["FileFormat"].GetString();
 		}
-		if (::detail::TextureSemantic::COLOR_CORRECTION_LOOKUP_TABLE == textureSemantic || ::detail::TextureSemantic::TERRAIN_HEIGHT_MAP == textureSemantic)
+		if (::detail::TextureSemantic::COLOR_CORRECTION_LOOKUP_TABLE == textureSemantic || ::detail::TextureSemantic::TERRAIN_HEIGHT_MAP == textureSemantic || ::detail::TextureSemantic::VOLUME == textureSemantic)
 		{
 			assetFileFormat = "dds";
 		}
@@ -1627,7 +1728,7 @@ namespace RendererToolkit
 			}
 
 			// Texture semantic overrules manual settings
-			if (::detail::TextureSemantic::COLOR_CORRECTION_LOOKUP_TABLE == textureSemantic ||::detail::TextureSemantic::TERRAIN_HEIGHT_MAP == textureSemantic)
+			if (::detail::TextureSemantic::COLOR_CORRECTION_LOOKUP_TABLE == textureSemantic ||::detail::TextureSemantic::TERRAIN_HEIGHT_MAP == textureSemantic ||::detail::TextureSemantic::VOLUME == textureSemantic)
 			{
 				assetFileFormat = "dds";
 				createMipmaps = false;
@@ -1678,6 +1779,10 @@ namespace RendererToolkit
 			else if (::detail::TextureSemantic::TERRAIN_HEIGHT_MAP == textureSemantic)
 			{
 				detail::convertTerrainHeightMap(input.context.getFileManager(), virtualInputAssetFilename.c_str(), virtualOutputAssetFilename.c_str());
+			}
+			else if (::detail::TextureSemantic::VOLUME == textureSemantic)
+			{
+				detail::convertVolume(configuration, input.context.getFileManager(), virtualInputAssetFilename.c_str(), virtualOutputAssetFilename.c_str());
 			}
 			else
 			{

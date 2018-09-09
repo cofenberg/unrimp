@@ -21,7 +21,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/Public/Resource/Scene/Item/Sky/SkySceneItem.h"
+#include "RendererRuntime/Public/Resource/Scene/Item/Volume/VolumeSceneItem.h"
 #include "RendererRuntime/Public/Resource/Scene/SceneResource.h"
 #include "RendererRuntime/Public/Resource/Scene/SceneNode.h"
 #include "RendererRuntime/Public/IRendererRuntime.h"
@@ -39,13 +39,13 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global variables                                      ]
 		//[-------------------------------------------------------]
-		static Renderer::IVertexArrayPtr SkyVertexArrayPtr;	///< Vertex array object (VAO), can be a null pointer, shared between all sky instances
+		static Renderer::IVertexArrayPtr VolumeVertexArrayPtr;	///< Vertex array object (VAO), can be a null pointer, shared between all volume instances
 
 
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		Renderer::IVertexArray* createSkyVertexArray(Renderer::IBufferManager& bufferManager)
+		Renderer::IVertexArray* createVolumeVertexArray(const RendererRuntime::IRendererRuntime& rendererRuntime)
 		{
 			// Vertex input layout
 			static constexpr Renderer::VertexAttribute vertexAttributesLayout[] =
@@ -61,43 +61,80 @@ namespace
 					0,											// alignedByteOffset (uint32_t)
 					sizeof(float) * 3,							// strideInBytes (uint32_t)
 					0											// instancesPerElement (uint32_t)
+				},
+				{ // Attribute 1, see "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html
+					// Data destination
+					Renderer::VertexAttributeFormat::UINT_1,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
+					"drawId",									// name[32] (char)
+					"DRAWID",									// semanticName[32] (char)
+					0,											// semanticIndex (uint32_t)
+					// Data source
+					1,											// inputSlot (uint32_t)
+					0,											// alignedByteOffset (uint32_t)
+					sizeof(uint32_t),							// strideInBytes (uint32_t)
+					1											// instancesPerElement (uint32_t)
 				}
 			};
 			const Renderer::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
 
+			// Our cube is constructed like this
+			/*
+					3+------+2  y
+					/|     /|   |
+				   / |    / |   |
+				  / 0+---/--+1  *---x
+				7+------+6 /   /
+				 | /    | /   z
+				 |/     |/
+				4+------+5
+			*/
+
 			// Create the vertex buffer object (VBO)
-			// -> Clip space vertex positions, left/bottom is (-1,-1) and right/top is (1,1)
+			// -> Object space vertex positions
 			static constexpr float VERTEX_POSITION[] =
 			{
-				-1.0f,  1.0f,  1.0f,
-				 1.0f,  1.0f,  1.0f,
-				 1.0f, -1.0f,  1.0f,
-				-1.0f, -1.0f,  1.0f,
-				 1.0f,  1.0f, -1.0f,
-				-1.0f,  1.0f, -1.0f,
-				-1.0f, -1.0f, -1.0f,
-				 1.0f, -1.0f,- 1.0f
+				-0.5f, -0.5f, -0.5f,	// 0
+				 0.5f, -0.5f, -0.5f,	// 1
+				 0.5f,  0.5f, -0.5f,	// 2
+				-0.5f,  0.5f, -0.5f,	// 3
+				-0.5f, -0.5f,  0.5f,	// 4
+				 0.5f, -0.5f,  0.5f,	// 5
+				 0.5f,  0.5f,  0.5f,	// 6
+				-0.5f,  0.5f,  0.5f,	// 7
 			};
+			Renderer::IBufferManager& bufferManager = rendererRuntime.getBufferManager();
 			Renderer::IVertexBufferPtr vertexBuffer(bufferManager.createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION));
-			RENDERER_SET_RESOURCE_DEBUG_NAME(vertexBuffer, "Sky")
+			RENDERER_SET_RESOURCE_DEBUG_NAME(vertexBuffer, "Volume")
 
 			// Create the index buffer object (IBO)
 			static constexpr uint16_t INDICES[] =
 			{
-				0, 1, 2, 2, 3, 0,	// Front
-				1, 4, 7, 7, 2, 1,	// Right
-				4, 5, 6, 6, 7, 4,	// Back
-				5, 0, 3, 3, 6, 5,	// Left
-				5, 4, 1, 1, 0, 5,	// Top
-				3, 2, 7, 7, 6, 3	// Bottom
+				// Back		Triangle
+				2, 3, 0,	// 0
+				0, 1, 2,	// 1
+				// Front
+				7, 6, 5,	// 0
+				5, 4, 7,	// 1
+				// Left
+				3, 7, 4,	// 0
+				4, 0, 3,	// 1
+				// Right
+				6, 2, 1,	// 0
+				1, 5, 6,	// 1
+				// Top
+				3, 2, 6,	// 0
+				6, 7, 3,	// 1
+				// Bottom
+				0, 4, 5,	// 0
+				5, 1, 0		// 1
 			};
 			Renderer::IIndexBuffer* indexBuffer = bufferManager.createIndexBuffer(sizeof(INDICES), INDICES);
-			RENDERER_SET_RESOURCE_DEBUG_NAME(indexBuffer, "Sky")
+			RENDERER_SET_RESOURCE_DEBUG_NAME(indexBuffer, "Volume")
 
 			// Create vertex array object (VAO)
-			const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
+			const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer, rendererRuntime.getMeshResourceManager().getDrawIdVertexBufferPtr() };
 			Renderer::IVertexArray* vertexArray = bufferManager.createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBuffer);
-			RENDERER_SET_RESOURCE_DEBUG_NAME(vertexArray, "Sky")
+			RENDERER_SET_RESOURCE_DEBUG_NAME(vertexArray, "Volume")
 
 			// Done
 			return vertexArray;
@@ -121,7 +158,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public RendererRuntime::ISceneItem methods            ]
 	//[-------------------------------------------------------]
-	void SkySceneItem::onAttachedToSceneNode(SceneNode& sceneNode)
+	void VolumeSceneItem::onAttachedToSceneNode(SceneNode& sceneNode)
 	{
 		mRenderableManager.setTransform(&sceneNode.getGlobalTransform());
 
@@ -129,13 +166,19 @@ namespace RendererRuntime
 		ISceneItem::onAttachedToSceneNode(sceneNode);
 	}
 
-	const RenderableManager* SkySceneItem::getRenderableManager() const
+	const RenderableManager* VolumeSceneItem::getRenderableManager() const
 	{
+		// Sanity check: Only uniform scale is supported to keep things simple
+		assert(mRenderableManager.getTransform().scale.x == mRenderableManager.getTransform().scale.y && mRenderableManager.getTransform().scale.y == mRenderableManager.getTransform().scale.z);
+
+		// Initialize, if necessary
 		if (!isValid(getMaterialResourceId()))
 		{
 			// TODO(co) Get rid of the nasty delayed initialization in here, including the evil const-cast. For this, full asynchronous material blueprint loading must work. See "TODO(co) Currently material blueprint resource loading is a blocking process.".
-			const_cast<SkySceneItem*>(this)->initialize();
+			const_cast<VolumeSceneItem*>(this)->initialize();
 		}
+
+		// Done
 		return &mRenderableManager;
 	}
 
@@ -143,20 +186,20 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::MaterialSceneItem methods ]
 	//[-------------------------------------------------------]
-	void SkySceneItem::onMaterialResourceCreated()
+	void VolumeSceneItem::onMaterialResourceCreated()
 	{
 		const IRendererRuntime& rendererRuntime = getSceneResource().getRendererRuntime();
 
-		// Add reference to vertex array object (VAO) shared between all sky instances
-		if (nullptr == ::detail::SkyVertexArrayPtr)
+		// Add reference to vertex array object (VAO) shared between all volume instances
+		if (nullptr == ::detail::VolumeVertexArrayPtr)
 		{
-			::detail::SkyVertexArrayPtr = ::detail::createSkyVertexArray(rendererRuntime.getBufferManager());
-			assert(nullptr != ::detail::SkyVertexArrayPtr);
+			::detail::VolumeVertexArrayPtr = ::detail::createVolumeVertexArray(rendererRuntime);
+			assert(nullptr != ::detail::VolumeVertexArrayPtr);
 		}
-		::detail::SkyVertexArrayPtr->addReference();
+		::detail::VolumeVertexArrayPtr->addReference();
 
 		// Setup renderable manager
-		mRenderableManager.getRenderables().emplace_back(mRenderableManager, ::detail::SkyVertexArrayPtr, rendererRuntime.getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>(), true, 0, 36);
+		mRenderableManager.getRenderables().emplace_back(mRenderableManager, ::detail::VolumeVertexArrayPtr, rendererRuntime.getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>(), true, 0, 36);
 		mRenderableManager.updateCachedRenderablesData();
 	}
 
@@ -164,17 +207,17 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
-	SkySceneItem::~SkySceneItem()
+	VolumeSceneItem::~VolumeSceneItem()
 	{
 		if (isValid(getMaterialResourceId()))
 		{
 			// Clear the renderable manager right now so we have no more references to the shared vertex array
 			mRenderableManager.getRenderables().clear();
 
-			// Release reference to vertex array object (VAO) shared between all sky instances
-			if (nullptr != ::detail::SkyVertexArrayPtr && 1 == ::detail::SkyVertexArrayPtr->releaseReference())	// +1 for reference to global shared pointer
+			// Release reference to vertex array object (VAO) shared between all volume instances
+			if (nullptr != ::detail::VolumeVertexArrayPtr && 1 == ::detail::VolumeVertexArrayPtr->releaseReference())	// +1 for reference to global shared pointer
 			{
-				::detail::SkyVertexArrayPtr = nullptr;
+				::detail::VolumeVertexArrayPtr = nullptr;
 			}
 		}
 	}

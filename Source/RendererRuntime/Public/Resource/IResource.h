@@ -131,6 +131,13 @@ namespace RendererRuntime
 		RENDERERRUNTIME_API_EXPORT void connectResourceListener(IResourceListener& resourceListener);	// No guaranteed resource listener caller order, if already connected nothing happens (no double registration)
 		RENDERERRUNTIME_API_EXPORT void disconnectResourceListener(IResourceListener& resourceListener);
 
+		#ifdef _DEBUG
+			inline const std::string& getDebugName() const
+			{
+				return mDebugName;
+			}
+		#endif
+
 
 	//[-------------------------------------------------------]
 	//[ Protected methods                                     ]

@@ -265,7 +265,9 @@ namespace RendererRuntime
 		assert(renderableManager.isVisible());
 
 		// Quantize the cached distance to camera
-		const uint32_t quantizedDepth = ::detail::depthToBits(renderableManager.getCachedDistanceToCamera());
+		// -> Solid: Sort from front to back to benefit from early z rejection
+		// -> Transparent: Sort from back to front to have correct alpha blending
+		const uint32_t quantizedDepth = ::detail::depthToBits(mTransparentPass ? -renderableManager.getCachedDistanceToCamera() : renderableManager.getCachedDistanceToCamera());
 
 		// Register the renderables inside our renderables queue
 		for (const Renderable& renderable : renderableManager.getRenderables())

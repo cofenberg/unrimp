@@ -93,6 +93,39 @@ namespace RendererRuntime
 			vertexAttributes.numberOfAttributes = static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout));
 			vertexAttributes.attributes = vertexAttributesLayout;
 		}
+		else if (STRING_ID("Example/VertexAttributes/Volume/VA_Volume") == getAsset().assetId)
+		{
+			Renderer::VertexAttributes& vertexAttributes = const_cast<Renderer::VertexAttributes&>(mVertexAttributesResource->mVertexAttributes);
+			static constexpr Renderer::VertexAttribute vertexAttributesLayout[] =
+			{
+				{ // Attribute 0
+					// Data destination
+					Renderer::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
+					"Position",									// name[32] (char)
+					"POSITION",									// semanticName[32] (char)
+					0,											// semanticIndex (uint32_t)
+					// Data source
+					0,											// inputSlot (uint32_t)
+					0,											// alignedByteOffset (uint32_t)
+					sizeof(float) * 3,							// strideInBytes (uint32_t)
+					0											// instancesPerElement (uint32_t)
+				},
+				{ // Attribute 1, see "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html
+					// Data destination
+					Renderer::VertexAttributeFormat::UINT_1,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
+					"drawId",									// name[32] (char)
+					"DRAWID",									// semanticName[32] (char)
+					0,											// semanticIndex (uint32_t)
+					// Data source
+					1,											// inputSlot (uint32_t)
+					0,											// alignedByteOffset (uint32_t)
+					sizeof(uint32_t),							// strideInBytes (uint32_t)
+					1											// instancesPerElement (uint32_t)
+				}
+			};
+			vertexAttributes.numberOfAttributes = static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout));
+			vertexAttributes.attributes = vertexAttributesLayout;
+		}
 		else if (STRING_ID("Example/VertexAttributes/DebugGui/VA_DebugGui") == getAsset().assetId)
 		{
 			Renderer::VertexAttributes& vertexAttributes = const_cast<Renderer::VertexAttributes&>(mVertexAttributesResource->mVertexAttributes);

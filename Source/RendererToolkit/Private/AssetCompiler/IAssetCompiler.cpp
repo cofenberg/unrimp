@@ -55,8 +55,9 @@ namespace RendererToolkit
 		RendererRuntime::Asset* asset = outputAssetPackage.tryGetWritableAssetByAssetId(outputAsset.assetId);
 		if (nullptr != asset)
 		{
-			// Update asset, the file hash might have been changed
+			// Update asset, the file hash or virtual filename might have been changed
 			asset->fileHash = outputAsset.fileHash;
+			strcpy(asset->virtualFilename, virtualFilename.c_str());
 		}
 		else
 		{

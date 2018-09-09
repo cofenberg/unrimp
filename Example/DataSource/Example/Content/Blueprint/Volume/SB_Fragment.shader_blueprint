@@ -1,0 +1,397 @@
+/*********************************************************\
+ * Copyright (c) 2012-2018 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+// Overview over the big-picture shader parts (use this to search and jump to the related places)
+// 1.0 - Ray Setup
+// 1.1 - Clip Ray
+// 1.2 - Jitter Position
+// 2.0 - Ray Traversal
+// 2.1 - Clip Position
+// 2.2 - Reconstruction
+// 2.2 - Fetch Scalar
+// 2.3 - Shading
+// 2.4 - Classification
+// 2.5 - Gradient
+// 2.5 - Gradient Input
+// 2.6 - Illumination
+
+
+//[-------------------------------------------------------]
+//[ Definitions                                           ]
+//[-------------------------------------------------------]
+@includepiece(../SharedShaderPiece/SP_Core.asset)
+	@insertpiece(SetCrossPlatformSettings)
+
+
+//[-------------------------------------------------------]
+//[ Define pieces                                         ]
+//[-------------------------------------------------------]
+// TODO(co) Define this outside
+@piece(MaximumNumberOfMaterials)2@end
+
+
+//[-------------------------------------------------------]
+//[ Input / output                                        ]
+//[-------------------------------------------------------]
+// Attribute input / output
+INPUT_BEGIN
+	INPUT_TEXTURE_COORDINATE_NOINTERPOLATION(1, float4, CameraVolumeSpacePosition, 				  0)	// Volume space camera position, w-component = The assigned material slot inside the material uniform buffer
+	INPUT_TEXTURE_COORDINATE				(2, float4, VolumeSpacePositionVS,   	  			  1)	// Volume space ray end position, w-component = Uniform world space to object space scale, only uniform scale is supported to keep things simple
+	INPUT_TEXTURE_COORDINATE_NOINTERPOLATION(3, float4, ViewSpaceToObjectSpaceRotationQuaternion, 2)	// View space to object space rotation quaternion
+	DECLARE_FRAGMENT_POSITION
+INPUT_END
+OUTPUT_BEGIN
+	OUTPUT_COLOR(0)
+OUTPUT_END
+
+// Uniform buffers
+struct PassDataStruct
+{
+	float4x4 WorldSpaceToClipSpaceMatrix[2];
+	float4   ViewSpaceToWorldSpaceQuaternion;
+	float3	 CameraWorldSpacePosition;
+	float	 JitterFactor;
+	float2   InverseViewportSize;
+	float2	 ProjectionParameters;
+};
+UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
+	PassDataStruct PassData;
+UNIFORM_BUFFER_END
+struct Material
+{
+	float StepSize;	// Step size, smaller value means more precise results (less wooden grain effects / moire pattern) but with higher performance costs, higher values for less quality but better performance
+					// Nyquist–Shannon sampling theorem
+					// -> Quote from the book "Real-Time Volume Graphics", section "9.1.1 Sampling Theorem" (page 217)
+					//    "It states that, when converting analog signals to digital, the sampling frequency must be greater than twice the
+					//     highest frequency of the input signal to be able to later reconstruct the original signal from the sampled version perfectly."
+					//     ...
+					//    "Thus, in order to accurately reconstruct the original signal from the discrete data, we need to take at least two samples per smallest inter-voxel distance."
+	float Opacity;	// Opacity, usually within the interval [~0 .. 1] = [transparent .. solid] (2.0 - Ray Traversal)
+};
+UNIFORM_BUFFER_BEGIN(1, 0, MaterialUniformBuffer, 1)
+	Material Materials[FAST_SHADER_BUILD_HACK(@insertpiece(MaximumNumberOfMaterials))];
+UNIFORM_BUFFER_END
+
+// Textures: We need to start at texture unit 1 instead of texture unit 0 because the vertex shader has an instance texture buffer bound at texture unit 0 (OpenGL shares those bindings across all shader stages while Direct3D doesn't)
+TEXTURE_3D(3, 0, VolumeMap, 1)
+TEXTURE_2D(3, 1, DepthMap, 2)
+
+// Samplers
+SAMPLER_STATE(4, 0, SamplerLinear, 0)
+SAMPLER_STATE(4, 1, SamplerPointClamp, 1)
+
+
+//[-------------------------------------------------------]
+//[ Functions                                             ]
+//[-------------------------------------------------------]
+@includepiece(../SharedShaderPiece/SP_Depth.asset)
+	@insertpiece(DefineGetLinearDepth)
+@includepiece(../SharedShaderPiece/SP_TangentFrame.asset)
+	@insertpiece(DefineGetTangentFrame)
+
+/**
+*  @brief
+*    1.1 - Clip Ray: Performs an clipping operation on the given ray
+*
+*  @param[in, out] rayOrigin
+*    Start position of the ray inside the volume, within the interval [(0, 0, 0) .. (1, 1, 1)]
+*  @param[in]      rayDirection
+*    Normalized ray direction
+*  @param[in, out] maximumTravelLength
+*    Maximum travel length along the ray, within the interval [0 .. 1]
+*/
+void ClipRay(inout float3 rayOrigin, float3 rayDirection, inout float maximumTravelLength)
+{
+	// Nothing to do in here
+}
+
+/**
+*  @brief
+*    1.2 - Jitter Position: Jitter the start position of the ray in order to reduce wooden grain effect (moire pattern)
+*
+*  @param[in] fragmentPosition
+*    Fragment position
+*  @param[in] position
+*    Position inside the volume to perform jitter on, within the interval [(0, 0, 0) .. (1, 1, 1)]
+*
+*  @return
+*    Jitter factor, usually in the interval [0 .. 1]
+*/
+float JitterPosition(float2 fragmentPosition, float3 position)
+{
+	// Trigonometric jitter
+	// -> An alternative would be "Stochastic Jittering" as described within the book "Real-Time Volume Graphics", section "9.1.4 Stochastic Jittering" (page 220)
+	// -> An alternative would be to reduce the step size which increases the performance costs but reduces the artefacts
+	const float DitherRay = 1.0f;	// Scale factor for dithering the ray's start position in order to avoid wooden grain effects (moire pattern, usually value between 0...1)
+	return DitherRay * frac(cos(fragmentPosition.x * 11.55f + fragmentPosition.y * 42.123f) * 35684.525f);
+}
+
+/**
+*  @brief
+*    2.1 - Clip Position: Performs an clipping operation on the given position
+*
+*  @param[in] position
+*    Position inside the volume to perform clipping on, within the interval [(0, 0, 0) .. (1, 1, 1)]
+*
+*  @return
+*    'true' if the given position was clipped, else 'false' if the given position survived the clipping operation
+*/
+bool ClipPosition(float3 position)
+{
+	// The given position survived the clipping operation and was not clipped away
+	return false;
+}
+
+/**
+*  @brief
+*    2.2 - Fetch Scalar: Fetches a scalar by using a given position inside the volume
+*
+*  @param[in] position
+*    Position inside the volume to fetch the scalar from, within the interval [(0, 0, 0) .. (1, 1, 1)]
+*
+*  @return
+*    Scalar, usually in the interval [0 .. 1]
+*/
+float FetchScalar(float3 position)
+{
+	// Fetch and return the requested scalar
+	return SAMPLE_3D_LOD(VolumeMap, SamplerLinear, float4(position, 0.0f)).r;
+}
+
+/**
+*  @brief
+*    2.2 - Reconstruction: Reconstructs a scalar by using a given position inside the volume
+*
+*  @param[in] position
+*    Position inside the volume were to reconstruct the scalar, within the interval [(0, 0, 0) .. (1, 1, 1)]
+*
+*  @return
+*    Reconstructed scalar, usually in the interval [0 .. 1]
+*/
+float Reconstruction(float3 position)
+{
+	// 2.2 - Fetch Scalar: Call the fetch scalar function
+	//     float FetchScalar(float3 position)
+	return FetchScalar(position);
+}
+
+/**
+*  @brief
+*    2.4 - Classification: Scalar classification
+*
+*  @param[in] scalar
+*    Scalar to perform a classification on
+*
+*  @return
+*    RGBA result of the classification
+*/
+float4 Classification(float scalar)
+{
+	float Threshold = 0.2f;	// TODO(co) Pass from outside
+	if (scalar > Threshold)
+	{
+		// No classification, just directly return the provided scalar
+		float4 sampleValue = float4(scalar, scalar, scalar, scalar);
+
+		// Perform sRGB to linear space conversion (gamma correction)
+		sampleValue.rgb = pow(abs(sampleValue.rgb), float3(2.2f, 2.2f, 2.2f));
+
+		// Return the result of the scalar classification
+		return sampleValue;
+	}
+	else
+	{
+		return float4(0.0f, 0.0f, 0.0f, 0.0f);
+	}
+}
+
+/**
+*  @brief
+*    2.3 - Shading: Shading
+*
+*  @param[in] scalar
+*    Current voxel scalar
+*  @param[in] position
+*    Current position along the ray inside the volume, within the interval [(0, 0, 0) .. (1, 1, 1)]
+*  @param[in] stepPositionDelta
+*    Position advance per step along the ray, within the interval [(0, 0, 0) .. (1, 1, 1)]
+*
+*  @return
+*    RGBA result of the shading
+*/
+float4 Shading(float scalar, float3 position, float3 stepPositionDelta)
+{
+	// Show classification result
+	// 2.4 - Classification: Call the classification function
+	//     float4 Classification(float scalar)
+	return Classification(scalar);
+}
+
+/**
+*  @brief
+*    2.0 - Ray Traversal: Integrates over the volume
+*
+*  @param[in] material
+*    Material
+*  @param[in] startPosition
+*    Start position of the ray inside the volume, within the interval [(0, 0, 0) .. (1, 1, 1)]
+*  @param[in] numberOfSteps
+*    Number of steps along the ray (= number of samples to take), must be positive
+*  @param[in] stepPositionDelta
+*    Position advance per step along the ray, within the interval [(0, 0, 0) .. (1, 1, 1)]
+*  @param[in] maximumTravelLength
+*    Maximum travel length along the ray, within the interval [0 .. 1]
+*
+*  @return
+*    RGBA result of the ray traversal
+*/
+float4 RayTraversal(Material material, float3 startPosition, int numberOfSteps, float3 stepPositionDelta, float maximumTravelLength)
+{
+	// Back-to-front compositing as described within the book "Real-Time Volume Graphics", section "7.1 Basic Structure of Ray Casting" (page 165)
+	// -> Early ray termination
+	// -> Requires opacity correction
+	//   -> Described in the book "Real-Time Volume Graphics", section "9.1.3 Opacity Correction" (page 219)
+	//   -> Also described in "GPU Gems", section "39.4.3 Rendering" ( http://http.developer.nvidia.com/GPUGems/gpugems_ch39.html )
+	float OpacityCorrectionFactor = 1.0f;	// Opacity correction factor	// TODO(co) Pass from outside
+
+	// Current position inside the volume
+	float3 currentPosition = startPosition + numberOfSteps * stepPositionDelta;
+
+	// Color accumulation variable
+	float4 destinationColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
+
+	// Integrate back-to-front over the volume
+	// -> Back-to-front traversal
+	for (int step = numberOfSteps; step > 0; step--)
+	{
+		// Call the clip position function
+		//     bool ClipPosition(float3 position)
+		if (!ClipPosition(currentPosition))
+		{
+			// Call the reconstruction function
+			//     float Reconstruction(float3 position)
+			float scalar = Reconstruction(currentPosition);
+
+			// Call the shading function
+			//     vec4 Shading(float scalar, float3 position, float3 stepPositionDelta)
+			float4 sourceColor = Shading(scalar, currentPosition, stepPositionDelta);
+
+			// Apply opacity correction
+			sourceColor.a = (1.0f - pow(abs(1.0f - sourceColor.a), OpacityCorrectionFactor)) * material.Opacity;
+
+			// Back-to-front compositing
+			destinationColor.rgb = (1.0f - sourceColor.a) * destinationColor.rgb + sourceColor.a*sourceColor.rgb;
+
+			// Accumulate alpha
+			destinationColor.a += sourceColor.a;
+		}
+
+		// Update the current position inside the volume
+		currentPosition -= stepPositionDelta;
+	}
+
+	// Return the calculated fragment color
+	return destinationColor;
+}
+
+
+//[-------------------------------------------------------]
+//[ Main                                                  ]
+//[-------------------------------------------------------]
+MAIN_BEGIN
+	// 1.0 - Ray Setup
+
+	// The volume space position the ray leaves the volume is provided by the vertex shader (rasterized graphics box)
+	float3 rayEndPosition = MAIN_INPUT(VolumeSpacePositionVS).xyz;
+
+	// Get normalized volume space ray direction
+	float3 rayDirection = normalize(rayEndPosition - MAIN_INPUT(CameraVolumeSpacePosition).xyz);
+
+	// Get the used material
+	// -> w-component = The assigned material slot inside the material uniform buffer
+	Material material = Materials[CAST_TO(MAIN_INPUT(CameraVolumeSpacePosition).w, uint)];
+
+	// Calculate the volume space position the ray enters the volume and the maximum travel length
+	float3 rayStartPosition;
+	float maximumTravelLength;
+	{
+		// Intersect ray with a axis aligned bounding box (AABB) basing on http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter3.htm
+		float3 inverseRayDirection = 1.0f / rayDirection;
+		float3 firstintersections = (0.0f - MAIN_INPUT(CameraVolumeSpacePosition).xyz) * inverseRayDirection;
+		float3 secondintersections = (1.0f - MAIN_INPUT(CameraVolumeSpacePosition).xyz) * inverseRayDirection;
+		float3 closest = min(firstintersections, secondintersections);
+		float3 furthest = max(firstintersections, secondintersections);
+		float t0 = max(closest.x, max(closest.y, closest.z));
+		float t1 = min(furthest.x, min(furthest.y, furthest.z));
+
+		// Depth buffer information usage for ray clipping as described within the paper
+		// "GPU-Based High-Quality Volume Rendering For Virtual Environments" by Andrea Kratz,
+		// Markus Hadwiger, Anton Fuhrmann, Rainer Splechtna, Katja Bühler and the book
+		// "Real-Time Volume Graphics", section "11.4.1 Opaque Scene Geometry Intersection with a Ray-Cast Volume" (page 286).
+		{
+			float linearSceneDepth = GetLinearDepth(SAMPLE_DEPTH_2D_LOD(DepthMap, SamplerPointClamp, float4(FRAGMENT_POSITION.xy * PassData.InverseViewportSize, 0.0f, 0.0f)));
+			linearSceneDepth *= MAIN_INPUT(VolumeSpacePositionVS).w;	// w-component = Uniform world space to object space scale, only uniform scale is supported to keep things simple
+			float3 cameraDirection = MultiplyQuaternionVector(MAIN_INPUT(ViewSpaceToObjectSpaceRotationQuaternion), float3(0.0f, 0.0f, 1.0f));
+			linearSceneDepth /= abs(dot(cameraDirection, rayDirection));
+			t1 = min(t1, linearSceneDepth);
+		}
+		t0 = max(0.0f, t0);
+
+		// Calculate the maximum travel length and the volume space position the ray enters the volume
+		maximumTravelLength = max(0.0f, t1 - t0);
+		if (maximumTravelLength <= 0.0f)
+		{
+			// Early escape, the ray is completely covered by something
+			discard;
+		}
+		rayEndPosition = MAIN_INPUT(CameraVolumeSpacePosition).xyz + (max(0.0f, t1) * rayDirection);
+
+		{ // Handle camera inside volume
+			float originCameraDistance = abs(distance(rayEndPosition, MAIN_INPUT(CameraVolumeSpacePosition).xyz));
+			if (maximumTravelLength > originCameraDistance)
+			{
+				maximumTravelLength = originCameraDistance;
+			}
+		}
+
+		// Make the maximum travel length a multiple of the step size to have a more stable result when moving the camera
+		// -> With enabled "1.2 - Jitter Position" the issue isn't that clear visible, but let's try to get as stable results as possible
+		maximumTravelLength = int(ceil(maximumTravelLength / material.StepSize)) * material.StepSize;
+
+		// Calculate the volume space position the ray enters the volume
+		rayStartPosition = rayEndPosition - rayDirection * maximumTravelLength;
+	}
+
+	// Calculate the position advance per step along the ray
+	float3 stepPositionDelta = rayDirection * material.StepSize;
+
+	// 1.1 - Clip Ray: Call the clip ray function
+	//     void ClipRay(inout float3 rayOrigin, float3 rayDirection, inout float maximumTravelLength)
+	ClipRay(rayStartPosition, rayDirection, maximumTravelLength);
+
+	// 1.2 - Jitter Position: Call the jitter position function to add jittering to the start position of the ray in order to reduce wooden grain effect (moire pattern)
+	//     float JitterPosition(float2 fragmentPosition, float3 position)
+	rayStartPosition += stepPositionDelta * JitterPosition(FRAGMENT_POSITION.xy, rayStartPosition) * PassData.JitterFactor;
+
+	// 2.0 - Ray Traversal: Call the ray traversal function
+	//     float4 RayTraversal(Material material, float3 startPosition, int numberOfSteps, float3 stepPositionDelta, float maximumTravelLength)
+	// -> Clamp the result to [0, 1] interval, else the image might flicker ugly on NVIDIA GPU's while working fine on AMD GPU'S (HDR only issue)
+	MAIN_OUTPUT_COLOR(0) = (maximumTravelLength > 0.0f) ? clamp(RayTraversal(material, rayStartPosition, int(maximumTravelLength / material.StepSize), stepPositionDelta, maximumTravelLength), float4(0.0f, 0.0f, 0.0f, 0.0f), float4(1.0f, 1.0f, 1.0f, 1.0f)) : float4(0.0f, 0.0f, 0.0f, 0.0f);
+MAIN_END

@@ -127,6 +127,7 @@
 #include "Public/Resource/Scene/Item/Particles/ParticlesSceneItem.cpp"
 #include "Public/Resource/Scene/Item/Sky/HosekWilkieSky.cpp"
 #include "Public/Resource/Scene/Item/Sky/SkySceneItem.cpp"
+#include "Public/Resource/Scene/Item/Volume/VolumeSceneItem.cpp"
 #include "Public/Resource/Scene/Item/Grass/GrassSceneItem.cpp"
 #include "Public/Resource/Scene/Item/Terrain/TerrainSceneItem.cpp"
 #include "Public/Resource/Scene/Loader/SceneResourceLoader.cpp"

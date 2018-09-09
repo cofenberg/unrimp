@@ -132,6 +132,11 @@ namespace RendererRuntime
 				// Nothing here
 			};
 
+			struct VolumeItem final : public MaterialItem
+			{
+				// Nothing here
+			};
+
 			struct GrassItem final : public MaterialItem
 			{
 				// Nothing here

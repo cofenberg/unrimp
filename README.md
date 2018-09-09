@@ -156,6 +156,7 @@ Renderer Runtime (e.g. "The Game")
 		- Hosek-Wilkie sky which is also used to derive a sun color
 		- Distance clouds
 		- Sun
+- Volume rendering
 
 
 Renderer Toolkit (e.g. "The Editor")
@@ -326,7 +327,7 @@ Asset References
 - Assets are referenced by using
 	- Renderer toolkit source asset ID naming scheme ```"<name>.asset"```
 		- Absolute: "${PROJECT_NAME}" inserts the name of the project the currently processed asset is in, only valid at the beginning of source asset IDs
-		- Relative: "./" uses the current directory the currently processed asset is in, only valid at the beginning of source asset IDs
+		- Relative: "./" uses the directory the currently processed asset is in, only valid at the beginning of source asset IDs
 		- Relative: "../" switches into the parent directory the currently processed asset is in, only valid at the beginning of source asset IDs
 	- Compiled or runtime generated asset ID naming scheme ```"<project name>/<asset type>/<asset category>/<asset name>"```
 - Examples for asset references inside source assets
@@ -336,7 +337,7 @@ Asset References
 		- "./MyDirectory/MB_Debug.asset": Referencing a source asset which is inside a sub-directory named "MyDirectory" which is inside same directory as the currently compiled source asset
 		- "../MB_Debug.asset": Referencing a source asset which is inside the parent directory of the directory the currently compiled source asset is in
 		- "../../MB_Debug.asset": Referencing a source asset which is inside the parent directory of the parent directory of the directory the currently compiled source asset is in
-		- "../../MyDirectory/MB_Debug.asset": Referencing a source asset which is inside sub-directory named "MyDirectory" which is inside the parent directory of the parent directory of the directory the currently compiled source asset is in
+		- "../../MyDirectory/MB_Debug.asset": Referencing a source asset which is inside a sub-directory named "MyDirectory" which is inside the parent directory of the parent directory of the directory the currently compiled source asset is in
 	- "MyProject/Blueprint/Sky/M_Sky.asset": Referencing a source asset which is inside another project named "MyProject"
 	- "Unrimp/Texture/DynamicByCode/BlackMap2D": Referencing an asset which is dynamically created during runtime without having a compiled source asset
 

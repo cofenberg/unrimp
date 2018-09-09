@@ -49,7 +49,7 @@ namespace
 			Renderer::ITextureManager& textureManager = rendererRuntime.getTextureManager();
 
 			// White RGBA texture
-			const uint8_t whiteRgbData[] = {
+			const uint8_t whiteRgbaData[] = {
 				255, 255, 255, 255,	// Face 0
 				255, 255, 255, 255,	// Face 1
 				255, 255, 255, 255,	// Face 2
@@ -57,12 +57,14 @@ namespace
 				255, 255, 255, 255,	// Face 4
 				255, 255, 255, 255	// Face 5
 			};
-			Renderer::ITexturePtr whiteRgb1DTexturePtr(textureManager.createTexture1D(1, Renderer::TextureFormat::R8G8B8A8, whiteRgbData, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
-			RENDERER_SET_RESOURCE_DEBUG_NAME(whiteRgb1DTexturePtr, "White 1D RGBA texture")
-			Renderer::ITexturePtr whiteRgb2DTexturePtr(textureManager.createTexture2D(1, 1, Renderer::TextureFormat::R8G8B8A8, whiteRgbData, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
-			RENDERER_SET_RESOURCE_DEBUG_NAME(whiteRgb2DTexturePtr, "White 2D RGBA texture")
-			Renderer::ITexturePtr whiteRgbCubeTexturePtr(textureManager.createTextureCube(1, 1, Renderer::TextureFormat::R8G8B8A8, whiteRgbData, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
-			RENDERER_SET_RESOURCE_DEBUG_NAME(whiteRgbCubeTexturePtr, "White cube RGBA texture")
+			Renderer::ITexturePtr whiteRgba1DTexturePtr(textureManager.createTexture1D(1, Renderer::TextureFormat::R8G8B8A8, whiteRgbaData, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
+			RENDERER_SET_RESOURCE_DEBUG_NAME(whiteRgba1DTexturePtr, "White 1D RGBA texture")
+			Renderer::ITexturePtr whiteRgba2DTexturePtr(textureManager.createTexture2D(1, 1, Renderer::TextureFormat::R8G8B8A8, whiteRgbaData, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
+			RENDERER_SET_RESOURCE_DEBUG_NAME(whiteRgba2DTexturePtr, "White 2D RGBA texture")
+			Renderer::ITexturePtr whiteRgbaCubeTexturePtr(textureManager.createTextureCube(1, 1, Renderer::TextureFormat::R8G8B8A8, whiteRgbaData, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
+			RENDERER_SET_RESOURCE_DEBUG_NAME(whiteRgbaCubeTexturePtr, "White cube RGBA texture")
+			Renderer::ITexturePtr whiteRgba3DTexturePtr(textureManager.createTexture3D(1, 1, 1, Renderer::TextureFormat::R8G8B8A8, whiteRgbaData, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
+			RENDERER_SET_RESOURCE_DEBUG_NAME(whiteRgbaCubeTexturePtr, "White 3D RGBA texture")
 
 			// Normal map identity texture
 			const uint8_t normalMapIdentityData[] = { 128, 128, 255, 255 };
@@ -75,7 +77,7 @@ namespace
 			RENDERER_SET_RESOURCE_DEBUG_NAME(whiteA2DTexturePtr, "White 2D alpha texture")
 
 			// Black RGBA texture
-			const uint8_t blackRgbData[] = {
+			const uint8_t blackRgbaData[] = {
 				0, 0, 0, 0,	// Face 0
 				0, 0, 0, 0,	// Face 1
 				0, 0, 0, 0,	// Face 2
@@ -83,12 +85,14 @@ namespace
 				0, 0, 0, 0,	// Face 4
 				0, 0, 0, 0	// Face 5
 			};
-			Renderer::ITexturePtr blackRgb1DTexturePtr(textureManager.createTexture1D(1, Renderer::TextureFormat::R8G8B8A8, blackRgbData, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
-			RENDERER_SET_RESOURCE_DEBUG_NAME(blackRgb1DTexturePtr, "Black 1D RGBA texture")
-			Renderer::ITexturePtr blackRgb2DTexturePtr(textureManager.createTexture2D(1, 1, Renderer::TextureFormat::R8G8B8A8, blackRgbData, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
-			RENDERER_SET_RESOURCE_DEBUG_NAME(blackRgb2DTexturePtr, "Black 2D RGBA texture")
-			Renderer::ITexturePtr blackRgbCubeTexturePtr(textureManager.createTextureCube(1, 1, Renderer::TextureFormat::R8G8B8A8, blackRgbData, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
-			RENDERER_SET_RESOURCE_DEBUG_NAME(blackRgbCubeTexturePtr, "Black cube RGBA texture")
+			Renderer::ITexturePtr blackRgba1DTexturePtr(textureManager.createTexture1D(1, Renderer::TextureFormat::R8G8B8A8, blackRgbaData, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
+			RENDERER_SET_RESOURCE_DEBUG_NAME(blackRgba1DTexturePtr, "Black 1D RGBA texture")
+			Renderer::ITexturePtr blackRgba2DTexturePtr(textureManager.createTexture2D(1, 1, Renderer::TextureFormat::R8G8B8A8, blackRgbaData, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
+			RENDERER_SET_RESOURCE_DEBUG_NAME(blackRgba2DTexturePtr, "Black 2D RGBA texture")
+			Renderer::ITexturePtr blackRgbaCubeTexturePtr(textureManager.createTextureCube(1, 1, Renderer::TextureFormat::R8G8B8A8, blackRgbaData, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
+			RENDERER_SET_RESOURCE_DEBUG_NAME(blackRgbaCubeTexturePtr, "Black cube RGBA texture")
+			Renderer::ITexturePtr blackRgba3DTexturePtr(textureManager.createTexture3D(1, 1, 1, Renderer::TextureFormat::R8G8B8A8, blackRgbaData, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
+			RENDERER_SET_RESOURCE_DEBUG_NAME(blackRgba3DTexturePtr, "Black 3D RGBA texture")
 
 			// Black alpha texture
 			const uint8_t blackAData[] = { 0 };
@@ -110,18 +114,20 @@ namespace
 			#define CREATE_TEXTURE(name, texturePtr) textureResourceManager.createTextureResourceByAssetId(STRING_ID("Unrimp/Texture/DynamicByCode/"#name), *texturePtr);
 
 			// Create default dynamic texture assets
-			CREATE_TEXTURE(WhiteMap1D,				whiteRgb1DTexturePtr)
-			CREATE_TEXTURE(WhiteMap2D,				whiteRgb2DTexturePtr)
-			CREATE_TEXTURE(WhiteMapCube,			whiteRgbCubeTexturePtr)
-			CREATE_TEXTURE(BlackMap1D,				blackRgb1DTexturePtr)
-			CREATE_TEXTURE(BlackMap2D,				blackRgb2DTexturePtr)
-			CREATE_TEXTURE(BlackMapCube,			blackRgbCubeTexturePtr)
-			CREATE_TEXTURE(IdentityAlbedoMap2D,		whiteRgb2DTexturePtr)	// Must be white so e.g. albedo color can be multiplied in
+			CREATE_TEXTURE(WhiteMap1D,				whiteRgba1DTexturePtr)
+			CREATE_TEXTURE(WhiteMap2D,				whiteRgba2DTexturePtr)
+			CREATE_TEXTURE(WhiteMapCube,			whiteRgbaCubeTexturePtr)
+			CREATE_TEXTURE(WhiteMap3D,				whiteRgba3DTexturePtr)
+			CREATE_TEXTURE(BlackMap1D,				blackRgba1DTexturePtr)
+			CREATE_TEXTURE(BlackMap2D,				blackRgba2DTexturePtr)
+			CREATE_TEXTURE(BlackMapCube,			blackRgbaCubeTexturePtr)
+			CREATE_TEXTURE(BlackMap3D,				blackRgba3DTexturePtr)
+			CREATE_TEXTURE(IdentityAlbedoMap2D,		whiteRgba2DTexturePtr)	// Must be white so e.g. albedo color can be multiplied in
 			CREATE_TEXTURE(IdentityAlphaMap2D,		whiteA2DTexturePtr)
 			CREATE_TEXTURE(IdentityNormalMap2D,		normalMapIdentity2DTexturePtr)
 			CREATE_TEXTURE(IdentityRoughnessMap2D,	whiteA2DTexturePtr)
 			CREATE_TEXTURE(DielectricMetallicMap2D,	blackA2DTexturePtr)
-			CREATE_TEXTURE(IdentityEmissiveMap2D,	blackRgb2DTexturePtr)
+			CREATE_TEXTURE(IdentityEmissiveMap2D,	blackRgba2DTexturePtr)
 			CREATE_TEXTURE(Identity_argb_nxa2D,		_argb_nxaIdentity2DTexturePtr)
 			CREATE_TEXTURE(Identity_hr_rg_mb_nya2D,	_hr_rg_mb_nyaIdentity2DTexturePtr)
 
@@ -156,9 +162,11 @@ namespace RendererRuntime
 		ADD_ASSET_ID("Unrimp/Texture/DynamicByCode/WhiteMap1D")
 		ADD_ASSET_ID("Unrimp/Texture/DynamicByCode/WhiteMap2D")
 		ADD_ASSET_ID("Unrimp/Texture/DynamicByCode/WhiteMapCube")
+		ADD_ASSET_ID("Unrimp/Texture/DynamicByCode/WhiteMap3D")
 		ADD_ASSET_ID("Unrimp/Texture/DynamicByCode/BlackMap1D")
 		ADD_ASSET_ID("Unrimp/Texture/DynamicByCode/BlackMap2D")
 		ADD_ASSET_ID("Unrimp/Texture/DynamicByCode/BlackMapCube")
+		ADD_ASSET_ID("Unrimp/Texture/DynamicByCode/BlackMap3D")
 		ADD_ASSET_ID("Unrimp/Texture/DynamicByCode/IdentityAlbedoMap2D")
 		ADD_ASSET_ID("Unrimp/Texture/DynamicByCode/IdentityAlphaMap2D")
 		ADD_ASSET_ID("Unrimp/Texture/DynamicByCode/IdentityNormalMap2D")

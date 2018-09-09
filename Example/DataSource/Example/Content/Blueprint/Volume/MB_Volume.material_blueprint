@@ -1,0 +1,247 @@
+{
+	"Format":
+	{
+		"Type": "MaterialBlueprintAsset",
+		"Version": "2"
+	},
+	"MaterialBlueprintAsset":
+	{
+		"Properties":
+		{
+			"RenderQueueIndex":
+			{
+				"Usage": "STATIC",
+				"ValueType": "INTEGER",
+				"Value": "255",
+				"Description": "Fixed build in material property for the render queue index [0, 255]",
+				"MinimumIntegerValue": "0",
+				"MaximumIntegerValue": "255"
+			},
+			"JitterFactor":
+			{
+				"Usage": "SHADER_UNIFORM",
+				"ValueType": "FLOAT",
+				"Value": "1.0",
+				"Description": "Jitter factor, pass parameter scope"
+			},
+			"StepSize":
+			{
+				"Usage": "SHADER_UNIFORM",
+				"ValueType": "FLOAT",
+				"Value": "0.01",
+				"Description": "Step size, smaller value means more precise results (less wooden grain effects / moire pattern) but with higher performance costs, higher values for less quality but better performance"
+			},
+			"Opacity":
+			{
+				"Usage": "SHADER_UNIFORM",
+				"ValueType": "FLOAT",
+				"Value": "1.0",
+				"Description": "Opacity, usually within the interval [~0 .. 1] = [transparent .. solid] (2.0 - Ray Traversal)"
+			},
+			"VolumeMap":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "Unrimp/Texture/DynamicByCode/BlackMap3D",
+				"Description": "3D volume map"
+			}
+		},
+		"GraphicsPipelineState":
+		{
+			"VertexAttributes": "./VA_Volume.asset",
+			"ShaderBlueprints":
+			{
+				"VertexShaderBlueprint": "./SB_Vertex.asset",
+				"FragmentShaderBlueprint": "./SB_Fragment.asset"
+			},
+			"RasterizerState":
+			{
+				"DepthClipEnable": "FALSE"
+			},
+			"DepthStencilState":
+			{
+				"DepthEnable": "FALSE",
+				"DepthWriteMask": "ZERO"
+			},
+			"BlendState":
+			{
+				"RenderTarget[0]":
+				{
+					"BlendEnable": "TRUE",
+					"SrcBlend": "SRC_ALPHA",
+					"DestBlend": "INV_SRC_ALPHA",
+					"SrcBlendAlpha": "INV_SRC_ALPHA"
+				}
+			}
+		},
+		"ResourceGroups":
+		{
+			"0":
+			{
+				"0":
+				{
+					"ResourceType": "UNIFORM_BUFFER",
+					"BaseShaderRegisterName": "PassUniformBuffer",
+					"BaseShaderRegister": "0",
+					"BufferUsage": "PASS",
+					"NumberOfElements": "1",
+					"ElementProperties":
+					{
+						"WorldSpaceToClipSpaceMatrix":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4_4",
+							"Value": "@WORLD_SPACE_TO_CLIP_SPACE_MATRIX"
+						},
+						"WorldSpaceToClipSpaceMatrix2":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4_4",
+							"Value": "@WORLD_SPACE_TO_CLIP_SPACE_MATRIX_2"
+						},
+						"ViewSpaceToWorldSpaceQuaternion":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4",
+							"Value": "@VIEW_SPACE_TO_WORLD_SPACE_QUATERNION"
+						},
+						"CameraWorldSpacePosition":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_3",
+							"Value": "@CAMERA_WORLD_SPACE_POSITION"
+						},
+						"JitterFactor":
+						{
+							"Usage": "MATERIAL_REFERENCE",
+							"ValueType": "FLOAT",
+							"Value": "@JitterFactor"
+						},
+						"InverseViewportSize":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_2",
+							"Value": "@INVERSE_VIEWPORT_SIZE"
+						},
+						"ProjectionParameters":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_2",
+							"Value": "@PROJECTION_PARAMETERS"
+						}
+					}
+				}
+			},
+			"1":
+			{
+				"0":
+				{
+					"ResourceType": "UNIFORM_BUFFER",
+					"BaseShaderRegisterName": "MaterialUniformBuffer",
+					"BaseShaderRegister": "1",
+					"ShaderVisibility": "FRAGMENT",
+					"BufferUsage": "MATERIAL",
+					"NumberOfElements": "2",
+					"ElementProperties":
+					{
+						"StepSize":
+						{
+							"Usage": "MATERIAL_REFERENCE",
+							"ValueType": "FLOAT",
+							"Value": "@StepSize"
+						},
+						"Opacity":
+						{
+							"Usage": "MATERIAL_REFERENCE",
+							"ValueType": "FLOAT",
+							"Value": "@Opacity"
+						}
+					}
+				}
+			},
+			"2":
+			{
+				"0":
+				{
+					"ResourceType": "UNIFORM_BUFFER",
+					"BaseShaderRegisterName": "InstanceUniformBuffer",
+					"BaseShaderRegister": "2",
+					"ShaderVisibility": "VERTEX",
+					"BufferUsage": "INSTANCE",
+					"NumberOfElements": "1",
+					"ElementProperties":
+					{
+						"InstanceIndicesArray":
+						{
+							"Usage": "INSTANCE_REFERENCE",
+							"ValueType": "INTEGER_4",
+							"Value": "@INSTANCE_INDICES"
+						}
+					}
+				},
+				"1":
+				{
+					"ResourceType": "TEXTURE_BUFFER",
+					"ValueType": "FLOAT_4",
+					"BaseShaderRegisterName": "InstanceTextureBuffer",
+					"BaseShaderRegister": "3",
+					"ShaderVisibility": "VERTEX",
+					"BufferUsage": "INSTANCE",
+					"Value": "@POSITION_ROTATION_SCALE"
+				}
+			},
+			"3":
+			{
+				"0":
+				{
+					"ResourceType": "TEXTURE_3D",
+					"BaseShaderRegisterName": "VolumeMap",
+					"BaseShaderRegister": "1",
+					"ShaderVisibility": "FRAGMENT",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@VolumeMap",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap3D",
+					"MipmapsUsed": "FALSE",
+					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
+				},
+				"1":
+				{
+					"ResourceType": "TEXTURE_2D",
+					"BaseShaderRegisterName": "DepthMap",
+					"BaseShaderRegister": "2",
+					"ShaderVisibility": "FRAGMENT",
+					"Usage": "STATIC",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "Example/Texture/Dynamic/DepthStencilRenderTarget",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+					"MipmapsUsed": "FALSE",
+					"SamplerStateBaseShaderRegisterName": "SamplerPointClamp"
+				}
+			},
+			"4":
+			{
+				"0":
+				{
+					"ResourceType": "SAMPLER_STATE",
+					"BaseShaderRegisterName": "SamplerLinear",
+					"BaseShaderRegister": "0",
+					"ShaderVisibility": "FRAGMENT",
+					"Filter": "MIN_MAG_LINEAR_MIP_POINT",
+					"MaxAnisotropy": "1",
+					"MaxLOD": "0.0"
+				},
+				"1":
+				{
+					"ResourceType": "SAMPLER_STATE",
+					"BaseShaderRegisterName": "SamplerPointClamp",
+					"BaseShaderRegister": "1",
+					"ShaderVisibility": "FRAGMENT",
+					"Filter": "MIN_MAG_MIP_POINT",
+					"MaxAnisotropy": "1",
+					"MaxLOD": "0.0"
+				}
+			}
+		}
+	}
+}

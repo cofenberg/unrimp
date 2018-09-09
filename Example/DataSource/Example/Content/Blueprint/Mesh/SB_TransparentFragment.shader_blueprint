@@ -89,7 +89,7 @@ UNIFORM_BUFFER_BEGIN(1, 0, MaterialUniformBuffer, 1)
 	Material Materials[FAST_SHADER_BUILD_HACK(@insertpiece(MaximumNumberOfMaterials))];
 UNIFORM_BUFFER_END
 
-// Texture buffers: We need to start at texture unit 1 instead of texture unit 0 because the vertex shader has an instance texture buffer bound at texture unit 0 (OpenGL shares those bindings accros all shader stages while Direct3D doesn't)
+// Texture buffers: We need to start at texture unit 1 instead of texture unit 0 because the vertex shader has an instance texture buffer bound at texture unit 0 (OpenGL shares those bindings across all shader stages while Direct3D doesn't)
 TEXTURE_BUFFER(2, 2, float4, LightTextureBuffer, 1)	// "LIGHT"
 
 // Textures

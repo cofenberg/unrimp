@@ -282,6 +282,61 @@
 						}
 					}
 				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "3.0 0.45 2.3 METER",
+					"Rotation": "90.0 0.0 0.0 DEGREE"
+				},
+				"Items":
+				{
+					"VolumeSceneItem":
+					{
+						"Material": "${PROJECT_NAME}/Blueprint/Volume/M_Volume.asset",
+						"SetMaterialProperties":
+						{
+							"VolumeMap": "${PROJECT_NAME}/Texture/T_TeddyBearVolume.asset"
+						}
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "2.1 0.45 2.1 METER",
+					"Rotation": "90.0 -35.0 0.0 DEGREE"
+				},
+				"Items":
+				{
+					"VolumeSceneItem":
+					{
+						"Material": "${PROJECT_NAME}/Blueprint/Volume/M_Volume.asset",
+						"SetMaterialProperties":
+						{
+							"VolumeMap": "${PROJECT_NAME}/Texture/T_TeddyBearVolume.asset"
+						}
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "6.0 0.95 -4.7 METER",
+					"Rotation": "90.0 -180.0 0.0 DEGREE",
+					"Scale": "2.0 2.0 2.0 FACTOR"
+				},
+				"Items":
+				{
+					"VolumeSceneItem":
+					{
+						"Material": "${PROJECT_NAME}/Blueprint/Volume/M_Volume.asset",
+						"SetMaterialProperties":
+						{
+							"VolumeMap": "${PROJECT_NAME}/Texture/T_TeddyBearVolume.asset"
+						}
+					}
+				}
 			}
 		]
 	}
