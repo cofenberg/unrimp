@@ -117,7 +117,7 @@ namespace
 					if (index + 1 < endPosition)
 					{
 						const char nextCharacter = sourceCode[index + 1];
-						if ('/' == nextCharacter && index > 0 && (sourceCode[index - 1] == ' ' || sourceCode[index - 1] == '\t'))
+						if ('/' == nextCharacter && (index > 0 || sourceCode[index - 1] == ' ' || sourceCode[index - 1] == '\t'))
 						{
 							// One-line-comment
 							index = sourceCode.find('\n', currentPosition);
@@ -178,7 +178,7 @@ namespace
 								break;
 							}
 						}
-						else if ('*' == nextCharacter && index > 0 && (sourceCode[index - 1] == ' ' || sourceCode[index - 1] == '\t'))
+						else if ('*' == nextCharacter && (index == 0 || sourceCode[index - 1] == ' ' || sourceCode[index - 1] == '\t'))
 						{
 							// Block-comment
 							index = sourceCode.find("*/", currentPosition);
