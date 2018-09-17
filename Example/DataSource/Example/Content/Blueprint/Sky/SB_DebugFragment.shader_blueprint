@@ -139,6 +139,6 @@ MAIN_BEGIN
 	@end
 
 	// Done
-	// -> Simple performance trick: No need to write out 0 as depth, we're telling via compositor node that the maximum depth is 0.0 so the GPU automatially writes out zero depth for us
+	// -> Simple performance trick: No need to write out 0 (we're using Reversed-Z) as depth, we're telling via compositor node that the maximum depth is 0.0 so the GPU automatially writes out zero depth for us
 	MAIN_OUTPUT_COLOR(0) = float4(color, 1.0f);
 MAIN_END
