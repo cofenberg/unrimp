@@ -929,7 +929,7 @@ namespace RendererToolkit
 
 	void JsonHelper::mandatoryAssetIdProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, RendererRuntime::AssetId& value)
 	{
-		value = StringHelper::getAssetIdByString(rapidJsonValue[propertyName].GetString());
+		value = StringHelper::hashAssetIdAsString(rapidJsonValue[propertyName].GetString());
 	}
 
 	void JsonHelper::optionalAssetIdProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, RendererRuntime::AssetId& value)

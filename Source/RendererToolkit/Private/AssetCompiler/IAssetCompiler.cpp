@@ -50,7 +50,7 @@ namespace RendererToolkit
 
 		// Append or update asset
 		RendererRuntime::Asset outputAsset;
-		outputAsset.assetId = StringHelper::getAssetIdByString(assetIdAsString.c_str());
+		outputAsset.assetId = StringHelper::hashAssetIdAsString(assetIdAsString.c_str());
 		outputAsset.fileHash = RendererRuntime::Math::calculateFileFNV1a64ByVirtualFilename(fileManager, virtualOutputAssetFilename.c_str());
 		RendererRuntime::Asset* asset = outputAssetPackage.tryGetWritableAssetByAssetId(outputAsset.assetId);
 		if (nullptr != asset)

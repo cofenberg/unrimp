@@ -181,7 +181,8 @@
 					{
 						"UseScreenSpaceReflectionMap": "FALSE",
 						"NormalMap": "Example/Texture/Dynamic/MultisampleNormalRenderTarget",
-						"DepthMap": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget"
+						"DepthMap": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
+						"ReflectionCubeMap": "${PROJECT_NAME}/Texture/T_Maskonaive3_rcube.asset"
 					}
 				}
 			},

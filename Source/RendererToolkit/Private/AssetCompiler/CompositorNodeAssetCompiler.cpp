@@ -109,7 +109,7 @@ namespace
 								materialProperty.setOverwritten(true);
 								if (materialProperty.getValueType() == RendererRuntime::MaterialPropertyValue::ValueType::TEXTURE_ASSET_ID)
 								{
-									const RendererRuntime::AssetId assetId = RendererToolkit::StringHelper::getAssetIdByString(iterator->second);
+									const RendererRuntime::AssetId assetId = RendererToolkit::StringHelper::getAssetIdByString(iterator->second, input);
 									if (renderTargetTextureAssetIds.find(assetId) != renderTargetTextureAssetIds.end())
 									{
 										static_cast<RendererRuntime::MaterialPropertyValue&>(materialProperty) = RendererRuntime::MaterialPropertyValue::fromTextureAssetId(assetId);
@@ -673,7 +673,7 @@ namespace RendererToolkit
 					for (rapidjson::Value::ConstMemberIterator rapidJsonMemberIteratorRenderTargetTextures = rapidJsonValueRenderTargetTextures.MemberBegin(); rapidJsonMemberIteratorRenderTargetTextures != rapidJsonValueRenderTargetTextures.MemberEnd(); ++rapidJsonMemberIteratorRenderTargetTextures)
 					{
 						RendererRuntime::v1CompositorNode::RenderTargetTexture renderTargetTexture;
-						renderTargetTexture.assetId = StringHelper::getAssetIdByString(rapidJsonMemberIteratorRenderTargetTextures->name.GetString());
+						renderTargetTexture.assetId = StringHelper::getAssetIdByString(rapidJsonMemberIteratorRenderTargetTextures->name.GetString(), input);
 						{ // Render target texture signature
 							const rapidjson::Value& rapidJsonValueRenderTargetTexture = rapidJsonMemberIteratorRenderTargetTextures->value;
 
@@ -768,7 +768,7 @@ namespace RendererToolkit
 								{
 									const rapidjson::Value& rapidJsonValueFramebufferColorAttachment = rapidJsonValueFramebufferColorAttachments[i];
 									RendererRuntime::FramebufferSignatureAttachment& colorFramebufferSignatureAttachment = colorFramebufferSignatureAttachments[i];
-									const RendererRuntime::AssetId textureAssetId = StringHelper::getAssetIdByString(rapidJsonValueFramebufferColorAttachment["ColorTexture"].GetString());
+									const RendererRuntime::AssetId textureAssetId = StringHelper::getAssetIdByString(rapidJsonValueFramebufferColorAttachment["ColorTexture"].GetString(), input);
 									if (RendererRuntime::isValid(textureAssetId))
 									{
 										if (renderTargetTextureAssetIds.find(textureAssetId) == renderTargetTextureAssetIds.end())
@@ -793,7 +793,7 @@ namespace RendererToolkit
 								numberOfColorFramebufferAttachments = static_cast<uint8_t>(rapidJsonValueFramebufferColorTextures.Size());
 								for (uint8_t i = 0; i < numberOfColorFramebufferAttachments; ++i)
 								{
-									const RendererRuntime::AssetId textureAssetId = StringHelper::getAssetIdByString(rapidJsonValueFramebufferColorTextures[i].GetString());
+									const RendererRuntime::AssetId textureAssetId = StringHelper::getAssetIdByString(rapidJsonValueFramebufferColorTextures[i].GetString(), input);
 									if (RendererRuntime::isValid(textureAssetId))
 									{
 										if (renderTargetTextureAssetIds.find(textureAssetId) == renderTargetTextureAssetIds.end())
@@ -821,14 +821,14 @@ namespace RendererToolkit
 							{
 								// "DepthStencilAttachment" for custom mipmap index and layer index, useful for example for low resolution particles or distortion rendering
 								const rapidjson::Value& rapidJsonValueDepthStencilAttachment = rapidJsonValueFramebuffer["DepthStencilAttachment"];
-								depthStencilTextureAssetId = StringHelper::getAssetIdByString(rapidJsonValueDepthStencilAttachment["DepthStencilTexture"].GetString());
+								depthStencilTextureAssetId = StringHelper::getAssetIdByString(rapidJsonValueDepthStencilAttachment["DepthStencilTexture"].GetString(), input);
 								JsonHelper::optionalIntegerProperty(rapidJsonValueDepthStencilAttachment, "MipmapIndex", depthStencilFramebufferSignatureAttachment.mipmapIndex);
 								JsonHelper::optionalIntegerProperty(rapidJsonValueDepthStencilAttachment, "LayerIndex", depthStencilFramebufferSignatureAttachment.layerIndex);
 							}
 							else
 							{
 								// Ease-of-use "DepthStencilTexture" for zero mipmap index and layer index, sufficient most of the time
-								depthStencilTextureAssetId = rapidJsonValueFramebuffer.HasMember("DepthStencilTexture") ? StringHelper::getAssetIdByString(rapidJsonValueFramebuffer["DepthStencilTexture"].GetString()) : RendererRuntime::getInvalid<RendererRuntime::AssetId>();
+								depthStencilTextureAssetId = rapidJsonValueFramebuffer.HasMember("DepthStencilTexture") ? StringHelper::getAssetIdByString(rapidJsonValueFramebuffer["DepthStencilTexture"].GetString(), input) : RendererRuntime::getInvalid<RendererRuntime::AssetId>();
 							}
 							depthStencilFramebufferSignatureAttachment.textureAssetId = depthStencilTextureAssetId;
 							if (RendererRuntime::isValid(depthStencilTextureAssetId))

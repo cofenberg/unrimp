@@ -58,7 +58,7 @@
 			{
 				"Usage": "TEXTURE_REFERENCE",
 				"ValueType": "TEXTURE_ASSET_ID",
-				"Value": "${PROJECT_NAME}/Texture/T_Maskonaive3_rcube.asset",
+				"Value": "Unrimp/Texture/DynamicByCode/BlackMapCube",
 				"Description": "Reflection cube map"
 			}
 		},

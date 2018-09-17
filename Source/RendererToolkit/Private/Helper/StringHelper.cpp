@@ -387,7 +387,7 @@ namespace RendererToolkit
 		}
 	}
 
-	RendererRuntime::AssetId StringHelper::getAssetIdByString(const std::string& assetIdAsString)
+	RendererRuntime::AssetId StringHelper::hashAssetIdAsString(const std::string& assetIdAsString)
 	{
 		// Enforce compiled asset ID naming scheme "<project name>/<asset type>/<asset category>/<asset name>"
 		std::vector<std::string> elements;
@@ -439,7 +439,7 @@ namespace RendererToolkit
 		else
 		{
 			// Compiled or runtime generated asset ID naming scheme "<project name>/<asset type>/<asset category>/<asset name>"
-			return getAssetIdByString(assetIdAsString);
+			return hashAssetIdAsString(assetIdAsString);
 		}
 	}
 

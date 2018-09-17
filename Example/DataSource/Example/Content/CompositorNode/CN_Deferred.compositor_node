@@ -415,7 +415,8 @@
 						"NormalMap": "Example/Texture/Dynamic/MultisampleGBufferRenderTarget1",
 						"ScreenSpaceReflectionMap": "Example/Texture/Dynamic/ScreenSpaceReflectionRayTracingRenderTarget",
 						"DepthMap": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
-						"ColorMap": "Example/Texture/Dynamic/PreviousHdrColorRenderTarget"
+						"ColorMap": "Example/Texture/Dynamic/PreviousHdrColorRenderTarget",
+						"ReflectionCubeMap": "${PROJECT_NAME}/Texture/T_Maskonaive3_rcube.asset"
 					}
 				}
 			},
