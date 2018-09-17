@@ -1512,7 +1512,7 @@ namespace
 						memoryFile.write("DDS ", sizeof(uint32_t));
 						memoryFile.write(reinterpret_cast<const char*>(&ddsSurfaceDesc2), sizeof(crnlib::DDSURFACEDESC2));
 						memoryFile.write(pData, sizeof(stbi_us) * numberOfTexelsPerLayer);
-						if (memoryFile.writeLz4CompressedDataByVirtualFilename(RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_TYPE, RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_VERSION, fileManager, virtualDestinationFilename))
+						if (!memoryFile.writeLz4CompressedDataByVirtualFilename(RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_TYPE, RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_VERSION, fileManager, virtualDestinationFilename))
 						{
 							stbi_image_free(pData);
 							throw std::runtime_error("Failed to write to destination file \"" + std::string(virtualDestinationFilename) + '\"');
