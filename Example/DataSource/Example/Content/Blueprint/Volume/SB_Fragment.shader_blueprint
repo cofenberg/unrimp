@@ -279,7 +279,7 @@ float4 RayTraversal(Material material, float3 startPosition, int numberOfSteps, 
 
 	// Integrate back-to-front over the volume
 	// -> Back-to-front traversal
-	for (int step = numberOfSteps; step > 0; step--)
+	for (int step = numberOfSteps; step > 0; --step)
 	{
 		// Call the clip position function
 		//     bool ClipPosition(float3 position)

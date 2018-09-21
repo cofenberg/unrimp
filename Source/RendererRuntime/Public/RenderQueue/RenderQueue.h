@@ -80,8 +80,8 @@ namespace RendererRuntime
 	*
 	*  @remarks
 	*    Using layered rendering (aka bucketized rendering) concept described in
-	*    - "realtimecollisiondetection.net – the blog" - "Order your graphics draw calls around!" - http://realtimecollisiondetection.net/blog/?p=86
-	*    - "Molecular Musings" - "Stateless, layered, multi-threaded rendering – Part 1" - https://blog.molecular-matters.com/2014/11/06/stateless-layered-multi-threaded-rendering-part-1/
+	*    - "realtimecollisiondetection.net – the blog" - "Order your graphics draw calls around!" by Christer Ericson from October 3, 2008 - http://realtimecollisiondetection.net/blog/?p=86
+	*    - "Molecular Musings" - "Stateless, layered, multi-threaded rendering – Part 1" by Stefan Reinalter from November 6, 2014 - https://blog.molecular-matters.com/2014/11/06/stateless-layered-multi-threaded-rendering-part-1/
 	*
 	*    The sole purpose of the render queue is to fill sorted commands into a given command buffer.
 	*/
