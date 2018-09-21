@@ -438,7 +438,6 @@
 						"DepthMap": "Example/Texture/Dynamic/MultisampleDepthStencilRenderTarget",
 						"ShadowMap": "Example/Texture/Dynamic/ShadowMapRenderTarget",
 						"ScreenSpaceAmbientOcclusionMap": "Example/Texture/Dynamic/BlurredScreenSpaceAmbientOcclusionRenderTarget",
-						"DistortionMap": "Example/Texture/Dynamic/DistortionRenderTarget",
 						"VolumetricLightMap": "Example/Texture/Dynamic/VolumetricLightRenderTarget",
 						"ReflectionMap": "Example/Texture/Dynamic/ReflectionRenderTarget"
 					}
@@ -742,6 +741,7 @@
 					"SetMaterialProperties":
 					{
 						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget0",
+						"DistortionMap": "Example/Texture/Dynamic/DistortionRenderTarget",
 						"LuminanceMap": "Example/Texture/Dynamic/AdaptiveLuminanceRenderTarget",
 						"BloomMap": "Example/Texture/Dynamic/BloomDownscale2ColorRenderTarget",
 						"LensFlareMap": "Example/Texture/Dynamic/LensFlareColorRenderTarget",

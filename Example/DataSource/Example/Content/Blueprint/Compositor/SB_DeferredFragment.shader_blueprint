@@ -84,12 +84,11 @@ TEXTURE_BUFFER(1, 0, float4, LightTextureBuffer, 0)	// "LIGHT"
 @end
 TEXTURE_2D_ARRAY(2, 4, ShadowMap, 5)
 TEXTURE_2D(2, 5, ScreenSpaceAmbientOcclusionMap, 6)
-TEXTURE_2D(2, 6, DistortionMap, 7)
-TEXTURE_2D(2, 7, VolumetricLightMap, 8)
-TEXTURE_2D(2, 8, ReflectionMap, 9)
-TEXTURE_3D_UINT(2, 9, LightClustersMap3D, 10)
+TEXTURE_2D(2, 6, VolumetricLightMap, 7)
+TEXTURE_2D(2, 7, ReflectionMap, 8)
+TEXTURE_3D_UINT(2, 8, LightClustersMap3D, 9)
 @property(UseWetSurfaces)
-	TEXTURE_2D(2, 10, RippleMap, 11)
+	TEXTURE_2D(2, 9, RippleMap, 10)
 @end
 
 // Samplers
@@ -196,9 +195,8 @@ MAIN_BEGIN
 	// Get the normalized view ray
 	float3 viewRay = normalize(MAIN_INPUT(ViewRayVS));
 
-	// Get texture coordinate and apply distortion
+	// Get texture coordinate
 	float2 texCoord = MAIN_INPUT(TexCoordVS);
-	texCoord += SAMPLE_2D_LOD(DistortionMap, SamplerLinear, float4(texCoord, 0.0f, 0.0f)).rg;
 	int2 textureCoordinate = int2(texCoord * PassData.ViewportSize);
 
 	// Gather screen space ambient occlusion value

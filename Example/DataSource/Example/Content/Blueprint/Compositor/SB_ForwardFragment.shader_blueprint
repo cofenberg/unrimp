@@ -58,8 +58,7 @@ UNIFORM_BUFFER_END
 TEXTURE_2D(1, 0, ColorMap, 0)
 TEXTURE_2D(1, 1, DepthMap, 1)
 TEXTURE_2D(1, 2, ScreenSpaceAmbientOcclusionMap, 2)
-TEXTURE_2D(1, 3, DistortionMap, 3)
-TEXTURE_2D(1, 4, VolumetricLightMap, 4)
+TEXTURE_2D(1, 3, VolumetricLightMap, 3)
 
 // Samplers
 SAMPLER_STATE(2, 0, SamplerPointClamp, 0)
@@ -135,9 +134,8 @@ float3 CalculateColor(float3 viewRay, float3 color, float screenSpaceAmbientOccl
 //[ Main                                                  ]
 //[-------------------------------------------------------]
 MAIN_BEGIN
-	// Get texture coordinate and apply distortion
+	// Get texture coordinate
 	float2 texCoord = MAIN_INPUT(TexCoordVS);
-	texCoord += SAMPLE_2D_LOD(DistortionMap, SamplerLinearClamp, float4(texCoord, 0.0f, 0.0f)).rg;
 
 	// Get color and screen space ambient occlusion value
 	float3 color = SAMPLE_2D_LOD(ColorMap, SamplerPointClamp, float4(texCoord, 0.0f, 0.0f)).rgb;

@@ -46,13 +46,6 @@
 				"Value": "Unrimp/Texture/DynamicByCode/WhiteMap2D",
 				"Description": "2D screen space ambient occlusion (SSAO) map"
 			},
-			"DistortionMap":
-			{
-				"Usage": "TEXTURE_REFERENCE",
-				"ValueType": "TEXTURE_ASSET_ID",
-				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
-				"Description": "2D screen space distortion map"
-			},
 			"VolumetricLightMap":
 			{
 				"Usage": "TEXTURE_REFERENCE",
@@ -201,21 +194,8 @@
 				"3":
 				{
 					"ResourceType": "TEXTURE_2D",
-					"BaseShaderRegisterName": "DistortionMap",
-					"BaseShaderRegister": "3",
-					"ShaderVisibility": "FRAGMENT",
-					"Usage": "MATERIAL_REFERENCE",
-					"ValueType": "TEXTURE_ASSET_ID",
-					"Value": "@DistortionMap",
-					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
-					"MipmapsUsed": "FALSE",
-					"SamplerStateBaseShaderRegisterName": "SamplerLinearClamp"
-				},
-				"4":
-				{
-					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "VolumetricLightMap",
-					"BaseShaderRegister": "4",
+					"BaseShaderRegister": "3",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",

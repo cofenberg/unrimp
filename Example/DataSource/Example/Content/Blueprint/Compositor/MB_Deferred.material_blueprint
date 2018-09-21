@@ -92,13 +92,6 @@
 				"Value": "Unrimp/Texture/DynamicByCode/WhiteMap2D",
 				"Description": "2D screen space ambient occlusion (SSAO) map"
 			},
-			"DistortionMap":
-			{
-				"Usage": "TEXTURE_REFERENCE",
-				"ValueType": "TEXTURE_ASSET_ID",
-				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
-				"Description": "2D screen space distortion map"
-			},
 			"VolumetricLightMap":
 			{
 				"Usage": "TEXTURE_REFERENCE",
@@ -395,21 +388,8 @@
 				"6":
 				{
 					"ResourceType": "TEXTURE_2D",
-					"BaseShaderRegisterName": "DistortionMap",
-					"BaseShaderRegister": "7",
-					"ShaderVisibility": "FRAGMENT",
-					"Usage": "MATERIAL_REFERENCE",
-					"ValueType": "TEXTURE_ASSET_ID",
-					"Value": "@DistortionMap",
-					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
-					"MipmapsUsed": "FALSE",
-					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
-				},
-				"7":
-				{
-					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "VolumetricLightMap",
-					"BaseShaderRegister": "8",
+					"BaseShaderRegister": "7",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
@@ -418,11 +398,11 @@
 					"MipmapsUsed": "FALSE",
 					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
 				},
-				"8":
+				"7":
 				{
 					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "ReflectionMap",
-					"BaseShaderRegister": "9",
+					"BaseShaderRegister": "8",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
@@ -431,11 +411,11 @@
 					"MipmapsUsed": "FALSE",
 					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
 				},
-				"9":
+				"8":
 				{
 					"ResourceType": "TEXTURE_3D",
 					"BaseShaderRegisterName": "LightClustersMap3D",
-					"BaseShaderRegister": "10",
+					"BaseShaderRegister": "9",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "STATIC",
 					"ValueType": "TEXTURE_ASSET_ID",
@@ -443,11 +423,11 @@
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/LightClustersMap3D",
 					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
 				},
-				"10":
+				"9":
 				{
 					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "RippleMap",
-					"BaseShaderRegister": "11",
+					"BaseShaderRegister": "10",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "STATIC",
 					"ValueType": "TEXTURE_ASSET_ID",

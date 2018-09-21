@@ -12786,7 +12786,7 @@ namespace Direct3D11Renderer
 		mD3D11DeviceContext->Dispatch(groupCountX, groupCountY, groupCountZ);
 		{ // TODO(co) Compute shader: "D3D11 WARNING: ID3D11DeviceContext::OMSetRenderTargets[AndUnorderedAccessViews]: Forcing CS shader resource slot 0 to NULL. [ STATE_SETTING WARNING #2097316: DEVICE_CSSETSHADERRESOURCES_HAZARD]"
 			ID3D11UnorderedAccessView* d3d11UnorderedAccessView = nullptr;
-			for (uint32_t i = 0; i < 7; ++i)
+			for (uint32_t i = 0; i < 8; ++i)
 			{
 				mD3D11DeviceContext->CSSetUnorderedAccessViews(i, 1, &d3d11UnorderedAccessView, nullptr);
 			}
