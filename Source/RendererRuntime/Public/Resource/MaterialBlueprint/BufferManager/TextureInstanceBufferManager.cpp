@@ -21,7 +21,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/Public/Resource/MaterialBlueprint/BufferManager/InstanceBufferManager.h"
+#include "RendererRuntime/Public/Resource/MaterialBlueprint/BufferManager/TextureInstanceBufferManager.h"
 #include "RendererRuntime/Public/Resource/MaterialBlueprint/Listener/MaterialBlueprintResourceListener.h"
 #include "RendererRuntime/Public/Resource/MaterialBlueprint/MaterialBlueprintResourceManager.h"
 #include "RendererRuntime/Public/Resource/Material/MaterialTechnique.h"
@@ -42,29 +42,6 @@ PRAGMA_WARNING_POP
 
 
 //[-------------------------------------------------------]
-//[ Anonymous detail namespace                            ]
-//[-------------------------------------------------------]
-namespace
-{
-	namespace detail
-	{
-
-
-		//[-------------------------------------------------------]
-		//[ Global definitions                                    ]
-		//[-------------------------------------------------------]
-		static uint32_t DEFAULT_UNIFORM_BUFFER_NUMBER_OF_BYTES = 64 * 1024;		// 64 KiB
-		static uint32_t DEFAULT_TEXTURE_BUFFER_NUMBER_OF_BYTES = 512 * 1024;	// 512 KiB
-
-
-//[-------------------------------------------------------]
-//[ Anonymous detail namespace                            ]
-//[-------------------------------------------------------]
-	} // detail
-}
-
-
-//[-------------------------------------------------------]
 //[ Namespace                                             ]
 //[-------------------------------------------------------]
 namespace RendererRuntime
@@ -74,10 +51,10 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
-	InstanceBufferManager::InstanceBufferManager(IRendererRuntime& rendererRuntime) :
+	TextureInstanceBufferManager::TextureInstanceBufferManager(IRendererRuntime& rendererRuntime) :
 		mRendererRuntime(rendererRuntime),
-		mMaximumUniformBufferSize(std::min(rendererRuntime.getRenderer().getCapabilities().maximumUniformBufferSize, ::detail::DEFAULT_UNIFORM_BUFFER_NUMBER_OF_BYTES)),
-		mMaximumTextureBufferSize(std::min(rendererRuntime.getRenderer().getCapabilities().maximumTextureBufferSize, ::detail::DEFAULT_TEXTURE_BUFFER_NUMBER_OF_BYTES)),
+		mMaximumUniformBufferSize(std::min(rendererRuntime.getRenderer().getCapabilities().maximumUniformBufferSize, 64u * 1024u)),		// Default uniform buffer number of bytes: 64 KiB
+		mMaximumTextureBufferSize(std::min(rendererRuntime.getRenderer().getCapabilities().maximumTextureBufferSize, 512u * 1024u)),	// Default texture buffer number of bytes: 512 KiB
 		// Current instance buffer related data
 		mCurrentInstanceBufferIndex(getInvalid<size_t>()),
 		mCurrentInstanceBuffer(nullptr),
@@ -91,7 +68,7 @@ namespace RendererRuntime
 		createInstanceBuffer();
 	}
 
-	InstanceBufferManager::~InstanceBufferManager()
+	TextureInstanceBufferManager::~TextureInstanceBufferManager()
 	{
 		// Release uniform and texture buffer instances
 		for (InstanceBuffer& instanceBuffer : mInstanceBuffers)
@@ -105,7 +82,7 @@ namespace RendererRuntime
 		}
 	}
 
-	void InstanceBufferManager::startupBufferFilling(const MaterialBlueprintResource& materialBlueprintResource, Renderer::CommandBuffer& commandBuffer)
+	void TextureInstanceBufferManager::startupBufferFilling(const MaterialBlueprintResource& materialBlueprintResource, Renderer::CommandBuffer& commandBuffer)
 	{
 		// Sanity checks
 		assert(nullptr != mCurrentInstanceBuffer);
@@ -124,12 +101,11 @@ namespace RendererRuntime
 			assert(instanceUniformBuffer->rootParameterIndex == instanceTextureBuffer->rootParameterIndex);
 
 			// Create resource group, if needed
-			// TODO(co) We probably need to move the instance buffer manager into the material blueprint resource
 			if (nullptr == mCurrentInstanceBuffer->resourceGroup)
 			{
 				Renderer::IResource* resources[2] = { mCurrentInstanceBuffer->uniformBuffer, mCurrentInstanceBuffer->textureBuffer };
 				mCurrentInstanceBuffer->resourceGroup = materialBlueprintResource.getRootSignaturePtr()->createResourceGroup(instanceUniformBuffer->rootParameterIndex, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources);
-				RENDERER_SET_RESOURCE_DEBUG_NAME(mCurrentInstanceBuffer->resourceGroup, "Instance buffer manager")
+				RENDERER_SET_RESOURCE_DEBUG_NAME(mCurrentInstanceBuffer->resourceGroup, "Texture instance buffer manager")
 				mCurrentInstanceBuffer->resourceGroup->addReference();
 			}
 
@@ -138,7 +114,7 @@ namespace RendererRuntime
 		}
 	}
 
-	uint32_t InstanceBufferManager::fillBuffer(const MaterialBlueprintResource& materialBlueprintResource, PassBufferManager* passBufferManager, const MaterialBlueprintResource::UniformBuffer& instanceUniformBuffer, const Renderable& renderable, MaterialTechnique& materialTechnique, Renderer::CommandBuffer& commandBuffer)
+	uint32_t TextureInstanceBufferManager::fillBuffer(const MaterialBlueprintResource& materialBlueprintResource, PassBufferManager* passBufferManager, const MaterialBlueprintResource::UniformBuffer& instanceUniformBuffer, const Renderable& renderable, MaterialTechnique& materialTechnique, Renderer::CommandBuffer& commandBuffer)
 	{
 		// Sanity checks
 		assert(nullptr != mCurrentInstanceBuffer);
@@ -313,7 +289,7 @@ namespace RendererRuntime
 		return mStartInstanceLocation - 1;
 	}
 
-	void InstanceBufferManager::onPreCommandBufferExecution()
+	void TextureInstanceBufferManager::onPreCommandBufferExecution()
 	{
 		// Unmap the current instance buffer and reset the current instance buffer to the first instance
 		if (isValid(mCurrentInstanceBufferIndex))
@@ -328,7 +304,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
-	void InstanceBufferManager::createInstanceBuffer()
+	void TextureInstanceBufferManager::createInstanceBuffer()
 	{
 		Renderer::IBufferManager& bufferManager = mRendererRuntime.getBufferManager();
 
@@ -341,12 +317,12 @@ namespace RendererRuntime
 		{
 			// Create uniform buffer instance
 			Renderer::IUniformBuffer* uniformBuffer = bufferManager.createUniformBuffer(mMaximumUniformBufferSize, nullptr, Renderer::BufferUsage::DYNAMIC_DRAW);
-			RENDERER_SET_RESOURCE_DEBUG_NAME(uniformBuffer, "Instance buffer manager")
+			RENDERER_SET_RESOURCE_DEBUG_NAME(uniformBuffer, "Texture instance buffer manager")
 			uniformBuffer->addReference();
 
 			// Create texture buffer instance
 			Renderer::ITextureBuffer* textureBuffer = bufferManager.createTextureBuffer(mMaximumTextureBufferSize, nullptr, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::DYNAMIC_DRAW);
-			RENDERER_SET_RESOURCE_DEBUG_NAME(textureBuffer, "Instance buffer manager")
+			RENDERER_SET_RESOURCE_DEBUG_NAME(textureBuffer, "Texture instance buffer manager")
 			textureBuffer->addReference();
 
 			// Create instance buffer instance
@@ -355,7 +331,7 @@ namespace RendererRuntime
 		mCurrentInstanceBuffer = &mInstanceBuffers[mCurrentInstanceBufferIndex];
 	}
 
-	void InstanceBufferManager::mapCurrentInstanceBuffer()
+	void TextureInstanceBufferManager::mapCurrentInstanceBuffer()
 	{
 		if (nullptr != mCurrentInstanceBuffer && !mCurrentInstanceBuffer->mapped)
 		{
@@ -377,7 +353,7 @@ namespace RendererRuntime
 		}
 	}
 
-	void InstanceBufferManager::unmapCurrentInstanceBuffer()
+	void TextureInstanceBufferManager::unmapCurrentInstanceBuffer()
 	{
 		if (nullptr != mCurrentInstanceBuffer && mCurrentInstanceBuffer->mapped)
 		{

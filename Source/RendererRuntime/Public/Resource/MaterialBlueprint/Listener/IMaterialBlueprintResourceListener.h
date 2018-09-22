@@ -66,7 +66,8 @@ namespace RendererRuntime
 		friend class PassBufferManager;					// Is calling the protected interface methods
 		friend class MaterialBlueprintResource;			// Is calling the protected interface methods
 		friend class MaterialBufferManager;				// Is calling the protected interface methods
-		friend class InstanceBufferManager;				// Is calling the protected interface methods
+		friend class UniformInstanceBufferManager;		// Is calling the protected interface methods
+		friend class TextureInstanceBufferManager;		// Is calling the protected interface methods
 		friend class MaterialBlueprintResourceManager;	// Is calling the protected interface methods
 
 

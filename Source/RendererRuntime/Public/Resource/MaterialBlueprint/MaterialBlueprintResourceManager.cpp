@@ -25,7 +25,8 @@
 #include "RendererRuntime/Public/Resource/MaterialBlueprint/MaterialBlueprintResource.h"
 #include "RendererRuntime/Public/Resource/MaterialBlueprint/Loader/MaterialBlueprintResourceLoader.h"
 #include "RendererRuntime/Public/Resource/MaterialBlueprint/Listener/MaterialBlueprintResourceListener.h"
-#include "RendererRuntime/Public/Resource/MaterialBlueprint/BufferManager/InstanceBufferManager.h"
+#include "RendererRuntime/Public/Resource/MaterialBlueprint/BufferManager/UniformInstanceBufferManager.h"
+#include "RendererRuntime/Public/Resource/MaterialBlueprint/BufferManager/TextureInstanceBufferManager.h"
 #include "RendererRuntime/Public/Resource/MaterialBlueprint/BufferManager/IndirectBufferManager.h"
 #include "RendererRuntime/Public/Resource/MaterialBlueprint/BufferManager/LightBufferManager.h"
 #include "RendererRuntime/Public/Resource/MaterialBlueprint/BufferManager/MaterialBufferManager.h"
@@ -152,9 +153,13 @@ namespace RendererRuntime
 
 	void MaterialBlueprintResourceManager::onPreCommandBufferExecution()
 	{
-		if (nullptr != mInstanceBufferManager)
+		if (nullptr != mUniformInstanceBufferManager)
 		{
-			mInstanceBufferManager->onPreCommandBufferExecution();
+			mUniformInstanceBufferManager->onPreCommandBufferExecution();
+		}
+		if (nullptr != mTextureInstanceBufferManager)
+		{
+			mTextureInstanceBufferManager->onPreCommandBufferExecution();
 		}
 		if (nullptr != mIndirectBufferManager)
 		{
@@ -322,7 +327,8 @@ namespace RendererRuntime
 		mMaterialBlueprintResourceListener(&::detail::defaultMaterialBlueprintResourceListener),
 		mDefaultTextureFilterMode(Renderer::FilterMode::MIN_MAG_MIP_LINEAR),
 		mDefaultMaximumTextureAnisotropy(1),
-		mInstanceBufferManager(nullptr),
+		mUniformInstanceBufferManager(nullptr),
+		mTextureInstanceBufferManager(nullptr),
 		mIndirectBufferManager(nullptr),
 		mLightBufferManager(nullptr)
 	{
@@ -336,7 +342,8 @@ namespace RendererRuntime
 		const Renderer::Capabilities& capabilities = rendererRuntime.getRenderer().getCapabilities();
 		if (capabilities.maximumUniformBufferSize > 0 && capabilities.maximumTextureBufferSize > 0)
 		{
-			mInstanceBufferManager = new InstanceBufferManager(rendererRuntime);
+			mUniformInstanceBufferManager = new UniformInstanceBufferManager(rendererRuntime);
+			mTextureInstanceBufferManager = new TextureInstanceBufferManager(rendererRuntime);
 			mIndirectBufferManager = new IndirectBufferManager(rendererRuntime);
 			mLightBufferManager = new LightBufferManager(rendererRuntime);
 		}
@@ -349,7 +356,8 @@ namespace RendererRuntime
 	MaterialBlueprintResourceManager::~MaterialBlueprintResourceManager()
 	{
 		// Destroy buffer managers
-		delete mInstanceBufferManager;
+		delete mUniformInstanceBufferManager;
+		delete mTextureInstanceBufferManager;
 		delete mIndirectBufferManager;
 		delete mLightBufferManager;
 

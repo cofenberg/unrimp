@@ -55,9 +55,14 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    Instance buffer manager
+	*    Texture instance buffer manager; includes a texture buffer to transport more complex per-instance data
+	*
+	*  @remarks
+	*    "RendererRuntime::UniformInstanceBufferManager" is a simplified version of "RendererRuntime::TextureInstanceBufferManager". Shared code is duplicated by intent
+	*     (including this comment) to avoid making the implementations too complex due to over-engineering. This is performance critical code and the topic is complex
+	*     enough as it is. When changing one implementation don't forget to update the other one as well.
 	*/
-	class InstanceBufferManager final : private Manager
+	class TextureInstanceBufferManager final : private Manager
 	{
 
 
@@ -72,13 +77,13 @@ namespace RendererRuntime
 		*  @param[in] rendererRuntime
 		*    Renderer runtime instance to use
 		*/
-		explicit InstanceBufferManager(IRendererRuntime& rendererRuntime);
+		explicit TextureInstanceBufferManager(IRendererRuntime& rendererRuntime);
 
 		/**
 		*  @brief
 		*    Destructor
 		*/
-		~InstanceBufferManager();
+		~TextureInstanceBufferManager();
 
 		/**
 		*  @brief
@@ -124,8 +129,8 @@ namespace RendererRuntime
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		explicit InstanceBufferManager(const InstanceBufferManager&) = delete;
-		InstanceBufferManager& operator=(const InstanceBufferManager&) = delete;
+		explicit TextureInstanceBufferManager(const TextureInstanceBufferManager&) = delete;
+		TextureInstanceBufferManager& operator=(const TextureInstanceBufferManager&) = delete;
 		void createInstanceBuffer();
 		void mapCurrentInstanceBuffer();
 		void unmapCurrentInstanceBuffer();

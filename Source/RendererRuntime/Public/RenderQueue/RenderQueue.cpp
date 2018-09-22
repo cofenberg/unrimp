@@ -30,8 +30,9 @@
 #include "RendererRuntime/Public/Resource/MaterialBlueprint/MaterialBlueprintResourceManager.h"
 #include "RendererRuntime/Public/Resource/MaterialBlueprint/BufferManager/PassBufferManager.h"
 #include "RendererRuntime/Public/Resource/MaterialBlueprint/BufferManager/LightBufferManager.h"
-#include "RendererRuntime/Public/Resource/MaterialBlueprint/BufferManager/InstanceBufferManager.h"
 #include "RendererRuntime/Public/Resource/MaterialBlueprint/BufferManager/IndirectBufferManager.h"
+#include "RendererRuntime/Public/Resource/MaterialBlueprint/BufferManager/UniformInstanceBufferManager.h"
+#include "RendererRuntime/Public/Resource/MaterialBlueprint/BufferManager/TextureInstanceBufferManager.h"
 #include "RendererRuntime/Public/Core/IProfiler.h"
 #include "RendererRuntime/Public/Core/Math/Transform.h"
 #include "RendererRuntime/Public/IRendererRuntime.h"
@@ -324,7 +325,8 @@ namespace RendererRuntime
 		const MaterialResourceManager& materialResourceManager = mRendererRuntime.getMaterialResourceManager();
 		const MaterialBlueprintResourceManager& materialBlueprintResourceManager = mRendererRuntime.getMaterialBlueprintResourceManager();
 		const MaterialProperties& globalMaterialProperties = materialBlueprintResourceManager.getGlobalMaterialProperties();
-		InstanceBufferManager& instanceBufferManager = materialBlueprintResourceManager.getInstanceBufferManager();
+		UniformInstanceBufferManager& uniformInstanceBufferManager = materialBlueprintResourceManager.getUniformInstanceBufferManager();
+		TextureInstanceBufferManager& textureInstanceBufferManager = materialBlueprintResourceManager.getTextureInstanceBufferManager();
 		LightBufferManager& lightBufferManager = materialBlueprintResourceManager.getLightBufferManager();
 		const bool singlePassStereoInstancing = compositorContextData.getSinglePassStereoInstancing();
 		const uint32_t instanceCount = (singlePassStereoInstancing ? 2u : 1u);
@@ -371,9 +373,15 @@ namespace RendererRuntime
 							// Bind the graphics material blueprint resource and instance and light buffer manager to the used renderer
 							materialBlueprintResource->fillGraphicsCommandBuffer(commandBuffer);
 							const MaterialBlueprintResource::UniformBuffer* instanceUniformBuffer = materialBlueprintResource->getInstanceUniformBuffer();
-							if (nullptr != instanceUniformBuffer)
+							const MaterialBlueprintResource::TextureBuffer* instanceTextureBuffer = materialBlueprintResource->getInstanceTextureBuffer();
+							if (nullptr != instanceTextureBuffer)
 							{
-								instanceBufferManager.startupBufferFilling(*materialBlueprintResource, commandBuffer);
+								assert(nullptr != instanceUniformBuffer);
+								textureInstanceBufferManager.startupBufferFilling(*materialBlueprintResource, commandBuffer);
+							}
+							else if (nullptr != instanceUniformBuffer)
+							{
+								uniformInstanceBufferManager.startupBufferFilling(*materialBlueprintResource, commandBuffer);
 							}
 							lightBufferManager.fillGraphicsCommandBuffer(*materialBlueprintResource, commandBuffer);
 
@@ -387,7 +395,16 @@ namespace RendererRuntime
 							}
 
 							// Fill the instance buffer manager
-							const uint32_t startInstanceLocation = (nullptr != instanceUniformBuffer) ? instanceBufferManager.fillBuffer(*materialBlueprintResource, materialBlueprintResource->getPassBufferManager(), *instanceUniformBuffer, renderable, *materialTechnique, commandBuffer) : 0;
+							uint32_t startInstanceLocation = 0;
+							if (nullptr != instanceTextureBuffer)
+							{
+								assert(nullptr != instanceUniformBuffer);
+								startInstanceLocation = textureInstanceBufferManager.fillBuffer(*materialBlueprintResource, materialBlueprintResource->getPassBufferManager(), *instanceUniformBuffer, renderable, *materialTechnique, commandBuffer);
+							}
+							else if (nullptr != instanceUniformBuffer)
+							{
+								startInstanceLocation = uniformInstanceBufferManager.fillBuffer(*materialBlueprintResource, materialBlueprintResource->getPassBufferManager(), *instanceUniformBuffer, renderable, *materialTechnique, commandBuffer);
+							}
 
 							// Render the specified geometric primitive, based on indexing into an array of vertices
 							// -> Please note that it's valid that there are no indices, for example "RendererRuntime::CompositorInstancePassDebugGui" is using the render queue only to set the material resource blueprint
@@ -502,6 +519,7 @@ namespace RendererRuntime
 										bool bindMaterialBlueprint = false;
 										PassBufferManager* passBufferManager = nullptr;
 										const MaterialBlueprintResource::UniformBuffer* instanceUniformBuffer = materialBlueprintResource->getInstanceUniformBuffer();
+										const MaterialBlueprintResource::TextureBuffer* instanceTextureBuffer = materialBlueprintResource->getInstanceTextureBuffer();
 										if (compositorContextData.mCurrentlyBoundMaterialBlueprintResource != materialBlueprintResource)
 										{
 											compositorContextData.mCurrentlyBoundMaterialBlueprintResource = materialBlueprintResource;
@@ -522,9 +540,14 @@ namespace RendererRuntime
 										{
 											// Bind the graphics material blueprint resource and instance and light buffer manager to the used renderer
 											materialBlueprintResource->fillGraphicsCommandBuffer(mScratchCommandBuffer);
-											if (nullptr != instanceUniformBuffer)
+											if (nullptr != instanceTextureBuffer)
 											{
-												instanceBufferManager.startupBufferFilling(*materialBlueprintResource, mScratchCommandBuffer);
+												assert(nullptr != instanceUniformBuffer);
+												textureInstanceBufferManager.startupBufferFilling(*materialBlueprintResource, mScratchCommandBuffer);
+											}
+											else if (nullptr != instanceUniformBuffer)
+											{
+												uniformInstanceBufferManager.startupBufferFilling(*materialBlueprintResource, mScratchCommandBuffer);
 											}
 											lightBufferManager.fillGraphicsCommandBuffer(*materialBlueprintResource, mScratchCommandBuffer);
 										}
@@ -545,7 +568,16 @@ namespace RendererRuntime
 										}
 
 										// Fill the instance buffer manager
-										const uint32_t startInstanceLocation = (nullptr != instanceUniformBuffer) ? instanceBufferManager.fillBuffer(*materialBlueprintResource, materialBlueprintResource->getPassBufferManager(), *instanceUniformBuffer, renderable, *materialTechnique, mScratchCommandBuffer) : 0;
+										uint32_t startInstanceLocation = 0;
+										if (nullptr != instanceTextureBuffer)
+										{
+											assert(nullptr != instanceUniformBuffer);
+											startInstanceLocation = textureInstanceBufferManager.fillBuffer(*materialBlueprintResource, materialBlueprintResource->getPassBufferManager(), *instanceUniformBuffer, renderable, *materialTechnique, mScratchCommandBuffer);
+										}
+										else if (nullptr != instanceUniformBuffer)
+										{
+											startInstanceLocation = uniformInstanceBufferManager.fillBuffer(*materialBlueprintResource, materialBlueprintResource->getPassBufferManager(), *instanceUniformBuffer, renderable, *materialTechnique, mScratchCommandBuffer);
+										}
 
 										// Emit draw command, if necessary
 										const Renderer::IIndirectBufferPtr renderableIndirectBufferPtr = renderable.getIndirectBufferPtr();
@@ -661,7 +693,7 @@ namespace RendererRuntime
 		const MaterialResourceManager& materialResourceManager = mRendererRuntime.getMaterialResourceManager();
 		const MaterialBlueprintResourceManager& materialBlueprintResourceManager = mRendererRuntime.getMaterialBlueprintResourceManager();
 		const MaterialProperties& globalMaterialProperties = materialBlueprintResourceManager.getGlobalMaterialProperties();
-		// InstanceBufferManager& instanceBufferManager = materialBlueprintResourceManager.getInstanceBufferManager();	// TODO(co) Think about compute instance buffer support
+		// TextureInstanceBufferManager& textureInstanceBufferManager = materialBlueprintResourceManager.getTextureInstanceBufferManager();	// TODO(co) Think about compute instance buffer support
 		LightBufferManager& lightBufferManager = materialBlueprintResourceManager.getLightBufferManager();
 		const bool singlePassStereoInstancing = compositorContextData.getSinglePassStereoInstancing();
 
@@ -819,7 +851,7 @@ namespace RendererRuntime
 							{
 								// TODO(co) Think about compute instance buffer support
 								assert(false);
-								// instanceBufferManager.startupBufferFilling(*materialBlueprintResource, commandBuffer);
+								// textureInstanceBufferManager.startupBufferFilling(*materialBlueprintResource, commandBuffer);
 							}
 							lightBufferManager.fillComputeCommandBuffer(*materialBlueprintResource, commandBuffer);
 
@@ -834,7 +866,7 @@ namespace RendererRuntime
 
 							// Fill the instance buffer manager
 							// TODO(co) Think about compute instance buffer support
-							// MAYBE_UNUSED const uint32_t startInstanceLocation = (nullptr != instanceUniformBuffer) ? instanceBufferManager.fillBuffer(*materialBlueprintResource, materialBlueprintResource->getPassBufferManager(), *instanceUniformBuffer, renderable, *materialTechnique, commandBuffer) : 0;
+							// MAYBE_UNUSED const uint32_t startInstanceLocation = (nullptr != instanceUniformBuffer) ? textureInstanceBufferManager.fillBuffer(*materialBlueprintResource, materialBlueprintResource->getPassBufferManager(), *instanceUniformBuffer, renderable, *materialTechnique, commandBuffer) : 0;
 
 							// Dispatch compute
 							Renderer::Command::DispatchCompute::create(commandBuffer, groupCountX, groupCountY, groupCountZ);
@@ -962,7 +994,7 @@ namespace RendererRuntime
 											materialBlueprintResource->fillCommandBuffer(mScratchCommandBuffer);
 											if (nullptr != instanceUniformBuffer)
 											{
-												instanceBufferManager.startupBufferFilling(*materialBlueprintResource, mScratchCommandBuffer);
+												textureInstanceBufferManager.startupBufferFilling(*materialBlueprintResource, mScratchCommandBuffer);
 											}
 											lightBufferManager.fillCommandBuffer(*materialBlueprintResource, mScratchCommandBuffer);
 										}
@@ -983,7 +1015,7 @@ namespace RendererRuntime
 										}
 
 										// Fill the instance buffer manager
-										const uint32_t startInstanceLocation = (nullptr != instanceUniformBuffer) ? instanceBufferManager.fillBuffer(*materialBlueprintResource, materialBlueprintResource->getPassBufferManager(), *instanceUniformBuffer, renderable, *materialTechnique, mScratchCommandBuffer) : 0;
+										const uint32_t startInstanceLocation = (nullptr != instanceUniformBuffer) ? textureInstanceBufferManager.fillBuffer(*materialBlueprintResource, materialBlueprintResource->getPassBufferManager(), *instanceUniformBuffer, renderable, *materialTechnique, mScratchCommandBuffer) : 0;
 
 										// Emit draw command, if necessary
 										const Renderer::IIndirectBufferPtr renderableIndirectBufferPtr = renderable.getIndirectBufferPtr();

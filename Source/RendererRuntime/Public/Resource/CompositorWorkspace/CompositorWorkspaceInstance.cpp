@@ -33,7 +33,6 @@
 #include "RendererRuntime/Public/Resource/CompositorNode/Pass/ICompositorInstancePass.h"
 #include "RendererRuntime/Public/Resource/CompositorNode/Pass/ShadowMap/CompositorInstancePassShadowMap.h"
 #include "RendererRuntime/Public/Resource/CompositorNode/Pass/ShadowMap/CompositorResourcePassShadowMap.h"
-#include "RendererRuntime/Public/Resource/MaterialBlueprint/BufferManager/InstanceBufferManager.h"
 #include "RendererRuntime/Public/Resource/MaterialBlueprint/BufferManager/IndirectBufferManager.h"
 #include "RendererRuntime/Public/Resource/MaterialBlueprint/BufferManager/LightBufferManager.h"
 #include "RendererRuntime/Public/Resource/MaterialBlueprint/BufferManager/PassBufferManager.h"

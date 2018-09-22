@@ -53,9 +53,10 @@ namespace RendererRuntime
 	class MemoryFile;
 	class IRendererRuntime;
 	class LightBufferManager;
-	class InstanceBufferManager;
 	class IndirectBufferManager;
 	class MaterialBlueprintResource;
+	class UniformInstanceBufferManager;
+	class TextureInstanceBufferManager;
 	class MaterialBlueprintResourceLoader;
 	class IMaterialBlueprintResourceListener;
 	template <class TYPE, class LOADER_TYPE, typename ID_TYPE, uint32_t MAXIMUM_NUMBER_OF_ELEMENTS> class ResourceManagerTemplate;
@@ -176,11 +177,18 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Manager                                               ]
 		//[-------------------------------------------------------]
-		inline InstanceBufferManager& getInstanceBufferManager() const
+		inline UniformInstanceBufferManager& getUniformInstanceBufferManager() const
 		{
 			// We know this pointer must always be valid
-			assert(nullptr != mInstanceBufferManager);
-			return *mInstanceBufferManager;
+			assert(nullptr != mUniformInstanceBufferManager);
+			return *mUniformInstanceBufferManager;
+		}
+
+		inline TextureInstanceBufferManager& getTextureInstanceBufferManager() const
+		{
+			// We know this pointer must always be valid
+			assert(nullptr != mTextureInstanceBufferManager);
+			return *mTextureInstanceBufferManager;
 		}
 
 		inline IndirectBufferManager& getIndirectBufferManager() const
@@ -249,7 +257,8 @@ namespace RendererRuntime
 		uint8_t								mDefaultMaximumTextureAnisotropy;			///< Default maximum texture anisotropy
 		std::mutex							mSerializedGraphicsPipelineStatesMutex;		///< "RendererRuntime::GraphicsPipelineStateCompiler" is running asynchronous, hence we need to synchronize the serialized graphics pipeline states access
 		SerializedGraphicsPipelineStates	mSerializedGraphicsPipelineStates;			///< Serialized pipeline states
-		InstanceBufferManager*				mInstanceBufferManager;						///< Instance buffer manager, always valid in a sane none-legacy environment
+		UniformInstanceBufferManager*		mUniformInstanceBufferManager;				///< Uniform instance buffer manager, always valid in a sane none-legacy environment
+		TextureInstanceBufferManager*		mTextureInstanceBufferManager;				///< Texture instance buffer manager, always valid in a sane none-legacy environment
 		IndirectBufferManager*				mIndirectBufferManager;						///< Indirect buffer manager, always valid in a sane none-legacy environment
 		LightBufferManager*					mLightBufferManager;						///< Light buffer manager, always valid in a sane none-legacy environment
 

@@ -1022,6 +1022,7 @@ namespace RendererRuntime
 			case ::detail::INSTANCE_INDICES:
 			{
 				assert(sizeof(uint32_t) * 4 == numberOfBytes);
+				assert(~0u != instanceTextureBufferStartIndex);
 				uint32_t* integerBuffer = reinterpret_cast<uint32_t*>(buffer);
 
 				// 0 = x = The instance texture buffer start index
@@ -1041,6 +1042,7 @@ namespace RendererRuntime
 			case ::detail::WORLD_POSITION_MATERIAL_INDEX:
 			{
 				assert(sizeof(uint32_t) * 4 == numberOfBytes);
+				assert(~0u == instanceTextureBufferStartIndex);
 				uint32_t* integerBuffer = reinterpret_cast<uint32_t*>(buffer);
 
 				// 0 = World space x position
