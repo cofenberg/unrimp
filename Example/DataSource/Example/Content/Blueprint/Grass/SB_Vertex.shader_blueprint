@@ -50,12 +50,13 @@ struct PassDataStruct
 	float4x4 PreviousWorldSpaceToViewSpaceMatrix;
 	float4	 WorldSpaceToViewSpaceQuaternion;
 	float4	 WindDirectionStrength;	// xyz = normalized wind direction vector, w = wind strength
+	float3   UnmodifiedWorldSpaceCameraPosition;
+	float	 GrassWindHeightFactor;
 	float2   ViewportSize;
 	float2   InverseViewportSize;
 	float2	 ProjectionParameters;
 	float    GlobalTimeInSeconds;
 	float    PreviousGlobalTimeInSeconds;
-	float	 GrassWindHeightFactor;
 };
 UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
 	PassDataStruct PassData;
@@ -115,15 +116,18 @@ MAIN_BEGIN_VERTEX
 	float3 windPositionOffset = sin(PassData.GlobalTimeInSeconds + positionFactor) * windVertexPosition;
 	float3 previousWindPositionOffset = sin(PassData.PreviousGlobalTimeInSeconds + positionFactor) * windVertexPosition;
 
+	// Get object space to world space data
+	float3 position = -PassData.UnmodifiedWorldSpaceCameraPosition;	// Camera relative rendering, TODO(co) This is a placeholder until we pass through the real node world space position
+
 	// Transform the grass to clip-space
-	float4 position = MATRIX_MUL(PassData.WorldSpaceToViewSpaceMatrix[MAIN_INPUT_STEREO_EYE_INDEX], float4(viewSpacePosition + windPositionOffset, 1.0f));
-	position = MATRIX_MUL(PassData.ViewSpaceToClipSpaceMatrix[MAIN_INPUT_STEREO_EYE_INDEX], position);
-	MAIN_OUTPUT_POSITION = position;
+	float4 transformedPosition = MATRIX_MUL(PassData.WorldSpaceToViewSpaceMatrix[MAIN_INPUT_STEREO_EYE_INDEX], float4(viewSpacePosition + position + windPositionOffset, 1.0f));
+	transformedPosition = MATRIX_MUL(PassData.ViewSpaceToClipSpaceMatrix[MAIN_INPUT_STEREO_EYE_INDEX], transformedPosition);
+	MAIN_OUTPUT_POSITION = transformedPosition;
 
 	// Previous position: Transform the grass to clip-space
-	position = MATRIX_MUL(PassData.PreviousWorldSpaceToViewSpaceMatrix, float4(viewSpacePosition + previousWindPositionOffset, 1.0f));
-	position = MATRIX_MUL(PassData.ViewSpaceToClipSpaceMatrix[MAIN_INPUT_STEREO_EYE_INDEX], position);
-	MAIN_OUTPUT(PreviousClipSpacePositionVS) = position.xyw;
+	transformedPosition = MATRIX_MUL(PassData.PreviousWorldSpaceToViewSpaceMatrix, float4(viewSpacePosition + position + previousWindPositionOffset, 1.0f));
+	transformedPosition = MATRIX_MUL(PassData.ViewSpaceToClipSpaceMatrix[MAIN_INPUT_STEREO_EYE_INDEX], transformedPosition);
+	MAIN_OUTPUT(PreviousClipSpacePositionVS) = transformedPosition.xyw;
 
 	// Pass through the texture coordinate, color and clip space position
 	MAIN_OUTPUT(TexCoordDepthVS) = float3(uv, MAIN_OUTPUT_POSITION.w);

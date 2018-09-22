@@ -62,10 +62,10 @@ struct PassDataStruct
 	float4	 ViewSpaceToWorldSpaceQuaternion;
 	float4	 WorldSpaceToViewSpaceQuaternion;
 	float4	 WetSurfaces;	// x=wet level, y=hole/cracks flood level, z=puddle flood level, w=rain intensity
+	float3	 UnmodifiedWorldSpaceCameraPosition;
 	float3	 ViewSpaceSunlightDirection;
 	float3	 AmbientColor;
 	float3	 SunlightColor;
-	float3   CameraWorldSpacePosition;
 	float3	 LightClustersScale;
 	float3	 LightClustersBias;
 	uint	 FullCoverageMask;
@@ -178,13 +178,14 @@ MAIN_BEGIN
 	@property(UseWetSurfaces)
 		if (0.0f != PassData.WetSurfaces.x)
 		{
-			DoWaterProcess(worldSpacePosition, shadowVisibility, value_hr_rg_mb_nya.r, multipleOctavesNoise3D(worldSpacePosition), PassData.WetSurfaces.x, PassData.WetSurfaces.y, PassData.WetSurfaces.z, PassData.WetSurfaces.w, albedo, roughness, metallic, viewSpaceNormal);
+			// Handle camera relative rendering
+			DoWaterProcess(worldSpacePosition + PassData.UnmodifiedWorldSpaceCameraPosition, shadowVisibility, value_hr_rg_mb_nya.r, multipleOctavesNoise3D(worldSpacePosition), PassData.WetSurfaces.x, PassData.WetSurfaces.y, PassData.WetSurfaces.z, PassData.WetSurfaces.w, albedo, roughness, metallic, viewSpaceNormal);
 		}
 	@end
 
 	// Derive data
 	float3 worldSpaceNormal = MultiplyQuaternionVector(PassData.ViewSpaceToWorldSpaceQuaternion, viewSpaceNormal);
-	float3 worldSpaceIncident = normalize(PassData.CameraWorldSpacePosition - worldSpacePosition);
+	float3 worldSpaceIncident = normalize(-worldSpacePosition);	// Since we're using camera relative rendering, "PassData.WorldSpaceCameraPosition - worldSpacePosition" becomes just "-worldSpacePosition"
 	float3 viewSpaceIncident = MultiplyQuaternionVector(PassData.WorldSpaceToViewSpaceQuaternion, worldSpaceIncident);
 
 	// Get reflection color

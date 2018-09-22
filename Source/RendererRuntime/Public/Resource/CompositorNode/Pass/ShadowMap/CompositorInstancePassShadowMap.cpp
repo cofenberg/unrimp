@@ -164,7 +164,7 @@ namespace RendererRuntime
 				{
 					renderTargetWidth /= 2;
 				}
-				const glm::mat4 worldSpaceToClipSpaceMatrix = cameraSceneItem->getViewSpaceToClipSpaceMatrix(static_cast<float>(renderTargetWidth) / renderTargetHeight) * cameraSceneItem->getWorldSpaceToViewSpaceMatrix();
+				const glm::mat4 worldSpaceToClipSpaceMatrix = cameraSceneItem->getViewSpaceToClipSpaceMatrix(static_cast<float>(renderTargetWidth) / renderTargetHeight) * cameraSceneItem->getCameraRelativeWorldSpaceToViewSpaceMatrix();
 				const glm::mat4 clipSpaceToWorldSpaceMatrix = glm::inverse(worldSpaceToClipSpaceMatrix);
 				for (int i = 0; i < 8; ++i)
 				{

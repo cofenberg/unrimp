@@ -56,7 +56,6 @@ struct PassDataStruct
 	float4   ViewSpaceToWorldSpaceQuaternion;
 	float3   SunlightColor;
 	float3   DiffuseFogColor;
-	float3   CameraWorldSpacePosition;
 	float3   LightClustersScale;
 	float3   LightClustersBias;
 	float2   ViewportSize;
@@ -132,7 +131,7 @@ MAIN_BEGIN
 
 	// Traverse through the volume
 	float3 startPosition = worldSpacePosition;
-	float3 rayVector = startPosition - PassData.CameraWorldSpacePosition;
+	float3 rayVector = startPosition;	// Since we're using camera relative rendering, "startPosition - PassData.WorldSpaceCameraPosition" becomes just "startPosition"
 	float rayLength = length(rayVector);
 	float3 rayDirection = rayVector / rayLength;
 	float stepLength = rayLength / NUMBER_OF_STEPS;

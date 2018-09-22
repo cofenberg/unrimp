@@ -45,9 +45,9 @@ struct PassDataStruct
 {
 	float4x4 WorldSpaceToClipSpaceMatrix[2];
 	float4   ViewSpaceToWorldSpaceQuaternion;
-	float3	 CameraWorldSpacePosition;
 	float2   InverseViewportSize;
 	float2	 ProjectionParameters;
+	float	 JitterFactor;
 };
 UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
 	PassDataStruct PassData;
@@ -94,8 +94,9 @@ MAIN_BEGIN_VERTEX
 	// Get volume space camera position by first transforming the available camera world space position into a camera object space position and then transforming it into a camera volume space position via +0.5
 	// -> Using the conjugated quaternion as inverse since we're using a rotation quaternion (which is normalized by definition)
 	// -> w-component = Pass through the assigned material slot inside the material uniform buffer
+	// -> Since we're using camera relative rendering, "PassData.WorldSpaceCameraPosition - position" becomes just "-position"
 	float4 worldSpaceToObjectSpaceRotationQuaternion = float4(-rotationQuaternion.x, -rotationQuaternion.y, -rotationQuaternion.z, rotationQuaternion.w);
-	MAIN_OUTPUT(CameraVolumeSpacePosition) = float4(MultiplyQuaternionVector(worldSpaceToObjectSpaceRotationQuaternion, PassData.CameraWorldSpacePosition - position) * (1.0f / scale) + 0.5f, CAST_TO(instanceIndices.y, float));
+	MAIN_OUTPUT(CameraVolumeSpacePosition) = float4(MultiplyQuaternionVector(worldSpaceToObjectSpaceRotationQuaternion, -position) * (1.0f / scale) + 0.5f, CAST_TO(instanceIndices.y, float));
 
 	// Object space position to volume space position and rotation quaternion
 	MAIN_OUTPUT(VolumeSpacePositionVS) = float4(objectSpacePosition + 0.5f, 1.0f / scale.x);	// w-component = Uniform world space to object space scale, only uniform scale is supported to keep things simple

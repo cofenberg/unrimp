@@ -399,7 +399,7 @@ namespace RendererRuntime
 							if (nullptr != instanceTextureBuffer)
 							{
 								assert(nullptr != instanceUniformBuffer);
-								startInstanceLocation = textureInstanceBufferManager.fillBuffer(*materialBlueprintResource, materialBlueprintResource->getPassBufferManager(), *instanceUniformBuffer, renderable, *materialTechnique, commandBuffer);
+								startInstanceLocation = textureInstanceBufferManager.fillBuffer(compositorContextData.getWorldSpaceCameraPosition(), *materialBlueprintResource, materialBlueprintResource->getPassBufferManager(), *instanceUniformBuffer, renderable, *materialTechnique, commandBuffer);
 							}
 							else if (nullptr != instanceUniformBuffer)
 							{
@@ -572,7 +572,7 @@ namespace RendererRuntime
 										if (nullptr != instanceTextureBuffer)
 										{
 											assert(nullptr != instanceUniformBuffer);
-											startInstanceLocation = textureInstanceBufferManager.fillBuffer(*materialBlueprintResource, materialBlueprintResource->getPassBufferManager(), *instanceUniformBuffer, renderable, *materialTechnique, mScratchCommandBuffer);
+											startInstanceLocation = textureInstanceBufferManager.fillBuffer(compositorContextData.getWorldSpaceCameraPosition(), *materialBlueprintResource, materialBlueprintResource->getPassBufferManager(), *instanceUniformBuffer, renderable, *materialTechnique, mScratchCommandBuffer);
 										}
 										else if (nullptr != instanceUniformBuffer)
 										{

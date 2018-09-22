@@ -184,11 +184,11 @@
 							"Usage": "UNKNOWN",
 							"ValueType": "FLOAT_3"
 						},
-						"CameraWorldSpacePosition":
+						"UnmodifiedWorldSpaceCameraPosition":
 						{
 							"Usage": "PASS_REFERENCE",
 							"ValueType": "FLOAT_3",
-							"Value": "@CAMERA_WORLD_SPACE_POSITION"
+							"Value": "@UNMODIFIED_WORLD_SPACE_CAMERA_POSITION"
 						},
 						"LightClustersScale":
 						{

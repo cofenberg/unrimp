@@ -99,13 +99,15 @@ MAIN_BEGIN_TESSELLATION_EVALUATION(4)
 	worldSpacePosition.y = SampleHeightMap(worldSpacePosition.xz);
 
 	// Transform to clip-space
-	MAIN_OUTPUT_POSITION = MATRIX_MUL(PassData.WorldSpaceToClipSpaceMatrix, worldSpacePosition);
+	// -> Take care of camera relative rendering
+	MAIN_OUTPUT_POSITION = MATRIX_MUL(PassData.WorldSpaceToClipSpaceMatrix, float4(worldSpacePosition.xyz - PassData.UnmodifiedWorldSpaceCameraPosition, 1.0f));
 
 	// Texture coordinate
 	MAIN_OUTPUT(TexCoord) = WorldXZToHeightUV(worldSpacePosition.xz);
 
 	{ // Previous clip space position
-		float4 previousPiewSpacePosition = MATRIX_MUL(PassData.PreviousWorldSpaceToViewSpaceMatrix, worldSpacePosition);
+	  // -> Take care of camera relative rendering
+		float4 previousPiewSpacePosition = MATRIX_MUL(PassData.PreviousWorldSpaceToViewSpaceMatrix, float4(worldSpacePosition.xyz - PassData.UnmodifiedWorldSpaceCameraPosition, 1.0f));
 		MAIN_OUTPUT(PreviousClipSpacePositionVS) = MATRIX_MUL(PassData.ViewSpaceToClipSpaceMatrix, previousPiewSpacePosition).xyw;
 	}
 

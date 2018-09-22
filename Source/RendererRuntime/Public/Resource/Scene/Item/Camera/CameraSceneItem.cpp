@@ -46,6 +46,12 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
+	glm::vec3 CameraSceneItem::getWorldSpaceCameraPosition() const
+	{
+		const SceneNode* parentSceneNode = getParentSceneNode();
+		return (nullptr != parentSceneNode) ? parentSceneNode->getGlobalTransform().position : Math::VEC3_ZERO;
+	}
+
 	const Transform& CameraSceneItem::getWorldSpaceToViewSpaceTransform() const
 	{
 		const SceneNode* parentSceneNode = getParentSceneNode();
@@ -71,11 +77,24 @@ namespace RendererRuntime
 		return mWorldSpaceToViewSpaceMatrix;
 	}
 
-	void CameraSceneItem::getPreviousWorldSpaceToViewSpaceMatrix(glm::mat4& previousWorldSpaceToViewSpaceMatrix) const
+	const glm::mat4& CameraSceneItem::getCameraRelativeWorldSpaceToViewSpaceMatrix() const
+	{
+		// Calculate the world space to view space matrix (Aka "view matrix")
+		if (!mHasCustomWorldSpaceToViewSpaceMatrix)
+		{
+			const Transform& worldSpaceToViewSpaceTransform = getWorldSpaceToViewSpaceTransform();
+			mWorldSpaceToViewSpaceMatrix = glm::lookAt(Math::VEC3_ZERO, worldSpaceToViewSpaceTransform.rotation * Math::VEC3_FORWARD, Math::VEC3_UP);
+		}
+
+		// Done
+		return mWorldSpaceToViewSpaceMatrix;
+	}
+
+	void CameraSceneItem::getPreviousCameraRelativeWorldSpaceToViewSpaceMatrix(glm::mat4& previousCameraRelativeWorldSpaceToViewSpaceMatrix) const
 	{
 		// Calculate the previous world space to view space matrix (Aka "view matrix")
 		const Transform& worldSpaceToViewSpaceTransform = getPreviousWorldSpaceToViewSpaceTransform();
-		previousWorldSpaceToViewSpaceMatrix = glm::lookAt(worldSpaceToViewSpaceTransform.position, worldSpaceToViewSpaceTransform.position + worldSpaceToViewSpaceTransform.rotation * Math::VEC3_FORWARD, Math::VEC3_UP);
+		previousCameraRelativeWorldSpaceToViewSpaceMatrix = glm::lookAt(Math::VEC3_ZERO, worldSpaceToViewSpaceTransform.rotation * Math::VEC3_FORWARD, Math::VEC3_UP);
 	}
 
 	const glm::mat4& CameraSceneItem::getViewSpaceToClipSpaceMatrix(float aspectRatio) const

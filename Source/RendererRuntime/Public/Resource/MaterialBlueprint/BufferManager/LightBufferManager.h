@@ -133,12 +133,14 @@ namespace RendererRuntime
 		*  @brief
 		*    Fill the light buffer
 		*
+		*  @param[in] worldSpaceCameraPosition
+		*    World space camera position for camera relative rendering
 		*  @param[in] sceneResource
 		*    Scene resource to use
 		*  @param[out] commandBuffer
 		*    Command buffer to fill
 		*/
-		void fillBuffer(SceneResource& sceneResource, Renderer::CommandBuffer& commandBuffer);
+		void fillBuffer(const glm::vec3& worldSpaceCameraPosition, SceneResource& sceneResource, Renderer::CommandBuffer& commandBuffer);
 
 		/**
 		*  @brief
@@ -187,7 +189,7 @@ namespace RendererRuntime
 	private:
 		explicit LightBufferManager(const LightBufferManager&) = delete;
 		LightBufferManager& operator=(const LightBufferManager&) = delete;
-		void fillTextureBuffer(SceneResource& sceneResource);
+		void fillTextureBuffer(const glm::vec3& worldSpaceCameraPosition, SceneResource& sceneResource);
 		void fillClusters3DTexture(SceneResource& sceneResource, Renderer::CommandBuffer& commandBuffer);
 
 

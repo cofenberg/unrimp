@@ -80,6 +80,7 @@
 #include "Public/Resource/CompositorNode/Pass/ShadowMap/CompositorResourcePassShadowMap.cpp"
 #include "Public/Resource/CompositorNode/Pass/VrHiddenAreaMesh/CompositorInstancePassVrHiddenAreaMesh.cpp"
 #include "Public/Resource/CompositorNode/Pass/VrHiddenAreaMesh/CompositorResourcePassVrHiddenAreaMesh.cpp"
+#include "Public/Resource/CompositorWorkspace/CompositorContextData.cpp"
 #include "Public/Resource/CompositorWorkspace/CompositorWorkspaceInstance.cpp"
 #include "Public/Resource/CompositorWorkspace/CompositorWorkspaceResourceManager.cpp"
 #include "Public/Resource/CompositorWorkspace/Loader/CompositorWorkspaceResourceLoader.cpp"

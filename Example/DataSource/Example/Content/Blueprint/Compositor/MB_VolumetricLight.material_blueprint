@@ -150,12 +150,6 @@
 							"ValueType": "FLOAT_3",
 							"Value": "@DiffuseFogColor"
 						},
-						"CameraWorldSpacePosition":
-						{
-							"Usage": "PASS_REFERENCE",
-							"ValueType": "FLOAT_3",
-							"Value": "@CAMERA_WORLD_SPACE_POSITION"
-						},
 						"LightClustersScale":
 						{
 							"Usage": "PASS_REFERENCE",

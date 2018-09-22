@@ -216,7 +216,7 @@ namespace RendererRuntime
 					cameraSceneItem->getSceneResource().getSceneCullingManager().gatherRenderQueueIndexRangesRenderableManagers(renderTarget, compositorContextData, mRenderQueueIndexRanges);
 
 					// Fill the light buffer manager
-					materialBlueprintResourceManager.getLightBufferManager().fillBuffer(cameraSceneItem->getSceneResource(), mCommandBuffer);
+					materialBlueprintResourceManager.getLightBufferManager().fillBuffer(compositorContextData.getWorldSpaceCameraPosition(), cameraSceneItem->getSceneResource(), mCommandBuffer);
 				}
 
 				{ // Scene rendering

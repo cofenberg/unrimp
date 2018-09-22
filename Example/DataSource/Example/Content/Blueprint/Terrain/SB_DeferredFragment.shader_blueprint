@@ -135,7 +135,7 @@ MAIN_BEGIN
 	// Derive data
 	float3 worldSpaceNormal = MultiplyQuaternionVector(PassData.ViewSpaceToWorldSpaceQuaternion, viewSpaceNormal);
 	float3 worldSpacePosition = MAIN_INPUT(WorldSpacePosition);
-	float3 worldSpaceIncident = normalize(PassData.CameraWorldSpacePosition - worldSpacePosition);
+	float3 worldSpaceIncident = normalize(-worldSpacePosition);	// Since we're using camera relative rendering, "PassData.WorldSpaceCameraPosition - worldSpacePosition" becomes just "-worldSpacePosition"
 	float3 viewSpaceIncident = MultiplyQuaternionVector(PassData.WorldSpaceToViewSpaceQuaternion, worldSpaceIncident);
 	float3 triPlanarBlending = GetTriPlanarBlending(worldSpaceNormal);	// TODO(co) Use this for the detail textures
 

@@ -105,18 +105,6 @@
 							"ValueType": "FLOAT_4",
 							"Value": "@VIEW_SPACE_TO_WORLD_SPACE_QUATERNION"
 						},
-						"CameraWorldSpacePosition":
-						{
-							"Usage": "PASS_REFERENCE",
-							"ValueType": "FLOAT_3",
-							"Value": "@CAMERA_WORLD_SPACE_POSITION"
-						},
-						"JitterFactor":
-						{
-							"Usage": "MATERIAL_REFERENCE",
-							"ValueType": "FLOAT",
-							"Value": "@JitterFactor"
-						},
 						"InverseViewportSize":
 						{
 							"Usage": "PASS_REFERENCE",
@@ -128,6 +116,12 @@
 							"Usage": "PASS_REFERENCE",
 							"ValueType": "FLOAT_2",
 							"Value": "@PROJECTION_PARAMETERS"
+						},
+						"JitterFactor":
+						{
+							"Usage": "MATERIAL_REFERENCE",
+							"ValueType": "FLOAT",
+							"Value": "@JitterFactor"
 						}
 					}
 				}

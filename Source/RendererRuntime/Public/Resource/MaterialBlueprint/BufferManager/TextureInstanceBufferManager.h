@@ -100,6 +100,8 @@ namespace RendererRuntime
 		*  @brief
 		*    Fill the instance buffer
 		*
+		*  @param[in] worldSpaceCameraPosition
+		*    World space camera position for camera relative rendering
 		*  @param[in] materialBlueprintResource
 		*    Material blueprint resource
 		*  @param[in] passBufferManager
@@ -116,7 +118,7 @@ namespace RendererRuntime
 		*  @return
 		*    Start instance location, used for draw ID (see "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html)
 		*/
-		uint32_t fillBuffer(const MaterialBlueprintResource& materialBlueprintResource, PassBufferManager* passBufferManager, const MaterialBlueprintResource::UniformBuffer& instanceUniformBuffer, const Renderable& renderable, MaterialTechnique& materialTechnique, Renderer::CommandBuffer& commandBuffer);
+		uint32_t fillBuffer(const glm::vec3& worldSpaceCameraPosition, const MaterialBlueprintResource& materialBlueprintResource, PassBufferManager* passBufferManager, const MaterialBlueprintResource::UniformBuffer& instanceUniformBuffer, const Renderable& renderable, MaterialTechnique& materialTechnique, Renderer::CommandBuffer& commandBuffer);
 
 		/**
 		*  @brief

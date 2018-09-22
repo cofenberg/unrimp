@@ -51,12 +51,13 @@ struct PassDataStruct
 	float4x4 PreviousWorldSpaceToViewSpaceMatrix;
 	float4	 WorldSpaceToViewSpaceQuaternion;
 	float4	 WindDirectionStrength;	// xyz = normalized wind direction vector, w = wind strength
+	float3   UnmodifiedWorldSpaceCameraPosition;
+	float	 GrassWindHeightFactor;
 	float2   ViewportSize;
 	float2   InverseViewportSize;
 	float2	 ProjectionParameters;
 	float    GlobalTimeInSeconds;
 	float    PreviousGlobalTimeInSeconds;
-	float	 GrassWindHeightFactor;
 };
 UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
 	PassDataStruct PassData;

@@ -64,7 +64,7 @@ namespace RendererRuntime
 	//[ Global definitions                                    ]
 	//[-------------------------------------------------------]
 	typedef uint32_t			 TextureResourceId;	///< POD texture resource identifier
-	typedef StringId			 AssetId;		///< Asset identifier, internally just a POD "uint32_t", string ID scheme is "<project name>/<asset type>/<asset category>/<asset name>"
+	typedef StringId			 AssetId;			///< Asset identifier, internally just a POD "uint32_t", string ID scheme is "<project name>/<asset type>/<asset category>/<asset name>"
 	typedef std::vector<AssetId> AssetIds;
 
 
@@ -74,6 +74,12 @@ namespace RendererRuntime
 	/**
 	*  @brief
 	*    Material blueprint resource listener
+	*
+	*  @remarks
+	*    Several things have to be taken into consideration when feeding shaders with parameters:
+	*    - Reversed-Z ( https://developer.nvidia.com/content/depth-precision-visualized ) for improved depth buffer precision to reduce z-fighting
+	*    - Camera relative rendering for rendering large scale scenes without jittering/wobbling
+	*    - Single pass stereo rendering via instancing
 	*/
 	class MaterialBlueprintResourceListener : public IMaterialBlueprintResourceListener
 	{
@@ -114,6 +120,7 @@ namespace RendererRuntime
 			mRendererRuntime(nullptr),
 			mPassData(nullptr),
 			mCompositorContextData(nullptr),
+			mWorldSpaceCameraPosition(0.0f, 0.0f, 0.0f),
 			mRenderTargetWidth(1),
 			mRenderTargetHeight(1),
 			mNearZ(0.0f),
@@ -227,9 +234,10 @@ namespace RendererRuntime
 		TextureResourceId mSsaoNoiseTexture4x4ResourceId;
 
 		// Pass
-		IRendererRuntime*			 mRendererRuntime;	///< Memory address received via "RendererRuntime::MaterialBlueprintResourceListener::beginFillPass()", can be a null pointer outside the correct scope, don't destroy the memory
-		PassBufferManager::PassData* mPassData;			///< Memory address received via "RendererRuntime::MaterialBlueprintResourceListener::beginFillPass()", can be a null pointer outside the correct scope, don't destroy the memory
+		IRendererRuntime*			 mRendererRuntime;			///< Memory address received via "RendererRuntime::MaterialBlueprintResourceListener::beginFillPass()", can be a null pointer outside the correct scope, don't destroy the memory
+		PassBufferManager::PassData* mPassData;					///< Memory address received via "RendererRuntime::MaterialBlueprintResourceListener::beginFillPass()", can be a null pointer outside the correct scope, don't destroy the memory
 		const CompositorContextData* mCompositorContextData;
+		glm::vec3					 mWorldSpaceCameraPosition;	///< Cached world space camera position since often accessed due to camera relative rendering
 		uint32_t					 mRenderTargetWidth;
 		uint32_t					 mRenderTargetHeight;
 		float						 mNearZ;

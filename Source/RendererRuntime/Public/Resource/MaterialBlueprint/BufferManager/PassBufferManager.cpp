@@ -47,11 +47,11 @@ namespace RendererRuntime
 		mMaterialBlueprintResourceManager(rendererRuntime.getMaterialBlueprintResourceManager()),
 		mPassData
 		{
-			{ Math::MAT4_IDENTITY, Math::MAT4_IDENTITY },	// worldSpaceToClipSpaceMatrixReversedZ (glm::mat4)
-			{ Math::MAT4_IDENTITY, Math::MAT4_IDENTITY },	// previousWorldSpaceToClipSpaceMatrixReversedZ (glm::mat4)
-			{ Math::MAT4_IDENTITY, Math::MAT4_IDENTITY },	// worldSpaceToViewSpaceMatrix (glm::mat4)
-			{ Math::QUAT_IDENTITY, Math::QUAT_IDENTITY },	// worldSpaceToViewSpaceQuaternion (glm::quat)
-			{ Math::MAT4_IDENTITY, Math::MAT4_IDENTITY },	// previousWorldSpaceToViewSpaceMatrix (glm::mat4)
+			{ Math::MAT4_IDENTITY, Math::MAT4_IDENTITY },	// cameraRelativeWorldSpaceToClipSpaceMatrixReversedZ (glm::mat4)
+			{ Math::MAT4_IDENTITY, Math::MAT4_IDENTITY },	// previousCameraRelativeWorldSpaceToClipSpaceMatrixReversedZ (glm::mat4)
+			{ Math::MAT4_IDENTITY, Math::MAT4_IDENTITY },	// cameraRelativeWorldSpaceToViewSpaceMatrix (glm::mat4)
+			{ Math::QUAT_IDENTITY, Math::QUAT_IDENTITY },	// cameraRelativeWorldSpaceToViewSpaceQuaternion (glm::quat)
+			{ Math::MAT4_IDENTITY, Math::MAT4_IDENTITY },	// previousCameraRelativeWorldSpaceToViewSpaceMatrix (glm::mat4)
 			{ Math::MAT4_IDENTITY, Math::MAT4_IDENTITY },	// viewSpaceToClipSpaceMatrix (glm::mat4)
 			{ Math::MAT4_IDENTITY, Math::MAT4_IDENTITY }	// viewSpaceToClipSpaceMatrixReversedZ (glm::mat4)
 		},

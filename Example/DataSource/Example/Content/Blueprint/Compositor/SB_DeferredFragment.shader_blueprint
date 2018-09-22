@@ -48,6 +48,7 @@ struct PassDataStruct
 	float4   ShadowCascadeScales[4];
 	float4   ShadowCascadeSplits;
 	float4	 WetSurfaces;	// x=wet level, y=hole/cracks flood level, z=puddle flood level, w=rain intensity
+	float3	 UnmodifiedWorldSpaceCameraPosition;
 	float3   ViewSpaceSunlightDirection;
 	float3   AmbientColor;
 	float    AtmosphereFogDensity;
@@ -56,7 +57,6 @@ struct PassDataStruct
 	float3   SunlightColor;
 	float    GlobalTimeInSeconds;
 	float3   DiffuseFogColor;
-	float3   CameraWorldSpacePosition;
 	float3   LightClustersScale;
 	float3   LightClustersBias;
 	float2   ViewportSize;
@@ -146,8 +146,9 @@ float3 CalculateColorByGBuffer(float3 viewRay, float4 gbuffer0Value, float4 gbuf
 	@property(UseWetSurfaces)
 		if (0.0f != PassData.WetSurfaces.x)
 		{
+			// Handle camera relative rendering
 			float heightMapValue = 0.0f;	// TODO(co) Transport this information?
-			DoWaterProcess(worldSpacePosition, shadowVisibility, heightMapValue, multipleOctavesNoise3D(worldSpacePosition), PassData.WetSurfaces.x, PassData.WetSurfaces.y, PassData.WetSurfaces.z, PassData.WetSurfaces.w, albedo, roughness, metallic, viewSpaceNormal);
+			DoWaterProcess(worldSpacePosition + PassData.UnmodifiedWorldSpaceCameraPosition, shadowVisibility, heightMapValue, multipleOctavesNoise3D(worldSpacePosition), PassData.WetSurfaces.x, PassData.WetSurfaces.y, PassData.WetSurfaces.z, PassData.WetSurfaces.w, albedo, roughness, metallic, viewSpaceNormal);
 		}
 	@end
 

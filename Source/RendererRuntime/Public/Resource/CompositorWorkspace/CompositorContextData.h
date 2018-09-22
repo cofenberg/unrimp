@@ -25,6 +25,21 @@
 
 
 //[-------------------------------------------------------]
+//[ Includes                                              ]
+//[-------------------------------------------------------]
+#include "RendererRuntime/Public/Core/Platform/PlatformTypes.h"
+
+// Disable warnings in external headers, we can't fix them
+PRAGMA_WARNING_PUSH
+	PRAGMA_WARNING_DISABLE_MSVC(4127)	// warning C4127: conditional expression is constant
+	PRAGMA_WARNING_DISABLE_MSVC(4201)	// warning C4201: nonstandard extension used: nameless struct/union
+	PRAGMA_WARNING_DISABLE_MSVC(4464)	// warning C4464: relative include path contains '..'
+	PRAGMA_WARNING_DISABLE_MSVC(4324)	// warning C4324: '<x>': structure was padded due to alignment specifier
+	#include <glm/glm.hpp>
+PRAGMA_WARNING_POP
+
+
+//[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
 namespace RendererRuntime
@@ -71,23 +86,14 @@ namespace RendererRuntime
 			mSinglePassStereoInstancing(false),
 			mLightSceneItem(nullptr),
 			mCompositorInstancePassShadowMap(nullptr),
+			mWorldSpaceCameraPosition(0.0f, 0.0f, 0.0f),
 			mCurrentlyBoundMaterialBlueprintResource(nullptr),
 			mGlobalComputeSize{0, 0, 0}
 		{
 			// Nothing here
 		}
 
-		inline explicit CompositorContextData(const CompositorWorkspaceInstance* compositorWorkspaceInstance, const CameraSceneItem* cameraSceneItem, bool singlePassStereoInstancing = false, const LightSceneItem* lightSceneItem = nullptr, const CompositorInstancePassShadowMap* compositorInstancePassShadowMap = nullptr) :
-			mCompositorWorkspaceInstance(compositorWorkspaceInstance),
-			mCameraSceneItem(cameraSceneItem),
-			mSinglePassStereoInstancing(singlePassStereoInstancing),
-			mLightSceneItem(lightSceneItem),
-			mCompositorInstancePassShadowMap(compositorInstancePassShadowMap),
-			mCurrentlyBoundMaterialBlueprintResource(nullptr),
-			mGlobalComputeSize{0, 0, 0}
-		{
-			// Nothing here
-		}
+		CompositorContextData(const CompositorWorkspaceInstance* compositorWorkspaceInstance, const CameraSceneItem* cameraSceneItem, bool singlePassStereoInstancing = false, const LightSceneItem* lightSceneItem = nullptr, const CompositorInstancePassShadowMap* compositorInstancePassShadowMap = nullptr);
 
 		inline ~CompositorContextData()
 		{
@@ -117,6 +123,11 @@ namespace RendererRuntime
 		inline const CompositorInstancePassShadowMap* getCompositorInstancePassShadowMap() const
 		{
 			return mCompositorInstancePassShadowMap;
+		}
+
+		inline const glm::vec3& getWorldSpaceCameraPosition() const
+		{
+			return mWorldSpaceCameraPosition;
 		}
 
 		inline void resetCurrentlyBoundMaterialBlueprintResource() const
@@ -152,6 +163,8 @@ namespace RendererRuntime
 		bool								   mSinglePassStereoInstancing;
 		const LightSceneItem*				   mLightSceneItem;
 		const CompositorInstancePassShadowMap* mCompositorInstancePassShadowMap;
+		// Cached data
+		glm::vec3 mWorldSpaceCameraPosition;	///< Cached world space camera position since often accessed due to camera relative rendering
 		// Cached "RendererRuntime::RenderQueue" data to reduce the number of state changes across different render queue instances (beneficial for complex compositors with e.g. multiple Gaussian blur passes)
 		mutable MaterialBlueprintResource* mCurrentlyBoundMaterialBlueprintResource;
 		mutable uint32_t				   mGlobalComputeSize[3];

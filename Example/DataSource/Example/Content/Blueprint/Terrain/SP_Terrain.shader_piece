@@ -41,7 +41,7 @@
 		float3	 WorldSize;
 		float3	 AmbientColor;
 		float3	 SunlightColor;
-		float3   CameraWorldSpacePosition;
+		float3   UnmodifiedWorldSpaceCameraPosition;
 		float3	 LightClustersScale;
 		float3	 LightClustersBias;
 		float2   ViewportSize;

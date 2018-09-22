@@ -125,7 +125,8 @@ Renderer Runtime (e.g. "The Game")
 	- Asyncrounous pipeline state compilation, including a fallback system to reduce visual artefacts in case of pipeline cache misses
 - Compositor: Setup your overal rendering flow without a single line of C++ source code
 	- The compositor is using the material blueprint system, meaning compact C++ implementation while offering mighty possibilities
-	- Using [Reversed-Z](https://developer.nvidia.com/content/depth-precision-visualized) for improved depth buffer precision
+	- Using [Reversed-Z](https://developer.nvidia.com/content/depth-precision-visualized) for improved depth buffer precision to reduce z-fighting
+	- Using camera relative rendering for rendering large scale scenes without jittering/wobbling
 	- Blurred stabilized cascaded (CSM) exponential variance (EVSM) shadow mapping basing on ["A Sampling of Shadow Techniques"](https://mynameismjp.wordpress.com/2013/09/10/shadow-maps/) by Matt Pettineo
 	- Resolution scale support
 - Scene as most top-level concept: Fancy-feature set kept simple because more complex applications / games usually add an entity-component-system

@@ -45,9 +45,10 @@ struct PassDataStruct
 {
 	float4x4 WorldSpaceToViewSpaceMatrix[2];
 	float4x4 ViewSpaceToClipSpaceMatrix[2];
+	float3   UnmodifiedWorldSpaceCameraPosition;
+	float    GlobalTimeInSeconds;
 	float2   InverseViewportSize;
 	float2	 ProjectionParameters;
-	float    GlobalTimeInSeconds;
 };
 UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
 	PassDataStruct PassData;
@@ -83,8 +84,11 @@ MAIN_BEGIN_VERTEX
 	// Scale the billboard
 	viewSpacePosition *= MAIN_INPUT(PositionSize).w;
 
+	// Get object space to world space data
+	float3 position = -PassData.UnmodifiedWorldSpaceCameraPosition;	// Camera relative rendering, TODO(co) This is a placeholder until we pass through the real node world space position
+
 	// Transform the billboard to clip-space
-	MAIN_OUTPUT_POSITION = MATRIX_MUL(PassData.WorldSpaceToViewSpaceMatrix[MAIN_INPUT_STEREO_EYE_INDEX], float4(MAIN_INPUT(PositionSize).xyz, 1.0f));
+	MAIN_OUTPUT_POSITION = MATRIX_MUL(PassData.WorldSpaceToViewSpaceMatrix[MAIN_INPUT_STEREO_EYE_INDEX], float4(MAIN_INPUT(PositionSize).xyz + position, 1.0f));
 	MAIN_OUTPUT_POSITION.xyz += viewSpacePosition;
 	MAIN_OUTPUT_POSITION = MATRIX_MUL(PassData.ViewSpaceToClipSpaceMatrix[MAIN_INPUT_STEREO_EYE_INDEX], MAIN_OUTPUT_POSITION);
 

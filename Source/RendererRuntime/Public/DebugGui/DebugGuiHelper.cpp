@@ -203,13 +203,15 @@ namespace RendererRuntime
 		}
 		{ // Let ImGuizmo do its thing
 			glm::mat4 matrix;
+			transform.position -= cameraSceneItem.getWorldSpaceCameraPosition();	// Camera relative rendering
 			transform.getAsMatrix(matrix);
 			ImGuizmo::OPERATION operation = static_cast<ImGuizmo::OPERATION>(gizmoSettings.currentGizmoOperation);
 			ImGuizmo::MODE mode = (operation == ImGuizmo::SCALE) ? ImGuizmo::LOCAL : static_cast<ImGuizmo::MODE>(gizmoSettings.currentGizmoMode);
 			const ImGuiIO& imGuiIO = ImGui::GetIO();
 			ImGuizmo::SetRect(0, 0, imGuiIO.DisplaySize.x, imGuiIO.DisplaySize.y);
-			ImGuizmo::Manipulate(glm::value_ptr(cameraSceneItem.getWorldSpaceToViewSpaceMatrix()), glm::value_ptr(cameraSceneItem.getViewSpaceToClipSpaceMatrix(static_cast<float>(imGuiIO.DisplaySize.x) / imGuiIO.DisplaySize.y)), operation, mode, glm::value_ptr(matrix), nullptr, gizmoSettings.useSnap ? &gizmoSettings.snap[0] : nullptr);
+			ImGuizmo::Manipulate(glm::value_ptr(cameraSceneItem.getCameraRelativeWorldSpaceToViewSpaceMatrix()), glm::value_ptr(cameraSceneItem.getViewSpaceToClipSpaceMatrix(static_cast<float>(imGuiIO.DisplaySize.x) / imGuiIO.DisplaySize.y)), operation, mode, glm::value_ptr(matrix), nullptr, gizmoSettings.useSnap ? &gizmoSettings.snap[0] : nullptr);
 			transform = Transform(matrix);
+			transform.position += cameraSceneItem.getWorldSpaceCameraPosition();	// Camera relative rendering
 		}
 	}
 
@@ -221,9 +223,13 @@ namespace RendererRuntime
 		{
 			// Get transform data
 			glm::mat4 objectSpaceToWorldSpace;
-			skeletonMeshSceneItem.getParentSceneNodeSafe().getGlobalTransform().getAsMatrix(objectSpaceToWorldSpace);
+			{
+				Transform transform = skeletonMeshSceneItem.getParentSceneNodeSafe().getGlobalTransform();
+				transform.position -= cameraSceneItem.getWorldSpaceCameraPosition();	// Camera relative rendering
+				transform.getAsMatrix(objectSpaceToWorldSpace);
+			}
 			const ImGuiIO& imGuiIO = ImGui::GetIO();
-			const glm::mat4 objectSpaceToClipSpaceMatrix = cameraSceneItem.getViewSpaceToClipSpaceMatrix(static_cast<float>(imGuiIO.DisplaySize.x) / imGuiIO.DisplaySize.y) * cameraSceneItem.getWorldSpaceToViewSpaceMatrix() * objectSpaceToWorldSpace;
+			const glm::mat4 objectSpaceToClipSpaceMatrix = cameraSceneItem.getViewSpaceToClipSpaceMatrix(static_cast<float>(imGuiIO.DisplaySize.x) / imGuiIO.DisplaySize.y) * cameraSceneItem.getCameraRelativeWorldSpaceToViewSpaceMatrix() * objectSpaceToWorldSpace;
 
 			// Get skeleton data
 			const uint8_t numberOfBones = skeletonResource->getNumberOfBones();
@@ -259,11 +265,12 @@ namespace RendererRuntime
 			static const ImColor GREY_COLOR(0.5f, 0.5f, 0.5f, 1.0f);
 			ImDrawList* imDrawList = ImGui::GetWindowDrawList();
 			const ImGuiIO& imGuiIO = ImGui::GetIO();
-			const glm::mat4 objectSpaceToClipSpaceMatrix = cameraSceneItem.getViewSpaceToClipSpaceMatrix(static_cast<float>(imGuiIO.DisplaySize.x) / imGuiIO.DisplaySize.y) * cameraSceneItem.getWorldSpaceToViewSpaceMatrix();
+			const glm::mat4 objectSpaceToClipSpaceMatrix = cameraSceneItem.getViewSpaceToClipSpaceMatrix(static_cast<float>(imGuiIO.DisplaySize.x) / imGuiIO.DisplaySize.y) * cameraSceneItem.getCameraRelativeWorldSpaceToViewSpaceMatrix();
 
 			// Keep the grid fixed at camera
 			const glm::vec3& cameraPosition = cameraSceneItem.getParentSceneNodeSafe().getTransform().position;
-			const glm::vec3 centerPosition(Math::makeMultipleOf(cameraPosition.x, cellSize), yPosition, Math::makeMultipleOf(cameraPosition.z, cellSize));
+			glm::vec3 centerPosition(Math::makeMultipleOf(cameraPosition.x, cellSize), yPosition, Math::makeMultipleOf(cameraPosition.z, cellSize));
+			centerPosition -= cameraSceneItem.getWorldSpaceCameraPosition();	// Camera relative rendering
 
 			// Lines along z axis
 			for (int32_t z = -NUMBER_OF_LINES_PER_DIRECTION; z <= NUMBER_OF_LINES_PER_DIRECTION; ++z)

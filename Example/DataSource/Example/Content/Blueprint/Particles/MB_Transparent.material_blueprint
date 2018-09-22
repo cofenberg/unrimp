@@ -105,6 +105,18 @@
 							"ValueType": "FLOAT_4_4",
 							"Value": "@VIEW_SPACE_TO_CLIP_SPACE_MATRIX2"
 						},
+						"UnmodifiedWorldSpaceCameraPosition":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_3",
+							"Value": "@UNMODIFIED_WORLD_SPACE_CAMERA_POSITION"
+						},
+						"GlobalTimeInSeconds":
+						{
+							"Usage": "GLOBAL_REFERENCE",
+							"ValueType": "FLOAT",
+							"Value": "@GlobalTimeInSeconds"
+						},
 						"InverseViewportSize":
 						{
 							"Usage": "PASS_REFERENCE",
@@ -116,12 +128,6 @@
 							"Usage": "PASS_REFERENCE",
 							"ValueType": "FLOAT_2",
 							"Value": "@PROJECTION_PARAMETERS"
-						},
-						"GlobalTimeInSeconds":
-						{
-							"Usage": "GLOBAL_REFERENCE",
-							"ValueType": "FLOAT",
-							"Value": "@GlobalTimeInSeconds"
 						}
 					}
 				}

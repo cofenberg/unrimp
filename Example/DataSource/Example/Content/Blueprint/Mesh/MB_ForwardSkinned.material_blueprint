@@ -264,6 +264,12 @@
 							"ValueType": "FLOAT_4",
 							"Value": "@GlobalWetSurfaces"
 						},
+						"UnmodifiedWorldSpaceCameraPosition":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_3",
+							"Value": "@UNMODIFIED_WORLD_SPACE_CAMERA_POSITION"
+						},
 						"ViewSpaceSunlightDirection":
 						{
 							"Usage": "PASS_REFERENCE",
@@ -281,12 +287,6 @@
 							"Usage": "PASS_REFERENCE",
 							"ValueType": "FLOAT_3",
 							"Value": "@SUNLIGHT_COLOR"
-						},
-						"CameraWorldSpacePosition":
-						{
-							"Usage": "PASS_REFERENCE",
-							"ValueType": "FLOAT_3",
-							"Value": "@CAMERA_WORLD_SPACE_POSITION"
 						},
 						"LightClustersScale":
 						{

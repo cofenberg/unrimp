@@ -81,7 +81,7 @@ bool IsInsideFrustum(float3 position, float3 cameraPosition, float3 cameraDirect
 	float3 cameraToPosition = position - cameraPosition;
 	float3 patchToCameraDirection = cameraDirection * dot(cameraToPosition, cameraDirection) - cameraToPosition;
 	float3 patchCenterRealigned = position + normalize(patchToCameraDirection) * min(margin, length(patchToCameraDirection));
-	float4 patchScreenSpaceCenter = MATRIX_MUL(PassData.WorldSpaceToClipSpaceMatrix, float4(patchCenterRealigned, 1.0f));
+	float4 patchScreenSpaceCenter = MATRIX_MUL(PassData.WorldSpaceToClipSpaceMatrix, float4(patchCenterRealigned - PassData.UnmodifiedWorldSpaceCameraPosition, 1.0f));
 	return ((patchScreenSpaceCenter.x / patchScreenSpaceCenter.w > -1.0f) && (patchScreenSpaceCenter.x / patchScreenSpaceCenter.w < 1.0f) &&
 			(patchScreenSpaceCenter.y / patchScreenSpaceCenter.w > -1.0f) && (patchScreenSpaceCenter.y / patchScreenSpaceCenter.w < 1.0f) &&
 			(patchScreenSpaceCenter.w > 0.0f)) || (length(position - cameraPosition) < margin);
@@ -206,7 +206,7 @@ MAIN_BEGIN_TESSELLATION_CONTROL_PATCH(4)
 		// Reject patches which are outside the camera frustum
 		// TODO(co) Optimize: Add world space camera direction vector parameter
 		float3 worldSpaceCameraDirection = MultiplyQuaternionVector(PassData.ViewSpaceToWorldSpaceQuaternion, float3(0.0f, 0.0f, -1.0f));
-		if (IsInsideFrustum(centre, PassData.CameraWorldSpacePosition, worldSpaceCameraDirection, diagonalLength))
+		if (IsInsideFrustum(centre, PassData.UnmodifiedWorldSpaceCameraPosition, worldSpaceCameraDirection, diagonalLength))
 		{
 			// Edges that need adjacency adjustment are identified by the per-instance "MAIN_INPUT_ARRAY(adjacency, 0)"
 			// scalars, in conjunction with a patch ID that puts them on the edge of a tile

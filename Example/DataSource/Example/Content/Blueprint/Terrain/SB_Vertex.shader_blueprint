@@ -89,8 +89,8 @@ void ReconstructPosition(uint vertexId, float3 vertexPosition, out float3 positi
 		float tileSize = 0.125f;
 		float3 SNAP_GRID_SIZE = PassData.WorldSize * tileSize / TERRAIN_PATCHES_PER_TILE_EDGE;
 		float3 snapPosition;
-		snapPosition.x = floor(PassData.CameraWorldSpacePosition.x / SNAP_GRID_SIZE.x) * SNAP_GRID_SIZE.x;
-		snapPosition.z = floor(PassData.CameraWorldSpacePosition.z / SNAP_GRID_SIZE.z) * SNAP_GRID_SIZE.z;
+		snapPosition.x = floor(PassData.UnmodifiedWorldSpaceCameraPosition.x / SNAP_GRID_SIZE.x) * SNAP_GRID_SIZE.x;
+		snapPosition.z = floor(PassData.UnmodifiedWorldSpaceCameraPosition.z / SNAP_GRID_SIZE.z) * SNAP_GRID_SIZE.z;
 		position.xz += snapPosition.xz;
 	}
 }

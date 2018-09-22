@@ -105,6 +105,18 @@
 							"ValueType": "FLOAT_4",
 							"Value": "@GlobalWindDirectionStrength"
 						},
+						"UnmodifiedWorldSpaceCameraPosition":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_3",
+							"Value": "@UNMODIFIED_WORLD_SPACE_CAMERA_POSITION"
+						},
+						"GrassWindHeightFactor":
+						{
+							"Usage": "STATIC",
+							"ValueType": "FLOAT",
+							"Value": "10.0"
+						},
 						"ViewportSize":
 						{
 							"Usage": "PASS_REFERENCE",
@@ -134,12 +146,6 @@
 							"Usage": "GLOBAL_REFERENCE",
 							"ValueType": "FLOAT",
 							"Value": "@PreviousGlobalTimeInSeconds"
-						},
-						"GrassWindHeightFactor":
-						{
-							"Usage": "STATIC",
-							"ValueType": "FLOAT",
-							"Value": "10.0"
 						}
 					}
 				}
