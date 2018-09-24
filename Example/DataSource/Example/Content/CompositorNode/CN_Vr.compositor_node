@@ -282,13 +282,17 @@
 				"Compute":
 				{
 					"Name": "Calculate luminance",
-					"Description": "Calculate luminance. The mipmaps are generated automatically after the next render target change.",
 					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_CalculateLuminance.asset",
 					"SetMaterialProperties":
 					{
 						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget1",
 						"OutputTexture2D": "Example/Texture/Dynamic/LuminanceRenderTarget"
 					}
+				},
+				"GenerateMipmaps":
+				{
+					"Name": "Generate luminance mipmap chain",
+					"Texture": "Example/Texture/Dynamic/LuminanceRenderTarget"
 				},
 				"Copy":
 				{

@@ -3393,6 +3393,7 @@ namespace Direct3D12Renderer
 		//[-------------------------------------------------------]
 		void resolveMultisampleFramebuffer(Renderer::IRenderTarget& destinationRenderTarget, Renderer::IFramebuffer& sourceMultisampleFramebuffer);
 		void copyResource(Renderer::IResource& destinationResource, Renderer::IResource& sourceResource);
+		void generateMipmaps(Renderer::IResource& resource);
 		//[-------------------------------------------------------]
 		//[ Debug                                                 ]
 		//[-------------------------------------------------------]
@@ -10261,6 +10262,12 @@ namespace
 				static_cast<Direct3D12Renderer::Direct3D12Renderer&>(renderer).copyResource(*realData->destinationResource, *realData->sourceResource);
 			}
 
+			void GenerateMipmaps(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::GenerateMipmaps* realData = static_cast<const Renderer::Command::GenerateMipmaps*>(data);
+				static_cast<Direct3D12Renderer::Direct3D12Renderer&>(renderer).generateMipmaps(*realData->resource);
+			}
+
 			//[-------------------------------------------------------]
 			//[ Debug                                                 ]
 			//[-------------------------------------------------------]
@@ -10329,6 +10336,7 @@ namespace
 			&BackendDispatch::SetTextureMinimumMaximumMipmapIndex,
 			&BackendDispatch::ResolveMultisampleFramebuffer,
 			&BackendDispatch::CopyResource,
+			&BackendDispatch::GenerateMipmaps,
 			// Debug
 			&BackendDispatch::SetDebugMarker,
 			&BackendDispatch::BeginDebugEvent,
@@ -11247,6 +11255,11 @@ namespace Direct3D12Renderer
 	}
 
 	void Direct3D12Renderer::copyResource(Renderer::IResource&, Renderer::IResource&)
+	{
+		// TODO(co) Implement me
+	}
+
+	void Direct3D12Renderer::generateMipmaps(Renderer::IResource&)
 	{
 		// TODO(co) Implement me
 	}

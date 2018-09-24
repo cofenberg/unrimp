@@ -808,6 +808,7 @@ namespace OpenGLES3Renderer
 		//[-------------------------------------------------------]
 		void resolveMultisampleFramebuffer(Renderer::IRenderTarget& destinationRenderTarget, Renderer::IFramebuffer& sourceMultisampleFramebuffer);
 		void copyResource(Renderer::IResource& destinationResource, Renderer::IResource& sourceResource);
+		void generateMipmaps(Renderer::IResource& resource);
 		//[-------------------------------------------------------]
 		//[ Debug                                                 ]
 		//[-------------------------------------------------------]
@@ -4897,8 +4898,7 @@ namespace OpenGLES3Renderer
 		*/
 		Texture1D(OpenGLES3Renderer& openGLES3Renderer, uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags) :
 			ITexture1D(openGLES3Renderer, width),
-			mOpenGLES3Texture(0),
-			mGenerateMipmaps(false)
+			mOpenGLES3Texture(0)
 		{
 			// OpenGL ES 3 has no 1D textures, just use a 2D texture with a height of one
 
@@ -4925,7 +4925,6 @@ namespace OpenGLES3Renderer
 			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
 			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width) : 1;
-			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET));
 
 			// Create the OpenGL ES 3 texture instance
 			glGenTextures(1, &mOpenGLES3Texture);
@@ -5029,18 +5028,6 @@ namespace OpenGLES3Renderer
 			return mOpenGLES3Texture;
 		}
 
-		/**
-		*  @brief
-		*    Return whether or not mipmaps should be generated automatically
-		*
-		*  @return
-		*    "true" if mipmaps should be generated automatically, else "false"
-		*/
-		inline bool getGenerateMipmaps() const
-		{
-			return mGenerateMipmaps;
-		}
-
 
 	//[-------------------------------------------------------]
 	//[ Public virtual Renderer::IResource methods            ]
@@ -5086,7 +5073,6 @@ namespace OpenGLES3Renderer
 	//[-------------------------------------------------------]
 	private:
 		GLuint mOpenGLES3Texture;	///< OpenGL ES 3 texture, can be zero if no resource is allocated
-		bool   mGenerateMipmaps;
 
 
 	};
@@ -5128,8 +5114,7 @@ namespace OpenGLES3Renderer
 		*/
 		Texture2D(OpenGLES3Renderer& openGLES3Renderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags) :
 			ITexture2D(openGLES3Renderer, width, height),
-			mOpenGLES3Texture(0),
-			mGenerateMipmaps(false)
+			mOpenGLES3Texture(0)
 		{
 			// Sanity checks
 			RENDERER_ASSERT(openGLES3Renderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL ES 3 texture parameters")
@@ -5155,7 +5140,6 @@ namespace OpenGLES3Renderer
 			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height) : 1;
 			const bool isDepthFormat = Renderer::TextureFormat::isDepth(textureFormat);
-			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET) && !isDepthFormat);
 
 			// Create the OpenGL ES 3 texture instance
 			glGenTextures(1, &mOpenGLES3Texture);
@@ -5263,18 +5247,6 @@ namespace OpenGLES3Renderer
 
 		/**
 		*  @brief
-		*    Return whether or not mipmaps should be generated automatically
-		*
-		*  @return
-		*    "true" if mipmaps should be generated automatically, else "false"
-		*/
-		inline bool getGenerateMipmaps() const
-		{
-			return mGenerateMipmaps;
-		}
-
-		/**
-		*  @brief
 		*    Set minimum maximum mipmap index
 		*
 		*  @param[in] minimumMipmapIndex
@@ -5354,7 +5326,6 @@ namespace OpenGLES3Renderer
 	//[-------------------------------------------------------]
 	private:
 		GLuint mOpenGLES3Texture;	///< OpenGL ES 3 texture, can be zero if no resource is allocated
-		bool   mGenerateMipmaps;
 
 
 	};
@@ -5556,8 +5527,7 @@ namespace OpenGLES3Renderer
 		inline Texture3D(OpenGLES3Renderer& openGLES3Renderer, uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags) :
 			ITexture3D(openGLES3Renderer, width, height, depth),
 			mTextureFormat(textureFormat),
-			mOpenGLES3Texture(0),
-			mGenerateMipmaps(false)
+			mOpenGLES3Texture(0)
 		{
 			// Sanity checks
 			RENDERER_ASSERT(openGLES3Renderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL ES 3 texture parameters")
@@ -5582,7 +5552,6 @@ namespace OpenGLES3Renderer
 			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
 			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height, depth) : 1;
-			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET));
 
 			// Create the OpenGL ES 3 texture instance
 			glGenTextures(1, &mOpenGLES3Texture);
@@ -5700,18 +5669,6 @@ namespace OpenGLES3Renderer
 			return mOpenGLES3Texture;
 		}
 
-		/**
-		*  @brief
-		*    Return whether or not mipmaps should be generated automatically
-		*
-		*  @return
-		*    "true" if mipmaps should be generated automatically, else "false"
-		*/
-		inline bool getGenerateMipmaps() const
-		{
-			return mGenerateMipmaps;
-		}
-
 
 	//[-------------------------------------------------------]
 	//[ Public virtual Renderer::IResource methods            ]
@@ -5758,7 +5715,6 @@ namespace OpenGLES3Renderer
 	private:
 		Renderer::TextureFormat::Enum mTextureFormat;
 		GLuint						  mOpenGLES3Texture;	///< OpenGL ES 3 texture, can be zero if no resource is allocated
-		bool						  mGenerateMipmaps;
 
 
 	};
@@ -5800,8 +5756,7 @@ namespace OpenGLES3Renderer
 		*/
 		TextureCube(OpenGLES3Renderer& openGLES3Renderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags) :
 			ITextureCube(openGLES3Renderer, width, height),
-			mOpenGLES3Texture(0),
-			mGenerateMipmaps(false)
+			mOpenGLES3Texture(0)
 		{
 			// Sanity checks
 			RENDERER_ASSERT(openGLES3Renderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL ES 3 texture parameters")
@@ -5826,7 +5781,6 @@ namespace OpenGLES3Renderer
 			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
 			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height) : 1;
-			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET));
 
 			// Create the OpenGL ES 3 texture instance
 			glGenTextures(1, &mOpenGLES3Texture);
@@ -5966,18 +5920,6 @@ namespace OpenGLES3Renderer
 			return mOpenGLES3Texture;
 		}
 
-		/**
-		*  @brief
-		*    Return whether or not mipmaps should be generated automatically
-		*
-		*  @return
-		*    "true" if mipmaps should be generated automatically, else "false"
-		*/
-		inline bool getGenerateMipmaps() const
-		{
-			return mGenerateMipmaps;
-		}
-
 
 	//[-------------------------------------------------------]
 	//[ Public virtual Renderer::IResource methods            ]
@@ -6023,7 +5965,6 @@ namespace OpenGLES3Renderer
 	//[-------------------------------------------------------]
 	private:
 		GLuint mOpenGLES3Texture;	///< OpenGL ES 3 texture, can be zero if no resource is allocated
-		bool   mGenerateMipmaps;
 
 
 	};
@@ -7060,8 +7001,7 @@ namespace OpenGLES3Renderer
 			mColorTextures(nullptr),	// Set below
 			mDepthStencilTexture(nullptr),
 			mWidth(1),
-			mHeight(1),
-			mGenerateMipmaps(false)
+			mHeight(1)
 		{
 			// Unlike the "GL_ARB_framebuffer_object"-extension of OpenGL, in OpenGL ES 3 all
 			// textures attached to the framebuffer must have the same width and height
@@ -7126,12 +7066,6 @@ namespace OpenGLES3Renderer
 
 							// Update the framebuffer width and height if required
 							::detail::updateWidthHeight(colorFramebufferAttachments->mipmapIndex, texture2D->getWidth(), texture2D->getHeight(), mWidth, mHeight);
-
-							// Generate mipmaps?
-							if (texture2D->getGenerateMipmaps())
-							{
-								mGenerateMipmaps = true;
-							}
 							break;
 						}
 
@@ -7201,12 +7135,6 @@ namespace OpenGLES3Renderer
 
 						// Update the framebuffer width and height if required
 						::detail::updateWidthHeight(depthStencilFramebufferAttachment->mipmapIndex, texture2D->getWidth(), texture2D->getHeight(), mWidth, mHeight);
-
-						// Generate mipmaps?
-						if (texture2D->getGenerateMipmaps())
-						{
-							mGenerateMipmaps = true;
-						}
 						break;
 					}
 
@@ -7378,58 +7306,6 @@ namespace OpenGLES3Renderer
 			return mNumberOfColorTextures;
 		}
 
-		/**
-		*  @brief
-		*    Return whether or not mipmaps should be generated automatically
-		*
-		*  @return
-		*    "true" if mipmaps should be generated automatically, else "false"
-		*/
-		inline bool getGenerateMipmaps() const
-		{
-			return mGenerateMipmaps;
-		}
-
-		/**
-		*  @brief
-		*    Generate mipmaps
-		*/
-		void generateMipmaps() const
-		{
-			// Sanity check
-			RENDERER_ASSERT(getRenderer().getContext(), mGenerateMipmaps, "OpenGL ES 3 framebuffer mipmap generation is disabled")
-
-			// TODO(co) Complete, currently only 2D textures are supported
-			Renderer::ITexture** colorTexturesEnd = mColorTextures + mNumberOfColorTextures;
-			for (Renderer::ITexture** colorTexture = mColorTextures; colorTexture < colorTexturesEnd; ++colorTexture)
-			{
-				// Valid entry?
-				if ((*colorTexture)->getResourceType() == Renderer::ResourceType::TEXTURE_2D)
-				{
-					Texture2D* texture2D = static_cast<Texture2D*>(*colorTexture);
-					if (texture2D->getGenerateMipmaps())
-					{
-						#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
-							// Backup the currently bound OpenGL ES 3 texture
-							// TODO(co) It's possible to avoid calling this multiple times
-							GLint openGLES3TextureBackup = 0;
-							glGetIntegerv(GL_TEXTURE_BINDING_2D, &openGLES3TextureBackup);
-						#endif
-
-						// Generate mipmaps
-						glActiveTexture(GL_TEXTURE0);
-						glBindTexture(GL_TEXTURE_2D, texture2D->getOpenGLES3Texture());
-						glGenerateMipmap(GL_TEXTURE_2D);
-
-						#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
-							// Be polite and restore the previous bound OpenGL ES 3 texture
-							glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(openGLES3TextureBackup));
-						#endif
-					}
-				}
-			}
-		}
-
 
 	//[-------------------------------------------------------]
 	//[ Public virtual Renderer::IResource methods            ]
@@ -7493,7 +7369,6 @@ namespace OpenGLES3Renderer
 		Renderer::ITexture*  mDepthStencilTexture;		///< The depth stencil render target texture (we keep a reference to it), can be a null pointer
 		uint32_t			 mWidth;					///< The framebuffer width
 		uint32_t			 mHeight;					///< The framebuffer height
-		bool				 mGenerateMipmaps;			///< "true" if mipmaps should be generated automatically, else "false"
 
 
 	};
@@ -8717,6 +8592,12 @@ namespace
 				static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).copyResource(*realData->destinationResource, *realData->sourceResource);
 			}
 
+			void GenerateMipmaps(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::GenerateMipmaps* realData = static_cast<const Renderer::Command::GenerateMipmaps*>(data);
+				static_cast<OpenGLES3Renderer::OpenGLES3Renderer&>(renderer).generateMipmaps(*realData->resource);
+			}
+
 			//[-------------------------------------------------------]
 			//[ Debug                                                 ]
 			//[-------------------------------------------------------]
@@ -8785,6 +8666,7 @@ namespace
 			&BackendDispatch::SetTextureMinimumMaximumMipmapIndex,
 			&BackendDispatch::ResolveMultisampleFramebuffer,
 			&BackendDispatch::CopyResource,
+			&BackendDispatch::GenerateMipmaps,
 			// Debug
 			&BackendDispatch::SetDebugMarker,
 			&BackendDispatch::BeginDebugEvent,
@@ -9307,7 +9189,6 @@ namespace OpenGLES3Renderer
 				OPENGLES3RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *renderTarget)
 
 				// Release the render target reference, in case we have one
-				Framebuffer* framebufferToGenerateMipmapsFor = nullptr;
 				if (nullptr != mRenderTarget)
 				{
 					// Unbind OpenGL ES 3 framebuffer?
@@ -9317,16 +9198,8 @@ namespace OpenGLES3Renderer
 						glBindFramebuffer(GL_FRAMEBUFFER, 0);
 					}
 
-					// Generate mipmaps?
-					if (Renderer::ResourceType::FRAMEBUFFER == mRenderTarget->getResourceType() && static_cast<Framebuffer*>(mRenderTarget)->getGenerateMipmaps())
-					{
-						framebufferToGenerateMipmapsFor = static_cast<Framebuffer*>(mRenderTarget);
-					}
-					else
-					{
-						// Release
-						mRenderTarget->releaseReference();
-					}
+					// Release
+					mRenderTarget->releaseReference();
 				}
 
 				// Set new render target and add a reference to it
@@ -9398,13 +9271,6 @@ namespace OpenGLES3Renderer
 					default:
 						// Not handled in here
 						break;
-				}
-
-				// Generate mipmaps
-				if (nullptr != framebufferToGenerateMipmapsFor)
-				{
-					framebufferToGenerateMipmapsFor->generateMipmaps();
-					framebufferToGenerateMipmapsFor->releaseReference();
 				}
 
 				// Setup clip control
@@ -9733,6 +9599,32 @@ namespace OpenGLES3Renderer
 				// Not handled in here
 				break;
 		}
+	}
+
+	void OpenGLES3Renderer::generateMipmaps(Renderer::IResource& resource)
+	{
+		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		OPENGLES3RENDERER_RENDERERMATCHCHECK_ASSERT(*this, resource)
+
+		RENDERER_ASSERT(mContext, resource.getResourceType() == Renderer::ResourceType::TEXTURE_2D, "TODO(co) Mipmaps can only be generated for OpenGL ES 3 2D texture resources")
+		Texture2D& texture2D = static_cast<Texture2D&>(resource);
+
+		#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
+			// Backup the currently bound OpenGL ES 3 texture
+			// TODO(co) It's possible to avoid calling this multiple times
+			GLint openGLES3TextureBackup = 0;
+			glGetIntegerv(GL_TEXTURE_BINDING_2D, &openGLES3TextureBackup);
+		#endif
+
+		// Generate mipmaps
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture2D.getOpenGLES3Texture());
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
+			// Be polite and restore the previous bound OpenGL ES 3 texture
+			glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(openGLES3TextureBackup));
+		#endif
 	}
 
 

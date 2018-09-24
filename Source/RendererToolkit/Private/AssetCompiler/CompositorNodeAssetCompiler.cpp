@@ -470,8 +470,21 @@ namespace
 											RendererRuntime::v1CompositorNode::PassGenerateMipmaps passGenerateMipmaps;
 											strcpy(passGenerateMipmaps.name, "Generate mipmaps compositor pass");
 											readPass(rapidJsonValuePass, passGenerateMipmaps);
-											RendererToolkit::JsonHelper::mandatoryStringIdProperty(rapidJsonValuePass, "DepthTexture", passGenerateMipmaps.depthTextureAssetId);
-											passGenerateMipmaps.materialBlueprintAssetId = RendererToolkit::JsonHelper::getCompiledAssetId(input, rapidJsonValuePass, "MaterialBlueprint");
+											RendererToolkit::JsonHelper::mandatoryStringIdProperty(rapidJsonValuePass, "Texture", passGenerateMipmaps.textureAssetId);
+											RendererToolkit::JsonHelper::optionalCompiledAssetId(input, rapidJsonValuePass, "MaterialBlueprint", passGenerateMipmaps.materialBlueprintAssetId);
+											RendererToolkit::JsonHelper::optionalStringIdProperty(rapidJsonValuePass, "TextureMaterialBlueprintProperty", passGenerateMipmaps.textureMaterialBlueprintProperty);
+
+											// Sanity checks
+											if (RendererRuntime::isValid(passGenerateMipmaps.materialBlueprintAssetId) && RendererRuntime::isInvalid(passGenerateMipmaps.textureMaterialBlueprintProperty))
+											{
+												throw std::runtime_error("Generate mipmaps compositor pass has a set material blueprint, but the texture material blueprint property is undefined. Either you use a custom mipmap generation material blueprint or you don't use one.");
+											}
+											if (RendererRuntime::isInvalid(passGenerateMipmaps.materialBlueprintAssetId) && RendererRuntime::isValid(passGenerateMipmaps.textureMaterialBlueprintProperty))
+											{
+												throw std::runtime_error("Generate mipmaps compositor pass has a set texture material blueprint property, but the material blueprint is undefined. Either you use a custom mipmap generation material blueprint or you don't use one.");
+											}
+
+											// Write down
 											file.write(&passGenerateMipmaps, sizeof(RendererRuntime::v1CompositorNode::PassGenerateMipmaps));
 											break;
 										}

@@ -40,7 +40,8 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Global definitions                                    ]
 	//[-------------------------------------------------------]
-	typedef StringId AssetId;	///< Asset identifier, internally just a POD "uint32_t", string ID scheme is "<project name>/<asset type>/<asset category>/<asset name>"
+	typedef StringId AssetId;				///< Asset identifier, internally just a POD "uint32_t", string ID scheme is "<project name>/<asset type>/<asset category>/<asset name>"
+	typedef StringId MaterialPropertyId;	///< Material property identifier, internally just a POD "uint32_t", result of hashing the property name
 
 
 	//[-------------------------------------------------------]
@@ -67,14 +68,19 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline AssetId getDepthTextureAssetId() const
+		inline AssetId getTextureAssetId() const
 		{
-			return mDepthTextureAssetId;
+			return mTextureAssetId;
 		}
 
 		inline AssetId getMaterialBlueprintAssetId() const
 		{
 			return mMaterialBlueprintAssetId;
+		}
+
+		inline MaterialPropertyId getTextureMaterialBlueprintProperty() const
+		{
+			return mTextureMaterialBlueprintProperty;
 		}
 
 
@@ -113,8 +119,9 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		AssetId mDepthTextureAssetId;
-		AssetId mMaterialBlueprintAssetId;
+		AssetId			   mTextureAssetId;
+		AssetId			   mMaterialBlueprintAssetId;
+		MaterialPropertyId mTextureMaterialBlueprintProperty;
 
 
 	};

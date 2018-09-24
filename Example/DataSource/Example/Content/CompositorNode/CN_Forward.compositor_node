@@ -361,8 +361,9 @@
 				{
 					"Name": "Generate HZB mipmap chain",
 					"Description": "Generate the mipmap chain of the hierarchical depth buffer. Is using a graphics material blueprint instead of compute material blueprint since we're dealing with a depth buffer format which doesn't work that well with unordered access.",
-					"DepthTexture": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
-					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_DepthGenerateMipmap.asset"
+					"Texture": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_DepthGenerateMipmap.asset",
+					"TextureMaterialBlueprintProperty": "DepthMap"
 				}
 			},
 			"ScreenSpaceAmbientOcclusionFramebuffer":
@@ -466,13 +467,17 @@
 				"Compute":
 				{
 					"Name": "Calculate luminance",
-					"Description": "Calculate luminance. The mipmaps are generated automatically after the next render target change.",
 					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_CalculateLuminance.asset",
 					"SetMaterialProperties":
 					{
 						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget1",
 						"OutputTexture2D": "Example/Texture/Dynamic/LuminanceRenderTarget"
 					}
+				},
+				"GenerateMipmaps":
+				{
+					"Name": "Generate luminance mipmap chain",
+					"Texture": "Example/Texture/Dynamic/LuminanceRenderTarget"
 				},
 				"Copy":
 				{

@@ -199,6 +199,7 @@ namespace RendererRuntime
 					if ((renderTargetTextureSignature.getFlags() & RenderTargetTextureSignature::Flag::GENERATE_MIPMAPS) != 0)
 					{
 						textureFlags |= Renderer::TextureFlag::GENERATE_MIPMAPS;
+						textureFlags |= Renderer::TextureFlag::RENDER_TARGET;	// Needed when generating mipmaps
 					}
 
 					// Create the texture instance, but without providing texture data (we use the texture as render target)

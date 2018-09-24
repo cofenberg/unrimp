@@ -1723,6 +1723,7 @@ namespace VulkanRenderer
 		//[-------------------------------------------------------]
 		void resolveMultisampleFramebuffer(Renderer::IRenderTarget& destinationRenderTarget, Renderer::IFramebuffer& sourceMultisampleFramebuffer);
 		void copyResource(Renderer::IResource& destinationResource, Renderer::IResource& sourceResource);
+		void generateMipmaps(Renderer::IResource& resource);
 		//[-------------------------------------------------------]
 		//[ Debug                                                 ]
 		//[-------------------------------------------------------]
@@ -10114,6 +10115,12 @@ namespace
 				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).copyResource(*realData->destinationResource, *realData->sourceResource);
 			}
 
+			void GenerateMipmaps(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::GenerateMipmaps* realData = static_cast<const Renderer::Command::GenerateMipmaps*>(data);
+				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).generateMipmaps(*realData->resource);
+			}
+
 			//[-------------------------------------------------------]
 			//[ Debug                                                 ]
 			//[-------------------------------------------------------]
@@ -10206,6 +10213,7 @@ namespace
 			&BackendDispatch::SetTextureMinimumMaximumMipmapIndex,
 			&BackendDispatch::ResolveMultisampleFramebuffer,
 			&BackendDispatch::CopyResource,
+			&BackendDispatch::GenerateMipmaps,
 			// Debug
 			&BackendDispatch::SetDebugMarker,
 			&BackendDispatch::BeginDebugEvent,
@@ -10780,6 +10788,11 @@ namespace VulkanRenderer
 	void VulkanRenderer::copyResource(Renderer::IResource&, Renderer::IResource&)
 	{
 		// TODO(co) Implement me
+	}
+
+	void VulkanRenderer::generateMipmaps(Renderer::IResource&)
+	{
+		// TODO(co) Implement me: Search for https://github.com/SaschaWillems/Vulkan/tree/master/texturemipmapgen inside this cpp file and unify the code to be able to reuse it in here
 	}
 
 

@@ -2206,7 +2206,7 @@ namespace Renderer
 			SHADER_RESOURCE       = 1 << 1,	///< This texture can be used as shader resource (when using Direct3D 11 a shader resource view (SRV) will be generated)
 			RENDER_TARGET         = 1 << 2,	///< This texture can be used as framebuffer object (FBO) attachment render target
 			DATA_CONTAINS_MIPMAPS = 1 << 3,	///< The user provided data containing mipmaps from 0-n down to 1x1 linearly in memory
-			GENERATE_MIPMAPS      = 1 << 4	///< Automatically generate mipmaps (avoid this if you can, will be ignored in case the "DATA_CONTAINS_MIPMAPS"-flag is set), for depth textures the mipmaps can only be allocated but not automatically be generated
+			GENERATE_MIPMAPS      = 1 << 4	///< Allocate mipmap chain, automatically generate mipmaps if static data has been provided (avoid this if you can, will be ignored in case the "DATA_CONTAINS_MIPMAPS"-flag is set), for depth textures the mipmaps can only be allocated but not automatically be generated
 		};
 	};
 
@@ -7990,6 +7990,7 @@ namespace Renderer
 		SetTextureMinimumMaximumMipmapIndex,
 		ResolveMultisampleFramebuffer,
 		CopyResource,
+		GenerateMipmaps,
 		// Debug
 		SetDebugMarker,
 		BeginDebugEvent,
@@ -9027,6 +9028,30 @@ namespace Renderer
 			IResource* sourceResource;
 			// Static data
 			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::CopyResource;
+		};
+
+		/**
+		*  @brief
+		*    Generate resource mipmaps
+		*
+		*  @param[in] resource
+		*    Resource
+		*/
+		struct GenerateMipmaps final
+		{
+			// Static methods
+			static inline void create(CommandBuffer& commandBuffer, IResource& resource)
+			{
+				*commandBuffer.addCommand<GenerateMipmaps>() = GenerateMipmaps(resource);
+			}
+			// Constructor
+			inline GenerateMipmaps(IResource& _resource) :
+				resource(&_resource)
+			{}
+			// Data
+			IResource* resource;
+			// Static data
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::GenerateMipmaps;
 		};
 
 		//[-------------------------------------------------------]

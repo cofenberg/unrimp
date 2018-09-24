@@ -1816,6 +1816,7 @@ namespace Direct3D10Renderer
 		//[-------------------------------------------------------]
 		void resolveMultisampleFramebuffer(Renderer::IRenderTarget& destinationRenderTarget, Renderer::IFramebuffer& sourceMultisampleFramebuffer);
 		void copyResource(Renderer::IResource& destinationResource, Renderer::IResource& sourceResource);
+		void generateMipmaps(Renderer::IResource& resource);
 		//[-------------------------------------------------------]
 		//[ Debug                                                 ]
 		//[-------------------------------------------------------]
@@ -4178,7 +4179,6 @@ namespace Direct3D10Renderer
 		Texture1D(Direct3D10Renderer& direct3D10Renderer, uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Renderer::TextureUsage textureUsage) :
 			ITexture1D(direct3D10Renderer, width),
 			mTextureFormat(textureFormat),
-			mGenerateMipmaps(false),
 			mD3D10Texture1D(nullptr),
 			mD3D10ShaderResourceView(nullptr)
 		{
@@ -4195,7 +4195,6 @@ namespace Direct3D10Renderer
 			RENDERER_ASSERT(direct3D10Renderer.getContext(), Renderer::TextureUsage::IMMUTABLE != textureUsage || !generateMipmaps, "Direct3D 10 immutable texture usage can't be combined with automatic mipmap generation")
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width) : 1;
 			const bool isDepthFormat = Renderer::TextureFormat::isDepth(textureFormat);
-			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET) && !isDepthFormat);
 
 			// Direct3D 10 1D texture description
 			D3D10_TEXTURE1D_DESC d3d10Texture1DDesc;
@@ -4206,7 +4205,7 @@ namespace Direct3D10Renderer
 			d3d10Texture1DDesc.Usage		  = static_cast<D3D10_USAGE>(textureUsage);	// These constants directly map to Direct3D constants, do not change them
 			d3d10Texture1DDesc.BindFlags	  = 0;
 			d3d10Texture1DDesc.CPUAccessFlags = (Renderer::TextureUsage::DYNAMIC == textureUsage) ? D3D10_CPU_ACCESS_WRITE : 0u;
-			d3d10Texture1DDesc.MiscFlags	  = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET)) ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0u;
+			d3d10Texture1DDesc.MiscFlags	  = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET) && !isDepthFormat) ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0u;
 
 			// Set bind flags
 			if (textureFlags & Renderer::TextureFlag::SHADER_RESOURCE)
@@ -4339,18 +4338,6 @@ namespace Direct3D10Renderer
 
 		/**
 		*  @brief
-		*    Return whether or not mipmaps should be generated automatically
-		*
-		*  @return
-		*    "true" if mipmaps should be generated automatically, else "false"
-		*/
-		inline bool getGenerateMipmaps() const
-		{
-			return mGenerateMipmaps;
-		}
-
-		/**
-		*  @brief
 		*    Return the Direct3D texture 1D resource instance
 		*
 		*  @return
@@ -4429,7 +4416,6 @@ namespace Direct3D10Renderer
 	//[-------------------------------------------------------]
 	private:
 		Renderer::TextureFormat::Enum mTextureFormat;
-		bool						  mGenerateMipmaps;
 		ID3D10Texture1D*			  mD3D10Texture1D;			///< Direct3D 10 texture 1D resource, can be a null pointer
 		ID3D10ShaderResourceView*	  mD3D10ShaderResourceView;	///< Direct3D 10 shader resource view, can be a null pointer
 
@@ -4479,7 +4465,6 @@ namespace Direct3D10Renderer
 			ITexture2D(direct3D10Renderer, width, height),
 			mTextureFormat(textureFormat),
 			mNumberOfMultisamples(numberOfMultisamples),
-			mGenerateMipmaps(false),
 			mD3D10Texture2D(nullptr),
 			mD3D10ShaderResourceView(nullptr)
 		{
@@ -4501,7 +4486,6 @@ namespace Direct3D10Renderer
 			RENDERER_ASSERT(direct3D10Renderer.getContext(), Renderer::TextureUsage::IMMUTABLE != textureUsage || !generateMipmaps, "Direct3D 10 immutable texture usage can't be combined with automatic mipmap generation")
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height) : 1;
 			const bool isDepthFormat = Renderer::TextureFormat::isDepth(textureFormat);
-			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET) && !isDepthFormat);
 
 			// Direct3D 10 2D texture description
 			D3D10_TEXTURE2D_DESC d3d10Texture2DDesc;
@@ -4515,7 +4499,7 @@ namespace Direct3D10Renderer
 			d3d10Texture2DDesc.Usage			  = static_cast<D3D10_USAGE>(textureUsage);	// These constants directly map to Direct3D constants, do not change them
 			d3d10Texture2DDesc.BindFlags		  = 0;
 			d3d10Texture2DDesc.CPUAccessFlags	  = (Renderer::TextureUsage::DYNAMIC == textureUsage) ? D3D10_CPU_ACCESS_WRITE : 0u;
-			d3d10Texture2DDesc.MiscFlags		  = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET)) ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0u;
+			d3d10Texture2DDesc.MiscFlags		  = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET) && !isDepthFormat) ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0u;
 
 			// Set bind flags
 			if (textureFlags & Renderer::TextureFlag::SHADER_RESOURCE)
@@ -4661,18 +4645,6 @@ namespace Direct3D10Renderer
 
 		/**
 		*  @brief
-		*    Return whether or not mipmaps should be generated automatically
-		*
-		*  @return
-		*    "true" if mipmaps should be generated automatically, else "false"
-		*/
-		inline bool getGenerateMipmaps() const
-		{
-			return mGenerateMipmaps;
-		}
-
-		/**
-		*  @brief
 		*    Return the Direct3D texture 2D resource instance
 		*
 		*  @return
@@ -4782,7 +4754,6 @@ namespace Direct3D10Renderer
 	private:
 		Renderer::TextureFormat::Enum mTextureFormat;
 		uint8_t						  mNumberOfMultisamples;
-		bool						  mGenerateMipmaps;
 		ID3D10Texture2D*			  mD3D10Texture2D;			///< Direct3D 10 texture 2D resource, can be a null pointer
 		ID3D10ShaderResourceView*	  mD3D10ShaderResourceView;	///< Direct3D 10 shader resource view, can be a null pointer
 
@@ -4832,7 +4803,6 @@ namespace Direct3D10Renderer
 			ITexture2DArray(direct3D10Renderer, width, height, numberOfSlices),
 			mTextureFormat(textureFormat),
 			mNumberOfMultisamples(1),	// TODO(co) Currently no MSAA support for 2D array textures
-			mGenerateMipmaps(false),
 			mD3D10Texture2D(nullptr),
 			mD3D10ShaderResourceView(nullptr)
 		{
@@ -4848,7 +4818,6 @@ namespace Direct3D10Renderer
 			RENDERER_ASSERT(direct3D10Renderer.getContext(), Renderer::TextureUsage::IMMUTABLE != textureUsage || !generateMipmaps, "Direct3D 10 immutable texture usage can't be combined with automatic mipmap generation")
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height) : 1;
 			const bool isDepthFormat = Renderer::TextureFormat::isDepth(textureFormat);
-			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET) && !isDepthFormat);
 
 			// Direct3D 10 2D array texture description
 			D3D10_TEXTURE2D_DESC d3d10Texture2DDesc;
@@ -4862,7 +4831,7 @@ namespace Direct3D10Renderer
 			d3d10Texture2DDesc.Usage			  = static_cast<D3D10_USAGE>(textureUsage);	// These constants directly map to Direct3D constants, do not change them
 			d3d10Texture2DDesc.BindFlags		  = 0;
 			d3d10Texture2DDesc.CPUAccessFlags	  = (Renderer::TextureUsage::DYNAMIC == textureUsage) ? D3D10_CPU_ACCESS_WRITE : 0u;
-			d3d10Texture2DDesc.MiscFlags		  = mGenerateMipmaps ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0u;
+			d3d10Texture2DDesc.MiscFlags		  = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET) && !isDepthFormat) ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0u;
 
 			// Set bind flags
 			if (textureFlags & Renderer::TextureFlag::SHADER_RESOURCE)
@@ -5050,18 +5019,6 @@ namespace Direct3D10Renderer
 
 		/**
 		*  @brief
-		*    Return whether or not mipmaps should be generated automatically
-		*
-		*  @return
-		*    "true" if mipmaps should be generated automatically, else "false"
-		*/
-		inline bool getGenerateMipmaps() const
-		{
-			return mGenerateMipmaps;
-		}
-
-		/**
-		*  @brief
 		*    Return the Direct3D texture 2D resource instance
 		*
 		*  @return
@@ -5136,7 +5093,6 @@ namespace Direct3D10Renderer
 	private:
 		Renderer::TextureFormat::Enum mTextureFormat;
 		uint8_t						  mNumberOfMultisamples;
-		bool						  mGenerateMipmaps;
 		ID3D10Texture2D*			  mD3D10Texture2D;			///< Direct3D 10 texture 2D resource, can be a null pointer
 		ID3D10ShaderResourceView*	  mD3D10ShaderResourceView;	///< Direct3D 10 shader resource view, can be a null pointer
 
@@ -5185,7 +5141,6 @@ namespace Direct3D10Renderer
 		Texture3D(Direct3D10Renderer& direct3D10Renderer, uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Renderer::TextureUsage textureUsage) :
 			ITexture3D(direct3D10Renderer, width, height, depth),
 			mTextureFormat(textureFormat),
-			mGenerateMipmaps(false),
 			mD3D10Texture3D(nullptr),
 			mD3D10ShaderResourceView(nullptr)
 		{
@@ -5202,7 +5157,6 @@ namespace Direct3D10Renderer
 			RENDERER_ASSERT(direct3D10Renderer.getContext(), Renderer::TextureUsage::IMMUTABLE != textureUsage || !generateMipmaps, "Direct3D 10 immutable texture usage can't be combined with automatic mipmap generation")
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height, depth) : 1;
 			const bool isDepthFormat = Renderer::TextureFormat::isDepth(textureFormat);
-			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET) && !isDepthFormat);
 
 			// Direct3D 10 3D texture description
 			D3D10_TEXTURE3D_DESC d3d10Texture3DDesc;
@@ -5214,7 +5168,7 @@ namespace Direct3D10Renderer
 			d3d10Texture3DDesc.Usage		  = static_cast<D3D10_USAGE>(textureUsage);	// These constants directly map to Direct3D constants, do not change them
 			d3d10Texture3DDesc.BindFlags	  = 0;
 			d3d10Texture3DDesc.CPUAccessFlags = (Renderer::TextureUsage::DYNAMIC == textureUsage) ? D3D10_CPU_ACCESS_WRITE : 0u;
-			d3d10Texture3DDesc.MiscFlags	  = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET)) ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0u;
+			d3d10Texture3DDesc.MiscFlags	  = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET) && !isDepthFormat) ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0u;
 
 			// Set bind flags
 			if (textureFlags & Renderer::TextureFlag::SHADER_RESOURCE)
@@ -5354,18 +5308,6 @@ namespace Direct3D10Renderer
 
 		/**
 		*  @brief
-		*    Return whether or not mipmaps should be generated automatically
-		*
-		*  @return
-		*    "true" if mipmaps should be generated automatically, else "false"
-		*/
-		inline bool getGenerateMipmaps() const
-		{
-			return mGenerateMipmaps;
-		}
-
-		/**
-		*  @brief
 		*    Return the Direct3D texture 3D resource instance
 		*
 		*  @return
@@ -5444,7 +5386,6 @@ namespace Direct3D10Renderer
 	//[-------------------------------------------------------]
 	private:
 		Renderer::TextureFormat::Enum mTextureFormat;
-		bool						  mGenerateMipmaps;
 		ID3D10Texture3D*			  mD3D10Texture3D;			///< Direct3D 10 texture 3D resource, can be a null pointer
 		ID3D10ShaderResourceView*	  mD3D10ShaderResourceView;	///< Direct3D 10 shader resource view, can be a null pointer
 
@@ -5491,7 +5432,6 @@ namespace Direct3D10Renderer
 		TextureCube(Direct3D10Renderer& direct3D10Renderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Renderer::TextureUsage textureUsage) :
 			ITextureCube(direct3D10Renderer, width, height),
 			mTextureFormat(textureFormat),
-			mGenerateMipmaps(false),
 			mD3D10TextureCube(nullptr),
 			mD3D10ShaderResourceView(nullptr)
 		{
@@ -5508,7 +5448,6 @@ namespace Direct3D10Renderer
 			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			RENDERER_ASSERT(direct3D10Renderer.getContext(), Renderer::TextureUsage::IMMUTABLE != textureUsage || !generateMipmaps, "Direct3D 10 immutable texture usage can't be combined with automatic mipmap generation")
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height) : 1;
-			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET));
 
 			// Direct3D 10 2D array texture description
 			D3D10_TEXTURE2D_DESC d3d10Texture2DDesc;
@@ -5522,7 +5461,7 @@ namespace Direct3D10Renderer
 			d3d10Texture2DDesc.Usage			  = static_cast<D3D10_USAGE>(textureUsage);	// These constants directly map to Direct3D constants, do not change them
 			d3d10Texture2DDesc.BindFlags		  = 0;
 			d3d10Texture2DDesc.CPUAccessFlags	  = (Renderer::TextureUsage::DYNAMIC == textureUsage) ? D3D10_CPU_ACCESS_WRITE : 0u;
-			d3d10Texture2DDesc.MiscFlags		  = (mGenerateMipmaps ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0u) | D3D10_RESOURCE_MISC_TEXTURECUBE;
+			d3d10Texture2DDesc.MiscFlags		  = ((generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET)) ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0u) | D3D10_RESOURCE_MISC_TEXTURECUBE;
 
 			// Set bind flags
 			if (textureFlags & Renderer::TextureFlag::SHADER_RESOURCE)
@@ -5682,18 +5621,6 @@ namespace Direct3D10Renderer
 
 		/**
 		*  @brief
-		*    Return whether or not mipmaps should be generated automatically
-		*
-		*  @return
-		*    "true" if mipmaps should be generated automatically, else "false"
-		*/
-		inline bool getGenerateMipmaps() const
-		{
-			return mGenerateMipmaps;
-		}
-
-		/**
-		*  @brief
 		*    Return the Direct3D texture cube resource instance
 		*
 		*  @return
@@ -5772,7 +5699,6 @@ namespace Direct3D10Renderer
 	//[-------------------------------------------------------]
 	private:
 		Renderer::TextureFormat::Enum mTextureFormat;
-		bool						  mGenerateMipmaps;
 		ID3D10Texture2D*			  mD3D10TextureCube;		///< Direct3D 10 texture cube resource, can be a null pointer
 		ID3D10ShaderResourceView*	  mD3D10ShaderResourceView;	///< Direct3D 10 shader resource view, can be a null pointer
 
@@ -7139,7 +7065,6 @@ namespace Direct3D10Renderer
 			mDepthStencilTexture(nullptr),
 			mWidth(UINT_MAX),
 			mHeight(UINT_MAX),
-			mGenerateMipmaps(false),
 			mD3D10RenderTargetViews(nullptr),
 			mD3D10DepthStencilView(nullptr)
 		{
@@ -7188,12 +7113,6 @@ namespace Direct3D10Renderer
 							d3d10RenderTargetViewDesc.ViewDimension		 = (texture2D->getNumberOfMultisamples() > 1) ? D3D10_RTV_DIMENSION_TEXTURE2DMS : D3D10_RTV_DIMENSION_TEXTURE2D;
 							d3d10RenderTargetViewDesc.Texture2D.MipSlice = colorFramebufferAttachments->mipmapIndex;
 							FAILED_DEBUG_BREAK(direct3D10Renderer.getD3D10Device()->CreateRenderTargetView(texture2D->getD3D10Texture2D(), &d3d10RenderTargetViewDesc, d3d10RenderTargetView));
-
-							// Generate mipmaps?
-							if (texture2D->getGenerateMipmaps())
-							{
-								mGenerateMipmaps = true;
-							}
 							break;
 						}
 
@@ -7211,12 +7130,6 @@ namespace Direct3D10Renderer
 							d3d10RenderTargetViewDesc.Texture2DArray.FirstArraySlice = colorFramebufferAttachments->layerIndex;
 							d3d10RenderTargetViewDesc.Texture2DArray.ArraySize		 = 1;
 							FAILED_DEBUG_BREAK(direct3D10Renderer.getD3D10Device()->CreateRenderTargetView(texture2DArray->getD3D10Texture2D(), &d3d10RenderTargetViewDesc, d3d10RenderTargetView));
-
-							// Generate mipmaps?
-							if (texture2DArray->getGenerateMipmaps())
-							{
-								mGenerateMipmaps = true;
-							}
 							break;
 						}
 
@@ -7280,12 +7193,6 @@ namespace Direct3D10Renderer
 						d3d10DepthStencilViewDesc.ViewDimension		 = (texture2D->getNumberOfMultisamples() > 1) ? D3D10_DSV_DIMENSION_TEXTURE2DMS : D3D10_DSV_DIMENSION_TEXTURE2D;
 						d3d10DepthStencilViewDesc.Texture2D.MipSlice = depthStencilFramebufferAttachment->mipmapIndex;
 						FAILED_DEBUG_BREAK(direct3D10Renderer.getD3D10Device()->CreateDepthStencilView(texture2D->getD3D10Texture2D(), &d3d10DepthStencilViewDesc, &mD3D10DepthStencilView));
-
-						// Generate mipmaps?
-						if (texture2D->getGenerateMipmaps())
-						{
-							mGenerateMipmaps = true;
-						}
 						break;
 					}
 
@@ -7303,12 +7210,6 @@ namespace Direct3D10Renderer
 						d3d10DepthStencilViewDesc.Texture2DArray.FirstArraySlice = depthStencilFramebufferAttachment->layerIndex;
 						d3d10DepthStencilViewDesc.Texture2DArray.ArraySize		 = 1;
 						FAILED_DEBUG_BREAK(direct3D10Renderer.getD3D10Device()->CreateDepthStencilView(texture2DArray->getD3D10Texture2D(), &d3d10DepthStencilViewDesc, &mD3D10DepthStencilView));
-
-						// Generate mipmaps?
-						if (texture2DArray->getGenerateMipmaps())
-						{
-							mGenerateMipmaps = true;
-						}
 						break;
 					}
 
@@ -7467,46 +7368,6 @@ namespace Direct3D10Renderer
 			return mD3D10DepthStencilView;
 		}
 
-		/**
-		*  @brief
-		*    Return whether or not mipmaps should be generated automatically
-		*
-		*  @return
-		*    "true" if mipmaps should be generated automatically, else "false"
-		*/
-		inline bool getGenerateMipmaps() const
-		{
-			return mGenerateMipmaps;
-		}
-
-		/**
-		*  @brief
-		*    Generate mipmaps
-		*
-		*  @param[in] d3d10Device
-		*    Direct3D 10 device to use
-		*/
-		void generateMipmaps(ID3D10Device& d3d10Device) const
-		{
-			// Sanity check
-			RENDERER_ASSERT(getRenderer().getContext(), mGenerateMipmaps, "Direct3D 10 framebuffer mipmap generation is disabled")
-
-			// TODO(co) Complete, currently only 2D textures are supported
-			Renderer::ITexture** colorTexturesEnd = mColorTextures + mNumberOfColorTextures;
-			for (Renderer::ITexture** colorTexture = mColorTextures; colorTexture < colorTexturesEnd; ++colorTexture)
-			{
-				// Valid entry?
-				if ((*colorTexture)->getResourceType() == Renderer::ResourceType::TEXTURE_2D)
-				{
-					Texture2D* texture2D = static_cast<Texture2D*>(*colorTexture);
-					if (texture2D->getGenerateMipmaps())
-					{
-						d3d10Device.GenerateMips(texture2D->getD3D10ShaderResourceView());
-					}
-				}
-			}
-		}
-
 
 	//[-------------------------------------------------------]
 	//[ Public virtual Renderer::IResource methods            ]
@@ -7583,7 +7444,6 @@ namespace Direct3D10Renderer
 		Renderer::ITexture*  mDepthStencilTexture;		///< The depth stencil render target texture (we keep a reference to it), can be a null pointer
 		uint32_t			 mWidth;					///< The framebuffer width
 		uint32_t			 mHeight;					///< The framebuffer height
-		bool				 mGenerateMipmaps;			///< "true" if mipmaps should be generated automatically, else "false"
 		// Direct3D 10 part
 		ID3D10RenderTargetView** mD3D10RenderTargetViews;	///< The Direct3D 10 render target views (we keep a reference to it), can be a null pointer or can contain null pointers, if not a null pointer there must be at least "mNumberOfColorTextures" views in the provided C-array of pointers
 		ID3D10DepthStencilView*  mD3D10DepthStencilView;	///< The Direct3D 10 depth stencil view (we keep a reference to it), can be a null pointer
@@ -8807,6 +8667,12 @@ namespace
 				static_cast<Direct3D10Renderer::Direct3D10Renderer&>(renderer).copyResource(*realData->destinationResource, *realData->sourceResource);
 			}
 
+			void GenerateMipmaps(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::GenerateMipmaps* realData = static_cast<const Renderer::Command::GenerateMipmaps*>(data);
+				static_cast<Direct3D10Renderer::Direct3D10Renderer&>(renderer).generateMipmaps(*realData->resource);
+			}
+
 			//[-------------------------------------------------------]
 			//[ Debug                                                 ]
 			//[-------------------------------------------------------]
@@ -8869,6 +8735,7 @@ namespace
 			&BackendDispatch::SetTextureMinimumMaximumMipmapIndex,
 			&BackendDispatch::ResolveMultisampleFramebuffer,
 			&BackendDispatch::CopyResource,
+			&BackendDispatch::GenerateMipmaps,
 			// Debug
 			&BackendDispatch::SetDebugMarker,
 			&BackendDispatch::BeginDebugEvent,
@@ -9468,19 +9335,10 @@ namespace Direct3D10Renderer
 				DIRECT3D10RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *renderTarget)
 
 				// Release the render target reference, in case we have one
-				Framebuffer* framebufferToGenerateMipmapsFor = nullptr;
 				if (nullptr != mRenderTarget)
 				{
-					// Generate mipmaps?
-					if (Renderer::ResourceType::FRAMEBUFFER == mRenderTarget->getResourceType() && static_cast<Framebuffer*>(mRenderTarget)->getGenerateMipmaps())
-					{
-						framebufferToGenerateMipmapsFor = static_cast<Framebuffer*>(mRenderTarget);
-					}
-					else
-					{
-						// Release reference
-						mRenderTarget->releaseReference();
-					}
+					// Release reference
+					mRenderTarget->releaseReference();
 				}
 
 				// Set new render target and add a reference to it
@@ -9539,13 +9397,6 @@ namespace Direct3D10Renderer
 					default:
 						// Not handled in here
 						break;
-				}
-
-				// Generate mipmaps
-				if (nullptr != framebufferToGenerateMipmapsFor)
-				{
-					framebufferToGenerateMipmapsFor->generateMipmaps(*mD3D10Device);
-					framebufferToGenerateMipmapsFor->releaseReference();
 				}
 			}
 			else
@@ -9929,6 +9780,16 @@ namespace Direct3D10Renderer
 				// Not handled in here
 				break;
 		}
+	}
+
+	void Direct3D10Renderer::generateMipmaps(Renderer::IResource& resource)
+	{
+		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		DIRECT3D10RENDERER_RENDERERMATCHCHECK_ASSERT(*this, resource)
+
+		RENDERER_ASSERT(mContext, resource.getResourceType() == Renderer::ResourceType::TEXTURE_2D, "TODO(co) Mipmaps can only be generated for Direct3D 10 2D texture resources")
+		Texture2D& texture2D = static_cast<Texture2D&>(resource);
+		mD3D10Device->GenerateMips(texture2D.getD3D10ShaderResourceView());
 	}
 
 

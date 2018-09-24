@@ -45,8 +45,12 @@ namespace RendererRuntime
 
 		// Read data
 		const v1CompositorNode::PassGenerateMipmaps* passGenerateMipmaps = reinterpret_cast<const v1CompositorNode::PassGenerateMipmaps*>(data);
-		mDepthTextureAssetId = passGenerateMipmaps->depthTextureAssetId;
+		mTextureAssetId = passGenerateMipmaps->textureAssetId;
 		mMaterialBlueprintAssetId = passGenerateMipmaps->materialBlueprintAssetId;
+		mTextureMaterialBlueprintProperty = passGenerateMipmaps->textureMaterialBlueprintProperty;
+
+		// Sanity check
+		assert((isInvalid(mMaterialBlueprintAssetId) && isInvalid(mTextureMaterialBlueprintProperty)) || (isValid(mMaterialBlueprintAssetId) && isValid(mTextureMaterialBlueprintProperty)));
 	}
 
 

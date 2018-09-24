@@ -1395,6 +1395,7 @@ namespace OpenGLRenderer
 		//[-------------------------------------------------------]
 		void resolveMultisampleFramebuffer(Renderer::IRenderTarget& destinationRenderTarget, Renderer::IFramebuffer& sourceMultisampleFramebuffer);
 		void copyResource(Renderer::IResource& destinationResource, Renderer::IResource& sourceResource);
+		void generateMipmaps(Renderer::IResource& resource);
 		//[-------------------------------------------------------]
 		//[ Debug                                                 ]
 		//[-------------------------------------------------------]
@@ -7666,18 +7667,6 @@ namespace OpenGLRenderer
 			return mOpenGLInternalFormat;
 		}
 
-		/**
-		*  @brief
-		*    Return whether or not mipmaps should be generated automatically
-		*
-		*  @return
-		*    "true" if mipmaps should be generated automatically, else "false"
-		*/
-		inline bool getGenerateMipmaps() const
-		{
-			return mGenerateMipmaps;
-		}
-
 
 	//[-------------------------------------------------------]
 	//[ Public virtual Renderer::IResource methods            ]
@@ -7728,8 +7717,7 @@ namespace OpenGLRenderer
 		inline Texture1D(OpenGLRenderer& openGLRenderer, uint32_t width, Renderer::TextureFormat::Enum textureFormat) :
 			ITexture1D(static_cast<Renderer::IRenderer&>(openGLRenderer), width),
 			mOpenGLTexture(0),
-			mOpenGLInternalFormat(Mapping::getOpenGLInternalFormat(textureFormat)),
-			mGenerateMipmaps(false)
+			mOpenGLInternalFormat(Mapping::getOpenGLInternalFormat(textureFormat))
 		{}
 
 
@@ -7739,7 +7727,6 @@ namespace OpenGLRenderer
 	protected:
 		GLuint mOpenGLTexture;			///< OpenGL texture, can be zero if no resource is allocated
 		GLuint mOpenGLInternalFormat;	///< OpenGL internal format
-		bool   mGenerateMipmaps;
 
 
 	//[-------------------------------------------------------]
@@ -7812,7 +7799,6 @@ namespace OpenGLRenderer
 			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
 			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width) : 1;
-			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET));
 
 			// Make this OpenGL texture instance to the currently used one
 			glBindTexture(GL_TEXTURE_1D, mOpenGLTexture);
@@ -7964,7 +7950,6 @@ namespace OpenGLRenderer
 			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
 			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width) : 1;
-			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET));
 
 			// Create the OpenGL texture instance
 			if (isArbDsa)
@@ -8205,18 +8190,6 @@ namespace OpenGLRenderer
 			return mOpenGLInternalFormat;
 		}
 
-		/**
-		*  @brief
-		*    Return whether or not mipmaps should be generated automatically
-		*
-		*  @return
-		*    "true" if mipmaps should be generated automatically, else "false"
-		*/
-		inline bool getGenerateMipmaps() const
-		{
-			return mGenerateMipmaps;
-		}
-
 
 	//[-------------------------------------------------------]
 	//[ Public virtual Texture2D methods                      ]
@@ -8288,8 +8261,7 @@ namespace OpenGLRenderer
 			ITexture2D(static_cast<Renderer::IRenderer&>(openGLRenderer), width, height),
 			mNumberOfMultisamples(numberOfMultisamples),
 			mOpenGLTexture(0),
-			mOpenGLInternalFormat(Mapping::getOpenGLInternalFormat(textureFormat)),
-			mGenerateMipmaps(false)
+			mOpenGLInternalFormat(Mapping::getOpenGLInternalFormat(textureFormat))
 		{}
 
 
@@ -8300,7 +8272,6 @@ namespace OpenGLRenderer
 		uint8_t mNumberOfMultisamples;	///< The number of multisamples per pixel (valid values: 1, 2, 4, 8)
 		GLuint  mOpenGLTexture;			///< OpenGL texture, can be zero if no resource is allocated
 		GLuint  mOpenGLInternalFormat;	///< OpenGL internal format
-		bool	mGenerateMipmaps;
 
 
 	//[-------------------------------------------------------]
@@ -8404,7 +8375,6 @@ namespace OpenGLRenderer
 				const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
 				const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 				const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height) : 1;
-				mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET));
 
 				// Make this OpenGL texture instance to the currently used one
 				glBindTexture(GL_TEXTURE_2D, mOpenGLTexture);
@@ -8636,7 +8606,6 @@ namespace OpenGLRenderer
 				const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 				const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height) : 1;
 				const bool isDepthFormat = Renderer::TextureFormat::isDepth(textureFormat);
-				mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET) && !isDepthFormat);
 
 				// Create the OpenGL texture instance
 				if (isArbDsa)
@@ -9305,18 +9274,6 @@ namespace OpenGLRenderer
 			return mOpenGLPixelUnpackBuffer;
 		}
 
-		/**
-		*  @brief
-		*    Return whether or not mipmaps should be generated automatically
-		*
-		*  @return
-		*    "true" if mipmaps should be generated automatically, else "false"
-		*/
-		inline bool getGenerateMipmaps() const
-		{
-			return mGenerateMipmaps;
-		}
-
 
 	//[-------------------------------------------------------]
 	//[ Public virtual Renderer::IResource methods            ]
@@ -9373,8 +9330,7 @@ namespace OpenGLRenderer
 			mOpenGLTexture(0),
 			mTextureFormat(textureFormat),
 			mOpenGLInternalFormat(Mapping::getOpenGLInternalFormat(textureFormat)),
-			mOpenGLPixelUnpackBuffer(0),
-			mGenerateMipmaps(false)
+			mOpenGLPixelUnpackBuffer(0)
 		{}
 
 
@@ -9386,7 +9342,6 @@ namespace OpenGLRenderer
 		Renderer::TextureFormat::Enum mTextureFormat;
 		GLuint						  mOpenGLInternalFormat;	///< OpenGL internal format
 		GLuint						  mOpenGLPixelUnpackBuffer;	///< OpenGL pixel unpack buffer for dynamic textures, can be zero if no resource is allocated
-		bool						  mGenerateMipmaps;
 
 
 	//[-------------------------------------------------------]
@@ -9492,7 +9447,6 @@ namespace OpenGLRenderer
 			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			RENDERER_ASSERT(openGLRenderer.getContext(), Renderer::TextureUsage::IMMUTABLE != textureUsage || !generateMipmaps, "OpenGL immutable texture usage can't be combined with automatic mipmap generation")
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height, depth) : 1;
-			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET));
 
 			// Make this OpenGL texture instance to the currently used one
 			glBindTexture(GL_TEXTURE_3D, mOpenGLTexture);
@@ -9674,7 +9628,6 @@ namespace OpenGLRenderer
 			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			RENDERER_ASSERT(openGLRenderer.getContext(), Renderer::TextureUsage::IMMUTABLE != textureUsage || !generateMipmaps, "OpenGL immutable texture usage can't be combined with automatic mipmap generation")
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height, depth) : 1;
-			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET));
 
 			// Create the OpenGL texture instance
 			const bool isArbDsa = openGLRenderer.getExtensions().isGL_ARB_direct_state_access();
@@ -9918,18 +9871,6 @@ namespace OpenGLRenderer
 			return mOpenGLInternalFormat;
 		}
 
-		/**
-		*  @brief
-		*    Return whether or not mipmaps should be generated automatically
-		*
-		*  @return
-		*    "true" if mipmaps should be generated automatically, else "false"
-		*/
-		inline bool getGenerateMipmaps() const
-		{
-			return mGenerateMipmaps;
-		}
-
 
 	//[-------------------------------------------------------]
 	//[ Public virtual Renderer::IResource methods            ]
@@ -9982,8 +9923,7 @@ namespace OpenGLRenderer
 		inline TextureCube(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat) :
 			ITextureCube(static_cast<Renderer::IRenderer&>(openGLRenderer), width, height),
 			mOpenGLTexture(0),
-			mOpenGLInternalFormat(Mapping::getOpenGLInternalFormat(textureFormat)),
-			mGenerateMipmaps(false)
+			mOpenGLInternalFormat(Mapping::getOpenGLInternalFormat(textureFormat))
 		{}
 
 
@@ -9993,7 +9933,6 @@ namespace OpenGLRenderer
 	protected:
 		GLuint mOpenGLTexture;			///< OpenGL texture, can be zero if no resource is allocated
 		GLuint mOpenGLInternalFormat;	///< OpenGL internal format
-		bool   mGenerateMipmaps;
 
 
 	//[-------------------------------------------------------]
@@ -10068,7 +10007,6 @@ namespace OpenGLRenderer
 			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
 			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height) : 1;
-			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET));
 
 			// Make this OpenGL texture instance to the currently used one
 			glBindTexture(GL_TEXTURE_CUBE_MAP, mOpenGLTexture);
@@ -10253,7 +10191,6 @@ namespace OpenGLRenderer
 			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
 			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height) : 1;
-			mGenerateMipmaps = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET));
 
 			// Create the OpenGL texture instance
 			// TODO(co) "GL_ARB_direct_state_access" AMD graphics card driver bug ahead
@@ -11929,29 +11866,6 @@ namespace OpenGLRenderer
 			return mMultisampleRenderTarget;
 		}
 
-		/**
-		*  @brief
-		*    Return whether or not mipmaps should be generated automatically
-		*
-		*  @return
-		*    "true" if mipmaps should be generated automatically, else "false"
-		*/
-		inline bool getGenerateMipmaps() const
-		{
-			return mGenerateMipmaps;
-		}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual OpenGLRenderer::Framebuffer methods    ]
-	//[-------------------------------------------------------]
-	public:
-		/**
-		*  @brief
-		*    Generate mipmaps
-		*/
-		virtual void generateMipmaps() const = 0;
-
 
 	//[-------------------------------------------------------]
 	//[ Public virtual Renderer::IResource methods            ]
@@ -12023,8 +11937,7 @@ namespace OpenGLRenderer
 			mDepthStencilTexture(nullptr),
 			mWidth(UINT_MAX),
 			mHeight(UINT_MAX),
-			mMultisampleRenderTarget(false),
-			mGenerateMipmaps(false)
+			mMultisampleRenderTarget(false)
 		{
 			// The "GL_ARB_framebuffer_object"-extension documentation says the following about the framebuffer width and height
 			//   "If the attachment sizes are not all identical, rendering will be limited to the largest area that can fit in
@@ -12060,12 +11973,6 @@ namespace OpenGLRenderer
 
 							// Update the framebuffer width and height if required
 							::detail::updateWidthHeight(colorFramebufferAttachments->mipmapIndex, texture2D->getWidth(), texture2D->getHeight(), mWidth, mHeight);
-
-							// Generate mipmaps?
-							if (texture2D->getGenerateMipmaps())
-							{
-								mGenerateMipmaps = true;
-							}
 							break;
 						}
 
@@ -12129,12 +12036,6 @@ namespace OpenGLRenderer
 
 						// Update the framebuffer width and height if required
 						::detail::updateWidthHeight(depthStencilFramebufferAttachment->mipmapIndex, texture2D->getWidth(), texture2D->getHeight(), mWidth, mHeight);
-
-						// Generate mipmaps?
-						if (texture2D->getGenerateMipmaps())
-						{
-							mGenerateMipmaps = true;
-						}
 						break;
 					}
 
@@ -12202,7 +12103,6 @@ namespace OpenGLRenderer
 		uint32_t			 mWidth;					///< The framebuffer width
 		uint32_t			 mHeight;					///< The framebuffer height
 		bool				 mMultisampleRenderTarget;	///< Multisample render target?
-		bool				 mGenerateMipmaps;			///< "true" if mipmaps should be generated automatically, else "false"
 
 
 	//[-------------------------------------------------------]
@@ -12480,47 +12380,6 @@ namespace OpenGLRenderer
 		{
 			// Texture reference handling is done within the base class "Framebuffer"
 			// Nothing here
-		}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual OpenGLRenderer::Framebuffer methods    ]
-	//[-------------------------------------------------------]
-	public:
-		virtual void generateMipmaps() const override
-		{
-			// Sanity check
-			RENDERER_ASSERT(getRenderer().getContext(), mGenerateMipmaps, "OpenGL framebuffer mipmap generation is disabled")
-
-			// TODO(co) Complete, currently only 2D textures are supported
-			Renderer::ITexture** colorTexturesEnd = mColorTextures + mNumberOfColorTextures;
-			for (Renderer::ITexture** colorTexture = mColorTextures; colorTexture < colorTexturesEnd; ++colorTexture)
-			{
-				// Valid entry?
-				if ((*colorTexture)->getResourceType() == Renderer::ResourceType::TEXTURE_2D)
-				{
-					Texture2D* texture2D = static_cast<Texture2D*>(*colorTexture);
-					if (texture2D->getGenerateMipmaps())
-					{
-						#ifdef RENDERER_OPENGL_STATE_CLEANUP
-							// Backup the currently bound OpenGL texture
-							// TODO(co) It's possible to avoid calling this multiple times
-							GLint openGLTextureBackup = 0;
-							glGetIntegerv(GL_TEXTURE_BINDING_2D, &openGLTextureBackup);
-						#endif
-
-						// Generate mipmaps
-						glActiveTextureARB(GL_TEXTURE0_ARB);
-						glBindTexture(GL_TEXTURE_2D, texture2D->getOpenGLTexture());
-						glGenerateMipmap(GL_TEXTURE_2D);
-
-						#ifdef RENDERER_OPENGL_STATE_CLEANUP
-							// Be polite and restore the previous bound OpenGL texture
-							glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(openGLTextureBackup));
-						#endif
-					}
-				}
-			}
 		}
 
 
@@ -12821,40 +12680,6 @@ namespace OpenGLRenderer
 		{
 			// Texture reference handling is done within the base class "Framebuffer"
 			// Nothing here
-		}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual OpenGLRenderer::Framebuffer methods    ]
-	//[-------------------------------------------------------]
-	public:
-		virtual void generateMipmaps() const override
-		{
-			// Sanity check
-			RENDERER_ASSERT(getRenderer().getContext(), mGenerateMipmaps, "OpenGL framebuffer mipmap generation is disabled")
-
-			// TODO(co) Complete, currently only 2D textures are supported
-			const bool isArbDsa = static_cast<const OpenGLRenderer&>(getRenderer()).getExtensions().isGL_ARB_direct_state_access();
-			Renderer::ITexture** colorTexturesEnd = mColorTextures + mNumberOfColorTextures;
-			for (Renderer::ITexture** colorTexture = mColorTextures; colorTexture < colorTexturesEnd; ++colorTexture)
-			{
-				// Valid entry?
-				if ((*colorTexture)->getResourceType() == Renderer::ResourceType::TEXTURE_2D)
-				{
-					Texture2D* texture2D = static_cast<Texture2D*>(*colorTexture);
-					if (texture2D->getGenerateMipmaps())
-					{
-						if (isArbDsa)
-						{
-							glGenerateTextureMipmap(texture2D->getOpenGLTexture());
-						}
-						else
-						{
-							glGenerateTextureMipmapEXT(texture2D->getOpenGLTexture(), GL_TEXTURE_2D);
-						}
-					}
-				}
-			}
 		}
 
 
@@ -17262,6 +17087,12 @@ namespace
 				static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).copyResource(*realData->destinationResource, *realData->sourceResource);
 			}
 
+			void GenerateMipmaps(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::GenerateMipmaps* realData = static_cast<const Renderer::Command::GenerateMipmaps*>(data);
+				static_cast<OpenGLRenderer::OpenGLRenderer&>(renderer).generateMipmaps(*realData->resource);
+			}
+
 			//[-------------------------------------------------------]
 			//[ Debug                                                 ]
 			//[-------------------------------------------------------]
@@ -17330,6 +17161,7 @@ namespace
 			&BackendDispatch::SetTextureMinimumMaximumMipmapIndex,
 			&BackendDispatch::ResolveMultisampleFramebuffer,
 			&BackendDispatch::CopyResource,
+			&BackendDispatch::GenerateMipmaps,
 			// Debug
 			&BackendDispatch::SetDebugMarker,
 			&BackendDispatch::BeginDebugEvent,
@@ -17747,7 +17579,6 @@ namespace OpenGLRenderer
 				OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *renderTarget)
 
 				// Release the render target reference, in case we have one
-				Framebuffer* framebufferToGenerateMipmapsFor = nullptr;
 				if (nullptr != mRenderTarget)
 				{
 					// Unbind OpenGL framebuffer?
@@ -17763,16 +17594,8 @@ namespace OpenGLRenderer
 						glBindFramebuffer(GL_FRAMEBUFFER, 0);
 					}
 
-					// Generate mipmaps?
-					if (Renderer::ResourceType::FRAMEBUFFER == mRenderTarget->getResourceType() && static_cast<Framebuffer*>(mRenderTarget)->getGenerateMipmaps())
-					{
-						framebufferToGenerateMipmapsFor = static_cast<Framebuffer*>(mRenderTarget);
-					}
-					else
-					{
-						// Release
-						mRenderTarget->releaseReference();
-					}
+					// Release
+					mRenderTarget->releaseReference();
 				}
 
 				// Set new render target and add a reference to it
@@ -17853,13 +17676,6 @@ namespace OpenGLRenderer
 					default:
 						// Not handled in here
 						break;
-				}
-
-				// Generate mipmaps
-				if (nullptr != framebufferToGenerateMipmapsFor)
-				{
-					framebufferToGenerateMipmapsFor->generateMipmaps();
-					framebufferToGenerateMipmapsFor->releaseReference();
 				}
 
 				// Setup clip control
@@ -18471,6 +18287,48 @@ namespace OpenGLRenderer
 			default:
 				// Not handled in here
 				break;
+		}
+	}
+
+	void OpenGLRenderer::generateMipmaps(Renderer::IResource& resource)
+	{
+		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, resource)
+
+		RENDERER_ASSERT(mContext, resource.getResourceType() == Renderer::ResourceType::TEXTURE_2D, "TODO(co) Mipmaps can only be generated for OpenGL 2D texture resources")
+		Texture2D& texture2D = static_cast<Texture2D&>(resource);
+
+		// Is "GL_EXT_direct_state_access" there?
+		if (mExtensions->isGL_ARB_direct_state_access())
+		{
+			// Effective direct state access (DSA)
+			glGenerateTextureMipmap(texture2D.getOpenGLTexture());
+		}
+		else if (mExtensions->isGL_EXT_direct_state_access())
+		{
+			// Effective direct state access (DSA)
+			glGenerateTextureMipmapEXT(texture2D.getOpenGLTexture(), GL_TEXTURE_2D);
+		}
+		else
+		{
+			// Traditional bind version
+
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
+				// Backup the currently bound OpenGL texture
+				// TODO(co) It's possible to avoid calling this multiple times
+				GLint openGLTextureBackup = 0;
+				glGetIntegerv(GL_TEXTURE_BINDING_2D, &openGLTextureBackup);
+			#endif
+
+			// Generate mipmaps
+			glActiveTextureARB(GL_TEXTURE0_ARB);
+			glBindTexture(GL_TEXTURE_2D, texture2D.getOpenGLTexture());
+			glGenerateMipmap(GL_TEXTURE_2D);
+
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
+				// Be polite and restore the previous bound OpenGL texture
+				glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(openGLTextureBackup));
+			#endif
 		}
 	}
 

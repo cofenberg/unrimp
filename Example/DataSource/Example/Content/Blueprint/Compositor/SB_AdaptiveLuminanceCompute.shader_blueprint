@@ -52,7 +52,8 @@ RW_TEXTURE_2D(1, 2, OutputTexture2D, 2, r32f, writeonly)
 //[ Main                                                  ]
 //[-------------------------------------------------------]
 MAIN_BEGIN_COMPUTE(1, 1, 1)
-	float currentAverageLuminance = exp(TEXTURE_FETCH_2D(CurrentLuminanceMap, int3(0, 0, 0)).r);
+	// We're using a fixed 1024x1024 current luminance input map, hence we have to pick mipmap 10 (0 = 1024, 1 = 512, 2 = 256, 3 = 128, 4 = 64, 5 = 32, 6 = 16, 7 = 8, 8 = 4, 9 = 2, 10 = 1)
+	float currentAverageLuminance = exp(TEXTURE_FETCH_2D(CurrentLuminanceMap, int3(0, 0, 10)).r);
 
 	// During the first execution there's no valid previous adaptive luminance available, so use the just calculated luminance as previous luminance
 	@property(FirstExecution)

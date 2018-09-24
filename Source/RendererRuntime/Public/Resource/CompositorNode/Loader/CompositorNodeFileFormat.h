@@ -46,6 +46,7 @@ namespace RendererRuntime
 	typedef StringId CompositorFramebufferId;	///< Compositor framebuffer identifier, internally just a POD "uint32_t"
 	typedef StringId CompositorPassTypeId;		///< Compositor pass type identifier, internally just a POD "uint32_t"
 	typedef StringId MaterialTechniqueId;		///< Material technique identifier, internally just a POD "uint32_t", result of hashing the material technique name
+	typedef StringId MaterialPropertyId;		///< Material property identifier, internally just a POD "uint32_t", result of hashing the property name
 
 
 	// Compositor node file format content:
@@ -156,8 +157,9 @@ namespace RendererRuntime
 
 			struct PassGenerateMipmaps final : public Pass
 			{
-				AssetId depthTextureAssetId;
-				AssetId materialBlueprintAssetId;
+				AssetId			   textureAssetId;
+				AssetId			   materialBlueprintAssetId;
+				MaterialPropertyId textureMaterialBlueprintProperty;
 			};
 
 			struct PassCompute : public Pass

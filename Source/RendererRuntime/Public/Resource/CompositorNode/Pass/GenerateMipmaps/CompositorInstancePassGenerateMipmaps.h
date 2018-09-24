@@ -93,6 +93,7 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
+		// For texture mipmap generation via custom material blueprint
 		Renderer::CommandBuffer		   mCommandBuffer;
 		CompositorResourcePassCompute* mCompositorResourcePassCompute;
 		CompositorInstancePassCompute* mCompositorInstancePassCompute;
