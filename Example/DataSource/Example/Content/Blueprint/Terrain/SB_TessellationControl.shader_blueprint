@@ -118,7 +118,7 @@ float ClipToScreenSpaceTessellation(float4 clip0, float4 clip1)
 float SphereToScreenSpaceTessellation(float3 p0, float3 p1, float diameter)
 {
 	float3 centre = 0.5f * (p0 + p1);
-	float4 view0 = MATRIX_MUL(PassData.WorldSpaceToViewSpaceMatrix, float4(centre, 1.0f));
+	float4 view0 = MATRIX_MUL(PassData.WorldSpaceToViewSpaceMatrix, float4(centre - PassData.UnmodifiedWorldSpaceCameraPosition, 1.0f));
 	float4 view1 = view0;
 	view1.x += diameter;
 
