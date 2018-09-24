@@ -188,37 +188,55 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void VolumeSceneItem::onMaterialResourceCreated()
 	{
-		const IRendererRuntime& rendererRuntime = getSceneResource().getRendererRuntime();
-
-		// Add reference to vertex array object (VAO) shared between all volume instances
-		if (nullptr == ::detail::VolumeVertexArrayPtr)
-		{
-			::detail::VolumeVertexArrayPtr = ::detail::createVolumeVertexArray(rendererRuntime);
-			assert(nullptr != ::detail::VolumeVertexArrayPtr);
-		}
-		::detail::VolumeVertexArrayPtr->addReference();
-
 		// Setup renderable manager
-		mRenderableManager.getRenderables().emplace_back(mRenderableManager, ::detail::VolumeVertexArrayPtr, rendererRuntime.getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>(), true, 0, 36);
+		mRenderableManager.getRenderables().emplace_back(mRenderableManager, ::detail::VolumeVertexArrayPtr, getSceneResource().getRendererRuntime().getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>(), true, 0, 36);
 		mRenderableManager.updateCachedRenderablesData();
+	}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual RendererRuntime::IResourceListener methods ]
+	//[-------------------------------------------------------]
+	void VolumeSceneItem::onLoadingStateChange(const IResource& resource)
+	{
+		assert(resource.getAssetId() == getMaterialAssetId());
+		if (resource.getLoadingState() == IResource::LoadingState::LOADED)
+		{
+			mRenderableManager.getRenderables().clear();
+		}
+
+		// Call the base implementation
+		MaterialSceneItem::onLoadingStateChange(resource);
 	}
 
 
 	//[-------------------------------------------------------]
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
+	VolumeSceneItem::VolumeSceneItem(SceneResource& sceneResource) :
+		MaterialSceneItem(sceneResource)
+	{
+		// Add reference to vertex array object (VAO) shared between all volume instances
+		if (nullptr == ::detail::VolumeVertexArrayPtr)
+		{
+			::detail::VolumeVertexArrayPtr = ::detail::createVolumeVertexArray(getSceneResource().getRendererRuntime());
+			assert(nullptr != ::detail::VolumeVertexArrayPtr);
+		}
+		::detail::VolumeVertexArrayPtr->addReference();
+	}
+
 	VolumeSceneItem::~VolumeSceneItem()
 	{
 		if (isValid(getMaterialResourceId()))
 		{
 			// Clear the renderable manager right now so we have no more references to the shared vertex array
 			mRenderableManager.getRenderables().clear();
+		}
 
-			// Release reference to vertex array object (VAO) shared between all volume instances
-			if (nullptr != ::detail::VolumeVertexArrayPtr && 1 == ::detail::VolumeVertexArrayPtr->releaseReference())	// +1 for reference to global shared pointer
-			{
-				::detail::VolumeVertexArrayPtr = nullptr;
-			}
+		// Release reference to vertex array object (VAO) shared between all volume instances
+		if (nullptr != ::detail::VolumeVertexArrayPtr && 1 == ::detail::VolumeVertexArrayPtr->releaseReference())	// +1 for reference to global shared pointer
+		{
+			::detail::VolumeVertexArrayPtr = nullptr;
 		}
 	}
 

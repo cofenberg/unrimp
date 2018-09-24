@@ -166,6 +166,22 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
+	//[ Protected virtual RendererRuntime::IResourceListener methods ]
+	//[-------------------------------------------------------]
+	void TerrainSceneItem::onLoadingStateChange(const IResource& resource)
+	{
+		assert(resource.getAssetId() == getMaterialAssetId());
+		if (resource.getLoadingState() == IResource::LoadingState::LOADED)
+		{
+			mRenderableManager.getRenderables().clear();
+		}
+
+		// Call the base implementation
+		MaterialSceneItem::onLoadingStateChange(resource);
+	}
+
+
+	//[-------------------------------------------------------]
 	//[ Protected methods                                     ]
 	//[-------------------------------------------------------]
 	TerrainSceneItem::TerrainSceneItem(SceneResource& sceneResource) :

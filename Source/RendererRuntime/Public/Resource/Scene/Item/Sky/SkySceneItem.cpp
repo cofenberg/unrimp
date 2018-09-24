@@ -145,37 +145,55 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void SkySceneItem::onMaterialResourceCreated()
 	{
-		const IRendererRuntime& rendererRuntime = getSceneResource().getRendererRuntime();
-
-		// Add reference to vertex array object (VAO) shared between all sky instances
-		if (nullptr == ::detail::SkyVertexArrayPtr)
-		{
-			::detail::SkyVertexArrayPtr = ::detail::createSkyVertexArray(rendererRuntime.getBufferManager());
-			assert(nullptr != ::detail::SkyVertexArrayPtr);
-		}
-		::detail::SkyVertexArrayPtr->addReference();
-
 		// Setup renderable manager
-		mRenderableManager.getRenderables().emplace_back(mRenderableManager, ::detail::SkyVertexArrayPtr, rendererRuntime.getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>(), true, 0, 36);
+		mRenderableManager.getRenderables().emplace_back(mRenderableManager, ::detail::SkyVertexArrayPtr, getSceneResource().getRendererRuntime().getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>(), true, 0, 36);
 		mRenderableManager.updateCachedRenderablesData();
+	}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual RendererRuntime::IResourceListener methods ]
+	//[-------------------------------------------------------]
+	void SkySceneItem::onLoadingStateChange(const IResource& resource)
+	{
+		assert(resource.getAssetId() == getMaterialAssetId());
+		if (resource.getLoadingState() == IResource::LoadingState::LOADED)
+		{
+			mRenderableManager.getRenderables().clear();
+		}
+
+		// Call the base implementation
+		MaterialSceneItem::onLoadingStateChange(resource);
 	}
 
 
 	//[-------------------------------------------------------]
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
+	SkySceneItem::SkySceneItem(SceneResource& sceneResource) :
+		MaterialSceneItem(sceneResource, false)	///< The sky isn't allowed to be culled
+	{
+		// Add reference to vertex array object (VAO) shared between all sky instances
+		if (nullptr == ::detail::SkyVertexArrayPtr)
+		{
+			::detail::SkyVertexArrayPtr = ::detail::createSkyVertexArray(getSceneResource().getRendererRuntime().getBufferManager());
+			assert(nullptr != ::detail::SkyVertexArrayPtr);
+		}
+		::detail::SkyVertexArrayPtr->addReference();
+	}
+
 	SkySceneItem::~SkySceneItem()
 	{
 		if (isValid(getMaterialResourceId()))
 		{
 			// Clear the renderable manager right now so we have no more references to the shared vertex array
 			mRenderableManager.getRenderables().clear();
+		}
 
-			// Release reference to vertex array object (VAO) shared between all sky instances
-			if (nullptr != ::detail::SkyVertexArrayPtr && 1 == ::detail::SkyVertexArrayPtr->releaseReference())	// +1 for reference to global shared pointer
-			{
-				::detail::SkyVertexArrayPtr = nullptr;
-			}
+		// Release reference to vertex array object (VAO) shared between all sky instances
+		if (nullptr != ::detail::SkyVertexArrayPtr && 1 == ::detail::SkyVertexArrayPtr->releaseReference())	// +1 for reference to global shared pointer
+		{
+			::detail::SkyVertexArrayPtr = nullptr;
 		}
 	}
 

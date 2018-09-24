@@ -116,6 +116,13 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
+	//[ Protected virtual RendererRuntime::IResourceListener methods ]
+	//[-------------------------------------------------------]
+	protected:
+		virtual void onLoadingStateChange(const IResource& resource) override;
+
+
+	//[-------------------------------------------------------]
 	//[ Private definitions                                   ]
 	//[-------------------------------------------------------]
 	private:

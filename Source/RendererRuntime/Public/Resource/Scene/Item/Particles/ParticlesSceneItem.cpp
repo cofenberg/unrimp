@@ -123,6 +123,22 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
+	//[ Protected virtual RendererRuntime::IResourceListener methods ]
+	//[-------------------------------------------------------]
+	void ParticlesSceneItem::onLoadingStateChange(const IResource& resource)
+	{
+		assert(resource.getAssetId() == getMaterialAssetId());
+		if (resource.getLoadingState() == IResource::LoadingState::LOADED)
+		{
+			mRenderableManager.getRenderables().clear();
+		}
+
+		// Call the base implementation
+		MaterialSceneItem::onLoadingStateChange(resource);
+	}
+
+
+	//[-------------------------------------------------------]
 	//[ Protected methods                                     ]
 	//[-------------------------------------------------------]
 	ParticlesSceneItem::ParticlesSceneItem(SceneResource& sceneResource) :

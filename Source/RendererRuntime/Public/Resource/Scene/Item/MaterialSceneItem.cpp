@@ -73,6 +73,14 @@ namespace RendererRuntime
 		assert(resource.getAssetId() == mMaterialAssetId);
 		if (resource.getLoadingState() == IResource::LoadingState::LOADED)
 		{
+			// Destroy the material resource we created
+			if (isValid(mMaterialResourceId))
+			{
+				getSceneResource().getRendererRuntime().getMaterialResourceManager().destroyMaterialResource(mMaterialResourceId);
+				setInvalid(mMaterialResourceId);
+			}
+
+			// Create material resource
 			createMaterialResource(resource.getId());
 		}
 	}

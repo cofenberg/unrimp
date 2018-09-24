@@ -96,15 +96,17 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
+	//[ Protected virtual RendererRuntime::IResourceListener methods ]
+	//[-------------------------------------------------------]
+	protected:
+		virtual void onLoadingStateChange(const IResource& resource) override;
+
+
+	//[-------------------------------------------------------]
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		inline explicit SkySceneItem(SceneResource& sceneResource) :
-			MaterialSceneItem(sceneResource, false)	///< The sky isn't allowed to be culled
-		{
-			// Nothing here
-		}
-
+		explicit SkySceneItem(SceneResource& sceneResource);
 		virtual ~SkySceneItem() override;
 		explicit SkySceneItem(const SkySceneItem&) = delete;
 		SkySceneItem& operator=(const SkySceneItem&) = delete;

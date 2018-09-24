@@ -96,15 +96,17 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
+	//[ Protected virtual RendererRuntime::IResourceListener methods ]
+	//[-------------------------------------------------------]
+	protected:
+		virtual void onLoadingStateChange(const IResource& resource) override;
+
+
+	//[-------------------------------------------------------]
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		inline explicit VolumeSceneItem(SceneResource& sceneResource) :
-			MaterialSceneItem(sceneResource)
-		{
-			// Nothing here
-		}
-
+		explicit VolumeSceneItem(SceneResource& sceneResource);
 		virtual ~VolumeSceneItem() override;
 		explicit VolumeSceneItem(const VolumeSceneItem&) = delete;
 		VolumeSceneItem& operator=(const VolumeSceneItem&) = delete;
