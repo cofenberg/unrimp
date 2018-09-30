@@ -96,6 +96,62 @@ namespace RendererRuntime
 		}
 	}
 
+	void MaterialTechnique::fillGraphicsCommandBuffer(const IRendererRuntime& rendererRuntime, Renderer::CommandBuffer& commandBuffer, uint32_t& resourceGroupRootParameterIndex, Renderer::IResourceGroup** resourceGroup)
+	{
+		// Sanity check
+		assert(isValid(mMaterialBlueprintResourceId));
+		assert((nullptr != resourceGroup) && "The renderer resource group pointer must be valid");
+
+		{ // Bind the material buffer manager
+			MaterialBufferManager* materialBufferManager = getMaterialBufferManager();
+			if (nullptr != materialBufferManager)
+			{
+				materialBufferManager->fillGraphicsCommandBuffer(*this, commandBuffer);
+			}
+		}
+
+		// Set resource group
+		fillCommandBuffer(rendererRuntime, resourceGroupRootParameterIndex, resourceGroup);
+	}
+
+	void MaterialTechnique::fillComputeCommandBuffer(const IRendererRuntime& rendererRuntime, Renderer::CommandBuffer& commandBuffer, uint32_t& resourceGroupRootParameterIndex, Renderer::IResourceGroup** resourceGroup)
+	{
+		// Sanity check
+		assert(isValid(mMaterialBlueprintResourceId));
+		assert((nullptr != resourceGroup) && "The renderer resource group pointer must be valid");
+
+		{ // Bind the material buffer manager
+			MaterialBufferManager* materialBufferManager = getMaterialBufferManager();
+			if (nullptr != materialBufferManager)
+			{
+				materialBufferManager->fillComputeCommandBuffer(*this, commandBuffer);
+			}
+		}
+
+		// Set resource group
+		fillCommandBuffer(rendererRuntime, resourceGroupRootParameterIndex, resourceGroup);
+	}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual RendererRuntime::IResourceListener methods ]
+	//[-------------------------------------------------------]
+	void MaterialTechnique::onLoadingStateChange(const RendererRuntime::IResource&)
+	{
+		makeResourceGroupDirty();
+	}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	MaterialBufferManager* MaterialTechnique::getMaterialBufferManager() const
+	{
+		// It's valid if a material blueprint resource doesn't contain a material uniform buffer (usually the case for compositor material blueprint resources)
+		const MaterialBlueprintResource* materialBlueprintResource = getMaterialResourceManager().getRendererRuntime().getMaterialBlueprintResourceManager().tryGetById(mMaterialBlueprintResourceId);
+		return (nullptr != materialBlueprintResource) ? materialBlueprintResource->getMaterialBufferManager() : nullptr;
+	}
+
 	const MaterialTechnique::Textures& MaterialTechnique::getTextures(const IRendererRuntime& rendererRuntime)
 	{
 		// Need for gathering the textures now?
@@ -108,6 +164,7 @@ namespace RendererRuntime
 				TextureResourceManager& textureResourceManager = rendererRuntime.getTextureResourceManager();
 				const MaterialBlueprintResource::Textures& textures = materialBlueprintResource->getTextures();
 				const size_t numberOfTextures = textures.size();
+				mTextures.reserve(numberOfTextures);
 				for (size_t i = 0; i < numberOfTextures; ++i)
 				{
 					const MaterialBlueprintResource::Texture& blueprintTexture = textures[i];
@@ -138,62 +195,6 @@ namespace RendererRuntime
 			}
 		}
 		return mTextures;
-	}
-
-	void MaterialTechnique::fillGraphicsCommandBuffer(const IRendererRuntime& rendererRuntime, Renderer::CommandBuffer& commandBuffer, uint32_t& textureResourceGroupRootParameterIndex, Renderer::IResourceGroup** textureResourceGroup)
-	{
-		// Sanity check
-		assert(isValid(mMaterialBlueprintResourceId));
-		assert((nullptr != textureResourceGroup) && "The renderer texture resource group pointer must be valid");
-
-		{ // Bind the material buffer manager
-			MaterialBufferManager* materialBufferManager = getMaterialBufferManager();
-			if (nullptr != materialBufferManager)
-			{
-				materialBufferManager->fillGraphicsCommandBuffer(*this, commandBuffer);
-			}
-		}
-
-		// Set textures
-		fillCommandBuffer(rendererRuntime, textureResourceGroupRootParameterIndex, textureResourceGroup);
-	}
-
-	void MaterialTechnique::fillComputeCommandBuffer(const IRendererRuntime& rendererRuntime, Renderer::CommandBuffer& commandBuffer, uint32_t& textureResourceGroupRootParameterIndex, Renderer::IResourceGroup** textureResourceGroup)
-	{
-		// Sanity check
-		assert(isValid(mMaterialBlueprintResourceId));
-		assert((nullptr != textureResourceGroup) && "The renderer texture resource group pointer must be valid");
-
-		{ // Bind the material buffer manager
-			MaterialBufferManager* materialBufferManager = getMaterialBufferManager();
-			if (nullptr != materialBufferManager)
-			{
-				materialBufferManager->fillComputeCommandBuffer(*this, commandBuffer);
-			}
-		}
-
-		// Set textures
-		fillCommandBuffer(rendererRuntime, textureResourceGroupRootParameterIndex, textureResourceGroup);
-	}
-
-
-	//[-------------------------------------------------------]
-	//[ Protected virtual RendererRuntime::IResourceListener methods ]
-	//[-------------------------------------------------------]
-	void MaterialTechnique::onLoadingStateChange(const RendererRuntime::IResource&)
-	{
-		makeTextureResourceGroupDirty();
-	}
-
-
-	//[-------------------------------------------------------]
-	//[ Private methods                                       ]
-	//[-------------------------------------------------------]
-	MaterialBufferManager* MaterialTechnique::getMaterialBufferManager() const
-	{
-		// It's valid if a material blueprint resource doesn't contain a material uniform buffer (usually the case for compositor material blueprint resources)
-		const MaterialBlueprintResource* materialBlueprintResource = getMaterialResourceManager().getRendererRuntime().getMaterialBlueprintResourceManager().tryGetById(mMaterialBlueprintResourceId);
-		return (nullptr != materialBlueprintResource) ? materialBlueprintResource->getMaterialBufferManager() : nullptr;
 	}
 
 	void MaterialTechnique::calculateSerializedGraphicsPipelineStateHash()
@@ -279,19 +280,19 @@ namespace RendererRuntime
 		}
 	}
 
-	void MaterialTechnique::fillCommandBuffer(const IRendererRuntime& rendererRuntime, uint32_t& textureResourceGroupRootParameterIndex, Renderer::IResourceGroup** textureResourceGroup)
+	void MaterialTechnique::fillCommandBuffer(const IRendererRuntime& rendererRuntime, uint32_t& resourceGroupRootParameterIndex, Renderer::IResourceGroup** resourceGroup)
 	{
 		// Set textures
 		const Textures& textures = getTextures(rendererRuntime);
 		if (textures.empty())
 		{
-			setInvalid(textureResourceGroupRootParameterIndex);
-			*textureResourceGroup = nullptr;
+			setInvalid(resourceGroupRootParameterIndex);
+			*resourceGroup = nullptr;
 		}
 		else
 		{
-			// Create texture resource group, if needed
-			if (nullptr == mTextureResourceGroup)
+			// Create resource group, if needed
+			if (nullptr == mResourceGroup)
 			{
 				// Check texture resources
 				const size_t numberOfTextures = textures.size();
@@ -324,10 +325,23 @@ namespace RendererRuntime
 				assert(nullptr != materialBlueprintResource);
 
 				// Create texture resource group
-				std::vector<Renderer::IResource*> textureResources;
+				std::vector<Renderer::IResource*> resources;
 				std::vector<Renderer::ISamplerState*> samplerStates;
-				textureResources.resize(numberOfTextures);
-				samplerStates.resize(numberOfTextures);
+				uint32_t textureStartIndex = 0;
+				if (nullptr != mStructuredBufferPtr)
+				{
+					// First entry is the structured buffer
+					resources.resize(numberOfTextures + 1);
+					samplerStates.resize(numberOfTextures + 1);
+					resources[0] = mStructuredBufferPtr;
+					samplerStates[0] = nullptr;
+					textureStartIndex = 1;
+				}
+				else
+				{
+					resources.resize(numberOfTextures);
+					samplerStates.resize(numberOfTextures);
+				}
 				const MaterialBlueprintResource::Textures& materialBlueprintResourceTextures = materialBlueprintResource->getTextures();
 				const MaterialBlueprintResource::SamplerStates& materialBlueprintResourceSamplerStates = materialBlueprintResource->getSamplerStates();
 				for (size_t i = 0; i < numberOfTextures; ++i)
@@ -335,28 +349,28 @@ namespace RendererRuntime
 					// Set texture resource
 					TextureResource* textureResource = textureResourceManager.tryGetById(textures[i].textureResourceId);
 					assert(nullptr != textureResource);
-					textureResources[i] = textureResource->getTexture();
-					assert(nullptr != textureResources[i]);
+					resources[i + textureStartIndex] = textureResource->getTexture();
+					assert(nullptr != resources[i + textureStartIndex]);
 
 					// Set sampler state, if there's one (e.g. texel fetch instead of sampling might be used)
 					if (isValid(materialBlueprintResourceTextures[i].samplerStateIndex))
 					{
 						assert(materialBlueprintResourceTextures[i].samplerStateIndex < materialBlueprintResourceSamplerStates.size());
-						samplerStates[i] = materialBlueprintResourceSamplerStates[materialBlueprintResourceTextures[i].samplerStateIndex].samplerStatePtr;
+						samplerStates[i + textureStartIndex] = materialBlueprintResourceSamplerStates[materialBlueprintResourceTextures[i].samplerStateIndex].samplerStatePtr;
 					}
 					else
 					{
-						samplerStates[i] = nullptr;
+						samplerStates[i + textureStartIndex] = nullptr;
 					}
 				}
-				// TODO(co) All textures need to be inside the same resource group, this needs to be guaranteed by design
-				mTextureResourceGroup = rendererRuntime.getRendererResourceManager().createResourceGroup(*materialBlueprintResource->getRootSignaturePtr(), textures[0].rootParameterIndex, static_cast<uint32_t>(numberOfTextures), textureResources.data(), samplerStates.data());
-				RENDERER_SET_RESOURCE_DEBUG_NAME(mTextureResourceGroup, "Material technique")
+				// TODO(co) All resources need to be inside the same resource group, this needs to be guaranteed by design
+				mResourceGroup = rendererRuntime.getRendererResourceManager().createResourceGroup(*materialBlueprintResource->getRootSignaturePtr(), textures[0].rootParameterIndex, static_cast<uint32_t>(resources.size()), resources.data(), samplerStates.data());
+				RENDERER_SET_RESOURCE_DEBUG_NAME(mResourceGroup, "Material technique")
 			}
 
 			// Tell the caller about the resource group
-			textureResourceGroupRootParameterIndex = textures[0].rootParameterIndex;
-			*textureResourceGroup = mTextureResourceGroup;
+			resourceGroupRootParameterIndex = textures[0].rootParameterIndex;
+			*resourceGroup = mResourceGroup;
 		}
 	}
 

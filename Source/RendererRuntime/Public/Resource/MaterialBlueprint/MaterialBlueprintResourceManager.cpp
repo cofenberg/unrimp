@@ -184,14 +184,14 @@ namespace RendererRuntime
 				}
 			}
 
-			{ // Make the texture resource groups of all material techniques dirty to instantly see default texture filtering changes
+			{ // Make the resource groups of all material techniques dirty to instantly see default texture filtering changes
 				const MaterialResourceManager& materialResourceManager = mRendererRuntime.getMaterialResourceManager();
 				const uint32_t numberOfElements = materialResourceManager.getNumberOfResources();
 				for (uint32_t i = 0; i < numberOfElements; ++i)
 				{
 					for (MaterialTechnique* materialTechnique : materialResourceManager.getByIndex(i).getSortedMaterialTechniqueVector())
 					{
-						materialTechnique->makeTextureResourceGroupDirty();
+						materialTechnique->makeResourceGroupDirty();
 					}
 				}
 			}
@@ -269,7 +269,7 @@ namespace RendererRuntime
 						{
 							if (materialTechnique->getMaterialBlueprintResourceId() == materialBlueprintResource.getId())
 							{
-								materialTechnique->makeTextureResourceGroupDirty();
+								materialTechnique->makeResourceGroupDirty();
 								for (const MaterialProperty& materialProperty : materialResource.getSortedPropertyVector())
 								{
 									// Update material property values as long as a material property was not explicitly overwritten inside a material

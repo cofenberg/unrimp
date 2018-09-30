@@ -48,11 +48,10 @@ struct PassDataStruct
 	float4x4 PreviousWorldSpaceToViewSpaceMatrix;
 	float4	 WorldSpaceToViewSpaceQuaternion;
 	float4	 WindDirectionStrength;	// xyz = normalized wind direction vector, w = wind strength
-	float3   UnmodifiedWorldSpaceCameraPosition;
-	float	 GrassWindHeightFactor;
 	float2   ViewportSize;
 	float2   InverseViewportSize;
 	float2	 ProjectionParameters;
+	float	 GrassWindHeightFactor;
 	float    GlobalTimeInSeconds;
 	float    PreviousGlobalTimeInSeconds;
 };
@@ -60,11 +59,11 @@ UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
 	PassDataStruct PassData;
 UNIFORM_BUFFER_END
 
-// Textures
-TEXTURE_2D(1, 0, _argb_alpha, 0)
+// Textures: We need to start at texture unit 1 instead of texture unit 0 because the vertex shader has an instance structured buffer bound at texture unit 0 (OpenGL shares those bindings across all shader stages while Direct3D doesn't)
+TEXTURE_2D(2, 1, _argb_alpha, 1)
 
 // Samplers
-SAMPLER_STATE(2, 0, SamplerLinear, 0)
+SAMPLER_STATE(3, 0, SamplerLinear, 0)
 
 
 //[-------------------------------------------------------]

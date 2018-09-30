@@ -71,14 +71,15 @@ namespace
 			#define ELSE_IF_VALUE(name, value) else if (strcmp(valueAsString, name) == 0) ++materialBlueprintHeader.value;
 
 			// Evaluate value
-				 IF_VALUE("UNIFORM_BUFFER",   numberOfUniformBuffers)
-			ELSE_IF_VALUE("TEXTURE_BUFFER",	  numberOfTextureBuffers)
-			ELSE_IF_VALUE("SAMPLER_STATE",	  numberOfSamplerStates)
-			ELSE_IF_VALUE("TEXTURE_1D",		  numberOfTextures)
-			ELSE_IF_VALUE("TEXTURE_2D",		  numberOfTextures)
-			ELSE_IF_VALUE("TEXTURE_2D_ARRAY", numberOfTextures)
-			ELSE_IF_VALUE("TEXTURE_3D",		  numberOfTextures)
-			ELSE_IF_VALUE("TEXTURE_CUBE",	  numberOfTextures)
+				 IF_VALUE("UNIFORM_BUFFER",    numberOfUniformBuffers)
+			ELSE_IF_VALUE("TEXTURE_BUFFER",	   numberOfTextureBuffers)
+			ELSE_IF_VALUE("STRUCTURED_BUFFER", numberOfStructuredBuffers)
+			ELSE_IF_VALUE("SAMPLER_STATE",	   numberOfSamplerStates)
+			ELSE_IF_VALUE("TEXTURE_1D",		   numberOfTextures)
+			ELSE_IF_VALUE("TEXTURE_2D",		   numberOfTextures)
+			ELSE_IF_VALUE("TEXTURE_2D_ARRAY",  numberOfTextures)
+			ELSE_IF_VALUE("TEXTURE_3D",		   numberOfTextures)
+			ELSE_IF_VALUE("TEXTURE_CUBE",	   numberOfTextures)
 			else
 			{
 				throw std::runtime_error("Invalid resource type \"" + std::string(valueAsString) + '\"');
@@ -92,7 +93,7 @@ namespace
 		void setMaterialBlueprintHeaderNumberOfResourcesByResourceGroups(const rapidjson::Value& rapidJsonValueResourceGroups, RendererRuntime::v1MaterialBlueprint::MaterialBlueprintHeader& materialBlueprintHeader)
 		{
 			// Initialize number of resources
-			materialBlueprintHeader.numberOfUniformBuffers = materialBlueprintHeader.numberOfTextureBuffers = materialBlueprintHeader.numberOfSamplerStates = materialBlueprintHeader.numberOfTextures = 0;
+			materialBlueprintHeader.numberOfUniformBuffers = materialBlueprintHeader.numberOfTextureBuffers = materialBlueprintHeader.numberOfStructuredBuffers = materialBlueprintHeader.numberOfSamplerStates = materialBlueprintHeader.numberOfTextures = 0;
 
 			// Iterate through all resource groups, we're only interested in the "ResourceType" resource parameter
 			int resourceGroupIndex = 0;

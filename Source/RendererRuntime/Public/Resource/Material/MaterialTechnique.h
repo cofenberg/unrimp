@@ -80,20 +80,7 @@ namespace RendererRuntime
 	//[ Friends                                               ]
 	//[-------------------------------------------------------]
 		friend class MaterialResource;					// Material technique owner
-		friend class MaterialBlueprintResourceManager;	// Needs to be able to call "RendererRuntime::MaterialTechnique::makeTextureResourceGroupDirty()"
-
-
-	//[-------------------------------------------------------]
-	//[ Public definitions                                    ]
-	//[-------------------------------------------------------]
-	public:
-		struct Texture final
-		{
-			uint32_t		  rootParameterIndex;
-			MaterialProperty  materialProperty;
-			TextureResourceId textureResourceId;
-		};
-		typedef std::vector<Texture> Textures;
+		friend class MaterialBlueprintResourceManager;	// Needs to be able to call "RendererRuntime::MaterialTechnique::makeResourceGroupDirty()"
 
 
 	//[-------------------------------------------------------]
@@ -117,7 +104,7 @@ namespace RendererRuntime
 		*  @brief
 		*    Destructor
 		*/
-		~MaterialTechnique();
+		virtual ~MaterialTechnique() override;
 
 		/**
 		*  @brief
@@ -145,15 +132,15 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Return the textures
+		*    Set structured buffer pointer
 		*
-		*  @param[in] rendererRuntime
-		*    Renderer runtime to use
-		*
-		*  @return
-		*    The textures
+		*  @param[in] structuredBufferPtr
+		*    Structured buffer pointer
 		*/
-		const Textures& getTextures(const IRendererRuntime& rendererRuntime);
+		inline void setStructuredBufferPtr(Renderer::IStructuredBufferPtr& structuredBufferPtr)
+		{
+			mStructuredBufferPtr = structuredBufferPtr;
+		}
 
 		/**
 		*  @brief
@@ -175,12 +162,12 @@ namespace RendererRuntime
 		*    Renderer runtime to use
 		*  @param[out] commandBuffer
 		*    Command buffer to fill
-		*  @param[out] textureResourceGroupRootParameterIndex
-		*    Root parameter index to bind the texture resource group to, can be "RendererRuntime::getInvalid<uint32_t>()"
-		*  @param[out] textureResourceGroup
-		*    Renderer texture resource group to set
+		*  @param[out] resourceGroupRootParameterIndex
+		*    Root parameter index to bind the resource group to, can be "RendererRuntime::getInvalid<uint32_t>()"
+		*  @param[out] resourceGroup
+		*    Renderer resource group to set
 		*/
-		void fillGraphicsCommandBuffer(const IRendererRuntime& rendererRuntime, Renderer::CommandBuffer& commandBuffer, uint32_t& textureResourceGroupRootParameterIndex, Renderer::IResourceGroup** textureResourceGroup);
+		void fillGraphicsCommandBuffer(const IRendererRuntime& rendererRuntime, Renderer::CommandBuffer& commandBuffer, uint32_t& resourceGroupRootParameterIndex, Renderer::IResourceGroup** resourceGroup);
 
 		/**
 		*  @brief
@@ -190,12 +177,12 @@ namespace RendererRuntime
 		*    Renderer runtime to use
 		*  @param[out] commandBuffer
 		*    Command buffer to fill
-		*  @param[out] textureResourceGroupRootParameterIndex
-		*    Root parameter index to bind the texture resource group to, can be "RendererRuntime::getInvalid<uint32_t>()"
-		*  @param[out] textureResourceGroup
-		*    Renderer texture resource group to set
+		*  @param[out] resourceGroupRootParameterIndex
+		*    Root parameter index to bind the resource group to, can be "RendererRuntime::getInvalid<uint32_t>()"
+		*  @param[out] resourceGroup
+		*    Renderer resource group to set
 		*/
-		void fillComputeCommandBuffer(const IRendererRuntime& rendererRuntime, Renderer::CommandBuffer& commandBuffer, uint32_t& textureResourceGroupRootParameterIndex, Renderer::IResourceGroup** textureResourceGroup);
+		void fillComputeCommandBuffer(const IRendererRuntime& rendererRuntime, Renderer::CommandBuffer& commandBuffer, uint32_t& resourceGroupRootParameterIndex, Renderer::IResourceGroup** resourceGroup);
 
 
 	//[-------------------------------------------------------]
@@ -203,6 +190,19 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	protected:
 		virtual void onLoadingStateChange(const RendererRuntime::IResource& resource) override;
+
+
+	//[-------------------------------------------------------]
+	//[ Private definitions                                   ]
+	//[-------------------------------------------------------]
+	private:
+		struct Texture final
+		{
+			uint32_t		  rootParameterIndex;
+			MaterialProperty  materialProperty;
+			TextureResourceId textureResourceId;
+		};
+		typedef std::vector<Texture> Textures;
 
 
 	//[-------------------------------------------------------]
@@ -216,14 +216,26 @@ namespace RendererRuntime
 		inline void clearTextures()
 		{
 			mTextures.clear();
-			makeTextureResourceGroupDirty();
+			makeResourceGroupDirty();
 		}
 
-		inline void makeTextureResourceGroupDirty()
+		/**
+		*  @brief
+		*    Return the textures
+		*
+		*  @param[in] rendererRuntime
+		*    Renderer runtime to use
+		*
+		*  @return
+		*    The textures
+		*/
+		const Textures& getTextures(const IRendererRuntime& rendererRuntime);
+
+		inline void makeResourceGroupDirty()
 		{
-			// Forget about the texture resource group so it's rebuild
+			// Forget about the resource group so it's rebuild
 			// TODO(co) Optimization possibility: Allow it to update resource groups instead of always having to destroy and recreate them?
-			mTextureResourceGroup = nullptr;
+			mResourceGroup = nullptr;
 		}
 
 		/**
@@ -244,23 +256,24 @@ namespace RendererRuntime
 		*
 		*  @param[in] rendererRuntime
 		*    Renderer runtime to use
-		*  @param[out] textureResourceGroupRootParameterIndex
-		*    Root parameter index to bind the texture resource group to, can be "RendererRuntime::getInvalid<uint32_t>()"
-		*  @param[out] textureResourceGroup
-		*    Renderer texture resource group to set
+		*  @param[out] resourceGroupRootParameterIndex
+		*    Root parameter index to bind the resource group to, can be "RendererRuntime::getInvalid<uint32_t>()"
+		*  @param[out] resourceGroup
+		*    Renderer resource group to set
 		*/
-		void fillCommandBuffer(const IRendererRuntime& rendererRuntime, uint32_t& textureResourceGroupRootParameterIndex, Renderer::IResourceGroup** textureResourceGroup);
+		void fillCommandBuffer(const IRendererRuntime& rendererRuntime, uint32_t& resourceGroupRootParameterIndex, Renderer::IResourceGroup** resourceGroup);
 
 
 	//[-------------------------------------------------------]
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		MaterialTechniqueId			mMaterialTechniqueId;					///< Material technique ID
-		MaterialBlueprintResourceId	mMaterialBlueprintResourceId;			///< Material blueprint resource ID, can be set to invalid value
-		Textures					mTextures;
-		uint32_t					mSerializedGraphicsPipelineStateHash;	///< FNV1a hash of "Renderer::SerializedGraphicsPipelineState"
-		Renderer::IResourceGroupPtr	mTextureResourceGroup;					///< Texture resource group, can be a null pointer
+		MaterialTechniqueId			   mMaterialTechniqueId;					///< Material technique ID
+		MaterialBlueprintResourceId	   mMaterialBlueprintResourceId;			///< Material blueprint resource ID, can be set to invalid value
+		Renderer::IStructuredBufferPtr mStructuredBufferPtr;
+		Textures					   mTextures;
+		uint32_t					   mSerializedGraphicsPipelineStateHash;	///< FNV1a hash of "Renderer::SerializedGraphicsPipelineState"
+		Renderer::IResourceGroupPtr	   mResourceGroup;							///< Resource group, can be a null pointer
 
 
 	};

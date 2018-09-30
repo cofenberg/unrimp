@@ -48,6 +48,7 @@
 		#define INPUT_BEGIN_CONTROL_POINT struct SHADER_INPUT_CONTROL_POINT {
 			#define INPUT_ARRAY(name) name
 			#define INPUT_VERTEX_ID uint vertexId : SV_VERTEXID;
+			#define INPUT_INSTANCE_ID uint instanceId : SV_INSTANCEID;
 			#define INPUT_VERTEX_DRAW_ID(attributeIndex) uint drawId : DRAWID;	// "DRAWID" is a special vertex attribute semantic introduced, see "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html
 			#define INPUT_VERTEX_POSITION(attributeIndex, type, name) type name : POSITION;
 			#define INPUT_POSITION(attributeIndex, type, name) type name : SV_POSITION;
@@ -89,6 +90,7 @@
 			#define MAIN_INPUT(name) ShaderInput.name
 			#define MAIN_INPUT_ARRAY(name, index) ShaderInput[index].name
 			#define MAIN_INPUT_VERTEX_ID ShaderInput.vertexId
+			#define MAIN_INPUT_INSTANCE_ID ShaderInput.instanceId
 			#define MAIN_INPUT_DRAW_ID ShaderInput.drawId
 			#define MAIN_OUTPUT(name) shaderOutput.name
 			#define MAIN_OUTPUT_POSITION shaderOutput.OutputPosition
@@ -143,6 +145,10 @@
 		// Texture buffer
 		#define TEXTURE_BUFFER(resourceGroupIndex, resourceIndex, type, name, registerIndex) Buffer<type> name : register(t##registerIndex);
 		#define TEXTURE_BUFFER_FETCH(name, texelIndex) name.Load(texelIndex)
+
+		// Structured buffer
+		#define STRUCTURED_BUFFER(resourceGroupIndex, resourceIndex, name, registerIndex, typeName, memberName) StructuredBuffer<typeName> name : register(t##registerIndex);
+		#define STRUCTURED_BUFFER_GET(name, memberName, index) name[index]
 
 		// Texture
 		#define TEXTURE_1D(resourceGroupIndex, resourceIndex, name, registerIndex) Texture1D name : register(t##registerIndex);
@@ -268,6 +274,7 @@
 		#define INPUT_BEGIN_CONTROL_POINT
 			#define INPUT_ARRAY(name) name[]
 			#define INPUT_VERTEX_ID
+			#define INPUT_INSTANCE_ID
 			#define INPUT_VERTEX_DRAW_ID(attributeIndex) layout(location = attributeIndex) in uint drawId;	// See "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html
 			#define INPUT_VERTEX_POSITION(attributeIndex, type, name) layout(location = attributeIndex) in type name;
 			#define INPUT_POSITION(attributeIndex, type, name) layout(location = attributeIndex) in type name;
@@ -308,7 +315,8 @@
 		#define MAIN_BEGIN_COMPUTE(localSizeX, localSizeY, localSizeZ) layout (local_size_x = localSizeX, local_size_y = localSizeY, local_size_z = localSizeZ) in; void main() {
 			#define MAIN_INPUT(name) name
 			#define MAIN_INPUT_ARRAY(name, index) name[index]
-			#define MAIN_INPUT_VERTEX_ID uint(gl_VertexIndex)						// "gl_VertexIndex" is equivalent to OpenGL's "gl_VertexID"
+			#define MAIN_INPUT_VERTEX_ID uint(gl_VertexIndex)				// "gl_VertexIndex" is equivalent to OpenGL's "gl_VertexID"
+			#define MAIN_INPUT_INSTANCE_ID uint(gl_InstanceIndex)			// "gl_InstanceIndex" is not equivalent to OpenGL's "gl_InstanceID" because "gl_InstanceID" does not include the "baseInstance"-parameter
 
 			// TODO(co) Review in detail: Looks like that with "gl_InstanceIndex" we don't need the "drawId"-hack in Vulkan
 			#define MAIN_INPUT_DRAW_ID uint(gl_InstanceIndex)				// "gl_InstanceIndex" is not equivalent to OpenGL's "gl_InstanceID" because "gl_InstanceID" does not include the "baseInstance"-parameter
@@ -355,6 +363,10 @@
 		// Texture buffer
 		#define TEXTURE_BUFFER(resourceGroupIndex, resourceIndex, type, name, registerIndex) layout(set = resourceGroupIndex, binding = resourceIndex) uniform samplerBuffer name;
 		#define TEXTURE_BUFFER_FETCH(name, texelIndex) texelFetch(name, int(texelIndex))
+
+		// Structured buffer
+		#define STRUCTURED_BUFFER(resourceGroupIndex, resourceIndex, name, registerIndex, typeName, memberName) layout(std430, set = resourceGroupIndex, binding = resourceIndex) readonly buffer name { typeName memberName[]; };
+		#define STRUCTURED_BUFFER_GET(name, memberName, index) memberName[index]
 
 		// Texture
 		#define TEXTURE_1D(resourceGroupIndex, resourceIndex, name, registerIndex) layout(set = resourceGroupIndex, binding = resourceIndex) uniform sampler1D name;
@@ -452,6 +464,7 @@
 		// TODO(co) OpenGL GLSL 430 instead of 410 for e.g. "GL_ARB_shader_image_load_store" build in support. Apply dropped OpenGL support so we can probably drop Apple support. If at once point Unrimp should run on Apple hardware, we probably will use MoltenVK for Vulkan (yet another renderer API Metal just for Apple hardware is probably to much work for a spare time project).
 		// #version 410 core	// This is what Mac OS X 10.11 and similar support, no fancy 420, no "#extension GL_ARB_shading_language_420pack : enable" and hence no "layout(binding)" usage possible (no problem, we're using material blueprints with a root signature)
 		#version 430 core
+		#define HAS_BASE_INSTANCE	// "GL_ARB_base_instance" is there
 
 		// Hack to speed up shader compilation, see e.g.
 		// - https://www.gamedev.net/forums/topic/663243-slow-shader-compile-time-when-using-large-arrays/
@@ -477,7 +490,12 @@
 		#define INPUT_BEGIN_CONTROL_POINT
 			#define INPUT_ARRAY(name) name[]
 			#define INPUT_VERTEX_ID
-			#define INPUT_VERTEX_DRAW_ID(attributeIndex) in uint drawId; uniform uint drawIdUniform;	// See "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html - "drawIdUniform" is used in case "GL_ARB_base_instance" isn't supported (Mac OS X 10.11 for example)
+			#define INPUT_INSTANCE_ID
+			#ifdef HAS_BASE_INSTANCE
+				#define INPUT_VERTEX_DRAW_ID(attributeIndex) in uint drawId;				// See "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html
+			#else
+				#define INPUT_VERTEX_DRAW_ID(attributeIndex) uniform uint drawIdUniform;	// See "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html - "drawIdUniform" is used in case "GL_ARB_base_instance" isn't supported (Mac OS X 10.11 for example)
+			#endif
 			#define INPUT_VERTEX_POSITION(attributeIndex, type, name) in type name;
 			#define INPUT_POSITION(attributeIndex, type, name) in type name;
 			#define INPUT_VERTEX_COLOR(attributeIndex, type, name) in type name;
@@ -518,7 +536,12 @@
 			#define MAIN_INPUT(name) name
 			#define MAIN_INPUT_ARRAY(name, index) name[index]
 			#define MAIN_INPUT_VERTEX_ID uint(gl_VertexID)
-			#define MAIN_INPUT_DRAW_ID (drawId + drawIdUniform + uint(gl_InstanceID))
+			#define MAIN_INPUT_INSTANCE_ID uint(gl_InstanceID)
+			#ifdef HAS_BASE_INSTANCE
+				#define MAIN_INPUT_DRAW_ID drawId
+			#else
+				#define MAIN_INPUT_DRAW_ID (drawIdUniform + uint(gl_InstanceID))
+			#endif
 			#define MAIN_OUTPUT(name) name
 			#define MAIN_OUTPUT_POSITION gl_Position
 			#define MAIN_OUTPUT_COLOR(semanticIndex) OutputColor##semanticIndex
@@ -538,7 +561,11 @@
 		#define OUTPUT_BEGIN_VERTEX
 		#define OUTPUT_END_VERTEX
 		#define MAIN_BEGIN_VERTEX void main() {
-			#define MAIN_INPUT_DRAW_ID_VERTEX (drawId + drawIdUniform + uint(gl_InstanceID))
+			#ifdef HAS_BASE_INSTANCE
+				#define MAIN_INPUT_DRAW_ID_VERTEX drawId
+			#else
+				#define MAIN_INPUT_DRAW_ID_VERTEX (drawIdUniform + uint(gl_InstanceID))
+			#endif
 			#define MAIN_INPUT_STEREO_EYE_INDEX 0
 		#define MAIN_END_VERTEX(vertexOutputPosition) }
 
@@ -560,6 +587,10 @@
 		// Texture buffer
 		#define TEXTURE_BUFFER(resourceGroupIndex, resourceIndex, type, name, registerIndex) uniform samplerBuffer name;
 		#define TEXTURE_BUFFER_FETCH(name, texelIndex) texelFetch(name, int(texelIndex))
+
+		// Structured buffer
+		#define STRUCTURED_BUFFER(resourceGroupIndex, resourceIndex, name, registerIndex, typeName, memberName) layout(std430, binding = resourceIndex) readonly buffer name { typeName memberName[]; };
+		#define STRUCTURED_BUFFER_GET(name, memberName, index) memberName[index]
 
 		// Texture
 		#define TEXTURE_1D(resourceGroupIndex, resourceIndex, name, registerIndex) uniform sampler1D name;
@@ -689,6 +720,7 @@
 		#define INPUT_BEGIN_CONTROL_POINT
 			#define INPUT_ARRAY(name) name[]
 			#define INPUT_VERTEX_ID
+			#define INPUT_INSTANCE_ID
 			#define INPUT_VERTEX_DRAW_ID(attributeIndex) in uint drawId; uniform uint drawIdUniform;	// See "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html - "drawIdUniform" is used in case "GL_EXT_base_instance" isn't supported
 			#define INPUT_VERTEX_POSITION(attributeIndex, type, name) in highp type name;
 			#define INPUT_POSITION(attributeIndex, type, name) in highp type name;
@@ -730,6 +762,7 @@
 			#define MAIN_INPUT(name) name
 			#define MAIN_INPUT_ARRAY(name, index) name[index]
 			#define MAIN_INPUT_VERTEX_ID uint(gl_VertexID)
+			#define MAIN_INPUT_INSTANCE_ID uint(gl_InstanceID)
 			#define MAIN_INPUT_DRAW_ID (drawId + drawIdUniform + uint(gl_InstanceID))
 			#define MAIN_OUTPUT(name) name
 			#define MAIN_OUTPUT_POSITION gl_Position
@@ -775,6 +808,10 @@
 		// #define TEXTURE_BUFFER_FETCH(name, texelIndex) texelFetch(name, int(texelIndex))
 		#define TEXTURE_BUFFER(resourceGroupIndex, resourceIndex, type, name, registerIndex) layout(std140) uniform name { highp float4 textureBufferEmulation_##name[4096]; };
 		#define TEXTURE_BUFFER_FETCH(name, texelIndex) textureBufferEmulation_##name[int(texelIndex)]
+
+		// Structured buffer
+		#define STRUCTURED_BUFFER(resourceGroupIndex, resourceIndex, name, registerIndex, typeName, memberName) layout(std430, binding = resourceIndex) readonly buffer name { typeName memberName[]; };
+		#define STRUCTURED_BUFFER_GET(name, memberName, index) memberName[index]
 
 		// Texture
 		#define TEXTURE_1D(resourceGroupIndex, resourceIndex, name, registerIndex) uniform highp sampler2D name;	// OpenGL ES 3 has no 1D textures, just use a 2D texture with a height of one

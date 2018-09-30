@@ -28,65 +28,10 @@
 
 
 //[-------------------------------------------------------]
-//[ Anonymous detail namespace                            ]
-//[-------------------------------------------------------]
-namespace
-{
-	namespace detail
-	{
-
-
-		//[-------------------------------------------------------]
-		//[ Global variables                                      ]
-		//[-------------------------------------------------------]
-		// Vertex input layout
-		static constexpr Renderer::VertexAttribute GrassVertexAttributesLayout[] =
-		{
-			{ // Attribute 0
-				// Data destination
-				Renderer::VertexAttributeFormat::FLOAT_4,			// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-				"PositionSize",										// name[32] (char)
-				"POSITION",											// semanticName[32] (char)
-				0,													// semanticIndex (uint32_t)
-				// Data source
-				0,													// inputSlot (uint32_t)
-				0,													// alignedByteOffset (uint32_t)
-				sizeof(RendererRuntime::GrassSceneItem::GrassData),	// strideInBytes (uint32_t)
-				1													// instancesPerElement (uint32_t)
-			},
-			{ // Attribute 1
-				// Data destination
-				Renderer::VertexAttributeFormat::FLOAT_4,			// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-				"ColorRotation",									// name[32] (char)
-				"COLOR",											// semanticName[32] (char)
-				0,													// semanticIndex (uint32_t)
-				// Data source
-				0,													// inputSlot (uint32_t)
-				sizeof(float) * 4,									// alignedByteOffset (uint32_t)
-				sizeof(RendererRuntime::GrassSceneItem::GrassData),	// strideInBytes (uint32_t)
-				1													// instancesPerElement (uint32_t)
-			}
-		};
-
-
-//[-------------------------------------------------------]
-//[ Anonymous detail namespace                            ]
-//[-------------------------------------------------------]
-	} // detail
-}
-
-
-//[-------------------------------------------------------]
 //[ Namespace                                             ]
 //[-------------------------------------------------------]
 namespace RendererRuntime
 {
-
-
-	//[-------------------------------------------------------]
-	//[ Public definitions                                    ]
-	//[-------------------------------------------------------]
-	const Renderer::VertexAttributes GrassSceneItem::VERTEX_ATTRIBUTES(static_cast<uint32_t>(GLM_COUNTOF(::detail::GrassVertexAttributesLayout)), ::detail::GrassVertexAttributesLayout);
 
 
 	//[-------------------------------------------------------]
@@ -95,8 +40,17 @@ namespace RendererRuntime
 	void GrassSceneItem::onMaterialResourceCreated()
 	{
 		// Setup renderable manager
-		mRenderableManager.getRenderables().emplace_back(mRenderableManager, mVertexArrayPtr, getSceneResource().getRendererRuntime().getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>(), false, mIndirectBufferPtr);
+		const IRendererRuntime& rendererRuntime = getSceneResource().getRendererRuntime();
+		const MaterialResourceManager& materialResourceManager = rendererRuntime.getMaterialResourceManager();
+		const MaterialResourceId materialResourceId = getMaterialResourceId();
+		mRenderableManager.getRenderables().emplace_back(mRenderableManager, rendererRuntime.getMeshResourceManager().getDrawIdVertexArrayPtr(), materialResourceManager, materialResourceId, getInvalid<SkeletonResourceId>(), false, mIndirectBufferPtr);
 		mRenderableManager.updateCachedRenderablesData();
+
+		// Tell the used material resource about our structured buffer
+		for (MaterialTechnique* materialTechnique : materialResourceManager.getById(materialResourceId).getSortedMaterialTechniqueVector())
+		{
+			materialTechnique->setStructuredBufferPtr(mStructuredBufferPtr);
+		}
 	}
 
 
@@ -110,7 +64,7 @@ namespace RendererRuntime
 		{ // Create vertex array object (VAO)
 			// Create the vertex buffer object (VBO)
 			// TODO(co) Make this dynamic
-			const GrassData grassData[3] =
+			const GrassDataStruct grassData[3] =
 			{
 				{
 					3.0f, -1.781f, 20.0f, 0.5f,
@@ -126,18 +80,10 @@ namespace RendererRuntime
 				}
 			};
 			Renderer::IBufferManager& bufferManager = getSceneResource().getRendererRuntime().getBufferManager();
-			Renderer::IVertexBufferPtr vertexBuffer(bufferManager.createVertexBuffer(sizeof(GrassData) * mMaximumNumberOfGrass, grassData));
-			RENDERER_SET_RESOURCE_DEBUG_NAME(vertexBuffer, "Grass VBO")
 
-			// Create vertex array object (VAO)
-			// -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)
-			// -> This means that there's no need to keep an own vertex buffer object (VBO) reference
-			// -> When the vertex array object (VAO) is destroyed, it automatically decreases the
-			//    reference of the used vertex buffer objects (VBO). If the reference counter of a
-			//    vertex buffer object (VBO) reaches zero, it's automatically destroyed.
-			const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
-			mVertexArrayPtr = bufferManager.createVertexArray(VERTEX_ATTRIBUTES, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
-			RENDERER_SET_RESOURCE_DEBUG_NAME(mVertexArrayPtr, "Grass VAO")
+			// Create the structured buffer
+			mStructuredBufferPtr = bufferManager.createStructuredBuffer(sizeof(GrassDataStruct) * mMaximumNumberOfGrass, grassData, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::STATIC_DRAW, sizeof(GrassDataStruct));
+			RENDERER_SET_RESOURCE_DEBUG_NAME(mStructuredBufferPtr, "Grass structured buffer")
 
 			{ // Create the indirect buffer: Twelve vertices per grass (two quads), grass index = instance index
 				const Renderer::DrawArguments drawArguments =

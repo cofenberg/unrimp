@@ -62,7 +62,7 @@ namespace RendererRuntime
 		//[ Definitions                                           ]
 		//[-------------------------------------------------------]
 		static constexpr uint32_t FORMAT_TYPE	 = STRING_ID("MaterialBlueprint");
-		static constexpr uint32_t FORMAT_VERSION = 10;
+		static constexpr uint32_t FORMAT_VERSION = 11;
 
 		#pragma pack(push)
 		#pragma pack(1)
@@ -73,6 +73,7 @@ namespace RendererRuntime
 				uint32_t numberOfIntegerShaderCombinationProperties;
 				uint32_t numberOfUniformBuffers;
 				uint32_t numberOfTextureBuffers;
+				uint32_t numberOfStructuredBuffers;
 				uint32_t numberOfSamplerStates;
 				uint32_t numberOfTextures;
 			};

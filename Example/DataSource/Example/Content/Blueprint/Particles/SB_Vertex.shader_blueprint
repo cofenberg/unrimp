@@ -30,9 +30,9 @@
 //[-------------------------------------------------------]
 // Attribute input / output
 INPUT_BEGIN_VERTEX
-	INPUT_VERTEX_POSITION(0, float4, PositionSize)	// Object space particle xyz-position, w = particle size
-	INPUT_VERTEX_COLOR	 (1, float4, Color)			// Linear RGBA particle color and opacity
+	INPUT_VERTEX_DRAW_ID(0)	// Draw ID
 	INPUT_VERTEX_ID
+	INPUT_INSTANCE_ID
 INPUT_END_VERTEX
 OUTPUT_BEGIN_VERTEX
 	OUTPUT_TEXTURE_COORDINATE(1, float3, TexCoordDepthVS, 0)	// xy = texture coordinate, z = particle depth
@@ -45,14 +45,29 @@ struct PassDataStruct
 {
 	float4x4 WorldSpaceToViewSpaceMatrix[2];
 	float4x4 ViewSpaceToClipSpaceMatrix[2];
-	float3   UnmodifiedWorldSpaceCameraPosition;
-	float    GlobalTimeInSeconds;
 	float2   InverseViewportSize;
 	float2	 ProjectionParameters;
+	float    GlobalTimeInSeconds;
 };
 UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
 	PassDataStruct PassData;
 UNIFORM_BUFFER_END
+struct InstanceDataStruct
+{
+	float3 WorldPosition;
+	uint   MaterialIndex;
+};
+UNIFORM_BUFFER_BEGIN(1, 0, InstanceUniformBuffer, 1)
+	InstanceDataStruct InstanceDataArray[FAST_SHADER_BUILD_HACK(4096)];	// 64 KiB
+UNIFORM_BUFFER_END
+
+// Structured buffers
+struct ParticleDataStruct
+{
+	float4 PositionSize;	// Object space particle xyz-position, w = particle size
+	float4 Color;			// Linear RGBA particle color and opacity
+};
+STRUCTURED_BUFFER(2, 0, ParticleStructuredBuffer, 0, ParticleDataStruct, ParticleData)
 
 
 //[-------------------------------------------------------]
@@ -68,6 +83,9 @@ MAIN_BEGIN_VERTEX
 	VERTICES[4] = float3( 1.0f, -1.0f, 0.0f);	// 4
 	VERTICES[5] = float3( 1.0f,  1.0f, 0.0f);	// 5
 
+	// Get the particle data of the currently processed particle instance
+	ParticleDataStruct particleDataStruct = STRUCTURED_BUFFER_GET(ParticleStructuredBuffer, ParticleData, MAIN_INPUT_INSTANCE_ID);
+
 	// Get view space vertex position and texture coordinate
 	float3 viewSpacePosition = VERTICES[MAIN_INPUT_VERTEX_ID];
 	float2 uv = viewSpacePosition.xy * float2(0.5f, 0.5f) + float2(0.5f, 0.5f);
@@ -82,17 +100,18 @@ MAIN_BEGIN_VERTEX
 	}
 
 	// Scale the billboard
-	viewSpacePosition *= MAIN_INPUT(PositionSize).w;
+	viewSpacePosition *= particleDataStruct.PositionSize.w;
 
-	// Get object space to world space data
-	float3 position = -PassData.UnmodifiedWorldSpaceCameraPosition;	// Camera relative rendering, TODO(co) This is a placeholder until we pass through the real node world space position
+	// Get object space to world space position
+	// -> Since the draw ID is automatically increased with each instance we need to compensate
+	float3 position = InstanceDataArray[MAIN_INPUT_DRAW_ID_VERTEX - MAIN_INPUT_INSTANCE_ID].WorldPosition;
 
 	// Transform the billboard to clip-space
-	MAIN_OUTPUT_POSITION = MATRIX_MUL(PassData.WorldSpaceToViewSpaceMatrix[MAIN_INPUT_STEREO_EYE_INDEX], float4(MAIN_INPUT(PositionSize).xyz + position, 1.0f));
+	MAIN_OUTPUT_POSITION = MATRIX_MUL(PassData.WorldSpaceToViewSpaceMatrix[MAIN_INPUT_STEREO_EYE_INDEX], float4(particleDataStruct.PositionSize.xyz + position, 1.0f));
 	MAIN_OUTPUT_POSITION.xyz += viewSpacePosition;
 	MAIN_OUTPUT_POSITION = MATRIX_MUL(PassData.ViewSpaceToClipSpaceMatrix[MAIN_INPUT_STEREO_EYE_INDEX], MAIN_OUTPUT_POSITION);
 
 	// Pass through the texture coordinate, color and clip space position
 	MAIN_OUTPUT(TexCoordDepthVS) = float3(uv, MAIN_OUTPUT_POSITION.w);
-	MAIN_OUTPUT(ColorVS) = MAIN_INPUT(Color);
+	MAIN_OUTPUT(ColorVS) = particleDataStruct.Color;
 MAIN_END_VERTEX(MAIN_OUTPUT_POSITION)

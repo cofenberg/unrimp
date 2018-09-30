@@ -385,13 +385,14 @@ namespace RendererRuntime
 							}
 							lightBufferManager.fillGraphicsCommandBuffer(*materialBlueprintResource, commandBuffer);
 
-							// Cheap state change: Bind the material technique to the used renderer
-							uint32_t textureResourceGroupRootParameterIndex = getInvalid<uint32_t>();
-							Renderer::IResourceGroup* textureResourceGroup = nullptr;
-							materialTechnique->fillGraphicsCommandBuffer(mRendererRuntime, commandBuffer, textureResourceGroupRootParameterIndex, &textureResourceGroup);
-							if (isValid(textureResourceGroupRootParameterIndex) && nullptr != textureResourceGroup)
-							{
-								Renderer::Command::SetGraphicsResourceGroup::create(commandBuffer, textureResourceGroupRootParameterIndex, textureResourceGroup);
+							{ // Cheap state change: Bind the material technique to the used renderer
+								uint32_t resourceGroupRootParameterIndex = getInvalid<uint32_t>();
+								Renderer::IResourceGroup* resourceGroup = nullptr;
+								materialTechnique->fillGraphicsCommandBuffer(mRendererRuntime, commandBuffer, resourceGroupRootParameterIndex, &resourceGroup);
+								if (isValid(resourceGroupRootParameterIndex) && nullptr != resourceGroup)
+								{
+									Renderer::Command::SetGraphicsResourceGroup::create(commandBuffer, resourceGroupRootParameterIndex, resourceGroup);
+								}
 							}
 
 							// Fill the instance buffer manager
@@ -557,14 +558,15 @@ namespace RendererRuntime
 											passBufferManager->fillGraphicsCommandBuffer(mScratchCommandBuffer);
 										}
 
-										// Cheap state change: Bind the material technique to the used renderer
-										uint32_t textureResourceGroupRootParameterIndex = getInvalid<uint32_t>();
-										Renderer::IResourceGroup* textureResourceGroup = nullptr;
-										materialTechnique->fillGraphicsCommandBuffer(mRendererRuntime, mScratchCommandBuffer, textureResourceGroupRootParameterIndex, &textureResourceGroup);
-										if (isValid(textureResourceGroupRootParameterIndex) && nullptr != textureResourceGroup && currentSetGraphicsResourceGroup[textureResourceGroupRootParameterIndex] != textureResourceGroup)
-										{
-											currentSetGraphicsResourceGroup[textureResourceGroupRootParameterIndex] = textureResourceGroup;
-											Renderer::Command::SetGraphicsResourceGroup::create(mScratchCommandBuffer, textureResourceGroupRootParameterIndex, textureResourceGroup);
+										{ // Cheap state change: Bind the material technique to the used renderer
+											uint32_t resourceGroupRootParameterIndex = getInvalid<uint32_t>();
+											Renderer::IResourceGroup* resourceGroup = nullptr;
+											materialTechnique->fillGraphicsCommandBuffer(mRendererRuntime, mScratchCommandBuffer, resourceGroupRootParameterIndex, &resourceGroup);
+											if (isValid(resourceGroupRootParameterIndex) && nullptr != resourceGroup && currentSetGraphicsResourceGroup[resourceGroupRootParameterIndex] != resourceGroup)
+											{
+												currentSetGraphicsResourceGroup[resourceGroupRootParameterIndex] = resourceGroup;
+												Renderer::Command::SetGraphicsResourceGroup::create(mScratchCommandBuffer, resourceGroupRootParameterIndex, resourceGroup);
+											}
 										}
 
 										// Fill the instance buffer manager
@@ -855,13 +857,14 @@ namespace RendererRuntime
 							}
 							lightBufferManager.fillComputeCommandBuffer(*materialBlueprintResource, commandBuffer);
 
-							// Cheap state change: Bind the material technique to the used renderer
-							uint32_t textureResourceGroupRootParameterIndex = getInvalid<uint32_t>();
-							Renderer::IResourceGroup* textureResourceGroup = nullptr;
-							materialTechnique->fillComputeCommandBuffer(mRendererRuntime, commandBuffer, textureResourceGroupRootParameterIndex, &textureResourceGroup);
-							if (isValid(textureResourceGroupRootParameterIndex) && nullptr != textureResourceGroup)
-							{
-								Renderer::Command::SetComputeResourceGroup::create(commandBuffer, textureResourceGroupRootParameterIndex, textureResourceGroup);
+							{ // Cheap state change: Bind the material technique to the used renderer
+								uint32_t resourceGroupRootParameterIndex = getInvalid<uint32_t>();
+								Renderer::IResourceGroup* resourceGroup = nullptr;
+								materialTechnique->fillComputeCommandBuffer(mRendererRuntime, commandBuffer, resourceGroupRootParameterIndex, &resourceGroup);
+								if (isValid(resourceGroupRootParameterIndex) && nullptr != resourceGroup)
+								{
+									Renderer::Command::SetComputeResourceGroup::create(commandBuffer, resourceGroupRootParameterIndex, resourceGroup);
+								}
 							}
 
 							// Fill the instance buffer manager
@@ -1004,14 +1007,15 @@ namespace RendererRuntime
 											passBufferManager->fillCommandBuffer(mScratchCommandBuffer);
 										}
 
-										// Cheap state change: Bind the material technique to the used renderer
-										uint32_t textureResourceGroupRootParameterIndex = getInvalid<uint32_t>();
-										Renderer::IResourceGroup* textureResourceGroup = nullptr;
-										materialTechnique->fillCommandBuffer(mRendererRuntime, mScratchCommandBuffer, textureResourceGroupRootParameterIndex, &textureResourceGroup);
-										if (isValid(textureResourceGroupRootParameterIndex) && nullptr != textureResourceGroup && currentSetGraphicsResourceGroup[textureResourceGroupRootParameterIndex] != textureResourceGroup)
-										{
-											currentSetGraphicsResourceGroup[textureResourceGroupRootParameterIndex] = textureResourceGroup;
-											Renderer::Command::SetGraphicsResourceGroup::create(mScratchCommandBuffer, textureResourceGroupRootParameterIndex, textureResourceGroup);
+										{ // Cheap state change: Bind the material technique to the used renderer
+											uint32_t resourceGroupRootParameterIndex = getInvalid<uint32_t>();
+											Renderer::IResourceGroup* resourceGroup = nullptr;
+											materialTechnique->fillCommandBuffer(mRendererRuntime, mScratchCommandBuffer, resourceGroupRootParameterIndex, &resourceGroup);
+											if (isValid(resourceGroupRootParameterIndex) && nullptr != resourceGroup && currentSetGraphicsResourceGroup[resourceGroupRootParameterIndex] != resourceGroup)
+											{
+												currentSetGraphicsResourceGroup[resourceGroupRootParameterIndex] = resourceGroup;
+												Renderer::Command::SetGraphicsResourceGroup::create(mScratchCommandBuffer, resourceGroupRootParameterIndex, resourceGroup);
+											}
 										}
 
 										// Fill the instance buffer manager

@@ -24,9 +24,7 @@
 #include "RendererRuntime/Public/Resource/VertexAttributes/Loader/VertexAttributesResourceLoader.h"
 #include "RendererRuntime/Public/Resource/VertexAttributes/Loader/VertexAttributesFileFormat.h"
 #include "RendererRuntime/Public/Resource/VertexAttributes/VertexAttributesResource.h"
-#include "RendererRuntime/Public/Resource/Scene/Item/Grass/GrassSceneItem.h"
 #include "RendererRuntime/Public/Resource/Scene/Item/Terrain/TerrainSceneItem.h"
-#include "RendererRuntime/Public/Resource/Scene/Item/Particles/ParticlesSceneItem.h"
 #include "RendererRuntime/Public/Resource/Mesh/MeshResource.h"
 
 // Disable warnings in external headers, we can't fix them
@@ -179,13 +177,10 @@ namespace RendererRuntime
 		{
 			mVertexAttributesResource->mVertexAttributes = Renderer::VertexAttributes(MeshResource::SKINNED_VERTEX_ATTRIBUTES.numberOfAttributes, MeshResource::SKINNED_VERTEX_ATTRIBUTES.attributes);
 		}
-		else if (STRING_ID("Example/VertexAttributes/Particles/VA_Particles") == getAsset().assetId)
+		else if (STRING_ID("Example/VertexAttributes/Particles/VA_Particles") == getAsset().assetId ||
+				 STRING_ID("Example/VertexAttributes/Grass/VA_Grass") == getAsset().assetId)
 		{
-			mVertexAttributesResource->mVertexAttributes = Renderer::VertexAttributes(ParticlesSceneItem::VERTEX_ATTRIBUTES.numberOfAttributes, ParticlesSceneItem::VERTEX_ATTRIBUTES.attributes);
-		}
-		else if (STRING_ID("Example/VertexAttributes/Grass/VA_Grass") == getAsset().assetId)
-		{
-			mVertexAttributesResource->mVertexAttributes = Renderer::VertexAttributes(GrassSceneItem::VERTEX_ATTRIBUTES.numberOfAttributes, GrassSceneItem::VERTEX_ATTRIBUTES.attributes);
+			mVertexAttributesResource->mVertexAttributes = Renderer::VertexAttributes(MeshResourceManager::DRAW_ID_VERTEX_ATTRIBUTES.numberOfAttributes, MeshResourceManager::DRAW_ID_VERTEX_ATTRIBUTES.attributes);
 		}
 		else if (STRING_ID("Example/VertexAttributes/Terrain/VA_Terrain") == getAsset().assetId)
 		{

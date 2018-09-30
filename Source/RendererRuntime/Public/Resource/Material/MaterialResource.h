@@ -132,6 +132,10 @@ namespace RendererRuntime
 		*  @return
 		*    The sorted material technique vector
 		*/
+		inline SortedMaterialTechniqueVector& getSortedMaterialTechniqueVector()
+		{
+			return mSortedMaterialTechniqueVector;
+		}
 		inline const SortedMaterialTechniqueVector& getSortedMaterialTechniqueVector() const
 		{
 			return mSortedMaterialTechniqueVector;
@@ -139,7 +143,7 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Return a material technique by its ID
+		*    Return a material technique by ID
 		*
 		*  @param[in] materialTechniqueId
 		*    ID of the material technique to return
@@ -193,7 +197,7 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Return a material property by its ID
+		*    Return a material property by ID
 		*
 		*  @param[in] materialPropertyId
 		*    ID of the material property to return
@@ -208,7 +212,7 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Set a material property value by its ID
+		*    Set a material property value by ID
 		*
 		*  @param[in] materialPropertyId
 		*    ID of the material property to set the value from
@@ -266,7 +270,7 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Set a material property value by its ID
+		*    Set a material property value by ID
 		*
 		*  @param[in] materialPropertyId
 		*    ID of the material property to set the value from

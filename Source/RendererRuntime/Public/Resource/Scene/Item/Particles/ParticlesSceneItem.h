@@ -62,8 +62,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	public:
 		static constexpr uint32_t TYPE_ID = STRING_ID("ParticlesSceneItem");
-		RENDERERRUNTIME_API_EXPORT static const Renderer::VertexAttributes VERTEX_ATTRIBUTES;
-		struct ParticleData
+		struct ParticleDataStruct
 		{
 			float PositionSize[4];	// Object space particle xyz-position, w = particle size
 			float Color[4];			// Linear RGBA particle color and opacity
@@ -106,8 +105,8 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		uint32_t				  mMaximumNumberOfParticles;	///< Maximum number of particles
-		Renderer::IVertexArrayPtr mVertexArrayPtr;				///< Vertex array holding the data of the individual particles
+		uint32_t					   mMaximumNumberOfParticles;	///< Maximum number of particles
+		Renderer::IStructuredBufferPtr mStructuredBufferPtr;		///< Structured buffer the data of the individual particles ("RendererRuntime::ParticlesSceneItem::ParticleDataStruct")
 
 
 	};

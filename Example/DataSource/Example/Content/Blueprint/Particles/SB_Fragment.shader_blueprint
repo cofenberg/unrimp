@@ -43,25 +43,24 @@ struct PassDataStruct
 {
 	float4x4 WorldSpaceToViewSpaceMatrix[2];
 	float4x4 ViewSpaceToClipSpaceMatrix[2];
-	float3   UnmodifiedWorldSpaceCameraPosition;
-	float    GlobalTimeInSeconds;
 	float2   InverseViewportSize;
 	float2	 ProjectionParameters;
+	float    GlobalTimeInSeconds;
 };
 UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
 	PassDataStruct PassData;
 UNIFORM_BUFFER_END
 
-// Textures
-TEXTURE_2D(1, 0, _argb_alpha, 0)
+// Textures: We need to start at texture unit 1 instead of texture unit 0 because the vertex shader has an instance structured buffer bound at texture unit 0 (OpenGL shares those bindings across all shader stages while Direct3D doesn't)
+TEXTURE_2D(2, 1, _argb_alpha, 1)
 @property(SoftParticles)
-	TEXTURE_2D(1, 1, DepthMap, 1)
+	TEXTURE_2D(2, 2, DepthMap, 2)
 @end
 
 // Samplers
-SAMPLER_STATE(2, 0, SamplerLinear, 0)
+SAMPLER_STATE(3, 0, SamplerLinear, 0)
 @property(SoftParticles)
-	SAMPLER_STATE(2, 1, SamplerPointClamp, 1)
+	SAMPLER_STATE(3, 1, SamplerPointClamp, 1)
 @end
 
 

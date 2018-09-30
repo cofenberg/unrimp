@@ -30,9 +30,9 @@
 //[-------------------------------------------------------]
 // Attribute input / output
 INPUT_BEGIN_VERTEX
-	INPUT_VERTEX_POSITION(0, float4, PositionSize)	// Object space grass xyz-position, w = grass size
-	INPUT_VERTEX_COLOR	 (1, float4, ColorRotation)	// Linear RGBA grass color and rotation in radians
+	INPUT_VERTEX_DRAW_ID(0)	// Draw ID
 	INPUT_VERTEX_ID
+	INPUT_INSTANCE_ID
 INPUT_END_VERTEX
 OUTPUT_BEGIN_VERTEX
 	OUTPUT_TEXTURE_COORDINATE(1, float3, TexCoordDepthVS,			  0)	// xy = texture coordinate, z = grass depth
@@ -50,17 +50,32 @@ struct PassDataStruct
 	float4x4 PreviousWorldSpaceToViewSpaceMatrix;
 	float4	 WorldSpaceToViewSpaceQuaternion;
 	float4	 WindDirectionStrength;	// xyz = normalized wind direction vector, w = wind strength
-	float3   UnmodifiedWorldSpaceCameraPosition;
-	float	 GrassWindHeightFactor;
 	float2   ViewportSize;
 	float2   InverseViewportSize;
 	float2	 ProjectionParameters;
+	float	 GrassWindHeightFactor;
 	float    GlobalTimeInSeconds;
 	float    PreviousGlobalTimeInSeconds;
 };
 UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
 	PassDataStruct PassData;
 UNIFORM_BUFFER_END
+struct InstanceDataStruct
+{
+	float3 WorldPosition;
+	uint   MaterialIndex;
+};
+UNIFORM_BUFFER_BEGIN(1, 0, InstanceUniformBuffer, 1)
+	InstanceDataStruct InstanceDataArray[FAST_SHADER_BUILD_HACK(4096)];	// 64 KiB
+UNIFORM_BUFFER_END
+
+// Structured buffers
+struct GrassDataStruct
+{
+	float4 PositionSize;	// Object space grass xyz-position, w = grass size
+	float4 ColorRotation;	// Linear RGB grass color and rotation in radians
+};
+STRUCTURED_BUFFER(2, 0, GrassStructuredBuffer, 0, GrassDataStruct, GrassData)
 
 
 //[-------------------------------------------------------]
@@ -92,32 +107,36 @@ MAIN_BEGIN_VERTEX
 	VERTICES[10] = float3( 0.0f, 0.0f,  1.0f);	// 4
 	VERTICES[11] = float3( 0.0f, 1.0f,  1.0f);	// 5
 
+	// Get the grass data of the currently processed grass instance
+	GrassDataStruct grassDataStruct = STRUCTURED_BUFFER_GET(GrassStructuredBuffer, GrassData, MAIN_INPUT_INSTANCE_ID);
+
 	// Get view space vertex position and texture coordinate
 	float3 vertexPosition = VERTICES[MAIN_INPUT_VERTEX_ID];
 	float3 viewSpacePosition = vertexPosition;
 	float2 uv = ((MAIN_INPUT_VERTEX_ID > 5) ? viewSpacePosition.zy : viewSpacePosition.xy) * float2(0.5f, 1.0f) + float2(0.5f, 0.0f);
 
 	{ // Rotate the grass clockwise
-		float grassRotation = MAIN_INPUT(ColorRotation).w;
+		float grassRotation = grassDataStruct.ColorRotation.w;
 		float2x2 rotationMatrix = ROW_MATRIX_2x2(float2(cos(grassRotation), -sin(grassRotation)),
 												 float2(sin(grassRotation),  cos(grassRotation)));
 		viewSpacePosition.xz = MATRIX_MUL(viewSpacePosition.xz, rotationMatrix);
 	}
 
 	// Scale the grass
-	viewSpacePosition *= MAIN_INPUT(PositionSize).w;
+	viewSpacePosition *= grassDataStruct.PositionSize.w;
 
 	// Position the grass
-	viewSpacePosition += MAIN_INPUT(PositionSize).xyz;
+	viewSpacePosition += grassDataStruct.PositionSize.xyz;
 
 	// Apply wind animation as described in "Chapter 7. Rendering Countless Blades of Waving Grass" - https://developer.nvidia.com/gpugems/GPUGems/gpugems_ch07.html
-	float positionFactor = (MAIN_INPUT(PositionSize).x + MAIN_INPUT(PositionSize).y + MAIN_INPUT(PositionSize).z);
+	float positionFactor = (grassDataStruct.PositionSize.x + grassDataStruct.PositionSize.y + grassDataStruct.PositionSize.z);
 	float3 windVertexPosition = PassData.WindDirectionStrength.xyz * PassData.WindDirectionStrength.w * vertexPosition.y * PassData.GrassWindHeightFactor;
 	float3 windPositionOffset = sin(PassData.GlobalTimeInSeconds + positionFactor) * windVertexPosition;
 	float3 previousWindPositionOffset = sin(PassData.PreviousGlobalTimeInSeconds + positionFactor) * windVertexPosition;
 
-	// Get object space to world space data
-	float3 position = -PassData.UnmodifiedWorldSpaceCameraPosition;	// Camera relative rendering, TODO(co) This is a placeholder until we pass through the real node world space position
+	// Get object space to world space position
+	// -> Since the draw ID is automatically increased with each instance we need to compensate
+	float3 position = InstanceDataArray[MAIN_INPUT_DRAW_ID_VERTEX - MAIN_INPUT_INSTANCE_ID].WorldPosition;
 
 	// Transform the grass to clip-space
 	float4 transformedPosition = MATRIX_MUL(PassData.WorldSpaceToViewSpaceMatrix[MAIN_INPUT_STEREO_EYE_INDEX], float4(viewSpacePosition + position + windPositionOffset, 1.0f));
@@ -131,7 +150,7 @@ MAIN_BEGIN_VERTEX
 
 	// Pass through the texture coordinate, color and clip space position
 	MAIN_OUTPUT(TexCoordDepthVS) = float3(uv, MAIN_OUTPUT_POSITION.w);
-	MAIN_OUTPUT(ColorVS) = MAIN_INPUT(ColorRotation);
+	MAIN_OUTPUT(ColorVS) = grassDataStruct.ColorRotation;
 	MAIN_OUTPUT(ColorVS).a = 1.0f;
 
 	// The view space normal vector should always look up for all vertices, see "Chapter 7. Rendering Countless Blades of Waving Grass" - https://developer.nvidia.com/gpugems/GPUGems/gpugems_ch07.html

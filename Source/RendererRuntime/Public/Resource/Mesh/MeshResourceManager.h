@@ -71,6 +71,13 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
+	//[ Public definitions                                    ]
+	//[-------------------------------------------------------]
+	public:
+		RENDERERRUNTIME_API_EXPORT static const Renderer::VertexAttributes DRAW_ID_VERTEX_ATTRIBUTES;
+
+
+	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
@@ -81,6 +88,11 @@ namespace RendererRuntime
 		inline Renderer::IVertexBufferPtr getDrawIdVertexBufferPtr() const
 		{
 			return mDrawIdVertexBufferPtr;
+		}
+
+		inline Renderer::IVertexArrayPtr getDrawIdVertexArrayPtr() const
+		{
+			return mDrawIdVertexArrayPtr;
 		}
 
 
@@ -119,6 +131,7 @@ namespace RendererRuntime
 	private:
 		ResourceManagerTemplate<MeshResource, IMeshResourceLoader, MeshResourceId, 4096>* mInternalResourceManager;
 		Renderer::IVertexBufferPtr mDrawIdVertexBufferPtr;	///< Draw ID vertex buffer, see "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html
+		Renderer::IVertexArrayPtr  mDrawIdVertexArrayPtr;	///< Draw ID vertex array, see "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html
 
 
 	};

@@ -62,8 +62,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	public:
 		static constexpr uint32_t TYPE_ID = STRING_ID("GrassSceneItem");
-		RENDERERRUNTIME_API_EXPORT static const Renderer::VertexAttributes VERTEX_ATTRIBUTES;
-		struct GrassData
+		struct GrassDataStruct
 		{
 			float PositionSize[4];	// Object space grass xyz-position, w = grass size
 			float ColorRotation[4];	// Linear RGB grass color and rotation in radians
@@ -106,9 +105,9 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		uint32_t					 mMaximumNumberOfGrass;	///< Maximum number of grass
-		Renderer::IVertexArrayPtr	 mVertexArrayPtr;		///< Vertex array holding the data of the individual grass
-		Renderer::IIndirectBufferPtr mIndirectBufferPtr;	///< Indirect buffer holding data related to the current grass "Renderer::DrawArguments" draw call
+		uint32_t					   mMaximumNumberOfGrass;	///< Maximum number of grass
+		Renderer::IStructuredBufferPtr mStructuredBufferPtr;	///< Structured buffer the data of the individual grass ("RendererRuntime::GrassSceneItem::GrassDataStruct")
+		Renderer::IIndirectBufferPtr   mIndirectBufferPtr;		///< Indirect buffer holding data related to the current grass "Renderer::DrawArguments" draw call
 
 
 	};
