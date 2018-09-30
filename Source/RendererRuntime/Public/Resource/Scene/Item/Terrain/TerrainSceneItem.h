@@ -90,36 +90,12 @@ namespace RendererRuntime
 			return TYPE_ID;
 		}
 
-		virtual void onAttachedToSceneNode(SceneNode& sceneNode) override;
-
-		inline virtual void onDetachedFromSceneNode(SceneNode& sceneNode) override
-		{
-			mRenderableManager.setTransform(nullptr);
-
-			// Call the base implementation
-			ISceneItem::onDetachedFromSceneNode(sceneNode);
-		}
-
-		inline virtual void setVisible(bool visible) override
-		{
-			mRenderableManager.setVisible(visible);
-		}
-
-		virtual const RenderableManager* getRenderableManager() const override;
-
 
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::MaterialSceneItem methods ]
 	//[-------------------------------------------------------]
 	protected:
 		virtual void onMaterialResourceCreated() override;
-
-
-	//[-------------------------------------------------------]
-	//[ Protected virtual RendererRuntime::IResourceListener methods ]
-	//[-------------------------------------------------------]
-	protected:
-		virtual void onLoadingStateChange(const IResource& resource) override;
 
 
 	//[-------------------------------------------------------]
@@ -139,7 +115,12 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	private:
 		explicit TerrainSceneItem(SceneResource& sceneResource);
-		virtual ~TerrainSceneItem() override;
+
+		inline virtual ~TerrainSceneItem() override
+		{
+			// Nothing here
+		}
+
 		explicit TerrainSceneItem(const TerrainSceneItem&) = delete;
 		TerrainSceneItem& operator=(const TerrainSceneItem&) = delete;
 		void createIndexBuffer(Renderer::IBufferManager& bufferManager);
@@ -150,7 +131,6 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		RenderableManager		  mRenderableManager;			///< Renderable manager of all terrain tile rings
 		Renderer::IIndexBufferPtr mIndexBufferPtr;				///< Index buffer which is shared between all terrain tile ring vertex array buffers
 		int						  mNumberOfTerrainTileRings;	///< Number of terrain tile rings
 		TerrainTileRing			  mTerrainTileRings[MAXIMUM_NUMBER_OF_TERRAIN_TILE_RINGS];

@@ -90,28 +90,6 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
-	//[ Public RendererRuntime::ISceneItem methods            ]
-	//[-------------------------------------------------------]
-	void ParticlesSceneItem::onAttachedToSceneNode(SceneNode& sceneNode)
-	{
-		mRenderableManager.setTransform(&sceneNode.getGlobalTransform());
-
-		// Call the base implementation
-		ISceneItem::onAttachedToSceneNode(sceneNode);
-	}
-
-	const RenderableManager* ParticlesSceneItem::getRenderableManager() const
-	{
-		if (!isValid(getMaterialResourceId()))
-		{
-			// TODO(co) Get rid of the nasty delayed initialization in here, including the evil const-cast. For this, full asynchronous material blueprint loading must work. See "TODO(co) Currently material blueprint resource loading is a blocking process.".
-			const_cast<ParticlesSceneItem*>(this)->initialize();
-		}
-		return &mRenderableManager;
-	}
-
-
-	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::MaterialSceneItem methods ]
 	//[-------------------------------------------------------]
 	void ParticlesSceneItem::onMaterialResourceCreated()
@@ -119,22 +97,6 @@ namespace RendererRuntime
 		// Setup renderable manager: Six vertices per particle, particle index = instance index
 		mRenderableManager.getRenderables().emplace_back(mRenderableManager, mVertexArrayPtr, getSceneResource().getRendererRuntime().getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>(), false, 0, 6, mMaximumNumberOfParticles);
 		mRenderableManager.updateCachedRenderablesData();
-	}
-
-
-	//[-------------------------------------------------------]
-	//[ Protected virtual RendererRuntime::IResourceListener methods ]
-	//[-------------------------------------------------------]
-	void ParticlesSceneItem::onLoadingStateChange(const IResource& resource)
-	{
-		assert(resource.getAssetId() == getMaterialAssetId());
-		if (resource.getLoadingState() == IResource::LoadingState::LOADED)
-		{
-			mRenderableManager.getRenderables().clear();
-		}
-
-		// Call the base implementation
-		MaterialSceneItem::onLoadingStateChange(resource);
 	}
 
 
@@ -196,19 +158,6 @@ namespace RendererRuntime
 			const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
 			mVertexArrayPtr = bufferManager.createVertexArray(VERTEX_ATTRIBUTES, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
 			RENDERER_SET_RESOURCE_DEBUG_NAME(mVertexArrayPtr, "Particles VAO")
-		}
-	}
-
-
-	//[-------------------------------------------------------]
-	//[ Private methods                                       ]
-	//[-------------------------------------------------------]
-	ParticlesSceneItem::~ParticlesSceneItem()
-	{
-		if (isValid(getMaterialResourceId()))
-		{
-			// Clear the renderable manager right now
-			mRenderableManager.getRenderables().clear();
 		}
 	}
 

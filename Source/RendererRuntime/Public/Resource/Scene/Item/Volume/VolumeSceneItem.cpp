@@ -158,28 +158,13 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public RendererRuntime::ISceneItem methods            ]
 	//[-------------------------------------------------------]
-	void VolumeSceneItem::onAttachedToSceneNode(SceneNode& sceneNode)
-	{
-		mRenderableManager.setTransform(&sceneNode.getGlobalTransform());
-
-		// Call the base implementation
-		ISceneItem::onAttachedToSceneNode(sceneNode);
-	}
-
 	const RenderableManager* VolumeSceneItem::getRenderableManager() const
 	{
 		// Sanity check: Only uniform scale is supported to keep things simple
 		assert(mRenderableManager.getTransform().scale.x == mRenderableManager.getTransform().scale.y && mRenderableManager.getTransform().scale.y == mRenderableManager.getTransform().scale.z);
 
-		// Initialize, if necessary
-		if (!isValid(getMaterialResourceId()))
-		{
-			// TODO(co) Get rid of the nasty delayed initialization in here, including the evil const-cast. For this, full asynchronous material blueprint loading must work. See "TODO(co) Currently material blueprint resource loading is a blocking process.".
-			const_cast<VolumeSceneItem*>(this)->initialize();
-		}
-
-		// Done
-		return &mRenderableManager;
+		// Call the base implementation
+		return MaterialSceneItem::getRenderableManager();
 	}
 
 
@@ -191,22 +176,6 @@ namespace RendererRuntime
 		// Setup renderable manager
 		mRenderableManager.getRenderables().emplace_back(mRenderableManager, ::detail::VolumeVertexArrayPtr, getSceneResource().getRendererRuntime().getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>(), true, 0, 36);
 		mRenderableManager.updateCachedRenderablesData();
-	}
-
-
-	//[-------------------------------------------------------]
-	//[ Protected virtual RendererRuntime::IResourceListener methods ]
-	//[-------------------------------------------------------]
-	void VolumeSceneItem::onLoadingStateChange(const IResource& resource)
-	{
-		assert(resource.getAssetId() == getMaterialAssetId());
-		if (resource.getLoadingState() == IResource::LoadingState::LOADED)
-		{
-			mRenderableManager.getRenderables().clear();
-		}
-
-		// Call the base implementation
-		MaterialSceneItem::onLoadingStateChange(resource);
 	}
 
 

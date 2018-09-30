@@ -119,28 +119,6 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
-	//[ Public RendererRuntime::ISceneItem methods            ]
-	//[-------------------------------------------------------]
-	void SkySceneItem::onAttachedToSceneNode(SceneNode& sceneNode)
-	{
-		mRenderableManager.setTransform(&sceneNode.getGlobalTransform());
-
-		// Call the base implementation
-		ISceneItem::onAttachedToSceneNode(sceneNode);
-	}
-
-	const RenderableManager* SkySceneItem::getRenderableManager() const
-	{
-		if (!isValid(getMaterialResourceId()))
-		{
-			// TODO(co) Get rid of the nasty delayed initialization in here, including the evil const-cast. For this, full asynchronous material blueprint loading must work. See "TODO(co) Currently material blueprint resource loading is a blocking process.".
-			const_cast<SkySceneItem*>(this)->initialize();
-		}
-		return &mRenderableManager;
-	}
-
-
-	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::MaterialSceneItem methods ]
 	//[-------------------------------------------------------]
 	void SkySceneItem::onMaterialResourceCreated()
@@ -148,22 +126,6 @@ namespace RendererRuntime
 		// Setup renderable manager
 		mRenderableManager.getRenderables().emplace_back(mRenderableManager, ::detail::SkyVertexArrayPtr, getSceneResource().getRendererRuntime().getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>(), true, 0, 36);
 		mRenderableManager.updateCachedRenderablesData();
-	}
-
-
-	//[-------------------------------------------------------]
-	//[ Protected virtual RendererRuntime::IResourceListener methods ]
-	//[-------------------------------------------------------]
-	void SkySceneItem::onLoadingStateChange(const IResource& resource)
-	{
-		assert(resource.getAssetId() == getMaterialAssetId());
-		if (resource.getLoadingState() == IResource::LoadingState::LOADED)
-		{
-			mRenderableManager.getRenderables().clear();
-		}
-
-		// Call the base implementation
-		MaterialSceneItem::onLoadingStateChange(resource);
 	}
 
 

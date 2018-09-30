@@ -79,23 +79,6 @@ namespace RendererRuntime
 			return TYPE_ID;
 		}
 
-		virtual void onAttachedToSceneNode(SceneNode& sceneNode) override;
-
-		inline virtual void onDetachedFromSceneNode(SceneNode& sceneNode) override
-		{
-			mRenderableManager.setTransform(nullptr);
-
-			// Call the base implementation
-			ISceneItem::onDetachedFromSceneNode(sceneNode);
-		}
-
-		inline virtual void setVisible(bool visible) override
-		{
-			mRenderableManager.setVisible(visible);
-		}
-
-		virtual const RenderableManager* getRenderableManager() const override;
-
 
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::MaterialSceneItem methods ]
@@ -105,18 +88,16 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
-	//[ Protected virtual RendererRuntime::IResourceListener methods ]
-	//[-------------------------------------------------------]
-	protected:
-		virtual void onLoadingStateChange(const IResource& resource) override;
-
-
-	//[-------------------------------------------------------]
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
 		explicit ParticlesSceneItem(SceneResource& sceneResource);
-		virtual ~ParticlesSceneItem() override;
+
+		inline virtual ~ParticlesSceneItem() override
+		{
+			// Nothing here
+		}
+
 		explicit ParticlesSceneItem(const ParticlesSceneItem&) = delete;
 		ParticlesSceneItem& operator=(const ParticlesSceneItem&) = delete;
 
@@ -125,7 +106,6 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		RenderableManager		  mRenderableManager;			///< Renderable manager
 		uint32_t				  mMaximumNumberOfParticles;	///< Maximum number of particles
 		Renderer::IVertexArrayPtr mVertexArrayPtr;				///< Vertex array holding the data of the individual particles
 

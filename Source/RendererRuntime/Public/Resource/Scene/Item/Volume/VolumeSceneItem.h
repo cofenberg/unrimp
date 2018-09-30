@@ -70,21 +70,6 @@ namespace RendererRuntime
 			return TYPE_ID;
 		}
 
-		virtual void onAttachedToSceneNode(SceneNode& sceneNode) override;
-
-		inline virtual void onDetachedFromSceneNode(SceneNode& sceneNode) override
-		{
-			mRenderableManager.setTransform(nullptr);
-
-			// Call the base implementation
-			ISceneItem::onDetachedFromSceneNode(sceneNode);
-		}
-
-		inline virtual void setVisible(bool visible) override
-		{
-			mRenderableManager.setVisible(visible);
-		}
-
 		virtual const RenderableManager* getRenderableManager() const override;
 
 
@@ -96,13 +81,6 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
-	//[ Protected virtual RendererRuntime::IResourceListener methods ]
-	//[-------------------------------------------------------]
-	protected:
-		virtual void onLoadingStateChange(const IResource& resource) override;
-
-
-	//[-------------------------------------------------------]
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
@@ -110,13 +88,6 @@ namespace RendererRuntime
 		virtual ~VolumeSceneItem() override;
 		explicit VolumeSceneItem(const VolumeSceneItem&) = delete;
 		VolumeSceneItem& operator=(const VolumeSceneItem&) = delete;
-
-
-	//[-------------------------------------------------------]
-	//[ Private data                                          ]
-	//[-------------------------------------------------------]
-	private:
-		RenderableManager mRenderableManager;
 
 
 	};

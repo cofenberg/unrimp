@@ -79,23 +79,6 @@ namespace RendererRuntime
 			return TYPE_ID;
 		}
 
-		virtual void onAttachedToSceneNode(SceneNode& sceneNode) override;
-
-		inline virtual void onDetachedFromSceneNode(SceneNode& sceneNode) override
-		{
-			mRenderableManager.setTransform(nullptr);
-
-			// Call the base implementation
-			ISceneItem::onDetachedFromSceneNode(sceneNode);
-		}
-
-		inline virtual void setVisible(bool visible) override
-		{
-			mRenderableManager.setVisible(visible);
-		}
-
-		virtual const RenderableManager* getRenderableManager() const override;
-
 
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::MaterialSceneItem methods ]
@@ -105,18 +88,16 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
-	//[ Protected virtual RendererRuntime::IResourceListener methods ]
-	//[-------------------------------------------------------]
-	protected:
-		virtual void onLoadingStateChange(const IResource& resource) override;
-
-
-	//[-------------------------------------------------------]
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
 		explicit GrassSceneItem(SceneResource& sceneResource);
-		virtual ~GrassSceneItem() override;
+
+		inline virtual ~GrassSceneItem() override
+		{
+			// Nothing here
+		}
+
 		explicit GrassSceneItem(const GrassSceneItem&) = delete;
 		GrassSceneItem& operator=(const GrassSceneItem&) = delete;
 
@@ -125,7 +106,6 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		RenderableManager			 mRenderableManager;	///< Renderable manager
 		uint32_t					 mMaximumNumberOfGrass;	///< Maximum number of grass
 		Renderer::IVertexArrayPtr	 mVertexArrayPtr;		///< Vertex array holding the data of the individual grass
 		Renderer::IIndirectBufferPtr mIndirectBufferPtr;	///< Indirect buffer holding data related to the current grass "Renderer::DrawArguments" draw call

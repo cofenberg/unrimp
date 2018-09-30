@@ -90,28 +90,6 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
-	//[ Public RendererRuntime::ISceneItem methods            ]
-	//[-------------------------------------------------------]
-	void GrassSceneItem::onAttachedToSceneNode(SceneNode& sceneNode)
-	{
-		mRenderableManager.setTransform(&sceneNode.getGlobalTransform());
-
-		// Call the base implementation
-		ISceneItem::onAttachedToSceneNode(sceneNode);
-	}
-
-	const RenderableManager* GrassSceneItem::getRenderableManager() const
-	{
-		if (!isValid(getMaterialResourceId()))
-		{
-			// TODO(co) Get rid of the nasty delayed initialization in here, including the evil const-cast. For this, full asynchronous material blueprint loading must work. See "TODO(co) Currently material blueprint resource loading is a blocking process.".
-			const_cast<GrassSceneItem*>(this)->initialize();
-		}
-		return &mRenderableManager;
-	}
-
-
-	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::MaterialSceneItem methods ]
 	//[-------------------------------------------------------]
 	void GrassSceneItem::onMaterialResourceCreated()
@@ -119,22 +97,6 @@ namespace RendererRuntime
 		// Setup renderable manager
 		mRenderableManager.getRenderables().emplace_back(mRenderableManager, mVertexArrayPtr, getSceneResource().getRendererRuntime().getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>(), false, mIndirectBufferPtr);
 		mRenderableManager.updateCachedRenderablesData();
-	}
-
-
-	//[-------------------------------------------------------]
-	//[ Protected virtual RendererRuntime::IResourceListener methods ]
-	//[-------------------------------------------------------]
-	void GrassSceneItem::onLoadingStateChange(const IResource& resource)
-	{
-		assert(resource.getAssetId() == getMaterialAssetId());
-		if (resource.getLoadingState() == IResource::LoadingState::LOADED)
-		{
-			mRenderableManager.getRenderables().clear();
-		}
-
-		// Call the base implementation
-		MaterialSceneItem::onLoadingStateChange(resource);
 	}
 
 
@@ -188,19 +150,6 @@ namespace RendererRuntime
 				mIndirectBufferPtr = bufferManager.createIndirectBuffer(sizeof(Renderer::DrawArguments), &drawArguments, Renderer::IndirectBufferFlag::UNORDERED_ACCESS | Renderer::IndirectBufferFlag::DRAW_ARGUMENTS);
 				RENDERER_SET_RESOURCE_DEBUG_NAME(mIndirectBufferPtr, "Grass indirect buffer")
 			}
-		}
-	}
-
-
-	//[-------------------------------------------------------]
-	//[ Private methods                                       ]
-	//[-------------------------------------------------------]
-	GrassSceneItem::~GrassSceneItem()
-	{
-		if (isValid(getMaterialResourceId()))
-		{
-			// Clear the renderable manager right now
-			mRenderableManager.getRenderables().clear();
 		}
 	}
 

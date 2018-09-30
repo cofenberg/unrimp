@@ -94,6 +94,22 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	public:
 		virtual void deserialize(uint32_t numberOfBytes, const uint8_t* data) override;
+		virtual void onAttachedToSceneNode(SceneNode& sceneNode) override;
+
+		inline virtual void onDetachedFromSceneNode(SceneNode& sceneNode) override
+		{
+			mRenderableManager.setTransform(nullptr);
+
+			// Call the base implementation
+			ISceneItem::onDetachedFromSceneNode(sceneNode);
+		}
+
+		inline virtual void setVisible(bool visible) override
+		{
+			mRenderableManager.setVisible(visible);
+		}
+
+		virtual const RenderableManager* getRenderableManager() const override;
 
 
 	//[-------------------------------------------------------]
@@ -126,6 +142,13 @@ namespace RendererRuntime
 		MaterialSceneItem& operator=(const MaterialSceneItem&) = delete;
 		void initialize();
 		void createMaterialResource(MaterialResourceId parentMaterialResourceId);
+
+
+	//[-------------------------------------------------------]
+	//[ Protected data                                        ]
+	//[-------------------------------------------------------]
+	protected:
+		RenderableManager mRenderableManager;
 
 
 	//[-------------------------------------------------------]

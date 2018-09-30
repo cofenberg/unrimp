@@ -398,6 +398,7 @@ namespace RendererRuntime
 						"SetTextureMinimumMaximumMipmapIndex",
 						"ResolveMultisampleFramebuffer",
 						"CopyResource",
+						"GenerateMipmaps",
 						// Debug
 						"SetDebugMarker",
 						"BeginDebugEvent",

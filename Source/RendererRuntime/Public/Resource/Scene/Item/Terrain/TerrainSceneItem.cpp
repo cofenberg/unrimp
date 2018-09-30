@@ -117,28 +117,6 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
-	//[ Public RendererRuntime::ISceneItem methods            ]
-	//[-------------------------------------------------------]
-	void TerrainSceneItem::onAttachedToSceneNode(SceneNode& sceneNode)
-	{
-		mRenderableManager.setTransform(&sceneNode.getGlobalTransform());
-
-		// Call the base implementation
-		ISceneItem::onAttachedToSceneNode(sceneNode);
-	}
-
-	const RenderableManager* TerrainSceneItem::getRenderableManager() const
-	{
-		if (!isValid(getMaterialResourceId()))
-		{
-			// TODO(co) Get rid of the nasty delayed initialization in here, including the evil const-cast. For this, full asynchronous material blueprint loading must work. See "TODO(co) Currently material blueprint resource loading is a blocking process.".
-			const_cast<TerrainSceneItem*>(this)->initialize();
-		}
-		return &mRenderableManager;
-	}
-
-
-	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::MaterialSceneItem methods ]
 	//[-------------------------------------------------------]
 	void TerrainSceneItem::onMaterialResourceCreated()
@@ -162,22 +140,6 @@ namespace RendererRuntime
 		{
 			RENDERER_LOG(rendererRuntime.getContext(), COMPATIBILITY_WARNING, "The renderer runtime terrain scene item isn't supported by the OpenGL ES 3 renderer, yet")
 		}
-	}
-
-
-	//[-------------------------------------------------------]
-	//[ Protected virtual RendererRuntime::IResourceListener methods ]
-	//[-------------------------------------------------------]
-	void TerrainSceneItem::onLoadingStateChange(const IResource& resource)
-	{
-		assert(resource.getAssetId() == getMaterialAssetId());
-		if (resource.getLoadingState() == IResource::LoadingState::LOADED)
-		{
-			mRenderableManager.getRenderables().clear();
-		}
-
-		// Call the base implementation
-		MaterialSceneItem::onLoadingStateChange(resource);
 	}
 
 
@@ -207,15 +169,6 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
-	TerrainSceneItem::~TerrainSceneItem()
-	{
-		if (isValid(getMaterialResourceId()))
-		{
-			// Clear the renderable manager right now so we have no more references to the shared vertex array
-			mRenderableManager.getRenderables().clear();
-		}
-	}
-
 	void TerrainSceneItem::createIndexBuffer(Renderer::IBufferManager& bufferManager)
 	{
 		// The index buffer describes one tile of NxN patches: Four vertices per quad, with "::detail::VERTICES_PER_TILE_EDGE" - 1 quads per tile edge

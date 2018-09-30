@@ -70,36 +70,12 @@ namespace RendererRuntime
 			return TYPE_ID;
 		}
 
-		virtual void onAttachedToSceneNode(SceneNode& sceneNode) override;
-
-		inline virtual void onDetachedFromSceneNode(SceneNode& sceneNode) override
-		{
-			mRenderableManager.setTransform(nullptr);
-
-			// Call the base implementation
-			ISceneItem::onDetachedFromSceneNode(sceneNode);
-		}
-
-		inline virtual void setVisible(bool visible) override
-		{
-			mRenderableManager.setVisible(visible);
-		}
-
-		virtual const RenderableManager* getRenderableManager() const override;
-
 
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::MaterialSceneItem methods ]
 	//[-------------------------------------------------------]
 	protected:
 		virtual void onMaterialResourceCreated() override;
-
-
-	//[-------------------------------------------------------]
-	//[ Protected virtual RendererRuntime::IResourceListener methods ]
-	//[-------------------------------------------------------]
-	protected:
-		virtual void onLoadingStateChange(const IResource& resource) override;
 
 
 	//[-------------------------------------------------------]
@@ -110,13 +86,6 @@ namespace RendererRuntime
 		virtual ~SkySceneItem() override;
 		explicit SkySceneItem(const SkySceneItem&) = delete;
 		SkySceneItem& operator=(const SkySceneItem&) = delete;
-
-
-	//[-------------------------------------------------------]
-	//[ Private data                                          ]
-	//[-------------------------------------------------------]
-	private:
-		RenderableManager mRenderableManager;
 
 
 	};

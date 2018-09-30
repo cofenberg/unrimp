@@ -64,6 +64,24 @@ namespace RendererRuntime
 		assert(!(isValid(mMaterialAssetId) && isValid(mMaterialBlueprintAssetId)));
 	}
 
+	void MaterialSceneItem::onAttachedToSceneNode(SceneNode& sceneNode)
+	{
+		mRenderableManager.setTransform(&sceneNode.getGlobalTransform());
+
+		// Call the base implementation
+		ISceneItem::onAttachedToSceneNode(sceneNode);
+	}
+
+	const RenderableManager* MaterialSceneItem::getRenderableManager() const
+	{
+		if (!isValid(getMaterialResourceId()))
+		{
+			// TODO(co) Get rid of the nasty delayed initialization in here, including the evil const-cast. For this, full asynchronous material blueprint loading must work. See "TODO(co) Currently material blueprint resource loading is a blocking process.".
+			const_cast<MaterialSceneItem*>(this)->initialize();
+		}
+		return &mRenderableManager;
+	}
+
 
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::IResourceListener methods ]
@@ -73,6 +91,8 @@ namespace RendererRuntime
 		assert(resource.getAssetId() == mMaterialAssetId);
 		if (resource.getLoadingState() == IResource::LoadingState::LOADED)
 		{
+			mRenderableManager.getRenderables().clear();
+
 			// Destroy the material resource we created
 			if (isValid(mMaterialResourceId))
 			{
@@ -93,6 +113,9 @@ namespace RendererRuntime
 	{
 		if (isValid(mMaterialResourceId))
 		{
+			// Clear the renderable manager right now
+			mRenderableManager.getRenderables().clear();
+
 			// Destroy the material resource we created
 			getSceneResource().getRendererRuntime().getMaterialResourceManager().destroyMaterialResource(mMaterialResourceId);
 		}
