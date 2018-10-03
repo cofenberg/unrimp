@@ -131,6 +131,7 @@
 	// -> See "Iestyn's RGB dither" - https://www.shadertoy.com/view/MtBGDD
 	// -> See "Advanced VR Rendering" - http://media.steampowered.com/apps/valve/2015/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf - page 49
 	// -> "Valve's screen space dither" https://www.shadertoy.com/view/4dcSRX - shows the effect nicely
+	// -> For an overview of other alternatives see "Tech Note: Shader Snippets for Efficient 2D Dithering" by Martin Mittring 20. August 2018 ( https://developer.oculus.com/blog/tech-note-shader-snippets-for-efficient-2d-dithering/ )
 	float3 ScreenSpaceDither(float2 screenPosition)
 	{
 		float ditherFactor = dot(float2(171.0f, 231.0f), screenPosition.xy + PassData.GlobalTimeInSeconds);
