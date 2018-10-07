@@ -1350,9 +1350,48 @@ namespace
 			{
 				case RendererToolkit::QualityStrategy::DEBUG:
 					// Most aggressive option: Reduce texture size
-					crunchConvertParams.m_mipmap_params.m_scale_mode = cCRNSMRelative;
-					crunchConvertParams.m_mipmap_params.m_scale_x = 0.5f;
-					crunchConvertParams.m_mipmap_params.m_scale_y = 0.5f;
+					if (dxtCompressed)
+					{
+						// 4x4 block size based DXT compression means the texture dimension must be a multiple of four, for all mipmaps if mipmaps are used
+						// -> Ensure we don't go below 4x4 to not get into troubles with 4x4 blocked based compression
+						// -> Ensure the base mipmap we tell the renderer about is a multiple of four. Even if the original base mipmap is a multiple of four, one of the lower mipmaps might not be.
+						const uint32_t width = crunchMipmappedTexture.get_width();
+						const uint32_t height = crunchMipmappedTexture.get_height();
+						static const int NUMBER_OF_TOP_MIPMAPS_TO_REMOVE = 2;
+						int startLevelIndex = NUMBER_OF_TOP_MIPMAPS_TO_REMOVE;
+
+						// First, try to remove more mipmaps without violating the DXT size restrictions
+						while ((0 != (std::max(1U, width >> startLevelIndex) % 4) || (0 != std::max(1U, height >> startLevelIndex) % 4)) &&
+							  (std::max(1U, width >> startLevelIndex) > 4 && std::max(1U, height >> startLevelIndex) > 4))
+						{
+							++startLevelIndex;
+						}
+						if (0 != (std::max(1U, width >> startLevelIndex) % 4) || (0 != std::max(1U, height >> startLevelIndex) % 4))
+						{
+							// Second, remove less mipmaps
+							startLevelIndex = NUMBER_OF_TOP_MIPMAPS_TO_REMOVE;
+							while (startLevelIndex > 0 && (std::max(1U, width >> startLevelIndex) < 4 || std::max(1U, height >> startLevelIndex) < 4))
+							{
+								--startLevelIndex;
+							}
+							while (startLevelIndex > 0 && (0 != (std::max(1U, width >> startLevelIndex) % 4) || (0 != std::max(1U, height >> startLevelIndex) % 4)))
+							{
+								--startLevelIndex;
+							}
+						}
+
+						// Set Crunch parameters
+						crunchConvertParams.m_mipmap_params.m_scale_mode = cCRNSMAbsolute;
+						crunchConvertParams.m_mipmap_params.m_scale_x	 = static_cast<float>(std::max(1U, width >> startLevelIndex));
+						crunchConvertParams.m_mipmap_params.m_scale_y	 = static_cast<float>(std::max(1U, height >> startLevelIndex));
+					}
+					else
+					{
+						// Set Crunch parameters
+						crunchConvertParams.m_mipmap_params.m_scale_mode = cCRNSMRelative;
+						crunchConvertParams.m_mipmap_params.m_scale_x	 = 0.25f;
+						crunchConvertParams.m_mipmap_params.m_scale_y	 = 0.25f;
+					}
 
 					// Disable several output file optimizations
 					crunchConvertParams.m_comp_params.set_flag(cCRNCompFlagQuick, true);
