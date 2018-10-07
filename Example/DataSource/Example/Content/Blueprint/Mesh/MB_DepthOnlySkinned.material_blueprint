@@ -6,49 +6,9 @@
 	},
 	"MaterialBlueprintAsset":
 	{
+		"BaseMaterialBlueprint": "./MB_DepthOnly.asset",
 		"Properties":
 		{
-			"RenderQueueIndex":
-			{
-				"Usage": "STATIC",
-				"ValueType": "INTEGER",
-				"Value": "0",
-				"Description": "Fixed build in material property for the render queue index [0, 255]",
-				"MinimumIntegerValue": "0",
-				"MaximumIntegerValue": "255"
-			},
-			"CastShadows":
-			{
-				"Usage": "STATIC",
-				"ValueType": "BOOLEAN",
-				"Value": "TRUE",
-				"Description": "Fixed build in material property for enabling/disabling shadow casting"
-			},
-			"UseAlphaMap":
-			{
-				"Usage": "SHADER_COMBINATION",
-				"ValueType": "BOOLEAN",
-				"Value": "FALSE",
-				"Description": "Use alpha map?",
-				"VisualImportance": "100"
-			},
-			"AlphaMap":
-			{
-				"Usage": "TEXTURE_REFERENCE",
-				"ValueType": "TEXTURE_ASSET_ID",
-				"Value": "Unrimp/Texture/DynamicByCode/IdentityAlphaMap2D",
-				"Description": "2D material alpha map"
-			},
-			"AlphaReference":
-			{
-				"Usage": "SHADER_UNIFORM",
-				"ValueType": "FLOAT",
-				"Value": "0.05",
-				"Description": "Alpha reference. Only used if 'UseAlphaMap' is true.",
-				"RangeMin": "0.0",
-				"RangeMax": "1.0",
-				"RangeStep": "0.05"
-			},
 			"UseGpuSkinning":
 			{
 				"Usage": "SHADER_COMBINATION",
@@ -60,120 +20,7 @@
 		},
 		"GraphicsPipelineState":
 		{
-			"VertexAttributes": "./VA_SkinnedMesh.asset",
-			"ShaderBlueprints":
-			{
-				"VertexShaderBlueprint": "./SB_DepthOnlyVertex.asset",
-				"FragmentShaderBlueprint": "./SB_DepthOnlyFragment.asset"
-			},
-			"RasterizerState":
-			{
-				"CullMode": "NONE",
-				"DepthClipEnable": "FALSE"
-			}
-		},
-		"ResourceGroups":
-		{
-			"0":
-			{
-				"0":
-				{
-					"ResourceType": "UNIFORM_BUFFER",
-					"BaseShaderRegisterName": "PassUniformBuffer",
-					"BaseShaderRegister": "0",
-					"ShaderVisibility": "VERTEX",
-					"BufferUsage": "PASS",
-					"NumberOfElements": "1",
-					"ElementProperties":
-					{
-						"WorldSpaceToClipSpaceMatrix":
-						{
-							"Usage": "PASS_REFERENCE",
-							"ValueType": "FLOAT_4_4",
-							"Value": "@WORLD_SPACE_TO_CLIP_SPACE_MATRIX"
-						}
-					}
-				}
-			},
-			"1":
-			{
-				"0":
-				{
-					"ResourceType": "UNIFORM_BUFFER",
-					"BaseShaderRegisterName": "MaterialUniformBuffer",
-					"BaseShaderRegister": "1",
-					"ShaderVisibility": "FRAGMENT",
-					"BufferUsage": "MATERIAL",
-					"NumberOfElements": "2",
-					"ElementProperties":
-					{
-						"AlphaReference":
-						{
-							"Usage": "MATERIAL_REFERENCE",
-							"ValueType": "FLOAT",
-							"Value": "@AlphaReference"
-						}
-					}
-				}
-			},
-			"2":
-			{
-				"0":
-				{
-					"ResourceType": "UNIFORM_BUFFER",
-					"BaseShaderRegisterName": "InstanceUniformBuffer",
-					"BaseShaderRegister": "2",
-					"ShaderVisibility": "VERTEX",
-					"BufferUsage": "INSTANCE",
-					"NumberOfElements": "1",
-					"ElementProperties":
-					{
-						"InstanceIndicesArray":
-						{
-							"Usage": "INSTANCE_REFERENCE",
-							"ValueType": "INTEGER_4",
-							"Value": "@INSTANCE_INDICES"
-						}
-					}
-				},
-				"1":
-				{
-					"ResourceType": "TEXTURE_BUFFER",
-					"ValueType": "FLOAT_4",
-					"BaseShaderRegisterName": "InstanceTextureBuffer",
-					"BaseShaderRegister": "0",
-					"ShaderVisibility": "VERTEX",
-					"BufferUsage": "INSTANCE",
-					"Value": "@POSITION_ROTATION_SCALE"
-				}
-			},
-			"3":
-			{
-				"0":
-				{
-					"ResourceType": "TEXTURE_2D",
-					"BaseShaderRegisterName": "AlphaMap",
-					"BaseShaderRegister": "1",
-					"ShaderVisibility": "FRAGMENT",
-					"Usage": "MATERIAL_REFERENCE",
-					"ValueType": "TEXTURE_ASSET_ID",
-					"Value": "@AlphaMap",
-					"FallbackTexture": "Unrimp/Texture/DynamicByCode/IdentityAlphaMap2D",
-					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
-				}
-			},
-			"4":
-			{
-				"0":
-				{
-					"ResourceType": "SAMPLER_STATE",
-					"BaseShaderRegisterName": "SamplerLinear",
-					"BaseShaderRegister": "0",
-					"ShaderVisibility": "FRAGMENT",
-					"AddressU": "WRAP",
-					"AddressV": "WRAP"
-				}
-			}
+			"VertexAttributes": "./VA_SkinnedMesh.asset"
 		}
 	}
 }

@@ -335,7 +335,7 @@ namespace RendererToolkit
 		return (sourceAssetIdAsString.length() > 6 && sourceAssetIdAsString.substr(sourceAssetIdAsString.length() - 6) == ".asset");
 	}
 
-	RendererRuntime::AssetId StringHelper::getSourceAssetIdByString(const std::string& sourceAssetIdAsString, const RendererToolkit::IAssetCompiler::Input& input)
+	std::string StringHelper::getSourceAssetFilenameByString(const std::string& sourceAssetIdAsString, const IAssetCompiler::Input& input)
 	{
 		// Sanity check
 		if (sourceAssetIdAsString.empty())
@@ -377,14 +377,20 @@ namespace RendererToolkit
 				throw std::runtime_error("\"" + sourceAssetIdAsString + "\" is an invalid source asset ID since the referenced file doesn't exist");
 			}
 
-			// Return the string ID of the resolved source asset ID as string
-			return RendererRuntime::StringId(resolvedSourceAssetIdAsString.c_str());
+			// Return the resolved source asset ID as string
+			return resolvedSourceAssetIdAsString;
 		}
 		else
 		{
 			// Error!
 			throw std::runtime_error("Compiled or runtime generated asset ID naming scheme \"<project name>/<asset type>/<asset category>/<asset name>\" isn't supported for source asset IDs: \"" + sourceAssetIdAsString + '\"');
 		}
+	}
+
+	RendererRuntime::AssetId StringHelper::getSourceAssetIdByString(const std::string& sourceAssetIdAsString, const IAssetCompiler::Input& input)
+	{
+		// Return the string ID of the resolved source asset ID as string
+		return RendererRuntime::StringId(getSourceAssetFilenameByString(sourceAssetIdAsString, input).c_str());
 	}
 
 	RendererRuntime::AssetId StringHelper::hashAssetIdAsString(const std::string& assetIdAsString)
@@ -399,7 +405,7 @@ namespace RendererToolkit
 		return RendererRuntime::AssetId(assetIdAsString.c_str());
 	}
 
-	RendererRuntime::AssetId StringHelper::getAssetIdByString(const std::string& assetIdAsString, const RendererToolkit::IAssetCompiler::Input& input)
+	RendererRuntime::AssetId StringHelper::getAssetIdByString(const std::string& assetIdAsString, const IAssetCompiler::Input& input)
 	{
 		// Sanity check
 		if (assetIdAsString.empty())

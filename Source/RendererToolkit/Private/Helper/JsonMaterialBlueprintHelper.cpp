@@ -248,6 +248,43 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	//[ Public static methods                                 ]
 	//[-------------------------------------------------------]
+	void JsonMaterialBlueprintHelper::loadDocumentByFilename(const IAssetCompiler::Input& input, const std::string& virtualFilename, rapidjson::Document& rapidJsonDocument)
+	{
+		// Parse JSON
+		rapidjson::Document derivedRapidJsonDocument;
+		const RendererRuntime::IFileManager& fileManager = input.context.getFileManager();
+		JsonHelper::loadDocumentByFilename(fileManager, virtualFilename, "MaterialBlueprintAsset", "2", derivedRapidJsonDocument);
+
+		// Handle optional base material blueprint
+		// -> Named toolkit time base material blueprint and not parent material blueprint by intent to not intermix it with the dynamic runtime parent material blueprint
+		// TODO(co) Recursive base material blueprint support would be nice
+		rapidjson::Document baseRapidJsonDocument;
+		const rapidjson::Value& derivedRapidJsonValueMaterialBlueprintAsset = derivedRapidJsonDocument["MaterialBlueprintAsset"];
+		if (derivedRapidJsonValueMaterialBlueprintAsset.HasMember("BaseMaterialBlueprint"))
+		{
+			// Read material blueprint asset compiler configuration
+			std::string materialBlueprintInputFile;
+			const std::string virtualMaterialBlueprintAssetFilename = StringHelper::getSourceAssetFilenameByString(derivedRapidJsonValueMaterialBlueprintAsset["BaseMaterialBlueprint"].GetString(), input);
+			{
+				// Parse material blueprint asset JSON
+				rapidjson::Document rapidJsonDocumentMaterialBlueprintAsset;
+				JsonHelper::loadDocumentByFilename(input.context.getFileManager(), virtualMaterialBlueprintAssetFilename, "Asset", "1", rapidJsonDocumentMaterialBlueprintAsset);
+				materialBlueprintInputFile = JsonHelper::getAssetInputFile(rapidJsonDocumentMaterialBlueprintAsset["Asset"]["MaterialBlueprintAssetCompiler"]);
+			}
+
+			// Load material blueprint
+			const std::string virtualMaterialBlueprintDirectory = std_filesystem::path(virtualMaterialBlueprintAssetFilename).parent_path().generic_string();
+			const std::string virtualMaterialBlueprintFilename = virtualMaterialBlueprintDirectory + '/' + materialBlueprintInputFile;
+			JsonHelper::loadDocumentByFilename(fileManager, virtualMaterialBlueprintFilename, "MaterialBlueprintAsset", "2", baseRapidJsonDocument);
+			JsonHelper::mergeObjects(baseRapidJsonDocument, derivedRapidJsonDocument, baseRapidJsonDocument);
+			rapidJsonDocument.Swap(baseRapidJsonDocument);
+		}
+		else
+		{
+			rapidJsonDocument.Swap(derivedRapidJsonDocument);
+		}
+	}
+
 	void JsonMaterialBlueprintHelper::optionalPrimitiveTopology(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::PrimitiveTopology& value)
 	{
 		if (rapidJsonValue.HasMember(propertyName))
@@ -491,12 +528,11 @@ namespace RendererToolkit
 
 		// Read material blueprint asset compiler configuration
 		std::string materialBlueprintInputFile;
-		const RendererRuntime::IFileManager& fileManager = input.context.getFileManager();
 		const std::string& virtualMaterialBlueprintAssetFilename = input.sourceAssetIdToVirtualAssetFilename(materialBlueprintAssetId);
 		{
 			// Parse material blueprint asset JSON
 			rapidjson::Document rapidJsonDocumentMaterialBlueprintAsset;
-			JsonHelper::loadDocumentByFilename(fileManager, virtualMaterialBlueprintAssetFilename, "Asset", "1", rapidJsonDocumentMaterialBlueprintAsset);
+			JsonHelper::loadDocumentByFilename(input.context.getFileManager(), virtualMaterialBlueprintAssetFilename, "Asset", "1", rapidJsonDocumentMaterialBlueprintAsset);
 			materialBlueprintInputFile = JsonHelper::getAssetInputFile(rapidJsonDocumentMaterialBlueprintAsset["Asset"]["MaterialBlueprintAssetCompiler"]);
 		}
 
@@ -504,7 +540,7 @@ namespace RendererToolkit
 		const std::string virtualMaterialBlueprintDirectory = std_filesystem::path(virtualMaterialBlueprintAssetFilename).parent_path().generic_string();
 		const std::string virtualMaterialBlueprintFilename = virtualMaterialBlueprintDirectory + '/' + materialBlueprintInputFile;
 		rapidjson::Document rapidJsonDocument;
-		JsonHelper::loadDocumentByFilename(fileManager, virtualMaterialBlueprintFilename, "MaterialBlueprintAsset", "2", rapidJsonDocument);
+		loadDocumentByFilename(input, virtualMaterialBlueprintFilename, rapidJsonDocument);
 		RendererRuntime::ShaderProperties visualImportanceOfShaderProperties;
 		RendererRuntime::ShaderProperties maximumIntegerValueOfShaderProperties;
 		const IAssetCompiler::Input materialBlueprintAssetInput(input.context, input.projectName, input.cacheManager, input.virtualAssetPackageInputDirectory, virtualMaterialBlueprintFilename, virtualMaterialBlueprintDirectory, input.virtualAssetOutputDirectory, input.sourceAssetIdToCompiledAssetId, input.compiledAssetIdToSourceAssetId, input.sourceAssetIdToVirtualFilename, input.defaultTextureAssetIds);
@@ -1713,6 +1749,45 @@ namespace RendererToolkit
 
 			// Advance resource group index
 			++resourceGroupIndex;
+		}
+	}
+
+	void JsonMaterialBlueprintHelper::getDependencyFiles(const IAssetCompiler::Input& input, const std::string& virtualInputFilename, std::vector<std::string>& virtualDependencyFilenames)
+	{
+		// Parse JSON
+		rapidjson::Document rapidJsonDocument;
+		JsonHelper::loadDocumentByFilename(input.context.getFileManager(), virtualInputFilename, "MaterialBlueprintAsset", "2", rapidJsonDocument);
+
+		// Optional base material blueprint
+		// -> Named toolkit time base material blueprint and not parent material blueprint by intent to not intermix it with the dynamic runtime parent material blueprint
+		const rapidjson::Value& rapidJsonValueMaterialBlueprintAsset = rapidJsonDocument["MaterialBlueprintAsset"];
+		if (rapidJsonValueMaterialBlueprintAsset.HasMember("BaseMaterialBlueprint"))
+		{
+			// Get base material blueprint asset ID
+			const rapidjson::Value& rapidJsonValueBaseMaterialBlueprint = rapidJsonValueMaterialBlueprintAsset["BaseMaterialBlueprint"];
+			std::string baseMaterialBlueprintVirtualInputFilename;
+			try
+			{
+				const RendererRuntime::AssetId materialBlueprintAssetId = StringHelper::getSourceAssetIdByString(rapidJsonValueBaseMaterialBlueprint.GetString(), input);
+				baseMaterialBlueprintVirtualInputFilename = input.sourceAssetIdToVirtualAssetFilename(materialBlueprintAssetId);
+				virtualDependencyFilenames.emplace_back(baseMaterialBlueprintVirtualInputFilename);
+				StringHelper::replaceFirstString(baseMaterialBlueprintVirtualInputFilename, ".asset", ".material_blueprint");
+			}
+			catch (const std::exception& e)
+			{
+				throw std::runtime_error("Failed to gather dependency files of material blueprint source asset \"" + virtualInputFilename + "\" due to unknown base material blueprint source asset \"" + std::string(rapidJsonValueBaseMaterialBlueprint.GetString()) + "\": " + std::string(e.what()));
+			}
+
+			// Go down the rabbit hole recursively
+			try
+			{
+				const IAssetCompiler::Input materialBlueprintAssetInput(input.context, input.projectName, input.cacheManager, input.virtualAssetPackageInputDirectory, baseMaterialBlueprintVirtualInputFilename, std_filesystem::path(baseMaterialBlueprintVirtualInputFilename).parent_path().generic_string(), input.virtualAssetOutputDirectory, input.sourceAssetIdToCompiledAssetId, input.compiledAssetIdToSourceAssetId, input.sourceAssetIdToVirtualFilename, input.defaultTextureAssetIds);
+				getDependencyFiles(materialBlueprintAssetInput, baseMaterialBlueprintVirtualInputFilename, virtualDependencyFilenames);
+			}
+			catch (const std::exception& e)
+			{
+				throw std::runtime_error("Failed to gather dependency files of base material blueprint source asset \"" + baseMaterialBlueprintVirtualInputFilename + "\": " + std::string(e.what()));
+			}
 		}
 	}
 

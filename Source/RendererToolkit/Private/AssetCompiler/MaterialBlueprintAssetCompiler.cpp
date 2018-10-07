@@ -166,10 +166,14 @@ namespace RendererToolkit
 
 	bool MaterialBlueprintAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const
 	{
-		// Let the cache manager check whether or not the files have been changed in order to speed up later checks and to support dependency tracking
+		// Read in dependency files
+		std::vector<std::string> virtualDependencyFilenames;
 		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFile(configuration.rapidJsonDocumentAsset["Asset"]["MaterialBlueprintAssetCompiler"]);
+		JsonMaterialBlueprintHelper::getDependencyFiles(input, virtualInputFilename, virtualDependencyFilenames);
 		const std::string virtualOutputAssetFilename = input.virtualAssetOutputDirectory + '/' + std_filesystem::path(input.virtualAssetFilename).stem().generic_string() + ".material_blueprint";
-		return input.cacheManager.checkIfFileIsModified(configuration.rendererTarget, input.virtualAssetFilename, {virtualInputFilename}, virtualOutputAssetFilename, RendererRuntime::v1MaterialBlueprint::FORMAT_VERSION);
+
+		// Let the cache manager check whether or not the files have been changed in order to speed up later checks and to support dependency tracking
+		return (input.cacheManager.checkIfFileIsModified(configuration.rendererTarget, input.virtualAssetFilename, {virtualInputFilename}, virtualOutputAssetFilename, RendererRuntime::v1MaterialBlueprint::FORMAT_VERSION) || input.cacheManager.dependencyFilesChanged(virtualDependencyFilenames));
 	}
 
 	void MaterialBlueprintAssetCompiler::compile(const Input& input, const Configuration& configuration, Output& output)
@@ -192,16 +196,20 @@ namespace RendererToolkit
 		const std::string assetName = std_filesystem::path(input.virtualAssetFilename).stem().generic_string();
 		const std::string virtualOutputAssetFilename = input.virtualAssetOutputDirectory + '/' + assetName + ".material_blueprint";
 
+		// Read in dependency files
+		std::vector<std::string> virtualDependencyFilenames;
+		JsonMaterialBlueprintHelper::getDependencyFiles(input, virtualInputFilename, virtualDependencyFilenames);
+
 		// Ask the cache manager whether or not we need to compile the source file (e.g. source changed or target not there)
 		CacheManager::CacheEntries cacheEntries;
-		if (input.cacheManager.needsToBeCompiled(configuration.rendererTarget, input.virtualAssetFilename, virtualInputFilename, virtualOutputAssetFilename, RendererRuntime::v1MaterialBlueprint::FORMAT_VERSION, cacheEntries))
+		if (input.cacheManager.needsToBeCompiled(configuration.rendererTarget, input.virtualAssetFilename, virtualInputFilename, virtualOutputAssetFilename, RendererRuntime::v1MaterialBlueprint::FORMAT_VERSION, cacheEntries) || input.cacheManager.dependencyFilesChanged(virtualDependencyFilenames))
 		{
 			RendererRuntime::MemoryFile memoryFile(0, 4096);
 
 			{ // Material blueprint
 				// Parse JSON
 				rapidjson::Document rapidJsonDocument;
-				JsonHelper::loadDocumentByFilename(input.context.getFileManager(), virtualInputFilename, "MaterialBlueprintAsset", "2", rapidJsonDocument);
+				JsonMaterialBlueprintHelper::loadDocumentByFilename(input, virtualInputFilename, rapidJsonDocument);
 
 				// Mandatory and optional main sections of the material blueprint
 				// -> For ease-of-use the material blueprint is edited by the user in a resource-group-style containing all needed information

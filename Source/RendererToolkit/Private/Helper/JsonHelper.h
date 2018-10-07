@@ -73,6 +73,7 @@ namespace RendererToolkit
 	public:
 		static void loadDocumentByFilename(const RendererRuntime::IFileManager& fileManager, const std::string& virtualFilename, const std::string& formatType, const std::string& formatVersion, rapidjson::Document& rapidJsonDocument);
 		static void saveDocumentByFilename(const RendererRuntime::IFileManager& fileManager, const std::string& virtualFilename, const std::string& formatType, const std::string& formatVersion, rapidjson::Value& rapidJsonValue);
+		static void mergeObjects(rapidjson::Value& destinationObject, rapidjson::Value& sourceObject, rapidjson::Document& allocatorRapidJsonDocument);
 		static std::string getAssetFile(const rapidjson::Value& rapidJsonValue);
 		static std::string getAssetInputFile(const rapidjson::Value& rapidJsonValue, const std::string_view& valueName = "InputFile");
 		static const RendererRuntime::MaterialProperty* getMaterialPropertyOfUsageAndValueType(const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector, const std::string& valueAsString, RendererRuntime::MaterialProperty::Usage usage, RendererRuntime::MaterialPropertyValue::ValueType valueType);

@@ -375,6 +375,42 @@ namespace RendererToolkit
 		}
 	}
 
+	void JsonHelper::mergeObjects(rapidjson::Value& destinationObject, rapidjson::Value& sourceObject, rapidjson::Document& allocatorRapidJsonDocument)
+	{
+		// The implementation is basing on https://stackoverflow.com/a/42491356
+		assert(&destinationObject != &sourceObject);
+		assert(destinationObject.IsObject() && sourceObject.IsObject());
+		rapidjson::Document::AllocatorType& allocatorType = allocatorRapidJsonDocument.GetAllocator();
+		for (rapidjson::Value::MemberIterator sourceIterator = sourceObject.MemberBegin(); sourceObject.MemberEnd() != sourceIterator; ++sourceIterator)
+		{
+			rapidjson::Value::MemberIterator destinationIterator = destinationObject.FindMember(sourceIterator->name);
+			if (destinationObject.MemberEnd() != destinationIterator)
+			{
+				assert(destinationIterator->value.GetType() == sourceIterator->value.GetType());
+				if (sourceIterator->value.IsArray())
+				{
+					for (rapidjson::Value::ValueIterator arrayIterator = sourceIterator->value.Begin(); sourceIterator->value.End() != arrayIterator; ++arrayIterator)
+					{
+						destinationIterator->value.PushBack(*arrayIterator, allocatorType);
+					}
+				}
+				else if (sourceIterator->value.IsObject())
+				{
+					mergeObjects(destinationIterator->value, sourceIterator->value, allocatorRapidJsonDocument);
+				}
+				else
+				{
+					destinationIterator->value = rapidjson::Value(sourceIterator->value, allocatorType);
+				}
+			}
+			else
+			{
+				// Deep copy
+				destinationObject.AddMember(rapidjson::Value(sourceIterator->name, allocatorType), rapidjson::Value(sourceIterator->value, allocatorType), allocatorType);
+			}
+		}
+	}
+
 	std::string JsonHelper::getAssetFile(const rapidjson::Value& rapidJsonValue)
 	{
 		// Asset input file must start with "./" = this directory, no variations allowed in this case

@@ -75,6 +75,7 @@ namespace RendererToolkit
 	//[ Public static methods                                 ]
 	//[-------------------------------------------------------]
 	public:
+		static void loadDocumentByFilename(const IAssetCompiler::Input& input, const std::string& virtualFilename, rapidjson::Document& rapidJsonDocument);
 		static void optionalPrimitiveTopology(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::PrimitiveTopology& value);
 		static Renderer::PrimitiveTopologyType getPrimitiveTopologyTypeByPrimitiveTopology(Renderer::PrimitiveTopology primitiveTopology);
 		static void optionalShaderVisibilityProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::ShaderVisibility& value);
@@ -90,6 +91,7 @@ namespace RendererToolkit
 		static void readTextureBuffersByResourceGroups(const rapidjson::Value& rapidJsonValueResourceGroups, RendererRuntime::IFile& file);
 		static void readSamplerStatesByResourceGroups(const rapidjson::Value& rapidJsonValueResourceGroups, const RendererRuntime::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector, RendererRuntime::IFile& file, SamplerBaseShaderRegisterNameToIndex& samplerBaseShaderRegisterNameToIndex);
 		static void readTexturesByResourceGroups(const IAssetCompiler::Input& input, const RendererRuntime::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector, const rapidjson::Value& rapidJsonValueResourceGroups, const SamplerBaseShaderRegisterNameToIndex& samplerBaseShaderRegisterNameToIndex, RendererRuntime::IFile& file);
+		static void getDependencyFiles(const IAssetCompiler::Input& input, const std::string& virtualInputFilename, std::vector<std::string>& virtualDependencyFilenames);
 
 
 	//[-------------------------------------------------------]

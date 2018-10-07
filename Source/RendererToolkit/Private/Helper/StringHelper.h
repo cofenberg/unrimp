@@ -66,9 +66,10 @@ namespace RendererToolkit
 		static std::string& trimLeftWhitespaceCharacters(std::string& s);
 		static std::string& trimWhitespaceCharacters(std::string& s);
 		static bool isSourceAssetIdAsString(const std::string& sourceAssetIdAsString);
-		static RendererRuntime::AssetId getSourceAssetIdByString(const std::string& sourceAssetIdAsString, const RendererToolkit::IAssetCompiler::Input& input);
+		static std::string getSourceAssetFilenameByString(const std::string& sourceAssetIdAsString, const IAssetCompiler::Input& input);
+		static RendererRuntime::AssetId getSourceAssetIdByString(const std::string& sourceAssetIdAsString, const IAssetCompiler::Input& input);
 		static RendererRuntime::AssetId hashAssetIdAsString(const std::string& assetIdAsString);	// Asset ID naming scheme "<project name>/<asset type>/<asset category>/<asset name>" only
-		static RendererRuntime::AssetId getAssetIdByString(const std::string& assetIdAsString, const RendererToolkit::IAssetCompiler::Input& input);	// Asset ID name + ID directly
+		static RendererRuntime::AssetId getAssetIdByString(const std::string& assetIdAsString, const IAssetCompiler::Input& input);	// Asset ID name + ID directly
 		static void readStringByFilename(const RendererRuntime::IFileManager& fileManager, const std::string& virtualFilename, std::string& string);
 		static void readStringWithStrippedCommentsByFilename(const RendererRuntime::IFileManager& fileManager, const std::string& virtualFilename, std::string& sourceCode);
 
