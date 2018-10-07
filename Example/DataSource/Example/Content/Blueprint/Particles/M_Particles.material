@@ -9,7 +9,7 @@
 		"Techniques":
 		{
 			"Transparent": "./MB_Transparent.asset",
-			"Distortion": "./MB_Transparent.asset"
+			"Distortion": "./MB_Distortion.asset"
 		}
 	}
 }

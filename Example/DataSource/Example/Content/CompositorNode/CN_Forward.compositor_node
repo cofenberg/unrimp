@@ -80,7 +80,7 @@
 			"Example/Texture/Dynamic/DistortionRenderTarget":
 			{
 				"Description": "Distortion which can e.g. be used for heat haze",
-				"TextureFormat": "R16G16_SNORM",
+				"TextureFormat": "R16G16_FLOAT",
 				"Scale": "0.5"
 			},
 			"Example/Texture/Dynamic/VolumetricLightRenderTarget":

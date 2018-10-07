@@ -1,0 +1,107 @@
+/*********************************************************\
+ * Copyright (c) 2012-2018 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+//[-------------------------------------------------------]
+//[ Definitions                                           ]
+//[-------------------------------------------------------]
+@includepiece(../SharedShaderPiece/SP_Core.asset)
+	@insertpiece(SetCrossPlatformSettings)
+
+
+//[-------------------------------------------------------]
+//[ Input / output                                        ]
+//[-------------------------------------------------------]
+// Attribute input / output
+INPUT_BEGIN
+	INPUT_TEXTURE_COORDINATE(1, float3, TexCoordDepthVS, 0)	// xy = texture coordinate, z = particle depth
+	INPUT_TEXTURE_COORDINATE(2, float4, ColorVS, 1)			// Color
+	DECLARE_FRAGMENT_POSITION
+INPUT_END
+OUTPUT_BEGIN
+	OUTPUT_COLOR(0)	// rg = xy distortion
+OUTPUT_END
+
+// Uniform buffers
+struct PassDataStruct
+{
+	float4x4 WorldSpaceToViewSpaceMatrix[2];
+	float4x4 ViewSpaceToClipSpaceMatrix[2];
+	float2   InverseViewportSize;
+	float2	 ProjectionParameters;
+	float    GlobalTimeInSeconds;
+};
+UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
+	PassDataStruct PassData;
+UNIFORM_BUFFER_END
+
+// Textures: We need to start at texture unit 1 instead of texture unit 0 because the vertex shader has an instance structured buffer bound at texture unit 0 (OpenGL shares those bindings across all shader stages while Direct3D doesn't)
+TEXTURE_2D(2, 1, _argb_alpha, 1)
+TEXTURE_2D(2, 2, DepthMap, 2)
+
+// Samplers
+SAMPLER_STATE(3, 0, SamplerLinear, 0)
+SAMPLER_STATE(3, 1, SamplerPointClamp, 1)
+
+
+//[-------------------------------------------------------]
+//[ Functions                                             ]
+//[-------------------------------------------------------]
+@includepiece(../SharedShaderPiece/SP_Depth.asset)
+	@insertpiece(DefineGetLinearDepth)
+
+
+//[-------------------------------------------------------]
+//[ Main                                                  ]
+//[-------------------------------------------------------]
+MAIN_BEGIN
+	// TODO(co) Pass or material parameters
+	float ContrastPower = 1.5f;
+
+	// TODO(co) Add and use normal map for distortion
+	// Fetch texel
+	float2 distortion = normalize(SAMPLE_2D(_argb_alpha, SamplerLinear, MAIN_INPUT(TexCoordDepthVS).xy).rgb).gb;
+
+	// Scale distortion
+	distortion.xy *= 10.0f;
+
+	{ // Do only apply distortion behind, not in front (< instead of > due to usage of Reversed-Z)
+		float4 texCoord = float4((FRAGMENT_POSITION.xy + distortion.xy) * PassData.InverseViewportSize, 0.0f, 0.0f);
+		float targetSceneDepth = GetLinearDepth(SAMPLE_DEPTH_2D_LOD(DepthMap, SamplerPointClamp, texCoord));
+		if (targetSceneDepth < MAIN_INPUT(TexCoordDepthVS).z)
+		{
+			discard;
+		}
+	}
+
+	// Soft particles function as described in "Soft Particles" by Tristan Lorach - https://developer.download.nvidia.com/whitepapers/2007/SDK10/SoftParticles_hi.pdf
+	float alpha = 1.0f;
+	@property(SoftParticles)
+	{ 
+		float sceneDepth = GetLinearDepth(SAMPLE_DEPTH_2D_LOD(DepthMap, SamplerPointClamp, float4(FRAGMENT_POSITION.xy * PassData.InverseViewportSize, 0.0f, 0.0f)));
+		float depthDifference = sceneDepth - MAIN_INPUT(TexCoordDepthVS).z;
+		float fade = 0.5f * pow(SATURATE(2.0f * ((depthDifference > 0.5f) ? 1.0f - depthDifference : depthDifference)), ContrastPower);
+		fade = (depthDifference > 0.5f) ? (1.0f - fade) : fade;
+		alpha *= fade;
+	}
+	@end
+
+	// Done
+	MAIN_OUTPUT_COLOR(0) = float4(distortion.xy, 0.0f, alpha);
+MAIN_END

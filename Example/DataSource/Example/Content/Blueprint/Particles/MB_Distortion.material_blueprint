@@ -1,0 +1,18 @@
+{
+	"Format":
+	{
+		"Type": "MaterialBlueprintAsset",
+		"Version": "2"
+	},
+	"MaterialBlueprintAsset":
+	{
+		"BaseMaterialBlueprint": "./MB_Transparent.asset",
+		"GraphicsPipelineState":
+		{
+			"ShaderBlueprints":
+			{
+				"FragmentShaderBlueprint": "./SB_DistortionFragment.asset"
+			}
+		}
+	}
+}
