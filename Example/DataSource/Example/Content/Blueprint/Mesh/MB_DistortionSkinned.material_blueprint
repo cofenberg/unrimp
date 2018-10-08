@@ -1,0 +1,26 @@
+{
+	"Format":
+	{
+		"Type": "MaterialBlueprintAsset",
+		"Version": "2"
+	},
+	"MaterialBlueprintAsset":
+	{
+		"BaseMaterialBlueprint": "./MB_Distortion.asset",
+		"Properties":
+		{
+			"UseGpuSkinning":
+			{
+				"Usage": "SHADER_COMBINATION",
+				"ValueType": "BOOLEAN",
+				"Value": "TRUE",
+				"Description": "Use GPU skinning?",
+				"VisualImportance": "MANDATORY"
+			}
+		},
+		"GraphicsPipelineState":
+		{
+			"VertexAttributes": "./VA_SkinnedMesh.asset"
+		}
+	}
+}

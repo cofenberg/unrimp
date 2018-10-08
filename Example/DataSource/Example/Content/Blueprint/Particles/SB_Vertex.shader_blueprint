@@ -35,7 +35,7 @@ INPUT_BEGIN_VERTEX
 	INPUT_INSTANCE_ID
 INPUT_END_VERTEX
 OUTPUT_BEGIN_VERTEX
-	OUTPUT_TEXTURE_COORDINATE(1, float3, TexCoordDepthVS, 0)	// xy = texture coordinate, z = particle depth
+	OUTPUT_TEXTURE_COORDINATE(1, float3, TexCoordDepthVS, 0)	// xy = texture coordinate, z = linear particle depth
 	OUTPUT_TEXTURE_COORDINATE(2, float4, ColorVS, 		  1)	// Color
 	OUTPUT_POSITION			 (0)								// Clip space vertex position as output, left/bottom is (-1,-1) and right/top is (1,1)
 OUTPUT_END_VERTEX

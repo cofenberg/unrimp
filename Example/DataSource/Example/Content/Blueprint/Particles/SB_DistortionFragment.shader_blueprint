@@ -30,7 +30,7 @@
 //[-------------------------------------------------------]
 // Attribute input / output
 INPUT_BEGIN
-	INPUT_TEXTURE_COORDINATE(1, float3, TexCoordDepthVS, 0)	// xy = texture coordinate, z = particle depth
+	INPUT_TEXTURE_COORDINATE(1, float3, TexCoordDepthVS, 0)	// xy = texture coordinate, z = linear particle depth
 	INPUT_TEXTURE_COORDINATE(2, float4, ColorVS, 1)			// Color
 	DECLARE_FRAGMENT_POSITION
 INPUT_END

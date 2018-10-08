@@ -194,7 +194,7 @@ Examples (just some high level keywords)
 - Gaussian blur, used to e.g. blur the transparent ImGui background
 - High dynamic range (HDR) rendering with adaptive luminance
 - Tangent space BC5/3DC/ATI2N stored normal maps
-- Distortion which can e.g. be used for heat haze
+- Distortion which can e.g. be used for refraction and heat haze / heat shimmer
 - [Color correction via 3D lookup table (LUT)](https://developer.nvidia.com/gpugems/GPUGems2/gpugems2_chapter24.html)
 - [Screen space ambient occlusion (SSAO)](http://john-chapman-graphics.blogspot.de/2013/01/ssao-tutorial.html)
 - [Fast Approximate Anti-Aliasing (FXAA)](http://developer.download.nvidia.com/assets/gamedev/files/sdk/11/FXAA_WhitePaper.pdf)

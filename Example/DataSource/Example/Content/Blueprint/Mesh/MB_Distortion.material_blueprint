@@ -1,0 +1,302 @@
+{
+	"Format":
+	{
+		"Type": "MaterialBlueprintAsset",
+		"Version": "2"
+	},
+	"MaterialBlueprintAsset":
+	{
+		"Properties":
+		{
+			"RenderQueueIndex":
+			{
+				"Usage": "STATIC",
+				"ValueType": "INTEGER",
+				"Value": "255",
+				"Description": "Fixed build in material property for the render queue index [0, 255]",
+				"MinimumIntegerValue": "0",
+				"MaximumIntegerValue": "255"
+			},
+			"CullMode":
+			{
+				"Usage": "RASTERIZER_STATE",
+				"ValueType": "CULL_MODE",
+				"Value": "BACK",
+				"Description": "Cull mode rasterizer state"
+			},
+			"IndexOfRefraction":
+			{
+				"Usage": "SHADER_UNIFORM",
+				"ValueType": "FLOAT",
+				"Value": "1.52",
+				"Description": "Index of refraction (IOR), e.g. glass = 1.52"
+			},
+			"DistortionScale":
+			{
+				"Usage": "SHADER_UNIFORM",
+				"ValueType": "FLOAT",
+				"Value": "40.0",
+				"Description": "Distortion scale"
+			},
+			"_argb_nxa":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "Unrimp/Texture/DynamicByCode/Identity_argb_nxa2D",
+				"Description": "RGB channel = Albedo map ('_a'-postfix), A channel = x component of normal map ('_n'-postfix)"
+			},
+			"_hr_rg_mb_nya":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "Unrimp/Texture/DynamicByCode/Identity_hr_rg_mb_nya2D",
+				"Description": "R channel = Height map ('_h'-postfix), G channel = Roughness map ('_r'-postfix, aka specular F0, roughness = 1 - glossiness (= smoothness)), B channel = Metallic map ('_m'-postfix), A channel = y component of normal map ('_n'-postfix)"
+			},
+			"UseAlphaMap":
+			{
+				"Usage": "SHADER_COMBINATION",
+				"ValueType": "BOOLEAN",
+				"Value": "FALSE",
+				"Description": "Use alpha map?",
+				"VisualImportance": "100"
+			},
+			"AlphaMap":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "Unrimp/Texture/DynamicByCode/IdentityAlphaMap2D",
+				"Description": "2D material alpha map"
+			},
+			"AlphaReference":
+			{
+				"Usage": "SHADER_UNIFORM",
+				"ValueType": "FLOAT",
+				"Value": "0.05",
+				"Description": "Alpha reference. Only used if 'UseAlphaMap' is true.",
+				"RangeMin": "0.0",
+				"RangeMax": "1.0",
+				"RangeStep": "0.05"
+			}
+		},
+		"GraphicsPipelineState":
+		{
+			"VertexAttributes": "./VA_Mesh.asset",
+			"ShaderBlueprints":
+			{
+				"VertexShaderBlueprint": "./SB_DistortionVertex.asset",
+				"FragmentShaderBlueprint": "./SB_DistortionFragment.asset"
+			},
+			"RasterizerState":
+			{
+				"CullMode": "@CullMode"
+			},
+			"DepthStencilState":
+			{
+				"DepthWriteMask": "ZERO"
+			},
+			"BlendState":
+			{
+				"RenderTarget[0]":
+				{
+					"BlendEnable": "TRUE",
+					"SrcBlend": "SRC_ALPHA",
+					"DestBlend": "INV_SRC_ALPHA",
+					"SrcBlendAlpha": "INV_SRC_ALPHA"
+				}
+			}
+		},
+		"ResourceGroups":
+		{
+			"0":
+			{
+				"0":
+				{
+					"ResourceType": "UNIFORM_BUFFER",
+					"BaseShaderRegisterName": "PassUniformBuffer",
+					"BaseShaderRegister": "0",
+					"ShaderVisibility": "ALL_GRAPHICS",
+					"BufferUsage": "PASS",
+					"NumberOfElements": "1",
+					"ElementProperties":
+					{
+						"WorldSpaceToClipSpaceMatrix":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4_4",
+							"Value": "@WORLD_SPACE_TO_CLIP_SPACE_MATRIX"
+						},
+						"WorldSpaceToClipSpaceMatrix2":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4_4",
+							"Value": "@WORLD_SPACE_TO_CLIP_SPACE_MATRIX_2"
+						},
+						"WorldSpaceToViewSpaceMatrix":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4_4",
+							"Value": "@WORLD_SPACE_TO_VIEW_SPACE_MATRIX"
+						},
+						"WorldSpaceToViewSpaceQuaternion":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4",
+							"Value": "@WORLD_SPACE_TO_VIEW_SPACE_QUATERNION"
+						},
+						"InverseViewportSize":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_2",
+							"Value": "@INVERSE_VIEWPORT_SIZE"
+						},
+						"ProjectionParameters":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_2",
+							"Value": "@PROJECTION_PARAMETERS"
+						}
+					}
+				}
+			},
+			"1":
+			{
+				"0":
+				{
+					"ResourceType": "UNIFORM_BUFFER",
+					"BaseShaderRegisterName": "MaterialUniformBuffer",
+					"BaseShaderRegister": "1",
+					"ShaderVisibility": "FRAGMENT",
+					"BufferUsage": "MATERIAL",
+					"NumberOfElements": "2",
+					"ElementProperties":
+					{
+						"AlphaReference":
+						{
+							"Usage": "MATERIAL_REFERENCE",
+							"ValueType": "FLOAT",
+							"Value": "@AlphaReference"
+						},
+						"IndexOfRefraction":
+						{
+							"Usage": "MATERIAL_REFERENCE",
+							"ValueType": "FLOAT",
+							"Value": "@IndexOfRefraction"
+						},
+						"DistortionScale":
+						{
+							"Usage": "MATERIAL_REFERENCE",
+							"ValueType": "FLOAT",
+							"Value": "@DistortionScale"
+						}
+					}
+				}
+			},
+			"2":
+			{
+				"0":
+				{
+					"ResourceType": "UNIFORM_BUFFER",
+					"BaseShaderRegisterName": "InstanceUniformBuffer",
+					"BaseShaderRegister": "2",
+					"ShaderVisibility": "VERTEX",
+					"BufferUsage": "INSTANCE",
+					"NumberOfElements": "1",
+					"ElementProperties":
+					{
+						"InstanceIndicesArray":
+						{
+							"Usage": "INSTANCE_REFERENCE",
+							"ValueType": "INTEGER_4",
+							"Value": "@INSTANCE_INDICES"
+						}
+					}
+				},
+				"1":
+				{
+					"ResourceType": "TEXTURE_BUFFER",
+					"ValueType": "FLOAT_4",
+					"BaseShaderRegisterName": "InstanceTextureBuffer",
+					"BaseShaderRegister": "0",
+					"ShaderVisibility": "VERTEX",
+					"BufferUsage": "INSTANCE",
+					"Value": "@POSITION_ROTATION_SCALE"
+				}
+			},
+			"3":
+			{
+				"0":
+				{
+					"ResourceType": "TEXTURE_2D",
+					"BaseShaderRegisterName": "_argb_nxa",
+					"BaseShaderRegister": "1",
+					"ShaderVisibility": "FRAGMENT",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@_argb_nxa",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/Identity_argb_nxa2D",
+					"RgbHardwareGammaCorrection": "TRUE",
+					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
+				},
+				"1":
+				{
+					"ResourceType": "TEXTURE_2D",
+					"BaseShaderRegisterName": "_hr_rg_mb_nya",
+					"BaseShaderRegister": "2",
+					"ShaderVisibility": "FRAGMENT",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@_hr_rg_mb_nya",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/Identity_hr_rg_mb_nya2D",
+					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
+				},
+				"2":
+				{
+					"ResourceType": "TEXTURE_2D",
+					"BaseShaderRegisterName": "AlphaMap",
+					"BaseShaderRegister": "3",
+					"ShaderVisibility": "FRAGMENT",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@AlphaMap",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/IdentityAlphaMap2D",
+					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
+				},
+				"3":
+				{
+					"ResourceType": "TEXTURE_2D",
+					"BaseShaderRegisterName": "DepthMap",
+					"BaseShaderRegister": "4",
+					"ShaderVisibility": "FRAGMENT",
+					"Usage": "STATIC",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "Example/Texture/Dynamic/DepthStencilRenderTarget",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+					"MipmapsUsed": "FALSE",
+					"SamplerStateBaseShaderRegisterName": "SamplerPointClamp"
+				}
+			},
+			"4":
+			{
+				"0":
+				{
+					"ResourceType": "SAMPLER_STATE",
+					"BaseShaderRegisterName": "SamplerLinear",
+					"BaseShaderRegister": "0",
+					"ShaderVisibility": "FRAGMENT",
+					"AddressU": "WRAP",
+					"AddressV": "WRAP"
+				},
+				"1":
+				{
+					"ResourceType": "SAMPLER_STATE",
+					"BaseShaderRegisterName": "SamplerPointClamp",
+					"BaseShaderRegister": "1",
+					"ShaderVisibility": "FRAGMENT",
+					"Filter": "MIN_MAG_MIP_POINT",
+					"MaxAnisotropy": "1",
+					"MaxLOD": "0.0"
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,142 @@
+/*********************************************************\
+ * Copyright (c) 2012-2018 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+//[-------------------------------------------------------]
+//[ Definitions                                           ]
+//[-------------------------------------------------------]
+@includepiece(../SharedShaderPiece/SP_Core.asset)
+	@insertpiece(SetCrossPlatformSettings)
+
+
+//[-------------------------------------------------------]
+//[ Define pieces                                         ]
+//[-------------------------------------------------------]
+// TODO(co) Define this outside
+@piece(MaximumNumberOfMaterials)2@end
+
+
+//[-------------------------------------------------------]
+//[ Input / output                                        ]
+//[-------------------------------------------------------]
+// Attribute input / output
+INPUT_BEGIN
+	INPUT_TEXTURE_COORDINATE_NOINTERPOLATION(1, uint,   AssignedMaterialSlotVS, 0)	// The assigned material slot inside the material uniform buffer
+	INPUT_TEXTURE_COORDINATE				(2, float3, TexCoordDepthVS,		1)	// Texture coordinate, z = linear mesh depth
+	INPUT_TEXTURE_COORDINATE				(3, float3, TangentFrame0VS,		2)	// Tangent frame
+	INPUT_TEXTURE_COORDINATE				(4, float3, TangentFrame1VS,		3)	// Tangent frame
+	INPUT_TEXTURE_COORDINATE				(5, float3, TangentFrame2VS,		4)	// Tangent frame
+	INPUT_TEXTURE_COORDINATE				(6, float3, ViewSpacePositionVS,	5)	// View space position
+	DECLARE_FRAGMENT_POSITION
+INPUT_END
+OUTPUT_BEGIN
+	OUTPUT_COLOR(0)	// rg = xy distortion
+OUTPUT_END
+
+// Uniform buffers
+struct PassDataStruct
+{
+	float4x4 WorldSpaceToClipSpaceMatrix[2];
+	float4x4 WorldSpaceToViewSpaceMatrix;
+	float4	 WorldSpaceToViewSpaceQuaternion;
+	float2   InverseViewportSize;
+	float2   ProjectionParameters;
+};
+UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
+	PassDataStruct PassData;
+UNIFORM_BUFFER_END
+struct Material
+{
+	float AlphaReference;
+	float IndexOfRefraction;
+	float DistortionScale;
+};
+UNIFORM_BUFFER_BEGIN(1, 0, MaterialUniformBuffer, 1)
+	Material Materials[FAST_SHADER_BUILD_HACK(@insertpiece(MaximumNumberOfMaterials))];
+UNIFORM_BUFFER_END
+
+// Textures
+TEXTURE_2D(3, 0, _argb_nxa, 1)		// RGB channel = Albedo map ("_a"-postfix), A channel = x component of normal map ("_n"-postfix)
+TEXTURE_2D(3, 1, _hr_rg_mb_nya, 2)	// R channel = Height map ("_h"-postfix), G channel = Roughness map ("_r"-postfix), B channel = Metallic map ("_m"-postfix), A channel = y component of normal map ("_n"-postfix)
+@property(UseAlphaMap)
+	TEXTURE_2D(3, 2, AlphaMap, 3)
+@end
+TEXTURE_2D(3, 3, DepthMap, 4)
+
+// Samplers
+SAMPLER_STATE(4, 0, SamplerLinear, 0)
+SAMPLER_STATE(4, 1, SamplerPointClamp, 1)
+
+
+//[-------------------------------------------------------]
+//[ Functions                                             ]
+//[-------------------------------------------------------]
+@includepiece(../SharedShaderPiece/SP_TangentFrame.asset)
+	@insertpiece(DefineGetTangentFrame)
+	@insertpiece(DefineUnpackTextureNormalXY)
+@includepiece(../SharedShaderPiece/SP_Depth.asset)
+	@insertpiece(DefineGetLinearDepth)
+
+
+//[-------------------------------------------------------]
+//[ Main                                                  ]
+//[-------------------------------------------------------]
+MAIN_BEGIN
+	// Get the used material
+	Material material = Materials[MAIN_INPUT(AssignedMaterialSlotVS)];
+
+	// Perform alpha map based fragment rejection
+	@property(UseAlphaMap)
+		if (material.AlphaReference >= SAMPLE_2D(AlphaMap, SamplerLinear, MAIN_INPUT(TexCoordDepthVS).xy).r)
+		{
+			discard;
+		}
+	@end
+
+	// Read channel packed texture data
+	// -> "_argb_nxa" = RGB channel = Albedo map ("_a"-postfix), A channel = x component of normal map ("_n"-postfix)
+	// -> "_hr_rg_mb_nya" = R channel = Height map ("_h"-postfix), G channel = Roughness map ("_r"-postfix), B channel = Metallic map ("_m"-postfix), A channel = y component of normal map ("_n"-postfix)
+	float4 value_argb_nxa = SAMPLE_2D(_argb_nxa, SamplerLinear, MAIN_INPUT(TexCoordDepthVS).xy);
+	float4 value_hr_rg_mb_nya = SAMPLE_2D(_hr_rg_mb_nya, SamplerLinear, MAIN_INPUT(TexCoordDepthVS).xy);
+
+	// Transform the tangent space normal into view space
+	float3 viewSpaceNormal = UnpackTextureNormalXY(value_argb_nxa.a, value_hr_rg_mb_nya.a);
+	viewSpaceNormal = normalize(viewSpaceNormal.x * MAIN_INPUT(TangentFrame0VS) + viewSpaceNormal.y * MAIN_INPUT(TangentFrame1VS) + viewSpaceNormal.z * MAIN_INPUT(TangentFrame2VS));
+
+	// Refract
+	viewSpaceNormal = refract(normalize(MAIN_INPUT(ViewSpacePositionVS)), viewSpaceNormal, material.IndexOfRefraction);
+
+	// Get distortion
+	float2 distortion = viewSpaceNormal.xy;
+
+	// Scale distortion
+	distortion.xy *= material.DistortionScale;
+
+	{ // Do only apply distortion behind, not in front (< instead of > due to usage of Reversed-Z)
+		float4 texCoord = float4((FRAGMENT_POSITION.xy + distortion.xy) * PassData.InverseViewportSize, 0.0f, 0.0f);
+		float targetSceneDepth = GetLinearDepth(SAMPLE_DEPTH_2D_LOD(DepthMap, SamplerPointClamp, texCoord));
+		if (targetSceneDepth < MAIN_INPUT(TexCoordDepthVS).z)
+		{
+			discard;
+		}
+	}
+
+	// Done
+	MAIN_OUTPUT_COLOR(0) = float4(distortion.xy, 0.0f, 1.0f);
+MAIN_END
