@@ -64,8 +64,9 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	public:
 		virtual AssetCompilerTypeId getAssetCompilerTypeId() const override;
+		virtual std::string getVirtualOutputAssetFilename(const Input& input, const Configuration& configuration) const override;
 		virtual bool checkIfChanged(const Input& input, const Configuration& configuration) const override;
-		virtual void compile(const Input& input, const Configuration& configuration, Output& output) override;
+		virtual void compile(const Input& input, const Configuration& configuration) const override;
 
 
 	};

@@ -1592,11 +1592,8 @@ namespace
 				throw std::runtime_error("Failed to convert volume " + std::string(virtualSourceFilename) + ": Only raw volume data is supported");
 			}
 
-			// Get the JSON asset object
-			const rapidjson::Value& rapidJsonValueAsset = configuration.rapidJsonDocumentAsset["Asset"];
-			const rapidjson::Value& rapidJsonValueTextureAssetCompiler = rapidJsonValueAsset["TextureAssetCompiler"];
-
 			// Get the JSON "RawVolume" object
+			const rapidjson::Value& rapidJsonValueTextureAssetCompiler = configuration.rapidJsonDocumentAsset["Asset"]["TextureAssetCompiler"];
 			if (!rapidJsonValueTextureAssetCompiler.HasMember("RawVolume"))
 			{
 				throw std::runtime_error("Failed to convert volume " + std::string(virtualSourceFilename) + ": \"RawVolume\" block is missing inside the texture asset JSON file");
@@ -1703,15 +1700,9 @@ namespace RendererToolkit
 		return TYPE_ID;
 	}
 
-	bool TextureAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const
+	std::string TextureAssetCompiler::getVirtualOutputAssetFilename(const Input& input, const Configuration& configuration) const
 	{
 		const rapidjson::Value& rapidJsonValueTextureAssetCompiler = configuration.rapidJsonDocumentAsset["Asset"]["TextureAssetCompiler"];
-		const std::string& virtualAssetInputDirectory = input.virtualAssetInputDirectory;
-		std::string inputFile;
-		if (rapidJsonValueTextureAssetCompiler.HasMember("InputFile"))
-		{
-			inputFile = JsonHelper::getAssetInputFile(rapidJsonValueTextureAssetCompiler);
-		}
 		::detail::TextureSemantic textureSemantic = ::detail::TextureSemantic::UNKNOWN;
 		::detail::optionalTextureSemanticProperty(rapidJsonValueTextureAssetCompiler, "TextureSemantic", textureSemantic);
 		std::string assetFileFormat;
@@ -1723,24 +1714,29 @@ namespace RendererToolkit
 		{
 			assetFileFormat = "dds";
 		}
-		const std::string virtualInputAssetFilename = virtualAssetInputDirectory + '/' + inputFile;
 		const std::string assetName = std_filesystem::path(input.virtualAssetFilename).stem().generic_string();
-
-		// Get output related settings
 		std::string virtualOutputAssetFilename;
 		crnlib::texture_file_types::format crunchOutputTextureFileType = crnlib::texture_file_types::cFormatCRN;
 		::detail::getVirtualOutputAssetFilenameAndCrunchOutputTextureFileType(configuration, assetFileFormat, assetName, input.virtualAssetOutputDirectory, textureSemantic, virtualOutputAssetFilename, crunchOutputTextureFileType);
-
-		// Check if changed
-		std::vector<CacheManager::CacheEntries> cacheEntries;
-		return ::detail::checkIfChanged(input, configuration, rapidJsonValueTextureAssetCompiler, textureSemantic, virtualInputAssetFilename, virtualOutputAssetFilename, cacheEntries);
+		return virtualOutputAssetFilename;
 	}
 
-	void TextureAssetCompiler::compile(const Input& input, const Configuration& configuration, Output& output)
+	bool TextureAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const
 	{
-		// Get the JSON asset object
-		const rapidjson::Value& rapidJsonValueAsset = configuration.rapidJsonDocumentAsset["Asset"];
+		const rapidjson::Value& rapidJsonValueTextureAssetCompiler = configuration.rapidJsonDocumentAsset["Asset"]["TextureAssetCompiler"];
+		std::string inputFile;
+		if (rapidJsonValueTextureAssetCompiler.HasMember("InputFile"))
+		{
+			inputFile = JsonHelper::getAssetInputFile(rapidJsonValueTextureAssetCompiler);
+		}
+		::detail::TextureSemantic textureSemantic = ::detail::TextureSemantic::UNKNOWN;
+		::detail::optionalTextureSemanticProperty(rapidJsonValueTextureAssetCompiler, "TextureSemantic", textureSemantic);
+		std::vector<CacheManager::CacheEntries> cacheEntries;
+		return ::detail::checkIfChanged(input, configuration, rapidJsonValueTextureAssetCompiler, textureSemantic, input.virtualAssetInputDirectory + '/' + inputFile, getVirtualOutputAssetFilename(input, configuration), cacheEntries);
+	}
 
+	void TextureAssetCompiler::compile(const Input& input, const Configuration& configuration) const
+	{
 		// Read texture asset compiler configuration
 		std::string inputFile;
 		std::string assetFileFormat;
@@ -1748,7 +1744,7 @@ namespace RendererToolkit
 		bool createMipmaps = true;
 		float mipmapBlurriness = 0.9f;	// Scale filter kernel, >1=blur, <1=sharpen, .01-8, default=.9, Crunch default "blurriness" factor of 0.9 actually sharpens the output a little
 		std::string normalMapInputFile;
-		const rapidjson::Value& rapidJsonValueTextureAssetCompiler = rapidJsonValueAsset["TextureAssetCompiler"];
+		const rapidjson::Value& rapidJsonValueTextureAssetCompiler = configuration.rapidJsonDocumentAsset["Asset"]["TextureAssetCompiler"];
 		{
 			::detail::optionalTextureSemanticProperty(rapidJsonValueTextureAssetCompiler, "TextureSemantic", textureSemantic);
 			if (rapidJsonValueTextureAssetCompiler.HasMember("InputFile"))
@@ -1833,12 +1829,6 @@ namespace RendererToolkit
 			{
 				input.cacheManager.storeOrUpdateCacheEntries(currentCacheEntries);
 			}
-		}
-
-		{ // Update the output asset package
-			const std::string assetCategory = rapidJsonValueAsset["AssetMetadata"]["AssetCategory"].GetString();
-			const std::string assetIdAsString = input.projectName + "/Texture/" + assetCategory + '/' + assetName;
-			outputAsset(input.context.getFileManager(), assetIdAsString, virtualOutputAssetFilename, *output.outputAssetPackage);
 		}
 	}
 

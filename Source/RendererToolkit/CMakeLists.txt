@@ -98,7 +98,6 @@ elseif(UNIX)
 endif()
 set(SOURCE_CODES
 	${EXTERNAL_SOURCE_CODES}
-	Private/AssetCompiler/IAssetCompiler.cpp
 	Private/AssetCompiler/CompositorNodeAssetCompiler.cpp
 	Private/AssetCompiler/CompositorWorkspaceAssetCompiler.cpp
 	Private/AssetCompiler/MaterialAssetCompiler.cpp

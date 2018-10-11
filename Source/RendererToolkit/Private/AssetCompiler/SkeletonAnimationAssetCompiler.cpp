@@ -90,22 +90,23 @@ namespace RendererToolkit
 		return TYPE_ID;
 	}
 
-	bool SkeletonAnimationAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const
+	std::string SkeletonAnimationAssetCompiler::getVirtualOutputAssetFilename(const Input& input, const Configuration&) const
 	{
-		// Let the cache manager check whether or not the files have been changed in order to speed up later checks and to support dependency tracking
-		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFile(configuration.rapidJsonDocumentAsset["Asset"]["SkeletonAnimationAssetCompiler"]);
-		const std::string virtualOutputAssetFilename = input.virtualAssetOutputDirectory + '/' + std_filesystem::path(input.virtualAssetFilename).stem().generic_string() + ".skeleton_animation";
-		return input.cacheManager.checkIfFileIsModified(configuration.rendererTarget, input.virtualAssetFilename, {virtualInputFilename}, virtualOutputAssetFilename, RendererRuntime::v1SkeletonAnimation::FORMAT_VERSION);
+		return input.virtualAssetOutputDirectory + '/' + std_filesystem::path(input.virtualAssetFilename).stem().generic_string() + ".skeleton_animation";
 	}
 
-	void SkeletonAnimationAssetCompiler::compile(const Input& input, const Configuration& configuration, Output& output)
+	bool SkeletonAnimationAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const
+	{
+		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFile(configuration.rapidJsonDocumentAsset["Asset"]["SkeletonAnimationAssetCompiler"]);
+		return input.cacheManager.checkIfFileIsModified(configuration.rendererTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), RendererRuntime::v1SkeletonAnimation::FORMAT_VERSION);
+	}
+
+	void SkeletonAnimationAssetCompiler::compile(const Input& input, const Configuration& configuration) const
 	{
 		// Get relevant data
-		const rapidjson::Value& rapidJsonValueAsset = configuration.rapidJsonDocumentAsset["Asset"];
-		const rapidjson::Value& rapidJsonValueSkeletonAnimationAssetCompiler = rapidJsonValueAsset["SkeletonAnimationAssetCompiler"];
+		const rapidjson::Value& rapidJsonValueSkeletonAnimationAssetCompiler = configuration.rapidJsonDocumentAsset["Asset"]["SkeletonAnimationAssetCompiler"];
 		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFile(rapidJsonValueSkeletonAnimationAssetCompiler);
-		const std::string assetName = std_filesystem::path(input.virtualAssetFilename).stem().generic_string();
-		const std::string virtualOutputAssetFilename = input.virtualAssetOutputDirectory + '/' + assetName + ".skeleton_animation";
+		const std::string virtualOutputAssetFilename = getVirtualOutputAssetFilename(input, configuration);
 
 		// Ask the cache manager whether or not we need to compile the source file (e.g. source changed or target not there)
 		CacheManager::CacheEntries cacheEntries;
@@ -297,12 +298,6 @@ namespace RendererToolkit
 
 			// Store new cache entries or update existing ones
 			input.cacheManager.storeOrUpdateCacheEntries(cacheEntries);
-		}
-
-		{ // Update the output asset package
-			const std::string assetCategory = rapidJsonValueAsset["AssetMetadata"]["AssetCategory"].GetString();
-			const std::string assetIdAsString = input.projectName + "/SkeletonAnimation/" + assetCategory + '/' + assetName;
-			outputAsset(input.context.getFileManager(), assetIdAsString, virtualOutputAssetFilename, *output.outputAssetPackage);
 		}
 	}
 

@@ -222,17 +222,6 @@ namespace RendererToolkit
 			Configuration(const Configuration&) = delete;
 			Configuration& operator =(const Configuration&) = delete;
 		};
-		struct Output final
-		{
-			RendererRuntime::AssetPackage* outputAssetPackage;
-		};
-
-
-	//[-------------------------------------------------------]
-	//[ Public static methods                                 ]
-	//[-------------------------------------------------------]
-	public:
-		static void outputAsset(const RendererRuntime::IFileManager& fileManager, const std::string& assetIdAsString, const std::string& virtualOutputAssetFilename, RendererRuntime::AssetPackage& outputAssetPackage);
 
 
 	//[-------------------------------------------------------]
@@ -247,8 +236,9 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	public:
 		virtual AssetCompilerTypeId getAssetCompilerTypeId() const = 0;
+		virtual std::string getVirtualOutputAssetFilename(const Input& input, const Configuration& configuration) const = 0;
 		virtual bool checkIfChanged(const Input& input, const Configuration& configuration) const = 0;
-		virtual void compile(const Input& input, const Configuration& configuration, Output& output) = 0;
+		virtual void compile(const Input& input, const Configuration& configuration) const = 0;
 
 
 	//[-------------------------------------------------------]

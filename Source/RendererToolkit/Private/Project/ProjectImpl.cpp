@@ -43,10 +43,12 @@
 #include "RendererToolkit/Private/Context.h"
 
 #include <RendererRuntime/Public/RendererRuntimeImpl.h>
+#include <RendererRuntime/Public/Core/Math/Math.h>
 #include <RendererRuntime/Public/Core/File/MemoryFile.h>
 #include <RendererRuntime/Public/Core/File/IFileManager.h>
 #include <RendererRuntime/Public/Core/File/FileSystemHelper.h>
 #include <RendererRuntime/Public/Core/Platform/PlatformManager.h>
+#include <RendererRuntime/Public/Asset/AssetPackage.h>
 #include <RendererRuntime/Public/Asset/Loader/AssetPackageFileFormat.h>
 
 // Disable warnings in external headers, we can't fix them
@@ -109,6 +111,34 @@ namespace
 				// Undefine helper macros
 				#undef IF_VALUE
 				#undef ELSE_IF_VALUE
+			}
+		}
+
+		void outputAsset(const RendererRuntime::IFileManager& fileManager, const std::string& assetIdAsString, const std::string& virtualOutputAssetFilename, RendererRuntime::AssetPackage& outputAssetPackage)
+		{
+			// Sanity check
+			const std::string virtualFilename = assetIdAsString + std_filesystem::path(virtualOutputAssetFilename).extension().generic_string();
+			if (virtualFilename.size() >= RendererRuntime::Asset::MAXIMUM_ASSET_FILENAME_LENGTH)
+			{
+				throw std::runtime_error("The output asset filename \"" + virtualFilename + "\" exceeds the length limit of " + std::to_string(RendererRuntime::Asset::MAXIMUM_ASSET_FILENAME_LENGTH - 1));	// -1 for not including terminating zero
+			}
+
+			// Append or update asset
+			RendererRuntime::Asset outputAsset;
+			outputAsset.assetId = RendererToolkit::StringHelper::hashAssetIdAsString(assetIdAsString.c_str());
+			outputAsset.fileHash = RendererRuntime::Math::calculateFileFNV1a64ByVirtualFilename(fileManager, virtualOutputAssetFilename.c_str());
+			RendererRuntime::Asset* asset = outputAssetPackage.tryGetWritableAssetByAssetId(outputAsset.assetId);
+			if (nullptr != asset)
+			{
+				// Update asset, the file hash or virtual filename might have been changed
+				asset->fileHash = outputAsset.fileHash;
+				strcpy(asset->virtualFilename, virtualFilename.c_str());
+			}
+			else
+			{
+				// Append asset
+				strcpy(outputAsset.virtualFilename, virtualFilename.c_str());
+				outputAssetPackage.getWritableSortedAssetVector().push_back(outputAsset);
 			}
 		}
 
@@ -288,10 +318,6 @@ namespace RendererToolkit
 		RENDERER_ASSERT(getContext(), nullptr != mRapidJsonDocument, "Invalid renderer toolkit Rapid JSON document")
 		const IAssetCompiler::Configuration configuration(rapidJsonDocument, (*mRapidJsonDocument)["Targets"], rendererTarget, mQualityStrategy);
 
-		// Asset compiler output
-		IAssetCompiler::Output output;
-		output.outputAssetPackage = &outputAssetPackage;
-
 		// Evaluate the asset type and continue with the processing in the asset type specific way
 		// TODO(co) Currently this is fixed build in, later on me might want to have this dynamic so we can plugin additional asset compilers
 		try
@@ -299,7 +325,14 @@ namespace RendererToolkit
 			AssetCompilers::const_iterator iterator = mAssetCompilers.find(AssetCompilerTypeId(assetType.c_str()));
 			if (mAssetCompilers.end() != iterator)
 			{
-				iterator->second->compile(input, configuration, output);
+				const IAssetCompiler* assetCompiler = iterator->second;
+				assetCompiler->compile(input, configuration);
+
+				{ // Update the output asset package
+					const std::string assetName = std_filesystem::path(input.virtualAssetFilename).stem().generic_string();
+					const std::string assetIdAsString = input.projectName + '/' + assetType + '/' + assetCategory + '/' + assetName;
+					::detail::outputAsset(input.context.getFileManager(), assetIdAsString, assetCompiler->getVirtualOutputAssetFilename(input, configuration), outputAssetPackage);
+				}
 			}
 			else
 			{
