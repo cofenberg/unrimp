@@ -9,7 +9,6 @@
 		"AssetMetadata":
 		{
 			"AssetType": "Texture",
-			"AssetCategory": "Compositor",
 			"Description": "16x1 identity color correction lookup table. Primarily for texture compiler testing and as reference to do color grading into image editing programs. Prefer using 'Unrimp/Texture/DynamicByCode/IdentityColorCorrectionLookupTable3D' in production."
 		},
 		"TextureAssetCompiler":

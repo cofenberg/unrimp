@@ -90,15 +90,13 @@ namespace RendererToolkit
 		{
 			const Context&	  context;
 			const std::string projectName;
-			const std::string assetCategory;
 			const std::string absoluteSourceFilename;
 			const std::string virtualAssetOutputDirectory;	///< Without "/" at the end
 
 			Input() = delete;
-			Input(const Context& _context, const std::string& _projectName, const std::string& _assetCategory, const std::string& _absoluteSourceFilename, const std::string& _virtualAssetOutputDirectory) :
+			Input(const Context& _context, const std::string& _projectName, const std::string& _absoluteSourceFilename, const std::string& _virtualAssetOutputDirectory) :
 				context(_context),
 				projectName(_projectName),
-				assetCategory(_assetCategory),
 				absoluteSourceFilename(_absoluteSourceFilename),
 				virtualAssetOutputDirectory(_virtualAssetOutputDirectory)
 			{

@@ -9,7 +9,6 @@
 		"AssetMetadata":
 		{
 			"AssetType": "CompositorNode",
-			"AssetCategory": "Default",
 			"Copyright": "Copyright (c) 2012-2018 The Unrimp Team",
 			"Description": "Forward rendering compositor node"
 		},

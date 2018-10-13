@@ -111,7 +111,7 @@ namespace
 			RENDERER_SET_RESOURCE_DEBUG_NAME(_hr_rg_mb_nyaIdentity2DTexturePtr, "2D _hr_rg_mb_nya identity texture")
 
 			// Define helper macro
-			#define CREATE_TEXTURE(name, texturePtr) textureResourceManager.createTextureResourceByAssetId(STRING_ID("Unrimp/Texture/DynamicByCode/"#name), *texturePtr);
+			#define CREATE_TEXTURE(name, texturePtr) textureResourceManager.createTextureResourceByAssetId(ASSET_ID("Unrimp/Texture/DynamicByCode/"#name), *texturePtr);
 
 			// Create default dynamic texture assets
 			CREATE_TEXTURE(WhiteMap1D,				whiteRgba1DTexturePtr)
@@ -156,7 +156,7 @@ namespace RendererRuntime
 	void TextureResourceManager::getDefaultTextureAssetIds(AssetIds& assetIds)
 	{
 		// Define helper macros
-		#define ADD_ASSET_ID(name) assetIds.push_back(STRING_ID(name));
+		#define ADD_ASSET_ID(name) assetIds.push_back(ASSET_ID(name));
 
 		// Add asset IDs
 		ADD_ASSET_ID("Unrimp/Texture/DynamicByCode/WhiteMap1D")

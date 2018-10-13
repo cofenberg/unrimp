@@ -362,8 +362,7 @@ namespace
 				},
 				"Asset": {
 					"AssetMetadata": {
-						"AssetType": "Texture",
-						"AssetCategory": "Imported"
+						"AssetType": "Texture"
 					},
 					"TextureAssetCompiler": {
 						"TextureSemantic": "PACKED_CHANNELS",
@@ -383,7 +382,6 @@ namespace
 			{ // Asset metadata
 				rapidjson::Value rapidJsonValueAssetMetadata(rapidjson::kObjectType);
 				rapidJsonValueAssetMetadata.AddMember("AssetType", "Texture", rapidJsonAllocatorType);
-				rapidJsonValueAssetMetadata.AddMember("AssetCategory", rapidjson::StringRef(input.assetCategory.c_str()), rapidJsonAllocatorType);
 				rapidJsonValueAsset.AddMember("AssetMetadata", rapidJsonValueAssetMetadata, rapidJsonAllocatorType);
 			}
 
@@ -560,8 +558,7 @@ namespace
 				},
 				"Asset": {
 					"AssetMetadata": {
-						"AssetType": "Material",
-						"AssetCategory": "Imported"
+						"AssetType": "Material"
 					},
 					"MaterialAssetCompiler": {
 						"InputFile": "./SpinosaurusBody.material"
@@ -577,7 +574,6 @@ namespace
 			{ // Asset metadata
 				rapidjson::Value rapidJsonValueAssetMetadata(rapidjson::kObjectType);
 				rapidJsonValueAssetMetadata.AddMember("AssetType", "Material", rapidJsonAllocatorType);
-				rapidJsonValueAssetMetadata.AddMember("AssetCategory", rapidjson::StringRef(input.assetCategory.c_str()), rapidJsonAllocatorType);
 				rapidJsonValueAsset.AddMember("AssetMetadata", rapidJsonValueAssetMetadata, rapidJsonAllocatorType);
 			}
 
@@ -717,8 +713,7 @@ namespace
 				},
 				"Asset": {
 					"AssetMetadata": {
-						"AssetType": "Mesh",
-						"AssetCategory": "Imported"
+						"AssetType": "Mesh"
 					},
 					"MeshAssetCompiler": {
 						"InputFile": "./SpinosaurusAeg.obj",
@@ -737,7 +732,6 @@ namespace
 			{ // Asset metadata
 				rapidjson::Value rapidJsonValueAssetMetadata(rapidjson::kObjectType);
 				rapidJsonValueAssetMetadata.AddMember("AssetType", "Mesh", rapidJsonAllocatorType);
-				rapidJsonValueAssetMetadata.AddMember("AssetCategory", rapidjson::StringRef(input.assetCategory.c_str()), rapidJsonAllocatorType);
 				rapidJsonValueAsset.AddMember("AssetMetadata", rapidJsonValueAssetMetadata, rapidJsonAllocatorType);
 			}
 

@@ -125,7 +125,7 @@ namespace
 
 			// Append or update asset
 			RendererRuntime::Asset outputAsset;
-			outputAsset.assetId = RendererToolkit::StringHelper::hashAssetIdAsString(assetIdAsString.c_str());
+			outputAsset.assetId = RendererRuntime::AssetId(assetIdAsString.c_str());
 			outputAsset.fileHash = RendererRuntime::Math::calculateFileFNV1a64ByVirtualFilename(fileManager, virtualOutputAssetFilename.c_str());
 			RendererRuntime::Asset* asset = outputAssetPackage.tryGetWritableAssetByAssetId(outputAsset.assetId);
 			if (nullptr != asset)
@@ -236,10 +236,10 @@ namespace RendererToolkit
 		// Get the asset input directory and asset output directory
 		const std::string virtualAssetPackageInputDirectory = mProjectName + '/' + mAssetPackageDirectoryName;
 		const std::string virtualAssetInputDirectory = std_filesystem::path(virtualAssetFilename).parent_path().generic_string();
+		const std::string assetDirectory = virtualAssetInputDirectory.substr(virtualAssetInputDirectory.find('/') + 1);
 		const std::string assetType = rapidJsonValueAssetMetadata["AssetType"].GetString();
-		const std::string assetCategory = rapidJsonValueAssetMetadata["AssetCategory"].GetString();
 		const std::string renderTargetDataRootDirectory = getRenderTargetDataRootDirectory(rendererTarget);
-		const std::string virtualAssetOutputDirectory = renderTargetDataRootDirectory + '/' + mProjectName + '/' + mAssetPackageDirectoryName + '/' + assetType + '/' + assetCategory;
+		const std::string virtualAssetOutputDirectory = renderTargetDataRootDirectory + '/' + mProjectName + '/' + mAssetPackageDirectoryName + '/' + assetDirectory;
 
 		{ // Do we need to mount a directory now? (e.g. "DataPc", "DataMobile" etc.)
 			RendererRuntime::IFileManager& fileManager = mContext.getFileManager();
@@ -297,10 +297,10 @@ namespace RendererToolkit
 		// Get the asset input directory and asset output directory
 		const std::string virtualAssetPackageInputDirectory = mProjectName + '/' + mAssetPackageDirectoryName;
 		const std::string virtualAssetInputDirectory = std_filesystem::path(virtualAssetFilename).parent_path().generic_string();
+		const std::string assetDirectory = virtualAssetInputDirectory.substr(virtualAssetInputDirectory.find('/') + 1);
 		const std::string assetType = rapidJsonValueAssetMetadata["AssetType"].GetString();
-		const std::string assetCategory = rapidJsonValueAssetMetadata["AssetCategory"].GetString();
 		const std::string renderTargetDataRootDirectory = getRenderTargetDataRootDirectory(rendererTarget);
-		const std::string virtualAssetOutputDirectory = renderTargetDataRootDirectory + '/' + mProjectName + '/' + mAssetPackageDirectoryName + '/' + assetType + '/' + assetCategory;
+		const std::string virtualAssetOutputDirectory = renderTargetDataRootDirectory + '/' + mProjectName + '/' + mAssetPackageDirectoryName + '/' + assetDirectory;
 
 		// Ensure that the asset output directory exists, else creating output file streams will fail
 		fileManager.createDirectories(virtualAssetOutputDirectory.c_str());
@@ -330,7 +330,7 @@ namespace RendererToolkit
 
 				{ // Update the output asset package
 					const std::string assetName = std_filesystem::path(input.virtualAssetFilename).stem().generic_string();
-					const std::string assetIdAsString = input.projectName + '/' + assetType + '/' + assetCategory + '/' + assetName;
+					const std::string assetIdAsString = input.projectName + '/' + assetDirectory + '/' + assetName;
 					::detail::outputAsset(input.context.getFileManager(), assetIdAsString, assetCompiler->getVirtualOutputAssetFilename(input, configuration), outputAssetPackage);
 				}
 			}
@@ -446,7 +446,7 @@ namespace RendererToolkit
 		for (const std::string& absoluteSourceFilename : absoluteSourceFilenames)
 		{
 			RENDERER_LOG(mContext, INFORMATION, "Importing asset %u of %u: \"%s\"", currentSourceAsset + 1, absoluteSourceFilenames.size(), absoluteSourceFilename.c_str())
-			IAssetImporter::Input input(mContext, mProjectName, "Imported", absoluteSourceFilename, mProjectName + "/Imported/" + std_filesystem::path(absoluteSourceFilename).stem().generic_string());
+			IAssetImporter::Input input(mContext, mProjectName, absoluteSourceFilename, mProjectName + "/Imported/" + std_filesystem::path(absoluteSourceFilename).stem().generic_string());
 
 			// TODO(co) Implement automatic asset importer selection
 			SketchfabAssetImporter().import(input);
@@ -711,22 +711,14 @@ namespace RendererToolkit
 		{
 			const RendererRuntime::Asset& asset = sortedAssetVector[i];
 
-			// Parse JSON
-			rapidjson::Document rapidJsonDocument;
-			const std::string& virtualFilename = asset.virtualFilename;
-			JsonHelper::loadDocumentByFilename(mContext.getFileManager(), virtualFilename, "Asset", "1", rapidJsonDocument);
-
-			// Mandatory main sections of the asset
-			const rapidjson::Value& rapidJsonValueAsset = rapidJsonDocument["Asset"];
-			const rapidjson::Value& rapidJsonValueAssetMetadata = rapidJsonValueAsset["AssetMetadata"];
-
 			// Get the relevant asset metadata parts
-			const std::string assetCategory = rapidJsonValueAssetMetadata["AssetCategory"].GetString();
-			const std::string assetType = rapidJsonValueAssetMetadata["AssetType"].GetString();
+			const std::string& virtualFilename = asset.virtualFilename;
+			const std::string virtualAssetDirectory = std_filesystem::path(virtualFilename).parent_path().generic_string();
+			const std::string assetDirectory = virtualAssetDirectory.substr(virtualAssetDirectory.find('/') + 1);
 			const std::string assetName = std_filesystem::path(virtualFilename).stem().generic_string();
 
-			// Construct the asset ID as string
-			const std::string compiledAssetIdAsString = mProjectName + '/' + assetType + '/' + assetCategory + '/' + assetName;
+			// Construct the compiled asset ID as string
+			const std::string compiledAssetIdAsString = mProjectName + '/' + assetDirectory + '/' + assetName;
 
 			// Hash the asset ID and put it into the map
 			const uint32_t compiledAssetId = RendererRuntime::StringId::calculateFNV(compiledAssetIdAsString.c_str());

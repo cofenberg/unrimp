@@ -9,7 +9,6 @@
 		"AssetMetadata":
 		{
 			"AssetType": "ShaderBlueprint",
-			"AssetCategory": "Compositor",
 			"Copyright": "Basing on 'SSAO Tutorial' from John Chapman http://john-chapman-graphics.blogspot.de/2013/01/ssao-tutorial.html"
 		},
 		"ShaderBlueprintAssetCompiler":

@@ -170,7 +170,7 @@ namespace RendererRuntime
 	void DebugGuiManager::getDefaultTextureAssetIds(AssetIds& assetIds)
 	{
 		// Define helper macro
-		#define ADD_ASSET_ID(name) assetIds.push_back(STRING_ID(name));
+		#define ADD_ASSET_ID(name) assetIds.push_back(ASSET_ID(name));
 
 		// Add asset IDs
 		ADD_ASSET_ID("Unrimp/Texture/DynamicByCode/ImGuiGlyphMap2D")
@@ -435,7 +435,7 @@ namespace RendererRuntime
 			RENDERER_SET_RESOURCE_DEBUG_NAME(mTexture2D, "Debug 2D GUI glyph texture atlas")
 
 			// Tell the texture resource manager about our render target texture so it can be referenced inside e.g. compositor nodes
-			mRendererRuntime.getTextureResourceManager().createTextureResourceByAssetId(STRING_ID("Unrimp/Texture/DynamicByCode/ImGuiGlyphMap2D"), *mTexture2D);
+			mRendererRuntime.getTextureResourceManager().createTextureResourceByAssetId(ASSET_ID("Unrimp/Texture/DynamicByCode/ImGuiGlyphMap2D"), *mTexture2D);
 		}
 	}
 

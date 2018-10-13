@@ -965,7 +965,7 @@ namespace RendererToolkit
 
 	void JsonHelper::mandatoryAssetIdProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, RendererRuntime::AssetId& value)
 	{
-		value = StringHelper::hashAssetIdAsString(rapidJsonValue[propertyName].GetString());
+		value = RendererRuntime::AssetId(rapidJsonValue[propertyName].GetString());
 	}
 
 	void JsonHelper::optionalAssetIdProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, RendererRuntime::AssetId& value)

@@ -157,7 +157,7 @@ namespace
 			RendererRuntime::AssetId assetId = RendererRuntime::VrManagerOpenVR::albedoTextureIdToAssetId(vrRenderModel.diffuseTextureId);
 			RendererRuntime::TextureResourceId textureResourceId = RendererRuntime::getInvalid<RendererRuntime::TextureResourceId>();
 			const bool rgbHardwareGammaCorrection = true;	// TODO(co) It must be possible to set the property name from the outside: Ask the material blueprint whether or not hardware gamma correction should be used
-			rendererRuntime.getTextureResourceManager().loadTextureResourceByAssetId(assetId, STRING_ID("Unrimp/Texture/DynamicByCode/IdentityAlbedoMap2D"), textureResourceId, nullptr, rgbHardwareGammaCorrection, false, RendererRuntime::OpenVRTextureResourceLoader::TYPE_ID);
+			rendererRuntime.getTextureResourceManager().loadTextureResourceByAssetId(assetId, ASSET_ID("Unrimp/Texture/DynamicByCode/IdentityAlbedoMap2D"), textureResourceId, nullptr, rgbHardwareGammaCorrection, false, RendererRuntime::OpenVRTextureResourceLoader::TYPE_ID);
 
 			// Done
 			return assetId;

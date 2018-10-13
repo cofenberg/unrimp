@@ -9,7 +9,6 @@
 		"AssetMetadata":
 		{
 			"AssetType": "Texture",
-			"AssetCategory": "Volume",
 			"Copyright": "Dataset from http://openqvis.sourceforge.net/"
 		},
 		"TextureAssetCompiler":

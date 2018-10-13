@@ -99,8 +99,8 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
-		static constexpr uint32_t SCENE_ASSET_ID		  = STRING_ID("Example/Scene/Default/S_FirstScene");
-		static constexpr uint32_t IMROD_MATERIAL_ASSET_ID = STRING_ID("Example/Material/Character/M_Imrod");
+		static constexpr uint32_t SCENE_ASSET_ID		  = ASSET_ID("Example/Scene/S_FirstScene");
+		static constexpr uint32_t IMROD_MATERIAL_ASSET_ID = ASSET_ID("Example/Mesh/Imrod/M_Imrod");
 
 
 //[-------------------------------------------------------]
@@ -229,7 +229,7 @@ void FirstScene::onInitialization()
 			if (vrManager.isHmdPresent())
 			{
 				vrManager.setSceneResourceId(mSceneResourceId);
-				if (vrManager.startup(STRING_ID("Example/Material/Mesh/M_VrDevice")))
+				if (vrManager.startup(ASSET_ID("Example/Blueprint/Mesh/M_VrDevice")))
 				{
 					// Select the VR compositor and enable MSAA by default since image stability is quite important for VR
 					// -> "Advanced VR Rendering" by Alex Vlachos, Valve -> page 26 -> "4xMSAA Minimum Quality" ( http://media.steampowered.com/apps/valve/2015/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf )
@@ -592,18 +592,18 @@ void FirstScene::applyCurrentSettings(Renderer::IRenderTarget& mainRenderTarget)
 			const RendererRuntime::MaterialResourceManager& materialResourceManager = rendererRuntime->getMaterialResourceManager();
 
 			// Depth of field compositor material
-			RendererRuntime::MaterialResource* materialResource = materialResourceManager.getMaterialResourceByAssetId(STRING_ID("Example/MaterialBlueprint/Compositor/MB_DepthOfField"));
+			RendererRuntime::MaterialResource* materialResource = materialResourceManager.getMaterialResourceByAssetId(ASSET_ID("Example/Blueprint/Compositor/MB_DepthOfField"));
 			if (nullptr != materialResource)
 			{
 				materialResource->setPropertyById(STRING_ID("BlurrinessCutoff"), RendererRuntime::MaterialPropertyValue::fromFloat(mDepthOfFieldBlurrinessCutoff));
 			}
 
 			// Final compositor material
-			materialResource = materialResourceManager.getMaterialResourceByAssetId(STRING_ID("Example/MaterialBlueprint/Compositor/MB_Final"));
+			materialResource = materialResourceManager.getMaterialResourceByAssetId(ASSET_ID("Example/Blueprint/Compositor/MB_Final"));
 			if (nullptr != materialResource)
 			{
-				static constexpr uint32_t IDENTITY_TEXTURE_ASSET_ID = STRING_ID("Unrimp/Texture/DynamicByCode/IdentityColorCorrectionLookupTable3D");
-				static constexpr uint32_t SEPIA_TEXTURE_ASSET_ID = STRING_ID("Example/Texture/Compositor/T_SepiaColorCorrectionLookupTable16x1");
+				static constexpr uint32_t IDENTITY_TEXTURE_ASSET_ID = ASSET_ID("Unrimp/Texture/DynamicByCode/IdentityColorCorrectionLookupTable3D");
+				static constexpr uint32_t SEPIA_TEXTURE_ASSET_ID = ASSET_ID("Example/Blueprint/Compositor/T_SepiaColorCorrectionLookupTable16x1");
 				materialResource->setPropertyById(STRING_ID("ColorCorrectionLookupTableMap"), RendererRuntime::MaterialPropertyValue::fromTextureAssetId(mPerformSepiaColorCorrection ? SEPIA_TEXTURE_ASSET_ID : IDENTITY_TEXTURE_ASSET_ID));
 				materialResource->setPropertyById(STRING_ID("Fxaa"), RendererRuntime::MaterialPropertyValue::fromBoolean(mPerformFxaa));
 				materialResource->setPropertyById(STRING_ID("Sharpen"), RendererRuntime::MaterialPropertyValue::fromBoolean(mPerformSharpen));
@@ -631,10 +631,10 @@ void FirstScene::createCompositorWorkspace()
 	{
 		// Create/recreate the compositor workspace instance
 		static constexpr uint32_t COMPOSITOR_WORKSPACE_ASSET_ID[4] = {
-			STRING_ID("Example/CompositorWorkspace/Default/CW_Debug"),
-			STRING_ID("Example/CompositorWorkspace/Default/CW_Forward"),
-			STRING_ID("Example/CompositorWorkspace/Default/CW_Deferred"),
-			STRING_ID("Example/CompositorWorkspace/Default/CW_Vr")
+			ASSET_ID("Example/CompositorWorkspace/CW_Debug"),
+			ASSET_ID("Example/CompositorWorkspace/CW_Forward"),
+			ASSET_ID("Example/CompositorWorkspace/CW_Deferred"),
+			ASSET_ID("Example/CompositorWorkspace/CW_Vr")
 		};
 		delete mCompositorWorkspaceInstance;
 		mCompositorWorkspaceInstance = new RendererRuntime::CompositorWorkspaceInstance(*rendererRuntime, COMPOSITOR_WORKSPACE_ASSET_ID[mInstancedCompositor]);

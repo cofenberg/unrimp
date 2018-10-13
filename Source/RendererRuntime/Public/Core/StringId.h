@@ -300,3 +300,9 @@ namespace RendererRuntime
 	*/
 	#define STRING_ID(string) std::integral_constant<uint32_t, RendererRuntime::StringId::compileTimeFNV(string)>::value
 #endif
+
+/**
+*  @brief
+*    Compile time asset ID macro; use this alias instead of "STRING_ID()" to be able to easily search for asset references
+*/
+#define ASSET_ID(string) STRING_ID(string)

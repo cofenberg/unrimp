@@ -9,7 +9,6 @@
 		"AssetMetadata":
 		{
 			"AssetType": "Texture",
-			"AssetCategory": "Terrain",
 			"Copyright": "Terrain data created by Marcel Gonzales - http://www.marcelgonzales.com/"
 		},
 		"TextureAssetCompiler":

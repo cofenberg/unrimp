@@ -63,7 +63,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Global definitions                                    ]
 	//[-------------------------------------------------------]
-	typedef const char* VirtualFilename;		///< UTF-8 virtual filename, the virtual filename scheme is "<mount point = project name>/<asset type>/<asset category>/<asset name>.<file extension>" (example "Example/Mesh/Monster/Squirrel.mesh"), never ever a null pointer and always finished by a terminating zero
+	typedef const char* VirtualFilename;		///< UTF-8 virtual filename, the virtual filename scheme is "<mount point = project name>/<asset directory>/<asset name>.<file extension>" (example "Example/Mesh/Monster/Squirrel.mesh"), never ever a null pointer and always finished by a terminating zero
 	typedef const char* AbsoluteDirectoryName;	///< UTF-8 absolute directory name (example: "c:/MyProject"), without "/" at the end, never ever a null pointer and always finished by a terminating zero
 	typedef const char* VirtualDirectoryName;	///< UTF-8 virtual directory name (example: "MyProject/MyDirectory"), without "/" at the end, never ever a null pointer and always finished by a terminating zero
 
@@ -81,12 +81,12 @@ namespace RendererRuntime
 	*    - Directory names have no "/"-slash at the end
 	*    - "/"-slash is used as separator
 	*    - The file manager interface works with virtual filenames to be compatible to libraries like PhysicsFS ( https://icculus.org/physfs/ ) by design
-	*    - Virtual filenames are constructed in way which is compatible to asset IDs and supports modding: "<mount point = project name>/<asset type>/<asset category>/<asset name>.<file extension>"
+	*    - Virtual filenames are constructed in way which is compatible to asset IDs and supports modding: "<mount point = project name>/<asset directory>/<asset name>.<file extension>"
 	*
 	*    For the Unrimp examples were using the following directory structure
 	*    - "<root directory>/Binary/Windows_x64_Static"
 	*    - "<root directory>/Binary/DataPc"
-	*      - "<root directory>/Binary/DataPc/<Project>/<Asset Package>/<Asset Type>/<Asset Category>/<Asset Filename>"
+	*      - "<root directory>/Binary/DataPc/<Project>/<Asset Package>/<Asset Directory>/<Asset Filename>"
 	*    - "<root directory>/Binary/LocalData"
 	*    -> For end-user products, you might want to choose a local user data directory
 	*    -> In here we assume that the current directory has not been changed and still points to the directory the running executable is in (e.g. "<root directory>/Binary/Windows_x64_Static")

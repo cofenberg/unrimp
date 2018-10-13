@@ -69,7 +69,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Global definitions                                    ]
 	//[-------------------------------------------------------]
-	typedef StringId						AssetId;				///< Asset identifier, internally just a POD "uint32_t", string ID scheme is "<project name>/<asset type>/<asset category>/<asset name>"
+	typedef StringId						AssetId;				///< Asset identifier, internally just a POD "uint32_t", string ID scheme is "<project name>/<asset directory>/<asset name>"
 	typedef std::vector<AssetId>			AssetIds;
 	typedef std::map<uint32_t, std::string> DynamicShaderPieces;	///< Key is "RendererRuntime::StringId"	// TODO(co) Visual Studio 2017: "std::unordered_map" appears to have an inefficient assignment operator which does memory handling even if containers are empty all the time, "std::map" isn't the most effective structure either but currently still better
 

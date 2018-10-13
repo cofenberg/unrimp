@@ -166,7 +166,7 @@ namespace
 			RENDERER_SET_RESOURCE_DEBUG_NAME(texturePtr, "3D identity color correction lookup table (LUT) texture")
 
 			// Create dynamic texture asset
-			return rendererRuntime.getTextureResourceManager().createTextureResourceByAssetId(STRING_ID("Unrimp/Texture/DynamicByCode/IdentityColorCorrectionLookupTable3D"), *texturePtr);
+			return rendererRuntime.getTextureResourceManager().createTextureResourceByAssetId(ASSET_ID("Unrimp/Texture/DynamicByCode/IdentityColorCorrectionLookupTable3D"), *texturePtr);
 		}
 
 		/**
@@ -214,7 +214,7 @@ namespace
 			RENDERER_SET_RESOURCE_DEBUG_NAME(texturePtr, "1D screen space ambient occlusion sample kernel texture")
 
 			// Create dynamic texture asset
-			return rendererRuntime.getTextureResourceManager().createTextureResourceByAssetId(STRING_ID("Unrimp/Texture/DynamicByCode/SsaoSampleKernel"), *texturePtr);
+			return rendererRuntime.getTextureResourceManager().createTextureResourceByAssetId(ASSET_ID("Unrimp/Texture/DynamicByCode/SsaoSampleKernel"), *texturePtr);
 		}
 
 		/**
@@ -253,7 +253,7 @@ namespace
 			RENDERER_SET_RESOURCE_DEBUG_NAME(texturePtr, "2D screen space ambient occlusion 4x4 noise texture")
 
 			// Create dynamic texture asset
-			return rendererRuntime.getTextureResourceManager().createTextureResourceByAssetId(STRING_ID("Unrimp/Texture/DynamicByCode/SsaoNoise4x4"), *texturePtr);
+			return rendererRuntime.getTextureResourceManager().createTextureResourceByAssetId(ASSET_ID("Unrimp/Texture/DynamicByCode/SsaoNoise4x4"), *texturePtr);
 		}
 
 		/**
@@ -303,7 +303,7 @@ namespace RendererRuntime
 	void MaterialBlueprintResourceListener::getDefaultTextureAssetIds(AssetIds& assetIds)
 	{
 		// Define helper macro
-		#define ADD_ASSET_ID(name) assetIds.push_back(STRING_ID(name));
+		#define ADD_ASSET_ID(name) assetIds.push_back(ASSET_ID(name));
 
 		// Add asset IDs
 		ADD_ASSET_ID("Unrimp/Texture/DynamicByCode/IdentityColorCorrectionLookupTable3D")

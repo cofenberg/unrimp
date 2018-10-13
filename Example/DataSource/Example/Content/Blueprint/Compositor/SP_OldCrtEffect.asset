@@ -9,7 +9,6 @@
 		"AssetMetadata":
 		{
 			"AssetType": "ShaderPiece",
-			"AssetCategory": "Compositor",
 			"Copyright": "Basing on https://www.shadertoy.com/view/MsXGD4"
 		},
 		"ShaderPieceAssetCompiler":

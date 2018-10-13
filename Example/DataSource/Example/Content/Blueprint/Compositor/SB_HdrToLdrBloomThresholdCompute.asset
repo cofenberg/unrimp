@@ -9,7 +9,6 @@
 		"AssetMetadata":
 		{
 			"AssetType": "ShaderBlueprint",
-			"AssetCategory": "Compositor",
 			"Copyright": "Copyright (c) 2012-2018 The Unrimp Team",
 			"Description": "Uses a lower exposure to produce a value suitable for a bloom pass"
 		},

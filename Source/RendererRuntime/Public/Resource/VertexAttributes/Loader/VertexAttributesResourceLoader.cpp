@@ -66,11 +66,11 @@ namespace RendererRuntime
 		mMemoryFile.read(&vertexAttributesHeader, sizeof(v1VertexAttributes::VertexAttributesHeader));
 
 		// TODO(co) Implement vertex attributes file format. This here is just a fixed build in dummy.
-		if (STRING_ID("Example/VertexAttributes/Compositor/VA_Compositor") == getAsset().assetId)
+		if (ASSET_ID("Example/Blueprint/Compositor/VA_Compositor") == getAsset().assetId)
 		{
 			mVertexAttributesResource->mVertexAttributes = Renderer::VertexAttributes(0, nullptr);
 		}
-		else if (STRING_ID("Example/VertexAttributes/Sky/VA_Sky") == getAsset().assetId)
+		else if (ASSET_ID("Example/Blueprint/Sky/VA_Sky") == getAsset().assetId)
 		{
 			Renderer::VertexAttributes& vertexAttributes = const_cast<Renderer::VertexAttributes&>(mVertexAttributesResource->mVertexAttributes);
 			static constexpr Renderer::VertexAttribute vertexAttributesLayout[] =
@@ -91,7 +91,7 @@ namespace RendererRuntime
 			vertexAttributes.numberOfAttributes = static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout));
 			vertexAttributes.attributes = vertexAttributesLayout;
 		}
-		else if (STRING_ID("Example/VertexAttributes/Volume/VA_Volume") == getAsset().assetId)
+		else if (ASSET_ID("Example/Blueprint/Volume/VA_Volume") == getAsset().assetId)
 		{
 			Renderer::VertexAttributes& vertexAttributes = const_cast<Renderer::VertexAttributes&>(mVertexAttributesResource->mVertexAttributes);
 			static constexpr Renderer::VertexAttribute vertexAttributesLayout[] =
@@ -124,7 +124,7 @@ namespace RendererRuntime
 			vertexAttributes.numberOfAttributes = static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout));
 			vertexAttributes.attributes = vertexAttributesLayout;
 		}
-		else if (STRING_ID("Example/VertexAttributes/DebugGui/VA_DebugGui") == getAsset().assetId)
+		else if (ASSET_ID("Example/Blueprint/DebugGui/VA_DebugGui") == getAsset().assetId)
 		{
 			Renderer::VertexAttributes& vertexAttributes = const_cast<Renderer::VertexAttributes&>(mVertexAttributesResource->mVertexAttributes);
 			static constexpr Renderer::VertexAttribute vertexAttributesLayout[] =
@@ -169,20 +169,20 @@ namespace RendererRuntime
 			vertexAttributes.numberOfAttributes = static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout));
 			vertexAttributes.attributes = vertexAttributesLayout;
 		}
-		else if (STRING_ID("Example/VertexAttributes/Mesh/VA_Mesh") == getAsset().assetId)
+		else if (ASSET_ID("Example/Blueprint/Mesh/VA_Mesh") == getAsset().assetId)
 		{
 			mVertexAttributesResource->mVertexAttributes = Renderer::VertexAttributes(MeshResource::VERTEX_ATTRIBUTES.numberOfAttributes, MeshResource::VERTEX_ATTRIBUTES.attributes);
 		}
-		else if (STRING_ID("Example/VertexAttributes/Mesh/VA_SkinnedMesh") == getAsset().assetId)
+		else if (ASSET_ID("Example/Blueprint/Mesh/VA_SkinnedMesh") == getAsset().assetId)
 		{
 			mVertexAttributesResource->mVertexAttributes = Renderer::VertexAttributes(MeshResource::SKINNED_VERTEX_ATTRIBUTES.numberOfAttributes, MeshResource::SKINNED_VERTEX_ATTRIBUTES.attributes);
 		}
-		else if (STRING_ID("Example/VertexAttributes/Particles/VA_Particles") == getAsset().assetId ||
-				 STRING_ID("Example/VertexAttributes/Grass/VA_Grass") == getAsset().assetId)
+		else if (ASSET_ID("Example/Blueprint/Particles/VA_Particles") == getAsset().assetId ||
+				 ASSET_ID("Example/Blueprint/Grass/VA_Grass") == getAsset().assetId)
 		{
 			mVertexAttributesResource->mVertexAttributes = Renderer::VertexAttributes(MeshResourceManager::DRAW_ID_VERTEX_ATTRIBUTES.numberOfAttributes, MeshResourceManager::DRAW_ID_VERTEX_ATTRIBUTES.attributes);
 		}
-		else if (STRING_ID("Example/VertexAttributes/Terrain/VA_Terrain") == getAsset().assetId)
+		else if (ASSET_ID("Example/Blueprint/Terrain/VA_Terrain") == getAsset().assetId)
 		{
 			mVertexAttributesResource->mVertexAttributes = Renderer::VertexAttributes(TerrainSceneItem::VERTEX_ATTRIBUTES.numberOfAttributes, TerrainSceneItem::VERTEX_ATTRIBUTES.attributes);
 		}

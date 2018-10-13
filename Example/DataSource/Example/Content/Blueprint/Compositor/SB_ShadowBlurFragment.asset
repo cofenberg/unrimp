@@ -9,7 +9,6 @@
 		"AssetMetadata":
 		{
 			"AssetType": "ShaderBlueprint",
-			"AssetCategory": "Compositor",
 			"Copyright": "Basing on https://mynameismjp.wordpress.com/2013/09/10/shadow-maps/ - https://github.com/TheRealMJP/Shadows"
 		},
 		"ShaderBlueprintAssetCompiler":

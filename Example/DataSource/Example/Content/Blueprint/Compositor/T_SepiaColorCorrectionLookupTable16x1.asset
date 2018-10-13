@@ -9,7 +9,6 @@
 		"AssetMetadata":
 		{
 			"AssetType": "Texture",
-			"AssetCategory": "Compositor",
 			"Description": "16x1 Sepia color correction lookup table"
 		},
 		"TextureAssetCompiler":

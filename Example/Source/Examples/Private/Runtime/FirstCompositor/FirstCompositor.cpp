@@ -64,7 +64,7 @@ void FirstCompositor::onInitialization()
 		rendererRuntime->getCompositorNodeResourceManager().setCompositorPassFactory(&::detail::compositorPassFactoryFirst);
 
 		// Create the compositor workspace instance
-		mCompositorWorkspaceInstance = new RendererRuntime::CompositorWorkspaceInstance(*rendererRuntime, STRING_ID("Example/CompositorWorkspace/Default/CW_First"));
+		mCompositorWorkspaceInstance = new RendererRuntime::CompositorWorkspaceInstance(*rendererRuntime, ASSET_ID("Example/CompositorWorkspace/CW_First"));
 	}
 }
 

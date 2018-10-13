@@ -8,8 +8,7 @@
 	{
 		"AssetMetadata":
 		{
-			"AssetType": "ShaderBlueprint",
-			"AssetCategory": "Compositor"
+			"AssetType": "ShaderBlueprint"
 		},
 		"ShaderBlueprintAssetCompiler":
 		{

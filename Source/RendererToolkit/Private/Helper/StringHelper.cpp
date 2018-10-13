@@ -345,7 +345,7 @@ namespace RendererToolkit
 
 		// There are two kind of source asset IDs
 		// - Source asset ID naming scheme "<name>.asset"
-		// - Compiled or runtime generated asset ID naming scheme "<project name>/<asset type>/<asset category>/<asset name>"
+		// - Compiled or runtime generated asset ID naming scheme "<project name>/<asset directory>/<asset name>"
 		if (isSourceAssetIdAsString(sourceAssetIdAsString))
 		{
 			// Source asset ID naming scheme "<name>.asset": Handle relative source asset references
@@ -383,7 +383,7 @@ namespace RendererToolkit
 		else
 		{
 			// Error!
-			throw std::runtime_error("Compiled or runtime generated asset ID naming scheme \"<project name>/<asset type>/<asset category>/<asset name>\" isn't supported for source asset IDs: \"" + sourceAssetIdAsString + '\"');
+			throw std::runtime_error("Compiled or runtime generated asset ID naming scheme \"<project name>/<asset directory>/<asset name>\" isn't supported for source asset IDs: \"" + sourceAssetIdAsString + '\"');
 		}
 	}
 
@@ -391,18 +391,6 @@ namespace RendererToolkit
 	{
 		// Return the string ID of the resolved source asset ID as string
 		return RendererRuntime::StringId(getSourceAssetFilenameByString(sourceAssetIdAsString, input).c_str());
-	}
-
-	RendererRuntime::AssetId StringHelper::hashAssetIdAsString(const std::string& assetIdAsString)
-	{
-		// Enforce compiled asset ID naming scheme "<project name>/<asset type>/<asset category>/<asset name>"
-		std::vector<std::string> elements;
-		splitString(assetIdAsString, "/", elements);
-		if (elements.size() != 4)
-		{
-			throw std::runtime_error('\"' + assetIdAsString + "\" is no valid asset ID as string. Asset ID naming scheme is \"<project name>/<asset type>/<asset category>/<asset name>\".");
-		}
-		return RendererRuntime::AssetId(assetIdAsString.c_str());
 	}
 
 	RendererRuntime::AssetId StringHelper::getAssetIdByString(const std::string& assetIdAsString, const IAssetCompiler::Input& input)
@@ -415,7 +403,7 @@ namespace RendererToolkit
 
 		// There are two kind of asset IDs
 		// - Source asset ID naming scheme "<name>.asset"
-		// - Compiled or runtime generated asset ID naming scheme "<project name>/<asset type>/<asset category>/<asset name>"
+		// - Compiled or runtime generated asset ID naming scheme "<project name>/<asset directory>/<asset name>"
 		if (isSourceAssetIdAsString(assetIdAsString))
 		{
 			// Source asset ID naming scheme "<name>.asset": Handle relative source asset references
@@ -444,8 +432,8 @@ namespace RendererToolkit
 		}
 		else
 		{
-			// Compiled or runtime generated asset ID naming scheme "<project name>/<asset type>/<asset category>/<asset name>"
-			return hashAssetIdAsString(assetIdAsString);
+			// Compiled or runtime generated asset ID naming scheme "<project name>/<asset directory>/<asset name>"
+			return RendererRuntime::AssetId(assetIdAsString.c_str());
 		}
 	}
 

@@ -76,7 +76,7 @@ namespace RendererRuntime
 	void LightBufferManager::getDefaultTextureAssetIds(AssetIds& assetIds)
 	{
 		// Define helper macro
-		#define ADD_ASSET_ID(name) assetIds.push_back(STRING_ID(name));
+		#define ADD_ASSET_ID(name) assetIds.push_back(ASSET_ID(name));
 
 		// Add asset IDs
 		ADD_ASSET_ID("Unrimp/Texture/DynamicByCode/LightClustersMap3D")
@@ -109,7 +109,7 @@ namespace RendererRuntime
 			RENDERER_SET_RESOURCE_DEBUG_NAME(texturePtr, "Clusters 3D texture resource")
 
 			// Create dynamic texture asset
-			mClusters3DTextureResourceId = mRendererRuntime.getTextureResourceManager().createTextureResourceByAssetId(STRING_ID("Unrimp/Texture/DynamicByCode/LightClustersMap3D"), *texturePtr);
+			mClusters3DTextureResourceId = mRendererRuntime.getTextureResourceManager().createTextureResourceByAssetId(ASSET_ID("Unrimp/Texture/DynamicByCode/LightClustersMap3D"), *texturePtr);
 		}
 	}
 

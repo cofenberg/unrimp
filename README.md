@@ -330,7 +330,7 @@ Asset References
 		- Absolute: "${PROJECT_NAME}" inserts the name of the project the currently processed asset is in, only valid at the beginning of source asset IDs
 		- Relative: "./" uses the directory the currently processed asset is in, only valid at the beginning of source asset IDs
 		- Relative: "../" switches into the parent directory the currently processed asset is in, only valid at the beginning of source asset IDs
-	- Compiled or runtime generated asset ID naming scheme ```"<project name>/<asset type>/<asset category>/<asset name>"```
+	- Compiled or runtime generated asset ID naming scheme ```"<project name>/<asset directory>/<asset name>"```
 - Examples for asset references inside source assets
 	- Referencing a source asset inside the same project as the currently compiled source asset
 		- "${PROJECT_NAME}/Blueprint/Sky/M_Sky.asset": Referencing a source asset which is inside the same project as the currently compiled source asset

@@ -9,7 +9,6 @@
 		"AssetMetadata":
 		{
 			"AssetType": "Texture",
-			"AssetCategory": "Grass",
 			"Copyright": "Copied from https://github.com/turanszkij/WickedEngine/blob/master/models/Sample/textures/grassbb.png"
 		},
 		"TextureAssetCompiler":

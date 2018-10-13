@@ -191,13 +191,13 @@ void FirstMesh::onInitialization()
 			}
 
 			// Create mesh instance
-			rendererRuntime->getMeshResourceManager().loadMeshResourceByAssetId(STRING_ID("Example/Mesh/Character/Imrod"), mMeshResourceId);
+			rendererRuntime->getMeshResourceManager().loadMeshResourceByAssetId(ASSET_ID("Example/Mesh/Imrod/SM_Imrod"), mMeshResourceId);
 
 			{ // Load in the albedo, emissive, normal and roughness texture
 				RendererRuntime::TextureResourceManager& textureResourceManager = rendererRuntime->getTextureResourceManager();
-				textureResourceManager.loadTextureResourceByAssetId(STRING_ID("Example/Texture/Character/Imrod_argb_nxa"),     STRING_ID("Unrimp/Texture/DynamicByCode/Identity_argb_nxa2D"),     m_argb_nxaTextureResourceId, this);
-				textureResourceManager.loadTextureResourceByAssetId(STRING_ID("Example/Texture/Character/Imrod_hr_rg_mb_nya"), STRING_ID("Unrimp/Texture/DynamicByCode/Identity_hr_rg_mb_nya2D"), m_hr_rg_mb_nyaTextureResourceId, this);
-				textureResourceManager.loadTextureResourceByAssetId(STRING_ID("Example/Texture/Character/Imrod_e"),            STRING_ID("Unrimp/Texture/DynamicByCode/IdentityEmissiveMap2D"),   mEmissiveTextureResourceId, this);
+				textureResourceManager.loadTextureResourceByAssetId(ASSET_ID("Example/Mesh/Imrod/T_Imrod_argb_nxa"),     ASSET_ID("Unrimp/Texture/DynamicByCode/Identity_argb_nxa2D"),     m_argb_nxaTextureResourceId, this);
+				textureResourceManager.loadTextureResourceByAssetId(ASSET_ID("Example/Mesh/Imrod/T_Imrod_hr_rg_mb_nya"), ASSET_ID("Unrimp/Texture/DynamicByCode/Identity_hr_rg_mb_nya2D"), m_hr_rg_mb_nyaTextureResourceId, this);
+				textureResourceManager.loadTextureResourceByAssetId(ASSET_ID("Example/Mesh/Imrod/T_Imrod_e"),            ASSET_ID("Unrimp/Texture/DynamicByCode/IdentityEmissiveMap2D"),   mEmissiveTextureResourceId, this);
 			}
 		}
 	}

@@ -36,7 +36,7 @@
 namespace RendererRuntime
 {
 	class IFileManager;
-	typedef StringId AssetId;	///< Asset identifier, internally just a POD "uint32_t", string ID scheme is "<project name>/<asset type>/<asset category>/<asset name>"
+	typedef StringId AssetId;	///< Asset identifier, internally just a POD "uint32_t", string ID scheme is "<project name>/<asset directory>/<asset name>"
 }
 
 
@@ -68,7 +68,6 @@ namespace RendererToolkit
 		static bool isSourceAssetIdAsString(const std::string& sourceAssetIdAsString);
 		static std::string getSourceAssetFilenameByString(const std::string& sourceAssetIdAsString, const IAssetCompiler::Input& input);
 		static RendererRuntime::AssetId getSourceAssetIdByString(const std::string& sourceAssetIdAsString, const IAssetCompiler::Input& input);
-		static RendererRuntime::AssetId hashAssetIdAsString(const std::string& assetIdAsString);	// Asset ID naming scheme "<project name>/<asset type>/<asset category>/<asset name>" only
 		static RendererRuntime::AssetId getAssetIdByString(const std::string& assetIdAsString, const IAssetCompiler::Input& input);	// Asset ID name + ID directly
 		static void readStringByFilename(const RendererRuntime::IFileManager& fileManager, const std::string& virtualFilename, std::string& string);
 		static void readStringWithStrippedCommentsByFilename(const RendererRuntime::IFileManager& fileManager, const std::string& virtualFilename, std::string& sourceCode);
