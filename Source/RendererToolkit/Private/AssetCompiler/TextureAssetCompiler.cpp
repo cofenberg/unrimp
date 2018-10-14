@@ -414,7 +414,7 @@ namespace
 			std::string textureTargetName;
 			{
 				const rapidjson::Value& rapidJsonValueRendererTargets = rapidJsonValueTargets["RendererTargets"];
-				const rapidjson::Value& rapidJsonValueRendererTarget = rapidJsonValueRendererTargets[configuration.rendererTarget.c_str()];
+				const rapidjson::Value& rapidJsonValueRendererTarget = rapidJsonValueRendererTargets[configuration.rendererTarget];
 				textureTargetName = rapidJsonValueRendererTarget["TextureTarget"].GetString();
 			}
 			{
@@ -422,7 +422,7 @@ namespace
 				if (fileFormat.empty())
 				{
 					const rapidjson::Value& rapidJsonValueTextureTargets = rapidJsonValueTargets["TextureTargets"];
-					const rapidjson::Value& rapidJsonValueTextureTarget = rapidJsonValueTextureTargets[textureTargetName.c_str()];
+					const rapidjson::Value& rapidJsonValueTextureTarget = rapidJsonValueTextureTargets[textureTargetName];
 					fileFormat = rapidJsonValueTextureTarget["FileFormat"].GetString();
 				}
 				virtualOutputAssetFilename = virtualAssetOutputDirectory + '/' + assetName + '.' + fileFormat;
@@ -667,7 +667,7 @@ namespace
 			{
 				const std::string textureChannelPacking = rapidJsonValueTextureAssetCompiler["TextureChannelPacking"].GetString();
 				const rapidjson::Value& rapidJsonValueTextureChannelPackings = configuration.rapidJsonValueTargets["TextureChannelPackings"];
-				const rapidjson::Value& rapidJsonValueTextureChannelPacking = rapidJsonValueTextureChannelPackings[textureChannelPacking.c_str()];
+				const rapidjson::Value& rapidJsonValueTextureChannelPacking = rapidJsonValueTextureChannelPackings[textureChannelPacking];
 
 				{ // Sources
 					const rapidjson::Value& rapidJsonValueSources = rapidJsonValueTextureChannelPacking["Sources"];

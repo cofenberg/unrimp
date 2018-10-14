@@ -1297,9 +1297,9 @@ namespace RendererToolkit
 			for (int i = 0; i < 8; ++i)
 			{
 				const std::string renderTarget = "RenderTarget[" + std::to_string(i) + ']';
-				if (rapidJsonValueBlendState.HasMember(renderTarget.c_str()))
+				if (rapidJsonValueBlendState.HasMember(renderTarget))
 				{
-					const rapidjson::Value& rapidJsonValueRenderTarget = rapidJsonValueBlendState[renderTarget.c_str()];
+					const rapidjson::Value& rapidJsonValueRenderTarget = rapidJsonValueBlendState[renderTarget];
 					Renderer::RenderTargetBlendDesc& renderTargetBlendDesc = blendState.renderTarget[i];
 
 					// The optional properties

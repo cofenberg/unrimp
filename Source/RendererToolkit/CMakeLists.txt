@@ -39,6 +39,7 @@ include_directories(${CMAKE_SOURCE_DIR}/External/Assimp/include)
 include_directories(${CMAKE_SOURCE_DIR}/External/crunch/inc)
 include_directories(${CMAKE_SOURCE_DIR}/External/mikktspace/include)
 include_directories(${CMAKE_SOURCE_DIR}/External/glm/include)
+include_directories(${CMAKE_SOURCE_DIR}/External/RapidJSON/configuration)	# RapidJSON configuration and assert to exception
 include_directories(${CMAKE_SOURCE_DIR}/External/RapidJSON/include)
 include_directories(${CMAKE_SOURCE_DIR}/External/SimpleFileWatcher/src)
 link_directories(${CMAKE_SOURCE_DIR}/Library/${OS_ARCHITECTURE})

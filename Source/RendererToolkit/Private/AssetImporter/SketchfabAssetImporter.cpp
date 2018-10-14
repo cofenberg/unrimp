@@ -382,13 +382,13 @@ namespace
 				{
 					// Texture channel packing
 					rapidJsonValueCompiler.AddMember("TextureSemantic", "PACKED_CHANNELS", rapidJsonAllocatorType);
-					rapidJsonValueCompiler.AddMember("TextureChannelPacking", rapidjson::StringRef(semantic.c_str()), rapidJsonAllocatorType);
+					rapidJsonValueCompiler.AddMember("TextureChannelPacking", rapidjson::StringRef(semantic), rapidJsonAllocatorType);
 
 					// Define helper macro
 					#define ADD_MEMBER(semanticType) \
 						if (!textureFilenames[SemanticType::semanticType].empty()) \
 						{ \
-							rapidJsonValueInputFiles.AddMember(#semanticType, rapidjson::StringRef(("./" + textureFilenames[SemanticType::semanticType]).c_str()), rapidJsonAllocatorType); \
+							rapidJsonValueInputFiles.AddMember(#semanticType, rapidjson::StringRef(("./" + textureFilenames[SemanticType::semanticType])), rapidJsonAllocatorType); \
 						}
 
 					{ // Input files
@@ -429,7 +429,7 @@ namespace
 				{
 					// No texture channel packing
 					rapidJsonValueCompiler.AddMember("TextureSemantic", "EMISSIVE_MAP", rapidJsonAllocatorType);
-					rapidJsonValueCompiler.AddMember("InputFile", rapidjson::StringRef(("./" + textureFilenames[SemanticType::EMISSIVE_MAP]).c_str()), rapidJsonAllocatorType);
+					rapidJsonValueCompiler.AddMember("InputFile", rapidjson::StringRef(("./" + textureFilenames[SemanticType::EMISSIVE_MAP])), rapidJsonAllocatorType);
 				}
 				else
 				{
@@ -502,7 +502,7 @@ namespace
 			const std::string relativeFilenameEmissiveMap = "../" + materialName + "_e" + ".asset";
 
 			// Base material
-			rapidJsonValueMaterialAsset.AddMember("BaseMaterial", rapidjson::StringRef(baseMaterial.c_str()), rapidJsonAllocatorType);
+			rapidJsonValueMaterialAsset.AddMember("BaseMaterial", rapidjson::StringRef(baseMaterial), rapidJsonAllocatorType);
 
 			{ // Properties
 				rapidjson::Value rapidJsonValueProperties(rapidjson::kObjectType);
@@ -510,21 +510,21 @@ namespace
 				// Texture channel packing "_argb_nxa"
 				if (!textureFilenames[SemanticType::ALBEDO_MAP].empty() || !textureFilenames[SemanticType::NORMAL_MAP].empty())
 				{
-					rapidJsonValueProperties.AddMember("_argb_nxa", rapidjson::StringRef(relativeFilename_argb_nxa.c_str()), rapidJsonAllocatorType);
+					rapidJsonValueProperties.AddMember("_argb_nxa", rapidjson::StringRef(relativeFilename_argb_nxa), rapidJsonAllocatorType);
 				}
 
 				// Texture channel packing "_hr_rg_mb_nya"
 				if (!textureFilenames[SemanticType::HEIGHT_MAP].empty() || !textureFilenames[SemanticType::ROUGHNESS_MAP].empty() || !textureFilenames[SemanticType::GLOSS_MAP].empty() ||
 					!textureFilenames[SemanticType::METALLIC_MAP].empty() || !textureFilenames[SemanticType::NORMAL_MAP].empty())
 				{
-					rapidJsonValueProperties.AddMember("_hr_rg_mb_nya", rapidjson::StringRef(relativeFilename_hr_rg_mb_nya.c_str()), rapidJsonAllocatorType);
+					rapidJsonValueProperties.AddMember("_hr_rg_mb_nya", rapidjson::StringRef(relativeFilename_hr_rg_mb_nya), rapidJsonAllocatorType);
 				}
 
 				// Emissive map "_e"
 				if (!textureFilenames[SemanticType::EMISSIVE_MAP].empty())
 				{
 					rapidJsonValueProperties.AddMember("UseEmissiveMap", "TRUE", rapidJsonAllocatorType);
-					rapidJsonValueProperties.AddMember("EmissiveMap", rapidjson::StringRef(relativeFilenameEmissiveMap.c_str()), rapidJsonAllocatorType);
+					rapidJsonValueProperties.AddMember("EmissiveMap", rapidjson::StringRef(relativeFilenameEmissiveMap), rapidJsonAllocatorType);
 				}
 
 				// Add properties member
@@ -561,7 +561,7 @@ namespace
 			{ // Material asset compiler
 				rapidjson::Value rapidJsonValueCompiler(rapidjson::kObjectType);
 				rapidJsonValueCompiler.AddMember("ClassName", "RendererToolkit::MaterialAssetCompiler", rapidJsonAllocatorType);
-				rapidJsonValueCompiler.AddMember("InputFile", rapidjson::StringRef(("./" + filename).c_str()), rapidJsonAllocatorType);
+				rapidJsonValueCompiler.AddMember("InputFile", rapidjson::StringRef(("./" + filename)), rapidJsonAllocatorType);
 				rapidJsonValueAsset.AddMember("Compiler", rapidJsonValueCompiler, rapidJsonAllocatorType);
 			}
 
@@ -712,7 +712,7 @@ namespace
 			{ // Mesh asset compiler
 				rapidjson::Value rapidJsonValueCompiler(rapidjson::kObjectType);
 				rapidJsonValueCompiler.AddMember("ClassName", "RendererToolkit::MeshAssetCompiler", rapidJsonAllocatorType);
-				rapidJsonValueCompiler.AddMember("InputFile", rapidjson::StringRef(("./" + importerContext.meshFilename).c_str()), rapidJsonAllocatorType);
+				rapidJsonValueCompiler.AddMember("InputFile", rapidjson::StringRef(("./" + importerContext.meshFilename)), rapidJsonAllocatorType);
 
 				// Check whether or not it looks dangerous to use "aiProcess_RemoveRedundantMaterials"
 				// -> "Centaur" ( https://sketchfab.com/models/0d3f1b4a51144b7fbc4e2ff64d858413 ) for example has only identical dummy
@@ -728,7 +728,7 @@ namespace
 					rapidjson::Value rapidJsonValueMaterialNameToAssetId(rapidjson::kObjectType);
 					for (const auto& pair : importerContext.materialNameToAssetId)
 					{
-						rapidJsonValueMaterialNameToAssetId.AddMember(rapidjson::StringRef(pair.first.c_str()), rapidjson::StringRef(pair.second.c_str()), rapidJsonAllocatorType);
+						rapidJsonValueMaterialNameToAssetId.AddMember(rapidjson::StringRef(pair.first), rapidjson::StringRef(pair.second), rapidJsonAllocatorType);
 					}
 					rapidJsonValueCompiler.AddMember("MaterialNameToAssetId", rapidJsonValueMaterialNameToAssetId, rapidJsonAllocatorType);
 				}

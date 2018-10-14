@@ -219,51 +219,51 @@ namespace RendererToolkit
 	{
 		const std::string& virtualAssetFilename = asset.virtualFilename;
 
-		// The renderer toolkit is now considered to be busy
-		mRendererToolkitImpl.setState(IRendererToolkit::State::BUSY);
-
-		// Parse JSON
-		rapidjson::Document rapidJsonDocument;
-		JsonHelper::loadDocumentByFilename(mContext.getFileManager(), virtualAssetFilename, "Asset", "1", rapidJsonDocument);
-
-		// Dispatch asset compiler
-		// TODO(co) Add multi-threading support: Add compiler queue which is processed in the background, ensure compiler instances are reused
-
-		// Get the asset input directory and asset output directory
-		const std::string virtualAssetPackageInputDirectory = mProjectName + '/' + mAssetPackageDirectoryName;
-		const std::string virtualAssetInputDirectory = std_filesystem::path(virtualAssetFilename).parent_path().generic_string();
-		const std::string assetDirectory = virtualAssetInputDirectory.substr(virtualAssetInputDirectory.find('/') + 1);
-		const std::string compilerClassName = rapidJsonDocument["Asset"]["Compiler"]["ClassName"].GetString();
-		const std::string renderTargetDataRootDirectory = getRenderTargetDataRootDirectory(rendererTarget);
-		const std::string virtualAssetOutputDirectory = renderTargetDataRootDirectory + '/' + mProjectName + '/' + mAssetPackageDirectoryName + '/' + assetDirectory;
-
-		{ // Do we need to mount a directory now? (e.g. "DataPc", "DataMobile" etc.)
-			RendererRuntime::IFileManager& fileManager = mContext.getFileManager();
-			if (fileManager.getMountPoint(renderTargetDataRootDirectory.c_str()) == nullptr)
-			{
-				fileManager.mountDirectory((fileManager.getAbsoluteRootDirectory() + '/' + renderTargetDataRootDirectory).c_str(), renderTargetDataRootDirectory.c_str());
-			}
-		}
-
-		// Asset compiler input
-		IAssetCompiler::Input input(mContext, mProjectName, *mCacheManager, virtualAssetPackageInputDirectory, virtualAssetFilename, virtualAssetInputDirectory, virtualAssetOutputDirectory, mSourceAssetIdToCompiledAssetId, mCompiledAssetIdToSourceAssetId, mSourceAssetIdToVirtualFilename, mDefaultTextureAssetIds);
-
-		// Asset compiler configuration
-		AssetCompilers::const_iterator iterator = mAssetCompilersByClassId.find(AssetCompilerClassId(compilerClassName.c_str()));
-		if (mAssetCompilersByClassId.end() != iterator)
+		try
 		{
-			RENDERER_ASSERT(getContext(), nullptr != mRapidJsonDocument, "Invalid renderer toolkit Rapid JSON document")
-			const IAssetCompiler::Configuration configuration(rapidJsonDocument, (*mRapidJsonDocument)["Targets"], rendererTarget, mQualityStrategy);
-			try
+			// The renderer toolkit is now considered to be busy
+			mRendererToolkitImpl.setState(IRendererToolkit::State::BUSY);
+
+			// Parse JSON
+			rapidjson::Document rapidJsonDocument;
+			JsonHelper::loadDocumentByFilename(mContext.getFileManager(), virtualAssetFilename, "Asset", "1", rapidJsonDocument);
+
+			// Dispatch asset compiler
+			// TODO(co) Add multi-threading support: Add compiler queue which is processed in the background, ensure compiler instances are reused
+
+			// Get the asset input directory and asset output directory
+			const std::string virtualAssetPackageInputDirectory = mProjectName + '/' + mAssetPackageDirectoryName;
+			const std::string virtualAssetInputDirectory = std_filesystem::path(virtualAssetFilename).parent_path().generic_string();
+			const std::string assetDirectory = virtualAssetInputDirectory.substr(virtualAssetInputDirectory.find('/') + 1);
+			const std::string compilerClassName = rapidJsonDocument["Asset"]["Compiler"]["ClassName"].GetString();
+			const std::string renderTargetDataRootDirectory = getRenderTargetDataRootDirectory(rendererTarget);
+			const std::string virtualAssetOutputDirectory = renderTargetDataRootDirectory + '/' + mProjectName + '/' + mAssetPackageDirectoryName + '/' + assetDirectory;
+
+			{ // Do we need to mount a directory now? (e.g. "DataPc", "DataMobile" etc.)
+				RendererRuntime::IFileManager& fileManager = mContext.getFileManager();
+				if (fileManager.getMountPoint(renderTargetDataRootDirectory.c_str()) == nullptr)
+				{
+					fileManager.mountDirectory((fileManager.getAbsoluteRootDirectory() + '/' + renderTargetDataRootDirectory).c_str(), renderTargetDataRootDirectory.c_str());
+				}
+			}
+
+			// Asset compiler input
+			IAssetCompiler::Input input(mContext, mProjectName, *mCacheManager, virtualAssetPackageInputDirectory, virtualAssetFilename, virtualAssetInputDirectory, virtualAssetOutputDirectory, mSourceAssetIdToCompiledAssetId, mCompiledAssetIdToSourceAssetId, mSourceAssetIdToVirtualFilename, mDefaultTextureAssetIds);
+
+			// Asset compiler configuration
+			AssetCompilers::const_iterator iterator = mAssetCompilersByClassId.find(AssetCompilerClassId(compilerClassName.c_str()));
+			if (mAssetCompilersByClassId.end() != iterator)
 			{
+				RENDERER_ASSERT(getContext(), nullptr != mRapidJsonDocument, "Invalid renderer toolkit Rapid JSON document")
+				const IAssetCompiler::Configuration configuration(rapidJsonDocument, (*mRapidJsonDocument)["Targets"], rendererTarget, mQualityStrategy);
 				return iterator->second->checkIfChanged(input, configuration);
 			}
-			catch (const std::exception& e)
-			{
-				// In case of an "RendererToolkit::IAssetCompiler::checkIfChanged()"-exception, consider the asset as changed and write at least an informative log message
-				RENDERER_LOG(mContext, INFORMATION, "Failed to check asset with filename \"%s\" for change: \"%s\". Considered the asset as changed.", asset.virtualFilename, e.what())
-				return true;
-			}
+		}
+		catch (const std::exception& e)
+		{
+			// In case of an "RendererToolkit::IAssetCompiler::checkIfChanged()"-exception, consider the asset as changed and write at least an informative log message
+			RENDERER_LOG(mContext, INFORMATION, "Failed to check asset with filename \"%s\" for change: \"%s\". Considered the asset as changed.", asset.virtualFilename, e.what())
+			return true;
 		}
 
 		// Not changed
@@ -272,48 +272,48 @@ namespace RendererToolkit
 
 	void ProjectImpl::compileAsset(const RendererRuntime::Asset& asset, const char* rendererTarget, RendererRuntime::AssetPackage& outputAssetPackage)
 	{
-		// The renderer toolkit is now considered to be busy
-		mRendererToolkitImpl.setState(IRendererToolkit::State::BUSY);
-
-		// Open the input stream
-		const std::string& virtualAssetFilename = asset.virtualFilename;
-
-		// Parse JSON
-		rapidjson::Document rapidJsonDocument;
-		RendererRuntime::IFileManager& fileManager = mContext.getFileManager();
-		JsonHelper::loadDocumentByFilename(fileManager, virtualAssetFilename, "Asset", "1", rapidJsonDocument);
-
-		// Dispatch asset compiler
-		// TODO(co) Add multi-threading support: Add compiler queue which is processed in the background, ensure compiler instances are reused
-
-		// Get the asset input directory and asset output directory
-		const std::string virtualAssetPackageInputDirectory = mProjectName + '/' + mAssetPackageDirectoryName;
-		const std::string virtualAssetInputDirectory = std_filesystem::path(virtualAssetFilename).parent_path().generic_string();
-		const std::string assetDirectory = virtualAssetInputDirectory.substr(virtualAssetInputDirectory.find('/') + 1);
-		const std::string compilerClassName = rapidJsonDocument["Asset"]["Compiler"]["ClassName"].GetString();
-		const std::string renderTargetDataRootDirectory = getRenderTargetDataRootDirectory(rendererTarget);
-		const std::string virtualAssetOutputDirectory = renderTargetDataRootDirectory + '/' + mProjectName + '/' + mAssetPackageDirectoryName + '/' + assetDirectory;
-
-		// Ensure that the asset output directory exists, else creating output file streams will fail
-		fileManager.createDirectories(virtualAssetOutputDirectory.c_str());
-
-		// Do we need to mount a directory now? (e.g. "DataPc", "DataMobile" etc.)
-		if (fileManager.getMountPoint(renderTargetDataRootDirectory.c_str()) == nullptr)
-		{
-			fileManager.mountDirectory((fileManager.getAbsoluteRootDirectory() + '/' + renderTargetDataRootDirectory).c_str(), renderTargetDataRootDirectory.c_str());
-		}
-
-		// Asset compiler input
-		IAssetCompiler::Input input(mContext, mProjectName, *mCacheManager, virtualAssetPackageInputDirectory, virtualAssetFilename, virtualAssetInputDirectory, virtualAssetOutputDirectory, mSourceAssetIdToCompiledAssetId, mCompiledAssetIdToSourceAssetId, mSourceAssetIdToVirtualFilename, mDefaultTextureAssetIds);
-
-		// Asset compiler configuration
-		RENDERER_ASSERT(getContext(), nullptr != mRapidJsonDocument, "Invalid renderer toolkit Rapid JSON document")
-		const IAssetCompiler::Configuration configuration(rapidJsonDocument, (*mRapidJsonDocument)["Targets"], rendererTarget, mQualityStrategy);
-
-		// Evaluate the asset type and continue with the processing in the asset type specific way
-		// TODO(co) Currently this is fixed build in, later on me might want to have this dynamic so we can plugin additional asset compilers
 		try
 		{
+			// The renderer toolkit is now considered to be busy
+			mRendererToolkitImpl.setState(IRendererToolkit::State::BUSY);
+
+			// Open the input stream
+			const std::string& virtualAssetFilename = asset.virtualFilename;
+
+			// Parse JSON
+			rapidjson::Document rapidJsonDocument;
+			RendererRuntime::IFileManager& fileManager = mContext.getFileManager();
+			JsonHelper::loadDocumentByFilename(fileManager, virtualAssetFilename, "Asset", "1", rapidJsonDocument);
+
+			// Dispatch asset compiler
+			// TODO(co) Add multi-threading support: Add compiler queue which is processed in the background, ensure compiler instances are reused
+
+			// Get the asset input directory and asset output directory
+			const std::string virtualAssetPackageInputDirectory = mProjectName + '/' + mAssetPackageDirectoryName;
+			const std::string virtualAssetInputDirectory = std_filesystem::path(virtualAssetFilename).parent_path().generic_string();
+			const std::string assetDirectory = virtualAssetInputDirectory.substr(virtualAssetInputDirectory.find('/') + 1);
+			const std::string compilerClassName = rapidJsonDocument["Asset"]["Compiler"]["ClassName"].GetString();
+			const std::string renderTargetDataRootDirectory = getRenderTargetDataRootDirectory(rendererTarget);
+			const std::string virtualAssetOutputDirectory = renderTargetDataRootDirectory + '/' + mProjectName + '/' + mAssetPackageDirectoryName + '/' + assetDirectory;
+
+			// Ensure that the asset output directory exists, else creating output file streams will fail
+			fileManager.createDirectories(virtualAssetOutputDirectory.c_str());
+
+			// Do we need to mount a directory now? (e.g. "DataPc", "DataMobile" etc.)
+			if (fileManager.getMountPoint(renderTargetDataRootDirectory.c_str()) == nullptr)
+			{
+				fileManager.mountDirectory((fileManager.getAbsoluteRootDirectory() + '/' + renderTargetDataRootDirectory).c_str(), renderTargetDataRootDirectory.c_str());
+			}
+
+			// Asset compiler input
+			IAssetCompiler::Input input(mContext, mProjectName, *mCacheManager, virtualAssetPackageInputDirectory, virtualAssetFilename, virtualAssetInputDirectory, virtualAssetOutputDirectory, mSourceAssetIdToCompiledAssetId, mCompiledAssetIdToSourceAssetId, mSourceAssetIdToVirtualFilename, mDefaultTextureAssetIds);
+
+			// Asset compiler configuration
+			RENDERER_ASSERT(getContext(), nullptr != mRapidJsonDocument, "Invalid renderer toolkit Rapid JSON document")
+			const IAssetCompiler::Configuration configuration(rapidJsonDocument, (*mRapidJsonDocument)["Targets"], rendererTarget, mQualityStrategy);
+
+			// Evaluate the asset type and continue with the processing in the asset type specific way
+			// TODO(co) Currently this is fixed build in, later on me might want to have this dynamic so we can plugin additional asset compilers
 			AssetCompilers::const_iterator iterator = mAssetCompilersByClassId.find(AssetCompilerClassId(compilerClassName.c_str()));
 			if (mAssetCompilersByClassId.end() != iterator)
 			{

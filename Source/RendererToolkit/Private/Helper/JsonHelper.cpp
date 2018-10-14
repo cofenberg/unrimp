@@ -306,7 +306,7 @@ namespace RendererToolkit
 		StringHelper::readStringByFilename(fileManager, virtualFilename, fileContentAsString);
 
 		// Load the JSON document
-		const rapidjson::ParseResult rapidJsonParseResult = rapidJsonDocument.Parse(fileContentAsString.c_str());
+		const rapidjson::ParseResult rapidJsonParseResult = rapidJsonDocument.Parse(fileContentAsString);
 		if (rapidJsonParseResult.Code() != rapidjson::kParseErrorNone)
 		{
 			// Get the line number
@@ -342,13 +342,13 @@ namespace RendererToolkit
 
 		{ // Format
 			rapidjson::Value rapidJsonValueFormat(rapidjson::kObjectType);
-			rapidJsonValueFormat.AddMember("Type", rapidjson::StringRef(formatType.c_str()), rapidJsonAllocatorType);
-			rapidJsonValueFormat.AddMember("Version", rapidjson::StringRef(formatVersion.c_str()), rapidJsonAllocatorType);
+			rapidJsonValueFormat.AddMember("Type", rapidjson::StringRef(formatType), rapidJsonAllocatorType);
+			rapidJsonValueFormat.AddMember("Version", rapidjson::StringRef(formatVersion), rapidJsonAllocatorType);
 			rapidJsonDocument.AddMember("Format", rapidJsonValueFormat, rapidJsonAllocatorType);
 		}
 
 		// Add asset format type member
-		rapidJsonDocument.AddMember(rapidjson::StringRef(formatType.c_str()), rapidJsonValue, rapidJsonAllocatorType);
+		rapidJsonDocument.AddMember(rapidjson::StringRef(formatType), rapidJsonValue, rapidJsonAllocatorType);
 
 		// JSON document to pretty string
 		std::ostringstream outputStringStream;
@@ -574,7 +574,7 @@ namespace RendererToolkit
 			{
 				for (size_t i = 0; i < numberOfComponents; ++i)
 				{
-					value[i] = std::stof(elements[i].c_str());
+					value[i] = std::stof(elements[i]);
 				}
 			}
 			else
@@ -614,7 +614,7 @@ namespace RendererToolkit
 				for (size_t i = 0; i < numberOfComponents; ++i)
 				{
 					// One unit = one meter
-					value[i] = std::stof(elements[i].c_str());
+					value[i] = std::stof(elements[i]);
 				}
 			}
 			else
@@ -658,7 +658,7 @@ namespace RendererToolkit
 				// Get component values
 				for (size_t i = 0; i < numberOfComponents; ++i)
 				{
-					value[i] = std::stof(elements[i].c_str());
+					value[i] = std::stof(elements[i]);
 					if (ValueSemantic::PERCENTAGE == valueSemantic)
 					{
 						value[i] *= 0.01f;
@@ -705,7 +705,7 @@ namespace RendererToolkit
 					}
 					for (uint8_t i = 0; i < 3; ++i)
 					{
-						const int integerValue = std::stoi(elements[elementIndex - (3 - i)].c_str());
+						const int integerValue = std::stoi(elements[elementIndex - (3 - i)]);
 						if (integerValue < 0 || integerValue > 255)
 						{
 							throw std::runtime_error("8-bit RGB color values must be between [0, 255]");
@@ -722,7 +722,7 @@ namespace RendererToolkit
 					}
 					for (uint8_t i = 0; i < 3; ++i)
 					{
-						color[i] = std::stof(elements[elementIndex - (3 - i)].c_str());
+						color[i] = std::stof(elements[elementIndex - (3 - i)]);
 					}
 					break;
 				}
@@ -734,7 +734,7 @@ namespace RendererToolkit
 					}
 					for (uint8_t i = 0; i < 3; ++i)
 					{
-						color[i] = std::stof(elements[elementIndex - (3 - i)].c_str());
+						color[i] = std::stof(elements[elementIndex - (3 - i)]);
 					}
 					::detail::hsvToRgb(color[0], color[1], color[2], color[0], color[1], color[2]);
 					break;
@@ -766,7 +766,7 @@ namespace RendererToolkit
 					{
 						throw std::runtime_error('\"' + std::string(propertyName) + "\": Intensity needs one component");
 					}
-					intensity = std::stof(elements[elementIndex - 1].c_str());
+					intensity = std::stof(elements[elementIndex - 1]);
 					break;
 				}
 			}
@@ -781,7 +781,7 @@ namespace RendererToolkit
 					{
 						throw std::runtime_error('\"' + std::string(propertyName) + "\": Kelvin needs one component");
 					}
-					kelvin = std::stof(elements[elementIndex - 1].c_str());
+					kelvin = std::stof(elements[elementIndex - 1]);
 					break;
 				}
 			}
@@ -806,7 +806,7 @@ namespace RendererToolkit
 			StringHelper::splitString(rapidJsonValue[propertyName].GetString(), ' ', elements);
 			if (elements.size() == 2)
 			{
-				value = std::stof(elements[0].c_str());
+				value = std::stof(elements[0]);
 				if (elements[1] == "DEGREE")
 				{
 					value = glm::radians(value);
@@ -837,10 +837,10 @@ namespace RendererToolkit
 			StringHelper::splitString(valueAsString, ' ', elements);
 			if (elements.size() == 5 && elements[4] == "QUATERNION")
 			{
-				value.x = std::stof(elements[0].c_str());
-				value.y = std::stof(elements[1].c_str());
-				value.z = std::stof(elements[2].c_str());
-				value.w = std::stof(elements[3].c_str());
+				value.x = std::stof(elements[0]);
+				value.y = std::stof(elements[1]);
+				value.z = std::stof(elements[2]);
+				value.w = std::stof(elements[3]);
 
 				{ // Sanity check
 					const float length = glm::length(value);
@@ -852,9 +852,9 @@ namespace RendererToolkit
 			}
 			else if (elements.size() == 4)
 			{
-				const float pitch = std::stof(elements[0].c_str());
-				const float yaw   = std::stof(elements[1].c_str());
-				const float roll  = std::stof(elements[2].c_str());
+				const float pitch = std::stof(elements[0]);
+				const float yaw   = std::stof(elements[1]);
+				const float roll  = std::stof(elements[2]);
 				if (elements[3] == "DEGREE")
 				{
 					value = glm::quat(glm::vec3(glm::radians(pitch), glm::radians(yaw), glm::radians(roll)));
@@ -883,7 +883,7 @@ namespace RendererToolkit
 			StringHelper::splitString(rapidJsonValue[propertyName].GetString(), ' ', elements);
 			if (elements.size() == 2)
 			{
-				value = std::stof(elements[0].c_str());
+				value = std::stof(elements[0]);
 				if (elements[1] == "O_CLOCK")
 				{
 					// Sanity check

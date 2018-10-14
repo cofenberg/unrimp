@@ -59,8 +59,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "glTF2Asset.h"
 // This is included here so WriteLazyDict<T>'s definition is found.
 #include "glTF2AssetWriter.h"
-#include <rapidjson/document.h>
 #include <rapidjson/rapidjson.h>
+#include <rapidjson/document.h>
 
 using namespace Assimp;
 using namespace glTF2;
