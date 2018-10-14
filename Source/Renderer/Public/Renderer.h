@@ -80,12 +80,6 @@
 
 	/**
 	*  @brief
-	*    C++17 attribute specifier sequence "[[maybe_unused]]"
-	*/
-	#define MAYBE_UNUSED [[maybe_unused]]
-
-	/**
-	*  @brief
 	*    Debug break operation macro
 	*/
 	#define DEBUG_BREAK __debugbreak()
@@ -152,12 +146,6 @@
 	*    No operation macro ("_asm nop"/__nop())
 	*/
 	#define NOP asm ("nop");
-
-	/**
-	*  @brief
-	*    C++17 attribute specifier sequence "[[maybe_unused]]"
-	*/
-	#define MAYBE_UNUSED
 
 	/**
 	*  @brief
@@ -5042,7 +5030,7 @@ namespace Renderer
 		*  @see
 		*    - "Renderer::IRenderer::isDebugEnabled()"
 		*/
-		inline virtual void setDebugName(MAYBE_UNUSED const char* name)
+		inline virtual void setDebugName([[maybe_unused]] const char* name)
 		{}
 
 		//[-------------------------------------------------------]
@@ -5276,30 +5264,30 @@ namespace Renderer
 	// Public virtual Renderer::IGraphicsProgram methods
 	public:
 		// TODO(co) Cleanup
-		inline virtual handle getUniformHandle(MAYBE_UNUSED const char* uniformName)
+		inline virtual handle getUniformHandle([[maybe_unused]] const char* uniformName)
 		{
 			return NULL_HANDLE;
 		}
 
-		inline virtual void setUniform1i(MAYBE_UNUSED handle uniformHandle, MAYBE_UNUSED int value)
+		inline virtual void setUniform1i([[maybe_unused]] handle uniformHandle, [[maybe_unused]] int value)
 		{}
 
-		inline virtual void setUniform1f(MAYBE_UNUSED handle uniformHandle, MAYBE_UNUSED float value)
+		inline virtual void setUniform1f([[maybe_unused]] handle uniformHandle, [[maybe_unused]] float value)
 		{}
 
-		inline virtual void setUniform2fv(MAYBE_UNUSED handle uniformHandle, MAYBE_UNUSED const float* value)
+		inline virtual void setUniform2fv([[maybe_unused]] handle uniformHandle, [[maybe_unused]] const float* value)
 		{}
 
-		inline virtual void setUniform3fv(MAYBE_UNUSED handle uniformHandle, MAYBE_UNUSED const float* value)
+		inline virtual void setUniform3fv([[maybe_unused]] handle uniformHandle, [[maybe_unused]] const float* value)
 		{}
 
-		inline virtual void setUniform4fv(MAYBE_UNUSED handle uniformHandle, MAYBE_UNUSED const float* value)
+		inline virtual void setUniform4fv([[maybe_unused]] handle uniformHandle, [[maybe_unused]] const float* value)
 		{}
 
-		inline virtual void setUniformMatrix3fv(MAYBE_UNUSED handle uniformHandle, MAYBE_UNUSED const float* value)
+		inline virtual void setUniformMatrix3fv([[maybe_unused]] handle uniformHandle, [[maybe_unused]] const float* value)
 		{}
 
-		inline virtual void setUniformMatrix4fv(MAYBE_UNUSED handle uniformHandle, MAYBE_UNUSED const float* value)
+		inline virtual void setUniformMatrix4fv([[maybe_unused]] handle uniformHandle, [[maybe_unused]] const float* value)
 		{}
 
 	// Protected methods

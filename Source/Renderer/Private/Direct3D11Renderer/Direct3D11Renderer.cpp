@@ -7343,7 +7343,7 @@ namespace Direct3D11Renderer
 			}
 		}
 
-		virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, MAYBE_UNUSED const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
+		virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0)
@@ -8503,7 +8503,7 @@ namespace Direct3D11Renderer
 			}
 		}
 
-		inline virtual void setRenderWindow(MAYBE_UNUSED Renderer::IRenderWindow* renderWindow) override
+		inline virtual void setRenderWindow([[maybe_unused]] Renderer::IRenderWindow* renderWindow) override
 		{
 			// TODO(sw) implement me
 		}
@@ -10248,13 +10248,13 @@ namespace Direct3D11Renderer
 			return ::detail::HLSL_NAME;
 		}
 
-		inline virtual Renderer::IVertexShader* createVertexShaderFromBytecode(MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderBytecode& shaderBytecode) override
+		inline virtual Renderer::IVertexShader* createVertexShaderFromBytecode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			// There's no need to check for "Renderer::Capabilities::vertexShader", we know there's vertex shader support
 			return RENDERER_NEW(getRenderer().getContext(), VertexShaderHlsl)(static_cast<Direct3D11Renderer&>(getRenderer()), shaderBytecode);
 		}
 
-		inline virtual Renderer::IVertexShader* createVertexShaderFromSourceCode(MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		inline virtual Renderer::IVertexShader* createVertexShaderFromSourceCode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// There's no need to check for "Renderer::Capabilities::vertexShader", we know there's vertex shader support
 			return RENDERER_NEW(getRenderer().getContext(), VertexShaderHlsl)(static_cast<Direct3D11Renderer&>(getRenderer()), shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode);
@@ -10292,7 +10292,7 @@ namespace Direct3D11Renderer
 			return RENDERER_NEW(getRenderer().getContext(), TessellationEvaluationShaderHlsl)(static_cast<Direct3D11Renderer&>(getRenderer()), shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode);
 		}
 
-		inline virtual Renderer::IGeometryShader* createGeometryShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode, MAYBE_UNUSED Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, MAYBE_UNUSED Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, MAYBE_UNUSED uint32_t numberOfOutputVertices) override
+		inline virtual Renderer::IGeometryShader* createGeometryShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode, [[maybe_unused]] Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices) override
 		{
 			// There's no need to check for "Renderer::Capabilities::maximumNumberOfGsOutputVertices", we know there's geometry shader support
 			// Ignore "gsInputPrimitiveTopology", it's directly set within HLSL
@@ -10301,7 +10301,7 @@ namespace Direct3D11Renderer
 			return RENDERER_NEW(getRenderer().getContext(), GeometryShaderHlsl)(static_cast<Direct3D11Renderer&>(getRenderer()), shaderBytecode);
 		}
 
-		inline virtual Renderer::IGeometryShader* createGeometryShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, MAYBE_UNUSED Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, MAYBE_UNUSED Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, MAYBE_UNUSED uint32_t numberOfOutputVertices, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		inline virtual Renderer::IGeometryShader* createGeometryShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// There's no need to check for "Renderer::Capabilities::maximumNumberOfGsOutputVertices", we know there's geometry shader support
 			// Ignore "gsInputPrimitiveTopology", it's directly set within HLSL
@@ -10334,7 +10334,7 @@ namespace Direct3D11Renderer
 			return RENDERER_NEW(getRenderer().getContext(), ComputeShaderHlsl)(static_cast<Direct3D11Renderer&>(getRenderer()), shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode);
 		}
 
-		virtual Renderer::IGraphicsProgram* createGraphicsProgram(MAYBE_UNUSED const Renderer::IRootSignature& rootSignature, MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
+		virtual Renderer::IGraphicsProgram* createGraphicsProgram([[maybe_unused]] const Renderer::IRootSignature& rootSignature, [[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
 		{
 			// Sanity checks
 			// -> A shader can be a null pointer, but if it's not the shader and graphics program language must match!

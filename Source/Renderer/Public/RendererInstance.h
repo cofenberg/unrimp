@@ -414,7 +414,7 @@ namespace Renderer
 			}
 		#endif
 
-		void loadRendererApiSharedLibraryInternal(MAYBE_UNUSED const char* rendererName)
+		void loadRendererApiSharedLibraryInternal([[maybe_unused]] const char* rendererName)
 		{
 			// TODO(sw) Currently this is only needed for OpenGL (libGL.so) under Linux. This interacts with the library libX11.
 			#ifdef LINUX

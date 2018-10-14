@@ -3000,7 +3000,7 @@ namespace OpenGLRenderer
 			//[ Core (OpenGL version dependent)                       ]
 			//[-------------------------------------------------------]
 			{
-				MAYBE_UNUSED bool result = true;	// Success by default
+				[[maybe_unused]] bool result = true;	// Success by default
 				IMPORT_FUNC(glShaderBinary)	// OpenGL 4.1
 			}
 
@@ -3962,7 +3962,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    OpenGL magnification filter mode
 		*/
-		static GLint getOpenGLMagFilterMode(MAYBE_UNUSED const Renderer::Context& context, Renderer::FilterMode filterMode)
+		static GLint getOpenGLMagFilterMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode)
 		{
 			switch (filterMode)
 			{
@@ -4043,7 +4043,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    OpenGL minification filter mode
 		*/
-		static GLint getOpenGLMinFilterMode(MAYBE_UNUSED const Renderer::Context& context, Renderer::FilterMode filterMode, bool hasMipmaps)
+		static GLint getOpenGLMinFilterMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode, bool hasMipmaps)
 		{
 			switch (filterMode)
 			{
@@ -4122,7 +4122,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    OpenGL compare mode
 		*/
-		static GLint getOpenGLCompareMode(MAYBE_UNUSED const Renderer::Context& context, Renderer::FilterMode filterMode)
+		static GLint getOpenGLCompareMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode)
 		{
 			switch (filterMode)
 			{
@@ -6730,7 +6730,7 @@ namespace OpenGLRenderer
 		*  @param[in] numberOfStructureBytes
 		*    Number of structure bytes
 		*/
-		StructuredBufferBind(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage, MAYBE_UNUSED uint32_t numberOfStructureBytes) :
+		StructuredBufferBind(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage, [[maybe_unused]] uint32_t numberOfStructureBytes) :
 			StructuredBuffer(openGLRenderer)
 		{
 			#ifdef RENDERER_OPENGL_STATE_CLEANUP
@@ -6804,7 +6804,7 @@ namespace OpenGLRenderer
 		*  @param[in] numberOfStructureBytes
 		*    Number of structure bytes
 		*/
-		StructuredBufferDsa(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage, MAYBE_UNUSED uint32_t numberOfStructureBytes) :
+		StructuredBufferDsa(OpenGLRenderer& openGLRenderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage, [[maybe_unused]] uint32_t numberOfStructureBytes) :
 			StructuredBuffer(openGLRenderer)
 		{
 			if (openGLRenderer.getExtensions().isGL_ARB_direct_state_access())
@@ -7394,7 +7394,7 @@ namespace OpenGLRenderer
 	//[ Public virtual Renderer::IBufferManager methods       ]
 	//[-------------------------------------------------------]
 	public:
-		virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			// "GL_ARB_vertex_buffer_object" required
 			if (mExtensions->isGL_ARB_vertex_buffer_object())
@@ -7418,7 +7418,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::Enum indexBufferFormat = Renderer::IndexBufferFormat::UNSIGNED_SHORT) override
+		virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::Enum indexBufferFormat = Renderer::IndexBufferFormat::UNSIGNED_SHORT) override
 		{
 			// "GL_ARB_vertex_buffer_object" required
 			if (mExtensions->isGL_ARB_vertex_buffer_object())
@@ -7498,7 +7498,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::IStructuredBuffer* createStructuredBuffer(uint32_t numberOfBytes, const void* data, MAYBE_UNUSED uint32_t bufferFlags, Renderer::BufferUsage bufferUsage, uint32_t numberOfStructureBytes) override
+		virtual Renderer::IStructuredBuffer* createStructuredBuffer(uint32_t numberOfBytes, const void* data, [[maybe_unused]] uint32_t bufferFlags, Renderer::BufferUsage bufferUsage, uint32_t numberOfStructureBytes) override
 		{
 			// Sanity checks
 			RENDERER_ASSERT(getRenderer().getContext(), (numberOfBytes % numberOfStructureBytes) == 0, "The OpenGL structured buffer size must be a multiple of the given number of structure bytes")
@@ -7556,7 +7556,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t indirectBufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, [[maybe_unused]] uint32_t indirectBufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			// Sanity checks
 			RENDERER_ASSERT(getRenderer().getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_ARGUMENTS) != 0 || (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS) != 0, "Invalid OpenGL flags, indirect buffer element type specification \"DRAW_ARGUMENTS\" or \"DRAW_INDEXED_ARGUMENTS\" is missing")
@@ -10458,7 +10458,7 @@ namespace OpenGLRenderer
 	//[ Public virtual Renderer::ITextureManager methods      ]
 	//[-------------------------------------------------------]
 	public:
-		virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, OpenGL has no texture usage indication
 
@@ -10483,7 +10483,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, MAYBE_UNUSED const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
+		virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, OpenGL has no texture usage indication
 
@@ -10508,7 +10508,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, OpenGL has no texture usage indication
 
@@ -10558,7 +10558,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, OpenGL has no texture usage indication
 
@@ -11537,7 +11537,7 @@ namespace OpenGLRenderer
 		*  @param[in] useExternalContext
 		*    Indicates if an external renderer context is used; in this case the renderer itself has nothing to do with the creation/managing of an renderer context
 		*/
-		SwapChain(Renderer::IRenderPass& renderPass, Renderer::WindowHandle windowHandle, MAYBE_UNUSED bool useExternalContext) :
+		SwapChain(Renderer::IRenderPass& renderPass, Renderer::WindowHandle windowHandle, [[maybe_unused]] bool useExternalContext) :
 			ISwapChain(renderPass),
 			mNativeWindowHandle(windowHandle.nativeWindowHandle),
 			#ifdef _WIN32
@@ -14380,7 +14380,7 @@ namespace OpenGLRenderer
 			return nullptr;
 		}
 
-		virtual Renderer::IVertexShader* createVertexShaderFromSourceCode(MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderSourceCode& shaderSourceCode, MAYBE_UNUSED Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		virtual Renderer::IVertexShader* createVertexShaderFromSourceCode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// Check whether or not there's vertex shader support
 			// -> Monolithic shaders have no shader bytecode, only a monolithic program bytecode
@@ -14403,7 +14403,7 @@ namespace OpenGLRenderer
 			return nullptr;
 		}
 
-		virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, MAYBE_UNUSED Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// Check whether or not there's tessellation support
 			// -> Monolithic shaders have no shader bytecode, only a monolithic program bytecode
@@ -14426,7 +14426,7 @@ namespace OpenGLRenderer
 			return nullptr;
 		}
 
-		virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, MAYBE_UNUSED Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// Check whether or not there's tessellation support
 			// -> Monolithic shaders have no shader bytecode, only a monolithic program bytecode
@@ -14449,7 +14449,7 @@ namespace OpenGLRenderer
 			return nullptr;
 		}
 
-		virtual Renderer::IGeometryShader* createGeometryShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices, MAYBE_UNUSED Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		virtual Renderer::IGeometryShader* createGeometryShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// Check whether or not there's geometry shader support
 			// -> Monolithic shaders have no shader bytecode, only a monolithic program bytecode
@@ -14476,7 +14476,7 @@ namespace OpenGLRenderer
 			return nullptr;
 		}
 
-		virtual Renderer::IFragmentShader* createFragmentShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, MAYBE_UNUSED Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		virtual Renderer::IFragmentShader* createFragmentShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// Check whether or not there's fragment shader support
 			// -> Monolithic shaders have no shader bytecode, only a monolithic program bytecode
@@ -14499,7 +14499,7 @@ namespace OpenGLRenderer
 			return nullptr;
 		}
 
-		virtual Renderer::IComputeShader* createComputeShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, MAYBE_UNUSED Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		virtual Renderer::IComputeShader* createComputeShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// Check whether or not there's compute shader support
 			// -> Monolithic shaders have no shader bytecode, only a monolithic program bytecode
@@ -15002,7 +15002,7 @@ namespace OpenGLRenderer
 		*  @param[in] numberOfOutputVertices
 		*    Number of output vertices
 		*/
-		inline GeometryShaderSeparate(OpenGLRenderer& openGLRenderer, const Renderer::ShaderBytecode& shaderBytecode, MAYBE_UNUSED Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, MAYBE_UNUSED Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, MAYBE_UNUSED uint32_t numberOfOutputVertices) :
+		inline GeometryShaderSeparate(OpenGLRenderer& openGLRenderer, const Renderer::ShaderBytecode& shaderBytecode, [[maybe_unused]] Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices) :
 			IGeometryShader(static_cast<Renderer::IRenderer&>(openGLRenderer)),
 			mOpenGLShaderProgram(::detail::loadShaderProgramFromBytecode(openGLRenderer.getContext(), GL_GEOMETRY_SHADER_ARB, shaderBytecode))
 		{}
@@ -16538,7 +16538,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::IGraphicsProgram* createGraphicsProgram(const Renderer::IRootSignature& rootSignature, MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
+		virtual Renderer::IGraphicsProgram* createGraphicsProgram(const Renderer::IRootSignature& rootSignature, [[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
 		{
 			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(getRenderer());
 
@@ -16851,7 +16851,7 @@ namespace
 			return N;
 		}
 
-		bool mapBuffer(MAYBE_UNUSED const Renderer::Context& context, const OpenGLRenderer::Extensions& extensions, GLenum target, MAYBE_UNUSED GLenum bindingTarget, GLuint openGLBuffer, Renderer::MapType mapType, Renderer::MappedSubresource& mappedSubresource)
+		bool mapBuffer([[maybe_unused]] const Renderer::Context& context, const OpenGLRenderer::Extensions& extensions, GLenum target, [[maybe_unused]] GLenum bindingTarget, GLuint openGLBuffer, Renderer::MapType mapType, Renderer::MappedSubresource& mappedSubresource)
 		{
 			// TODO(co) This buffer update isn't efficient, use e.g. persistent buffer mapping
 
@@ -16900,7 +16900,7 @@ namespace
 			return (nullptr != mappedSubresource.data);
 		}
 
-		void unmapBuffer(const OpenGLRenderer::Extensions& extensions, GLenum target, MAYBE_UNUSED GLenum bindingTarget, GLuint openGLBuffer)
+		void unmapBuffer(const OpenGLRenderer::Extensions& extensions, GLenum target, [[maybe_unused]] GLenum bindingTarget, GLuint openGLBuffer)
 		{
 			// Is "GL_ARB_direct_state_access" there?
 			if (extensions.isGL_ARB_direct_state_access())
@@ -17510,7 +17510,7 @@ namespace OpenGLRenderer
 		}
 	}
 
-	void OpenGLRenderer::setGraphicsViewports(MAYBE_UNUSED uint32_t numberOfViewports, const Renderer::Viewport* viewports)
+	void OpenGLRenderer::setGraphicsViewports([[maybe_unused]] uint32_t numberOfViewports, const Renderer::Viewport* viewports)
 	{
 		// Rasterizer (RS) stage
 
@@ -17537,7 +17537,7 @@ namespace OpenGLRenderer
 		glDepthRange(static_cast<GLclampf>(viewports->minDepth), static_cast<GLclampf>(viewports->maxDepth));
 	}
 
-	void OpenGLRenderer::setGraphicsScissorRectangles(MAYBE_UNUSED uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles)
+	void OpenGLRenderer::setGraphicsScissorRectangles([[maybe_unused]] uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles)
 	{
 		// Rasterizer (RS) stage
 

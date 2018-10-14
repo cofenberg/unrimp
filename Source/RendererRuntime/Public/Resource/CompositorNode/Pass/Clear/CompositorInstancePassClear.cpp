@@ -45,7 +45,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::ICompositorInstancePass methods ]
 	//[-------------------------------------------------------]
-	void CompositorInstancePassClear::onFillCommandBuffer(MAYBE_UNUSED const Renderer::IRenderTarget* renderTarget, const CompositorContextData&, Renderer::CommandBuffer& commandBuffer)
+	void CompositorInstancePassClear::onFillCommandBuffer([[maybe_unused]] const Renderer::IRenderTarget* renderTarget, const CompositorContextData&, Renderer::CommandBuffer& commandBuffer)
 	{
 		// Sanity check
 		assert((nullptr != renderTarget) && "The clear compositor instance pass needs a valid render target");

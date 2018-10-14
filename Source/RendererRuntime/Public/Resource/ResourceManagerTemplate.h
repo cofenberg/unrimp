@@ -106,7 +106,7 @@ namespace RendererRuntime
 			return mResourceManager;
 		}
 
-		inline LOADER_TYPE* createResourceLoaderInstance(MAYBE_UNUSED ResourceLoaderTypeId resourceLoaderTypeId)
+		inline LOADER_TYPE* createResourceLoaderInstance([[maybe_unused]] ResourceLoaderTypeId resourceLoaderTypeId)
 		{
 			// We only support our own format
 			assert(resourceLoaderTypeId == LOADER_TYPE::TYPE_ID);

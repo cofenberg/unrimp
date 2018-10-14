@@ -4086,7 +4086,7 @@ namespace Direct3D12Renderer
 		*  @return
 		*    Direct3D 12 usage // TODO(co) Use correct Direct3D 12 type
 		*/
-		static uint32_t getDirect3D12UsageAndCPUAccessFlags(MAYBE_UNUSED Renderer::BufferUsage bufferUsage, MAYBE_UNUSED uint32_t& cpuAccessFlags)
+		static uint32_t getDirect3D12UsageAndCPUAccessFlags([[maybe_unused]] Renderer::BufferUsage bufferUsage, [[maybe_unused]] uint32_t& cpuAccessFlags)
 		{
 			// TODO(co) Direct3D 12
 			/*
@@ -4377,7 +4377,7 @@ namespace Direct3D12Renderer
 	//[ Public virtual Renderer::IRootSignature methods       ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual Renderer::IResourceGroup* createResourceGroup(MAYBE_UNUSED uint32_t rootParameterIndex, MAYBE_UNUSED uint32_t numberOfResources, MAYBE_UNUSED Renderer::IResource** resources, MAYBE_UNUSED Renderer::ISamplerState** samplerStates = nullptr) override
+		inline virtual Renderer::IResourceGroup* createResourceGroup([[maybe_unused]] uint32_t rootParameterIndex, [[maybe_unused]] uint32_t numberOfResources, [[maybe_unused]] Renderer::IResource** resources, [[maybe_unused]] Renderer::ISamplerState** samplerStates = nullptr) override
 		{
 			// TODO(co) Implement resource group
 			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 12 resource group creation isn't implemented, yet")
@@ -4463,7 +4463,7 @@ namespace Direct3D12Renderer
 		*  @param[in] indexBufferFormat
 		*    Index buffer data format
 		*/
-		IndexBuffer(Direct3D12Renderer& direct3D12Renderer, uint32_t numberOfBytes, const void* data, MAYBE_UNUSED Renderer::BufferUsage bufferUsage, Renderer::IndexBufferFormat::Enum indexBufferFormat) :
+		IndexBuffer(Direct3D12Renderer& direct3D12Renderer, uint32_t numberOfBytes, const void* data, [[maybe_unused]] Renderer::BufferUsage bufferUsage, Renderer::IndexBufferFormat::Enum indexBufferFormat) :
 			IIndexBuffer(direct3D12Renderer),
 			mD3D12Resource(nullptr)
 		{
@@ -4654,7 +4654,7 @@ namespace Direct3D12Renderer
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		VertexBuffer(Direct3D12Renderer& direct3D12Renderer, uint32_t numberOfBytes, const void* data, MAYBE_UNUSED Renderer::BufferUsage bufferUsage) :
+		VertexBuffer(Direct3D12Renderer& direct3D12Renderer, uint32_t numberOfBytes, const void* data, [[maybe_unused]] Renderer::BufferUsage bufferUsage) :
 			IVertexBuffer(direct3D12Renderer),
 			mNumberOfBytes(numberOfBytes),
 			mD3D12Resource(nullptr)
@@ -4995,7 +4995,7 @@ namespace Direct3D12Renderer
 		*  @param[in] textureFormat
 		*    Texture buffer data format
 		*/
-		TextureBuffer(Direct3D12Renderer& direct3D12Renderer, MAYBE_UNUSED uint32_t numberOfBytes, MAYBE_UNUSED const void* data, MAYBE_UNUSED Renderer::BufferUsage bufferUsage, MAYBE_UNUSED Renderer::TextureFormat::Enum textureFormat) :
+		TextureBuffer(Direct3D12Renderer& direct3D12Renderer, [[maybe_unused]] uint32_t numberOfBytes, [[maybe_unused]] const void* data, [[maybe_unused]] Renderer::BufferUsage bufferUsage, [[maybe_unused]] Renderer::TextureFormat::Enum textureFormat) :
 			ITextureBuffer(direct3D12Renderer)
 			// TODO(co) Direct3D 12 update
 		//	mD3D12Buffer(nullptr),
@@ -5193,7 +5193,7 @@ namespace Direct3D12Renderer
 		*  @param[in] numberOfStructureBytes
 		*    Number of structure bytes
 		*/
-		StructuredBuffer(Direct3D12Renderer& direct3D12Renderer, MAYBE_UNUSED uint32_t numberOfBytes, MAYBE_UNUSED const void* data, MAYBE_UNUSED Renderer::BufferUsage bufferUsage, MAYBE_UNUSED uint32_t numberOfStructureBytes) :
+		StructuredBuffer(Direct3D12Renderer& direct3D12Renderer, [[maybe_unused]] uint32_t numberOfBytes, [[maybe_unused]] const void* data, [[maybe_unused]] Renderer::BufferUsage bufferUsage, [[maybe_unused]] uint32_t numberOfStructureBytes) :
 			IStructuredBuffer(direct3D12Renderer)
 			// TODO(co) Direct3D 12 update
 		//	mD3D12Buffer(nullptr),
@@ -5392,7 +5392,7 @@ namespace Direct3D12Renderer
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		IndirectBuffer(Direct3D12Renderer& direct3D12Renderer, uint32_t numberOfBytes, const void* data, MAYBE_UNUSED uint32_t indirectBufferFlags, MAYBE_UNUSED Renderer::BufferUsage bufferUsage) :
+		IndirectBuffer(Direct3D12Renderer& direct3D12Renderer, uint32_t numberOfBytes, const void* data, [[maybe_unused]] uint32_t indirectBufferFlags, [[maybe_unused]] Renderer::BufferUsage bufferUsage) :
 			IIndirectBuffer(direct3D12Renderer),
 			mNumberOfBytes(numberOfBytes),
 			mData(nullptr)
@@ -5632,7 +5632,7 @@ namespace Direct3D12Renderer
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		UniformBuffer(Direct3D12Renderer& direct3D12Renderer, uint32_t numberOfBytes, const void* data, MAYBE_UNUSED Renderer::BufferUsage bufferUsage) :
+		UniformBuffer(Direct3D12Renderer& direct3D12Renderer, uint32_t numberOfBytes, const void* data, [[maybe_unused]] Renderer::BufferUsage bufferUsage) :
 			Renderer::IUniformBuffer(direct3D12Renderer),
 			mD3D12Resource(nullptr),
 			mD3D12DescriptorHeap(nullptr),
@@ -5835,12 +5835,12 @@ namespace Direct3D12Renderer
 	//[ Public virtual Renderer::IBufferManager methods       ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		inline virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), VertexBuffer)(static_cast<Direct3D12Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
 		}
 
-		inline virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::Enum indexBufferFormat = Renderer::IndexBufferFormat::UNSIGNED_SHORT) override
+		inline virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::Enum indexBufferFormat = Renderer::IndexBufferFormat::UNSIGNED_SHORT) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), IndexBuffer)(static_cast<Direct3D12Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage, indexBufferFormat);
 		}
@@ -5856,7 +5856,7 @@ namespace Direct3D12Renderer
 			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<Direct3D12Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage, textureFormat);
 		}
 
-		inline virtual Renderer::IStructuredBuffer* createStructuredBuffer(uint32_t numberOfBytes, const void* data, MAYBE_UNUSED uint32_t bufferFlags, Renderer::BufferUsage bufferUsage, uint32_t numberOfStructureBytes) override
+		inline virtual Renderer::IStructuredBuffer* createStructuredBuffer(uint32_t numberOfBytes, const void* data, [[maybe_unused]] uint32_t bufferFlags, Renderer::BufferUsage bufferUsage, uint32_t numberOfStructureBytes) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), StructuredBuffer)(static_cast<Direct3D12Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage, numberOfStructureBytes);
 		}
@@ -5932,7 +5932,7 @@ namespace Direct3D12Renderer
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		Texture1D(Direct3D12Renderer& direct3D12Renderer, uint32_t width, Renderer::TextureFormat::Enum textureFormat, MAYBE_UNUSED const void* data, MAYBE_UNUSED uint32_t textureFlags, MAYBE_UNUSED Renderer::TextureUsage textureUsage) :
+		Texture1D(Direct3D12Renderer& direct3D12Renderer, uint32_t width, Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data, [[maybe_unused]] uint32_t textureFlags, [[maybe_unused]] Renderer::TextureUsage textureUsage) :
 			ITexture1D(direct3D12Renderer, width),
 			mDxgiFormat(Mapping::getDirect3D12Format(textureFormat)),
 			mD3D12Resource(nullptr),
@@ -6092,7 +6092,7 @@ namespace Direct3D12Renderer
 		*  @param[in] optimizedTextureClearValue
 		*    Optional optimized texture clear value
 		*/
-		Texture2D(Direct3D12Renderer& direct3D12Renderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, MAYBE_UNUSED Renderer::TextureUsage textureUsage, uint8_t numberOfMultisamples, const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue) :
+		Texture2D(Direct3D12Renderer& direct3D12Renderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, [[maybe_unused]] Renderer::TextureUsage textureUsage, uint8_t numberOfMultisamples, const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue) :
 			ITexture2D(direct3D12Renderer, width, height),
 			mDxgiFormat(Mapping::getDirect3D12Format(textureFormat)),
 			mD3D12Resource(nullptr),
@@ -6333,7 +6333,7 @@ namespace Direct3D12Renderer
 		*  @param[in] maximumMipmapIndex
 		*    Maximum mipmap index, the least detailed mipmap, <number of mipmaps> by default
 		*/
-		inline void setMinimumMaximumMipmapIndex(MAYBE_UNUSED uint32_t minimumMipmapIndex, MAYBE_UNUSED uint32_t maximumMipmapIndex)
+		inline void setMinimumMaximumMipmapIndex([[maybe_unused]] uint32_t minimumMipmapIndex, [[maybe_unused]] uint32_t maximumMipmapIndex)
 		{
 			// TODO(co) Implement me
 		}
@@ -6430,7 +6430,7 @@ namespace Direct3D12Renderer
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		Texture2DArray(Direct3D12Renderer& direct3D12Renderer, uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, MAYBE_UNUSED const void* data, MAYBE_UNUSED uint32_t textureFlags, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) :
+		Texture2DArray(Direct3D12Renderer& direct3D12Renderer, uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data, [[maybe_unused]] uint32_t textureFlags, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) :
 			ITexture2DArray(direct3D12Renderer, width, height, numberOfSlices),
 			mDxgiFormat(Mapping::getDirect3D12Format(textureFormat)),
 			mD3D12Resource(nullptr)
@@ -6691,7 +6691,7 @@ namespace Direct3D12Renderer
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		Texture3D(Direct3D12Renderer& direct3D12Renderer, uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, MAYBE_UNUSED const void* data, MAYBE_UNUSED uint32_t textureFlags, MAYBE_UNUSED Renderer::TextureUsage textureUsage) :
+		Texture3D(Direct3D12Renderer& direct3D12Renderer, uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data, [[maybe_unused]] uint32_t textureFlags, [[maybe_unused]] Renderer::TextureUsage textureUsage) :
 			ITexture3D(direct3D12Renderer, width, height, depth),
 			mDxgiFormat(Mapping::getDirect3D12Format(textureFormat)),
 			mD3D12Resource(nullptr),
@@ -6847,7 +6847,7 @@ namespace Direct3D12Renderer
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		TextureCube(Direct3D12Renderer& direct3D12Renderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, MAYBE_UNUSED const void* data, MAYBE_UNUSED uint32_t textureFlags, MAYBE_UNUSED Renderer::TextureUsage textureUsage) :
+		TextureCube(Direct3D12Renderer& direct3D12Renderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data, [[maybe_unused]] uint32_t textureFlags, [[maybe_unused]] Renderer::TextureUsage textureUsage) :
 			ITextureCube(direct3D12Renderer, width, height),
 			mDxgiFormat(Mapping::getDirect3D12Format(textureFormat)),
 			mD3D12Resource(nullptr),
@@ -7854,7 +7854,7 @@ namespace Direct3D12Renderer
 			}
 		}
 
-		inline virtual void setRenderWindow(MAYBE_UNUSED Renderer::IRenderWindow* renderWindow) override
+		inline virtual void setRenderWindow([[maybe_unused]] Renderer::IRenderWindow* renderWindow) override
 		{
 			// TODO(sw) implement me
 		}
@@ -9591,13 +9591,13 @@ namespace Direct3D12Renderer
 			return ::detail::HLSL_NAME;
 		}
 
-		inline virtual Renderer::IVertexShader* createVertexShaderFromBytecode(MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderBytecode& shaderBytecode) override
+		inline virtual Renderer::IVertexShader* createVertexShaderFromBytecode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			// There's no need to check for "Renderer::Capabilities::vertexShader", we know there's vertex shader support
 			return RENDERER_NEW(getRenderer().getContext(), VertexShaderHlsl)(static_cast<Direct3D12Renderer&>(getRenderer()), shaderBytecode);
 		}
 
-		inline virtual Renderer::IVertexShader* createVertexShaderFromSourceCode(MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		inline virtual Renderer::IVertexShader* createVertexShaderFromSourceCode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// There's no need to check for "Renderer::Capabilities::vertexShader", we know there's vertex shader support
 			return RENDERER_NEW(getRenderer().getContext(), VertexShaderHlsl)(static_cast<Direct3D12Renderer&>(getRenderer()), shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode);
@@ -9635,7 +9635,7 @@ namespace Direct3D12Renderer
 			return RENDERER_NEW(getRenderer().getContext(), TessellationEvaluationShaderHlsl)(static_cast<Direct3D12Renderer&>(getRenderer()), shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode);
 		}
 
-		inline virtual Renderer::IGeometryShader* createGeometryShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode, MAYBE_UNUSED Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, MAYBE_UNUSED Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, MAYBE_UNUSED uint32_t numberOfOutputVertices) override
+		inline virtual Renderer::IGeometryShader* createGeometryShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode, [[maybe_unused]] Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices) override
 		{
 			// There's no need to check for "Renderer::Capabilities::maximumNumberOfGsOutputVertices", we know there's geometry shader support
 			// Ignore "gsInputPrimitiveTopology", it's directly set within HLSL
@@ -9644,7 +9644,7 @@ namespace Direct3D12Renderer
 			return RENDERER_NEW(getRenderer().getContext(), GeometryShaderHlsl)(static_cast<Direct3D12Renderer&>(getRenderer()), shaderBytecode);
 		}
 
-		inline virtual Renderer::IGeometryShader* createGeometryShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, MAYBE_UNUSED Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, MAYBE_UNUSED Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, MAYBE_UNUSED uint32_t numberOfOutputVertices, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		inline virtual Renderer::IGeometryShader* createGeometryShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// There's no need to check for "Renderer::Capabilities::maximumNumberOfGsOutputVertices", we know there's geometry shader support
 			// Ignore "gsInputPrimitiveTopology", it's directly set within HLSL
@@ -9677,7 +9677,7 @@ namespace Direct3D12Renderer
 			return RENDERER_NEW(getRenderer().getContext(), ComputeShaderHlsl)(static_cast<Direct3D12Renderer&>(getRenderer()), shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode);
 		}
 
-		virtual Renderer::IGraphicsProgram* createGraphicsProgram(MAYBE_UNUSED const Renderer::IRootSignature& rootSignature, MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
+		virtual Renderer::IGraphicsProgram* createGraphicsProgram([[maybe_unused]] const Renderer::IRootSignature& rootSignature, [[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
 		{
 			// Sanity checks
 			// -> A shader can be a null pointer, but if it's not the shader and graphics program language must match!

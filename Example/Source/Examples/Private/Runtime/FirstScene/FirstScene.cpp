@@ -641,7 +641,7 @@ void FirstScene::createCompositorWorkspace()
 	}
 }
 
-void FirstScene::createDebugGui(MAYBE_UNUSED Renderer::IRenderTarget& mainRenderTarget)
+void FirstScene::createDebugGui([[maybe_unused]] Renderer::IRenderTarget& mainRenderTarget)
 {
 	#ifdef RENDERER_RUNTIME_IMGUI
 		RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();

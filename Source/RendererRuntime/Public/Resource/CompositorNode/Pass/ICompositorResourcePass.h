@@ -127,7 +127,7 @@ namespace RendererRuntime
 	public:
 		virtual CompositorPassTypeId getTypeId() const = 0;
 
-		inline virtual void deserialize(MAYBE_UNUSED uint32_t numberOfBytes, const uint8_t* data)
+		inline virtual void deserialize([[maybe_unused]] uint32_t numberOfBytes, const uint8_t* data)
 		{
 			// Keep this in sync with "RendererRuntime::v1CompositorNode::Pass"
 			// -> Don't include "RendererRuntime/Resource/CompositorNode/Loader/CompositorNodeFileFormat.h" here to keep the header complexity low (compile times matter)
@@ -173,7 +173,7 @@ namespace RendererRuntime
 		*  @return
 		*    "true" if this compositor resource pass has a render queue range defined, else "false"
 		*/
-		inline virtual bool getRenderQueueIndexRange(MAYBE_UNUSED uint8_t& minimumRenderQueueIndex, MAYBE_UNUSED uint8_t& maximumRenderQueueIndex) const
+		inline virtual bool getRenderQueueIndexRange([[maybe_unused]] uint8_t& minimumRenderQueueIndex, [[maybe_unused]] uint8_t& maximumRenderQueueIndex) const
 		{
 			// This compositor resource pass has no render queue range defined
 			return false;

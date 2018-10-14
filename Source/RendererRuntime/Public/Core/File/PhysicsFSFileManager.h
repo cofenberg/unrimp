@@ -153,7 +153,7 @@ namespace
 			{
 				if (nullptr != mPhysicsFSFile)
 				{
-					MAYBE_UNUSED const int result = PHYSFS_close(mPhysicsFSFile);
+					[[maybe_unused]] const int result = PHYSFS_close(mPhysicsFSFile);
 					assert((0 != result) && "Failed to close read PhysicsFS file");
 				}
 			}
@@ -186,7 +186,7 @@ namespace
 				assert((nullptr != destinationBuffer) && "Letting a file read into a null destination buffer is not allowed");
 				assert((0 != numberOfBytes) && "Letting a file read zero bytes is not allowed");
 				assert((nullptr != mPhysicsFSFile) && "Invalid PhysicsFS file access");
-				MAYBE_UNUSED const PHYSFS_sint64 numberOfReadBytes = PHYSFS_readBytes(mPhysicsFSFile, destinationBuffer, numberOfBytes);
+				[[maybe_unused]] const PHYSFS_sint64 numberOfReadBytes = PHYSFS_readBytes(mPhysicsFSFile, destinationBuffer, numberOfBytes);
 				assert((static_cast<size_t>(numberOfReadBytes) == numberOfBytes) && "PhysicsFS failed to read all requested bytes");	// We're restrictive by intent
 			}
 
@@ -196,11 +196,11 @@ namespace
 				assert((nullptr != mPhysicsFSFile) && "Invalid PhysicsFS file access");
 				const PHYSFS_sint64 currentOffset = PHYSFS_tell(mPhysicsFSFile);
 				assert((-1 != currentOffset) && "PhysicsFS failed to retrieve the current file offset");
-				MAYBE_UNUSED const int result = PHYSFS_seek(mPhysicsFSFile, static_cast<PHYSFS_uint64>(currentOffset + numberOfBytes));
+				[[maybe_unused]] const int result = PHYSFS_seek(mPhysicsFSFile, static_cast<PHYSFS_uint64>(currentOffset + numberOfBytes));
 				assert((0 != result) && "PhysicsFS failed seek file");
 			}
 
-			inline virtual void write(MAYBE_UNUSED const void* sourceBuffer, MAYBE_UNUSED size_t numberOfBytes) override
+			inline virtual void write([[maybe_unused]] const void* sourceBuffer, [[maybe_unused]] size_t numberOfBytes) override
 			{
 				assert((nullptr != sourceBuffer) && "Letting a file write from a null source buffer is not allowed");
 				assert((0 != numberOfBytes) && "Letting a file write zero bytes is not allowed");
@@ -244,7 +244,7 @@ namespace
 			{
 				if (nullptr != mPhysicsFSFile)
 				{
-					MAYBE_UNUSED const int result = PHYSFS_close(mPhysicsFSFile);
+					[[maybe_unused]] const int result = PHYSFS_close(mPhysicsFSFile);
 					assert((0 != result) && "Failed to close written PhysicsFS file");
 				}
 			}
@@ -286,7 +286,7 @@ namespace
 			inline virtual void write(const void* sourceBuffer, size_t numberOfBytes) override
 			{
 				assert((nullptr != mPhysicsFSFile) && "Invalid PhysicsFS file access");
-				MAYBE_UNUSED const PHYSFS_sint64 numberOfWrittenBytes = PHYSFS_writeBytes(mPhysicsFSFile, sourceBuffer, numberOfBytes);
+				[[maybe_unused]] const PHYSFS_sint64 numberOfWrittenBytes = PHYSFS_writeBytes(mPhysicsFSFile, sourceBuffer, numberOfBytes);
 				assert((static_cast<size_t>(numberOfWrittenBytes) == numberOfBytes) && "PhysicsFS failed to write all requested bytes");	// We're restrictive by intent
 			}
 

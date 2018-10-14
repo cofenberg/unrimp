@@ -2778,7 +2778,7 @@ namespace VulkanRenderer
 		*  @return
 		*    Vulkan magnification filter mode
 		*/
-		static VkFilter getVulkanMagFilterMode(MAYBE_UNUSED const Renderer::Context& context, Renderer::FilterMode filterMode)
+		static VkFilter getVulkanMagFilterMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode)
 		{
 			switch (filterMode)
 			{
@@ -2857,7 +2857,7 @@ namespace VulkanRenderer
 		*  @return
 		*    Vulkan minification filter mode
 		*/
-		static VkFilter getVulkanMinFilterMode(MAYBE_UNUSED const Renderer::Context& context, Renderer::FilterMode filterMode)
+		static VkFilter getVulkanMinFilterMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode)
 		{
 			switch (filterMode)
 			{
@@ -2936,7 +2936,7 @@ namespace VulkanRenderer
 		*  @return
 		*    Vulkan sampler mipmap mode
 		*/
-		static VkSamplerMipmapMode getVulkanMipmapMode(MAYBE_UNUSED const Renderer::Context& context, Renderer::FilterMode filterMode)
+		static VkSamplerMipmapMode getVulkanMipmapMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode)
 		{
 			switch (filterMode)
 			{
@@ -3166,7 +3166,7 @@ namespace VulkanRenderer
 		*  @return
 		*    Vulkan index type
 		*/
-		static VkIndexType getVulkanType(MAYBE_UNUSED const Renderer::Context& context, Renderer::IndexBufferFormat::Enum indexBufferFormat)
+		static VkIndexType getVulkanType([[maybe_unused]] const Renderer::Context& context, Renderer::IndexBufferFormat::Enum indexBufferFormat)
 		{
 			RENDERER_ASSERT(context, Renderer::IndexBufferFormat::UNSIGNED_CHAR != indexBufferFormat, "One byte per element index buffer format isn't supported by Vulkan")
 			static constexpr VkIndexType MAPPING[] =
@@ -3270,7 +3270,7 @@ namespace VulkanRenderer
 		*  @return
 		*    Vulkan sample count flag bits
 		*/
-		static VkSampleCountFlagBits getVulkanSampleCountFlagBits(MAYBE_UNUSED const Renderer::Context& context, uint8_t numberOfMultisamples)
+		static VkSampleCountFlagBits getVulkanSampleCountFlagBits([[maybe_unused]] const Renderer::Context& context, uint8_t numberOfMultisamples)
 		{
 			RENDERER_ASSERT(context, numberOfMultisamples <= 8, "Invalid number of Vulkan multisamples")
 			static constexpr VkSampleCountFlagBits MAPPING[] =
@@ -4542,7 +4542,7 @@ namespace VulkanRenderer
 		*  @param[in] indexBufferFormat
 		*    Index buffer data format
 		*/
-		IndexBuffer(VulkanRenderer& vulkanRenderer, uint32_t numberOfBytes, const void* data, uint32_t bufferFlags, MAYBE_UNUSED Renderer::BufferUsage bufferUsage, Renderer::IndexBufferFormat::Enum indexBufferFormat) :
+		IndexBuffer(VulkanRenderer& vulkanRenderer, uint32_t numberOfBytes, const void* data, uint32_t bufferFlags, [[maybe_unused]] Renderer::BufferUsage bufferUsage, Renderer::IndexBufferFormat::Enum indexBufferFormat) :
 			IIndexBuffer(vulkanRenderer),
 			mVkIndexType(Mapping::getVulkanType(vulkanRenderer.getContext(), indexBufferFormat)),
 			mVkBuffer(VK_NULL_HANDLE),
@@ -4672,7 +4672,7 @@ namespace VulkanRenderer
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		VertexBuffer(VulkanRenderer& vulkanRenderer, uint32_t numberOfBytes, const void* data, uint32_t bufferFlags, MAYBE_UNUSED Renderer::BufferUsage bufferUsage) :
+		VertexBuffer(VulkanRenderer& vulkanRenderer, uint32_t numberOfBytes, const void* data, uint32_t bufferFlags, [[maybe_unused]] Renderer::BufferUsage bufferUsage) :
 			IVertexBuffer(vulkanRenderer),
 			mVkBuffer(VK_NULL_HANDLE),
 			mVkDeviceMemory(VK_NULL_HANDLE)
@@ -4983,7 +4983,7 @@ namespace VulkanRenderer
 		*  @param[in] textureFormat
 		*    Texture buffer data format
 		*/
-		TextureBuffer(VulkanRenderer& vulkanRenderer, uint32_t numberOfBytes, const void* data, uint32_t bufferFlags, MAYBE_UNUSED Renderer::BufferUsage bufferUsage, Renderer::TextureFormat::Enum textureFormat) :
+		TextureBuffer(VulkanRenderer& vulkanRenderer, uint32_t numberOfBytes, const void* data, uint32_t bufferFlags, [[maybe_unused]] Renderer::BufferUsage bufferUsage, Renderer::TextureFormat::Enum textureFormat) :
 			ITextureBuffer(vulkanRenderer),
 			mVkBuffer(VK_NULL_HANDLE),
 			mVkDeviceMemory(VK_NULL_HANDLE),
@@ -5158,7 +5158,7 @@ namespace VulkanRenderer
 		*  @param[in] numberOfStructureBytes
 		*    Number of structure bytes
 		*/
-		StructuredBuffer(VulkanRenderer& vulkanRenderer, uint32_t numberOfBytes, const void* data, MAYBE_UNUSED Renderer::BufferUsage bufferUsage, MAYBE_UNUSED uint32_t numberOfStructureBytes) :
+		StructuredBuffer(VulkanRenderer& vulkanRenderer, uint32_t numberOfBytes, const void* data, [[maybe_unused]] Renderer::BufferUsage bufferUsage, [[maybe_unused]] uint32_t numberOfStructureBytes) :
 			IStructuredBuffer(vulkanRenderer),
 			mVkBuffer(VK_NULL_HANDLE),
 			mVkDeviceMemory(VK_NULL_HANDLE)
@@ -5284,7 +5284,7 @@ namespace VulkanRenderer
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		IndirectBuffer(VulkanRenderer& vulkanRenderer, uint32_t numberOfBytes, const void* data, uint32_t indirectBufferFlags, MAYBE_UNUSED Renderer::BufferUsage bufferUsage) :
+		IndirectBuffer(VulkanRenderer& vulkanRenderer, uint32_t numberOfBytes, const void* data, uint32_t indirectBufferFlags, [[maybe_unused]] Renderer::BufferUsage bufferUsage) :
 			IIndirectBuffer(vulkanRenderer),
 			mVkBuffer(VK_NULL_HANDLE),
 			mVkDeviceMemory(VK_NULL_HANDLE)
@@ -5415,7 +5415,7 @@ namespace VulkanRenderer
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		UniformBuffer(VulkanRenderer& vulkanRenderer, uint32_t numberOfBytes, const void* data, MAYBE_UNUSED Renderer::BufferUsage bufferUsage) :
+		UniformBuffer(VulkanRenderer& vulkanRenderer, uint32_t numberOfBytes, const void* data, [[maybe_unused]] Renderer::BufferUsage bufferUsage) :
 			IUniformBuffer(vulkanRenderer),
 			mVkBuffer(VK_NULL_HANDLE),
 			mVkDeviceMemory(VK_NULL_HANDLE)
@@ -5554,7 +5554,7 @@ namespace VulkanRenderer
 			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, data, bufferFlags, bufferUsage, textureFormat);
 		}
 
-		inline virtual Renderer::IStructuredBuffer* createStructuredBuffer(uint32_t numberOfBytes, const void* data, MAYBE_UNUSED uint32_t bufferFlags, Renderer::BufferUsage bufferUsage, uint32_t numberOfStructureBytes) override
+		inline virtual Renderer::IStructuredBuffer* createStructuredBuffer(uint32_t numberOfBytes, const void* data, [[maybe_unused]] uint32_t bufferFlags, Renderer::BufferUsage bufferUsage, uint32_t numberOfStructureBytes) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), StructuredBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, data, bufferUsage, numberOfStructureBytes);
 		}
@@ -5849,7 +5849,7 @@ namespace VulkanRenderer
 		*  @param[in] maximumMipmapIndex
 		*    Maximum mipmap index, the least detailed mipmap, <number of mipmaps> by default
 		*/
-		inline void setMinimumMaximumMipmapIndex(MAYBE_UNUSED uint32_t minimumMipmapIndex, MAYBE_UNUSED uint32_t maximumMipmapIndex)
+		inline void setMinimumMaximumMipmapIndex([[maybe_unused]] uint32_t minimumMipmapIndex, [[maybe_unused]] uint32_t maximumMipmapIndex)
 		{
 			// TODO(co) Implement me
 		}
@@ -6322,7 +6322,7 @@ namespace VulkanRenderer
 	//[ Public virtual Renderer::ITextureManager methods      ]
 	//[-------------------------------------------------------]
 	public:
-		virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, Vulkan has no texture usage indication
 
@@ -6337,7 +6337,7 @@ namespace VulkanRenderer
 			}
 		}
 
-		virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, MAYBE_UNUSED const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
+		virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, Vulkan has no texture usage indication
 
@@ -6352,7 +6352,7 @@ namespace VulkanRenderer
 			}
 		}
 
-		virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, Vulkan has no texture usage indication
 
@@ -6367,7 +6367,7 @@ namespace VulkanRenderer
 			}
 		}
 
-		virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, Vulkan has no texture usage indication
 
@@ -6382,7 +6382,7 @@ namespace VulkanRenderer
 			}
 		}
 
-		virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, Vulkan has no texture usage indication
 
@@ -8237,7 +8237,7 @@ namespace VulkanRenderer
 		*    Number of output vertices
 		*/
 		// TODO(co) Remove unused parameters
-		GeometryShaderGlsl(VulkanRenderer& vulkanRenderer, const Renderer::ShaderBytecode& shaderBytecode, MAYBE_UNUSED Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, MAYBE_UNUSED Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, MAYBE_UNUSED uint32_t numberOfOutputVertices) :
+		GeometryShaderGlsl(VulkanRenderer& vulkanRenderer, const Renderer::ShaderBytecode& shaderBytecode, [[maybe_unused]] Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices) :
 			IGeometryShader(vulkanRenderer),
 			mVkShaderModule(::detail::createVkShaderModuleFromBytecode(vulkanRenderer.getContext(), vulkanRenderer.getVkAllocationCallbacks(), vulkanRenderer.getVulkanContext().getVkDevice(), shaderBytecode))
 		{
@@ -8260,7 +8260,7 @@ namespace VulkanRenderer
 		*    Number of output vertices
 		*/
 		// TODO(co) Remove unused parameters
-		GeometryShaderGlsl(VulkanRenderer& vulkanRenderer, const char* sourceCode, MAYBE_UNUSED Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, MAYBE_UNUSED Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, MAYBE_UNUSED uint32_t numberOfOutputVertices, Renderer::ShaderBytecode* shaderBytecode = nullptr) :
+		GeometryShaderGlsl(VulkanRenderer& vulkanRenderer, const char* sourceCode, [[maybe_unused]] Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices, Renderer::ShaderBytecode* shaderBytecode = nullptr) :
 			IGeometryShader(vulkanRenderer),
 			mVkShaderModule(::detail::createVkShaderModuleFromSourceCode(vulkanRenderer.getContext(), vulkanRenderer.getVkAllocationCallbacks(), vulkanRenderer.getVulkanContext().getVkDevice(), VK_SHADER_STAGE_GEOMETRY_BIT, sourceCode, shaderBytecode))
 		{
@@ -8620,7 +8620,7 @@ namespace VulkanRenderer
 		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
 		*/
 		// TODO(co) Remove unused parameters
-		GraphicsProgramGlsl(VulkanRenderer& vulkanRenderer, MAYBE_UNUSED const Renderer::IRootSignature& rootSignature, MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, VertexShaderGlsl *vertexShaderGlsl, TessellationControlShaderGlsl *tessellationControlShaderGlsl, TessellationEvaluationShaderGlsl *tessellationEvaluationShaderGlsl, GeometryShaderGlsl *geometryShaderGlsl, FragmentShaderGlsl *fragmentShaderGlsl) :
+		GraphicsProgramGlsl(VulkanRenderer& vulkanRenderer, [[maybe_unused]] const Renderer::IRootSignature& rootSignature, [[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, VertexShaderGlsl *vertexShaderGlsl, TessellationControlShaderGlsl *tessellationControlShaderGlsl, TessellationEvaluationShaderGlsl *tessellationEvaluationShaderGlsl, GeometryShaderGlsl *geometryShaderGlsl, FragmentShaderGlsl *fragmentShaderGlsl) :
 			IGraphicsProgram(vulkanRenderer),
 			mVertexShaderGlsl(vertexShaderGlsl),
 			mTessellationControlShaderGlsl(tessellationControlShaderGlsl),
@@ -8830,12 +8830,12 @@ namespace VulkanRenderer
 			return ::detail::GLSL_NAME;
 		}
 
-		inline virtual Renderer::IVertexShader* createVertexShaderFromBytecode(MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderBytecode& shaderBytecode) override
+		inline virtual Renderer::IVertexShader* createVertexShaderFromBytecode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), VertexShaderGlsl)(static_cast<VulkanRenderer&>(getRenderer()), shaderBytecode);
 		}
 
-		inline virtual Renderer::IVertexShader* createVertexShaderFromSourceCode(MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		inline virtual Renderer::IVertexShader* createVertexShaderFromSourceCode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), VertexShaderGlsl)(static_cast<VulkanRenderer&>(getRenderer()), shaderSourceCode.sourceCode, shaderBytecode);
 		}
@@ -9587,7 +9587,7 @@ namespace VulkanRenderer
 
 					case Renderer::ResourceType::STRUCTURED_BUFFER:
 					{
-						MAYBE_UNUSED const Renderer::DescriptorRange& descriptorRange = reinterpret_cast<const Renderer::DescriptorRange*>(rootSignature.getRootSignature().parameters[rootParameterIndex].descriptorTable.descriptorRanges)[resourceIndex];
+						[[maybe_unused]] const Renderer::DescriptorRange& descriptorRange = reinterpret_cast<const Renderer::DescriptorRange*>(rootSignature.getRootSignature().parameters[rootParameterIndex].descriptorTable.descriptorRanges)[resourceIndex];
 						RENDERER_ASSERT(vulkanRenderer.getContext(), Renderer::DescriptorRangeType::SRV == descriptorRange.rangeType || Renderer::DescriptorRangeType::UAV == descriptorRange.rangeType, "Vulkan structured buffer must bound at SRV or UAV descriptor range type")
 						const VkDescriptorBufferInfo vkDescriptorBufferInfo =
 						{
@@ -10465,7 +10465,7 @@ namespace VulkanRenderer
 		}
 	}
 
-	void VulkanRenderer::setGraphicsViewports(MAYBE_UNUSED uint32_t numberOfViewports, const Renderer::Viewport* viewports)
+	void VulkanRenderer::setGraphicsViewports([[maybe_unused]] uint32_t numberOfViewports, const Renderer::Viewport* viewports)
 	{
 		// Rasterizer (RS) stage
 
@@ -10482,7 +10482,7 @@ namespace VulkanRenderer
 		vkCmdSetViewport(getVulkanContext().getVkCommandBuffer(), 0, 1, &vkViewport);
 	}
 
-	void VulkanRenderer::setGraphicsScissorRectangles(MAYBE_UNUSED uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles)
+	void VulkanRenderer::setGraphicsScissorRectangles([[maybe_unused]] uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles)
 	{
 		// Rasterizer (RS) stage
 

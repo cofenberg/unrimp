@@ -187,7 +187,7 @@ namespace
 				assert((nullptr != destinationBuffer) && "Letting a file read into a null destination buffer is not allowed");
 				assert((0 != numberOfBytes) && "Letting a file read zero bytes is not allowed");
 				assert((nullptr != mAAsset) && "Invalid Android file access");
-				MAYBE_UNUSED const int numberOfReadBytes = AAsset_read(mAAsset, destinationBuffer, numberOfBytes);
+				[[maybe_unused]] const int numberOfReadBytes = AAsset_read(mAAsset, destinationBuffer, numberOfBytes);
 				assert((numberOfReadBytes == numberOfBytes) && "Failed to read the requested number of bytes from the Android file");
 			}
 
@@ -196,14 +196,14 @@ namespace
 				assert((0 != numberOfBytes) && "Letting a file skip zero bytes is not allowed");
 				assert((nullptr != mAAsset) && "Invalid Android file access");
 				#ifdef ARCHITECTURE_X64
-					MAYBE_UNUSED const off64_t newPosition = AAsset_seek64(mAAsset, numberOfBytes, SEEK_CUR);
+					[[maybe_unused]] const off64_t newPosition = AAsset_seek64(mAAsset, numberOfBytes, SEEK_CUR);
 				#else
-					MAYBE_UNUSED const off_t newPosition = AAsset_seek(mAAsset, numberOfBytes, SEEK_CUR);
+					[[maybe_unused]] const off_t newPosition = AAsset_seek(mAAsset, numberOfBytes, SEEK_CUR);
 				#endif
 				assert((-1 != newPosition) && "Failed to skip the requested number of bytes from the Android file");
 			}
 
-			inline virtual void write(MAYBE_UNUSED const void* sourceBuffer, MAYBE_UNUSED size_t numberOfBytes) override
+			inline virtual void write([[maybe_unused]] const void* sourceBuffer, [[maybe_unused]] size_t numberOfBytes) override
 			{
 				assert((nullptr != sourceBuffer) && "Letting a file write from a null source buffer is not allowed");
 				assert((0 != numberOfBytes) && "Letting a file write zero bytes is not allowed");
@@ -426,7 +426,7 @@ namespace RendererRuntime
 			return fileSize;
 		}
 
-		inline virtual bool createDirectories(MAYBE_UNUSED VirtualDirectoryName virtualDirectoryName) const override
+		inline virtual bool createDirectories([[maybe_unused]] VirtualDirectoryName virtualDirectoryName) const override
 		{
 			// Sanity check
 			assert(nullptr != virtualDirectoryName);

@@ -1025,17 +1025,17 @@ namespace NullRenderer
 	//[ Public virtual Renderer::IBufferManager methods       ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual Renderer::IVertexBuffer* createVertexBuffer(MAYBE_UNUSED uint32_t numberOfBytes, MAYBE_UNUSED const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		inline virtual Renderer::IVertexBuffer* createVertexBuffer([[maybe_unused]] uint32_t numberOfBytes, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, [[maybe_unused]] Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), VertexBuffer)(static_cast<NullRenderer&>(getRenderer()));
 		}
 
-		inline virtual Renderer::IIndexBuffer* createIndexBuffer(MAYBE_UNUSED uint32_t numberOfBytes, MAYBE_UNUSED const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, MAYBE_UNUSED Renderer::IndexBufferFormat::Enum indexBufferFormat = Renderer::IndexBufferFormat::UNSIGNED_SHORT) override
+		inline virtual Renderer::IIndexBuffer* createIndexBuffer([[maybe_unused]] uint32_t numberOfBytes, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, [[maybe_unused]] Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, [[maybe_unused]] Renderer::IndexBufferFormat::Enum indexBufferFormat = Renderer::IndexBufferFormat::UNSIGNED_SHORT) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), IndexBuffer)(static_cast<NullRenderer&>(getRenderer()));
 		}
 
-		virtual Renderer::IVertexArray* createVertexArray(MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Renderer::VertexArrayVertexBuffer* vertexBuffers, Renderer::IIndexBuffer* indexBuffer = nullptr) override
+		virtual Renderer::IVertexArray* createVertexArray([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Renderer::VertexArrayVertexBuffer* vertexBuffers, Renderer::IIndexBuffer* indexBuffer = nullptr) override
 		{
 			// We don't keep a reference to the vertex buffers used by the vertex array attributes in here
 			// -> Ensure a correct reference counter behaviour
@@ -1058,7 +1058,7 @@ namespace NullRenderer
 			return RENDERER_NEW(getRenderer().getContext(), VertexArray)(static_cast<NullRenderer&>(getRenderer()));
 		}
 
-		inline virtual Renderer::ITextureBuffer* createTextureBuffer(MAYBE_UNUSED uint32_t numberOfBytes, MAYBE_UNUSED const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = Renderer::BufferFlag::SHADER_RESOURCE, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, MAYBE_UNUSED Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F) override
+		inline virtual Renderer::ITextureBuffer* createTextureBuffer([[maybe_unused]] uint32_t numberOfBytes, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = Renderer::BufferFlag::SHADER_RESOURCE, [[maybe_unused]] Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, [[maybe_unused]] Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F) override
 		{
 			// Sanity check
 			RENDERER_ASSERT(getRenderer().getContext(), (numberOfBytes % Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat)) == 0, "The null texture buffer size must be a multiple of the selected texture format bytes per texel")
@@ -1067,7 +1067,7 @@ namespace NullRenderer
 			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<NullRenderer&>(getRenderer()));
 		}
 
-		inline virtual Renderer::IStructuredBuffer* createStructuredBuffer(MAYBE_UNUSED uint32_t numberOfBytes, MAYBE_UNUSED const void* data, MAYBE_UNUSED uint32_t bufferFlags, MAYBE_UNUSED Renderer::BufferUsage bufferUsage, MAYBE_UNUSED uint32_t numberOfStructureBytes) override
+		inline virtual Renderer::IStructuredBuffer* createStructuredBuffer([[maybe_unused]] uint32_t numberOfBytes, [[maybe_unused]] const void* data, [[maybe_unused]] uint32_t bufferFlags, [[maybe_unused]] Renderer::BufferUsage bufferUsage, [[maybe_unused]] uint32_t numberOfStructureBytes) override
 		{
 			// Sanity checks
 			RENDERER_ASSERT(getRenderer().getContext(), (numberOfBytes % numberOfStructureBytes) == 0, "The null structured buffer size must be a multiple of the given number of structure bytes")
@@ -1077,7 +1077,7 @@ namespace NullRenderer
 			return RENDERER_NEW(getRenderer().getContext(), StructuredBuffer)(static_cast<NullRenderer&>(getRenderer()));
 		}
 
-		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(MAYBE_UNUSED uint32_t numberOfBytes, MAYBE_UNUSED const void* data = nullptr, MAYBE_UNUSED uint32_t indirectBufferFlags = 0, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer([[maybe_unused]] uint32_t numberOfBytes, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t indirectBufferFlags = 0, [[maybe_unused]] Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			// Sanity checks
 			RENDERER_ASSERT(getRenderer().getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_ARGUMENTS) != 0 || (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS) != 0, "Invalid null flags, indirect buffer element type specification \"DRAW_ARGUMENTS\" or \"DRAW_INDEXED_ARGUMENTS\" is missing")
@@ -1089,7 +1089,7 @@ namespace NullRenderer
 			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<NullRenderer&>(getRenderer()));
 		}
 
-		inline virtual Renderer::IUniformBuffer* createUniformBuffer(MAYBE_UNUSED uint32_t numberOfBytes, MAYBE_UNUSED const void* data = nullptr, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		inline virtual Renderer::IUniformBuffer* createUniformBuffer([[maybe_unused]] uint32_t numberOfBytes, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			// Don't remove this reminder comment block: There are no buffer flags by intent since an uniform buffer can't be used for unordered access and as a consequence an uniform buffer must always used as shader resource to not be pointless
 			// RENDERER_ASSERT(getRenderer().getContext(), (bufferFlags & Renderer::BufferFlag::UNORDERED_ACCESS) == 0, "Invalid null buffer flags, uniform buffer can't be used for unordered access")
@@ -1468,7 +1468,7 @@ namespace NullRenderer
 	//[ Public virtual Renderer::ITextureManager methods      ]
 	//[-------------------------------------------------------]
 	public:
-		virtual Renderer::ITexture1D* createTexture1D(uint32_t width, MAYBE_UNUSED Renderer::TextureFormat::Enum textureFormat, MAYBE_UNUSED const void* data = nullptr, MAYBE_UNUSED uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture1D* createTexture1D(uint32_t width, [[maybe_unused]] Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0)
@@ -1481,7 +1481,7 @@ namespace NullRenderer
 			}
 		}
 
-		virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, MAYBE_UNUSED Renderer::TextureFormat::Enum textureFormat, MAYBE_UNUSED const void* data = nullptr, MAYBE_UNUSED uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, MAYBE_UNUSED uint8_t numberOfMultisamples = 1, MAYBE_UNUSED const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
+		virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, [[maybe_unused]] Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, [[maybe_unused]] uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0)
@@ -1494,7 +1494,7 @@ namespace NullRenderer
 			}
 		}
 
-		virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, MAYBE_UNUSED Renderer::TextureFormat::Enum textureFormat, MAYBE_UNUSED const void* data = nullptr, MAYBE_UNUSED uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, [[maybe_unused]] Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0 && numberOfSlices > 0)
@@ -1507,7 +1507,7 @@ namespace NullRenderer
 			}
 		}
 
-		virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, MAYBE_UNUSED Renderer::TextureFormat::Enum textureFormat, MAYBE_UNUSED const void* data = nullptr, MAYBE_UNUSED uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, [[maybe_unused]] Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0 && depth > 0)
@@ -1520,7 +1520,7 @@ namespace NullRenderer
 			}
 		}
 
-		virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, MAYBE_UNUSED Renderer::TextureFormat::Enum textureFormat, MAYBE_UNUSED const void* data = nullptr, MAYBE_UNUSED uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, [[maybe_unused]] Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0)
@@ -2496,79 +2496,79 @@ namespace NullRenderer
 			return ::detail::NULL_NAME;
 		}
 
-		inline virtual Renderer::IVertexShader* createVertexShaderFromBytecode(MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, MAYBE_UNUSED const Renderer::ShaderBytecode& shaderBytecode) override
+		inline virtual Renderer::IVertexShader* createVertexShaderFromBytecode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, [[maybe_unused]] const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			// There's no need to check for "Renderer::Capabilities::vertexShader", we know there's vertex shader support
 			return RENDERER_NEW(getRenderer().getContext(), VertexShader)(static_cast<NullRenderer&>(getRenderer()));
 		}
 
-		inline virtual Renderer::IVertexShader* createVertexShaderFromSourceCode(MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, MAYBE_UNUSED const Renderer::ShaderSourceCode& shaderSourceCode, MAYBE_UNUSED Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		inline virtual Renderer::IVertexShader* createVertexShaderFromSourceCode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, [[maybe_unused]] const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// There's no need to check for "Renderer::Capabilities::vertexShader", we know there's vertex shader support
 			return RENDERER_NEW(getRenderer().getContext(), VertexShader)(static_cast<NullRenderer&>(getRenderer()));
 		}
 
-		inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromBytecode(MAYBE_UNUSED const Renderer::ShaderBytecode& shaderBytecode) override
+		inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromBytecode([[maybe_unused]] const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			// There's no need to check for "Renderer::Capabilities::maximumNumberOfPatchVertices", we know there's tessellation control shader support
 			return RENDERER_NEW(getRenderer().getContext(), TessellationControlShader)(static_cast<NullRenderer&>(getRenderer()));
 		}
 
-		inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromSourceCode(MAYBE_UNUSED const Renderer::ShaderSourceCode& shaderSourceCode, MAYBE_UNUSED Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromSourceCode([[maybe_unused]] const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// There's no need to check for "Renderer::Capabilities::maximumNumberOfPatchVertices", we know there's tessellation control shader support
 			return RENDERER_NEW(getRenderer().getContext(), TessellationControlShader)(static_cast<NullRenderer&>(getRenderer()));
 		}
 
-		inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode(MAYBE_UNUSED const Renderer::ShaderBytecode& shaderBytecode) override
+		inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode([[maybe_unused]] const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			// There's no need to check for "Renderer::Capabilities::maximumNumberOfPatchVertices", we know there's tessellation evaluation shader support
 			return RENDERER_NEW(getRenderer().getContext(), TessellationEvaluationShader)(static_cast<NullRenderer&>(getRenderer()));
 		}
 
-		inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode(MAYBE_UNUSED const Renderer::ShaderSourceCode& shaderSourceCode, MAYBE_UNUSED Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode([[maybe_unused]] const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// There's no need to check for "Renderer::Capabilities::maximumNumberOfPatchVertices", we know there's tessellation evaluation shader support
 			return RENDERER_NEW(getRenderer().getContext(), TessellationEvaluationShader)(static_cast<NullRenderer&>(getRenderer()));
 		}
 
-		inline virtual Renderer::IGeometryShader* createGeometryShaderFromBytecode(MAYBE_UNUSED const Renderer::ShaderBytecode& shaderBytecode, MAYBE_UNUSED Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, MAYBE_UNUSED Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, MAYBE_UNUSED uint32_t numberOfOutputVertices) override
+		inline virtual Renderer::IGeometryShader* createGeometryShaderFromBytecode([[maybe_unused]] const Renderer::ShaderBytecode& shaderBytecode, [[maybe_unused]] Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices) override
 		{
 			// There's no need to check for "Renderer::Capabilities::maximumNumberOfGsOutputVertices", we know there's geometry shader support
 			return RENDERER_NEW(getRenderer().getContext(), GeometryShader)(static_cast<NullRenderer&>(getRenderer()));
 		}
 
-		inline virtual Renderer::IGeometryShader* createGeometryShaderFromSourceCode(MAYBE_UNUSED const Renderer::ShaderSourceCode& shaderSourceCode, MAYBE_UNUSED Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, MAYBE_UNUSED Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, MAYBE_UNUSED uint32_t numberOfOutputVertices, MAYBE_UNUSED Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		inline virtual Renderer::IGeometryShader* createGeometryShaderFromSourceCode([[maybe_unused]] const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// There's no need to check for "Renderer::Capabilities::maximumNumberOfGsOutputVertices", we know there's geometry shader support
 			return RENDERER_NEW(getRenderer().getContext(), GeometryShader)(static_cast<NullRenderer&>(getRenderer()));
 		}
 
-		inline virtual Renderer::IFragmentShader* createFragmentShaderFromBytecode(MAYBE_UNUSED const Renderer::ShaderBytecode& shaderBytecode) override
+		inline virtual Renderer::IFragmentShader* createFragmentShaderFromBytecode([[maybe_unused]] const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			// There's no need to check for "Renderer::Capabilities::fragmentShader", we know there's fragment shader support
 			return RENDERER_NEW(getRenderer().getContext(), FragmentShader)(static_cast<NullRenderer&>(getRenderer()));
 		}
 
-		inline virtual Renderer::IFragmentShader* createFragmentShaderFromSourceCode(MAYBE_UNUSED const Renderer::ShaderSourceCode& shaderSourceCode, MAYBE_UNUSED Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		inline virtual Renderer::IFragmentShader* createFragmentShaderFromSourceCode([[maybe_unused]] const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// There's no need to check for "Renderer::Capabilities::fragmentShader", we know there's fragment shader support
 			return RENDERER_NEW(getRenderer().getContext(), FragmentShader)(static_cast<NullRenderer&>(getRenderer()));
 		}
 
-		inline virtual Renderer::IComputeShader* createComputeShaderFromBytecode(MAYBE_UNUSED const Renderer::ShaderBytecode& shaderBytecode) override
+		inline virtual Renderer::IComputeShader* createComputeShaderFromBytecode([[maybe_unused]] const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			// There's no need to check for "Renderer::Capabilities::computeShader", we know there's compute shader support
 			return RENDERER_NEW(getRenderer().getContext(), ComputeShader)(static_cast<NullRenderer&>(getRenderer()));
 		}
 
-		inline virtual Renderer::IComputeShader* createComputeShaderFromSourceCode(MAYBE_UNUSED const Renderer::ShaderSourceCode& shaderSourceCode, MAYBE_UNUSED Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		inline virtual Renderer::IComputeShader* createComputeShaderFromSourceCode([[maybe_unused]] const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// There's no need to check for "Renderer::Capabilities::computeShader", we know there's compute shader support
 			return RENDERER_NEW(getRenderer().getContext(), ComputeShader)(static_cast<NullRenderer&>(getRenderer()));
 		}
 
-		virtual Renderer::IGraphicsProgram* createGraphicsProgram(MAYBE_UNUSED const Renderer::IRootSignature& rootSignature, MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
+		virtual Renderer::IGraphicsProgram* createGraphicsProgram([[maybe_unused]] const Renderer::IRootSignature& rootSignature, [[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
 		{
 			// Sanity checks
 			// -> A shader can be a null pointer, but if it's not the shader and graphics program language must match!
@@ -3114,7 +3114,7 @@ namespace NullRenderer
 		}
 	}
 
-	void NullRenderer::setGraphicsResourceGroup(MAYBE_UNUSED uint32_t rootParameterIndex, Renderer::IResourceGroup* resourceGroup)
+	void NullRenderer::setGraphicsResourceGroup([[maybe_unused]] uint32_t rootParameterIndex, Renderer::IResourceGroup* resourceGroup)
 	{
 		// Security checks
 		#ifdef RENDERER_DEBUG
@@ -3169,7 +3169,7 @@ namespace NullRenderer
 		}
 	}
 
-	void NullRenderer::setGraphicsViewports(MAYBE_UNUSED uint32_t numberOfViewports, MAYBE_UNUSED const Renderer::Viewport* viewports)
+	void NullRenderer::setGraphicsViewports([[maybe_unused]] uint32_t numberOfViewports, [[maybe_unused]] const Renderer::Viewport* viewports)
 	{
 		// Rasterizer (RS) stage
 
@@ -3177,7 +3177,7 @@ namespace NullRenderer
 		RENDERER_ASSERT(mContext, numberOfViewports > 0 && nullptr != viewports, "Invalid null rasterizer state viewports")
 	}
 
-	void NullRenderer::setGraphicsScissorRectangles(MAYBE_UNUSED uint32_t numberOfScissorRectangles, MAYBE_UNUSED const Renderer::ScissorRectangle* scissorRectangles)
+	void NullRenderer::setGraphicsScissorRectangles([[maybe_unused]] uint32_t numberOfScissorRectangles, [[maybe_unused]] const Renderer::ScissorRectangle* scissorRectangles)
 	{
 		// Rasterizer (RS) stage
 
@@ -3227,14 +3227,14 @@ namespace NullRenderer
 	void NullRenderer::clearGraphics(uint32_t, const float [4], float, uint32_t)
 	{}
 
-	void NullRenderer::drawGraphicsEmulated(MAYBE_UNUSED const uint8_t* emulationData, uint32_t, MAYBE_UNUSED uint32_t numberOfDraws)
+	void NullRenderer::drawGraphicsEmulated([[maybe_unused]] const uint8_t* emulationData, uint32_t, [[maybe_unused]] uint32_t numberOfDraws)
 	{
 		// Sanity checks
 		RENDERER_ASSERT(mContext, nullptr != emulationData, "The null emulation data must be valid")
 		RENDERER_ASSERT(mContext, numberOfDraws > 0, "The number of null draws must not be zero")
 	}
 
-	void NullRenderer::drawIndexedGraphicsEmulated(MAYBE_UNUSED const uint8_t* emulationData, uint32_t, MAYBE_UNUSED uint32_t numberOfDraws)
+	void NullRenderer::drawIndexedGraphicsEmulated([[maybe_unused]] const uint8_t* emulationData, uint32_t, [[maybe_unused]] uint32_t numberOfDraws)
 	{
 		// Sanity checks
 		RENDERER_ASSERT(mContext, nullptr != emulationData, "The null emulation data must be valid")
@@ -3274,7 +3274,7 @@ namespace NullRenderer
 		}
 	}
 
-	void NullRenderer::setComputeResourceGroup(MAYBE_UNUSED uint32_t rootParameterIndex, Renderer::IResourceGroup* resourceGroup)
+	void NullRenderer::setComputeResourceGroup([[maybe_unused]] uint32_t rootParameterIndex, Renderer::IResourceGroup* resourceGroup)
 	{
 		// Security checks
 		#ifdef RENDERER_DEBUG

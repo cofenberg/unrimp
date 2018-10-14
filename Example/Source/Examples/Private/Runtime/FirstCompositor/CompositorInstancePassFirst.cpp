@@ -36,7 +36,7 @@
 //[-------------------------------------------------------]
 //[ Protected virtual RendererRuntime::ICompositorInstancePass methods ]
 //[-------------------------------------------------------]
-void CompositorInstancePassFirst::onFillCommandBuffer(MAYBE_UNUSED const Renderer::IRenderTarget* renderTarget, const RendererRuntime::CompositorContextData&, MAYBE_UNUSED Renderer::CommandBuffer& commandBuffer)
+void CompositorInstancePassFirst::onFillCommandBuffer([[maybe_unused]] const Renderer::IRenderTarget* renderTarget, const RendererRuntime::CompositorContextData&, [[maybe_unused]] Renderer::CommandBuffer& commandBuffer)
 {
 	// Sanity check
 	assert((nullptr != renderTarget) && "The first example compositor instance pass needs a valid render target");

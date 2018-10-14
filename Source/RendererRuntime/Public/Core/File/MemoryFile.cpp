@@ -125,7 +125,7 @@ namespace RendererRuntime
 	void MemoryFile::decompress()
 	{
 		mDecompressedData.resize(mNumberOfDecompressedBytes);
-		MAYBE_UNUSED const int numberOfDecompressedBytes = LZ4_decompress_safe(reinterpret_cast<const char*>(mCompressedData.data()), reinterpret_cast<char*>(mDecompressedData.data()), static_cast<int>(mCompressedData.size()), static_cast<int>(mNumberOfDecompressedBytes));
+		[[maybe_unused]] const int numberOfDecompressedBytes = LZ4_decompress_safe(reinterpret_cast<const char*>(mCompressedData.data()), reinterpret_cast<char*>(mDecompressedData.data()), static_cast<int>(mCompressedData.size()), static_cast<int>(mNumberOfDecompressedBytes));
 		assert(mNumberOfDecompressedBytes == static_cast<uint32_t>(numberOfDecompressedBytes));
 		mCurrentDataPointer = mDecompressedData.data();
 	}

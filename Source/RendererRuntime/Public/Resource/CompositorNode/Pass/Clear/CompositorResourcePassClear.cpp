@@ -42,7 +42,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public virtual RendererRuntime::ICompositorResourcePass methods ]
 	//[-------------------------------------------------------]
-	void CompositorResourcePassClear::deserialize(MAYBE_UNUSED uint32_t numberOfBytes, const uint8_t* data)
+	void CompositorResourcePassClear::deserialize([[maybe_unused]] uint32_t numberOfBytes, const uint8_t* data)
 	{
 		// Sanity check
 		assert(sizeof(v1CompositorNode::PassClear) == numberOfBytes);

@@ -1012,7 +1012,7 @@ namespace RendererRuntime
 		return valueFilled;
 	}
 
-	bool MaterialBlueprintResourceListener::fillInstanceValue(uint32_t referenceValue, uint8_t* buffer, MAYBE_UNUSED uint32_t numberOfBytes, uint32_t instanceTextureBufferStartIndex)
+	bool MaterialBlueprintResourceListener::fillInstanceValue(uint32_t referenceValue, uint8_t* buffer, [[maybe_unused]] uint32_t numberOfBytes, uint32_t instanceTextureBufferStartIndex)
 	{
 		bool valueFilled = true;
 

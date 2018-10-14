@@ -46,7 +46,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::ICompositorInstancePass methods ]
 	//[-------------------------------------------------------]
-	void CompositorInstancePassGenerateMipmaps::onFillCommandBuffer(MAYBE_UNUSED const Renderer::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
+	void CompositorInstancePassGenerateMipmaps::onFillCommandBuffer([[maybe_unused]] const Renderer::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
 	{
 		// Sanity check
 		assert((nullptr == renderTarget) && "The generate mipmaps compositor instance pass needs an invalid render target");

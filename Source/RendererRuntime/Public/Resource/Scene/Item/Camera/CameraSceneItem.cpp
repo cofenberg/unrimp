@@ -126,7 +126,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public RendererRuntime::ISceneItem methods            ]
 	//[-------------------------------------------------------]
-	void CameraSceneItem::deserialize(MAYBE_UNUSED uint32_t numberOfBytes, const uint8_t*)
+	void CameraSceneItem::deserialize([[maybe_unused]] uint32_t numberOfBytes, const uint8_t*)
 	{
 		assert(sizeof(v1Scene::CameraItem) == numberOfBytes);
 

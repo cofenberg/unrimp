@@ -44,7 +44,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public RendererRuntime::ISceneItem methods            ]
 	//[-------------------------------------------------------]
-	void LightSceneItem::deserialize(MAYBE_UNUSED uint32_t numberOfBytes, const uint8_t* data)
+	void LightSceneItem::deserialize([[maybe_unused]] uint32_t numberOfBytes, const uint8_t* data)
 	{
 		assert(sizeof(v1Scene::LightItem) == numberOfBytes);
 

@@ -122,13 +122,13 @@ namespace RendererRuntime
 			mParentSceneNode = &sceneNode;
 		}
 
-		inline virtual void onDetachedFromSceneNode(MAYBE_UNUSED SceneNode& sceneNode)
+		inline virtual void onDetachedFromSceneNode([[maybe_unused]] SceneNode& sceneNode)
 		{
 			assert(nullptr != mParentSceneNode);
 			mParentSceneNode = nullptr;
 		}
 
-		inline virtual void setVisible(MAYBE_UNUSED bool visible)
+		inline virtual void setVisible([[maybe_unused]] bool visible)
 		{
 			// Nothing here
 		}

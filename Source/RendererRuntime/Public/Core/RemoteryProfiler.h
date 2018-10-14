@@ -101,7 +101,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	public:
 		// TODO(co) Remotery GPU profiling: Disabled by default since it might take some shutdown time due to "rmt_UnbindOpenGL blocks indefinitely #112" - https://github.com/Celtoys/Remotery/issues/112
-		inline RemoteryProfiler(Renderer::IRenderer& renderer, MAYBE_UNUSED bool enableGpuProfiling = false) :
+		inline RemoteryProfiler(Renderer::IRenderer& renderer, [[maybe_unused]] bool enableGpuProfiling = false) :
 			mRemotery(nullptr),
 			mUseD3D11(false),
 			mUseOpenGL(false)
@@ -178,7 +178,7 @@ namespace RendererRuntime
 			#endif
 		}
 
-		virtual void beginGpuSample(MAYBE_UNUSED const char* name, MAYBE_UNUSED uint32_t* hashCache) override
+		virtual void beginGpuSample([[maybe_unused]] const char* name, [[maybe_unused]] uint32_t* hashCache) override
 		{
 			#ifdef _DEBUG
 				++mNumberOfCurrentlyBegunGpuSamples;

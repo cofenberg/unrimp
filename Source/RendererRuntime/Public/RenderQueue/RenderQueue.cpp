@@ -869,7 +869,7 @@ namespace RendererRuntime
 
 							// Fill the instance buffer manager
 							// TODO(co) Think about compute instance buffer support
-							// MAYBE_UNUSED const uint32_t startInstanceLocation = (nullptr != instanceUniformBuffer) ? textureInstanceBufferManager.fillBuffer(*materialBlueprintResource, materialBlueprintResource->getPassBufferManager(), *instanceUniformBuffer, renderable, *materialTechnique, commandBuffer) : 0;
+							// [[maybe_unused]] const uint32_t startInstanceLocation = (nullptr != instanceUniformBuffer) ? textureInstanceBufferManager.fillBuffer(*materialBlueprintResource, materialBlueprintResource->getPassBufferManager(), *instanceUniformBuffer, renderable, *materialTechnique, commandBuffer) : 0;
 
 							// Dispatch compute
 							Renderer::Command::DispatchCompute::create(commandBuffer, groupCountX, groupCountY, groupCountZ);

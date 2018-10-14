@@ -174,7 +174,7 @@ namespace
 				mFileStream.ignore(static_cast<std::streamsize>(numberOfBytes));
 			}
 
-			inline virtual void write(MAYBE_UNUSED const void* sourceBuffer, MAYBE_UNUSED size_t numberOfBytes) override
+			inline virtual void write([[maybe_unused]] const void* sourceBuffer, [[maybe_unused]] size_t numberOfBytes) override
 			{
 				assert((nullptr != sourceBuffer) && "Letting a file write from a null source buffer is not allowed");
 				assert((0 != numberOfBytes) && "Letting a file write zero bytes is not allowed");
@@ -241,7 +241,7 @@ namespace
 				return 0;
 			}
 
-			inline virtual void read(MAYBE_UNUSED void* destinationBuffer, MAYBE_UNUSED size_t numberOfBytes) override
+			inline virtual void read([[maybe_unused]] void* destinationBuffer, [[maybe_unused]] size_t numberOfBytes) override
 			{
 				assert((nullptr != destinationBuffer) && "Letting a file read into a null destination buffer is not allowed");
 				assert((0 != numberOfBytes) && "Letting a file read zero bytes is not allowed");
@@ -249,7 +249,7 @@ namespace
 				assert(false && "File read method not supported by the default implementation");
 			}
 
-			inline virtual void skip(MAYBE_UNUSED size_t numberOfBytes) override
+			inline virtual void skip([[maybe_unused]] size_t numberOfBytes) override
 			{
 				assert((0 != numberOfBytes) && "Letting a file skip zero bytes is not allowed");
 				assert(mFileStream && "Invalid default file access");

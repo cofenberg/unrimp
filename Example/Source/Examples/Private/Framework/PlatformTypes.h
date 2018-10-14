@@ -52,12 +52,6 @@
 
 	/**
 	*  @brief
-	*    C++17 attribute specifier sequence "[[maybe_unused]]"
-	*/
-	#define MAYBE_UNUSED [[maybe_unused]]
-
-	/**
-	*  @brief
 	*    Debug break operation macro
 	*/
 	#define DEBUG_BREAK __debugbreak()
@@ -113,12 +107,6 @@
 	*    No operation macro ("_asm nop"/__nop())
 	*/
 	#define NOP asm ("nop");
-
-	/**
-	*  @brief
-	*    C++17 attribute specifier sequence "[[maybe_unused]]"
-	*/
-	#define MAYBE_UNUSED
 
 	/**
 	*  @brief

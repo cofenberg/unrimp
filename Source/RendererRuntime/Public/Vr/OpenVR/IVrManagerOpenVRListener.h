@@ -86,12 +86,12 @@ namespace RendererRuntime
 	//[ Protected virtual RendererRuntime::IVrManagerOpenVRListener methods ]
 	//[-------------------------------------------------------]
 	protected:
-		inline virtual void onVrEvent(MAYBE_UNUSED const vr::VREvent_t& vrVrEvent)
+		inline virtual void onVrEvent([[maybe_unused]] const vr::VREvent_t& vrVrEvent)
 		{
 			// Nothing here
 		}
 
-		inline virtual void onSceneNodeCreated(MAYBE_UNUSED vr::TrackedDeviceIndex_t trackedDeviceIndex, MAYBE_UNUSED SceneResource& sceneResource, MAYBE_UNUSED SceneNode& sceneNode)
+		inline virtual void onSceneNodeCreated([[maybe_unused]] vr::TrackedDeviceIndex_t trackedDeviceIndex, [[maybe_unused]] SceneResource& sceneResource, [[maybe_unused]] SceneNode& sceneNode)
 		{
 			// Nothing here
 		}

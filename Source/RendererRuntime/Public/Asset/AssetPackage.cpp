@@ -74,7 +74,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
-	void AssetPackage::addAsset(MAYBE_UNUSED const Context& context, AssetId assetId, VirtualFilename virtualFilename)
+	void AssetPackage::addAsset([[maybe_unused]] const Context& context, AssetId assetId, VirtualFilename virtualFilename)
 	{
 		RENDERER_ASSERT(context, nullptr == tryGetAssetByAssetId(assetId), "Renderer runtime asset ID is already used")
 		RENDERER_ASSERT(context, strlen(virtualFilename) < Asset::MAXIMUM_ASSET_FILENAME_LENGTH, "The renderer runtime asset filename is too long")

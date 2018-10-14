@@ -93,7 +93,7 @@ namespace RendererRuntime
 
 		// Get buffer pointers
 		const MaterialBlueprintResource::UniformBuffer* instanceUniformBuffer = materialBlueprintResource.getInstanceUniformBuffer();
-		MAYBE_UNUSED const MaterialBlueprintResource::TextureBuffer* instanceTextureBuffer = materialBlueprintResource.getInstanceTextureBuffer();
+		[[maybe_unused]] const MaterialBlueprintResource::TextureBuffer* instanceTextureBuffer = materialBlueprintResource.getInstanceTextureBuffer();
 		if (nullptr != instanceUniformBuffer)
 		{
 			// Sanity checks

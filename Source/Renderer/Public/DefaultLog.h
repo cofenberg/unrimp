@@ -218,7 +218,7 @@ namespace Renderer
 		*  @return
 		*    "true" to request debug break, else "false"
 		*/
-		inline virtual bool printInternal(Type type, const char*, MAYBE_UNUSED const char* file, MAYBE_UNUSED uint32_t line, const char* message, uint32_t)
+		inline virtual bool printInternal(Type type, const char*, [[maybe_unused]] const char* file, [[maybe_unused]] uint32_t line, const char* message, uint32_t)
 		{
 			std::lock_guard<std::mutex> mutexLock(mMutex);
 			bool requestDebugBreak = false;

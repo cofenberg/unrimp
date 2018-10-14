@@ -179,7 +179,7 @@ namespace RendererRuntime
 			// Nothing here
 		}
 
-		inline virtual bool fillUnknownValue(MAYBE_UNUSED uint32_t referenceValue, MAYBE_UNUSED uint8_t* buffer, MAYBE_UNUSED uint32_t numberOfBytes) override
+		inline virtual bool fillUnknownValue([[maybe_unused]] uint32_t referenceValue, [[maybe_unused]] uint8_t* buffer, [[maybe_unused]] uint32_t numberOfBytes) override
 		{
 			// Nothing here
 
@@ -195,7 +195,7 @@ namespace RendererRuntime
 			// Nothing here
 		}
 
-		inline virtual bool fillMaterialValue(MAYBE_UNUSED uint32_t referenceValue, MAYBE_UNUSED uint8_t* buffer, MAYBE_UNUSED uint32_t numberOfBytes) override
+		inline virtual bool fillMaterialValue([[maybe_unused]] uint32_t referenceValue, [[maybe_unused]] uint8_t* buffer, [[maybe_unused]] uint32_t numberOfBytes) override
 		{
 			// Nothing here
 

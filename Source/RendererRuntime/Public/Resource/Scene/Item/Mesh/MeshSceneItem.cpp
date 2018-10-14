@@ -91,7 +91,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public RendererRuntime::ISceneItem methods            ]
 	//[-------------------------------------------------------]
-	void MeshSceneItem::deserialize(MAYBE_UNUSED uint32_t numberOfBytes, const uint8_t* data)
+	void MeshSceneItem::deserialize([[maybe_unused]] uint32_t numberOfBytes, const uint8_t* data)
 	{
 		// Sanity check
 		assert(sizeof(v1Scene::MeshItem) <= numberOfBytes);

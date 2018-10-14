@@ -1992,7 +1992,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    Direct3D 9 magnification filter mode
 		*/
-		static D3DTEXTUREFILTERTYPE getDirect3D9MagFilterMode(MAYBE_UNUSED const Renderer::Context& context, Renderer::FilterMode filterMode)
+		static D3DTEXTUREFILTERTYPE getDirect3D9MagFilterMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode)
 		{
 			switch (filterMode)
 			{
@@ -2071,7 +2071,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    Direct3D 9 minification filter mode
 		*/
-		static D3DTEXTUREFILTERTYPE getDirect3D9MinFilterMode(MAYBE_UNUSED const Renderer::Context& context, Renderer::FilterMode filterMode)
+		static D3DTEXTUREFILTERTYPE getDirect3D9MinFilterMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode)
 		{
 			switch (filterMode)
 			{
@@ -2150,7 +2150,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    Direct3D 9 mipmapping filter mode
 		*/
-		static D3DTEXTUREFILTERTYPE getDirect3D9MipFilterMode(MAYBE_UNUSED const Renderer::Context& context, Renderer::FilterMode filterMode)
+		static D3DTEXTUREFILTERTYPE getDirect3D9MipFilterMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode)
 		{
 			switch (filterMode)
 			{
@@ -2497,7 +2497,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    Direct3D 9 presentation interval
 		*/
-		static uint32_t getDirect3D9PresentationInterval(MAYBE_UNUSED const Renderer::Context& context, uint32_t synchronizationInterval)
+		static uint32_t getDirect3D9PresentationInterval([[maybe_unused]] const Renderer::Context& context, uint32_t synchronizationInterval)
 		{
 			RENDERER_ASSERT(context, synchronizationInterval <= 4, "Direct3D 9 supports a maximum synchronization interval of four")
 			static constexpr uint32_t MAPPING[] =
@@ -3310,7 +3310,7 @@ namespace Direct3D9Renderer
 		*  @param[in] indirectBufferFlags
 		*    Indirect buffer flags, see "Renderer::IndirectBufferFlag"
 		*/
-		IndirectBuffer(Direct3D9Renderer& direct3D9Renderer, uint32_t numberOfBytes, const void* data, MAYBE_UNUSED uint32_t indirectBufferFlags) :
+		IndirectBuffer(Direct3D9Renderer& direct3D9Renderer, uint32_t numberOfBytes, const void* data, [[maybe_unused]] uint32_t indirectBufferFlags) :
 			IIndirectBuffer(direct3D9Renderer),
 			mNumberOfBytes(numberOfBytes),
 			mData(nullptr)
@@ -3437,13 +3437,13 @@ namespace Direct3D9Renderer
 	//[ Public virtual Renderer::IBufferManager methods       ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		inline virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			// TODO(co) Security checks
 			return RENDERER_NEW(getRenderer().getContext(), VertexBuffer)(static_cast<Direct3D9Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
 		}
 
-		inline virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::Enum indexBufferFormat = Renderer::IndexBufferFormat::UNSIGNED_SHORT) override
+		inline virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::Enum indexBufferFormat = Renderer::IndexBufferFormat::UNSIGNED_SHORT) override
 		{
 			// TODO(co) Security checks
 			return RENDERER_NEW(getRenderer().getContext(), IndexBuffer)(static_cast<Direct3D9Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage, indexBufferFormat);
@@ -3467,7 +3467,7 @@ namespace Direct3D9Renderer
 			return nullptr;
 		}
 
-		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, [[maybe_unused]] Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<Direct3D9Renderer&>(getRenderer()), numberOfBytes, data, indirectBufferFlags);
 		}
@@ -3896,7 +3896,7 @@ namespace Direct3D9Renderer
 		*  @param[in] maximumMipmapIndex
 		*    Maximum mipmap index, the least detailed mipmap, <number of mipmaps> by default
 		*/
-		inline void setMinimumMaximumMipmapIndex(MAYBE_UNUSED uint32_t minimumMipmapIndex, MAYBE_UNUSED uint32_t maximumMipmapIndex)
+		inline void setMinimumMaximumMipmapIndex([[maybe_unused]] uint32_t minimumMipmapIndex, [[maybe_unused]] uint32_t maximumMipmapIndex)
 		{
 			// TODO(co) Implement me
 		}
@@ -4007,7 +4007,7 @@ namespace Direct3D9Renderer
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		Texture3D(Direct3D9Renderer& direct3D9Renderer, uint32_t width, uint32_t height, uint32_t depth, MAYBE_UNUSED Renderer::TextureFormat::Enum textureFormat, MAYBE_UNUSED const void* data, MAYBE_UNUSED uint32_t textureFlags, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) :
+		Texture3D(Direct3D9Renderer& direct3D9Renderer, uint32_t width, uint32_t height, uint32_t depth, [[maybe_unused]] Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data, [[maybe_unused]] uint32_t textureFlags, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) :
 			ITexture3D(direct3D9Renderer, width, height, depth),
 			mDirect3DTexture9(nullptr)
 		{
@@ -4239,7 +4239,7 @@ namespace Direct3D9Renderer
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		TextureCube(Direct3D9Renderer& direct3D9Renderer, uint32_t width, uint32_t height, MAYBE_UNUSED Renderer::TextureFormat::Enum textureFormat, MAYBE_UNUSED const void* data, MAYBE_UNUSED uint32_t textureFlags, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) :
+		TextureCube(Direct3D9Renderer& direct3D9Renderer, uint32_t width, uint32_t height, [[maybe_unused]] Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data, [[maybe_unused]] uint32_t textureFlags, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) :
 			ITextureCube(direct3D9Renderer, width, height),
 			mDirect3DTexture9(nullptr)
 		{
@@ -4488,7 +4488,7 @@ namespace Direct3D9Renderer
 			}
 		}
 
-		virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, MAYBE_UNUSED uint8_t numberOfMultisamples = 1, MAYBE_UNUSED const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
+		virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, [[maybe_unused]] uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0)
@@ -4501,7 +4501,7 @@ namespace Direct3D9Renderer
 			}
 		}
 
-		virtual Renderer::ITexture2DArray* createTexture2DArray(MAYBE_UNUSED uint32_t width, MAYBE_UNUSED uint32_t height, MAYBE_UNUSED uint32_t numberOfSlices, MAYBE_UNUSED Renderer::TextureFormat::Enum textureFormat, MAYBE_UNUSED const void* data = nullptr, MAYBE_UNUSED uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture2DArray* createTexture2DArray([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height, [[maybe_unused]] uint32_t numberOfSlices, [[maybe_unused]] Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// Direct3D 9 has no 2D texture arrays
 			return nullptr;
@@ -5526,12 +5526,12 @@ namespace Direct3D9Renderer
 			return false;
 		}
 
-		inline virtual void setFullscreenState(MAYBE_UNUSED bool fullscreen) override
+		inline virtual void setFullscreenState([[maybe_unused]] bool fullscreen) override
 		{
 			// TODO(co) Implement me
 		}
 
-		inline virtual void setRenderWindow(MAYBE_UNUSED Renderer::IRenderWindow* renderWindow) override
+		inline virtual void setRenderWindow([[maybe_unused]] Renderer::IRenderWindow* renderWindow) override
 		{
 			// TODO(sw) implement me
 		}
@@ -6464,7 +6464,7 @@ namespace Direct3D9Renderer
 			return NULL_HANDLE;
 		}
 
-		inline virtual void setUniform1i(MAYBE_UNUSED Renderer::handle uniformHandle, MAYBE_UNUSED int value) override
+		inline virtual void setUniform1i([[maybe_unused]] Renderer::handle uniformHandle, [[maybe_unused]] int value) override
 		{
 			// TODO(co) Implement me
 		}
@@ -6597,49 +6597,49 @@ namespace Direct3D9Renderer
 			return ::detail::HLSL_NAME;
 		}
 
-		inline virtual Renderer::IVertexShader* createVertexShaderFromBytecode(MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderBytecode& shaderBytecode) override
+		inline virtual Renderer::IVertexShader* createVertexShaderFromBytecode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			// There's no need to check for "Renderer::Capabilities::vertexShader", we know there's vertex shader support
 			return RENDERER_NEW(getRenderer().getContext(), VertexShaderHlsl)(static_cast<Direct3D9Renderer&>(getRenderer()), shaderBytecode);
 		}
 
-		inline virtual Renderer::IVertexShader* createVertexShaderFromSourceCode(MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		inline virtual Renderer::IVertexShader* createVertexShaderFromSourceCode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// There's no need to check for "Renderer::Capabilities::vertexShader", we know there's vertex shader support
 			return RENDERER_NEW(getRenderer().getContext(), VertexShaderHlsl)(static_cast<Direct3D9Renderer&>(getRenderer()), shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode);
 		}
 
-		inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromBytecode(MAYBE_UNUSED const Renderer::ShaderBytecode& shaderBytecode) override
+		inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromBytecode([[maybe_unused]] const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 9 has no tessellation control shader support")
 			return nullptr;
 		}
 
-		inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromSourceCode(MAYBE_UNUSED const Renderer::ShaderSourceCode& shaderSourceCode, MAYBE_UNUSED Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromSourceCode([[maybe_unused]] const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 9 has no tessellation control shader support")
 			return nullptr;
 		}
 
-		inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode(MAYBE_UNUSED const Renderer::ShaderBytecode& shaderBytecode) override
+		inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode([[maybe_unused]] const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 9 has no tessellation evaluation shader support")
 			return nullptr;
 		}
 
-		inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode(MAYBE_UNUSED const Renderer::ShaderSourceCode& shaderSourceCode, MAYBE_UNUSED Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode([[maybe_unused]] const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 9 has no tessellation evaluation shader support")
 			return nullptr;
 		}
 
-		inline virtual Renderer::IGeometryShader* createGeometryShaderFromBytecode(MAYBE_UNUSED const Renderer::ShaderBytecode& shaderBytecode, MAYBE_UNUSED Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, MAYBE_UNUSED Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, MAYBE_UNUSED uint32_t numberOfOutputVertices) override
+		inline virtual Renderer::IGeometryShader* createGeometryShaderFromBytecode([[maybe_unused]] const Renderer::ShaderBytecode& shaderBytecode, [[maybe_unused]] Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices) override
 		{
 			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 9 has no geometry shader support")
 			return nullptr;
 		}
 
-		inline virtual Renderer::IGeometryShader* createGeometryShaderFromSourceCode(MAYBE_UNUSED const Renderer::ShaderSourceCode& shaderSourceCode, MAYBE_UNUSED Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, MAYBE_UNUSED Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, MAYBE_UNUSED uint32_t numberOfOutputVertices, MAYBE_UNUSED Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		inline virtual Renderer::IGeometryShader* createGeometryShaderFromSourceCode([[maybe_unused]] const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 9 has no geometry shader support")
 			return nullptr;
@@ -6669,7 +6669,7 @@ namespace Direct3D9Renderer
 			return nullptr;
 		}
 
-		virtual Renderer::IGraphicsProgram* createGraphicsProgram(MAYBE_UNUSED const Renderer::IRootSignature& rootSignature, MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, MAYBE_UNUSED Renderer::IVertexShader* vertexShader, MAYBE_UNUSED Renderer::ITessellationControlShader* tessellationControlShader, MAYBE_UNUSED Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, MAYBE_UNUSED Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
+		virtual Renderer::IGraphicsProgram* createGraphicsProgram([[maybe_unused]] const Renderer::IRootSignature& rootSignature, [[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, [[maybe_unused]] Renderer::IVertexShader* vertexShader, [[maybe_unused]] Renderer::ITessellationControlShader* tessellationControlShader, [[maybe_unused]] Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, [[maybe_unused]] Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
 		{
 			// Sanity checks
 			// -> A shader can be a null pointer, but if it's not the shader and graphics program language must match!
@@ -7648,7 +7648,7 @@ namespace Direct3D9Renderer
 		}
 	}
 
-	void Direct3D9Renderer::setGraphicsViewports(MAYBE_UNUSED uint32_t numberOfViewports, const Renderer::Viewport* viewports)
+	void Direct3D9Renderer::setGraphicsViewports([[maybe_unused]] uint32_t numberOfViewports, const Renderer::Viewport* viewports)
 	{
 		// Rasterizer (RS) stage
 
@@ -7670,7 +7670,7 @@ namespace Direct3D9Renderer
 		FAILED_DEBUG_BREAK(mDirect3DDevice9->SetViewport(&direct3D9Viewport));
 	}
 
-	void Direct3D9Renderer::setGraphicsScissorRectangles(MAYBE_UNUSED uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles)
+	void Direct3D9Renderer::setGraphicsScissorRectangles([[maybe_unused]] uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles)
 	{
 		// Rasterizer (RS) stage
 

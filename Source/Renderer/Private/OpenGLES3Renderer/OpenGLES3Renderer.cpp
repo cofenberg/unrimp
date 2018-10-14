@@ -1246,7 +1246,7 @@ namespace OpenGLES3Renderer
 		*  @param[in] useExternalContext
 		*    When true an own OpenGL ES context won't be created
 		*/
-		IOpenGLES3Context(MAYBE_UNUSED OpenGLES3Renderer& openGLES3Renderer, Renderer::handle nativeWindowHandle, bool useExternalContext) :
+		IOpenGLES3Context([[maybe_unused]] OpenGLES3Renderer& openGLES3Renderer, Renderer::handle nativeWindowHandle, bool useExternalContext) :
 			mNativeWindowHandle(nativeWindowHandle),
 			#if (defined(LINUX) && !defined(__ANDROID__))
 				mX11Display(nullptr),
@@ -2639,7 +2639,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    OpenGL ES 3 magnification filter mode
 		*/
-		static GLint getOpenGLES3MagFilterMode(MAYBE_UNUSED const Renderer::Context& context, Renderer::FilterMode filterMode)
+		static GLint getOpenGLES3MagFilterMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode)
 		{
 			switch (filterMode)
 			{
@@ -2720,7 +2720,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    OpenGL ES 3 minification filter mode
 		*/
-		static GLint getOpenGLES3MinFilterMode(MAYBE_UNUSED const Renderer::Context& context, Renderer::FilterMode filterMode, bool hasMipmaps)
+		static GLint getOpenGLES3MinFilterMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode, bool hasMipmaps)
 		{
 			switch (filterMode)
 			{
@@ -2797,7 +2797,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    OpenGL ES 3 compare mode
 		*/
-		inline static GLint getOpenGLES3CompareMode(MAYBE_UNUSED Renderer::FilterMode filterMode)
+		inline static GLint getOpenGLES3CompareMode([[maybe_unused]] Renderer::FilterMode filterMode)
 		{
 			// "GL_COMPARE_REF_TO_TEXTURE" is not supported by OpenGL ES 3
 			return GL_NONE;
@@ -4438,7 +4438,7 @@ namespace OpenGLES3Renderer
 		*  @param[in] textureFormat
 		*    Texture buffer data format
 		*/
-		TextureBufferBindEmulation(OpenGLES3Renderer& openGLES3Renderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage, MAYBE_UNUSED Renderer::TextureFormat::Enum textureFormat) :
+		TextureBufferBindEmulation(OpenGLES3Renderer& openGLES3Renderer, uint32_t numberOfBytes, const void* data, Renderer::BufferUsage bufferUsage, [[maybe_unused]] Renderer::TextureFormat::Enum textureFormat) :
 			TextureBuffer(openGLES3Renderer, numberOfBytes)
 		{
 			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
@@ -4509,7 +4509,7 @@ namespace OpenGLES3Renderer
 		*  @param[in] indirectBufferFlags
 		*    Indirect buffer flags, see "Renderer::IndirectBufferFlag"
 		*/
-		IndirectBuffer(OpenGLES3Renderer& openGLES3Renderer, uint32_t numberOfBytes, const void* data, MAYBE_UNUSED uint32_t indirectBufferFlags) :
+		IndirectBuffer(OpenGLES3Renderer& openGLES3Renderer, uint32_t numberOfBytes, const void* data, [[maybe_unused]] uint32_t indirectBufferFlags) :
 			IIndirectBuffer(openGLES3Renderer),
 			mNumberOfBytes(numberOfBytes),
 			mData(nullptr)
@@ -4768,12 +4768,12 @@ namespace OpenGLES3Renderer
 	//[ Public virtual Renderer::IBufferManager methods       ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		inline virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), VertexBuffer)(static_cast<OpenGLES3Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
 		}
 
-		inline virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, MAYBE_UNUSED uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::Enum indexBufferFormat = Renderer::IndexBufferFormat::UNSIGNED_SHORT) override
+		inline virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::Enum indexBufferFormat = Renderer::IndexBufferFormat::UNSIGNED_SHORT) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), IndexBuffer)(static_cast<OpenGLES3Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage, indexBufferFormat);
 		}
@@ -4808,7 +4808,7 @@ namespace OpenGLES3Renderer
 			return nullptr;
 		}
 
-		virtual Renderer::IStructuredBuffer* createStructuredBuffer(MAYBE_UNUSED uint32_t numberOfBytes, MAYBE_UNUSED const void* data, MAYBE_UNUSED uint32_t bufferFlags, MAYBE_UNUSED Renderer::BufferUsage bufferUsage, MAYBE_UNUSED uint32_t numberOfStructureBytes) override
+		virtual Renderer::IStructuredBuffer* createStructuredBuffer([[maybe_unused]] uint32_t numberOfBytes, [[maybe_unused]] const void* data, [[maybe_unused]] uint32_t bufferFlags, [[maybe_unused]] Renderer::BufferUsage bufferUsage, [[maybe_unused]] uint32_t numberOfStructureBytes) override
 		{
 			// Sanity checks
 			RENDERER_ASSERT(getRenderer().getContext(), (numberOfBytes % numberOfStructureBytes) == 0, "The OpenGL ES 3 structured buffer size must be a multiple of the given number of structure bytes")
@@ -4818,7 +4818,7 @@ namespace OpenGLES3Renderer
 			return nullptr;
 		}
 
-		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, MAYBE_UNUSED Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, [[maybe_unused]] Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<OpenGLES3Renderer&>(getRenderer()), numberOfBytes, data, indirectBufferFlags);
 		}
@@ -6011,7 +6011,7 @@ namespace OpenGLES3Renderer
 	//[ Public virtual Renderer::ITextureManager methods      ]
 	//[-------------------------------------------------------]
 	public:
-		virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, OpenGL ES 3 has no texture usage indication
 
@@ -6026,7 +6026,7 @@ namespace OpenGLES3Renderer
 			}
 		}
 
-		virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, MAYBE_UNUSED uint8_t numberOfMultisamples = 1, MAYBE_UNUSED const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
+		virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, [[maybe_unused]] uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, OpenGL ES 3 has no texture usage indication
 
@@ -6041,7 +6041,7 @@ namespace OpenGLES3Renderer
 			}
 		}
 
-		virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, OpenGL ES 3 has no texture usage indication
 
@@ -6056,7 +6056,7 @@ namespace OpenGLES3Renderer
 			}
 		}
 
-		virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, OpenGL ES 3 has no texture usage indication
 
@@ -6071,7 +6071,7 @@ namespace OpenGLES3Renderer
 			}
 		}
 
-		virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, MAYBE_UNUSED Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, OpenGL ES 3 has no texture usage indication
 
@@ -8122,7 +8122,7 @@ namespace OpenGLES3Renderer
 			return nullptr;
 		}
 
-		inline virtual Renderer::IVertexShader* createVertexShaderFromSourceCode(MAYBE_UNUSED const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderSourceCode& shaderSourceCode, MAYBE_UNUSED Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		inline virtual Renderer::IVertexShader* createVertexShaderFromSourceCode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// There's no need to check for "Renderer::Capabilities::vertexShader", we know there's vertex shader support
 			// -> Monolithic shaders have no shader bytecode, only a monolithic program bytecode
@@ -8175,7 +8175,7 @@ namespace OpenGLES3Renderer
 			return nullptr;
 		}
 
-		inline virtual Renderer::IFragmentShader* createFragmentShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, MAYBE_UNUSED Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		inline virtual Renderer::IFragmentShader* createFragmentShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// There's no need to check for "Renderer::Capabilities::fragmentShader", we know there's fragment shader support
 			// -> Monolithic shaders have no shader bytecode, only a monolithic program bytecode
@@ -8195,7 +8195,7 @@ namespace OpenGLES3Renderer
 			return nullptr;
 		}
 
-		virtual Renderer::IGraphicsProgram* createGraphicsProgram(const Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, MAYBE_UNUSED Renderer::ITessellationControlShader* tessellationControlShader, MAYBE_UNUSED Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, MAYBE_UNUSED Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
+		virtual Renderer::IGraphicsProgram* createGraphicsProgram(const Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, [[maybe_unused]] Renderer::ITessellationControlShader* tessellationControlShader, [[maybe_unused]] Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, [[maybe_unused]] Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
 		{
 			// Sanity checks
 			// -> A shader can be a null pointer, but if it's not the shader and graphics program language must match!
@@ -8396,7 +8396,7 @@ namespace
 			return N;
 		}
 
-		bool mapBuffer(MAYBE_UNUSED const Renderer::Context& context, GLenum target, GLenum bindingTarget, GLuint openGLES3Buffer, uint32_t bufferSize, Renderer::MapType mapType, Renderer::MappedSubresource& mappedSubresource)
+		bool mapBuffer([[maybe_unused]] const Renderer::Context& context, GLenum target, GLenum bindingTarget, GLuint openGLES3Buffer, uint32_t bufferSize, Renderer::MapType mapType, Renderer::MappedSubresource& mappedSubresource)
 		{
 			// TODO(co) This buffer update isn't efficient, use e.g. persistent buffer mapping
 
@@ -9123,7 +9123,7 @@ namespace OpenGLES3Renderer
 		}
 	}
 
-	void OpenGLES3Renderer::setGraphicsViewports(MAYBE_UNUSED uint32_t numberOfViewports, const Renderer::Viewport* viewports)
+	void OpenGLES3Renderer::setGraphicsViewports([[maybe_unused]] uint32_t numberOfViewports, const Renderer::Viewport* viewports)
 	{
 		// Rasterizer (RS) stage
 
@@ -9149,7 +9149,7 @@ namespace OpenGLES3Renderer
 		glDepthRangef(static_cast<GLclampf>(viewports->minDepth), static_cast<GLclampf>(viewports->maxDepth));
 	}
 
-	void OpenGLES3Renderer::setGraphicsScissorRectangles(MAYBE_UNUSED uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles)
+	void OpenGLES3Renderer::setGraphicsScissorRectangles([[maybe_unused]] uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles)
 	{
 		// Rasterizer (RS) stage
 

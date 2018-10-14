@@ -101,7 +101,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public static methods                                 ]
 	//[-------------------------------------------------------]
-	void PlatformManager::setCurrentThreadName(MAYBE_UNUSED const char* shortName, MAYBE_UNUSED const char* descriptiveName)
+	void PlatformManager::setCurrentThreadName([[maybe_unused]] const char* shortName, [[maybe_unused]] const char* descriptiveName)
 	{
 		// "pthread_setname_np()" support only up to 16 characters (including the terminating zero), so this is our limiting factor
 		assert((strlen(shortName) + 1) <= 16);	// +1 for the terminating zero
@@ -120,7 +120,7 @@ namespace RendererRuntime
 		#endif
 	}
 
-	bool PlatformManager::execute(MAYBE_UNUSED const char* command, MAYBE_UNUSED const char* parameters, MAYBE_UNUSED AbsoluteDirectoryName workingDirectory)
+	bool PlatformManager::execute([[maybe_unused]] const char* command, [[maybe_unused]] const char* parameters, [[maybe_unused]] AbsoluteDirectoryName workingDirectory)
 	{
 		// Sanity checks
 		assert(nullptr != command);
@@ -157,7 +157,7 @@ namespace RendererRuntime
 		#endif
 	}
 
-	bool PlatformManager::openUrlExternal(MAYBE_UNUSED const char* url)
+	bool PlatformManager::openUrlExternal([[maybe_unused]] const char* url)
 	{
 		// Sanity checks
 		assert(nullptr != url);

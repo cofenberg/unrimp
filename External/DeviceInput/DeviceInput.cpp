@@ -823,7 +823,7 @@ namespace DeviceInput
 		*    - The default implementation is empty
 		*    - If you are using a "HIDDevice", the output and input ports will be ignored
 		*/
-		inline virtual bool Open(MAYBE_UNUSED uint16_t nOutputPort = 0, MAYBE_UNUSED uint16_t nInputPort = 0)
+		inline virtual bool Open([[maybe_unused]] uint16_t nOutputPort = 0, [[maybe_unused]] uint16_t nInputPort = 0)
 		{
 			// To be implemented in derived classes
 			// Please use InitThread() to start the read thread after successful connection
