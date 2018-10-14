@@ -39,7 +39,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		inline bool orderByResourceListener(RendererRuntime::IResourceListener* left, RendererRuntime::IResourceListener* right)
+		[[nodiscard]] inline bool orderByResourceListener(RendererRuntime::IResourceListener* left, RendererRuntime::IResourceListener* right)
 		{
 			return (left < right);
 		}

@@ -80,7 +80,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		bool doesFileExist(AAssetManager& aAssetManager, RendererRuntime::VirtualFilename virtualFilename)
+		[[nodiscard]] bool doesFileExist(AAssetManager& aAssetManager, RendererRuntime::VirtualFilename virtualFilename)
 		{
 			AAsset* aAsset = AAssetManager_open(&aAssetManager, virtualFilename, AASSET_MODE_STREAMING);
 			if (nullptr != aAsset)
@@ -122,7 +122,7 @@ namespace
 		//[ Public virtual AndroidFile methods                    ]
 		//[-------------------------------------------------------]
 		public:
-			virtual bool isInvalid() const = 0;
+			[[nodiscard]] virtual bool isInvalid() const = 0;
 
 
 		//[-------------------------------------------------------]
@@ -162,7 +162,7 @@ namespace
 		//[ Public virtual AndroidFile methods                    ]
 		//[-------------------------------------------------------]
 		public:
-			inline virtual bool isInvalid() const override
+			[[nodiscard]] inline virtual bool isInvalid() const override
 			{
 				return (nullptr == mAAsset);
 			}
@@ -172,7 +172,7 @@ namespace
 		//[ Public virtual RendererRuntime::IFile methods         ]
 		//[-------------------------------------------------------]
 		public:
-			inline virtual size_t getNumberOfBytes() override
+			[[nodiscard]] inline virtual size_t getNumberOfBytes() override
 			{
 				assert((nullptr != mAAsset) && "Invalid Android file access");
 				#ifdef ARCHITECTURE_X64
@@ -288,12 +288,12 @@ namespace RendererRuntime
 	//[ Public virtual RendererRuntime::IFileManager methods  ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getLocalDataMountPoint() const override
+		[[nodiscard]] inline virtual const char* getLocalDataMountPoint() const override
 		{
 			return ::detail::ANDROID_LOCAL_DATA_MOUNT_POINT;
 		}
 
-		inline virtual const char* getMountPoint(const char* mountPoint) const override
+		[[nodiscard]] inline virtual const char* getMountPoint(const char* mountPoint) const override
 		{
 			assert(nullptr != mountPoint);
 			const MountedDirectories::const_iterator mountedDirectoriesIterator = mMountedDirectories.find(mountPoint);
@@ -361,7 +361,7 @@ namespace RendererRuntime
 			return true;
 		}
 
-		inline virtual bool doesFileExist(VirtualFilename virtualFilename) const override
+		[[nodiscard]] inline virtual bool doesFileExist(VirtualFilename virtualFilename) const override
 		{
 			return !mapVirtualToAbsoluteFilename(FileMode::READ, virtualFilename).empty();
 		}
@@ -394,19 +394,19 @@ namespace RendererRuntime
 			}
 		}
 
-		inline virtual std::string mapVirtualToAbsoluteFilename(FileMode fileMode, VirtualFilename virtualFilename) const override
+		[[nodiscard]] inline virtual std::string mapVirtualToAbsoluteFilename(FileMode fileMode, VirtualFilename virtualFilename) const override
 		{
 			std::string mountPoint;
 			return mapVirtualToAbsoluteFilenameAndMountPoint(fileMode, virtualFilename, mountPoint);
 		}
 
-		inline virtual int64_t getLastModificationTime(VirtualFilename) const override
+		[[nodiscard]] inline virtual int64_t getLastModificationTime(VirtualFilename) const override
 		{
 			assert(false && "RendererRuntime::IFileManager::getLastModificationTime() isn't supported on Android");
 			return -1;
 		}
 
-		inline virtual int64_t getFileSize(VirtualFilename virtualFilename) const override
+		[[nodiscard]] inline virtual int64_t getFileSize(VirtualFilename virtualFilename) const override
 		{
 			int64_t fileSize = -1;
 			const std::string absoluteFilename = mapVirtualToAbsoluteFilename(FileMode::READ, virtualFilename);
@@ -436,7 +436,7 @@ namespace RendererRuntime
 			return false;
 		}
 
-		inline virtual IFile* openFile(FileMode fileMode, VirtualFilename virtualFilename) const override
+		[[nodiscard]] inline virtual IFile* openFile(FileMode fileMode, VirtualFilename virtualFilename) const override
 		{
 			::detail::AndroidFile* file = nullptr;
 			const std::string absoluteFilename = mapVirtualToAbsoluteFilename(fileMode, virtualFilename);
@@ -504,7 +504,7 @@ namespace RendererRuntime
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		inline bool getAbsoluteDirectoryNamesByMountPoint(VirtualFilename virtualFilename, const AbsoluteDirectoryNames** absoluteDirectoryNames, std::string& relativeFilename, std::string& mountPoint) const
+		[[nodiscard]] inline bool getAbsoluteDirectoryNamesByMountPoint(VirtualFilename virtualFilename, const AbsoluteDirectoryNames** absoluteDirectoryNames, std::string& relativeFilename, std::string& mountPoint) const
 		{
 			assert(nullptr != absoluteDirectoryNames);
 
@@ -541,7 +541,7 @@ namespace RendererRuntime
 			}
 		}
 
-		inline std::string mapVirtualToAbsoluteFilenameAndMountPoint(FileMode fileMode, VirtualFilename virtualFilename, std::string& mountPoint) const
+		[[nodiscard]] inline std::string mapVirtualToAbsoluteFilenameAndMountPoint(FileMode fileMode, VirtualFilename virtualFilename, std::string& mountPoint) const
 		{
 			// Sanity check
 			assert(nullptr != virtualFilename);

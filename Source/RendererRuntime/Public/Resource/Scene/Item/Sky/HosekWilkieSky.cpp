@@ -45,7 +45,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		double evaluateSpline(const double* spline, size_t stride, double value)
+		[[nodiscard]] double evaluateSpline(const double* spline, size_t stride, double value)
 		{
 			return
 				1 *  std::pow(1 - value, 5) *                      spline[0 * stride] +
@@ -56,7 +56,7 @@ namespace
 				1 *                           std::pow(value, 5) * spline[5 * stride];
 		}
 
-		float evaluate(const double* dataset, size_t stride, float turbidity, float albedo, float sunTheta)
+		[[nodiscard]] float evaluate(const double* dataset, size_t stride, float turbidity, float albedo, float sunTheta)
 		{
 			// Splines are functions of elevation^1/3
 			const double elevationK = std::pow(std::max<float>(0.0f, 1.0f - sunTheta / (glm::pi<float>() / 2.0f)), 1.0f / 3.0f);
@@ -77,7 +77,7 @@ namespace
 			return static_cast<float>(a0t0 * (1 - albedo) * (1 - turbidityK) + a1t0 * albedo * (1 - turbidityK) + a0t1 * (1 - albedo) * turbidityK + a1t1 * albedo * turbidityK);
 		}
 
-		glm::vec3 hosekWilkie(float cos_theta, float gamma, float cos_gamma, const glm::vec3& A, const glm::vec3& B, const glm::vec3& C, const glm::vec3& D, const glm::vec3& E, const glm::vec3& F, const glm::vec3& G, const glm::vec3& H, const glm::vec3& I)
+		[[nodiscard]] glm::vec3 hosekWilkie(float cos_theta, float gamma, float cos_gamma, const glm::vec3& A, const glm::vec3& B, const glm::vec3& C, const glm::vec3& D, const glm::vec3& E, const glm::vec3& F, const glm::vec3& G, const glm::vec3& H, const glm::vec3& I)
 		{
 			const glm::vec3 chi = (1.0f + cos_gamma * cos_gamma) / glm::pow(1.0f + H * H - 2.0f * cos_gamma * H, glm::vec3(1.5f));
 			return (1.0f + A * glm::exp(B / (cos_theta + 0.01f))) * (C + D * glm::exp(E * gamma) + F * (cos_gamma * cos_gamma) + G * chi + I * static_cast<float>(std::sqrt(std::max(0.0f, cos_theta))));
@@ -129,7 +129,7 @@ namespace
 		*  @note
 		*    - The implementation is basing on "Solar Radiance Calculation" - https://www.gamedev.net/topic/671214-simple-solar-radiance-calculation/
 		*/
-		glm::vec2 squareToConcentricDiskMapping(float x, float y)
+		[[nodiscard]] glm::vec2 squareToConcentricDiskMapping(float x, float y)
 		{
 			float phi = 0.0f;
 			float r = 0.0f;

@@ -77,17 +77,17 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline const ICompositorResourcePass& getCompositorResourcePass() const
+		[[nodiscard]] inline const ICompositorResourcePass& getCompositorResourcePass() const
 		{
 			return mCompositorResourcePass;
 		}
 
-		inline const CompositorNodeInstance& getCompositorNodeInstance() const
+		[[nodiscard]] inline const CompositorNodeInstance& getCompositorNodeInstance() const
 		{
 			return mCompositorNodeInstance;
 		}
 
-		inline Renderer::IRenderTarget* getRenderTarget() const
+		[[nodiscard]] inline Renderer::IRenderTarget* getRenderTarget() const
 		{
 			return mRenderTarget;
 		}

@@ -127,12 +127,12 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	public:
 		RENDERERRUNTIME_API_EXPORT void newFrame(Renderer::IRenderTarget& renderTarget, CompositorWorkspaceInstance* compositorWorkspaceInstance = nullptr);
-		RENDERERRUNTIME_API_EXPORT Renderer::IVertexArrayPtr getFillVertexArrayPtr();
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT Renderer::IVertexArrayPtr getFillVertexArrayPtr();
 		RENDERERRUNTIME_API_EXPORT void fillGraphicsCommandBuffer(Renderer::CommandBuffer& commandBuffer);
 		RENDERERRUNTIME_API_EXPORT void fillGraphicsCommandBufferUsingFixedBuildInRendererConfiguration(Renderer::CommandBuffer& commandBuffer);
 
 		// Ini-settings
-		RENDERERRUNTIME_API_EXPORT bool getIniSetting(const char* name, float value[4]);
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT bool getIniSetting(const char* name, float value[4]);
 		RENDERERRUNTIME_API_EXPORT void setIniSetting(const char* name, const float value[4]);
 
 		// Helper

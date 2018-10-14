@@ -107,12 +107,12 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Bounding                                              ]
 		//[-------------------------------------------------------]
-		inline const glm::vec3& getMinimumBoundingBoxPosition() const
+		[[nodiscard]] inline const glm::vec3& getMinimumBoundingBoxPosition() const
 		{
 			return mMinimumBoundingBoxPosition;
 		}
 
-		inline const glm::vec3& getMaximumBoundingBoxPosition() const
+		[[nodiscard]] inline const glm::vec3& getMaximumBoundingBoxPosition() const
 		{
 			return mMaximumBoundingBoxPosition;
 		}
@@ -123,12 +123,12 @@ namespace RendererRuntime
 			mMaximumBoundingBoxPosition = maximumBoundingBoxPosition;
 		}
 
-		inline const glm::vec3& getBoundingSpherePosition() const
+		[[nodiscard]] inline const glm::vec3& getBoundingSpherePosition() const
 		{
 			return mBoundingSpherePosition;
 		}
 
-		inline float getBoundingSphereRadius() const
+		[[nodiscard]] inline float getBoundingSphereRadius() const
 		{
 			return mBoundingSphereRadius;
 		}
@@ -142,7 +142,7 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Vertex and index data                                 ]
 		//[-------------------------------------------------------]
-		inline uint32_t getNumberOfVertices() const
+		[[nodiscard]] inline uint32_t getNumberOfVertices() const
 		{
 			return mNumberOfVertices;
 		}
@@ -152,7 +152,7 @@ namespace RendererRuntime
 			mNumberOfVertices = numberOfVertices;
 		}
 
-		inline uint32_t getNumberOfIndices() const
+		[[nodiscard]] inline uint32_t getNumberOfIndices() const
 		{
 			return mNumberOfIndices;
 		}
@@ -162,7 +162,7 @@ namespace RendererRuntime
 			mNumberOfIndices = numberOfIndices;
 		}
 
-		inline Renderer::IVertexArrayPtr getVertexArrayPtr() const
+		[[nodiscard]] inline Renderer::IVertexArrayPtr getVertexArrayPtr() const
 		{
 			return mVertexArray;
 		}
@@ -175,12 +175,12 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Sub-meshes                                            ]
 		//[-------------------------------------------------------]
-		inline const SubMeshes& getSubMeshes() const
+		[[nodiscard]] inline const SubMeshes& getSubMeshes() const
 		{
 			return mSubMeshes;
 		}
 
-		inline SubMeshes& getSubMeshes()
+		[[nodiscard]] inline SubMeshes& getSubMeshes()
 		{
 			return mSubMeshes;
 		}
@@ -188,7 +188,7 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Optional skeleton                                     ]
 		//[-------------------------------------------------------]
-		inline SkeletonResourceId getSkeletonResourceId() const
+		[[nodiscard]] inline SkeletonResourceId getSkeletonResourceId() const
 		{
 			return mSkeletonResourceId;
 		}

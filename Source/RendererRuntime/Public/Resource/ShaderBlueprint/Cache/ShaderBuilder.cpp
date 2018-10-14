@@ -72,42 +72,42 @@ namespace
 	{
 
 
-		int setOp(int, int op2)
+		[[nodiscard]] int setOp(int, int op2)
 		{
 			return op2;
 		}
 
-		int addOp(int op1, int op2)
+		[[nodiscard]] int addOp(int op1, int op2)
 		{
 			return op1 + op2;
 		}
 
-		int subOp(int op1, int op2)
+		[[nodiscard]] int subOp(int op1, int op2)
 		{
 			return op1 - op2;
 		}
 
-		int mulOp(int op1, int op2)
+		[[nodiscard]] int mulOp(int op1, int op2)
 		{
 			return op1 * op2;
 		}
 
-		int divOp(int op1, int op2)
+		[[nodiscard]] int divOp(int op1, int op2)
 		{
 			return op1 / op2;
 		}
 
-		int modOp(int op1, int op2)
+		[[nodiscard]] int modOp(int op1, int op2)
 		{
 			return op1 % op2;
 		}
 
-		int minOp(int op1, int op2)
+		[[nodiscard]] int minOp(int op1, int op2)
 		{
 			return std::min(op1, op2);
 		}
 
-		int maxOp(int op1, int op2)
+		[[nodiscard]] int maxOp(int op1, int op2)
 		{
 			return std::max(op1, op2);
 		}
@@ -215,7 +215,7 @@ namespace
 				// Nothing here
 			}
 
-			size_t find(const char* value, size_t pos = 0) const
+			[[nodiscard]] size_t find(const char* value, size_t pos = 0) const
 			{
 				size_t retVal = mOriginal->find(value, mStart + pos);
 				if (retVal >= mEnd)
@@ -230,7 +230,7 @@ namespace
 				return retVal;
 			}
 
-			size_t find(const std::string& value) const
+			[[nodiscard]] size_t find(const std::string& value) const
 			{
 				size_t retVal = mOriginal->find(value, mStart);
 				if (retVal >= mEnd)
@@ -245,7 +245,7 @@ namespace
 				return retVal;
 			}
 
-			size_t findFirstOf(const char* c, size_t pos) const
+			[[nodiscard]] size_t findFirstOf(const char* c, size_t pos) const
 			{
 				size_t retVal = mOriginal->find_first_of(c, mStart + pos);
 				if (retVal >= mEnd)
@@ -260,7 +260,7 @@ namespace
 				return retVal;
 			}
 
-			bool matchEqual(const char* stringCompare) const
+			[[nodiscard]] bool matchEqual(const char* stringCompare) const
 			{
 				const char* origStr = mOriginal->c_str() + mStart;
 				ptrdiff_t length = static_cast<ptrdiff_t>(mEnd - mStart);
@@ -282,38 +282,38 @@ namespace
 				mEnd = std::min(newEnd, mOriginal->size());
 			}
 
-			size_t getStart() const
+			[[nodiscard]] size_t getStart() const
 			{
 				return mStart;
 			}
 
-			size_t getEnd() const
+			[[nodiscard]] size_t getEnd() const
 			{
 				return mEnd;
 			}
 
-			size_t getSize() const
+			[[nodiscard]] size_t getSize() const
 			{
 				return mEnd - mStart;
 			}
 
-			std::string::const_iterator begin() const
+			[[nodiscard]] std::string::const_iterator begin() const
 			{
 				return mOriginal->begin() + static_cast<int>(mStart);
 			}
 
-			std::string::const_iterator end() const
+			[[nodiscard]] std::string::const_iterator end() const
 			{
 				return mOriginal->begin() + static_cast<int>(mEnd);
 			}
 
-			const std::string& getOriginalBuffer() const
+			[[nodiscard]] const std::string& getOriginalBuffer() const
 			{
 				return *mOriginal;
 			}
 		};
 
-		size_t calculateLineCount(const std::string& buffer, size_t idx)
+		[[nodiscard]] size_t calculateLineCount(const std::string& buffer, size_t idx)
 		{
 			std::string::const_iterator itor = buffer.begin();
 			std::string::const_iterator end  = buffer.begin() + static_cast<int>(idx);
@@ -332,7 +332,7 @@ namespace
 			return lineCount + 1;
 		}
 
-		size_t calculateLineCount(const SubStringRef& subString)
+		[[nodiscard]] size_t calculateLineCount(const SubStringRef& subString)
 		{
 			return calculateLineCount(subString.getOriginalBuffer(), subString.getStart());
 		}
@@ -395,7 +395,7 @@ namespace
 			}
 		}
 
-		size_t evaluateExpressionEnd(const Renderer::Context& context, const SubStringRef& outSubString)
+		[[nodiscard]] size_t evaluateExpressionEnd(const Renderer::Context& context, const SubStringRef& outSubString)
 		{
 			std::string::const_iterator it = outSubString.begin();
 			std::string::const_iterator en = outSubString.end();
@@ -430,7 +430,7 @@ namespace
 			return returnValue;
 		}
 
-		bool evaluateExpressionRecursive(const Renderer::Context& context, const RendererRuntime::ShaderProperties& shaderProperties, ExpressionVec& expression, bool& outSyntaxError)
+		[[nodiscard]] bool evaluateExpressionRecursive(const Renderer::Context& context, const RendererRuntime::ShaderProperties& shaderProperties, ExpressionVec& expression, bool& outSyntaxError)
 		{
 			ExpressionVec::iterator itor = expression.begin();
 			ExpressionVec::iterator end  = expression.end();
@@ -528,7 +528,7 @@ namespace
 			return retVal;
 		}
 
-		bool evaluateExpression(const Renderer::Context& context, const RendererRuntime::ShaderProperties& shaderProperties, SubStringRef& outSubString, bool& outSyntaxError)
+		[[nodiscard]] bool evaluateExpression(const Renderer::Context& context, const RendererRuntime::ShaderProperties& shaderProperties, SubStringRef& outSubString, bool& outSyntaxError)
 		{
 			const size_t expEnd = evaluateExpressionEnd(context, outSubString);
 			if (std::string::npos == expEnd)

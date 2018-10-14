@@ -50,10 +50,10 @@ namespace RendererRuntime
 		mShaderPieceResource = static_cast<ShaderPieceResource*>(&resource);
 	}
 
-	void ShaderPieceResourceLoader::onDeserialization(IFile& file)
+	bool ShaderPieceResourceLoader::onDeserialization(IFile& file)
 	{
 		// Tell the memory mapped file about the LZ4 compressed data
-		mMemoryFile.loadLz4CompressedDataFromFile(v1ShaderPiece::FORMAT_TYPE, v1ShaderPiece::FORMAT_VERSION, file);
+		return mMemoryFile.loadLz4CompressedDataFromFile(v1ShaderPiece::FORMAT_TYPE, v1ShaderPiece::FORMAT_VERSION, file);
 	}
 
 	void ShaderPieceResourceLoader::onProcessing()

@@ -105,7 +105,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		std::string getTrackedDeviceString(vr::IVRSystem& vrSystem, vr::TrackedDeviceIndex_t trackedDeviceIndex, vr::TrackedDeviceProperty trackedDeviceProperty, vr::TrackedPropertyError* trackedPropertyError = nullptr)
+		[[nodiscard]] std::string getTrackedDeviceString(vr::IVRSystem& vrSystem, vr::TrackedDeviceIndex_t trackedDeviceIndex, vr::TrackedDeviceProperty trackedDeviceProperty, vr::TrackedPropertyError* trackedPropertyError = nullptr)
 		{
 			uint32_t requiredBufferLength = vrSystem.GetStringTrackedDeviceProperty(trackedDeviceIndex, trackedDeviceProperty, nullptr, 0, trackedPropertyError);
 			if (0 == requiredBufferLength)
@@ -120,7 +120,7 @@ namespace
 			return result;
 		}
 
-		std::string getRenderModelName(uint32_t renderModelIndex)
+		[[nodiscard]] std::string getRenderModelName(uint32_t renderModelIndex)
 		{
 			vr::IVRRenderModels* vrRenderModels = vr::VRRenderModels();
 
@@ -137,7 +137,7 @@ namespace
 			return result;
 		}
 
-		std::string getRenderModelComponentName(const std::string& renderModelName, uint32_t componentIndex)
+		[[nodiscard]] std::string getRenderModelComponentName(const std::string& renderModelName, uint32_t componentIndex)
 		{
 			vr::IVRRenderModels* vrRenderModels = vr::VRRenderModels();
 
@@ -154,7 +154,7 @@ namespace
 			return result;
 		}
 
-		std::string getRenderModelComponentRenderModelName(const std::string& renderModelName, const std::string& componentName)
+		[[nodiscard]] std::string getRenderModelComponentRenderModelName(const std::string& renderModelName, const std::string& componentName)
 		{
 			vr::IVRRenderModels* vrRenderModels = vr::VRRenderModels();
 
@@ -182,7 +182,7 @@ namespace
 			}
 		}
 
-		glm::mat4 convertOpenVrMatrixToGlmMat34(const vr::HmdMatrix34_t& vrHmdMatrix34)
+		[[nodiscard]] glm::mat4 convertOpenVrMatrixToGlmMat34(const vr::HmdMatrix34_t& vrHmdMatrix34)
 		{
 			// Transform the OpenGL style transform matrix into a Direct3D style transform matrix as described at http://cv4mar.blogspot.de/2009/03/transformation-matrices-between-opengl.html
 			// -> Direct3D: Left-handed coordinate system
@@ -259,7 +259,7 @@ namespace
 		*    - Basing on https://github.com/ValveSoftware/openvr/blob/master/samples/hellovr_vulkan/hellovr_vulkan_main.cpp
 		*    - See also https://github.com/ValveSoftware/openvr/wiki/Vulkan
 		*/
-		bool getVulkanInstanceExtensionsRequired(std::vector<std::string>& outInstanceExtensionList)
+		[[nodiscard]] bool getVulkanInstanceExtensionsRequired(std::vector<std::string>& outInstanceExtensionList)
 		{
 			if (!vr::VRCompositor())
 			{
@@ -293,7 +293,7 @@ namespace
 		*    - Basing on https://github.com/ValveSoftware/openvr/blob/master/samples/hellovr_vulkan/hellovr_vulkan_main.cpp
 		*    - See also https://github.com/ValveSoftware/openvr/wiki/Vulkan
 		*/
-		bool getVulkanDeviceExtensionsRequired(VkPhysicalDevice_T* vkPhysicalDevice_T, std::vector<std::string>& outDeviceExtensionList)
+		[[nodiscard]] bool getVulkanDeviceExtensionsRequired(VkPhysicalDevice_T* vkPhysicalDevice_T, std::vector<std::string>& outDeviceExtensionList)
 		{
 			if (!vr::VRCompositor())
 			{
@@ -420,8 +420,7 @@ namespace RendererRuntime
 				//          see https://github.com/ValveSoftware/openvr/wiki/Vulkan and https://github.com/ValveSoftware/openvr/blob/master/samples/hellovr_vulkan/hellovr_vulkan_main.cpp
 				//          The stuff here is currently just for debugging to check whether or not locally extensions are needed.
 				std::vector<std::string> outInstanceExtensionList;
-				::detail::getVulkanInstanceExtensionsRequired(outInstanceExtensionList);
-				if (!outInstanceExtensionList.empty())
+				if (!::detail::getVulkanInstanceExtensionsRequired(outInstanceExtensionList) || !outInstanceExtensionList.empty())
 				{
 					RENDERER_LOG(mRendererRuntime.getContext(), CRITICAL, "OpenVR needs Vulkan instance extensions which are currently not supported")
 					outInstanceExtensionList.clear();

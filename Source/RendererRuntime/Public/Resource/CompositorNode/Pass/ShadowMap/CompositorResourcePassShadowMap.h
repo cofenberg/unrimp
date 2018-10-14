@@ -72,47 +72,47 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline AssetId getTextureAssetId() const
+		[[nodiscard]] inline AssetId getTextureAssetId() const
 		{
 			return mTextureAssetId;
 		}
 
-		inline uint32_t getShadowMapSize() const
+		[[nodiscard]] inline uint32_t getShadowMapSize() const
 		{
 			return mShadowMapSize;
 		}
 
-		inline uint8_t getNumberOfShadowCascades() const
+		[[nodiscard]] inline uint8_t getNumberOfShadowCascades() const
 		{
 			return mNumberOfShadowCascades;
 		}
 
-		inline uint8_t getNumberOfShadowMultisamples() const
+		[[nodiscard]] inline uint8_t getNumberOfShadowMultisamples() const
 		{
 			return mNumberOfShadowMultisamples;
 		}
 
-		inline float getCascadeSplitsLambda() const
+		[[nodiscard]] inline float getCascadeSplitsLambda() const
 		{
 			return mCascadeSplitsLambda;
 		}
 
-		inline AssetId getDepthToExponentialVarianceMaterialBlueprintAssetId() const
+		[[nodiscard]] inline AssetId getDepthToExponentialVarianceMaterialBlueprintAssetId() const
 		{
 			return mDepthToExponentialVarianceMaterialBlueprintAssetId;
 		}
 
-		inline AssetId getBlurMaterialBlueprintAssetId() const
+		[[nodiscard]] inline AssetId getBlurMaterialBlueprintAssetId() const
 		{
 			return mBlurMaterialBlueprintAssetId;
 		}
 
-		inline float getShadowFilterSize() const
+		[[nodiscard]] inline float getShadowFilterSize() const
 		{
 			return mShadowFilterSize;
 		}
 
-		inline bool getStabilizeCascades() const
+		[[nodiscard]] inline bool getStabilizeCascades() const
 		{
 			return mStabilizeCascades;
 		}
@@ -122,7 +122,7 @@ namespace RendererRuntime
 	//[ Public virtual RendererRuntime::ICompositorResourcePass methods ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual CompositorPassTypeId getTypeId() const override
+		[[nodiscard]] inline virtual CompositorPassTypeId getTypeId() const override
 		{
 			return TYPE_ID;
 		}

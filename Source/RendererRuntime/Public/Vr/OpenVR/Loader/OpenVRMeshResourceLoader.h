@@ -99,17 +99,17 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline vr::RenderModel_t* getVrRenderModel() const
+		[[nodiscard]] inline vr::RenderModel_t* getVrRenderModel() const
 		{
 			return mVrRenderModel;
 		}
 
-		inline BufferData& getTangentsData()
+		[[nodiscard]] inline BufferData& getTangentsData()
 		{
 			return mTangentsData;
 		}
 
-		inline BufferData& getBinormalsData()
+		[[nodiscard]] inline BufferData& getBinormalsData()
 		{
 			return mBinormalsData;
 		}
@@ -119,23 +119,26 @@ namespace RendererRuntime
 	//[ Public virtual RendererRuntime::IResourceLoader methods ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual ResourceLoaderTypeId getResourceLoaderTypeId() const override
+		[[nodiscard]] inline virtual ResourceLoaderTypeId getResourceLoaderTypeId() const override
 		{
 			return TYPE_ID;
 		}
 
-		inline virtual bool hasDeserialization() const override
+		[[nodiscard]] inline virtual bool hasDeserialization() const override
 		{
 			return false;
 		}
 
-		inline virtual void onDeserialization(IFile&) override
+		[[nodiscard]] inline virtual bool onDeserialization(IFile&) override
 		{
 			// We're using the OpenVR API instead of reading from a file
+
+			// Done
+			return true;
 		}
 
 		virtual void onProcessing() override;
-		virtual bool onDispatch() override;
+		[[nodiscard]] virtual bool onDispatch() override;
 
 
 	//[-------------------------------------------------------]
@@ -157,8 +160,8 @@ namespace RendererRuntime
 
 		explicit OpenVRMeshResourceLoader(const OpenVRMeshResourceLoader&) = delete;
 		OpenVRMeshResourceLoader& operator=(const OpenVRMeshResourceLoader&) = delete;
-		Renderer::IVertexArray* createVertexArray() const;
-		const std::string& getRenderModelName() const;
+		[[nodiscard]] Renderer::IVertexArray* createVertexArray() const;
+		[[nodiscard]] const std::string& getRenderModelName() const;
 
 
 	//[-------------------------------------------------------]

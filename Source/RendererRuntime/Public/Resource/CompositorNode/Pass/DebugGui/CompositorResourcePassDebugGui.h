@@ -68,7 +68,7 @@ namespace RendererRuntime
 	//[ Public virtual RendererRuntime::ICompositorResourcePass methods ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual CompositorPassTypeId getTypeId() const override
+		[[nodiscard]] inline virtual CompositorPassTypeId getTypeId() const override
 		{
 			return TYPE_ID;
 		}

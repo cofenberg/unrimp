@@ -64,7 +64,7 @@ namespace RendererRuntime
 	//[ Protected virtual RendererRuntime::ISceneFactory methods ]
 	//[-------------------------------------------------------]
 	protected:
-		RENDERERRUNTIME_API_EXPORT virtual ISceneItem* createSceneItem(const SceneItemTypeId& sceneItemTypeId, SceneResource& sceneResource) const override;
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT virtual ISceneItem* createSceneItem(const SceneItemTypeId& sceneItemTypeId, SceneResource& sceneResource) const override;
 
 
 	//[-------------------------------------------------------]

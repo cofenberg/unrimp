@@ -68,7 +68,7 @@ namespace RendererRuntime
 		*  @return
 		*    The graphics program cache ID
 		*/
-		inline GraphicsProgramCacheId getGraphicsProgramCacheId() const
+		[[nodiscard]] inline GraphicsProgramCacheId getGraphicsProgramCacheId() const
 		{
 			return mGraphicsProgramCacheId;
 		}
@@ -80,7 +80,7 @@ namespace RendererRuntime
 		*  @return
 		*    The graphics program
 		*/
-		inline Renderer::IGraphicsProgramPtr getGraphicsProgramPtr() const
+		[[nodiscard]] inline Renderer::IGraphicsProgramPtr getGraphicsProgramPtr() const
 		{
 			return mGraphicsProgramPtr;
 		}

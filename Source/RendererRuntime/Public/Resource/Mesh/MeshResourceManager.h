@@ -81,16 +81,16 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		RENDERERRUNTIME_API_EXPORT MeshResource* getMeshResourceByAssetId(AssetId assetId) const;	// Considered to be inefficient, avoid method whenever possible
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT MeshResource* getMeshResourceByAssetId(AssetId assetId) const;	// Considered to be inefficient, avoid method whenever possible
 		RENDERERRUNTIME_API_EXPORT void loadMeshResourceByAssetId(AssetId assetId, MeshResourceId& meshResourceId, IResourceListener* resourceListener = nullptr, bool reload = false, ResourceLoaderTypeId resourceLoaderTypeId = getInvalid<ResourceLoaderTypeId>());	// Asynchronous
-		RENDERERRUNTIME_API_EXPORT MeshResourceId createEmptyMeshResourceByAssetId(AssetId assetId);	// Mesh resource is not allowed to exist, yet, prefer asynchronous mesh resource loading over this method
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT MeshResourceId createEmptyMeshResourceByAssetId(AssetId assetId);	// Mesh resource is not allowed to exist, yet, prefer asynchronous mesh resource loading over this method
 
-		inline Renderer::IVertexBufferPtr getDrawIdVertexBufferPtr() const
+		[[nodiscard]] inline Renderer::IVertexBufferPtr getDrawIdVertexBufferPtr() const
 		{
 			return mDrawIdVertexBufferPtr;
 		}
 
-		inline Renderer::IVertexArrayPtr getDrawIdVertexArrayPtr() const
+		[[nodiscard]] inline Renderer::IVertexArrayPtr getDrawIdVertexArrayPtr() const
 		{
 			return mDrawIdVertexArrayPtr;
 		}
@@ -100,10 +100,10 @@ namespace RendererRuntime
 	//[ Public virtual RendererRuntime::IResourceManager methods ]
 	//[-------------------------------------------------------]
 	public:
-		virtual uint32_t getNumberOfResources() const override;
-		virtual IResource& getResourceByIndex(uint32_t index) const override;
-		RENDERERRUNTIME_API_EXPORT virtual IResource& getResourceByResourceId(ResourceId resourceId) const override;
-		virtual IResource* tryGetResourceByResourceId(ResourceId resourceId) const override;
+		[[nodiscard]] virtual uint32_t getNumberOfResources() const override;
+		[[nodiscard]] virtual IResource& getResourceByIndex(uint32_t index) const override;
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT virtual IResource& getResourceByResourceId(ResourceId resourceId) const override;
+		[[nodiscard]] virtual IResource* tryGetResourceByResourceId(ResourceId resourceId) const override;
 		virtual void reloadResourceByAssetId(AssetId assetId) override;
 		virtual void update() override;
 
@@ -112,7 +112,7 @@ namespace RendererRuntime
 	//[ Private virtual RendererRuntime::IResourceManager methods ]
 	//[-------------------------------------------------------]
 	private:
-		virtual IResourceLoader* createResourceLoaderInstance(ResourceLoaderTypeId resourceLoaderTypeId) override;
+		[[nodiscard]] virtual IResourceLoader* createResourceLoaderInstance(ResourceLoaderTypeId resourceLoaderTypeId) override;
 
 
 	//[-------------------------------------------------------]

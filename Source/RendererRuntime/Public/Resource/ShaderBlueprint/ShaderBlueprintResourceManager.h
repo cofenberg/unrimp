@@ -79,7 +79,7 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline IRendererRuntime& getRendererRuntime() const
+		[[nodiscard]] inline IRendererRuntime& getRendererRuntime() const
 		{
 			return mRendererRuntime;
 		}
@@ -95,7 +95,7 @@ namespace RendererRuntime
 		*    - The renderer shader properties depend on the current renderer backend, contains e.g. "OpenGL", "GLSL", "ZeroToOneClipZ", "UpperLeftOrigin" etc.
 		*    - The renderer shader properties are added during shader source code building and hence are not part of the pipeline state signature
 		*/
-		inline const ShaderProperties& getRendererShaderProperties() const
+		[[nodiscard]] inline const ShaderProperties& getRendererShaderProperties() const
 		{
 			return mRendererShaderProperties;
 		}
@@ -109,7 +109,7 @@ namespace RendererRuntime
 		*  @return
 		*    The shader cache manager
 		*/
-		inline ShaderCacheManager& getShaderCacheManager()
+		[[nodiscard]] inline ShaderCacheManager& getShaderCacheManager()
 		{
 			return mShaderCacheManager;
 		}
@@ -119,10 +119,10 @@ namespace RendererRuntime
 	//[ Public virtual RendererRuntime::IResourceManager methods ]
 	//[-------------------------------------------------------]
 	public:
-		virtual uint32_t getNumberOfResources() const override;
-		virtual IResource& getResourceByIndex(uint32_t index) const override;
-		virtual IResource& getResourceByResourceId(ResourceId resourceId) const override;
-		virtual IResource* tryGetResourceByResourceId(ResourceId resourceId) const override;
+		[[nodiscard]] virtual uint32_t getNumberOfResources() const override;
+		[[nodiscard]] virtual IResource& getResourceByIndex(uint32_t index) const override;
+		[[nodiscard]] virtual IResource& getResourceByResourceId(ResourceId resourceId) const override;
+		[[nodiscard]] virtual IResource* tryGetResourceByResourceId(ResourceId resourceId) const override;
 		virtual void reloadResourceByAssetId(AssetId assetId) override;
 
 		inline virtual void update() override
@@ -135,7 +135,7 @@ namespace RendererRuntime
 	//[ Private virtual RendererRuntime::IResourceManager methods ]
 	//[-------------------------------------------------------]
 	private:
-		virtual IResourceLoader* createResourceLoaderInstance(ResourceLoaderTypeId resourceLoaderTypeId) override;
+		[[nodiscard]] virtual IResourceLoader* createResourceLoaderInstance(ResourceLoaderTypeId resourceLoaderTypeId) override;
 
 
 	//[-------------------------------------------------------]
@@ -160,7 +160,7 @@ namespace RendererRuntime
 			mShaderCacheManager.loadCache(file);
 		}
 
-		inline bool doesPipelineStateObjectCacheNeedSaving() const
+		[[nodiscard]] inline bool doesPipelineStateObjectCacheNeedSaving() const
 		{
 			return mShaderCacheManager.doesCacheNeedSaving();
 		}

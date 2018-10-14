@@ -41,7 +41,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		inline bool orderRenderTargetTextureElementByRenderTargetTextureSignatureId(const RendererRuntime::RenderTargetTextureManager::RenderTargetTextureElement& left, const RendererRuntime::RenderTargetTextureManager::RenderTargetTextureElement& right)
+		[[nodiscard]] inline bool orderRenderTargetTextureElementByRenderTargetTextureSignatureId(const RendererRuntime::RenderTargetTextureManager::RenderTargetTextureElement& left, const RendererRuntime::RenderTargetTextureManager::RenderTargetTextureElement& right)
 		{
 			return (left.renderTargetTextureSignature.getRenderTargetTextureSignatureId() < right.renderTargetTextureSignature.getRenderTargetTextureSignatureId());
 		}

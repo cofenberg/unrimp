@@ -108,7 +108,7 @@ namespace RendererRuntime
 		*  @brief
 		*    Constructor
 		*/
-		inline ShaderBuilder(const Renderer::Context& context) :
+		inline explicit ShaderBuilder(const Renderer::Context& context) :
 			mContext(context)
 		{
 			// Nothing here

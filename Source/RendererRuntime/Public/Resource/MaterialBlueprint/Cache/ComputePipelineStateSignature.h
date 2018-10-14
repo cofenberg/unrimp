@@ -136,12 +136,12 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Getter for input data                                 ]
 		//[-------------------------------------------------------]
-		inline MaterialBlueprintResourceId getMaterialBlueprintResourceId() const
+		[[nodiscard]] inline MaterialBlueprintResourceId getMaterialBlueprintResourceId() const
 		{
 			return mMaterialBlueprintResourceId;
 		}
 
-		inline const ShaderProperties& getShaderProperties() const
+		[[nodiscard]] inline const ShaderProperties& getShaderProperties() const
 		{
 			return mShaderProperties;
 		}
@@ -149,12 +149,12 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Getter for derived data                               ]
 		//[-------------------------------------------------------]
-		inline ComputePipelineStateSignatureId getComputePipelineStateSignatureId() const
+		[[nodiscard]] inline ComputePipelineStateSignatureId getComputePipelineStateSignatureId() const
 		{
 			return mComputePipelineStateSignatureId;
 		}
 
-		inline ShaderCombinationId getShaderCombinationId() const
+		[[nodiscard]] inline ShaderCombinationId getShaderCombinationId() const
 		{
 			return mShaderCombinationId;
 		}

@@ -89,47 +89,47 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline uint8_t getNumberOfBones() const
+		[[nodiscard]] inline uint8_t getNumberOfBones() const
 		{
 			return mNumberOfBones;
 		}
 
-		inline const uint8_t* getBoneParentIndices() const
+		[[nodiscard]] inline const uint8_t* getBoneParentIndices() const
 		{
 			return mBoneParentIndices;
 		}
 
-		inline const uint32_t* getBoneIds() const
+		[[nodiscard]] inline const uint32_t* getBoneIds() const
 		{
 			return mBoneIds;
 		}
 
-		inline glm::mat4* getLocalBoneMatrices()
+		[[nodiscard]] inline glm::mat4* getLocalBoneMatrices()
 		{
 			return mLocalBoneMatrices;
 		}
 
-		inline const glm::mat4* getLocalBoneMatrices() const
+		[[nodiscard]] inline const glm::mat4* getLocalBoneMatrices() const
 		{
 			return mLocalBoneMatrices;
 		}
 
-		inline const glm::mat4* getBoneOffsetMatrices() const
+		[[nodiscard]] inline const glm::mat4* getBoneOffsetMatrices() const
 		{
 			return mBoneOffsetMatrices;
 		}
 
-		inline const glm::mat4* getGlobalBoneMatrices() const
+		[[nodiscard]] inline const glm::mat4* getGlobalBoneMatrices() const
 		{
 			return mGlobalBoneMatrices;
 		}
 
-		inline const glm::mat3x4* getBoneSpaceMatrices() const
+		[[nodiscard]] inline const glm::mat3x4* getBoneSpaceMatrices() const
 		{
 			return mBoneSpaceMatrices;
 		}
 
-		uint32_t getBoneIndexByBoneId(uint32_t boneId) const;	// Bone IDs = "RendererRuntime::StringId" on bone name, "RendererRuntime::getInvalid<uint32_t>()" if unknown bone ID
+		[[nodiscard]] uint32_t getBoneIndexByBoneId(uint32_t boneId) const;	// Bone IDs = "RendererRuntime::StringId" on bone name, "RendererRuntime::getInvalid<uint32_t>()" if unknown bone ID
 		void localToGlobalPose();
 
 

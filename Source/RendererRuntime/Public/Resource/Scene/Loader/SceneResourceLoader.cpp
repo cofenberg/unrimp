@@ -132,10 +132,10 @@ namespace RendererRuntime
 		mSceneResource = static_cast<SceneResource*>(&resource);
 	}
 
-	void SceneResourceLoader::onDeserialization(IFile& file)
+	bool SceneResourceLoader::onDeserialization(IFile& file)
 	{
 		// Tell the memory mapped file about the LZ4 compressed data
-		mMemoryFile.loadLz4CompressedDataFromFile(v1Scene::FORMAT_TYPE, v1Scene::FORMAT_VERSION, file);
+		return mMemoryFile.loadLz4CompressedDataFromFile(v1Scene::FORMAT_TYPE, v1Scene::FORMAT_VERSION, file);
 	}
 
 	void SceneResourceLoader::onProcessing()

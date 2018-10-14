@@ -75,10 +75,10 @@ namespace RendererRuntime
 	//[ Public virtual RendererRuntime::IResourceManager methods ]
 	//[-------------------------------------------------------]
 	public:
-		virtual uint32_t getNumberOfResources() const = 0;
-		virtual IResource& getResourceByIndex(uint32_t index) const = 0;
-		virtual IResource& getResourceByResourceId(ResourceId resourceId) const = 0;
-		virtual IResource* tryGetResourceByResourceId(ResourceId resourceId) const = 0;
+		[[nodiscard]] virtual uint32_t getNumberOfResources() const = 0;
+		[[nodiscard]] virtual IResource& getResourceByIndex(uint32_t index) const = 0;
+		[[nodiscard]] virtual IResource& getResourceByResourceId(ResourceId resourceId) const = 0;
+		[[nodiscard]] virtual IResource* tryGetResourceByResourceId(ResourceId resourceId) const = 0;
 		virtual void reloadResourceByAssetId(AssetId assetId) = 0;
 		virtual void update() = 0;
 
@@ -110,7 +110,7 @@ namespace RendererRuntime
 	//[ Private virtual RendererRuntime::IResourceManager methods ]
 	//[-------------------------------------------------------]
 	private:
-		virtual IResourceLoader* createResourceLoaderInstance(ResourceLoaderTypeId resourceLoaderTypeId) = 0;
+		[[nodiscard]] virtual IResourceLoader* createResourceLoaderInstance(ResourceLoaderTypeId resourceLoaderTypeId) = 0;
 
 
 	};

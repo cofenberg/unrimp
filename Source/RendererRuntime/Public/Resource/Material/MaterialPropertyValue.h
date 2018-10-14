@@ -118,16 +118,16 @@ namespace RendererRuntime
 	//[ Public static methods                                 ]
 	//[-------------------------------------------------------]
 	public:
-		RENDERERRUNTIME_API_EXPORT static uint32_t getValueTypeNumberOfBytes(ValueType valueType);
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT static uint32_t getValueTypeNumberOfBytes(ValueType valueType);
 
-		static inline MaterialPropertyValue fromUnknown()
+		[[nodiscard]] static inline MaterialPropertyValue fromUnknown()
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType = ValueType::UNKNOWN;
 			return materialPropertyValue;
 		}
 
-		static inline MaterialPropertyValue fromBoolean(bool value)
+		[[nodiscard]] static inline MaterialPropertyValue fromBoolean(bool value)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType	 = ValueType::BOOLEAN;
@@ -135,7 +135,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		static inline MaterialPropertyValue fromInteger(int value)
+		[[nodiscard]] static inline MaterialPropertyValue fromInteger(int value)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType	 = ValueType::INTEGER;
@@ -143,7 +143,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		static inline MaterialPropertyValue fromInteger2(int value0, int value1)
+		[[nodiscard]] static inline MaterialPropertyValue fromInteger2(int value0, int value1)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType		 = ValueType::INTEGER_2;
@@ -152,7 +152,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		static inline MaterialPropertyValue fromInteger2(int value[2])	// It's your responsibility to take care that there are at least two integers
+		[[nodiscard]] static inline MaterialPropertyValue fromInteger2(int value[2])	// It's your responsibility to take care that there are at least two integers
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType		 = ValueType::INTEGER_2;
@@ -161,7 +161,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		static inline MaterialPropertyValue fromInteger3(int value0, int value1, int value2)
+		[[nodiscard]] static inline MaterialPropertyValue fromInteger3(int value0, int value1, int value2)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType		 = ValueType::INTEGER_3;
@@ -171,7 +171,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		static inline MaterialPropertyValue fromInteger3(int value[3])	// It's your responsibility to take care that there are at least three integers
+		[[nodiscard]] static inline MaterialPropertyValue fromInteger3(int value[3])	// It's your responsibility to take care that there are at least three integers
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType		 = ValueType::INTEGER_3;
@@ -181,7 +181,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		static inline MaterialPropertyValue fromInteger4(int value0, int value1, int value2, int value3)
+		[[nodiscard]] static inline MaterialPropertyValue fromInteger4(int value0, int value1, int value2, int value3)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType		 = ValueType::INTEGER_4;
@@ -192,7 +192,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		static inline MaterialPropertyValue fromInteger4(int value[4])	// It's your responsibility to take care that there are at least four integers
+		[[nodiscard]] static inline MaterialPropertyValue fromInteger4(int value[4])	// It's your responsibility to take care that there are at least four integers
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType		 = ValueType::INTEGER_4;
@@ -203,7 +203,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		static inline MaterialPropertyValue fromFloat(float value)
+		[[nodiscard]] static inline MaterialPropertyValue fromFloat(float value)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType   = ValueType::FLOAT;
@@ -211,7 +211,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		static inline MaterialPropertyValue fromFloat2(float value0, float value1)
+		[[nodiscard]] static inline MaterialPropertyValue fromFloat2(float value0, float value1)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType	   = ValueType::FLOAT_2;
@@ -220,7 +220,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		static inline MaterialPropertyValue fromFloat2(float value[2])	// It's your responsibility to take care that there are at least two floats
+		[[nodiscard]] static inline MaterialPropertyValue fromFloat2(float value[2])	// It's your responsibility to take care that there are at least two floats
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType	   = ValueType::FLOAT_2;
@@ -229,7 +229,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		static inline MaterialPropertyValue fromFloat3(float value0, float value1, float value2)
+		[[nodiscard]] static inline MaterialPropertyValue fromFloat3(float value0, float value1, float value2)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType	   = ValueType::FLOAT_3;
@@ -239,7 +239,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		static inline MaterialPropertyValue fromFloat3(float value[3])	// It's your responsibility to take care that there are at least three floats
+		[[nodiscard]] static inline MaterialPropertyValue fromFloat3(float value[3])	// It's your responsibility to take care that there are at least three floats
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType	   = ValueType::FLOAT_3;
@@ -249,7 +249,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		static inline MaterialPropertyValue fromFloat4(float value0, float value1, float value2, float value3)
+		[[nodiscard]] static inline MaterialPropertyValue fromFloat4(float value0, float value1, float value2, float value3)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType	   = ValueType::FLOAT_4;
@@ -260,7 +260,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		static inline MaterialPropertyValue fromFloat4(float value[4])	// It's your responsibility to take care that there are at least four floats
+		[[nodiscard]] static inline MaterialPropertyValue fromFloat4(float value[4])	// It's your responsibility to take care that there are at least four floats
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType	   = ValueType::FLOAT_4;
@@ -271,7 +271,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		static inline MaterialPropertyValue fromFloat3_3()	// Declaration property only
+		[[nodiscard]] static inline MaterialPropertyValue fromFloat3_3()	// Declaration property only
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType = ValueType::FLOAT_3_3;
@@ -279,7 +279,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		static inline MaterialPropertyValue fromFloat4_4()	// Declaration property only
+		[[nodiscard]] static inline MaterialPropertyValue fromFloat4_4()	// Declaration property only
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType = ValueType::FLOAT_4_4;
@@ -288,7 +288,7 @@ namespace RendererRuntime
 		}
 
 		// For graphics pipeline rasterizer state property usage
-		static inline MaterialPropertyValue fromFillMode(Renderer::FillMode value)
+		[[nodiscard]] static inline MaterialPropertyValue fromFillMode(Renderer::FillMode value)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType	  = ValueType::FILL_MODE;
@@ -296,7 +296,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		static inline MaterialPropertyValue fromCullMode(Renderer::CullMode value)
+		[[nodiscard]] static inline MaterialPropertyValue fromCullMode(Renderer::CullMode value)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType	  = ValueType::CULL_MODE;
@@ -304,7 +304,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		static inline MaterialPropertyValue fromConservativeRasterizationMode(Renderer::ConservativeRasterizationMode value)
+		[[nodiscard]] static inline MaterialPropertyValue fromConservativeRasterizationMode(Renderer::ConservativeRasterizationMode value)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType						   = ValueType::CONSERVATIVE_RASTERIZATION_MODE;
@@ -313,7 +313,7 @@ namespace RendererRuntime
 		}
 
 		// For graphics pipeline depth stencil state property usage
-		static inline MaterialPropertyValue fromDepthWriteMask(Renderer::DepthWriteMask value)
+		[[nodiscard]] static inline MaterialPropertyValue fromDepthWriteMask(Renderer::DepthWriteMask value)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType			= ValueType::DEPTH_WRITE_MASK;
@@ -321,7 +321,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		static inline MaterialPropertyValue fromStencilOp(Renderer::StencilOp value)
+		[[nodiscard]] static inline MaterialPropertyValue fromStencilOp(Renderer::StencilOp value)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType	   = ValueType::STENCIL_OP;
@@ -330,7 +330,7 @@ namespace RendererRuntime
 		}
 
 		// For graphics pipeline depth stencil state and sampler state property usage
-		static inline MaterialPropertyValue fromComparisonFunc(Renderer::ComparisonFunc value)
+		[[nodiscard]] static inline MaterialPropertyValue fromComparisonFunc(Renderer::ComparisonFunc value)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType			= ValueType::COMPARISON_FUNC;
@@ -339,7 +339,7 @@ namespace RendererRuntime
 		}
 
 		// For graphics pipeline blend state property usage
-		static inline MaterialPropertyValue fromBlend(Renderer::Blend value)
+		[[nodiscard]] static inline MaterialPropertyValue fromBlend(Renderer::Blend value)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType   = ValueType::BLEND;
@@ -347,7 +347,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		static inline MaterialPropertyValue fromBlendOp(Renderer::BlendOp value)
+		[[nodiscard]] static inline MaterialPropertyValue fromBlendOp(Renderer::BlendOp value)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType	 = ValueType::BLEND_OP;
@@ -356,7 +356,7 @@ namespace RendererRuntime
 		}
 
 		// For sampler state property usage
-		static inline MaterialPropertyValue fromFilterMode(Renderer::FilterMode value)
+		[[nodiscard]] static inline MaterialPropertyValue fromFilterMode(Renderer::FilterMode value)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType		= ValueType::FILTER_MODE;
@@ -364,7 +364,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		static inline MaterialPropertyValue fromTextureAddressMode(Renderer::TextureAddressMode value)
+		[[nodiscard]] static inline MaterialPropertyValue fromTextureAddressMode(Renderer::TextureAddressMode value)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType				= ValueType::TEXTURE_ADDRESS_MODE;
@@ -373,7 +373,7 @@ namespace RendererRuntime
 		}
 
 		// For texture property usage
-		static inline MaterialPropertyValue fromTextureAssetId(AssetId value)
+		[[nodiscard]] static inline MaterialPropertyValue fromTextureAssetId(AssetId value)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType			= ValueType::TEXTURE_ASSET_ID;
@@ -382,7 +382,7 @@ namespace RendererRuntime
 		}
 
 		// For shader combination property usage
-		static inline MaterialPropertyValue fromGlobalMaterialPropertyId(MaterialPropertyId value)
+		[[nodiscard]] static inline MaterialPropertyValue fromGlobalMaterialPropertyId(MaterialPropertyId value)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType					  = ValueType::GLOBAL_MATERIAL_PROPERTY_ID;
@@ -411,7 +411,7 @@ namespace RendererRuntime
 		*  @return
 		*    The value type
 		*/
-		inline ValueType getValueType() const
+		[[nodiscard]] inline ValueType getValueType() const
 		{
 			return mValueType;
 		}
@@ -419,142 +419,142 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Value getter                                          ]
 		//[-------------------------------------------------------]
-		inline const uint8_t* getData() const
+		[[nodiscard]] inline const uint8_t* getData() const
 		{
 			return reinterpret_cast<const uint8_t*>(&mValue);
 		}
 
-		inline bool getBooleanValue() const
+		[[nodiscard]] inline bool getBooleanValue() const
 		{
 			assert(ValueType::BOOLEAN == mValueType);
 			return mValue.Boolean;
 		}
 
-		inline int getIntegerValue() const
+		[[nodiscard]] inline int getIntegerValue() const
 		{
 			assert(ValueType::INTEGER == mValueType);
 			return mValue.Integer;
 		}
 
-		inline const int* getInteger2Value() const
+		[[nodiscard]] inline const int* getInteger2Value() const
 		{
 			assert(ValueType::INTEGER_2 == mValueType);
 			return &mValue.Integer2[0];
 		}
 
-		inline const int* getInteger3Value() const
+		[[nodiscard]] inline const int* getInteger3Value() const
 		{
 			assert(ValueType::INTEGER_3 == mValueType);
 			return &mValue.Integer3[0];
 		}
 
-		inline const int* getInteger4Value() const
+		[[nodiscard]] inline const int* getInteger4Value() const
 		{
 			assert(ValueType::INTEGER_4 == mValueType);
 			return &mValue.Integer4[0];
 		}
 
-		inline float getFloatValue() const
+		[[nodiscard]] inline float getFloatValue() const
 		{
 			assert(ValueType::FLOAT == mValueType);
 			return mValue.Float;
 		}
 
-		inline const float* getFloat2Value() const
+		[[nodiscard]] inline const float* getFloat2Value() const
 		{
 			assert(ValueType::FLOAT_2 == mValueType);
 			return &mValue.Float2[0];
 		}
 
-		inline const float* getFloat3Value() const
+		[[nodiscard]] inline const float* getFloat3Value() const
 		{
 			assert(ValueType::FLOAT_3 == mValueType);
 			return &mValue.Float3[0];
 		}
 
-		inline const float* getFloat4Value() const
+		[[nodiscard]] inline const float* getFloat4Value() const
 		{
 			assert(ValueType::FLOAT_4 == mValueType);
 			return &mValue.Float4[0];
 		}
 
-		// inline const float* getFloat3_3Value() const;	// Declaration property only
-		// inline const float* getFloat4_4Value() const;	// Declaration property only
+		// [[nodiscard]] inline const float* getFloat3_3Value() const;	// Declaration property only
+		// [[nodiscard]] inline const float* getFloat4_4Value() const;	// Declaration property only
 
 		// For graphics pipeline rasterizer state property usage
-		inline Renderer::FillMode getFillModeValue() const
+		[[nodiscard]] inline Renderer::FillMode getFillModeValue() const
 		{
 			assert(ValueType::FILL_MODE == mValueType);
 			return mValue.FillMode;
 		}
 
-		inline Renderer::CullMode getCullModeValue() const
+		[[nodiscard]] inline Renderer::CullMode getCullModeValue() const
 		{
 			assert(ValueType::CULL_MODE == mValueType);
 			return mValue.CullMode;
 		}
 
-		inline Renderer::ConservativeRasterizationMode getConservativeRasterizationModeValue() const
+		[[nodiscard]] inline Renderer::ConservativeRasterizationMode getConservativeRasterizationModeValue() const
 		{
 			assert(ValueType::CONSERVATIVE_RASTERIZATION_MODE == mValueType);
 			return mValue.ConservativeRasterizationMode;
 		}
 
 		// For graphics pipeline depth stencil state property usage
-		inline Renderer::DepthWriteMask getDepthWriteMaskValue() const
+		[[nodiscard]] inline Renderer::DepthWriteMask getDepthWriteMaskValue() const
 		{
 			assert(ValueType::DEPTH_WRITE_MASK == mValueType);
 			return mValue.DepthWriteMask;
 		}
 
-		inline Renderer::StencilOp getStencilOpValue() const
+		[[nodiscard]] inline Renderer::StencilOp getStencilOpValue() const
 		{
 			assert(ValueType::STENCIL_OP == mValueType);
 			return mValue.StencilOp;
 		}
 
 		// For graphics pipeline depth stencil state and sampler state property usage
-		inline Renderer::ComparisonFunc getComparisonFuncValue() const
+		[[nodiscard]] inline Renderer::ComparisonFunc getComparisonFuncValue() const
 		{
 			assert(ValueType::COMPARISON_FUNC == mValueType);
 			return mValue.ComparisonFunc;
 		}
 
 		// For graphics pipeline blend state property usage
-		inline Renderer::Blend getBlendValue() const
+		[[nodiscard]] inline Renderer::Blend getBlendValue() const
 		{
 			assert(ValueType::BLEND == mValueType);
 			return mValue.Blend;
 		}
 
-		inline Renderer::BlendOp getBlendOpValue() const
+		[[nodiscard]] inline Renderer::BlendOp getBlendOpValue() const
 		{
 			assert(ValueType::BLEND_OP == mValueType);
 			return mValue.BlendOp;
 		}
 
 		// For sampler state property usage
-		inline Renderer::FilterMode getFilterMode() const
+		[[nodiscard]] inline Renderer::FilterMode getFilterMode() const
 		{
 			assert(ValueType::FILTER_MODE == mValueType);
 			return mValue.FilterMode;
 		}
 
-		inline Renderer::TextureAddressMode getTextureAddressModeValue() const
+		[[nodiscard]] inline Renderer::TextureAddressMode getTextureAddressModeValue() const
 		{
 			assert(ValueType::TEXTURE_ADDRESS_MODE == mValueType);
 			return mValue.TextureAddressMode;
 		}
 
 		// For texture property usage
-		inline AssetId getTextureAssetIdValue() const
+		[[nodiscard]] inline AssetId getTextureAssetIdValue() const
 		{
 			assert(ValueType::TEXTURE_ASSET_ID == mValueType);
 			return mValue.TextureAssetId;
 		}
 
 		// For shader combination property usage
-		inline MaterialPropertyId getGlobalMaterialPropertyId() const
+		[[nodiscard]] inline MaterialPropertyId getGlobalMaterialPropertyId() const
 		{
 			assert(ValueType::GLOBAL_MATERIAL_PROPERTY_ID == mValueType);
 			return mValue.GlobalMaterialPropertyId;
@@ -563,9 +563,9 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Comparison operator                                   ]
 		//[-------------------------------------------------------]
-		RENDERERRUNTIME_API_EXPORT bool operator ==(const MaterialPropertyValue& materialPropertyValue) const;
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT bool operator ==(const MaterialPropertyValue& materialPropertyValue) const;
 
-		inline bool operator !=(const MaterialPropertyValue& materialPropertyValue) const
+		[[nodiscard]] inline bool operator !=(const MaterialPropertyValue& materialPropertyValue) const
 		{
 			return !(*this == materialPropertyValue);
 		}

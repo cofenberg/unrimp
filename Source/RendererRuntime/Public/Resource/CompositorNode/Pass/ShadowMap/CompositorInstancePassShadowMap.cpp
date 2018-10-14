@@ -64,7 +64,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		glm::vec4 transformVectorByMatrix(const glm::mat4& matrix, const glm::vec4& vector)
+		[[nodiscard]] glm::vec4 transformVectorByMatrix(const glm::mat4& matrix, const glm::vec4& vector)
 		{
 			const glm::vec4 temporaryVector = matrix * vector;
 			return temporaryVector / temporaryVector.w;

@@ -102,7 +102,7 @@ namespace RendererRuntime
 			mInputChannels.push_back(compositorChannelId);
 		}
 
-		inline const CompositorChannels& getInputChannels() const
+		[[nodiscard]] inline const CompositorChannels& getInputChannels() const
 		{
 			return mInputChannels;
 		}
@@ -120,7 +120,7 @@ namespace RendererRuntime
 			mCompositorRenderTargetTextures.emplace_back(assetId, renderTargetTextureSignature);
 		}
 
-		inline const CompositorRenderTargetTextures& getRenderTargetTextures() const
+		[[nodiscard]] inline const CompositorRenderTargetTextures& getRenderTargetTextures() const
 		{
 			return mCompositorRenderTargetTextures;
 		}
@@ -138,7 +138,7 @@ namespace RendererRuntime
 			mCompositorFramebuffers.emplace_back(compositorFramebufferId, framebufferSignature);
 		}
 
-		inline const CompositorFramebuffers& getFramebuffers() const
+		[[nodiscard]] inline const CompositorFramebuffers& getFramebuffers() const
 		{
 			return mCompositorFramebuffers;
 		}
@@ -151,13 +151,13 @@ namespace RendererRuntime
 			mCompositorTargets.reserve(numberOfCompositorTargets);
 		}
 
-		inline CompositorTarget& addCompositorTarget(CompositorChannelId compositorChannelId, CompositorFramebufferId compositorFramebufferId)
+		[[nodiscard]] inline CompositorTarget& addCompositorTarget(CompositorChannelId compositorChannelId, CompositorFramebufferId compositorFramebufferId)
 		{
 			mCompositorTargets.emplace_back(compositorChannelId, compositorFramebufferId);
 			return mCompositorTargets.back();
 		}
 
-		inline const CompositorTargets& getCompositorTargets() const
+		[[nodiscard]] inline const CompositorTargets& getCompositorTargets() const
 		{
 			return mCompositorTargets;
 		}
@@ -175,7 +175,7 @@ namespace RendererRuntime
 			mOutputChannels.push_back(compositorChannelId);
 		}
 
-		inline const CompositorChannels& getOutputChannels() const
+		[[nodiscard]] inline const CompositorChannels& getOutputChannels() const
 		{
 			return mOutputChannels;
 		}

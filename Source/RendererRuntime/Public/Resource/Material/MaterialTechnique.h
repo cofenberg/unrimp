@@ -113,7 +113,7 @@ namespace RendererRuntime
 		*  @return
 		*    The material technique ID
 		*/
-		inline MaterialTechniqueId getMaterialTechniqueId() const
+		[[nodiscard]] inline MaterialTechniqueId getMaterialTechniqueId() const
 		{
 			return mMaterialTechniqueId;
 		}
@@ -125,7 +125,7 @@ namespace RendererRuntime
 		*  @return
 		*    The ID of the used material blueprint resource, can be invalid
 		*/
-		inline MaterialBlueprintResourceId getMaterialBlueprintResourceId() const
+		[[nodiscard]] inline MaterialBlueprintResourceId getMaterialBlueprintResourceId() const
 		{
 			return mMaterialBlueprintResourceId;
 		}
@@ -149,7 +149,7 @@ namespace RendererRuntime
 		*  @return
 		*    The FNV1a hash of "Renderer::SerializedGraphicsPipelineState"
 		*/
-		inline uint32_t getSerializedGraphicsPipelineStateHash() const
+		[[nodiscard]] inline uint32_t getSerializedGraphicsPipelineStateHash() const
 		{
 			return mSerializedGraphicsPipelineStateHash;
 		}
@@ -229,7 +229,7 @@ namespace RendererRuntime
 		*  @return
 		*    The textures
 		*/
-		const Textures& getTextures(const IRendererRuntime& rendererRuntime);
+		[[nodiscard]] const Textures& getTextures(const IRendererRuntime& rendererRuntime);
 
 		inline void makeResourceGroupDirty()
 		{

@@ -86,7 +86,7 @@ namespace RendererRuntime
 		*  @return
 		*    The vertex attributes
 		*/
-		inline const Renderer::VertexAttributes& getVertexAttributes() const
+		[[nodiscard]] inline const Renderer::VertexAttributes& getVertexAttributes() const
 		{
 			return mVertexAttributes;
 		}

@@ -98,7 +98,7 @@ namespace RendererRuntime
 			mCompositorNodeAssetIds.push_back(compositorNodeAssetId);
 		}
 
-		inline const CompositorNodeAssetIds& getCompositorNodeAssetIds() const
+		[[nodiscard]] inline const CompositorNodeAssetIds& getCompositorNodeAssetIds() const
 		{
 			return mCompositorNodeAssetIds;
 		}

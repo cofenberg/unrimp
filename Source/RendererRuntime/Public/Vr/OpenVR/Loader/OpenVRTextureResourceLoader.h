@@ -70,19 +70,22 @@ namespace RendererRuntime
 	//[ Public virtual RendererRuntime::IResourceLoader methods ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual ResourceLoaderTypeId getResourceLoaderTypeId() const override
+		[[nodiscard]] inline virtual ResourceLoaderTypeId getResourceLoaderTypeId() const override
 		{
 			return TYPE_ID;
 		}
 
-		inline virtual bool hasDeserialization() const override
+		[[nodiscard]] inline virtual bool hasDeserialization() const override
 		{
 			return false;
 		}
 
-		inline virtual void onDeserialization(IFile&) override
+		[[nodiscard]] inline virtual bool onDeserialization(IFile&) override
 		{
 			// We're using the OpenVR API instead of reading from a file
+
+			// Done
+			return true;
 		}
 
 		virtual void onProcessing() override;
@@ -92,7 +95,7 @@ namespace RendererRuntime
 	//[ Protected RendererRuntime::ITextureResourceLoader methods ]
 	//[-------------------------------------------------------]
 	protected:
-		virtual Renderer::ITexture* createRendererTexture() override;
+		[[nodiscard]] virtual Renderer::ITexture* createRendererTexture() override;
 
 
 	//[-------------------------------------------------------]

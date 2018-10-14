@@ -114,21 +114,21 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline bool isAsynchronousCompilationEnabled() const
+		[[nodiscard]] inline bool isAsynchronousCompilationEnabled() const
 		{
 			return mAsynchronousCompilationEnabled;
 		}
 
 		void setAsynchronousCompilationEnabled(bool enabled);
 
-		inline uint32_t getNumberOfCompilerThreads() const
+		[[nodiscard]] inline uint32_t getNumberOfCompilerThreads() const
 		{
 			return mNumberOfCompilerThreads;
 		}
 
 		void setNumberOfCompilerThreads(uint32_t numberOfCompilerThreads);
 
-		inline uint32_t getNumberOfInFlightCompilerRequests() const
+		[[nodiscard]] inline uint32_t getNumberOfInFlightCompilerRequests() const
 		{
 			return mNumberOfInFlightCompilerRequests;
 		}
@@ -208,7 +208,7 @@ namespace RendererRuntime
 		void flushQueue(std::mutex& mutex, const CompilerRequests& compilerRequests);
 		void builderThreadWorker();
 		void compilerThreadWorker();
-		Renderer::IGraphicsPipelineState* createGraphicsPipelineState(const RendererRuntime::MaterialBlueprintResource& materialBlueprintResource, uint32_t serializedGraphicsPipelineStateHash, Renderer::IGraphicsProgram& graphicsProgram) const;
+		[[nodiscard]] Renderer::IGraphicsPipelineState* createGraphicsPipelineState(const RendererRuntime::MaterialBlueprintResource& materialBlueprintResource, uint32_t serializedGraphicsPipelineStateHash, Renderer::IGraphicsProgram& graphicsProgram) const;
 
 
 	//[-------------------------------------------------------]

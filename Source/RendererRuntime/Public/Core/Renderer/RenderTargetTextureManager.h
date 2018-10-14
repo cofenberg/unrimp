@@ -136,7 +136,7 @@ namespace RendererRuntime
 		explicit RenderTargetTextureManager(const RenderTargetTextureManager&) = delete;
 		RenderTargetTextureManager& operator=(const RenderTargetTextureManager&) = delete;
 
-		inline IRendererRuntime& getRendererRuntime() const
+		[[nodiscard]] inline IRendererRuntime& getRendererRuntime() const
 		{
 			return mRendererRuntime;
 		}
@@ -144,7 +144,7 @@ namespace RendererRuntime
 		void clear();
 		void clearRendererResources();
 		void addRenderTargetTexture(AssetId assetId, const RenderTargetTextureSignature& renderTargetTextureSignature);
-		Renderer::ITexture* getTextureByAssetId(AssetId assetId, const Renderer::IRenderTarget& renderTarget, uint8_t numberOfMultisamples, float resolutionScale, const RenderTargetTextureSignature** outRenderTargetTextureSignature);
+		[[nodiscard]] Renderer::ITexture* getTextureByAssetId(AssetId assetId, const Renderer::IRenderTarget& renderTarget, uint8_t numberOfMultisamples, float resolutionScale, const RenderTargetTextureSignature** outRenderTargetTextureSignature);
 		void releaseRenderTargetTextureBySignature(const RenderTargetTextureSignature& renderTargetTextureSignature);
 
 
@@ -152,9 +152,9 @@ namespace RendererRuntime
 	//[ Private definitions                                   ]
 	//[-------------------------------------------------------]
 	private:
-		typedef std::vector<RenderTargetTextureElement> SortedRenderTargetTextureVector;
+		typedef std::vector<RenderTargetTextureElement>						 SortedRenderTargetTextureVector;
 		typedef std::unordered_map<uint32_t, RenderTargetTextureSignatureId> AssetIdToRenderTargetTextureSignatureId;	///< Key = "RendererRuntime::AssetId"
-		typedef std::unordered_map<uint32_t, uint32_t> AssetIdToIndex;	///< Key = "RendererRuntime::AssetId"
+		typedef std::unordered_map<uint32_t, uint32_t>						 AssetIdToIndex;							///< Key = "RendererRuntime::AssetId"
 
 
 	//[-------------------------------------------------------]

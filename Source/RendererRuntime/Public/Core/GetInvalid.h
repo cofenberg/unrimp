@@ -48,7 +48,7 @@ namespace RendererRuntime
 	*    Return invalid default value for a given type
 	*/
 	template <typename TYPE>
-	TYPE getInvalid()
+	[[nodiscard]] TYPE getInvalid()
 	{
 		return std::numeric_limits<TYPE>::max();
 	}
@@ -58,7 +58,7 @@ namespace RendererRuntime
 	*    Return invalid default value for a type provided by a variable
 	*/
 	template <typename TYPE>
-	TYPE getInvalid(const TYPE&)
+	[[nodiscard]] TYPE getInvalid(const TYPE&)
 	{
 		return std::numeric_limits<TYPE>::max();
 	}
@@ -78,7 +78,7 @@ namespace RendererRuntime
 	*    Check whether or not the given variable has not the invalid default value
 	*/
 	template <typename TYPE>
-	bool isValid(const TYPE& value)
+	[[nodiscard]] bool isValid(const TYPE& value)
 	{
 		return (getInvalid<TYPE>() != value);
 	}
@@ -88,7 +88,7 @@ namespace RendererRuntime
 	*    Check whether or not the given variable has the invalid default value
 	*/
 	template <typename TYPE>
-	bool isInvalid(const TYPE& value)
+	[[nodiscard]] bool isInvalid(const TYPE& value)
 	{
 		return (getInvalid<TYPE>() == value);
 	}

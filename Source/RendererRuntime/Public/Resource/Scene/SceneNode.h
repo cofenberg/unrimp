@@ -83,7 +83,7 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Local transform                                       ]
 		//[-------------------------------------------------------]
-		inline const Transform& getTransform() const
+		[[nodiscard]] inline const Transform& getTransform() const
 		{
 			return mTransform;
 		}
@@ -122,12 +122,12 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Derived global transform                              ]
 		//[-------------------------------------------------------]
-		inline const Transform& getGlobalTransform() const
+		[[nodiscard]] inline const Transform& getGlobalTransform() const
 		{
 			return mGlobalTransform;
 		}
 
-		inline const Transform& getPreviousGlobalTransform() const
+		[[nodiscard]] inline const Transform& getPreviousGlobalTransform() const
 		{
 			return mPreviousGlobalTransform;
 		}
@@ -138,7 +138,7 @@ namespace RendererRuntime
 		RENDERERRUNTIME_API_EXPORT void attachSceneNode(SceneNode& sceneNode);
 		RENDERERRUNTIME_API_EXPORT void detachAllSceneNodes();
 
-		inline const AttachedSceneNodes& getAttachedSceneNodes() const
+		[[nodiscard]] inline const AttachedSceneNodes& getAttachedSceneNodes() const
 		{
 			return mAttachedSceneNodes;
 		}
@@ -151,7 +151,7 @@ namespace RendererRuntime
 		RENDERERRUNTIME_API_EXPORT void attachSceneItem(ISceneItem& sceneItem);
 		RENDERERRUNTIME_API_EXPORT void detachAllSceneItems();
 
-		inline const AttachedSceneItems& getAttachedSceneItems() const
+		[[nodiscard]] inline const AttachedSceneItems& getAttachedSceneItems() const
 		{
 			return mAttachedSceneItems;
 		}

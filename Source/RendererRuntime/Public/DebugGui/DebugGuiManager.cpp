@@ -99,7 +99,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		void* AllocFunc(size_t sz, void* user_data)
+		[[nodiscard]] void* AllocFunc(size_t sz, void* user_data)
 		{
 			return static_cast<Renderer::IAllocator*>(user_data)->reallocate(nullptr, 0, sz, 1);
 		}
@@ -110,7 +110,7 @@ namespace
 		}
 
 		// From "imgui.cpp"
-		ImGuiWindowSettings* FindWindowSettings(const char* name)
+		[[nodiscard]] ImGuiWindowSettings* FindWindowSettings(const char* name)
 		{
 			ImGuiContext& g = *GImGui;
 			ImGuiID id = ImHash(name, 0);
@@ -124,7 +124,7 @@ namespace
 		}
 
 		// From "imgui.cpp"
-		ImGuiWindowSettings* AddWindowSettings(const char* name)
+		[[nodiscard]] ImGuiWindowSettings* AddWindowSettings(const char* name)
 		{
 			GImGui->SettingsWindows.resize(GImGui->SettingsWindows.Size + 1);
 			ImGuiWindowSettings* ini = &GImGui->SettingsWindows.back();

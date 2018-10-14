@@ -45,7 +45,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		Renderer::IVertexArray* createSkyVertexArray(Renderer::IBufferManager& bufferManager)
+		[[nodiscard]] Renderer::IVertexArray* createSkyVertexArray(Renderer::IBufferManager& bufferManager)
 		{
 			// Vertex input layout
 			static constexpr Renderer::VertexAttribute vertexAttributesLayout[] =

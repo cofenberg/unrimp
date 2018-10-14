@@ -111,28 +111,28 @@ namespace RendererRuntime
 			// Nothing here
 		}
 
-		inline ByteVector& getByteVector()
+		[[nodiscard]] inline ByteVector& getByteVector()
 		{
 			return mDecompressedData;
 		}
 
-		inline const ByteVector& getByteVector() const
+		[[nodiscard]] inline const ByteVector& getByteVector() const
 		{
 			return mDecompressedData;
 		}
 
-		RENDERERRUNTIME_API_EXPORT bool loadLz4CompressedDataByVirtualFilename(uint32_t formatType, uint32_t formatVersion, const IFileManager& fileManager, VirtualFilename virtualFilename);
-		RENDERERRUNTIME_API_EXPORT bool loadLz4CompressedDataFromFile(uint32_t formatType, uint32_t formatVersion, IFile& file);
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT bool loadLz4CompressedDataByVirtualFilename(uint32_t formatType, uint32_t formatVersion, const IFileManager& fileManager, VirtualFilename virtualFilename);
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT bool loadLz4CompressedDataFromFile(uint32_t formatType, uint32_t formatVersion, IFile& file);
 		RENDERERRUNTIME_API_EXPORT void setLz4CompressedDataByFile(IFile& file, uint32_t numberOfCompressedBytes, uint32_t numberOfDecompressedBytes);
 		RENDERERRUNTIME_API_EXPORT void decompress();
-		RENDERERRUNTIME_API_EXPORT bool writeLz4CompressedDataByVirtualFilename(uint32_t formatType, uint32_t formatVersion, const IFileManager& fileManager, VirtualFilename virtualFilename) const;
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT bool writeLz4CompressedDataByVirtualFilename(uint32_t formatType, uint32_t formatVersion, const IFileManager& fileManager, VirtualFilename virtualFilename) const;
 
 
 	//[-------------------------------------------------------]
 	//[ Public virtual RendererRuntime::IFile methods         ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual size_t getNumberOfBytes() override
+		[[nodiscard]] inline virtual size_t getNumberOfBytes() override
 		{
 			return mDecompressedData.size();
 		}

@@ -38,7 +38,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		inline bool orderPropertyByShaderPropertyId(const RendererRuntime::ShaderProperties::Property& left, const RendererRuntime::ShaderProperties::Property& right)
+		[[nodiscard]] inline bool orderPropertyByShaderPropertyId(const RendererRuntime::ShaderProperties::Property& left, const RendererRuntime::ShaderProperties::Property& right)
 		{
 			return (left.shaderPropertyId < right.shaderPropertyId);
 		}

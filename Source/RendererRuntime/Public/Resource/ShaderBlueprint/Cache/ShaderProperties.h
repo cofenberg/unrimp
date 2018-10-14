@@ -87,7 +87,7 @@ namespace RendererRuntime
 				// Nothing here
 			}
 
-			inline bool operator ==(const Property& property) const
+			[[nodiscard]] inline bool operator ==(const Property& property) const
 			{
 				return (shaderPropertyId == property.shaderPropertyId && value == property.value);
 			}
@@ -137,12 +137,12 @@ namespace RendererRuntime
 		*  @return
 		*    The properties
 		*/
-		inline const SortedPropertyVector& getSortedPropertyVector() const
+		[[nodiscard]] inline const SortedPropertyVector& getSortedPropertyVector() const
 		{
 			return mSortedPropertyVector;
 		}
 
-		inline SortedPropertyVector& getSortedPropertyVector()
+		[[nodiscard]] inline SortedPropertyVector& getSortedPropertyVector()
 		{
 			return mSortedPropertyVector;
 		}
@@ -166,7 +166,7 @@ namespace RendererRuntime
 		*  @return
 		*    "true" if the requested shader property exists, else "false" if the requested shader property doesn't exist
 		*/
-		RENDERERRUNTIME_API_EXPORT bool hasPropertyValue(ShaderPropertyId shaderPropertyId) const;
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT bool hasPropertyValue(ShaderPropertyId shaderPropertyId) const;
 
 		/**
 		*  @brief
@@ -199,7 +199,7 @@ namespace RendererRuntime
 		*  @note
 		*    - Unsafe because one can't figure out by the return value whether or not the property exists or if it's just the default value
 		*/
-		RENDERERRUNTIME_API_EXPORT int32_t getPropertyValueUnsafe(ShaderPropertyId shaderPropertyId, int32_t defaultValue = 0) const;
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT int32_t getPropertyValueUnsafe(ShaderPropertyId shaderPropertyId, int32_t defaultValue = 0) const;
 
 		/**
 		*  @brief
@@ -221,7 +221,7 @@ namespace RendererRuntime
 		*/
 		RENDERERRUNTIME_API_EXPORT void setPropertyValues(const ShaderProperties& shaderProperties);
 
-		RENDERERRUNTIME_API_EXPORT bool operator ==(const ShaderProperties& shaderProperties) const;
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT bool operator ==(const ShaderProperties& shaderProperties) const;
 
 
 	//[-------------------------------------------------------]

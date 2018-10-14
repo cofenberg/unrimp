@@ -82,14 +82,14 @@ namespace RendererRuntime
 		~SceneCullingManager();
 		void gatherRenderQueueIndexRangesRenderableManagers(const Renderer::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, CompositorWorkspaceInstance::RenderQueueIndexRanges& renderQueueIndexRanges);
 
-		inline SceneItemSet& getCullableSceneItemSet() const
+		[[nodiscard]] inline SceneItemSet& getCullableSceneItemSet() const
 		{
 			// We know that this pointer is always valid
 			assert(nullptr != mCullableSceneItemSet);
 			return *mCullableSceneItemSet;
 		}
 
-		inline SceneItems& getUncullableSceneItems()
+		[[nodiscard]] inline SceneItems& getUncullableSceneItems()
 		{
 			return mUncullableSceneItems;
 		}

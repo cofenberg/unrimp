@@ -140,12 +140,12 @@ public:
 	//[-------------------------------------------------------]
 	//[ Assignment operators                                  ]
 	//[-------------------------------------------------------]
-	inline operator float* ()
+	[[nodiscard]] inline operator float* ()
 	{
 		return &value[0];
 	}
 
-	inline operator const float* () const
+	[[nodiscard]] inline operator const float* () const
 	{
 		return &value[0];
 	}

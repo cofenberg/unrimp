@@ -103,12 +103,12 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline IRendererRuntime& getRendererRuntime() const
+		[[nodiscard]] inline IRendererRuntime& getRendererRuntime() const
 		{
 			return mRendererRuntime;
 		}
 
-		inline bool getCreateInitialPipelineStateCaches() const
+		[[nodiscard]] inline bool getCreateInitialPipelineStateCaches() const
 		{
 			return mCreateInitialPipelineStateCaches;
 		}
@@ -120,7 +120,7 @@ namespace RendererRuntime
 
 		RENDERERRUNTIME_API_EXPORT void loadMaterialBlueprintResourceByAssetId(AssetId assetId, MaterialBlueprintResourceId& materialBlueprintResourceId, IResourceListener* resourceListener = nullptr, bool reload = false, ResourceLoaderTypeId resourceLoaderTypeId = getInvalid<ResourceLoaderTypeId>());	// Asynchronous
 
-		inline IMaterialBlueprintResourceListener& getMaterialBlueprintResourceListener() const
+		[[nodiscard]] inline IMaterialBlueprintResourceListener& getMaterialBlueprintResourceListener() const
 		{
 			// We know this pointer must always be valid
 			assert(nullptr != mMaterialBlueprintResourceListener);
@@ -143,12 +143,12 @@ namespace RendererRuntime
 		*    - Floating point property "PreviousGlobalTimeInSeconds"
 		*    - Integer property "GlobalNumberOfMultisamples" (see "RendererRuntime::CompositorWorkspaceInstance::setNumberOfMultisamples()")
 		*/
-		inline MaterialProperties& getGlobalMaterialProperties()
+		[[nodiscard]] inline MaterialProperties& getGlobalMaterialProperties()
 		{
 			return mGlobalMaterialProperties;
 		}
 
-		inline const MaterialProperties& getGlobalMaterialProperties() const
+		[[nodiscard]] inline const MaterialProperties& getGlobalMaterialProperties() const
 		{
 			return mGlobalMaterialProperties;
 		}
@@ -162,12 +162,12 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Default texture filtering                             ]
 		//[-------------------------------------------------------]
-		inline Renderer::FilterMode getDefaultTextureFilterMode() const
+		[[nodiscard]] inline Renderer::FilterMode getDefaultTextureFilterMode() const
 		{
 			return mDefaultTextureFilterMode;
 		}
 
-		inline uint8_t getDefaultMaximumTextureAnisotropy() const
+		[[nodiscard]] inline uint8_t getDefaultMaximumTextureAnisotropy() const
 		{
 			return mDefaultMaximumTextureAnisotropy;
 		}
@@ -177,28 +177,28 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Manager                                               ]
 		//[-------------------------------------------------------]
-		inline UniformInstanceBufferManager& getUniformInstanceBufferManager() const
+		[[nodiscard]] inline UniformInstanceBufferManager& getUniformInstanceBufferManager() const
 		{
 			// We know this pointer must always be valid
 			assert(nullptr != mUniformInstanceBufferManager);
 			return *mUniformInstanceBufferManager;
 		}
 
-		inline TextureInstanceBufferManager& getTextureInstanceBufferManager() const
+		[[nodiscard]] inline TextureInstanceBufferManager& getTextureInstanceBufferManager() const
 		{
 			// We know this pointer must always be valid
 			assert(nullptr != mTextureInstanceBufferManager);
 			return *mTextureInstanceBufferManager;
 		}
 
-		inline IndirectBufferManager& getIndirectBufferManager() const
+		[[nodiscard]] inline IndirectBufferManager& getIndirectBufferManager() const
 		{
 			// We know this pointer must always be valid
 			assert(nullptr != mIndirectBufferManager);
 			return *mIndirectBufferManager;
 		}
 
-		inline LightBufferManager& getLightBufferManager() const
+		[[nodiscard]] inline LightBufferManager& getLightBufferManager() const
 		{
 			// We know this pointer must always be valid
 			assert(nullptr != mLightBufferManager);
@@ -210,10 +210,10 @@ namespace RendererRuntime
 	//[ Public virtual RendererRuntime::IResourceManager methods ]
 	//[-------------------------------------------------------]
 	public:
-		virtual uint32_t getNumberOfResources() const override;
-		virtual IResource& getResourceByIndex(uint32_t index) const override;
-		virtual IResource& getResourceByResourceId(ResourceId resourceId) const override;
-		virtual IResource* tryGetResourceByResourceId(ResourceId resourceId) const override;
+		[[nodiscard]] virtual uint32_t getNumberOfResources() const override;
+		[[nodiscard]] virtual IResource& getResourceByIndex(uint32_t index) const override;
+		[[nodiscard]] virtual IResource& getResourceByResourceId(ResourceId resourceId) const override;
+		[[nodiscard]] virtual IResource* tryGetResourceByResourceId(ResourceId resourceId) const override;
 		virtual void reloadResourceByAssetId(AssetId assetId) override;
 		virtual void update() override;
 
@@ -222,7 +222,7 @@ namespace RendererRuntime
 	//[ Private virtual RendererRuntime::IResourceManager methods ]
 	//[-------------------------------------------------------]
 	private:
-		virtual IResourceLoader* createResourceLoaderInstance(ResourceLoaderTypeId resourceLoaderTypeId) override;
+		[[nodiscard]] virtual IResourceLoader* createResourceLoaderInstance(ResourceLoaderTypeId resourceLoaderTypeId) override;
 
 
 	//[-------------------------------------------------------]
@@ -241,7 +241,7 @@ namespace RendererRuntime
 		void applySerializedGraphicsPipelineState(uint32_t serializedGraphicsPipelineStateHash, Renderer::GraphicsPipelineState& graphicsPipelineState);
 		void clearPipelineStateObjectCache();
 		void loadPipelineStateObjectCache(IFile& file);
-		bool doesPipelineStateObjectCacheNeedSaving() const;
+		[[nodiscard]] bool doesPipelineStateObjectCacheNeedSaving() const;
 		void savePipelineStateObjectCache(MemoryFile& memoryFile);
 
 

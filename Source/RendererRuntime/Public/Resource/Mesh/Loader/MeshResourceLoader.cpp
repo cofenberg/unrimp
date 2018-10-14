@@ -49,10 +49,10 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public virtual RendererRuntime::IResourceLoader methods ]
 	//[-------------------------------------------------------]
-	void MeshResourceLoader::onDeserialization(IFile& file)
+	bool MeshResourceLoader::onDeserialization(IFile& file)
 	{
 		// Tell the memory mapped file about the LZ4 compressed data
-		mMemoryFile.loadLz4CompressedDataFromFile(v1Mesh::FORMAT_TYPE, v1Mesh::FORMAT_VERSION, file);
+		return mMemoryFile.loadLz4CompressedDataFromFile(v1Mesh::FORMAT_TYPE, v1Mesh::FORMAT_VERSION, file);
 	}
 
 	void MeshResourceLoader::onProcessing()

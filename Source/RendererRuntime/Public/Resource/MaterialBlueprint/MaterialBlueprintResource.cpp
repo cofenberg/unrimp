@@ -87,12 +87,12 @@ namespace
 				mNumberOfPropertyValuesByPropertyIndex.push_back(numberOfIntegerValues);
 			}
 
-			bool getCurrentCombinationBoolProperty(size_t index) const
+			[[nodiscard]] bool getCurrentCombinationBoolProperty(size_t index) const
 			{
 				return (getCurrentCombinationIntegerProperty(index) > 0);
 			}
 
-			uint32_t getCurrentCombinationIntegerProperty(size_t index) const
+			[[nodiscard]] uint32_t getCurrentCombinationIntegerProperty(size_t index) const
 			{
 				assert(index < mCurrentCombination.size());
 				return mCurrentCombination[index];
@@ -105,7 +105,7 @@ namespace
 				memset(mCurrentCombination.data(), 0, sizeof(uint32_t) * mNumberOfPropertyValuesByPropertyIndex.size());
 			}
 
-			bool iterate()
+			[[nodiscard]] bool iterate()
 			{
 				// Just a sanity check, in case someone forgot to start iterating first
 				assert(mCurrentCombination.size() == mNumberOfPropertyValuesByPropertyIndex.size());

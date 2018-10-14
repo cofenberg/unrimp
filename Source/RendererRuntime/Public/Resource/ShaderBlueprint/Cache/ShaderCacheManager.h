@@ -107,7 +107,7 @@ namespace RendererRuntime
 		*  @return
 		*    The owner shader blueprint resource manager
 		*/
-		inline ShaderBlueprintResourceManager& getShaderBlueprintResourceManager() const
+		[[nodiscard]] inline ShaderBlueprintResourceManager& getShaderBlueprintResourceManager() const
 		{
 			return mShaderBlueprintResourceManager;
 		}
@@ -128,7 +128,7 @@ namespace RendererRuntime
 		*  @return
 		*    The shader cache, null pointer on error
 		*/
-		ShaderCache* getGraphicsShaderCache(const GraphicsPipelineStateSignature& graphicsPipelineStateSignature, const MaterialBlueprintResource& materialBlueprintResource, Renderer::IShaderLanguage& shaderLanguage, GraphicsShaderType graphicsShaderType);
+		[[nodiscard]] ShaderCache* getGraphicsShaderCache(const GraphicsPipelineStateSignature& graphicsPipelineStateSignature, const MaterialBlueprintResource& materialBlueprintResource, Renderer::IShaderLanguage& shaderLanguage, GraphicsShaderType graphicsShaderType);
 
 		/**
 		*  @brief
@@ -144,7 +144,7 @@ namespace RendererRuntime
 		*  @return
 		*    The shader cache, null pointer on error
 		*/
-		ShaderCache* getComputeShaderCache(const ComputePipelineStateSignature& computePipelineStateSignature, const MaterialBlueprintResource& materialBlueprintResource, Renderer::IShaderLanguage& shaderLanguage);
+		[[nodiscard]] ShaderCache* getComputeShaderCache(const ComputePipelineStateSignature& computePipelineStateSignature, const MaterialBlueprintResource& materialBlueprintResource, Renderer::IShaderLanguage& shaderLanguage);
 
 
 	//[-------------------------------------------------------]
@@ -171,7 +171,7 @@ namespace RendererRuntime
 	private:
 		void loadCache(IFile& file);
 
-		inline bool doesCacheNeedSaving() const
+		[[nodiscard]] inline bool doesCacheNeedSaving() const
 		{
 			return mCacheNeedsSaving;
 		}

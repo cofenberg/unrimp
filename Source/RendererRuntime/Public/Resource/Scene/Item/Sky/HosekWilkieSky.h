@@ -84,12 +84,12 @@ namespace RendererRuntime
 			// Nothing here
 		}
 
-		inline const Coefficients& getCoefficients() const
+		[[nodiscard]] inline const Coefficients& getCoefficients() const
 		{
 			return mCoefficients;
 		}
 
-		inline const glm::vec3& getSunColor() const
+		[[nodiscard]] inline const glm::vec3& getSunColor() const
 		{
 			return mSunColor;
 		}

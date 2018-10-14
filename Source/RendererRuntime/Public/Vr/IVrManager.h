@@ -99,7 +99,7 @@ namespace RendererRuntime
 	//[ Public virtual RendererRuntime::IVrManager methods    ]
 	//[-------------------------------------------------------]
 	public:
-		virtual VrManagerTypeId getVrManagerTypeId() const = 0;
+		[[nodiscard]] virtual VrManagerTypeId getVrManagerTypeId() const = 0;
 
 		/**
 		*  @brief
@@ -113,23 +113,23 @@ namespace RendererRuntime
 		*      can be loaded ("openvr_api.dll" under Microsoft Windows, "libopenvr_api.so" under Linux)
 		*    - Method can also be used when the VR manager is not running
 		*/
-		virtual bool isHmdPresent() const = 0;
+		[[nodiscard]] virtual bool isHmdPresent() const = 0;
 
 		//[-------------------------------------------------------]
 		//[ Lifecycle                                             ]
 		//[-------------------------------------------------------]
 		virtual void setSceneResourceId(SceneResourceId sceneResourceId) = 0;
-		virtual bool startup(AssetId vrDeviceMaterialAssetId) = 0;	// If invalid material asset ID, no VR devices will be rendered
-		virtual bool isRunning() const = 0;
+		[[nodiscard]] virtual bool startup(AssetId vrDeviceMaterialAssetId) = 0;	// If invalid material asset ID, no VR devices will be rendered
+		[[nodiscard]] virtual bool isRunning() const = 0;
 		virtual void shutdown() = 0;
 
 		//[-------------------------------------------------------]
 		//[ Transform (only valid if manager is running)          ]
 		//[-------------------------------------------------------]
 		virtual void updateHmdMatrixPose(CameraSceneItem* cameraSceneItem) = 0;
-		virtual glm::mat4 getHmdViewSpaceToClipSpaceMatrix(VrEye vrEye, float nearZ, float farZ) const = 0;
-		virtual glm::mat4 getHmdEyeSpaceToHeadSpaceMatrix(VrEye vrEye) const = 0;
-		virtual const glm::mat4& getHmdPoseMatrix() const = 0;
+		[[nodiscard]] virtual glm::mat4 getHmdViewSpaceToClipSpaceMatrix(VrEye vrEye, float nearZ, float farZ) const = 0;
+		[[nodiscard]] virtual glm::mat4 getHmdEyeSpaceToHeadSpaceMatrix(VrEye vrEye) const = 0;
+		[[nodiscard]] virtual const glm::mat4& getHmdPoseMatrix() const = 0;
 
 
 	//[-------------------------------------------------------]

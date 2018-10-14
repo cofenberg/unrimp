@@ -128,8 +128,11 @@ namespace RendererRuntime
 
 				// Map
 				Renderer::MappedSubresource mappedSubresource;
-				mRendererRuntime.getRenderer().map(*mCurrentIndirectBuffer->indirectBuffer, 0, Renderer::MapType::WRITE_DISCARD, 0, mappedSubresource);
-				mCurrentIndirectBuffer->mappedData = static_cast<uint8_t*>(mappedSubresource.data);
+				if (mRendererRuntime.getRenderer().map(*mCurrentIndirectBuffer->indirectBuffer, 0, Renderer::MapType::WRITE_DISCARD, 0, mappedSubresource))
+				{
+					mCurrentIndirectBuffer->mappedData = static_cast<uint8_t*>(mappedSubresource.data);
+				}
+				assert(nullptr != mCurrentIndirectBuffer->mappedData);
 			}
 		}
 

@@ -135,7 +135,7 @@ namespace RendererRuntime
 		*  @return
 		*    The owner material blueprint resource
 		*/
-		inline MaterialBlueprintResource& getMaterialBlueprintResource() const
+		[[nodiscard]] inline MaterialBlueprintResource& getMaterialBlueprintResource() const
 		{
 			return mMaterialBlueprintResource;
 		}
@@ -152,7 +152,7 @@ namespace RendererRuntime
 		*  @return
 		*    The requested compute pipeline state cache instance, null pointer on error, do not destroy the instance
 		*/
-		Renderer::IComputePipelineStatePtr getComputePipelineStateCacheByCombination(const ShaderProperties& shaderProperties, bool allowEmergencySynchronousCompilation);
+		[[nodiscard]] Renderer::IComputePipelineStatePtr getComputePipelineStateCacheByCombination(const ShaderProperties& shaderProperties, bool allowEmergencySynchronousCompilation);
 
 		/**
 		*  @brief

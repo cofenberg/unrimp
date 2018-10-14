@@ -92,7 +92,7 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Derived data                                          ]
 		//[-------------------------------------------------------]
-		inline uint64_t getSortingKey() const
+		[[nodiscard]] inline uint64_t getSortingKey() const
 		{
 			return mSortingKey;
 		}
@@ -100,12 +100,12 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Data                                                  ]
 		//[-------------------------------------------------------]
-		inline RenderableManager& getRenderableManager() const
+		[[nodiscard]] inline RenderableManager& getRenderableManager() const
 		{
 			return mRenderableManager;
 		}
 
-		inline Renderer::IVertexArrayPtr getVertexArrayPtr() const
+		[[nodiscard]] inline Renderer::IVertexArrayPtr getVertexArrayPtr() const
 		{
 			return mVertexArrayPtr;
 		}
@@ -116,7 +116,7 @@ namespace RendererRuntime
 			calculateSortingKey();
 		}
 
-		inline Renderer::IIndirectBufferPtr getIndirectBufferPtr() const
+		[[nodiscard]] inline Renderer::IIndirectBufferPtr getIndirectBufferPtr() const
 		{
 			return mIndirectBufferPtr;
 		}
@@ -127,7 +127,7 @@ namespace RendererRuntime
 			calculateSortingKey();
 		}
 
-		inline bool getDrawIndexed() const
+		[[nodiscard]] inline bool getDrawIndexed() const
 		{
 			return mDrawIndexed;
 		}
@@ -137,7 +137,7 @@ namespace RendererRuntime
 			mDrawIndexed = drawIndexed;
 		}
 
-		inline uint32_t getStartIndexLocation() const
+		[[nodiscard]] inline uint32_t getStartIndexLocation() const
 		{
 			return mStartIndexLocation;
 		}
@@ -147,7 +147,7 @@ namespace RendererRuntime
 			mStartIndexLocation = startIndexLocation;
 		}
 
-		inline uint32_t getIndirectBufferOffset() const
+		[[nodiscard]] inline uint32_t getIndirectBufferOffset() const
 		{
 			return mIndirectBufferOffset;
 		}
@@ -157,7 +157,7 @@ namespace RendererRuntime
 			mIndirectBufferOffset = indirectBufferOffset;
 		}
 
-		inline uint32_t getNumberOfIndices() const
+		[[nodiscard]] inline uint32_t getNumberOfIndices() const
 		{
 			return mNumberOfIndices;
 		}
@@ -167,7 +167,7 @@ namespace RendererRuntime
 			mNumberOfIndices = numberOfIndices;
 		}
 
-		inline uint32_t getInstanceCount() const
+		[[nodiscard]] inline uint32_t getInstanceCount() const
 		{
 			return mInstanceCount;
 		}
@@ -177,7 +177,7 @@ namespace RendererRuntime
 			mInstanceCount = instanceCount;
 		}
 
-		inline uint32_t getNumberOfDraws() const
+		[[nodiscard]] inline uint32_t getNumberOfDraws() const
 		{
 			return mNumberOfDraws;
 		}
@@ -187,7 +187,7 @@ namespace RendererRuntime
 			mNumberOfDraws = numberOfDraws;
 		}
 
-		inline MaterialResourceId getMaterialResourceId() const
+		[[nodiscard]] inline MaterialResourceId getMaterialResourceId() const
 		{
 			return mMaterialResourceId;
 		}
@@ -200,7 +200,7 @@ namespace RendererRuntime
 			calculateSortingKey();
 		}
 
-		inline SkeletonResourceId getSkeletonResourceId() const
+		[[nodiscard]] inline SkeletonResourceId getSkeletonResourceId() const
 		{
 			return mSkeletonResourceId;
 		}
@@ -213,12 +213,12 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Cached material data                                  ]
 		//[-------------------------------------------------------]
-		inline uint8_t getRenderQueueIndex() const
+		[[nodiscard]] inline uint8_t getRenderQueueIndex() const
 		{
 			return mRenderQueueIndex;
 		}
 
-		inline bool getCastShadows() const
+		[[nodiscard]] inline bool getCastShadows() const
 		{
 			return mCastShadows;
 		}

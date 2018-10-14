@@ -227,7 +227,7 @@ namespace RendererRuntime
 	//[ Protected virtual Renderer::DefaultLog methods        ]
 	//[-------------------------------------------------------]
 	protected:
-		inline virtual bool printInternal(Type type, const char* attachment, const char* file, uint32_t line, const char* message, uint32_t numberOfCharacters) override
+		[[nodiscard]] inline virtual bool printInternal(Type type, const char* attachment, const char* file, uint32_t line, const char* message, uint32_t numberOfCharacters) override
 		{
 			// Call the base implementation
 			const bool requestDebugBreak = DefaultLog::printInternal(type, attachment, file, line, message, numberOfCharacters);

@@ -74,7 +74,7 @@ namespace RendererRuntime
 			// Nothing here
 		}
 
-		inline SubMesh(const SubMesh& subMesh) :
+		inline explicit SubMesh(const SubMesh& subMesh) :
 			mMaterialResourceId(subMesh.mMaterialResourceId),
 			mStartIndexLocation(subMesh.mStartIndexLocation),
 			mNumberOfIndices(subMesh.mNumberOfIndices)
@@ -97,7 +97,7 @@ namespace RendererRuntime
 			return *this;
 		}
 
-		inline MaterialResourceId getMaterialResourceId() const
+		[[nodiscard]] inline MaterialResourceId getMaterialResourceId() const
 		{
 			return mMaterialResourceId;
 		}
@@ -107,7 +107,7 @@ namespace RendererRuntime
 			mMaterialResourceId = materialResourceId;
 		}
 
-		inline uint32_t getStartIndexLocation() const
+		[[nodiscard]] inline uint32_t getStartIndexLocation() const
 		{
 			return mStartIndexLocation;
 		}
@@ -117,7 +117,7 @@ namespace RendererRuntime
 			mStartIndexLocation = startIndexLocation;
 		}
 
-		inline uint32_t getNumberOfIndices() const
+		[[nodiscard]] inline uint32_t getNumberOfIndices() const
 		{
 			return mNumberOfIndices;
 		}

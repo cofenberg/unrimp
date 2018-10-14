@@ -143,7 +143,7 @@ namespace Renderer
 	//[ Public virtual Renderer::IAssert methods              ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual bool handleAssert(const char* expression, const char* file, uint32_t line, const char* format, ...) override
+		[[nodiscard]] inline virtual bool handleAssert(const char* expression, const char* file, uint32_t line, const char* format, ...) override
 		{
 			bool requestDebugBreak = false;
 
@@ -210,7 +210,7 @@ namespace Renderer
 		*  @return
 		*    "true" to request debug break, else "false"
 		*/
-		inline virtual bool handleAssertInternal(const char* expression, const char* file, uint32_t line, const char* message, uint32_t)
+		[[nodiscard]] inline virtual bool handleAssertInternal(const char* expression, const char* file, uint32_t line, const char* message, uint32_t)
 		{
 			std::lock_guard<std::mutex> mutexLock(mMutex);
 			bool requestDebugBreak = false;

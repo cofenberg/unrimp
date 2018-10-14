@@ -97,9 +97,9 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		RENDERERRUNTIME_API_EXPORT IRendererRuntime& getRendererRuntime() const;
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT IRendererRuntime& getRendererRuntime() const;
 
-		inline SceneCullingManager& getSceneCullingManager() const
+		[[nodiscard]] inline SceneCullingManager& getSceneCullingManager() const
 		{
 			// We know that this pointer is always valid
 			assert(nullptr != mSceneCullingManager);
@@ -111,11 +111,11 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Node                                                  ]
 		//[-------------------------------------------------------]
-		RENDERERRUNTIME_API_EXPORT SceneNode* createSceneNode(const Transform& transform);
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT SceneNode* createSceneNode(const Transform& transform);
 		RENDERERRUNTIME_API_EXPORT void destroySceneNode(SceneNode& sceneNode);
 		RENDERERRUNTIME_API_EXPORT void destroyAllSceneNodes();
 
-		inline const SceneNodes& getSceneNodes() const
+		[[nodiscard]] inline const SceneNodes& getSceneNodes() const
 		{
 			return mSceneNodes;
 		}
@@ -123,9 +123,10 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Item                                                  ]
 		//[-------------------------------------------------------]
-		RENDERERRUNTIME_API_EXPORT ISceneItem* createSceneItem(SceneItemTypeId sceneItemTypeId, SceneNode& sceneNode);
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT ISceneItem* createSceneItem(SceneItemTypeId sceneItemTypeId, SceneNode& sceneNode);
 
-		template <typename T> inline T* createSceneItem(SceneNode& sceneNode)
+		template <typename T>
+		[[nodiscard]] inline T* createSceneItem(SceneNode& sceneNode)
 		{
 			return static_cast<T*>(createSceneItem(T::TYPE_ID, sceneNode));
 		}
@@ -133,7 +134,7 @@ namespace RendererRuntime
 		RENDERERRUNTIME_API_EXPORT void destroySceneItem(ISceneItem& sceneItem);
 		RENDERERRUNTIME_API_EXPORT void destroyAllSceneItems();
 
-		inline const SceneItems& getSceneItems() const
+		[[nodiscard]] inline const SceneItems& getSceneItems() const
 		{
 			return mSceneItems;
 		}

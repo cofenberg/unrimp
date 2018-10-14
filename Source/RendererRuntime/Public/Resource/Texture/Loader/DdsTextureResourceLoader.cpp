@@ -126,7 +126,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public virtual RendererRuntime::IResourceLoader methods ]
 	//[-------------------------------------------------------]
-	void DdsTextureResourceLoader::onDeserialization(IFile& file)
+	bool DdsTextureResourceLoader::onDeserialization(IFile& file)
 	{
 		// TODO(co) Cleanup and complete, currently just a prototype
 		// TODO(co) Add optional top mipmap removal support (see "RendererRuntime::TextureResourceManager::NumberOfTopMipmapsToRemove")
@@ -276,7 +276,7 @@ namespace RendererRuntime
 						default:
 							// Error: Unsupported format
 							assert(false);
-							return;
+							return false;
 					}
 				}
 				else
@@ -384,7 +384,7 @@ namespace RendererRuntime
 									{
 										// Error: Unsupported format
 										assert(false);
-										return;
+										return false;
 									}
 									break;
 
@@ -407,14 +407,14 @@ namespace RendererRuntime
 									{
 										// Error: Unsupported format
 										assert(false);
-										return;
+										return false;
 									}
 									break;
 
 								default:
 									// Error: Unsupported format
 									assert(false);
-									return;
+									return false;
 							}
 					}
 				}
@@ -673,6 +673,9 @@ namespace RendererRuntime
 		{
 			mTexture = createRendererTexture();
 		}
+
+		// Done
+		return true;
 	}
 
 

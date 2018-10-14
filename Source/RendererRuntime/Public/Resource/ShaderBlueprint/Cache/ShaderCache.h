@@ -82,7 +82,7 @@ namespace RendererRuntime
 		*  @return
 		*    The shader cache ID
 		*/
-		inline ShaderCacheId getShaderCacheId() const
+		[[nodiscard]] inline ShaderCacheId getShaderCacheId() const
 		{
 			return mShaderCacheId;
 		}
@@ -94,7 +94,7 @@ namespace RendererRuntime
 		*  @return
 		*    The master shader cache, can be a null pointer, don't destroy the instance
 		*/
-		inline ShaderCache* getMasterShaderCache() const
+		[[nodiscard]] inline ShaderCache* getMasterShaderCache() const
 		{
 			return mMasterShaderCache;
 		}
@@ -106,7 +106,7 @@ namespace RendererRuntime
 		*  @return
 		*    The shader bytecode
 		*/
-		inline const Renderer::ShaderBytecode& getShaderBytecode() const
+		[[nodiscard]] inline const Renderer::ShaderBytecode& getShaderBytecode() const
 		{
 			return mShaderBytecode;
 		}
@@ -118,7 +118,7 @@ namespace RendererRuntime
 		*  @return
 		*    The shader
 		*/
-		inline Renderer::IShaderPtr getShaderPtr() const
+		[[nodiscard]] inline Renderer::IShaderPtr getShaderPtr() const
 		{
 			return (nullptr != mMasterShaderCache) ? mMasterShaderCache->mShaderPtr : mShaderPtr;
 		}

@@ -136,7 +136,7 @@ namespace
 		*    - Color correction lookup table size is 16
 		*    - Resulting texture asset ID is "Unrimp/Texture/DynamicByCode/IdentityColorCorrectionLookupTable3D"
 		*/
-		RendererRuntime::TextureResourceId createIdentityColorCorrectionLookupTable3D(const RendererRuntime::IRendererRuntime& rendererRuntime)
+		[[nodiscard]] RendererRuntime::TextureResourceId createIdentityColorCorrectionLookupTable3D(const RendererRuntime::IRendererRuntime& rendererRuntime)
 		{
 			static constexpr uint8_t SIZE = 16;
 			static constexpr uint8_t NUMBER_OF_COMPONENTS = 4;
@@ -184,7 +184,7 @@ namespace
 		*    - Kernel size is 16, since the samples are randomly distributed this doesn't mean that a shader has to use all samples
 		*    - Resulting texture asset ID is "Unrimp/Texture/DynamicByCode/SsaoSampleKernel"
 		*/
-		RendererRuntime::TextureResourceId createSsaoSampleKernelTexture(const RendererRuntime::IRendererRuntime& rendererRuntime)
+		[[nodiscard]] RendererRuntime::TextureResourceId createSsaoSampleKernelTexture(const RendererRuntime::IRendererRuntime& rendererRuntime)
 		{
 			static constexpr uint32_t KERNEL_SIZE = 16;
 			glm::vec4 kernel[KERNEL_SIZE];
@@ -232,7 +232,7 @@ namespace
 		*    - Noise texture size is 4x4
 		*    - Resulting texture asset ID is "Unrimp/Texture/DynamicByCode/SsaoNoise4x4"
 		*/
-		RendererRuntime::TextureResourceId createSsaoNoiseTexture4x4(const RendererRuntime::IRendererRuntime& rendererRuntime)
+		[[nodiscard]] RendererRuntime::TextureResourceId createSsaoNoiseTexture4x4(const RendererRuntime::IRendererRuntime& rendererRuntime)
 		{
 			static constexpr uint32_t NOISE_SIZE = 4;
 			static constexpr uint32_t SQUARED_NOISE_SIZE = NOISE_SIZE * NOISE_SIZE;
@@ -260,7 +260,7 @@ namespace
 		*  @brief
 		*    Compute a radical inverse with base 2 using crazy bit-twiddling from "Hacker's Delight"
 		*/
-		inline float radicalInverseBase2(uint32_t bits)
+		[[nodiscard]] inline float radicalInverseBase2(uint32_t bits)
 		{
 			bits = (bits << 16u) | (bits >> 16u);
 			bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
@@ -277,7 +277,7 @@ namespace
 		*  @note
 		*    - From "MSAA Resolve + Temporal AA" from https://github.com/TheRealMJP/MSAAFilter with background information at https://mynameismjp.wordpress.com/2012/10/28/msaa-resolve-filters/
 		*/
-		inline glm::vec2 hammersley2D(uint64_t sampleIndex, uint64_t numberOfSamples)
+		[[nodiscard]] inline glm::vec2 hammersley2D(uint64_t sampleIndex, uint64_t numberOfSamples)
 		{
 			return glm::vec2(float(sampleIndex) / float(numberOfSamples), radicalInverseBase2(uint32_t(sampleIndex)));
 		}

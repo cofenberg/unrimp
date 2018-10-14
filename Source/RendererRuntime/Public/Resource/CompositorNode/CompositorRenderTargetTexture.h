@@ -78,12 +78,12 @@ namespace RendererRuntime
 			// Nothing here
 		}
 
-		inline AssetId getAssetId() const
+		[[nodiscard]] inline AssetId getAssetId() const
 		{
 			return mAssetId;
 		}
 
-		inline const RenderTargetTextureSignature& getRenderTargetTextureSignature() const
+		[[nodiscard]] inline const RenderTargetTextureSignature& getRenderTargetTextureSignature() const
 		{
 			return mRenderTargetTextureSignature;
 		}

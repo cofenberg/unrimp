@@ -76,7 +76,7 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline IRendererRuntime& getRendererRuntime() const
+		[[nodiscard]] inline IRendererRuntime& getRendererRuntime() const
 		{
 			return mRendererRuntime;
 		}
@@ -88,10 +88,10 @@ namespace RendererRuntime
 	//[ Public virtual RendererRuntime::IResourceManager methods ]
 	//[-------------------------------------------------------]
 	public:
-		virtual uint32_t getNumberOfResources() const override;
-		virtual IResource& getResourceByIndex(uint32_t index) const override;
-		virtual IResource& getResourceByResourceId(ResourceId resourceId) const override;
-		virtual IResource* tryGetResourceByResourceId(ResourceId resourceId) const override;
+		[[nodiscard]] virtual uint32_t getNumberOfResources() const override;
+		[[nodiscard]] virtual IResource& getResourceByIndex(uint32_t index) const override;
+		[[nodiscard]] virtual IResource& getResourceByResourceId(ResourceId resourceId) const override;
+		[[nodiscard]] virtual IResource* tryGetResourceByResourceId(ResourceId resourceId) const override;
 		virtual void reloadResourceByAssetId(AssetId assetId) override;
 		virtual void update() override;
 
@@ -100,7 +100,7 @@ namespace RendererRuntime
 	//[ Private virtual RendererRuntime::IResourceManager methods ]
 	//[-------------------------------------------------------]
 	private:
-		virtual IResourceLoader* createResourceLoaderInstance(ResourceLoaderTypeId resourceLoaderTypeId) override;
+		[[nodiscard]] virtual IResourceLoader* createResourceLoaderInstance(ResourceLoaderTypeId resourceLoaderTypeId) override;
 
 
 	//[-------------------------------------------------------]

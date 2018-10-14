@@ -160,7 +160,7 @@ namespace RendererRuntime
 		explicit MaterialBlueprintResourceListener(const MaterialBlueprintResourceListener&) = delete;
 		MaterialBlueprintResourceListener& operator=(const MaterialBlueprintResourceListener&) = delete;
 
-		inline const PassBufferManager::PassData& getPassData() const	// Memory address received via "RendererRuntime::MaterialBlueprintResourceListener::beginFillPass()", can be invalid outside the correct scope, don't destroy the memory
+		[[nodiscard]] inline const PassBufferManager::PassData& getPassData() const	// Memory address received via "RendererRuntime::MaterialBlueprintResourceListener::beginFillPass()", can be invalid outside the correct scope, don't destroy the memory
 		{
 			assert(nullptr != mPassData);
 			return *mPassData;
@@ -179,7 +179,7 @@ namespace RendererRuntime
 			// Nothing here
 		}
 
-		inline virtual bool fillUnknownValue([[maybe_unused]] uint32_t referenceValue, [[maybe_unused]] uint8_t* buffer, [[maybe_unused]] uint32_t numberOfBytes) override
+		[[nodiscard]] inline virtual bool fillUnknownValue([[maybe_unused]] uint32_t referenceValue, [[maybe_unused]] uint8_t* buffer, [[maybe_unused]] uint32_t numberOfBytes) override
 		{
 			// Nothing here
 
@@ -188,14 +188,14 @@ namespace RendererRuntime
 		}
 
 		RENDERERRUNTIME_API_EXPORT virtual void beginFillPass(IRendererRuntime& rendererRuntime, const Renderer::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, PassBufferManager::PassData& passData) override;
-		RENDERERRUNTIME_API_EXPORT virtual bool fillPassValue(uint32_t referenceValue, uint8_t* buffer, uint32_t numberOfBytes) override;
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT virtual bool fillPassValue(uint32_t referenceValue, uint8_t* buffer, uint32_t numberOfBytes) override;
 
 		inline virtual void beginFillMaterial() override
 		{
 			// Nothing here
 		}
 
-		inline virtual bool fillMaterialValue([[maybe_unused]] uint32_t referenceValue, [[maybe_unused]] uint8_t* buffer, [[maybe_unused]] uint32_t numberOfBytes) override
+		[[nodiscard]] inline virtual bool fillMaterialValue([[maybe_unused]] uint32_t referenceValue, [[maybe_unused]] uint8_t* buffer, [[maybe_unused]] uint32_t numberOfBytes) override
 		{
 			// Nothing here
 
@@ -214,14 +214,14 @@ namespace RendererRuntime
 			mMaterialTechnique				  = &materialTechnique;
 		}
 
-		RENDERERRUNTIME_API_EXPORT virtual bool fillInstanceValue(uint32_t referenceValue, uint8_t* buffer, uint32_t numberOfBytes, uint32_t instanceTextureBufferStartIndex) override;
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT virtual bool fillInstanceValue(uint32_t referenceValue, uint8_t* buffer, uint32_t numberOfBytes, uint32_t instanceTextureBufferStartIndex) override;
 
 
 	//[-------------------------------------------------------]
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		glm::vec3 getWorldSpaceSunlightDirection() const;
+		[[nodiscard]] glm::vec3 getWorldSpaceSunlightDirection() const;
 
 
 	//[-------------------------------------------------------]

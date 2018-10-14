@@ -103,7 +103,7 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline const ResourceConnections& getResourceConnections() const
+		[[nodiscard]] inline const ResourceConnections& getResourceConnections() const
 		{
 			return mResourceConnections;
 		}

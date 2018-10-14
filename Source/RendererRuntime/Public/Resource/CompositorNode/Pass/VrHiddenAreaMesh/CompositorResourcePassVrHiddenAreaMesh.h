@@ -61,12 +61,12 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline uint32_t getFlags() const	// Combination of "Renderer::ClearFlag", except for color-flag
+		[[nodiscard]] inline uint32_t getFlags() const	// Combination of "Renderer::ClearFlag", except for color-flag
 		{
 			return mFlags;
 		}
 
-		inline uint32_t getStencil() const
+		[[nodiscard]] inline uint32_t getStencil() const
 		{
 			return mStencil;
 		}
@@ -76,7 +76,7 @@ namespace RendererRuntime
 	//[ Public virtual RendererRuntime::ICompositorResourcePass methods ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual CompositorPassTypeId getTypeId() const override
+		[[nodiscard]] inline virtual CompositorPassTypeId getTypeId() const override
 		{
 			return TYPE_ID;
 		}

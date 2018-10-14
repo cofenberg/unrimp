@@ -78,7 +78,7 @@ namespace RendererRuntime
 			Renderer::IIndirectBuffer* indirectBuffer;			///< Indirect buffer instance, always valid
 			uint32_t				   indirectBufferOffset;	///< Current indirect buffer offset
 			uint8_t*				   mappedData;				///< Currently mapped data, don't destroy the data
-			IndirectBuffer(Renderer::IIndirectBuffer* _indirectBuffer) :
+			explicit IndirectBuffer(Renderer::IIndirectBuffer* _indirectBuffer) :
 				indirectBuffer(_indirectBuffer),
 				indirectBufferOffset(0),
 				mappedData(nullptr)
@@ -106,7 +106,7 @@ namespace RendererRuntime
 		*  @return
 		*    The renderer runtime instance to use
 		*/
-		inline const IRendererRuntime& getRendererRuntime() const
+		[[nodiscard]] inline const IRendererRuntime& getRendererRuntime() const
 		{
 			return mRendererRuntime;
 		}
@@ -127,7 +127,7 @@ namespace RendererRuntime
 		*  @return
 		*    The requested indirect buffer, don't destroy the instance, null pointer in case of a horrible nightmare apocalypse scenario
 		*/
-		IndirectBuffer* getIndirectBuffer(uint32_t numberOfBytes);
+		[[nodiscard]] IndirectBuffer* getIndirectBuffer(uint32_t numberOfBytes);
 
 		/**
 		*  @brief

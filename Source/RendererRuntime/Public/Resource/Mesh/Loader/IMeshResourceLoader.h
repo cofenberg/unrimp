@@ -65,13 +65,13 @@ namespace RendererRuntime
 	//[ Public virtual RendererRuntime::IResourceLoader methods ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual ResourceLoaderTypeId getResourceLoaderTypeId() const override
+		[[nodiscard]] inline virtual ResourceLoaderTypeId getResourceLoaderTypeId() const override
 		{
 			return TYPE_ID;
 		}
 
 		virtual void initialize(const Asset& asset, bool reload, IResource& resource) override;
-		virtual bool isFullyLoaded() override;
+		[[nodiscard]] virtual bool isFullyLoaded() override;
 
 
 	//[-------------------------------------------------------]

@@ -126,7 +126,7 @@ namespace RendererRuntime
 		*  @return
 		*    The absolute UTF-8 root directory, without "/" at the end
 		*/
-		inline const std::string& getAbsoluteRootDirectory() const
+		[[nodiscard]] inline const std::string& getAbsoluteRootDirectory() const
 		{
 			return mAbsoluteRootDirectory;
 		}
@@ -150,7 +150,7 @@ namespace RendererRuntime
 		*    - "RendererToolkit": Used e.g. for renderer toolkit cache which is used to detect source data changes for incremental asset compilation instead of time consuming full asset compilation
 		*    - "Log": Log files, Unrimp itself won't save log files
 		*/
-		virtual const char* getLocalDataMountPoint() const = 0;
+		[[nodiscard]] virtual const char* getLocalDataMountPoint() const = 0;
 
 		/**
 		*  @brief
@@ -165,7 +165,7 @@ namespace RendererRuntime
 		*  @see
 		*    - "RendererRuntime::IFileManager::mountDirectory()"
 		*/
-		virtual const char* getMountPoint(const char* mountPoint) const = 0;
+		[[nodiscard]] virtual const char* getMountPoint(const char* mountPoint) const = 0;
 
 		/**
 		*  @brief
@@ -193,7 +193,7 @@ namespace RendererRuntime
 		*  @return
 		*    "true" if the file does exist, else "false"
 		*/
-		virtual bool doesFileExist(VirtualFilename virtualFilename) const = 0;
+		[[nodiscard]] virtual bool doesFileExist(VirtualFilename virtualFilename) const = 0;
 
 		/**
 		*  @brief
@@ -220,7 +220,7 @@ namespace RendererRuntime
 		*  @return
 		*    Mapped UTF-8 absolute filename, empty string on error
 		*/
-		virtual std::string mapVirtualToAbsoluteFilename(FileMode fileMode, VirtualFilename virtualFilename) const = 0;
+		[[nodiscard]] virtual std::string mapVirtualToAbsoluteFilename(FileMode fileMode, VirtualFilename virtualFilename) const = 0;
 
 		/**
 		*  @brief
@@ -239,7 +239,7 @@ namespace RendererRuntime
 		*    information for a particular archiver, or there was some sort of error,
 		*    this function returns (-1).
 		*/
-		virtual int64_t getLastModificationTime(VirtualFilename virtualFilename) const = 0;
+		[[nodiscard]] virtual int64_t getLastModificationTime(VirtualFilename virtualFilename) const = 0;
 
 		/**
 		*  @brief
@@ -251,7 +251,7 @@ namespace RendererRuntime
 		*  @return
 		*    File size, -1 if it can't be determined
 		*/
-		virtual int64_t getFileSize(VirtualFilename virtualFilename) const = 0;
+		[[nodiscard]] virtual int64_t getFileSize(VirtualFilename virtualFilename) const = 0;
 
 		/**
 		*  @brief
@@ -282,7 +282,7 @@ namespace RendererRuntime
 		*      with the virtual filename syntax "<filename>$<password>" (e.g. "myfile$mypassword"); due
 		*      to the negative loading time impact password secured asset packages are not supported
 		*/
-		virtual IFile* openFile(FileMode fileMode, VirtualFilename virtualFilename) const = 0;
+		[[nodiscard]] virtual IFile* openFile(FileMode fileMode, VirtualFilename virtualFilename) const = 0;
 
 		/**
 		*  @brief

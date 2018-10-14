@@ -151,7 +151,7 @@ namespace RendererRuntime
 		*  @return
 		*    Number of weeks elapsed since the stopwatch was started
 		*/
-		inline float getWeeks() const
+		[[nodiscard]] inline float getWeeks() const
 		{
 			return getDays() / 7.0f;
 		}
@@ -163,7 +163,7 @@ namespace RendererRuntime
 		*  @return
 		*    Number of days elapsed since the stopwatch was started
 		*/
-		inline float getDays() const
+		[[nodiscard]] inline float getDays() const
 		{
 			return getHours() / 24.0f;
 		}
@@ -175,7 +175,7 @@ namespace RendererRuntime
 		*  @return
 		*    Number of hours elapsed since the stopwatch was started
 		*/
-		inline float getHours() const
+		[[nodiscard]] inline float getHours() const
 		{
 			return getMinutes() / 60.0f;
 		}
@@ -187,7 +187,7 @@ namespace RendererRuntime
 		*  @return
 		*    Number of minutes elapsed since the stopwatch was started
 		*/
-		inline float getMinutes() const
+		[[nodiscard]] inline float getMinutes() const
 		{
 			return getSeconds() / 60.0f;
 		}
@@ -199,7 +199,7 @@ namespace RendererRuntime
 		*  @return
 		*    Number of seconds elapsed since the stopwatch was started
 		*/
-		inline float getSeconds() const
+		[[nodiscard]] inline float getSeconds() const
 		{
 			return getMilliseconds() / 1000.0f;
 		}
@@ -211,7 +211,7 @@ namespace RendererRuntime
 		*  @return
 		*    Number of milliseconds elapsed since the stopwatch was started
 		*/
-		inline float getMilliseconds() const
+		[[nodiscard]] inline float getMilliseconds() const
 		{
 			return getMicroseconds() / 1000.0f;
 		}
@@ -223,7 +223,7 @@ namespace RendererRuntime
 		*  @return
 		*    Number of microseconds elapsed since the stopwatch was started
 		*/
-		inline std::time_t getMicroseconds() const
+		[[nodiscard]] inline std::time_t getMicroseconds() const
 		{
 			return mRunning ? (getSystemMicroseconds() - mStart) : (mStop - mStart);
 		}
@@ -240,7 +240,7 @@ namespace RendererRuntime
 		*  @return
 		*    Number of microseconds elapsed since the system was started
 		*/
-		RENDERERRUNTIME_API_EXPORT std::time_t getSystemMicroseconds() const;
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT std::time_t getSystemMicroseconds() const;
 
 
 	//[-------------------------------------------------------]

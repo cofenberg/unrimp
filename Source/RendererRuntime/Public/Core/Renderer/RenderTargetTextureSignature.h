@@ -163,32 +163,32 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Getter for input data                                 ]
 		//[-------------------------------------------------------]
-		inline uint32_t getWidth() const
+		[[nodiscard]] inline uint32_t getWidth() const
 		{
 			return mWidth;
 		}
 
-		inline uint32_t getHeight() const
+		[[nodiscard]] inline uint32_t getHeight() const
 		{
 			return mHeight;
 		}
 
-		inline Renderer::TextureFormat::Enum getTextureFormat() const
+		[[nodiscard]] inline Renderer::TextureFormat::Enum getTextureFormat() const
 		{
 			return mTextureFormat;
 		}
 
-		inline uint8_t getFlags() const
+		[[nodiscard]] inline uint8_t getFlags() const
 		{
 			return mFlags;
 		}
 
-		inline float getWidthScale() const
+		[[nodiscard]] inline float getWidthScale() const
 		{
 			return mWidthScale;
 		}
 
-		inline float getHeightScale() const
+		[[nodiscard]] inline float getHeightScale() const
 		{
 			return mHeightScale;
 		}
@@ -196,7 +196,7 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Getter for derived data                               ]
 		//[-------------------------------------------------------]
-		inline RenderTargetTextureSignatureId getRenderTargetTextureSignatureId() const
+		[[nodiscard]] inline RenderTargetTextureSignatureId getRenderTargetTextureSignatureId() const
 		{
 			return mRenderTargetTextureSignatureId;
 		}

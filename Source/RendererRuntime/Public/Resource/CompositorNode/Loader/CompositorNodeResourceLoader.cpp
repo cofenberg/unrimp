@@ -156,10 +156,10 @@ namespace RendererRuntime
 		mCompositorNodeResource = static_cast<CompositorNodeResource*>(&resource);
 	}
 
-	void CompositorNodeResourceLoader::onDeserialization(IFile& file)
+	bool CompositorNodeResourceLoader::onDeserialization(IFile& file)
 	{
 		// Tell the memory mapped file about the LZ4 compressed data
-		mMemoryFile.loadLz4CompressedDataFromFile(v1CompositorNode::FORMAT_TYPE, v1CompositorNode::FORMAT_VERSION, file);
+		return mMemoryFile.loadLz4CompressedDataFromFile(v1CompositorNode::FORMAT_TYPE, v1CompositorNode::FORMAT_VERSION, file);
 	}
 
 	void CompositorNodeResourceLoader::onProcessing()

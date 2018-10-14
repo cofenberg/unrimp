@@ -86,19 +86,19 @@ namespace RendererRuntime
 	//[ Public virtual RendererRuntime::IResourceLoader methods ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual ResourceLoaderTypeId getResourceLoaderTypeId() const override
+		[[nodiscard]] inline virtual ResourceLoaderTypeId getResourceLoaderTypeId() const override
 		{
 			return TYPE_ID;
 		}
 
-		inline virtual bool hasDeserialization() const override
+		[[nodiscard]] inline virtual bool hasDeserialization() const override
 		{
 			return true;
 		}
 
-		virtual void onDeserialization(IFile& file) override;
+		[[nodiscard]] virtual bool onDeserialization(IFile& file) override;
 		virtual void onProcessing() override;
-		virtual bool onDispatch() override;
+		[[nodiscard]] virtual bool onDispatch() override;
 
 
 	//[-------------------------------------------------------]
@@ -109,7 +109,7 @@ namespace RendererRuntime
 		virtual ~MeshResourceLoader() override;
 		explicit MeshResourceLoader(const MeshResourceLoader&) = delete;
 		MeshResourceLoader& operator=(const MeshResourceLoader&) = delete;
-		Renderer::IVertexArray* createVertexArray() const;
+		[[nodiscard]] Renderer::IVertexArray* createVertexArray() const;
 
 
 	//[-------------------------------------------------------]

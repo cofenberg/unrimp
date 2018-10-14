@@ -203,7 +203,7 @@ namespace RendererRuntime
 	//[ Public static methods                                 ]
 	//[-------------------------------------------------------]
 	public:
-		static MaterialProperty::Usage getMaterialPropertyUsageFromBufferUsage(BufferUsage bufferUsage);
+		[[nodiscard]] static MaterialProperty::Usage getMaterialPropertyUsageFromBufferUsage(BufferUsage bufferUsage);
 
 
 	//[-------------------------------------------------------]
@@ -217,7 +217,7 @@ namespace RendererRuntime
 		*  @return
 		*    The graphics pipeline state cache manager
 		*/
-		inline GraphicsPipelineStateCacheManager& getGraphicsPipelineStateCacheManager()
+		[[nodiscard]] inline GraphicsPipelineStateCacheManager& getGraphicsPipelineStateCacheManager()
 		{
 			return mGraphicsPipelineStateCacheManager;
 		}
@@ -229,7 +229,7 @@ namespace RendererRuntime
 		*  @return
 		*    The compute pipeline state cache manager
 		*/
-		inline ComputePipelineStateCacheManager& getComputePipelineStateCacheManager()
+		[[nodiscard]] inline ComputePipelineStateCacheManager& getComputePipelineStateCacheManager()
 		{
 			return mComputePipelineStateCacheManager;
 		}
@@ -241,7 +241,7 @@ namespace RendererRuntime
 		*  @return
 		*    The material blueprint properties
 		*/
-		inline const MaterialProperties& getMaterialProperties() const
+		[[nodiscard]] inline const MaterialProperties& getMaterialProperties() const
 		{
 			return mMaterialProperties;
 		}
@@ -254,7 +254,7 @@ namespace RendererRuntime
 		*    The visual importance of the requested shader property, lower visual importance value = lower probability that someone will miss the shader property,
 		*    can be "RendererRuntime::MaterialBlueprintResource::MANDATORY_SHADER_PROPERTY" for mandatory shader properties (such properties are not removed when finding a fallback pipeline state)
 		*/
-		inline int32_t getVisualImportanceOfShaderProperty(ShaderPropertyId shaderPropertyId) const
+		[[nodiscard]] inline int32_t getVisualImportanceOfShaderProperty(ShaderPropertyId shaderPropertyId) const
 		{
 			return mVisualImportanceOfShaderProperties.getPropertyValueUnsafe(shaderPropertyId);
 		}
@@ -266,7 +266,7 @@ namespace RendererRuntime
 		*  @return
 		*    The maximum integer value (inclusive) of the requested shader property
 		*/
-		inline int32_t getMaximumIntegerValueOfShaderProperty(ShaderPropertyId shaderPropertyId) const
+		[[nodiscard]] inline int32_t getMaximumIntegerValueOfShaderProperty(ShaderPropertyId shaderPropertyId) const
 		{
 			return mMaximumIntegerValueOfShaderProperties.getPropertyValueUnsafe(shaderPropertyId);
 		}
@@ -297,7 +297,7 @@ namespace RendererRuntime
 		*  @return
 		*    The root signature, can be a null pointer, do not destroy the instance
 		*/
-		inline Renderer::IRootSignaturePtr getRootSignaturePtr() const
+		[[nodiscard]] inline Renderer::IRootSignaturePtr getRootSignaturePtr() const
 		{
 			return mRootSignaturePtr;
 		}
@@ -312,7 +312,7 @@ namespace RendererRuntime
 		*  @return
 		*    The graphics pipeline state
 		*/
-		inline const Renderer::GraphicsPipelineState& getGraphicsPipelineState() const
+		[[nodiscard]] inline const Renderer::GraphicsPipelineState& getGraphicsPipelineState() const
 		{
 			return mGraphicsPipelineState;
 		}
@@ -324,7 +324,7 @@ namespace RendererRuntime
 		*  @return
 		*    The requested vertex attributes resource ID, can be invalid
 		*/
-		inline VertexAttributesResourceId getVertexAttributesResourceId() const
+		[[nodiscard]] inline VertexAttributesResourceId getVertexAttributesResourceId() const
 		{
 			return mVertexAttributesResourceId;
 		}
@@ -339,7 +339,7 @@ namespace RendererRuntime
 		*  @return
 		*    The requested graphics shader blueprint resource ID, can be invalid
 		*/
-		inline ShaderBlueprintResourceId getGraphicsShaderBlueprintResourceId(GraphicsShaderType graphicsShaderType) const
+		[[nodiscard]] inline ShaderBlueprintResourceId getGraphicsShaderBlueprintResourceId(GraphicsShaderType graphicsShaderType) const
 		{
 			return mGraphicsShaderBlueprintResourceId[static_cast<uint8_t>(graphicsShaderType)];
 		}
@@ -357,7 +357,7 @@ namespace RendererRuntime
 		*  @note
 		*    - If a material blueprint resource has a valid compute shader blueprint resource ID there's no graphics pipeline
 		*/
-		inline ShaderBlueprintResourceId getComputeShaderBlueprintResourceId() const
+		[[nodiscard]] inline ShaderBlueprintResourceId getComputeShaderBlueprintResourceId() const
 		{
 			return mComputeShaderBlueprintResourceId;
 		}
@@ -372,7 +372,7 @@ namespace RendererRuntime
 		*  @return
 		*    The uniform buffers
 		*/
-		inline const UniformBuffers& getUniformBuffers() const
+		[[nodiscard]] inline const UniformBuffers& getUniformBuffers() const
 		{
 			return mUniformBuffers;
 		}
@@ -384,7 +384,7 @@ namespace RendererRuntime
 		*  @return
 		*    The texture buffers
 		*/
-		inline const TextureBuffers& getTextureBuffers() const
+		[[nodiscard]] inline const TextureBuffers& getTextureBuffers() const
 		{
 			return mTextureBuffers;
 		}
@@ -396,7 +396,7 @@ namespace RendererRuntime
 		*  @return
 		*    The sampler states
 		*/
-		inline const SamplerStates& getSamplerStates() const
+		[[nodiscard]] inline const SamplerStates& getSamplerStates() const
 		{
 			return mSamplerStates;
 		}
@@ -408,7 +408,7 @@ namespace RendererRuntime
 		*  @return
 		*    The textures
 		*/
-		inline const Textures& getTextures() const
+		[[nodiscard]] inline const Textures& getTextures() const
 		{
 			return mTextures;
 		}
@@ -423,7 +423,7 @@ namespace RendererRuntime
 		*  @return
 		*    The pass uniform buffer, can be a null pointer, don't destroy the instance
 		*/
-		inline const UniformBuffer* getPassUniformBuffer() const
+		[[nodiscard]] inline const UniformBuffer* getPassUniformBuffer() const
 		{
 			return mPassUniformBuffer;
 		}
@@ -435,7 +435,7 @@ namespace RendererRuntime
 		*  @return
 		*    The material uniform buffer, can be a null pointer, don't destroy the instance
 		*/
-		inline const UniformBuffer* getMaterialUniformBuffer() const
+		[[nodiscard]] inline const UniformBuffer* getMaterialUniformBuffer() const
 		{
 			return mMaterialUniformBuffer;
 		}
@@ -447,7 +447,7 @@ namespace RendererRuntime
 		*  @return
 		*    The instance uniform buffer, can be a null pointer, don't destroy the instance
 		*/
-		inline const UniformBuffer* getInstanceUniformBuffer() const
+		[[nodiscard]] inline const UniformBuffer* getInstanceUniformBuffer() const
 		{
 			return mInstanceUniformBuffer;
 		}
@@ -459,7 +459,7 @@ namespace RendererRuntime
 		*  @return
 		*    The instance texture buffer, can be a null pointer, don't destroy the instance
 		*/
-		inline const TextureBuffer* getInstanceTextureBuffer() const
+		[[nodiscard]] inline const TextureBuffer* getInstanceTextureBuffer() const
 		{
 			return mInstanceTextureBuffer;
 		}
@@ -471,7 +471,7 @@ namespace RendererRuntime
 		*  @return
 		*    The light texture buffer, can be a null pointer, don't destroy the instance
 		*/
-		inline const TextureBuffer* getLightTextureBuffer() const
+		[[nodiscard]] inline const TextureBuffer* getLightTextureBuffer() const
 		{
 			return mLightTextureBuffer;
 		}
@@ -486,7 +486,7 @@ namespace RendererRuntime
 		*  @return
 		*    The pass buffer manager, can be a null pointer, don't destroy the instance
 		*/
-		inline PassBufferManager* getPassBufferManager() const
+		[[nodiscard]] inline PassBufferManager* getPassBufferManager() const
 		{
 			return mPassBufferManager;
 		}
@@ -498,7 +498,7 @@ namespace RendererRuntime
 		*  @return
 		*    The material buffer manager, can be a null pointer, don't destroy the instance
 		*/
-		inline MaterialBufferManager* getMaterialBufferManager() const
+		[[nodiscard]] inline MaterialBufferManager* getMaterialBufferManager() const
 		{
 			return mMaterialBufferManager;
 		}
@@ -568,7 +568,7 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		void clearPipelineStateObjectCache();
 		void loadPipelineStateObjectCache(IFile& file);
-		bool doesPipelineStateObjectCacheNeedSaving() const;
+		[[nodiscard]] bool doesPipelineStateObjectCacheNeedSaving() const;
 		void savePipelineStateObjectCache(IFile& file);
 
 		//[-------------------------------------------------------]

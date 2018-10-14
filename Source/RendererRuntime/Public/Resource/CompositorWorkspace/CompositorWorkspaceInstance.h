@@ -110,19 +110,19 @@ namespace RendererRuntime
 		RENDERERRUNTIME_API_EXPORT CompositorWorkspaceInstance(IRendererRuntime& rendererRuntime, AssetId compositorWorkspaceAssetId);
 		RENDERERRUNTIME_API_EXPORT virtual ~CompositorWorkspaceInstance() override;
 
-		inline const IRendererRuntime& getRendererRuntime() const
+		[[nodiscard]] inline const IRendererRuntime& getRendererRuntime() const
 		{
 			return mRendererRuntime;
 		}
 
-		inline uint8_t getNumberOfMultisamples() const
+		[[nodiscard]] inline uint8_t getNumberOfMultisamples() const
 		{
 			return mNumberOfMultisamples;
 		}
 
 		RENDERERRUNTIME_API_EXPORT void setNumberOfMultisamples(uint8_t numberOfMultisamples);	// The number of multisamples per pixel (valid values: 1, 2, 4, 8); Changes are considered to be expensive since internal renderer resources might need to be updated when rendering the next time
 
-		inline float getResolutionScale() const
+		[[nodiscard]] inline float getResolutionScale() const
 		{
 			return mResolutionScale;
 		}
@@ -132,22 +132,22 @@ namespace RendererRuntime
 			mResolutionScale = resolutionScale;
 		}
 
-		inline const RenderQueueIndexRanges& getRenderQueueIndexRanges() const	// Renderable manager pointers are only considered to be safe directly after the "RendererRuntime::CompositorWorkspaceInstance::execute()" call
+		[[nodiscard]] inline const RenderQueueIndexRanges& getRenderQueueIndexRanges() const	// Renderable manager pointers are only considered to be safe directly after the "RendererRuntime::CompositorWorkspaceInstance::execute()" call
 		{
 			return mRenderQueueIndexRanges;
 		}
 
-		RENDERERRUNTIME_API_EXPORT const RenderQueueIndexRange* getRenderQueueIndexRangeByRenderQueueIndex(uint8_t renderQueueIndex) const;	// Can be a null pointer, don't destroy the instance
-		RENDERERRUNTIME_API_EXPORT const ICompositorInstancePass* getFirstCompositorInstancePassByCompositorPassTypeId(CompositorPassTypeId compositorPassTypeId) const;
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT const RenderQueueIndexRange* getRenderQueueIndexRangeByRenderQueueIndex(uint8_t renderQueueIndex) const;	// Can be a null pointer, don't destroy the instance
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT const ICompositorInstancePass* getFirstCompositorInstancePassByCompositorPassTypeId(CompositorPassTypeId compositorPassTypeId) const;
 		RENDERERRUNTIME_API_EXPORT void executeVr(Renderer::IRenderTarget& renderTarget, CameraSceneItem* cameraSceneItem, const LightSceneItem* lightSceneItem);	// If "RendererRuntime::IVrManager::isRunning()" is true, virtual reality rendering is used, don't use this method if you want to render e.g. into a texture for other purposes
 		RENDERERRUNTIME_API_EXPORT void execute(Renderer::IRenderTarget& renderTarget, const CameraSceneItem* cameraSceneItem, const LightSceneItem* lightSceneItem, bool singlePassStereoInstancing = false);
 
-		inline Renderer::IRenderTarget* getExecutionRenderTarget() const	// Only valid during compositor workspace instance execution
+		[[nodiscard]] inline Renderer::IRenderTarget* getExecutionRenderTarget() const	// Only valid during compositor workspace instance execution
 		{
 			return mExecutionRenderTarget;
 		}
 
-		inline const Renderer::CommandBuffer& getCommandBuffer() const
+		[[nodiscard]] inline const Renderer::CommandBuffer& getCommandBuffer() const
 		{
 			return mCommandBuffer;
 		}

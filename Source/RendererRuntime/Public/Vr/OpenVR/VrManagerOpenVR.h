@@ -87,14 +87,14 @@ namespace RendererRuntime
 	//[ Public static methods                                 ]
 	//[-------------------------------------------------------]
 	public:
-		static AssetId albedoTextureIdToAssetId(vr::TextureID_t albedoTextureId);
+		[[nodiscard]] static AssetId albedoTextureIdToAssetId(vr::TextureID_t albedoTextureId);
 
 
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline IVrManagerOpenVRListener& getVrManagerOpenVRListener() const
+		[[nodiscard]] inline IVrManagerOpenVRListener& getVrManagerOpenVRListener() const
 		{
 			// We know this pointer must always be valid
 			assert(nullptr != mVrManagerOpenVRListener);
@@ -103,28 +103,28 @@ namespace RendererRuntime
 
 		RENDERERRUNTIME_API_EXPORT void setVrManagerOpenVRListener(IVrManagerOpenVRListener* vrManagerOpenVRListener);	// Does not take over the control of the memory
 
-		inline vr::IVRSystem* getVrSystem() const
+		[[nodiscard]] inline vr::IVRSystem* getVrSystem() const
 		{
 			return mVrSystem;
 		}
 
-		inline MaterialResourceId getVrDeviceMaterialResourceId() const
+		[[nodiscard]] inline MaterialResourceId getVrDeviceMaterialResourceId() const
 		{
 			return mVrDeviceMaterialResourceId;
 		}
 
-		inline const RenderModelNames& getRenderModelNames() const
+		[[nodiscard]] inline const RenderModelNames& getRenderModelNames() const
 		{
 			return mRenderModelNames;
 		}
 
-		inline const vr::TrackedDevicePose_t& getVrTrackedDevicePose(vr::TrackedDeviceIndex_t trackedDeviceIndex) const
+		[[nodiscard]] inline const vr::TrackedDevicePose_t& getVrTrackedDevicePose(vr::TrackedDeviceIndex_t trackedDeviceIndex) const
 		{
 			assert(trackedDeviceIndex < vr::k_unMaxTrackedDeviceCount);
 			return mVrTrackedDevicePose[trackedDeviceIndex];
 		}
 
-		inline const glm::mat4& getDevicePoseMatrix(vr::TrackedDeviceIndex_t trackedDeviceIndex) const
+		[[nodiscard]] inline const glm::mat4& getDevicePoseMatrix(vr::TrackedDeviceIndex_t trackedDeviceIndex) const
 		{
 			assert(trackedDeviceIndex < vr::k_unMaxTrackedDeviceCount);
 			return mDevicePoseMatrix[trackedDeviceIndex];
@@ -135,22 +135,22 @@ namespace RendererRuntime
 	//[ Public virtual RendererRuntime::IVrManager methods    ]
 	//[-------------------------------------------------------]
 	public:
-		virtual VrManagerTypeId getVrManagerTypeId() const override;
-		virtual bool isHmdPresent() const override;
+		[[nodiscard]] virtual VrManagerTypeId getVrManagerTypeId() const override;
+		[[nodiscard]] virtual bool isHmdPresent() const override;
 		virtual void setSceneResourceId(SceneResourceId sceneResourceId) override;
-		virtual bool startup(AssetId vrDeviceMaterialAssetId) override;
+		[[nodiscard]] virtual bool startup(AssetId vrDeviceMaterialAssetId) override;
 
-		inline virtual bool isRunning() const override
+		[[nodiscard]] inline virtual bool isRunning() const override
 		{
 			return (nullptr != mVrSystem);
 		}
 
 		virtual void shutdown() override;
 		virtual void updateHmdMatrixPose(CameraSceneItem* cameraSceneItem) override;
-		virtual glm::mat4 getHmdViewSpaceToClipSpaceMatrix(VrEye vrEye, float nearZ, float farZ) const override;
-		virtual glm::mat4 getHmdEyeSpaceToHeadSpaceMatrix(VrEye vrEye) const override;
+		[[nodiscard]] virtual glm::mat4 getHmdViewSpaceToClipSpaceMatrix(VrEye vrEye, float nearZ, float farZ) const override;
+		[[nodiscard]] virtual glm::mat4 getHmdEyeSpaceToHeadSpaceMatrix(VrEye vrEye) const override;
 
-		inline virtual const glm::mat4& getHmdPoseMatrix() const override
+		[[nodiscard]] inline virtual const glm::mat4& getHmdPoseMatrix() const override
 		{
 			return mHmdPoseMatrix;
 		}

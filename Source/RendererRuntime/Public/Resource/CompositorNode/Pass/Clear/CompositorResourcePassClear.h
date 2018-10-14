@@ -70,22 +70,22 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline uint32_t getFlags() const	// Combination of "Renderer::ClearFlag"
+		[[nodiscard]] inline uint32_t getFlags() const	// Combination of "Renderer::ClearFlag"
 		{
 			return mFlags;
 		}
 
-		inline const glm::vec4& getClearColor() const
+		[[nodiscard]] inline const glm::vec4& getClearColor() const
 		{
 			return mColor;
 		}
 
-		inline float getZ() const
+		[[nodiscard]] inline float getZ() const
 		{
 			return mZ;
 		}
 
-		inline uint32_t getStencil() const
+		[[nodiscard]] inline uint32_t getStencil() const
 		{
 			return mStencil;
 		}
@@ -95,7 +95,7 @@ namespace RendererRuntime
 	//[ Public virtual RendererRuntime::ICompositorResourcePass methods ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual CompositorPassTypeId getTypeId() const override
+		[[nodiscard]] inline virtual CompositorPassTypeId getTypeId() const override
 		{
 			return TYPE_ID;
 		}

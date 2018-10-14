@@ -73,17 +73,17 @@ namespace RendererRuntime
 			// Nothing here
 		}
 
-		inline float getPastSecondsSinceLastFrame() const
+		[[nodiscard]] inline float getPastSecondsSinceLastFrame() const
 		{
 			return mPastSecondsSinceLastFrame;
 		}
 
-		inline float getGlobalTimeInSeconds() const
+		[[nodiscard]] inline float getGlobalTimeInSeconds() const
 		{
 			return mGlobalTimeInSeconds;
 		}
 
-		inline uint64_t getNumberOfRenderedFrames() const
+		[[nodiscard]] inline uint64_t getNumberOfRenderedFrames() const
 		{
 			return mNumberOfRenderedFrames;
 		}

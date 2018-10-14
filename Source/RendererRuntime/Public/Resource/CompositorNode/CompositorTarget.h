@@ -109,12 +109,12 @@ namespace RendererRuntime
 			removeAllCompositorResourcePasses();
 		}
 
-		inline CompositorChannelId getCompositorChannelId() const
+		[[nodiscard]] inline CompositorChannelId getCompositorChannelId() const
 		{
 			return mCompositorChannelId;
 		}
 
-		inline CompositorFramebufferId getCompositorFramebufferId() const
+		[[nodiscard]] inline CompositorFramebufferId getCompositorFramebufferId() const
 		{
 			return mCompositorFramebufferId;
 		}
@@ -127,9 +127,9 @@ namespace RendererRuntime
 			mCompositorResourcePasses.reserve(numberOfCompositorResourcePasses);
 		}
 
-		ICompositorResourcePass* addCompositorResourcePass(const ICompositorPassFactory& compositorPassFactory, CompositorPassTypeId compositorPassTypeId);
+		[[nodiscard]] ICompositorResourcePass* addCompositorResourcePass(const ICompositorPassFactory& compositorPassFactory, CompositorPassTypeId compositorPassTypeId);
 
-		inline const CompositorResourcePasses& getCompositorResourcePasses() const
+		[[nodiscard]] inline const CompositorResourcePasses& getCompositorResourcePasses() const
 		{
 			return mCompositorResourcePasses;
 		}

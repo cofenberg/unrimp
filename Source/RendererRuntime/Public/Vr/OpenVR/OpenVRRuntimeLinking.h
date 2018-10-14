@@ -92,7 +92,7 @@ namespace RendererRuntime
 		*  @return
 		*    "true" if OpenVR is available, else "false"
 		*/
-		bool isOpenVRAvaiable();
+		[[nodiscard]] bool isOpenVRAvaiable();
 
 		/**
 		*  @brief
@@ -101,7 +101,7 @@ namespace RendererRuntime
 		*  @return
 		*    "true" if all went fine, else "false"
 		*/
-		bool loadSharedLibraries();
+		[[nodiscard]] bool loadSharedLibraries();
 
 		/**
 		*  @brief
@@ -110,7 +110,7 @@ namespace RendererRuntime
 		*  @return
 		*    "true" if all went fine, else "false"
 		*/
-		bool loadOpenVREntryPoints();
+		[[nodiscard]] bool loadOpenVREntryPoints();
 
 
 	//[-------------------------------------------------------]

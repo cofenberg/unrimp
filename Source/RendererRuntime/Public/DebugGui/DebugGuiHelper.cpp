@@ -79,7 +79,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		bool objectSpaceToScreenSpacePosition(const glm::vec3& objectSpacePosition, const glm::mat4& objectSpaceToClipSpaceMatrix, ImVec2& screenSpacePosition)
+		[[nodiscard]] bool objectSpaceToScreenSpacePosition(const glm::vec3& objectSpacePosition, const glm::mat4& objectSpaceToClipSpaceMatrix, ImVec2& screenSpacePosition)
 		{
 			glm::vec4 position = objectSpaceToClipSpaceMatrix * glm::vec4(objectSpacePosition, 1.0f);
 			const bool inFront = (position.z >= 0.0f);

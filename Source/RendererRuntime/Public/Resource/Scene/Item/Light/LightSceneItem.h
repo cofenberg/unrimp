@@ -83,7 +83,7 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline LightType getLightType() const
+		[[nodiscard]] inline LightType getLightType() const
 		{
 			return static_cast<LightType>(static_cast<int>(mPackedShaderData.lightType));
 		}
@@ -107,7 +107,7 @@ namespace RendererRuntime
 			assert(lightType != LightType::DIRECTIONAL || 0.0f == mPackedShaderData.radius);
 		}
 
-		inline const glm::vec3& getColor() const
+		[[nodiscard]] inline const glm::vec3& getColor() const
 		{
 			return mPackedShaderData.color;
 		}
@@ -120,7 +120,7 @@ namespace RendererRuntime
 			assert(mPackedShaderData.color.x >= 0.0f && mPackedShaderData.color.y >= 0.0f && mPackedShaderData.color.z >= 0.0f);
 		}
 
-		inline float getRadius() const
+		[[nodiscard]] inline float getRadius() const
 		{
 			return mPackedShaderData.radius;
 		}
@@ -134,7 +134,7 @@ namespace RendererRuntime
 			assert(mPackedShaderData.lightType != static_cast<float>(LightType::DIRECTIONAL) || 0.0f == mPackedShaderData.radius);
 		}
 
-		inline float getInnerAngle() const
+		[[nodiscard]] inline float getInnerAngle() const
 		{
 			return mInnerAngle;
 		}
@@ -151,7 +151,7 @@ namespace RendererRuntime
 			assert(mInnerAngle < mOuterAngle);
 		}
 
-		inline float getOuterAngle() const
+		[[nodiscard]] inline float getOuterAngle() const
 		{
 			return mOuterAngle;
 		}
@@ -183,7 +183,7 @@ namespace RendererRuntime
 			assert(mInnerAngle < mOuterAngle);
 		}
 
-		inline float getNearClipDistance() const
+		[[nodiscard]] inline float getNearClipDistance() const
 		{
 			return mPackedShaderData.nearClipDistance;
 		}
@@ -196,7 +196,7 @@ namespace RendererRuntime
 			assert(mPackedShaderData.nearClipDistance >= 0.0f);
 		}
 
-		inline bool isVisible() const
+		[[nodiscard]] inline bool isVisible() const
 		{
 			return (mPackedShaderData.visible != 0);
 		}
@@ -206,7 +206,7 @@ namespace RendererRuntime
 	//[ Public RendererRuntime::ISceneItem methods            ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual SceneItemTypeId getSceneItemTypeId() const override
+		[[nodiscard]] inline virtual SceneItemTypeId getSceneItemTypeId() const override
 		{
 			return TYPE_ID;
 		}

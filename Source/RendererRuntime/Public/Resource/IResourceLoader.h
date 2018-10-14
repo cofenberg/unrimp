@@ -79,7 +79,7 @@ namespace RendererRuntime
 		*  @return
 		*    The owner resource manager
 		*/
-		inline IResourceManager& getResourceManager() const
+		[[nodiscard]] inline IResourceManager& getResourceManager() const
 		{
 			return mResourceManager;
 		}
@@ -91,7 +91,7 @@ namespace RendererRuntime
 		*  @return
 		*    The asset the resource is using
 		*/
-		inline const Asset& getAsset() const
+		[[nodiscard]] inline const Asset& getAsset() const
 		{
 			assert(nullptr != mAsset);
 			return *mAsset;
@@ -104,7 +104,7 @@ namespace RendererRuntime
 		*  @return
 		*    "true" if the resource is new in memory, else "false" for reload an already loaded resource (and e.g. update cache entries)
 		*/
-		inline bool getReload() const
+		[[nodiscard]] inline bool getReload() const
 		{
 			return mReload;
 		}
@@ -118,7 +118,7 @@ namespace RendererRuntime
 		*  @brief
 		*    Return the resource loader type ID
 		*/
-		virtual ResourceLoaderTypeId getResourceLoaderTypeId() const = 0;
+		[[nodiscard]] virtual ResourceLoaderTypeId getResourceLoaderTypeId() const = 0;
 
 		/**
 		*  @brief
@@ -140,7 +140,7 @@ namespace RendererRuntime
 		*  @return
 		*    "true" if deserialization has to be called, else "false" (for example a procedural resource or a resource received via an API like OpenVR)
 		*/
-		virtual bool hasDeserialization() const = 0;
+		[[nodiscard]] virtual bool hasDeserialization() const = 0;
 
 		/**
 		*  @brief
@@ -148,8 +148,11 @@ namespace RendererRuntime
 		*
 		*  @param[in] file
 		*    File to read from
+		*
+		*  @return
+		*    "true" if all went fine, else "false"
 		*/
-		virtual void onDeserialization(IFile& file) = 0;
+		[[nodiscard]] virtual bool onDeserialization(IFile& file) = 0;
 
 		/**
 		*  @brief
@@ -164,7 +167,7 @@ namespace RendererRuntime
 		*  @return
 		*    "true" if the resource is fully loaded, else "false" (e.g. asset dependencies are not fully loaded, yet) meaning this method will be called later on again
 		*/
-		virtual bool onDispatch() = 0;
+		[[nodiscard]] virtual bool onDispatch() = 0;
 
 		/**
 		*  @brief
@@ -173,14 +176,14 @@ namespace RendererRuntime
 		*  @return
 		*    "true" if the resource is fully loaded, else "false" (e.g. asset dependencies are not fully loaded, yet) meaning this method will be called later on again
 		*/
-		virtual bool isFullyLoaded() = 0;
+		[[nodiscard]] virtual bool isFullyLoaded() = 0;
 
 
 	//[-------------------------------------------------------]
 	//[ Protected methods                                     ]
 	//[-------------------------------------------------------]
 	protected:
-		inline IResourceLoader(IResourceManager& resourceManager) :
+		inline explicit IResourceLoader(IResourceManager& resourceManager) :
 			mResourceManager(resourceManager),
 			mAsset(nullptr),
 			mReload(false)

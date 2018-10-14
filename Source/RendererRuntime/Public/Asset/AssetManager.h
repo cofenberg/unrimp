@@ -93,25 +93,25 @@ namespace RendererRuntime
 		//[ Asset package                                         ]
 		//[-------------------------------------------------------]
 		void clear();
-		RENDERERRUNTIME_API_EXPORT AssetPackage& addAssetPackage(AssetPackageId assetPackageId);
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT AssetPackage& addAssetPackage(AssetPackageId assetPackageId);
 		RENDERERRUNTIME_API_EXPORT AssetPackage* mountAssetPackage(AbsoluteDirectoryName absoluteDirectoryName, const char* projectName);
-		RENDERERRUNTIME_API_EXPORT AssetPackage& getAssetPackageById(AssetPackageId assetPackageId) const;
-		RENDERERRUNTIME_API_EXPORT AssetPackage* tryGetAssetPackageById(AssetPackageId assetPackageId) const;
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT AssetPackage& getAssetPackageById(AssetPackageId assetPackageId) const;
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT AssetPackage* tryGetAssetPackageById(AssetPackageId assetPackageId) const;
 		RENDERERRUNTIME_API_EXPORT void removeAssetPackage(AssetPackageId assetPackageId);
 
 		//[-------------------------------------------------------]
 		//[ Asset                                                 ]
 		//[-------------------------------------------------------]
-		RENDERERRUNTIME_API_EXPORT const Asset* tryGetAssetByAssetId(AssetId assetId) const;
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT const Asset* tryGetAssetByAssetId(AssetId assetId) const;
 
-		inline const Asset& getAssetByAssetId(AssetId assetId) const
+		[[nodiscard]] inline const Asset& getAssetByAssetId(AssetId assetId) const
 		{
 			const Asset* asset = tryGetAssetByAssetId(assetId);
 			assert(nullptr != asset);
 			return *asset;
 		}
 
-		inline VirtualFilename tryGetVirtualFilenameByAssetId(AssetId assetId) const
+		[[nodiscard]] inline VirtualFilename tryGetVirtualFilenameByAssetId(AssetId assetId) const
 		{
 			const Asset* asset = tryGetAssetByAssetId(assetId);
 			return (nullptr != asset) ? asset->virtualFilename : nullptr;
@@ -135,7 +135,7 @@ namespace RendererRuntime
 
 		explicit AssetManager(const AssetManager&) = delete;
 		AssetManager& operator=(const AssetManager&) = delete;
-		AssetPackage* addAssetPackageByVirtualFilename(AssetPackageId assetPackageId, VirtualFilename virtualFilename);
+		[[nodiscard]] AssetPackage* addAssetPackageByVirtualFilename(AssetPackageId assetPackageId, VirtualFilename virtualFilename);
 
 
 	//[-------------------------------------------------------]

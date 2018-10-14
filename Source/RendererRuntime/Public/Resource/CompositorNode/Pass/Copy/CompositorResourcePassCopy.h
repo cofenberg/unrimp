@@ -67,12 +67,12 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline AssetId getDestinationTextureAssetId() const
+		[[nodiscard]] inline AssetId getDestinationTextureAssetId() const
 		{
 			return mDestinationTextureAssetId;
 		}
 
-		inline AssetId getSourceTextureAssetId() const
+		[[nodiscard]] inline AssetId getSourceTextureAssetId() const
 		{
 			return mSourceTextureAssetId;
 		}
@@ -82,7 +82,7 @@ namespace RendererRuntime
 	//[ Public virtual RendererRuntime::ICompositorResourcePass methods ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual CompositorPassTypeId getTypeId() const override
+		[[nodiscard]] inline virtual CompositorPassTypeId getTypeId() const override
 		{
 			return TYPE_ID;
 		}

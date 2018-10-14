@@ -40,7 +40,7 @@ namespace
 			// Copied from boost: https://github.com/boostorg/filesystem/blob/a682eaa476cf0b4e992884d32dd2ddcfb0b6b1aa/src/path.cpp
 			// Implement lexically_normal used when std::filesystem::path implementation of the c++ runtime doesn't provide this as member method
 			// std::filesystem::path::lexically_normal is part of the filesystem TS which is part of C++17
-			const std_filesystem::path&  dot_path()
+			[[nodiscard]] const std_filesystem::path&  dot_path()
 			{
 				#ifdef _WIN32
 					static const std_filesystem::path dot_pth(L".");
@@ -61,7 +61,7 @@ namespace
 				const std_filesystem::path::value_type      dot = '.';
 			#endif
 		
-			std_filesystem::path lexically_normal(const std_filesystem::path& path)
+			[[nodiscard]] std_filesystem::path lexically_normal(const std_filesystem::path& path)
 			{
 				if (path.empty())
 					return path;

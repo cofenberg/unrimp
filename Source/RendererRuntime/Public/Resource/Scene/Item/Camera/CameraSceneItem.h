@@ -86,7 +86,7 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Data                                                  ]
 		//[-------------------------------------------------------]
-		inline float getFovY() const
+		[[nodiscard]] inline float getFovY() const
 		{
 			return mFovY;
 		}
@@ -96,7 +96,7 @@ namespace RendererRuntime
 			mFovY = fovY;
 		}
 
-		inline float getNearZ() const
+		[[nodiscard]] inline float getNearZ() const
 		{
 			return mNearZ;
 		}
@@ -106,7 +106,7 @@ namespace RendererRuntime
 			mNearZ = nearZ;
 		}
 
-		inline float getFarZ() const
+		[[nodiscard]] inline float getFarZ() const
 		{
 			return mFarZ;
 		}
@@ -119,16 +119,16 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Derived or custom data                                ]
 		//[-------------------------------------------------------]
-		RENDERERRUNTIME_API_EXPORT glm::vec3 getWorldSpaceCameraPosition() const;	// Ease-of-use method for camera relative rendering
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT glm::vec3 getWorldSpaceCameraPosition() const;	// Ease-of-use method for camera relative rendering
 
 		// World space to view space matrix (Aka "view matrix")
-		RENDERERRUNTIME_API_EXPORT const Transform& getWorldSpaceToViewSpaceTransform() const;
-		RENDERERRUNTIME_API_EXPORT const Transform& getPreviousWorldSpaceToViewSpaceTransform() const;
-		RENDERERRUNTIME_API_EXPORT const glm::mat4& getWorldSpaceToViewSpaceMatrix() const;	// Prefer using "RendererRuntime::CameraSceneItem::getCameraRelativeWorldSpaceToViewSpaceMatrix()" whenever possible
-		RENDERERRUNTIME_API_EXPORT const glm::mat4& getCameraRelativeWorldSpaceToViewSpaceMatrix() const;
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT const Transform& getWorldSpaceToViewSpaceTransform() const;
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT const Transform& getPreviousWorldSpaceToViewSpaceTransform() const;
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT const glm::mat4& getWorldSpaceToViewSpaceMatrix() const;	// Prefer using "RendererRuntime::CameraSceneItem::getCameraRelativeWorldSpaceToViewSpaceMatrix()" whenever possible
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT const glm::mat4& getCameraRelativeWorldSpaceToViewSpaceMatrix() const;
 		RENDERERRUNTIME_API_EXPORT void getPreviousCameraRelativeWorldSpaceToViewSpaceMatrix(glm::mat4& previousCameraRelativeWorldSpaceToViewSpaceMatrix) const;
 
-		inline bool hasCustomWorldSpaceToViewSpaceMatrix() const
+		[[nodiscard]] inline bool hasCustomWorldSpaceToViewSpaceMatrix() const
 		{
 			return mHasCustomWorldSpaceToViewSpaceMatrix;
 		}
@@ -145,10 +145,10 @@ namespace RendererRuntime
 		}
 
 		// View space to clip space matrix (aka "projection matrix")
-		RENDERERRUNTIME_API_EXPORT const glm::mat4& getViewSpaceToClipSpaceMatrix(float aspectRatio) const;
-		RENDERERRUNTIME_API_EXPORT const glm::mat4& getViewSpaceToClipSpaceMatrixReversedZ(float aspectRatio) const;
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT const glm::mat4& getViewSpaceToClipSpaceMatrix(float aspectRatio) const;
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT const glm::mat4& getViewSpaceToClipSpaceMatrixReversedZ(float aspectRatio) const;
 
-		inline bool hasCustomViewSpaceToClipSpaceMatrix() const
+		[[nodiscard]] inline bool hasCustomViewSpaceToClipSpaceMatrix() const
 		{
 			return mHasCustomViewSpaceToClipSpaceMatrix;
 		}
@@ -170,7 +170,7 @@ namespace RendererRuntime
 	//[ Public RendererRuntime::ISceneItem methods            ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual SceneItemTypeId getSceneItemTypeId() const override
+		[[nodiscard]] inline virtual SceneItemTypeId getSceneItemTypeId() const override
 		{
 			return TYPE_ID;
 		}

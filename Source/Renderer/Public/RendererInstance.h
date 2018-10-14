@@ -93,49 +93,49 @@
 	// Null
 	#ifdef RENDERER_NULL
 		// "createNullRendererInstance()" signature
-		extern Renderer::IRenderer* createNullRendererInstance(const Renderer::Context&);
+		[[nodiscard]] extern Renderer::IRenderer* createNullRendererInstance(const Renderer::Context&);
 	#endif
 
 	// Vulkan
 	#ifdef RENDERER_VULKAN
 		// "createVulkanRendererInstance()" signature
-		extern Renderer::IRenderer* createVulkanRendererInstance(const Renderer::Context&);
+		[[nodiscard]] extern Renderer::IRenderer* createVulkanRendererInstance(const Renderer::Context&);
 	#endif
 
 	// OpenGL
 	#ifdef RENDERER_OPENGL
 		// "createOpenGLRendererInstance()" signature
-		extern Renderer::IRenderer* createOpenGLRendererInstance(const Renderer::Context&);
+		[[nodiscard]] extern Renderer::IRenderer* createOpenGLRendererInstance(const Renderer::Context&);
 	#endif
 
 	// OpenGLES3
 	#ifdef RENDERER_OPENGLES3
 		// "createOpenGLES3RendererInstance()" signature
-		extern Renderer::IRenderer* createOpenGLES3RendererInstance(const Renderer::Context&);
+		[[nodiscard]] extern Renderer::IRenderer* createOpenGLES3RendererInstance(const Renderer::Context&);
 	#endif
 
 	// Direct3D 9
 	#ifdef RENDERER_DIRECT3D9
 		// "createDirect3D9RendererInstance()" signature
-		extern Renderer::IRenderer* createDirect3D9RendererInstance(const Renderer::Context&);
+		[[nodiscard]] extern Renderer::IRenderer* createDirect3D9RendererInstance(const Renderer::Context&);
 	#endif
 
 	// Direct3D 10
 	#ifdef RENDERER_DIRECT3D10
 		// "createDirect3D10RendererInstance()" signature
-		extern Renderer::IRenderer* createDirect3D10RendererInstance(const Renderer::Context&);
+		[[nodiscard]] extern Renderer::IRenderer* createDirect3D10RendererInstance(const Renderer::Context&);
 	#endif
 
 	// Direct3D 11
 	#ifdef RENDERER_DIRECT3D11
 		// "createDirect3D11RendererInstance()" signature
-		extern Renderer::IRenderer* createDirect3D11RendererInstance(const Renderer::Context&);
+		[[nodiscard]] extern Renderer::IRenderer* createDirect3D11RendererInstance(const Renderer::Context&);
 	#endif
 
 	// Direct3D 12
 	#ifdef RENDERER_DIRECT3D12
 		// "createDirect3D12RendererInstance()" signature
-		extern Renderer::IRenderer* createDirect3D12RendererInstance(const Renderer::Context&);
+		[[nodiscard]] extern Renderer::IRenderer* createDirect3D12RendererInstance(const Renderer::Context&);
 	#endif
 #endif
 
@@ -386,7 +386,7 @@ namespace Renderer
 		*  @remarks
 		*    The renderer instance, can be a null pointer
 		*/
-		inline IRenderer* getRenderer() const
+		[[nodiscard]] inline IRenderer* getRenderer() const
 		{
 			return mRenderer;
 		}
@@ -408,7 +408,7 @@ namespace Renderer
 		#ifdef SHARED_LIBRARIES
 			// Implementation from "08/02/2015 Better array 'countof' implementation with C++ 11 (updated)" - https://www.g-truc.net/post-0708.html
 			template<typename T, std::size_t N>
-			constexpr std::size_t countof(T const (&)[N])
+			[[nodiscard]] constexpr std::size_t countof(T const (&)[N])
 			{
 				return N;
 			}

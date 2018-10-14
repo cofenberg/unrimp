@@ -57,7 +57,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public virtual RendererRuntime::IResourceLoader methods ]
 	//[-------------------------------------------------------]
-	void CrnTextureResourceLoader::onDeserialization(IFile& file)
+	bool CrnTextureResourceLoader::onDeserialization(IFile& file)
 	{
 		// Load the source image file into memory: Get file size and file data
 		mNumberOfUsedFileDataBytes = static_cast<uint32_t>(file.getNumberOfBytes());
@@ -68,6 +68,9 @@ namespace RendererRuntime
 			mFileData = new uint8_t[mNumberOfFileDataBytes];
 		}
 		file.read(mFileData, mNumberOfUsedFileDataBytes);
+
+		// Done
+		return true;
 	}
 
 	void CrnTextureResourceLoader::onProcessing()

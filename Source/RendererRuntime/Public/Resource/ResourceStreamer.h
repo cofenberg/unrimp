@@ -130,7 +130,7 @@ namespace RendererRuntime
 			{
 				// Nothing here
 			}
-			IResource& getResource() const;
+			[[nodiscard]] IResource& getResource() const;
 		};
 
 
@@ -138,7 +138,7 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline uint32_t getNumberOfInFlightLoadRequests() const
+		[[nodiscard]] inline uint32_t getNumberOfInFlightLoadRequests() const
 		{
 			return mNumberOfInFlightLoadRequests;
 		}

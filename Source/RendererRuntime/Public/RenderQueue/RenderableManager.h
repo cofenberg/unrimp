@@ -91,17 +91,17 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Data                                                  ]
 		//[-------------------------------------------------------]
-		inline const Renderables& getRenderables() const
+		[[nodiscard]] inline const Renderables& getRenderables() const
 		{
 			return mRenderables;
 		}
 
-		inline Renderables& getRenderables()	// Don't forget to call "RendererRuntime::RenderableManager::updateCachedRenderablesData()" if you changed something relevant in here
+		[[nodiscard]] inline Renderables& getRenderables()	// Don't forget to call "RendererRuntime::RenderableManager::updateCachedRenderablesData()" if you changed something relevant in here
 		{
 			return mRenderables;
 		}
 
-		inline const Transform& getTransform() const
+		[[nodiscard]] inline const Transform& getTransform() const
 		{
 			// We know that this pointer is always valid
 			assert(nullptr != mTransform);
@@ -110,7 +110,7 @@ namespace RendererRuntime
 
 		void setTransform(const Transform* transform);	// Can be a null pointer (internally a identity transform will be set), transform instance must stay valid as long as the renderable manager is referencing it
 
-		inline bool isVisible() const
+		[[nodiscard]] inline bool isVisible() const
 		{
 			return mVisible;
 		}
@@ -123,7 +123,7 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Cached data                                           ]
 		//[-------------------------------------------------------]
-		inline float getCachedDistanceToCamera() const
+		[[nodiscard]] inline float getCachedDistanceToCamera() const
 		{
 			return mCachedDistanceToCamera;
 		}
@@ -143,7 +143,7 @@ namespace RendererRuntime
 		*  @see
 		*    - "RendererRuntime::RenderableManager::updateCachedRenderablesData()"
 		*/
-		inline uint8_t getMinimumRenderQueueIndex() const
+		[[nodiscard]] inline uint8_t getMinimumRenderQueueIndex() const
 		{
 			return mMinimumRenderQueueIndex;
 		}
@@ -158,7 +158,7 @@ namespace RendererRuntime
 		*  @see
 		*    - "RendererRuntime::RenderableManager::updateCachedRenderablesData()"
 		*/
-		inline uint8_t getMaximumRenderQueueIndex() const
+		[[nodiscard]] inline uint8_t getMaximumRenderQueueIndex() const
 		{
 			return mMaximumRenderQueueIndex;
 		}
@@ -173,7 +173,7 @@ namespace RendererRuntime
 		*  @see
 		*    - "RendererRuntime::RenderableManager::updateCachedRenderablesData()"
 		*/
-		inline bool getCastShadows() const
+		[[nodiscard]] inline bool getCastShadows() const
 		{
 			return mCastShadows;
 		}

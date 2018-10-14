@@ -70,7 +70,7 @@ namespace RendererRuntime
 	//[ Protected virtual RendererRuntime::ISceneFactory methods ]
 	//[-------------------------------------------------------]
 	protected:
-		virtual ISceneItem* createSceneItem(const SceneItemTypeId& sceneItemTypeId, SceneResource& sceneResource) const = 0;
+		[[nodiscard]] virtual ISceneItem* createSceneItem(const SceneItemTypeId& sceneItemTypeId, SceneResource& sceneResource) const = 0;
 
 
 	//[-------------------------------------------------------]

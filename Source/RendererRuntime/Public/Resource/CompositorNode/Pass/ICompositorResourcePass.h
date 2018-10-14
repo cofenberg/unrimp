@@ -83,13 +83,13 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline const CompositorTarget& getCompositorTarget() const
+		[[nodiscard]] inline const CompositorTarget& getCompositorTarget() const
 		{
 			return mCompositorTarget;
 		}
 
 		#if defined(_DEBUG) || defined(RENDERER_RUNTIME_PROFILER)
-			inline const char* getDebugName() const
+			[[nodiscard]] inline const char* getDebugName() const
 			{
 				return mDebugName;
 			}
@@ -100,22 +100,22 @@ namespace RendererRuntime
 			}
 		#endif
 
-		inline float getMinimumDepth() const
+		[[nodiscard]] inline float getMinimumDepth() const
 		{
 			return mMinimumDepth;
 		}
 
-		inline float getMaximumDepth() const
+		[[nodiscard]] inline float getMaximumDepth() const
 		{
 			return mMaximumDepth;
 		}
 
-		inline bool getSkipFirstExecution() const
+		[[nodiscard]] inline bool getSkipFirstExecution() const
 		{
 			return mSkipFirstExecution;
 		}
 
-		inline uint32_t getNumberOfExecutions() const
+		[[nodiscard]] inline uint32_t getNumberOfExecutions() const
 		{
 			return mNumberOfExecutions;
 		}
@@ -125,7 +125,7 @@ namespace RendererRuntime
 	//[ Public virtual RendererRuntime::ICompositorResourcePass methods ]
 	//[-------------------------------------------------------]
 	public:
-		virtual CompositorPassTypeId getTypeId() const = 0;
+		[[nodiscard]] virtual CompositorPassTypeId getTypeId() const = 0;
 
 		inline virtual void deserialize([[maybe_unused]] uint32_t numberOfBytes, const uint8_t* data)
 		{
@@ -173,7 +173,7 @@ namespace RendererRuntime
 		*  @return
 		*    "true" if this compositor resource pass has a render queue range defined, else "false"
 		*/
-		inline virtual bool getRenderQueueIndexRange([[maybe_unused]] uint8_t& minimumRenderQueueIndex, [[maybe_unused]] uint8_t& maximumRenderQueueIndex) const
+		[[nodiscard]] inline virtual bool getRenderQueueIndexRange([[maybe_unused]] uint8_t& minimumRenderQueueIndex, [[maybe_unused]] uint8_t& maximumRenderQueueIndex) const
 		{
 			// This compositor resource pass has no render queue range defined
 			return false;

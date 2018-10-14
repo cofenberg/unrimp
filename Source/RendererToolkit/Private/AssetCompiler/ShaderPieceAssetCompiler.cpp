@@ -103,7 +103,10 @@ namespace RendererToolkit
 			}
 
 			// Write LZ4 compressed output
-			memoryFile.writeLz4CompressedDataByVirtualFilename(RendererRuntime::v1ShaderPiece::FORMAT_TYPE, RendererRuntime::v1ShaderPiece::FORMAT_VERSION, input.context.getFileManager(), virtualOutputAssetFilename.c_str());
+			if (!memoryFile.writeLz4CompressedDataByVirtualFilename(RendererRuntime::v1ShaderPiece::FORMAT_TYPE, RendererRuntime::v1ShaderPiece::FORMAT_VERSION, input.context.getFileManager(), virtualOutputAssetFilename.c_str()))
+			{
+				throw std::runtime_error("Failed to write LZ4 compressed output file \"" + virtualOutputAssetFilename + '\"');
+			}
 
 			// Store new cache entries or update existing ones
 			input.cacheManager.storeOrUpdateCacheEntries(cacheEntries);

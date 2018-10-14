@@ -64,15 +64,15 @@ namespace RendererRuntime
 	//[ Public virtual RendererRuntime::IResourceLoader methods ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual ResourceLoaderTypeId getResourceLoaderTypeId() const override
+		[[nodiscard]] inline virtual ResourceLoaderTypeId getResourceLoaderTypeId() const override
 		{
 			return TYPE_ID;
 		}
 
-		inline virtual void onDeserialization(IFile& file) override
+		[[nodiscard]] inline virtual bool onDeserialization(IFile& file) override
 		{
 			// Tell the memory mapped file about the LZ4 compressed data
-			mMemoryFile.loadLz4CompressedDataFromFile(FORMAT_TYPE, FORMAT_VERSION, file);
+			return mMemoryFile.loadLz4CompressedDataFromFile(FORMAT_TYPE, FORMAT_VERSION, file);
 		}
 
 		inline virtual void onProcessing() override
@@ -81,7 +81,7 @@ namespace RendererRuntime
 			mMemoryFile.decompress();
 
 			// Call the deserialization base implementation
-			DdsTextureResourceLoader::onDeserialization(mMemoryFile);
+			[[maybe_unused]] const bool result = DdsTextureResourceLoader::onDeserialization(mMemoryFile);
 		}
 
 

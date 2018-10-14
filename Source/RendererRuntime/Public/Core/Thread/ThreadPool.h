@@ -183,10 +183,10 @@ namespace RendererRuntime
 			}
 		}
 
-		inline size_t getThreadCount() const { return threads; }
-		inline FutVec &getFutures() { return futuresDone; }
+		[[nodiscard]] inline size_t getThreadCount() const { return threads; }
+		[[nodiscard]] inline FutVec &getFutures() { return futuresDone; }
 
-		size_t getThreadCountAndSplitCount(size_t itemCount, size_t& splitCount) const
+		[[nodiscard]] size_t getThreadCountAndSplitCount(size_t itemCount, size_t& splitCount) const
 		{
 			size_t threadCount = static_cast<size_t>(std::ceil(itemCount / static_cast<float>(splitCount)));
 			if (threadCount > threads)

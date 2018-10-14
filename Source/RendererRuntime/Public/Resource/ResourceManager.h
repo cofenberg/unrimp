@@ -56,17 +56,17 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Ease-of-use access templates                          ]
 		//[-------------------------------------------------------]
-		inline TYPE& getByIndex(uint32_t index) const
+		[[nodiscard]] inline TYPE& getByIndex(uint32_t index) const
 		{
 			return static_cast<TYPE&>(getResourceByIndex(index));
 		}
 
-		inline TYPE& getById(ResourceId resourceId) const
+		[[nodiscard]] inline TYPE& getById(ResourceId resourceId) const
 		{
 			return static_cast<TYPE&>(getResourceByResourceId(resourceId));
 		}
 
-		inline TYPE* tryGetById(ResourceId resourceId) const
+		[[nodiscard]] inline TYPE* tryGetById(ResourceId resourceId) const
 		{
 			return static_cast<TYPE*>(tryGetResourceByResourceId(resourceId));
 		}

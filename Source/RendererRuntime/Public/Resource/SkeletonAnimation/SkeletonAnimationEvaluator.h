@@ -137,7 +137,7 @@ namespace RendererRuntime
 		*  @return
 		*    The bone IDs
 		*/
-		inline const BoneIds& getBoneIds() const
+		[[nodiscard]] inline const BoneIds& getBoneIds() const
 		{
 			return mBoneIds;
 		}
@@ -149,7 +149,7 @@ namespace RendererRuntime
 		*  @return
 		*    The transform matrices
 		*/
-		inline const TransformMatrices& getTransformMatrices() const
+		[[nodiscard]] inline const TransformMatrices& getTransformMatrices() const
 		{
 			return mTransformMatrices;
 		}

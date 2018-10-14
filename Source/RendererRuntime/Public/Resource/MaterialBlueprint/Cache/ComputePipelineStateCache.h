@@ -64,7 +64,7 @@ namespace RendererRuntime
 		*  @return
 		*    The compute pipeline state signature of the cache
 		*/
-		inline const ComputePipelineStateSignature& getComputePipelineStateSignature() const
+		[[nodiscard]] inline const ComputePipelineStateSignature& getComputePipelineStateSignature() const
 		{
 			return mComputePipelineStateSignature;
 		}
@@ -76,7 +76,7 @@ namespace RendererRuntime
 		*  @return
 		*    The compute pipeline state object
 		*/
-		inline Renderer::IComputePipelineStatePtr getComputePipelineStateObjectPtr() const
+		[[nodiscard]] inline Renderer::IComputePipelineStatePtr getComputePipelineStateObjectPtr() const
 		{
 			return mComputePipelineStateObjectPtr;
 		}
@@ -88,7 +88,7 @@ namespace RendererRuntime
 		*  @return
 		*    If "true", this compute pipeline state cache is currently using fallback data because it's in asynchronous compilation
 		*/
-		inline bool isUsingFallback() const
+		[[nodiscard]] inline bool isUsingFallback() const
 		{
 			return mIsUsingFallback;
 		}

@@ -159,18 +159,18 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Getter for input data                                 ]
 		//[-------------------------------------------------------]
-		inline uint8_t getNumberOfColorAttachments() const
+		[[nodiscard]] inline uint8_t getNumberOfColorAttachments() const
 		{
 			return mNumberOfColorAttachments;
 		}
 
-		inline const FramebufferSignatureAttachment& getColorFramebufferSignatureAttachment(uint8_t index) const
+		[[nodiscard]] inline const FramebufferSignatureAttachment& getColorFramebufferSignatureAttachment(uint8_t index) const
 		{
 			assert(index < mNumberOfColorAttachments);
 			return mColorFramebufferSignatureAttachments[index];
 		}
 
-		inline const FramebufferSignatureAttachment& getDepthStencilFramebufferSignatureAttachment() const
+		[[nodiscard]] inline const FramebufferSignatureAttachment& getDepthStencilFramebufferSignatureAttachment() const
 		{
 			return mDepthStencilFramebufferSignatureAttachment;
 		}
@@ -178,7 +178,7 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Getter for derived data                               ]
 		//[-------------------------------------------------------]
-		inline FramebufferSignatureId getFramebufferSignatureId() const
+		[[nodiscard]] inline FramebufferSignatureId getFramebufferSignatureId() const
 		{
 			return mFramebufferSignatureId;
 		}

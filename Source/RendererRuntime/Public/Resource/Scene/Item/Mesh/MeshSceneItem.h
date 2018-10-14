@@ -70,7 +70,7 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline MeshResourceId getMeshResourceId() const
+		[[nodiscard]] inline MeshResourceId getMeshResourceId() const
 		{
 			return mMeshResourceId;
 		}
@@ -78,12 +78,12 @@ namespace RendererRuntime
 		RENDERERRUNTIME_API_EXPORT void setMeshResourceId(MeshResourceId meshResourceId);
 		RENDERERRUNTIME_API_EXPORT void setMeshResourceIdByAssetId(AssetId meshAssetId);
 
-		inline uint32_t getNumberOfSubMeshes() const
+		[[nodiscard]] inline uint32_t getNumberOfSubMeshes() const
 		{
 			return static_cast<uint32_t>(mRenderableManager.getRenderables().size());
 		}
 
-		inline MaterialResourceId getMaterialResourceIdOfSubMesh(uint32_t subMeshIndex) const
+		[[nodiscard]] inline MaterialResourceId getMaterialResourceIdOfSubMesh(uint32_t subMeshIndex) const
 		{
 			assert(subMeshIndex < mRenderableManager.getRenderables().size());
 			return mRenderableManager.getRenderables()[subMeshIndex].getMaterialResourceId();
@@ -97,7 +97,7 @@ namespace RendererRuntime
 	//[ Public RendererRuntime::ISceneItem methods            ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual SceneItemTypeId getSceneItemTypeId() const override
+		[[nodiscard]] inline virtual SceneItemTypeId getSceneItemTypeId() const override
 		{
 			return TYPE_ID;
 		}
@@ -118,7 +118,7 @@ namespace RendererRuntime
 			mRenderableManager.setVisible(visible);
 		}
 
-		inline virtual const RenderableManager* getRenderableManager() const override
+		[[nodiscard]] inline virtual const RenderableManager* getRenderableManager() const override
 		{
 			return &mRenderableManager;
 		}

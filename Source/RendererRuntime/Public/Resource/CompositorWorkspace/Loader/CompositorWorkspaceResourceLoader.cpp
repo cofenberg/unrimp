@@ -82,10 +82,10 @@ namespace RendererRuntime
 		mCompositorWorkspaceResource = static_cast<CompositorWorkspaceResource*>(&resource);
 	}
 
-	void CompositorWorkspaceResourceLoader::onDeserialization(IFile& file)
+	bool CompositorWorkspaceResourceLoader::onDeserialization(IFile& file)
 	{
 		// Tell the memory mapped file about the LZ4 compressed data
-		mMemoryFile.loadLz4CompressedDataFromFile(v1CompositorWorkspace::FORMAT_TYPE, v1CompositorWorkspace::FORMAT_VERSION, file);
+		return mMemoryFile.loadLz4CompressedDataFromFile(v1CompositorWorkspace::FORMAT_TYPE, v1CompositorWorkspace::FORMAT_VERSION, file);
 	}
 
 	void CompositorWorkspaceResourceLoader::onProcessing()

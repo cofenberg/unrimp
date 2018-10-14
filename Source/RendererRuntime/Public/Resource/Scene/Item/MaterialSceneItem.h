@@ -63,27 +63,27 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline AssetId getMaterialAssetId() const
+		[[nodiscard]] inline AssetId getMaterialAssetId() const
 		{
 			return mMaterialAssetId;
 		}
 
-		inline MaterialTechniqueId getMaterialTechniqueId() const
+		[[nodiscard]] inline MaterialTechniqueId getMaterialTechniqueId() const
 		{
 			return mMaterialTechniqueId;
 		}
 
-		inline AssetId getMaterialBlueprintAssetId() const
+		[[nodiscard]] inline AssetId getMaterialBlueprintAssetId() const
 		{
 			return mMaterialBlueprintAssetId;
 		}
 
-		inline const MaterialProperties& getMaterialProperties() const
+		[[nodiscard]] inline const MaterialProperties& getMaterialProperties() const
 		{
 			return mMaterialProperties;
 		}
 
-		inline MaterialResourceId getMaterialResourceId() const
+		[[nodiscard]] inline MaterialResourceId getMaterialResourceId() const
 		{
 			return mMaterialResourceId;
 		}
@@ -109,7 +109,7 @@ namespace RendererRuntime
 			mRenderableManager.setVisible(visible);
 		}
 
-		virtual const RenderableManager* getRenderableManager() const override;
+		[[nodiscard]] virtual const RenderableManager* getRenderableManager() const override;
 
 
 	//[-------------------------------------------------------]

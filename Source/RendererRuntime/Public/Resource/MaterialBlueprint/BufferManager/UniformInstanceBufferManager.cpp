@@ -272,9 +272,12 @@ namespace RendererRuntime
 			// Map instance buffer
 			Renderer::IRenderer& renderer = mRendererRuntime.getRenderer();
 			Renderer::MappedSubresource mappedSubresource;
-			renderer.map(*mCurrentInstanceBuffer->uniformBuffer, 0, Renderer::MapType::WRITE_DISCARD, 0, mappedSubresource);
-			mStartUniformBufferPointer = mCurrentUniformBufferPointer = static_cast<uint8_t*>(mappedSubresource.data);
-			mCurrentInstanceBuffer->mapped = true;
+			if (renderer.map(*mCurrentInstanceBuffer->uniformBuffer, 0, Renderer::MapType::WRITE_DISCARD, 0, mappedSubresource))
+			{
+				mStartUniformBufferPointer = mCurrentUniformBufferPointer = static_cast<uint8_t*>(mappedSubresource.data);
+				mCurrentInstanceBuffer->mapped = true;
+			}
+			assert(mCurrentInstanceBuffer->mapped);
 		}
 	}
 

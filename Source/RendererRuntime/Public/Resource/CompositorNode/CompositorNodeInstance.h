@@ -82,12 +82,12 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline CompositorNodeResourceId getCompositorNodeResourceId() const
+		[[nodiscard]] inline CompositorNodeResourceId getCompositorNodeResourceId() const
 		{
 			return mCompositorNodeResourceId;
 		}
 
-		inline const CompositorWorkspaceInstance& getCompositorWorkspaceInstance() const
+		[[nodiscard]] inline const CompositorWorkspaceInstance& getCompositorWorkspaceInstance() const
 		{
 			return mCompositorWorkspaceInstance;
 		}
@@ -108,7 +108,7 @@ namespace RendererRuntime
 		explicit CompositorNodeInstance(const CompositorNodeInstance&) = delete;
 		CompositorNodeInstance& operator=(const CompositorNodeInstance&) = delete;
 		void compositorWorkspaceInstanceLoadingFinished() const;
-		Renderer::IRenderTarget& fillCommandBuffer(Renderer::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer) const;
+		[[nodiscard]] Renderer::IRenderTarget& fillCommandBuffer(Renderer::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer) const;
 
 		/**
 		*  @brief

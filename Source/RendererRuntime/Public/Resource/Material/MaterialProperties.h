@@ -92,7 +92,7 @@ namespace RendererRuntime
 		*  @return
 		*    The properties
 		*/
-		inline const SortedPropertyVector& getSortedPropertyVector() const
+		[[nodiscard]] inline const SortedPropertyVector& getSortedPropertyVector() const
 		{
 			return mSortedPropertyVector;
 		}
@@ -116,7 +116,7 @@ namespace RendererRuntime
 		*  @return
 		*    The requested material property, null pointer on error, don't destroy the returned instance
 		*/
-		RENDERERRUNTIME_API_EXPORT const MaterialProperty* getPropertyById(MaterialPropertyId materialPropertyId) const;
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT const MaterialProperty* getPropertyById(MaterialPropertyId materialPropertyId) const;
 
 		/**
 		*  @brief
@@ -150,12 +150,12 @@ namespace RendererRuntime
 	{
 		struct OrderByMaterialPropertyId final
 		{
-			inline bool operator()(const MaterialProperty& left, MaterialPropertyId right) const
+			[[nodiscard]] inline bool operator()(const MaterialProperty& left, MaterialPropertyId right) const
 			{
 				return (left.getMaterialPropertyId() < right);
 			}
 
-			inline bool operator()(MaterialPropertyId left, const MaterialProperty& right) const
+			[[nodiscard]] inline bool operator()(MaterialPropertyId left, const MaterialProperty& right) const
 			{
 				return (left < right.getMaterialPropertyId());
 			}

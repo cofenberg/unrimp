@@ -70,7 +70,7 @@ namespace RendererRuntime
 		~RenderPassManager();
 		explicit RenderPassManager(const RenderPassManager&) = delete;
 		RenderPassManager& operator=(const RenderPassManager&) = delete;
-		Renderer::IRenderPass* getOrCreateRenderPass(uint32_t numberOfColorAttachments, const Renderer::TextureFormat::Enum* colorAttachmentTextureFormats, Renderer::TextureFormat::Enum depthStencilAttachmentTextureFormat = Renderer::TextureFormat::UNKNOWN, uint8_t numberOfMultisamples = 1);
+		[[nodiscard]] Renderer::IRenderPass* getOrCreateRenderPass(uint32_t numberOfColorAttachments, const Renderer::TextureFormat::Enum* colorAttachmentTextureFormats, Renderer::TextureFormat::Enum depthStencilAttachmentTextureFormat = Renderer::TextureFormat::UNKNOWN, uint8_t numberOfMultisamples = 1);
 
 
 	//[-------------------------------------------------------]

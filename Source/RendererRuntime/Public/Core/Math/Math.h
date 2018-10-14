@@ -120,7 +120,7 @@ namespace RendererRuntime
 		*  - QTangent basing on http://dev.theomader.com/qtangents/ "QTangents" which is basing on
 		*    http://www.crytek.com/cryengine/presentations/spherical-skinning-with-dual-quaternions-and-qtangents "Spherical Skinning with Dual-Quaternions and QTangents"
 		*/
-		RENDERERRUNTIME_API_EXPORT static glm::quat calculateTangentFrameQuaternion(glm::mat3& tangentFrameMatrix);
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT static glm::quat calculateTangentFrameQuaternion(glm::mat3& tangentFrameMatrix);
 
 		/**
 		*  @brief
@@ -134,7 +134,7 @@ namespace RendererRuntime
 		*  @return
 		*    Inner bounding sphere radius
 		*/
-		RENDERERRUNTIME_API_EXPORT static float calculateInnerBoundingSphereRadius(const glm::vec3& minimumBoundingBoxPosition, const glm::vec3& maximumBoundingBoxPosition);
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT static float calculateInnerBoundingSphereRadius(const glm::vec3& minimumBoundingBoxPosition, const glm::vec3& maximumBoundingBoxPosition);
 
 		/**
 		*  @brief
@@ -153,7 +153,7 @@ namespace RendererRuntime
 		*  @note
 		*    - In case of violating the interface specification by swapping minimum/maximum the result will not be different to the one of the correct order
 		*/
-		RENDERERRUNTIME_API_EXPORT static float wrapToInterval(float value, float minimum, float maximum);
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT static float wrapToInterval(float value, float minimum, float maximum);
 
 		/**
 		*  @brief
@@ -167,8 +167,8 @@ namespace RendererRuntime
 		*  @return
 		*    The updated value (e.g. 1.5)
 		*/
-		RENDERERRUNTIME_API_EXPORT static float makeMultipleOf(float value, float primaryValue);
-		RENDERERRUNTIME_API_EXPORT static uint32_t makeMultipleOf(uint32_t value, uint32_t primaryValue);
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT static float makeMultipleOf(float value, float primaryValue);
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT static uint32_t makeMultipleOf(uint32_t value, uint32_t primaryValue);
 
 		/**
 		*  @brief
@@ -180,14 +180,14 @@ namespace RendererRuntime
 		*  @return
 		*    Renderer dependent texture scale bias matrix
 		*/
-		RENDERERRUNTIME_API_EXPORT static const glm::mat4& getTextureScaleBiasMatrix(const Renderer::IRenderer& renderer);
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT static const glm::mat4& getTextureScaleBiasMatrix(const Renderer::IRenderer& renderer);
 
 		//[-------------------------------------------------------]
 		//[ Hash                                                  ]
 		//[-------------------------------------------------------]
-		RENDERERRUNTIME_API_EXPORT static uint32_t calculateFNV1a32(const uint8_t* content, uint32_t numberOfBytes, uint32_t hash = FNV1a_INITIAL_HASH_32);
-		RENDERERRUNTIME_API_EXPORT static uint64_t calculateFNV1a64(const uint8_t* content, uint32_t numberOfBytes, uint64_t hash = FNV1a_INITIAL_HASH_64);
-		RENDERERRUNTIME_API_EXPORT static uint64_t calculateFileFNV1a64ByVirtualFilename(const IFileManager& fileManager, VirtualFilename virtualFilename);
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT static uint32_t calculateFNV1a32(const uint8_t* content, uint32_t numberOfBytes, uint32_t hash = FNV1a_INITIAL_HASH_32);
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT static uint64_t calculateFNV1a64(const uint8_t* content, uint32_t numberOfBytes, uint64_t hash = FNV1a_INITIAL_HASH_64);
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT static uint64_t calculateFileFNV1a64ByVirtualFilename(const IFileManager& fileManager, VirtualFilename virtualFilename);
 
 
 	//[-------------------------------------------------------]

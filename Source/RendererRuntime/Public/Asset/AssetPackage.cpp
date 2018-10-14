@@ -45,12 +45,12 @@ namespace
 		//[-------------------------------------------------------]
 		struct OrderByAssetId final
 		{
-			inline bool operator()(const RendererRuntime::Asset& left, RendererRuntime::AssetId right) const
+			[[nodiscard]] inline bool operator()(const RendererRuntime::Asset& left, RendererRuntime::AssetId right) const
 			{
 				return (left.assetId < right);
 			}
 
-			inline bool operator()(RendererRuntime::AssetId left, const RendererRuntime::Asset& right) const
+			[[nodiscard]] inline bool operator()(RendererRuntime::AssetId left, const RendererRuntime::Asset& right) const
 			{
 				return (left < right.assetId);
 			}

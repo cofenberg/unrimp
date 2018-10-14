@@ -67,7 +67,7 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline CompositorFramebufferId getSourceMultisampleCompositorFramebufferId() const
+		[[nodiscard]] inline CompositorFramebufferId getSourceMultisampleCompositorFramebufferId() const
 		{
 			return mSourceMultisampleCompositorFramebufferId;
 		}
@@ -77,7 +77,7 @@ namespace RendererRuntime
 	//[ Public virtual RendererRuntime::ICompositorResourcePass methods ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual CompositorPassTypeId getTypeId() const override
+		[[nodiscard]] inline virtual CompositorPassTypeId getTypeId() const override
 		{
 			return TYPE_ID;
 		}

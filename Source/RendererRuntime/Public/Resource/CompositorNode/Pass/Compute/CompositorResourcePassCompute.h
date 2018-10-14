@@ -86,27 +86,27 @@ namespace RendererRuntime
 			// Nothing here
 		}
 
-		inline bool isMaterialDefinitionMandatory() const
+		[[nodiscard]] inline bool isMaterialDefinitionMandatory() const
 		{
 			return mMaterialDefinitionMandatory;
 		}
 
-		inline AssetId getMaterialAssetId() const
+		[[nodiscard]] inline AssetId getMaterialAssetId() const
 		{
 			return mMaterialAssetId;
 		}
 
-		inline MaterialTechniqueId getMaterialTechniqueId() const
+		[[nodiscard]] inline MaterialTechniqueId getMaterialTechniqueId() const
 		{
 			return mMaterialTechniqueId;
 		}
 
-		inline AssetId getMaterialBlueprintAssetId() const
+		[[nodiscard]] inline AssetId getMaterialBlueprintAssetId() const
 		{
 			return mMaterialBlueprintAssetId;
 		}
 
-		inline const MaterialProperties& getMaterialProperties() const
+		[[nodiscard]] inline const MaterialProperties& getMaterialProperties() const
 		{
 			return mMaterialProperties;
 		}
@@ -116,7 +116,7 @@ namespace RendererRuntime
 	//[ Public virtual RendererRuntime::ICompositorResourcePass methods ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual CompositorPassTypeId getTypeId() const override
+		[[nodiscard]] inline virtual CompositorPassTypeId getTypeId() const override
 		{
 			return TYPE_ID;
 		}

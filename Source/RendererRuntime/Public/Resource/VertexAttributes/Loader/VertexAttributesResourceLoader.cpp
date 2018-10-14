@@ -50,10 +50,10 @@ namespace RendererRuntime
 		mVertexAttributesResource = static_cast<VertexAttributesResource*>(&resource);
 	}
 
-	void VertexAttributesResourceLoader::onDeserialization(IFile& file)
+	bool VertexAttributesResourceLoader::onDeserialization(IFile& file)
 	{
 		// Tell the memory mapped file about the LZ4 compressed data
-		mMemoryFile.loadLz4CompressedDataFromFile(v1VertexAttributes::FORMAT_TYPE, v1VertexAttributes::FORMAT_VERSION, file);
+		return mMemoryFile.loadLz4CompressedDataFromFile(v1VertexAttributes::FORMAT_TYPE, v1VertexAttributes::FORMAT_VERSION, file);
 	}
 
 	void VertexAttributesResourceLoader::onProcessing()

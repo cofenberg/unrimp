@@ -43,7 +43,7 @@ namespace
 		//[-------------------------------------------------------]
 		struct OrderByMaterialResourceId final
 		{
-			inline bool operator()(RendererRuntime::MaterialResourceId left, RendererRuntime::MaterialResourceId right) const
+			[[nodiscard]] inline bool operator()(RendererRuntime::MaterialResourceId left, RendererRuntime::MaterialResourceId right) const
 			{
 				return (left < right);
 			}
@@ -51,12 +51,12 @@ namespace
 
 		struct OrderByMaterialTechniqueId final
 		{
-			inline bool operator()(const RendererRuntime::MaterialTechnique* left, RendererRuntime::MaterialTechniqueId right) const
+			[[nodiscard]] inline bool operator()(const RendererRuntime::MaterialTechnique* left, RendererRuntime::MaterialTechniqueId right) const
 			{
 				return (left->getMaterialTechniqueId() < right);
 			}
 
-			inline bool operator()(RendererRuntime::MaterialTechniqueId left, const RendererRuntime::MaterialTechnique* right) const
+			[[nodiscard]] inline bool operator()(RendererRuntime::MaterialTechniqueId left, const RendererRuntime::MaterialTechnique* right) const
 			{
 				return (left < right->getMaterialTechniqueId());
 			}

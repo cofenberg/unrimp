@@ -87,7 +87,7 @@ namespace RendererRuntime
 	//[ Public static methods                                 ]
 	//[-------------------------------------------------------]
 	public:
-		static inline MaterialPropertyValue materialPropertyValueFromReference(ValueType valueType, uint32_t reference)
+		[[nodiscard]] static inline MaterialPropertyValue materialPropertyValueFromReference(ValueType valueType, uint32_t reference)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType	 = valueType;
@@ -105,7 +105,7 @@ namespace RendererRuntime
 		*  @return
 		*    "true" if the provided material blueprint property usage is a reference to something else, else "false"
 		*/
-		static inline bool isReferenceUsage(Usage usage)
+		[[nodiscard]] static inline bool isReferenceUsage(Usage usage)
 		{
 			return (Usage::TEXTURE_REFERENCE == usage || Usage::GLOBAL_REFERENCE == usage || Usage::UNKNOWN_REFERENCE == usage || Usage::PASS_REFERENCE == usage || Usage::MATERIAL_REFERENCE == usage || Usage::INSTANCE_REFERENCE == usage);
 		}
@@ -167,7 +167,7 @@ namespace RendererRuntime
 		*  @return
 		*    The material property ID
 		*/
-		inline MaterialPropertyId getMaterialPropertyId() const
+		[[nodiscard]] inline MaterialPropertyId getMaterialPropertyId() const
 		{
 			return mMaterialPropertyId;
 		}
@@ -179,7 +179,7 @@ namespace RendererRuntime
 		*  @return
 		*    The material blueprint property usage
 		*/
-		inline Usage getUsage() const
+		[[nodiscard]] inline Usage getUsage() const
 		{
 			return mUsage;
 		}
@@ -191,7 +191,7 @@ namespace RendererRuntime
 		*  @return
 		*    "true" if this is an overwritten property, else "false"
 		*/
-		inline bool isOverwritten() const
+		[[nodiscard]] inline bool isOverwritten() const
 		{
 			return mOverwritten;
 		}
@@ -218,7 +218,7 @@ namespace RendererRuntime
 		*  @return
 		*    "true" if the material blueprint property is a reference to something else, else "false"
 		*/
-		inline bool isReferenceUsage() const
+		[[nodiscard]] inline bool isReferenceUsage() const
 		{
 			return isReferenceUsage(mUsage);
 		}
@@ -226,7 +226,7 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Value getter                                          ]
 		//[-------------------------------------------------------]
-		inline uint32_t getReferenceValue() const
+		[[nodiscard]] inline uint32_t getReferenceValue() const
 		{
 			assert(isReferenceUsage());
 			return static_cast<uint32_t>(mValue.Integer);

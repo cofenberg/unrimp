@@ -78,12 +78,12 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline bool isRgbHardwareGammaCorrection() const
+		[[nodiscard]] inline bool isRgbHardwareGammaCorrection() const
 		{
 			return mRgbHardwareGammaCorrection;
 		}
 
-		inline Renderer::ITexturePtr getTexture() const
+		[[nodiscard]] inline Renderer::ITexturePtr getTexture() const
 		{
 			return mTexture;
 		}

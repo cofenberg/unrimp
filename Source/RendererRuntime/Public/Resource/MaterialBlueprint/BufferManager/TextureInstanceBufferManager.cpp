@@ -345,11 +345,17 @@ namespace RendererRuntime
 			// Map instance buffer
 			Renderer::IRenderer& renderer = mRendererRuntime.getRenderer();
 			Renderer::MappedSubresource mappedSubresource;
-			renderer.map(*mCurrentInstanceBuffer->uniformBuffer, 0, Renderer::MapType::WRITE_DISCARD, 0, mappedSubresource);
-			mStartUniformBufferPointer = mCurrentUniformBufferPointer = static_cast<uint8_t*>(mappedSubresource.data);
-			renderer.map(*mCurrentInstanceBuffer->textureBuffer, 0, Renderer::MapType::WRITE_DISCARD, 0, mappedSubresource);
-			mStartTextureBufferPointer = mCurrentTextureBufferPointer = static_cast<float*>(mappedSubresource.data);
-			mCurrentInstanceBuffer->mapped = true;
+			if (renderer.map(*mCurrentInstanceBuffer->uniformBuffer, 0, Renderer::MapType::WRITE_DISCARD, 0, mappedSubresource))
+			{
+				mStartUniformBufferPointer = mCurrentUniformBufferPointer = static_cast<uint8_t*>(mappedSubresource.data);
+			}
+			assert(nullptr != mStartUniformBufferPointer);
+			if (renderer.map(*mCurrentInstanceBuffer->textureBuffer, 0, Renderer::MapType::WRITE_DISCARD, 0, mappedSubresource))
+			{
+				mStartTextureBufferPointer = mCurrentTextureBufferPointer = static_cast<float*>(mappedSubresource.data);
+				mCurrentInstanceBuffer->mapped = true;
+			}
+			assert(nullptr != mStartTextureBufferPointer);
 		}
 	}
 

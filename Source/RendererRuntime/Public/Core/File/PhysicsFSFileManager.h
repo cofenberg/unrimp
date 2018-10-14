@@ -122,7 +122,7 @@ namespace
 		//[ Public virtual PhysicsFSFile methods                  ]
 		//[-------------------------------------------------------]
 		public:
-			virtual bool isInvalid() const = 0;
+			[[nodiscard]] virtual bool isInvalid() const = 0;
 
 
 		//[-------------------------------------------------------]
@@ -163,7 +163,7 @@ namespace
 		//[ Public virtual PhysicsFSFile methods                  ]
 		//[-------------------------------------------------------]
 		public:
-			inline virtual bool isInvalid() const override
+			[[nodiscard]] inline virtual bool isInvalid() const override
 			{
 				return (nullptr == mPhysicsFSFile);
 			}
@@ -173,7 +173,7 @@ namespace
 		//[ Public virtual RendererRuntime::IFile methods         ]
 		//[-------------------------------------------------------]
 		public:
-			inline virtual size_t getNumberOfBytes() override
+			[[nodiscard]] inline virtual size_t getNumberOfBytes() override
 			{
 				assert((nullptr != mPhysicsFSFile) && "Invalid PhysicsFS file access");
 				const PHYSFS_sint64 fileLength = PHYSFS_fileLength(mPhysicsFSFile);
@@ -254,7 +254,7 @@ namespace
 		//[ Public virtual PhysicsFSFile methods                  ]
 		//[-------------------------------------------------------]
 		public:
-			inline virtual bool isInvalid() const override
+			[[nodiscard]] inline virtual bool isInvalid() const override
 			{
 				return (nullptr == mPhysicsFSFile);
 			}
@@ -264,7 +264,7 @@ namespace
 		//[ Public virtual RendererRuntime::IFile methods         ]
 		//[-------------------------------------------------------]
 		public:
-			inline virtual size_t getNumberOfBytes() override
+			[[nodiscard]] inline virtual size_t getNumberOfBytes() override
 			{
 				assert((nullptr != mPhysicsFSFile) && "Invalid PhysicsFS file access");
 				assert(false && "File get number of bytes method not supported by the PhysicsFS implementation");
@@ -386,12 +386,12 @@ namespace RendererRuntime
 	//[ Public virtual RendererRuntime::IFileManager methods  ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getLocalDataMountPoint() const override
+		[[nodiscard]] inline virtual const char* getLocalDataMountPoint() const override
 		{
 			return ::detail::PHYSICSFS_LOCAL_DATA_MOUNT_POINT;
 		}
 
-		inline virtual const char* getMountPoint(const char* mountPoint) const override
+		[[nodiscard]] inline virtual const char* getMountPoint(const char* mountPoint) const override
 		{
 			assert(nullptr != mountPoint);
 			return PHYSFS_getMountPoint(mountPoint);
@@ -415,7 +415,7 @@ namespace RendererRuntime
 			return true;
 		}
 
-		inline virtual bool doesFileExist(VirtualFilename virtualFilename) const override
+		[[nodiscard]] inline virtual bool doesFileExist(VirtualFilename virtualFilename) const override
 		{
 			// Sanity check
 			assert(nullptr != virtualFilename);
@@ -467,7 +467,7 @@ namespace RendererRuntime
 			PHYSFS_freeList(physicsFsFilenames);
 		}
 
-		inline virtual std::string mapVirtualToAbsoluteFilename(FileMode fileMode, VirtualFilename virtualFilename) const override
+		[[nodiscard]] inline virtual std::string mapVirtualToAbsoluteFilename(FileMode fileMode, VirtualFilename virtualFilename) const override
 		{
 			// Figure out where in the search path a file resides (e.g. "LocalData/DebugGui/UnrimpDebugGuiLayout.ini" -> "c:/MyProject/Binary/LocalData")
 			const char* realDirectory = PHYSFS_getRealDir(virtualFilename);
@@ -517,7 +517,7 @@ namespace RendererRuntime
 			return "";
 		}
 
-		inline virtual int64_t getLastModificationTime(VirtualFilename virtualFilename) const override
+		[[nodiscard]] inline virtual int64_t getLastModificationTime(VirtualFilename virtualFilename) const override
 		{
 			// Sanity check
 			assert(nullptr != virtualFilename);
@@ -537,7 +537,7 @@ namespace RendererRuntime
 			}
 		}
 
-		inline virtual int64_t getFileSize(VirtualFilename virtualFilename) const override
+		[[nodiscard]] inline virtual int64_t getFileSize(VirtualFilename virtualFilename) const override
 		{
 			// Sanity check
 			assert(nullptr != virtualFilename);
@@ -568,7 +568,7 @@ namespace RendererRuntime
 			return (result != 0);
 		}
 
-		inline virtual IFile* openFile(FileMode fileMode, VirtualFilename virtualFilename) const override
+		[[nodiscard]] inline virtual IFile* openFile(FileMode fileMode, VirtualFilename virtualFilename) const override
 		{
 			// Sanity check
 			assert(nullptr != virtualFilename);

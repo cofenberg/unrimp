@@ -144,7 +144,7 @@ namespace RendererRuntime
 		*  @return
 		*    The pass data filled inside "RendererRuntime::PassBufferManager::fillBuffer()"
 		*/
-		inline const PassData& getPassData() const
+		[[nodiscard]] inline const PassData& getPassData() const
 		{
 			return mPassData;
 		}

@@ -76,33 +76,33 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline SceneResource& getSceneResource() const
+		[[nodiscard]] inline SceneResource& getSceneResource() const
 		{
 			return mSceneResource;
 		}
 
-		inline bool hasParentSceneNode() const
+		[[nodiscard]] inline bool hasParentSceneNode() const
 		{
 			return (nullptr != mParentSceneNode);
 		}
 
-		inline SceneNode* getParentSceneNode()
+		[[nodiscard]] inline SceneNode* getParentSceneNode()
 		{
 			return mParentSceneNode;
 		}
 
-		inline const SceneNode* getParentSceneNode() const
+		[[nodiscard]] inline const SceneNode* getParentSceneNode() const
 		{
 			return mParentSceneNode;
 		}
 
-		inline SceneNode& getParentSceneNodeSafe()				// Just safe in context known as safe
+		[[nodiscard]] inline SceneNode& getParentSceneNodeSafe()	// Just safe in context known as safe
 		{
 			assert(nullptr != mParentSceneNode);
 			return *mParentSceneNode;
 		}
 
-		inline const SceneNode& getParentSceneNodeSafe() const	// Just safe in context known as safe
+		[[nodiscard]] inline const SceneNode& getParentSceneNodeSafe() const	// Just safe in context known as safe
 		{
 			assert(nullptr != mParentSceneNode);
 			return *mParentSceneNode;
@@ -113,7 +113,7 @@ namespace RendererRuntime
 	//[ Public RendererRuntime::ISceneItem methods            ]
 	//[-------------------------------------------------------]
 	public:
-		virtual SceneItemTypeId getSceneItemTypeId() const = 0;
+		[[nodiscard]] virtual SceneItemTypeId getSceneItemTypeId() const = 0;
 		virtual void deserialize(uint32_t numberOfBytes, const uint8_t* data) = 0;
 
 		inline virtual void onAttachedToSceneNode(SceneNode& sceneNode)
@@ -133,7 +133,7 @@ namespace RendererRuntime
 			// Nothing here
 		}
 
-		inline virtual const RenderableManager* getRenderableManager() const
+		[[nodiscard]] inline virtual const RenderableManager* getRenderableManager() const
 		{
 			return nullptr;
 		}

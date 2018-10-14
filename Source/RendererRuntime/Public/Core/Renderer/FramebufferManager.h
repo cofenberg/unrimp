@@ -131,8 +131,8 @@ namespace RendererRuntime
 		void clear();
 		void clearRendererResources();
 		void addFramebuffer(CompositorFramebufferId compositorFramebufferId, const FramebufferSignature& framebufferSignature);
-		Renderer::IFramebuffer* getFramebufferByCompositorFramebufferId(CompositorFramebufferId compositorFramebufferId) const;
-		Renderer::IFramebuffer* getFramebufferByCompositorFramebufferId(CompositorFramebufferId compositorFramebufferId, const Renderer::IRenderTarget& mainRenderTarget, uint8_t numberOfMultisamples, float resolutionScale);
+		[[nodiscard]] Renderer::IFramebuffer* getFramebufferByCompositorFramebufferId(CompositorFramebufferId compositorFramebufferId) const;
+		[[nodiscard]] Renderer::IFramebuffer* getFramebufferByCompositorFramebufferId(CompositorFramebufferId compositorFramebufferId, const Renderer::IRenderTarget& mainRenderTarget, uint8_t numberOfMultisamples, float resolutionScale);
 		void releaseFramebufferBySignature(const FramebufferSignature& framebufferSignature);
 
 

@@ -171,7 +171,7 @@ namespace RendererRuntime
 		*  @return
 		*    Light clusters scale
 		*/
-		glm::vec3 getLightClustersScale() const;
+		[[nodiscard]] glm::vec3 getLightClustersScale() const;
 
 		/**
 		*  @brief
@@ -180,7 +180,7 @@ namespace RendererRuntime
 		*  @return
 		*    Light clusters bias
 		*/
-		glm::vec3 getLightClustersBias() const;
+		[[nodiscard]] glm::vec3 getLightClustersBias() const;
 
 
 	//[-------------------------------------------------------]

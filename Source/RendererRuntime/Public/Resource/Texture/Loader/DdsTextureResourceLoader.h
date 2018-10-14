@@ -61,12 +61,12 @@ namespace RendererRuntime
 	//[ Public virtual RendererRuntime::IResourceLoader methods ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual ResourceLoaderTypeId getResourceLoaderTypeId() const override
+		[[nodiscard]] inline virtual ResourceLoaderTypeId getResourceLoaderTypeId() const override
 		{
 			return TYPE_ID;
 		}
 
-		virtual void onDeserialization(IFile& file) override;
+		[[nodiscard]] virtual bool onDeserialization(IFile& file) override;
 
 		inline virtual void onProcessing() override
 		{
@@ -78,7 +78,7 @@ namespace RendererRuntime
 	//[ Protected RendererRuntime::ITextureResourceLoader methods ]
 	//[-------------------------------------------------------]
 	protected:
-		virtual Renderer::ITexture* createRendererTexture() override;
+		[[nodiscard]] virtual Renderer::ITexture* createRendererTexture() override;
 
 
 	//[-------------------------------------------------------]

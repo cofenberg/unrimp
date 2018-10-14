@@ -85,7 +85,7 @@ namespace RendererRuntime
 	//[ Public RendererRuntime::ISceneItem methods            ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual SceneItemTypeId getSceneItemTypeId() const override
+		[[nodiscard]] inline virtual SceneItemTypeId getSceneItemTypeId() const override
 		{
 			return TYPE_ID;
 		}

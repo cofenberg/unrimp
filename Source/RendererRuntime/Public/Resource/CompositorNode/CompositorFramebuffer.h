@@ -85,12 +85,12 @@ namespace RendererRuntime
 			return *this;
 		}
 
-		inline CompositorFramebufferId getCompositorFramebufferId() const
+		[[nodiscard]] inline CompositorFramebufferId getCompositorFramebufferId() const
 		{
 			return mCompositorFramebufferId;
 		}
 
-		inline const FramebufferSignature& getFramebufferSignature() const
+		[[nodiscard]] inline const FramebufferSignature& getFramebufferSignature() const
 		{
 			return mFramebufferSignature;
 		}

@@ -123,7 +123,7 @@ namespace
 			}
 		}
 
-		bool checkHeader(KtxHeader& ktxHeader, KTX_texinfo& ktxTexinfo)
+		[[nodiscard]] bool checkHeader(KtxHeader& ktxHeader, KTX_texinfo& ktxTexinfo)
 		{
 			{ // Compare identifier, is this a KTX file?
 				const uint8_t identifierReference[12] = KTX_IDENTIFIER_REF;
@@ -245,7 +245,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public virtual RendererRuntime::IResourceLoader methods ]
 	//[-------------------------------------------------------]
-	void KtxTextureResourceLoader::onDeserialization(IFile& file)
+	bool KtxTextureResourceLoader::onDeserialization(IFile& file)
 	{
 		// TODO(co) Add optional top mipmap removal support (see "RendererRuntime::TextureResourceManager::NumberOfTopMipmapsToRemove")
 		// TODO(co) Add support for 3D textures (if supported by the KTX format)
@@ -385,6 +385,9 @@ namespace RendererRuntime
 		{
 			mTexture = createRendererTexture();
 		}
+
+		// Done
+		return true;
 	}
 
 

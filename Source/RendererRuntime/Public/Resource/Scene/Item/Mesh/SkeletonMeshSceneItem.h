@@ -80,19 +80,19 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline AssetId getSkeletonAnimationAssetId() const
+		[[nodiscard]] inline AssetId getSkeletonAnimationAssetId() const
 		{
 			return mSkeletonAnimationAssetId;
 		}
 
-		RENDERERRUNTIME_API_EXPORT SkeletonResourceId getSkeletonResourceId() const;
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT SkeletonResourceId getSkeletonResourceId() const;
 
 
 	//[-------------------------------------------------------]
 	//[ Public RendererRuntime::ISceneItem methods            ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual SceneItemTypeId getSceneItemTypeId() const override
+		[[nodiscard]] inline virtual SceneItemTypeId getSceneItemTypeId() const override
 		{
 			return TYPE_ID;
 		}

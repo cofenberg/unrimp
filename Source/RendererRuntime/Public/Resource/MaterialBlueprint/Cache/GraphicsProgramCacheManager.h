@@ -101,7 +101,7 @@ namespace RendererRuntime
 		*  @return
 		*    The graphics program cache ID
 		*/
-		static GraphicsProgramCacheId generateGraphicsProgramCacheId(const GraphicsPipelineStateSignature& graphicsPipelineStateSignature);
+		[[nodiscard]] static GraphicsProgramCacheId generateGraphicsProgramCacheId(const GraphicsPipelineStateSignature& graphicsPipelineStateSignature);
 
 
 	//[-------------------------------------------------------]
@@ -115,7 +115,7 @@ namespace RendererRuntime
 		*  @return
 		*    The owner graphics pipeline state cache manager
 		*/
-		inline GraphicsPipelineStateCacheManager& getGraphicsPipelineStateCacheManager() const
+		[[nodiscard]] inline GraphicsPipelineStateCacheManager& getGraphicsPipelineStateCacheManager() const
 		{
 			return mGraphicsPipelineStateCacheManager;
 		}
@@ -130,7 +130,7 @@ namespace RendererRuntime
 		*  @return
 		*    The graphics program cache, null pointer on error
 		*/
-		GraphicsProgramCache* getGraphicsProgramCacheByGraphicsPipelineStateSignature(const GraphicsPipelineStateSignature& graphicsPipelineStateSignature);
+		[[nodiscard]] GraphicsProgramCache* getGraphicsProgramCacheByGraphicsPipelineStateSignature(const GraphicsPipelineStateSignature& graphicsPipelineStateSignature);
 
 		/**
 		*  @brief

@@ -69,21 +69,21 @@ namespace RendererRuntime
 	//[ Public virtual RendererRuntime::IResourceLoader methods ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual ResourceLoaderTypeId getResourceLoaderTypeId() const override
+		[[nodiscard]] inline virtual ResourceLoaderTypeId getResourceLoaderTypeId() const override
 		{
 			return TYPE_ID;
 		}
 
 		virtual void initialize(const Asset& asset, bool reload, IResource& resource) override;
 
-		inline virtual bool hasDeserialization() const override
+		[[nodiscard]] inline virtual bool hasDeserialization() const override
 		{
 			return true;
 		}
 
-		virtual bool onDispatch() override;
+		[[nodiscard]] virtual bool onDispatch() override;
 
-		inline virtual bool isFullyLoaded() override
+		[[nodiscard]] inline virtual bool isFullyLoaded() override
 		{
 			// Fully loaded
 			return true;
@@ -94,7 +94,7 @@ namespace RendererRuntime
 	//[ Protected RendererRuntime::ITextureResourceLoader methods ]
 	//[-------------------------------------------------------]
 	protected:
-		virtual Renderer::ITexture* createRendererTexture() = 0;
+		[[nodiscard]] virtual Renderer::ITexture* createRendererTexture() = 0;
 
 
 	//[-------------------------------------------------------]

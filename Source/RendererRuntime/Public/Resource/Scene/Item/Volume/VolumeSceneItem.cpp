@@ -45,7 +45,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		Renderer::IVertexArray* createVolumeVertexArray(const RendererRuntime::IRendererRuntime& rendererRuntime)
+		[[nodiscard]] Renderer::IVertexArray* createVolumeVertexArray(const RendererRuntime::IRendererRuntime& rendererRuntime)
 		{
 			// Vertex input layout
 			static constexpr Renderer::VertexAttribute vertexAttributesLayout[] =

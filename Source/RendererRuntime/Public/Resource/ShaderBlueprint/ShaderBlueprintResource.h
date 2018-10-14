@@ -105,7 +105,7 @@ namespace RendererRuntime
 		*  @return
 		*    The IDs of the shader piece resources to include
 		*/
-		inline const IncludeShaderPieceResourceIds& getIncludeShaderPieceResourceIds() const
+		[[nodiscard]] inline const IncludeShaderPieceResourceIds& getIncludeShaderPieceResourceIds() const
 		{
 			return mIncludeShaderPieceResourceIds;
 		}
@@ -117,7 +117,7 @@ namespace RendererRuntime
 		*  @return
 		*    The referenced shader properties
 		*/
-		inline const ShaderProperties& getReferencedShaderProperties() const
+		[[nodiscard]] inline const ShaderProperties& getReferencedShaderProperties() const
 		{
 			return mReferencedShaderProperties;
 		}
@@ -129,7 +129,7 @@ namespace RendererRuntime
 		*  @return
 		*    The shader ASCII source code
 		*/
-		inline const std::string& getShaderSourceCode() const
+		[[nodiscard]] inline const std::string& getShaderSourceCode() const
 		{
 			return mShaderSourceCode;
 		}

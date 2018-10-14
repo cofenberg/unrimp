@@ -263,7 +263,15 @@ namespace RendererRuntime
 						IFile* file = fileManager.openFile(IFileManager::FileMode::READ, loadRequest.resourceLoader->getAsset().virtualFilename);
 						if (nullptr != file)
 						{
-							loadRequest.resourceLoader->onDeserialization(*file);
+							if (loadRequest.resourceLoader->onDeserialization(*file))
+							{
+								// Push the load request into the queue of the next resource streamer pipeline stage
+								// -> Resource streamer stage: 2. Asynchronous processing
+								std::unique_lock<std::mutex> processingMutexLock(mProcessingMutex);
+								mProcessingQueue.push_back(loadRequest);
+								processingMutexLock.unlock();
+								mProcessingConditionVariable.notify_one();
+							}
 							fileManager.closeFile(*file);
 						}
 						else
@@ -271,14 +279,6 @@ namespace RendererRuntime
 							// Error! This is horrible, now we've got a zombie inside the resource streamer. We could let it crash, but maybe the zombie won't directly eat brains.
 							assert(false);
 						}
-					}
-
-					{ // Push the load request into the queue of the next resource streamer pipeline stage
-					  // -> Resource streamer stage: 2. Asynchronous processing
-						std::unique_lock<std::mutex> processingMutexLock(mProcessingMutex);
-						mProcessingQueue.push_back(loadRequest);
-						processingMutexLock.unlock();
-						mProcessingConditionVariable.notify_one();
 					}
 
 					// We're ready for the next round

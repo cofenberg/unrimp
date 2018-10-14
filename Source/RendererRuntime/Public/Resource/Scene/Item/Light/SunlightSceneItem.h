@@ -72,7 +72,7 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Usually fixed                                         ]
 		//[-------------------------------------------------------]
-		inline float getSunriseTime() const
+		[[nodiscard]] inline float getSunriseTime() const
 		{
 			return mSunriseTime;
 		}
@@ -90,7 +90,7 @@ namespace RendererRuntime
 			}
 		}
 
-		inline float getSunsetTime() const
+		[[nodiscard]] inline float getSunsetTime() const
 		{
 			return mSunsetTime;
 		}
@@ -108,7 +108,7 @@ namespace RendererRuntime
 			}
 		}
 
-		inline float getEastDirection() const
+		[[nodiscard]] inline float getEastDirection() const
 		{
 			return mEastDirection;
 		}
@@ -122,7 +122,7 @@ namespace RendererRuntime
 			}
 		}
 
-		inline float getAngleOfIncidence() const
+		[[nodiscard]] inline float getAngleOfIncidence() const
 		{
 			return mAngleOfIncidence;
 		}
@@ -139,7 +139,7 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Usually animated                                      ]
 		//[-------------------------------------------------------]
-		inline float getTimeOfDay() const
+		[[nodiscard]] inline float getTimeOfDay() const
 		{
 			return mTimeOfDay;
 		}
@@ -162,7 +162,7 @@ namespace RendererRuntime
 	//[ Public RendererRuntime::ISceneItem methods            ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual SceneItemTypeId getSceneItemTypeId() const override
+		[[nodiscard]] inline virtual SceneItemTypeId getSceneItemTypeId() const override
 		{
 			return TYPE_ID;
 		}

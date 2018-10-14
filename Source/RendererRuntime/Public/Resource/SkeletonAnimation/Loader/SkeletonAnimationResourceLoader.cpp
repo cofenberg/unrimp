@@ -42,10 +42,10 @@ namespace RendererRuntime
 		mSkeletonAnimationResource = static_cast<SkeletonAnimationResource*>(&resource);
 	}
 
-	void SkeletonAnimationResourceLoader::onDeserialization(IFile& file)
+	bool SkeletonAnimationResourceLoader::onDeserialization(IFile& file)
 	{
 		// Tell the memory mapped file about the LZ4 compressed data
-		mMemoryFile.loadLz4CompressedDataFromFile(v1SkeletonAnimation::FORMAT_TYPE, v1SkeletonAnimation::FORMAT_VERSION, file);
+		return mMemoryFile.loadLz4CompressedDataFromFile(v1SkeletonAnimation::FORMAT_TYPE, v1SkeletonAnimation::FORMAT_VERSION, file);
 	}
 
 	void SkeletonAnimationResourceLoader::onProcessing()

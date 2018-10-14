@@ -77,7 +77,7 @@ namespace RendererRuntime
 	//[ Public static methods                                 ]
 	//[-------------------------------------------------------]
 	public:
-		RENDERERRUNTIME_API_EXPORT static std_filesystem::path lexicallyNormal(const std_filesystem::path& path);
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT static std_filesystem::path lexicallyNormal(const std_filesystem::path& path);
 
 
 	//[-------------------------------------------------------]

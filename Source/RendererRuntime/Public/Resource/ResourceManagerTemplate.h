@@ -96,24 +96,24 @@ namespace RendererRuntime
 			// Nothing here
 		}
 
-		inline IRendererRuntime& getRendererRuntime() const
+		[[nodiscard]] inline IRendererRuntime& getRendererRuntime() const
 		{
 			return mRendererRuntime;
 		}
 
-		inline IResourceManager& getResourceManager() const
+		[[nodiscard]] inline IResourceManager& getResourceManager() const
 		{
 			return mResourceManager;
 		}
 
-		inline LOADER_TYPE* createResourceLoaderInstance([[maybe_unused]] ResourceLoaderTypeId resourceLoaderTypeId)
+		[[nodiscard]] inline LOADER_TYPE* createResourceLoaderInstance([[maybe_unused]] ResourceLoaderTypeId resourceLoaderTypeId)
 		{
 			// We only support our own format
 			assert(resourceLoaderTypeId == LOADER_TYPE::TYPE_ID);
 			return new LOADER_TYPE(mResourceManager, mRendererRuntime);
 		}
 
-		inline TYPE* getResourceByAssetId(AssetId assetId) const	// Considered to be inefficient, avoid method whenever possible
+		[[nodiscard]] inline TYPE* getResourceByAssetId(AssetId assetId) const	// Considered to be inefficient, avoid method whenever possible
 		{
 			// TODO(co) Implement more efficient solution later on
 			const uint32_t numberOfElements = mResources.getNumberOfElements();
@@ -130,7 +130,7 @@ namespace RendererRuntime
 			return nullptr;
 		}
 
-		inline TYPE& createEmptyResourceByAssetId(AssetId assetId)	// Resource is not allowed to exist, yet
+		[[nodiscard]] inline TYPE& createEmptyResourceByAssetId(AssetId assetId)	// Resource is not allowed to exist, yet
 		{
 			// Resource is not allowed to exist, yet
 			assert(nullptr == getResourceByAssetId(assetId));
@@ -205,7 +205,7 @@ namespace RendererRuntime
 			}
 		}
 
-		inline Resources& getResources()
+		[[nodiscard]] inline Resources& getResources()
 		{
 			return mResources;
 		}

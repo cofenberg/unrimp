@@ -122,7 +122,7 @@ namespace RendererRuntime
 		*  @return
 		*    The hash value of the given string
 		*/
-		static constexpr inline uint32_t compileTimeFNV(const char* string, const uint32_t value = FNV1a_INITIAL_HASH_32) noexcept
+		[[nodiscard]] static constexpr inline uint32_t compileTimeFNV(const char* string, const uint32_t value = FNV1a_INITIAL_HASH_32) noexcept
 		{
 			// 32-bit FNV-1a implementation basing on http://www.isthe.com/chongo/tech/comp/fnv/
 			return ('\0' == string[0]) ? value : compileTimeFNV(&string[1], (value ^ static_cast<uint32_t>(string[0])) * FNV1a_MAGIC_PRIME_32);
@@ -138,7 +138,7 @@ namespace RendererRuntime
 		*  @return
 		*    The hash value of the given string
 		*/
-		static inline uint32_t calculateFNV(const char* string)
+		[[nodiscard]] static inline uint32_t calculateFNV(const char* string)
 		{
 			// Sanity check
 			assert((nullptr != string) && "The string must be valid to be able to calculate a FNV1a32 hash");
@@ -245,7 +245,7 @@ namespace RendererRuntime
 		*  @return
 		*    The generated FNV-1a hash value used as identifier
 		*/
-		inline uint32_t getId() const
+		[[nodiscard]] inline uint32_t getId() const
 		{
 			return mId;
 		}
@@ -257,7 +257,7 @@ namespace RendererRuntime
 		*  @return
 		*    The generated FNV-1a hash value used as identifier
 		*/
-		inline operator uint32_t() const
+		[[nodiscard]] inline operator uint32_t() const
 		{
 			return mId;
 		}

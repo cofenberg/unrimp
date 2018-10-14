@@ -85,17 +85,17 @@ namespace RendererRuntime
 			}
 		}
 
-		inline uint32_t getNumberOfElements() const
+		[[nodiscard]] inline uint32_t getNumberOfElements() const
 		{
 			return mNumberOfElements;
 		}
 
-		inline ELEMENT_TYPE& getElementByIndex(uint32_t index) const
+		[[nodiscard]] inline ELEMENT_TYPE& getElementByIndex(uint32_t index) const
 		{
 			return mElements[index];
 		}
 
-		inline bool isElementIdValid(ID_TYPE id) const
+		[[nodiscard]] inline bool isElementIdValid(ID_TYPE id) const
 		{
 			if (isValid(id))
 			{
@@ -105,13 +105,13 @@ namespace RendererRuntime
 			return false;
 		}
 
-		inline ELEMENT_TYPE& getElementById(ID_TYPE id) const
+		[[nodiscard]] inline ELEMENT_TYPE& getElementById(ID_TYPE id) const
 		{
 			assert(isElementIdValid(id));
 			return mElements[mIndices[id & INDEX_MASK].index];
 		}
 
-		inline ELEMENT_TYPE* tryGetElementById(ID_TYPE id) const
+		[[nodiscard]] inline ELEMENT_TYPE* tryGetElementById(ID_TYPE id) const
 		{
 			if (isValid(id))
 			{
@@ -121,7 +121,7 @@ namespace RendererRuntime
 			return nullptr;
 		}
 
-		inline ELEMENT_TYPE& addElement()
+		[[nodiscard]] inline ELEMENT_TYPE& addElement()
 		{
 			Index& index = mIndices[mFreeListDequeue];
 			mFreeListDequeue = index.next;

@@ -61,7 +61,7 @@ namespace
 		//[-------------------------------------------------------]
 		// Flip the float to deal with negative & positive numbers
 		// - See "Rough sorting by depth" - http://aras-p.info/blog/2014/01/16/rough-sorting-by-depth/
-		inline uint32_t floatFlip(uint32_t f)
+		[[nodiscard]] inline uint32_t floatFlip(uint32_t f)
 		{
 			const uint32_t mask = -int(f >> 31) | 0x80000000;
 			return (f ^ mask);
@@ -71,7 +71,7 @@ namespace
 		// - 0.01 maps to 752; 0.1 to 759; 1.0 to 766; 10.0 to 772;
 		// - 100.0 to 779 etc. Negative numbers go similarly in 0..511 range.
 		// - See "Rough sorting by depth" - http://aras-p.info/blog/2014/01/16/rough-sorting-by-depth/
-		inline uint32_t depthToBits(float depth)
+		[[nodiscard]] inline uint32_t depthToBits(float depth)
 		{
 			union { float f; uint32_t i; } f2i;
 			f2i.f = depth;

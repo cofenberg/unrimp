@@ -67,22 +67,22 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline uint8_t getMinimumRenderQueueIndex() const	///< Inclusive
+		[[nodiscard]] inline uint8_t getMinimumRenderQueueIndex() const	///< Inclusive
 		{
 			return mMinimumRenderQueueIndex;
 		}
 
-		inline uint8_t getMaximumRenderQueueIndex() const	///< Inclusive
+		[[nodiscard]] inline uint8_t getMaximumRenderQueueIndex() const	///< Inclusive
 		{
 			return mMaximumRenderQueueIndex;
 		}
 
-		inline bool isTransparentPass() const
+		[[nodiscard]] inline bool isTransparentPass() const
 		{
 			return mTransparentPass;
 		}
 
-		inline MaterialTechniqueId getMaterialTechniqueId() const
+		[[nodiscard]] inline MaterialTechniqueId getMaterialTechniqueId() const
 		{
 			return mMaterialTechniqueId;
 		}
@@ -92,13 +92,13 @@ namespace RendererRuntime
 	//[ Public virtual RendererRuntime::ICompositorResourcePass methods ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual CompositorPassTypeId getTypeId() const override
+		[[nodiscard]] inline virtual CompositorPassTypeId getTypeId() const override
 		{
 			return TYPE_ID;
 		}
 
 		virtual void deserialize(uint32_t numberOfBytes, const uint8_t* data) override;
-		virtual bool getRenderQueueIndexRange(uint8_t& minimumRenderQueueIndex, uint8_t& maximumRenderQueueIndex) const override;
+		[[nodiscard]] virtual bool getRenderQueueIndexRange(uint8_t& minimumRenderQueueIndex, uint8_t& maximumRenderQueueIndex) const override;
 
 
 	//[-------------------------------------------------------]

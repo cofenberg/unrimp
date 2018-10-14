@@ -100,32 +100,32 @@ namespace RendererRuntime
 			// Nothing here
 		}
 
-		inline const CompositorWorkspaceInstance* getCompositorWorkspaceInstance() const
+		[[nodiscard]] inline const CompositorWorkspaceInstance* getCompositorWorkspaceInstance() const
 		{
 			return mCompositorWorkspaceInstance;
 		}
 
-		inline const CameraSceneItem* getCameraSceneItem() const
+		[[nodiscard]] inline const CameraSceneItem* getCameraSceneItem() const
 		{
 			return mCameraSceneItem;
 		}
 
-		inline bool getSinglePassStereoInstancing() const
+		[[nodiscard]] inline bool getSinglePassStereoInstancing() const
 		{
 			return mSinglePassStereoInstancing;
 		}
 
-		inline const LightSceneItem* getLightSceneItem() const
+		[[nodiscard]] inline const LightSceneItem* getLightSceneItem() const
 		{
 			return mLightSceneItem;
 		}
 
-		inline const CompositorInstancePassShadowMap* getCompositorInstancePassShadowMap() const
+		[[nodiscard]] inline const CompositorInstancePassShadowMap* getCompositorInstancePassShadowMap() const
 		{
 			return mCompositorInstancePassShadowMap;
 		}
 
-		inline const glm::vec3& getWorldSpaceCameraPosition() const
+		[[nodiscard]] inline const glm::vec3& getWorldSpaceCameraPosition() const
 		{
 			return mWorldSpaceCameraPosition;
 		}
@@ -135,12 +135,12 @@ namespace RendererRuntime
 			mCurrentlyBoundMaterialBlueprintResource = nullptr;
 		}
 
-		inline MaterialBlueprintResource* getCurrentlyBoundMaterialBlueprintResource() const
+		[[nodiscard]] inline MaterialBlueprintResource* getCurrentlyBoundMaterialBlueprintResource() const
 		{
 			return mCurrentlyBoundMaterialBlueprintResource;
 		}
 
-		inline uint32_t* getGlobalComputeSize() const
+		[[nodiscard]] inline uint32_t* getGlobalComputeSize() const
 		{
 			return mGlobalComputeSize;
 		}

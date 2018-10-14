@@ -106,7 +106,7 @@ namespace RendererRuntime
 		*  @return
 		*    The owner material resource manager
 		*/
-		inline MaterialResourceManager& getMaterialResourceManager() const
+		[[nodiscard]] inline MaterialResourceManager& getMaterialResourceManager() const
 		{
 			assert(nullptr != mMaterialResourceManager);
 			return *mMaterialResourceManager;
@@ -119,7 +119,7 @@ namespace RendererRuntime
 		*  @return
 		*    The owner material resource ID
 		*/
-		inline MaterialResourceId getMaterialResourceId() const
+		[[nodiscard]] inline MaterialResourceId getMaterialResourceId() const
 		{
 			return mMaterialResourceId;
 		}
@@ -134,7 +134,7 @@ namespace RendererRuntime
 		*  @note
 		*    - Ease of use method
 		*/
-		const MaterialResource& getMaterialResource() const;
+		[[nodiscard]] const MaterialResource& getMaterialResource() const;
 
 		/**
 		*  @brief
@@ -143,7 +143,7 @@ namespace RendererRuntime
 		*  @return
 		*    The assigned material slot
 		*/
-		inline uint32_t getAssignedMaterialSlot() const
+		[[nodiscard]] inline uint32_t getAssignedMaterialSlot() const
 		{
 			return mAssignedMaterialSlot;
 		}

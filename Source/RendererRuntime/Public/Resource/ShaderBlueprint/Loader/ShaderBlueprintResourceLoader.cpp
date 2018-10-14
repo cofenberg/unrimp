@@ -50,10 +50,10 @@ namespace RendererRuntime
 		mShaderBlueprintResource = static_cast<ShaderBlueprintResource*>(&resource);
 	}
 
-	void ShaderBlueprintResourceLoader::onDeserialization(IFile& file)
+	bool ShaderBlueprintResourceLoader::onDeserialization(IFile& file)
 	{
 		// Tell the memory mapped file about the LZ4 compressed data
-		mMemoryFile.loadLz4CompressedDataFromFile(v1ShaderBlueprint::FORMAT_TYPE, v1ShaderBlueprint::FORMAT_VERSION, file);
+		return mMemoryFile.loadLz4CompressedDataFromFile(v1ShaderBlueprint::FORMAT_TYPE, v1ShaderBlueprint::FORMAT_VERSION, file);
 	}
 
 	void ShaderBlueprintResourceLoader::onProcessing()

@@ -112,27 +112,27 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline uint8_t getNumberOfChannels() const
+		[[nodiscard]] inline uint8_t getNumberOfChannels() const
 		{
 			return mNumberOfChannels;
 		}
 
-		inline float getDurationInTicks() const
+		[[nodiscard]] inline float getDurationInTicks() const
 		{
 			return mDurationInTicks;
 		}
 
-		inline float getTicksPerSecond() const
+		[[nodiscard]] inline float getTicksPerSecond() const
 		{
 			return mTicksPerSecond;
 		}
 
-		inline const ChannelByteOffsets& getChannelByteOffsets() const
+		[[nodiscard]] inline const ChannelByteOffsets& getChannelByteOffsets() const
 		{
 			return mChannelByteOffsets;
 		}
 
-		inline const ChannelData& getChannelData() const
+		[[nodiscard]] inline const ChannelData& getChannelData() const
 		{
 			return mChannelData;
 		}

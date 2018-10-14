@@ -104,7 +104,7 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline const PassData& getPassData() const
+		[[nodiscard]] inline const PassData& getPassData() const
 		{
 			return mPassData;
 		}

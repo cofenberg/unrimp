@@ -96,7 +96,7 @@ namespace RendererRuntime
 		*  @return
 		*    The shader ASCII source code
 		*/
-		inline const std::string& getShaderSourceCode() const
+		[[nodiscard]] inline const std::string& getShaderSourceCode() const
 		{
 			return mShaderSourceCode;
 		}

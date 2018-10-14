@@ -51,12 +51,12 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		void* RmtMalloc(void* mm_context, rmtU32 size)
+		[[nodiscard]] void* RmtMalloc(void* mm_context, rmtU32 size)
 		{
 			return static_cast<Renderer::IAllocator*>(mm_context)->reallocate(nullptr, 0, size, 1);
 		}
 
-		void* RmtRealloc(void* mm_context, void* ptr, rmtU32 size)
+		[[nodiscard]] void* RmtRealloc(void* mm_context, void* ptr, rmtU32 size)
 		{
 			return static_cast<Renderer::IAllocator*>(mm_context)->reallocate(ptr, 0, size, 1);
 		}

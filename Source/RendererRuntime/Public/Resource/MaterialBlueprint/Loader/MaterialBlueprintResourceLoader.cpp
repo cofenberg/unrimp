@@ -48,10 +48,10 @@ namespace RendererRuntime
 		mMaterialBlueprintResource = static_cast<MaterialBlueprintResource*>(&resource);
 	}
 
-	void MaterialBlueprintResourceLoader::onDeserialization(IFile& file)
+	bool MaterialBlueprintResourceLoader::onDeserialization(IFile& file)
 	{
 		// Tell the memory mapped file about the LZ4 compressed data
-		mMemoryFile.loadLz4CompressedDataFromFile(v1MaterialBlueprint::FORMAT_TYPE, v1MaterialBlueprint::FORMAT_VERSION, file);
+		return mMemoryFile.loadLz4CompressedDataFromFile(v1MaterialBlueprint::FORMAT_TYPE, v1MaterialBlueprint::FORMAT_VERSION, file);
 	}
 
 	void MaterialBlueprintResourceLoader::onProcessing()

@@ -136,7 +136,7 @@ namespace RendererRuntime
 		*  @return
 		*    The used renderer runtime context instance
 		*/
-		inline Context& getContext() const
+		[[nodiscard]] inline Context& getContext() const
 		{
 			return mContext;
 		}
@@ -148,7 +148,7 @@ namespace RendererRuntime
 		*  @return
 		*    The used renderer instance, do not release the returned instance unless you added an own reference to it
 		*/
-		inline Renderer::IRenderer& getRenderer() const
+		[[nodiscard]] inline Renderer::IRenderer& getRenderer() const
 		{
 			return *mRenderer;
 		}
@@ -160,7 +160,7 @@ namespace RendererRuntime
 		*  @return
 		*    The used buffer manager instance, do not release the returned instance unless you added an own reference to it
 		*/
-		inline Renderer::IBufferManager& getBufferManager() const
+		[[nodiscard]] inline Renderer::IBufferManager& getBufferManager() const
 		{
 			return *mBufferManager;
 		}
@@ -172,7 +172,7 @@ namespace RendererRuntime
 		*  @return
 		*    The used texture manager instance, do not release the returned instance unless you added an own reference to it
 		*/
-		inline Renderer::ITextureManager& getTextureManager() const
+		[[nodiscard]] inline Renderer::ITextureManager& getTextureManager() const
 		{
 			return *mTextureManager;
 		}
@@ -184,7 +184,7 @@ namespace RendererRuntime
 		*  @return
 		*    The file manager instance, do not release the returned instance
 		*/
-		inline IFileManager& getFileManager() const
+		[[nodiscard]] inline IFileManager& getFileManager() const
 		{
 			return *mFileManager;
 		}
@@ -196,7 +196,7 @@ namespace RendererRuntime
 		*  @return
 		*    The default thread pool instance, do not release the returned instance
 		*/
-		inline DefaultThreadPool& getDefaultThreadPool() const
+		[[nodiscard]] inline DefaultThreadPool& getDefaultThreadPool() const
 		{
 			return *mDefaultThreadPool;
 		}
@@ -208,7 +208,7 @@ namespace RendererRuntime
 		*  @return
 		*    The asset manager instance, do not release the returned instance
 		*/
-		inline AssetManager& getAssetManager() const
+		[[nodiscard]] inline AssetManager& getAssetManager() const
 		{
 			return *mAssetManager;
 		}
@@ -220,7 +220,7 @@ namespace RendererRuntime
 		*  @return
 		*    The time manager instance, do not release the returned instance
 		*/
-		inline TimeManager& getTimeManager() const
+		[[nodiscard]] inline TimeManager& getTimeManager() const
 		{
 			return *mTimeManager;
 		}
@@ -235,7 +235,7 @@ namespace RendererRuntime
 		*  @return
 		*    The renderer resource manager instance, do not release the returned instance
 		*/
-		inline RendererResourceManager& getRendererResourceManager() const
+		[[nodiscard]] inline RendererResourceManager& getRendererResourceManager() const
 		{
 			return *mRendererResourceManager;
 		}
@@ -247,7 +247,7 @@ namespace RendererRuntime
 		*  @return
 		*    The resource streamer instance, do not release the returned instance
 		*/
-		inline ResourceStreamer& getResourceStreamer() const
+		[[nodiscard]] inline ResourceStreamer& getResourceStreamer() const
 		{
 			return *mResourceStreamer;
 		}
@@ -259,7 +259,7 @@ namespace RendererRuntime
 		*  @return
 		*    The vertex attributes resource manager instance, do not release the returned instance
 		*/
-		inline VertexAttributesResourceManager& getVertexAttributesResourceManager() const
+		[[nodiscard]] inline VertexAttributesResourceManager& getVertexAttributesResourceManager() const
 		{
 			return *mVertexAttributesResourceManager;
 		}
@@ -271,7 +271,7 @@ namespace RendererRuntime
 		*  @return
 		*    The texture resource manager instance, do not release the returned instance
 		*/
-		inline TextureResourceManager& getTextureResourceManager() const
+		[[nodiscard]] inline TextureResourceManager& getTextureResourceManager() const
 		{
 			return *mTextureResourceManager;
 		}
@@ -283,7 +283,7 @@ namespace RendererRuntime
 		*  @return
 		*    The shader piece resource manager instance, do not release the returned instance
 		*/
-		inline ShaderPieceResourceManager& getShaderPieceResourceManager() const
+		[[nodiscard]] inline ShaderPieceResourceManager& getShaderPieceResourceManager() const
 		{
 			return *mShaderPieceResourceManager;
 		}
@@ -295,7 +295,7 @@ namespace RendererRuntime
 		*  @return
 		*    The shader blueprint resource manager instance, do not release the returned instance
 		*/
-		inline ShaderBlueprintResourceManager& getShaderBlueprintResourceManager() const
+		[[nodiscard]] inline ShaderBlueprintResourceManager& getShaderBlueprintResourceManager() const
 		{
 			return *mShaderBlueprintResourceManager;
 		}
@@ -307,7 +307,7 @@ namespace RendererRuntime
 		*  @return
 		*    The material blueprint resource manager instance, do not release the returned instance
 		*/
-		inline MaterialBlueprintResourceManager& getMaterialBlueprintResourceManager() const
+		[[nodiscard]] inline MaterialBlueprintResourceManager& getMaterialBlueprintResourceManager() const
 		{
 			return *mMaterialBlueprintResourceManager;
 		}
@@ -319,7 +319,7 @@ namespace RendererRuntime
 		*  @return
 		*    The material resource manager instance, do not release the returned instance
 		*/
-		inline MaterialResourceManager& getMaterialResourceManager() const
+		[[nodiscard]] inline MaterialResourceManager& getMaterialResourceManager() const
 		{
 			return *mMaterialResourceManager;
 		}
@@ -331,7 +331,7 @@ namespace RendererRuntime
 		*  @return
 		*    The skeleton resource manager instance, do not release the returned instance
 		*/
-		inline SkeletonResourceManager& getSkeletonResourceManager() const
+		[[nodiscard]] inline SkeletonResourceManager& getSkeletonResourceManager() const
 		{
 			return *mSkeletonResourceManager;
 		}
@@ -343,7 +343,7 @@ namespace RendererRuntime
 		*  @return
 		*    The skeleton animation resource manager instance, do not release the returned instance
 		*/
-		inline SkeletonAnimationResourceManager& getSkeletonAnimationResourceManager() const
+		[[nodiscard]] inline SkeletonAnimationResourceManager& getSkeletonAnimationResourceManager() const
 		{
 			return *mSkeletonAnimationResourceManager;
 		}
@@ -355,7 +355,7 @@ namespace RendererRuntime
 		*  @return
 		*    The mesh resource manager instance, do not release the returned instance
 		*/
-		inline MeshResourceManager& getMeshResourceManager() const
+		[[nodiscard]] inline MeshResourceManager& getMeshResourceManager() const
 		{
 			return *mMeshResourceManager;
 		}
@@ -367,7 +367,7 @@ namespace RendererRuntime
 		*  @return
 		*    The scene resource manager instance, do not release the returned instance
 		*/
-		inline SceneResourceManager& getSceneResourceManager() const
+		[[nodiscard]] inline SceneResourceManager& getSceneResourceManager() const
 		{
 			return *mSceneResourceManager;
 		}
@@ -379,7 +379,7 @@ namespace RendererRuntime
 		*  @return
 		*    The compositor node resource manager instance, do not release the returned instance
 		*/
-		inline CompositorNodeResourceManager& getCompositorNodeResourceManager() const
+		[[nodiscard]] inline CompositorNodeResourceManager& getCompositorNodeResourceManager() const
 		{
 			return *mCompositorNodeResourceManager;
 		}
@@ -391,7 +391,7 @@ namespace RendererRuntime
 		*  @return
 		*    The compositor workspace resource manager instance, do not release the returned instance
 		*/
-		inline CompositorWorkspaceResourceManager& getCompositorWorkspaceResourceManager() const
+		[[nodiscard]] inline CompositorWorkspaceResourceManager& getCompositorWorkspaceResourceManager() const
 		{
 			return *mCompositorWorkspaceResourceManager;
 		}
@@ -403,7 +403,7 @@ namespace RendererRuntime
 		*  @return
 		*    List of all resource manager instances, do not release the returned instances
 		*/
-		inline const ResourceManagers& getResourceManagers() const
+		[[nodiscard]] inline const ResourceManagers& getResourceManagers() const
 		{
 			return mResourceManagers;
 		}
@@ -418,7 +418,7 @@ namespace RendererRuntime
 		*  @return
 		*    The graphics pipeline state compiler instance, do not release the returned instance
 		*/
-		inline GraphicsPipelineStateCompiler& getGraphicsPipelineStateCompiler() const
+		[[nodiscard]] inline GraphicsPipelineStateCompiler& getGraphicsPipelineStateCompiler() const
 		{
 			return *mGraphicsPipelineStateCompiler;
 		}
@@ -430,7 +430,7 @@ namespace RendererRuntime
 		*  @return
 		*    The compute pipeline state compiler instance, do not release the returned instance
 		*/
-		inline ComputePipelineStateCompiler& getComputePipelineStateCompiler() const
+		[[nodiscard]] inline ComputePipelineStateCompiler& getComputePipelineStateCompiler() const
 		{
 			return *mComputePipelineStateCompiler;
 		}
@@ -446,7 +446,7 @@ namespace RendererRuntime
 			*  @return
 			*    The debug GUI manager instance, do not release the returned instance
 			*/
-			inline DebugGuiManager& getDebugGuiManager() const
+			[[nodiscard]] inline DebugGuiManager& getDebugGuiManager() const
 			{
 				return *mDebugGuiManager;
 			}
@@ -460,7 +460,7 @@ namespace RendererRuntime
 			*  @return
 			*    The VR manager instance, do not release the returned instance
 			*/
-			inline IVrManager& getVrManager() const
+			[[nodiscard]] inline IVrManager& getVrManager() const
 			{
 				return *mVrManager;
 			}

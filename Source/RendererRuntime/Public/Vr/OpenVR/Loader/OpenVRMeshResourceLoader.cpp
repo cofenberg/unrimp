@@ -75,13 +75,13 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		int getNumFaces(const SMikkTSpaceContext* pContext)
+		[[nodiscard]] int getNumFaces(const SMikkTSpaceContext* pContext)
 		{
 			const RendererRuntime::OpenVRMeshResourceLoader* openVRMeshResourceLoader = static_cast<const RendererRuntime::OpenVRMeshResourceLoader*>(pContext->m_pUserData);
 			return static_cast<int>(openVRMeshResourceLoader->getVrRenderModel()->unTriangleCount);
 		}
 
-		int getNumVerticesOfFace(const SMikkTSpaceContext*, const int)
+		[[nodiscard]] int getNumVerticesOfFace(const SMikkTSpaceContext*, const int)
 		{
 			return NUMBER_OF_VERTICES_PER_FACE;
 		}
@@ -151,7 +151,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		RendererRuntime::AssetId setupRenderModelAlbedoTexture(const RendererRuntime::IRendererRuntime& rendererRuntime, const vr::RenderModel_t& vrRenderModel)
+		[[nodiscard]] RendererRuntime::AssetId setupRenderModelAlbedoTexture(const RendererRuntime::IRendererRuntime& rendererRuntime, const vr::RenderModel_t& vrRenderModel)
 		{
 			// Check whether or not we need to generate the runtime mesh asset right now
 			RendererRuntime::AssetId assetId = RendererRuntime::VrManagerOpenVR::albedoTextureIdToAssetId(vrRenderModel.diffuseTextureId);
@@ -163,7 +163,7 @@ namespace
 			return assetId;
 		}
 
-		RendererRuntime::MaterialResourceId setupRenderModelMaterial(const RendererRuntime::IRendererRuntime& rendererRuntime, RendererRuntime::MaterialResourceId vrDeviceMaterialResourceId, vr::TextureID_t vrTextureId, RendererRuntime::AssetId albedoTextureAssetId)
+		[[nodiscard]] RendererRuntime::MaterialResourceId setupRenderModelMaterial(const RendererRuntime::IRendererRuntime& rendererRuntime, RendererRuntime::MaterialResourceId vrDeviceMaterialResourceId, vr::TextureID_t vrTextureId, RendererRuntime::AssetId albedoTextureAssetId)
 		{
 			// Get the texture name and convert it into an runtime material asset ID
 			const std::string materialName = "OpenVR_" + std::to_string(vrTextureId);

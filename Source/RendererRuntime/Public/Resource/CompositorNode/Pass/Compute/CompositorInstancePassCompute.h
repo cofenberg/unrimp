@@ -88,7 +88,7 @@ namespace RendererRuntime
 		CompositorInstancePassCompute(const CompositorResourcePassCompute& compositorResourcePassCompute, const CompositorNodeInstance& compositorNodeInstance);
 		virtual ~CompositorInstancePassCompute() override;
 
-		inline MaterialResourceId getMaterialResourceId() const
+		[[nodiscard]] inline MaterialResourceId getMaterialResourceId() const
 		{
 			return mMaterialResourceId;
 		}

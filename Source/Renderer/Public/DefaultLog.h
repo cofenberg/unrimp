@@ -149,7 +149,7 @@ namespace Renderer
 	//[ Public virtual Renderer::ILog methods                 ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual bool print(Type type, const char* attachment, const char* file, uint32_t line, const char* format, ...) override
+		[[nodiscard]] inline virtual bool print(Type type, const char* attachment, const char* file, uint32_t line, const char* format, ...) override
 		{
 			bool requestDebugBreak = false;
 
@@ -218,7 +218,7 @@ namespace Renderer
 		*  @return
 		*    "true" to request debug break, else "false"
 		*/
-		inline virtual bool printInternal(Type type, const char*, [[maybe_unused]] const char* file, [[maybe_unused]] uint32_t line, const char* message, uint32_t)
+		[[nodiscard]] inline virtual bool printInternal(Type type, const char*, [[maybe_unused]] const char* file, [[maybe_unused]] uint32_t line, const char* message, uint32_t)
 		{
 			std::lock_guard<std::mutex> mutexLock(mMutex);
 			bool requestDebugBreak = false;
@@ -309,7 +309,7 @@ namespace Renderer
 	//[ Protected methods                                     ]
 	//[-------------------------------------------------------]
 	protected:
-		inline const char* typeToString(Type type) const
+		[[nodiscard]] inline const char* typeToString(Type type) const
 		{
 			switch (type)
 			{

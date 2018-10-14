@@ -86,12 +86,12 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		uint32_t alignToSimdLaneCount(uint32_t value)
+		[[nodiscard]] uint32_t alignToSimdLaneCount(uint32_t value)
 		{
 			return RendererRuntime::Math::makeMultipleOf(value, xsimd::simd_type<float>::size);
 		}
 
-		uint32_t removeNotVisible(const RendererRuntime::SceneItemSet& sceneItemSet, uint32_t count, const uint32_t* inputIndirection, uint32_t* outputIndirection)
+		[[nodiscard]] uint32_t removeNotVisible(const RendererRuntime::SceneItemSet& sceneItemSet, uint32_t count, const uint32_t* inputIndirection, uint32_t* outputIndirection)
 		{
 			const uint32_t* RESTRICT visibilityFlag = sceneItemSet.visibilityFlag.data();
 			uint32_t numberOfVisibleItems = 0u;
@@ -130,7 +130,7 @@ namespace
 			return numberOfVisibleItems;
 		}
 
-		SimdVector simdMultiply(const SimdVector& v, const SimdMatrix& m)
+		[[nodiscard]] SimdVector simdMultiply(const SimdVector& v, const SimdMatrix& m)
 		{
 			float4 x = v.x * m.x.x;     x = v.y * m.y.x + x;    x = v.z * m.z.x + x;    x = v.w * m.w.x + x;
 			float4 y = v.x * m.x.y;     y = v.y * m.y.y + y;    y = v.z * m.z.y + y;    y = v.w * m.w.y + y;
@@ -139,7 +139,7 @@ namespace
 			return { x, y, z, w };
 		}
 
-		SimdMatrix simdMultiply(const SimdMatrix& lhs, const SimdMatrix& rhs)
+		[[nodiscard]] SimdMatrix simdMultiply(const SimdMatrix& lhs, const SimdMatrix& rhs)
 		{
 			const SimdVector x = simdMultiply(lhs.x, rhs);
 			const SimdVector y = simdMultiply(lhs.y, rhs);

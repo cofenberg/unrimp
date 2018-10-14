@@ -125,7 +125,7 @@ namespace RendererRuntime
 		*  @return
 		*    Resulting rotation quaternion
 		*/
-		static glm::quat eulerToQuaternion(const glm::vec3& eulerAngles, Order order = DefaultOrder);
+		[[nodiscard]] static glm::quat eulerToQuaternion(const glm::vec3& eulerAngles, Order order = DefaultOrder);
 
 		/**
 		*  @brief
@@ -143,7 +143,7 @@ namespace RendererRuntime
 		*  @return
 		*    Resulting rotation quaternion
 		*/
-		static glm::quat eulerToQuaternion(float yaw, float pitch, float roll, Order order = DefaultOrder);
+		[[nodiscard]] static glm::quat eulerToQuaternion(float yaw, float pitch, float roll, Order order = DefaultOrder);
 
 		/**
 		*  @brief
@@ -172,9 +172,9 @@ namespace RendererRuntime
 		*  @return
 		*    Resulting Euler angles in vector format: yaw, pitch, roll in radians; for more information, see notes on EulerAngles class
 		*/
-		static glm::vec3 matrixToEuler(const glm::mat3& mRot, Order order = DefaultOrder);
-		static glm::vec3 matrixToEuler(const glm::mat3x4& mRot, Order order = DefaultOrder);
-		static glm::vec3 matrixToEuler(const glm::mat4& mRot, Order order = DefaultOrder);
+		[[nodiscard]] static glm::vec3 matrixToEuler(const glm::mat3& mRot, Order order = DefaultOrder);
+		[[nodiscard]] static glm::vec3 matrixToEuler(const glm::mat3x4& mRot, Order order = DefaultOrder);
+		[[nodiscard]] static glm::vec3 matrixToEuler(const glm::mat4& mRot, Order order = DefaultOrder);
 
 
 	//[-------------------------------------------------------]

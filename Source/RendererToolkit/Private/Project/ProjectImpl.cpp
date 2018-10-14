@@ -579,7 +579,10 @@ namespace RendererToolkit
 				memoryFile.write(sortedOutputAssetVector.data(), sizeof(RendererRuntime::Asset) * sortedOutputAssetVector.size());
 
 				// Write LZ4 compressed output
-				memoryFile.writeLz4CompressedDataByVirtualFilename(STRING_ID("AssetPackage"), RendererRuntime::v1AssetPackage::FORMAT_VERSION, fileManager, virtualAssetPackageFilename.c_str());
+				if (!memoryFile.writeLz4CompressedDataByVirtualFilename(STRING_ID("AssetPackage"), RendererRuntime::v1AssetPackage::FORMAT_VERSION, fileManager, virtualAssetPackageFilename.c_str()))
+				{
+					throw std::runtime_error("Failed to write LZ4 compressed output file \"" + virtualAssetPackageFilename + '\"');
+				}
 			}
 		}
 

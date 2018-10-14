@@ -60,7 +60,7 @@ namespace RendererRuntime
 	// This is needed to do here because the methods in the library are also defined in global namespace
 
 	// "createRendererRuntimeInstance()" signature
-	extern RendererRuntime::IRendererRuntime* createRendererRuntimeInstance(RendererRuntime::Context& context);
+	[[nodiscard]] extern RendererRuntime::IRendererRuntime* createRendererRuntimeInstance(RendererRuntime::Context& context);
 #endif
 
 
@@ -201,7 +201,7 @@ namespace RendererRuntime
 		*  @remarks
 		*    The renderer runtime instance, can be a null pointer
 		*/
-		inline IRendererRuntime* getRendererRuntime() const
+		[[nodiscard]] inline IRendererRuntime* getRendererRuntime() const
 		{
 			return mRendererRuntime;
 		}

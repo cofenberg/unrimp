@@ -104,7 +104,7 @@ namespace RendererRuntime
 		*  @return
 		*    The log instance
 		*/
-		inline Renderer::ILog& getLog() const
+		[[nodiscard]] inline Renderer::ILog& getLog() const
 		{
 			return mLog;
 		}
@@ -116,7 +116,7 @@ namespace RendererRuntime
 		*  @return
 		*    The assert instance
 		*/
-		inline Renderer::IAssert& getAssert() const
+		[[nodiscard]] inline Renderer::IAssert& getAssert() const
 		{
 			return mAssert;
 		}
@@ -128,7 +128,7 @@ namespace RendererRuntime
 		*  @return
 		*    The allocator instance
 		*/
-		inline Renderer::IAllocator& getAllocator() const
+		[[nodiscard]] inline Renderer::IAllocator& getAllocator() const
 		{
 			return mAllocator;
 		}
@@ -140,7 +140,7 @@ namespace RendererRuntime
 		*  @return
 		*    The used renderer instance
 		*/
-		inline Renderer::IRenderer& getRenderer() const
+		[[nodiscard]] inline Renderer::IRenderer& getRenderer() const
 		{
 			return mRenderer;
 		}
@@ -152,7 +152,7 @@ namespace RendererRuntime
 		*  @return
 		*    The used file manager instance
 		*/
-		inline IFileManager& getFileManager() const
+		[[nodiscard]] inline IFileManager& getFileManager() const
 		{
 			return mFileManager;
 		}
@@ -165,7 +165,7 @@ namespace RendererRuntime
 			*  @return
 			*    The used profiler instance
 			*/
-			inline IProfiler& getProfiler() const
+			[[nodiscard]] inline IProfiler& getProfiler() const
 			{
 				return mProfiler;
 			}

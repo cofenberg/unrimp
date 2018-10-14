@@ -96,34 +96,35 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline IResourceManager& getResourceManager() const
+		[[nodiscard]] inline IResourceManager& getResourceManager() const
 		{
 			assert(nullptr != mResourceManager);
 			return *mResourceManager;
 		}
 
-		template <typename T> inline T& getResourceManager() const
+		template <typename T>
+		[[nodiscard]] inline T& getResourceManager() const
 		{
 			assert(nullptr != mResourceManager);
 			return *static_cast<T*>(mResourceManager);
 		}
 
-		inline ResourceId getId() const
+		[[nodiscard]] inline ResourceId getId() const
 		{
 			return mResourceId;
 		}
 
-		inline AssetId getAssetId() const
+		[[nodiscard]] inline AssetId getAssetId() const
 		{
 			return mAssetId;
 		}
 
-		inline ResourceLoaderTypeId getResourceLoaderTypeId() const
+		[[nodiscard]] inline ResourceLoaderTypeId getResourceLoaderTypeId() const
 		{
 			return mResourceLoaderTypeId;
 		}
 
-		inline LoadingState getLoadingState() const
+		[[nodiscard]] inline LoadingState getLoadingState() const
 		{
 			return mLoadingState;
 		}
@@ -132,7 +133,7 @@ namespace RendererRuntime
 		RENDERERRUNTIME_API_EXPORT void disconnectResourceListener(IResourceListener& resourceListener);
 
 		#ifdef _DEBUG
-			inline const std::string& getDebugName() const
+			[[nodiscard]] inline const std::string& getDebugName() const
 			{
 				return mDebugName;
 			}

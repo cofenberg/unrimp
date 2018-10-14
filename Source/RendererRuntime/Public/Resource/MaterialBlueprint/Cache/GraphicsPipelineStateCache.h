@@ -64,7 +64,7 @@ namespace RendererRuntime
 		*  @return
 		*    The graphics pipeline state signature of the cache
 		*/
-		inline const GraphicsPipelineStateSignature& getGraphicsPipelineStateSignature() const
+		[[nodiscard]] inline const GraphicsPipelineStateSignature& getGraphicsPipelineStateSignature() const
 		{
 			return mGraphicsPipelineStateSignature;
 		}
@@ -76,7 +76,7 @@ namespace RendererRuntime
 		*  @return
 		*    The graphics pipeline state object
 		*/
-		inline Renderer::IGraphicsPipelineStatePtr getGraphicsPipelineStateObjectPtr() const
+		[[nodiscard]] inline Renderer::IGraphicsPipelineStatePtr getGraphicsPipelineStateObjectPtr() const
 		{
 			return mGraphicsPipelineStateObjectPtr;
 		}
@@ -88,7 +88,7 @@ namespace RendererRuntime
 		*  @return
 		*    If "true", this graphics pipeline state cache is currently using fallback data because it's in asynchronous compilation
 		*/
-		inline bool isUsingFallback() const
+		[[nodiscard]] inline bool isUsingFallback() const
 		{
 			return mIsUsingFallback;
 		}

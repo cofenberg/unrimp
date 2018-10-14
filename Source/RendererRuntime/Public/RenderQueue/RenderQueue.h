@@ -115,17 +115,17 @@ namespace RendererRuntime
 			// Nothing here
 		}
 
-		inline uint32_t getNumberOfDrawCalls() const
+		[[nodiscard]] inline uint32_t getNumberOfDrawCalls() const
 		{
 			return mNumberOfNullDrawCalls + mNumberOfDrawIndexedCalls + mNumberOfDrawCalls;
 		}
 
-		inline uint8_t getMinimumRenderQueueIndex() const
+		[[nodiscard]] inline uint8_t getMinimumRenderQueueIndex() const
 		{
 			return mMinimumRenderQueueIndex;
 		}
 
-		inline uint8_t getMaximumRenderQueueIndex() const
+		[[nodiscard]] inline uint8_t getMaximumRenderQueueIndex() const
 		{
 			return mMaximumRenderQueueIndex;
 		}
@@ -161,7 +161,7 @@ namespace RendererRuntime
 				renderable(&_renderable),
 				sortingKey(_sortingKey)
 			{}
-			inline bool operator < (const QueuedRenderable& queuedRenderable) const
+			[[nodiscard]] inline bool operator < (const QueuedRenderable& queuedRenderable) const
 			{
 				return (sortingKey < queuedRenderable.sortingKey);
 			}

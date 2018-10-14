@@ -107,7 +107,7 @@ namespace RendererRuntime
 		*  @return
 		*    The parent material resource ID, invalid if there's no parent
 		*/
-		inline MaterialResourceId getParentMaterialResourceId() const
+		[[nodiscard]] inline MaterialResourceId getParentMaterialResourceId() const
 		{
 			return mParentMaterialResourceId;
 		}
@@ -132,11 +132,11 @@ namespace RendererRuntime
 		*  @return
 		*    The sorted material technique vector
 		*/
-		inline SortedMaterialTechniqueVector& getSortedMaterialTechniqueVector()
+		[[nodiscard]] inline SortedMaterialTechniqueVector& getSortedMaterialTechniqueVector()
 		{
 			return mSortedMaterialTechniqueVector;
 		}
-		inline const SortedMaterialTechniqueVector& getSortedMaterialTechniqueVector() const
+		[[nodiscard]] inline const SortedMaterialTechniqueVector& getSortedMaterialTechniqueVector() const
 		{
 			return mSortedMaterialTechniqueVector;
 		}
@@ -151,7 +151,7 @@ namespace RendererRuntime
 		*  @return
 		*    The requested material technique, null pointer on error, don't destroy the returned instance
 		*/
-		RENDERERRUNTIME_API_EXPORT MaterialTechnique* getMaterialTechniqueById(MaterialTechniqueId materialTechniqueId) const;
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT MaterialTechnique* getMaterialTechniqueById(MaterialTechniqueId materialTechniqueId) const;
 
 		/**
 		*  @brief
@@ -169,7 +169,7 @@ namespace RendererRuntime
 		*  @return
 		*    The material properties
 		*/
-		inline const MaterialProperties& getMaterialProperties() const
+		[[nodiscard]] inline const MaterialProperties& getMaterialProperties() const
 		{
 			return mMaterialProperties;
 		}
@@ -181,7 +181,7 @@ namespace RendererRuntime
 		*  @return
 		*    The material properties as sorted vector
 		*/
-		inline const MaterialProperties::SortedPropertyVector& getSortedPropertyVector() const
+		[[nodiscard]] inline const MaterialProperties::SortedPropertyVector& getSortedPropertyVector() const
 		{
 			return mMaterialProperties.getSortedPropertyVector();
 		}
@@ -205,7 +205,7 @@ namespace RendererRuntime
 		*  @return
 		*    The requested material property, null pointer on error, don't destroy the returned instance
 		*/
-		inline const MaterialProperty* getPropertyById(MaterialPropertyId materialPropertyId) const
+		[[nodiscard]] inline const MaterialProperty* getPropertyById(MaterialPropertyId materialPropertyId) const
 		{
 			return mMaterialProperties.getPropertyById(materialPropertyId);
 		}

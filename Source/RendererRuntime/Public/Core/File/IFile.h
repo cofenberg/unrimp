@@ -73,7 +73,7 @@ namespace RendererRuntime
 		*  @return
 		*    The number of bytes inside the file
 		*/
-		virtual size_t getNumberOfBytes() = 0;
+		[[nodiscard]] virtual size_t getNumberOfBytes() = 0;
 
 		/**
 		*  @brief

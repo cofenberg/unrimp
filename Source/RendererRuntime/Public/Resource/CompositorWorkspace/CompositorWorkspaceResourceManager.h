@@ -79,19 +79,19 @@ namespace RendererRuntime
 	public:
 		RENDERERRUNTIME_API_EXPORT void loadCompositorWorkspaceResourceByAssetId(AssetId assetId, CompositorWorkspaceResourceId& compositorWorkspaceResourceId, IResourceListener* resourceListener = nullptr, bool reload = false, ResourceLoaderTypeId resourceLoaderTypeId = getInvalid<ResourceLoaderTypeId>());	// Asynchronous
 
-		inline RenderTargetTextureManager& getRenderTargetTextureManager()
+		[[nodiscard]] inline RenderTargetTextureManager& getRenderTargetTextureManager()
 		{
 			assert(nullptr != mRenderTargetTextureManager);
 			return *mRenderTargetTextureManager;
 		}
 
-		inline RenderPassManager& getRenderPassManager()
+		[[nodiscard]] inline RenderPassManager& getRenderPassManager()
 		{
 			assert(nullptr != mRenderPassManager);
 			return *mRenderPassManager;
 		}
 
-		inline FramebufferManager& getFramebufferManager()
+		[[nodiscard]] inline FramebufferManager& getFramebufferManager()
 		{
 			assert(nullptr != mFramebufferManager);
 			return *mFramebufferManager;
@@ -102,10 +102,10 @@ namespace RendererRuntime
 	//[ Public virtual RendererRuntime::IResourceManager methods ]
 	//[-------------------------------------------------------]
 	public:
-		virtual uint32_t getNumberOfResources() const override;
-		virtual IResource& getResourceByIndex(uint32_t index) const override;
-		virtual IResource& getResourceByResourceId(ResourceId resourceId) const override;
-		virtual IResource* tryGetResourceByResourceId(ResourceId resourceId) const override;
+		[[nodiscard]] virtual uint32_t getNumberOfResources() const override;
+		[[nodiscard]] virtual IResource& getResourceByIndex(uint32_t index) const override;
+		[[nodiscard]] virtual IResource& getResourceByResourceId(ResourceId resourceId) const override;
+		[[nodiscard]] virtual IResource* tryGetResourceByResourceId(ResourceId resourceId) const override;
 		virtual void reloadResourceByAssetId(AssetId assetId) override;
 
 		inline virtual void update() override
@@ -118,7 +118,7 @@ namespace RendererRuntime
 	//[ Private virtual RendererRuntime::IResourceManager methods ]
 	//[-------------------------------------------------------]
 	private:
-		virtual IResourceLoader* createResourceLoaderInstance(ResourceLoaderTypeId resourceLoaderTypeId) override;
+		[[nodiscard]] virtual IResourceLoader* createResourceLoaderInstance(ResourceLoaderTypeId resourceLoaderTypeId) override;
 
 
 	//[-------------------------------------------------------]

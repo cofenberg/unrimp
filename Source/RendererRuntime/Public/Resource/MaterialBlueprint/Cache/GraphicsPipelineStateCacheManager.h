@@ -135,7 +135,7 @@ namespace RendererRuntime
 		*  @return
 		*    The owner material blueprint resource
 		*/
-		inline MaterialBlueprintResource& getMaterialBlueprintResource() const
+		[[nodiscard]] inline MaterialBlueprintResource& getMaterialBlueprintResource() const
 		{
 			return mMaterialBlueprintResource;
 		}
@@ -147,7 +147,7 @@ namespace RendererRuntime
 		*  @return
 		*    The graphics program cache manager
 		*/
-		inline GraphicsProgramCacheManager& getGraphicsProgramCacheManager()
+		[[nodiscard]] inline GraphicsProgramCacheManager& getGraphicsProgramCacheManager()
 		{
 			return mGraphicsProgramCacheManager;
 		}
@@ -166,7 +166,7 @@ namespace RendererRuntime
 		*  @return
 		*    The requested graphics pipeline state cache instance, null pointer on error, do not destroy the instance
 		*/
-		Renderer::IGraphicsPipelineStatePtr getGraphicsPipelineStateCacheByCombination(uint32_t serializedGraphicsPipelineStateHash, const ShaderProperties& shaderProperties, bool allowEmergencySynchronousCompilation);
+		[[nodiscard]] Renderer::IGraphicsPipelineStatePtr getGraphicsPipelineStateCacheByCombination(uint32_t serializedGraphicsPipelineStateHash, const ShaderProperties& shaderProperties, bool allowEmergencySynchronousCompilation);
 
 		/**
 		*  @brief

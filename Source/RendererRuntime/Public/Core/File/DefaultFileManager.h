@@ -102,7 +102,7 @@ namespace
 		//[ Public virtual DefaultFile methods                    ]
 		//[-------------------------------------------------------]
 		public:
-			virtual bool isInvalid() const = 0;
+			[[nodiscard]] virtual bool isInvalid() const = 0;
 
 
 		//[-------------------------------------------------------]
@@ -139,7 +139,7 @@ namespace
 		//[ Public virtual DefaultFile methods                    ]
 		//[-------------------------------------------------------]
 		public:
-			inline virtual bool isInvalid() const override
+			[[nodiscard]] inline virtual bool isInvalid() const override
 			{
 				return !mFileStream;
 			}
@@ -149,7 +149,7 @@ namespace
 		//[ Public virtual RendererRuntime::IFile methods         ]
 		//[-------------------------------------------------------]
 		public:
-			inline virtual size_t getNumberOfBytes() override
+			[[nodiscard]] inline virtual size_t getNumberOfBytes() override
 			{
 				assert(mFileStream && "Invalid default file access");
 				size_t numberOfBytes = 0;
@@ -224,7 +224,7 @@ namespace
 		//[ Public virtual DefaultFile methods                    ]
 		//[-------------------------------------------------------]
 		public:
-			inline virtual bool isInvalid() const override
+			[[nodiscard]] inline virtual bool isInvalid() const override
 			{
 				return !mFileStream;
 			}
@@ -234,7 +234,7 @@ namespace
 		//[ Public virtual RendererRuntime::IFile methods         ]
 		//[-------------------------------------------------------]
 		public:
-			inline virtual size_t getNumberOfBytes() override
+			[[nodiscard]] inline virtual size_t getNumberOfBytes() override
 			{
 				assert(mFileStream && "Invalid default file access");
 				assert(false && "File get number of bytes method not supported by the default implementation");
@@ -340,12 +340,12 @@ namespace RendererRuntime
 	//[ Public virtual RendererRuntime::IFileManager methods  ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getLocalDataMountPoint() const override
+		[[nodiscard]] inline virtual const char* getLocalDataMountPoint() const override
 		{
 			return ::detail::DEFAULT_LOCAL_DATA_MOUNT_POINT;
 		}
 
-		inline virtual const char* getMountPoint(const char* mountPoint) const override
+		[[nodiscard]] inline virtual const char* getMountPoint(const char* mountPoint) const override
 		{
 			assert(nullptr != mountPoint);
 			const MountedDirectories::const_iterator mountedDirectoriesIterator = mMountedDirectories.find(mountPoint);
@@ -413,7 +413,7 @@ namespace RendererRuntime
 			return true;
 		}
 
-		inline virtual bool doesFileExist(VirtualFilename virtualFilename) const override
+		[[nodiscard]] inline virtual bool doesFileExist(VirtualFilename virtualFilename) const override
 		{
 			return !mapVirtualToAbsoluteFilename(FileMode::READ, virtualFilename).empty();
 		}
@@ -457,19 +457,19 @@ namespace RendererRuntime
 			}
 		}
 
-		inline virtual std::string mapVirtualToAbsoluteFilename(FileMode fileMode, VirtualFilename virtualFilename) const override
+		[[nodiscard]] inline virtual std::string mapVirtualToAbsoluteFilename(FileMode fileMode, VirtualFilename virtualFilename) const override
 		{
 			std::string mountPoint;
 			return mapVirtualToAbsoluteFilenameAndMountPoint(fileMode, virtualFilename, mountPoint);
 		}
 
-		inline virtual int64_t getLastModificationTime(VirtualFilename virtualFilename) const override
+		[[nodiscard]] inline virtual int64_t getLastModificationTime(VirtualFilename virtualFilename) const override
 		{
 			const std::string absoluteFilename = mapVirtualToAbsoluteFilename(FileMode::READ, virtualFilename);
 			return absoluteFilename.empty() ? -1 : static_cast<int64_t>(std_filesystem::last_write_time(std_filesystem::u8path(absoluteFilename)).time_since_epoch().count());
 		}
 
-		inline virtual int64_t getFileSize(VirtualFilename virtualFilename) const override
+		[[nodiscard]] inline virtual int64_t getFileSize(VirtualFilename virtualFilename) const override
 		{
 			const std::string absoluteFilename = mapVirtualToAbsoluteFilename(FileMode::READ, virtualFilename);
 			return absoluteFilename.empty() ? -1 : static_cast<int64_t>(std_filesystem::file_size(std_filesystem::u8path(absoluteFilename)));
@@ -499,7 +499,7 @@ namespace RendererRuntime
 			return true;
 		}
 
-		inline virtual IFile* openFile(FileMode fileMode, VirtualFilename virtualFilename) const override
+		[[nodiscard]] inline virtual IFile* openFile(FileMode fileMode, VirtualFilename virtualFilename) const override
 		{
 			::detail::DefaultFile* file = nullptr;
 			const std::string absoluteFilename = mapVirtualToAbsoluteFilename(fileMode, virtualFilename);
@@ -565,7 +565,7 @@ namespace RendererRuntime
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		inline bool getAbsoluteDirectoryNamesByMountPoint(VirtualFilename virtualFilename, const AbsoluteDirectoryNames** absoluteDirectoryNames, std::string& relativeFilename, std::string& mountPoint) const
+		[[nodiscard]] inline bool getAbsoluteDirectoryNamesByMountPoint(VirtualFilename virtualFilename, const AbsoluteDirectoryNames** absoluteDirectoryNames, std::string& relativeFilename, std::string& mountPoint) const
 		{
 			assert(nullptr != absoluteDirectoryNames);
 
@@ -602,7 +602,7 @@ namespace RendererRuntime
 			}
 		}
 
-		inline std::string mapVirtualToAbsoluteFilenameAndMountPoint(FileMode fileMode, VirtualFilename virtualFilename, std::string& mountPoint) const
+		[[nodiscard]] inline std::string mapVirtualToAbsoluteFilenameAndMountPoint(FileMode fileMode, VirtualFilename virtualFilename, std::string& mountPoint) const
 		{
 			// Sanity check
 			assert(nullptr != virtualFilename);

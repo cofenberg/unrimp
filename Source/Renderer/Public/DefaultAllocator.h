@@ -45,7 +45,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		void* reallocate(Renderer::IAllocator&, void* oldPointer, size_t, size_t newNumberOfBytes, size_t alignment)
+		[[nodiscard]] void* reallocate(Renderer::IAllocator&, void* oldPointer, size_t, size_t newNumberOfBytes, size_t alignment)
 		{
 			// Sanity check
 			assert((0 != alignment && !(alignment & (alignment - 1))) && "The alignment must be a power of two");

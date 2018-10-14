@@ -73,7 +73,7 @@ namespace RendererRuntime
 	//[ Public static methods                                 ]
 	//[-------------------------------------------------------]
 	public:
-		static ShaderCombinationId generateShaderCombinationId(const ShaderBlueprintResource& shaderBlueprintResource, const ShaderProperties& shaderProperties);
+		[[nodiscard]] static ShaderCombinationId generateShaderCombinationId(const ShaderBlueprintResource& shaderBlueprintResource, const ShaderProperties& shaderProperties);
 
 
 	//[-------------------------------------------------------]
@@ -149,17 +149,17 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Getter for input data                                 ]
 		//[-------------------------------------------------------]
-		inline MaterialBlueprintResourceId getMaterialBlueprintResourceId() const
+		[[nodiscard]] inline MaterialBlueprintResourceId getMaterialBlueprintResourceId() const
 		{
 			return mMaterialBlueprintResourceId;
 		}
 
-		inline uint32_t getSerializedGraphicsPipelineStateHash() const
+		[[nodiscard]] inline uint32_t getSerializedGraphicsPipelineStateHash() const
 		{
 			return mSerializedGraphicsPipelineStateHash;
 		}
 
-		inline const ShaderProperties& getShaderProperties() const
+		[[nodiscard]] inline const ShaderProperties& getShaderProperties() const
 		{
 			return mShaderProperties;
 		}
@@ -167,12 +167,12 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Getter for derived data                               ]
 		//[-------------------------------------------------------]
-		inline GraphicsPipelineStateSignatureId getGraphicsPipelineStateSignatureId() const
+		[[nodiscard]] inline GraphicsPipelineStateSignatureId getGraphicsPipelineStateSignatureId() const
 		{
 			return mGraphicsPipelineStateSignatureId;
 		}
 
-		inline ShaderCombinationId getShaderCombinationId(GraphicsShaderType graphicsShaderType) const
+		[[nodiscard]] inline ShaderCombinationId getShaderCombinationId(GraphicsShaderType graphicsShaderType) const
 		{
 			return mShaderCombinationId[static_cast<uint8_t>(graphicsShaderType)];
 		}

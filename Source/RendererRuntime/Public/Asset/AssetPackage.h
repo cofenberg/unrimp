@@ -105,7 +105,7 @@ namespace RendererRuntime
 			// Nothing here
 		}
 
-		inline AssetPackageId getAssetPackageId() const
+		[[nodiscard]] inline AssetPackageId getAssetPackageId() const
 		{
 			return mAssetPackageId;
 		}
@@ -115,28 +115,28 @@ namespace RendererRuntime
 			mSortedAssetVector.clear();
 		}
 
-		inline const SortedAssetVector& getSortedAssetVector() const
+		[[nodiscard]] inline const SortedAssetVector& getSortedAssetVector() const
 		{
 			return mSortedAssetVector;
 		}
 
 		RENDERERRUNTIME_API_EXPORT void addAsset(const Context& context, AssetId assetId, VirtualFilename virtualFilename);
-		RENDERERRUNTIME_API_EXPORT const Asset* tryGetAssetByAssetId(AssetId assetId) const;
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT const Asset* tryGetAssetByAssetId(AssetId assetId) const;
 
-		inline VirtualFilename tryGetVirtualFilenameByAssetId(AssetId assetId) const
+		[[nodiscard]] inline VirtualFilename tryGetVirtualFilenameByAssetId(AssetId assetId) const
 		{
 			const Asset* asset = tryGetAssetByAssetId(assetId);
 			return (nullptr != asset) ? asset->virtualFilename : nullptr;
 		}
 
-		RENDERERRUNTIME_API_EXPORT bool validateIntegrity(const IFileManager& fileManager) const;
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT bool validateIntegrity(const IFileManager& fileManager) const;
 
 		// For internal use only (exposed for API performance reasons)
-		inline SortedAssetVector& getWritableSortedAssetVector()
+		[[nodiscard]] inline SortedAssetVector& getWritableSortedAssetVector()
 		{
 			return mSortedAssetVector;
 		}
-		RENDERERRUNTIME_API_EXPORT Asset* tryGetWritableAssetByAssetId(AssetId assetId);
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT Asset* tryGetWritableAssetByAssetId(AssetId assetId);
 
 
 	//[-------------------------------------------------------]

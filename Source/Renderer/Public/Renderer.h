@@ -423,7 +423,7 @@ namespace Renderer
 		*  @return
 		*    The log instance
 		*/
-		inline ILog& getLog() const
+		[[nodiscard]] inline ILog& getLog() const
 		{
 			return mLog;
 		}
@@ -435,7 +435,7 @@ namespace Renderer
 		*  @return
 		*    The assert instance
 		*/
-		inline IAssert& getAssert() const
+		[[nodiscard]] inline IAssert& getAssert() const
 		{
 			return mAssert;
 		}
@@ -447,7 +447,7 @@ namespace Renderer
 		*  @return
 		*    The allocator instance
 		*/
-		inline IAllocator& getAllocator() const
+		[[nodiscard]] inline IAllocator& getAllocator() const
 		{
 			return mAllocator;
 		}
@@ -459,7 +459,7 @@ namespace Renderer
 		*  @return
 		*    The native window handle
 		*/
-		inline handle getNativeWindowHandle() const
+		[[nodiscard]] inline handle getNativeWindowHandle() const
 		{
 			return mNativeWindowHandle;
 		}
@@ -471,7 +471,7 @@ namespace Renderer
 		*  @return
 		*    "true" if an external context is used, else "false"
 		*/
-		inline bool isUsingExternalContext() const
+		[[nodiscard]] inline bool isUsingExternalContext() const
 		{
 			return mUseExternalContext;
 		}
@@ -483,7 +483,7 @@ namespace Renderer
 		*  @return
 		*    The context type
 		*/
-		inline ContextType getType() const
+		[[nodiscard]] inline ContextType getType() const
 		{
 			return mContextType;
 		}
@@ -495,7 +495,7 @@ namespace Renderer
 		*  @return
 		*    The handle to the renderer API shared library
 		*/
-		inline void* getRendererApiSharedLibrary() const
+		[[nodiscard]] inline void* getRendererApiSharedLibrary() const
 		{
 			return mRendererApiSharedLibrary;
 		}
@@ -568,11 +568,10 @@ namespace Renderer
 			*  @return
 			*    The x11 display connection
 			*/
-			inline _XDisplay* getDisplay() const
+			[[nodiscard]] inline _XDisplay* getDisplay() const
 			{
 				return mDisplay;
 			}
-
 
 		// Private data
 		private:
@@ -619,7 +618,7 @@ namespace Renderer
 			*  @return
 			*    The Wayland display connection
 			*/
-			inline wl_display* getDisplay() const
+			[[nodiscard]] inline wl_display* getDisplay() const
 			{
 				return mDisplay;
 			}
@@ -631,7 +630,7 @@ namespace Renderer
 			*  @return
 			*    The Wayland surface
 			*/
-			inline wl_surface* getSurface() const
+			[[nodiscard]] inline wl_surface* getSurface() const
 			{
 				return mSurface;
 			}
@@ -697,7 +696,7 @@ namespace Renderer
 		*  @return
 		*    "true" to request debug break, else "false"
 		*/
-		virtual bool print(Type type, const char* attachment, const char* file, uint32_t line, const char* format, ...) = 0;
+		[[nodiscard]] virtual bool print(Type type, const char* attachment, const char* file, uint32_t line, const char* format, ...) = 0;
 
 	// Protected methods
 	protected:
@@ -771,7 +770,7 @@ namespace Renderer
 		*  @return
 		*    "true" to request debug break, else "false"
 		*/
-		virtual bool handleAssert(const char* expression, const char* file, uint32_t line, const char* format, ...) = 0;
+		[[nodiscard]] virtual bool handleAssert(const char* expression, const char* file, uint32_t line, const char* format, ...) = 0;
 
 	// Protected methods
 	protected:
@@ -835,7 +834,7 @@ namespace Renderer
 	// Public static methods
 	public:
 		template<typename Type>
-		static inline Type* constructN(Type* basePointer, size_t count)
+		[[nodiscard]] static inline Type* constructN(Type* basePointer, size_t count)
 		{
 			for (size_t i = 0; i < count; ++i)
 			{
@@ -858,6 +857,9 @@ namespace Renderer
 		*    New number of bytes
 		*  @param[in] alignment
 		*    Alignment
+		*
+		*  @return
+		*    New pointer, can be a null pointer
 		*/
 		inline void* reallocate(void* oldPointer, size_t oldNumberOfBytes, size_t newNumberOfBytes, size_t alignment)
 		{
@@ -1859,7 +1861,7 @@ namespace Renderer
 		*  @return
 		*    "true" if the given "Renderer::TextureFormat" is a compressed format, else "false"
 		*/
-		static inline bool isCompressed(Enum textureFormat)
+		[[nodiscard]] static inline bool isCompressed(Enum textureFormat)
 		{
 			static constexpr bool MAPPING[] =
 			{
@@ -1901,7 +1903,7 @@ namespace Renderer
 		*  @return
 		*    "true" if the given "Renderer::TextureFormat" is a depth format, else "false"
 		*/
-		static inline bool isDepth(Enum textureFormat)
+		[[nodiscard]] static inline bool isDepth(Enum textureFormat)
 		{
 			static constexpr bool MAPPING[] =
 			{
@@ -1943,7 +1945,7 @@ namespace Renderer
 		*  @return
 		*    Number of bytes per element
 		*/
-		static inline uint32_t getNumberOfBytesPerElement(Enum textureFormat)
+		[[nodiscard]] static inline uint32_t getNumberOfBytesPerElement(Enum textureFormat)
 		{
 			static constexpr uint32_t MAPPING[] =
 			{
@@ -1987,7 +1989,7 @@ namespace Renderer
 		*  @return
 		*    Number of bytes per row
 		*/
-		static inline uint32_t getNumberOfBytesPerRow(Enum textureFormat, uint32_t width)
+		[[nodiscard]] static inline uint32_t getNumberOfBytesPerRow(Enum textureFormat, uint32_t width)
 		{
 			switch (textureFormat)
 			{
@@ -2089,7 +2091,7 @@ namespace Renderer
 		*  @return
 		*    Number of bytes per slice
 		*/
-		static inline uint32_t getNumberOfBytesPerSlice(Enum textureFormat, uint32_t width, uint32_t height)
+		[[nodiscard]] static inline uint32_t getNumberOfBytesPerSlice(Enum textureFormat, uint32_t width, uint32_t height)
 		{
 			switch (textureFormat)
 			{
@@ -2342,7 +2344,7 @@ namespace Renderer
 		*  @return
 		*    The default blend state, see "Renderer::BlendState" for the default values
 		*/
-		static inline const BlendState& getDefaultBlendState()
+		[[nodiscard]] static inline const BlendState& getDefaultBlendState()
 		{
 			// As default values, the one of Direct3D 11 and Direct 10 were chosen in order to make it easier for those renderer implementations
 			// (choosing OpenGL default values would bring no benefit due to the design of the OpenGL API)
@@ -2628,7 +2630,7 @@ namespace Renderer
 		*  @return
 		*    Number of bytes per element
 		*/
-		static inline uint32_t getNumberOfBytesPerElement(Enum indexFormat)
+		[[nodiscard]] static inline uint32_t getNumberOfBytesPerElement(Enum indexFormat)
 		{
 			static constexpr uint32_t MAPPING[] =
 			{
@@ -2799,7 +2801,7 @@ namespace Renderer
 		*  @return
 		*    The default rasterizer state, see "Renderer::RasterizerState" for the default values
 		*/
-		static inline const RasterizerState& getDefaultRasterizerState()
+		[[nodiscard]] static inline const RasterizerState& getDefaultRasterizerState()
 		{
 			// As default values, the one of Direct3D 11 and Direct 10 were chosen in order to make it easier for those renderer implementations
 			// (choosing OpenGL default values would bring no benefit due to the design of the OpenGL API)
@@ -2924,7 +2926,7 @@ namespace Renderer
 		*  @return
 		*    The default depth stencil state, see "Renderer::DepthStencilState" for the default values
 		*/
-		static inline const DepthStencilState& getDefaultDepthStencilState()
+		[[nodiscard]] static inline const DepthStencilState& getDefaultDepthStencilState()
 		{
 			// As default values, the one of Direct3D 11 and Direct 10 were chosen in order to make it easier for those renderer implementations
 			// (choosing OpenGL default values would bring no benefit due to the design of the OpenGL API)
@@ -3166,12 +3168,12 @@ namespace Renderer
 			delete [] mBytecode;
 		}
 
-		inline uint32_t getNumberOfBytes() const
+		[[nodiscard]] inline uint32_t getNumberOfBytes() const
 		{
 			return mNumberOfBytes;
 		}
 
-		inline const uint8_t* getBytecode() const
+		[[nodiscard]] inline const uint8_t* getBytecode() const
 		{
 			return mBytecode;
 		}
@@ -3250,7 +3252,7 @@ namespace Renderer
 		*  @return
 		*    Pointer to the reference counter's object, never a null pointer!
 		*/
-		inline const AType* getPointer() const
+		[[nodiscard]] inline const AType* getPointer() const
 		{
 			return static_cast<const AType*>(this);
 		}
@@ -3262,7 +3264,7 @@ namespace Renderer
 		*  @return
 		*    Pointer to the reference counter's object, never a null pointer!
 		*/
-		inline AType* getPointer()
+		[[nodiscard]] inline AType* getPointer()
 		{
 			return static_cast<AType*>(this);
 		}
@@ -3321,7 +3323,7 @@ namespace Renderer
 		*  @return
 		*    Current reference count
 		*/
-		inline uint32_t getRefCount() const
+		[[nodiscard]] inline uint32_t getRefCount() const
 		{
 			// Return current reference count
 			return mRefCount;
@@ -3445,7 +3447,7 @@ namespace Renderer
 		*  @return
 		*    Pointer to the object, can be a null pointer
 		*/
-		inline AType* getPointer() const
+		[[nodiscard]] inline AType* getPointer() const
 		{
 			return (nullptr != mPtr) ? static_cast<AType*>(mPtr->getPointer()) : nullptr;
 		}
@@ -3457,7 +3459,7 @@ namespace Renderer
 		*  @return
 		*    Pointer to the object, can be a null pointer
 		*/
-		inline AType* operator ->() const
+		[[nodiscard]] inline AType* operator ->() const
 		{
 			return getPointer();
 		}
@@ -3469,7 +3471,7 @@ namespace Renderer
 		*  @return
 		*    Pointer to the object, can be a null pointer
 		*/
-		inline operator AType*() const
+		[[nodiscard]] inline operator AType*() const
 		{
 			return getPointer();
 		}
@@ -3481,7 +3483,7 @@ namespace Renderer
 		*  @return
 		*    "true" if the pointer is not a null pointer
 		*/
-		inline bool operator !() const
+		[[nodiscard]] inline bool operator !() const
 		{
 			return (nullptr == getPointer());
 		}
@@ -3496,7 +3498,7 @@ namespace Renderer
 		*  @return
 		*    "true" if the two pointers are equal
 		*/
-		inline bool operator ==(AType* ptr) const
+		[[nodiscard]] inline bool operator ==(AType* ptr) const
 		{
 			return (getPointer() == ptr);
 		}
@@ -3511,7 +3513,7 @@ namespace Renderer
 		*  @return
 		*    "true" if the two pointers are equal
 		*/
-		inline bool operator ==(const SmartRefCount<AType>& ptr) const
+		[[nodiscard]] inline bool operator ==(const SmartRefCount<AType>& ptr) const
 		{
 			return (getPointer() == ptr.getPointer());
 		}
@@ -3526,7 +3528,7 @@ namespace Renderer
 		*  @return
 		*    "true" if the two pointers are not equal
 		*/
-		inline bool operator !=(AType* ptr) const
+		[[nodiscard]] inline bool operator !=(AType* ptr) const
 		{
 			return (getPointer() != ptr);
 		}
@@ -3541,7 +3543,7 @@ namespace Renderer
 		*  @return
 		*    "true" if the two pointers are not equal
 		*/
-		inline bool operator !=(const SmartRefCount<AType>& ptr) const
+		[[nodiscard]] inline bool operator !=(const SmartRefCount<AType>& ptr) const
 		{
 			return (getPointer() != ptr.getPointer());
 		}
@@ -3578,7 +3580,7 @@ namespace Renderer
 		*  @return
 		*    Pointer to the RefCount object, can be a null pointer
 		*/
-		inline AType* getPtr() const
+		[[nodiscard]] inline AType* getPtr() const
 		{
 			// Return pointer
 			return mPtr;
@@ -3857,7 +3859,7 @@ namespace Renderer
 			*    - Primarily for debugging
 			*    - The result is calculated by using the current statistics, do only call this method if you have to
 			*/
-			inline uint32_t getNumberOfCurrentResources() const
+			[[nodiscard]] inline uint32_t getNumberOfCurrentResources() const
 			{
 				// Calculate the current number of resource instances
 				return	currentNumberOfRootSignatures +
@@ -4034,7 +4036,7 @@ namespace Renderer
 		*  @return
 		*    The renderer backend name as ID
 		*/
-		inline NameId getNameId() const
+		[[nodiscard]] inline NameId getNameId() const
 		{
 			return mNameId;
 		}
@@ -4046,7 +4048,7 @@ namespace Renderer
 		*  @return
 		*    The context of the renderer instance, do not free the memory the returned reference is pointing to
 		*/
-		inline const Context& getContext() const
+		[[nodiscard]] inline const Context& getContext() const
 		{
 			return mContext;
 		}
@@ -4058,7 +4060,7 @@ namespace Renderer
 		*  @return
 		*    The capabilities of the renderer instance, do not free the memory the returned reference is pointing to
 		*/
-		inline const Capabilities& getCapabilities() const
+		[[nodiscard]] inline const Capabilities& getCapabilities() const
 		{
 			return mCapabilities;
 		}
@@ -4074,7 +4076,7 @@ namespace Renderer
 			*  @note
 			*    - It's possible that the statistics or part of it are disabled, e.g. due to hight performance constrains
 			*/
-			inline const Statistics& getStatistics() const
+			[[nodiscard]] inline const Statistics& getStatistics() const
 			{
 				return mStatistics;
 			}
@@ -4089,7 +4091,7 @@ namespace Renderer
 		*  @return
 		*    The ASCII name of the renderer instance, null pointer on error, do not free the memory the returned pointer is pointing to
 		*/
-		virtual const char* getName() const = 0;
+		[[nodiscard]] virtual const char* getName() const = 0;
 
 		/**
 		*  @brief
@@ -4101,7 +4103,7 @@ namespace Renderer
 		*  @note
 		*    - Do never ever use a not properly initialized renderer!
 		*/
-		virtual bool isInitialized() const = 0;
+		[[nodiscard]] virtual bool isInitialized() const = 0;
 
 		/**
 		*  @brief
@@ -4134,7 +4136,7 @@ namespace Renderer
 		*  @return
 		*    "true" if debug is enabled, else "false"
 		*/
-		virtual bool isDebugEnabled() = 0;
+		[[nodiscard]] virtual bool isDebugEnabled() = 0;
 
 		//[-------------------------------------------------------]
 		//[ Shader language                                       ]
@@ -4146,7 +4148,7 @@ namespace Renderer
 		*  @return
 		*    The number of supported shader languages
 		*/
-		virtual uint32_t getNumberOfShaderLanguages() const = 0;
+		[[nodiscard]] virtual uint32_t getNumberOfShaderLanguages() const = 0;
 
 		/**
 		*  @brief
@@ -4162,7 +4164,7 @@ namespace Renderer
 		*    - Do not free the memory the returned pointer is pointing to
 		*    - The default shader language is always at index 0
 		*/
-		virtual const char* getShaderLanguageName(uint32_t index) const = 0;
+		[[nodiscard]] virtual const char* getShaderLanguageName(uint32_t index) const = 0;
 
 		/**
 		*  @brief
@@ -4175,7 +4177,7 @@ namespace Renderer
 		*  @return
 		*    The shader language instance, a null pointer on error, do not release the returned instance unless you added an own reference to it
 		*/
-		virtual IShaderLanguage* getShaderLanguage(const char* shaderLanguageName = nullptr) = 0;
+		[[nodiscard]] virtual IShaderLanguage* getShaderLanguage(const char* shaderLanguageName = nullptr) = 0;
 
 		//[-------------------------------------------------------]
 		//[ Resource creation                                     ]
@@ -4197,7 +4199,7 @@ namespace Renderer
 		*  @return
 		*    The created render pass instance, null pointer on error. Release the returned instance if you no longer need it.
 		*/
-		virtual IRenderPass* createRenderPass(uint32_t numberOfColorAttachments, const TextureFormat::Enum* colorAttachmentTextureFormats, TextureFormat::Enum depthStencilAttachmentTextureFormat = TextureFormat::UNKNOWN, uint8_t numberOfMultisamples = 1) = 0;
+		[[nodiscard]] virtual IRenderPass* createRenderPass(uint32_t numberOfColorAttachments, const TextureFormat::Enum* colorAttachmentTextureFormats, TextureFormat::Enum depthStencilAttachmentTextureFormat = TextureFormat::UNKNOWN, uint8_t numberOfMultisamples = 1) = 0;
 
 		/**
 		*  @brief
@@ -4213,7 +4215,7 @@ namespace Renderer
 		*  @return
 		*    The created swap chain instance, null pointer on error. Release the returned instance if you no longer need it.
 		*/
-		virtual ISwapChain* createSwapChain(IRenderPass& renderPass, WindowHandle windowHandle, bool useExternalContext = false) = 0;
+		[[nodiscard]] virtual ISwapChain* createSwapChain(IRenderPass& renderPass, WindowHandle windowHandle, bool useExternalContext = false) = 0;
 
 		/**
 		*  @brief
@@ -4237,7 +4239,7 @@ namespace Renderer
 		*    - Depending on the used graphics API and feature set, there might be the requirement that all provided textures have the same size
 		*      (in order to be on the save side, ensure that all provided textures have the same size and same MSAA sample count)
 		*/
-		virtual IFramebuffer* createFramebuffer(IRenderPass& renderPass, const FramebufferAttachment* colorFramebufferAttachments, const FramebufferAttachment* depthStencilFramebufferAttachment = nullptr) = 0;
+		[[nodiscard]] virtual IFramebuffer* createFramebuffer(IRenderPass& renderPass, const FramebufferAttachment* colorFramebufferAttachments, const FramebufferAttachment* depthStencilFramebufferAttachment = nullptr) = 0;
 
 		/**
 		*  @brief
@@ -4246,7 +4248,7 @@ namespace Renderer
 		*  @return
 		*    The created buffer manager instance, null pointer on error. Release the returned instance if you no longer need it.
 		*/
-		virtual IBufferManager* createBufferManager() = 0;
+		[[nodiscard]] virtual IBufferManager* createBufferManager() = 0;
 
 		/**
 		*  @brief
@@ -4255,7 +4257,7 @@ namespace Renderer
 		*  @return
 		*    The created texture manager instance, null pointer on error. Release the returned instance if you no longer need it.
 		*/
-		virtual ITextureManager* createTextureManager() = 0;
+		[[nodiscard]] virtual ITextureManager* createTextureManager() = 0;
 
 		/**
 		*  @brief
@@ -4267,7 +4269,7 @@ namespace Renderer
 		*  @return
 		*    The root signature instance, null pointer on error. Release the returned instance if you no longer need it.
 		*/
-		virtual IRootSignature* createRootSignature(const RootSignature& rootSignature) = 0;
+		[[nodiscard]] virtual IRootSignature* createRootSignature(const RootSignature& rootSignature) = 0;
 
 		/**
 		*  @brief
@@ -4279,7 +4281,7 @@ namespace Renderer
 		*  @return
 		*    The graphics pipeline state instance, null pointer on error. Release the returned instance if you no longer need it.
 		*/
-		virtual IGraphicsPipelineState* createGraphicsPipelineState(const GraphicsPipelineState& graphicsPipelineState) = 0;
+		[[nodiscard]] virtual IGraphicsPipelineState* createGraphicsPipelineState(const GraphicsPipelineState& graphicsPipelineState) = 0;
 
 		/**
 		*  @brief
@@ -4293,7 +4295,7 @@ namespace Renderer
 		*  @return
 		*    The compute pipeline state instance, null pointer on error. Release the returned instance if you no longer need it.
 		*/
-		virtual IComputePipelineState* createComputePipelineState(IRootSignature& rootSignature, IComputeShader& computeShader) = 0;
+		[[nodiscard]] virtual IComputePipelineState* createComputePipelineState(IRootSignature& rootSignature, IComputeShader& computeShader) = 0;
 
 		/**
 		*  @brief
@@ -4305,7 +4307,7 @@ namespace Renderer
 		*  @return
 		*    The sampler state instance, null pointer on error. Release the returned instance if you no longer need it.
 		*/
-		virtual ISamplerState* createSamplerState(const SamplerState& samplerState) = 0;
+		[[nodiscard]] virtual ISamplerState* createSamplerState(const SamplerState& samplerState) = 0;
 
 		//[-------------------------------------------------------]
 		//[ Resource handling                                     ]
@@ -4328,7 +4330,7 @@ namespace Renderer
 		*  @return
 		*    "true" if all went fine, else "false"
 		*/
-		virtual bool map(IResource& resource, uint32_t subresource, MapType mapType, uint32_t mapFlags, MappedSubresource& mappedSubresource) = 0;
+		[[nodiscard]] virtual bool map(IResource& resource, uint32_t subresource, MapType mapType, uint32_t mapFlags, MappedSubresource& mappedSubresource) = 0;
 
 		/**
 		*  @brief
@@ -4354,7 +4356,7 @@ namespace Renderer
 		*  @note
 		*    - In order to be graphics API independent, call this method when starting to render something
 		*/
-		virtual bool beginScene() = 0;
+		[[nodiscard]] virtual bool beginScene() = 0;
 
 		/**
 		*  @brief
@@ -4392,12 +4394,12 @@ namespace Renderer
 		//[-------------------------------------------------------]
 		//[ Backend specific                                      ]
 		//[-------------------------------------------------------]
-		virtual void* getD3D11DevicePointer() const
+		[[nodiscard]] virtual void* getD3D11DevicePointer() const
 		{
 			return nullptr;
 		}
 
-		virtual void* getD3D11ImmediateContextPointer() const
+		[[nodiscard]] virtual void* getD3D11ImmediateContextPointer() const
 		{
 			return nullptr;
 		}
@@ -4433,7 +4435,7 @@ namespace Renderer
 			*    - Do not free the memory the returned reference is pointing to
 			*    - It's possible that the statistics or part of it are disabled, e.g. due to hight performance constrains
 			*/
-			inline Statistics& getStatistics()
+			[[nodiscard]] inline Statistics& getStatistics()
 			{
 				return mStatistics;
 			}
@@ -4500,7 +4502,7 @@ namespace Renderer
 		*  @return
 		*    The owner renderer instance, do not release the returned instance unless you added an own reference to it
 		*/
-		inline IRenderer& getRenderer() const
+		[[nodiscard]] inline IRenderer& getRenderer() const
 		{
 			return *mRenderer;
 		}
@@ -4512,7 +4514,7 @@ namespace Renderer
 		*  @return
 		*    The optimization level
 		*/
-		inline OptimizationLevel getOptimizationLevel() const
+		[[nodiscard]] inline OptimizationLevel getOptimizationLevel() const
 		{
 			return mOptimizationLevel;
 		}
@@ -4551,7 +4553,7 @@ namespace Renderer
 		*      (this means that in the case of not having any more references, a shader might get destroyed when calling this method)
 		*    - Comfort method
 		*/
-		inline IGraphicsProgram* createGraphicsProgram(const IRootSignature& rootSignature, const VertexAttributes& vertexAttributes, IVertexShader* vertexShader, IFragmentShader* fragmentShader)
+		[[nodiscard]] inline IGraphicsProgram* createGraphicsProgram(const IRootSignature& rootSignature, const VertexAttributes& vertexAttributes, IVertexShader* vertexShader, IFragmentShader* fragmentShader)
 		{
 			return createGraphicsProgram(rootSignature, vertexAttributes, vertexShader, nullptr, nullptr, nullptr, fragmentShader);
 		}
@@ -4580,7 +4582,7 @@ namespace Renderer
 		*      (this means that in the case of not having any more references, a shader might get destroyed when calling this method)
 		*    - Comfort method
 		*/
-		inline IGraphicsProgram* createGraphicsProgram(const IRootSignature& rootSignature, const VertexAttributes& vertexAttributes, IVertexShader* vertexShader, IGeometryShader* geometryShader, IFragmentShader* fragmentShader)
+		[[nodiscard]] inline IGraphicsProgram* createGraphicsProgram(const IRootSignature& rootSignature, const VertexAttributes& vertexAttributes, IVertexShader* vertexShader, IGeometryShader* geometryShader, IFragmentShader* fragmentShader)
 		{
 			return createGraphicsProgram(rootSignature, vertexAttributes, vertexShader, nullptr, nullptr, geometryShader, fragmentShader);
 		}
@@ -4611,7 +4613,7 @@ namespace Renderer
 		*      (this means that in the case of not having any more references, a shader might get destroyed when calling this method)
 		*    - Comfort method
 		*/
-		inline IGraphicsProgram* createGraphicsProgram(const IRootSignature& rootSignature, const VertexAttributes& vertexAttributes, IVertexShader* vertexShader, ITessellationControlShader* tessellationControlShader, ITessellationEvaluationShader* tessellationEvaluationShader, IFragmentShader* fragmentShader)
+		[[nodiscard]] inline IGraphicsProgram* createGraphicsProgram(const IRootSignature& rootSignature, const VertexAttributes& vertexAttributes, IVertexShader* vertexShader, ITessellationControlShader* tessellationControlShader, ITessellationEvaluationShader* tessellationEvaluationShader, IFragmentShader* fragmentShader)
 		{
 			return createGraphicsProgram(rootSignature, vertexAttributes, vertexShader, tessellationControlShader, tessellationEvaluationShader, nullptr, fragmentShader);
 		}
@@ -4628,7 +4630,7 @@ namespace Renderer
 		*  @note
 		*    - Do not free the memory the returned pointer is pointing to
 		*/
-		virtual const char* getShaderLanguageName() const = 0;
+		[[nodiscard]] virtual const char* getShaderLanguageName() const = 0;
 
 		/**
 		*  @brief
@@ -4646,7 +4648,7 @@ namespace Renderer
 		*    - Only supported if "Renderer::Capabilities::vertexShader" is "true"
 		*    - The data the given pointers are pointing to is internally copied and you have to free your memory if you no longer need it
 		*/
-		virtual IVertexShader* createVertexShaderFromBytecode(const VertexAttributes& vertexAttributes, const ShaderBytecode& shaderBytecode) = 0;
+		[[nodiscard]] virtual IVertexShader* createVertexShaderFromBytecode(const VertexAttributes& vertexAttributes, const ShaderBytecode& shaderBytecode) = 0;
 
 		/**
 		*  @brief
@@ -4708,7 +4710,7 @@ namespace Renderer
 		*    - Only supported if "Renderer::Capabilities::vertexShader" is "true"
 		*    - The data the given pointers are pointing to is internally copied and you have to free your memory if you no longer need it
 		*/
-		virtual IVertexShader* createVertexShaderFromSourceCode(const VertexAttributes& vertexAttributes, const ShaderSourceCode& shaderSourceCode, ShaderBytecode* shaderBytecode = nullptr) = 0;
+		[[nodiscard]] virtual IVertexShader* createVertexShaderFromSourceCode(const VertexAttributes& vertexAttributes, const ShaderSourceCode& shaderSourceCode, ShaderBytecode* shaderBytecode = nullptr) = 0;
 
 		/**
 		*  @brief
@@ -4724,7 +4726,7 @@ namespace Renderer
 		*    - Only supported if "Renderer::Capabilities::maximumNumberOfPatchVertices" is not 0
 		*    - The data the given pointers are pointing to is internally copied and you have to free your memory if you no longer need it
 		*/
-		virtual ITessellationControlShader* createTessellationControlShaderFromBytecode(const ShaderBytecode& shaderBytecode) = 0;
+		[[nodiscard]] virtual ITessellationControlShader* createTessellationControlShaderFromBytecode(const ShaderBytecode& shaderBytecode) = 0;
 
 		/**
 		*  @brief
@@ -4745,7 +4747,7 @@ namespace Renderer
 		*  @see
 		*    - "Renderer::IShaderLanguage::createVertexShader()" for more information
 		*/
-		virtual ITessellationControlShader* createTessellationControlShaderFromSourceCode(const ShaderSourceCode& shaderSourceCode, ShaderBytecode* shaderBytecode = nullptr) = 0;
+		[[nodiscard]] virtual ITessellationControlShader* createTessellationControlShaderFromSourceCode(const ShaderSourceCode& shaderSourceCode, ShaderBytecode* shaderBytecode = nullptr) = 0;
 
 		/**
 		*  @brief
@@ -4761,7 +4763,7 @@ namespace Renderer
 		*    - Only supported if "Renderer::Capabilities::maximumNumberOfPatchVertices" is not 0
 		*    - The data the given pointers are pointing to is internally copied and you have to free your memory if you no longer need it
 		*/
-		virtual ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode(const ShaderBytecode& shaderBytecode) = 0;
+		[[nodiscard]] virtual ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode(const ShaderBytecode& shaderBytecode) = 0;
 
 		/**
 		*  @brief
@@ -4782,7 +4784,7 @@ namespace Renderer
 		*  @see
 		*    - "Renderer::IShaderLanguage::createVertexShader()" for more information
 		*/
-		virtual ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode(const ShaderSourceCode& shaderSourceCode, ShaderBytecode* shaderBytecode = nullptr) = 0;
+		[[nodiscard]] virtual ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode(const ShaderSourceCode& shaderSourceCode, ShaderBytecode* shaderBytecode = nullptr) = 0;
 
 		/**
 		*  @brief
@@ -4807,7 +4809,7 @@ namespace Renderer
 		*      highly recommended to provide this information anyway to be able to switch the internal implementation (e.g. using
 		*      OpenGL instead of Direct3D)
 		*/
-		virtual IGeometryShader* createGeometryShaderFromBytecode(const ShaderBytecode& shaderBytecode, GsInputPrimitiveTopology gsInputPrimitiveTopology, GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices) = 0;
+		[[nodiscard]] virtual IGeometryShader* createGeometryShaderFromBytecode(const ShaderBytecode& shaderBytecode, GsInputPrimitiveTopology gsInputPrimitiveTopology, GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices) = 0;
 
 		/**
 		*  @brief
@@ -4837,7 +4839,7 @@ namespace Renderer
 		*  @see
 		*    - "Renderer::IShaderLanguage::createVertexShader()" for more information
 		*/
-		virtual IGeometryShader* createGeometryShaderFromSourceCode(const ShaderSourceCode& shaderSourceCode, GsInputPrimitiveTopology gsInputPrimitiveTopology, GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices, ShaderBytecode* shaderBytecode = nullptr) = 0;
+		[[nodiscard]] virtual IGeometryShader* createGeometryShaderFromSourceCode(const ShaderSourceCode& shaderSourceCode, GsInputPrimitiveTopology gsInputPrimitiveTopology, GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices, ShaderBytecode* shaderBytecode = nullptr) = 0;
 
 		/**
 		*  @brief
@@ -4853,7 +4855,7 @@ namespace Renderer
 		*    - Only supported if "Renderer::Capabilities::fragmentShader" is "true"
 		*    - The data the given pointers are pointing to is internally copied and you have to free your memory if you no longer need it
 		*/
-		virtual IFragmentShader* createFragmentShaderFromBytecode(const ShaderBytecode& shaderBytecode) = 0;
+		[[nodiscard]] virtual IFragmentShader* createFragmentShaderFromBytecode(const ShaderBytecode& shaderBytecode) = 0;
 
 		/**
 		*  @brief
@@ -4874,7 +4876,7 @@ namespace Renderer
 		*  @see
 		*    - "Renderer::IShaderLanguage::createVertexShader()" for more information
 		*/
-		virtual IFragmentShader* createFragmentShaderFromSourceCode(const ShaderSourceCode& shaderSourceCode, ShaderBytecode* shaderBytecode = nullptr) = 0;
+		[[nodiscard]] virtual IFragmentShader* createFragmentShaderFromSourceCode(const ShaderSourceCode& shaderSourceCode, ShaderBytecode* shaderBytecode = nullptr) = 0;
 
 		/**
 		*  @brief
@@ -4890,7 +4892,7 @@ namespace Renderer
 		*    - Only supported if "Renderer::Capabilities::computeShader" is "true"
 		*    - The data the given pointers are pointing to is internally copied and you have to free your memory if you no longer need it
 		*/
-		virtual IComputeShader* createComputeShaderFromBytecode(const ShaderBytecode& shaderBytecode) = 0;
+		[[nodiscard]] virtual IComputeShader* createComputeShaderFromBytecode(const ShaderBytecode& shaderBytecode) = 0;
 
 		/**
 		*  @brief
@@ -4911,7 +4913,7 @@ namespace Renderer
 		*  @see
 		*    - "Renderer::IShaderLanguage::createVertexShader()" for more information
 		*/
-		virtual IComputeShader* createComputeShaderFromSourceCode(const ShaderSourceCode& shaderSourceCode, ShaderBytecode* shaderBytecode = nullptr) = 0;
+		[[nodiscard]] virtual IComputeShader* createComputeShaderFromSourceCode(const ShaderSourceCode& shaderSourceCode, ShaderBytecode* shaderBytecode = nullptr) = 0;
 
 		/**
 		*  @brief
@@ -4941,7 +4943,7 @@ namespace Renderer
 		*    - It's valid that a graphics program implementation is adding a reference and releasing it again at once
 		*      (this means that in the case of not having any more references, a shader might get destroyed when calling this method)
 		*/
-		virtual IGraphicsProgram* createGraphicsProgram(const IRootSignature& rootSignature, const VertexAttributes& vertexAttributes, IVertexShader* vertexShader, ITessellationControlShader* tessellationControlShader, ITessellationEvaluationShader* tessellationEvaluationShader, IGeometryShader* geometryShader, IFragmentShader* fragmentShader) = 0;
+		[[nodiscard]] virtual IGraphicsProgram* createGraphicsProgram(const IRootSignature& rootSignature, const VertexAttributes& vertexAttributes, IVertexShader* vertexShader, ITessellationControlShader* tessellationControlShader, ITessellationEvaluationShader* tessellationEvaluationShader, IGeometryShader* geometryShader, IFragmentShader* fragmentShader) = 0;
 
 	// Protected methods
 	protected:
@@ -4998,7 +5000,7 @@ namespace Renderer
 		*  @return
 		*    The resource type
 		*/
-		inline ResourceType getResourceType() const
+		[[nodiscard]] inline ResourceType getResourceType() const
 		{
 			return mResourceType;
 		}
@@ -5010,7 +5012,7 @@ namespace Renderer
 		*  @return
 		*    The owner renderer instance, do not release the returned instance unless you added an own reference to it
 		*/
-		inline IRenderer& getRenderer() const
+		[[nodiscard]] inline IRenderer& getRenderer() const
 		{
 			return *mRenderer;
 		}
@@ -5046,7 +5048,7 @@ namespace Renderer
 		*  @note
 		*    - Don't use this renderer backend specific method if you don't have to
 		*/
-		inline virtual void* getInternalResourceHandle() const
+		[[nodiscard]] inline virtual void* getInternalResourceHandle() const
 		{
 			return nullptr;
 		}
@@ -5142,7 +5144,7 @@ namespace Renderer
 		*  @return
 		*    The created resource group instance, a null pointer on error. Release the returned instance if you no longer need it.
 		*/
-		virtual IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, IResource** resources, ISamplerState** samplerStates = nullptr) = 0;
+		[[nodiscard]] virtual IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, IResource** resources, ISamplerState** samplerStates = nullptr) = 0;
 
 	// Protected methods
 	protected:
@@ -5264,7 +5266,7 @@ namespace Renderer
 	// Public virtual Renderer::IGraphicsProgram methods
 	public:
 		// TODO(co) Cleanup
-		inline virtual handle getUniformHandle([[maybe_unused]] const char* uniformName)
+		[[nodiscard]] inline virtual handle getUniformHandle([[maybe_unused]] const char* uniformName)
 		{
 			return NULL_HANDLE;
 		}
@@ -5400,7 +5402,7 @@ namespace Renderer
 		*  @return
 		*    Render pass, don't release the reference unless you add an own reference
 		*/
-		inline IRenderPass& getRenderPass() const
+		[[nodiscard]] inline IRenderPass& getRenderPass() const
 		{
 			return mRenderPass;
 		}
@@ -5536,7 +5538,7 @@ namespace Renderer
 		*  @return
 		*    Native window handle the swap chain is using as output window, can be a null handle
 		*/
-		virtual handle getNativeWindowHandle() const = 0;
+		[[nodiscard]] virtual handle getNativeWindowHandle() const = 0;
 
 		/**
 		*  @brief
@@ -5569,7 +5571,7 @@ namespace Renderer
 		*  @return
 		*    "true" if fullscreen, else "false"
 		*/
-		virtual bool getFullscreenState() const = 0;
+		[[nodiscard]] virtual bool getFullscreenState() const = 0;
 
 		/**
 		*  @brief
@@ -5735,7 +5737,7 @@ namespace Renderer
 		*  @return
 		*    The owner renderer instance, do not release the returned instance unless you added an own reference to it
 		*/
-		inline IRenderer& getRenderer() const
+		[[nodiscard]] inline IRenderer& getRenderer() const
 		{
 			return mRenderer;
 		}
@@ -5761,7 +5763,7 @@ namespace Renderer
 		*  @return
 		*    The created VBO instance, null pointer on error. Release the returned instance if you no longer need it.
 		*/
-		virtual IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, BufferUsage bufferUsage = BufferUsage::STATIC_DRAW) = 0;
+		[[nodiscard]] virtual IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, BufferUsage bufferUsage = BufferUsage::STATIC_DRAW) = 0;
 
 		/**
 		*  @brief
@@ -5781,7 +5783,7 @@ namespace Renderer
 		*  @return
 		*    The created IBO instance, null pointer on error. Release the returned instance if you no longer need it.
 		*/
-		virtual IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, BufferUsage bufferUsage = BufferUsage::STATIC_DRAW, IndexBufferFormat::Enum indexBufferFormat = IndexBufferFormat::UNSIGNED_SHORT) = 0;
+		[[nodiscard]] virtual IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, BufferUsage bufferUsage = BufferUsage::STATIC_DRAW, IndexBufferFormat::Enum indexBufferFormat = IndexBufferFormat::UNSIGNED_SHORT) = 0;
 
 		/**
 		*  @brief
@@ -5804,7 +5806,7 @@ namespace Renderer
 		*    - It's valid that a vertex array implementation is adding a reference and releasing it again at once
 		*      (this means that in the case of not having any more references, a vertex buffer might get destroyed when calling this method)
 		*/
-		virtual IVertexArray* createVertexArray(const VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const VertexArrayVertexBuffer* vertexBuffers, IIndexBuffer* indexBuffer = nullptr) = 0;
+		[[nodiscard]] virtual IVertexArray* createVertexArray(const VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const VertexArrayVertexBuffer* vertexBuffers, IIndexBuffer* indexBuffer = nullptr) = 0;
 
 		/**
 		*  @brief
@@ -5827,7 +5829,7 @@ namespace Renderer
 		*  @note
 		*    - Only supported if "Renderer::Capabilities::maximumTextureBufferSize" is not 0
 		*/
-		virtual ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = BufferFlag::SHADER_RESOURCE, BufferUsage bufferUsage = BufferUsage::STATIC_DRAW, TextureFormat::Enum textureFormat = TextureFormat::R32G32B32A32F) = 0;
+		[[nodiscard]] virtual ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = BufferFlag::SHADER_RESOURCE, BufferUsage bufferUsage = BufferUsage::STATIC_DRAW, TextureFormat::Enum textureFormat = TextureFormat::R32G32B32A32F) = 0;
 
 		/**
 		*  @brief
@@ -5850,7 +5852,7 @@ namespace Renderer
 		*  @note
 		*    - Only supported if "Renderer::Capabilities::maximumStructuredBufferSize" is not 0
 		*/
-		virtual IStructuredBuffer* createStructuredBuffer(uint32_t numberOfBytes, const void* data, uint32_t bufferFlags, BufferUsage bufferUsage, uint32_t numberOfStructureBytes) = 0;
+		[[nodiscard]] virtual IStructuredBuffer* createStructuredBuffer(uint32_t numberOfBytes, const void* data, uint32_t bufferFlags, BufferUsage bufferUsage, uint32_t numberOfStructureBytes) = 0;
 
 		/**
 		*  @brief
@@ -5871,7 +5873,7 @@ namespace Renderer
 		*  @note
 		*    - Only supported if "Renderer::Capabilities::maximumIndirectBufferSize" is >0
 		*/
-		virtual IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, BufferUsage bufferUsage = BufferUsage::STATIC_DRAW) = 0;
+		[[nodiscard]] virtual IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, BufferUsage bufferUsage = BufferUsage::STATIC_DRAW) = 0;
 
 		/**
 		*  @brief
@@ -5891,7 +5893,7 @@ namespace Renderer
 		*    - Only supported if "Renderer::Capabilities::maximumUniformBufferSize" is >0
 		*    - There are no buffer flags by intent since an uniform buffer can't be used for unordered access and as a consequence an uniform buffer must always used as shader resource to not be pointless
 		*/
-		virtual IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, BufferUsage bufferUsage = BufferUsage::STATIC_DRAW) = 0;
+		[[nodiscard]] virtual IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, BufferUsage bufferUsage = BufferUsage::STATIC_DRAW) = 0;
 
 	// Protected methods
 	protected:
@@ -6323,7 +6325,7 @@ namespace Renderer
 		*  @return
 		*    Indirect buffer emulation data pointer, can be a null pointer, don't destroy the returned instance
 		*/
-		virtual const uint8_t* getEmulationData() const = 0;
+		[[nodiscard]] virtual const uint8_t* getEmulationData() const = 0;
 
 	// Protected methods
 	protected:
@@ -6468,7 +6470,7 @@ namespace Renderer
 		*  @return
 		*    The owner renderer instance, do not release the returned instance unless you added an own reference to it
 		*/
-		inline IRenderer& getRenderer() const
+		[[nodiscard]] inline IRenderer& getRenderer() const
 		{
 			return mRenderer;
 		}
@@ -6499,7 +6501,7 @@ namespace Renderer
 		*  @note
 		*    - The following texture data layout is expected: Mip0, Mip1, Mip2, Mip3 ...
 		*/
-		virtual ITexture1D* createTexture1D(uint32_t width, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT) = 0;
+		[[nodiscard]] virtual ITexture1D* createTexture1D(uint32_t width, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT) = 0;
 
 		/**
 		*  @brief
@@ -6528,7 +6530,7 @@ namespace Renderer
 		*  @note
 		*    - The following texture data layout is expected: Mip0, Mip1, Mip2, Mip3 ...
 		*/
-		virtual ITexture2D* createTexture2D(uint32_t width, uint32_t height, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, const OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) = 0;
+		[[nodiscard]] virtual ITexture2D* createTexture2D(uint32_t width, uint32_t height, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, const OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) = 0;
 
 		/**
 		*  @brief
@@ -6562,7 +6564,7 @@ namespace Renderer
 		*  @note
 		*    - Only supported if "Renderer::Capabilities::maximumNumberOf2DTextureArraySlices" is not 0
 		*/
-		virtual ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT) = 0;
+		[[nodiscard]] virtual ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT) = 0;
 
 		/**
 		*  @brief
@@ -6592,7 +6594,7 @@ namespace Renderer
 		*    - Mip1: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
 		*    (DDS-texture layout is using face-major order)
 		*/
-		virtual ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT) = 0;
+		[[nodiscard]] virtual ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT) = 0;
 
 		/**
 		*  @brief
@@ -6620,7 +6622,7 @@ namespace Renderer
 		*    - Mip1: Face0, Face1, Face2, Face3, Face4, Face5
 		*    (DDS-texture layout is using face-major order)
 		*/
-		virtual ITextureCube* createTextureCube(uint32_t width, uint32_t height, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT) = 0;
+		[[nodiscard]] virtual ITextureCube* createTextureCube(uint32_t width, uint32_t height, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT) = 0;
 
 	// Protected methods
 	protected:
@@ -6671,7 +6673,7 @@ namespace Renderer
 		*  @return
 		*    Number of mipmaps
 		*/
-		static inline uint32_t getNumberOfMipmaps(uint32_t width)
+		[[nodiscard]] static inline uint32_t getNumberOfMipmaps(uint32_t width)
 		{
 			// If "std::log2()" wouldn't be supported, we could write the following: "return static_cast<uint32_t>(1 + std::floor(std::log(width) / 0.69314718055994529));"
 			// -> log2(x) = log(x) / log(2)
@@ -6691,7 +6693,7 @@ namespace Renderer
 		*  @return
 		*    Number of mipmaps
 		*/
-		static inline uint32_t getNumberOfMipmaps(uint32_t width, uint32_t height)
+		[[nodiscard]] static inline uint32_t getNumberOfMipmaps(uint32_t width, uint32_t height)
 		{
 			return getNumberOfMipmaps((width > height) ? width : height);
 		}
@@ -6710,7 +6712,7 @@ namespace Renderer
 		*  @return
 		*    Number of mipmaps
 		*/
-		static inline uint32_t getNumberOfMipmaps(uint32_t width, uint32_t height, uint32_t depth)
+		[[nodiscard]] static inline uint32_t getNumberOfMipmaps(uint32_t width, uint32_t height, uint32_t depth)
 		{
 			return getNumberOfMipmaps(width, (height > depth) ? height : depth);
 		}
@@ -6725,7 +6727,7 @@ namespace Renderer
 		*  @return
 		*    Half size, 1 as minimum
 		*/
-		static inline uint32_t getHalfSize(uint32_t size)
+		[[nodiscard]] static inline uint32_t getHalfSize(uint32_t size)
 		{
 			size = (size >> 1);	// /= 2
 			return (0u == size) ? 1u : size;
@@ -6854,7 +6856,7 @@ namespace Renderer
 		*  @return
 		*    The width of the texture
 		*/
-		inline uint32_t getWidth() const
+		[[nodiscard]] inline uint32_t getWidth() const
 		{
 			return mWidth;
 		}
@@ -6926,7 +6928,7 @@ namespace Renderer
 		*  @return
 		*    The width of the texture
 		*/
-		inline uint32_t getWidth() const
+		[[nodiscard]] inline uint32_t getWidth() const
 		{
 			return mWidth;
 		}
@@ -6938,7 +6940,7 @@ namespace Renderer
 		*  @return
 		*    The height of the texture
 		*/
-		inline uint32_t getHeight() const
+		[[nodiscard]] inline uint32_t getHeight() const
 		{
 			return mHeight;
 		}
@@ -7014,7 +7016,7 @@ namespace Renderer
 		*  @return
 		*    The width of the texture
 		*/
-		inline uint32_t getWidth() const
+		[[nodiscard]] inline uint32_t getWidth() const
 		{
 			return mWidth;
 		}
@@ -7026,7 +7028,7 @@ namespace Renderer
 		*  @return
 		*    The height of the texture
 		*/
-		inline uint32_t getHeight() const
+		[[nodiscard]] inline uint32_t getHeight() const
 		{
 			return mHeight;
 		}
@@ -7038,7 +7040,7 @@ namespace Renderer
 		*  @return
 		*    The number of slices
 		*/
-		inline uint32_t getNumberOfSlices() const
+		[[nodiscard]] inline uint32_t getNumberOfSlices() const
 		{
 			return mNumberOfSlices;
 		}
@@ -7118,7 +7120,7 @@ namespace Renderer
 		*  @return
 		*    The width of the texture
 		*/
-		inline uint32_t getWidth() const
+		[[nodiscard]] inline uint32_t getWidth() const
 		{
 			return mWidth;
 		}
@@ -7130,7 +7132,7 @@ namespace Renderer
 		*  @return
 		*    The height of the texture
 		*/
-		inline uint32_t getHeight() const
+		[[nodiscard]] inline uint32_t getHeight() const
 		{
 			return mHeight;
 		}
@@ -7142,7 +7144,7 @@ namespace Renderer
 		*  @return
 		*    The depth of the texture
 		*/
-		inline uint32_t getDepth() const
+		[[nodiscard]] inline uint32_t getDepth() const
 		{
 			return mDepth;
 		}
@@ -7222,7 +7224,7 @@ namespace Renderer
 		*  @return
 		*    The width of the texture
 		*/
-		inline uint32_t getWidth() const
+		[[nodiscard]] inline uint32_t getWidth() const
 		{
 			return mWidth;
 		}
@@ -7234,7 +7236,7 @@ namespace Renderer
 		*  @return
 		*    The height of the texture
 		*/
-		inline uint32_t getHeight() const
+		[[nodiscard]] inline uint32_t getHeight() const
 		{
 			return mHeight;
 		}
@@ -7492,7 +7494,7 @@ namespace Renderer
 		*  @return
 		*    The default sampler state, see "Renderer::SamplerState" for the default values
 		*/
-		static inline const SamplerState& getDefaultSamplerState()
+		[[nodiscard]] static inline const SamplerState& getDefaultSamplerState()
 		{
 			// As default values, the one of Direct3D 11 and Direct 10 were chosen in order to make it easier for those renderer implementations
 			// (choosing OpenGL default values would bring no benefit due to the design of the OpenGL API)
@@ -7606,7 +7608,7 @@ namespace Renderer
 		*  @note
 		*    - Do not free the memory the returned pointer is pointing to
 		*/
-		virtual const char* getShaderLanguageName() const = 0;
+		[[nodiscard]] virtual const char* getShaderLanguageName() const = 0;
 
 	// Protected methods
 	protected:
@@ -7999,17 +8001,17 @@ namespace Renderer
 		static constexpr uint32_t OFFSET_COMMAND						= OFFSET_BACKEND_DISPATCH_FUNCTION + sizeof(uint32_t);	// Don't use "sizeof(CommandDispatchFunctionIndex)" instead of "sizeof(uint32_t)" so we have a known alignment
 
 		template <typename T>
-		inline uint32_t getNumberOfBytes(uint32_t numberOfAuxiliaryBytes)
+		[[nodiscard]] inline uint32_t getNumberOfBytes(uint32_t numberOfAuxiliaryBytes)
 		{
 			return OFFSET_COMMAND + sizeof(T) + numberOfAuxiliaryBytes;
 		};
 
-		inline uint32_t getNextCommandPacketByteIndex(const CommandPacket commandPacket)
+		[[nodiscard]] inline uint32_t getNextCommandPacketByteIndex(const CommandPacket commandPacket)
 		{
 			return *reinterpret_cast<const uint32_t*>(reinterpret_cast<const uint8_t*>(commandPacket) + OFFSET_NEXT_COMMAND_PACKET_BYTE_INDEX);
 		}
 
-		inline uint32_t getNextCommandPacketByteIndex(const ConstCommandPacket constCommandPacket)
+		[[nodiscard]] inline uint32_t getNextCommandPacketByteIndex(const ConstCommandPacket constCommandPacket)
 		{
 			return *reinterpret_cast<const uint32_t*>(reinterpret_cast<const uint8_t*>(constCommandPacket) + OFFSET_NEXT_COMMAND_PACKET_BYTE_INDEX);
 		}
@@ -8019,12 +8021,12 @@ namespace Renderer
 			*reinterpret_cast<uint32_t*>(reinterpret_cast<uint8_t*>(commandPacket) + OFFSET_NEXT_COMMAND_PACKET_BYTE_INDEX) = nextPacketByteIndex;
 		}
 
-		inline CommandDispatchFunctionIndex* getCommandDispatchFunctionIndex(const CommandPacket commandPacket)
+		[[nodiscard]] inline CommandDispatchFunctionIndex* getCommandDispatchFunctionIndex(const CommandPacket commandPacket)
 		{
 			return reinterpret_cast<CommandDispatchFunctionIndex*>(reinterpret_cast<uint8_t*>(commandPacket) + OFFSET_BACKEND_DISPATCH_FUNCTION);
 		}
 
-		inline const CommandDispatchFunctionIndex* getCommandDispatchFunctionIndex(const ConstCommandPacket constCommandPacket)
+		[[nodiscard]] inline const CommandDispatchFunctionIndex* getCommandDispatchFunctionIndex(const ConstCommandPacket constCommandPacket)
 		{
 			return reinterpret_cast<const CommandDispatchFunctionIndex*>(reinterpret_cast<const uint8_t*>(constCommandPacket) + OFFSET_BACKEND_DISPATCH_FUNCTION);
 		}
@@ -8034,28 +8036,28 @@ namespace Renderer
 			*getCommandDispatchFunctionIndex(commandPacket) = commandDispatchFunctionIndex;
 		}
 
-		inline CommandDispatchFunctionIndex loadCommandDispatchFunctionIndex(const CommandPacket commandPacket)
+		[[nodiscard]] inline CommandDispatchFunctionIndex loadCommandDispatchFunctionIndex(const CommandPacket commandPacket)
 		{
 			return *getCommandDispatchFunctionIndex(commandPacket);
 		}
 
-		inline CommandDispatchFunctionIndex loadCommandDispatchFunctionIndex(const ConstCommandPacket constCommandPacket)
+		[[nodiscard]] inline CommandDispatchFunctionIndex loadCommandDispatchFunctionIndex(const ConstCommandPacket constCommandPacket)
 		{
 			return *getCommandDispatchFunctionIndex(constCommandPacket);
 		}
 
 		template <typename T>
-		inline T* getCommand(const CommandPacket commandPacket)
+		[[nodiscard]] inline T* getCommand(const CommandPacket commandPacket)
 		{
 			return reinterpret_cast<T*>(reinterpret_cast<uint8_t*>(commandPacket) + OFFSET_COMMAND);
 		}
 
-		inline const void* loadCommand(const CommandPacket commandPacket)
+		[[nodiscard]] inline const void* loadCommand(const CommandPacket commandPacket)
 		{
 			return reinterpret_cast<uint8_t*>(commandPacket) + OFFSET_COMMAND;
 		}
 
-		inline const void* loadCommand(const ConstCommandPacket constCommandPacket)
+		[[nodiscard]] inline const void* loadCommand(const ConstCommandPacket constCommandPacket)
 		{
 			return reinterpret_cast<const uint8_t*>(constCommandPacket) + OFFSET_COMMAND;
 		}
@@ -8065,7 +8067,7 @@ namespace Renderer
 		*    Return auxiliary memory address of the given command; returned memory address is considered unstable and might change as soon as another command is added
 		*/
 		template <typename T>
-		inline uint8_t* getAuxiliaryMemory(T* command)
+		[[nodiscard]] inline uint8_t* getAuxiliaryMemory(T* command)
 		{
 			return reinterpret_cast<uint8_t*>(command) + sizeof(T);
 		}
@@ -8075,7 +8077,7 @@ namespace Renderer
 		*    Return auxiliary memory address of the given command; returned memory address is considered unstable and might change as soon as another command is added
 		*/
 		template <typename T>
-		inline const uint8_t* getAuxiliaryMemory(const T* command)
+		[[nodiscard]] inline const uint8_t* getAuxiliaryMemory(const T* command)
 		{
 			return reinterpret_cast<const uint8_t*>(command) + sizeof(T);
 		}
@@ -8135,7 +8137,7 @@ namespace Renderer
 		*  @return
 		*    "true" if the command buffer is empty, else "false"
 		*/
-		inline bool isEmpty() const
+		[[nodiscard]] inline bool isEmpty() const
 		{
 			return (~0u == mPreviousCommandPacketByteIndex);
 		}
@@ -8151,7 +8153,7 @@ namespace Renderer
 			*  @note
 			*    - Counting the number of commands inside the command buffer is only a debugging feature and not used in optimized builds
 			*/
-			inline uint32_t getNumberOfCommands() const
+			[[nodiscard]] inline uint32_t getNumberOfCommands() const
 			{
 				return mNumberOfCommands;
 			}
@@ -8167,7 +8169,7 @@ namespace Renderer
 		*  @note
 		*    - Internal, don't access the method if you don't have to
 		*/
-		inline const uint8_t* getCommandPacketBuffer() const
+		[[nodiscard]] inline const uint8_t* getCommandPacketBuffer() const
 		{
 			return mCommandPacketBuffer;
 		}
@@ -8196,7 +8198,7 @@ namespace Renderer
 		*    Pointer to the added command, only null pointer in case of apocalypse, don't destroy the memory
 		*/
 		template <typename U>
-		U* addCommand(uint32_t numberOfAuxiliaryBytes = 0)
+		[[nodiscard]] U* addCommand(uint32_t numberOfAuxiliaryBytes = 0)
 		{
 			// How many command package buffer bytes are consumed by the command to add?
 			const uint32_t numberOfCommandBytes = CommandPacketHelper::getNumberOfBytes<U>(numberOfAuxiliaryBytes);
@@ -9117,7 +9119,7 @@ namespace Renderer
 			// Static methods
 			static inline void create(CommandBuffer& commandBuffer)
 			{
-				commandBuffer.addCommand<EndDebugEvent>();
+				*commandBuffer.addCommand<EndDebugEvent>() = EndDebugEvent();
 			}
 			// Static data
 			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::EndDebugEvent;

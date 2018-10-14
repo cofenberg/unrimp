@@ -98,7 +98,7 @@ namespace
 			virtualFilename = virtualDirectoryName + '/' + rendererRuntime.getRenderer().getName() + ".pso_cache";
 		}
 
-		bool loadPipelineStateObjectCacheFile(const RendererRuntime::IRendererRuntime& rendererRuntime, RendererRuntime::MemoryFile& memoryFile)
+		[[nodiscard]] bool loadPipelineStateObjectCacheFile(const RendererRuntime::IRendererRuntime& rendererRuntime, RendererRuntime::MemoryFile& memoryFile)
 		{
 			// Tell the memory mapped file about the LZ4 compressed data and decompress it at once
 			std::string virtualDirectoryName;
