@@ -6,13 +6,13 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "Mesh",
 			"Copyright": "Copyright © 2009 KatsBits - Ken Beyer (kat) - http://www.katsbits.com"
 		},
-		"MeshAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::MeshAssetCompiler",
 			"InputFile": "./SM_Bob.md5mesh",
 			"MaterialNameToAssetId":
 			{

@@ -55,22 +55,33 @@ namespace RendererToolkit
 	//[ Public definitions                                    ]
 	//[-------------------------------------------------------]
 	public:
-		static constexpr uint32_t TYPE_ID = STRING_ID("OGRE");
+		static constexpr uint32_t CLASS_ID = STRING_ID("RendererToolkit::OgreAssetImporter");
 
 
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		OgreAssetImporter();
-		virtual ~OgreAssetImporter() override;
+		inline OgreAssetImporter()
+		{
+			// Nothing here
+		}
+
+		inline virtual ~OgreAssetImporter() override
+		{
+			// Nothing here
+		}
 
 
 	//[-------------------------------------------------------]
 	//[ Public virtual RendererToolkit::IAssetImporter methods ]
 	//[-------------------------------------------------------]
 	public:
-		virtual AssetImporterTypeId getAssetImporterTypeId() const override;
+		inline virtual AssetImporterClassId getAssetImporterClassId() const override
+		{
+			return CLASS_ID;
+		}
+
 		virtual void import(const Input& input) override;
 
 

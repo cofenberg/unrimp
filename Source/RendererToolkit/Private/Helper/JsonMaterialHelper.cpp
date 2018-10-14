@@ -565,7 +565,7 @@ namespace RendererToolkit
 			// Parse material asset JSON
 			rapidjson::Document rapidJsonDocumentMaterialAsset;
 			JsonHelper::loadDocumentByFilename(input.context.getFileManager(), virtualMaterialAssetFilename, "Asset", "1", rapidJsonDocumentMaterialAsset);
-			materialInputFile = JsonHelper::getAssetInputFile(rapidJsonDocumentMaterialAsset["Asset"]["MaterialAssetCompiler"]);
+			materialInputFile = JsonHelper::getAssetInputFileByRapidJsonDocument(rapidJsonDocumentMaterialAsset);
 		}
 
 		// Parse material JSON

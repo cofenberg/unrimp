@@ -6,13 +6,13 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "Mesh",
 			"Copyright": "'Test Object' by Yasutoshi Mori, updated version downloaded from http://graphics.cs.williams.edu/data/meshes.xml"
 		},
-		"MeshAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::MeshAssetCompiler",
 			"InputFile": "./testObj.obj",
 			"MaterialNameToAssetId":
 			{

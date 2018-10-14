@@ -6,13 +6,13 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "ShaderBlueprint",
 			"Copyright": "'MSAA Resolve + Temporal AA' from https://github.com/TheRealMJP/MSAAFilter with background information at https://mynameismjp.wordpress.com/2012/10/28/msaa-resolve-filters/"
 		},
-		"ShaderBlueprintAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::ShaderBlueprintAssetCompiler",
 			"InputFile": "./SB_MsaaResolveFragment.shader_blueprint"
 		}
 	}

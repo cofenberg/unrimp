@@ -6,13 +6,13 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "Mesh",
 			"Copyright": "Sponza model downloaded from http://www.crytek.com/cryengine/cryengine3/downloads"
 		},
-		"MeshAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::MeshAssetCompiler",
 			"InputFile": "./sponza.obj",
 			"MaterialNameToAssetId":
 			{

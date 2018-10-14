@@ -56,27 +56,8 @@ namespace RendererToolkit
 
 
 	//[-------------------------------------------------------]
-	//[ Public methods                                        ]
-	//[-------------------------------------------------------]
-	MaterialAssetCompiler::MaterialAssetCompiler()
-	{
-		// Nothing here
-	}
-
-	MaterialAssetCompiler::~MaterialAssetCompiler()
-	{
-		// Nothing here
-	}
-
-
-	//[-------------------------------------------------------]
 	//[ Public virtual RendererToolkit::IAssetCompiler methods ]
 	//[-------------------------------------------------------]
-	AssetCompilerTypeId MaterialAssetCompiler::getAssetCompilerTypeId() const
-	{
-		return TYPE_ID;
-	}
-
 	std::string MaterialAssetCompiler::getVirtualOutputAssetFilename(const Input& input, const Configuration&) const
 	{
 		return input.virtualAssetOutputDirectory + '/' + std_filesystem::path(input.virtualAssetFilename).stem().generic_string() + ".material";
@@ -85,7 +66,7 @@ namespace RendererToolkit
 	bool MaterialAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const
 	{
 		std::vector<std::string> virtualDependencyFilenames;
-		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFile(configuration.rapidJsonDocumentAsset["Asset"]["MaterialAssetCompiler"]);
+		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFileByRapidJsonDocument(configuration.rapidJsonDocumentAsset);
 		JsonMaterialHelper::getDependencyFiles(input, virtualInputFilename, virtualDependencyFilenames);
 		return (input.cacheManager.checkIfFileIsModified(configuration.rendererTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), RendererRuntime::v1Material::FORMAT_VERSION) || input.cacheManager.dependencyFilesChanged(virtualDependencyFilenames));
 	}
@@ -93,7 +74,7 @@ namespace RendererToolkit
 	void MaterialAssetCompiler::compile(const Input& input, const Configuration& configuration) const
 	{
 		// Get relevant data
-		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFile(configuration.rapidJsonDocumentAsset["Asset"]["MaterialAssetCompiler"]);
+		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFileByRapidJsonDocument(configuration.rapidJsonDocumentAsset);
 		const std::string virtualOutputAssetFilename = getVirtualOutputAssetFilename(input, configuration);
 
 		// Read in dependency files

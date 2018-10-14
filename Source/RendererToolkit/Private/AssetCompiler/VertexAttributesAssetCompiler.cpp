@@ -56,27 +56,8 @@ namespace RendererToolkit
 
 
 	//[-------------------------------------------------------]
-	//[ Public methods                                        ]
-	//[-------------------------------------------------------]
-	VertexAttributesAssetCompiler::VertexAttributesAssetCompiler()
-	{
-		// Nothing here
-	}
-
-	VertexAttributesAssetCompiler::~VertexAttributesAssetCompiler()
-	{
-		// Nothing here
-	}
-
-
-	//[-------------------------------------------------------]
 	//[ Public virtual RendererToolkit::IAssetCompiler methods ]
 	//[-------------------------------------------------------]
-	AssetCompilerTypeId VertexAttributesAssetCompiler::getAssetCompilerTypeId() const
-	{
-		return TYPE_ID;
-	}
-
 	std::string VertexAttributesAssetCompiler::getVirtualOutputAssetFilename(const Input& input, const Configuration&) const
 	{
 		return input.virtualAssetOutputDirectory + '/' + std_filesystem::path(input.virtualAssetFilename).stem().generic_string() + ".vertex_attributes";
@@ -84,14 +65,14 @@ namespace RendererToolkit
 
 	bool VertexAttributesAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const
 	{
-		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFile(configuration.rapidJsonDocumentAsset["Asset"]["VertexAttributesAssetCompiler"]);
+		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFileByRapidJsonDocument(configuration.rapidJsonDocumentAsset);
 		return input.cacheManager.checkIfFileIsModified(configuration.rendererTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), RendererRuntime::v1VertexAttributes::FORMAT_VERSION);
 	}
 
 	void VertexAttributesAssetCompiler::compile(const Input& input, const Configuration& configuration) const
 	{
 		// Get relevant data
-		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFile(configuration.rapidJsonDocumentAsset["Asset"]["VertexAttributesAssetCompiler"]);
+		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFileByRapidJsonDocument(configuration.rapidJsonDocumentAsset);
 		const std::string virtualOutputAssetFilename = getVirtualOutputAssetFilename(input, configuration);
 
 		// Ask the cache manager whether or not we need to compile the source file (e.g. source changed or target not there)

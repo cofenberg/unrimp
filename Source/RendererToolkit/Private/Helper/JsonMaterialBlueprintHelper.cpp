@@ -269,7 +269,7 @@ namespace RendererToolkit
 				// Parse material blueprint asset JSON
 				rapidjson::Document rapidJsonDocumentMaterialBlueprintAsset;
 				JsonHelper::loadDocumentByFilename(input.context.getFileManager(), virtualMaterialBlueprintAssetFilename, "Asset", "1", rapidJsonDocumentMaterialBlueprintAsset);
-				materialBlueprintInputFile = JsonHelper::getAssetInputFile(rapidJsonDocumentMaterialBlueprintAsset["Asset"]["MaterialBlueprintAssetCompiler"]);
+				materialBlueprintInputFile = JsonHelper::getAssetInputFileByRapidJsonDocument(rapidJsonDocumentMaterialBlueprintAsset);
 			}
 
 			// Load material blueprint
@@ -533,7 +533,7 @@ namespace RendererToolkit
 			// Parse material blueprint asset JSON
 			rapidjson::Document rapidJsonDocumentMaterialBlueprintAsset;
 			JsonHelper::loadDocumentByFilename(input.context.getFileManager(), virtualMaterialBlueprintAssetFilename, "Asset", "1", rapidJsonDocumentMaterialBlueprintAsset);
-			materialBlueprintInputFile = JsonHelper::getAssetInputFile(rapidJsonDocumentMaterialBlueprintAsset["Asset"]["MaterialBlueprintAssetCompiler"]);
+			materialBlueprintInputFile = JsonHelper::getAssetInputFileByRapidJsonDocument(rapidJsonDocumentMaterialBlueprintAsset);
 		}
 
 		// Parse material blueprint JSON with modified asset compiler input so relative texture asset IDs can be resolved correctly

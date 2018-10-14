@@ -6,14 +6,14 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "CompositorWorkspace",
 			"Copyright": "Copyright (c) 2012-2018 The Unrimp Team",
 			"Description": "Forward rendering compositor workspace"
 		},
-		"CompositorWorkspaceAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::CompositorWorkspaceAssetCompiler",
 			"InputFile": "./CW_Forward.compositor_workspace"
 		}
 	}

@@ -1012,7 +1012,7 @@ namespace
 			filenames.reserve(6);
 			for (uint32_t faceIndex = 0; faceIndex < NUMBER_OF_FACES; ++faceIndex)
 			{
-				filenames.emplace_back(basePath + RendererToolkit::JsonHelper::getAssetInputFile(rapidJsonValueInputFiles, FACE_NAMES[faceIndex]));
+				filenames.emplace_back(basePath + RendererToolkit::JsonHelper::getAssetInputFileByRapidJsonValue(rapidJsonValueInputFiles, FACE_NAMES[faceIndex]));
 			}
 			return filenames;
 		}
@@ -1239,7 +1239,7 @@ namespace
 
 			// The 4x4 block size based DXT compression format has no support for 1D textures
 			bool compression = true;
-			RendererToolkit::JsonHelper::optionalBooleanProperty(configuration.rapidJsonDocumentAsset["Asset"]["TextureAssetCompiler"], "Compression", compression);
+			RendererToolkit::JsonHelper::optionalBooleanProperty(configuration.rapidJsonDocumentAsset["Asset"]["Compiler"], "Compression", compression);
 			if (!compression || crunchMipmappedTexture.get_width() == 1 || crunchMipmappedTexture.get_height() == 1)
 			{
 				crunchConvertParams.m_dst_format = crnlib::PIXEL_FMT_A8R8G8B8;
@@ -1593,7 +1593,7 @@ namespace
 			}
 
 			// Get the JSON "RawVolume" object
-			const rapidjson::Value& rapidJsonValueTextureAssetCompiler = configuration.rapidJsonDocumentAsset["Asset"]["TextureAssetCompiler"];
+			const rapidjson::Value& rapidJsonValueTextureAssetCompiler = configuration.rapidJsonDocumentAsset["Asset"]["Compiler"];
 			if (!rapidJsonValueTextureAssetCompiler.HasMember("RawVolume"))
 			{
 				throw std::runtime_error("Failed to convert volume " + std::string(virtualSourceFilename) + ": \"RawVolume\" block is missing inside the texture asset JSON file");
@@ -1695,14 +1695,9 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	//[ Public virtual RendererToolkit::IAssetCompiler methods ]
 	//[-------------------------------------------------------]
-	AssetCompilerTypeId TextureAssetCompiler::getAssetCompilerTypeId() const
-	{
-		return TYPE_ID;
-	}
-
 	std::string TextureAssetCompiler::getVirtualOutputAssetFilename(const Input& input, const Configuration& configuration) const
 	{
-		const rapidjson::Value& rapidJsonValueTextureAssetCompiler = configuration.rapidJsonDocumentAsset["Asset"]["TextureAssetCompiler"];
+		const rapidjson::Value& rapidJsonValueTextureAssetCompiler = configuration.rapidJsonDocumentAsset["Asset"]["Compiler"];
 		::detail::TextureSemantic textureSemantic = ::detail::TextureSemantic::UNKNOWN;
 		::detail::optionalTextureSemanticProperty(rapidJsonValueTextureAssetCompiler, "TextureSemantic", textureSemantic);
 		std::string assetFileFormat;
@@ -1723,11 +1718,11 @@ namespace RendererToolkit
 
 	bool TextureAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const
 	{
-		const rapidjson::Value& rapidJsonValueTextureAssetCompiler = configuration.rapidJsonDocumentAsset["Asset"]["TextureAssetCompiler"];
+		const rapidjson::Value& rapidJsonValueTextureAssetCompiler = configuration.rapidJsonDocumentAsset["Asset"]["Compiler"];
 		std::string inputFile;
 		if (rapidJsonValueTextureAssetCompiler.HasMember("InputFile"))
 		{
-			inputFile = JsonHelper::getAssetInputFile(rapidJsonValueTextureAssetCompiler);
+			inputFile = JsonHelper::getAssetInputFileByRapidJsonValue(rapidJsonValueTextureAssetCompiler);
 		}
 		::detail::TextureSemantic textureSemantic = ::detail::TextureSemantic::UNKNOWN;
 		::detail::optionalTextureSemanticProperty(rapidJsonValueTextureAssetCompiler, "TextureSemantic", textureSemantic);
@@ -1744,12 +1739,12 @@ namespace RendererToolkit
 		bool createMipmaps = true;
 		float mipmapBlurriness = 0.9f;	// Scale filter kernel, >1=blur, <1=sharpen, .01-8, default=.9, Crunch default "blurriness" factor of 0.9 actually sharpens the output a little
 		std::string normalMapInputFile;
-		const rapidjson::Value& rapidJsonValueTextureAssetCompiler = configuration.rapidJsonDocumentAsset["Asset"]["TextureAssetCompiler"];
+		const rapidjson::Value& rapidJsonValueTextureAssetCompiler = configuration.rapidJsonDocumentAsset["Asset"]["Compiler"];
 		{
 			::detail::optionalTextureSemanticProperty(rapidJsonValueTextureAssetCompiler, "TextureSemantic", textureSemantic);
 			if (rapidJsonValueTextureAssetCompiler.HasMember("InputFile"))
 			{
-				inputFile = JsonHelper::getAssetInputFile(rapidJsonValueTextureAssetCompiler);
+				inputFile = JsonHelper::getAssetInputFileByRapidJsonValue(rapidJsonValueTextureAssetCompiler);
 			}
 			if (rapidJsonValueTextureAssetCompiler.HasMember("FileFormat"))
 			{

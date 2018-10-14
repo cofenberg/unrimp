@@ -84,9 +84,6 @@ namespace
 		typedef std::vector<std::string> TextureFilenames;
 		typedef std::unordered_map<std::string, TextureFilenames> MaterialTextureFilenames;	// Key = material name
 		typedef std::unordered_map<std::string, std::string> MaterialNameToAssetId;	// Key = source material name (e.g. "/Head"), value = imported material filename (e.g. "../Material/SpinosaurusHead.asset")
-		static const std::string TEXTURE_TYPE = "Texture";
-		static const std::string MATERIAL_TYPE = "Material";
-		static const std::string MESH_TYPE = "Mesh";
 		struct ImporterContext final
 		{
 			std::string			  meshFilename;
@@ -233,16 +230,15 @@ namespace
 			}
 		}
 
-		void extractFromZipToFile(const RendererToolkit::IAssetImporter::Input& input, mz_zip_archive& zipArchive, mz_uint fileIndex, const char* filename, const std::string& assetType)
+		void extractFromZipToFile(const RendererToolkit::IAssetImporter::Input& input, mz_zip_archive& zipArchive, mz_uint fileIndex, const char* filename)
 		{
 			// Ensure the directory exists
 			RendererRuntime::IFileManager& fileManager = input.context.getFileManager();
-			const std::string virtualDirectoryName = input.virtualAssetOutputDirectory + '/' + assetType;
-			fileManager.createDirectories(virtualDirectoryName.c_str());
+			fileManager.createDirectories(input.virtualAssetOutputDirectory.c_str());
 
 			// Write down the uncompressed file
 			// -> Silently ignore and overwrite already existing files (might be a re-import)
-			const std::string virtualFilename = virtualDirectoryName + '/' + std_filesystem::path(filename).filename().generic_string();
+			const std::string virtualFilename = input.virtualAssetOutputDirectory + '/' + std_filesystem::path(filename).filename().generic_string();
 			RendererRuntime::IFile* file = fileManager.openFile(RendererRuntime::IFileManager::FileMode::WRITE, virtualFilename.c_str());
 			if (nullptr != file)
 			{
@@ -276,7 +272,7 @@ namespace
 			if (std::find(textureFilenames.cbegin(), textureFilenames.cend(), textureFilename) == textureFilenames.cend())
 			{
 				// Extract texture from ZIP-archive to file
-				extractFromZipToFile(input, zipArchive, fileIndex, filename, TEXTURE_TYPE);
+				extractFromZipToFile(input, zipArchive, fileIndex, filename);
 
 				// Remember the texture filename for creating the texture asset files later on
 				textureFilenames.push_back(textureFilename);
@@ -361,10 +357,8 @@ namespace
 					"Version": "1"
 				},
 				"Asset": {
-					"AssetMetadata": {
-						"AssetType": "Texture"
-					},
-					"TextureAssetCompiler": {
+					"Compiler": {
+						"ClassName": "RendererToolkit::TextureAssetCompiler",
 						"TextureSemantic": "PACKED_CHANNELS",
 						"TextureChannelPacking": "_argb_nxa",
 						"InputFiles": {
@@ -379,21 +373,16 @@ namespace
 			rapidjson::Document::AllocatorType& rapidJsonAllocatorType = rapidJsonDocumentAsset.GetAllocator();
 			rapidjson::Value rapidJsonValueAsset(rapidjson::kObjectType);
 
-			{ // Asset metadata
-				rapidjson::Value rapidJsonValueAssetMetadata(rapidjson::kObjectType);
-				rapidJsonValueAssetMetadata.AddMember("AssetType", "Texture", rapidJsonAllocatorType);
-				rapidJsonValueAsset.AddMember("AssetMetadata", rapidJsonValueAssetMetadata, rapidJsonAllocatorType);
-			}
-
 			{ // Texture asset compiler
-				rapidjson::Value rapidJsonValueTextureAssetCompiler(rapidjson::kObjectType);
+				rapidjson::Value rapidJsonValueCompiler(rapidjson::kObjectType);
+				rapidJsonValueCompiler.AddMember("ClassName", "RendererToolkit::TextureAssetCompiler", rapidJsonAllocatorType);
 
 				// Semantic dependent handling
 				if ("_argb_nxa" == semantic || "_hr_rg_mb_nya" == semantic)
 				{
 					// Texture channel packing
-					rapidJsonValueTextureAssetCompiler.AddMember("TextureSemantic", "PACKED_CHANNELS", rapidJsonAllocatorType);
-					rapidJsonValueTextureAssetCompiler.AddMember("TextureChannelPacking", rapidjson::StringRef(semantic.c_str()), rapidJsonAllocatorType);
+					rapidJsonValueCompiler.AddMember("TextureSemantic", "PACKED_CHANNELS", rapidJsonAllocatorType);
+					rapidJsonValueCompiler.AddMember("TextureChannelPacking", rapidjson::StringRef(semantic.c_str()), rapidJsonAllocatorType);
 
 					// Define helper macro
 					#define ADD_MEMBER(semanticType) \
@@ -430,7 +419,7 @@ namespace
 							// Error!
 							assert(false && "Broken implementation, we should never ever be in here");
 						}
-						rapidJsonValueTextureAssetCompiler.AddMember("InputFiles", rapidJsonValueInputFiles, rapidJsonAllocatorType);
+						rapidJsonValueCompiler.AddMember("InputFiles", rapidJsonValueInputFiles, rapidJsonAllocatorType);
 					}
 
 					// Undefine helper macro
@@ -439,8 +428,8 @@ namespace
 				else if ("_e" == semantic)
 				{
 					// No texture channel packing
-					rapidJsonValueTextureAssetCompiler.AddMember("TextureSemantic", "EMISSIVE_MAP", rapidJsonAllocatorType);
-					rapidJsonValueTextureAssetCompiler.AddMember("InputFile", rapidjson::StringRef(("./" + textureFilenames[SemanticType::EMISSIVE_MAP]).c_str()), rapidJsonAllocatorType);
+					rapidJsonValueCompiler.AddMember("TextureSemantic", "EMISSIVE_MAP", rapidJsonAllocatorType);
+					rapidJsonValueCompiler.AddMember("InputFile", rapidjson::StringRef(("./" + textureFilenames[SemanticType::EMISSIVE_MAP]).c_str()), rapidJsonAllocatorType);
 				}
 				else
 				{
@@ -449,12 +438,12 @@ namespace
 				}
 
 				// Add texture asset compiler member
-				rapidJsonValueAsset.AddMember("TextureAssetCompiler", rapidJsonValueTextureAssetCompiler, rapidJsonAllocatorType);
+				rapidJsonValueAsset.AddMember("Compiler", rapidJsonValueCompiler, rapidJsonAllocatorType);
 			}
 
 			// Write down the texture asset JSON file
 			// -> Silently ignore and overwrite already existing files (might be a re-import)
-			const std::string virtualFilename = input.virtualAssetOutputDirectory + '/' + TEXTURE_TYPE + '/' + materialName + semantic + ".asset";
+			const std::string virtualFilename = input.virtualAssetOutputDirectory + '/' + materialName + semantic + ".asset";
 			RendererToolkit::JsonHelper::saveDocumentByFilename(input.context.getFileManager(), virtualFilename, "Asset", "1", rapidJsonValueAsset);
 		}
 
@@ -508,9 +497,9 @@ namespace
 			rapidjson::Document::AllocatorType& rapidJsonAllocatorType = rapidJsonDocumentAsset.GetAllocator();
 			rapidjson::Value rapidJsonValueMaterialAsset(rapidjson::kObjectType);
 			const std::string baseMaterial = importerContext.hasSkeleton ? "${PROJECT_NAME}/Blueprint/Mesh/M_SkinnedMesh.asset" : "${PROJECT_NAME}/Blueprint/Mesh/M_Mesh.asset";
-			const std::string relativeFilename_argb_nxa = "../" + TEXTURE_TYPE + '/' + materialName + "_argb_nxa" + ".asset";
-			const std::string relativeFilename_hr_rg_mb_nya = "../" + TEXTURE_TYPE + '/' + materialName + "_hr_rg_mb_nya" + ".asset";
-			const std::string relativeFilenameEmissiveMap = "../" + TEXTURE_TYPE + '/' + materialName + "_e" + ".asset";
+			const std::string relativeFilename_argb_nxa = "../" + materialName + "_argb_nxa" + ".asset";
+			const std::string relativeFilename_hr_rg_mb_nya = "../" + materialName + "_hr_rg_mb_nya" + ".asset";
+			const std::string relativeFilenameEmissiveMap = "../" + materialName + "_e" + ".asset";
 
 			// Base material
 			rapidJsonValueMaterialAsset.AddMember("BaseMaterial", rapidjson::StringRef(baseMaterial.c_str()), rapidJsonAllocatorType);
@@ -544,7 +533,7 @@ namespace
 
 			// Write down the material JSON file
 			// -> Silently ignore and overwrite already existing files (might be a re-import)
-			const std::string virtualFilename = input.virtualAssetOutputDirectory + '/' + MATERIAL_TYPE + '/' + materialName + ".material";
+			const std::string virtualFilename = input.virtualAssetOutputDirectory + '/' + materialName + ".material";
 			RendererToolkit::JsonHelper::saveDocumentByFilename(input.context.getFileManager(), virtualFilename, "MaterialAsset", "1", rapidJsonValueMaterialAsset);
 		}
 
@@ -557,10 +546,8 @@ namespace
 					"Version": "1"
 				},
 				"Asset": {
-					"AssetMetadata": {
-						"AssetType": "Material"
-					},
-					"MaterialAssetCompiler": {
+					"Compiler": {
+						"ClassName": "RendererToolkit::MaterialAssetCompiler",
 						"InputFile": "./SpinosaurusBody.material"
 					}
 				}
@@ -571,28 +558,23 @@ namespace
 			rapidjson::Value rapidJsonValueAsset(rapidjson::kObjectType);
 			const std::string filename = materialName + ".material";
 
-			{ // Asset metadata
-				rapidjson::Value rapidJsonValueAssetMetadata(rapidjson::kObjectType);
-				rapidJsonValueAssetMetadata.AddMember("AssetType", "Material", rapidJsonAllocatorType);
-				rapidJsonValueAsset.AddMember("AssetMetadata", rapidJsonValueAssetMetadata, rapidJsonAllocatorType);
-			}
-
 			{ // Material asset compiler
-				rapidjson::Value rapidJsonValueMaterialAssetCompiler(rapidjson::kObjectType);
-				rapidJsonValueMaterialAssetCompiler.AddMember("InputFile", rapidjson::StringRef(("./" + filename).c_str()), rapidJsonAllocatorType);
-				rapidJsonValueAsset.AddMember("MaterialAssetCompiler", rapidJsonValueMaterialAssetCompiler, rapidJsonAllocatorType);
+				rapidjson::Value rapidJsonValueCompiler(rapidjson::kObjectType);
+				rapidJsonValueCompiler.AddMember("ClassName", "RendererToolkit::MaterialAssetCompiler", rapidJsonAllocatorType);
+				rapidJsonValueCompiler.AddMember("InputFile", rapidjson::StringRef(("./" + filename).c_str()), rapidJsonAllocatorType);
+				rapidJsonValueAsset.AddMember("Compiler", rapidJsonValueCompiler, rapidJsonAllocatorType);
 			}
 
 			// Write down the material asset JSON file
 			// -> Silently ignore and overwrite already existing files (might be a re-import)
-			const std::string virtualFilename = input.virtualAssetOutputDirectory + '/' + MATERIAL_TYPE + '/' + materialName + ".asset";
+			const std::string virtualFilename = input.virtualAssetOutputDirectory + '/' + materialName + ".asset";
 			RendererToolkit::JsonHelper::saveDocumentByFilename(input.context.getFileManager(), virtualFilename, "Asset", "1", rapidJsonValueAsset);
 		}
 
 		void createMaterialAssetFiles(const RendererToolkit::IAssetImporter::Input& input, const MaterialTextureFilenames& materialTextureFilenames, const ImporterContext& importerContext)
 		{
 			// Ensure the material directory exists
-			input.context.getFileManager().createDirectories((input.virtualAssetOutputDirectory + '/' + MATERIAL_TYPE).c_str());
+			input.context.getFileManager().createDirectories(input.virtualAssetOutputDirectory.c_str());
 
 			// Iterate through the materials
 			for (const auto& pair : materialTextureFilenames)
@@ -607,7 +589,7 @@ namespace
 		void importMeshMtl(const RendererToolkit::IAssetImporter::Input& input, mz_zip_archive& zipArchive, mz_uint fileIndex, const char* filename)
 		{
 			// Extract MTL-file of OBJ mesh format from ZIP-archive to file
-			extractFromZipToFile(input, zipArchive, fileIndex, filename, MESH_TYPE);
+			extractFromZipToFile(input, zipArchive, fileIndex, filename);
 		}
 
 		// Due to many artist asset variations, the material name to asset ID is a tricky and error prone mapping
@@ -618,7 +600,7 @@ namespace
 			if (iterator != materialTextureFilenames.cend())
 			{
 				// We have a nice and clean exact match
-				materialNameToAssetId.emplace(assimpMaterialName, "../" + MATERIAL_TYPE + '/' + assimpMaterialName + ".asset");
+				materialNameToAssetId.emplace(assimpMaterialName, "../" + assimpMaterialName + ".asset");
 			}
 			else
 			{
@@ -634,7 +616,7 @@ namespace
 					const std::string& currentMaterialName = pair.first;
 					if (currentMaterialName.find(materialName) != std::string::npos)
 					{
-						materialNameToAssetId.emplace(assimpMaterialName, "../" + MATERIAL_TYPE + '/' + currentMaterialName + ".asset");
+						materialNameToAssetId.emplace(assimpMaterialName, "../" + currentMaterialName + ".asset");
 						return;
 					}
 				}
@@ -654,7 +636,7 @@ namespace
 
 			// Load the given mesh so we can figure out which materials are referenced
 			// -> Since we're only interesting in referenced materials, Assimp doesn't need to perform any additional mesh processing
-			const std::string virtualFilename = input.virtualAssetOutputDirectory + '/' + MESH_TYPE + '/' + importerContext.meshFilename;
+			const std::string virtualFilename = input.virtualAssetOutputDirectory + '/' + importerContext.meshFilename;
 			const aiScene* assimpScene = assimpImporter.ReadFile(virtualFilename.c_str(), 0);
 			if (nullptr != assimpScene && nullptr != assimpScene->mRootNode)
 			{
@@ -712,10 +694,8 @@ namespace
 					"Version": "1"
 				},
 				"Asset": {
-					"AssetMetadata": {
-						"AssetType": "Mesh"
-					},
-					"MeshAssetCompiler": {
+					"Compiler": {
+						"ClassName": "RendererToolkit::MeshAssetCompiler",
 						"InputFile": "./SpinosaurusAeg.obj",
 						"MaterialNameToAssetId": {
 							"/Head": "../Material/SpinosaurusHead.asset",
@@ -729,22 +709,17 @@ namespace
 			rapidjson::Document::AllocatorType& rapidJsonAllocatorType = rapidJsonDocumentAsset.GetAllocator();
 			rapidjson::Value rapidJsonValueAsset(rapidjson::kObjectType);
 
-			{ // Asset metadata
-				rapidjson::Value rapidJsonValueAssetMetadata(rapidjson::kObjectType);
-				rapidJsonValueAssetMetadata.AddMember("AssetType", "Mesh", rapidJsonAllocatorType);
-				rapidJsonValueAsset.AddMember("AssetMetadata", rapidJsonValueAssetMetadata, rapidJsonAllocatorType);
-			}
-
 			{ // Mesh asset compiler
-				rapidjson::Value rapidJsonValueMeshAssetCompiler(rapidjson::kObjectType);
-				rapidJsonValueMeshAssetCompiler.AddMember("InputFile", rapidjson::StringRef(("./" + importerContext.meshFilename).c_str()), rapidJsonAllocatorType);
+				rapidjson::Value rapidJsonValueCompiler(rapidjson::kObjectType);
+				rapidJsonValueCompiler.AddMember("ClassName", "RendererToolkit::MeshAssetCompiler", rapidJsonAllocatorType);
+				rapidJsonValueCompiler.AddMember("InputFile", rapidjson::StringRef(("./" + importerContext.meshFilename).c_str()), rapidJsonAllocatorType);
 
 				// Check whether or not it looks dangerous to use "aiProcess_RemoveRedundantMaterials"
 				// -> "Centaur" ( https://sketchfab.com/models/0d3f1b4a51144b7fbc4e2ff64d858413 ) for example has only identical dummy
 				//    entries inside the MTL-OBJ-file and removing redundant materials results in some wrong assigned materials
 				if (!importerContext.removeRedundantMaterials)
 				{
-					rapidJsonValueMeshAssetCompiler.AddMember("ImportFlags", "DEFAULT_FLAGS & ~REMOVE_REDUNDANT_MATERIALS", rapidJsonAllocatorType);
+					rapidJsonValueCompiler.AddMember("ImportFlags", "DEFAULT_FLAGS & ~REMOVE_REDUNDANT_MATERIALS", rapidJsonAllocatorType);
 				}
 
 				// Add material name to asset ID mapping
@@ -755,16 +730,16 @@ namespace
 					{
 						rapidJsonValueMaterialNameToAssetId.AddMember(rapidjson::StringRef(pair.first.c_str()), rapidjson::StringRef(pair.second.c_str()), rapidJsonAllocatorType);
 					}
-					rapidJsonValueMeshAssetCompiler.AddMember("MaterialNameToAssetId", rapidJsonValueMaterialNameToAssetId, rapidJsonAllocatorType);
+					rapidJsonValueCompiler.AddMember("MaterialNameToAssetId", rapidJsonValueMaterialNameToAssetId, rapidJsonAllocatorType);
 				}
 
 				// Add mesh asset compiler member
-				rapidJsonValueAsset.AddMember("MeshAssetCompiler", rapidJsonValueMeshAssetCompiler, rapidJsonAllocatorType);
+				rapidJsonValueAsset.AddMember("Compiler", rapidJsonValueCompiler, rapidJsonAllocatorType);
 			}
 
 			// Write down the mesh asset JSON file
 			// -> Silently ignore and overwrite already existing files (might be a re-import)
-			const std::string virtualFilename = input.virtualAssetOutputDirectory + '/' + MESH_TYPE + '/' + std_filesystem::path(importerContext.meshFilename).stem().generic_string() + ".asset";
+			const std::string virtualFilename = input.virtualAssetOutputDirectory + '/' + std_filesystem::path(importerContext.meshFilename).stem().generic_string() + ".asset";
 			RendererToolkit::JsonHelper::saveDocumentByFilename(input.context.getFileManager(), virtualFilename, "Asset", "1", rapidJsonValueAsset);
 		}
 
@@ -778,7 +753,7 @@ namespace
 			}
 
 			// Extract mesh from ZIP-archive to file
-			extractFromZipToFile(input, zipArchive, fileIndex, filename, MESH_TYPE);
+			extractFromZipToFile(input, zipArchive, fileIndex, filename);
 			importerContext.meshFilename = std_filesystem::path(filename).filename().generic_string();
 		}
 
@@ -875,27 +850,8 @@ namespace RendererToolkit
 
 
 	//[-------------------------------------------------------]
-	//[ Public methods                                        ]
-	//[-------------------------------------------------------]
-	SketchfabAssetImporter::SketchfabAssetImporter()
-	{
-		// Nothing here
-	}
-
-	SketchfabAssetImporter::~SketchfabAssetImporter()
-	{
-		// Nothing here
-	}
-
-
-	//[-------------------------------------------------------]
 	//[ Public virtual RendererToolkit::IAssetImporter methods ]
 	//[-------------------------------------------------------]
-	AssetImporterTypeId SketchfabAssetImporter::getAssetImporterTypeId() const
-	{
-		return TYPE_ID;
-	}
-
 	void SketchfabAssetImporter::import(const Input& input)
 	{
 		// Read the ZIP-archive file into memory

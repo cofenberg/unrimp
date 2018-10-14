@@ -6,14 +6,14 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "ShaderPiece",
 			"Copyright": "NVIDIA FXAA 3.11 by TIMOTHY LOTTES",
 			"Description": "Fast Approximate Anti-Aliasing (FXAA) as described within http://developer.download.nvidia.com/assets/gamedev/files/sdk/11/FXAA_WhitePaper.pdf and FxaaSamplePack.zip ( https://docs.google.com/leaf?id=0B2manFVVrzQAMzUzYWQ5MTEtYmE1NC00ZTQzLWI2YWYtNTk2MDcyMmY1ZWNm&sort=name&layout=list&num=50&pli=1 )"
 		},
-		"ShaderPieceAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::ShaderPieceAssetCompiler",
 			"InputFile": "./SP_Fxaa.shader_piece"
 		}
 	}

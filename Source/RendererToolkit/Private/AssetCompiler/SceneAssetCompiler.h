@@ -48,22 +48,33 @@ namespace RendererToolkit
 	//[ Public definitions                                    ]
 	//[-------------------------------------------------------]
 	public:
-		static constexpr uint32_t TYPE_ID = STRING_ID("Scene");
+		static constexpr uint32_t CLASS_ID = STRING_ID("RendererToolkit::SceneAssetCompiler");
 
 
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		SceneAssetCompiler();
-		virtual ~SceneAssetCompiler() override;
+		inline SceneAssetCompiler()
+		{
+			// Nothing here
+		}
+
+		inline virtual ~SceneAssetCompiler() override
+		{
+			// Nothing here
+		}
 
 
 	//[-------------------------------------------------------]
 	//[ Public virtual RendererToolkit::IAssetCompiler methods ]
 	//[-------------------------------------------------------]
 	public:
-		virtual AssetCompilerTypeId getAssetCompilerTypeId() const override;
+		inline virtual AssetCompilerClassId getAssetCompilerClassId() const override
+		{
+			return CLASS_ID;
+		}
+
 		virtual std::string getVirtualOutputAssetFilename(const Input& input, const Configuration& configuration) const override;
 		virtual bool checkIfChanged(const Input& input, const Configuration& configuration) const override;
 		virtual void compile(const Input& input, const Configuration& configuration) const override;

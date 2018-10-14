@@ -6,14 +6,14 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "CompositorWorkspace",
 			"Copyright": "Copyright (c) 2012-2018 The Unrimp Team",
 			"Description": "Debug compositor workspace with the most simple rendering. Useful for performance tests or when focusing on gameplay programming."
 		},
-		"CompositorWorkspaceAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::CompositorWorkspaceAssetCompiler",
 			"InputFile": "./CW_Debug.compositor_workspace"
 		}
 	}

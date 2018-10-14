@@ -6,13 +6,13 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "Texture",
 			"Copyright": "Dataset from http://openqvis.sourceforge.net/"
 		},
-		"TextureAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::TextureAssetCompiler",
 			"TextureSemantic": "VOLUME",
 			"InputFile": "./T_TeddyBearVolume.raw",
 			"RawVolume":

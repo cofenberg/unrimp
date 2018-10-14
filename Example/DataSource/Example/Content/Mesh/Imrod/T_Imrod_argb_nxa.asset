@@ -6,13 +6,13 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "Texture",
 			"Copyright": "Imrod model and Imrod textures ( http://www.parkparkin.com/gallery/imrod_dw.html ) by Dmitry Parkin: http://www.parkparkin.com"
 		},
-		"TextureAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::TextureAssetCompiler",
 			"TextureSemantic": "PACKED_CHANNELS",
 			"TextureChannelPacking": "_argb_nxa",
 			"InputFiles":

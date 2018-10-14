@@ -6,13 +6,13 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "ShaderBlueprint",
 			"Copyright": "Basing on 'SSAO Tutorial' from John Chapman http://john-chapman-graphics.blogspot.de/2013/01/ssao-tutorial.html"
 		},
-		"ShaderBlueprintAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::ShaderBlueprintAssetCompiler",
 			"InputFile": "./SB_ScreenSpaceAmbientOcclusionGenerationFragment.shader_blueprint"
 		}
 	}

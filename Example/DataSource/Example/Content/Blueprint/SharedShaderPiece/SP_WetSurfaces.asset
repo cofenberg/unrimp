@@ -6,13 +6,13 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "ShaderPiece",
 			"Copyright": "Basing on 'Water drop 3b – Physically based wet surfaces' by Sébastien Lagarde ( https://seblagarde.wordpress.com/2013/04/14/water-drop-3b-physically-based-wet-surfaces/ )"
 		},
-		"ShaderPieceAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::ShaderPieceAssetCompiler",
 			"InputFile": "./SP_WetSurfaces.shader_piece"
 		}
 	}

@@ -6,14 +6,14 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "CompositorNode",
 			"Copyright": "Copyright (c) 2012-2018 The Unrimp Team",
 			"Description": "Deferred rendering compositor node"
 		},
-		"CompositorNodeAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::CompositorNodeAssetCompiler",
 			"InputFile": "./CN_Deferred.compositor_node"
 		}
 	}

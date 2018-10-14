@@ -75,7 +75,8 @@ namespace RendererToolkit
 		static void saveDocumentByFilename(const RendererRuntime::IFileManager& fileManager, const std::string& virtualFilename, const std::string& formatType, const std::string& formatVersion, rapidjson::Value& rapidJsonValue);
 		static void mergeObjects(rapidjson::Value& destinationObject, rapidjson::Value& sourceObject, rapidjson::Document& allocatorRapidJsonDocument);
 		static std::string getAssetFile(const rapidjson::Value& rapidJsonValue);
-		static std::string getAssetInputFile(const rapidjson::Value& rapidJsonValue, const std::string_view& valueName = "InputFile");
+		static std::string getAssetInputFileByRapidJsonValue(const rapidjson::Value& rapidJsonValue, const std::string_view& valueName = "InputFile");
+		static std::string getAssetInputFileByRapidJsonDocument(const rapidjson::Document& rapidJsonDocument);
 		static const RendererRuntime::MaterialProperty* getMaterialPropertyOfUsageAndValueType(const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector, const std::string& valueAsString, RendererRuntime::MaterialProperty::Usage usage, RendererRuntime::MaterialPropertyValue::ValueType valueType);
 		static void optionalBooleanProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, bool& value, RendererRuntime::MaterialProperty::Usage usage = RendererRuntime::MaterialProperty::Usage::UNKNOWN, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector = nullptr);
 		static void optionalBooleanProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, int& value, RendererRuntime::MaterialProperty::Usage usage = RendererRuntime::MaterialProperty::Usage::UNKNOWN, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector = nullptr);

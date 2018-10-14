@@ -6,13 +6,13 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "Material",
 			"Copyright": "'Test Object' by Yasutoshi Mori, updated version downloaded from http://graphics.cs.williams.edu/data/meshes.xml"
 		},
-		"MaterialAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::MaterialAssetCompiler",
 			"InputFile": "./OuterMat.material"
 		}
 	}

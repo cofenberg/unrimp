@@ -142,27 +142,8 @@ namespace RendererToolkit
 
 
 	//[-------------------------------------------------------]
-	//[ Public methods                                        ]
-	//[-------------------------------------------------------]
-	ShaderBlueprintAssetCompiler::ShaderBlueprintAssetCompiler()
-	{
-		// Nothing here
-	}
-
-	ShaderBlueprintAssetCompiler::~ShaderBlueprintAssetCompiler()
-	{
-		// Nothing here
-	}
-
-
-	//[-------------------------------------------------------]
 	//[ Public virtual RendererToolkit::IAssetCompiler methods ]
 	//[-------------------------------------------------------]
-	AssetCompilerTypeId ShaderBlueprintAssetCompiler::getAssetCompilerTypeId() const
-	{
-		return TYPE_ID;
-	}
-
 	std::string ShaderBlueprintAssetCompiler::getVirtualOutputAssetFilename(const Input& input, const Configuration&) const
 	{
 		return input.virtualAssetOutputDirectory + '/' + std_filesystem::path(input.virtualAssetFilename).stem().generic_string() + ".shader_blueprint";
@@ -170,14 +151,14 @@ namespace RendererToolkit
 
 	bool ShaderBlueprintAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const
 	{
-		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFile(configuration.rapidJsonDocumentAsset["Asset"]["ShaderBlueprintAssetCompiler"]);
+		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFileByRapidJsonDocument(configuration.rapidJsonDocumentAsset);
 		return input.cacheManager.checkIfFileIsModified(configuration.rendererTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), RendererRuntime::v1ShaderBlueprint::FORMAT_VERSION);
 	}
 
 	void ShaderBlueprintAssetCompiler::compile(const Input& input, const Configuration& configuration) const
 	{
 		// Get relevant data
-		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFile(configuration.rapidJsonDocumentAsset["Asset"]["ShaderBlueprintAssetCompiler"]);
+		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFileByRapidJsonDocument(configuration.rapidJsonDocumentAsset);
 		const std::string virtualOutputAssetFilename = getVirtualOutputAssetFilename(input, configuration);
 
 		// Ask the cache manager whether or not we need to compile the source file (e.g. source changed or target not there)

@@ -6,13 +6,13 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "ShaderBlueprint",
 			"Copyright": "Basing on https://mynameismjp.wordpress.com/2013/09/10/shadow-maps/ - https://github.com/TheRealMJP/Shadows"
 		},
-		"ShaderBlueprintAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::ShaderBlueprintAssetCompiler",
 			"InputFile": "./SB_DepthToExponentialVarianceFragment.shader_blueprint"
 		}
 	}

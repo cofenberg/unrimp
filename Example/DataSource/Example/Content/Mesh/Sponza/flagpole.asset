@@ -6,13 +6,13 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "Material",
 			"Copyright": "Sponza model downloaded from http://www.crytek.com/cryengine/cryengine3/downloads"
 		},
-		"MaterialAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::MaterialAssetCompiler",
 			"InputFile": "./flagpole.material"
 		}
 	}

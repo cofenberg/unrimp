@@ -6,13 +6,13 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "Texture",
 			"Copyright": "Copied from https://github.com/turanszkij/WickedEngine/blob/master/models/Sample/textures/grassbb.png"
 		},
-		"TextureAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::TextureAssetCompiler",
 			"TextureSemantic": "PACKED_CHANNELS",
 			"TextureChannelPacking": "_argb_alpha",
 			"InputFiles":

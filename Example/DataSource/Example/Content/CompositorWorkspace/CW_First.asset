@@ -6,13 +6,13 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "CompositorWorkspace",
 			"Copyright": "Copyright (c) 2012-2018 The Unrimp Team"
 		},
-		"CompositorWorkspaceAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::CompositorWorkspaceAssetCompiler",
 			"InputFile": "./CW_First.compositor_workspace"
 		}
 	}

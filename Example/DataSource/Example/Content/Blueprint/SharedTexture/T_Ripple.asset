@@ -6,13 +6,13 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "Texture",
 			"Copyright": "From 'Water drop 2b – Dynamic rain and its effects' by Sébastien Lagarde ( https://seblagarde.wordpress.com/2013/04/14/water-drop-3b-physically-based-wet-surfaces/ )"
 		},
-		"TextureAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::TextureAssetCompiler",
 			"Description": "Use dds file format to be able to save an uncompressed texture.",
 			"InputFile": "./T_Ripple.png",
 			"FileFormat": "dds",

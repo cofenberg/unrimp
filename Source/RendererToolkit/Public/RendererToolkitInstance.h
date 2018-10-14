@@ -154,7 +154,7 @@ namespace RendererToolkit
 						if (nullptr != symbol)
 						{
 							// "createRendererToolkitInstance()" signature
-							typedef RendererToolkit::IRendererToolkit* (__cdecl *createRendererToolkitInstance)(Context& context);
+							typedef IRendererToolkit* (__cdecl *createRendererToolkitInstance)(Context& context);
 
 							// Create the renderer toolkit instance
 							mRendererToolkit = static_cast<createRendererToolkitInstance>(symbol)(context);
@@ -181,7 +181,7 @@ namespace RendererToolkit
 						if (nullptr != symbol)
 						{
 							// "createRendererToolkitInstance()" signature
-							typedef RendererToolkit::IRendererToolkit* (*createRendererToolkitInstance)(Context& context);
+							typedef IRendererToolkit* (*createRendererToolkitInstance)(Context& context);
 
 							// Create the renderer toolkit instance
 							mRendererToolkit = reinterpret_cast<createRendererToolkitInstance>(symbol)(context);
@@ -244,7 +244,7 @@ namespace RendererToolkit
 		*  @remarks
 		*    The renderer toolkit instance, can be a null pointer
 		*/
-		inline RendererToolkit::IRendererToolkit* getRendererToolkit() const
+		inline IRendererToolkit* getRendererToolkit() const
 		{
 			return mRendererToolkit;
 		}
@@ -254,8 +254,8 @@ namespace RendererToolkit
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		void*								 mRendererToolkitSharedLibrary;	///< Shared renderer toolkit library, can be a null pointer
-		RendererToolkit::IRendererToolkitPtr mRendererToolkit;				///< Renderer toolkit instance, can be a null pointer
+		void*				mRendererToolkitSharedLibrary;	///< Shared renderer toolkit library, can be a null pointer
+		IRendererToolkitPtr mRendererToolkit;				///< Renderer toolkit instance, can be a null pointer
 
 
 	};

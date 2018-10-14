@@ -202,7 +202,7 @@ namespace RendererToolkit
 		std::atomic<bool>				mShutdownThread;
 		std::thread						mThread;
 		CacheManager*					mCacheManager;				///< Cache manager, can be a null pointer, destroy the instance if no longer needed
-		AssetCompilers					mAssetCompilers;			///< List of asset compilers key "AssetCompilerTypeId" (type not used directly or we would need to define a hash-function for it)
+		AssetCompilers					mAssetCompilersByClassId;	///< List of asset compilers key "RendererToolkit::AssetCompilerClassId" (type not used directly or we would need to define a hash-function for it)
 
 
 	};

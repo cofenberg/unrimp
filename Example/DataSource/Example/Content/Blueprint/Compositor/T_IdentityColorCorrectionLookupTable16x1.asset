@@ -6,13 +6,13 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "Texture",
 			"Description": "16x1 identity color correction lookup table. Primarily for texture compiler testing and as reference to do color grading into image editing programs. Prefer using 'Unrimp/Texture/DynamicByCode/IdentityColorCorrectionLookupTable3D' in production."
 		},
-		"TextureAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::TextureAssetCompiler",
 			"TextureSemantic": "COLOR_CORRECTION_LOOKUP_TABLE",
 			"InputFile": "./T_IdentityColorCorrectionLookupTable16x1.tga"
 		}

@@ -6,13 +6,13 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "ShaderPiece",
 			"Copyright": "Basing on https://www.shadertoy.com/view/MsXGD4"
 		},
-		"ShaderPieceAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::ShaderPieceAssetCompiler",
 			"InputFile": "./SP_OldCrtEffect.shader_piece"
 		}
 	}

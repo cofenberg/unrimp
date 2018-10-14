@@ -6,14 +6,14 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "ShaderBlueprint",
 			"Copyright": "Copyright (c) 2012-2018 The Unrimp Team",
 			"Description": "The Gaussian blur implementation is basing on http://rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/"
 		},
-		"ShaderBlueprintAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::ShaderBlueprintAssetCompiler",
 			"InputFile": "./SB_GaussianBlurCompute.shader_blueprint"
 		}
 	}

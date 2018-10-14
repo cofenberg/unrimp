@@ -69,27 +69,8 @@ namespace RendererToolkit
 
 
 	//[-------------------------------------------------------]
-	//[ Public methods                                        ]
-	//[-------------------------------------------------------]
-	SkeletonAnimationAssetCompiler::SkeletonAnimationAssetCompiler()
-	{
-		// Nothing here
-	}
-
-	SkeletonAnimationAssetCompiler::~SkeletonAnimationAssetCompiler()
-	{
-		// Nothing here
-	}
-
-
-	//[-------------------------------------------------------]
 	//[ Public virtual RendererToolkit::IAssetCompiler methods ]
 	//[-------------------------------------------------------]
-	AssetCompilerTypeId SkeletonAnimationAssetCompiler::getAssetCompilerTypeId() const
-	{
-		return TYPE_ID;
-	}
-
 	std::string SkeletonAnimationAssetCompiler::getVirtualOutputAssetFilename(const Input& input, const Configuration&) const
 	{
 		return input.virtualAssetOutputDirectory + '/' + std_filesystem::path(input.virtualAssetFilename).stem().generic_string() + ".skeleton_animation";
@@ -97,15 +78,15 @@ namespace RendererToolkit
 
 	bool SkeletonAnimationAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const
 	{
-		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFile(configuration.rapidJsonDocumentAsset["Asset"]["SkeletonAnimationAssetCompiler"]);
+		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFileByRapidJsonDocument(configuration.rapidJsonDocumentAsset);
 		return input.cacheManager.checkIfFileIsModified(configuration.rendererTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), RendererRuntime::v1SkeletonAnimation::FORMAT_VERSION);
 	}
 
 	void SkeletonAnimationAssetCompiler::compile(const Input& input, const Configuration& configuration) const
 	{
 		// Get relevant data
-		const rapidjson::Value& rapidJsonValueSkeletonAnimationAssetCompiler = configuration.rapidJsonDocumentAsset["Asset"]["SkeletonAnimationAssetCompiler"];
-		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFile(rapidJsonValueSkeletonAnimationAssetCompiler);
+		const rapidjson::Value& rapidJsonValueSkeletonAnimationAssetCompiler = configuration.rapidJsonDocumentAsset["Asset"]["Compiler"];
+		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFileByRapidJsonValue(rapidJsonValueSkeletonAnimationAssetCompiler);
 		const std::string virtualOutputAssetFilename = getVirtualOutputAssetFilename(input, configuration);
 
 		// Ask the cache manager whether or not we need to compile the source file (e.g. source changed or target not there)

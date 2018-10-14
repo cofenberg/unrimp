@@ -66,22 +66,33 @@ namespace RendererToolkit
 	//[ Public definitions                                    ]
 	//[-------------------------------------------------------]
 	public:
-		static constexpr uint32_t TYPE_ID = STRING_ID("Sketchfab");
+		static constexpr uint32_t CLASS_ID = STRING_ID("RendererToolkit::SketchfabAssetImporter");
 
 
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		SketchfabAssetImporter();
-		virtual ~SketchfabAssetImporter() override;
+		inline SketchfabAssetImporter()
+		{
+			// Nothing here
+		}
+
+		inline virtual ~SketchfabAssetImporter() override
+		{
+			// Nothing here
+		}
 
 
 	//[-------------------------------------------------------]
 	//[ Public virtual RendererToolkit::IAssetImporter methods ]
 	//[-------------------------------------------------------]
 	public:
-		virtual AssetImporterTypeId getAssetImporterTypeId() const override;
+		inline virtual AssetImporterClassId getAssetImporterClassId() const override
+		{
+			return CLASS_ID;
+		}
+
 		virtual void import(const Input& input) override;
 
 

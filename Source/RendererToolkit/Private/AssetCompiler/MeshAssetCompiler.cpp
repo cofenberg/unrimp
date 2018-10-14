@@ -645,27 +645,8 @@ namespace RendererToolkit
 
 
 	//[-------------------------------------------------------]
-	//[ Public methods                                        ]
-	//[-------------------------------------------------------]
-	MeshAssetCompiler::MeshAssetCompiler()
-	{
-		// Nothing here
-	}
-
-	MeshAssetCompiler::~MeshAssetCompiler()
-	{
-		// Nothing here
-	}
-
-
-	//[-------------------------------------------------------]
 	//[ Public virtual RendererToolkit::IAssetCompiler methods ]
 	//[-------------------------------------------------------]
-	AssetCompilerTypeId MeshAssetCompiler::getAssetCompilerTypeId() const
-	{
-		return TYPE_ID;
-	}
-
 	std::string MeshAssetCompiler::getVirtualOutputAssetFilename(const Input& input, const Configuration&) const
 	{
 		return input.virtualAssetOutputDirectory + '/' + std_filesystem::path(input.virtualAssetFilename).stem().generic_string() + ".mesh";
@@ -673,15 +654,15 @@ namespace RendererToolkit
 
 	bool MeshAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const
 	{
-		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFile(configuration.rapidJsonDocumentAsset["Asset"]["MeshAssetCompiler"]);
+		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFileByRapidJsonDocument(configuration.rapidJsonDocumentAsset);
 		return input.cacheManager.checkIfFileIsModified(configuration.rendererTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), RendererRuntime::v1Mesh::FORMAT_VERSION);
 	}
 
 	void MeshAssetCompiler::compile(const Input& input, const Configuration& configuration) const
 	{
 		// Get relevant data
-		const rapidjson::Value& rapidJsonValueMeshAssetCompiler = configuration.rapidJsonDocumentAsset["Asset"]["MeshAssetCompiler"];
-		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFile(rapidJsonValueMeshAssetCompiler);
+		const rapidjson::Value& rapidJsonValueMeshAssetCompiler = configuration.rapidJsonDocumentAsset["Asset"]["Compiler"];
+		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFileByRapidJsonValue(rapidJsonValueMeshAssetCompiler);
 		const std::string virtualOutputAssetFilename = getVirtualOutputAssetFilename(input, configuration);
 
 		// Ask the cache manager whether or not we need to compile the source file (e.g. source changed or target not there)

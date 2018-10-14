@@ -424,9 +424,14 @@ namespace RendererToolkit
 		throw std::runtime_error("Input files must start with \"./\" but \"" + inputFile + "\" given");
 	}
 
-	std::string JsonHelper::getAssetInputFile(const rapidjson::Value& rapidJsonValue, const std::string_view& valueName)
+	std::string JsonHelper::getAssetInputFileByRapidJsonValue(const rapidjson::Value& rapidJsonValue, const std::string_view& valueName)
 	{
 		return getAssetFile(rapidJsonValue[valueName.data()]);
+	}
+
+	std::string JsonHelper::getAssetInputFileByRapidJsonDocument(const rapidjson::Document& rapidJsonDocument)
+	{
+		return getAssetFile(rapidJsonDocument["Asset"]["Compiler"]["InputFile"]);
 	}
 
 	const RendererRuntime::MaterialProperty* JsonHelper::getMaterialPropertyOfUsageAndValueType(const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector, const std::string& valueAsString, RendererRuntime::MaterialProperty::Usage usage, RendererRuntime::MaterialPropertyValue::ValueType valueType)

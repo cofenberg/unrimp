@@ -6,14 +6,14 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "MaterialBlueprint",
 			"Copyright": "Copyright (c) 2012-2018 The Unrimp Team",
 			"Description": "Basing on 'SSAO Tutorial' from John Chapman http://john-chapman-graphics.blogspot.de/2013/01/ssao-tutorial.html"
 		},
-		"MaterialBlueprintAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::MaterialBlueprintAssetCompiler",
 			"InputFile": "./MB_ScreenSpaceAmbientOcclusionBlur.material_blueprint"
 		}
 	}

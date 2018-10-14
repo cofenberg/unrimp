@@ -64,7 +64,7 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	//[ Global definitions                                    ]
 	//[-------------------------------------------------------]
-	typedef RendererRuntime::StringId AssetImporterTypeId;	///< Asset importer type identifier, internally just a POD "uint32_t"
+	typedef RendererRuntime::StringId AssetImporterClassId;	///< Asset importer type identifier, internally just a POD "uint32_t"
 
 
 	//[-------------------------------------------------------]
@@ -111,7 +111,7 @@ namespace RendererToolkit
 	//[ Public virtual RendererToolkit::IAssetImporter methods ]
 	//[-------------------------------------------------------]
 	public:
-		virtual AssetImporterTypeId getAssetImporterTypeId() const = 0;
+		virtual AssetImporterClassId getAssetImporterClassId() const = 0;
 		virtual void import(const Input& input) = 0;
 
 

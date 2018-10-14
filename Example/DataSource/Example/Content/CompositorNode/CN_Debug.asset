@@ -6,14 +6,14 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "CompositorNode",
 			"Copyright": "Copyright (c) 2012-2018 The Unrimp Team",
 			"Description": "Debug compositor node with the most simple rendering. Useful for performance tests or when focusing on gameplay programming."
 		},
-		"CompositorNodeAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::CompositorNodeAssetCompiler",
 			"InputFile": "./CN_Debug.compositor_node"
 		}
 	}

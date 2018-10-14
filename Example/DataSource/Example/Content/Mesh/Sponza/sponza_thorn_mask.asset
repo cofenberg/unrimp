@@ -6,13 +6,13 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "Texture",
 			"Copyright": "Sponza model downloaded from http://www.crytek.com/cryengine/cryengine3/downloads"
 		},
-		"TextureAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::TextureAssetCompiler",
 			"TextureSemantic": "ALPHA_MAP",
 			"InputFile": "./sponza_thorn_mask.png"
 		}

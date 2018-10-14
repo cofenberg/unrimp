@@ -32,27 +32,8 @@ namespace RendererToolkit
 
 
 	//[-------------------------------------------------------]
-	//[ Public methods                                        ]
-	//[-------------------------------------------------------]
-	OgreAssetImporter::OgreAssetImporter()
-	{
-		// Nothing here
-	}
-
-	OgreAssetImporter::~OgreAssetImporter()
-	{
-		// Nothing here
-	}
-
-
-	//[-------------------------------------------------------]
 	//[ Public virtual RendererToolkit::IAssetImporter methods ]
 	//[-------------------------------------------------------]
-	AssetImporterTypeId OgreAssetImporter::getAssetImporterTypeId() const
-	{
-		return TYPE_ID;
-	}
-
 	void OgreAssetImporter::import(const Input&)
 	{
 		// TODO(co) Implement me

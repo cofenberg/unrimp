@@ -6,13 +6,13 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "ShaderBlueprint",
 			"Description": "Basing on 'Screen Space Ray Tracing' http://casual-effects.blogspot.de/2014/08/screen-space-ray-tracing.html by Morgan McGuire and Michael Mara at Williams College 2014"
 		},
-		"ShaderBlueprintAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::ShaderBlueprintAssetCompiler",
 			"InputFile": "./SB_ScreenSpaceReflectionRayTracingFragment.shader_blueprint"
 		}
 	}

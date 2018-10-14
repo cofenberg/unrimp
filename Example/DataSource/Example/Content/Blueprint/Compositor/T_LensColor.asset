@@ -6,13 +6,13 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "Texture",
 			"Copyright": "'Pseudo Lens Flare' from John Chapman - http://john-chapman-graphics.blogspot.de/2013/02/pseudo-lens-flare.html"
 		},
-		"TextureAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::TextureAssetCompiler",
 			"Description": "We're dealing with a 1D-texture. DXT is a 4x4 block based format which can't handle compressed 1D textures. Use dds file format to be able to save an uncompressed texture.",
 			"InputFile": "./T_LensColor.tga",
 			"FileFormat": "dds",

@@ -6,13 +6,13 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "ShaderBlueprint",
 			"Copyright": "Basing on http://rastergrid.com/blog/2010/10/hierarchical-z-map-based-occlusion-culling/"
 		},
-		"ShaderBlueprintAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::ShaderBlueprintAssetCompiler",
 			"InputFile": "./SB_DepthGenerateMipmapFragment.shader_blueprint"
 		}
 	}

@@ -6,14 +6,14 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "MaterialBlueprint",
 			"Copyright": "Copyright (c) 2012-2018 The Unrimp Team",
 			"Description": "Basing on 'Screen Space Ray Tracing' http://casual-effects.blogspot.de/2014/08/screen-space-ray-tracing.html by Morgan McGuire and Michael Mara at Williams College 2014"
 		},
-		"MaterialBlueprintAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::MaterialBlueprintAssetCompiler",
 			"InputFile": "./MB_ScreenSpaceReflectionRayTracing.material_blueprint"
 		}
 	}

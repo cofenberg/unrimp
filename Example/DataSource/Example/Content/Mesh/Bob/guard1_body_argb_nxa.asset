@@ -6,13 +6,13 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "Texture",
 			"Copyright": "Copyright © 2009 KatsBits - Ken Beyer (kat) - http://www.katsbits.com"
 		},
-		"TextureAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::TextureAssetCompiler",
 			"TextureSemantic": "PACKED_CHANNELS",
 			"TextureChannelPacking": "_argb_nxa",
 			"InputFiles":

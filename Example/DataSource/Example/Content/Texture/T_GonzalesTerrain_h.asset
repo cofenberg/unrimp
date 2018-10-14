@@ -6,13 +6,13 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "Texture",
 			"Copyright": "Terrain data created by Marcel Gonzales - http://www.marcelgonzales.com/"
 		},
-		"TextureAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::TextureAssetCompiler",
 			"TextureSemantic": "TERRAIN_HEIGHT_MAP",
 			"InputFile": "./T_GonzalesTerrain_h.png"
 		}

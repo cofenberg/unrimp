@@ -48,22 +48,33 @@ namespace RendererToolkit
 	//[ Public definitions                                    ]
 	//[-------------------------------------------------------]
 	public:
-		static constexpr uint32_t TYPE_ID = STRING_ID("ShaderPiece");
+		static constexpr uint32_t CLASS_ID = STRING_ID("RendererToolkit::ShaderPieceAssetCompiler");
 
 
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		ShaderPieceAssetCompiler();
-		virtual ~ShaderPieceAssetCompiler() override;
+		inline ShaderPieceAssetCompiler()
+		{
+			// Nothing here
+		}
+
+		inline virtual ~ShaderPieceAssetCompiler() override
+		{
+			// Nothing here
+		}
 
 
 	//[-------------------------------------------------------]
 	//[ Public virtual RendererToolkit::IAssetCompiler methods ]
 	//[-------------------------------------------------------]
 	public:
-		virtual AssetCompilerTypeId getAssetCompilerTypeId() const override;
+		inline virtual AssetCompilerClassId getAssetCompilerClassId() const override
+		{
+			return CLASS_ID;
+		}
+
 		virtual std::string getVirtualOutputAssetFilename(const Input& input, const Configuration& configuration) const override;
 		virtual bool checkIfChanged(const Input& input, const Configuration& configuration) const override;
 		virtual void compile(const Input& input, const Configuration& configuration) const override;

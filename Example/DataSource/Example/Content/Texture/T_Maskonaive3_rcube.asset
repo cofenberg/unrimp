@@ -6,13 +6,13 @@
 	},
 	"Asset":
 	{
-		"AssetMetadata":
+		"Metadata":
 		{
-			"AssetType": "Texture",
 			"Copyright": "Måskonåive 3 cube map by Emil Persson - 'Creative Commons Attribution 3.0 Unported License' - http://humus.name/index.php?page=Textures&start=56 - http://humus.name/Textures/Maskonaive3.zip "
 		},
-		"TextureAssetCompiler":
+		"Compiler":
 		{
+			"ClassName": "RendererToolkit::TextureAssetCompiler",
 			"TextureSemantic": "REFLECTION_CUBE_MAP",
 			"InputFiles":
 			{

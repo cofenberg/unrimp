@@ -143,27 +143,8 @@ namespace RendererToolkit
 
 
 	//[-------------------------------------------------------]
-	//[ Public methods                                        ]
-	//[-------------------------------------------------------]
-	MaterialBlueprintAssetCompiler::MaterialBlueprintAssetCompiler()
-	{
-		// Nothing here
-	}
-
-	MaterialBlueprintAssetCompiler::~MaterialBlueprintAssetCompiler()
-	{
-		// Nothing here
-	}
-
-
-	//[-------------------------------------------------------]
 	//[ Public virtual RendererToolkit::IAssetCompiler methods ]
 	//[-------------------------------------------------------]
-	AssetCompilerTypeId MaterialBlueprintAssetCompiler::getAssetCompilerTypeId() const
-	{
-		return TYPE_ID;
-	}
-
 	std::string MaterialBlueprintAssetCompiler::getVirtualOutputAssetFilename(const Input& input, const Configuration&) const
 	{
 		return input.virtualAssetOutputDirectory + '/' + std_filesystem::path(input.virtualAssetFilename).stem().generic_string() + ".material_blueprint";
@@ -172,7 +153,7 @@ namespace RendererToolkit
 	bool MaterialBlueprintAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const
 	{
 		std::vector<std::string> virtualDependencyFilenames;
-		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFile(configuration.rapidJsonDocumentAsset["Asset"]["MaterialBlueprintAssetCompiler"]);
+		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFileByRapidJsonDocument(configuration.rapidJsonDocumentAsset);
 		JsonMaterialBlueprintHelper::getDependencyFiles(input, virtualInputFilename, virtualDependencyFilenames);
 		return (input.cacheManager.checkIfFileIsModified(configuration.rendererTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), RendererRuntime::v1MaterialBlueprint::FORMAT_VERSION) || input.cacheManager.dependencyFilesChanged(virtualDependencyFilenames));
 	}
@@ -184,8 +165,8 @@ namespace RendererToolkit
 		bool allowCrazyNumberOfShaderCombinations = false;
 		{
 			// Read material blueprint asset compiler configuration
-			const rapidjson::Value& rapidJsonValueMaterialBlueprintAssetCompiler = configuration.rapidJsonDocumentAsset["Asset"]["MaterialBlueprintAssetCompiler"];
-			inputFile = JsonHelper::getAssetInputFile(rapidJsonValueMaterialBlueprintAssetCompiler);
+			const rapidjson::Value& rapidJsonValueMaterialBlueprintAssetCompiler = configuration.rapidJsonDocumentAsset["Asset"]["Compiler"];
+			inputFile = JsonHelper::getAssetInputFileByRapidJsonValue(rapidJsonValueMaterialBlueprintAssetCompiler);
 			JsonHelper::optionalBooleanProperty(rapidJsonValueMaterialBlueprintAssetCompiler, "AllowCrazyNumberOfShaderCombinations", allowCrazyNumberOfShaderCombinations);
 		}
 		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + inputFile;
