@@ -6,9 +6,9 @@
 #define GLM_VERSION_MAJOR			0
 #define GLM_VERSION_MINOR			9
 #define GLM_VERSION_PATCH			9
-#define GLM_VERSION_REVISION		1
-#define GLM_VERSION					991
-#define GLM_VERSION_MESSAGE			"GLM: version 0.9.9.1"
+#define GLM_VERSION_REVISION		3
+#define GLM_VERSION					993
+#define GLM_VERSION_MESSAGE			"GLM: version 0.9.9.3"
 
 #define GLM_SETUP_INCLUDED			GLM_VERSION
 
@@ -274,13 +274,16 @@
 
 // N2235 Generalized Constant Expressions http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2235.pdf
 // N3652 Extended Constant Expressions http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3652.html
-#if (GLM_COMPILER & GLM_COMPILER_CLANG) && !(GLM_ARCH & GLM_ARCH_SIMD_BIT)
+#if (GLM_ARCH & GLM_ARCH_SIMD_BIT) // Compiler SIMD intrinsics don't support constexpr...
+#	define GLM_HAS_CONSTEXPR 0
+#elif (GLM_COMPILER & GLM_COMPILER_CLANG)
 #	define GLM_HAS_CONSTEXPR __has_feature(cxx_relaxed_constexpr)
-#elif (GLM_LANG & GLM_LANG_CXX14_FLAG) && !(GLM_ARCH & GLM_ARCH_SIMD_BIT)
+#elif (GLM_LANG & GLM_LANG_CXX14_FLAG)
 #	define GLM_HAS_CONSTEXPR 1
 #else
-#	define GLM_HAS_CONSTEXPR ((GLM_LANG & GLM_LANG_CXX0X_FLAG) && !(GLM_ARCH & GLM_ARCH_SIMD_BIT) && GLM_HAS_INITIALIZER_LISTS && (\
+#	define GLM_HAS_CONSTEXPR ((GLM_LANG & GLM_LANG_CXX0X_FLAG) && GLM_HAS_INITIALIZER_LISTS && (\
 		((GLM_COMPILER & GLM_COMPILER_INTEL) && (GLM_COMPILER >= GLM_COMPILER_INTEL17)) || \
+		((GLM_COMPILER & GLM_COMPILER_GCC) && (GLM_COMPILER >= GLM_COMPILER_GCC6)) || \
 		((GLM_COMPILER & GLM_COMPILER_VC) && (GLM_COMPILER >= GLM_COMPILER_VC15))))
 #endif
 
@@ -708,35 +711,16 @@ namespace detail
 ///////////////////////////////////////////////////////////////////////////////////
 // Configure the use of defaulted initialized types
 
-#define GLM_CTOR_INITIALIZER_LIST	(1 << 1)
-#define GLM_CTOR_INITIALISATION		(1 << 2)
+#define GLM_CTOR_INIT_DISABLE		0
+#define GLM_CTOR_INITIALIZER_LIST	1
+#define GLM_CTOR_INITIALISATION		2
 
 #if defined(GLM_FORCE_CTOR_INIT) && GLM_HAS_INITIALIZER_LISTS
 #	define GLM_CONFIG_CTOR_INIT GLM_CTOR_INITIALIZER_LIST
 #elif defined(GLM_FORCE_CTOR_INIT) && !GLM_HAS_INITIALIZER_LISTS
 #	define GLM_CONFIG_CTOR_INIT GLM_CTOR_INITIALISATION
 #else
-#	define GLM_CONFIG_CTOR_INIT GLM_DISABLE
-#endif
-
-///////////////////////////////////////////////////////////////////////////////////
-// Configure the use of defaulted function
-
-#if GLM_HAS_DEFAULTED_FUNCTIONS && GLM_CONFIG_CTOR_INIT == GLM_DISABLE
-#	define GLM_CONFIG_DEFAULTED_FUNCTIONS GLM_ENABLE
-#	define GLM_DEFAULT = default
-#else
-#	define GLM_CONFIG_DEFAULTED_FUNCTIONS GLM_DISABLE
-#	define GLM_DEFAULT
-#endif
-
-///////////////////////////////////////////////////////////////////////////////////
-// Configure the use of aligned gentypes
-
-#if GLM_HAS_ALIGNOF && (GLM_LANG & GLM_LANG_CXXMS_FLAG)
-#	define GLM_CONFIG_ALIGNED_GENTYPES GLM_ENABLE
-#else
-#	define GLM_CONFIG_ALIGNED_GENTYPES GLM_DISABLE
+#	define GLM_CONFIG_CTOR_INIT GLM_CTOR_INIT_DISABLE
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -749,12 +733,49 @@ namespace detail
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////////
+// Configure the use of defaulted function
+
+#if GLM_HAS_DEFAULTED_FUNCTIONS && GLM_CONFIG_CTOR_INIT == GLM_CTOR_INIT_DISABLE
+#	define GLM_CONFIG_DEFAULTED_FUNCTIONS GLM_ENABLE
+#	define GLM_DEFAULT = default
+#else
+#	define GLM_CONFIG_DEFAULTED_FUNCTIONS GLM_DISABLE
+#	define GLM_DEFAULT
+#endif
+
+///////////////////////////////////////////////////////////////////////////////////
+// Configure the use of aligned gentypes
+
+#ifdef GLM_FORCE_ALIGNED // Legacy define
+#	define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
+#endif
+
+#ifdef GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
+#	define GLM_FORCE_ALIGNED_GENTYPES
+#endif
+
+#if GLM_HAS_ALIGNOF && (GLM_LANG & GLM_LANG_CXXMS_FLAG) && (defined(GLM_FORCE_ALIGNED_GENTYPES) || (GLM_CONFIG_SIMD == GLM_ENABLE))
+#	define GLM_CONFIG_ALIGNED_GENTYPES GLM_ENABLE
+#else
+#	define GLM_CONFIG_ALIGNED_GENTYPES GLM_DISABLE
+#endif
+
+///////////////////////////////////////////////////////////////////////////////////
 // Configure the use of anonymous structure as implementation detail
 
 #if ((GLM_CONFIG_SIMD == GLM_ENABLE) || (GLM_CONFIG_SWIZZLE == GLM_SWIZZLE_OPERATOR) || (GLM_CONFIG_ALIGNED_GENTYPES == GLM_ENABLE))
 #	define GLM_CONFIG_ANONYMOUS_STRUCT GLM_ENABLE
 #else
 #	define GLM_CONFIG_ANONYMOUS_STRUCT GLM_DISABLE
+#endif
+
+///////////////////////////////////////////////////////////////////////////////////
+// Silent warnings
+
+#ifdef GLM_FORCE_SILENT_WARNINGS
+#	define GLM_SILENT_WARNINGS GLM_ENABLE
+#else
+#	define GLM_SILENT_WARNINGS GLM_DISABLE
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -826,9 +847,11 @@ namespace detail
 
 #if GLM_MESSAGES == GLM_ENABLE && !defined(GLM_MESSAGE_DISPLAYED)
 #	define GLM_MESSAGE_DISPLAYED
+#		define GLM_STR_HELPER(x) #x
+#		define GLM_STR(x) GLM_STR_HELPER(x)
 
 	// Report GLM version
-#		pragma message (GLM_VERSION_MESSAGE)
+#		pragma message (GLM_STR(GLM_VERSION_MESSAGE))
 
 	// Report C++ language
 #	if (GLM_LANG & GLM_LANG_CXX2A_FLAG) && (GLM_LANG & GLM_LANG_EXT)
@@ -994,8 +1017,27 @@ namespace detail
 #		pragma message("GLM: GLM_FORCE_UNRESTRICTED_GENTYPE is undefined. Follows strictly GLSL on valid function genTypes.")
 #	endif
 
+#	if GLM_SILENT_WARNINGS == GLM_ENABLE
+#		pragma message("GLM: GLM_FORCE_SILENT_WARNINGS is defined. Ignores C++ warnings from using C++ language extensions.")
+#	else
+#		pragma message("GLM: GLM_FORCE_SILENT_WARNINGS is undefined. Shows C++ warnings from using C++ language extensions.")
+#	endif
+
 #	ifdef GLM_FORCE_SINGLE_ONLY
 #		pragma message("GLM: GLM_FORCE_SINGLE_ONLY is defined. Using only single precision floating-point types")
+#	endif
+
+#	if defined(GLM_FORCE_ALIGNED_GENTYPES) && (GLM_CONFIG_ALIGNED_GENTYPES == GLM_ENABLE)
+#		undef GLM_FORCE_ALIGNED_GENTYPES
+#		pragma message("GLM: GLM_FORCE_ALIGNED_GENTYPES is defined, allowing aligned types. This prevents the use of C++ constexpr.")
+#	elif defined(GLM_FORCE_ALIGNED_GENTYPES) && (GLM_CONFIG_ALIGNED_GENTYPES == GLM_DISABLE)
+#		undef GLM_FORCE_ALIGNED_GENTYPES
+#		pragma message("GLM: GLM_FORCE_ALIGNED_GENTYPES is defined but is disabled. It requires C++11 and language extensions")
+#	endif
+
+#	if defined(GLM_FORCE_DEFAULT_ALIGNED_GENTYPES) && (GLM_CONFIG_ALIGNED_GENTYPES == GLM_DISABLE)
+#		undef GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
+#		pragma message("GLM: GLM_FORCE_DEFAULT_ALIGNED_GENTYPES is defined but is disabled. It requires C++11 and language extensions")
 #	endif
 
 #	if GLM_CONFIG_CLIP_CONTROL & GLM_CLIP_CONTROL_ZO_BIT
