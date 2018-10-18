@@ -46,10 +46,10 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
-	glm::vec3 CameraSceneItem::getWorldSpaceCameraPosition() const
+	const glm::dvec3& CameraSceneItem::getWorldSpaceCameraPosition() const
 	{
 		const SceneNode* parentSceneNode = getParentSceneNode();
-		return (nullptr != parentSceneNode) ? parentSceneNode->getGlobalTransform().position : Math::VEC3_ZERO;
+		return (nullptr != parentSceneNode) ? parentSceneNode->getGlobalTransform().position : Math::DVEC3_ZERO;
 	}
 
 	const Transform& CameraSceneItem::getWorldSpaceToViewSpaceTransform() const
@@ -62,19 +62,6 @@ namespace RendererRuntime
 	{
 		const SceneNode* parentSceneNode = getParentSceneNode();
 		return (nullptr != parentSceneNode) ? parentSceneNode->getPreviousGlobalTransform() : Transform::IDENTITY;
-	}
-
-	const glm::mat4& CameraSceneItem::getWorldSpaceToViewSpaceMatrix() const
-	{
-		// Calculate the world space to view space matrix (Aka "view matrix")
-		if (!mHasCustomWorldSpaceToViewSpaceMatrix)
-		{
-			const Transform& worldSpaceToViewSpaceTransform = getWorldSpaceToViewSpaceTransform();
-			mWorldSpaceToViewSpaceMatrix = glm::lookAt(worldSpaceToViewSpaceTransform.position, worldSpaceToViewSpaceTransform.position + worldSpaceToViewSpaceTransform.rotation * Math::VEC3_FORWARD, Math::VEC3_UP);
-		}
-
-		// Done
-		return mWorldSpaceToViewSpaceMatrix;
 	}
 
 	const glm::mat4& CameraSceneItem::getCameraRelativeWorldSpaceToViewSpaceMatrix() const

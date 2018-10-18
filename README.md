@@ -127,6 +127,7 @@ Renderer Runtime (e.g. "The Game")
 	- The compositor is using the material blueprint system, meaning compact C++ implementation while offering mighty possibilities
 	- Using [Reversed-Z](https://developer.nvidia.com/content/depth-precision-visualized) for improved depth buffer precision to reduce z-fighting
 	- Using camera relative rendering for rendering large scale scenes without jittering/wobbling
+	- Using 64 bit world space position
 	- Blurred stabilized cascaded (CSM) exponential variance (EVSM) shadow mapping basing on ["A Sampling of Shadow Techniques"](https://mynameismjp.wordpress.com/2013/09/10/shadow-maps/) by Matt Pettineo
 	- Resolution scale support
 - Scene as most top-level concept: Fancy-feature set kept simple because more complex applications / games usually add an entity-component-system
@@ -348,6 +349,10 @@ Hints
 - Error strategy
 	- Inside renderer toolkit: Exceptions in extreme, up to no error tolerance. If something smells odd, blame it to make it possible to detect problems as early as possible in the production pipeline.
 	- Inside renderer runtime: The show must go on. If the floor breaks, just keep smiling and continue dancing.
+- Windows using Visual Studio 2017 C++ Open Folder and CMake: IntelliSense keeps failing
+	- Visual Studio 2017 -> Menu bar -> "Options" -> "Text Editor" -> "C/C++" -> "Advanced" -> "Inactive Platform IntelliSense Limit" -> Set it to e.g. 16 (see https://blogs.msdn.microsoft.com/vcblog/2018/01/10/intellisense-enhancements-for-cpp-open-folder-and-cmake/ )
+- How to test the 64 bit world space position support?
+	- Inside "SceneResourceLoader.cpp" -> "nodeDeserialization()" after reading a node, add an 100.000.000 offset to the node transform position
 
 The unified renderer interface can't unify some graphics API behaviour differences. Here's a list of hints you might want to know:
 - Texel coordinate system origin

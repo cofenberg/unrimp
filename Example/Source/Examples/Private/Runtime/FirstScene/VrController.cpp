@@ -239,7 +239,8 @@ namespace
 						const glm::quat rotationOffset = RendererRuntime::EulerAngles::eulerToQuaternion(glm::vec3(glm::degrees(0.0f), glm::degrees(180.0f), 0.0f));
 						const glm::mat4 guiScaleMatrix = glm::scale(RendererRuntime::Math::MAT4_IDENTITY, glm::vec3(1.0f / imGuiIo.DisplaySize.x, 1.0f / imGuiIo.DisplaySize.y, 1.0f));
 						const glm::mat4& devicePoseMatrix = mVrManagerOpenVR->getDevicePoseMatrix(mVrManagerOpenVRListener->getVrControllerTrackedDeviceIndices(SECOND_CONTROLLER_INDEX));
-						const glm::mat4& cameraPositionMatrix = glm::translate(RendererRuntime::Math::MAT4_IDENTITY, -mVrController->getCameraSceneItem().getParentSceneNodeSafe().getGlobalTransform().position);
+						// TODO(co) 64 bit support
+						const glm::mat4& cameraPositionMatrix = glm::translate(RendererRuntime::Math::MAT4_IDENTITY, glm::vec3(-mVrController->getCameraSceneItem().getParentSceneNodeSafe().getGlobalTransform().position));
 						const glm::mat4 objectSpaceToClipSpaceMatrix = getPassData().cameraRelativeWorldSpaceToClipSpaceMatrixReversedZ[0] * cameraPositionMatrix * devicePoseMatrix * glm::mat4_cast(rotationOffset) * guiScaleMatrix;
 						memcpy(buffer, glm::value_ptr(objectSpaceToClipSpaceMatrix), numberOfBytes);
 
@@ -363,17 +364,14 @@ void VrController::onUpdate(float, bool)
 			glm::vec4 perspective;
 			glm::decompose(devicePoseMatrix, scale, rotation, translation, skew, perspective);
 
-			// Everything must be relative to the camera world space position
-			translation -= getCameraSceneItem().getParentSceneNodeSafe().getGlobalTransform().position;
-
-			// Construct ray
-			const glm::vec3& rayOrigin = translation;
-			const glm::vec3 rayDirection = rotation * RendererRuntime::Math::VEC3_FORWARD;
+			// Construct ray: Everything must be relative to the 64 bit world space position of the camera
+			const glm::dvec3 rayOrigin = glm::dvec3(translation) - getCameraSceneItem().getParentSceneNodeSafe().getGlobalTransform().position;
+			const glm::dvec3 rayDirection = rotation * RendererRuntime::Math::VEC3_FORWARD;
 
 			// Simple ray-plane intersection
-			static constexpr float MAXIMUM_TELEPORT_DISTANCE = 10.0f;
-			float distance = 0.0f;
-			if (glm::intersectRayPlane(rayOrigin, rayDirection, RendererRuntime::Math::VEC3_ZERO, RendererRuntime::Math::VEC3_UP, distance) && !std::isnan(distance) && distance <= MAXIMUM_TELEPORT_DISTANCE)
+			static constexpr double MAXIMUM_TELEPORT_DISTANCE = 10.0;
+			double distance = 0.0;
+			if (glm::intersectRayPlane(rayOrigin, rayDirection, RendererRuntime::Math::DVEC3_ZERO, RendererRuntime::Math::DVEC3_UP, distance) && !std::isnan(distance) && distance <= MAXIMUM_TELEPORT_DISTANCE)
 			{
 				mTeleportIndicationLightSceneItem->getParentSceneNode()->setPosition(rayOrigin + rayDirection * distance);
 			}

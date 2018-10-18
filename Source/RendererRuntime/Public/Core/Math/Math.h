@@ -90,16 +90,35 @@ namespace RendererRuntime
 		static constexpr glm::vec3 VEC3_UP		= glm::vec3(0.0f, 1.0f, 0.0f);	///< 0 1 0; coordinate system axis terminology, don't remove
 		static constexpr glm::vec3 VEC3_UNIT_Z	= glm::vec3(0.0f, 0.0f, 1.0f);	///< 0 0 1
 		static constexpr glm::vec3 VEC3_FORWARD	= glm::vec3(0.0f, 0.0f, 1.0f);	///< 0 0 1; coordinate system axis terminology, don't remove
+		// "glm::dvec3" constants
+		static constexpr glm::dvec3 DVEC3_ZERO	  = glm::dvec3(0.0, 0.0, 0.0);	///< 0 0 0
+		static constexpr glm::dvec3 DVEC3_ONE	  = glm::dvec3(1.0, 1.0, 1.0);	///< 1 1 1
+		static constexpr glm::dvec3 DVEC3_UNIT_X  = glm::dvec3(1.0, 0.0, 0.0);	///< 1 0 0
+		static constexpr glm::dvec3 DVEC3_RIGHT	  = glm::dvec3(1.0, 0.0, 0.0);	///< 1 0 0; coordinate system axis terminology, don't remove
+		static constexpr glm::dvec3 DVEC3_UNIT_Y  = glm::dvec3(0.0, 1.0, 0.0);	///< 0 1 0
+		static constexpr glm::dvec3 DVEC3_UP	  = glm::dvec3(0.0, 1.0, 0.0);	///< 0 1 0; coordinate system axis terminology, don't remove
+		static constexpr glm::dvec3 DVEC3_UNIT_Z  = glm::dvec3(0.0, 0.0, 1.0);	///< 0 0 1
+		static constexpr glm::dvec3 DVEC3_FORWARD = glm::dvec3(0.0, 0.0, 1.0);	///< 0 0 1; coordinate system axis terminology, don't remove
 		// "glm::vec4" constants
 		static constexpr glm::vec4 VEC4_ZERO = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);	///< 0 0 0 0
 		static constexpr glm::vec4 VEC4_ONE  = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);	///< 1 1 1 1
+		// "glm::dvec4" constants
+		static constexpr glm::dvec4 DVEC4_ZERO = glm::dvec4(0.0, 0.0, 0.0, 0.0);	///< 0 0 0 0
+		static constexpr glm::dvec4 DVEC4_ONE  = glm::dvec4(1.0, 1.0, 1.0, 1.0);	///< 1 1 1 1
 		// "glm::mat4" constants
 		static constexpr glm::mat4 MAT4_IDENTITY = glm::mat4(1.0f, 0.0f, 0.0f, 0.0f,
 															 0.0f, 1.0f, 0.0f, 0.0f,
 															 0.0f, 0.0f, 1.0f, 0.0f,
 															 0.0f, 0.0f, 0.0f, 1.0f);
+		// "glm::dmat4" constants
+		static constexpr glm::dmat4 DMAT4_IDENTITY = glm::dmat4(1.0, 0.0, 0.0, 0.0,
+																0.0, 1.0, 0.0, 0.0,
+																0.0, 0.0, 1.0, 0.0,
+																0.0, 0.0, 0.0, 1.0);
 		// "glm::quat" constants
 		static constexpr glm::quat QUAT_IDENTITY = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+		// "glm::squat" constants
+		static constexpr glm::dquat DQUAT_IDENTITY = glm::dquat(1.0, 0.0, 0.0, 0.0);
 
 
 	//[-------------------------------------------------------]
@@ -168,6 +187,7 @@ namespace RendererRuntime
 		*    The updated value (e.g. 1.5)
 		*/
 		[[nodiscard]] RENDERERRUNTIME_API_EXPORT static float makeMultipleOf(float value, float primaryValue);
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT static double makeMultipleOf(double value, float primaryValue);
 		[[nodiscard]] RENDERERRUNTIME_API_EXPORT static uint32_t makeMultipleOf(uint32_t value, uint32_t primaryValue);
 
 		/**

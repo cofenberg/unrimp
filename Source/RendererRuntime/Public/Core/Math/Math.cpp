@@ -100,6 +100,11 @@ namespace RendererRuntime
 		return std::floor(value / primaryValue + 0.5f) * primaryValue;
 	}
 
+	double Math::makeMultipleOf(double value, float primaryValue)
+	{
+		return std::floor(value / primaryValue + 0.5) * primaryValue;
+	}
+
 	uint32_t Math::makeMultipleOf(uint32_t value, uint32_t primaryValue)
 	{
 		return static_cast<uint32_t>(std::ceil(static_cast<float>(value) / static_cast<float>(primaryValue))) * primaryValue;

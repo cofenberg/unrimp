@@ -114,7 +114,7 @@ namespace RendererRuntime
 		}
 	}
 
-	uint32_t TextureInstanceBufferManager::fillBuffer(const glm::vec3& worldSpaceCameraPosition, const MaterialBlueprintResource& materialBlueprintResource, PassBufferManager* passBufferManager, const MaterialBlueprintResource::UniformBuffer& instanceUniformBuffer, const Renderable& renderable, MaterialTechnique& materialTechnique, Renderer::CommandBuffer& commandBuffer)
+	uint32_t TextureInstanceBufferManager::fillBuffer(const glm::dvec3& worldSpaceCameraPosition, const MaterialBlueprintResource& materialBlueprintResource, PassBufferManager* passBufferManager, const MaterialBlueprintResource::UniformBuffer& instanceUniformBuffer, const Renderable& renderable, MaterialTechnique& materialTechnique, Renderer::CommandBuffer& commandBuffer)
 	{
 		// Sanity checks
 		assert(nullptr != mCurrentInstanceBuffer);
@@ -255,8 +255,9 @@ namespace RendererRuntime
 
 		{ // Fill the texture buffer
 			{ // "POSITION_ROTATION_SCALE"-semantic
-				// xyz position adjusted for camera relative rendering
-				memcpy(mCurrentTextureBufferPointer, glm::value_ptr(objectSpaceToWorldSpaceTransform.position - worldSpaceCameraPosition), sizeof(float) * 3);
+				// xyz position adjusted for camera relative rendering: While we're using a 64 bit world space position in general, for relative positions 32 bit are sufficient
+				const glm::vec3 position = objectSpaceToWorldSpaceTransform.position - worldSpaceCameraPosition;
+				memcpy(mCurrentTextureBufferPointer, glm::value_ptr(position), sizeof(float) * 3);
 				mCurrentTextureBufferPointer += 4;
 
 				// xyzw rotation quaternion

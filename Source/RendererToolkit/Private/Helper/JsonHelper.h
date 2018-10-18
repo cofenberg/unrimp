@@ -81,6 +81,7 @@ namespace RendererToolkit
 		static void optionalFloatProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, float& value);
 		static void optionalFloatNProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, float value[], uint32_t numberOfComponents);
 		static void optionalUnitNProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, float value[], uint32_t numberOfComponents);
+		static void optionalUnitNProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, double value[], uint32_t numberOfComponents);
 		static void optionalFactorNProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, float value[], uint32_t numberOfComponents);
 		static void optionalRgbColorProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, float value[3]);
 		static void optionalAngleProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, float& value);	// Angle in radians

@@ -123,7 +123,7 @@ namespace RendererRuntime
 		mRendererRuntime.getTextureResourceManager().destroyTextureResource(mClusters3DTextureResourceId);
 	}
 
-	void LightBufferManager::fillBuffer(const glm::vec3& worldSpaceCameraPosition, SceneResource& sceneResource, Renderer::CommandBuffer& commandBuffer)
+	void LightBufferManager::fillBuffer(const glm::dvec3& worldSpaceCameraPosition, SceneResource& sceneResource, Renderer::CommandBuffer& commandBuffer)
 	{
 		fillTextureBuffer(worldSpaceCameraPosition, sceneResource);
 		fillClusters3DTexture(sceneResource, commandBuffer);
@@ -195,7 +195,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
-	void LightBufferManager::fillTextureBuffer(const glm::vec3& worldSpaceCameraPosition, SceneResource& sceneResource)
+	void LightBufferManager::fillTextureBuffer(const glm::dvec3& worldSpaceCameraPosition, SceneResource& sceneResource)
 	{
 		// TODO(co) This is just a placeholder implementation until "RendererRuntime::LightBufferManager" is ready (containing e.g. reasonable optimizations)
 
@@ -214,7 +214,7 @@ namespace RendererRuntime
 						// Update the world space light position and the normalized view space light direction
 						LightSceneItem::PackedShaderData& packedShaderData = lightSceneItem->mPackedShaderData;
 						const Transform& transform = sceneNode->getGlobalTransform();
-						packedShaderData.position  = transform.position - worldSpaceCameraPosition;	// Camera relative rendering
+						packedShaderData.position  = transform.position - worldSpaceCameraPosition;	// Camera relative rendering: While we're using a 64 bit world space position in general, for relative positions 32 bit are sufficient
 						packedShaderData.direction = transform.rotation * Math::VEC3_FORWARD;
 
 						// Copy the light data into the texture scratch buffer

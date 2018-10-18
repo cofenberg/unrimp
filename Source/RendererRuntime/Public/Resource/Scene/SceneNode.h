@@ -94,7 +94,8 @@ namespace RendererRuntime
 			updateGlobalTransformRecursive();
 		}
 
-		inline void setPosition(const glm::vec3& position)
+		// 64 bit world space position
+		inline void setPosition(const glm::dvec3& position)
 		{
 			mTransform.position = position;
 			updateGlobalTransformRecursive();
@@ -106,7 +107,8 @@ namespace RendererRuntime
 			updateGlobalTransformRecursive();
 		}
 
-		inline void setPositionRotation(const glm::vec3& position, const glm::quat& rotation)
+		// 64 bit world space position
+		inline void setPositionRotation(const glm::dvec3& position, const glm::quat& rotation)
 		{
 			mTransform.position = position;
 			mTransform.rotation = rotation;

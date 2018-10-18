@@ -168,7 +168,11 @@ namespace RendererRuntime
 		}
 		{ // Show and edit rotation quaternion using Euler angles in degree
 			glm::vec3 eulerAngles = glm::degrees(EulerAngles::matrixToEuler(glm::mat3_cast(transform.rotation)));
-			ImGui::InputFloat3("Tr", glm::value_ptr(transform.position), 3);
+			{ // TODO(co) We're using a 64 bit position, ImGui can only process 32 bit floating point values
+				glm::vec3 position = transform.position;
+				ImGui::InputFloat3("Tr", glm::value_ptr(position), 3);
+				transform.position = position;
+			}
 			ImGui::InputFloat3("Rt", glm::value_ptr(eulerAngles), 3);
 			ImGui::InputFloat3("Sc", glm::value_ptr(transform.scale), 3);
 			transform.rotation = EulerAngles::eulerToQuaternion(glm::radians(eulerAngles));
@@ -267,10 +271,10 @@ namespace RendererRuntime
 			const ImGuiIO& imGuiIO = ImGui::GetIO();
 			const glm::mat4 objectSpaceToClipSpaceMatrix = cameraSceneItem.getViewSpaceToClipSpaceMatrix(static_cast<float>(imGuiIO.DisplaySize.x) / imGuiIO.DisplaySize.y) * cameraSceneItem.getCameraRelativeWorldSpaceToViewSpaceMatrix();
 
-			// Keep the grid fixed at camera
-			const glm::vec3& cameraPosition = cameraSceneItem.getParentSceneNodeSafe().getTransform().position;
-			glm::vec3 centerPosition(Math::makeMultipleOf(cameraPosition.x, cellSize), yPosition, Math::makeMultipleOf(cameraPosition.z, cellSize));
-			centerPosition -= cameraSceneItem.getWorldSpaceCameraPosition();	// Camera relative rendering
+			// Keep the grid fixed at the 64 bit world space position of the camera and take camera relative rendering into account
+			const glm::dvec3& cameraPosition = cameraSceneItem.getParentSceneNodeSafe().getTransform().position;
+			const glm::dvec3& worldSpaceCameraPosition = cameraSceneItem.getWorldSpaceCameraPosition();
+			const glm::vec3 centerPosition(Math::makeMultipleOf(cameraPosition.x, cellSize) - worldSpaceCameraPosition.x, yPosition - worldSpaceCameraPosition.y, Math::makeMultipleOf(cameraPosition.z, cellSize) - worldSpaceCameraPosition.z);
 
 			// Lines along z axis
 			for (int32_t z = -NUMBER_OF_LINES_PER_DIRECTION; z <= NUMBER_OF_LINES_PER_DIRECTION; ++z)

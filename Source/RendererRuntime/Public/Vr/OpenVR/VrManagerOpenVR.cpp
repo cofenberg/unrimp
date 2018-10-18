@@ -577,8 +577,8 @@ namespace RendererRuntime
 		// Request poses from OpenVR
 		vr::VRCompositor()->WaitGetPoses(mVrTrackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
 
-		// Everything must be relative to the camera world space position
-		const glm::vec3& cameraPosition = (nullptr != cameraSceneItem && nullptr != cameraSceneItem->getParentSceneNode()) ? cameraSceneItem->getParentSceneNode()->getGlobalTransform().position : Math::VEC3_ZERO;
+		// Everything must be relative to the 64 bit world space position of the camera
+		const glm::dvec3& cameraPosition = (nullptr != cameraSceneItem && nullptr != cameraSceneItem->getParentSceneNode()) ? cameraSceneItem->getParentSceneNode()->getGlobalTransform().position : Math::DVEC3_ZERO;
 
 		// Don't draw controllers if somebody else has input focus
 		const bool showControllers = (mShowRenderModels && !mVrSystem->IsInputFocusCapturedByAnotherProcess());
@@ -594,6 +594,7 @@ namespace RendererRuntime
 				SceneNode* sceneNode = mSceneNodes[deviceIndex];
 				if (nullptr != sceneNode)
 				{
+					// Transform data
 					glm::vec3 scale;
 					glm::quat rotation;
 					glm::vec3 translation;
@@ -601,11 +602,9 @@ namespace RendererRuntime
 					glm::vec4 perspective;
 					glm::decompose(devicePoseMatrix, scale, rotation, translation, skew, perspective);
 
-					// Everything must be relative to the camera world space position
-					translation -= cameraPosition;
-
 					// Tell the scene node about the new position and rotation, scale doesn't change
-					sceneNode->setPositionRotation(translation, rotation);
+					// -> Everything must be relative to the 64 bit world space position of the camera
+					sceneNode->setPositionRotation(glm::dvec3(translation) - cameraPosition, rotation);
 
 					// Show/hide scene node
 					sceneNode->setVisible(showControllers);

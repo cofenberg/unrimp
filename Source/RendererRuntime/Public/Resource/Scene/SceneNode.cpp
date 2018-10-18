@@ -170,7 +170,7 @@ namespace RendererRuntime
 				{
 					{ // Set world space center position of bounding sphere
 						const glm::vec3& boundingSpherePosition = meshResource->getBoundingSpherePosition();
-						const glm::vec3& position = mGlobalTransform.position;
+						const glm::dvec3& position = mGlobalTransform.position;
 						const glm::vec3& scale = mGlobalTransform.scale;
 						sceneItemSet->spherePositionX[sceneItemSetIndex] = boundingSpherePosition.x * scale.x + position.x;
 						sceneItemSet->spherePositionY[sceneItemSetIndex] = boundingSpherePosition.y * scale.y + position.y;

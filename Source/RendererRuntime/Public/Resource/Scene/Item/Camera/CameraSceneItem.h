@@ -119,12 +119,11 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Derived or custom data                                ]
 		//[-------------------------------------------------------]
-		[[nodiscard]] RENDERERRUNTIME_API_EXPORT glm::vec3 getWorldSpaceCameraPosition() const;	// Ease-of-use method for camera relative rendering
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT const glm::dvec3& getWorldSpaceCameraPosition() const;	// Ease-of-use method for camera relative rendering: 64 bit world space position of the camera
 
 		// World space to view space matrix (Aka "view matrix")
 		[[nodiscard]] RENDERERRUNTIME_API_EXPORT const Transform& getWorldSpaceToViewSpaceTransform() const;
 		[[nodiscard]] RENDERERRUNTIME_API_EXPORT const Transform& getPreviousWorldSpaceToViewSpaceTransform() const;
-		[[nodiscard]] RENDERERRUNTIME_API_EXPORT const glm::mat4& getWorldSpaceToViewSpaceMatrix() const;	// Prefer using "RendererRuntime::CameraSceneItem::getCameraRelativeWorldSpaceToViewSpaceMatrix()" whenever possible
 		[[nodiscard]] RENDERERRUNTIME_API_EXPORT const glm::mat4& getCameraRelativeWorldSpaceToViewSpaceMatrix() const;
 		RENDERERRUNTIME_API_EXPORT void getPreviousCameraRelativeWorldSpaceToViewSpaceMatrix(glm::mat4& previousCameraRelativeWorldSpaceToViewSpaceMatrix) const;
 

@@ -237,7 +237,7 @@ namespace RendererRuntime
 		IRendererRuntime*			 mRendererRuntime;			///< Memory address received via "RendererRuntime::MaterialBlueprintResourceListener::beginFillPass()", can be a null pointer outside the correct scope, don't destroy the memory
 		PassBufferManager::PassData* mPassData;					///< Memory address received via "RendererRuntime::MaterialBlueprintResourceListener::beginFillPass()", can be a null pointer outside the correct scope, don't destroy the memory
 		const CompositorContextData* mCompositorContextData;
-		glm::vec3					 mWorldSpaceCameraPosition;	///< Cached world space camera position since often accessed due to camera relative rendering
+		glm::dvec3					 mWorldSpaceCameraPosition;	///< Cached 64 bit world space position of the camera since often accessed due to camera relative rendering
 		uint32_t					 mRenderTargetWidth;
 		uint32_t					 mRenderTargetHeight;
 		float						 mNearZ;

@@ -91,7 +91,7 @@ void FreeCameraController::onUpdate(float pastSecondsSinceLastFrame, bool inputE
 	{
 		// Get the current local transform
 		const RendererRuntime::Transform& transform = sceneNode->getTransform();
-		glm::vec3 newPosition = transform.position;
+		glm::dvec3 newPosition = transform.position;	// 64 bit world space position
 		glm::quat newRotation = transform.rotation;
 
 		// In case input is enabled, process input
@@ -125,7 +125,7 @@ void FreeCameraController::onUpdate(float pastSecondsSinceLastFrame, bool inputE
 					}
 				}
 
-				// Get the movement vector
+				// Get the movement vector, 32 bit is sufficient here
 				glm::vec3 movementVector = RendererRuntime::Math::VEC3_ZERO;
 				{
 					{ // Move forward/backward

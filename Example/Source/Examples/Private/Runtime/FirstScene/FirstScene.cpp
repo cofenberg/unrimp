@@ -340,7 +340,8 @@ void FirstScene::onUpdate()
 				{
 					RendererRuntime::DebugGuiManager& debugGuiManager = mCompositorWorkspaceInstance->getRendererRuntime().getDebugGuiManager();
 					{
-						const float value[4] = { mCameraTransformBackup.position.x, mCameraTransformBackup.position.y, mCameraTransformBackup.position.z, 0.0f };
+						// TODO(co) Use a configuration serialization which supports double
+						const float value[4] = { static_cast<float>(mCameraTransformBackup.position.x), static_cast<float>(mCameraTransformBackup.position.y), static_cast<float>(mCameraTransformBackup.position.z), 0.0f };
 						debugGuiManager.setIniSetting("CameraPosition", value);
 					}
 					debugGuiManager.setIniSetting("CameraRotation", glm::value_ptr(mCameraTransformBackup.rotation));
@@ -459,7 +460,7 @@ void FirstScene::onLoadingStateChange(const RendererRuntime::IResource& resource
 
 						// For VR, set camera to origin
 						RendererRuntime::SceneNode* sceneNode = mCameraSceneItem->getParentSceneNode();
-						sceneNode->setPosition(RendererRuntime::Math::VEC3_ZERO);
+						sceneNode->setPosition(RendererRuntime::Math::DVEC3_ZERO);
 						sceneNode->setRotation(RendererRuntime::Math::QUAT_IDENTITY);
 					}
 					else
@@ -471,11 +472,12 @@ void FirstScene::onLoadingStateChange(const RendererRuntime::IResource& resource
 					#ifdef RENDERER_RUNTIME_IMGUI
 						if (!mHasCameraTransformBackup)
 						{
+							// TODO(co) Use a configuration serialization which supports double
 							float value[4] = {};
 							RendererRuntime::DebugGuiManager& debugGuiManager = mCompositorWorkspaceInstance->getRendererRuntime().getDebugGuiManager();
 							if (debugGuiManager.getIniSetting("CameraPosition", value))
 							{
-								mCameraSceneItem->getParentSceneNode()->setPosition(glm::vec3(value[0], value[1], value[2]));
+								mCameraSceneItem->getParentSceneNode()->setPosition(glm::dvec3(value[0], value[1], value[2]));
 							}
 							if (debugGuiManager.getIniSetting("CameraRotation", value))
 							{

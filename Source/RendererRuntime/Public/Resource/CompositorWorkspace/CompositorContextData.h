@@ -86,7 +86,7 @@ namespace RendererRuntime
 			mSinglePassStereoInstancing(false),
 			mLightSceneItem(nullptr),
 			mCompositorInstancePassShadowMap(nullptr),
-			mWorldSpaceCameraPosition(0.0f, 0.0f, 0.0f),
+			mWorldSpaceCameraPosition(0.0, 0.0, 0.0),
 			mCurrentlyBoundMaterialBlueprintResource(nullptr),
 			mGlobalComputeSize{0, 0, 0}
 		{
@@ -125,8 +125,9 @@ namespace RendererRuntime
 			return mCompositorInstancePassShadowMap;
 		}
 
-		[[nodiscard]] inline const glm::vec3& getWorldSpaceCameraPosition() const
+		[[nodiscard]] inline const glm::dvec3& getWorldSpaceCameraPosition() const
 		{
+			// 64 bit world space position of the camera
 			return mWorldSpaceCameraPosition;
 		}
 
@@ -164,7 +165,7 @@ namespace RendererRuntime
 		const LightSceneItem*				   mLightSceneItem;
 		const CompositorInstancePassShadowMap* mCompositorInstancePassShadowMap;
 		// Cached data
-		glm::vec3 mWorldSpaceCameraPosition;	///< Cached world space camera position since often accessed due to camera relative rendering
+		glm::dvec3 mWorldSpaceCameraPosition;	///< Cached 64 bit world space position of the camera since often accessed due to camera relative rendering
 		// Cached "RendererRuntime::RenderQueue" data to reduce the number of state changes across different render queue instances (beneficial for complex compositors with e.g. multiple Gaussian blur passes)
 		mutable MaterialBlueprintResource* mCurrentlyBoundMaterialBlueprintResource;
 		mutable uint32_t				   mGlobalComputeSize[3];

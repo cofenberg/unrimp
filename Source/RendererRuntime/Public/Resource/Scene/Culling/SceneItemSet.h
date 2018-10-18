@@ -82,6 +82,7 @@ namespace RendererRuntime
 		//[ Public definitions                                    ]
 		//[-------------------------------------------------------]
 		typedef std::vector<float, xsimd::aligned_allocator<float, XSIMD_DEFAULT_ALIGNMENT>>			 FloatVector;
+		typedef std::vector<double, xsimd::aligned_allocator<double, XSIMD_DEFAULT_ALIGNMENT>>			 DoubleVector;
 		typedef std::vector<uint32_t, xsimd::aligned_allocator<uint32_t, XSIMD_DEFAULT_ALIGNMENT>>		 IntegerVector;
 		typedef std::vector<ISceneItem*, xsimd::aligned_allocator<ISceneItem*, XSIMD_DEFAULT_ALIGNMENT>> SceneItemVector;	// TODO(co) No raw pointers here (no smart pointers either, handles please)
 
@@ -117,10 +118,10 @@ namespace RendererRuntime
 		FloatVector worldWZ;
 		FloatVector worldWW;
 
-		// World space center position of bounding sphere (the bounding sphere isn't always at the object center, so we need to store this beside the transform position)
-		FloatVector spherePositionX;
-		FloatVector spherePositionY;
-		FloatVector spherePositionZ;
+		// 64 bit world space position center of bounding sphere (the bounding sphere isn't always at the object center, so we need to store this beside the transform position)
+		DoubleVector spherePositionX;
+		DoubleVector spherePositionY;
+		DoubleVector spherePositionZ;
 
 		// Negative world space radius of bounding sphere, the bounding sphere radius is enclosing the bounding box (don't use the inner bounding box radius)
 		FloatVector negativeRadius;

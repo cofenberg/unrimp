@@ -414,7 +414,8 @@ namespace RendererRuntime
 
 						// Calculate the world space to view space matrix (Aka "view matrix")
 						const Transform& worldSpaceToViewSpaceTransform = cameraSceneItem->getWorldSpaceToViewSpaceTransform();
-						mPassData->cameraRelativeWorldSpaceToViewSpaceMatrix[eyeIndex] = glm::translate(glm::mat4(1.0f), worldSpaceToViewSpaceTransform.position) * glm::toMat4(worldSpaceToViewSpaceTransform.rotation);
+						// TODO(co) 64 bit position support
+						mPassData->cameraRelativeWorldSpaceToViewSpaceMatrix[eyeIndex] = glm::translate(glm::mat4(1.0f), glm::vec3(worldSpaceToViewSpaceTransform.position)) * glm::toMat4(worldSpaceToViewSpaceTransform.rotation);
 						mPassData->cameraRelativeWorldSpaceToViewSpaceMatrix[eyeIndex] = viewTranslateMatrix * mPassData->cameraRelativeWorldSpaceToViewSpaceMatrix[eyeIndex];
 
 						// TODO(co) Implement "previousCameraRelativeWorldSpaceToViewSpaceMatrix"
@@ -439,7 +440,7 @@ namespace RendererRuntime
 				// Standard rendering
 
 				// Get world space to view space matrix (Aka "view matrix")
-				mPassData->cameraRelativeWorldSpaceToViewSpaceMatrix[eyeIndex] = previousCameraRelativeWorldSpaceToViewSpaceMatrix = glm::lookAt(Transform::IDENTITY.position, Transform::IDENTITY.position + Transform::IDENTITY.rotation * Math::VEC3_FORWARD, Math::VEC3_UP);
+				mPassData->cameraRelativeWorldSpaceToViewSpaceMatrix[eyeIndex] = previousCameraRelativeWorldSpaceToViewSpaceMatrix = glm::lookAt(Math::VEC3_ZERO, Math::VEC3_FORWARD, Math::VEC3_UP);
 
 				// Get view space to clip space matrix (aka "projection matrix")
 				// -> Near and far flipped due to usage of Reversed-Z (see e.g. https://developer.nvidia.com/content/depth-precision-visualized and https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/)
@@ -565,9 +566,13 @@ namespace RendererRuntime
 				break;
 
 			case ::detail::UNMODIFIED_WORLD_SPACE_CAMERA_POSITION:
+			{
 				assert(sizeof(float) * 3 == numberOfBytes);
-				memcpy(buffer, glm::value_ptr(mWorldSpaceCameraPosition), numberOfBytes);
+				// TODO(co) "UNMODIFIED_WORLD_SPACE_CAMERA_POSITION" shouldn't be used due to the loss of precision
+				const glm::vec3 worldSpaceCameraPosition = mWorldSpaceCameraPosition;
+				memcpy(buffer, glm::value_ptr(worldSpaceCameraPosition), numberOfBytes);
 				break;
+			}
 
 			// Only valid for graphics pipeline
 			case ::detail::VIEW_SPACE_FRUSTUM_CORNERS:
@@ -1045,13 +1050,13 @@ namespace RendererRuntime
 				assert(~0u == instanceTextureBufferStartIndex);
 				uint32_t* integerBuffer = reinterpret_cast<uint32_t*>(buffer);
 
-				// xyz world position adjusted for camera relative rendering
+				// xyz world position adjusted for camera relative rendering: While we're using a 64 bit world space position in general, for relative positions 32 bit are sufficient
 				// -> 0 = World space x position
 				// -> 1 = World space y position
 				// -> 2 = World space z position
-				*reinterpret_cast<float*>(integerBuffer)	 = mObjectSpaceToWorldSpaceTransform->position.x - mWorldSpaceCameraPosition.x;
-				*reinterpret_cast<float*>(integerBuffer + 1) = mObjectSpaceToWorldSpaceTransform->position.y - mWorldSpaceCameraPosition.y;
-				*reinterpret_cast<float*>(integerBuffer + 2) = mObjectSpaceToWorldSpaceTransform->position.z - mWorldSpaceCameraPosition.z;
+				*reinterpret_cast<float*>(integerBuffer)	 = static_cast<float>(mObjectSpaceToWorldSpaceTransform->position.x - mWorldSpaceCameraPosition.x);
+				*reinterpret_cast<float*>(integerBuffer + 1) = static_cast<float>(mObjectSpaceToWorldSpaceTransform->position.y - mWorldSpaceCameraPosition.y);
+				*reinterpret_cast<float*>(integerBuffer + 2) = static_cast<float>(mObjectSpaceToWorldSpaceTransform->position.z - mWorldSpaceCameraPosition.z);
 
 				// 3 = w = The assigned material slot inside the material uniform buffer
 				integerBuffer[3] = mMaterialTechnique->getAssignedMaterialSlot();

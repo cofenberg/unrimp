@@ -43,7 +43,7 @@ namespace RendererRuntime
 		mSinglePassStereoInstancing(singlePassStereoInstancing),
 		mLightSceneItem(lightSceneItem),
 		mCompositorInstancePassShadowMap(compositorInstancePassShadowMap),
-		mWorldSpaceCameraPosition((nullptr != cameraSceneItem) ? cameraSceneItem->getWorldSpaceCameraPosition() : Math::VEC3_ZERO),
+		mWorldSpaceCameraPosition((nullptr != cameraSceneItem) ? cameraSceneItem->getWorldSpaceCameraPosition() : Math::DVEC3_ZERO),
 		mCurrentlyBoundMaterialBlueprintResource(nullptr),
 		mGlobalComputeSize{0, 0, 0}
 	{

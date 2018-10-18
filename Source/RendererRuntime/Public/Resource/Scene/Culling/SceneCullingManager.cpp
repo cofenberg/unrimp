@@ -57,6 +57,7 @@ namespace
 		static constexpr size_t SCENE_ITEMS_SPLIT_COUNT = 256;	///< Package size for each thread to work on	TODO(co) This value needs to be fine-tuned
 		typedef xsimd::batch_bool<float, 4> bool4;
 		typedef xsimd::simd_type<float> float4;
+		typedef xsimd::simd_type<double> double4;
 		static const float4 FLOAT4_ALL_ZERO(0.0f);
 		static const bool4 BOOL4_ALL_FALSE(false);
 		static const bool4 BOOL4_ALL_TRUE(true);
@@ -269,13 +270,14 @@ namespace
 			}
 		}
 
-		FORCEINLINE void gatherRenderQueueIndexRangesRenderableManagersBySceneItem(const RendererRuntime::ISceneItem& sceneItem, const glm::vec3& cameraPosition, RendererRuntime::CompositorWorkspaceInstance::RenderQueueIndexRanges& renderQueueIndexRanges)
+		FORCEINLINE void gatherRenderQueueIndexRangesRenderableManagersBySceneItem(const RendererRuntime::ISceneItem& sceneItem, const glm::dvec3& cameraPosition, RendererRuntime::CompositorWorkspaceInstance::RenderQueueIndexRanges& renderQueueIndexRanges)
 		{
 			RendererRuntime::RenderableManager* renderableManager = const_cast<RendererRuntime::RenderableManager*>(sceneItem.getRenderableManager());	// TODO(co) Get rid of the evil const-cast
 			if (nullptr != renderableManager && renderableManager->isVisible() && !renderableManager->getRenderables().empty())
 			{
 				// Calculate the distance to the camera
-				renderableManager->setCachedDistanceToCamera(glm::distance(cameraPosition, sceneItem.getParentSceneNodeSafe().getGlobalTransform().position));
+				// -> While using a 64 bit world space position, a 32 bit distance to camera is sufficient
+				renderableManager->setCachedDistanceToCamera(static_cast<float>(glm::distance(cameraPosition, sceneItem.getParentSceneNodeSafe().getGlobalTransform().position)));
 
 				// A renderable manager can be inside multiple render queue index ranges
 				for (RendererRuntime::CompositorWorkspaceInstance::RenderQueueIndexRange& renderQueueIndexRange : renderQueueIndexRanges)
@@ -295,12 +297,12 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global thread functions                               ]
 		//[-------------------------------------------------------]
-		void simdSphereCulling(const SimdPlane planes[6], const RendererRuntime::SceneItemSet& sceneItemSet, size_t threadSceneItemIndexStart, size_t threadSceneItemIndexEnd, uint32_t* RESTRICT visibilityFlag)
+		void simdSphereCulling(const double4 worldSpaceCameraPositionDouble4[3], const SimdPlane planes[6], const RendererRuntime::SceneItemSet& sceneItemSet, size_t threadSceneItemIndexStart, size_t threadSceneItemIndexEnd, uint32_t* RESTRICT visibilityFlag)
 		{
 			// Get pointers to the necessary members of the object set
-			const float* RESTRICT spherePositionXData = sceneItemSet.spherePositionX.data();
-			const float* RESTRICT spherePositionYData = sceneItemSet.spherePositionY.data();
-			const float* RESTRICT spherePositionZData = sceneItemSet.spherePositionZ.data();
+			const double* RESTRICT spherePositionXData = sceneItemSet.spherePositionX.data();
+			const double* RESTRICT spherePositionYData = sceneItemSet.spherePositionY.data();
+			const double* RESTRICT spherePositionZData = sceneItemSet.spherePositionZ.data();
 			const float* RESTRICT negativeRadiusData = sceneItemSet.negativeRadius.data();
 
 			// Test each plane of the frustum against each sphere
@@ -319,10 +321,18 @@ namespace
 				}
 				#endif
 
-				// Get world space center position of bounding sphere
-				const float4 spherePositionX = xsimd::load_aligned(&spherePositionXData[sceneItemIndex]);
-				const float4 spherePositionY = xsimd::load_aligned(&spherePositionYData[sceneItemIndex]);
-				const float4 spherePositionZ = xsimd::load_aligned(&spherePositionZData[sceneItemIndex]);
+				// Get camera relative world space center position of bounding sphere
+				// -> After this step we no longer need a 64 bit world space position and a 32 bit world space position is sufficient for the rest of the calculations
+				const double4 spherePositionXDouble = xsimd::load_aligned(&spherePositionXData[sceneItemIndex]) - worldSpaceCameraPositionDouble4[0];
+				const double4 spherePositionYDouble = xsimd::load_aligned(&spherePositionYData[sceneItemIndex]) - worldSpaceCameraPositionDouble4[1];
+				const double4 spherePositionZDouble = xsimd::load_aligned(&spherePositionZData[sceneItemIndex]) - worldSpaceCameraPositionDouble4[2];
+				// TODO(co) Simplify the double to float cast
+				float4 spherePositionX;
+				spherePositionXDouble.store_aligned(reinterpret_cast<float*>(&spherePositionX));
+				float4 spherePositionY;
+				spherePositionYDouble.store_aligned(reinterpret_cast<float*>(&spherePositionY));
+				float4 spherePositionZ;
+				spherePositionZDouble.store_aligned(reinterpret_cast<float*>(&spherePositionZ));
 
 				// Get negative world space radius of bounding sphere
 				const float4 negativeRadius = xsimd::load_aligned(&negativeRadiusData[sceneItemIndex]);
@@ -352,7 +362,7 @@ namespace
 			}
 		}
 
-		void simdOobbCulling(const SimdMatrix& viewSpaceToClipSpaceMatrix, const RendererRuntime::SceneItemSet& sceneItemSet, const uint32_t* RESTRICT indirection, size_t threadSceneItemIndexStart, size_t threadSceneItemIndexEnd, uint32_t* RESTRICT visibilityFlag)
+		void simdOobbCulling([[maybe_unused]] const float4 worldSpaceCameraPositionFloat4[3], const SimdMatrix& viewSpaceToClipSpaceMatrix, const RendererRuntime::SceneItemSet& sceneItemSet, const uint32_t* RESTRICT indirection, size_t threadSceneItemIndexStart, size_t threadSceneItemIndexEnd, uint32_t* RESTRICT visibilityFlag)
 		{
 			// Get pointers to the necessary members of the object set
 
@@ -366,6 +376,7 @@ namespace
 			const float* RESTRICT maximumY = sceneItemSet.maximumY.data();
 			const float* RESTRICT maximumZ = sceneItemSet.maximumZ.data();
 
+			// TODO(co) Add camera relative rendering ("worldSpaceCameraPositionFloat4") and 64 bit world space position support
 			// Get object space to world space matrix
 			const float* RESTRICT worldXX = sceneItemSet.worldXX.data();
 			const float* RESTRICT worldXY = sceneItemSet.worldXY.data();
@@ -577,7 +588,7 @@ namespace RendererRuntime
 				{
 					// TODO(co) There are currently multiple culling issues notable when using stereo rendering, so disabled culling for now until this has been resolved
 					// Fill render queue index ranges with the visible stuff
-					const glm::vec3& cameraPosition = cameraSceneItem->getParentSceneNodeSafe().getGlobalTransform().position;
+					const glm::dvec3& cameraPosition = cameraSceneItem->getParentSceneNodeSafe().getGlobalTransform().position;	// 64 bit world space position of the camera
 					for (uint32_t i = 0; i < mCullableSceneItemSet->numberOfSceneItems; ++i)
 					{
 						::detail::gatherRenderQueueIndexRangesRenderableManagersBySceneItem(*mCullableSceneItemSet->sceneItemVector[i], cameraPosition, renderQueueIndexRanges);
@@ -605,8 +616,12 @@ namespace RendererRuntime
 			}
 		}
 
-		// Calculate frustum using a world space to clip space matrix
-		const Frustum frustum(viewSpaceToClipSpaceMatrix * cameraSceneItem->getWorldSpaceToViewSpaceMatrix());
+		// Calculate frustum using a camera relative world space to clip space matrix
+		const Frustum frustum(viewSpaceToClipSpaceMatrix * cameraSceneItem->getCameraRelativeWorldSpaceToViewSpaceMatrix());
+		const glm::dvec3& worldSpaceCameraPosition = cameraSceneItem->getWorldSpaceCameraPosition();
+		::detail::double4 worldSpaceCameraPositionDouble4[3] = { ::detail::double4(worldSpaceCameraPosition.x), ::detail::double4(worldSpaceCameraPosition.y), ::detail::double4(worldSpaceCameraPosition.z) };
+		const glm::vec3 worldSpaceCameraPositionFloat = cameraSceneItem->getWorldSpaceCameraPosition();
+		::detail::float4 worldSpaceCameraPositionFloat4[3] = { ::detail::float4(worldSpaceCameraPositionFloat.x), ::detail::float4(worldSpaceCameraPositionFloat.y), ::detail::float4(worldSpaceCameraPositionFloat.z) };
 
 		// Splat out the planes to be able to do plane-sphere test with SIMD
 		const ::detail::SimdPlane planes[6] =
@@ -707,7 +722,7 @@ namespace RendererRuntime
 			if (1 == threadCount)
 			{
 				// Just execute it directly inside the current thread, not worth the additional threading effort
-				::detail::simdSphereCulling(planes, *mCullableSceneItemSet, 0, itemCount, mCullableSceneItemSet->visibilityFlag.data());
+				::detail::simdSphereCulling(worldSpaceCameraPositionDouble4, planes, *mCullableSceneItemSet, 0, itemCount, mCullableSceneItemSet->visibilityFlag.data());
 			}
 			else
 			{
@@ -716,7 +731,7 @@ namespace RendererRuntime
 				for (size_t threadIndex = 0; threadIndex < threadCount; ++threadIndex)
 				{
 					const size_t numberOfItemsToProcess = (threadIndex >= threadCount - 1) ? itemCount : splitCount;	// The last thread has to do all the rest of the remaining work
-					defaultThreadPool.queueTask(std::bind(::detail::simdSphereCulling, planes, *mCullableSceneItemSet, threadSceneItemIndexOffset, threadSceneItemIndexOffset + numberOfItemsToProcess, mCullableSceneItemSet->visibilityFlag.data()));
+					defaultThreadPool.queueTask(std::bind(::detail::simdSphereCulling, worldSpaceCameraPositionDouble4, planes, *mCullableSceneItemSet, threadSceneItemIndexOffset, threadSceneItemIndexOffset + numberOfItemsToProcess, mCullableSceneItemSet->visibilityFlag.data()));
 					itemCount -= splitCount;
 					threadSceneItemIndexOffset += splitCount;
 				}
@@ -761,7 +776,7 @@ namespace RendererRuntime
 			if (1 == threadCount)
 			{
 				// Just execute it directly inside the current thread, not worth the additional threading effort
-				::detail::simdOobbCulling(simd_view_proj, *mCullableSceneItemSet, mIndirection.data(), 0, itemCount, mCullableSceneItemSet->visibilityFlag.data());
+				::detail::simdOobbCulling(worldSpaceCameraPositionFloat4, simd_view_proj, *mCullableSceneItemSet, mIndirection.data(), 0, itemCount, mCullableSceneItemSet->visibilityFlag.data());
 			}
 			else
 			{
@@ -770,7 +785,7 @@ namespace RendererRuntime
 				for (size_t threadIndex = 0; threadIndex < threadCount; ++threadIndex)
 				{
 					const size_t numberOfItemsToProcess = (threadIndex >= threadCount - 1) ? itemCount : splitCount;	// The last thread has to do all the rest of the remaining work
-					defaultThreadPool.queueTask(std::bind(::detail::simdOobbCulling, simd_view_proj, *mCullableSceneItemSet, mIndirection.data(), threadSceneItemIndexOffset, threadSceneItemIndexOffset + numberOfItemsToProcess, mCullableSceneItemSet->visibilityFlag.data()));
+					defaultThreadPool.queueTask(std::bind(::detail::simdOobbCulling, worldSpaceCameraPositionFloat4, simd_view_proj, *mCullableSceneItemSet, mIndirection.data(), threadSceneItemIndexOffset, threadSceneItemIndexOffset + numberOfItemsToProcess, mCullableSceneItemSet->visibilityFlag.data()));
 					itemCount -= splitCount;
 					threadSceneItemIndexOffset += splitCount;
 				}
@@ -784,7 +799,7 @@ namespace RendererRuntime
 		const uint32_t numberOfOobbVisible = ::detail::removeNotVisible(*mCullableSceneItemSet, numberOfVisibleItems, mIndirection.data(), mIndirection.data());
 
 		// Fill render queue index ranges with the visible stuff
-		const glm::vec3& cameraPosition = cameraSceneItem->getParentSceneNodeSafe().getGlobalTransform().position;
+		const glm::dvec3& cameraPosition = cameraSceneItem->getParentSceneNodeSafe().getGlobalTransform().position;
 		for (uint32_t indirectionIndex = 0; indirectionIndex < numberOfOobbVisible; ++indirectionIndex)
 		{
 			::detail::gatherRenderQueueIndexRangesRenderableManagersBySceneItem(*mCullableSceneItemSet->sceneItemVector[mIndirection[indirectionIndex]], cameraPosition, renderQueueIndexRanges);

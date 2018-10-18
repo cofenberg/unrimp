@@ -58,7 +58,7 @@ namespace RendererRuntime
 		//[ Definitions                                           ]
 		//[-------------------------------------------------------]
 		static constexpr uint32_t FORMAT_TYPE	 = STRING_ID("Scene");
-		static constexpr uint32_t FORMAT_VERSION = 3;
+		static constexpr uint32_t FORMAT_VERSION = 4;
 
 		#pragma pack(push)
 		#pragma pack(1)
