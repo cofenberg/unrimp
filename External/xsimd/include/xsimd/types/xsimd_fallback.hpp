@@ -91,6 +91,9 @@ namespace xsimd
     {
     public:
 
+        using self_type = batch<T, N>;
+        using base_type = simd_batch<self_type>;
+
         batch();
         explicit batch(T f);
 
@@ -109,41 +112,12 @@ namespace xsimd
 
         operator std::array<T, N>() const;
 
-        batch& load_aligned(const float* src);
-        batch& load_unaligned(const float* src);
+        XSIMD_DECLARE_LOAD_STORE_ALL(T, N);
 
-        batch& load_aligned(const double* src);
-        batch& load_unaligned(const double* src);
-
-        batch& load_aligned(const int32_t* src);
-        batch& load_unaligned(const int32_t* src);
-
-        batch& load_aligned(const int64_t* src);
-        batch& load_unaligned(const int64_t* src);
-
-        batch& load_aligned(const char* src);
-        batch& load_unaligned(const char* src);
-
-        batch& load_aligned(const unsigned char* src);
-        batch& load_unaligned(const unsigned char* src);
-
-        void store_aligned(float* dst) const;
-        void store_unaligned(float* dst) const;
-
-        void store_aligned(double* dst) const;
-        void store_unaligned(double* dst) const;
-
-        void store_aligned(int32_t* dst) const;
-        void store_unaligned(int32_t* dst) const;
-
-        void store_aligned(int64_t* dst) const;
-        void store_unaligned(int64_t* dst) const;
-
-        void store_aligned(char* dst) const;
-        void store_unaligned(char* dst) const;
-
-        void store_aligned(unsigned char* dst) const;
-        void store_unaligned(unsigned char* dst) const;
+        using base_type::load_aligned;
+        using base_type::load_unaligned;
+        using base_type::store_aligned;
+        using base_type::store_unaligned;
 
         const T& operator[](std::size_t index) const;
         T& operator[](std::size_t index);
@@ -575,7 +549,7 @@ namespace xsimd
     template <typename T, std::size_t N>
     template <typename... Args, typename Enable>
     inline batch<T, N>::batch(Args... exactly_N_scalars)
-        : m_value{ exactly_N_scalars... }
+        : m_value{ static_cast<T>(exactly_N_scalars)... }
     {
     }
 
@@ -616,148 +590,40 @@ namespace xsimd
         return m_value;
     }
 
-    template <typename T, std::size_t N>
-    inline batch<T, N>& batch<T, N>::load_aligned(const float* src)
-    {
-        return this->load_unaligned_impl(src);
+#define FALLBACK_DEFINE_LOAD_STORE(TYPE)                             \
+    template <typename T, std::size_t N>                             \
+    inline batch<T, N>& batch<T, N>::load_aligned(const TYPE* src)   \
+    {                                                                \
+        return this->load_unaligned_impl(src);                       \
+    }                                                                \
+    template <typename T, std::size_t N>                             \
+    inline batch<T, N>& batch<T, N>::load_unaligned(const TYPE* src) \
+    {                                                                \
+        return this->load_unaligned_impl(src);                       \
+    }                                                                \
+    template <typename T, std::size_t N>                             \
+    inline void batch<T, N>::store_aligned(TYPE* dst) const          \
+    {                                                                \
+        this->store_unaligned_impl(dst);                             \
+    }                                                                \
+    template <typename T, std::size_t N>                             \
+    inline void batch<T, N>::store_unaligned(TYPE* dst) const        \
+    {                                                                \
+        this->store_unaligned_impl(dst);                             \
     }
 
-    template <typename T, std::size_t N>
-    inline batch<T, N>& batch<T, N>::load_unaligned(const float* src)
-    {
-        return this->load_unaligned_impl(src);
-    }
+    FALLBACK_DEFINE_LOAD_STORE(int8_t)
+    FALLBACK_DEFINE_LOAD_STORE(uint8_t)
+    FALLBACK_DEFINE_LOAD_STORE(int16_t)
+    FALLBACK_DEFINE_LOAD_STORE(uint16_t)
+    FALLBACK_DEFINE_LOAD_STORE(int32_t)
+    FALLBACK_DEFINE_LOAD_STORE(uint32_t)
+    FALLBACK_DEFINE_LOAD_STORE(int64_t)
+    FALLBACK_DEFINE_LOAD_STORE(uint64_t)
+    FALLBACK_DEFINE_LOAD_STORE(float)
+    FALLBACK_DEFINE_LOAD_STORE(double)
 
-    template <typename T, std::size_t N>
-    inline batch<T, N>& batch<T, N>::load_aligned(const double* src)
-    {
-        return this->load_unaligned_impl(src);
-    }
-
-    template <typename T, std::size_t N>
-    inline batch<T, N>& batch<T, N>::load_unaligned(const double* src)
-    {
-        return this->load_unaligned_impl(src);
-    }
-
-    template <typename T, std::size_t N>
-    inline batch<T, N>& batch<T, N>::load_aligned(const int32_t* src)
-    {
-        return this->load_unaligned_impl(src);
-    }
-
-    template <typename T, std::size_t N>
-    inline batch<T, N>& batch<T, N>::load_unaligned(const int32_t* src)
-    {
-        return this->load_unaligned_impl(src);
-    }
-
-    template <typename T, std::size_t N>
-    inline batch<T, N>& batch<T, N>::load_aligned(const int64_t* src)
-    {
-        return this->load_unaligned_impl(src);
-    }
-
-    template <typename T, std::size_t N>
-    inline batch<T, N>& batch<T, N>::load_unaligned(const int64_t* src)
-    {
-        return this->load_unaligned_impl(src);
-    }
-
-    template <typename T, std::size_t N>
-    inline batch<T, N>& batch<T, N>::load_aligned(const char* src)
-    {
-        return this->load_unaligned_impl(src);
-    }
-
-    template <typename T, std::size_t N>
-    inline batch<T, N>& batch<T, N>::load_unaligned(const char* src)
-    {
-        return this->load_unaligned_impl(src);
-    }
-
-    template <typename T, std::size_t N>
-    inline batch<T, N>& batch<T, N>::load_aligned(const unsigned char* src)
-    {
-        return  this->load_unaligned_impl(src);
-    }
-
-    template <typename T, std::size_t N>
-    inline batch<T, N>& batch<T, N>::load_unaligned(const unsigned char* src)
-    {
-        return this->load_unaligned_impl(src);
-    }
-
-    template <typename T, std::size_t N>
-    inline void batch<T, N>::store_aligned(float* dst) const
-    {
-        this->store_unaligned_impl(dst);
-    }
-
-    template <typename T, std::size_t N>
-    inline void batch<T, N>::store_unaligned(float* dst) const
-    {
-        this->store_unaligned_impl(dst);
-    }
-
-    template <typename T, std::size_t N>
-    inline void batch<T, N>::store_aligned(double* dst) const
-    {
-        this->store_unaligned_impl(dst);
-    }
-
-    template <typename T, std::size_t N>
-    inline void batch<T, N>::store_unaligned(double* dst) const
-    {
-        this->store_unaligned_impl(dst);
-    }
-
-    template <typename T, std::size_t N>
-    inline void batch<T, N>::store_aligned(int32_t* dst) const
-    {
-        this->store_unaligned_impl(dst);
-    }
-
-    template <typename T, std::size_t N>
-    inline void batch<T, N>::store_unaligned(int32_t* dst) const
-    {
-        this->store_unaligned_impl(dst);
-    }
-
-    template <typename T, std::size_t N>
-    inline void batch<T, N>::store_aligned(int64_t* dst) const
-    {
-        this->store_unaligned_impl(dst);
-    }
-
-    template <typename T, std::size_t N>
-    inline void batch<T, N>::store_unaligned(int64_t* dst) const
-    {
-        this->store_unaligned_impl(dst);
-    }
-
-    template <typename T, std::size_t N>
-    inline void batch<T, N>::store_aligned(char* dst) const
-    {
-        this->store_unaligned_impl(dst);
-    }
-
-    template <typename T, std::size_t N>
-    inline void batch<T, N>::store_unaligned(char* dst) const
-    {
-        this->store_unaligned_impl(dst);
-    }
-
-    template <typename T, std::size_t N>
-    inline void batch<T, N>::store_aligned(unsigned char* dst) const
-    {
-        this->store_unaligned_impl(dst);
-    }
-    template <typename T, std::size_t N>
-    inline void batch<T, N>::store_unaligned(unsigned char* dst) const
-    {
-        this->store_unaligned_impl(dst);
-    }
+#undef FALLBACK_DEFINE_LOAD_STORE
 
     template <typename T, std::size_t N>
     inline const T& batch<T, N>::operator[](std::size_t index) const
@@ -822,6 +688,11 @@ namespace xsimd
             static batch_type div(const batch_type& lhs, const batch_type& rhs)
             {
                 XSIMD_FALLBACK_BINARY_OP(batch, /, lhs, rhs)
+            }
+
+            static batch_type mod(const batch_type& lhs, const batch_type& rhs)
+            {
+                XSIMD_FALLBACK_BINARY_OP(batch, % , lhs, rhs)
             }
 
             static batch_bool_type eq(const batch_type& lhs, const batch_type& rhs)
