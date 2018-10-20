@@ -95,6 +95,16 @@ namespace RendererRuntime
 		return interval ? (value - floor((value - minimum) / interval) * (maximum - minimum)) : minimum;
 	}
 
+	double Math::wrapToInterval(double value, double minimum, double maximum)
+	{
+		// Wrap as described at http://en.wikipedia.org/wiki/Wrapping_%28graphics%29
+		//   value' = value - rounddown((value-min)/(max-min))*(max-min)
+		// -> In here, there's no need to check for swapped minimum/maximum, it's handled correctly
+		// -> Check interval in order to avoid an evil division through zero
+		const double interval = (maximum - minimum);
+		return interval ? (value - floor((value - minimum) / interval) * (maximum - minimum)) : minimum;
+	}
+
 	float Math::makeMultipleOf(float value, float primaryValue)
 	{
 		return std::floor(value / primaryValue + 0.5f) * primaryValue;

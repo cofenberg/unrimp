@@ -173,6 +173,7 @@ namespace RendererRuntime
 		*    - In case of violating the interface specification by swapping minimum/maximum the result will not be different to the one of the correct order
 		*/
 		[[nodiscard]] RENDERERRUNTIME_API_EXPORT static float wrapToInterval(float value, float minimum, float maximum);
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT static double wrapToInterval(double value, double minimum, double maximum);
 
 		/**
 		*  @brief

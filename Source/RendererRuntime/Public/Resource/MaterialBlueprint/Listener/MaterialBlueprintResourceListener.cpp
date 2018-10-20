@@ -87,7 +87,8 @@ namespace
 			DEFINE_CONSTANT(CLIP_SPACE_TO_VIEW_SPACE_MATRIX)			///< "FLOAT_4_4"-type, only valid for graphics pipeline
 			DEFINE_CONSTANT(CLIP_SPACE_TO_WORLD_SPACE_MATRIX)			///< "FLOAT_4_4"-type, only valid for graphics pipeline
 			// DEFINE_CONSTANT(WORLD_SPACE_CAMERA_POSITION)				///< "FLOAT_3"-type, since we're using camera relative rendering this is always a null vector and hence we don't need to provide a parameter for this, don't delete this reminder comment
-			DEFINE_CONSTANT(UNMODIFIED_WORLD_SPACE_CAMERA_POSITION)		///< "FLOAT_3"-type, original unmodified world space camera position which isn't adjusted for camera relative rendering, try to avoid using this parameter
+			DEFINE_CONSTANT(UNMODIFIED_WORLD_SPACE_CAMERA_POSITION)		///< "FLOAT_3"-type, original unmodified world space camera position which isn't adjusted for camera relative rendering, try to avoid using this parameter - TODO(co) "UNMODIFIED_WORLD_SPACE_CAMERA_POSITION" shouldn't be used due to the loss of precision
+			DEFINE_CONSTANT(WRAPPED_WORLD_SPACE_CAMERA_POSITION)		///< "FLOAT_3"-type, original wrapped world space camera position which isn't adjusted for camera relative rendering, try to avoid using this parameter since due to the value wrapping to avoid huge values, there might be visible artefact's depending on the use-case
 			DEFINE_CONSTANT(VIEW_SPACE_FRUSTUM_CORNERS)					///< "FLOAT_4_4"-type, only valid for graphics pipeline
 			DEFINE_CONSTANT(VIEW_SPACE_SUNLIGHT_DIRECTION)				///< "FLOAT_3"-type
 
@@ -570,6 +571,16 @@ namespace RendererRuntime
 				assert(sizeof(float) * 3 == numberOfBytes);
 				// TODO(co) "UNMODIFIED_WORLD_SPACE_CAMERA_POSITION" shouldn't be used due to the loss of precision
 				const glm::vec3 worldSpaceCameraPosition = mWorldSpaceCameraPosition;
+				memcpy(buffer, glm::value_ptr(worldSpaceCameraPosition), numberOfBytes);
+				break;
+			}
+
+			case ::detail::WRAPPED_WORLD_SPACE_CAMERA_POSITION:
+			{
+				assert(sizeof(float) * 3 == numberOfBytes);
+				const double minimum = -1000.0;
+				const double maximum =  1000.0;
+				const glm::vec3 worldSpaceCameraPosition(Math::wrapToInterval(mWorldSpaceCameraPosition.x, minimum, maximum), Math::wrapToInterval(mWorldSpaceCameraPosition.y, minimum, maximum), Math::wrapToInterval(mWorldSpaceCameraPosition.z, minimum, maximum));
 				memcpy(buffer, glm::value_ptr(worldSpaceCameraPosition), numberOfBytes);
 				break;
 			}

@@ -63,7 +63,7 @@ struct PassDataStruct
 	float4	 ViewSpaceToWorldSpaceQuaternion;
 	float4	 WorldSpaceToViewSpaceQuaternion;
 	float4	 WetSurfaces;	// x=wet level, y=hole/cracks flood level, z=puddle flood level, w=rain intensity
-	float3	 UnmodifiedWorldSpaceCameraPosition;
+	float3	 WrappedWorldSpaceCameraPosition;
 	float3	 ViewSpaceSunlightDirection;
 	float3	 AmbientColor;
 	float3	 SunlightColor;

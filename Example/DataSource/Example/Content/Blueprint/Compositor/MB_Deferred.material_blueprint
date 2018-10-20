@@ -216,11 +216,11 @@
 							"ValueType": "FLOAT_4",
 							"Value": "@GlobalWetSurfaces"
 						},
-						"UnmodifiedWorldSpaceCameraPosition":
+						"WrappedWorldSpaceCameraPosition":
 						{
 							"Usage": "PASS_REFERENCE",
 							"ValueType": "FLOAT_3",
-							"Value": "@UNMODIFIED_WORLD_SPACE_CAMERA_POSITION"
+							"Value": "@WRAPPED_WORLD_SPACE_CAMERA_POSITION"
 						},
 						"ViewSpaceSunlightDirection":
 						{
