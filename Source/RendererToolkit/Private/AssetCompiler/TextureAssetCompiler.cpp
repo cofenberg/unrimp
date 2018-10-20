@@ -46,6 +46,8 @@ PRAGMA_WARNING_POP
 PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4005)						// warning C4005: '_HAS_EXCEPTIONS': macro redefinition
 	PRAGMA_WARNING_DISABLE_MSVC(4061)						// warning C4061: enumerator 'crnlib::PIXEL_FMT_INVALID' in switch of enum 'crnlib::pixel_format' is not explicitly handled by a case label
+	PRAGMA_WARNING_DISABLE_MSVC(4302)						// warning C4302: 'type cast': truncation from 'crnd::uint8 *' to 'crnd::uint32'
+	PRAGMA_WARNING_DISABLE_MSVC(4311)						// warning C4311: 'type cast': pointer truncation from 'crnd::uint8 *' to 'crnd::uint32'
 	PRAGMA_WARNING_DISABLE_MSVC(4365)						// warning C4365: 'argument': conversion from 'long' to 'crnlib::uint', signed/unsigned mismatch
 	PRAGMA_WARNING_DISABLE_MSVC(4464)						// warning C4464: relative include path contains '..'
 	PRAGMA_WARNING_DISABLE_MSVC(4555)						// warning C4555: result of expression not used
