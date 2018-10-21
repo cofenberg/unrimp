@@ -8,7 +8,10 @@
 
       // Usually fixed directories
       "BuildDirectory": "${workspaceRoot}\\.vs\\unrimp\\CMakeBuilds\\build",
-      "InstallDirectory": "${workspaceRoot}\\.vs\\unrimp\\CMakeBuilds\\install"
+      "InstallDirectory": "${workspaceRoot}\\.vs\\unrimp\\CMakeBuilds\\install",
+
+      // "Additional Environment Variables"-tip from https://www.3dgep.com/cmake-visual-studio-2017/
+      "NINJA_STATUS": "[%f/%t %es]"
     }
   ],
   "configurations": [
@@ -22,7 +25,14 @@
       "installRoot": "${env.InstallDirectory}\\${name}",
       "cmakeCommandArgs": "-DARCHITECTURE_X86=1 -DEXAMPLE_SDL2_ENABLED=${env.EXAMPLE_SDL2_ENABLED} -DSDL2_DIR=\"${env.SDL2_DIR}\"",
       "buildCommandArgs": "-v",
-      "ctestCommandArgs": ""
+      "ctestCommandArgs": "",
+
+	  // "Additional Environment Variables"-tip from https://www.3dgep.com/cmake-visual-studio-2017/
+      "environments": [
+        {
+          "NINJA_STATUS": "[%f/%t %es]"
+        }
+      ]
     },
     {
       "name": "Windows_x86_Shared",
@@ -33,7 +43,14 @@
       "installRoot": "${env.InstallDirectory}\\${name}",
       "cmakeCommandArgs": "-DARCHITECTURE_X86=1 -DEXAMPLE_SDL2_ENABLED=${env.EXAMPLE_SDL2_ENABLED} -DSDL2_DIR=\"${env.SDL2_DIR}\"",
       "buildCommandArgs": "-v",
-      "ctestCommandArgs": ""
+      "ctestCommandArgs": "",
+
+	  // "Additional Environment Variables"-tip from https://www.3dgep.com/cmake-visual-studio-2017/
+      "environments": [
+        {
+          "NINJA_STATUS": "[%f/%t %es]"
+        }
+      ]
     },
     {
       "name": "Windows_x64d_Shared",
@@ -44,7 +61,14 @@
       "installRoot": "${env.InstallDirectory}\\${name}",
       "cmakeCommandArgs": "-DARCHITECTURE_X64=1 -DEXAMPLE_SDL2_ENABLED=${env.EXAMPLE_SDL2_ENABLED} -DSDL2_DIR=\"${env.SDL2_DIR}\"",
       "buildCommandArgs": "-v",
-      "ctestCommandArgs": ""
+      "ctestCommandArgs": "",
+
+	  // "Additional Environment Variables"-tip from https://www.3dgep.com/cmake-visual-studio-2017/
+      "environments": [
+        {
+          "NINJA_STATUS": "[%f/%t %es]"
+        }
+      ]
     },
     {
       "name": "Windows_x64_Shared",
@@ -55,7 +79,14 @@
       "installRoot": "${env.InstallDirectory}\\${name}",
       "cmakeCommandArgs": "-DARCHITECTURE_X64=1 -DEXAMPLE_SDL2_ENABLED=${env.EXAMPLE_SDL2_ENABLED} -DSDL2_DIR=\"${env.SDL2_DIR}\"",
       "buildCommandArgs": "-v",
-      "ctestCommandArgs": ""
+      "ctestCommandArgs": "",
+
+	  // "Additional Environment Variables"-tip from https://www.3dgep.com/cmake-visual-studio-2017/
+      "environments": [
+        {
+          "NINJA_STATUS": "[%f/%t %es]"
+        }
+      ]
     },
     {
       "name": "Windows_x86d_Static",
@@ -66,7 +97,14 @@
       "installRoot": "${env.InstallDirectory}\\${name}",
       "cmakeCommandArgs": "-DARCHITECTURE_X86=1 -DSHARED_LIBRARY=0 -DEXAMPLE_SDL2_ENABLED=${env.EXAMPLE_SDL2_ENABLED} -DSDL2_DIR=\"${env.SDL2_DIR}\"",
       "buildCommandArgs": "-v",
-      "ctestCommandArgs": ""
+      "ctestCommandArgs": "",
+
+	  // "Additional Environment Variables"-tip from https://www.3dgep.com/cmake-visual-studio-2017/
+      "environments": [
+        {
+          "NINJA_STATUS": "[%f/%t %es]"
+        }
+      ]
     },
     {
       "name": "Windows_x86_Static",
@@ -77,7 +115,14 @@
       "installRoot": "${env.InstallDirectory}\\${name}",
       "cmakeCommandArgs": "-DARCHITECTURE_X86=1 -DSHARED_LIBRARY=0 -DEXAMPLE_SDL2_ENABLED=${env.EXAMPLE_SDL2_ENABLED} -DSDL2_DIR=\"${env.SDL2_DIR}\"",
       "buildCommandArgs": "-v",
-      "ctestCommandArgs": ""
+      "ctestCommandArgs": "",
+
+	  // "Additional Environment Variables"-tip from https://www.3dgep.com/cmake-visual-studio-2017/
+      "environments": [
+        {
+          "NINJA_STATUS": "[%f/%t %es]"
+        }
+      ]
     },
     {
       "name": "Windows_x64d_Static",
@@ -88,7 +133,14 @@
       "installRoot": "${env.InstallDirectory}\\${name}",
       "cmakeCommandArgs": "-DARCHITECTURE_X64=1 -DSHARED_LIBRARY=0 -DEXAMPLE_SDL2_ENABLED=${env.EXAMPLE_SDL2_ENABLED} -DSDL2_DIR=\"${env.SDL2_DIR}\"",
       "buildCommandArgs": "-v",
-      "ctestCommandArgs": ""
+      "ctestCommandArgs": "",
+
+	  // "Additional Environment Variables"-tip from https://www.3dgep.com/cmake-visual-studio-2017/
+      "environments": [
+        {
+          "NINJA_STATUS": "[%f/%t %es]"
+        }
+      ]
     },
     {
       "name": "Windows_x64_Static",
@@ -99,7 +151,14 @@
       "installRoot": "${env.InstallDirectory}\\${name}",
       "cmakeCommandArgs": "-DARCHITECTURE_X64=1 -DSHARED_LIBRARY=0 -DEXAMPLE_SDL2_ENABLED=${env.EXAMPLE_SDL2_ENABLED} -DSDL2_DIR=\"${env.SDL2_DIR}\"",
       "buildCommandArgs": "-v",
-      "ctestCommandArgs": ""
+      "ctestCommandArgs": "",
+
+	  // "Additional Environment Variables"-tip from https://www.3dgep.com/cmake-visual-studio-2017/
+      "environments": [
+        {
+          "NINJA_STATUS": "[%f/%t %es]"
+        }
+      ]
     },
 
     // TODO(co) Android
@@ -112,7 +171,14 @@
       "installRoot": "${env.InstallDirectory}\\${name}",
       "cmakeCommandArgs": "-DCMAKE_TOOLCHAIN_FILE:FILEPATH=\"${workspaceRoot}\\Build\\AndroidToolchain.cmake\" -DARCHITECTURE_X64=1 -DSHARED_LIBRARY=0",
       "buildCommandArgs": "-v",
-      "ctestCommandArgs": ""
+      "ctestCommandArgs": "",
+
+	  // "Additional Environment Variables"-tip from https://www.3dgep.com/cmake-visual-studio-2017/
+      "environments": [
+        {
+          "NINJA_STATUS": "[%f/%t %es]"
+        }
+      ]
     },
     {
       "name": "TODO(co) Android_arm64_Static",
@@ -123,7 +189,14 @@
       "installRoot": "${env.InstallDirectory}\\${name}",
       "cmakeCommandArgs": "-DCMAKE_TOOLCHAIN_FILE:FILEPATH=\"${workspaceRoot}\\Build\\AndroidToolchain.cmake\" -DARCHITECTURE_X64=1 -DSHARED_LIBRARY=0",
       "buildCommandArgs": "-v",
-      "ctestCommandArgs": ""
+      "ctestCommandArgs": "",
+
+	  // "Additional Environment Variables"-tip from https://www.3dgep.com/cmake-visual-studio-2017/
+      "environments": [
+        {
+          "NINJA_STATUS": "[%f/%t %es]"
+        }
+      ]
     },
 
     // TODO(co) Linux
