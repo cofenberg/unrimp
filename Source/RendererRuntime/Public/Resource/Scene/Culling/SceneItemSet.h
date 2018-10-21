@@ -101,6 +101,7 @@ namespace RendererRuntime
 		FloatVector maximumZ;
 
 		// Object space to world space matrix
+		// TODO(co) Add 64 bit world space position support
 		FloatVector worldXX;
 		FloatVector worldXY;
 		FloatVector worldXZ;
@@ -118,10 +119,11 @@ namespace RendererRuntime
 		FloatVector worldWZ;
 		FloatVector worldWW;
 
-		// 64 bit world space position center of bounding sphere (the bounding sphere isn't always at the object center, so we need to store this beside the transform position)
-		DoubleVector spherePositionX;
-		DoubleVector spherePositionY;
-		DoubleVector spherePositionZ;
+		// 32 bit world space position center of bounding sphere (the bounding sphere isn't always at the object center, so we need to store this beside the transform position)
+		// TODO(co) Add 64 bit world space position support
+		FloatVector spherePositionX;
+		FloatVector spherePositionY;
+		FloatVector spherePositionZ;
 
 		// Negative world space radius of bounding sphere, the bounding sphere radius is enclosing the bounding box (don't use the inner bounding box radius)
 		FloatVector negativeRadius;

@@ -172,9 +172,9 @@ namespace RendererRuntime
 						const glm::vec3& boundingSpherePosition = meshResource->getBoundingSpherePosition();
 						const glm::dvec3& position = mGlobalTransform.position;
 						const glm::vec3& scale = mGlobalTransform.scale;
-						sceneItemSet->spherePositionX[sceneItemSetIndex] = boundingSpherePosition.x * scale.x + position.x;
-						sceneItemSet->spherePositionY[sceneItemSetIndex] = boundingSpherePosition.y * scale.y + position.y;
-						sceneItemSet->spherePositionZ[sceneItemSetIndex] = boundingSpherePosition.z * scale.z + position.z;
+						sceneItemSet->spherePositionX[sceneItemSetIndex] = static_cast<float>(boundingSpherePosition.x * scale.x + position.x);
+						sceneItemSet->spherePositionY[sceneItemSetIndex] = static_cast<float>(boundingSpherePosition.y * scale.y + position.y);
+						sceneItemSet->spherePositionZ[sceneItemSetIndex] = static_cast<float>(boundingSpherePosition.z * scale.z + position.z);
 					}
 
 					// Set negative world space radius of bounding sphere
@@ -183,17 +183,17 @@ namespace RendererRuntime
 				else
 				{
 					// Set world space center position of bounding sphere
-					sceneItemSet->spherePositionX[sceneItemSetIndex] = mGlobalTransform.position.x;
-					sceneItemSet->spherePositionY[sceneItemSetIndex] = mGlobalTransform.position.y;
-					sceneItemSet->spherePositionZ[sceneItemSetIndex] = mGlobalTransform.position.z;
+					sceneItemSet->spherePositionX[sceneItemSetIndex] = static_cast<float>(mGlobalTransform.position.x);
+					sceneItemSet->spherePositionY[sceneItemSetIndex] = static_cast<float>(mGlobalTransform.position.y);
+					sceneItemSet->spherePositionZ[sceneItemSetIndex] = static_cast<float>(mGlobalTransform.position.z);
 				}
 			}
 			else
 			{
 				// Set world space center position of bounding sphere
-				sceneItemSet->spherePositionX[sceneItemSetIndex] = mGlobalTransform.position.x;
-				sceneItemSet->spherePositionY[sceneItemSetIndex] = mGlobalTransform.position.y;
-				sceneItemSet->spherePositionZ[sceneItemSetIndex] = mGlobalTransform.position.z;
+				sceneItemSet->spherePositionX[sceneItemSetIndex] = static_cast<float>(mGlobalTransform.position.x);
+				sceneItemSet->spherePositionY[sceneItemSetIndex] = static_cast<float>(mGlobalTransform.position.y);
+				sceneItemSet->spherePositionZ[sceneItemSetIndex] = static_cast<float>(mGlobalTransform.position.z);
 			}
 		}
 	}
