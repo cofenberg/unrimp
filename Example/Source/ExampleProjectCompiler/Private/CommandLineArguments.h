@@ -127,7 +127,7 @@ public:
 	*  @return
 	*    The argument at the given index or an empty string when index is out of range
 	*/
-	[[nodiscard]] inline std::string_view getArgumentAtIndex(uint32_t index) const
+	[[nodiscard]] inline std::string getArgumentAtIndex(uint32_t index) const
 	{
 		return (index >= mArguments.size()) ? "" : mArguments[index];
 	}

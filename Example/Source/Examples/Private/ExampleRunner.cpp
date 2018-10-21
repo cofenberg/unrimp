@@ -205,7 +205,7 @@ bool ExampleRunner::parseCommandLineArguments(const CommandLineArguments& comman
 	const uint32_t numberOfArguments = commandLineArguments.getCount();
 	for (uint32_t argumentIndex = 0; argumentIndex < numberOfArguments; ++argumentIndex)
 	{
-		const std::string_view argument = commandLineArguments.getArgumentAtIndex(argumentIndex);
+		const std::string argument = commandLineArguments.getArgumentAtIndex(argumentIndex);
 		if ("-r" != argument)
 		{
 			mCurrentExampleName = argument;

@@ -189,6 +189,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED	ON)
 set(CMAKE_CXX_EXTENSIONS		OFF)	# "Disable Language Extensions" = "Yes (/Za)"
 
 if(WIN32)
+	set(CMAKE_VS_INCLUDE_INSTALL_TO_DEFAULT_BUILD ON)
+
 	# Used options:
 	# - "Warning Level"						= "EnableAllWarnings (/Wall)"
 	# - "Treat Warnings As Error"			= "Yes (/WX)""
@@ -380,6 +382,10 @@ endif()
 add_subdirectory(Source)
 if(EXAMPLES)
 	add_subdirectory(Example/Source/Examples)
+	if(WIN32)
+		# Set the startup project
+		set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT "Examples")
+	endif()
 endif()
 if(EXAMPLE_PROJECT_COMPILER AND RENDERER_RUNTIME AND RENDERER_TOOLKIT)
 	add_subdirectory(Example/Source/ExampleProjectCompiler)

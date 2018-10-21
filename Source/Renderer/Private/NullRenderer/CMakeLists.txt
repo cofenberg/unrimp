@@ -60,7 +60,14 @@ endif()
 ##################################################
 ## Post build
 ##################################################
-add_custom_command(TARGET NullRenderer COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBRARY_PREFIX}NullRenderer${LIBRARY_SUFFIX}" ${OUTPUT_LIBRARY_BINARY_DIRECTORY})
 if(WIN32 AND SHARED_LIBRARY)
 	add_custom_command(TARGET NullRenderer COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/NullRenderer.lib" ${OUTPUT_LIBRARY_DIRECTORY})
 endif()
+
+
+##################################################
+## Install
+##################################################
+install(TARGETS NullRenderer
+		RUNTIME DESTINATION "${OUTPUT_LIBRARY_BINARY_DIRECTORY}"
+		ARCHIVE DESTINATION "${OUTPUT_LIBRARY_DIRECTORY}")

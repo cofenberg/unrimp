@@ -94,6 +94,6 @@ endif()
 
 
 ##################################################
-## Post build
+## Install
 ##################################################
-add_custom_command(TARGET ExampleProjectCompiler COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/ExampleProjectCompiler${CMAKE_EXECUTABLE_SUFFIX}" ${OUTPUT_BINARY_DIRECTORY})
+install(TARGETS ExampleProjectCompiler RUNTIME DESTINATION "${OUTPUT_BINARY_DIRECTORY}")

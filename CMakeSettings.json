@@ -8,7 +8,7 @@
 
       // Usually fixed directories
       "BUILD_ROOT": "${workspaceRoot}\\.vs\\unrimp\\CMakeBuilds\\build\\${name}",
-      "INSTALL_ROOT": "${workspaceRoot}\\.vs\\unrimp\\CMakeBuilds\\install\\${name}",
+      "INSTALL_ROOT": "${workspaceRoot}\\Binary\\${name}",
 
       // "Additional Environment Variables"-tip from https://www.3dgep.com/cmake-visual-studio-2017/
       "NINJA_STATUS": "[%f/%t %es]"

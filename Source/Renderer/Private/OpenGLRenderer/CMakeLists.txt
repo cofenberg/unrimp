@@ -105,7 +105,14 @@ endif()
 ##################################################
 ## Post build
 ##################################################
-add_custom_command(TARGET OpenGLRenderer COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBRARY_PREFIX}OpenGLRenderer${LIBRARY_SUFFIX}" ${OUTPUT_LIBRARY_BINARY_DIRECTORY})
 if(WIN32 AND SHARED_LIBRARY)
 	add_custom_command(TARGET OpenGLRenderer COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/OpenGLRenderer.lib" ${OUTPUT_LIBRARY_DIRECTORY})
 endif()
+
+
+##################################################
+## Install
+##################################################
+install(TARGETS OpenGLRenderer
+		RUNTIME DESTINATION "${OUTPUT_LIBRARY_BINARY_DIRECTORY}"
+		ARCHIVE DESTINATION "${OUTPUT_LIBRARY_DIRECTORY}")

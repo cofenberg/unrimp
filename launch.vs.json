@@ -4,31 +4,18 @@
   "version": "0.2.1",
   "defaults": {},
   "configurations": [
-    // Used when pressing F5 to debug the application
-    {
-      "type": "dll",
-      "project": "CMakeLists.txt",
-      "name": "CMakeLists.txt",
-      "exe": "${workspaceRoot}\\Binary\\Windows_x86d_Shared\\Examples.exe",
-      "currentDir": "${workspaceRoot}\\Binary\\Windows_x86d_Shared\\",
-      "args": [ "" ]
-    },
-    // "Debug from Build Folder": "Examples.exe (Example\\Examples\\Examples.exe)"
     {
       "type": "default",
       "project": "CMakeLists.txt",
-      "projectTarget": "Examples.exe (Example\\Examples\\Examples.exe)",
-      "name": "Examples.exe (Example\\Examples\\Examples.exe)",
-      "currentDir": "${workspaceRoot}\\Binary\\Windows_x86d_Shared\\",
+      "projectTarget": "Examples.exe (Install)",
+      "name": "Examples.exe (Install with Arguments)",
       "args": [ "ImGuiExampleSelector -r Direct3D11" ]
     },
-    // "Debug from Build Folder": "ExampleProjectCompiler.exe (Example\\ExampleProjectCompiler\\ExampleProjectCompiler.exe)"
     {
       "type": "default",
       "project": "CMakeLists.txt",
-      "projectTarget": "ExampleProjectCompiler.exe (Example\\ExampleProjectCompiler\\ExampleProjectCompiler.exe)",
-      "name": "ExampleProjectCompiler.exe (Example\\ExampleProjectCompiler\\ExampleProjectCompiler.exe)",
-      "currentDir": "${workspaceRoot}\\Binary\\Windows_x86d_Shared\\",
+      "projectTarget": "ExampleProjectCompiler.exe (Install)",
+      "name": "ExampleProjectCompiler.exe (Install with Arguments)",
       "args": [ "Direct3D11_50" ]
     }
   ]

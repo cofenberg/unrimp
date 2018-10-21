@@ -122,7 +122,6 @@ endif()
 ##################################################
 ## Post build
 ##################################################
-add_custom_command(TARGET RendererRuntime COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBRARY_PREFIX}RendererRuntime${LIBRARY_SUFFIX}" ${OUTPUT_LIBRARY_BINARY_DIRECTORY})
 if(WIN32)
 	if(SHARED_LIBRARY)
 		add_custom_command(TARGET RendererRuntime COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/RendererRuntime.lib" ${OUTPUT_LIBRARY_DIRECTORY})
@@ -133,3 +132,11 @@ if(WIN32)
 		add_custom_command(TARGET RendererRuntime COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/External/Windows_${ARCHITECTURE}/OpenVR/Binary/openvr_api.dll" ${OUTPUT_BINARY_DIRECTORY})
 	endif()
 endif()
+
+
+##################################################
+## Install
+##################################################
+install(TARGETS RendererRuntime
+		RUNTIME DESTINATION "${OUTPUT_LIBRARY_BINARY_DIRECTORY}"
+		ARCHIVE DESTINATION "${OUTPUT_LIBRARY_DIRECTORY}")

@@ -241,14 +241,14 @@ endif()
 ##################################################
 ## Post build
 ##################################################
-if(ANDROID)
-	add_custom_command(TARGET Examples COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${CMAKE_SHARED_LIBRARY_PREFIX}Examples${CMAKE_SHARED_LIBRARY_SUFFIX}" ${OUTPUT_BINARY_DIRECTORY})
-else()
-	add_custom_command(TARGET Examples COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/Examples${CMAKE_EXECUTABLE_SUFFIX}" ${OUTPUT_BINARY_DIRECTORY})
-endif()
-
 # Copy the SDL2 shared library, if necessary
 if(WIN32 AND SDL2_FOUND)
 	message("SDL copy " "${CMAKE_SOURCE_DIR}/External/SDL2/lib/${ARCHITECTURE}/SDL2.dll")
 	add_custom_command(TARGET Examples COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/External/SDL2/lib/${ARCHITECTURE}/SDL2.dll" ${OUTPUT_BINARY_DIRECTORY})
 endif()
+
+
+##################################################
+## Install
+##################################################
+install(TARGETS Examples RUNTIME DESTINATION "${OUTPUT_BINARY_DIRECTORY}")
