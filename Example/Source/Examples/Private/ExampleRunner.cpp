@@ -97,10 +97,10 @@ ExampleRunner::ExampleRunner() :
 	)
 {
 	// Sets of supported renderer backends
-	const std::array<std::string, 8> supportsAllRenderer	 = {{"Null", "Vulkan", "OpenGL", "OpenGLES3", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"}};
-	const std::array<std::string, 7> doesNotSupportOpenGLES3 = {{"Null", "Vulkan", "OpenGL", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"}};
-	const std::array<std::string, 6> onlyShaderModel4Plus	 = {{"Null", "Vulkan", "OpenGL", "Direct3D10", "Direct3D11", "Direct3D12"}};
-	const std::array<std::string, 5> onlyShaderModel5Plus    = {{"Null", "Vulkan", "OpenGL", "Direct3D11", "Direct3D12"}};
+	const std::array<std::string_view, 8> supportsAllRenderer	  = {{"Null", "Vulkan", "OpenGL", "OpenGLES3", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"}};
+	const std::array<std::string_view, 7> doesNotSupportOpenGLES3 = {{"Null", "Vulkan", "OpenGL", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"}};
+	const std::array<std::string_view, 6> onlyShaderModel4Plus	  = {{"Null", "Vulkan", "OpenGL", "Direct3D10", "Direct3D11", "Direct3D12"}};
+	const std::array<std::string_view, 5> onlyShaderModel5Plus    = {{"Null", "Vulkan", "OpenGL", "Direct3D11", "Direct3D12"}};
 
 	// Basics
 	addExample("FirstTriangle",					&runRenderExample<FirstTriangle>,				supportsAllRenderer);
@@ -205,7 +205,7 @@ bool ExampleRunner::parseCommandLineArguments(const CommandLineArguments& comman
 	const uint32_t numberOfArguments = commandLineArguments.getCount();
 	for (uint32_t argumentIndex = 0; argumentIndex < numberOfArguments; ++argumentIndex)
 	{
-		const std::string argument = commandLineArguments.getArgumentAtIndex(argumentIndex);
+		const std::string_view argument = commandLineArguments.getArgumentAtIndex(argumentIndex);
 		if ("-r" != argument)
 		{
 			mCurrentExampleName = argument;
@@ -246,7 +246,7 @@ void ExampleRunner::printUsage(const AvailableExamples& availableExamples, const
 
 	// Available renderers
 	std::cout << "Available Renderer:\n";
-	for (const std::string& rendererName : availableRenderers)
+	for (const std::string_view& rendererName : availableRenderers)
 	{
 		std::cout << "\t" << rendererName << '\n';
 	}
@@ -257,11 +257,11 @@ void ExampleRunner::showError(const std::string& errorMessage)
 	std::cout << errorMessage << "\n";
 }
 
-int ExampleRunner::runExample(const std::string& rendererName, const std::string& exampleName)
+int ExampleRunner::runExample(const std::string_view& rendererName, const std::string_view& exampleName)
 {
 	// Get selected renderer and selected example
 	const AvailableRenderers::iterator selectedRenderer = mAvailableRenderers.find(rendererName);
-	const std::string& selectedExampleName = exampleName.empty() ? mDefaultExampleName : exampleName;
+	const std::string_view& selectedExampleName = exampleName.empty() ? mDefaultExampleName : exampleName;
 	const AvailableExamples::iterator selectedExample = mAvailableExamples.find(selectedExampleName);
 
 	// Ensure the selected renderer is supported by the selected example
@@ -280,11 +280,11 @@ int ExampleRunner::runExample(const std::string& rendererName, const std::string
 		}
 		if (mAvailableRenderers.end() == selectedRenderer)
 		{
-			showError("Unknown renderer: \"" + rendererName + "\"");
+			showError("Unknown renderer: \"" + std::string(rendererName) + "\"");
 		}
 		if (rendererNotSupportedByExample)
 		{
-			showError("The example \"" + selectedExampleName + "\" doesn't support renderer: \"" + rendererName + "\"");
+			showError("The example \"" + std::string(selectedExampleName) + "\" doesn't support renderer: \"" + std::string(rendererName) + "\"");
 		}
 
 		// Print usage
@@ -294,6 +294,6 @@ int ExampleRunner::runExample(const std::string& rendererName, const std::string
 	else
 	{
 		// Run example
-		return selectedExample->second(*this, rendererName.c_str());
+		return selectedExample->second(*this, std::string(rendererName).c_str());
 	}
 }

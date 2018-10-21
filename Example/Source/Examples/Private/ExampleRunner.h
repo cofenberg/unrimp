@@ -44,6 +44,7 @@ PRAGMA_WARNING_PUSH
 	#include <set>
 	#include <vector>
 	#include <string>
+	#include <string_view>
 PRAGMA_WARNING_POP
 
 
@@ -65,10 +66,10 @@ class ExampleRunner final
 //[-------------------------------------------------------]
 public:
 	typedef int(*RunnerMethod)(ExampleRunner&, const char*);
-	typedef std::map<std::string, RunnerMethod>		  AvailableExamples;
-	typedef std::set<std::string>					  AvailableRenderers;
-	typedef std::vector<std::string>				  SupportedRenderers;
-	typedef std::map<std::string, SupportedRenderers> ExampleToSupportedRenderers;
+	typedef std::map<std::string_view, RunnerMethod>	   AvailableExamples;
+	typedef std::set<std::string_view>					   AvailableRenderers;
+	typedef std::vector<std::string_view>				   SupportedRenderers;
+	typedef std::map<std::string_view, SupportedRenderers> ExampleToSupportedRenderers;
 
 
 //[-------------------------------------------------------]
@@ -159,18 +160,18 @@ private:
 	[[nodiscard]] bool parseCommandLineArguments(const CommandLineArguments& commandLineArguments);
 	void printUsage(const AvailableExamples& availableExamples, const AvailableRenderers& availableRenderers);
 	void showError(const std::string& errorMessage);
-	[[nodiscard]] int runExample(const std::string& rendererName, const std::string& exampleName);
+	[[nodiscard]] int runExample(const std::string_view& rendererName, const std::string_view& exampleName);
 
 	template<typename T>
-	void addExample(const std::string& name, RunnerMethod runnerMethod, T const& supportedRendererList)
+	void addExample(const std::string_view& name, RunnerMethod runnerMethod, const T& supportedRendererList)
 	{
-		mAvailableExamples.insert(std::pair<std::string,RunnerMethod>(name, runnerMethod));
+		mAvailableExamples.insert(std::pair<std::string_view, RunnerMethod>(name, runnerMethod));
 		SupportedRenderers supportedRenderers;
-		for (const std::string& supportedRenderer : supportedRendererList)
+		for (const std::string_view& supportedRenderer : supportedRendererList)
 		{
 			supportedRenderers.push_back(supportedRenderer);
 		}
-		mExampleToSupportedRenderers.insert(std::pair<std::string, std::vector<std::string>>(name, std::move(supportedRenderers)));
+		mExampleToSupportedRenderers.insert(std::pair<std::string_view, SupportedRenderers>(name, std::move(supportedRenderers)));
 	}
 
 

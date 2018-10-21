@@ -65,10 +65,11 @@
 			else
 			{
 				// For now all given arguments are interpreted as render target
-				for (const std::string& renderTarget : commandLineArguments.getArguments())
+				for (const std::string_view& renderTarget : commandLineArguments.getArguments())
 				{
-					RENDERER_LOG(rendererToolkitContext, INFORMATION, "Compiling for target: \"%s\"", renderTarget.c_str())
-					project->compileAllAssets(renderTarget.c_str());
+					const std::string renderTargetString(renderTarget);
+					RENDERER_LOG(rendererToolkitContext, INFORMATION, "Compiling for target: \"%s\"", renderTargetString.c_str())
+					project->compileAllAssets(renderTargetString.c_str());
 					RENDERER_LOG(rendererToolkitContext, INFORMATION, "Compilation done")
 				}
 			}

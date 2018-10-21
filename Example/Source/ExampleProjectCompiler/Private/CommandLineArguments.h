@@ -41,6 +41,7 @@ PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4774)	// warning C4774: 'sprintf_s' : format string expected in argument 3 is not a string literal
 	#include <vector>
 	#include <string>
+	#include <string_view>
 PRAGMA_WARNING_POP
 
 
@@ -126,7 +127,7 @@ public:
 	*  @return
 	*    The argument at the given index or an empty string when index is out of range
 	*/
-	[[nodiscard]] inline std::string getArgumentAtIndex(uint32_t index) const
+	[[nodiscard]] inline std::string_view getArgumentAtIndex(uint32_t index) const
 	{
 		return (index >= mArguments.size()) ? "" : mArguments[index];
 	}

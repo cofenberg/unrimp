@@ -51,8 +51,8 @@ CommandLineArguments::CommandLineArguments()
 			// argv[0] is the path+name of the program
 			// -> Ignore it
 			mArguments.reserve(static_cast<size_t>(wargc - 1));
-			std::vector<std::wstring> lines(wargv + 1, wargv + wargc);
-			for (std::vector<std::wstring>::iterator iterator = lines.begin(); iterator != lines.end(); ++iterator)
+			std::vector<std::wstring_view> lines(wargv + 1, wargv + wargc);
+			for (std::vector<std::wstring_view>::iterator iterator = lines.begin(); iterator != lines.end(); ++iterator)
 			{
 				// Convert UTF-16 string to UTF-8
 				std::string utf8Line;
@@ -65,16 +65,16 @@ CommandLineArguments::CommandLineArguments()
 		}
 		::LocalFree(wargv);
 	#else
-		std::string cmdLine(::GetCommandLineA());
+		std::string_view cmdLine(::GetCommandLineA());
 		std::istringstream ss(cmdLine);
-		std::istream_iterator<std::string> iss(ss);
+		std::istream_iterator<std::string_view> iss(ss);
 
 		// The first token is the path+name of the program
 		// -> Ignore it
 		++iss;
 		std::copy(iss,
-			 std::istream_iterator<std::string>(),
-			 std::back_inserter<std::vector<std::string>>(mArguments));
+			 std::istream_iterator<std::string_view>(),
+			 std::back_inserter<std::vector<std::string_view>>(mArguments));
 	#endif
 #endif
 }

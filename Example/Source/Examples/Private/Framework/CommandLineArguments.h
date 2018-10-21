@@ -42,6 +42,7 @@ PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(5027)	// warning C5027: 'std::_Generic_error_category': move assignment operator was implicitly defined as deleted
 	#include <vector>
 	#include <string>
+	#include <string_view>
 PRAGMA_WARNING_POP
 
 
@@ -127,7 +128,7 @@ public:
 	*  @return
 	*    The argument at the given index or an empty string when index is out of range
 	*/
-	[[nodiscard]] inline std::string getArgumentAtIndex(uint32_t index) const
+	[[nodiscard]] inline std::string_view getArgumentAtIndex(uint32_t index) const
 	{
 		return (index >= mArguments.size()) ? "" : mArguments[index];
 	}

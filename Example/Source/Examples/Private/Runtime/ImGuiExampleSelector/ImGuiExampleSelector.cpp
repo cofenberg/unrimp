@@ -83,7 +83,7 @@ void ImGuiExampleSelector::createDebugGui()
 			{
 				int rendererIndex = 0;
 				const std::string& defaultRendererName = getExampleRunner().getDefaultRendererName();
-				for (const std::string& rendererName : availableRenderers)
+				for (const std::string_view& rendererName : availableRenderers)
 				{
 					itemsSeparatedByZeros += rendererName;
 					itemsSeparatedByZeros += '\0';
