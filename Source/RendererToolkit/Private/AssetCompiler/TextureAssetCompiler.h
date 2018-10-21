@@ -103,13 +103,13 @@ namespace RendererToolkit
 	//[ Public virtual RendererToolkit::IAssetCompiler methods ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual AssetCompilerClassId getAssetCompilerClassId() const override
+		[[nodiscard]] inline virtual AssetCompilerClassId getAssetCompilerClassId() const override
 		{
 			return CLASS_ID;
 		}
 
-		virtual std::string getVirtualOutputAssetFilename(const Input& input, const Configuration& configuration) const override;
-		virtual bool checkIfChanged(const Input& input, const Configuration& configuration) const override;
+		[[nodiscard]] virtual std::string getVirtualOutputAssetFilename(const Input& input, const Configuration& configuration) const override;
+		[[nodiscard]] virtual bool checkIfChanged(const Input& input, const Configuration& configuration) const override;
 		virtual void compile(const Input& input, const Configuration& configuration) const override;
 
 

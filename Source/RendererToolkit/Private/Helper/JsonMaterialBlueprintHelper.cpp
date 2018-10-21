@@ -63,7 +63,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		bool orderByMaterialPropertyId(const RendererRuntime::MaterialProperty& left, const RendererRuntime::MaterialProperty& right)
+		[[nodiscard]] inline bool orderByMaterialPropertyId(const RendererRuntime::MaterialProperty& left, const RendererRuntime::MaterialProperty& right)
 		{
 			return (left.getMaterialPropertyId() < right.getMaterialPropertyId());
 		}
@@ -97,7 +97,7 @@ namespace
 			}
 		}
 
-		uint32_t roundUpToNextIntegerDivisibleByFactor(uint32_t input, uint32_t factor)
+		[[nodiscard]] uint32_t roundUpToNextIntegerDivisibleByFactor(uint32_t input, uint32_t factor)
 		{
 			return (input + factor - 1) / factor * factor;
 		}
@@ -126,7 +126,7 @@ namespace
 		}
 		*/
 
-		int32_t executeCounterInstruction(const std::string& instructionAsString, RendererRuntime::ShaderProperties& shaderProperties)
+		[[nodiscard]] int32_t executeCounterInstruction(const std::string& instructionAsString, RendererRuntime::ShaderProperties& shaderProperties)
 		{
 			// "@counter(<parameter name>)" (same syntax as in "RendererRuntime::ShaderBuilder")
 
@@ -143,14 +143,14 @@ namespace
 			return value;
 		}
 
-		uint32_t getIntegerFromInstructionString(const char* instructionAsString, RendererRuntime::ShaderProperties& shaderProperties)
+		[[nodiscard]] uint32_t getIntegerFromInstructionString(const char* instructionAsString, RendererRuntime::ShaderProperties& shaderProperties)
 		{
 			// Check for instruction "@counter(<parameter name>)" (same syntax as in "RendererRuntime::ShaderBuilder")
 			// -> TODO(co) We might want to get rid of the implicit std::string parameter conversion below
 			return static_cast<uint32_t>((strncmp(instructionAsString, "@counter(", 7) == 0) ? executeCounterInstruction(instructionAsString, shaderProperties) : std::atoi(instructionAsString));
 		}
 
-		Renderer::ResourceType mandatoryResourceType(const rapidjson::Value& rapidJsonValue)
+		[[nodiscard]] Renderer::ResourceType mandatoryResourceType(const rapidjson::Value& rapidJsonValue)
 		{
 			const rapidjson::Value& rapidJsonValueUsage = rapidJsonValue["ResourceType"];
 			const char* valueAsString = rapidJsonValueUsage.GetString();

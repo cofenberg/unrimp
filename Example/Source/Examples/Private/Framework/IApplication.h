@@ -59,7 +59,7 @@ public:
 	*  @return
 	*    Program return code, 0 to indicate that no error has occurred
 	*/
-	int run();
+	[[nodiscard]] int run();
 
 	/**
 	*  @brief
@@ -91,7 +91,7 @@ public:
 	*  @remarks
 	*    The OS dependent window handle, can be a null handle
 	*/
-	inline handle getNativeWindowHandle() const
+	[[nodiscard]] inline handle getNativeWindowHandle() const
 	{
 		return mApplicationImpl->getNativeWindowHandle();
 	}
@@ -113,7 +113,7 @@ public:
 		*  @note
 		*    - The X11 display connection object, can be a null pointer
 		*/
-		inline Display* getX11Display() const
+		[[nodiscard]] inline Display* getX11Display() const
 		{
 			return mApplicationImpl->getX11Display();
 		}

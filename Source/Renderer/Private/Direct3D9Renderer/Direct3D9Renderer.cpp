@@ -1417,7 +1417,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    The Direct3D 9 instance, null pointer on error, do not release the returned instance unless you added an own reference to it
 		*/
-		inline IDirect3D9* getDirect3D9() const
+		[[nodiscard]] inline IDirect3D9* getDirect3D9() const
 		{
 			return mDirect3D9;
 		}
@@ -1429,7 +1429,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    The Direct3D 9 device instance, null pointer on error, do not release the returned instance unless you added an own reference to it
 		*/
-		inline IDirect3DDevice9* getDirect3DDevice9() const
+		[[nodiscard]] inline IDirect3DDevice9* getDirect3DDevice9() const
 		{
 			return mDirect3DDevice9;
 		}
@@ -1441,7 +1441,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    Render target currently bound to the output-merger state, a null pointer on error, do not release the returned instance unless you added an own reference to it
 		*/
-		inline Renderer::IRenderTarget* omGetRenderTarget() const
+		[[nodiscard]] inline Renderer::IRenderTarget* omGetRenderTarget() const
 		{
 			return mRenderTarget;
 		}
@@ -1479,45 +1479,45 @@ namespace Direct3D9Renderer
 	//[ Public virtual Renderer::IRenderer methods            ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getName() const override
+		[[nodiscard]] inline virtual const char* getName() const override
 		{
 			return "Direct3D9";
 		}
 
-		inline virtual bool isInitialized() const override
+		[[nodiscard]] inline virtual bool isInitialized() const override
 		{
 			// Is there a Direct3D 9 instance?
 			return (nullptr != mDirect3D9);
 		}
 
-		virtual bool isDebugEnabled() override;
+		[[nodiscard]] virtual bool isDebugEnabled() override;
 		//[-------------------------------------------------------]
 		//[ Shader language                                       ]
 		//[-------------------------------------------------------]
-		virtual uint32_t getNumberOfShaderLanguages() const override;
-		virtual const char* getShaderLanguageName(uint32_t index) const override;
-		virtual Renderer::IShaderLanguage* getShaderLanguage(const char* shaderLanguageName = nullptr) override;
+		[[nodiscard]] virtual uint32_t getNumberOfShaderLanguages() const override;
+		[[nodiscard]] virtual const char* getShaderLanguageName(uint32_t index) const override;
+		[[nodiscard]] virtual Renderer::IShaderLanguage* getShaderLanguage(const char* shaderLanguageName = nullptr) override;
 		//[-------------------------------------------------------]
 		//[ Resource creation                                     ]
 		//[-------------------------------------------------------]
-		virtual Renderer::IRenderPass* createRenderPass(uint32_t numberOfColorAttachments, const Renderer::TextureFormat::Enum* colorAttachmentTextureFormats, Renderer::TextureFormat::Enum depthStencilAttachmentTextureFormat = Renderer::TextureFormat::UNKNOWN, uint8_t numberOfMultisamples = 1) override;
-		virtual Renderer::ISwapChain* createSwapChain(Renderer::IRenderPass& renderPass, Renderer::WindowHandle windowHandle, bool useExternalContext = false) override;
-		virtual Renderer::IFramebuffer* createFramebuffer(Renderer::IRenderPass& renderPass, const Renderer::FramebufferAttachment* colorFramebufferAttachments, const Renderer::FramebufferAttachment* depthStencilFramebufferAttachment = nullptr) override;
-		virtual Renderer::IBufferManager* createBufferManager() override;
-		virtual Renderer::ITextureManager* createTextureManager() override;
-		virtual Renderer::IRootSignature* createRootSignature(const Renderer::RootSignature& rootSignature) override;
-		virtual Renderer::IGraphicsPipelineState* createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState) override;
-		virtual Renderer::IComputePipelineState* createComputePipelineState(Renderer::IRootSignature& rootSignature, Renderer::IComputeShader& computeShader) override;
-		virtual Renderer::ISamplerState* createSamplerState(const Renderer::SamplerState& samplerState) override;
+		[[nodiscard]] virtual Renderer::IRenderPass* createRenderPass(uint32_t numberOfColorAttachments, const Renderer::TextureFormat::Enum* colorAttachmentTextureFormats, Renderer::TextureFormat::Enum depthStencilAttachmentTextureFormat = Renderer::TextureFormat::UNKNOWN, uint8_t numberOfMultisamples = 1) override;
+		[[nodiscard]] virtual Renderer::ISwapChain* createSwapChain(Renderer::IRenderPass& renderPass, Renderer::WindowHandle windowHandle, bool useExternalContext = false) override;
+		[[nodiscard]] virtual Renderer::IFramebuffer* createFramebuffer(Renderer::IRenderPass& renderPass, const Renderer::FramebufferAttachment* colorFramebufferAttachments, const Renderer::FramebufferAttachment* depthStencilFramebufferAttachment = nullptr) override;
+		[[nodiscard]] virtual Renderer::IBufferManager* createBufferManager() override;
+		[[nodiscard]] virtual Renderer::ITextureManager* createTextureManager() override;
+		[[nodiscard]] virtual Renderer::IRootSignature* createRootSignature(const Renderer::RootSignature& rootSignature) override;
+		[[nodiscard]] virtual Renderer::IGraphicsPipelineState* createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState) override;
+		[[nodiscard]] virtual Renderer::IComputePipelineState* createComputePipelineState(Renderer::IRootSignature& rootSignature, Renderer::IComputeShader& computeShader) override;
+		[[nodiscard]] virtual Renderer::ISamplerState* createSamplerState(const Renderer::SamplerState& samplerState) override;
 		//[-------------------------------------------------------]
 		//[ Resource handling                                     ]
 		//[-------------------------------------------------------]
-		virtual bool map(Renderer::IResource& resource, uint32_t subresource, Renderer::MapType mapType, uint32_t mapFlags, Renderer::MappedSubresource& mappedSubresource) override;
+		[[nodiscard]] virtual bool map(Renderer::IResource& resource, uint32_t subresource, Renderer::MapType mapType, uint32_t mapFlags, Renderer::MappedSubresource& mappedSubresource) override;
 		virtual void unmap(Renderer::IResource& resource, uint32_t subresource) override;
 		//[-------------------------------------------------------]
 		//[ Operations                                            ]
 		//[-------------------------------------------------------]
-		virtual bool beginScene() override;
+		[[nodiscard]] virtual bool beginScene() override;
 		virtual void submitCommandBuffer(const Renderer::CommandBuffer& commandBuffer) override;
 		virtual void endScene() override;
 		//[-------------------------------------------------------]
@@ -1678,7 +1678,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    "true" if Direct3D 9 is available, else "false"
 		*/
-		bool isDirect3D9Avaiable()
+		[[nodiscard]] bool isDirect3D9Avaiable()
 		{
 			// Already initialized?
 			if (!mInitialized)
@@ -1713,7 +1713,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    "true" if all went fine, else "false"
 		*/
-		bool loadSharedLibraries()
+		[[nodiscard]] bool loadSharedLibraries()
 		{
 			// Load the shared library
 			mD3D9SharedLibrary = ::LoadLibraryExA("d3d9.dll", nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
@@ -1741,7 +1741,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    "true" if all went fine, else "false"
 		*/
-		bool loadD3D9EntryPoints()
+		[[nodiscard]] bool loadD3D9EntryPoints()
 		{
 			bool result = true;	// Success by default
 
@@ -1788,7 +1788,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    "true" if all went fine, else "false"
 		*/
-		bool loadD3DX9EntryPoints()
+		[[nodiscard]] bool loadD3DX9EntryPoints()
 		{
 			bool result = true;	// Success by default
 
@@ -1904,7 +1904,7 @@ namespace Direct3D9Renderer
 	*  @return
 	*    The loaded and compiled shader, can be a null pointer, release the instance if you no longer need it
 	*/
-	ID3DXBuffer* loadShaderFromSourcecode(const Renderer::Context& context, const char* shaderModel, const char* sourceCode, const char* entryPoint, Renderer::IShaderLanguage::OptimizationLevel optimizationLevel, ID3DXConstantTable** d3dXConstantTable)
+	[[nodiscard]] ID3DXBuffer* loadShaderFromSourcecode(const Renderer::Context& context, const char* shaderModel, const char* sourceCode, const char* entryPoint, Renderer::IShaderLanguage::OptimizationLevel optimizationLevel, ID3DXConstantTable** d3dXConstantTable)
 	{
 		// Sanity checks
 		RENDERER_ASSERT(context, nullptr != shaderModel, "Invalid Direct3D 9 shader model")
@@ -1992,7 +1992,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    Direct3D 9 magnification filter mode
 		*/
-		static D3DTEXTUREFILTERTYPE getDirect3D9MagFilterMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode)
+		[[nodiscard]] static D3DTEXTUREFILTERTYPE getDirect3D9MagFilterMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode)
 		{
 			switch (filterMode)
 			{
@@ -2071,7 +2071,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    Direct3D 9 minification filter mode
 		*/
-		static D3DTEXTUREFILTERTYPE getDirect3D9MinFilterMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode)
+		[[nodiscard]] static D3DTEXTUREFILTERTYPE getDirect3D9MinFilterMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode)
 		{
 			switch (filterMode)
 			{
@@ -2150,7 +2150,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    Direct3D 9 mipmapping filter mode
 		*/
-		static D3DTEXTUREFILTERTYPE getDirect3D9MipFilterMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode)
+		[[nodiscard]] static D3DTEXTUREFILTERTYPE getDirect3D9MipFilterMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode)
 		{
 			switch (filterMode)
 			{
@@ -2230,7 +2230,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    Direct3D 9 texture address mode
 		*/
-		static D3DTEXTUREADDRESS getDirect3D9TextureAddressMode(Renderer::TextureAddressMode textureAddressMode)
+		[[nodiscard]] static D3DTEXTUREADDRESS getDirect3D9TextureAddressMode(Renderer::TextureAddressMode textureAddressMode)
 		{
 			static constexpr D3DTEXTUREADDRESS MAPPING[] =
 			{
@@ -2256,7 +2256,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    Direct3D 9 comparison function
 		*/
-		static D3DCMPFUNC getDirect3D9ComparisonFunc(Renderer::ComparisonFunc comparisonFunc)
+		[[nodiscard]] static D3DCMPFUNC getDirect3D9ComparisonFunc(Renderer::ComparisonFunc comparisonFunc)
 		{
 			static constexpr D3DCMPFUNC MAPPING[] =
 			{
@@ -2285,7 +2285,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    Direct3D 9 type
 		*/
-		static D3DDECLTYPE getDirect3D9Type(Renderer::VertexAttributeFormat vertexAttributeFormat)
+		[[nodiscard]] static D3DDECLTYPE getDirect3D9Type(Renderer::VertexAttributeFormat vertexAttributeFormat)
 		{
 			static constexpr D3DDECLTYPE MAPPING[] =
 			{
@@ -2312,7 +2312,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    Direct3D 9 semantic, "D3DDECLUSAGE_POSITION" as fallback if no match was found
 		*/
-		static D3DDECLUSAGE getDirect3D9Semantic(const char* semanticName)
+		[[nodiscard]] static D3DDECLUSAGE getDirect3D9Semantic(const char* semanticName)
 		{
 			D3DDECLUSAGE direct3D9Semantic = D3DDECLUSAGE_POSITION;
 			if (0 == stricmp("POSITION", semanticName))
@@ -2387,7 +2387,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    Direct3D 9 usage
 		*/
-		static uint32_t getDirect3D9Usage(Renderer::BufferUsage bufferUsage)
+		[[nodiscard]] static uint32_t getDirect3D9Usage(Renderer::BufferUsage bufferUsage)
 		{
 			// Direct3D 9 only supports a subset of the OpenGL usage indications
 			// -> See "D3DUSAGE"-documentation at http://msdn.microsoft.com/en-us/library/windows/desktop/bb172625%28v=vs.85%29.aspx
@@ -2426,7 +2426,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    Direct3D 9 format
 		*/
-		static D3DFORMAT getDirect3D9Format(Renderer::IndexBufferFormat::Enum indexBufferFormat)
+		[[nodiscard]] static D3DFORMAT getDirect3D9Format(Renderer::IndexBufferFormat::Enum indexBufferFormat)
 		{
 			static constexpr D3DFORMAT MAPPING[] =
 			{
@@ -2450,7 +2450,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    Direct3D 9 format
 		*/
-		static D3DFORMAT getDirect3D9Format(Renderer::TextureFormat::Enum textureFormat)
+		[[nodiscard]] static D3DFORMAT getDirect3D9Format(Renderer::TextureFormat::Enum textureFormat)
 		{
 			static constexpr D3DFORMAT MAPPING[] =
 			{
@@ -2497,7 +2497,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    Direct3D 9 presentation interval
 		*/
-		static uint32_t getDirect3D9PresentationInterval([[maybe_unused]] const Renderer::Context& context, uint32_t synchronizationInterval)
+		[[nodiscard]] static uint32_t getDirect3D9PresentationInterval([[maybe_unused]] const Renderer::Context& context, uint32_t synchronizationInterval)
 		{
 			RENDERER_ASSERT(context, synchronizationInterval <= 4, "Direct3D 9 supports a maximum synchronization interval of four")
 			static constexpr uint32_t MAPPING[] =
@@ -2617,7 +2617,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    The number of resources this resource group groups together
 		*/
-		inline uint32_t getNumberOfResources() const
+		[[nodiscard]] inline uint32_t getNumberOfResources() const
 		{
 			return mNumberOfResources;
 		}
@@ -2629,7 +2629,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    The renderer resources, don't release or destroy the returned pointer
 		*/
-		inline Renderer::IResource** getResources() const
+		[[nodiscard]] inline Renderer::IResource** getResources() const
 		{
 			return mResources;
 		}
@@ -2641,7 +2641,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    The sampler states, don't release or destroy the returned pointer
 		*/
-		inline Renderer::ISamplerState** getSamplerState() const
+		[[nodiscard]] inline Renderer::ISamplerState** getSamplerState() const
 		{
 			return mSamplerStates;
 		}
@@ -2773,7 +2773,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    The root signature data
 		*/
-		inline const Renderer::RootSignature& getRootSignature() const
+		[[nodiscard]] inline const Renderer::RootSignature& getRootSignature() const
 		{
 			return mRootSignature;
 		}
@@ -2783,7 +2783,7 @@ namespace Direct3D9Renderer
 	//[ Public virtual Renderer::IRootSignature methods       ]
 	//[-------------------------------------------------------]
 	public:
-		virtual Renderer::IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, Renderer::IResource** resources, Renderer::ISamplerState** samplerStates = nullptr) override
+		[[nodiscard]] virtual Renderer::IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, Renderer::IResource** resources, Renderer::ISamplerState** samplerStates = nullptr) override
 		{
 			// Sanity checks
 			RENDERER_ASSERT(getRenderer().getContext(), rootParameterIndex < mRootSignature.numberOfParameters, "The Direct3D 9 root parameter index is out-of-bounds")
@@ -2906,7 +2906,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    The Direct3D index buffer instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline IDirect3DIndexBuffer9* getDirect3DIndexBuffer9() const
+		[[nodiscard]] inline IDirect3DIndexBuffer9* getDirect3DIndexBuffer9() const
 		{
 			return mDirect3DIndexBuffer9;
 		}
@@ -3033,7 +3033,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    The Direct3D vertex buffer instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline IDirect3DVertexBuffer9* getDirect3DVertexBuffer9() const
+		[[nodiscard]] inline IDirect3DVertexBuffer9* getDirect3DVertexBuffer9() const
 		{
 			return mDirect3DVertexBuffer9;
 		}
@@ -3352,7 +3352,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    Writable indirect buffer emulation data pointer, can be a null pointer, don't destroy the returned instance
 		*/
-		inline uint8_t* getWritableEmulationData() const
+		[[nodiscard]] inline uint8_t* getWritableEmulationData() const
 		{
 			return mData;
 		}
@@ -3362,7 +3362,7 @@ namespace Direct3D9Renderer
 	//[ Public virtual Renderer::IIndirectBuffer methods      ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const uint8_t* getEmulationData() const override
+		[[nodiscard]] inline virtual const uint8_t* getEmulationData() const override
 		{
 			return mData;
 		}
@@ -3437,42 +3437,42 @@ namespace Direct3D9Renderer
 	//[ Public virtual Renderer::IBufferManager methods       ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		[[nodiscard]] inline virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			// TODO(co) Security checks
 			return RENDERER_NEW(getRenderer().getContext(), VertexBuffer)(static_cast<Direct3D9Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
 		}
 
-		inline virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::Enum indexBufferFormat = Renderer::IndexBufferFormat::UNSIGNED_SHORT) override
+		[[nodiscard]] inline virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::Enum indexBufferFormat = Renderer::IndexBufferFormat::UNSIGNED_SHORT) override
 		{
 			// TODO(co) Security checks
 			return RENDERER_NEW(getRenderer().getContext(), IndexBuffer)(static_cast<Direct3D9Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage, indexBufferFormat);
 		}
 
-		inline virtual Renderer::IVertexArray* createVertexArray(const Renderer::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Renderer::VertexArrayVertexBuffer* vertexBuffers, Renderer::IIndexBuffer* indexBuffer = nullptr) override
+		[[nodiscard]] inline virtual Renderer::IVertexArray* createVertexArray(const Renderer::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Renderer::VertexArrayVertexBuffer* vertexBuffers, Renderer::IIndexBuffer* indexBuffer = nullptr) override
 		{
 			// TODO(co) Add security check: Is the given resource one of the currently used renderer?
 			return RENDERER_NEW(getRenderer().getContext(), VertexArray)(static_cast<Direct3D9Renderer&>(getRenderer()), vertexAttributes, numberOfVertexBuffers, vertexBuffers, static_cast<IndexBuffer*>(indexBuffer));
 		}
 
-		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t, const void*, uint32_t, Renderer::BufferUsage, Renderer::TextureFormat::Enum) override
+		[[nodiscard]] inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t, const void*, uint32_t, Renderer::BufferUsage, Renderer::TextureFormat::Enum) override
 		{
 			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 9 doesn't support texture buffer")
 			return nullptr;
 		}
 
-		inline virtual Renderer::IStructuredBuffer* createStructuredBuffer(uint32_t, const void*, uint32_t, Renderer::BufferUsage, uint32_t) override
+		[[nodiscard]] inline virtual Renderer::IStructuredBuffer* createStructuredBuffer(uint32_t, const void*, uint32_t, Renderer::BufferUsage, uint32_t) override
 		{
 			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 9 doesn't support structured buffer")
 			return nullptr;
 		}
 
-		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, [[maybe_unused]] Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		[[nodiscard]] inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, [[maybe_unused]] Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<Direct3D9Renderer&>(getRenderer()), numberOfBytes, data, indirectBufferFlags);
 		}
 
-		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t, const void*, Renderer::BufferUsage) override
+		[[nodiscard]] inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t, const void*, Renderer::BufferUsage) override
 		{
 			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 9 doesn't support uniform buffer")
 			return nullptr;
@@ -3653,7 +3653,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    The Direct3D texture instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline IDirect3DTexture9* getDirect3DTexture9() const
+		[[nodiscard]] inline IDirect3DTexture9* getDirect3DTexture9() const
 		{
 			return mDirect3DTexture9;
 		}
@@ -3882,7 +3882,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    The Direct3D texture instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline IDirect3DTexture9* getDirect3DTexture9() const
+		[[nodiscard]] inline IDirect3DTexture9* getDirect3DTexture9() const
 		{
 			return mDirect3DTexture9;
 		}
@@ -4130,7 +4130,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    The Direct3D texture instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline IDirect3DTexture9* getDirect3DTexture9() const
+		[[nodiscard]] inline IDirect3DTexture9* getDirect3DTexture9() const
 		{
 			return mDirect3DTexture9;
 		}
@@ -4362,7 +4362,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    The Direct3D texture instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline IDirect3DTexture9* getDirect3DTexture9() const
+		[[nodiscard]] inline IDirect3DTexture9* getDirect3DTexture9() const
 		{
 			return mDirect3DTexture9;
 		}
@@ -4475,7 +4475,7 @@ namespace Direct3D9Renderer
 	//[ Public virtual Renderer::ITextureManager methods      ]
 	//[-------------------------------------------------------]
 	public:
-		virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0)
@@ -4488,7 +4488,7 @@ namespace Direct3D9Renderer
 			}
 		}
 
-		virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, [[maybe_unused]] uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
+		[[nodiscard]] virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, [[maybe_unused]] uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0)
@@ -4501,13 +4501,13 @@ namespace Direct3D9Renderer
 			}
 		}
 
-		virtual Renderer::ITexture2DArray* createTexture2DArray([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height, [[maybe_unused]] uint32_t numberOfSlices, [[maybe_unused]] Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Renderer::ITexture2DArray* createTexture2DArray([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height, [[maybe_unused]] uint32_t numberOfSlices, [[maybe_unused]] Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// Direct3D 9 has no 2D texture arrays
 			return nullptr;
 		}
 
-		virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0 && depth > 0)
@@ -4520,7 +4520,7 @@ namespace Direct3D9Renderer
 			}
 		}
 
-		virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0)
@@ -5079,7 +5079,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    The number of color render target textures
 		*/
-		inline uint32_t getNumberOfColorAttachments() const
+		[[nodiscard]] inline uint32_t getNumberOfColorAttachments() const
 		{
 			return mNumberOfColorAttachments;
 		}
@@ -5091,7 +5091,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    The number of render target textures (color and depth stencil)
 		*/
-		inline uint32_t getNumberOfAttachments() const
+		[[nodiscard]] inline uint32_t getNumberOfAttachments() const
 		{
 			return (mDepthStencilAttachmentTextureFormat != Renderer::TextureFormat::Enum::UNKNOWN) ? (mNumberOfColorAttachments + 1) : mNumberOfColorAttachments;
 		}
@@ -5106,7 +5106,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    The color attachment texture format
 		*/
-		inline Renderer::TextureFormat::Enum getColorAttachmentTextureFormat(uint32_t colorAttachmentIndex) const
+		[[nodiscard]] inline Renderer::TextureFormat::Enum getColorAttachmentTextureFormat(uint32_t colorAttachmentIndex) const
 		{
 			RENDERER_ASSERT(getRenderer().getContext(), colorAttachmentIndex < mNumberOfColorAttachments, "Invalid Direct3D 9 color attachment index")
 			return mColorAttachmentTextureFormats[colorAttachmentIndex];
@@ -5119,7 +5119,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    The depth stencil attachment texture format
 		*/
-		inline Renderer::TextureFormat::Enum getDepthStencilAttachmentTextureFormat() const
+		[[nodiscard]] inline Renderer::TextureFormat::Enum getDepthStencilAttachmentTextureFormat() const
 		{
 			return mDepthStencilAttachmentTextureFormat;
 		}
@@ -5287,7 +5287,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    The Direct3D 9 swap chain instance, null pointer on error, do not release the returned instance unless you added an own reference to it
 		*/
-		inline IDirect3DSwapChain9* getDirect3DSwapChain9() const
+		[[nodiscard]] inline IDirect3DSwapChain9* getDirect3DSwapChain9() const
 		{
 			return mDirect3DSwapChain9;
 		}
@@ -5302,7 +5302,7 @@ namespace Direct3D9Renderer
 		*  @note
 		*    - It's highly recommended to not keep any references to the returned instance, else issues may occur when resizing the swap chain
 		*/
-		inline IDirect3DSurface9* getDirect3DSurface9RenderTarget() const
+		[[nodiscard]] inline IDirect3DSurface9* getDirect3DSurface9RenderTarget() const
 		{
 			return mDirect3DSurface9RenderTarget;
 		}
@@ -5317,7 +5317,7 @@ namespace Direct3D9Renderer
 		*  @note
 		*    - It's highly recommended to not keep any references to the returned instance, else issues may occur when resizing the swap chain
 		*/
-		inline IDirect3DSurface9* getDirect3DSurface9DepthStencil() const
+		[[nodiscard]] inline IDirect3DSurface9* getDirect3DSurface9DepthStencil() const
 		{
 			return mDirect3DSurface9DepthStencil;
 		}
@@ -5408,7 +5408,7 @@ namespace Direct3D9Renderer
 	//[ Public virtual Renderer::ISwapChain methods           ]
 	//[-------------------------------------------------------]
 	public:
-		virtual Renderer::handle getNativeWindowHandle() const override
+		[[nodiscard]] virtual Renderer::handle getNativeWindowHandle() const override
 		{
 			// Is there a valid swap chain?
 			if (nullptr != mDirect3DSwapChain9)
@@ -5520,7 +5520,7 @@ namespace Direct3D9Renderer
 			}
 		}
 
-		inline virtual bool getFullscreenState() const override
+		[[nodiscard]] inline virtual bool getFullscreenState() const override
 		{
 			// TODO(co) Implement me
 			return false;
@@ -5861,7 +5861,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    The number of Direct3D 9 render target surfaces
 		*/
-		inline uint32_t getNumberOfDirect3DSurface9Colors() const
+		[[nodiscard]] inline uint32_t getNumberOfDirect3DSurface9Colors() const
 		{
 			return mNumberOfColorTextures;
 		}
@@ -5873,7 +5873,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    The Direct3D 9 render target surfaces, can be a null pointer, do not release the returned instances unless you added an own reference to it
 		*/
-		inline IDirect3DSurface9** getDirect3DSurface9Colors() const
+		[[nodiscard]] inline IDirect3DSurface9** getDirect3DSurface9Colors() const
 		{
 			return mDirect3D9ColorSurfaces;
 		}
@@ -5885,7 +5885,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    The Direct3D 9 depth stencil surface, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline IDirect3DSurface9* getDirect3DSurface9DepthStencil() const
+		[[nodiscard]] inline IDirect3DSurface9* getDirect3DSurface9DepthStencil() const
 		{
 			return mDirect3D9DepthStencilSurface;
 		}
@@ -6047,7 +6047,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    Direct3D 9 vertex shader, can be a null pointer on error, do not release the returned instance unless you added an own reference to it
 		*/
-		inline IDirect3DVertexShader9* getDirect3DVertexShader9() const
+		[[nodiscard]] inline IDirect3DVertexShader9* getDirect3DVertexShader9() const
 		{
 			return mDirect3DVertexShader9;
 		}
@@ -6059,7 +6059,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    Direct3D 9 constant table shader, can be a null pointer on error, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3DXConstantTable* getD3DXConstantTable() const
+		[[nodiscard]] inline ID3DXConstantTable* getD3DXConstantTable() const
 		{
 			return mD3DXConstantTable;
 		}
@@ -6081,7 +6081,7 @@ namespace Direct3D9Renderer
 	//[ Public virtual Renderer::IShader methods              ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::HLSL_NAME;
 		}
@@ -6210,7 +6210,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    Direct3D 9 pixel shader, can be a null pointer on error, do not release the returned instance unless you added an own reference to it
 		*/
-		inline IDirect3DPixelShader9* getDirect3DPixelShader9() const
+		[[nodiscard]] inline IDirect3DPixelShader9* getDirect3DPixelShader9() const
 		{
 			return mDirect3DPixelShader9;
 		}
@@ -6222,7 +6222,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    Direct3D 9 constant table shader, can be a null pointer on error, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3DXConstantTable* getD3DXConstantTable() const
+		[[nodiscard]] inline ID3DXConstantTable* getD3DXConstantTable() const
 		{
 			return mD3DXConstantTable;
 		}
@@ -6244,7 +6244,7 @@ namespace Direct3D9Renderer
 	//[ Public virtual Renderer::IShader methods              ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::HLSL_NAME;
 		}
@@ -6402,7 +6402,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    The HLSL vertex shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline VertexShaderHlsl* getVertexShaderHlsl() const
+		[[nodiscard]] inline VertexShaderHlsl* getVertexShaderHlsl() const
 		{
 			return mVertexShaderHlsl;
 		}
@@ -6414,7 +6414,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    The HLSL fragment shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline FragmentShaderHlsl* getFragmentShaderHlsl() const
+		[[nodiscard]] inline FragmentShaderHlsl* getFragmentShaderHlsl() const
 		{
 			return mFragmentShaderHlsl;
 		}
@@ -6438,7 +6438,7 @@ namespace Direct3D9Renderer
 	//[ Public virtual Renderer::IGraphicsProgram methods     ]
 	//[-------------------------------------------------------]
 	public:
-		virtual Renderer::handle getUniformHandle(const char* uniformName) override
+		[[nodiscard]] virtual Renderer::handle getUniformHandle(const char* uniformName) override
 		{
 			// Get the uniform handle
 			if (nullptr != mVertexShaderHlsl && nullptr != mVertexShaderHlsl->getD3DXConstantTable())
@@ -6592,84 +6592,84 @@ namespace Direct3D9Renderer
 	//[ Public virtual Renderer::IShaderLanguage methods      ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::HLSL_NAME;
 		}
 
-		inline virtual Renderer::IVertexShader* createVertexShaderFromBytecode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderBytecode& shaderBytecode) override
+		[[nodiscard]] inline virtual Renderer::IVertexShader* createVertexShaderFromBytecode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			// There's no need to check for "Renderer::Capabilities::vertexShader", we know there's vertex shader support
 			return RENDERER_NEW(getRenderer().getContext(), VertexShaderHlsl)(static_cast<Direct3D9Renderer&>(getRenderer()), shaderBytecode);
 		}
 
-		inline virtual Renderer::IVertexShader* createVertexShaderFromSourceCode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] inline virtual Renderer::IVertexShader* createVertexShaderFromSourceCode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// There's no need to check for "Renderer::Capabilities::vertexShader", we know there's vertex shader support
 			return RENDERER_NEW(getRenderer().getContext(), VertexShaderHlsl)(static_cast<Direct3D9Renderer&>(getRenderer()), shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode);
 		}
 
-		inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromBytecode([[maybe_unused]] const Renderer::ShaderBytecode& shaderBytecode) override
+		[[nodiscard]] inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromBytecode([[maybe_unused]] const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 9 has no tessellation control shader support")
 			return nullptr;
 		}
 
-		inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromSourceCode([[maybe_unused]] const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromSourceCode([[maybe_unused]] const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 9 has no tessellation control shader support")
 			return nullptr;
 		}
 
-		inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode([[maybe_unused]] const Renderer::ShaderBytecode& shaderBytecode) override
+		[[nodiscard]] inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode([[maybe_unused]] const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 9 has no tessellation evaluation shader support")
 			return nullptr;
 		}
 
-		inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode([[maybe_unused]] const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode([[maybe_unused]] const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 9 has no tessellation evaluation shader support")
 			return nullptr;
 		}
 
-		inline virtual Renderer::IGeometryShader* createGeometryShaderFromBytecode([[maybe_unused]] const Renderer::ShaderBytecode& shaderBytecode, [[maybe_unused]] Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices) override
+		[[nodiscard]] inline virtual Renderer::IGeometryShader* createGeometryShaderFromBytecode([[maybe_unused]] const Renderer::ShaderBytecode& shaderBytecode, [[maybe_unused]] Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices) override
 		{
 			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 9 has no geometry shader support")
 			return nullptr;
 		}
 
-		inline virtual Renderer::IGeometryShader* createGeometryShaderFromSourceCode([[maybe_unused]] const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] inline virtual Renderer::IGeometryShader* createGeometryShaderFromSourceCode([[maybe_unused]] const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 9 has no geometry shader support")
 			return nullptr;
 		}
 
-		inline virtual Renderer::IFragmentShader* createFragmentShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
+		[[nodiscard]] inline virtual Renderer::IFragmentShader* createFragmentShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			// There's no need to check for "Renderer::Capabilities::fragmentShader", we know there's fragment shader support
 			return RENDERER_NEW(getRenderer().getContext(), FragmentShaderHlsl)(static_cast<Direct3D9Renderer&>(getRenderer()), shaderBytecode);
 		}
 
-		inline virtual Renderer::IFragmentShader* createFragmentShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] inline virtual Renderer::IFragmentShader* createFragmentShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// There's no need to check for "Renderer::Capabilities::fragmentShader", we know there's fragment shader support
 			return RENDERER_NEW(getRenderer().getContext(), FragmentShaderHlsl)(static_cast<Direct3D9Renderer&>(getRenderer()), shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode);
 		}
 
-		inline virtual Renderer::IComputeShader* createComputeShaderFromBytecode(const Renderer::ShaderBytecode&) override
+		[[nodiscard]] inline virtual Renderer::IComputeShader* createComputeShaderFromBytecode(const Renderer::ShaderBytecode&) override
 		{
 			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 9 has no compute shader support")
 			return nullptr;
 		}
 
-		inline virtual Renderer::IComputeShader* createComputeShaderFromSourceCode(const Renderer::ShaderSourceCode&, Renderer::ShaderBytecode* = nullptr) override
+		[[nodiscard]] inline virtual Renderer::IComputeShader* createComputeShaderFromSourceCode(const Renderer::ShaderSourceCode&, Renderer::ShaderBytecode* = nullptr) override
 		{
 			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 9 has no compute shader support")
 			return nullptr;
 		}
 
-		virtual Renderer::IGraphicsProgram* createGraphicsProgram([[maybe_unused]] const Renderer::IRootSignature& rootSignature, [[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, [[maybe_unused]] Renderer::IVertexShader* vertexShader, [[maybe_unused]] Renderer::ITessellationControlShader* tessellationControlShader, [[maybe_unused]] Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, [[maybe_unused]] Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
+		[[nodiscard]] virtual Renderer::IGraphicsProgram* createGraphicsProgram([[maybe_unused]] const Renderer::IRootSignature& rootSignature, [[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, [[maybe_unused]] Renderer::IVertexShader* vertexShader, [[maybe_unused]] Renderer::ITessellationControlShader* tessellationControlShader, [[maybe_unused]] Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, [[maybe_unused]] Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
 		{
 			// Sanity checks
 			// -> A shader can be a null pointer, but if it's not the shader and graphics program language must match!
@@ -6814,7 +6814,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    The primitive topology
 		*/
-		inline Renderer::PrimitiveTopology getPrimitiveTopology() const
+		[[nodiscard]] inline Renderer::PrimitiveTopology getPrimitiveTopology() const
 		{
 			return mPrimitiveTopology;
 		}
@@ -6826,7 +6826,7 @@ namespace Direct3D9Renderer
 		*  @return
 		*    Direct3D 9 vertex declaration instance, can be a null pointer on error, do not release the returned instance unless you added an own reference to it
 		*/
-		inline IDirect3DVertexDeclaration9* getDirect3DVertexDeclaration9() const
+		[[nodiscard]] inline IDirect3DVertexDeclaration9* getDirect3DVertexDeclaration9() const
 		{
 			return mDirect3DVertexDeclaration9;
 		}
@@ -7272,7 +7272,7 @@ namespace Direct3D9Renderer
 		#ifdef RENDERER_STATISTICS
 		{ // For debugging: At this point there should be no resource instances left, validate this!
 			// -> Are the currently any resource instances?
-			const unsigned long numberOfCurrentResources = getStatistics().getNumberOfCurrentResources();
+			const uint32_t numberOfCurrentResources = getStatistics().getNumberOfCurrentResources();
 			if (numberOfCurrentResources > 0)
 			{
 				// Error!

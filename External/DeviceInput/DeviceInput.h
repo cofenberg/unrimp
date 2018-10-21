@@ -398,7 +398,7 @@ namespace DeviceInput
 		*  @return
 		*    Reference to controller that owns the control
 		*/
-		inline Controller& getController() const
+		[[nodiscard]] inline Controller& getController() const
 		{
 			return mController;
 		}
@@ -410,7 +410,7 @@ namespace DeviceInput
 		*  @return
 		*    Type of control
 		*/
-		inline ControlType getControlType() const
+		[[nodiscard]] inline ControlType getControlType() const
 		{
 			return mControlType;
 		}
@@ -422,7 +422,7 @@ namespace DeviceInput
 		*  @return
 		*    "true" if control is input control, "false" if output
 		*/
-		inline bool isInputControl() const
+		[[nodiscard]] inline bool isInputControl() const
 		{
 			// Input controls are:  Axis and button
 			// Output controls are: Effect and LED
@@ -436,7 +436,7 @@ namespace DeviceInput
 		*  @return
 		*    UTF-8 control name
 		*/
-		inline const std::string& getName() const
+		[[nodiscard]] inline const std::string& getName() const
 		{
 			return mName;
 		}
@@ -448,7 +448,7 @@ namespace DeviceInput
 		*  @return
 		*    UTF-8 control description
 		*/
-		inline const std::string& getDescription() const
+		[[nodiscard]] inline const std::string& getDescription() const
 		{
 			return mDescription;
 		}
@@ -548,7 +548,7 @@ namespace DeviceInput
 		*  @return
 		*    "true", if both buttons are equal, else "false"
 		*/
-		inline bool operator ==(const Button& button) const
+		[[nodiscard]] inline bool operator ==(const Button& button) const
 		{
 			return (mCharacter == button.mCharacter && mPressed == button.mPressed && mHit == button.mHit);
 		}
@@ -584,7 +584,7 @@ namespace DeviceInput
 		*  @return
 		*    Character associated with the button, "\0" if none
 		*/
-		inline char getCharacter() const
+		[[nodiscard]] inline char getCharacter() const
 		{
 			return mCharacter;
 		}
@@ -596,7 +596,7 @@ namespace DeviceInput
 		*  @return
 		*    "true" if the button is currently pressed, else "false"
 		*/
-		inline bool isPressed() const
+		[[nodiscard]] inline bool isPressed() const
 		{
 			return mPressed;
 		}
@@ -630,7 +630,7 @@ namespace DeviceInput
 		*  @note
 		*    - This method will not reset the hit-state after being called (see "checkHitAndReset()")
 		*/
-		inline bool isHit() const
+		[[nodiscard]] inline bool isHit() const
 		{
 			return mHit;
 		}
@@ -647,7 +647,7 @@ namespace DeviceInput
 		*    to "checkHitAndReset()" will return false). If you only want to check, but not reset the hit-state of
 		*    a button, you should call "isHit()".
 		*/
-		inline bool checkHitAndReset()
+		[[nodiscard]] inline bool checkHitAndReset()
 		{
 			const bool bHit = mHit;
 			mHit = false;
@@ -734,7 +734,7 @@ namespace DeviceInput
 		*  @return
 		*    "true" if both axes are equal, else "false"
 		*/
-		inline bool operator ==(const Axis& axis) const
+		[[nodiscard]] inline bool operator ==(const Axis& axis) const
 		{
 			return (mValue == axis.mValue && mRelativeValue == axis.mRelativeValue);
 		}
@@ -777,7 +777,7 @@ namespace DeviceInput
 		*    type in order to, for instance, multiply a absolute value with the current time difference
 		*    since the last frame/update to get correctly timed movement.
 		*/
-		inline float getValue() const
+		[[nodiscard]] inline float getValue() const
 		{
 			return mValue;
 		}
@@ -808,7 +808,7 @@ namespace DeviceInput
 		*  @return
 		*    "true" if the current value is relative, else "false" if it's a absolute value
 		*/
-		inline bool isRelativeValue() const
+		[[nodiscard]] inline bool isRelativeValue() const
 		{
 			return mRelativeValue;
 		}
@@ -890,7 +890,7 @@ namespace DeviceInput
 		*  @return
 		*    "true" if both LEDs are equal, else "false"
 		*/
-		inline bool operator ==(const LED& led) const
+		[[nodiscard]] inline bool operator ==(const LED& led) const
 		{
 			return (mLedStates == led.mLedStates);
 		}
@@ -924,7 +924,7 @@ namespace DeviceInput
 		*  @return
 		*    LED states as a bit field
 		*/
-		inline uint32_t getLedStates() const
+		[[nodiscard]] inline uint32_t getLedStates() const
 		{
 			return mLedStates;
 		}
@@ -955,7 +955,7 @@ namespace DeviceInput
 		*  @return
 		*    "true" if the LED is currently on, else "false"
 		*/
-		inline bool isOn(int ledIndex) const
+		[[nodiscard]] inline bool isOn(int ledIndex) const
 		{
 			return (ledIndex >= 0 && ledIndex < 32) ? (((mLedStates >> ledIndex) & 1) != 0) : false;
 		}
@@ -1066,7 +1066,7 @@ namespace DeviceInput
 		*  @return
 		*    "true" if both effects are equal, else "false"
 		*/
-		inline bool operator ==(const Effect& effect) const
+		[[nodiscard]] inline bool operator ==(const Effect& effect) const
 		{
 			return (mValue == effect.mValue);
 		}
@@ -1100,7 +1100,7 @@ namespace DeviceInput
 		*  @return
 		*    Current value; usually, an effect value should be in the range of 0..1 (but it's up to the actual device definition)
 		*/
-		inline float getValue() const
+		[[nodiscard]] inline float getValue() const
 		{
 			return mValue;
 		}
@@ -1172,7 +1172,7 @@ namespace DeviceInput
 		*  @return
 		*    Reference to control that is on the input side of the connection
 		*/
-		inline Control& getInputControl() const
+		[[nodiscard]] inline Control& getInputControl() const
 		{
 			return mInputControl;
 		}
@@ -1184,7 +1184,7 @@ namespace DeviceInput
 		*  @return
 		*    Reference to control that is on the output side of the connection
 		*/
-		inline Control& getOutputControl() const
+		[[nodiscard]] inline Control& getOutputControl() const
 		{
 			return mOutputControl;
 		}
@@ -1203,7 +1203,7 @@ namespace DeviceInput
 		*    It is also not valid to use a control of a device as an output, because devices can only be
 		*    used as input, not as output of controls (a device is controlled by the physical device only).
 		*/
-		inline bool isValid() const
+		[[nodiscard]] inline bool isValid() const
 		{
 			return mValid;
 		}
@@ -1318,7 +1318,7 @@ namespace DeviceInput
 		*  @return
 		*    Owner input manager
 		*/
-		inline InputManager& GetInputManager() const
+		[[nodiscard]] inline InputManager& GetInputManager() const
 		{
 			return mInputManager;
 		}
@@ -1330,7 +1330,7 @@ namespace DeviceInput
 		*  @return
 		*    Controller type
 		*/
-		inline ControllerType getControllerType() const
+		[[nodiscard]] inline ControllerType getControllerType() const
 		{
 			return mControllerType;
 		}
@@ -1342,7 +1342,7 @@ namespace DeviceInput
 		*  @return
 		*    Name
 		*/
-		inline const std::string& GetName() const
+		[[nodiscard]] inline const std::string& GetName() const
 		{
 			return m_sName;
 		}
@@ -1354,7 +1354,7 @@ namespace DeviceInput
 		*  @return
 		*    Description
 		*/
-		inline const std::string& GetDescription() const
+		[[nodiscard]] inline const std::string& GetDescription() const
 		{
 			return m_sDescription;
 		}
@@ -1371,7 +1371,7 @@ namespace DeviceInput
 		*    If a controller is not active, no state changes will occur and all input events from connected
 		*    devices will be discarded.
 		*/
-		inline bool GetActive() const
+		[[nodiscard]] inline bool GetActive() const
 		{
 			return m_bActive;
 		}
@@ -1404,7 +1404,7 @@ namespace DeviceInput
 		*  @return
 		*    'true', if the state has changed, else 'false'
 		*/
-		inline bool HasChanged() const
+		[[nodiscard]] inline bool HasChanged() const
 		{
 			// Get state
 			const bool bChanged = m_bChanged;
@@ -1423,7 +1423,7 @@ namespace DeviceInput
 		*  @return
 		*    List of controls
 		*/
-		inline const Controls &GetControls() const
+		[[nodiscard]] inline const Controls &GetControls() const
 		{
 			return m_lstControls;
 		}
@@ -1435,7 +1435,7 @@ namespace DeviceInput
 		*  @return
 		*    List of buttons
 		*/
-		inline const std::vector<Button*> &GetButtons() const
+		[[nodiscard]] inline const std::vector<Button*> &GetButtons() const
 		{
 			// Initialize button list
 			if (m_lstButtons.empty())
@@ -1452,7 +1452,7 @@ namespace DeviceInput
 		*  @return
 		*    List of axes
 		*/
-		inline const std::vector<Axis*> &GetAxes() const
+		[[nodiscard]] inline const std::vector<Axis*> &GetAxes() const
 		{
 			// Initialize axes list
 			if (m_lstAxes.empty())
@@ -1474,7 +1474,7 @@ namespace DeviceInput
 		*  @return
 		*    Control, or a null pointer if no control with that name could be found
 		*/
-		inline Control *GetControl(const std::string &sName) const
+		[[nodiscard]] inline Control *GetControl(const std::string &sName) const
 		{
 			ControlMap::const_iterator iterator = m_mapControls.find(sName);
 			return (m_mapControls.cend() != iterator) ? iterator->second : nullptr;
@@ -1492,7 +1492,7 @@ namespace DeviceInput
 		*    The character will then be reset to '\0', so the next call will return '\0', until
 		*    a new button is first pressed and then released.
 		*/
-		inline char GetChar()
+		[[nodiscard]] inline char GetChar()
 		{
 			// Get character
 			const char nChar = m_nChar;
@@ -1513,7 +1513,7 @@ namespace DeviceInput
 		*    To determine whether a connection is incoming or outgoing, you can check e.g.
 		*    "GetOutputControl()->getController()" == this or something similar.
 		*/
-		inline const Connections &GetConnections()
+		[[nodiscard]] inline const Connections &GetConnections()
 		{
 			return m_lstConnections;
 		}
@@ -1737,7 +1737,7 @@ namespace DeviceInput
 		*  @return
 		*    System specific device implementation, can be a null pointer
 		*/
-		inline DeviceImpl *GetImpl() const
+		[[nodiscard]] inline DeviceImpl *GetImpl() const
 		{
 			return m_pImpl;
 		}
@@ -2116,7 +2116,7 @@ namespace DeviceInput
 		*  @return
 		*    Threshold
 		*/
-		inline int GetThreshold() const
+		[[nodiscard]] inline int GetThreshold() const
 		{
 			return m_nThreshold;
 		}
@@ -2431,7 +2431,7 @@ namespace DeviceInput
 		*  @return
 		*    Report mode
 		*/
-		inline EReport GetReportMode() const
+		[[nodiscard]] inline EReport GetReportMode() const
 		{
 			return m_nReportMode;
 		}
@@ -2454,7 +2454,7 @@ namespace DeviceInput
 		*  @return
 		*    Infrared mode
 		*/
-		inline EIRMode GetIRMode() const
+		[[nodiscard]] inline EIRMode GetIRMode() const
 		{
 			return m_nIRMode;
 		}
@@ -2475,7 +2475,7 @@ namespace DeviceInput
 		*  @return
 		*    Extension type
 		*/
-		inline EExtension GetExtension() const
+		[[nodiscard]] inline EExtension GetExtension() const
 		{
 			return m_nExtension;
 		}
@@ -2487,7 +2487,7 @@ namespace DeviceInput
 		*  @return
 		*    Battery state
 		*/
-		inline uint8_t GetBattery() const
+		[[nodiscard]] inline uint8_t GetBattery() const
 		{
 			return m_nBattery;
 		}
@@ -3355,7 +3355,7 @@ namespace DeviceInput
 		*  @return
 		*    Provider list, do not destroy the returned instances
 		*/
-		inline const std::vector<Provider*> &GetProviders() const
+		[[nodiscard]] inline const std::vector<Provider*> &GetProviders() const
 		{
 			return m_lstProviders;
 		}
@@ -3370,7 +3370,7 @@ namespace DeviceInput
 		*  @return
 		*    Provider, or a null pointer if it doesn't exist, do not destroy the returned instance!
 		*/
-		inline Provider *GetProvider(const std::string &sProvider)
+		[[nodiscard]] inline Provider *GetProvider(const std::string &sProvider)
 		{
 			ProviderMap::const_iterator iterator = m_mapProviders.find(sProvider);
 			return (m_mapProviders.cend() != iterator) ? iterator->second : nullptr;
@@ -3383,7 +3383,7 @@ namespace DeviceInput
 		*  @return
 		*    Device list, do not destroy the returned instances!
 		*/
-		inline Devices &GetDevices()
+		[[nodiscard]] inline Devices &GetDevices()
 		{
 			return m_lstDevices;
 		}
@@ -3398,7 +3398,7 @@ namespace DeviceInput
 		*  @return
 		*    Device, or a null pointer if it doesn't exist, do not destroy the returned instance!
 		*/
-		inline Device *GetDevice(const std::string &sDevice) const
+		[[nodiscard]] inline Device *GetDevice(const std::string &sDevice) const
 		{
 			DeviceMap::const_iterator iterator = m_mapDevices.find(sDevice);
 			return (m_mapDevices.cend() != iterator) ? iterator->second : nullptr;
@@ -3411,7 +3411,7 @@ namespace DeviceInput
 		*  @return
 		*    Default keyboard, can be a null pointer, do not destroy the returned instance!
 		*/
-		inline Keyboard *GetKeyboard() const
+		[[nodiscard]] inline Keyboard *GetKeyboard() const
 		{
 			return static_cast<Keyboard*>(GetDevice("Keyboard"));
 		}
@@ -3423,7 +3423,7 @@ namespace DeviceInput
 		*  @return
 		*    Default mouse, can be a null pointer, do not destroy the returned instance!
 		*/
-		inline Mouse *GetMouse() const
+		[[nodiscard]] inline Mouse *GetMouse() const
 		{
 			return static_cast<Mouse*>(GetDevice("Mouse"));
 		}

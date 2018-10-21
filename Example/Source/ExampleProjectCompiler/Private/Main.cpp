@@ -36,7 +36,7 @@
 //[-------------------------------------------------------]
 //[ Platform independent program entry point              ]
 //[-------------------------------------------------------]
-int programEntryPoint(const CommandLineArguments& commandLineArguments)
+[[nodiscard]] int programEntryPoint(const CommandLineArguments& commandLineArguments)
 {
 	Renderer::DefaultLog defaultLog;
 	Renderer::DefaultAssert defaultAssert;

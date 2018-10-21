@@ -111,12 +111,12 @@ namespace
 				mVrController = &vrController;
 			}
 
-			inline uint32_t getNumberOfVrControllers() const
+			[[nodiscard]] inline uint32_t getNumberOfVrControllers() const
 			{
 				return mNumberOfVrControllers;
 			}
 
-			inline vr::TrackedDeviceIndex_t getVrControllerTrackedDeviceIndices(uint32_t vrControllerIndex) const
+			[[nodiscard]] inline vr::TrackedDeviceIndex_t getVrControllerTrackedDeviceIndices(uint32_t vrControllerIndex) const
 			{
 				assert(vrControllerIndex < vr::k_unMaxTrackedDeviceCount);
 				return mVrControllerTrackedDeviceIndices[vrControllerIndex];
@@ -228,7 +228,7 @@ namespace
 		//[ Private virtual RendererRuntime::IMaterialBlueprintResourceListener methods ]
 		//[-------------------------------------------------------]
 		private:
-			virtual bool fillPassValue(uint32_t referenceValue, uint8_t* buffer, uint32_t numberOfBytes) override
+			[[nodiscard]] virtual bool fillPassValue(uint32_t referenceValue, uint8_t* buffer, uint32_t numberOfBytes) override
 			{
 				// The GUI is placed over the second VR controller
 				#ifdef RENDERER_RUNTIME_IMGUI

@@ -99,7 +99,7 @@ public:
 	*  @return
 	*    The arguments
 	*/
-	inline const Arguments& getArguments() const
+	[[nodiscard]] inline const Arguments& getArguments() const
 	{
 		return mArguments;
 	}
@@ -111,7 +111,7 @@ public:
 	*  @return
 	*    The amount of arguments hold by this instance
 	*/
-	inline uint32_t getCount() const
+	[[nodiscard]] inline uint32_t getCount() const
 	{
 		return static_cast<uint32_t>(mArguments.size());
 	}
@@ -126,7 +126,7 @@ public:
 	*  @return
 	*    The argument at the given index or an empty string when index is out of range
 	*/
-	inline std::string getArgumentAtIndex(uint32_t index) const
+	[[nodiscard]] inline std::string getArgumentAtIndex(uint32_t index) const
 	{
 		return (index >= mArguments.size()) ? "" : mArguments[index];
 	}

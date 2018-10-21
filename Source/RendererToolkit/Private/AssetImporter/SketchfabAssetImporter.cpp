@@ -135,7 +135,8 @@ namespace
 
 		// TODO(co) Add more supported mesh formats, but only add tested mesh formats so we know it's working in general
 		typedef std::array<const char*, 4> SupportedMeshFormats;
-		SupportedMeshFormats g_SupportedMeshFormats = {
+		SupportedMeshFormats g_SupportedMeshFormats =
+		{
 			".obj",			// Alias Wavefront
 			".fbx",			// Autodesk Filmbox, FBX
 			".gltf", ".glb"	// GL Transmission Format
@@ -186,7 +187,8 @@ namespace
 		};
 		typedef std::vector<const char*> SemanticStrings;
 		typedef std::array<SemanticStrings, SemanticType::NUMBER_OF_SEMANTICS> Semantics;
-		const Semantics g_Semantics = {{
+		const Semantics g_Semantics =
+		{{
 			// ALBEDO_MAP
 			{ "diffuse", "albedo", "basecolor", "", "d", "diff", "dif" },
 			// NORMAL_MAP

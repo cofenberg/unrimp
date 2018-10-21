@@ -69,7 +69,7 @@ namespace RendererToolkit
 	//[ Public static methods                                 ]
 	//[-------------------------------------------------------]
 	public:
-		static uint32_t getAssimpFlagsByRapidJsonValue(const rapidjson::Value& rapidJsonValue, const char* propertyName);
+		[[nodiscard]] static uint32_t getAssimpFlagsByRapidJsonValue(const rapidjson::Value& rapidJsonValue, const char* propertyName);
 
 		/**
 		*  @brief
@@ -81,7 +81,7 @@ namespace RendererToolkit
 		*  @return
 		*    The number of bones
 		*/
-		static uint32_t getNumberOfBones(const aiNode& assimpNode);
+		[[nodiscard]] static uint32_t getNumberOfBones(const aiNode& assimpNode);
 
 
 	//[-------------------------------------------------------]

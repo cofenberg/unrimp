@@ -74,7 +74,7 @@ public:
 	~X11Application();
 	int run();
 	bool handlePendingEvents();
-	Display* getDisplay() { return mDisplay; }
+	[[nodiscard]] Display* getDisplay() { return mDisplay; }
 
 
 //[-------------------------------------------------------]

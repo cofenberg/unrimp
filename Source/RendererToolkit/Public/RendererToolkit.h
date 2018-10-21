@@ -83,8 +83,8 @@ namespace RendererToolkit
 	public:
 		virtual ~IRendererToolkit() override;
 	public:
-		virtual IProject* createProject() = 0;
-		virtual State getState() const = 0;
+		[[nodiscard]] virtual IProject* createProject() = 0;
+		[[nodiscard]] virtual State getState() const = 0;
 	protected:
 		IRendererToolkit();
 		explicit IRendererToolkit(const IRendererToolkit& source) = delete;

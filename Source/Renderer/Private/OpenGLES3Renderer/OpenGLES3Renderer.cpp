@@ -785,7 +785,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The OpenGL ES 3 context instance, do not free the memory the reference is pointing to
 		*/
-		inline IOpenGLES3Context& getOpenGLES3Context() const
+		[[nodiscard]] inline IOpenGLES3Context& getOpenGLES3Context() const
 		{
 			return *mOpenGLES3Context;
 		}
@@ -823,36 +823,36 @@ namespace OpenGLES3Renderer
 	//[ Public virtual Renderer::IRenderer methods            ]
 	//[-------------------------------------------------------]
 	public:
-		virtual const char* getName() const override;
-		virtual bool isInitialized() const override;
-		virtual bool isDebugEnabled() override;
+		[[nodiscard]] virtual const char* getName() const override;
+		[[nodiscard]] virtual bool isInitialized() const override;
+		[[nodiscard]] virtual bool isDebugEnabled() override;
 		//[-------------------------------------------------------]
 		//[ Shader language                                       ]
 		//[-------------------------------------------------------]
-		virtual uint32_t getNumberOfShaderLanguages() const override;
-		virtual const char* getShaderLanguageName(uint32_t index) const override;
-		virtual Renderer::IShaderLanguage* getShaderLanguage(const char* shaderLanguageName = nullptr) override;
+		[[nodiscard]] virtual uint32_t getNumberOfShaderLanguages() const override;
+		[[nodiscard]] virtual const char* getShaderLanguageName(uint32_t index) const override;
+		[[nodiscard]] virtual Renderer::IShaderLanguage* getShaderLanguage(const char* shaderLanguageName = nullptr) override;
 		//[-------------------------------------------------------]
 		//[ Resource creation                                     ]
 		//[-------------------------------------------------------]
-		virtual Renderer::IRenderPass* createRenderPass(uint32_t numberOfColorAttachments, const Renderer::TextureFormat::Enum* colorAttachmentTextureFormats, Renderer::TextureFormat::Enum depthStencilAttachmentTextureFormat = Renderer::TextureFormat::UNKNOWN, uint8_t numberOfMultisamples = 1) override;
-		virtual Renderer::ISwapChain* createSwapChain(Renderer::IRenderPass& renderPass, Renderer::WindowHandle windowHandle, bool useExternalContext = false) override;
-		virtual Renderer::IFramebuffer* createFramebuffer(Renderer::IRenderPass& renderPass, const Renderer::FramebufferAttachment* colorFramebufferAttachments, const Renderer::FramebufferAttachment* depthStencilFramebufferAttachment = nullptr) override;
-		virtual Renderer::IBufferManager* createBufferManager() override;
-		virtual Renderer::ITextureManager* createTextureManager() override;
-		virtual Renderer::IRootSignature* createRootSignature(const Renderer::RootSignature& rootSignature) override;
-		virtual Renderer::IGraphicsPipelineState* createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState) override;
-		virtual Renderer::IComputePipelineState* createComputePipelineState(Renderer::IRootSignature& rootSignature, Renderer::IComputeShader& computeShader) override;
-		virtual Renderer::ISamplerState* createSamplerState(const Renderer::SamplerState& samplerState) override;
+		[[nodiscard]] virtual Renderer::IRenderPass* createRenderPass(uint32_t numberOfColorAttachments, const Renderer::TextureFormat::Enum* colorAttachmentTextureFormats, Renderer::TextureFormat::Enum depthStencilAttachmentTextureFormat = Renderer::TextureFormat::UNKNOWN, uint8_t numberOfMultisamples = 1) override;
+		[[nodiscard]] virtual Renderer::ISwapChain* createSwapChain(Renderer::IRenderPass& renderPass, Renderer::WindowHandle windowHandle, bool useExternalContext = false) override;
+		[[nodiscard]] virtual Renderer::IFramebuffer* createFramebuffer(Renderer::IRenderPass& renderPass, const Renderer::FramebufferAttachment* colorFramebufferAttachments, const Renderer::FramebufferAttachment* depthStencilFramebufferAttachment = nullptr) override;
+		[[nodiscard]] virtual Renderer::IBufferManager* createBufferManager() override;
+		[[nodiscard]] virtual Renderer::ITextureManager* createTextureManager() override;
+		[[nodiscard]] virtual Renderer::IRootSignature* createRootSignature(const Renderer::RootSignature& rootSignature) override;
+		[[nodiscard]] virtual Renderer::IGraphicsPipelineState* createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState) override;
+		[[nodiscard]] virtual Renderer::IComputePipelineState* createComputePipelineState(Renderer::IRootSignature& rootSignature, Renderer::IComputeShader& computeShader) override;
+		[[nodiscard]] virtual Renderer::ISamplerState* createSamplerState(const Renderer::SamplerState& samplerState) override;
 		//[-------------------------------------------------------]
 		//[ Resource handling                                     ]
 		//[-------------------------------------------------------]
-		virtual bool map(Renderer::IResource& resource, uint32_t subresource, Renderer::MapType mapType, uint32_t mapFlags, Renderer::MappedSubresource& mappedSubresource) override;
+		[[nodiscard]] virtual bool map(Renderer::IResource& resource, uint32_t subresource, Renderer::MapType mapType, uint32_t mapFlags, Renderer::MappedSubresource& mappedSubresource) override;
 		virtual void unmap(Renderer::IResource& resource, uint32_t subresource) override;
 		//[-------------------------------------------------------]
 		//[ Operations                                            ]
 		//[-------------------------------------------------------]
-		virtual bool beginScene() override;
+		[[nodiscard]] virtual bool beginScene() override;
 		virtual void submitCommandBuffer(const Renderer::CommandBuffer& commandBuffer) override;
 		virtual void endScene() override;
 		//[-------------------------------------------------------]
@@ -989,7 +989,7 @@ namespace OpenGLES3Renderer
 		*  @brief
 		*    Return whether or not the context is properly initialized
 		*/
-		inline bool isInitialized() const
+		[[nodiscard]] inline bool isInitialized() const
 		{
 			return (mUseExternalContext || EGL_NO_CONTEXT != getEGLContext());
 		}
@@ -1001,7 +1001,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The handle of a native OS window which is valid as long as the renderer instance exists, "NULL_HANDLE" if there's no such window
 		*/
-		inline Renderer::handle getNativeWindowHandle() const
+		[[nodiscard]] inline Renderer::handle getNativeWindowHandle() const
 		{
 			return mNativeWindowHandle;
 		}
@@ -1013,7 +1013,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The used EGL display, "EGL_NO_DISPLAY" on error
 		*/
-		inline EGLDisplay getEGLDisplay() const
+		[[nodiscard]] inline EGLDisplay getEGLDisplay() const
 		{
 			return mEGLDisplay;
 		}
@@ -1025,7 +1025,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The used EGL configuration, null pointer on error
 		*/
-		inline EGLConfig getEGLConfig() const
+		[[nodiscard]] inline EGLConfig getEGLConfig() const
 		{
 			return mEGLConfig;
 		}
@@ -1037,7 +1037,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The used EGL context, "EGL_NO_CONTEXT" on error
 		*/
-		inline EGLContext getEGLContext() const
+		[[nodiscard]] inline EGLContext getEGLContext() const
 		{
 			return mEGLContext;
 		}
@@ -1049,7 +1049,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The used EGL dummy surface, "EGL_NO_SURFACE" on error
 		*/
-		inline EGLSurface getEGLDummySurface() const
+		[[nodiscard]] inline EGLSurface getEGLDummySurface() const
 		{
 			return mDummySurface;
 		}
@@ -1064,7 +1064,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    "EGL_TRUE" if all went fine, else "EGL_FALSE"
 		*/
-		EGLBoolean makeCurrent(EGLSurface eglSurface)
+		[[nodiscard]] EGLBoolean makeCurrent(EGLSurface eglSurface)
 		{
 			// Use the EGL dummy surface?
 			if (nullptr == eglSurface)
@@ -1081,7 +1081,7 @@ namespace OpenGLES3Renderer
 		//[ Platform specific                                     ]
 		//[-------------------------------------------------------]
 		#if defined(LINUX) && !defined(__ANDROID__)
-			inline ::Display* getX11Display() const
+			[[nodiscard]] inline ::Display* getX11Display() const
 			{
 				return mX11Display;
 			}
@@ -1102,7 +1102,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    "true" if all went fine, else "false"
 		*/
-		virtual bool initialize(uint32_t multisampleAntialiasingSamples)
+		[[nodiscard]] virtual bool initialize(uint32_t multisampleAntialiasingSamples)
 		{
 			if (mUseExternalContext)
 			{
@@ -1228,7 +1228,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The available extensions
 		*/
-		virtual const IExtensions& getExtensions() const = 0;
+		[[nodiscard]] virtual const IExtensions& getExtensions() const = 0;
 
 
 	//[-------------------------------------------------------]
@@ -1387,7 +1387,7 @@ namespace OpenGLES3Renderer
 		*  @note
 		*    - Automatically tries to find fallback configurations
 		*/
-		virtual EGLConfig chooseConfig(uint32_t multisampleAntialiasingSamples) const
+		[[nodiscard]] virtual EGLConfig chooseConfig(uint32_t multisampleAntialiasingSamples) const
 		{
 			// Try to find a working EGL configuration
 			EGLConfig eglConfig = nullptr;
@@ -1509,24 +1509,24 @@ namespace OpenGLES3Renderer
 		// Returns whether an extension is supported or not
 		///////////////////////////////////////////////////////////
 		// EXT
-		virtual bool isGL_EXT_texture_compression_s3tc() const = 0;
-		virtual bool isGL_EXT_texture_compression_dxt1() const = 0;
-		virtual bool isGL_EXT_texture_compression_latc() const = 0;
-		virtual bool isGL_EXT_texture_buffer() const = 0;
-		virtual bool isGL_EXT_draw_elements_base_vertex() const = 0;
-		virtual bool isGL_EXT_base_instance() const = 0;
-		virtual bool isGL_EXT_clip_control() const = 0;
+		[[nodiscard]] virtual bool isGL_EXT_texture_compression_s3tc() const = 0;
+		[[nodiscard]] virtual bool isGL_EXT_texture_compression_dxt1() const = 0;
+		[[nodiscard]] virtual bool isGL_EXT_texture_compression_latc() const = 0;
+		[[nodiscard]] virtual bool isGL_EXT_texture_buffer() const = 0;
+		[[nodiscard]] virtual bool isGL_EXT_draw_elements_base_vertex() const = 0;
+		[[nodiscard]] virtual bool isGL_EXT_base_instance() const = 0;
+		[[nodiscard]] virtual bool isGL_EXT_clip_control() const = 0;
 		// AMD
-		virtual bool isGL_AMD_compressed_3DC_texture() const = 0;
+		[[nodiscard]] virtual bool isGL_AMD_compressed_3DC_texture() const = 0;
 		// NV
-		virtual bool isGL_NV_fbo_color_attachments() const = 0;
+		[[nodiscard]] virtual bool isGL_NV_fbo_color_attachments() const = 0;
 		// OES
-		virtual bool isGL_OES_element_index_uint() const = 0;
-		virtual bool isGL_OES_packed_depth_stencil() const = 0;
-		virtual bool isGL_OES_depth24() const = 0;
-		virtual bool isGL_OES_depth32() const = 0;
+		[[nodiscard]] virtual bool isGL_OES_element_index_uint() const = 0;
+		[[nodiscard]] virtual bool isGL_OES_packed_depth_stencil() const = 0;
+		[[nodiscard]] virtual bool isGL_OES_depth24() const = 0;
+		[[nodiscard]] virtual bool isGL_OES_depth32() const = 0;
 		// KHR
-		virtual bool isGL_KHR_debug() const = 0;
+		[[nodiscard]] virtual bool isGL_KHR_debug() const = 0;
 
 
 	//[-------------------------------------------------------]
@@ -1732,76 +1732,76 @@ namespace OpenGLES3Renderer
 		// Returns whether an extension is supported or not
 		///////////////////////////////////////////////////////////
 		// EXT
-		inline virtual bool isGL_EXT_texture_compression_s3tc() const override
+		[[nodiscard]] inline virtual bool isGL_EXT_texture_compression_s3tc() const override
 		{
 			return mGL_EXT_texture_compression_s3tc;
 		}
 
-		inline virtual bool isGL_EXT_texture_compression_dxt1() const override
+		[[nodiscard]] inline virtual bool isGL_EXT_texture_compression_dxt1() const override
 		{
 			return mGL_EXT_texture_compression_dxt1;
 		}
 
-		inline virtual bool isGL_EXT_texture_compression_latc() const override
+		[[nodiscard]] inline virtual bool isGL_EXT_texture_compression_latc() const override
 		{
 			return mGL_EXT_texture_compression_latc;
 		}
 
-		inline virtual bool isGL_EXT_texture_buffer() const override
+		[[nodiscard]] inline virtual bool isGL_EXT_texture_buffer() const override
 		{
 			return mGL_EXT_texture_buffer;
 		}
 
-		inline virtual bool isGL_EXT_draw_elements_base_vertex() const override
+		[[nodiscard]] inline virtual bool isGL_EXT_draw_elements_base_vertex() const override
 		{
 			return mGL_EXT_draw_elements_base_vertex;
 		}
 
-		inline virtual bool isGL_EXT_base_instance() const override
+		[[nodiscard]] inline virtual bool isGL_EXT_base_instance() const override
 		{
 			return mGL_EXT_base_instance;
 		}
 
-		inline virtual bool isGL_EXT_clip_control() const override
+		[[nodiscard]] inline virtual bool isGL_EXT_clip_control() const override
 		{
 			return mGL_EXT_clip_control;
 		}
 
 		// AMD
-		inline virtual bool isGL_AMD_compressed_3DC_texture() const override
+		[[nodiscard]] inline virtual bool isGL_AMD_compressed_3DC_texture() const override
 		{
 			return mGL_AMD_compressed_3DC_texture;
 		}
 
 		// NV
-		inline virtual bool isGL_NV_fbo_color_attachments() const override
+		[[nodiscard]] inline virtual bool isGL_NV_fbo_color_attachments() const override
 		{
 			return mGL_NV_fbo_color_attachments;
 		}
 
 		// OES
-		inline virtual bool isGL_OES_element_index_uint() const override
+		[[nodiscard]] inline virtual bool isGL_OES_element_index_uint() const override
 		{
 			return mGL_OES_element_index_uint;
 		}
 
-		inline virtual bool isGL_OES_packed_depth_stencil() const override
+		[[nodiscard]] inline virtual bool isGL_OES_packed_depth_stencil() const override
 		{
 			return mGL_OES_packed_depth_stencil;
 		}
 
-		inline virtual bool isGL_OES_depth24() const override
+		[[nodiscard]] inline virtual bool isGL_OES_depth24() const override
 		{
 			return mGL_OES_depth24;
 		}
 
-		inline virtual bool isGL_OES_depth32() const override
+		[[nodiscard]] inline virtual bool isGL_OES_depth32() const override
 		{
 			return mGL_OES_depth32;
 		}
 
 		// KHR
-		inline virtual bool isGL_KHR_debug() const override
+		[[nodiscard]] inline virtual bool isGL_KHR_debug() const override
 		{
 			return mGL_KHR_debug;
 		}
@@ -1966,7 +1966,7 @@ namespace OpenGLES3Renderer
 	//[ Public virtual OpenGLES3Renderer::IOpenGLES3Context methods ]
 	//[-------------------------------------------------------]
 	public:
-		virtual bool initialize(uint32_t multisampleAntialiasingSamples) override
+		[[nodiscard]] virtual bool initialize(uint32_t multisampleAntialiasingSamples) override
 		{
 			// Entry points successfully registered?
 			if (mEntryPointsRegistered)
@@ -1986,7 +1986,7 @@ namespace OpenGLES3Renderer
 			return false;
 		}
 
-		inline virtual const IExtensions& getExtensions() const override
+		[[nodiscard]] inline virtual const IExtensions& getExtensions() const override
 		{
 			return *mExtensions;
 		}
@@ -1996,7 +1996,7 @@ namespace OpenGLES3Renderer
 	//[ Protected virtual OpenGLES3Renderer::IOpenGLES3Context methods ]
 	//[-------------------------------------------------------]
 	protected:
-		virtual EGLConfig chooseConfig(uint32_t multisampleAntialiasingSamples) const override
+		[[nodiscard]] virtual EGLConfig chooseConfig(uint32_t multisampleAntialiasingSamples) const override
 		{
 			// Try to find a working EGL configuration
 			EGLConfig eglConfig = nullptr;
@@ -2076,7 +2076,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    "true" if all went fine, else "false"
 		*/
-		bool loadSharedLibraries()
+		[[nodiscard]] bool loadSharedLibraries()
 		{
 			// We don't need to check m_pEGLSharedLibrary and m_pGLESSharedLibrary at this point because we know they must contain a null pointer
 
@@ -2161,7 +2161,7 @@ namespace OpenGLES3Renderer
 		*  @note
 		*    - Do only call this method if the OpenGL ES 3 shared library was loaded successfully
 		*/
-		bool loadEGLEntryPoints()
+		[[nodiscard]] bool loadEGLEntryPoints()
 		{
 			bool result = true;	// Success by default
 
@@ -2303,7 +2303,7 @@ namespace OpenGLES3Renderer
 		*  @note
 		*    - Do only call this method if the OpenGL ES 3 shared library was loaded successfully
 		*/
-		bool loadGLESEntryPoints()
+		[[nodiscard]] bool loadGLESEntryPoints()
 		{
 			bool result = true;	// Success by default
 
@@ -2551,7 +2551,7 @@ namespace OpenGLES3Renderer
 	*  @return
 	*    The OpenGL ES 3 shader, 0 on error, destroy the returned resource if you no longer need it
 	*/
-	GLuint loadShaderFromSourcecode(OpenGLES3Renderer& openGLES3Renderer, GLenum shaderType, const GLchar* sourceCode)
+	[[nodiscard]] GLuint loadShaderFromSourcecode(OpenGLES3Renderer& openGLES3Renderer, GLenum shaderType, const GLchar* sourceCode)
 	{
 		// Create the shader object
 		const GLuint openGLES3Shader = glCreateShader(shaderType);
@@ -2639,7 +2639,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    OpenGL ES 3 magnification filter mode
 		*/
-		static GLint getOpenGLES3MagFilterMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode)
+		[[nodiscard]] static GLint getOpenGLES3MagFilterMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode)
 		{
 			switch (filterMode)
 			{
@@ -2720,7 +2720,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    OpenGL ES 3 minification filter mode
 		*/
-		static GLint getOpenGLES3MinFilterMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode, bool hasMipmaps)
+		[[nodiscard]] static GLint getOpenGLES3MinFilterMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode, bool hasMipmaps)
 		{
 			switch (filterMode)
 			{
@@ -2797,7 +2797,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    OpenGL ES 3 compare mode
 		*/
-		inline static GLint getOpenGLES3CompareMode([[maybe_unused]] Renderer::FilterMode filterMode)
+		[[nodiscard]] inline static GLint getOpenGLES3CompareMode([[maybe_unused]] Renderer::FilterMode filterMode)
 		{
 			// "GL_COMPARE_REF_TO_TEXTURE" is not supported by OpenGL ES 3
 			return GL_NONE;
@@ -2816,7 +2816,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    OpenGL ES 3 texture address mode
 		*/
-		static GLint getOpenGLES3TextureAddressMode(Renderer::TextureAddressMode textureAddressMode)
+		[[nodiscard]] static GLint getOpenGLES3TextureAddressMode(Renderer::TextureAddressMode textureAddressMode)
 		{
 			static constexpr GLint MAPPING[] =
 			{
@@ -2842,7 +2842,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    OpenGL ES 3 comparison function
 		*/
-		static GLenum getOpenGLES3ComparisonFunc(Renderer::ComparisonFunc comparisonFunc)
+		[[nodiscard]] static GLenum getOpenGLES3ComparisonFunc(Renderer::ComparisonFunc comparisonFunc)
 		{
 			static constexpr GLenum MAPPING[] =
 			{
@@ -2871,7 +2871,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    OpenGL ES 3 size (number of elements)
 		*/
-		static GLint getOpenGLES3Size(Renderer::VertexAttributeFormat vertexAttributeFormat)
+		[[nodiscard]] static GLint getOpenGLES3Size(Renderer::VertexAttributeFormat vertexAttributeFormat)
 		{
 			static constexpr GLint MAPPING[] =
 			{
@@ -2898,7 +2898,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    OpenGL ES 3 type
 		*/
-		static GLenum getOpenGLES3Type(Renderer::VertexAttributeFormat vertexAttributeFormat)
+		[[nodiscard]] static GLenum getOpenGLES3Type(Renderer::VertexAttributeFormat vertexAttributeFormat)
 		{
 			static constexpr GLenum MAPPING[] =
 			{
@@ -2925,7 +2925,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    "GL_TRUE" if the format is normalized, else "GL_FALSE"
 		*/
-		static GLboolean isOpenGLES3VertexAttributeFormatNormalized(Renderer::VertexAttributeFormat vertexAttributeFormat)
+		[[nodiscard]] static GLboolean isOpenGLES3VertexAttributeFormatNormalized(Renderer::VertexAttributeFormat vertexAttributeFormat)
 		{
 			static constexpr GLboolean MAPPING[] =
 			{
@@ -2952,7 +2952,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    "GL_TRUE" if the format is integer, else "GL_FALSE"
 		*/
-		static GLboolean isOpenGLES3VertexAttributeFormatInteger(Renderer::VertexAttributeFormat vertexAttributeFormat)
+		[[nodiscard]] static GLboolean isOpenGLES3VertexAttributeFormatInteger(Renderer::VertexAttributeFormat vertexAttributeFormat)
 		{
 			static constexpr GLboolean MAPPING[] =
 			{
@@ -2982,7 +2982,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    OpenGL ES 3 usage
 		*/
-		static GLenum getOpenGLES3Type(Renderer::BufferUsage bufferUsage)
+		[[nodiscard]] static GLenum getOpenGLES3Type(Renderer::BufferUsage bufferUsage)
 		{
 			// OpenGL ES 3 only supports: "STREAM_DRAW", "STATIC_DRAW" and "DYNAMIC_DRAW"
 
@@ -3021,7 +3021,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    OpenGL ES 3 type
 		*/
-		static GLenum getOpenGLES3Type(Renderer::IndexBufferFormat::Enum indexBufferFormat)
+		[[nodiscard]] static GLenum getOpenGLES3Type(Renderer::IndexBufferFormat::Enum indexBufferFormat)
 		{
 			static constexpr GLenum MAPPING[] =
 			{
@@ -3045,7 +3045,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    OpenGL ES 3 internal format
 		*/
-		static GLenum getOpenGLES3InternalFormat(Renderer::TextureFormat::Enum textureFormat)
+		[[nodiscard]] static GLenum getOpenGLES3InternalFormat(Renderer::TextureFormat::Enum textureFormat)
 		{
 			static constexpr GLenum MAPPING[] =
 			{
@@ -3087,7 +3087,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    OpenGL ES 3 format
 		*/
-		static GLenum getOpenGLES3Format(Renderer::TextureFormat::Enum textureFormat)
+		[[nodiscard]] static GLenum getOpenGLES3Format(Renderer::TextureFormat::Enum textureFormat)
 		{
 			static constexpr GLenum MAPPING[] =
 			{
@@ -3129,7 +3129,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    OpenGL ES 3 type
 		*/
-		static GLenum getOpenGLES3Type(Renderer::TextureFormat::Enum textureFormat)
+		[[nodiscard]] static GLenum getOpenGLES3Type(Renderer::TextureFormat::Enum textureFormat)
 		{
 			static constexpr GLenum MAPPING[] =
 			{
@@ -3174,7 +3174,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    OpenGL ES 3 type
 		*/
-		static GLenum getOpenGLES3Type(Renderer::PrimitiveTopology primitiveTopology)
+		[[nodiscard]] static GLenum getOpenGLES3Type(Renderer::PrimitiveTopology primitiveTopology)
 		{
 			static constexpr GLenum MAPPING[] =
 			{
@@ -3200,7 +3200,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    OpenGL ES 3 type
 		*/
-		static GLbitfield getOpenGLES3MapRangeType(Renderer::MapType mapType)
+		[[nodiscard]] static GLbitfield getOpenGLES3MapRangeType(Renderer::MapType mapType)
 		{
 			// OpenGL ES 3 defines access bits for "glMapBufferRange()"
 			static constexpr GLbitfield MAPPING[] =
@@ -3227,7 +3227,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    OpenGL ES 3 type
 		*/
-		static GLenum getOpenGLES3BlendType(Renderer::Blend blend)
+		[[nodiscard]] static GLenum getOpenGLES3BlendType(Renderer::Blend blend)
 		{
 			if (blend <= Renderer::Blend::SRC_ALPHA_SAT)
 			{
@@ -3416,7 +3416,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The number of resources this resource group groups together
 		*/
-		inline uint32_t getNumberOfResources() const
+		[[nodiscard]] inline uint32_t getNumberOfResources() const
 		{
 			return mNumberOfResources;
 		}
@@ -3428,7 +3428,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The renderer resources, don't release or destroy the returned pointer
 		*/
-		inline Renderer::IResource** getResources() const
+		[[nodiscard]] inline Renderer::IResource** getResources() const
 		{
 			return mResources;
 		}
@@ -3440,7 +3440,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The sampler states, don't release or destroy the returned pointer
 		*/
-		inline Renderer::ISamplerState** getSamplerState() const
+		[[nodiscard]] inline Renderer::ISamplerState** getSamplerState() const
 		{
 			return mSamplerStates;
 		}
@@ -3452,7 +3452,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The resource index to uniform block binding index mapping, only valid for uniform buffer resources
 		*/
-		inline uint32_t* getResourceIndexToUniformBlockBindingIndex() const
+		[[nodiscard]] inline uint32_t* getResourceIndexToUniformBlockBindingIndex() const
 		{
 			return mResourceIndexToUniformBlockBindingIndex;
 		}
@@ -3585,7 +3585,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The root signature data
 		*/
-		inline const Renderer::RootSignature& getRootSignature() const
+		[[nodiscard]] inline const Renderer::RootSignature& getRootSignature() const
 		{
 			return mRootSignature;
 		}
@@ -3595,7 +3595,7 @@ namespace OpenGLES3Renderer
 	//[ Public virtual Renderer::IRootSignature methods       ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual Renderer::IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, Renderer::IResource** resources, Renderer::ISamplerState** samplerStates = nullptr) override
+		[[nodiscard]] inline virtual Renderer::IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, Renderer::IResource** resources, Renderer::ISamplerState** samplerStates = nullptr) override
 		{
 			// Sanity checks
 			RENDERER_ASSERT(getRenderer().getContext(), rootParameterIndex < mRootSignature.numberOfParameters, "The OpenGL ES 3 root parameter index is out-of-bounds")
@@ -3723,7 +3723,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The OpenGL ES 3 element array buffer, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLES3ElementArrayBuffer() const
+		[[nodiscard]] inline GLuint getOpenGLES3ElementArrayBuffer() const
 		{
 			return mOpenGLES3ElementArrayBuffer;
 		}
@@ -3735,7 +3735,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The OpenGL ES 3 element array buffer data type
 		*/
-		inline GLenum getOpenGLES3Type() const
+		[[nodiscard]] inline GLenum getOpenGLES3Type() const
 		{
 			return mOpenGLES3Type;
 		}
@@ -3747,12 +3747,12 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The number of bytes of an index
 		*/
-		inline uint32_t getIndexSizeInBytes() const
+		[[nodiscard]] inline uint32_t getIndexSizeInBytes() const
 		{
 			return mIndexSizeInBytes;
 		}
 
-		inline uint32_t getBufferSize() const
+		[[nodiscard]] inline uint32_t getBufferSize() const
 		{
 			return mBufferSize;
 		}
@@ -3877,12 +3877,12 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The OpenGL ES 3 array buffer, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLES3ArrayBuffer() const
+		[[nodiscard]] inline GLuint getOpenGLES3ArrayBuffer() const
 		{
 			return mOpenGLES3ArrayBuffer;
 		}
 
-		inline uint32_t getBufferSize() const
+		[[nodiscard]] inline uint32_t getBufferSize() const
 		{
 			return mBufferSize;
 		}
@@ -4107,7 +4107,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The used index buffer, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline IndexBuffer* getIndexBuffer() const
+		[[nodiscard]] inline IndexBuffer* getIndexBuffer() const
 		{
 			return mIndexBuffer;
 		}
@@ -4119,7 +4119,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The OpenGL ES 3 vertex array, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLES3VertexArray() const
+		[[nodiscard]] inline GLuint getOpenGLES3VertexArray() const
 		{
 			return mOpenGLES3VertexArray;
 		}
@@ -4211,7 +4211,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The OpenGL ES 3 texture buffer instance, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLES3TextureBuffer() const
+		[[nodiscard]] inline GLuint getOpenGLES3TextureBuffer() const
 		{
 			return mOpenGLES3TextureBuffer;
 		}
@@ -4223,12 +4223,12 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The OpenGL ES 3 texture instance, can be zero if no resource is allocated
 		*/
-		inline GLuint getOpenGLES3Texture() const
+		[[nodiscard]] inline GLuint getOpenGLES3Texture() const
 		{
 			return mOpenGLES3Texture;
 		}
 
-		inline uint32_t getBufferSize() const
+		[[nodiscard]] inline uint32_t getBufferSize() const
 		{
 			return mBufferSize;
 		}
@@ -4551,7 +4551,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    Writable indirect buffer emulation data pointer, can be a null pointer, don't destroy the returned instance
 		*/
-		inline uint8_t* getWritableEmulationData() const
+		[[nodiscard]] inline uint8_t* getWritableEmulationData() const
 		{
 			return mData;
 		}
@@ -4561,7 +4561,7 @@ namespace OpenGLES3Renderer
 	//[ Public virtual Renderer::IIndirectBuffer methods      ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const uint8_t* getEmulationData() const override
+		[[nodiscard]] inline virtual const uint8_t* getEmulationData() const override
 		{
 			return mData;
 		}
@@ -4671,12 +4671,12 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The OpenGL ES 3 uniform buffer instance, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLES3UniformBuffer() const
+		[[nodiscard]] inline GLuint getOpenGLES3UniformBuffer() const
 		{
 			return mOpenGLES3UniformBuffer;
 		}
 
-		inline uint32_t getBufferSize() const
+		[[nodiscard]] inline uint32_t getBufferSize() const
 		{
 			return mBufferSize;
 		}
@@ -4768,24 +4768,24 @@ namespace OpenGLES3Renderer
 	//[ Public virtual Renderer::IBufferManager methods       ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		[[nodiscard]] inline virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), VertexBuffer)(static_cast<OpenGLES3Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage);
 		}
 
-		inline virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::Enum indexBufferFormat = Renderer::IndexBufferFormat::UNSIGNED_SHORT) override
+		[[nodiscard]] inline virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::Enum indexBufferFormat = Renderer::IndexBufferFormat::UNSIGNED_SHORT) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), IndexBuffer)(static_cast<OpenGLES3Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage, indexBufferFormat);
 		}
 
-		inline virtual Renderer::IVertexArray* createVertexArray(const Renderer::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Renderer::VertexArrayVertexBuffer* vertexBuffers, Renderer::IIndexBuffer* indexBuffer = nullptr) override
+		[[nodiscard]] inline virtual Renderer::IVertexArray* createVertexArray(const Renderer::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Renderer::VertexArrayVertexBuffer* vertexBuffers, Renderer::IIndexBuffer* indexBuffer = nullptr) override
 		{
 			// Effective vertex array object (VAO)
 			// TODO(co) Add security check: Is the given resource one of the currently used renderer?
 			return RENDERER_NEW(getRenderer().getContext(), VertexArray)(static_cast<OpenGLES3Renderer&>(getRenderer()), vertexAttributes, numberOfVertexBuffers, vertexBuffers, static_cast<IndexBuffer*>(indexBuffer));
 		}
 
-		virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t = Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F) override
+		[[nodiscard]] virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t = Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F) override
 		{
 			// Sanity check
 			RENDERER_ASSERT(getRenderer().getContext(), (numberOfBytes % Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat)) == 0, "The OpenGL ES 3 texture buffer size must be a multiple of the selected texture format bytes per texel")
@@ -4808,7 +4808,7 @@ namespace OpenGLES3Renderer
 			return nullptr;
 		}
 
-		virtual Renderer::IStructuredBuffer* createStructuredBuffer([[maybe_unused]] uint32_t numberOfBytes, [[maybe_unused]] const void* data, [[maybe_unused]] uint32_t bufferFlags, [[maybe_unused]] Renderer::BufferUsage bufferUsage, [[maybe_unused]] uint32_t numberOfStructureBytes) override
+		[[nodiscard]] virtual Renderer::IStructuredBuffer* createStructuredBuffer([[maybe_unused]] uint32_t numberOfBytes, [[maybe_unused]] const void* data, [[maybe_unused]] uint32_t bufferFlags, [[maybe_unused]] Renderer::BufferUsage bufferUsage, [[maybe_unused]] uint32_t numberOfStructureBytes) override
 		{
 			// Sanity checks
 			RENDERER_ASSERT(getRenderer().getContext(), (numberOfBytes % numberOfStructureBytes) == 0, "The OpenGL ES 3 structured buffer size must be a multiple of the given number of structure bytes")
@@ -4818,12 +4818,12 @@ namespace OpenGLES3Renderer
 			return nullptr;
 		}
 
-		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, [[maybe_unused]] Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		[[nodiscard]] inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, [[maybe_unused]] Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<OpenGLES3Renderer&>(getRenderer()), numberOfBytes, data, indirectBufferFlags);
 		}
 
-		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		[[nodiscard]] inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			// Don't remove this reminder comment block: There are no buffer flags by intent since an uniform buffer can't be used for unordered access and as a consequence an uniform buffer must always used as shader resource to not be pointless
 			// -> Inside GLSL "layout(binding = 0, std140) writeonly uniform OutputUniformBuffer" will result in the GLSL compiler error "Failed to parse the GLSL shader source code: ERROR: 0:85: 'assign' :  l-value required "anon@6" (can't modify a uniform)"
@@ -5023,7 +5023,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The OpenGL ES 3 texture, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLES3Texture() const
+		[[nodiscard]] inline GLuint getOpenGLES3Texture() const
 		{
 			return mOpenGLES3Texture;
 		}
@@ -5044,7 +5044,7 @@ namespace OpenGLES3Renderer
 			}
 		#endif
 
-		inline virtual void* getInternalResourceHandle() const override
+		[[nodiscard]] inline virtual void* getInternalResourceHandle() const override
 		{
 			return reinterpret_cast<void*>(static_cast<uintptr_t>(mOpenGLES3Texture));
 		}
@@ -5240,7 +5240,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The OpenGL ES 3 texture, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLES3Texture() const
+		[[nodiscard]] inline GLuint getOpenGLES3Texture() const
 		{
 			return mOpenGLES3Texture;
 		}
@@ -5297,7 +5297,7 @@ namespace OpenGLES3Renderer
 			}
 		#endif
 
-		inline virtual void* getInternalResourceHandle() const override
+		[[nodiscard]] inline virtual void* getInternalResourceHandle() const override
 		{
 			return reinterpret_cast<void*>(static_cast<uintptr_t>(mOpenGLES3Texture));
 		}
@@ -5438,7 +5438,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The OpenGL ES 3 texture, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLES3Texture() const
+		[[nodiscard]] inline GLuint getOpenGLES3Texture() const
 		{
 			return mOpenGLES3Texture;
 		}
@@ -5664,7 +5664,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The OpenGL ES 3 texture, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLES3Texture() const
+		[[nodiscard]] inline GLuint getOpenGLES3Texture() const
 		{
 			return mOpenGLES3Texture;
 		}
@@ -5685,7 +5685,7 @@ namespace OpenGLES3Renderer
 			}
 		#endif
 
-		inline virtual void* getInternalResourceHandle() const override
+		[[nodiscard]] inline virtual void* getInternalResourceHandle() const override
 		{
 			return reinterpret_cast<void*>(static_cast<uintptr_t>(mOpenGLES3Texture));
 		}
@@ -5915,7 +5915,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The OpenGL ES 3 texture, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLES3Texture() const
+		[[nodiscard]] inline GLuint getOpenGLES3Texture() const
 		{
 			return mOpenGLES3Texture;
 		}
@@ -5936,7 +5936,7 @@ namespace OpenGLES3Renderer
 			}
 		#endif
 
-		inline virtual void* getInternalResourceHandle() const override
+		[[nodiscard]] inline virtual void* getInternalResourceHandle() const override
 		{
 			return reinterpret_cast<void*>(static_cast<uintptr_t>(mOpenGLES3Texture));
 		}
@@ -6011,7 +6011,7 @@ namespace OpenGLES3Renderer
 	//[ Public virtual Renderer::ITextureManager methods      ]
 	//[-------------------------------------------------------]
 	public:
-		virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, OpenGL ES 3 has no texture usage indication
 
@@ -6026,7 +6026,7 @@ namespace OpenGLES3Renderer
 			}
 		}
 
-		virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, [[maybe_unused]] uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
+		[[nodiscard]] virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, [[maybe_unused]] uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, OpenGL ES 3 has no texture usage indication
 
@@ -6041,7 +6041,7 @@ namespace OpenGLES3Renderer
 			}
 		}
 
-		virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, OpenGL ES 3 has no texture usage indication
 
@@ -6056,7 +6056,7 @@ namespace OpenGLES3Renderer
 			}
 		}
 
-		virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, OpenGL ES 3 has no texture usage indication
 
@@ -6071,7 +6071,7 @@ namespace OpenGLES3Renderer
 			}
 		}
 
-		virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, OpenGL ES 3 has no texture usage indication
 
@@ -6333,7 +6333,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The rasterizer state
 		*/
-		inline const Renderer::RasterizerState& getRasterizerState() const
+		[[nodiscard]] inline const Renderer::RasterizerState& getRasterizerState() const
 		{
 			return mRasterizerState;
 		}
@@ -6508,7 +6508,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The depth stencil state
 		*/
-		inline const Renderer::DepthStencilState& getDepthStencilState() const
+		[[nodiscard]] inline const Renderer::DepthStencilState& getDepthStencilState() const
 		{
 			return mDepthStencilState;
 		}
@@ -6595,7 +6595,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The blend state
 		*/
-		inline const Renderer::BlendState& getBlendState() const
+		[[nodiscard]] inline const Renderer::BlendState& getBlendState() const
 		{
 			return mBlendState;
 		}
@@ -6698,7 +6698,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The number of color render target textures
 		*/
-		inline uint32_t getNumberOfColorAttachments() const
+		[[nodiscard]] inline uint32_t getNumberOfColorAttachments() const
 		{
 			return mNumberOfColorAttachments;
 		}
@@ -6877,7 +6877,7 @@ namespace OpenGLES3Renderer
 	//[ Public virtual Renderer::ISwapChain methods           ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual Renderer::handle getNativeWindowHandle() const override
+		[[nodiscard]] inline virtual Renderer::handle getNativeWindowHandle() const override
 		{
 			return mNativeWindowHandle;
 		}
@@ -6914,7 +6914,7 @@ namespace OpenGLES3Renderer
 		inline virtual void resizeBuffers() override
 		{}
 
-		inline virtual bool getFullscreenState() const override
+		[[nodiscard]] inline virtual bool getFullscreenState() const override
 		{
 			// TODO(co) Implement me
 			return false;
@@ -7289,7 +7289,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The OpenGL ES 3 framebuffer, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLES3Framebuffer() const
+		[[nodiscard]] inline GLuint getOpenGLES3Framebuffer() const
 		{
 			return mOpenGLES3Framebuffer;
 		}
@@ -7301,7 +7301,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The number of color render target textures
 		*/
-		inline uint32_t getNumberOfColorTextures() const
+		[[nodiscard]] inline uint32_t getNumberOfColorTextures() const
 		{
 			return mNumberOfColorTextures;
 		}
@@ -7322,7 +7322,7 @@ namespace OpenGLES3Renderer
 			}
 		#endif
 
-		inline virtual void* getInternalResourceHandle() const override
+		[[nodiscard]] inline virtual void* getInternalResourceHandle() const override
 		{
 			return reinterpret_cast<void*>(static_cast<uintptr_t>(mOpenGLES3Framebuffer));
 		}
@@ -7423,7 +7423,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The OpenGL ES 3 shader, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLES3Shader() const
+		[[nodiscard]] inline GLuint getOpenGLES3Shader() const
 		{
 			return mOpenGLES3Shader;
 		}
@@ -7449,7 +7449,7 @@ namespace OpenGLES3Renderer
 	//[ Public virtual Renderer::IShader methods              ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::GLSLES_NAME;
 		}
@@ -7532,7 +7532,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The OpenGL ES 3 shader, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline uint32_t getOpenGLES3Shader() const
+		[[nodiscard]] inline uint32_t getOpenGLES3Shader() const
 		{
 			return mOpenGLES3Shader;
 		}
@@ -7558,7 +7558,7 @@ namespace OpenGLES3Renderer
 	//[ Public virtual Renderer::IShader methods              ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::GLSLES_NAME;
 		}
@@ -7807,7 +7807,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    The OpenGL ES 3 program, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLES3Program() const
+		[[nodiscard]] inline GLuint getOpenGLES3Program() const
 		{
 			return mOpenGLES3Program;
 		}
@@ -7819,7 +7819,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    Draw ID uniform location, -1 if there's no such uniform
 		*/
-		inline GLint getDrawIdUniformLocation() const
+		[[nodiscard]] inline GLint getDrawIdUniformLocation() const
 		{
 			return mDrawIdUniformLocation;
 		}
@@ -7845,7 +7845,7 @@ namespace OpenGLES3Renderer
 	//[ Public virtual Renderer::IGraphicsProgram methods     ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual Renderer::handle getUniformHandle(const char* uniformName) override
+		[[nodiscard]] inline virtual Renderer::handle getUniformHandle(const char* uniformName) override
 		{
 			return static_cast<Renderer::handle>(glGetUniformLocation(mOpenGLES3Program, uniformName));
 		}
@@ -8110,92 +8110,92 @@ namespace OpenGLES3Renderer
 	//[ Public virtual Renderer::IShaderLanguage methods      ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::GLSLES_NAME;
 		}
 
-		inline virtual Renderer::IVertexShader* createVertexShaderFromBytecode(const Renderer::VertexAttributes&, const Renderer::ShaderBytecode&) override
+		[[nodiscard]] inline virtual Renderer::IVertexShader* createVertexShaderFromBytecode(const Renderer::VertexAttributes&, const Renderer::ShaderBytecode&) override
 		{
 			// Error!
 			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL ES 3 monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
-		inline virtual Renderer::IVertexShader* createVertexShaderFromSourceCode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] inline virtual Renderer::IVertexShader* createVertexShaderFromSourceCode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// There's no need to check for "Renderer::Capabilities::vertexShader", we know there's vertex shader support
 			// -> Monolithic shaders have no shader bytecode, only a monolithic program bytecode
 			return RENDERER_NEW(getRenderer().getContext(), VertexShaderGlsl)(static_cast<OpenGLES3Renderer&>(getRenderer()), shaderSourceCode.sourceCode);
 		}
 
-		inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromBytecode(const Renderer::ShaderBytecode&) override
+		[[nodiscard]] inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromBytecode(const Renderer::ShaderBytecode&) override
 		{
 			// Error!
 			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL ES 3 monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
-		inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromSourceCode(const Renderer::ShaderSourceCode&, Renderer::ShaderBytecode*) override
+		[[nodiscard]] inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromSourceCode(const Renderer::ShaderSourceCode&, Renderer::ShaderBytecode*) override
 		{
 			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL ES 3 has no tessellation control shader support")
 			return nullptr;
 		}
 
-		inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode(const Renderer::ShaderBytecode&) override
+		[[nodiscard]] inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode(const Renderer::ShaderBytecode&) override
 		{
 			// Error!
 			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL ES 3 monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
-		inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode(const Renderer::ShaderSourceCode&, Renderer::ShaderBytecode*) override
+		[[nodiscard]] inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode(const Renderer::ShaderSourceCode&, Renderer::ShaderBytecode*) override
 		{
 			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL ES 3 has no tessellation evaluation shader support")
 			return nullptr;
 		}
 
-		inline virtual Renderer::IGeometryShader* createGeometryShaderFromBytecode(const Renderer::ShaderBytecode&, Renderer::GsInputPrimitiveTopology, Renderer::GsOutputPrimitiveTopology, uint32_t) override
+		[[nodiscard]] inline virtual Renderer::IGeometryShader* createGeometryShaderFromBytecode(const Renderer::ShaderBytecode&, Renderer::GsInputPrimitiveTopology, Renderer::GsOutputPrimitiveTopology, uint32_t) override
 		{
 			// Error!
 			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL ES 3 monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
-		inline virtual Renderer::IGeometryShader* createGeometryShaderFromSourceCode(const Renderer::ShaderSourceCode&, Renderer::GsInputPrimitiveTopology, Renderer::GsOutputPrimitiveTopology, uint32_t, Renderer::ShaderBytecode*) override
+		[[nodiscard]] inline virtual Renderer::IGeometryShader* createGeometryShaderFromSourceCode(const Renderer::ShaderSourceCode&, Renderer::GsInputPrimitiveTopology, Renderer::GsOutputPrimitiveTopology, uint32_t, Renderer::ShaderBytecode*) override
 		{
 			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL ES 3 has no geometry shader support")
 			return nullptr;
 		}
 
-		inline virtual Renderer::IFragmentShader* createFragmentShaderFromBytecode(const Renderer::ShaderBytecode&) override
+		[[nodiscard]] inline virtual Renderer::IFragmentShader* createFragmentShaderFromBytecode(const Renderer::ShaderBytecode&) override
 		{
 			// Error!
 			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL ES 3 monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
-		inline virtual Renderer::IFragmentShader* createFragmentShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] inline virtual Renderer::IFragmentShader* createFragmentShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// There's no need to check for "Renderer::Capabilities::fragmentShader", we know there's fragment shader support
 			// -> Monolithic shaders have no shader bytecode, only a monolithic program bytecode
 			return RENDERER_NEW(getRenderer().getContext(), FragmentShaderGlsl)(static_cast<OpenGLES3Renderer&>(getRenderer()), shaderSourceCode.sourceCode);
 		}
 
-		inline virtual Renderer::IComputeShader* createComputeShaderFromBytecode(const Renderer::ShaderBytecode&) override
+		[[nodiscard]] inline virtual Renderer::IComputeShader* createComputeShaderFromBytecode(const Renderer::ShaderBytecode&) override
 		{
 			// Error!
 			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL ES 3 monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
-		inline virtual Renderer::IComputeShader* createComputeShaderFromSourceCode(const Renderer::ShaderSourceCode&, Renderer::ShaderBytecode* = nullptr) override
+		[[nodiscard]] inline virtual Renderer::IComputeShader* createComputeShaderFromSourceCode(const Renderer::ShaderSourceCode&, Renderer::ShaderBytecode* = nullptr) override
 		{
 			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL ES 3 has no compute shader support")
 			return nullptr;
 		}
 
-		virtual Renderer::IGraphicsProgram* createGraphicsProgram(const Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, [[maybe_unused]] Renderer::ITessellationControlShader* tessellationControlShader, [[maybe_unused]] Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, [[maybe_unused]] Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
+		[[nodiscard]] virtual Renderer::IGraphicsProgram* createGraphicsProgram(const Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, [[maybe_unused]] Renderer::ITessellationControlShader* tessellationControlShader, [[maybe_unused]] Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, [[maybe_unused]] Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
 		{
 			// Sanity checks
 			// -> A shader can be a null pointer, but if it's not the shader and graphics program language must match!
@@ -8292,7 +8292,7 @@ namespace OpenGLES3Renderer
 		*  @return
 		*    OpenGL ES 3 primitive topology describing the type of primitive to render
 		*/
-		inline GLenum getOpenGLES3PrimitiveTopology() const
+		[[nodiscard]] inline GLenum getOpenGLES3PrimitiveTopology() const
 		{
 			return mOpenGLES3PrimitiveTopology;
 		}
@@ -8318,17 +8318,17 @@ namespace OpenGLES3Renderer
 		//[-------------------------------------------------------]
 		//[ Detail state access                                   ]
 		//[-------------------------------------------------------]
-		inline const Renderer::RasterizerState& getRasterizerState() const
+		[[nodiscard]] inline const Renderer::RasterizerState& getRasterizerState() const
 		{
 			return mRasterizerState.getRasterizerState();
 		}
 
-		inline const Renderer::DepthStencilState& getDepthStencilState() const
+		[[nodiscard]] inline const Renderer::DepthStencilState& getDepthStencilState() const
 		{
 			return mDepthStencilState.getDepthStencilState();
 		}
 
-		inline const Renderer::BlendState& getBlendState() const
+		[[nodiscard]] inline const Renderer::BlendState& getBlendState() const
 		{
 			return mBlendState.getBlendState();
 		}
@@ -8391,12 +8391,12 @@ namespace
 		//[-------------------------------------------------------]
 		// Implementation from "08/02/2015 Better array 'countof' implementation with C++ 11 (updated)" - https://www.g-truc.net/post-0708.html
 		template<typename T, std::size_t N>
-		constexpr std::size_t countof(T const (&)[N])
+		[[nodiscard]] constexpr std::size_t countof(T const (&)[N])
 		{
 			return N;
 		}
 
-		bool mapBuffer([[maybe_unused]] const Renderer::Context& context, GLenum target, GLenum bindingTarget, GLuint openGLES3Buffer, uint32_t bufferSize, Renderer::MapType mapType, Renderer::MappedSubresource& mappedSubresource)
+		[[nodiscard]] bool mapBuffer([[maybe_unused]] const Renderer::Context& context, GLenum target, GLenum bindingTarget, GLuint openGLES3Buffer, uint32_t bufferSize, Renderer::MapType mapType, Renderer::MappedSubresource& mappedSubresource)
 		{
 			// TODO(co) This buffer update isn't efficient, use e.g. persistent buffer mapping
 
@@ -8799,7 +8799,7 @@ namespace OpenGLES3Renderer
 		#ifdef RENDERER_STATISTICS
 		{ // For debugging: At this point there should be no resource instances left, validate this!
 			// -> Are the currently any resource instances?
-			const unsigned long numberOfCurrentResources = getStatistics().getNumberOfCurrentResources();
+			const uint32_t numberOfCurrentResources = getStatistics().getNumberOfCurrentResources();
 			if (numberOfCurrentResources > 0)
 			{
 				// Error!

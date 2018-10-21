@@ -120,7 +120,7 @@ public:
 	*  @return
 	*    The renderer runtime instance, can be a null pointer
 	*/
-	virtual RendererRuntime::IRendererRuntime* getRendererRuntime() const override;
+	[[nodiscard]] virtual RendererRuntime::IRendererRuntime* getRendererRuntime() const override;
 
 	/**
 	*  @brief
@@ -138,7 +138,7 @@ public:
 	*    the renderer toolkit shared library is not there, this method will return a null pointer. This is a developer-feature
 	*    and as such, it's not available in static builds which are meant for the end-user who e.g. just want to "play the game".
 	*/
-	virtual RendererToolkit::IRendererToolkit* getRendererToolkit() override;
+	[[nodiscard]] virtual RendererToolkit::IRendererToolkit* getRendererToolkit() override;
 
 
 //[-------------------------------------------------------]

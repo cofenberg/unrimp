@@ -82,9 +82,9 @@ public:
 	virtual void onDeinitialization() override;
 	virtual bool processMessages() override;
 	virtual void getWindowSize(int& width, int& height) const override;
-	virtual handle getNativeWindowHandle() const override;
+	[[nodiscard]] virtual handle getNativeWindowHandle() const override;
 	virtual void redraw() override;
-	virtual Display* getX11Display() const override;
+	[[nodiscard]] virtual Display* getX11Display() const override;
 
 
 //[-------------------------------------------------------]

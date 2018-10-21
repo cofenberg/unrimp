@@ -60,7 +60,7 @@ namespace
 			virtualFilename = virtualDirectoryName + '/' + projectName + ".cache";
 		}
 
-		bool loadRendererToolkitCacheFile(const RendererRuntime::IFileManager& fileManager, const std::string& projectName, RendererRuntime::MemoryFile& memoryFile)
+		[[nodiscard]] bool loadRendererToolkitCacheFile(const RendererRuntime::IFileManager& fileManager, const std::string& projectName, RendererRuntime::MemoryFile& memoryFile)
 		{
 			// Tell the memory mapped file about the LZ4 compressed data and decompress it at once
 			std::string virtualDirectoryName;

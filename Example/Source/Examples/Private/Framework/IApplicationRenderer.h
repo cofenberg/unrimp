@@ -92,12 +92,12 @@ public:
 		IApplication::exit();
 	}
 
-	inline virtual Renderer::IRenderer* getRenderer() const override
+	[[nodiscard]] inline virtual Renderer::IRenderer* getRenderer() const override
 	{
 		return mRenderer;
 	}
 
-	inline virtual Renderer::IRenderTarget* getMainRenderTarget() const override
+	[[nodiscard]] inline virtual Renderer::IRenderTarget* getMainRenderTarget() const override
 	{
 		return mMainSwapChain;
 	}
@@ -158,7 +158,7 @@ private:
 	*  @return
 	*    The created renderer instance, null pointer on error
 	*/
-	Renderer::IRenderer* createRendererInstance(const char* rendererName);
+	[[nodiscard]] Renderer::IRenderer* createRendererInstance(const char* rendererName);
 
 
 //[-------------------------------------------------------]

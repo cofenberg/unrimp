@@ -158,7 +158,7 @@ namespace RendererToolkit
 			{
 				// Nothing here
 			}
-			uint32_t getCompiledAssetIdBySourceAssetId(uint32_t sourceAssetId) const
+			[[nodiscard]] uint32_t getCompiledAssetIdBySourceAssetId(uint32_t sourceAssetId) const
 			{
 				SourceAssetIdToCompiledAssetId::const_iterator iterator = sourceAssetIdToCompiledAssetId.find(sourceAssetId);
 				if (iterator == sourceAssetIdToCompiledAssetId.cend())
@@ -167,7 +167,7 @@ namespace RendererToolkit
 				}
 				return iterator->second;
 			}
-			uint32_t getCompiledAssetIdBySourceAssetIdAsString(const std::string& sourceAssetIdAsString) const
+			[[nodiscard]] uint32_t getCompiledAssetIdBySourceAssetIdAsString(const std::string& sourceAssetIdAsString) const
 			{
 				// Source asset ID naming scheme "<name>.asset"
 				SourceAssetIdToCompiledAssetId::const_iterator iterator = sourceAssetIdToCompiledAssetId.find(RendererRuntime::StringId::calculateFNV(sourceAssetIdAsString.c_str()));
@@ -177,7 +177,7 @@ namespace RendererToolkit
 				}
 				return iterator->second;
 			}
-			std::string sourceAssetIdToDebugName(uint32_t sourceAssetId) const
+			[[nodiscard]] std::string sourceAssetIdToDebugName(uint32_t sourceAssetId) const
 			{
 				SourceAssetIdToVirtualFilename::const_iterator iterator = sourceAssetIdToVirtualFilename.find(sourceAssetId);
 				if (iterator == sourceAssetIdToVirtualFilename.cend())
@@ -186,7 +186,7 @@ namespace RendererToolkit
 				}
 				return '\"' + iterator->second + "\" (ID = " + std::to_string(sourceAssetId) + ')';
 			}
-			const std::string& sourceAssetIdToVirtualAssetFilename(uint32_t sourceAssetId) const
+			[[nodiscard]] const std::string& sourceAssetIdToVirtualAssetFilename(uint32_t sourceAssetId) const
 			{
 				SourceAssetIdToVirtualFilename::const_iterator iterator = sourceAssetIdToVirtualFilename.find(sourceAssetId);
 				if (sourceAssetIdToVirtualFilename.cend() != iterator)
@@ -198,7 +198,7 @@ namespace RendererToolkit
 					throw std::runtime_error("Failed to map source asset ID " + std::to_string(sourceAssetId) + " to virtual asset filename");
 				}
 			}
-			const std::string& compiledAssetIdToVirtualAssetFilename(uint32_t compiledAssetId) const
+			[[nodiscard]] const std::string& compiledAssetIdToVirtualAssetFilename(uint32_t compiledAssetId) const
 			{
 				// Map compiled asset ID to source asset ID
 				CompiledAssetIdToSourceAssetId::const_iterator iterator = compiledAssetIdToSourceAssetId.find(compiledAssetId);
@@ -244,9 +244,9 @@ namespace RendererToolkit
 	//[ Public virtual RendererToolkit::IAssetCompiler methods ]
 	//[-------------------------------------------------------]
 	public:
-		virtual AssetCompilerClassId getAssetCompilerClassId() const = 0;
-		virtual std::string getVirtualOutputAssetFilename(const Input& input, const Configuration& configuration) const = 0;
-		virtual bool checkIfChanged(const Input& input, const Configuration& configuration) const = 0;
+		[[nodiscard]] virtual AssetCompilerClassId getAssetCompilerClassId() const = 0;
+		[[nodiscard]] virtual std::string getVirtualOutputAssetFilename(const Input& input, const Configuration& configuration) const = 0;
+		[[nodiscard]] virtual bool checkIfChanged(const Input& input, const Configuration& configuration) const = 0;
 		virtual void compile(const Input& input, const Configuration& configuration) const = 0;
 
 

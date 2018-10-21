@@ -66,7 +66,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		uint32_t getAssimpFlagByString(const std::string& flagAsString)
+		[[nodiscard]] uint32_t getAssimpFlagByString(const std::string& flagAsString)
 		{
 			// Define helper macros
 			#define IF_VALUE(name, value)			if (flagAsString == #name) return value;
@@ -123,7 +123,7 @@ namespace
 		*  @return
 		*    The number of bones
 		*/
-		uint32_t getNumberOfBonesRecursive(const aiNode& assimpNode)
+		[[nodiscard]] uint32_t getNumberOfBonesRecursive(const aiNode& assimpNode)
 		{
 			// Loop through all child nodes recursively
 			uint32_t numberOfBones = assimpNode.mNumChildren;

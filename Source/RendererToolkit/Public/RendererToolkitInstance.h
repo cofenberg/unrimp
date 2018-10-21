@@ -65,7 +65,7 @@ namespace RendererToolkit
 	// This is needed to do here because the methods in the library are also defined in global namespace
 
 	// "createRendererToolkitInstance()" signature
-	extern RendererToolkit::IRendererToolkit* createRendererToolkitInstance(RendererToolkit::Context& context);
+	[[nodiscard]] extern RendererToolkit::IRendererToolkit* createRendererToolkitInstance(RendererToolkit::Context& context);
 #endif
 
 
@@ -91,19 +91,19 @@ namespace RendererToolkit
 		{ }
 		inline ~Context()
 		{ }
-		inline Renderer::ILog& getLog() const
+		[[nodiscard]] inline Renderer::ILog& getLog() const
 		{
 			return mLog;
 		}
-		inline Renderer::IAssert& getAssert() const
+		[[nodiscard]] inline Renderer::IAssert& getAssert() const
 		{
 			return mAssert;
 		}
-		inline Renderer::IAllocator& getAllocator() const
+		[[nodiscard]] inline Renderer::IAllocator& getAllocator() const
 		{
 			return mAllocator;
 		}
-		inline RendererRuntime::IFileManager& getFileManager() const
+		[[nodiscard]] inline RendererRuntime::IFileManager& getFileManager() const
 		{
 			return mFileManager;
 		}
@@ -244,7 +244,7 @@ namespace RendererToolkit
 		*  @remarks
 		*    The renderer toolkit instance, can be a null pointer
 		*/
-		inline IRendererToolkit* getRendererToolkit() const
+		[[nodiscard]] inline IRendererToolkit* getRendererToolkit() const
 		{
 			return mRendererToolkit;
 		}

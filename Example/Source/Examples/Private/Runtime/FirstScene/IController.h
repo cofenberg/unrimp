@@ -60,7 +60,7 @@ public:
 		// Nothing here
 	}
 
-	inline RendererRuntime::CameraSceneItem& getCameraSceneItem()
+	[[nodiscard]] inline RendererRuntime::CameraSceneItem& getCameraSceneItem()
 	{
 		return mCameraSceneItem;
 	}
@@ -75,7 +75,7 @@ public:
 	*  @note
 	*    - This can be used to avoid that while looking around with the mouse the mouse is becoming considered hovering over an GUI element
 	*/
-	inline bool isMouseControlInProgress() const
+	[[nodiscard]] inline bool isMouseControlInProgress() const
 	{
 		return mMouseControlInProgress;
 	}

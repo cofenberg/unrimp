@@ -93,7 +93,7 @@ namespace RendererToolkit
 		*  @return
 		*    The used renderer toolkit context instance
 		*/
-		inline Context& getContext() const
+		[[nodiscard]] inline Context& getContext() const
 		{
 			return mContext;
 		}
@@ -103,8 +103,8 @@ namespace RendererToolkit
 	//[ Public virtual RendererToolkit::IRendererToolkit methods ]
 	//[-------------------------------------------------------]
 	public:
-		virtual IProject* createProject() = 0;
-		virtual State getState() const = 0;
+		[[nodiscard]] virtual IProject* createProject() = 0;
+		[[nodiscard]] virtual State getState() const = 0;
 
 
 	//[-------------------------------------------------------]

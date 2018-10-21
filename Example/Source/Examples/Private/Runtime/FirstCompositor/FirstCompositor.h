@@ -87,7 +87,7 @@ public:
 	virtual void onDeinitialization() override;
 	virtual void onDraw() override;
 
-	inline virtual bool doesCompleteOwnDrawing() const override
+	[[nodiscard]] inline virtual bool doesCompleteOwnDrawing() const override
 	{
 		// This example wants complete control of the drawing
 		return true;

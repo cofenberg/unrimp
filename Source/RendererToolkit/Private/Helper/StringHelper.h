@@ -62,13 +62,13 @@ namespace RendererToolkit
 		static void toLowerCase(std::string& strintToLower);
 		static void splitString(const std::string& stringToSplit, char separator, std::vector<std::string>& elements);
 		static void splitString(const std::string& stringToSplit, const std::string& separators, std::vector<std::string>& elements);
-		static std::string& trimRightWhitespaceCharacters(std::string& s);
-		static std::string& trimLeftWhitespaceCharacters(std::string& s);
-		static std::string& trimWhitespaceCharacters(std::string& s);
-		static bool isSourceAssetIdAsString(const std::string& sourceAssetIdAsString);
-		static std::string getSourceAssetFilenameByString(const std::string& sourceAssetIdAsString, const IAssetCompiler::Input& input);
-		static RendererRuntime::AssetId getSourceAssetIdByString(const std::string& sourceAssetIdAsString, const IAssetCompiler::Input& input);
-		static RendererRuntime::AssetId getAssetIdByString(const std::string& assetIdAsString, const IAssetCompiler::Input& input);	// Asset ID name + ID directly
+		static std::string& trimRightWhitespaceCharacters(std::string& s);	// In place
+		static std::string& trimLeftWhitespaceCharacters(std::string& s);	// In place
+		static std::string& trimWhitespaceCharacters(std::string& s);		// In place
+		[[nodiscard]] static bool isSourceAssetIdAsString(const std::string& sourceAssetIdAsString);
+		[[nodiscard]] static std::string getSourceAssetFilenameByString(const std::string& sourceAssetIdAsString, const IAssetCompiler::Input& input);
+		[[nodiscard]] static RendererRuntime::AssetId getSourceAssetIdByString(const std::string& sourceAssetIdAsString, const IAssetCompiler::Input& input);
+		[[nodiscard]] static RendererRuntime::AssetId getAssetIdByString(const std::string& assetIdAsString, const IAssetCompiler::Input& input);	// Asset ID name + ID directly
 		static void readStringByFilename(const RendererRuntime::IFileManager& fileManager, const std::string& virtualFilename, std::string& string);
 		static void readStringWithStrippedCommentsByFilename(const RendererRuntime::IFileManager& fileManager, const std::string& virtualFilename, std::string& sourceCode);
 

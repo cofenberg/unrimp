@@ -423,7 +423,8 @@ namespace
 			static bool GlslangInitialized = false;
 
 			// Settings from "glslang/StandAlone/ResourceLimits.cpp"
-			static constexpr TBuiltInResource DefaultTBuiltInResource = {
+			static constexpr TBuiltInResource DefaultTBuiltInResource =
+			{
 				32,		///< MaxLights
 				6,		///< MaxClipPlanes
 				32,		///< MaxTextureUnits
@@ -581,7 +582,7 @@ namespace
 			}
 		}
 
-		bool isExtensionAvailable(const char* extensionName, const VkExtensionPropertiesVector& vkExtensionPropertiesVector)
+		[[nodiscard]] bool isExtensionAvailable(const char* extensionName, const VkExtensionPropertiesVector& vkExtensionPropertiesVector)
 		{
 			for (const VkExtensionProperties& vkExtensionProperties : vkExtensionPropertiesVector)
 			{
@@ -596,7 +597,7 @@ namespace
 			return false;
 		}
 
-		VkPhysicalDevice selectPhysicalDevice(const Renderer::Context& context, const VkPhysicalDevices& vkPhysicalDevices, bool validationEnabled, bool& enableDebugMarker)
+		[[nodiscard]] VkPhysicalDevice selectPhysicalDevice(const Renderer::Context& context, const VkPhysicalDevices& vkPhysicalDevices, bool validationEnabled, bool& enableDebugMarker)
 		{
 			// TODO(co) I'am sure this selection can be improved (rating etc.)
 			for (const VkPhysicalDevice& vkPhysicalDevice : vkPhysicalDevices)
@@ -701,7 +702,7 @@ namespace
 			return VK_NULL_HANDLE;
 		}
 
-		VkResult createVkDevice(const Renderer::Context& context, const VkAllocationCallbacks* vkAllocationCallbacks, VkPhysicalDevice vkPhysicalDevice, const VkDeviceQueueCreateInfo& vkDeviceQueueCreateInfo, bool enableValidation, bool enableDebugMarker, VkDevice& vkDevice)
+		[[nodiscard]] VkResult createVkDevice(const Renderer::Context& context, const VkAllocationCallbacks* vkAllocationCallbacks, VkPhysicalDevice vkPhysicalDevice, const VkDeviceQueueCreateInfo& vkDeviceQueueCreateInfo, bool enableValidation, bool enableDebugMarker, VkDevice& vkDevice)
 		{
 			// See http://vulkan.gpuinfo.org/listfeatures.php to check out GPU hardware capabilities
 			static constexpr std::array<const char*, 3> enabledExtensions =
@@ -812,7 +813,7 @@ namespace
 			return vkResult;
 		}
 
-		VkDevice createVkDevice(const Renderer::Context& context, const VkAllocationCallbacks* vkAllocationCallbacks, VkPhysicalDevice vkPhysicalDevice, bool enableValidation, bool enableDebugMarker, uint32_t& graphicsQueueFamilyIndex, uint32_t& presentQueueFamilyIndex)
+		[[nodiscard]] VkDevice createVkDevice(const Renderer::Context& context, const VkAllocationCallbacks* vkAllocationCallbacks, VkPhysicalDevice vkPhysicalDevice, bool enableValidation, bool enableDebugMarker, uint32_t& graphicsQueueFamilyIndex, uint32_t& presentQueueFamilyIndex)
 		{
 			VkDevice vkDevice = VK_NULL_HANDLE;
 
@@ -868,7 +869,7 @@ namespace
 			return vkDevice;
 		}
 
-		VkCommandPool createVkCommandPool(const Renderer::Context& context, const VkAllocationCallbacks* vkAllocationCallbacks, VkDevice vkDevice, uint32_t graphicsQueueFamilyIndex)
+		[[nodiscard]] VkCommandPool createVkCommandPool(const Renderer::Context& context, const VkAllocationCallbacks* vkAllocationCallbacks, VkDevice vkDevice, uint32_t graphicsQueueFamilyIndex)
 		{
 			VkCommandPool vkCommandPool = VK_NULL_HANDLE;
 
@@ -891,7 +892,7 @@ namespace
 			return vkCommandPool;
 		}
 
-		VkCommandBuffer createVkCommandBuffer(const Renderer::Context& context, VkDevice vkDevice, VkCommandPool vkCommandPool)
+		[[nodiscard]] VkCommandBuffer createVkCommandBuffer(const Renderer::Context& context, VkDevice vkDevice, VkCommandPool vkCommandPool)
 		{
 			VkCommandBuffer vkCommandBuffer = VK_NULL_HANDLE;
 
@@ -915,12 +916,12 @@ namespace
 			return vkCommandBuffer;
 		}
 
-		bool hasVkFormatStencilComponent(VkFormat vkFormat)
+		[[nodiscard]] bool hasVkFormatStencilComponent(VkFormat vkFormat)
 		{
 			return (VK_FORMAT_D32_SFLOAT_S8_UINT == vkFormat || VK_FORMAT_D24_UNORM_S8_UINT == vkFormat);
 		}
 
-		const char* vkDebugReportObjectTypeToString(VkDebugReportObjectTypeEXT vkDebugReportObjectTypeEXT)
+		[[nodiscard]] const char* vkDebugReportObjectTypeToString(VkDebugReportObjectTypeEXT vkDebugReportObjectTypeEXT)
 		{
 			// Define helper macro
 			#define VALUE(value) case value: return #value;
@@ -977,7 +978,7 @@ namespace
 			return nullptr;
 		}
 
-		VKAPI_ATTR VkBool32 VKAPI_CALL debugReportCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* pLayerPrefix, const char* pMessage, void* pUserData)
+		[[nodiscard]] VKAPI_ATTR VkBool32 VKAPI_CALL debugReportCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* pLayerPrefix, const char* pMessage, void* pUserData)
 		{
 			const Renderer::Context* context = static_cast<const Renderer::Context*>(pUserData);
 
@@ -1041,7 +1042,7 @@ namespace
 			return VK_FALSE;
 		}
 
-		VkSurfaceKHR createPresentationSurface(const Renderer::Context& context, const VkAllocationCallbacks* vkAllocationCallbacks, VkInstance vkInstance, VkPhysicalDevice vkPhysicalDevice, uint32_t graphicsQueueFamilyIndex, Renderer::WindowHandle windoInfo)
+		[[nodiscard]] VkSurfaceKHR createPresentationSurface(const Renderer::Context& context, const VkAllocationCallbacks* vkAllocationCallbacks, VkInstance vkInstance, VkPhysicalDevice vkPhysicalDevice, uint32_t graphicsQueueFamilyIndex, Renderer::WindowHandle windoInfo)
 		{
 			VkSurfaceKHR vkSurfaceKHR = VK_NULL_HANDLE;
 
@@ -1145,7 +1146,7 @@ namespace
 			return vkSurfaceKHR;
 		}
 
-		uint32_t getNumberOfSwapChainImages(const VkSurfaceCapabilitiesKHR& vkSurfaceCapabilitiesKHR)
+		[[nodiscard]] uint32_t getNumberOfSwapChainImages(const VkSurfaceCapabilitiesKHR& vkSurfaceCapabilitiesKHR)
 		{
 			// Set of images defined in a swap chain may not always be available for application to render to:
 			// - One may be displayed and one may wait in a queue to be presented
@@ -1158,7 +1159,7 @@ namespace
 			return numberOfImages;
 		}
 
-		VkSurfaceFormatKHR getSwapChainFormat(const Renderer::Context& context, VkPhysicalDevice vkPhysicalDevice, VkSurfaceKHR vkSurfaceKHR)
+		[[nodiscard]] VkSurfaceFormatKHR getSwapChainFormat(const Renderer::Context& context, VkPhysicalDevice vkPhysicalDevice, VkSurfaceKHR vkSurfaceKHR)
 		{
 			uint32_t surfaceFormatCount = 0;
 			if ((vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysicalDevice, vkSurfaceKHR, &surfaceFormatCount, nullptr) != VK_SUCCESS) || (0 == surfaceFormatCount))
@@ -1194,7 +1195,7 @@ namespace
 			return surfaceFormats[0];
 		}
 
-		VkExtent2D getSwapChainExtent(const VkSurfaceCapabilitiesKHR& vkSurfaceCapabilitiesKHR)
+		[[nodiscard]] VkExtent2D getSwapChainExtent(const VkSurfaceCapabilitiesKHR& vkSurfaceCapabilitiesKHR)
 		{
 			// Special value of surface extent is width == height == -1
 			// -> If this is so we define the size by ourselves but it must fit within defined confines, else it's already set to the operation window dimension
@@ -1224,7 +1225,7 @@ namespace
 			return vkSurfaceCapabilitiesKHR.currentExtent;
 		}
 
-		VkImageUsageFlags getSwapChainUsageFlags(const Renderer::Context& context, const VkSurfaceCapabilitiesKHR& vkSurfaceCapabilitiesKHR)
+		[[nodiscard]] VkImageUsageFlags getSwapChainUsageFlags(const Renderer::Context& context, const VkSurfaceCapabilitiesKHR& vkSurfaceCapabilitiesKHR)
 		{
 			// Color attachment flag must always be supported. We can define other usage flags but we always need to check if they are supported.
 			if (vkSurfaceCapabilitiesKHR.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_DST_BIT)
@@ -1251,7 +1252,7 @@ namespace
 			return static_cast<VkImageUsageFlags>(-1);
 		}
 
-		VkSurfaceTransformFlagBitsKHR getSwapChainTransform(const VkSurfaceCapabilitiesKHR& vkSurfaceCapabilitiesKHR)
+		[[nodiscard]] VkSurfaceTransformFlagBitsKHR getSwapChainTransform(const VkSurfaceCapabilitiesKHR& vkSurfaceCapabilitiesKHR)
 		{
 			// - Sometimes images must be transformed before they are presented (i.e. due to device's orientation being other than default orientation)
 			// - If the specified transform is other than current transform, presentation engine will transform image during presentation operation; this operation may hit performance on some platforms
@@ -1259,7 +1260,7 @@ namespace
 			return (vkSurfaceCapabilitiesKHR.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) ? VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR : vkSurfaceCapabilitiesKHR.currentTransform;
 		}
 
-		VkPresentModeKHR getSwapChainPresentMode(const Renderer::Context& context, VkPhysicalDevice vkPhysicalDevice, VkSurfaceKHR vkSurfaceKHR)
+		[[nodiscard]] VkPresentModeKHR getSwapChainPresentMode(const Renderer::Context& context, VkPhysicalDevice vkPhysicalDevice, VkSurfaceKHR vkSurfaceKHR)
 		{
 			uint32_t presentModeCount = 0;
 			if ((vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysicalDevice, vkSurfaceKHR, &presentModeCount, nullptr) != VK_SUCCESS) || (0 == presentModeCount))
@@ -1297,7 +1298,7 @@ namespace
 			return VK_PRESENT_MODE_MAX_ENUM_KHR;
 		}
 
-		VkRenderPass createRenderPass(const Renderer::Context& context, const VkAllocationCallbacks* vkAllocationCallbacks, VkDevice vkDevice, VkFormat colorVkFormat, VkFormat depthVkFormat, VkSampleCountFlagBits vkSampleCountFlagBits)
+		[[nodiscard]] VkRenderPass createRenderPass(const Renderer::Context& context, const VkAllocationCallbacks* vkAllocationCallbacks, VkDevice vkDevice, VkFormat colorVkFormat, VkFormat depthVkFormat, VkSampleCountFlagBits vkSampleCountFlagBits)
 		{
 			const bool hasDepthStencilAttachment = (VK_FORMAT_UNDEFINED != depthVkFormat);
 
@@ -1384,7 +1385,7 @@ namespace
 			return vkRenderPass;
 		}
 
-		VkFormat findSupportedVkFormat(VkPhysicalDevice vkPhysicalDevice, const std::vector<VkFormat>& vkFormatCandidates, VkImageTiling vkImageTiling, VkFormatFeatureFlags vkFormatFeatureFlags)
+		[[nodiscard]] VkFormat findSupportedVkFormat(VkPhysicalDevice vkPhysicalDevice, const std::vector<VkFormat>& vkFormatCandidates, VkImageTiling vkImageTiling, VkFormatFeatureFlags vkFormatFeatureFlags)
 		{
 			for (VkFormat vkFormat : vkFormatCandidates)
 			{
@@ -1420,7 +1421,7 @@ namespace
 		*  @return
 		*    The Vulkan shader module, null handle on error
 		*/
-		VkShaderModule createVkShaderModuleFromBytecode(const Renderer::Context& context, const VkAllocationCallbacks* vkAllocationCallbacks, VkDevice vkDevice, const Renderer::ShaderBytecode& shaderBytecode)
+		[[nodiscard]] VkShaderModule createVkShaderModuleFromBytecode(const Renderer::Context& context, const VkAllocationCallbacks* vkAllocationCallbacks, VkDevice vkDevice, const Renderer::ShaderBytecode& shaderBytecode)
 		{
 			// Decode from SMOL-V: like Vulkan/Khronos SPIR-V, but smaller
 			// -> https://github.com/aras-p/smol-v
@@ -1470,7 +1471,7 @@ namespace
 		#ifdef _MSC_VER
 			#pragma optimize("", off)
 		#endif
-		VkShaderModule createVkShaderModuleFromSourceCode(const Renderer::Context& context, const VkAllocationCallbacks* vkAllocationCallbacks, VkDevice vkDevice, VkShaderStageFlagBits vkShaderStageFlagBits, const char* sourceCode, Renderer::ShaderBytecode* shaderBytecode)
+		[[nodiscard]] VkShaderModule createVkShaderModuleFromSourceCode(const Renderer::Context& context, const VkAllocationCallbacks* vkAllocationCallbacks, VkDevice vkDevice, VkShaderStageFlagBits vkShaderStageFlagBits, const char* sourceCode, Renderer::ShaderBytecode* shaderBytecode)
 		{
 			#ifdef RENDERER_VULKAN_GLSLTOSPIRV
 				// Initialize glslang, if necessary
@@ -1663,7 +1664,7 @@ namespace VulkanRenderer
 		*  @return
 		*    Vulkan allocation callbacks, can be a null pointer, don't destroy the instance
 		*/
-		inline const VkAllocationCallbacks* getVkAllocationCallbacks() const
+		[[nodiscard]] inline const VkAllocationCallbacks* getVkAllocationCallbacks() const
 		{
 			#ifdef VK_USE_PLATFORM_WIN32_KHR
 				return &mVkAllocationCallbacks;
@@ -1680,7 +1681,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan runtime linking instance, do not free the memory the reference is pointing to
 		*/
-		inline const VulkanRuntimeLinking& getVulkanRuntimeLinking() const
+		[[nodiscard]] inline const VulkanRuntimeLinking& getVulkanRuntimeLinking() const
 		{
 			return *mVulkanRuntimeLinking;
 		}
@@ -1692,7 +1693,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan context instance, do not free the memory the reference is pointing to
 		*/
-		inline const VulkanContext& getVulkanContext() const
+		[[nodiscard]] inline const VulkanContext& getVulkanContext() const
 		{
 			return *mVulkanContext;
 		}
@@ -1738,36 +1739,36 @@ namespace VulkanRenderer
 	//[ Public virtual Renderer::IRenderer methods            ]
 	//[-------------------------------------------------------]
 	public:
-		virtual const char* getName() const override;
-		virtual bool isInitialized() const override;
-		virtual bool isDebugEnabled() override;
+		[[nodiscard]] virtual const char* getName() const override;
+		[[nodiscard]] virtual bool isInitialized() const override;
+		[[nodiscard]] virtual bool isDebugEnabled() override;
 		//[-------------------------------------------------------]
 		//[ Shader language                                       ]
 		//[-------------------------------------------------------]
-		virtual uint32_t getNumberOfShaderLanguages() const override;
-		virtual const char* getShaderLanguageName(uint32_t index) const override;
-		virtual Renderer::IShaderLanguage* getShaderLanguage(const char* shaderLanguageName = nullptr) override;
+		[[nodiscard]] virtual uint32_t getNumberOfShaderLanguages() const override;
+		[[nodiscard]] virtual const char* getShaderLanguageName(uint32_t index) const override;
+		[[nodiscard]] virtual Renderer::IShaderLanguage* getShaderLanguage(const char* shaderLanguageName = nullptr) override;
 		//[-------------------------------------------------------]
 		//[ Resource creation                                     ]
 		//[-------------------------------------------------------]
-		virtual Renderer::IRenderPass* createRenderPass(uint32_t numberOfColorAttachments, const Renderer::TextureFormat::Enum* colorAttachmentTextureFormats, Renderer::TextureFormat::Enum depthStencilAttachmentTextureFormat = Renderer::TextureFormat::UNKNOWN, uint8_t numberOfMultisamples = 1) override;
-		virtual Renderer::ISwapChain* createSwapChain(Renderer::IRenderPass& renderPass, Renderer::WindowHandle windowHandle, bool useExternalContext = false) override;
-		virtual Renderer::IFramebuffer* createFramebuffer(Renderer::IRenderPass& renderPass, const Renderer::FramebufferAttachment* colorFramebufferAttachments, const Renderer::FramebufferAttachment* depthStencilFramebufferAttachment = nullptr) override;
-		virtual Renderer::IBufferManager* createBufferManager() override;
-		virtual Renderer::ITextureManager* createTextureManager() override;
-		virtual Renderer::IRootSignature* createRootSignature(const Renderer::RootSignature& rootSignature) override;
-		virtual Renderer::IGraphicsPipelineState* createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState) override;
-		virtual Renderer::IComputePipelineState* createComputePipelineState(Renderer::IRootSignature& rootSignature, Renderer::IComputeShader& computeShader) override;
-		virtual Renderer::ISamplerState* createSamplerState(const Renderer::SamplerState& samplerState) override;
+		[[nodiscard]] virtual Renderer::IRenderPass* createRenderPass(uint32_t numberOfColorAttachments, const Renderer::TextureFormat::Enum* colorAttachmentTextureFormats, Renderer::TextureFormat::Enum depthStencilAttachmentTextureFormat = Renderer::TextureFormat::UNKNOWN, uint8_t numberOfMultisamples = 1) override;
+		[[nodiscard]] virtual Renderer::ISwapChain* createSwapChain(Renderer::IRenderPass& renderPass, Renderer::WindowHandle windowHandle, bool useExternalContext = false) override;
+		[[nodiscard]] virtual Renderer::IFramebuffer* createFramebuffer(Renderer::IRenderPass& renderPass, const Renderer::FramebufferAttachment* colorFramebufferAttachments, const Renderer::FramebufferAttachment* depthStencilFramebufferAttachment = nullptr) override;
+		[[nodiscard]] virtual Renderer::IBufferManager* createBufferManager() override;
+		[[nodiscard]] virtual Renderer::ITextureManager* createTextureManager() override;
+		[[nodiscard]] virtual Renderer::IRootSignature* createRootSignature(const Renderer::RootSignature& rootSignature) override;
+		[[nodiscard]] virtual Renderer::IGraphicsPipelineState* createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState) override;
+		[[nodiscard]] virtual Renderer::IComputePipelineState* createComputePipelineState(Renderer::IRootSignature& rootSignature, Renderer::IComputeShader& computeShader) override;
+		[[nodiscard]] virtual Renderer::ISamplerState* createSamplerState(const Renderer::SamplerState& samplerState) override;
 		//[-------------------------------------------------------]
 		//[ Resource handling                                     ]
 		//[-------------------------------------------------------]
-		virtual bool map(Renderer::IResource& resource, uint32_t subresource, Renderer::MapType mapType, uint32_t mapFlags, Renderer::MappedSubresource& mappedSubresource) override;
+		[[nodiscard]] virtual bool map(Renderer::IResource& resource, uint32_t subresource, Renderer::MapType mapType, uint32_t mapFlags, Renderer::MappedSubresource& mappedSubresource) override;
 		virtual void unmap(Renderer::IResource& resource, uint32_t subresource) override;
 		//[-------------------------------------------------------]
 		//[ Operations                                            ]
 		//[-------------------------------------------------------]
-		virtual bool beginScene() override;
+		[[nodiscard]] virtual bool beginScene() override;
 		virtual void submitCommandBuffer(const Renderer::CommandBuffer& commandBuffer) override;
 		virtual void endScene() override;
 		//[-------------------------------------------------------]
@@ -1917,7 +1918,7 @@ namespace VulkanRenderer
 		*  @return
 		*    "true" if validation is enabled, else "false"
 		*/
-		inline bool isValidationEnabled() const
+		[[nodiscard]] inline bool isValidationEnabled() const
 		{
 			return mValidationEnabled;
 		}
@@ -1929,7 +1930,7 @@ namespace VulkanRenderer
 		*  @return
 		*    "true" if Vulkan is available, else "false"
 		*/
-		bool isVulkanAvaiable()
+		[[nodiscard]] bool isVulkanAvaiable()
 		{
 			// Already initialized?
 			if (!mInitialized)
@@ -1977,7 +1978,7 @@ namespace VulkanRenderer
 		*  @return
 		*    Vulkan instance
 		*/
-		inline VkInstance getVkInstance() const
+		[[nodiscard]] inline VkInstance getVkInstance() const
 		{
 			return mVkInstance;
 		}
@@ -1992,7 +1993,7 @@ namespace VulkanRenderer
 		*  @return
 		*    "true" if all went fine, else "false"
 		*/
-		bool loadDeviceLevelVulkanEntryPoints(VkDevice vkDevice) const
+		[[nodiscard]] bool loadDeviceLevelVulkanEntryPoints(VkDevice vkDevice) const
 		{
 			bool result = true;	// Success by default
 
@@ -2128,7 +2129,7 @@ namespace VulkanRenderer
 		*  @return
 		*    "true" if all went fine, else "false"
 		*/
-		bool loadSharedLibraries()
+		[[nodiscard]] bool loadSharedLibraries()
 		{
 			// Load the shared library
 			#ifdef _WIN32
@@ -2158,7 +2159,7 @@ namespace VulkanRenderer
 		*  @return
 		*    "true" if all went fine, else "false"
 		*/
-		bool loadGlobalLevelVulkanEntryPoints() const
+		[[nodiscard]] bool loadGlobalLevelVulkanEntryPoints() const
 		{
 			bool result = true;	// Success by default
 
@@ -2246,7 +2247,7 @@ namespace VulkanRenderer
 		*  @return
 		*    Vulkan instance creation result
 		*/
-		VkResult createVulkanInstance(bool enableValidation)
+		[[nodiscard]] VkResult createVulkanInstance(bool enableValidation)
 		{
 			// Enable surface extensions depending on OS
 			std::vector<const char*> enabledExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
@@ -2339,7 +2340,7 @@ namespace VulkanRenderer
 		*  @return
 		*    "true" if all went fine, else "false"
 		*/
-		bool loadInstanceLevelVulkanEntryPoints() const
+		[[nodiscard]] bool loadInstanceLevelVulkanEntryPoints() const
 		{
 			bool result = true;	// Success by default
 
@@ -2575,7 +2576,7 @@ namespace VulkanRenderer
 		*  @return
 		*    "true" if the context is initialized, else "false"
 		*/
-		inline bool isInitialized() const
+		[[nodiscard]] inline bool isInitialized() const
 		{
 			return (VK_NULL_HANDLE != mVkCommandBuffer);
 		}
@@ -2587,7 +2588,7 @@ namespace VulkanRenderer
 		*  @return
 		*    Owner Vulkan renderer instance
 		*/
-		inline VulkanRenderer& getVulkanRenderer() const
+		[[nodiscard]] inline VulkanRenderer& getVulkanRenderer() const
 		{
 			return mVulkanRenderer;
 		}
@@ -2599,7 +2600,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan physical device this context is using
 		*/
-		inline VkPhysicalDevice getVkPhysicalDevice() const
+		[[nodiscard]] inline VkPhysicalDevice getVkPhysicalDevice() const
 		{
 			return mVkPhysicalDevice;
 		}
@@ -2611,7 +2612,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan device this context is using
 		*/
-		inline VkDevice getVkDevice() const
+		[[nodiscard]] inline VkDevice getVkDevice() const
 		{
 			return mVkDevice;
 		}
@@ -2623,7 +2624,7 @@ namespace VulkanRenderer
 		*  @return
 		*    Graphics queue family index, ~0u if invalid
 		*/
-		inline uint32_t getGraphicsQueueFamilyIndex() const
+		[[nodiscard]] inline uint32_t getGraphicsQueueFamilyIndex() const
 		{
 			return mGraphicsQueueFamilyIndex;
 		}
@@ -2635,7 +2636,7 @@ namespace VulkanRenderer
 		*  @return
 		*    Present queue family index, ~0u if invalid
 		*/
-		inline uint32_t getPresentQueueFamilyIndex() const
+		[[nodiscard]] inline uint32_t getPresentQueueFamilyIndex() const
 		{
 			return mPresentQueueFamilyIndex;
 		}
@@ -2647,7 +2648,7 @@ namespace VulkanRenderer
 		*  @return
 		*    Handle to the Vulkan device graphics queue that command buffers are submitted to
 		*/
-		inline VkQueue getGraphicsVkQueue() const
+		[[nodiscard]] inline VkQueue getGraphicsVkQueue() const
 		{
 			return mGraphicsVkQueue;
 		}
@@ -2659,7 +2660,7 @@ namespace VulkanRenderer
 		*  @return
 		*    Handle to the Vulkan device present queue
 		*/
-		inline VkQueue getPresentVkQueue() const
+		[[nodiscard]] inline VkQueue getPresentVkQueue() const
 		{
 			return mPresentVkQueue;
 		}
@@ -2671,7 +2672,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The used Vulkan command buffer pool instance
 		*/
-		inline VkCommandPool getVkCommandPool() const
+		[[nodiscard]] inline VkCommandPool getVkCommandPool() const
 		{
 			return mVkCommandPool;
 		}
@@ -2683,13 +2684,13 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan command buffer instance
 		*/
-		inline VkCommandBuffer getVkCommandBuffer() const
+		[[nodiscard]] inline VkCommandBuffer getVkCommandBuffer() const
 		{
 			return mVkCommandBuffer;
 		}
 
 		// TODO(co) Trivial implementation to have something to start with. Need to use more clever memory management and stating buffers later on.
-		uint32_t findMemoryTypeIndex(uint32_t typeFilter, VkMemoryPropertyFlags vkMemoryPropertyFlags) const
+		[[nodiscard]] uint32_t findMemoryTypeIndex(uint32_t typeFilter, VkMemoryPropertyFlags vkMemoryPropertyFlags) const
 		{
 			VkPhysicalDeviceMemoryProperties vkPhysicalDeviceMemoryProperties;
 			vkGetPhysicalDeviceMemoryProperties(mVkPhysicalDevice, &vkPhysicalDeviceMemoryProperties);
@@ -2706,7 +2707,7 @@ namespace VulkanRenderer
 			return ~0u;
 		}
 
-		inline VkCommandBuffer createVkCommandBuffer() const
+		[[nodiscard]] inline VkCommandBuffer createVkCommandBuffer() const
 		{
 			return ::detail::createVkCommandBuffer(mVulkanRenderer.getContext(), mVkDevice, mVkCommandPool);
 		}
@@ -2778,7 +2779,7 @@ namespace VulkanRenderer
 		*  @return
 		*    Vulkan magnification filter mode
 		*/
-		static VkFilter getVulkanMagFilterMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode)
+		[[nodiscard]] static VkFilter getVulkanMagFilterMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode)
 		{
 			switch (filterMode)
 			{
@@ -2857,7 +2858,7 @@ namespace VulkanRenderer
 		*  @return
 		*    Vulkan minification filter mode
 		*/
-		static VkFilter getVulkanMinFilterMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode)
+		[[nodiscard]] static VkFilter getVulkanMinFilterMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode)
 		{
 			switch (filterMode)
 			{
@@ -2936,7 +2937,7 @@ namespace VulkanRenderer
 		*  @return
 		*    Vulkan sampler mipmap mode
 		*/
-		static VkSamplerMipmapMode getVulkanMipmapMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode)
+		[[nodiscard]] static VkSamplerMipmapMode getVulkanMipmapMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode)
 		{
 			switch (filterMode)
 			{
@@ -3016,7 +3017,7 @@ namespace VulkanRenderer
 		*  @return
 		*    Vulkan texture address mode
 		*/
-		static VkSamplerAddressMode getVulkanTextureAddressMode(Renderer::TextureAddressMode textureAddressMode)
+		[[nodiscard]] static VkSamplerAddressMode getVulkanTextureAddressMode(Renderer::TextureAddressMode textureAddressMode)
 		{
 			static constexpr VkSamplerAddressMode MAPPING[] =
 			{
@@ -3042,7 +3043,7 @@ namespace VulkanRenderer
 		*  @return
 		*    Vulkan blend factor
 		*/
-		static VkBlendFactor getVulkanBlendFactor(Renderer::Blend blend)
+		[[nodiscard]] static VkBlendFactor getVulkanBlendFactor(Renderer::Blend blend)
 		{
 			static constexpr VkBlendFactor MAPPING[] =
 			{
@@ -3079,7 +3080,7 @@ namespace VulkanRenderer
 		*  @return
 		*    Vulkan blend operation
 		*/
-		static VkBlendOp getVulkanBlendOp(Renderer::BlendOp blendOp)
+		[[nodiscard]] static VkBlendOp getVulkanBlendOp(Renderer::BlendOp blendOp)
 		{
 			static constexpr VkBlendOp MAPPING[] =
 			{
@@ -3105,7 +3106,7 @@ namespace VulkanRenderer
 		*  @return
 		*    Vulkan comparison function
 		*/
-		static VkCompareOp getVulkanComparisonFunc(Renderer::ComparisonFunc comparisonFunc)
+		[[nodiscard]] static VkCompareOp getVulkanComparisonFunc(Renderer::ComparisonFunc comparisonFunc)
 		{
 			static constexpr VkCompareOp MAPPING[] =
 			{
@@ -3134,7 +3135,7 @@ namespace VulkanRenderer
 		*  @return
 		*    Vulkan format
 		*/
-		static VkFormat getVulkanFormat(Renderer::VertexAttributeFormat vertexAttributeFormat)
+		[[nodiscard]] static VkFormat getVulkanFormat(Renderer::VertexAttributeFormat vertexAttributeFormat)
 		{
 			static constexpr VkFormat MAPPING[] =
 			{
@@ -3166,7 +3167,7 @@ namespace VulkanRenderer
 		*  @return
 		*    Vulkan index type
 		*/
-		static VkIndexType getVulkanType([[maybe_unused]] const Renderer::Context& context, Renderer::IndexBufferFormat::Enum indexBufferFormat)
+		[[nodiscard]] static VkIndexType getVulkanType([[maybe_unused]] const Renderer::Context& context, Renderer::IndexBufferFormat::Enum indexBufferFormat)
 		{
 			RENDERER_ASSERT(context, Renderer::IndexBufferFormat::UNSIGNED_CHAR != indexBufferFormat, "One byte per element index buffer format isn't supported by Vulkan")
 			static constexpr VkIndexType MAPPING[] =
@@ -3191,7 +3192,7 @@ namespace VulkanRenderer
 		*  @return
 		*    Vulkan type
 		*/
-		static VkPrimitiveTopology getVulkanType(Renderer::PrimitiveTopology primitiveTopology)
+		[[nodiscard]] static VkPrimitiveTopology getVulkanType(Renderer::PrimitiveTopology primitiveTopology)
 		{
 			// Tessellation support: Up to 32 vertices per patch are supported "Renderer::PrimitiveTopology::PATCH_LIST_1" ... "Renderer::PrimitiveTopology::PATCH_LIST_32"
 			if (primitiveTopology >= Renderer::PrimitiveTopology::PATCH_LIST_1)
@@ -3226,7 +3227,7 @@ namespace VulkanRenderer
 		*  @return
 		*    Vulkan format
 		*/
-		static VkFormat getVulkanFormat(Renderer::TextureFormat::Enum textureFormat)
+		[[nodiscard]] static VkFormat getVulkanFormat(Renderer::TextureFormat::Enum textureFormat)
 		{
 			static constexpr VkFormat MAPPING[] =
 			{
@@ -3270,7 +3271,7 @@ namespace VulkanRenderer
 		*  @return
 		*    Vulkan sample count flag bits
 		*/
-		static VkSampleCountFlagBits getVulkanSampleCountFlagBits([[maybe_unused]] const Renderer::Context& context, uint8_t numberOfMultisamples)
+		[[nodiscard]] static VkSampleCountFlagBits getVulkanSampleCountFlagBits([[maybe_unused]] const Renderer::Context& context, uint8_t numberOfMultisamples)
 		{
 			RENDERER_ASSERT(context, numberOfMultisamples <= 8, "Invalid number of Vulkan multisamples")
 			static constexpr VkSampleCountFlagBits MAPPING[] =
@@ -3307,7 +3308,7 @@ namespace VulkanRenderer
 		//[-------------------------------------------------------]
 		//[ Command                                               ]
 		//[-------------------------------------------------------]
-		static VkCommandBuffer beginSingleTimeCommands(const VulkanRenderer& vulkanRenderer)
+		[[nodiscard]] static VkCommandBuffer beginSingleTimeCommands(const VulkanRenderer& vulkanRenderer)
 		{
 			// Create and begin Vulkan command buffer
 			VkCommandBuffer vkCommandBuffer = vulkanRenderer.getVulkanContext().createVkCommandBuffer();
@@ -3648,7 +3649,7 @@ namespace VulkanRenderer
 		//[-------------------------------------------------------]
 		//[ Image                                                 ]
 		//[-------------------------------------------------------]
-		static VkImageLayout getVkImageLayoutByTextureFlags(uint32_t textureFlags)
+		[[nodiscard]] static VkImageLayout getVkImageLayoutByTextureFlags(uint32_t textureFlags)
 		{
 			if (textureFlags & Renderer::TextureFlag::RENDER_TARGET)
 			{
@@ -4412,7 +4413,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The root signature data
 		*/
-		inline const Renderer::RootSignature& getRootSignature() const
+		[[nodiscard]] inline const Renderer::RootSignature& getRootSignature() const
 		{
 			return mRootSignature;
 		}
@@ -4424,7 +4425,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan pipeline layout
 		*/
-		inline VkPipelineLayout getVkPipelineLayout() const
+		[[nodiscard]] inline VkPipelineLayout getVkPipelineLayout() const
 		{
 			return mVkPipelineLayout;
 		}
@@ -4436,7 +4437,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan descriptor pool
 		*/
-		inline VkDescriptorPool getVkDescriptorPool() const
+		[[nodiscard]] inline VkDescriptorPool getVkDescriptorPool() const
 		{
 			return mVkDescriptorPool;
 		}
@@ -4467,7 +4468,7 @@ namespace VulkanRenderer
 	//[ Public virtual Renderer::IRootSignature methods       ]
 	//[-------------------------------------------------------]
 	public:
-		virtual Renderer::IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, Renderer::IResource** resources, Renderer::ISamplerState** samplerStates = nullptr) override;
+		[[nodiscard]] virtual Renderer::IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, Renderer::IResource** resources, Renderer::ISamplerState** samplerStates = nullptr) override;
 
 
 	//[-------------------------------------------------------]
@@ -4573,7 +4574,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan index type
 		*/
-		inline VkIndexType getVkIndexType() const
+		[[nodiscard]] inline VkIndexType getVkIndexType() const
 		{
 			return mVkIndexType;
 		}
@@ -4585,7 +4586,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan index buffer
 		*/
-		inline VkBuffer getVkBuffer() const
+		[[nodiscard]] inline VkBuffer getVkBuffer() const
 		{
 			return mVkBuffer;
 		}
@@ -4597,7 +4598,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan device memory
 		*/
-		inline VkDeviceMemory getVkDeviceMemory() const
+		[[nodiscard]] inline VkDeviceMemory getVkDeviceMemory() const
 		{
 			return mVkDeviceMemory;
 		}
@@ -4702,7 +4703,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan vertex buffer
 		*/
-		inline VkBuffer getVkBuffer() const
+		[[nodiscard]] inline VkBuffer getVkBuffer() const
 		{
 			return mVkBuffer;
 		}
@@ -4714,7 +4715,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan device memory
 		*/
-		inline VkDeviceMemory getVkDeviceMemory() const
+		[[nodiscard]] inline VkDeviceMemory getVkDeviceMemory() const
 		{
 			return mVkDeviceMemory;
 		}
@@ -4880,7 +4881,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The used index buffer, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline IndexBuffer* getIndexBuffer() const
+		[[nodiscard]] inline IndexBuffer* getIndexBuffer() const
 		{
 			return mIndexBuffer;
 		}
@@ -5048,7 +5049,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan texture buffer
 		*/
-		inline VkBuffer getVkBuffer() const
+		[[nodiscard]] inline VkBuffer getVkBuffer() const
 		{
 			return mVkBuffer;
 		}
@@ -5060,7 +5061,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan device memory
 		*/
-		inline VkDeviceMemory getVkDeviceMemory() const
+		[[nodiscard]] inline VkDeviceMemory getVkDeviceMemory() const
 		{
 			return mVkDeviceMemory;
 		}
@@ -5072,7 +5073,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan buffer view
 		*/
-		inline VkBufferView getVkBufferView() const
+		[[nodiscard]] inline VkBufferView getVkBufferView() const
 		{
 			return mVkBufferView;
 		}
@@ -5188,7 +5189,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan structured buffer
 		*/
-		inline VkBuffer getVkBuffer() const
+		[[nodiscard]] inline VkBuffer getVkBuffer() const
 		{
 			return mVkBuffer;
 		}
@@ -5200,7 +5201,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan device memory
 		*/
-		inline VkDeviceMemory getVkDeviceMemory() const
+		[[nodiscard]] inline VkDeviceMemory getVkDeviceMemory() const
 		{
 			return mVkDeviceMemory;
 		}
@@ -5321,7 +5322,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan indirect buffer
 		*/
-		inline VkBuffer getVkBuffer() const
+		[[nodiscard]] inline VkBuffer getVkBuffer() const
 		{
 			return mVkBuffer;
 		}
@@ -5333,7 +5334,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan device memory
 		*/
-		inline VkDeviceMemory getVkDeviceMemory() const
+		[[nodiscard]] inline VkDeviceMemory getVkDeviceMemory() const
 		{
 			return mVkDeviceMemory;
 		}
@@ -5343,7 +5344,7 @@ namespace VulkanRenderer
 	//[ Public virtual Renderer::IIndirectBuffer methods      ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const uint8_t* getEmulationData() const override
+		[[nodiscard]] inline virtual const uint8_t* getEmulationData() const override
 		{
 			return nullptr;
 		}
@@ -5440,7 +5441,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan uniform buffer
 		*/
-		inline VkBuffer getVkBuffer() const
+		[[nodiscard]] inline VkBuffer getVkBuffer() const
 		{
 			return mVkBuffer;
 		}
@@ -5452,7 +5453,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan device memory
 		*/
-		inline VkDeviceMemory getVkDeviceMemory() const
+		[[nodiscard]] inline VkDeviceMemory getVkDeviceMemory() const
 		{
 			return mVkDeviceMemory;
 		}
@@ -5534,37 +5535,37 @@ namespace VulkanRenderer
 	//[ Public virtual Renderer::IBufferManager methods       ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		[[nodiscard]] inline virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), VertexBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, data, bufferFlags, bufferUsage);
 		}
 
-		inline virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::Enum indexBufferFormat = Renderer::IndexBufferFormat::UNSIGNED_SHORT) override
+		[[nodiscard]] inline virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::Enum indexBufferFormat = Renderer::IndexBufferFormat::UNSIGNED_SHORT) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), IndexBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, data, bufferFlags, bufferUsage, indexBufferFormat);
 		}
 
-		inline virtual Renderer::IVertexArray* createVertexArray(const Renderer::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Renderer::VertexArrayVertexBuffer* vertexBuffers, Renderer::IIndexBuffer* indexBuffer = nullptr) override
+		[[nodiscard]] inline virtual Renderer::IVertexArray* createVertexArray(const Renderer::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Renderer::VertexArrayVertexBuffer* vertexBuffers, Renderer::IIndexBuffer* indexBuffer = nullptr) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), VertexArray)(static_cast<VulkanRenderer&>(getRenderer()), vertexAttributes, numberOfVertexBuffers, vertexBuffers, static_cast<IndexBuffer*>(indexBuffer));
 		}
 
-		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F) override
+		[[nodiscard]] inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, data, bufferFlags, bufferUsage, textureFormat);
 		}
 
-		inline virtual Renderer::IStructuredBuffer* createStructuredBuffer(uint32_t numberOfBytes, const void* data, [[maybe_unused]] uint32_t bufferFlags, Renderer::BufferUsage bufferUsage, uint32_t numberOfStructureBytes) override
+		[[nodiscard]] inline virtual Renderer::IStructuredBuffer* createStructuredBuffer(uint32_t numberOfBytes, const void* data, [[maybe_unused]] uint32_t bufferFlags, Renderer::BufferUsage bufferUsage, uint32_t numberOfStructureBytes) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), StructuredBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, data, bufferUsage, numberOfStructureBytes);
 		}
 
-		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		[[nodiscard]] inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<VulkanRenderer&>(getRenderer()), numberOfBytes, data, indirectBufferFlags, bufferUsage);
 		}
 
-		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		[[nodiscard]] inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			// Don't remove this reminder comment block: There are no buffer flags by intent since an uniform buffer can't be used for unordered access and as a consequence an uniform buffer must always used as shader resource to not be pointless
 			// -> Inside GLSL "layout(binding = 0, std140) writeonly uniform OutputUniformBuffer" will result in the GLSL compiler error "Failed to parse the GLSL shader source code: ERROR: 0:85: 'assign' :  l-value required "anon@6" (can't modify a uniform)"
@@ -5657,7 +5658,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan image view
 		*/
-		inline VkImageView getVkImageView() const
+		[[nodiscard]] inline VkImageView getVkImageView() const
 		{
 			return mVkImageView;
 		}
@@ -5669,7 +5670,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan image layout
 		*/
-		inline VkImageLayout getVkImageLayout() const
+		[[nodiscard]] inline VkImageLayout getVkImageLayout() const
 		{
 			return mVkImageLayout;
 		}
@@ -5811,7 +5812,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan image view
 		*/
-		inline VkImageView getVkImageView() const
+		[[nodiscard]] inline VkImageView getVkImageView() const
 		{
 			return mVkImageView;
 		}
@@ -5823,7 +5824,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan image layout
 		*/
-		inline VkImageLayout getVkImageLayout() const
+		[[nodiscard]] inline VkImageLayout getVkImageLayout() const
 		{
 			return mVkImageLayout;
 		}
@@ -5835,7 +5836,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan format
 		*/
-		inline VkFormat getVkFormat() const
+		[[nodiscard]] inline VkFormat getVkFormat() const
 		{
 			return mVrVulkanTextureData.m_nFormat;
 		}
@@ -5859,7 +5860,7 @@ namespace VulkanRenderer
 	//[ Public virtual Renderer::IResource methods            ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual void* getInternalResourceHandle() const override
+		[[nodiscard]] inline virtual void* getInternalResourceHandle() const override
 		{
 			return reinterpret_cast<void*>(const_cast<VRVulkanTextureData_t*>(&mVrVulkanTextureData));
 		}
@@ -5977,7 +5978,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan image view
 		*/
-		inline VkImageView getVkImageView() const
+		[[nodiscard]] inline VkImageView getVkImageView() const
 		{
 			return mVkImageView;
 		}
@@ -5989,7 +5990,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan image layout
 		*/
-		inline VkImageLayout getVkImageLayout() const
+		[[nodiscard]] inline VkImageLayout getVkImageLayout() const
 		{
 			return mVkImageLayout;
 		}
@@ -6001,7 +6002,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan format
 		*/
-		inline VkFormat getVkFormat() const
+		[[nodiscard]] inline VkFormat getVkFormat() const
 		{
 			return mVkFormat;
 		}
@@ -6109,7 +6110,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan image view
 		*/
-		inline VkImageView getVkImageView() const
+		[[nodiscard]] inline VkImageView getVkImageView() const
 		{
 			return mVkImageView;
 		}
@@ -6121,7 +6122,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan image layout
 		*/
-		inline VkImageLayout getVkImageLayout() const
+		[[nodiscard]] inline VkImageLayout getVkImageLayout() const
 		{
 			return mVkImageLayout;
 		}
@@ -6226,7 +6227,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan image view
 		*/
-		inline VkImageView getVkImageView() const
+		[[nodiscard]] inline VkImageView getVkImageView() const
 		{
 			return mVkImageView;
 		}
@@ -6238,7 +6239,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan image layout
 		*/
-		inline VkImageLayout getVkImageLayout() const
+		[[nodiscard]] inline VkImageLayout getVkImageLayout() const
 		{
 			return mVkImageLayout;
 		}
@@ -6322,7 +6323,7 @@ namespace VulkanRenderer
 	//[ Public virtual Renderer::ITextureManager methods      ]
 	//[-------------------------------------------------------]
 	public:
-		virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, Vulkan has no texture usage indication
 
@@ -6337,7 +6338,7 @@ namespace VulkanRenderer
 			}
 		}
 
-		virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
+		[[nodiscard]] virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, Vulkan has no texture usage indication
 
@@ -6352,7 +6353,7 @@ namespace VulkanRenderer
 			}
 		}
 
-		virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, Vulkan has no texture usage indication
 
@@ -6367,7 +6368,7 @@ namespace VulkanRenderer
 			}
 		}
 
-		virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, Vulkan has no texture usage indication
 
@@ -6382,7 +6383,7 @@ namespace VulkanRenderer
 			}
 		}
 
-		virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, Vulkan has no texture usage indication
 
@@ -6506,7 +6507,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan sampler
 		*/
-		inline VkSampler getVkSampler() const
+		[[nodiscard]] inline VkSampler getVkSampler() const
 		{
 			return mVkSampler;
 		}
@@ -6732,7 +6733,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan render pass
 		*/
-		inline VkRenderPass getVkRenderPass() const
+		[[nodiscard]] inline VkRenderPass getVkRenderPass() const
 		{
 			return mVkRenderPass;
 		}
@@ -6744,7 +6745,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The number of color render target textures
 		*/
-		inline uint32_t getNumberOfColorAttachments() const
+		[[nodiscard]] inline uint32_t getNumberOfColorAttachments() const
 		{
 			return mNumberOfColorAttachments;
 		}
@@ -6756,7 +6757,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The number of render target textures (color and depth stencil)
 		*/
-		inline uint32_t getNumberOfAttachments() const
+		[[nodiscard]] inline uint32_t getNumberOfAttachments() const
 		{
 			return (mDepthStencilAttachmentTextureFormat != Renderer::TextureFormat::Enum::UNKNOWN) ? (mNumberOfColorAttachments + 1) : mNumberOfColorAttachments;
 		}
@@ -6768,7 +6769,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The depth stencil attachment texture format
 		*/
-		inline Renderer::TextureFormat::Enum getDepthStencilAttachmentTextureFormat() const
+		[[nodiscard]] inline Renderer::TextureFormat::Enum getDepthStencilAttachmentTextureFormat() const
 		{
 			return mDepthStencilAttachmentTextureFormat;
 		}
@@ -6780,7 +6781,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan sample count flag bits
 		*/
-		inline VkSampleCountFlagBits getVkSampleCountFlagBits() const
+		[[nodiscard]] inline VkSampleCountFlagBits getVkSampleCountFlagBits() const
 		{
 			return mVkSampleCountFlagBits;
 		}
@@ -6837,7 +6838,7 @@ namespace VulkanRenderer
 	//[ Public static methods                                 ]
 	//[-------------------------------------------------------]
 	public:
-		static VkFormat findColorVkFormat(const Renderer::Context& context, VkInstance vkInstance, const VulkanContext& vulkanContext)
+		[[nodiscard]] static VkFormat findColorVkFormat(const Renderer::Context& context, VkInstance vkInstance, const VulkanContext& vulkanContext)
 		{
 			const VkPhysicalDevice vkPhysicalDevice = vulkanContext.getVkPhysicalDevice();
 			const VkSurfaceKHR vkSurfaceKHR = detail::createPresentationSurface(context, vulkanContext.getVulkanRenderer().getVkAllocationCallbacks(), vkInstance, vkPhysicalDevice, vulkanContext.getGraphicsQueueFamilyIndex(), Renderer::WindowHandle{context.getNativeWindowHandle(), nullptr, nullptr});
@@ -6846,7 +6847,7 @@ namespace VulkanRenderer
 			return desiredVkSurfaceFormatKHR.format;
 		}
 
-		inline static VkFormat findDepthVkFormat(VkPhysicalDevice vkPhysicalDevice)
+		[[nodiscard]] inline static VkFormat findDepthVkFormat(VkPhysicalDevice vkPhysicalDevice)
 		{
 			return detail::findSupportedVkFormat(vkPhysicalDevice, { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 		}
@@ -6923,7 +6924,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan render pass
 		*/
-		inline VkRenderPass getVkRenderPass() const
+		[[nodiscard]] inline VkRenderPass getVkRenderPass() const
 		{
 			return mVkRenderPass;
 		}
@@ -6935,7 +6936,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The current Vulkan image to render color into
 		*/
-		inline VkImage getColorCurrentVkImage() const
+		[[nodiscard]] inline VkImage getColorCurrentVkImage() const
 		{
 			RENDERER_ASSERT(getRenderer().getContext(), ~0u != mCurrentImageIndex, "Invalid index of the current Vulkan swap chain image to render into (Vulkan swap chain creation failed?)")
 			RENDERER_ASSERT(getRenderer().getContext(), mCurrentImageIndex < mSwapChainBuffer.size(), "Out-of-bounds index of the current Vulkan swap chain image to render into")
@@ -6949,7 +6950,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan image to render depth into
 		*/
-		inline VkImage getDepthVkImage() const
+		[[nodiscard]] inline VkImage getDepthVkImage() const
 		{
 			return mDepthVkImage;
 		}
@@ -6961,7 +6962,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The current Vulkan framebuffer to render into
 		*/
-		inline VkFramebuffer getCurrentVkFramebuffer() const
+		[[nodiscard]] inline VkFramebuffer getCurrentVkFramebuffer() const
 		{
 			RENDERER_ASSERT(getRenderer().getContext(), ~0u != mCurrentImageIndex, "Invalid index of the current Vulkan swap chain image to render into (Vulkan swap chain creation failed?)")
 			RENDERER_ASSERT(getRenderer().getContext(), mCurrentImageIndex < mSwapChainBuffer.size(), "Out-of-bounds index of the current Vulkan swap chain image to render into")
@@ -7075,7 +7076,7 @@ namespace VulkanRenderer
 	//[ Public virtual Renderer::ISwapChain methods           ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual Renderer::handle getNativeWindowHandle() const override
+		[[nodiscard]] inline virtual Renderer::handle getNativeWindowHandle() const override
 		{
 			return mNativeWindowHandle;
 		}
@@ -7164,7 +7165,7 @@ namespace VulkanRenderer
 			createVulkanSwapChain();
 		}
 
-		inline virtual bool getFullscreenState() const override
+		[[nodiscard]] inline virtual bool getFullscreenState() const override
 		{
 			// TODO(co) Implement me
 			return false;
@@ -7763,7 +7764,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan render pass
 		*/
-		inline VkRenderPass getVkRenderPass() const
+		[[nodiscard]] inline VkRenderPass getVkRenderPass() const
 		{
 			return mVkRenderPass;
 		}
@@ -7775,7 +7776,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan framebuffer to render into
 		*/
-		inline VkFramebuffer getVkFramebuffer() const
+		[[nodiscard]] inline VkFramebuffer getVkFramebuffer() const
 		{
 			return mVkFramebuffer;
 		}
@@ -7913,7 +7914,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan shader module
 		*/
-		inline VkShaderModule getVkShaderModule() const
+		[[nodiscard]] inline VkShaderModule getVkShaderModule() const
 		{
 			return mVkShaderModule;
 		}
@@ -7930,7 +7931,7 @@ namespace VulkanRenderer
 	//[ Public virtual Renderer::IShader methods              ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::GLSL_NAME;
 		}
@@ -8033,7 +8034,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan shader module
 		*/
-		inline VkShaderModule getVkShaderModule() const
+		[[nodiscard]] inline VkShaderModule getVkShaderModule() const
 		{
 			return mVkShaderModule;
 		}
@@ -8050,7 +8051,7 @@ namespace VulkanRenderer
 	//[ Public virtual Renderer::IShader methods              ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::GLSL_NAME;
 		}
@@ -8153,7 +8154,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan shader module
 		*/
-		inline VkShaderModule getVkShaderModule() const
+		[[nodiscard]] inline VkShaderModule getVkShaderModule() const
 		{
 			return mVkShaderModule;
 		}
@@ -8170,7 +8171,7 @@ namespace VulkanRenderer
 	//[ Public virtual Renderer::IShader methods              ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::GLSL_NAME;
 		}
@@ -8287,7 +8288,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan shader module
 		*/
-		inline VkShaderModule getVkShaderModule() const
+		[[nodiscard]] inline VkShaderModule getVkShaderModule() const
 		{
 			return mVkShaderModule;
 		}
@@ -8304,7 +8305,7 @@ namespace VulkanRenderer
 	//[ Public virtual Renderer::IShader methods              ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::GLSL_NAME;
 		}
@@ -8407,7 +8408,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan shader module
 		*/
-		inline VkShaderModule getVkShaderModule() const
+		[[nodiscard]] inline VkShaderModule getVkShaderModule() const
 		{
 			return mVkShaderModule;
 		}
@@ -8424,7 +8425,7 @@ namespace VulkanRenderer
 	//[ Public virtual Renderer::IShader methods              ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::GLSL_NAME;
 		}
@@ -8527,7 +8528,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan shader module
 		*/
-		inline VkShaderModule getVkShaderModule() const
+		[[nodiscard]] inline VkShaderModule getVkShaderModule() const
 		{
 			return mVkShaderModule;
 		}
@@ -8544,7 +8545,7 @@ namespace VulkanRenderer
 	//[ Public virtual Renderer::IShader methods              ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::GLSL_NAME;
 		}
@@ -8687,7 +8688,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The GLSL vertex shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline VertexShaderGlsl* getVertexShaderGlsl() const
+		[[nodiscard]] inline VertexShaderGlsl* getVertexShaderGlsl() const
 		{
 			return mVertexShaderGlsl;
 		}
@@ -8699,7 +8700,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The GLSL tessellation control shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline TessellationControlShaderGlsl* getTessellationControlShaderGlsl() const
+		[[nodiscard]] inline TessellationControlShaderGlsl* getTessellationControlShaderGlsl() const
 		{
 			return mTessellationControlShaderGlsl;
 		}
@@ -8711,7 +8712,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The GLSL tessellation evaluation shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline TessellationEvaluationShaderGlsl* getTessellationEvaluationShaderGlsl() const
+		[[nodiscard]] inline TessellationEvaluationShaderGlsl* getTessellationEvaluationShaderGlsl() const
 		{
 			return mTessellationEvaluationShaderGlsl;
 		}
@@ -8723,7 +8724,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The GLSL geometry shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline GeometryShaderGlsl* getGeometryShaderGlsl() const
+		[[nodiscard]] inline GeometryShaderGlsl* getGeometryShaderGlsl() const
 		{
 			return mGeometryShaderGlsl;
 		}
@@ -8735,7 +8736,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The GLSL fragment shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline FragmentShaderGlsl* getFragmentShaderGlsl() const
+		[[nodiscard]] inline FragmentShaderGlsl* getFragmentShaderGlsl() const
 		{
 			return mFragmentShaderGlsl;
 		}
@@ -8825,72 +8826,72 @@ namespace VulkanRenderer
 	//[ Public virtual Renderer::IShaderLanguage methods      ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::GLSL_NAME;
 		}
 
-		inline virtual Renderer::IVertexShader* createVertexShaderFromBytecode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderBytecode& shaderBytecode) override
+		[[nodiscard]] inline virtual Renderer::IVertexShader* createVertexShaderFromBytecode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), VertexShaderGlsl)(static_cast<VulkanRenderer&>(getRenderer()), shaderBytecode);
 		}
 
-		inline virtual Renderer::IVertexShader* createVertexShaderFromSourceCode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] inline virtual Renderer::IVertexShader* createVertexShaderFromSourceCode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), VertexShaderGlsl)(static_cast<VulkanRenderer&>(getRenderer()), shaderSourceCode.sourceCode, shaderBytecode);
 		}
 
-		inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
+		[[nodiscard]] inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), TessellationControlShaderGlsl)(static_cast<VulkanRenderer&>(getRenderer()), shaderBytecode);
 		}
 
-		inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), TessellationControlShaderGlsl)(static_cast<VulkanRenderer&>(getRenderer()), shaderSourceCode.sourceCode, shaderBytecode);
 		}
 
-		inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
+		[[nodiscard]] inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), TessellationEvaluationShaderGlsl)(static_cast<VulkanRenderer&>(getRenderer()), shaderBytecode);
 		}
 
-		inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), TessellationEvaluationShaderGlsl)(static_cast<VulkanRenderer&>(getRenderer()), shaderSourceCode.sourceCode, shaderBytecode);
 		}
 
-		inline virtual Renderer::IGeometryShader* createGeometryShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode, Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices) override
+		[[nodiscard]] inline virtual Renderer::IGeometryShader* createGeometryShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode, Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), GeometryShaderGlsl)(static_cast<VulkanRenderer&>(getRenderer()), shaderBytecode, gsInputPrimitiveTopology, gsOutputPrimitiveTopology, numberOfOutputVertices);
 		}
 
-		inline virtual Renderer::IGeometryShader* createGeometryShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] inline virtual Renderer::IGeometryShader* createGeometryShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), GeometryShaderGlsl)(static_cast<VulkanRenderer&>(getRenderer()), shaderSourceCode.sourceCode, gsInputPrimitiveTopology, gsOutputPrimitiveTopology, numberOfOutputVertices, shaderBytecode);
 		}
 
-		inline virtual Renderer::IFragmentShader* createFragmentShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
+		[[nodiscard]] inline virtual Renderer::IFragmentShader* createFragmentShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), FragmentShaderGlsl)(static_cast<VulkanRenderer&>(getRenderer()), shaderBytecode);
 		}
 
-		inline virtual Renderer::IFragmentShader* createFragmentShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] inline virtual Renderer::IFragmentShader* createFragmentShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), FragmentShaderGlsl)(static_cast<VulkanRenderer&>(getRenderer()), shaderSourceCode.sourceCode, shaderBytecode);
 		}
 
-		inline virtual Renderer::IComputeShader* createComputeShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
+		[[nodiscard]] inline virtual Renderer::IComputeShader* createComputeShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), ComputeShaderGlsl)(static_cast<VulkanRenderer&>(getRenderer()), shaderBytecode);
 		}
 
-		inline virtual Renderer::IComputeShader* createComputeShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] inline virtual Renderer::IComputeShader* createComputeShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), ComputeShaderGlsl)(static_cast<VulkanRenderer&>(getRenderer()), shaderSourceCode.sourceCode, shaderBytecode);
 		}
 
-		virtual Renderer::IGraphicsProgram* createGraphicsProgram(const Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
+		[[nodiscard]] virtual Renderer::IGraphicsProgram* createGraphicsProgram(const Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
 		{
 			// Sanity checks
 			// -> A shader can be a null pointer, but if it's not the shader and graphics program language must match!
@@ -9247,7 +9248,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan graphics pipeline
 		*/
-		inline VkPipeline getVkPipeline() const
+		[[nodiscard]] inline VkPipeline getVkPipeline() const
 		{
 			return mVkPipeline;
 		}
@@ -9391,7 +9392,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan compute pipeline
 		*/
-		inline VkPipeline getVkPipeline() const
+		[[nodiscard]] inline VkPipeline getVkPipeline() const
 		{
 			return mVkPipeline;
 		}
@@ -9834,7 +9835,7 @@ namespace VulkanRenderer
 		*  @return
 		*    The Vulkan descriptor set, can be a null handle
 		*/
-		inline VkDescriptorSet getVkDescriptorSet() const
+		[[nodiscard]] inline VkDescriptorSet getVkDescriptorSet() const
 		{
 			return mVkDescriptorSet;
 		}
@@ -9945,17 +9946,17 @@ namespace
 		//[-------------------------------------------------------]
 		// Implementation from "08/02/2015 Better array 'countof' implementation with C++ 11 (updated)" - https://www.g-truc.net/post-0708.html
 		template<typename T, std::size_t N>
-		constexpr std::size_t countof(T const (&)[N])
+		[[nodiscard]] constexpr std::size_t countof(T const (&)[N])
 		{
 			return N;
 		}
 
-		VKAPI_ATTR void* VKAPI_CALL vkAllocationFunction(void* pUserData, size_t size, size_t alignment, VkSystemAllocationScope)
+		[[nodiscard]] VKAPI_ATTR void* VKAPI_CALL vkAllocationFunction(void* pUserData, size_t size, size_t alignment, VkSystemAllocationScope)
 		{
 			return reinterpret_cast<Renderer::IAllocator*>(pUserData)->reallocate(nullptr, 0, size, alignment);
 		}
 
-		VKAPI_ATTR void* VKAPI_CALL vkReallocationFunction(void* pUserData, void* pOriginal, size_t size, size_t alignment, VkSystemAllocationScope)
+		[[nodiscard]] VKAPI_ATTR void* VKAPI_CALL vkReallocationFunction(void* pUserData, void* pOriginal, size_t size, size_t alignment, VkSystemAllocationScope)
 		{
 			return reinterpret_cast<Renderer::IAllocator*>(pUserData)->reallocate(pOriginal, 0, size, alignment);
 		}
@@ -10318,7 +10319,7 @@ namespace VulkanRenderer
 		#ifdef RENDERER_STATISTICS
 		{ // For debugging: At this point there should be no resource instances left, validate this!
 			// -> Are the currently any resource instances?
-			const unsigned long numberOfCurrentResources = getStatistics().getNumberOfCurrentResources();
+			const uint32_t numberOfCurrentResources = getStatistics().getNumberOfCurrentResources();
 			if (numberOfCurrentResources > 0)
 			{
 				// Error!

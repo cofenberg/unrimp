@@ -99,7 +99,7 @@ namespace RendererToolkit
 		*  @return
 		*    The used log instance
 		*/
-		inline Renderer::ILog& getLog() const
+		[[nodiscard]] inline Renderer::ILog& getLog() const
 		{
 			return mLog;
 		}
@@ -111,7 +111,7 @@ namespace RendererToolkit
 		*  @return
 		*    The used assert instance
 		*/
-		inline Renderer::IAssert& getAssert() const
+		[[nodiscard]] inline Renderer::IAssert& getAssert() const
 		{
 			return mAssert;
 		}
@@ -123,7 +123,7 @@ namespace RendererToolkit
 		*  @return
 		*    The used allocator instance
 		*/
-		inline Renderer::IAllocator& getAllocator() const
+		[[nodiscard]] inline Renderer::IAllocator& getAllocator() const
 		{
 			return mAllocator;
 		}
@@ -135,7 +135,7 @@ namespace RendererToolkit
 		*  @return
 		*    The used file manager instance
 		*/
-		inline RendererRuntime::IFileManager& getFileManager() const
+		[[nodiscard]] inline RendererRuntime::IFileManager& getFileManager() const
 		{
 			return mFileManager;
 		}

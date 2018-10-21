@@ -80,37 +80,37 @@ public:
 	inline ~ExampleRunner()
 	{}
 
-	inline const AvailableRenderers& getAvailableRenderers() const
+	[[nodiscard]] inline const AvailableRenderers& getAvailableRenderers() const
 	{
 		return mAvailableRenderers;
 	}
 
-	inline const ExampleToSupportedRenderers& getExampleToSupportedRenderers() const
+	[[nodiscard]] inline const ExampleToSupportedRenderers& getExampleToSupportedRenderers() const
 	{
 		return mExampleToSupportedRenderers;
 	}
 
-	inline const std::string& getDefaultRendererName() const
+	[[nodiscard]] inline const std::string& getDefaultRendererName() const
 	{
 		return mDefaultRendererName;
 	}
 
-	inline const std::string& getDefaultExampleName() const
+	[[nodiscard]] inline const std::string& getDefaultExampleName() const
 	{
 		return mDefaultExampleName;
 	}
 
-	inline const std::string& getCurrentRendererName() const
+	[[nodiscard]] inline const std::string& getCurrentRendererName() const
 	{
 		return mCurrentRendererName;
 	}
 
-	inline const std::string& getCurrentExampleName() const
+	[[nodiscard]] inline const std::string& getCurrentExampleName() const
 	{
 		return mCurrentExampleName;
 	}
 
-	int run(const CommandLineArguments& commandLineArguments);
+	[[nodiscard]] int run(const CommandLineArguments& commandLineArguments);
 
 	/**
 	*  @brief
@@ -129,7 +129,7 @@ public:
 //[-------------------------------------------------------]
 private:
 	template <class ExampleClass>
-	static int runRenderExample(ExampleRunner& exampleRunner, const char* rendererName)
+	[[nodiscard]] static int runRenderExample(ExampleRunner& exampleRunner, const char* rendererName)
 	{
 		ExampleClass exampleClass;
 		exampleClass.mExampleRunner = &exampleRunner;
@@ -137,7 +137,7 @@ private:
 	}
 
 	template <class ExampleClass>
-	static int runRenderRuntimeExample(ExampleRunner& exampleRunner, const char* rendererName)
+	[[nodiscard]] static int runRenderRuntimeExample(ExampleRunner& exampleRunner, const char* rendererName)
 	{
 		ExampleClass exampleClass;
 		exampleClass.mExampleRunner = &exampleRunner;
@@ -145,7 +145,7 @@ private:
 	}
 
 	template <class ExampleClass>
-	static int runBasicExample(ExampleRunner& exampleRunner, const char* rendererName)
+	[[nodiscard]] static int runBasicExample(ExampleRunner& exampleRunner, const char* rendererName)
 	{
 		ExampleClass exampleClass(exampleRunner, rendererName);
 		return exampleClass.run();
@@ -156,10 +156,10 @@ private:
 //[ Private methods                                       ]
 //[-------------------------------------------------------]
 private:
-	bool parseCommandLineArguments(const CommandLineArguments& commandLineArguments);
+	[[nodiscard]] bool parseCommandLineArguments(const CommandLineArguments& commandLineArguments);
 	void printUsage(const AvailableExamples& availableExamples, const AvailableRenderers& availableRenderers);
 	void showError(const std::string& errorMessage);
-	int runExample(const std::string& rendererName, const std::string& exampleName);
+	[[nodiscard]] int runExample(const std::string& rendererName, const std::string& exampleName);
 
 	template<typename T>
 	void addExample(const std::string& name, RunnerMethod runnerMethod, T const& supportedRendererList)

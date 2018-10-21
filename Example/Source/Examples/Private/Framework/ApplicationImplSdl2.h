@@ -87,9 +87,9 @@ public:
 public:
 	virtual void onInitialization() override;
 	virtual void onDeinitialization() override;
-	virtual bool processMessages() override;
+	[[nodiscard]] virtual bool processMessages() override;
 	virtual void getWindowSize(int &width, int &height) const override;
-	virtual handle getNativeWindowHandle() const override;
+	[[nodiscard]] virtual handle getNativeWindowHandle() const override;
 	virtual void redraw() override;
 
 

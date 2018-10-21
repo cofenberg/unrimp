@@ -111,20 +111,20 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		float gaussianWeight(const glm::vec2& offset)
+		[[nodiscard]] float gaussianWeight(const glm::vec2& offset)
 		{
 			const float v = 2.0f * SIGMA * SIGMA;
 			return exp(-glm::dot(offset, offset) / v) / (glm::pi<float>() * v);
 		}
 
-		glm::vec4 fetch(crnlib::image_u8& normalMapCrunchImage, const glm::vec2& position, const glm::vec2& offset)
+		[[nodiscard]] glm::vec4 fetch(crnlib::image_u8& normalMapCrunchImage, const glm::vec2& position, const glm::vec2& offset)
 		{
 			const crnlib::color_quad_u8& crunchColor = normalMapCrunchImage.get_clamped(static_cast<int>(position.x + offset.x), static_cast<int>(position.y + offset.y));
 			const glm::vec3 n((crunchColor.r / 255.0f) * 2.0f - 1.0f, (crunchColor.g / 255.0f) * 2.0f - 1.0f, (crunchColor.b / 255.0f) * 2.0f - 1.0f);
 			return glm::vec4(glm::normalize(n), 1.0f) * gaussianWeight(offset);
 		}
 
-		float calculateToksvig(crnlib::image_u8& normalMapCrunchImage, const glm::vec2& position, float power)
+		[[nodiscard]] float calculateToksvig(crnlib::image_u8& normalMapCrunchImage, const glm::vec2& position, float power)
 		{
 			// 3x3 filter
 			glm::vec4 n = fetch(normalMapCrunchImage, position, glm::vec2(-1.0f, -1.0f));
@@ -256,7 +256,7 @@ namespace
 				m_opened = (nullptr != mFile);
 			}
 
-			virtual ~FileStream() override
+			inline virtual ~FileStream() override
 			{
 				close();
 			}
@@ -289,7 +289,7 @@ namespace
 				return false;
 			}
 
-			virtual crnlib::uint read(void* pBuf, crnlib::uint len) override
+			[[nodiscard]] virtual crnlib::uint read(void* pBuf, crnlib::uint len) override
 			{
 				CRNLIB_ASSERT(pBuf && (len <= 0x7FFFFFFF));
 				if (!m_opened || !is_readable() || !len)
@@ -302,7 +302,7 @@ namespace
 				return len;
 			}
 
-			virtual crnlib::uint write(const void* pBuf, crnlib::uint len) override
+			[[nodiscard]] virtual crnlib::uint write(const void* pBuf, crnlib::uint len) override
 			{
 				CRNLIB_ASSERT(pBuf && (len <= 0x7FFFFFFF));
 				if (!m_opened || !is_writable() || !len)
@@ -315,18 +315,18 @@ namespace
 				return len;
 			}
 
-			virtual bool flush() override
+			inline virtual bool flush() override
 			{
 				// Nothing here
 				return true;
 			}
 
-			virtual crnlib::uint64 get_size() override
+			[[nodiscard]] inline virtual crnlib::uint64 get_size() override
 			{
 				return m_opened ? mFileSize : 0;
 			}
 
-			virtual crnlib::uint64 get_remaining() override
+			[[nodiscard]] virtual crnlib::uint64 get_remaining() override
 			{
 				if (!m_opened)
 				{
@@ -336,12 +336,12 @@ namespace
 				return mFileSize - mOffset;
 			}
 
-			virtual crnlib::uint64 get_ofs() override
+			[[nodiscard]] inline virtual crnlib::uint64 get_ofs() override
 			{
 				return m_opened ? mOffset : 0;
 			}
 
-			virtual bool seek(crnlib::int64, bool) override
+			inline virtual bool seek(crnlib::int64, bool) override
 			{
 				// Nothing here
 				return false;
@@ -449,7 +449,7 @@ namespace
 			}
 		}
 
-		TextureSemantic getTextureSemanticByRapidJsonValue(const rapidjson::Value& rapidJsonValue)
+		[[nodiscard]] TextureSemantic getTextureSemanticByRapidJsonValue(const rapidjson::Value& rapidJsonValue)
 		{
 			const char* valueAsString = rapidJsonValue.GetString();
 			const rapidjson::SizeType valueStringLength = rapidJsonValue.GetStringLength();
@@ -485,7 +485,7 @@ namespace
 			#undef ELSE_IF_VALUE
 		}
 
-		void mandatoryTextureSemanticProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, TextureSemantic& value)
+		inline void mandatoryTextureSemanticProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, TextureSemantic& value)
 		{
 			value = getTextureSemanticByRapidJsonValue(rapidJsonValue[propertyName]);
 		}
@@ -562,7 +562,7 @@ namespace
 			}
 		}
 
-		bool isToksvigSpecularAntiAliasingEnabled(const rapidjson::Value& rapidJsonValueTextureAssetCompiler)
+		[[nodiscard]] bool isToksvigSpecularAntiAliasingEnabled(const rapidjson::Value& rapidJsonValueTextureAssetCompiler)
 		{
 			bool toksvigSpecularAntiAliasing = false;
 			RendererToolkit::JsonHelper::optionalBooleanProperty(rapidJsonValueTextureAssetCompiler, "ToksvigSpecularAntiAliasing", toksvigSpecularAntiAliasing);
@@ -608,7 +608,7 @@ namespace
 				loadSourceCrunchMipmappedTextures(fileManager, rapidJsonValueTextureAssetCompiler, basePath, virtualSourceNormalMapFilename);
 			}
 
-			crnlib::uint getDestinationWidth() const
+			[[nodiscard]] crnlib::uint getDestinationWidth() const
 			{
 				for (const Source& source : mSources)
 				{
@@ -620,7 +620,7 @@ namespace
 				throw std::runtime_error("Texture channel packing needs at least one source texture");
 			}
 
-			crnlib::uint getDestinationHeight() const
+			[[nodiscard]] crnlib::uint getDestinationHeight() const
 			{
 				for (const Source& source : mSources)
 				{
@@ -632,7 +632,7 @@ namespace
 				throw std::runtime_error("Texture channel packing needs at least one source texture");
 			}
 
-			crnlib::pixel_format getDestinationCrunchPixelFormat() const
+			[[nodiscard]] crnlib::pixel_format getDestinationCrunchPixelFormat() const
 			{
 				switch (mDestinations.size())
 				{
@@ -650,12 +650,12 @@ namespace
 				}
 			}
 
-			inline const Sources& getSources() const
+			[[nodiscard]] inline const Sources& getSources() const
 			{
 				return mSources;
 			}
 
-			inline const Destinations& getDestinations() const
+			[[nodiscard]] inline const Destinations& getDestinations() const
 			{
 				return mDestinations;
 			}
@@ -747,7 +747,7 @@ namespace
 				}
 			}
 
-			std::string getSourceNormalMapFilename(const char* basePath, RendererRuntime::VirtualFilename virtualSourceNormalMapFilename, const rapidjson::Value& rapidJsonValueInputFiles) const
+			[[nodiscard]] std::string getSourceNormalMapFilename(const char* basePath, RendererRuntime::VirtualFilename virtualSourceNormalMapFilename, const rapidjson::Value& rapidJsonValueInputFiles) const
 			{
 				if (nullptr != virtualSourceNormalMapFilename)
 				{
@@ -916,7 +916,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		bool crunchConsoleOutput(crnlib::eConsoleMessageType crunchType, const char* message, void* data)
+		[[nodiscard]] bool crunchConsoleOutput(crnlib::eConsoleMessageType crunchType, const char* message, void* data)
 		{
 			// Map the log message type
 			Renderer::ILog::Type type = Renderer::ILog::Type::TRACE;
@@ -990,7 +990,7 @@ namespace
 			}
 		}
 
-		std::string widthHeightToString(uint32_t width, uint32_t height)
+		[[nodiscard]] std::string widthHeightToString(uint32_t width, uint32_t height)
 		{
 			return std::to_string(width) + 'x' + std::to_string(height);
 		}
@@ -1003,7 +1003,7 @@ namespace
 			}
 		}
 
-		Filenames getCubemapFilenames(const rapidjson::Value& rapidJsonValueTextureAssetCompiler, const std::string& basePath)
+		[[nodiscard]] Filenames getCubemapFilenames(const rapidjson::Value& rapidJsonValueTextureAssetCompiler, const std::string& basePath)
 		{
 			const rapidjson::Value& rapidJsonValueInputFiles = rapidJsonValueTextureAssetCompiler["InputFiles"];
 			static constexpr uint32_t NUMBER_OF_FACES = 6;
@@ -1019,7 +1019,7 @@ namespace
 			return filenames;
 		}
 
-		bool checkIfChanged(const RendererToolkit::IAssetCompiler::Input& input, const RendererToolkit::IAssetCompiler::Configuration& configuration, const rapidjson::Value& rapidJsonValueTextureAssetCompiler, TextureSemantic textureSemantic, const std::string& virtualInputAssetFilename, const std::string& virtualOutputAssetFilename, std::vector<RendererToolkit::CacheManager::CacheEntries>& cacheEntries)
+		[[nodiscard]] bool checkIfChanged(const RendererToolkit::IAssetCompiler::Input& input, const RendererToolkit::IAssetCompiler::Configuration& configuration, const rapidjson::Value& rapidJsonValueTextureAssetCompiler, TextureSemantic textureSemantic, const std::string& virtualInputAssetFilename, const std::string& virtualOutputAssetFilename, std::vector<RendererToolkit::CacheManager::CacheEntries>& cacheEntries)
 		{
 			if (TextureSemantic::REFLECTION_CUBE_MAP == textureSemantic)
 			{

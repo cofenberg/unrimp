@@ -77,7 +77,7 @@ namespace RendererToolkit
 	//[ Public virtual RendererToolkit::IAssetImporter methods ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual AssetImporterClassId getAssetImporterClassId() const override
+		[[nodiscard]] inline virtual AssetImporterClassId getAssetImporterClassId() const override
 		{
 			return CLASS_ID;
 		}

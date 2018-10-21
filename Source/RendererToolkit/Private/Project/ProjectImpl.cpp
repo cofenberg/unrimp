@@ -82,7 +82,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		bool orderByAssetId(const RendererRuntime::Asset& left, const RendererRuntime::Asset& right)
+		[[nodiscard]] inline bool orderByAssetId(const RendererRuntime::Asset& left, const RendererRuntime::Asset& right)
 		{
 			return (left.assetId < right.assetId);
 		}

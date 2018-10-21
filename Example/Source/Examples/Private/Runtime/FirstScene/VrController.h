@@ -75,7 +75,7 @@ public:
 	*/
 	virtual ~VrController() override;
 
-	const RendererRuntime::LightSceneItem& getTeleportIndicationLightSceneItemSafe() const;
+	[[nodiscard]] const RendererRuntime::LightSceneItem& getTeleportIndicationLightSceneItemSafe() const;
 
 
 //[-------------------------------------------------------]

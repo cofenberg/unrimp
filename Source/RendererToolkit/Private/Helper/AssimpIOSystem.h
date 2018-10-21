@@ -87,14 +87,14 @@ namespace RendererToolkit
 	//[ Public virtual Assimp::IOSystem methods               ]
 	//[-------------------------------------------------------]
 	public:
-		virtual bool Exists(const char* pFile) const override;
+		[[nodiscard]] virtual bool Exists(const char* pFile) const override;
 
-		inline virtual char getOsSeparator() const override
+		[[nodiscard]] inline virtual char getOsSeparator() const override
 		{
 			return '/';
 		}
 
-		virtual Assimp::IOStream* Open(const char* pFile, const char* pMode = "rb") override;
+		[[nodiscard]] virtual Assimp::IOStream* Open(const char* pFile, const char* pMode = "rb") override;
 		virtual void Close(Assimp::IOStream* pFile) override;
 
 

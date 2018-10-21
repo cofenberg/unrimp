@@ -81,10 +81,10 @@ public:
 public:
 	virtual void onInitialization() override;
 	virtual void onDeinitialization() override;
-	virtual bool processMessages() override;
+	[[nodiscard]] virtual bool processMessages() override;
 	virtual void getWindowSize(int &width, int &height) const override;
 
-	inline virtual handle getNativeWindowHandle() const override
+	[[nodiscard]] inline virtual handle getNativeWindowHandle() const override
 	{
 		return reinterpret_cast<handle>(mNativeWindowHandle);
 	}
@@ -96,7 +96,7 @@ public:
 //[ Private static Microsoft Windows callback function    ]
 //[-------------------------------------------------------]
 private:
-	static LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	[[nodiscard]] static LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 
 //[-------------------------------------------------------]

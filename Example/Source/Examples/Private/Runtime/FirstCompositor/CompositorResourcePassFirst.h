@@ -54,7 +54,7 @@ public:
 //[ Public virtual RendererRuntime::ICompositorResourcePass methods ]
 //[-------------------------------------------------------]
 public:
-	inline virtual RendererRuntime::CompositorPassTypeId getTypeId() const override
+	[[nodiscard]] inline virtual RendererRuntime::CompositorPassTypeId getTypeId() const override
 	{
 		return TYPE_ID;
 	}

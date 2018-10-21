@@ -55,8 +55,8 @@ public:
 	void show();
 	void getWindowSize(int& width, int& height) const;
 	void refresh();
-	Window winId() const { return mWindowId; }
-	bool isDestroyed() const { return mDestroyed; }
+	[[nodiscard]] Window winId() const { return mWindowId; }
+	[[nodiscard]] bool isDestroyed() const { return mDestroyed; }
 
 
 //[-------------------------------------------------------]

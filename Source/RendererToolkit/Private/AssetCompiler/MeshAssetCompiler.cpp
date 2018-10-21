@@ -82,13 +82,13 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		int getNumFaces(const SMikkTSpaceContext* pContext)
+		[[nodiscard]] int getNumFaces(const SMikkTSpaceContext* pContext)
 		{
 			const aiMesh* assimpMesh = static_cast<const aiMesh*>(pContext->m_pUserData);
 			return static_cast<int>(assimpMesh->mNumFaces);
 		}
 
-		int getNumVerticesOfFace(const SMikkTSpaceContext* pContext, const int iFace)
+		[[nodiscard]] int getNumVerticesOfFace(const SMikkTSpaceContext* pContext, const int iFace)
 		{
 			const aiMesh* assimpMesh = static_cast<const aiMesh*>(pContext->m_pUserData);
 			return static_cast<int>(assimpMesh->mFaces[iFace].mNumIndices);
@@ -179,7 +179,7 @@ namespace
 		//[ Public methods                                        ]
 		//[-------------------------------------------------------]
 		public:
-			explicit Skeleton(uint8_t _numberOfBones, const aiNode& assimpNode) :
+			Skeleton(uint8_t _numberOfBones, const aiNode& assimpNode) :
 				numberOfBones(_numberOfBones),
 				boneParentIndices(nullptr),
 				boneIds(nullptr),
@@ -241,22 +241,22 @@ namespace
 				}
 			}
 
-			~Skeleton()
+			inline ~Skeleton()
 			{
 				delete [] getSkeletonData();
 			}
 
-			uint32_t getNumberOfSkeletonDataBytes() const
+			[[nodiscard]] inline uint32_t getNumberOfSkeletonDataBytes() const
 			{
 				return (sizeof(uint8_t) + sizeof(uint32_t) + sizeof(aiMatrix4x4) * 2) * numberOfBones;
 			}
 
-			const uint8_t* getSkeletonData() const
+			[[nodiscard]] inline const uint8_t* getSkeletonData() const
 			{
 				return boneParentIndices;
 			}
 
-			uint32_t getBoneIndexByBoneId(uint32_t boneId) const
+			[[nodiscard]] uint32_t getBoneIndexByBoneId(uint32_t boneId) const
 			{
 				// TODO(co) Maybe it makes sense to store the bone IDs in some order to speed up the following
 				for (uint8_t boneIndex = 0; boneIndex < numberOfBones; ++boneIndex)

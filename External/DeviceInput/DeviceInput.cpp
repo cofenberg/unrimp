@@ -390,7 +390,7 @@ namespace DeviceInput
 		*  @return
 		*    Device list, do not destroy the returned instances!
 		*/
-		inline const std::vector<Device*> &GetDevices() const
+		[[nodiscard]] inline const std::vector<Device*> &GetDevices() const
 		{
 			return m_lstDevices;
 		}
@@ -438,7 +438,7 @@ namespace DeviceInput
 		*    it will not get deleted by DetectDevices(). Therefore, an input provider must
 		*    call this function every time in it's QueryDevices()-function.
 		*/
-		bool CheckDevice(const std::string &sName);
+		[[nodiscard]] bool CheckDevice(const std::string &sName);
 
 		/**
 		*  @brief
@@ -547,7 +547,7 @@ namespace DeviceInput
 		*  @return
 		*    Type of device backend
 		*/
-		inline DeviceBackendType getDeviceBackendType() const
+		[[nodiscard]] inline DeviceBackendType getDeviceBackendType() const
 		{
 			return mDeviceBackendType;
 		}
@@ -559,7 +559,7 @@ namespace DeviceInput
 		*  @return
 		*    Device that owns this device implementation, can be a null pointer
 		*/
-		inline Device *GetDevice() const
+		[[nodiscard]] inline Device *GetDevice() const
 		{
 			return m_pDevice;
 		}
@@ -725,7 +725,7 @@ namespace DeviceInput
 		*  @return
 		*    Device type
 		*/
-		inline EDeviceType GetDeviceType() const
+		[[nodiscard]] inline EDeviceType GetDeviceType() const
 		{
 			return m_nDeviceType;
 		}
@@ -737,7 +737,7 @@ namespace DeviceInput
 		*  @return
 		*    Size of an input report in bytes (unique to each HID device)
 		*/
-		inline uint32_t GetInputReportSize() const
+		[[nodiscard]] inline uint32_t GetInputReportSize() const
 		{
 			return m_nInputReportSize;
 		}
@@ -761,7 +761,7 @@ namespace DeviceInput
 		*  @return
 		*    Size of an output report in bytes
 		*/
-		inline uint32_t GetOutputReportSize() const
+		[[nodiscard]] inline uint32_t GetOutputReportSize() const
 		{
 			return m_nOutputReportSize;
 		}
@@ -785,7 +785,7 @@ namespace DeviceInput
 		*  @return
 		*    Input buffer (can be a null pointer if the device is not open), do not destroy the returned buffer!
 		*/
-		inline uint8_t *GetInputBuffer() const
+		[[nodiscard]] inline uint8_t *GetInputBuffer() const
 		{
 			return m_pInputBuffer;
 		}
@@ -797,7 +797,7 @@ namespace DeviceInput
 		*  @return
 		*    Output buffer (can be a null pointer if the device is not open), do not destroy the returned buffer!
 		*/
-		inline uint8_t *GetOutputBuffer() const
+		[[nodiscard]] inline uint8_t *GetOutputBuffer() const
 		{
 			return m_pOutputBuffer;
 		}
@@ -863,7 +863,7 @@ namespace DeviceInput
 		*  @note
 		*    - The default implementation is empty
 		*/
-		inline virtual bool IsOpen() const
+		[[nodiscard]] inline virtual bool IsOpen() const
 		{
 			// To be implemented in derived classes
 
@@ -971,7 +971,7 @@ namespace DeviceInput
 		*  @param[in] pData
 		*    Pointer to this ConnectionDevice instance, always valid!
 		*/
-		static int ReadThread(void *pData);
+		[[nodiscard]] static int ReadThread(void *pData);
 
 
 	//[-------------------------------------------------------]
@@ -1169,7 +1169,7 @@ namespace DeviceInput
 		*  @return
 		*    'true' if both are equal, else 'false'
 		*/
-		bool operator ==(const HIDCapability &cSource) const
+		[[nodiscard]] bool operator ==(const HIDCapability &cSource) const
 		{
 			return (m_nReportID	== cSource.m_nReportID &&  m_nLinkCollection == cSource.m_nLinkCollection &&
 					m_nUsagePage == cSource.m_nUsagePage && m_nUsage == cSource.m_nUsage &&
@@ -1356,7 +1356,7 @@ namespace DeviceInput
 		*  @return
 		*    'true', if both are equal, else 'false'
 		*/
-		bool operator ==(const HIDDevice &cSource)
+		[[nodiscard]] bool operator ==(const HIDDevice &cSource)
 		{
 					// Device data
 			return (m_nVendor						== cSource.m_nVendor &&
@@ -1390,7 +1390,7 @@ namespace DeviceInput
 		*  @return
 		*    Device name
 		*/
-		inline const std::string& GetName() const
+		[[nodiscard]] inline const std::string& GetName() const
 		{
 			return m_sName;
 		}
@@ -1402,7 +1402,7 @@ namespace DeviceInput
 		*  @return
 		*    Vendor ID
 		*/
-		inline uint32_t GetVendor() const
+		[[nodiscard]] inline uint32_t GetVendor() const
 		{
 			return m_nVendor;
 		}
@@ -1414,7 +1414,7 @@ namespace DeviceInput
 		*  @return
 		*    Product ID
 		*/
-		inline uint32_t GetProduct() const
+		[[nodiscard]] inline uint32_t GetProduct() const
 		{
 			return m_nProduct;
 		}
@@ -1426,7 +1426,7 @@ namespace DeviceInput
 		*  @return
 		*    Usage ID
 		*/
-		inline uint16_t GetUsage() const
+		[[nodiscard]] inline uint16_t GetUsage() const
 		{
 			return m_nUsage;
 		}
@@ -1438,7 +1438,7 @@ namespace DeviceInput
 		*  @return
 		*    Usage page ID
 		*/
-		inline uint16_t GetUsagePage() const
+		[[nodiscard]] inline uint16_t GetUsagePage() const
 		{
 			return m_nUsagePage;
 		}
@@ -1450,7 +1450,7 @@ namespace DeviceInput
 		*  @return
 		*    List of input button controls
 		*/
-		inline const std::vector<HIDCapability> &GetInputButtons() const
+		[[nodiscard]] inline const std::vector<HIDCapability> &GetInputButtons() const
 		{
 			return m_lstInputButtons;
 		}
@@ -1462,7 +1462,7 @@ namespace DeviceInput
 		*  @return
 		*    List of input value controls
 		*/
-		inline const std::vector<HIDCapability> &GetInputValues() const
+		[[nodiscard]] inline const std::vector<HIDCapability> &GetInputValues() const
 		{
 			return m_lstInputValues;
 		}
@@ -1474,7 +1474,7 @@ namespace DeviceInput
 		*  @return
 		*    List of output value controls
 		*/
-		inline std::vector<HIDCapability> &GetOutputValues()
+		[[nodiscard]] inline std::vector<HIDCapability> &GetOutputValues()
 		{
 			return m_lstOutputValues;
 		}
@@ -1686,7 +1686,7 @@ namespace DeviceInput
 		*  @return
 		*    Device list
 		*/
-		inline const std::vector<HIDDevice*> &GetDevices() const
+		[[nodiscard]] inline const std::vector<HIDDevice*> &GetDevices() const
 		{
 			return m_lstDevices;
 		}
@@ -4709,7 +4709,7 @@ namespace DeviceInput
 		*  @return
 		*    Device list
 		*/
-		inline const std::vector<BTDevice*> &GetDevices() const
+		[[nodiscard]] inline const std::vector<BTDevice*> &GetDevices() const
 		{
 			// Return list
 			return m_lstDevices;
@@ -4852,7 +4852,7 @@ namespace DeviceInput
 		*  @return
 		*    'true', if both are equal, else 'false'
 		*/
-		bool operator ==(const BTDevice &cSource) const
+		[[nodiscard]] bool operator ==(const BTDevice &cSource) const
 		{
 			return (m_sName == cSource.m_sName &&
 					memcmp(m_nAddress,	cSource.m_nAddress, 6) == 0 &&
@@ -4866,7 +4866,7 @@ namespace DeviceInput
 		*  @return
 		*    Device name
 		*/
-		inline const std::string& GetName() const
+		[[nodiscard]] inline const std::string& GetName() const
 		{
 			return m_sName;
 		}
@@ -4881,7 +4881,7 @@ namespace DeviceInput
 		*  @return
 		*    Address
 		*/
-		inline uint8_t GetAddress(int8_t nIndex) const
+		[[nodiscard]] inline uint8_t GetAddress(int8_t nIndex) const
 		{
 			return (nIndex >= 0 && nIndex < 6) ? m_nAddress[nIndex] : 0u;
 		}
@@ -4896,7 +4896,7 @@ namespace DeviceInput
 		*  @return
 		*    Class
 		*/
-		inline uint8_t GetClass(int8_t nIndex) const
+		[[nodiscard]] inline uint8_t GetClass(int8_t nIndex) const
 		{
 			return (nIndex >= 0 && nIndex < 3) ? m_nClass[nIndex] : 0u;
 		}
@@ -5202,7 +5202,7 @@ namespace DeviceInput
 			*  @param[in] nJoystickID
 			*    Joystick ID
 			*/
-			LegacyJoystickDevice(uint32_t nJoystickID) :
+			explicit LegacyJoystickDevice(uint32_t nJoystickID) :
 				m_nJoystickID (nJoystickID),
 				m_nFallbackPOV(0)
 			{
@@ -5484,7 +5484,7 @@ namespace DeviceInput
 			*  @return
 			*    'true', if both are equal, else 'false'
 			*/
-			bool operator ==(const RawInputDevice &cSource)
+			[[nodiscard]] bool operator ==(const RawInputDevice &cSource)
 			{
 				return (m_sName		== cSource.m_sName &&
 						m_nType		== cSource.m_nType &&
@@ -5500,7 +5500,7 @@ namespace DeviceInput
 			*  @return
 			*    Device name
 			*/
-			inline const std::string& GetName() const
+			[[nodiscard]] inline const std::string& GetName() const
 			{
 				return m_sName;
 			}
@@ -5512,7 +5512,7 @@ namespace DeviceInput
 			*  @return
 			*    Device type
 			*/
-			inline DWORD GetType() const
+			[[nodiscard]] inline DWORD GetType() const
 			{
 				return m_nType;
 			}
@@ -5524,7 +5524,7 @@ namespace DeviceInput
 			*  @return
 			*    Device handle
 			*/
-			inline HANDLE GetHandle() const
+			[[nodiscard]] inline HANDLE GetHandle() const
 			{
 				return m_hDevice;
 			}
@@ -5536,7 +5536,7 @@ namespace DeviceInput
 			*  @return
 			*    Device info
 			*/
-			inline RID_DEVICE_INFO GetDeviceInfo() const
+			[[nodiscard]] inline RID_DEVICE_INFO GetDeviceInfo() const
 			{
 				return m_sDeviceInfo;
 			}
@@ -5548,7 +5548,7 @@ namespace DeviceInput
 			*  @return
 			*    'true', if it is a virtual device, else 'false'
 			*/
-			inline bool IsVirtual() const
+			[[nodiscard]] inline bool IsVirtual() const
 			{
 				return m_bVirtual;
 			}
@@ -5751,7 +5751,7 @@ namespace DeviceInput
 			*  @return
 			*    Corresponding key, a null pointer if key code is invalid
 			*/
-			Button *GetKeyboardKey(Keyboard *pKeyboard, unsigned short nKey)
+			[[nodiscard]] Button *GetKeyboardKey(Keyboard *pKeyboard, unsigned short nKey)
 			{
 				// Return key that corresponds to the given key code
 				switch (nKey) {
@@ -6031,7 +6031,7 @@ namespace DeviceInput
 			*    The virtual mouse device named "Mouse" catches all events from all mouse devices.
 			*    All other devices represent real devices and have names given from Windows.
 			*/
-			inline const std::vector<RawInputDevice*> &GetDevices() const
+			[[nodiscard]] inline const std::vector<RawInputDevice*> &GetDevices() const
 			{
 				return m_lstDevices;
 			}
@@ -6120,7 +6120,7 @@ namespace DeviceInput
 			*  @return
 			*    Error code, 0 = success
 			*/
-			LRESULT ProcessRawInput(HWND, UINT, WPARAM, LPARAM lParam)
+			[[nodiscard]] LRESULT ProcessRawInput(HWND, UINT, WPARAM, LPARAM lParam)
 			{
 				// Create buffer
 				UINT nSize;
@@ -6229,7 +6229,7 @@ namespace DeviceInput
 			*  @return
 			*    Error code, 0 = success
 			*/
-			static LRESULT WINAPI WndProc(HWND hWnd, UINT nMsg, WPARAM wParam, LPARAM lParam)
+			[[nodiscard]] static LRESULT WINAPI WndProc(HWND hWnd, UINT nMsg, WPARAM wParam, LPARAM lParam)
 			{
 				// Catch Raw-Input messages
 				if (nMsg == WM_INPUT) {
@@ -6561,7 +6561,7 @@ namespace DeviceInput
 				return false;
 			}
 
-			inline virtual bool IsOpen() const override
+			[[nodiscard]] inline virtual bool IsOpen() const override
 			{
 				return (m_hDevice != INVALID_HANDLE_VALUE);
 			}
@@ -6616,7 +6616,7 @@ namespace DeviceInput
 		//[ Private static functions                              ]
 		//[-------------------------------------------------------]
 		private:
-			static void CALLBACK OnReadComplete(DWORD, DWORD, LPOVERLAPPED lpOverlapped) noexcept
+			[[nodiscard]] static void CALLBACK OnReadComplete(DWORD, DWORD, LPOVERLAPPED lpOverlapped) noexcept
 			{
 				// Get object
 				HIDDeviceWindows *pThis = reinterpret_cast<ExtendedOverlapped*>(lpOverlapped)->pDevice;
@@ -6627,7 +6627,7 @@ namespace DeviceInput
 				}
 			}
 
-			static inline void CALLBACK OnWriteComplete(DWORD, DWORD, LPOVERLAPPED) noexcept
+			[[nodiscard]] static inline void CALLBACK OnWriteComplete(DWORD, DWORD, LPOVERLAPPED) noexcept
 			{
 				// Nothing here
 			}
@@ -7034,7 +7034,7 @@ namespace DeviceInput
 		*  @brief
 		*    Returns the sign of the given value
 		*/
-		inline float sign(float x)
+		[[nodiscard]] inline float sign(float x)
 		{
 			return (x < 0.0f) ? -1.0f : 1.0f;
 		}
@@ -7170,7 +7170,7 @@ namespace DeviceInput
 			*  @return
 			*    Corresponding key, a null pointer if Android key code is invalid
 			*/
-			Button *GetKeyboardKey(Keyboard &cKeyboard, int32_t nKeyCode)
+			[[nodiscard]] Button *GetKeyboardKey(Keyboard &cKeyboard, int32_t nKeyCode)
 			{
 				// Return key that corresponds to the given Android key code
 				switch (nKeyCode) {
@@ -7298,7 +7298,7 @@ namespace DeviceInput
 				public:
 					int32_t nKeyCode;
 					bool    bPressed;
-					bool operator ==(const KeyInfo &cSource) { return false; }
+					[[nodiscard]] bool operator ==(const KeyInfo &cSource) { return false; }
 			};
 			std::vector<KeyInfo> m_lstDelayedKeys;
 
@@ -8553,7 +8553,7 @@ namespace DeviceInput
 			*  @return
 			*    Corresponding key, a null pointer if key code is invalid
 			*/
-			Button *GetKeyboardKey(Keyboard *pKeyboard, KeySym nKeySym)
+			[[nodiscard]] Button *GetKeyboardKey(Keyboard *pKeyboard, KeySym nKeySym)
 			{
 				// Return key that corresponds to the given key code
 				switch (nKeySym) {
@@ -8720,7 +8720,7 @@ namespace DeviceInput
 			*  @return
 			*    Bus type
 			*/
-			inline uint16_t GetBusType() const
+			[[nodiscard]] inline uint16_t GetBusType() const
 			{
 				return m_nBusType;
 			}
@@ -8732,7 +8732,7 @@ namespace DeviceInput
 			*  @return
 			*    Vendor ID
 			*/
-			inline uint16_t GetVendorID() const
+			[[nodiscard]] inline uint16_t GetVendorID() const
 			{
 				return m_nVendor;
 			}
@@ -8744,7 +8744,7 @@ namespace DeviceInput
 			*  @return
 			*    Product ID
 			*/
-			inline uint16_t GetProductID() const
+			[[nodiscard]] inline uint16_t GetProductID() const
 			{
 				return m_nProduct;
 			}
@@ -8756,7 +8756,7 @@ namespace DeviceInput
 			*  @return
 			*    Version
 			*/
-			inline uint16_t GetVersion() const
+			[[nodiscard]] inline uint16_t GetVersion() const
 			{
 				return m_nVersion;
 			}
@@ -9019,7 +9019,7 @@ namespace DeviceInput
 				return false;
 			}
 
-			virtual bool IsOpen() const override
+			[[nodiscard]] virtual bool IsOpen() const override
 			{
 				// TODO(co)
 				return false;

@@ -108,28 +108,28 @@ namespace RendererToolkit
 		*/
 		virtual ~ProjectImpl() override;
 
-		inline const Context& getContext() const
+		[[nodiscard]] inline const Context& getContext() const
 		{
 			return mContext;
 		}
 
-		inline const std::string& getProjectName() const
+		[[nodiscard]] inline const std::string& getProjectName() const
 		{
 			return mProjectName;
 		}
 
-		inline const std::string& getAbsoluteProjectDirectory() const	// Has no "/" at the end
+		[[nodiscard]] inline const std::string& getAbsoluteProjectDirectory() const	// Has no "/" at the end
 		{
 			return mAbsoluteProjectDirectory;
 		}
 
-		inline const RendererRuntime::AssetPackage& getAssetPackage() const
+		[[nodiscard]] inline const RendererRuntime::AssetPackage& getAssetPackage() const
 		{
 			return mAssetPackage;
 		}
 
-		RendererRuntime::VirtualFilename tryGetVirtualFilenameByAssetId(RendererRuntime::AssetId assetId) const;
-		bool checkAssetIsChanged(const RendererRuntime::Asset& asset, const char* rendererTarget);
+		[[nodiscard]] RendererRuntime::VirtualFilename tryGetVirtualFilenameByAssetId(RendererRuntime::AssetId assetId) const;
+		[[nodiscard]] bool checkAssetIsChanged(const RendererRuntime::Asset& asset, const char* rendererTarget);
 		void compileAsset(const RendererRuntime::Asset& asset, const char* rendererTarget, RendererRuntime::AssetPackage& outputAssetPackage);
 		void compileAssetIncludingDependencies(const RendererRuntime::Asset& asset, const char* rendererTarget, RendererRuntime::AssetPackage& outputAssetPackage) noexcept;
 
@@ -170,7 +170,7 @@ namespace RendererToolkit
 		void clear();
 		void readAssetPackageByDirectory(const std::string& directoryName);	// Directory name has no "/" at the end
 		void readTargetsByFilename(const std::string& relativeFilename);
-		std::string getRenderTargetDataRootDirectory(const char* rendererTarget) const;	// Directory name has no "/" at the end
+		[[nodiscard]] std::string getRenderTargetDataRootDirectory(const char* rendererTarget) const;	// Directory name has no "/" at the end
 		void buildSourceAssetIdToCompiledAssetId();
 		void threadWorker();
 

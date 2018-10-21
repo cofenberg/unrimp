@@ -50,7 +50,7 @@ PRAGMA_WARNING_POP
 	//[-------------------------------------------------------]
 	//[ Global Microsoft Windows callback function            ]
 	//[-------------------------------------------------------]
-	LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+	[[nodiscard]] LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		// Get pointer to the swap chain implementation
 		Renderer::ISwapChain* swapChain = (NULL_HANDLE != hWnd) ? reinterpret_cast<Renderer::ISwapChain*>(GetWindowLongPtr(hWnd, GWLP_USERDATA)) : nullptr;

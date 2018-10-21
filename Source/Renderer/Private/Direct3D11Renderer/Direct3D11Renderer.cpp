@@ -2001,7 +2001,7 @@ namespace
 		}
 
 		// From https://stackoverflow.com/a/36545162
-		RTL_OSVERSIONINFOW getRealOSVersion()
+		[[nodiscard]] RTL_OSVERSIONINFOW getRealOSVersion()
 		{
 			const HMODULE hModule = ::GetModuleHandleW(L"ntdll.dll");
 			if (hModule)
@@ -2027,7 +2027,7 @@ namespace
 		// "IsWindows10OrGreater()" isn't practically usable
 		// - See "Windows Dev Center" -> "Version Helper functions" -> "IsWindows10OrGreater" at https://msdn.microsoft.com/en-us/library/windows/desktop/dn424972(v=vs.85).aspx
 		//   "For Windows 10, IsWindows10OrGreater returns false unless the application contains a manifest that includes a compatibility section that contains the GUID that designates Windows 10."
-		inline bool isWindows10OrGreater()
+		[[nodiscard]] inline bool isWindows10OrGreater()
 		{
 			return (getRealOSVersion().dwMajorVersion >= 10);
 		}
@@ -2097,7 +2097,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The Direct3D 11 device, null pointer on error, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11Device* getD3D11Device() const
+		[[nodiscard]] inline ID3D11Device* getD3D11Device() const
 		{
 			return mD3D11Device;
 		}
@@ -2109,7 +2109,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The Direct3D 11 device context instance, null pointer on error, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11DeviceContext* getD3D11DeviceContext() const
+		[[nodiscard]] inline ID3D11DeviceContext* getD3D11DeviceContext() const
 		{
 			return mD3D11DeviceContext;
 		}
@@ -2121,7 +2121,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The Direct3D feature level
 		*/
-		inline D3D_FEATURE_LEVEL getD3DFeatureLevel() const
+		[[nodiscard]] inline D3D_FEATURE_LEVEL getD3DFeatureLevel() const
 		{
 			return mD3DFeatureLevel;
 		}
@@ -2133,7 +2133,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    Render target currently bound to the output-merger state, a null pointer on error, do not release the returned instance unless you added an own reference to it
 		*/
-		inline Renderer::IRenderTarget* omGetRenderTarget() const
+		[[nodiscard]] inline Renderer::IRenderTarget* omGetRenderTarget() const
 		{
 			return mRenderTarget;
 		}
@@ -2184,45 +2184,45 @@ namespace Direct3D11Renderer
 	//[ Public virtual Renderer::IRenderer methods            ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getName() const override
+		[[nodiscard]] inline virtual const char* getName() const override
 		{
 			return "Direct3D11";
 		}
 
-		inline virtual bool isInitialized() const override
+		[[nodiscard]] inline virtual bool isInitialized() const override
 		{
 			// Is there a Direct3D 11 device?
 			return (nullptr != mD3D11Device);
 		}
 
-		virtual bool isDebugEnabled() override;
+		[[nodiscard]] virtual bool isDebugEnabled() override;
 		//[-------------------------------------------------------]
 		//[ Shader language                                       ]
 		//[-------------------------------------------------------]
-		virtual uint32_t getNumberOfShaderLanguages() const override;
-		virtual const char* getShaderLanguageName(uint32_t index) const override;
-		virtual Renderer::IShaderLanguage* getShaderLanguage(const char* shaderLanguageName = nullptr) override;
+		[[nodiscard]] virtual uint32_t getNumberOfShaderLanguages() const override;
+		[[nodiscard]] virtual const char* getShaderLanguageName(uint32_t index) const override;
+		[[nodiscard]] virtual Renderer::IShaderLanguage* getShaderLanguage(const char* shaderLanguageName = nullptr) override;
 		//[-------------------------------------------------------]
 		//[ Resource creation                                     ]
 		//[-------------------------------------------------------]
-		virtual Renderer::IRenderPass* createRenderPass(uint32_t numberOfColorAttachments, const Renderer::TextureFormat::Enum* colorAttachmentTextureFormats, Renderer::TextureFormat::Enum depthStencilAttachmentTextureFormat = Renderer::TextureFormat::UNKNOWN, uint8_t numberOfMultisamples = 1) override;
-		virtual Renderer::ISwapChain* createSwapChain(Renderer::IRenderPass& renderPass, Renderer::WindowHandle windowHandle, bool useExternalContext = false) override;
-		virtual Renderer::IFramebuffer* createFramebuffer(Renderer::IRenderPass& renderPass, const Renderer::FramebufferAttachment* colorFramebufferAttachments, const Renderer::FramebufferAttachment* depthStencilFramebufferAttachment = nullptr) override;
-		virtual Renderer::IBufferManager* createBufferManager() override;
-		virtual Renderer::ITextureManager* createTextureManager() override;
-		virtual Renderer::IRootSignature* createRootSignature(const Renderer::RootSignature& rootSignature) override;
-		virtual Renderer::IGraphicsPipelineState* createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState) override;
-		virtual Renderer::IComputePipelineState* createComputePipelineState(Renderer::IRootSignature& rootSignature, Renderer::IComputeShader& computeShader) override;
-		virtual Renderer::ISamplerState* createSamplerState(const Renderer::SamplerState& samplerState) override;
+		[[nodiscard]] virtual Renderer::IRenderPass* createRenderPass(uint32_t numberOfColorAttachments, const Renderer::TextureFormat::Enum* colorAttachmentTextureFormats, Renderer::TextureFormat::Enum depthStencilAttachmentTextureFormat = Renderer::TextureFormat::UNKNOWN, uint8_t numberOfMultisamples = 1) override;
+		[[nodiscard]] virtual Renderer::ISwapChain* createSwapChain(Renderer::IRenderPass& renderPass, Renderer::WindowHandle windowHandle, bool useExternalContext = false) override;
+		[[nodiscard]] virtual Renderer::IFramebuffer* createFramebuffer(Renderer::IRenderPass& renderPass, const Renderer::FramebufferAttachment* colorFramebufferAttachments, const Renderer::FramebufferAttachment* depthStencilFramebufferAttachment = nullptr) override;
+		[[nodiscard]] virtual Renderer::IBufferManager* createBufferManager() override;
+		[[nodiscard]] virtual Renderer::ITextureManager* createTextureManager() override;
+		[[nodiscard]] virtual Renderer::IRootSignature* createRootSignature(const Renderer::RootSignature& rootSignature) override;
+		[[nodiscard]] virtual Renderer::IGraphicsPipelineState* createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState) override;
+		[[nodiscard]] virtual Renderer::IComputePipelineState* createComputePipelineState(Renderer::IRootSignature& rootSignature, Renderer::IComputeShader& computeShader) override;
+		[[nodiscard]] virtual Renderer::ISamplerState* createSamplerState(const Renderer::SamplerState& samplerState) override;
 		//[-------------------------------------------------------]
 		//[ Resource handling                                     ]
 		//[-------------------------------------------------------]
-		virtual bool map(Renderer::IResource& resource, uint32_t subresource, Renderer::MapType mapType, uint32_t mapFlags, Renderer::MappedSubresource& mappedSubresource) override;
+		[[nodiscard]] virtual bool map(Renderer::IResource& resource, uint32_t subresource, Renderer::MapType mapType, uint32_t mapFlags, Renderer::MappedSubresource& mappedSubresource) override;
 		virtual void unmap(Renderer::IResource& resource, uint32_t subresource) override;
 		//[-------------------------------------------------------]
 		//[ Operations                                            ]
 		//[-------------------------------------------------------]
-		virtual bool beginScene() override;
+		[[nodiscard]] virtual bool beginScene() override;
 		virtual void submitCommandBuffer(const Renderer::CommandBuffer& commandBuffer) override;
 		virtual void endScene() override;
 		//[-------------------------------------------------------]
@@ -2234,12 +2234,12 @@ namespace Direct3D11Renderer
 		//[-------------------------------------------------------]
 		//[ Backend specific                                      ]
 		//[-------------------------------------------------------]
-		inline virtual void* getD3D11DevicePointer() const override
+		[[nodiscard]] inline virtual void* getD3D11DevicePointer() const override
 		{
 			return mD3D11Device;
 		}
 
-		inline virtual void* getD3D11ImmediateContextPointer() const override
+		[[nodiscard]] inline virtual void* getD3D11ImmediateContextPointer() const override
 		{
 			return mD3D11DeviceContext;
 		}
@@ -2456,7 +2456,7 @@ namespace Direct3D11Renderer
 		#endif
 	#endif
 	Renderer::IAllocator* g_AmdAgsAllocator = nullptr;	///< Evil global variable since AMD AGS doesn't allow to pass in user data to the allocator functions
-	void* __stdcall AmdAgsAllocCallback(size_t allocationSize)
+	[[nodiscard]] void* __stdcall AmdAgsAllocCallback(size_t allocationSize)
 	{
 		return g_AmdAgsAllocator->reallocate(nullptr, 0, allocationSize, 1);
 	}
@@ -2574,7 +2574,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    "true" if Direct3D 11 is available, else "false"
 		*/
-		bool isDirect3D11Avaiable()
+		[[nodiscard]] bool isDirect3D11Avaiable()
 		{
 			// Already initialized?
 			if (!mInitialized)
@@ -2708,7 +2708,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The AMD AGS instance, can be a null pointer, don't destroy the returned instance
 		*/
-		inline AGSContext* getAgsContext() const
+		[[nodiscard]] inline AGSContext* getAgsContext() const
 		{
 			return mAgsContext;
 		}
@@ -2728,7 +2728,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    "true" if all went fine, else "false"
 		*/
-		bool loadSharedLibraries()
+		[[nodiscard]] bool loadSharedLibraries()
 		{
 			// Load the shared library
 			mDxgiSharedLibrary = ::LoadLibraryExA("dxgi.dll", nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
@@ -2772,7 +2772,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    "true" if all went fine, else "false"
 		*/
-		bool loadDxgiEntryPoints()
+		[[nodiscard]] bool loadDxgiEntryPoints()
 		{
 			bool result = true;	// Success by default
 
@@ -2812,7 +2812,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    "true" if all went fine, else "false"
 		*/
-		bool loadD3D11EntryPoints()
+		[[nodiscard]] bool loadD3D11EntryPoints()
 		{
 			bool result = true;	// Success by default
 
@@ -2852,7 +2852,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    "true" if all went fine, else "false"
 		*/
-		bool loadD3DX11EntryPoints()
+		[[nodiscard]] bool loadD3DX11EntryPoints()
 		{
 			bool result = true;	// Success by default
 
@@ -2892,7 +2892,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    "true" if all went fine, else "false"
 		*/
-		bool loadD3DCompilerEntryPoints()
+		[[nodiscard]] bool loadD3DCompilerEntryPoints()
 		{
 			bool result = true;	// Success by default
 
@@ -2934,7 +2934,7 @@ namespace Direct3D11Renderer
 			*  @return
 			*    "true" if all went fine, else "false"
 			*/
-			bool loadAmdAgsEntryPoints()
+			[[nodiscard]] bool loadAmdAgsEntryPoints()
 			{
 				bool result = true;	// Success by default
 
@@ -2995,7 +2995,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    "true" if all went fine, else "false"
 		*/
-		bool loadNvAPIEntryPoints()
+		[[nodiscard]] bool loadNvAPIEntryPoints()
 		{
 			bool result = true;	// Success by default
 
@@ -3145,7 +3145,7 @@ namespace Direct3D11Renderer
 	*  @return
 	*    The loaded and compiled shader, can be a null pointer, release the instance if you no longer need it
 	*/
-	ID3DBlob* loadShaderFromSourcecode(const Renderer::Context& context, const char* shaderModel, const char* sourceCode, const char* entryPoint, Renderer::IShaderLanguage::OptimizationLevel optimizationLevel)
+	[[nodiscard]] ID3DBlob* loadShaderFromSourcecode(const Renderer::Context& context, const char* shaderModel, const char* sourceCode, const char* entryPoint, Renderer::IShaderLanguage::OptimizationLevel optimizationLevel)
 	{
 		// Sanity checks
 		RENDERER_ASSERT(context, nullptr != shaderModel, "Invalid Direct3D 11 shader model")
@@ -3255,7 +3255,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    Direct3D 11 format
 		*/
-		static DXGI_FORMAT getDirect3D11Format(Renderer::VertexAttributeFormat vertexAttributeFormat)
+		[[nodiscard]] static DXGI_FORMAT getDirect3D11Format(Renderer::VertexAttributeFormat vertexAttributeFormat)
 		{
 			static constexpr DXGI_FORMAT MAPPING[] =
 			{
@@ -3287,7 +3287,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    Direct3D 11 usage
 		*/
-		static D3D11_USAGE getDirect3D11UsageAndCPUAccessFlags(Renderer::BufferUsage bufferUsage, uint32_t& cpuAccessFlags)
+		[[nodiscard]] static D3D11_USAGE getDirect3D11UsageAndCPUAccessFlags(Renderer::BufferUsage bufferUsage, uint32_t& cpuAccessFlags)
 		{
 			// Direct3D 11 only supports a subset of the OpenGL usage indications
 			// -> See "D3D11_USAGE enumeration "-documentation at http://msdn.microsoft.com/en-us/library/windows/desktop/ff476259%28v=vs.85%29.aspx
@@ -3330,7 +3330,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    Direct3D 11 format
 		*/
-		static DXGI_FORMAT getDirect3D11Format(Renderer::IndexBufferFormat::Enum indexBufferFormat)
+		[[nodiscard]] static DXGI_FORMAT getDirect3D11Format(Renderer::IndexBufferFormat::Enum indexBufferFormat)
 		{
 			static constexpr DXGI_FORMAT MAPPING[] =
 			{
@@ -3361,7 +3361,7 @@ namespace Direct3D11Renderer
 		*    - Direct3D 11 shader resource view format is "DXGI_FORMAT_R32_FLOAT"
 		*    - Direct3D 11 depth stencil view format is "DXGI_FORMAT_D32_FLOAT"
 		*/
-		static DXGI_FORMAT getDirect3D11Format(Renderer::TextureFormat::Enum textureFormat)
+		[[nodiscard]] static DXGI_FORMAT getDirect3D11Format(Renderer::TextureFormat::Enum textureFormat)
 		{
 			static constexpr DXGI_FORMAT MAPPING[] =
 			{
@@ -3426,7 +3426,7 @@ namespace Direct3D11Renderer
 			return MAPPING[textureFormat];
 		}
 
-		static DXGI_FORMAT getDirect3D11ShaderResourceViewFormat(Renderer::TextureFormat::Enum textureFormat)
+		[[nodiscard]] static DXGI_FORMAT getDirect3D11ShaderResourceViewFormat(Renderer::TextureFormat::Enum textureFormat)
 		{
 			// Only "Renderer::TextureFormat::D32_FLOAT" has to be handled in a different way
 			static constexpr DXGI_FORMAT MAPPING[] =
@@ -3558,7 +3558,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The number of resources this resource group groups together
 		*/
-		inline uint32_t getNumberOfResources() const
+		[[nodiscard]] inline uint32_t getNumberOfResources() const
 		{
 			return mNumberOfResources;
 		}
@@ -3570,7 +3570,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The renderer resources, don't release or destroy the returned pointer
 		*/
-		inline Renderer::IResource** getResources() const
+		[[nodiscard]] inline Renderer::IResource** getResources() const
 		{
 			return mResources;
 		}
@@ -3701,7 +3701,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The root signature data
 		*/
-		inline const Renderer::RootSignature& getRootSignature() const
+		[[nodiscard]] inline const Renderer::RootSignature& getRootSignature() const
 		{
 			return mRootSignature;
 		}
@@ -3711,7 +3711,7 @@ namespace Direct3D11Renderer
 	//[ Public virtual Renderer::IRootSignature methods       ]
 	//[-------------------------------------------------------]
 	public:
-		virtual Renderer::IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, Renderer::IResource** resources, Renderer::ISamplerState** samplerStates = nullptr) override
+		[[nodiscard]] virtual Renderer::IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, Renderer::IResource** resources, Renderer::ISamplerState** samplerStates = nullptr) override
 		{
 			// Sanity checks
 			RENDERER_ASSERT(getRenderer().getContext(), rootParameterIndex < mRootSignature.numberOfParameters, "The Direct3D 11 root parameter index is out-of-bounds")
@@ -3904,7 +3904,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The Direct3D index buffer instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11Buffer* getD3D11Buffer() const
+		[[nodiscard]] inline ID3D11Buffer* getD3D11Buffer() const
 		{
 			return mD3D11Buffer;
 		}
@@ -3916,7 +3916,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The DXGI index buffer data format
 		*/
-		inline DXGI_FORMAT getDXGIFormat() const
+		[[nodiscard]] inline DXGI_FORMAT getDXGIFormat() const
 		{
 			return mDXGIFormat;
 		}
@@ -3928,7 +3928,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The Direct3D shader resource view instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
+		[[nodiscard]] inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
 		{
 			return mD3D11ShaderResourceView;
 		}
@@ -3944,7 +3944,7 @@ namespace Direct3D11Renderer
 		*    - It's not recommended to manipulate the returned Direct3D 11 resource
 		*      view by e.g. assigning another Direct3D 11 resource to it
 		*/
-		inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
+		[[nodiscard]] inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
 		{
 			return mD3D11UnorderedAccessView;
 		}
@@ -4157,7 +4157,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The Direct3D vertex buffer instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11Buffer* getD3D11Buffer() const
+		[[nodiscard]] inline ID3D11Buffer* getD3D11Buffer() const
 		{
 			return mD3D11Buffer;
 		}
@@ -4169,7 +4169,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The Direct3D shader resource view instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
+		[[nodiscard]] inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
 		{
 			return mD3D11ShaderResourceView;
 		}
@@ -4185,7 +4185,7 @@ namespace Direct3D11Renderer
 		*    - It's not recommended to manipulate the returned Direct3D 11 resource
 		*      view by e.g. assigning another Direct3D 11 resource to it
 		*/
-		inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
+		[[nodiscard]] inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
 		{
 			return mD3D11UnorderedAccessView;
 		}
@@ -4596,7 +4596,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The Direct3D texture buffer instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11Buffer* getD3D11Buffer() const
+		[[nodiscard]] inline ID3D11Buffer* getD3D11Buffer() const
 		{
 			return mD3D11Buffer;
 		}
@@ -4608,7 +4608,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The Direct3D shader resource view instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
+		[[nodiscard]] inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
 		{
 			return mD3D11ShaderResourceView;
 		}
@@ -4624,7 +4624,7 @@ namespace Direct3D11Renderer
 		*    - It's not recommended to manipulate the returned Direct3D 11 resource
 		*      view by e.g. assigning another Direct3D 11 resource to it
 		*/
-		inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
+		[[nodiscard]] inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
 		{
 			return mD3D11UnorderedAccessView;
 		}
@@ -4839,7 +4839,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The Direct3D structured buffer instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11Buffer* getD3D11Buffer() const
+		[[nodiscard]] inline ID3D11Buffer* getD3D11Buffer() const
 		{
 			return mD3D11Buffer;
 		}
@@ -4851,7 +4851,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The Direct3D shader resource view instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
+		[[nodiscard]] inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
 		{
 			return mD3D11ShaderResourceView;
 		}
@@ -4867,7 +4867,7 @@ namespace Direct3D11Renderer
 		*    - It's not recommended to manipulate the returned Direct3D 11 resource
 		*      view by e.g. assigning another Direct3D 11 resource to it
 		*/
-		inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
+		[[nodiscard]] inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
 		{
 			return mD3D11UnorderedAccessView;
 		}
@@ -5120,12 +5120,12 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The Direct3D indirect buffer instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11Buffer* getD3D11Buffer() const
+		[[nodiscard]] inline ID3D11Buffer* getD3D11Buffer() const
 		{
 			return mD3D11Buffer;
 		}
 
-		inline ID3D11Buffer* getStagingD3D11Buffer() const
+		[[nodiscard]] inline ID3D11Buffer* getStagingD3D11Buffer() const
 		{
 			return mStagingD3D11Buffer;
 		}
@@ -5137,7 +5137,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The Direct3D shader resource view instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
+		[[nodiscard]] inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
 		{
 			return mD3D11ShaderResourceView;
 		}
@@ -5153,7 +5153,7 @@ namespace Direct3D11Renderer
 		*    - It's not recommended to manipulate the returned Direct3D 11 resource
 		*      view by e.g. assigning another Direct3D 11 resource to it
 		*/
-		inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
+		[[nodiscard]] inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
 		{
 			return mD3D11UnorderedAccessView;
 		}
@@ -5208,7 +5208,7 @@ namespace Direct3D11Renderer
 	//[ Public virtual Renderer::IIndirectBuffer methods      ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const uint8_t* getEmulationData() const override
+		[[nodiscard]] inline virtual const uint8_t* getEmulationData() const override
 		{
 			return nullptr;
 		}
@@ -5334,7 +5334,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The Direct3D 11 constant buffer instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11Buffer* getD3D11Buffer() const
+		[[nodiscard]] inline ID3D11Buffer* getD3D11Buffer() const
 		{
 			return mD3D11Buffer;
 		}
@@ -5427,38 +5427,38 @@ namespace Direct3D11Renderer
 	//[ Public virtual Renderer::IBufferManager methods       ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		[[nodiscard]] inline virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), VertexBuffer)(static_cast<Direct3D11Renderer&>(getRenderer()), numberOfBytes, data, bufferFlags, bufferUsage);
 		}
 
-		inline virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::Enum indexBufferFormat = Renderer::IndexBufferFormat::UNSIGNED_SHORT) override
+		[[nodiscard]] inline virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::Enum indexBufferFormat = Renderer::IndexBufferFormat::UNSIGNED_SHORT) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), IndexBuffer)(static_cast<Direct3D11Renderer&>(getRenderer()), numberOfBytes, data, bufferFlags, bufferUsage, indexBufferFormat);
 		}
 
-		inline virtual Renderer::IVertexArray* createVertexArray(const Renderer::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Renderer::VertexArrayVertexBuffer* vertexBuffers, Renderer::IIndexBuffer* indexBuffer = nullptr) override
+		[[nodiscard]] inline virtual Renderer::IVertexArray* createVertexArray(const Renderer::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Renderer::VertexArrayVertexBuffer* vertexBuffers, Renderer::IIndexBuffer* indexBuffer = nullptr) override
 		{
 			// TODO(co) Add security check: Is the given resource one of the currently used renderer?
 			return RENDERER_NEW(getRenderer().getContext(), VertexArray)(static_cast<Direct3D11Renderer&>(getRenderer()), vertexAttributes, numberOfVertexBuffers, vertexBuffers, static_cast<IndexBuffer*>(indexBuffer));
 		}
 
-		inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F) override
+		[[nodiscard]] inline virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), TextureBuffer)(static_cast<Direct3D11Renderer&>(getRenderer()), numberOfBytes, data, bufferFlags, bufferUsage, textureFormat);
 		}
 
-		inline virtual Renderer::IStructuredBuffer* createStructuredBuffer(uint32_t numberOfBytes, const void* data, uint32_t bufferFlags, Renderer::BufferUsage bufferUsage, uint32_t numberOfStructureBytes) override
+		[[nodiscard]] inline virtual Renderer::IStructuredBuffer* createStructuredBuffer(uint32_t numberOfBytes, const void* data, uint32_t bufferFlags, Renderer::BufferUsage bufferUsage, uint32_t numberOfStructureBytes) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), StructuredBuffer)(static_cast<Direct3D11Renderer&>(getRenderer()), numberOfBytes, data, bufferFlags, bufferUsage, numberOfStructureBytes);
 		}
 
-		inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		[[nodiscard]] inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<Direct3D11Renderer&>(getRenderer()), numberOfBytes, data, indirectBufferFlags, bufferUsage);
 		}
 
-		inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		[[nodiscard]] inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			// Don't remove this reminder comment block: There are no buffer flags by intent since an uniform buffer can't be used for unordered access and as a consequence an uniform buffer must always used as shader resource to not be pointless
 			// -> "Bind a buffer as a constant buffer to a shader stage; this flag may NOT be combined with any other bind flag." - https://docs.microsoft.com/en-us/windows/desktop/api/d3d11/ne-d3d11-d3d11_bind_flag
@@ -5704,7 +5704,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The texture format
 		*/
-		inline Renderer::TextureFormat::Enum getTextureFormat() const
+		[[nodiscard]] inline Renderer::TextureFormat::Enum getTextureFormat() const
 		{
 			return mTextureFormat;
 		}
@@ -5716,7 +5716,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The Direct3D texture 1D resource instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11Texture1D* getD3D11Texture1D() const
+		[[nodiscard]] inline ID3D11Texture1D* getD3D11Texture1D() const
 		{
 			return mD3D11Texture1D;
 		}
@@ -5732,7 +5732,7 @@ namespace Direct3D11Renderer
 		*    - It's not recommended to manipulate the returned Direct3D 11 resource
 		*      view by e.g. assigning another Direct3D 11 resource to it
 		*/
-		inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
+		[[nodiscard]] inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
 		{
 			return mD3D11ShaderResourceView;
 		}
@@ -5748,7 +5748,7 @@ namespace Direct3D11Renderer
 		*    - It's not recommended to manipulate the returned Direct3D 11 resource
 		*      view by e.g. assigning another Direct3D 11 resource to it
 		*/
-		inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
+		[[nodiscard]] inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
 		{
 			return mD3D11UnorderedAccessView;
 		}
@@ -5781,7 +5781,7 @@ namespace Direct3D11Renderer
 			}
 		#endif
 
-		inline virtual void* getInternalResourceHandle() const override
+		[[nodiscard]] inline virtual void* getInternalResourceHandle() const override
 		{
 			return mD3D11Texture1D;
 		}
@@ -6045,7 +6045,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The texture format
 		*/
-		inline Renderer::TextureFormat::Enum getTextureFormat() const
+		[[nodiscard]] inline Renderer::TextureFormat::Enum getTextureFormat() const
 		{
 			return mTextureFormat;
 		}
@@ -6057,7 +6057,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The number of multisamples per pixel (valid values: 1, 2, 4, 8)
 		*/
-		inline uint8_t getNumberOfMultisamples() const
+		[[nodiscard]] inline uint8_t getNumberOfMultisamples() const
 		{
 			return mNumberOfMultisamples;
 		}
@@ -6069,7 +6069,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The Direct3D texture 2D resource instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11Texture2D* getD3D11Texture2D() const
+		[[nodiscard]] inline ID3D11Texture2D* getD3D11Texture2D() const
 		{
 			return mD3D11Texture2D;
 		}
@@ -6085,7 +6085,7 @@ namespace Direct3D11Renderer
 		*    - It's not recommended to manipulate the returned Direct3D 11 resource
 		*      view by e.g. assigning another Direct3D 11 resource to it
 		*/
-		inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
+		[[nodiscard]] inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
 		{
 			return mD3D11ShaderResourceView;
 		}
@@ -6101,7 +6101,7 @@ namespace Direct3D11Renderer
 		*    - It's not recommended to manipulate the returned Direct3D 11 resource
 		*      view by e.g. assigning another Direct3D 11 resource to it
 		*/
-		inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
+		[[nodiscard]] inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
 		{
 			return mD3D11UnorderedAccessView;
 		}
@@ -6164,7 +6164,7 @@ namespace Direct3D11Renderer
 			}
 		#endif
 
-		inline virtual void* getInternalResourceHandle() const override
+		[[nodiscard]] inline virtual void* getInternalResourceHandle() const override
 		{
 			return mD3D11Texture2D;
 		}
@@ -6466,7 +6466,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The texture format
 		*/
-		inline Renderer::TextureFormat::Enum getTextureFormat() const
+		[[nodiscard]] inline Renderer::TextureFormat::Enum getTextureFormat() const
 		{
 			return mTextureFormat;
 		}
@@ -6478,7 +6478,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The number of multisamples per pixel (valid values: 1, 2, 4, 8)
 		*/
-		inline uint8_t getNumberOfMultisamples() const
+		[[nodiscard]] inline uint8_t getNumberOfMultisamples() const
 		{
 			return mNumberOfMultisamples;
 		}
@@ -6490,7 +6490,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The Direct3D texture 2D resource instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11Texture2D* getD3D11Texture2D() const
+		[[nodiscard]] inline ID3D11Texture2D* getD3D11Texture2D() const
 		{
 			return mD3D11Texture2D;
 		}
@@ -6506,7 +6506,7 @@ namespace Direct3D11Renderer
 		*    - It's not recommended to manipulate the returned Direct3D 11 resource
 		*      view by e.g. assigning another Direct3D 11 resource to it
 		*/
-		inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
+		[[nodiscard]] inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
 		{
 			return mD3D11ShaderResourceView;
 		}
@@ -6522,7 +6522,7 @@ namespace Direct3D11Renderer
 		*    - It's not recommended to manipulate the returned Direct3D 11 resource
 		*      view by e.g. assigning another Direct3D 11 resource to it
 		*/
-		inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
+		[[nodiscard]] inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
 		{
 			return mD3D11UnorderedAccessView;
 		}
@@ -6814,7 +6814,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The texture format
 		*/
-		inline Renderer::TextureFormat::Enum getTextureFormat() const
+		[[nodiscard]] inline Renderer::TextureFormat::Enum getTextureFormat() const
 		{
 			return mTextureFormat;
 		}
@@ -6826,7 +6826,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The Direct3D texture 3D resource instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11Texture3D* getD3D11Texture3D() const
+		[[nodiscard]] inline ID3D11Texture3D* getD3D11Texture3D() const
 		{
 			return mD3D11Texture3D;
 		}
@@ -6842,7 +6842,7 @@ namespace Direct3D11Renderer
 		*    - It's not recommended to manipulate the returned Direct3D 11 resource
 		*      view by e.g. assigning another Direct3D 11 resource to it
 		*/
-		inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
+		[[nodiscard]] inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
 		{
 			return mD3D11ShaderResourceView;
 		}
@@ -6858,7 +6858,7 @@ namespace Direct3D11Renderer
 		*    - It's not recommended to manipulate the returned Direct3D 11 resource
 		*      view by e.g. assigning another Direct3D 11 resource to it
 		*/
-		inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
+		[[nodiscard]] inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
 		{
 			return mD3D11UnorderedAccessView;
 		}
@@ -6891,7 +6891,7 @@ namespace Direct3D11Renderer
 			}
 		#endif
 
-		inline virtual void* getInternalResourceHandle() const override
+		[[nodiscard]] inline virtual void* getInternalResourceHandle() const override
 		{
 			return mD3D11Texture3D;
 		}
@@ -7176,7 +7176,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The texture format
 		*/
-		inline Renderer::TextureFormat::Enum getTextureFormat() const
+		[[nodiscard]] inline Renderer::TextureFormat::Enum getTextureFormat() const
 		{
 			return mTextureFormat;
 		}
@@ -7188,7 +7188,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The Direct3D texture cube resource instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11Texture2D* getD3D11TextureCube() const
+		[[nodiscard]] inline ID3D11Texture2D* getD3D11TextureCube() const
 		{
 			return mD3D11TextureCube;
 		}
@@ -7204,7 +7204,7 @@ namespace Direct3D11Renderer
 		*    - It's not recommended to manipulate the returned Direct3D 11 resource
 		*      view by e.g. assigning another Direct3D 11 resource to it
 		*/
-		inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
+		[[nodiscard]] inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
 		{
 			return mD3D11ShaderResourceView;
 		}
@@ -7220,7 +7220,7 @@ namespace Direct3D11Renderer
 		*    - It's not recommended to manipulate the returned Direct3D 11 resource
 		*      view by e.g. assigning another Direct3D 11 resource to it
 		*/
-		inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
+		[[nodiscard]] inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
 		{
 			return mD3D11UnorderedAccessView;
 		}
@@ -7253,7 +7253,7 @@ namespace Direct3D11Renderer
 			}
 		#endif
 
-		inline virtual void* getInternalResourceHandle() const override
+		[[nodiscard]] inline virtual void* getInternalResourceHandle() const override
 		{
 			return mD3D11TextureCube;
 		}
@@ -7330,7 +7330,7 @@ namespace Direct3D11Renderer
 	//[ Public virtual Renderer::ITextureManager methods      ]
 	//[-------------------------------------------------------]
 	public:
-		virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0)
@@ -7343,7 +7343,7 @@ namespace Direct3D11Renderer
 			}
 		}
 
-		virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
+		[[nodiscard]] virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0)
@@ -7356,7 +7356,7 @@ namespace Direct3D11Renderer
 			}
 		}
 
-		virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0 && numberOfSlices > 0)
@@ -7369,7 +7369,7 @@ namespace Direct3D11Renderer
 			}
 		}
 
-		virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0 && depth > 0)
@@ -7382,7 +7382,7 @@ namespace Direct3D11Renderer
 			}
 		}
 
-		virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// Check whether or not the given texture dimension is valid
 			if (width > 0 && height > 0)
@@ -7481,7 +7481,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The Direct3D 11 sampler state, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11SamplerState* getD3D11SamplerState() const
+		[[nodiscard]] inline ID3D11SamplerState* getD3D11SamplerState() const
 		{
 			return mD3D11SamplerState;
 		}
@@ -7638,7 +7638,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The Direct3D 11 rasterizer state, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11RasterizerState* getD3D11RasterizerState() const
+		[[nodiscard]] inline ID3D11RasterizerState* getD3D11RasterizerState() const
 		{
 			return mD3D11RasterizerState;
 		}
@@ -7736,7 +7736,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The Direct3D 11 depth stencil state, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11DepthStencilState* getD3D11DepthStencilState() const
+		[[nodiscard]] inline ID3D11DepthStencilState* getD3D11DepthStencilState() const
 		{
 			return mD3D11DepthStencilState;
 		}
@@ -7834,7 +7834,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The Direct3D 11 blend state, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11BlendState* getD3D11BlendState() const
+		[[nodiscard]] inline ID3D11BlendState* getD3D11BlendState() const
 		{
 			return mD3D11BlendState;
 		}
@@ -7930,7 +7930,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The number of color render target textures
 		*/
-		inline uint32_t getNumberOfColorAttachments() const
+		[[nodiscard]] inline uint32_t getNumberOfColorAttachments() const
 		{
 			return mNumberOfColorAttachments;
 		}
@@ -7942,7 +7942,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The number of render target textures (color and depth stencil)
 		*/
-		inline uint32_t getNumberOfAttachments() const
+		[[nodiscard]] inline uint32_t getNumberOfAttachments() const
 		{
 			return (mDepthStencilAttachmentTextureFormat != Renderer::TextureFormat::Enum::UNKNOWN) ? (mNumberOfColorAttachments + 1) : mNumberOfColorAttachments;
 		}
@@ -7957,7 +7957,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The color attachment texture format
 		*/
-		inline Renderer::TextureFormat::Enum getColorAttachmentTextureFormat(uint32_t colorAttachmentIndex) const
+		[[nodiscard]] inline Renderer::TextureFormat::Enum getColorAttachmentTextureFormat(uint32_t colorAttachmentIndex) const
 		{
 			RENDERER_ASSERT(getRenderer().getContext(), colorAttachmentIndex < mNumberOfColorAttachments, "Invalid Direct3D 11 color attachment index")
 			return mColorAttachmentTextureFormats[colorAttachmentIndex];
@@ -7970,7 +7970,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The depth stencil attachment texture format
 		*/
-		inline Renderer::TextureFormat::Enum getDepthStencilAttachmentTextureFormat() const
+		[[nodiscard]] inline Renderer::TextureFormat::Enum getDepthStencilAttachmentTextureFormat() const
 		{
 			return mDepthStencilAttachmentTextureFormat;
 		}
@@ -7982,7 +7982,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The number of multisamples
 		*/
-		inline uint8_t getNumberOfMultisamples() const
+		[[nodiscard]] inline uint8_t getNumberOfMultisamples() const
 		{
 			return mNumberOfMultisamples;
 		}
@@ -8256,7 +8256,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The DXGI swap chain instance, null pointer on error, do not release the returned instance unless you added an own reference to it
 		*/
-		inline IDXGISwapChain* getDxgiSwapChain() const
+		[[nodiscard]] inline IDXGISwapChain* getDxgiSwapChain() const
 		{
 			return mDxgiSwapChain;
 		}
@@ -8271,7 +8271,7 @@ namespace Direct3D11Renderer
 		*  @note
 		*    - It's highly recommended to not keep any references to the returned instance, else issues may occur when resizing the swap chain
 		*/
-		inline ID3D11RenderTargetView* getD3D11RenderTargetView() const
+		[[nodiscard]] inline ID3D11RenderTargetView* getD3D11RenderTargetView() const
 		{
 			return mD3D11RenderTargetView;
 		}
@@ -8286,7 +8286,7 @@ namespace Direct3D11Renderer
 		*  @note
 		*    - It's highly recommended to not keep any references to the returned instance, else issues may occur when resizing the swap chain
 		*/
-		inline ID3D11DepthStencilView* getD3D11DepthStencilView() const
+		[[nodiscard]] inline ID3D11DepthStencilView* getD3D11DepthStencilView() const
 		{
 			return mD3D11DepthStencilView;
 		}
@@ -8375,7 +8375,7 @@ namespace Direct3D11Renderer
 	//[ Public virtual Renderer::ISwapChain methods           ]
 	//[-------------------------------------------------------]
 	public:
-		virtual Renderer::handle getNativeWindowHandle() const override
+		[[nodiscard]] virtual Renderer::handle getNativeWindowHandle() const override
 		{
 			// Is there a valid swap chain?
 			if (nullptr != mDxgiSwapChain)
@@ -8479,7 +8479,7 @@ namespace Direct3D11Renderer
 			}
 		}
 
-		virtual bool getFullscreenState() const override
+		[[nodiscard]] virtual bool getFullscreenState() const override
 		{
 			// Window mode by default
 			BOOL fullscreen = FALSE;
@@ -8934,7 +8934,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The number of color textures
 		*/
-		inline uint32_t getNumberOfColorTextures() const
+		[[nodiscard]] inline uint32_t getNumberOfColorTextures() const
 		{
 			return mNumberOfColorTextures;
 		}
@@ -8946,7 +8946,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The color textures, can be a null pointer, do not release the returned instances unless you added an own reference to it
 		*/
-		inline Renderer::ITexture** getColorTextures() const
+		[[nodiscard]] inline Renderer::ITexture** getColorTextures() const
 		{
 			return mColorTextures;
 		}
@@ -8958,7 +8958,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The depth stencil texture, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline Renderer::ITexture* getDepthStencilTexture() const
+		[[nodiscard]] inline Renderer::ITexture* getDepthStencilTexture() const
 		{
 			return mDepthStencilTexture;
 		}
@@ -8970,7 +8970,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The Direct3D 11 render target views, can be a null pointer, do not release the returned instances unless you added an own reference to it
 		*/
-		inline ID3D11RenderTargetView** getD3D11RenderTargetViews() const
+		[[nodiscard]] inline ID3D11RenderTargetView** getD3D11RenderTargetViews() const
 		{
 			return mD3D11RenderTargetViews;
 		}
@@ -8982,7 +8982,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The Direct3D 11 depth stencil view, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11DepthStencilView* getD3D11DepthStencilView() const
+		[[nodiscard]] inline ID3D11DepthStencilView* getD3D11DepthStencilView() const
 		{
 			return mD3D11DepthStencilView;
 		}
@@ -9169,7 +9169,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    Direct3D 11 vertex shader blob, can be a null pointer on error, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3DBlob* getD3DBlobVertexShader() const
+		[[nodiscard]] inline ID3DBlob* getD3DBlobVertexShader() const
 		{
 			return mD3DBlobVertexShader;
 		}
@@ -9181,7 +9181,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    Direct3D 11 vertex shader, can be a null pointer on error, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11VertexShader* getD3D11VertexShader() const
+		[[nodiscard]] inline ID3D11VertexShader* getD3D11VertexShader() const
 		{
 			return mD3D11VertexShader;
 		}
@@ -9209,7 +9209,7 @@ namespace Direct3D11Renderer
 	//[ Public virtual Renderer::IShader methods              ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::HLSL_NAME;
 		}
@@ -9333,7 +9333,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    Direct3D 11 hull shader, can be a null pointer on error, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11HullShader* getD3D11HullShader() const
+		[[nodiscard]] inline ID3D11HullShader* getD3D11HullShader() const
 		{
 			return mD3D11HullShader;
 		}
@@ -9361,7 +9361,7 @@ namespace Direct3D11Renderer
 	//[ Public virtual Renderer::IShader methods              ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::HLSL_NAME;
 		}
@@ -9484,7 +9484,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    Direct3D 11 domain shader, can be a null pointer on error, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11DomainShader* getD3D11DomainShader() const
+		[[nodiscard]] inline ID3D11DomainShader* getD3D11DomainShader() const
 		{
 			return mD3D11DomainShader;
 		}
@@ -9512,7 +9512,7 @@ namespace Direct3D11Renderer
 	//[ Public virtual Renderer::IShader methods              ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::HLSL_NAME;
 		}
@@ -9635,7 +9635,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    Direct3D 11 geometry shader, can be a null pointer on error, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11GeometryShader* getD3D11GeometryShader() const
+		[[nodiscard]] inline ID3D11GeometryShader* getD3D11GeometryShader() const
 		{
 			return mD3D11GeometryShader;
 		}
@@ -9663,7 +9663,7 @@ namespace Direct3D11Renderer
 	//[ Public virtual Renderer::IShader methods              ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::HLSL_NAME;
 		}
@@ -9786,7 +9786,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    Direct3D 11 pixel shader, can be a null pointer on error, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11PixelShader* getD3D11PixelShader() const
+		[[nodiscard]] inline ID3D11PixelShader* getD3D11PixelShader() const
 		{
 			return mD3D11PixelShader;
 		}
@@ -9814,7 +9814,7 @@ namespace Direct3D11Renderer
 	//[ Public virtual Renderer::IShader methods              ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::HLSL_NAME;
 		}
@@ -9937,7 +9937,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    Direct3D 11 compute shader, can be a null pointer on error, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11ComputeShader* getD3D11ComputeShader() const
+		[[nodiscard]] inline ID3D11ComputeShader* getD3D11ComputeShader() const
 		{
 			return mD3D11ComputeShader;
 		}
@@ -9965,7 +9965,7 @@ namespace Direct3D11Renderer
 	//[ Public virtual Renderer::IShader methods              ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::HLSL_NAME;
 		}
@@ -10103,7 +10103,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The HLSL vertex shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline VertexShaderHlsl* getVertexShaderHlsl() const
+		[[nodiscard]] inline VertexShaderHlsl* getVertexShaderHlsl() const
 		{
 			return mVertexShaderHlsl;
 		}
@@ -10115,7 +10115,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The HLSL tessellation control shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline TessellationControlShaderHlsl* getTessellationControlShaderHlsl() const
+		[[nodiscard]] inline TessellationControlShaderHlsl* getTessellationControlShaderHlsl() const
 		{
 			return mTessellationControlShaderHlsl;
 		}
@@ -10127,7 +10127,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The HLSL tessellation evaluation shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline TessellationEvaluationShaderHlsl* getTessellationEvaluationShaderHlsl() const
+		[[nodiscard]] inline TessellationEvaluationShaderHlsl* getTessellationEvaluationShaderHlsl() const
 		{
 			return mTessellationEvaluationShaderHlsl;
 		}
@@ -10139,7 +10139,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The HLSL geometry shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline GeometryShaderHlsl* getGeometryShaderHlsl() const
+		[[nodiscard]] inline GeometryShaderHlsl* getGeometryShaderHlsl() const
 		{
 			return mGeometryShaderHlsl;
 		}
@@ -10151,7 +10151,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The HLSL fragment shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline FragmentShaderHlsl* getFragmentShaderHlsl() const
+		[[nodiscard]] inline FragmentShaderHlsl* getFragmentShaderHlsl() const
 		{
 			return mFragmentShaderHlsl;
 		}
@@ -10243,24 +10243,24 @@ namespace Direct3D11Renderer
 	//[ Public virtual Renderer::IShaderLanguage methods      ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::HLSL_NAME;
 		}
 
-		inline virtual Renderer::IVertexShader* createVertexShaderFromBytecode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderBytecode& shaderBytecode) override
+		[[nodiscard]] inline virtual Renderer::IVertexShader* createVertexShaderFromBytecode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			// There's no need to check for "Renderer::Capabilities::vertexShader", we know there's vertex shader support
 			return RENDERER_NEW(getRenderer().getContext(), VertexShaderHlsl)(static_cast<Direct3D11Renderer&>(getRenderer()), shaderBytecode);
 		}
 
-		inline virtual Renderer::IVertexShader* createVertexShaderFromSourceCode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] inline virtual Renderer::IVertexShader* createVertexShaderFromSourceCode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// There's no need to check for "Renderer::Capabilities::vertexShader", we know there's vertex shader support
 			return RENDERER_NEW(getRenderer().getContext(), VertexShaderHlsl)(static_cast<Direct3D11Renderer&>(getRenderer()), shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode);
 		}
 
-		inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
+		[[nodiscard]] inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			// "hull shader" in Direct3D terminology
 
@@ -10268,7 +10268,7 @@ namespace Direct3D11Renderer
 			return RENDERER_NEW(getRenderer().getContext(), TessellationControlShaderHlsl)(static_cast<Direct3D11Renderer&>(getRenderer()), shaderBytecode);
 		}
 
-		inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// "hull shader" in Direct3D terminology
 
@@ -10276,7 +10276,7 @@ namespace Direct3D11Renderer
 			return RENDERER_NEW(getRenderer().getContext(), TessellationControlShaderHlsl)(static_cast<Direct3D11Renderer&>(getRenderer()), shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode);
 		}
 
-		inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
+		[[nodiscard]] inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			// "domain shader" in Direct3D terminology
 
@@ -10284,7 +10284,7 @@ namespace Direct3D11Renderer
 			return RENDERER_NEW(getRenderer().getContext(), TessellationEvaluationShaderHlsl)(static_cast<Direct3D11Renderer&>(getRenderer()), shaderBytecode);
 		}
 
-		inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// "domain shader" in Direct3D terminology
 
@@ -10292,7 +10292,7 @@ namespace Direct3D11Renderer
 			return RENDERER_NEW(getRenderer().getContext(), TessellationEvaluationShaderHlsl)(static_cast<Direct3D11Renderer&>(getRenderer()), shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode);
 		}
 
-		inline virtual Renderer::IGeometryShader* createGeometryShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode, [[maybe_unused]] Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices) override
+		[[nodiscard]] inline virtual Renderer::IGeometryShader* createGeometryShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode, [[maybe_unused]] Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices) override
 		{
 			// There's no need to check for "Renderer::Capabilities::maximumNumberOfGsOutputVertices", we know there's geometry shader support
 			// Ignore "gsInputPrimitiveTopology", it's directly set within HLSL
@@ -10301,7 +10301,7 @@ namespace Direct3D11Renderer
 			return RENDERER_NEW(getRenderer().getContext(), GeometryShaderHlsl)(static_cast<Direct3D11Renderer&>(getRenderer()), shaderBytecode);
 		}
 
-		inline virtual Renderer::IGeometryShader* createGeometryShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] inline virtual Renderer::IGeometryShader* createGeometryShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// There's no need to check for "Renderer::Capabilities::maximumNumberOfGsOutputVertices", we know there's geometry shader support
 			// Ignore "gsInputPrimitiveTopology", it's directly set within HLSL
@@ -10310,31 +10310,31 @@ namespace Direct3D11Renderer
 			return RENDERER_NEW(getRenderer().getContext(), GeometryShaderHlsl)(static_cast<Direct3D11Renderer&>(getRenderer()), shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode);
 		}
 
-		inline virtual Renderer::IFragmentShader* createFragmentShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
+		[[nodiscard]] inline virtual Renderer::IFragmentShader* createFragmentShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			// There's no need to check for "Renderer::Capabilities::fragmentShader", we know there's fragment shader support
 			return RENDERER_NEW(getRenderer().getContext(), FragmentShaderHlsl)(static_cast<Direct3D11Renderer&>(getRenderer()), shaderBytecode);
 		}
 
-		inline virtual Renderer::IFragmentShader* createFragmentShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] inline virtual Renderer::IFragmentShader* createFragmentShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// There's no need to check for "Renderer::Capabilities::fragmentShader", we know there's fragment shader support
 			return RENDERER_NEW(getRenderer().getContext(), FragmentShaderHlsl)(static_cast<Direct3D11Renderer&>(getRenderer()), shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode);
 		}
 
-		inline virtual Renderer::IComputeShader* createComputeShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
+		[[nodiscard]] inline virtual Renderer::IComputeShader* createComputeShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			// There's no need to check for "Renderer::Capabilities::computeShader", we know there's compute shader support
 			return RENDERER_NEW(getRenderer().getContext(), ComputeShaderHlsl)(static_cast<Direct3D11Renderer&>(getRenderer()), shaderBytecode);
 		}
 
-		inline virtual Renderer::IComputeShader* createComputeShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] inline virtual Renderer::IComputeShader* createComputeShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// There's no need to check for "Renderer::Capabilities::computeShader", we know there's compute shader support
 			return RENDERER_NEW(getRenderer().getContext(), ComputeShaderHlsl)(static_cast<Direct3D11Renderer&>(getRenderer()), shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode);
 		}
 
-		virtual Renderer::IGraphicsProgram* createGraphicsProgram([[maybe_unused]] const Renderer::IRootSignature& rootSignature, [[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
+		[[nodiscard]] virtual Renderer::IGraphicsProgram* createGraphicsProgram([[maybe_unused]] const Renderer::IRootSignature& rootSignature, [[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
 		{
 			// Sanity checks
 			// -> A shader can be a null pointer, but if it's not the shader and graphics program language must match!
@@ -10502,7 +10502,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    The Direct3D 11 primitive topology
 		*/
-		inline D3D11_PRIMITIVE_TOPOLOGY getD3D11PrimitiveTopology() const
+		[[nodiscard]] inline D3D11_PRIMITIVE_TOPOLOGY getD3D11PrimitiveTopology() const
 		{
 			return mD3D11PrimitiveTopology;
 		}
@@ -10514,7 +10514,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    Direct3D 11 input layout instance, can be a null pointer on error, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11InputLayout* getD3D11InputLayout() const
+		[[nodiscard]] inline ID3D11InputLayout* getD3D11InputLayout() const
 		{
 			return mD3D11InputLayout;
 		}
@@ -10657,7 +10657,7 @@ namespace Direct3D11Renderer
 		*  @return
 		*    Direct3D 11 compute shader, can be a null pointer on error, do not release the returned instance unless you added an own reference to it
 		*/
-		inline ID3D11ComputeShader* getD3D11ComputeShader() const
+		[[nodiscard]] inline ID3D11ComputeShader* getD3D11ComputeShader() const
 		{
 			return mD3D11ComputeShader;
 		}
@@ -11243,7 +11243,7 @@ namespace Direct3D11Renderer
 		#ifdef RENDERER_STATISTICS
 		{ // For debugging: At this point there should be no resource instances left, validate this!
 			// -> Are the currently any resource instances?
-			const unsigned long numberOfCurrentResources = getStatistics().getNumberOfCurrentResources();
+			const uint32_t numberOfCurrentResources = getStatistics().getNumberOfCurrentResources();
 			if (numberOfCurrentResources > 0)
 			{
 				// Error!

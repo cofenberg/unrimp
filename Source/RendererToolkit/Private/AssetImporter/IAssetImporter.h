@@ -111,7 +111,7 @@ namespace RendererToolkit
 	//[ Public virtual RendererToolkit::IAssetImporter methods ]
 	//[-------------------------------------------------------]
 	public:
-		virtual AssetImporterClassId getAssetImporterClassId() const = 0;
+		[[nodiscard]] virtual AssetImporterClassId getAssetImporterClassId() const = 0;
 		virtual void import(const Input& input) = 0;
 
 

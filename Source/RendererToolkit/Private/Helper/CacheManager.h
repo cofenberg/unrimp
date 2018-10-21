@@ -95,11 +95,11 @@ namespace RendererToolkit
 			int64_t  fileTime		  = 0;	///< The file time (last write time)
 			uint32_t compilerVersion  = 0;	///< Compiler version so we can detect compiler version changes and enforce compiling even if the source data has not been changed
 			// Method
-			inline uint64_t getKey() const
+			[[nodiscard]] inline uint64_t getKey() const
 			{
 				return ((static_cast<uint64_t>(rendererTargetId) << 32) | static_cast<uint64_t>(fileId));
 			}
-			static inline uint64_t generateKey(const std::string& rendererTarget, RendererRuntime::StringId fileId)
+			[[nodiscard]] static inline uint64_t generateKey(const std::string& rendererTarget, RendererRuntime::StringId fileId)
 			{
 				return ((static_cast<uint64_t>(RendererRuntime::StringId::calculateFNV(rendererTarget.c_str())) << 32) | static_cast<uint64_t>(fileId.getId()));
 			}
@@ -153,7 +153,7 @@ namespace RendererToolkit
 		*  @return
 		*    "true" if the file needs to be compiled (aka source changed, destination doesn't exists or is yet unknown file) otherwise "false"
 		*/
-		bool needsToBeCompiled(const std::string& rendererTarget, const std::string& virtualAssetFilename, const std::string& virtualSourceFilename, const std::string& virtualDestinationFilename, uint32_t compilerVersion, CacheEntries& cacheEntries);
+		[[nodiscard]] bool needsToBeCompiled(const std::string& rendererTarget, const std::string& virtualAssetFilename, const std::string& virtualSourceFilename, const std::string& virtualDestinationFilename, uint32_t compilerVersion, CacheEntries& cacheEntries);
 
 		/**
 		*  @brief
@@ -175,7 +175,7 @@ namespace RendererToolkit
 		*  @return
 		*    "true" if the file needs to be compiled (aka source changed, destination doesn't exists or is yet unknown file) otherwise "false"
 		*/
-		bool needsToBeCompiled(const std::string& rendererTarget, const std::string& virtualAssetFilename, const std::vector<std::string>& virtualSourceFilenames, const std::string& virtualDestinationFilename, uint32_t compilerVersion, CacheEntries& cacheEntries);
+		[[nodiscard]] bool needsToBeCompiled(const std::string& rendererTarget, const std::string& virtualAssetFilename, const std::vector<std::string>& virtualSourceFilenames, const std::string& virtualDestinationFilename, uint32_t compilerVersion, CacheEntries& cacheEntries);
 
 		/**
 		*  @brief
@@ -207,7 +207,7 @@ namespace RendererToolkit
 		*  @note
 		*    - This method fills an internal cache which stores the check result in order to speed up "RendererToolkit::CacheManager::needsToBeCompiled()"-calls and support dependency tracking
 		*/
-		bool checkIfFileIsModified(const std::string& rendererTarget, const std::string& virtualAssetFilename, const std::vector<std::string>& virtualSourceFilenames, const std::string& virtualDestinationFilename, uint32_t compilerVersion);
+		[[nodiscard]] bool checkIfFileIsModified(const std::string& rendererTarget, const std::string& virtualAssetFilename, const std::vector<std::string>& virtualSourceFilenames, const std::string& virtualDestinationFilename, uint32_t compilerVersion);
 
 		/**
 		*  @brief
@@ -219,7 +219,7 @@ namespace RendererToolkit
 		*  @return
 		*    "true" if any of the files have been modified otherwise "false"
 		*/
-		bool dependencyFilesChanged(const std::vector<std::string>& virtualDependencyFilenames);
+		[[nodiscard]] bool dependencyFilesChanged(const std::vector<std::string>& virtualDependencyFilenames);
 
 		/**
 		*  @brief
@@ -258,7 +258,7 @@ namespace RendererToolkit
 		*  @return
 		*    "true" if a cache entry exists otherwise "false"
 		*/
-		bool fillEntryForFile(const std::string& rendererTarget, RendererRuntime::StringId fileId, CacheEntry& cacheEntry);
+		[[nodiscard]] bool fillEntryForFile(const std::string& rendererTarget, RendererRuntime::StringId fileId, CacheEntry& cacheEntry);
 
 		/**
 		*  @brief
@@ -279,7 +279,7 @@ namespace RendererToolkit
 		*  @note
 		*    - When a change was detected the an cache entry is stored/updated
 		*/
-		bool checkIfFileChanged(const std::string& rendererTarget, RendererRuntime::VirtualFilename virtualFilename, uint32_t compilerVersion, CacheEntry& cacheEntry);
+		[[nodiscard]] bool checkIfFileChanged(const std::string& rendererTarget, RendererRuntime::VirtualFilename virtualFilename, uint32_t compilerVersion, CacheEntry& cacheEntry);
 
 		/**
 		*  @brief

@@ -106,7 +106,7 @@ public:
 	*  @return
 	*    The example runner instance
 	*/
-	inline ExampleRunner& getExampleRunner()
+	[[nodiscard]] inline ExampleRunner& getExampleRunner()
 	{
 		assert((nullptr != mExampleRunner) && "Don't call this method inside constructors");
 		return *mExampleRunner;
@@ -119,7 +119,7 @@ public:
 	*  @return
 	*    Custom log instance, can be a null pointer, don't destroy the instance
 	*/
-	inline Renderer::ILog* getCustomLog() const
+	[[nodiscard]] inline Renderer::ILog* getCustomLog() const
 	{
 		return mCustomLog;
 	}
@@ -149,7 +149,7 @@ public:
 	*  @return
 	*    The renderer instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 	*/
-	Renderer::IRenderer* getRenderer() const;
+	[[nodiscard]] Renderer::IRenderer* getRenderer() const;
 
 	/**
 	*  @brief
@@ -158,7 +158,7 @@ public:
 	*  @return
 	*    The main renderer target instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 	*/
-	Renderer::IRenderTarget* getMainRenderTarget() const;
+	[[nodiscard]] Renderer::IRenderTarget* getMainRenderTarget() const;
 
 	/**
 	*  @brief
@@ -167,7 +167,7 @@ public:
 	*  @return
 	*    The renderer runtime instance, can be a null pointer
 	*/
-	RendererRuntime::IRendererRuntime* getRendererRuntime() const;
+	[[nodiscard]] RendererRuntime::IRendererRuntime* getRendererRuntime() const;
 
 	/**
 	*  @brief
@@ -185,7 +185,7 @@ public:
 	*    the renderer toolkit shared library is not there, this method will return a null pointer. This is a developer-feature
 	*    and as such, it's not available in static builds which are meant for the end-user who e.g. just want to "play the game".
 	*/
-	RendererToolkit::IRendererToolkit* getRendererToolkit();
+	[[nodiscard]] RendererToolkit::IRendererToolkit* getRendererToolkit();
 
 	/**
 	*  @brief
@@ -236,7 +236,7 @@ public:
 	*  @return
 	*    "true" if the example does it's complete draw handling, otherwise "false"
 	*/
-	inline virtual bool doesCompleteOwnDrawing() const
+	[[nodiscard]] inline virtual bool doesCompleteOwnDrawing() const
 	{
 		// Default implementation does not complete own drawing
 		return false;

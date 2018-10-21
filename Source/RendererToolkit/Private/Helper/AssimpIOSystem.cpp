@@ -51,7 +51,7 @@ namespace
 		//[ Public methods                                        ]
 		//[-------------------------------------------------------]
 		public:
-			inline explicit AssimpIOStream(const RendererRuntime::IFileManager& fileManager, RendererRuntime::IFile& file) :
+			inline AssimpIOStream(const RendererRuntime::IFileManager& fileManager, RendererRuntime::IFile& file) :
 				mFileManager(fileManager),
 				mFile(file),
 				mNumberOfBytes(mFile.getNumberOfBytes()),
@@ -65,7 +65,7 @@ namespace
 				mFileManager.closeFile(mFile);
 			}
 
-			inline RendererRuntime::IFile& getFile() const
+			[[nodiscard]] inline RendererRuntime::IFile& getFile() const
 			{
 				return mFile;
 			}
@@ -75,7 +75,7 @@ namespace
 		//[ Public virtual Assimp::IOStream methods               ]
 		//[-------------------------------------------------------]
 		public:
-			virtual size_t Read(void* pvBuffer, size_t pSize, size_t pCount) override
+			[[nodiscard]] virtual size_t Read(void* pvBuffer, size_t pSize, size_t pCount) override
 			{
 				size_t numberOfBytes = pSize * pCount;
 				size_t newCurrentPosition = mCurrentPosition + numberOfBytes;
@@ -94,13 +94,13 @@ namespace
 				return pCount;
 			}
 
-			inline virtual size_t Write(const void*, size_t, size_t) override
+			[[nodiscard]] inline virtual size_t Write(const void*, size_t, size_t) override
 			{
 				assert(false && "We only support read-only Assimp files");
 				return 0;
 			}
 
-			virtual aiReturn Seek(size_t pOffset, aiOrigin pOrigin) override
+			[[nodiscard]] virtual aiReturn Seek(size_t pOffset, aiOrigin pOrigin) override
 			{
 				assert((aiOrigin_END != pOrigin) && "We don't support \"aiOrigin_END\" in read-only Assimp files");
 				if (aiOrigin_SET == pOrigin)
@@ -116,12 +116,12 @@ namespace
 				return aiReturn_SUCCESS;
 			}
 
-			inline virtual size_t Tell() const override
+			[[nodiscard]] inline virtual size_t Tell() const override
 			{
 				return mCurrentPosition;
 			}
 
-			inline virtual size_t FileSize() const override
+			[[nodiscard]] inline virtual size_t FileSize() const override
 			{
 				return mNumberOfBytes;
 			}

@@ -88,7 +88,7 @@ namespace
 		*    - Basing on "How to Convert Temperature (K) to RGB: Algorithm and Sample Code" ( http://www.tannerhelland.com/4435/convert-temperature-rgb-algorithm-code/ )
 		*    - See also "Moving Frostbite to Physically Based Rendering" from DICE, starting page 35 ( http://www.frostbite.com/wp-content/uploads/2014/11/s2014_pbs_frostbite_slides.pdf )
 		*/
-		glm::vec3 getRgbColorFromKelvin(float kelvin)
+		[[nodiscard]] glm::vec3 getRgbColorFromKelvin(float kelvin)
 		{
 			if (kelvin > 40000.0f)
 			{
@@ -282,19 +282,19 @@ namespace
 		}
 
 		template <typename T>
-		T toNumeric(const std::string& string)
+		[[nodiscard]] T toNumeric(const std::string& string)
 		{
 			return 0.0f;
 		}
 
 		template <>
-		float toNumeric<float>(const std::string& string)
+		[[nodiscard]] float toNumeric<float>(const std::string& string)
 		{
 			return std::stof(string);
 		}
 
 		template <>
-		double toNumeric<double>(const std::string& string)
+		[[nodiscard]] double toNumeric<double>(const std::string& string)
 		{
 			return std::stod(string);
 		}

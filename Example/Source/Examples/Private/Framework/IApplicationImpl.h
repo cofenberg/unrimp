@@ -73,7 +73,7 @@ public:
 	*  @return
 	*    The owner application
 	*/
-	inline IApplication& getApplication() const
+	[[nodiscard]] inline IApplication& getApplication() const
 	{
 		return mApplication;
 	}
@@ -102,7 +102,7 @@ public:
 	*  @return
 	*    "true" in case the application should shut down, else "false"
 	*/
-	virtual bool processMessages() = 0;
+	[[nodiscard]] virtual bool processMessages() = 0;
 
 	/**
 	*  @brief
@@ -122,7 +122,7 @@ public:
 	*  @remarks
 	*    The OS dependent window handle, can be a null handle
 	*/
-	virtual handle getNativeWindowHandle() const = 0;
+	[[nodiscard]] virtual handle getNativeWindowHandle() const = 0;
 
 	/**
 	*  @brief
@@ -138,7 +138,7 @@ public:
 	*  @note
 	*    - The X11 display connection object, can be a null pointer
 	*/
-	virtual Display* getX11Display() const = 0;
+	[[nodiscard]] virtual Display* getX11Display() const = 0;
 #endif
 
 

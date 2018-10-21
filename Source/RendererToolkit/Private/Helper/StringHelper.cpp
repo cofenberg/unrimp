@@ -60,7 +60,7 @@ namespace
 		//[-------------------------------------------------------]
 		// This method searches only three kind of white spaces (spaces, tabs(\t) and carriage return(\r))
 		// It returns the last position of an character which isn't a space or tab (\t) or an carriage return (\r)
-		size_t rfindNextNonWhiteSpace(const std::string& text, size_t startPosition, size_t endPosition)
+		[[nodiscard]] size_t rfindNextNonWhiteSpace(const std::string& text, size_t startPosition, size_t endPosition)
 		{
 			if (startPosition > endPosition || text.length() <= startPosition || text.length() <= endPosition)
 			{

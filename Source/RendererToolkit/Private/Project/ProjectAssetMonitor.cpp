@@ -40,7 +40,7 @@ namespace RendererToolkit
 
 	namespace detail
 	{
-		class FileWatchListener : public FW::FileWatchListener
+		class FileWatchListener final : public FW::FileWatchListener
 		{
 
 

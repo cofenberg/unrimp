@@ -167,7 +167,7 @@ void ApplicationImplWindows::onDeinitialization()
 	::UnregisterClass(TEXT("ApplicationImplWindows"), ::GetModuleHandle(nullptr));
 
 	// Flush messages
-	processMessages();
+	[[maybe_unused]] const bool quit = processMessages();
 }
 
 bool ApplicationImplWindows::processMessages()

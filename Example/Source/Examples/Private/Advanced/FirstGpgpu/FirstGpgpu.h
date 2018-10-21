@@ -96,7 +96,7 @@ public:
 	*  @return
 	*    Program return code, 0 to indicate that no error has occurred
 	*/
-	int run();
+	[[nodiscard]] int run();
 
 
 //[-------------------------------------------------------]

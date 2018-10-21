@@ -639,7 +639,8 @@ namespace
 			static bool GlslangInitialized = false;
 
 			// Settings from "glslang/StandAlone/ResourceLimits.cpp"
-			static constexpr TBuiltInResource DefaultTBuiltInResource = {
+			static constexpr TBuiltInResource DefaultTBuiltInResource =
+			{
 				32,		///< MaxLights
 				6,		///< MaxClipPlanes
 				32,		///< MaxTextureUnits
@@ -813,7 +814,7 @@ namespace
 		*  @return
 		*    The OpenGL shader, 0 on error, destroy the resource if you no longer need it
 		*/
-		GLuint loadShaderFromBytecode(const Renderer::Context& context, GLenum shaderType, const Renderer::ShaderBytecode& shaderBytecode)
+		[[nodiscard]] GLuint loadShaderFromBytecode(const Renderer::Context& context, GLenum shaderType, const Renderer::ShaderBytecode& shaderBytecode)
 		{
 			// Create the shader object
 			const GLuint openGLShader = glCreateShaderObjectARB(shaderType);
@@ -849,7 +850,7 @@ namespace
 		*  @return
 		*    The OpenGL shader program, 0 on error, destroy the resource if you no longer need it
 		*/
-		GLuint loadShaderProgramFromBytecode(const Renderer::Context& context, GLenum shaderType, const Renderer::ShaderBytecode& shaderBytecode)
+		[[nodiscard]] GLuint loadShaderProgramFromBytecode(const Renderer::Context& context, GLenum shaderType, const Renderer::ShaderBytecode& shaderBytecode)
 		{
 			// Create and load the shader object
 			const GLuint openGLShader = loadShaderFromBytecode(context, shaderType, shaderBytecode);
@@ -911,7 +912,7 @@ namespace
 		*  @return
 		*    The OpenGL shader program, 0 on error, destroy the resource if you no longer need it
 		*/
-		GLuint loadShaderProgramFromSourceCode(const Renderer::Context& context, GLenum shaderType, const GLchar* sourceCode)
+		[[nodiscard]] GLuint loadShaderProgramFromSourceCode(const Renderer::Context& context, GLenum shaderType, const GLchar* sourceCode)
 		{
 			// Create the shader program
 			const GLuint openGLProgram = glCreateShaderProgramv(shaderType, 1, &sourceCode);
@@ -939,7 +940,7 @@ namespace
 		}
 
 		// Basing on the implementation from https://www.opengl.org/registry/specs/ARB/separate_shader_objects.txt
-		GLuint createShaderProgramObject(const Renderer::Context& context, GLuint openGLShader, const Renderer::VertexAttributes& vertexAttributes)
+		[[nodiscard]] GLuint createShaderProgramObject(const Renderer::Context& context, GLuint openGLShader, const Renderer::VertexAttributes& vertexAttributes)
 		{
 			if (openGLShader > 0)
 			{
@@ -994,7 +995,7 @@ namespace
 			return 0;
 		}
 
-		GLuint loadShaderProgramFromBytecode(const Renderer::Context& context, const Renderer::VertexAttributes& vertexAttributes, GLenum shaderType, const Renderer::ShaderBytecode& shaderBytecode)
+		[[nodiscard]] GLuint loadShaderProgramFromBytecode(const Renderer::Context& context, const Renderer::VertexAttributes& vertexAttributes, GLenum shaderType, const Renderer::ShaderBytecode& shaderBytecode)
 		{
 			// Create and load the shader object
 			const GLuint openGLShader = loadShaderFromBytecode(context, shaderType, shaderBytecode);
@@ -1039,7 +1040,7 @@ namespace
 		*  @return
 		*    The OpenGL shader, 0 on error, destroy the resource if you no longer need it
 		*/
-		GLuint loadShaderFromSourcecode(const Renderer::Context& context, GLenum shaderType, const GLchar* sourceCode)
+		[[nodiscard]] GLuint loadShaderFromSourcecode(const Renderer::Context& context, GLenum shaderType, const GLchar* sourceCode)
 		{
 			// Create the shader object
 			const GLuint openGLShader = glCreateShaderObjectARB(shaderType);
@@ -1093,7 +1094,7 @@ namespace
 			}
 		}
 
-		GLuint loadShaderProgramFromSourcecode(const Renderer::Context& context, const Renderer::VertexAttributes& vertexAttributes, GLenum type, const char* sourceCode)
+		[[nodiscard]] GLuint loadShaderProgramFromSourcecode(const Renderer::Context& context, const Renderer::VertexAttributes& vertexAttributes, GLenum type, const char* sourceCode)
 		{
 			return createShaderProgramObject(context, loadShaderFromSourcecode(context, type, sourceCode), vertexAttributes);
 		}
@@ -1339,7 +1340,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL context instance, do not free the memory the reference is pointing to
 		*/
-		inline const IOpenGLContext& getOpenGLContext() const
+		[[nodiscard]] inline const IOpenGLContext& getOpenGLContext() const
 		{
 			return *mOpenGLContext;
 		}
@@ -1351,7 +1352,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The available extensions, do not free the memory the reference is pointing to
 		*/
-		inline const Extensions& getExtensions() const
+		[[nodiscard]] inline const Extensions& getExtensions() const
 		{
 			return *mExtensions;
 		}
@@ -1363,7 +1364,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The available extensions, do not free the memory the reference is pointing to
 		*/
-		inline Extensions& getExtensions()
+		[[nodiscard]] inline Extensions& getExtensions()
 		{
 			return *mExtensions;
 		}
@@ -1410,36 +1411,36 @@ namespace OpenGLRenderer
 	//[ Public virtual Renderer::IRenderer methods            ]
 	//[-------------------------------------------------------]
 	public:
-		virtual const char* getName() const override;
-		virtual bool isInitialized() const override;
-		virtual bool isDebugEnabled() override;
+		[[nodiscard]] virtual const char* getName() const override;
+		[[nodiscard]] virtual bool isInitialized() const override;
+		[[nodiscard]] virtual bool isDebugEnabled() override;
 		//[-------------------------------------------------------]
 		//[ Shader language                                       ]
 		//[-------------------------------------------------------]
-		virtual uint32_t getNumberOfShaderLanguages() const override;
-		virtual const char* getShaderLanguageName(uint32_t index) const override;
-		virtual Renderer::IShaderLanguage* getShaderLanguage(const char* shaderLanguageName = nullptr) override;
+		[[nodiscard]] virtual uint32_t getNumberOfShaderLanguages() const override;
+		[[nodiscard]] virtual const char* getShaderLanguageName(uint32_t index) const override;
+		[[nodiscard]] virtual Renderer::IShaderLanguage* getShaderLanguage(const char* shaderLanguageName = nullptr) override;
 		//[-------------------------------------------------------]
 		//[ Resource creation                                     ]
 		//[-------------------------------------------------------]
-		virtual Renderer::IRenderPass* createRenderPass(uint32_t numberOfColorAttachments, const Renderer::TextureFormat::Enum* colorAttachmentTextureFormats, Renderer::TextureFormat::Enum depthStencilAttachmentTextureFormat = Renderer::TextureFormat::UNKNOWN, uint8_t numberOfMultisamples = 1) override;
-		virtual Renderer::ISwapChain* createSwapChain(Renderer::IRenderPass& renderPass, Renderer::WindowHandle windowHandle, bool useExternalContext = false) override;
-		virtual Renderer::IFramebuffer* createFramebuffer(Renderer::IRenderPass& renderPass, const Renderer::FramebufferAttachment* colorFramebufferAttachments, const Renderer::FramebufferAttachment* depthStencilFramebufferAttachment = nullptr) override;
-		virtual Renderer::IBufferManager* createBufferManager() override;
-		virtual Renderer::ITextureManager* createTextureManager() override;
-		virtual Renderer::IRootSignature* createRootSignature(const Renderer::RootSignature& rootSignature) override;
-		virtual Renderer::IGraphicsPipelineState* createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState) override;
-		virtual Renderer::IComputePipelineState* createComputePipelineState(Renderer::IRootSignature& rootSignature, Renderer::IComputeShader& computeShader) override;
-		virtual Renderer::ISamplerState* createSamplerState(const Renderer::SamplerState& samplerState) override;
+		[[nodiscard]] virtual Renderer::IRenderPass* createRenderPass(uint32_t numberOfColorAttachments, const Renderer::TextureFormat::Enum* colorAttachmentTextureFormats, Renderer::TextureFormat::Enum depthStencilAttachmentTextureFormat = Renderer::TextureFormat::UNKNOWN, uint8_t numberOfMultisamples = 1) override;
+		[[nodiscard]] virtual Renderer::ISwapChain* createSwapChain(Renderer::IRenderPass& renderPass, Renderer::WindowHandle windowHandle, bool useExternalContext = false) override;
+		[[nodiscard]] virtual Renderer::IFramebuffer* createFramebuffer(Renderer::IRenderPass& renderPass, const Renderer::FramebufferAttachment* colorFramebufferAttachments, const Renderer::FramebufferAttachment* depthStencilFramebufferAttachment = nullptr) override;
+		[[nodiscard]] virtual Renderer::IBufferManager* createBufferManager() override;
+		[[nodiscard]] virtual Renderer::ITextureManager* createTextureManager() override;
+		[[nodiscard]] virtual Renderer::IRootSignature* createRootSignature(const Renderer::RootSignature& rootSignature) override;
+		[[nodiscard]] virtual Renderer::IGraphicsPipelineState* createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState) override;
+		[[nodiscard]] virtual Renderer::IComputePipelineState* createComputePipelineState(Renderer::IRootSignature& rootSignature, Renderer::IComputeShader& computeShader) override;
+		[[nodiscard]] virtual Renderer::ISamplerState* createSamplerState(const Renderer::SamplerState& samplerState) override;
 		//[-------------------------------------------------------]
 		//[ Resource handling                                     ]
 		//[-------------------------------------------------------]
-		virtual bool map(Renderer::IResource& resource, uint32_t subresource, Renderer::MapType mapType, uint32_t mapFlags, Renderer::MappedSubresource& mappedSubresource) override;
+		[[nodiscard]] virtual bool map(Renderer::IResource& resource, uint32_t subresource, Renderer::MapType mapType, uint32_t mapFlags, Renderer::MappedSubresource& mappedSubresource) override;
 		virtual void unmap(Renderer::IResource& resource, uint32_t subresource) override;
 		//[-------------------------------------------------------]
 		//[ Operations                                            ]
 		//[-------------------------------------------------------]
-		virtual bool beginScene() override;
+		[[nodiscard]] virtual bool beginScene() override;
 		virtual void submitCommandBuffer(const Renderer::CommandBuffer& commandBuffer) override;
 		virtual void endScene() override;
 		//[-------------------------------------------------------]
@@ -1651,7 +1652,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    "true" if OpenGL is available, else "false"
 		*/
-		bool isOpenGLAvaiable()
+		[[nodiscard]] bool isOpenGLAvaiable()
 		{
 			// Already initialized?
 			if (!mInitialized)
@@ -1686,7 +1687,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    "true" if all went fine, else "false"
 		*/
-		bool loadSharedLibraries()
+		[[nodiscard]] bool loadSharedLibraries()
 		{
 			if (mOwnsOpenGLSharedLibrary)
 			{
@@ -1719,7 +1720,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    "true" if all went fine, else "false"
 		*/
-		bool loadOpenGLEntryPoints()
+		[[nodiscard]] bool loadOpenGLEntryPoints()
 		{
 			bool result = true;	// Success by default
 
@@ -1789,7 +1790,7 @@ namespace OpenGLRenderer
 		*  @note
 		*    - This method is only allowed to be called after an >= OpenGL context has been created and set
 		*/
-		bool loadOpenGL3EntryPoints()
+		[[nodiscard]] bool loadOpenGL3EntryPoints()
 		{
 			bool result = true;	// Success by default
 
@@ -1879,7 +1880,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    "true" if the extension are initialized, else "false"
 		*/
-		inline bool isInitialized() const
+		[[nodiscard]] inline bool isInitialized() const
 		{
 			return mInitialized;
 		}
@@ -1888,220 +1889,220 @@ namespace OpenGLRenderer
 		// Returns whether an extension is supported or not
 		///////////////////////////////////////////////////////////
 		// WGL (Windows only)
-		inline bool isWGL_ARB_extensions_string() const
+		[[nodiscard]] inline bool isWGL_ARB_extensions_string() const
 		{
 			return mWGL_ARB_extensions_string;
 		}
 
-		inline bool isWGL_EXT_swap_control() const
+		[[nodiscard]] inline bool isWGL_EXT_swap_control() const
 		{
 			return mWGL_EXT_swap_control;
 		}
 
-		inline bool isWGL_EXT_swap_control_tear() const
+		[[nodiscard]] inline bool isWGL_EXT_swap_control_tear() const
 		{
 			return mWGL_EXT_swap_control_tear;
 		}
 
 		// EXT
-		inline bool isGL_EXT_texture_lod_bias() const
+		[[nodiscard]] inline bool isGL_EXT_texture_lod_bias() const
 		{
 			return mGL_EXT_texture_lod_bias;
 		}
 
-		inline bool isGL_EXT_texture_filter_anisotropic() const
+		[[nodiscard]] inline bool isGL_EXT_texture_filter_anisotropic() const
 		{
 			return mGL_EXT_texture_filter_anisotropic;
 		}
 
-		inline bool isGL_EXT_texture_array() const
+		[[nodiscard]] inline bool isGL_EXT_texture_array() const
 		{
 			return mGL_EXT_texture_array;
 		}
 
-		inline bool isGL_EXT_texture3D() const
+		[[nodiscard]] inline bool isGL_EXT_texture3D() const
 		{
 			return mGL_EXT_texture3D;
 		}
 
-		inline bool isGL_EXT_direct_state_access() const
+		[[nodiscard]] inline bool isGL_EXT_direct_state_access() const
 		{
 			return mGL_EXT_direct_state_access;
 		}
 
-		inline bool isGL_EXT_shader_image_load_store() const
+		[[nodiscard]] inline bool isGL_EXT_shader_image_load_store() const
 		{
 			return mGL_EXT_shader_image_load_store;
 		}
 
 		// KHR
-		inline bool isGL_KHR_debug() const
+		[[nodiscard]] inline bool isGL_KHR_debug() const
 		{
 			return mGL_KHR_debug;
 		}
 
 		// ARB
-		inline bool isGL_ARB_framebuffer_object() const
+		[[nodiscard]] inline bool isGL_ARB_framebuffer_object() const
 		{
 			return mGL_ARB_framebuffer_object;
 		}
 
-		inline bool isGL_ARB_multitexture() const
+		[[nodiscard]] inline bool isGL_ARB_multitexture() const
 		{
 			return mGL_ARB_multitexture;
 		}
 
-		inline bool isGL_ARB_texture_multisample() const
+		[[nodiscard]] inline bool isGL_ARB_texture_multisample() const
 		{
 			return mGL_ARB_texture_multisample;
 		}
 
-		inline bool isGL_ARB_vertex_buffer_object() const
+		[[nodiscard]] inline bool isGL_ARB_vertex_buffer_object() const
 		{
 			return mGL_ARB_vertex_buffer_object;
 		}
 
-		inline bool isGL_ARB_texture_compression() const
+		[[nodiscard]] inline bool isGL_ARB_texture_compression() const
 		{
 			return mGL_ARB_texture_compression;
 		}
 
-		inline bool isGL_ARB_vertex_program() const
+		[[nodiscard]] inline bool isGL_ARB_vertex_program() const
 		{
 			return mGL_ARB_vertex_program;
 		}
 
-		inline bool isGL_ARB_fragment_program() const
+		[[nodiscard]] inline bool isGL_ARB_fragment_program() const
 		{
 			return mGL_ARB_fragment_program;
 		}
 
-		inline bool isGL_ARB_draw_buffers() const
+		[[nodiscard]] inline bool isGL_ARB_draw_buffers() const
 		{
 			return mGL_ARB_draw_buffers;
 		}
 
-		inline bool isGL_ARB_shader_objects() const
+		[[nodiscard]] inline bool isGL_ARB_shader_objects() const
 		{
 			return mGL_ARB_shader_objects;
 		}
 
-		inline bool isGL_ARB_separate_shader_objects() const
+		[[nodiscard]] inline bool isGL_ARB_separate_shader_objects() const
 		{
 			return mGL_ARB_separate_shader_objects;
 		}
 
-		inline bool isGL_ARB_get_program_binary() const
+		[[nodiscard]] inline bool isGL_ARB_get_program_binary() const
 		{
 			return mGL_ARB_get_program_binary;
 		}
 
-		inline bool isGL_ARB_uniform_buffer_object() const
+		[[nodiscard]] inline bool isGL_ARB_uniform_buffer_object() const
 		{
 			return mGL_ARB_uniform_buffer_object;
 		}
 
-		inline bool isGL_ARB_texture_buffer_object() const
+		[[nodiscard]] inline bool isGL_ARB_texture_buffer_object() const
 		{
 			return mGL_ARB_texture_buffer_object;
 		}
 
-		inline bool isGL_ARB_draw_indirect() const
+		[[nodiscard]] inline bool isGL_ARB_draw_indirect() const
 		{
 			return mGL_ARB_draw_indirect;
 		}
 
-		inline bool isGL_ARB_multi_draw_indirect() const
+		[[nodiscard]] inline bool isGL_ARB_multi_draw_indirect() const
 		{
 			return mGL_ARB_multi_draw_indirect;
 		}
 
-		inline bool isGL_ARB_vertex_shader() const
+		[[nodiscard]] inline bool isGL_ARB_vertex_shader() const
 		{
 			return mGL_ARB_vertex_shader;
 		}
 
-		inline bool isGL_ARB_tessellation_shader() const
+		[[nodiscard]] inline bool isGL_ARB_tessellation_shader() const
 		{
 			return mGL_ARB_tessellation_shader;
 		}
 
-		inline bool isGL_ARB_geometry_shader4() const
+		[[nodiscard]] inline bool isGL_ARB_geometry_shader4() const
 		{
 			return mGL_ARB_geometry_shader4;
 		}
 
-		inline bool isGL_ARB_fragment_shader() const
+		[[nodiscard]] inline bool isGL_ARB_fragment_shader() const
 		{
 			return mGL_ARB_fragment_shader;
 		}
 
-		inline bool isGL_ARB_compute_shader() const
+		[[nodiscard]] inline bool isGL_ARB_compute_shader() const
 		{
 			return mGL_ARB_compute_shader;
 		}
 
-		inline bool isGL_ARB_draw_instanced() const
+		[[nodiscard]] inline bool isGL_ARB_draw_instanced() const
 		{
 			return mGL_ARB_draw_instanced;
 		}
 
-		inline bool isGL_ARB_base_instance() const
+		[[nodiscard]] inline bool isGL_ARB_base_instance() const
 		{
 			return mGL_ARB_base_instance;
 		}
 
-		inline bool isGL_ARB_instanced_arrays() const
+		[[nodiscard]] inline bool isGL_ARB_instanced_arrays() const
 		{
 			return mGL_ARB_instanced_arrays;
 		}
 
-		inline bool isGL_ARB_vertex_array_object() const
+		[[nodiscard]] inline bool isGL_ARB_vertex_array_object() const
 		{
 			return mGL_ARB_vertex_array_object;
 		}
 
-		inline bool isGL_ARB_sampler_objects() const
+		[[nodiscard]] inline bool isGL_ARB_sampler_objects() const
 		{
 			return mGL_ARB_sampler_objects;
 		}
 
-		inline bool isGL_ARB_draw_elements_base_vertex() const
+		[[nodiscard]] inline bool isGL_ARB_draw_elements_base_vertex() const
 		{
 			return mGL_ARB_draw_elements_base_vertex;
 		}
 
-		inline bool isGL_ARB_debug_output() const
+		[[nodiscard]] inline bool isGL_ARB_debug_output() const
 		{
 			return mGL_ARB_debug_output;
 		}
 
-		inline bool isGL_ARB_direct_state_access() const
+		[[nodiscard]] inline bool isGL_ARB_direct_state_access() const
 		{
 			return mGL_ARB_direct_state_access;
 		}
 
-		inline bool isGL_ARB_texture_storage() const
+		[[nodiscard]] inline bool isGL_ARB_texture_storage() const
 		{
 			return mGL_ARB_texture_storage;
 		}
 
-		inline bool isGL_ARB_shader_storage_buffer_object() const
+		[[nodiscard]] inline bool isGL_ARB_shader_storage_buffer_object() const
 		{
 			return mGL_ARB_shader_storage_buffer_object;
 		}
 
-		inline bool isGL_ARB_copy_image() const
+		[[nodiscard]] inline bool isGL_ARB_copy_image() const
 		{
 			return mGL_ARB_copy_image;
 		}
 
-		inline bool isGL_ARB_gl_spirv() const
+		[[nodiscard]] inline bool isGL_ARB_gl_spirv() const
 		{
 			return mGL_ARB_gl_spirv;
 		}
 
-		inline bool isGL_ARB_clip_control() const
+		[[nodiscard]] inline bool isGL_ARB_clip_control() const
 		{
 			return mGL_ARB_clip_control;
 		}
@@ -2124,7 +2125,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    "true" if the extensions is supported, else "false"
 		*/
-		bool isSupported(const char* extension) const
+		[[nodiscard]] bool isSupported(const char* extension) const
 		{
 			// Check whether or not the given extension string pointer is valid
 			if (nullptr != extension)
@@ -2151,7 +2152,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    "true" if the extensions is supported, else "false"
 		*/
-		bool checkExtension(const char* extension) const
+		[[nodiscard]] bool checkExtension(const char* extension) const
 		{
 			// Check whether or not the given extension string pointer is valid
 			if (nullptr != extension)
@@ -2330,7 +2331,7 @@ namespace OpenGLRenderer
 		*    - Platform dependent implementation
 		*/
 		#ifdef _WIN32
-			bool initialize(bool useExtensions = true)
+			[[nodiscard]] bool initialize(bool useExtensions = true)
 			{
 				// Disable the following warning, we can't do anything to resolve this warning
 				PRAGMA_WARNING_PUSH
@@ -2377,7 +2378,7 @@ namespace OpenGLRenderer
 				return initializeUniversal();
 			}
 		#elif LINUX
-			bool initialize(bool useExtensions)
+			[[nodiscard]] bool initialize(bool useExtensions)
 			{
 				// Disable the following warning, we can't do anything to resolve this warning
 				// Should the extensions be used?
@@ -2411,7 +2412,7 @@ namespace OpenGLRenderer
 		*  @note
 		*    - Platform independent implementation
 		*/
-		bool initializeUniversal()
+		[[nodiscard]] bool initializeUniversal()
 		{
 			// Define a platform dependent helper macro
 			#ifdef _WIN32
@@ -3116,7 +3117,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    "true" if the context is initialized, else "false"
 		*/
-		virtual bool isInitialized() const = 0;
+		[[nodiscard]] virtual bool isInitialized() const = 0;
 
 		/**
 		*  @brief
@@ -3156,7 +3157,7 @@ namespace OpenGLRenderer
 		*  @note
 		*    - This method is only allowed to be called after an >= OpenGL context has been created and set
 		*/
-		inline bool loadOpenGL3EntryPoints() const
+		[[nodiscard]] inline bool loadOpenGL3EntryPoints() const
 		{
 			return (nullptr != mOpenGLRuntimeLinking) ? mOpenGLRuntimeLinking->loadOpenGL3EntryPoints() : true;
 		}
@@ -3257,7 +3258,7 @@ namespace OpenGLRenderer
 			*  @return
 			*    The primary device context, null pointer on error
 			*/
-			inline HDC getDeviceContext() const
+			[[nodiscard]] inline HDC getDeviceContext() const
 			{
 				return mWindowDeviceContext;
 			}
@@ -3269,7 +3270,7 @@ namespace OpenGLRenderer
 			*  @return
 			*    The primary render context, null pointer on error
 			*/
-			inline HGLRC getRenderContext() const
+			[[nodiscard]] inline HGLRC getRenderContext() const
 			{
 				return mWindowRenderContext;
 			}
@@ -3279,7 +3280,7 @@ namespace OpenGLRenderer
 		//[ Public virtual OpenGLRenderer::IOpenGLContext methods ]
 		//[-------------------------------------------------------]
 		public:
-			inline virtual bool isInitialized() const override
+			[[nodiscard]] inline virtual bool isInitialized() const override
 			{
 				return (nullptr != mWindowRenderContext);
 			}
@@ -3459,7 +3460,7 @@ namespace OpenGLRenderer
 			*  @return
 			*    The created OpenGL context, null pointer on error
 			*/
-			HGLRC createOpenGLContext(const OpenGLContextWindows* shareContextWindows)
+			[[nodiscard]] HGLRC createOpenGLContext(const OpenGLContextWindows* shareContextWindows)
 			{
 				// Disable the following warning, we can't do anything to resolve this warning
 				PRAGMA_WARNING_PUSH
@@ -3556,7 +3557,7 @@ namespace OpenGLRenderer
 		//[-------------------------------------------------------]
 		// TODO(co) Cleanup
 		static bool ctxErrorOccurred = false;
-		static int ctxErrorHandler(Display*, XErrorEvent*)
+		[[nodiscard]] static int ctxErrorHandler(Display*, XErrorEvent*)
 		{
 			ctxErrorOccurred = true;
 			return 0;
@@ -3634,7 +3635,7 @@ namespace OpenGLRenderer
 			*  @return
 			*    The primary device context, null pointer on error
 			*/
-			inline Display* getDisplay() const
+			[[nodiscard]] inline Display* getDisplay() const
 			{
 				return mDisplay;
 			}
@@ -3646,7 +3647,7 @@ namespace OpenGLRenderer
 			*  @return
 			*    The primary render context, null pointer on error
 			*/
-			inline GLXContext getRenderContext() const
+			[[nodiscard]] inline GLXContext getRenderContext() const
 			{
 				return mWindowRenderContext;
 			}
@@ -3656,7 +3657,7 @@ namespace OpenGLRenderer
 		//[ Public virtual OpenGLRenderer::IOpenGLContext methods ]
 		//[-------------------------------------------------------]
 		public:
-			inline virtual bool isInitialized() const override
+			[[nodiscard]] inline virtual bool isInitialized() const override
 			{
 				return (nullptr != mWindowRenderContext || mUseExternalContext);
 			}
@@ -3798,7 +3799,7 @@ namespace OpenGLRenderer
 			*  @return
 			*    The created OpenGL context, null pointer on error
 			*/
-			GLXContext createOpenGLContext(Renderer::TextureFormat::Enum depthStencilAttachmentTextureFormat)
+			[[nodiscard]] GLXContext createOpenGLContext(Renderer::TextureFormat::Enum depthStencilAttachmentTextureFormat)
 			{
 				#define GLX_CONTEXT_MAJOR_VERSION_ARB	0x2091
 				#define GLX_CONTEXT_MINOR_VERSION_ARB	0x2092
@@ -3962,7 +3963,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    OpenGL magnification filter mode
 		*/
-		static GLint getOpenGLMagFilterMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode)
+		[[nodiscard]] static GLint getOpenGLMagFilterMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode)
 		{
 			switch (filterMode)
 			{
@@ -4043,7 +4044,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    OpenGL minification filter mode
 		*/
-		static GLint getOpenGLMinFilterMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode, bool hasMipmaps)
+		[[nodiscard]] static GLint getOpenGLMinFilterMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode, bool hasMipmaps)
 		{
 			switch (filterMode)
 			{
@@ -4122,7 +4123,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    OpenGL compare mode
 		*/
-		static GLint getOpenGLCompareMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode)
+		[[nodiscard]] static GLint getOpenGLCompareMode([[maybe_unused]] const Renderer::Context& context, Renderer::FilterMode filterMode)
 		{
 			switch (filterMode)
 			{
@@ -4170,7 +4171,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    OpenGL texture address mode
 		*/
-		static GLint getOpenGLTextureAddressMode(Renderer::TextureAddressMode textureAddressMode)
+		[[nodiscard]] static GLint getOpenGLTextureAddressMode(Renderer::TextureAddressMode textureAddressMode)
 		{
 			static constexpr GLint MAPPING[] =
 			{
@@ -4196,7 +4197,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    OpenGL comparison function
 		*/
-		static GLenum getOpenGLComparisonFunc(Renderer::ComparisonFunc comparisonFunc)
+		[[nodiscard]] static GLenum getOpenGLComparisonFunc(Renderer::ComparisonFunc comparisonFunc)
 		{
 			static constexpr GLenum MAPPING[] =
 			{
@@ -4225,7 +4226,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    OpenGL size
 		*/
-		static GLint getOpenGLSize(Renderer::VertexAttributeFormat vertexAttributeFormat)
+		[[nodiscard]] static GLint getOpenGLSize(Renderer::VertexAttributeFormat vertexAttributeFormat)
 		{
 			static constexpr GLint MAPPING[] =
 			{
@@ -4252,7 +4253,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    OpenGL type
 		*/
-		static GLenum getOpenGLType(Renderer::VertexAttributeFormat vertexAttributeFormat)
+		[[nodiscard]] static GLenum getOpenGLType(Renderer::VertexAttributeFormat vertexAttributeFormat)
 		{
 			static constexpr GLenum MAPPING[] =
 			{
@@ -4279,7 +4280,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    "GL_TRUE" if the format is normalized, else "GL_FALSE"
 		*/
-		static GLboolean isOpenGLVertexAttributeFormatNormalized(Renderer::VertexAttributeFormat vertexAttributeFormat)
+		[[nodiscard]] static GLboolean isOpenGLVertexAttributeFormatNormalized(Renderer::VertexAttributeFormat vertexAttributeFormat)
 		{
 			static constexpr GLboolean MAPPING[] =
 			{
@@ -4306,7 +4307,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    "GL_TRUE" if the format is integer, else "GL_FALSE"
 		*/
-		static GLboolean isOpenGLVertexAttributeFormatInteger(Renderer::VertexAttributeFormat vertexAttributeFormat)
+		[[nodiscard]] static GLboolean isOpenGLVertexAttributeFormatInteger(Renderer::VertexAttributeFormat vertexAttributeFormat)
 		{
 			static constexpr GLboolean MAPPING[] =
 			{
@@ -4336,7 +4337,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    OpenGL type
 		*/
-		static GLenum getOpenGLType(Renderer::IndexBufferFormat::Enum indexBufferFormat)
+		[[nodiscard]] static GLenum getOpenGLType(Renderer::IndexBufferFormat::Enum indexBufferFormat)
 		{
 			static constexpr GLenum MAPPING[] =
 			{
@@ -4360,7 +4361,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    OpenGL internal format
 		*/
-		static GLuint getOpenGLInternalFormat(Renderer::TextureFormat::Enum textureFormat)
+		[[nodiscard]] static GLuint getOpenGLInternalFormat(Renderer::TextureFormat::Enum textureFormat)
 		{
 			static constexpr GLuint MAPPING[] =
 			{
@@ -4402,7 +4403,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    OpenGL format
 		*/
-		static GLuint getOpenGLFormat(Renderer::TextureFormat::Enum textureFormat)
+		[[nodiscard]] static GLuint getOpenGLFormat(Renderer::TextureFormat::Enum textureFormat)
 		{
 			static constexpr GLuint MAPPING[] =
 			{
@@ -4444,7 +4445,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    OpenGL type
 		*/
-		static GLenum getOpenGLType(Renderer::TextureFormat::Enum textureFormat)
+		[[nodiscard]] static GLenum getOpenGLType(Renderer::TextureFormat::Enum textureFormat)
 		{
 			static constexpr GLenum MAPPING[] =
 			{
@@ -4489,7 +4490,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    OpenGL type
 		*/
-		static GLenum getOpenGLType(Renderer::PrimitiveTopology primitiveTopology)
+		[[nodiscard]] static GLenum getOpenGLType(Renderer::PrimitiveTopology primitiveTopology)
 		{
 			static constexpr GLenum MAPPING[] =
 			{
@@ -4515,7 +4516,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    OpenGL type
 		*/
-		static GLenum getOpenGLMapType(Renderer::MapType mapType)
+		[[nodiscard]] static GLenum getOpenGLMapType(Renderer::MapType mapType)
 		{
 			static constexpr GLenum MAPPING[] =
 			{
@@ -4541,7 +4542,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    OpenGL type
 		*/
-		static GLenum getOpenGLBlendType(Renderer::Blend blend)
+		[[nodiscard]] static GLenum getOpenGLBlendType(Renderer::Blend blend)
 		{
 			if (blend <= Renderer::Blend::SRC_ALPHA_SAT)
 			{
@@ -4713,7 +4714,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The number of resources this resource group groups together
 		*/
-		inline uint32_t getNumberOfResources() const
+		[[nodiscard]] inline uint32_t getNumberOfResources() const
 		{
 			return mNumberOfResources;
 		}
@@ -4725,7 +4726,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The renderer resources, don't release or destroy the returned pointer
 		*/
-		inline Renderer::IResource** getResources() const
+		[[nodiscard]] inline Renderer::IResource** getResources() const
 		{
 			return mResources;
 		}
@@ -4737,7 +4738,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The sampler states, don't release or destroy the returned pointer
 		*/
-		inline Renderer::ISamplerState** getSamplerState() const
+		[[nodiscard]] inline Renderer::ISamplerState** getSamplerState() const
 		{
 			return mSamplerStates;
 		}
@@ -4749,7 +4750,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The resource index to uniform block binding index mapping, only valid for uniform buffer resources
 		*/
-		inline uint32_t* getResourceIndexToUniformBlockBindingIndex() const
+		[[nodiscard]] inline uint32_t* getResourceIndexToUniformBlockBindingIndex() const
 		{
 			return mResourceIndexToUniformBlockBindingIndex;
 		}
@@ -4882,7 +4883,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The root signature data
 		*/
-		inline const Renderer::RootSignature& getRootSignature() const
+		[[nodiscard]] inline const Renderer::RootSignature& getRootSignature() const
 		{
 			return mRootSignature;
 		}
@@ -4892,7 +4893,7 @@ namespace OpenGLRenderer
 	//[ Public virtual Renderer::IRootSignature methods       ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual Renderer::IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, Renderer::IResource** resources, Renderer::ISamplerState** samplerStates = nullptr) override
+		[[nodiscard]] inline virtual Renderer::IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, Renderer::IResource** resources, Renderer::ISamplerState** samplerStates = nullptr) override
 		{
 			// Sanity checks
 			RENDERER_ASSERT(getRenderer().getContext(), rootParameterIndex < mRootSignature.numberOfParameters, "The OpenGL root parameter index is out-of-bounds")
@@ -4967,7 +4968,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL element array buffer, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLElementArrayBuffer() const
+		[[nodiscard]] inline GLuint getOpenGLElementArrayBuffer() const
 		{
 			return mOpenGLElementArrayBuffer;
 		}
@@ -4979,7 +4980,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL element array buffer data type
 		*/
-		inline GLenum getOpenGLType() const
+		[[nodiscard]] inline GLenum getOpenGLType() const
 		{
 			return mOpenGLType;
 		}
@@ -4991,7 +4992,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The number of bytes of an index
 		*/
-		inline uint32_t getIndexSizeInBytes() const
+		[[nodiscard]] inline uint32_t getIndexSizeInBytes() const
 		{
 			return mIndexSizeInBytes;
 		}
@@ -5247,7 +5248,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL array buffer, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLArrayBuffer() const
+		[[nodiscard]] inline GLuint getOpenGLArrayBuffer() const
 		{
 			return mOpenGLArrayBuffer;
 		}
@@ -5514,7 +5515,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The used index buffer, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		inline IndexBuffer* getIndexBuffer() const
+		[[nodiscard]] inline IndexBuffer* getIndexBuffer() const
 		{
 			return mIndexBuffer;
 		}
@@ -5526,7 +5527,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The internal resource type
 		*/
-		inline InternalResourceType::Enum getInternalResourceType() const
+		[[nodiscard]] inline InternalResourceType::Enum getInternalResourceType() const
 		{
 			return mInternalResourceType;
 		}
@@ -5835,7 +5836,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL vertex array, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLVertexArray() const
+		[[nodiscard]] inline GLuint getOpenGLVertexArray() const
 		{
 			return mOpenGLVertexArray;
 		}
@@ -6286,7 +6287,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL texture buffer instance, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLTextureBuffer() const
+		[[nodiscard]] inline GLuint getOpenGLTextureBuffer() const
 		{
 			return mOpenGLTextureBuffer;
 		}
@@ -6298,7 +6299,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL texture instance, can be zero if no resource is allocated
 		*/
-		inline GLuint getOpenGLTexture() const
+		[[nodiscard]] inline GLuint getOpenGLTexture() const
 		{
 			return mOpenGLTexture;
 		}
@@ -6310,7 +6311,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL internal format
 		*/
-		inline GLuint getOpenGLInternalFormat() const
+		[[nodiscard]] inline GLuint getOpenGLInternalFormat() const
 		{
 			return mOpenGLInternalFormat;
 		}
@@ -6631,7 +6632,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL structured buffer instance, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLStructuredBuffer() const
+		[[nodiscard]] inline GLuint getOpenGLStructuredBuffer() const
 		{
 			return mOpenGLStructuredBuffer;
 		}
@@ -6882,7 +6883,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL indirect buffer, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLIndirectBuffer() const
+		[[nodiscard]] inline GLuint getOpenGLIndirectBuffer() const
 		{
 			return mOpenGLIndirectBuffer;
 		}
@@ -6892,7 +6893,7 @@ namespace OpenGLRenderer
 	//[ Public virtual Renderer::IIndirectBuffer methods      ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const uint8_t* getEmulationData() const override
+		[[nodiscard]] inline virtual const uint8_t* getEmulationData() const override
 		{
 			return nullptr;
 		}
@@ -7138,7 +7139,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL uniform buffer instance, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLUniformBuffer() const
+		[[nodiscard]] inline GLuint getOpenGLUniformBuffer() const
 		{
 			return mOpenGLUniformBuffer;
 		}
@@ -7394,7 +7395,7 @@ namespace OpenGLRenderer
 	//[ Public virtual Renderer::IBufferManager methods       ]
 	//[-------------------------------------------------------]
 	public:
-		virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		[[nodiscard]] virtual Renderer::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			// "GL_ARB_vertex_buffer_object" required
 			if (mExtensions->isGL_ARB_vertex_buffer_object())
@@ -7418,7 +7419,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::Enum indexBufferFormat = Renderer::IndexBufferFormat::UNSIGNED_SHORT) override
+		[[nodiscard]] virtual Renderer::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::IndexBufferFormat::Enum indexBufferFormat = Renderer::IndexBufferFormat::UNSIGNED_SHORT) override
 		{
 			// "GL_ARB_vertex_buffer_object" required
 			if (mExtensions->isGL_ARB_vertex_buffer_object())
@@ -7442,7 +7443,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::IVertexArray* createVertexArray(const Renderer::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Renderer::VertexArrayVertexBuffer* vertexBuffers, Renderer::IIndexBuffer* indexBuffer = nullptr) override
+		[[nodiscard]] virtual Renderer::IVertexArray* createVertexArray(const Renderer::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Renderer::VertexArrayVertexBuffer* vertexBuffers, Renderer::IIndexBuffer* indexBuffer = nullptr) override
 		{
 			// Is "GL_ARB_vertex_array_object" there?
 			if (mExtensions->isGL_ARB_vertex_array_object())
@@ -7471,7 +7472,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t = Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F) override
+		[[nodiscard]] virtual Renderer::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t = Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F) override
 		{
 			// Sanity check
 			RENDERER_ASSERT(getRenderer().getContext(), (numberOfBytes % Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat)) == 0, "The OpenGL texture buffer size must be a multiple of the selected texture format bytes per texel")
@@ -7498,7 +7499,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::IStructuredBuffer* createStructuredBuffer(uint32_t numberOfBytes, const void* data, [[maybe_unused]] uint32_t bufferFlags, Renderer::BufferUsage bufferUsage, uint32_t numberOfStructureBytes) override
+		[[nodiscard]] virtual Renderer::IStructuredBuffer* createStructuredBuffer(uint32_t numberOfBytes, const void* data, [[maybe_unused]] uint32_t bufferFlags, Renderer::BufferUsage bufferUsage, uint32_t numberOfStructureBytes) override
 		{
 			// Sanity checks
 			RENDERER_ASSERT(getRenderer().getContext(), (numberOfBytes % numberOfStructureBytes) == 0, "The OpenGL structured buffer size must be a multiple of the given number of structure bytes")
@@ -7526,7 +7527,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		[[nodiscard]] virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			// "GL_ARB_uniform_buffer_object" required
 			if (mExtensions->isGL_ARB_uniform_buffer_object())
@@ -7556,7 +7557,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, [[maybe_unused]] uint32_t indirectBufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		[[nodiscard]] virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, [[maybe_unused]] uint32_t indirectBufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
 			// Sanity checks
 			RENDERER_ASSERT(getRenderer().getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_ARGUMENTS) != 0 || (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS) != 0, "Invalid OpenGL flags, indirect buffer element type specification \"DRAW_ARGUMENTS\" or \"DRAW_INDEXED_ARGUMENTS\" is missing")
@@ -7650,7 +7651,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL texture, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLTexture() const
+		[[nodiscard]] inline GLuint getOpenGLTexture() const
 		{
 			return mOpenGLTexture;
 		}
@@ -7662,7 +7663,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL internal format
 		*/
-		inline GLuint getOpenGLInternalFormat() const
+		[[nodiscard]] inline GLuint getOpenGLInternalFormat() const
 		{
 			return mOpenGLInternalFormat;
 		}
@@ -7683,7 +7684,7 @@ namespace OpenGLRenderer
 			}
 		#endif
 
-		inline virtual void* getInternalResourceHandle() const override
+		[[nodiscard]] inline virtual void* getInternalResourceHandle() const override
 		{
 			return reinterpret_cast<void*>(static_cast<uintptr_t>(mOpenGLTexture));
 		}
@@ -8161,7 +8162,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The number of multisamples per pixel (valid values: 1, 2, 4, 8)
 		*/
-		inline uint8_t getNumberOfMultisamples() const
+		[[nodiscard]] inline uint8_t getNumberOfMultisamples() const
 		{
 			return mNumberOfMultisamples;
 		}
@@ -8173,7 +8174,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL texture, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLTexture() const
+		[[nodiscard]] inline GLuint getOpenGLTexture() const
 		{
 			return mOpenGLTexture;
 		}
@@ -8185,7 +8186,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL internal format
 		*/
-		inline GLuint getOpenGLInternalFormat() const
+		[[nodiscard]] inline GLuint getOpenGLInternalFormat() const
 		{
 			return mOpenGLInternalFormat;
 		}
@@ -8222,7 +8223,7 @@ namespace OpenGLRenderer
 			}
 		#endif
 
-		inline virtual void* getInternalResourceHandle() const override
+		[[nodiscard]] inline virtual void* getInternalResourceHandle() const override
 		{
 			return reinterpret_cast<void*>(static_cast<uintptr_t>(mOpenGLTexture));
 		}
@@ -8840,7 +8841,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The number of multisamples per pixel (valid values: 1, 2, 4, 8)
 		*/
-		inline uint8_t getNumberOfMultisamples() const
+		[[nodiscard]] inline uint8_t getNumberOfMultisamples() const
 		{
 			return mNumberOfMultisamples;
 		}
@@ -8852,7 +8853,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL texture, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLTexture() const
+		[[nodiscard]] inline GLuint getOpenGLTexture() const
 		{
 			return mOpenGLTexture;
 		}
@@ -8864,7 +8865,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL internal format
 		*/
-		inline GLuint getOpenGLInternalFormat() const
+		[[nodiscard]] inline GLuint getOpenGLInternalFormat() const
 		{
 			return mOpenGLInternalFormat;
 		}
@@ -9233,7 +9234,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL texture, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLTexture() const
+		[[nodiscard]] inline GLuint getOpenGLTexture() const
 		{
 			return mOpenGLTexture;
 		}
@@ -9245,7 +9246,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The texture format
 		*/
-		inline Renderer::TextureFormat::Enum getTextureFormat() const
+		[[nodiscard]] inline Renderer::TextureFormat::Enum getTextureFormat() const
 		{
 			return mTextureFormat;
 		}
@@ -9257,7 +9258,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL internal format
 		*/
-		inline GLuint getOpenGLInternalFormat() const
+		[[nodiscard]] inline GLuint getOpenGLInternalFormat() const
 		{
 			return mOpenGLInternalFormat;
 		}
@@ -9269,7 +9270,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL pixel unpack buffer for dynamic textures, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLPixelUnpackBuffer() const
+		[[nodiscard]] inline GLuint getOpenGLPixelUnpackBuffer() const
 		{
 			return mOpenGLPixelUnpackBuffer;
 		}
@@ -9290,7 +9291,7 @@ namespace OpenGLRenderer
 			}
 		#endif
 
-		inline virtual void* getInternalResourceHandle() const override
+		[[nodiscard]] inline virtual void* getInternalResourceHandle() const override
 		{
 			return reinterpret_cast<void*>(static_cast<uintptr_t>(mOpenGLTexture));
 		}
@@ -9854,7 +9855,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL texture, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLTexture() const
+		[[nodiscard]] inline GLuint getOpenGLTexture() const
 		{
 			return mOpenGLTexture;
 		}
@@ -9866,7 +9867,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL internal format
 		*/
-		inline GLuint getOpenGLInternalFormat() const
+		[[nodiscard]] inline GLuint getOpenGLInternalFormat() const
 		{
 			return mOpenGLInternalFormat;
 		}
@@ -9887,7 +9888,7 @@ namespace OpenGLRenderer
 			}
 		#endif
 
-		inline virtual void* getInternalResourceHandle() const override
+		[[nodiscard]] inline virtual void* getInternalResourceHandle() const override
 		{
 			return reinterpret_cast<void*>(static_cast<uintptr_t>(mOpenGLTexture));
 		}
@@ -10458,7 +10459,7 @@ namespace OpenGLRenderer
 	//[ Public virtual Renderer::ITextureManager methods      ]
 	//[-------------------------------------------------------]
 	public:
-		virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, OpenGL has no texture usage indication
 
@@ -10483,7 +10484,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
+		[[nodiscard]] virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, OpenGL has no texture usage indication
 
@@ -10508,7 +10509,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, OpenGL has no texture usage indication
 
@@ -10533,7 +10534,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, OpenGL has no texture usage indication
 
@@ -10558,7 +10559,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
 			// The indication of the texture usage is only relevant for Direct3D, OpenGL has no texture usage indication
 
@@ -10969,7 +10970,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL sampler, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLSampler() const
+		[[nodiscard]] inline GLuint getOpenGLSampler() const
 		{
 			return mOpenGLSampler;
 		}
@@ -11087,7 +11088,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The rasterizer state
 		*/
-		inline const Renderer::RasterizerState& getRasterizerState() const
+		[[nodiscard]] inline const Renderer::RasterizerState& getRasterizerState() const
 		{
 			return mRasterizerState;
 		}
@@ -11235,7 +11236,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The depth stencil state
 		*/
-		inline const Renderer::DepthStencilState& getDepthStencilState() const
+		[[nodiscard]] inline const Renderer::DepthStencilState& getDepthStencilState() const
 		{
 			return mDepthStencilState;
 		}
@@ -11322,7 +11323,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The blend state
 		*/
-		inline const Renderer::BlendState& getBlendState() const
+		[[nodiscard]] inline const Renderer::BlendState& getBlendState() const
 		{
 			return mBlendState;
 		}
@@ -11432,7 +11433,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The number of color render target textures
 		*/
-		inline uint32_t getNumberOfColorAttachments() const
+		[[nodiscard]] inline uint32_t getNumberOfColorAttachments() const
 		{
 			return mNumberOfColorAttachments;
 		}
@@ -11444,7 +11445,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The number of render target textures (color and depth stencil)
 		*/
-		inline uint32_t getNumberOfAttachments() const
+		[[nodiscard]] inline uint32_t getNumberOfAttachments() const
 		{
 			return (mDepthStencilAttachmentTextureFormat != Renderer::TextureFormat::Enum::UNKNOWN) ? (mNumberOfColorAttachments + 1) : mNumberOfColorAttachments;
 		}
@@ -11459,7 +11460,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The color attachment texture format
 		*/
-		inline Renderer::TextureFormat::Enum getColorAttachmentTextureFormat(uint32_t colorAttachmentIndex) const
+		[[nodiscard]] inline Renderer::TextureFormat::Enum getColorAttachmentTextureFormat(uint32_t colorAttachmentIndex) const
 		{
 			RENDERER_ASSERT(getRenderer().getContext(), colorAttachmentIndex < mNumberOfColorAttachments, "Invalid OpenGL color attachment index")
 			return mColorAttachmentTextureFormats[colorAttachmentIndex];
@@ -11472,7 +11473,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The depth stencil attachment texture format
 		*/
-		inline Renderer::TextureFormat::Enum getDepthStencilAttachmentTextureFormat() const
+		[[nodiscard]] inline Renderer::TextureFormat::Enum getDepthStencilAttachmentTextureFormat() const
 		{
 			return mDepthStencilAttachmentTextureFormat;
 		}
@@ -11572,7 +11573,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL context
 		*/
-		inline IOpenGLContext& getOpenGLContext() const
+		[[nodiscard]] inline IOpenGLContext& getOpenGLContext() const
 		{
 			return *mOpenGLContext;
 		}
@@ -11669,7 +11670,7 @@ namespace OpenGLRenderer
 	//[ Public virtual Renderer::ISwapChain methods           ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual Renderer::handle getNativeWindowHandle() const override
+		[[nodiscard]] inline virtual Renderer::handle getNativeWindowHandle() const override
 		{
 			return mNativeWindowHandle;
 		}
@@ -11731,7 +11732,7 @@ namespace OpenGLRenderer
 			// Nothing here
 		}
 
-		inline virtual bool getFullscreenState() const override
+		[[nodiscard]] inline virtual bool getFullscreenState() const override
 		{
 			// TODO(co) Implement me
 			return false;
@@ -11837,7 +11838,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL framebuffer, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLFramebuffer() const
+		[[nodiscard]] inline GLuint getOpenGLFramebuffer() const
 		{
 			return mOpenGLFramebuffer;
 		}
@@ -11849,7 +11850,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The number of color render target textures
 		*/
-		inline uint32_t getNumberOfColorTextures() const
+		[[nodiscard]] inline uint32_t getNumberOfColorTextures() const
 		{
 			return mNumberOfColorTextures;
 		}
@@ -11861,7 +11862,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    "true" if the framebuffer is a multisample render target, else "false"
 		*/
-		inline bool isMultisampleRenderTarget() const
+		[[nodiscard]] inline bool isMultisampleRenderTarget() const
 		{
 			return mMultisampleRenderTarget;
 		}
@@ -11882,7 +11883,7 @@ namespace OpenGLRenderer
 			}
 		#endif
 
-		inline virtual void* getInternalResourceHandle() const override
+		[[nodiscard]] inline virtual void* getInternalResourceHandle() const override
 		{
 			return reinterpret_cast<void*>(static_cast<uintptr_t>(mOpenGLFramebuffer));
 		}
@@ -12743,7 +12744,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL shader, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLShader() const
+		[[nodiscard]] inline GLuint getOpenGLShader() const
 		{
 			return mOpenGLShader;
 		}
@@ -12769,7 +12770,7 @@ namespace OpenGLRenderer
 	//[ Public virtual Renderer::IShader methods              ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::GLSL_NAME;
 		}
@@ -12852,7 +12853,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL shader, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLShader() const
+		[[nodiscard]] inline GLuint getOpenGLShader() const
 		{
 			return mOpenGLShader;
 		}
@@ -12878,7 +12879,7 @@ namespace OpenGLRenderer
 	//[ Public virtual Renderer::IShader methods              ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::GLSL_NAME;
 		}
@@ -12961,7 +12962,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL shader, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLShader() const
+		[[nodiscard]] inline GLuint getOpenGLShader() const
 		{
 			return mOpenGLShader;
 		}
@@ -12987,7 +12988,7 @@ namespace OpenGLRenderer
 	//[ Public virtual Renderer::IShader methods              ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::GLSL_NAME;
 		}
@@ -13079,7 +13080,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL shader, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLShader() const
+		[[nodiscard]] inline GLuint getOpenGLShader() const
 		{
 			return mOpenGLShader;
 		}
@@ -13091,7 +13092,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL geometry shader input primitive topology
 		*/
-		inline GLint getOpenGLGsInputPrimitiveTopology() const
+		[[nodiscard]] inline GLint getOpenGLGsInputPrimitiveTopology() const
 		{
 			return mOpenGLGsInputPrimitiveTopology;
 		}
@@ -13103,7 +13104,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL geometry shader output primitive topology
 		*/
-		inline GLint getOpenGLGsOutputPrimitiveTopology() const
+		[[nodiscard]] inline GLint getOpenGLGsOutputPrimitiveTopology() const
 		{
 			return mOpenGLGsOutputPrimitiveTopology;
 		}
@@ -13115,7 +13116,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The number of output vertices
 		*/
-		inline uint32_t getNumberOfOutputVertices() const
+		[[nodiscard]] inline uint32_t getNumberOfOutputVertices() const
 		{
 			return mNumberOfOutputVertices;
 		}
@@ -13141,7 +13142,7 @@ namespace OpenGLRenderer
 	//[ Public virtual Renderer::IShader methods              ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::GLSL_NAME;
 		}
@@ -13227,7 +13228,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL shader, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLShader() const
+		[[nodiscard]] inline GLuint getOpenGLShader() const
 		{
 			return mOpenGLShader;
 		}
@@ -13253,7 +13254,7 @@ namespace OpenGLRenderer
 	//[ Public virtual Renderer::IShader methods              ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::GLSL_NAME;
 		}
@@ -13336,7 +13337,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL shader, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLShader() const
+		[[nodiscard]] inline GLuint getOpenGLShader() const
 		{
 			return mOpenGLShader;
 		}
@@ -13362,7 +13363,7 @@ namespace OpenGLRenderer
 	//[ Public virtual Renderer::IShader methods              ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::GLSL_NAME;
 		}
@@ -13648,7 +13649,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL program, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLProgram() const
+		[[nodiscard]] inline GLuint getOpenGLProgram() const
 		{
 			return mOpenGLProgram;
 		}
@@ -13660,7 +13661,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    Draw ID uniform location, -1 if there's no such uniform
 		*/
-		inline GLint getDrawIdUniformLocation() const
+		[[nodiscard]] inline GLint getDrawIdUniformLocation() const
 		{
 			return mDrawIdUniformLocation;
 		}
@@ -13686,7 +13687,7 @@ namespace OpenGLRenderer
 	//[ Public virtual Renderer::IGraphicsProgram methods     ]
 	//[-------------------------------------------------------]
 	public:
-		virtual Renderer::handle getUniformHandle(const char* uniformName) override
+		[[nodiscard]] virtual Renderer::handle getUniformHandle(const char* uniformName) override
 		{
 			return static_cast<Renderer::handle>(glGetUniformLocationARB(mOpenGLProgram, uniformName));
 		}
@@ -14278,7 +14279,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL program, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLProgram() const
+		[[nodiscard]] inline GLuint getOpenGLProgram() const
 		{
 			return mOpenGLProgram;
 		}
@@ -14368,19 +14369,19 @@ namespace OpenGLRenderer
 	//[ Public virtual Renderer::IShaderLanguage methods      ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::GLSL_NAME;
 		}
 
-		inline virtual Renderer::IVertexShader* createVertexShaderFromBytecode(const Renderer::VertexAttributes&, const Renderer::ShaderBytecode&) override
+		[[nodiscard]] inline virtual Renderer::IVertexShader* createVertexShaderFromBytecode(const Renderer::VertexAttributes&, const Renderer::ShaderBytecode&) override
 		{
 			// Error!
 			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
-		virtual Renderer::IVertexShader* createVertexShaderFromSourceCode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] virtual Renderer::IVertexShader* createVertexShaderFromSourceCode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// Check whether or not there's vertex shader support
 			// -> Monolithic shaders have no shader bytecode, only a monolithic program bytecode
@@ -14396,14 +14397,14 @@ namespace OpenGLRenderer
 			}
 		}
 
-		inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromBytecode(const Renderer::ShaderBytecode&) override
+		[[nodiscard]] inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromBytecode(const Renderer::ShaderBytecode&) override
 		{
 			// Error!
 			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
-		virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// Check whether or not there's tessellation support
 			// -> Monolithic shaders have no shader bytecode, only a monolithic program bytecode
@@ -14419,14 +14420,14 @@ namespace OpenGLRenderer
 			}
 		}
 
-		inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode(const Renderer::ShaderBytecode&) override
+		[[nodiscard]] inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode(const Renderer::ShaderBytecode&) override
 		{
 			// Error!
 			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
-		virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// Check whether or not there's tessellation support
 			// -> Monolithic shaders have no shader bytecode, only a monolithic program bytecode
@@ -14442,14 +14443,14 @@ namespace OpenGLRenderer
 			}
 		}
 
-		inline virtual Renderer::IGeometryShader* createGeometryShaderFromBytecode(const Renderer::ShaderBytecode&, Renderer::GsInputPrimitiveTopology, Renderer::GsOutputPrimitiveTopology, uint32_t) override
+		[[nodiscard]] inline virtual Renderer::IGeometryShader* createGeometryShaderFromBytecode(const Renderer::ShaderBytecode&, Renderer::GsInputPrimitiveTopology, Renderer::GsOutputPrimitiveTopology, uint32_t) override
 		{
 			// Error!
 			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
-		virtual Renderer::IGeometryShader* createGeometryShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] virtual Renderer::IGeometryShader* createGeometryShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// Check whether or not there's geometry shader support
 			// -> Monolithic shaders have no shader bytecode, only a monolithic program bytecode
@@ -14469,14 +14470,14 @@ namespace OpenGLRenderer
 			}
 		}
 
-		inline virtual Renderer::IFragmentShader* createFragmentShaderFromBytecode(const Renderer::ShaderBytecode&) override
+		[[nodiscard]] inline virtual Renderer::IFragmentShader* createFragmentShaderFromBytecode(const Renderer::ShaderBytecode&) override
 		{
 			// Error!
 			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
-		virtual Renderer::IFragmentShader* createFragmentShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] virtual Renderer::IFragmentShader* createFragmentShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// Check whether or not there's fragment shader support
 			// -> Monolithic shaders have no shader bytecode, only a monolithic program bytecode
@@ -14492,14 +14493,14 @@ namespace OpenGLRenderer
 			}
 		}
 
-		inline virtual Renderer::IComputeShader* createComputeShaderFromBytecode(const Renderer::ShaderBytecode&) override
+		[[nodiscard]] inline virtual Renderer::IComputeShader* createComputeShaderFromBytecode(const Renderer::ShaderBytecode&) override
 		{
 			// Error!
 			RENDERER_ASSERT(getRenderer().getContext(), false, "OpenGL monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
-		virtual Renderer::IComputeShader* createComputeShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] virtual Renderer::IComputeShader* createComputeShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// Check whether or not there's compute shader support
 			// -> Monolithic shaders have no shader bytecode, only a monolithic program bytecode
@@ -14515,7 +14516,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::IGraphicsProgram* createGraphicsProgram(const Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
+		[[nodiscard]] virtual Renderer::IGraphicsProgram* createGraphicsProgram(const Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
 		{
 			// Sanity checks
 			// -> A shader can be a null pointer, but if it's not the shader and graphics program language must match!
@@ -14639,7 +14640,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL shader program, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLShaderProgram() const
+		[[nodiscard]] inline GLuint getOpenGLShaderProgram() const
 		{
 			return mOpenGLShaderProgram;
 		}
@@ -14651,7 +14652,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    Draw ID uniform location, -1 if there's no such uniform
 		*/
-		inline GLint getDrawIdUniformLocation() const
+		[[nodiscard]] inline GLint getDrawIdUniformLocation() const
 		{
 			return mDrawIdUniformLocation;
 		}
@@ -14677,7 +14678,7 @@ namespace OpenGLRenderer
 	//[ Public virtual Renderer::IShader methods              ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::GLSL_NAME;
 		}
@@ -14781,7 +14782,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL shader program, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLShaderProgram() const
+		[[nodiscard]] inline GLuint getOpenGLShaderProgram() const
 		{
 			return mOpenGLShaderProgram;
 		}
@@ -14807,7 +14808,7 @@ namespace OpenGLRenderer
 	//[ Public virtual Renderer::IShader methods              ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::GLSL_NAME;
 		}
@@ -14910,7 +14911,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL shader program, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLShaderProgram() const
+		[[nodiscard]] inline GLuint getOpenGLShaderProgram() const
 		{
 			return mOpenGLShaderProgram;
 		}
@@ -14936,7 +14937,7 @@ namespace OpenGLRenderer
 	//[ Public virtual Renderer::IShader methods              ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::GLSL_NAME;
 		}
@@ -15059,7 +15060,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL shader program, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLShaderProgram() const
+		[[nodiscard]] inline GLuint getOpenGLShaderProgram() const
 		{
 			return mOpenGLShaderProgram;
 		}
@@ -15085,7 +15086,7 @@ namespace OpenGLRenderer
 	//[ Public virtual Renderer::IShader methods              ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::GLSL_NAME;
 		}
@@ -15188,7 +15189,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL shader program, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLShaderProgram() const
+		[[nodiscard]] inline GLuint getOpenGLShaderProgram() const
 		{
 			return mOpenGLShaderProgram;
 		}
@@ -15214,7 +15215,7 @@ namespace OpenGLRenderer
 	//[ Public virtual Renderer::IShader methods              ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::GLSL_NAME;
 		}
@@ -15317,7 +15318,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL shader program, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLShaderProgram() const
+		[[nodiscard]] inline GLuint getOpenGLShaderProgram() const
 		{
 			return mOpenGLShaderProgram;
 		}
@@ -15343,7 +15344,7 @@ namespace OpenGLRenderer
 	//[ Public virtual Renderer::IShader methods              ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::GLSL_NAME;
 		}
@@ -15638,7 +15639,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL program pipeline, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLProgramPipeline() const
+		[[nodiscard]] inline GLuint getOpenGLProgramPipeline() const
 		{
 			return mOpenGLProgramPipeline;
 		}
@@ -15650,7 +15651,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    Vertex shader the program is using, can be a null pointer, don't destroy the instance
 		*/
-		inline VertexShaderSeparate* getVertexShaderSeparate() const
+		[[nodiscard]] inline VertexShaderSeparate* getVertexShaderSeparate() const
 		{
 			return mVertexShaderSeparate;
 		}
@@ -15676,7 +15677,7 @@ namespace OpenGLRenderer
 	//[ Public virtual Renderer::IGraphicsProgram methods     ]
 	//[-------------------------------------------------------]
 	public:
-		virtual Renderer::handle getUniformHandle(const char* uniformName) override
+		[[nodiscard]] virtual Renderer::handle getUniformHandle(const char* uniformName) override
 		{
 			GLint uniformLocation = -1;
 			#define GET_UNIFORM_LOCATION(ShaderSeparate) if (uniformLocation < 0 && nullptr != ShaderSeparate) uniformLocation = glGetUniformLocationARB(ShaderSeparate->getOpenGLShaderProgram(), uniformName);
@@ -16230,7 +16231,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL program pipeline, can be zero if no resource is allocated, do not destroy the returned resource
 		*/
-		inline GLuint getOpenGLProgramPipeline() const
+		[[nodiscard]] inline GLuint getOpenGLProgramPipeline() const
 		{
 			return mOpenGLProgramPipeline;
 		}
@@ -16333,12 +16334,12 @@ namespace OpenGLRenderer
 	//[ Public virtual Renderer::IShaderLanguage methods      ]
 	//[-------------------------------------------------------]
 	public:
-		inline virtual const char* getShaderLanguageName() const override
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
 		{
 			return ::detail::GLSL_NAME;
 		}
 
-		virtual Renderer::IVertexShader* createVertexShaderFromBytecode(const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderBytecode& shaderBytecode) override
+		[[nodiscard]] virtual Renderer::IVertexShader* createVertexShaderFromBytecode(const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			// Check whether or not there's vertex shader support
 			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(getRenderer());
@@ -16354,7 +16355,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::IVertexShader* createVertexShaderFromSourceCode(const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] virtual Renderer::IVertexShader* createVertexShaderFromSourceCode(const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// Check whether or not there's vertex shader support
 			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(getRenderer());
@@ -16370,7 +16371,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
+		[[nodiscard]] virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			// Check whether or not there's tessellation support
 			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(getRenderer());
@@ -16386,7 +16387,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// Check whether or not there's tessellation support
 			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(getRenderer());
@@ -16402,7 +16403,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
+		[[nodiscard]] virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			// Check whether or not there's tessellation support
 			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(getRenderer());
@@ -16418,7 +16419,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// Check whether or not there's tessellation support
 			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(getRenderer());
@@ -16434,7 +16435,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::IGeometryShader* createGeometryShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode, Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices) override
+		[[nodiscard]] virtual Renderer::IGeometryShader* createGeometryShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode, Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices) override
 		{
 			// Check whether or not there's geometry shader support
 			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(getRenderer());
@@ -16454,7 +16455,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::IGeometryShader* createGeometryShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] virtual Renderer::IGeometryShader* createGeometryShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// Check whether or not there's geometry shader support
 			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(getRenderer());
@@ -16474,7 +16475,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::IFragmentShader* createFragmentShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
+		[[nodiscard]] virtual Renderer::IFragmentShader* createFragmentShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			// Check whether or not there's fragment shader support
 			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(getRenderer());
@@ -16490,7 +16491,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::IFragmentShader* createFragmentShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] virtual Renderer::IFragmentShader* createFragmentShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// Check whether or not there's fragment shader support
 			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(getRenderer());
@@ -16506,7 +16507,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::IComputeShader* createComputeShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
+		[[nodiscard]] virtual Renderer::IComputeShader* createComputeShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			// Check whether or not there's compute shader support
 			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(getRenderer());
@@ -16522,7 +16523,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::IComputeShader* createComputeShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] virtual Renderer::IComputeShader* createComputeShaderFromSourceCode(const Renderer::ShaderSourceCode& shaderSourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) override
 		{
 			// Check whether or not there's compute shader support
 			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(getRenderer());
@@ -16538,7 +16539,7 @@ namespace OpenGLRenderer
 			}
 		}
 
-		virtual Renderer::IGraphicsProgram* createGraphicsProgram(const Renderer::IRootSignature& rootSignature, [[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
+		[[nodiscard]] virtual Renderer::IGraphicsProgram* createGraphicsProgram(const Renderer::IRootSignature& rootSignature, [[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexShader* vertexShader, Renderer::ITessellationControlShader* tessellationControlShader, Renderer::ITessellationEvaluationShader* tessellationEvaluationShader, Renderer::IGeometryShader* geometryShader, Renderer::IFragmentShader* fragmentShader) override
 		{
 			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(getRenderer());
 
@@ -16722,7 +16723,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    Graphics program, always valid
 		*/
-		inline Renderer::IGraphicsProgram* getGraphicsProgram() const
+		[[nodiscard]] inline Renderer::IGraphicsProgram* getGraphicsProgram() const
 		{
 			return mGraphicsProgram;
 		}
@@ -16734,7 +16735,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    OpenGL primitive topology describing the type of primitive to render
 		*/
-		inline GLenum getOpenGLPrimitiveTopology() const
+		[[nodiscard]] inline GLenum getOpenGLPrimitiveTopology() const
 		{
 			return mOpenGLPrimitiveTopology;
 		}
@@ -16746,7 +16747,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    Return the number of vertices per patch
 		*/
-		inline GLint getNumberOfVerticesPerPatch() const
+		[[nodiscard]] inline GLint getNumberOfVerticesPerPatch() const
 		{
 			return mNumberOfVerticesPerPatch;
 		}
@@ -16772,17 +16773,17 @@ namespace OpenGLRenderer
 		//[-------------------------------------------------------]
 		//[ Detail state access                                   ]
 		//[-------------------------------------------------------]
-		inline const Renderer::RasterizerState& getRasterizerState() const
+		[[nodiscard]] inline const Renderer::RasterizerState& getRasterizerState() const
 		{
 			return mRasterizerState.getRasterizerState();
 		}
 
-		inline const Renderer::DepthStencilState& getDepthStencilState() const
+		[[nodiscard]] inline const Renderer::DepthStencilState& getDepthStencilState() const
 		{
 			return mDepthStencilState.getDepthStencilState();
 		}
 
-		inline const Renderer::BlendState& getBlendState() const
+		[[nodiscard]] inline const Renderer::BlendState& getBlendState() const
 		{
 			return mBlendState.getBlendState();
 		}
@@ -16846,12 +16847,12 @@ namespace
 		//[-------------------------------------------------------]
 		// Implementation from "08/02/2015 Better array 'countof' implementation with C++ 11 (updated)" - https://www.g-truc.net/post-0708.html
 		template<typename T, std::size_t N>
-		constexpr std::size_t countof(T const (&)[N])
+		[[nodiscard]] constexpr std::size_t countof(T const (&)[N])
 		{
 			return N;
 		}
 
-		bool mapBuffer([[maybe_unused]] const Renderer::Context& context, const OpenGLRenderer::Extensions& extensions, GLenum target, [[maybe_unused]] GLenum bindingTarget, GLuint openGLBuffer, Renderer::MapType mapType, Renderer::MappedSubresource& mappedSubresource)
+		[[nodiscard]] bool mapBuffer([[maybe_unused]] const Renderer::Context& context, const OpenGLRenderer::Extensions& extensions, GLenum target, [[maybe_unused]] GLenum bindingTarget, GLuint openGLBuffer, Renderer::MapType mapType, Renderer::MappedSubresource& mappedSubresource)
 		{
 			// TODO(co) This buffer update isn't efficient, use e.g. persistent buffer mapping
 
@@ -17237,12 +17238,9 @@ namespace OpenGLRenderer
 			// We're using "this" in here, so we are not allowed to write the following within the initializer list
 			mExtensions = RENDERER_NEW(mContext, Extensions)(*this, *mOpenGLContext);
 
-			// Is the OpenGL context initialized?
-			if (mOpenGLContext->isInitialized())
+			// Is the OpenGL context and extensions initialized?
+			if (mOpenGLContext->isInitialized() && mExtensions->initialize())
 			{
-				// Initialize the OpenGL extensions
-				mExtensions->initialize();
-
 				#ifdef RENDERER_DEBUG
 					// "GL_ARB_debug_output"-extension available?
 					if (mExtensions->isGL_ARB_debug_output())
@@ -17333,7 +17331,7 @@ namespace OpenGLRenderer
 		#ifdef RENDERER_STATISTICS
 		{ // For debugging: At this point there should be no resource instances left, validate this!
 			// -> Are the currently any resource instances?
-			const unsigned long numberOfCurrentResources = getStatistics().getNumberOfCurrentResources();
+			const uint32_t numberOfCurrentResources = getStatistics().getNumberOfCurrentResources();
 			if (numberOfCurrentResources > 0)
 			{
 				// Error!

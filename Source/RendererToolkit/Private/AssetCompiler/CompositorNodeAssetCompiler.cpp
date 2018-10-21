@@ -188,7 +188,7 @@ namespace
 			}
 		}
 
-		uint32_t getRenderTargetTextureSize(const rapidjson::Value& rapidJsonValueRenderTargetTexture, const char* propertyName, const char* defaultValue)
+		[[nodiscard]] uint32_t getRenderTargetTextureSize(const rapidjson::Value& rapidJsonValueRenderTargetTexture, const char* propertyName, const char* defaultValue)
 		{
 			uint32_t size = RendererRuntime::getInvalid<uint32_t>();
 			if (rapidJsonValueRenderTargetTexture.HasMember(propertyName))
@@ -202,7 +202,7 @@ namespace
 			return size;
 		}
 
-		uint32_t getForEachInstructionParameters(const std::string& instructionAsString, std::string& scopedIterationCounterVariable)
+		[[nodiscard]] uint32_t getForEachInstructionParameters(const std::string& instructionAsString, std::string& scopedIterationCounterVariable)
 		{
 			// "@foreach(<number of iterations>, <scoped iteration counter variable>)" (same syntax as in "RendererRuntime::ShaderBuilder")
 			std::vector<std::string> elements;
@@ -217,7 +217,7 @@ namespace
 			return static_cast<uint32_t>(std::atoi(elements[0].c_str()));
 		}
 
-		uint32_t getNumberOfTargets(const rapidjson::Value& rapidJsonValueTargets)
+		[[nodiscard]] uint32_t getNumberOfTargets(const rapidjson::Value& rapidJsonValueTargets)
 		{
 			// We can't just return "rapidJsonValueTargets.MemberCount()" since there might be "@foreach"-instructions
 			uint32_t numberOfTargets = 0;

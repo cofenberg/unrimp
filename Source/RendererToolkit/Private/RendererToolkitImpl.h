@@ -107,9 +107,9 @@ namespace RendererToolkit
 	//[ Public virtual RendererToolkit::IRendererToolkit methods ]
 	//[-------------------------------------------------------]
 	public:
-		virtual IProject* createProject() override;
+		[[nodiscard]] virtual IProject* createProject() override;
 
-		inline virtual State getState() const override
+		[[nodiscard]] inline virtual State getState() const override
 		{
 			return mState;
 		}

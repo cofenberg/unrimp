@@ -63,7 +63,7 @@ namespace RendererToolkit
 	//[ Public data                                           ]
 	//[-------------------------------------------------------]
 	public:
-		inline const std::string& getLastErrorMessage() const
+		[[nodiscard]] inline const std::string& getLastErrorMessage() const
 		{
 			return mLastErrorMessage;
 		}
