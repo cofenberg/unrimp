@@ -89,6 +89,9 @@ struct Material
 	float  Metallic;
 	float  AlphaReference;
 	float  EmissiveIntensity;
+	float  PomHeightMapScale;		// Parallax occlusion mapping (POM) height map scale
+	int    MinimumNumberOfPomSteps;	// Minimum number of parallax occlusion mapping (POM) steps
+	int    MaximumNumberOfPomSteps;	// Maximum number of parallax occlusion mapping (POM) steps
 };
 UNIFORM_BUFFER_BEGIN(1, 0, MaterialUniformBuffer, 1)
 	Material Materials[FAST_SHADER_BUILD_HACK(@insertpiece(MaximumNumberOfMaterials))];
@@ -139,6 +142,11 @@ SAMPLER_STATE(5, 0, SamplerLinear, 0)
 	@insertpiece(DefineShadowDebugging)
 @includepiece(../SharedShaderPiece/SP_Noise.asset)
 	@insertpiece(DefineMultipleOctavesNoise3D)
+@property(UseParallaxOcclusionMapping)
+	@includepiece(../SharedShaderPiece/SP_ParallaxOcclusionMapping.asset)
+		@insertpiece(DefineParallaxOcclusionMapping)
+		@insertpiece(DefineParallaxOcclusionMappingSelfShadowing)
+@end
 @property(UseWetSurfaces)
 	@includepiece(../SharedShaderPiece/SP_WetSurfaces.asset)
 		@insertpiece(DefineWetSurfaces)
@@ -149,14 +157,40 @@ SAMPLER_STATE(5, 0, SamplerLinear, 0)
 //[ Main                                                  ]
 //[-------------------------------------------------------]
 MAIN_BEGIN
+	float2 texCoord = MAIN_INPUT(TexCoordVS);
+	float shadowVisibility = 1.0f;
+
 	// Get the used material
 	Material material = Materials[MAIN_INPUT(AssignedMaterialSlotVS)];
+
+	// Get unnormalized camera incident vector
+	float3 worldSpacePosition = MAIN_INPUT(WorldSpacePositionVS);
+	float3 worldSpaceIncident = -worldSpacePosition;	// Since we're using camera relative rendering, "PassData.WorldSpaceCameraPosition - worldSpacePosition" becomes just "-worldSpacePosition"
+	float3 viewSpaceIncident = MultiplyQuaternionVector(PassData.WorldSpaceToViewSpaceQuaternion, worldSpaceIncident);
+
+	// Parallax occlusion mapping (POM)
+	@property(UseParallaxOcclusionMapping)
+	{
+		float pomHeightMapScale = ParallaxOcclusionMappingHeightMapScale(material.PomHeightMapScale, worldSpacePosition);
+		if (pomHeightMapScale > 0.0f)
+		{
+			// Get new texture coordinates from parallax occlusion mapping
+			float parallaxHeight = 0.0f;
+			float3x3 TBN = ROW_MATRIX_3x3(MAIN_INPUT(TangentFrame0VS), MAIN_INPUT(TangentFrame1VS), MAIN_INPUT(TangentFrame2VS));
+			ParallaxOcclusionMapping(MATRIX_MUL(TBN, viewSpaceIncident), pomHeightMapScale, material.MinimumNumberOfPomSteps, material.MaximumNumberOfPomSteps, texCoord, parallaxHeight);
+
+			// Get self-shadowing factor for elements of parallax
+			float shadowSampleFactor = 0.5f;	// Reduce sample rate for shadow
+			shadowVisibility = ParallaxOcclusionMappingSelfShadowing(normalize(MATRIX_MUL(TBN, PassData.ViewSpaceSunlightDirection)), pomHeightMapScale, min(1, material.MinimumNumberOfPomSteps * shadowSampleFactor), min(1, material.MaximumNumberOfPomSteps * shadowSampleFactor), texCoord, parallaxHeight);
+		}
+	}
+	@end
 
 	// Read channel packed texture data
 	// -> "_argb_nxa" = RGB channel = Albedo map ("_a"-postfix), A channel = x component of normal map ("_n"-postfix)
 	// -> "_hr_rg_mb_nya" = R channel = Height map ("_h"-postfix), G channel = Roughness map ("_r"-postfix), B channel = Metallic map ("_m"-postfix), A channel = y component of normal map ("_n"-postfix)
-	float4 value_argb_nxa = SAMPLE_2D(_argb_nxa, SamplerLinear, MAIN_INPUT(TexCoordVS));
-	float4 value_hr_rg_mb_nya = SAMPLE_2D(_hr_rg_mb_nya, SamplerLinear, MAIN_INPUT(TexCoordVS));
+	float4 value_argb_nxa = SAMPLE_2D(_argb_nxa, SamplerLinear, texCoord);
+	float4 value_hr_rg_mb_nya = SAMPLE_2D(_hr_rg_mb_nya, SamplerLinear, texCoord);
 
 	// Get albedo, roughness and metallic
 	float3 albedo = material.AlbedoColor * value_argb_nxa.rgb;
@@ -172,8 +206,7 @@ MAIN_BEGIN
 	viewSpaceNormal = IS_FRONT_FACE ? viewSpaceNormal : -viewSpaceNormal;
 
 	// Shadow mapping
-	float3 worldSpacePosition = MAIN_INPUT(WorldSpacePositionVS);
-	float shadowVisibility = CalculateShadowVisibility(worldSpacePosition, GetLinearDepthReversedZ(FRAGMENT_POSITION.z));
+	shadowVisibility *= CalculateShadowVisibility(worldSpacePosition, GetLinearDepthReversedZ(FRAGMENT_POSITION.z));
 
 	// Water influence on material BRDF
 	// -> Wet surfaces parameter layout: x=wet level, y=hole/cracks flood level, z=puddle flood level, w=rain intensity
@@ -185,11 +218,6 @@ MAIN_BEGIN
 			DoWaterProcess(wrappedWorldSpacePosition, shadowVisibility, value_hr_rg_mb_nya.r, multipleOctavesNoise3D(wrappedWorldSpacePosition), PassData.WetSurfaces.x, PassData.WetSurfaces.y, PassData.WetSurfaces.z, PassData.WetSurfaces.w, albedo, roughness, metallic, viewSpaceNormal);
 		}
 	@end
-
-	// Derive data
-	float3 worldSpaceNormal = MultiplyQuaternionVector(PassData.ViewSpaceToWorldSpaceQuaternion, viewSpaceNormal);
-	float3 worldSpaceIncident = normalize(-worldSpacePosition);	// Since we're using camera relative rendering, "PassData.WorldSpaceCameraPosition - worldSpacePosition" becomes just "-worldSpacePosition"
-	float3 viewSpaceIncident = MultiplyQuaternionVector(PassData.WorldSpaceToViewSpaceQuaternion, worldSpaceIncident);
 
 	// Calculate screen space velocity
 	@insertpiece(DefineCalculateScreenSpaceVelocity)
@@ -206,12 +234,13 @@ MAIN_BEGIN
 	}
 
 	// Ambient term
+	float3 worldSpaceNormal = MultiplyQuaternionVector(PassData.ViewSpaceToWorldSpaceQuaternion, viewSpaceNormal);
 	float3 color = (reflectionColor * metallic + albedo) * (PassData.AmbientColor.rgb + CalculateHemisphereLighting(worldSpaceNormal.xyz, PassData.AmbientColor.rgb * 0.7f, PassData.AmbientColor.rgb * 0.2f));
 
 	// Directional sunlight, our primary light
 	if (shadowVisibility > 0.0f)
 	{
-		color += shadowVisibility * CalculateLighting(albedo, roughness, metallic, viewSpaceNormal, viewSpaceIncident, reflectionColor, PassData.ViewSpaceSunlightDirection, PassData.SunlightColor);
+		color += shadowVisibility * CalculateLighting(albedo, roughness, metallic, viewSpaceNormal, normalize(viewSpaceIncident), reflectionColor, PassData.ViewSpaceSunlightDirection, PassData.SunlightColor);
 	}
 
 	// Perform clustered shading
@@ -219,7 +248,7 @@ MAIN_BEGIN
 
 	// Emissive term
 	@property(UseEmissiveMap)
-		color += SAMPLE_2D(EmissiveMap, SamplerLinear, MAIN_INPUT(TexCoordVS)).rgb * material.EmissiveIntensity;
+		color += SAMPLE_2D(EmissiveMap, SamplerLinear, texCoord).rgb * material.EmissiveIntensity;
 	@end
 
 	// Complex pixel detection and alpha test using alpha to coverage

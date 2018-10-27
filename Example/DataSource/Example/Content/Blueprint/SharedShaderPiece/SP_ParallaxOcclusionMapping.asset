@@ -1,0 +1,19 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"Metadata":
+		{
+			"Copyright": "The implementation is basing on 'Parallax Occlusion Mapping in GLSL' by Igor Dykhta published 21 March 2013 at http://sunandblackcat.com/tipFullView.php?l=eng&topicid=28"
+		},
+		"Compiler":
+		{
+			"ClassName": "RendererToolkit::ShaderPieceAssetCompiler",
+			"InputFile": "./SP_ParallaxOcclusionMapping.shader_piece"
+		}
+	}
+}

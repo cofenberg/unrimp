@@ -135,6 +135,34 @@
 				"Value": "1.0",
 				"Description": "Material emissive intensity, has only an effect if there's an emissive map"
 			},
+			"UseParallaxOcclusionMapping":
+			{
+				"Usage": "SHADER_COMBINATION",
+				"ValueType": "BOOLEAN",
+				"Value": "FALSE",
+				"Description": "Use parallax occlusion mapping (POM)? Needs height map values which range from [0, 1], 1 for polygonal surface and 0 for the deepest possible position pushing the polygonal surface down. Fillrate performance impact."
+			},
+			"PomHeightMapScale":
+			{
+				"Usage": "SHADER_UNIFORM",
+				"ValueType": "FLOAT",
+				"Value": "0.04",
+				"Description": "Parallax occlusion mapping (POM) height map scale"
+			},
+			"MinimumNumberOfPomSteps":
+			{
+				"Usage": "SHADER_UNIFORM",
+				"ValueType": "INTEGER",
+				"Value": "8",
+				"Description": "Minimum number of parallax occlusion mapping steps"
+			},
+			"MaximumNumberOfPomSteps":
+			{
+				"Usage": "SHADER_UNIFORM",
+				"ValueType": "INTEGER",
+				"Value": "32",
+				"Description": "Maximum number of parallax occlusion mapping steps"
+			},
 			"UseWetSurfaces":
 			{
 				"Usage": "SHADER_COMBINATION",
@@ -360,6 +388,24 @@
 							"Usage": "MATERIAL_REFERENCE",
 							"ValueType": "FLOAT",
 							"Value": "@EmissiveIntensity"
+						},
+						"PomHeightMapScale":
+						{
+							"Usage": "MATERIAL_REFERENCE",
+							"ValueType": "FLOAT",
+							"Value": "@PomHeightMapScale"
+						},
+						"MinimumNumberOfPomSteps":
+						{
+							"Usage": "MATERIAL_REFERENCE",
+							"ValueType": "INTEGER",
+							"Value": "@MinimumNumberOfPomSteps"
+						},
+						"MaximumNumberOfPomSteps":
+						{
+							"Usage": "MATERIAL_REFERENCE",
+							"ValueType": "INTEGER",
+							"Value": "@MaximumNumberOfPomSteps"
 						}
 					}
 				}

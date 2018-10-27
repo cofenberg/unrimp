@@ -1,0 +1,152 @@
+/*********************************************************\
+ * Copyright (c) 2012-2018 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+//[-------------------------------------------------------]
+//[ Pieces                                                ]
+//[-------------------------------------------------------]
+@piece(DefineParallaxOcclusionMapping)
+	// Distance based reduction of parallax occlusion mapping height map scale, the number of steps will not be manipulated distance based to avoid introducing additional artifacts
+	float ParallaxOcclusionMappingHeightMapScale(float pomHeightMapScale, float3 viewSpacePosition)
+	{
+		float maximumPomDistance = 20.0f;
+		float pomDistanceFactor = 1.0f - (min(abs(length(viewSpacePosition)), maximumPomDistance) / maximumPomDistance);
+		return pomHeightMapScale * pomDistanceFactor;
+	}
+
+	// The implementation is basing on "Parallax Occlusion Mapping in GLSL" by Igor Dykhta published 21 March 2013 at http://sunandblackcat.com/tipFullView.php?l=eng&topicid=28
+	// -> See also "Practical Parallax Occlusion Mapping For Highly Detailed Surface Rendering" by Natalya Tatarchuk, SIGGRAPH2006 ( https://developer.amd.com/wordpress/media/2012/10/Tatarchuk-POM.pdf )
+	// -> Height map values range from [0, 1], 1 for polygonal surface and 0 for the deepest possible position pushing the polygonal surface down
+	void ParallaxOcclusionMapping(float3 tangentSpaceViewDirection, float heightMapScale, float minimumNumberOfSteps, float maximumNumberOfSteps, inout float2 texCoord, out float parallaxHeight)
+	{
+		// Determine optimal number of steps depending on the viewing angle for the surface, oblique angles require more steps
+		int numberOfSteps = CAST_TO(LERP(maximumNumberOfSteps, minimumNumberOfSteps, SATURATE(abs(dot(float3(0.0f, 0.0f, 1.0f), tangentSpaceViewDirection)))), int);
+
+		// Height of each step
+		float stepHeight = 1.0f / numberOfSteps;
+
+		// Current height of the step
+		float currentStepHeight = 0.0f;
+
+		// Shift of texture coordinate for each step
+		float2 texCoordShift = heightMapScale * tangentSpaceViewDirection.xy / tangentSpaceViewDirection.z / numberOfSteps;
+
+		// Current texture coordinate
+		float2 currentTexCoord = texCoord;
+
+		// Height from height map
+		float heightFromTexture = (1.0f - SAMPLE_2D(_hr_rg_mb_nya, SamplerLinear, currentTexCoord).r);
+
+		// Compute all the derivatives
+		float2 dx = DDX(texCoord);
+		float2 dy = DDY(texCoord);
+
+		// Ray tracing: While point is above the surface
+		while (heightFromTexture > currentStepHeight)
+		{
+			// To the next step
+			currentStepHeight += stepHeight;
+
+			// Shift of texture coordinate
+			currentTexCoord -= texCoordShift;
+
+			// New height from height map
+			heightFromTexture = (1 - SAMPLE_2D_GRAD(_hr_rg_mb_nya, SamplerLinear, currentTexCoord, dx, dy).r);
+		}
+
+		// Previous texture coordinate
+		float2 previousTexCoord = currentTexCoord + texCoordShift;
+
+		// Heights for linear interpolation
+		float nextHeight = heightFromTexture - currentStepHeight;
+		float previousHeight = (1 - SAMPLE_2D(_hr_rg_mb_nya, SamplerLinear, previousTexCoord).r) - currentStepHeight + stepHeight;
+
+		// Proportions for linear interpolation
+		float nextHeightMinusPreviousHeight = nextHeight - previousHeight;
+		float weight = (0.0f == nextHeightMinusPreviousHeight) ? 0.0f : (nextHeight / nextHeightMinusPreviousHeight);
+
+		// Interpolation of texture coordinates
+		texCoord = previousTexCoord * weight + currentTexCoord * (1.0f - weight);
+
+		// Interpolation of height values
+		parallaxHeight = currentStepHeight + previousHeight * weight + nextHeight * (1.0f - weight);
+	}
+@end
+
+@piece(DefineParallaxOcclusionMappingSelfShadowing)
+	// The implementation is basing on "Parallax Occlusion Mapping in GLSL" by Igor Dykhta published 21 March 2013 at http://sunandblackcat.com/tipFullView.php?l=eng&topicid=28
+	// -> Height map values range from [0, 1], 1 for polygonal surface and 0 for the deepest possible position pushing the polygonal surface down
+	float ParallaxOcclusionMappingSelfShadowing(float3 tangentSpaceLightDirection, float heightMapScale, float minimumNumberOfSteps, float maximumNumberOfSteps, float2 initialTexCoord, float initialHeight)
+	{
+		float selfShadowing = 1.0f;
+
+		// Calculate lighting only for surface oriented to the light source
+		float lDot = dot(float3(0.0f, 0.0f, 1.0f), tangentSpaceLightDirection);
+		if (lDot > 0.0f && initialHeight > 0.0f)
+		{
+			// Apply an offset to the initial height to reduce shadow acne
+			initialHeight -= 0.04f * lDot;
+
+			// Determine optimal number of steps depending on the viewing angle for the surface, oblique angles require more steps
+			float numberOfSteps = LERP(maximumNumberOfSteps, minimumNumberOfSteps, SATURATE(lDot));
+
+			// Calculate initial parameters
+			float numberOfStepsUnderSurface = 0.0f;
+			selfShadowing = 0.0f;
+			float stepHeight = initialHeight / numberOfSteps;
+			float2 texCoordShift = heightMapScale * tangentSpaceLightDirection.xy / tangentSpaceLightDirection.z / numberOfSteps;
+
+			// Current parameters
+			float currentStepHeight = initialHeight - stepHeight;
+			float2 currentTexCoord = initialTexCoord + texCoordShift;
+			float heightFromTexture = (1 - SAMPLE_2D(_hr_rg_mb_nya, SamplerLinear, currentTexCoord).r);
+			int stepIndex = 1;
+
+			// Compute all the derivatives
+			float2 dx = DDX(initialTexCoord);
+			float2 dy = DDY(initialTexCoord);
+
+			// Ray tracing: While point is below height 0
+			while (currentStepHeight > 0.0f)
+			{
+				// If point is under the surface
+				if (heightFromTexture < currentStepHeight)
+				{
+					// Calculate partial self shadowing
+					numberOfStepsUnderSurface += 1.0f;
+					float newSelfShadowing = (currentStepHeight - heightFromTexture) * (1.0f - stepIndex / numberOfSteps);
+					selfShadowing = max(selfShadowing, newSelfShadowing);
+				}
+
+				// Offset to the next step
+				stepIndex += 1;
+				currentStepHeight -= stepHeight;
+				currentTexCoord += texCoordShift;
+				heightFromTexture = (1 - SAMPLE_2D_GRAD(_hr_rg_mb_nya, SamplerLinear, currentTexCoord, dx, dy).r);
+			}
+
+			// Self shadowing should be 1 if there were no points under the surface
+			// -> // Increase the parallax occlusion mapping self shadowing influence to make it more visible
+			selfShadowing = (numberOfStepsUnderSurface < 1.0f) ? 1.0f : pow(abs(1.0f - selfShadowing), 16);
+		}
+
+		// Done
+		return selfShadowing;
+	}
+@end

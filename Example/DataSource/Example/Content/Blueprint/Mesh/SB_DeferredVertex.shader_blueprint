@@ -47,6 +47,9 @@ OUTPUT_BEGIN_VERTEX
 	OUTPUT_TEXTURE_COORDINATE				 (4, float3, TangentFrame1VS,				3)	// Tangent frame
 	OUTPUT_TEXTURE_COORDINATE				 (5, float3, TangentFrame2VS,				4)	// Tangent frame
 	OUTPUT_TEXTURE_COORDINATE				 (6, float3, PreviousClipSpacePositionVS,	5)	// Previous clip space position
+	@property(UseParallaxOcclusionMapping)
+		OUTPUT_TEXTURE_COORDINATE			 (7, float3, WorldSpacePositionVS,			6)	// World space position
+	@end
 	OUTPUT_POSITION							 (0)											// Clip space vertex position as output, left/bottom is (-1,-1) and right/top is (1,1)
 OUTPUT_END_VERTEX
 
@@ -101,6 +104,11 @@ MAIN_BEGIN_VERTEX
 
 	// Calculate the world space vertex position
 	float3 worldSpacePosition = MultiplyQuaternionVector(rotationQuaternion, objectSpacePosition * scale) + position;
+
+	// Pass through the world space position
+	@property(UseParallaxOcclusionMapping)
+		MAIN_OUTPUT(WorldSpacePositionVS) = worldSpacePosition;
+	@end
 
 	// Calculate the clip space vertex position, left/bottom is (-1,-1) and right/top is (1,1)
 	MAIN_OUTPUT_POSITION = MATRIX_MUL(PassData.WorldSpaceToClipSpaceMatrix, float4(worldSpacePosition, 1.0f));
