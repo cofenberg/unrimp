@@ -30,6 +30,7 @@
 		float factor = LERP(1.0f, 0.2f, porosity);
 
 		// Water influence on material BRDF
+		// -> See also "The Technical Art of Uncharted 4" by Waylon Brinck and Andrew Maximov at http://advances.realtimerendering.com/other/2016/naughty_dog/NaughtyDog_TechArt_Final.pdf - page 64
 		albedo *= LERP(1.0f, factor, wetLevel);	// Attenuate albedo
 		roughness = LERP(0.0f, roughness, LERP(1.0f, factor, 0.5f * wetLevel));
 	}
@@ -86,6 +87,8 @@
 	// -> Lookout with camera relative rendering, the world space position must be the real one and not the camera relative one
 	void DoWaterProcess(float3 wrappedWorldSpacePosition, float shadowVisibility, float heightMapValue, float puddleFactor, float wetLevel, float cracksFloodLevel, float puddleFloodLevel, float rainIntensity, inout float3 albedo, inout float roughness, inout float metallic, inout float3 viewSpaceNormal)
 	{
+		heightMapValue = 1.0f - heightMapValue;
+
 		// TODO(co) Optimization: Pass this as shader uniform
 		float3 waterViewSpaceNormal = normalize(MultiplyQuaternionVector(PassData.WorldSpaceToViewSpaceQuaternion, float3(0.0f, 1.0f, 0.0f)));
 
@@ -93,10 +96,10 @@
 		float2 accumulatedWaters;
 
 		// Get the "size" of the accumulated water in a hole/cracks
-		accumulatedWaters.x = wetLevel * min(cracksFloodLevel, 1.0f - heightMapValue);
+		accumulatedWaters.x = wetLevel * min(cracksFloodLevel, heightMapValue);
 
 		// Get the size of the accumulated water in puddle taking into account the margin (0.4 constant here)
-		accumulatedWaters.y = SATURATE((puddleFloodLevel - puddleFactor) / 0.4f);
+		accumulatedWaters.y = SATURATE((puddleFloodLevel - puddleFactor) / 0.4f) * heightMapValue;
 
 		// Mix vertex color and height map accumulated water by taking the higher
 		float accumulatedWater = max(accumulatedWaters.x, accumulatedWaters.y);
