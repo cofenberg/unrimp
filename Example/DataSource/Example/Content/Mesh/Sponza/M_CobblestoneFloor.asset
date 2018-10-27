@@ -1,0 +1,19 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"Metadata":
+		{
+			"Copyright": "Textures from opengameart.org author HellGate, released at Wednesday, January 21, 2015 - 00:38 under public domain license (CC0), downloaded from https://opengameart.org/content/seamless-cobblestone-texture"
+		},
+		"Compiler":
+		{
+			"ClassName": "RendererToolkit::MaterialAssetCompiler",
+			"InputFile": "./M_CobblestoneFloor.material"
+		}
+	}
+}

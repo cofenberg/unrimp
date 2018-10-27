@@ -32,7 +32,7 @@
 				"fabric_f": "./fabric_f.asset",
 				"fabric_g": "./fabric_g.asset",
 				"flagpole": "./flagpole.asset",
-				"floor": "./floor.asset",
+				"floor": "./M_CobblestoneFloor.asset",
 				"16___Default": "./gi_flag.asset",
 				"leaf": "./leaf.asset",
 				"Material__25": "./lion.asset",
