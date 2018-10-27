@@ -181,7 +181,8 @@ MAIN_BEGIN
 		if (0.0f != PassData.WetSurfaces.x)
 		{
 			// Handle camera relative rendering
-			DoWaterProcess(worldSpacePosition + PassData.WrappedWorldSpaceCameraPosition, shadowVisibility, value_hr_rg_mb_nya.r, multipleOctavesNoise3D(worldSpacePosition), PassData.WetSurfaces.x, PassData.WetSurfaces.y, PassData.WetSurfaces.z, PassData.WetSurfaces.w, albedo, roughness, metallic, viewSpaceNormal);
+			float3 wrappedWorldSpacePosition = worldSpacePosition + PassData.WrappedWorldSpaceCameraPosition;
+			DoWaterProcess(wrappedWorldSpacePosition, shadowVisibility, value_hr_rg_mb_nya.r, multipleOctavesNoise3D(wrappedWorldSpacePosition), PassData.WetSurfaces.x, PassData.WetSurfaces.y, PassData.WetSurfaces.z, PassData.WetSurfaces.w, albedo, roughness, metallic, viewSpaceNormal);
 		}
 	@end
 

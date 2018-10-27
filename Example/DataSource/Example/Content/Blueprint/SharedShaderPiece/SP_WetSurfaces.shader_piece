@@ -83,8 +83,8 @@
 
 	// Basing on "Water drop 2b – Dynamic rain and its effects" by Sébastien Lagarde ( https://seblagarde.wordpress.com/2013/04/14/water-drop-3b-physically-based-wet-surfaces/ )
 	// -> "puddleFactor": 0 means puddle and 1 means no puddle
-	// -> Lookout with camera relative rendering, the world space position must be the real unmodified one
-	void DoWaterProcess(float3 unmodifiedWorldSpacePosition, float shadowVisibility, float heightMapValue, float puddleFactor, float wetLevel, float cracksFloodLevel, float puddleFloodLevel, float rainIntensity, inout float3 albedo, inout float roughness, inout float metallic, inout float3 viewSpaceNormal)
+	// -> Lookout with camera relative rendering, the world space position must be the real one and not the camera relative one
+	void DoWaterProcess(float3 wrappedWorldSpacePosition, float shadowVisibility, float heightMapValue, float puddleFactor, float wetLevel, float cracksFloodLevel, float puddleFloodLevel, float rainIntensity, inout float3 albedo, inout float roughness, inout float metallic, inout float3 viewSpaceNormal)
 	{
 		// TODO(co) Optimization: Pass this as shader uniform
 		float3 waterViewSpaceNormal = normalize(MultiplyQuaternionVector(PassData.WorldSpaceToViewSpaceQuaternion, float3(0.0f, 1.0f, 0.0f)));
@@ -123,7 +123,7 @@
 			if (rainIntensityOn > 0.0f)
 			{
 				const float RIPPLE_SCALE_FACTOR = 0.5f;
-				float3 rippleNormal = ComputeRippleNormal(unmodifiedWorldSpacePosition.xz * RIPPLE_SCALE_FACTOR, rainIntensity);	// TODO(co) Optimization: Create a global dynamic ripple texture instead of calculating it on-the-fly in each using shader
+				float3 rippleNormal = ComputeRippleNormal(wrappedWorldSpacePosition.xz * RIPPLE_SCALE_FACTOR, rainIntensity);	// TODO(co) Optimization: Create a global dynamic ripple texture instead of calculating it on-the-fly in each using shader
 				rippleNormal = rippleNormal.xzy;
 				float3 waterNormal = LERP(float3(0.0f, 1.0f, 0.0f), rippleNormal, rainIntensityOn);
 				float3 rippleViewSpaceNormal = normalize(MultiplyQuaternionVector(PassData.WorldSpaceToViewSpaceQuaternion, waterNormal));

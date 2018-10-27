@@ -148,7 +148,8 @@ float3 CalculateColorByGBuffer(float3 viewRay, float4 gbuffer0Value, float4 gbuf
 		{
 			// Handle camera relative rendering
 			float heightMapValue = 0.0f;	// TODO(co) Transport this information?
-			DoWaterProcess(worldSpacePosition + PassData.WrappedWorldSpaceCameraPosition, shadowVisibility, heightMapValue, multipleOctavesNoise3D(worldSpacePosition), PassData.WetSurfaces.x, PassData.WetSurfaces.y, PassData.WetSurfaces.z, PassData.WetSurfaces.w, albedo, roughness, metallic, viewSpaceNormal);
+			float3 wrappedWorldSpacePosition = worldSpacePosition + PassData.WrappedWorldSpaceCameraPosition;
+			DoWaterProcess(wrappedWorldSpacePosition, shadowVisibility, heightMapValue, multipleOctavesNoise3D(wrappedWorldSpacePosition), PassData.WetSurfaces.x, PassData.WetSurfaces.y, PassData.WetSurfaces.z, PassData.WetSurfaces.w, albedo, roughness, metallic, viewSpaceNormal);
 		}
 	@end
 
