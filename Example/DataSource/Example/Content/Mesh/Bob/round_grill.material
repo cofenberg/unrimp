@@ -9,6 +9,7 @@
 		"BaseMaterial": "${PROJECT_NAME}/Blueprint/Mesh/M_SkinnedMesh.asset",
 		"Properties":
 		{
+			"CullMode": "NONE",
 			"_argb_nxa": "./round_grill_argb_nxa.asset"
 		}
 	}

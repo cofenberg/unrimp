@@ -9,7 +9,12 @@
 		"BaseMaterial": "${PROJECT_NAME}/Blueprint/Mesh/M_SkinnedMesh.asset",
 		"Properties":
 		{
-			"_argb_nxa": "./iron_grill_argb_nxa.asset"
+			"CullMode": "NONE",
+			"_argb_nxa": "./iron_grill_argb_nxa.asset",
+			"UseAlphaMap": "TRUE",
+			"AlphaToCoverageEnable": "TRUE",
+			"AlphaMap": "./iron_grill_a.asset",
+			"AlphaReference": "0.99"
 		}
 	}
 }
