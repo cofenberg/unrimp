@@ -17,7 +17,7 @@
 			"TextureChannelPacking": "_hr_rg_mb_nya",
 			"InputFiles":
 			{
-				"ROUGHNESS_MAP": "./T_CobblestoneSpecular.png",
+				"ROUGHNESS_MAP": "./T_CobblestoneDiffuse.png",
 				"NORMAL_MAP": "./T_CobblestoneNormal.png",
 				"HEIGHT_MAP": "./T_CobblestoneHeight.png"
 			}
