@@ -186,6 +186,10 @@ MAIN_BEGIN
 	}
 	@end
 
+	// Get normalized camera incident vector
+	worldSpaceIncident = normalize(worldSpaceIncident);
+	viewSpaceIncident = normalize(viewSpaceIncident);
+
 	// Read channel packed texture data
 	// -> "_argb_nxa" = RGB channel = Albedo map ("_a"-postfix), A channel = x component of normal map ("_n"-postfix)
 	// -> "_hr_rg_mb_nya" = R channel = Height map ("_h"-postfix), G channel = Roughness map ("_r"-postfix), B channel = Metallic map ("_m"-postfix), A channel = y component of normal map ("_n"-postfix)
@@ -240,7 +244,7 @@ MAIN_BEGIN
 	// Directional sunlight, our primary light
 	if (shadowVisibility > 0.0f)
 	{
-		color += shadowVisibility * CalculateLighting(albedo, roughness, metallic, viewSpaceNormal, normalize(viewSpaceIncident), reflectionColor, PassData.ViewSpaceSunlightDirection, PassData.SunlightColor);
+		color += shadowVisibility * CalculateLighting(albedo, roughness, metallic, viewSpaceNormal, viewSpaceIncident, reflectionColor, PassData.ViewSpaceSunlightDirection, PassData.SunlightColor);
 	}
 
 	// Perform clustered shading
