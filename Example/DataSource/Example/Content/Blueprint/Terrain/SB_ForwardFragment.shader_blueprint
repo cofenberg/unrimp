@@ -60,7 +60,8 @@ TEXTURE_2D_ARRAY(2, 3, ShadowMap, 4)
 TEXTURE_2D(2, 4, ReflectionMap, 5)
 TEXTURE_3D_UINT(2, 5, LightClustersMap3D, 6)
 @property(UseWetSurfaces)
-	TEXTURE_2D(2, 6, RippleMap, 7)
+	TEXTURE_2D(2, 6, WaterRipplesMap, 7)	// r = droplet mask, gb = ripples xy normal map, a = random grey value constant
+	TEXTURE_2D(2, 7, WaterStreaksMap, 8)	// r = streak pattern, g = gradient, ba = streak xy normal map
 @end
 
 // Samplers
@@ -74,6 +75,7 @@ SAMPLER_STATE(3, 1, SamplerLinearClamp, 1)
 @includepiece(../SharedShaderPiece/SP_TangentFrame.asset)
 	@insertpiece(DefineGetTangentFrame)
 	@insertpiece(DefineUnpackTextureNormalXY)
+	@insertpiece(DefineCalculateCotangentFrame)
 @includepiece(../SharedShaderPiece/SP_PhysicallyBasedShading.asset)
 	@property(HighQualityLighting)
 		@insertpiece(DefinePhysicallyBasedShading)
@@ -151,7 +153,7 @@ MAIN_BEGIN
 	float3 viewSpaceNormal = float3(0.0f, 0.0f, -1.0f);
 	{
 		// Transform the tangent space normal into view space
-		// -> We could use "Followup: Normal Mapping Without Precomputed Tangents" by Christian Schüler ( http://www.thetenthplanet.de/archives/1180 ), but the following simple solution is sufficient in here
+		// -> We could use "CalculateCotangentFrame()" which is basing on "Followup: Normal Mapping Without Precomputed Tangents" by Christian Schüler ( http://www.thetenthplanet.de/archives/1180 ), but the following simple solution is sufficient in here
 		float3 tangentSpaceNormal = UnpackTextureNormalXY(value_argb_nxa.a, value_aor_rg_mb_nya.a);
 		tangentSpaceNormal = float3(-tangentSpaceNormal.x, tangentSpaceNormal.z, -tangentSpaceNormal.y);
 		viewSpaceNormal = MultiplyQuaternionVector(PassData.WorldSpaceToViewSpaceQuaternion, tangentSpaceNormal);
@@ -161,21 +163,22 @@ MAIN_BEGIN
 	float3 worldSpacePosition = MAIN_INPUT(WorldSpacePosition);
 	float shadowVisibility = CalculateShadowVisibility(worldSpacePosition - PassData.UnmodifiedWorldSpaceCameraPosition, GetLinearDepthReversedZ(FRAGMENT_POSITION.z));
 
+	// Derive data
+	float3 worldSpaceNormal = MultiplyQuaternionVector(PassData.ViewSpaceToWorldSpaceQuaternion, viewSpaceNormal);
+	float3 worldSpaceIncident = normalize(-worldSpacePosition);	// Since we're using camera relative rendering, "PassData.WorldSpaceCameraPosition - worldSpacePosition" becomes just "-worldSpacePosition"
+	float3 viewSpaceIncident = MultiplyQuaternionVector(PassData.WorldSpaceToViewSpaceQuaternion, worldSpaceIncident);
+	float3 triPlanarBlending = GetTriPlanarBlending(worldSpaceNormal);	// TODO(co) Use this for the detail textures
+
 	// Water influence on material BRDF
 	// -> Wet surfaces parameter layout: x=wet level, y=hole/cracks flood level, z=puddle flood level, w=rain intensity
 	@property(UseWetSurfaces)
 		if (0.0f != PassData.WetSurfaces.x)
 		{
 			float heightMapValue = 0.0f;	// TODO(co)
-			DoWaterProcess(worldSpacePosition, shadowVisibility, heightMapValue, multipleOctavesNoise3D(worldSpacePosition), PassData.WetSurfaces.x, PassData.WetSurfaces.y, PassData.WetSurfaces.z, PassData.WetSurfaces.w, albedo, roughness, metallic, viewSpaceNormal);
+			float3x3 TBN = CalculateCotangentFrame(viewSpaceNormal, viewSpaceIncident, MAIN_INPUT(TexCoord));
+			DoWaterProcess(worldSpacePosition, TBN, PassData.GlobalTimeInSeconds, PassData.WorldSpaceToViewSpaceQuaternion, shadowVisibility, heightMapValue, multipleOctavesNoise3D(worldSpacePosition), PassData.WetSurfaces.x, PassData.WetSurfaces.y, PassData.WetSurfaces.z, PassData.WetSurfaces.w, albedo, roughness, metallic, viewSpaceNormal);
 		}
 	@end
-
-	// Derive data
-	float3 worldSpaceNormal = MultiplyQuaternionVector(PassData.ViewSpaceToWorldSpaceQuaternion, viewSpaceNormal);
-	float3 worldSpaceIncident = normalize(-worldSpacePosition);	// Since we're using camera relative rendering, "PassData.WorldSpaceCameraPosition - worldSpacePosition" becomes just "-worldSpacePosition"
-	float3 viewSpaceIncident = MultiplyQuaternionVector(PassData.WorldSpaceToViewSpaceQuaternion, worldSpaceIncident);
-	float3 triPlanarBlending = GetTriPlanarBlending(worldSpaceNormal);	// TODO(co) Use this for the detail textures
 
 	// Calculate screen space velocity
 	@insertpiece(DefineCalculateScreenSpaceVelocity)

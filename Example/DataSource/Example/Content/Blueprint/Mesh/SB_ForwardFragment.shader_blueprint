@@ -113,7 +113,8 @@ TEXTURE_2D(4, 4, _hr_rg_mb_nya, 6)	// R channel = Height map ("_h"-postfix), G c
 	TEXTURE_2D(4, 6, EmissiveMap, 8)
 @end
 @property(UseWetSurfaces)
-	TEXTURE_2D(4, 7, RippleMap, 9)
+	TEXTURE_2D(4, 7, WaterRipplesMap, 9)	// r = droplet mask, gb = ripples xy normal map, a = random grey value constant
+	TEXTURE_2D(4, 8, WaterStreaksMap, 10)	// r = streak pattern, g = gradient, ba = streak xy normal map
 @end
 
 // Samplers
@@ -168,6 +169,11 @@ MAIN_BEGIN
 	float3 worldSpaceIncident = -worldSpacePosition;	// Since we're using camera relative rendering, "PassData.WorldSpaceCameraPosition - worldSpacePosition" becomes just "-worldSpacePosition"
 	float3 viewSpaceIncident = MultiplyQuaternionVector(PassData.WorldSpaceToViewSpaceQuaternion, worldSpaceIncident);
 
+	// Get TBN
+	@property(UseParallaxOcclusionMapping || UseWetSurfaces)
+		float3x3 TBN = ROW_MATRIX_3x3(MAIN_INPUT(TangentFrame0VS), MAIN_INPUT(TangentFrame1VS), MAIN_INPUT(TangentFrame2VS));
+	@end
+
 	// Parallax occlusion mapping (POM)
 	@property(UseParallaxOcclusionMapping)
 	{
@@ -176,7 +182,6 @@ MAIN_BEGIN
 		{
 			// Get new texture coordinates from parallax occlusion mapping
 			float parallaxHeight = 0.0f;
-			float3x3 TBN = ROW_MATRIX_3x3(MAIN_INPUT(TangentFrame0VS), MAIN_INPUT(TangentFrame1VS), MAIN_INPUT(TangentFrame2VS));
 			ParallaxOcclusionMapping(MATRIX_MUL(TBN, viewSpaceIncident), pomHeightMapScale, material.MinimumNumberOfPomSteps, material.MaximumNumberOfPomSteps, texCoord, parallaxHeight);
 
 			// Get self-shadowing factor for elements of parallax
@@ -219,7 +224,7 @@ MAIN_BEGIN
 		{
 			// Handle camera relative rendering
 			float3 wrappedWorldSpacePosition = worldSpacePosition + PassData.WrappedWorldSpaceCameraPosition;
-			DoWaterProcess(wrappedWorldSpacePosition, shadowVisibility, value_hr_rg_mb_nya.r, multipleOctavesNoise3D(wrappedWorldSpacePosition), PassData.WetSurfaces.x, PassData.WetSurfaces.y, PassData.WetSurfaces.z, PassData.WetSurfaces.w, albedo, roughness, metallic, viewSpaceNormal);
+			DoWaterProcess(wrappedWorldSpacePosition, TBN, PassData.GlobalTimeInSeconds, PassData.WorldSpaceToViewSpaceQuaternion, shadowVisibility, value_hr_rg_mb_nya.r, multipleOctavesNoise3D(wrappedWorldSpacePosition), PassData.WetSurfaces.x, PassData.WetSurfaces.y, PassData.WetSurfaces.z, PassData.WetSurfaces.w, albedo, roughness, metallic, viewSpaceNormal);
 		}
 	@end
 

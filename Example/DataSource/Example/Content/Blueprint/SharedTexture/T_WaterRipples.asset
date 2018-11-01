@@ -1,0 +1,25 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"Metadata":
+		{
+			"Copyright": "From 'Water drop 2b – Dynamic rain and its effects' by Sébastien Lagarde ( https://seblagarde.wordpress.com/2013/04/14/water-drop-3b-physically-based-wet-surfaces/ )",
+			"Description": "r = droplet mask, gb = ripples xy normal map, a = random grey value constant",
+			"DetailedDescription": "This texture has been generated procedurally. This work have been done by Antoine Zanuttini. An algorithm spawn circles with different sizes and no overlapping then for the red channel: calculate the distance inversed and normalized from the circle center, for the green/blue channel: store the direction from the circle center, for the alpha: take random grey value constant for the circle."
+		},
+		"Compiler":
+		{
+			"ClassName": "RendererToolkit::TextureAssetCompiler",
+			"Description": "Use dds file format to be able to save an uncompressed texture.",
+			"InputFile": "./T_WaterRipples.png",
+			"FileFormat": "dds",
+			"CreateMipmaps": "FALSE",
+			"Compression": "FALSE"
+		}
+	}
+}

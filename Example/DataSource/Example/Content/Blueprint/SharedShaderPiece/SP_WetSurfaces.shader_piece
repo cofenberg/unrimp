@@ -21,6 +21,9 @@
 //[-------------------------------------------------------]
 //[ Pieces                                                ]
 //[-------------------------------------------------------]
+// Needs shader piece function "UnpackTextureNormalXY()"
+// Needs 2D texture "WaterRipplesMap": r = droplet mask, gb = ripples xy normal map, a = random grey value constant
+// Needs 2D texture "WaterStreaksMap": r = streak pattern, g = gradient, ba = streak xy normal map
 @piece(DefineWetSurfaces)
 	// Basing on "Water drop 3b – Physically based wet surfaces" by Sébastien Lagarde ( https://seblagarde.wordpress.com/2013/04/14/water-drop-3b-physically-based-wet-surfaces/ )
 	void DoWetProcess(float wetLevel, inout float3 albedo, inout float roughness, float metallic)
@@ -38,26 +41,26 @@
 	// Basing on "Water drop 2b – Dynamic rain and its effects" by Sébastien Lagarde ( https://seblagarde.wordpress.com/2013/04/14/water-drop-3b-physically-based-wet-surfaces/ )
 	float3 ComputeRipple(float2 uv, float currentTime, float weight)
 	{
-		float4 ripple = SAMPLE_2D_LOD(RippleMap, SamplerLinear, float4(uv, 0.0f, 0.0f)).bgra;
-		ripple.yz = ripple.yz * 2 - 1;	// Decompress perturbation
+		float4 waterRipples = SAMPLE_2D_LOD(WaterRipplesMap, SamplerLinear, float4(uv, 0.0f, 0.0f)).bgra;	// r = droplet mask, gb = ripples xy normal map, a = random grey value constant
+		waterRipples.yz = waterRipples.yz * 2 - 1;	// Decompress perturbation
 
-		float dropFrac = frac(ripple.w + currentTime);	// Apply time shift
-		float timeFrac = dropFrac - 1.0f + ripple.x;
+		float dropFrac = frac(waterRipples.w + currentTime);	// Apply time shift
+		float timeFrac = dropFrac - 1.0f + waterRipples.x;
 		float dropFactor = SATURATE(0.2f + weight * 0.8f - dropFrac);
-		float finalFactor = dropFactor * ripple.x * sin(clamp(timeFrac * 9.0f, 0.0f, 3.0f) * PI);
+		float finalFactor = dropFactor * waterRipples.x * sin(clamp(timeFrac * 9.0f, 0.0f, 3.0f) * PI);
 
-		return float3(ripple.yz * finalFactor * 0.35f, 1.0f);
+		return float3(waterRipples.yz * finalFactor * 0.35f, 1.0f);
 	}
 
 	// Basing on "Water drop 2b – Dynamic rain and its effects" by Sébastien Lagarde ( https://seblagarde.wordpress.com/2013/04/14/water-drop-3b-physically-based-wet-surfaces/ )
-	// -> See also "Rainy Surface Shader Part 1: Ripples" by Taizyd Korambayil ( https://deepspacebanana.github.io/blog/shader/art/unreal%20engine/Rainy-Surface-Shader-Part-1 )
-	float3 ComputeRippleNormal(float2 uv, float rainIntensity)
+	// -> See also "DeepSpaceBanana Art - Rainy Surface Shader Part 1: Ripples" by Taizyd Korambayil published on May 22, 2017 at https://deepspacebanana.github.io/blog/shader/art/unreal%20engine/Rainy-Surface-Shader-Part-1
+	float3 ComputeRippleNormal(float2 uv, float rainIntensity, float globalTimeInSeconds)
 	{
 		// This are just visually tweak value
 		const float GLOBAL_TIME_SCALE = 0.5f;
 		const float4 TIME_BIAS = float4(1.0f, 0.85f, 0.93f, 1.13f);
 		const float4 TIME_OFFSET = float4(0.0f, 0.2f, 0.45f, 0.7f);
-		float4 times = (PassData.GlobalTimeInSeconds * GLOBAL_TIME_SCALE * TIME_BIAS + TIME_OFFSET) * 1.6f;
+		float4 times = (globalTimeInSeconds * GLOBAL_TIME_SCALE * TIME_BIAS + TIME_OFFSET) * 1.6f;
 		times = frac(times);
 
 		// We enable one layer by quarter intensity and progressively blend in the current layer
@@ -85,12 +88,12 @@
 	// Basing on "Water drop 2b – Dynamic rain and its effects" by Sébastien Lagarde ( https://seblagarde.wordpress.com/2013/04/14/water-drop-3b-physically-based-wet-surfaces/ )
 	// -> "puddleFactor": 0 means puddle and 1 means no puddle
 	// -> Lookout with camera relative rendering, the world space position must be the real one and not the camera relative one
-	void DoWaterProcess(float3 wrappedWorldSpacePosition, float shadowVisibility, float heightMapValue, float puddleFactor, float wetLevel, float cracksFloodLevel, float puddleFloodLevel, float rainIntensity, inout float3 albedo, inout float roughness, inout float metallic, inout float3 viewSpaceNormal)
+	void DoWaterProcess(float3 wrappedWorldSpacePosition, float3x3 TBN, float globalTimeInSeconds, float4 worldSpaceToViewSpaceQuaternion, float shadowVisibility, float heightMapValue, float puddleFactor, float wetLevel, float cracksFloodLevel, float puddleFloodLevel, float rainIntensity, inout float3 albedo, inout float roughness, inout float metallic, inout float3 viewSpaceNormal)
 	{
 		heightMapValue = 1.0f - heightMapValue;
 
 		// TODO(co) Optimization: Pass this as shader uniform
-		float3 waterViewSpaceNormal = normalize(MultiplyQuaternionVector(PassData.WorldSpaceToViewSpaceQuaternion, float3(0.0f, 1.0f, 0.0f)));
+		float3 waterViewSpaceNormal = normalize(MultiplyQuaternionVector(worldSpaceToViewSpaceQuaternion, float3(0.0f, 1.0f, 0.0f)));
 
 		// Get depth/accumulation water information
 		float2 accumulatedWaters;
@@ -104,7 +107,7 @@
 		// Mix vertex color and height map accumulated water by taking the higher
 		float accumulatedWater = max(accumulatedWaters.x, accumulatedWaters.y);
 
-		// Walls don't accumulate water
+		// Slope awareness: Walls don't accumulate water
 		accumulatedWater *= SATURATE(dot(waterViewSpaceNormal, viewSpaceNormal));
 
 		// "wetLevel" could be 0 but we can still require to have wet surface if there is accumulated water
@@ -121,16 +124,75 @@
 			const float WATER_METALLIC = 0.0f;	// Result of: SATURATE(0.02f * 0.33f * 1000 - 500) - see "Metallic and smooth material"-section of "Water drop 2b – Dynamic rain and its effects"
 			metallic = LERP(metallic, 1.0f - WATER_METALLIC, accumulatedWater);
 
-			// Water ripples modify the view space normal
+			// Get world space normal
+			float4 viewSpaceToWorldSpaceQuaternion = float4(-worldSpaceToViewSpaceQuaternion.x, -worldSpaceToViewSpaceQuaternion.y, -worldSpaceToViewSpaceQuaternion.z, worldSpaceToViewSpaceQuaternion.w);
+			float3 worldSpaceNormal = MultiplyQuaternionVector(viewSpaceToWorldSpaceQuaternion, viewSpaceNormal);
+
+			// View space normal modification by water streaks and water ripples
 			float rainIntensityOn = (rainIntensity > 0.0f && shadowVisibility > 0.0f) ? 1.0f : 0.0f;
 			if (rainIntensityOn > 0.0f)
 			{
-				const float RIPPLE_SCALE_FACTOR = 0.5f;
-				float3 rippleNormal = ComputeRippleNormal(wrappedWorldSpacePosition.xz * RIPPLE_SCALE_FACTOR, rainIntensity);	// TODO(co) Optimization: Create a global dynamic ripple texture instead of calculating it on-the-fly in each using shader
-				rippleNormal = rippleNormal.xzy;
-				float3 waterNormal = LERP(float3(0.0f, 1.0f, 0.0f), rippleNormal, rainIntensityOn);
-				float3 rippleViewSpaceNormal = normalize(MultiplyQuaternionVector(PassData.WorldSpaceToViewSpaceQuaternion, waterNormal));
-				viewSpaceNormal = normalize(LERP(viewSpaceNormal, rippleViewSpaceNormal, accumulatedWater));
+				{ // Water streaks basing on "DeepSpaceBanana Art - Rainy SurfaceShader in UE4 Part 2" by Taizyd Korambayil published on April 19, 2018 at https://deepspacebanana.github.io/deepspacebanana.github.io/blog/shader/art/unreal%20engine/Rainy-Surface-Shader-Part-2
+					// Fixed build in constants
+					const float STREAKS_TILING = 1.5f;	// Floor xz-plane
+					const float STREAKS_LENGTH = 0.5f;	// Height y-axis
+					const float STREAKS_INTENSITY = 1.0f;
+					const float GLOBAL_TIME_SCALE = 0.2f;
+
+					// Get texture coordinate
+					float3 xyz = float3(wrappedWorldSpacePosition.x * STREAKS_TILING, wrappedWorldSpacePosition.y * STREAKS_LENGTH, wrappedWorldSpacePosition.z * STREAKS_TILING);
+					float4 xy = float4(xyz.xy, 0.0f, 0.0f);
+					float4 zy = float4(xyz.zy, 0.0f, 0.0f);
+					float4 yOffset = float4(0.0f, globalTimeInSeconds * GLOBAL_TIME_SCALE * rainIntensity, 0.0f, 0.0f);
+					float worldSpaceNormalXLerpFactor = SATURATE(abs(worldSpaceNormal.x));
+
+					// Get streak pattern
+					float streakPatternXY = SAMPLE_2D_LOD(WaterStreaksMap, SamplerLinear, xy).z;	// z due to BGRA-texture: r = streak pattern, g = gradient, ba = streak xy normal map
+					float streakPatternZY = SAMPLE_2D_LOD(WaterStreaksMap, SamplerLinear, zy).z;	// z due to BGRA-texture: r = streak pattern, g = gradient, ba = streak xy normal map
+					float streakPattern = LERP(streakPatternXY, streakPatternZY, worldSpaceNormalXLerpFactor);
+
+					// Get streak normal
+					float2 packedStreakNormalXY = SAMPLE_2D_LOD(WaterStreaksMap, SamplerLinear, xy).xw;	// xw due to BGRA-texture: r = streak pattern, g = gradient, ba = streak xy normal map
+					float2 packedStreakNormalZY = SAMPLE_2D_LOD(WaterStreaksMap, SamplerLinear, zy).xw;	// xw due to BGRA-texture: r = streak pattern, g = gradient, ba = streak xy normal map
+					float2 packedStreakNormal = LERP(packedStreakNormalXY, packedStreakNormalZY, worldSpaceNormalXLerpFactor);
+					float3 streaksNormal = UnpackTextureNormalXY(packedStreakNormal.x, packedStreakNormal.y);
+
+					// Get gradient
+					xy += yOffset;
+					zy += yOffset;
+					float gradientXY = SAMPLE_2D_LOD(WaterStreaksMap, SamplerLinear, xy).g;	// r = streak pattern, g = gradient, ba = streak xy normal map
+					float gradientZY = SAMPLE_2D_LOD(WaterStreaksMap, SamplerLinear, zy).g;	// r = streak pattern, g = gradient, ba = streak xy normal map
+					float gradient = LERP(gradientXY, gradientZY, worldSpaceNormalXLerpFactor);
+					gradient = SATURATE(pow(abs(gradient), 8));
+
+					// Update streak pattern and streak normal using the gradient
+					streakPattern -= gradient;
+					streakPattern *= STREAKS_INTENSITY;
+					streaksNormal = LERP(float3(0.0f, 0.0f, 1.0f), streaksNormal, streakPattern);
+
+					// Tangent space streaks normal to view space streaks normal
+					streaksNormal = MATRIX_MUL(streaksNormal, TBN);
+
+					// Update the view space normal using streaks slope awareness
+					viewSpaceNormal = LERP(streaksNormal, viewSpaceNormal, worldSpaceNormal.y);
+					roughness = LERP(SATURATE(roughness + streakPattern), roughness, worldSpaceNormal.y);
+				}
+
+				{ // Water ripples
+					// Compute ripple normal
+					const float RIPPLE_SCALE_FACTOR = 0.25f;
+					float3 rippleNormal = ComputeRippleNormal(wrappedWorldSpacePosition.xz * RIPPLE_SCALE_FACTOR, rainIntensity, globalTimeInSeconds);	// TODO(co) Optimization: Create a global dynamic ripple texture instead of calculating it on-the-fly in each using shader
+
+					// Tangent space ripple normal to view space ripple normal
+					rippleNormal = MATRIX_MUL(rippleNormal, TBN);
+
+					// Update the view space normal using ripple slope awareness
+					rippleNormal = LERP(viewSpaceNormal, rippleNormal, accumulatedWater);
+					viewSpaceNormal = LERP(viewSpaceNormal, rippleNormal, worldSpaceNormal.y);
+				}
+
+				// Done
+				viewSpaceNormal = normalize(viewSpaceNormal);
 			}
 		}
 	}

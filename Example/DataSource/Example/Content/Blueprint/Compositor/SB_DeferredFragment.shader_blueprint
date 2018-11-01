@@ -88,7 +88,8 @@ TEXTURE_2D(2, 6, VolumetricLightMap, 7)
 TEXTURE_2D(2, 7, ReflectionMap, 8)
 TEXTURE_3D_UINT(2, 8, LightClustersMap3D, 9)
 @property(UseWetSurfaces)
-	TEXTURE_2D(2, 9, RippleMap, 10)
+	TEXTURE_2D(2, 9, WaterRipplesMap, 10)	// r = droplet mask, gb = ripples xy normal map, a = random grey value constant
+	TEXTURE_2D(2, 10, WaterStreaksMap, 11)	// r = streak pattern, g = gradient, ba = streak xy normal map
 @end
 
 // Samplers
@@ -102,6 +103,8 @@ SAMPLER_STATE(2, 0, SamplerLinear, 0)
 	@insertpiece(DefineCalculateFoggedColor)
 @includepiece(../SharedShaderPiece/SP_TangentFrame.asset)
 	@insertpiece(DefineGetTangentFrame)
+	@insertpiece(DefineUnpackTextureNormalXY)
+	@insertpiece(DefineCalculateCotangentFrame)
 @includepiece(../SharedShaderPiece/SP_PhysicallyBasedShading.asset)
 	@property(HighQualityLighting)
 		@insertpiece(DefinePhysicallyBasedShading)
@@ -123,7 +126,7 @@ SAMPLER_STATE(2, 0, SamplerLinear, 0)
 		@insertpiece(DefineWetSurfaces)
 @end
 
-float3 CalculateColorByGBuffer(float3 viewRay, float4 gbuffer0Value, float4 gbuffer1Value, float4 gbuffer2Value, float depth, float screenSpaceAmbientOcclusion, float3 volumetricLight, float3 reflectionColor)
+float3 CalculateColorByGBuffer(float2 texCoord, float3 viewRay, float4 gbuffer0Value, float4 gbuffer1Value, float4 gbuffer2Value, float depth, float screenSpaceAmbientOcclusion, float3 volumetricLight, float3 reflectionColor)
 {
 	// Gather GBuffer data
 	float3 albedo		   = gbuffer0Value.rgb;
@@ -141,6 +144,11 @@ float3 CalculateColorByGBuffer(float3 viewRay, float4 gbuffer0Value, float4 gbuf
 	float3 worldSpacePosition = MATRIX_MUL(PassData.ViewSpaceToWorldSpaceMatrix, float4(viewSpacePosition.xyz, 1.0f)).xyz;
 	float shadowVisibility = CalculateShadowVisibility(worldSpacePosition, linearDepth);
 
+	// Derive data
+	float3 viewSpaceIncident = -normalize(viewSpacePosition);	// In view space, the camera is at the origin
+	float3 worldSpaceIncident = MultiplyQuaternionVector(PassData.ViewSpaceToWorldSpaceQuaternion, viewSpaceIncident);
+	float3 worldSpaceNormal = MultiplyQuaternionVector(PassData.ViewSpaceToWorldSpaceQuaternion, viewSpaceNormal);
+
 	// Water influence on material BRDF
 	// -> Wet surfaces parameter layout: x=wet level, y=hole/cracks flood level, z=puddle flood level, w=rain intensity
 	@property(UseWetSurfaces)
@@ -149,14 +157,10 @@ float3 CalculateColorByGBuffer(float3 viewRay, float4 gbuffer0Value, float4 gbuf
 			// Handle camera relative rendering
 			float heightMapValue = 0.0f;	// TODO(co) Transport this information?
 			float3 wrappedWorldSpacePosition = worldSpacePosition + PassData.WrappedWorldSpaceCameraPosition;
-			DoWaterProcess(wrappedWorldSpacePosition, shadowVisibility, heightMapValue, multipleOctavesNoise3D(wrappedWorldSpacePosition), PassData.WetSurfaces.x, PassData.WetSurfaces.y, PassData.WetSurfaces.z, PassData.WetSurfaces.w, albedo, roughness, metallic, viewSpaceNormal);
+			float3x3 TBN = CalculateCotangentFrame(viewSpaceNormal, viewSpaceIncident, texCoord);	// We need the texture coordinates of the used real geometry and not of the screen space triangle, but since we don't have them let's just use what we've got
+			DoWaterProcess(wrappedWorldSpacePosition, TBN, PassData.GlobalTimeInSeconds, PassData.WorldSpaceToViewSpaceQuaternion, shadowVisibility, heightMapValue, multipleOctavesNoise3D(wrappedWorldSpacePosition), PassData.WetSurfaces.x, PassData.WetSurfaces.y, PassData.WetSurfaces.z, PassData.WetSurfaces.w, albedo, roughness, metallic, viewSpaceNormal);
 		}
 	@end
-
-	// Derive data
-	float3 viewSpaceIncident = -normalize(viewSpacePosition);	// In view space, the camera is at the origin
-	float3 worldSpaceIncident = MultiplyQuaternionVector(PassData.ViewSpaceToWorldSpaceQuaternion, viewSpaceIncident);
-	float3 worldSpaceNormal = MultiplyQuaternionVector(PassData.ViewSpaceToWorldSpaceQuaternion, viewSpaceNormal);
 
 	// Ambient term
 	float3 color = (reflectionColor * metallic + albedo) * (PassData.AmbientColor.rgb + CalculateHemisphereLighting(worldSpaceNormal.xyz, PassData.AmbientColor.rgb * 0.7f, PassData.AmbientColor.rgb * 0.2f));
@@ -228,7 +232,7 @@ MAIN_BEGIN
 				float4 gbuffer2Value = SAMPLE_2D_MS(GBufferMap2, textureCoordinate, @i);
 
 				// Calculate color by GBuffer
-				color += CalculateColorByGBuffer(viewRay, gbuffer0Value, gbuffer1Value, gbuffer2Value, depth, screenSpaceAmbientOcclusion, volumetricLight, reflectionColor);
+				color += CalculateColorByGBuffer(texCoord, viewRay, gbuffer0Value, gbuffer1Value, gbuffer2Value, depth, screenSpaceAmbientOcclusion, volumetricLight, reflectionColor);
 			}
 			else
 			{
@@ -252,7 +256,7 @@ MAIN_BEGIN
 			float4 gbuffer2Value = TEXTURE_FETCH_2D(GBufferMap2, int3(textureCoordinate, 0));
 
 			// Calculate color by GBuffer
-			color = CalculateColorByGBuffer(viewRay, gbuffer0Value, gbuffer1Value, gbuffer2Value, depth, screenSpaceAmbientOcclusion, volumetricLight, reflectionColor);
+			color = CalculateColorByGBuffer(texCoord, viewRay, gbuffer0Value, gbuffer1Value, gbuffer2Value, depth, screenSpaceAmbientOcclusion, volumetricLight, reflectionColor);
 		}
 		else
 		{
