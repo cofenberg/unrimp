@@ -6,6 +6,7 @@
 	},
 	"CompositorWorkspaceAsset":
 	{
+		"Description": "Deferred rendering compositor workspace",
 		"Nodes":
 		{
 			"${PROJECT_NAME}/CompositorNode/CN_Deferred.asset":

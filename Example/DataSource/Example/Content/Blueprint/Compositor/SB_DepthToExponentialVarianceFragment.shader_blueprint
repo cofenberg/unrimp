@@ -65,8 +65,8 @@ UNIFORM_BUFFER_END
 //[ Main                                                  ]
 //[-------------------------------------------------------]
 MAIN_BEGIN
+	// Basing on https://mynameismjp.wordpress.com/2013/09/10/shadow-maps/ - https://github.com/TheRealMJP/Shadows
 	float2 exponents = GetEvsmExponents(PassData.CurrentShadowCascadeScale);
-
 	@property(NumberOfMultisamples)
 		float sampleWeight = 1.0f / float(@value(NumberOfMultisamples));
 		float4 average = float4(0.0f, 0.0f, 0.0f, 0.0f);

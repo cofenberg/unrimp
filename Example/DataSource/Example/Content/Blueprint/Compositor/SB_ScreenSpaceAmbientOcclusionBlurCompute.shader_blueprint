@@ -55,6 +55,7 @@ SAMPLER_STATE(2, 0, SamplerLinear, 0)
 //[-------------------------------------------------------]
 MAIN_BEGIN_COMPUTE(32, 32, 1)
 	// Compute dispatch is using groups of a multiple of the local size, ensure we don't access ouf of global compute size which musn't be a multiple of the local size and hence might be smaller
+	// -> Basing on "SSAO Tutorial" from John Chapman http://john-chapman-graphics.blogspot.de/2013/01/ssao-tutorial.html
 	if (GLOBAL_INVOCATION_ID.x < PassData.GlobalComputeSize.x && GLOBAL_INVOCATION_ID.y < PassData.GlobalComputeSize.y)
 	{
 		int BLUR_SIZE = 4;

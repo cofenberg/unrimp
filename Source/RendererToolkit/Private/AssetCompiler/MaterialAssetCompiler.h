@@ -75,6 +75,11 @@ namespace RendererToolkit
 			return CLASS_ID;
 		}
 
+		[[nodiscard]] inline virtual std::string_view getOptionalUniqueAssetFilenameExtension() const override
+		{
+			return ".material";
+		}
+
 		[[nodiscard]] virtual std::string getVirtualOutputAssetFilename(const Input& input, const Configuration& configuration) const override;
 		[[nodiscard]] virtual bool checkIfChanged(const Input& input, const Configuration& configuration) const override;
 		virtual void compile(const Input& input, const Configuration& configuration) const override;

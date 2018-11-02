@@ -6,6 +6,7 @@
 	},
 	"CompositorNodeAsset":
 	{
+		"Description": "Forward rendering compositor node",
 		"InputChannels":
 		{
 			"0": "InputRenderTarget",

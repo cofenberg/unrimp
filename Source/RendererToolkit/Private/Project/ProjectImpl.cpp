@@ -169,45 +169,27 @@ namespace RendererToolkit
 		mShutdownThread(false),
 		mCacheManager(nullptr)
 	{
-		mThread = std::thread(&ProjectImpl::threadWorker, this);
-
-		// Setup asset compilers map
-		// TODO(co) Currently this is fixed build in, later on me might want to have this dynamic so we can plugin additional asset compilers
-		mAssetCompilersByClassId.emplace(TextureAssetCompiler::CLASS_ID, new TextureAssetCompiler(mContext));
-		mAssetCompilersByClassId.emplace(ShaderPieceAssetCompiler::CLASS_ID, new ShaderPieceAssetCompiler());
-		mAssetCompilersByClassId.emplace(ShaderBlueprintAssetCompiler::CLASS_ID, new ShaderBlueprintAssetCompiler());
-		mAssetCompilersByClassId.emplace(MaterialBlueprintAssetCompiler::CLASS_ID, new MaterialBlueprintAssetCompiler());
-		mAssetCompilersByClassId.emplace(MaterialAssetCompiler::CLASS_ID, new MaterialAssetCompiler());
-		mAssetCompilersByClassId.emplace(SkeletonAssetCompiler::CLASS_ID, new SkeletonAssetCompiler());
-		mAssetCompilersByClassId.emplace(SkeletonAnimationAssetCompiler::CLASS_ID, new SkeletonAnimationAssetCompiler());
-		mAssetCompilersByClassId.emplace(MeshAssetCompiler::CLASS_ID, new MeshAssetCompiler());
-		mAssetCompilersByClassId.emplace(SceneAssetCompiler::CLASS_ID, new SceneAssetCompiler());
-		mAssetCompilersByClassId.emplace(CompositorNodeAssetCompiler::CLASS_ID, new CompositorNodeAssetCompiler());
-		mAssetCompilersByClassId.emplace(CompositorWorkspaceAssetCompiler::CLASS_ID, new CompositorWorkspaceAssetCompiler());
-		mAssetCompilersByClassId.emplace(VertexAttributesAssetCompiler::CLASS_ID, new VertexAttributesAssetCompiler());
-
-		{ // Gather default texture asset IDs
-			RendererRuntime::AssetIds assetIds;
-			RendererRuntime::RendererRuntimeImpl::getDefaultTextureAssetIds(assetIds);
-			std::copy(assetIds.begin(), assetIds.end(), std::inserter(mDefaultTextureAssetIds, mDefaultTextureAssetIds.end()));
-		}
+		// Nothing here
 	}
 
 	ProjectImpl::~ProjectImpl()
 	{
-		// Shutdown worker thread
-		mShutdownThread = true;
-		mThread.join();
-
-		// Clear
-		clear();
-		for (const auto& pair : mAssetCompilersByClassId)
+		if (isInitialized())
 		{
-			delete pair.second;
-		}
+			// Shutdown worker thread
+			mShutdownThread = true;
+			mThread.join();
 
-		// Destroy the cache manager
-		delete mCacheManager;
+			// Clear
+			clear();
+			for (const auto& pair : mAssetCompilerByClassId)
+			{
+				delete pair.second;
+			}
+
+			// Destroy the cache manager
+			delete mCacheManager;
+		}
 	}
 
 	RendererRuntime::VirtualFilename ProjectImpl::tryGetVirtualFilenameByAssetId(RendererRuntime::AssetId assetId) const
@@ -224,9 +206,9 @@ namespace RendererToolkit
 			// The renderer toolkit is now considered to be busy
 			mRendererToolkitImpl.setState(IRendererToolkit::State::BUSY);
 
-			// Parse JSON
-			rapidjson::Document rapidJsonDocument;
-			JsonHelper::loadDocumentByFilename(mContext.getFileManager(), virtualAssetFilename, "Asset", "1", rapidJsonDocument);
+			// Get asset compiler class instance
+			rapidjson::Document rapidJsonDocument(rapidjson::kObjectType);
+			const IAssetCompiler* assetCompiler = getSourceAssetCompilerAndRapidJsonDocument(virtualAssetFilename, rapidJsonDocument);
 
 			// Dispatch asset compiler
 			// TODO(co) Add multi-threading support: Add compiler queue which is processed in the background, ensure compiler instances are reused
@@ -235,29 +217,24 @@ namespace RendererToolkit
 			const std::string virtualAssetPackageInputDirectory = mProjectName + '/' + mAssetPackageDirectoryName;
 			const std::string virtualAssetInputDirectory = std_filesystem::path(virtualAssetFilename).parent_path().generic_string();
 			const std::string assetDirectory = virtualAssetInputDirectory.substr(virtualAssetInputDirectory.find('/') + 1);
-			const std::string compilerClassName = rapidJsonDocument["Asset"]["Compiler"]["ClassName"].GetString();
 			const std::string renderTargetDataRootDirectory = getRenderTargetDataRootDirectory(rendererTarget);
 			const std::string virtualAssetOutputDirectory = renderTargetDataRootDirectory + '/' + mProjectName + '/' + mAssetPackageDirectoryName + '/' + assetDirectory;
 
-			{ // Do we need to mount a directory now? (e.g. "DataPc", "DataMobile" etc.)
-				RendererRuntime::IFileManager& fileManager = mContext.getFileManager();
-				if (fileManager.getMountPoint(renderTargetDataRootDirectory.c_str()) == nullptr)
-				{
-					fileManager.mountDirectory((fileManager.getAbsoluteRootDirectory() + '/' + renderTargetDataRootDirectory).c_str(), renderTargetDataRootDirectory.c_str());
-				}
+			// Do we need to mount a directory now? (e.g. "DataPc", "DataMobile" etc.)
+			RendererRuntime::IFileManager& fileManager = mContext.getFileManager();
+			if (fileManager.getMountPoint(renderTargetDataRootDirectory.c_str()) == nullptr)
+			{
+				fileManager.mountDirectory((fileManager.getAbsoluteRootDirectory() + '/' + renderTargetDataRootDirectory).c_str(), renderTargetDataRootDirectory.c_str());
 			}
 
 			// Asset compiler input
 			IAssetCompiler::Input input(mContext, mProjectName, *mCacheManager, virtualAssetPackageInputDirectory, virtualAssetFilename, virtualAssetInputDirectory, virtualAssetOutputDirectory, mSourceAssetIdToCompiledAssetId, mCompiledAssetIdToSourceAssetId, mSourceAssetIdToVirtualFilename, mDefaultTextureAssetIds);
 
-			// Asset compiler configuration
-			AssetCompilers::const_iterator iterator = mAssetCompilersByClassId.find(AssetCompilerClassId(compilerClassName.c_str()));
-			if (mAssetCompilersByClassId.end() != iterator)
-			{
-				RENDERER_ASSERT(getContext(), nullptr != mRapidJsonDocument, "Invalid renderer toolkit Rapid JSON document")
-				const IAssetCompiler::Configuration configuration(rapidJsonDocument, (*mRapidJsonDocument)["Targets"], rendererTarget, mQualityStrategy);
-				return iterator->second->checkIfChanged(input, configuration);
-			}
+			// Compile the asset
+			assert(nullptr != assetCompiler);
+			RENDERER_ASSERT(getContext(), nullptr != mRapidJsonDocument, "Invalid renderer toolkit Rapid JSON document")
+			const IAssetCompiler::Configuration configuration(rapidJsonDocument, (*mRapidJsonDocument)["Targets"], rendererTarget, mQualityStrategy);
+			return assetCompiler->checkIfChanged(input, configuration);
 		}
 		catch (const std::exception& e)
 		{
@@ -277,13 +254,10 @@ namespace RendererToolkit
 			// The renderer toolkit is now considered to be busy
 			mRendererToolkitImpl.setState(IRendererToolkit::State::BUSY);
 
-			// Open the input stream
+			// Get asset compiler class instance
 			const std::string& virtualAssetFilename = asset.virtualFilename;
-
-			// Parse JSON
-			rapidjson::Document rapidJsonDocument;
-			RendererRuntime::IFileManager& fileManager = mContext.getFileManager();
-			JsonHelper::loadDocumentByFilename(fileManager, virtualAssetFilename, "Asset", "1", rapidJsonDocument);
+			rapidjson::Document rapidJsonDocument(rapidjson::kObjectType);
+			const IAssetCompiler* assetCompiler = getSourceAssetCompilerAndRapidJsonDocument(virtualAssetFilename, rapidJsonDocument);
 
 			// Dispatch asset compiler
 			// TODO(co) Add multi-threading support: Add compiler queue which is processed in the background, ensure compiler instances are reused
@@ -292,11 +266,11 @@ namespace RendererToolkit
 			const std::string virtualAssetPackageInputDirectory = mProjectName + '/' + mAssetPackageDirectoryName;
 			const std::string virtualAssetInputDirectory = std_filesystem::path(virtualAssetFilename).parent_path().generic_string();
 			const std::string assetDirectory = virtualAssetInputDirectory.substr(virtualAssetInputDirectory.find('/') + 1);
-			const std::string compilerClassName = rapidJsonDocument["Asset"]["Compiler"]["ClassName"].GetString();
 			const std::string renderTargetDataRootDirectory = getRenderTargetDataRootDirectory(rendererTarget);
 			const std::string virtualAssetOutputDirectory = renderTargetDataRootDirectory + '/' + mProjectName + '/' + mAssetPackageDirectoryName + '/' + assetDirectory;
 
 			// Ensure that the asset output directory exists, else creating output file streams will fail
+			RendererRuntime::IFileManager& fileManager = mContext.getFileManager();
 			fileManager.createDirectories(virtualAssetOutputDirectory.c_str());
 
 			// Do we need to mount a directory now? (e.g. "DataPc", "DataMobile" etc.)
@@ -312,23 +286,14 @@ namespace RendererToolkit
 			RENDERER_ASSERT(getContext(), nullptr != mRapidJsonDocument, "Invalid renderer toolkit Rapid JSON document")
 			const IAssetCompiler::Configuration configuration(rapidJsonDocument, (*mRapidJsonDocument)["Targets"], rendererTarget, mQualityStrategy);
 
-			// Evaluate the asset type and continue with the processing in the asset type specific way
-			// TODO(co) Currently this is fixed build in, later on me might want to have this dynamic so we can plugin additional asset compilers
-			AssetCompilers::const_iterator iterator = mAssetCompilersByClassId.find(AssetCompilerClassId(compilerClassName.c_str()));
-			if (mAssetCompilersByClassId.end() != iterator)
-			{
-				const IAssetCompiler* assetCompiler = iterator->second;
-				assetCompiler->compile(input, configuration);
+			// Compile the asset
+			assert(nullptr != assetCompiler);
+			assetCompiler->compile(input, configuration);
 
-				{ // Update the output asset package
-					const std::string assetName = std_filesystem::path(input.virtualAssetFilename).stem().generic_string();
-					const std::string assetIdAsString = input.projectName + '/' + assetDirectory + '/' + assetName;
-					::detail::outputAsset(input.context.getFileManager(), assetIdAsString, assetCompiler->getVirtualOutputAssetFilename(input, configuration), outputAssetPackage);
-				}
-			}
-			else
-			{
-				throw std::runtime_error("Asset compiler class \"" + compilerClassName + "\" is unknown");
+			{ // Update the output asset package
+				const std::string assetName = std_filesystem::path(input.virtualAssetFilename).stem().generic_string();
+				const std::string assetIdAsString = input.projectName + '/' + assetDirectory + '/' + assetName;
+				::detail::outputAsset(input.context.getFileManager(), assetIdAsString, assetCompiler->getVirtualOutputAssetFilename(input, configuration), outputAssetPackage);
 			}
 		}
 		catch (const std::exception& e)
@@ -374,6 +339,11 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	void ProjectImpl::load(RendererRuntime::AbsoluteDirectoryName absoluteProjectDirectoryName)
 	{
+		if (!isInitialized())
+		{
+			initialize();
+		}
+
 		// The renderer toolkit is now considered to be busy
 		mRendererToolkitImpl.setState(IRendererToolkit::State::BUSY);
 
@@ -620,6 +590,44 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
+	void ProjectImpl::initialize()
+	{
+		mThread = std::thread(&ProjectImpl::threadWorker, this);
+
+		// Setup asset compilers map
+		// TODO(co) Currently this is fixed build in, later on me might want to have this dynamic so we can plugin additional asset compilers
+		mAssetCompilerByClassId.emplace(TextureAssetCompiler::CLASS_ID, new TextureAssetCompiler(mContext));
+		mAssetCompilerByClassId.emplace(ShaderPieceAssetCompiler::CLASS_ID, new ShaderPieceAssetCompiler());
+		mAssetCompilerByClassId.emplace(ShaderBlueprintAssetCompiler::CLASS_ID, new ShaderBlueprintAssetCompiler());
+		mAssetCompilerByClassId.emplace(MaterialBlueprintAssetCompiler::CLASS_ID, new MaterialBlueprintAssetCompiler());
+		mAssetCompilerByClassId.emplace(MaterialAssetCompiler::CLASS_ID, new MaterialAssetCompiler());
+		mAssetCompilerByClassId.emplace(SkeletonAssetCompiler::CLASS_ID, new SkeletonAssetCompiler());
+		mAssetCompilerByClassId.emplace(SkeletonAnimationAssetCompiler::CLASS_ID, new SkeletonAnimationAssetCompiler());
+		mAssetCompilerByClassId.emplace(MeshAssetCompiler::CLASS_ID, new MeshAssetCompiler());
+		mAssetCompilerByClassId.emplace(SceneAssetCompiler::CLASS_ID, new SceneAssetCompiler());
+		mAssetCompilerByClassId.emplace(CompositorNodeAssetCompiler::CLASS_ID, new CompositorNodeAssetCompiler());
+		mAssetCompilerByClassId.emplace(CompositorWorkspaceAssetCompiler::CLASS_ID, new CompositorWorkspaceAssetCompiler());
+		mAssetCompilerByClassId.emplace(VertexAttributesAssetCompiler::CLASS_ID, new VertexAttributesAssetCompiler());
+		for (const auto& element : mAssetCompilerByClassId)
+		{
+			const std::string_view& filenameExtension = element.second->getOptionalUniqueAssetFilenameExtension();
+			if (!filenameExtension.empty())
+			{
+				if (mAssetCompilerByFilenameExtension.find(filenameExtension) != mAssetCompilerByFilenameExtension.cend())
+				{
+					throw std::runtime_error("Multiple asset compiler classes use the unique asset filename extensions \"" + std::string(filenameExtension) + '\"');
+				}
+				mAssetCompilerByFilenameExtension.emplace(filenameExtension, element.second);
+			}
+		}
+
+		{ // Gather default texture asset IDs
+			RendererRuntime::AssetIds assetIds;
+			RendererRuntime::RendererRuntimeImpl::getDefaultTextureAssetIds(assetIds);
+			std::copy(assetIds.begin(), assetIds.end(), std::inserter(mDefaultTextureAssetIds, mDefaultTextureAssetIds.end()));
+		}
+	}
+
 	void ProjectImpl::clear()
 	{
 		// TODO(co) Add support for file system directory unmounting
@@ -648,7 +656,7 @@ namespace RendererToolkit
 		RendererRuntime::IFileManager& fileManager = mContext.getFileManager();
 		fileManager.mountDirectory((mAbsoluteProjectDirectory + '/' + mAssetPackageDirectoryName).c_str(), mProjectName.c_str());
 
-		// Discover assets
+		// Discover assets, first pass: Look for explicit ".asset"-files
 		RendererRuntime::AssetPackage::SortedAssetVector& sortedAssetVector = mAssetPackage.getWritableSortedAssetVector();
 		std::vector<std::string> virtualFilenames;
 		fileManager.enumerateFiles((mProjectName + '/' + mAssetPackageDirectoryName).c_str(), RendererRuntime::IFileManager::EnumerationMode::FILES, virtualFilenames);
@@ -672,6 +680,49 @@ namespace RendererToolkit
 			}
 		}
 		std::sort(sortedAssetVector.begin(), sortedAssetVector.end(), ::detail::orderByAssetId);
+
+		// Discover assets, second pass: Look for known file extensions with support for automatically in-memory generated ".asset"-files
+		// -> Background: Per-design, each source asset processed by the renderer toolkit needs a ".asset"-file which contains optional metadata and mandatory compile/bake instructions.
+		//    Source assets can reference other source assets via "<name>.asset", the concrete source asset file extension like ".png" is never used for such use-cases. On the other hand,
+		//    especially Unrimp specific assets like material blueprints usually don't have any relevant information inside ".asset"-files.
+		const size_t previousNumberOfSourceAssets = sortedAssetVector.size();
+		for (const std::string& virtualFilename : virtualFilenames)
+		{
+			// Check unique asset filename extension
+			const std::string extension = std_filesystem::path(virtualFilename).extension().generic_string();
+			AssetCompilerByFilenameExtension::const_iterator iterator = mAssetCompilerByFilenameExtension.find(extension);
+			if (iterator != mAssetCompilerByFilenameExtension.cend())
+			{
+				// Construct the filename of the ".asset"-file
+				std::string virtualAssetFilename = virtualFilename;
+				StringHelper::replaceFirstString(virtualAssetFilename, extension, ".asset");
+
+				// Does the source asset has an explicit ".asset"-file?
+				const RendererRuntime::AssetId assetId = RendererRuntime::StringId(virtualAssetFilename.c_str());
+				if (mAssetPackage.tryGetAssetByAssetId(assetId) == nullptr)
+				{
+					// Automatically in-memory generated ".asset"-file
+
+					// Sanity check
+					if (virtualFilename.length() >= RendererRuntime::Asset::MAXIMUM_ASSET_FILENAME_LENGTH)
+					{
+						const std::string message = "Asset filename \"" + virtualFilename + "\" is too long. Maximum allowed asset filename number of bytes is " + std::to_string(RendererRuntime::Asset::MAXIMUM_ASSET_FILENAME_LENGTH - 1);	// -1 for not including the terminating zero
+						throw std::runtime_error(message);
+					}
+
+					// Copy asset data
+					RendererRuntime::Asset asset;
+					asset.assetId = RendererRuntime::StringId(virtualAssetFilename.c_str());	// Asset ID using the ".asset"-filename
+					RendererRuntime::setInvalid(asset.fileHash);
+					strcpy(asset.virtualFilename, virtualFilename.c_str());						// Filename of source asset (e.g. "<name>.material_blueprint") and not the ".asset"-file
+					sortedAssetVector.push_back(asset);
+				}
+			}
+		}
+		if (sortedAssetVector.size() != previousNumberOfSourceAssets)
+		{
+			std::sort(sortedAssetVector.begin(), sortedAssetVector.end(), ::detail::orderByAssetId);
+		}
 
 		// Build the source asset ID to compiled asset ID map
 		buildSourceAssetIdToCompiledAssetId();
@@ -721,6 +772,86 @@ namespace RendererToolkit
 			mCompiledAssetIdToSourceAssetId.emplace(compiledAssetId, asset.assetId);
 			mSourceAssetIdToVirtualFilename.emplace(asset.assetId, virtualFilename);
 		}
+	}
+
+	const IAssetCompiler* ProjectImpl::getSourceAssetCompilerAndRapidJsonDocument(const std::string& virtualAssetFilename, rapidjson::Document& rapidJsonDocument) const
+	{
+		const IAssetCompiler* assetCompiler = nullptr;
+		if (virtualAssetFilename.find(".asset") != std::string::npos)
+		{
+			// Explicit ".asset"-file
+
+			// Parse JSON
+			JsonHelper::loadDocumentByFilename(mContext.getFileManager(), virtualAssetFilename, "Asset", "1", rapidJsonDocument);
+			const char* compilerClassName = rapidJsonDocument["Asset"]["Compiler"]["ClassName"].GetString();
+			AssetCompilerByClassId::const_iterator iterator = mAssetCompilerByClassId.find(AssetCompilerClassId(compilerClassName));
+			if (mAssetCompilerByClassId.cend() == iterator)
+			{
+				throw std::runtime_error("Asset compiler class \"" + std::string(compilerClassName) + "\" is unknown");
+			}
+			assetCompiler = iterator->second;
+		}
+		else
+		{
+			// Automatically in-memory generated ".asset"-file
+
+			// Get asset compiler class instance
+			const std_filesystem::path path(virtualAssetFilename);
+			{
+				const std::string filenameExtension = path.extension().generic_string();
+				AssetCompilerByFilenameExtension::const_iterator iterator = mAssetCompilerByFilenameExtension.find(filenameExtension);
+				if (mAssetCompilerByFilenameExtension.cend() == iterator)
+				{
+					throw std::runtime_error("Failed to find asset compiler class for filename extension \"" + filenameExtension + '\"');
+				}
+				assetCompiler = iterator->second;
+			}
+
+			// JSON ".asset"-file example:
+			/*
+			{
+				"Format":
+				{
+					"Type": "Asset",
+					"Version": "1"
+				},
+				"Asset":
+				{
+					"Metadata":
+					{
+						"Copyright": "Copyright (c) 2012-2018 The Unrimp Team"
+					},
+					"Compiler":
+					{
+						"ClassName": "RendererToolkit::MaterialBlueprintAssetCompiler",
+						"InputFile": "./MB_CalculateLuminance.material_blueprint"
+					}
+				}
+			}
+			*/
+
+			// Format
+			rapidjson::Document::AllocatorType& rapidJsonAllocatorType = rapidJsonDocument.GetAllocator();
+			{
+				rapidjson::Value rapidJsonValueFormat(rapidjson::kObjectType);
+				rapidJsonValueFormat.AddMember("Type", "Asset", rapidJsonAllocatorType);
+				rapidJsonValueFormat.AddMember("Version", "1", rapidJsonAllocatorType);
+				rapidJsonDocument.AddMember("Format", rapidJsonValueFormat, rapidJsonAllocatorType);
+			}
+
+			{ // Asset
+				rapidjson::Value rapidJsonValueAsset(rapidjson::kObjectType);
+				{ // Compiler
+					rapidjson::Value rapidJsonValueCompiler(rapidjson::kObjectType);
+					rapidJsonValueCompiler.AddMember("InputFile", "./" + path.filename().generic_string(), rapidJsonAllocatorType);
+					rapidJsonValueAsset.AddMember("Compiler", rapidJsonValueCompiler, rapidJsonAllocatorType);
+				}
+				rapidJsonDocument.AddMember("Asset", rapidJsonValueAsset, rapidJsonAllocatorType);
+			}
+		}
+
+		// Done
+		return assetCompiler;
 	}
 
 	void ProjectImpl::threadWorker()

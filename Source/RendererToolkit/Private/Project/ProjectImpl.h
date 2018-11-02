@@ -42,6 +42,7 @@ PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(5039)	// warning C5039: '_Thrd_start': pointer or reference to potentially throwing function passed to extern C function under -EHc. Undefined behavior may occur if this function throws an exception.
 	#include <thread>
 	#include <atomic>	// For "std::atomic<>"
+	#include <string_view>
 	#include <unordered_set>
 PRAGMA_WARNING_POP
 
@@ -167,11 +168,19 @@ namespace RendererToolkit
 	private:
 		explicit ProjectImpl(const ProjectImpl& source) = delete;
 		ProjectImpl& operator =(const ProjectImpl& source) = delete;
+
+		inline bool isInitialized() const
+		{
+			return !mAssetCompilerByClassId.empty();
+		}
+
+		void initialize();
 		void clear();
 		void readAssetPackageByDirectory(const std::string& directoryName);	// Directory name has no "/" at the end
 		void readTargetsByFilename(const std::string& relativeFilename);
 		[[nodiscard]] std::string getRenderTargetDataRootDirectory(const char* rendererTarget) const;	// Directory name has no "/" at the end
 		void buildSourceAssetIdToCompiledAssetId();
+		const IAssetCompiler* getSourceAssetCompilerAndRapidJsonDocument(const std::string& virtualAssetFilename, rapidjson::Document& rapidJsonDocument) const;
 		void threadWorker();
 
 
@@ -179,30 +188,32 @@ namespace RendererToolkit
 	//[ Private definitions                                   ]
 	//[-------------------------------------------------------]
 	private:
-		typedef std::unordered_map<uint32_t, IAssetCompiler*> AssetCompilers;
+		typedef std::unordered_map<uint32_t, IAssetCompiler*> AssetCompilerByClassId;
+		typedef std::unordered_map<std::string_view, IAssetCompiler*> AssetCompilerByFilenameExtension;
 
 
 	//[-------------------------------------------------------]
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		RendererToolkitImpl&			mRendererToolkitImpl;
-		const Context&					mContext;
-		std::string						mProjectName;				///< UTF-8 project name
-		std::string						mAbsoluteProjectDirectory;	///< UTF-8 project directory, Has no "/" at the end
-		QualityStrategy					mQualityStrategy;
-		RendererRuntime::AssetPackage	mAssetPackage;
-		std::string						mAssetPackageDirectoryName;	///< UTF-8 asset package name, has no "/" at the end
-		SourceAssetIdToCompiledAssetId	mSourceAssetIdToCompiledAssetId;
-		CompiledAssetIdToSourceAssetId	mCompiledAssetIdToSourceAssetId;
-		SourceAssetIdToVirtualFilename	mSourceAssetIdToVirtualFilename;
-		DefaultTextureAssetIds			mDefaultTextureAssetIds;
-		rapidjson::Document*			mRapidJsonDocument;			///< There's no real benefit in trying to store the targets data in custom data structures, so we just stick to the read in JSON object
-		ProjectAssetMonitor*			mProjectAssetMonitor;
-		std::atomic<bool>				mShutdownThread;
-		std::thread						mThread;
-		CacheManager*					mCacheManager;				///< Cache manager, can be a null pointer, destroy the instance if no longer needed
-		AssetCompilers					mAssetCompilersByClassId;	///< List of asset compilers key "RendererToolkit::AssetCompilerClassId" (type not used directly or we would need to define a hash-function for it)
+		RendererToolkitImpl&				mRendererToolkitImpl;
+		const Context&						mContext;
+		std::string							mProjectName;						///< UTF-8 project name
+		std::string							mAbsoluteProjectDirectory;			///< UTF-8 project directory, Has no "/" at the end
+		QualityStrategy						mQualityStrategy;
+		RendererRuntime::AssetPackage		mAssetPackage;
+		std::string							mAssetPackageDirectoryName;			///< UTF-8 asset package name, has no "/" at the end
+		SourceAssetIdToCompiledAssetId		mSourceAssetIdToCompiledAssetId;
+		CompiledAssetIdToSourceAssetId		mCompiledAssetIdToSourceAssetId;
+		SourceAssetIdToVirtualFilename		mSourceAssetIdToVirtualFilename;
+		DefaultTextureAssetIds				mDefaultTextureAssetIds;
+		rapidjson::Document*				mRapidJsonDocument;					///< There's no real benefit in trying to store the targets data in custom data structures, so we just stick to the read in JSON object
+		ProjectAssetMonitor*				mProjectAssetMonitor;
+		std::atomic<bool>					mShutdownThread;
+		std::thread							mThread;
+		CacheManager*						mCacheManager;						///< Cache manager, can be a null pointer, destroy the instance if no longer needed
+		AssetCompilerByClassId				mAssetCompilerByClassId;			///< List of asset compilers by key "RendererToolkit::AssetCompilerClassId" (type not used directly or we would need to define a hash-function for it)
+		AssetCompilerByFilenameExtension	mAssetCompilerByFilenameExtension;	///< List of asset compilers by key "unique asset filename extension"
 
 
 	};

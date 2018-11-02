@@ -327,8 +327,9 @@ The asset prefixes are just used inside the Unrimp examples and are not fixed bu
 - "VA" = "Vertex attributes"
 
 
-Asset References
+Assets
 ======
+- Each source asset which gets compiled into an runtime usable asset has a ".asset"-file which defines which asset compiler should be used as well as an optional asset compiler configuration. The rule is to not manipulate the source asset itself for asset compilation but to just decorate it with additional information. For ease of use there's support for automatically in-memory generated ".asset"-files which works for asset compilers which accept just a single unique filename extension.
 - Assets are referenced by using
 	- Renderer toolkit source asset ID naming scheme ```"<name>.asset"```
 		- Absolute: "${PROJECT_NAME}" inserts the name of the project the currently processed asset is in, only valid at the beginning of source asset IDs

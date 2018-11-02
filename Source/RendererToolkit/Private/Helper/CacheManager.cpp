@@ -165,7 +165,8 @@ namespace RendererToolkit
 		}
 
 		// Check if also the asset file (*.asset) has changed, e.g. compile options has changed
-		const bool assetFileChanged = checkIfFileChanged(rendererTarget, virtualAssetFilename.c_str(), ::detail::ASSET_FORMAT_VERSION, cacheEntries.assetCacheEntry);
+		// -> ".asset"-check for automatically in-memory generated ".asset"-file support
+		const bool assetFileChanged = (virtualAssetFilename.find(".asset") != std::string::npos && checkIfFileChanged(rendererTarget, virtualAssetFilename.c_str(), ::detail::ASSET_FORMAT_VERSION, cacheEntries.assetCacheEntry));
 		if (!assetFileChanged && (sourceFilesChanged || !destinationExists))
 		{
 			// Mark the asset file as changed when asset needs to be compiled and asset file itself didn't changed
@@ -206,7 +207,8 @@ namespace RendererToolkit
 			}
 		
 			// Check the asset file
-			if (checkIfFileChanged(rendererTarget, virtualAssetFilename.c_str(), ::detail::ASSET_FORMAT_VERSION, dummyEntry))
+			// -> ".asset"-check for automatically in-memory generated ".asset"-file support
+			if (virtualAssetFilename.find(".asset") != std::string::npos && checkIfFileChanged(rendererTarget, virtualAssetFilename.c_str(), ::detail::ASSET_FORMAT_VERSION, dummyEntry))
 			{
 				result = true;
 			}

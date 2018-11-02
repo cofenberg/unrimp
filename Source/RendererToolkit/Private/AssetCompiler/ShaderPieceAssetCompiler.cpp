@@ -59,7 +59,7 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	std::string ShaderPieceAssetCompiler::getVirtualOutputAssetFilename(const Input& input, const Configuration&) const
 	{
-		return input.virtualAssetOutputDirectory + '/' + std_filesystem::path(input.virtualAssetFilename).stem().generic_string() + ".shader_piece";
+		return (input.virtualAssetOutputDirectory + '/' + std_filesystem::path(input.virtualAssetFilename).stem().generic_string()).append(getOptionalUniqueAssetFilenameExtension());
 	}
 
 	bool ShaderPieceAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const

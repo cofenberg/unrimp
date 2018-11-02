@@ -6,6 +6,7 @@
 	},
 	"CompositorWorkspaceAsset":
 	{
+		"Description": "Forward rendering compositor workspace",
 		"Nodes":
 		{
 			"${PROJECT_NAME}/CompositorNode/CN_Forward.asset":

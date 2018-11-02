@@ -6,6 +6,7 @@
 	},
 	"CompositorNodeAsset":
 	{
+		"Description": "Debug compositor node with the most simple rendering. Useful for performance tests or when focusing on gameplay programming.",
 		"InputChannels":
 		{
 			"0": "InputRenderTarget",

@@ -263,13 +263,20 @@ namespace RendererToolkit
 		if (derivedRapidJsonValueMaterialBlueprintAsset.HasMember("BaseMaterialBlueprint"))
 		{
 			// Read material blueprint asset compiler configuration
+			// -> ".asset"-check for automatically in-memory generated ".asset"-file support
 			std::string materialBlueprintInputFile;
 			const std::string virtualMaterialBlueprintAssetFilename = StringHelper::getSourceAssetFilenameByString(derivedRapidJsonValueMaterialBlueprintAsset["BaseMaterialBlueprint"].GetString(), input);
+			if (virtualMaterialBlueprintAssetFilename.find(".asset") != std::string::npos)
 			{
-				// Parse material blueprint asset JSON
+				// Explicit ".asset"-file: Parse material blueprint asset JSON
 				rapidjson::Document rapidJsonDocumentMaterialBlueprintAsset;
 				JsonHelper::loadDocumentByFilename(input.context.getFileManager(), virtualMaterialBlueprintAssetFilename, "Asset", "1", rapidJsonDocumentMaterialBlueprintAsset);
 				materialBlueprintInputFile = JsonHelper::getAssetInputFileByRapidJsonDocument(rapidJsonDocumentMaterialBlueprintAsset);
+			}
+			else
+			{
+				// Automatically in-memory generated ".asset"-file
+				materialBlueprintInputFile = std_filesystem::path(virtualMaterialBlueprintAssetFilename).filename().generic_string();
 			}
 
 			// Load material blueprint
@@ -527,13 +534,20 @@ namespace RendererToolkit
 		// TODO(co) Error handling and simplification, has several parts of "RendererToolkit::MaterialBlueprintAssetCompiler" in common
 
 		// Read material blueprint asset compiler configuration
+		// -> ".asset"-check for automatically in-memory generated ".asset"-file support
 		std::string materialBlueprintInputFile;
 		const std::string& virtualMaterialBlueprintAssetFilename = input.sourceAssetIdToVirtualAssetFilename(materialBlueprintAssetId);
+		if (virtualMaterialBlueprintAssetFilename.find(".asset") != std::string::npos)
 		{
-			// Parse material blueprint asset JSON
+			// Explicit ".asset"-file: Parse material blueprint asset JSON
 			rapidjson::Document rapidJsonDocumentMaterialBlueprintAsset;
 			JsonHelper::loadDocumentByFilename(input.context.getFileManager(), virtualMaterialBlueprintAssetFilename, "Asset", "1", rapidJsonDocumentMaterialBlueprintAsset);
 			materialBlueprintInputFile = JsonHelper::getAssetInputFileByRapidJsonDocument(rapidJsonDocumentMaterialBlueprintAsset);
+		}
+		else
+		{
+			// Automatically in-memory generated ".asset"-file
+			materialBlueprintInputFile = std_filesystem::path(virtualMaterialBlueprintAssetFilename).filename().generic_string();
 		}
 
 		// Parse material blueprint JSON with modified asset compiler input so relative texture asset IDs can be resolved correctly

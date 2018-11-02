@@ -335,7 +335,7 @@ namespace RendererToolkit
 		return (sourceAssetIdAsString.length() > 6 && sourceAssetIdAsString.substr(sourceAssetIdAsString.length() - 6) == ".asset");
 	}
 
-	std::string StringHelper::getSourceAssetFilenameByString(const std::string& sourceAssetIdAsString, const IAssetCompiler::Input& input)
+	std::string StringHelper::getSourceAssetFilenameByString(const std::string& sourceAssetIdAsString, const IAssetCompiler::Input& input, bool supportAutomaticallyGeneratedAssetFiles)
 	{
 		// Sanity check
 		if (sourceAssetIdAsString.empty())
@@ -371,14 +371,17 @@ namespace RendererToolkit
 				replaceFirstString(resolvedSourceAssetIdAsString, "${PROJECT_NAME}", input.projectName);
 			}
 
+			// Support for automatically in-memory generated ".asset"-file (e.g. "<name>.asset" will become "<name>.material_blueprint")
+			const std::string virtualAssetFilename = input.sourceAssetIdToVirtualAssetFilename(RendererRuntime::AssetId(resolvedSourceAssetIdAsString.c_str()));
+
 			// Sanity check: Last chance to provide a human readable error message in case a none existing file is referenced
-			if (!input.context.getFileManager().doesFileExist(resolvedSourceAssetIdAsString.c_str()))
+			if (!input.context.getFileManager().doesFileExist(virtualAssetFilename.c_str()))
 			{
 				throw std::runtime_error("\"" + sourceAssetIdAsString + "\" is an invalid source asset ID since the referenced file doesn't exist");
 			}
 
 			// Return the resolved source asset ID as string
-			return resolvedSourceAssetIdAsString;
+			return supportAutomaticallyGeneratedAssetFiles ? virtualAssetFilename : resolvedSourceAssetIdAsString;
 		}
 		else
 		{
@@ -390,7 +393,7 @@ namespace RendererToolkit
 	RendererRuntime::AssetId StringHelper::getSourceAssetIdByString(const std::string& sourceAssetIdAsString, const IAssetCompiler::Input& input)
 	{
 		// Return the string ID of the resolved source asset ID as string
-		return RendererRuntime::StringId(getSourceAssetFilenameByString(sourceAssetIdAsString, input).c_str());
+		return RendererRuntime::StringId(getSourceAssetFilenameByString(sourceAssetIdAsString, input, false).c_str());
 	}
 
 	RendererRuntime::AssetId StringHelper::getAssetIdByString(const std::string& assetIdAsString, const IAssetCompiler::Input& input)

@@ -60,7 +60,7 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	std::string MaterialAssetCompiler::getVirtualOutputAssetFilename(const Input& input, const Configuration&) const
 	{
-		return input.virtualAssetOutputDirectory + '/' + std_filesystem::path(input.virtualAssetFilename).stem().generic_string() + ".material";
+		return (input.virtualAssetOutputDirectory + '/' + std_filesystem::path(input.virtualAssetFilename).stem().generic_string()).append(getOptionalUniqueAssetFilenameExtension());
 	}
 
 	bool MaterialAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const

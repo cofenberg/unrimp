@@ -559,13 +559,20 @@ namespace RendererToolkit
 		// TODO(co) Error handling and simplification
 
 		// Read material asset compiler configuration
+		// -> ".asset"-check for automatically in-memory generated ".asset"-file support
 		std::string materialInputFile;
 		const std::string& virtualMaterialAssetFilename = input.sourceAssetIdToVirtualAssetFilename(materialAssetId);
+		if (virtualMaterialAssetFilename.find(".asset") != std::string::npos)
 		{
-			// Parse material asset JSON
+			// Explicit ".asset"-file: Parse material asset JSON
 			rapidjson::Document rapidJsonDocumentMaterialAsset;
 			JsonHelper::loadDocumentByFilename(input.context.getFileManager(), virtualMaterialAssetFilename, "Asset", "1", rapidJsonDocumentMaterialAsset);
 			materialInputFile = JsonHelper::getAssetInputFileByRapidJsonDocument(rapidJsonDocumentMaterialAsset);
+		}
+		else
+		{
+			// Automatically in-memory generated ".asset"-file
+			materialInputFile = std_filesystem::path(virtualMaterialAssetFilename).filename().generic_string();
 		}
 
 		// Parse material JSON

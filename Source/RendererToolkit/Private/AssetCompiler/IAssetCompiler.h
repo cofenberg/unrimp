@@ -58,6 +58,7 @@ PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(5027)	// warning C5027: 'std::_Generic_error_category': move assignment operator was implicitly defined as deleted
 	#include <string>
 	#include <vector>
+	#include <string_view>
 	#include <unordered_map>
 	#include <unordered_set>
 PRAGMA_WARNING_POP
@@ -245,6 +246,7 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	public:
 		[[nodiscard]] virtual AssetCompilerClassId getAssetCompilerClassId() const = 0;
+		[[nodiscard]] virtual std::string_view getOptionalUniqueAssetFilenameExtension() const = 0;
 		[[nodiscard]] virtual std::string getVirtualOutputAssetFilename(const Input& input, const Configuration& configuration) const = 0;
 		[[nodiscard]] virtual bool checkIfChanged(const Input& input, const Configuration& configuration) const = 0;
 		virtual void compile(const Input& input, const Configuration& configuration) const = 0;

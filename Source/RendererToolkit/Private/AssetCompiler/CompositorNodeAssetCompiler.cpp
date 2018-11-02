@@ -605,7 +605,7 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	std::string CompositorNodeAssetCompiler::getVirtualOutputAssetFilename(const Input& input, const Configuration&) const
 	{
-		return input.virtualAssetOutputDirectory + '/' + std_filesystem::path(input.virtualAssetFilename).stem().generic_string() + ".compositor_node";
+		return (input.virtualAssetOutputDirectory + '/' + std_filesystem::path(input.virtualAssetFilename).stem().generic_string()).append(getOptionalUniqueAssetFilenameExtension());
 	}
 
 	bool CompositorNodeAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const

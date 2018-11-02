@@ -186,7 +186,7 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	std::string SceneAssetCompiler::getVirtualOutputAssetFilename(const Input& input, const Configuration&) const
 	{
-		return input.virtualAssetOutputDirectory + '/' + std_filesystem::path(input.virtualAssetFilename).stem().generic_string() + ".scene";
+		return (input.virtualAssetOutputDirectory + '/' + std_filesystem::path(input.virtualAssetFilename).stem().generic_string()).append(getOptionalUniqueAssetFilenameExtension());
 	}
 
 	bool SceneAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const

@@ -6,6 +6,7 @@
 	},
 	"CompositorNodeAsset":
 	{
+		"Description": "Deferred rendering compositor node",
 		"InputChannels":
 		{
 			"0": "InputRenderTarget",

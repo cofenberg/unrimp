@@ -60,7 +60,7 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	std::string VertexAttributesAssetCompiler::getVirtualOutputAssetFilename(const Input& input, const Configuration&) const
 	{
-		return input.virtualAssetOutputDirectory + '/' + std_filesystem::path(input.virtualAssetFilename).stem().generic_string() + ".vertex_attributes";
+		return (input.virtualAssetOutputDirectory + '/' + std_filesystem::path(input.virtualAssetFilename).stem().generic_string()).append(getOptionalUniqueAssetFilenameExtension());
 	}
 
 	bool VertexAttributesAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const

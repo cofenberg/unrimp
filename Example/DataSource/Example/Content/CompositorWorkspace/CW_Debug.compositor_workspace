@@ -6,6 +6,7 @@
 	},
 	"CompositorWorkspaceAsset":
 	{
+		"Description": "Debug compositor workspace with the most simple rendering. Useful for performance tests or when focusing on gameplay programming.",
 		"Nodes":
 		{
 			"${PROJECT_NAME}/CompositorNode/CN_Debug.asset":

@@ -6,6 +6,7 @@
 	},
 	"CompositorNodeAsset":
 	{
+		"Description": "VR rendering compositor node",
 		"InputChannels":
 		{
 			"0": "InputRenderTarget",
