@@ -136,7 +136,7 @@
 					// Fixed build in constants
 					const float STREAKS_TILING = 1.5f;	// Floor xz-plane
 					const float STREAKS_LENGTH = 0.5f;	// Height y-axis
-					const float STREAKS_INTENSITY = 1.0f;
+					const float STREAKS_INTENSITY = 0.5f;
 					const float GLOBAL_TIME_SCALE = 0.2f;
 
 					// Get texture coordinate
@@ -147,17 +147,20 @@
 					float worldSpaceNormalXLerpFactor = SATURATE(abs(worldSpaceNormal.x));
 
 					// Get streak pattern
-					float streakPatternXY = SAMPLE_2D_LOD(WaterStreaksMap, SamplerLinear, xy).z;	// z due to BGRA-texture: r = streak pattern, g = gradient, ba = streak xy normal map
-					float streakPatternZY = SAMPLE_2D_LOD(WaterStreaksMap, SamplerLinear, zy).z;	// z due to BGRA-texture: r = streak pattern, g = gradient, ba = streak xy normal map
+					float4 waterStreaksXY = SAMPLE_2D_LOD(WaterStreaksMap, SamplerLinear, xy).bgra;
+					float4 waterStreaksZY = SAMPLE_2D_LOD(WaterStreaksMap, SamplerLinear, zy).bgra;
+					float streakPatternXY = waterStreaksXY.r;	// r = streak pattern, g = gradient, ba = streak xy normal map
+					float streakPatternZY = waterStreaksZY.r;	// r = streak pattern, g = gradient, ba = streak xy normal map
 					float streakPattern = LERP(streakPatternXY, streakPatternZY, worldSpaceNormalXLerpFactor);
 
 					// Get streak normal
-					float2 packedStreakNormalXY = SAMPLE_2D_LOD(WaterStreaksMap, SamplerLinear, xy).xw;	// xw due to BGRA-texture: r = streak pattern, g = gradient, ba = streak xy normal map
-					float2 packedStreakNormalZY = SAMPLE_2D_LOD(WaterStreaksMap, SamplerLinear, zy).xw;	// xw due to BGRA-texture: r = streak pattern, g = gradient, ba = streak xy normal map
+					float2 packedStreakNormalXY = waterStreaksXY.ba;	// r = streak pattern, g = gradient, ba = streak xy normal map
+					float2 packedStreakNormalZY = waterStreaksZY.ba;	// r = streak pattern, g = gradient, ba = streak xy normal map
 					float2 packedStreakNormal = LERP(packedStreakNormalXY, packedStreakNormalZY, worldSpaceNormalXLerpFactor);
 					float3 streaksNormal = UnpackTextureNormalXY(packedStreakNormal.x, packedStreakNormal.y);
 
 					// Get gradient
+					// -> We could also take the roughness into account for more variation, but in tests this looked odd
 					xy += yOffset;
 					zy += yOffset;
 					float gradientXY = SAMPLE_2D_LOD(WaterStreaksMap, SamplerLinear, xy).g;	// r = streak pattern, g = gradient, ba = streak xy normal map
@@ -166,15 +169,16 @@
 					gradient = SATURATE(pow(abs(gradient), 8));
 
 					// Update streak pattern and streak normal using the gradient
-					streakPattern -= gradient;
-					streakPattern *= STREAKS_INTENSITY;
+					streakPattern = SATURATE(streakPattern - gradient) * STREAKS_INTENSITY;
 					streaksNormal = LERP(float3(0.0f, 0.0f, 1.0f), streaksNormal, streakPattern);
 
 					// Tangent space streaks normal to view space streaks normal
 					streaksNormal = MATRIX_MUL(streaksNormal, TBN);
 
 					// Update the view space normal using streaks slope awareness
+					// -> Metallic isn't modified by intent
 					viewSpaceNormal = LERP(streaksNormal, viewSpaceNormal, worldSpaceNormal.y);
+					albedo = LERP(SATURATE(albedo + streakPattern * 0.25f), albedo, worldSpaceNormal.y);
 					roughness = LERP(SATURATE(roughness + streakPattern), roughness, worldSpaceNormal.y);
 				}
 

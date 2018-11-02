@@ -189,8 +189,8 @@ Examples (just some high level keywords)
 - Physically based shading (PBS) using "metallic workflow" (aka "metal-rough-workflow" aka "Albedo/Metallic/Roughness") instead of "specular workflow" (aka "specular-gloss-workflow" aka "Diffuse/Specular/Glossines")
 - Microsoft Windows: ["NVIDIA Optimus"](http://developer.download.nvidia.com/devzone/devcenter/gamegraphics/files/OptimusRenderingPolicies.pdf) and ["AMD Dynamic Switchable Graphic"](https://community.amd.com/message/1307599#comment-1307599) awareness to reduce the risk of getting the integrated graphics unit assigned when there's a dedicated graphics card as well
 - [Volumetric light/fog](https://fr.slideshare.net/BenjaminGlatzel/volumetric-lighting-for-many-lights-in-lords-of-the-fallen) (aka crepuscular rays, god rays, sunbeams, sunbursts, light shafts or star flare)
-- [Custom resolved MSAA for antialiased deferred rendering and temporal anti-aliasing](https://mynameismjp.wordpress.com/2012/10/28/msaa-resolve-filters/)
 - [Dynamic rain accumulated water in a hole/cracks with puddle and rain drops](https://seblagarde.wordpress.com/2013/04/14/water-drop-3b-physically-based-wet-surfaces/) [and water streaks](https://deepspacebanana.github.io/deepspacebanana.github.io/blog/shader/art/unreal%20engine/Rainy-Surface-Shader-Part-2)
+- [Custom resolved MSAA for antialiased deferred rendering and temporal anti-aliasing](https://mynameismjp.wordpress.com/2012/10/28/msaa-resolve-filters/)
 - Distortion which can e.g. be used for refraction and heat haze / heat shimmer
 - General Purpose Computation on Graphics Processing Unit (GPGPU)
 - Gaussian blur, used to e.g. blur the transparent ImGui background
