@@ -374,11 +374,11 @@ void FirstScene::onDraw()
 	if (nullptr != mainRenderTarget && nullptr != rendererRuntime && nullptr != mCompositorWorkspaceInstance)
 	{
 		applyCurrentSettings(*mainRenderTarget);
-		createDebugGui(*mainRenderTarget);
 		RendererRuntime::SceneResource* sceneResource = rendererRuntime->getSceneResourceManager().tryGetById(mSceneResourceId);
 		if (nullptr != sceneResource && sceneResource->getLoadingState() == RendererRuntime::IResource::LoadingState::LOADED)
 		{
 			// Execute the compositor workspace instance
+			createDebugGui(*mainRenderTarget);
 			mCompositorWorkspaceInstance->executeVr(*mainRenderTarget, mCameraSceneItem, mSunlightSceneItem);
 		}
 	}
