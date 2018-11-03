@@ -83,7 +83,7 @@ namespace
 		typedef std::vector<uint8_t> FileData;
 		typedef std::vector<std::string> TextureFilenames;
 		typedef std::unordered_map<std::string, TextureFilenames> MaterialTextureFilenames;	// Key = material name
-		typedef std::unordered_map<std::string, std::string> MaterialNameToAssetId;	// Key = source material name (e.g. "/Head"), value = imported material filename (e.g. "../Material/SpinosaurusHead.asset")
+		typedef std::unordered_map<std::string, std::string> MaterialNameToAssetId;	// Key = source material name (e.g. "/Head"), value = imported material filename (e.g. "./Spino_Head.asset")
 		struct ImporterContext final
 		{
 			std::string			  meshFilename;
@@ -390,7 +390,7 @@ namespace
 					#define ADD_MEMBER(semanticType) \
 						if (!textureFilenames[SemanticType::semanticType].empty()) \
 						{ \
-							rapidJsonValueInputFiles.AddMember(#semanticType, rapidjson::StringRef(("./" + textureFilenames[SemanticType::semanticType])), rapidJsonAllocatorType); \
+							rapidJsonValueInputFiles.AddMember(#semanticType, "./" + textureFilenames[SemanticType::semanticType], rapidJsonAllocatorType); \
 						}
 
 					{ // Input files
@@ -431,7 +431,7 @@ namespace
 				{
 					// No texture channel packing
 					rapidJsonValueCompiler.AddMember("TextureSemantic", "EMISSIVE_MAP", rapidJsonAllocatorType);
-					rapidJsonValueCompiler.AddMember("InputFile", rapidjson::StringRef(("./" + textureFilenames[SemanticType::EMISSIVE_MAP])), rapidJsonAllocatorType);
+					rapidJsonValueCompiler.AddMember("InputFile", "./" + textureFilenames[SemanticType::EMISSIVE_MAP], rapidJsonAllocatorType);
 				}
 				else
 				{
@@ -489,8 +489,8 @@ namespace
 				"MaterialAsset": {
 					"BaseMaterial": "${PROJECT_NAME}/Material/Base/Mesh.asset",
 					"Properties": {
-						"_argb_nxa": "../Texture/Spino_Body_argb_nxa.asset",
-						"_hr_rg_mb_nya": "../Texture/Spino_Body_hr_rg_mb_nya.asset"
+						"_argb_nxa": "./Texture/Spino_Body_argb_nxa.asset",
+						"_hr_rg_mb_nya": "./Texture/Spino_Body_hr_rg_mb_nya.asset"
 					}
 				}
 			}
@@ -499,9 +499,9 @@ namespace
 			rapidjson::Document::AllocatorType& rapidJsonAllocatorType = rapidJsonDocumentAsset.GetAllocator();
 			rapidjson::Value rapidJsonValueMaterialAsset(rapidjson::kObjectType);
 			const std::string baseMaterial = importerContext.hasSkeleton ? "${PROJECT_NAME}/Blueprint/Mesh/M_SkinnedMesh.asset" : "${PROJECT_NAME}/Blueprint/Mesh/M_Mesh.asset";
-			const std::string relativeFilename_argb_nxa = "../" + materialName + "_argb_nxa" + ".asset";
-			const std::string relativeFilename_hr_rg_mb_nya = "../" + materialName + "_hr_rg_mb_nya" + ".asset";
-			const std::string relativeFilenameEmissiveMap = "../" + materialName + "_e" + ".asset";
+			const std::string relativeFilename_argb_nxa = "./" + materialName + "_argb_nxa" + ".asset";
+			const std::string relativeFilename_hr_rg_mb_nya = "./" + materialName + "_hr_rg_mb_nya" + ".asset";
+			const std::string relativeFilenameEmissiveMap = "./" + materialName + "_e" + ".asset";
 
 			// Base material
 			rapidJsonValueMaterialAsset.AddMember("BaseMaterial", rapidjson::StringRef(baseMaterial), rapidJsonAllocatorType);
@@ -539,52 +539,12 @@ namespace
 			RendererToolkit::JsonHelper::saveDocumentByFilename(input.context.getFileManager(), virtualFilename, "MaterialAsset", "1", rapidJsonValueMaterialAsset);
 		}
 
-		void createMaterialAssetFile(const RendererToolkit::IAssetImporter::Input& input, const std::string& materialName)
-		{
-			/* Example for a resulting material asset JSON file
-			{
-				"Format": {
-					"Type": "Asset",
-					"Version": "1"
-				},
-				"Asset": {
-					"Compiler": {
-						"ClassName": "RendererToolkit::MaterialAssetCompiler",
-						"InputFile": "./SpinosaurusBody.material"
-					}
-				}
-			}
-			*/
-			rapidjson::Document rapidJsonDocumentAsset(rapidjson::kObjectType);
-			rapidjson::Document::AllocatorType& rapidJsonAllocatorType = rapidJsonDocumentAsset.GetAllocator();
-			rapidjson::Value rapidJsonValueAsset(rapidjson::kObjectType);
-			const std::string filename = materialName + ".material";
-
-			{ // Material asset compiler
-				rapidjson::Value rapidJsonValueCompiler(rapidjson::kObjectType);
-				rapidJsonValueCompiler.AddMember("ClassName", "RendererToolkit::MaterialAssetCompiler", rapidJsonAllocatorType);
-				rapidJsonValueCompiler.AddMember("InputFile", rapidjson::StringRef(("./" + filename)), rapidJsonAllocatorType);
-				rapidJsonValueAsset.AddMember("Compiler", rapidJsonValueCompiler, rapidJsonAllocatorType);
-			}
-
-			// Write down the material asset JSON file
-			// -> Silently ignore and overwrite already existing files (might be a re-import)
-			const std::string virtualFilename = input.virtualAssetOutputDirectory + '/' + materialName + ".asset";
-			RendererToolkit::JsonHelper::saveDocumentByFilename(input.context.getFileManager(), virtualFilename, "Asset", "1", rapidJsonValueAsset);
-		}
-
 		void createMaterialAssetFiles(const RendererToolkit::IAssetImporter::Input& input, const MaterialTextureFilenames& materialTextureFilenames, const ImporterContext& importerContext)
 		{
-			// Ensure the material directory exists
-			input.context.getFileManager().createDirectories(input.virtualAssetOutputDirectory.c_str());
-
 			// Iterate through the materials
 			for (const auto& pair : materialTextureFilenames)
 			{
-				const std::string& materialName = pair.first;
-				const TextureFilenames& textureFilenames = pair.second;
-				createMaterialFile(input, materialName, textureFilenames, importerContext);
-				createMaterialAssetFile(input, materialName);
+				createMaterialFile(input, pair.first, pair.second, importerContext);
 			}
 		}
 
@@ -602,7 +562,7 @@ namespace
 			if (iterator != materialTextureFilenames.cend())
 			{
 				// We have a nice and clean exact match
-				materialNameToAssetId.emplace(assimpMaterialName, "../" + assimpMaterialName + ".asset");
+				materialNameToAssetId.emplace(assimpMaterialName, "./" + assimpMaterialName + ".asset");
 			}
 			else
 			{
@@ -618,7 +578,7 @@ namespace
 					const std::string& currentMaterialName = pair.first;
 					if (currentMaterialName.find(materialName) != std::string::npos)
 					{
-						materialNameToAssetId.emplace(assimpMaterialName, "../" + currentMaterialName + ".asset");
+						materialNameToAssetId.emplace(assimpMaterialName, "./" + currentMaterialName + ".asset");
 						return;
 					}
 				}
@@ -700,8 +660,8 @@ namespace
 						"ClassName": "RendererToolkit::MeshAssetCompiler",
 						"InputFile": "./SpinosaurusAeg.obj",
 						"MaterialNameToAssetId": {
-							"/Head": "../Material/SpinosaurusHead.asset",
-							"/Body": "../Material/SpinosaurusBody.asset"
+							"/Head": "./Spino_Head.asset",
+							"/Body": "./Spino_Body.asset"
 						}
 					}
 				}
@@ -714,7 +674,7 @@ namespace
 			{ // Mesh asset compiler
 				rapidjson::Value rapidJsonValueCompiler(rapidjson::kObjectType);
 				rapidJsonValueCompiler.AddMember("ClassName", "RendererToolkit::MeshAssetCompiler", rapidJsonAllocatorType);
-				rapidJsonValueCompiler.AddMember("InputFile", rapidjson::StringRef(("./" + importerContext.meshFilename)), rapidJsonAllocatorType);
+				rapidJsonValueCompiler.AddMember("InputFile", "./" + importerContext.meshFilename, rapidJsonAllocatorType);
 
 				// Check whether or not it looks dangerous to use "aiProcess_RemoveRedundantMaterials"
 				// -> "Centaur" ( https://sketchfab.com/models/0d3f1b4a51144b7fbc4e2ff64d858413 ) for example has only identical dummy
