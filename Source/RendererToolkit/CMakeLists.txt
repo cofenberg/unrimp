@@ -111,7 +111,6 @@ set(SOURCE_CODES
 	Private/AssetCompiler/VertexAttributesAssetCompiler.cpp
 	Private/AssetCompiler/SkeletonAnimationAssetCompiler.cpp
 	Private/AssetCompiler/TextureAssetCompiler.cpp
-	Private/AssetImporter/OgreAssetImporter.cpp
 	Private/AssetImporter/SketchfabAssetImporter.cpp
 	Private/Helper/JsonHelper.cpp
 	Private/Helper/JsonMaterialBlueprintHelper.cpp

@@ -489,8 +489,8 @@ namespace
 				"MaterialAsset": {
 					"BaseMaterial": "${PROJECT_NAME}/Material/Base/Mesh.asset",
 					"Properties": {
-						"_argb_nxa": "./Texture/Spino_Body_argb_nxa.asset",
-						"_hr_rg_mb_nya": "./Texture/Spino_Body_hr_rg_mb_nya.asset"
+						"_argb_nxa": "./Spino_Body_argb_nxa.asset",
+						"_hr_rg_mb_nya": "./Spino_Body_hr_rg_mb_nya.asset"
 					}
 				}
 			}
