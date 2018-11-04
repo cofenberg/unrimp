@@ -392,7 +392,7 @@ namespace RendererToolkit
 		mRendererToolkitImpl.setState(IRendererToolkit::State::IDLE);
 	}
 
-	void ProjectImpl::importAssets(const AbsoluteFilenames& absoluteSourceFilenames, const std::string& targetAssetPackageName)
+	void ProjectImpl::importAssets(const AbsoluteFilenames& absoluteSourceFilenames, const std::string& targetAssetPackageName, const std::string& targetDirectoryName)
 	{
 		// Sanity check
 		// TODO(co) Add support for multiple asset packages
@@ -408,7 +408,7 @@ namespace RendererToolkit
 		for (const std::string& absoluteSourceFilename : absoluteSourceFilenames)
 		{
 			RENDERER_LOG(mContext, INFORMATION, "Importing asset %u of %u: \"%s\"", currentSourceAsset + 1, absoluteSourceFilenames.size(), absoluteSourceFilename.c_str())
-			IAssetImporter::Input input(mContext, mProjectName, absoluteSourceFilename, mProjectName + "/Imported/" + std_filesystem::path(absoluteSourceFilename).stem().generic_string());
+			IAssetImporter::Input input(mContext, mProjectName, absoluteSourceFilename, mProjectName + '/' + targetDirectoryName + '/' + std_filesystem::path(absoluteSourceFilename).stem().generic_string());
 
 			// TODO(co) Implement automatic asset importer selection
 			SketchfabAssetImporter().import(input);

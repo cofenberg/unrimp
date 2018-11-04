@@ -106,7 +106,7 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	public:
 		virtual void load(RendererRuntime::AbsoluteDirectoryName absoluteDirectoryName) = 0;
-		virtual void importAssets(const AbsoluteFilenames& absoluteSourceFilenames, const std::string& targetAssetPackageName) = 0;
+		virtual void importAssets(const AbsoluteFilenames& absoluteSourceFilenames, const std::string& targetAssetPackageName, const std::string& targetDirectoryName = "Imported") = 0;
 		virtual void compileAllAssets(const char* rendererTarget) = 0;
 		virtual void startupAssetMonitor(RendererRuntime::IRendererRuntime& rendererRuntime, const char* rendererTarget) = 0;
 		virtual void shutdownAssetMonitor() = 0;

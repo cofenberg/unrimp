@@ -150,7 +150,7 @@ namespace RendererToolkit
 	public:
 		virtual void load(RendererRuntime::AbsoluteDirectoryName absoluteProjectDirectoryName) override;
 		virtual void compileAllAssets(const char* rendererTarget) override;
-		virtual void importAssets(const AbsoluteFilenames& absoluteSourceFilenames, const std::string& targetAssetPackageName) override;
+		virtual void importAssets(const AbsoluteFilenames& absoluteSourceFilenames, const std::string& targetAssetPackageName, const std::string& targetDirectoryName = "Imported") override;
 		virtual void startupAssetMonitor(RendererRuntime::IRendererRuntime& rendererRuntime, const char* rendererTarget) override;
 		virtual void shutdownAssetMonitor() override;
 
