@@ -54,8 +54,13 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	void AssimpLogStream::write(const char* message)
 	{
-		// Ignore "Error, T88896: Failed to compute tangents; need UV data in channel0" since some sub-meshes might have no texture coordinates, worth a hint but no error
-		if (nullptr != strstr(message, "Error, T88896: Failed to compute tangents; need UV data in channel0"))
+		// Ignore the following errors
+		// -> "Failed to compute tangents; need UV data in channel0" since some sub-meshes might have no texture coordinates, worth a hint but no error
+		// -> "OBJ: unexpected illumination model (0-2 recognized)" since the illumination model information is unused anyway
+		// -> "Skipping one or more lines with the same contents" since the default setting of Assimp is to not repeat error messages but to emit such a message instead
+		if (nullptr == strstr(message, "Failed to compute tangents; need UV data in channel0") &&
+			nullptr == strstr(message, "OBJ: unexpected illumination model (0-2 recognized)") &&
+			nullptr == strstr(message, "Skipping one or more lines with the same contents"))
 		{
 			mLastErrorMessage = message;
 			throw std::runtime_error(message);
