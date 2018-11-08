@@ -11784,7 +11784,7 @@ namespace Direct3D12Renderer
 				mCapabilities.maximumTextureBufferSize = mCapabilities.maximumStructuredBufferSize = 0;
 
 				// Maximum indirect buffer size in bytes
-				mCapabilities.maximumIndirectBufferSize = 64 * 1024;	// 64 KiB
+				mCapabilities.maximumIndirectBufferSize = 128 * 1024;	// 128 KiB
 
 				// Maximum number of multisamples (always at least 1, usually 8)
 				mCapabilities.maximumNumberOfMultisamples = 1;	// Don't want to support the legacy DirectX 9 multisample support
@@ -11822,7 +11822,7 @@ namespace Direct3D12Renderer
 				mCapabilities.maximumTextureBufferSize = mCapabilities.maximumStructuredBufferSize = 0;
 
 				// Maximum indirect buffer size in bytes
-				mCapabilities.maximumIndirectBufferSize = 64 * 1024;	// 64 KiB
+				mCapabilities.maximumIndirectBufferSize = 128 * 1024;	// 128 KiB
 
 				// Maximum number of multisamples (always at least 1, usually 8)
 				mCapabilities.maximumNumberOfMultisamples = 1;	// Don't want to support the legacy DirectX 9 multisample support
@@ -11860,7 +11860,7 @@ namespace Direct3D12Renderer
 				mCapabilities.maximumTextureBufferSize = mCapabilities.maximumStructuredBufferSize = 0;
 
 				// Maximum indirect buffer size in bytes
-				mCapabilities.maximumIndirectBufferSize = 64 * 1024;	// 64 KiB
+				mCapabilities.maximumIndirectBufferSize = 128 * 1024;	// 128 KiB
 
 				// Maximum number of multisamples (always at least 1, usually 8)
 				mCapabilities.maximumNumberOfMultisamples = 1;	// Don't want to support the legacy DirectX 9 multisample support
@@ -11902,7 +11902,7 @@ namespace Direct3D12Renderer
 				mCapabilities.maximumTextureBufferSize = mCapabilities.maximumStructuredBufferSize = 128 * 1024 * 1024;	// TODO(co) http://msdn.microsoft.com/en-us/library/ff476876%28v=vs.85%29.aspx does not mention the texture buffer? Currently the OpenGL 3 minimum is used: 128 MiB.
 
 				// Maximum indirect buffer size in bytes
-				mCapabilities.maximumIndirectBufferSize = 64 * 1024;	// 64 KiB
+				mCapabilities.maximumIndirectBufferSize = 128 * 1024;	// 128 KiB
 
 				// Maximum number of multisamples (always at least 1, usually 8)
 				mCapabilities.maximumNumberOfMultisamples = 8;
@@ -11944,7 +11944,7 @@ namespace Direct3D12Renderer
 				mCapabilities.maximumTextureBufferSize = mCapabilities.maximumStructuredBufferSize = 128 * 1024 * 1024;	// TODO(co) http://msdn.microsoft.com/en-us/library/ff476876%28v=vs.85%29.aspx does not mention the texture buffer? Currently the OpenGL 3 minimum is used: 128 MiB.
 
 				// Maximum indirect buffer size in bytes
-				mCapabilities.maximumIndirectBufferSize = 64 * 1024;	// 64 KiB
+				mCapabilities.maximumIndirectBufferSize = 128 * 1024;	// 128 KiB
 
 				// Maximum number of multisamples (always at least 1, usually 8)
 				mCapabilities.maximumNumberOfMultisamples = 8;
@@ -11993,7 +11993,7 @@ namespace Direct3D12Renderer
 				mCapabilities.maximumAnisotropy = 16;
 
 				// Maximum indirect buffer size in bytes
-				mCapabilities.maximumIndirectBufferSize = 64 * 1024;	// 64 KiB
+				mCapabilities.maximumIndirectBufferSize = 128 * 1024;	// 128 KiB
 
 				// Instanced arrays supported? (shader model 3 feature, vertex array element advancing per-instance instead of per-vertex)
 				mCapabilities.instancedArrays = true;

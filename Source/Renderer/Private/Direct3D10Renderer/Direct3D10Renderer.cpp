@@ -10324,7 +10324,7 @@ namespace Direct3D10Renderer
 
 		// Maximum indirect buffer size in bytes
 		// -> DirectX 10 has no indirect buffer
-		mCapabilities.maximumIndirectBufferSize = 64 * 1024;	// 64 KiB
+		mCapabilities.maximumIndirectBufferSize = 128 * 1024;	// 128 KiB
 
 		// Maximum uniform buffer (UBO) size in bytes (usually at least 4096 * 16 bytes, in case there's no support for uniform buffer it's 0)
 		// -> See https://msdn.microsoft.com/en-us/library/windows/desktop/cc308052(v=vs.85).aspx - "Resource Limits (Direct3D 10)" - "Number of elements in a constant buffer 4096"

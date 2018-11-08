@@ -3611,7 +3611,7 @@ namespace NullRenderer
 		mCapabilities.maximumTextureBufferSize = mCapabilities.maximumStructuredBufferSize = 42;
 
 		// Maximum indirect buffer size in bytes
-		mCapabilities.maximumIndirectBufferSize = 64 * 1024;	// 64 KiB
+		mCapabilities.maximumIndirectBufferSize = 128 * 1024;	// 128 KiB
 
 		// Maximum uniform buffer (UBO) size in bytes (usually at least 4096 * 16 bytes, in case there's no support for uniform buffer it's 0)
 		// -> Let's use the DirectX 11 value: See https://msdn.microsoft.com/en-us/library/windows/desktop/ff819065(v=vs.85).aspx - "Resource Limits (Direct3D 11)" - "Number of elements in a constant buffer D3D11_REQ_CONSTANT_BUFFER_ELEMENT_COUNT (4096)"

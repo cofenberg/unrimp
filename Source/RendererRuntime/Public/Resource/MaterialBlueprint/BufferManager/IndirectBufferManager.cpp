@@ -40,7 +40,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
-		static uint32_t DEFAULT_INDIRECT_BUFFER_NUMBER_OF_BYTES = 64 * 1024;	// 64 KiB
+		static uint32_t DEFAULT_INDIRECT_BUFFER_NUMBER_OF_BYTES = 128 * 1024;	// 128 KiB
 
 
 //[-------------------------------------------------------]
@@ -88,6 +88,7 @@ namespace RendererRuntime
 	{
 		// Sanity check
 		assert((numberOfBytes > 0) && "Don't call this method if there's no work to be done");
+		assert((numberOfBytes > mMaximumIndirectBufferSize) && "Maximum indirect buffer size exceeded");
 
 		// Is there enough space left inside the current indirect buffer?
 		if (nullptr != mCurrentIndirectBuffer)

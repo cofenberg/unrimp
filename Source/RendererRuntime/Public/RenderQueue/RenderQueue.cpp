@@ -414,7 +414,7 @@ namespace RendererRuntime
 								// Fill indirect buffer
 								if (renderable.getDrawIndexed())
 								{
-									Renderer::Command::DrawIndexedGraphics::create(commandBuffer, renderable.getNumberOfIndices(), instanceCount * renderable.getInstanceCount(), renderable.getStartIndexLocation(), 0,  startInstanceLocation);
+									Renderer::Command::DrawIndexedGraphics::create(commandBuffer, renderable.getNumberOfIndices(), instanceCount * renderable.getInstanceCount(), renderable.getStartIndexLocation(), 0, startInstanceLocation);
 								}
 								else
 								{

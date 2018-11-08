@@ -8677,7 +8677,7 @@ namespace Direct3D9Renderer
 		mCapabilities.maximumStructuredBufferSize = 0;
 
 		// Maximum indirect buffer size in bytes
-		mCapabilities.maximumIndirectBufferSize = 64 * 1024;	// 64 KiB
+		mCapabilities.maximumIndirectBufferSize = 128 * 1024;	// 128 KiB
 
 		// Maximum uniform buffer (UBO) size in bytes (usually at least 4096 * 16 bytes, in case there's no support for uniform buffer it's 0)
 		mCapabilities.maximumUniformBufferSize = 0;

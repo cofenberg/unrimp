@@ -11333,7 +11333,7 @@ namespace VulkanRenderer
 			mCapabilities.maximumTextureBufferSize = mCapabilities.maximumStructuredBufferSize = 128 * 1024 * 1024;	// TODO(co) http://msdn.microsoft.com/en-us/library/ff476876%28v=vs.85%29.aspx does not mention the texture buffer? Currently the OpenGL 3 minimum is used: 128 MiB.
 
 			// Maximum indirect buffer size in bytes
-			mCapabilities.maximumIndirectBufferSize = 64 * 1024;	// 64 KiB
+			mCapabilities.maximumIndirectBufferSize = 128 * 1024;	// 128 KiB
 
 			// Maximum number of multisamples (always at least 1, usually 8)
 			mCapabilities.maximumNumberOfMultisamples = 1;	// TODO(co) Add multisample support, when setting "VkPhysicalDeviceFeatures" -> "sampleRateShading" -> VK_TRUE don't forget to check whether or not the device sup pots the feature

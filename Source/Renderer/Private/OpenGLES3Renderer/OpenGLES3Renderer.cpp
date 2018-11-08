@@ -10302,7 +10302,7 @@ namespace OpenGLES3Renderer
 		mCapabilities.maximumStructuredBufferSize = 0;
 
 		// Maximum indirect buffer size in bytes
-		mCapabilities.maximumIndirectBufferSize = 64 * 1024;	// 64 KiB
+		mCapabilities.maximumIndirectBufferSize = 128 * 1024;	// 128 KiB
 
 		// Maximum number of multisamples (always at least 4 according to https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glGet.xhtml )
 		glGetIntegerv(GL_MAX_SAMPLES, &openGLValue);
