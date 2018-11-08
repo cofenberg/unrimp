@@ -88,7 +88,7 @@ namespace RendererRuntime
 	{
 		// Sanity check
 		assert((numberOfBytes > 0) && "Don't call this method if there's no work to be done");
-		assert((numberOfBytes > mMaximumIndirectBufferSize) && "Maximum indirect buffer size exceeded");
+		assert((numberOfBytes <= mMaximumIndirectBufferSize) && "Maximum indirect buffer size exceeded");
 
 		// Is there enough space left inside the current indirect buffer?
 		if (nullptr != mCurrentIndirectBuffer)

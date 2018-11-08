@@ -93,8 +93,8 @@ namespace RendererRuntime
 		mRendererRuntime(rendererRuntime),
 		mTextureBuffer(nullptr),
 		mClusters3DTextureResourceId(getInvalid<TextureResourceId>()),
-		mLightClustersAabbMinimum(-16.0f, -0.5f, -6.0f),	// TODO(co) Just for the clusters shading kickoff
-		mLightClustersAabbMaximum(14.0f, 15.0f, 7.0f),		// TODO(co) Just for the clusters shading kickoff
+		mLightClustersAabbMinimum(-50.0f, -1.0f, -50.0f),	// TODO(co) Just for the clusters shading kickoff
+		mLightClustersAabbMaximum( 50.0f, 40.0f,  50.0f),	// TODO(co) Just for the clusters shading kickoff
 		mResourceGroup(nullptr)
 	{
 		// Create texture buffer instance
