@@ -28,6 +28,7 @@
 //[ Includes                                              ]
 //[-------------------------------------------------------]
 #include "RendererRuntime/Public/Core/StringId.h"
+#include "RendererRuntime/Public/Core/GetInvalid.h"
 
 
 //[-------------------------------------------------------]
@@ -63,13 +64,13 @@ namespace RendererRuntime
 		#pragma pack(1)
 			struct MaterialHeader final
 			{
-				uint32_t numberOfTechniques;
-				uint32_t numberOfProperties;
+				uint32_t numberOfTechniques = 0;
+				uint32_t numberOfProperties = 0;
 			};
 
 			struct Technique final
 			{
-				MaterialTechniqueId materialTechniqueId;
+				MaterialTechniqueId materialTechniqueId = getInvalid<MaterialTechniqueId>();
 				AssetId				materialBlueprintAssetId;
 			};
 		#pragma pack(pop)

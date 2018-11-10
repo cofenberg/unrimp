@@ -111,7 +111,7 @@ namespace RendererRuntime
 				char	 name[MAXIMUM_PASS_NAME_LENGTH] = { "Compositor pass" };	///< Human readable ASCII pass name for debugging and profiling, contains terminating zero
 				float	 minimumDepth					= 0.0f;
 				float	 maximumDepth					= 1.0f;
-				uint32_t numberOfExecutions				= RendererRuntime::getInvalid<uint32_t>();
+				uint32_t numberOfExecutions				= getInvalid<uint32_t>();
 				bool	 skipFirstExecution				= false;
 			};
 
@@ -134,7 +134,7 @@ namespace RendererRuntime
 				uint8_t				minimumRenderQueueIndex = 0;	///< Inclusive
 				uint8_t				maximumRenderQueueIndex = 255;	///< Inclusive
 				bool				transparentPass			= false;
-				MaterialTechniqueId	materialTechniqueId;
+				MaterialTechniqueId	materialTechniqueId		= getInvalid<MaterialTechniqueId>();
 			};
 
 			struct PassShadowMap final : public PassScene
@@ -164,9 +164,9 @@ namespace RendererRuntime
 
 			struct PassCompute : public Pass
 			{
-				AssetId				materialAssetId;				///< If material blueprint asset ID is set, material asset ID must be invalid
-				MaterialTechniqueId	materialTechniqueId;			///< Must always be valid
-				AssetId				materialBlueprintAssetId;		///< If material asset ID is set, material blueprint asset ID must be invalid
+				AssetId				materialAssetId;												///< If material blueprint asset ID is set, material asset ID must be invalid
+				MaterialTechniqueId	materialTechniqueId		   = getInvalid<MaterialTechniqueId>();	///< Must always be valid
+				AssetId				materialBlueprintAssetId;										///< If material asset ID is set, material blueprint asset ID must be invalid
 				uint32_t			numberOfMaterialProperties = 0;
 			};
 

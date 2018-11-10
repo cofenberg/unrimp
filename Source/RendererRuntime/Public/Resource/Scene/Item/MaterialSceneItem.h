@@ -132,6 +132,7 @@ namespace RendererRuntime
 	protected:
 		inline MaterialSceneItem(SceneResource& sceneResource, bool cullable = true) :
 			ISceneItem(sceneResource, cullable),
+			mMaterialTechniqueId(getInvalid<MaterialTechniqueId>()),
 			mMaterialResourceId(getInvalid<MaterialResourceId>())
 		{
 			// Nothing here

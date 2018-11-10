@@ -109,7 +109,8 @@ namespace RendererRuntime
 			ICompositorResourcePass(compositorTarget),
 			mMinimumRenderQueueIndex(0),
 			mMaximumRenderQueueIndex(255),
-			mTransparentPass(false)
+			mTransparentPass(false),
+			mMaterialTechniqueId(getInvalid<MaterialTechniqueId>())
 		{
 			// Nothing here
 		}

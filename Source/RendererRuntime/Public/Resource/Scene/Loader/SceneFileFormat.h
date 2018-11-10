@@ -121,9 +121,9 @@ namespace RendererRuntime
 
 			struct MaterialItem
 			{
-				AssetId				materialAssetId;				///< If material blueprint asset ID is set, material asset ID must be invalid
-				MaterialTechniqueId	materialTechniqueId;			///< Must always be valid
-				AssetId				materialBlueprintAssetId;		///< If material asset ID is set, material blueprint asset ID must be invalid
+				AssetId				materialAssetId;												///< If material blueprint asset ID is set, material asset ID must be invalid
+				MaterialTechniqueId	materialTechniqueId		   = getInvalid<MaterialTechniqueId>();	///< Must always be valid
+				AssetId				materialBlueprintAssetId;										///< If material asset ID is set, material blueprint asset ID must be invalid
 				uint32_t			numberOfMaterialProperties = 0;
 			};
 

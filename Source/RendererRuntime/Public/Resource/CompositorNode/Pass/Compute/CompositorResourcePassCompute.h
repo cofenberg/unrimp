@@ -130,14 +130,16 @@ namespace RendererRuntime
 	protected:
 		inline explicit CompositorResourcePassCompute(const CompositorTarget& compositorTarget) :
 			ICompositorResourcePass(compositorTarget),
-			mMaterialDefinitionMandatory(true)
+			mMaterialDefinitionMandatory(true),
+			mMaterialTechniqueId(getInvalid<MaterialTechniqueId>())
 		{
 			// Nothing here
 		}
 
 		inline CompositorResourcePassCompute(const CompositorTarget& compositorTarget, bool materialDefinitionMandatory) :
 			ICompositorResourcePass(compositorTarget),
-			mMaterialDefinitionMandatory(materialDefinitionMandatory)
+			mMaterialDefinitionMandatory(materialDefinitionMandatory),
+			mMaterialTechniqueId(getInvalid<MaterialTechniqueId>())
 		{
 			// Nothing here
 		}
