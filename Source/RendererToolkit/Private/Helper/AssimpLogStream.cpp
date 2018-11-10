@@ -60,7 +60,10 @@ namespace RendererToolkit
 		// -> "Skipping one or more lines with the same contents" since the default setting of Assimp is to not repeat error messages but to emit such a message instead
 		if (nullptr == strstr(message, "Failed to compute tangents; need UV data in channel0") &&
 			nullptr == strstr(message, "OBJ: unexpected illumination model (0-2 recognized)") &&
-			nullptr == strstr(message, "Skipping one or more lines with the same contents"))
+			nullptr == strstr(message, "Skipping one or more lines with the same contents") &&
+			nullptr == strstr(message, "FindInvalidDataProcess fails on mesh uvcoords: All vectors are identical") &&
+			nullptr == strstr(message, "FindInvalidDataProcess fails on mesh normals: Found zero-length vector") &&
+			nullptr == strstr(message, "This algorithm works on triangle meshes only"))
 		{
 			mLastErrorMessage = message;
 			throw std::runtime_error(message);

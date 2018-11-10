@@ -443,7 +443,7 @@ namespace
 				aiMesh& assimpMesh = *assimpScene.mMeshes[assimpNode.mMeshes[i]];
 
 				// Use "mikktspace" by Morten S. Mikkelsen for semi-standard tangent space generation and overwrite what Assimp calculated (see e.g. https://wiki.blender.org/index.php/Dev:Shading/Tangent_Space_Normal_Maps for background information)
-				if (0 != assimpMesh.mNumUVComponents[0])
+				if (0 != assimpMesh.mNumUVComponents[0] && nullptr != assimpMesh.mTangents && nullptr != assimpMesh.mBitangents)
 				{
 					mikktspace::g_MikkTSpaceContext.m_pUserData = reinterpret_cast<void*>(&assimpMesh);
 					if (genTangSpaceDefault(&mikktspace::g_MikkTSpaceContext) == 0)
@@ -514,7 +514,7 @@ namespace
 							aiVector3D tangent(1.0f, 0.0f, 0.0f);
 							aiVector3D binormal(0.0f, 1.0f, 0.0f);
 							aiVector3D normal = assimpMesh.mNormals[j];
-							if (0 != assimpMesh.mNumUVComponents[0])
+							if (0 != assimpMesh.mNumUVComponents[0] && nullptr != assimpMesh.mTangents && nullptr != assimpMesh.mBitangents)
 							{
 								tangent = assimpMesh.mTangents[j];
 								binormal = assimpMesh.mBitangents[j];
