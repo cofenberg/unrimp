@@ -45,7 +45,7 @@ namespace RendererRuntime
 	typedef StringId CompositorChannelId;		///< Compositor channel identifier, internally just a POD "uint32_t"
 	typedef StringId CompositorFramebufferId;	///< Compositor framebuffer identifier, internally just a POD "uint32_t"
 	typedef StringId CompositorPassTypeId;		///< Compositor pass type identifier, internally just a POD "uint32_t"
-	typedef StringId MaterialTechniqueId;		///< Material technique identifier, internally just a POD "uint32_t", result of hashing the material technique name
+	typedef uint32_t MaterialTechniqueId;		///< Material technique identifier, result of hashing the material technique name via "RendererRuntime::StringId"
 	typedef StringId MaterialPropertyId;		///< Material property identifier, internally just a POD "uint32_t", result of hashing the property name
 
 

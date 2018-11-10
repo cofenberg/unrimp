@@ -989,7 +989,20 @@ namespace RendererToolkit
 		value = RendererRuntime::StringId(rapidJsonValue[propertyName].GetString());
 	}
 
+	void JsonHelper::mandatoryStringIdProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, uint32_t& value)
+	{
+		value = RendererRuntime::StringId(rapidJsonValue[propertyName].GetString());
+	}
+
 	void JsonHelper::optionalStringIdProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, RendererRuntime::StringId& value)
+	{
+		if (rapidJsonValue.HasMember(propertyName))
+		{
+			mandatoryStringIdProperty(rapidJsonValue, propertyName, value);
+		}
+	}
+
+	void JsonHelper::optionalStringIdProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, uint32_t& value)
 	{
 		if (rapidJsonValue.HasMember(propertyName))
 		{

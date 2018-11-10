@@ -54,6 +54,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	typedef uint32_t MaterialResourceId;	///< POD material resource identifier
 	typedef uint32_t SkeletonResourceId;	///< POD skeleton resource identifier
+	typedef uint32_t MaterialTechniqueId;	///< Material technique identifier, result of hashing the material technique name via "RendererRuntime::StringId"
 
 
 	//[-------------------------------------------------------]
