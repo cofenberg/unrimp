@@ -103,7 +103,7 @@ MAIN_BEGIN
 
 	// The final compositor is rendered into the original render target which can be for example an operation system window
 	// -> In order to support dynamic resolution scale we need to ask the color map for the viewport size rather than the render target
-	float2 viewportSize = CAST_TO(GET_TEXTURE_2D_SIZE(ColorMap, 0), float2);
+	float2 viewportSize = CAST_TO(GET_TEXTURE_2D_LOD_SIZE(ColorMap, 0), float2);
 
 	// Mutually exclusive since each effect is gathering multiple color map samples
 	// -> This isn't a real problem since the point of the effects is mutually exclusive as well sense wise

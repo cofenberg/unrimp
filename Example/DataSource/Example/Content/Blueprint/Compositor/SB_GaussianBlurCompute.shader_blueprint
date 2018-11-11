@@ -69,9 +69,9 @@ MAIN_BEGIN_COMPUTE(32, 32, 1)
 		weight[2] = 0.0702702703f;
 
 		// Gather values
-		float2 texCoord = CAST_TO(GLOBAL_INVOCATION_ID.xy, float2) / CAST_TO(PassData.GlobalComputeSize.xy, float2);
+		float2 texCoord = (CAST_TO(GLOBAL_INVOCATION_ID.xy, float2) + float2(0.5f, 0.5f)) / CAST_TO(PassData.GlobalComputeSize.xy, float2);
 		float4 color = SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(texCoord, 0.0f, 0.0f)) * weight[0];
-		float2 inverseColorMapSize = float2(1.0f, 1.0f) / CAST_TO(GET_TEXTURE_2D_SIZE(ColorMap, 0), float2);	// TODO(co) Possible optimization: Each thread group needs to fetch this value just once
+		float2 inverseColorMapSize = float2(1.0f, 1.0f) / CAST_TO(GET_TEXTURE_2D_LOD_SIZE(ColorMap, 0), float2);	// TODO(co) Possible optimization: Each thread group needs to fetch this value just once
 		UNROLL for (int i = 1; i < 3; ++i)
 		{
 			@property(VerticalBlur)

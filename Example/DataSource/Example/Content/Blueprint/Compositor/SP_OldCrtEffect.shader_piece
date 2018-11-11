@@ -101,7 +101,7 @@
 	color.g = SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(OldCrtDistort(OldCrtColorShift(sd_uv, 0.01f, rand), crtDistortFactor), 0.0f, 0.0f)).g;
 	color.b = SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(OldCrtDistort(OldCrtColorShift(sd_uv, 0.024f, rand), crtDistortFactor), 0.0f, 0.0f)).b;
 
-	float resolutionY = CAST_TO(GET_TEXTURE_2D_SIZE(ColorMap, 0), float2).y;
+	float resolutionY = CAST_TO(GET_TEXTURE_2D_LOD_SIZE(ColorMap, 0), float2).y;
 	float scanline_color = OldCrtScanline(crt_uv, resolutionY);
 	float slowscan_color = OldCrtSlowScan(crt_uv, resolutionY);
 

@@ -128,7 +128,7 @@ MAIN_BEGIN
 	{
 		// Select mip level based on roughness
 		float3 R = reflect(-worldSpaceIncident, worldSpaceNormal);
-		float2 cubeDimension = CAST_TO(GET_TEXTURE_CUBE_SIZE(ReflectionCubeMap, 0), float2);
+		float2 cubeDimension = CAST_TO(GET_TEXTURE_CUBE_LOD_SIZE(ReflectionCubeMap, 0), float2);
 		float numberOfCubeMipmaps = log2(max(cubeDimension.x, cubeDimension.y));
 		cubeReflectionColor = SAMPLE_CUBE_LOD(ReflectionCubeMap, SamplerLinear, float4(R, roughness * numberOfCubeMipmaps)).rgb;
 

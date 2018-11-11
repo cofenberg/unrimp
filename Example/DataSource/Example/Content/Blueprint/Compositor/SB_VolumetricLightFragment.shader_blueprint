@@ -123,7 +123,7 @@ MAIN_BEGIN
 	float3 worldSpacePosition = MATRIX_MUL(PassData.ViewSpaceToWorldSpaceMatrix, float4(viewSpacePosition.xyz, 1.0f)).xyz;
 
 	// Dither using a Bayer matrix to hide banding artefacts when using not enough samples
-	float ditherValue = GetBayerScreenSpaceDitherValue(CAST_TO(MAIN_INPUT(TexCoordVS) * CAST_TO(GET_TEXTURE_2D_SIZE(DepthMap, 1), float2), uint2));
+	float ditherValue = GetBayerScreenSpaceDitherValue(CAST_TO(MAIN_INPUT(TexCoordVS) * CAST_TO(GET_TEXTURE_2D_LOD_SIZE(DepthMap, 1), float2), uint2));
 
 // TODO(co) Make flexible
 #define NUMBER_OF_STEPS 32

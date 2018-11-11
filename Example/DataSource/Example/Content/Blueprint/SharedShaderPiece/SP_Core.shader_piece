@@ -166,7 +166,7 @@
 			textureObject.GetDimensions(mipmapIndex, width, height, numberOfLevels);
 			return float2(width, height);
 		}
-		#define GET_TEXTURE_2D_SIZE(textureObject, mipmapIndex) getDirect3DTexture2DSize(textureObject, mipmapIndex)
+		#define GET_TEXTURE_2D_LOD_SIZE(textureObject, mipmapIndex) getDirect3DTexture2DSize(textureObject, mipmapIndex)
 		float2 getDirect3DTextureCubeSize(TextureCube textureObject, uint mipmapIndex)
 		{
 			uint width;
@@ -175,7 +175,7 @@
 			textureObject.GetDimensions(mipmapIndex, width, height, numberOfLevels);
 			return float2(width, height);
 		}
-		#define GET_TEXTURE_CUBE_SIZE(textureObject, mipmapIndex) getDirect3DTextureCubeSize(textureObject, mipmapIndex)
+		#define GET_TEXTURE_CUBE_LOD_SIZE(textureObject, mipmapIndex) getDirect3DTextureCubeSize(textureObject, mipmapIndex)
 
 		// Texture unordered access
 		#define RW_TEXTURE_2D(resourceGroupIndex, resourceIndex, name, registerIndex, format, access) RWTexture2D<float4> name : register(u##registerIndex);
@@ -206,7 +206,7 @@
 		#define IMAGE_STORE(name, texelIndex, data) name[texelIndex] = data
 
 		// Fragment shader only
-		#define DECLARE_FRAGMENT_POSITION float4 FragmentPosition : SV_POSITION;
+		#define DECLARE_FRAGMENT_POSITION float4 FragmentPosition : SV_POSITION;	// Fragment position in screen space (e.g. 0x0 ... 1920x1080), includes half-texel offset so first pixel isn't (0, 0) but (0.5, 0.5), see "Half-Pixel Offset in DirectX 11" by Adam Sawicki published 9 November 2012 at http://www.asawicki.info/news_1516_half-pixel_offset_in_directx_11.html
 		#define FRAGMENT_POSITION ShaderInput.FragmentPosition
 		#define DECLARE_IS_FRONT_FACE bool IsFrontFace : SV_ISFRONTFACE;
 		#define IS_FRONT_FACE ShaderInput.IsFrontFace
@@ -379,8 +379,8 @@
 		#define TEXTURE_3D(resourceGroupIndex, resourceIndex, name, registerIndex) layout(set = resourceGroupIndex, binding = resourceIndex) uniform sampler3D name;
 		#define TEXTURE_3D_UINT(resourceGroupIndex, resourceIndex, name, registerIndex) layout(set = resourceGroupIndex, binding = resourceIndex) uniform isampler3D name;
 		#define TEXTURE_CUBE(resourceGroupIndex, resourceIndex, name, registerIndex) layout(set = resourceGroupIndex, binding = resourceIndex) uniform samplerCube name;
-		#define GET_TEXTURE_2D_SIZE(textureObject, mipmapIndex) textureSize(textureObject, mipmapIndex)
-		#define GET_TEXTURE_CUBE_SIZE(textureObject, mipmapIndex) textureSize(textureObject, mipmapIndex)
+		#define GET_TEXTURE_2D_LOD_SIZE(textureObject, mipmapIndex) textureSize(textureObject, mipmapIndex)
+		#define GET_TEXTURE_CUBE_LOD_SIZE(textureObject, mipmapIndex) textureSize(textureObject, mipmapIndex)
 
 		// Texture unordered access
 		#define RW_TEXTURE_2D(resourceGroupIndex, resourceIndex, name, registerIndex, format, access) layout(format, set = resourceGroupIndex, binding = resourceIndex) access uniform image2D name;
@@ -606,8 +606,8 @@
 		#define TEXTURE_3D(resourceGroupIndex, resourceIndex, name, registerIndex) uniform sampler3D name;
 		#define TEXTURE_3D_UINT(resourceGroupIndex, resourceIndex, name, registerIndex) uniform isampler3D name;
 		#define TEXTURE_CUBE(resourceGroupIndex, resourceIndex, name, registerIndex) uniform samplerCube name;
-		#define GET_TEXTURE_2D_SIZE(textureObject, mipmapIndex) textureSize(textureObject, mipmapIndex)
-		#define GET_TEXTURE_CUBE_SIZE(textureObject, mipmapIndex) textureSize(textureObject, mipmapIndex)
+		#define GET_TEXTURE_2D_LOD_SIZE(textureObject, mipmapIndex) textureSize(textureObject, mipmapIndex)
+		#define GET_TEXTURE_CUBE_LOD_SIZE(textureObject, mipmapIndex) textureSize(textureObject, mipmapIndex)
 
 		// Texture unordered access
 		#define RW_TEXTURE_2D(resourceGroupIndex, resourceIndex, name, registerIndex, format, access) layout(format) access uniform image2D name;
@@ -830,8 +830,8 @@
 		#define TEXTURE_3D(resourceGroupIndex, resourceIndex, name, registerIndex) uniform highp sampler3D name;
 		#define TEXTURE_3D_UINT(resourceGroupIndex, resourceIndex, name, registerIndex) uniform highp isampler3D name;
 		#define TEXTURE_CUBE(resourceGroupIndex, resourceIndex, name, registerIndex) uniform highp samplerCube name;
-		#define GET_TEXTURE_2D_SIZE(textureObject, mipmapIndex) textureSize(textureObject, mipmapIndex)
-		#define GET_TEXTURE_CUBE_SIZE(textureObject, mipmapIndex) textureSize(textureObject, mipmapIndex)
+		#define GET_TEXTURE_2D_LOD_SIZE(textureObject, mipmapIndex) textureSize(textureObject, mipmapIndex)
+		#define GET_TEXTURE_CUBE_LOD_SIZE(textureObject, mipmapIndex) textureSize(textureObject, mipmapIndex)
 
 		// Texture unordered access
 		#define RW_TEXTURE_2D(resourceGroupIndex, resourceIndex, name, registerIndex, format, access) layout(format) access uniform image2D name;

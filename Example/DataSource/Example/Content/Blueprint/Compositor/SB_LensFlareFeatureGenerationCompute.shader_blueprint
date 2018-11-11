@@ -76,7 +76,7 @@ MAIN_BEGIN_COMPUTE(32, 32, 1)
 	// -> Basing on "Pseudo Lens Flare" from John Chapman - http://john-chapman-graphics.blogspot.de/2013/02/pseudo-lens-flare.html
 	// -> 256 = fixed global compute size
 	float2 texelSize = float2(1.0f, 1.0f) / float2(256.0f, 256.0f);
-	float2 texCoord = CAST_TO(GLOBAL_INVOCATION_ID.xy, float2) * texelSize;
+	float2 texCoord = (CAST_TO(GLOBAL_INVOCATION_ID.xy, float2) + float2(0.5f, 0.5f)) * texelSize;
 
 	float2 ghostVector = (float2(0.5f, 0.5f) - texCoord) * PassData.GhostDispersalFactor;
 	float2 normalizedGhostVector = normalize(ghostVector);

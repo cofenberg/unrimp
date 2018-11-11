@@ -71,5 +71,5 @@ MAIN_BEGIN
 	// - http://amd-dev.wpengine.netdna-cdn.com/wordpress/media/2013/05/GCNPerformanceTweets.pdf
 	// - http://www.gamedev.net/topic/605580-performance-comparison-hlsl-texturegetdimension/
 	// So, you might want to perform this inside the vertex shader and then pass the result into the fragment shader (except the vertes shader is your bottleneck).
-	MAIN_OUTPUT(InverseTextureSize0VS) = float2(1.0f, 1.0f) / CAST_TO(GET_TEXTURE_2D_SIZE(ColorMap, 0), float2);
+	MAIN_OUTPUT(InverseTextureSize0VS) = float2(1.0f, 1.0f) / CAST_TO(GET_TEXTURE_2D_LOD_SIZE(ColorMap, 0), float2);
 MAIN_END

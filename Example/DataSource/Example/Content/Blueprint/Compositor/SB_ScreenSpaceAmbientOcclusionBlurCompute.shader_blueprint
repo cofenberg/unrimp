@@ -62,9 +62,9 @@ MAIN_BEGIN_COMPUTE(32, 32, 1)
 
 		// Blur
 		float sum = 0.0f;
-		float2 hlim = float2(float(-BLUR_SIZE) * 0.5f + 0.5f, float(-BLUR_SIZE) * 0.5f + 0.5f);
+		float2 hlim = float2(float(-BLUR_SIZE) * 0.5f + 0.5f, float(-BLUR_SIZE) * 0.5f + 0.5f) + float2(0.5f, 0.5f);
 		float2 inverseGlobalComputeSize = float2(1.0f, 1.0f) / CAST_TO(PassData.GlobalComputeSize.xy, float2);
-		float2 texCoord = CAST_TO(GLOBAL_INVOCATION_ID.xy, float2) * inverseGlobalComputeSize;
+		float2 texCoord = (CAST_TO(GLOBAL_INVOCATION_ID.xy, float2) + float2(0.5f, 0.5f)) * inverseGlobalComputeSize;
 		UNROLL for (int x = 0; x < BLUR_SIZE; ++x)
 		{
 			UNROLL for (int y = 0; y < BLUR_SIZE; ++y)

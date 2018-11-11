@@ -68,7 +68,7 @@ SAMPLER_STATE(2, 0, SamplerLinear, 0)
 MAIN_BEGIN_COMPUTE(32, 32, 1)
 	// Compute dispatch is using groups of a multiple of the local size, in here we don't need to ensure we don't access ouf of global compute size since our color map must be a multiple of the local size
 	// -> 256 = fixed global compute size
-	float3 color = SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(CAST_TO(GLOBAL_INVOCATION_ID.xy, float2) / float2(256.0f, 256.0f), 0.0f, 0.0f)).rgb;
+	float3 color = SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4((CAST_TO(GLOBAL_INVOCATION_ID.xy, float2) + float2(0.5f, 0.5f)) / float2(256.0f, 256.0f), 0.0f, 0.0f)).rgb;
 	float averageLuminance = TEXTURE_FETCH_2D(LuminanceMap, int3(0, 0, 0)).r;	// TODO(co) Possible optimization: Each thread group needs to fetch this value just once
 
 	// Use a lower exposure to produce a value suitable for a bloom pass

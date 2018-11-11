@@ -90,7 +90,7 @@ float4 CalculateSum(float2 textureCoordinate,
 					float2 pixelSizeScene)	// Pixel size of full resolution image
 {
 	// Depth of field basing on https://developer.amd.com/wordpress/media/2012/10/Scheuermann_DepthOfField.pdf
-	float2 pixelSizeBlur = float2(1.0f, 1.0f) / CAST_TO(GET_TEXTURE_2D_SIZE(BlurMap, 0), float2);	// Pixel size of downsampled and blurred image
+	float2 pixelSizeBlur = float2(1.0f, 1.0f) / CAST_TO(GET_TEXTURE_2D_LOD_SIZE(BlurMap, 0), float2);	// Pixel size of downsampled and blurred image
 	float2 poisson[12];	// Containts poisson-distributed positions on the unit circle for 12 taps
 	poisson[ 0] = float2( 0.00f,  0.00f);
 	poisson[ 1] = float2( 0.07f, -0.45f);
@@ -153,7 +153,7 @@ MAIN_BEGIN_COMPUTE(32, 32, 1)
 	BRANCH if (GLOBAL_INVOCATION_ID.x < PassData.GlobalComputeSize.x && GLOBAL_INVOCATION_ID.y < PassData.GlobalComputeSize.y)
 	{
 		float2 inverseGlobalComputeSize = float2(1.0f, 1.0f) / CAST_TO(PassData.GlobalComputeSize.xy, float2);
-		float4 sum = CalculateSum(CAST_TO(GLOBAL_INVOCATION_ID.xy, float2) * inverseGlobalComputeSize, inverseGlobalComputeSize);
+		float4 sum = CalculateSum((CAST_TO(GLOBAL_INVOCATION_ID.xy, float2) + float2(0.5f, 0.5f)) * inverseGlobalComputeSize, inverseGlobalComputeSize);
 
 		// Done, ensure we're in a 0..1 range
 		IMAGE_STORE(OutputTexture2D, CAST_TO(GLOBAL_INVOCATION_ID.xy, int2), float4(sum.rgb / sum.a, 1.0f));

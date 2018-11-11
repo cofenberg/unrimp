@@ -59,7 +59,7 @@ MAIN_BEGIN_COMPUTE(32, 32, 1)
 	BRANCH if (GLOBAL_INVOCATION_ID.x < PassData.GlobalComputeSize.x && GLOBAL_INVOCATION_ID.y < PassData.GlobalComputeSize.y)
 	{
 		// Using hardware bilinear filtering for upscaling or downscaling
-		float2 texCoord = CAST_TO(GLOBAL_INVOCATION_ID.xy, float2) / CAST_TO(PassData.GlobalComputeSize.xy, float2);
+		float2 texCoord = (CAST_TO(GLOBAL_INVOCATION_ID.xy, float2) + float2(0.5f, 0.5f)) / CAST_TO(PassData.GlobalComputeSize.xy, float2);
 		IMAGE_STORE(OutputTexture2D, CAST_TO(GLOBAL_INVOCATION_ID.xy, int2), SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(texCoord, 0.0f, 0.0f)));
 	}
 MAIN_END_NO_OUTPUT

@@ -95,7 +95,7 @@ MAIN_BEGIN_COMPUTE(32, 32, 1)
 	BRANCH if (GLOBAL_INVOCATION_ID.x < PassData.GlobalComputeSize.x && GLOBAL_INVOCATION_ID.y < PassData.GlobalComputeSize.y)
 	{
 		// Get texture coordinate and distortion
-		float4 texCoord = float4(CAST_TO(GLOBAL_INVOCATION_ID.xy, float2) / CAST_TO(PassData.GlobalComputeSize.xy, float2), 0.0f, 0.0f);
+		float4 texCoord = float4((CAST_TO(GLOBAL_INVOCATION_ID.xy, float2) + float2(0.5f, 0.5f)) / CAST_TO(PassData.GlobalComputeSize.xy, float2), 0.0f, 0.0f);
 		int3 distortedTexCoord = CAST_TO(GLOBAL_INVOCATION_ID, int3) + int3(CAST_TO(SAMPLE_2D_LOD(DistortionMap, SamplerLinear, texCoord).rg, int2), 0);
 		distortedTexCoord = max(int3(0, 0, 0), distortedTexCoord);
 		distortedTexCoord = min(distortedTexCoord, CAST_TO(PassData.GlobalComputeSize.xyz - uint3(1, 1, 0), int3));
