@@ -117,7 +117,7 @@
 		float v = 0.0f;
 		float a = 0.5f;
 		float shift = 100.0f;
-		for (int i = 0; i < 5; ++i)
+		UNROLL for (int i = 0; i < 5; ++i)
 		{
 			v += a * noise1D(x);
 			x = x * 2.0f + shift;
@@ -161,7 +161,7 @@
 
 		// Rotate to reduce axial bias
 		float2x2 rot = float2x2(cos(0.5f), sin(0.5f), -sin(0.5f), cos(0.5f));
-		for (int i = 0; i < 5; ++i)
+		UNROLL for (int i = 0; i < 5; ++i)
 		{
 			v += a * noise2D(x);
 			x = MATRIX_MUL(rot,  x * 2.0f + shift);
@@ -200,7 +200,7 @@
 		float v = 0.0f;
 		float a = 0.5;
 		float3 shift = float3(100.0f, 100.0f, 100.0f);
-		for (int i = 0; i < 5; ++i)
+		UNROLL for (int i = 0; i < 5; ++i)
 		{
 			v += a * noise3D(x);
 			x = x * 2.0f + shift;

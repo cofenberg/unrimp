@@ -152,7 +152,7 @@ float3 CalculateColorByGBuffer(float2 texCoord, float3 viewRay, float4 gbuffer0V
 	// Water influence on material BRDF
 	// -> Wet surfaces parameter layout: x=wet level, y=hole/cracks flood level, z=puddle flood level, w=rain intensity
 	@property(UseWetSurfaces)
-		if (0.0f != PassData.WetSurfaces.x)
+		BRANCH if (0.0f != PassData.WetSurfaces.x)
 		{
 			// Handle camera relative rendering
 			float heightMapValue = 0.0f;	// TODO(co) Transport this information?
@@ -166,7 +166,7 @@ float3 CalculateColorByGBuffer(float2 texCoord, float3 viewRay, float4 gbuffer0V
 	float3 color = (reflectionColor * metallic + albedo) * (PassData.AmbientColor.rgb + CalculateHemisphereLighting(worldSpaceNormal.xyz, PassData.AmbientColor.rgb * 0.7f, PassData.AmbientColor.rgb * 0.2f));
 
 	// Directional sunlight, our primary light
-	if (shadowVisibility > 0.0f)
+	BRANCH if (shadowVisibility > 0.0f)
 	{
 		color += shadowVisibility * CalculateLighting(albedo, roughness, metallic, viewSpaceNormal, viewSpaceIncident, reflectionColor, PassData.ViewSpaceSunlightDirection, PassData.SunlightColor);
 	}
@@ -225,7 +225,7 @@ MAIN_BEGIN
 
 			// Read depth map value and check whether or not a depth value was written (depth = 1 = depth clear value)
 			float depth = SAMPLE_DEPTH_2D_MS(DepthMap, textureCoordinate, @i);
-			if (1.0f != depth)
+			BRANCH if (1.0f != depth)
 			{
 				// Read GBuffer data
 				float4 gbuffer1Value = SAMPLE_2D_MS(GBufferMap1, textureCoordinate, @i);
@@ -249,7 +249,7 @@ MAIN_BEGIN
 
 		// Read depth map value and check whether or not a depth value was written (depth = 1 = depth clear value)
 		float depth = REVERSED_Z(TEXTURE_FETCH_2D(DepthMap, int3(textureCoordinate, 0)).r);
-		if (1.0f != depth)
+		BRANCH if (1.0f != depth)
 		{
 			// Read GBuffer data
 			float4 gbuffer1Value = TEXTURE_FETCH_2D(GBufferMap1, int3(textureCoordinate, 0));

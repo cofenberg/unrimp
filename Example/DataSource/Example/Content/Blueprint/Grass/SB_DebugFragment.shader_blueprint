@@ -74,7 +74,7 @@ MAIN_BEGIN
 	float4 color = SAMPLE_2D(_argb_alpha, SamplerLinear, MAIN_INPUT(TexCoordDepthVS).xy);
 
 	// Perform alpha map based fragment rejection (no alpha reference material parameter by intent because real shaders use alpha to coverage)
-	if (0.8f >= color.a)
+	FLATTEN if (0.8f >= color.a)
 	{
 		discard;
 	}

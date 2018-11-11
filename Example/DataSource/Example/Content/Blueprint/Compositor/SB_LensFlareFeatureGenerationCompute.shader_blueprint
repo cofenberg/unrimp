@@ -87,7 +87,7 @@ MAIN_BEGIN_COMPUTE(32, 32, 1)
 
 	// Sample ghosts
 	float3 result = float3(0.0f, 0.0f, 0.0f);
-	for (int i = 0; i < PassData.NumberOfGhostSamples; ++i)
+	LOOP for (int i = 0; i < PassData.NumberOfGhostSamples; ++i)
 	{
 		float2 offset = frac(texCoord + ghostVector * float(i));
 
@@ -103,7 +103,7 @@ MAIN_BEGIN_COMPUTE(32, 32, 1)
 
 	// Sample halo
 	float weight = SATURATE(length(float2(0.5f, 0.5f) - frac(texCoord + haloVec)) / halfVectorLength);
-	if (1.0f > weight)
+	FLATTEN if (1.0f > weight)
 	{
 		weight = pow(1.0f - weight, 10.0f);
 	}

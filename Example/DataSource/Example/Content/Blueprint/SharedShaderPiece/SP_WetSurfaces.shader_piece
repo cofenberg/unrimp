@@ -130,7 +130,7 @@
 
 			// View space normal modification by water streaks and water ripples
 			float rainIntensityOn = (rainIntensity > 0.0f && shadowVisibility > 0.0f) ? 1.0f : 0.0f;
-			if (rainIntensityOn > 0.0f)
+			BRANCH if (rainIntensityOn > 0.0f)
 			{
 				{ // Water streaks basing on "DeepSpaceBanana Art - Rainy SurfaceShader in UE4 Part 2" by Taizyd Korambayil published on April 19, 2018 at https://deepspacebanana.github.io/deepspacebanana.github.io/blog/shader/art/unreal%20engine/Rainy-Surface-Shader-Part-2
 					// Fixed build in constants

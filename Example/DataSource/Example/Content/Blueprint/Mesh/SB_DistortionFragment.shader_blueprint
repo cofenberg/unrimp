@@ -103,7 +103,7 @@ MAIN_BEGIN
 
 	// Perform alpha map based fragment rejection
 	@property(UseAlphaMap)
-		if (material.AlphaReference >= SAMPLE_2D(AlphaMap, SamplerLinear, MAIN_INPUT(TexCoordDepthVS).xy).r)
+		FLATTEN if (material.AlphaReference >= SAMPLE_2D(AlphaMap, SamplerLinear, MAIN_INPUT(TexCoordDepthVS).xy).r)
 		{
 			discard;
 		}
@@ -131,7 +131,7 @@ MAIN_BEGIN
 	{ // Do only apply distortion behind, not in front (< instead of > due to usage of Reversed-Z)
 		float4 texCoord = float4((FRAGMENT_POSITION.xy + distortion.xy) * PassData.InverseViewportSize, 0.0f, 0.0f);
 		float targetSceneDepth = GetLinearDepth(SAMPLE_DEPTH_2D_LOD(DepthMap, SamplerPointClamp, texCoord));
-		if (targetSceneDepth < MAIN_INPUT(TexCoordDepthVS).z)
+		FLATTEN if (targetSceneDepth < MAIN_INPUT(TexCoordDepthVS).z)
 		{
 			discard;
 		}

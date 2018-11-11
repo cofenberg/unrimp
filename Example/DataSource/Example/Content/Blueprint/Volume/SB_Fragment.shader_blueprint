@@ -204,7 +204,7 @@ float Reconstruction(float3 position)
 float4 Classification(float scalar)
 {
 	float Threshold = 0.2f;	// TODO(co) Pass from outside
-	if (scalar > Threshold)
+	FLATTEN if (scalar > Threshold)
 	{
 		// No classification, just directly return the provided scalar
 		float4 sampleValue = float4(scalar, scalar, scalar, scalar);
@@ -278,11 +278,11 @@ float4 RayTraversal(Material material, float3 startPosition, int numberOfSteps, 
 
 	// Integrate back-to-front over the volume
 	// -> Back-to-front traversal
-	for (int step = numberOfSteps; step > 0; --step)
+	LOOP for (int step = numberOfSteps; step > 0; --step)
 	{
 		// Call the clip position function
 		//     bool ClipPosition(float3 position)
-		if (!ClipPosition(currentPosition))
+		BRANCH if (!ClipPosition(currentPosition))
 		{
 			// Call the reconstruction function
 			//     float Reconstruction(float3 position)
@@ -355,7 +355,7 @@ MAIN_BEGIN
 
 		// Calculate the maximum travel length and the volume space position the ray enters the volume
 		maximumTravelLength = max(0.0f, t1 - t0);
-		if (maximumTravelLength <= 0.0f)
+		FLATTEN if (maximumTravelLength <= 0.0f)
 		{
 			// Early escape, the ray is completely covered by something
 			discard;

@@ -139,12 +139,12 @@ MAIN_BEGIN
 	float3 currentPosition = startPosition - step * ditherValue;
 	float3 accumulatedFog = float3(0.0f, 0.0f, 0.0f);
 	float3 mieScatter = 2 * CalculateMieScatter(PassData.WorldSpaceSunlightDirection, rayDirection) * PassData.SunlightColor;
-	for (int i = 0; i < NUMBER_OF_STEPS; ++i)
+	UNROLL for (int i = 0; i < NUMBER_OF_STEPS; ++i)
 	{
 		linearDepth = MATRIX_MUL(PassData.WorldSpaceToViewSpaceMatrix, float4(currentPosition.xyz, 1.0f)).z;
 
 		float shadowVisibility = CalculateShadowVisibility(currentPosition, linearDepth);
-		if (shadowVisibility > 0.0f)
+		FLATTEN if (shadowVisibility > 0.0f)
 		{
 			accumulatedFog += mieScatter;
 		}

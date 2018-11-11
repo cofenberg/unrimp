@@ -89,7 +89,7 @@ float3 VolumetricLightBilateralUpsampling(float2 screenSpacePosition, float upSa
 	offset[1] = float2(0.0f, yOffset);
 	offset[2] = float2(xOffset, 0.0f);
 	offset[3] = float2(xOffset, yOffset);
-	for (int i = 0; i < 4; ++i)
+	UNROLL for (int i = 0; i < 4; ++i)
 	{
 		float3 downscaledColor = SAMPLE_2D_LOD(VolumetricLightMap, SamplerLinearClamp, float4(screenSpacePosition + offset[i], 0.0f, 0.0f)).rgb;
 		float downscaledDepth = SAMPLE_DEPTH_2D_LOD(DepthMap, SamplerPointClamp, float4(screenSpacePosition + offset[i], 0.0f, 1.0f));
@@ -107,7 +107,7 @@ float3 CalculateColor(float3 viewRay, float3 color, float screenSpaceAmbientOccl
 {
 	// Read depth map value and check whether or not a depth value was written (depth = 1 = depth clear value)
 	float depth = SAMPLE_DEPTH_2D_LOD(DepthMap, SamplerPointClamp, float4(screenSpacePosition, 0.0f, 0.0f));
-	if (1.0f != depth)
+	BRANCH if (1.0f != depth)
 	{
 		// Scale the view ray by the ratio of the linear z value to the projected view ray
 		// -> For details see "The Danger Zone" - "Position From Depth 3: Back In The Habit" - "Written by MJPSeptember 5, 2010" - https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/

@@ -115,7 +115,7 @@
 	float4 colorSum = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	float4 weightSum = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	float stepSize = 1.0f / float(PassData.ChromaticAberrationIterations);
-	for (int i = 0; i < PassData.ChromaticAberrationIterations; ++i)
+	LOOP for (int i = 0; i < PassData.ChromaticAberrationIterations; ++i)
 	{
 		float t = float(i) * stepSize;
 		float4 w = ChromaticAberrationSpectrumOffset(t);

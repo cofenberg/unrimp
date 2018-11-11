@@ -60,8 +60,7 @@ MAIN_BEGIN
 	@property(NumberOfMultisamples)
 		// Maximum operator due to the usage of Reversed-Z (see e.g. https://developer.nvidia.com/content/depth-precision-visualized and https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/)
 		float depth = SAMPLE_2D_MS(DepthMap, int2(FRAGMENT_POSITION.xy), 0).r;
-		UNROLL_HINT
-		for (int sampleIndex = 1; sampleIndex < NUMBER_OF_MSAA_SAMPLES; ++sampleIndex)
+		UNROLL for (int sampleIndex = 1; sampleIndex < NUMBER_OF_MSAA_SAMPLES; ++sampleIndex)
 		{
 			depth = max(depth, SAMPLE_2D_MS(DepthMap, int2(FRAGMENT_POSITION.xy), sampleIndex).r);
 		}

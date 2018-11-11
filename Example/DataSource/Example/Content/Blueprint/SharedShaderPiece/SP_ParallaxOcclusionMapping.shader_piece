@@ -58,7 +58,7 @@
 		float2 dy = DDY(texCoord);
 
 		// Ray tracing: While point is above the surface
-		while (heightFromTexture > currentStepHeight)
+		LOOP while (heightFromTexture > currentStepHeight)
 		{
 			// To the next step
 			currentStepHeight += stepHeight;
@@ -98,7 +98,7 @@
 
 		// Calculate lighting only for surface oriented to the light source
 		float lDot = dot(float3(0.0f, 0.0f, 1.0f), tangentSpaceLightDirection);
-		if (lDot > 0.0f && initialHeight > 0.0f)
+		BRANCH if (lDot > 0.0f && initialHeight > 0.0f)
 		{
 			// Apply an offset to the initial height to reduce shadow acne
 			initialHeight -= 0.04f * lDot;
@@ -123,7 +123,7 @@
 			float2 dy = DDY(initialTexCoord);
 
 			// Ray tracing: While point is below height 0
-			while (currentStepHeight > 0.0f)
+			LOOP while (currentStepHeight > 0.0f)
 			{
 				// If point is under the surface
 				if (heightFromTexture < currentStepHeight)

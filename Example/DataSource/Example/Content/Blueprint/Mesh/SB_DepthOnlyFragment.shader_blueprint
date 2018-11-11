@@ -76,7 +76,7 @@ MAIN_BEGIN_NO_OUTPUT
 		Material material = Materials[MAIN_INPUT(AssignedMaterialSlotVS)];
 
 		// Perform alpha map based fragment rejection
-		if (material.AlphaReference >= SAMPLE_2D(AlphaMap, SamplerLinear, MAIN_INPUT(TexCoordVS)).r)
+		FLATTEN if (material.AlphaReference >= SAMPLE_2D(AlphaMap, SamplerLinear, MAIN_INPUT(TexCoordVS)).r)
 		{
 			discard;
 		}

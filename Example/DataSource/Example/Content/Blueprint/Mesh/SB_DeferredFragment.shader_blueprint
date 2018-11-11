@@ -133,7 +133,7 @@ MAIN_BEGIN
 
 		// Parallax occlusion mapping 
 		float pomHeightMapScale = ParallaxOcclusionMappingHeightMapScale(material.PomHeightMapScale, worldSpacePosition);
-		if (pomHeightMapScale > 0.0f)
+		BRANCH if (pomHeightMapScale > 0.0f)
 		{
 			// Get new texture coordinates from parallax occlusion mapping
 			float parallaxHeight = 0.0f;

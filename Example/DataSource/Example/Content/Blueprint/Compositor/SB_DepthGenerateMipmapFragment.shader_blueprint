@@ -69,13 +69,13 @@ MAIN_BEGIN
 
 	// If we are reducing an odd-sized texture, then the edge pixels need to fetch additional texels
 	float2 extra;
-	if (((previousMipmapSize.x & 1) != 0) && coordinate.x == previousMipmapSize.x - 3)
+	BRANCH if (((previousMipmapSize.x & 1) != 0) && coordinate.x == previousMipmapSize.x - 3)
 	{
 		extra.x = TEXTURE_FETCH_2D(DepthMap, (coordinate + int3(2, 0, 0))).r;
 		extra.y = TEXTURE_FETCH_2D(DepthMap, (coordinate + int3(2, 1, 0))).r;
 		maximumDepth = COMPARISON_OPERATOR(maximumDepth, COMPARISON_OPERATOR(extra.x, extra.y));
 	}
-	if (((previousMipmapSize.y & 1) != 0) && coordinate.y == previousMipmapSize.y - 3)
+	BRANCH if (((previousMipmapSize.y & 1) != 0) && coordinate.y == previousMipmapSize.y - 3)
 	{
 		extra.x = TEXTURE_FETCH_2D(DepthMap, (coordinate + int3(0, 2, 0))).r;
 		extra.y = TEXTURE_FETCH_2D(DepthMap, (coordinate + int3(1, 2, 0))).r;
@@ -83,7 +83,7 @@ MAIN_BEGIN
 	}
 
 	// Extreme case: If both edges are odd, fetch the bottom-right corner texel
-	if (((previousMipmapSize.x & 1) != 0) && ((previousMipmapSize.y & 1) != 0) && coordinate.x == previousMipmapSize.x - 3 && coordinate.y == previousMipmapSize.y - 3)
+	BRANCH if (((previousMipmapSize.x & 1) != 0) && ((previousMipmapSize.y & 1) != 0) && coordinate.x == previousMipmapSize.x - 3 && coordinate.y == previousMipmapSize.y - 3)
 	{
 		maximumDepth = COMPARISON_OPERATOR(maximumDepth, TEXTURE_FETCH_2D(DepthMap, (coordinate + int3(2, 2, 0))).r);
 	}

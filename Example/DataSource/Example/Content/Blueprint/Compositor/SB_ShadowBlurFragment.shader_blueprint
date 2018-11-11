@@ -85,7 +85,7 @@ MAIN_BEGIN
 	float radius = PassData.ShadowFilterSize * 0.5f;
 	float4 sum = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
-	for (int i = -PassData.ShadowSampleRadius; i <= PassData.ShadowSampleRadius; ++i)
+	LOOP for (int i = -PassData.ShadowSampleRadius; i <= PassData.ShadowSampleRadius; ++i)
 	{
 		float4 sampleValue = BlurSample(FRAGMENT_POSITION.xy, float(i), float(PassData.ShadowMapSize));
 		sampleValue *= SATURATE((radius + 0.5f) - float(abs(i)));

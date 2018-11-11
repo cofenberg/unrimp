@@ -92,7 +92,7 @@ float3 ToneMap(float3 color, float averageLuminance, float threshold, out float 
 //[-------------------------------------------------------]
 MAIN_BEGIN_COMPUTE(32, 32, 1)
 	// Compute dispatch is using groups of a multiple of the local size, ensure we don't access ouf of global compute size which musn't be a multiple of the local size and hence might be smaller
-	if (GLOBAL_INVOCATION_ID.x < PassData.GlobalComputeSize.x && GLOBAL_INVOCATION_ID.y < PassData.GlobalComputeSize.y)
+	BRANCH if (GLOBAL_INVOCATION_ID.x < PassData.GlobalComputeSize.x && GLOBAL_INVOCATION_ID.y < PassData.GlobalComputeSize.y)
 	{
 		// Get texture coordinate and distortion
 		float4 texCoord = float4(CAST_TO(GLOBAL_INVOCATION_ID.xy, float2) / CAST_TO(PassData.GlobalComputeSize.xy, float2), 0.0f, 0.0f);

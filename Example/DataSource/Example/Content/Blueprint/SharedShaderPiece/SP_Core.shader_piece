@@ -229,9 +229,11 @@
 		#define DECLARE_GLOBAL_INVOCATION_ID uint3 DispatchThreadId : SV_DispatchThreadID;
 		#define GLOBAL_INVOCATION_ID ShaderInput.DispatchThreadId
 
-		// Compiler hints
-		#define UNROLL_HINT [unroll]
-		#define FLATTEN_HINT [flatten]
+		// Compiler hints (see "for"-statement attributes at https://docs.microsoft.com/de-de/windows/desktop/direct3dhlsl/dx-graphics-hlsl-for and "if"-statement attributes at https://docs.microsoft.com/de-de/windows/desktop/direct3dhlsl/dx-graphics-hlsl-if )
+		#define UNROLL [unroll]
+		#define LOOP [loop]
+		#define BRANCH [branch]
+		#define FLATTEN [flatten]
 	@end
 @end
 
@@ -420,9 +422,11 @@
 		#define DECLARE_GLOBAL_INVOCATION_ID
 		#define GLOBAL_INVOCATION_ID gl_GlobalInvocationID	// "uvec3"-type, 3 components vector of unsigned integer numbers
 
-		// Compiler hints
-		#define UNROLL_HINT
-		#define FLATTEN_HINT
+		// Compiler hints TODO(co) SPIR-V supports "GL_EXT_control_flow_attributes", have a look into it
+		#define UNROLL
+		#define LOOP
+		#define BRANCH
+		#define FLATTEN
 
 		// Primitive HLSL datatypes
 		#define float2 vec2
@@ -651,9 +655,11 @@
 		#define DECLARE_GLOBAL_INVOCATION_ID
 		#define GLOBAL_INVOCATION_ID gl_GlobalInvocationID	// "uvec3"-type, 3 components vector of unsigned integer numbers
 
-		// Compiler hints
-		#define UNROLL_HINT
-		#define FLATTEN_HINT
+		// Compiler hints TODO(co) SPIR-V supports "GL_EXT_control_flow_attributes", have a look into it
+		#define UNROLL
+		#define LOOP
+		#define BRANCH
+		#define FLATTEN
 
 		// Primitive HLSL datatypes
 		#define float2 vec2
@@ -873,9 +879,11 @@
 		#define DECLARE_GLOBAL_INVOCATION_ID
 		#define GLOBAL_INVOCATION_ID gl_GlobalInvocationID	// "uvec3"-type, 3 components vector of unsigned integer numbers
 
-		// Compiler hints
-		#define UNROLL_HINT
-		#define FLATTEN_HINT
+		// Compiler hints TODO(co) SPIR-V supports "GL_EXT_control_flow_attributes", have a look into it
+		#define UNROLL
+		#define LOOP
+		#define BRANCH
+		#define FLATTEN
 
 		// Primitive HLSL datatypes
 		#define float2 vec2

@@ -198,7 +198,7 @@ bool TraceScreenSpaceRay(
 
 	// Permute so that the primary iteration is in x to collapse all quadrant-specific DDA cases later
 	bool permute = false;
-	if(abs(delta.x) < abs(delta.y))
+	FLATTEN if (abs(delta.x) < abs(delta.y))
 	{
 		// More-vertical line, create a permutation that swaps x and y in the output
 		permute = true;
@@ -252,7 +252,7 @@ bool TraceScreenSpaceRay(
 	float sceneZMaximum = rayZMaximum + 100.0f;
 
 	// We only advance the z field of Q in the inner loop, since Q.xy is never used until after the loop terminates
-	for (;
+	LOOP for (;
 		((PQk.x * stepDirection) <= end) && (stepCount < PassData.MaximumNumberOfSteps) &&
 		!IntersectsDepthBuffer(sceneZMaximum, rayZMinimum, rayZMaximum) &&
 		(0.0f != sceneZMaximum);
@@ -268,7 +268,7 @@ bool TraceScreenSpaceRay(
 		// Compute the value at 1/2 pixel into the future
 		rayZMaximum = (dPQk.z * 0.5f + PQk.z) / (dPQk.w * 0.5f + PQk.w);
 		previousZMaximumEstimate = rayZMaximum;
-		if (rayZMinimum > rayZMaximum)
+		FLATTEN if (rayZMinimum > rayZMaximum)
 		{
 			// Swap
 			float t = rayZMinimum;
@@ -331,13 +331,13 @@ MAIN_BEGIN
 		float cameraFacingReflectionAttenuation = 1 - smoothstep(0.25f, 0.5f, dot(-viewSpaceDirection, viewSpaceReflectDirection));
 
 		// Reject if the reflection vector is pointing back at the viewer
-		if (cameraFacingReflectionAttenuation > 0.0f)
+		BRANCH if (cameraFacingReflectionAttenuation > 0.0f)
 		{
 			// Early escape: Reflections outside the viewport
 			// -> Modulate the reflection intensity basing on "Screen Space Reflections in Killing Floor 2" by Sakib Saikia ( https://sakibsaikia.github.io/graphics/2016/12/25/Screen-Space-Reflection-in-Killing-Floor-2.html )
 			float2 uvSamplingAttenuation = smoothstep(0.0f, 0.05f, texCoord) * (1 - smoothstep(0.975f, 1.0f, texCoord));
 			uvSamplingAttenuation.x *= uvSamplingAttenuation.y;
-			if (uvSamplingAttenuation.x > 0.0f)
+			BRANCH if (uvSamplingAttenuation.x > 0.0f)
 			{
 				// Jitter: Number between 0 and 1 for how far to bump the ray in stride units to conceal banding artifacts
 				// -> For an alternative solution see "Screen Space Reflections in Killing Floor 2" by Sakib Saikia ( https://sakibsaikia.github.io/graphics/2016/12/25/Screen-Space-Reflection-in-Killing-Floor-2.html ) - "Banding and Self-Intersection"
@@ -345,7 +345,7 @@ MAIN_BEGIN
 
 				// Raycast
 				float3 hitPoint = float3(-1.0f, -1.0f, -1.0f);
-				if (TraceScreenSpaceRay(
+				BRANCH if (TraceScreenSpaceRay(
 					viewRay,
 					viewSpacePosition,			// View space ray origin, which must be within the view volume
 					viewSpaceReflectDirection,	// Unit length view space ray direction

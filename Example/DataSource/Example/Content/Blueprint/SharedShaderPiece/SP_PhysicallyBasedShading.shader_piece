@@ -283,7 +283,7 @@
 	uint lightMask = uint(TEXTURE_FETCH_3D(LightClustersMap3D, int4(worldSpacePosition * PassData.LightClustersScale + PassData.LightClustersBias, 0)).x);
 
 	// Point and spot lights using clustered shading
-	while (0u != lightMask)
+	LOOP while (0u != lightMask)
 	{
 		// Extract a light from the mask and disable that bit
 		uint lightIndex = firstbitlow(lightMask);
@@ -293,7 +293,7 @@
 		float4 lightPositionRadius = TEXTURE_BUFFER_FETCH(LightTextureBuffer, lightIndex * 4u);
 		float3 lightDirection = lightPositionRadius.xyz - worldSpacePosition;
 		float lightDistance = length(lightDirection);
-		if (lightDistance < lightPositionRadius.w)
+		BRANCH if (lightDistance < lightPositionRadius.w)
 		{
 			float4 lightColorType = TEXTURE_BUFFER_FETCH(LightTextureBuffer, lightIndex * 4u + 1u);
 			float lightIntensity = 1.0f;
@@ -302,10 +302,10 @@
 			lightDirection /= lightDistance;
 
 			// Spot-light attenuation
-			if (2.0f == lightColorType.w)
+			FLATTEN if (2.0f == lightColorType.w)
 			{
 				float4 innerOuterNearClip = TEXTURE_BUFFER_FETCH(LightTextureBuffer, lightIndex * 4u + 2u);
-				if (lightDistance < innerOuterNearClip.z)
+				FLATTEN if (lightDistance < innerOuterNearClip.z)
 				{
 					// Early escape: Not influenced by the light
 					continue;
@@ -323,7 +323,7 @@
 			lightIntensity *= t1 / (lightDistance * lightDistance + 1.0f);
 
 			// Calculate lighting
-			if (lightIntensity > 0.0f && dot(worldSpaceNormal, lightDirection) > 0.0f)
+			BRANCH if (lightIntensity > 0.0f && dot(worldSpaceNormal, lightDirection) > 0.0f)
 			{
 				color += CalculateLighting(albedo, roughness, metallic, worldSpaceNormal, worldSpaceIncident, reflectionColor, lightDirection, lightColorType.rgb * lightIntensity);
 			}

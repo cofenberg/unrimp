@@ -149,7 +149,7 @@ MAIN_BEGIN
 	@property(UseProceduralSky)
 		// Sky
 		float3 color = CalculateHosekWilkieSkyColor(normalize(MAIN_INPUT(TexCoordVS)));
-		if (MAIN_INPUT(TexCoordVS).y > 0.0f)
+		BRANCH if (MAIN_INPUT(TexCoordVS).y > 0.0f)
 		{
 			// Add sun
 			color += pow(SATURATE(dot(PassData.WorldSpaceSunlightDirection, normalize(MAIN_INPUT(TexCoordVS))) + 0.0001f), 64.0f) * PassData.SunlightColor;

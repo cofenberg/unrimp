@@ -115,7 +115,7 @@ float CalculateOcclusion(float3 viewRay, float2 textureCoordinate, int sampleInd
 
 	// Calculate occlusion
 	float occlusion = 0.0f;
-	for (int i = 0; i < PassData.SampleKernelSize; ++i)
+	LOOP for (int i = 0; i < PassData.SampleKernelSize; ++i)
 	{
 		// Rotate sample and get sample position in view space
 		float3 samplePosition = MATRIX_MUL(SAMPLE_1D_LOD(SsaoSampleKernelMap, SamplerPointClamp, float4(float(i) / float(PassData.SampleKernelSize), 0.0f, 0.0f, 0.0f)).xyz, tbn);
@@ -129,7 +129,7 @@ float CalculateOcclusion(float3 viewRay, float2 textureCoordinate, int sampleInd
 		@property(UpperLeftOrigin)
 			offset.y = 1.0f - offset.y;
 		@end
-		if (offset.x >= 0.0f && offset.y >= 0.0f && offset.x <= 1.0f && offset.y <= 1.0f)
+		FLATTEN if (offset.x >= 0.0f && offset.y >= 0.0f && offset.x <= 1.0f && offset.y <= 1.0f)
 		{
 			// Compute occlusion based on the (scaled) Z difference
 			float linearSampleDepth = GetLinearDepth(SAMPLE_DEPTH_2D_LOD(DepthMap, SamplerPointClamp, float4(offset.xy, 0.0f, 0.0f)));

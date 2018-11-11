@@ -72,8 +72,7 @@ MAIN_BEGIN
 		float4 average = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
 		// Custom MSAA resolve
-		UNROLL_HINT
-		for (int i = 0; i < @value(NumberOfMultisamples); ++i)
+		UNROLL for (int i = 0; i < @value(NumberOfMultisamples); ++i)
 		{
 			// Convert to EVSM representation
 			float depth = REVERSED_Z(SAMPLE_2D_MS(DepthMap, int2(FRAGMENT_POSITION.xy), i).r);

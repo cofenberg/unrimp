@@ -172,7 +172,7 @@ MAIN_BEGIN
 	// Water influence on material BRDF
 	// -> Wet surfaces parameter layout: x=wet level, y=hole/cracks flood level, z=puddle flood level, w=rain intensity
 	@property(UseWetSurfaces)
-		if (0.0f != PassData.WetSurfaces.x)
+		BRANCH if (0.0f != PassData.WetSurfaces.x)
 		{
 			float heightMapValue = 0.0f;	// TODO(co)
 			float3x3 TBN = CalculateCotangentFrame(viewSpaceNormal, viewSpaceIncident, MAIN_INPUT(TexCoord));
@@ -198,7 +198,7 @@ MAIN_BEGIN
 	float3 color = (reflectionColor * metallic + albedo) * (PassData.AmbientColor.rgb + CalculateHemisphereLighting(worldSpaceNormal.xyz, PassData.AmbientColor.rgb * 0.7f, PassData.AmbientColor.rgb * 0.2f));
 
 	// Directional sunlight, our primary light
-	if (shadowVisibility > 0.0f)
+	BRANCH if (shadowVisibility > 0.0f)
 	{
 		color += shadowVisibility * CalculateLighting(albedo, roughness, metallic, viewSpaceNormal, viewSpaceIncident, reflectionColor, PassData.ViewSpaceSunlightDirection, PassData.SunlightColor);
 	}

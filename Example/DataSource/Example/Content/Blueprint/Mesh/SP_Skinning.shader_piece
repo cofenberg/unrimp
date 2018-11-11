@@ -33,7 +33,7 @@
 	objectSpaceToWorldSpaceMatrix[2] = TEXTURE_BUFFER_FETCH(InstanceTextureBuffer, textureBufferBoneOffset + 2u) * boneWeight;
 
 	// The other bones
-	for (int i = 1; i < 4; ++i)
+	UNROLL for (int i = 1; i < 4; ++i)
 	{
 		textureBufferBoneOffset = textureBufferIndex + uint(MAIN_INPUT(BlendIndices)[i]) * 3u;
 		boneWeight = float(MAIN_INPUT(BlendWeights)[i]) / 255.0f;	// 8 bit bone weights decoding

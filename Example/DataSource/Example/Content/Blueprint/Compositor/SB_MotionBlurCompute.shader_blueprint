@@ -61,13 +61,13 @@ RW_TEXTURE_2D(1, 2, OutputTexture2D, 2, r11f_g11f_b10f, writeonly)
 //[-------------------------------------------------------]
 MAIN_BEGIN_COMPUTE(32, 32, 1)
 	// Compute dispatch is using groups of a multiple of the local size, ensure we don't access ouf of global compute size which musn't be a multiple of the local size and hence might be smaller
-	if (GLOBAL_INVOCATION_ID.x < PassData.GlobalComputeSize.x && GLOBAL_INVOCATION_ID.y < PassData.GlobalComputeSize.y)
+	BRANCH if (GLOBAL_INVOCATION_ID.x < PassData.GlobalComputeSize.x && GLOBAL_INVOCATION_ID.y < PassData.GlobalComputeSize.y)
 	{
 		int3 globalInvocationId = CAST_TO(GLOBAL_INVOCATION_ID, int3);
 		@property(NumberOfMultisamples)
 			// Complex pixel detection
 			float2 velocity = float2(0.0f, 0.0f);
-			if (0 != TEXTURE_FETCH_2D(ColorMap, globalInvocationId).a)
+			BRANCH if (0 != TEXTURE_FETCH_2D(ColorMap, globalInvocationId).a)
 			{
 				// Custom MSAA resolve
 				@foreach(NumberOfMultisamples, i, 0)
@@ -103,7 +103,7 @@ MAIN_BEGIN_COMPUTE(32, 32, 1)
 
 		// For each sample, sum up each sample's color in "sum" and then divide to average the color after all the samples are added
 		float4 sum = float4(0.0f, 0.0f, 0.0f, 0.0f);
-		for (int i = 0; i < PassData.NumberOfSamples; ++i)
+		LOOP for (int i = 0; i < PassData.NumberOfSamples; ++i)
 		{
 			// Sample texture in a new spot based on velocity vector and average it with the other samples
 			float2 sampleTexCoord = globalInvocationId.xy + (velocity * (float(i) / float(PassData.NumberOfSamples)));

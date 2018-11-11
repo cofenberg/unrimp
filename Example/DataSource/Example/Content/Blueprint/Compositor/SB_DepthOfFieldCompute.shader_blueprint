@@ -67,7 +67,7 @@ SAMPLER_STATE(2, 1, SamplerLinear, 1)
 float ConvertDepth(float linearDepth)
 {
 	float depth = 0.0f;
-	if (linearDepth < PassData.FocalPlaneDepth)
+	FLATTEN if (linearDepth < PassData.FocalPlaneDepth)
 	{
 		// Scale depth value between near blur distance and focal distance to [-1, 0] range
 		depth = (linearDepth - PassData.FocalPlaneDepth) / (PassData.FocalPlaneDepth - PassData.NearBlurDepth);
@@ -117,7 +117,7 @@ float4 CalculateSum(float2 textureCoordinate,
 	float discRadiusBlur  = discRadiusScene * radiusScale;	// Radius on low resolution image
 
 	float4 sum = float4(0.0f, 0.0f, 0.0f, 0.0f);
-	for (int i = 0; i < 12; ++i)
+	UNROLL for (int i = 0; i < 12; ++i)
 	{
 		// Compute texture coordinates
 		float4 coordScene = float4(textureCoordinate + (pixelSizeScene * poisson[i] * discRadiusScene), 0.0f, 0.0f);
@@ -150,7 +150,7 @@ float4 CalculateSum(float2 textureCoordinate,
 //[-------------------------------------------------------]
 MAIN_BEGIN_COMPUTE(32, 32, 1)
 	// Compute dispatch is using groups of a multiple of the local size, ensure we don't access ouf of global compute size which musn't be a multiple of the local size and hence might be smaller
-	if (GLOBAL_INVOCATION_ID.x < PassData.GlobalComputeSize.x && GLOBAL_INVOCATION_ID.y < PassData.GlobalComputeSize.y)
+	BRANCH if (GLOBAL_INVOCATION_ID.x < PassData.GlobalComputeSize.x && GLOBAL_INVOCATION_ID.y < PassData.GlobalComputeSize.y)
 	{
 		float2 inverseGlobalComputeSize = float2(1.0f, 1.0f) / CAST_TO(PassData.GlobalComputeSize.xy, float2);
 		float4 sum = CalculateSum(CAST_TO(GLOBAL_INVOCATION_ID.xy, float2) * inverseGlobalComputeSize, inverseGlobalComputeSize);
