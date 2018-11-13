@@ -64,7 +64,6 @@ UNIFORM_BUFFER_END
 struct Material
 {
 	float AlphaReference;
-	float IndexOfRefraction;
 	float DistortionScale;
 };
 UNIFORM_BUFFER_BEGIN(1, 0, MaterialUniformBuffer, 1)
@@ -119,10 +118,7 @@ MAIN_BEGIN
 	float3 viewSpaceNormal = UnpackTextureNormalXY(value_argb_nxa.a, value_hr_rg_mb_nya.a);
 	viewSpaceNormal = normalize(viewSpaceNormal.x * MAIN_INPUT(TangentFrame0VS) + viewSpaceNormal.y * MAIN_INPUT(TangentFrame1VS) + viewSpaceNormal.z * MAIN_INPUT(TangentFrame2VS));
 
-	// Refract
-	viewSpaceNormal = refract(normalize(MAIN_INPUT(ViewSpacePositionVS)), viewSpaceNormal, material.IndexOfRefraction);
-
-	// Get distortion
+	// Get distortion which later on is used for simple perturbation as described at "GPU Gems 2"-book, "Chapter 19. Generic Refraction Simulation"-chapter by Tiago Sousa
 	float2 distortion = viewSpaceNormal.xy;
 
 	// Scale distortion

@@ -24,13 +24,6 @@
 				"Value": "BACK",
 				"Description": "Cull mode rasterizer state"
 			},
-			"IndexOfRefraction":
-			{
-				"Usage": "SHADER_UNIFORM",
-				"ValueType": "FLOAT",
-				"Value": "1.52",
-				"Description": "Index of refraction (IOR), e.g. glass = 1.52"
-			},
 			"DistortionScale":
 			{
 				"Usage": "SHADER_UNIFORM",
@@ -175,12 +168,6 @@
 							"Usage": "MATERIAL_REFERENCE",
 							"ValueType": "FLOAT",
 							"Value": "@AlphaReference"
-						},
-						"IndexOfRefraction":
-						{
-							"Usage": "MATERIAL_REFERENCE",
-							"ValueType": "FLOAT",
-							"Value": "@IndexOfRefraction"
 						},
 						"DistortionScale":
 						{
