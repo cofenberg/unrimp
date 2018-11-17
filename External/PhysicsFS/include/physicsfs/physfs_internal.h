@@ -162,36 +162,35 @@ void __PHYSFS_smallFree(void *ptr);
 #define free(x) Do not use free() directly.
 /* !!! FIXME: add alloca check here. */
 
-// TODO(co) Disabled unused formats
 #ifndef PHYSFS_SUPPORTS_ZIP
 #define PHYSFS_SUPPORTS_ZIP 1
 #endif
 #ifndef PHYSFS_SUPPORTS_7Z
-#define PHYSFS_SUPPORTS_7Z 0
+#define PHYSFS_SUPPORTS_7Z 1
 #endif
 #ifndef PHYSFS_SUPPORTS_GRP
-#define PHYSFS_SUPPORTS_GRP 0
+#define PHYSFS_SUPPORTS_GRP 1
 #endif
 #ifndef PHYSFS_SUPPORTS_HOG
-#define PHYSFS_SUPPORTS_HOG 0
+#define PHYSFS_SUPPORTS_HOG 1
 #endif
 #ifndef PHYSFS_SUPPORTS_MVL
-#define PHYSFS_SUPPORTS_MVL 0
+#define PHYSFS_SUPPORTS_MVL 1
 #endif
 #ifndef PHYSFS_SUPPORTS_WAD
-#define PHYSFS_SUPPORTS_WAD 0
+#define PHYSFS_SUPPORTS_WAD 1
 #endif
 #ifndef PHYSFS_SUPPORTS_QPAK
-#define PHYSFS_SUPPORTS_QPAK 0
+#define PHYSFS_SUPPORTS_QPAK 1
 #endif
 #ifndef PHYSFS_SUPPORTS_SLB
-#define PHYSFS_SUPPORTS_SLB 0
+#define PHYSFS_SUPPORTS_SLB 1
 #endif
 #ifndef PHYSFS_SUPPORTS_ISO9660
-#define PHYSFS_SUPPORTS_ISO9660 0
+#define PHYSFS_SUPPORTS_ISO9660 1
 #endif
 #ifndef PHYSFS_SUPPORTS_VDF
-#define PHYSFS_SUPPORTS_VDF 0
+#define PHYSFS_SUPPORTS_VDF 1
 #endif
 
 #if PHYSFS_SUPPORTS_7Z

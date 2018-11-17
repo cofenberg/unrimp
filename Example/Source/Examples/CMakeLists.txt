@@ -179,18 +179,23 @@ endif()
 # Disable warnings in external libraries, we can't fix them
 if(WIN32)
 	# Used options:
+	# - Disable "warning C4018: '<': signed/unsigned mismatch"
 	# - Disable "warning C4100: 'len': unreferenced formal parameter"
+	# - Disable "warning C4101: 'retval': unreferenced local variable"
 	# - Disable "warning C4127: conditional expression is constant"
 	# - Disable "warning C4201: nonstandard extension used: nameless struct/union"
 	# - Disable "warning C4242: '=': conversion from 'PHYSFS_uint32' to 'PHYSFS_uint16', possible loss of data"
 	# - Disable "warning C4244: 'initializing': conversion from 'const PHYSFS_uint32' to 'const PHYSFS_uint16', possible loss of data"
 	# - Disable "warning C4255: '__slwpcb': no function prototype given: converting '()' to '(void)'"
+	# - Disable "warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data"
+	# - Disable "warning C4388: '<': signed/unsigned mismatch"
 	# - Disable "warning C4389: '==': signed/unsigned mismatch"
 	# - Disable "warning C4456: declaration of 'len' hides previous local declaration"
 	# - Disable "warning C4548: expression before comma has no effect; expected expression with side-effect"
 	# - Disable "warning C4668: '_USING_V110_SDK71_' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'"
 	# - Disable "warning C4701: potentially uninitialized local variable 'timestamp' used"
-	set_source_files_properties(${EXTERNAL_SOURCE_CODES} PROPERTIES COMPILE_FLAGS "/wd4100 /wd4127 /wd4201 /wd4242 /wd4244 /wd4255 /wd4389 /wd4456 /wd4548 /wd4668 /wd4701")
+	set_source_files_properties(${EXTERNAL_SOURCE_CODES} PROPERTIES COMPILE_DEFINITIONS "PHYSFS_SUPPORTS_7Z=0;PHYSFS_SUPPORTS_GRP=0;PHYSFS_SUPPORTS_HOG=0;;PHYSFS_SUPPORTS_MVL=0;PHYSFS_SUPPORTS_WAD=0;PHYSFS_SUPPORTS_QPAK=0;PHYSFS_SUPPORTS_SLB=0;PHYSFS_SUPPORTS_ISO9660=0;PHYSFS_SUPPORTS_VDF=0")
+	set_source_files_properties(${EXTERNAL_SOURCE_CODES} PROPERTIES COMPILE_FLAGS "/wd4018 /wd4100 /wd4101 /wd4127 /wd4201 /wd4242 /wd4244 /wd4255 /wd4267 /wd4388 /wd4389 /wd4456 /wd4548 /wd4668 /wd4701")
 endif()
 
 

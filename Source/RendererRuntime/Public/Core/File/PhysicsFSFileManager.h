@@ -33,10 +33,14 @@
 
 #include <Renderer/Public/Renderer.h>
 
-extern "C"
-{
-	#include <physicsfs/physfs.h>
-}
+// Disable warnings in external headers, we can't fix them
+PRAGMA_WARNING_PUSH
+	PRAGMA_WARNING_DISABLE_MSVC(4668)	// warning C4668: '__GNUC__' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+	extern "C"
+	{
+		#include <physicsfs/physfs.h>
+	}
+PRAGMA_WARNING_POP
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
