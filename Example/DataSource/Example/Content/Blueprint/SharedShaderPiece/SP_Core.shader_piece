@@ -446,9 +446,9 @@
 		#define uint4 uvec4
 
 		// Load/fetch/store (unordered access)
-		#define TEXTURE_FETCH_2D(name, texelIndex) texelFetch(name, texelIndex.xy, texelIndex.z)
-		#define TEXTURE_FETCH_ARRAY(name, texelIndex) texelFetch(name, texelIndex.xyz, texelIndex.w)
-		#define TEXTURE_FETCH_3D(name, texelIndex) texelFetch(name, texelIndex.xyz, texelIndex.w)
+		#define TEXTURE_FETCH_2D(name, texelIndex) texelFetch(name, (texelIndex).xy, (texelIndex).z)
+		#define TEXTURE_FETCH_ARRAY(name, texelIndex) texelFetch(name, (texelIndex).xyz, (texelIndex).w)
+		#define TEXTURE_FETCH_3D(name, texelIndex) texelFetch(name, (texelIndex).xyz, (texelIndex).w)
 		#define IMAGE_STORE(name, texelIndex, data) imageStore(name, texelIndex, data)
 
 		// HLSL math functions
@@ -679,9 +679,9 @@
 		#define uint4 uvec4
 
 		// Load/fetch/store (unordered access)
-		#define TEXTURE_FETCH_2D(name, texelIndex) texelFetch(name, texelIndex.xy, texelIndex.z)
-		#define TEXTURE_FETCH_ARRAY(name, texelIndex) texelFetch(name, texelIndex.xyz, texelIndex.w)
-		#define TEXTURE_FETCH_3D(name, texelIndex) texelFetch(name, texelIndex.xyz, texelIndex.w)
+		#define TEXTURE_FETCH_2D(name, texelIndex) texelFetch(name, (texelIndex).xy, (texelIndex).z)
+		#define TEXTURE_FETCH_ARRAY(name, texelIndex) texelFetch(name, (texelIndex).xyz, (texelIndex).w)
+		#define TEXTURE_FETCH_3D(name, texelIndex) texelFetch(name, (texelIndex).xyz, (texelIndex).w)
 		#define IMAGE_STORE(name, texelIndex, data) imageStore(name, texelIndex, data)
 
 		// HLSL math functions
@@ -903,9 +903,9 @@
 		#define uint4 uvec4
 
 		// Load/fetch/store (unordered access)
-		#define TEXTURE_FETCH_2D(name, texelIndex) texelFetch(name, texelIndex.xy, texelIndex.z)
-		#define TEXTURE_FETCH_ARRAY(name, texelIndex) texelFetch(name, texelIndex.xyz, texelIndex.w)
-		#define TEXTURE_FETCH_3D(name, texelIndex) texelFetch(name, texelIndex.xyz, texelIndex.w)
+		#define TEXTURE_FETCH_2D(name, texelIndex) texelFetch(name, (texelIndex).xy, (texelIndex).z)
+		#define TEXTURE_FETCH_ARRAY(name, texelIndex) texelFetch(name, (texelIndex).xyz, (texelIndex).w)
+		#define TEXTURE_FETCH_3D(name, texelIndex) texelFetch(name, (texelIndex).xyz, (texelIndex).w)
 		#define IMAGE_STORE(name, texelIndex, data) imageStore(name, texelIndex, data)
 
 		// HLSL math functions
