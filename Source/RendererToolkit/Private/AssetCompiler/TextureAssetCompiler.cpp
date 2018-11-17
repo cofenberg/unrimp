@@ -883,21 +883,94 @@ namespace
 					}
 				}
 
-				// Sanity check: All source textures must have the same dimension
+				// Get combined maximum width and height of all source textures
+				crnlib::uint maximumWidth = RendererRuntime::getInvalid<crnlib::uint>();
+				crnlib::uint maximumHeight = RendererRuntime::getInvalid<crnlib::uint>();
 				for (uint8_t i = 0; i < mSources.size(); ++i)
 				{
 					const Source& source = mSources[i];
 					if (source.crunchMipmappedTexture.is_valid())
 					{
-						for (uint8_t k = i + 1u; k < static_cast<uint8_t>(mSources.size()); ++k)
+						if (RendererRuntime::isInvalid(maximumWidth) && RendererRuntime::isInvalid(maximumHeight))
 						{
-							const Source& otherSource = mSources[k];
-							if (otherSource.crunchMipmappedTexture.is_valid() && (source.crunchMipmappedTexture.get_width() != otherSource.crunchMipmappedTexture.get_width() || source.crunchMipmappedTexture.get_height() != otherSource.crunchMipmappedTexture.get_height()))
+							maximumWidth = source.crunchMipmappedTexture.get_width();
+							maximumHeight = source.crunchMipmappedTexture.get_height();
+						}
+						else
+						{
+							maximumWidth = std::max(maximumWidth, source.crunchMipmappedTexture.get_width());
+							maximumHeight = std::max(maximumHeight, source.crunchMipmappedTexture.get_height());
+						}
+					}
+				}
+
+				// Sanity check: All source textures must have the same size
+				// -> The optional texture asset compiler option "ForceMaximumSizeUsage" can be used to enforce this, intentionally not enabled by default since the different size might have been an artist accident
+				bool forceMaximumSizeUsage = false;
+				RendererToolkit::JsonHelper::optionalBooleanProperty(rapidJsonValueTextureAssetCompiler, "ForceMaximumSizeUsage", forceMaximumSizeUsage);
+				if (forceMaximumSizeUsage)
+				{
+					for (uint8_t i = 0; i < mSources.size(); ++i)
+					{
+						Source& source = mSources[i];
+						crnlib::mipmapped_texture& crunchMipmappedTexture = source.crunchMipmappedTexture;
+						if (crunchMipmappedTexture.is_valid() && (crunchMipmappedTexture.get_width() != maximumWidth || crunchMipmappedTexture.get_height() != maximumHeight))
+						{
+							crnlib::mipmapped_texture::resample_params crunchResampleParams;
+							switch (source.textureSemantic)
 							{
-								throw std::runtime_error("All input textures must have the same dimension");
+								case TextureSemantic::ALBEDO_MAP:
+								case TextureSemantic::REFLECTION_2D_MAP:
+								case TextureSemantic::EMISSIVE_MAP:
+								case TextureSemantic::TERRAIN_HEIGHT_MAP:
+								case TextureSemantic::REFLECTION_CUBE_MAP:
+								case TextureSemantic::COLOR_CORRECTION_LOOKUP_TABLE:
+								case TextureSemantic::PACKED_CHANNELS:
+								case TextureSemantic::VOLUME:
+								case TextureSemantic::UNKNOWN:
+									crunchResampleParams.m_srgb  = true;
+									crunchResampleParams.m_gamma = 2.2f;	// Mipmap gamma correction value, default=2.2, use 1.0 for linear
+									break;
+
+								case TextureSemantic::ALPHA_MAP:
+								case TextureSemantic::ROUGHNESS_MAP:
+								case TextureSemantic::GLOSS_MAP:
+								case TextureSemantic::METALLIC_MAP:
+								case TextureSemantic::HEIGHT_MAP:
+								case TextureSemantic::TINT_MAP:
+								case TextureSemantic::AMBIENT_OCCLUSION_MAP:
+									crunchResampleParams.m_gamma = 1.0f;	// Mipmap gamma correction value, default=2.2, use 1.0 for linear
+									break;
+
+								case TextureSemantic::NORMAL_MAP:
+									crunchResampleParams.m_renormalize = true;
+									crunchResampleParams.m_gamma	   = 1.0f;	// Mipmap gamma correction value, default=2.2, use 1.0 for linear
+									break;
+							}
+							if (!crunchMipmappedTexture.resize(maximumWidth, maximumHeight, crunchResampleParams))
+							{
+								throw std::runtime_error("All input textures must have the same size, failed to automatically resize to the combined maximum width and height of all input textures " + std::to_string(maximumWidth) + 'x' + std::to_string(maximumHeight));
 							}
 						}
-						break;
+					}
+				}
+				else
+				{
+					for (uint8_t i = 0; i < mSources.size(); ++i)
+					{
+						const crnlib::mipmapped_texture& crunchSourceMipmappedTexture = mSources[i].crunchMipmappedTexture;
+						if (crunchSourceMipmappedTexture.is_valid())
+						{
+							for (uint8_t k = i + 1u; k < static_cast<uint8_t>(mSources.size()); ++k)
+							{
+								const crnlib::mipmapped_texture& crunchOtherMipmappedTexture = mSources[k].crunchMipmappedTexture;
+								if (crunchOtherMipmappedTexture.is_valid() && (crunchSourceMipmappedTexture.get_width() != crunchOtherMipmappedTexture.get_width() || crunchSourceMipmappedTexture.get_height() != crunchOtherMipmappedTexture.get_height()))
+								{
+									throw std::runtime_error("All input textures must have the same size. The combined maximum width and height of all input textures is " + std::to_string(maximumWidth) + 'x' + std::to_string(maximumHeight) + ". Set texture asset compiler option \"ForceMaximumSizeUsage\" to \"TRUE\" to enforce using this maximum size.");
+								}
+							}
+							break;
+						}
 					}
 				}
 			}
