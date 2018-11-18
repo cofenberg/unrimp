@@ -8776,9 +8776,6 @@ namespace Direct3D10Renderer
 	{
 		mDirect3D10RuntimeLinking = RENDERER_NEW(mContext, Direct3D10RuntimeLinking)(*this);
 
-		// Begin debug event
-		RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(this)
-
 		// Is Direct3D 10 available?
 		if (mDirect3D10RuntimeLinking->isDirect3D10Avaiable())
 		{
@@ -8810,6 +8807,9 @@ namespace Direct3D10Renderer
 						D3DPERF_SetOptions(1);
 					}
 				#endif
+
+				// Begin debug event
+				RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(this)
 
 				// Direct3D 10 debug settings
 				if (flags & D3D10_CREATE_DEVICE_DEBUG)
@@ -8858,15 +8858,15 @@ namespace Direct3D10Renderer
 
 				// Initialize the capabilities
 				initializeCapabilities();
+
+				// End debug event
+				RENDERER_END_DEBUG_EVENT(this)
 			}
 			else
 			{
 				RENDERER_LOG(mContext, CRITICAL, "Failed to create the Direct3D 10 device instance")
 			}
 		}
-
-		// End debug event
-		RENDERER_END_DEBUG_EVENT(this)
 	}
 
 	Direct3D10Renderer::~Direct3D10Renderer()

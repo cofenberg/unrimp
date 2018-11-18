@@ -10376,9 +10376,6 @@ namespace Direct3D12Renderer
 	{
 		mDirect3D12RuntimeLinking = RENDERER_NEW(mContext, Direct3D12RuntimeLinking)(*this);
 
-		// Begin debug event
-		RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(this)
-
 		// Is Direct3D 12 available?
 		if (mDirect3D12RuntimeLinking->isDirect3D12Avaiable())
 		{
@@ -10430,6 +10427,9 @@ namespace Direct3D12Renderer
 			// Is there a valid Direct3D 12 device instance?
 			if (nullptr != mD3D12Device)
 			{
+				// Begin debug event
+				RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(this)
+
 				// Describe and create the command queue
 				D3D12_COMMAND_QUEUE_DESC d3d12CommandQueueDesc;
 				d3d12CommandQueueDesc.Type		= D3D12_COMMAND_LIST_TYPE_DIRECT;
@@ -10469,11 +10469,11 @@ namespace Direct3D12Renderer
 				{
 					RENDERER_LOG(mContext, CRITICAL, "Failed to create the Direct3D 12 command queue instance")
 				}
+
+				// End debug event
+				RENDERER_END_DEBUG_EVENT(this)
 			}
 		}
-
-		// End debug event
-		RENDERER_END_DEBUG_EVENT(this)
 	}
 
 	Direct3D12Renderer::~Direct3D12Renderer()

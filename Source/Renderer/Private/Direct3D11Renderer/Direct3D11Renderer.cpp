@@ -11111,9 +11111,6 @@ namespace Direct3D11Renderer
 	{
 		mDirect3D11RuntimeLinking = RENDERER_NEW(context, Direct3D11RuntimeLinking)(*this);
 
-		// Begin debug event
-		RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(this)
-
 		// Is Direct3D 11 available?
 		if (mDirect3D11RuntimeLinking->isDirect3D11Avaiable())
 		{
@@ -11147,6 +11144,9 @@ namespace Direct3D11Renderer
 			// Is there a valid Direct3D 11 device and device context?
 			if (nullptr != mD3D11Device && nullptr != mD3D11DeviceContext)
 			{
+				// Begin debug event
+				RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(this)
+
 				// Direct3D 11 debug related stuff
 				if (flags & D3D11_CREATE_DEVICE_DEBUG)
 				{
@@ -11207,15 +11207,15 @@ namespace Direct3D11Renderer
 
 				// Initialize the capabilities
 				initializeCapabilities();
+
+				// End debug event
+				RENDERER_END_DEBUG_EVENT(this)
 			}
 			else
 			{
 				RENDERER_LOG(mContext, CRITICAL, "Failed to create the Direct3D 11 device and device context instance")
 			}
 		}
-
-		// End debug event
-		RENDERER_END_DEBUG_EVENT(this)
 	}
 
 	Direct3D11Renderer::~Direct3D11Renderer()
