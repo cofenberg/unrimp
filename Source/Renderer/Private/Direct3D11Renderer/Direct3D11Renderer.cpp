@@ -4285,7 +4285,6 @@ namespace Direct3D11Renderer
 		*/
 		VertexArray(Direct3D11Renderer& direct3D11Renderer, const Renderer::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Renderer::VertexArrayVertexBuffer* vertexBuffers, IndexBuffer* indexBuffer) :
 			IVertexArray(direct3D11Renderer),
-			mD3D11DeviceContext(direct3D11Renderer.getD3D11DeviceContext()),
 			mIndexBuffer(indexBuffer),
 			mNumberOfSlots(numberOfVertexBuffers),
 			mD3D11Buffers(nullptr),
@@ -4293,9 +4292,6 @@ namespace Direct3D11Renderer
 			mOffsets(nullptr),
 			mVertexBuffers(nullptr)
 		{
-			// Acquire our Direct3D 11 device context reference
-			mD3D11DeviceContext->AddRef();
-
 			// Add a reference to the given index buffer
 			if (nullptr != mIndexBuffer)
 			{
@@ -4370,27 +4366,27 @@ namespace Direct3D11Renderer
 				// Cleanup
 				RENDERER_FREE(context, mVertexBuffers);
 			}
-
-			// Release our Direct3D 11 device context reference
-			mD3D11DeviceContext->Release();
 		}
 
 		/**
 		*  @brief
 		*    Set the Direct3D 11 vertex declaration and stream source
+		*
+		*  @param[in] d3d11DeviceContext
+		*    The Direct3D 11 device context instance
 		*/
-		void setDirect3DIASetInputLayoutAndStreamSource() const
+		void setDirect3DIASetInputLayoutAndStreamSource(ID3D11DeviceContext& d3d11DeviceContext) const
 		{
 			// Set the Direct3D 11 vertex buffers
 			if (nullptr != mD3D11Buffers)
 			{
 				{ // TODO(co) Work in progress: Compute shader writing into vertex buffer: "D3D11 WARNING: ID3D11DeviceContext::IASetVertexBuffers: Resource being set to Vertex Buffer slot 0 is still bound on output! Forcing to NULL. [ STATE_SETTING WARNING #1: DEVICE_IASETVERTEXBUFFERS_HAZARD]"
 					ID3D11UnorderedAccessView* d3d11UnorderedAccessView = nullptr;
-					mD3D11DeviceContext->CSSetUnorderedAccessViews(2, 1, &d3d11UnorderedAccessView, nullptr);
+					d3d11DeviceContext.CSSetUnorderedAccessViews(2, 1, &d3d11UnorderedAccessView, nullptr);
 				}
 
 				// Just make a single API call
-				mD3D11DeviceContext->IASetVertexBuffers(0, mNumberOfSlots, mD3D11Buffers, mStrides, mOffsets);
+				d3d11DeviceContext.IASetVertexBuffers(0, mNumberOfSlots, mD3D11Buffers, mStrides, mOffsets);
 			}
 			else
 			{
@@ -4404,11 +4400,11 @@ namespace Direct3D11Renderer
 			{
 				{ // TODO(co) Work in progress: Compute shader writing into vertex buffer: "D3D11 WARNING: ID3D11DeviceContext::IASetIndexBuffer: Resource being set to Index Buffer is still bound on output! Forcing to NULL. [ STATE_SETTING WARNING #2: DEVICE_IASETINDEXBUFFER_HAZARD]"
 					ID3D11UnorderedAccessView* d3d11UnorderedAccessView = nullptr;
-					mD3D11DeviceContext->CSSetUnorderedAccessViews(1, 1, &d3d11UnorderedAccessView, nullptr);
+					d3d11DeviceContext.CSSetUnorderedAccessViews(1, 1, &d3d11UnorderedAccessView, nullptr);
 				}
 
 				// Set the Direct3D 11 indices
-				mD3D11DeviceContext->IASetIndexBuffer(mIndexBuffer->getD3D11Buffer(), static_cast<DXGI_FORMAT>(mIndexBuffer->getDXGIFormat()), 0);
+				d3d11DeviceContext.IASetIndexBuffer(mIndexBuffer->getD3D11Buffer(), static_cast<DXGI_FORMAT>(mIndexBuffer->getDXGIFormat()), 0);
 			}
 		}
 
@@ -4435,15 +4431,14 @@ namespace Direct3D11Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		ID3D11DeviceContext*  mD3D11DeviceContext;	///< The Direct3D 11 device context instance (we keep a reference to it), null pointer on horrible error (so we don't check)
-		IndexBuffer*		  mIndexBuffer;			///< Optional index buffer to use, can be a null pointer, the vertex array instance keeps a reference to the index buffer
+		IndexBuffer*   mIndexBuffer;	///< Optional index buffer to use, can be a null pointer, the vertex array instance keeps a reference to the index buffer
 		// Direct3D 11 input slots
-		UINT				  mNumberOfSlots;		///< Number of used Direct3D 11 input slots
-		ID3D11Buffer**		  mD3D11Buffers;		///< Direct3D 11 vertex buffers, if "mD3D11InputLayout" is no null pointer this is no null pointer as well
-		UINT*				  mStrides;				///< Strides in bytes, if "mD3D11Buffers" is no null pointer this is no null pointer as well
-		UINT*				  mOffsets;				///< Offsets in bytes, if "mD3D11Buffers" is no null pointer this is no null pointer as well
+		UINT		   mNumberOfSlots;	///< Number of used Direct3D 11 input slots
+		ID3D11Buffer** mD3D11Buffers;	///< Direct3D 11 vertex buffers, if "mD3D11InputLayout" is no null pointer this is no null pointer as well
+		UINT*		   mStrides;		///< Strides in bytes, if "mD3D11Buffers" is no null pointer this is no null pointer as well
+		UINT*		   mOffsets;		///< Offsets in bytes, if "mD3D11Buffers" is no null pointer this is no null pointer as well
 		// For proper vertex buffer reference counter behaviour
-		VertexBuffer**		  mVertexBuffers;		///< Vertex buffers (we keep a reference to it) used by this vertex array, can be a null pointer
+		VertexBuffer** mVertexBuffers;	///< Vertex buffers (we keep a reference to it) used by this vertex array, can be a null pointer
 
 
 	};
@@ -10403,16 +10398,12 @@ namespace Direct3D11Renderer
 			IGraphicsPipelineState(direct3D11Renderer),
 			mGraphicsProgram(graphicsPipelineState.graphicsProgram),
 			mRenderPass(graphicsPipelineState.renderPass),
-			mD3D11DeviceContext(direct3D11Renderer.getD3D11DeviceContext()),
 			mD3D11PrimitiveTopology(static_cast<D3D11_PRIMITIVE_TOPOLOGY>(graphicsPipelineState.primitiveTopology)),
 			mD3D11InputLayout(nullptr),
 			mRasterizerState(direct3D11Renderer, graphicsPipelineState.rasterizerState),
 			mDepthStencilState(direct3D11Renderer, graphicsPipelineState.depthStencilState),
 			mBlendState(direct3D11Renderer, graphicsPipelineState.blendState)
 		{
-			// Acquire our Direct3D 11 device context reference
-			mD3D11DeviceContext->AddRef();
-
 			// Add a reference to the given graphics program and render pass
 			mGraphicsProgram->addReference();
 			mRenderPass->addReference();
@@ -10490,9 +10481,6 @@ namespace Direct3D11Renderer
 			{
 				mD3D11InputLayout->Release();
 			}
-
-			// Release our Direct3D 11 device context reference
-			mD3D11DeviceContext->Release();
 		}
 
 		/**
@@ -10522,26 +10510,29 @@ namespace Direct3D11Renderer
 		/**
 		*  @brief
 		*    Bind the graphics pipeline state
+		*
+		*  @param[in] d3d11DeviceContext
+		*    The Direct3D 11 device context instance
 		*/
-		void bindGraphicsPipelineState() const
+		void bindGraphicsPipelineState(ID3D11DeviceContext& d3d11DeviceContext) const
 		{
 			// Set the Direct3D 11 input layout
 			if (nullptr != mD3D11InputLayout)
 			{
-				mD3D11DeviceContext->IASetInputLayout(mD3D11InputLayout);
+				d3d11DeviceContext.IASetInputLayout(mD3D11InputLayout);
 			}
 
 			// Set the graphics program
 			static_cast<Direct3D11Renderer&>(getRenderer()).setGraphicsProgram(mGraphicsProgram);
 
 			// Set the Direct3D 11 rasterizer state
-			mD3D11DeviceContext->RSSetState(mRasterizerState.getD3D11RasterizerState());
+			d3d11DeviceContext.RSSetState(mRasterizerState.getD3D11RasterizerState());
 
 			// Set Direct3D 11 depth stencil state
-			mD3D11DeviceContext->OMSetDepthStencilState(mDepthStencilState.getD3D11DepthStencilState(), 0);
+			d3d11DeviceContext.OMSetDepthStencilState(mDepthStencilState.getD3D11DepthStencilState(), 0);
 
 			// Set Direct3D 11 blend state
-			mD3D11DeviceContext->OMSetBlendState(mBlendState.getD3D11BlendState(), 0, 0xffffffff);
+			d3d11DeviceContext.OMSetBlendState(mBlendState.getD3D11BlendState(), 0, 0xffffffff);
 		}
 
 
@@ -10587,7 +10578,6 @@ namespace Direct3D11Renderer
 	private:
 		Renderer::IGraphicsProgram*	mGraphicsProgram;
 		Renderer::IRenderPass*		mRenderPass;
-		ID3D11DeviceContext*		mD3D11DeviceContext;	///< The Direct3D 11 device context instance (we keep a reference to it), null pointer on horrible error (so we don't check)
 		D3D11_PRIMITIVE_TOPOLOGY	mD3D11PrimitiveTopology;
 		ID3D11InputLayout*			mD3D11InputLayout;		///< Direct3D 11 input layout, can be a null pointer
 		RasterizerState				mRasterizerState;
@@ -11355,7 +11345,7 @@ namespace Direct3D11Renderer
 			}
 
 			// Set graphics pipeline state
-			direct3D11GraphicsPipelineState->bindGraphicsPipelineState();
+			direct3D11GraphicsPipelineState->bindGraphicsPipelineState(*mD3D11DeviceContext);
 		}
 		else
 		{
@@ -11669,7 +11659,7 @@ namespace Direct3D11Renderer
 			// Begin debug event
 			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(this)
 
-			static_cast<VertexArray*>(vertexArray)->setDirect3DIASetInputLayoutAndStreamSource();
+			static_cast<VertexArray*>(vertexArray)->setDirect3DIASetInputLayoutAndStreamSource(*mD3D11DeviceContext);
 
 			// End debug event
 			RENDERER_END_DEBUG_EVENT(this)
