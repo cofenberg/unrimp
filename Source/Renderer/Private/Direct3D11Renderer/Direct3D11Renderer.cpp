@@ -11937,10 +11937,7 @@ namespace Direct3D11Renderer
 		{
 			// Emulate multi-draw-indirect
 			#ifdef RENDERER_DEBUG
-				if (nullptr != mD3DUserDefinedAnnotation)
-				{
-					mD3DUserDefinedAnnotation->BeginEvent(L"Multi-draw-indirect emulation");
-				}
+				beginDebugEvent("Multi-draw-indirect emulation");
 			#endif
 			for (uint32_t i = 0; i < numberOfDraws; ++i)
 			{
@@ -11948,10 +11945,7 @@ namespace Direct3D11Renderer
 				indirectBufferOffset += sizeof(Renderer::DrawArguments);
 			}
 			#ifdef RENDERER_DEBUG
-				if (nullptr != mD3DUserDefinedAnnotation)
-				{
-					mD3DUserDefinedAnnotation->EndEvent();
-				}
+				endDebugEvent();
 			#endif
 		}
 	}
@@ -12011,9 +12005,9 @@ namespace Direct3D11Renderer
 
 		// Emit the draw calls
 		#ifdef RENDERER_DEBUG
-			if (nullptr != mD3DUserDefinedAnnotation && numberOfDraws > 1)
+			if (numberOfDraws > 1)
 			{
-				mD3DUserDefinedAnnotation->BeginEvent(L"Multi-draw-indirect emulation");
+				beginDebugEvent("Multi-draw-indirect emulation");
 			}
 		#endif
 		for (uint32_t i = 0; i < numberOfDraws; ++i)
@@ -12044,9 +12038,9 @@ namespace Direct3D11Renderer
 			emulationData += sizeof(Renderer::DrawArguments);
 		}
 		#ifdef RENDERER_DEBUG
-			if (nullptr != mD3DUserDefinedAnnotation && numberOfDraws > 1)
+			if (numberOfDraws > 1)
 			{
-				mD3DUserDefinedAnnotation->EndEvent();
+				endDebugEvent();
 			}
 		#endif
 	}
@@ -12069,10 +12063,7 @@ namespace Direct3D11Renderer
 		{
 			// Emulate multi-draw-indirect
 			#ifdef RENDERER_DEBUG
-				if (nullptr != mD3DUserDefinedAnnotation)
-				{
-					mD3DUserDefinedAnnotation->BeginEvent(L"Multi-indexed-draw-indirect emulation");
-				}
+				beginDebugEvent("Multi-indexed-draw-indirect emulation");
 			#endif
 			for (uint32_t i = 0; i < numberOfDraws; ++i)
 			{
@@ -12080,10 +12071,7 @@ namespace Direct3D11Renderer
 				indirectBufferOffset += sizeof(Renderer::DrawIndexedArguments);
 			}
 			#ifdef RENDERER_DEBUG
-				if (nullptr != mD3DUserDefinedAnnotation)
-				{
-					mD3DUserDefinedAnnotation->EndEvent();
-				}
+				endDebugEvent();
 			#endif
 		}
 	}
@@ -12143,9 +12131,9 @@ namespace Direct3D11Renderer
 
 		// Emit the draw calls
 		#ifdef RENDERER_DEBUG
-			if (nullptr != mD3DUserDefinedAnnotation && numberOfDraws > 1)
+			if (numberOfDraws > 1)
 			{
-				mD3DUserDefinedAnnotation->BeginEvent(L"Multi-indexed-draw-indirect emulation");
+				beginDebugEvent("Multi-indexed-draw-indirect emulation");
 			}
 		#endif
 		for (uint32_t i = 0; i < numberOfDraws; ++i)
@@ -12178,9 +12166,9 @@ namespace Direct3D11Renderer
 			emulationData += sizeof(Renderer::DrawIndexedArguments);
 		}
 		#ifdef RENDERER_DEBUG
-			if (nullptr != mD3DUserDefinedAnnotation && numberOfDraws > 1)
+			if (numberOfDraws > 1)
 			{
-				mD3DUserDefinedAnnotation->EndEvent();
+				endDebugEvent();
 			}
 		#endif
 	}
