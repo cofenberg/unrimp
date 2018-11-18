@@ -13468,13 +13468,7 @@ namespace Direct3D11Renderer
 		mCapabilities.baseVertex = true;
 
 		// Direct3D 11 has native multi-threading
-		// -> When using user defined annotation for enhanced graphics debugging, disable native multi-threading or we'll get synchronization problems like
-		//    "
-		//    D3D11 CORRUPTION: ID3D11DeviceContext::Map: Two threads were found to be executing functions associated with the same Device[Context] at the same time. This will cause corruption of memory. Appropriate thread synchronization needs to occur external to the Direct3D API (or through the ID3D10Multithread interface). 7584 and 12900 are the implicated thread ids. [ MISCELLANEOUS CORRUPTION #28: CORRUPTED_MULTITHREADING]
-		//    Exception thrown at 0x7645B782 (KernelBase.dll) in ExamplesD.exe: 0x0000087D (parameters: 0x00000000, 0x00C84D70, 0x00C841A8).
-		//    "
-		//    in case a thread is currently between "beginDebugEvent()"/"endDebugEvent()" while another thread is creating for example a texture resource.
-		mCapabilities.nativeMultiThreading = (nullptr == mD3DUserDefinedAnnotation);
+		mCapabilities.nativeMultiThreading = true;
 
 		// Direct3D 11 has shader bytecode support
 		mCapabilities.shaderBytecode = true;
