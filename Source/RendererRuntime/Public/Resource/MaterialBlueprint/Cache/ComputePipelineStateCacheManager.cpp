@@ -39,7 +39,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
-	Renderer::IComputePipelineStatePtr ComputePipelineStateCacheManager::getComputePipelineStateCacheByCombination(const ShaderProperties& shaderProperties, bool allowEmergencySynchronousCompilation)
+	Renderer::IComputePipelineStatePtr ComputePipelineStateCacheManager::getComputePipelineStateCacheByCombination(const ShaderProperties& shaderProperties, [[maybe_unused]] bool allowEmergencySynchronousCompilation)
 	{
 		// TODO(co) Asserts whether or not e.g. the material resource is using the owning material resource blueprint
 		assert(IResource::LoadingState::LOADED == mMaterialBlueprintResource.getLoadingState());
@@ -63,91 +63,20 @@ namespace RendererRuntime
 		if (computePipelineStateCompiler.isAsynchronousCompilationEnabled())
 		{
 			// Asynchronous
-
-			// Look for a suitable already available pipeline state cache which content we can use as fallback while the pipeline state compiler is working. We
-			// do this by reducing the shader properties set until we find something, hopefully. In case no fallback can be found we have to switch to synchronous processing.
-
-			// Start with the full shader properties and then clear one shader property after another
-			ShaderProperties fallbackShaderProperties(shaderProperties);	// TODO(co) Optimization: There are allocations for vector involved in here, we might want to get rid of this
-			ShaderProperties::SortedPropertyVector& sortedFallbackPropertyVector = fallbackShaderProperties.getSortedPropertyVector();
-			while (nullptr == fallbackComputePipelineStateCache && !sortedFallbackPropertyVector.empty())
+			if (!shaderProperties.getSortedPropertyVector().empty())
 			{
-				{ // Remove a fallback shader property
-					// Find the most useless shader property, we're going to sacrifice it
-					ShaderProperties::SortedPropertyVector::iterator worstHitShaderPropertyIterator = sortedFallbackPropertyVector.end();
-					int32_t worstHitVisualImportanceOfShaderProperty = getInvalid<int32_t>();
-					ShaderProperties::SortedPropertyVector::iterator iterator = sortedFallbackPropertyVector.begin();
-					while (iterator != sortedFallbackPropertyVector.end())
-					{
-						// Do not remove mandatory shader combination shader properties, at least not inside this pass
-						const int32_t visualImportanceOfShaderProperty = mMaterialBlueprintResource.getVisualImportanceOfShaderProperty(iterator->shaderPropertyId);
-						if (MaterialBlueprintResource::MANDATORY_SHADER_PROPERTY != visualImportanceOfShaderProperty)
-						{
-							if (isValid(worstHitVisualImportanceOfShaderProperty))
-							{
-								// Lower visual importance value = lower probability that someone will miss the shader property
-								if (worstHitVisualImportanceOfShaderProperty > visualImportanceOfShaderProperty)
-								{
-									worstHitVisualImportanceOfShaderProperty = visualImportanceOfShaderProperty;
-									worstHitShaderPropertyIterator = iterator;
-								}
-							}
-							else
-							{
-								worstHitShaderPropertyIterator = iterator;
-								worstHitVisualImportanceOfShaderProperty = visualImportanceOfShaderProperty;
-							}
-						}
-
-						// Next shader property on the to-kill-list, please
-						++iterator;
-					}
-
-					// Sacrifice our victim
-					if (sortedFallbackPropertyVector.end() == worstHitShaderPropertyIterator)
-					{
-						// No chance, no goats left
-						break;
-					}
-					sortedFallbackPropertyVector.erase(worstHitShaderPropertyIterator);
-				}
-
-				// Generate the current fallback compute pipeline state signature
-				ComputePipelineStateSignature fallbackComputePipelineStateSignature(mMaterialBlueprintResource, fallbackShaderProperties);	// TODO(co) Optimization: There are allocations for vector and map involved in here, we might want to get rid of those
-				ComputePipelineStateCacheByComputePipelineStateSignatureId::const_iterator iterator = mComputePipelineStateCacheByComputePipelineStateSignatureId.find(fallbackComputePipelineStateSignature.getComputePipelineStateSignatureId());
-				if (iterator != mComputePipelineStateCacheByComputePipelineStateSignatureId.cend())
-				{
-					// We don't care whether or not the compute pipeline state cache is currently using fallback data due to asynchronous complication
-					fallbackComputePipelineStateCache = iterator->second;
-				}
+				fallbackComputePipelineStateCache = getFallbackComputePipelineStateCache(shaderProperties);
 			}
-
-			// If we're here and still not having any fallback compute pipeline state cache we'll end up with a runtime hiccup, we don't want that
-			// -> Kids, don't try this at home: We'll trade the runtime hiccup against a nasty major compute artifact. If we're in luck no one
-			//    will notice it, depends on the situation. A runtime hiccup on the other hand will always be notable. So this trade in here
-			//    might not involve our first born.
-			if (!allowEmergencySynchronousCompilation && nullptr == fallbackComputePipelineStateCache)
-			{
-				// TODO(co) Optimization: There are allocations for vector and map involved in here, we might want to get rid of those
-				fallbackShaderProperties.clear();
-				ComputePipelineStateCacheByComputePipelineStateSignatureId::const_iterator iterator = mComputePipelineStateCacheByComputePipelineStateSignatureId.find(ComputePipelineStateSignature(mMaterialBlueprintResource, fallbackShaderProperties).getComputePipelineStateSignatureId());
-				if (iterator != mComputePipelineStateCacheByComputePipelineStateSignatureId.cend())
-				{
-					// We don't care whether or not the compute pipeline state cache is currently using fallback data due to asynchronous complication
-					fallbackComputePipelineStateCache = iterator->second;
-				}
-				#ifdef _DEBUG
-					else
-					{
-						RENDERER_LOG(static_cast<const MaterialBlueprintResourceManager&>(mMaterialBlueprintResource.getResourceManager()).getRendererRuntime().getContext(), PERFORMANCE_WARNING, "Hiccup alert: Failed to find any fallback compute pipeline state cache, synchronous compilation instead of asynchronous compilation will be used resulting in a hiccup which might be notable")
-					}
-				#endif
-			}
+		}
+		else
+		{
+			allowEmergencySynchronousCompilation = true;
 		}
 
 		// Create the new compute pipeline state cache instance
 		ComputePipelineStateCache* computePipelineStateCache = new ComputePipelineStateCache(mTemporaryComputePipelineStateSignature);
 		mComputePipelineStateCacheByComputePipelineStateSignatureId.emplace(mTemporaryComputePipelineStateSignature.getComputePipelineStateSignatureId(), computePipelineStateCache);
+		mPipelineStateObjectCacheNeedSaving = true;
 
 		// If we've got a fallback compute pipeline state cache then commit the asynchronous pipeline state compiler request now, else we must proceed synchronous (risk of notable runtime hiccups)
 		if (nullptr != fallbackComputePipelineStateCache)
@@ -157,24 +86,168 @@ namespace RendererRuntime
 			computePipelineStateCache->mIsUsingFallback = true;
 			computePipelineStateCompiler.addAsynchronousCompilerRequest(*computePipelineStateCache);
 		}
-		else
+		else if (allowEmergencySynchronousCompilation)
 		{
 			// Synchronous, the dark side
 			computePipelineStateCompiler.instantSynchronousCompilerRequest(mMaterialBlueprintResource, *computePipelineStateCache);
 		}
+		else
+		{
+			// Compute won't work as long as there's no compute pipeline state instance
+			computePipelineStateCompiler.addAsynchronousCompilerRequest(*computePipelineStateCache);
+		}
 
 		// Done
-		// TODO(co) Mark material cache as dirty
 		return computePipelineStateCache->getComputePipelineStateObjectPtr();
 	}
 
 	void ComputePipelineStateCacheManager::clearCache()
 	{
-		for (auto& computePipelineStateCacheElement : mComputePipelineStateCacheByComputePipelineStateSignatureId)
+		if (!mComputePipelineStateCacheByComputePipelineStateSignatureId.empty())
 		{
-			delete computePipelineStateCacheElement.second;
+			for (auto& computePipelineStateCacheElement : mComputePipelineStateCacheByComputePipelineStateSignatureId)
+			{
+				delete computePipelineStateCacheElement.second;
+			}
+			mComputePipelineStateCacheByComputePipelineStateSignatureId.clear();
+			mPipelineStateObjectCacheNeedSaving = true;
 		}
-		mComputePipelineStateCacheByComputePipelineStateSignatureId.clear();
+	}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	ComputePipelineStateCache* ComputePipelineStateCacheManager::getFallbackComputePipelineStateCache(const ShaderProperties& shaderProperties)
+	{
+		// Look for a suitable already available pipeline state cache which content we can use as fallback while the pipeline state compiler is working. We
+		// do this by reducing the shader properties set until we find something, hopefully. In case no fallback can be found we have to switch to synchronous processing.
+
+		// Start with the full shader properties and then clear one shader property after another
+		mFallbackShaderProperties = shaderProperties;
+		ShaderProperties::SortedPropertyVector& sortedFallbackPropertyVector = mFallbackShaderProperties.getSortedPropertyVector();
+		while (!sortedFallbackPropertyVector.empty())
+		{
+			{ // Remove a fallback shader property
+				// Find the most useless shader property, we're going to sacrifice it
+				ShaderProperties::SortedPropertyVector::iterator worstHitShaderPropertyIterator = sortedFallbackPropertyVector.end();
+				int32_t worstHitVisualImportanceOfShaderProperty = getInvalid<int32_t>();
+				ShaderProperties::SortedPropertyVector::iterator iterator = sortedFallbackPropertyVector.begin();
+				while (iterator != sortedFallbackPropertyVector.end())
+				{
+					// Do not remove mandatory shader combination shader properties, at least not inside this pass
+					const int32_t visualImportanceOfShaderProperty = mMaterialBlueprintResource.getVisualImportanceOfShaderProperty(iterator->shaderPropertyId);
+					if (MaterialBlueprintResource::MANDATORY_SHADER_PROPERTY != visualImportanceOfShaderProperty)
+					{
+						if (isValid(worstHitVisualImportanceOfShaderProperty))
+						{
+							// Lower visual importance value = lower probability that someone will miss the shader property
+							if (worstHitVisualImportanceOfShaderProperty > visualImportanceOfShaderProperty)
+							{
+								worstHitVisualImportanceOfShaderProperty = visualImportanceOfShaderProperty;
+								worstHitShaderPropertyIterator = iterator;
+							}
+						}
+						else
+						{
+							worstHitShaderPropertyIterator = iterator;
+							worstHitVisualImportanceOfShaderProperty = visualImportanceOfShaderProperty;
+						}
+					}
+
+					// Next shader property on the to-kill-list, please
+					++iterator;
+				}
+
+				// Sacrifice our victim
+				if (sortedFallbackPropertyVector.end() == worstHitShaderPropertyIterator)
+				{
+					// No chance, no goats left
+					break;
+				}
+				sortedFallbackPropertyVector.erase(worstHitShaderPropertyIterator);
+			}
+
+			// Generate the current fallback compute pipeline state signature
+			mFallbackComputePipelineStateSignature.set(mMaterialBlueprintResource, mFallbackShaderProperties);
+			ComputePipelineStateCacheByComputePipelineStateSignatureId::const_iterator iterator = mComputePipelineStateCacheByComputePipelineStateSignatureId.find(mFallbackComputePipelineStateSignature.getComputePipelineStateSignatureId());
+			if (iterator != mComputePipelineStateCacheByComputePipelineStateSignatureId.cend())
+			{
+				// We don't care whether or not the compute pipeline state cache is currently using fallback data due to asynchronous complication
+				return iterator->second;
+			}
+		}
+
+		// No fallback compute pipeline state cache found
+		return nullptr;
+	}
+
+	void ComputePipelineStateCacheManager::loadPipelineStateObjectCache(IFile& file)
+	{
+		// Material blueprint resource ID, all compute pipeline state cache share the same material blueprint resource ID
+		MaterialBlueprintResourceId materialBlueprintResourceId = getInvalid<MaterialBlueprintResourceId>();
+		file.read(&materialBlueprintResourceId, sizeof(uint32_t));
+		assert(mMaterialBlueprintResource.getId() == materialBlueprintResourceId);
+
+		// TODO(co) Currently only the compute pipeline state signature ID is loaded, not the resulting binary pipeline state cache
+		uint32_t numberOfComputePipelineStateCaches = getInvalid<uint32_t>();
+		file.read(&numberOfComputePipelineStateCaches, sizeof(uint32_t));
+		mComputePipelineStateCacheByComputePipelineStateSignatureId.reserve(numberOfComputePipelineStateCaches);
+		ShaderProperties shaderProperties;
+		ShaderProperties::SortedPropertyVector& sortedPropertyVector = shaderProperties.getSortedPropertyVector();
+		sortedPropertyVector.reserve(10);
+		ComputePipelineStateCompiler& computePipelineStateCompiler = mMaterialBlueprintResource.getResourceManager<MaterialBlueprintResourceManager>().getRendererRuntime().getComputePipelineStateCompiler();
+		for (uint32_t computePipelineStateCacheIndex = 0; computePipelineStateCacheIndex < numberOfComputePipelineStateCaches; ++computePipelineStateCacheIndex)
+		{
+			// Read shader properties
+			uint32_t numberOfShaderProperties = getInvalid<uint32_t>();
+			file.read(&numberOfShaderProperties, sizeof(uint32_t));
+			sortedPropertyVector.resize(numberOfShaderProperties);
+			if (numberOfShaderProperties > 0)
+			{
+				file.read(sortedPropertyVector.data(), sizeof(ShaderProperties::Property) * numberOfShaderProperties);
+			}
+
+			// Register
+			mTemporaryComputePipelineStateSignature.set(mMaterialBlueprintResource, shaderProperties);
+			ComputePipelineStateCache* computePipelineStateCache = new ComputePipelineStateCache(mTemporaryComputePipelineStateSignature);
+			mComputePipelineStateCacheByComputePipelineStateSignatureId.emplace(mTemporaryComputePipelineStateSignature.getComputePipelineStateSignatureId(), computePipelineStateCache);
+			computePipelineStateCompiler.instantSynchronousCompilerRequest(mMaterialBlueprintResource, *computePipelineStateCache);
+		}
+
+		// Done
+		mPipelineStateObjectCacheNeedSaving = false;
+	}
+
+	void ComputePipelineStateCacheManager::savePipelineStateObjectCache(IFile& file)
+	{
+		// Material blueprint resource ID, all compute pipeline state cache share the same material blueprint resource ID
+		const MaterialBlueprintResourceId materialBlueprintResourceId = mMaterialBlueprintResource.getId();
+		file.write(&materialBlueprintResourceId, sizeof(uint32_t));
+
+		// TODO(co) Currently only the compute pipeline state signature ID is saved, not the resulting binary pipeline state cache
+		const uint32_t numberOfComputePipelineStateCaches = static_cast<uint32_t>(mComputePipelineStateCacheByComputePipelineStateSignatureId.size());
+		file.write(&numberOfComputePipelineStateCaches, sizeof(uint32_t));
+		for (const auto& elementPair : mComputePipelineStateCacheByComputePipelineStateSignatureId)
+		{
+			const ComputePipelineStateSignature& computePipelineStateSignature = elementPair.second->getComputePipelineStateSignature();
+
+			// Sanity check: All compute pipeline state cache share the same material blueprint resource ID
+			assert(computePipelineStateSignature.getMaterialBlueprintResourceId() == materialBlueprintResourceId);
+
+			{ // Write shader properties
+				const ShaderProperties::SortedPropertyVector& sortedPropertyVector = computePipelineStateSignature.getShaderProperties().getSortedPropertyVector();
+				const uint32_t numberOfShaderProperties = static_cast<uint32_t>(sortedPropertyVector.size());
+				file.write(&numberOfShaderProperties, sizeof(uint32_t));
+				if (numberOfShaderProperties > 0)
+				{
+					file.write(sortedPropertyVector.data(), sizeof(ShaderProperties::Property) * numberOfShaderProperties);
+				}
+			}
+		}
+
+		// Done
+		mPipelineStateObjectCacheNeedSaving = false;
 	}
 
 

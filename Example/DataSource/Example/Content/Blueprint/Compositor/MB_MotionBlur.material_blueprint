@@ -28,7 +28,7 @@
 				"ValueType": "GLOBAL_MATERIAL_PROPERTY_ID",
 				"Value": "@GlobalNumberOfMultisamples",
 				"Description": "Number of multisamples. Valid values are 0, 2, 4, 8. Use 0 to disable multisample.",
-				"VisualImportance": "100",
+				"VisualImportance": "MANDATORY",
 				"MaximumIntegerValue": "8",
 				"ValidIntegerValues": [ 0, 2, 4, 8 ]
 			},

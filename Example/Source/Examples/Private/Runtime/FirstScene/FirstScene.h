@@ -169,6 +169,7 @@ private:
 	DeviceInput::InputManager*					  mInputManager;
 	RendererRuntime::ImGuiLog*					  mImGuiLog;
 	RendererRuntime::CompositorWorkspaceInstance* mCompositorWorkspaceInstance;
+	bool										  mFirstFrame;
 	RendererRuntime::SceneResourceId			  mSceneResourceId;
 	RendererRuntime::MaterialResourceId			  mMaterialResourceId;
 	RendererRuntime::MaterialResourceId			  mCloneMaterialResourceId;

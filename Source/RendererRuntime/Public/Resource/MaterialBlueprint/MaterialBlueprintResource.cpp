@@ -441,13 +441,11 @@ namespace RendererRuntime
 				// Create the current pipeline state cache instances for the material blueprint
 				if (isValid(mComputeShaderBlueprintResourceId))
 				{
-					const Renderer::IComputePipelineStatePtr computePipelineStatePtr = mComputePipelineStateCacheManager.getComputePipelineStateCacheByCombination(shaderProperties, true);
-					assert(nullptr != computePipelineStatePtr);	// TODO(co) Decent error handling
+					[[maybe_unused]] const Renderer::IComputePipelineStatePtr computePipelineStatePtr = mComputePipelineStateCacheManager.getComputePipelineStateCacheByCombination(shaderProperties, false);
 				}
 				else
 				{
-					const Renderer::IGraphicsPipelineStatePtr graphicsPipelineStatePtr = mGraphicsPipelineStateCacheManager.getGraphicsPipelineStateCacheByCombination(getInvalid<uint32_t>(), shaderProperties, true);
-					assert(nullptr != graphicsPipelineStatePtr);	// TODO(co) Decent error handling
+					[[maybe_unused]] const Renderer::IGraphicsPipelineStatePtr graphicsPipelineStatePtr = mGraphicsPipelineStateCacheManager.getGraphicsPipelineStateCacheByCombination(getInvalid<uint32_t>(), shaderProperties, false);
 				}
 			}
 			while (shaderCombinationIterator.iterate());
@@ -538,26 +536,25 @@ namespace RendererRuntime
 
 	void MaterialBlueprintResource::clearPipelineStateObjectCache()
 	{
-		// TODO(co) Implement me
-		NOP;
+		mGraphicsPipelineStateCacheManager.clearCache();
+		mComputePipelineStateCacheManager.clearCache();
 	}
 
-	void MaterialBlueprintResource::loadPipelineStateObjectCache(IFile&)
+	void MaterialBlueprintResource::loadPipelineStateObjectCache(IFile& file)
 	{
-		// TODO(co) Implement me
-		NOP;
+		mGraphicsPipelineStateCacheManager.loadPipelineStateObjectCache(file);
+		mComputePipelineStateCacheManager.loadPipelineStateObjectCache(file);
 	}
 
 	bool MaterialBlueprintResource::doesPipelineStateObjectCacheNeedSaving() const
 	{
-		// TODO(co) Implement me
-		return true;
+		return (mGraphicsPipelineStateCacheManager.doesPipelineStateObjectCacheNeedSaving() || mComputePipelineStateCacheManager.doesPipelineStateObjectCacheNeedSaving());
 	}
 
-	void MaterialBlueprintResource::savePipelineStateObjectCache(IFile&)
+	void MaterialBlueprintResource::savePipelineStateObjectCache(IFile& file)
 	{
-		// TODO(co) Implement me
-		NOP;
+		mGraphicsPipelineStateCacheManager.savePipelineStateObjectCache(file);
+		mComputePipelineStateCacheManager.savePipelineStateObjectCache(file);
 	}
 
 	void MaterialBlueprintResource::initializeElement(MaterialBlueprintResourceId materialBlueprintResourceId)

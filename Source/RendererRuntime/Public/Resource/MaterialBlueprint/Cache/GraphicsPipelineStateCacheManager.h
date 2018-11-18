@@ -181,18 +181,34 @@ namespace RendererRuntime
 	private:
 		inline explicit GraphicsPipelineStateCacheManager(MaterialBlueprintResource& materialBlueprintResource) :
 			mMaterialBlueprintResource(materialBlueprintResource),
-			mGraphicsProgramCacheManager(*this)
+			mGraphicsProgramCacheManager(*this),
+			mPipelineStateObjectCacheNeedSaving(false)
 		{
 			// Nothing here
 		}
+
+		explicit GraphicsPipelineStateCacheManager(const GraphicsPipelineStateCacheManager&) = delete;
 
 		inline ~GraphicsPipelineStateCacheManager()
 		{
 			clearCache();
 		}
 
-		explicit GraphicsPipelineStateCacheManager(const GraphicsPipelineStateCacheManager&) = delete;
 		GraphicsPipelineStateCacheManager& operator=(const GraphicsPipelineStateCacheManager&) = delete;
+
+		GraphicsPipelineStateCache* getFallbackGraphicsPipelineStateCache(uint32_t serializedGraphicsPipelineStateHash, const ShaderProperties& shaderProperties);
+
+		//[-------------------------------------------------------]
+		//[ Pipeline state object cache                           ]
+		//[-------------------------------------------------------]
+		void loadPipelineStateObjectCache(IFile& file);
+
+		[[nodiscard]] inline bool doesPipelineStateObjectCacheNeedSaving() const
+		{
+			return mPipelineStateObjectCacheNeedSaving;
+		}
+
+		void savePipelineStateObjectCache(IFile& file);
 
 
 	//[-------------------------------------------------------]
@@ -206,10 +222,15 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		MaterialBlueprintResource&									 mMaterialBlueprintResource;				///< Owner material blueprint resource
+		MaterialBlueprintResource&									 mMaterialBlueprintResource;			///< Owner material blueprint resource
 		GraphicsProgramCacheManager									 mGraphicsProgramCacheManager;
 		GraphicsPipelineStateCacheByGraphicsPipelineStateSignatureId mGraphicsPipelineStateCacheByGraphicsPipelineStateSignatureId;
-		GraphicsPipelineStateSignature								 mTemporaryGraphicsPipelineStateSignature;	///< Temporary graphics pipeline state signature to reduce the number of memory allocations/deallocations
+		bool														 mPipelineStateObjectCacheNeedSaving;	///< "true" if a cache needs saving due to changes during runtime, else "false"
+
+		// Temporary instances to reduce the number of memory allocations/deallocations
+		GraphicsPipelineStateSignature mTemporaryGraphicsPipelineStateSignature;
+		ShaderProperties			   mFallbackShaderProperties;
+		GraphicsPipelineStateSignature mFallbackGraphicsPipelineStateSignature;
 
 
 	};

@@ -485,6 +485,12 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
+		*    Flush all queues
+		*/
+		virtual void flushAllQueues() = 0;
+
+		/**
+		*  @brief
 		*    Renderer runtime update
 		*
 		*  @note

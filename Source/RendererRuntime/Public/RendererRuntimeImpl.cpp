@@ -239,7 +239,7 @@ namespace RendererRuntime
 	RendererRuntimeImpl::~RendererRuntimeImpl()
 	{
 		// Before doing anything else, ensure the resource streamer has no more work to do
-		mResourceStreamer->flushAllQueues();
+		flushAllQueues();
 
 		// Save pipeline state object cache
 		savePipelineStateObjectCache();
@@ -291,6 +291,13 @@ namespace RendererRuntime
 		{
 			mAssetIdsOfResourcesToReload.push_back(assetId);
 		}
+	}
+
+	void RendererRuntimeImpl::flushAllQueues()
+	{
+		mResourceStreamer->flushAllQueues();
+		mGraphicsPipelineStateCompiler->flushAllQueues();
+		mComputePipelineStateCompiler->flushAllQueues();
 	}
 
 	void RendererRuntimeImpl::update()
@@ -360,7 +367,7 @@ namespace RendererRuntime
 	{
 		// Do only save the pipeline state object cache if writing local data is allowed
 		// -> We only support saving material blueprint based shader bytecodes, creating shaders without material blueprint is supposed to be only used for debugging and tiny shaders which are compiled at the very beginning of rendering
-		if (mRenderer->getCapabilities().shaderBytecode && mShaderBlueprintResourceManager->doesPipelineStateObjectCacheNeedSaving() && mMaterialBlueprintResourceManager->doesPipelineStateObjectCacheNeedSaving() && nullptr != mFileManager->getLocalDataMountPoint())
+		if (mRenderer->getCapabilities().shaderBytecode && nullptr != mFileManager->getLocalDataMountPoint() && (mShaderBlueprintResourceManager->doesPipelineStateObjectCacheNeedSaving() || mMaterialBlueprintResourceManager->doesPipelineStateObjectCacheNeedSaving()))
 		{
 			MemoryFile memoryFile;
 			mShaderBlueprintResourceManager->savePipelineStateObjectCache(memoryFile);

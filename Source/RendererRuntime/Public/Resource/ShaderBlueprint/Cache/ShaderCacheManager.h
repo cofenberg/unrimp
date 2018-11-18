@@ -153,7 +153,7 @@ namespace RendererRuntime
 	private:
 		inline explicit ShaderCacheManager(ShaderBlueprintResourceManager& shaderBlueprintResourceManager) :
 			mShaderBlueprintResourceManager(shaderBlueprintResourceManager),
-			mCacheNeedsSaving(true)
+			mCacheNeedsSaving(false)
 		{
 			// Nothing here
 		}

@@ -106,6 +106,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	public:
 		virtual void reloadResourceByAssetId(AssetId assetId) override;
+		virtual void flushAllQueues() override;
 		virtual void update() override;
 
 		//[-------------------------------------------------------]

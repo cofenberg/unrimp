@@ -54,10 +54,10 @@ namespace RendererRuntime
 			// Fill command buffer
 			DebugGuiManager& debugGuiManager = rendererRuntime.getDebugGuiManager();
 			RenderableManager::Renderables& renderables = mRenderableManager.getRenderables();
+			compositorContextData.resetCurrentlyBoundMaterialBlueprintResource();
 			if (renderables.empty())
 			{
 				// Fill command buffer using fixed build in renderer configuration resources
-				compositorContextData.resetCurrentlyBoundMaterialBlueprintResource();
 				debugGuiManager.fillGraphicsCommandBufferUsingFixedBuildInRendererConfiguration(commandBuffer);
 			}
 			else
@@ -74,10 +74,13 @@ namespace RendererRuntime
 				if (mRenderQueue.getNumberOfDrawCalls() > 0)
 				{
 					mRenderQueue.fillGraphicsCommandBuffer(*renderTarget, static_cast<const CompositorResourcePassDebugGui&>(getCompositorResourcePass()).getMaterialTechniqueId(), compositorContextData, commandBuffer);
-				}
 
-				// Fill command buffer using custom graphics material blueprint resource
-				debugGuiManager.fillGraphicsCommandBuffer(commandBuffer);
+					// Fill command buffer using custom graphics material blueprint resource
+					if (nullptr != compositorContextData.getCurrentlyBoundMaterialBlueprintResource())
+					{
+						debugGuiManager.fillGraphicsCommandBuffer(commandBuffer);
+					}
+				}
 			}
 		#else
 			assert(false && "ImGui support is disabled");

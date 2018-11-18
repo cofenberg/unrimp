@@ -118,7 +118,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	GraphicsPipelineStateCompiler::GraphicsPipelineStateCompiler(IRendererRuntime& rendererRuntime) :
 		mRendererRuntime(rendererRuntime),
-		mAsynchronousCompilationEnabled(false),
+		mAsynchronousCompilationEnabled(rendererRuntime.getRenderer().getCapabilities().nativeMultiThreading),
 		mNumberOfCompilerThreads(0),
 		mNumberOfInFlightCompilerRequests(0),
 		mShutdownBuilderThread(false),
@@ -143,6 +143,7 @@ namespace RendererRuntime
 	void GraphicsPipelineStateCompiler::addAsynchronousCompilerRequest(GraphicsPipelineStateCache& graphicsPipelineStateCache)
 	{
 		// Push the load request into the builder queue
+		assert(mAsynchronousCompilationEnabled);
 		++mNumberOfInFlightCompilerRequests;
 		std::unique_lock<std::mutex> builderMutexLock(mBuilderMutex);
 		mBuilderQueue.emplace_back(CompilerRequest(graphicsPipelineStateCache));

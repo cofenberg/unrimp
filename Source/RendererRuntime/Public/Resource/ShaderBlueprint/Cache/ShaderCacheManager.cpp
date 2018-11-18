@@ -311,13 +311,16 @@ namespace RendererRuntime
 	void ShaderCacheManager::clearCache()
 	{
 		std::unique_lock<std::mutex> mutexLock(mMutex);
-		for (auto& shaderCacheElement : mShaderCacheByShaderCacheId)
+		if (!mShaderCacheByShaderCacheId.empty() || !mShaderCacheByShaderSourceCodeId.empty())
 		{
-			delete shaderCacheElement.second;
+			for (auto& shaderCacheElement : mShaderCacheByShaderCacheId)
+			{
+				delete shaderCacheElement.second;
+			}
+			mShaderCacheByShaderCacheId.clear();
+			mShaderCacheByShaderSourceCodeId.clear();
+			mCacheNeedsSaving = true;
 		}
-		mShaderCacheByShaderCacheId.clear();
-		mShaderCacheByShaderSourceCodeId.clear();
-		mCacheNeedsSaving = true;
 	}
 
 	void ShaderCacheManager::loadCache(IFile& file)

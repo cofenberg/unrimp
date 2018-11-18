@@ -117,6 +117,7 @@ FirstScene::FirstScene() :
 	mInputManager(new DeviceInput::InputManager()),
 	mImGuiLog(nullptr),
 	mCompositorWorkspaceInstance(nullptr),
+	mFirstFrame(true),
 	mSceneResourceId(RendererRuntime::getInvalid<RendererRuntime::SceneResourceId>()),
 	mMaterialResourceId(RendererRuntime::getInvalid<RendererRuntime::MaterialResourceId>()),
 	mCloneMaterialResourceId(RendererRuntime::getInvalid<RendererRuntime::MaterialResourceId>()),
@@ -377,6 +378,13 @@ void FirstScene::onDraw()
 		RendererRuntime::SceneResource* sceneResource = rendererRuntime->getSceneResourceManager().tryGetById(mSceneResourceId);
 		if (nullptr != sceneResource && sceneResource->getLoadingState() == RendererRuntime::IResource::LoadingState::LOADED)
 		{
+			// Flush all queues to have less visible glitches on the first visible frame
+			if (mFirstFrame)
+			{
+				mFirstFrame = false;
+				rendererRuntime->flushAllQueues();
+			}
+
 			// Execute the compositor workspace instance
 			createDebugGui(*mainRenderTarget);
 			mCompositorWorkspaceInstance->executeVr(*mainRenderTarget, mCameraSceneItem, mSunlightSceneItem);
@@ -666,7 +674,7 @@ void FirstScene::createDebugGui([[maybe_unused]] Renderer::IRenderTarget& mainRe
 						ImGui::Text("Renderer: %s", mainRenderTarget.getRenderer().getName());
 						ImGui::Text("GPU: %s", mainRenderTarget.getRenderer().getCapabilities().deviceName);
 						#ifdef RENDERER_TOOLKIT
-						{
+						{ // Renderer toolkit
 							const RendererToolkit::IRendererToolkit* rendererToolkit = getRendererToolkit();
 							if (nullptr != rendererToolkit)
 							{
@@ -683,7 +691,12 @@ void FirstScene::createDebugGui([[maybe_unused]] Renderer::IRenderTarget& mainRe
 								ImGui::Text("Resource Streamer: %s", idle ? "Idle" : "Busy");
 							ImGui::PopStyleColor();
 						}
-						ImGui::Text("Pipeline State Compiler: %s", (0 == rendererRuntime->getGraphicsPipelineStateCompiler().getNumberOfInFlightCompilerRequests() && 0 == rendererRuntime->getComputePipelineStateCompiler().getNumberOfInFlightCompilerRequests()) ? "Idle" : "Busy");
+						{ // Pipeline state compiler
+							const bool idle = (0 == rendererRuntime->getGraphicsPipelineStateCompiler().getNumberOfInFlightCompilerRequests() && 0 == rendererRuntime->getComputePipelineStateCompiler().getNumberOfInFlightCompilerRequests());
+							ImGui::PushStyleColor(ImGuiCol_Text, idle ? GREY_COLOR : RED_COLOR);
+								ImGui::Text("Pipeline State Compiler: %s", idle ? "Idle" : "Busy");
+							ImGui::PopStyleColor();
+						}
 					ImGui::PopStyleColor();
 					if (ImGui::Button("Log"))
 					{

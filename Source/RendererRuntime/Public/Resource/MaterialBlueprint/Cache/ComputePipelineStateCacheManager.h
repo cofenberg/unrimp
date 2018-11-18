@@ -166,18 +166,34 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	private:
 		inline explicit ComputePipelineStateCacheManager(MaterialBlueprintResource& materialBlueprintResource) :
-			mMaterialBlueprintResource(materialBlueprintResource)
+			mMaterialBlueprintResource(materialBlueprintResource),
+			mPipelineStateObjectCacheNeedSaving(false)
 		{
 			// Nothing here
 		}
+
+		explicit ComputePipelineStateCacheManager(const ComputePipelineStateCacheManager&) = delete;
 
 		inline ~ComputePipelineStateCacheManager()
 		{
 			clearCache();
 		}
 
-		explicit ComputePipelineStateCacheManager(const ComputePipelineStateCacheManager&) = delete;
 		ComputePipelineStateCacheManager& operator=(const ComputePipelineStateCacheManager&) = delete;
+
+		ComputePipelineStateCache* getFallbackComputePipelineStateCache(const ShaderProperties& shaderProperties);
+
+		//[-------------------------------------------------------]
+		//[ Pipeline state object cache                           ]
+		//[-------------------------------------------------------]
+		void loadPipelineStateObjectCache(IFile& file);
+
+		[[nodiscard]] inline bool doesPipelineStateObjectCacheNeedSaving() const
+		{
+			return mPipelineStateObjectCacheNeedSaving;
+		}
+
+		void savePipelineStateObjectCache(IFile& file);
 
 
 	//[-------------------------------------------------------]
@@ -191,9 +207,14 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		MaterialBlueprintResource&								   mMaterialBlueprintResource;				///< Owner material blueprint resource
+		MaterialBlueprintResource&								   mMaterialBlueprintResource;			///< Owner material blueprint resource
 		ComputePipelineStateCacheByComputePipelineStateSignatureId mComputePipelineStateCacheByComputePipelineStateSignatureId;
-		ComputePipelineStateSignature							   mTemporaryComputePipelineStateSignature;	///< Temporary compute pipeline state signature to reduce the number of memory allocations/deallocations
+		bool													   mPipelineStateObjectCacheNeedSaving;	///< "true" if a cache needs saving due to changes during runtime, else "false"
+
+		// Temporary instances to reduce the number of memory allocations/deallocations
+		ComputePipelineStateSignature mTemporaryComputePipelineStateSignature;
+		ShaderProperties			  mFallbackShaderProperties;
+		ComputePipelineStateSignature mFallbackComputePipelineStateSignature;
 
 
 	};
