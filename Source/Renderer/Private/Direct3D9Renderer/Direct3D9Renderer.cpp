@@ -7185,10 +7185,6 @@ namespace Direct3D9Renderer
 		mDirect3D9RuntimeLinking = RENDERER_NEW(mContext, Direct3D9RuntimeLinking)(*this);
 		if (mDirect3D9RuntimeLinking->isDirect3D9Avaiable())
 		{
-			// Begin debug event
-			// -> Must be done in here because "Direct3D9Renderer::beginDebugEvent()" is using directly "D3DPERF_BeginEvent()" without loading the function entry point
-			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(this)
-
 			// Create the Direct3D instance
 			mDirect3D9 = Direct3DCreate9(D3D_SDK_VERSION);
 			if (nullptr != mDirect3D9)
@@ -7239,17 +7235,11 @@ namespace Direct3D9Renderer
 			{
 				RENDERER_LOG(mContext, CRITICAL, "Failed to create the Direct3D 9 instance")
 			}
-
-			// End debug event
-			RENDERER_END_DEBUG_EVENT(this)
 		}
 	}
 
 	Direct3D9Renderer::~Direct3D9Renderer()
 	{
-		// Begin debug event
-		RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(this)
-
 		// Release instances
 		if (nullptr != mRenderTarget)
 		{
@@ -7314,9 +7304,6 @@ namespace Direct3D9Renderer
 			mDirect3D9->Release();
 			mDirect3D9 = nullptr;
 		}
-
-		// End debug event
-		RENDERER_END_DEBUG_EVENT(this)
 
 		// Destroy the Direct3D 9 runtime linking instance
 		RENDERER_DELETE(mContext, Direct3D9RuntimeLinking, mDirect3D9RuntimeLinking);

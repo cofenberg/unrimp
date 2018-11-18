@@ -5531,9 +5531,6 @@ namespace Direct3D11Renderer
 			RENDERER_ASSERT(direct3D11Renderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 11 texture parameters")
 			RENDERER_ASSERT(direct3D11Renderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 11 render target textures can't be filled using provided data")
 
-			// Begin debug event
-			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D11Renderer)
-
 			// Calculate the number of mipmaps
 			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
 			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
@@ -5584,14 +5581,22 @@ namespace Direct3D11Renderer
 					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture1D(&d3d11Texture1DDesc, nullptr, &mD3D11Texture1D));
 					if (nullptr != mD3D11Texture1D)
 					{
+						ID3D11DeviceContext* d3d11DeviceContext = direct3D11Renderer.getD3D11DeviceContext();
+
+						// Begin debug event
+						RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D11Renderer)
+
 						{ // Update Direct3D 11 subresource data of the base-map
 							const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
 							const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1);
-							direct3D11Renderer.getD3D11DeviceContext()->UpdateSubresource(mD3D11Texture1D, 0, nullptr, data, bytesPerRow, bytesPerSlice);
+							d3d11DeviceContext->UpdateSubresource(mD3D11Texture1D, 0, nullptr, data, bytesPerRow, bytesPerSlice);
 						}
 
 						// Let Direct3D 11 generate the mipmaps for us automatically
-						D3DX11FilterTexture(direct3D11Renderer.getD3D11DeviceContext(), mD3D11Texture1D, 0, D3DX11_DEFAULT);
+						D3DX11FilterTexture(d3d11DeviceContext, mD3D11Texture1D, 0, D3DX11_DEFAULT);
+
+						// End debug event
+						RENDERER_END_DEBUG_EVENT(&direct3D11Renderer)
 					}
 				}
 				else
@@ -5667,9 +5672,6 @@ namespace Direct3D11Renderer
 			#ifdef RENDERER_DEBUG
 				setDebugName("1D texture");
 			#endif
-
-			// End debug event
-			RENDERER_END_DEBUG_EVENT(&direct3D11Renderer)
 		}
 
 		/**
@@ -5868,9 +5870,6 @@ namespace Direct3D11Renderer
 			RENDERER_ASSERT(direct3D11Renderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 11 texture parameters")
 			RENDERER_ASSERT(direct3D11Renderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 11 render target textures can't be filled using provided data")
 
-			// Begin debug event
-			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D11Renderer)
-
 			// Calculate the number of mipmaps
 			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
 			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
@@ -5924,14 +5923,22 @@ namespace Direct3D11Renderer
 					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, nullptr, &mD3D11Texture2D));
 					if (nullptr != mD3D11Texture2D)
 					{
+						ID3D11DeviceContext* d3d11DeviceContext = direct3D11Renderer.getD3D11DeviceContext();
+
+						// Begin debug event
+						RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D11Renderer)
+
 						{ // Update Direct3D 11 subresource data of the base-map
 							const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
 							const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
-							direct3D11Renderer.getD3D11DeviceContext()->UpdateSubresource(mD3D11Texture2D, 0, nullptr, data, bytesPerRow, bytesPerSlice);
+							d3d11DeviceContext->UpdateSubresource(mD3D11Texture2D, 0, nullptr, data, bytesPerRow, bytesPerSlice);
 						}
 
 						// Let Direct3D 11 generate the mipmaps for us automatically
-						D3DX11FilterTexture(direct3D11Renderer.getD3D11DeviceContext(), mD3D11Texture2D, 0, D3DX11_DEFAULT);
+						D3DX11FilterTexture(d3d11DeviceContext, mD3D11Texture2D, 0, D3DX11_DEFAULT);
+
+						// End debug event
+						RENDERER_END_DEBUG_EVENT(&direct3D11Renderer)
 					}
 				}
 				else
@@ -6008,9 +6015,6 @@ namespace Direct3D11Renderer
 			#ifdef RENDERER_DEBUG
 				setDebugName("2D texture");
 			#endif
-
-			// End debug event
-			RENDERER_END_DEBUG_EVENT(&direct3D11Renderer)
 		}
 
 		/**
@@ -6246,9 +6250,6 @@ namespace Direct3D11Renderer
 			// Sanity checks
 			RENDERER_ASSERT(direct3D11Renderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 11 render target textures can't be filled using provided data")
 
-			// Begin debug event
-			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D11Renderer)
-
 			// Calculate the number of mipmaps
 			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
 			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
@@ -6304,6 +6305,9 @@ namespace Direct3D11Renderer
 					{
 						ID3D11DeviceContext* d3d11DeviceContext = direct3D11Renderer.getD3D11DeviceContext();
 
+						// Begin debug event
+						RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D11Renderer)
+
 						{ // Update Direct3D 11 subresource data of the base-map
 							const uint32_t  bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
 							const uint32_t  bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
@@ -6318,6 +6322,9 @@ namespace Direct3D11Renderer
 
 						// Let Direct3D 11 generate the mipmaps for us automatically
 						D3DX11FilterTexture(d3d11DeviceContext, mD3D11Texture2D, 0, D3DX11_DEFAULT);
+
+						// End debug event
+						RENDERER_END_DEBUG_EVENT(&direct3D11Renderer)
 					}
 				}
 				else
@@ -6429,9 +6436,6 @@ namespace Direct3D11Renderer
 			#ifdef RENDERER_DEBUG
 				setDebugName("2D texture array");
 			#endif
-
-			// End debug event
-			RENDERER_END_DEBUG_EVENT(&direct3D11Renderer)
 		}
 
 		/**
@@ -6632,9 +6636,6 @@ namespace Direct3D11Renderer
 			RENDERER_ASSERT(direct3D11Renderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 11 texture parameters")
 			RENDERER_ASSERT(direct3D11Renderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 11 render target textures can't be filled using provided data")
 
-			// Begin debug event
-			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D11Renderer)
-
 			// Calculate the number of mipmaps
 			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
 			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
@@ -6686,14 +6687,22 @@ namespace Direct3D11Renderer
 					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture3D(&d3d11Texture3DDesc, nullptr, &mD3D11Texture3D));
 					if (nullptr != mD3D11Texture3D)
 					{
+						ID3D11DeviceContext* d3d11DeviceContext = direct3D11Renderer.getD3D11DeviceContext();
+
+						// Begin debug event
+						RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D11Renderer)
+
 						{ // Update Direct3D 11 subresource data of the base-map
 							const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
 							const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
-							direct3D11Renderer.getD3D11DeviceContext()->UpdateSubresource(mD3D11Texture3D, 0, nullptr, data, bytesPerRow, bytesPerSlice);
+							d3d11DeviceContext->UpdateSubresource(mD3D11Texture3D, 0, nullptr, data, bytesPerRow, bytesPerSlice);
 						}
 
 						// Let Direct3D 11 generate the mipmaps for us automatically
-						D3DX11FilterTexture(direct3D11Renderer.getD3D11DeviceContext(), mD3D11Texture3D, 0, D3DX11_DEFAULT);
+						D3DX11FilterTexture(d3d11DeviceContext, mD3D11Texture3D, 0, D3DX11_DEFAULT);
+
+						// End debug event
+						RENDERER_END_DEBUG_EVENT(&direct3D11Renderer)
 					}
 				}
 				else
@@ -6777,9 +6786,6 @@ namespace Direct3D11Renderer
 			#ifdef RENDERER_DEBUG
 				setDebugName("3D texture");
 			#endif
-
-			// End debug event
-			RENDERER_END_DEBUG_EVENT(&direct3D11Renderer)
 		}
 
 		/**
@@ -6971,9 +6977,6 @@ namespace Direct3D11Renderer
 			// Sanity checks
 			RENDERER_ASSERT(direct3D11Renderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 11 render target textures can't be filled using provided data")
 
-			// Begin debug event
-			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D11Renderer)
-
 			// Calculate the number of mipmaps
 			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
 			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
@@ -7021,6 +7024,9 @@ namespace Direct3D11Renderer
 					{
 						ID3D11DeviceContext* d3d11DeviceContext = direct3D11Renderer.getD3D11DeviceContext();
 
+						// Begin debug event
+						RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D11Renderer)
+
 						{ // Update Direct3D 11 subresource data of the base-map
 							const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
 							const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
@@ -7035,6 +7041,9 @@ namespace Direct3D11Renderer
 
 						// Let Direct3D 11 generate the mipmaps for us automatically
 						D3DX11FilterTexture(d3d11DeviceContext, mD3D11TextureCube, 0, D3DX11_DEFAULT);
+
+						// End debug event
+						RENDERER_END_DEBUG_EVENT(&direct3D11Renderer)
 					}
 				}
 				else
@@ -7139,9 +7148,6 @@ namespace Direct3D11Renderer
 			#ifdef RENDERER_DEBUG
 				setDebugName("Cube texture");
 			#endif
-
-			// End debug event
-			RENDERER_END_DEBUG_EVENT(&direct3D11Renderer)
 		}
 
 		/**
@@ -11134,9 +11140,6 @@ namespace Direct3D11Renderer
 			// Is there a valid Direct3D 11 device and device context?
 			if (nullptr != mD3D11Device && nullptr != mD3D11DeviceContext)
 			{
-				// Begin debug event
-				RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(this)
-
 				// Direct3D 11 debug related stuff
 				if (flags & D3D11_CREATE_DEVICE_DEBUG)
 				{
@@ -11197,9 +11200,6 @@ namespace Direct3D11Renderer
 
 				// Initialize the capabilities
 				initializeCapabilities();
-
-				// End debug event
-				RENDERER_END_DEBUG_EVENT(this)
 			}
 			else
 			{
@@ -11210,9 +11210,6 @@ namespace Direct3D11Renderer
 
 	Direct3D11Renderer::~Direct3D11Renderer()
 	{
-		// Begin debug event
-		RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(this)
-
 		// Release instances
 		if (nullptr != mRenderTarget)
 		{
@@ -11303,9 +11300,6 @@ namespace Direct3D11Renderer
 
 		// Destroy the Direct3D 11 runtime linking instance
 		RENDERER_DELETE(mContext, Direct3D11RuntimeLinking, mDirect3D11RuntimeLinking);
-
-		// End debug event
-		RENDERER_END_DEBUG_EVENT(this)
 	}
 
 

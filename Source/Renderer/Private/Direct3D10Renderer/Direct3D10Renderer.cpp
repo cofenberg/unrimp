@@ -4186,9 +4186,6 @@ namespace Direct3D10Renderer
 			RENDERER_ASSERT(direct3D10Renderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 10 texture parameters")
 			RENDERER_ASSERT(direct3D10Renderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 10 render target textures can't be filled using provided data")
 
-			// Begin debug event
-			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D10Renderer)
-
 			// Calculate the number of mipmaps
 			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
 			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
@@ -4235,6 +4232,9 @@ namespace Direct3D10Renderer
 					FAILED_DEBUG_BREAK(direct3D10Renderer.getD3D10Device()->CreateTexture1D(&d3d10Texture1DDesc, nullptr, &mD3D10Texture1D));
 					if (nullptr != mD3D10Texture1D)
 					{
+						// Begin debug event
+						RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D10Renderer)
+
 						{ // Update Direct3D 10 subresource data of the base-map
 							const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
 							const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1);
@@ -4243,6 +4243,9 @@ namespace Direct3D10Renderer
 
 						// Let Direct3D 10 generate the mipmaps for us automatically
 						D3DX10FilterTexture(mD3D10Texture1D, 0, D3DX10_DEFAULT);
+
+						// End debug event
+						RENDERER_END_DEBUG_EVENT(&direct3D10Renderer)
 					}
 				}
 				else
@@ -4303,9 +4306,6 @@ namespace Direct3D10Renderer
 			#ifdef RENDERER_DEBUG
 				setDebugName("1D texture");
 			#endif
-
-			// End debug event
-			RENDERER_END_DEBUG_EVENT(&direct3D10Renderer)
 		}
 
 		/**
@@ -4477,9 +4477,6 @@ namespace Direct3D10Renderer
 			RENDERER_ASSERT(direct3D10Renderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 10 texture parameters")
 			RENDERER_ASSERT(direct3D10Renderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 10 render target textures can't be filled using provided data")
 
-			// Begin debug event
-			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D10Renderer)
-
 			// Calculate the number of mipmaps
 			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
 			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
@@ -4529,6 +4526,9 @@ namespace Direct3D10Renderer
 					FAILED_DEBUG_BREAK(direct3D10Renderer.getD3D10Device()->CreateTexture2D(&d3d10Texture2DDesc, nullptr, &mD3D10Texture2D));
 					if (nullptr != mD3D10Texture2D)
 					{
+						// Begin debug event
+						RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D10Renderer)
+
 						{ // Update Direct3D 10 subresource data of the base-map
 							const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
 							const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
@@ -4537,6 +4537,9 @@ namespace Direct3D10Renderer
 
 						// Let Direct3D 10 generate the mipmaps for us automatically
 						D3DX10FilterTexture(mD3D10Texture2D, 0, D3DX10_DEFAULT);
+
+						// End debug event
+						RENDERER_END_DEBUG_EVENT(&direct3D10Renderer)
 					}
 				}
 				else
@@ -4598,9 +4601,6 @@ namespace Direct3D10Renderer
 			#ifdef RENDERER_DEBUG
 				setDebugName("2D texture");
 			#endif
-
-			// End debug event
-			RENDERER_END_DEBUG_EVENT(&direct3D10Renderer)
 		}
 
 		/**
@@ -4809,9 +4809,6 @@ namespace Direct3D10Renderer
 			// Sanity checks
 			RENDERER_ASSERT(direct3D10Renderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 10 render target textures can't be filled using provided data")
 
-			// Begin debug event
-			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D10Renderer)
-
 			// Calculate the number of mipmaps
 			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
 			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
@@ -4862,6 +4859,9 @@ namespace Direct3D10Renderer
 					FAILED_DEBUG_BREAK(d3d10Device->CreateTexture2D(&d3d10Texture2DDesc, nullptr, &mD3D10Texture2D));
 					if (nullptr != mD3D10Texture2D)
 					{
+						// Begin debug event
+						RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D10Renderer)
+
 						{ // Update Direct3D 10 subresource data of the base-map
 							const uint32_t  bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
 							const uint32_t  bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
@@ -4876,6 +4876,9 @@ namespace Direct3D10Renderer
 
 						// Let Direct3D 10 generate the mipmaps for us automatically
 						D3DX10FilterTexture(mD3D10Texture2D, 0, D3DX10_DEFAULT);
+
+						// End debug event
+						RENDERER_END_DEBUG_EVENT(&direct3D10Renderer)
 					}
 				}
 				else
@@ -4972,9 +4975,6 @@ namespace Direct3D10Renderer
 			#ifdef RENDERER_DEBUG
 				setDebugName("2D texture array");
 			#endif
-
-			// End debug event
-			RENDERER_END_DEBUG_EVENT(&direct3D10Renderer)
 		}
 
 		/**
@@ -5148,9 +5148,6 @@ namespace Direct3D10Renderer
 			RENDERER_ASSERT(direct3D10Renderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 10 texture parameters")
 			RENDERER_ASSERT(direct3D10Renderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 10 render target textures can't be filled using provided data")
 
-			// Begin debug event
-			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D10Renderer)
-
 			// Calculate the number of mipmaps
 			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
 			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
@@ -5198,6 +5195,9 @@ namespace Direct3D10Renderer
 					FAILED_DEBUG_BREAK(direct3D10Renderer.getD3D10Device()->CreateTexture3D(&d3d10Texture3DDesc, nullptr, &mD3D10Texture3D));
 					if (nullptr != mD3D10Texture3D)
 					{
+						// Begin debug event
+						RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D10Renderer)
+
 						{ // Update Direct3D 10 subresource data of the base-map
 							const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
 							const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
@@ -5206,6 +5206,9 @@ namespace Direct3D10Renderer
 
 						// Let Direct3D 10 generate the mipmaps for us automatically
 						D3DX10FilterTexture(mD3D10Texture3D, 0, D3DX10_DEFAULT);
+
+						// End debug event
+						RENDERER_END_DEBUG_EVENT(&direct3D10Renderer)
 					}
 				}
 				else
@@ -5273,9 +5276,6 @@ namespace Direct3D10Renderer
 			#ifdef RENDERER_DEBUG
 				setDebugName("3D texture");
 			#endif
-
-			// End debug event
-			RENDERER_END_DEBUG_EVENT(&direct3D10Renderer)
 		}
 
 		/**
@@ -5440,9 +5440,6 @@ namespace Direct3D10Renderer
 			// Sanity checks
 			RENDERER_ASSERT(direct3D10Renderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 10 render target textures can't be filled using provided data")
 
-			// Begin debug event
-			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D10Renderer)
-
 			// Calculate the number of mipmaps
 			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
 			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
@@ -5485,6 +5482,9 @@ namespace Direct3D10Renderer
 					FAILED_DEBUG_BREAK(d3d10Device->CreateTexture2D(&d3d10Texture2DDesc, nullptr, &mD3D10TextureCube));
 					if (nullptr != mD3D10TextureCube)
 					{
+						// Begin debug event
+						RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D10Renderer)
+
 						{ // Update Direct3D 10 subresource data of the base-map
 							const uint32_t  bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
 							const uint32_t  bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
@@ -5499,6 +5499,9 @@ namespace Direct3D10Renderer
 
 						// Let Direct3D 10 generate the mipmaps for us automatically
 						D3DX10FilterTexture(mD3D10TextureCube, 0, D3DX10_DEFAULT);
+
+						// End debug event
+						RENDERER_END_DEBUG_EVENT(&direct3D10Renderer)
 					}
 				}
 				else
@@ -5586,9 +5589,6 @@ namespace Direct3D10Renderer
 			#ifdef RENDERER_DEBUG
 				setDebugName("Cube texture");
 			#endif
-
-			// End debug event
-			RENDERER_END_DEBUG_EVENT(&direct3D10Renderer)
 		}
 
 		/**
@@ -8808,9 +8808,6 @@ namespace Direct3D10Renderer
 					}
 				#endif
 
-				// Begin debug event
-				RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(this)
-
 				// Direct3D 10 debug settings
 				if (flags & D3D10_CREATE_DEVICE_DEBUG)
 				{
@@ -8858,9 +8855,6 @@ namespace Direct3D10Renderer
 
 				// Initialize the capabilities
 				initializeCapabilities();
-
-				// End debug event
-				RENDERER_END_DEBUG_EVENT(this)
 			}
 			else
 			{
@@ -8871,9 +8865,6 @@ namespace Direct3D10Renderer
 
 	Direct3D10Renderer::~Direct3D10Renderer()
 	{
-		// Begin debug event
-		RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(this)
-
 		// Release instances
 		if (nullptr != mRenderTarget)
 		{
@@ -8929,9 +8920,6 @@ namespace Direct3D10Renderer
 
 		// Destroy the Direct3D 10 runtime linking instance
 		RENDERER_DELETE(mContext, Direct3D10RuntimeLinking, mDirect3D10RuntimeLinking);
-
-		// End debug event
-		RENDERER_END_DEBUG_EVENT(this)
 
 		// Destroy the Direct3D 9 runtime linking instance, in case there's one
 		#ifdef RENDERER_DEBUG

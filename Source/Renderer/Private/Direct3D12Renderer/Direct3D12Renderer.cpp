@@ -4467,9 +4467,6 @@ namespace Direct3D12Renderer
 			IIndexBuffer(direct3D12Renderer),
 			mD3D12Resource(nullptr)
 		{
-			// Begin debug event
-			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D12Renderer)
-
 			// "Renderer::IndexBufferFormat::UnsignedChar" is not supported by Direct3D 12
 			// TODO(co) Check this, there's "DXGI_FORMAT_R8_UINT" which might work in Direct3D 12
 			if (Renderer::IndexBufferFormat::UNSIGNED_CHAR == indexBufferFormat)
@@ -4481,6 +4478,9 @@ namespace Direct3D12Renderer
 			}
 			else
 			{
+				// Begin debug event
+				RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D12Renderer)
+
 				// TODO(co) This is only meant for the Direct3D 12 renderer backend kickoff.
 				// Note: using upload heaps to transfer static data like vert buffers is not 
 				// recommended. Every time the GPU needs it, the upload heap will be marshalled 
@@ -4528,15 +4528,15 @@ namespace Direct3D12Renderer
 					mD3D12IndexBufferView.SizeInBytes	 = 0;
 					mD3D12IndexBufferView.Format		 = DXGI_FORMAT_UNKNOWN;
 				}
+
+				// End debug event
+				RENDERER_END_DEBUG_EVENT(&direct3D12Renderer)
 			}
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RENDERER_DEBUG
 				setDebugName("");
 			#endif
-
-			// End debug event
-			RENDERER_END_DEBUG_EVENT(&direct3D12Renderer)
 		}
 
 		/**
@@ -10427,9 +10427,6 @@ namespace Direct3D12Renderer
 			// Is there a valid Direct3D 12 device instance?
 			if (nullptr != mD3D12Device)
 			{
-				// Begin debug event
-				RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(this)
-
 				// Describe and create the command queue
 				D3D12_COMMAND_QUEUE_DESC d3d12CommandQueueDesc;
 				d3d12CommandQueueDesc.Type		= D3D12_COMMAND_LIST_TYPE_DIRECT;
@@ -10469,18 +10466,12 @@ namespace Direct3D12Renderer
 				{
 					RENDERER_LOG(mContext, CRITICAL, "Failed to create the Direct3D 12 command queue instance")
 				}
-
-				// End debug event
-				RENDERER_END_DEBUG_EVENT(this)
 			}
 		}
 	}
 
 	Direct3D12Renderer::~Direct3D12Renderer()
 	{
-		// Begin debug event
-		RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(this)
-
 		// Release instances
 		if (nullptr != mRenderTarget)
 		{
@@ -10558,9 +10549,6 @@ namespace Direct3D12Renderer
 
 		// Destroy the Direct3D 12 runtime linking instance
 		RENDERER_DELETE(mContext, Direct3D12RuntimeLinking, mDirect3D12RuntimeLinking);
-
-		// End debug event
-		RENDERER_END_DEBUG_EVENT(this)
 	}
 
 
