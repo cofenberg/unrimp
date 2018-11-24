@@ -164,9 +164,7 @@ namespace RendererRuntime
 			uint32_t newNeededTextureBufferSize = sizeof(float) * 4 * 3;	// xyz position (float4) + xyzw rotation quaternion (float4) + xyz scale (float4)
 			if (nullptr != skeletonResource)
 			{
-				const uint8_t numberOfBones = skeletonResource->getNumberOfBones();
-				assert((0 != numberOfBones) && "Each skeleton must have at least one bone");
-				const uint32_t numberOfBytes = sizeof(glm::mat3x4) * numberOfBones;
+				const uint32_t numberOfBytes = skeletonResource->getTotalNumberOfBoneSpaceDataBytes();
 				assert((numberOfBytes <= mMaximumTextureBufferSize) && "The skeleton has too many bones for the available maximum texture buffer size");
 				newNeededTextureBufferSize += numberOfBytes;
 			}
@@ -274,13 +272,11 @@ namespace RendererRuntime
 			// Do we also need to pass on bone transform matrices?
 			if (nullptr != skeletonResource)
 			{
-				const uint8_t numberOfBones = skeletonResource->getNumberOfBones();
-				assert((0 != numberOfBones) && "Each skeleton must have at least one bone");
-				const glm::mat3x4* boneSpaceMatrices = skeletonResource->getBoneSpaceMatrices();
-				assert(nullptr != boneSpaceMatrices);
-				const size_t numberOfBytes = sizeof(glm::mat3x4) * numberOfBones;
+				const size_t numberOfBytes = skeletonResource->getTotalNumberOfBoneSpaceDataBytes();
 				assert((numberOfBytes <= mMaximumTextureBufferSize) && "The skeleton has too many bones for the available maximum texture buffer size");
-				memcpy(mCurrentTextureBufferPointer, boneSpaceMatrices, numberOfBytes);
+				const uint8_t* boneSpaceData = skeletonResource->getBoneSpaceData();
+				assert(nullptr != boneSpaceData);
+				memcpy(mCurrentTextureBufferPointer, boneSpaceData, numberOfBytes);
 				mCurrentTextureBufferPointer += numberOfBytes / sizeof(float);
 			}
 		}

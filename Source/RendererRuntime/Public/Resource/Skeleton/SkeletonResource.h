@@ -86,6 +86,14 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
+	//[ Public definitions                                    ]
+	//[-------------------------------------------------------]
+	public:
+		// static constexpr uint32_t NUMBER_OF_BONE_SPACE_DATA_BYTES = sizeof(glm::mat3x4);	// Linear blend skinning (LBS) using matrices; there's no runtime switch by intent since dual quaternion skinning (DQS) is the way to go, don't remove this reference comment
+		static constexpr uint32_t NUMBER_OF_BONE_SPACE_DATA_BYTES = 32;	// Dual quaternion skinning (DQS); "sizeof(glm::dualquat)" not used due to unavailable forward declaration inside "glm/fwd.hpp"
+
+
+	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
@@ -124,9 +132,15 @@ namespace RendererRuntime
 			return mGlobalBoneMatrices;
 		}
 
-		[[nodiscard]] inline const glm::mat3x4* getBoneSpaceMatrices() const
+		[[nodiscard]] inline uint32_t getTotalNumberOfBoneSpaceDataBytes() const
 		{
-			return mBoneSpaceMatrices;
+			assert((0 != mNumberOfBones) && "Each skeleton must have at least one bone");
+			return static_cast<uint32_t>(NUMBER_OF_BONE_SPACE_DATA_BYTES * mNumberOfBones);
+		}
+
+		[[nodiscard]] inline const uint8_t* getBoneSpaceData() const
+		{
+			return mBoneSpaceData;
 		}
 
 		[[nodiscard]] uint32_t getBoneIndexByBoneId(uint32_t boneId) const;	// Bone IDs = "RendererRuntime::StringId" on bone name, "RendererRuntime::getInvalid<uint32_t>()" if unknown bone ID
@@ -144,7 +158,7 @@ namespace RendererRuntime
 			mLocalBoneMatrices(nullptr),
 			mBoneOffsetMatrices(nullptr),
 			mGlobalBoneMatrices(nullptr),
-			mBoneSpaceMatrices(nullptr)
+			mBoneSpaceData(nullptr)
 		{
 			// Nothing here
 		}
@@ -158,7 +172,7 @@ namespace RendererRuntime
 			assert(nullptr == mLocalBoneMatrices);
 			assert(nullptr == mBoneOffsetMatrices);
 			assert(nullptr == mGlobalBoneMatrices);
-			assert(nullptr == mBoneSpaceMatrices);
+			assert(nullptr == mBoneSpaceData);
 		}
 
 		explicit SkeletonResource(const SkeletonResource&) = delete;
@@ -177,8 +191,8 @@ namespace RendererRuntime
 			mBoneOffsetMatrices = nullptr;
 			// delete [] mGlobalBoneMatrices;	// The complete skeleton data is sequential in memory, so, deleting "mBoneParentIndices" is does it all
 			mGlobalBoneMatrices = nullptr;
-			// delete [] mBoneSpaceMatrices;	// The complete skeleton data is sequential in memory, so, deleting "mBoneParentIndices" is does it all
-			mBoneSpaceMatrices = nullptr;
+			// delete [] mBoneSpaceData;		// The complete skeleton data is sequential in memory, so, deleting "mBoneParentIndices" is does it all
+			mBoneSpaceData = nullptr;
 		}
 
 		//[-------------------------------------------------------]
@@ -193,7 +207,7 @@ namespace RendererRuntime
 			assert(nullptr == mLocalBoneMatrices);
 			assert(nullptr == mBoneOffsetMatrices);
 			assert(nullptr == mGlobalBoneMatrices);
-			assert(nullptr == mBoneSpaceMatrices);
+			assert(nullptr == mBoneSpaceData);
 
 			// Call base implementation
 			IResource::initializeElement(skeletonResourceId);
@@ -213,14 +227,14 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		uint8_t		 mNumberOfBones;		///< Number of bones
+		uint8_t	   mNumberOfBones;		///< Number of bones
 		// Structure-of-arrays (SoA)
-		uint8_t*	 mBoneParentIndices;	///< Cache friendly depth-first rolled up bone parent indices, null pointer only in case of horrible error, free the memory if no longer required
-		uint32_t*	 mBoneIds;				///< Cache friendly depth-first rolled up bone IDs ("RendererRuntime::StringId" on bone name), null pointer only in case of horrible error, don't free the memory because it's owned by "mBoneParentIndices"
-		glm::mat4*	 mLocalBoneMatrices;	///< Cache friendly depth-first rolled up local bone matrices, null pointer only in case of horrible error, don't free the memory because it's owned by "mBoneParentIndices"
-		glm::mat4*	 mBoneOffsetMatrices;	///< Cache friendly depth-first rolled up bone offset matrices (object space to bone space), null pointer only in case of horrible error, don't free the memory because it's owned by "mBoneParentIndices"
-		glm::mat4*	 mGlobalBoneMatrices;	///< Cache friendly depth-first rolled up global bone matrices, null pointer only in case of horrible error, don't free the memory because it's owned by "mBoneParentIndices"
-		glm::mat3x4* mBoneSpaceMatrices;	///< Cache friendly depth-first rolled up bone space matrices, null pointer only in case of horrible error, don't free the memory because it's owned by "mBoneParentIndices"
+		uint8_t*   mBoneParentIndices;	///< Cache friendly depth-first rolled up bone parent indices, null pointer only in case of horrible error, free the memory if no longer required
+		uint32_t*  mBoneIds;			///< Cache friendly depth-first rolled up bone IDs ("RendererRuntime::StringId" on bone name), null pointer only in case of horrible error, don't free the memory because it's owned by "mBoneParentIndices"
+		glm::mat4* mLocalBoneMatrices;	///< Cache friendly depth-first rolled up local bone matrices, null pointer only in case of horrible error, don't free the memory because it's owned by "mBoneParentIndices"
+		glm::mat4* mBoneOffsetMatrices;	///< Cache friendly depth-first rolled up bone offset matrices (object space to bone space), null pointer only in case of horrible error, don't free the memory because it's owned by "mBoneParentIndices"
+		glm::mat4* mGlobalBoneMatrices;	///< Cache friendly depth-first rolled up global bone matrices, null pointer only in case of horrible error, don't free the memory because it's owned by "mBoneParentIndices"
+		uint8_t*   mBoneSpaceData;		///< Cache friendly depth-first rolled up bone space data, null pointer only in case of horrible error, don't free the memory because it's owned by "mBoneParentIndices"
 
 
 	};

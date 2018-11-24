@@ -436,6 +436,7 @@
 		#define float3x4 mat3x4
 		#define float3x3 mat3
 		#define float3x2 mat3x2
+		#define float2x4 mat2x4
 		#define float2x3 mat2x3
 		#define float2x2 mat2x2
 		#define int2 ivec2
@@ -669,6 +670,7 @@
 		#define float3x4 mat3x4
 		#define float3x3 mat3
 		#define float3x2 mat3x2
+		#define float2x4 mat2x4
 		#define float2x3 mat2x3
 		#define float2x2 mat2x2
 		#define int2 ivec2
@@ -893,6 +895,7 @@
 		#define float3x4 mat3x4
 		#define float3x3 mat3
 		#define float3x2 mat3x2
+		#define float2x4 mat2x4
 		#define float2x3 mat2x3
 		#define float2x2 mat2x2
 		#define int2 ivec2
