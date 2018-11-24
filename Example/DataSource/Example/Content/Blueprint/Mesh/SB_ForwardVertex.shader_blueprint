@@ -111,7 +111,7 @@ MAIN_BEGIN_VERTEX
 
 	// GPU skinning
 	@property(UseGpuSkinning)
-		@insertpiece(GetObjectSpaceToWorldSpaceMatrix)
+		@insertpiece(PerformGpuSkinning)
 	@end
 
 	// Calculate the world space vertex position
@@ -137,7 +137,7 @@ MAIN_BEGIN_VERTEX
 	float3x3 tangentFrame = GetTangentFrame(objectSpaceToViewSpaceQuaternion, float4(MAIN_INPUT(QTangent)) / 32767.0f);
 	@property(UseGpuSkinning)
 	{
-		float3x3 normalMatrix = ROW_MATRIX_3x3(objectSpaceToWorldSpaceMatrix[0].xyz, objectSpaceToWorldSpaceMatrix[1].xyz, objectSpaceToWorldSpaceMatrix[2].xyz);
+		float3x3 normalMatrix = ROW_MATRIX_3x3(gpuSkinningMatrix[0].xyz, gpuSkinningMatrix[1].xyz, gpuSkinningMatrix[2].xyz);
 		tangentFrame[0] = MATRIX_MUL(normalMatrix, tangentFrame[0]);
 		tangentFrame[1] = MATRIX_MUL(normalMatrix, tangentFrame[1]);
 		tangentFrame[2] = MATRIX_MUL(normalMatrix, tangentFrame[2]);

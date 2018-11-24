@@ -90,7 +90,7 @@ MAIN_BEGIN_VERTEX
 	// GPU skinning
 	@property(UseGpuSkinning)
 	{
-		@insertpiece(GetObjectSpaceToWorldSpaceMatrix)
+		@insertpiece(PerformGpuSkinning)
 	}
 	@end
 

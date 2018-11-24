@@ -116,7 +116,7 @@ Renderer Runtime (e.g. "The Game")
 - Asynchronous loading for all resources: To fight lags, micro stutter / judder, especially for virtual reality applications one needs a constant framerate
 - Material and shader blueprint system which was desiged from ground up for pipeline state object (PSO) architecture
 	- New material types can be added without a single line of C++ source code, meaning technical artists can create and fine-tune the shaders in realtime
-	- Materials reference material blueprints and just are a list of key-value-pairs
+	- Materials reference material blueprints and are just a list of key-value-pairs
 	- Shader language specifics are abstracted away: Write shaders once, use them across multiple renderer APIs
 	- Support for shader combinations (Uber-shaders)
 	- Support for reusable shader pieces
