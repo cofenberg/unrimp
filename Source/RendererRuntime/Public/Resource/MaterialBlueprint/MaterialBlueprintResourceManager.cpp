@@ -409,38 +409,53 @@ namespace RendererRuntime
 
 	void MaterialBlueprintResourceManager::loadPipelineStateObjectCache(IFile& file)
 	{
-		// Read the pipeline state object cache header which consists of information about the contained material blueprint resources
-		uint32_t numberOfElements = 0;
-		file.read(&numberOfElements, sizeof(uint32_t));
-		if (numberOfElements > 0)
-		{
-			std::vector< ::detail::MaterialBlueprintCacheEntry> materialBlueprintCacheEntries;
-			materialBlueprintCacheEntries.resize(numberOfElements);
-			file.read(materialBlueprintCacheEntries.data(), sizeof(::detail::MaterialBlueprintCacheEntry) * numberOfElements);
-
-			// Loop through all material blueprint resources and read the cache entries
+		{ // Read the serialized graphics pipeline states
+			uint32_t numberOfElements = getInvalid<uint32_t>();
+			file.read(&numberOfElements, sizeof(uint32_t));
+			mSerializedGraphicsPipelineStates.reserve(numberOfElements);
 			for (uint32_t i = 0; i < numberOfElements; ++i)
 			{
-				// TODO(co) Currently material blueprint resource loading is a blocking process
-				const ::detail::MaterialBlueprintCacheEntry& materialBlueprintCacheEntry = materialBlueprintCacheEntries[i];
-				MaterialBlueprintResourceId materialBlueprintResourceId = getInvalid<MaterialBlueprintResourceId>();
-				loadMaterialBlueprintResourceByAssetId(materialBlueprintCacheEntry.materialBlueprintAssetId, materialBlueprintResourceId, nullptr, false, getInvalid<ResourceLoaderTypeId>(), false);
-				if (isValid(materialBlueprintResourceId))
-				{
-					mInternalResourceManager->getResources().getElementById(materialBlueprintResourceId).loadPipelineStateObjectCache(file);
-				}
-				else
-				{
-					RENDERER_LOG(mRendererRuntime.getContext(), COMPATIBILITY_WARNING, "The pipeline state object cache contains an unknown material blueprint asset. Might have happened due to renaming or removal which can be considered normal during development, but not in shipped builds.")
-
-					// TODO(co) Enable file skip after "RendererRuntime::MaterialBlueprintResource::savePipelineStateObjectCache()" has been implemented
-					// file.skip(materialBlueprintCacheEntry.numberOfBytes);
-				}
+				uint32_t key = getInvalid<uint32_t>();
+				file.read(&key, sizeof(uint32_t));
+				Renderer::SerializedGraphicsPipelineState serializedGraphicsPipelineState = {};
+				file.read(&serializedGraphicsPipelineState, sizeof(Renderer::SerializedGraphicsPipelineState));
+				mSerializedGraphicsPipelineStates.emplace(key, serializedGraphicsPipelineState);
 			}
 		}
-		else
-		{
-			RENDERER_LOG(mRendererRuntime.getContext(), WARNING, "The pipeline state object cache contains no elements which is a bit unusual")
+
+		{ // Read the pipeline state object cache header which consists of information about the contained material blueprint resources
+			uint32_t numberOfElements = 0;
+			file.read(&numberOfElements, sizeof(uint32_t));
+			if (numberOfElements > 0)
+			{
+				std::vector< ::detail::MaterialBlueprintCacheEntry> materialBlueprintCacheEntries;
+				materialBlueprintCacheEntries.resize(numberOfElements);
+				file.read(materialBlueprintCacheEntries.data(), sizeof(::detail::MaterialBlueprintCacheEntry) * numberOfElements);
+
+				// Loop through all material blueprint resources and read the cache entries
+				for (uint32_t i = 0; i < numberOfElements; ++i)
+				{
+					// TODO(co) Currently material blueprint resource loading is a blocking process
+					const ::detail::MaterialBlueprintCacheEntry& materialBlueprintCacheEntry = materialBlueprintCacheEntries[i];
+					MaterialBlueprintResourceId materialBlueprintResourceId = getInvalid<MaterialBlueprintResourceId>();
+					loadMaterialBlueprintResourceByAssetId(materialBlueprintCacheEntry.materialBlueprintAssetId, materialBlueprintResourceId, nullptr, false, getInvalid<ResourceLoaderTypeId>(), false);
+					if (isValid(materialBlueprintResourceId))
+					{
+						mInternalResourceManager->getResources().getElementById(materialBlueprintResourceId).loadPipelineStateObjectCache(file);
+					}
+					else
+					{
+						RENDERER_LOG(mRendererRuntime.getContext(), COMPATIBILITY_WARNING, "The pipeline state object cache contains an unknown material blueprint asset. Might have happened due to renaming or removal which can be considered normal during development, but not in shipped builds.")
+
+						// TODO(co) Enable file skip after "RendererRuntime::MaterialBlueprintResource::savePipelineStateObjectCache()" has been implemented
+						// file.skip(materialBlueprintCacheEntry.numberOfBytes);
+					}
+				}
+			}
+			else
+			{
+				RENDERER_LOG(mRendererRuntime.getContext(), WARNING, "The pipeline state object cache contains no elements which is a bit unusual")
+			}
 		}
 	}
 
@@ -462,29 +477,40 @@ namespace RendererRuntime
 
 	void MaterialBlueprintResourceManager::savePipelineStateObjectCache(MemoryFile& memoryFile)
 	{
-		// Write the pipeline state object cache header which consists of information about the contained material blueprint resources
-		const uint32_t numberOfElements = mInternalResourceManager->getResources().getNumberOfElements();
-		memoryFile.write(&numberOfElements, sizeof(uint32_t));
-		uint32_t firstMaterialBlueprintCacheEntryIndex = 0;
-		for (uint32_t i = 0; i < numberOfElements; ++i)
-		{
-			::detail::MaterialBlueprintCacheEntry materialBlueprintCacheEntry;
-			materialBlueprintCacheEntry.materialBlueprintAssetId = mInternalResourceManager->getResources().getElementByIndex(i).getAssetId();
-			materialBlueprintCacheEntry.numberOfBytes			 = 0;	// At this point in time we don't know the number of bytes the material blueprint cache entry consumes
-			memoryFile.write(&materialBlueprintCacheEntry, sizeof(::detail::MaterialBlueprintCacheEntry));
-			if (0 == firstMaterialBlueprintCacheEntryIndex)
+		{ // Write the serialized graphics pipeline states
+			const uint32_t numberOfElements = static_cast<uint32_t>(mSerializedGraphicsPipelineStates.size());
+			memoryFile.write(&numberOfElements, sizeof(uint32_t));
+			for (const auto& elementPair : mSerializedGraphicsPipelineStates)
 			{
-				firstMaterialBlueprintCacheEntryIndex = static_cast<uint32_t>(memoryFile.getNumberOfBytes() - sizeof(::detail::MaterialBlueprintCacheEntry));
+				memoryFile.write(&elementPair.first, sizeof(uint32_t));
+				memoryFile.write(&elementPair.second, sizeof(Renderer::SerializedGraphicsPipelineState));
 			}
 		}
-		::detail::MaterialBlueprintCacheEntry* firstMaterialBlueprintCacheEntry = reinterpret_cast< ::detail::MaterialBlueprintCacheEntry*>(&memoryFile.getByteVector()[firstMaterialBlueprintCacheEntryIndex]);
 
-		// Loop through all material blueprint resources and write the cache entries
-		for (uint32_t i = 0; i < numberOfElements; ++i)
-		{
-			const uint32_t fileStart = static_cast<uint32_t>(memoryFile.getNumberOfBytes());
-			mInternalResourceManager->getResources().getElementByIndex(i).savePipelineStateObjectCache(memoryFile);
-			firstMaterialBlueprintCacheEntry[i].numberOfBytes = static_cast<uint32_t>(memoryFile.getNumberOfBytes() - fileStart);
+		{ // Write the pipeline state object cache header which consists of information about the contained material blueprint resources
+			const uint32_t numberOfElements = mInternalResourceManager->getResources().getNumberOfElements();
+			memoryFile.write(&numberOfElements, sizeof(uint32_t));
+			uint32_t firstMaterialBlueprintCacheEntryIndex = 0;
+			for (uint32_t i = 0; i < numberOfElements; ++i)
+			{
+				::detail::MaterialBlueprintCacheEntry materialBlueprintCacheEntry;
+				materialBlueprintCacheEntry.materialBlueprintAssetId = mInternalResourceManager->getResources().getElementByIndex(i).getAssetId();
+				materialBlueprintCacheEntry.numberOfBytes			 = 0;	// At this point in time we don't know the number of bytes the material blueprint cache entry consumes
+				memoryFile.write(&materialBlueprintCacheEntry, sizeof(::detail::MaterialBlueprintCacheEntry));
+				if (0 == firstMaterialBlueprintCacheEntryIndex)
+				{
+					firstMaterialBlueprintCacheEntryIndex = static_cast<uint32_t>(memoryFile.getNumberOfBytes() - sizeof(::detail::MaterialBlueprintCacheEntry));
+				}
+			}
+			::detail::MaterialBlueprintCacheEntry* firstMaterialBlueprintCacheEntry = reinterpret_cast< ::detail::MaterialBlueprintCacheEntry*>(&memoryFile.getByteVector()[firstMaterialBlueprintCacheEntryIndex]);
+
+			// Loop through all material blueprint resources and write the cache entries
+			for (uint32_t i = 0; i < numberOfElements; ++i)
+			{
+				const uint32_t fileStart = static_cast<uint32_t>(memoryFile.getNumberOfBytes());
+				mInternalResourceManager->getResources().getElementByIndex(i).savePipelineStateObjectCache(memoryFile);
+				firstMaterialBlueprintCacheEntry[i].numberOfBytes = static_cast<uint32_t>(memoryFile.getNumberOfBytes() - fileStart);
+			}
 		}
 	}
 
