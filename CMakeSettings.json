@@ -32,7 +32,19 @@
         {
           "NINJA_STATUS": "[%f/%t %es]"
         }
-      ]
+      ],
+
+      // "IntelliSense Enhancements for C++ Open Folder and CMake" from https://blogs.msdn.microsoft.com/vcblog/2018/01/10/intellisense-enhancements-for-cpp-open-folder-and-cmake/
+      "includePath": [
+        "${env.INCLUDE}",
+        "${workspaceRoot}/**"
+      ],
+      "defines": [
+        "WIN32",
+        "UNICODE",
+        "_UNICODE"
+      ],
+      "intelliSenseMode": "windows-msvc-x86"
     },
     {
       "name": "Windows_x86_Shared",
@@ -50,7 +62,19 @@
         {
           "NINJA_STATUS": "[%f/%t %es]"
         }
-      ]
+      ],
+
+      // "IntelliSense Enhancements for C++ Open Folder and CMake" from https://blogs.msdn.microsoft.com/vcblog/2018/01/10/intellisense-enhancements-for-cpp-open-folder-and-cmake/
+      "includePath": [
+        "${env.INCLUDE}",
+        "${workspaceRoot}/**"
+      ],
+      "defines": [
+        "WIN32",
+        "UNICODE",
+        "_UNICODE"
+      ],
+      "intelliSenseMode": "windows-msvc-x86"
     },
     {
       "name": "Windows_x64d_Shared",
@@ -68,7 +92,19 @@
         {
           "NINJA_STATUS": "[%f/%t %es]"
         }
-      ]
+      ],
+
+      // "IntelliSense Enhancements for C++ Open Folder and CMake" from https://blogs.msdn.microsoft.com/vcblog/2018/01/10/intellisense-enhancements-for-cpp-open-folder-and-cmake/
+      "includePath": [
+        "${env.INCLUDE}",
+        "${workspaceRoot}/**"
+      ],
+      "defines": [
+        "WIN32",
+        "UNICODE",
+        "_UNICODE"
+      ],
+      "intelliSenseMode": "windows-msvc-x64"
     },
     {
       "name": "Windows_x64_Shared",
@@ -86,7 +122,19 @@
         {
           "NINJA_STATUS": "[%f/%t %es]"
         }
-      ]
+      ],
+
+      // "IntelliSense Enhancements for C++ Open Folder and CMake" from https://blogs.msdn.microsoft.com/vcblog/2018/01/10/intellisense-enhancements-for-cpp-open-folder-and-cmake/
+      "includePath": [
+        "${env.INCLUDE}",
+        "${workspaceRoot}/**"
+      ],
+      "defines": [
+        "WIN32",
+        "UNICODE",
+        "_UNICODE"
+      ],
+      "intelliSenseMode": "windows-msvc-x64"
     },
     {
       "name": "Windows_x86d_Static",
@@ -104,7 +152,19 @@
         {
           "NINJA_STATUS": "[%f/%t %es]"
         }
-      ]
+      ],
+
+      // "IntelliSense Enhancements for C++ Open Folder and CMake" from https://blogs.msdn.microsoft.com/vcblog/2018/01/10/intellisense-enhancements-for-cpp-open-folder-and-cmake/
+      "includePath": [
+        "${env.INCLUDE}",
+        "${workspaceRoot}/**"
+      ],
+      "defines": [
+        "WIN32",
+        "UNICODE",
+        "_UNICODE"
+      ],
+      "intelliSenseMode": "windows-msvc-x86"
     },
     {
       "name": "Windows_x86_Static",
@@ -122,7 +182,19 @@
         {
           "NINJA_STATUS": "[%f/%t %es]"
         }
-      ]
+      ],
+
+      // "IntelliSense Enhancements for C++ Open Folder and CMake" from https://blogs.msdn.microsoft.com/vcblog/2018/01/10/intellisense-enhancements-for-cpp-open-folder-and-cmake/
+      "includePath": [
+        "${env.INCLUDE}",
+        "${workspaceRoot}/**"
+      ],
+      "defines": [
+        "WIN32",
+        "UNICODE",
+        "_UNICODE"
+      ],
+      "intelliSenseMode": "windows-msvc-x86"
     },
     {
       "name": "Windows_x64d_Static",
@@ -140,7 +212,19 @@
         {
           "NINJA_STATUS": "[%f/%t %es]"
         }
-      ]
+      ],
+
+      // "IntelliSense Enhancements for C++ Open Folder and CMake" from https://blogs.msdn.microsoft.com/vcblog/2018/01/10/intellisense-enhancements-for-cpp-open-folder-and-cmake/
+      "includePath": [
+        "${env.INCLUDE}",
+        "${workspaceRoot}/**"
+      ],
+      "defines": [
+        "WIN32",
+        "UNICODE",
+        "_UNICODE"
+      ],
+      "intelliSenseMode": "windows-msvc-x64"
     },
     {
       "name": "Windows_x64_Static",
@@ -158,7 +242,19 @@
         {
           "NINJA_STATUS": "[%f/%t %es]"
         }
-      ]
+      ],
+
+      // "IntelliSense Enhancements for C++ Open Folder and CMake" from https://blogs.msdn.microsoft.com/vcblog/2018/01/10/intellisense-enhancements-for-cpp-open-folder-and-cmake/
+      "includePath": [
+        "${env.INCLUDE}",
+        "${workspaceRoot}/**"
+      ],
+      "defines": [
+        "WIN32",
+        "UNICODE",
+        "_UNICODE"
+      ],
+      "intelliSenseMode": "windows-msvc-x64"
     },
 
     // TODO(co) Android
