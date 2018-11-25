@@ -166,7 +166,7 @@ namespace RendererRuntime
 		*  @return
 		*    The requested graphics pipeline state cache instance, null pointer on error, do not destroy the instance
 		*/
-		[[nodiscard]] Renderer::IGraphicsPipelineStatePtr getGraphicsPipelineStateCacheByCombination(uint32_t serializedGraphicsPipelineStateHash, const ShaderProperties& shaderProperties, bool allowEmergencySynchronousCompilation);
+		[[nodiscard]] const GraphicsPipelineStateCache* getGraphicsPipelineStateCacheByCombination(uint32_t serializedGraphicsPipelineStateHash, const ShaderProperties& shaderProperties, bool allowEmergencySynchronousCompilation);
 
 		/**
 		*  @brief

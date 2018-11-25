@@ -114,7 +114,7 @@ namespace RendererRuntime
 	//[ Public definitions                                    ]
 	//[-------------------------------------------------------]
 	public:
-		RENDERERRUNTIME_API_EXPORT static const int32_t MANDATORY_SHADER_PROPERTY;	///< Visual importance value for mandatory shader properties (such properties are not removed when finding a fallback pipeline state)
+		static constexpr int32_t MANDATORY_SHADER_PROPERTY = std::numeric_limits<int32_t>::max();	///< Visual importance value for mandatory shader properties (such properties are not removed when finding a fallback pipeline state)
 
 		/**
 		*  @brief

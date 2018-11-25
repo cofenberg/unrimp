@@ -68,7 +68,7 @@ namespace RendererRuntime
 		if (iterator == mSortedResourceListeners.end() || *iterator != &resourceListener)
 		{
 			mSortedResourceListeners.insert(iterator, &resourceListener);
-			resourceListener.mResourceConnections.emplace_back(IResourceListener::ResourceConnection(mResourceManager, mResourceId));
+			resourceListener.mResourceConnections.emplace_back(mResourceManager, mResourceId);
 			resourceListener.onLoadingStateChange(*this);
 		}
 	}

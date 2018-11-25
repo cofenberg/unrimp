@@ -301,12 +301,12 @@ namespace RendererRuntime
 	void MaterialBlueprintResourceManager::update()
 	{
 		const TimeManager& timeManager = mRendererRuntime.getTimeManager();
-		mGlobalMaterialProperties.setPropertyById(STRING_ID("GlobalPastSecondsSinceLastFrame"), MaterialPropertyValue::fromFloat(timeManager.getPastSecondsSinceLastFrame()));
+		mGlobalMaterialProperties.setPropertyById(STRING_ID("GlobalPastSecondsSinceLastFrame"), MaterialPropertyValue::fromFloat(timeManager.getPastSecondsSinceLastFrame()), MaterialProperty::Usage::SHADER_UNIFORM);
 		{ // Set previous global time in seconds
 			const MaterialProperty* materialProperty = mGlobalMaterialProperties.getPropertyById(STRING_ID("GlobalTimeInSeconds"));
-			mGlobalMaterialProperties.setPropertyById(STRING_ID("PreviousGlobalTimeInSeconds"), (nullptr != materialProperty) ? *materialProperty : MaterialPropertyValue::fromFloat(timeManager.getGlobalTimeInSeconds()));
+			mGlobalMaterialProperties.setPropertyById(STRING_ID("PreviousGlobalTimeInSeconds"), (nullptr != materialProperty) ? *materialProperty : MaterialPropertyValue::fromFloat(timeManager.getGlobalTimeInSeconds()), MaterialProperty::Usage::SHADER_UNIFORM);
 		}
-		mGlobalMaterialProperties.setPropertyById(STRING_ID("GlobalTimeInSeconds"), MaterialPropertyValue::fromFloat(timeManager.getGlobalTimeInSeconds()));
+		mGlobalMaterialProperties.setPropertyById(STRING_ID("GlobalTimeInSeconds"), MaterialPropertyValue::fromFloat(timeManager.getGlobalTimeInSeconds()), MaterialProperty::Usage::SHADER_UNIFORM);
 	}
 
 
@@ -351,7 +351,7 @@ namespace RendererRuntime
 
 		// Update at once to have all managed global material properties known from the start
 		update();
-		mGlobalMaterialProperties.setPropertyById(STRING_ID("GlobalNumberOfMultisamples"), MaterialPropertyValue::fromInteger(0));
+		mGlobalMaterialProperties.setPropertyById(STRING_ID("GlobalNumberOfMultisamples"), MaterialPropertyValue::fromInteger(0), MaterialProperty::Usage::SHADER_COMBINATION);
 	}
 
 	MaterialBlueprintResourceManager::~MaterialBlueprintResourceManager()

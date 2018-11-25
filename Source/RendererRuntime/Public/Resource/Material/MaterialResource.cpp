@@ -228,7 +228,6 @@ namespace RendererRuntime
 		if (nullptr != materialProperty)
 		{
 			// Perform derived work, if required to do so
-			// TODO(co) "RendererRuntime::MaterialResource::setPropertyByIdInternal()": Implement the other "RendererRuntime::MaterialProperty::Usage" if required
 			switch (materialProperty->getUsage())
 			{
 				case MaterialProperty::Usage::SHADER_UNIFORM:
@@ -239,7 +238,7 @@ namespace RendererRuntime
 					break;
 
 				case MaterialProperty::Usage::SHADER_COMBINATION:
-					// TODO(co) Gather shader properties (later on we cache as much as possible of this work inside the renderable)
+					// Handled by "RendererRuntime::MaterialProperties::setPropertyById()"
 					break;
 
 				case MaterialProperty::Usage::RASTERIZER_STATE:

@@ -27,6 +27,8 @@
 #include "RendererRuntime/Public/Resource/Material/MaterialResourceManager.h"
 #include "RendererRuntime/Public/Resource/Material/MaterialTechnique.h"
 #include "RendererRuntime/Public/Resource/Material/MaterialResource.h"
+#include "RendererRuntime/Public/Resource/MaterialBlueprint/Cache/ComputePipelineStateCache.h"
+#include "RendererRuntime/Public/Resource/MaterialBlueprint/Cache/GraphicsPipelineStateCache.h"
 #include "RendererRuntime/Public/Resource/MaterialBlueprint/MaterialBlueprintResourceManager.h"
 #include "RendererRuntime/Public/Resource/MaterialBlueprint/BufferManager/PassBufferManager.h"
 #include "RendererRuntime/Public/Resource/MaterialBlueprint/BufferManager/LightBufferManager.h"
@@ -335,6 +337,7 @@ namespace RendererRuntime
 		// -> When adding renderables from renderable manager we could build up a minimum/maximum used render queue index to sometimes reduce
 		//    the number of iterations. On the other hand, there are usually much more renderables added as iterations in here so this possible
 		//    optimization might be a fact a performance degeneration while at the same time increasing the code complexity. So, not implemented by intent.
+		// TODO(co) Try to reduce code copy'n'paste without making things too complicated in here since this is highly performance critical code
 		if (mQueues.size() == 1 && mQueues[0].queuedRenderables.size() == 1)
 		{
 			// Material resource
@@ -348,16 +351,57 @@ namespace RendererRuntime
 					MaterialBlueprintResource* materialBlueprintResource = materialBlueprintResourceManager.tryGetById(materialTechnique->getMaterialBlueprintResourceId());
 					if (nullptr != materialBlueprintResource && IResource::LoadingState::LOADED == materialBlueprintResource->getLoadingState())
 					{
-						// TODO(co) Gather shader properties (later on we cache as much as possible of this work inside the renderable)
-						::detail::gatherShaderProperties(*materialResource, *materialBlueprintResource, globalMaterialProperties, renderable, singlePassStereoInstancing, mScratchShaderProperties, mScratchOptimizedShaderProperties);
+						// Get a simple conservative combined generation counter to detect whether or not the renderable pipeline state cache is still considered to be valid
+						const uint32_t generationCounter = materialResource->getMaterialProperties().getShaderCombinationGenerationCounter() + globalMaterialProperties.getShaderCombinationGenerationCounter() + materialBlueprintResource->getMaterialProperties().getShaderCombinationGenerationCounter() + materialTechnique->getSerializedGraphicsPipelineStateHash();
 
-						Renderer::IGraphicsPipelineStatePtr graphicsPipelineStatePtr = materialBlueprintResource->getGraphicsPipelineStateCacheManager().getGraphicsPipelineStateCacheByCombination(materialTechnique->getSerializedGraphicsPipelineStateHash(), mScratchOptimizedShaderProperties, false);
-						if (nullptr != graphicsPipelineStatePtr)
+						// Get the pipeline state object (PSO) to use, preferably by using cached information
+						Renderer::IGraphicsPipelineState* foundGraphicsPipelineState = nullptr;
+						Renderable::PipelineStateCaches& pipelineStateCaches = const_cast<Renderable::PipelineStateCaches&>(renderable.mPipelineStateCaches);
+						for (Renderable::PipelineStateCache& pipelineStateCache : pipelineStateCaches)
+						{
+							if (materialTechniqueId == pipelineStateCache.materialTechniqueId)
+							{
+								if (generationCounter != pipelineStateCache.generationCounter)
+								{
+									::detail::gatherShaderProperties(*materialResource, *materialBlueprintResource, globalMaterialProperties, renderable, singlePassStereoInstancing, mScratchShaderProperties, mScratchOptimizedShaderProperties);
+									const GraphicsPipelineStateCache* graphicsPipelineStateCache = materialBlueprintResource->getGraphicsPipelineStateCacheManager().getGraphicsPipelineStateCacheByCombination(materialTechnique->getSerializedGraphicsPipelineStateHash(), mScratchOptimizedShaderProperties, false);
+
+									// As long as we received a fallback graphics pipeline state cache, we can't update the renderable pipeline state cache
+									if (nullptr != graphicsPipelineStateCache && nullptr != graphicsPipelineStateCache->getGraphicsPipelineStateObjectPtr() && !graphicsPipelineStateCache->isUsingFallback())
+									{
+										pipelineStateCache.generationCounter = generationCounter;
+										pipelineStateCache.pipelineStatePtr = graphicsPipelineStateCache->getGraphicsPipelineStateObjectPtr();
+									}
+								}
+								foundGraphicsPipelineState = static_cast<Renderer::IGraphicsPipelineState*>(pipelineStateCache.pipelineStatePtr->getPointer());
+								assert(nullptr != foundGraphicsPipelineState);
+								break;
+							}
+						}
+						if (nullptr == foundGraphicsPipelineState)
+						{
+							::detail::gatherShaderProperties(*materialResource, *materialBlueprintResource, globalMaterialProperties, renderable, singlePassStereoInstancing, mScratchShaderProperties, mScratchOptimizedShaderProperties);
+							const GraphicsPipelineStateCache* graphicsPipelineStateCache = materialBlueprintResource->getGraphicsPipelineStateCacheManager().getGraphicsPipelineStateCacheByCombination(materialTechnique->getSerializedGraphicsPipelineStateHash(), mScratchOptimizedShaderProperties, false);
+							if (nullptr != graphicsPipelineStateCache && nullptr != graphicsPipelineStateCache->getGraphicsPipelineStateObjectPtr())
+							{
+								// As long as we received a fallback graphics pipeline state cache, we can't put it into the renderable pipeline state cache
+								if (graphicsPipelineStateCache->isUsingFallback())
+								{
+									foundGraphicsPipelineState = static_cast<Renderer::IGraphicsPipelineState*>(graphicsPipelineStateCache->getGraphicsPipelineStateObjectPtr());
+								}
+								else
+								{
+									foundGraphicsPipelineState = static_cast<Renderer::IGraphicsPipelineState*>(pipelineStateCaches.emplace_back(materialTechniqueId, generationCounter, graphicsPipelineStateCache->getGraphicsPipelineStateObjectPtr()).pipelineStatePtr.getPointer());
+								}
+								assert(nullptr != foundGraphicsPipelineState);
+							}
+						}
+						if (nullptr != foundGraphicsPipelineState)
 						{
 							compositorContextData.mCurrentlyBoundMaterialBlueprintResource = materialBlueprintResource;
 
 							// Set the used graphics pipeline state object (PSO)
-							Renderer::Command::SetGraphicsPipelineState::create(commandBuffer, graphicsPipelineStatePtr);
+							Renderer::Command::SetGraphicsPipelineState::create(commandBuffer, foundGraphicsPipelineState);
 
 							// Setup input assembly (IA): Set the used vertex array
 							Renderer::Command::SetGraphicsVertexArray::create(commandBuffer, renderable.getVertexArrayPtr());
@@ -492,16 +536,57 @@ namespace RendererRuntime
 								MaterialBlueprintResource* materialBlueprintResource = materialBlueprintResourceManager.tryGetById(materialTechnique->getMaterialBlueprintResourceId());
 								if (nullptr != materialBlueprintResource && IResource::LoadingState::LOADED == materialBlueprintResource->getLoadingState())
 								{
-									// TODO(co) Gather shader properties (later on we cache as much as possible of this work inside the renderable)
-									::detail::gatherShaderProperties(*materialResource, *materialBlueprintResource, globalMaterialProperties, renderable, singlePassStereoInstancing, mScratchShaderProperties, mScratchOptimizedShaderProperties);
+									// Get a simple conservative combined generation counter to detect whether or not the renderable pipeline state cache is still considered to be valid
+									const uint32_t generationCounter = materialResource->getMaterialProperties().getShaderCombinationGenerationCounter() + globalMaterialProperties.getShaderCombinationGenerationCounter() + materialBlueprintResource->getMaterialProperties().getShaderCombinationGenerationCounter() + materialTechnique->getSerializedGraphicsPipelineStateHash();
 
-									Renderer::IGraphicsPipelineStatePtr graphicsPipelineStatePtr = materialBlueprintResource->getGraphicsPipelineStateCacheManager().getGraphicsPipelineStateCacheByCombination(materialTechnique->getSerializedGraphicsPipelineStateHash(), mScratchOptimizedShaderProperties, false);
-									if (nullptr != graphicsPipelineStatePtr)
+									// Get the pipeline state object (PSO) to use, preferably by using cached information
+									Renderer::IGraphicsPipelineState* foundGraphicsPipelineState = nullptr;
+									Renderable::PipelineStateCaches& pipelineStateCaches = const_cast<Renderable::PipelineStateCaches&>(renderable.mPipelineStateCaches);
+									for (Renderable::PipelineStateCache& pipelineStateCache : pipelineStateCaches)
+									{
+										if (materialTechniqueId == pipelineStateCache.materialTechniqueId)
+										{
+											if (generationCounter != pipelineStateCache.generationCounter)
+											{
+												::detail::gatherShaderProperties(*materialResource, *materialBlueprintResource, globalMaterialProperties, renderable, singlePassStereoInstancing, mScratchShaderProperties, mScratchOptimizedShaderProperties);
+												const GraphicsPipelineStateCache* graphicsPipelineStateCache = materialBlueprintResource->getGraphicsPipelineStateCacheManager().getGraphicsPipelineStateCacheByCombination(materialTechnique->getSerializedGraphicsPipelineStateHash(), mScratchOptimizedShaderProperties, false);
+
+												// As long as we received a fallback graphics pipeline state cache, we can't update the renderable pipeline state cache
+												if (nullptr != graphicsPipelineStateCache && nullptr != graphicsPipelineStateCache->getGraphicsPipelineStateObjectPtr() && !graphicsPipelineStateCache->isUsingFallback())
+												{
+													pipelineStateCache.generationCounter = generationCounter;
+													pipelineStateCache.pipelineStatePtr = graphicsPipelineStateCache->getGraphicsPipelineStateObjectPtr();
+												}
+											}
+											foundGraphicsPipelineState = static_cast<Renderer::IGraphicsPipelineState*>(pipelineStateCache.pipelineStatePtr->getPointer());
+											assert(nullptr != foundGraphicsPipelineState);
+											break;
+										}
+									}
+									if (nullptr == foundGraphicsPipelineState)
+									{
+										::detail::gatherShaderProperties(*materialResource, *materialBlueprintResource, globalMaterialProperties, renderable, singlePassStereoInstancing, mScratchShaderProperties, mScratchOptimizedShaderProperties);
+										const GraphicsPipelineStateCache* graphicsPipelineStateCache = materialBlueprintResource->getGraphicsPipelineStateCacheManager().getGraphicsPipelineStateCacheByCombination(materialTechnique->getSerializedGraphicsPipelineStateHash(), mScratchOptimizedShaderProperties, false);
+										if (nullptr != graphicsPipelineStateCache && nullptr != graphicsPipelineStateCache->getGraphicsPipelineStateObjectPtr())
+										{
+											// As long as we received a fallback graphics pipeline state cache, we can't put it into the renderable pipeline state cache
+											if (graphicsPipelineStateCache->isUsingFallback())
+											{
+												foundGraphicsPipelineState = static_cast<Renderer::IGraphicsPipelineState*>(graphicsPipelineStateCache->getGraphicsPipelineStateObjectPtr());
+											}
+											else
+											{
+												foundGraphicsPipelineState = static_cast<Renderer::IGraphicsPipelineState*>(pipelineStateCaches.emplace_back(materialTechniqueId, generationCounter, graphicsPipelineStateCache->getGraphicsPipelineStateObjectPtr()).pipelineStatePtr.getPointer());
+											}
+											assert(nullptr != foundGraphicsPipelineState);
+										}
+									}
+									if (nullptr != foundGraphicsPipelineState)
 									{
 										// Set the used graphics pipeline state object (PSO)
-										if (currentGraphicsPipelineState != graphicsPipelineStatePtr)
+										if (currentGraphicsPipelineState != foundGraphicsPipelineState)
 										{
-											currentGraphicsPipelineState = graphicsPipelineStatePtr;
+											currentGraphicsPipelineState = foundGraphicsPipelineState;
 											Renderer::Command::SetGraphicsPipelineState::create(mScratchCommandBuffer, currentGraphicsPipelineState);
 										}
 
@@ -716,11 +801,52 @@ namespace RendererRuntime
 					MaterialBlueprintResource* materialBlueprintResource = materialBlueprintResourceManager.tryGetById(materialTechnique->getMaterialBlueprintResourceId());
 					if (nullptr != materialBlueprintResource && IResource::LoadingState::LOADED == materialBlueprintResource->getLoadingState())
 					{
-						// TODO(co) Gather shader properties (later on we cache as much as possible of this work inside the renderable)
-						::detail::gatherShaderProperties(*materialResource, *materialBlueprintResource, globalMaterialProperties, renderable, singlePassStereoInstancing, mScratchShaderProperties, mScratchOptimizedShaderProperties);
+						// Get a simple conservative combined generation counter to detect whether or not the renderable pipeline state cache is still considered to be valid
+						const uint32_t generationCounter = materialResource->getMaterialProperties().getShaderCombinationGenerationCounter() + globalMaterialProperties.getShaderCombinationGenerationCounter() + materialBlueprintResource->getMaterialProperties().getShaderCombinationGenerationCounter();
 
-						Renderer::IComputePipelineStatePtr computePipelineStatePtr = materialBlueprintResource->getComputePipelineStateCacheManager().getComputePipelineStateCacheByCombination(mScratchOptimizedShaderProperties, false);
-						if (nullptr != computePipelineStatePtr)
+						// Get the pipeline state object (PSO) to use, preferably by using cached information
+						Renderer::IComputePipelineState* foundComputePipelineState = nullptr;
+						Renderable::PipelineStateCaches& pipelineStateCaches = const_cast<Renderable::PipelineStateCaches&>(renderable.mPipelineStateCaches);
+						for (Renderable::PipelineStateCache& pipelineStateCache : pipelineStateCaches)
+						{
+							if (materialTechniqueId == pipelineStateCache.materialTechniqueId)
+							{
+								if (generationCounter != pipelineStateCache.generationCounter)
+								{
+									::detail::gatherShaderProperties(*materialResource, *materialBlueprintResource, globalMaterialProperties, renderable, singlePassStereoInstancing, mScratchShaderProperties, mScratchOptimizedShaderProperties);
+									const ComputePipelineStateCache* computePipelineStateCache = materialBlueprintResource->getComputePipelineStateCacheManager().getComputePipelineStateCacheByCombination(mScratchOptimizedShaderProperties, false);
+
+									// As long as we received a fallback compute pipeline state cache, we can't update the renderable pipeline state cache
+									if (nullptr != computePipelineStateCache && nullptr != computePipelineStateCache->getComputePipelineStateObjectPtr() && !computePipelineStateCache->isUsingFallback())
+									{
+										pipelineStateCache.generationCounter = generationCounter;
+										pipelineStateCache.pipelineStatePtr = computePipelineStateCache->getComputePipelineStateObjectPtr();
+									}
+								}
+								foundComputePipelineState = static_cast<Renderer::IComputePipelineState*>(pipelineStateCache.pipelineStatePtr->getPointer());
+								assert(nullptr != foundComputePipelineState);
+								break;
+							}
+						}
+						if (nullptr == foundComputePipelineState)
+						{
+							::detail::gatherShaderProperties(*materialResource, *materialBlueprintResource, globalMaterialProperties, renderable, singlePassStereoInstancing, mScratchShaderProperties, mScratchOptimizedShaderProperties);
+							const ComputePipelineStateCache* computePipelineStateCache = materialBlueprintResource->getComputePipelineStateCacheManager().getComputePipelineStateCacheByCombination(mScratchOptimizedShaderProperties, false);
+							if (nullptr != computePipelineStateCache && nullptr != computePipelineStateCache->getComputePipelineStateObjectPtr())
+							{
+								// As long as we received a fallback compute pipeline state cache, we can't put it into the renderable pipeline state cache
+								if (computePipelineStateCache->isUsingFallback())
+								{
+									foundComputePipelineState = static_cast<Renderer::IComputePipelineState*>(computePipelineStateCache->getComputePipelineStateObjectPtr());
+								}
+								else
+								{
+									foundComputePipelineState = static_cast<Renderer::IComputePipelineState*>(pipelineStateCaches.emplace_back(materialTechniqueId, generationCounter, computePipelineStateCache->getComputePipelineStateObjectPtr()).pipelineStatePtr.getPointer());
+								}
+								assert(nullptr != foundComputePipelineState);
+							}
+						}
+						if (nullptr != foundComputePipelineState)
 						{
 							compositorContextData.mCurrentlyBoundMaterialBlueprintResource = materialBlueprintResource;
 
@@ -836,7 +962,7 @@ namespace RendererRuntime
 							}
 
 							// Set the used compute pipeline state object (PSO)
-							Renderer::Command::SetComputePipelineState::create(commandBuffer, computePipelineStatePtr);
+							Renderer::Command::SetComputePipelineState::create(commandBuffer, foundComputePipelineState);
 
 							{ // Fill the pass buffer manager
 								PassBufferManager* passBufferManager = materialBlueprintResource->getPassBufferManager();
@@ -950,13 +1076,13 @@ namespace RendererRuntime
 									// TODO(co) Gather shader properties (later on we cache as much as possible of this work inside the renderable)
 									::detail::gatherShaderProperties(*materialResource, *materialBlueprintResource, globalMaterialProperties, renderable, singlePassStereoInstancing, mScratchShaderProperties, mScratchOptimizedShaderProperties);
 
-									Renderer::IGraphicsPipelineStatePtr graphicsPipelineStatePtr = materialBlueprintResource->getGraphicsPipelineStateCacheManager().getGraphicsPipelineStateCacheByCombination(materialTechnique->getSerializedGraphicsPipelineStateHash(), mScratchOptimizedShaderProperties, false);
-									if (nullptr != graphicsPipelineStatePtr)
+									GraphicsPipelineStateCache* graphicsPipelineStateCache = materialBlueprintResource->getGraphicsPipelineStateCacheManager().getGraphicsPipelineStateCacheByCombination(materialTechnique->getSerializedGraphicsPipelineStateHash(), mScratchOptimizedShaderProperties, false);
+									if (nullptr != graphicsPipelineStateCache)
 									{
 										// Set the used graphics pipeline state object (PSO)
-										if (currentGraphicsPipelineState != graphicsPipelineStatePtr)
+										if (currentGraphicsPipelineState != graphicsPipelineStateCache->getGraphicsPipelineStateObjectPtr())
 										{
-											currentGraphicsPipelineState = graphicsPipelineStatePtr;
+											currentGraphicsPipelineState = graphicsPipelineStateCache->getGraphicsPipelineStateObjectPtr();
 											Renderer::Command::SetGraphicsPipelineState::create(mScratchCommandBuffer, currentGraphicsPipelineState);
 										}
 

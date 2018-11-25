@@ -57,6 +57,13 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
+	//[ Friends                                               ]
+	//[-------------------------------------------------------]
+		friend class ShaderPieceResourceLoader;		// TODO(co) Remove this as soon as the incremental hot reloading cache update has been implemented
+		friend class ShaderBlueprintResourceLoader;	// TODO(co) Remove this as soon as the incremental hot reloading cache update has been implemented
+
+
+	//[-------------------------------------------------------]
 	//[ Public definitions                                    ]
 	//[-------------------------------------------------------]
 	public:
@@ -71,7 +78,8 @@ namespace RendererRuntime
 		*  @brief
 		*    Constructor
 		*/
-		inline MaterialProperties()
+		inline MaterialProperties() :
+			mShaderCombinationGenerationCounter(0u)
 		{
 			// Nothing here
 		}
@@ -104,6 +112,7 @@ namespace RendererRuntime
 		inline void removeAllProperties()
 		{
 			mSortedPropertyVector.clear();
+			mShaderCombinationGenerationCounter = 0;
 		}
 
 		/**
@@ -136,12 +145,25 @@ namespace RendererRuntime
 		*/
 		RENDERERRUNTIME_API_EXPORT MaterialProperty* setPropertyById(MaterialPropertyId materialPropertyId, const MaterialPropertyValue& materialPropertyValue, MaterialProperty::Usage materialPropertyUsage = MaterialProperty::Usage::UNKNOWN, bool changeOverwrittenState = false);
 
+		/**
+		*  @brief
+		*    Return the shader combination generation counter
+		*
+		*  @return
+		*    The shader combination generation counter
+		*/
+		[[nodiscard]] inline uint32_t getShaderCombinationGenerationCounter() const
+		{
+			return mShaderCombinationGenerationCounter;
+		}
+
 
 	//[-------------------------------------------------------]
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
 		SortedPropertyVector mSortedPropertyVector;
+		uint32_t			 mShaderCombinationGenerationCounter;	// Incremented each time a shader combination material property gets changed, used for e.g. performance critical renderable cache updates were hashes would be too expensive to generate
 
 
 	};

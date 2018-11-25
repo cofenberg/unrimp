@@ -31,6 +31,15 @@
 
 #include <Renderer/Public/Renderer.h>
 
+// Disable warnings in external headers, we can't fix them
+PRAGMA_WARNING_PUSH
+	PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'argument': conversion from 'long' to 'unsigned int', signed/unsigned mismatch
+	PRAGMA_WARNING_DISABLE_MSVC(4571)	// warning C4571: Informational: catch(...) semantics changed since Visual C++ 7.1; structured exceptions (SEH) are no longer caught
+	PRAGMA_WARNING_DISABLE_MSVC(4668)	// warning C4668: '_M_HYBRID_X86_ARM64' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+	#include <vector>
+	#include <cassert>
+PRAGMA_WARNING_POP
+
 
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
@@ -74,6 +83,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Friends                                               ]
 	//[-------------------------------------------------------]
+		friend class RenderQueue;		// Must be able to update cached material data
 		friend class MaterialResource;	// Must be able to update cached material data
 
 
@@ -235,6 +245,29 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
+	//[ Public definitions                                    ]
+	//[-------------------------------------------------------]
+	public:
+		struct PipelineStateCache
+		{
+			MaterialTechniqueId			materialTechniqueId;
+			uint32_t					generationCounter;	// Most simple solution to detect e.g. shader combination changes which make the pipeline state cache invalid
+			Renderer::IPipelineStatePtr	pipelineStatePtr;
+			inline PipelineStateCache(MaterialTechniqueId _materialTechniqueId, uint32_t _generationCounter, const Renderer::IGraphicsPipelineStatePtr& graphicsPipelineStatePtr) :
+				materialTechniqueId(_materialTechniqueId),
+				generationCounter(_generationCounter),
+				pipelineStatePtr(graphicsPipelineStatePtr)
+			{};
+			inline PipelineStateCache(MaterialTechniqueId _materialTechniqueId, uint32_t _generationCounter, const Renderer::IComputePipelineStatePtr& computePipelineStatePtr) :
+				materialTechniqueId(_materialTechniqueId),
+				generationCounter(_generationCounter),
+				pipelineStatePtr(computePipelineStatePtr)
+			{};
+		};
+		typedef std::vector<PipelineStateCache> PipelineStateCaches;
+
+
+	//[-------------------------------------------------------]
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
@@ -261,6 +294,7 @@ namespace RendererRuntime
 		// Cached material data
 		uint8_t							mRenderQueueIndex;
 		bool							mCastShadows;
+		PipelineStateCaches				mPipelineStateCaches;
 		// Internal data
 		const MaterialResourceManager*	mMaterialResourceManager;
 		int								mMaterialResourceAttachmentIndex;

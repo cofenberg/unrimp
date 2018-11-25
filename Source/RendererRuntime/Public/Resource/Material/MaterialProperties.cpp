@@ -56,13 +56,27 @@ namespace RendererRuntime
 				materialProperty->mOverwritten = true;
 				return materialProperty;
 			}
+			if (MaterialProperty::Usage::SHADER_COMBINATION == materialPropertyUsage)
+			{
+				++mShaderCombinationGenerationCounter;
+			}
 			return &*iterator;
 		}
 
 		// Update the material property value, in case there's a material property value change
 		else if (*iterator != materialPropertyValue)
 		{
-			*iterator = MaterialProperty(materialPropertyId, iterator->getUsage(), materialPropertyValue);
+			// Sanity checks
+			assert(iterator->getValueType() == materialPropertyValue.getValueType());
+			assert(MaterialProperty::Usage::UNKNOWN == materialPropertyUsage || materialPropertyUsage == iterator->getUsage());
+
+			// Update the material property value
+			materialPropertyUsage = iterator->getUsage();
+			*iterator = MaterialProperty(materialPropertyId, materialPropertyUsage, materialPropertyValue);
+			if (MaterialProperty::Usage::SHADER_COMBINATION == materialPropertyUsage)
+			{
+				++mShaderCombinationGenerationCounter;
+			}
 
 			// Material property change detected
 			if (changeOverwrittenState)

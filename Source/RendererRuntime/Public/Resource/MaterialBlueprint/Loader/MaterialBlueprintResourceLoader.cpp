@@ -385,10 +385,11 @@ namespace RendererRuntime
 			}
 		}
 
-		{ // Create the sampler states
+		// Create the sampler states
+		MaterialBlueprintResourceManager& materialBlueprintResourceManager = mMaterialBlueprintResource->getResourceManager<MaterialBlueprintResourceManager>();
+		{
 			MaterialBlueprintResource::SamplerStates& samplerStates = mMaterialBlueprintResource->mSamplerStates;
 			const size_t numberOfSamplerStates = samplerStates.size();
-			const MaterialBlueprintResourceManager& materialBlueprintResourceManager = mMaterialBlueprintResource->getResourceManager<MaterialBlueprintResourceManager>();
 			const Renderer::FilterMode defaultTextureFilterMode = materialBlueprintResourceManager.getDefaultTextureFilterMode();
 			const uint8_t defaultMaximumTextureAnisotropy = materialBlueprintResourceManager.getDefaultMaximumTextureAnisotropy();
 			v1MaterialBlueprint::SamplerState* materialBlueprintSamplerState = mMaterialBlueprintSamplerStates;
@@ -429,6 +430,50 @@ namespace RendererRuntime
 					textureResourceManager.loadTextureResourceByAssetId(materialProperty.getTextureAssetIdValue(), texture.fallbackTextureAssetId, texture.textureResourceId, nullptr, texture.rgbHardwareGammaCorrection);
 				}
 			}
+		}
+
+		{ // Register the global material properties
+			#define GET_MATERIAL_PROPERTY_USAGE \
+				MaterialProperty::Usage materialPropertyUsage = MaterialProperty::Usage::SHADER_UNIFORM; \
+				for (const MaterialProperty& usageMaterialProperty : sortedPropertyVector) \
+				{ \
+					if (usageMaterialProperty.getValueType() == MaterialPropertyValue::ValueType::GLOBAL_MATERIAL_PROPERTY_ID && usageMaterialProperty.getGlobalMaterialPropertyId() == materialPropertyId) \
+					{ \
+						materialPropertyUsage = usageMaterialProperty.getUsage(); \
+						break; \
+					} \
+				}
+			MaterialProperties& globalMaterialProperties = materialBlueprintResourceManager.getGlobalMaterialProperties();
+			const MaterialProperties::SortedPropertyVector& sortedPropertyVector = mMaterialBlueprintResource->mMaterialProperties.getSortedPropertyVector();
+			for (const MaterialProperty& materialProperty : sortedPropertyVector)
+			{
+				if (materialProperty.getUsage() == MaterialProperty::Usage::GLOBAL_REFERENCE_FALLBACK)
+				{
+					const MaterialPropertyId materialPropertyId = materialProperty.getMaterialPropertyId();
+					const MaterialProperty* globalMaterialProperty = globalMaterialProperties.getPropertyById(materialPropertyId);
+					if (nullptr == globalMaterialProperty)
+					{
+						GET_MATERIAL_PROPERTY_USAGE
+						globalMaterialProperties.setPropertyById(materialPropertyId, materialProperty, materialPropertyUsage);
+					}
+					else
+					{
+						// Since the application user of the global material properties shouldn't need to care about the material property usage, it can happen that a global material property has been set by the user without having a known material property usage
+						if (globalMaterialProperty->getUsage() == MaterialProperty::Usage::UNKNOWN)
+						{
+							GET_MATERIAL_PROPERTY_USAGE
+							const_cast<MaterialProperty*>(globalMaterialProperty)->mUsage = materialPropertyUsage;
+						}
+
+						// Sanity check
+						#ifdef _DEBUG
+							GET_MATERIAL_PROPERTY_USAGE
+							assert(globalMaterialProperty->getValueType() == materialProperty.getValueType() && globalMaterialProperty->getUsage() == materialPropertyUsage);
+						#endif
+					}
+				}
+			}
+			#undef GET_MATERIAL_PROPERTY_USAGE
 		}
 
 		// Fully loaded?

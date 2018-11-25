@@ -1031,18 +1031,18 @@ namespace RendererToolkit
 
 						// Write down the material property
 						const RendererRuntime::StringId referenceAsInteger(&referenceAsString[1]);
-						sortedMaterialPropertyVector.emplace_back(RendererRuntime::MaterialProperty(materialPropertyId, usage, RendererRuntime::MaterialProperty::materialPropertyValueFromReference(valueType, referenceAsInteger)));
+						sortedMaterialPropertyVector.emplace_back(materialPropertyId, usage, RendererRuntime::MaterialProperty::materialPropertyValueFromReference(valueType, referenceAsInteger));
 					}
 					else
 					{
 						// Write down the material property
-						sortedMaterialPropertyVector.emplace_back(RendererRuntime::MaterialProperty(materialPropertyId, usage, mandatoryMaterialPropertyValue(input, rapidJsonValueProperty, "Value", valueType)));
+						sortedMaterialPropertyVector.emplace_back(materialPropertyId, usage, mandatoryMaterialPropertyValue(input, rapidJsonValueProperty, "Value", valueType));
 					}
 				}
 				else
 				{
 					// Write down the material property
-					sortedMaterialPropertyVector.emplace_back(RendererRuntime::MaterialProperty(materialPropertyId, usage, mandatoryMaterialPropertyValue(input, rapidJsonValueProperty, "Value", valueType)));
+					sortedMaterialPropertyVector.emplace_back(materialPropertyId, usage, mandatoryMaterialPropertyValue(input, rapidJsonValueProperty, "Value", valueType));
 				}
 
 				// Optional visual importance of shader property

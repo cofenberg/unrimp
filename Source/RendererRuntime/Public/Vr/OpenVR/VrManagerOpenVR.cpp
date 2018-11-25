@@ -805,7 +805,7 @@ namespace RendererRuntime
 									sceneNode->attachSceneNode(*componentSceneNode);
 									::detail::createMeshSceneItem(*sceneResource, *componentSceneNode, componentRenderModelName);
 									componentSceneNode->setVisible((renderModelComponentState.uProperties & vr::VRComponentProperty_IsVisible) != 0);
-									trackedDeviceInformation.components.emplace_back(componentName, componentSceneNode);
+									trackedDeviceInformation.components.emplace_back(std::move(componentName), componentSceneNode);
 								}
 							}
 						}

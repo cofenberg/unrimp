@@ -62,43 +62,43 @@ namespace
 		*  @brief
 		*    Internal helper class to iterate through all shader combinations
 		*/
-		class ShaderCombinationIterator
+		class ShaderCombinationIterator final
 		{
 		public:
-			explicit ShaderCombinationIterator(size_t reserveSize)
+			inline explicit ShaderCombinationIterator(size_t reserveSize)
 			{
 				mNumberOfPropertyValuesByPropertyIndex.reserve(reserveSize);
 				mCurrentCombination.reserve(reserveSize);
 			}
 
-			void clear()
+			inline void clear()
 			{
 				mNumberOfPropertyValuesByPropertyIndex.clear();
 				mCurrentCombination.clear();
 			}
 
-			void addBoolProperty()
+			inline void addBoolProperty()
 			{
 				addIntegerProperty(2);
 			}
 
-			void addIntegerProperty(uint32_t numberOfIntegerValues)
+			inline void addIntegerProperty(uint32_t numberOfIntegerValues)
 			{
 				mNumberOfPropertyValuesByPropertyIndex.push_back(numberOfIntegerValues);
 			}
 
-			[[nodiscard]] bool getCurrentCombinationBoolProperty(size_t index) const
+			[[nodiscard]] inline bool getCurrentCombinationBoolProperty(size_t index) const
 			{
 				return (getCurrentCombinationIntegerProperty(index) > 0);
 			}
 
-			[[nodiscard]] uint32_t getCurrentCombinationIntegerProperty(size_t index) const
+			[[nodiscard]] inline uint32_t getCurrentCombinationIntegerProperty(size_t index) const
 			{
 				assert(index < mCurrentCombination.size());
 				return mCurrentCombination[index];
 			}
 
-			void startIterate()
+			inline void startIterate()
 			{
 				// Start with every property value set to zero
 				mCurrentCombination.resize(mNumberOfPropertyValuesByPropertyIndex.size());
@@ -193,12 +193,6 @@ namespace
 //[-------------------------------------------------------]
 namespace RendererRuntime
 {
-
-
-	//[-------------------------------------------------------]
-	//[ Public definitions                                    ]
-	//[-------------------------------------------------------]
-	const int32_t MaterialBlueprintResource::MANDATORY_SHADER_PROPERTY = std::numeric_limits<int32_t>::max();
 
 
 	//[-------------------------------------------------------]
@@ -441,11 +435,11 @@ namespace RendererRuntime
 				// Create the current pipeline state cache instances for the material blueprint
 				if (isValid(mComputeShaderBlueprintResourceId))
 				{
-					[[maybe_unused]] const Renderer::IComputePipelineStatePtr computePipelineStatePtr = mComputePipelineStateCacheManager.getComputePipelineStateCacheByCombination(shaderProperties, false);
+					[[maybe_unused]] const ComputePipelineStateCache* computePipelineStateCache = mComputePipelineStateCacheManager.getComputePipelineStateCacheByCombination(shaderProperties, false);
 				}
 				else
 				{
-					[[maybe_unused]] const Renderer::IGraphicsPipelineStatePtr graphicsPipelineStatePtr = mGraphicsPipelineStateCacheManager.getGraphicsPipelineStateCacheByCombination(getInvalid<uint32_t>(), shaderProperties, false);
+					[[maybe_unused]] const GraphicsPipelineStateCache* graphicsPipelineStateCache = mGraphicsPipelineStateCacheManager.getGraphicsPipelineStateCacheByCombination(getInvalid<uint32_t>(), shaderProperties, false);
 				}
 			}
 			while (shaderCombinationIterator.iterate());

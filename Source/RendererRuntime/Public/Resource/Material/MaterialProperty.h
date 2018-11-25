@@ -53,6 +53,7 @@ namespace RendererRuntime
 	//[ Friends                                               ]
 	//[-------------------------------------------------------]
 		friend class MaterialProperties;
+		friend class MaterialBlueprintResourceLoader;	// Must be able to set the material property usage
 
 
 	//[-------------------------------------------------------]

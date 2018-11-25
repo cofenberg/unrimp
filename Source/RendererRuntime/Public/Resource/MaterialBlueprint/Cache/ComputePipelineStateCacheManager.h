@@ -152,7 +152,7 @@ namespace RendererRuntime
 		*  @return
 		*    The requested compute pipeline state cache instance, null pointer on error, do not destroy the instance
 		*/
-		[[nodiscard]] Renderer::IComputePipelineStatePtr getComputePipelineStateCacheByCombination(const ShaderProperties& shaderProperties, bool allowEmergencySynchronousCompilation);
+		[[nodiscard]] const ComputePipelineStateCache* getComputePipelineStateCacheByCombination(const ShaderProperties& shaderProperties, bool allowEmergencySynchronousCompilation);
 
 		/**
 		*  @brief

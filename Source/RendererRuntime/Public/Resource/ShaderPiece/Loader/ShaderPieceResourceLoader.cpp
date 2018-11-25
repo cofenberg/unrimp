@@ -128,6 +128,7 @@ namespace RendererRuntime
 				materialBlueprintResource->getGraphicsPipelineStateCacheManager().clearCache();
 				materialBlueprintResource->getGraphicsPipelineStateCacheManager().getGraphicsProgramCacheManager().clearCache();
 				materialBlueprintResource->getComputePipelineStateCacheManager().clearCache();
+				++const_cast<MaterialProperties&>(materialBlueprintResource->getMaterialProperties()).mShaderCombinationGenerationCounter;
 			}
 
 			// TODO(co) Do only clear the influenced shader cache entries

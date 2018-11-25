@@ -39,7 +39,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
-	Renderer::IComputePipelineStatePtr ComputePipelineStateCacheManager::getComputePipelineStateCacheByCombination(const ShaderProperties& shaderProperties, [[maybe_unused]] bool allowEmergencySynchronousCompilation)
+	const ComputePipelineStateCache* ComputePipelineStateCacheManager::getComputePipelineStateCacheByCombination(const ShaderProperties& shaderProperties, [[maybe_unused]] bool allowEmergencySynchronousCompilation)
 	{
 		// TODO(co) Asserts whether or not e.g. the material resource is using the owning material resource blueprint
 		assert(IResource::LoadingState::LOADED == mMaterialBlueprintResource.getLoadingState());
@@ -52,7 +52,7 @@ namespace RendererRuntime
 			{
 				// There's already a pipeline state cache for the pipeline state signature ID
 				// -> We don't care whether or not the pipeline state cache is currently using fallback data due to asynchronous complication
-				return iterator->second->getComputePipelineStateObjectPtr();
+				return iterator->second;
 			}
 		}
 
@@ -98,7 +98,7 @@ namespace RendererRuntime
 		}
 
 		// Done
-		return computePipelineStateCache->getComputePipelineStateObjectPtr();
+		return computePipelineStateCache;
 	}
 
 	void ComputePipelineStateCacheManager::clearCache()
