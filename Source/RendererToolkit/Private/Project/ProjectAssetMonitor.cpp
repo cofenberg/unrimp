@@ -203,7 +203,15 @@ namespace RendererToolkit
 		const FW::WatchID watchID = fileWatcher.addWatch(mProjectImpl.getAbsoluteProjectDirectory(), &fileWatchListener, true);
 
 		// On startup we need to check for changes which were done while the project asset monitor wasn't running
-		mProjectImpl.compileAllAssets(mRendererTarget.c_str());
+		try
+		{
+			mProjectImpl.compileAllAssets(mRendererTarget.c_str());
+		}
+		catch (const std::exception& e)
+		{
+			RENDERER_LOG(mProjectImpl.getContext(), CRITICAL, "Project compilation failed: %s", e.what())
+			mProjectImpl.onCompilationRunFinished();
+		}
 
 		// Update the file watcher object as long as the project asset monitor is up-and-running
 		while (!mShutdownThread)

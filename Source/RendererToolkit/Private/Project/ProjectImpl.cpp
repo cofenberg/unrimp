@@ -239,7 +239,7 @@ namespace RendererToolkit
 		catch (const std::exception& e)
 		{
 			// In case of an "RendererToolkit::IAssetCompiler::checkIfChanged()"-exception, consider the asset as changed and write at least an informative log message
-			RENDERER_LOG(mContext, INFORMATION, "Failed to check asset with filename \"%s\" for change: \"%s\". Considered the asset as changed.", asset.virtualFilename, e.what())
+			RENDERER_LOG(mContext, TRACE, "Failed to check asset with filename \"%s\" for change: \"%s\". Considered the asset as changed.", asset.virtualFilename, e.what())
 			return true;
 		}
 
