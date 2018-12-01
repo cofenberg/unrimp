@@ -304,7 +304,10 @@ namespace RendererRuntime
 					// The material blueprint is using a graphics pipeline state
 					for (uint8_t i = 0; i < NUMBER_OF_GRAPHICS_SHADER_TYPES; ++i)
 					{
-						shaderBlueprintResourceManager.loadShaderBlueprintResourceByAssetId(mGraphicsShaderBlueprintAssetId[i], mMaterialBlueprintResource->mGraphicsShaderBlueprintResourceId[i]);
+						if (isValid(mGraphicsShaderBlueprintAssetId[i]))
+						{
+							shaderBlueprintResourceManager.loadShaderBlueprintResourceByAssetId(mGraphicsShaderBlueprintAssetId[i], mMaterialBlueprintResource->mGraphicsShaderBlueprintResourceId[i]);
+						}
 					}
 				}
 			}

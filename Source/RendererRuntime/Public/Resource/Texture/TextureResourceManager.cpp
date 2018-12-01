@@ -227,6 +227,7 @@ namespace RendererRuntime
 		// -> Please note that the fallback texture asset ID is intentionally only used if the texture asset ID is valid, it's a fallback as long as the real texture data has not been loaded yet
 		const IRendererRuntime& rendererRuntime = mInternalResourceManager->getRendererRuntime();
 		const Asset* asset = rendererRuntime.getAssetManager().tryGetAssetByAssetId(assetId);
+		// assert((nullptr != asset) && "Unknown asset ID"); // For texture assets there's no assert by intent since it's not unusual that e.g. referenced compositor texture assets get created later on
 		bool load = (reload && nullptr != asset);
 		if (nullptr == textureResource && nullptr != asset)
 		{

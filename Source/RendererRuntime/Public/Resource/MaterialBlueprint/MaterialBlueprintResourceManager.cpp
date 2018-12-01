@@ -94,6 +94,7 @@ namespace RendererRuntime
 
 		// Create the resource instance
 		const Asset* asset = mRendererRuntime.getAssetManager().tryGetAssetByAssetId(assetId);
+		assert((nullptr != asset) && "Unknown asset ID");
 		bool load = (reload && nullptr != asset);
 		if (nullptr == materialBlueprintResource && nullptr != asset)
 		{
