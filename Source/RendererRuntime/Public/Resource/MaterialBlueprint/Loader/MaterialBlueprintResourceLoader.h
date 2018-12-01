@@ -130,6 +130,7 @@ namespace RendererRuntime
 		virtual ~MaterialBlueprintResourceLoader() override;
 		explicit MaterialBlueprintResourceLoader(const MaterialBlueprintResourceLoader&) = delete;
 		MaterialBlueprintResourceLoader& operator=(const MaterialBlueprintResourceLoader&) = delete;
+		void createRendererResources();
 
 
 	//[-------------------------------------------------------]

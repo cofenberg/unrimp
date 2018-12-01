@@ -148,8 +148,10 @@ namespace RendererRuntime
 	private:
 		IRendererRuntime& mRendererRuntime;		///< Renderer runtime instance, do not destroy the instance
 		MaterialResource* mMaterialResource;	///< Destination resource
+
 		// Temporary data
 		MemoryFile mMemoryFile;
+
 		// Temporary data: Techniques
 		uint32_t					 mMaximumNumberOfMaterialTechniques;
 		uint32_t					 mNumberOfTechniques;

@@ -137,6 +137,7 @@ namespace RendererRuntime
 	private:
 		IRendererRuntime& mRendererRuntime;		///< Renderer runtime instance, do not destroy the instance
 		SkeletonResource* mSkeletonResource;	///< Destination resource
+
 		// Temporary data
 		// TODO(co) Right now, there's no standalone skeleton asset, only the skeleton which is part of a mesh
 

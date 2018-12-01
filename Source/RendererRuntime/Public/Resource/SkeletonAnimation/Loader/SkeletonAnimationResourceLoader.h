@@ -134,6 +134,7 @@ namespace RendererRuntime
 	private:
 		IRendererRuntime&		   mRendererRuntime;			///< Renderer runtime instance, do not destroy the instance
 		SkeletonAnimationResource* mSkeletonAnimationResource;	///< Destination resource
+
 		// Temporary data
 		MemoryFile mMemoryFile;
 

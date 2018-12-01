@@ -130,6 +130,7 @@ namespace RendererRuntime
 	private:
 		IRendererRuntime&		 mRendererRuntime;			///< Renderer runtime instance, do not destroy the instance
 		ShaderBlueprintResource* mShaderBlueprintResource;	///< Destination resource
+
 		// Temporary data
 		MemoryFile mMemoryFile;
 		uint32_t   mMaximumNumberOfIncludeShaderPieceAssetIds;

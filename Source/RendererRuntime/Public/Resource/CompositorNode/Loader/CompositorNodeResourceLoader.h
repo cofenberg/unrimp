@@ -138,6 +138,7 @@ namespace RendererRuntime
 	private:
 		IRendererRuntime&		mRendererRuntime;			///< Renderer runtime instance, do not destroy the instance
 		CompositorNodeResource*	mCompositorNodeResource;	///< Destination resource
+
 		// Temporary data
 		MemoryFile mMemoryFile;
 

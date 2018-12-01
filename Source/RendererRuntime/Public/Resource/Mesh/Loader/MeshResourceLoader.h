@@ -117,26 +117,32 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	private:
 		Renderer::IBufferManager& mBufferManager;	///< Buffer manager instance, do not destroy the instance
-		Renderer::IVertexArray*	  mVertexArray;		///< In case the used renderer backend supports native multi-threading we also create the renderer resource asynchronous, but the final resource pointer reassignment must still happen synchronous
+
 		// Temporary data
-		MemoryFile mMemoryFile;
+		Renderer::IVertexArray* mVertexArray;	///< In case the used renderer backend supports native multi-threading we also create the renderer resource asynchronous, but the final resource pointer reassignment must still happen synchronous
+		MemoryFile				mMemoryFile;
+
 		// Temporary vertex buffer
 		uint32_t mNumberOfVertexBufferDataBytes;
 		uint32_t mNumberOfUsedVertexBufferDataBytes;
 		uint8_t* mVertexBufferData;
+
 		// Temporary index buffer
 		uint32_t mNumberOfIndexBufferDataBytes;
 		uint32_t mNumberOfUsedIndexBufferDataBytes;
 		uint8_t* mIndexBufferData;
 		uint8_t  mIndexBufferFormat;	// "Renderer::IndexBufferFormat", don't want to include the header in here
+
 		// Temporary vertex attributes
 		uint32_t				   mNumberOfVertexAttributes;
 		uint32_t				   mNumberOfUsedVertexAttributes;
 		Renderer::VertexAttribute* mVertexAttributes;
+
 		// Temporary sub-meshes
 		uint32_t		 mNumberOfSubMeshes;
 		uint32_t		 mNumberOfUsedSubMeshes;
 		v1Mesh::SubMesh* mSubMeshes;
+
 		// Optional temporary skeleton
 		uint8_t  mNumberOfBones;
 		uint8_t* mSkeletonData;

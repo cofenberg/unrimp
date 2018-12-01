@@ -134,6 +134,7 @@ namespace RendererRuntime
 	private:
 		IRendererRuntime&		  mRendererRuntime;				///< Renderer runtime instance, do not destroy the instance
 		VertexAttributesResource* mVertexAttributesResource;	///< Destination resource
+
 		// Temporary data
 		MemoryFile mMemoryFile;
 

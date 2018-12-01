@@ -133,6 +133,7 @@ namespace RendererRuntime
 	private:
 		IRendererRuntime& mRendererRuntime;	///< Renderer runtime instance, do not destroy the instance
 		SceneResource*    mSceneResource;	///< Destination resource
+
 		// Temporary data
 		MemoryFile mMemoryFile;
 

@@ -132,6 +132,7 @@ namespace RendererRuntime
 	private:
 		IRendererRuntime&	 mRendererRuntime;		///< Renderer runtime instance, do not destroy the instance
 		ShaderPieceResource* mShaderPieceResource;	///< Destination resource
+
 		// Temporary data
 		MemoryFile mMemoryFile;
 		uint32_t   mMaximumNumberOfShaderSourceCodeBytes;
