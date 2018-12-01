@@ -515,11 +515,10 @@ namespace RendererRuntime
 	void MaterialBlueprintResourceLoader::createRendererResources()
 	{
 		Renderer::IRenderer& renderer = mRendererRuntime.getRenderer();
-		const char* virtualFilename = getAsset().virtualFilename;
 
 		// Create the root signature
 		mMaterialBlueprintResource->mRootSignaturePtr = renderer.createRootSignature(mRootSignature);
-		RENDERER_SET_RESOURCE_DEBUG_NAME(mMaterialBlueprintResource->mRootSignaturePtr, virtualFilename);
+		RENDERER_SET_RESOURCE_DEBUG_NAME(mMaterialBlueprintResource->mRootSignaturePtr, getAsset().virtualFilename);
 
 		// Create the sampler states
 		const MaterialBlueprintResourceManager& materialBlueprintResourceManager = mMaterialBlueprintResource->getResourceManager<MaterialBlueprintResourceManager>();
@@ -542,7 +541,7 @@ namespace RendererRuntime
 				materialBlueprintSamplerState->samplerState.maxAnisotropy = defaultMaximumTextureAnisotropy;
 			}
 			samplerState.samplerStatePtr = renderer.createSamplerState(materialBlueprintSamplerState->samplerState);
-			RENDERER_SET_RESOURCE_DEBUG_NAME(samplerState.samplerStatePtr, virtualFilename)
+			RENDERER_SET_RESOURCE_DEBUG_NAME(samplerState.samplerStatePtr, getAsset().virtualFilename)
 		}
 		mMaterialBlueprintResource->mSamplerStateGroup = nullptr;
 	}

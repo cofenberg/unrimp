@@ -122,7 +122,7 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Initialize the resource loader type ID
+		*    Asynchronous initialize the resource loader type ID
 		*
 		*  @param[in] asset
 		*    Asset to load
@@ -135,7 +135,7 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Called to check whether or not the resource loader has to deserialize (usually from file)
+		*    Asynchronous called to check whether or not the resource loader has to deserialize (usually from file)
 		*
 		*  @return
 		*    "true" if deserialization has to be called, else "false" (for example a procedural resource or a resource received via an API like OpenVR)
@@ -144,7 +144,7 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Called when the resource loader has to deserialize (usually from file) the internal data into memory
+		*    Asynchronous called when the resource loader has to deserialize (usually from file) the internal data into memory
 		*
 		*  @param[in] file
 		*    File to read from
@@ -156,13 +156,13 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Called when the resource loader has to perform internal in-memory data processing
+		*    Asynchronous called when the resource loader has to perform internal in-memory data processing
 		*/
 		virtual void onProcessing() = 0;
 
 		/**
 		*  @brief
-		*    Called when the resource loader has to dispatch the data (e.g. to the renderer backend)
+		*    Synchronous called when the resource loader has to dispatch the data (e.g. to the renderer backend)
 		*
 		*  @return
 		*    "true" if the resource is fully loaded, else "false" (e.g. asset dependencies are not fully loaded, yet) meaning this method will be called later on again
@@ -171,7 +171,7 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Called when the resource loader is about to switch the resource into the loaded state
+		*    Synchronous called when the resource loader is about to switch the resource into the loaded state
 		*
 		*  @return
 		*    "true" if the resource is fully loaded, else "false" (e.g. asset dependencies are not fully loaded, yet) meaning this method will be called later on again
