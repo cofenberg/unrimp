@@ -147,7 +147,7 @@
 					"Value": "@ScreenSpaceReflectionMap",
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
 					"MipmapsUsed": "FALSE",
-					"SamplerStateBaseShaderRegisterName": "SamplerPointClamp"
+					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
 				},
 				"2":
 				{
@@ -172,7 +172,7 @@
 					"Value": "@ColorMap",
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
 					"MipmapsUsed": "FALSE",
-					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
+					"SamplerStateBaseShaderRegisterName": "SamplerPointClamp"
 				},
 				"4":
 				{

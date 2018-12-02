@@ -117,9 +117,9 @@ MAIN_BEGIN
 
 	// Fetch the screen space reflection color
 	@property(UseScreenSpaceReflectionMap)
-		float3 screenSpaceReflectionValue = SAMPLE_2D_LOD(ScreenSpaceReflectionMap, SamplerPointClamp, float4(texCoord, 0.0f, 0.0f)).rgb;
+		float3 screenSpaceReflectionValue = SAMPLE_2D_LOD(ScreenSpaceReflectionMap, SamplerLinear, float4(texCoord, 0.0f, 0.0f)).rgb;
 		float2 hitPixel = screenSpaceReflectionValue.xy;
-		float3 reflectionColor = SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(hitPixel.xy, 0.0f, 0.0f)).rgb;
+		float3 reflectionColor = SAMPLE_2D_LOD(ColorMap, SamplerPointClamp, float4(hitPixel.xy, 0.0f, 0.0f)).rgb;
 		float reflectionIntensity = screenSpaceReflectionValue.z;
 	@end
 
