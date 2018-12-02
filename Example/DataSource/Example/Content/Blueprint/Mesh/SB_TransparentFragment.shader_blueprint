@@ -93,7 +93,9 @@ UNIFORM_BUFFER_END
 TEXTURE_BUFFER(2, 2, float4, LightTextureBuffer, 1)	// "LIGHT"
 
 // Textures
-TEXTURE_2D_ARRAY(4, 0, ShadowMap, 2)
+@property(ReceiveShadows)
+	TEXTURE_2D_ARRAY(4, 0, ShadowMap, 2)
+@end
 TEXTURE_2D(4, 1, ReflectionMap, 3)
 TEXTURE_3D_UINT(4, 2, LightClustersMap3D, 4)
 TEXTURE_2D(4, 3, _argb_nxa, 5)		// RGB channel = Albedo map ("_a"-postfix), A channel = x component of normal map ("_n"-postfix)
@@ -128,10 +130,12 @@ SAMPLER_STATE(4, 0, SamplerLinear, 0)
 	@end
 @includepiece(../SharedShaderPiece/SP_Depth.asset)
 	@insertpiece(DefineGetLinearDepthReversedZ)
-@includepiece(../SharedShaderPiece/SP_ExponentialShadow.asset)
-	@insertpiece(DefineExponentialShadow)
-@includepiece(../SharedShaderPiece/SP_Shadow.asset)
-	@insertpiece(DefineCalculateShadowVisibility)
+@property(ReceiveShadows)
+	@includepiece(../SharedShaderPiece/SP_ExponentialShadow.asset)
+		@insertpiece(DefineExponentialShadow)
+	@includepiece(../SharedShaderPiece/SP_Shadow.asset)
+		@insertpiece(DefineCalculateShadowVisibility)
+@end
 @includepiece(../SharedShaderPiece/SP_Noise.asset)
 	@insertpiece(DefineMultipleOctavesNoise3D)
 @property(UseWetSurfaces)
@@ -172,7 +176,10 @@ MAIN_BEGIN
 
 	// Shadow mapping
 	float3 worldSpacePosition = MAIN_INPUT(WorldSpacePositionVS);
-	float shadowVisibility = CalculateShadowVisibility(worldSpacePosition, GetLinearDepthReversedZ(FRAGMENT_POSITION.z));
+	float shadowVisibility = 1.0f;
+	@property(ReceiveShadows)
+		shadowVisibility = CalculateShadowVisibility(worldSpacePosition, GetLinearDepthReversedZ(FRAGMENT_POSITION.z));
+	@end
 
 	// Derive data
 	float3 worldSpaceNormal = MultiplyQuaternionVector(PassData.ViewSpaceToWorldSpaceQuaternion, viewSpaceNormal);

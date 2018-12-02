@@ -79,6 +79,13 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
+	//[ Public definitions                                    ]
+	//[-------------------------------------------------------]
+	public:
+		typedef std::vector<ICompositorInstancePass*> CompositorInstancePasses;
+
+
+	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
@@ -90,6 +97,11 @@ namespace RendererRuntime
 		[[nodiscard]] inline const CompositorWorkspaceInstance& getCompositorWorkspaceInstance() const
 		{
 			return mCompositorWorkspaceInstance;
+		}
+
+		[[nodiscard]] inline const CompositorInstancePasses& getCompositorInstancePasses() const
+		{
+			return mCompositorInstancePasses;
 		}
 
 
@@ -115,13 +127,6 @@ namespace RendererRuntime
 		*    Called post command buffer execution
 		*/
 		void onPostCommandBufferExecution() const;
-
-
-	//[-------------------------------------------------------]
-	//[ Private definitions                                   ]
-	//[-------------------------------------------------------]
-	private:
-		typedef std::vector<ICompositorInstancePass*> CompositorInstancePasses;
 
 
 	//[-------------------------------------------------------]

@@ -104,6 +104,99 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
+		//[-------------------------------------------------------]
+		//[ Settings                                              ]
+		//[-------------------------------------------------------]
+		[[nodiscard]] inline bool isEnabled() const
+		{
+			return mEnabled;
+		}
+
+		inline void setEnabled(bool enabled)
+		{
+			if (mEnabled != enabled)
+			{
+				mEnabled = enabled;
+				++mSettingsGenerationCounter;
+			}
+		}
+
+		[[nodiscard]] inline uint32_t getShadowMapSize() const
+		{
+			return mShadowMapSize;
+		}
+
+		inline void setShadowMapSize(uint32_t shadowMapSize)
+		{
+			if (mShadowMapSize != shadowMapSize)
+			{
+				mShadowMapSize = shadowMapSize;
+				++mSettingsGenerationCounter;
+			}
+		}
+
+		[[nodiscard]] inline uint8_t getNumberOfShadowCascades() const
+		{
+			return mNumberOfShadowCascades;
+		}
+
+		inline void setNumberOfShadowCascades(uint8_t numberOfShadowCascades)
+		{
+			if (mNumberOfShadowCascades != numberOfShadowCascades)
+			{
+				assert(numberOfShadowCascades < CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES);
+				mNumberOfShadowCascades = numberOfShadowCascades;
+				++mSettingsGenerationCounter;
+			}
+		}
+
+		[[nodiscard]] inline uint8_t getNumberOfShadowMultisamples() const
+		{
+			return mNumberOfShadowMultisamples;
+		}
+
+		inline void setNumberOfShadowMultisamples(uint8_t numberOfShadowMultisamples)
+		{
+			if (mNumberOfShadowMultisamples != numberOfShadowMultisamples)
+			{
+				mNumberOfShadowMultisamples = numberOfShadowMultisamples;
+				++mSettingsGenerationCounter;
+			}
+		}
+
+		[[nodiscard]] inline float getCascadeSplitsLambda() const
+		{
+			return mCascadeSplitsLambda;
+		}
+
+		inline void setCascadeSplitsLambda(float cascadeSplitsLambda)
+		{
+			mCascadeSplitsLambda = cascadeSplitsLambda;
+		}
+
+		[[nodiscard]] inline float getShadowFilterSize() const
+		{
+			return mShadowFilterSize;
+		}
+
+		inline void setShadowFilterSize(float shadowFilterSize)
+		{
+			mShadowFilterSize = shadowFilterSize;
+		}
+
+		[[nodiscard]] inline bool getStabilizeCascades() const
+		{
+			return mStabilizeCascades;
+		}
+
+		inline void setStabilizeCascades(bool stabilizeCascades)
+		{
+			mStabilizeCascades = stabilizeCascades;
+		}
+
+		//[-------------------------------------------------------]
+		//[ Internal                                              ]
+		//[-------------------------------------------------------]
 		[[nodiscard]] inline const PassData& getPassData() const
 		{
 			return mPassData;
@@ -138,6 +231,17 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
+		// Settings
+		bool	 mEnabled;						///< Shadow enabled?
+		uint32_t mShadowMapSize;				///< The shadow map size is usually 512, 1024 or 2048
+		uint8_t  mNumberOfShadowCascades;		///< Number of shadow cascades, usually 4
+		uint8_t  mNumberOfShadowMultisamples;	///< The number of shadow multisamples per pixel (valid values: 1, 2, 4, 8)
+		float	 mCascadeSplitsLambda;			///< Cascade splits lambda
+		float	 mShadowFilterSize;				///< Shadow filter size
+		bool	 mStabilizeCascades;			///< Keeps consistent sizes for each cascade, and snaps each cascade so that they move in texel-sized increments. Reduces temporal aliasing artifacts, but reduces the effective resolution of the cascades. See Valient, M., "Stable Rendering of Cascaded Shadow Maps", In: Engel, W. F ., et al., "ShaderX6: Advanced Rendering Techniques", Charles River Media, 2008, ISBN 1-58450-544-3.
+		// Internal
+		uint32_t					   mSettingsGenerationCounter;	// Most simple solution to detect settings changes which make internal data invalid
+		uint32_t					   mUsedSettingsGenerationCounter;
 		PassData					   mPassData;
 		Renderer::IFramebufferPtr	   mDepthFramebufferPtr;
 		Renderer::IFramebufferPtr	   mVarianceFramebufferPtr[CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES];

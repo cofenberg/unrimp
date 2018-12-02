@@ -56,7 +56,9 @@ TEXTURE_BUFFER(1, 0, float4, LightTextureBuffer, 0)	// "LIGHT"
 // Textures
 TEXTURE_2D(2, 1, _argb_nxa, 2)
 TEXTURE_2D(2, 2, _aor_rg_mb_nya, 3)
-TEXTURE_2D_ARRAY(2, 3, ShadowMap, 4)
+@property(ReceiveShadows)
+	TEXTURE_2D_ARRAY(2, 3, ShadowMap, 4)
+@end
 TEXTURE_2D(2, 4, ReflectionMap, 5)
 TEXTURE_3D_UINT(2, 5, LightClustersMap3D, 6)
 @property(UseWetSurfaces)
@@ -85,11 +87,13 @@ SAMPLER_STATE(3, 1, SamplerLinearClamp, 1)
 	@end
 @includepiece(../SharedShaderPiece/SP_Depth.asset)
 	@insertpiece(DefineGetLinearDepthReversedZ)
-@includepiece(../SharedShaderPiece/SP_ExponentialShadow.asset)
-	@insertpiece(DefineExponentialShadow)
-@includepiece(../SharedShaderPiece/SP_Shadow.asset)
-	@insertpiece(DefineCalculateShadowVisibility)
-	@insertpiece(DefineShadowDebugging)
+@property(ReceiveShadows)
+	@includepiece(../SharedShaderPiece/SP_ExponentialShadow.asset)
+		@insertpiece(DefineExponentialShadow)
+	@includepiece(../SharedShaderPiece/SP_Shadow.asset)
+		@insertpiece(DefineCalculateShadowVisibility)
+		@insertpiece(DefineShadowDebugging)
+@end
 @includepiece(../SharedShaderPiece/SP_Noise.asset)
 	@insertpiece(DefineMultipleOctavesNoise3D)
 @property(UseWetSurfaces)
@@ -161,7 +165,10 @@ MAIN_BEGIN
 
 	// Shadow mapping
 	float3 worldSpacePosition = MAIN_INPUT(WorldSpacePosition);
-	float shadowVisibility = CalculateShadowVisibility(worldSpacePosition - PassData.UnmodifiedWorldSpaceCameraPosition, GetLinearDepthReversedZ(FRAGMENT_POSITION.z));
+	float shadowVisibility = 1.0f;
+	@property(ReceiveShadows)
+		shadowVisibility = CalculateShadowVisibility(worldSpacePosition - PassData.UnmodifiedWorldSpaceCameraPosition, GetLinearDepthReversedZ(FRAGMENT_POSITION.z));
+	@end
 
 	// Derive data
 	float3 worldSpaceNormal = MultiplyQuaternionVector(PassData.ViewSpaceToWorldSpaceQuaternion, viewSpaceNormal);
@@ -214,7 +221,9 @@ MAIN_BEGIN
 	float edgePixel = (COVERAGE_MASK != PassData.FullCoverageMask) ? 1.0f : 0.0f;
 
 	// Don't remove the following commented code: Shadow map debugging
+	// @property(ReceiveShadows)
 	// color *= GetShadowCascadeColor(GetLinearDepthReversedZ(FRAGMENT_POSITION.z));
+	// @end
 
 	// Done
 	MAIN_OUTPUT_COLOR(0) = float4(color, edgePixel);

@@ -192,6 +192,7 @@ private:
 	// Graphics
 	Compositor mInstancedCompositor;
 	int		   mCurrentCompositor;
+	bool	   mShadows;
 	bool	   mHighQualityLighting;
 	bool	   mSoftParticles;
 	int		   mCurrentTextureFiltering;

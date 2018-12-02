@@ -78,6 +78,21 @@
 				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
 				"Description": "2D depth map"
 			},
+			"ReceiveShadows":
+			{
+				"Usage": "SHADER_COMBINATION",
+				"ValueType": "GLOBAL_MATERIAL_PROPERTY_ID",
+				"Value": "@GlobalReceiveShadows",
+				"Description": "Enable/disable receive shadows",
+				"VisualImportance": "100"
+			},
+			"GlobalReceiveShadows":
+			{
+				"Usage": "GLOBAL_REFERENCE_FALLBACK",
+				"ValueType": "BOOLEAN",
+				"Value": "TRUE",
+				"Description": "Fallback value in case there's no global receive shadows global material property"
+			},
 			"ShadowMap":
 			{
 				"Usage": "TEXTURE_REFERENCE",

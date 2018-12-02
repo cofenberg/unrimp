@@ -51,9 +51,9 @@
 #include <RendererRuntime/Public/Resource/Scene/Item/Light/SunlightSceneItem.h>
 #include <RendererRuntime/Public/Resource/Scene/Item/Mesh/SkeletonMeshSceneItem.h>
 #include <RendererRuntime/Public/Resource/Mesh/MeshResourceManager.h>
-#include <RendererRuntime/Public/Resource/CompositorNode/Pass/ICompositorInstancePass.h>
-#include <RendererRuntime/Public/Resource/CompositorWorkspace/CompositorWorkspaceInstance.h>
 #include <RendererRuntime/Public/Resource/CompositorNode/Pass/DebugGui/CompositorResourcePassDebugGui.h>
+#include <RendererRuntime/Public/Resource/CompositorNode/Pass/ShadowMap/CompositorInstancePassShadowMap.h>
+#include <RendererRuntime/Public/Resource/CompositorWorkspace/CompositorWorkspaceInstance.h>
 #include <RendererRuntime/Public/Resource/MaterialBlueprint/Cache/GraphicsPipelineStateCompiler.h>
 #include <RendererRuntime/Public/Resource/MaterialBlueprint/Cache/ComputePipelineStateCompiler.h>
 #include <RendererRuntime/Public/Resource/MaterialBlueprint/MaterialBlueprintResourceManager.h>
@@ -138,6 +138,7 @@ FirstScene::FirstScene() :
 	// Graphics
 	mInstancedCompositor(Compositor::FORWARD),
 	mCurrentCompositor(mInstancedCompositor),
+	mShadows(true),
 	mHighQualityLighting(true),
 	mSoftParticles(true),
 	mCurrentTextureFiltering(TextureFiltering::ANISOTROPIC_4),
@@ -288,6 +289,7 @@ void FirstScene::onUpdate()
 		{ // Tell the material blueprint resource manager about our global material properties
 			RendererRuntime::MaterialProperties& globalMaterialProperties = rendererRuntime->getMaterialBlueprintResourceManager().getGlobalMaterialProperties();
 			// Graphics
+			globalMaterialProperties.setPropertyById(STRING_ID("GlobalReceiveShadows"), RendererRuntime::MaterialPropertyValue::fromBoolean(mShadows));
 			globalMaterialProperties.setPropertyById(STRING_ID("GlobalHighQualityLighting"), RendererRuntime::MaterialPropertyValue::fromBoolean(mHighQualityLighting));
 			globalMaterialProperties.setPropertyById(STRING_ID("GlobalSoftParticles"), RendererRuntime::MaterialPropertyValue::fromBoolean(mSoftParticles));
 			globalMaterialProperties.setPropertyById(STRING_ID("GlobalTessellatedTriangleWidth"), RendererRuntime::MaterialPropertyValue::fromFloat(static_cast<float>(mTerrainTessellatedTriangleWidth)));
@@ -585,18 +587,37 @@ void FirstScene::applyCurrentSettings(Renderer::IRenderTarget& mainRenderTarget)
 		}
 		rendererRuntime->getTextureResourceManager().setNumberOfTopMipmapsToRemove(static_cast<uint8_t>(mNumberOfTopTextureMipmapsToRemove));
 
-		// Update compositor workspace
-		{ // MSAA
-			static constexpr uint8_t NUMBER_OF_MULTISAMPLES[4] = { 1, 2, 4, 8 };
-			uint8_t numberOfMultisamples = NUMBER_OF_MULTISAMPLES[mCurrentMsaa];
-			const uint8_t maximumNumberOfMultisamples = rendererRuntime->getRenderer().getCapabilities().maximumNumberOfMultisamples;
-			if (numberOfMultisamples > maximumNumberOfMultisamples)
-			{
-				numberOfMultisamples = maximumNumberOfMultisamples;
+		{ // Update compositor workspace
+			{ // MSAA
+				static constexpr uint8_t NUMBER_OF_MULTISAMPLES[4] = { 1, 2, 4, 8 };
+				uint8_t numberOfMultisamples = NUMBER_OF_MULTISAMPLES[mCurrentMsaa];
+				const uint8_t maximumNumberOfMultisamples = rendererRuntime->getRenderer().getCapabilities().maximumNumberOfMultisamples;
+				if (numberOfMultisamples > maximumNumberOfMultisamples)
+				{
+					numberOfMultisamples = maximumNumberOfMultisamples;
+				}
+				mCompositorWorkspaceInstance->setNumberOfMultisamples(numberOfMultisamples);
 			}
-			mCompositorWorkspaceInstance->setNumberOfMultisamples(numberOfMultisamples);
+
+			// Resolution Scale
+			mCompositorWorkspaceInstance->setResolutionScale(mResolutionScale);
+
+			// Shadow
+			for (const RendererRuntime::CompositorNodeInstance* compositorNodeInstance : mCompositorWorkspaceInstance->getSequentialCompositorNodeInstances())
+			{
+				for (RendererRuntime::ICompositorInstancePass* compositorInstancePass : compositorNodeInstance->getCompositorInstancePasses())
+				{
+					if (compositorInstancePass->getCompositorResourcePass().getTypeId() == RendererRuntime::CompositorResourcePassShadowMap::TYPE_ID)
+					{
+						RendererRuntime::CompositorInstancePassShadowMap* compositorInstancePassShadowMap = static_cast<RendererRuntime::CompositorInstancePassShadowMap*>(compositorInstancePass);
+						compositorInstancePassShadowMap->setEnabled(mShadows);
+
+						// We know that there's just a single compositor instance pass shadow map per compositor node instance, so get us out of the inner loop right now
+						break;
+					}
+				}
+			}
 		}
-		mCompositorWorkspaceInstance->setResolutionScale(mResolutionScale);
 
 		{ // Update the material resource instance
 			const RendererRuntime::MaterialResourceManager& materialResourceManager = rendererRuntime->getMaterialResourceManager();
@@ -733,6 +754,7 @@ void FirstScene::createDebugGui([[maybe_unused]] Renderer::IRenderTarget& mainRe
 							static constexpr const char* items[] = { "Debug", "Forward", "Deferred", "VR" };
 							ImGui::Combo("Compositor", &mCurrentCompositor, items, static_cast<int>(GLM_COUNTOF(items)));
 						}
+						ImGui::Checkbox("Shadows", &mShadows);
 						ImGui::Checkbox("High Quality Lighting", &mHighQualityLighting);
 						ImGui::Checkbox("Soft-Particles", &mSoftParticles);
 						{

@@ -77,26 +77,6 @@ namespace RendererRuntime
 			return mTextureAssetId;
 		}
 
-		[[nodiscard]] inline uint32_t getShadowMapSize() const
-		{
-			return mShadowMapSize;
-		}
-
-		[[nodiscard]] inline uint8_t getNumberOfShadowCascades() const
-		{
-			return mNumberOfShadowCascades;
-		}
-
-		[[nodiscard]] inline uint8_t getNumberOfShadowMultisamples() const
-		{
-			return mNumberOfShadowMultisamples;
-		}
-
-		[[nodiscard]] inline float getCascadeSplitsLambda() const
-		{
-			return mCascadeSplitsLambda;
-		}
-
 		[[nodiscard]] inline AssetId getDepthToExponentialVarianceMaterialBlueprintAssetId() const
 		{
 			return mDepthToExponentialVarianceMaterialBlueprintAssetId;
@@ -105,16 +85,6 @@ namespace RendererRuntime
 		[[nodiscard]] inline AssetId getBlurMaterialBlueprintAssetId() const
 		{
 			return mBlurMaterialBlueprintAssetId;
-		}
-
-		[[nodiscard]] inline float getShadowFilterSize() const
-		{
-			return mShadowFilterSize;
-		}
-
-		[[nodiscard]] inline bool getStabilizeCascades() const
-		{
-			return mStabilizeCascades;
 		}
 
 
@@ -135,13 +105,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	private:
 		inline explicit CompositorResourcePassShadowMap(const CompositorTarget& compositorTarget) :
-			CompositorResourcePassScene(compositorTarget),
-			mShadowMapSize(1024),
-			mNumberOfShadowCascades(4),
-			mNumberOfShadowMultisamples(4),
-			mCascadeSplitsLambda(0.99f),
-			mShadowFilterSize(8.0f),
-			mStabilizeCascades(true)
+			CompositorResourcePassScene(compositorTarget)
 		{
 			// Nothing here
 		}
@@ -159,15 +123,9 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		AssetId	 mTextureAssetId;										///< Shadow map texture asset ID
-		uint32_t mShadowMapSize;										///< The shadow map size is usually 512, 1024 or 2048
-		uint8_t  mNumberOfShadowCascades;								///< Number of shadow cascades, usually 4
-		uint8_t  mNumberOfShadowMultisamples;							///< The number of shadow multisamples per pixel (valid values: 1, 2, 4, 8)
-		float	 mCascadeSplitsLambda;									///< Cascade splits lambda
-		AssetId  mDepthToExponentialVarianceMaterialBlueprintAssetId;	///< Depth to exponential variance material blueprint asset ID
-		AssetId  mBlurMaterialBlueprintAssetId;							///< Blur material blueprint asset ID
-		float	 mShadowFilterSize;										///< Shadow filter size
-		bool	 mStabilizeCascades;									///< Keeps consistent sizes for each cascade, and snaps each cascade so that they move in texel-sized increments. Reduces temporal aliasing artifacts, but reduces the effective resolution of the cascades. See Valient, M., "Stable Rendering of Cascaded Shadow Maps", In: Engel, W. F ., et al., "ShaderX6: Advanced Rendering Techniques", Charles River Media, 2008, ISBN 1-58450-544-3.
+		AssetId	mTextureAssetId;										///< Shadow map texture asset ID
+		AssetId mDepthToExponentialVarianceMaterialBlueprintAssetId;	///< Depth to exponential variance material blueprint asset ID
+		AssetId mBlurMaterialBlueprintAssetId;							///< Blur material blueprint asset ID
 
 
 	};

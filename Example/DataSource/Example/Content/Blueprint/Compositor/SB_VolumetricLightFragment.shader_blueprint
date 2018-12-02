@@ -70,7 +70,9 @@ TEXTURE_BUFFER(1, 0, float4, LightTextureBuffer, 0)	// "LIGHT"
 
 // Textures
 TEXTURE_2D(2, 0, DepthMap, 1)
-TEXTURE_2D_ARRAY(2, 1, ShadowMap, 2)
+@property(ReceiveShadows)
+	TEXTURE_2D_ARRAY(2, 1, ShadowMap, 2)
+@end
 TEXTURE_3D_UINT(2, 2, LightClustersMap3D, 3)
 
 // Samplers
@@ -84,10 +86,12 @@ SAMPLER_STATE(2, 0, SamplerLinear, 0)
 	@insertpiece(DefineGetBayerScreenSpaceDitherValue)
 @includepiece(../SharedShaderPiece/SP_Depth.asset)
 	@insertpiece(DefineGetLinearDepth)
-@includepiece(../SharedShaderPiece/SP_ExponentialShadow.asset)
-	@insertpiece(DefineExponentialShadow)
-@includepiece(../SharedShaderPiece/SP_Shadow.asset)
-	@insertpiece(DefineCalculateShadowVisibility)
+@property(ReceiveShadows)
+	@includepiece(../SharedShaderPiece/SP_ExponentialShadow.asset)
+		@insertpiece(DefineExponentialShadow)
+	@includepiece(../SharedShaderPiece/SP_Shadow.asset)
+		@insertpiece(DefineCalculateShadowVisibility)
+@end
 
 // Mie scaterring approximated with Henyey-Greenstein phase function as outlined in "GPU Pro 5", page 131, equation 3.1
 // Let x = angle between light and camera vectors
@@ -143,8 +147,10 @@ MAIN_BEGIN
 	{
 		linearDepth = MATRIX_MUL(PassData.WorldSpaceToViewSpaceMatrix, float4(currentPosition.xyz, 1.0f)).z;
 
-		float shadowVisibility = CalculateShadowVisibility(currentPosition, linearDepth);
-		FLATTEN if (shadowVisibility > 0.0f)
+		@property(ReceiveShadows)
+			float shadowVisibility = CalculateShadowVisibility(currentPosition, linearDepth);
+			FLATTEN if (shadowVisibility > 0.0f)
+		@end
 		{
 			accumulatedFog += mieScatter;
 		}

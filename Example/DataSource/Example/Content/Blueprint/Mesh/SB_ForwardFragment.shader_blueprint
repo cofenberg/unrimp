@@ -101,7 +101,9 @@ UNIFORM_BUFFER_END
 TEXTURE_BUFFER(3, 0, float4, LightTextureBuffer, 1)	// "LIGHT"
 
 // Textures
-TEXTURE_2D_ARRAY(4, 0, ShadowMap, 2)
+@property(ReceiveShadows)
+	TEXTURE_2D_ARRAY(4, 0, ShadowMap, 2)
+@end
 TEXTURE_2D(4, 1, ReflectionMap, 3)
 TEXTURE_3D_UINT(4, 2, LightClustersMap3D, 4)
 TEXTURE_2D(4, 3, _argb_nxa, 5)		// RGB channel = Albedo map ("_a"-postfix), A channel = x component of normal map ("_n"-postfix)
@@ -136,11 +138,13 @@ SAMPLER_STATE(5, 0, SamplerLinear, 0)
 	@end
 @includepiece(../SharedShaderPiece/SP_Depth.asset)
 	@insertpiece(DefineGetLinearDepthReversedZ)
-@includepiece(../SharedShaderPiece/SP_ExponentialShadow.asset)
-	@insertpiece(DefineExponentialShadow)
-@includepiece(../SharedShaderPiece/SP_Shadow.asset)
-	@insertpiece(DefineCalculateShadowVisibility)
-	@insertpiece(DefineShadowDebugging)
+@property(ReceiveShadows)
+	@includepiece(../SharedShaderPiece/SP_ExponentialShadow.asset)
+		@insertpiece(DefineExponentialShadow)
+	@includepiece(../SharedShaderPiece/SP_Shadow.asset)
+		@insertpiece(DefineCalculateShadowVisibility)
+		@insertpiece(DefineShadowDebugging)
+@end
 @includepiece(../SharedShaderPiece/SP_Noise.asset)
 	@insertpiece(DefineMultipleOctavesNoise3D)
 @property(UseParallaxOcclusionMapping)
@@ -215,7 +219,9 @@ MAIN_BEGIN
 	viewSpaceNormal = IS_FRONT_FACE ? viewSpaceNormal : -viewSpaceNormal;
 
 	// Shadow mapping
-	shadowVisibility *= CalculateShadowVisibility(worldSpacePosition, GetLinearDepthReversedZ(FRAGMENT_POSITION.z));
+	@property(ReceiveShadows)
+		shadowVisibility *= CalculateShadowVisibility(worldSpacePosition, GetLinearDepthReversedZ(FRAGMENT_POSITION.z));
+	@end
 
 	// Water influence on material BRDF
 	// -> Wet surfaces parameter layout: x=wet level, y=hole/cracks flood level, z=puddle flood level, w=rain intensity
@@ -264,7 +270,9 @@ MAIN_BEGIN
 	@insertpiece(PerformComplexPixelDetection)
 
 	// Don't remove the following commented code: Shadow map debugging
-	// color *= GetShadowCascadeColor(GetLinearDepthReversedZ(FRAGMENT_POSITION.z));
+	// @property(ReceiveShadows)
+	//	color *= GetShadowCascadeColor(GetLinearDepthReversedZ(FRAGMENT_POSITION.z));
+	// @end
 
 	// Done
 	MAIN_OUTPUT_COLOR(0) = float4(color, edgePixel);

@@ -88,6 +88,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	public:
 		typedef std::vector<RenderableManager*> RenderableManagers;
+		typedef std::vector<CompositorNodeInstance*> CompositorNodeInstances;
 
 		struct RenderQueueIndexRange final
 		{
@@ -95,7 +96,7 @@ namespace RendererRuntime
 			uint8_t			   maximumRenderQueueIndex;	///< Fixed during runtime
 			RenderableManagers renderableManagers;		///< Dynamic during runtime
 
-			RenderQueueIndexRange(uint8_t _minimumRenderQueueIndex, uint8_t _maximumRenderQueueIndex) :
+			inline RenderQueueIndexRange(uint8_t _minimumRenderQueueIndex, uint8_t _maximumRenderQueueIndex) :
 				minimumRenderQueueIndex(_minimumRenderQueueIndex),
 				maximumRenderQueueIndex(_maximumRenderQueueIndex)
 			{}
@@ -147,6 +148,11 @@ namespace RendererRuntime
 			return mExecutionRenderTarget;
 		}
 
+		[[nodiscard]] inline const CompositorNodeInstances& getSequentialCompositorNodeInstances() const
+		{
+			return mSequentialCompositorNodeInstances;
+		}
+
 		[[nodiscard]] inline const Renderer::CommandBuffer& getCommandBuffer() const
 		{
 			return mCommandBuffer;
@@ -171,13 +177,6 @@ namespace RendererRuntime
 		void createFramebuffersAndRenderTargetTextures(const Renderer::IRenderTarget& mainRenderTarget);
 		void destroyFramebuffersAndRenderTargetTextures(bool clearManagers = false);
 		void clearRenderQueueIndexRangesRenderableManagers();
-
-
-	//[-------------------------------------------------------]
-	//[ Private definitions                                   ]
-	//[-------------------------------------------------------]
-	private:
-		typedef std::vector<CompositorNodeInstance*> CompositorNodeInstances;
 
 
 	//[-------------------------------------------------------]

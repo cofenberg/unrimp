@@ -82,7 +82,9 @@ TEXTURE_BUFFER(1, 0, float4, LightTextureBuffer, 0)	// "LIGHT"
 	TEXTURE_2D(2, 2, GBufferMap2, 3)	// GBuffer 2: rgb = emissive color, a = metallic
 	TEXTURE_2D(2, 3, DepthMap, 4)
 @end
-TEXTURE_2D_ARRAY(2, 4, ShadowMap, 5)
+@property(ReceiveShadows)
+	TEXTURE_2D_ARRAY(2, 4, ShadowMap, 5)
+@end
 TEXTURE_2D(2, 5, ScreenSpaceAmbientOcclusionMap, 6)
 TEXTURE_2D(2, 6, VolumetricLightMap, 7)
 TEXTURE_2D(2, 7, ReflectionMap, 8)
@@ -114,11 +116,13 @@ SAMPLER_STATE(2, 0, SamplerLinear, 0)
 	@end
 @includepiece(../SharedShaderPiece/SP_Depth.asset)
 	@insertpiece(DefineGetLinearDepth)
-@includepiece(../SharedShaderPiece/SP_ExponentialShadow.asset)
-	@insertpiece(DefineExponentialShadow)
-@includepiece(../SharedShaderPiece/SP_Shadow.asset)
-	@insertpiece(DefineCalculateShadowVisibility)
-	@insertpiece(DefineShadowDebugging)
+@property(ReceiveShadows)
+	@includepiece(../SharedShaderPiece/SP_ExponentialShadow.asset)
+		@insertpiece(DefineExponentialShadow)
+	@includepiece(../SharedShaderPiece/SP_Shadow.asset)
+		@insertpiece(DefineCalculateShadowVisibility)
+		@insertpiece(DefineShadowDebugging)
+@end
 @includepiece(../SharedShaderPiece/SP_Noise.asset)
 	@insertpiece(DefineMultipleOctavesNoise3D)
 @property(UseWetSurfaces)
@@ -142,7 +146,10 @@ float3 CalculateColorByGBuffer(float2 texCoord, float3 viewRay, float4 gbuffer0V
 
 	// Shadow mapping
 	float3 worldSpacePosition = MATRIX_MUL(PassData.ViewSpaceToWorldSpaceMatrix, float4(viewSpacePosition.xyz, 1.0f)).xyz;
-	float shadowVisibility = CalculateShadowVisibility(worldSpacePosition, linearDepth);
+	float shadowVisibility = 1.0f;
+	@property(ReceiveShadows)
+		shadowVisibility = CalculateShadowVisibility(worldSpacePosition, linearDepth);
+	@end
 
 	// Derive data
 	float3 viewSpaceIncident = -normalize(viewSpacePosition);	// In view space, the camera is at the origin
@@ -187,7 +194,9 @@ float3 CalculateColorByGBuffer(float2 texCoord, float3 viewRay, float4 gbuffer0V
 	color += volumetricLight;
 
 	// Don't remove the following commented code: Shadow map debugging
+	// @property(ReceiveShadows)
 	// color *= GetShadowCascadeColor(linearDepth);
+	// @end
 
 	// Done
 	return color;
