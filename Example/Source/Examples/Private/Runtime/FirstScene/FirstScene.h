@@ -136,21 +136,30 @@ private:
 //[ Private definitions                                   ]
 //[-------------------------------------------------------]
 private:
-	enum Compositor
-	{
-		DEBUG,
-		FORWARD,
-		DEFERRED,
-		VR
-	};
-	enum Msaa
+	enum class Msaa
 	{
 		NONE,
 		TWO,
 		FOUR,
 		EIGHT
 	};
-	enum TextureFiltering
+	enum class Compositor
+	{
+		DEBUG,
+		FORWARD,
+		DEFERRED,
+		VR
+	};
+	enum class ShadowQuality
+	{
+		NONE,
+		LOW,
+		MEDIUM,
+		HIGH,
+		ULTRA,
+		EPIC
+	};
+	enum class TextureFiltering
 	{
 		POINT,
 		BILINEAR,
@@ -190,14 +199,15 @@ private:
 	bool  mCurrentUseVerticalSynchronization;
 	int	  mCurrentMsaa;
 	// Graphics
-	Compositor mInstancedCompositor;
-	int		   mCurrentCompositor;
-	bool	   mShadows;
-	bool	   mHighQualityLighting;
-	bool	   mSoftParticles;
-	int		   mCurrentTextureFiltering;
-	int		   mNumberOfTopTextureMipmapsToRemove;
-	int		   mTerrainTessellatedTriangleWidth;
+	Compositor	  mInstancedCompositor;
+	int			  mCurrentCompositor;
+	ShadowQuality mShadowQuality;
+	int			  mCurrentShadowQuality;
+	bool		  mHighQualityLighting;
+	bool		  mSoftParticles;
+	int			  mCurrentTextureFiltering;
+	int			  mNumberOfTopTextureMipmapsToRemove;
+	int			  mTerrainTessellatedTriangleWidth;
 	// Environment
 	float mCloudsIntensity;
 	float mWindSpeed;

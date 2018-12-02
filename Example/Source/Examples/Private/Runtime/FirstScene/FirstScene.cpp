@@ -134,14 +134,15 @@ FirstScene::FirstScene() :
 	mResolutionScale(1.0f),
 	mUseVerticalSynchronization(false),
 	mCurrentUseVerticalSynchronization(false),
-	mCurrentMsaa(Msaa::FOUR),
+	mCurrentMsaa(static_cast<int>(Msaa::FOUR)),
 	// Graphics
 	mInstancedCompositor(Compositor::FORWARD),
-	mCurrentCompositor(mInstancedCompositor),
-	mShadows(true),
+	mCurrentCompositor(static_cast<int>(mInstancedCompositor)),
+	mShadowQuality(ShadowQuality::HIGH),
+	mCurrentShadowQuality(static_cast<int>(mShadowQuality)),
 	mHighQualityLighting(true),
 	mSoftParticles(true),
-	mCurrentTextureFiltering(TextureFiltering::ANISOTROPIC_4),
+	mCurrentTextureFiltering(static_cast<int>(TextureFiltering::ANISOTROPIC_4)),
 	mNumberOfTopTextureMipmapsToRemove(0),
 	mTerrainTessellatedTriangleWidth(16),
 	// Environment
@@ -211,7 +212,8 @@ void FirstScene::onInitialization()
 		const Renderer::NameId nameId = rendererRuntime->getRenderer().getNameId();
 		if (Renderer::NameId::VULKAN == nameId || Renderer::NameId::DIRECT3D10 == nameId || Renderer::NameId::DIRECT3D9 == nameId)
 		{
-			mCurrentCompositor = mInstancedCompositor = Compositor::DEBUG;
+			mInstancedCompositor = Compositor::DEBUG;
+			mCurrentCompositor = static_cast<int>(mInstancedCompositor);
 			if (Renderer::NameId::VULKAN == nameId)
 			{
 				rendererRuntime->getMaterialBlueprintResourceManager().setCreateInitialPipelineStateCaches(false);
@@ -235,12 +237,13 @@ void FirstScene::onInitialization()
 				{
 					// Select the VR compositor and enable MSAA by default since image stability is quite important for VR
 					// -> "Advanced VR Rendering" by Alex Vlachos, Valve -> page 26 -> "4xMSAA Minimum Quality" ( http://media.steampowered.com/apps/valve/2015/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf )
-					if (Compositor::DEBUG != mCurrentCompositor)
+					if (Compositor::DEBUG != static_cast<Compositor>(mCurrentCompositor))
 					{
-						mCurrentCompositor = mInstancedCompositor = Compositor::VR;
+						mInstancedCompositor = Compositor::VR;
+						mCurrentCompositor = static_cast<int>(mInstancedCompositor);
 					}
-					mCurrentMsaa = Msaa::FOUR;
-					mCurrentTextureFiltering = TextureFiltering::ANISOTROPIC_4;
+					mCurrentMsaa = static_cast<int>(Msaa::FOUR);
+					mCurrentTextureFiltering = static_cast<int>(TextureFiltering::ANISOTROPIC_4);
 				}
 			}
 		}
@@ -251,9 +254,10 @@ void FirstScene::onInitialization()
 		if (rendererRuntime->getRenderer().getNameId() == Renderer::NameId::VULKAN || rendererRuntime->getRenderer().getNameId() == Renderer::NameId::OPENGLES3)
 		{
 			// TODO(co) Add compositor designed for mobile devices, for now we're using the most simple debug compositor to have something on the screen
-			mCurrentCompositor = mInstancedCompositor = Compositor::DEBUG;
-			mCurrentMsaa = Msaa::NONE;
-			mCurrentTextureFiltering = TextureFiltering::BILINEAR;
+			mInstancedCompositor = Compositor::DEBUG;
+			mCurrentCompositor = static_cast<int>(mInstancedCompositor);
+			mCurrentMsaa = static_cast<int>(Msaa::NONE);
+			mCurrentTextureFiltering = static_cast<int>(TextureFiltering::BILINEAR);
 		}
 
 		// Create the compositor workspace instance
@@ -289,7 +293,7 @@ void FirstScene::onUpdate()
 		{ // Tell the material blueprint resource manager about our global material properties
 			RendererRuntime::MaterialProperties& globalMaterialProperties = rendererRuntime->getMaterialBlueprintResourceManager().getGlobalMaterialProperties();
 			// Graphics
-			globalMaterialProperties.setPropertyById(STRING_ID("GlobalReceiveShadows"), RendererRuntime::MaterialPropertyValue::fromBoolean(mShadows));
+			globalMaterialProperties.setPropertyById(STRING_ID("GlobalReceiveShadows"), RendererRuntime::MaterialPropertyValue::fromBoolean(ShadowQuality::NONE != mShadowQuality));
 			globalMaterialProperties.setPropertyById(STRING_ID("GlobalHighQualityLighting"), RendererRuntime::MaterialPropertyValue::fromBoolean(mHighQualityLighting));
 			globalMaterialProperties.setPropertyById(STRING_ID("GlobalSoftParticles"), RendererRuntime::MaterialPropertyValue::fromBoolean(mSoftParticles));
 			globalMaterialProperties.setPropertyById(STRING_ID("GlobalTessellatedTriangleWidth"), RendererRuntime::MaterialPropertyValue::fromFloat(static_cast<float>(mTerrainTessellatedTriangleWidth)));
@@ -545,7 +549,7 @@ void FirstScene::applyCurrentSettings(Renderer::IRenderTarget& mainRenderTarget)
 		}
 
 		// Recreate the compositor workspace instance, if required
-		if (mInstancedCompositor != mCurrentCompositor)
+		if (mInstancedCompositor != static_cast<Compositor>(mCurrentCompositor))
 		{
 			mInstancedCompositor = static_cast<Compositor>(mCurrentCompositor);
 			createCompositorWorkspace();
@@ -588,32 +592,73 @@ void FirstScene::applyCurrentSettings(Renderer::IRenderTarget& mainRenderTarget)
 		rendererRuntime->getTextureResourceManager().setNumberOfTopMipmapsToRemove(static_cast<uint8_t>(mNumberOfTopTextureMipmapsToRemove));
 
 		{ // Update compositor workspace
+			const uint8_t maximumNumberOfMultisamples = rendererRuntime->getRenderer().getCapabilities().maximumNumberOfMultisamples;
+
 			{ // MSAA
 				static constexpr uint8_t NUMBER_OF_MULTISAMPLES[4] = { 1, 2, 4, 8 };
-				uint8_t numberOfMultisamples = NUMBER_OF_MULTISAMPLES[mCurrentMsaa];
-				const uint8_t maximumNumberOfMultisamples = rendererRuntime->getRenderer().getCapabilities().maximumNumberOfMultisamples;
-				if (numberOfMultisamples > maximumNumberOfMultisamples)
-				{
-					numberOfMultisamples = maximumNumberOfMultisamples;
-				}
-				mCompositorWorkspaceInstance->setNumberOfMultisamples(numberOfMultisamples);
+				const uint8_t numberOfMultisamples = NUMBER_OF_MULTISAMPLES[mCurrentMsaa];
+				mCompositorWorkspaceInstance->setNumberOfMultisamples((numberOfMultisamples > maximumNumberOfMultisamples) ? maximumNumberOfMultisamples : numberOfMultisamples);
 			}
 
 			// Resolution Scale
 			mCompositorWorkspaceInstance->setResolutionScale(mResolutionScale);
 
 			// Shadow
-			for (const RendererRuntime::CompositorNodeInstance* compositorNodeInstance : mCompositorWorkspaceInstance->getSequentialCompositorNodeInstances())
+			if (mShadowQuality != static_cast<ShadowQuality>(mCurrentShadowQuality))
 			{
-				for (RendererRuntime::ICompositorInstancePass* compositorInstancePass : compositorNodeInstance->getCompositorInstancePasses())
+				mShadowQuality = static_cast<ShadowQuality>(mCurrentShadowQuality);
+				for (const RendererRuntime::CompositorNodeInstance* compositorNodeInstance : mCompositorWorkspaceInstance->getSequentialCompositorNodeInstances())
 				{
-					if (compositorInstancePass->getCompositorResourcePass().getTypeId() == RendererRuntime::CompositorResourcePassShadowMap::TYPE_ID)
+					for (RendererRuntime::ICompositorInstancePass* compositorInstancePass : compositorNodeInstance->getCompositorInstancePasses())
 					{
-						RendererRuntime::CompositorInstancePassShadowMap* compositorInstancePassShadowMap = static_cast<RendererRuntime::CompositorInstancePassShadowMap*>(compositorInstancePass);
-						compositorInstancePassShadowMap->setEnabled(mShadows);
+						if (compositorInstancePass->getCompositorResourcePass().getTypeId() == RendererRuntime::CompositorResourcePassShadowMap::TYPE_ID)
+						{
+							RendererRuntime::CompositorInstancePassShadowMap* compositorInstancePassShadowMap = static_cast<RendererRuntime::CompositorInstancePassShadowMap*>(compositorInstancePass);
+							switch (mShadowQuality)
+							{
+								case ShadowQuality::NONE:
+									compositorInstancePassShadowMap->setEnabled(false);
+									break;
 
-						// We know that there's just a single compositor instance pass shadow map per compositor node instance, so get us out of the inner loop right now
-						break;
+								case ShadowQuality::LOW:
+									compositorInstancePassShadowMap->setEnabled(ShadowQuality::NONE != mShadowQuality);
+									compositorInstancePassShadowMap->setShadowMapSize(512u);
+									compositorInstancePassShadowMap->setNumberOfShadowCascades(2u);
+									compositorInstancePassShadowMap->setNumberOfShadowMultisamples(1u);
+									break;
+
+								case ShadowQuality::MEDIUM:
+									compositorInstancePassShadowMap->setEnabled(ShadowQuality::NONE != mShadowQuality);
+									compositorInstancePassShadowMap->setShadowMapSize(1024u);
+									compositorInstancePassShadowMap->setNumberOfShadowCascades(2u);
+									compositorInstancePassShadowMap->setNumberOfShadowMultisamples(1u);
+									break;
+
+								case ShadowQuality::HIGH:
+									compositorInstancePassShadowMap->setEnabled(ShadowQuality::NONE != mShadowQuality);
+									compositorInstancePassShadowMap->setShadowMapSize(1024u);
+									compositorInstancePassShadowMap->setNumberOfShadowCascades(3u);
+									compositorInstancePassShadowMap->setNumberOfShadowMultisamples((2u > maximumNumberOfMultisamples) ? maximumNumberOfMultisamples : 2u);
+									break;
+
+								case ShadowQuality::ULTRA:
+									compositorInstancePassShadowMap->setEnabled(ShadowQuality::NONE != mShadowQuality);
+									compositorInstancePassShadowMap->setShadowMapSize(2048u);
+									compositorInstancePassShadowMap->setNumberOfShadowCascades(4u);
+									compositorInstancePassShadowMap->setNumberOfShadowMultisamples((2 > maximumNumberOfMultisamples) ? maximumNumberOfMultisamples : 2u);
+									break;
+
+								case ShadowQuality::EPIC:
+									compositorInstancePassShadowMap->setEnabled(ShadowQuality::NONE != mShadowQuality);
+									compositorInstancePassShadowMap->setShadowMapSize(4096u);
+									compositorInstancePassShadowMap->setNumberOfShadowCascades(4u);
+									compositorInstancePassShadowMap->setNumberOfShadowMultisamples((4u > maximumNumberOfMultisamples) ? maximumNumberOfMultisamples : 4u);
+									break;
+							}
+
+							// We know that there's just a single compositor instance pass shadow map per compositor node instance, so get us out of the inner loop right now
+							break;
+						}
 					}
 				}
 			}
@@ -668,7 +713,7 @@ void FirstScene::createCompositorWorkspace()
 			ASSET_ID("Example/CompositorWorkspace/CW_Vr")
 		};
 		delete mCompositorWorkspaceInstance;
-		mCompositorWorkspaceInstance = new RendererRuntime::CompositorWorkspaceInstance(*rendererRuntime, COMPOSITOR_WORKSPACE_ASSET_ID[mInstancedCompositor]);
+		mCompositorWorkspaceInstance = new RendererRuntime::CompositorWorkspaceInstance(*rendererRuntime, COMPOSITOR_WORKSPACE_ASSET_ID[static_cast<int>(mInstancedCompositor)]);
 	}
 }
 
@@ -750,16 +795,20 @@ void FirstScene::createDebugGui([[maybe_unused]] Renderer::IRenderTarget& mainRe
 					// Graphics
 					if (ImGui::BeginMenu("Graphics"))
 					{
-						{
+						{ // Compositor
 							static constexpr const char* items[] = { "Debug", "Forward", "Deferred", "VR" };
 							ImGui::Combo("Compositor", &mCurrentCompositor, items, static_cast<int>(GLM_COUNTOF(items)));
 						}
-						ImGui::Checkbox("Shadows", &mShadows);
+						{ // Shadow quality
+							static constexpr const char* items[] = { "None", "Low", "Medium", "High", "Ultra", "Epic" };
+							ImGui::Combo("Shadow Quality", &mCurrentShadowQuality, items, static_cast<int>(GLM_COUNTOF(items)));
+						}
+
 						ImGui::Checkbox("High Quality Lighting", &mHighQualityLighting);
 						ImGui::Checkbox("Soft-Particles", &mSoftParticles);
-						{
+						{ // Texture filtering
 							static constexpr const char* items[] = { "Point", "Bilinear", "Trilinear", "2x Anisotropic", "4x Anisotropic", "8x Anisotropic", "16x Anisotropic" };
-							ImGui::Combo("Texture filtering", &mCurrentTextureFiltering, items, static_cast<int>(GLM_COUNTOF(items)));
+							ImGui::Combo("Texture Filtering", &mCurrentTextureFiltering, items, static_cast<int>(GLM_COUNTOF(items)));
 						}
 						ImGui::SliderInt("Mipmaps to Remove", &mNumberOfTopTextureMipmapsToRemove, 0, 8);
 						ImGui::SliderInt("Terrain Tessellated Triangle Width", &mTerrainTessellatedTriangleWidth, 0, 64);

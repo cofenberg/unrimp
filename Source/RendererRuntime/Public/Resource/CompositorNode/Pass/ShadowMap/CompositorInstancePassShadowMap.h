@@ -140,29 +140,14 @@ namespace RendererRuntime
 			return mNumberOfShadowCascades;
 		}
 
-		inline void setNumberOfShadowCascades(uint8_t numberOfShadowCascades)
-		{
-			if (mNumberOfShadowCascades != numberOfShadowCascades)
-			{
-				assert(numberOfShadowCascades < CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES);
-				mNumberOfShadowCascades = numberOfShadowCascades;
-				++mSettingsGenerationCounter;
-			}
-		}
+		RENDERERRUNTIME_API_EXPORT void setNumberOfShadowCascades(uint8_t numberOfShadowCascades);
 
 		[[nodiscard]] inline uint8_t getNumberOfShadowMultisamples() const
 		{
 			return mNumberOfShadowMultisamples;
 		}
 
-		inline void setNumberOfShadowMultisamples(uint8_t numberOfShadowMultisamples)
-		{
-			if (mNumberOfShadowMultisamples != numberOfShadowMultisamples)
-			{
-				mNumberOfShadowMultisamples = numberOfShadowMultisamples;
-				++mSettingsGenerationCounter;
-			}
-		}
+		RENDERERRUNTIME_API_EXPORT void setNumberOfShadowMultisamples(uint8_t numberOfShadowMultisamples);
 
 		[[nodiscard]] inline float getCascadeSplitsLambda() const
 		{

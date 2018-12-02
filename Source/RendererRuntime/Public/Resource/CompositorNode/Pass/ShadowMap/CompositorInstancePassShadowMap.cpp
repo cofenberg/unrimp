@@ -57,6 +57,7 @@ namespace
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
 		static constexpr float	  SHADOW_MAP_FILTER_SIZE							  = 7.0f;
+		static constexpr uint8_t  INTERMEDIATE_CASCADE_INDEX						  = 3;
 		static constexpr uint32_t DEPTH_SHADOW_MAP_TEXTURE_ASSET_ID					  = ASSET_ID("Unrimp/Texture/DynamicByCode/DepthShadowMap");
 		static constexpr uint32_t INTERMEDIATE_DEPTH_BLUR_SHADOW_MAP_TEXTURE_ASSET_ID = ASSET_ID("Unrimp/Texture/DynamicByCode/IntermediateDepthBlurShadowMap");
 
@@ -83,6 +84,31 @@ namespace
 //[-------------------------------------------------------]
 namespace RendererRuntime
 {
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	void CompositorInstancePassShadowMap::setNumberOfShadowCascades(uint8_t numberOfShadowCascades)
+	{
+		if (mNumberOfShadowCascades != numberOfShadowCascades)
+		{
+			RENDERER_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), numberOfShadowCascades <= CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES, "Invalid number of shadow cascades")
+			mNumberOfShadowCascades = numberOfShadowCascades;
+			++mSettingsGenerationCounter;
+		}
+	}
+
+	void CompositorInstancePassShadowMap::setNumberOfShadowMultisamples(uint8_t numberOfShadowMultisamples)
+	{
+		if (mNumberOfShadowMultisamples != numberOfShadowMultisamples)
+		{
+			RENDERER_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), numberOfShadowMultisamples >= 1, "Invalid number of shadow multisamples")
+			RENDERER_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), numberOfShadowMultisamples <= getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getRenderer().getCapabilities().maximumNumberOfMultisamples, "Invalid number of shadow multisamples")
+			mNumberOfShadowMultisamples = numberOfShadowMultisamples;
+			++mSettingsGenerationCounter;
+		}
+	}
 
 
 	//[-------------------------------------------------------]
@@ -374,28 +400,24 @@ namespace RendererRuntime
 				const float filterSizeY = std::max(mShadowFilterSize * cascadeScale.y, 1.0f);
 				if (filterSizeX > 1.0f || filterSizeY > 1.0f)
 				{
-					{ // Execute compositor instance pass compute, use cascade index three as intermediate render target
-						const uint8_t INTERMEDIATE_CASCADE_INDEX = 3;
-						RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX], "Invalid variance framebuffer")
-						Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX]);
-						mDepthToExponentialVarianceCompositorInstancePassCompute->onFillCommandBuffer(mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX], shadowCompositorContextData, commandBuffer);
-						mDepthToExponentialVarianceCompositorInstancePassCompute->onPostCommandBufferExecution();
-					}
+					// Execute compositor instance pass compute, use cascade index three as intermediate render target
+					RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != mVarianceFramebufferPtr[::detail::INTERMEDIATE_CASCADE_INDEX], "Invalid variance framebuffer")
+					Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[::detail::INTERMEDIATE_CASCADE_INDEX]);
+					mDepthToExponentialVarianceCompositorInstancePassCompute->onFillCommandBuffer(mVarianceFramebufferPtr[::detail::INTERMEDIATE_CASCADE_INDEX], shadowCompositorContextData, commandBuffer);
+					mDepthToExponentialVarianceCompositorInstancePassCompute->onPostCommandBufferExecution();
 
-					{ // Horizontal blur
-						mPassData.shadowFilterSize = filterSizeX;
-						Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mIntermediateFramebufferPtr);
-						mHorizontalBlurCompositorInstancePassCompute->onFillCommandBuffer(mIntermediateFramebufferPtr, shadowCompositorContextData, commandBuffer);
-						mHorizontalBlurCompositorInstancePassCompute->onPostCommandBufferExecution();
-					}
+					// Horizontal blur
+					mPassData.shadowFilterSize = filterSizeX;
+					Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mIntermediateFramebufferPtr);
+					mHorizontalBlurCompositorInstancePassCompute->onFillCommandBuffer(mIntermediateFramebufferPtr, shadowCompositorContextData, commandBuffer);
+					mHorizontalBlurCompositorInstancePassCompute->onPostCommandBufferExecution();
 
-					{ // Vertical blur
-						mPassData.shadowFilterSize = filterSizeY;
-						RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != mVarianceFramebufferPtr[cascadeIndex], "Invalid variance framebuffer")
-						Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[cascadeIndex]);
-						mVerticalBlurCompositorInstancePassCompute->onFillCommandBuffer(mVarianceFramebufferPtr[cascadeIndex], shadowCompositorContextData, commandBuffer);
-						mVerticalBlurCompositorInstancePassCompute->onPostCommandBufferExecution();
-					}
+					// Vertical blur
+					mPassData.shadowFilterSize = filterSizeY;
+					RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != mVarianceFramebufferPtr[cascadeIndex], "Invalid variance framebuffer")
+					Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[cascadeIndex]);
+					mVerticalBlurCompositorInstancePassCompute->onFillCommandBuffer(mVarianceFramebufferPtr[cascadeIndex], shadowCompositorContextData, commandBuffer);
+					mVerticalBlurCompositorInstancePassCompute->onPostCommandBufferExecution();
 				}
 				else
 				{
@@ -424,7 +446,7 @@ namespace RendererRuntime
 		mEnabled(true),
 		mShadowMapSize(1024),
 		mNumberOfShadowCascades(4),
-		mNumberOfShadowMultisamples(4),
+		mNumberOfShadowMultisamples(2),
 		mCascadeSplitsLambda(0.99f),
 		mShadowFilterSize(8.0f),
 		mStabilizeCascades(true),
@@ -465,6 +487,7 @@ namespace RendererRuntime
 			{
 				// Check shadow map settings
 				RENDERER_ASSERT(rendererRuntime.getContext(), mNumberOfShadowCascades <= CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES, "Invalid number of shadow cascades")
+				RENDERER_ASSERT(rendererRuntime.getContext(), mNumberOfShadowMultisamples >= 1, "Invalid number of shadow multisamples")
 				uint8_t numberOfShadowMultisamples = mNumberOfShadowMultisamples;
 				{ // Multisamples sanity check
 					const uint8_t maximumNumberOfMultisamples = renderer.getCapabilities().maximumNumberOfMultisamples;
@@ -502,18 +525,18 @@ namespace RendererRuntime
 
 				{ // Variance shadow map
 					const Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F;
-					Renderer::ITexture* texture = rendererRuntime.getTextureManager().createTexture2DArray(mShadowMapSize, mShadowMapSize, mNumberOfShadowCascades, textureFormat, nullptr, Renderer::TextureFlag::SHADER_RESOURCE | Renderer::TextureFlag::RENDER_TARGET);
+					Renderer::ITexture* texture = rendererRuntime.getTextureManager().createTexture2DArray(mShadowMapSize, mShadowMapSize, CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES, textureFormat, nullptr, Renderer::TextureFlag::SHADER_RESOURCE | Renderer::TextureFlag::RENDER_TARGET);
 					RENDERER_SET_RESOURCE_DEBUG_NAME(texture, "Compositor instance pass variance shadow map")
 
 					// Create the framebuffer object (FBO) instances
 					Renderer::IRenderPass* renderPass = renderer.createRenderPass(1, &textureFormat);
-					for (uint8_t cascadeIndex = 0; cascadeIndex < mNumberOfShadowCascades; ++cascadeIndex)
+					for (uint8_t cascadeIndex = 0; cascadeIndex < CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES; ++cascadeIndex)
 					{
 						const Renderer::FramebufferAttachment colorFramebufferAttachment(texture, 0, cascadeIndex);
 						mVarianceFramebufferPtr[cascadeIndex] = renderer.createFramebuffer(*renderPass, &colorFramebufferAttachment);
 						RENDERER_SET_RESOURCE_DEBUG_NAME(mVarianceFramebufferPtr[cascadeIndex], ("Compositor instance pass variance shadow map " + std::to_string(cascadeIndex)).c_str())
 					}
-					for (uint8_t cascadeIndex = mNumberOfShadowCascades; cascadeIndex < CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES; ++cascadeIndex)
+					for (uint8_t cascadeIndex = CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES; cascadeIndex < CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES; ++cascadeIndex)
 					{
 						mVarianceFramebufferPtr[cascadeIndex] = nullptr;
 					}
