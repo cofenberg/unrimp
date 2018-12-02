@@ -44,12 +44,13 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void CompositorInstancePassCopy::onFillCommandBuffer([[maybe_unused]] const Renderer::IRenderTarget* renderTarget, const CompositorContextData&, Renderer::CommandBuffer& commandBuffer)
 	{
-		// Sanity check
-		assert((nullptr == renderTarget) && "The copy compositor instance pass needs an invalid render target");
-
-		// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
 		const CompositorResourcePassCopy& compositorResourcePassCopy = static_cast<const CompositorResourcePassCopy&>(getCompositorResourcePass());
 		const IRendererRuntime& rendererRuntime = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime();
+
+		// Sanity check
+		RENDERER_ASSERT(rendererRuntime.getContext(), nullptr == renderTarget, "The copy compositor instance pass needs an invalid render target")
+
+		// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
 		RENDERER_SCOPED_PROFILER_EVENT_DYNAMIC(rendererRuntime.getContext(), commandBuffer, compositorResourcePassCopy.getDebugName())
 
 		// Get destination and source texture resources
@@ -68,13 +69,13 @@ namespace RendererRuntime
 			else
 			{
 				// Error!
-				assert(false);
+				RENDERER_ASSERT(rendererRuntime.getContext(), false, "We should never end up in here")
 			}
 		}
 		else
 		{
 			// Error!
-			assert(false);
+			RENDERER_ASSERT(rendererRuntime.getContext(), false, "We should never end up in here")
 		}
 	}
 

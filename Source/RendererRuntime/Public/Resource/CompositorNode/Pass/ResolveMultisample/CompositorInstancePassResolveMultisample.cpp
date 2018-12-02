@@ -43,11 +43,12 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void CompositorInstancePassResolveMultisample::onFillCommandBuffer(const Renderer::IRenderTarget* renderTarget, const CompositorContextData&, Renderer::CommandBuffer& commandBuffer)
 	{
+		const IRendererRuntime& rendererRuntime = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime();
+
 		// Sanity check
-		assert((nullptr != renderTarget) && "The resolve multisample compositor instance pass needs a valid render target");
+		RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != renderTarget, "The resolve multisample compositor instance pass needs a valid render target")
 
 		// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
-		const IRendererRuntime& rendererRuntime = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime();
 		RENDERER_SCOPED_PROFILER_EVENT_DYNAMIC(rendererRuntime.getContext(), commandBuffer, getCompositorResourcePass().getDebugName())
 
 		// Resolve
@@ -60,7 +61,7 @@ namespace RendererRuntime
 		else
 		{
 			// Error!
-			assert(false);
+			RENDERER_ASSERT(rendererRuntime.getContext(), false, "We should never end up in here")
 		}
 	}
 

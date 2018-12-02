@@ -48,20 +48,21 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void CompositorInstancePassGenerateMipmaps::onFillCommandBuffer([[maybe_unused]] const Renderer::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
 	{
+		const IRendererRuntime& rendererRuntime = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime();
+
 		// Sanity check
-		assert((nullptr == renderTarget) && "The generate mipmaps compositor instance pass needs an invalid render target");
+		RENDERER_ASSERT(rendererRuntime.getContext(), nullptr == renderTarget, "The generate mipmaps compositor instance pass needs an invalid render target")
 
 		// Handle texture mipmap generation via custom material blueprint
 		const CompositorResourcePassGenerateMipmaps& compositorResourcePassGenerateMipmaps = static_cast<const CompositorResourcePassGenerateMipmaps&>(getCompositorResourcePass());
-		assert(isValid(compositorResourcePassGenerateMipmaps.getTextureAssetId()));
+		RENDERER_ASSERT(rendererRuntime.getContext(), isValid(compositorResourcePassGenerateMipmaps.getTextureAssetId()), "Invalid compositor resource pass generate mipmaps texture asset ID")
 		const AssetId materialBlueprintAssetId = compositorResourcePassGenerateMipmaps.getMaterialBlueprintAssetId();
 		if (isValid(materialBlueprintAssetId))
 		{
 			// Sanity check
-			assert(isValid(compositorResourcePassGenerateMipmaps.getTextureMaterialBlueprintProperty()));
+			RENDERER_ASSERT(rendererRuntime.getContext(), isValid(compositorResourcePassGenerateMipmaps.getTextureMaterialBlueprintProperty()), "Invalid compositor resource pass generate mipmaps texture material blueprint property")
 
 			{ // Record reusable command buffer, if necessary
-				const IRendererRuntime& rendererRuntime = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime();
 				const TextureResourceManager& textureResourceManager = rendererRuntime.getTextureResourceManager();
 				// TODO(co) "RendererRuntime::TextureResourceManager::getTextureResourceByAssetId()" is considered to be inefficient, don't use it in here
 				TextureResource* textureResource = textureResourceManager.getTextureResourceByAssetId(compositorResourcePassGenerateMipmaps.getTextureAssetId());
@@ -71,7 +72,7 @@ namespace RendererRuntime
 					if (nullptr != texture)
 					{
 						// Sanity check
-						assert((texture->getResourceType() == Renderer::ResourceType::TEXTURE_2D) && "The generate mipmaps compositor instance pass needs an 2D texture as texture");
+						RENDERER_ASSERT(rendererRuntime.getContext(), texture->getResourceType() == Renderer::ResourceType::TEXTURE_2D, "The generate mipmaps compositor instance pass needs an 2D texture as texture")
 
 						// Render target size changed?
 						Renderer::ITexture2D* texture2D = static_cast<Renderer::ITexture2D*>(texture);
@@ -132,12 +133,14 @@ namespace RendererRuntime
 					}
 					else
 					{
-						assert(false && "Texture resource has no renderer texture instance");
+						// Error!
+						RENDERER_ASSERT(rendererRuntime.getContext(), false, "Texture resource has no renderer texture instance")
 					}
 				}
 				else
 				{
-					assert(false && "Failed to get texture resource by asset ID");
+					// Error!
+					RENDERER_ASSERT(rendererRuntime.getContext(), false, "Failed to get texture resource by asset ID")
 				}
 			}
 
@@ -150,7 +153,7 @@ namespace RendererRuntime
 		else
 		{
 			// Sanity check
-			assert(isInvalid(compositorResourcePassGenerateMipmaps.getTextureMaterialBlueprintProperty()));
+			RENDERER_ASSERT(rendererRuntime.getContext(), isInvalid(compositorResourcePassGenerateMipmaps.getTextureMaterialBlueprintProperty()), "Invalid compositor resource pass generate mipmaps texture material blueprint property")
 
 			// Generate mipmaps
 			// TODO(co) "RendererRuntime::TextureResourceManager::getTextureResourceByAssetId()" is considered to be inefficient, don't use it in here
@@ -182,7 +185,7 @@ namespace RendererRuntime
 		if (isValid(materialBlueprintAssetId))
 		{
 			// Sanity check
-			assert(isValid(compositorResourcePassGenerateMipmaps.getTextureMaterialBlueprintProperty()));
+			RENDERER_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), isValid(compositorResourcePassGenerateMipmaps.getTextureMaterialBlueprintProperty()), "Invalid compositor resource pass generate mipmaps texture material blueprint property")
 
 			// Create compositor pass compute
 			MaterialProperties materialProperties;
@@ -196,7 +199,7 @@ namespace RendererRuntime
 		else
 		{
 			// Sanity check
-			assert(isInvalid(compositorResourcePassGenerateMipmaps.getTextureMaterialBlueprintProperty()));
+			RENDERER_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), isInvalid(compositorResourcePassGenerateMipmaps.getTextureMaterialBlueprintProperty()), "Invalid compositor resource pass generate mipmaps texture material blueprint property")
 		}
 	}
 
@@ -207,7 +210,7 @@ namespace RendererRuntime
 		{
 			delete mCompositorInstancePassCompute;
 			mCompositorInstancePassCompute = nullptr;
-			assert(nullptr != mCompositorResourcePassCompute);
+			RENDERER_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), nullptr != mCompositorResourcePassCompute, "Invalid compositor resource pass compute")
 			delete mCompositorResourcePassCompute;
 			mCompositorResourcePassCompute = nullptr;
 		}

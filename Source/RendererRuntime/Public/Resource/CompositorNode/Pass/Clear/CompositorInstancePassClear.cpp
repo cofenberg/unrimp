@@ -48,7 +48,7 @@ namespace RendererRuntime
 	void CompositorInstancePassClear::onFillCommandBuffer([[maybe_unused]] const Renderer::IRenderTarget* renderTarget, const CompositorContextData&, Renderer::CommandBuffer& commandBuffer)
 	{
 		// Sanity check
-		assert((nullptr != renderTarget) && "The clear compositor instance pass needs a valid render target");
+		RENDERER_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), nullptr != renderTarget, "The clear compositor instance pass needs a valid render target")
 
 		// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
 		const CompositorResourcePassClear& compositorResourcePassClear = static_cast<const CompositorResourcePassClear&>(getCompositorResourcePass());

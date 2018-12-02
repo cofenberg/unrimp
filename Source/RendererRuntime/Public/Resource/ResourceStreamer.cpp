@@ -101,7 +101,7 @@ namespace RendererRuntime
 		} while (!everythingFlushed);
 
 		// Sanity check
-		assert(0 == mNumberOfInFlightLoadRequests);
+		RENDERER_ASSERT(mRendererRuntime.getContext(), 0 == mNumberOfInFlightLoadRequests, "Invalid number of in flight load requests")
 	}
 
 	void ResourceStreamer::dispatch()
@@ -232,7 +232,7 @@ namespace RendererRuntime
 							if (resourceLoaderType.numberOfInstances < 5)
 							{
 								loadRequest.resourceLoader = loadRequest.resourceManager->createResourceLoaderInstance(resourceLoaderTypeId);
-								assert(nullptr != loadRequest.resourceLoader);
+								RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != loadRequest.resourceLoader, "Invalid load request resource loader")
 								++resourceLoaderType.numberOfInstances;
 							}
 							else
@@ -277,7 +277,7 @@ namespace RendererRuntime
 						else
 						{
 							// Error! This is horrible, now we've got a zombie inside the resource streamer. We could let it crash, but maybe the zombie won't directly eat brains.
-							assert(false);
+							RENDERER_ASSERT(mRendererRuntime.getContext(), false, "We should never end up in here")
 						}
 					}
 
@@ -341,7 +341,7 @@ namespace RendererRuntime
 					// Get the waiting resource streamer load request and immediately release our resource manager mutex
 					LoadRequest waitingLoadRequest = waitingLoadRequests.front();
 					waitingLoadRequests.pop_front();
-					assert(0 != mDeserializationWaitingQueueRequests);
+					RENDERER_ASSERT(mRendererRuntime.getContext(), 0 != mDeserializationWaitingQueueRequests, "Invalid deserialization waiting queue requests")
 					--mDeserializationWaitingQueueRequests;
 					resourceManagerMutexLock.unlock();
 
@@ -355,13 +355,13 @@ namespace RendererRuntime
 			else
 			{
 				// Error! This shouldn't be possible if we're in here
-				assert(false);
+				RENDERER_ASSERT(mRendererRuntime.getContext(), false, "We should never end up in here")
 			}
 		}
 
 		// The last thing we do: Update the resource loading state
 		loadRequest.getResource().setLoadingState(IResource::LoadingState::LOADED);
-		assert(0 != mNumberOfInFlightLoadRequests);
+		RENDERER_ASSERT(mRendererRuntime.getContext(), 0 != mNumberOfInFlightLoadRequests, "Invalid number of in flight load requests")
 		--mNumberOfInFlightLoadRequests;
 	}
 

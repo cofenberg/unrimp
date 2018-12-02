@@ -238,8 +238,8 @@ namespace RendererRuntime
 				}
 				if (nullptr == mVertexArrayPtr)
 				{
-					assert(nullptr != mVertexBufferPtr);
-					assert(nullptr != mIndexBufferPtr);
+					RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mVertexBufferPtr, "Invalid vertex buffer")
+					RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mIndexBufferPtr, "Invalid index buffer")
 
 					// Create vertex array object (VAO)
 					const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { mVertexBufferPtr };
@@ -421,7 +421,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void DebugGuiManager::startup()
 	{
-		assert(!mIsRunning);
+		RENDERER_ASSERT(mRendererRuntime.getContext(), !mIsRunning, "The debug GUI manager is already running")
 
 		{ // Create texture instance
 			// Build texture atlas
@@ -507,7 +507,7 @@ namespace RendererRuntime
 	void DebugGuiManager::createFixedBuildInRendererConfigurationResources()
 	{
 		Renderer::IRenderer& renderer = mRendererRuntime.getRenderer();
-		assert(nullptr == mRootSignature);
+		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr == mRootSignature, "The debug GUI manager has already root signature")
 
 		{ // Create the root signature instance
 			// Create the root signature

@@ -43,21 +43,21 @@ namespace RendererRuntime
 	{
 		// Cache render queue index range instance, we know it must exist when we're in here
 		mRenderQueueIndexRange = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRenderQueueIndexRangeByRenderQueueIndex(mRenderQueue.getMinimumRenderQueueIndex());
-		assert(nullptr != mRenderQueueIndexRange);
-		assert(mRenderQueueIndexRange->minimumRenderQueueIndex <= mRenderQueue.getMinimumRenderQueueIndex());
-		assert(mRenderQueueIndexRange->maximumRenderQueueIndex >= mRenderQueue.getMaximumRenderQueueIndex());
+		RENDERER_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), nullptr != mRenderQueueIndexRange, "Invalid render queue index range")
+		RENDERER_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), mRenderQueueIndexRange->minimumRenderQueueIndex <= mRenderQueue.getMinimumRenderQueueIndex(), "Invalid minimum render queue index")
+		RENDERER_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), mRenderQueueIndexRange->maximumRenderQueueIndex >= mRenderQueue.getMaximumRenderQueueIndex(), "Invalid maximum render queue index")
 	}
 
 	void CompositorInstancePassScene::onFillCommandBuffer(const Renderer::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
 	{
 		// Sanity check
-		assert((nullptr != renderTarget) && "The scene compositor instance pass needs a valid render target");
+		RENDERER_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), nullptr != renderTarget, "The scene compositor instance pass needs a valid render target")
 
 		// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
 		RENDERER_SCOPED_PROFILER_EVENT_DYNAMIC(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), commandBuffer, getCompositorResourcePass().getDebugName())
 
 		// Fill command buffer
-		assert(nullptr != mRenderQueueIndexRange);
+		RENDERER_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), nullptr != mRenderQueueIndexRange, "Invalid render queue index range")
 		for (const RenderableManager* renderableManager : mRenderQueueIndexRange->renderableManagers)
 		{
 			// The render queue index range covered by this compositor instance pass scene might be smaller than the range of the

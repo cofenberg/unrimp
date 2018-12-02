@@ -245,7 +245,7 @@ namespace RendererRuntime
 		mTransparentPass(transparentPass),
 		mDoSort(doSort)
 	{
-		assert(mMaximumRenderQueueIndex >= mMinimumRenderQueueIndex);
+		RENDERER_ASSERT(mRendererRuntime.getContext(), mMaximumRenderQueueIndex >= mMinimumRenderQueueIndex, "Invalid minimum/maximum render queue index")
 		mQueues.resize(static_cast<size_t>(mMaximumRenderQueueIndex - mMinimumRenderQueueIndex + 1));
 	}
 
@@ -265,7 +265,7 @@ namespace RendererRuntime
 	void RenderQueue::addRenderablesFromRenderableManager(const RenderableManager& renderableManager, bool castShadows)
 	{
 		// Sanity check
-		assert(renderableManager.isVisible());
+		RENDERER_ASSERT(mRendererRuntime.getContext(), renderableManager.isVisible(), "Invalid renderable manager visibility")
 
 		// Quantize the cached distance to camera
 		// -> Solid: Sort from front to back to benefit from early z rejection
@@ -292,7 +292,7 @@ namespace RendererRuntime
 
 					// Register the renderable inside our renderables queue
 					Queue& queue = mQueues[static_cast<size_t>(renderQueueIndex - mMinimumRenderQueueIndex)];
-					assert(!queue.sorted);	// Ensure render queue is still in filling state and not already in rendering state
+					RENDERER_ASSERT(mRendererRuntime.getContext(), !queue.sorted, "Ensure render queue is still in filling state and not already in rendering state")
 					queue.queuedRenderables.emplace_back(renderable, sortingKey);
 					if (0 != renderable.getNumberOfIndices())
 					{
@@ -317,8 +317,8 @@ namespace RendererRuntime
 	void RenderQueue::fillGraphicsCommandBuffer(const Renderer::IRenderTarget& renderTarget, MaterialTechniqueId materialTechniqueId, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
 	{
 		// Sanity check
-		assert((getNumberOfDrawCalls() > 0) && "Don't call the fill command buffer method if there's no work to be done");
-		assert(mScratchCommandBuffer.isEmpty() && "Scratch command buffer should be empty at this point in time");
+		RENDERER_ASSERT(mRendererRuntime.getContext(), getNumberOfDrawCalls() > 0, "Don't call the fill command buffer method if there's no work to be done")
+		RENDERER_ASSERT(mRendererRuntime.getContext(), mScratchCommandBuffer.isEmpty(), "Scratch command buffer should be empty at this point in time")
 
 		// No combined scoped profiler CPU and GPU sample as well as renderer debug event command by intent, this is something the caller has to take care of
 		// RENDERER_SCOPED_PROFILER_EVENT(mRendererRuntime.getContext(), commandBuffer, "Graphics render queue")
@@ -374,7 +374,7 @@ namespace RendererRuntime
 									}
 								}
 								foundGraphicsPipelineState = static_cast<Renderer::IGraphicsPipelineState*>(pipelineStateCache.pipelineStatePtr->getPointer());
-								assert(nullptr != foundGraphicsPipelineState);
+								RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != foundGraphicsPipelineState, "Invalid found graphics pipeline state")
 								break;
 							}
 						}
@@ -393,7 +393,7 @@ namespace RendererRuntime
 								{
 									foundGraphicsPipelineState = static_cast<Renderer::IGraphicsPipelineState*>(pipelineStateCaches.emplace_back(materialTechniqueId, generationCounter, graphicsPipelineStateCache->getGraphicsPipelineStateObjectPtr()).pipelineStatePtr.getPointer());
 								}
-								assert(nullptr != foundGraphicsPipelineState);
+								RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != foundGraphicsPipelineState, "Invalid found graphics pipeline state")
 							}
 						}
 						if (nullptr != foundGraphicsPipelineState)
@@ -420,7 +420,7 @@ namespace RendererRuntime
 							const MaterialBlueprintResource::TextureBuffer* instanceTextureBuffer = materialBlueprintResource->getInstanceTextureBuffer();
 							if (nullptr != instanceTextureBuffer)
 							{
-								assert(nullptr != instanceUniformBuffer);
+								RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != instanceUniformBuffer, "Invalid instance uniform buffer")
 								textureInstanceBufferManager.startupBufferFilling(*materialBlueprintResource, commandBuffer);
 							}
 							else if (nullptr != instanceUniformBuffer)
@@ -443,7 +443,7 @@ namespace RendererRuntime
 							uint32_t startInstanceLocation = 0;
 							if (nullptr != instanceTextureBuffer)
 							{
-								assert(nullptr != instanceUniformBuffer);
+								RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != instanceUniformBuffer, "Invalid instance uniform buffer")
 								startInstanceLocation = textureInstanceBufferManager.fillBuffer(compositorContextData.getWorldSpaceCameraPosition(), *materialBlueprintResource, materialBlueprintResource->getPassBufferManager(), *instanceUniformBuffer, renderable, *materialTechnique, commandBuffer);
 							}
 							else if (nullptr != instanceUniformBuffer)
@@ -488,7 +488,7 @@ namespace RendererRuntime
 			if (mNumberOfDrawIndexedCalls > 0 || mNumberOfDrawCalls > 0 )
 			{
 				IndirectBufferManager::IndirectBuffer* managedIndirectBuffer = mIndirectBufferManager.getIndirectBuffer(sizeof(Renderer::DrawIndexedArguments) * mNumberOfDrawIndexedCalls + sizeof(Renderer::DrawArguments) * mNumberOfDrawCalls);
-				assert(nullptr != managedIndirectBuffer);
+				RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != managedIndirectBuffer, "Invalid managed indirect buffer")
 				indirectBuffer		 = managedIndirectBuffer->indirectBuffer;
 				indirectBufferOffset = managedIndirectBuffer->indirectBufferOffset;
 				indirectBufferData   = managedIndirectBuffer->mappedData;
@@ -523,7 +523,7 @@ namespace RendererRuntime
 					// Inject queued renderables into the renderer
 					for (const QueuedRenderable& queuedRenderable : queuedRenderables)
 					{
-						assert(nullptr != queuedRenderable.renderable);
+						RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != queuedRenderable.renderable, "Invalid renderable")
 						const Renderable& renderable = *queuedRenderable.renderable;
 
 						// Material resource
@@ -559,7 +559,7 @@ namespace RendererRuntime
 												}
 											}
 											foundGraphicsPipelineState = static_cast<Renderer::IGraphicsPipelineState*>(pipelineStateCache.pipelineStatePtr->getPointer());
-											assert(nullptr != foundGraphicsPipelineState);
+											RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != foundGraphicsPipelineState, "Invalid found graphics pipeline state")
 											break;
 										}
 									}
@@ -578,7 +578,7 @@ namespace RendererRuntime
 											{
 												foundGraphicsPipelineState = static_cast<Renderer::IGraphicsPipelineState*>(pipelineStateCaches.emplace_back(materialTechniqueId, generationCounter, graphicsPipelineStateCache->getGraphicsPipelineStateObjectPtr()).pipelineStatePtr.getPointer());
 											}
-											assert(nullptr != foundGraphicsPipelineState);
+											RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != foundGraphicsPipelineState, "Invalid found graphics pipeline state")
 										}
 									}
 									if (nullptr != foundGraphicsPipelineState)
@@ -628,7 +628,7 @@ namespace RendererRuntime
 											materialBlueprintResource->fillGraphicsCommandBuffer(mScratchCommandBuffer);
 											if (nullptr != instanceTextureBuffer)
 											{
-												assert(nullptr != instanceUniformBuffer);
+												RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != instanceUniformBuffer, "Invalid instance uniform buffer")
 												textureInstanceBufferManager.startupBufferFilling(*materialBlueprintResource, mScratchCommandBuffer);
 											}
 											else if (nullptr != instanceUniformBuffer)
@@ -658,7 +658,7 @@ namespace RendererRuntime
 										uint32_t startInstanceLocation = 0;
 										if (nullptr != instanceTextureBuffer)
 										{
-											assert(nullptr != instanceUniformBuffer);
+											RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != instanceUniformBuffer, "Invalid instance uniform buffer")
 											startInstanceLocation = textureInstanceBufferManager.fillBuffer(compositorContextData.getWorldSpaceCameraPosition(), *materialBlueprintResource, materialBlueprintResource->getPassBufferManager(), *instanceUniformBuffer, renderable, *materialTechnique, mScratchCommandBuffer);
 										}
 										else if (nullptr != instanceUniformBuffer)
@@ -709,8 +709,8 @@ namespace RendererRuntime
 										else if (0 != renderable.getNumberOfIndices())
 										{
 											// Sanity checks
-											assert(nullptr != indirectBuffer);
-											assert(nullptr != indirectBufferData);
+											RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != indirectBuffer, "Invalid indirect buffer")
+											RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != indirectBuffer, "Invalid indirect buffer data")
 
 											// Fill indirect buffer
 											if (renderable.getDrawIndexed())
@@ -769,8 +769,8 @@ namespace RendererRuntime
 	void RenderQueue::fillComputeCommandBuffer(MaterialTechniqueId materialTechniqueId, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
 	{
 		// Sanity check
-		assert((getNumberOfDrawCalls() > 0) && "Don't call the fill command buffer method if there's no work to be done");
-		assert(mScratchCommandBuffer.isEmpty() && "Scratch command buffer should be empty at this point in time");
+		RENDERER_ASSERT(mRendererRuntime.getContext(), getNumberOfDrawCalls() > 0, "Don't call the fill command buffer method if there's no work to be done")
+		RENDERER_ASSERT(mRendererRuntime.getContext(), mScratchCommandBuffer.isEmpty(), "Scratch command buffer should be empty at this point in time")
 
 		// No combined scoped profiler CPU and GPU sample as well as renderer debug event command by intent, this is something the caller has to take care of
 		// RENDERER_SCOPED_PROFILER_EVENT(mRendererRuntime.getContext(), commandBuffer, "Compute render queue")
@@ -824,7 +824,7 @@ namespace RendererRuntime
 									}
 								}
 								foundComputePipelineState = static_cast<Renderer::IComputePipelineState*>(pipelineStateCache.pipelineStatePtr->getPointer());
-								assert(nullptr != foundComputePipelineState);
+								RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != foundComputePipelineState, "Invalid found compute pipeline state")
 								break;
 							}
 						}
@@ -843,7 +843,7 @@ namespace RendererRuntime
 								{
 									foundComputePipelineState = static_cast<Renderer::IComputePipelineState*>(pipelineStateCaches.emplace_back(materialTechniqueId, generationCounter, computePipelineStateCache->getComputePipelineStateObjectPtr()).pipelineStatePtr.getPointer());
 								}
-								assert(nullptr != foundComputePipelineState);
+								RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != foundComputePipelineState, "Invalid found compute pipeline state")
 							}
 						}
 						if (nullptr != foundComputePipelineState)
@@ -857,14 +857,14 @@ namespace RendererRuntime
 							{
 								// Use mandatory fixed build in material property "LocalComputeSize" for the compute shader local size (also known as number of threads)
 								const MaterialProperty* materialProperty = materialResource->getPropertyById(MaterialResource::LOCAL_COMPUTE_SIZE_PROPERTY_ID);
-								assert(nullptr != materialProperty);
-								assert(materialProperty->getUsage() == MaterialProperty::Usage::STATIC);
+								RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != materialProperty, "Invalid material property")
+								RENDERER_ASSERT(mRendererRuntime.getContext(), materialProperty->getUsage() == MaterialProperty::Usage::STATIC, "Invalid material property usage")
 								const int* localComputeSizeInteger3Value = materialProperty->getInteger3Value();
 
 								// Use mandatory fixed build in material property "GlobalComputeSize" for the compute shader global size
 								materialProperty = materialResource->getPropertyById(MaterialResource::GLOBAL_COMPUTE_SIZE_PROPERTY_ID);
-								assert(nullptr != materialProperty);
-								assert(materialProperty->getUsage() == MaterialProperty::Usage::STATIC || materialProperty->getUsage() == MaterialProperty::Usage::MATERIAL_REFERENCE);
+								RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != materialProperty, "Invalid material property")
+								RENDERER_ASSERT(mRendererRuntime.getContext(), materialProperty->getUsage() == MaterialProperty::Usage::STATIC || materialProperty->getUsage() == MaterialProperty::Usage::MATERIAL_REFERENCE, "Invalid material property usage")
 								compositorContextData.mGlobalComputeSize[0] = 1;
 								compositorContextData.mGlobalComputeSize[1] = 1;
 								compositorContextData.mGlobalComputeSize[2] = 1;
@@ -881,12 +881,12 @@ namespace RendererRuntime
 									// Material property reference
 									const MaterialPropertyId materialPropertyId = materialProperty->getReferenceValue();
 									materialProperty = materialResource->getPropertyById(materialPropertyId);
-									assert(materialProperty->getValueType() == MaterialPropertyValue::ValueType::TEXTURE_ASSET_ID);
-									assert(materialProperty->getUsage() == MaterialProperty::Usage::TEXTURE_REFERENCE);
+									RENDERER_ASSERT(mRendererRuntime.getContext(), materialProperty->getValueType() == MaterialPropertyValue::ValueType::TEXTURE_ASSET_ID, "Invalid material property value type")
+									RENDERER_ASSERT(mRendererRuntime.getContext(), materialProperty->getUsage() == MaterialProperty::Usage::TEXTURE_REFERENCE, "Invalid material property usage")
 									const TextureResource* textureResource = textureResourceManager.getTextureResourceByAssetId(materialProperty->getTextureAssetIdValue());
-									assert(nullptr != textureResource);
+									RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != textureResource, "Invalid texture resource")
 									const Renderer::ITexture* texture = textureResource->getTexture();
-									assert(nullptr != texture);
+									RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != texture, "Invalid texture")
 									switch (texture->getResourceType())
 									{
 										case Renderer::ResourceType::TEXTURE_1D:
@@ -950,7 +950,8 @@ namespace RendererRuntime
 										case Renderer::ResourceType::FRAGMENT_SHADER:
 										case Renderer::ResourceType::COMPUTE_SHADER:
 										default:
-											assert(false);
+											// Error!
+											RENDERER_ASSERT(mRendererRuntime.getContext(), false, "We should never end up in here")
 											break;
 									}
 								}
@@ -978,7 +979,7 @@ namespace RendererRuntime
 							if (nullptr != instanceUniformBuffer)
 							{
 								// TODO(co) Think about compute instance buffer support
-								assert(false);
+								RENDERER_ASSERT(mRendererRuntime.getContext(), false, "We should never end up in here")
 								// textureInstanceBufferManager.startupBufferFilling(*materialBlueprintResource, commandBuffer);
 							}
 							lightBufferManager.fillComputeCommandBuffer(*materialBlueprintResource, commandBuffer);
@@ -1007,7 +1008,7 @@ namespace RendererRuntime
 		else
 		{
 			// TODO(co)
-			assert(false);
+			RENDERER_ASSERT(mRendererRuntime.getContext(), false, "We should never end up in here")
 			/*
 			// Track currently bound renderer resources and states to void generating redundant commands
 			bool vertexArraySet = false;

@@ -44,7 +44,7 @@ namespace RendererRuntime
 	void CompositorInstancePassDebugGui::onFillCommandBuffer([[maybe_unused]] const Renderer::IRenderTarget* renderTarget, [[maybe_unused]] const CompositorContextData& compositorContextData, [[maybe_unused]] Renderer::CommandBuffer& commandBuffer)
 	{
 		// Sanity check
-		assert((nullptr != renderTarget) && "The debug GUI compositor instance pass needs a valid render target");
+		RENDERER_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), nullptr != renderTarget, "The debug GUI compositor instance pass needs a valid render target")
 
 		#ifdef RENDERER_RUNTIME_IMGUI
 			// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
@@ -83,7 +83,7 @@ namespace RendererRuntime
 				}
 			}
 		#else
-			assert(false && "ImGui support is disabled");
+			RENDERER_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), false, "ImGui support is disabled")
 		#endif
 	}
 

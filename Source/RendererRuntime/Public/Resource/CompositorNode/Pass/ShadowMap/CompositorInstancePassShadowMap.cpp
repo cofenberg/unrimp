@@ -90,8 +90,11 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void CompositorInstancePassShadowMap::onFillCommandBuffer([[maybe_unused]] const Renderer::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
 	{
+		const CompositorWorkspaceInstance& compositorWorkspaceInstance = getCompositorNodeInstance().getCompositorWorkspaceInstance();
+		const IRendererRuntime& rendererRuntime = compositorWorkspaceInstance.getRendererRuntime();
+
 		// Sanity check
-		assert((nullptr == renderTarget) && "The shadow map compositor instance pass needs an invalid render target");
+		RENDERER_ASSERT(rendererRuntime.getContext(), nullptr == renderTarget, "The shadow map compositor instance pass needs an invalid render target")
 
 		// Fill command buffer
 		const CameraSceneItem* cameraSceneItem = compositorContextData.getCameraSceneItem();
@@ -137,8 +140,6 @@ namespace RendererRuntime
 			// Coordinate system related adjustments
 			// -> Vulkan and Direct3D: Left-handed coordinate system with clip space depth value range 0..1
 			// -> OpenGL without "GL_ARB_clip_control"-extension: Right-handed coordinate system with clip space depth value range -1..1
-			const CompositorWorkspaceInstance& compositorWorkspaceInstance = getCompositorNodeInstance().getCompositorWorkspaceInstance();
-			const IRendererRuntime& rendererRuntime = compositorWorkspaceInstance.getRendererRuntime();
 			const float nearZ = rendererRuntime.getRenderer().getCapabilities().zeroToOneClipZ ? 0.0f : -1.0f;
 
 			// Get the 8 points of the view frustum in world space
@@ -158,7 +159,7 @@ namespace RendererRuntime
 			{
 				uint32_t renderTargetWidth = 0;
 				uint32_t renderTargetHeight = 0;
-				assert((nullptr != compositorWorkspaceInstance.getExecutionRenderTarget()));
+				RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != compositorWorkspaceInstance.getExecutionRenderTarget(), "Invalid compositor workspace instance execution render target")
 				compositorWorkspaceInstance.getExecutionRenderTarget()->getWidthAndHeight(renderTargetWidth, renderTargetHeight);
 				if (compositorContextData.getSinglePassStereoInstancing())
 				{
@@ -304,7 +305,7 @@ namespace RendererRuntime
 
 					// Render shadow casters
 					// TODO(co) Optimization: Do only render stuff which calls into the current shadow cascade
-					assert(nullptr != mRenderQueueIndexRange);
+					RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != mRenderQueueIndexRange, "Invalid render queue index range")
 					for (const RenderableManager* renderableManager : mRenderQueueIndexRange->renderableManagers)
 					{
 						// The render queue index range covered by this compositor instance pass scene might be smaller than the range of the
@@ -364,7 +365,7 @@ namespace RendererRuntime
 				{
 					{ // Execute compositor instance pass compute, use cascade index three as intermediate render target
 						const uint8_t INTERMEDIATE_CASCADE_INDEX = 3;
-						assert(nullptr != mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX]);
+						RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX], "Invalid variance framebuffer")
 						Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX]);
 						mDepthToExponentialVarianceCompositorInstancePassCompute->onFillCommandBuffer(mVarianceFramebufferPtr[INTERMEDIATE_CASCADE_INDEX], shadowCompositorContextData, commandBuffer);
 						mDepthToExponentialVarianceCompositorInstancePassCompute->onPostCommandBufferExecution();
@@ -379,7 +380,7 @@ namespace RendererRuntime
 
 					{ // Vertical blur
 						mPassData.shadowFilterSize = filterSizeY;
-						assert(nullptr != mVarianceFramebufferPtr[cascadeIndex]);
+						RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != mVarianceFramebufferPtr[cascadeIndex], "Invalid variance framebuffer")
 						Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[cascadeIndex]);
 						mVerticalBlurCompositorInstancePassCompute->onFillCommandBuffer(mVarianceFramebufferPtr[cascadeIndex], shadowCompositorContextData, commandBuffer);
 						mVerticalBlurCompositorInstancePassCompute->onPostCommandBufferExecution();
@@ -388,7 +389,7 @@ namespace RendererRuntime
 				else
 				{
 					// Execute compositor instance pass compute
-					assert(nullptr != mVarianceFramebufferPtr[cascadeIndex]);
+					RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != mVarianceFramebufferPtr[cascadeIndex], "Invalid variance framebuffer")
 					Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[cascadeIndex]);
 					mDepthToExponentialVarianceCompositorInstancePassCompute->onFillCommandBuffer(mVarianceFramebufferPtr[cascadeIndex], shadowCompositorContextData, commandBuffer);
 					mDepthToExponentialVarianceCompositorInstancePassCompute->onPostCommandBufferExecution();
@@ -398,7 +399,7 @@ namespace RendererRuntime
 		else
 		{
 			// Error!
-			assert(false);
+			RENDERER_ASSERT(rendererRuntime.getContext(), false, "We should never end up in here")
 		}
 	}
 
@@ -440,13 +441,13 @@ namespace RendererRuntime
 			Renderer::IRenderer& renderer = rendererRuntime.getRenderer();
 			const uint32_t shadowMapSize = compositorResourcePassShadowMap.getShadowMapSize();
 			const uint8_t numberOfShadowCascades = compositorResourcePassShadowMap.getNumberOfShadowCascades();
-			assert(numberOfShadowCascades <= CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES);
+			RENDERER_ASSERT(rendererRuntime.getContext(), numberOfShadowCascades <= CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES, "Invalid number of shadow cascades")
 			uint8_t numberOfShadowMultisamples = compositorResourcePassShadowMap.getNumberOfShadowMultisamples();
 			{ // Multisamples sanity check
 				const uint8_t maximumNumberOfMultisamples = renderer.getCapabilities().maximumNumberOfMultisamples;
 				if (numberOfShadowMultisamples > maximumNumberOfMultisamples)
 				{
-					assert(false && "Number of shadow multisamples not supported by the renderer backend");
+					RENDERER_ASSERT(rendererRuntime.getContext(), false, "Number of shadow multisamples not supported by the renderer backend")
 					numberOfShadowMultisamples = maximumNumberOfMultisamples;
 				}
 			}
@@ -537,13 +538,13 @@ namespace RendererRuntime
 		else
 		{
 			// This is not allowed to happen
-			assert(false);
+			RENDERER_ASSERT(rendererRuntime.getContext(), false, "We should never end up in here")
 		}
 	}
 
 	void CompositorInstancePassShadowMap::destroyShadowMapRenderTarget()
 	{
-		assert(isValid(mDepthTextureResourceId) && isValid(mVarianceTextureResourceId) && isValid(mIntermediateDepthBlurTextureResourceId) && nullptr != mDepthFramebufferPtr);
+		RENDERER_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), isValid(mDepthTextureResourceId) && isValid(mVarianceTextureResourceId) && isValid(mIntermediateDepthBlurTextureResourceId) && nullptr != mDepthFramebufferPtr, "Invalid compositor instance pass resource")
 
 		// Depth to exponential variance
 		delete mDepthToExponentialVarianceCompositorInstancePassCompute;

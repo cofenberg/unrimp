@@ -153,8 +153,8 @@ namespace RendererRuntime
 			if (nullptr != materialResource)
 			{
 				// Sanity checks
-				assert(isInvalid(mMaterialResourceAttachmentIndex));
-				assert(nullptr == mMaterialResourceManager);
+				RENDERER_ASSERT(materialResourceManager.getRendererRuntime().getContext(), isInvalid(mMaterialResourceAttachmentIndex), "Invalid material resource attachment index")
+				RENDERER_ASSERT(materialResourceManager.getRendererRuntime().getContext(), nullptr == mMaterialResourceManager, "Invalid material resource manager instance")
 
 				// Attach the renderable from the material resource
 				mMaterialResourceId = materialResourceId;
@@ -170,9 +170,9 @@ namespace RendererRuntime
 						const int renderQueueIndex = materialProperty->getIntegerValue();
 
 						// Sanity checks
-						assert(materialProperty->getUsage() == MaterialProperty::Usage::STATIC);
-						assert(renderQueueIndex >= 0);
-						assert(renderQueueIndex <= 255);
+						RENDERER_ASSERT(materialResourceManager.getRendererRuntime().getContext(), materialProperty->getUsage() == MaterialProperty::Usage::STATIC, "Invalid material property usage")
+						RENDERER_ASSERT(materialResourceManager.getRendererRuntime().getContext(), renderQueueIndex >= 0, "Invalid render queue index")
+						RENDERER_ASSERT(materialResourceManager.getRendererRuntime().getContext(), renderQueueIndex <= 255, "Invalid render queue index")
 
 						// Set value
 						mRenderQueueIndex = static_cast<uint8_t>(renderQueueIndex);
@@ -187,7 +187,7 @@ namespace RendererRuntime
 					if (nullptr != materialProperty)
 					{
 						// Sanity checks
-						assert(materialProperty->getUsage() == MaterialProperty::Usage::STATIC);
+						RENDERER_ASSERT(materialResourceManager.getRendererRuntime().getContext(), materialProperty->getUsage() == MaterialProperty::Usage::STATIC, "Invalid material property usage")
 
 						// Set value
 						mCastShadows = materialProperty->getBooleanValue();
@@ -201,7 +201,7 @@ namespace RendererRuntime
 			else
 			{
 				// Error!
-				assert(false);
+				RENDERER_ASSERT(materialResourceManager.getRendererRuntime().getContext(), false, "We should never end up in here")
 			}
 
 			// Calculate sorting key
@@ -210,7 +210,7 @@ namespace RendererRuntime
 		else
 		{
 			// Sanity check
-			assert((isValid(mMaterialResourceId) && &materialResourceManager == mMaterialResourceManager) || (isInvalid(mMaterialResourceId) && nullptr == mMaterialResourceManager));
+			RENDERER_ASSERT(materialResourceManager.getRendererRuntime().getContext(), (isValid(mMaterialResourceId) && &materialResourceManager == mMaterialResourceManager) || (isInvalid(mMaterialResourceId) && nullptr == mMaterialResourceManager), "Invalid renderable configuration")
 		}
 	}
 
