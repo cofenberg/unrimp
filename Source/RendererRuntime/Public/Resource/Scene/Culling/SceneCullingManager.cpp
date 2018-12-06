@@ -38,6 +38,7 @@
 	#include "RendererRuntime/Public/Vr/IVrManager.h"
 #endif
 #include "RendererRuntime/Public/IRendererRuntime.h"
+#include "RendererRuntime/Public/Context.h"
 
 #include <Renderer/Public/Renderer.h>
 
@@ -564,14 +565,14 @@ namespace RendererRuntime
 		// - For objects that pass sphere test, kick jobs to do frustum vs object-oriented bounding box (OOBB) culling
 		//   - For each frustum plane, test plane vs OOBB
 		// - Wait for OOBB culling to finish
+		const IRendererRuntime& rendererRuntime = compositorContextData.getCompositorWorkspaceInstance()->getRendererRuntime();
 
 		// Get the camera scene item
 		const CameraSceneItem* cameraSceneItem = compositorContextData.getCameraSceneItem();
-		assert(nullptr != cameraSceneItem);
+		RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != cameraSceneItem, "Invalid camera")
 
 		// Get view space to clip space matrix
-		assert(nullptr != compositorContextData.getCompositorWorkspaceInstance());
-		const IRendererRuntime& rendererRuntime = compositorContextData.getCompositorWorkspaceInstance()->getRendererRuntime();
+		RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != compositorContextData.getCompositorWorkspaceInstance(), "Invalid compositor workspace instance")
 		glm::mat4 viewSpaceToClipSpaceMatrix;
 		{
 			#ifdef RENDERER_RUNTIME_OPENVR

@@ -29,8 +29,6 @@
 //[-------------------------------------------------------]
 #include "RendererRuntime/Public/Resource/ResourceManager.h"
 
-#include <cassert>
-
 
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]

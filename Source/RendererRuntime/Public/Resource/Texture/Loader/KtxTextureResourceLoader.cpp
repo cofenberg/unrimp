@@ -259,7 +259,7 @@ namespace RendererRuntime
 			::detail::KTX_texinfo ktxTexinfo;
 			if (!checkHeader(ktxHeader, ktxTexinfo))
 			{
-				assert(false && "KTX header invalid");
+				RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Invalid KTX header")
 			}
 		}
 		file.skip(ktxHeader.bytesOfKeyValueData);
@@ -271,7 +271,7 @@ namespace RendererRuntime
 		// Check if the file contains data for one texture or for 6 textures
 		if (1 != ktxHeader.numberOfFaces && 6 != ktxHeader.numberOfFaces)
 		{
-			assert(false && "Don't support more then one faces or exactly 6 faces");
+			RENDERER_ASSERT(mRendererRuntime.getContext(), false, "The number of faces must be one or six")
 		}
 
 		// Texture format
@@ -281,7 +281,7 @@ namespace RendererRuntime
 			// -> For now we only support ETC1 compression
 			if (GL_ETC1_RGB8_OES != ktxHeader.glInternalFormat)
 			{
-				assert(false && "Unsupported compressed \"glInternalFormat\"");
+				RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Unsupported compressed \"glInternalFormat\"")
 			}
 			mTextureFormat = Renderer::TextureFormat::ETC1;
 		}
@@ -295,7 +295,7 @@ namespace RendererRuntime
 			}
 			else
 			{
-				assert(false && "Unsupported uncompressed \"glInternalFormat\"");
+				RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Unsupported uncompressed \"glInternalFormat\"")
 			}
 		}
 

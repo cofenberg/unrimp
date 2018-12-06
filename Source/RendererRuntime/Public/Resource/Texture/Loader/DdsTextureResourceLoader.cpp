@@ -274,8 +274,8 @@ namespace RendererRuntime
 							break;
 
 						default:
-							// Error: Unsupported format
-							assert(false);
+							// Error!
+							RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Unsupported format")
 							return false;
 					}
 				}
@@ -382,8 +382,8 @@ namespace RendererRuntime
 									}
 									else
 									{
-										// Error: Unsupported format
-										assert(false);
+										// Error
+										RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Unsupported format")
 										return false;
 									}
 									break;
@@ -405,15 +405,15 @@ namespace RendererRuntime
 									}
 									else
 									{
-										// Error: Unsupported format
-										assert(false);
+										// Error
+										RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Unsupported format")
 										return false;
 									}
 									break;
 
 								default:
-									// Error: Unsupported format
-									assert(false);
+									// Error
+									RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Unsupported format")
 									return false;
 							}
 					}

@@ -29,8 +29,6 @@
 //[-------------------------------------------------------]
 #include "RendererRuntime/Public/Resource/ResourceManager.h"
 
-#include <cassert>
-
 
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
@@ -83,7 +81,7 @@ namespace RendererRuntime
 		[[nodiscard]] inline const ISceneFactory& getSceneFactory() const
 		{
 			// We know that this pointer is always valid
-			assert(nullptr != mSceneFactory);
+			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mSceneFactory, "Invalid scene factory")
 			return *mSceneFactory;
 		}
 

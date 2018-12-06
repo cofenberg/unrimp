@@ -31,7 +31,6 @@
 #include "RendererRuntime/Public/Core/StringId.h"
 #include "RendererRuntime/Public/Core/GetInvalid.h"
 
-#include <cassert>
 #include <cstring>	// For "memcpy()"
 
 

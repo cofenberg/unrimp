@@ -31,8 +31,6 @@ PRAGMA_WARNING_PUSH
 	#include <glm/gtc/type_ptr.hpp>
 PRAGMA_WARNING_POP
 
-#include <cassert>
-
 
 //[-------------------------------------------------------]
 //[ Namespace                                             ]
@@ -46,7 +44,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void LightSceneItem::deserialize([[maybe_unused]] uint32_t numberOfBytes, const uint8_t* data)
 	{
-		assert(sizeof(v1Scene::LightItem) == numberOfBytes);
+		RENDERER_ASSERT(getContext(), sizeof(v1Scene::LightItem) == numberOfBytes, "Invalid number of bytes")
 
 		// Read data
 		const v1Scene::LightItem* lightItem = reinterpret_cast<const v1Scene::LightItem*>(data);
@@ -57,13 +55,13 @@ namespace RendererRuntime
 		mPackedShaderData.nearClipDistance = lightItem->nearClipDistance;
 
 		// Sanity checks
-		assert(mPackedShaderData.color.x >= 0.0f && mPackedShaderData.color.y >= 0.0f && mPackedShaderData.color.z >= 0.0f);
-		assert(lightItem->lightType == LightType::DIRECTIONAL || mPackedShaderData.radius > 0.0f);
-		assert(lightItem->lightType != LightType::DIRECTIONAL || 0.0f == mPackedShaderData.radius);
-		assert(mInnerAngle >= 0.0f);
-		assert(mOuterAngle < glm::radians(90.0f));
-		assert(mInnerAngle < mOuterAngle);
-		assert(mPackedShaderData.nearClipDistance >= 0.0f);
+		RENDERER_ASSERT(getContext(), mPackedShaderData.color.x >= 0.0f && mPackedShaderData.color.y >= 0.0f && mPackedShaderData.color.z >= 0.0f, "Invalid data")
+		RENDERER_ASSERT(getContext(), lightItem->lightType == LightType::DIRECTIONAL || mPackedShaderData.radius > 0.0f, "Invalid data")
+		RENDERER_ASSERT(getContext(), lightItem->lightType != LightType::DIRECTIONAL || 0.0f == mPackedShaderData.radius, "Invalid data")
+		RENDERER_ASSERT(getContext(), mInnerAngle >= 0.0f, "Invalid data")
+		RENDERER_ASSERT(getContext(), mOuterAngle < glm::radians(90.0f), "Invalid data")
+		RENDERER_ASSERT(getContext(), mInnerAngle < mOuterAngle, "Invalid data")
+		RENDERER_ASSERT(getContext(), mPackedShaderData.nearClipDistance >= 0.0f, "Invalid data")
 	}
 
 

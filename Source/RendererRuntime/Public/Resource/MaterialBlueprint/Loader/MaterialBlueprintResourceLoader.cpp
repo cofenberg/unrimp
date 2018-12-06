@@ -109,7 +109,7 @@ namespace RendererRuntime
 			// Read in the root signature header
 			v1MaterialBlueprint::RootSignatureHeader rootSignatureHeader;
 			mMemoryFile.read(&rootSignatureHeader, sizeof(v1MaterialBlueprint::RootSignatureHeader));
-			assert((rootSignatureHeader.numberOfRootParameters > 0 || 0 == rootSignatureHeader.numberOfDescriptorRanges) && "Invalid root signature without root parameters but with descriptor ranges detected");
+			RENDERER_ASSERT(mRendererRuntime.getContext(), rootSignatureHeader.numberOfRootParameters > 0 || 0 == rootSignatureHeader.numberOfDescriptorRanges, "Invalid root signature without root parameters but with descriptor ranges detected")
 
 			// Load in root signature data
 			if (rootSignatureHeader.numberOfRootParameters > 0)
@@ -210,7 +210,7 @@ namespace RendererRuntime
 				uniformBuffer.uniformBufferNumberOfBytes = uniformBufferHeader.uniformBufferNumberOfBytes;
 
 				// Sanity check
-				assert((uniformBufferHeader.numberOfElementProperties > 0) && "Invalid uniform buffer without any element properties detected");
+				RENDERER_ASSERT(mRendererRuntime.getContext(), uniformBufferHeader.numberOfElementProperties > 0, "Invalid uniform buffer without any element properties detected")
 
 				// Read in the uniform buffer property elements
 				MaterialBlueprintResource::UniformBufferElementProperties& uniformBufferElementProperties = uniformBuffer.uniformBufferElementProperties;
@@ -345,7 +345,7 @@ namespace RendererRuntime
 
 					case MaterialBlueprintResource::BufferUsage::LIGHT:
 						// Error!
-						assert(false);
+						RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Invalid buffer usage")
 						break;
 				}
 			}
@@ -450,7 +450,7 @@ namespace RendererRuntime
 						// Sanity check
 						#ifdef _DEBUG
 							GET_MATERIAL_PROPERTY_USAGE
-							assert(globalMaterialProperty->getValueType() == materialProperty.getValueType() && globalMaterialProperty->getUsage() == materialPropertyUsage);
+							RENDERER_ASSERT(mRendererRuntime.getContext(), globalMaterialProperty->getValueType() == materialProperty.getValueType() && globalMaterialProperty->getUsage() == materialPropertyUsage, "Invalid property")
 						#endif
 					}
 				}

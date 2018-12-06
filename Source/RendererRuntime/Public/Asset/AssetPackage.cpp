@@ -27,7 +27,6 @@
 
 #include <Renderer/Public/Renderer.h>
 
-#include <cassert>
 #include <algorithm>
 
 

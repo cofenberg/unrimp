@@ -81,8 +81,7 @@ namespace RendererRuntime
 		crnd::crn_texture_info crnTextureInfo;
 		if (!crnd::crnd_get_texture_info(mFileData, mNumberOfUsedFileDataBytes, &crnTextureInfo))
 		{
-			//return error("crnd_get_texture_info() failed!\n");
-			assert(false);
+			RENDERER_ASSERT(mRendererRuntime.getContext(), false, "crnd_get_texture_info() failed")
 			return;
 		}
 		mWidth  = crnTextureInfo.m_width;
@@ -90,7 +89,7 @@ namespace RendererRuntime
 		mCubeMap = (crnTextureInfo.m_faces > 1);
 
 		// Sanity check
-		assert(!mCubeMap || mWidth == mHeight);
+		RENDERER_ASSERT(mRendererRuntime.getContext(), !mCubeMap || mWidth == mHeight, "The width and height of a cube map must be identical")
 
 		// Get the renderer texture format
 		switch (crnTextureInfo.m_format)
@@ -120,14 +119,14 @@ namespace RendererRuntime
 				mTextureFormat = Renderer::TextureFormat::BC5;
 				break;
 
-			case cCRNFmtETC1:	// Not supported by CRN
+			case cCRNFmtETC1:	// Not supported by CRN	// TODO(co) CRN now supports "cCRNFmtETC1"
 			case cCRNFmtTotal:
 			case cCRNFmtForceDWORD:
 			case cCRNFmtDXT5A:
 			default:
 				// Error!
 				// TODO(co)
-				assert(false);
+				RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Invalid format")
 				return;
 		}
 
@@ -137,8 +136,7 @@ namespace RendererRuntime
 		crnd::crnd_unpack_context crndUnpackContext = crnd::crnd_unpack_begin(mFileData, mNumberOfUsedFileDataBytes);
 		if (nullptr == crndUnpackContext)
 		{
-		//	return error("crnd_unpack_begin() failed!\n");
-			assert(false);
+			RENDERER_ASSERT(mRendererRuntime.getContext(), false, "crnd_unpack_begin() failed")
 			return;
 		}
 
@@ -216,9 +214,7 @@ namespace RendererRuntime
 				{
 					// Free allocated memory
 					crnd::crnd_unpack_end(crndUnpackContext);
-
-					// return error("Failed transcoding texture!");
-					assert(false);
+					RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Failed transcoding texture")
 					return;
 				}
 			}

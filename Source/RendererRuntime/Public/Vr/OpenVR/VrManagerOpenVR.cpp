@@ -375,7 +375,7 @@ namespace RendererRuntime
 
 	bool VrManagerOpenVR::startup(AssetId vrDeviceMaterialAssetId)
 	{
-		assert(nullptr == mVrSystem);
+		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr == mVrSystem, "The VR system is already running")
 		if (nullptr == mVrSystem)
 		{
 			// TODO(co) Add support for "vr::TextureType_DirectX12" as soon as the renderer backend is ready
@@ -503,7 +503,7 @@ namespace RendererRuntime
 						::detail::registerRenderModel(context, renderModelName, mRenderModelNames, assetPackage);
 					}
 				}
-				assert(assetPackage.getSortedAssetVector().size() == mRenderModelNames.size());
+				RENDERER_ASSERT(mRendererRuntime.getContext(), assetPackage.getSortedAssetVector().size() == mRenderModelNames.size(), "Size mismatch")
 
 				// Register render model textures
 				// -> Sadly, there's no way to determine all available albedo texture IDs upfront without loading the render models
@@ -542,7 +542,8 @@ namespace RendererRuntime
 
 	void VrManagerOpenVR::updateHmdMatrixPose(CameraSceneItem* cameraSceneItem)
 	{
-		assert(nullptr != mVrSystem);
+		// Sanity check
+		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mVrSystem, "The VR system isn't running")
 
 		// Process OpenVR events
 		if (mVrDeviceMaterialResourceLoaded)
@@ -624,9 +625,9 @@ namespace RendererRuntime
 					vr::IVRRenderModels* vrRenderModels = vr::VRRenderModels();
 					for (const Component& component : trackedDeviceInformation.components)
 					{
-						assert(!component.name.empty());
+						RENDERER_ASSERT(mRendererRuntime.getContext(), !component.name.empty(), "The component name mustn't be empty")
 						SceneNode* sceneNode = component.sceneNode;
-						assert(nullptr != sceneNode);
+						RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != sceneNode, "Invalid scene node")
 						vr::RenderModel_ControllerMode_State_t renderModelControllerModeState;
 						renderModelControllerModeState.bScrollWheelVisible = false;
 						vr::RenderModel_ComponentState_t renderModelComponentState;
@@ -666,10 +667,12 @@ namespace RendererRuntime
 
 	glm::mat4 VrManagerOpenVR::getHmdViewSpaceToClipSpaceMatrix(VrEye vrEye, float nearZ, float farZ) const
 	{
+		// Sanity check
+		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mVrSystem, "The VR system isn't running")
+
 		// Transform the OpenGL style projection matrix into a Direct3D style projection matrix as described at http://cv4mar.blogspot.de/2009/03/transformation-matrices-between-opengl.html
 		// -> Direct3D: Left-handed coordinate system with clip space depth value range 0..1
 		// -> OpenGL without "GL_ARB_clip_control"-extension: Right-handed coordinate system with clip space depth value range -1..1
-		assert(nullptr != mVrSystem);
 		const vr::HmdMatrix44_t vrHmdMatrix34 = mVrSystem->GetProjectionMatrix(static_cast<vr::Hmd_Eye>(vrEye), nearZ, farZ);
 		return glm::mat4(
 			 vrHmdMatrix34.m[0][0],  vrHmdMatrix34.m[1][0],  vrHmdMatrix34.m[2][0],  vrHmdMatrix34.m[3][0],
@@ -681,7 +684,7 @@ namespace RendererRuntime
 
 	glm::mat4 VrManagerOpenVR::getHmdEyeSpaceToHeadSpaceMatrix(VrEye vrEye) const
 	{
-		assert(nullptr != mVrSystem);
+		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mVrSystem, "The VR system isn't running")
 		return ::detail::convertOpenVrMatrixToGlmMat34(mVrSystem->GetEyeToHeadTransform(static_cast<vr::Hmd_Eye>(vrEye)));
 	}
 
@@ -691,7 +694,8 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void VrManagerOpenVR::executeCompositorWorkspaceInstance(CompositorWorkspaceInstance& compositorWorkspaceInstance, Renderer::IRenderTarget&, CameraSceneItem* cameraSceneItem, const LightSceneItem* lightSceneItem)
 	{
-		assert(nullptr != mVrSystem);
+		// Sanity check
+		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mVrSystem, "The VR system isn't running")
 
 		// Execute the compositor workspace instance
 		// -> Using single pass stereo rendering via instancing as described in "High Performance Stereo Rendering For VR", Timothy Wilson, San Diego, Virtual Reality Meetup
@@ -763,7 +767,7 @@ namespace RendererRuntime
 
 	void VrManagerOpenVR::setupRenderModelForTrackedDevice(vr::TrackedDeviceIndex_t trackedDeviceIndex)
 	{
-		assert(trackedDeviceIndex < vr::k_unMaxTrackedDeviceCount);
+		RENDERER_ASSERT(mRendererRuntime.getContext(), trackedDeviceIndex < vr::k_unMaxTrackedDeviceCount, "Maximum tracked device count exceeded")
 
 		// Create and setup scene node with mesh item, this is what's controlled during runtime
 		SceneResource* sceneResource = mRendererRuntime.getSceneResourceManager().tryGetById(mSceneResourceId);

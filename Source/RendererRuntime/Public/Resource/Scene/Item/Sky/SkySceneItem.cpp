@@ -139,7 +139,7 @@ namespace RendererRuntime
 		if (nullptr == ::detail::SkyVertexArrayPtr)
 		{
 			::detail::SkyVertexArrayPtr = ::detail::createSkyVertexArray(getSceneResource().getRendererRuntime().getBufferManager());
-			assert(nullptr != ::detail::SkyVertexArrayPtr);
+			RENDERER_ASSERT(getContext(), nullptr != ::detail::SkyVertexArrayPtr, "Invalid sky vertex array")
 		}
 		::detail::SkyVertexArrayPtr->addReference();
 	}

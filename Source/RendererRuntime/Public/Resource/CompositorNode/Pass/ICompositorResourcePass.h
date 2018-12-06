@@ -30,12 +30,6 @@
 #include "RendererRuntime/Public/Core/StringId.h"
 #include "RendererRuntime/Public/Core/GetInvalid.h"
 
-// Disable warnings in external headers, we can't fix them
-PRAGMA_WARNING_PUSH
-	PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'return': conversion from 'int' to 'std::char_traits<wchar_t>::int_type', signed/unsigned mismatch
-	#include <cassert>
-PRAGMA_WARNING_POP
-
 
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]

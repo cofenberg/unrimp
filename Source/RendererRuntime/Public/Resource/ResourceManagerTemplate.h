@@ -27,13 +27,10 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/Public/Core/StringId.h"
 #include "RendererRuntime/Public/Core/PackedElementManager.h"
 #include "RendererRuntime/Public/Asset/AssetManager.h"
 #include "RendererRuntime/Public/Resource/ResourceStreamer.h"
 #include "RendererRuntime/Public/IRendererRuntime.h"
-
-#include <cassert>
 
 
 //[-------------------------------------------------------]
@@ -109,7 +106,7 @@ namespace RendererRuntime
 		[[nodiscard]] inline LOADER_TYPE* createResourceLoaderInstance([[maybe_unused]] ResourceLoaderTypeId resourceLoaderTypeId)
 		{
 			// We only support our own format
-			assert(resourceLoaderTypeId == LOADER_TYPE::TYPE_ID);
+			RENDERER_ASSERT(mRendererRuntime.getContext(), resourceLoaderTypeId == LOADER_TYPE::TYPE_ID, "Invalid resource loader type ID")
 			return new LOADER_TYPE(mResourceManager, mRendererRuntime);
 		}
 
@@ -132,8 +129,8 @@ namespace RendererRuntime
 
 		[[nodiscard]] inline TYPE& createEmptyResourceByAssetId(AssetId assetId)	// Resource is not allowed to exist, yet
 		{
-			// Resource is not allowed to exist, yet
-			assert(nullptr == getResourceByAssetId(assetId));
+			// Sanity check
+			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr == getResourceByAssetId(assetId), "The resource isn't allowed to exist, yet")
 
 			// Create the resource instance
 			TYPE& resource = mResources.addElement();
@@ -157,7 +154,7 @@ namespace RendererRuntime
 
 			// Create the resource instance
 			const Asset* asset = mRendererRuntime.getAssetManager().tryGetAssetByAssetId(assetId);
-			assert((nullptr != asset) && "Unknown asset ID");
+			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != asset, "Unknown asset ID")
 			bool load = (reload && nullptr != asset);
 			if (nullptr == resource && nullptr != asset)
 			{

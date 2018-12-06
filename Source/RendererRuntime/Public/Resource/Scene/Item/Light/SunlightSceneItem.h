@@ -27,7 +27,6 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/Public/Export.h"
 #include "RendererRuntime/Public/Resource/Scene/Item/Light/LightSceneItem.h"
 
 
@@ -81,8 +80,8 @@ namespace RendererRuntime
 		{
 			if (mSunriseTime != sunriseTime)
 			{
-				// Sanity check
-				assert(sunriseTime >= 00.00f && sunriseTime < 24.00f);	// O'clock
+				// Sanity check (unit in O'clock)
+				RENDERER_ASSERT(getContext(), sunriseTime >= 00.00f && sunriseTime < 24.00f, "Invalid data")
 
 				// Set new value and calculate derived sunlight properties
 				mSunriseTime = sunriseTime;
@@ -99,8 +98,8 @@ namespace RendererRuntime
 		{
 			if (mSunsetTime != sunsetTime)
 			{
-				// Sanity check
-				assert(sunsetTime >= 00.00f && sunsetTime < 24.00f);	// O'clock
+				// Sanity check (unit in O'clock)
+				RENDERER_ASSERT(getContext(), sunsetTime >= 00.00f && sunsetTime < 24.00f, "Invalid data")
 
 				// Set new value and calculate derived sunlight properties
 				mSunsetTime = sunsetTime;
@@ -148,8 +147,8 @@ namespace RendererRuntime
 		{
 			if (mTimeOfDay != timeOfDay)
 			{
-				// Sanity check
-				assert(timeOfDay >= 00.00f && timeOfDay < 24.00f);	// O'clock
+				// Sanity check (unit in O'clock)
+				RENDERER_ASSERT(getContext(), timeOfDay >= 00.00f && timeOfDay < 24.00f, "Invalid data")
 
 				// Set new value and calculate derived sunlight properties
 				mTimeOfDay = timeOfDay;

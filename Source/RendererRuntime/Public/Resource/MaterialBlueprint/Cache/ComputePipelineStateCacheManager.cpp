@@ -42,7 +42,7 @@ namespace RendererRuntime
 	const ComputePipelineStateCache* ComputePipelineStateCacheManager::getComputePipelineStateCacheByCombination(const ShaderProperties& shaderProperties, [[maybe_unused]] bool allowEmergencySynchronousCompilation)
 	{
 		// TODO(co) Asserts whether or not e.g. the material resource is using the owning material resource blueprint
-		assert(IResource::LoadingState::LOADED == mMaterialBlueprintResource.getLoadingState());
+		RENDERER_ASSERT(mMaterialBlueprintResource.getResourceManager<MaterialBlueprintResourceManager>().getRendererRuntime().getContext(), IResource::LoadingState::LOADED == mMaterialBlueprintResource.getLoadingState(), "Invalid loading state")
 
 		// Generate the compute pipeline state signature
 		mTemporaryComputePipelineStateSignature.set(mMaterialBlueprintResource, shaderProperties);
@@ -187,7 +187,7 @@ namespace RendererRuntime
 		// Material blueprint resource ID, all compute pipeline state cache share the same material blueprint resource ID
 		MaterialBlueprintResourceId materialBlueprintResourceId = getInvalid<MaterialBlueprintResourceId>();
 		file.read(&materialBlueprintResourceId, sizeof(uint32_t));
-		assert(mMaterialBlueprintResource.getId() == materialBlueprintResourceId);
+		RENDERER_ASSERT(mMaterialBlueprintResource.getResourceManager<MaterialBlueprintResourceManager>().getRendererRuntime().getContext(), mMaterialBlueprintResource.getId() == materialBlueprintResourceId, "Invalid material blueprint resource ID")
 
 		// TODO(co) Currently only the compute pipeline state signature ID is loaded, not the resulting binary pipeline state cache
 		uint32_t numberOfComputePipelineStateCaches = getInvalid<uint32_t>();
@@ -233,7 +233,7 @@ namespace RendererRuntime
 			const ComputePipelineStateSignature& computePipelineStateSignature = elementPair.second->getComputePipelineStateSignature();
 
 			// Sanity check: All compute pipeline state cache share the same material blueprint resource ID
-			assert(computePipelineStateSignature.getMaterialBlueprintResourceId() == materialBlueprintResourceId);
+			RENDERER_ASSERT(mMaterialBlueprintResource.getResourceManager<MaterialBlueprintResourceManager>().getRendererRuntime().getContext(), computePipelineStateSignature.getMaterialBlueprintResourceId() == materialBlueprintResourceId, "Invalid material blueprint resource ID")
 
 			{ // Write shader properties
 				const ShaderProperties::SortedPropertyVector& sortedPropertyVector = computePipelineStateSignature.getShaderProperties().getSortedPropertyVector();

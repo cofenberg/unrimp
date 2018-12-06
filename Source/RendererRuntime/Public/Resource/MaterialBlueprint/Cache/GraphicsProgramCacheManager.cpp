@@ -119,7 +119,7 @@ namespace RendererRuntime
 				else
 				{
 					// TODO(co) Error handling
-					assert(false);
+					RENDERER_ASSERT(materialBlueprintResource.getResourceManager<MaterialBlueprintResourceManager>().getRendererRuntime().getContext(), false, "Invalid graphics program")
 				}
 			}
 		}

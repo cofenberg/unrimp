@@ -27,6 +27,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
+#include "RendererRuntime/Public/Context.h"
 #include "RendererRuntime/Public/Resource/Scene/Item/ISceneItem.h"
 
 // Disable warnings in external headers, we can't fix them
@@ -37,8 +38,6 @@ PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4324)	// warning C4324: '<x>': structure was padded due to alignment specifier
 	#include <glm/glm.hpp>
 PRAGMA_WARNING_POP
-
-#include <cassert>
 
 
 //[-------------------------------------------------------]
@@ -93,8 +92,8 @@ namespace RendererRuntime
 			mPackedShaderData.lightType = static_cast<float>(lightType);
 
 			// Sanity checks
-			assert(lightType == LightType::DIRECTIONAL || mPackedShaderData.radius > 0.0f);
-			assert(lightType != LightType::DIRECTIONAL || 0.0f == mPackedShaderData.radius);
+			RENDERER_ASSERT(getContext(), lightType == LightType::DIRECTIONAL || mPackedShaderData.radius > 0.0f, "Invalid data")
+			RENDERER_ASSERT(getContext(), lightType != LightType::DIRECTIONAL || 0.0f == mPackedShaderData.radius, "Invalid data")
 		}
 
 		inline void setLightTypeAndRadius(LightType lightType, float radius)
@@ -103,8 +102,8 @@ namespace RendererRuntime
 			mPackedShaderData.radius = radius;
 
 			// Sanity checks
-			assert(lightType == LightType::DIRECTIONAL || mPackedShaderData.radius > 0.0f);
-			assert(lightType != LightType::DIRECTIONAL || 0.0f == mPackedShaderData.radius);
+			RENDERER_ASSERT(getContext(), lightType == LightType::DIRECTIONAL || mPackedShaderData.radius > 0.0f, "Invalid data")
+			RENDERER_ASSERT(getContext(), lightType != LightType::DIRECTIONAL || 0.0f == mPackedShaderData.radius, "Invalid data")
 		}
 
 		[[nodiscard]] inline const glm::vec3& getColor() const
@@ -117,7 +116,7 @@ namespace RendererRuntime
 			mPackedShaderData.color = color;
 
 			// Sanity checks
-			assert(mPackedShaderData.color.x >= 0.0f && mPackedShaderData.color.y >= 0.0f && mPackedShaderData.color.z >= 0.0f);
+			RENDERER_ASSERT(getContext(), mPackedShaderData.color.x >= 0.0f && mPackedShaderData.color.y >= 0.0f && mPackedShaderData.color.z >= 0.0f, "Invalid data")
 		}
 
 		[[nodiscard]] inline float getRadius() const
@@ -130,8 +129,8 @@ namespace RendererRuntime
 			mPackedShaderData.radius = radius;
 
 			// Sanity checks
-			assert(mPackedShaderData.lightType == static_cast<float>(LightType::DIRECTIONAL) || mPackedShaderData.radius > 0.0f);
-			assert(mPackedShaderData.lightType != static_cast<float>(LightType::DIRECTIONAL) || 0.0f == mPackedShaderData.radius);
+			RENDERER_ASSERT(getContext(), mPackedShaderData.lightType == static_cast<float>(LightType::DIRECTIONAL) || mPackedShaderData.radius > 0.0f, "Invalid data")
+			RENDERER_ASSERT(getContext(), mPackedShaderData.lightType != static_cast<float>(LightType::DIRECTIONAL) || 0.0f == mPackedShaderData.radius, "Invalid data")
 		}
 
 		[[nodiscard]] inline float getInnerAngle() const
@@ -147,8 +146,8 @@ namespace RendererRuntime
 			mPackedShaderData.innerAngle = std::cos(mInnerAngle);
 
 			// Sanity checks
-			assert(mInnerAngle >= 0.0f);
-			assert(mInnerAngle < mOuterAngle);
+			RENDERER_ASSERT(getContext(), mInnerAngle >= 0.0f, "Invalid data")
+			RENDERER_ASSERT(getContext(), mInnerAngle < mOuterAngle, "Invalid data")
 		}
 
 		[[nodiscard]] inline float getOuterAngle() const
@@ -164,8 +163,8 @@ namespace RendererRuntime
 			mPackedShaderData.outerAngle = std::cos(mOuterAngle);
 
 			// Sanity checks
-			assert(mOuterAngle < glm::radians(90.0f));
-			assert(mInnerAngle < mOuterAngle);
+			RENDERER_ASSERT(getContext(), mOuterAngle < glm::radians(90.0f), "Invalid data")
+			RENDERER_ASSERT(getContext(), mInnerAngle < mOuterAngle, "Invalid data")
 		}
 
 		inline void setInnerOuterAngle(float innerAngle, float outerAngle)
@@ -178,9 +177,9 @@ namespace RendererRuntime
 			mPackedShaderData.outerAngle = std::cos(mOuterAngle);
 
 			// Sanity checks
-			assert(mInnerAngle >= 0.0f);
-			assert(mOuterAngle < glm::radians(90.0f));
-			assert(mInnerAngle < mOuterAngle);
+			RENDERER_ASSERT(getContext(), mInnerAngle >= 0.0f, "Invalid data")
+			RENDERER_ASSERT(getContext(), mOuterAngle < glm::radians(90.0f), "Invalid data")
+			RENDERER_ASSERT(getContext(), mInnerAngle < mOuterAngle, "Invalid data")
 		}
 
 		[[nodiscard]] inline float getNearClipDistance() const
@@ -193,7 +192,7 @@ namespace RendererRuntime
 			mPackedShaderData.nearClipDistance = nearClipDistance;
 
 			// Sanity check
-			assert(mPackedShaderData.nearClipDistance >= 0.0f);
+			RENDERER_ASSERT(getContext(), mPackedShaderData.nearClipDistance >= 0.0f, "Invalid data")
 		}
 
 		[[nodiscard]] inline bool isVisible() const

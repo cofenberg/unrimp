@@ -29,14 +29,13 @@
 //[-------------------------------------------------------]
 #include "RendererRuntime/Public/Core/StringId.h"
 
-#include <cassert>
-
 
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
 namespace RendererRuntime
 {
+	class Context;
 	class SceneNode;
 	struct SceneItemSet;
 	class SceneResource;
@@ -76,6 +75,8 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
+		RENDERERRUNTIME_API_EXPORT [[nodiscard]] Context& getContext() const;
+
 		[[nodiscard]] inline SceneResource& getSceneResource() const
 		{
 			return mSceneResource;

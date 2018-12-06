@@ -24,7 +24,6 @@
 #include "RendererRuntime/Public/Resource/MaterialBlueprint/BufferManager/IndirectBufferManager.h"
 #include "RendererRuntime/Public/IRendererRuntime.h"
 
-#include <cassert>
 #include <algorithm>
 
 

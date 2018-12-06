@@ -154,7 +154,7 @@ namespace RendererRuntime
 		// This array defines the outer width of each successive ring
 		const int widths[] = { 0, 16, 16, 16, 16, 16 };
 		mNumberOfTerrainTileRings = sizeof(widths) / sizeof(widths[0]) - 1;	// "widths[0]" doesn't define a ring hence -1
-		assert(mNumberOfTerrainTileRings <= MAXIMUM_NUMBER_OF_TERRAIN_TILE_RINGS);
+		RENDERER_ASSERT(getContext(), mNumberOfTerrainTileRings <= MAXIMUM_NUMBER_OF_TERRAIN_TILE_RINGS, "Invalid number of terrain tile rings")
 		Renderer::IBufferManager& bufferManager = getSceneResource().getRendererRuntime().getBufferManager();
 		createIndexBuffer(bufferManager);
 		float tileWidth = 0.125f;
@@ -185,7 +185,7 @@ namespace RendererRuntime
 				indices[index++] = static_cast<uint16_t>(rowStart + x + 1);
 			}
 		}
-		assert(::detail::NUMBER_OF_INDICES == index);
+		RENDERER_ASSERT(getContext(), ::detail::NUMBER_OF_INDICES == index, "Invalid index")
 
 		// Create the index buffer object (IBO)
 		mIndexBufferPtr = bufferManager.createIndexBuffer(sizeof(uint16_t) * ::detail::NUMBER_OF_INDICES, indices);
@@ -195,8 +195,8 @@ namespace RendererRuntime
 	void TerrainSceneItem::createTerrainTileRing(TerrainTileRing& terrainTileRing, Renderer::IBufferManager& bufferManager, int holeWidth, int outerWidth, float tileSize) const
 	{
 		// Sanity checks
-		assert((nullptr != mIndexBufferPtr) && "The index buffer must be created before this method is called");
-		assert((outerWidth - holeWidth) % 2 == 0);
+		RENDERER_ASSERT(getContext(), nullptr != mIndexBufferPtr, "The index buffer must be created before this method is called")
+		RENDERER_ASSERT(getContext(), (outerWidth - holeWidth) % 2 == 0, "Invalid outer/hole width")
 
 		// Derive data
 		const int ringWidth = (outerWidth - holeWidth) / 2;	// No remainder - see assert above
@@ -214,8 +214,8 @@ namespace RendererRuntime
 				for (int x = 0; x < outerWidth; ++x)
 				{
 					// Is in ring?
-					assert(x >= 0 && x < outerWidth);
-					assert(y >= 0 && y < outerWidth);
+					RENDERER_ASSERT(getContext(), x >= 0 && x < outerWidth, "Invalid x")
+					RENDERER_ASSERT(getContext(), y >= 0 && y < outerWidth, "Invalid y")
 					if (x < ringWidth || y < ringWidth || x >= outerWidth - ringWidth || y >= outerWidth - ringWidth)
 					{
 						::detail::InstanceData& instanceData = vertexBufferData[index];
@@ -285,7 +285,7 @@ namespace RendererRuntime
 					}
 				}
 			}
-			assert(index == numberOfTiles);
+			RENDERER_ASSERT(getContext(), index == numberOfTiles, "Invalid index")
 
 			// Create the vertex buffer object (VBO)
 			vertexBuffer = bufferManager.createVertexBuffer(sizeof(::detail::InstanceData) * numberOfTiles, vertexBufferData);

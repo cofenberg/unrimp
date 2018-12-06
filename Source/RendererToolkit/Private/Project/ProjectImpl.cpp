@@ -65,7 +65,6 @@ PRAGMA_WARNING_PUSH
 	#include <rapidjson/document.h>
 PRAGMA_WARNING_POP
 
-#include <cassert>
 #include <algorithm>
 #include <unordered_set>
 

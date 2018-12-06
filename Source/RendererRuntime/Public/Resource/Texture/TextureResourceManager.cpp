@@ -227,7 +227,7 @@ namespace RendererRuntime
 		// -> Please note that the fallback texture asset ID is intentionally only used if the texture asset ID is valid, it's a fallback as long as the real texture data has not been loaded yet
 		const IRendererRuntime& rendererRuntime = mInternalResourceManager->getRendererRuntime();
 		const Asset* asset = rendererRuntime.getAssetManager().tryGetAssetByAssetId(assetId);
-		// assert((nullptr != asset) && "Unknown asset ID"); // For texture assets there's no assert by intent since it's not unusual that e.g. referenced compositor texture assets get created later on
+		// RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != asset, "Unknown asset ID")	// For texture assets there's no assert by intent since it's not unusual that e.g. referenced compositor texture assets get created later on
 		bool load = (reload && nullptr != asset);
 		if (nullptr == textureResource && nullptr != asset)
 		{
@@ -267,8 +267,8 @@ namespace RendererRuntime
 				}
 				else
 				{
-					// Error! We should never ever be able to be in here, it's the renderer toolkit responsible to ensure the renderer runtime only works with sane data.
-					assert(false);
+					// Error!
+					RENDERER_ASSERT(rendererRuntime.getContext(), false, "We should never ever be able to be in here, it's the renderer toolkit responsible to ensure the renderer runtime only works with sane data")
 				}
 			}
 			if (isValid(resourceLoaderTypeId))
@@ -290,29 +290,29 @@ namespace RendererRuntime
 						}
 						else
 						{
-							// Error! Fallback texture asset ID not found.
-							assert(false);
+							// Error! 
+							RENDERER_ASSERT(rendererRuntime.getContext(), false, "Fallback texture asset ID not found")
 						}
 					}
 					else
 					{
-						// Hiccups / lags warning: There should always be a fallback texture asset ID (better be safe than sorry)
-						assert(false);
+						// Hiccups / lags warning
+						RENDERER_ASSERT(rendererRuntime.getContext(), false, "There should always be a fallback texture asset ID (better be safe than sorry)")
 					}
 				}
 			}
 			else
 			{
-				// Error! We should never ever be able to be in here, it's the renderer toolkit responsible to ensure the renderer runtime only works with sane data.
-				assert(false);
+				// Error!
+				RENDERER_ASSERT(rendererRuntime.getContext(), false, "We should never ever be able to be in here, it's the renderer toolkit responsible to ensure the renderer runtime only works with sane data")
 			}
 		}
 	}
 
 	TextureResourceId TextureResourceManager::createTextureResourceByAssetId(AssetId assetId, Renderer::ITexture& texture, bool rgbHardwareGammaCorrection)
 	{
-		// Texture resource is not allowed to exist, yet
-		assert(nullptr == getTextureResourceByAssetId(assetId));
+		// Sanity check
+		RENDERER_ASSERT(mInternalResourceManager->getRendererRuntime().getContext(), nullptr == getTextureResourceByAssetId(assetId), "The texture resource isn't allowed to exist, yet")
 
 		// Create the texture resource instance
 		TextureResource& textureResource = mInternalResourceManager->getResources().addElement();
@@ -398,7 +398,7 @@ namespace RendererRuntime
 
 			default:
 				// TODO(co) Error handling
-				assert(false);
+				RENDERER_ASSERT(mInternalResourceManager->getRendererRuntime().getContext(), false, "Invalid resource loader type ID")
 				return nullptr;
 		}
 	}

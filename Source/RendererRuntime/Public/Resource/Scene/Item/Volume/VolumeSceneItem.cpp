@@ -160,8 +160,8 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	const RenderableManager* VolumeSceneItem::getRenderableManager() const
 	{
-		// Sanity check: Only uniform scale is supported to keep things simple
-		assert(mRenderableManager.getTransform().scale.x == mRenderableManager.getTransform().scale.y && mRenderableManager.getTransform().scale.y == mRenderableManager.getTransform().scale.z);
+		// Sanity check
+		RENDERER_ASSERT(getContext(), mRenderableManager.getTransform().scale.x == mRenderableManager.getTransform().scale.y && mRenderableManager.getTransform().scale.y == mRenderableManager.getTransform().scale.z, "Only uniform scale is supported to keep things simple")
 
 		// Call the base implementation
 		return MaterialSceneItem::getRenderableManager();
@@ -189,7 +189,7 @@ namespace RendererRuntime
 		if (nullptr == ::detail::VolumeVertexArrayPtr)
 		{
 			::detail::VolumeVertexArrayPtr = ::detail::createVolumeVertexArray(getSceneResource().getRendererRuntime());
-			assert(nullptr != ::detail::VolumeVertexArrayPtr);
+			RENDERER_ASSERT(getContext(), nullptr != ::detail::VolumeVertexArrayPtr, "Invalid volume vertex array")
 		}
 		::detail::VolumeVertexArrayPtr->addReference();
 	}

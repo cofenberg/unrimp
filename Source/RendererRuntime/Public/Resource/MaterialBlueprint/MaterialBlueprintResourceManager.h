@@ -123,7 +123,7 @@ namespace RendererRuntime
 		[[nodiscard]] inline IMaterialBlueprintResourceListener& getMaterialBlueprintResourceListener() const
 		{
 			// We know this pointer must always be valid
-			assert(nullptr != mMaterialBlueprintResourceListener);
+			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mMaterialBlueprintResourceListener, "Invalid material blueprint resource listener")
 			return *mMaterialBlueprintResourceListener;
 		}
 
@@ -180,28 +180,28 @@ namespace RendererRuntime
 		[[nodiscard]] inline UniformInstanceBufferManager& getUniformInstanceBufferManager() const
 		{
 			// We know this pointer must always be valid
-			assert(nullptr != mUniformInstanceBufferManager);
+			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mUniformInstanceBufferManager, "Invalid uniform instance buffer manager")
 			return *mUniformInstanceBufferManager;
 		}
 
 		[[nodiscard]] inline TextureInstanceBufferManager& getTextureInstanceBufferManager() const
 		{
 			// We know this pointer must always be valid
-			assert(nullptr != mTextureInstanceBufferManager);
+			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mTextureInstanceBufferManager, "Invalid texture instance buffer manager")
 			return *mTextureInstanceBufferManager;
 		}
 
 		[[nodiscard]] inline IndirectBufferManager& getIndirectBufferManager() const
 		{
 			// We know this pointer must always be valid
-			assert(nullptr != mIndirectBufferManager);
+			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mIndirectBufferManager, "Invalid indirect buffer manager")
 			return *mIndirectBufferManager;
 		}
 
 		[[nodiscard]] inline LightBufferManager& getLightBufferManager() const
 		{
 			// We know this pointer must always be valid
-			assert(nullptr != mLightBufferManager);
+			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mLightBufferManager, "Invalid light buffer manager")
 			return *mLightBufferManager;
 		}
 

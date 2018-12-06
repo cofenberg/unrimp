@@ -94,7 +94,7 @@ namespace RendererRuntime
 
 		// Create the resource instance
 		const Asset* asset = mRendererRuntime.getAssetManager().tryGetAssetByAssetId(assetId);
-		assert((nullptr != asset) && "Unknown asset ID");
+		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != asset, "Unknown asset ID")
 		bool load = (reload && nullptr != asset);
 		if (nullptr == materialBlueprintResource && nullptr != asset)
 		{
@@ -146,7 +146,7 @@ namespace RendererRuntime
 		if (mMaterialBlueprintResourceListener != materialBlueprintResourceListener)
 		{
 			// We know there must be a currently set material blueprint resource listener
-			assert(nullptr != mMaterialBlueprintResourceListener);
+			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mMaterialBlueprintResourceListener, "Invalid material blueprint resource listener")
 			mMaterialBlueprintResourceListener->onShutdown(mRendererRuntime);
 			mMaterialBlueprintResourceListener = (nullptr != materialBlueprintResourceListener) ? materialBlueprintResourceListener : &::detail::defaultMaterialBlueprintResourceListener;
 			mMaterialBlueprintResourceListener->onStartup(mRendererRuntime);
@@ -364,7 +364,7 @@ namespace RendererRuntime
 		delete mLightBufferManager;
 
 		// Shutdown material blueprint resource listener (we know there must be such an instance)
-		assert(nullptr != mMaterialBlueprintResourceListener);
+		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mMaterialBlueprintResourceListener, "Invalid material blueprint resource listener")
 		mMaterialBlueprintResourceListener->onShutdown(mRendererRuntime);
 
 		// Destroy internal resource manager

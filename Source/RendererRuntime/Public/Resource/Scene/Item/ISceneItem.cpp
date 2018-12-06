@@ -35,6 +35,15 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	Context& ISceneItem::getContext() const
+	{
+		return mSceneResource.getRendererRuntime().getContext();
+	}
+
+
+	//[-------------------------------------------------------]
 	//[ Protected methods                                     ]
 	//[-------------------------------------------------------]
 	ISceneItem::ISceneItem(SceneResource& sceneResource, bool cullable) :

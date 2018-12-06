@@ -61,8 +61,8 @@ namespace RendererRuntime
 		mSkeletonAnimationResource->mTicksPerSecond   = skeletonAnimationHeader.ticksPerSecond;
 
 		// Sanity checks
-		assert((skeletonAnimationHeader.numberOfChannels > 0) && "Invalid skeleton animation asset with zero channels detected");
-		assert((skeletonAnimationHeader.numberOfChannelDataBytes > 0) && "Invalid skeleton animation asset with zero channel data bytes detected");
+		RENDERER_ASSERT(mRendererRuntime.getContext(), skeletonAnimationHeader.numberOfChannels > 0, "Invalid skeleton animation asset with zero channels detected")
+		RENDERER_ASSERT(mRendererRuntime.getContext(), skeletonAnimationHeader.numberOfChannelDataBytes > 0, "Invalid skeleton animation asset with zero channel data bytes detected")
 
 		// Read in the channel byte offsets
 		mSkeletonAnimationResource->mChannelByteOffsets.resize(skeletonAnimationHeader.numberOfChannels);

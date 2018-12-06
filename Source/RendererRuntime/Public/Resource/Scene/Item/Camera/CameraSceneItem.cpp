@@ -33,8 +33,6 @@ PRAGMA_WARNING_PUSH
 	#include <glm/gtc/matrix_transform.hpp>
 PRAGMA_WARNING_POP
 
-#include <cassert>
-
 
 //[-------------------------------------------------------]
 //[ Namespace                                             ]
@@ -115,7 +113,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void CameraSceneItem::deserialize([[maybe_unused]] uint32_t numberOfBytes, const uint8_t*)
 	{
-		assert(sizeof(v1Scene::CameraItem) == numberOfBytes);
+		RENDERER_ASSERT(getContext(), sizeof(v1Scene::CameraItem) == numberOfBytes, "Invalid number of bytes")
 
 		// No FOV Y, near z and far z deserialization by intent, those are usually application controlled values
 	}

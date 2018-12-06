@@ -132,7 +132,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void SunlightSceneItem::deserialize([[maybe_unused]] uint32_t numberOfBytes, const uint8_t* data)
 	{
-		assert(sizeof(v1Scene::SunlightItem) == numberOfBytes);
+		RENDERER_ASSERT(getContext(), sizeof(v1Scene::SunlightItem) == numberOfBytes, "Invalid number of bytes")
 
 		// Read data
 		const v1Scene::SunlightItem* sunlightItem = reinterpret_cast<const v1Scene::SunlightItem*>(data);
@@ -142,10 +142,10 @@ namespace RendererRuntime
 		mAngleOfIncidence = sunlightItem->angleOfIncidence;
 		mTimeOfDay		  = sunlightItem->timeOfDay;
 
-		// Sanity checks
-		assert(mSunriseTime >= 00.00f && mSunriseTime < 24.00f);	// O'clock
-		assert(mSunsetTime >= 00.00f && mSunsetTime < 24.00f);		// O'clock
-		assert(mTimeOfDay >= 00.00f && mTimeOfDay < 24.00f);		// O'clock
+		// Sanity checks (units in O'clock)
+		RENDERER_ASSERT(getContext(), mSunriseTime >= 00.00f && mSunriseTime < 24.00f, "Invalid sunrise time")
+		RENDERER_ASSERT(getContext(), mSunsetTime >= 00.00f && mSunsetTime < 24.00f, "Invalid sunset time")
+		RENDERER_ASSERT(getContext(), mTimeOfDay >= 00.00f && mTimeOfDay < 24.00f, "Invalid time of day")
 
 		// Calculated derived sunlight properties
 		calculatedDerivedSunlightProperties();

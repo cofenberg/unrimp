@@ -333,8 +333,8 @@ namespace RendererRuntime
 
 	void MaterialBlueprintResource::createPipelineStateCaches(bool mandatoryOnly)
 	{
-		// Material blueprint resource must be fully loaded, meaning also all referenced shader resources
-		assert(LoadingState::LOADED == getLoadingState());
+		// Sanity check
+		RENDERER_ASSERT(getResourceManager<MaterialBlueprintResourceManager>().getRendererRuntime().getContext(), LoadingState::LOADED == getLoadingState(), "Material blueprint resource must be fully loaded, meaning also all referenced shader resources")
 
 		// TODO(co) Optimization: Avoid constant allocations/deallocations, can't use a static instance to not get false-positive memory-leaks, add maybe some kind of context?
 		::detail::ShaderCombinationIterator shaderCombinationIterator(128);
@@ -378,8 +378,8 @@ namespace RendererRuntime
 								}
 								else
 								{
-									// Error, can't resolve reference
-									assert(false);	// TODO(co) Error handling
+									// Error!
+									RENDERER_ASSERT(getResourceManager<MaterialBlueprintResourceManager>().getRendererRuntime().getContext(), false, "Can't resolve reference")
 								}
 							}
 							break;
@@ -407,8 +407,8 @@ namespace RendererRuntime
 						case MaterialProperty::ValueType::TEXTURE_ADDRESS_MODE:
 						case MaterialProperty::ValueType::TEXTURE_ASSET_ID:
 						default:
-							// Unsupported shader combination material property value type
-							assert(false);
+							// Error!
+							RENDERER_ASSERT(getResourceManager<MaterialBlueprintResourceManager>().getRendererRuntime().getContext(), false, "Unsupported shader combination material property value type")
 							break;
 					}
 				}

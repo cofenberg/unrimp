@@ -29,7 +29,6 @@
 #include "RendererRuntime/Public/IRendererRuntime.h"
 #include "RendererRuntime/Public/Context.h"
 
-#include <cassert>
 #include <algorithm>
 
 

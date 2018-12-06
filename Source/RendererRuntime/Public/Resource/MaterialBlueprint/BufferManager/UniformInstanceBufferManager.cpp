@@ -72,8 +72,8 @@ namespace RendererRuntime
 	void UniformInstanceBufferManager::startupBufferFilling(const MaterialBlueprintResource& materialBlueprintResource, Renderer::CommandBuffer& commandBuffer)
 	{
 		// Sanity checks
-		assert(nullptr != mCurrentInstanceBuffer);
-		assert(isInvalid(materialBlueprintResource.getComputeShaderBlueprintResourceId()));
+		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mCurrentInstanceBuffer, "Invalid current instance buffer")
+		RENDERER_ASSERT(mRendererRuntime.getContext(), isInvalid(materialBlueprintResource.getComputeShaderBlueprintResourceId()), "Invalid compute shader blueprint resource ID")
 
 		// Map the current instance buffer
 		mapCurrentInstanceBuffer();

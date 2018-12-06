@@ -65,10 +65,10 @@ namespace RendererRuntime
 		mMemoryFile.read(&meshHeader, sizeof(v1Mesh::MeshHeader));
 
 		// Sanity checks
-		assert((0 != meshHeader.numberOfBytesPerVertex) && "Invalid mesh with zero bytes per vertex");
-		assert((0 != meshHeader.numberOfVertices) && "Invalid mesh which has no vertices");
-		assert((0 != meshHeader.numberOfVertexAttributes) && "Invalid mesh which has no vertex attributes");
-		assert((0 != meshHeader.numberOfSubMeshes) && "Invalid mesh which has no sub-meshes");
+		RENDERER_ASSERT(mRendererRuntime.getContext(), 0 != meshHeader.numberOfBytesPerVertex, "Invalid mesh with zero bytes per vertex")
+		RENDERER_ASSERT(mRendererRuntime.getContext(), 0 != meshHeader.numberOfVertices, "Invalid mesh which has no vertices")
+		RENDERER_ASSERT(mRendererRuntime.getContext(), 0 != meshHeader.numberOfVertexAttributes, "Invalid mesh which has no vertex attributes")
+		RENDERER_ASSERT(mRendererRuntime.getContext(), 0 != meshHeader.numberOfSubMeshes, "Invalid mesh which has no sub-meshes")
 
 		// Set basic mesh resource data
 		mMeshResource->setBoundingBoxPosition(meshHeader.minimumBoundingBoxPosition, meshHeader.maximumBoundingBoxPosition);
@@ -167,7 +167,7 @@ namespace RendererRuntime
 				subMesh.setNumberOfIndices(v1SubMesh.numberOfIndices);
 
 				// Sanity check
-				assert(isValid(subMesh.getMaterialResourceId()));
+				RENDERER_ASSERT(mRendererRuntime.getContext(), isValid(subMesh.getMaterialResourceId()), "Invalid sub mesh material resource ID")
 			}
 		}
 

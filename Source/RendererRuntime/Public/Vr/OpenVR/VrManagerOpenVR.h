@@ -34,8 +34,6 @@
 
 #include <openvr/openvr.h>
 
-#include <cassert>
-
 
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
@@ -97,7 +95,7 @@ namespace RendererRuntime
 		[[nodiscard]] inline IVrManagerOpenVRListener& getVrManagerOpenVRListener() const
 		{
 			// We know this pointer must always be valid
-			assert(nullptr != mVrManagerOpenVRListener);
+			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mVrManagerOpenVRListener, "Invalid VR manager OpenVR listener")
 			return *mVrManagerOpenVRListener;
 		}
 
@@ -120,13 +118,13 @@ namespace RendererRuntime
 
 		[[nodiscard]] inline const vr::TrackedDevicePose_t& getVrTrackedDevicePose(vr::TrackedDeviceIndex_t trackedDeviceIndex) const
 		{
-			assert(trackedDeviceIndex < vr::k_unMaxTrackedDeviceCount);
+			RENDERER_ASSERT(mRendererRuntime.getContext(), trackedDeviceIndex < vr::k_unMaxTrackedDeviceCount, "Maximum tracked device count exceeded")
 			return mVrTrackedDevicePose[trackedDeviceIndex];
 		}
 
 		[[nodiscard]] inline const glm::mat4& getDevicePoseMatrix(vr::TrackedDeviceIndex_t trackedDeviceIndex) const
 		{
-			assert(trackedDeviceIndex < vr::k_unMaxTrackedDeviceCount);
+			RENDERER_ASSERT(mRendererRuntime.getContext(), trackedDeviceIndex < vr::k_unMaxTrackedDeviceCount, "Maximum tracked device count exceeded")
 			return mDevicePoseMatrix[trackedDeviceIndex];
 		}
 

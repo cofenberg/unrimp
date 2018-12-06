@@ -41,8 +41,6 @@ PRAGMA_WARNING_PUSH
 	#include <glm/glm.hpp>
 PRAGMA_WARNING_POP
 
-#include <cassert>
-
 
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
@@ -162,7 +160,7 @@ namespace RendererRuntime
 
 		[[nodiscard]] inline const PassBufferManager::PassData& getPassData() const	// Memory address received via "RendererRuntime::MaterialBlueprintResourceListener::beginFillPass()", can be invalid outside the correct scope, don't destroy the memory
 		{
-			assert(nullptr != mPassData);
+			RENDERER_ASSERT(mRendererRuntime->getContext(), nullptr != mPassData, "Invalid pass data")
 			return *mPassData;
 		}
 

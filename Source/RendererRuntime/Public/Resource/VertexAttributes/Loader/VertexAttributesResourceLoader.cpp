@@ -188,7 +188,7 @@ namespace RendererRuntime
 		}
 		else
 		{
-			assert(false && "Unknown vertex attributes asset");
+			RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Unknown vertex attributes asset")
 		}
 	}
 
