@@ -425,6 +425,7 @@ namespace RendererRuntime
 						ImGui::Text("Graphics programs: %d", statistics.currentNumberOfGraphicsPrograms.load());
 						ImGui::Text("Vertex arrays: %d", statistics.currentNumberOfVertexArrays.load());
 						ImGui::Text("Render passes: %d", statistics.currentNumberOfRenderPasses.load());
+						ImGui::Text("Query pools: %d", statistics.currentNumberOfQueryPools.load());
 						ImGui::Text("Swap chains: %d", statistics.currentNumberOfSwapChains.load());
 						ImGui::Text("Framebuffers: %d", statistics.currentNumberOfFramebuffers.load());
 						ImGui::Text("Index buffers: %d", statistics.currentNumberOfIndexBuffers.load());

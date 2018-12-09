@@ -25,6 +25,7 @@
 // Basics
 	#include "Private/Basics/FirstTriangle/FirstTriangle.cpp"
 	#include "Private/Basics/FirstIndirectBuffer/FirstIndirectBuffer.cpp"
+	#include "Private/Basics/FirstQueries/FirstQueries.cpp"
 	#include "Private/Basics/VertexBuffer/VertexBuffer.cpp"
 	#include "Private/Basics/FirstTexture/FirstTexture.cpp"
 	#include "Private/Basics/FirstRenderToTexture/FirstRenderToTexture.cpp"

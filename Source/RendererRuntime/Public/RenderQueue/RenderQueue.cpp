@@ -932,6 +932,7 @@ namespace RendererRuntime
 										case Renderer::ResourceType::GRAPHICS_PROGRAM:
 										case Renderer::ResourceType::VERTEX_ARRAY:
 										case Renderer::ResourceType::RENDER_PASS:
+										case Renderer::ResourceType::QUERY_POOL:
 										case Renderer::ResourceType::SWAP_CHAIN:
 										case Renderer::ResourceType::FRAMEBUFFER:
 										case Renderer::ResourceType::INDEX_BUFFER:

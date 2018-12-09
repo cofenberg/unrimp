@@ -202,6 +202,13 @@ namespace NullRenderer
 		void copyResource(Renderer::IResource& destinationResource, Renderer::IResource& sourceResource);
 		void generateMipmaps(Renderer::IResource& resource);
 		//[-------------------------------------------------------]
+		//[ Query                                                 ]
+		//[-------------------------------------------------------]
+		void resetQueryPool(Renderer::IQueryPool& queryPool, uint32_t firstQueryIndex, uint32_t numberOfQueries);
+		void beginQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex, uint32_t queryControlFlags);
+		void endQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex);
+		void writeTimestampQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex);
+		//[-------------------------------------------------------]
 		//[ Debug                                                 ]
 		//[-------------------------------------------------------]
 		#ifdef RENDERER_DEBUG
@@ -228,6 +235,7 @@ namespace NullRenderer
 		//[ Resource creation                                     ]
 		//[-------------------------------------------------------]
 		[[nodiscard]] virtual Renderer::IRenderPass* createRenderPass(uint32_t numberOfColorAttachments, const Renderer::TextureFormat::Enum* colorAttachmentTextureFormats, Renderer::TextureFormat::Enum depthStencilAttachmentTextureFormat = Renderer::TextureFormat::UNKNOWN, uint8_t numberOfMultisamples = 1) override;
+		[[nodiscard]] virtual Renderer::IQueryPool* createQueryPool(Renderer::QueryType queryType, uint32_t numberOfQueries = 1) override;
 		[[nodiscard]] virtual Renderer::ISwapChain* createSwapChain(Renderer::IRenderPass& renderPass, Renderer::WindowHandle windowHandle, bool useExternalContext = false) override;
 		[[nodiscard]] virtual Renderer::IFramebuffer* createFramebuffer(Renderer::IRenderPass& renderPass, const Renderer::FramebufferAttachment* colorFramebufferAttachments, const Renderer::FramebufferAttachment* depthStencilFramebufferAttachment = nullptr) override;
 		[[nodiscard]] virtual Renderer::IBufferManager* createBufferManager() override;
@@ -241,6 +249,7 @@ namespace NullRenderer
 		//[-------------------------------------------------------]
 		[[nodiscard]] virtual bool map(Renderer::IResource& resource, uint32_t subresource, Renderer::MapType mapType, uint32_t mapFlags, Renderer::MappedSubresource& mappedSubresource) override;
 		virtual void unmap(Renderer::IResource& resource, uint32_t subresource) override;
+		[[nodiscard]] virtual bool getQueryPoolResults(Renderer::IQueryPool& queryPool, uint32_t numberOfDataBytes, uint8_t* data, uint32_t firstQueryIndex = 0, uint32_t numberOfQueries = 1, uint32_t strideInBytes = 0, uint32_t queryResultFlags = Renderer::QueryResultFlags::WAIT) override;
 		//[-------------------------------------------------------]
 		//[ Operations                                            ]
 		//[-------------------------------------------------------]
@@ -2934,6 +2943,33 @@ namespace
 			}
 
 			//[-------------------------------------------------------]
+			//[ Query                                                 ]
+			//[-------------------------------------------------------]
+			void ResetQueryPool(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::ResetQueryPool* realData = static_cast<const Renderer::Command::ResetQueryPool*>(data);
+				static_cast<NullRenderer::NullRenderer&>(renderer).resetQueryPool(*realData->queryPool, realData->firstQueryIndex, realData->numberOfQueries);
+			}
+
+			void BeginQuery(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::BeginQuery* realData = static_cast<const Renderer::Command::BeginQuery*>(data);
+				static_cast<NullRenderer::NullRenderer&>(renderer).beginQuery(*realData->queryPool, realData->queryIndex, realData->queryControlFlags);
+			}
+
+			void EndQuery(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::EndQuery* realData = static_cast<const Renderer::Command::EndQuery*>(data);
+				static_cast<NullRenderer::NullRenderer&>(renderer).endQuery(*realData->queryPool, realData->queryIndex);
+			}
+
+			void WriteTimestampQuery(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::WriteTimestampQuery* realData = static_cast<const Renderer::Command::WriteTimestampQuery*>(data);
+				static_cast<NullRenderer::NullRenderer&>(renderer).writeTimestampQuery(*realData->queryPool, realData->queryIndex);
+			}
+
+			//[-------------------------------------------------------]
 			//[ Debug                                                 ]
 			//[-------------------------------------------------------]
 			#ifdef RENDERER_DEBUG
@@ -2996,6 +3032,11 @@ namespace
 			&BackendDispatch::ResolveMultisampleFramebuffer,
 			&BackendDispatch::CopyResource,
 			&BackendDispatch::GenerateMipmaps,
+			// Query
+			&BackendDispatch::ResetQueryPool,
+			&BackendDispatch::BeginQuery,
+			&BackendDispatch::EndQuery,
+			&BackendDispatch::WriteTimestampQuery,
 			// Debug
 			&BackendDispatch::SetDebugMarker,
 			&BackendDispatch::BeginDebugEvent,
@@ -3335,6 +3376,21 @@ namespace NullRenderer
 
 
 	//[-------------------------------------------------------]
+	//[ Query                                                 ]
+	//[-------------------------------------------------------]
+	void NullRenderer::resetQueryPool(Renderer::IQueryPool&, uint32_t, uint32_t)
+	{}
+
+	void NullRenderer::beginQuery(Renderer::IQueryPool&, uint32_t, uint32_t)
+	{}
+
+	void NullRenderer::endQuery(Renderer::IQueryPool&, uint32_t)
+	{}
+
+	void NullRenderer::writeTimestampQuery(Renderer::IQueryPool&, uint32_t)
+	{}
+
+	//[-------------------------------------------------------]
 	//[ Debug                                                 ]
 	//[-------------------------------------------------------]
 	#ifdef RENDERER_DEBUG
@@ -3431,6 +3487,12 @@ namespace NullRenderer
 		return RENDERER_NEW(mContext, RenderPass)(*this, numberOfColorAttachments, colorAttachmentTextureFormats, depthStencilAttachmentTextureFormat, numberOfMultisamples);
 	}
 
+	Renderer::IQueryPool* NullRenderer::createQueryPool([[maybe_unused]] Renderer::QueryType queryType, [[maybe_unused]] uint32_t numberOfQueries)
+	{
+		// TODO(co) Implement me
+		return nullptr;
+	}
+
 	Renderer::ISwapChain* NullRenderer::createSwapChain(Renderer::IRenderPass& renderPass, Renderer::WindowHandle windowHandle, bool)
 	{
 		// Sanity checks
@@ -3525,6 +3587,11 @@ namespace NullRenderer
 
 	void NullRenderer::unmap(Renderer::IResource&, uint32_t)
 	{}
+
+	bool NullRenderer::getQueryPoolResults(Renderer::IQueryPool&, uint32_t, uint8_t*, uint32_t, uint32_t, uint32_t, uint32_t)
+	{
+		return true;
+	}
 
 
 	//[-------------------------------------------------------]

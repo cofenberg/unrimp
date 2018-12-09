@@ -34,6 +34,9 @@ Standalone renderer examples.
 	- "FirstIndirectBuffer" demonstrates:
 		- Everything from "FirstTriangle"
 		- Indirect buffer
+	- "FirstQueries" demonstrates:
+		- Everything from "FirstTriangle"
+		- Asynchronous queries
 	- "VertexBuffer" demonstrates:
 		- Vertex buffer object (VBO)
 		- Vertex array object (VAO)

@@ -29,6 +29,7 @@
 // Basics
 #include "Examples/Private/Basics/FirstTriangle/FirstTriangle.h"
 #include "Examples/Private/Basics/FirstIndirectBuffer/FirstIndirectBuffer.h"
+#include "Examples/Private/Basics/FirstQueries/FirstQueries.h"
 #include "Examples/Private/Basics/VertexBuffer/VertexBuffer.h"
 #include "Examples/Private/Basics/FirstTexture/FirstTexture.h"
 #include "Examples/Private/Basics/FirstRenderToTexture/FirstRenderToTexture.h"
@@ -105,6 +106,7 @@ ExampleRunner::ExampleRunner() :
 	// Basics
 	addExample("FirstTriangle",					&runRenderExample<FirstTriangle>,				supportsAllRenderer);
 	addExample("FirstIndirectBuffer",			&runRenderExample<FirstIndirectBuffer>,			supportsAllRenderer);
+	addExample("FirstQueries",					&runRenderExample<FirstQueries>,				supportsAllRenderer);
 	addExample("VertexBuffer",					&runRenderExample<VertexBuffer>,				supportsAllRenderer);
 	addExample("FirstTexture",					&runRenderExample<FirstTexture>,				supportsAllRenderer);
 	addExample("FirstRenderToTexture",			&runRenderExample<FirstRenderToTexture>,		supportsAllRenderer);

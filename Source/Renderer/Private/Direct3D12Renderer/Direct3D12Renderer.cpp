@@ -3395,6 +3395,13 @@ namespace Direct3D12Renderer
 		void copyResource(Renderer::IResource& destinationResource, Renderer::IResource& sourceResource);
 		void generateMipmaps(Renderer::IResource& resource);
 		//[-------------------------------------------------------]
+		//[ Query                                                 ]
+		//[-------------------------------------------------------]
+		void resetQueryPool(Renderer::IQueryPool& queryPool, uint32_t firstQueryIndex, uint32_t numberOfQueries);
+		void beginQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex, uint32_t queryControlFlags);
+		void endQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex);
+		void writeTimestampQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex);
+		//[-------------------------------------------------------]
 		//[ Debug                                                 ]
 		//[-------------------------------------------------------]
 		#ifdef RENDERER_DEBUG
@@ -3430,6 +3437,7 @@ namespace Direct3D12Renderer
 		//[ Resource creation                                     ]
 		//[-------------------------------------------------------]
 		[[nodiscard]] virtual Renderer::IRenderPass* createRenderPass(uint32_t numberOfColorAttachments, const Renderer::TextureFormat::Enum* colorAttachmentTextureFormats, Renderer::TextureFormat::Enum depthStencilAttachmentTextureFormat = Renderer::TextureFormat::UNKNOWN, uint8_t numberOfMultisamples = 1) override;
+		[[nodiscard]] virtual Renderer::IQueryPool* createQueryPool(Renderer::QueryType queryType, uint32_t numberOfQueries = 1) override;
 		[[nodiscard]] virtual Renderer::ISwapChain* createSwapChain(Renderer::IRenderPass& renderPass, Renderer::WindowHandle windowHandle, bool useExternalContext = false) override;
 		[[nodiscard]] virtual Renderer::IFramebuffer* createFramebuffer(Renderer::IRenderPass& renderPass, const Renderer::FramebufferAttachment* colorFramebufferAttachments, const Renderer::FramebufferAttachment* depthStencilFramebufferAttachment = nullptr) override;
 		[[nodiscard]] virtual Renderer::IBufferManager* createBufferManager() override;
@@ -3443,6 +3451,7 @@ namespace Direct3D12Renderer
 		//[-------------------------------------------------------]
 		[[nodiscard]] virtual bool map(Renderer::IResource& resource, uint32_t subresource, Renderer::MapType mapType, uint32_t mapFlags, Renderer::MappedSubresource& mappedSubresource) override;
 		virtual void unmap(Renderer::IResource& resource, uint32_t subresource) override;
+		[[nodiscard]] virtual bool getQueryPoolResults(Renderer::IQueryPool& queryPool, uint32_t numberOfDataBytes, uint8_t* data, uint32_t firstQueryIndex = 0, uint32_t numberOfQueries = 1, uint32_t strideInBytes = 0, uint32_t queryResultFlags = Renderer::QueryResultFlags::WAIT) override;
 		//[-------------------------------------------------------]
 		//[ Operations                                            ]
 		//[-------------------------------------------------------]
@@ -8265,6 +8274,7 @@ namespace Direct3D12Renderer
 						case Renderer::ResourceType::GRAPHICS_PROGRAM:
 						case Renderer::ResourceType::VERTEX_ARRAY:
 						case Renderer::ResourceType::RENDER_PASS:
+						case Renderer::ResourceType::QUERY_POOL:
 						case Renderer::ResourceType::SWAP_CHAIN:
 						case Renderer::ResourceType::FRAMEBUFFER:
 						case Renderer::ResourceType::INDEX_BUFFER:
@@ -8364,6 +8374,7 @@ namespace Direct3D12Renderer
 					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
+					case Renderer::ResourceType::QUERY_POOL:
 					case Renderer::ResourceType::SWAP_CHAIN:
 					case Renderer::ResourceType::FRAMEBUFFER:
 					case Renderer::ResourceType::INDEX_BUFFER:
@@ -10269,6 +10280,34 @@ namespace
 			}
 
 			//[-------------------------------------------------------]
+			//[ Query                                                 ]
+			//[-------------------------------------------------------]
+			void ResetQueryPool(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::ResetQueryPool* realData = static_cast<const Renderer::Command::ResetQueryPool*>(data);
+				static_cast<Direct3D12Renderer::Direct3D12Renderer&>(renderer).resetQueryPool(*realData->queryPool, realData->firstQueryIndex, realData->numberOfQueries);
+			}
+
+			void BeginQuery(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::BeginQuery* realData = static_cast<const Renderer::Command::BeginQuery*>(data);
+				static_cast<Direct3D12Renderer::Direct3D12Renderer&>(renderer).beginQuery(*realData->queryPool, realData->queryIndex, realData->queryControlFlags);
+			}
+
+			void EndQuery(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::EndQuery* realData = static_cast<const Renderer::Command::EndQuery*>(data);
+				static_cast<Direct3D12Renderer::Direct3D12Renderer&>(renderer).endQuery(*realData->queryPool, realData->queryIndex);
+			}
+
+			void WriteTimestampQuery(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::WriteTimestampQuery* realData = static_cast<const Renderer::Command::WriteTimestampQuery*>(data);
+				static_cast<Direct3D12Renderer::Direct3D12Renderer&>(renderer).writeTimestampQuery(*realData->queryPool, realData->queryIndex);
+			}
+
+
+			//[-------------------------------------------------------]
 			//[ Debug                                                 ]
 			//[-------------------------------------------------------]
 			#ifdef RENDERER_DEBUG
@@ -10337,6 +10376,11 @@ namespace
 			&BackendDispatch::ResolveMultisampleFramebuffer,
 			&BackendDispatch::CopyResource,
 			&BackendDispatch::GenerateMipmaps,
+			// Query
+			&BackendDispatch::ResetQueryPool,
+			&BackendDispatch::BeginQuery,
+			&BackendDispatch::EndQuery,
+			&BackendDispatch::WriteTimestampQuery,
 			// Debug
 			&BackendDispatch::SetDebugMarker,
 			&BackendDispatch::BeginDebugEvent,
@@ -10712,6 +10756,7 @@ namespace Direct3D12Renderer
 				case Renderer::ResourceType::GRAPHICS_PROGRAM:
 				case Renderer::ResourceType::VERTEX_ARRAY:
 				case Renderer::ResourceType::RENDER_PASS:
+				case Renderer::ResourceType::QUERY_POOL:
 				case Renderer::ResourceType::SWAP_CHAIN:
 				case Renderer::ResourceType::FRAMEBUFFER:
 				case Renderer::ResourceType::INDEX_BUFFER:
@@ -10841,6 +10886,7 @@ namespace Direct3D12Renderer
 					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
+					case Renderer::ResourceType::QUERY_POOL:
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
@@ -10950,6 +10996,7 @@ namespace Direct3D12Renderer
 					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
+					case Renderer::ResourceType::QUERY_POOL:
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
@@ -11071,6 +11118,7 @@ namespace Direct3D12Renderer
 				case Renderer::ResourceType::GRAPHICS_PROGRAM:
 				case Renderer::ResourceType::VERTEX_ARRAY:
 				case Renderer::ResourceType::RENDER_PASS:
+				case Renderer::ResourceType::QUERY_POOL:
 				case Renderer::ResourceType::INDEX_BUFFER:
 				case Renderer::ResourceType::VERTEX_BUFFER:
 				case Renderer::ResourceType::TEXTURE_BUFFER:
@@ -11254,6 +11302,42 @@ namespace Direct3D12Renderer
 
 
 	//[-------------------------------------------------------]
+	//[ Query                                                 ]
+	//[-------------------------------------------------------]
+	void Direct3D12Renderer::resetQueryPool([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t firstQueryIndex, [[maybe_unused]] uint32_t numberOfQueries)
+	{
+		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
+
+		// TODO(co) Implement me
+	}
+
+	void Direct3D12Renderer::beginQuery([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t queryIndex, [[maybe_unused]] uint32_t queryControlFlags)
+	{
+		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
+
+		// TODO(co) Implement me
+	}
+
+	void Direct3D12Renderer::endQuery([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t queryIndex)
+	{
+		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
+
+		// TODO(co) Implement me
+	}
+
+	void Direct3D12Renderer::writeTimestampQuery([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t queryIndex)
+	{
+		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
+
+		// TODO(co) Implement me
+	}
+
+
+	//[-------------------------------------------------------]
 	//[ Debug                                                 ]
 	//[-------------------------------------------------------]
 	#ifdef RENDERER_DEBUG
@@ -11357,6 +11441,12 @@ namespace Direct3D12Renderer
 	Renderer::IRenderPass* Direct3D12Renderer::createRenderPass(uint32_t numberOfColorAttachments, const Renderer::TextureFormat::Enum* colorAttachmentTextureFormats, Renderer::TextureFormat::Enum depthStencilAttachmentTextureFormat, uint8_t numberOfMultisamples)
 	{
 		return RENDERER_NEW(mContext, RenderPass)(*this, numberOfColorAttachments, colorAttachmentTextureFormats, depthStencilAttachmentTextureFormat, numberOfMultisamples);
+	}
+
+	Renderer::IQueryPool* Direct3D12Renderer::createQueryPool([[maybe_unused]] Renderer::QueryType queryType, [[maybe_unused]] uint32_t numberOfQueries)
+	{
+		// TODO(co) Implement me
+		return nullptr;
 	}
 
 	Renderer::ISwapChain* Direct3D12Renderer::createSwapChain(Renderer::IRenderPass& renderPass, Renderer::WindowHandle windowHandle, bool)
@@ -11497,6 +11587,7 @@ namespace Direct3D12Renderer
 			case Renderer::ResourceType::GRAPHICS_PROGRAM:
 			case Renderer::ResourceType::VERTEX_ARRAY:
 			case Renderer::ResourceType::RENDER_PASS:
+			case Renderer::ResourceType::QUERY_POOL:
 			case Renderer::ResourceType::SWAP_CHAIN:
 			case Renderer::ResourceType::FRAMEBUFFER:
 			case Renderer::ResourceType::SAMPLER_STATE:
@@ -11581,6 +11672,7 @@ namespace Direct3D12Renderer
 			case Renderer::ResourceType::GRAPHICS_PROGRAM:
 			case Renderer::ResourceType::VERTEX_ARRAY:
 			case Renderer::ResourceType::RENDER_PASS:
+			case Renderer::ResourceType::QUERY_POOL:
 			case Renderer::ResourceType::SWAP_CHAIN:
 			case Renderer::ResourceType::FRAMEBUFFER:
 			case Renderer::ResourceType::SAMPLER_STATE:
@@ -11595,6 +11687,15 @@ namespace Direct3D12Renderer
 				break;
 		}
 		*/
+	}
+
+	bool Direct3D12Renderer::getQueryPoolResults([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t numberOfDataBytes, [[maybe_unused]] uint8_t* data, [[maybe_unused]] uint32_t firstQueryIndex, [[maybe_unused]] uint32_t numberOfQueries, [[maybe_unused]] uint32_t strideInBytes, [[maybe_unused]] uint32_t queryResultFlags)
+	{
+		// Sanity check
+		DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
+
+		// TODO(co) Implement me
+		return false;
 	}
 
 

@@ -294,6 +294,7 @@ namespace Renderer
 		class IGraphicsProgram;
 		class IVertexArray;
 		class IRenderPass;
+		class IQueryPool;
 		class IRenderTarget;
 			class IRenderWindow;
 			class ISwapChain;
@@ -1115,34 +1116,35 @@ namespace Renderer
 		GRAPHICS_PROGRAM			   = 2,		///< Graphics program, "Renderer::IShader"-related
 		VERTEX_ARRAY				   = 3,		///< Vertex array object (VAO, input-assembler (IA) stage), "Renderer::IBuffer"-related
 		RENDER_PASS					   = 4,		///< Render pass
+		QUERY_POOL					   = 5,		///< Asynchronous query pool
 		// IRenderTarget
-		SWAP_CHAIN					   = 5,		///< Swap chain
-		FRAMEBUFFER					   = 6,		///< Framebuffer object (FBO)
+		SWAP_CHAIN					   = 6,		///< Swap chain
+		FRAMEBUFFER					   = 7,		///< Framebuffer object (FBO)
 		// IBuffer
-		INDEX_BUFFER				   = 7,		///< Index buffer object (IBO, input-assembler (IA) stage)
-		VERTEX_BUFFER				   = 8,		///< Vertex buffer object (VBO, input-assembler (IA) stage)
-		TEXTURE_BUFFER				   = 9,		///< Texture buffer object (TBO)
-		STRUCTURED_BUFFER			   = 10,	///< Structured buffer object
-		INDIRECT_BUFFER				   = 11,	///< Indirect buffer object
-		UNIFORM_BUFFER				   = 12,	///< Uniform buffer object (UBO, "constant buffer" in Direct3D terminology)
+		INDEX_BUFFER				   = 8,		///< Index buffer object (IBO, input-assembler (IA) stage)
+		VERTEX_BUFFER				   = 9,		///< Vertex buffer object (VBO, input-assembler (IA) stage)
+		TEXTURE_BUFFER				   = 10,	///< Texture buffer object (TBO)
+		STRUCTURED_BUFFER			   = 11,	///< Structured buffer object
+		INDIRECT_BUFFER				   = 12,	///< Indirect buffer object
+		UNIFORM_BUFFER				   = 13,	///< Uniform buffer object (UBO, "constant buffer" in Direct3D terminology)
 		// ITexture
-		TEXTURE_1D					   = 13,	///< Texture 1D
-		TEXTURE_2D					   = 14,	///< Texture 2D
-		TEXTURE_2D_ARRAY			   = 15,	///< Texture 2D array
-		TEXTURE_3D					   = 16,	///< Texture 3D
-		TEXTURE_CUBE				   = 17,	///< Texture cube
+		TEXTURE_1D					   = 14,	///< Texture 1D
+		TEXTURE_2D					   = 15,	///< Texture 2D
+		TEXTURE_2D_ARRAY			   = 16,	///< Texture 2D array
+		TEXTURE_3D					   = 17,	///< Texture 3D
+		TEXTURE_CUBE				   = 18,	///< Texture cube
 		// IState
 			// IPipelineState
-			GRAPHICS_PIPELINE_STATE	   = 18,	///< Graphics pipeline state (PSO)
-			COMPUTE_PIPELINE_STATE	   = 19,	///< Compute pipeline state (PSO)
-		SAMPLER_STATE				   = 20,	///< Sampler state
+			GRAPHICS_PIPELINE_STATE	   = 19,	///< Graphics pipeline state (PSO)
+			COMPUTE_PIPELINE_STATE	   = 20,	///< Compute pipeline state (PSO)
+		SAMPLER_STATE				   = 21,	///< Sampler state
 		// IShader
-		VERTEX_SHADER				   = 21,	///< Vertex shader (VS)
-		TESSELLATION_CONTROL_SHADER	   = 22,	///< Tessellation control shader (TCS, "hull shader" in Direct3D terminology)
-		TESSELLATION_EVALUATION_SHADER = 23,	///< Tessellation evaluation shader (TES, "domain shader" in Direct3D terminology)
-		GEOMETRY_SHADER				   = 24,	///< Geometry shader (GS)
-		FRAGMENT_SHADER				   = 25,	///< Fragment shader (FS, "pixel shader" in Direct3D terminology)
-		COMPUTE_SHADER				   = 26		///< Compute shader (CS)
+		VERTEX_SHADER				   = 22,	///< Vertex shader (VS)
+		TESSELLATION_CONTROL_SHADER	   = 23,	///< Tessellation control shader (TCS, "hull shader" in Direct3D terminology)
+		TESSELLATION_EVALUATION_SHADER = 24,	///< Tessellation evaluation shader (TES, "domain shader" in Direct3D terminology)
+		GEOMETRY_SHADER				   = 25,	///< Geometry shader (GS)
+		FRAGMENT_SHADER				   = 26,	///< Fragment shader (FS, "pixel shader" in Direct3D terminology)
+		COMPUTE_SHADER				   = 27		///< Compute shader (CS)
 	};
 
 
@@ -1359,6 +1361,7 @@ namespace Renderer
 					case ResourceType::GRAPHICS_PROGRAM:
 					case ResourceType::VERTEX_ARRAY:
 					case ResourceType::RENDER_PASS:
+					case ResourceType::QUERY_POOL:
 					case ResourceType::SWAP_CHAIN:
 					case ResourceType::FRAMEBUFFER:
 					case ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -3215,6 +3218,70 @@ namespace Renderer
 
 
 	//[-------------------------------------------------------]
+	//[ Renderer/QueryType.h                                  ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Asynchronous query type
+	*/
+	enum class QueryType
+	{
+		OCCLUSION			= 0,	///< Occlusion query, result is a "uint64_t" containing the number of passed samples
+		PIPELINE_STATISTICS = 1,	///< Pipeline statistics query, result is a "Renderer::PipelineStatisticsQueryResult"
+		TIMESTAMP			= 2		///< Timestamp query, result is a "uint64_t" containing a timestamp in nanosecond
+	};
+
+	/**
+	*  @brief
+	*    Asynchronous query control flags
+	*/
+	struct QueryControlFlags final
+	{
+		enum Enum
+		{
+			PRECISE = 1 << 0	///< Query control precise
+		};
+	};
+
+	/**
+	*  @brief
+	*    Asynchronous query result flags
+	*/
+	struct QueryResultFlags final
+	{
+		enum Enum
+		{
+			WAIT = 1 << 0	///< Wait for the result
+		};
+	};
+
+	/**
+	*  @brief
+	*    Asynchronous pipeline statistics query result
+	*
+	*  @note
+	*    - This pipeline statistics structure maps directly to Direct3D 11, do not change it
+	*
+	*  @see
+	*    - "D3D11_QUERY_DATA_PIPELINE_STATISTICS"-documentation for details
+	*/
+	struct PipelineStatisticsQueryResult final
+	{
+		uint64_t iaVertices;
+		uint64_t iaPrimitives;
+		uint64_t vsInvocations;
+		uint64_t gsInvocations;
+		uint64_t gsPrimitives;
+		uint64_t cInvocations;
+		uint64_t cPrimitives;
+		uint64_t psInvocations;
+		uint64_t hsInvocations;
+		uint64_t dsInvocations;
+		uint64_t csInvocations;
+	};
+
+
+	//[-------------------------------------------------------]
 	//[ Renderer/RefCount.h                                   ]
 	//[-------------------------------------------------------]
 	/**
@@ -3723,6 +3790,8 @@ namespace Renderer
 			std::atomic<uint32_t> numberOfCreatedVertexArrays;					///< Number of created vertex array object (VAO, input-assembler (IA) stage) instances
 			std::atomic<uint32_t> currentNumberOfRenderPasses;					///< Current number of render pass instances
 			std::atomic<uint32_t> numberOfCreatedRenderPasses;					///< Number of created render pass instances
+			std::atomic<uint32_t> currentNumberOfQueryPools;					///< Current number of asynchronous query pool instances
+			std::atomic<uint32_t> numberOfCreatedQueryPools;					///< Number of created asynchronous query pool instances
 			// IRenderTarget
 			std::atomic<uint32_t> currentNumberOfSwapChains;					///< Current number of swap chain instances
 			std::atomic<uint32_t> numberOfCreatedSwapChains;					///< Number of created swap chain instances
@@ -3790,6 +3859,8 @@ namespace Renderer
 				numberOfCreatedVertexArrays(0),
 				currentNumberOfRenderPasses(0),
 				numberOfCreatedRenderPasses(0),
+				currentNumberOfQueryPools(0),
+				numberOfCreatedQueryPools(0),
 				// IRenderTarget
 				currentNumberOfSwapChains(0),
 				numberOfCreatedSwapChains(0),
@@ -3867,6 +3938,7 @@ namespace Renderer
 						currentNumberOfGraphicsPrograms +
 						currentNumberOfVertexArrays +
 						currentNumberOfRenderPasses +
+						currentNumberOfQueryPools +
 						// IRenderTarget
 						currentNumberOfSwapChains +
 						currentNumberOfFramebuffers +
@@ -3917,6 +3989,7 @@ namespace Renderer
 				RENDERER_LOG(context, INFORMATION, "Graphics programs: %d", currentNumberOfGraphicsPrograms.load())
 				RENDERER_LOG(context, INFORMATION, "Vertex arrays: %d", currentNumberOfVertexArrays.load())
 				RENDERER_LOG(context, INFORMATION, "Render passes: %d", currentNumberOfRenderPasses.load())
+				RENDERER_LOG(context, INFORMATION, "Query pools: %d", currentNumberOfQueryPools.load())
 
 				// IRenderTarget
 				RENDERER_LOG(context, INFORMATION, "Swap chains: %d", currentNumberOfSwapChains.load())
@@ -3997,6 +4070,7 @@ namespace Renderer
 		friend class IGraphicsProgram;
 		friend class IVertexArray;
 		friend class IRenderPass;
+		friend class IQueryPool;
 		friend class ISwapChain;
 		friend class IFramebuffer;
 		friend class IIndexBuffer;
@@ -4203,6 +4277,20 @@ namespace Renderer
 
 		/**
 		*  @brief
+		*    Create a asynchronous query pool instance
+		*
+		*  @param[in] queryType
+		*    Query type (e.g. "Renderer::QueryType::OCCLUSION")
+		*  @param[in] numberOfQueries
+		*    The number of queries the query pool contains (e.g. 1)
+		*
+		*  @return
+		*    The created query pool instance, null pointer on error. Release the returned instance if you no longer need it.
+		*/
+		[[nodiscard]] virtual IQueryPool* createQueryPool(QueryType queryType, uint32_t numberOfQueries = 1) = 0;
+
+		/**
+		*  @brief
 		*    Create a swap chain instance
 		*
 		*  @param[in] renderPass
@@ -4342,6 +4430,30 @@ namespace Renderer
 		*    Subresource
 		*/
 		virtual void unmap(IResource& resource, uint32_t subresource) = 0;
+
+		/**
+		*  @brief
+		*    Get asynchronous query pool results
+		*
+		*  @param[in] queryPool
+		*    Query pool
+		*  @param[in] numberOfDataBytes
+		*    Number of data bytes
+		*  @param[out] data
+		*    Receives the query data
+		*  @param[in] firstQueryIndex
+		*    First query index (e.g. 0)
+		*  @param[in] numberOfQueries
+		*    Number of queries (e.g. 1)
+		*  @param[in] strideInBytes
+		*    Stride in bytes, 0 is only valid in case there's just a single query
+		*  @param[in] queryResultFlags
+		*    Query control flags (e.g. "Renderer::QueryResultFlags::WAIT")
+		*
+		*  @return
+		*    "true" if all went fine, else "false"
+		*/
+		[[nodiscard]] virtual bool getQueryPoolResults(IQueryPool& queryPool, uint32_t numberOfDataBytes, uint8_t* data, uint32_t firstQueryIndex = 0, uint32_t numberOfQueries = 1, uint32_t strideInBytes = 0, uint32_t queryResultFlags = QueryResultFlags::WAIT) = 0;
 
 		//[-------------------------------------------------------]
 		//[ Operations                                            ]
@@ -5370,6 +5482,59 @@ namespace Renderer
 	};
 
 	typedef SmartRefCount<IRenderPass> IRenderPassPtr;
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ Renderer/RenderTarget/IQueryPool.h                    ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Abstract asynchronous query pool interface
+	*/
+	class IQueryPool : public IResource
+	{
+
+	// Public methods
+	public:
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~IQueryPool() override
+		{
+			#ifdef RENDERER_STATISTICS
+				// Update the statistics
+				--getRenderer().getStatistics().currentNumberOfQueryPools;
+			#endif
+		}
+
+	// Protected methods
+	protected:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] renderer
+		*    Owner renderer instance
+		*/
+		inline explicit IQueryPool(IRenderer& renderer) :
+			IResource(ResourceType::QUERY_POOL, renderer)
+		{
+			#ifdef RENDERER_STATISTICS
+				// Update the statistics
+				++getRenderer().getStatistics().numberOfCreatedQueryPools;
+				++getRenderer().getStatistics().currentNumberOfQueryPools;
+			#endif
+		}
+
+		explicit IQueryPool(const IQueryPool& source) = delete;
+		IQueryPool& operator =(const IQueryPool& source) = delete;
+
+	};
+
+	typedef SmartRefCount<IQueryPool> IQueryPoolPtr;
 
 
 
@@ -7981,6 +8146,11 @@ namespace Renderer
 		ResolveMultisampleFramebuffer,
 		CopyResource,
 		GenerateMipmaps,
+		// Query
+		ResetQueryPool,
+		BeginQuery,
+		EndQuery,
+		WriteTimestampQuery,
 		// Debug
 		SetDebugMarker,
 		BeginDebugEvent,
@@ -9042,6 +9212,150 @@ namespace Renderer
 			IResource* resource;
 			// Static data
 			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::GenerateMipmaps;
+		};
+
+		//[-------------------------------------------------------]
+		//[ Query                                                 ]
+		//[-------------------------------------------------------]
+		/**
+		*  @brief
+		*    Reset asynchronous query pool
+		*
+		*  @param[in] queryPool
+		*    Query pool
+		*  @param[in] firstQueryIndex
+		*    First query index (e.g. 0)
+		*  @param[in] numberOfQueries
+		*    Number of queries (e.g. 1)
+		*/
+		struct ResetQueryPool final
+		{
+			// Static methods
+			static inline void create(CommandBuffer& commandBuffer, IQueryPool& queryPool, uint32_t firstQueryIndex = 0, uint32_t numberOfQueries = 1)
+			{
+				*commandBuffer.addCommand<ResetQueryPool>() = ResetQueryPool(queryPool, firstQueryIndex, numberOfQueries);
+			}
+			// Constructor
+			inline ResetQueryPool(IQueryPool& _queryPool, uint32_t _firstQueryIndex, uint32_t _numberOfQueries) :
+				queryPool(&_queryPool),
+				firstQueryIndex(_firstQueryIndex),
+				numberOfQueries(_numberOfQueries)
+			{}
+			// Data
+			IQueryPool* queryPool;
+			uint32_t	firstQueryIndex;
+			uint32_t	numberOfQueries;
+			// Static data
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::ResetQueryPool;
+		};
+
+		/**
+		*  @brief
+		*    Begin asynchronous query
+		*
+		*  @param[in] queryPool
+		*    Query pool
+		*  @param[in] queryIndex
+		*    Query index (e.g. 0)
+		*  @param[in] queryControlFlags
+		*    Query control flags (e.g. "Renderer::QueryControlFlags::PRECISE")
+		*/
+		struct BeginQuery final
+		{
+			// Static methods
+			static inline void create(CommandBuffer& commandBuffer, IQueryPool& queryPool, uint32_t queryIndex = 0, uint32_t queryControlFlags = 0)
+			{
+				*commandBuffer.addCommand<BeginQuery>() = BeginQuery(queryPool, queryIndex, queryControlFlags);
+			}
+			// Constructor
+			inline BeginQuery(IQueryPool& _queryPool, uint32_t _queryIndex, uint32_t _queryControlFlags) :
+				queryPool(&_queryPool),
+				queryIndex(_queryIndex),
+				queryControlFlags(_queryControlFlags)
+			{}
+			// Data
+			IQueryPool* queryPool;
+			uint32_t	queryIndex;
+			uint32_t	queryControlFlags;
+			// Static data
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::BeginQuery;
+		};
+
+		/**
+		*  @brief
+		*    Reset and begin asynchronous query; ease-of-use function in case there's just a single query inside the query pool
+		*
+		*  @param[in] queryPool
+		*    Query pool
+		*  @param[in] queryIndex
+		*    Query index (e.g. 0)
+		*  @param[in] queryControlFlags
+		*    Query control flags (e.g. "Renderer::QueryControlFlags::PRECISE")
+		*/
+		struct ResetAndBeginQuery final
+		{
+			// Static methods
+			static inline void create(CommandBuffer& commandBuffer, IQueryPool& queryPool, uint32_t queryIndex = 0, uint32_t queryControlFlags = 0)
+			{
+				*commandBuffer.addCommand<ResetQueryPool>() = ResetQueryPool(queryPool, queryIndex, 1);
+				*commandBuffer.addCommand<BeginQuery>() = BeginQuery(queryPool, queryIndex, queryControlFlags);
+			}
+		};
+
+		/**
+		*  @brief
+		*    End asynchronous query
+		*
+		*  @param[in] queryPool
+		*    Query pool
+		*  @param[in] queryIndex
+		*    Query index (e.g. 0)
+		*/
+		struct EndQuery final
+		{
+			// Static methods
+			static inline void create(CommandBuffer& commandBuffer, IQueryPool& queryPool, uint32_t queryIndex = 0)
+			{
+				*commandBuffer.addCommand<EndQuery>() = EndQuery(queryPool, queryIndex);
+			}
+			// Constructor
+			inline EndQuery(IQueryPool& _queryPool, uint32_t _queryIndex) :
+				queryPool(&_queryPool),
+				queryIndex(_queryIndex)
+			{}
+			// Data
+			IQueryPool* queryPool;
+			uint32_t	queryIndex;
+			// Static data
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::EndQuery;
+		};
+
+		/**
+		*  @brief
+		*    Write asynchronous timestamp query
+		*
+		*  @param[in] queryPool
+		*    Query pool
+		*  @param[in] queryIndex
+		*    Query index (e.g. 0)
+		*/
+		struct WriteTimestampQuery final
+		{
+			// Static methods
+			static inline void create(CommandBuffer& commandBuffer, IQueryPool& queryPool, uint32_t queryIndex = 0)
+			{
+				*commandBuffer.addCommand<WriteTimestampQuery>() = WriteTimestampQuery(queryPool, queryIndex);
+			}
+			// Constructor
+			inline WriteTimestampQuery(IQueryPool& _queryPool, uint32_t _queryIndex) :
+				queryPool(&_queryPool),
+				queryIndex(_queryIndex)
+			{}
+			// Data
+			IQueryPool* queryPool;
+			uint32_t	queryIndex;
+			// Static data
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::WriteTimestampQuery;
 		};
 
 		//[-------------------------------------------------------]

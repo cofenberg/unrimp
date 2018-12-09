@@ -103,6 +103,7 @@ Renderer API and Backends
 - Debug methods
 	- When using Direct3D <11.1, those methods map to the Direct3D 9 PIX functions (D3DPERF_* functions, also works directly within VisualStudio 2017 out-of-the-box)
 	- Used inside the renderer implementations for better renderer debugging
+- Supported asynchronous queries: Occlusion, pipeline statistics and timestamp
 - Renderer implementation specific optimizations
 	- OpenGL: Usage of direct state access (DSA), if available
 

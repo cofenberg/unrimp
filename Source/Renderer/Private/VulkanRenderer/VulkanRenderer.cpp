@@ -339,6 +339,7 @@ FNPTR(vkGetQueryPoolResults)
 FNPTR(vkCmdBeginQuery)
 FNPTR(vkCmdEndQuery)
 FNPTR(vkCmdResetQueryPool)
+FNPTR(vkCmdWriteTimestamp)
 FNPTR(vkCmdCopyQueryPoolResults)
 FNPTR(vkCmdPipelineBarrier)
 FNPTR(vkCmdBeginRenderPass)
@@ -736,8 +737,8 @@ namespace
 				VK_FALSE,	// textureCompressionETC2 (VkBool32)
 				VK_FALSE,	// textureCompressionASTC_LDR (VkBool32)
 				VK_TRUE,	// textureCompressionBC (VkBool32)
-				VK_FALSE,	// occlusionQueryPrecise (VkBool32)
-				VK_FALSE,	// pipelineStatisticsQuery (VkBool32)
+				VK_TRUE,	// occlusionQueryPrecise (VkBool32)
+				VK_TRUE,	// pipelineStatisticsQuery (VkBool32)
 				VK_FALSE,	// vertexPipelineStoresAndAtomics (VkBool32)
 				VK_FALSE,	// fragmentStoresAndAtomics (VkBool32)
 				VK_FALSE,	// shaderTessellationAndGeometryPointSize (VkBool32)
@@ -1726,6 +1727,13 @@ namespace VulkanRenderer
 		void copyResource(Renderer::IResource& destinationResource, Renderer::IResource& sourceResource);
 		void generateMipmaps(Renderer::IResource& resource);
 		//[-------------------------------------------------------]
+		//[ Query                                                 ]
+		//[-------------------------------------------------------]
+		void resetQueryPool(Renderer::IQueryPool& queryPool, uint32_t firstQueryIndex, uint32_t numberOfQueries);
+		void beginQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex, uint32_t queryControlFlags);
+		void endQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex);
+		void writeTimestampQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex);
+		//[-------------------------------------------------------]
 		//[ Debug                                                 ]
 		//[-------------------------------------------------------]
 		#ifdef RENDERER_DEBUG
@@ -1752,6 +1760,7 @@ namespace VulkanRenderer
 		//[ Resource creation                                     ]
 		//[-------------------------------------------------------]
 		[[nodiscard]] virtual Renderer::IRenderPass* createRenderPass(uint32_t numberOfColorAttachments, const Renderer::TextureFormat::Enum* colorAttachmentTextureFormats, Renderer::TextureFormat::Enum depthStencilAttachmentTextureFormat = Renderer::TextureFormat::UNKNOWN, uint8_t numberOfMultisamples = 1) override;
+		[[nodiscard]] virtual Renderer::IQueryPool* createQueryPool(Renderer::QueryType queryType, uint32_t numberOfQueries = 1) override;
 		[[nodiscard]] virtual Renderer::ISwapChain* createSwapChain(Renderer::IRenderPass& renderPass, Renderer::WindowHandle windowHandle, bool useExternalContext = false) override;
 		[[nodiscard]] virtual Renderer::IFramebuffer* createFramebuffer(Renderer::IRenderPass& renderPass, const Renderer::FramebufferAttachment* colorFramebufferAttachments, const Renderer::FramebufferAttachment* depthStencilFramebufferAttachment = nullptr) override;
 		[[nodiscard]] virtual Renderer::IBufferManager* createBufferManager() override;
@@ -1765,6 +1774,7 @@ namespace VulkanRenderer
 		//[-------------------------------------------------------]
 		[[nodiscard]] virtual bool map(Renderer::IResource& resource, uint32_t subresource, Renderer::MapType mapType, uint32_t mapFlags, Renderer::MappedSubresource& mappedSubresource) override;
 		virtual void unmap(Renderer::IResource& resource, uint32_t subresource) override;
+		[[nodiscard]] virtual bool getQueryPoolResults(Renderer::IQueryPool& queryPool, uint32_t numberOfDataBytes, uint8_t* data, uint32_t firstQueryIndex = 0, uint32_t numberOfQueries = 1, uint32_t strideInBytes = 0, uint32_t queryResultFlags = Renderer::QueryResultFlags::WAIT) override;
 		//[-------------------------------------------------------]
 		//[ Operations                                            ]
 		//[-------------------------------------------------------]
@@ -2073,6 +2083,7 @@ namespace VulkanRenderer
 			IMPORT_FUNC(vkCmdBeginQuery)
 			IMPORT_FUNC(vkCmdEndQuery)
 			IMPORT_FUNC(vkCmdResetQueryPool)
+			IMPORT_FUNC(vkCmdWriteTimestamp)
 			IMPORT_FUNC(vkCmdCopyQueryPoolResults)
 			IMPORT_FUNC(vkCmdPipelineBarrier)
 			IMPORT_FUNC(vkCmdBeginRenderPass)
@@ -4174,6 +4185,7 @@ namespace VulkanRenderer
 								case Renderer::ResourceType::GRAPHICS_PROGRAM:
 								case Renderer::ResourceType::VERTEX_ARRAY:
 								case Renderer::ResourceType::RENDER_PASS:
+								case Renderer::ResourceType::QUERY_POOL:
 								case Renderer::ResourceType::SWAP_CHAIN:
 								case Renderer::ResourceType::FRAMEBUFFER:
 								case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -6704,11 +6716,13 @@ namespace VulkanRenderer
 				static_cast<uint32_t>(vkSubpassDependencies.size()),	// dependencyCount (uint32_t)
 				vkSubpassDependencies.data()							// pDependencies (const VkSubpassDependency*)
 			};
-			const VkDevice vkDevice = vulkanRenderer.getVulkanContext().getVkDevice();
-			const Renderer::Context& context = vulkanRenderer.getContext();
-			if (vkCreateRenderPass(vkDevice, &vkRenderPassCreateInfo, vulkanRenderer.getVkAllocationCallbacks(), &mVkRenderPass) != VK_SUCCESS)
+			if (vkCreateRenderPass(vulkanRenderer.getVulkanContext().getVkDevice(), &vkRenderPassCreateInfo, vulkanRenderer.getVkAllocationCallbacks(), &mVkRenderPass) != VK_SUCCESS)
 			{
-				RENDERER_LOG(context, CRITICAL, "Failed to create Vulkan render pass")
+				RENDERER_LOG(vulkanRenderer.getContext(), CRITICAL, "Failed to create Vulkan render pass")
+			}
+			else
+			{
+				SET_DEFAULT_DEBUG_NAME	// setDebugName("");
 			}
 		}
 
@@ -6788,6 +6802,21 @@ namespace VulkanRenderer
 
 
 	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		#ifdef RENDERER_DEBUG
+			virtual void setDebugName(const char* name) override
+			{
+				if (nullptr != vkDebugMarkerSetObjectNameEXT)
+				{
+					Helper::setDebugObjectName(static_cast<const VulkanRenderer&>(getRenderer()).getVulkanContext().getVkDevice(), VK_DEBUG_REPORT_OBJECT_TYPE_RENDER_PASS_EXT, (uint64_t)mVkRenderPass, name);
+				}
+			}
+		#endif
+
+
+	//[-------------------------------------------------------]
 	//[ Protected virtual Renderer::RefCount methods          ]
 	//[-------------------------------------------------------]
 	protected:
@@ -6813,6 +6842,185 @@ namespace VulkanRenderer
 		uint32_t					  mNumberOfColorAttachments;			///< Number of color render target textures
 		Renderer::TextureFormat::Enum mDepthStencilAttachmentTextureFormat;	///< The depth stencil attachment texture format
 		VkSampleCountFlagBits		  mVkSampleCountFlagBits;				///< Vulkan sample count flag bits
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ VulkanRenderer/QueryPool.h                            ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Vulkan asynchronous query pool interface
+	*/
+	class QueryPool final : public Renderer::IQueryPool
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] vulkanRenderer
+		*    Owner Vulkan renderer instance
+		*  @param[in] queryType
+		*    Query type
+		*  @param[in] numberOfQueries
+		*    Number of queries
+		*/
+		QueryPool(VulkanRenderer& vulkanRenderer, Renderer::QueryType queryType, uint32_t numberOfQueries) :
+			IQueryPool(vulkanRenderer),
+			mQueryType(queryType),
+			mVkQueryPool(VK_NULL_HANDLE)
+		{
+			// Get Vulkan query pool create information
+			VkQueryPoolCreateInfo vkQueryPoolCreateInfo;
+			vkQueryPoolCreateInfo.sType		 = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;	// VkStructureType
+			vkQueryPoolCreateInfo.pNext		 = nullptr;										// const void*
+			vkQueryPoolCreateInfo.flags		 = 0;											// VkQueryPoolCreateFlags
+			vkQueryPoolCreateInfo.queryCount = numberOfQueries;								// uint32_t
+			switch (queryType)
+			{
+				case Renderer::QueryType::OCCLUSION:
+					vkQueryPoolCreateInfo.queryType			 = VK_QUERY_TYPE_OCCLUSION;	// VkQueryType
+					vkQueryPoolCreateInfo.pipelineStatistics = 0;						// VkQueryPipelineStatisticFlags
+					break;
+
+				case Renderer::QueryType::PIPELINE_STATISTICS:
+					// This setup results in the same structure layout as used by "D3D11_QUERY_DATA_PIPELINE_STATISTICS" which we use for "Renderer::PipelineStatisticsQueryResult"
+					vkQueryPoolCreateInfo.queryType			 = VK_QUERY_TYPE_PIPELINE_STATISTICS;	// VkQueryType
+					vkQueryPoolCreateInfo.pipelineStatistics = 										// VkQueryPipelineStatisticFlags
+						VK_QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_VERTICES_BIT						|
+						VK_QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_PRIMITIVES_BIT					|
+						VK_QUERY_PIPELINE_STATISTIC_VERTEX_SHADER_INVOCATIONS_BIT					|
+						VK_QUERY_PIPELINE_STATISTIC_GEOMETRY_SHADER_INVOCATIONS_BIT					|
+						VK_QUERY_PIPELINE_STATISTIC_GEOMETRY_SHADER_PRIMITIVES_BIT					|
+						VK_QUERY_PIPELINE_STATISTIC_CLIPPING_INVOCATIONS_BIT						|
+						VK_QUERY_PIPELINE_STATISTIC_CLIPPING_PRIMITIVES_BIT							|
+						VK_QUERY_PIPELINE_STATISTIC_FRAGMENT_SHADER_INVOCATIONS_BIT					|
+						VK_QUERY_PIPELINE_STATISTIC_TESSELLATION_CONTROL_SHADER_PATCHES_BIT			|
+						VK_QUERY_PIPELINE_STATISTIC_TESSELLATION_EVALUATION_SHADER_INVOCATIONS_BIT	|
+						VK_QUERY_PIPELINE_STATISTIC_COMPUTE_SHADER_INVOCATIONS_BIT;
+					break;
+
+				case Renderer::QueryType::TIMESTAMP:
+					vkQueryPoolCreateInfo.queryType			 = VK_QUERY_TYPE_TIMESTAMP;	// VkQueryType
+					vkQueryPoolCreateInfo.pipelineStatistics = 0;						// VkQueryPipelineStatisticFlags
+					break;
+			}
+
+			// Create Vulkan query pool
+			if (vkCreateQueryPool(vulkanRenderer.getVulkanContext().getVkDevice(), &vkQueryPoolCreateInfo, vulkanRenderer.getVkAllocationCallbacks(), &mVkQueryPool) != VK_SUCCESS)
+			{
+				RENDERER_LOG(vulkanRenderer.getContext(), CRITICAL, "Failed to create Vulkan query pool")
+			}
+			else
+			{
+				// Assign a default name to the resource for debugging purposes
+				#ifdef RENDERER_DEBUG
+					switch (queryType)
+					{
+						case Renderer::QueryType::OCCLUSION:
+							setDebugName("Occlusion query");
+							break;
+
+						case Renderer::QueryType::PIPELINE_STATISTICS:
+							setDebugName("Pipeline statistics query");
+							break;
+
+						case Renderer::QueryType::TIMESTAMP:
+							setDebugName("Timestamp query");
+							break;
+					}
+				#endif
+			}
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~QueryPool() override
+		{
+			// Destroy Vulkan query pool instance
+			if (VK_NULL_HANDLE != mVkQueryPool)
+			{
+				const VulkanRenderer& vulkanRenderer = static_cast<VulkanRenderer&>(getRenderer());
+				vkDestroyQueryPool(vulkanRenderer.getVulkanContext().getVkDevice(), mVkQueryPool, vulkanRenderer.getVkAllocationCallbacks());
+			}
+		}
+
+		/**
+		*  @brief
+		*    Return the query type
+		*
+		*  @return
+		*    The query type
+		*/
+		[[nodiscard]] inline Renderer::QueryType getQueryType() const
+		{
+			return mQueryType;
+		}
+
+		/**
+		*  @brief
+		*    Return the Vulkan query pool
+		*
+		*  @return
+		*    The Vulkan query pool
+		*/
+		[[nodiscard]] inline VkQueryPool getVkQueryPool() const
+		{
+			return mVkQueryPool;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		#ifdef RENDERER_DEBUG
+			virtual void setDebugName(const char* name) override
+			{
+				if (nullptr != vkDebugMarkerSetObjectNameEXT)
+				{
+					Helper::setDebugObjectName(static_cast<const VulkanRenderer&>(getRenderer()).getVulkanContext().getVkDevice(), VK_DEBUG_REPORT_OBJECT_TYPE_QUERY_POOL_EXT, (uint64_t)mVkQueryPool, name);
+				}
+			}
+		#endif
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), QueryPool, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit QueryPool(const QueryPool& source) = delete;
+		QueryPool& operator =(const QueryPool& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		Renderer::QueryType	mQueryType;
+		VkQueryPool			mVkQueryPool;
 
 
 	};
@@ -7583,6 +7791,7 @@ namespace VulkanRenderer
 						case Renderer::ResourceType::GRAPHICS_PROGRAM:
 						case Renderer::ResourceType::VERTEX_ARRAY:
 						case Renderer::ResourceType::RENDER_PASS:
+						case Renderer::ResourceType::QUERY_POOL:
 						case Renderer::ResourceType::SWAP_CHAIN:
 						case Renderer::ResourceType::FRAMEBUFFER:
 						case Renderer::ResourceType::INDEX_BUFFER:
@@ -7655,6 +7864,7 @@ namespace VulkanRenderer
 					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
+					case Renderer::ResourceType::QUERY_POOL:
 					case Renderer::ResourceType::SWAP_CHAIN:
 					case Renderer::ResourceType::FRAMEBUFFER:
 					case Renderer::ResourceType::INDEX_BUFFER:
@@ -9719,6 +9929,7 @@ namespace VulkanRenderer
 							case Renderer::ResourceType::GRAPHICS_PROGRAM:
 							case Renderer::ResourceType::VERTEX_ARRAY:
 							case Renderer::ResourceType::RENDER_PASS:
+							case Renderer::ResourceType::QUERY_POOL:
 							case Renderer::ResourceType::SWAP_CHAIN:
 							case Renderer::ResourceType::FRAMEBUFFER:
 							case Renderer::ResourceType::INDEX_BUFFER:
@@ -9776,6 +9987,7 @@ namespace VulkanRenderer
 					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
+					case Renderer::ResourceType::QUERY_POOL:
 					case Renderer::ResourceType::SWAP_CHAIN:
 					case Renderer::ResourceType::FRAMEBUFFER:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -10123,6 +10335,33 @@ namespace
 			}
 
 			//[-------------------------------------------------------]
+			//[ Query                                                 ]
+			//[-------------------------------------------------------]
+			void ResetQueryPool(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::ResetQueryPool* realData = static_cast<const Renderer::Command::ResetQueryPool*>(data);
+				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).resetQueryPool(*realData->queryPool, realData->firstQueryIndex, realData->numberOfQueries);
+			}
+
+			void BeginQuery(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::BeginQuery* realData = static_cast<const Renderer::Command::BeginQuery*>(data);
+				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).beginQuery(*realData->queryPool, realData->queryIndex, realData->queryControlFlags);
+			}
+
+			void EndQuery(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::EndQuery* realData = static_cast<const Renderer::Command::EndQuery*>(data);
+				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).endQuery(*realData->queryPool, realData->queryIndex);
+			}
+
+			void WriteTimestampQuery(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::WriteTimestampQuery* realData = static_cast<const Renderer::Command::WriteTimestampQuery*>(data);
+				static_cast<VulkanRenderer::VulkanRenderer&>(renderer).writeTimestampQuery(*realData->queryPool, realData->queryIndex);
+			}
+
+			//[-------------------------------------------------------]
 			//[ Debug                                                 ]
 			//[-------------------------------------------------------]
 			#ifdef RENDERER_DEBUG
@@ -10215,6 +10454,11 @@ namespace
 			&BackendDispatch::ResolveMultisampleFramebuffer,
 			&BackendDispatch::CopyResource,
 			&BackendDispatch::GenerateMipmaps,
+			// Query
+			&BackendDispatch::ResetQueryPool,
+			&BackendDispatch::BeginQuery,
+			&BackendDispatch::EndQuery,
+			&BackendDispatch::WriteTimestampQuery,
 			// Debug
 			&BackendDispatch::SetDebugMarker,
 			&BackendDispatch::BeginDebugEvent,
@@ -10798,6 +11042,46 @@ namespace VulkanRenderer
 
 
 	//[-------------------------------------------------------]
+	//[ Query                                                 ]
+	//[-------------------------------------------------------]
+	void VulkanRenderer::resetQueryPool(Renderer::IQueryPool& queryPool, uint32_t firstQueryIndex, uint32_t numberOfQueries)
+	{
+		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
+
+		// Reset Vulkan query pool
+		vkCmdResetQueryPool(getVulkanContext().getVkCommandBuffer(), static_cast<QueryPool&>(queryPool).getVkQueryPool(), firstQueryIndex, numberOfQueries);
+	}
+
+	void VulkanRenderer::beginQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex, uint32_t queryControlFlags)
+	{
+		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
+
+		// Begin Vulkan query
+		vkCmdBeginQuery(getVulkanContext().getVkCommandBuffer(), static_cast<QueryPool&>(queryPool).getVkQueryPool(), queryIndex, ((queryControlFlags & Renderer::QueryControlFlags::PRECISE) != 0) ? VK_QUERY_CONTROL_PRECISE_BIT : 0u);
+	}
+
+	void VulkanRenderer::endQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex)
+	{
+		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
+
+		// End Vulkan query
+		vkCmdEndQuery(getVulkanContext().getVkCommandBuffer(), static_cast<QueryPool&>(queryPool).getVkQueryPool(), queryIndex);
+	}
+
+	void VulkanRenderer::writeTimestampQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex)
+	{
+		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
+
+		// Write Vulkan timestamp query
+		vkCmdWriteTimestamp(getVulkanContext().getVkCommandBuffer(), VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, static_cast<QueryPool&>(queryPool).getVkQueryPool(), queryIndex);
+	}
+
+
+	//[-------------------------------------------------------]
 	//[ Debug                                                 ]
 	//[-------------------------------------------------------]
 	#ifdef RENDERER_DEBUG
@@ -10923,6 +11207,12 @@ namespace VulkanRenderer
 	Renderer::IRenderPass* VulkanRenderer::createRenderPass(uint32_t numberOfColorAttachments, const Renderer::TextureFormat::Enum* colorAttachmentTextureFormats, Renderer::TextureFormat::Enum depthStencilAttachmentTextureFormat, uint8_t numberOfMultisamples)
 	{
 		return RENDERER_NEW(mContext, RenderPass)(*this, numberOfColorAttachments, colorAttachmentTextureFormats, depthStencilAttachmentTextureFormat, numberOfMultisamples);
+	}
+
+	Renderer::IQueryPool* VulkanRenderer::createQueryPool(Renderer::QueryType queryType, uint32_t numberOfQueries)
+	{
+		RENDERER_ASSERT(mContext, numberOfQueries > 0, "Vulkan: Number of queries mustn't be zero")
+		return RENDERER_NEW(mContext, QueryPool)(*this, queryType, numberOfQueries);
 	}
 
 	Renderer::ISwapChain* VulkanRenderer::createSwapChain(Renderer::IRenderPass& renderPass, Renderer::WindowHandle windowHandle, bool)
@@ -11065,6 +11355,7 @@ namespace VulkanRenderer
 			case Renderer::ResourceType::GRAPHICS_PROGRAM:
 			case Renderer::ResourceType::VERTEX_ARRAY:
 			case Renderer::ResourceType::RENDER_PASS:
+			case Renderer::ResourceType::QUERY_POOL:
 			case Renderer::ResourceType::SWAP_CHAIN:
 			case Renderer::ResourceType::FRAMEBUFFER:
 			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -11189,6 +11480,7 @@ namespace VulkanRenderer
 			case Renderer::ResourceType::GRAPHICS_PROGRAM:
 			case Renderer::ResourceType::VERTEX_ARRAY:
 			case Renderer::ResourceType::RENDER_PASS:
+			case Renderer::ResourceType::QUERY_POOL:
 			case Renderer::ResourceType::SWAP_CHAIN:
 			case Renderer::ResourceType::FRAMEBUFFER:
 			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -11204,6 +11496,37 @@ namespace VulkanRenderer
 				// Nothing we can unmap
 				break;
 		}
+	}
+
+	bool VulkanRenderer::getQueryPoolResults(Renderer::IQueryPool& queryPool, uint32_t numberOfDataBytes, uint8_t* data, uint32_t firstQueryIndex, uint32_t numberOfQueries, uint32_t strideInBytes, [[maybe_unused]] uint32_t queryResultFlags)
+	{
+		// Sanity check
+		VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
+
+		// Query pool type dependent processing
+		QueryPool& vulkanQueryPool = static_cast<QueryPool&>(queryPool);
+		switch (vulkanQueryPool.getQueryType())
+		{
+			case Renderer::QueryType::OCCLUSION:
+			case Renderer::QueryType::TIMESTAMP:	// TODO(co) Convert time to nanoseconds, see e.g. http://vulkan-spec-chunked.ahcox.com/ch16s05.html - VkPhysicalDeviceLimits::timestampPeriod - The number of nanoseconds it takes for a timestamp value to be incremented by 1
+			{
+				// Get Vulkan query pool results
+				const VkQueryResultFlags vkQueryResultFlags = 0u;
+				// const VkQueryResultFlags vkQueryResultFlags = ((queryResultFlags & Renderer::QueryResultFlags::WAIT) != 0) ? VK_QUERY_RESULT_WAIT_BIT : 0u;	// TODO(co)
+				return (vkGetQueryPoolResults(getVulkanContext().getVkDevice(), vulkanQueryPool.getVkQueryPool(), firstQueryIndex, numberOfQueries, numberOfDataBytes, data, strideInBytes, VK_QUERY_RESULT_64_BIT | vkQueryResultFlags) == VK_SUCCESS);
+			}
+
+			case Renderer::QueryType::PIPELINE_STATISTICS:
+			{
+				// Our setup results in the same structure layout as used by "D3D11_QUERY_DATA_PIPELINE_STATISTICS" which we use for "Renderer::PipelineStatisticsQueryResult"
+				const VkQueryResultFlags vkQueryResultFlags = 0u;
+				// const VkQueryResultFlags vkQueryResultFlags = ((queryResultFlags & Renderer::QueryResultFlags::WAIT) != 0) ? VK_QUERY_RESULT_WAIT_BIT : 0u;	// TODO(co)
+				return (vkGetQueryPoolResults(getVulkanContext().getVkDevice(), vulkanQueryPool.getVkQueryPool(), firstQueryIndex, numberOfQueries, numberOfDataBytes, data, strideInBytes, VK_QUERY_RESULT_64_BIT | vkQueryResultFlags) == VK_SUCCESS);
+			}
+		}
+
+		// Result not ready
+		return false;
 	}
 
 
@@ -11430,6 +11753,7 @@ namespace VulkanRenderer
 			case Renderer::ResourceType::GRAPHICS_PROGRAM:
 			case Renderer::ResourceType::VERTEX_ARRAY:
 			case Renderer::ResourceType::RENDER_PASS:
+			case Renderer::ResourceType::QUERY_POOL:
 			case Renderer::ResourceType::INDEX_BUFFER:
 			case Renderer::ResourceType::VERTEX_BUFFER:
 			case Renderer::ResourceType::TEXTURE_BUFFER:

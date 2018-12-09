@@ -1378,6 +1378,138 @@ typedef struct D3D11_RASTERIZER_DESC
 	BOOL            AntialiasedLineEnable;
 } D3D11_RASTERIZER_DESC;
 
+// "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
+typedef enum D3D11_FILTER
+{
+	D3D11_FILTER_MIN_MAG_MIP_POINT							= 0,
+	D3D11_FILTER_MIN_MAG_POINT_MIP_LINEAR					= 0x1,
+	D3D11_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT				= 0x4,
+	D3D11_FILTER_MIN_POINT_MAG_MIP_LINEAR					= 0x5,
+	D3D11_FILTER_MIN_LINEAR_MAG_MIP_POINT					= 0x10,
+	D3D11_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR			= 0x11,
+	D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT					= 0x14,
+	D3D11_FILTER_MIN_MAG_MIP_LINEAR							= 0x15,
+	D3D11_FILTER_ANISOTROPIC								= 0x55,
+	D3D11_FILTER_COMPARISON_MIN_MAG_MIP_POINT				= 0x80,
+	D3D11_FILTER_COMPARISON_MIN_MAG_POINT_MIP_LINEAR		= 0x81,
+	D3D11_FILTER_COMPARISON_MIN_POINT_MAG_LINEAR_MIP_POINT	= 0x84,
+	D3D11_FILTER_COMPARISON_MIN_POINT_MAG_MIP_LINEAR		= 0x85,
+	D3D11_FILTER_COMPARISON_MIN_LINEAR_MAG_MIP_POINT		= 0x90,
+	D3D11_FILTER_COMPARISON_MIN_LINEAR_MAG_POINT_MIP_LINEAR	= 0x91,
+	D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT		= 0x94,
+	D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR				= 0x95,
+	D3D11_FILTER_COMPARISON_ANISOTROPIC						= 0xd5,
+	D3D11_FILTER_MINIMUM_MIN_MAG_MIP_POINT					= 0x100,
+	D3D11_FILTER_MINIMUM_MIN_MAG_POINT_MIP_LINEAR			= 0x101,
+	D3D11_FILTER_MINIMUM_MIN_POINT_MAG_LINEAR_MIP_POINT		= 0x104,
+	D3D11_FILTER_MINIMUM_MIN_POINT_MAG_MIP_LINEAR			= 0x105,
+	D3D11_FILTER_MINIMUM_MIN_LINEAR_MAG_MIP_POINT			= 0x110,
+	D3D11_FILTER_MINIMUM_MIN_LINEAR_MAG_POINT_MIP_LINEAR	= 0x111,
+	D3D11_FILTER_MINIMUM_MIN_MAG_LINEAR_MIP_POINT			= 0x114,
+	D3D11_FILTER_MINIMUM_MIN_MAG_MIP_LINEAR					= 0x115,
+	D3D11_FILTER_MINIMUM_ANISOTROPIC						= 0x155,
+	D3D11_FILTER_MAXIMUM_MIN_MAG_MIP_POINT					= 0x180,
+	D3D11_FILTER_MAXIMUM_MIN_MAG_POINT_MIP_LINEAR			= 0x181,
+	D3D11_FILTER_MAXIMUM_MIN_POINT_MAG_LINEAR_MIP_POINT		= 0x184,
+	D3D11_FILTER_MAXIMUM_MIN_POINT_MAG_MIP_LINEAR			= 0x185,
+	D3D11_FILTER_MAXIMUM_MIN_LINEAR_MAG_MIP_POINT			= 0x190,
+	D3D11_FILTER_MAXIMUM_MIN_LINEAR_MAG_POINT_MIP_LINEAR	= 0x191,
+	D3D11_FILTER_MAXIMUM_MIN_MAG_LINEAR_MIP_POINT			= 0x194,
+	D3D11_FILTER_MAXIMUM_MIN_MAG_MIP_LINEAR					= 0x195,
+	D3D11_FILTER_MAXIMUM_ANISOTROPIC						= 0x1d5
+} D3D11_FILTER;
+
+// "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
+typedef enum D3D11_TEXTURE_ADDRESS_MODE
+{
+	D3D11_TEXTURE_ADDRESS_WRAP			= 1,
+	D3D11_TEXTURE_ADDRESS_MIRROR		= 2,
+	D3D11_TEXTURE_ADDRESS_CLAMP			= 3,
+	D3D11_TEXTURE_ADDRESS_BORDER		= 4,
+	D3D11_TEXTURE_ADDRESS_MIRROR_ONCE	= 5
+} D3D11_TEXTURE_ADDRESS_MODE;
+
+// "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
+typedef enum D3D11_COMPARISON_FUNC
+{
+	D3D11_COMPARISON_NEVER			= 1,
+	D3D11_COMPARISON_LESS			= 2,
+	D3D11_COMPARISON_EQUAL			= 3,
+	D3D11_COMPARISON_LESS_EQUAL		= 4,
+	D3D11_COMPARISON_GREATER		= 5,
+	D3D11_COMPARISON_NOT_EQUAL		= 6,
+	D3D11_COMPARISON_GREATER_EQUAL	= 7,
+	D3D11_COMPARISON_ALWAYS			= 8
+} D3D11_COMPARISON_FUNC;
+
+// "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
+typedef struct D3D11_SAMPLER_DESC
+{
+	D3D11_FILTER				Filter;
+	D3D11_TEXTURE_ADDRESS_MODE	AddressU;
+	D3D11_TEXTURE_ADDRESS_MODE	AddressV;
+	D3D11_TEXTURE_ADDRESS_MODE	AddressW;
+	FLOAT						MipLODBias;
+	UINT						MaxAnisotropy;
+	D3D11_COMPARISON_FUNC		ComparisonFunc;
+	FLOAT						BorderColor[4];
+	FLOAT						MinLOD;
+	FLOAT						MaxLOD;
+} D3D11_SAMPLER_DESC;
+
+// "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
+typedef enum D3D11_BLEND
+{
+	D3D11_BLEND_ZERO				= 1,
+	D3D11_BLEND_ONE					= 2,
+	D3D11_BLEND_SRC_COLOR			= 3,
+	D3D11_BLEND_INV_SRC_COLOR		= 4,
+	D3D11_BLEND_SRC_ALPHA			= 5,
+	D3D11_BLEND_INV_SRC_ALPHA		= 6,
+	D3D11_BLEND_DEST_ALPHA			= 7,
+	D3D11_BLEND_INV_DEST_ALPHA		= 8,
+	D3D11_BLEND_DEST_COLOR			= 9,
+	D3D11_BLEND_INV_DEST_COLOR		= 10,
+	D3D11_BLEND_SRC_ALPHA_SAT		= 11,
+	D3D11_BLEND_BLEND_FACTOR		= 14,
+	D3D11_BLEND_INV_BLEND_FACTOR	= 15,
+	D3D11_BLEND_SRC1_COLOR			= 16,
+	D3D11_BLEND_INV_SRC1_COLOR		= 17,
+	D3D11_BLEND_SRC1_ALPHA			= 18,
+	D3D11_BLEND_INV_SRC1_ALPHA		= 19
+} D3D11_BLEND;
+
+// "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
+typedef enum D3D11_BLEND_OP
+{
+	D3D11_BLEND_OP_ADD			= 1,
+	D3D11_BLEND_OP_SUBTRACT		= 2,
+	D3D11_BLEND_OP_REV_SUBTRACT	= 3,
+	D3D11_BLEND_OP_MIN			= 4,
+	D3D11_BLEND_OP_MAX			= 5
+} D3D11_BLEND_OP;
+
+// "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
+typedef struct D3D11_RENDER_TARGET_BLEND_DESC
+{
+	BOOL			BlendEnable;
+	D3D11_BLEND		SrcBlend;
+	D3D11_BLEND		DestBlend;
+	D3D11_BLEND_OP	BlendOp;
+	D3D11_BLEND		SrcBlendAlpha;
+	D3D11_BLEND		DestBlendAlpha;
+	D3D11_BLEND_OP	BlendOpAlpha;
+	UINT8			RenderTargetWriteMask;
+} D3D11_RENDER_TARGET_BLEND_DESC;
+
+// "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
+typedef struct D3D11_BLEND_DESC
+{
+	BOOL							AlphaToCoverageEnable;
+	BOOL							IndependentBlendEnable;
+	D3D11_RENDER_TARGET_BLEND_DESC	RenderTarget[8];
+} D3D11_BLEND_DESC;
+
 
 //[-------------------------------------------------------]
 //[ Classes                                               ]
@@ -1772,6 +1904,22 @@ struct ID3D11Query : public ID3D11Asynchronous
 	public:
 		virtual void STDMETHODCALLTYPE GetDesc(__out D3D11_QUERY_DESC *pDesc) = 0;
 };
+
+// "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
+typedef struct D3D11_QUERY_DATA_PIPELINE_STATISTICS
+{
+	UINT64 IAVertices;
+	UINT64 IAPrimitives;
+	UINT64 VSInvocations;
+	UINT64 GSInvocations;
+	UINT64 GSPrimitives;
+	UINT64 CInvocations;
+	UINT64 CPrimitives;
+	UINT64 PSInvocations;
+	UINT64 HSInvocations;
+	UINT64 DSInvocations;
+	UINT64 CSInvocations;
+} D3D11_QUERY_DATA_PIPELINE_STATISTICS;
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11SDKLayers.h"
 typedef enum D3D11_RLDO_FLAGS
@@ -2171,6 +2319,13 @@ namespace Direct3D11Renderer
 		void copyResource(Renderer::IResource& destinationResource, Renderer::IResource& sourceResource);
 		void generateMipmaps(Renderer::IResource& resource);
 		//[-------------------------------------------------------]
+		//[ Query                                                 ]
+		//[-------------------------------------------------------]
+		void resetQueryPool(Renderer::IQueryPool& queryPool, uint32_t firstQueryIndex, uint32_t numberOfQueries);
+		void beginQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex, uint32_t queryControlFlags);
+		void endQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex);
+		void writeTimestampQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex);
+		//[-------------------------------------------------------]
 		//[ Debug                                                 ]
 		//[-------------------------------------------------------]
 		#ifdef RENDERER_DEBUG
@@ -2206,6 +2361,7 @@ namespace Direct3D11Renderer
 		//[ Resource creation                                     ]
 		//[-------------------------------------------------------]
 		[[nodiscard]] virtual Renderer::IRenderPass* createRenderPass(uint32_t numberOfColorAttachments, const Renderer::TextureFormat::Enum* colorAttachmentTextureFormats, Renderer::TextureFormat::Enum depthStencilAttachmentTextureFormat = Renderer::TextureFormat::UNKNOWN, uint8_t numberOfMultisamples = 1) override;
+		[[nodiscard]] virtual Renderer::IQueryPool* createQueryPool(Renderer::QueryType queryType, uint32_t numberOfQueries = 1) override;
 		[[nodiscard]] virtual Renderer::ISwapChain* createSwapChain(Renderer::IRenderPass& renderPass, Renderer::WindowHandle windowHandle, bool useExternalContext = false) override;
 		[[nodiscard]] virtual Renderer::IFramebuffer* createFramebuffer(Renderer::IRenderPass& renderPass, const Renderer::FramebufferAttachment* colorFramebufferAttachments, const Renderer::FramebufferAttachment* depthStencilFramebufferAttachment = nullptr) override;
 		[[nodiscard]] virtual Renderer::IBufferManager* createBufferManager() override;
@@ -2219,6 +2375,7 @@ namespace Direct3D11Renderer
 		//[-------------------------------------------------------]
 		[[nodiscard]] virtual bool map(Renderer::IResource& resource, uint32_t subresource, Renderer::MapType mapType, uint32_t mapFlags, Renderer::MappedSubresource& mappedSubresource) override;
 		virtual void unmap(Renderer::IResource& resource, uint32_t subresource) override;
+		[[nodiscard]] virtual bool getQueryPoolResults(Renderer::IQueryPool& queryPool, uint32_t numberOfDataBytes, uint8_t* data, uint32_t firstQueryIndex = 0, uint32_t numberOfQueries = 1, uint32_t strideInBytes = 0, uint32_t queryResultFlags = Renderer::QueryResultFlags::WAIT) override;
 		//[-------------------------------------------------------]
 		//[ Operations                                            ]
 		//[-------------------------------------------------------]
@@ -7454,6 +7611,7 @@ namespace Direct3D11Renderer
 
 			// Create the Direct3D 11 sampler state
 			// -> "Renderer::SamplerState" maps directly to Direct3D 10 & 11, do not change it
+			static_assert(sizeof(Renderer::SamplerState) == sizeof(D3D11_SAMPLER_DESC), "Direct3D 11 structure mismatch detected");
 			FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateSamplerState(reinterpret_cast<const D3D11_SAMPLER_DESC*>(&samplerState), &mD3D11SamplerState));
 
 			// Assign a default name to the resource for debugging purposes
@@ -7807,6 +7965,7 @@ namespace Direct3D11Renderer
 		{
 			// Create the Direct3D 11 depth stencil state
 			// -> "Renderer::DepthStencilState" maps directly to Direct3D 10 & 11, do not change it
+			static_assert(sizeof(Renderer::BlendState) == sizeof(D3D11_BLEND_DESC), "Direct3D 11 structure mismatch detected");
 			FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateBlendState(reinterpret_cast<const D3D11_BLEND_DESC*>(&blendState), &mD3D11BlendState));
 
 			// Assign a default name to the resource for debugging purposes
@@ -8015,6 +8174,184 @@ namespace Direct3D11Renderer
 		Renderer::TextureFormat::Enum mColorAttachmentTextureFormats[8];
 		Renderer::TextureFormat::Enum mDepthStencilAttachmentTextureFormat;
 		uint8_t						  mNumberOfMultisamples;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ Direct3D11Renderer/QueryPool.h                        ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Direct3D 11 asynchronous query pool interface
+	*/
+	class QueryPool final : public Renderer::IQueryPool
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] direct3D11Renderer
+		*    Owner Direct3D 11 renderer instance
+		*  @param[in] queryType
+		*    Query type
+		*  @param[in] numberOfQueries
+		*    Number of queries
+		*/
+		QueryPool(Direct3D11Renderer& direct3D11Renderer, Renderer::QueryType queryType, uint32_t numberOfQueries) :
+			IQueryPool(direct3D11Renderer),
+			mQueryType(queryType),
+			mNumberOfQueries(numberOfQueries),
+			mD3D11Queries(RENDERER_MALLOC_TYPED(direct3D11Renderer.getContext(), ID3D11Query*, numberOfQueries))
+		{
+			// Get Direct3D 11 query description
+			D3D11_QUERY_DESC d3d11QueryDesc = {};
+			switch (queryType)
+			{
+				case Renderer::QueryType::OCCLUSION:
+					d3d11QueryDesc.Query = D3D11_QUERY_OCCLUSION;
+					break;
+
+				case Renderer::QueryType::PIPELINE_STATISTICS:
+					d3d11QueryDesc.Query = D3D11_QUERY_PIPELINE_STATISTICS;
+					break;
+
+				case Renderer::QueryType::TIMESTAMP:
+					d3d11QueryDesc.Query = D3D11_QUERY_TIMESTAMP;
+					break;
+			}
+
+			{ // Create Direct3D 11 queries
+				ID3D11Device* d3d11Device = direct3D11Renderer.getD3D11Device();
+				for (uint32_t i = 0; i < numberOfQueries; ++i)
+				{
+					FAILED_DEBUG_BREAK(d3d11Device->CreateQuery(&d3d11QueryDesc, &mD3D11Queries[i]));
+				}
+			}
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RENDERER_DEBUG
+				switch (queryType)
+				{
+					case Renderer::QueryType::OCCLUSION:
+						setDebugName("Occlusion query");
+						break;
+
+					case Renderer::QueryType::PIPELINE_STATISTICS:
+						setDebugName("Pipeline statistics query");
+						break;
+
+					case Renderer::QueryType::TIMESTAMP:
+						setDebugName("Timestamp query");
+						break;
+				}
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~QueryPool() override
+		{
+			for (uint32_t i = 0; i < mNumberOfQueries; ++i)
+			{
+				mD3D11Queries[i]->Release();
+			}
+			RENDERER_FREE(getRenderer().getContext(), mD3D11Queries);
+		}
+
+		/**
+		*  @brief
+		*    Return the query type
+		*
+		*  @return
+		*    The query type
+		*/
+		[[nodiscard]] inline Renderer::QueryType getQueryType() const
+		{
+			return mQueryType;
+		}
+
+		/**
+		*  @brief
+		*    Return the number of queries
+		*
+		*  @return
+		*    The number of queries
+		*/
+		[[nodiscard]] inline uint32_t getNumberOfQueries() const
+		{
+			return mNumberOfQueries;
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D 11 queries
+		*
+		*  @return
+		*    The Direct3D 11 queries
+		*/
+		[[nodiscard]] inline ID3D11Query** getD3D11Queries() const
+		{
+			return mD3D11Queries;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		#ifdef RENDERER_DEBUG
+			virtual void setDebugName(const char* name) override
+			{
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
+				const UINT nameLength = static_cast<UINT>(strlen(name));
+				for (uint32_t i = 0; i < mNumberOfQueries; ++i)
+				{
+					ID3D11Query* d3d11Query = mD3D11Queries[i];
+					FAILED_DEBUG_BREAK(d3d11Query->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(d3d11Query->SetPrivateData(WKPDID_D3DDebugObjectName, nameLength, name));
+				}
+			}
+		#endif
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), QueryPool, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit QueryPool(const QueryPool& source) = delete;
+		QueryPool& operator =(const QueryPool& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		Renderer::QueryType mQueryType;
+		uint32_t			mNumberOfQueries;
+		ID3D11Query**		mD3D11Queries;
 
 
 	};
@@ -8758,6 +9095,7 @@ namespace Direct3D11Renderer
 						case Renderer::ResourceType::GRAPHICS_PROGRAM:
 						case Renderer::ResourceType::VERTEX_ARRAY:
 						case Renderer::ResourceType::RENDER_PASS:
+						case Renderer::ResourceType::QUERY_POOL:
 						case Renderer::ResourceType::SWAP_CHAIN:
 						case Renderer::ResourceType::FRAMEBUFFER:
 						case Renderer::ResourceType::INDEX_BUFFER:
@@ -8838,6 +9176,7 @@ namespace Direct3D11Renderer
 					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
+					case Renderer::ResourceType::QUERY_POOL:
 					case Renderer::ResourceType::SWAP_CHAIN:
 					case Renderer::ResourceType::FRAMEBUFFER:
 					case Renderer::ResourceType::INDEX_BUFFER:
@@ -10997,6 +11336,33 @@ namespace
 			}
 
 			//[-------------------------------------------------------]
+			//[ Query                                                 ]
+			//[-------------------------------------------------------]
+			void ResetQueryPool(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::ResetQueryPool* realData = static_cast<const Renderer::Command::ResetQueryPool*>(data);
+				static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).resetQueryPool(*realData->queryPool, realData->firstQueryIndex, realData->numberOfQueries);
+			}
+
+			void BeginQuery(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::BeginQuery* realData = static_cast<const Renderer::Command::BeginQuery*>(data);
+				static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).beginQuery(*realData->queryPool, realData->queryIndex, realData->queryControlFlags);
+			}
+
+			void EndQuery(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::EndQuery* realData = static_cast<const Renderer::Command::EndQuery*>(data);
+				static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).endQuery(*realData->queryPool, realData->queryIndex);
+			}
+
+			void WriteTimestampQuery(const void* data, Renderer::IRenderer& renderer)
+			{
+				const Renderer::Command::WriteTimestampQuery* realData = static_cast<const Renderer::Command::WriteTimestampQuery*>(data);
+				static_cast<Direct3D11Renderer::Direct3D11Renderer&>(renderer).writeTimestampQuery(*realData->queryPool, realData->queryIndex);
+			}
+
+			//[-------------------------------------------------------]
 			//[ Debug                                                 ]
 			//[-------------------------------------------------------]
 			#ifdef RENDERER_DEBUG
@@ -11059,6 +11425,11 @@ namespace
 			&BackendDispatch::ResolveMultisampleFramebuffer,
 			&BackendDispatch::CopyResource,
 			&BackendDispatch::GenerateMipmaps,
+			// Query
+			&BackendDispatch::ResetQueryPool,
+			&BackendDispatch::BeginQuery,
+			&BackendDispatch::EndQuery,
+			&BackendDispatch::WriteTimestampQuery,
 			// Debug
 			&BackendDispatch::SetDebugMarker,
 			&BackendDispatch::BeginDebugEvent,
@@ -11494,6 +11865,7 @@ namespace Direct3D11Renderer
 							case Renderer::ResourceType::GRAPHICS_PROGRAM:
 							case Renderer::ResourceType::VERTEX_ARRAY:
 							case Renderer::ResourceType::RENDER_PASS:
+							case Renderer::ResourceType::QUERY_POOL:
 							case Renderer::ResourceType::SWAP_CHAIN:
 							case Renderer::ResourceType::FRAMEBUFFER:
 							case Renderer::ResourceType::INDEX_BUFFER:
@@ -11618,6 +11990,7 @@ namespace Direct3D11Renderer
 					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
+					case Renderer::ResourceType::QUERY_POOL:
 					case Renderer::ResourceType::SWAP_CHAIN:
 					case Renderer::ResourceType::FRAMEBUFFER:
 					case Renderer::ResourceType::INDEX_BUFFER:
@@ -11675,6 +12048,7 @@ namespace Direct3D11Renderer
 		// Set the Direct3D 11 viewports
 		// -> "Renderer::Viewport" directly maps to Direct3D 11, do not change it
 		// -> Let Direct3D 11 perform the index validation for us (the Direct3D 11 debug features are pretty good)
+		static_assert(sizeof(Renderer::Viewport) == sizeof(D3D11_VIEWPORT), "Direct3D 11 structure mismatch detected");
 		mD3D11DeviceContext->RSSetViewports(numberOfViewports, reinterpret_cast<const D3D11_VIEWPORT*>(viewports));
 	}
 
@@ -11688,6 +12062,7 @@ namespace Direct3D11Renderer
 		// Set the Direct3D 11 scissor rectangles
 		// -> "Renderer::ScissorRectangle" directly maps to Direct3D 9 & 10 & 11, do not change it
 		// -> Let Direct3D 11 perform the index validation for us (the Direct3D 11 debug features are pretty good)
+		static_assert(sizeof(Renderer::ScissorRectangle) == sizeof(D3D11_RECT), "Direct3D 11 structure mismatch detected");
 		mD3D11DeviceContext->RSSetScissorRects(numberOfScissorRectangles, reinterpret_cast<const D3D11_RECT*>(scissorRectangles));
 	}
 
@@ -11744,6 +12119,7 @@ namespace Direct3D11Renderer
 					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
+					case Renderer::ResourceType::QUERY_POOL:
 					case Renderer::ResourceType::INDEX_BUFFER:
 					case Renderer::ResourceType::VERTEX_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
@@ -11869,6 +12245,7 @@ namespace Direct3D11Renderer
 				case Renderer::ResourceType::GRAPHICS_PROGRAM:
 				case Renderer::ResourceType::VERTEX_ARRAY:
 				case Renderer::ResourceType::RENDER_PASS:
+				case Renderer::ResourceType::QUERY_POOL:
 				case Renderer::ResourceType::INDEX_BUFFER:
 				case Renderer::ResourceType::VERTEX_BUFFER:
 				case Renderer::ResourceType::TEXTURE_BUFFER:
@@ -12335,6 +12712,7 @@ namespace Direct3D11Renderer
 									case Renderer::ResourceType::GRAPHICS_PROGRAM:
 									case Renderer::ResourceType::VERTEX_ARRAY:
 									case Renderer::ResourceType::RENDER_PASS:
+									case Renderer::ResourceType::QUERY_POOL:
 									case Renderer::ResourceType::SWAP_CHAIN:
 									case Renderer::ResourceType::FRAMEBUFFER:
 									case Renderer::ResourceType::INDEX_BUFFER:
@@ -12426,6 +12804,7 @@ namespace Direct3D11Renderer
 									case Renderer::ResourceType::GRAPHICS_PROGRAM:
 									case Renderer::ResourceType::VERTEX_ARRAY:
 									case Renderer::ResourceType::RENDER_PASS:
+									case Renderer::ResourceType::QUERY_POOL:
 									case Renderer::ResourceType::SWAP_CHAIN:
 									case Renderer::ResourceType::FRAMEBUFFER:
 									case Renderer::ResourceType::INDEX_BUFFER:
@@ -12583,6 +12962,7 @@ namespace Direct3D11Renderer
 					case Renderer::ResourceType::GRAPHICS_PROGRAM:
 					case Renderer::ResourceType::VERTEX_ARRAY:
 					case Renderer::ResourceType::RENDER_PASS:
+					case Renderer::ResourceType::QUERY_POOL:
 					case Renderer::ResourceType::SWAP_CHAIN:
 					case Renderer::ResourceType::FRAMEBUFFER:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -12677,6 +13057,7 @@ namespace Direct3D11Renderer
 			case Renderer::ResourceType::GRAPHICS_PROGRAM:
 			case Renderer::ResourceType::VERTEX_ARRAY:
 			case Renderer::ResourceType::RENDER_PASS:
+			case Renderer::ResourceType::QUERY_POOL:
 			case Renderer::ResourceType::INDEX_BUFFER:
 			case Renderer::ResourceType::VERTEX_BUFFER:
 			case Renderer::ResourceType::TEXTURE_BUFFER:
@@ -12734,6 +13115,7 @@ namespace Direct3D11Renderer
 			case Renderer::ResourceType::GRAPHICS_PROGRAM:
 			case Renderer::ResourceType::VERTEX_ARRAY:
 			case Renderer::ResourceType::RENDER_PASS:
+			case Renderer::ResourceType::QUERY_POOL:
 			case Renderer::ResourceType::SWAP_CHAIN:
 			case Renderer::ResourceType::FRAMEBUFFER:
 			case Renderer::ResourceType::INDEX_BUFFER:
@@ -12769,6 +13151,86 @@ namespace Direct3D11Renderer
 		RENDERER_ASSERT(mContext, resource.getResourceType() == Renderer::ResourceType::TEXTURE_2D, "TODO(co) Mipmaps can only be generated for Direct3D 11 2D texture resources")
 		Texture2D& texture2D = static_cast<Texture2D&>(resource);
 		mD3D11DeviceContext->GenerateMips(texture2D.getD3D11ShaderResourceView());
+	}
+
+
+	//[-------------------------------------------------------]
+	//[ Query                                                 ]
+	//[-------------------------------------------------------]
+	void Direct3D11Renderer::resetQueryPool([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t firstQueryIndex, [[maybe_unused]] uint32_t numberOfQueries)
+	{
+		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
+
+		// Nothing to do in here for Direct3D 11
+
+		// TODO(co) Sanity checks
+	}
+
+	void Direct3D11Renderer::beginQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex, uint32_t)
+	{
+		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
+
+		// Query pool type dependent processing
+		QueryPool& d3d11QueryPool = static_cast<QueryPool&>(queryPool);
+		RENDERER_ASSERT(mContext, queryIndex < d3d11QueryPool.getNumberOfQueries(), "Direct3D 11 out-of-bounds query index")
+		switch (d3d11QueryPool.getQueryType())
+		{
+			case Renderer::QueryType::OCCLUSION:
+			case Renderer::QueryType::PIPELINE_STATISTICS:
+				mD3D11DeviceContext->Begin(d3d11QueryPool.getD3D11Queries()[queryIndex]);
+				break;
+
+			case Renderer::QueryType::TIMESTAMP:
+				RENDERER_ASSERT(mContext, false, "Direct3D 11 begin query isn't allowed for timestamp queries, use \"Renderer::Command::WriteTimestampQuery\" instead")
+				break;
+		}
+	}
+
+	void Direct3D11Renderer::endQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex)
+	{
+		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
+
+		// Query pool type dependent processing
+		QueryPool& d3d11QueryPool = static_cast<QueryPool&>(queryPool);
+		RENDERER_ASSERT(mContext, queryIndex < d3d11QueryPool.getNumberOfQueries(), "Direct3D 11 out-of-bounds query index")
+		switch (d3d11QueryPool.getQueryType())
+		{
+			case Renderer::QueryType::OCCLUSION:
+			case Renderer::QueryType::PIPELINE_STATISTICS:
+				mD3D11DeviceContext->End(d3d11QueryPool.getD3D11Queries()[queryIndex]);
+				break;
+
+			case Renderer::QueryType::TIMESTAMP:
+				RENDERER_ASSERT(mContext, false, "Direct3D 11 end query isn't allowed for timestamp queries, use \"Renderer::Command::WriteTimestampQuery\" instead")
+				break;
+		}
+	}
+
+	void Direct3D11Renderer::writeTimestampQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex)
+	{
+		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
+
+		// Query pool type dependent processing
+		QueryPool& d3d11QueryPool = static_cast<QueryPool&>(queryPool);
+		RENDERER_ASSERT(mContext, queryIndex < d3d11QueryPool.getNumberOfQueries(), "Direct3D 11 out-of-bounds query index")
+		switch (d3d11QueryPool.getQueryType())
+		{
+			case Renderer::QueryType::OCCLUSION:
+				RENDERER_ASSERT(mContext, false, "Direct3D 11 write timestamp query isn't allowed for occlusion queries, use \"Renderer::Command::BeginQuery\" and \"Renderer::Command::EndQuery\" instead")
+				break;
+
+			case Renderer::QueryType::PIPELINE_STATISTICS:
+				RENDERER_ASSERT(mContext, false, "Direct3D 11 write timestamp query isn't allowed for pipeline statistics queries, use \"Renderer::Command::BeginQuery\" and \"Renderer::Command::EndQuery\" instead")
+				break;
+
+			case Renderer::QueryType::TIMESTAMP:
+				mD3D11DeviceContext->End(d3d11QueryPool.getD3D11Queries()[queryIndex]);
+				break;
+		}
 	}
 
 
@@ -12881,6 +13343,12 @@ namespace Direct3D11Renderer
 	Renderer::IRenderPass* Direct3D11Renderer::createRenderPass(uint32_t numberOfColorAttachments, const Renderer::TextureFormat::Enum* colorAttachmentTextureFormats, Renderer::TextureFormat::Enum depthStencilAttachmentTextureFormat, uint8_t numberOfMultisamples)
 	{
 		return RENDERER_NEW(mContext, RenderPass)(*this, numberOfColorAttachments, colorAttachmentTextureFormats, depthStencilAttachmentTextureFormat, numberOfMultisamples);
+	}
+
+	Renderer::IQueryPool* Direct3D11Renderer::createQueryPool(Renderer::QueryType queryType, uint32_t numberOfQueries)
+	{
+		RENDERER_ASSERT(mContext, numberOfQueries > 0, "Direct3D 11: Number of queries mustn't be zero")
+		return RENDERER_NEW(mContext, QueryPool)(*this, queryType, numberOfQueries);
 	}
 
 	Renderer::ISwapChain* Direct3D11Renderer::createSwapChain(Renderer::IRenderPass& renderPass, Renderer::WindowHandle windowHandle, bool)
@@ -12999,6 +13467,7 @@ namespace Direct3D11Renderer
 			case Renderer::ResourceType::GRAPHICS_PROGRAM:
 			case Renderer::ResourceType::VERTEX_ARRAY:
 			case Renderer::ResourceType::RENDER_PASS:
+			case Renderer::ResourceType::QUERY_POOL:
 			case Renderer::ResourceType::SWAP_CHAIN:
 			case Renderer::ResourceType::FRAMEBUFFER:
 			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -13083,6 +13552,7 @@ namespace Direct3D11Renderer
 			case Renderer::ResourceType::GRAPHICS_PROGRAM:
 			case Renderer::ResourceType::VERTEX_ARRAY:
 			case Renderer::ResourceType::RENDER_PASS:
+			case Renderer::ResourceType::QUERY_POOL:
 			case Renderer::ResourceType::SWAP_CHAIN:
 			case Renderer::ResourceType::FRAMEBUFFER:
 			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -13101,6 +13571,81 @@ namespace Direct3D11Renderer
 
 		// Undefine helper macro
 		#undef TEXTURE_RESOURCE
+	}
+
+	bool Direct3D11Renderer::getQueryPoolResults(Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t numberOfDataBytes, uint8_t* data, uint32_t firstQueryIndex, uint32_t numberOfQueries, uint32_t strideInBytes, uint32_t queryResultFlags)
+	{
+		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
+
+		// Sanity checks
+		RENDERER_ASSERT(mContext, numberOfDataBytes >= sizeof(UINT64), "Direct3D 11 out-of-memory query access")
+		RENDERER_ASSERT(mContext, 1 == numberOfQueries || strideInBytes > 0, "Direct3D 11 invalid stride in bytes")
+		RENDERER_ASSERT(mContext, numberOfDataBytes >= strideInBytes * numberOfQueries, "Direct3D 11 out-of-memory query access")
+		RENDERER_ASSERT(mContext, nullptr != data, "Direct3D 11 out-of-memory query access")
+		RENDERER_ASSERT(mContext, numberOfQueries > 0, "Direct3D 11 number of queries mustn't be zero")
+
+		// Query pool type dependent processing
+		bool resultAvailable = true;
+		QueryPool& d3d11QueryPool = static_cast<QueryPool&>(queryPool);
+		RENDERER_ASSERT(mContext, firstQueryIndex < d3d11QueryPool.getNumberOfQueries(), "Direct3D 11 out-of-bounds query index")
+		RENDERER_ASSERT(mContext, (firstQueryIndex + numberOfQueries) <= d3d11QueryPool.getNumberOfQueries(), "Direct3D 11 out-of-bounds query index")
+		const bool waitForResult = ((queryResultFlags & Renderer::QueryResultFlags::WAIT) != 0);
+		switch (d3d11QueryPool.getQueryType())
+		{
+			case Renderer::QueryType::OCCLUSION:
+			case Renderer::QueryType::TIMESTAMP:	// TODO(co) Convert time to nanoseconds, see e.g. http://reedbeta.com/blog/gpu-profiling-101/
+			{
+				uint8_t* currentData = data;
+				ID3D11Query** d3D11Queries = d3d11QueryPool.getD3D11Queries();
+				for (uint32_t i = 0; i  < numberOfQueries; ++i)
+				{
+					HRESULT d3d11QueryResult = S_FALSE;
+					do
+					{
+						d3d11QueryResult = mD3D11DeviceContext->GetData(d3D11Queries[firstQueryIndex + i], currentData, sizeof(UINT64), 0);
+					}
+					while (waitForResult && S_OK != d3d11QueryResult);
+					if (S_FALSE == d3d11QueryResult)
+					{
+						// Result not ready
+						resultAvailable = false;
+						break;
+					}
+					currentData += strideInBytes;
+				}
+				break;
+			}
+
+			case Renderer::QueryType::PIPELINE_STATISTICS:
+			{
+				static_assert(sizeof(Renderer::PipelineStatisticsQueryResult) == sizeof(D3D11_QUERY_DATA_PIPELINE_STATISTICS), "Direct3D 11 structure mismatch detected");
+				RENDERER_ASSERT(mContext, numberOfDataBytes >= sizeof(Renderer::PipelineStatisticsQueryResult), "Direct3D 11 out-of-memory query access")
+				RENDERER_ASSERT(mContext, 1 == numberOfQueries || strideInBytes >= sizeof(Renderer::PipelineStatisticsQueryResult), "Direct3D 11 out-of-memory query access")
+				uint8_t* currentData = data;
+				ID3D11Query** d3D11Queries = d3d11QueryPool.getD3D11Queries();
+				for (uint32_t i = 0; i  < numberOfQueries; ++i)
+				{
+					HRESULT d3d11QueryResult = S_FALSE;
+					do
+					{
+						d3d11QueryResult = mD3D11DeviceContext->GetData(d3D11Queries[firstQueryIndex + i], currentData, sizeof(D3D11_QUERY_DATA_PIPELINE_STATISTICS), 0);
+					}
+					while (waitForResult && S_OK != d3d11QueryResult);
+					if (S_FALSE == d3d11QueryResult)
+					{
+						// Result not ready
+						resultAvailable = false;
+						break;
+					}
+					currentData += strideInBytes;
+				}
+				break;
+			}
+		}
+
+		// Done
+		return resultAvailable;
 	}
 
 
