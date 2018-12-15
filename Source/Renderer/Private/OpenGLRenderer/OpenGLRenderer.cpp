@@ -11951,8 +11951,8 @@ namespace OpenGLRenderer
 				GET_QUERY_RESULT(mVertexShaderInvocationsOpenGLQueries, numberOfVertexShaderInvocations)
 				GET_QUERY_RESULT(mGeometryShaderInvocationsOpenGLQueries, numberOfGeometryShaderInvocations)
 				GET_QUERY_RESULT(mGeometryShaderPrimitivesEmittedOpenGLQueries, numberOfGeometryShaderOutputPrimitives)
-				GET_QUERY_RESULT(mClippingInputPrimitivesOpenGLQueries, numberOfClippingInputPrimitivesInvocations)
-				GET_QUERY_RESULT(mClippingOutputPrimitivesOpenGLQueries, numberOfClippingOutputPrimitivesPrimitives)
+				GET_QUERY_RESULT(mClippingInputPrimitivesOpenGLQueries, numberOfClippingInputPrimitives)
+				GET_QUERY_RESULT(mClippingOutputPrimitivesOpenGLQueries, numberOfClippingOutputPrimitives)
 				GET_QUERY_RESULT(mFragmentShaderInvocationsOpenGLQueries, numberOfFragmentShaderInvocations)
 				GET_QUERY_RESULT(mTessControlShaderPatchesOpenGLQueries, numberOfTessellationControlShaderInvocations)
 				GET_QUERY_RESULT(mTesEvaluationShaderInvocationsOpenGLQueries, numberOfTessellationEvaluationShaderInvocations)
@@ -12038,8 +12038,8 @@ namespace OpenGLRenderer
 		GLuint* mVertexShaderInvocationsOpenGLQueries;			///< "GL_VERTEX_SHADER_INVOCATIONS_ARB", "Renderer::PipelineStatisticsQueryResult::numberOfVertexShaderInvocations"
 		GLuint* mGeometryShaderInvocationsOpenGLQueries;		///< "GL_GEOMETRY_SHADER_INVOCATIONS", "Renderer::PipelineStatisticsQueryResult::numberOfGeometryShaderInvocations"
 		GLuint* mGeometryShaderPrimitivesEmittedOpenGLQueries;	///< "GL_GEOMETRY_SHADER_PRIMITIVES_EMITTED_ARB", "Renderer::PipelineStatisticsQueryResult::numberOfGeometryShaderOutputPrimitives"
-		GLuint* mClippingInputPrimitivesOpenGLQueries;			///< "GL_CLIPPING_INPUT_PRIMITIVES_ARB", "Renderer::PipelineStatisticsQueryResult::numberOfClippingInputPrimitivesInvocations"
-		GLuint* mClippingOutputPrimitivesOpenGLQueries;			///< "GL_CLIPPING_OUTPUT_PRIMITIVES_ARB", "Renderer::PipelineStatisticsQueryResult::numberOfClippingOutputPrimitivesPrimitives"
+		GLuint* mClippingInputPrimitivesOpenGLQueries;			///< "GL_CLIPPING_INPUT_PRIMITIVES_ARB", "Renderer::PipelineStatisticsQueryResult::numberOfClippingInputPrimitives"
+		GLuint* mClippingOutputPrimitivesOpenGLQueries;			///< "GL_CLIPPING_OUTPUT_PRIMITIVES_ARB", "Renderer::PipelineStatisticsQueryResult::numberOfClippingOutputPrimitives"
 		GLuint* mFragmentShaderInvocationsOpenGLQueries;		///< "GL_FRAGMENT_SHADER_INVOCATIONS_ARB", "Renderer::PipelineStatisticsQueryResult::numberOfFragmentShaderInvocations"
 		GLuint* mTessControlShaderPatchesOpenGLQueries;			///< "GL_TESS_CONTROL_SHADER_PATCHES_ARB", "Renderer::PipelineStatisticsQueryResult::numberOfTessellationControlShaderInvocations"
 		GLuint* mTesEvaluationShaderInvocationsOpenGLQueries;	///< "GL_TESS_EVALUATION_SHADER_INVOCATIONS_ARB", "Renderer::PipelineStatisticsQueryResult::numberOfTessellationEvaluationShaderInvocations"

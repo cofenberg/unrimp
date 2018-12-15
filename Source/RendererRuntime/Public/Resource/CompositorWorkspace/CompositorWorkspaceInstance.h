@@ -158,6 +158,13 @@ namespace RendererRuntime
 			return mCommandBuffer;
 		}
 
+		#ifdef RENDERER_STATISTICS
+			[[nodiscard]] inline const Renderer::PipelineStatisticsQueryResult& getPipelineStatisticsQueryResult() const
+			{
+				return mPipelineStatisticsQueryResult;
+			}
+		#endif
+
 
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::IResourceListener methods ]
@@ -196,6 +203,12 @@ namespace RendererRuntime
 		RenderQueueIndexRanges			 mRenderQueueIndexRanges;				///< The render queue index ranges layout is fixed during runtime
 		Renderer::CommandBuffer			 mCommandBuffer;						///< Command buffer
 		CompositorInstancePassShadowMap* mCompositorInstancePassShadowMap;		///< Can be a null pointer, don't destroy the instance
+		#ifdef RENDERER_STATISTICS
+			Renderer::IQueryPoolPtr					mPipelineStatisticsQueryPoolPtr;				///< Double buffered asynchronous pipeline statistics query pool, can be a null pointer
+			uint32_t								mPreviousCurrentPipelineStatisticsQueryIndex;	///< Can be "RendererRuntime::getInvalid<uint32_t>()"
+			uint32_t								mCurrentPipelineStatisticsQueryIndex;			///< Toggles between 0 or 1
+			Renderer::PipelineStatisticsQueryResult mPipelineStatisticsQueryResult;					///< Due to double buffered asynchronous pipeline statistics query pool, this is the pipeline statistics query result of the previous frame
+		#endif
 
 
 	};

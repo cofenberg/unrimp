@@ -75,6 +75,12 @@ namespace RendererRuntime
 		mCompositorWorkspaceResourceId(getInvalid<CompositorWorkspaceResourceId>()),
 		mFramebufferManagerInitialized(false),
 		mCompositorInstancePassShadowMap(nullptr)
+		#ifdef RENDERER_STATISTICS
+			, mPipelineStatisticsQueryPoolPtr((rendererRuntime.getRenderer().getNameId() == Renderer::NameId::OPENGL) ? nullptr : rendererRuntime.getRenderer().createQueryPool(Renderer::QueryType::PIPELINE_STATISTICS, 2)),	// TODO(co) When using OpenGL "GL_ARB_pipeline_statistics_query" features, "glCopyImageSubData()" will horribly stall/freeze on Windows using AMD Radeon 18.12.2 (tested on 16 December 2018)
+			mPreviousCurrentPipelineStatisticsQueryIndex(getInvalid<uint32_t>()),
+			mCurrentPipelineStatisticsQueryIndex(0),
+			mPipelineStatisticsQueryResult{}
+		#endif
 	{
 		rendererRuntime.getCompositorWorkspaceResourceManager().loadCompositorWorkspaceResourceByAssetId(compositorWorkspaceAssetId, mCompositorWorkspaceResourceId, this);
 	}
@@ -209,6 +215,13 @@ namespace RendererRuntime
 			Renderer::IRenderer& renderer = renderTarget.getRenderer();
 			if (renderer.beginScene())
 			{
+				#ifdef RENDERER_STATISTICS
+					if (nullptr != mPipelineStatisticsQueryPoolPtr)
+					{
+						Renderer::Command::ResetAndBeginQuery::create(mCommandBuffer, *mPipelineStatisticsQueryPoolPtr, mCurrentPipelineStatisticsQueryIndex, Renderer::QueryControlFlags::PRECISE);
+					}
+				#endif
+
 				const CompositorContextData compositorContextData(this, cameraSceneItem, singlePassStereoInstancing, lightSceneItem, mCompositorInstancePassShadowMap);
 				if (nullptr != cameraSceneItem)
 				{
@@ -236,6 +249,12 @@ namespace RendererRuntime
 					materialBlueprintResourceManager.onPreCommandBufferExecution();
 
 					// Submit command buffer to the renderer backend
+					#ifdef RENDERER_STATISTICS
+						if (nullptr != mPipelineStatisticsQueryPoolPtr)
+						{
+							Renderer::Command::EndQuery::create(mCommandBuffer, *mPipelineStatisticsQueryPoolPtr, mCurrentPipelineStatisticsQueryIndex);
+						}
+					#endif
 					mCommandBuffer.submitToRenderer(renderer);
 
 					// The command buffer has been submitted, inform everyone who cares about this
@@ -267,6 +286,19 @@ namespace RendererRuntime
 			{
 				static_cast<Renderer::ISwapChain&>(renderTarget).present();
 			}
+
+			// Pipeline statistics query pool
+			#ifdef RENDERER_STATISTICS
+				if (nullptr != mPipelineStatisticsQueryPoolPtr)
+				{
+					if (isValid(mPreviousCurrentPipelineStatisticsQueryIndex) && !renderer.getQueryPoolResults(*mPipelineStatisticsQueryPoolPtr, sizeof(Renderer::PipelineStatisticsQueryResult), reinterpret_cast<uint8_t*>(&mPipelineStatisticsQueryResult), mPreviousCurrentPipelineStatisticsQueryIndex, 1, 0, 0))
+					{
+						mPipelineStatisticsQueryResult = {};
+					}
+					mPreviousCurrentPipelineStatisticsQueryIndex = mCurrentPipelineStatisticsQueryIndex;
+					mCurrentPipelineStatisticsQueryIndex = (0 == mCurrentPipelineStatisticsQueryIndex) ? 1u : 0u;
+				}
+			#endif
 
 			// Release reference from the render target
 			mExecutionRenderTarget = nullptr;

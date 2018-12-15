@@ -3272,8 +3272,8 @@ namespace Renderer
 		uint64_t numberOfVertexShaderInvocations;					///< Number of times a vertex shader was invoked
 		uint64_t numberOfGeometryShaderInvocations;					///< Number of times a geometry shader was invoked
 		uint64_t numberOfGeometryShaderOutputPrimitives;			///< Number of primitives output by a geometry shader
-		uint64_t numberOfClippingInputPrimitivesInvocations;		///< Number of primitives that were sent to the rasterizer
-		uint64_t numberOfClippingOutputPrimitivesPrimitives;		///< Number of primitives that were rendered
+		uint64_t numberOfClippingInputPrimitives;					///< Number of primitives that were sent to the rasterizer
+		uint64_t numberOfClippingOutputPrimitives;					///< Number of primitives that were rendered
 		uint64_t numberOfFragmentShaderInvocations;					///< Number of times a fragment shader (FS, "pixel shader" in Direct3D terminology) was invoked
 		uint64_t numberOfTessellationControlShaderInvocations;		///< Number of times a hull shader (TCS, "hull shader" in Direct3D terminology) was invoked
 		uint64_t numberOfTessellationEvaluationShaderInvocations;	///< Number of times a domain shader (TES, "domain shader" in Direct3D terminology) was invoked

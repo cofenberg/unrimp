@@ -108,6 +108,28 @@ namespace
 			}
 		}
 
+		// Basing on https://stackoverflow.com/a/33390058
+		const char* stringFormatCommas(uint64_t number, char* output)
+		{
+			char* outputBackup = output;	// Backup pointer for return
+			char buffer[100];
+			snprintf(buffer, 100, "%I64d", number);
+			size_t c = 2 - (strlen(buffer) % 3);
+
+			for (const char* p = buffer; 0 != *p; ++p)
+			{
+				*output++ = *p;
+				if (1 == c)
+				{
+					*output++ = '.';
+				}
+				c = (c + 1) % 3;
+			}
+			*--output = 0;
+
+			return outputBackup;
+		}
+
 
 //[-------------------------------------------------------]
 //[ Anonymous detail namespace                            ]
@@ -320,6 +342,8 @@ namespace RendererRuntime
 			// Optional compositor workspace instance metrics
 			if (nullptr != compositorWorkspaceInstance)
 			{
+				char temporary[128] = {};
+
 				// Please note that one renderable manager can be inside multiple render queue index ranges
 				// -> Since this metrics debugging code isn't performance critical we're using already available data to extract the
 				//    information we want to display instead of letting the core system gather additional data it doesn't need to work
@@ -336,8 +360,8 @@ namespace RendererRuntime
 						}
 					}
 				}
-				ImGui::Text("Rendered renderable managers %d", static_cast<int>(processedRenderableManager.size()));
-				ImGui::Text("Rendered renderables %d", static_cast<int>(numberOfRenderables));
+				ImGui::Text("Rendered renderable managers %s", ::detail::stringFormatCommas(static_cast<uint64_t>(processedRenderableManager.size()), temporary));
+				ImGui::Text("Rendered renderables %s", ::detail::stringFormatCommas(static_cast<uint64_t>(numberOfRenderables), temporary));
 
 				// Command buffer metrics
 				const Renderer::CommandBuffer& commandBuffer = compositorWorkspaceInstance->getCommandBuffer();
@@ -360,7 +384,7 @@ namespace RendererRuntime
 						}
 					}
 				#endif
-				if (ImGui::TreeNode("EmittedCommands", "Emitted commands: %d", numberOfCommands))
+				if (ImGui::TreeNode("EmittedCommands", "Emitted commands: %s", ::detail::stringFormatCommas(numberOfCommands, temporary)))
 				{
 					// Loop through all commands and count them
 					uint32_t numberOfCommandFunctions[Renderer::CommandDispatchFunctionIndex::NumberOfFunctions] = {};
@@ -403,6 +427,11 @@ namespace RendererRuntime
 						"ResolveMultisampleFramebuffer",
 						"CopyResource",
 						"GenerateMipmaps",
+						// Query
+						"ResetQueryPool",
+						"BeginQuery",
+						"EndQuery",
+						"WriteTimestampQuery",
 						// Debug
 						"SetDebugMarker",
 						"BeginDebugEvent",
@@ -410,46 +439,66 @@ namespace RendererRuntime
 					};
 					for (uint32_t i = 0; i < Renderer::CommandDispatchFunctionIndex::NumberOfFunctions; ++i)
 					{
-						ImGui::Text("%s: %d", commandFunction[i], numberOfCommandFunctions[i]);
+						ImGui::Text("%s: %s", commandFunction[i], ::detail::stringFormatCommas(numberOfCommandFunctions[i], temporary));
 					}
 					ImGui::TreePop();
 				}
 
-				// Renderer statistics
+				// Renderer and pipeline statistics
 				#ifdef RENDERER_STATISTICS
+				{ // Renderer statistics
 					const Renderer::Statistics& statistics = static_cast<const Renderer::IRenderer&>(compositorWorkspaceInstance->getRendererRuntime().getRenderer()).getStatistics();
-					if (ImGui::TreeNode("RendererResources", "Renderer resources: %d", statistics.getNumberOfCurrentResources()))
+					if (ImGui::TreeNode("RendererResources", "Renderer resources: %s", ::detail::stringFormatCommas(statistics.getNumberOfCurrentResources(), temporary)))
 					{
-						ImGui::Text("Root signatures: %d", statistics.currentNumberOfRootSignatures.load());
-						ImGui::Text("Resource groups: %d", statistics.currentNumberOfResourceGroups.load());
-						ImGui::Text("Graphics programs: %d", statistics.currentNumberOfGraphicsPrograms.load());
-						ImGui::Text("Vertex arrays: %d", statistics.currentNumberOfVertexArrays.load());
-						ImGui::Text("Render passes: %d", statistics.currentNumberOfRenderPasses.load());
-						ImGui::Text("Query pools: %d", statistics.currentNumberOfQueryPools.load());
-						ImGui::Text("Swap chains: %d", statistics.currentNumberOfSwapChains.load());
-						ImGui::Text("Framebuffers: %d", statistics.currentNumberOfFramebuffers.load());
-						ImGui::Text("Index buffers: %d", statistics.currentNumberOfIndexBuffers.load());
-						ImGui::Text("Vertex buffers: %d", statistics.currentNumberOfVertexBuffers.load());
-						ImGui::Text("Texture buffers: %d", statistics.currentNumberOfTextureBuffers.load());
-						ImGui::Text("Structured buffers: %d", statistics.currentNumberOfStructuredBuffers.load());
-						ImGui::Text("Indirect buffers: %d", statistics.currentNumberOfIndirectBuffers.load());
-						ImGui::Text("Uniform buffers: %d", statistics.currentNumberOfUniformBuffers.load());
-						ImGui::Text("1D textures: %d", statistics.currentNumberOfTexture1Ds.load());
-						ImGui::Text("2D textures: %d", statistics.currentNumberOfTexture2Ds.load());
-						ImGui::Text("2D texture arrays: %d", statistics.currentNumberOfTexture2DArrays.load());
-						ImGui::Text("3D textures: %d", statistics.currentNumberOfTexture3Ds.load());
-						ImGui::Text("Cubes textures: %d", statistics.currentNumberOfTextureCubes.load());
-						ImGui::Text("Graphics pipeline states: %d", statistics.currentNumberOfGraphicsPipelineStates.load());
-						ImGui::Text("Compute pipeline states: %d", statistics.currentNumberOfComputePipelineStates.load());
-						ImGui::Text("Sampler states: %d", statistics.currentNumberOfSamplerStates.load());
-						ImGui::Text("Vertex shaders: %d", statistics.currentNumberOfVertexShaders.load());
-						ImGui::Text("Tessellation control shaders: %d", statistics.currentNumberOfTessellationControlShaders.load());
-						ImGui::Text("Tessellation evaluation shaders: %d", statistics.currentNumberOfTessellationEvaluationShaders.load());
-						ImGui::Text("Geometry shaders: %d", statistics.currentNumberOfGeometryShaders.load());
-						ImGui::Text("Fragment shaders: %d", statistics.currentNumberOfFragmentShaders.load());
-						ImGui::Text("Compute shaders: %d", statistics.currentNumberOfComputeShaders.load());
+						ImGui::Text("Root signatures: %s", ::detail::stringFormatCommas(statistics.currentNumberOfRootSignatures.load(), temporary));
+						ImGui::Text("Resource groups: %s", ::detail::stringFormatCommas(statistics.currentNumberOfResourceGroups.load(), temporary));
+						ImGui::Text("Graphics programs: %s", ::detail::stringFormatCommas(statistics.currentNumberOfGraphicsPrograms.load(), temporary));
+						ImGui::Text("Vertex arrays: %s", ::detail::stringFormatCommas(statistics.currentNumberOfVertexArrays.load(), temporary));
+						ImGui::Text("Render passes: %s", ::detail::stringFormatCommas(statistics.currentNumberOfRenderPasses.load(), temporary));
+						ImGui::Text("Query pools: %s", ::detail::stringFormatCommas(statistics.currentNumberOfQueryPools.load(), temporary));
+						ImGui::Text("Swap chains: %s", ::detail::stringFormatCommas(statistics.currentNumberOfSwapChains.load(), temporary));
+						ImGui::Text("Framebuffers: %s", ::detail::stringFormatCommas(statistics.currentNumberOfFramebuffers.load(), temporary));
+						ImGui::Text("Index buffers: %s", ::detail::stringFormatCommas(statistics.currentNumberOfIndexBuffers.load(), temporary));
+						ImGui::Text("Vertex buffers: %s", ::detail::stringFormatCommas(statistics.currentNumberOfVertexBuffers.load(), temporary));
+						ImGui::Text("Texture buffers: %s", ::detail::stringFormatCommas(statistics.currentNumberOfTextureBuffers.load(), temporary));
+						ImGui::Text("Structured buffers: %s", ::detail::stringFormatCommas(statistics.currentNumberOfStructuredBuffers.load(), temporary));
+						ImGui::Text("Indirect buffers: %s", ::detail::stringFormatCommas(statistics.currentNumberOfIndirectBuffers.load(), temporary));
+						ImGui::Text("Uniform buffers: %s", ::detail::stringFormatCommas(statistics.currentNumberOfUniformBuffers.load(), temporary));
+						ImGui::Text("1D textures: %s", ::detail::stringFormatCommas(statistics.currentNumberOfTexture1Ds.load(), temporary));
+						ImGui::Text("2D textures: %s", ::detail::stringFormatCommas(statistics.currentNumberOfTexture2Ds.load(), temporary));
+						ImGui::Text("2D texture arrays: %s", ::detail::stringFormatCommas(statistics.currentNumberOfTexture2DArrays.load(), temporary));
+						ImGui::Text("3D textures: %s", ::detail::stringFormatCommas(statistics.currentNumberOfTexture3Ds.load(), temporary));
+						ImGui::Text("Cubes textures: %s", ::detail::stringFormatCommas(statistics.currentNumberOfTextureCubes.load(), temporary));
+						ImGui::Text("Graphics pipeline states: %s", ::detail::stringFormatCommas(statistics.currentNumberOfGraphicsPipelineStates.load(), temporary));
+						ImGui::Text("Compute pipeline states: %s", ::detail::stringFormatCommas(statistics.currentNumberOfComputePipelineStates.load(), temporary));
+						ImGui::Text("Sampler states: %s", ::detail::stringFormatCommas(statistics.currentNumberOfSamplerStates.load(), temporary));
+						ImGui::Text("Vertex shaders: %s", ::detail::stringFormatCommas(statistics.currentNumberOfVertexShaders.load(), temporary));
+						ImGui::Text("Tessellation control shaders: %s", ::detail::stringFormatCommas(statistics.currentNumberOfTessellationControlShaders.load(), temporary));
+						ImGui::Text("Tessellation evaluation shaders: %s", ::detail::stringFormatCommas(statistics.currentNumberOfTessellationEvaluationShaders.load(), temporary));
+						ImGui::Text("Geometry shaders: %s", ::detail::stringFormatCommas(statistics.currentNumberOfGeometryShaders.load(), temporary));
+						ImGui::Text("Fragment shaders: %s", ::detail::stringFormatCommas(statistics.currentNumberOfFragmentShaders.load(), temporary));
+						ImGui::Text("Compute shaders: %s", ::detail::stringFormatCommas(statistics.currentNumberOfComputeShaders.load(), temporary));
 						ImGui::TreePop();
 					}
+				}
+
+				// Pipeline statistics
+				if (ImGui::TreeNode("PipelineStatistics", "Pipeline statistics"))
+				{
+					const Renderer::PipelineStatisticsQueryResult& pipelineStatisticsQueryResult = compositorWorkspaceInstance->getPipelineStatisticsQueryResult();
+					ImGui::Text("Input assembler vertices: %s", ::detail::stringFormatCommas(pipelineStatisticsQueryResult.numberOfInputAssemblerVertices, temporary));
+					ImGui::Text("Input assembler primitives: %s", ::detail::stringFormatCommas(pipelineStatisticsQueryResult.numberOfInputAssemblerPrimitives, temporary));
+					ImGui::Text("Vertex shader invocations: %s", ::detail::stringFormatCommas(pipelineStatisticsQueryResult.numberOfVertexShaderInvocations, temporary));
+					ImGui::Text("Geometry shader invocations: %s", ::detail::stringFormatCommas(pipelineStatisticsQueryResult.numberOfGeometryShaderInvocations, temporary));
+					ImGui::Text("Geometry shader output primitives: %s", ::detail::stringFormatCommas(pipelineStatisticsQueryResult.numberOfGeometryShaderOutputPrimitives, temporary));
+					ImGui::Text("Clipping input primitives: %s", ::detail::stringFormatCommas(pipelineStatisticsQueryResult.numberOfClippingInputPrimitives, temporary));
+					ImGui::Text("Clipping output primitives: %s", ::detail::stringFormatCommas(pipelineStatisticsQueryResult.numberOfClippingOutputPrimitives, temporary));
+					ImGui::Text("Fragment shader invocations: %s", ::detail::stringFormatCommas(pipelineStatisticsQueryResult.numberOfFragmentShaderInvocations, temporary));
+					ImGui::Text("Tessellation control shader invocations: %s", ::detail::stringFormatCommas(pipelineStatisticsQueryResult.numberOfTessellationControlShaderInvocations, temporary));
+					ImGui::Text("Tessellation evaluation shader invocations: %s", ::detail::stringFormatCommas(pipelineStatisticsQueryResult.numberOfTessellationEvaluationShaderInvocations, temporary));
+					ImGui::Text("Compute shader invocations: %s", ::detail::stringFormatCommas(pipelineStatisticsQueryResult.numberOfComputeShaderInvocations, temporary));
+					ImGui::TreePop();
+				}
 				#endif
 			}
 		}
