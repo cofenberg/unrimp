@@ -204,6 +204,9 @@ FNDEF_GL(void,		glFinish,			(void));
 // >= OpenGL 3.0
 FNDEF_GL(GLubyte *,	glGetStringi,	(GLenum, GLuint));
 
+// >= OpenGL 4.5
+FNDEF_GL(void,	glCreateQueries,	(GLenum, GLsizei, GLuint*));
+
 // Platform specific
 #ifdef _WIN32
 	FNDEF_GL(HDC,	wglGetCurrentDC,	(VOID));
@@ -265,6 +268,9 @@ FNDEF_GL(GLubyte *,	glGetStringi,	(GLenum, GLuint));
 
 // >= OpenGL 3.0
 #define glGetStringi FNPTR(glGetStringi)
+
+// >= OpenGL 4.5
+#define glCreateQueries FNPTR(glCreateQueries)
 
 // Platform specific
 #ifdef _WIN32
@@ -1814,7 +1820,11 @@ namespace OpenGLRenderer
 		{
 			bool result = true;	// Success by default
 
-			// Load the entry points
+			// Optional >= OpenGL 4.5: Load the entry points
+			IMPORT_FUNC(glCreateQueries);
+
+			// Mandatory >= OpenGL 3.0: Load the entry points
+			result = true;	// Success by default
 			IMPORT_FUNC(glGetStringi);
 
 			// Done
@@ -11612,7 +11622,29 @@ namespace OpenGLRenderer
 			mNumberOfQueries(numberOfQueries),
 			mOpenGLQueries(RENDERER_MALLOC_TYPED(openGLRenderer.getContext(), GLuint, numberOfQueries))
 		{
-			glGenQueriesARB(static_cast<GLsizei>(numberOfQueries), mOpenGLQueries);
+			// If possible, use "glCreateQueries()" (OpenGL 4.5) in order to create the query instance at once
+			if (nullptr != glCreateQueries)
+			{
+				switch (queryType)
+				{
+					case Renderer::QueryType::OCCLUSION:
+						glCreateQueries(GL_SAMPLES_PASSED_ARB, static_cast<GLsizei>(numberOfQueries), mOpenGLQueries);
+						break;
+
+					case Renderer::QueryType::PIPELINE_STATISTICS:
+						// TODO(co)
+						glGenQueriesARB(static_cast<GLsizei>(numberOfQueries), mOpenGLQueries);
+						break;
+
+					case Renderer::QueryType::TIMESTAMP:
+						glCreateQueries(GL_TIMESTAMP, static_cast<GLsizei>(numberOfQueries), mOpenGLQueries);
+						break;
+				}
+			}
+			else
+			{
+				glGenQueriesARB(static_cast<GLsizei>(numberOfQueries), mOpenGLQueries);
+			}
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RENDERER_DEBUG
@@ -11689,8 +11721,8 @@ namespace OpenGLRenderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid OpenGL sampler and "GL_KHR_debug"-extension available?
-				if (static_cast<OpenGLRenderer&>(getRenderer()).getExtensions().isGL_KHR_debug())
+				// Valid OpenGL sampler and "glCreateQueries()" (OpenGL 4.5) as well as "GL_KHR_debug"-extension available?
+				if (nullptr != glCreateQueries && static_cast<OpenGLRenderer&>(getRenderer()).getExtensions().isGL_KHR_debug())
 				{
 					for (uint32_t i = 0; i < mNumberOfQueries; ++i)
 					{
