@@ -10603,7 +10603,7 @@ namespace Direct3D12Renderer
 	{
 		if (nullptr != rootSignature)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *rootSignature)
 
 			// Set graphics root signature
@@ -10619,7 +10619,7 @@ namespace Direct3D12Renderer
 	{
 		if (nullptr != graphicsPipelineState)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *graphicsPipelineState)
 
 			// Set primitive topology
@@ -10647,7 +10647,7 @@ namespace Direct3D12Renderer
 		/*
 		if (nullptr != resource)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *resource)
 
 			switch (resource->getResourceType())
@@ -10788,7 +10788,7 @@ namespace Direct3D12Renderer
 		// Input-assembler (IA) stage
 		if (nullptr != vertexArray)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *vertexArray)
 
 			// Begin debug event
@@ -10920,7 +10920,7 @@ namespace Direct3D12Renderer
 			// Set a render target?
 			if (nullptr != renderTarget)
 			{
-				// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+				// Sanity check
 				DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *renderTarget)
 
 				// Set new render target and add a reference to it
@@ -11242,7 +11242,7 @@ namespace Direct3D12Renderer
 	{
 		if (nullptr != rootSignature)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *rootSignature)
 
 			// Set compute root signature
@@ -11258,7 +11258,7 @@ namespace Direct3D12Renderer
 	{
 		if (nullptr != computePipelineState)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *computePipelineState)
 
 			// Set compute pipeline state
@@ -11306,7 +11306,7 @@ namespace Direct3D12Renderer
 	//[-------------------------------------------------------]
 	void Direct3D12Renderer::resetQueryPool([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t firstQueryIndex, [[maybe_unused]] uint32_t numberOfQueries)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity check
 		DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// TODO(co) Implement me
@@ -11314,7 +11314,7 @@ namespace Direct3D12Renderer
 
 	void Direct3D12Renderer::beginQuery([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t queryIndex, [[maybe_unused]] uint32_t queryControlFlags)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity check
 		DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// TODO(co) Implement me
@@ -11322,7 +11322,7 @@ namespace Direct3D12Renderer
 
 	void Direct3D12Renderer::endQuery([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t queryIndex)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity check
 		DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// TODO(co) Implement me
@@ -11330,7 +11330,7 @@ namespace Direct3D12Renderer
 
 	void Direct3D12Renderer::writeTimestampQuery([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t queryIndex)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity check
 		DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// TODO(co) Implement me

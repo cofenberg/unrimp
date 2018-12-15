@@ -8886,7 +8886,7 @@ namespace OpenGLES3Renderer
 		{
 			mGraphicsRootSignature->addReference();
 
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			OPENGLES3RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *rootSignature)
 		}
 	}
@@ -8897,7 +8897,7 @@ namespace OpenGLES3Renderer
 		{
 			if (nullptr != graphicsPipelineState)
 			{
-				// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+				// Sanity check
 				OPENGLES3RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *graphicsPipelineState)
 
 				// Set new graphics pipeline state and add a reference to it
@@ -8953,7 +8953,7 @@ namespace OpenGLES3Renderer
 
 		if (nullptr != resourceGroup)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			OPENGLES3RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *resourceGroup)
 
 			// Set graphics resource group
@@ -9136,7 +9136,7 @@ namespace OpenGLES3Renderer
 			// Set a vertex array?
 			if (nullptr != vertexArray)
 			{
-				// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+				// Sanity check
 				OPENGLES3RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *vertexArray)
 
 				// Release the vertex array reference, in case we have one
@@ -9229,7 +9229,7 @@ namespace OpenGLES3Renderer
 			// Set a render target?
 			if (nullptr != renderTarget)
 			{
-				// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+				// Sanity check
 				OPENGLES3RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *renderTarget)
 
 				// Release the render target reference, in case we have one
@@ -9563,7 +9563,7 @@ namespace OpenGLES3Renderer
 
 	void OpenGLES3Renderer::copyResource(Renderer::IResource& destinationResource, Renderer::IResource& sourceResource)
 	{
-		// Security check: Are the given resources owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity checks
 		OPENGLES3RENDERER_RENDERERMATCHCHECK_ASSERT(*this, destinationResource)
 		OPENGLES3RENDERER_RENDERERMATCHCHECK_ASSERT(*this, sourceResource)
 
@@ -9649,10 +9649,10 @@ namespace OpenGLES3Renderer
 
 	void OpenGLES3Renderer::generateMipmaps(Renderer::IResource& resource)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity checks
 		OPENGLES3RENDERER_RENDERERMATCHCHECK_ASSERT(*this, resource)
-
 		RENDERER_ASSERT(mContext, resource.getResourceType() == Renderer::ResourceType::TEXTURE_2D, "TODO(co) Mipmaps can only be generated for OpenGL ES 3 2D texture resources")
+
 		Texture2D& texture2D = static_cast<Texture2D&>(resource);
 
 		#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
@@ -9679,7 +9679,7 @@ namespace OpenGLES3Renderer
 	//[-------------------------------------------------------]
 	void OpenGLES3Renderer::resetQueryPool([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t firstQueryIndex, [[maybe_unused]] uint32_t numberOfQueries)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity check
 		OPENGLES3RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// TODO(co) Implement me
@@ -9688,7 +9688,7 @@ namespace OpenGLES3Renderer
 
 	void OpenGLES3Renderer::beginQuery([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t queryIndex, [[maybe_unused]] uint32_t queryControlFlags)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity check
 		OPENGLES3RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// TODO(co) Implement me
@@ -9697,7 +9697,7 @@ namespace OpenGLES3Renderer
 
 	void OpenGLES3Renderer::endQuery([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t queryIndex)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity check
 		OPENGLES3RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// TODO(co) Implement me
@@ -9706,7 +9706,7 @@ namespace OpenGLES3Renderer
 
 	void OpenGLES3Renderer::writeTimestampQuery([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t queryIndex)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity check
 		OPENGLES3RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// TODO(co) Implement me
@@ -10469,7 +10469,7 @@ namespace OpenGLES3Renderer
 	{
 		if (nullptr != graphicsProgram)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			OPENGLES3RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *graphicsProgram)
 
 			// Bind the graphics program, if required

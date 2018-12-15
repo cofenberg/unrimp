@@ -7367,7 +7367,7 @@ namespace Direct3D9Renderer
 		{
 			mGraphicsRootSignature->addReference();
 
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			DIRECT3D9RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *rootSignature)
 		}
 	}
@@ -7376,7 +7376,7 @@ namespace Direct3D9Renderer
 	{
 		if (nullptr != graphicsPipelineState)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			DIRECT3D9RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *graphicsPipelineState)
 
 			// Set graphics pipeline state
@@ -7422,7 +7422,7 @@ namespace Direct3D9Renderer
 
 		if (nullptr != resourceGroup)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			DIRECT3D9RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *resourceGroup)
 
 			// Set graphics resource group
@@ -7662,7 +7662,7 @@ namespace Direct3D9Renderer
 		// Input-assembler (IA) stage
 		if (nullptr != vertexArray)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			DIRECT3D9RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *vertexArray)
 
 			// Begin debug event
@@ -7741,7 +7741,7 @@ namespace Direct3D9Renderer
 			// Set a render target?
 			if (nullptr != renderTarget)
 			{
-				// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+				// Sanity check
 				DIRECT3D9RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *renderTarget)
 
 				// Release the render target reference, in case we have one
@@ -8182,7 +8182,7 @@ namespace Direct3D9Renderer
 	//[-------------------------------------------------------]
 	void Direct3D9Renderer::resetQueryPool([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t firstQueryIndex, [[maybe_unused]] uint32_t numberOfQueries)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity check
 		DIRECT3D9RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// TODO(co) Implement me
@@ -8191,7 +8191,7 @@ namespace Direct3D9Renderer
 
 	void Direct3D9Renderer::beginQuery([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t queryIndex, [[maybe_unused]] uint32_t queryControlFlags)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity check
 		DIRECT3D9RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// TODO(co) Implement me
@@ -8200,7 +8200,7 @@ namespace Direct3D9Renderer
 
 	void Direct3D9Renderer::endQuery([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t queryIndex)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity check
 		DIRECT3D9RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// TODO(co) Implement me
@@ -8209,7 +8209,7 @@ namespace Direct3D9Renderer
 
 	void Direct3D9Renderer::writeTimestampQuery([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t queryIndex)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity check
 		DIRECT3D9RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// TODO(co) Implement me
@@ -8841,7 +8841,7 @@ namespace Direct3D9Renderer
 
 		if (nullptr != graphicsProgram)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			DIRECT3D9RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *graphicsProgram)
 
 			// Get shaders

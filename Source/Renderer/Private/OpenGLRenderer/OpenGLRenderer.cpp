@@ -17958,7 +17958,7 @@ namespace OpenGLRenderer
 		{
 			mGraphicsRootSignature->addReference();
 
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *rootSignature)
 		}
 	}
@@ -17969,7 +17969,7 @@ namespace OpenGLRenderer
 		{
 			if (nullptr != graphicsPipelineState)
 			{
-				// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+				// Sanity check
 				OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *graphicsPipelineState)
 
 				// Set new graphics pipeline state and add a reference to it
@@ -18053,7 +18053,7 @@ namespace OpenGLRenderer
 			// Set a vertex array?
 			if (nullptr != vertexArray)
 			{
-				// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+				// Sanity check
 				OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *vertexArray)
 
 				// Unset the currently used vertex array
@@ -18150,7 +18150,7 @@ namespace OpenGLRenderer
 			// Set a render target?
 			if (nullptr != renderTarget)
 			{
-				// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+				// Sanity check
 				OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *renderTarget)
 
 				// Release the render target reference, in case we have one
@@ -18344,15 +18344,13 @@ namespace OpenGLRenderer
 
 	void OpenGLRenderer::drawGraphics(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
-		// Sanity check
+		// Sanity checks
+		OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
 		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of OpenGL draws must not be zero")
 		RENDERER_ASSERT(mContext, mExtensions->isGL_ARB_draw_indirect(), "The GL_ARB_draw_indirect OpenGL extension isn't supported")
 		// It's possible to draw without "mVertexArray"
 
 		// Tessellation support: "glPatchParameteri()" is called within "OpenGLRenderer::iaSetPrimitiveTopology()"
-
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
-		OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
 
 		{ // Bind indirect buffer
 			const GLuint openGLIndirectBuffer = static_cast<const IndirectBuffer&>(indirectBuffer).getOpenGLIndirectBuffer();
@@ -18446,15 +18444,13 @@ namespace OpenGLRenderer
 	void OpenGLRenderer::drawIndexedGraphics(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
 		// Sanity checks
+		OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
 		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of OpenGL draws must not be zero")
 		RENDERER_ASSERT(mContext, nullptr != mVertexArray, "OpenGL draw indexed needs a set vertex array")
 		RENDERER_ASSERT(mContext, nullptr != mVertexArray->getIndexBuffer(), "OpenGL draw indexed needs a set vertex array which contains an index buffer")
 		RENDERER_ASSERT(mContext, mExtensions->isGL_ARB_draw_indirect(), "The GL_ARB_draw_indirect OpenGL extension isn't supported")
 
 		// Tessellation support: "glPatchParameteri()" is called within "OpenGLRenderer::iaSetPrimitiveTopology()"
-
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
-		OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
 
 		{ // Bind indirect buffer
 			const GLuint openGLIndirectBuffer = static_cast<const IndirectBuffer&>(indirectBuffer).getOpenGLIndirectBuffer();
@@ -18606,7 +18602,7 @@ namespace OpenGLRenderer
 		{
 			mComputeRootSignature->addReference();
 
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *rootSignature)
 		}
 	}
@@ -18617,7 +18613,7 @@ namespace OpenGLRenderer
 		{
 			if (nullptr != computePipelineState)
 			{
-				// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+				// Sanity check
 				OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *computePipelineState)
 
 				// Set new compute pipeline state and add a reference to it
@@ -18701,7 +18697,7 @@ namespace OpenGLRenderer
 	//[-------------------------------------------------------]
 	void OpenGLRenderer::resolveMultisampleFramebuffer(Renderer::IRenderTarget& destinationRenderTarget, Renderer::IFramebuffer& sourceMultisampleFramebuffer)
 	{
-		// Security check: Are the given resources owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity checks
 		OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, destinationRenderTarget)
 		OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, sourceMultisampleFramebuffer)
 
@@ -18774,7 +18770,7 @@ namespace OpenGLRenderer
 
 	void OpenGLRenderer::copyResource(Renderer::IResource& destinationResource, Renderer::IResource& sourceResource)
 	{
-		// Security check: Are the given resources owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity checks
 		OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, destinationResource)
 		OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, sourceResource)
 
@@ -18870,10 +18866,10 @@ namespace OpenGLRenderer
 
 	void OpenGLRenderer::generateMipmaps(Renderer::IResource& resource)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity checks
 		OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, resource)
-
 		RENDERER_ASSERT(mContext, resource.getResourceType() == Renderer::ResourceType::TEXTURE_2D, "TODO(co) Mipmaps can only be generated for OpenGL 2D texture resources")
+
 		Texture2D& texture2D = static_cast<Texture2D&>(resource);
 
 		// Is "GL_EXT_direct_state_access" there?
@@ -18916,17 +18912,17 @@ namespace OpenGLRenderer
 	//[-------------------------------------------------------]
 	void OpenGLRenderer::resetQueryPool([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t firstQueryIndex, [[maybe_unused]] uint32_t numberOfQueries)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity checks
 		OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
+		RENDERER_ASSERT(mContext, firstQueryIndex < static_cast<QueryPool&>(queryPool).getNumberOfQueries(), "OpenGL out-of-bounds query index")
+		RENDERER_ASSERT(mContext, (firstQueryIndex + numberOfQueries) <= static_cast<QueryPool&>(queryPool).getNumberOfQueries(), "OpenGL out-of-bounds query index")
 
 		// Nothing to do in here for OpenGL
-
-		// TODO(co) Sanity checks
 	}
 
 	void OpenGLRenderer::beginQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex, uint32_t)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity check
 		OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// Query pool type dependent processing
@@ -18952,7 +18948,7 @@ namespace OpenGLRenderer
 
 	void OpenGLRenderer::endQuery(Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t queryIndex)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity check
 		OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// Query pool type dependent processing
@@ -18978,7 +18974,7 @@ namespace OpenGLRenderer
 
 	void OpenGLRenderer::writeTimestampQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity check
 		OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// Query pool type dependent processing
@@ -20024,7 +20020,7 @@ namespace OpenGLRenderer
 	{
 		if (nullptr != resourceGroup)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *resourceGroup)
 
 			// Set resource group
@@ -20534,7 +20530,7 @@ namespace OpenGLRenderer
 	{
 		if (nullptr != graphicsProgram)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *graphicsProgram)
 
 			// Prefer "GL_ARB_separate_shader_objects" over "GL_ARB_shader_objects"
@@ -20608,7 +20604,7 @@ namespace OpenGLRenderer
 	{
 		if (nullptr != computePipelineState)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *computePipelineState)
 
 			// Prefer "GL_ARB_separate_shader_objects" over "GL_ARB_shader_objects"

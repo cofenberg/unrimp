@@ -8985,7 +8985,7 @@ namespace Direct3D10Renderer
 		{
 			mGraphicsRootSignature->addReference();
 
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			DIRECT3D10RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *rootSignature)
 		}
 	}
@@ -8994,7 +8994,7 @@ namespace Direct3D10Renderer
 	{
 		if (nullptr != graphicsPipelineState)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			DIRECT3D10RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *graphicsPipelineState)
 
 			// Set primitive topology
@@ -9047,7 +9047,7 @@ namespace Direct3D10Renderer
 
 		if (nullptr != resourceGroup)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			DIRECT3D10RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *resourceGroup)
 
 			// Set graphics resource group
@@ -9293,7 +9293,7 @@ namespace Direct3D10Renderer
 		// Input-assembler (IA) stage
 		if (nullptr != vertexArray)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			DIRECT3D10RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *vertexArray)
 
 			// Begin debug event
@@ -9364,7 +9364,7 @@ namespace Direct3D10Renderer
 			// Set a render target?
 			if (nullptr != renderTarget)
 			{
-				// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+				// Sanity check
 				DIRECT3D10RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *renderTarget)
 
 				// Release the render target reference, in case we have one
@@ -9678,7 +9678,7 @@ namespace Direct3D10Renderer
 	//[-------------------------------------------------------]
 	void Direct3D10Renderer::resolveMultisampleFramebuffer(Renderer::IRenderTarget& destinationRenderTarget, Renderer::IFramebuffer& sourceMultisampleFramebuffer)
 	{
-		// Security check: Are the given resources owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity checks
 		DIRECT3D10RENDERER_RENDERERMATCHCHECK_ASSERT(*this, destinationRenderTarget)
 		DIRECT3D10RENDERER_RENDERERMATCHCHECK_ASSERT(*this, sourceMultisampleFramebuffer)
 
@@ -9762,7 +9762,7 @@ namespace Direct3D10Renderer
 
 	void Direct3D10Renderer::copyResource(Renderer::IResource& destinationResource, Renderer::IResource& sourceResource)
 	{
-		// Security check: Are the given resources owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity checks
 		DIRECT3D10RENDERER_RENDERERMATCHCHECK_ASSERT(*this, destinationResource)
 		DIRECT3D10RENDERER_RENDERERMATCHCHECK_ASSERT(*this, sourceResource)
 
@@ -9821,10 +9821,11 @@ namespace Direct3D10Renderer
 
 	void Direct3D10Renderer::generateMipmaps(Renderer::IResource& resource)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity checks
 		DIRECT3D10RENDERER_RENDERERMATCHCHECK_ASSERT(*this, resource)
-
 		RENDERER_ASSERT(mContext, resource.getResourceType() == Renderer::ResourceType::TEXTURE_2D, "TODO(co) Mipmaps can only be generated for Direct3D 10 2D texture resources")
+
+		// Generate mipmaps
 		Texture2D& texture2D = static_cast<Texture2D&>(resource);
 		mD3D10Device->GenerateMips(texture2D.getD3D10ShaderResourceView());
 	}
@@ -9835,7 +9836,7 @@ namespace Direct3D10Renderer
 	//[-------------------------------------------------------]
 	void Direct3D10Renderer::resetQueryPool([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t firstQueryIndex, [[maybe_unused]] uint32_t numberOfQueries)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity check
 		DIRECT3D10RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// TODO(co) Implement me
@@ -9844,7 +9845,7 @@ namespace Direct3D10Renderer
 
 	void Direct3D10Renderer::beginQuery([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t queryIndex, [[maybe_unused]] uint32_t queryControlFlags)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity check
 		DIRECT3D10RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// TODO(co) Implement me
@@ -9853,7 +9854,7 @@ namespace Direct3D10Renderer
 
 	void Direct3D10Renderer::endQuery([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t queryIndex)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity check
 		DIRECT3D10RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// TODO(co) Implement me
@@ -9862,7 +9863,7 @@ namespace Direct3D10Renderer
 
 	void Direct3D10Renderer::writeTimestampQuery([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t queryIndex)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity check
 		DIRECT3D10RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// TODO(co) Implement me
@@ -10480,7 +10481,7 @@ namespace Direct3D10Renderer
 
 		if (nullptr != graphicsProgram)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			DIRECT3D10RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *graphicsProgram)
 
 			// Get shaders

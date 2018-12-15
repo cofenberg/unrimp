@@ -3137,7 +3137,7 @@ namespace NullRenderer
 		{
 			mGraphicsRootSignature->addReference();
 
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			NULLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *rootSignature)
 		}
 	}
@@ -3146,7 +3146,7 @@ namespace NullRenderer
 	{
 		if (nullptr != graphicsPipelineState)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			NULLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *graphicsPipelineState)
 		}
 		else
@@ -3187,7 +3187,7 @@ namespace NullRenderer
 
 		if (nullptr != resourceGroup)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			NULLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *resourceGroup)
 
 			// TODO(co) Some additional resource type root signature security checks in debug build?
@@ -3205,7 +3205,7 @@ namespace NullRenderer
 		// Nothing here, the following is just for debugging
 		if (nullptr != vertexArray)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			NULLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *vertexArray)
 		}
 	}
@@ -3236,7 +3236,7 @@ namespace NullRenderer
 			// Set a render target?
 			if (nullptr != renderTarget)
 			{
-				// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+				// Sanity check
 				NULLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *renderTarget)
 
 				// Release the render target reference, in case we have one
@@ -3297,7 +3297,7 @@ namespace NullRenderer
 		{
 			mComputeRootSignature->addReference();
 
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			NULLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *rootSignature)
 		}
 	}
@@ -3306,7 +3306,7 @@ namespace NullRenderer
 	{
 		if (nullptr != computePipelineState)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			NULLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *computePipelineState)
 		}
 		else
@@ -3347,7 +3347,7 @@ namespace NullRenderer
 
 		if (nullptr != resourceGroup)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			NULLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *resourceGroup)
 
 			// TODO(co) Some additional resource type root signature security checks in debug build?

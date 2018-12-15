@@ -11688,7 +11688,7 @@ namespace Direct3D11Renderer
 		{
 			mGraphicsRootSignature->addReference();
 
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *rootSignature)
 		}
 	}
@@ -11697,7 +11697,7 @@ namespace Direct3D11Renderer
 	{
 		if (nullptr != graphicsPipelineState)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *graphicsPipelineState)
 
 			// Set primitive topology
@@ -11750,7 +11750,7 @@ namespace Direct3D11Renderer
 
 		if (nullptr != resourceGroup)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *resourceGroup)
 
 			// Set graphics resource group
@@ -12020,7 +12020,7 @@ namespace Direct3D11Renderer
 		// Input-assembler (IA) stage
 		if (nullptr != vertexArray)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *vertexArray)
 
 			// Begin debug event
@@ -12076,7 +12076,7 @@ namespace Direct3D11Renderer
 			// Set a render target?
 			if (nullptr != renderTarget)
 			{
-				// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+				// Sanity check
 				DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *renderTarget)
 
 				// Release the render target reference, in case we have one
@@ -12282,11 +12282,9 @@ namespace Direct3D11Renderer
 
 	void Direct3D11Renderer::drawGraphics(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
-		// Sanity check
-		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of Direct3D 11 draws must not be zero")
-
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity checks
 		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
+		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of Direct3D 11 draws must not be zero")
 
 		// Draw indirect
 		ID3D11Buffer* d3D11Buffer = static_cast<const IndirectBuffer&>(indirectBuffer).getD3D11Buffer();
@@ -12313,12 +12311,10 @@ namespace Direct3D11Renderer
 
 	void Direct3D11Renderer::drawGraphicsAgs(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
-		// Sanity check
+		// Sanity checks
+		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
 		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of Direct3D 11 draws must not be zero")
 		RENDERER_ASSERT(mContext, nullptr != agsDriverExtensionsDX11_MultiDrawInstancedIndirect, "Direct3D 11: AMD AGS function \"agsDriverExtensionsDX11_MultiDrawInstancedIndirect()\" not found")
-
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
-		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
 
 		// Draw indirect
 		ID3D11Buffer* d3D11Buffer = static_cast<const IndirectBuffer&>(indirectBuffer).getD3D11Buffer();
@@ -12335,12 +12331,10 @@ namespace Direct3D11Renderer
 
 	void Direct3D11Renderer::drawGraphicsNvApi(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
-		// Sanity check
+		// Sanity checks
+		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
 		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of Direct3D 11 draws must not be zero")
 		RENDERER_ASSERT(mContext, nullptr != NvAPI_D3D11_MultiDrawInstancedIndirect, "Direct3D 11: NvAPI function \"NvAPI_D3D11_MultiDrawInstancedIndirect()\" not found")
-
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
-		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
 
 		// Draw indirect
 		ID3D11Buffer* d3D11Buffer = static_cast<const IndirectBuffer&>(indirectBuffer).getD3D11Buffer();
@@ -12409,10 +12403,8 @@ namespace Direct3D11Renderer
 	void Direct3D11Renderer::drawIndexedGraphics(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
 		// Sanity checks
-		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of Direct3D 11 draws must not be zero")
-
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
 		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
+		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of Direct3D 11 draws must not be zero")
 
 		// Draw indirect
 		ID3D11Buffer* d3D11Buffer = static_cast<const IndirectBuffer&>(indirectBuffer).getD3D11Buffer();
@@ -12440,11 +12432,9 @@ namespace Direct3D11Renderer
 	void Direct3D11Renderer::drawIndexedGraphicsAgs(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
 		// Sanity checks
+		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
 		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of Direct3D 11 draws must not be zero")
 		RENDERER_ASSERT(mContext, nullptr != agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect, "Direct3D 11: NvAPI function \"agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect()\" not found")
-
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
-		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
 
 		// Draw indirect
 		ID3D11Buffer* d3D11Buffer = static_cast<const IndirectBuffer&>(indirectBuffer).getD3D11Buffer();
@@ -12462,11 +12452,9 @@ namespace Direct3D11Renderer
 	void Direct3D11Renderer::drawIndexedGraphicsNvApi(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
 		// Sanity checks
+		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
 		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of Direct3D 11 draws must not be zero")
 		RENDERER_ASSERT(mContext, nullptr != NvAPI_D3D11_MultiDrawIndexedInstancedIndirect, "Direct3D 11: NvAPI function \"NvAPI_D3D11_MultiDrawIndexedInstancedIndirect()\" not found")
-
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
-		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
 
 		// Draw indirect
 		ID3D11Buffer* d3D11Buffer = static_cast<const IndirectBuffer&>(indirectBuffer).getD3D11Buffer();
@@ -12549,7 +12537,7 @@ namespace Direct3D11Renderer
 		{
 			mComputeRootSignature->addReference();
 
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *rootSignature)
 		}
 	}
@@ -12558,7 +12546,7 @@ namespace Direct3D11Renderer
 	{
 		if (nullptr != computePipelineState)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *computePipelineState)
 
 			// Set compute pipeline state
@@ -12607,7 +12595,7 @@ namespace Direct3D11Renderer
 
 		if (nullptr != resourceGroup)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *resourceGroup)
 
 			// Set compute resource group
@@ -13002,7 +12990,7 @@ namespace Direct3D11Renderer
 	//[-------------------------------------------------------]
 	void Direct3D11Renderer::resolveMultisampleFramebuffer(Renderer::IRenderTarget& destinationRenderTarget, Renderer::IFramebuffer& sourceMultisampleFramebuffer)
 	{
-		// Security check: Are the given resources owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity checks
 		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, destinationRenderTarget)
 		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, sourceMultisampleFramebuffer)
 
@@ -13086,7 +13074,7 @@ namespace Direct3D11Renderer
 
 	void Direct3D11Renderer::copyResource(Renderer::IResource& destinationResource, Renderer::IResource& sourceResource)
 	{
-		// Security check: Are the given resources owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity checks
 		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, destinationResource)
 		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, sourceResource)
 
@@ -13145,10 +13133,11 @@ namespace Direct3D11Renderer
 
 	void Direct3D11Renderer::generateMipmaps(Renderer::IResource& resource)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity checks
 		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, resource)
-
 		RENDERER_ASSERT(mContext, resource.getResourceType() == Renderer::ResourceType::TEXTURE_2D, "TODO(co) Mipmaps can only be generated for Direct3D 11 2D texture resources")
+
+		// Generate mipmaps
 		Texture2D& texture2D = static_cast<Texture2D&>(resource);
 		mD3D11DeviceContext->GenerateMips(texture2D.getD3D11ShaderResourceView());
 	}
@@ -13159,17 +13148,17 @@ namespace Direct3D11Renderer
 	//[-------------------------------------------------------]
 	void Direct3D11Renderer::resetQueryPool([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t firstQueryIndex, [[maybe_unused]] uint32_t numberOfQueries)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity checks
 		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
+		RENDERER_ASSERT(mContext, firstQueryIndex < static_cast<QueryPool&>(queryPool).getNumberOfQueries(), "Direct3D 11 out-of-bounds query index")
+		RENDERER_ASSERT(mContext, (firstQueryIndex + numberOfQueries) <= static_cast<QueryPool&>(queryPool).getNumberOfQueries(), "Direct3D 11 out-of-bounds query index")
 
 		// Nothing to do in here for Direct3D 11
-
-		// TODO(co) Sanity checks
 	}
 
 	void Direct3D11Renderer::beginQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex, uint32_t)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity check
 		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// Query pool type dependent processing
@@ -13190,7 +13179,7 @@ namespace Direct3D11Renderer
 
 	void Direct3D11Renderer::endQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity check
 		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// Query pool type dependent processing
@@ -13211,7 +13200,7 @@ namespace Direct3D11Renderer
 
 	void Direct3D11Renderer::writeTimestampQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity check
 		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// Query pool type dependent processing
@@ -13575,10 +13564,8 @@ namespace Direct3D11Renderer
 
 	bool Direct3D11Renderer::getQueryPoolResults(Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t numberOfDataBytes, uint8_t* data, uint32_t firstQueryIndex, uint32_t numberOfQueries, uint32_t strideInBytes, uint32_t queryResultFlags)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
-		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
-
 		// Sanity checks
+		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 		RENDERER_ASSERT(mContext, numberOfDataBytes >= sizeof(UINT64), "Direct3D 11 out-of-memory query access")
 		RENDERER_ASSERT(mContext, 1 == numberOfQueries || strideInBytes > 0, "Direct3D 11 invalid stride in bytes")
 		RENDERER_ASSERT(mContext, numberOfDataBytes >= strideInBytes * numberOfQueries, "Direct3D 11 out-of-memory query access")
@@ -14035,7 +14022,7 @@ namespace Direct3D11Renderer
 
 		if (nullptr != graphicsProgram)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *graphicsProgram)
 
 			// Get shaders

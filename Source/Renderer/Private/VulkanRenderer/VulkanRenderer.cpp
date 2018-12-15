@@ -10610,7 +10610,7 @@ namespace VulkanRenderer
 		{
 			mGraphicsRootSignature->addReference();
 
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *rootSignature)
 		}
 	}
@@ -10619,7 +10619,7 @@ namespace VulkanRenderer
 	{
 		if (nullptr != graphicsPipelineState)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *graphicsPipelineState)
 
 			// Bind Vulkan graphics pipeline
@@ -10663,7 +10663,7 @@ namespace VulkanRenderer
 
 		if (nullptr != resourceGroup)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *resourceGroup)
 
 			// Bind Vulkan descriptor set
@@ -10689,7 +10689,7 @@ namespace VulkanRenderer
 			// Set a vertex array?
 			if (nullptr != vertexArray)
 			{
-				// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+				// Sanity check
 				VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *vertexArray)
 
 				// Unset the currently used vertex array
@@ -10775,7 +10775,7 @@ namespace VulkanRenderer
 			// Set a render target?
 			if (nullptr != renderTarget)
 			{
-				// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+				// Sanity check
 				VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *renderTarget)
 
 				// Set new render target and add a reference to it
@@ -10821,12 +10821,10 @@ namespace VulkanRenderer
 
 	void VulkanRenderer::drawGraphics(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
-		// Sanity check
+		// Sanity checks
+		VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
 		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of Vulkan draws must not be zero")
 		// It's possible to draw without "mVertexArray"
-
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
-		VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
 
 		// Start Vulkan render pass, if necessary
 		if (!mInsideVulkanRenderPass)
@@ -10880,12 +10878,10 @@ namespace VulkanRenderer
 	void VulkanRenderer::drawIndexedGraphics(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
 		// Sanity checks
+		VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
 		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of Vulkan draws must not be zero")
 		RENDERER_ASSERT(mContext, nullptr != mVertexArray, "Vulkan draw indexed needs a set vertex array")
 		RENDERER_ASSERT(mContext, nullptr != mVertexArray->getIndexBuffer(), "Vulkan draw indexed needs a set vertex array which contains an index buffer")
-
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
-		VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
 
 		// Start Vulkan render pass, if necessary
 		if (!mInsideVulkanRenderPass)
@@ -10952,7 +10948,7 @@ namespace VulkanRenderer
 		{
 			mComputeRootSignature->addReference();
 
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *rootSignature)
 		}
 	}
@@ -10961,7 +10957,7 @@ namespace VulkanRenderer
 	{
 		if (nullptr != computePipelineState)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *computePipelineState)
 
 			// Bind Vulkan compute pipeline
@@ -11005,7 +11001,7 @@ namespace VulkanRenderer
 
 		if (nullptr != resourceGroup)
 		{
-			// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+			// Sanity check
 			VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, *resourceGroup)
 
 			// Bind Vulkan descriptor set
@@ -11046,7 +11042,7 @@ namespace VulkanRenderer
 	//[-------------------------------------------------------]
 	void VulkanRenderer::resetQueryPool(Renderer::IQueryPool& queryPool, uint32_t firstQueryIndex, uint32_t numberOfQueries)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity check
 		VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// Reset Vulkan query pool
@@ -11055,7 +11051,7 @@ namespace VulkanRenderer
 
 	void VulkanRenderer::beginQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex, uint32_t queryControlFlags)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity check
 		VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// Begin Vulkan query
@@ -11064,7 +11060,7 @@ namespace VulkanRenderer
 
 	void VulkanRenderer::endQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity check
 		VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// End Vulkan query
@@ -11073,7 +11069,7 @@ namespace VulkanRenderer
 
 	void VulkanRenderer::writeTimestampQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex)
 	{
-		// Security check: Is the given resource owned by this renderer? (calls "return" in case of a mismatch)
+		// Sanity check
 		VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// Write Vulkan timestamp query
