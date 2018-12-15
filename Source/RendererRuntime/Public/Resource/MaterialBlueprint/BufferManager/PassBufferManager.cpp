@@ -79,8 +79,8 @@ namespace RendererRuntime
 		// Even if there's no pass uniform buffer, there must still be a pass buffer manager filling "RendererRuntime::PassBufferManager::PassData" which is used to fill the instances texture buffer
 
 		// Sanity checks: The render target to render into must be valid for graphics pipeline and must be a null pointer for compute pipeline
-		assert((isValid(mMaterialBlueprintResource.getComputeShaderBlueprintResourceId()) || nullptr != renderTarget) && "Graphics pipeline used but render target is invalid");
-		assert((isInvalid(mMaterialBlueprintResource.getComputeShaderBlueprintResourceId()) || nullptr == renderTarget) && "Compute pipeline used but render target is valid");
+		RENDERER_ASSERT(mRendererRuntime.getContext(), isValid(mMaterialBlueprintResource.getComputeShaderBlueprintResourceId()) || nullptr != renderTarget, "Graphics pipeline used but render target is invalid")
+		RENDERER_ASSERT(mRendererRuntime.getContext(), isInvalid(mMaterialBlueprintResource.getComputeShaderBlueprintResourceId()) || nullptr == renderTarget, "Compute pipeline used but render target is valid")
 
 		// Tell the material blueprint resource listener that we're about to fill a pass uniform buffer
 		IMaterialBlueprintResourceListener& materialBlueprintResourceListener = mMaterialBlueprintResourceManager.getMaterialBlueprintResourceListener();
@@ -119,8 +119,8 @@ namespace RendererRuntime
 					{
 						if (!materialBlueprintResourceListener.fillPassValue(uniformBufferElementProperty.getReferenceValue(), scratchBufferPointer, valueTypeNumberOfBytes))
 						{
-							// Error, can't resolve reference
-							assert(false);	// RendererRuntime::PassBufferManager::fillBuffer(): Material blueprint resource listener failed to fill pass uniform buffer element " << i
+							// Error!
+							RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Can't resolve reference")
 						}
 					}
 					else if (MaterialProperty::Usage::GLOBAL_REFERENCE == usage)
@@ -143,8 +143,8 @@ namespace RendererRuntime
 							}
 							else
 							{
-								// Error, can't resolve reference
-								assert(false);	// RendererRuntime::PassBufferManager::fillBuffer(): Failed to fill pass uniform buffer element " << i << " by using unknown global material property
+								// Error!
+								RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Can't resolve reference")
 							}
 						}
 					}
@@ -159,8 +159,8 @@ namespace RendererRuntime
 						}
 						else if (!materialBlueprintResourceListener.fillMaterialValue(uniformBufferElementProperty.getReferenceValue(), scratchBufferPointer, valueTypeNumberOfBytes))
 						{
-							// Error, can't resolve reference
-							assert(false);	// RendererRuntime::PassBufferManager::uploadToConstBuffer(): Failed to resolve material property value reference
+							// Error!
+							RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Can't resolve reference")
 						}
 					}
 					else if (!uniformBufferElementProperty.isReferenceUsage())
@@ -170,8 +170,8 @@ namespace RendererRuntime
 					}
 					else
 					{
-						// Error, invalid property
-						assert(false);	// RendererRuntime::PassBufferManager::fillBuffer(): Failed to fill pass uniform buffer element " << i << " due to unsupported element property usage
+						// Error!
+						RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Invalid property")
 					}
 
 					// Next property

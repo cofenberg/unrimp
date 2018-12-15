@@ -27,6 +27,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
+#include "RendererRuntime/Public/Context.h"
 #include "RendererRuntime/Public/Resource/IResource.h"
 #include "RendererRuntime/Public/Resource/Material/MaterialProperties.h"
 
@@ -100,6 +101,8 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
+		RENDERERRUNTIME_API_EXPORT [[nodiscard]] Context& getContext() const;
+
 		/**
 		*  @brief
 		*    Return the parent material resource ID
@@ -257,10 +260,10 @@ namespace RendererRuntime
 		inline void initializeElement(MaterialResourceId materialResourceId)
 		{
 			// Sanity checks
-			assert(isInvalid(mParentMaterialResourceId));
-			assert(mSortedChildMaterialResourceIds.empty());
-			assert(mSortedMaterialTechniqueVector.empty());
-			assert(mMaterialProperties.getSortedPropertyVector().empty());
+			RENDERER_ASSERT(getContext(), isInvalid(mParentMaterialResourceId), "Invalid parent material resource ID")
+			RENDERER_ASSERT(getContext(), mSortedChildMaterialResourceIds.empty(), "Invalid sorted child material resource IDs")
+			RENDERER_ASSERT(getContext(), mSortedMaterialTechniqueVector.empty(), "Invalid sorted material technique vector")
+			RENDERER_ASSERT(getContext(), mMaterialProperties.getSortedPropertyVector().empty(), "Invalid material properties")
 
 			// Call base implementation
 			IResource::initializeElement(materialResourceId);

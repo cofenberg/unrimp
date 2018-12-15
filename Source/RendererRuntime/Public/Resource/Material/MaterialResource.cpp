@@ -80,6 +80,11 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
+	Context& MaterialResource::getContext() const
+	{
+		return getResourceManager<MaterialResourceManager>().getRendererRuntime().getContext();
+	}
+
 	void MaterialResource::setParentMaterialResourceId(MaterialResourceId parentMaterialResourceId)
 	{
 		if (mParentMaterialResourceId != parentMaterialResourceId)
@@ -95,7 +100,7 @@ namespace RendererRuntime
 			{
 				MaterialResource& parentMaterialResource = materialResourceManager.getById(mParentMaterialResourceId);
 				SortedChildMaterialResourceIds::const_iterator iterator = std::lower_bound(parentMaterialResource.mSortedChildMaterialResourceIds.cbegin(), parentMaterialResource.mSortedChildMaterialResourceIds.cend(), materialResourceId, ::detail::OrderByMaterialResourceId());
-				assert(iterator != parentMaterialResource.mSortedChildMaterialResourceIds.end() && *iterator == materialResourceId);
+				RENDERER_ASSERT(getContext(), iterator != parentMaterialResource.mSortedChildMaterialResourceIds.end() && *iterator == materialResourceId, "Invalid material resource ID")
 				parentMaterialResource.mSortedChildMaterialResourceIds.erase(iterator);
 			}
 
@@ -105,9 +110,9 @@ namespace RendererRuntime
 			{
 				// Register to new parent material resource
 				MaterialResource& parentMaterialResource = materialResourceManager.getById(mParentMaterialResourceId);
-				assert(parentMaterialResource.getLoadingState() == IResource::LoadingState::LOADED);
+				RENDERER_ASSERT(getContext(), parentMaterialResource.getLoadingState() == IResource::LoadingState::LOADED, "Invalid parent material resource loading state")
 				SortedChildMaterialResourceIds::const_iterator iterator = std::lower_bound(parentMaterialResource.mSortedChildMaterialResourceIds.cbegin(), parentMaterialResource.mSortedChildMaterialResourceIds.cend(), materialResourceId, ::detail::OrderByMaterialResourceId());
-				assert(iterator == parentMaterialResource.mSortedChildMaterialResourceIds.end() || *iterator != materialResourceId);
+				RENDERER_ASSERT(getContext(), iterator == parentMaterialResource.mSortedChildMaterialResourceIds.end() || *iterator != materialResourceId, "Invalid material resource ID")
 				parentMaterialResource.mSortedChildMaterialResourceIds.insert(iterator, materialResourceId);
 
 				// Setup material resource
@@ -157,11 +162,11 @@ namespace RendererRuntime
 	MaterialResource::~MaterialResource()
 	{
 		// Sanity checks
-		assert(isInvalid(mParentMaterialResourceId));
-		assert(mSortedChildMaterialResourceIds.empty());
-		assert(mSortedMaterialTechniqueVector.empty());
-		assert(mMaterialProperties.getSortedPropertyVector().empty());
-		assert(mAttachedRenderables.empty());
+		RENDERER_ASSERT(getContext(), isInvalid(mParentMaterialResourceId), "Invalid parent material resource ID")
+		RENDERER_ASSERT(getContext(), mSortedChildMaterialResourceIds.empty(), "Invalid sorted child material resource IDs")
+		RENDERER_ASSERT(getContext(), mSortedMaterialTechniqueVector.empty(), "Invalid sorted material technique vector")
+		RENDERER_ASSERT(getContext(), mMaterialProperties.getSortedPropertyVector().empty(), "Invalid material properties")
+		RENDERER_ASSERT(getContext(), mAttachedRenderables.empty(), "Invalid attached renderables")
 
 		// Avoid crash in case of failed sanity check
 		while (!mAttachedRenderables.empty())
@@ -190,7 +195,7 @@ namespace RendererRuntime
 	void MaterialResource::deinitializeElement()
 	{
 		// Sanity check
-		assert(mAttachedRenderables.empty());
+		RENDERER_ASSERT(getContext(), mAttachedRenderables.empty(), "Invalid attached renderables")
 
 		// Avoid crash in case of failed sanity check
 		while (!mAttachedRenderables.empty())
@@ -267,8 +272,8 @@ namespace RendererRuntime
 						const int renderQueueIndex = materialProperty->getIntegerValue();
 
 						// Sanity checks
-						assert(renderQueueIndex >= 0);
-						assert(renderQueueIndex <= 255);
+						RENDERER_ASSERT(getContext(), renderQueueIndex >= 0, "Invalid render queue index")
+						RENDERER_ASSERT(getContext(), renderQueueIndex <= 255, "Invalid render queue index")
 
 						// Update the cached material data of all attached renderables
 						for (Renderable* renderable : mAttachedRenderables)

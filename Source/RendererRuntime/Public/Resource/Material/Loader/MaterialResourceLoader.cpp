@@ -105,7 +105,7 @@ namespace RendererRuntime
 			for (size_t i = 0; i < mNumberOfTechniques; ++i, ++v1MaterialTechnique)
 			{
 				materialBlueprintResourceManager.loadMaterialBlueprintResourceByAssetId(v1MaterialTechnique->materialBlueprintAssetId, mMaterialBlueprintResourceIds[i]);
-				assert(isValid(mMaterialBlueprintResourceIds[i]));
+				RENDERER_ASSERT(mRendererRuntime.getContext(), isValid(mMaterialBlueprintResourceIds[i]), "Invalid material blueprint resource ID")
 			}
 		}
 

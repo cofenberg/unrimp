@@ -85,8 +85,8 @@ namespace RendererRuntime
 	void TextureInstanceBufferManager::startupBufferFilling(const MaterialBlueprintResource& materialBlueprintResource, Renderer::CommandBuffer& commandBuffer)
 	{
 		// Sanity checks
-		assert(nullptr != mCurrentInstanceBuffer);
-		assert(isInvalid(materialBlueprintResource.getComputeShaderBlueprintResourceId()));
+		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mCurrentInstanceBuffer, "Invalid current instance buffer")
+		RENDERER_ASSERT(mRendererRuntime.getContext(), isInvalid(materialBlueprintResource.getComputeShaderBlueprintResourceId()), "Invalid compute shader blueprint resource ID")
 
 		// Map the current instance buffer
 		mapCurrentInstanceBuffer();
@@ -97,8 +97,8 @@ namespace RendererRuntime
 		if (nullptr != instanceUniformBuffer)
 		{
 			// Sanity checks
-			assert(nullptr != instanceTextureBuffer);
-			assert(instanceUniformBuffer->rootParameterIndex == instanceTextureBuffer->rootParameterIndex);
+			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != instanceTextureBuffer, "Invalid instance texture buffer")
+			RENDERER_ASSERT(mRendererRuntime.getContext(), instanceUniformBuffer->rootParameterIndex == instanceTextureBuffer->rootParameterIndex, "Invalid root parameter index")
 
 			// Create resource group, if needed
 			if (nullptr == mCurrentInstanceBuffer->resourceGroup)
@@ -117,13 +117,13 @@ namespace RendererRuntime
 	uint32_t TextureInstanceBufferManager::fillBuffer(const glm::dvec3& worldSpaceCameraPosition, const MaterialBlueprintResource& materialBlueprintResource, PassBufferManager* passBufferManager, const MaterialBlueprintResource::UniformBuffer& instanceUniformBuffer, const Renderable& renderable, MaterialTechnique& materialTechnique, Renderer::CommandBuffer& commandBuffer)
 	{
 		// Sanity checks
-		assert(nullptr != mCurrentInstanceBuffer);
-		assert(nullptr != mStartUniformBufferPointer);
-		assert(nullptr != mCurrentUniformBufferPointer);
-		assert(nullptr != mStartTextureBufferPointer);
-		assert(nullptr != mCurrentTextureBufferPointer);
-		// assert(0 == mStartInstanceLocation); -> Not done by intent
-		assert((MaterialBlueprintResource::BufferUsage::INSTANCE == instanceUniformBuffer.bufferUsage) && "Currently only the uniform buffer instance buffer usage is supported");
+		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mCurrentInstanceBuffer, "Invalid current instance buffer")
+		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mStartUniformBufferPointer, "Invalid start uniform buffer pointer")
+		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mCurrentUniformBufferPointer, "Invalid current uniform buffer pointer")
+		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mStartTextureBufferPointer, "Invalid start texture buffer pointer")
+		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mCurrentTextureBufferPointer, "Invalid current texture buffer pointer")
+		// RENDERER_ASSERT(mRendererRuntime.getContext(), 0 == mStartInstanceLocation, "Invalid start instance location")	// Not done by intent
+		RENDERER_ASSERT(mRendererRuntime.getContext(), MaterialBlueprintResource::BufferUsage::INSTANCE == instanceUniformBuffer.bufferUsage, "Currently only the uniform buffer instance buffer usage is supported")
 
 		// Get relevant data
 		const Transform& objectSpaceToWorldSpaceTransform = renderable.getRenderableManager().getTransform();
@@ -165,7 +165,7 @@ namespace RendererRuntime
 			if (nullptr != skeletonResource)
 			{
 				const uint32_t numberOfBytes = skeletonResource->getTotalNumberOfBoneSpaceDataBytes();
-				assert((numberOfBytes <= mMaximumTextureBufferSize) && "The skeleton has too many bones for the available maximum texture buffer size");
+				RENDERER_ASSERT(mRendererRuntime.getContext(), numberOfBytes <= mMaximumTextureBufferSize, "The skeleton has too many bones for the available maximum texture buffer size")
 				newNeededTextureBufferSize += numberOfBytes;
 			}
 
@@ -203,8 +203,8 @@ namespace RendererRuntime
 				const uint32_t instanceTextureBufferStartIndex = static_cast<uint32_t>(mCurrentTextureBufferPointer - mStartTextureBufferPointer) / 4;	// /4 since the texture buffer is working with float4
 				if (!materialBlueprintResourceListener.fillInstanceValue(uniformBufferElementProperty.getReferenceValue(), mCurrentUniformBufferPointer, valueTypeNumberOfBytes, instanceTextureBufferStartIndex))
 				{
-					// Error, can't resolve reference
-					assert(false);
+					// Error!
+					RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Can't resolve reference")
 				}
 			}
 			else if (MaterialProperty::Usage::GLOBAL_REFERENCE == usage)
@@ -229,8 +229,8 @@ namespace RendererRuntime
 					}
 					else
 					{
-						// Error, can't resolve reference
-						assert(false);	// RendererRuntime::PassBufferManager::fillBuffer(): Failed to fill pass uniform buffer element " << i << " by using unknown global material property
+						// Error!
+						RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Can't resolve reference")
 					}
 				}
 			}
@@ -243,8 +243,8 @@ namespace RendererRuntime
 			}
 			else
 			{
-				// Error, invalid property
-				assert(false);
+				// Error!
+				RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Invalid property")
 			}
 
 			// Next property
@@ -273,9 +273,9 @@ namespace RendererRuntime
 			if (nullptr != skeletonResource)
 			{
 				const size_t numberOfBytes = skeletonResource->getTotalNumberOfBoneSpaceDataBytes();
-				assert((numberOfBytes <= mMaximumTextureBufferSize) && "The skeleton has too many bones for the available maximum texture buffer size");
+				RENDERER_ASSERT(mRendererRuntime.getContext(), numberOfBytes <= mMaximumTextureBufferSize, "The skeleton has too many bones for the available maximum texture buffer size")
 				const uint8_t* boneSpaceData = skeletonResource->getBoneSpaceData();
-				assert(nullptr != boneSpaceData);
+				RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != boneSpaceData, "Invalid bone space data")
 				memcpy(mCurrentTextureBufferPointer, boneSpaceData, numberOfBytes);
 				mCurrentTextureBufferPointer += numberOfBytes / sizeof(float);
 			}
@@ -333,11 +333,11 @@ namespace RendererRuntime
 		if (nullptr != mCurrentInstanceBuffer && !mCurrentInstanceBuffer->mapped)
 		{
 			// Sanity checks: Only one mapped instance buffer at a time
-			assert(nullptr == mStartUniformBufferPointer);
-			assert(nullptr == mCurrentUniformBufferPointer);
-			assert(nullptr == mStartTextureBufferPointer);
-			assert(nullptr == mCurrentTextureBufferPointer);
-			assert(0 == mStartInstanceLocation);
+			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr == mStartUniformBufferPointer, "Invalid start uniform buffer pointer")
+			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr == mCurrentUniformBufferPointer, "Invalid current uniform buffer pointer")
+			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr == mStartTextureBufferPointer, "Invalid start texture buffer pointer")
+			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr == mCurrentTextureBufferPointer, "Invalid current texture buffer pointer")
+			RENDERER_ASSERT(mRendererRuntime.getContext(), 0 == mStartInstanceLocation, "Invalid start instance location")
 
 			// Map instance buffer
 			Renderer::IRenderer& renderer = mRendererRuntime.getRenderer();
@@ -346,13 +346,13 @@ namespace RendererRuntime
 			{
 				mStartUniformBufferPointer = mCurrentUniformBufferPointer = static_cast<uint8_t*>(mappedSubresource.data);
 			}
-			assert(nullptr != mStartUniformBufferPointer);
+			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mStartUniformBufferPointer, "Invalid start uniform buffer pointer")
 			if (renderer.map(*mCurrentInstanceBuffer->textureBuffer, 0, Renderer::MapType::WRITE_DISCARD, 0, mappedSubresource))
 			{
 				mStartTextureBufferPointer = mCurrentTextureBufferPointer = static_cast<float*>(mappedSubresource.data);
 				mCurrentInstanceBuffer->mapped = true;
 			}
-			assert(nullptr != mStartTextureBufferPointer);
+			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mStartTextureBufferPointer, "Invalid start texture buffer pointer")
 		}
 	}
 
@@ -361,11 +361,11 @@ namespace RendererRuntime
 		if (nullptr != mCurrentInstanceBuffer && mCurrentInstanceBuffer->mapped)
 		{
 			// Sanity checks
-			assert(nullptr != mStartUniformBufferPointer);
-			assert(nullptr != mCurrentUniformBufferPointer);
-			assert(nullptr != mStartTextureBufferPointer);
-			assert(nullptr != mCurrentTextureBufferPointer);
-			// assert(0 == mStartInstanceLocation); -> Not done by intent
+			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mStartUniformBufferPointer, "Invalid start uniform buffer pointer")
+			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mCurrentUniformBufferPointer, "Invalid current uniform buffer pointer")
+			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mStartTextureBufferPointer, "Invalid start texture buffer pointer")
+			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mCurrentTextureBufferPointer, "Invalid current texture buffer pointer")
+			// RENDERER_ASSERT(mRendererRuntime.getContext(), 0 == mStartInstanceLocation, "Invalid start instance location")	// Not done by intent
 
 			// Unmap instance buffer
 			Renderer::IRenderer& renderer = mRendererRuntime.getRenderer();

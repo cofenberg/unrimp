@@ -99,11 +99,11 @@ namespace RendererRuntime
 	uint32_t UniformInstanceBufferManager::fillBuffer(const MaterialBlueprintResource& materialBlueprintResource, PassBufferManager* passBufferManager, const MaterialBlueprintResource::UniformBuffer& instanceUniformBuffer, const Renderable& renderable, MaterialTechnique& materialTechnique, Renderer::CommandBuffer& commandBuffer)
 	{
 		// Sanity checks
-		assert(nullptr != mCurrentInstanceBuffer);
-		assert(nullptr != mStartUniformBufferPointer);
-		assert(nullptr != mCurrentUniformBufferPointer);
-		// assert(0 == mStartInstanceLocation); -> Not done by intent
-		assert((MaterialBlueprintResource::BufferUsage::INSTANCE == instanceUniformBuffer.bufferUsage) && "Currently only the uniform buffer instance buffer usage is supported");
+		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mCurrentInstanceBuffer, "Invalid current instance buffer")
+		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mStartUniformBufferPointer, "Invalid start uniform buffer pointer")
+		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mCurrentUniformBufferPointer, "Invalid current uniform buffer pointer")
+		// RENDERER_ASSERT(mRendererRuntime.getContext(), 0 == mStartInstanceLocation, "Invalid start instance location")	// Not done by intent
+		RENDERER_ASSERT(mRendererRuntime.getContext(), MaterialBlueprintResource::BufferUsage::INSTANCE == instanceUniformBuffer.bufferUsage, "Currently only the uniform buffer instance buffer usage is supported")
 
 		// Get relevant data
 		const Transform& objectSpaceToWorldSpaceTransform = renderable.getRenderableManager().getTransform();
@@ -170,8 +170,8 @@ namespace RendererRuntime
 			{
 				if (!materialBlueprintResourceListener.fillInstanceValue(uniformBufferElementProperty.getReferenceValue(), mCurrentUniformBufferPointer, valueTypeNumberOfBytes, ~0u))
 				{
-					// Error, can't resolve reference
-					assert(false);
+					// Error!
+					RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Can't resolve reference")
 				}
 			}
 			else if (MaterialProperty::Usage::GLOBAL_REFERENCE == usage)
@@ -196,8 +196,8 @@ namespace RendererRuntime
 					}
 					else
 					{
-						// Error, can't resolve reference
-						assert(false);	// RendererRuntime::PassBufferManager::fillBuffer(): Failed to fill pass uniform buffer element " << i << " by using unknown global material property
+						// Error!
+						RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Can't resolve reference")
 					}
 				}
 			}
@@ -210,8 +210,8 @@ namespace RendererRuntime
 			}
 			else
 			{
-				// Error, invalid property
-				assert(false);
+				// Error!
+				RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Invalid property")
 			}
 
 			// Next property
@@ -265,9 +265,9 @@ namespace RendererRuntime
 		if (nullptr != mCurrentInstanceBuffer && !mCurrentInstanceBuffer->mapped)
 		{
 			// Sanity checks: Only one mapped instance buffer at a time
-			assert(nullptr == mStartUniformBufferPointer);
-			assert(nullptr == mCurrentUniformBufferPointer);
-			assert(0 == mStartInstanceLocation);
+			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr == mStartUniformBufferPointer, "Invalid start uniform buffer pointer")
+			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr == mCurrentUniformBufferPointer, "Invalid current uniform buffer pointer")
+			RENDERER_ASSERT(mRendererRuntime.getContext(), 0 == mStartInstanceLocation, "Invalid start instance location")
 
 			// Map instance buffer
 			Renderer::IRenderer& renderer = mRendererRuntime.getRenderer();
@@ -277,7 +277,7 @@ namespace RendererRuntime
 				mStartUniformBufferPointer = mCurrentUniformBufferPointer = static_cast<uint8_t*>(mappedSubresource.data);
 				mCurrentInstanceBuffer->mapped = true;
 			}
-			assert(mCurrentInstanceBuffer->mapped);
+			RENDERER_ASSERT(mRendererRuntime.getContext(), mCurrentInstanceBuffer->mapped, "Current instance buffer isn't mapped")
 		}
 	}
 
@@ -286,9 +286,9 @@ namespace RendererRuntime
 		if (nullptr != mCurrentInstanceBuffer && mCurrentInstanceBuffer->mapped)
 		{
 			// Sanity checks
-			assert(nullptr != mStartUniformBufferPointer);
-			assert(nullptr != mCurrentUniformBufferPointer);
-			// assert(0 == mStartInstanceLocation); -> Not done by intent
+			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mStartUniformBufferPointer, "Invalid start uniform buffer pointer")
+			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mCurrentUniformBufferPointer, "Invalid current uniform buffer pointer")
+			// RENDERER_ASSERT(mRendererRuntime.getContext(), 0 == mStartInstanceLocation, "Invalid start instance location")	// Not done by intent
 
 			// Unmap instance buffer
 			Renderer::IRenderer& renderer = mRendererRuntime.getRenderer();

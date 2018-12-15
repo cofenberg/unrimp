@@ -72,9 +72,9 @@ namespace RendererRuntime
 	IndirectBufferManager::~IndirectBufferManager()
 	{
 		// At this point in time, no indirect buffers should be in use anymore
-		assert(mUsedIndirectBuffers.empty());
-		assert(nullptr == mCurrentIndirectBuffer);
-		assert(0 == mPreviouslyRequestedNumberOfBytes);
+		RENDERER_ASSERT(mRendererRuntime.getContext(), mUsedIndirectBuffers.empty(), "Invalid used indirect buffers")
+		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr == mCurrentIndirectBuffer, "Invalid current indirect buffer")
+		RENDERER_ASSERT(mRendererRuntime.getContext(), 0 == mPreviouslyRequestedNumberOfBytes, "Invalid previously requested number of bytes")
 
 		// Destroy all indirect buffers
 		for (IndirectBuffer& indirectBuffer : mFreeIndirectBuffers)
@@ -86,8 +86,8 @@ namespace RendererRuntime
 	IndirectBufferManager::IndirectBuffer* IndirectBufferManager::getIndirectBuffer(uint32_t numberOfBytes)
 	{
 		// Sanity check
-		assert((numberOfBytes > 0) && "Don't call this method if there's no work to be done");
-		assert((numberOfBytes <= mMaximumIndirectBufferSize) && "Maximum indirect buffer size exceeded");
+		RENDERER_ASSERT(mRendererRuntime.getContext(), numberOfBytes > 0, "Don't call this method if there's no work to be done")
+		RENDERER_ASSERT(mRendererRuntime.getContext(), numberOfBytes <= mMaximumIndirectBufferSize, "Maximum indirect buffer size exceeded")
 
 		// Is there enough space left inside the current indirect buffer?
 		if (nullptr != mCurrentIndirectBuffer)
@@ -122,9 +122,9 @@ namespace RendererRuntime
 
 			{ // Map
 				// Sanity checks
-				assert(nullptr != mCurrentIndirectBuffer->indirectBuffer);
-				assert(0 == mCurrentIndirectBuffer->indirectBufferOffset);
-				assert(nullptr == mCurrentIndirectBuffer->mappedData);
+				RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mCurrentIndirectBuffer->indirectBuffer, "Invalid current indirect buffer")
+				RENDERER_ASSERT(mRendererRuntime.getContext(), 0 == mCurrentIndirectBuffer->indirectBufferOffset, "Invalid current indirect buffer")
+				RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr == mCurrentIndirectBuffer->mappedData, "Invalid current indirect buffer")
 
 				// Map
 				Renderer::MappedSubresource mappedSubresource;
@@ -132,7 +132,7 @@ namespace RendererRuntime
 				{
 					mCurrentIndirectBuffer->mappedData = static_cast<uint8_t*>(mappedSubresource.data);
 				}
-				assert(nullptr != mCurrentIndirectBuffer->mappedData);
+				RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mCurrentIndirectBuffer->mappedData, "Invalid current indirect buffer")
 			}
 		}
 
@@ -160,8 +160,8 @@ namespace RendererRuntime
 	void IndirectBufferManager::unmapCurrentIndirectBuffer()
 	{
 		// Sanity checks
-		assert(nullptr != mCurrentIndirectBuffer);
-		assert(nullptr != mCurrentIndirectBuffer->mappedData);
+		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mCurrentIndirectBuffer, "Invalid current indirect buffer")
+		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mCurrentIndirectBuffer->mappedData, "Invalid current indirect buffer")
 
 		// Unmap
 		mRendererRuntime.getRenderer().unmap(*mCurrentIndirectBuffer->indirectBuffer, 0);

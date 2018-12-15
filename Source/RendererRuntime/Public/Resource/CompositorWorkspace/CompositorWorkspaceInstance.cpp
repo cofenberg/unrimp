@@ -88,8 +88,8 @@ namespace RendererRuntime
 	void CompositorWorkspaceInstance::setNumberOfMultisamples(uint8_t numberOfMultisamples)
 	{
 		// Sanity checks
-		assert(numberOfMultisamples == 1 || numberOfMultisamples == 2 || numberOfMultisamples == 4 || numberOfMultisamples == 8);
-		assert(numberOfMultisamples <= mRendererRuntime.getRenderer().getCapabilities().maximumNumberOfMultisamples);
+		RENDERER_ASSERT(mRendererRuntime.getContext(), numberOfMultisamples == 1 || numberOfMultisamples == 2 || numberOfMultisamples == 4 || numberOfMultisamples == 8, "Invalid number of multisamples")
+		RENDERER_ASSERT(mRendererRuntime.getContext(), numberOfMultisamples <= mRendererRuntime.getRenderer().getCapabilities().maximumNumberOfMultisamples, "Invalid number of multisamples")
 
 		// Set the value
 		mNumberOfMultisamples = numberOfMultisamples;
@@ -347,7 +347,7 @@ namespace RendererRuntime
 									ICompositorInstancePass* compositorInstancePass = compositorPassFactory.createCompositorInstancePass(*compositorResourcePass, *compositorNodeInstance);
 									if (compositorResourcePass->getTypeId() == CompositorResourcePassShadowMap::TYPE_ID)
 									{
-										assert(nullptr == mCompositorInstancePassShadowMap);
+										RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr == mCompositorInstancePassShadowMap, "Invalid compositor instance pass shadow map")
 										mCompositorInstancePassShadowMap = static_cast<CompositorInstancePassShadowMap*>(compositorInstancePass);
 									}
 									compositorNodeInstance->mCompositorInstancePasses.push_back(compositorInstancePass);
@@ -425,7 +425,7 @@ namespace RendererRuntime
 
 	void CompositorWorkspaceInstance::createFramebuffersAndRenderTargetTextures(const Renderer::IRenderTarget& mainRenderTarget)
 	{
-		assert(!mFramebufferManagerInitialized);
+		RENDERER_ASSERT(mRendererRuntime.getContext(), !mFramebufferManagerInitialized, "Framebuffer manager is already initialized")
 		CompositorWorkspaceResourceManager& compositorWorkspaceResourceManager = mRendererRuntime.getCompositorWorkspaceResourceManager();
 
 		{ // Framebuffers

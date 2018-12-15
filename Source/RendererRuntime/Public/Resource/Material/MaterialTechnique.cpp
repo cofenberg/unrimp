@@ -99,8 +99,8 @@ namespace RendererRuntime
 	void MaterialTechnique::fillGraphicsCommandBuffer(const IRendererRuntime& rendererRuntime, Renderer::CommandBuffer& commandBuffer, uint32_t& resourceGroupRootParameterIndex, Renderer::IResourceGroup** resourceGroup)
 	{
 		// Sanity check
-		assert(isValid(mMaterialBlueprintResourceId));
-		assert((nullptr != resourceGroup) && "The renderer resource group pointer must be valid");
+		RENDERER_ASSERT(rendererRuntime.getContext(), isValid(mMaterialBlueprintResourceId), "Invalid material blueprint resource ID")
+		RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != resourceGroup, "The renderer resource group pointer must be valid")
 
 		{ // Bind the material buffer manager
 			MaterialBufferManager* materialBufferManager = getMaterialBufferManager();
@@ -117,8 +117,8 @@ namespace RendererRuntime
 	void MaterialTechnique::fillComputeCommandBuffer(const IRendererRuntime& rendererRuntime, Renderer::CommandBuffer& commandBuffer, uint32_t& resourceGroupRootParameterIndex, Renderer::IResourceGroup** resourceGroup)
 	{
 		// Sanity check
-		assert(isValid(mMaterialBlueprintResourceId));
-		assert((nullptr != resourceGroup) && "The renderer resource group pointer must be valid");
+		RENDERER_ASSERT(rendererRuntime.getContext(), isValid(mMaterialBlueprintResourceId), "Invalid material blueprint resource ID")
+		RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != resourceGroup, "The renderer resource group pointer must be valid")
 
 		{ // Bind the material buffer manager
 			MaterialBufferManager* materialBufferManager = getMaterialBufferManager();
@@ -322,7 +322,7 @@ namespace RendererRuntime
 
 				// Get material blueprint resource
 				const MaterialBlueprintResource* materialBlueprintResource = getMaterialResourceManager().getRendererRuntime().getMaterialBlueprintResourceManager().tryGetById(mMaterialBlueprintResourceId);
-				assert(nullptr != materialBlueprintResource);
+				RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != materialBlueprintResource, "Invalid material blueprint resource")
 
 				// Create texture resource group
 				std::vector<Renderer::IResource*> resources;
@@ -348,14 +348,14 @@ namespace RendererRuntime
 				{
 					// Set texture resource
 					TextureResource* textureResource = textureResourceManager.tryGetById(textures[i].textureResourceId);
-					assert(nullptr != textureResource);
+					RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != textureResource, "Invalid texture resource")
 					resources[i + textureStartIndex] = textureResource->getTexture();
-					assert(nullptr != resources[i + textureStartIndex]);
+					RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != resources[i + textureStartIndex], "Invalid resource")
 
 					// Set sampler state, if there's one (e.g. texel fetch instead of sampling might be used)
 					if (isValid(materialBlueprintResourceTextures[i].samplerStateIndex))
 					{
-						assert(materialBlueprintResourceTextures[i].samplerStateIndex < materialBlueprintResourceSamplerStates.size());
+						RENDERER_ASSERT(rendererRuntime.getContext(), materialBlueprintResourceTextures[i].samplerStateIndex < materialBlueprintResourceSamplerStates.size(), "Invalid sampler state index")
 						samplerStates[i + textureStartIndex] = materialBlueprintResourceSamplerStates[materialBlueprintResourceTextures[i].samplerStateIndex].samplerStatePtr;
 					}
 					else

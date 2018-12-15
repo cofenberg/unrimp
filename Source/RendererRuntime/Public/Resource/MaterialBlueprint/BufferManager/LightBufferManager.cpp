@@ -132,7 +132,7 @@ namespace RendererRuntime
 	void LightBufferManager::fillGraphicsCommandBuffer(const MaterialBlueprintResource& materialBlueprintResource, Renderer::CommandBuffer& commandBuffer)
 	{
 		// Sanity check
-		assert(isInvalid(materialBlueprintResource.getComputeShaderBlueprintResourceId()));
+		RENDERER_ASSERT(mRendererRuntime.getContext(), isInvalid(materialBlueprintResource.getComputeShaderBlueprintResourceId()), "Invalid compute shader blueprint resource ID")
 
 		// Light texture buffer
 		const MaterialBlueprintResource::TextureBuffer* lightTextureBuffer = materialBlueprintResource.getLightTextureBuffer();
@@ -158,7 +158,7 @@ namespace RendererRuntime
 	void LightBufferManager::fillComputeCommandBuffer(const MaterialBlueprintResource& materialBlueprintResource, Renderer::CommandBuffer& commandBuffer)
 	{
 		// Sanity check
-		assert(isValid(materialBlueprintResource.getComputeShaderBlueprintResourceId()));
+		RENDERER_ASSERT(mRendererRuntime.getContext(), isValid(materialBlueprintResource.getComputeShaderBlueprintResourceId()), "Invalid compute shader blueprint resource ID")
 
 		// Light texture buffer
 		const MaterialBlueprintResource::TextureBuffer* lightTextureBuffer = materialBlueprintResource.getLightTextureBuffer();
@@ -265,7 +265,7 @@ namespace RendererRuntime
 			// Loop through all scene items attached to the current scene node
 			for (ISceneItem* sceneItem : sceneNode->getAttachedSceneItems())
 			{
-				assert(currentLightIndex < 32);
+				RENDERER_ASSERT(mRendererRuntime.getContext(), currentLightIndex < 32, "The current light index is out-of-bounds")
 				if (sceneItem->getSceneItemTypeId() == LightSceneItem::TYPE_ID && currentLightIndex < 32)
 				{
 					LightSceneItem* lightSceneItem = static_cast<LightSceneItem*>(sceneItem);
@@ -328,8 +328,8 @@ namespace RendererRuntime
 
 		// Upload the cluster data to a volume texture
 		Renderer::ITexturePtr texturePtr = mRendererRuntime.getTextureResourceManager().getById(mClusters3DTextureResourceId).getTexture();
-		assert(nullptr != texturePtr.getPointer());
-		assert(Renderer::ResourceType::TEXTURE_3D == texturePtr.getPointer()->getResourceType());
+		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != texturePtr.getPointer(), "Invalid texture pointer")
+		RENDERER_ASSERT(mRendererRuntime.getContext(), Renderer::ResourceType::TEXTURE_3D == texturePtr.getPointer()->getResourceType(), "Invalid texture resource type")
 		Renderer::ITexture3D* texture3D = static_cast<Renderer::ITexture3D*>(texturePtr.getPointer());
 		Renderer::MappedSubresource mappedSubresource;
 		Renderer::IRenderer& renderer = mRendererRuntime.getRenderer();

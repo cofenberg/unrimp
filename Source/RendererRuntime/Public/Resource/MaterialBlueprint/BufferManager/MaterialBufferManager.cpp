@@ -52,7 +52,7 @@ namespace RendererRuntime
 		mLastComputeBoundPool(nullptr)
 	{
 		const MaterialBlueprintResource::UniformBuffer* materialUniformBuffer = mMaterialBlueprintResource.getMaterialUniformBuffer();
-		assert(nullptr != materialUniformBuffer);
+		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != materialUniformBuffer, "Invalid material uniform buffer")
 
 		// Get the buffer size
 		mBufferSize = std::min<uint32_t>(rendererRuntime.getRenderer().getCapabilities().maximumUniformBufferSize, 64 * 1024);
@@ -107,12 +107,12 @@ namespace RendererRuntime
 		BufferPool* bufferPool = static_cast<BufferPool*>(materialBufferSlot.mAssignedMaterialPool);
 
 		// Sanity checks
-		assert(isValid(materialBufferSlot.mAssignedMaterialPool));
-		assert(isValid(materialBufferSlot.mAssignedMaterialSlot));
-		assert(materialBufferSlot.mAssignedMaterialSlot < mSlotsPerPool);
-		assert(std::find(bufferPool->freeSlots.begin(), bufferPool->freeSlots.end(), materialBufferSlot.mAssignedMaterialSlot) == bufferPool->freeSlots.end());
-		assert(materialBufferSlot.mGlobalIndex < static_cast<int>(mMaterialBufferSlots.size()));
-		assert(&materialBufferSlot == *(mMaterialBufferSlots.begin() + materialBufferSlot.mGlobalIndex));
+		RENDERER_ASSERT(mRendererRuntime.getContext(), isValid(materialBufferSlot.mAssignedMaterialPool), "Invalid assigned material pool")
+		RENDERER_ASSERT(mRendererRuntime.getContext(), isValid(materialBufferSlot.mAssignedMaterialSlot), "Invalid assigned material slot")
+		RENDERER_ASSERT(mRendererRuntime.getContext(), materialBufferSlot.mAssignedMaterialSlot < mSlotsPerPool, "Invalid assigned material slot")
+		RENDERER_ASSERT(mRendererRuntime.getContext(), std::find(bufferPool->freeSlots.begin(), bufferPool->freeSlots.end(), materialBufferSlot.mAssignedMaterialSlot) == bufferPool->freeSlots.end(), "Invalid assigned material slot")
+		RENDERER_ASSERT(mRendererRuntime.getContext(), materialBufferSlot.mGlobalIndex < static_cast<int>(mMaterialBufferSlots.size()), "Invalid global index")
+		RENDERER_ASSERT(mRendererRuntime.getContext(), &materialBufferSlot == *(mMaterialBufferSlots.begin() + materialBufferSlot.mGlobalIndex), "Invalid global index")
 
 		// If the slot is dirty, remove it from the list of dirty slots
 		if (materialBufferSlot.mDirty)
@@ -170,11 +170,11 @@ namespace RendererRuntime
 		if (mLastGraphicsBoundPool != materialBufferSlot.mAssignedMaterialPool)
 		{
 			mLastGraphicsBoundPool = static_cast<BufferPool*>(materialBufferSlot.mAssignedMaterialPool);
-			assert(nullptr != mLastGraphicsBoundPool);
+			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mLastGraphicsBoundPool, "Invalid last graphics bound pool")
 
 			// Set resource group
 			const MaterialBlueprintResource::UniformBuffer* materialUniformBuffer = mMaterialBlueprintResource.getMaterialUniformBuffer();
-			assert(nullptr != materialUniformBuffer);
+			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != materialUniformBuffer, "Invalid material uniform buffer")
 			Renderer::Command::SetGraphicsResourceGroup::create(commandBuffer, materialUniformBuffer->rootParameterIndex, mLastGraphicsBoundPool->resourceGroup);
 		}
 	}
@@ -184,11 +184,11 @@ namespace RendererRuntime
 		if (mLastComputeBoundPool != materialBufferSlot.mAssignedMaterialPool)
 		{
 			mLastComputeBoundPool = static_cast<BufferPool*>(materialBufferSlot.mAssignedMaterialPool);
-			assert(nullptr != mLastComputeBoundPool);
+			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mLastComputeBoundPool, "Invalid last compute bound pool")
 
 			// Set resource group
 			const MaterialBlueprintResource::UniformBuffer* materialUniformBuffer = mMaterialBlueprintResource.getMaterialUniformBuffer();
-			assert(nullptr != materialUniformBuffer);
+			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != materialUniformBuffer, "Invalid material uniform buffer")
 			Renderer::Command::SetComputeResourceGroup::create(commandBuffer, materialUniformBuffer->rootParameterIndex, mLastComputeBoundPool->resourceGroup);
 		}
 	}
@@ -199,9 +199,9 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void MaterialBufferManager::uploadDirtySlots()
 	{
-		assert(!mDirtyMaterialBufferSlots.empty());
+		RENDERER_ASSERT(mRendererRuntime.getContext(), !mDirtyMaterialBufferSlots.empty(), "Invalid dirty material buffer slots")
 		const MaterialBlueprintResource::UniformBuffer* materialUniformBuffer = mMaterialBlueprintResource.getMaterialUniformBuffer();
-		assert(nullptr != materialUniformBuffer);
+		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != materialUniformBuffer, "Invalid material uniform buffer")
 		const MaterialBlueprintResourceManager& materialBlueprintResourceManager = mMaterialBlueprintResource.getResourceManager<MaterialBlueprintResourceManager>();
 		const MaterialProperties& globalMaterialProperties = materialBlueprintResourceManager.getGlobalMaterialProperties();
 		IMaterialBlueprintResourceListener& materialBlueprintResourceListener = materialBlueprintResourceManager.getMaterialBlueprintResourceListener();
@@ -250,8 +250,8 @@ namespace RendererRuntime
 						}
 						else if (!materialBlueprintResourceListener.fillMaterialValue(uniformBufferElementProperty.getReferenceValue(), scratchBufferPointer, valueTypeNumberOfBytes))
 						{
-							// Error, can't resolve reference
-							assert(false);
+							// Error!
+							RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Can't resolve reference")
 						}
 					}
 					else if (MaterialProperty::Usage::GLOBAL_REFERENCE == usage)
@@ -276,8 +276,8 @@ namespace RendererRuntime
 							}
 							else
 							{
-								// Error, can't resolve reference
-								assert(false);	// RendererRuntime::PassBufferManager::fillBuffer(): Failed to fill pass uniform buffer element " << i << " by using unknown global material property
+								// Error
+								RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Can't resolve reference")
 							}
 						}
 					}
@@ -290,8 +290,8 @@ namespace RendererRuntime
 					}
 					else
 					{
-						// Error, invalid property
-						assert(false);
+						// Error!
+						RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Invalid property")
 					}
 
 					// Next property

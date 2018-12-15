@@ -58,8 +58,8 @@ namespace RendererRuntime
 
 	MaterialResourceId MaterialResourceManager::createMaterialResourceByAssetId(AssetId assetId, AssetId materialBlueprintAssetId, MaterialTechniqueId materialTechniqueId)
 	{
-		// Material resource is not allowed to exist, yet
-		assert(nullptr == getMaterialResourceByAssetId(assetId));
+		// Sanity check
+		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr == getMaterialResourceByAssetId(assetId), "Material resource is not allowed to exist, yet")
 
 		// Create the material resource instance
 		MaterialResource& materialResource = mInternalResourceManager->getResources().addElement();
@@ -75,7 +75,7 @@ namespace RendererRuntime
 			if (nullptr != materialBlueprintResource)
 			{
 				// TODO(co) Possible optimization: Right now we don't filter for "RendererRuntime::MaterialProperty::Usage::GLOBAL_REFERENCE_FALLBACK" properties.
-				//          Only the material blueprint resource needs to store such properties while there're useless inside material resources. The filtering
+				//          Only the material blueprint resource needs to store such properties while they're useless inside material resources. The filtering
 				//          makes the following more complex and it might not bring any real benefit. So, review this place in here later when we have more pressure on the system.
 				materialResource.mMaterialProperties = materialBlueprintResource->mMaterialProperties;
 
@@ -85,7 +85,7 @@ namespace RendererRuntime
 			else
 			{
 				// Error!
-				assert(false);
+				RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Invalid material blueprint resource")
 			}
 		}
 
@@ -96,7 +96,7 @@ namespace RendererRuntime
 
 	MaterialResourceId MaterialResourceManager::createMaterialResourceByCloning(MaterialResourceId parentMaterialResourceId, AssetId assetId)
 	{
-		assert(mInternalResourceManager->getResources().getElementById(parentMaterialResourceId).getLoadingState() == IResource::LoadingState::LOADED);
+		RENDERER_ASSERT(mRendererRuntime.getContext(), mInternalResourceManager->getResources().getElementById(parentMaterialResourceId).getLoadingState() == IResource::LoadingState::LOADED, "Invalid parent material resource ID")
 
 		// Create the material resource instance
 		MaterialResource& materialResource = mInternalResourceManager->getResources().addElement();
