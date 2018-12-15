@@ -5920,7 +5920,7 @@ namespace OpenGLRenderer
 				// Valid OpenGL vertex array buffer and "GL_KHR_debug"-extension available?
 				if (0 != mOpenGLVertexArray && static_cast<OpenGLRenderer&>(getRenderer()).getExtensions().isGL_KHR_debug())
 				{
-					glObjectLabel(GL_BUFFER, mOpenGLVertexArray, -1, name);
+					glObjectLabel(GL_VERTEX_ARRAY, mOpenGLVertexArray, -1, name);
 				}
 			}
 		#endif
