@@ -3267,18 +3267,20 @@ namespace Renderer
 	*/
 	struct PipelineStatisticsQueryResult final
 	{
-		uint64_t iaVertices;
-		uint64_t iaPrimitives;
-		uint64_t vsInvocations;
-		uint64_t gsInvocations;
-		uint64_t gsPrimitives;
-		uint64_t cInvocations;
-		uint64_t cPrimitives;
-		uint64_t psInvocations;
-		uint64_t hsInvocations;
-		uint64_t dsInvocations;
-		uint64_t csInvocations;
+		uint64_t numberOfInputAssemblerVertices;					///< Number of vertices read by input assembler
+		uint64_t numberOfInputAssemblerPrimitives;					///< Number of primitives read by the input assembler
+		uint64_t numberOfVertexShaderInvocations;					///< Number of times a vertex shader was invoked
+		uint64_t numberOfGeometryShaderInvocations;					///< Number of times a geometry shader was invoked
+		uint64_t numberOfGeometryShaderOutputPrimitives;			///< Number of primitives output by a geometry shader
+		uint64_t numberOfClippingInputPrimitivesInvocations;		///< Number of primitives that were sent to the rasterizer
+		uint64_t numberOfClippingOutputPrimitivesPrimitives;		///< Number of primitives that were rendered
+		uint64_t numberOfFragmentShaderInvocations;					///< Number of times a fragment shader (FS, "pixel shader" in Direct3D terminology) was invoked
+		uint64_t numberOfTessellationControlShaderInvocations;		///< Number of times a hull shader (TCS, "hull shader" in Direct3D terminology) was invoked
+		uint64_t numberOfTessellationEvaluationShaderInvocations;	///< Number of times a domain shader (TES, "domain shader" in Direct3D terminology) was invoked
+		uint64_t numberOfComputeShaderInvocations;					///< Number of times a compute shader was invoked
 	};
+
+
 
 
 	//[-------------------------------------------------------]

@@ -11595,9 +11595,9 @@ namespace OpenGLRenderer
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    OpenGL asynchronous query pool interface
+	*    Abstract OpenGL asynchronous query pool base class
 	*/
-	class QueryPool final : public Renderer::IQueryPool
+	class QueryPool : public Renderer::IQueryPool
 	{
 
 
@@ -11616,66 +11616,18 @@ namespace OpenGLRenderer
 		*  @param[in] numberOfQueries
 		*    Number of queries
 		*/
-		QueryPool(OpenGLRenderer& openGLRenderer, Renderer::QueryType queryType, uint32_t numberOfQueries) :
+		inline QueryPool(OpenGLRenderer& openGLRenderer, Renderer::QueryType queryType, uint32_t numberOfQueries) :
 			IQueryPool(openGLRenderer),
 			mQueryType(queryType),
-			mNumberOfQueries(numberOfQueries),
-			mOpenGLQueries(RENDERER_MALLOC_TYPED(openGLRenderer.getContext(), GLuint, numberOfQueries))
-		{
-			// If possible, use "glCreateQueries()" (OpenGL 4.5) in order to create the query instance at once
-			if (nullptr != glCreateQueries)
-			{
-				switch (queryType)
-				{
-					case Renderer::QueryType::OCCLUSION:
-						glCreateQueries(GL_SAMPLES_PASSED_ARB, static_cast<GLsizei>(numberOfQueries), mOpenGLQueries);
-						break;
-
-					case Renderer::QueryType::PIPELINE_STATISTICS:
-						// TODO(co)
-						glGenQueriesARB(static_cast<GLsizei>(numberOfQueries), mOpenGLQueries);
-						break;
-
-					case Renderer::QueryType::TIMESTAMP:
-						glCreateQueries(GL_TIMESTAMP, static_cast<GLsizei>(numberOfQueries), mOpenGLQueries);
-						break;
-				}
-			}
-			else
-			{
-				glGenQueriesARB(static_cast<GLsizei>(numberOfQueries), mOpenGLQueries);
-			}
-
-			// Assign a default name to the resource for debugging purposes
-			#ifdef RENDERER_DEBUG
-				switch (queryType)
-				{
-					case Renderer::QueryType::OCCLUSION:
-						setDebugName("Occlusion query");
-						break;
-
-					case Renderer::QueryType::PIPELINE_STATISTICS:
-						setDebugName("Pipeline statistics query");
-						break;
-
-					case Renderer::QueryType::TIMESTAMP:
-						setDebugName("Timestamp query");
-						break;
-				}
-			#endif
-		}
+			mNumberOfQueries(numberOfQueries)
+		{}
 
 		/**
 		*  @brief
 		*    Destructor
 		*/
-		virtual ~QueryPool() override
-		{
-			// Destroy the OpenGL queries
-			// -> Silently ignores 0's and names that do not correspond to existing queries
-			glDeleteQueriesARB(static_cast<GLsizei>(mNumberOfQueries), mOpenGLQueries);
-			RENDERER_FREE(getRenderer().getContext(), mOpenGLQueries);
-		}
+		inline virtual ~QueryPool() override
+		{}
 
 		/**
 		*  @brief
@@ -11701,6 +11653,112 @@ namespace OpenGLRenderer
 			return mNumberOfQueries;
 		}
 
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit QueryPool(const QueryPool& source) = delete;
+		QueryPool& operator =(const QueryPool& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Protected data                                        ]
+	//[-------------------------------------------------------]
+	protected:
+		Renderer::QueryType mQueryType;
+		uint32_t			mNumberOfQueries;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ OpenGLRenderer/OcclusionTimestampQueryPool.h          ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    OpenGL asynchronous occlusion and timestamp query pool interface
+	*/
+	class OcclusionTimestampQueryPool final : public QueryPool
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] openGLRenderer
+		*    Owner OpenGL renderer instance
+		*  @param[in] queryType
+		*    Query type
+		*  @param[in] numberOfQueries
+		*    Number of queries
+		*/
+		OcclusionTimestampQueryPool(OpenGLRenderer& openGLRenderer, Renderer::QueryType queryType, uint32_t numberOfQueries) :
+			QueryPool(openGLRenderer, queryType, numberOfQueries),
+			mOpenGLQueries(RENDERER_MALLOC_TYPED(openGLRenderer.getContext(), GLuint, numberOfQueries))
+		{
+			// If possible, use "glCreateQueries()" (OpenGL 4.5) in order to create the query instance at once
+			if (nullptr != glCreateQueries)
+			{
+				switch (queryType)
+				{
+					case Renderer::QueryType::OCCLUSION:
+						glCreateQueries(GL_SAMPLES_PASSED_ARB, static_cast<GLsizei>(numberOfQueries), mOpenGLQueries);
+						break;
+
+					case Renderer::QueryType::PIPELINE_STATISTICS:
+						RENDERER_ASSERT(openGLRenderer.getContext(), false, "Use \"OpenGLRenderer::PipelineStatisticsQueryPool\"")
+						break;
+
+					case Renderer::QueryType::TIMESTAMP:
+						glCreateQueries(GL_TIMESTAMP, static_cast<GLsizei>(numberOfQueries), mOpenGLQueries);
+						break;
+				}
+			}
+			else
+			{
+				glGenQueriesARB(static_cast<GLsizei>(numberOfQueries), mOpenGLQueries);
+			}
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RENDERER_DEBUG
+				switch (queryType)
+				{
+					case Renderer::QueryType::OCCLUSION:
+						setDebugName("Occlusion query");
+						break;
+
+					case Renderer::QueryType::PIPELINE_STATISTICS:
+						RENDERER_ASSERT(openGLRenderer.getContext(), false, "Use \"OpenGLRenderer::PipelineStatisticsQueryPool\"")
+						break;
+
+					case Renderer::QueryType::TIMESTAMP:
+						setDebugName("Timestamp query");
+						break;
+				}
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~OcclusionTimestampQueryPool() override
+		{
+			// Destroy the OpenGL queries
+			// -> Silently ignores 0's and names that do not correspond to existing queries
+			glDeleteQueriesARB(static_cast<GLsizei>(mNumberOfQueries), mOpenGLQueries);
+			RENDERER_FREE(getRenderer().getContext(), mOpenGLQueries);
+		}
+
 		/**
 		*  @brief
 		*    Return the OpenGL queries
@@ -11721,7 +11779,7 @@ namespace OpenGLRenderer
 		#ifdef RENDERER_DEBUG
 			virtual void setDebugName(const char* name) override
 			{
-				// Valid OpenGL sampler and "glCreateQueries()" (OpenGL 4.5) as well as "GL_KHR_debug"-extension available?
+				// "glCreateQueries()" (OpenGL 4.5) as well as "GL_KHR_debug"-extension available?
 				if (nullptr != glCreateQueries && static_cast<OpenGLRenderer&>(getRenderer()).getExtensions().isGL_KHR_debug())
 				{
 					for (uint32_t i = 0; i < mNumberOfQueries; ++i)
@@ -11739,7 +11797,7 @@ namespace OpenGLRenderer
 	protected:
 		inline virtual void selfDestruct() override
 		{
-			RENDERER_DELETE(getRenderer().getContext(), QueryPool, this);
+			RENDERER_DELETE(getRenderer().getContext(), OcclusionTimestampQueryPool, this);
 		}
 
 
@@ -11747,17 +11805,245 @@ namespace OpenGLRenderer
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		explicit QueryPool(const QueryPool& source) = delete;
-		QueryPool& operator =(const QueryPool& source) = delete;
+		explicit OcclusionTimestampQueryPool(const OcclusionTimestampQueryPool& source) = delete;
+		OcclusionTimestampQueryPool& operator =(const OcclusionTimestampQueryPool& source) = delete;
 
 
 	//[-------------------------------------------------------]
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		Renderer::QueryType mQueryType;
-		uint32_t			mNumberOfQueries;
-		GLuint*				mOpenGLQueries;
+		GLuint* mOpenGLQueries;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ OpenGLRenderer/PipelineStatisticsQueryPool.h          ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    OpenGL asynchronous pipeline statistics query pool interface
+	*/
+	class PipelineStatisticsQueryPool final : public QueryPool
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] openGLRenderer
+		*    Owner OpenGL renderer instance
+		*  @param[in] queryType
+		*    Query type
+		*  @param[in] numberOfQueries
+		*    Number of queries
+		*/
+		PipelineStatisticsQueryPool(OpenGLRenderer& openGLRenderer, Renderer::QueryType queryType, uint32_t numberOfQueries) :
+			QueryPool(openGLRenderer, queryType, numberOfQueries),
+			mVerticesSubmittedOpenGLQueries(RENDERER_MALLOC_TYPED(openGLRenderer.getContext(), GLuint, numberOfQueries * 11)),
+			mPrimitivesSubmittedOpenGLQueries(mVerticesSubmittedOpenGLQueries + numberOfQueries),
+			mVertexShaderInvocationsOpenGLQueries(mPrimitivesSubmittedOpenGLQueries + numberOfQueries),
+			mGeometryShaderInvocationsOpenGLQueries(mVertexShaderInvocationsOpenGLQueries + numberOfQueries),
+			mGeometryShaderPrimitivesEmittedOpenGLQueries(mGeometryShaderInvocationsOpenGLQueries + numberOfQueries),
+			mClippingInputPrimitivesOpenGLQueries(mGeometryShaderPrimitivesEmittedOpenGLQueries + numberOfQueries),
+			mClippingOutputPrimitivesOpenGLQueries(mClippingInputPrimitivesOpenGLQueries + numberOfQueries),
+			mFragmentShaderInvocationsOpenGLQueries(mClippingOutputPrimitivesOpenGLQueries + numberOfQueries),
+			mTessControlShaderPatchesOpenGLQueries(mFragmentShaderInvocationsOpenGLQueries + numberOfQueries),
+			mTesEvaluationShaderInvocationsOpenGLQueries(mTessControlShaderPatchesOpenGLQueries + numberOfQueries),
+			mComputeShaderInvocationsOpenGLQueries(mTesEvaluationShaderInvocationsOpenGLQueries + numberOfQueries)
+		{
+			// "glCreateQueries()" (OpenGL 4.5) doesn't support "GL_ARB_pipeline_statistics_query"
+			glGenQueriesARB(static_cast<GLsizei>(numberOfQueries) * 11, mVerticesSubmittedOpenGLQueries);
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RENDERER_DEBUG
+				switch (queryType)
+				{
+					case Renderer::QueryType::OCCLUSION:
+					case Renderer::QueryType::TIMESTAMP:
+						RENDERER_ASSERT(openGLRenderer.getContext(), false, "Use \"OpenGLRenderer::OcclusionTimestampQueryPool\"")
+						break;
+
+					case Renderer::QueryType::PIPELINE_STATISTICS:
+						// Enforce instant query creation so we can set a debug name
+						for (uint32_t i = 0; i  < numberOfQueries; ++i)
+						{
+							beginQuery(i);
+							endQuery();
+						}
+
+						// Set debug name
+						setDebugName("Pipeline statistics query");
+						break;
+				}
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~PipelineStatisticsQueryPool() override
+		{
+			// Destroy the OpenGL queries
+			// -> Silently ignores 0's and names that do not correspond to existing queries
+			glDeleteQueriesARB(static_cast<GLsizei>(mNumberOfQueries) * 11, mVerticesSubmittedOpenGLQueries);
+			RENDERER_FREE(getRenderer().getContext(), mVerticesSubmittedOpenGLQueries);
+		}
+
+		void beginQuery(uint32_t queryIndex) const
+		{
+			glBeginQueryARB(GL_VERTICES_SUBMITTED_ARB, mVerticesSubmittedOpenGLQueries[queryIndex]);
+			glBeginQueryARB(GL_PRIMITIVES_SUBMITTED_ARB, mPrimitivesSubmittedOpenGLQueries[queryIndex]);
+			glBeginQueryARB(GL_VERTEX_SHADER_INVOCATIONS_ARB, mVertexShaderInvocationsOpenGLQueries[queryIndex]);
+			glBeginQueryARB(GL_GEOMETRY_SHADER_INVOCATIONS, mGeometryShaderInvocationsOpenGLQueries[queryIndex]);
+			glBeginQueryARB(GL_GEOMETRY_SHADER_PRIMITIVES_EMITTED_ARB, mGeometryShaderPrimitivesEmittedOpenGLQueries[queryIndex]);
+			glBeginQueryARB(GL_CLIPPING_INPUT_PRIMITIVES_ARB, mClippingInputPrimitivesOpenGLQueries[queryIndex]);
+			glBeginQueryARB(GL_CLIPPING_OUTPUT_PRIMITIVES_ARB, mClippingOutputPrimitivesOpenGLQueries[queryIndex]);
+			glBeginQueryARB(GL_FRAGMENT_SHADER_INVOCATIONS_ARB, mFragmentShaderInvocationsOpenGLQueries[queryIndex]);
+			glBeginQueryARB(GL_TESS_CONTROL_SHADER_PATCHES_ARB, mTessControlShaderPatchesOpenGLQueries[queryIndex]);
+			glBeginQueryARB(GL_TESS_EVALUATION_SHADER_INVOCATIONS_ARB, mTesEvaluationShaderInvocationsOpenGLQueries[queryIndex]);
+			glBeginQueryARB(GL_COMPUTE_SHADER_INVOCATIONS_ARB, mComputeShaderInvocationsOpenGLQueries[queryIndex]);
+		}
+
+		void endQuery() const
+		{
+			glEndQueryARB(GL_VERTICES_SUBMITTED_ARB);
+			glEndQueryARB(GL_PRIMITIVES_SUBMITTED_ARB);
+			glEndQueryARB(GL_VERTEX_SHADER_INVOCATIONS_ARB);
+			glEndQueryARB(GL_GEOMETRY_SHADER_INVOCATIONS);
+			glEndQueryARB(GL_GEOMETRY_SHADER_PRIMITIVES_EMITTED_ARB);
+			glEndQueryARB(GL_CLIPPING_INPUT_PRIMITIVES_ARB);
+			glEndQueryARB(GL_CLIPPING_OUTPUT_PRIMITIVES_ARB);
+			glEndQueryARB(GL_FRAGMENT_SHADER_INVOCATIONS_ARB);
+			glEndQueryARB(GL_TESS_CONTROL_SHADER_PATCHES_ARB);
+			glEndQueryARB(GL_TESS_EVALUATION_SHADER_INVOCATIONS_ARB);
+			glEndQueryARB(GL_COMPUTE_SHADER_INVOCATIONS_ARB);
+		}
+
+		bool getQueryPoolResults(uint8_t* data, uint32_t firstQueryIndex, uint32_t numberOfQueries, uint32_t strideInBytes, bool waitForResult) const
+		{
+			bool resultAvailable = true;
+
+			// Define a helper macro
+			#define GET_QUERY_RESULT(openGLQueries, queryResult) \
+				resultAvailable = getQueryPoolResult(openGLQueries[firstQueryIndex + i], waitForResult, currentPipelineStatisticsQueryResult->queryResult); \
+				if (!resultAvailable) \
+				{ \
+					break; \
+				}
+
+			// Get query pool results
+			Renderer::PipelineStatisticsQueryResult* currentPipelineStatisticsQueryResult = reinterpret_cast<Renderer::PipelineStatisticsQueryResult*>(data);
+			for (uint32_t i = 0; i  < numberOfQueries; ++i)
+			{
+				GET_QUERY_RESULT(mVerticesSubmittedOpenGLQueries, numberOfInputAssemblerVertices)
+				GET_QUERY_RESULT(mPrimitivesSubmittedOpenGLQueries, numberOfInputAssemblerPrimitives)
+				GET_QUERY_RESULT(mVertexShaderInvocationsOpenGLQueries, numberOfVertexShaderInvocations)
+				GET_QUERY_RESULT(mGeometryShaderInvocationsOpenGLQueries, numberOfGeometryShaderInvocations)
+				GET_QUERY_RESULT(mGeometryShaderPrimitivesEmittedOpenGLQueries, numberOfGeometryShaderOutputPrimitives)
+				GET_QUERY_RESULT(mClippingInputPrimitivesOpenGLQueries, numberOfClippingInputPrimitivesInvocations)
+				GET_QUERY_RESULT(mClippingOutputPrimitivesOpenGLQueries, numberOfClippingOutputPrimitivesPrimitives)
+				GET_QUERY_RESULT(mFragmentShaderInvocationsOpenGLQueries, numberOfFragmentShaderInvocations)
+				GET_QUERY_RESULT(mTessControlShaderPatchesOpenGLQueries, numberOfTessellationControlShaderInvocations)
+				GET_QUERY_RESULT(mTesEvaluationShaderInvocationsOpenGLQueries, numberOfTessellationEvaluationShaderInvocations)
+				GET_QUERY_RESULT(mComputeShaderInvocationsOpenGLQueries, numberOfComputeShaderInvocations)
+				currentPipelineStatisticsQueryResult += strideInBytes;
+			}
+
+			// Undefine helper macro
+			#undef GET_QUERY_RESULT
+
+			// Done
+			return resultAvailable;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		#ifdef RENDERER_DEBUG
+			virtual void setDebugName([[maybe_unused]] const char* name) override
+			{
+				// "GL_KHR_debug"-extension available?
+				if (static_cast<OpenGLRenderer&>(getRenderer()).getExtensions().isGL_KHR_debug())
+				{
+					for (uint32_t i = 0; i < mNumberOfQueries * 11; ++i)
+					{
+						glObjectLabel(GL_QUERY, mVerticesSubmittedOpenGLQueries[i], -1, name);
+					}
+				}
+			}
+		#endif
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), PipelineStatisticsQueryPool, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit PipelineStatisticsQueryPool(const PipelineStatisticsQueryPool& source) = delete;
+		PipelineStatisticsQueryPool& operator =(const PipelineStatisticsQueryPool& source) = delete;
+
+		bool getQueryPoolResult(GLuint openGLQuery, bool waitForResult, uint64_t& queryResult) const
+		{
+			bool resultAvailable = true;
+			GLuint openGLQueryResult = GL_FALSE;
+			do
+			{
+				glGetQueryObjectuivARB(openGLQuery, GL_QUERY_RESULT_AVAILABLE_ARB, &openGLQueryResult);
+			}
+			while (waitForResult && GL_TRUE != openGLQueryResult);
+			if (GL_TRUE == openGLQueryResult)
+			{
+				glGetQueryObjectuivARB(openGLQuery, GL_QUERY_RESULT_ARB, &openGLQueryResult);
+				queryResult = static_cast<uint64_t>(openGLQueryResult);
+			}
+			else
+			{
+				// Result not ready
+				resultAvailable = false;
+			}
+
+			// Done
+			return resultAvailable;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		GLuint* mVerticesSubmittedOpenGLQueries;				///< "GL_VERTICES_SUBMITTED_ARB", "Renderer::PipelineStatisticsQueryResult::numberOfInputAssemblerVertices"
+		GLuint* mPrimitivesSubmittedOpenGLQueries;				///< "GL_PRIMITIVES_SUBMITTED_ARB", "Renderer::PipelineStatisticsQueryResult::numberOfInputAssemblerPrimitives"
+		GLuint* mVertexShaderInvocationsOpenGLQueries;			///< "GL_VERTEX_SHADER_INVOCATIONS_ARB", "Renderer::PipelineStatisticsQueryResult::numberOfVertexShaderInvocations"
+		GLuint* mGeometryShaderInvocationsOpenGLQueries;		///< "GL_GEOMETRY_SHADER_INVOCATIONS", "Renderer::PipelineStatisticsQueryResult::numberOfGeometryShaderInvocations"
+		GLuint* mGeometryShaderPrimitivesEmittedOpenGLQueries;	///< "GL_GEOMETRY_SHADER_PRIMITIVES_EMITTED_ARB", "Renderer::PipelineStatisticsQueryResult::numberOfGeometryShaderOutputPrimitives"
+		GLuint* mClippingInputPrimitivesOpenGLQueries;			///< "GL_CLIPPING_INPUT_PRIMITIVES_ARB", "Renderer::PipelineStatisticsQueryResult::numberOfClippingInputPrimitivesInvocations"
+		GLuint* mClippingOutputPrimitivesOpenGLQueries;			///< "GL_CLIPPING_OUTPUT_PRIMITIVES_ARB", "Renderer::PipelineStatisticsQueryResult::numberOfClippingOutputPrimitivesPrimitives"
+		GLuint* mFragmentShaderInvocationsOpenGLQueries;		///< "GL_FRAGMENT_SHADER_INVOCATIONS_ARB", "Renderer::PipelineStatisticsQueryResult::numberOfFragmentShaderInvocations"
+		GLuint* mTessControlShaderPatchesOpenGLQueries;			///< "GL_TESS_CONTROL_SHADER_PATCHES_ARB", "Renderer::PipelineStatisticsQueryResult::numberOfTessellationControlShaderInvocations"
+		GLuint* mTesEvaluationShaderInvocationsOpenGLQueries;	///< "GL_TESS_EVALUATION_SHADER_INVOCATIONS_ARB", "Renderer::PipelineStatisticsQueryResult::numberOfTessellationEvaluationShaderInvocations"
+		GLuint* mComputeShaderInvocationsOpenGLQueries;			///< "GL_COMPUTE_SHADER_INVOCATIONS_ARB", "Renderer::PipelineStatisticsQueryResult::numberOfComputeShaderInvocations"
 
 
 	};
@@ -18650,13 +18936,12 @@ namespace OpenGLRenderer
 		{
 			case Renderer::QueryType::OCCLUSION:
 				// At this point in time we know that the "GL_ARB_occlusion_query"-extension is supported
-				glBeginQueryARB(GL_SAMPLES_PASSED_ARB, openGLQueryPool.getOpenGLQueries()[queryIndex]);
+				glBeginQueryARB(GL_SAMPLES_PASSED_ARB, static_cast<OcclusionTimestampQueryPool&>(openGLQueryPool).getOpenGLQueries()[queryIndex]);
 				break;
 
 			case Renderer::QueryType::PIPELINE_STATISTICS:
 				// At this point in time we know that the "GL_ARB_pipeline_statistics_query"-extension is supported
-				// TODO(co)
-				//mD3D11DeviceContext->Begin(openGLQueryPool.getD3D11Queries()[queryIndex]);
+				static_cast<PipelineStatisticsQueryPool&>(openGLQueryPool).beginQuery(queryIndex);
 				break;
 
 			case Renderer::QueryType::TIMESTAMP:
@@ -18682,8 +18967,7 @@ namespace OpenGLRenderer
 
 			case Renderer::QueryType::PIPELINE_STATISTICS:
 				// At this point in time we know that the "GL_ARB_pipeline_statistics_query"-extension is supported
-				// TODO(co)
-				// mD3D11DeviceContext->End(openGLQueryPool.getD3D11Queries()[queryIndex]);
+				static_cast<PipelineStatisticsQueryPool&>(openGLQueryPool).endQuery();
 				break;
 
 			case Renderer::QueryType::TIMESTAMP:
@@ -18712,7 +18996,7 @@ namespace OpenGLRenderer
 
 			case Renderer::QueryType::TIMESTAMP:
 				// At this point in time we know that the "GL_ARB_timer_query"-extension is supported
-				glQueryCounter(openGLQueryPool.getOpenGLQueries()[queryIndex], GL_TIMESTAMP);
+				glQueryCounter(static_cast<OcclusionTimestampQueryPool&>(openGLQueryPool).getOpenGLQueries()[queryIndex], GL_TIMESTAMP);
 				break;
 		}
 	}
@@ -18879,7 +19163,7 @@ namespace OpenGLRenderer
 					RENDERER_LOG(mContext, CRITICAL, "OpenGL extension \"GL_ARB_occlusion_query\" isn't supported")
 					return nullptr;
 				}
-				break;
+				return RENDERER_NEW(mContext, OcclusionTimestampQueryPool)(*this, queryType, numberOfQueries);
 
 			case Renderer::QueryType::PIPELINE_STATISTICS:
 				if (!mExtensions->isGL_ARB_pipeline_statistics_query())
@@ -18887,7 +19171,7 @@ namespace OpenGLRenderer
 					RENDERER_LOG(mContext, CRITICAL, "OpenGL extension \"GL_ARB_pipeline_statistics_query\" isn't supported")
 					return nullptr;
 				}
-				break;
+				return RENDERER_NEW(mContext, PipelineStatisticsQueryPool)(*this, queryType, numberOfQueries);
 
 			case Renderer::QueryType::TIMESTAMP:
 				if (!mExtensions->isGL_ARB_timer_query())
@@ -18895,9 +19179,9 @@ namespace OpenGLRenderer
 					RENDERER_LOG(mContext, CRITICAL, "OpenGL extension \"GL_ARB_timer_query\" isn't supported")
 					return nullptr;
 				}
-				break;
+				return RENDERER_NEW(mContext, OcclusionTimestampQueryPool)(*this, queryType, numberOfQueries);
 		}
-		return RENDERER_NEW(mContext, QueryPool)(*this, queryType, numberOfQueries);
+		return nullptr;
 	}
 
 	Renderer::ISwapChain* OpenGLRenderer::createSwapChain(Renderer::IRenderPass& renderPass, Renderer::WindowHandle windowHandle, bool useExternalContext)
@@ -19317,7 +19601,7 @@ namespace OpenGLRenderer
 			case Renderer::QueryType::TIMESTAMP:	// OpenGL return the time in nanoseconds
 			{
 				uint8_t* currentData = data;
-				const GLuint* openGLQueries = openGLQueryPool.getOpenGLQueries();
+				const GLuint* openGLQueries = static_cast<const OcclusionTimestampQueryPool&>(openGLQueryPool).getOpenGLQueries();
 				for (uint32_t i = 0; i  < numberOfQueries; ++i)
 				{
 					const GLuint openGLQuery = openGLQueries[firstQueryIndex + i];
@@ -19344,21 +19628,10 @@ namespace OpenGLRenderer
 			}
 
 			case Renderer::QueryType::PIPELINE_STATISTICS:
-			{
-				/*
-				// TODO(co) Fill "Renderer::PipelineStatisticsQueryResult"
-				D3D11_QUERY_DATA_PIPELINE_STATISTICS d3d11QueryDataPipelineStatistics = {};
-				// TODO(co) queryResultFlags
-				// TODO(co) numberOfQueries
-				RENDERER_ASSERT(mContext, numberOfDataBytes <= sizeof(UINT64) * numberOfQueries, "OpenGL out-of-memory query access")
-				while (S_OK != mD3D11DeviceContext->GetData(d3d11QueryPool.getD3D11Queries()[firstQueryIndex], &d3d11QueryDataPipelineStatistics, sizeof(D3D11_QUERY_DATA_PIPELINE_STATISTICS), 0))
-				{
-					;	// Nothing here
-				}
-				*/
-				resultAvailable = false;
+				RENDERER_ASSERT(mContext, numberOfDataBytes >= sizeof(Renderer::PipelineStatisticsQueryResult), "OpenGL out-of-memory query access")
+				RENDERER_ASSERT(mContext, 1 == numberOfQueries || strideInBytes >= sizeof(Renderer::PipelineStatisticsQueryResult), "OpenGL out-of-memory query access")
+				resultAvailable = static_cast<const PipelineStatisticsQueryPool&>(openGLQueryPool).getQueryPoolResults(data, firstQueryIndex, numberOfQueries, strideInBytes, waitForResult);
 				break;
-			}
 		}
 
 		// Done
