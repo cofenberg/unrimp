@@ -1485,6 +1485,19 @@ struct ID3D10Query : public ID3D10Asynchronous
 		virtual void STDMETHODCALLTYPE GetDesc(__out D3D10_QUERY_DESC *pDesc) = 0;
 };
 
+// "Microsoft DirectX SDK (June 2010)" -> "D3D10.h"
+typedef struct D3D10_QUERY_DATA_PIPELINE_STATISTICS
+{
+	UINT64 IAVertices;
+	UINT64 IAPrimitives;
+	UINT64 VSInvocations;
+	UINT64 GSInvocations;
+	UINT64 GSPrimitives;
+	UINT64 CInvocations;
+	UINT64 CPrimitives;
+	UINT64 PSInvocations;
+} D3D10_QUERY_DATA_PIPELINE_STATISTICS;
+
 // "Microsoft DirectX SDK (June 2010)" -> "D3D10SDKLayers.h"
 MIDL_INTERFACE("9B7E4E01-342C-4106-A19F-4F2704F689F0")
 ID3D10Debug : public IUnknown
@@ -6472,6 +6485,184 @@ namespace Direct3D10Renderer
 
 
 	//[-------------------------------------------------------]
+	//[ Direct3D10Renderer/QueryPool.h                        ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Direct3D 10 asynchronous query pool interface
+	*/
+	class QueryPool final : public Renderer::IQueryPool
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] direct3D10Renderer
+		*    Owner Direct3D 10 renderer instance
+		*  @param[in] queryType
+		*    Query type
+		*  @param[in] numberOfQueries
+		*    Number of queries
+		*/
+		QueryPool(Direct3D10Renderer& direct3D10Renderer, Renderer::QueryType queryType, uint32_t numberOfQueries) :
+			IQueryPool(direct3D10Renderer),
+			mQueryType(queryType),
+			mNumberOfQueries(numberOfQueries),
+			mD3D10Queries(RENDERER_MALLOC_TYPED(direct3D10Renderer.getContext(), ID3D10Query*, numberOfQueries))
+		{
+			// Get Direct3D 10 query description
+			D3D10_QUERY_DESC d3d10QueryDesc = {};
+			switch (queryType)
+			{
+				case Renderer::QueryType::OCCLUSION:
+					d3d10QueryDesc.Query = D3D10_QUERY_OCCLUSION;
+					break;
+
+				case Renderer::QueryType::PIPELINE_STATISTICS:
+					d3d10QueryDesc.Query = D3D10_QUERY_PIPELINE_STATISTICS;
+					break;
+
+				case Renderer::QueryType::TIMESTAMP:
+					d3d10QueryDesc.Query = D3D10_QUERY_TIMESTAMP;
+					break;
+			}
+
+			{ // Create Direct3D 10 queries
+				ID3D10Device* d3d10Device = direct3D10Renderer.getD3D10Device();
+				for (uint32_t i = 0; i < numberOfQueries; ++i)
+				{
+					FAILED_DEBUG_BREAK(d3d10Device->CreateQuery(&d3d10QueryDesc, &mD3D10Queries[i]));
+				}
+			}
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RENDERER_DEBUG
+				switch (queryType)
+				{
+					case Renderer::QueryType::OCCLUSION:
+						setDebugName("Occlusion query");
+						break;
+
+					case Renderer::QueryType::PIPELINE_STATISTICS:
+						setDebugName("Pipeline statistics query");
+						break;
+
+					case Renderer::QueryType::TIMESTAMP:
+						setDebugName("Timestamp query");
+						break;
+				}
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~QueryPool() override
+		{
+			for (uint32_t i = 0; i < mNumberOfQueries; ++i)
+			{
+				mD3D10Queries[i]->Release();
+			}
+			RENDERER_FREE(getRenderer().getContext(), mD3D10Queries);
+		}
+
+		/**
+		*  @brief
+		*    Return the query type
+		*
+		*  @return
+		*    The query type
+		*/
+		[[nodiscard]] inline Renderer::QueryType getQueryType() const
+		{
+			return mQueryType;
+		}
+
+		/**
+		*  @brief
+		*    Return the number of queries
+		*
+		*  @return
+		*    The number of queries
+		*/
+		[[nodiscard]] inline uint32_t getNumberOfQueries() const
+		{
+			return mNumberOfQueries;
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D 10 queries
+		*
+		*  @return
+		*    The Direct3D 10 queries
+		*/
+		[[nodiscard]] inline ID3D10Query** getD3D10Queries() const
+		{
+			return mD3D10Queries;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		#ifdef RENDERER_DEBUG
+			virtual void setDebugName(const char* name) override
+			{
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
+				const UINT nameLength = static_cast<UINT>(strlen(name));
+				for (uint32_t i = 0; i < mNumberOfQueries; ++i)
+				{
+					ID3D10Query* d3d10Query = mD3D10Queries[i];
+					FAILED_DEBUG_BREAK(d3d10Query->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(d3d10Query->SetPrivateData(WKPDID_D3DDebugObjectName, nameLength, name));
+				}
+			}
+		#endif
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), QueryPool, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit QueryPool(const QueryPool& source) = delete;
+		QueryPool& operator =(const QueryPool& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		Renderer::QueryType mQueryType;
+		uint32_t			mNumberOfQueries;
+		ID3D10Query**		mD3D10Queries;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ Direct3D10Renderer/RenderTarget/SwapChain.h           ]
 	//[-------------------------------------------------------]
 	/**
@@ -9836,38 +10027,78 @@ namespace Direct3D10Renderer
 	//[-------------------------------------------------------]
 	void Direct3D10Renderer::resetQueryPool([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t firstQueryIndex, [[maybe_unused]] uint32_t numberOfQueries)
 	{
-		// Sanity check
+		// Sanity checks
 		DIRECT3D10RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
+		RENDERER_ASSERT(mContext, firstQueryIndex < static_cast<QueryPool&>(queryPool).getNumberOfQueries(), "Direct3D 10 out-of-bounds query index")
+		RENDERER_ASSERT(mContext, (firstQueryIndex + numberOfQueries) <= static_cast<QueryPool&>(queryPool).getNumberOfQueries(), "Direct3D 10 out-of-bounds query index")
 
-		// TODO(co) Implement me
-		NOP;
+		// Nothing to do in here for Direct3D 10
 	}
 
-	void Direct3D10Renderer::beginQuery([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t queryIndex, [[maybe_unused]] uint32_t queryControlFlags)
+	void Direct3D10Renderer::beginQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex, uint32_t)
 	{
 		// Sanity check
 		DIRECT3D10RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
-		// TODO(co) Implement me
-		NOP;
+		// Query pool type dependent processing
+		QueryPool& d3d10QueryPool = static_cast<QueryPool&>(queryPool);
+		RENDERER_ASSERT(mContext, queryIndex < d3d10QueryPool.getNumberOfQueries(), "Direct3D 10 out-of-bounds query index")
+		switch (d3d10QueryPool.getQueryType())
+		{
+			case Renderer::QueryType::OCCLUSION:
+			case Renderer::QueryType::PIPELINE_STATISTICS:
+				d3d10QueryPool.getD3D10Queries()[queryIndex]->Begin();
+				break;
+
+			case Renderer::QueryType::TIMESTAMP:
+				RENDERER_ASSERT(mContext, false, "Direct3D 10 begin query isn't allowed for timestamp queries, use \"Renderer::Command::WriteTimestampQuery\" instead")
+				break;
+		}
 	}
 
-	void Direct3D10Renderer::endQuery([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t queryIndex)
+	void Direct3D10Renderer::endQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex)
 	{
 		// Sanity check
 		DIRECT3D10RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
-		// TODO(co) Implement me
-		NOP;
+		// Query pool type dependent processing
+		QueryPool& d3d10QueryPool = static_cast<QueryPool&>(queryPool);
+		RENDERER_ASSERT(mContext, queryIndex < d3d10QueryPool.getNumberOfQueries(), "Direct3D 10 out-of-bounds query index")
+		switch (d3d10QueryPool.getQueryType())
+		{
+			case Renderer::QueryType::OCCLUSION:
+			case Renderer::QueryType::PIPELINE_STATISTICS:
+				d3d10QueryPool.getD3D10Queries()[queryIndex]->End();
+				break;
+
+			case Renderer::QueryType::TIMESTAMP:
+				RENDERER_ASSERT(mContext, false, "Direct3D 10 end query isn't allowed for timestamp queries, use \"Renderer::Command::WriteTimestampQuery\" instead")
+				break;
+		}
 	}
 
-	void Direct3D10Renderer::writeTimestampQuery([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t queryIndex)
+	void Direct3D10Renderer::writeTimestampQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex)
 	{
 		// Sanity check
 		DIRECT3D10RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
-		// TODO(co) Implement me
-		NOP;
+		// Query pool type dependent processing
+		QueryPool& d3d10QueryPool = static_cast<QueryPool&>(queryPool);
+		RENDERER_ASSERT(mContext, queryIndex < d3d10QueryPool.getNumberOfQueries(), "Direct3D 10 out-of-bounds query index")
+		switch (d3d10QueryPool.getQueryType())
+		{
+			case Renderer::QueryType::OCCLUSION:
+				RENDERER_ASSERT(mContext, false, "Direct3D 10 write timestamp query isn't allowed for occlusion queries, use \"Renderer::Command::BeginQuery\" and \"Renderer::Command::EndQuery\" instead")
+				break;
+
+			case Renderer::QueryType::PIPELINE_STATISTICS:
+				RENDERER_ASSERT(mContext, false, "Direct3D 10 write timestamp query isn't allowed for pipeline statistics queries, use \"Renderer::Command::BeginQuery\" and \"Renderer::Command::EndQuery\" instead")
+				break;
+
+			case Renderer::QueryType::TIMESTAMP:
+				d3d10QueryPool.getD3D10Queries()[queryIndex]->End();
+				break;
+		}
 	}
 
 
@@ -10009,8 +10240,8 @@ namespace Direct3D10Renderer
 
 	Renderer::IQueryPool* Direct3D10Renderer::createQueryPool([[maybe_unused]] Renderer::QueryType queryType, [[maybe_unused]] uint32_t numberOfQueries)
 	{
-		// TODO(co) Implement me
-		return nullptr;
+		RENDERER_ASSERT(mContext, numberOfQueries > 0, "Direct3D 10: Number of queries mustn't be zero")
+		return RENDERER_NEW(mContext, QueryPool)(*this, queryType, numberOfQueries);
 	}
 
 	Renderer::ISwapChain* Direct3D10Renderer::createSwapChain(Renderer::IRenderPass& renderPass, Renderer::WindowHandle windowHandle, bool)
@@ -10277,11 +10508,90 @@ namespace Direct3D10Renderer
 
 	bool Direct3D10Renderer::getQueryPoolResults([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t numberOfDataBytes, [[maybe_unused]] uint8_t* data, [[maybe_unused]] uint32_t firstQueryIndex, [[maybe_unused]] uint32_t numberOfQueries, [[maybe_unused]] uint32_t strideInBytes, [[maybe_unused]] uint32_t queryResultFlags)
 	{
-		// Sanity check
+		// Sanity checks
 		DIRECT3D10RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
+		RENDERER_ASSERT(mContext, numberOfDataBytes >= sizeof(UINT64), "Direct3D 10 out-of-memory query access")
+		RENDERER_ASSERT(mContext, 1 == numberOfQueries || strideInBytes > 0, "Direct3D 10 invalid stride in bytes")
+		RENDERER_ASSERT(mContext, numberOfDataBytes >= strideInBytes * numberOfQueries, "Direct3D 10 out-of-memory query access")
+		RENDERER_ASSERT(mContext, nullptr != data, "Direct3D 10 out-of-memory query access")
+		RENDERER_ASSERT(mContext, numberOfQueries > 0, "Direct3D 10 number of queries mustn't be zero")
 
-		// TODO(co) Implement me
-		return false;
+		// Query pool type dependent processing
+		bool resultAvailable = true;
+		QueryPool& d3d10QueryPool = static_cast<QueryPool&>(queryPool);
+		RENDERER_ASSERT(mContext, firstQueryIndex < d3d10QueryPool.getNumberOfQueries(), "Direct3D 10 out-of-bounds query index")
+		RENDERER_ASSERT(mContext, (firstQueryIndex + numberOfQueries) <= d3d10QueryPool.getNumberOfQueries(), "Direct3D 10 out-of-bounds query index")
+		const bool waitForResult = ((queryResultFlags & Renderer::QueryResultFlags::WAIT) != 0);
+		switch (d3d10QueryPool.getQueryType())
+		{
+			case Renderer::QueryType::OCCLUSION:
+			case Renderer::QueryType::TIMESTAMP:	// TODO(co) Convert time to nanoseconds, see e.g. http://reedbeta.com/blog/gpu-profiling-101/
+			{
+				uint8_t* currentData = data;
+				ID3D10Query** d3D10Queries = d3d10QueryPool.getD3D10Queries();
+				for (uint32_t i = 0; i  < numberOfQueries; ++i)
+				{
+					HRESULT d3d10QueryResult = S_FALSE;
+					do
+					{
+						d3d10QueryResult = d3D10Queries[firstQueryIndex + i]->GetData(currentData, sizeof(UINT64), 0);
+					}
+					while (waitForResult && S_OK != d3d10QueryResult);
+					if (S_FALSE == d3d10QueryResult)
+					{
+						// Result not ready
+						resultAvailable = false;
+						break;
+					}
+					currentData += strideInBytes;
+				}
+				break;
+			}
+
+			case Renderer::QueryType::PIPELINE_STATISTICS:
+			{
+				RENDERER_ASSERT(mContext, numberOfDataBytes >= sizeof(Renderer::PipelineStatisticsQueryResult), "Direct3D 10 out-of-memory query access")
+				RENDERER_ASSERT(mContext, 1 == numberOfQueries || strideInBytes >= sizeof(Renderer::PipelineStatisticsQueryResult), "Direct3D 10 out-of-memory query access")
+				uint8_t* currentData = data;
+				ID3D10Query** d3D10Queries = d3d10QueryPool.getD3D10Queries();
+				D3D10_QUERY_DATA_PIPELINE_STATISTICS d3d10QueryDataPipelineStatistics = {};
+				for (uint32_t i = 0; i  < numberOfQueries; ++i)
+				{
+					HRESULT d3d10QueryResult = S_FALSE;
+					do
+					{
+						d3d10QueryResult = d3D10Queries[firstQueryIndex + i]->GetData(&d3d10QueryDataPipelineStatistics, sizeof(D3D10_QUERY_DATA_PIPELINE_STATISTICS), 0);
+					}
+					while (waitForResult && S_OK != d3d10QueryResult);
+					if (S_FALSE == d3d10QueryResult)
+					{
+						// Result not ready
+						resultAvailable = false;
+						break;
+					}
+					else
+					{
+						Renderer::PipelineStatisticsQueryResult* pipelineStatisticsQueryResult = reinterpret_cast<Renderer::PipelineStatisticsQueryResult*>(currentData);
+						pipelineStatisticsQueryResult->numberOfInputAssemblerVertices					= d3d10QueryDataPipelineStatistics.IAVertices;
+						pipelineStatisticsQueryResult->numberOfInputAssemblerPrimitives					= d3d10QueryDataPipelineStatistics.IAPrimitives;
+						pipelineStatisticsQueryResult->numberOfVertexShaderInvocations					= d3d10QueryDataPipelineStatistics.VSInvocations;
+						pipelineStatisticsQueryResult->numberOfGeometryShaderInvocations				= d3d10QueryDataPipelineStatistics.GSInvocations;
+						pipelineStatisticsQueryResult->numberOfGeometryShaderOutputPrimitives			= d3d10QueryDataPipelineStatistics.GSPrimitives;
+						pipelineStatisticsQueryResult->numberOfClippingInputPrimitives					= d3d10QueryDataPipelineStatistics.CInvocations;
+						pipelineStatisticsQueryResult->numberOfClippingOutputPrimitives					= d3d10QueryDataPipelineStatistics.CPrimitives;
+						pipelineStatisticsQueryResult->numberOfFragmentShaderInvocations				= d3d10QueryDataPipelineStatistics.PSInvocations;
+						pipelineStatisticsQueryResult->numberOfTessellationControlShaderInvocations		= 0;
+						pipelineStatisticsQueryResult->numberOfTessellationEvaluationShaderInvocations	= 0;
+						pipelineStatisticsQueryResult->numberOfComputeShaderInvocations					= 0;
+					}
+					currentData += strideInBytes;
+				}
+				break;
+			}
+		}
+
+		// Done
+		return resultAvailable;
 	}
 
 
