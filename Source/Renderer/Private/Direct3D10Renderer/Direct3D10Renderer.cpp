@@ -1751,6 +1751,15 @@ namespace Direct3D10Renderer
 	//[-------------------------------------------------------]
 	//[ Direct3D10Renderer/Direct3D10Renderer.h               ]
 	//[-------------------------------------------------------]
+	struct CurrentGraphicsPipelineState
+	{
+		Renderer::IGraphicsProgram*	graphicsProgram			= nullptr;
+		ID3D10InputLayout*			d3d10InputLayout		= nullptr;
+		ID3D10RasterizerState*		d3d10RasterizerState	= nullptr;
+		ID3D10DepthStencilState*	d3d10DepthStencilState	= nullptr;
+		ID3D10BlendState*			d3D10BlendState			= nullptr;
+	};
+
 	/**
 	*  @brief
 	*    Direct3D 10 renderer class
@@ -1946,10 +1955,11 @@ namespace Direct3D10Renderer
 		Renderer::IRenderTarget*   mRenderTarget;				///< Currently set render target (we keep a reference to it), can be a null pointer
 		RootSignature*			   mGraphicsRootSignature;		///< Currently set graphics root signature (we keep a reference to it), can be a null pointer
 		// State cache to avoid making redundant Direct3D 10 calls
-		D3D10_PRIMITIVE_TOPOLOGY mD3D10PrimitiveTopology;
-		ID3D10VertexShader*		 mD3d10VertexShader;
-		ID3D10GeometryShader*	 mD3d10GeometryShader;
-		ID3D10PixelShader*		 mD3d10PixelShader;
+		CurrentGraphicsPipelineState mCurrentGraphicsPipelineState;
+		D3D10_PRIMITIVE_TOPOLOGY	 mD3D10PrimitiveTopology;
+		ID3D10VertexShader*			 mD3d10VertexShader;
+		ID3D10GeometryShader*		 mD3d10GeometryShader;
+		ID3D10PixelShader*			 mD3d10PixelShader;
 
 
 	};
@@ -6036,6 +6046,7 @@ namespace Direct3D10Renderer
 			mD3D10RasterizerState(nullptr)
 		{
 			// Create the Direct3D 10 rasterizer state
+			// -> "ID3D10Device::CreateRasterizerState()" takes automatically care of duplicate rasterizer state handling
 			// -> Thank's to Direct3D 12, "Renderer::RasterizerState" doesn't map directly to Direct3D 10 & 11 - but at least the constants directly still map
 			D3D10_RASTERIZER_DESC d3d10RasterizerDesc;
 			d3d10RasterizerDesc.FillMode				= static_cast<D3D10_FILL_MODE>(rasterizerState.fillMode);
@@ -6145,6 +6156,7 @@ namespace Direct3D10Renderer
 			mD3D10DepthStencilState(nullptr)
 		{
 			// Create the Direct3D 10 depth stencil state
+			// -> "ID3D10Device::CreateDepthStencilState()" takes automatically care of duplicate depth stencil state handling
 			// -> "Renderer::DepthStencilState" maps directly to Direct3D 10 & 11, do not change it
 			FAILED_DEBUG_BREAK(direct3D10Renderer.getD3D10Device()->CreateDepthStencilState(reinterpret_cast<const D3D10_DEPTH_STENCIL_DESC*>(&depthStencilState), &mD3D10DepthStencilState));
 
@@ -6243,6 +6255,7 @@ namespace Direct3D10Renderer
 			mD3D10BlendState(nullptr)
 		{
 			// Create the Direct3D 10 blend state
+			// -> "ID3D10Device::CreateBlendState()" takes automatically care of duplicate blend state handling
 			const D3D10_BLEND_DESC d3d10BlendDesc =
 			{
 				blendState.alphaToCoverageEnable,										// AlphaToCoverageEnable (BOOL)
@@ -8598,25 +8611,42 @@ namespace Direct3D10Renderer
 		*  @brief
 		*    Bind the graphics pipeline state
 		*/
-		void bindGraphicsPipelineState() const
+		void bindGraphicsPipelineState(CurrentGraphicsPipelineState& currentGraphicsPipelineState) const
 		{
-			// Set the Direct3D 10 input layout
-			if (nullptr != mD3D10InputLayout)
+			// Set the graphics program
+			if (currentGraphicsPipelineState.graphicsProgram != mGraphicsProgram)
 			{
+				currentGraphicsPipelineState.graphicsProgram = mGraphicsProgram;
+				static_cast<Direct3D10Renderer&>(getRenderer()).setGraphicsProgram(mGraphicsProgram);
+			}
+
+			// Set the Direct3D 10 input layout
+			if (nullptr != mD3D10InputLayout && currentGraphicsPipelineState.d3d10InputLayout != mD3D10InputLayout)
+			{
+				currentGraphicsPipelineState.d3d10InputLayout = mD3D10InputLayout;
 				mD3D10Device->IASetInputLayout(mD3D10InputLayout);
 			}
 
-			// Set the graphics program
-			static_cast<Direct3D10Renderer&>(getRenderer()).setGraphicsProgram(mGraphicsProgram);
-
 			// Set the Direct3D 10 rasterizer state
-			mD3D10Device->RSSetState(mRasterizerState.getD3D10RasterizerState());
+			if (currentGraphicsPipelineState.d3d10RasterizerState != mRasterizerState.getD3D10RasterizerState())
+			{
+				currentGraphicsPipelineState.d3d10RasterizerState = mRasterizerState.getD3D10RasterizerState();
+				mD3D10Device->RSSetState(currentGraphicsPipelineState.d3d10RasterizerState);
+			}
 
 			// Set Direct3D 10 depth stencil state
-			mD3D10Device->OMSetDepthStencilState(mDepthStencilState.getD3D10DepthStencilState(), 0);
+			if (currentGraphicsPipelineState.d3d10DepthStencilState != mDepthStencilState.getD3D10DepthStencilState())
+			{
+				currentGraphicsPipelineState.d3d10DepthStencilState = mDepthStencilState.getD3D10DepthStencilState();
+				mD3D10Device->OMSetDepthStencilState(currentGraphicsPipelineState.d3d10DepthStencilState, 0);
+			}
 
 			// Set Direct3D 10 blend state
-			mD3D10Device->OMSetBlendState(mBlendState.getD3D10BlendState(), 0, 0xffffffff);
+			if (currentGraphicsPipelineState.d3D10BlendState != mBlendState.getD3D10BlendState())
+			{
+				currentGraphicsPipelineState.d3D10BlendState = mBlendState.getD3D10BlendState();
+				mD3D10Device->OMSetBlendState(currentGraphicsPipelineState.d3D10BlendState, 0, 0xffffffff);
+			}
 		}
 
 
@@ -9198,7 +9228,7 @@ namespace Direct3D10Renderer
 			}
 
 			// Set graphics pipeline state
-			direct3D10GraphicsPipelineState->bindGraphicsPipelineState();
+			direct3D10GraphicsPipelineState->bindGraphicsPipelineState(mCurrentGraphicsPipelineState);
 		}
 		else
 		{

@@ -2202,6 +2202,15 @@ namespace Direct3D11Renderer
 	//[-------------------------------------------------------]
 	//[ Direct3D11Renderer/Direct3D11Renderer.h               ]
 	//[-------------------------------------------------------]
+	struct CurrentGraphicsPipelineState
+	{
+		Renderer::IGraphicsProgram*	graphicsProgram			= nullptr;
+		ID3D11InputLayout*			d3d11InputLayout		= nullptr;
+		ID3D11RasterizerState*		d3d11RasterizerState	= nullptr;
+		ID3D11DepthStencilState*	d3d11DepthStencilState	= nullptr;
+		ID3D11BlendState*			d3D11BlendState			= nullptr;
+	};
+
 	/**
 	*  @brief
 	*    Direct3D 11 renderer class
@@ -2450,13 +2459,14 @@ namespace Direct3D11Renderer
 		RootSignature*			   mGraphicsRootSignature;		///< Currently set graphics root signature (we keep a reference to it), can be a null pointer
 		RootSignature*			   mComputeRootSignature;		///< Currently set compute root signature (we keep a reference to it), can be a null pointer
 		// State cache to avoid making redundant Direct3D 11 calls
-		D3D11_PRIMITIVE_TOPOLOGY mD3D11PrimitiveTopology;
-		ID3D11VertexShader*		 mD3d11VertexShader;
-		ID3D11HullShader*		 mD3d11HullShader;
-		ID3D11DomainShader*		 mD3d11DomainShader;
-		ID3D11GeometryShader*	 mD3d11GeometryShader;
-		ID3D11PixelShader*		 mD3d11PixelShader;
-		ID3D11ComputeShader*	 mD3d11ComputeShader;
+		CurrentGraphicsPipelineState mCurrentGraphicsPipelineState;
+		D3D11_PRIMITIVE_TOPOLOGY	 mD3D11PrimitiveTopology;
+		ID3D11VertexShader*			 mD3d11VertexShader;
+		ID3D11HullShader*			 mD3d11HullShader;
+		ID3D11DomainShader*			 mD3d11DomainShader;
+		ID3D11GeometryShader*		 mD3d11GeometryShader;
+		ID3D11PixelShader*			 mD3d11PixelShader;
+		ID3D11ComputeShader*		 mD3d11ComputeShader;
 
 
 	};
@@ -7757,6 +7767,7 @@ namespace Direct3D11Renderer
 			mD3D11RasterizerState(nullptr)
 		{
 			// Create the Direct3D 11 rasterizer state
+			// -> "ID3D11Device::CreateRasterizerState()" takes automatically care of duplicate rasterizer state handling
 			// -> Thank's to Direct3D 12, "Renderer::RasterizerState" doesn't map directly to Direct3D 10 & 11 - but at least the constants directly still map
 			D3D11_RASTERIZER_DESC d3d11RasterizerDesc;
 			d3d11RasterizerDesc.FillMode				= static_cast<D3D11_FILL_MODE>(rasterizerState.fillMode);
@@ -7866,6 +7877,7 @@ namespace Direct3D11Renderer
 			mD3D11DepthStencilState(nullptr)
 		{
 			// Create the Direct3D 11 depth stencil state
+			// -> "ID3D11Device::CreateDepthStencilState()" takes automatically care of duplicate depth stencil state handling
 			// -> "Renderer::DepthStencilState" maps directly to Direct3D 10 & 11 & 12, do not change it
 			FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateDepthStencilState(reinterpret_cast<const D3D11_DEPTH_STENCIL_DESC*>(&depthStencilState), &mD3D11DepthStencilState));
 
@@ -7964,6 +7976,7 @@ namespace Direct3D11Renderer
 			mD3D11BlendState(nullptr)
 		{
 			// Create the Direct3D 11 depth stencil state
+			// -> "ID3D11Device::CreateBlendState()" takes automatically care of duplicate blend state handling
 			// -> "Renderer::DepthStencilState" maps directly to Direct3D 10 & 11, do not change it
 			static_assert(sizeof(Renderer::BlendState) == sizeof(D3D11_BLEND_DESC), "Direct3D 11 structure mismatch detected");
 			FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateBlendState(reinterpret_cast<const D3D11_BLEND_DESC*>(&blendState), &mD3D11BlendState));
@@ -10859,25 +10872,42 @@ namespace Direct3D11Renderer
 		*  @param[in] d3d11DeviceContext
 		*    The Direct3D 11 device context instance
 		*/
-		void bindGraphicsPipelineState(ID3D11DeviceContext& d3d11DeviceContext) const
+		void bindGraphicsPipelineState(ID3D11DeviceContext& d3d11DeviceContext, CurrentGraphicsPipelineState& currentGraphicsPipelineState) const
 		{
-			// Set the Direct3D 11 input layout
-			if (nullptr != mD3D11InputLayout)
+			// Set the graphics program
+			if (currentGraphicsPipelineState.graphicsProgram != mGraphicsProgram)
 			{
+				currentGraphicsPipelineState.graphicsProgram = mGraphicsProgram;
+				static_cast<Direct3D11Renderer&>(getRenderer()).setGraphicsProgram(mGraphicsProgram);
+			}
+
+			// Set the Direct3D 11 input layout
+			if (nullptr != mD3D11InputLayout && currentGraphicsPipelineState.d3d11InputLayout != mD3D11InputLayout)
+			{
+				currentGraphicsPipelineState.d3d11InputLayout = mD3D11InputLayout;
 				d3d11DeviceContext.IASetInputLayout(mD3D11InputLayout);
 			}
 
-			// Set the graphics program
-			static_cast<Direct3D11Renderer&>(getRenderer()).setGraphicsProgram(mGraphicsProgram);
-
 			// Set the Direct3D 11 rasterizer state
-			d3d11DeviceContext.RSSetState(mRasterizerState.getD3D11RasterizerState());
+			if (currentGraphicsPipelineState.d3d11RasterizerState != mRasterizerState.getD3D11RasterizerState())
+			{
+				currentGraphicsPipelineState.d3d11RasterizerState = mRasterizerState.getD3D11RasterizerState();
+				d3d11DeviceContext.RSSetState(currentGraphicsPipelineState.d3d11RasterizerState);
+			}
 
 			// Set Direct3D 11 depth stencil state
-			d3d11DeviceContext.OMSetDepthStencilState(mDepthStencilState.getD3D11DepthStencilState(), 0);
+			if (currentGraphicsPipelineState.d3d11DepthStencilState != mDepthStencilState.getD3D11DepthStencilState())
+			{
+				currentGraphicsPipelineState.d3d11DepthStencilState = mDepthStencilState.getD3D11DepthStencilState();
+				d3d11DeviceContext.OMSetDepthStencilState(currentGraphicsPipelineState.d3d11DepthStencilState, 0);
+			}
 
 			// Set Direct3D 11 blend state
-			d3d11DeviceContext.OMSetBlendState(mBlendState.getD3D11BlendState(), 0, 0xffffffff);
+			if (currentGraphicsPipelineState.d3D11BlendState != mBlendState.getD3D11BlendState())
+			{
+				currentGraphicsPipelineState.d3D11BlendState = mBlendState.getD3D11BlendState();
+				d3d11DeviceContext.OMSetBlendState(currentGraphicsPipelineState.d3D11BlendState, 0, 0xffffffff);
+			}
 		}
 
 
@@ -11710,7 +11740,7 @@ namespace Direct3D11Renderer
 			}
 
 			// Set graphics pipeline state
-			direct3D11GraphicsPipelineState->bindGraphicsPipelineState(*mD3D11DeviceContext);
+			direct3D11GraphicsPipelineState->bindGraphicsPipelineState(*mD3D11DeviceContext, mCurrentGraphicsPipelineState);
 		}
 		else
 		{
