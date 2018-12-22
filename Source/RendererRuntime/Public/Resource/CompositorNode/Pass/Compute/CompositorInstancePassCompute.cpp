@@ -105,7 +105,7 @@ namespace RendererRuntime
 			RENDERER_SCOPED_PROFILER_EVENT_DYNAMIC(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), commandBuffer, getCompositorResourcePass().getDebugName())
 
 			// Fill command buffer depending on graphics or compute material blueprint
-			mRenderQueue.addRenderablesFromRenderableManager(mRenderableManager);
+			mRenderQueue.addRenderablesFromRenderableManager(mRenderableManager, static_cast<const CompositorResourcePassCompute&>(getCompositorResourcePass()).getMaterialTechniqueId(), compositorContextData);
 			if (mRenderQueue.getNumberOfDrawCalls() > 0)
 			{
 				if (mComputeMaterialBlueprint)
@@ -114,7 +114,7 @@ namespace RendererRuntime
 					RENDERER_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), nullptr == renderTarget, "The compute compositor instance pass needs an invalid render target in case a compute material blueprint is used")
 
 					// Fill command buffer using a compute material blueprint
-					mRenderQueue.fillComputeCommandBuffer(static_cast<const CompositorResourcePassCompute&>(getCompositorResourcePass()).getMaterialTechniqueId(), compositorContextData, commandBuffer);
+					mRenderQueue.fillComputeCommandBuffer(compositorContextData, commandBuffer);
 				}
 				else
 				{
@@ -122,7 +122,7 @@ namespace RendererRuntime
 					RENDERER_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), nullptr != renderTarget, "The compute compositor instance pass needs a valid render target in case a graphics material blueprint is used")
 
 					// Fill command buffer using a graphics material blueprint
-					mRenderQueue.fillGraphicsCommandBuffer(*renderTarget, static_cast<const CompositorResourcePassCompute&>(getCompositorResourcePass()).getMaterialTechniqueId(), compositorContextData, commandBuffer);
+					mRenderQueue.fillGraphicsCommandBuffer(*renderTarget, compositorContextData, commandBuffer);
 				}
 			}
 		}

@@ -64,16 +64,16 @@ namespace RendererRuntime
 			{
 				// Fill command buffer, this sets the material resource blueprint
 				{
-					Renderer::IVertexArrayPtr vertexArrayPtr = debugGuiManager.getFillVertexArrayPtr();
+					const Renderer::IVertexArrayPtr& vertexArrayPtr = debugGuiManager.getFillVertexArrayPtr();
 					if (vertexArrayPtr != renderables[0].getVertexArrayPtr())
 					{
 						renderables[0].setVertexArrayPtr(vertexArrayPtr);
 					}
 				}
-				mRenderQueue.addRenderablesFromRenderableManager(mRenderableManager);
+				mRenderQueue.addRenderablesFromRenderableManager(mRenderableManager, static_cast<const CompositorResourcePassDebugGui&>(getCompositorResourcePass()).getMaterialTechniqueId(), compositorContextData);
 				if (mRenderQueue.getNumberOfDrawCalls() > 0)
 				{
-					mRenderQueue.fillGraphicsCommandBuffer(*renderTarget, static_cast<const CompositorResourcePassDebugGui&>(getCompositorResourcePass()).getMaterialTechniqueId(), compositorContextData, commandBuffer);
+					mRenderQueue.fillGraphicsCommandBuffer(*renderTarget, compositorContextData, commandBuffer);
 
 					// Fill command buffer using custom graphics material blueprint resource
 					if (nullptr != compositorContextData.getCurrentlyBoundMaterialBlueprintResource())

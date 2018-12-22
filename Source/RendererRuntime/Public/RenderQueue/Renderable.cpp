@@ -61,8 +61,6 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	Renderable::Renderable() :
-		// Derived data
-		mSortingKey(getInvalid<uint64_t>()),
 		// Data
 		mRenderableManager(::detail::NullRenderableManager),
 		mStartIndexLocation(0),
@@ -82,8 +80,6 @@ namespace RendererRuntime
 	}
 
 	Renderable::Renderable(RenderableManager& renderableManager, const Renderer::IVertexArrayPtr& vertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, uint32_t startIndexLocation, uint32_t numberOfIndices, uint32_t instanceCount) :
-		// Derived data
-		mSortingKey(getInvalid<uint64_t>()),
 		// Data
 		mRenderableManager(renderableManager),
 		mVertexArrayPtr(vertexArrayPtr),
@@ -104,15 +100,9 @@ namespace RendererRuntime
 		{
 			setMaterialResourceId(materialResourceManager, materialResourceId);
 		}
-		else
-		{
-			calculateSortingKey();
-		}
 	}
 
 	Renderable::Renderable(RenderableManager& renderableManager, const Renderer::IVertexArrayPtr& vertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, const Renderer::IIndirectBufferPtr& indirectBufferPtr, uint32_t indirectBufferOffset, uint32_t numberOfDraws) :
-		// Derived data
-		mSortingKey(getInvalid<uint64_t>()),
 		// Data
 		mRenderableManager(renderableManager),
 		mVertexArrayPtr(vertexArrayPtr),
@@ -133,10 +123,6 @@ namespace RendererRuntime
 		if (isValid(materialResourceId))
 		{
 			setMaterialResourceId(materialResourceManager, materialResourceId);
-		}
-		else
-		{
-			calculateSortingKey();
 		}
 	}
 
@@ -203,9 +189,6 @@ namespace RendererRuntime
 				// Error!
 				RENDERER_ASSERT(materialResourceManager.getRendererRuntime().getContext(), false, "We should never end up in here")
 			}
-
-			// Calculate sorting key
-			calculateSortingKey();
 		}
 		else
 		{
@@ -218,14 +201,6 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
-	void Renderable::calculateSortingKey()
-	{
-		// TODO(co) Implement me, "mVertexArrayPtr" and "mMaterialResourceId" have an influence
-
-		// The quantized depth is a dynamic part which can't be set inside the cached sorting key (see "RendererRuntime::RenderQueue::addRenderablesFromRenderableManager()")
-		mSortingKey = getInvalid<uint64_t>();
-	}
-
 	void Renderable::unsetMaterialResourceIdInternal()
 	{
 		if (isValid(mMaterialResourceId))

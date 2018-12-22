@@ -297,7 +297,7 @@ namespace RendererRuntime
 		*  @return
 		*    The root signature, can be a null pointer, do not destroy the instance
 		*/
-		[[nodiscard]] inline Renderer::IRootSignaturePtr getRootSignaturePtr() const
+		[[nodiscard]] inline const Renderer::IRootSignaturePtr& getRootSignaturePtr() const
 		{
 			return mRootSignaturePtr;
 		}

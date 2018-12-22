@@ -73,10 +73,385 @@
 	#define NOMCX
 	#define NOCRYPT
 	#include <windows.h>
+
+	// Get rid of some nasty OS macros
+	#undef max
 #elif LINUX
 	// TODO(co) Review which of the following headers can be removed
 	#include <X11/Xlib.h>
 #endif
+
+
+
+
+//[-------------------------------------------------------]
+//[ NullRenderer/MakeID.h                                 ]
+//[-------------------------------------------------------]
+/*
+
+Author:
+	Emil Persson, A.K.A. Humus.
+	http://www.humus.name
+
+Version history:
+	1.0  - Initial release.
+	1.01 - Code review fixes. Code reviewed by Denis A. Gladkiy.
+	1.02 - Fixed an off-by-one error in DestroyRange() found by Markus Billeter
+
+License:
+	Public Domain
+
+	This file is released in the hopes that it will be useful. Use in whatever way you like, but no guarantees that it
+	actually works or fits any particular purpose. It has been unit-tested and benchmarked though, and seems to do
+	what it was designed to do, and seems pretty quick at it too.
+
+Notes: 
+	There are many applications where it is desired to generate unique IDs at runtime for various resources, such that they can be
+	distinguished, sorted or otherwise processed in an efficient manner. It can in some cases replace hashes, handles and pointers.
+	In cases where resource pointers are used as IDs, it offers a unique ID that requires far fewer bits, especially for 64bit apps.
+	The design goal of this implementation was to return the most compact IDs as possible, limiting to a specific range if necessary.
+
+	The properties of this system are as follows:
+		- Creating a new ID returns the smallest possible unused ID.
+		- Creating a new range of IDs returns the smallest possible continuous range of the specified size.
+		- Created IDs remain valid until destroyed.
+		- Destroying an ID returns it to the pool and may be returned by subsequent allocations.
+		- The system is NOT thread-safe.
+
+	Performance properties:
+		- Creating an ID is O(1) and generally super-cheap.
+		- Destroying an ID is also cheap, but O(log(n)), where n is the current number of distinct available ranges.
+		- The system merges available ranges when IDs are destroyed, keeping said n generally very small in practice.
+		- After warmup, no further memory allocations should be necessary, or be very rare.
+		- The system uses very little memory.
+		- It is possible to construct a pathological case where fragmentation would cause n to become large. This can be done by
+		  first allocating a very large range of IDs, then deleting every other ID, causing a new range to be allocated for every
+		  free ID, or as many ranges as there are free IDs. I believe nothing close to this situation happens in practical applications.
+		  In tests, millions of random scattered creations and deletions only resulted in a relatively short list in the worst case.
+		  This is because freed IDs are quickly reused and ranges eagerly merged.
+
+	Where would this system be useful? It was originally thought up as a replacement for resource pointers as part of sort-ids
+	in rendering. Using for instance a 64-bit sort-id packing various flags and states, putting a pointer in there takes an
+	awful lot of bits, especially considering the actual possible resources range in the thousands at most. This got far worse
+	of course with the switch to 64bit as pointers are now twice as large and essentially eats all bits except bottom few for
+	alignment.
+	Another application would be for managing a shared pool of resources. IDs could be handed out as handles and used to access
+	the actual resource from an array. By always returning the lowest possible ID or range of IDs we get very good cache behavior
+	since all active resources will grouped together in the bottom part of the array. Using IDs instead of pointers for handles
+	also allows easy resizing of the allocated memory since IDs can remain the same even if the underlying storage changed.
+
+*/
+
+
+#ifdef _DEBUG
+	#include <cstdio>  // For printf(). Remove if you don't need the PrintRanges() function (mostly for debugging anyway).
+#endif
+
+#include <cstdint>	// uint32_t
+#include <limits>	// std::numeric_limits<type>::max()
+#include <cstdlib>
+#include <cstring>
+
+class MakeID final
+{
+private:
+	// Change to uint16_t here for a more compact implementation if 16bit or less IDs work for you.
+	typedef uint16_t uint;
+
+	struct Range
+	{
+		uint m_First;
+		uint m_Last;
+	};
+
+	Range *m_Ranges; // Sorted array of ranges of free IDs
+	uint m_Count;    // Number of ranges in list
+	uint m_Capacity; // Total capacity of range list
+
+	MakeID & operator=(const MakeID &) = delete;
+	MakeID(const MakeID &) = delete;
+
+public:
+	explicit MakeID(const uint max_id = std::numeric_limits<uint>::max())
+	{
+		// Start with a single range, from 0 to max allowed ID (specified)
+		m_Ranges = static_cast<Range*>(::malloc(sizeof(Range)));
+		m_Ranges[0].m_First = 0;
+		m_Ranges[0].m_Last = max_id;
+		m_Count = 1;
+		m_Capacity = 1;
+	}
+
+	~MakeID()
+	{
+		::free(m_Ranges);
+	}
+
+	bool CreateID(uint &id)
+	{
+		if (m_Ranges[0].m_First <= m_Ranges[0].m_Last)
+		{
+			id = m_Ranges[0].m_First;
+
+			// If current range is full and there is another one, that will become the new current range
+			if (m_Ranges[0].m_First == m_Ranges[0].m_Last && m_Count > 1)
+			{
+				DestroyRange(0);
+			}
+			else
+			{
+				++m_Ranges[0].m_First;
+			}
+			return true;
+		}
+
+		// No available ID left
+		return false;
+	}
+
+	bool CreateRangeID(uint &id, const uint count)
+	{
+		uint i = 0;
+		do
+		{
+			const uint range_count = 1u + m_Ranges[i].m_Last - m_Ranges[i].m_First;
+			if (count <= range_count)
+			{
+				id = m_Ranges[i].m_First;
+
+				// If current range is full and there is another one, that will become the new current range
+				if (count == range_count && i + 1 < m_Count)
+				{
+					DestroyRange(i);
+				}
+				else
+				{
+					m_Ranges[i].m_First += count;
+				}
+				return true;
+			}
+			++i;
+		} while (i < m_Count);
+
+		// No range of free IDs was large enough to create the requested continuous ID sequence
+		return false;
+	}
+
+	bool DestroyID(const uint id)
+	{
+		return DestroyRangeID(id, 1);
+	}
+
+	bool DestroyRangeID(const uint id, const uint count)
+	{
+		const uint end_id = static_cast<uint>(id + count);
+
+		// Binary search of the range list
+		uint i0 = 0u;
+		uint i1 = m_Count - 1u;
+
+		for (;;)
+		{
+			const uint i = (i0 + i1) / 2u;
+
+			if (id < m_Ranges[i].m_First)
+			{
+				// Before current range, check if neighboring
+				if (end_id >= m_Ranges[i].m_First)
+				{
+					if (end_id != m_Ranges[i].m_First)
+						return false; // Overlaps a range of free IDs, thus (at least partially) invalid IDs
+
+					// Neighbor id, check if neighboring previous range too
+					if (i > i0 && id - 1 == m_Ranges[i - 1].m_Last)
+					{
+						// Merge with previous range
+						m_Ranges[i - 1].m_Last = m_Ranges[i].m_Last;
+						DestroyRange(i);
+					}
+					else
+					{
+						// Just grow range
+						m_Ranges[i].m_First = id;
+					}
+					return true;
+				}
+				else
+				{
+					// Non-neighbor id
+					if (i != i0)
+					{
+						// Cull upper half of list
+						i1 = i - 1u;
+					}
+					else
+					{
+						// Found our position in the list, insert the deleted range here
+						InsertRange(i);
+						m_Ranges[i].m_First = id;
+						m_Ranges[i].m_Last = end_id - 1u;
+						return true;
+					}
+				}
+			}
+			else if (id > m_Ranges[i].m_Last)
+			{
+				// After current range, check if neighboring
+				if (id - 1 == m_Ranges[i].m_Last)
+				{
+					// Neighbor id, check if neighboring next range too
+					if (i < i1 && end_id == m_Ranges[i + 1].m_First)
+					{
+						// Merge with next range
+						m_Ranges[i].m_Last = m_Ranges[i + 1].m_Last;
+						DestroyRange(i + 1u);
+					}
+					else
+					{
+						// Just grow range
+						m_Ranges[i].m_Last += count;
+					}
+					return true;
+				}
+				else
+				{
+					// Non-neighbor id
+					if (i != i1)
+					{
+						// Cull bottom half of list
+						i0 = i + 1u;
+					}
+					else
+					{
+						// Found our position in the list, insert the deleted range here
+						InsertRange(i + 1u);
+						m_Ranges[i + 1].m_First = id;
+						m_Ranges[i + 1].m_Last = end_id - 1u;
+						return true;
+					}
+				}
+			}
+			else
+			{
+				// Inside a free block, not a valid ID
+				return false;
+			}
+
+		}
+	}
+
+	bool IsID(const uint id) const
+	{
+		// Binary search of the range list
+		uint i0 = 0u;
+		uint i1 = m_Count - 1u;
+
+		for (;;)
+		{
+			const uint i = (i0 + i1) / 2u;
+
+			if (id < m_Ranges[i].m_First)
+			{
+				if (i == i0)
+					return true;
+
+				// Cull upper half of list
+				i1 = i - 1u;
+			}
+			else if (id > m_Ranges[i].m_Last)
+			{
+				if (i == i1)
+					return true;
+
+				// Cull bottom half of list
+				i0 = i + 1u;
+			}
+			else
+			{
+				// Inside a free block, not a valid ID
+				return false;
+			}
+
+		}
+	}
+
+	uint GetAvailableIDs() const
+	{
+		uint count = m_Count;
+		uint i = 0;
+
+		do
+		{
+			count += m_Ranges[i].m_Last - m_Ranges[i].m_First;
+			++i;
+		} while (i < m_Count);
+
+		return count;
+	}
+
+	uint GetLargestContinuousRange() const
+	{
+		uint max_count = 0;
+		uint i = 0;
+
+		do
+		{
+			uint count = m_Ranges[i].m_Last - m_Ranges[i].m_First + 1u;
+			if (count > max_count)
+				max_count = count;
+
+			++i;
+		} while (i < m_Count);
+
+		return max_count;
+	}
+
+	#ifdef _DEBUG
+		void PrintRanges() const
+		{
+			uint i = 0;
+			for (;;)
+			{
+				if (m_Ranges[i].m_First < m_Ranges[i].m_Last)
+					printf("%u-%u", m_Ranges[i].m_First, m_Ranges[i].m_Last);
+				else if (m_Ranges[i].m_First == m_Ranges[i].m_Last)
+					printf("%u", m_Ranges[i].m_First);
+				else
+					printf("-");
+
+				++i;
+				if (i >= m_Count)
+				{
+					printf("\n");
+					return;
+				}
+
+				printf(", ");
+			}
+		}
+	#endif
+
+
+private:
+
+	void InsertRange(const uint index)
+	{
+		if (m_Count >= m_Capacity)
+		{
+			m_Capacity += m_Capacity;
+			m_Ranges = (Range *) realloc(m_Ranges, m_Capacity * sizeof(Range));
+		}
+ 
+		::memmove(m_Ranges + index + 1, m_Ranges + index, (m_Count - index) * sizeof(Range));
+		++m_Count;
+	}
+
+	void DestroyRange(const uint index)
+	{
+		--m_Count;
+		::memmove(m_Ranges + index, m_Ranges + index + 1, (m_Count - index) * sizeof(Range));
+	}
+};
 
 
 
@@ -151,6 +526,15 @@ namespace NullRenderer
 	*/
 	class NullRenderer final : public Renderer::IRenderer
 	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public data                                           ]
+	//[-------------------------------------------------------]
+	public:
+		MakeID VertexArrayMakeId;
+		MakeID GraphicsPipelineStateMakeId;
+		MakeID ComputePipelineStateMakeId;
 
 
 	//[-------------------------------------------------------]
@@ -722,9 +1106,11 @@ namespace NullRenderer
 		*
 		*  @param[in] nullRenderer
 		*    Owner null renderer instance
+		*  @param[in] id
+		*    The unique compact vertex array ID
 		*/
-		inline explicit VertexArray(NullRenderer& nullRenderer) :
-			IVertexArray(nullRenderer)
+		inline explicit VertexArray(NullRenderer& nullRenderer, uint16_t id) :
+			IVertexArray(nullRenderer, id)
 		{}
 
 		/**
@@ -732,7 +1118,10 @@ namespace NullRenderer
 		*    Destructor
 		*/
 		inline virtual ~VertexArray() override
-		{}
+		{
+			// Free the unique compact vertex array ID
+			static_cast<NullRenderer&>(getRenderer()).VertexArrayMakeId.DestroyID(getId());
+		}
 
 
 	//[-------------------------------------------------------]
@@ -1046,6 +1435,18 @@ namespace NullRenderer
 
 		[[nodiscard]] virtual Renderer::IVertexArray* createVertexArray([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Renderer::VertexArrayVertexBuffer* vertexBuffers, Renderer::IIndexBuffer* indexBuffer = nullptr) override
 		{
+			// Sanity checks
+			#ifdef RENDERER_DEBUG
+			{
+				const Renderer::VertexArrayVertexBuffer* vertexBufferEnd = vertexBuffers + numberOfVertexBuffers;
+				for (const Renderer::VertexArrayVertexBuffer* vertexBuffer = vertexBuffers; vertexBuffer < vertexBufferEnd; ++vertexBuffer)
+				{
+					RENDERER_ASSERT(getRenderer().getContext(), &getRenderer() == &vertexBuffer->vertexBuffer->getRenderer(), "Null error: The given vertex buffer resource is owned by another renderer instance")
+				}
+			}
+			#endif
+			RENDERER_ASSERT(getRenderer().getContext(), nullptr == indexBuffer || &getRenderer() == &indexBuffer->getRenderer(), "Null error: The given index buffer resource is owned by another renderer instance")
+
 			// We don't keep a reference to the vertex buffers used by the vertex array attributes in here
 			// -> Ensure a correct reference counter behaviour
 			const Renderer::VertexArrayVertexBuffer* vertexBufferEnd = vertexBuffers + numberOfVertexBuffers;
@@ -1064,7 +1465,8 @@ namespace NullRenderer
 			}
 
 			// Create the vertex array instance
-			return RENDERER_NEW(getRenderer().getContext(), VertexArray)(static_cast<NullRenderer&>(getRenderer()));
+			uint16_t id = 0;
+			return static_cast<NullRenderer&>(getRenderer()).VertexArrayMakeId.CreateID(id) ? RENDERER_NEW(getRenderer().getContext(), VertexArray)(static_cast<NullRenderer&>(getRenderer()), id) : nullptr;
 		}
 
 		[[nodiscard]] inline virtual Renderer::ITextureBuffer* createTextureBuffer([[maybe_unused]] uint32_t numberOfBytes, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = Renderer::BufferFlag::SHADER_RESOURCE, [[maybe_unused]] Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW, [[maybe_unused]] Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F) override
@@ -2641,13 +3043,17 @@ namespace NullRenderer
 		*    Owner null renderer instance
 		*  @param[in] graphicsPipelineState
 		*    Graphics pipeline state to use
+		*  @param[in] id
+		*    The unique compact graphics pipeline state ID
 		*/
-		GraphicsPipelineState(NullRenderer& nullRenderer, const Renderer::GraphicsPipelineState& graphicsPipelineState) :
-			IGraphicsPipelineState(nullRenderer),
+		GraphicsPipelineState(NullRenderer& nullRenderer, const Renderer::GraphicsPipelineState& graphicsPipelineState, uint16_t id) :
+			IGraphicsPipelineState(nullRenderer, id),
+			mRootSignature(graphicsPipelineState.rootSignature),
 			mGraphicsProgram(graphicsPipelineState.graphicsProgram),
 			mRenderPass(graphicsPipelineState.renderPass)
 		{
-			// Add a reference to the given graphics program and render pass
+			// Add a reference to the referenced renderer resources
+			mRootSignature->addReference();
 			mGraphicsProgram->addReference();
 			mRenderPass->addReference();
 		}
@@ -2658,9 +3064,13 @@ namespace NullRenderer
 		*/
 		virtual ~GraphicsPipelineState() override
 		{
-			// Release the graphics program reference and render pass
+			// Release referenced renderer resources
+			mRootSignature->releaseReference();
 			mGraphicsProgram->releaseReference();
 			mRenderPass->releaseReference();
+
+			// Free the unique compact graphics pipeline state ID
+			static_cast<NullRenderer&>(getRenderer()).GraphicsPipelineStateMakeId.DestroyID(getId());
 		}
 
 
@@ -2686,6 +3096,7 @@ namespace NullRenderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
+		Renderer::IRootSignature*	mRootSignature;
 		Renderer::IGraphicsProgram*	mGraphicsProgram;
 		Renderer::IRenderPass*		mRenderPass;
 
@@ -2720,9 +3131,11 @@ namespace NullRenderer
 		*    Root signature to use
 		*  @param[in] computeShader
 		*    Compute shader to use
+		*  @param[in] id
+		*    The unique compact compute pipeline state ID
 		*/
-		ComputePipelineState(NullRenderer& nullRenderer, Renderer::IRootSignature& rootSignature, Renderer::IComputeShader& computeShader) :
-			IComputePipelineState(nullRenderer),
+		ComputePipelineState(NullRenderer& nullRenderer, Renderer::IRootSignature& rootSignature, Renderer::IComputeShader& computeShader, uint16_t id) :
+			IComputePipelineState(nullRenderer, id),
 			mRootSignature(rootSignature),
 			mComputeShader(computeShader)
 		{
@@ -2740,6 +3153,9 @@ namespace NullRenderer
 			// Release the root signature and compute shader reference
 			mRootSignature.releaseReference();
 			mComputeShader.releaseReference();
+
+			// Free the unique compact compute pipeline state ID
+			static_cast<NullRenderer&>(getRenderer()).ComputePipelineStateMakeId.DestroyID(getId());
 		}
 
 
@@ -3557,7 +3973,26 @@ namespace NullRenderer
 
 	Renderer::IGraphicsPipelineState* NullRenderer::createGraphicsPipelineState(const Renderer::GraphicsPipelineState& graphicsPipelineState)
 	{
-		return RENDERER_NEW(mContext, GraphicsPipelineState)(*this, graphicsPipelineState);
+		// Sanity checks
+		RENDERER_ASSERT(mContext, nullptr != graphicsPipelineState.rootSignature, "Null: Invalid graphics pipeline state root signature")
+		RENDERER_ASSERT(mContext, nullptr != graphicsPipelineState.graphicsProgram, "Null: Invalid graphics pipeline state graphics program")
+		RENDERER_ASSERT(mContext, nullptr != graphicsPipelineState.renderPass, "Null: Invalid graphics pipeline state render pass")
+
+		// Create graphics pipeline state
+		uint16_t id = 0;
+		if (GraphicsPipelineStateMakeId.CreateID(id))
+		{
+			return RENDERER_NEW(mContext, GraphicsPipelineState)(*this, graphicsPipelineState, id);
+		}
+
+		// Error: Ensure a correct reference counter behaviour
+		graphicsPipelineState.rootSignature->addReference();
+		graphicsPipelineState.rootSignature->releaseReference();
+		graphicsPipelineState.graphicsProgram->addReference();
+		graphicsPipelineState.graphicsProgram->releaseReference();
+		graphicsPipelineState.renderPass->addReference();
+		graphicsPipelineState.renderPass->releaseReference();
+		return nullptr;
 	}
 
 	Renderer::IComputePipelineState* NullRenderer::createComputePipelineState(Renderer::IRootSignature& rootSignature, Renderer::IComputeShader& computeShader)
@@ -3567,7 +4002,18 @@ namespace NullRenderer
 		NULLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, computeShader)
 
 		// Create the compute pipeline state
-		return RENDERER_NEW(mContext, ComputePipelineState)(*this, rootSignature, computeShader);
+		uint16_t id = 0;
+		if (ComputePipelineStateMakeId.CreateID(id))
+		{
+			return RENDERER_NEW(mContext, ComputePipelineState)(*this, rootSignature, computeShader, id);
+		}
+
+		// Error: Ensure a correct reference counter behaviour
+		rootSignature.addReference();
+		rootSignature.releaseReference();
+		computeShader.addReference();
+		computeShader.releaseReference();
+		return nullptr;
 	}
 
 	Renderer::ISamplerState* NullRenderer::createSamplerState(const Renderer::SamplerState &)

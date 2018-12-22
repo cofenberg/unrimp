@@ -210,7 +210,7 @@ namespace RendererRuntime
 		}
 	}
 
-	Renderer::IVertexArrayPtr DebugGuiManager::getFillVertexArrayPtr()
+	const Renderer::IVertexArrayPtr& DebugGuiManager::getFillVertexArrayPtr()
 	{
 		if (GImGui->Initialized)
 		{

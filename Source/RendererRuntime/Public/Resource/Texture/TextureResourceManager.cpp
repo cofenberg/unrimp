@@ -285,7 +285,7 @@ namespace RendererRuntime
 						const TextureResource* fallbackTextureResource = getTextureResourceByAssetId(fallbackTextureAssetId);
 						if (nullptr != fallbackTextureResource)
 						{
-							textureResource->mTexture = fallbackTextureResource->getTexture();
+							textureResource->mTexture = fallbackTextureResource->getTexturePtr();
 							textureResource->setLoadingState(IResource::LoadingState::LOADED);
 						}
 						else

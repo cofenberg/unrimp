@@ -127,7 +127,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	public:
 		RENDERERRUNTIME_API_EXPORT void newFrame(Renderer::IRenderTarget& renderTarget, CompositorWorkspaceInstance* compositorWorkspaceInstance = nullptr);
-		[[nodiscard]] RENDERERRUNTIME_API_EXPORT Renderer::IVertexArrayPtr getFillVertexArrayPtr();
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT const Renderer::IVertexArrayPtr& getFillVertexArrayPtr();
 		RENDERERRUNTIME_API_EXPORT void fillGraphicsCommandBuffer(Renderer::CommandBuffer& commandBuffer);
 		RENDERERRUNTIME_API_EXPORT void fillGraphicsCommandBufferUsingFixedBuildInRendererConfiguration(Renderer::CommandBuffer& commandBuffer);
 

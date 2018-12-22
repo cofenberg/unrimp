@@ -349,7 +349,7 @@ namespace RendererRuntime
 					// Set texture resource
 					TextureResource* textureResource = textureResourceManager.tryGetById(textures[i].textureResourceId);
 					RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != textureResource, "Invalid texture resource")
-					resources[i + textureStartIndex] = textureResource->getTexture();
+					resources[i + textureStartIndex] = textureResource->getTexturePtr();
 					RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != resources[i + textureStartIndex], "Invalid resource")
 
 					// Set sampler state, if there's one (e.g. texel fetch instead of sampling might be used)

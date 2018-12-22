@@ -85,12 +85,12 @@ namespace RendererRuntime
 		RENDERERRUNTIME_API_EXPORT void loadMeshResourceByAssetId(AssetId assetId, MeshResourceId& meshResourceId, IResourceListener* resourceListener = nullptr, bool reload = false, ResourceLoaderTypeId resourceLoaderTypeId = getInvalid<ResourceLoaderTypeId>());	// Asynchronous
 		[[nodiscard]] RENDERERRUNTIME_API_EXPORT MeshResourceId createEmptyMeshResourceByAssetId(AssetId assetId);	// Mesh resource is not allowed to exist, yet, prefer asynchronous mesh resource loading over this method
 
-		[[nodiscard]] inline Renderer::IVertexBufferPtr getDrawIdVertexBufferPtr() const
+		[[nodiscard]] inline const Renderer::IVertexBufferPtr& getDrawIdVertexBufferPtr() const
 		{
 			return mDrawIdVertexBufferPtr;
 		}
 
-		[[nodiscard]] inline Renderer::IVertexArrayPtr getDrawIdVertexArrayPtr() const
+		[[nodiscard]] inline const Renderer::IVertexArrayPtr& getDrawIdVertexArrayPtr() const
 		{
 			return mDrawIdVertexArrayPtr;
 		}

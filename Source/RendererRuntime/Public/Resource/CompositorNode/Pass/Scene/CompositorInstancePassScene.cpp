@@ -58,16 +58,17 @@ namespace RendererRuntime
 
 		// Fill command buffer
 		RENDERER_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), nullptr != mRenderQueueIndexRange, "Invalid render queue index range")
+		const MaterialTechniqueId materialTechniqueId = static_cast<const CompositorResourcePassScene&>(getCompositorResourcePass()).getMaterialTechniqueId();
 		for (const RenderableManager* renderableManager : mRenderQueueIndexRange->renderableManagers)
 		{
 			// The render queue index range covered by this compositor instance pass scene might be smaller than the range of the
 			// cached render queue index range. So, we could add a range check in here to reject renderable managers, but it's not
 			// really worth to do so since the render queue only considers renderables inside the render queue range anyway.
-			mRenderQueue.addRenderablesFromRenderableManager(*renderableManager);
+			mRenderQueue.addRenderablesFromRenderableManager(*renderableManager, materialTechniqueId, compositorContextData);
 		}
 		if (mRenderQueue.getNumberOfDrawCalls() > 0)
 		{
-			mRenderQueue.fillGraphicsCommandBuffer(*renderTarget, static_cast<const CompositorResourcePassScene&>(getCompositorResourcePass()).getMaterialTechniqueId(), compositorContextData, commandBuffer);
+			mRenderQueue.fillGraphicsCommandBuffer(*renderTarget, compositorContextData, commandBuffer);
 		}
 	}
 

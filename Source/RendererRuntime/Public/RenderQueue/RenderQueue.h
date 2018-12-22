@@ -131,9 +131,9 @@ namespace RendererRuntime
 		}
 
 		void clear();
-		void addRenderablesFromRenderableManager(const RenderableManager& renderableManager, bool castShadows = false);
-		void fillGraphicsCommandBuffer(const Renderer::IRenderTarget& renderTarget, MaterialTechniqueId materialTechniqueId, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer);
-		void fillComputeCommandBuffer(MaterialTechniqueId materialTechniqueId, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer);
+		void addRenderablesFromRenderableManager(const RenderableManager& renderableManager, MaterialTechniqueId materialTechniqueId, const CompositorContextData& compositorContextData, bool castShadows = false);
+		void fillGraphicsCommandBuffer(const Renderer::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer);
+		void fillComputeCommandBuffer(const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer);
 
 
 	//[-------------------------------------------------------]
@@ -150,15 +150,27 @@ namespace RendererRuntime
 	private:
 		struct QueuedRenderable final
 		{
-			const Renderable* renderable;	///< Always valid, don't destroy the instance
-			uint64_t		  sortingKey;	///< Key used for sorting
+			const Renderable*		   renderable;					///< Always valid, don't destroy the instance
+			const MaterialResource*	   materialResource;			///< Always valid, don't destroy the instance
+			MaterialTechnique*		   materialTechnique;			///< Always valid, don't destroy the instance
+			MaterialBlueprintResource* materialBlueprintResource;	///< Always valid, don't destroy the instance
+			Renderer::IPipelineState*  foundPipelineState;			///< Always valid, don't destroy the instance
+			uint64_t				   sortingKey;					///< Key used for sorting
 
 			inline QueuedRenderable() :
 				renderable(nullptr),
+				materialResource(nullptr),
+				materialTechnique(nullptr),
+				materialBlueprintResource(nullptr),
+				foundPipelineState(nullptr),
 				sortingKey(0)
 			{}
-			inline QueuedRenderable(const Renderable& _renderable, uint64_t _sortingKey) :
+			inline QueuedRenderable(const Renderable& _renderable, const MaterialResource& _materialResource, MaterialTechnique& _materialTechnique, MaterialBlueprintResource& _materialBlueprintResource, Renderer::IPipelineState& _foundPipelineState, uint64_t _sortingKey) :
 				renderable(&_renderable),
+				materialResource(&_materialResource),
+				materialTechnique(&_materialTechnique),
+				materialBlueprintResource(&_materialBlueprintResource),
+				foundPipelineState(&_foundPipelineState),
 				sortingKey(_sortingKey)
 			{}
 			[[nodiscard]] inline bool operator < (const QueuedRenderable& queuedRenderable) const

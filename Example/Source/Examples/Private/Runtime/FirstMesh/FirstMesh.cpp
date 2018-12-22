@@ -247,16 +247,16 @@ void FirstMesh::onDraw()
 	const RendererRuntime::TextureResource* _argb_nxaTextureResource = textureResourceManager.tryGetById(m_argb_nxaTextureResourceId);
 	const RendererRuntime::TextureResource* _hr_rg_mb_nyaTextureResource = textureResourceManager.tryGetById(m_hr_rg_mb_nyaTextureResourceId);
 	const RendererRuntime::TextureResource* emissiveTextureResource = textureResourceManager.tryGetById(mEmissiveTextureResourceId);
-	if (nullptr == _argb_nxaTextureResource || nullptr == _argb_nxaTextureResource->getTexture() ||
-		nullptr == _hr_rg_mb_nyaTextureResource || nullptr == _hr_rg_mb_nyaTextureResource->getTexture() ||
-		nullptr == emissiveTextureResource || nullptr == emissiveTextureResource->getTexture())
+	if (nullptr == _argb_nxaTextureResource || nullptr == _argb_nxaTextureResource->getTexturePtr() ||
+		nullptr == _hr_rg_mb_nyaTextureResource || nullptr == _hr_rg_mb_nyaTextureResource->getTexturePtr() ||
+		nullptr == emissiveTextureResource || nullptr == emissiveTextureResource->getTexturePtr())
 	{
 		return;
 	}
 	if (nullptr == mResourceGroup)
 	{
 		// Create resource group
-		Renderer::IResource* resources[4] = { mUniformBuffer, _argb_nxaTextureResource->getTexture(), _hr_rg_mb_nyaTextureResource->getTexture(), emissiveTextureResource->getTexture() };
+		Renderer::IResource* resources[4] = { mUniformBuffer, _argb_nxaTextureResource->getTexturePtr(), _hr_rg_mb_nyaTextureResource->getTexturePtr(), emissiveTextureResource->getTexturePtr() };
 		Renderer::ISamplerState* samplerStates[4] = { nullptr, mSamplerStatePtr, mSamplerStatePtr, mSamplerStatePtr };
 		mResourceGroup = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources, samplerStates);
 	}

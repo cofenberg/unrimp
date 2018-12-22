@@ -187,7 +187,7 @@ namespace RendererRuntime
 					}
 
 					// Get vertex array instance
-					const Renderer::IVertexArrayPtr vertexArrayPtr = meshResource->getVertexArrayPtr();
+					const Renderer::IVertexArrayPtr& vertexArrayPtr = meshResource->getVertexArrayPtr();
 
 					// Set material resource ID of each sub-mesh
 					const SkeletonResourceId skeletonResourceId = meshResource->getSkeletonResourceId();

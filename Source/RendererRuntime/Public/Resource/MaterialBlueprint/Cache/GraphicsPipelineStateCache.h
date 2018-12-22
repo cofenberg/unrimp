@@ -76,7 +76,7 @@ namespace RendererRuntime
 		*  @return
 		*    The graphics pipeline state object
 		*/
-		[[nodiscard]] inline Renderer::IGraphicsPipelineStatePtr getGraphicsPipelineStateObjectPtr() const
+		[[nodiscard]] inline const Renderer::IGraphicsPipelineStatePtr& getGraphicsPipelineStateObjectPtr() const
 		{
 			return mGraphicsPipelineStateObjectPtr;
 		}

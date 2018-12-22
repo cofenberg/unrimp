@@ -57,8 +57,12 @@ Notes:
 */
 
 
-#include <cstdio>  // For printf(). Remove if you don't need the PrintRanges() function (mostly for debugging anyway).
-#include <cstdint> // uint32_t
+#ifdef _DEBUG
+	#include <cstdio>  // For printf(). Remove if you don't need the PrintRanges() function (mostly for debugging anyway).
+#endif
+
+#include <cstdint>	// uint32_t
+#include <limits>	// std::numeric_limits<type>::max()
 #include <cstdlib>
 #include <cstring>
 
@@ -78,11 +82,11 @@ private:
 	uint m_Count;    // Number of ranges in list
 	uint m_Capacity; // Total capacity of range list
 
-	MakeID & operator=(const MakeID &);
-	MakeID(const MakeID &);
+	MakeID & operator=(const MakeID &) = delete;
+	MakeID(const MakeID &) = delete;
 
 public:
-	explicit MakeID(const uint max_id)
+	explicit MakeID(const uint max_id = std::numeric_limits<uint>::max())
 	{
 		// Start with a single range, from 0 to max allowed ID (specified)
 		m_Ranges = static_cast<Range*>(::malloc(sizeof(Range)));
@@ -116,7 +120,7 @@ public:
 			return true;
 		}
 
-		// No availble ID left
+		// No available ID left
 		return false;
 	}
 
@@ -125,7 +129,7 @@ public:
 		uint i = 0;
 		do
 		{
-			const uint range_count = 1 + m_Ranges[i].m_Last - m_Ranges[i].m_First;
+			const uint range_count = 1u + m_Ranges[i].m_Last - m_Ranges[i].m_First;
 			if (count <= range_count)
 			{
 				id = m_Ranges[i].m_First;
@@ -155,15 +159,15 @@ public:
 
 	bool DestroyRangeID(const uint id, const uint count)
 	{
-		const uint end_id = id + count;
+		const uint end_id = static_cast<uint>(id + count);
 
 		// Binary search of the range list
-		uint i0 = 0;
-		uint i1 = m_Count - 1;
+		uint i0 = 0u;
+		uint i1 = m_Count - 1u;
 
 		for (;;)
 		{
-			const uint i = (i0 + i1) / 2;
+			const uint i = (i0 + i1) / 2u;
 
 			if (id < m_Ranges[i].m_First)
 			{
@@ -193,14 +197,14 @@ public:
 					if (i != i0)
 					{
 						// Cull upper half of list
-						i1 = i - 1;
+						i1 = i - 1u;
 					}
 					else
 					{
 						// Found our position in the list, insert the deleted range here
 						InsertRange(i);
 						m_Ranges[i].m_First = id;
-						m_Ranges[i].m_Last = end_id - 1;
+						m_Ranges[i].m_Last = end_id - 1u;
 						return true;
 					}
 				}
@@ -215,7 +219,7 @@ public:
 					{
 						// Merge with next range
 						m_Ranges[i].m_Last = m_Ranges[i + 1].m_Last;
-						DestroyRange(i + 1);
+						DestroyRange(i + 1u);
 					}
 					else
 					{
@@ -230,14 +234,14 @@ public:
 					if (i != i1)
 					{
 						// Cull bottom half of list
-						i0 = i + 1;
+						i0 = i + 1u;
 					}
 					else
 					{
 						// Found our position in the list, insert the deleted range here
-						InsertRange(i + 1);
+						InsertRange(i + 1u);
 						m_Ranges[i + 1].m_First = id;
-						m_Ranges[i + 1].m_Last = end_id - 1;
+						m_Ranges[i + 1].m_Last = end_id - 1u;
 						return true;
 					}
 				}
@@ -254,12 +258,12 @@ public:
 	bool IsID(const uint id) const
 	{
 		// Binary search of the range list
-		uint i0 = 0;
-		uint i1 = m_Count - 1;
+		uint i0 = 0u;
+		uint i1 = m_Count - 1u;
 
 		for (;;)
 		{
-			const uint i = (i0 + i1) / 2;
+			const uint i = (i0 + i1) / 2u;
 
 			if (id < m_Ranges[i].m_First)
 			{
@@ -267,7 +271,7 @@ public:
 					return true;
 
 				// Cull upper half of list
-				i1 = i - 1;
+				i1 = i - 1u;
 			}
 			else if (id > m_Ranges[i].m_Last)
 			{
@@ -275,7 +279,7 @@ public:
 					return true;
 
 				// Cull bottom half of list
-				i0 = i + 1;
+				i0 = i + 1u;
 			}
 			else
 			{
@@ -307,7 +311,7 @@ public:
 
 		do
 		{
-			uint count = m_Ranges[i].m_Last - m_Ranges[i].m_First + 1;
+			uint count = m_Ranges[i].m_Last - m_Ranges[i].m_First + 1u;
 			if (count > max_count)
 				max_count = count;
 
@@ -317,28 +321,30 @@ public:
 		return max_count;
 	}
 
-	void PrintRanges() const
-	{
-		uint i = 0;
-		for (;;)
+	#ifdef _DEBUG
+		void PrintRanges() const
 		{
-			if (m_Ranges[i].m_First < m_Ranges[i].m_Last)
-				printf("%u-%u", m_Ranges[i].m_First, m_Ranges[i].m_Last);
-			else if (m_Ranges[i].m_First == m_Ranges[i].m_Last)
-				printf("%u", m_Ranges[i].m_First);
-			else
-				printf("-");
-
-			++i;
-			if (i >= m_Count)
+			uint i = 0;
+			for (;;)
 			{
-				printf("\n");
-				return;
-			}
+				if (m_Ranges[i].m_First < m_Ranges[i].m_Last)
+					printf("%u-%u", m_Ranges[i].m_First, m_Ranges[i].m_Last);
+				else if (m_Ranges[i].m_First == m_Ranges[i].m_Last)
+					printf("%u", m_Ranges[i].m_First);
+				else
+					printf("-");
 
-			printf(", ");
+				++i;
+				if (i >= m_Count)
+				{
+					printf("\n");
+					return;
+				}
+
+				printf(", ");
+			}
 		}
-	}
+	#endif
 
 
 private:

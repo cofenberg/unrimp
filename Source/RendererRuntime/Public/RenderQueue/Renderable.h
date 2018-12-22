@@ -100,14 +100,6 @@ namespace RendererRuntime
 		}
 
 		//[-------------------------------------------------------]
-		//[ Derived data                                          ]
-		//[-------------------------------------------------------]
-		[[nodiscard]] inline uint64_t getSortingKey() const
-		{
-			return mSortingKey;
-		}
-
-		//[-------------------------------------------------------]
 		//[ Data                                                  ]
 		//[-------------------------------------------------------]
 		[[nodiscard]] inline RenderableManager& getRenderableManager() const
@@ -115,7 +107,7 @@ namespace RendererRuntime
 			return mRenderableManager;
 		}
 
-		[[nodiscard]] inline Renderer::IVertexArrayPtr getVertexArrayPtr() const
+		[[nodiscard]] inline const Renderer::IVertexArrayPtr& getVertexArrayPtr() const
 		{
 			return mVertexArrayPtr;
 		}
@@ -123,10 +115,9 @@ namespace RendererRuntime
 		inline void setVertexArrayPtr(const Renderer::IVertexArrayPtr& vertexArrayPtr)
 		{
 			mVertexArrayPtr = vertexArrayPtr;
-			calculateSortingKey();
 		}
 
-		[[nodiscard]] inline Renderer::IIndirectBufferPtr getIndirectBufferPtr() const
+		[[nodiscard]] inline const Renderer::IIndirectBufferPtr& getIndirectBufferPtr() const
 		{
 			return mIndirectBufferPtr;
 		}
@@ -134,7 +125,6 @@ namespace RendererRuntime
 		inline void setIndirectBufferPtr(const Renderer::IIndirectBufferPtr& indirectBufferPtr)
 		{
 			mIndirectBufferPtr = indirectBufferPtr;
-			calculateSortingKey();
 		}
 
 		[[nodiscard]] inline bool getDrawIndexed() const
@@ -207,7 +197,6 @@ namespace RendererRuntime
 		inline void unsetMaterialResourceId()
 		{
 			unsetMaterialResourceIdInternal();
-			calculateSortingKey();
 		}
 
 		[[nodiscard]] inline SkeletonResourceId getSkeletonResourceId() const
@@ -239,7 +228,6 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	private:
 		Renderable& operator=(const Renderable&) = delete;
-		RENDERERRUNTIME_API_EXPORT void calculateSortingKey();
 		RENDERERRUNTIME_API_EXPORT void unsetMaterialResourceIdInternal();
 
 
@@ -270,8 +258,6 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		// Derived data
-		uint64_t						mSortingKey;			///< The sorting key is directly calculated after data change, no lazy evaluation since it's changed rarely but requested often (no branching)
 		// Data
 		RenderableManager&				mRenderableManager;
 		Renderer::IVertexArrayPtr		mVertexArrayPtr;		///< Optional vertex array object (VAO), can be a null pointer

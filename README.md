@@ -132,7 +132,7 @@ Renderer Runtime (e.g. "The Game")
 	- Blurred stabilized cascaded (CSM) exponential variance (EVSM) shadow mapping basing on ["A Sampling of Shadow Techniques"](https://mynameismjp.wordpress.com/2013/09/10/shadow-maps/) by Matt Pettineo
 	- Resolution scale support
 - Scene as most top-level concept: Fancy-feature set kept simple because more complex applications / games usually add an entity-component-system
-- Render queue fed with generic renderables to decouple concrete constructs like meshes, particles, terrain etc. from the generic rendering
+- [Sorted render queue](http://realtimecollisiondetection.net/blog/?p=86) fed with generic renderables to decouple concrete constructs like meshes, particles, terrain etc. from the generic rendering
 - Using mathematics library [GLM](https://glm.g-truc.net/)
 - Using [xsimd](https://github.com/QuantStack/xsimd) for SIMD intrinsics
 - Cache efficient SIMD multi-threaded frustum culling basing on ["The Implementation of Frustum Culling in Stingray"](http://bitsquid.blogspot.de/2016/10/the-implementation-of-frustum-culling.html)

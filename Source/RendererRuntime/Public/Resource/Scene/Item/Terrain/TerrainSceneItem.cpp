@@ -39,8 +39,8 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
-		const int VERTICES_PER_TILE_EDGE = 9;	///< Overlap => -2
-		const int NUMBER_OF_INDICES = (VERTICES_PER_TILE_EDGE - 1) * (VERTICES_PER_TILE_EDGE - 1) * 4;
+		static constexpr int VERTICES_PER_TILE_EDGE = 9;	///< Overlap => -2
+		static constexpr int NUMBER_OF_INDICES = (VERTICES_PER_TILE_EDGE - 1) * (VERTICES_PER_TILE_EDGE - 1) * 4;
 
 		/**
 		*  @brief
@@ -134,10 +134,11 @@ namespace RendererRuntime
 		// -> One tiles is one instance and the index buffer describes all the NxN patches within one tile
 		RenderableManager::Renderables& renderables = mRenderableManager.getRenderables();
 		renderables.reserve(static_cast<size_t>(mNumberOfTerrainTileRings));
+		const MaterialResourceManager& materialResourceManager = getSceneResource().getRendererRuntime().getMaterialResourceManager();
 		for (int i = 0; i != mNumberOfTerrainTileRings; ++i)
 		{
 			const TerrainTileRing& terrainTileRing = mTerrainTileRings[i];
-			renderables.emplace_back(mRenderableManager, terrainTileRing.vertexArrayPtr, getSceneResource().getRendererRuntime().getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>(), true, 0, ::detail::NUMBER_OF_INDICES, terrainTileRing.numberOfTiles);
+			renderables.emplace_back(mRenderableManager, terrainTileRing.vertexArrayPtr, materialResourceManager, getMaterialResourceId(), getInvalid<SkeletonResourceId>(), true, 0, ::detail::NUMBER_OF_INDICES, terrainTileRing.numberOfTiles);
 		}
 		mRenderableManager.updateCachedRenderablesData();
 	}
@@ -152,13 +153,14 @@ namespace RendererRuntime
 		mTerrainTileRings{}
 	{
 		// The renderer backend must support tessellation shaders
-		if (getSceneResource().getRendererRuntime().getRenderer().getCapabilities().maximumNumberOfPatchVertices > 0)
+		const IRendererRuntime& rendererRuntime = getSceneResource().getRendererRuntime();
+		if (rendererRuntime.getRenderer().getCapabilities().maximumNumberOfPatchVertices > 0)
 		{
 			// This array defines the outer width of each successive ring
 			const int widths[] = { 0, 16, 16, 16, 16, 16 };
 			mNumberOfTerrainTileRings = sizeof(widths) / sizeof(widths[0]) - 1;	// "widths[0]" doesn't define a ring hence -1
 			RENDERER_ASSERT(getContext(), mNumberOfTerrainTileRings <= MAXIMUM_NUMBER_OF_TERRAIN_TILE_RINGS, "Invalid number of terrain tile rings")
-			Renderer::IBufferManager& bufferManager = getSceneResource().getRendererRuntime().getBufferManager();
+			Renderer::IBufferManager& bufferManager = rendererRuntime.getBufferManager();
 			createIndexBuffer(bufferManager);
 			float tileWidth = 0.125f;
 			for (int i = 0; i != mNumberOfTerrainTileRings && i != MAXIMUM_NUMBER_OF_TERRAIN_TILE_RINGS; ++i)
@@ -169,7 +171,7 @@ namespace RendererRuntime
 		}
 		else
 		{
-			RENDERER_LOG_ONCE(getSceneResource().getRendererRuntime().getContext(), COMPATIBILITY_WARNING, "The renderer runtime terrain scene item needs a renderer backend with tessellation shader support")
+			RENDERER_LOG_ONCE(rendererRuntime.getContext(), COMPATIBILITY_WARNING, "The renderer runtime terrain scene item needs a renderer backend with tessellation shader support")
 		}
 	}
 

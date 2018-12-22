@@ -153,7 +153,7 @@ namespace RendererRuntime
 	void ComputePipelineStateCompiler::instantSynchronousCompilerRequest(MaterialBlueprintResource& materialBlueprintResource, ComputePipelineStateCache& computePipelineStateCache)
 	{
 		// Get the compute program cache; synchronous processing
-		Renderer::IRootSignaturePtr rootSignaturePtr = materialBlueprintResource.getRootSignaturePtr();
+		const Renderer::IRootSignaturePtr& rootSignaturePtr = materialBlueprintResource.getRootSignaturePtr();
 		if (nullptr != rootSignaturePtr)
 		{
 			Renderer::IShaderLanguagePtr shaderLanguage(rootSignaturePtr->getRenderer().getShaderLanguage());
@@ -367,7 +367,7 @@ namespace RendererRuntime
 	Renderer::IComputePipelineState* ComputePipelineStateCompiler::createComputePipelineState(const RendererRuntime::MaterialBlueprintResource& materialBlueprintResource, Renderer::IShader& shader) const
 	{
 		// Create the compute pipeline state object (PSO)
-		Renderer::IRootSignaturePtr rootSignaturePtr = materialBlueprintResource.getRootSignaturePtr();
+		const Renderer::IRootSignaturePtr& rootSignaturePtr = materialBlueprintResource.getRootSignaturePtr();
 		RENDERER_ASSERT(mRendererRuntime.getContext(), shader.getResourceType() == Renderer::ResourceType::COMPUTE_SHADER, "Invalid shader resource type")
 		Renderer::IComputePipelineState* computePipelineStateResource = rootSignaturePtr->getRenderer().createComputePipelineState(*rootSignaturePtr, static_cast<Renderer::IComputeShader&>(shader));
 		RENDERER_SET_RESOURCE_DEBUG_NAME(computePipelineStateResource, "Compute pipeline state compiler")

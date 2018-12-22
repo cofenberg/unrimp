@@ -143,7 +143,7 @@ namespace RendererRuntime
 			if (nullptr == mResourceGroup)
 			{
 				// TODO(co) We probably should put the clusters 3D texture resource into the light buffer manager resource group as well
-				// Renderer::IResource* resources[2] = { mTextureBuffer, mRendererRuntime.getTextureResourceManager().getById(mClusters3DTextureResourceId).getTexture() };
+				// Renderer::IResource* resources[2] = { mTextureBuffer, mRendererRuntime.getTextureResourceManager().getById(mClusters3DTextureResourceId).getTexturePtr() };
 				Renderer::IResource* resources[1] = { mTextureBuffer };
 				mResourceGroup = materialBlueprintResource.getRootSignaturePtr()->createResourceGroup(lightTextureBuffer->rootParameterIndex, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources);
 				RENDERER_SET_RESOURCE_DEBUG_NAME(mResourceGroup, "Light buffer manager resource group")
@@ -169,7 +169,7 @@ namespace RendererRuntime
 			if (nullptr == mResourceGroup)
 			{
 				// TODO(co) We probably should put the clusters 3D texture resource into the light buffer manager resource group as well
-				// Renderer::IResource* resources[2] = { mTextureBuffer, mRendererRuntime.getTextureResourceManager().getById(mClusters3DTextureResourceId).getTexture() };
+				// Renderer::IResource* resources[2] = { mTextureBuffer, mRendererRuntime.getTextureResourceManager().getById(mClusters3DTextureResourceId).getTexturePtr() };
 				Renderer::IResource* resources[1] = { mTextureBuffer };
 				mResourceGroup = materialBlueprintResource.getRootSignaturePtr()->createResourceGroup(lightTextureBuffer->rootParameterIndex, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources);
 				RENDERER_SET_RESOURCE_DEBUG_NAME(mResourceGroup, "Light buffer manager resource group")
@@ -327,7 +327,7 @@ namespace RendererRuntime
 		}
 
 		// Upload the cluster data to a volume texture
-		Renderer::ITexturePtr texturePtr = mRendererRuntime.getTextureResourceManager().getById(mClusters3DTextureResourceId).getTexture();
+		const Renderer::ITexturePtr& texturePtr = mRendererRuntime.getTextureResourceManager().getById(mClusters3DTextureResourceId).getTexturePtr();
 		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != texturePtr.getPointer(), "Invalid texture pointer")
 		RENDERER_ASSERT(mRendererRuntime.getContext(), Renderer::ResourceType::TEXTURE_3D == texturePtr.getPointer()->getResourceType(), "Invalid texture resource type")
 		Renderer::ITexture3D* texture3D = static_cast<Renderer::ITexture3D*>(texturePtr.getPointer());

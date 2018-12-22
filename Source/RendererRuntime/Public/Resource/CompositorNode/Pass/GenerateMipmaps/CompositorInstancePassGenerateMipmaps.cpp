@@ -68,7 +68,7 @@ namespace RendererRuntime
 				TextureResource* textureResource = textureResourceManager.getTextureResourceByAssetId(compositorResourcePassGenerateMipmaps.getTextureAssetId());
 				if (nullptr != textureResource)
 				{
-					Renderer::ITexture* texture = textureResource->getTexture();
+					Renderer::ITexture* texture = textureResource->getTexturePtr();
 					if (nullptr != texture)
 					{
 						// Sanity check
@@ -160,7 +160,7 @@ namespace RendererRuntime
 			TextureResource* textureResource = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getTextureResourceManager().getTextureResourceByAssetId(compositorResourcePassGenerateMipmaps.getTextureAssetId());
 			if (nullptr != textureResource)
 			{
-				Renderer::ITexture* texture = textureResource->getTexture();
+				Renderer::ITexture* texture = textureResource->getTexturePtr();
 				if (nullptr != texture)
 				{
 					Renderer::Command::GenerateMipmaps::create(commandBuffer, *texture);

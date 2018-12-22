@@ -71,7 +71,8 @@ namespace RendererRuntime
 		mMaximumNumberOfGrass(3)	// TODO(co) Make this dynamic
 	{
 		// The renderer backend must support structured buffers
-		if (getSceneResource().getRendererRuntime().getRenderer().getCapabilities().maximumStructuredBufferSize > 0)
+		const IRendererRuntime& rendererRuntime = getSceneResource().getRendererRuntime();
+		if (rendererRuntime.getRenderer().getCapabilities().maximumStructuredBufferSize > 0)
 		{
 			// Create vertex array object (VAO)
 			// Create the vertex buffer object (VBO)
@@ -91,7 +92,7 @@ namespace RendererRuntime
 					1.0f,  1.0f,   1.0f, 1.2f
 				}
 			};
-			Renderer::IBufferManager& bufferManager = getSceneResource().getRendererRuntime().getBufferManager();
+			Renderer::IBufferManager& bufferManager = rendererRuntime.getBufferManager();
 
 			// Create the structured buffer
 			mStructuredBufferPtr = bufferManager.createStructuredBuffer(sizeof(GrassDataStruct) * mMaximumNumberOfGrass, grassData, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::STATIC_DRAW, sizeof(GrassDataStruct));
@@ -112,7 +113,7 @@ namespace RendererRuntime
 		else
 		{
 			mMaximumNumberOfGrass = 0;
-			RENDERER_LOG_ONCE(getSceneResource().getRendererRuntime().getContext(), COMPATIBILITY_WARNING, "The renderer runtime grass scene item needs a renderer backend with structured buffer support")
+			RENDERER_LOG_ONCE(rendererRuntime.getContext(), COMPATIBILITY_WARNING, "The renderer runtime grass scene item needs a renderer backend with structured buffer support")
 		}
 	}
 

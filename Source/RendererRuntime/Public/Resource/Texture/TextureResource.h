@@ -83,7 +83,7 @@ namespace RendererRuntime
 			return mRgbHardwareGammaCorrection;
 		}
 
-		[[nodiscard]] inline Renderer::ITexturePtr getTexture() const
+		[[nodiscard]] inline const Renderer::ITexturePtr& getTexturePtr() const
 		{
 			return mTexture;
 		}

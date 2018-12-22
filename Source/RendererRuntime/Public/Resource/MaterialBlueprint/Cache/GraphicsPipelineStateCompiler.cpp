@@ -158,7 +158,7 @@ namespace RendererRuntime
 		const GraphicsProgramCache* graphicsProgramCache = materialBlueprintResource.getGraphicsPipelineStateCacheManager().getGraphicsProgramCacheManager().getGraphicsProgramCacheByGraphicsPipelineStateSignature(graphicsPipelineStateSignature);
 		if (nullptr != graphicsProgramCache)
 		{
-			Renderer::IGraphicsProgramPtr graphicsProgramPtr = graphicsProgramCache->getGraphicsProgramPtr();
+			const Renderer::IGraphicsProgramPtr& graphicsProgramPtr = graphicsProgramCache->getGraphicsProgramPtr();
 			if (nullptr != graphicsProgramPtr)
 			{
 				graphicsPipelineStateCache.mGraphicsPipelineStateObjectPtr = createGraphicsPipelineState(materialBlueprintResource, graphicsPipelineStateSignature.getSerializedGraphicsPipelineStateHash(), *graphicsProgramPtr);
@@ -495,7 +495,7 @@ namespace RendererRuntime
 
 		// Setup the dynamic part of the pipeline state
 		const RendererRuntime::IRendererRuntime& rendererRuntime = materialBlueprintResource.getResourceManager<RendererRuntime::MaterialBlueprintResourceManager>().getRendererRuntime();
-		Renderer::IRootSignaturePtr rootSignaturePtr = materialBlueprintResource.getRootSignaturePtr();
+		const Renderer::IRootSignaturePtr& rootSignaturePtr = materialBlueprintResource.getRootSignaturePtr();
 		graphicsPipelineState.rootSignature	   = rootSignaturePtr;
 		graphicsPipelineState.graphicsProgram  = &graphicsProgram;
 		graphicsPipelineState.vertexAttributes = rendererRuntime.getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes();

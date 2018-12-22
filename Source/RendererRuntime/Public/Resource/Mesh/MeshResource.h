@@ -162,7 +162,7 @@ namespace RendererRuntime
 			mNumberOfIndices = numberOfIndices;
 		}
 
-		[[nodiscard]] inline Renderer::IVertexArrayPtr getVertexArrayPtr() const
+		[[nodiscard]] inline const Renderer::IVertexArrayPtr& getVertexArrayPtr() const
 		{
 			return mVertexArray;
 		}

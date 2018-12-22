@@ -76,7 +76,7 @@ namespace RendererRuntime
 		*  @return
 		*    The compute pipeline state object
 		*/
-		[[nodiscard]] inline Renderer::IComputePipelineStatePtr getComputePipelineStateObjectPtr() const
+		[[nodiscard]] inline const Renderer::IComputePipelineStatePtr& getComputePipelineStateObjectPtr() const
 		{
 			return mComputePipelineStateObjectPtr;
 		}

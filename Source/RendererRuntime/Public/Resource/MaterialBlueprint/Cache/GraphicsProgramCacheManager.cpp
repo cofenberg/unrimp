@@ -78,7 +78,7 @@ namespace RendererRuntime
 		{
 			// Create the renderer program: Decide which shader language should be used (for example "GLSL" or "HLSL")
 			const MaterialBlueprintResource& materialBlueprintResource = mGraphicsPipelineStateCacheManager.getMaterialBlueprintResource();
-			const Renderer::IRootSignaturePtr rootSignaturePtr = materialBlueprintResource.getRootSignaturePtr();
+			const Renderer::IRootSignaturePtr& rootSignaturePtr = materialBlueprintResource.getRootSignaturePtr();
 			Renderer::IShaderLanguagePtr shaderLanguage(rootSignaturePtr->getRenderer().getShaderLanguage());
 			if (nullptr != shaderLanguage)
 			{

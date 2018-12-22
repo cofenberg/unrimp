@@ -80,7 +80,7 @@ namespace RendererRuntime
 		*  @return
 		*    The graphics program
 		*/
-		[[nodiscard]] inline Renderer::IGraphicsProgramPtr getGraphicsProgramPtr() const
+		[[nodiscard]] inline const Renderer::IGraphicsProgramPtr& getGraphicsProgramPtr() const
 		{
 			return mGraphicsProgramPtr;
 		}

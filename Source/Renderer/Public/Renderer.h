@@ -3085,7 +3085,7 @@ namespace Renderer
 		IRootSignature*   rootSignature;	///< Root signature (graphics pipeline state instances keep a reference to the root signature), must be valid
 		IGraphicsProgram* graphicsProgram;	///< Graphics program used by the graphics pipeline state (graphics pipeline state instances keep a reference to the graphics program), must be valid
 		VertexAttributes  vertexAttributes;	///< Vertex attributes
-		IRenderPass*	  renderPass;		///< Render pass, the graphics pipeline state keeps a reference
+		IRenderPass*	  renderPass;		///< Render pass, the graphics pipeline state keeps a reference, must be valid
 	};
 	struct GraphicsPipelineStateBuilder final : public GraphicsPipelineState
 	{
@@ -3330,7 +3330,7 @@ namespace Renderer
 		*  @brief
 		*    Default constructor
 		*/
-		inline RefCount() :
+		FORCEINLINE RefCount() :
 			mRefCount(0)
 		{}
 
@@ -3348,7 +3348,7 @@ namespace Renderer
 		*  @return
 		*    Pointer to the reference counter's object, never a null pointer!
 		*/
-		[[nodiscard]] inline const AType* getPointer() const
+		[[nodiscard]] FORCEINLINE const AType* getPointer() const
 		{
 			return static_cast<const AType*>(this);
 		}
@@ -3360,7 +3360,7 @@ namespace Renderer
 		*  @return
 		*    Pointer to the reference counter's object, never a null pointer!
 		*/
-		[[nodiscard]] inline AType* getPointer()
+		[[nodiscard]] FORCEINLINE AType* getPointer()
 		{
 			return static_cast<AType*>(this);
 		}
@@ -3372,7 +3372,7 @@ namespace Renderer
 		*  @return
 		*    Current reference count
 		*/
-		inline uint32_t addReference()
+		FORCEINLINE uint32_t addReference()
 		{
 			// Increment reference count
 			++mRefCount;
@@ -3391,7 +3391,7 @@ namespace Renderer
 		*  @note
 		*    - When the last reference was released, the instance is destroyed automatically
 		*/
-		inline uint32_t releaseReference()
+		FORCEINLINE uint32_t releaseReference()
 		{
 			// Decrement reference count
 			if (mRefCount > 1)
@@ -3419,7 +3419,7 @@ namespace Renderer
 		*  @return
 		*    Current reference count
 		*/
-		[[nodiscard]] inline uint32_t getRefCount() const
+		[[nodiscard]] FORCEINLINE uint32_t getRefCount() const
 		{
 			// Return current reference count
 			return mRefCount;
@@ -3459,7 +3459,7 @@ namespace Renderer
 		*  @brief
 		*    Default constructor
 		*/
-		inline SmartRefCount() :
+		FORCEINLINE SmartRefCount() :
 			mPtr(nullptr)
 		{}
 
@@ -3470,7 +3470,7 @@ namespace Renderer
 		*  @param[in] ptr
 		*    Direct pointer to initialize with, can be a null pointer
 		*/
-		inline explicit SmartRefCount(AType* ptr) :
+		FORCEINLINE explicit SmartRefCount(AType* ptr) :
 			mPtr(nullptr)
 		{
 			setPtr(ptr);
@@ -3483,7 +3483,7 @@ namespace Renderer
 		*  @param[in] ptr
 		*    Smart pointer to initialize with
 		*/
-		inline SmartRefCount(const SmartRefCount<AType>& ptr) :
+		FORCEINLINE SmartRefCount(const SmartRefCount<AType>& ptr) :
 			mPtr(nullptr)
 		{
 			setPtr(ptr.getPtr());
@@ -3508,7 +3508,7 @@ namespace Renderer
 		*  @return
 		*    Reference to the smart pointer
 		*/
-		inline SmartRefCount<AType>& operator =(AType* ptr)
+		FORCEINLINE SmartRefCount<AType>& operator =(AType* ptr)
 		{
 			if (getPointer() != ptr)
 			{
@@ -3527,7 +3527,7 @@ namespace Renderer
 		*  @return
 		*    Reference to the smart pointer
 		*/
-		inline SmartRefCount<AType>& operator =(const SmartRefCount<AType>& ptr)
+		FORCEINLINE SmartRefCount<AType>& operator =(const SmartRefCount<AType>& ptr)
 		{
 			if (getPointer() != ptr.getPointer())
 			{
@@ -3543,7 +3543,7 @@ namespace Renderer
 		*  @return
 		*    Pointer to the object, can be a null pointer
 		*/
-		[[nodiscard]] inline AType* getPointer() const
+		[[nodiscard]] FORCEINLINE AType* getPointer() const
 		{
 			return (nullptr != mPtr) ? static_cast<AType*>(mPtr->getPointer()) : nullptr;
 		}
@@ -3555,7 +3555,7 @@ namespace Renderer
 		*  @return
 		*    Pointer to the object, can be a null pointer
 		*/
-		[[nodiscard]] inline AType* operator ->() const
+		[[nodiscard]] FORCEINLINE AType* operator ->() const
 		{
 			return getPointer();
 		}
@@ -3567,7 +3567,7 @@ namespace Renderer
 		*  @return
 		*    Pointer to the object, can be a null pointer
 		*/
-		[[nodiscard]] inline operator AType*() const
+		[[nodiscard]] FORCEINLINE operator AType*() const
 		{
 			return getPointer();
 		}
@@ -3579,7 +3579,7 @@ namespace Renderer
 		*  @return
 		*    "true" if the pointer is not a null pointer
 		*/
-		[[nodiscard]] inline bool operator !() const
+		[[nodiscard]] FORCEINLINE bool operator !() const
 		{
 			return (nullptr == getPointer());
 		}
@@ -3594,7 +3594,7 @@ namespace Renderer
 		*  @return
 		*    "true" if the two pointers are equal
 		*/
-		[[nodiscard]] inline bool operator ==(AType* ptr) const
+		[[nodiscard]] FORCEINLINE bool operator ==(AType* ptr) const
 		{
 			return (getPointer() == ptr);
 		}
@@ -3609,7 +3609,7 @@ namespace Renderer
 		*  @return
 		*    "true" if the two pointers are equal
 		*/
-		[[nodiscard]] inline bool operator ==(const SmartRefCount<AType>& ptr) const
+		[[nodiscard]] FORCEINLINE bool operator ==(const SmartRefCount<AType>& ptr) const
 		{
 			return (getPointer() == ptr.getPointer());
 		}
@@ -3624,7 +3624,7 @@ namespace Renderer
 		*  @return
 		*    "true" if the two pointers are not equal
 		*/
-		[[nodiscard]] inline bool operator !=(AType* ptr) const
+		[[nodiscard]] FORCEINLINE bool operator !=(AType* ptr) const
 		{
 			return (getPointer() != ptr);
 		}
@@ -3639,7 +3639,7 @@ namespace Renderer
 		*  @return
 		*    "true" if the two pointers are not equal
 		*/
-		[[nodiscard]] inline bool operator !=(const SmartRefCount<AType>& ptr) const
+		[[nodiscard]] FORCEINLINE bool operator !=(const SmartRefCount<AType>& ptr) const
 		{
 			return (getPointer() != ptr.getPointer());
 		}
@@ -3653,7 +3653,7 @@ namespace Renderer
 		*  @param[in] ptr
 		*    Pointer to assign, can be a null pointer
 		*/
-		inline void setPtr(AType* ptr)
+		FORCEINLINE void setPtr(AType* ptr)
 		{
 			// Release old pointer
 			if (nullptr != mPtr)
@@ -3676,7 +3676,7 @@ namespace Renderer
 		*  @return
 		*    Pointer to the RefCount object, can be a null pointer
 		*/
-		[[nodiscard]] inline AType* getPtr() const
+		[[nodiscard]] FORCEINLINE AType* getPtr() const
 		{
 			// Return pointer
 			return mPtr;
@@ -6149,6 +6149,18 @@ namespace Renderer
 			#endif
 		}
 
+		/**
+		*  @brief
+		*    Return the unique compact vertex array ID
+		*
+		*  @return
+		*    The unique compact vertex array ID
+		*/
+		inline uint16_t getId() const
+		{
+			return mId;
+		}
+
 	// Protected methods
 	protected:
 		/**
@@ -6157,9 +6169,12 @@ namespace Renderer
 		*
 		*  @param[in] renderer
 		*    Owner renderer instance
+		*  @param[in] id
+		*    The unique compact vertex array ID
 		*/
-		inline explicit IVertexArray(IRenderer& renderer) :
-			IResource(ResourceType::VERTEX_ARRAY, renderer)
+		inline IVertexArray(IRenderer& renderer, uint16_t id) :
+			IResource(ResourceType::VERTEX_ARRAY, renderer),
+			mId(id)
 		{
 			#ifdef RENDERER_STATISTICS
 				// Update the statistics
@@ -6171,6 +6186,9 @@ namespace Renderer
 		explicit IVertexArray(const IVertexArray& source) = delete;
 		IVertexArray& operator =(const IVertexArray& source) = delete;
 
+	// Private data
+	private:
+		uint16_t mId;
 	};
 
 	typedef SmartRefCount<IVertexArray> IVertexArrayPtr;
@@ -7538,6 +7556,18 @@ namespace Renderer
 		inline virtual ~IPipelineState() override
 		{}
 
+		/**
+		*  @brief
+		*    Return the unique compact graphics or compute pipeline state ID; one internal ID pool per concrete pipeline state type
+		*
+		*  @return
+		*    The unique compact graphics or compute pipeline state ID
+		*/
+		inline uint16_t getId() const
+		{
+			return mId;
+		}
+
 	// Protected methods
 	protected:
 		/**
@@ -7548,14 +7578,20 @@ namespace Renderer
 		*    The resource type
 		*  @param[in] renderer
 		*    Owner renderer instance
+		*  @param[in] id
+		*    The unique compact graphics or compute pipeline state ID
 		*/
-		inline explicit IPipelineState(ResourceType resourceType, IRenderer& renderer) :
-			IState(resourceType, renderer)
+		inline IPipelineState(ResourceType resourceType, IRenderer& renderer, uint16_t id) :
+			IState(resourceType, renderer),
+			mId(id)
 		{}
 
 		explicit IPipelineState(const IPipelineState& source) = delete;
 		IPipelineState& operator =(const IPipelineState& source) = delete;
 
+	// Private data
+	private:
+		uint16_t mId;
 	};
 
 	typedef SmartRefCount<IPipelineState> IPipelineStatePtr;
@@ -7595,9 +7631,11 @@ namespace Renderer
 		*
 		*  @param[in] renderer
 		*    Owner renderer instance
+		*  @param[in] id
+		*    The unique compact graphics or compute pipeline state ID
 		*/
-		inline explicit IGraphicsPipelineState(IRenderer& renderer) :
-			IPipelineState(ResourceType::GRAPHICS_PIPELINE_STATE, renderer)
+		inline IGraphicsPipelineState(IRenderer& renderer, uint16_t id) :
+			IPipelineState(ResourceType::GRAPHICS_PIPELINE_STATE, renderer, id)
 		{
 			#ifdef RENDERER_STATISTICS
 				// Update the statistics
@@ -7648,9 +7686,11 @@ namespace Renderer
 		*
 		*  @param[in] renderer
 		*    Owner renderer instance
+		*  @param[in] id
+		*    The unique compact graphics or compute pipeline state ID
 		*/
-		inline explicit IComputePipelineState(IRenderer& renderer) :
-			IPipelineState(ResourceType::COMPUTE_PIPELINE_STATE, renderer)
+		inline IComputePipelineState(IRenderer& renderer, uint16_t id) :
+			IPipelineState(ResourceType::COMPUTE_PIPELINE_STATE, renderer, id)
 		{
 			#ifdef RENDERER_STATISTICS
 				// Update the statistics
@@ -8289,10 +8329,10 @@ namespace Renderer
 	*
 	*  @remarks
 	*    Basing on
-	*    - http://molecularmusings.wordpress.com/2014/11/06/stateless-layered-multi-threaded-rendering-part-1/ - "Stateless, layered, multi-threaded rendering – Part 1"
-	*    - http://molecularmusings.wordpress.com/2014/11/13/stateless-layered-multi-threaded-rendering-part-2-stateless-api-design/ - "Stateless, layered, multi-threaded rendering – Part 2"
-	*    - http://molecularmusings.wordpress.com/2014/12/16/stateless-layered-multi-threaded-rendering-part-3-api-design-details/ - "Stateless, layered, multi-threaded rendering – Part 3"
-	*    - http://realtimecollisiondetection.net/blog/?p=86 - "Order your graphics draw calls around!"
+	*    - "Molecular Musings" - "Stateless, layered, multi-threaded rendering – Part 1" by Stefan Reinalter from November 6, 2014 - https://blog.molecular-matters.com/2014/11/06/stateless-layered-multi-threaded-rendering-part-1/
+	*    - "Molecular Musings" - "Stateless, layered, multi-threaded rendering – Part 2" by Stefan Reinalter from November 13, 2014 - http://molecularmusings.wordpress.com/2014/11/13/stateless-layered-multi-threaded-rendering-part-2-stateless-api-design/
+	*    - "Molecular Musings" - "Stateless, layered, multi-threaded rendering – Part 3" by Stefan Reinalter from December 16, 2014 - http://molecularmusings.wordpress.com/2014/12/16/stateless-layered-multi-threaded-rendering-part-3-api-design-details/
+	*    - "realtimecollisiondetection.net – the blog" - "Order your graphics draw calls around!" by Christer Ericson from October 3, 2008 - http://realtimecollisiondetection.net/blog/?p=86
 	*    but without a key inside the more general command buffer. Sorting is a job of a more high level construct like a render queue which also automatically will perform
 	*    batching and instancing. Also the memory management is much simplified to be cache friendly.
 	*

@@ -343,6 +343,7 @@ namespace RendererRuntime
 					// Render shadow casters
 					// TODO(co) Optimization: Do only render stuff which calls into the current shadow cascade
 					RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != mRenderQueueIndexRange, "Invalid render queue index range")
+					const MaterialTechniqueId materialTechniqueId = static_cast<const CompositorResourcePassScene&>(getCompositorResourcePass()).getMaterialTechniqueId();
 					for (const RenderableManager* renderableManager : mRenderQueueIndexRange->renderableManagers)
 					{
 						// The render queue index range covered by this compositor instance pass scene might be smaller than the range of the
@@ -350,12 +351,12 @@ namespace RendererRuntime
 						// really worth to do so since the render queue only considers renderables inside the render queue range anyway.
 						if (renderableManager->getCastShadows())
 						{
-							mRenderQueue.addRenderablesFromRenderableManager(*renderableManager, true);
+							mRenderQueue.addRenderablesFromRenderableManager(*renderableManager, materialTechniqueId, shadowCompositorContextData, true);
 						}
 					}
 					if (mRenderQueue.getNumberOfDrawCalls() > 0)
 					{
-						mRenderQueue.fillGraphicsCommandBuffer(*mDepthFramebufferPtr, static_cast<const CompositorResourcePassScene&>(getCompositorResourcePass()).getMaterialTechniqueId(), shadowCompositorContextData, commandBuffer);
+						mRenderQueue.fillGraphicsCommandBuffer(*mDepthFramebufferPtr, shadowCompositorContextData, commandBuffer);
 						mRenderQueue.clear();
 					}
 				}

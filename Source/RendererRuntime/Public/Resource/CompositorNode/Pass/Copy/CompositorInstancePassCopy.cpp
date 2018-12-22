@@ -60,8 +60,8 @@ namespace RendererRuntime
 		const TextureResource* sourceTextureResource = textureResourceManager.getTextureResourceByAssetId(compositorResourcePassCopy.getSourceTextureAssetId());
 		if (nullptr != destinationTextureResource && nullptr != sourceTextureResource)
 		{
-			const Renderer::ITexturePtr destinationTexturePtr = destinationTextureResource->getTexture();
-			const Renderer::ITexturePtr sourceTexturePtr = sourceTextureResource->getTexture();
+			const Renderer::ITexturePtr& destinationTexturePtr = destinationTextureResource->getTexturePtr();
+			const Renderer::ITexturePtr& sourceTexturePtr = sourceTextureResource->getTexturePtr();
 			if (nullptr != destinationTexturePtr && nullptr != sourceTexturePtr)
 			{
 				Renderer::Command::CopyResource::create(commandBuffer, *destinationTexturePtr, *sourceTexturePtr);

@@ -118,7 +118,7 @@ namespace RendererRuntime
 		*  @return
 		*    The shader
 		*/
-		[[nodiscard]] inline Renderer::IShaderPtr getShaderPtr() const
+		[[nodiscard]] inline const Renderer::IShaderPtr& getShaderPtr() const
 		{
 			return (nullptr != mMasterShaderCache) ? mMasterShaderCache->mShaderPtr : mShaderPtr;
 		}
