@@ -95,6 +95,7 @@ namespace RendererRuntime
 	//[ Protected virtual RendererRuntime::MaterialSceneItem methods ]
 	//[-------------------------------------------------------]
 	protected:
+		virtual void initialize() override;
 		virtual void onMaterialResourceCreated() override;
 
 

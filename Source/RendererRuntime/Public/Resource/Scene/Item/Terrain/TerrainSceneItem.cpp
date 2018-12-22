@@ -119,27 +119,27 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::MaterialSceneItem methods ]
 	//[-------------------------------------------------------]
+	void TerrainSceneItem::initialize()
+	{
+		// Call the base implementation
+		if (mNumberOfTerrainTileRings > 0)
+		{
+			MaterialSceneItem::initialize();
+		}
+	}
+
 	void TerrainSceneItem::onMaterialResourceCreated()
 	{
 		// Setup renderable manager: Instancing is used
 		// -> One tiles is one instance and the index buffer describes all the NxN patches within one tile
-		const IRendererRuntime& rendererRuntime = getSceneResource().getRendererRuntime();
-		// TODO(co) The terrain scene item isn't supported by the OpenGL ES 3 renderer, yet
-		if (rendererRuntime.getRenderer().getNameId() != Renderer::NameId::OPENGLES3)
+		RenderableManager::Renderables& renderables = mRenderableManager.getRenderables();
+		renderables.reserve(static_cast<size_t>(mNumberOfTerrainTileRings));
+		for (int i = 0; i != mNumberOfTerrainTileRings; ++i)
 		{
-			RenderableManager::Renderables& renderables = mRenderableManager.getRenderables();
-			renderables.reserve(static_cast<size_t>(mNumberOfTerrainTileRings));
-			for (int i = 0; i != mNumberOfTerrainTileRings; ++i)
-			{
-				const TerrainTileRing& terrainTileRing = mTerrainTileRings[i];
-				renderables.emplace_back(mRenderableManager, terrainTileRing.vertexArrayPtr, rendererRuntime.getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>(), true, 0, ::detail::NUMBER_OF_INDICES, terrainTileRing.numberOfTiles);
-			}
-			mRenderableManager.updateCachedRenderablesData();
+			const TerrainTileRing& terrainTileRing = mTerrainTileRings[i];
+			renderables.emplace_back(mRenderableManager, terrainTileRing.vertexArrayPtr, getSceneResource().getRendererRuntime().getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>(), true, 0, ::detail::NUMBER_OF_INDICES, terrainTileRing.numberOfTiles);
 		}
-		else
-		{
-			RENDERER_LOG(rendererRuntime.getContext(), COMPATIBILITY_WARNING, "The renderer runtime terrain scene item isn't supported by the OpenGL ES 3 renderer, yet")
-		}
+		mRenderableManager.updateCachedRenderablesData();
 	}
 
 
@@ -151,17 +151,25 @@ namespace RendererRuntime
 		mNumberOfTerrainTileRings(0),
 		mTerrainTileRings{}
 	{
-		// This array defines the outer width of each successive ring
-		const int widths[] = { 0, 16, 16, 16, 16, 16 };
-		mNumberOfTerrainTileRings = sizeof(widths) / sizeof(widths[0]) - 1;	// "widths[0]" doesn't define a ring hence -1
-		RENDERER_ASSERT(getContext(), mNumberOfTerrainTileRings <= MAXIMUM_NUMBER_OF_TERRAIN_TILE_RINGS, "Invalid number of terrain tile rings")
-		Renderer::IBufferManager& bufferManager = getSceneResource().getRendererRuntime().getBufferManager();
-		createIndexBuffer(bufferManager);
-		float tileWidth = 0.125f;
-		for (int i = 0; i != mNumberOfTerrainTileRings && i != MAXIMUM_NUMBER_OF_TERRAIN_TILE_RINGS; ++i)
+		// The renderer backend must support tessellation shaders
+		if (getSceneResource().getRendererRuntime().getRenderer().getCapabilities().maximumNumberOfPatchVertices > 0)
 		{
-			createTerrainTileRing(mTerrainTileRings[i], bufferManager, widths[i] / 2, widths[i + 1], tileWidth);
-			tileWidth *= 2.0f;
+			// This array defines the outer width of each successive ring
+			const int widths[] = { 0, 16, 16, 16, 16, 16 };
+			mNumberOfTerrainTileRings = sizeof(widths) / sizeof(widths[0]) - 1;	// "widths[0]" doesn't define a ring hence -1
+			RENDERER_ASSERT(getContext(), mNumberOfTerrainTileRings <= MAXIMUM_NUMBER_OF_TERRAIN_TILE_RINGS, "Invalid number of terrain tile rings")
+			Renderer::IBufferManager& bufferManager = getSceneResource().getRendererRuntime().getBufferManager();
+			createIndexBuffer(bufferManager);
+			float tileWidth = 0.125f;
+			for (int i = 0; i != mNumberOfTerrainTileRings && i != MAXIMUM_NUMBER_OF_TERRAIN_TILE_RINGS; ++i)
+			{
+				createTerrainTileRing(mTerrainTileRings[i], bufferManager, widths[i] / 2, widths[i + 1], tileWidth);
+				tileWidth *= 2.0f;
+			}
+		}
+		else
+		{
+			RENDERER_LOG_ONCE(getSceneResource().getRendererRuntime().getContext(), COMPATIBILITY_WARNING, "The renderer runtime terrain scene item needs a renderer backend with tessellation shader support")
 		}
 	}
 

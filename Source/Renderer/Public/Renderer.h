@@ -736,6 +736,19 @@ namespace Renderer
 				DEBUG_BREAK; \
 			} \
 		} while (0);
+	#define RENDERER_LOG_ONCE(context, type, format, ...) \
+		do \
+		{ \
+			static bool loggedOnce = false; \
+			if (!loggedOnce) \
+			{ \
+				loggedOnce = true; \
+				if ((context).getLog().print(Renderer::ILog::Type::type, nullptr, __FILE__, static_cast<uint32_t>(__LINE__), format, ##__VA_ARGS__)) \
+				{ \
+					DEBUG_BREAK; \
+				} \
+			} \
+		} while (0);
 
 
 
@@ -811,8 +824,22 @@ namespace Renderer
 					DEBUG_BREAK; \
 				} \
 			} while (0);
+		#define RENDERER_ASSERT_ONCE(context, expression, format, ...) \
+			do \
+			{ \
+				static bool loggedOnce = false; \
+				if (!loggedOnce && !(expression)) \
+				{ \
+					loggedOnce = true; \
+					if ((context).getAssert().handleAssert(#expression, __FILE__, static_cast<uint32_t>(__LINE__), format, ##__VA_ARGS__)) \
+					{ \
+						DEBUG_BREAK; \
+					} \
+				} \
+			} while (0);
 	#else
 		#define RENDERER_ASSERT(context, expression, format, ...)
+		#define RENDERER_ASSERT_ONCE(context, expression, format, ...)
 	#endif
 
 

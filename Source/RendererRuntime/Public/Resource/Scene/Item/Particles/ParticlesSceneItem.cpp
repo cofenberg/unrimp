@@ -37,6 +37,15 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::MaterialSceneItem methods ]
 	//[-------------------------------------------------------]
+	void ParticlesSceneItem::initialize()
+	{
+		// Call the base implementation
+		if (mMaximumNumberOfParticles > 0)
+		{
+			MaterialSceneItem::initialize();
+		}
+	}
+
 	void ParticlesSceneItem::onMaterialResourceCreated()
 	{
 		// Setup renderable manager: Six vertices per particle, particle index = instance index
@@ -61,7 +70,10 @@ namespace RendererRuntime
 		MaterialSceneItem(sceneResource, false),	// TODO(co) Set bounding box
 		mMaximumNumberOfParticles(8)	// TODO(co) Make this dynamic
 	{
-		{ // Create vertex array object (VAO)
+		// The renderer backend must support structured buffers
+		if (getSceneResource().getRendererRuntime().getRenderer().getCapabilities().maximumStructuredBufferSize > 0)
+		{
+			// Create vertex array object (VAO)
 			// Create the vertex buffer object (VBO)
 			// TODO(co) Make this dynamic
 			const ParticleDataStruct particlesData[8] =
@@ -103,6 +115,11 @@ namespace RendererRuntime
 			// Create the structured buffer
 			mStructuredBufferPtr = getSceneResource().getRendererRuntime().getBufferManager().createStructuredBuffer(sizeof(ParticleDataStruct) * mMaximumNumberOfParticles, particlesData, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::STATIC_DRAW, sizeof(ParticleDataStruct));
 			RENDERER_SET_RESOURCE_DEBUG_NAME(mStructuredBufferPtr, "Particles structured buffer")
+		}
+		else
+		{
+			mMaximumNumberOfParticles = 0;
+			RENDERER_LOG_ONCE(getSceneResource().getRendererRuntime().getContext(), COMPATIBILITY_WARNING, "The renderer runtime particles scene item needs a renderer backend with structured buffer support")
 		}
 	}
 

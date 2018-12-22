@@ -84,6 +84,40 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
+	//[ Protected virtual RendererRuntime::MaterialSceneItem methods ]
+	//[-------------------------------------------------------]
+	void MaterialSceneItem::initialize()
+	{
+		// Sanity checks
+		RENDERER_ASSERT(getContext(), isValid(mMaterialAssetId) || isValid(mMaterialBlueprintAssetId), "Invalid data")
+		RENDERER_ASSERT(getContext(), !(isValid(mMaterialAssetId) && isValid(mMaterialBlueprintAssetId)), "Invalid data")
+
+		// Get parent material resource ID and initiate creating the material resource
+		MaterialResourceManager& materialResourceManager = getSceneResource().getRendererRuntime().getMaterialResourceManager();
+		if (isValid(mMaterialAssetId))
+		{
+			// Get or load material resource
+			MaterialResourceId materialResourceId = getInvalid<MaterialResourceId>();
+			materialResourceManager.loadMaterialResourceByAssetId(mMaterialAssetId, materialResourceId, this);
+		}
+		else
+		{
+			// Get or load material blueprint resource
+			const AssetId materialBlueprintAssetId = mMaterialBlueprintAssetId;
+			if (isValid(materialBlueprintAssetId))
+			{
+				MaterialResourceId parentMaterialResourceId = materialResourceManager.getMaterialResourceIdByAssetId(materialBlueprintAssetId);
+				if (isInvalid(parentMaterialResourceId))
+				{
+					parentMaterialResourceId = materialResourceManager.createMaterialResourceByAssetId(materialBlueprintAssetId, materialBlueprintAssetId, mMaterialTechniqueId);
+				}
+				createMaterialResource(parentMaterialResourceId);
+			}
+		}
+	}
+
+
+	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::IResourceListener methods ]
 	//[-------------------------------------------------------]
 	void MaterialSceneItem::onLoadingStateChange(const IResource& resource)
@@ -118,36 +152,6 @@ namespace RendererRuntime
 
 			// Destroy the material resource we created
 			getSceneResource().getRendererRuntime().getMaterialResourceManager().destroyMaterialResource(mMaterialResourceId);
-		}
-	}
-
-	void MaterialSceneItem::initialize()
-	{
-		// Sanity checks
-		RENDERER_ASSERT(getContext(), isValid(mMaterialAssetId) || isValid(mMaterialBlueprintAssetId), "Invalid data")
-		RENDERER_ASSERT(getContext(), !(isValid(mMaterialAssetId) && isValid(mMaterialBlueprintAssetId)), "Invalid data")
-
-		// Get parent material resource ID and initiate creating the material resource
-		MaterialResourceManager& materialResourceManager = getSceneResource().getRendererRuntime().getMaterialResourceManager();
-		if (isValid(mMaterialAssetId))
-		{
-			// Get or load material resource
-			MaterialResourceId materialResourceId = getInvalid<MaterialResourceId>();
-			materialResourceManager.loadMaterialResourceByAssetId(mMaterialAssetId, materialResourceId, this);
-		}
-		else
-		{
-			// Get or load material blueprint resource
-			const AssetId materialBlueprintAssetId = mMaterialBlueprintAssetId;
-			if (isValid(materialBlueprintAssetId))
-			{
-				MaterialResourceId parentMaterialResourceId = materialResourceManager.getMaterialResourceIdByAssetId(materialBlueprintAssetId);
-				if (isInvalid(parentMaterialResourceId))
-				{
-					parentMaterialResourceId = materialResourceManager.createMaterialResourceByAssetId(materialBlueprintAssetId, materialBlueprintAssetId, mMaterialTechniqueId);
-				}
-				createMaterialResource(parentMaterialResourceId);
-			}
 		}
 	}
 

@@ -116,6 +116,7 @@ namespace RendererRuntime
 	//[ Protected virtual RendererRuntime::MaterialSceneItem methods ]
 	//[-------------------------------------------------------]
 	protected:
+		virtual void initialize();
 		virtual void onMaterialResourceCreated() = 0;
 
 
@@ -141,7 +142,6 @@ namespace RendererRuntime
 		virtual ~MaterialSceneItem() override;
 		explicit MaterialSceneItem(const MaterialSceneItem&) = delete;
 		MaterialSceneItem& operator=(const MaterialSceneItem&) = delete;
-		void initialize();
 		void createMaterialResource(MaterialResourceId parentMaterialResourceId);
 
 

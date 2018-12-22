@@ -37,6 +37,15 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::MaterialSceneItem methods ]
 	//[-------------------------------------------------------]
+	void GrassSceneItem::initialize()
+	{
+		// Call the base implementation
+		if (mMaximumNumberOfGrass > 0)
+		{
+			MaterialSceneItem::initialize();
+		}
+	}
+
 	void GrassSceneItem::onMaterialResourceCreated()
 	{
 		// Setup renderable manager
@@ -61,7 +70,10 @@ namespace RendererRuntime
 		MaterialSceneItem(sceneResource, false),	// TODO(co) Set bounding box
 		mMaximumNumberOfGrass(3)	// TODO(co) Make this dynamic
 	{
-		{ // Create vertex array object (VAO)
+		// The renderer backend must support structured buffers
+		if (getSceneResource().getRendererRuntime().getRenderer().getCapabilities().maximumStructuredBufferSize > 0)
+		{
+			// Create vertex array object (VAO)
 			// Create the vertex buffer object (VBO)
 			// TODO(co) Make this dynamic
 			const GrassDataStruct grassData[3] =
@@ -96,6 +108,11 @@ namespace RendererRuntime
 				mIndirectBufferPtr = bufferManager.createIndirectBuffer(sizeof(Renderer::DrawArguments), &drawArguments, Renderer::IndirectBufferFlag::UNORDERED_ACCESS | Renderer::IndirectBufferFlag::DRAW_ARGUMENTS);
 				RENDERER_SET_RESOURCE_DEBUG_NAME(mIndirectBufferPtr, "Grass indirect buffer")
 			}
+		}
+		else
+		{
+			mMaximumNumberOfGrass = 0;
+			RENDERER_LOG_ONCE(getSceneResource().getRendererRuntime().getContext(), COMPATIBILITY_WARNING, "The renderer runtime grass scene item needs a renderer backend with structured buffer support")
 		}
 	}
 
