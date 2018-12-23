@@ -291,7 +291,9 @@ namespace RendererRuntime
 			#ifdef RENDERER_STATISTICS
 				if (nullptr != mPipelineStatisticsQueryPoolPtr)
 				{
-					if (isValid(mPreviousCurrentPipelineStatisticsQueryIndex) && !renderer.getQueryPoolResults(*mPipelineStatisticsQueryPoolPtr, sizeof(Renderer::PipelineStatisticsQueryResult), reinterpret_cast<uint8_t*>(&mPipelineStatisticsQueryResult), mPreviousCurrentPipelineStatisticsQueryIndex, 1, 0, 0))
+					// We explicitly wait ("Renderer::QueryResultFlags::WAIT" default value) if the previous result isn't available yet to avoid
+					// "D3D11 WARNING: ID3D10Query::Begin: Begin is being invoked on a Query, where the previous results have not been obtained with GetData. This is valid; but unusual. The previous results are being abandoned, and new Query results will be generated. [ EXECUTION WARNING #408: QUERY_BEGIN_ABANDONING_PREVIOUS_RESULTS]"
+					if (isValid(mPreviousCurrentPipelineStatisticsQueryIndex) && !renderer.getQueryPoolResults(*mPipelineStatisticsQueryPoolPtr, sizeof(Renderer::PipelineStatisticsQueryResult), reinterpret_cast<uint8_t*>(&mPipelineStatisticsQueryResult), mPreviousCurrentPipelineStatisticsQueryIndex))
 					{
 						mPipelineStatisticsQueryResult = {};
 					}
