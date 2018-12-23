@@ -1336,11 +1336,16 @@ namespace
 				VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_DISPLAY_MODE_KHR_EXT)
 				VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_OBJECT_TABLE_NVX_EXT)
 				VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_INDIRECT_COMMANDS_LAYOUT_NVX_EXT)
-				VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_VALIDATION_CACHE_EXT)
-				VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_KHR_EXT)
-				VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_KHR_EXT)
-				// VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_BEGIN_RANGE_EXT)	- Not possible due to identical value
-				// VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_END_RANGE_EXT)		- Not possible due to identical value
+				VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_VALIDATION_CACHE_EXT_EXT)
+				VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_EXT)
+				VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_EXT)
+				VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_ACCELERATION_STRUCTURE_NV_EXT)
+			//	VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_DEBUG_REPORT_EXT)	not possible
+			//	VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_VALIDATION_CACHE_EXT)	not possible	
+			//	VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_KHR_EXT)	not possible
+			//	VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_KHR_EXT)	not possible
+			//	VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_BEGIN_RANGE_EXT)	not possible
+			//	VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_END_RANGE_EXT)	not possible
 				VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_RANGE_SIZE_EXT)
 				VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_MAX_ENUM_EXT)
 			}
@@ -3801,15 +3806,26 @@ namespace VulkanRenderer
 			};
 
 			// "srcAccessMask" and "dstAccessMask" configuration
+			VkPipelineStageFlags srcStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+			VkPipelineStageFlags dstStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 			if (VK_IMAGE_LAYOUT_PREINITIALIZED == oldVkImageLayout && VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL == newVkImageLayout)
 			{
-				vkImageMemoryBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
+				vkImageMemoryBarrier.srcAccessMask = 0;
 				vkImageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+				dstStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
 			}
 			else if (VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL == oldVkImageLayout && VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL == newVkImageLayout)
 			{
-				vkImageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+				vkImageMemoryBarrier.srcAccessMask = 0;
 				vkImageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+				dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			}
+			else if (VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL == oldVkImageLayout && VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL == newVkImageLayout)
+			{
+				vkImageMemoryBarrier.srcAccessMask = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+				vkImageMemoryBarrier.dstAccessMask = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+				srcStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
+				dstStageMask = VK_PIPELINE_STAGE_HOST_BIT;
 			}
 			else if (VK_IMAGE_LAYOUT_UNDEFINED == oldVkImageLayout && VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL == newVkImageLayout)
 			{
@@ -3822,7 +3838,7 @@ namespace VulkanRenderer
 			}
 
 			// Create Vulkan pipeline barrier command
-			vkCmdPipelineBarrier(vkCommandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &vkImageMemoryBarrier);
+			vkCmdPipelineBarrier(vkCommandBuffer, srcStageMask, dstStageMask, 0, 0, nullptr, 0, nullptr, 1, &vkImageMemoryBarrier);
 		}
 
 		static void transitionVkImageLayout(const VulkanRenderer& vulkanRenderer, VkCommandBuffer vkCommandBuffer, VkImage vkImage, VkImageLayout oldVkImageLayout, VkImageLayout newVkImageLayout, VkImageSubresourceRange vkImageSubresourceRange, VkPipelineStageFlags sourceVkPipelineStageFlags, VkPipelineStageFlags destinationVkPipelineStageFlags)
@@ -3896,6 +3912,7 @@ namespace VulkanRenderer
 				case VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL:
 				case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
 				case VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR:
+				case VK_IMAGE_LAYOUT_SHADING_RATE_OPTIMAL_NV:
 				case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL_KHR:
 				case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL_KHR:
 				// case VK_IMAGE_LAYOUT_BEGIN_RANGE:	not possible
@@ -3952,6 +3969,7 @@ namespace VulkanRenderer
 				case VK_IMAGE_LAYOUT_PREINITIALIZED:
 				case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
 				case VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR:
+				case VK_IMAGE_LAYOUT_SHADING_RATE_OPTIMAL_NV:
 				case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL_KHR:
 				case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL_KHR:
 				// case VK_IMAGE_LAYOUT_BEGIN_RANGE:	not possible
@@ -3965,6 +3983,7 @@ namespace VulkanRenderer
 			}
 
 			// Put barrier inside setup command buffer
+			// -> "Table 4. Supported access types": https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/vkspec.html#synchronization-access-types-supported
 			vkCmdPipelineBarrier(vkCommandBuffer, sourceVkPipelineStageFlags, destinationVkPipelineStageFlags, 0, 0, nullptr, 0, nullptr, 1, &vkImageMemoryBarrier);
 		}
 
@@ -4052,7 +4071,7 @@ namespace VulkanRenderer
 			{
 				return VK_IMAGE_LAYOUT_GENERAL;
 			}
-			return VK_IMAGE_LAYOUT_PREINITIALIZED;
+			return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		}
 
 		// TODO(co) Trivial implementation to have something to start with. Need to use more clever memory management and stating buffers later on.
@@ -4144,9 +4163,11 @@ namespace VulkanRenderer
 				createAndAllocateVkBuffer(vulkanRenderer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, numberOfBytes, data, stagingVkBuffer, stagingVkDeviceMemory);
 
 				{ // Upload all mipmaps
+					const uint32_t numberOfUploadedMipmaps = generateMipmaps ? 1 : numberOfMipmaps;
+
 					// Create and begin Vulkan command buffer
 					VkCommandBuffer vkCommandBuffer = beginSingleTimeCommands(vulkanRenderer);
-					transitionVkImageLayout(vulkanRenderer, vkCommandBuffer, vkImage, vkImageAspectFlags, numberOfMipmaps, layerCount, VK_IMAGE_LAYOUT_PREINITIALIZED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+					transitionVkImageLayout(vulkanRenderer, vkCommandBuffer, vkImage, vkImageAspectFlags, numberOfUploadedMipmaps, layerCount, VK_IMAGE_LAYOUT_PREINITIALIZED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
 					// Upload all mipmaps
 					uint32_t bufferOffset  = 0;
@@ -4155,7 +4176,6 @@ namespace VulkanRenderer
 					uint32_t currentDepth  = depth;
 
 					// Allocate list of VkBufferImageCopy and setup VkBufferImageCopy data for each mipmap level
-					const uint32_t numberOfUploadedMipmaps = generateMipmaps ? 1 : numberOfMipmaps;
 					std::vector<VkBufferImageCopy> vkBufferImageCopyList;
 					vkBufferImageCopyList.reserve(numberOfUploadedMipmaps);
 					for (uint32_t mipmap = 0; mipmap < numberOfUploadedMipmaps; ++mipmap)
@@ -4185,7 +4205,22 @@ namespace VulkanRenderer
 					vkCmdCopyBufferToImage(vkCommandBuffer, stagingVkBuffer, vkImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, static_cast<uint32_t>(vkBufferImageCopyList.size()), vkBufferImageCopyList.data());
 
 					// End and destroy Vulkan command buffer
-					transitionVkImageLayout(vulkanRenderer, vkCommandBuffer, vkImage, vkImageAspectFlags, numberOfMipmaps, layerCount, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+					if (generateMipmaps)
+					{
+						const VkImageSubresourceRange vkImageSubresourceRange =
+						{
+							vkImageAspectFlags,	// aspectMask (VkImageAspectFlags)
+							0,					// baseMipLevel (uint32_t)
+							1,					// levelCount (uint32_t)
+							0,					// baseArrayLayer (uint32_t)
+							layerCount			// layerCount (uint32_t)
+						};
+						transitionVkImageLayout(vulkanRenderer, vkCommandBuffer, vkImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, vkImageSubresourceRange, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+					}
+					else
+					{
+						transitionVkImageLayout(vulkanRenderer, vkCommandBuffer, vkImage, vkImageAspectFlags, numberOfUploadedMipmaps, layerCount, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+					}
 					endSingleTimeCommands(vulkanRenderer, vkCommandBuffer);
 				}
 
@@ -4193,7 +4228,7 @@ namespace VulkanRenderer
 				destroyAndFreeVkBuffer(vulkanRenderer, stagingVkBuffer, stagingVkDeviceMemory);
 
 				// Generate a complete texture mip-chain at runtime from a base image using image blits and proper image barriers
-				// -> Basing on https://github.com/SaschaWillems/Vulkan/tree/master/texturemipmapgen
+				// -> Basing on https://github.com/SaschaWillems/Vulkan/tree/master/examples/texturemipmapgen and "Mipmap generation : Transfers, transition layout" by Antoine MORRIER published January 12, 2017 at http://cpp-rendering.io/mipmap-generation/
 				// -> We copy down the whole mip chain doing a blit from mip-1 to mip. An alternative way would be to always blit from the first mip level and sample that one down.
 				// TODO(co) Some GPUs also offer "asynchronous transfer queues" (check for queue families with only the "VK_QUEUE_TRANSFER_BIT" set) that may be used to speed up such operations
 				if (generateMipmaps)
@@ -4249,25 +4284,25 @@ namespace VulkanRenderer
 						};
 
 						// Transition current mip level to transfer destination
-						transitionVkImageLayout(vulkanRenderer, vkCommandBuffer, vkImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, vkImageSubresourceRange, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_HOST_BIT);
+						transitionVkImageLayout(vulkanRenderer, vkCommandBuffer, vkImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, vkImageSubresourceRange, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
 
 						// Blit from previous level
 						vkCmdBlitImage(vkCommandBuffer, vkImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, vkImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &VkImageBlit, VK_FILTER_LINEAR);
 
 						// Transition current mip level to transfer source for read in next iteration
-						transitionVkImageLayout(vulkanRenderer, vkCommandBuffer, vkImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, vkImageSubresourceRange, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+						transitionVkImageLayout(vulkanRenderer, vkCommandBuffer, vkImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, vkImageSubresourceRange, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
 					}
 
 					{ // After the loop, all mip layers are in "VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL"-layout, so transition all to "VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL"-layout
 						const VkImageSubresourceRange vkImageSubresourceRange =
 						{
 							vkImageAspectFlags,		// aspectMask (VkImageAspectFlags)
-							1,						// baseMipLevel (uint32_t)
-							numberOfMipmaps - 1,	// levelCount (uint32_t)
+							0,						// baseMipLevel (uint32_t)
+							numberOfMipmaps,		// levelCount (uint32_t)
 							0,						// baseArrayLayer (uint32_t)
 							layerCount				// layerCount (uint32_t)
 						};
-						transitionVkImageLayout(vulkanRenderer, vkCommandBuffer, vkImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, vkImageSubresourceRange, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
+						transitionVkImageLayout(vulkanRenderer, vkCommandBuffer, vkImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, vkImageSubresourceRange, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
 					}
 
 					// End and destroy Vulkan command buffer

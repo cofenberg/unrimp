@@ -218,7 +218,7 @@ namespace RendererRuntime
 				#ifdef RENDERER_STATISTICS
 					if (nullptr != mPipelineStatisticsQueryPoolPtr)
 					{
-						Renderer::Command::ResetAndBeginQuery::create(mCommandBuffer, *mPipelineStatisticsQueryPoolPtr, mCurrentPipelineStatisticsQueryIndex, Renderer::QueryControlFlags::PRECISE);
+						Renderer::Command::ResetAndBeginQuery::create(mCommandBuffer, *mPipelineStatisticsQueryPoolPtr, mCurrentPipelineStatisticsQueryIndex);
 					}
 				#endif
 
