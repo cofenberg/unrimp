@@ -43,8 +43,8 @@
 						"SetMaterialProperties":
 						{
 							"HeightMap": "${PROJECT_NAME}/Texture/T_GonzalesTerrain_h.asset",
-							"_argb_nxa": "${PROJECT_NAME}/Texture/T_GonzalesTerrain_argb_nxa.asset",
-							"_aor_rg_mb_nya": "${PROJECT_NAME}/Texture/T_GonzalesTerrain_aor_rg_mb_nya.asset",
+							"_argb": "${PROJECT_NAME}/Texture/T_GonzalesTerrain_argb.asset",
+							"_aor_rg_mb": "${PROJECT_NAME}/Texture/T_GonzalesTerrain_aor_rg_mb.asset",
 							"WorldPosition": "1000.0 -43.1 400.0",
 							"WorldSize": "4096.0 200.0 4096.0"
 						}

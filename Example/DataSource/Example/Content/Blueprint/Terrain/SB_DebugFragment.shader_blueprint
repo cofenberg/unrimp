@@ -46,7 +46,7 @@ UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
 UNIFORM_BUFFER_END
 
 // Textures
-TEXTURE_2D(2, 1, _argb_nxa, 2)
+TEXTURE_2D(2, 1, _argb, 2)
 
 // Samplers
 SAMPLER_STATE(3, 1, SamplerLinearClamp, 1)
@@ -64,8 +64,8 @@ SAMPLER_STATE(3, 1, SamplerLinearClamp, 1)
 //[-------------------------------------------------------]
 MAIN_BEGIN
 	// Read channel packed texture data
-	// -> "_argb_nxa" = RGB channel = Albedo map ("_a"-postfix), A channel = x component of normal map ("_n"-postfix)
-	float3 color = LinearSpaceToGammaSpace3(SAMPLE_2D(_argb_nxa, SamplerLinearClamp, MAIN_INPUT(TexCoord)).rgb);
+	// -> "_argb" = RGB channel = Albedo map ("_a"-postfix)
+	float3 color = LinearSpaceToGammaSpace3(SAMPLE_2D(_argb, SamplerLinearClamp, MAIN_INPUT(TexCoord)).rgb);
 
 	// Done
 	MAIN_OUTPUT_COLOR(0) = float4(color, 1.0f);

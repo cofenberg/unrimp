@@ -8,6 +8,33 @@
 	{
 		"TextureChannelPackings":
 		{
+			"_argb":
+			{
+				"Sources":
+				[
+					{
+						"TextureSemantic": "ALBEDO_MAP",
+						"NumberOfChannels": 3,
+						"DefaultColor": "1.0 1.0 1.0"
+					}
+				],
+				"Destinations":
+				[
+					{
+						"TextureSemantic": "ALBEDO_MAP",
+						"SourceChannel": 0
+					},
+					{
+						"TextureSemantic": "ALBEDO_MAP",
+						"SourceChannel": 1
+					},
+					{
+						"TextureSemantic": "ALBEDO_MAP",
+						"SourceChannel": 2
+					}
+				],
+				"RgbHardwareGammaCorrection": "TRUE"
+			},
 			"_argb_nxa":
 			{
 				"Sources":
@@ -86,6 +113,43 @@
 					{
 						"TextureSemantic": "NORMAL_MAP",
 						"SourceChannel": 1
+					}
+				],
+				"RgbHardwareGammaCorrection": "FALSE"
+			},
+			"_aor_rg_mb":
+			{
+				"Sources":
+				[
+					{
+						"TextureSemantic": "AMBIENT_OCCLUSION_MAP",
+						"NumberOfChannels": 1,
+						"DefaultColor": "1.0"
+					},
+					{
+						"TextureSemantic": "ROUGHNESS_MAP",
+						"NumberOfChannels": 1,
+						"DefaultColor": "1.0"
+					},
+					{
+						"TextureSemantic": "METALLIC_MAP",
+						"NumberOfChannels": 1,
+						"DefaultColor": "0.0"
+					}
+				],
+				"Destinations":
+				[
+					{
+						"TextureSemantic": "AMBIENT_OCCLUSION_MAP",
+						"SourceChannel": 0
+					},
+					{
+						"TextureSemantic": "ROUGHNESS_MAP",
+						"SourceChannel": 0
+					},
+					{
+						"TextureSemantic": "METALLIC_MAP",
+						"SourceChannel": 0
 					}
 				],
 				"RgbHardwareGammaCorrection": "FALSE"

@@ -145,7 +145,7 @@ float CalculateOcclusion(float3 viewRay, float2 textureCoordinate, int sampleInd
 	occlusion = pow(occlusion, 2.0f);
 
 	// Fade occlusion with distance to reduce visible precision artefacts
-	float2 ssaoFarFadeStart = float2(20.0f, 60.0f);	// TODO(co) We could expose this
+	float2 ssaoFarFadeStart = float2(100.0f, 140.0f);	// TODO(co) We could expose this
 	occlusion = farFade(occlusion, ssaoFarFadeStart, originLinearDepth);
 
 	// Done

@@ -24,19 +24,19 @@
 				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
 				"Description": "Terrain height map"
 			},
-			"_argb_nxa":
+			"_argb":
 			{
 				"Usage": "TEXTURE_REFERENCE",
 				"ValueType": "TEXTURE_ASSET_ID",
 				"Value": "Unrimp/Texture/DynamicByCode/Identity_argb_nxa2D",
-				"Description": "Terrain data map, RGB channel = Albedo map ('_a'-postfix), A channel = x component of normal map ('_n'-postfix)"
+				"Description": "Terrain data map, RGB channel = Albedo map ('_a'-postfix)"
 			},
-			"_aor_rg_mb_nya":
+			"_aor_rg_mb":
 			{
 				"Usage": "TEXTURE_REFERENCE",
 				"ValueType": "TEXTURE_ASSET_ID",
 				"Value": "Unrimp/Texture/DynamicByCode/Identity_hr_rg_mb_nya2D",
-				"Description": "Terrain data map, R channel = Ambient occlusion map ('_ao'-postfix), G channel = Roughness map ('_r'-postfix, aka specular F0, roughness = 1 - glossiness (= smoothness)), B channel = Metallic map ('_m'-postfix), A channel = y component of normal map ('_n'-postfix)"
+				"Description": "Terrain data map, R channel = Ambient occlusion map ('_ao'-postfix), G channel = Roughness map ('_r'-postfix, aka specular F0, roughness = 1 - glossiness (= smoothness)), B channel = Metallic map ('_m'-postfix)"
 			},
 			"WorldPosition":
 			{
@@ -264,12 +264,12 @@
 				"1":
 				{
 					"ResourceType": "TEXTURE_2D",
-					"BaseShaderRegisterName": "_argb_nxa",
+					"BaseShaderRegisterName": "_argb",
 					"BaseShaderRegister": "2",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
-					"Value": "@_argb_nxa",
+					"Value": "@_argb",
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/Identity_argb_nxa2D",
 					"RgbHardwareGammaCorrection": "TRUE",
 					"SamplerStateBaseShaderRegisterName": "SamplerLinearClamp"
@@ -277,12 +277,12 @@
 				"2":
 				{
 					"ResourceType": "TEXTURE_2D",
-					"BaseShaderRegisterName": "_aor_rg_mb_nya",
+					"BaseShaderRegisterName": "_aor_rg_mb",
 					"BaseShaderRegister": "3",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
-					"Value": "@_aor_rg_mb_nya",
+					"Value": "@_aor_rg_mb",
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/Identity_hr_rg_mb_nya2D",
 					"SamplerStateBaseShaderRegisterName": "SamplerLinearClamp"
 				}

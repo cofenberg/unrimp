@@ -24,12 +24,12 @@
 				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
 				"Description": "Terrain height map"
 			},
-			"_argb_nxa":
+			"_argb":
 			{
 				"Usage": "TEXTURE_REFERENCE",
 				"ValueType": "TEXTURE_ASSET_ID",
 				"Value": "Unrimp/Texture/DynamicByCode/Identity_argb_nxa2D",
-				"Description": "Terrain data map, RGB channel = Albedo map ('_a'-postfix), A channel = x component of normal map ('_n'-postfix)"
+				"Description": "Terrain data map, RGB channel = Albedo map ('_a'-postfix)"
 			},
 			"WorldPosition":
 			{
@@ -256,12 +256,12 @@
 				"1":
 				{
 					"ResourceType": "TEXTURE_2D",
-					"BaseShaderRegisterName": "_argb_nxa",
+					"BaseShaderRegisterName": "_argb",
 					"BaseShaderRegister": "2",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
-					"Value": "@_argb_nxa",
+					"Value": "@_argb",
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/Identity_argb_nxa2D",
 					"RgbHardwareGammaCorrection": "TRUE",
 					"SamplerStateBaseShaderRegisterName": "SamplerLinearClamp"

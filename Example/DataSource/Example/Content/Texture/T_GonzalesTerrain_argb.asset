@@ -14,12 +14,10 @@
 		{
 			"ClassName": "RendererToolkit::TextureAssetCompiler",
 			"TextureSemantic": "PACKED_CHANNELS",
-			"TextureChannelPacking": "_aor_rg_mb_nya",
+			"TextureChannelPacking": "_argb",
 			"InputFiles":
 			{
-				"AMBIENT_OCCLUSION_MAP": "./T_GonzalesTerrain_ao.png",
-				"GLOSS_MAP": "./T_GonzalesTerrain_r.png",
-				"NORMAL_MAP": "./T_GonzalesTerrain_n.png"
+				"ALBEDO_MAP": "./T_GonzalesTerrain_a.png"
 			}
 		}
 	}

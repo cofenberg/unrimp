@@ -139,7 +139,7 @@ MAIN_BEGIN
 
 	// Get color and screen space ambient occlusion value
 	float3 color = SAMPLE_2D_LOD(ColorMap, SamplerPointClamp, float4(texCoord, 0.0f, 0.0f)).rgb;
-	float screenSpaceAmbientOcclusion = SAMPLE_2D_LOD(ScreenSpaceAmbientOcclusionMap, SamplerPointClamp, float4(texCoord, 0.0f, 0.0f)).r;
+	float screenSpaceAmbientOcclusion = SAMPLE_2D_LOD(ScreenSpaceAmbientOcclusionMap, SamplerLinearClamp, float4(texCoord, 0.0f, 0.0f)).r;
 
 	// Get the normalized view ray
 	float3 viewRay = normalize(MAIN_INPUT(ViewRayVS));

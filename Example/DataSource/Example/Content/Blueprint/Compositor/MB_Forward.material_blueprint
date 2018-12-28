@@ -189,7 +189,7 @@
 					"Value": "@ScreenSpaceAmbientOcclusionMap",
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/WhiteMap2D",
 					"MipmapsUsed": "FALSE",
-					"SamplerStateBaseShaderRegisterName": "SamplerPointClamp"
+					"SamplerStateBaseShaderRegisterName": "SamplerLinearClamp"
 				},
 				"3":
 				{
