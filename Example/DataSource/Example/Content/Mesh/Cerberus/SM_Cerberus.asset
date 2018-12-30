@@ -1,0 +1,23 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"Metadata":
+		{
+			"Copyright": "Andrew Maximov 2014: http://artisaverb.info/PBT.html"
+		},
+		"Compiler":
+		{
+			"ClassName": "RendererToolkit::MeshAssetCompiler",
+			"InputFile": "./Cerberus_LP.FBX",
+			"MaterialNameToAssetId":
+			{
+				"08 - Default": "./M_Cerberus.asset"
+			}
+		}
+	}
+}
