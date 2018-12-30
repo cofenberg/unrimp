@@ -41,10 +41,10 @@
 		// ->  1 - normal is oriented to upper hemisphere
 		// -> -1 - normal is oriented to lower hemisphere
 		float3 topHemisphereDirection = float3(0.0f, -1.0f, 0.0f);
-		float dotNL = dot(worldSpaceNormal, topHemisphereDirection);
+		float NdotL = dot(worldSpaceNormal, topHemisphereDirection);
 
 		// From [-1, 1] to [0, 1] range
-		float lightInfluence = dotNL * 0.5f + 0.5f;
+		float lightInfluence = NdotL * 0.5f + 0.5f;
 
 		// Interpolate colors from upper and lower hemispheres
 		return LERP(groundColor, skyColor, lightInfluence);
@@ -52,101 +52,83 @@
 
 
 	//[-------------------------------------------------------]
-	//[ Diffuse model                                         ]
-	//[-------------------------------------------------------]
-	// Burley 2012, "Physically-Based Shading at Disney" - https://disney-animation.s3.amazonaws.com/library/s2012_pbs_disney_brdf_notes_v2.pdf
-	float3 DiffuseBurley(float3 albedo, float roughness, float dotNV, float dotNL, float dotVH)
-	{
-		float FD90 = 0.5f + 2.0f * dotVH * dotVH * roughness;
-		float FdV = 1.0f + (FD90 - 1.0f) * exp2((-5.55473f * dotNV - 6.98316f) * dotNV);
-		float FdL = 1.0f + (FD90 - 1.0f) * exp2((-5.55473f * dotNL - 6.98316f) * dotNL);
-		return albedo / PI * FdV * FdL;
-	}
-
-
-	//[-------------------------------------------------------]
 	//[ Fresnel                                               ]
 	//[-------------------------------------------------------]
-	// Schlick 1994, "An Inexpensive BRDF Model for Physically-Based Rendering"
-	float3 FresnelSchlick(float ct, float3 F0)
+	// Schlick 1994, "An Inexpensive BRDF Model for Physically-Based Rendering" approximation of the Fresnel factor
+	float3 FresnelSchlick(float3 F0, float cosTheta)
 	{
-		return F0 + (float3(1.0f, 1.0f, 1.0f) - F0) * pow(1.0f - ct, 5.0f);
+		return F0 + (float3(1.0f, 1.0f, 1.0f) - F0) * pow(1.0f - cosTheta, 5.0f);
 	}
 
 
 	//[-------------------------------------------------------]
-	//[ Normal distribution functions (NDF)                   ]
+	//[ Diffuse model                                         ]
 	//[-------------------------------------------------------]
-	float NDF_blinnPhong(float dotNH, float alphaSqr)
+	/**
+	*  @brief
+	*    Burley 2012, "Physically-Based Shading at Disney" - https://disney-animation.s3.amazonaws.com/library/s2012_pbs_disney_brdf_notes_v2.pdf
+	*
+	*  @param[in] albedo
+	*    Albedo = base color
+	*  @param[in] roughness
+	*    Roughness = 1 - glossiness (= smoothness)
+	*  @param[in] NdotV
+	*    The normal dot with the camera view direction
+	*  @param[in] NdotL
+	*    The normal dot with the light direction
+	*  @param[in] VdotH
+	*    The camera view direction dot with the half vector
+	*/
+	float3 DiffuseBurley(float3 albedo, float roughness, float NdotV, float NdotL, float VdotH)
 	{
-		return 1.0f / (PI * alphaSqr) * pow(dotNH, 2.0f / alphaSqr - 2.0f);
+		float energyBias = LERP(0.0f, 0.5f, roughness);
+		float energyFactor = LERP(1.0f, 1.0f / 1.51f, roughness);
+		float fd90 = energyBias + 2.0f * VdotH * VdotH * roughness;
+		float f0 = 1.0f;
+		float lightScatter = f0 + (fd90 - f0) * pow(1.0f - NdotL, 5.0f);
+		float viewScatter = f0 + (fd90 - f0) * pow(1.0f - NdotV, 5.0f);
+		return albedo * lightScatter * viewScatter * energyFactor;
 	}
 
-	float NDF_beckmann(float dotNH, float alphaSqr)
+
+	//[-------------------------------------------------------]
+	//[ Normal distribution function (NDF)                    ]
+	//[-------------------------------------------------------]
+	// GGX/Towbridge-Reitz normal distribution function. Walter et al. 2007, "Microfacet models for refraction through rough surfaces". Uses Disney's reparametrization of alpha = roughness^2.
+	float NDF_GGX(float VdotH, float roughness)
 	{
-		float dotNH2 = dotNH * dotNH;
-		return 1.0f / (PI * alphaSqr * dotNH2 * dotNH2) * exp((dotNH2 - 1.0f) / (alphaSqr * dotNH2));
-	}
-
-	// GGX / Trowbridge-Reitz
-	// Walter et al. 2007, "Microfacet models for refraction through rough surfaces"
-	float NDF_GGX(float dotNH, float alphaSqr)
-	{
-		float result = alphaSqr / (PI * pow(dotNH * dotNH * (alphaSqr - 1.0f) + 1.0f, 2.0f));
-
-		// Ensure we never get insane values resulting in visual artefacts
-		result = min(result, 10.0f);
-
-		// Done
-		return result;
+		float alpha = roughness * roughness;
+		float alphaSquared = alpha * alpha;
+		float denominator = (VdotH * VdotH) * (alphaSquared - 1.0f) + 1.0f;
+		denominator = (PI * denominator * denominator);
+		return (denominator > 0.0f) ? (alphaSquared / denominator) : 0.0f;
 	}
 
 
 	//[-------------------------------------------------------]
-	//[ Geometry visibility functions (GEOM)                  ]
+	//[ Geometry visibility function (GEOM)                   ]
 	//[-------------------------------------------------------]
-	float GEOM_SchlickSmith(float dotNL, float dotNV, float alpha)
+	// Single term for separable Schlick-GGX below
+	float GEOM_SchlickG1(float cosTheta, float k)
 	{
-		float k = pow(0.8f + 0.5f * alpha, 2.0f) / 2.0f;
-		float GL = 1.0f / (dotNL * (1.0f - k) + k);
-		float GV = 1.0f / (dotNV * (1.0f - k) + k);
-		return GL * GV;
+		return cosTheta / (cosTheta * (1.0f - k) + k);
+	}
+
+	// Schlick-GGX approximation of geometric attenuation function using Smith's method
+	float GEOM_SchlickGGX(float NdotL, float NdotV, float roughness)
+	{
+		float r = roughness + 1.0f;
+		float k = (r * r) / 8.0f;	// Epic suggests using this roughness remapping for analytic lights ("Real Shading in Unreal Engine 4" by Brian Karis, Epic Games - http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf )
+		return GEOM_SchlickG1(NdotL, k) * GEOM_SchlickG1(NdotV, k);
 	}
 
 
 	//[-------------------------------------------------------]
 	//[ Lighting function                                     ]
 	//[-------------------------------------------------------]
-	// N = Surface normalize
-	// V = Camera direction
-	// L = Light direction
-	float3 PBS_Specular(float3 N, float3 V, float3 L, float roughness, float3 F0)
-	{
-		float alpha = roughness * roughness;
-		float alphaSqr = alpha * alpha;
-
-		float3 H = normalize(V + L);
-		float dotNL = SATURATE(dot(N, L));
-		float dotNV = SATURATE(dot(N, V));
-		float dotNH = SATURATE(dot(N, H));
-		float dotLH = SATURATE(dot(L, H));
-
-		// Normal / microfacet distribution
-		float Di = NDF_GGX(dotNH, alphaSqr);
-
-		// Fresnel
-		float3 Fs = FresnelSchlick(dotNV, F0);
-
-		// Visibility term
-		float Vs = GEOM_SchlickSmith(dotNL, dotNV, alpha);
-
-		// Combine
-		return dotNL * Di * Fs * Vs;
-	}
-
 	/**
 	*  @brief
-	*    Calculate lighting
+	*    Calculate direct lighting calculation for analytical lights
 	*
 	*  @param[in] albedo
 	*    Albedo = base color
@@ -157,7 +139,7 @@
 	*  @param[in] N
 	*    N = Surface normal
 	*  @param[in] V
-	*    V = Camera direction
+	*    V = Outgoing light direction (vector from fragment position to the "eye").
 	*  @param[in] reflectionColor
 	*    Reflection color, has horizon occlusion build in
 	*  @param[in] L
@@ -167,32 +149,58 @@
 	*/
 	float3 CalculateLighting(float3 albedo, float roughness, float metallic, float3 N, float3 V, float3 reflectionColor, float3 L, float3 lightColor)
 	{
-		// Derive data
-		float3 R = reflect(-V, N);
-		float3 H = normalize(V + L);
-		float dotVH = SATURATE(dot(V, H));
-		float dotNV = SATURATE(dot(N, V));
-		float dotNL = SATURATE(dot(N, L));
+		// Angle between surface normal and outgoing light direction
+		float NdotV = SATURATE(dot(N, V));
+
+		// Specular reflection vector
+		float3 R = 2.0f * NdotV * N - V;
+
+		// Fresnel reflectance at normal incidence (for metals use albedo color)
+		float3 F_DIELECTRIC = 0.04f;	// Constant normal incidence Fresnel factor for all dielectrics
+		float3 F0 = LERP(F_DIELECTRIC, albedo, metallic);
+
+		// Half-vector between L and V
+		float3 H = normalize(L + V);
+
+		// Calculate angles between surface normal and various light vectors
+		float NdotL = SATURATE(dot(N, L));
+		float VdotH = SATURATE(dot(V, H));
+
+		// Calculate Fresnel term for direct lighting
+		float3 F = FresnelSchlick(F0, VdotH);
+
+		// Calculate normal / microfacet distribution for specular BRDF
+		float D = NDF_GGX(SATURATE(dot(N, H)), roughness);
+
+		// Calculate geometric attenuation for specular BRDF
+		float G = GEOM_SchlickGGX(NdotL, NdotV, roughness);
+
+		// Diffuse scattering happens due to light being refracted multiple times by a dielectric medium.
+		// Metals on the other hand either reflect or absorb energy, so diffuse contribution is always zero.
+		// To be energy conserving we must scale diffuse BRDF contribution based on Fresnel factor & metalness.
+		float3 kd = LERP(float3(1.0f, 1.0f, 1.0f) - F, float3(0.0f, 0.0f, 0.0f), metallic);
+
+		// Burley diffuse BRDF
+		// -> We don't scale by 1/PI for lighting & material units to be more convenient (see https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/ )
+		float3 albedoReduced = kd * albedo * (1.0f - metallic);
+		float3 diffuseBRDF = DiffuseBurley(albedoReduced, roughness, NdotV, NdotL, VdotH);
+
+		// Cook-Torrance specular microfacet BRDF
+		float EPSILON = 0.00001f;
+		float3 specularBRDF = (F * D * G) / max(EPSILON, 4.0f * NdotL * NdotV);
 
 		// Image quality improvement via "Horizon Occlusion for Normal Mapped Reflections" ( http://marmosetco.tumblr.com/post/81245981087 )
-		float horizonFade = 1.3f;
-		float horiz = SATURATE(1.0f + horizonFade * dot(R, N));
-		horiz *= horiz;
+		float HORIZON_FADE = 1.3f;
+		float horizon = SATURATE(1.0f + HORIZON_FADE * dot(R, N));
+		specularBRDF *= horizon * horizon;
 
-		// Diffuse part
-		float3 albedoReduced = albedo * (1.0f - metallic);
-		float3 diffuseColor = lightColor * DiffuseBurley(albedoReduced, roughness, dotNV, dotNL, dotVH);
-
-		// Specular part
-		// -> F0 based on metallic factor of material
-		float3 dielectricColor = float3(0.04f, 0.04f, 0.04f);
-		float3 F0 = LERP(dielectricColor, albedo, metallic);
-		float3 specularColor = horiz * lightColor * PBS_Specular(N, V, L, roughness, F0);
+		// Adjust reflection color
 		reflectionColor *= lightColor;
-		reflectionColor -= specularColor;
+		reflectionColor -= specularBRDF;
 
 		// Final output mixes based on material metalness
-		return LERP(diffuseColor, reflectionColor, metallic) + specularColor;
+		diffuseBRDF = LERP(diffuseBRDF, reflectionColor, metallic);
+		return (diffuseBRDF * NdotL + specularBRDF) * lightColor;
 	}
 @end
 
@@ -213,10 +221,10 @@
 		// ->  1 - normal is oriented to upper hemisphere
 		// -> -1 - normal is oriented to lower hemisphere
 		float3 topHemisphereDirection = float3(0.0f, -1.0f, 0.0f);
-		float dotNL = dot(worldSpaceNormal, topHemisphereDirection);
+		float NdotL = dot(worldSpaceNormal, topHemisphereDirection);
 
 		// From [-1, 1] to [0, 1] range
-		float lightInfluence = dotNL * 0.5f + 0.5f;
+		float lightInfluence = NdotL * 0.5f + 0.5f;
 
 		// Interpolate colors from upper and lower hemispheres
 		return LERP(groundColor, skyColor, lightInfluence);
