@@ -6198,67 +6198,47 @@ namespace Direct3D10Renderer
 	public:
 		[[nodiscard]] virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
-			// Check whether or not the given texture dimension is valid
-			if (width > 0)
-			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture1D)(static_cast<Direct3D10Renderer&>(getRenderer()), width, textureFormat, data, textureFlags, textureUsage);
-			}
-			else
-			{
-				return nullptr;
-			}
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), width > 0, "Direct3D 10 create texture 1D was called with invalid parameters")
+
+			// Create 1D texture resource
+			return RENDERER_NEW(getRenderer().getContext(), Texture1D)(static_cast<Direct3D10Renderer&>(getRenderer()), width, textureFormat, data, textureFlags, textureUsage);
 		}
 
 		[[nodiscard]] virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
 		{
-			// Check whether or not the given texture dimension is valid
-			if (width > 0 && height > 0)
-			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture2D)(static_cast<Direct3D10Renderer&>(getRenderer()), width, height, textureFormat, data, textureFlags, textureUsage, numberOfMultisamples);
-			}
-			else
-			{
-				return nullptr;
-			}
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), width > 0 && height > 0, "Direct3D 10 create texture 2D was called with invalid parameters")
+
+			// Create 2D texture resource
+			return RENDERER_NEW(getRenderer().getContext(), Texture2D)(static_cast<Direct3D10Renderer&>(getRenderer()), width, height, textureFormat, data, textureFlags, textureUsage, numberOfMultisamples);
 		}
 
 		[[nodiscard]] virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
-			// Check whether or not the given texture dimension is valid
-			if (width > 0 && height > 0 && numberOfSlices > 0)
-			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture2DArray)(static_cast<Direct3D10Renderer&>(getRenderer()), width, height, numberOfSlices, textureFormat, data, textureFlags, textureUsage);
-			}
-			else
-			{
-				return nullptr;
-			}
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), width > 0 && height > 0 && numberOfSlices > 0, "Direct3D 10 create texture 2D array was called with invalid parameters")
+
+			// Create 2D texture array resource
+			return RENDERER_NEW(getRenderer().getContext(), Texture2DArray)(static_cast<Direct3D10Renderer&>(getRenderer()), width, height, numberOfSlices, textureFormat, data, textureFlags, textureUsage);
 		}
 
 		[[nodiscard]] virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
-			// Check whether or not the given texture dimension is valid
-			if (width > 0 && height > 0 && depth > 0)
-			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture3D)(static_cast<Direct3D10Renderer&>(getRenderer()), width, height, depth, textureFormat, data, textureFlags, textureUsage);
-			}
-			else
-			{
-				return nullptr;
-			}
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), width > 0 && height > 0 && depth > 0, "Direct3D 10 create texture 3D was called with invalid parameters")
+
+			// Create 3D texture resource
+			return RENDERER_NEW(getRenderer().getContext(), Texture3D)(static_cast<Direct3D10Renderer&>(getRenderer()), width, height, depth, textureFormat, data, textureFlags, textureUsage);
 		}
 
 		[[nodiscard]] virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
-			// Check whether or not the given texture dimension is valid
-			if (width > 0 && height > 0)
-			{
-				return RENDERER_NEW(getRenderer().getContext(), TextureCube)(static_cast<Direct3D10Renderer&>(getRenderer()), width, height, textureFormat, data, textureFlags, textureUsage);
-			}
-			else
-			{
-				return nullptr;
-			}
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), width > 0 && height > 0, "Direct3D 10 create texture cube was called with invalid parameters")
+
+			// Create cube texture resource
+			return RENDERER_NEW(getRenderer().getContext(), TextureCube)(static_cast<Direct3D10Renderer&>(getRenderer()), width, height, textureFormat, data, textureFlags, textureUsage);
 		}
 
 

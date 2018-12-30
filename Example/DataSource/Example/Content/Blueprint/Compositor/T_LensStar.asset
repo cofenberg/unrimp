@@ -13,7 +13,7 @@
 		"Compiler":
 		{
 			"ClassName": "RendererToolkit::TextureAssetCompiler",
-			"InputFile": "./T_LensStar.tga",
+			"InputFile": "./T_LensStar.png",
 			"CreateMipmaps": "FALSE"
 		}
 	}

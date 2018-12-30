@@ -203,6 +203,7 @@ private:
 	int			  mCurrentCompositor;
 	ShadowQuality mShadowQuality;
 	int			  mCurrentShadowQuality;
+	bool		  mHighQualityRendering;
 	bool		  mHighQualityLighting;
 	bool		  mSoftParticles;
 	int			  mCurrentTextureFiltering;

@@ -1881,67 +1881,47 @@ namespace NullRenderer
 	public:
 		[[nodiscard]] virtual Renderer::ITexture1D* createTexture1D(uint32_t width, [[maybe_unused]] Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
-			// Check whether or not the given texture dimension is valid
-			if (width > 0)
-			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture1D)(static_cast<NullRenderer&>(getRenderer()), width);
-			}
-			else
-			{
-				return nullptr;
-			}
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), width > 0, "Null create texture 1D was called with invalid parameters")
+
+			// Create 1D texture resource
+			return RENDERER_NEW(getRenderer().getContext(), Texture1D)(static_cast<NullRenderer&>(getRenderer()), width);
 		}
 
 		[[nodiscard]] virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, [[maybe_unused]] Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, [[maybe_unused]] uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
 		{
-			// Check whether or not the given texture dimension is valid
-			if (width > 0 && height > 0)
-			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture2D)(static_cast<NullRenderer&>(getRenderer()), width, height);
-			}
-			else
-			{
-				return nullptr;
-			}
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), width > 0 && height > 0, "Null create texture 2D was called with invalid parameters")
+
+			// Create 2D texture resource
+			return RENDERER_NEW(getRenderer().getContext(), Texture2D)(static_cast<NullRenderer&>(getRenderer()), width, height);
 		}
 
 		[[nodiscard]] virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, [[maybe_unused]] Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
-			// Check whether or not the given texture dimension is valid
-			if (width > 0 && height > 0 && numberOfSlices > 0)
-			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture2DArray)(static_cast<NullRenderer&>(getRenderer()), width, height, numberOfSlices);
-			}
-			else
-			{
-				return nullptr;
-			}
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), width > 0 && height > 0 && numberOfSlices > 0, "Null create texture 2D array was called with invalid parameters")
+
+			// Create 2D texture array resource
+			return RENDERER_NEW(getRenderer().getContext(), Texture2DArray)(static_cast<NullRenderer&>(getRenderer()), width, height, numberOfSlices);
 		}
 
 		[[nodiscard]] virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, [[maybe_unused]] Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
-			// Check whether or not the given texture dimension is valid
-			if (width > 0 && height > 0 && depth > 0)
-			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture3D)(static_cast<NullRenderer&>(getRenderer()), width, height, depth);
-			}
-			else
-			{
-				return nullptr;
-			}
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), width > 0 && height > 0 && depth > 0, "Null create texture 3D was called with invalid parameters")
+
+			// Create 3D texture resource
+			return RENDERER_NEW(getRenderer().getContext(), Texture3D)(static_cast<NullRenderer&>(getRenderer()), width, height, depth);
 		}
 
 		[[nodiscard]] virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, [[maybe_unused]] Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
-			// Check whether or not the given texture dimension is valid
-			if (width > 0 && height > 0)
-			{
-				return RENDERER_NEW(getRenderer().getContext(), TextureCube)(static_cast<NullRenderer&>(getRenderer()), width, height);
-			}
-			else
-			{
-				return nullptr;
-			}
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), width > 0 && height > 0, "Null create texture cube was called with invalid parameters")
+
+			// Create cube texture resource
+			return RENDERER_NEW(getRenderer().getContext(), TextureCube)(static_cast<NullRenderer&>(getRenderer()), width, height);
 		}
 
 

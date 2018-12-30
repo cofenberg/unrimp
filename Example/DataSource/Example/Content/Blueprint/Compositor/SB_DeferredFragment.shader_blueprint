@@ -103,7 +103,7 @@ SAMPLER_STATE(2, 0, SamplerLinear, 0)
 //[-------------------------------------------------------]
 @includepiece(../SharedShaderPiece/SP_Color.asset)
 	@insertpiece(DefineCalculateFoggedColor)
-@includepiece(../SharedShaderPiece/SP_TangentFrame.asset)
+@includepiece(../SharedShaderPiece/SP_Normal.asset)
 	@insertpiece(DefineGetTangentFrame)
 	@insertpiece(DefineUnpackTextureNormalXY)
 	@insertpiece(DefineCalculateCotangentFrame)
@@ -188,7 +188,7 @@ float3 CalculateColorByGBuffer(float2 texCoord, float3 viewRay, float4 gbuffer0V
 	color += emissive;
 
 	// Apply fog
-	color = CalculateFoggedColor(viewSpacePosition, color);
+	color = CalculateFoggedColor(viewSpacePosition, color, PassData.AtmosphereFogDensity, PassData.ViewSpaceSunlightDirection, PassData.AmbientColor, PassData.SunlightColor, PassData.DiffuseFogColor);
 
 	// Apply volumetric light
 	color += volumetricLight;

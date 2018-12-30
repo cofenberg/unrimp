@@ -30,6 +30,7 @@
 #include <RendererRuntime/Public/Asset/AssetPackage.h>
 #include <RendererRuntime/Public/Core/File/IFileManager.h>
 #include <RendererRuntime/Public/Core/File/FileSystemHelper.h>
+#include <RendererRuntime/Public/Resource/Texture/Loader/CrnArrayFileFormat.h>
 #include <RendererRuntime/Public/Resource/Texture/Loader/Lz4DdsTextureResourceLoader.h>
 
 // Disable warnings in external headers, we can't fix them
@@ -221,7 +222,8 @@ namespace
 			REFLECTION_CUBE_MAP,
 			COLOR_CORRECTION_LOOKUP_TABLE,
 			PACKED_CHANNELS,
-			VOLUME,			///< 3D volume data
+			VOLUME,	///< 3D volume data
+			CRN_ARRAY,
 			UNKNOWN
 		};
 
@@ -476,6 +478,7 @@ namespace
 			ELSE_IF_VALUE(COLOR_CORRECTION_LOOKUP_TABLE)
 			ELSE_IF_VALUE(PACKED_CHANNELS)
 			ELSE_IF_VALUE(VOLUME)
+			ELSE_IF_VALUE(CRN_ARRAY)
 			else
 			{
 				throw std::runtime_error(std::string("Unknown texture semantic \"") + valueAsString + '\"');
@@ -927,6 +930,7 @@ namespace
 								case TextureSemantic::COLOR_CORRECTION_LOOKUP_TABLE:
 								case TextureSemantic::PACKED_CHANNELS:
 								case TextureSemantic::VOLUME:
+								case TextureSemantic::CRN_ARRAY:
 								case TextureSemantic::UNKNOWN:
 									crunchResampleParams.m_srgb  = true;
 									crunchResampleParams.m_gamma = 2.2f;	// Mipmap gamma correction value, default=2.2, use 1.0 for linear
@@ -1095,93 +1099,135 @@ namespace
 
 		[[nodiscard]] bool checkIfChanged(const RendererToolkit::IAssetCompiler::Input& input, const RendererToolkit::IAssetCompiler::Configuration& configuration, const rapidjson::Value& rapidJsonValueTextureAssetCompiler, TextureSemantic textureSemantic, const std::string& virtualInputAssetFilename, const std::string& virtualOutputAssetFilename, std::vector<RendererToolkit::CacheManager::CacheEntries>& cacheEntries)
 		{
-			if (TextureSemantic::REFLECTION_CUBE_MAP == textureSemantic)
+			switch (textureSemantic)
 			{
-				// A cube map has six source files (for each face one source), so check if any of the six files has been changed
-				// -> "virtualInputAssetFilename" specifies the base directory of the faces source files
-				const Filenames faceFilenames = getCubemapFilenames(rapidJsonValueTextureAssetCompiler, virtualInputAssetFilename);
-				RendererToolkit::CacheManager::CacheEntries cacheEntriesCandidate;
-				if (input.cacheManager.needsToBeCompiled(configuration.rendererTarget, input.virtualAssetFilename, faceFilenames, virtualOutputAssetFilename, TEXTURE_FORMAT_VERSION, cacheEntriesCandidate))
+				case TextureSemantic::ROUGHNESS_MAP:
+				case TextureSemantic::GLOSS_MAP:
 				{
-					// Changed
-					cacheEntries.push_back(cacheEntriesCandidate);
-					return true;
-				}
-
-				// Not changed
-				return false;
-			}
-			else if (TextureSemantic::ROUGHNESS_MAP == textureSemantic || TextureSemantic::GLOSS_MAP == textureSemantic)
-			{
-				// A roughness map has two source files: First the roughness map itself and second a normal map
-				// -> An asset can specify both files or only one of them
-				// -> "virtualInputAssetFilename" points to the roughness map
-				// -> We need to fetch the name of the input normal map
-				std::string virtualNormalMapAssetFilename;
-				if (rapidJsonValueTextureAssetCompiler.HasMember("NormalMapInputFile"))
-				{
-					const std::string normalMapInputFile = rapidJsonValueTextureAssetCompiler["NormalMapInputFile"].GetString();
-					if (!normalMapInputFile.empty())
+					// A roughness map has two source files: First the roughness map itself and second a normal map
+					// -> An asset can specify both files or only one of them
+					// -> "virtualInputAssetFilename" points to the roughness map
+					// -> We need to fetch the name of the input normal map
+					std::string virtualNormalMapAssetFilename;
+					if (rapidJsonValueTextureAssetCompiler.HasMember("NormalMapInputFile"))
 					{
-						virtualNormalMapAssetFilename = input.virtualAssetInputDirectory + '/' + normalMapInputFile;
+						const std::string normalMapInputFile = rapidJsonValueTextureAssetCompiler["NormalMapInputFile"].GetString();
+						if (!normalMapInputFile.empty())
+						{
+							virtualNormalMapAssetFilename = input.virtualAssetInputDirectory + '/' + normalMapInputFile;
+						}
 					}
+
+					// Setup a list of source files
+					Filenames virtualInputFilenames;
+					if (!virtualInputAssetFilename.empty())
+					{
+						virtualInputFilenames.emplace_back(virtualInputAssetFilename);
+					}
+					if (!virtualNormalMapAssetFilename.empty())
+					{
+						virtualInputFilenames.emplace_back(virtualNormalMapAssetFilename);
+					}
+
+					RendererToolkit::CacheManager::CacheEntries cacheEntriesCandidate;
+					if (input.cacheManager.needsToBeCompiled(configuration.rendererTarget, input.virtualAssetFilename, virtualInputFilenames, virtualOutputAssetFilename, TEXTURE_FORMAT_VERSION, cacheEntriesCandidate))
+					{
+						// Changed
+						cacheEntries.push_back(cacheEntriesCandidate);
+						return true;
+					}
+
+					// Not changed
+					return false;
 				}
 
-				// Setup a list of source files
-				Filenames virtualInputFilenames;
-				if (!virtualInputAssetFilename.empty())
+				case TextureSemantic::REFLECTION_CUBE_MAP:
 				{
-					virtualInputFilenames.emplace_back(virtualInputAssetFilename);
-				}
-				if (!virtualNormalMapAssetFilename.empty())
-				{
-					virtualInputFilenames.emplace_back(virtualNormalMapAssetFilename);
+					// A cube map has six source files (for each face one source), so check if any of the six files has been changed
+					// -> "virtualInputAssetFilename" specifies the base directory of the faces source files
+					const Filenames faceFilenames = getCubemapFilenames(rapidJsonValueTextureAssetCompiler, virtualInputAssetFilename);
+					RendererToolkit::CacheManager::CacheEntries cacheEntriesCandidate;
+					if (input.cacheManager.needsToBeCompiled(configuration.rendererTarget, input.virtualAssetFilename, faceFilenames, virtualOutputAssetFilename, TEXTURE_FORMAT_VERSION, cacheEntriesCandidate))
+					{
+						// Changed
+						cacheEntries.push_back(cacheEntriesCandidate);
+						return true;
+					}
+
+					// Not changed
+					return false;
 				}
 
-				RendererToolkit::CacheManager::CacheEntries cacheEntriesCandidate;
-				if (input.cacheManager.needsToBeCompiled(configuration.rendererTarget, input.virtualAssetFilename, virtualInputFilenames, virtualOutputAssetFilename, TEXTURE_FORMAT_VERSION, cacheEntriesCandidate))
+				case TextureSemantic::PACKED_CHANNELS:
 				{
-					// Changed
-					cacheEntries.push_back(cacheEntriesCandidate);
-					return true;
+					const rapidjson::Value& rapidJsonValueInputFiles = rapidJsonValueTextureAssetCompiler["InputFiles"];
+					Filenames filenames;
+					filenames.reserve(rapidJsonValueInputFiles.MemberCount());
+					for (rapidjson::Value::ConstMemberIterator rapidJsonMemberIteratorInputFile = rapidJsonValueInputFiles.MemberBegin(); rapidJsonMemberIteratorInputFile != rapidJsonValueInputFiles.MemberEnd(); ++rapidJsonMemberIteratorInputFile)
+					{
+						filenames.emplace_back(virtualInputAssetFilename + RendererToolkit::JsonHelper::getAssetFile(rapidJsonMemberIteratorInputFile->value));
+					}
+					RendererToolkit::CacheManager::CacheEntries cacheEntriesCandidate;
+					if (input.cacheManager.needsToBeCompiled(configuration.rendererTarget, input.virtualAssetFilename, filenames, virtualOutputAssetFilename, TEXTURE_FORMAT_VERSION, cacheEntriesCandidate))
+					{
+						// Changed
+						cacheEntries.push_back(cacheEntriesCandidate);
+						return true;
+					}
+
+					// Not changed
+					return false;
 				}
 
-				// Not changed
-				return false;
-			}
-			else if (TextureSemantic::PACKED_CHANNELS == textureSemantic)
-			{
-				const rapidjson::Value& rapidJsonValueInputFiles = rapidJsonValueTextureAssetCompiler["InputFiles"];
-				Filenames filenames;
-				filenames.reserve(rapidJsonValueInputFiles.MemberCount());
-				for (rapidjson::Value::ConstMemberIterator rapidJsonMemberIteratorInputFile = rapidJsonValueInputFiles.MemberBegin(); rapidJsonMemberIteratorInputFile != rapidJsonValueInputFiles.MemberEnd(); ++rapidJsonMemberIteratorInputFile)
+				case TextureSemantic::CRN_ARRAY:
 				{
-					filenames.emplace_back(virtualInputAssetFilename + RendererToolkit::JsonHelper::getAssetFile(rapidJsonMemberIteratorInputFile->value));
-				}
-				RendererToolkit::CacheManager::CacheEntries cacheEntriesCandidate;
-				if (input.cacheManager.needsToBeCompiled(configuration.rendererTarget, input.virtualAssetFilename, filenames, virtualOutputAssetFilename, TEXTURE_FORMAT_VERSION, cacheEntriesCandidate))
-				{
-					// Changed
-					cacheEntries.push_back(cacheEntriesCandidate);
-					return true;
+					const rapidjson::Value& rapidJsonValueInputFiles = rapidJsonValueTextureAssetCompiler["InputFiles"];
+					Filenames filenames;
+					const uint32_t numberOfFiles = rapidJsonValueInputFiles.Size();
+					filenames.reserve(numberOfFiles);
+					for (uint32_t i = 0; i < numberOfFiles; ++i)
+					{
+						filenames.emplace_back(virtualInputAssetFilename + RendererToolkit::JsonHelper::getAssetFile(rapidJsonValueInputFiles[i]));
+					}
+					RendererToolkit::CacheManager::CacheEntries cacheEntriesCandidate;
+					if (input.cacheManager.needsToBeCompiled(configuration.rendererTarget, input.virtualAssetFilename, filenames, virtualOutputAssetFilename, RendererToolkit::IAssetCompiler::ASSET_FORMAT_VERSION, cacheEntriesCandidate))
+					{
+						// Changed
+						cacheEntries.push_back(cacheEntriesCandidate);
+						return true;
+					}
+
+					// Not changed
+					return false;
 				}
 
-				// Not changed
-				return false;
-			}
-			else
-			{
-				// Asset has single source file
-				RendererToolkit::CacheManager::CacheEntries cacheEntriesCandidate;
-				if (input.cacheManager.needsToBeCompiled(configuration.rendererTarget, input.virtualAssetFilename, virtualInputAssetFilename, virtualOutputAssetFilename, TEXTURE_FORMAT_VERSION, cacheEntriesCandidate))
+				case TextureSemantic::ALBEDO_MAP:
+				case TextureSemantic::ALPHA_MAP:
+				case TextureSemantic::NORMAL_MAP:
+				case TextureSemantic::METALLIC_MAP:
+				case TextureSemantic::EMISSIVE_MAP:
+				case TextureSemantic::HEIGHT_MAP:
+				case TextureSemantic::TERRAIN_HEIGHT_MAP:
+				case TextureSemantic::TINT_MAP:
+				case TextureSemantic::AMBIENT_OCCLUSION_MAP:
+				case TextureSemantic::REFLECTION_2D_MAP:
+				case TextureSemantic::COLOR_CORRECTION_LOOKUP_TABLE:
+				case TextureSemantic::VOLUME:
+				case TextureSemantic::UNKNOWN:
+				default:
 				{
-					// Changed
-					cacheEntries.push_back(cacheEntriesCandidate);
-					return true;
-				}
+					// Asset has single source file
+					RendererToolkit::CacheManager::CacheEntries cacheEntriesCandidate;
+					if (input.cacheManager.needsToBeCompiled(configuration.rendererTarget, input.virtualAssetFilename, virtualInputAssetFilename, virtualOutputAssetFilename, TEXTURE_FORMAT_VERSION, cacheEntriesCandidate))
+					{
+						// Changed
+						cacheEntries.push_back(cacheEntriesCandidate);
+						return true;
+					}
 
-				// Not changed
-				return false;
+					// Not changed
+					return false;
+				}
 			}
 		}
 
@@ -1378,6 +1424,7 @@ namespace
 					// Nothing here, handled elsewhere
 					break;
 
+				case TextureSemantic::CRN_ARRAY:
 				case TextureSemantic::UNKNOWN:
 					// Nothing here, just a regular texture
 					break;
@@ -1517,10 +1564,10 @@ namespace
 			}
 		}
 
-		void convertColorCorrectionLookupTable(RendererRuntime::IFileManager& fileManager, RendererRuntime::VirtualFilename virtualSourceFilename, RendererRuntime::VirtualFilename virtualDestinationFilename)
+		void convertColorCorrectionLookupTable(RendererRuntime::IFileManager& fileManager, RendererRuntime::VirtualFilename virtualInputAssetFilename, RendererRuntime::VirtualFilename virtualOutputAssetFilename)
 		{
 			// Load the 2D source image
-			FileDataStreamSerializer fileDataStreamSerializer(fileManager, RendererRuntime::IFileManager::FileMode::READ, virtualSourceFilename);
+			FileDataStreamSerializer fileDataStreamSerializer(fileManager, RendererRuntime::IFileManager::FileMode::READ, virtualInputAssetFilename);
 			crnlib::image_u8 sourceImage;
 			crnlib::image_utils::read_from_stream(sourceImage, fileDataStreamSerializer);
 
@@ -1572,10 +1619,10 @@ namespace
 
 			// Write down the 3D destination texture
 			// -> Since usually tiny, not really worth to apply LZ4 compression here
-			RendererRuntime::IFile* file = fileManager.openFile(RendererRuntime::IFileManager::FileMode::WRITE, virtualDestinationFilename);
+			RendererRuntime::IFile* file = fileManager.openFile(RendererRuntime::IFileManager::FileMode::WRITE, virtualOutputAssetFilename);
 			if (nullptr == file)
 			{
-				throw std::runtime_error("Failed to open destination file \"" + std::string(virtualDestinationFilename) + '\"');
+				throw std::runtime_error("Failed to open destination file \"" + std::string(virtualOutputAssetFilename) + '\"');
 			}
 			file->write("DDS ", sizeof(uint32_t));
 			file->write(reinterpret_cast<const char*>(&ddsSurfaceDesc2), sizeof(crnlib::DDSURFACEDESC2));
@@ -1586,10 +1633,10 @@ namespace
 			delete [] destinationData;
 		}
 
-		void convertTerrainHeightMap(RendererRuntime::IFileManager& fileManager, RendererRuntime::VirtualFilename virtualSourceFilename, RendererRuntime::VirtualFilename virtualDestinationFilename)
+		void convertTerrainHeightMap(RendererRuntime::IFileManager& fileManager, RendererRuntime::VirtualFilename virtualInputAssetFilename, RendererRuntime::VirtualFilename virtualOutputAssetFilename)
 		{
 			// Load the 2D source image
-			FileDataStreamSerializer fileDataStreamSerializer(fileManager, RendererRuntime::IFileManager::FileMode::READ, virtualSourceFilename);
+			FileDataStreamSerializer fileDataStreamSerializer(fileManager, RendererRuntime::IFileManager::FileMode::READ, virtualInputAssetFilename);
 			crnlib::uint8_vec buf;
 			if (fileDataStreamSerializer.read_entire_file(buf))
 			{
@@ -1627,10 +1674,10 @@ namespace
 						memoryFile.write("DDS ", sizeof(uint32_t));
 						memoryFile.write(reinterpret_cast<const char*>(&ddsSurfaceDesc2), sizeof(crnlib::DDSURFACEDESC2));
 						memoryFile.write(pData, sizeof(stbi_us) * numberOfTexelsPerLayer);
-						if (!memoryFile.writeLz4CompressedDataByVirtualFilename(RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_TYPE, RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_VERSION, fileManager, virtualDestinationFilename))
+						if (!memoryFile.writeLz4CompressedDataByVirtualFilename(RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_TYPE, RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_VERSION, fileManager, virtualOutputAssetFilename))
 						{
 							stbi_image_free(pData);
-							throw std::runtime_error("Failed to write to destination file \"" + std::string(virtualDestinationFilename) + '\"');
+							throw std::runtime_error("Failed to write to destination file \"" + std::string(virtualOutputAssetFilename) + '\"');
 						}
 					}
 
@@ -1658,26 +1705,26 @@ namespace
 		*    - Lookout! This loader requires the user to provide correct loader parameters! (data type, width, height and depth)
 		*    - The image loader is only able to deal with the volumetric image data, not with volumetric specific additional information like voxel size
 		*/
-		void convertVolume(const RendererToolkit::IAssetCompiler::Configuration& configuration, RendererRuntime::IFileManager& fileManager, RendererRuntime::VirtualFilename virtualSourceFilename, RendererRuntime::VirtualFilename virtualDestinationFilename)
+		void convertVolume(const RendererToolkit::IAssetCompiler::Configuration& configuration, RendererRuntime::IFileManager& fileManager, RendererRuntime::VirtualFilename virtualInputAssetFilename, RendererRuntime::VirtualFilename virtualOutputAssetFilename)
 		{
 			// Get and check the filename extension
-			std::string extension = std_filesystem::path(virtualSourceFilename).extension().generic_string();
+			std::string extension = std_filesystem::path(virtualInputAssetFilename).extension().generic_string();
 			RendererToolkit::StringHelper::toLowerCase(extension);
 			if (".raw" != extension)
 			{
-				throw std::runtime_error("Failed to convert volume " + std::string(virtualSourceFilename) + ": Only raw volume data is supported");
+				throw std::runtime_error("Failed to convert volume " + std::string(virtualInputAssetFilename) + ": Only raw volume data is supported");
 			}
 
 			// Get the JSON "RawVolume" object
 			const rapidjson::Value& rapidJsonValueTextureAssetCompiler = configuration.rapidJsonDocumentAsset["Asset"]["Compiler"];
 			if (!rapidJsonValueTextureAssetCompiler.HasMember("RawVolume"))
 			{
-				throw std::runtime_error("Failed to convert volume " + std::string(virtualSourceFilename) + ": \"RawVolume\" block is missing inside the texture asset JSON file");
+				throw std::runtime_error("Failed to convert volume " + std::string(virtualInputAssetFilename) + ": \"RawVolume\" block is missing inside the texture asset JSON file");
 			}
 			const rapidjson::Value& rapidJsonValueRawVolume = rapidJsonValueTextureAssetCompiler["RawVolume"];
 			if (strcmp(rapidJsonValueRawVolume["Format"].GetString(), "UCHAR") != 0)
 			{
-				throw std::runtime_error("Failed to convert volume " + std::string(virtualSourceFilename) + ": Texture asset JSON file \"RawVolume\" format must be \"UCHAR\"");
+				throw std::runtime_error("Failed to convert volume " + std::string(virtualInputAssetFilename) + ": Texture asset JSON file \"RawVolume\" format must be \"UCHAR\"");
 			}
 
 			// Get the resolution
@@ -1687,7 +1734,7 @@ namespace
 				RendererToolkit::StringHelper::splitString(rapidJsonValueRawVolume["Resolution"].GetString(), ' ', elements);
 				if (elements.size() != 3)
 				{
-					throw std::runtime_error("Failed to convert volume " + std::string(virtualSourceFilename) + ": Texture asset JSON file \"RawVolume\" resolution needs three components");
+					throw std::runtime_error("Failed to convert volume " + std::string(virtualInputAssetFilename) + ": Texture asset JSON file \"RawVolume\" resolution needs three components");
 				}
 				for (uint32_t i = 0; i < 3; ++i)
 				{
@@ -1699,10 +1746,10 @@ namespace
 			const uint32_t rawVoumeDataNumberOfBytes = resolution[0] * resolution[1] * resolution[2];
 			std::vector<uint8_t> rawVoumeData;
 			{
-				RendererRuntime::IFile* file = fileManager.openFile(RendererRuntime::IFileManager::FileMode::READ, virtualSourceFilename);
+				RendererRuntime::IFile* file = fileManager.openFile(RendererRuntime::IFileManager::FileMode::READ, virtualInputAssetFilename);
 				if (nullptr == file)
 				{
-					throw std::runtime_error("Failed to open source file \"" + std::string(virtualSourceFilename) + '\"');
+					throw std::runtime_error("Failed to open source file \"" + std::string(virtualInputAssetFilename) + '\"');
 				}
 				rawVoumeData.resize(rawVoumeDataNumberOfBytes);
 				file->read(rawVoumeData.data(), rawVoumeDataNumberOfBytes);
@@ -1732,9 +1779,38 @@ namespace
 				memoryFile.write("DDS ", sizeof(uint32_t));
 				memoryFile.write(reinterpret_cast<const char*>(&ddsSurfaceDesc2), sizeof(crnlib::DDSURFACEDESC2));
 				memoryFile.write(rawVoumeData.data(), rawVoumeDataNumberOfBytes);
-				if (!memoryFile.writeLz4CompressedDataByVirtualFilename(RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_TYPE, RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_VERSION, fileManager, virtualDestinationFilename))
+				if (!memoryFile.writeLz4CompressedDataByVirtualFilename(RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_TYPE, RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_VERSION, fileManager, virtualOutputAssetFilename))
 				{
-					throw std::runtime_error("Failed to write to destination file \"" + std::string(virtualDestinationFilename) + '\"');
+					throw std::runtime_error("Failed to write to destination file \"" + std::string(virtualOutputAssetFilename) + '\"');
+				}
+			}
+		}
+
+		/**
+		*  @brief
+		*    Convert CRN array
+		*/
+		void convertCrnArray(const RendererToolkit::IAssetCompiler::Input& input, const RendererToolkit::IAssetCompiler::Configuration& configuration, RendererRuntime::VirtualFilename virtualOutputAssetFilename)
+		{
+			// Read in the texture asset IDs
+			const rapidjson::Value& rapidJsonValueInputFiles = configuration.rapidJsonDocumentAsset["Asset"]["Compiler"]["InputFiles"];
+			const uint32_t numberOfFiles = rapidJsonValueInputFiles.Size();
+			std::vector<RendererRuntime::AssetId> assetIds;
+			assetIds.resize(numberOfFiles);
+			for (uint32_t i = 0; i < numberOfFiles; ++i)
+			{
+				assetIds[i] = RendererToolkit::StringHelper::getAssetIdByString(rapidJsonValueInputFiles[i].GetString(), input);
+
+				// TODO(co) Add CRN array sanity checks: The referenced texture asset must be CRN, all referenced texture assets must have the same size and same format, all referenced texture assets must be compiled texture assets (runtime generated texture assets are not supported)
+			}
+
+			{ // Write down the CRN array destination texture
+				RendererRuntime::MemoryFile memoryFile(0, 1024);
+				memoryFile.write(&numberOfFiles, sizeof(uint32_t));
+				memoryFile.write(assetIds.data(), sizeof(RendererRuntime::AssetId) * numberOfFiles);
+				if (!memoryFile.writeLz4CompressedDataByVirtualFilename(RendererRuntime::v1CrnArray::FORMAT_TYPE, RendererRuntime::v1CrnArray::FORMAT_VERSION, input.context.getFileManager(), virtualOutputAssetFilename))
+				{
+					throw std::runtime_error("Failed to write to destination file \"" + std::string(virtualOutputAssetFilename) + '\"');
 				}
 			}
 		}
@@ -1784,6 +1860,10 @@ namespace RendererToolkit
 		if (::detail::TextureSemantic::COLOR_CORRECTION_LOOKUP_TABLE == textureSemantic || ::detail::TextureSemantic::TERRAIN_HEIGHT_MAP == textureSemantic || ::detail::TextureSemantic::VOLUME == textureSemantic)
 		{
 			assetFileFormat = "dds";
+		}
+		else if (::detail::TextureSemantic::CRN_ARRAY == textureSemantic)
+		{
+			assetFileFormat = "crn_array";
 		}
 		const std::string assetName = std_filesystem::path(input.virtualAssetFilename).stem().generic_string();
 		std::string virtualOutputAssetFilename;
@@ -1839,6 +1919,10 @@ namespace RendererToolkit
 				assetFileFormat = "dds";
 				createMipmaps = false;
 			}
+			else if (::detail::TextureSemantic::CRN_ARRAY == textureSemantic)
+			{
+				assetFileFormat = "crn_array";
+			}
 		}
 		const std::string& virtualAssetInputDirectory = input.virtualAssetInputDirectory;
 		const std::string virtualInputAssetFilename = virtualAssetInputDirectory + '/' + inputFile;
@@ -1859,6 +1943,11 @@ namespace RendererToolkit
 				// If a normal map input file is provided roughness maps can be calculated automatically using Toksvig specular anti-aliasing to reduce shimmering, in this case a input file is optional
 				throwException = normalMapInputFile.empty();
 			}
+			else if (::detail::TextureSemantic::CRN_ARRAY == textureSemantic)
+			{
+				// CRN array textures don't have a single input file, they're composed of multiple input files
+				throwException = false;
+			}
 			if (throwException)
 			{
 				throw std::runtime_error("Input file must be defined");
@@ -1878,21 +1967,41 @@ namespace RendererToolkit
 		std::vector<CacheManager::CacheEntries> cacheEntries;
 		if (::detail::checkIfChanged(input, configuration, rapidJsonValueTextureAssetCompiler, textureSemantic, virtualInputAssetFilename, virtualOutputAssetFilename, cacheEntries))
 		{
-			if (::detail::TextureSemantic::COLOR_CORRECTION_LOOKUP_TABLE == textureSemantic)
+			switch (textureSemantic)
 			{
-				detail::convertColorCorrectionLookupTable(input.context.getFileManager(), virtualInputAssetFilename.c_str(), virtualOutputAssetFilename.c_str());
-			}
-			else if (::detail::TextureSemantic::TERRAIN_HEIGHT_MAP == textureSemantic)
-			{
-				detail::convertTerrainHeightMap(input.context.getFileManager(), virtualInputAssetFilename.c_str(), virtualOutputAssetFilename.c_str());
-			}
-			else if (::detail::TextureSemantic::VOLUME == textureSemantic)
-			{
-				detail::convertVolume(configuration, input.context.getFileManager(), virtualInputAssetFilename.c_str(), virtualOutputAssetFilename.c_str());
-			}
-			else
-			{
-				detail::convertFile(input, configuration, rapidJsonValueTextureAssetCompiler, virtualInputAssetFilename.c_str(), inputFile.empty() ? nullptr : virtualInputAssetFilename.c_str(), virtualOutputAssetFilename.c_str(), crunchOutputTextureFileType, textureSemantic, createMipmaps, mipmapBlurriness, normalMapInputFile.empty() ? nullptr : virtualNormalMapAssetFilename.c_str());
+				case ::detail::TextureSemantic::TERRAIN_HEIGHT_MAP:
+					detail::convertTerrainHeightMap(input.context.getFileManager(), virtualInputAssetFilename.c_str(), virtualOutputAssetFilename.c_str());
+					break;
+
+				case ::detail::TextureSemantic::COLOR_CORRECTION_LOOKUP_TABLE:
+					detail::convertColorCorrectionLookupTable(input.context.getFileManager(), virtualInputAssetFilename.c_str(), virtualOutputAssetFilename.c_str());
+					break;
+
+				case ::detail::TextureSemantic::VOLUME:
+					detail::convertVolume(configuration, input.context.getFileManager(), virtualInputAssetFilename.c_str(), virtualOutputAssetFilename.c_str());
+					break;
+
+				case ::detail::TextureSemantic::CRN_ARRAY:
+					detail::convertCrnArray(input, configuration, virtualOutputAssetFilename.c_str());
+					break;
+
+				case ::detail::TextureSemantic::ALBEDO_MAP:
+				case ::detail::TextureSemantic::ALPHA_MAP:
+				case ::detail::TextureSemantic::NORMAL_MAP:
+				case ::detail::TextureSemantic::ROUGHNESS_MAP:
+				case ::detail::TextureSemantic::GLOSS_MAP:
+				case ::detail::TextureSemantic::METALLIC_MAP:
+				case ::detail::TextureSemantic::EMISSIVE_MAP:
+				case ::detail::TextureSemantic::HEIGHT_MAP:
+				case ::detail::TextureSemantic::TINT_MAP:
+				case ::detail::TextureSemantic::AMBIENT_OCCLUSION_MAP:
+				case ::detail::TextureSemantic::REFLECTION_2D_MAP:
+				case ::detail::TextureSemantic::REFLECTION_CUBE_MAP:
+				case ::detail::TextureSemantic::PACKED_CHANNELS:
+				case ::detail::TextureSemantic::UNKNOWN:
+				default:
+					detail::convertFile(input, configuration, rapidJsonValueTextureAssetCompiler, virtualInputAssetFilename.c_str(), inputFile.empty() ? nullptr : virtualInputAssetFilename.c_str(), virtualOutputAssetFilename.c_str(), crunchOutputTextureFileType, textureSemantic, createMipmaps, mipmapBlurriness, normalMapInputFile.empty() ? nullptr : virtualNormalMapAssetFilename.c_str());
+					break;
 			}
 
 			// Store new cache entries or update existing ones

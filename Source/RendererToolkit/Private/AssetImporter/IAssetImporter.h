@@ -83,7 +83,7 @@ namespace RendererToolkit
 
 
 	//[-------------------------------------------------------]
-	//[ Public structures                                     ]
+	//[ Public definitions                                    ]
 	//[-------------------------------------------------------]
 	public:
 		struct Input final

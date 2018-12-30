@@ -102,7 +102,7 @@ SAMPLER_STATE(4, 1, SamplerPointClamp, 1)
 //[-------------------------------------------------------]
 @includepiece(../SharedShaderPiece/SP_Depth.asset)
 	@insertpiece(DefineGetLinearDepth)
-@includepiece(../SharedShaderPiece/SP_TangentFrame.asset)
+@includepiece(../SharedShaderPiece/SP_Normal.asset)
 	@insertpiece(DefineGetTangentFrame)
 
 /**
@@ -358,7 +358,7 @@ MAIN_BEGIN
 		FLATTEN if (maximumTravelLength <= 0.0f)
 		{
 			// Early escape, the ray is completely covered by something
-			discard;
+			discard;	// Performance impact: This disables early-Z and hi-Z
 		}
 		rayEndPosition = MAIN_INPUT(CameraVolumeSpacePosition).xyz + (max(0.0f, t1) * rayDirection);
 

@@ -114,7 +114,7 @@ float3 CalculateColor(float3 viewRay, float3 color, float screenSpaceAmbientOccl
 		float3 viewSpacePosition = viewRay * (GetLinearDepth(depth) / dot(float3(0.0f, 0.0f, 1.0f), viewRay));
 
 		// Calculate fogged color
-		float3 foggedColor = CalculateFoggedColor(viewSpacePosition, color * screenSpaceAmbientOcclusion);
+		float3 foggedColor = CalculateFoggedColor(viewSpacePosition, color * screenSpaceAmbientOcclusion, PassData.AtmosphereFogDensity, PassData.ViewSpaceSunlightDirection, PassData.AmbientColor, PassData.SunlightColor, PassData.DiffuseFogColor);
 
 		// Apply volumetric light
 		foggedColor += VolumetricLightBilateralUpsampling(screenSpacePosition, depth);

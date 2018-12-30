@@ -1,0 +1,26 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"Compiler":
+		{
+			"ClassName": "RendererToolkit::TextureAssetCompiler",
+			"TextureSemantic": "CRN_ARRAY",
+			"InputFiles":
+			[
+				"./Layer/T_Snow_hr_rg_mb_nya.asset",
+				"./Layer/T_Stone_hr_rg_mb_nya.asset",
+				"./Layer/T_Grass_hr_rg_mb_nya.asset",
+				"./Layer/T_Floor_hr_rg_mb_nya.asset",
+				"./Layer/T_Sand_hr_rg_mb_nya.asset",
+				"./Layer/T_CrackedStone_hr_rg_mb_nya.asset",
+				"./Layer/T_Mossy_hr_rg_mb_nya.asset",
+				"./Layer/T_Dirt_hr_rg_mb_nya.asset"
+			]
+		}
+	}
+}

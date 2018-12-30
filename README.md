@@ -39,7 +39,7 @@ Features
 		- Backend abstracts way the underlying renderer API like Vulkan/OpenGL/DirectX
 		- Runtime designed with end-user and middleware-user in mind
 			- Efficiency and responsiveness over flexibility (were it isn't useful in practice)
-			- Intented to be controlled by a high-level entity-component system, no unused implementation feature overkill in the basic runtime
+			- Intended to be controlled by a high-level entity-component system, no unused implementation feature overkill in the basic runtime
 		- Toolkit designed with developer fast iterations in mind: Asset source flexibility, asset background compilation, hot-reloading
 	- Interfaces for log, assert, memory allocator and profiler so the user has the control over those things
 		- Standard implementations are provided
@@ -78,7 +78,7 @@ Renderer API and Backends
 	- Shader data sources
 		- Shader bytecode (aka shader microcode, binary large object (BLOB))
 			- Vulkan and OpenGL: SPIR-V support for cross-platform vendor and GPU driver independent shader bytecodes
-				- Optional build in online GLSL to SPIR-V compilation using [glslang](https://github.com/KhronosGroup/glslang), offline compilation before shipping a product is preferred of course but not manditory
+				- Optional build in online GLSL to SPIR-V compilation using [glslang](https://github.com/KhronosGroup/glslang), offline compilation before shipping a product is preferred of course but not mandatory
 				- Using [SMOL-V](https://github.com/aras-p/smol-v): like Vulkan/Khronos SPIR-V, but smaller
 		- Shader source code
 - Buffers
@@ -115,7 +115,7 @@ Renderer Runtime (e.g. "The Game")
 	- Efficient [CRN](https://github.com/BinomialLLC/crunch) textures are used by default, DDS is supported as well
 	- Using [LZ4](http://lz4.github.io/lz4/) compression
 - Asynchronous loading for all resources: To fight lags, micro stutter / judder, especially for virtual reality applications one needs a constant framerate
-- Material and shader blueprint system which was desiged from ground up for pipeline state object (PSO) architecture
+- Material and shader blueprint system which was designed from ground up for pipeline state object (PSO) architecture
 	- New material types can be added without a single line of C++ source code, meaning technical artists can create and fine-tune the shaders in realtime
 	- Materials reference material blueprints and are just a list of key-value-pairs
 	- Shader language specifics are abstracted away: Write shaders once, use them across multiple renderer APIs
@@ -123,8 +123,8 @@ Renderer Runtime (e.g. "The Game")
 	- Support for reusable shader pieces
 	- Material inheritance for materials which should share common properties, but differ in other properties
 	- Using [MojoShader](https://icculus.org/mojoshader/) as shader preprocessor so the resulting shader source codes are compact and easy to debug
-	- Asyncrounous pipeline state compilation, including a fallback system to reduce visual artefacts in case of pipeline cache misses
-- Compositor: Setup your overal rendering flow without a single line of C++ source code
+	- Asynchronous pipeline state compilation, including a fallback system to reduce visual artifacts in case of pipeline cache misses
+- Compositor: Setup your overall rendering flow without a single line of C++ source code
 	- The compositor is using the material blueprint system, meaning compact C++ implementation while offering mighty possibilities
 	- Using [Reversed-Z](https://developer.nvidia.com/content/depth-precision-visualized) for improved depth buffer precision to reduce z-fighting
 	- Using camera relative rendering for rendering large scale scenes without jittering/wobbling
@@ -153,6 +153,9 @@ Renderer Runtime (e.g. "The Game")
 - Terrain
 	- This software contains source code provided by NVIDIA Corporation. The height map terrain tessellation implementation is basing on ["DirectX 11 Terrain Tessellation"](https://developer.nvidia.com/sites/default/files/akamai/gamedev/files/sdk/11/TerrainTessellation_WhitePaper.pdf) by Iain Cantlay and the concrete implementation "TerrainTessellation"-sample inside ["NVIDIA Direct3D SDK 11"](https://developer.nvidia.com/dx11-samples).
 	- Terrain data created by [Marcel Gonzales](http://www.marcelgonzales.com/)
+	- [Procedural shader splatting for elevation/slope based blending](http://www.dice.se/wp-content/uploads/2014/12/Chapter5-Andersson-Terrain_Rendering_in_Frostbite.pdf) with additional splash map
+	- [Height map based texture layer blending](https://www.gamedev.net/articles/programming/graphics/advanced-terrain-texture-splatting-r3287/)
+	- [Triplanar texture mapping](https://medium.com/@bgolus/normal-mapping-for-a-triplanar-shader-10bf39dca05a)
 - Sky
 	- Classic environment cube map skybox
 	- Procedural sky
@@ -165,7 +168,7 @@ Renderer Runtime (e.g. "The Game")
 Renderer Toolkit (e.g. "The Editor")
 ======
 - Project compiler will transform source data into runtime data and while doing so tries to detect editing issues at tooltime as early as possible to reduce runtime harm and long debugging seasons
-- Asynchronous resource compilation and hot reloading for all resources if the toolkit is enabled (true for production, probably not true for shippped titles)
+- Asynchronous resource compilation and hot reloading for all resources if the toolkit is enabled (true for production, probably not true for shipped titles)
 	- Shader-resource example: It's possible to develop shaders while the application is running and see changes instantly
 - Most source file formats are using JSON: [RapidJSON](http://rapidjson.org/) is used for parsing
 - Performs optimizations and validations at tooltime instead of runtime. Examples:
@@ -181,7 +184,8 @@ Renderer Toolkit (e.g. "The Editor")
 	- Support for creating a cube-map out of six provided individual textures
 	- Support for 2D-LUT to 3D-LUT conversion
 	- Support for texture channel packing
-	- Toksvig specular anti-aliasing basing on ["Specular Showdown in the Wild West"](http://blog.selfshadow.com/2011/07/22/specular-showdown/) by Stephen Hill to reduce shimmering/sparkling via texture modifiations during texture asset compilation
+	- Support for defining texture arrays
+	- Toksvig specular anti-aliasing basing on ["Specular Showdown in the Wild West"](http://blog.selfshadow.com/2011/07/22/specular-showdown/) by Stephen Hill to reduce shimmering/sparkling via texture modifications during texture asset compilation
 - [Sketchfab](https://sketchfab.com/) asset importer without the need to unzip the downloaded meshes first
 
 
@@ -296,7 +300,7 @@ Useful Microsoft Windows Developer Tools
 		- [/d2cgsummary](http://aras-p.info/blog/2017/10/23/Best-unknown-MSVC-flag-d2cgsummary/)
 	- Binary size
 		- ["Sizer - executable size breakdown (2007)"](http://aras-p.info/projSizer.html): "Command line tool that reports size of things (functions, data, classes, templates, object files) in a Visual Studio compiled exe/dll. Extracts info from debug information (.pdb) file."
-			- As of October 14, 2017: Doesn't work with Visual Studio 2017 (v141), compile for Visual Studio 2015 (v140) if you want to analys the binaries using Sizer
+			- As of October 14, 2017: Doesn't work with Visual Studio 2017 (v141), compile for Visual Studio 2015 (v140) if you want to analyze the binaries using Sizer
 - Static code analysis: [Cppcheck](http://cppcheck.sourceforge.net/)
 - Checking external dependencies of exe and dll: [Dependency Walker](http://www.dependencywalker.com/)
 - Texture handling related: [Compressonator](https://github.com/GPUOpen-Tools/Compressonator)

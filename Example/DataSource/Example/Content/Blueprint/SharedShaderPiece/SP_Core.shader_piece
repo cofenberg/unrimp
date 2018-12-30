@@ -153,8 +153,8 @@
 		// Texture
 		#define TEXTURE_1D(resourceGroupIndex, resourceIndex, name, registerIndex) Texture1D name : register(t##registerIndex);
 		#define TEXTURE_2D(resourceGroupIndex, resourceIndex, name, registerIndex) Texture2D name : register(t##registerIndex);
-		#define TEXTURE_2D_ARRAY(resourceGroupIndex, resourceIndex, name, registerIndex) Texture2DArray name : register(t##registerIndex);
 		#define TEXTURE_2D_MS(resourceGroupIndex, resourceIndex, name, numberOfMultisamples, registerIndex) Texture2DMS<float4, numberOfMultisamples> name : register(t##registerIndex);
+		#define TEXTURE_2D_ARRAY(resourceGroupIndex, resourceIndex, name, registerIndex) Texture2DArray name : register(t##registerIndex);
 		#define TEXTURE_3D(resourceGroupIndex, resourceIndex, name, registerIndex) Texture3D name : register(t##registerIndex);
 		#define TEXTURE_3D_UINT(resourceGroupIndex, resourceIndex, name, registerIndex) Texture3D<uint> name : register(t##registerIndex);
 		#define TEXTURE_CUBE(resourceGroupIndex, resourceIndex, name, registerIndex) TextureCube name : register(t##registerIndex);
@@ -179,6 +179,15 @@
 
 		// Texture unordered access
 		#define RW_TEXTURE_2D(resourceGroupIndex, resourceIndex, name, registerIndex, format, access) RWTexture2D<float4> name : register(u##registerIndex);
+
+		// Texture parameter
+		#define TEXTURE_1D_PARAMETER Texture1D
+		#define TEXTURE_2D_PARAMETER Texture2D
+		#define TEXTURE_2D_MS_PARAMETER(numberOfMultisamples) Texture2DMS<float4, numberOfMultisamples>
+		#define TEXTURE_2D_ARRAY_PARAMETER Texture2DArray
+		#define TEXTURE_3D_PARAMETER Texture3D
+		#define TEXTURE_3D_UINT_PARAMETER Texture3D<uint>
+		#define TEXTURE_CUBE_PARAMETER TextureCube
 
 		// Sampler
 		#define SAMPLER_STATE(resourceGroupIndex, resourceIndex, name, registerIndex) SamplerState name : register(s##registerIndex);
@@ -384,6 +393,15 @@
 
 		// Texture unordered access
 		#define RW_TEXTURE_2D(resourceGroupIndex, resourceIndex, name, registerIndex, format, access) layout(format, set = resourceGroupIndex, binding = resourceIndex) access uniform image2D name;
+
+		// Texture parameter
+		#define TEXTURE_1D_PARAMETER sampler1D
+		#define TEXTURE_2D_PARAMETER sampler2D
+		#define TEXTURE_2D_MS_PARAMETER(numberOfMultisamples) sampler2DMS
+		#define TEXTURE_2D_ARRAY_PARAMETER sampler2DArray
+		#define TEXTURE_3D_PARAMETER sampler3D
+		#define TEXTURE_3D_UINT_PARAMETER isampler3D
+		#define TEXTURE_CUBE_PARAMETER samplerCube
 
 		// Sampler
 		#define SAMPLER_STATE(resourceGroupIndex, resourceIndex, name, registerIndex) int name = registerIndex;	// We need something to pass into functions
@@ -613,6 +631,15 @@
 		// Texture unordered access
 		#define RW_TEXTURE_2D(resourceGroupIndex, resourceIndex, name, registerIndex, format, access) layout(format) access uniform image2D name;
 
+		// Texture parameter
+		#define TEXTURE_1D_PARAMETER sampler1D
+		#define TEXTURE_2D_PARAMETER sampler2D
+		#define TEXTURE_2D_MS_PARAMETER(numberOfMultisamples) sampler2DMS
+		#define TEXTURE_2D_ARRAY_PARAMETER sampler2DArray
+		#define TEXTURE_3D_PARAMETER sampler3D
+		#define TEXTURE_3D_UINT_PARAMETER isampler3D
+		#define TEXTURE_CUBE_PARAMETER samplerCube
+
 		// Sampler
 		#define SAMPLER_STATE(resourceGroupIndex, resourceIndex, name, registerIndex) int name = registerIndex;	// We need something to pass into functions
 		#define SAMPLER_COMPARISON_STATE(resourceGroupIndex, resourceIndex, name, registerIndex)
@@ -837,6 +864,15 @@
 
 		// Texture unordered access
 		#define RW_TEXTURE_2D(resourceGroupIndex, resourceIndex, name, registerIndex, format, access) layout(format) access uniform image2D name;
+
+		// Texture parameter
+		#define TEXTURE_1D_PARAMETER sampler1D
+		#define TEXTURE_2D_PARAMETER sampler2D
+		#define TEXTURE_2D_MS_PARAMETER(numberOfMultisamples) sampler2DMS
+		#define TEXTURE_2D_ARRAY_PARAMETER sampler2DArray
+		#define TEXTURE_3D_PARAMETER sampler3D
+		#define TEXTURE_3D_UINT_PARAMETER isampler3D
+		#define TEXTURE_CUBE_PARAMETER samplerCube
 
 		// Sampler
 		#define SAMPLER_STATE(resourceGroupIndex, resourceIndex, name, registerIndex) int name = registerIndex;	// We need something to pass into functions

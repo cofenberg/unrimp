@@ -118,7 +118,7 @@ SAMPLER_STATE(4, 0, SamplerLinear, 0)
 //[-------------------------------------------------------]
 //[ Functions                                             ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_TangentFrame.asset)
+@includepiece(../SharedShaderPiece/SP_Normal.asset)
 	@insertpiece(DefineGetTangentFrame)
 	@insertpiece(DefineUnpackTextureNormalXY)
 @includepiece(../SharedShaderPiece/SP_PhysicallyBasedShading.asset)
@@ -155,7 +155,7 @@ MAIN_BEGIN
 	@property(UseAlphaMap)
 		FLATTEN if (material.AlphaReference >= SAMPLE_2D(AlphaMap, SamplerLinear, MAIN_INPUT(TexCoordVS)).r)
 		{
-			discard;
+			discard;	// Performance impact: This disables early-Z and hi-Z
 		}
 	@end
 

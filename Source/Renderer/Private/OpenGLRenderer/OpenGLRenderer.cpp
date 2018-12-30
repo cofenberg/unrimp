@@ -8459,6 +8459,7 @@ namespace OpenGLRenderer
 			if (isArbDsa)
 			{
 				glCreateTextures(GL_TEXTURE_1D, 1, &mOpenGLTexture);
+				glTextureStorage1D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width));
 			}
 			else
 			{
@@ -8471,12 +8472,6 @@ namespace OpenGLRenderer
 				// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
 				if (dataContainsMipmaps)
 				{
-					// Allocate storage for all levels
-					if (isArbDsa)
-					{
-						glTextureStorage1D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width));
-					}
-
 					// Upload all mipmaps
 					const uint32_t format = Mapping::getOpenGLFormat(textureFormat);
 					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
@@ -8503,8 +8498,6 @@ namespace OpenGLRenderer
 					// The user only provided us with the base texture, no mipmaps
 					if (isArbDsa)
 					{
-						// Allocate storage for all levels
-						glTextureStorage1D(mOpenGLTexture, 1, mOpenGLInternalFormat, static_cast<GLsizei>(width));
 						if (nullptr != data)
 						{
 							glCompressedTextureSubImage1D(mOpenGLTexture, 0, 0, static_cast<GLsizei>(width), Mapping::getOpenGLFormat(textureFormat), static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1)), data);
@@ -8523,12 +8516,6 @@ namespace OpenGLRenderer
 				// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
 				if (dataContainsMipmaps)
 				{
-					// Allocate storage for all levels
-					if (isArbDsa)
-					{
-						glTextureStorage1D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width));
-					}
-
 					// Upload all mipmaps
 					const uint32_t format = Mapping::getOpenGLFormat(textureFormat);
 					const uint32_t type = Mapping::getOpenGLType(textureFormat);
@@ -8556,8 +8543,6 @@ namespace OpenGLRenderer
 					// The user only provided us with the base texture, no mipmaps
 					if (isArbDsa)
 					{
-						// Allocate storage for all levels
-						glTextureStorage1D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width));
 						if (nullptr != data)
 						{
 							glTextureSubImage1D(mOpenGLTexture, 0, 0, static_cast<GLsizei>(width), Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
@@ -9066,8 +9051,6 @@ namespace OpenGLRenderer
 				{
 					// Create the OpenGL texture instance
 					glCreateTextures(GL_TEXTURE_2D_MULTISAMPLE, 1, &mOpenGLTexture);
-
-					// Define the texture
 					glTextureStorage2DMultisample(mOpenGLTexture, numberOfMultisamples, mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), GL_TRUE);
 				}
 				else
@@ -9109,12 +9092,12 @@ namespace OpenGLRenderer
 				const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
 				const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 				const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height) : 1;
-				const bool isDepthFormat = Renderer::TextureFormat::isDepth(textureFormat);
 
 				// Create the OpenGL texture instance
 				if (isArbDsa)
 				{
 					glCreateTextures(GL_TEXTURE_2D, 1, &mOpenGLTexture);
+					glTextureStorage2D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
 				}
 				else
 				{
@@ -9127,12 +9110,6 @@ namespace OpenGLRenderer
 					// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
 					if (dataContainsMipmaps)
 					{
-						// Allocate storage for all levels
-						if (isArbDsa)
-						{
-							glTextureStorage2D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
-						}
-
 						// Upload all mipmaps
 						const uint32_t format = Mapping::getOpenGLFormat(textureFormat);
 						for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
@@ -9160,8 +9137,6 @@ namespace OpenGLRenderer
 						// The user only provided us with the base texture, no mipmaps
 						if (isArbDsa)
 						{
-							// Allocate storage for all levels
-							glTextureStorage2D(mOpenGLTexture, 1, mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
 							if (nullptr != data)
 							{
 								glCompressedTextureSubImage2D(mOpenGLTexture, 0, 0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height), Mapping::getOpenGLFormat(textureFormat), static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height)), data);
@@ -9180,12 +9155,6 @@ namespace OpenGLRenderer
 					// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
 					if (dataContainsMipmaps)
 					{
-						// Allocate storage for all levels
-						if (isArbDsa)
-						{
-							glTextureStorage2D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
-						}
-
 						// Upload all mipmaps
 						const uint32_t format = Mapping::getOpenGLFormat(textureFormat);
 						const uint32_t type = Mapping::getOpenGLType(textureFormat);
@@ -9214,8 +9183,6 @@ namespace OpenGLRenderer
 						// The user only provided us with the base texture, no mipmaps
 						if (isArbDsa)
 						{
-							// Allocate storage for all levels
-							glTextureStorage2D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
 							if (nullptr != data)
 							{
 								glTextureSubImage2D(mOpenGLTexture, 0, 0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height), Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
@@ -9602,6 +9569,11 @@ namespace OpenGLRenderer
 			// Set correct unpack alignment
 			glPixelStorei(GL_UNPACK_ALIGNMENT, (Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat) & 3) ? 1 : 4);
 
+			// Calculate the number of mipmaps
+			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
+			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
+			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height) : 1;
+
 			// Create the OpenGL texture instance
 			#ifdef _WIN32
 				// TODO(co) It appears that DSA "glGenerateTextureMipmap()" is not working (one notices the noise) or we're using it wrong, tested with
@@ -9615,30 +9587,112 @@ namespace OpenGLRenderer
 			if (isArbDsa)
 			{
 				glCreateTextures(GL_TEXTURE_2D_ARRAY_EXT, 1, &mOpenGLTexture);
+				glTextureStorage3D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(numberOfSlices));
 			}
 			else
 			{
 				glGenTextures(1, &mOpenGLTexture);
 			}
 
-			// TODO(co) Add support for user provided mipmaps
-			// Data layout: The renderer interface provides: CRN and KTX files are organized in mip-major order, like this:
-			//   Mip0: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
-			//   Mip1: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
-			//   etc.
-
-			// Upload the base map of the texture (mipmaps are automatically created as soon as the base map is changed)
-			if (isArbDsa)
+			// Upload the texture data
+			if (Renderer::TextureFormat::isCompressed(textureFormat))
 			{
-				glTextureStorage3D(mOpenGLTexture, 1, mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(numberOfSlices));
-				if (nullptr != data)
+				// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
+				if (dataContainsMipmaps)
 				{
-					glTextureSubImage3D(mOpenGLTexture, 0, 0, 0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(numberOfSlices), Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
+					// Data layout: The renderer interface provides: CRN and KTX files are organized in mip-major order, like this:
+					//   Mip0: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
+					//   Mip1: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
+					//   etc.
+
+					// Upload all mipmaps
+					const uint32_t format = Mapping::getOpenGLFormat(textureFormat);
+					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
+					{
+						// Upload the current mipmap
+						const GLsizei numberOfBytesPerSlice = static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height) * numberOfSlices);
+						if (isArbDsa)
+						{
+							// We know that "data" must be valid when we're in here due to the "Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS"-flag
+							glCompressedTextureSubImage3D(mOpenGLTexture, static_cast<GLint>(mipmap), 0, 0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(numberOfSlices), format, numberOfBytesPerSlice, data);
+						}
+						else
+						{
+							glCompressedTextureImage3DEXT(mOpenGLTexture, GL_TEXTURE_2D_ARRAY_EXT, static_cast<GLint>(mipmap), format, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(numberOfSlices), 0, numberOfBytesPerSlice, data);
+						}
+
+						// Move on to the next mipmap and ensure the size is always at least 1x1
+						data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
+						width = getHalfSize(width);
+						height = getHalfSize(height);
+					}
+				}
+				else
+				{
+					// The user only provided us with the base texture, no mipmaps
+					if (isArbDsa)
+					{
+						if (nullptr != data)
+						{
+							glCompressedTextureSubImage3D(mOpenGLTexture, 0, 0, 0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(numberOfSlices), Mapping::getOpenGLFormat(textureFormat), static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height) * numberOfSlices), data);
+						}
+					}
+					else
+					{
+						glCompressedTextureImage3DEXT(mOpenGLTexture, GL_TEXTURE_2D_ARRAY_EXT, 0, mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(numberOfSlices), 0, static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height) * numberOfSlices), data);
+					}
 				}
 			}
 			else
 			{
-				glTextureImage3DEXT(mOpenGLTexture, GL_TEXTURE_2D_ARRAY_EXT, 0, static_cast<GLint>(mOpenGLInternalFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(numberOfSlices), 0, Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
+				// Texture format is not compressed
+
+				// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
+				if (dataContainsMipmaps)
+				{
+					// Data layout: The renderer interface provides: CRN and KTX files are organized in mip-major order, like this:
+					//   Mip0: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
+					//   Mip1: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
+					//   etc.
+
+					// Upload all mipmaps
+					const uint32_t format = Mapping::getOpenGLFormat(textureFormat);
+					const uint32_t type = Mapping::getOpenGLType(textureFormat);
+					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
+					{
+						// Upload the current mipmap
+						const GLsizei numberOfBytesPerSlice = static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height) * numberOfSlices);
+						if (isArbDsa)
+						{
+							// We know that "data" must be valid when we're in here due to the "Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS"-flag
+							glTextureSubImage3D(mOpenGLTexture, static_cast<GLint>(mipmap), 0, 0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(numberOfSlices), format, type, data);
+						}
+						else
+						{
+							glTextureImage3DEXT(mOpenGLTexture, GL_TEXTURE_2D_ARRAY_EXT, static_cast<GLint>(mipmap), static_cast<GLint>(mOpenGLInternalFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(numberOfSlices), 0, format, type, data);
+						}
+
+						// Move on to the next mipmap and ensure the size is always at least 1x1
+						data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
+						width = getHalfSize(width);
+						height = getHalfSize(height);
+					}
+				}
+				else
+				{
+					// The user only provided us with the base texture, no mipmaps
+					if (isArbDsa)
+					{
+						if (nullptr != data)
+						{
+							glTextureSubImage3D(mOpenGLTexture, 0, 0, 0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(numberOfSlices), Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
+						}
+					}
+					else
+					{
+						glTextureImage3DEXT(mOpenGLTexture, GL_TEXTURE_2D_ARRAY_EXT, 0, static_cast<GLint>(mOpenGLInternalFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(numberOfSlices), 0, Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
+					}
+				}
 			}
 
 			// Build mipmaps automatically on the GPU? (or GPU driver)
@@ -10138,6 +10192,7 @@ namespace OpenGLRenderer
 			if (isArbDsa)
 			{
 				glCreateTextures(GL_TEXTURE_3D, 1, &mOpenGLTexture);
+				glTextureStorage3D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(depth));
 			}
 			else
 			{
@@ -10154,12 +10209,6 @@ namespace OpenGLRenderer
 					//   Mip0: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
 					//   Mip1: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
 					//   etc.
-
-					// Allocate storage for all levels
-					if (isArbDsa)
-					{
-						glTextureStorage3D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(depth));
-					}
 
 					// Upload all mipmaps
 					const uint32_t format = Mapping::getOpenGLFormat(textureFormat);
@@ -10189,8 +10238,6 @@ namespace OpenGLRenderer
 					// The user only provided us with the base texture, no mipmaps
 					if (isArbDsa)
 					{
-						// Allocate storage for all levels
-						glTextureStorage3D(mOpenGLTexture, 1, mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(depth));
 						if (nullptr != data)
 						{
 							glCompressedTextureSubImage3D(mOpenGLTexture, 0, 0, 0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(depth), Mapping::getOpenGLFormat(textureFormat), static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height)), data);
@@ -10213,12 +10260,6 @@ namespace OpenGLRenderer
 					//   Mip0: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
 					//   Mip1: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
 					//   etc.
-
-					// Allocate storage for all levels
-					if (isArbDsa)
-					{
-						glTextureStorage3D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(height));
-					}
 
 					// Upload all mipmaps
 					const uint32_t format = Mapping::getOpenGLFormat(textureFormat);
@@ -10249,8 +10290,6 @@ namespace OpenGLRenderer
 					// The user only provided us with the base texture, no mipmaps
 					if (isArbDsa)
 					{
-						// Allocate storage for all levels
-						glTextureStorage3D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(depth));
 						if (nullptr != data)
 						{
 							glTextureSubImage3D(mOpenGLTexture, 0, 0, 0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height), static_cast<GLsizei>(depth), Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
@@ -10708,6 +10747,7 @@ namespace OpenGLRenderer
 			if (isArbDsa)
 			{
 				glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &mOpenGLTexture);
+				glTextureStorage2D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
 			}
 			else
 			{
@@ -10720,12 +10760,6 @@ namespace OpenGLRenderer
 				// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
 				if (dataContainsMipmaps)
 				{
-					// Allocate storage for all levels
-					if (isArbDsa)
-					{
-						glTextureStorage2D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
-					}
-
 					// Data layout: The renderer interface provides: CRN and KTX files are organized in mip-major order, like this:
 					//   Mip0: Face0, Face1, Face2, Face3, Face4, Face5
 					//   Mip1: Face0, Face1, Face2, Face3, Face4, Face5
@@ -10768,8 +10802,6 @@ namespace OpenGLRenderer
 					// The user only provided us with the base texture, no mipmaps
 					if (isArbDsa)
 					{
-						// Allocate storage for all levels
-						glTextureStorage2D(mOpenGLTexture, 1, mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
 						if (nullptr != data)
 						{
 							glCompressedTextureSubImage3D(mOpenGLTexture, 0, 0, 0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 6, Mapping::getOpenGLFormat(textureFormat), static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height)) * 6, data);
@@ -10800,12 +10832,6 @@ namespace OpenGLRenderer
 					//   Mip0: Face0, Face1, Face2, Face3, Face4, Face5
 					//   Mip1: Face0, Face1, Face2, Face3, Face4, Face5
 					//   etc.
-
-					// Allocate storage for all levels
-					if (isArbDsa)
-					{
-						glTextureStorage2D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
-					}
 
 					// Upload all mipmaps of all faces
 					const uint32_t format = Mapping::getOpenGLFormat(textureFormat);
@@ -10840,8 +10866,6 @@ namespace OpenGLRenderer
 					// The user only provided us with the base texture, no mipmaps
 					if (isArbDsa)
 					{
-						// Allocate storage for all levels
-						glTextureStorage2D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
 						if (nullptr != data)
 						{
 							glTextureSubImage3D(mOpenGLTexture, 0, 0, 0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 6, Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
@@ -10964,60 +10988,50 @@ namespace OpenGLRenderer
 	public:
 		[[nodiscard]] virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
-			// The indication of the texture usage is only relevant for Direct3D, OpenGL has no texture usage indication
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), width > 0, "OpenGL create texture 1D was called with invalid parameters")
 
-			// Check whether or not the given texture dimension is valid
-			if (width > 0)
+			// Create 1D texture resource: Is "GL_EXT_direct_state_access" there?
+			// -> The indication of the texture usage is only relevant for Direct3D, OpenGL has no texture usage indication
+			if (mExtensions->isGL_EXT_direct_state_access() || mExtensions->isGL_ARB_direct_state_access())
 			{
-				// Is "GL_EXT_direct_state_access" there?
-				if (mExtensions->isGL_EXT_direct_state_access() || mExtensions->isGL_ARB_direct_state_access())
-				{
-					// Effective direct state access (DSA)
-					return RENDERER_NEW(getRenderer().getContext(), Texture1DDsa)(static_cast<OpenGLRenderer&>(getRenderer()), width, textureFormat, data, textureFlags);
-				}
-				else
-				{
-					// Traditional bind version
-					return RENDERER_NEW(getRenderer().getContext(), Texture1DBind)(static_cast<OpenGLRenderer&>(getRenderer()), width, textureFormat, data, textureFlags);
-				}
+				// Effective direct state access (DSA)
+				return RENDERER_NEW(getRenderer().getContext(), Texture1DDsa)(static_cast<OpenGLRenderer&>(getRenderer()), width, textureFormat, data, textureFlags);
 			}
 			else
 			{
-				return nullptr;
+				// Traditional bind version
+				return RENDERER_NEW(getRenderer().getContext(), Texture1DBind)(static_cast<OpenGLRenderer&>(getRenderer()), width, textureFormat, data, textureFlags);
 			}
 		}
 
 		[[nodiscard]] virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
 		{
-			// The indication of the texture usage is only relevant for Direct3D, OpenGL has no texture usage indication
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), width > 0 && height > 0, "OpenGL create texture 2D was called with invalid parameters")
 
-			// Check whether or not the given texture dimension is valid
-			if (width > 0 && height > 0)
+			// Create 2D texture resource: Is "GL_EXT_direct_state_access" there?
+			// -> The indication of the texture usage is only relevant for Direct3D, OpenGL has no texture usage indication
+			if (mExtensions->isGL_EXT_direct_state_access() || mExtensions->isGL_ARB_direct_state_access())
 			{
-				// Is "GL_EXT_direct_state_access" there?
-				if (mExtensions->isGL_EXT_direct_state_access() || mExtensions->isGL_ARB_direct_state_access())
-				{
-					// Effective direct state access (DSA)
-					return RENDERER_NEW(getRenderer().getContext(), Texture2DDsa)(static_cast<OpenGLRenderer&>(getRenderer()), width, height, textureFormat, data, textureFlags, numberOfMultisamples);
-				}
-				else
-				{
-					// Traditional bind version
-					return RENDERER_NEW(getRenderer().getContext(), Texture2DBind)(static_cast<OpenGLRenderer&>(getRenderer()), width, height, textureFormat, data, textureFlags, numberOfMultisamples);
-				}
+				// Effective direct state access (DSA)
+				return RENDERER_NEW(getRenderer().getContext(), Texture2DDsa)(static_cast<OpenGLRenderer&>(getRenderer()), width, height, textureFormat, data, textureFlags, numberOfMultisamples);
 			}
 			else
 			{
-				return nullptr;
+				// Traditional bind version
+				return RENDERER_NEW(getRenderer().getContext(), Texture2DBind)(static_cast<OpenGLRenderer&>(getRenderer()), width, height, textureFormat, data, textureFlags, numberOfMultisamples);
 			}
 		}
 
 		[[nodiscard]] virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
-			// The indication of the texture usage is only relevant for Direct3D, OpenGL has no texture usage indication
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), width > 0 && height > 0 && numberOfSlices > 0, "OpenGL create texture 2D array was called with invalid parameters")
 
-			// Check whether or not the given texture dimension is valid, "GL_EXT_texture_array" required
-			if (width > 0 && height > 0 && numberOfSlices > 0 && mExtensions->isGL_EXT_texture_array())
+			// Create 2D texture array resource, "GL_EXT_texture_array"-extension required
+			// -> The indication of the texture usage is only relevant for Direct3D, OpenGL has no texture usage indication
+			if (mExtensions->isGL_EXT_texture_array())
 			{
 				// Is "GL_EXT_direct_state_access" there?
 				if (mExtensions->isGL_EXT_direct_state_access() || mExtensions->isGL_ARB_direct_state_access())
@@ -11039,51 +11053,40 @@ namespace OpenGLRenderer
 
 		[[nodiscard]] virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
-			// The indication of the texture usage is only relevant for Direct3D, OpenGL has no texture usage indication
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), width > 0 && height > 0 && depth > 0, "OpenGL create texture 3D was called with invalid parameters")
 
-			// Check whether or not the given texture dimension is valid
-			if (width > 0 && height > 0 && depth > 0)
+			// Create 3D texture resource: Is "GL_EXT_direct_state_access" there?
+			// -> The indication of the texture usage is only relevant for Direct3D, OpenGL has no texture usage indication
+			if (mExtensions->isGL_EXT_direct_state_access() || mExtensions->isGL_ARB_direct_state_access())
 			{
-				// Is "GL_EXT_direct_state_access" there?
-				if (mExtensions->isGL_EXT_direct_state_access() || mExtensions->isGL_ARB_direct_state_access())
-				{
-					// Effective direct state access (DSA)
-					return RENDERER_NEW(getRenderer().getContext(), Texture3DDsa)(static_cast<OpenGLRenderer&>(getRenderer()), width, height, depth, textureFormat, data, textureFlags, textureUsage);
-				}
-				else
-				{
-					// Traditional bind version
-					return RENDERER_NEW(getRenderer().getContext(), Texture3DBind)(static_cast<OpenGLRenderer&>(getRenderer()), width, height, depth, textureFormat, data, textureFlags, textureUsage);
-				}
+				// Effective direct state access (DSA)
+				return RENDERER_NEW(getRenderer().getContext(), Texture3DDsa)(static_cast<OpenGLRenderer&>(getRenderer()), width, height, depth, textureFormat, data, textureFlags, textureUsage);
 			}
 			else
 			{
-				return nullptr;
+				// Traditional bind version
+				return RENDERER_NEW(getRenderer().getContext(), Texture3DBind)(static_cast<OpenGLRenderer&>(getRenderer()), width, height, depth, textureFormat, data, textureFlags, textureUsage);
 			}
 		}
 
 		[[nodiscard]] virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
-			// The indication of the texture usage is only relevant for Direct3D, OpenGL has no texture usage indication
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), width > 0 && height > 0, "OpenGL create texture cube was called with invalid parameters")
 
-			// Check whether or not the given texture dimension is valid
-			if (width > 0 && height > 0)
+			// Create cube texture resource
+			// -> The indication of the texture usage is only relevant for Direct3D, OpenGL has no texture usage indication
+			// Is "GL_EXT_direct_state_access" or "GL_ARB_direct_state_access" there?
+			if (mExtensions->isGL_EXT_direct_state_access() || mExtensions->isGL_ARB_direct_state_access())
 			{
-				// Is "GL_EXT_direct_state_access" or "GL_ARB_direct_state_access" there?
-				if (mExtensions->isGL_EXT_direct_state_access() || mExtensions->isGL_ARB_direct_state_access())
-				{
-					// Effective direct state access (DSA)
-					return RENDERER_NEW(getRenderer().getContext(), TextureCubeDsa)(static_cast<OpenGLRenderer&>(getRenderer()), width, height, textureFormat, data, textureFlags);
-				}
-				else
-				{
-					// Traditional bind version
-					return RENDERER_NEW(getRenderer().getContext(), TextureCubeBind)(static_cast<OpenGLRenderer&>(getRenderer()), width, height, textureFormat, data, textureFlags);
-				}
+				// Effective direct state access (DSA)
+				return RENDERER_NEW(getRenderer().getContext(), TextureCubeDsa)(static_cast<OpenGLRenderer&>(getRenderer()), width, height, textureFormat, data, textureFlags);
 			}
 			else
 			{
-				return nullptr;
+				// Traditional bind version
+				return RENDERER_NEW(getRenderer().getContext(), TextureCubeBind)(static_cast<OpenGLRenderer&>(getRenderer()), width, height, textureFormat, data, textureFlags);
 			}
 		}
 

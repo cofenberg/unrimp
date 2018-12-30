@@ -22,6 +22,7 @@
 //[ Includes                                              ]
 //[-------------------------------------------------------]
 #include "RendererToolkit/Private/Helper/CacheManager.h"
+#include "RendererToolkit/Private/AssetCompiler/IAssetCompiler.h"
 #include "RendererToolkit/Private/Context.h"
 
 #include <RendererRuntime/Public/IRendererRuntime.h>
@@ -43,7 +44,6 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
-		static constexpr uint16_t ASSET_FORMAT_VERSION = 1;
 		namespace RendererToolkitCache
 		{
 			static constexpr uint32_t FORMAT_TYPE	 = STRING_ID("RendererToolkitCache");
@@ -166,7 +166,7 @@ namespace RendererToolkit
 
 		// Check if also the asset file (*.asset) has changed, e.g. compile options has changed
 		// -> ".asset"-check for automatically in-memory generated ".asset"-file support
-		const bool assetFileChanged = (virtualAssetFilename.find(".asset") != std::string::npos && checkIfFileChanged(rendererTarget, virtualAssetFilename.c_str(), ::detail::ASSET_FORMAT_VERSION, cacheEntries.assetCacheEntry));
+		const bool assetFileChanged = (virtualAssetFilename.find(".asset") != std::string::npos && checkIfFileChanged(rendererTarget, virtualAssetFilename.c_str(), IAssetCompiler::ASSET_FORMAT_VERSION, cacheEntries.assetCacheEntry));
 		if (!assetFileChanged && (sourceFilesChanged || !destinationExists))
 		{
 			// Mark the asset file as changed when asset needs to be compiled and asset file itself didn't changed
@@ -208,7 +208,7 @@ namespace RendererToolkit
 		
 			// Check the asset file
 			// -> ".asset"-check for automatically in-memory generated ".asset"-file support
-			if (virtualAssetFilename.find(".asset") != std::string::npos && checkIfFileChanged(rendererTarget, virtualAssetFilename.c_str(), ::detail::ASSET_FORMAT_VERSION, dummyEntry))
+			if (virtualAssetFilename.find(".asset") != std::string::npos && checkIfFileChanged(rendererTarget, virtualAssetFilename.c_str(), IAssetCompiler::ASSET_FORMAT_VERSION, dummyEntry))
 			{
 				result = true;
 			}
@@ -385,6 +385,7 @@ namespace RendererToolkit
 					cacheEntry.fileTime		   = fileTime;
 					cacheEntry.fileHash		   = fileHash;
 					cacheEntry.compilerVersion = compilerVersion;
+					storeOrUpdateCacheEntry(cacheEntry);
 
 					// The file has changed -> store the result
 					CheckedFile& checkedFile = mCheckedFilesStatus[fileId];
@@ -402,6 +403,7 @@ namespace RendererToolkit
 			cacheEntry.fileTime			= fileTime;
 			cacheEntry.fileHash			= RendererRuntime::Math::calculateFileFNV1a64ByVirtualFilename(fileManager, virtualFilename);
 			cacheEntry.compilerVersion	= compilerVersion;
+			storeOrUpdateCacheEntry(cacheEntry);
 
 			// The file had no cache entry yet -> store it as "has changed"
 			CheckedFile& checkedFile = mCheckedFilesStatus[fileId];

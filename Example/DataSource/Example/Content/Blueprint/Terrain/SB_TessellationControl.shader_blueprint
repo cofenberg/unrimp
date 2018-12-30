@@ -65,7 +65,7 @@ UNIFORM_BUFFER_END
 //[-------------------------------------------------------]
 // From shader piece "./SP_Terrain.asset"
 	@insertpiece(DefineWorldXZToHeightUV)
-@includepiece(../SharedShaderPiece/SP_TangentFrame.asset)
+@includepiece(../SharedShaderPiece/SP_Normal.asset)
 	@insertpiece(DefineGetTangentFrame)
 
 bool IsInsideHeightMap(float2 worldXZ)
@@ -200,7 +200,9 @@ MAIN_BEGIN_TESSELLATION_CONTROL_PATCH(4)
 			   IsInsideHeightMap(MAIN_INPUT_ARRAY(PositionVS, 2).xz) && IsInsideHeightMap(MAIN_INPUT_ARRAY(PositionVS, 3).xz))
 	{
 		float3 centre = 0.25f * (MAIN_INPUT_ARRAY(PositionVS, 0).xyz + MAIN_INPUT_ARRAY(PositionVS, 1).xyz + MAIN_INPUT_ARRAY(PositionVS, 2).xyz + MAIN_INPUT_ARRAY(PositionVS, 3).xyz);
-		float  sideLength = max(abs(MAIN_INPUT_ARRAY(PositionVS, 1).x - MAIN_INPUT_ARRAY(PositionVS, 0).x), abs(MAIN_INPUT_ARRAY(PositionVS, 1).x - MAIN_INPUT_ARRAY(PositionVS, 2).x));	// Assume square and uniform
+		float  sideLengthX = max(abs(MAIN_INPUT_ARRAY(PositionVS, 1).x - MAIN_INPUT_ARRAY(PositionVS, 0).x), abs(MAIN_INPUT_ARRAY(PositionVS, 1).x - MAIN_INPUT_ARRAY(PositionVS, 2).x));	// Assume square and uniform
+		float  sideLengthY = max(abs(MAIN_INPUT_ARRAY(PositionVS, 1).y - MAIN_INPUT_ARRAY(PositionVS, 0).y), abs(MAIN_INPUT_ARRAY(PositionVS, 1).y - MAIN_INPUT_ARRAY(PositionVS, 2).y));	// We need to take steep terrain heights into account as well
+		float  sideLength = max(sideLengthX, sideLengthY);
 		float  diagonalLength = sqrt(2 * sideLength * sideLength);
 
 		// Reject patches which are outside the camera frustum

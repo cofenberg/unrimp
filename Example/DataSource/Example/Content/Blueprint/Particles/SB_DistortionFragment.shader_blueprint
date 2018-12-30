@@ -86,7 +86,7 @@ MAIN_BEGIN
 		float targetSceneDepth = GetLinearDepth(SAMPLE_DEPTH_2D_LOD(DepthMap, SamplerPointClamp, texCoord));
 		FLATTEN if (targetSceneDepth < MAIN_INPUT(TexCoordDepthVS).z)
 		{
-			discard;
+			discard;	// Performance impact: This disables early-Z and hi-Z
 		}
 	}
 

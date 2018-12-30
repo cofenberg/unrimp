@@ -1,0 +1,26 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"Compiler":
+		{
+			"ClassName": "RendererToolkit::TextureAssetCompiler",
+			"TextureSemantic": "CRN_ARRAY",
+			"InputFiles":
+			[
+				"./Layer/T_Snow_argb_nxa.asset",
+				"./Layer/T_Stone_argb_nxa.asset",
+				"./Layer/T_Grass_argb_nxa.asset",
+				"./Layer/T_Floor_argb_nxa.asset",
+				"./Layer/T_Sand_argb_nxa.asset",
+				"./Layer/T_CrackedStone_argb_nxa.asset",
+				"./Layer/T_Mossy_argb_nxa.asset",
+				"./Layer/T_Dirt_argb_nxa.asset"
+			]
+		}
+	}
+}

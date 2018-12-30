@@ -1,0 +1,131 @@
+/*********************************************************\
+ * Copyright (c) 2012-2018 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+//[-------------------------------------------------------]
+//[ Pieces                                                ]
+//[-------------------------------------------------------]
+@piece(DefineGetTangentFrame)
+	float4 MultiplyQuaternions(float4 q1, float4 q2)
+	{
+		float4 result;
+		result.w = q1.w * q2.w - dot(q1.xyz, q2.xyz);
+		result.xyz = q1.w * q2.xyz + q2.w * q1.xyz + cross(q1.xyz, q2.xyz);
+		return result;
+	}
+
+	// https://blog.molecular-matters.com/2013/05/24/a-faster-quaternion-vector-multiplication/ mentions as source
+	//   "The faster method comes courtesy of Fabian Giesen ( http://fgiesen.wordpress.com/ ) (ryg of Farbrausch fame ( http://www.farbrausch.de/~fg/ )),
+	//    who posted this to the MollyRocket forums years ago. Another derivation, yielding the same result, can be found here ( http://gns.wikia.com/wiki/Quaternions )."
+	float3 MultiplyQuaternionVector(float4 rotationQuaternion, float3 vertex)
+	{
+		float3 t = 2.0f * cross(rotationQuaternion.xyz, vertex);
+		return vertex + rotationQuaternion.w * t + cross(rotationQuaternion.xyz, t);
+	}
+
+	// QTangent basing on http://dev.theomader.com/qtangents/ "QTangents" which is basing on
+	// http://www.crytek.com/cryengine/presentations/spherical-skinning-with-dual-quaternions-and-qtangents "Spherical Skinning with Dual-Quaternions and QTangents"
+	float2x3 QuaternionToTangentBitangent(float4 q)
+	{
+		return float2x3(
+			1.0f - 2.0f * (q.y * q.y + q.z * q.z),	2.0f * (q.x * q.y + q.w * q.z),			2.0f * (q.x * q.z - q.w * q.y),
+			2.0f * (q.x * q.y - q.w * q.z),			1.0f - 2.0f * (q.x * q.x + q.z * q.z),	2.0f * (q.y * q.z + q.w * q.x)
+		);
+	}
+
+	// QTangent basing on http://dev.theomader.com/qtangents/ "QTangents" which is basing on
+	// http://www.crytek.com/cryengine/presentations/spherical-skinning-with-dual-quaternions-and-qtangents "Spherical Skinning with Dual-Quaternions and QTangents"
+	float3x3 GetTangentFrame(float4 objectSpaceToViewSpaceQuaternion, float4 qTangent)
+	{
+		float2x3 tBt = QuaternionToTangentBitangent(qTangent);
+		float3 t = MultiplyQuaternionVector(objectSpaceToViewSpaceQuaternion, tBt[0]);
+		float3 b = MultiplyQuaternionVector(objectSpaceToViewSpaceQuaternion, tBt[1]);
+		return float3x3(
+			t,
+			b,
+			cross(t, b) * (qTangent.w < 0.0f ? -1.0f : 1.0f)
+		);
+	}
+@end
+
+@piece(DefineUnpackTextureNormalXY)
+	// Get the per fragment normal [0..1] by using a tangent space BC5/3DC/ATI2N stored normal map
+	// -> See "Real-Time Normal Map DXT Compression" -> "3.3 Tangent-Space 3Dc" - http://www.nvidia.com/object/real-time-normal-map-dxt-compression.html
+	float3 UnpackTextureNormalXY(float normalX, float normalY)
+	{
+		float3 normal;
+		normal.x = normalX * 2.0f - 1.0f;
+		normal.y = normalY * 2.0f - 1.0f;
+		normal.z = 1.0f - dot(normal.xy, normal.xy);
+		if (normal.z > 0.0f)
+		{
+			normal.z = sqrt(normal.z);
+		}
+
+		// Done
+		return normal;
+	}
+@end
+
+@piece(DefineCalculateCotangentFrame)
+	// From "Followup: Normal Mapping Without Precomputed Tangents" by Christian Schueler published on 2013-01-20 at http://www.thetenthplanet.de/archives/1180
+	float3x3 CalculateCotangentFrame(float3 normal, float3 incidentVector, float2 uv)
+	{
+		// Get edge vectors of the pixel triangle
+		float3 dp1 = DDX(incidentVector);
+		float3 dp2 = DDY(incidentVector);
+		float2 duv1 = DDX(uv);
+		float2 duv2 = DDY(uv);
+
+		// Solve the linear system
+		float3 dp2perp = cross(dp2, normal);
+		float3 dp1perp = cross(normal, dp1);
+		float3 tangent = dp2perp * duv1.x + dp1perp * duv2.x;
+		float3 binormal = dp2perp * duv1.y + dp1perp * duv2.y;
+
+		// Construct a scale-invariant frame 
+		float inverseMaximum = rsqrt(max(dot(tangent, tangent), dot(binormal, binormal)));
+		return ROW_MATRIX_3x3(tangent * inverseMaximum, binormal * inverseMaximum, normal);
+	}
+@end
+
+@piece(DefineFilterNormal)
+	// From "Advanced Real-Time Rendering in 3D Graphics and Games Course – SIGGRAPH 2007 - Chapter 5: Terrain Rendering in Frostbite Using Procedural Shader Splatting" by Johan Andersson
+	float4 FilterNormal(float2 uv, float2 texelSize, float texelAspect)
+	{
+		float4 h;
+		h[0] = SAMPLE_2D_LOD(HeightMap, SamplerLinearClamp, float4(uv + texelSize * float2( 0, -1), 0.0f, 0.0f)).r * texelAspect;
+		h[1] = SAMPLE_2D_LOD(HeightMap, SamplerLinearClamp, float4(uv + texelSize * float2(-1,  0), 0.0f, 0.0f)).r * texelAspect;
+		h[2] = SAMPLE_2D_LOD(HeightMap, SamplerLinearClamp, float4(uv + texelSize * float2( 1,  0), 0.0f, 0.0f)).r * texelAspect;
+		h[3] = SAMPLE_2D_LOD(HeightMap, SamplerLinearClamp, float4(uv + texelSize * float2( 0,  1), 0.0f, 0.0f)).r * texelAspect;
+		return float4(normalize(float3(h[1] - h[2], 2.0f, h[0] - h[3])), (h[0] + h[1] + h[2] + h[3]) / (4.0f * texelAspect));
+	}
+@end
+
+@piece(DefineBlendNormalUdn)
+	// Normal blending, see "Blending in Detail" by Colin Barré-Brisebois and Stephen Hill, published Jul 10th, 2012 at https://blog.selfshadow.com/publications/blending-in-detail/ and "Normal Mapping for a Triplanar Shader" by Ben Golus published Sep 17, 2017 at https://medium.com/@bgolus/normal-mapping-for-a-triplanar-shader-10bf39dca05a
+	float3 BlendNormalUdn(float3 n1, float3 n2)
+	{
+		float3 c = float3(2.0f, 1.0f, 0.0f);
+		float3 r;
+		r = n2 * c.yyz + n1.xyz;
+		r =  r * c.xxx -  c.xxy;
+		return normalize(r);
+	}
+@end

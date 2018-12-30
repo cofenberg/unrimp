@@ -29,13 +29,35 @@
 	}
 @end
 
+// Color blending using the formula "19.6.12. Overlay" for overlay blending from http://www.yaldex.com/open-gl/ch19lev1sec6.html
+@piece(DefineOverlayColorBlending)
+	float3 OverlayColorBlending(float3 rgb1, float3 rgb2)
+	{
+		float luminance = max(dot(rgb1, float3(0.299f, 0.587f, 0.114f)), 0.0001f);	// Same as "ColorToLuminance()" function
+		if (luminance < 0.5f)
+		{
+			return 2.0f * rgb1 * rgb2;
+		}
+		else if (luminance > 0.5f)
+		{
+			return float3(1.0f, 1.0f, 1.0f) - 2.0f * (float3(1.0f, 1.0f, 1.0f) - rgb1) * (float3(1.0f, 1.0f, 1.0f) - rgb2);
+		}
+		else
+		{
+			float3 result1 = 2.0f * rgb1 * rgb2;
+			float3 result2 = float3(1.0f, 1.0f, 1.0f) - 2.0f * (float3(1.0f, 1.0f, 1.0f) - rgb1) * (float3(1.0f, 1.0f, 1.0f) - rgb2);
+			return LERP(result1, result2, SATURATE((luminance - 0.5f) * 10.0f));
+		}
+	}
+@end
+
 // Determine the color based on exposure settings
 @piece(DefineCalculateExposedColor)
-	float3 CalculateExposedColor(float3 color, float averageLuminance, float threshold, out float exposure)
+	float3 CalculateExposedColor(float3 color, float averageLuminance, float toneMapKeyValue, float threshold, out float exposure)
 	{
 		// Use geometric mean
 		averageLuminance = clamp(averageLuminance, 0.125f, 4.0f);
-		float linearExposure = (PassData.ToneMapKeyValue / averageLuminance);
+		float linearExposure = (toneMapKeyValue / averageLuminance);
 		exposure = log2(max(linearExposure, 0.0001f));
 		exposure -= threshold;
 		return exp2(exposure) * color;
@@ -52,7 +74,7 @@
 
 @piece(DefineFilmGrain)
 	// The implementation is basing on https://github.com/thefranke/dirtchamber/blob/master/shader/pp_film_grain.hlsl
-	float3 ApplyFilmGrain(float3 color, float2 uv, float intensity)
+	float3 ApplyFilmGrain(float3 color, float2 uv, float intensity, float globalTimeInSeconds)
 	{
 		// Calculate the grain
 		float grain = 0.0f;
@@ -60,7 +82,7 @@
 			float l = ColorToLuminance(color);
 
 			// Add noise
-			float x = uv.x * uv.y * PassData.GlobalTimeInSeconds *  1000.0f;
+			float x = uv.x * uv.y * globalTimeInSeconds * 1000.0f;
 			x = fmod(x, 13.0f) * fmod(x, 123.0f);
 			float dx = fmod(x, 0.01f);
 			float y = clamp(0.1f + dx * 100.0f, 0.0f, 1.0f) * intensity;
@@ -132,9 +154,9 @@
 	// -> See "Advanced VR Rendering" - http://media.steampowered.com/apps/valve/2015/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf - page 49
 	// -> "Valve's screen space dither" https://www.shadertoy.com/view/4dcSRX - shows the effect nicely
 	// -> For an overview of other alternatives see "Tech Note: Shader Snippets for Efficient 2D Dithering" by Martin Mittring 20. August 2018 ( https://developer.oculus.com/blog/tech-note-shader-snippets-for-efficient-2d-dithering/ )
-	float3 ScreenSpaceDither(float2 screenPosition)
+	float3 ScreenSpaceDither(float2 screenPosition, float globalTimeInSeconds)
 	{
-		float ditherFactor = dot(float2(171.0f, 231.0f), screenPosition.xy + PassData.GlobalTimeInSeconds);
+		float ditherFactor = dot(float2(171.0f, 231.0f), screenPosition.xy + globalTimeInSeconds);
 		float3 dither = float3(ditherFactor, ditherFactor, ditherFactor);
 		dither.rgb = frac(dither.rgb / float3(103.0f, 71.0f, 97.0f)) - float3(0.5f, 0.5f, 0.5f);
 		return (dither.rgb / 255.0f) * 0.375f;
@@ -157,23 +179,23 @@
 
 // Fog
 @piece(DefineCalculateFoggedColor)
-	float3 CalculateFoggedColor(float3 viewSpacePosition, float3 color)
+	float3 CalculateFoggedColor(float3 viewSpacePosition, float3 color, float atmosphereFogDensity, float3 viewSpaceSunlightDirection, float3 ambientColor, float3 sunlightColor, float3 diffuseFogColor)
 	{
 		// Traditional depth fog
 		// -> Depth fog: Exponential^2 (see e.g. http://developer.download.nvidia.com/assets/gamedev/docs/Fog2.pdf?display=style-table )
-		float factor = viewSpacePosition.z * PassData.AtmosphereFogDensity;
+		float factor = viewSpacePosition.z * atmosphereFogDensity;
 		factor *= factor;
 		float fogDepth = 1.0f - SATURATE(1.0f / exp(factor));
 
 		// Fog lighting direction
 		float3 viewSpaceCameraDirection = -normalize(viewSpacePosition);	// In view space, we always look along the positive z-axis
-		float fogDirection = SATURATE(dot(viewSpaceCameraDirection, -PassData.ViewSpaceSunlightDirection));
+		float fogDirection = SATURATE(dot(viewSpaceCameraDirection, -viewSpaceSunlightDirection));
 		fogDirection = pow(fogDirection, 15.0f);
 
 		// Calculate fogged color
-		// -> See e.g. http://www.iquilezles.org/www/articles/fog/fog.htm
-		float3 ambientFogDiffuseColor = PassData.AmbientColor * PassData.DiffuseFogColor;
-		float3 sunFogDiffuseColor = PassData.SunlightColor * PassData.DiffuseFogColor;
+		// -> See e.g. http://www.iquilezles.org/www/articles/fog/fog.htm by Inigo Quilez
+		float3 ambientFogDiffuseColor = ambientColor * diffuseFogColor;
+		float3 sunFogDiffuseColor = sunlightColor * diffuseFogColor;
 		float3 litFog = LERP(ambientFogDiffuseColor, ambientFogDiffuseColor + sunFogDiffuseColor, fogDirection);
 		return LERP(color, litFog, fogDepth);
 	}

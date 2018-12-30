@@ -6439,77 +6439,52 @@ namespace OpenGLES3Renderer
 	public:
 		[[nodiscard]] virtual Renderer::ITexture1D* createTexture1D(uint32_t width, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
-			// The indication of the texture usage is only relevant for Direct3D, OpenGL ES 3 has no texture usage indication
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), width > 0, "OpenGL ES 3 create texture 1D was called with invalid parameters")
 
-			// Check whether or not the given texture dimension is valid
-			if (width > 0)
-			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture1D)(static_cast<OpenGLES3Renderer&>(getRenderer()), width, textureFormat, data, textureFlags);
-			}
-			else
-			{
-				return nullptr;
-			}
+			// Create 1D texture resource
+			// -> The indication of the texture usage is only relevant for Direct3D, OpenGL ES 3 has no texture usage indication
+			return RENDERER_NEW(getRenderer().getContext(), Texture1D)(static_cast<OpenGLES3Renderer&>(getRenderer()), width, textureFormat, data, textureFlags);
 		}
 
 		[[nodiscard]] virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, [[maybe_unused]] uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
 		{
-			// The indication of the texture usage is only relevant for Direct3D, OpenGL ES 3 has no texture usage indication
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), width > 0 && height > 0, "OpenGL ES 3 create texture 2D was called with invalid parameters")
 
-			// Check whether or not the given texture dimension is valid
-			if (width > 0 && height > 0)
-			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture2D)(static_cast<OpenGLES3Renderer&>(getRenderer()), width, height, textureFormat, data, textureFlags);
-			}
-			else
-			{
-				return nullptr;
-			}
+			// Create 2D texture resource
+			// -> The indication of the texture usage is only relevant for Direct3D, OpenGL ES 3 has no texture usage indication
+			return RENDERER_NEW(getRenderer().getContext(), Texture2D)(static_cast<OpenGLES3Renderer&>(getRenderer()), width, height, textureFormat, data, textureFlags);
 		}
 
 		[[nodiscard]] virtual Renderer::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
-			// The indication of the texture usage is only relevant for Direct3D, OpenGL ES 3 has no texture usage indication
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), width > 0 && height > 0 && numberOfSlices > 0, "OpenGL ES 3 create texture 2D array was called with invalid parameters")
 
-			// Check whether or not the given texture dimension is valid
-			if (width > 0 && height > 0 && numberOfSlices > 0)
-			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture2DArray)(static_cast<OpenGLES3Renderer&>(getRenderer()), width, height, numberOfSlices, textureFormat, data, textureFlags);
-			}
-			else
-			{
-				return nullptr;
-			}
+			// Create 2D texture array resource
+			// -> The indication of the texture usage is only relevant for Direct3D, OpenGL ES 3 has no texture usage indication
+			return RENDERER_NEW(getRenderer().getContext(), Texture2DArray)(static_cast<OpenGLES3Renderer&>(getRenderer()), width, height, numberOfSlices, textureFormat, data, textureFlags);
 		}
 
 		[[nodiscard]] virtual Renderer::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
-			// The indication of the texture usage is only relevant for Direct3D, OpenGL ES 3 has no texture usage indication
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), width > 0 && height > 0 && depth > 0, "OpenGL ES 3 create texture 3D was called with invalid parameters")
 
-			// Check whether or not the given texture dimension is valid
-			if (width > 0 && height > 0 && depth > 0)
-			{
-				return RENDERER_NEW(getRenderer().getContext(), Texture3D)(static_cast<OpenGLES3Renderer&>(getRenderer()), width, height, depth, textureFormat, data, textureFlags);
-			}
-			else
-			{
-				return nullptr;
-			}
+			// Create 3D texture resource
+			// -> The indication of the texture usage is only relevant for Direct3D, OpenGL ES 3 has no texture usage indication
+			return RENDERER_NEW(getRenderer().getContext(), Texture3D)(static_cast<OpenGLES3Renderer&>(getRenderer()), width, height, depth, textureFormat, data, textureFlags);
 		}
 
 		[[nodiscard]] virtual Renderer::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
 		{
-			// The indication of the texture usage is only relevant for Direct3D, OpenGL ES 3 has no texture usage indication
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), width > 0 && height > 0, "OpenGL ES 3 create texture cube was called with invalid parameters")
 
-			// Check whether or not the given texture dimension is valid
-			if (width > 0 && height > 0)
-			{
-				return RENDERER_NEW(getRenderer().getContext(), TextureCube)(static_cast<OpenGLES3Renderer&>(getRenderer()), width, height, textureFormat, data, textureFlags);
-			}
-			else
-			{
-				return nullptr;
-			}
+			// Create cube texture resource
+			// -> The indication of the texture usage is only relevant for Direct3D, OpenGL ES 3 has no texture usage indication
+			return RENDERER_NEW(getRenderer().getContext(), TextureCube)(static_cast<OpenGLES3Renderer&>(getRenderer()), width, height, textureFormat, data, textureFlags);
 		}
 
 

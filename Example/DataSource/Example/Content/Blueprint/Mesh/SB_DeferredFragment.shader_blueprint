@@ -103,7 +103,7 @@ SAMPLER_STATE(4, 0, SamplerLinear, 0)
 //[-------------------------------------------------------]
 //[ Functions                                             ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_TangentFrame.asset)
+@includepiece(../SharedShaderPiece/SP_Normal.asset)
 	@property(UseParallaxOcclusionMapping)
 		@insertpiece(DefineGetTangentFrame)
 	@end

@@ -27,22 +27,26 @@
 #include "RendererRuntime/Public/Core/File/IFile.h"
 #include "RendererRuntime/Public/IRendererRuntime.h"
 
-// Disable warnings in external headers, we can't fix them
-PRAGMA_WARNING_PUSH
-	PRAGMA_WARNING_DISABLE_MSVC(4061)	// warning C4061: enumerator 'cCRNFmtTotal' in switch of enum 'crn_format' is not explicitly handled by a case label
-	PRAGMA_WARNING_DISABLE_MSVC(4242)	// warning C4242: '=': conversion from 'crnd::uint32' to 'crnd::uint8', possible loss of data
-	PRAGMA_WARNING_DISABLE_MSVC(4302)	// warning C4302: 'type cast': truncation from 'crnd::uint8 *' to 'crnd::uint32'
-	PRAGMA_WARNING_DISABLE_MSVC(4311)	// warning C4311: 'type cast': pointer truncation from 'crnd::uint8 *' to 'crnd::uint32'
-	PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: '<x>': conversion from '<y>' to '<z>', signed/unsigned mismatch
-	PRAGMA_WARNING_DISABLE_MSVC(4548)	// warning C4548: expression before comma has no effect; expected expression with side-effect
-	PRAGMA_WARNING_DISABLE_MSVC(4555)	// warning C4555: expression has no effect; expected expression with side-effect
-	PRAGMA_WARNING_DISABLE_MSVC(4668)	// warning C4668: '<x>' is not defined as a preprocessor macro, replacing with '<y>' for '<z>'
-	PRAGMA_WARNING_DISABLE_CLANG("-Wunused-value")	// warning: expression result unused [-Wunused-value]
-	PRAGMA_WARNING_DISABLE_CLANG("-Warray-bounds")	// warning: array index 1 is past the end of the array (which contains 1 element) [-Warray-bounds]
-	PRAGMA_WARNING_DISABLE_GCC("-Wunused-value")	// warning: expression result unused [-Wunused-value]
-	#include <crn_decomp.h>
-	#include <dds_defs.h>
-PRAGMA_WARNING_POP
+#ifndef RENDERER_CRN_INCLUDED
+	#define RENDERER_CRN_INCLUDED
+
+	// Disable warnings in external headers, we can't fix them
+	PRAGMA_WARNING_PUSH
+		PRAGMA_WARNING_DISABLE_MSVC(4061)	// warning C4061: enumerator 'cCRNFmtTotal' in switch of enum 'crn_format' is not explicitly handled by a case label
+		PRAGMA_WARNING_DISABLE_MSVC(4242)	// warning C4242: '=': conversion from 'crnd::uint32' to 'crnd::uint8', possible loss of data
+		PRAGMA_WARNING_DISABLE_MSVC(4302)	// warning C4302: 'type cast': truncation from 'crnd::uint8 *' to 'crnd::uint32'
+		PRAGMA_WARNING_DISABLE_MSVC(4311)	// warning C4311: 'type cast': pointer truncation from 'crnd::uint8 *' to 'crnd::uint32'
+		PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: '<x>': conversion from '<y>' to '<z>', signed/unsigned mismatch
+		PRAGMA_WARNING_DISABLE_MSVC(4548)	// warning C4548: expression before comma has no effect; expected expression with side-effect
+		PRAGMA_WARNING_DISABLE_MSVC(4555)	// warning C4555: expression has no effect; expected expression with side-effect
+		PRAGMA_WARNING_DISABLE_MSVC(4668)	// warning C4668: '<x>' is not defined as a preprocessor macro, replacing with '<y>' for '<z>'
+		PRAGMA_WARNING_DISABLE_CLANG("-Wunused-value")	// warning: expression result unused [-Wunused-value]
+		PRAGMA_WARNING_DISABLE_CLANG("-Warray-bounds")	// warning: array index 1 is past the end of the array (which contains 1 element) [-Warray-bounds]
+		PRAGMA_WARNING_DISABLE_GCC("-Wunused-value")	// warning: expression result unused [-Wunused-value]
+			#include <crn_decomp.h>
+			#include <dds_defs.h>
+		PRAGMA_WARNING_POP
+#endif
 
 #include <algorithm>
 

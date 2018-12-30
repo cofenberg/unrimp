@@ -74,7 +74,7 @@ MAIN_BEGIN_COMPUTE(32, 32, 1)
 	// Use a lower exposure to produce a value suitable for a bloom pass
 	// -> Tone map it to threshold
 	float exposure = 0.0f;
-	color = CalculateExposedColor(color, averageLuminance, PassData.BloomThreshold, exposure);
+	color = CalculateExposedColor(color, averageLuminance, PassData.ToneMapKeyValue, PassData.BloomThreshold, exposure);
 	FLATTEN if (dot(color, float3(0.333f, 0.333f, 0.333f)) <= 0.001f)
 	{
 		color = float3(0.0f, 0.0f, 0.0f);

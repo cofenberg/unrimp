@@ -1,0 +1,25 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"Metadata":
+		{
+			"Copyright": "'pattern_203' from https://opengameart.org/content/free-tilling-textures-pack-40"
+		},
+		"Compiler":
+		{
+			"ClassName": "RendererToolkit::TextureAssetCompiler",
+			"TextureSemantic": "PACKED_CHANNELS",
+			"TextureChannelPacking": "_argb_nxa",
+			"InputFiles":
+			{
+				"ALBEDO_MAP": "./T_Stone_a.png",
+				"NORMAL_MAP": "./T_Stone_n.png"
+			}
+		}
+	}
+}

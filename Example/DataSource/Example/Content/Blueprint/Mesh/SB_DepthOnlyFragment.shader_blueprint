@@ -78,7 +78,7 @@ MAIN_BEGIN_NO_OUTPUT
 		// Perform alpha map based fragment rejection
 		FLATTEN if (material.AlphaReference >= SAMPLE_2D(AlphaMap, SamplerLinear, MAIN_INPUT(TexCoordVS)).r)
 		{
-			discard;
+			discard;	// Performance impact: This disables early-Z and hi-Z
 		}
 	@end
 MAIN_END_NO_OUTPUT

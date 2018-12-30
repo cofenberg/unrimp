@@ -76,7 +76,7 @@ SAMPLER_STATE(2, 1, SamplerLinear, 1)
 //[-------------------------------------------------------]
 @includepiece(../SharedShaderPiece/SP_Depth.asset)
 	@insertpiece(DefineGetLinearDepth)
-@includepiece(../SharedShaderPiece/SP_TangentFrame.asset)
+@includepiece(../SharedShaderPiece/SP_Normal.asset)
 	@insertpiece(DefineGetTangentFrame)
 
 float4 GetNormalFromNormalMap(float2 textureCoordinate, int sampleIndex)

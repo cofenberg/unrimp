@@ -17,6 +17,21 @@
 				"MinimumIntegerValue": "0",
 				"MaximumIntegerValue": "255"
 			},
+			"UseTriplanarMapping":
+			{
+				"Usage": "SHADER_COMBINATION",
+				"ValueType": "GLOBAL_MATERIAL_PROPERTY_ID",
+				"Value": "@GlobalHighQualityRendering",
+				"Description": "Use triplanar mapping to avoid stretched detail layer textures at steep terrain angles. Disable this feature to trade visual quality for better performance.",
+				"VisualImportance": "100"
+			},
+			"GlobalHighQualityRendering":
+			{
+				"Usage": "GLOBAL_REFERENCE_FALLBACK",
+				"ValueType": "BOOLEAN",
+				"Value": "TRUE",
+				"Description": "Fallback value in case there's no global high quality global rendering material property"
+			},
 			"HeightMap":
 			{
 				"Usage": "TEXTURE_REFERENCE",
@@ -37,6 +52,27 @@
 				"ValueType": "TEXTURE_ASSET_ID",
 				"Value": "Unrimp/Texture/DynamicByCode/Identity_hr_rg_mb_nya2D",
 				"Description": "Terrain data map, R channel = Ambient occlusion map ('_ao'-postfix), G channel = Roughness map ('_r'-postfix, aka specular F0, roughness = 1 - glossiness (= smoothness)), B channel = Metallic map ('_m'-postfix)"
+			},
+			"LayerArray_argb_nxa":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "Unrimp/Texture/DynamicByCode/Identity_argb_nxa2D",
+				"Description": "Detail layer array texture, RGB channel = Albedo map ('_a'-postfix), A channel = x component of normal map ('_n'-postfix)"
+			},
+			"LayerArray_hr_rg_mb_nya":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "Unrimp/Texture/DynamicByCode/Identity_hr_rg_mb_nya2D",
+				"Description": "Detail layer array texture, R channel = Height map ('_h'-postfix), G channel = Roughness map ('_r'-postfix, aka specular F0, roughness = 1 - glossiness (= smoothness)), B channel = Metallic map ('_m'-postfix), A channel = y component of normal map ('_n'-postfix)"
+			},
+			"SplashMap":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+				"Description": "Terrain splash map defining detail layers"
 			},
 			"WorldPosition":
 			{
@@ -285,8 +321,44 @@
 					"Value": "@_aor_rg_mb",
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/Identity_hr_rg_mb_nya2D",
 					"SamplerStateBaseShaderRegisterName": "SamplerLinearClamp"
+				},
+				"3":
+				{
+					"ResourceType": "TEXTURE_2D_ARRAY",
+					"BaseShaderRegisterName": "LayerArray_argb_nxa",
+					"BaseShaderRegister": "4",
+					"ShaderVisibility": "FRAGMENT",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@LayerArray_argb_nxa",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/Identity_argb_nxa2D",
+					"RgbHardwareGammaCorrection": "TRUE",
+					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
+				},
+				"4":
+				{
+					"ResourceType": "TEXTURE_2D_ARRAY",
+					"BaseShaderRegisterName": "LayerArray_hr_rg_mb_nya",
+					"BaseShaderRegister": "5",
+					"ShaderVisibility": "FRAGMENT",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@LayerArray_hr_rg_mb_nya",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/Identity_hr_rg_mb_nya2D",
+					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
+				},
+				"5":
+				{
+					"ResourceType": "TEXTURE_2D",
+					"BaseShaderRegisterName": "SplashMap",
+					"BaseShaderRegister": "6",
+					"ShaderVisibility": "FRAGMENT",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@SplashMap",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+					"SamplerStateBaseShaderRegisterName": "SamplerLinearClamp"
 				}
-
 			},
 			"3":
 			{

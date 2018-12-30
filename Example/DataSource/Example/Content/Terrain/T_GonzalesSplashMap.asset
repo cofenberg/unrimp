@@ -1,0 +1,23 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"Metadata":
+		{
+			"Copyright": "'Pseudo Lens Flare' from John Chapman - http://john-chapman-graphics.blogspot.de/2013/02/pseudo-lens-flare.html"
+		},
+		"Compiler":
+		{
+			"ClassName": "RendererToolkit::TextureAssetCompiler",
+			"Description": "Use dds file format to be able to save an uncompressed texture",
+			"InputFile": "./T_GonzalesSplashMap.png",
+			"FileFormat": "dds",
+			"CreateMipmaps": "FALSE",
+			"Compression": "FALSE"
+		}
+	}
+}

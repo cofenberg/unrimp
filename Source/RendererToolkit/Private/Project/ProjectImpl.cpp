@@ -198,7 +198,7 @@ namespace RendererToolkit
 
 	bool ProjectImpl::checkAssetIsChanged(const RendererRuntime::Asset& asset, const char* rendererTarget)
 	{
-		const std::string& virtualAssetFilename = asset.virtualFilename;
+		const std::string virtualAssetFilename = asset.virtualFilename;
 
 		try
 		{

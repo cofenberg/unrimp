@@ -38,7 +38,7 @@ struct PassDataStruct
 {
 	float4x4 LensStarMatrix;
 	uint3	 GlobalComputeSize;
-	float 	 ToneMapKeyValue;	// Used by "CalculateExposedColor()"
+	float 	 ToneMapKeyValue;
 	float 	 BloomIntensity;
 };
 UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
@@ -81,7 +81,7 @@ float3 ToneMapFilmicAlu(float3 color)
 // Apply exposure and tone mapping to the specific color, apply the threshold to the exposure value
 float3 ToneMap(float3 color, float averageLuminance, float threshold, out float exposure)
 {
-	color = CalculateExposedColor(color, averageLuminance, threshold, exposure);
+	color = CalculateExposedColor(color, averageLuminance, PassData.ToneMapKeyValue, threshold, exposure);
 	color = ToneMapFilmicAlu(color);
 	return color;
 }

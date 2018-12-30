@@ -171,11 +171,11 @@ MAIN_BEGIN
 
 	// Apply film grain
 	@property(FilmGrain)
-		color.rgb = ApplyFilmGrain(color.rgb, MAIN_INPUT(TexCoordVS), PassData.FilmGrainIntensity);
+		color.rgb = ApplyFilmGrain(color.rgb, MAIN_INPUT(TexCoordVS), PassData.FilmGrainIntensity, PassData.GlobalTimeInSeconds);
 	@end
 
 	// Apply screen space dither
-	color.rgb += ScreenSpaceDither(MAIN_INPUT(TexCoordVS) * viewportSize);
+	color.rgb += ScreenSpaceDither(MAIN_INPUT(TexCoordVS) * viewportSize, PassData.GlobalTimeInSeconds);
 
 	// Ensure we're in a 0..1 range
 	color = SATURATE(color);

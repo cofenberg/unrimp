@@ -1,0 +1,25 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"Metadata":
+		{
+			"Copyright": "'pattern_267' from https://opengameart.org/content/free-tiling-textures-pack-53"
+		},
+		"Compiler":
+		{
+			"ClassName": "RendererToolkit::TextureAssetCompiler",
+			"TextureSemantic": "PACKED_CHANNELS",
+			"TextureChannelPacking": "_argb_nxa",
+			"InputFiles":
+			{
+				"ALBEDO_MAP": "./T_CrackedStone_a.png",
+				"NORMAL_MAP": "./T_CrackedStone_n.png"
+			}
+		}
+	}
+}

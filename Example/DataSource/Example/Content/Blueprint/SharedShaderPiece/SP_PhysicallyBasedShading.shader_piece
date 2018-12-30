@@ -156,7 +156,7 @@
 		float3 R = 2.0f * NdotV * N - V;
 
 		// Fresnel reflectance at normal incidence (for metals use albedo color)
-		float3 F_DIELECTRIC = 0.04f;	// Constant normal incidence Fresnel factor for all dielectrics
+		float3 F_DIELECTRIC = float3(0.04f, 0.04f, 0.04f);	// Constant normal incidence Fresnel factor for all dielectrics
 		float3 F0 = LERP(F_DIELECTRIC, albedo, metallic);
 
 		// Half-vector between L and V

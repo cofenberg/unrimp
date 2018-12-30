@@ -76,7 +76,7 @@ MAIN_BEGIN
 	// Perform alpha map based fragment rejection (no alpha reference material parameter by intent because real shaders use alpha to coverage)
 	FLATTEN if (0.8f >= color.a)
 	{
-		discard;
+		discard;	// Performance impact: This disables early-Z and hi-Z
 	}
 
 	// Apply grass color

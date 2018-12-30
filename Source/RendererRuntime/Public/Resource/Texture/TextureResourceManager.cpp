@@ -24,6 +24,7 @@
 #include "RendererRuntime/Public/Resource/Texture/TextureResourceManager.h"
 #include "RendererRuntime/Public/Resource/Texture/TextureResource.h"
 #include "RendererRuntime/Public/Resource/Texture/Loader/CrnTextureResourceLoader.h"
+#include "RendererRuntime/Public/Resource/Texture/Loader/CrnArrayTextureResourceLoader.h"
 #include "RendererRuntime/Public/Resource/Texture/Loader/KtxTextureResourceLoader.h"
 #include "RendererRuntime/Public/Resource/Texture/Loader/Lz4DdsTextureResourceLoader.h"
 #include "RendererRuntime/Public/Resource/ResourceManagerTemplate.h"
@@ -381,6 +382,9 @@ namespace RendererRuntime
 		{
 			case CrnTextureResourceLoader::TYPE_ID:
 				return new CrnTextureResourceLoader(*this, mInternalResourceManager->getRendererRuntime());
+
+			case CrnArrayTextureResourceLoader::TYPE_ID:
+				return new CrnArrayTextureResourceLoader(*this, mInternalResourceManager->getRendererRuntime());
 
 			case Lz4DdsTextureResourceLoader::TYPE_ID:
 				return new Lz4DdsTextureResourceLoader(*this, mInternalResourceManager->getRendererRuntime());

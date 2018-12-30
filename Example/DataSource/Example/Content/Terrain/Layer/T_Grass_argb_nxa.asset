@@ -1,0 +1,25 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"Metadata":
+		{
+			"Copyright": "'pattern_163' from https://opengameart.org/content/tilling-textures-pack-32"
+		},
+		"Compiler":
+		{
+			"ClassName": "RendererToolkit::TextureAssetCompiler",
+			"TextureSemantic": "PACKED_CHANNELS",
+			"TextureChannelPacking": "_argb_nxa",
+			"InputFiles":
+			{
+				"ALBEDO_MAP": "./T_Grass_a.png",
+				"NORMAL_MAP": "./T_Grass_n.png"
+			}
+		}
+	}
+}

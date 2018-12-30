@@ -139,7 +139,7 @@
 					const float STREAKS_INTENSITY = 0.5f;
 					const float GLOBAL_TIME_SCALE = 0.2f;
 
-					// Get texture coordinate
+					// Get texture coordinate for triplanar texture mapping with just two planes
 					float3 xyz = float3(wrappedWorldSpacePosition.x * STREAKS_TILING, wrappedWorldSpacePosition.y * STREAKS_LENGTH, wrappedWorldSpacePosition.z * STREAKS_TILING);
 					float4 xy = float4(xyz.xy, 0.0f, 0.0f);
 					float4 zy = float4(xyz.zy, 0.0f, 0.0f);

@@ -68,7 +68,7 @@ TEXTURE_BUFFER(2, 1, float4, InstanceTextureBuffer, 3)	// "POSITION_ROTATION_SCA
 //[-------------------------------------------------------]
 //[ Functions                                             ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_TangentFrame.asset)
+@includepiece(../SharedShaderPiece/SP_Normal.asset)
 	@insertpiece(DefineGetTangentFrame)
 
 

@@ -1,0 +1,20 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"Metadata":
+		{
+			"Copyright": "Terrain data created by Marcel Gonzales - http://www.marcelgonzales.com/"
+		},
+		"Compiler":
+		{
+			"ClassName": "RendererToolkit::TextureAssetCompiler",
+			"TextureSemantic": "TERRAIN_HEIGHT_MAP",
+			"InputFile": "./T_Gonzales_h.png"
+		}
+	}
+}

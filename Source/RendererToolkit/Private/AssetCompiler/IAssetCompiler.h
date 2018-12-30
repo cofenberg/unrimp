@@ -125,9 +125,10 @@ namespace RendererToolkit
 
 
 	//[-------------------------------------------------------]
-	//[ Public structures                                     ]
+	//[ Public definitions                                    ]
 	//[-------------------------------------------------------]
 	public:
+		static constexpr uint16_t ASSET_FORMAT_VERSION = 1;
 		struct Input final
 		{
 			const Context&							context;

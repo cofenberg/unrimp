@@ -80,3 +80,169 @@
 		return PassData.WorldPosition.y + PassData.WorldSize.y * SAMPLE_2D_LOD(HeightMap, SamplerLinearClamp, float4(uv, 0.0f, 0.0f)).r;
 	}
 @end
+@piece(DefineTriplanarMapping)
+	// See "Use Tri-Planar Texture Mapping for Better Terrain" by Brent Owens published 3 Jan 2014 at https://gamedevelopment.tutsplus.com/articles/use-tri-planar-texture-mapping-for-better-terrain--gamedev-13821
+	float3 ComputeTerrainTriplanarWeights(float3 normal)
+	{
+		// Calculate weights for blending
+		float3 weights = abs(normal);
+
+		// Performance: Adjust triplanar mapping weights basing on "Landscape creation and rendering in REDengine 3" by Marcin Gollent published at Game Developers Conference March 17-21 2014, section "Triplar mapping - performance" + "Blend zone tightening" ( https://twvideo01.ubm-us.net/o1/vault/GDC2014/Presentations/Gollent_Marcin_Landscape_Creation_and.pdf )
+		float TIGHTEN_FACTOR = 0.5f;
+		weights = SATURATE(weights - float3(TIGHTEN_FACTOR, TIGHTEN_FACTOR, TIGHTEN_FACTOR));
+
+		// Force weights to sum to one
+		weights = normalize(max(weights, 0.00001f));
+		float b = (weights.x + weights.y + weights.z);
+		weights /= float3(b, b, b);
+		return weights;
+	}
+
+	// See "Use Tri-Planar Texture Mapping for Better Terrain" by Brent Owens published 3 Jan 2014 at https://gamedevelopment.tutsplus.com/articles/use-tri-planar-texture-mapping-for-better-terrain--gamedev-13821
+	float4 SampleTerrainTriplanar(TEXTURE_2D_ARRAY_PARAMETER textureMap, float layerIndex, float3 triplanarWeights, float3 position)
+	{
+		// Sample the three planar projections
+		float4 northSouthValue = (triplanarWeights.x > 0.0f) ? SAMPLE_2D_ARRAY(textureMap, SamplerLinear, float3(position.yz, layerIndex)) : float4(0.0f, 0.0f, 0.0f, 0.0f);
+		float4 flatValue 	   = (triplanarWeights.y > 0.0f) ? SAMPLE_2D_ARRAY(textureMap, SamplerLinear, float3(position.xz, layerIndex)) : float4(0.0f, 0.0f, 0.0f, 0.0f);
+		float4 eastWestValue   = (triplanarWeights.z > 0.0f) ? SAMPLE_2D_ARRAY(textureMap, SamplerLinear, float3(position.xy, layerIndex)) : float4(0.0f, 0.0f, 0.0f, 0.0f);
+
+		// Blend the results of the three planar projections
+		return northSouthValue * triplanarWeights.x + flatValue * triplanarWeights.y + eastWestValue * triplanarWeights.z;
+	}
+@end
+@piece(DefineSharedFragmentShading)
+	// Get the world space normal
+	float2 texCoord = MAIN_INPUT(TexCoord);
+	float4 worldSpaceNormalHeight = FilterNormal(texCoord, float2(1.0f, 1.0f) / GET_TEXTURE_2D_LOD_SIZE(HeightMap, 0), PassData.WorldSize.y);
+	float3 worldSpaceNormal = worldSpaceNormalHeight.xyz;
+
+	// Compute triplanar weights
+	@property(UseTriplanarMapping)
+		float3 triplanarWeights = ComputeTerrainTriplanarWeights(worldSpaceNormal);
+	@end
+
+	// Get layer weights
+	#define NUMBER_OF_LAYERS 8
+	float layerWeights[NUMBER_OF_LAYERS];
+	float3 worldSpacePosition = MAIN_INPUT(WorldSpacePosition);
+	{
+		// Get procedural shader splatting parameters basing on "Chapter 5: Terrain Rendering in Frostbite Using Procedural Shader Splatting" by Johan Andersson ( http://www.dice.se/wp-content/uploads/2014/12/Chapter5-Andersson-Terrain_Rendering_in_Frostbite.pdf )
+		// - Height (meters)
+		// - Slope (0.0 = 0 degrees, 1.0 = 90°)
+		// - Normal (world-space)
+		float height = worldSpaceNormalHeight.w;
+		float slope = 1.0f - worldSpaceNormal.y;
+
+		// Highest level: Snow
+		float SNOW_FACTOR = 0.3f;	// 0..1 = (more snow)..(less snow)
+		float snow = 0.0f;
+		{
+			float noise3D1 = multipleOctavesNoise3D(worldSpacePosition * 0.5f);
+			float noise3D2 = multipleOctavesNoise3D(worldSpacePosition * 0.05f);
+			snow = SATURATE((4.0f + 6.0f * noise3D1) * (height - SNOW_FACTOR + SNOW_FACTOR * noise3D2 * 0.3f));
+			snow *= SATURATE(pow(SATURATE(1.0f - slope), 2.0f)) * (6.0f + 6.0f * noise3D1);
+			snow = pow(SATURATE(snow), 2.0f + noise3D1 * 4);
+		}
+
+		// Rock
+		float rock = SATURATE((pow(slope, 1.3f) * 10.0f - 0.04f) * 4.4f);
+
+		// Lowest level: Floor
+		float clampedHeight = max(height, 0.0f);
+		float floor = (clampedHeight < 0.1f) ? (1.0f - (clampedHeight / 0.1f)) : 0.0f;
+
+		// Grass
+		float grass = 1.0f - SATURATE(snow + rock + floor);
+
+		// Store layer weights
+		float4 splashMapValue = SAMPLE_2D(SplashMap, SamplerLinearClamp, texCoord).bgra;
+		layerWeights[0] = snow * (1.0f - splashMapValue.r);
+		layerWeights[1] = rock * (1.0f - splashMapValue.g);
+		layerWeights[2] = grass * (1.0f - splashMapValue.b);
+		layerWeights[3] = floor * (1.0f - splashMapValue.a);
+		layerWeights[4] = splashMapValue.r;
+		layerWeights[5] = splashMapValue.g;
+		layerWeights[6] = splashMapValue.b;
+		layerWeights[7] = splashMapValue.a;
+	}
+
+	// Blend different layers
+	float4 blended_argb_nxa = float4(0.5f, 0.5f, 0.5f, 0.0f);
+	float4 blended_hr_rg_mb_nya = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	UNROLL for (int layerIndex = 0; layerIndex < NUMBER_OF_LAYERS; ++layerIndex)
+	{
+		// TODO(co) Per-layer properties, see e.g. GDC 2018 presentation "Terrain Rendering in 'Far Cry 5'" by Jeremy Moore, page 77 of http://twvideo01.ubm-us.net/o1/vault/gdc2018/presentations/TerrainRenderingFarCry5.pdf
+		float uvMultiplier = 0.5f;
+		float maximumHeight = 1.0f;
+		float heightThreshold = 0.2f;
+		float blendFalloff = 0.2f;
+
+		// Read detail layer channel packed texture data
+		// -> "_argb_nxa" = RGB channel = Albedo map ("_a"-postfix), A channel = x component of normal map ("_n"-postfix)
+		// -> "_hr_rg_mb_nya" = R channel = Height map ("_h"-postfix), G channel = Roughness map ("_r"-postfix), B channel = Metallic map ("_m"-postfix), A channel = y component of normal map ("_n"-postfix)
+		@property(UseTriplanarMapping)
+			float4 layer_argb_nxa = SampleTerrainTriplanar(LayerArray_argb_nxa, CAST_TO(layerIndex, float), triplanarWeights, worldSpacePosition * uvMultiplier);
+			float4 layer_hr_rg_mb_nya = SampleTerrainTriplanar(LayerArray_hr_rg_mb_nya, CAST_TO(layerIndex, float), triplanarWeights, worldSpacePosition * uvMultiplier);
+		@end
+		@property(!UseTriplanarMapping)
+			float3 layerTexCoord = float3(worldSpacePosition.xz * uvMultiplier, CAST_TO(layerIndex, float));
+			float4 layer_argb_nxa = SAMPLE_2D_ARRAY(LayerArray_argb_nxa, SamplerLinear, layerTexCoord);
+			float4 layer_hr_rg_mb_nya = SAMPLE_2D_ARRAY(LayerArray_hr_rg_mb_nya, SamplerLinear, layerTexCoord);
+		@end
+
+		// TODO(co) Parallax occlusion mapping (POM)
+
+		// Get detail layer properties
+		float layerWeight = layerWeights[layerIndex];
+		float layerHeight = SATURATE(layer_hr_rg_mb_nya.r * maximumHeight) * (1.0f - blendFalloff);
+
+		// Blend layers
+		BRANCH if (0 == layerIndex)
+		{
+			// Initialize
+			blended_argb_nxa = layer_argb_nxa;
+			blended_hr_rg_mb_nya = float4(layerHeight * layerWeight, layer_hr_rg_mb_nya.yzw);
+		}
+		else
+		{
+			// Height based blending algorithm from "Advanced Terrain Texture Splatting" by Andrey Mishkinis - https://www.gamedev.net/articles/programming/graphics/advanced-terrain-texture-splatting-r3287/
+			float a2 = 1.0f - layerWeight;
+			float ma = max(layerHeight + layerWeight, blended_hr_rg_mb_nya.r + a2) - blendFalloff;
+			float b1 = max(layerHeight + layerWeight - ma, 0.0f);
+			float b2 = max(blended_hr_rg_mb_nya.r + a2 - ma, 0.0f);
+			float denominator = b1 + b2;
+			BRANCH if (denominator > 0.0f)
+			{
+				layerWeight = b1 / denominator;
+
+				// Blend
+				blended_argb_nxa = LERP(blended_argb_nxa, layer_argb_nxa, layerWeight);
+				blended_hr_rg_mb_nya.yzw = LERP(blended_hr_rg_mb_nya.yzw, layer_hr_rg_mb_nya.yzw, layerWeight);
+
+				// Smooth fading out below visible height threshold
+				FLATTEN if (layerHeight > blended_hr_rg_mb_nya.r)
+				{
+					blended_hr_rg_mb_nya.r = (layerWeight < heightThreshold) ? LERP(blended_hr_rg_mb_nya.r, layerHeight, layerWeight / heightThreshold) : layerHeight;
+				}
+			}
+		}
+	}
+
+	// Read channel packed texture data
+	// -> "_argb" = RGB channel = Albedo map ("_a"-postfix)
+	// -> "_aor_rg_mb" = R channel = Ambient occlusion map ("_ao"-postfix), G channel = Roughness map ("_r"-postfix), B channel = Metallic map ("_m"-postfix)
+	float4 value_argb = SAMPLE_2D(_argb, SamplerLinearClamp, texCoord);
+	float4 value_aor_rg_mb = SAMPLE_2D(_aor_rg_mb, SamplerLinearClamp, texCoord);
+
+	// Blend with global data to get final albedo, ambient occlusion, roughness and metallic
+	float3 albedo = OverlayColorBlending(value_argb.rgb, blended_argb_nxa.rgb * 4);
+	float ambientOcclusion = value_aor_rg_mb.r;
+	float roughness = LERP(value_aor_rg_mb.g, blended_hr_rg_mb_nya.g, 0.5f);
+	float metallic = LERP(value_aor_rg_mb.b, blended_hr_rg_mb_nya.b, 0.75f);
+	worldSpaceNormal = BlendNormalUdn(worldSpaceNormal, UnpackTextureNormalXY(blended_argb_nxa.a, blended_hr_rg_mb_nya.a).xzy);
+
+	// Derive data
+	float3 viewSpaceNormal = MultiplyQuaternionVector(PassData.WorldSpaceToViewSpaceQuaternion, worldSpaceNormal);
+	float3 worldSpaceIncident = normalize(-worldSpacePosition);	// Since we're using camera relative rendering, "PassData.WorldSpaceCameraPosition - worldSpacePosition" becomes just "-worldSpacePosition"
+	float3 viewSpaceIncident = MultiplyQuaternionVector(PassData.WorldSpaceToViewSpaceQuaternion, worldSpaceIncident);
+@end

@@ -42,9 +42,12 @@
 						"Material": "${PROJECT_NAME}/Blueprint/Terrain/M_Terrain.asset",
 						"SetMaterialProperties":
 						{
-							"HeightMap": "${PROJECT_NAME}/Texture/T_GonzalesTerrain_h.asset",
-							"_argb": "${PROJECT_NAME}/Texture/T_GonzalesTerrain_argb.asset",
-							"_aor_rg_mb": "${PROJECT_NAME}/Texture/T_GonzalesTerrain_aor_rg_mb.asset",
+							"HeightMap": "${PROJECT_NAME}/Terrain/T_Gonzales_h.asset",
+							"_argb": "${PROJECT_NAME}/Terrain/T_Gonzales_argb.asset",
+							"_aor_rg_mb": "${PROJECT_NAME}/Terrain/T_Gonzales_aor_rg_mb.asset",
+							"LayerArray_argb_nxa": "${PROJECT_NAME}/Terrain/T_GonzalesLayerArray_argb_nxa.asset",
+							"LayerArray_hr_rg_mb_nya": "${PROJECT_NAME}/Terrain/T_GonzalesLayerArray_hr_rg_mb_nya.asset",
+							"SplashMap": "${PROJECT_NAME}/Terrain/T_GonzalesSplashMap.asset",
 							"WorldPosition": "1000.0 -43.1 400.0",
 							"WorldSize": "4096.0 200.0 4096.0"
 						}

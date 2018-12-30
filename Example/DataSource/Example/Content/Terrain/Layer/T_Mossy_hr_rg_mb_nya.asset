@@ -1,0 +1,26 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"Metadata":
+		{
+			"Copyright": "'pattern_42' from https://opengameart.org/content/tilling-textures-pack-08"
+		},
+		"Compiler":
+		{
+			"ClassName": "RendererToolkit::TextureAssetCompiler",
+			"TextureSemantic": "PACKED_CHANNELS",
+			"TextureChannelPacking": "_hr_rg_mb_nya",
+			"InputFiles":
+			{
+				"HEIGHT_MAP": "./T_Mossy_h.png",
+				"ROUGHNESS_MAP": "./T_Mossy_r.png",
+				"NORMAL_MAP": "./T_Mossy_n.png"
+			}
+		}
+	}
+}

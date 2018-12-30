@@ -140,6 +140,7 @@ FirstScene::FirstScene() :
 	mCurrentCompositor(static_cast<int>(mInstancedCompositor)),
 	mShadowQuality(ShadowQuality::HIGH),
 	mCurrentShadowQuality(static_cast<int>(mShadowQuality)),
+	mHighQualityRendering(true),
 	mHighQualityLighting(true),
 	mSoftParticles(true),
 	mCurrentTextureFiltering(static_cast<int>(TextureFiltering::ANISOTROPIC_4)),
@@ -294,6 +295,7 @@ void FirstScene::onUpdate()
 			RendererRuntime::MaterialProperties& globalMaterialProperties = rendererRuntime->getMaterialBlueprintResourceManager().getGlobalMaterialProperties();
 			// Graphics
 			globalMaterialProperties.setPropertyById(STRING_ID("GlobalReceiveShadows"), RendererRuntime::MaterialPropertyValue::fromBoolean(ShadowQuality::NONE != mShadowQuality));
+			globalMaterialProperties.setPropertyById(STRING_ID("GlobalHighQualityRendering"), RendererRuntime::MaterialPropertyValue::fromBoolean(mHighQualityRendering));
 			globalMaterialProperties.setPropertyById(STRING_ID("GlobalHighQualityLighting"), RendererRuntime::MaterialPropertyValue::fromBoolean(mHighQualityLighting));
 			globalMaterialProperties.setPropertyById(STRING_ID("GlobalSoftParticles"), RendererRuntime::MaterialPropertyValue::fromBoolean(mSoftParticles));
 			globalMaterialProperties.setPropertyById(STRING_ID("GlobalTessellatedTriangleWidth"), RendererRuntime::MaterialPropertyValue::fromFloat(static_cast<float>(mTerrainTessellatedTriangleWidth)));
@@ -803,7 +805,13 @@ void FirstScene::createDebugGui([[maybe_unused]] Renderer::IRenderTarget& mainRe
 							static constexpr const char* items[] = { "None", "Low", "Medium", "High", "Ultra", "Epic" };
 							ImGui::Combo("Shadow Quality", &mCurrentShadowQuality, items, static_cast<int>(GLM_COUNTOF(items)));
 						}
-
+						{ // High quality rendering
+							ImGui::Checkbox("High Quality Rendering", &mHighQualityRendering);
+							if (ImGui::IsItemHovered())
+							{
+								ImGui::SetTooltip("High quality rendering enables e.g. terrain triplanar mapping");
+							}
+						}
 						ImGui::Checkbox("High Quality Lighting", &mHighQualityLighting);
 						ImGui::Checkbox("Soft-Particles", &mSoftParticles);
 						{ // Texture filtering
