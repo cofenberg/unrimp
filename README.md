@@ -385,7 +385,7 @@ The unified renderer interface can't unify some graphics API behaviour differenc
 
 [MIT License](https://opensource.org/licenses/MIT)
 ======
-Copyright (c) 2012-2018 The Unrimp Team
+Copyright (c) 2012-2019 The Unrimp Team
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
