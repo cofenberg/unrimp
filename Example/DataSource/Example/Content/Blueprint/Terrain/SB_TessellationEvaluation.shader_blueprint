@@ -107,8 +107,8 @@ MAIN_BEGIN_TESSELLATION_EVALUATION(4)
 
 	{ // Previous clip space position
 	  // -> Take care of camera relative rendering
-		float4 previousPiewSpacePosition = MATRIX_MUL(PassData.PreviousWorldSpaceToViewSpaceMatrix, float4(worldSpacePosition.xyz - PassData.UnmodifiedWorldSpaceCameraPosition, 1.0f));
-		MAIN_OUTPUT(PreviousClipSpacePositionVS) = MATRIX_MUL(PassData.ViewSpaceToClipSpaceMatrix, previousPiewSpacePosition).xyw;
+		float4 previousViewSpacePosition = MATRIX_MUL(PassData.PreviousWorldSpaceToViewSpaceMatrix, float4(worldSpacePosition.xyz - PassData.UnmodifiedWorldSpaceCameraPosition, 1.0f));
+		MAIN_OUTPUT(PreviousClipSpacePositionVS) = MATRIX_MUL(PassData.ViewSpaceToClipSpaceMatrix, previousViewSpacePosition).xyw;
 	}
 
 	// World space position

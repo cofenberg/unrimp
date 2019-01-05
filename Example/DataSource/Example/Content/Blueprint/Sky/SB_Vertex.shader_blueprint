@@ -64,11 +64,11 @@ UNIFORM_BUFFER_END
 MAIN_BEGIN_VERTEX
 	// Rotate into view-space, centered on the camera
 	float3 viewSpacePosition = (MATRIX_MUL(CAST_TO(PassData.WorldSpaceToViewSpaceMatrix, float3x3), MAIN_INPUT(Position))).xyz;
-	float3 previousPiewSpacePosition = (MATRIX_MUL(CAST_TO(PassData.PreviousWorldSpaceToViewSpaceMatrix, float3x3), MAIN_INPUT(Position))).xyz;
+	float3 previousViewSpacePosition = (MATRIX_MUL(CAST_TO(PassData.PreviousWorldSpaceToViewSpaceMatrix, float3x3), MAIN_INPUT(Position))).xyz;
 
 	// Transform to clip-space
 	MAIN_OUTPUT_POSITION = MATRIX_MUL(PassData.ViewSpaceToClipSpaceMatrix, float4(viewSpacePosition, 1.0f));
-	MAIN_OUTPUT(PreviousClipSpacePositionVS) = MATRIX_MUL(PassData.ViewSpaceToClipSpaceMatrix, float4(previousPiewSpacePosition, 1.0f)).xyw;
+	MAIN_OUTPUT(PreviousClipSpacePositionVS) = MATRIX_MUL(PassData.ViewSpaceToClipSpaceMatrix, float4(previousViewSpacePosition, 1.0f)).xyw;
 
 	// Pass through the object space position as texture coordinate
 	MAIN_OUTPUT(TexCoordVS) = MAIN_INPUT(Position);
