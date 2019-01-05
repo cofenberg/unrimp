@@ -131,7 +131,6 @@ namespace RendererRuntime
 		}
 
 		// Early escape if shadow is disabled
-		const CompositorResourcePassShadowMap& compositorResourcePassShadowMap = static_cast<const CompositorResourcePassShadowMap&>(getCompositorResourcePass());
 		if (!mEnabled)
 		{
 			return;
@@ -211,7 +210,7 @@ namespace RendererRuntime
 			}
 
 			// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
-			RENDERER_SCOPED_PROFILER_EVENT_DYNAMIC(rendererRuntime.getContext(), commandBuffer, compositorResourcePassShadowMap.getDebugName())
+			RENDERER_SCOPED_PROFILER_EVENT_DYNAMIC(rendererRuntime.getContext(), commandBuffer, static_cast<const CompositorResourcePassShadowMap&>(getCompositorResourcePass()).getDebugName())
 
 			// Render the meshes to each cascade
 			// -> Shadows should never be rendered via single pass stereo instancing

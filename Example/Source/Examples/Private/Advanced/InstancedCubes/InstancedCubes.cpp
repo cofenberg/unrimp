@@ -246,7 +246,7 @@ void InstancedCubes::onDraw()
 						char text[128];
 
 						// Number of cubes
-						snprintf(text, GLM_COUNTOF(text), "Number of cubes: %d", mNumberOfCubeInstances);
+						snprintf(text, GLM_COUNTOF(text), "Number of cubes: %u", mNumberOfCubeInstances);
 						RendererRuntime::DebugGuiHelper::drawText(text, 10.0f, 10.0f);
 
 						// Frames per second

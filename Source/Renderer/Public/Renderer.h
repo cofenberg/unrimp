@@ -4013,44 +4013,44 @@ namespace Renderer
 				RENDERER_LOG(context, INFORMATION, "** Number of current renderer resource instances **")
 
 				// Misc
-				RENDERER_LOG(context, INFORMATION, "Root signatures: %d", currentNumberOfRootSignatures.load())
-				RENDERER_LOG(context, INFORMATION, "Resource groups: %d", currentNumberOfResourceGroups.load())
-				RENDERER_LOG(context, INFORMATION, "Graphics programs: %d", currentNumberOfGraphicsPrograms.load())
-				RENDERER_LOG(context, INFORMATION, "Vertex arrays: %d", currentNumberOfVertexArrays.load())
-				RENDERER_LOG(context, INFORMATION, "Render passes: %d", currentNumberOfRenderPasses.load())
-				RENDERER_LOG(context, INFORMATION, "Query pools: %d", currentNumberOfQueryPools.load())
+				RENDERER_LOG(context, INFORMATION, "Root signatures: %u", currentNumberOfRootSignatures.load())
+				RENDERER_LOG(context, INFORMATION, "Resource groups: %u", currentNumberOfResourceGroups.load())
+				RENDERER_LOG(context, INFORMATION, "Graphics programs: %u", currentNumberOfGraphicsPrograms.load())
+				RENDERER_LOG(context, INFORMATION, "Vertex arrays: %u", currentNumberOfVertexArrays.load())
+				RENDERER_LOG(context, INFORMATION, "Render passes: %u", currentNumberOfRenderPasses.load())
+				RENDERER_LOG(context, INFORMATION, "Query pools: %u", currentNumberOfQueryPools.load())
 
 				// IRenderTarget
-				RENDERER_LOG(context, INFORMATION, "Swap chains: %d", currentNumberOfSwapChains.load())
-				RENDERER_LOG(context, INFORMATION, "Framebuffers: %d", currentNumberOfFramebuffers.load())
+				RENDERER_LOG(context, INFORMATION, "Swap chains: %u", currentNumberOfSwapChains.load())
+				RENDERER_LOG(context, INFORMATION, "Framebuffers: %u", currentNumberOfFramebuffers.load())
 
 				// IBuffer
-				RENDERER_LOG(context, INFORMATION, "Index buffers: %d", currentNumberOfIndexBuffers.load())
-				RENDERER_LOG(context, INFORMATION, "Vertex buffers: %d", currentNumberOfVertexBuffers.load())
-				RENDERER_LOG(context, INFORMATION, "Texture buffers: %d", currentNumberOfTextureBuffers.load())
-				RENDERER_LOG(context, INFORMATION, "Structured buffers: %d", currentNumberOfStructuredBuffers.load())
-				RENDERER_LOG(context, INFORMATION, "Indirect buffers: %d", currentNumberOfIndirectBuffers.load())
-				RENDERER_LOG(context, INFORMATION, "Uniform buffers: %d", currentNumberOfUniformBuffers.load())
+				RENDERER_LOG(context, INFORMATION, "Index buffers: %u", currentNumberOfIndexBuffers.load())
+				RENDERER_LOG(context, INFORMATION, "Vertex buffers: %u", currentNumberOfVertexBuffers.load())
+				RENDERER_LOG(context, INFORMATION, "Texture buffers: %u", currentNumberOfTextureBuffers.load())
+				RENDERER_LOG(context, INFORMATION, "Structured buffers: %u", currentNumberOfStructuredBuffers.load())
+				RENDERER_LOG(context, INFORMATION, "Indirect buffers: %u", currentNumberOfIndirectBuffers.load())
+				RENDERER_LOG(context, INFORMATION, "Uniform buffers: %u", currentNumberOfUniformBuffers.load())
 
 				// ITexture
-				RENDERER_LOG(context, INFORMATION, "1D textures: %d", currentNumberOfTexture1Ds.load())
-				RENDERER_LOG(context, INFORMATION, "2D textures: %d", currentNumberOfTexture2Ds.load())
-				RENDERER_LOG(context, INFORMATION, "2D texture arrays: %d", currentNumberOfTexture2DArrays.load())
-				RENDERER_LOG(context, INFORMATION, "3D textures: %d", currentNumberOfTexture3Ds.load())
-				RENDERER_LOG(context, INFORMATION, "Cube textures: %d", currentNumberOfTextureCubes.load())
+				RENDERER_LOG(context, INFORMATION, "1D textures: %u", currentNumberOfTexture1Ds.load())
+				RENDERER_LOG(context, INFORMATION, "2D textures: %u", currentNumberOfTexture2Ds.load())
+				RENDERER_LOG(context, INFORMATION, "2D texture arrays: %u", currentNumberOfTexture2DArrays.load())
+				RENDERER_LOG(context, INFORMATION, "3D textures: %u", currentNumberOfTexture3Ds.load())
+				RENDERER_LOG(context, INFORMATION, "Cube textures: %u", currentNumberOfTextureCubes.load())
 
 				// IState
-				RENDERER_LOG(context, INFORMATION, "Graphics pipeline states: %d", currentNumberOfGraphicsPipelineStates.load())
-				RENDERER_LOG(context, INFORMATION, "Compute pipeline states: %d", currentNumberOfComputePipelineStates.load())
-				RENDERER_LOG(context, INFORMATION, "Sampler states: %d", currentNumberOfSamplerStates.load())
+				RENDERER_LOG(context, INFORMATION, "Graphics pipeline states: %u", currentNumberOfGraphicsPipelineStates.load())
+				RENDERER_LOG(context, INFORMATION, "Compute pipeline states: %u", currentNumberOfComputePipelineStates.load())
+				RENDERER_LOG(context, INFORMATION, "Sampler states: %u", currentNumberOfSamplerStates.load())
 
 				// IShader
-				RENDERER_LOG(context, INFORMATION, "Vertex shaders: %d", currentNumberOfVertexShaders.load())
-				RENDERER_LOG(context, INFORMATION, "Tessellation control shaders: %d", currentNumberOfTessellationControlShaders.load())
-				RENDERER_LOG(context, INFORMATION, "Tessellation evaluation shaders: %d", currentNumberOfTessellationEvaluationShaders.load())
-				RENDERER_LOG(context, INFORMATION, "Geometry shaders: %d", currentNumberOfGeometryShaders.load())
-				RENDERER_LOG(context, INFORMATION, "Fragment shaders: %d", currentNumberOfFragmentShaders.load())
-				RENDERER_LOG(context, INFORMATION, "Compute shaders: %d", currentNumberOfComputeShaders.load())
+				RENDERER_LOG(context, INFORMATION, "Vertex shaders: %u", currentNumberOfVertexShaders.load())
+				RENDERER_LOG(context, INFORMATION, "Tessellation control shaders: %u", currentNumberOfTessellationControlShaders.load())
+				RENDERER_LOG(context, INFORMATION, "Tessellation evaluation shaders: %u", currentNumberOfTessellationEvaluationShaders.load())
+				RENDERER_LOG(context, INFORMATION, "Geometry shaders: %u", currentNumberOfGeometryShaders.load())
+				RENDERER_LOG(context, INFORMATION, "Fragment shaders: %u", currentNumberOfFragmentShaders.load())
+				RENDERER_LOG(context, INFORMATION, "Compute shaders: %u", currentNumberOfComputeShaders.load())
 
 				// End
 				RENDERER_LOG(context, INFORMATION, "***************************************************")

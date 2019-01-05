@@ -140,11 +140,11 @@ namespace RendererRuntime
 			for (uint32_t i = 0; i < numberOfElements; ++i)
 			{
 				MaterialBlueprintResource& materialBlueprintResource = materialBlueprintResourceManager.getByIndex(i);
-				ShaderBlueprintResourceId shaderBlueprintResourceId = materialBlueprintResource.getComputeShaderBlueprintResourceId();
-				if (isValid(shaderBlueprintResourceId))
+				const ShaderBlueprintResourceId computeShaderBlueprintResourceId = materialBlueprintResource.getComputeShaderBlueprintResourceId();
+				if (isValid(computeShaderBlueprintResourceId))
 				{
 					// Compute pipeline state object (PSO)
-					if (shaderBlueprintResourceId == shaderBlueprintResourceId)
+					if (shaderBlueprintResourceId == computeShaderBlueprintResourceId)
 					{
 						materialBlueprintResourcePointers.insert(&materialBlueprintResource);
 					}

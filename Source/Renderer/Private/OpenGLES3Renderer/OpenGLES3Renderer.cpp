@@ -185,6 +185,7 @@ private:
 		uint m_Last;
 	};
 
+	Renderer::IAllocator& m_Allocator;
 	Range *m_Ranges; // Sorted array of ranges of free IDs
 	uint m_Count;    // Number of ranges in list
 	uint m_Capacity; // Total capacity of range list
@@ -193,19 +194,20 @@ private:
 	MakeID(const MakeID &) = delete;
 
 public:
-	explicit MakeID(const uint max_id = std::numeric_limits<uint>::max())
+	MakeID(Renderer::IAllocator& allocator, const uint max_id = std::numeric_limits<uint>::max()) :
+		m_Allocator(allocator),
+		m_Ranges(static_cast<Range*>(allocator.reallocate(nullptr, 0, sizeof(Range), 1))),
+		m_Count(1),
+		m_Capacity(1)
 	{
 		// Start with a single range, from 0 to max allowed ID (specified)
-		m_Ranges = static_cast<Range*>(::malloc(sizeof(Range)));
 		m_Ranges[0].m_First = 0;
 		m_Ranges[0].m_Last = max_id;
-		m_Count = 1;
-		m_Capacity = 1;
 	}
 
 	~MakeID()
 	{
-		::free(m_Ranges);
+		m_Allocator.reallocate(m_Ranges, 0, 0, 1);
 	}
 
 	bool CreateID(uint &id)
@@ -459,8 +461,8 @@ private:
 	{
 		if (m_Count >= m_Capacity)
 		{
+			m_Ranges = static_cast<Range *>(m_Allocator.reallocate(m_Ranges, sizeof(Range) * m_Capacity, (m_Capacity + m_Capacity) * sizeof(Range), 1));
 			m_Capacity += m_Capacity;
-			m_Ranges = (Range *) realloc(m_Ranges, m_Capacity * sizeof(Range));
 		}
  
 		::memmove(m_Ranges + index + 1, m_Ranges + index, (m_Count - index) * sizeof(Range));
@@ -5565,7 +5567,6 @@ namespace OpenGLES3Renderer
 			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
 			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
 			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height) : 1;
-			const bool isDepthFormat = Renderer::TextureFormat::isDepth(textureFormat);
 
 			// Create the OpenGL ES 3 texture instance
 			glGenTextures(1, &mOpenGLES3Texture);
@@ -7444,7 +7445,7 @@ namespace OpenGLES3Renderer
 						if (&openGLES3Renderer != &(*colorTexture)->getRenderer())
 						{
 							// Output an error message and keep on going in order to keep a reasonable behaviour even in case on an error
-							RENDERER_LOG(openGLES3Renderer.getContext(), CRITICAL, "OpenGL ES 3 error: The given color texture at index %d is owned by another renderer instance", colorTexture - mColorTextures)
+							RENDERER_LOG(openGLES3Renderer.getContext(), CRITICAL, "OpenGL ES 3 error: The given color texture at index %u is owned by another renderer instance", colorTexture - mColorTextures)
 
 							// Continue, there's no point in trying to do any error handling in here
 							continue;
@@ -8033,12 +8034,9 @@ namespace OpenGLES3Renderer
 		GraphicsProgramGlsl(OpenGLES3Renderer& openGLES3Renderer, const Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, VertexShaderGlsl* vertexShaderGlsl, FragmentShaderGlsl* fragmentShaderGlsl) :
 			IGraphicsProgram(openGLES3Renderer),
 			mNumberOfRootSignatureParameters(0),
-			mOpenGLES3Program(0),
+			mOpenGLES3Program(glCreateProgram()),
 			mDrawIdUniformLocation(-1)
 		{
-			// Create the OpenGL ES 3 program
-			mOpenGLES3Program = glCreateProgram();
-
 			{ // Define the vertex array attribute binding locations ("vertex declaration" in Direct3D 9 terminology, "input layout" in Direct3D 10 & 11 terminology)
 				const uint32_t numberOfVertexAttributes = vertexAttributes.numberOfAttributes;
 				for (uint32_t vertexAttribute = 0; vertexAttribute < numberOfVertexAttributes; ++vertexAttribute)
@@ -9137,6 +9135,8 @@ namespace OpenGLES3Renderer
 	//[-------------------------------------------------------]
 	OpenGLES3Renderer::OpenGLES3Renderer(const Renderer::Context& context) :
 		IRenderer(Renderer::NameId::OPENGLES3, context),
+		VertexArrayMakeId(context.getAllocator()),
+		GraphicsPipelineStateMakeId(context.getAllocator()),
 		mOpenGLES3Context(nullptr),
 		mShaderLanguageGlsl(nullptr),
 		mGraphicsRootSignature(nullptr),
@@ -10755,7 +10755,7 @@ namespace OpenGLES3Renderer
 			}
 
 			// Print into log
-			if (static_cast<const OpenGLES3Renderer*>(userParam)->getContext().getLog().print(logType, nullptr, __FILE__, static_cast<uint32_t>(__LINE__), "OpenGL ES 3 debug message\tSource:\"%s\"\tType:\"%s\"\tID:\"%d\"\tSeverity:\"%s\"\tMessage:\"%s\"", debugSource, debugType, id, debugSeverity, message))
+			if (static_cast<const OpenGLES3Renderer*>(userParam)->getContext().getLog().print(logType, nullptr, __FILE__, static_cast<uint32_t>(__LINE__), "OpenGL ES 3 debug message\tSource:\"%s\"\tType:\"%s\"\tID:\"%u\"\tSeverity:\"%s\"\tMessage:\"%s\"", debugSource, debugType, id, debugSeverity, message))
 			{
 				DEBUG_BREAK;
 			}

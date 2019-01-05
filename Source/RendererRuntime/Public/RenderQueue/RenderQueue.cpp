@@ -833,7 +833,6 @@ namespace RendererRuntime
 			// Get queued renderable data
 			const QueuedRenderable&					queuedRenderable		  = mQueues[0].queuedRenderables[0];
 			const MaterialResource&					materialResource		  = *queuedRenderable.materialResource;
-				  MaterialTechnique&				materialTechnique		  = *queuedRenderable.materialTechnique;
 				  MaterialBlueprintResource&		materialBlueprintResource = *queuedRenderable.materialBlueprintResource;
 				  Renderer::IComputePipelineState&	foundComputePipelineState = *static_cast<Renderer::IComputePipelineState*>(queuedRenderable.foundPipelineState);
 			compositorContextData.mCurrentlyBoundMaterialBlueprintResource = &materialBlueprintResource;
@@ -976,7 +975,7 @@ namespace RendererRuntime
 			{ // Cheap state change: Bind the material technique to the used renderer
 				uint32_t resourceGroupRootParameterIndex = getInvalid<uint32_t>();
 				Renderer::IResourceGroup* resourceGroup = nullptr;
-				materialTechnique.fillComputeCommandBuffer(mRendererRuntime, commandBuffer, resourceGroupRootParameterIndex, &resourceGroup);
+				queuedRenderable.materialTechnique->fillComputeCommandBuffer(mRendererRuntime, commandBuffer, resourceGroupRootParameterIndex, &resourceGroup);
 				if (isValid(resourceGroupRootParameterIndex) && nullptr != resourceGroup)
 				{
 					Renderer::Command::SetComputeResourceGroup::create(commandBuffer, resourceGroupRootParameterIndex, resourceGroup);

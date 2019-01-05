@@ -162,6 +162,7 @@ private:
 		uint m_Last;
 	};
 
+	Renderer::IAllocator& m_Allocator;
 	Range *m_Ranges; // Sorted array of ranges of free IDs
 	uint m_Count;    // Number of ranges in list
 	uint m_Capacity; // Total capacity of range list
@@ -170,19 +171,20 @@ private:
 	MakeID(const MakeID &) = delete;
 
 public:
-	explicit MakeID(const uint max_id = std::numeric_limits<uint>::max())
+	MakeID(Renderer::IAllocator& allocator, const uint max_id = std::numeric_limits<uint>::max()) :
+		m_Allocator(allocator),
+		m_Ranges(static_cast<Range*>(allocator.reallocate(nullptr, 0, sizeof(Range), 1))),
+		m_Count(1),
+		m_Capacity(1)
 	{
 		// Start with a single range, from 0 to max allowed ID (specified)
-		m_Ranges = static_cast<Range*>(::malloc(sizeof(Range)));
 		m_Ranges[0].m_First = 0;
 		m_Ranges[0].m_Last = max_id;
-		m_Count = 1;
-		m_Capacity = 1;
 	}
 
 	~MakeID()
 	{
-		::free(m_Ranges);
+		m_Allocator.reallocate(m_Ranges, 0, 0, 1);
 	}
 
 	bool CreateID(uint &id)
@@ -436,8 +438,8 @@ private:
 	{
 		if (m_Count >= m_Capacity)
 		{
+			m_Ranges = static_cast<Range *>(m_Allocator.reallocate(m_Ranges, sizeof(Range) * m_Capacity, (m_Capacity + m_Capacity) * sizeof(Range), 1));
 			m_Capacity += m_Capacity;
-			m_Ranges = (Range *) realloc(m_Ranges, m_Capacity * sizeof(Range));
 		}
  
 		::memmove(m_Ranges + index + 1, m_Ranges + index, (m_Count - index) * sizeof(Range));
@@ -9529,7 +9531,7 @@ namespace Direct3D11Renderer
 						case Renderer::ResourceType::FRAGMENT_SHADER:
 						case Renderer::ResourceType::COMPUTE_SHADER:
 						default:
-							RENDERER_LOG(direct3D11Renderer.getContext(), CRITICAL, "The type of the given color texture at index %d is not supported by the Direct3D 11 renderer backend", colorTexture - mColorTextures)
+							RENDERER_LOG(direct3D11Renderer.getContext(), CRITICAL, "The type of the given color texture at index %u is not supported by the Direct3D 11 renderer backend", colorTexture - mColorTextures)
 							*d3d11RenderTargetView = nullptr;
 							break;
 					}
@@ -9756,7 +9758,7 @@ namespace Direct3D11Renderer
 					{
 						// Set the debug name
 						// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-						sprintf_s(nameWithIndex, nameLength, "%s [%d]", name, static_cast<uint32_t>(d3d11RenderTargetView - mD3D11RenderTargetViews));
+						sprintf_s(nameWithIndex, nameLength, "%s [%u]", name, static_cast<uint32_t>(d3d11RenderTargetView - mD3D11RenderTargetViews));
 						FAILED_DEBUG_BREAK((*d3d11RenderTargetView)->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 						FAILED_DEBUG_BREAK((*d3d11RenderTargetView)->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(nameLength), nameWithIndex));
 					}
@@ -11901,6 +11903,9 @@ namespace Direct3D11Renderer
 	//[-------------------------------------------------------]
 	Direct3D11Renderer::Direct3D11Renderer(const Renderer::Context& context) :
 		IRenderer(Renderer::NameId::DIRECT3D11, context),
+		VertexArrayMakeId(context.getAllocator()),
+		GraphicsPipelineStateMakeId(context.getAllocator()),
+		ComputePipelineStateMakeId(context.getAllocator()),
 		mDirect3D11RuntimeLinking(nullptr),
 		mD3D11Device(nullptr),
 		mD3D11DeviceContext(nullptr),
@@ -12050,7 +12055,7 @@ namespace Direct3D11Renderer
 				// Error!
 				if (numberOfCurrentResources > 1)
 				{
-					RENDERER_LOG(mContext, CRITICAL, "The Direct3D 11 renderer backend is going to be destroyed, but there are still %d resource instances left (memory leak)", numberOfCurrentResources)
+					RENDERER_LOG(mContext, CRITICAL, "The Direct3D 11 renderer backend is going to be destroyed, but there are still %u resource instances left (memory leak)", numberOfCurrentResources)
 				}
 				else
 				{

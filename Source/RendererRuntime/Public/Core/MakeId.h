@@ -354,7 +354,7 @@ private:
 		if (m_Count >= m_Capacity)
 		{
 			m_Capacity += m_Capacity;
-			m_Ranges = (Range *) realloc(m_Ranges, m_Capacity * sizeof(Range));
+			m_Ranges = static_cast<Range *>(realloc(m_Ranges, m_Capacity * sizeof(Range)));
 		}
  
 		::memmove(m_Ranges + index + 1, m_Ranges + index, (m_Count - index) * sizeof(Range));
