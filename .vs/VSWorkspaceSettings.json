@@ -1,0 +1,7 @@
+{
+  "ExcludedItems": [
+    ".gitattributes",
+    ".gitignore",
+    "External"
+  ] 
+}
