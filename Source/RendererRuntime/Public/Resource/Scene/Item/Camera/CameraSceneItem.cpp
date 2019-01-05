@@ -78,8 +78,10 @@ namespace RendererRuntime
 	void CameraSceneItem::getPreviousCameraRelativeWorldSpaceToViewSpaceMatrix(glm::mat4& previousCameraRelativeWorldSpaceToViewSpaceMatrix) const
 	{
 		// Calculate the previous world space to view space matrix (Aka "view matrix")
-		const Transform& worldSpaceToViewSpaceTransform = getPreviousWorldSpaceToViewSpaceTransform();
-		previousCameraRelativeWorldSpaceToViewSpaceMatrix = glm::lookAt(Math::VEC3_ZERO, worldSpaceToViewSpaceTransform.rotation * Math::VEC3_FORWARD, Math::VEC3_UP);
+		const Transform& worldSpaceToViewSpaceTransform = getWorldSpaceToViewSpaceTransform();
+		const Transform& previousWorldSpaceToViewSpaceTransform = getPreviousWorldSpaceToViewSpaceTransform();
+		const glm::vec3 positionOffset = worldSpaceToViewSpaceTransform.position - previousWorldSpaceToViewSpaceTransform.position;
+		previousCameraRelativeWorldSpaceToViewSpaceMatrix = glm::lookAt(positionOffset, positionOffset + previousWorldSpaceToViewSpaceTransform.rotation * Math::VEC3_FORWARD, Math::VEC3_UP);
 	}
 
 	const glm::mat4& CameraSceneItem::getViewSpaceToClipSpaceMatrix(float aspectRatio) const
