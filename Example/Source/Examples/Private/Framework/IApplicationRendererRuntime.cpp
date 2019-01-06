@@ -97,7 +97,12 @@ void IApplicationRendererRuntime::onInitialization()
 		#else
 			mFileManager = new RendererRuntime::PhysicsFSFileManager(renderer->getContext().getLog(), std_filesystem::canonical(std_filesystem::current_path() / "..").generic_string());
 		#endif
-		#ifdef RENDERER_RUNTIME_PROFILER
+		#if defined(RENDERER_RUNTIME_GRAPHICS_DEBUGGER) && defined(RENDERER_RUNTIME_PROFILER)
+			mProfiler = new RendererRuntime::RemoteryProfiler(*renderer);
+			mRendererRuntimeContext = new RendererRuntime::Context(*renderer, *mFileManager, *mGraphicsDebugger, *mProfiler);
+		#elif defined RENDERER_RUNTIME_GRAPHICS_DEBUGGER
+			mRendererRuntimeContext = new RendererRuntime::Context(*renderer, *mFileManager, *mGraphicsDebugger);
+		#elif defined RENDERER_RUNTIME_PROFILER
 			mProfiler = new RendererRuntime::RemoteryProfiler(*renderer);
 			mRendererRuntimeContext = new RendererRuntime::Context(*renderer, *mFileManager, *mProfiler);
 		#else

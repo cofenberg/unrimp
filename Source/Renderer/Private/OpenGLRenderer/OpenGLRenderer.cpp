@@ -836,29 +836,28 @@ FNDEF_EX(glDisableVertexAttribArrayARB,	PFNGLDISABLEVERTEXATTRIBARRAYARBPROC);
 FNDEF_EX(glDrawBuffersARB,	PFNGLDRAWBUFFERSARBPROC);
 
 // GL_ARB_shader_objects
-FNDEF_EX(glDeleteObjectARB,			PFNGLDELETEOBJECTARBPROC);
-FNDEF_EX(glGetHandleARB,			PFNGLGETHANDLEARBPROC);
-FNDEF_EX(glDetachObjectARB,			PFNGLDETACHOBJECTARBPROC);
-FNDEF_EX(glCreateShaderObjectARB,	PFNGLCREATESHADEROBJECTARBPROC);
-FNDEF_EX(glShaderSourceARB,			PFNGLSHADERSOURCEARBPROC);
-FNDEF_EX(glCompileShaderARB,		PFNGLCOMPILESHADERARBPROC);
-FNDEF_EX(glCreateProgramObjectARB,	PFNGLCREATEPROGRAMOBJECTARBPROC);
-FNDEF_EX(glAttachObjectARB,			PFNGLATTACHOBJECTARBPROC);
-FNDEF_EX(glLinkProgramARB,			PFNGLLINKPROGRAMARBPROC);
-FNDEF_EX(glUseProgramObjectARB,		PFNGLUSEPROGRAMOBJECTARBPROC);
-FNDEF_EX(glUniform1fARB,			PFNGLUNIFORM1FARBPROC);
-FNDEF_EX(glUniform1iARB,			PFNGLUNIFORM1IARBPROC);
-FNDEF_EX(glUniform2iARB,			PFNGLUNIFORM2IARBPROC);
-FNDEF_EX(glUniform3iARB,			PFNGLUNIFORM3IARBPROC);
-FNDEF_EX(glUniform4iARB,			PFNGLUNIFORM4IARBPROC);
-FNDEF_EX(glUniform2fvARB,			PFNGLUNIFORM2FVARBPROC);
-FNDEF_EX(glUniform3fvARB,			PFNGLUNIFORM3FVARBPROC);
-FNDEF_EX(glUniform4fvARB,			PFNGLUNIFORM4FVARBPROC);
-FNDEF_EX(glUniformMatrix3fvARB,		PFNGLUNIFORMMATRIX3FVARBPROC);
-FNDEF_EX(glUniformMatrix4fvARB,		PFNGLUNIFORMMATRIX4FVARBPROC);
-FNDEF_EX(glGetObjectParameterivARB,	PFNGLGETOBJECTPARAMETERIVARBPROC);
-FNDEF_EX(glGetInfoLogARB,			PFNGLGETINFOLOGARBPROC);
-FNDEF_EX(glGetUniformLocationARB,	PFNGLGETUNIFORMLOCATIONARBPROC);
+FNDEF_EX(glDeleteShader,		PFNGLDELETESHADERPROC);			// glDeleteObjectARB
+FNDEF_EX(glGetHandleARB,		PFNGLGETHANDLEARBPROC);
+FNDEF_EX(glDetachShader,		PFNGLDETACHSHADERPROC);			// glDetachObjectARB
+FNDEF_EX(glCreateShader,		PFNGLCREATESHADERPROC);			// glCreateShaderObjectARB
+FNDEF_EX(glShaderSource,		PFNGLSHADERSOURCEPROC);			// glShaderSourceARB
+FNDEF_EX(glCompileShader,		PFNGLCOMPILESHADERPROC);		// glCompileShaderARB
+FNDEF_EX(glCreateProgram,		PFNGLCREATEPROGRAMPROC);		// glCreateProgramObjectARB
+FNDEF_EX(glAttachShader,		PFNGLATTACHSHADERPROC);			// glAttachObjectARB
+FNDEF_EX(glLinkProgram,			PFNGLLINKPROGRAMPROC);			// glLinkProgramARB
+FNDEF_EX(glUseProgram,			PFNGLUSEPROGRAMPROC);			// glUseProgramObjectARB
+FNDEF_EX(glUniform1f,			PFNGLUNIFORM1FPROC);			// glUniform1fARB
+FNDEF_EX(glUniform1i,			PFNGLUNIFORM1IPROC);			// glUniform1iARB
+FNDEF_EX(glUniform2fv,			PFNGLUNIFORM2FVPROC);			// glUniform2fvARB
+FNDEF_EX(glUniform3fv,			PFNGLUNIFORM3FVPROC);			// glUniform3fvARB
+FNDEF_EX(glUniform4fv,			PFNGLUNIFORM4FVPROC);			// glUniform4fvARB
+FNDEF_EX(glUniformMatrix3fv,	PFNGLUNIFORMMATRIX3FVPROC);		// glUniformMatrix3fvARB
+FNDEF_EX(glUniformMatrix4fv,	PFNGLUNIFORMMATRIX4FVPROC);		// glUniformMatrix4fvARB
+FNDEF_EX(glGetShaderiv,			PFNGLGETSHADERIVPROC);			// glGetObjectParameterivARB
+FNDEF_EX(glGetProgramiv,		PFNGLGETPROGRAMIVPROC);			// glGetObjectParameterivARB
+FNDEF_EX(glGetShaderInfoLog,	PFNGLGETSHADERINFOLOGPROC);		// glGetInfoLogARB
+FNDEF_EX(glGetProgramInfoLog,	PFNGLGETPROGRAMINFOLOGPROC);	// glGetInfoLogARB
+FNDEF_EX(glGetUniformLocation,	PFNGLGETUNIFORMLOCATIONPROC);	// glGetUniformLocationARB
 
 // GL_ARB_separate_shader_objects
 FNDEF_EX(glCreateShaderProgramv,		PFNGLCREATESHADERPROGRAMVPROC);
@@ -892,7 +891,7 @@ FNDEF_EX(glMultiDrawArraysIndirect,		PFNGLMULTIDRAWARRAYSINDIRECTPROC);
 FNDEF_EX(glMultiDrawElementsIndirect,	PFNGLMULTIDRAWELEMENTSINDIRECTPROC);
 
 // GL_ARB_vertex_shader
-FNDEF_EX(glBindAttribLocationARB,	PFNGLBINDATTRIBLOCATIONARBPROC);
+FNDEF_EX(glBindAttribLocation,	PFNGLBINDATTRIBLOCATIONPROC);	// glBindAttribLocationARB
 
 // GL_ARB_tessellation_shader
 FNDEF_EX(glPatchParameteri,	PFNGLPATCHPARAMETERIPROC);
@@ -1149,18 +1148,18 @@ namespace
 			}
 		}
 
-		void printOpenGLShaderProgramInformationIntoLog(const Renderer::Context& context, GLuint openGLObject)
+		void printOpenGLShaderInformationIntoLog(const Renderer::Context& context, GLuint openGLShader)
 		{
 			// Get the length of the information (including a null termination)
 			GLint informationLength = 0;
-			glGetObjectParameterivARB(openGLObject, GL_OBJECT_INFO_LOG_LENGTH_ARB, &informationLength);
+			glGetShaderiv(openGLShader, GL_INFO_LOG_LENGTH, &informationLength);
 			if (informationLength > 1)
 			{
 				// Allocate memory for the information
 				char* informationLog = RENDERER_MALLOC_TYPED(context, char, informationLength);
 
 				// Get the information
-				glGetInfoLogARB(openGLObject, informationLength, nullptr, informationLog);
+				glGetShaderInfoLog(openGLShader, informationLength, nullptr, informationLog);
 
 				// Output the debug string
 				RENDERER_LOG(context, CRITICAL, informationLog)
@@ -1170,18 +1169,63 @@ namespace
 			}
 		}
 
-		void printOpenGLShaderProgramInformationIntoLog(const Renderer::Context& context, GLuint openGLObject, const char* sourceCode)
+		void printOpenGLShaderInformationIntoLog(const Renderer::Context& context, GLuint openGLShader, const char* sourceCode)
 		{
 			// Get the length of the information (including a null termination)
 			GLint informationLength = 0;
-			glGetObjectParameterivARB(openGLObject, GL_OBJECT_INFO_LOG_LENGTH_ARB, &informationLength);
+			glGetShaderiv(openGLShader, GL_INFO_LOG_LENGTH, &informationLength);
 			if (informationLength > 1)
 			{
 				// Allocate memory for the information
 				char* informationLog = RENDERER_MALLOC_TYPED(context, char, informationLength);
 
 				// Get the information
-				glGetInfoLogARB(openGLObject, informationLength, nullptr, informationLog);
+				glGetShaderInfoLog(openGLShader, informationLength, nullptr, informationLog);
+
+				// Output the debug string
+				if (context.getLog().print(Renderer::ILog::Type::CRITICAL, sourceCode, __FILE__, static_cast<uint32_t>(__LINE__), informationLog))
+				{
+					DEBUG_BREAK;
+				}
+
+				// Cleanup information memory
+				RENDERER_FREE(context, informationLog);
+			}
+		}
+
+		void printOpenGLProgramInformationIntoLog(const Renderer::Context& context, GLuint openGLProgram)
+		{
+			// Get the length of the information (including a null termination)
+			GLint informationLength = 0;
+			glGetProgramiv(openGLProgram, GL_INFO_LOG_LENGTH, &informationLength);
+			if (informationLength > 1)
+			{
+				// Allocate memory for the information
+				char* informationLog = RENDERER_MALLOC_TYPED(context, char, informationLength);
+
+				// Get the information
+				glGetProgramInfoLog(openGLProgram, informationLength, nullptr, informationLog);
+
+				// Output the debug string
+				RENDERER_LOG(context, CRITICAL, informationLog)
+
+				// Cleanup information memory
+				RENDERER_FREE(context, informationLog);
+			}
+		}
+
+		void printOpenGLProgramInformationIntoLog(const Renderer::Context& context, GLuint openGLProgram, const char* sourceCode)
+		{
+			// Get the length of the information (including a null termination)
+			GLint informationLength = 0;
+			glGetProgramiv(openGLProgram, GL_INFO_LOG_LENGTH, &informationLength);
+			if (informationLength > 1)
+			{
+				// Allocate memory for the information
+				char* informationLog = RENDERER_MALLOC_TYPED(context, char, informationLength);
+
+				// Get the information
+				glGetProgramInfoLog(openGLProgram, informationLength, nullptr, informationLog);
 
 				// Output the debug string
 				if (context.getLog().print(Renderer::ILog::Type::CRITICAL, sourceCode, __FILE__, static_cast<uint32_t>(__LINE__), informationLog))
@@ -1211,7 +1255,7 @@ namespace
 		[[nodiscard]] GLuint loadShaderFromBytecode(const Renderer::Context& context, GLenum shaderType, const Renderer::ShaderBytecode& shaderBytecode)
 		{
 			// Create the shader object
-			const GLuint openGLShader = glCreateShaderObjectARB(shaderType);
+			const GLuint openGLShader = glCreateShader(shaderType);
 
 			// Load the SPIR-V module into the shader object
 			// -> "glShaderBinary" is OpenGL 4.1
@@ -1255,24 +1299,24 @@ namespace
 
 			// Check the compile status
 			GLint compiled = GL_FALSE;
-			glGetObjectParameterivARB(openGLShader, GL_OBJECT_COMPILE_STATUS_ARB, &compiled);
+			glGetShaderiv(openGLShader, GL_OBJECT_COMPILE_STATUS_ARB, &compiled);
 			if (GL_TRUE == compiled)
 			{
 				// All went fine, create and return the program
-				const GLuint openGLProgram = glCreateProgramObjectARB();
+				const GLuint openGLProgram = glCreateProgram();
 				glProgramParameteri(openGLProgram, GL_PROGRAM_SEPARABLE, GL_TRUE);
-				glAttachObjectARB(openGLProgram, openGLShader);
-				glLinkProgramARB(openGLProgram);
-				glDetachObjectARB(openGLProgram, openGLShader);
-				glDeleteObjectARB(openGLShader);
+				glAttachShader(openGLProgram, openGLShader);
+				glLinkProgram(openGLProgram);
+				glDetachShader(openGLProgram, openGLShader);
+				glDeleteShader(openGLShader);
 
 				// Check the link status
 				GLint linked = GL_FALSE;
-				glGetObjectParameterivARB(openGLProgram, GL_OBJECT_LINK_STATUS_ARB, &linked);
+				glGetProgramiv(openGLProgram, GL_LINK_STATUS, &linked);
 				if (GL_TRUE != linked)
 				{
 					// Error, program link failed!
-					printOpenGLShaderProgramInformationIntoLog(context, openGLProgram, nullptr);
+					printOpenGLProgramInformationIntoLog(context, openGLProgram, nullptr);
 				}
 
 				// Done
@@ -1281,11 +1325,11 @@ namespace
 			else
 			{
 				// Error, failed to compile the shader!
-				printOpenGLShaderProgramInformationIntoLog(context, openGLShader, nullptr);
+				printOpenGLShaderInformationIntoLog(context, openGLShader, nullptr);
 
 				// Destroy the OpenGL shader
 				// -> A value of 0 for shader will be silently ignored
-				glDeleteObjectARB(openGLShader);
+				glDeleteShader(openGLShader);
 
 				// Error!
 				return 0u;
@@ -1313,7 +1357,7 @@ namespace
 
 			// Check the link status
 			GLint linked = GL_FALSE;
-			glGetObjectParameterivARB(openGLProgram, GL_LINK_STATUS, &linked);
+			glGetProgramiv(openGLProgram, GL_LINK_STATUS, &linked);
 			if (GL_TRUE == linked)
 			{
 				// All went fine, return the program
@@ -1322,7 +1366,7 @@ namespace
 			else
 			{
 				// Error, failed to compile the shader!
-				printOpenGLShaderProgramInformationIntoLog(context, openGLProgram, sourceCode);
+				printOpenGLProgramInformationIntoLog(context, openGLProgram, sourceCode);
 
 				// Destroy the program
 				// -> A value of 0 for shader will be silently ignored
@@ -1339,13 +1383,13 @@ namespace
 			if (openGLShader > 0)
 			{
 				// Create the OpenGL program
-				const GLuint openGLProgram = glCreateProgramObjectARB();
+				const GLuint openGLProgram = glCreateProgram();
 				if (openGLProgram > 0)
 				{
 					glProgramParameteri(openGLProgram, GL_PROGRAM_SEPARABLE, GL_TRUE);
 
 					// Attach the shader to the program
-					glAttachObjectARB(openGLProgram, openGLShader);
+					glAttachShader(openGLProgram, openGLShader);
 
 					// Define the vertex array attribute binding locations ("vertex declaration" in Direct3D 9 terminology, "input layout" in Direct3D 10 & 11 & 12 terminology)
 					// -> Crucial code that glCreateShaderProgram doesn't do
@@ -1353,25 +1397,25 @@ namespace
 						const uint32_t numberOfVertexAttributes = vertexAttributes.numberOfAttributes;
 						for (uint32_t vertexAttribute = 0; vertexAttribute < numberOfVertexAttributes; ++vertexAttribute)
 						{
-							glBindAttribLocationARB(openGLProgram, vertexAttribute, vertexAttributes.attributes[vertexAttribute].name);
+							glBindAttribLocation(openGLProgram, vertexAttribute, vertexAttributes.attributes[vertexAttribute].name);
 						}
 					}
 
 					// Link the program
-					glLinkProgramARB(openGLProgram);
+					glLinkProgram(openGLProgram);
 
 					// Detach the shader from the program
-					glDetachObjectARB(openGLProgram, openGLShader);
+					glDetachShader(openGLProgram, openGLShader);
 				}
 
 				// Destroy the OpenGL shader
-				glDeleteObjectARB(openGLShader);
+				glDeleteShader(openGLShader);
 
 				// Check the link status
 				if (openGLProgram > 0)
 				{
 					GLint linked = GL_FALSE;
-					glGetObjectParameterivARB(openGLProgram, GL_OBJECT_LINK_STATUS_ARB, &linked);
+					glGetProgramiv(openGLProgram, GL_LINK_STATUS, &linked);
 					if (GL_TRUE == linked)
 					{
 						// Done
@@ -1380,7 +1424,7 @@ namespace
 					else
 					{
 						// Error, program link failed!
-						printOpenGLShaderProgramInformationIntoLog(context, openGLProgram);
+						printOpenGLProgramInformationIntoLog(context, openGLProgram);
 					}
 				}
 			}
@@ -1400,7 +1444,7 @@ namespace
 
 			// Check the compile status
 			GLint compiled = GL_FALSE;
-			glGetObjectParameterivARB(openGLShader, GL_OBJECT_COMPILE_STATUS_ARB, &compiled);
+			glGetShaderiv(openGLShader, GL_OBJECT_COMPILE_STATUS_ARB, &compiled);
 			if (GL_TRUE == compiled)
 			{
 				// All went fine, create and return the program
@@ -1409,11 +1453,11 @@ namespace
 			else
 			{
 				// Error, failed to compile the shader!
-				printOpenGLShaderProgramInformationIntoLog(context, openGLShader);
+				printOpenGLShaderInformationIntoLog(context, openGLShader);
 
 				// Destroy the OpenGL shader
 				// -> A value of 0 for shader will be silently ignored
-				glDeleteObjectARB(openGLShader);
+				glDeleteShader(openGLShader);
 
 				// Error!
 				return 0;
@@ -1437,17 +1481,17 @@ namespace
 		[[nodiscard]] GLuint loadShaderFromSourcecode(const Renderer::Context& context, GLenum shaderType, const GLchar* sourceCode)
 		{
 			// Create the shader object
-			const GLuint openGLShader = glCreateShaderObjectARB(shaderType);
+			const GLuint openGLShader = glCreateShader(shaderType);
 
 			// Load the shader source
-			glShaderSourceARB(openGLShader, 1, &sourceCode, nullptr);
+			glShaderSource(openGLShader, 1, &sourceCode, nullptr);
 
 			// Compile the shader
-			glCompileShaderARB(openGLShader);
+			glCompileShader(openGLShader);
 
 			// Check the compile status
 			GLint compiled = GL_FALSE;
-			glGetObjectParameterivARB(openGLShader, GL_OBJECT_COMPILE_STATUS_ARB, &compiled);
+			glGetShaderiv(openGLShader, GL_OBJECT_COMPILE_STATUS_ARB, &compiled);
 			if (GL_TRUE == compiled)
 			{
 				// All went fine, return the shader
@@ -1459,14 +1503,14 @@ namespace
 
 				{ // Get the length of the information
 					GLint informationLength = 0;
-					glGetObjectParameterivARB(openGLShader, GL_OBJECT_INFO_LOG_LENGTH_ARB, &informationLength);
+					glGetShaderiv(openGLShader, GL_INFO_LOG_LENGTH, &informationLength);
 					if (informationLength > 1)
 					{
 						// Allocate memory for the information
 						GLchar* informationLog = RENDERER_MALLOC_TYPED(context, GLchar, informationLength);
 
 						// Get the information
-						glGetInfoLogARB(openGLShader, informationLength, nullptr, informationLog);
+						glGetShaderInfoLog(openGLShader, informationLength, nullptr, informationLog);
 
 						// Output the debug string
 						if (context.getLog().print(Renderer::ILog::Type::CRITICAL, sourceCode, __FILE__, static_cast<uint32_t>(__LINE__), informationLog))
@@ -1481,7 +1525,7 @@ namespace
 
 				// Destroy the shader
 				// -> A value of 0 for shader will be silently ignored
-				glDeleteObjectARB(openGLShader);
+				glDeleteShader(openGLShader);
 
 				// Error!
 				return 0u;
@@ -1622,7 +1666,7 @@ namespace
 
 		void bindUniformLocation(const Renderer::DescriptorRange& descriptorRange, uint32_t openGLProgramPipeline, uint32_t openGLProgram)
 		{
-			const GLint uniformLocation = glGetUniformLocationARB(openGLProgram, descriptorRange.baseShaderRegisterName);
+			const GLint uniformLocation = glGetUniformLocation(openGLProgram, descriptorRange.baseShaderRegisterName);
 			if (uniformLocation >= 0)
 			{
 				// OpenGL/GLSL is not automatically assigning texture units to samplers, so, we have to take over this job
@@ -1650,20 +1694,20 @@ namespace
 						if (static_cast<uint32_t>(openGLProgramBackup) == openGLProgram)
 						{
 							// Set uniform, please note that for this our program must be the currently used one
-							glUniform1iARB(uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
+							glUniform1i(uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
 						}
 						else
 						{
 							// Set uniform, please note that for this our program must be the currently used one
 							glActiveShaderProgram(openGLProgramPipeline, openGLProgram);
-							glUniform1iARB(uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
+							glUniform1i(uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
 
 							// Be polite and restore the previous used OpenGL program
 							glActiveShaderProgram(openGLProgramPipeline, static_cast<GLuint>(openGLProgramBackup));
 						}
 					#else
 						glActiveShaderProgram(openGLProgramPipeline, openGLProgram);
-						glUniform1iARB(uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
+						glUniform1i(uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
 					#endif
 				}
 			}
@@ -2383,16 +2427,6 @@ namespace OpenGLRenderer
 			return mGL_ARB_texture_compression;
 		}
 
-		[[nodiscard]] inline bool isGL_ARB_vertex_program() const
-		{
-			return mGL_ARB_vertex_program;
-		}
-
-		[[nodiscard]] inline bool isGL_ARB_fragment_program() const
-		{
-			return mGL_ARB_fragment_program;
-		}
-
 		[[nodiscard]] inline bool isGL_ARB_draw_buffers() const
 		{
 			return mGL_ARB_draw_buffers;
@@ -2438,6 +2472,11 @@ namespace OpenGLRenderer
 			return mGL_ARB_vertex_shader;
 		}
 
+		[[nodiscard]] inline bool isGL_ARB_vertex_program() const
+		{
+			return mGL_ARB_vertex_program;
+		}
+
 		[[nodiscard]] inline bool isGL_ARB_tessellation_shader() const
 		{
 			return mGL_ARB_tessellation_shader;
@@ -2451,6 +2490,11 @@ namespace OpenGLRenderer
 		[[nodiscard]] inline bool isGL_ARB_fragment_shader() const
 		{
 			return mGL_ARB_fragment_shader;
+		}
+
+		[[nodiscard]] inline bool isGL_ARB_fragment_program() const
+		{
+			return mGL_ARB_fragment_program;
 		}
 
 		[[nodiscard]] inline bool isGL_ARB_compute_shader() const
@@ -2718,8 +2762,6 @@ namespace OpenGLRenderer
 			mGL_ARB_texture_multisample			 = false;
 			mGL_ARB_vertex_buffer_object		 = false;
 			mGL_ARB_texture_compression			 = false;
-			mGL_ARB_vertex_program				 = false;
-			mGL_ARB_fragment_program			 = false;
 			mGL_ARB_draw_buffers				 = false;
 			mGL_ARB_shader_objects				 = false;
 			mGL_ARB_separate_shader_objects		 = false;
@@ -2729,9 +2771,11 @@ namespace OpenGLRenderer
 			mGL_ARB_draw_indirect				 = false;
 			mGL_ARB_multi_draw_indirect			 = false;
 			mGL_ARB_vertex_shader				 = false;
+			mGL_ARB_vertex_program				 = false;
 			mGL_ARB_tessellation_shader			 = false;
 			mGL_ARB_geometry_shader4			 = false;
 			mGL_ARB_fragment_shader				 = false;
+			mGL_ARB_fragment_program			 = false;
 			mGL_ARB_compute_shader				 = false;
 			mGL_ARB_draw_instanced				 = false;
 			mGL_ARB_base_instance				 = false;
@@ -2916,17 +2960,17 @@ namespace OpenGLRenderer
 			//[-------------------------------------------------------]
 			//[ EXT                                                   ]
 			//[-------------------------------------------------------]
-			// GL_EXT_texture_lod_bias
-			mGL_EXT_texture_lod_bias = isCoreProfile ? true : isSupported("GL_EXT_texture_lod_bias");	// Is core feature since OpenGL 1.4
+			// GL_EXT_texture_lod_bias - Is core since OpenGL 1.4
+			mGL_EXT_texture_lod_bias = isCoreProfile ? true : isSupported("GL_EXT_texture_lod_bias");
 
 			// GL_EXT_texture_filter_anisotropic
 			mGL_EXT_texture_filter_anisotropic = isSupported("GL_EXT_texture_filter_anisotropic");
 
-			// GL_EXT_texture_array
-			mGL_EXT_texture_array = isSupported("GL_EXT_texture_array");
+			// GL_EXT_texture_array - Is core since OpenGL 3.0
+			mGL_EXT_texture_array = isCoreProfile ? true : isSupported("GL_EXT_texture_array");
 
-			// GL_EXT_texture3D
-			mGL_EXT_texture3D = isCoreProfile ? true : isSupported("GL_EXT_texture3D");	// Is core feature since OpenGL 1.2
+			// GL_EXT_texture3D - Is core since OpenGL 1.2
+			mGL_EXT_texture3D = isCoreProfile ? true : isSupported("GL_EXT_texture3D");
 			if (mGL_EXT_texture3D)
 			{
 				// Load the entry points
@@ -2936,8 +2980,8 @@ namespace OpenGLRenderer
 				mGL_EXT_texture3D = result;
 			}
 
-			// GL_EXT_direct_state_access
-			mGL_EXT_direct_state_access = isSupported("GL_EXT_direct_state_access");
+			// GL_EXT_direct_state_access - Is core since OpenGL 2.1
+			mGL_EXT_direct_state_access = isCoreProfile ? true : isSupported("GL_EXT_direct_state_access");
 			if (mGL_EXT_direct_state_access)
 			{
 				// Load the entry points
@@ -3028,8 +3072,8 @@ namespace OpenGLRenderer
 				mGL_ARB_framebuffer_object = result;
 			}
 
-			// GL_ARB_multitexture
-			mGL_ARB_multitexture = isCoreProfile ? true : isSupported("GL_ARB_multitexture");	// Is core feature since OpenGL 1.3
+			// GL_ARB_multitexture - Is core feature since OpenGL 1.3
+			mGL_ARB_multitexture = isCoreProfile ? true : isSupported("GL_ARB_multitexture");
 			if (mGL_ARB_multitexture)
 			{
 				// Load the entry points
@@ -3038,8 +3082,8 @@ namespace OpenGLRenderer
 				mGL_ARB_multitexture = result;
 			}
 
-			// GL_ARB_texture_multisample
-			mGL_ARB_texture_multisample = isCoreProfile ? true : isSupported("GL_ARB_texture_multisample");	// Is core feature since OpenGL 3.2
+			// GL_ARB_texture_multisample - Is core feature since OpenGL 3.2
+			mGL_ARB_texture_multisample = isCoreProfile ? true : isSupported("GL_ARB_texture_multisample");
 			if (mGL_ARB_texture_multisample)
 			{
 				// Load the entry points
@@ -3048,8 +3092,8 @@ namespace OpenGLRenderer
 				mGL_ARB_texture_multisample = result;
 			}
 
-			// GL_ARB_vertex_buffer_object
-			mGL_ARB_vertex_buffer_object = isCoreProfile ? true : isSupported("GL_ARB_vertex_buffer_object");	// Is core feature since OpenGL 1.5
+			// GL_ARB_vertex_buffer_object - Is core feature since OpenGL 1.5
+			mGL_ARB_vertex_buffer_object = isCoreProfile ? true : isSupported("GL_ARB_vertex_buffer_object");
 			if (mGL_ARB_vertex_buffer_object)
 			{
 				// Load the entry points
@@ -3064,8 +3108,8 @@ namespace OpenGLRenderer
 				mGL_ARB_vertex_buffer_object = result;
 			}
 
-			// GL_ARB_texture_compression
-			mGL_ARB_texture_compression = isCoreProfile ? true : isSupported("GL_ARB_texture_compression");	// Is core since OpenGL 1.3
+			// GL_ARB_texture_compression - Is core since OpenGL 1.3
+			mGL_ARB_texture_compression = isCoreProfile ? true : isSupported("GL_ARB_texture_compression");
 			if (mGL_ARB_texture_compression)
 			{
 				// Load the entry points
@@ -3076,24 +3120,8 @@ namespace OpenGLRenderer
 				mGL_ARB_texture_compression = result;
 			}
 
-			// GL_ARB_vertex_program
-			mGL_ARB_vertex_program = isCoreProfile ? true : isSupported("GL_ARB_vertex_program");
-			if (mGL_ARB_vertex_program)
-			{
-				// Load the entry points
-				bool result = true;	// Success by default
-				IMPORT_FUNC(glVertexAttribPointerARB)
-				IMPORT_FUNC(glVertexAttribIPointer)	// GL_NV_vertex_program4
-				IMPORT_FUNC(glEnableVertexAttribArrayARB)
-				IMPORT_FUNC(glDisableVertexAttribArrayARB)
-				mGL_ARB_vertex_program = result;
-			}
-
-			// GL_ARB_fragment_program (we do not need any of the functions this extension provides)
-			mGL_ARB_fragment_program = isSupported("GL_ARB_fragment_program");
-
-			// GL_ARB_draw_buffers
-			mGL_ARB_draw_buffers = isSupported("GL_ARB_draw_buffers");
+			// GL_ARB_draw_buffers - Is core since OpenGL 2.0
+			mGL_ARB_draw_buffers = isCoreProfile ? true : isSupported("GL_ARB_draw_buffers");
 			if (mGL_ARB_draw_buffers)
 			{
 				// Load the entry points
@@ -3102,40 +3130,39 @@ namespace OpenGLRenderer
 				mGL_ARB_draw_buffers = result;
 			}
 
-			// GL_ARB_shader_objects
-			mGL_ARB_shader_objects = isSupported("GL_ARB_shader_objects");
+			// GL_ARB_shader_objects - Is core since OpenGL 2.0
+			mGL_ARB_shader_objects = isCoreProfile ? true : isSupported("GL_ARB_shader_objects");
 			if (mGL_ARB_shader_objects)
 			{
 				// Load the entry points
 				bool result = true;	// Success by default
-				IMPORT_FUNC(glDeleteObjectARB)
+				IMPORT_FUNC(glDeleteShader)
 				IMPORT_FUNC(glGetHandleARB)
-				IMPORT_FUNC(glDetachObjectARB)
-				IMPORT_FUNC(glCreateShaderObjectARB)
-				IMPORT_FUNC(glShaderSourceARB)
-				IMPORT_FUNC(glCompileShaderARB)
-				IMPORT_FUNC(glCreateProgramObjectARB)
-				IMPORT_FUNC(glAttachObjectARB)
-				IMPORT_FUNC(glLinkProgramARB)
-				IMPORT_FUNC(glUseProgramObjectARB)
-				IMPORT_FUNC(glUniform1fARB)
-				IMPORT_FUNC(glUniform1iARB)
-				IMPORT_FUNC(glUniform2iARB)
-				IMPORT_FUNC(glUniform3iARB)
-				IMPORT_FUNC(glUniform4iARB)
-				IMPORT_FUNC(glUniform2fvARB)
-				IMPORT_FUNC(glUniform3fvARB)
-				IMPORT_FUNC(glUniform4fvARB)
-				IMPORT_FUNC(glUniformMatrix3fvARB)
-				IMPORT_FUNC(glUniformMatrix4fvARB)
-				IMPORT_FUNC(glGetObjectParameterivARB)
-				IMPORT_FUNC(glGetInfoLogARB)
-				IMPORT_FUNC(glGetUniformLocationARB)
+				IMPORT_FUNC(glDetachShader)
+				IMPORT_FUNC(glCreateShader)
+				IMPORT_FUNC(glShaderSource)
+				IMPORT_FUNC(glCompileShader)
+				IMPORT_FUNC(glCreateProgram)
+				IMPORT_FUNC(glAttachShader)
+				IMPORT_FUNC(glLinkProgram)
+				IMPORT_FUNC(glUseProgram)
+				IMPORT_FUNC(glUniform1f)
+				IMPORT_FUNC(glUniform1i)
+				IMPORT_FUNC(glUniform2fv)
+				IMPORT_FUNC(glUniform3fv)
+				IMPORT_FUNC(glUniform4fv)
+				IMPORT_FUNC(glUniformMatrix3fv)
+				IMPORT_FUNC(glUniformMatrix4fv)
+				IMPORT_FUNC(glGetShaderiv)
+				IMPORT_FUNC(glGetProgramiv)
+				IMPORT_FUNC(glGetShaderInfoLog)
+				IMPORT_FUNC(glGetProgramInfoLog)
+				IMPORT_FUNC(glGetUniformLocation)
 				mGL_ARB_shader_objects = result;
 			}
 
-			// GL_ARB_separate_shader_objects
-			mGL_ARB_separate_shader_objects = isSupported("GL_ARB_separate_shader_objects");
+			// GL_ARB_separate_shader_objects - Is core since OpenGL 4.1
+			mGL_ARB_separate_shader_objects = isCoreProfile ? true : isSupported("GL_ARB_separate_shader_objects");
 			if (mGL_ARB_separate_shader_objects)
 			{
 				// Load the entry points
@@ -3153,8 +3180,8 @@ namespace OpenGLRenderer
 				mGL_ARB_separate_shader_objects = result;
 			}
 
-			// GL_ARB_get_program_binary
-			mGL_ARB_get_program_binary = isSupported("GL_ARB_get_program_binary");
+			// GL_ARB_get_program_binary - Is core since OpenGL 4.1
+			mGL_ARB_get_program_binary = isCoreProfile ? true : isSupported("GL_ARB_get_program_binary");
 			if (mGL_ARB_get_program_binary)
 			{
 				// Load the entry points
@@ -3163,8 +3190,8 @@ namespace OpenGLRenderer
 				mGL_ARB_get_program_binary = result;
 			}
 
-			// GL_ARB_uniform_buffer_object
-			mGL_ARB_uniform_buffer_object = isSupported("GL_ARB_uniform_buffer_object");
+			// GL_ARB_uniform_buffer_object - Is core since OpenGL 3.1
+			mGL_ARB_uniform_buffer_object = isCoreProfile ? true : isSupported("GL_ARB_uniform_buffer_object");
 			if (mGL_ARB_uniform_buffer_object)
 			{
 				// Load the entry points
@@ -3175,8 +3202,8 @@ namespace OpenGLRenderer
 				mGL_ARB_uniform_buffer_object = result;
 			}
 
-			// GL_ARB_texture_buffer_object
-			mGL_ARB_texture_buffer_object = isSupported("GL_ARB_texture_buffer_object");
+			// GL_ARB_texture_buffer_object - Is core since OpenGL 3.1
+			mGL_ARB_texture_buffer_object = isCoreProfile ? true : isSupported("GL_ARB_texture_buffer_object");
 			if (mGL_ARB_texture_buffer_object)
 			{
 				// Load the entry points
@@ -3185,8 +3212,8 @@ namespace OpenGLRenderer
 				mGL_ARB_texture_buffer_object = result;
 			}
 
-			// GL_ARB_draw_indirect
-			mGL_ARB_draw_indirect = isSupported("GL_ARB_draw_indirect");
+			// GL_ARB_draw_indirect - Is core since OpenGL 4.0
+			mGL_ARB_draw_indirect = isCoreProfile ? true : isSupported("GL_ARB_draw_indirect");
 			if (mGL_ARB_draw_indirect)
 			{
 				// Load the entry points
@@ -3196,7 +3223,7 @@ namespace OpenGLRenderer
 				mGL_ARB_draw_indirect = result;
 			}
 
-			// GL_ARB_multi_draw_indirect
+			// GL_ARB_multi_draw_indirect - Is core since OpenGL 4.3
 			mGL_ARB_multi_draw_indirect = isSupported("GL_ARB_multi_draw_indirect");
 			if (mGL_ARB_multi_draw_indirect)
 			{
@@ -3207,18 +3234,31 @@ namespace OpenGLRenderer
 				mGL_ARB_multi_draw_indirect = result;
 			}
 
-			// GL_ARB_vertex_shader
-			mGL_ARB_vertex_shader = isSupported("GL_ARB_vertex_shader");
+			// GL_ARB_vertex_shader - Is core since OpenGL 2.0
+			mGL_ARB_vertex_shader = isCoreProfile ? true : isSupported("GL_ARB_vertex_shader");
 			if (mGL_ARB_vertex_shader)
 			{
 				// Load the entry points
 				bool result = true;	// Success by default
-				IMPORT_FUNC(glBindAttribLocationARB)
+				IMPORT_FUNC(glBindAttribLocation)
 				mGL_ARB_vertex_shader = result;
 			}
 
-			// GL_ARB_tessellation_shader
-			mGL_ARB_tessellation_shader = isSupported("GL_ARB_tessellation_shader");
+			// GL_ARB_vertex_program
+			mGL_ARB_vertex_program = isCoreProfile ? true : isSupported("GL_ARB_vertex_program");
+			if (mGL_ARB_vertex_program)
+			{
+				// Load the entry points
+				bool result = true;	// Success by default
+				IMPORT_FUNC(glVertexAttribPointerARB)
+				IMPORT_FUNC(glVertexAttribIPointer)	// GL_NV_vertex_program4
+				IMPORT_FUNC(glEnableVertexAttribArrayARB)
+				IMPORT_FUNC(glDisableVertexAttribArrayARB)
+				mGL_ARB_vertex_program = result;
+			}
+
+			// GL_ARB_tessellation_shader - Is core since OpenGL 4.0
+			mGL_ARB_tessellation_shader = isCoreProfile ? true : isSupported("GL_ARB_tessellation_shader");
 			if (mGL_ARB_tessellation_shader)
 			{
 				// Load the entry points
@@ -3239,10 +3279,13 @@ namespace OpenGLRenderer
 				mGL_ARB_geometry_shader4 = result;
 			}
 
-			// GL_ARB_fragment_shader
-			mGL_ARB_fragment_shader = isSupported("GL_ARB_fragment_shader");
+			// GL_ARB_fragment_shader - Is core since OpenGL 2.0
+			mGL_ARB_fragment_shader = isCoreProfile ? true : isSupported("GL_ARB_fragment_shader");
 
-			// GL_ARB_compute_shader
+			// GL_ARB_fragment_program (we do not need any of the functions this extension provides)
+			mGL_ARB_fragment_program = isCoreProfile ? true : isSupported("GL_ARB_fragment_program");
+
+			// GL_ARB_compute_shader - Is core since OpenGL 4.3
 			mGL_ARB_compute_shader = isSupported("GL_ARB_compute_shader");
 			if (mGL_ARB_compute_shader)
 			{
@@ -3252,8 +3295,8 @@ namespace OpenGLRenderer
 				mGL_ARB_compute_shader = result;
 			}
 
-			// GL_ARB_draw_instanced
-			mGL_ARB_draw_instanced = isSupported("GL_ARB_draw_instanced");
+			// GL_ARB_draw_instanced - Is core since OpenGL 3.1
+			mGL_ARB_draw_instanced = isCoreProfile ? true : isSupported("GL_ARB_draw_instanced");
 			if (mGL_ARB_draw_instanced)
 			{
 				// Load the entry points
@@ -3275,8 +3318,8 @@ namespace OpenGLRenderer
 				mGL_ARB_base_instance = result;
 			}
 
-			// GL_ARB_instanced_arrays
-			mGL_ARB_instanced_arrays = isSupported("GL_ARB_instanced_arrays");
+			// GL_ARB_instanced_arrays - Is core since OpenGL 3.3
+			mGL_ARB_instanced_arrays = isCoreProfile ? true : isSupported("GL_ARB_instanced_arrays");
 			if (mGL_ARB_instanced_arrays)
 			{
 				// Load the entry points
@@ -3297,8 +3340,8 @@ namespace OpenGLRenderer
 				mGL_ARB_vertex_array_object = result;
 			}
 
-			// GL_ARB_sampler_objects
-			mGL_ARB_sampler_objects = isSupported("GL_ARB_sampler_objects");
+			// GL_ARB_sampler_objects - Is core since OpenGL 3.3
+			mGL_ARB_sampler_objects = isCoreProfile ? true : isSupported("GL_ARB_sampler_objects");
 			if (mGL_ARB_sampler_objects)
 			{
 				// Load the entry points
@@ -3312,8 +3355,8 @@ namespace OpenGLRenderer
 				mGL_ARB_sampler_objects = result;
 			}
 
-			// GL_ARB_draw_elements_base_vertex
-			mGL_ARB_draw_elements_base_vertex = isSupported("GL_ARB_draw_elements_base_vertex");
+			// GL_ARB_draw_elements_base_vertex - Is core since OpenGL 3.2
+			mGL_ARB_draw_elements_base_vertex = isCoreProfile ? true : isSupported("GL_ARB_draw_elements_base_vertex");
 			if (mGL_ARB_draw_elements_base_vertex)
 			{
 				// Load the entry points
@@ -3323,7 +3366,7 @@ namespace OpenGLRenderer
 				mGL_ARB_draw_elements_base_vertex = result;
 			}
 
-			// GL_ARB_debug_output
+			// GL_ARB_debug_output - Is core since OpenGL 4.3
 			mGL_ARB_debug_output = isSupported("GL_ARB_debug_output");
 			if (mGL_ARB_debug_output)
 			{
@@ -3430,8 +3473,8 @@ namespace OpenGLRenderer
 				mGL_ARB_clip_control = result;
 			}
 
-			// GL_ARB_occlusion_query
-			mGL_ARB_occlusion_query = isSupported("GL_ARB_occlusion_query");
+			// GL_ARB_occlusion_query - Is core since OpenGL 1.5
+			mGL_ARB_occlusion_query = isCoreProfile ? true : isSupported("GL_ARB_occlusion_query");
 			if (mGL_ARB_occlusion_query)
 			{
 				// Load the entry points
@@ -3447,8 +3490,8 @@ namespace OpenGLRenderer
 			// GL_ARB_pipeline_statistics_query
 			mGL_ARB_pipeline_statistics_query = isSupported("GL_ARB_pipeline_statistics_query");
 
-			// GL_ARB_timer_query
-			mGL_ARB_timer_query = isSupported("GL_ARB_timer_query");
+			// GL_ARB_timer_query - Is core since OpenGL 3.3
+			mGL_ARB_timer_query = isCoreProfile ? true : isSupported("GL_ARB_timer_query");
 			if (mGL_ARB_timer_query)
 			{
 				// Load the entry points
@@ -3503,8 +3546,6 @@ namespace OpenGLRenderer
 		bool mGL_ARB_texture_multisample;
 		bool mGL_ARB_vertex_buffer_object;
 		bool mGL_ARB_texture_compression;
-		bool mGL_ARB_vertex_program;
-		bool mGL_ARB_fragment_program;
 		bool mGL_ARB_draw_buffers;
 		bool mGL_ARB_shader_objects;
 		bool mGL_ARB_separate_shader_objects;
@@ -3514,9 +3555,11 @@ namespace OpenGLRenderer
 		bool mGL_ARB_draw_indirect;
 		bool mGL_ARB_multi_draw_indirect;
 		bool mGL_ARB_vertex_shader;
+		bool mGL_ARB_vertex_program;
 		bool mGL_ARB_tessellation_shader;
 		bool mGL_ARB_geometry_shader4;
 		bool mGL_ARB_fragment_shader;
+		bool mGL_ARB_fragment_program;
 		bool mGL_ARB_compute_shader;
 		bool mGL_ARB_draw_instanced;
 		bool mGL_ARB_base_instance;
@@ -6157,7 +6200,7 @@ namespace OpenGLRenderer
 			#endif
 
 			// Loop through all attributes
-			// -> We're using "glBindAttribLocationARB()" when linking the program so we have known attribute locations (the vertex array can't know about the program)
+			// -> We're using "glBindAttribLocation()" when linking the program so we have known attribute locations (the vertex array can't know about the program)
 			GLuint attributeLocation = 0;
 			const Renderer::VertexAttribute* attributeEnd = mAttributes + mNumberOfAttributes;
 			for (const Renderer::VertexAttribute* attribute = mAttributes; attribute < attributeEnd; ++attribute, ++attributeLocation)
@@ -6218,7 +6261,7 @@ namespace OpenGLRenderer
 			// No previous bound OpenGL element array buffer restore, there's not really a point in it
 
 			// Loop through all attributes
-			// -> We're using "glBindAttribLocationARB()" when linking the program so we have known attribute locations (the vertex array can't know about the program)
+			// -> We're using "glBindAttribLocation()" when linking the program so we have known attribute locations (the vertex array can't know about the program)
 			GLuint attributeLocation = 0;
 			const Renderer::VertexAttribute* attributeEnd = mAttributes + mNumberOfAttributes;
 			for (const Renderer::VertexAttribute* attribute = mAttributes; attribute < attributeEnd; ++attribute, ++attributeLocation)
@@ -6451,7 +6494,7 @@ namespace OpenGLRenderer
 			glBindVertexArray(mOpenGLVertexArray);
 
 			// Loop through all attributes
-			// -> We're using "glBindAttribLocationARB()" when linking the program so we have known attribute locations (the vertex array can't know about the program)
+			// -> We're using "glBindAttribLocation()" when linking the program so we have known attribute locations (the vertex array can't know about the program)
 			GLuint attributeLocation = 0;
 			const Renderer::VertexAttribute* attributeEnd = vertexAttributes.attributes + vertexAttributes.numberOfAttributes;
 			for (const Renderer::VertexAttribute* attribute = vertexAttributes.attributes; attribute < attributeEnd; ++attribute, ++attributeLocation)
@@ -6581,7 +6624,7 @@ namespace OpenGLRenderer
 			}
 
 			// Loop through all attributes
-			// -> We're using "glBindAttribLocationARB()" when linking the program so we have known attribute locations (the vertex array can't know about the program)
+			// -> We're using "glBindAttribLocation()" when linking the program so we have known attribute locations (the vertex array can't know about the program)
 			GLuint attributeLocation = 0;
 			const Renderer::VertexAttribute* attributeEnd = vertexAttributes.attributes + vertexAttributes.numberOfAttributes;
 			for (const Renderer::VertexAttribute* attribute = vertexAttributes.attributes; attribute < attributeEnd; ++attribute, ++attributeLocation)
@@ -13703,7 +13746,7 @@ namespace OpenGLRenderer
 		{
 			// Destroy the OpenGL shader
 			// -> Silently ignores 0's and names that do not correspond to existing buffer objects
-			glDeleteObjectARB(mOpenGLShader);
+			glDeleteShader(mOpenGLShader);
 		}
 
 		/**
@@ -13812,7 +13855,7 @@ namespace OpenGLRenderer
 		{
 			// Destroy the OpenGL shader
 			// -> Silently ignores 0's and names that do not correspond to existing buffer objects
-			glDeleteObjectARB(mOpenGLShader);
+			glDeleteShader(mOpenGLShader);
 		}
 
 		/**
@@ -13921,7 +13964,7 @@ namespace OpenGLRenderer
 		{
 			// Destroy the OpenGL shader
 			// -> Silently ignores 0's and names that do not correspond to existing buffer objects
-			glDeleteObjectARB(mOpenGLShader);
+			glDeleteShader(mOpenGLShader);
 		}
 
 		/**
@@ -14039,7 +14082,7 @@ namespace OpenGLRenderer
 		{
 			// Destroy the OpenGL shader
 			// -> Silently ignores 0's and names that do not correspond to existing buffer objects
-			glDeleteObjectARB(mOpenGLShader);
+			glDeleteShader(mOpenGLShader);
 		}
 
 		/**
@@ -14187,7 +14230,7 @@ namespace OpenGLRenderer
 		{
 			// Destroy the OpenGL shader
 			// -> Silently ignores 0's and names that do not correspond to existing buffer objects
-			glDeleteObjectARB(mOpenGLShader);
+			glDeleteShader(mOpenGLShader);
 		}
 
 		/**
@@ -14296,7 +14339,7 @@ namespace OpenGLRenderer
 		{
 			// Destroy the OpenGL shader
 			// -> Silently ignores 0's and names that do not correspond to existing buffer objects
-			glDeleteObjectARB(mOpenGLShader);
+			glDeleteShader(mOpenGLShader);
 		}
 
 		/**
@@ -14409,7 +14452,7 @@ namespace OpenGLRenderer
 		*/
 		GraphicsProgramMonolithic(OpenGLRenderer& openGLRenderer, const Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, VertexShaderMonolithic* vertexShaderMonolithic, TessellationControlShaderMonolithic* tessellationControlShaderMonolithic, TessellationEvaluationShaderMonolithic* tessellationEvaluationShaderMonolithic, GeometryShaderMonolithic* geometryShaderMonolithic, FragmentShaderMonolithic* fragmentShaderMonolithic) :
 			IGraphicsProgram(openGLRenderer),
-			mOpenGLProgram(glCreateProgramObjectARB()),
+			mOpenGLProgram(glCreateProgram()),
 			mDrawIdUniformLocation(-1)
 		{
 			// Attach the shaders to the program
@@ -14417,19 +14460,19 @@ namespace OpenGLRenderer
 			if (nullptr != vertexShaderMonolithic)
 			{
 				vertexShaderMonolithic->addReference();
-				glAttachObjectARB(mOpenGLProgram, vertexShaderMonolithic->getOpenGLShader());
+				glAttachShader(mOpenGLProgram, vertexShaderMonolithic->getOpenGLShader());
 				vertexShaderMonolithic->releaseReference();
 			}
 			if (nullptr != tessellationControlShaderMonolithic)
 			{
 				tessellationControlShaderMonolithic->addReference();
-				glAttachObjectARB(mOpenGLProgram, tessellationControlShaderMonolithic->getOpenGLShader());
+				glAttachShader(mOpenGLProgram, tessellationControlShaderMonolithic->getOpenGLShader());
 				tessellationControlShaderMonolithic->releaseReference();
 			}
 			if (nullptr != tessellationEvaluationShaderMonolithic)
 			{
 				tessellationEvaluationShaderMonolithic->addReference();
-				glAttachObjectARB(mOpenGLProgram, tessellationEvaluationShaderMonolithic->getOpenGLShader());
+				glAttachShader(mOpenGLProgram, tessellationEvaluationShaderMonolithic->getOpenGLShader());
 				tessellationEvaluationShaderMonolithic->releaseReference();
 			}
 			if (nullptr != geometryShaderMonolithic)
@@ -14438,7 +14481,7 @@ namespace OpenGLRenderer
 				geometryShaderMonolithic->addReference();
 
 				// Attach the monolithic shader to the monolithic program
-				glAttachObjectARB(mOpenGLProgram, geometryShaderMonolithic->getOpenGLShader());
+				glAttachShader(mOpenGLProgram, geometryShaderMonolithic->getOpenGLShader());
 
 				// In modern GLSL, "geometry shader input primitive topology" & "geometry shader output primitive topology" & "number of output vertices" can be directly set within GLSL by writing e.g.
 				//   "layout(triangles) in;"
@@ -14460,7 +14503,7 @@ namespace OpenGLRenderer
 			if (nullptr != fragmentShaderMonolithic)
 			{
 				fragmentShaderMonolithic->addReference();
-				glAttachObjectARB(mOpenGLProgram, fragmentShaderMonolithic->getOpenGLShader());
+				glAttachShader(mOpenGLProgram, fragmentShaderMonolithic->getOpenGLShader());
 				fragmentShaderMonolithic->releaseReference();
 			}
 
@@ -14468,16 +14511,16 @@ namespace OpenGLRenderer
 				const uint32_t numberOfVertexAttributes = vertexAttributes.numberOfAttributes;
 				for (uint32_t vertexAttribute = 0; vertexAttribute < numberOfVertexAttributes; ++vertexAttribute)
 				{
-					glBindAttribLocationARB(mOpenGLProgram, vertexAttribute, vertexAttributes.attributes[vertexAttribute].name);
+					glBindAttribLocation(mOpenGLProgram, vertexAttribute, vertexAttributes.attributes[vertexAttribute].name);
 				}
 			}
 
 			// Link the program
-			glLinkProgramARB(mOpenGLProgram);
+			glLinkProgram(mOpenGLProgram);
 
 			// Check the link status
 			GLint linked = GL_FALSE;
-			glGetObjectParameterivARB(mOpenGLProgram, GL_OBJECT_LINK_STATUS_ARB, &linked);
+			glGetProgramiv(mOpenGLProgram, GL_LINK_STATUS, &linked);
 			if (GL_TRUE == linked)
 			{
 				// We're not using "glBindFragDataLocation()", else the user would have to provide us with additional OpenGL-only specific information
@@ -14491,7 +14534,7 @@ namespace OpenGLRenderer
 				// Get draw ID uniform location
 				if (!openGLRenderer.getExtensions().isGL_ARB_base_instance())
 				{
-					mDrawIdUniformLocation = glGetUniformLocationARB(mOpenGLProgram, "drawIdUniform");
+					mDrawIdUniformLocation = glGetUniformLocation(mOpenGLProgram, "drawIdUniform");
 				}
 
 				// The actual locations assigned to uniform variables are not known until the program object is linked successfully
@@ -14525,7 +14568,7 @@ namespace OpenGLRenderer
 							}
 							else if (Renderer::DescriptorRangeType::SAMPLER != descriptorRange.rangeType)
 							{
-								const GLint uniformLocation = glGetUniformLocationARB(mOpenGLProgram, descriptorRange.baseShaderRegisterName);
+								const GLint uniformLocation = glGetUniformLocation(mOpenGLProgram, descriptorRange.baseShaderRegisterName);
 								if (uniformLocation >= 0)
 								{
 									// OpenGL/GLSL is not automatically assigning texture units to samplers, so, we have to take over this job
@@ -14553,20 +14596,20 @@ namespace OpenGLRenderer
 											if (static_cast<GLuint>(openGLProgramBackup) == mOpenGLProgram)
 											{
 												// Set uniform, please note that for this our program must be the currently used one
-												glUniform1iARB(uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
+												glUniform1i(uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
 											}
 											else
 											{
 												// Set uniform, please note that for this our program must be the currently used one
-												glUseProgramObjectARB(mOpenGLProgram);
-												glUniform1iARB(uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
+												glUseProgram(mOpenGLProgram);
+												glUniform1i(uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
 
 												// Be polite and restore the previous used OpenGL program
-												glUseProgramObjectARB(static_cast<GLhandleARB>(openGLProgramBackup));
+												glUseProgram(static_cast<GLhandleARB>(openGLProgramBackup));
 											}
 										#else
-											glUseProgramObjectARB(mOpenGLProgram);
-											glUniform1iARB(uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
+											glUseProgram(mOpenGLProgram);
+											glUniform1i(uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
 										#endif
 									}
 								}
@@ -14581,7 +14624,7 @@ namespace OpenGLRenderer
 
 				// Get the length of the information (including a null termination)
 				GLint informationLength = 0;
-				glGetObjectParameterivARB(mOpenGLProgram, GL_OBJECT_INFO_LOG_LENGTH_ARB, &informationLength);
+				glGetProgramiv(mOpenGLProgram, GL_INFO_LOG_LENGTH, &informationLength);
 				if (informationLength > 1)
 				{
 					// Allocate memory for the information
@@ -14589,7 +14632,7 @@ namespace OpenGLRenderer
 					char* informationLog = RENDERER_MALLOC_TYPED(context, char, informationLength);
 
 					// Get the information
-					glGetInfoLogARB(mOpenGLProgram, informationLength, nullptr, informationLog);
+					glGetProgramInfoLog(mOpenGLProgram, informationLength, nullptr, informationLog);
 
 					// Output the debug string
 					RENDERER_LOG(context, CRITICAL, informationLog)
@@ -14608,7 +14651,7 @@ namespace OpenGLRenderer
 		{
 			// Destroy the OpenGL program
 			// -> A value of 0 for program will be silently ignored
-			glDeleteObjectARB(mOpenGLProgram);
+			glDeleteShader(mOpenGLProgram);
 		}
 
 		/**
@@ -14658,7 +14701,7 @@ namespace OpenGLRenderer
 	public:
 		[[nodiscard]] virtual Renderer::handle getUniformHandle(const char* uniformName) override
 		{
-			return static_cast<Renderer::handle>(glGetUniformLocationARB(mOpenGLProgram, uniformName));
+			return static_cast<Renderer::handle>(glGetUniformLocation(mOpenGLProgram, uniformName));
 		}
 
 		virtual void setUniform1i(Renderer::handle uniformHandle, int value) override
@@ -14669,21 +14712,21 @@ namespace OpenGLRenderer
 				if (openGLProgramBackup == mOpenGLProgram)
 				{
 					// Set uniform, please note that for this our program must be the currently used one
-					glUniform1iARB(static_cast<GLint>(uniformHandle), value);
+					glUniform1i(static_cast<GLint>(uniformHandle), value);
 				}
 				else
 				{
 					// Set uniform, please note that for this our program must be the currently used one
-					glUseProgramObjectARB(mOpenGLProgram);
-					glUniform1iARB(static_cast<GLint>(uniformHandle), value);
+					glUseProgram(mOpenGLProgram);
+					glUniform1i(static_cast<GLint>(uniformHandle), value);
 
 					// Be polite and restore the previous used OpenGL program
-					glUseProgramObjectARB(openGLProgramBackup);
+					glUseProgram(openGLProgramBackup);
 				}
 			#else
 				// Set uniform, please note that for this our program must be the currently used one
-				glUseProgramObjectARB(mOpenGLProgram);
-				glUniform1iARB(static_cast<GLint>(uniformHandle), value);
+				glUseProgram(mOpenGLProgram);
+				glUniform1i(static_cast<GLint>(uniformHandle), value);
 			#endif
 		}
 
@@ -14695,21 +14738,21 @@ namespace OpenGLRenderer
 				if (openGLProgramBackup == mOpenGLProgram)
 				{
 					// Set uniform, please note that for this our program must be the currently used one
-					glUniform1fARB(static_cast<GLint>(uniformHandle), value);
+					glUniform1f(static_cast<GLint>(uniformHandle), value);
 				}
 				else
 				{
 					// Set uniform, please note that for this our program must be the currently used one
-					glUseProgramObjectARB(mOpenGLProgram);
-					glUniform1fARB(static_cast<GLint>(uniformHandle), value);
+					glUseProgram(mOpenGLProgram);
+					glUniform1f(static_cast<GLint>(uniformHandle), value);
 
 					// Be polite and restore the previous used OpenGL program
-					glUseProgramObjectARB(openGLProgramBackup);
+					glUseProgram(openGLProgramBackup);
 				}
 			#else
 				// Set uniform, please note that for this our program must be the currently used one
-				glUseProgramObjectARB(mOpenGLProgram);
-				glUniform1fARB(static_cast<GLint>(uniformHandle), value);
+				glUseProgram(mOpenGLProgram);
+				glUniform1f(static_cast<GLint>(uniformHandle), value);
 			#endif
 		}
 
@@ -14721,21 +14764,21 @@ namespace OpenGLRenderer
 				if (openGLProgramBackup == mOpenGLProgram)
 				{
 					// Set uniform, please note that for this our program must be the currently used one
-					glUniform2fvARB(static_cast<GLint>(uniformHandle), 1, value);
+					glUniform2fv(static_cast<GLint>(uniformHandle), 1, value);
 				}
 				else
 				{
 					// Set uniform, please note that for this our program must be the currently used one
-					glUseProgramObjectARB(mOpenGLProgram);
-					glUniform2fvARB(static_cast<GLint>(uniformHandle), 1, value);
+					glUseProgram(mOpenGLProgram);
+					glUniform2fv(static_cast<GLint>(uniformHandle), 1, value);
 
 					// Be polite and restore the previous used OpenGL program
-					glUseProgramObjectARB(openGLProgramBackup);
+					glUseProgram(openGLProgramBackup);
 				}
 			#else
 				// Set uniform, please note that for this our program must be the currently used one
-				glUseProgramObjectARB(mOpenGLProgram);
-				glUniform2fvARB(static_cast<GLint>(uniformHandle), 1, value);
+				glUseProgram(mOpenGLProgram);
+				glUniform2fv(static_cast<GLint>(uniformHandle), 1, value);
 			#endif
 		}
 
@@ -14747,21 +14790,21 @@ namespace OpenGLRenderer
 				if (openGLProgramBackup == mOpenGLProgram)
 				{
 					// Set uniform, please note that for this our program must be the currently used one
-					glUniform3fvARB(static_cast<GLint>(uniformHandle), 1, value);
+					glUniform3fv(static_cast<GLint>(uniformHandle), 1, value);
 				}
 				else
 				{
 					// Set uniform, please note that for this our program must be the currently used one
-					glUseProgramObjectARB(mOpenGLProgram);
-					glUniform3fvARB(static_cast<GLint>(uniformHandle), 1, value);
+					glUseProgram(mOpenGLProgram);
+					glUniform3fv(static_cast<GLint>(uniformHandle), 1, value);
 
 					// Be polite and restore the previous used OpenGL program
-					glUseProgramObjectARB(openGLProgramBackup);
+					glUseProgram(openGLProgramBackup);
 				}
 			#else
 				// Set uniform, please note that for this our program must be the currently used one
-				glUseProgramObjectARB(mOpenGLProgram);
-				glUniform3fvARB(static_cast<GLint>(uniformHandle), 1, value);
+				glUseProgram(mOpenGLProgram);
+				glUniform3fv(static_cast<GLint>(uniformHandle), 1, value);
 			#endif
 		}
 
@@ -14773,21 +14816,21 @@ namespace OpenGLRenderer
 				if (openGLProgramBackup == mOpenGLProgram)
 				{
 					// Set uniform, please note that for this our program must be the currently used one
-					glUniform4fvARB(static_cast<GLint>(uniformHandle), 1, value);
+					glUniform4fv(static_cast<GLint>(uniformHandle), 1, value);
 				}
 				else
 				{
 					// Set uniform, please note that for this our program must be the currently used one
-					glUseProgramObjectARB(mOpenGLProgram);
-					glUniform4fvARB(static_cast<GLint>(uniformHandle), 1, value);
+					glUseProgram(mOpenGLProgram);
+					glUniform4fv(static_cast<GLint>(uniformHandle), 1, value);
 
 					// Be polite and restore the previous used OpenGL program
-					glUseProgramObjectARB(openGLProgramBackup);
+					glUseProgram(openGLProgramBackup);
 				}
 			#else
 				// Set uniform, please note that for this our program must be the currently used one
-				glUseProgramObjectARB(mOpenGLProgram);
-				glUniform4fvARB(static_cast<GLint>(uniformHandle), 1, value);
+				glUseProgram(mOpenGLProgram);
+				glUniform4fv(static_cast<GLint>(uniformHandle), 1, value);
 			#endif
 		}
 
@@ -14799,21 +14842,21 @@ namespace OpenGLRenderer
 				if (openGLProgramBackup == mOpenGLProgram)
 				{
 					// Set uniform, please note that for this our program must be the currently used one
-					glUniformMatrix3fvARB(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
+					glUniformMatrix3fv(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
 				}
 				else
 				{
 					// Set uniform, please note that for this our program must be the currently used one
-					glUseProgramObjectARB(mOpenGLProgram);
-					glUniformMatrix3fvARB(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
+					glUseProgram(mOpenGLProgram);
+					glUniformMatrix3fv(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
 
 					// Be polite and restore the previous used OpenGL program
-					glUseProgramObjectARB(openGLProgramBackup);
+					glUseProgram(openGLProgramBackup);
 				}
 			#else
 				// Set uniform, please note that for this our program must be the currently used one
-				glUseProgramObjectARB(mOpenGLProgram);
-				glUniformMatrix3fvARB(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
+				glUseProgram(mOpenGLProgram);
+				glUniformMatrix3fv(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
 			#endif
 		}
 
@@ -14825,21 +14868,21 @@ namespace OpenGLRenderer
 				if (openGLProgramBackup == mOpenGLProgram)
 				{
 					// Set uniform, please note that for this our program must be the currently used one
-					glUniformMatrix4fvARB(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
+					glUniformMatrix4fv(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
 				}
 				else
 				{
 					// Set uniform, please note that for this our program must be the currently used one
-					glUseProgramObjectARB(mOpenGLProgram);
-					glUniformMatrix4fvARB(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
+					glUseProgram(mOpenGLProgram);
+					glUniformMatrix4fv(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
 
 					// Be polite and restore the previous used OpenGL program
-					glUseProgramObjectARB(openGLProgramBackup);
+					glUseProgram(openGLProgramBackup);
 				}
 			#else
 				// Set uniform, please note that for this our program must be the currently used one
-				glUseProgramObjectARB(mOpenGLProgram);
-				glUniformMatrix4fvARB(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
+				glUseProgram(mOpenGLProgram);
+				glUniformMatrix4fv(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
 			#endif
 		}
 
@@ -15107,20 +15150,20 @@ namespace OpenGLRenderer
 		*/
 		ComputePipelineStateMonolithic(OpenGLRenderer& openGLRenderer, const Renderer::IRootSignature& rootSignature, ComputeShaderMonolithic& computeShaderMonolithic, uint16_t id) :
 			ComputePipelineState(openGLRenderer, id),
-			mOpenGLProgram(glCreateProgramObjectARB())
+			mOpenGLProgram(glCreateProgram())
 		{
 			// Attach the compute shader to the program
 			// -> We don't need to keep a reference to the shader, to add and release at once to ensure a nice behaviour
 			computeShaderMonolithic.addReference();
-			glAttachObjectARB(mOpenGLProgram, computeShaderMonolithic.getOpenGLShader());
+			glAttachShader(mOpenGLProgram, computeShaderMonolithic.getOpenGLShader());
 			computeShaderMonolithic.releaseReference();
 
 			// Link the program
-			glLinkProgramARB(mOpenGLProgram);
+			glLinkProgram(mOpenGLProgram);
 
 			// Check the link status
 			GLint linked = GL_FALSE;
-			glGetObjectParameterivARB(mOpenGLProgram, GL_OBJECT_LINK_STATUS_ARB, &linked);
+			glGetShaderiv(mOpenGLProgram, GL_LINK_STATUS, &linked);
 			if (GL_TRUE == linked)
 			{
 				// We're not using "glBindFragDataLocation()", else the user would have to provide us with additional OpenGL-only specific information
@@ -15162,7 +15205,7 @@ namespace OpenGLRenderer
 							}
 							else if (Renderer::DescriptorRangeType::SAMPLER != descriptorRange.rangeType)
 							{
-								const GLint uniformLocation = glGetUniformLocationARB(mOpenGLProgram, descriptorRange.baseShaderRegisterName);
+								const GLint uniformLocation = glGetUniformLocation(mOpenGLProgram, descriptorRange.baseShaderRegisterName);
 								if (uniformLocation >= 0)
 								{
 									// OpenGL/GLSL is not automatically assigning texture units to samplers, so, we have to take over this job
@@ -15190,20 +15233,20 @@ namespace OpenGLRenderer
 											if (static_cast<GLuint>(openGLProgramBackup) == mOpenGLProgram)
 											{
 												// Set uniform, please note that for this our program must be the currently used one
-												glUniform1iARB(uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
+												glUniform1i(uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
 											}
 											else
 											{
 												// Set uniform, please note that for this our program must be the currently used one
-												glUseProgramObjectARB(mOpenGLProgram);
-												glUniform1iARB(uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
+												glUseProgram(mOpenGLProgram);
+												glUniform1i(uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
 
 												// Be polite and restore the previous used OpenGL program
-												glUseProgramObjectARB(static_cast<GLhandleARB>(openGLProgramBackup));
+												glUseProgram(static_cast<GLhandleARB>(openGLProgramBackup));
 											}
 										#else
-											glUseProgramObjectARB(mOpenGLProgram);
-											glUniform1iARB(uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
+											glUseProgram(mOpenGLProgram);
+											glUniform1i(uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
 										#endif
 									}
 								}
@@ -15218,7 +15261,7 @@ namespace OpenGLRenderer
 
 				// Get the length of the information (including a null termination)
 				GLint informationLength = 0;
-				glGetObjectParameterivARB(mOpenGLProgram, GL_OBJECT_INFO_LOG_LENGTH_ARB, &informationLength);
+				glGetProgramiv(mOpenGLProgram, GL_INFO_LOG_LENGTH, &informationLength);
 				if (informationLength > 1)
 				{
 					// Allocate memory for the information
@@ -15226,7 +15269,7 @@ namespace OpenGLRenderer
 					char* informationLog = RENDERER_MALLOC_TYPED(context, char, informationLength);
 
 					// Get the information
-					glGetInfoLogARB(mOpenGLProgram, informationLength, nullptr, informationLog);
+					glGetProgramInfoLog(mOpenGLProgram, informationLength, nullptr, informationLog);
 
 					// Output the debug string
 					RENDERER_LOG(context, CRITICAL, informationLog)
@@ -15245,7 +15288,7 @@ namespace OpenGLRenderer
 		{
 			// Destroy the OpenGL program
 			// -> A value of 0 for program will be silently ignored
-			glDeleteObjectARB(mOpenGLProgram);
+			glDeleteShader(mOpenGLProgram);
 		}
 
 		/**
@@ -15572,7 +15615,7 @@ namespace OpenGLRenderer
 		inline VertexShaderSeparate(OpenGLRenderer& openGLRenderer, const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderBytecode& shaderBytecode) :
 			IVertexShader(static_cast<Renderer::IRenderer&>(openGLRenderer)),
 			mOpenGLShaderProgram(::detail::loadShaderProgramFromBytecode(openGLRenderer.getContext(), vertexAttributes, GL_VERTEX_SHADER_ARB, shaderBytecode)),
-			mDrawIdUniformLocation(openGLRenderer.getExtensions().isGL_ARB_base_instance() ? -1 : glGetUniformLocationARB(mOpenGLShaderProgram, "drawIdUniform"))
+			mDrawIdUniformLocation(openGLRenderer.getExtensions().isGL_ARB_base_instance() ? -1 : glGetUniformLocation(mOpenGLShaderProgram, "drawIdUniform"))
 		{}
 
 		/**
@@ -15589,7 +15632,7 @@ namespace OpenGLRenderer
 		inline VertexShaderSeparate(OpenGLRenderer& openGLRenderer, const Renderer::VertexAttributes& vertexAttributes, const char* sourceCode, Renderer::ShaderBytecode* shaderBytecode = nullptr) :
 			IVertexShader(static_cast<Renderer::IRenderer&>(openGLRenderer)),
 			mOpenGLShaderProgram(::detail::loadShaderProgramFromSourcecode(openGLRenderer.getContext(), vertexAttributes, GL_VERTEX_SHADER_ARB, sourceCode)),
-			mDrawIdUniformLocation(openGLRenderer.getExtensions().isGL_ARB_base_instance() ? -1 : glGetUniformLocationARB(mOpenGLShaderProgram, "drawIdUniform"))
+			mDrawIdUniformLocation(openGLRenderer.getExtensions().isGL_ARB_base_instance() ? -1 : glGetUniformLocation(mOpenGLShaderProgram, "drawIdUniform"))
 		{
 			// Return shader bytecode, if requested do to so
 			if (nullptr != shaderBytecode)
@@ -16656,7 +16699,7 @@ namespace OpenGLRenderer
 		[[nodiscard]] virtual Renderer::handle getUniformHandle(const char* uniformName) override
 		{
 			GLint uniformLocation = -1;
-			#define GET_UNIFORM_LOCATION(ShaderSeparate) if (uniformLocation < 0 && nullptr != ShaderSeparate) uniformLocation = glGetUniformLocationARB(ShaderSeparate->getOpenGLShaderProgram(), uniformName);
+			#define GET_UNIFORM_LOCATION(ShaderSeparate) if (uniformLocation < 0 && nullptr != ShaderSeparate) uniformLocation = glGetUniformLocation(ShaderSeparate->getOpenGLShaderProgram(), uniformName);
 			GET_UNIFORM_LOCATION(mVertexShaderSeparate)
 			GET_UNIFORM_LOCATION(mTessellationControlShaderSeparate)
 			GET_UNIFORM_LOCATION(mTessellationEvaluationShaderSeparate)
@@ -16676,7 +16719,7 @@ namespace OpenGLRenderer
 				// Set uniform, please note that for this our program must be the currently used one
 				glBindProgramPipeline(mOpenGLProgramPipeline);
 				glActiveShaderProgram(mOpenGLProgramPipeline, mVertexShaderSeparate->getOpenGLShaderProgram());
-				glUniform1iARB(static_cast<GLint>(uniformHandle), value);
+				glUniform1i(static_cast<GLint>(uniformHandle), value);
 
 				// Be polite and restore the previous used OpenGL program pipeline
 				glBindProgramPipeline(static_cast<GLuint>(openGLProgramPipelineBackup));
@@ -16684,7 +16727,7 @@ namespace OpenGLRenderer
 				// Set uniform, please note that for this our program must be the currently used one
 				glBindProgramPipeline(mOpenGLProgramPipeline);
 				glActiveShaderProgram(mOpenGLProgramPipeline, mVertexShaderSeparate->getOpenGLShaderProgram());
-				glUniform1iARB(static_cast<GLint>(uniformHandle), value);
+				glUniform1i(static_cast<GLint>(uniformHandle), value);
 			#endif
 		}
 
@@ -16698,7 +16741,7 @@ namespace OpenGLRenderer
 				// Set uniform, please note that for this our program must be the currently used one
 				glBindProgramPipeline(mOpenGLProgramPipeline);
 				glActiveShaderProgram(mOpenGLProgramPipeline, mVertexShaderSeparate->getOpenGLShaderProgram());
-				glUniform1fARB(static_cast<GLint>(uniformHandle), value);
+				glUniform1f(static_cast<GLint>(uniformHandle), value);
 
 				// Be polite and restore the previous used OpenGL program pipeline
 				glBindProgramPipeline(static_cast<GLuint>(openGLProgramPipelineBackup));
@@ -16706,7 +16749,7 @@ namespace OpenGLRenderer
 				// Set uniform, please note that for this our program must be the currently used one
 				glBindProgramPipeline(mOpenGLProgramPipeline);
 				glActiveShaderProgram(mOpenGLProgramPipeline, mVertexShaderSeparate->getOpenGLShaderProgram());
-				glUniform1fARB(static_cast<GLint>(uniformHandle), value);
+				glUniform1f(static_cast<GLint>(uniformHandle), value);
 			#endif
 		}
 
@@ -16720,7 +16763,7 @@ namespace OpenGLRenderer
 				// Set uniform, please note that for this our program must be the currently used one
 				glBindProgramPipeline(mOpenGLProgramPipeline);
 				glActiveShaderProgram(mOpenGLProgramPipeline, mVertexShaderSeparate->getOpenGLShaderProgram());
-				glUniform2fvARB(static_cast<GLint>(uniformHandle), 1, value);
+				glUniform2fv(static_cast<GLint>(uniformHandle), 1, value);
 
 				// Be polite and restore the previous used OpenGL program pipeline
 				glBindProgramPipeline(static_cast<GLuint>(openGLProgramPipelineBackup));
@@ -16728,7 +16771,7 @@ namespace OpenGLRenderer
 				// Set uniform, please note that for this our program must be the currently used one
 				glBindProgramPipeline(mOpenGLProgramPipeline);
 				glActiveShaderProgram(mOpenGLProgramPipeline, mVertexShaderSeparate->getOpenGLShaderProgram());
-				glUniform2fvARB(static_cast<GLint>(uniformHandle), 1, value);
+				glUniform2fv(static_cast<GLint>(uniformHandle), 1, value);
 			#endif
 		}
 
@@ -16742,7 +16785,7 @@ namespace OpenGLRenderer
 				// Set uniform, please note that for this our program must be the currently used one
 				glBindProgramPipeline(mOpenGLProgramPipeline);
 				glActiveShaderProgram(mOpenGLProgramPipeline, mVertexShaderSeparate->getOpenGLShaderProgram());
-				glUniform3fvARB(static_cast<GLint>(uniformHandle), 1, value);
+				glUniform3fv(static_cast<GLint>(uniformHandle), 1, value);
 
 				// Be polite and restore the previous used OpenGL program pipeline
 				glBindProgramPipeline(static_cast<GLuint>(openGLProgramPipelineBackup));
@@ -16750,7 +16793,7 @@ namespace OpenGLRenderer
 				// Set uniform, please note that for this our program must be the currently used one
 				glBindProgramPipeline(mOpenGLProgramPipeline);
 				glActiveShaderProgram(mOpenGLProgramPipeline, mVertexShaderSeparate->getOpenGLShaderProgram());
-				glUniform3fvARB(static_cast<GLint>(uniformHandle), 1, value);
+				glUniform3fv(static_cast<GLint>(uniformHandle), 1, value);
 			#endif
 		}
 
@@ -16764,7 +16807,7 @@ namespace OpenGLRenderer
 				// Set uniform, please note that for this our program must be the currently used one
 				glBindProgramPipeline(mOpenGLProgramPipeline);
 				glActiveShaderProgram(mOpenGLProgramPipeline, mVertexShaderSeparate->getOpenGLShaderProgram());
-				glUniform4fvARB(static_cast<GLint>(uniformHandle), 1, value);
+				glUniform4fv(static_cast<GLint>(uniformHandle), 1, value);
 
 				// Be polite and restore the previous used OpenGL program pipeline
 				glBindProgramPipeline(static_cast<GLuint>(openGLProgramPipelineBackup));
@@ -16772,7 +16815,7 @@ namespace OpenGLRenderer
 				// Set uniform, please note that for this our program must be the currently used one
 				glBindProgramPipeline(mOpenGLProgramPipeline);
 				glActiveShaderProgram(mOpenGLProgramPipeline, mVertexShaderSeparate->getOpenGLShaderProgram());
-				glUniform4fvARB(static_cast<GLint>(uniformHandle), 1, value);
+				glUniform4fv(static_cast<GLint>(uniformHandle), 1, value);
 			#endif
 		}
 
@@ -16786,7 +16829,7 @@ namespace OpenGLRenderer
 				// Set uniform, please note that for this our program must be the currently used one
 				glBindProgramPipeline(mOpenGLProgramPipeline);
 				glActiveShaderProgram(mOpenGLProgramPipeline, mVertexShaderSeparate->getOpenGLShaderProgram());
-				glUniformMatrix3fvARB(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
+				glUniformMatrix3fv(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
 
 				// Be polite and restore the previous used OpenGL program pipeline
 				glBindProgramPipeline(static_cast<GLuint>(openGLProgramPipelineBackup));
@@ -16794,7 +16837,7 @@ namespace OpenGLRenderer
 				// Set uniform, please note that for this our program must be the currently used one
 				glBindProgramPipeline(mOpenGLProgramPipeline);
 				glActiveShaderProgram(mOpenGLProgramPipeline, mVertexShaderSeparate->getOpenGLShaderProgram());
-				glUniformMatrix3fvARB(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
+				glUniformMatrix3fv(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
 			#endif
 		}
 
@@ -16808,7 +16851,7 @@ namespace OpenGLRenderer
 				// Set uniform, please note that for this our program must be the currently used one
 				glBindProgramPipeline(mOpenGLProgramPipeline);
 				glActiveShaderProgram(mOpenGLProgramPipeline, mVertexShaderSeparate->getOpenGLShaderProgram());
-				glUniformMatrix4fvARB(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
+				glUniformMatrix4fv(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
 
 				// Be polite and restore the previous used OpenGL program pipeline
 				glBindProgramPipeline(static_cast<GLuint>(openGLProgramPipelineBackup));
@@ -16816,7 +16859,7 @@ namespace OpenGLRenderer
 				// Set uniform, please note that for this our program must be the currently used one
 				glBindProgramPipeline(mOpenGLProgramPipeline);
 				glActiveShaderProgram(mOpenGLProgramPipeline, mVertexShaderSeparate->getOpenGLShaderProgram());
-				glUniformMatrix4fvARB(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
+				glUniformMatrix4fv(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
 			#endif
 		}
 
@@ -21040,7 +21083,7 @@ namespace OpenGLRenderer
 					mOpenGLProgram = mOpenGLVertexProgram = openGLProgram;
 					mDrawIdUniformLocation = graphicsProgramMonolithic->getDrawIdUniformLocation();
 					mCurrentStartInstanceLocation = ~0u;
-					glUseProgramObjectARB(mOpenGLProgram);
+					glUseProgram(mOpenGLProgram);
 				}
 			}
 		}
@@ -21061,7 +21104,7 @@ namespace OpenGLRenderer
 				// Unbind the program, if required
 				if (0 != mOpenGLProgram)
 				{
-					glUseProgramObjectARB(0);
+					glUseProgram(0);
 					mOpenGLProgram = 0;
 				}
 			}
@@ -21099,7 +21142,7 @@ namespace OpenGLRenderer
 				if (openGLProgram != mOpenGLProgram)
 				{
 					mOpenGLProgram = openGLProgram;
-					glUseProgramObjectARB(mOpenGLProgram);
+					glUseProgram(mOpenGLProgram);
 					mOpenGLVertexProgram = 0;
 					mDrawIdUniformLocation = -1;
 					mCurrentStartInstanceLocation = ~0u;
@@ -21123,7 +21166,7 @@ namespace OpenGLRenderer
 				// Unbind the program, if required
 				if (0 != mOpenGLProgram)
 				{
-					glUseProgramObjectARB(0);
+					glUseProgram(0);
 					mOpenGLProgram = 0;
 				}
 			}

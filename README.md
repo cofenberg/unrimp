@@ -41,8 +41,9 @@ Features
 			- Efficiency and responsiveness over flexibility (were it isn't useful in practice)
 			- Intended to be controlled by a high-level entity-component system, no unused implementation feature overkill in the basic runtime
 		- Toolkit designed with developer fast iterations in mind: Asset source flexibility, asset background compilation, hot-reloading
-	- Interfaces for log, assert, memory allocator and profiler so the user has the control over those things
+	- Interfaces for log, assert, memory allocator, graphics debugger and profiler so the user has the control over those things
 		- Standard implementations are provided
+		- Standard graphics debugger implementation using [RenderDoc](https://renderdoc.org/) is provided
 		- Standard profiler implementation using [Remotery](https://github.com/Celtoys/Remotery) is provided
 - Cross-platform
 	- Microsoft Windows x86 and x64
@@ -291,8 +292,6 @@ Useful Microsoft Windows Developer Tools
 			- As of October 14, 2017: Doesn't work with Visual Studio 2017 (v141) x86 but works with x64
 	- Graphics
 		- Direct3D 11 graphics debugging can be done directly inside Visual Studio 2017
-		- [RenderDoc](https://renderdoc.org/) for other renderer APIs like Vulkan
-		- [NVIDIA Nsight](http://www.nvidia.com/object/nsight.html) for OpenGL renderer API
 	- CPU
 		- For CPU profiling the tool [Very Sleepy](http://www.codersnotes.com/sleepy/) is easy to use while providing useful results
 	- Compile time

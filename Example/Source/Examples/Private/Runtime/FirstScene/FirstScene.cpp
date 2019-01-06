@@ -37,6 +37,9 @@
 #include <RendererRuntime/Public/IRendererRuntime.h>
 #include <RendererRuntime/Public/Core/Math/EulerAngles.h>
 #include <RendererRuntime/Public/Core/Time/TimeManager.h>
+#ifdef RENDERER_RUNTIME_GRAPHICS_DEBUGGER
+	#include <RendererRuntime/Public/Core/RenderDocGraphicsDebugger.h>
+#endif
 #ifdef RENDERER_RUNTIME_IMGUI
 	#include <RendererRuntime/Public/DebugGui/ImGuiLog.h>
 	#include <RendererRuntime/Public/DebugGui/DebugGuiManager.h>
@@ -775,6 +778,23 @@ void FirstScene::createDebugGui([[maybe_unused]] Renderer::IRenderTarget& mainRe
 					{
 						debugGuiManager.openMetricsWindow();
 					}
+					#ifdef RENDERER_RUNTIME_GRAPHICS_DEBUGGER
+					{
+						RendererRuntime::IGraphicsDebugger& graphicsDebugger = rendererRuntime->getContext().getGraphicsDebugger();
+						if (graphicsDebugger.isInitialized())
+						{
+							ImGui::SameLine();
+							if (ImGui::Button("Capture"))
+							{
+								graphicsDebugger.captureNextFrame();
+							}
+							if (ImGui::IsItemHovered())
+							{
+								ImGui::SetTooltip("Capture next frame for RenderDoc graphics debugging");
+							}
+						}
+					}
+					#endif
 					ImGui::Separator();
 
 					// Video

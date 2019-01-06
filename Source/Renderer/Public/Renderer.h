@@ -4204,7 +4204,7 @@ namespace Renderer
 		*    "true" if the renderer instance is properly initialized, else "false"
 		*
 		*  @note
-		*    - Do never ever use a not properly initialized renderer!
+		*    - Do never ever use a not properly initialized renderer
 		*/
 		[[nodiscard]] virtual bool isInitialized() const = 0;
 

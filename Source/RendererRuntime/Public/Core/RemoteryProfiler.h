@@ -106,6 +106,11 @@ namespace RendererRuntime
 			mUseD3D11(false),
 			mUseOpenGL(false)
 		{
+			// Sanity check
+			#if !defined(_DEBUG) && !defined(SHARED_LIBRARIES)
+				RENDERER_LOG(renderer.getContext(), PERFORMANCE_WARNING, "Reminder: You might not want to ship products with enabled Remotery CPU and GPU profiling")
+			#endif
+
 			{ // Set Remotery settings
 				rmtSettings* settings = _rmt_Settings();
 
@@ -218,9 +223,9 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
-	//[ Protected methods                                     ]
+	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
-	protected:
+	private:
 		explicit RemoteryProfiler(const RemoteryProfiler&) = delete;
 		RemoteryProfiler& operator=(const RemoteryProfiler&) = delete;
 

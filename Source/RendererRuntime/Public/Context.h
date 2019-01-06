@@ -43,6 +43,9 @@ namespace Renderer
 namespace RendererRuntime
 {
 	class IFileManager;
+	#ifdef RENDERER_RUNTIME_GRAPHICS_DEBUGGER
+		class IGraphicsDebugger;
+	#endif
 	#ifdef RENDERER_RUNTIME_PROFILER
 		class IProfiler;
 	#endif
@@ -79,10 +82,16 @@ namespace RendererRuntime
 		*    Renderer instance to use, the render instance must stay valid as long as the renderer runtime instance exists
 		*  @param[in] fileManager
 		*    File manager instance to use, the file manager instance must stay valid as long as the renderer runtime instance exists
+		*  @param[in] graphicsDebugger
+		*    Graphics debugger instance to use, the graphics debugger instance must stay valid as long as the renderer runtime instance exists
 		*  @param[in] profiler
 		*    Profiler instance to use, the profiler instance must stay valid as long as the renderer runtime instance exists
 		*/
-		#ifdef RENDERER_RUNTIME_PROFILER
+		#if defined(RENDERER_RUNTIME_GRAPHICS_DEBUGGER) && defined(RENDERER_RUNTIME_PROFILER)
+			RENDERERRUNTIME_API_EXPORT Context(Renderer::IRenderer& renderer, IFileManager& fileManager, IGraphicsDebugger& graphicsDebugger, IProfiler& profiler);
+		#elif defined RENDERER_RUNTIME_GRAPHICS_DEBUGGER
+			RENDERERRUNTIME_API_EXPORT Context(Renderer::IRenderer& renderer, IFileManager& fileManager, IGraphicsDebugger& graphicsDebugger);
+		#elif defined RENDERER_RUNTIME_PROFILER
 			RENDERERRUNTIME_API_EXPORT Context(Renderer::IRenderer& renderer, IFileManager& fileManager, IProfiler& profiler);
 		#else
 			RENDERERRUNTIME_API_EXPORT Context(Renderer::IRenderer& renderer, IFileManager& fileManager);
@@ -157,6 +166,20 @@ namespace RendererRuntime
 			return mFileManager;
 		}
 
+		#ifdef RENDERER_RUNTIME_GRAPHICS_DEBUGGER
+			/**
+			*  @brief
+			*    Return the used graphics debugger instance
+			*
+			*  @return
+			*    The used graphics debugger instance
+			*/
+			[[nodiscard]] inline IGraphicsDebugger& getGraphicsDebugger() const
+			{
+				return mGraphicsDebugger;
+			}
+		#endif
+
 		#ifdef RENDERER_RUNTIME_PROFILER
 			/**
 			*  @brief
@@ -189,6 +212,9 @@ namespace RendererRuntime
 		Renderer::IAllocator& mAllocator;
 		Renderer::IRenderer&  mRenderer;
 		IFileManager&		  mFileManager;
+		#ifdef RENDERER_RUNTIME_GRAPHICS_DEBUGGER
+			IGraphicsDebugger& mGraphicsDebugger;
+		#endif
 		#ifdef RENDERER_RUNTIME_PROFILER
 			IProfiler& mProfiler;
 		#endif

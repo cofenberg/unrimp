@@ -30,6 +30,10 @@
 #include <Renderer/Public/DefaultAllocator.h>
 #include <Renderer/Public/RendererInstance.h>
 
+#if defined(RENDERER_RUNTIME) && defined(RENDERER_RUNTIME_GRAPHICS_DEBUGGER)
+	#include <RendererRuntime/Public/Core/RenderDocGraphicsDebugger.h>
+#endif
+
 
 //[-------------------------------------------------------]
 //[ Global variables                                      ]
@@ -65,6 +69,9 @@ namespace
 //[-------------------------------------------------------]
 IApplicationRenderer::IApplicationRenderer(const char* rendererName, ExampleBase& exampleBase) :
 	IApplication(rendererName),
+	#if defined(RENDERER_RUNTIME) && defined(RENDERER_RUNTIME_GRAPHICS_DEBUGGER)
+		mGraphicsDebugger(nullptr),
+	#endif
 	mExampleBase(exampleBase),
 	mRendererContext(nullptr),
 	mRendererInstance(nullptr),
@@ -256,6 +263,9 @@ void IApplicationRenderer::destroyRenderer()
 	mRendererInstance = nullptr;
 	delete mRendererContext;
 	mRendererContext = nullptr;
+	#ifdef RENDERER_RUNTIME_GRAPHICS_DEBUGGER
+		delete static_cast<RendererRuntime::RenderDocGraphicsDebugger*>(mGraphicsDebugger);
+	#endif
 }
 
 
@@ -276,6 +286,9 @@ Renderer::IRenderer* IApplicationRenderer::createRendererInstance(const char* re
 			// -> See http://dri.sourceforge.net/doc/DRIuserguide.html "11.5 libGL.so and dlopen()"
 			loadRendererApiSharedLibrary = true;
 			mRendererContext = new Renderer::X11Context(log, ::detail::g_DefaultAssert, g_DefaultAllocator, getX11Display(), getNativeWindowHandle());
+		#endif
+		#if defined(RENDERER_RUNTIME) && defined(RENDERER_RUNTIME_GRAPHICS_DEBUGGER)
+			mGraphicsDebugger = new RendererRuntime::RenderDocGraphicsDebugger(*mRendererContext);
 		#endif
 		mRendererInstance = new Renderer::RendererInstance(rendererName, *mRendererContext, loadRendererApiSharedLibrary);
 	}

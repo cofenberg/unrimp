@@ -35,6 +35,7 @@ Renderer runtime.
 
 == Preprocessor Definitions ==
 - Set "RENDERER_RUNTIME_EXPORTS" as preprocessor definition when building this library as shared library
+- Set "RENDERER_RUNTIME_GRAPHICS_DEBUGGER" as preprocessor definition to enable graphics debugger support
 - Set "RENDERER_RUNTIME_PROFILER" as preprocessor definition to enable profiler support
 - Set "RENDERER_RUNTIME_IMGUI" as preprocessor definition to enable ImGui support
 - Set "RENDERER_RUNTIME_OPENVR" as preprocessor definition to enable OpenVR support

@@ -3232,7 +3232,7 @@ namespace Direct3D11Renderer
 							{
 								if (!loadNvAPIEntryPoints())
 								{
-									RENDERER_LOG(mDirect3D11Renderer.getContext(), CRITICAL, "Direct3D 11: Failed to load NvAPI function entry points")
+									RENDERER_LOG(mDirect3D11Renderer.getContext(), PERFORMANCE_WARNING, "Direct3D 11: Failed to load NvAPI function entry points, maybe a graphics debugger like RenderDoc disabled NvAPI")
 									::FreeLibrary(static_cast<HMODULE>(mNvAPISharedLibrary));
 									mNvAPISharedLibrary							  = nullptr;
 									NvAPI_Initialize							  = nullptr;

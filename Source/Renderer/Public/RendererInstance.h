@@ -179,15 +179,15 @@ namespace Renderer
 		*/
 		RendererInstance(const char* rendererName, Context& context, bool loadRendererApiSharedLibrary = false) :
 			mRendererSharedLibrary(nullptr),
-			mRendererApiSharedLibrary(nullptr)
+			mOpenGLSharedLibrary(nullptr)
 		{
 			// In order to keep it simple in this test project the supported renderer backends are
 			// fixed typed in. For a real system a dynamic plugin system would be a good idea.
 			if (loadRendererApiSharedLibrary)
 			{
 				// User wants us to load the renderer API shared library
-				loadRendererApiSharedLibraryInternal(rendererName);
-				context.setRendererApiSharedLibrary(mRendererApiSharedLibrary);
+				loadOpenGLSharedLibraryInternal(rendererName);
+				context.setRendererApiSharedLibrary(mOpenGLSharedLibrary);
 			}
 			#ifdef SHARED_LIBRARIES
 				// Dynamically linked libraries
@@ -344,19 +344,11 @@ namespace Renderer
 					if (nullptr != mRendererSharedLibrary)
 					{
 						::FreeLibrary(static_cast<HMODULE>(mRendererSharedLibrary));
-						mRendererSharedLibrary = nullptr;
-					}
-
-					if (nullptr != mRendererApiSharedLibrary)
-					{
-						::FreeLibrary(static_cast<HMODULE>(mRendererApiSharedLibrary));
-						mRendererApiSharedLibrary = nullptr;
 					}
 				#elif defined LINUX
 					if (nullptr != mRendererSharedLibrary)
 					{
 						::dlclose(mRendererSharedLibrary);
-						mRendererSharedLibrary = nullptr;
 					}
 				#else
 					#error "Unsupported platform"
@@ -365,16 +357,14 @@ namespace Renderer
 
 			// Unload the renderer API shared library instance
 			#ifdef _WIN32
-				if (nullptr != mRendererApiSharedLibrary)
+				if (nullptr != mOpenGLSharedLibrary)
 				{
-					::FreeLibrary(static_cast<HMODULE>(mRendererApiSharedLibrary));
-					mRendererApiSharedLibrary = nullptr;
+					::FreeLibrary(static_cast<HMODULE>(mOpenGLSharedLibrary));
 				}
 			#elif defined LINUX
-				if (nullptr != mRendererApiSharedLibrary)
+				if (nullptr != mOpenGLSharedLibrary)
 				{
-					::dlclose(mRendererApiSharedLibrary);
-					mRendererApiSharedLibrary = nullptr;
+					::dlclose(mOpenGLSharedLibrary);
 				}
 			#endif
 		}
@@ -414,7 +404,7 @@ namespace Renderer
 			}
 		#endif
 
-		void loadRendererApiSharedLibraryInternal([[maybe_unused]] const char* rendererName)
+		void loadOpenGLSharedLibraryInternal([[maybe_unused]] const char* rendererName)
 		{
 			// TODO(sw) Currently this is only needed for OpenGL (libGL.so) under Linux. This interacts with the library libX11.
 			#ifdef LINUX
@@ -424,7 +414,7 @@ namespace Renderer
 				// See http://dri.sourceforge.net/doc/DRIuserguide.html "11.5 libGL.so and dlopen()"
 				if (0 == strcmp(rendererName, "OpenGL"))
 				{
-					mRendererApiSharedLibrary = ::dlopen("libGL.so", RTLD_NOW | RTLD_GLOBAL);
+					mOpenGLSharedLibrary = ::dlopen("libGL.so", RTLD_NOW | RTLD_GLOBAL);
 				}
 			#endif
 		}
@@ -436,7 +426,7 @@ namespace Renderer
 	private:
 		void*		 mRendererSharedLibrary;	///< Shared renderer library, can be a null pointer
 		IRendererPtr mRenderer;					///< Renderer instance, can be a null pointer
-		void*		 mRendererApiSharedLibrary;	///< Shared renderer API library, can be a null pointer
+		void*		 mOpenGLSharedLibrary;		///< Shared OpenGL library, can be a null pointer
 
 
 	};

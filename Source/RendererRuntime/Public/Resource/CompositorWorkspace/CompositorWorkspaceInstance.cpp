@@ -46,6 +46,9 @@
 #include "RendererRuntime/Public/Core/IProfiler.h"
 #include "RendererRuntime/Public/Core/Renderer/FramebufferManager.h"
 #include "RendererRuntime/Public/Core/Renderer/RenderTargetTextureManager.h"
+#ifdef RENDERER_RUNTIME_GRAPHICS_DEBUGGER
+	#include "RendererRuntime/Public/Core/IGraphicsDebugger.h"
+#endif
 #ifdef RENDERER_RUNTIME_OPENVR
 	#include "RendererRuntime/Public/Vr/IVrManager.h"
 #endif
@@ -215,6 +218,13 @@ namespace RendererRuntime
 			Renderer::IRenderer& renderer = renderTarget.getRenderer();
 			if (renderer.beginScene())
 			{
+				#ifdef RENDERER_RUNTIME_GRAPHICS_DEBUGGER
+					IGraphicsDebugger& graphicsDebugger = mRendererRuntime.getContext().getGraphicsDebugger();
+					if (graphicsDebugger.getCaptureNextFrame())
+					{
+						graphicsDebugger.startFrameCapture((renderTarget.getResourceType() == Renderer::ResourceType::SWAP_CHAIN) ? static_cast<Renderer::ISwapChain&>(renderTarget).getNativeWindowHandle() : NULL_HANDLE);
+					}
+				#endif
 				#ifdef RENDERER_STATISTICS
 					if (nullptr != mPipelineStatisticsQueryPoolPtr)
 					{
@@ -278,6 +288,12 @@ namespace RendererRuntime
 				// End scene rendering
 				// -> Required for Direct3D 9 and Direct3D 12
 				// -> Not required for Direct3D 10, Direct3D 11, OpenGL and OpenGL ES 3
+				#ifdef RENDERER_RUNTIME_GRAPHICS_DEBUGGER
+					if (graphicsDebugger.getCaptureNextFrame())
+					{
+						graphicsDebugger.endFrameCapture((renderTarget.getResourceType() == Renderer::ResourceType::SWAP_CHAIN) ? static_cast<Renderer::ISwapChain&>(renderTarget).getNativeWindowHandle() : NULL_HANDLE);
+					}
+				#endif
 				renderer.endScene();
 			}
 

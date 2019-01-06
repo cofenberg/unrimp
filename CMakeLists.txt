@@ -91,8 +91,9 @@ set(SHARED_LIBRARY "1" CACHE BOOL "'true' to build as shared library (dynamic li
 # Renderer runtime
 set(RENDERER_RUNTIME "1" CACHE BOOL "Build renderer runtime?")
 if(RENDERER_RUNTIME)
-	set(RENDERER_RUNTIME_PROFILER "1" CACHE BOOL "For debugging: 'true' to enable profiler support, else 'false' to reduce the binary size")
-	set(RENDERER_RUNTIME_IMGUI	  "1" CACHE BOOL "For debugging: 'true' to enable ImGui support, else 'false' to reduce the binary size")
+	set(RENDERER_RUNTIME_GRAPHICS_DEBUGGER "0" CACHE BOOL "For debugging: 'true' to enable graphics debugger support, else 'false' to reduce the binary size. Not enabled by default since RenderDoc disables Direct3D 11 NvAPI resulting in a notable negative performance impact.")
+	set(RENDERER_RUNTIME_PROFILER		   "1" CACHE BOOL "For debugging: 'true' to enable profiler support, else 'false' to reduce the binary size")
+	set(RENDERER_RUNTIME_IMGUI			   "1" CACHE BOOL "For debugging: 'true' to enable ImGui support, else 'false' to reduce the binary size")
 
 	# TODO(sw) OpenVR doesn't support non Windows systems yet
 	if(WIN32)
