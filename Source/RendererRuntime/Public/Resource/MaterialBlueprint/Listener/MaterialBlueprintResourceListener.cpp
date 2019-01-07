@@ -72,25 +72,30 @@ namespace
 		//[-------------------------------------------------------]
 		#define DEFINE_CONSTANT(name) static constexpr uint32_t name = STRING_ID(#name);
 			// Pass data influenced by single pass stereo rendering via instancing as described in "High Performance Stereo Rendering For VR", Timothy Wilson, San Diego, Virtual Reality Meetup
-			DEFINE_CONSTANT(WORLD_SPACE_TO_VIEW_SPACE_MATRIX)			///< "FLOAT_4_4"-type
-			DEFINE_CONSTANT(WORLD_SPACE_TO_VIEW_SPACE_MATRIX2)			///< "FLOAT_4_4"-type
-			DEFINE_CONSTANT(VIEW_SPACE_TO_WORLD_SPACE_MATRIX)			///< "FLOAT_4_4"-type
-			DEFINE_CONSTANT(WORLD_SPACE_TO_VIEW_SPACE_QUATERNION)		///< "FLOAT_4"-type
-			DEFINE_CONSTANT(VIEW_SPACE_TO_WORLD_SPACE_QUATERNION)		///< "FLOAT_4"-type
-			DEFINE_CONSTANT(WORLD_SPACE_TO_CLIP_SPACE_MATRIX)			///< "FLOAT_4_4"-type, only valid for graphics pipeline
-			DEFINE_CONSTANT(WORLD_SPACE_TO_CLIP_SPACE_MATRIX_2)			///< "FLOAT_4_4"-type, only valid for graphics pipeline
-			DEFINE_CONSTANT(PREVIOUS_WORLD_SPACE_TO_CLIP_SPACE_MATRIX)	///< "FLOAT_4_4"-type, only valid for graphics pipeline
-			DEFINE_CONSTANT(PREVIOUS_WORLD_SPACE_TO_VIEW_SPACE_MATRIX)	///< "FLOAT_4_4"-type
-			DEFINE_CONSTANT(VIEW_SPACE_TO_CLIP_SPACE_MATRIX)			///< "FLOAT_4_4"-type, only valid for graphics pipeline
-			DEFINE_CONSTANT(VIEW_SPACE_TO_CLIP_SPACE_MATRIX2)			///< "FLOAT_4_4"-type, only valid for graphics pipeline
-			DEFINE_CONSTANT(VIEW_SPACE_TO_TEXTURE_SPACE_MATRIX)			///< "FLOAT_4_4"-type, only valid for graphics pipeline
-			DEFINE_CONSTANT(CLIP_SPACE_TO_VIEW_SPACE_MATRIX)			///< "FLOAT_4_4"-type, only valid for graphics pipeline
-			DEFINE_CONSTANT(CLIP_SPACE_TO_WORLD_SPACE_MATRIX)			///< "FLOAT_4_4"-type, only valid for graphics pipeline
-			// DEFINE_CONSTANT(WORLD_SPACE_CAMERA_POSITION)				///< "FLOAT_3"-type, since we're using camera relative rendering this is always a null vector and hence we don't need to provide a parameter for this, don't delete this reminder comment
-			DEFINE_CONSTANT(UNMODIFIED_WORLD_SPACE_CAMERA_POSITION)		///< "FLOAT_3"-type, original unmodified world space camera position which isn't adjusted for camera relative rendering, try to avoid using this parameter - TODO(co) "UNMODIFIED_WORLD_SPACE_CAMERA_POSITION" shouldn't be used due to the loss of precision
-			DEFINE_CONSTANT(WRAPPED_WORLD_SPACE_CAMERA_POSITION)		///< "FLOAT_3"-type, original wrapped world space camera position which isn't adjusted for camera relative rendering, try to avoid using this parameter since due to the value wrapping to avoid huge values, there might be visible artefact's depending on the use-case
-			DEFINE_CONSTANT(VIEW_SPACE_FRUSTUM_CORNERS)					///< "FLOAT_4_4"-type, only valid for graphics pipeline
-			DEFINE_CONSTANT(VIEW_SPACE_SUNLIGHT_DIRECTION)				///< "FLOAT_3"-type
+			DEFINE_CONSTANT(WORLD_SPACE_TO_VIEW_SPACE_MATRIX)				///< "FLOAT_4_4"-type
+			DEFINE_CONSTANT(WORLD_SPACE_TO_VIEW_SPACE_MATRIX2)				///< "FLOAT_4_4"-type
+			DEFINE_CONSTANT(VIEW_SPACE_TO_WORLD_SPACE_MATRIX)				///< "FLOAT_4_4"-type
+			DEFINE_CONSTANT(WORLD_SPACE_TO_VIEW_SPACE_QUATERNION)			///< "FLOAT_4"-type
+			DEFINE_CONSTANT(WORLD_SPACE_TO_VIEW_SPACE_QUATERNION_2)			///< "FLOAT_4"-type
+			DEFINE_CONSTANT(VIEW_SPACE_TO_WORLD_SPACE_QUATERNION)			///< "FLOAT_4"-type
+			DEFINE_CONSTANT(VIEW_SPACE_TO_WORLD_SPACE_QUATERNION_2)			///< "FLOAT_4"-type
+			DEFINE_CONSTANT(WORLD_SPACE_TO_CLIP_SPACE_MATRIX)				///< "FLOAT_4_4"-type, only valid for graphics pipeline
+			DEFINE_CONSTANT(WORLD_SPACE_TO_CLIP_SPACE_MATRIX_2)				///< "FLOAT_4_4"-type, only valid for graphics pipeline
+			DEFINE_CONSTANT(PREVIOUS_WORLD_SPACE_TO_CLIP_SPACE_MATRIX)		///< "FLOAT_4_4"-type, only valid for graphics pipeline
+			DEFINE_CONSTANT(PREVIOUS_WORLD_SPACE_TO_CLIP_SPACE_MATRIX_2)	///< "FLOAT_4_4"-type
+			DEFINE_CONSTANT(PREVIOUS_WORLD_SPACE_TO_VIEW_SPACE_MATRIX)		///< "FLOAT_4_4"-type, only valid for graphics pipeline
+			DEFINE_CONSTANT(PREVIOUS_WORLD_SPACE_TO_VIEW_SPACE_MATRIX_2)	///< "FLOAT_4_4"-type
+			DEFINE_CONSTANT(VIEW_SPACE_TO_CLIP_SPACE_MATRIX)				///< "FLOAT_4_4"-type, only valid for graphics pipeline
+			DEFINE_CONSTANT(VIEW_SPACE_TO_CLIP_SPACE_MATRIX2)				///< "FLOAT_4_4"-type, only valid for graphics pipeline
+			DEFINE_CONSTANT(VIEW_SPACE_TO_TEXTURE_SPACE_MATRIX)				///< "FLOAT_4_4"-type, only valid for graphics pipeline
+			DEFINE_CONSTANT(CLIP_SPACE_TO_VIEW_SPACE_MATRIX)				///< "FLOAT_4_4"-type, only valid for graphics pipeline
+			DEFINE_CONSTANT(CLIP_SPACE_TO_WORLD_SPACE_MATRIX)				///< "FLOAT_4_4"-type, only valid for graphics pipeline
+			DEFINE_CONSTANT(WORLD_SPACE_CAMERA_POSITION)					///< "FLOAT_3"-type, camera relative world space camera position, only relevant for stereo rendering were each eye has an offset to the head and the head itself might not be identical to the camera scene node transform
+			DEFINE_CONSTANT(WORLD_SPACE_CAMERA_POSITION_2)					///< "FLOAT_3"-type, camera relative world space camera position, only relevant for stereo rendering were each eye has an offset to the head and the head itself might not be identical to the camera scene node transform
+			DEFINE_CONSTANT(UNMODIFIED_WORLD_SPACE_CAMERA_POSITION)			///< "FLOAT_3"-type, original unmodified world space camera position which isn't adjusted for camera relative rendering, try to avoid using this parameter - TODO(co) "UNMODIFIED_WORLD_SPACE_CAMERA_POSITION" shouldn't be used due to the loss of precision
+			DEFINE_CONSTANT(WRAPPED_WORLD_SPACE_CAMERA_POSITION)			///< "FLOAT_3"-type, original wrapped world space camera position which isn't adjusted for camera relative rendering, try to avoid using this parameter since due to the value wrapping to avoid huge values, there might be visible artefact's depending on the use-case
+			DEFINE_CONSTANT(VIEW_SPACE_FRUSTUM_CORNERS)						///< "FLOAT_4_4"-type, only valid for graphics pipeline
+			DEFINE_CONSTANT(VIEW_SPACE_SUNLIGHT_DIRECTION)					///< "FLOAT_3"-type
 
 			// Pass data not influenced by single pass stereo rendering via instancing as described in "High Performance Stereo Rendering For VR", Timothy Wilson, San Diego, Virtual Reality Meetup
 			DEFINE_CONSTANT(GLOBAL_COMPUTE_SIZE)						///< "INTEGER_3"-type, only valid for compute pipeline
@@ -389,7 +394,6 @@ namespace RendererRuntime
 		// Calculate required matrices basing whether or not the VR-manager is currently running
 		glm::mat4 viewSpaceToClipSpaceMatrix;
 		glm::mat4 viewSpaceToClipSpaceMatrixReversedZ;
-		glm::mat4 previousCameraRelativeWorldSpaceToViewSpaceMatrix;
 		#ifdef RENDERER_RUNTIME_OPENVR
 			const IVrManager& vrManager = rendererRuntime.getVrManager();
 			const bool vrRendering = (singlePassStereoInstancing && vrManager.isRunning() && !cameraSceneItem->hasCustomWorldSpaceToViewSpaceMatrix() && !cameraSceneItem->hasCustomViewSpaceToClipSpaceMatrix());
@@ -411,25 +415,24 @@ namespace RendererRuntime
 						const IVrManager::VrEye vrEye = (0 == eyeIndex) ? IVrManager::VrEye::RIGHT : IVrManager::VrEye::LEFT;
 						viewSpaceToClipSpaceMatrix = vrManager.getHmdViewSpaceToClipSpaceMatrix(vrEye, mNearZ, mFarZ);
 						viewSpaceToClipSpaceMatrixReversedZ = vrManager.getHmdViewSpaceToClipSpaceMatrix(vrEye, mFarZ, mNearZ);
-						const glm::mat4& viewTranslateMatrix = glm::inverse(vrManager.getHmdEyeSpaceToHeadSpaceMatrix(vrEye)) * glm::inverse(vrManager.getHmdPoseMatrix());
 
 						// Calculate the world space to view space matrix (Aka "view matrix")
-						const Transform& worldSpaceToViewSpaceTransform = cameraSceneItem->getWorldSpaceToViewSpaceTransform();
-						// TODO(co) 64 bit position support
-						mPassData->cameraRelativeWorldSpaceToViewSpaceMatrix[eyeIndex] = glm::translate(glm::mat4(1.0f), glm::vec3(worldSpaceToViewSpaceTransform.position)) * glm::toMat4(worldSpaceToViewSpaceTransform.rotation);
-						mPassData->cameraRelativeWorldSpaceToViewSpaceMatrix[eyeIndex] = viewTranslateMatrix * mPassData->cameraRelativeWorldSpaceToViewSpaceMatrix[eyeIndex];
-
-						// TODO(co) Implement "previousCameraRelativeWorldSpaceToViewSpaceMatrix"
-						previousCameraRelativeWorldSpaceToViewSpaceMatrix = mPassData->cameraRelativeWorldSpaceToViewSpaceMatrix[eyeIndex];	// TODO(co) Camera relative
+						const glm::mat4 hmdEyeSpaceToHeadSpaceMatrix = vrManager.getHmdEyeSpaceToHeadSpaceMatrix(vrEye);
+						const glm::mat4 inverseHmdEyeSpaceToHeadSpaceMatrix = glm::inverse(hmdEyeSpaceToHeadSpaceMatrix);
+						mCameraRelativeWorldSpaceCameraPosition[eyeIndex] = glm::vec3((hmdEyeSpaceToHeadSpaceMatrix * vrManager.getHmdHeadSpaceToWorldSpaceMatrix())[3]);
+						mPassData->cameraRelativeWorldSpaceToViewSpaceMatrix[eyeIndex] = (inverseHmdEyeSpaceToHeadSpaceMatrix * glm::inverse(vrManager.getHmdHeadSpaceToWorldSpaceMatrix())) * cameraSceneItem->getCameraRelativeWorldSpaceToViewSpaceMatrix();
+						cameraSceneItem->getPreviousCameraRelativeWorldSpaceToViewSpaceMatrix(mPassData->previousCameraRelativeWorldSpaceToViewSpaceMatrix[eyeIndex]);
+						mPassData->previousCameraRelativeWorldSpaceToViewSpaceMatrix[eyeIndex] = (inverseHmdEyeSpaceToHeadSpaceMatrix * glm::inverse(vrManager.getPreviousHmdHeadSpaceToWorldSpaceMatrix())) * mPassData->previousCameraRelativeWorldSpaceToViewSpaceMatrix[eyeIndex];
 					}
 					else
 				#endif
 				{
 					// Standard rendering using a camera scene item
+					mCameraRelativeWorldSpaceCameraPosition[eyeIndex] = Math::VEC3_ZERO;
 
 					// Get world space to view space matrix (Aka "view matrix")
 					mPassData->cameraRelativeWorldSpaceToViewSpaceMatrix[eyeIndex] = cameraSceneItem->getCameraRelativeWorldSpaceToViewSpaceMatrix();
-					cameraSceneItem->getPreviousCameraRelativeWorldSpaceToViewSpaceMatrix(previousCameraRelativeWorldSpaceToViewSpaceMatrix);
+					cameraSceneItem->getPreviousCameraRelativeWorldSpaceToViewSpaceMatrix(mPassData->previousCameraRelativeWorldSpaceToViewSpaceMatrix[eyeIndex]);
 
 					// Get view space to clip space matrix (aka "projection matrix")
 					viewSpaceToClipSpaceMatrix = cameraSceneItem->getViewSpaceToClipSpaceMatrix(static_cast<float>(renderTargetWidth) / mRenderTargetHeight);
@@ -439,9 +442,10 @@ namespace RendererRuntime
 			else
 			{
 				// Standard rendering
+				mCameraRelativeWorldSpaceCameraPosition[eyeIndex] = Math::VEC3_ZERO;
 
 				// Get world space to view space matrix (Aka "view matrix")
-				mPassData->cameraRelativeWorldSpaceToViewSpaceMatrix[eyeIndex] = previousCameraRelativeWorldSpaceToViewSpaceMatrix = glm::lookAt(Math::VEC3_ZERO, Math::VEC3_FORWARD, Math::VEC3_UP);
+				mPassData->cameraRelativeWorldSpaceToViewSpaceMatrix[eyeIndex] = mPassData->previousCameraRelativeWorldSpaceToViewSpaceMatrix[eyeIndex] = glm::lookAt(Math::VEC3_ZERO, Math::VEC3_FORWARD, Math::VEC3_UP);
 
 				// Get view space to clip space matrix (aka "projection matrix")
 				// -> Near and far flipped due to usage of Reversed-Z (see e.g. https://developer.nvidia.com/content/depth-precision-visualized and https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/)
@@ -450,8 +454,7 @@ namespace RendererRuntime
 			}
 			mPassData->cameraRelativeWorldSpaceToViewSpaceQuaternion[eyeIndex] = glm::quat(mPassData->cameraRelativeWorldSpaceToViewSpaceMatrix[eyeIndex]);
 			mPassData->cameraRelativeWorldSpaceToClipSpaceMatrixReversedZ[eyeIndex] = viewSpaceToClipSpaceMatrixReversedZ * mPassData->cameraRelativeWorldSpaceToViewSpaceMatrix[eyeIndex];
-			mPassData->previousCameraRelativeWorldSpaceToClipSpaceMatrixReversedZ[eyeIndex] = viewSpaceToClipSpaceMatrixReversedZ * previousCameraRelativeWorldSpaceToViewSpaceMatrix;	// TODO(co) Do also support the previous view space to clip space matrix so e.g. FOV changes have an influence?
-			mPassData->previousCameraRelativeWorldSpaceToViewSpaceMatrix[eyeIndex] = previousCameraRelativeWorldSpaceToViewSpaceMatrix;
+			mPassData->previousCameraRelativeWorldSpaceToClipSpaceMatrixReversedZ[eyeIndex] = viewSpaceToClipSpaceMatrixReversedZ * mPassData->previousCameraRelativeWorldSpaceToViewSpaceMatrix[eyeIndex];	// TODO(co) Do also support the previous view space to clip space matrix so e.g. FOV changes have an influence?
 			mPassData->viewSpaceToClipSpaceMatrix[eyeIndex] = viewSpaceToClipSpaceMatrix;
 			mPassData->viewSpaceToClipSpaceMatrixReversedZ[eyeIndex] = viewSpaceToClipSpaceMatrixReversedZ;
 		}
@@ -484,9 +487,19 @@ namespace RendererRuntime
 				memcpy(buffer, glm::value_ptr(mPassData->cameraRelativeWorldSpaceToViewSpaceQuaternion[0]), numberOfBytes);
 				break;
 
+			case ::detail::WORLD_SPACE_TO_VIEW_SPACE_QUATERNION_2:
+				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 == numberOfBytes, "Invalid number of bytes")
+				memcpy(buffer, glm::value_ptr(mPassData->cameraRelativeWorldSpaceToViewSpaceQuaternion[1]), numberOfBytes);
+				break;
+
 			case ::detail::VIEW_SPACE_TO_WORLD_SPACE_QUATERNION:
 				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 == numberOfBytes, "Invalid number of bytes")
 				memcpy(buffer, glm::value_ptr(glm::inverse(mPassData->cameraRelativeWorldSpaceToViewSpaceQuaternion[0])), numberOfBytes);
+				break;
+
+			case ::detail::VIEW_SPACE_TO_WORLD_SPACE_QUATERNION_2:
+				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 == numberOfBytes, "Invalid number of bytes")
+				memcpy(buffer, glm::value_ptr(glm::inverse(mPassData->cameraRelativeWorldSpaceToViewSpaceQuaternion[1])), numberOfBytes);
 				break;
 
 			// Only valid for graphics pipeline
@@ -510,9 +523,21 @@ namespace RendererRuntime
 				memcpy(buffer, glm::value_ptr(mPassData->previousCameraRelativeWorldSpaceToClipSpaceMatrixReversedZ[0]), numberOfBytes);
 				break;
 
+			// Only valid for graphics pipeline
+			case ::detail::PREVIOUS_WORLD_SPACE_TO_CLIP_SPACE_MATRIX_2:
+				RENDERER_ASSERT(mRendererRuntime->getContext(), !mIsComputePipeline, "\"PREVIOUS_WORLD_SPACE_TO_CLIP_SPACE_MATRIX\" is only valid for graphics pipeline")
+				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
+				memcpy(buffer, glm::value_ptr(mPassData->previousCameraRelativeWorldSpaceToClipSpaceMatrixReversedZ[1]), numberOfBytes);
+				break;
+
 			case ::detail::PREVIOUS_WORLD_SPACE_TO_VIEW_SPACE_MATRIX:
 				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
 				memcpy(buffer, glm::value_ptr(mPassData->previousCameraRelativeWorldSpaceToViewSpaceMatrix[0]), numberOfBytes);
+				break;
+
+			case ::detail::PREVIOUS_WORLD_SPACE_TO_VIEW_SPACE_MATRIX_2:
+				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
+				memcpy(buffer, glm::value_ptr(mPassData->previousCameraRelativeWorldSpaceToViewSpaceMatrix[1]), numberOfBytes);
 				break;
 
 			// Only valid for graphics pipeline
@@ -549,6 +574,20 @@ namespace RendererRuntime
 				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
 				memcpy(buffer, glm::value_ptr(glm::inverse(mPassData->cameraRelativeWorldSpaceToClipSpaceMatrixReversedZ[0])), numberOfBytes);
 				break;
+
+			case ::detail::WORLD_SPACE_CAMERA_POSITION:
+			{
+				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 3 == numberOfBytes, "Invalid number of bytes")
+				memcpy(buffer, glm::value_ptr(mCameraRelativeWorldSpaceCameraPosition[0]), numberOfBytes);
+				break;
+			}
+
+			case ::detail::WORLD_SPACE_CAMERA_POSITION_2:
+			{
+				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 3 == numberOfBytes, "Invalid number of bytes")
+				memcpy(buffer, glm::value_ptr(mCameraRelativeWorldSpaceCameraPosition[1]), numberOfBytes);
+				break;
+			}
 
 			case ::detail::UNMODIFIED_WORLD_SPACE_CAMERA_POSITION:
 			{

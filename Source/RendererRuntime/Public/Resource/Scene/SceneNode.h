@@ -88,26 +88,49 @@ namespace RendererRuntime
 			return mTransform;
 		}
 
+		// For incremental transform updates
 		inline void setTransform(const Transform& transform)
 		{
 			mTransform = transform;
 			updateGlobalTransformRecursive();
 		}
 
-		// 64 bit world space position
+		// For instant transform updates
+		inline void teleportTransform(const Transform& transform)
+		{
+			setTransform(transform);
+			mPreviousGlobalTransform = mGlobalTransform;
+		}
+
+		// For incremental position updates, 64 bit world space position
 		inline void setPosition(const glm::dvec3& position)
 		{
 			mTransform.position = position;
 			updateGlobalTransformRecursive();
 		}
 
+		// For instant position updates, 64 bit world space position
+		inline void teleportPosition(const glm::dvec3& position)
+		{
+			setPosition(position);
+			mPreviousGlobalTransform = mGlobalTransform;
+		}
+
+		// For incremental rotation updates
 		inline void setRotation(const glm::quat& rotation)
 		{
 			mTransform.rotation = rotation;
 			updateGlobalTransformRecursive();
 		}
 
-		// 64 bit world space position
+		// For instant rotation updates
+		inline void teleportRotation(const glm::quat& rotation)
+		{
+			setRotation(rotation);
+			mPreviousGlobalTransform = mGlobalTransform;
+		}
+
+		// For incremental position and rotation updates, 64 bit world space position
 		inline void setPositionRotation(const glm::dvec3& position, const glm::quat& rotation)
 		{
 			mTransform.position = position;
@@ -115,10 +138,25 @@ namespace RendererRuntime
 			updateGlobalTransformRecursive();
 		}
 
+		// For instant position and rotation updates, 64 bit world space position
+		inline void teleportPositionRotation(const glm::dvec3& position, const glm::quat& rotation)
+		{
+			setPositionRotation(position, rotation);
+			mPreviousGlobalTransform = mGlobalTransform;
+		}
+
+		// For incremental scale updates
 		inline void setScale(const glm::vec3& scale)
 		{
 			mTransform.scale = scale;
 			updateGlobalTransformRecursive();
+		}
+
+		// For instant scale updates
+		inline void teleportScale(const glm::vec3& scale)
+		{
+			setScale(scale);
+			mPreviousGlobalTransform = mGlobalTransform;
 		}
 
 		//[-------------------------------------------------------]

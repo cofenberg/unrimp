@@ -65,7 +65,8 @@ OUTPUT_END
 struct PassDataStruct
 {
 	float4x4 WorldSpaceToClipSpaceMatrix[2];
-	float4   ViewSpaceToWorldSpaceQuaternion;
+	float4   ViewSpaceToWorldSpaceQuaternion[2];
+	float3	 WorldSpaceCameraPosition[2];
 	float2   InverseViewportSize;
 	float2	 ProjectionParameters;
 	float	 JitterFactor;

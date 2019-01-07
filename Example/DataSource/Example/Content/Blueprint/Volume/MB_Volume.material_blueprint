@@ -105,6 +105,24 @@
 							"ValueType": "FLOAT_4",
 							"Value": "@VIEW_SPACE_TO_WORLD_SPACE_QUATERNION"
 						},
+						"ViewSpaceToWorldSpaceQuaternion2":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4",
+							"Value": "@VIEW_SPACE_TO_WORLD_SPACE_QUATERNION_2"
+						},
+						"WorldSpaceCameraPosition":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_3",
+							"Value": "@WORLD_SPACE_CAMERA_POSITION"
+						},
+						"WorldSpaceCameraPosition2":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_3",
+							"Value": "@WORLD_SPACE_CAMERA_POSITION_2"
+						},
 						"InverseViewportSize":
 						{
 							"Usage": "PASS_REFERENCE",

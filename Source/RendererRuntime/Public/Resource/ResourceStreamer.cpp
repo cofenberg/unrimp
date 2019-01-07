@@ -280,6 +280,15 @@ namespace RendererRuntime
 							RENDERER_ASSERT(mRendererRuntime.getContext(), false, "We should never end up in here")
 						}
 					}
+					else
+					{
+						// Push the load request into the queue of the next resource streamer pipeline stage
+						// -> Resource streamer stage: 2. Asynchronous processing
+						std::unique_lock<std::mutex> processingMutexLock(mProcessingMutex);
+						mProcessingQueue.push_back(loadRequest);
+						processingMutexLock.unlock();
+						mProcessingConditionVariable.notify_one();
+					}
 
 					// We're ready for the next round
 					deserializationMutexLock.lock();

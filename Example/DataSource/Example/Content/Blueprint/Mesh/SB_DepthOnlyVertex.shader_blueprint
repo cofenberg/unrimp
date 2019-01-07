@@ -46,10 +46,10 @@ INPUT_BEGIN
 INPUT_END
 OUTPUT_BEGIN
 	@property(UseAlphaMap)
-		OUTPUT_TEXTURE_COORDINATE_NOINTERPOLATION(1, uint,   AssignedMaterialSlotVS, 0)	// The assigned material slot inside the material uniform buffer
-		OUTPUT_TEXTURE_COORDINATE				 (2, float2, TexCoordVS,			 1)	// Texture coordinate
+		OUTPUT_TEXTURE_COORDINATE_NOINTERPOLATION(1, uint,   MaterialSlotVS, 0)	// The assigned material slot inside the material uniform buffer
+		OUTPUT_TEXTURE_COORDINATE				 (2, float2, TexCoordVS,	 1)	// Texture coordinate
 	@end
-	OUTPUT_POSITION								 (0)									// Clip space vertex position as output, left/bottom is (-1,-1) and right/top is (1,1)
+	OUTPUT_POSITION								 (0)							// Clip space vertex position as output, left/bottom is (-1,-1) and right/top is (1,1)
 OUTPUT_END
 
 // Uniform buffers
@@ -107,7 +107,7 @@ MAIN_BEGIN
 
 	@property(UseAlphaMap)
 		// Pass through the assigned material slot inside the material uniform buffer
-		MAIN_OUTPUT(AssignedMaterialSlotVS) = instanceIndices.y;
+		MAIN_OUTPUT(MaterialSlotVS) = instanceIndices.y;
 
 		// Pass through the 32 bit texture coordinate
 		MAIN_OUTPUT(TexCoordVS) = MAIN_INPUT(TexCoord);

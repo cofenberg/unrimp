@@ -232,6 +232,12 @@
 							"ValueType": "FLOAT_4_4",
 							"Value": "@PREVIOUS_WORLD_SPACE_TO_CLIP_SPACE_MATRIX"
 						},
+						"PreviousWorldSpaceToClipSpaceMatrix2":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4_4",
+							"Value": "@PREVIOUS_WORLD_SPACE_TO_CLIP_SPACE_MATRIX_2"
+						},
 						"ShadowMatrix":
 						{
 							"Usage": "PASS_REFERENCE",
@@ -262,17 +268,41 @@
 							"ValueType": "FLOAT_4",
 							"Value": "@VIEW_SPACE_TO_WORLD_SPACE_QUATERNION"
 						},
+						"ViewSpaceToWorldSpaceQuaternion2":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4",
+							"Value": "@VIEW_SPACE_TO_WORLD_SPACE_QUATERNION_2"
+						},
 						"WorldSpaceToViewSpaceQuaternion":
 						{
 							"Usage": "PASS_REFERENCE",
 							"ValueType": "FLOAT_4",
 							"Value": "@WORLD_SPACE_TO_VIEW_SPACE_QUATERNION"
 						},
+						"WorldSpaceToViewSpaceQuaternion2":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4",
+							"Value": "@WORLD_SPACE_TO_VIEW_SPACE_QUATERNION_2"
+						},
 						"WetSurfaces":
 						{
 							"Usage": "GLOBAL_REFERENCE",
 							"ValueType": "FLOAT_4",
 							"Value": "@GlobalWetSurfaces"
+						},
+						"WorldSpaceCameraPosition":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_3",
+							"Value": "@WORLD_SPACE_CAMERA_POSITION"
+						},
+						"WorldSpaceCameraPosition2":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_3",
+							"Value": "@WORLD_SPACE_CAMERA_POSITION_2"
 						},
 						"WrappedWorldSpaceCameraPosition":
 						{

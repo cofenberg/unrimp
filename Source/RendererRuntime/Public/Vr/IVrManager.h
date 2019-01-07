@@ -129,7 +129,8 @@ namespace RendererRuntime
 		virtual void updateHmdMatrixPose(CameraSceneItem* cameraSceneItem) = 0;
 		[[nodiscard]] virtual glm::mat4 getHmdViewSpaceToClipSpaceMatrix(VrEye vrEye, float nearZ, float farZ) const = 0;
 		[[nodiscard]] virtual glm::mat4 getHmdEyeSpaceToHeadSpaceMatrix(VrEye vrEye) const = 0;
-		[[nodiscard]] virtual const glm::mat4& getHmdPoseMatrix() const = 0;
+		[[nodiscard]] virtual const glm::mat4& getHmdHeadSpaceToWorldSpaceMatrix() const = 0;
+		[[nodiscard]] virtual const glm::mat4& getPreviousHmdHeadSpaceToWorldSpaceMatrix() const = 0;
 
 
 	//[-------------------------------------------------------]

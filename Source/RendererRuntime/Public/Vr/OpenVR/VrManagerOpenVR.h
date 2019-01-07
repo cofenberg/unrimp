@@ -148,9 +148,14 @@ namespace RendererRuntime
 		[[nodiscard]] virtual glm::mat4 getHmdViewSpaceToClipSpaceMatrix(VrEye vrEye, float nearZ, float farZ) const override;
 		[[nodiscard]] virtual glm::mat4 getHmdEyeSpaceToHeadSpaceMatrix(VrEye vrEye) const override;
 
-		[[nodiscard]] inline virtual const glm::mat4& getHmdPoseMatrix() const override
+		[[nodiscard]] inline virtual const glm::mat4& getHmdHeadSpaceToWorldSpaceMatrix() const override
 		{
-			return mHmdPoseMatrix;
+			return mHmdHeadSpaceToWorldSpaceMatrix;
+		}
+
+		[[nodiscard]] inline virtual const glm::mat4& getPreviousHmdHeadSpaceToWorldSpaceMatrix() const override
+		{
+			return mPreviousHmdHeadSpaceToWorldSpaceMatrix;
 		}
 
 
@@ -221,7 +226,8 @@ namespace RendererRuntime
 		vr::TrackedDevicePose_t	mVrTrackedDevicePose[vr::k_unMaxTrackedDeviceCount];
 		glm::mat4				mDevicePoseMatrix[vr::k_unMaxTrackedDeviceCount];
 		uint32_t				mNumberOfValidDevicePoses;
-		glm::mat4				mHmdPoseMatrix;
+		glm::mat4				mHmdHeadSpaceToWorldSpaceMatrix;
+		glm::mat4				mPreviousHmdHeadSpaceToWorldSpaceMatrix;
 		// Renderer resources
 		Renderer::ITexture2DPtr	  mColorTexture2D;	///< Color 2D texture, can be a null pointer
 		Renderer::IFramebufferPtr mFramebuffer;		///< Framebuffer object (FBO), can be a null pointer

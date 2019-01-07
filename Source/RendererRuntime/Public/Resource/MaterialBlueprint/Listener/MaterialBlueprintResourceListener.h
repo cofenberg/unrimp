@@ -119,6 +119,7 @@ namespace RendererRuntime
 			mPassData(nullptr),
 			mCompositorContextData(nullptr),
 			mWorldSpaceCameraPosition(0.0f, 0.0f, 0.0f),
+			mCameraRelativeWorldSpaceCameraPosition{{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}},
 			mRenderTargetWidth(1),
 			mRenderTargetHeight(1),
 			mNearZ(0.0f),
@@ -236,6 +237,7 @@ namespace RendererRuntime
 		PassBufferManager::PassData* mPassData;					///< Memory address received via "RendererRuntime::MaterialBlueprintResourceListener::beginFillPass()", can be a null pointer outside the correct scope, don't destroy the memory
 		const CompositorContextData* mCompositorContextData;
 		glm::dvec3					 mWorldSpaceCameraPosition;	///< Cached 64 bit world space position of the camera since often accessed due to camera relative rendering
+		glm::vec3					 mCameraRelativeWorldSpaceCameraPosition[2];
 		uint32_t					 mRenderTargetWidth;
 		uint32_t					 mRenderTargetHeight;
 		float						 mNearZ;

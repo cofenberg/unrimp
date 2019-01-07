@@ -37,7 +37,7 @@
 //[-------------------------------------------------------]
 // Attribute input / output
 INPUT_BEGIN
-	INPUT_TEXTURE_COORDINATE_NOINTERPOLATION(1, uint,   AssignedMaterialSlotVS,			0)	// The assigned material slot inside the material uniform buffer
+	INPUT_TEXTURE_COORDINATE_NOINTERPOLATION(1, uint2,  MaterialSlotStereoEyeIndexVS,	0)	// x = The assigned material slot inside the material uniform buffer, y = Stereo eye index
 	INPUT_TEXTURE_COORDINATE				(2, float2, TexCoordVS,						1)	// Texture coordinate
 	INPUT_TEXTURE_COORDINATE				(3, float3, TangentFrame0VS,				2)	// Tangent frame
 	INPUT_TEXTURE_COORDINATE				(4, float3, TangentFrame1VS,				3)	// Tangent frame
@@ -54,14 +54,15 @@ OUTPUT_END
 struct PassDataStruct
 {
 	float4x4 WorldSpaceToClipSpaceMatrix[2];
-	float4x4 PreviousWorldSpaceToClipSpaceMatrix;
+	float4x4 PreviousWorldSpaceToClipSpaceMatrix[2];
 	float4x4 ShadowMatrix;
 	float4   ShadowCascadeOffsets[4];
 	float4   ShadowCascadeScales[4];
 	float4   ShadowCascadeSplits;
-	float4	 ViewSpaceToWorldSpaceQuaternion;
-	float4	 WorldSpaceToViewSpaceQuaternion;
+	float4	 ViewSpaceToWorldSpaceQuaternion[2];
+	float4	 WorldSpaceToViewSpaceQuaternion[2];
 	float4	 WetSurfaces;	// x=wet level, y=hole/cracks flood level, z=puddle flood level, w=rain intensity
+	float3	 WorldSpaceCameraPosition[2];
 	float3	 WrappedWorldSpaceCameraPosition;
 	float3	 ViewSpaceSunlightDirection;
 	float3	 AmbientColor;
@@ -148,8 +149,9 @@ SAMPLER_STATE(4, 0, SamplerLinear, 0)
 //[ Main                                                  ]
 //[-------------------------------------------------------]
 MAIN_BEGIN
-	// Get the used material
-	Material material = Materials[MAIN_INPUT(AssignedMaterialSlotVS)];
+	// Get the used material and stereo eye index
+	Material material = Materials[MAIN_INPUT(MaterialSlotStereoEyeIndexVS).x];
+	uint stereoEyeIndex = MAIN_INPUT(MaterialSlotStereoEyeIndexVS).y;
 
 	// Perform alpha map based fragment rejection
 	@property(UseAlphaMap)
@@ -182,9 +184,9 @@ MAIN_BEGIN
 	@end
 
 	// Derive data
-	float3 worldSpaceNormal = MultiplyQuaternionVector(PassData.ViewSpaceToWorldSpaceQuaternion, viewSpaceNormal);
+	float3 worldSpaceNormal = MultiplyQuaternionVector(PassData.ViewSpaceToWorldSpaceQuaternion[stereoEyeIndex], viewSpaceNormal);
 	float3 worldSpaceIncident = normalize(-worldSpacePosition);	// Since we're using camera relative rendering, "PassData.WorldSpaceCameraPosition - worldSpacePosition" becomes just "-worldSpacePosition"
-	float3 viewSpaceIncident = MultiplyQuaternionVector(PassData.WorldSpaceToViewSpaceQuaternion, worldSpaceIncident);
+	float3 viewSpaceIncident = MultiplyQuaternionVector(PassData.WorldSpaceToViewSpaceQuaternion[stereoEyeIndex], worldSpaceIncident);
 
 	// Water influence on material BRDF
 	// -> Wet surfaces parameter layout: x=wet level, y=hole/cracks flood level, z=puddle flood level, w=rain intensity
@@ -194,7 +196,7 @@ MAIN_BEGIN
 			// Handle camera relative rendering
 			float3 wrappedWorldSpacePosition = worldSpacePosition + PassData.WrappedWorldSpaceCameraPosition;
 			float3x3 TBN = ROW_MATRIX_3x3(MAIN_INPUT(TangentFrame0VS), MAIN_INPUT(TangentFrame1VS), MAIN_INPUT(TangentFrame2VS));
-			DoWaterProcess(wrappedWorldSpacePosition, TBN, PassData.GlobalTimeInSeconds, PassData.WorldSpaceToViewSpaceQuaternion, shadowVisibility, value_hr_rg_mb_nya.r, multipleOctavesNoise3D(wrappedWorldSpacePosition), PassData.WetSurfaces.x, PassData.WetSurfaces.y, PassData.WetSurfaces.z, PassData.WetSurfaces.w, albedo, roughness, metallic, viewSpaceNormal);
+			DoWaterProcess(wrappedWorldSpacePosition, TBN, PassData.GlobalTimeInSeconds, PassData.WorldSpaceToViewSpaceQuaternion[stereoEyeIndex], shadowVisibility, value_hr_rg_mb_nya.r, multipleOctavesNoise3D(wrappedWorldSpacePosition), PassData.WetSurfaces.x, PassData.WetSurfaces.y, PassData.WetSurfaces.z, PassData.WetSurfaces.w, albedo, roughness, metallic, viewSpaceNormal);
 		}
 	@end
 

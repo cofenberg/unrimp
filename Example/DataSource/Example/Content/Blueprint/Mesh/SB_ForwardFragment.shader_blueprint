@@ -39,7 +39,7 @@
 //[-------------------------------------------------------]
 // Attribute input / output
 INPUT_BEGIN
-	INPUT_TEXTURE_COORDINATE_NOINTERPOLATION(1, uint,   AssignedMaterialSlotVS,			0)	// The assigned material slot inside the material uniform buffer
+	INPUT_TEXTURE_COORDINATE_NOINTERPOLATION(1, uint2,  MaterialSlotStereoEyeIndexVS,	0)	// x = The assigned material slot inside the material uniform buffer, y = Stereo eye index
 	INPUT_TEXTURE_COORDINATE				(2, float2, TexCoordVS,						1)	// Texture coordinate
 	INPUT_TEXTURE_COORDINATE				(3, float3, TangentFrame0VS,				2)	// Tangent frame
 	INPUT_TEXTURE_COORDINATE				(4, float3, TangentFrame1VS,				3)	// Tangent frame
@@ -60,14 +60,15 @@ OUTPUT_END
 struct PassDataStruct
 {
 	float4x4 WorldSpaceToClipSpaceMatrix[2];
-	float4x4 PreviousWorldSpaceToClipSpaceMatrix;
+	float4x4 PreviousWorldSpaceToClipSpaceMatrix[2];
 	float4x4 ShadowMatrix;
 	float4   ShadowCascadeOffsets[4];
 	float4   ShadowCascadeScales[4];
 	float4   ShadowCascadeSplits;
-	float4	 ViewSpaceToWorldSpaceQuaternion;
-	float4	 WorldSpaceToViewSpaceQuaternion;
+	float4	 ViewSpaceToWorldSpaceQuaternion[2];
+	float4	 WorldSpaceToViewSpaceQuaternion[2];
 	float4	 WetSurfaces;	// x=wet level, y=hole/cracks flood level, z=puddle flood level, w=rain intensity
+	float3	 WorldSpaceCameraPosition[2];
 	float3	 WrappedWorldSpaceCameraPosition;
 	float3	 ViewSpaceSunlightDirection;
 	float3	 AmbientColor;
@@ -165,13 +166,20 @@ MAIN_BEGIN
 	float2 texCoord = MAIN_INPUT(TexCoordVS);
 	float shadowVisibility = 1.0f;
 
-	// Get the used material
-	Material material = Materials[MAIN_INPUT(AssignedMaterialSlotVS)];
+	// Get the used material and stereo eye index
+	Material material = Materials[MAIN_INPUT(MaterialSlotStereoEyeIndexVS).x];
+	uint stereoEyeIndex = MAIN_INPUT(MaterialSlotStereoEyeIndexVS).y;
 
 	// Get unnormalized camera incident vector
 	float3 worldSpacePosition = MAIN_INPUT(WorldSpacePositionVS);
-	float3 worldSpaceIncident = -worldSpacePosition;	// Since we're using camera relative rendering, "PassData.WorldSpaceCameraPosition - worldSpacePosition" becomes just "-worldSpacePosition"
-	float3 viewSpaceIncident = MultiplyQuaternionVector(PassData.WorldSpaceToViewSpaceQuaternion, worldSpaceIncident);
+	@property(SinglePassStereoInstancing)
+		float3 worldSpaceIncident = PassData.WorldSpaceCameraPosition[stereoEyeIndex] - worldSpacePosition;
+	@end
+	@property(!SinglePassStereoInstancing)
+		// Possible optimization when not using stereo rendering: Since we're using camera relative rendering, "PassData.WorldSpaceCameraPosition - worldSpacePosition" becomes just "-worldSpacePosition"
+		float3 worldSpaceIncident = -worldSpacePosition;
+	@end
+	float3 viewSpaceIncident = MultiplyQuaternionVector(PassData.WorldSpaceToViewSpaceQuaternion[stereoEyeIndex], worldSpaceIncident);
 
 	// Get TBN
 	@property(UseParallaxOcclusionMapping || UseWetSurfaces)
@@ -230,7 +238,7 @@ MAIN_BEGIN
 		{
 			// Handle camera relative rendering
 			float3 wrappedWorldSpacePosition = worldSpacePosition + PassData.WrappedWorldSpaceCameraPosition;
-			DoWaterProcess(wrappedWorldSpacePosition, TBN, PassData.GlobalTimeInSeconds, PassData.WorldSpaceToViewSpaceQuaternion, shadowVisibility, value_hr_rg_mb_nya.r, multipleOctavesNoise3D(wrappedWorldSpacePosition), PassData.WetSurfaces.x, PassData.WetSurfaces.y, PassData.WetSurfaces.z, PassData.WetSurfaces.w, albedo, roughness, metallic, viewSpaceNormal);
+			DoWaterProcess(wrappedWorldSpacePosition, TBN, PassData.GlobalTimeInSeconds, PassData.WorldSpaceToViewSpaceQuaternion[stereoEyeIndex], shadowVisibility, value_hr_rg_mb_nya.r, multipleOctavesNoise3D(wrappedWorldSpacePosition), PassData.WetSurfaces.x, PassData.WetSurfaces.y, PassData.WetSurfaces.z, PassData.WetSurfaces.w, albedo, roughness, metallic, viewSpaceNormal);
 		}
 	@end
 
@@ -240,16 +248,26 @@ MAIN_BEGIN
 	// Get reflection color
 	float3 reflectionColor;
 	{
+		float2 reflectionTexCoord = (FRAGMENT_POSITION.xy / PassData.ViewportSize);
+
 		// Temporal reprojection: We're using data from the previous frame for the reflection color. In order to hide that
 		// the reflections lag one frame behind we're reprojecting the reflection basing on previous camera related data.
-		float2 reflectionTexCoord = (FRAGMENT_POSITION.xy / PassData.ViewportSize) - velocity;
-		float2 coordinateEdgeAttenuation = float2(1.0f, 1.0f) - pow(SATURATE(abs(reflectionTexCoord - float2(0.5f, 0.5f)) * 2), float2(8.0f, 8.0f));
-		float screenEdgeAttenuation = SATURATE(min(coordinateEdgeAttenuation.x, coordinateEdgeAttenuation.y));
-		reflectionColor = SAMPLE_2D(ReflectionMap, SamplerLinear, reflectionTexCoord).rgb * float3(screenEdgeAttenuation, screenEdgeAttenuation, screenEdgeAttenuation);
+		reflectionTexCoord -= velocity;
+
+		// Get reflection color
+		@property(SinglePassStereoInstancing)
+			// No screen edge attenuation necessary for single pass stereo instancing since due to lens distortion we don't see the edges anyway
+			reflectionColor = SAMPLE_2D(ReflectionMap, SamplerLinear, reflectionTexCoord).rgb;
+		@end
+		@property(!SinglePassStereoInstancing)
+			float2 coordinateEdgeAttenuation = float2(1.0f, 1.0f) - pow(SATURATE(abs(reflectionTexCoord - float2(0.5f, 0.5f)) * 2), float2(8.0f, 8.0f));
+			float screenEdgeAttenuation = SATURATE(min(coordinateEdgeAttenuation.x, coordinateEdgeAttenuation.y));
+			reflectionColor = SAMPLE_2D(ReflectionMap, SamplerLinear, reflectionTexCoord).rgb * float3(screenEdgeAttenuation, screenEdgeAttenuation, screenEdgeAttenuation);
+		@end
 	}
 
 	// Ambient term
-	float3 worldSpaceNormal = MultiplyQuaternionVector(PassData.ViewSpaceToWorldSpaceQuaternion, viewSpaceNormal);
+	float3 worldSpaceNormal = MultiplyQuaternionVector(PassData.ViewSpaceToWorldSpaceQuaternion[stereoEyeIndex], viewSpaceNormal);
 	float3 color = (reflectionColor * metallic + albedo) * (PassData.AmbientColor.rgb + CalculateHemisphereLighting(worldSpaceNormal.xyz, PassData.AmbientColor.rgb * 0.7f, PassData.AmbientColor.rgb * 0.2f));
 
 	// Directional sunlight, our primary light

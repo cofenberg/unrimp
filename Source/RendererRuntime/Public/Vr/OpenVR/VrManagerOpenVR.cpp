@@ -604,8 +604,7 @@ namespace RendererRuntime
 					glm::decompose(devicePoseMatrix, scale, rotation, translation, skew, perspective);
 
 					// Tell the scene node about the new position and rotation, scale doesn't change
-					// -> Everything must be relative to the 64 bit world space position of the camera
-					sceneNode->setPositionRotation(glm::dvec3(translation) - cameraPosition, rotation);
+					sceneNode->setPositionRotation(glm::dvec3(translation) + cameraPosition, rotation);
 
 					// Show/hide scene node
 					sceneNode->setVisible(showControllers);
@@ -641,10 +640,11 @@ namespace RendererRuntime
 			}
 		}
 
-		// Backup HMD pose
+		// Backup head space to world space
 		if (mVrTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid)
 		{
-			mHmdPoseMatrix = mDevicePoseMatrix[vr::k_unTrackedDeviceIndex_Hmd];
+			mPreviousHmdHeadSpaceToWorldSpaceMatrix = mHmdHeadSpaceToWorldSpaceMatrix;	// First update isn't correct, but probably no one will notice
+			mHmdHeadSpaceToWorldSpaceMatrix = mDevicePoseMatrix[vr::k_unTrackedDeviceIndex_Hmd];
 		}
 
 		// Update camera scene node transform and hide the HMD scene node in case it's currently used as the camera scene node (we don't want to see the HMD mesh from the inside)
@@ -751,7 +751,8 @@ namespace RendererRuntime
 		mVrRenderModels(nullptr),
 		mShowRenderModels(true),
 		mNumberOfValidDevicePoses(0),
-		mHmdPoseMatrix(Math::MAT4_IDENTITY)
+		mHmdHeadSpaceToWorldSpaceMatrix(Math::MAT4_IDENTITY),
+		mPreviousHmdHeadSpaceToWorldSpaceMatrix(Math::MAT4_IDENTITY)
 	{
 		for (int i = 0; i < vr::k_unMaxTrackedDeviceCount; ++i)
 		{

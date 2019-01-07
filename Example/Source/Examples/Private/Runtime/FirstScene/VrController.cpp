@@ -145,8 +145,7 @@ namespace
 						// -> When pressing the trigger button one teleports to this position
 						if (mNumberOfVrControllers > 0 && mVrControllerTrackedDeviceIndices[FIRST_CONTROLLER_INDEX] == vrVrEvent.trackedDeviceIndex && vrVrEvent.data.controller.button == vr::k_EButton_SteamVR_Trigger && mVrController->getTeleportIndicationLightSceneItemSafe().isVisible())
 						{
-							// TODO(co) Why inversed position?
-							mVrController->getCameraSceneItem().getParentSceneNodeSafe().setPosition(-mVrController->getTeleportIndicationLightSceneItemSafe().getParentSceneNodeSafe().getGlobalTransform().position);
+							mVrController->getCameraSceneItem().getParentSceneNodeSafe().setPosition(mVrController->getTeleportIndicationLightSceneItemSafe().getParentSceneNodeSafe().getGlobalTransform().position);
 						}
 						break;
 					}
@@ -364,8 +363,8 @@ void VrController::onUpdate(float, bool)
 			glm::vec4 perspective;
 			glm::decompose(devicePoseMatrix, scale, rotation, translation, skew, perspective);
 
-			// Construct ray: Everything must be relative to the 64 bit world space position of the camera
-			const glm::dvec3 rayOrigin = glm::dvec3(translation) - getCameraSceneItem().getParentSceneNodeSafe().getGlobalTransform().position;
+			// Construct ray
+			const glm::dvec3 rayOrigin = glm::dvec3(translation) + getCameraSceneItem().getParentSceneNodeSafe().getGlobalTransform().position;
 			const glm::dvec3 rayDirection = rotation * RendererRuntime::Math::VEC3_FORWARD;
 
 			// Simple ray-plane intersection

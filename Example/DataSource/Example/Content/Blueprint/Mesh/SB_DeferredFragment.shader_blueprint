@@ -39,14 +39,14 @@
 //[-------------------------------------------------------]
 // Attribute input / output
 INPUT_BEGIN
-	INPUT_TEXTURE_COORDINATE_NOINTERPOLATION(1, uint,   AssignedMaterialSlotVS,			0)	// The assigned material slot inside the material uniform buffer
-	INPUT_TEXTURE_COORDINATE				(2, float2, TexCoordVS,						1)	// Texture coordinate
-	INPUT_TEXTURE_COORDINATE				(3, float3, TangentFrame0VS,				2)	// Tangent frame
-	INPUT_TEXTURE_COORDINATE				(4, float3, TangentFrame1VS,				3)	// Tangent frame
-	INPUT_TEXTURE_COORDINATE				(5, float3, TangentFrame2VS,				4)	// Tangent frame
-	INPUT_TEXTURE_COORDINATE				(6, float3, PreviousClipSpacePositionVS,	5)	// Previous clip space position
+	INPUT_TEXTURE_COORDINATE_NOINTERPOLATION(1, uint,   MaterialSlotVS,				 0)	// The assigned material slot inside the material uniform buffer
+	INPUT_TEXTURE_COORDINATE				(2, float2, TexCoordVS,					 1)	// Texture coordinate
+	INPUT_TEXTURE_COORDINATE				(3, float3, TangentFrame0VS,			 2)	// Tangent frame
+	INPUT_TEXTURE_COORDINATE				(4, float3, TangentFrame1VS,			 3)	// Tangent frame
+	INPUT_TEXTURE_COORDINATE				(5, float3, TangentFrame2VS,			 4)	// Tangent frame
+	INPUT_TEXTURE_COORDINATE				(6, float3, PreviousClipSpacePositionVS, 5)	// Previous clip space position
 	@property(UseParallaxOcclusionMapping)
-		INPUT_TEXTURE_COORDINATE			(7, float3, WorldSpacePositionVS,			6)	// World space position
+		INPUT_TEXTURE_COORDINATE			(7, float3, WorldSpacePositionVS,		 6)	// World space position
 	@end
 	DECLARE_FRAGMENT_POSITION
 	DECLARE_COVERAGE_MASK
@@ -121,7 +121,7 @@ MAIN_BEGIN
 	float2 texCoord = MAIN_INPUT(TexCoordVS);
 
 	// Get the used material
-	Material material = Materials[MAIN_INPUT(AssignedMaterialSlotVS)];
+	Material material = Materials[MAIN_INPUT(MaterialSlotVS)];
 
 	// Parallax occlusion mapping (POM)
 	@property(UseParallaxOcclusionMapping)

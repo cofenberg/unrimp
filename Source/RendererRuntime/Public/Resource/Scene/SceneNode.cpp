@@ -53,6 +53,7 @@ namespace RendererRuntime
 		mAttachedSceneNodes.push_back(&sceneNode);
 		sceneNode.mParentSceneNode = this;
 		sceneNode.updateGlobalTransformRecursive();
+		mPreviousGlobalTransform = mGlobalTransform;	// Teleport since we don't have a decent incremental previous global transform
 	}
 
 	void SceneNode::detachAllSceneNodes()
@@ -61,6 +62,7 @@ namespace RendererRuntime
 		{
 			sceneNode->mParentSceneNode = nullptr;
 			sceneNode->updateGlobalTransformRecursive();
+			mPreviousGlobalTransform = mGlobalTransform;	// Teleport since we don't have a decent incremental previous global transform
 		}
 		mAttachedSceneNodes.clear();
 	}

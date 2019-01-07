@@ -446,7 +446,7 @@ void FirstScene::onLoadingStateChange(const RendererRuntime::IResource& resource
 								if (mHasCameraTransformBackup)
 								{
 									// Scene hot-reloading memory
-									mCameraSceneItem->getParentSceneNodeSafe().setTransform(mCameraTransformBackup);
+									mCameraSceneItem->getParentSceneNodeSafe().teleportTransform(mCameraTransformBackup);
 								}
 							}
 							break;
@@ -479,8 +479,7 @@ void FirstScene::onLoadingStateChange(const RendererRuntime::IResource& resource
 
 						// For VR, set camera to origin
 						RendererRuntime::SceneNode* sceneNode = mCameraSceneItem->getParentSceneNode();
-						sceneNode->setPosition(RendererRuntime::Math::DVEC3_ZERO);
-						sceneNode->setRotation(RendererRuntime::Math::QUAT_IDENTITY);
+						sceneNode->teleportPositionRotation(RendererRuntime::Math::DVEC3_ZERO, RendererRuntime::Math::QUAT_IDENTITY);
 					}
 					else
 				#endif

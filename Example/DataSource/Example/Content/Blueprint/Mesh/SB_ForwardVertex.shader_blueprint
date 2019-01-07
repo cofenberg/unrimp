@@ -41,7 +41,7 @@ INPUT_BEGIN_VERTEX
 	@end
 INPUT_END_VERTEX
 OUTPUT_BEGIN_VERTEX
-	OUTPUT_TEXTURE_COORDINATE_NOINTERPOLATION(1, uint,   AssignedMaterialSlotVS,		0)	// The assigned material slot inside the material uniform buffer
+	OUTPUT_TEXTURE_COORDINATE_NOINTERPOLATION(1, uint2,  MaterialSlotStereoEyeIndexVS,	0)	// x = The assigned material slot inside the material uniform buffer, y = Stereo eye index
 	OUTPUT_TEXTURE_COORDINATE				 (2, float2, TexCoordVS,					1)	// Texture coordinate
 	OUTPUT_TEXTURE_COORDINATE				 (3, float3, TangentFrame0VS,				2)	// Tangent frame
 	OUTPUT_TEXTURE_COORDINATE				 (4, float3, TangentFrame1VS,				3)	// Tangent frame
@@ -55,14 +55,15 @@ OUTPUT_END_VERTEX
 struct PassDataStruct
 {
 	float4x4 WorldSpaceToClipSpaceMatrix[2];
-	float4x4 PreviousWorldSpaceToClipSpaceMatrix;
+	float4x4 PreviousWorldSpaceToClipSpaceMatrix[2];
 	float4x4 ShadowMatrix;
 	float4   ShadowCascadeOffsets[4];
 	float4   ShadowCascadeScales[4];
 	float4   ShadowCascadeSplits;
-	float4	 ViewSpaceToWorldSpaceQuaternion;
-	float4	 WorldSpaceToViewSpaceQuaternion;
+	float4	 ViewSpaceToWorldSpaceQuaternion[2];
+	float4	 WorldSpaceToViewSpaceQuaternion[2];
 	float4	 WetSurfaces;	// x=wet level, y=hole/cracks flood level, z=puddle flood level, w=rain intensity
+	float3	 WorldSpaceCameraPosition[2];
 	float3	 WrappedWorldSpaceCameraPosition;
 	float3	 ViewSpaceSunlightDirection;
 	float3	 AmbientColor;
@@ -122,10 +123,18 @@ MAIN_BEGIN_VERTEX
 
 	// Calculate the clip space vertex position, left/bottom is (-1,-1) and right/top is (1,1)
 	MAIN_OUTPUT_POSITION = MATRIX_MUL(PassData.WorldSpaceToClipSpaceMatrix[MAIN_INPUT_STEREO_EYE_INDEX], float4(worldSpacePosition, 1.0f));
-	MAIN_OUTPUT(PreviousClipSpacePositionVS) = MATRIX_MUL(PassData.PreviousWorldSpaceToClipSpaceMatrix, float4(worldSpacePosition, 1.0f)).xyw;
+	MAIN_OUTPUT(PreviousClipSpacePositionVS) = MATRIX_MUL(PassData.PreviousWorldSpaceToClipSpaceMatrix[MAIN_INPUT_STEREO_EYE_INDEX], float4(worldSpacePosition, 1.0f)).xyw;
+	@property(SinglePassStereoInstancing)
+	{
+		// Replicate the "MAIN_END_VERTEX(MAIN_OUTPUT_POSITION)" part for the previous clip space position used for velocity calculation
+		float StereoEyeOffsetScale[2] = { 0.5f, -0.5f };
+		MAIN_OUTPUT(PreviousClipSpacePositionVS).x *= 0.5f;
+		MAIN_OUTPUT(PreviousClipSpacePositionVS).x += StereoEyeOffsetScale[stereoEyeIndex] * MAIN_OUTPUT(PreviousClipSpacePositionVS).z;
+	}
+	@end
 
 	// Pass through the assigned material slot inside the material uniform buffer
-	MAIN_OUTPUT(AssignedMaterialSlotVS) = instanceIndices.y;
+	MAIN_OUTPUT(MaterialSlotStereoEyeIndexVS) = uint2(instanceIndices.y, MAIN_INPUT_STEREO_EYE_INDEX);
 
 	// Pass through the 32 bit texture coordinate
 	MAIN_OUTPUT(TexCoordVS) = MAIN_INPUT(TexCoord);
@@ -133,7 +142,7 @@ MAIN_BEGIN_VERTEX
 	// Calculate the tangent space to view space tangent, binormal and normal
 	// - 16 bit QTangent basing on http://dev.theomader.com/qtangents/ "QTangents" which is basing on
 	//   http://www.crytek.com/cryengine/presentations/spherical-skinning-with-dual-quaternions-and-qtangents "Spherical Skinning with Dual-Quaternions and QTangents"
-	float4 objectSpaceToViewSpaceQuaternion = MultiplyQuaternions(PassData.WorldSpaceToViewSpaceQuaternion, rotationQuaternion);
+	float4 objectSpaceToViewSpaceQuaternion = MultiplyQuaternions(PassData.WorldSpaceToViewSpaceQuaternion[MAIN_INPUT_STEREO_EYE_INDEX], rotationQuaternion);
 	float3x3 tangentFrame = GetTangentFrame(objectSpaceToViewSpaceQuaternion, float4(MAIN_INPUT(QTangent)) / 32767.0f);
 	@property(UseGpuSkinning)
 	{

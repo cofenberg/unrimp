@@ -38,8 +38,8 @@
 	//[-------------------------------------------------------]
 	// Attribute input / output
 	INPUT_BEGIN
-		INPUT_TEXTURE_COORDINATE_NOINTERPOLATION(1, uint,   AssignedMaterialSlotVS, 0)	// The assigned material slot inside the material uniform buffer
-		INPUT_TEXTURE_COORDINATE				(2, float2, TexCoordVS,				1)	// Texture coordinate
+		INPUT_TEXTURE_COORDINATE_NOINTERPOLATION(1, uint,   MaterialSlotVS, 0)	// The assigned material slot inside the material uniform buffer
+		INPUT_TEXTURE_COORDINATE				(2, float2, TexCoordVS,		1)	// Texture coordinate
 	INPUT_END
 
 	// Uniform buffers
@@ -73,7 +73,7 @@
 MAIN_BEGIN_NO_OUTPUT
 	@property(UseAlphaMap)
 		// Get the used material
-		Material material = Materials[MAIN_INPUT(AssignedMaterialSlotVS)];
+		Material material = Materials[MAIN_INPUT(MaterialSlotVS)];
 
 		// Perform alpha map based fragment rejection
 		FLATTEN if (material.AlphaReference >= SAMPLE_2D(AlphaMap, SamplerLinear, MAIN_INPUT(TexCoordVS)).r)
