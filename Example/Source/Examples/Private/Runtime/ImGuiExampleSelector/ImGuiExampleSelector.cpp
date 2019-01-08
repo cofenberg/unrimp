@@ -32,6 +32,9 @@
 
 #include <RendererRuntime/Public/IRendererRuntime.h>
 #include <RendererRuntime/Public/DebugGui/DebugGuiManager.h>
+#ifdef RENDERER_RUNTIME_OPENVR
+	#include <RendererRuntime/Public/Vr/IVrManager.h>
+#endif
 
 #include <imgui/imgui.h>
 
@@ -39,6 +42,20 @@
 //[-------------------------------------------------------]
 //[ Public virtual IApplication methods                   ]
 //[-------------------------------------------------------]
+void ImGuiExampleSelector::onInitialization()
+{
+	// Ease-of-use: If a HMD is present automatically start the "FirstScene"-example so the user can see something
+	#ifdef RENDERER_RUNTIME_OPENVR
+	{
+		RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
+		if (nullptr != rendererRuntime && rendererRuntime->getVrManager().isHmdPresent())
+		{
+			switchExample("FirstScene");
+		}
+	}
+	#endif
+}
+
 void ImGuiExampleSelector::onDraw()
 {
 	// Get and check the renderer instance

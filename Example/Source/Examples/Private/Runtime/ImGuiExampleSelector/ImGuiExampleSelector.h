@@ -71,6 +71,7 @@ public:
 //[ Public virtual IApplication methods                   ]
 //[-------------------------------------------------------]
 public:
+	virtual void onInitialization() override;
 	virtual void onDraw() override;
 
 
