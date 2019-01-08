@@ -73,6 +73,7 @@ struct PassDataStruct
 	uint	 FullCoverageMask;
 	float2   ViewportSize;
 	float2   ProjectionParametersReversedZ;
+	float2   JitterOffset;
 	float    GlobalTimeInSeconds;
 };
 UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)

@@ -383,6 +383,12 @@
 							"ValueType": "FLOAT_2",
 							"Value": "@PROJECTION_PARAMETERS_REVERSED_Z"
 						},
+						"JitterOffset":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_2",
+							"Value": "@JITTER_OFFSET"
+						},
 						"GlobalTimeInSeconds":
 						{
 							"Usage": "GLOBAL_REFERENCE",

@@ -78,6 +78,7 @@ struct PassDataStruct
 	uint	 FullCoverageMask;
 	float2   ViewportSize;
 	float2   ProjectionParametersReversedZ;
+	float2   JitterOffset;
 	float    GlobalTimeInSeconds;
 };
 UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
@@ -192,13 +193,20 @@ MAIN_BEGIN
 		float pomHeightMapScale = ParallaxOcclusionMappingHeightMapScale(material.PomHeightMapScale, worldSpacePosition);
 		BRANCH if (pomHeightMapScale > 0.0f)
 		{
+			// Apply jitter offset for dither temporal anti aliasing
+			// -> The jitter offset is using "Hammersley 4x" from "MSAA Resolve + Temporal AA" from https://github.com/TheRealMJP/MSAAFilter with background information at https://mynameismjp.wordpress.com/2012/10/28/msaa-resolve-filters/
+			// -> Approach as seen inside a material graph at https://wiki.unrealengine.com/Parallax_Occlusion_Mapping
+			@property(!SinglePassStereoInstancing)
+				float maximumNumberOfSteps = LERP(material.MinimumNumberOfPomSteps, material.MaximumNumberOfPomSteps, PassData.JitterOffset.x * PassData.JitterOffset.y);
+			@end
+
 			// Get new texture coordinates from parallax occlusion mapping
 			float parallaxHeight = 0.0f;
-			ParallaxOcclusionMapping(MATRIX_MUL(TBN, viewSpaceIncident), pomHeightMapScale, material.MinimumNumberOfPomSteps, material.MaximumNumberOfPomSteps, texCoord, parallaxHeight);
+			ParallaxOcclusionMapping(MATRIX_MUL(TBN, viewSpaceIncident), pomHeightMapScale, material.MinimumNumberOfPomSteps, maximumNumberOfSteps, texCoord, parallaxHeight);
 
 			// Get self-shadowing factor for elements of parallax
 			float shadowSampleFactor = 0.5f;	// Reduce sample rate for shadow
-			shadowVisibility = ParallaxOcclusionMappingSelfShadowing(normalize(MATRIX_MUL(TBN, PassData.ViewSpaceSunlightDirection)), pomHeightMapScale, min(1, material.MinimumNumberOfPomSteps * shadowSampleFactor), min(1, material.MaximumNumberOfPomSteps * shadowSampleFactor), texCoord, parallaxHeight);
+			shadowVisibility = ParallaxOcclusionMappingSelfShadowing(normalize(MATRIX_MUL(TBN, PassData.ViewSpaceSunlightDirection)), pomHeightMapScale, min(1, material.MinimumNumberOfPomSteps * shadowSampleFactor), min(1, maximumNumberOfSteps * shadowSampleFactor), texCoord, parallaxHeight);
 		}
 	}
 	@end
