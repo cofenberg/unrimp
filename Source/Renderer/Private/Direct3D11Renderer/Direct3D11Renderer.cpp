@@ -79,6 +79,18 @@
 
 #include <VersionHelpers.h>	// For "IsWindows8OrGreater()"
 
+// Disable warnings in external headers, we can't fix them
+PRAGMA_WARNING_PUSH
+	PRAGMA_WARNING_DISABLE_MSVC(4530)	// warning C4530: C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc
+	PRAGMA_WARNING_DISABLE_MSVC(4623)	// warning C4623: 'std::_UInt_is_zero': default constructor was implicitly defined as deleted
+	PRAGMA_WARNING_DISABLE_MSVC(4625)	// warning C4625: 'std::_Generic_error_category': copy constructor was implicitly defined as deleted
+	PRAGMA_WARNING_DISABLE_MSVC(4626)	// warning C4626: 'std::_UInt_is_zero': assignment operator was implicitly defined as deleted
+	PRAGMA_WARNING_DISABLE_MSVC(5026)	// warning C5026: 'std::_Generic_error_category': move constructor was implicitly defined as deleted
+	PRAGMA_WARNING_DISABLE_MSVC(5027)	// warning C5027: 'std::_UInt_is_zero': move assignment operator was implicitly defined as deleted
+	#include <mutex>
+	#include <vector>
+PRAGMA_WARNING_POP
+
 
 
 
@@ -505,7 +517,6 @@ struct ID3D11BlendState;
 struct D3D11_BLEND_DESC;
 struct D3D11_QUERY_DESC;
 struct ID3D11HullShader;
-struct ID3DX11ThreadPump;
 struct ID3D11PixelShader;
 struct D3D11_BUFFER_DESC;
 struct ID3D11InputLayout;
@@ -574,9 +585,6 @@ typedef DWORD D3DCOLOR;
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3X11.h"
 #define	D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT	(32)
-
-// "Microsoft DirectX SDK (June 2010)" -> "D3DX11.h"
-#define D3DX11_DEFAULT	(static_cast<UINT>(-1))
 
 // "Microsoft DirectX SDK (June 2010)" -> "DXGI.h"
 #define DXGI_MWA_NO_ALT_ENTER	(1 << 1)
@@ -2647,10 +2655,10 @@ namespace Direct3D11Renderer
 
 		/**
 		*  @brief
-		*    Return the Direct3D 11 device context instance
+		*    Return the immediate Direct3D 11 device context instance
 		*
 		*  @return
-		*    The Direct3D 11 device context instance, null pointer on error, do not release the returned instance unless you added an own reference to it
+		*    The immediate Direct3D 11 device context instance, null pointer on error, do not release the returned instance unless you added an own reference to it
 		*/
 		[[nodiscard]] inline ID3D11DeviceContext* getD3D11DeviceContext() const
 		{
@@ -2713,6 +2721,7 @@ namespace Direct3D11Renderer
 		void resolveMultisampleFramebuffer(Renderer::IRenderTarget& destinationRenderTarget, Renderer::IFramebuffer& sourceMultisampleFramebuffer);
 		void copyResource(Renderer::IResource& destinationResource, Renderer::IResource& sourceResource);
 		void generateMipmaps(Renderer::IResource& resource);
+		void generateAsynchronousDeferredMipmaps(Renderer::ITexture& texture, ID3D11ShaderResourceView& d3d11ShaderResourceView);
 		//[-------------------------------------------------------]
 		//[ Query                                                 ]
 		//[-------------------------------------------------------]
@@ -2834,16 +2843,16 @@ namespace Direct3D11Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		Direct3D11RuntimeLinking*  mDirect3D11RuntimeLinking;	///< Direct3D 11 runtime linking instance, always valid
-		ID3D11Device*			   mD3D11Device;				///< The Direct3D 11 device, null pointer on error (we don't check because this would be a total overhead, the user has to use "Renderer::IRenderer::isInitialized()" and is asked to never ever use a not properly initialized renderer!)
-		ID3D11DeviceContext*	   mD3D11DeviceContext;			///< The Direct3D 11 device context instance, null pointer on error (we don't check because this would be a total overhead, the user has to use "Renderer::IRenderer::isInitialized()" and is asked to never ever use a not properly initialized renderer!)
+		Direct3D11RuntimeLinking*  mDirect3D11RuntimeLinking;				///< Direct3D 11 runtime linking instance, always valid
+		ID3D11Device*			   mD3D11Device;							///< The Direct3D 11 device, null pointer on error (we don't check because this would be a total overhead, the user has to use "Renderer::IRenderer::isInitialized()" and is asked to never ever use a not properly initialized renderer!)
+		ID3D11DeviceContext*	   mD3D11DeviceContext;						///< The Direct3D 11 device context instance, null pointer on error (we don't check because this would be a total overhead, the user has to use "Renderer::IRenderer::isInitialized()" and is asked to never ever use a not properly initialized renderer!)
 		D3D_FEATURE_LEVEL		   mD3DFeatureLevel;
-		ID3DUserDefinedAnnotation* mD3DUserDefinedAnnotation;	///< The Direct3D 11 user defined annotation interface, null pointer on error, Direct3D 11.1 feature
-		Renderer::IShaderLanguage* mShaderLanguageHlsl;			///< HLSL shader language instance (we keep a reference to it), can be a null pointer
-		ID3D11Query*			   mD3D11QueryFlush;			///< Direct3D 11 query used for flush, can be a null pointer
-		Renderer::IRenderTarget*   mRenderTarget;				///< Currently set render target (we keep a reference to it), can be a null pointer
-		RootSignature*			   mGraphicsRootSignature;		///< Currently set graphics root signature (we keep a reference to it), can be a null pointer
-		RootSignature*			   mComputeRootSignature;		///< Currently set compute root signature (we keep a reference to it), can be a null pointer
+		ID3DUserDefinedAnnotation* mD3DUserDefinedAnnotation;				///< The Direct3D 11 user defined annotation interface, null pointer on error, Direct3D 11.1 feature
+		Renderer::IShaderLanguage* mShaderLanguageHlsl;						///< HLSL shader language instance (we keep a reference to it), can be a null pointer
+		ID3D11Query*			   mD3D11QueryFlush;						///< Direct3D 11 query used for flush, can be a null pointer
+		Renderer::IRenderTarget*   mRenderTarget;							///< Currently set render target (we keep a reference to it), can be a null pointer
+		RootSignature*			   mGraphicsRootSignature;					///< Currently set graphics root signature (we keep a reference to it), can be a null pointer
+		RootSignature*			   mComputeRootSignature;					///< Currently set compute root signature (we keep a reference to it), can be a null pointer
 		// State cache to avoid making redundant Direct3D 11 calls
 		CurrentGraphicsPipelineState mCurrentGraphicsPipelineState;
 		D3D11_PRIMITIVE_TOPOLOGY	 mD3D11PrimitiveTopology;
@@ -2853,6 +2862,9 @@ namespace Direct3D11Renderer
 		ID3D11GeometryShader*		 mD3d11GeometryShader;
 		ID3D11PixelShader*			 mD3d11PixelShader;
 		ID3D11ComputeShader*		 mD3d11ComputeShader;
+		// Generate asynchronous mipmaps for textures
+		std::mutex						 mGenerateAsynchronousMipmapsForTexturesMutex;
+		std::vector<Renderer::ITexture*> mGenerateAsynchronousMipmapsForTextures;
 
 
 	};
@@ -2866,7 +2878,7 @@ namespace Direct3D11Renderer
 	//[-------------------------------------------------------]
 	//[ Macros & definitions                                  ]
 	//[-------------------------------------------------------]
-	// Redirect D3D11* and D3DX11* function calls to funcPtr_D3D11* and funcPtr_D3DX11*
+	// Redirect D3D11* function calls to funcPtr_D3D11*
 	#ifndef FNPTR
 		#define FNPTR(name) funcPtr_##name
 	#endif
@@ -2886,20 +2898,13 @@ namespace Direct3D11Renderer
 	#define D3D11CreateDevice	FNPTR(D3D11CreateDevice)
 
 	//[-------------------------------------------------------]
-	//[ D3DX11 functions                                      ]
-	//[-------------------------------------------------------]
-	#define FNDEF_D3DX11(retType, funcName, args) retType (WINAPI *funcPtr_##funcName) args
-	FNDEF_D3DX11(HRESULT,	D3DX11FilterTexture,	(ID3D11DeviceContext*, ID3D11Resource*, UINT, UINT));
-	#define D3DX11FilterTexture	FNPTR(D3DX11FilterTexture)
-
-	//[-------------------------------------------------------]
 	//[ D3DCompiler functions                                 ]
 	//[-------------------------------------------------------]
-	#define FNDEF_D3DX11(retType, funcName, args) retType (WINAPI *funcPtr_##funcName) args
+	#define FNDEF_D3DCOMPILER(retType, funcName, args) retType (WINAPI *funcPtr_##funcName) args
 	typedef __interface ID3D10Blob *LPD3D10BLOB;	// "__interface" is no keyword of the ISO C++ standard, shouldn't be a problem because this in here is Microsoft Windows only and it's also within the Direct3D headers we have to use
 	typedef ID3D10Blob ID3DBlob;
-	FNDEF_D3DX11(HRESULT,	D3DCompile,		(LPCVOID, SIZE_T, LPCSTR, CONST D3D_SHADER_MACRO*, ID3DInclude*, LPCSTR, LPCSTR, UINT, UINT, ID3DBlob**, ID3DBlob**));
-	FNDEF_D3DX11(HRESULT,	D3DCreateBlob,	(SIZE_T Size, ID3DBlob** ppBlob));
+	FNDEF_D3DCOMPILER(HRESULT,	D3DCompile,		(LPCVOID, SIZE_T, LPCSTR, CONST D3D_SHADER_MACRO*, ID3DInclude*, LPCSTR, LPCSTR, UINT, UINT, ID3DBlob**, ID3DBlob**));
+	FNDEF_D3DCOMPILER(HRESULT,	D3DCreateBlob,	(SIZE_T Size, ID3DBlob** ppBlob));
 	#define D3DCompile		FNPTR(D3DCompile)
 	#define D3DCreateBlob	FNPTR(D3DCreateBlob)
 
@@ -3061,7 +3066,6 @@ namespace Direct3D11Renderer
 			mDirect3D11Renderer(direct3D11Renderer),
 			mDxgiSharedLibrary(nullptr),
 			mD3D11SharedLibrary(nullptr),
-			mD3DX11SharedLibrary(nullptr),
 			mD3DCompilerSharedLibrary(nullptr),
 			#ifdef DYNAMIC_AMD_AGS
 				mAmdAgsSharedLibrary(nullptr),
@@ -3086,10 +3090,6 @@ namespace Direct3D11Renderer
 			if (nullptr != mD3D11SharedLibrary)
 			{
 				::FreeLibrary(static_cast<HMODULE>(mD3D11SharedLibrary));
-			}
-			if (nullptr != mD3DX11SharedLibrary)
-			{
-				::FreeLibrary(static_cast<HMODULE>(mD3DX11SharedLibrary));
 			}
 			if (nullptr != mD3DCompilerSharedLibrary)
 			{
@@ -3138,8 +3138,8 @@ namespace Direct3D11Renderer
 				// Load the shared libraries
 				if (loadSharedLibraries())
 				{
-					// Load the DXGI, D3D11, D3DX11 and D3DCompiler entry points
-					mEntryPointsRegistered = (loadDxgiEntryPoints() && loadD3D11EntryPoints() && loadD3DX11EntryPoints() && loadD3DCompilerEntryPoints());
+					// Load the DXGI, D3D11 and D3DCompiler entry points
+					mEntryPointsRegistered = (loadDxgiEntryPoints() && loadD3D11EntryPoints() && loadD3DCompilerEntryPoints());
 
 					// AMD AGS and NvAPI for e.g. multi-draw-indirect support
 					if (mEntryPointsRegistered)
@@ -3290,18 +3290,10 @@ namespace Direct3D11Renderer
 				mD3D11SharedLibrary = ::LoadLibraryExA("d3d11.dll", nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
 				if (nullptr != mD3D11SharedLibrary)
 				{
-					mD3DX11SharedLibrary = ::LoadLibraryExA("d3dx11_43.dll", nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
-					if (nullptr != mD3DX11SharedLibrary)
+					mD3DCompilerSharedLibrary = ::LoadLibraryExA("D3DCompiler_47.dll", nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
+					if (nullptr == mD3DCompilerSharedLibrary)
 					{
-						mD3DCompilerSharedLibrary = ::LoadLibraryExA("D3DCompiler_47.dll", nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
-						if (nullptr == mD3DCompilerSharedLibrary)
-						{
-							RENDERER_LOG(mDirect3D11Renderer.getContext(), CRITICAL, "Failed to load in the shared Direct3D 11 library \"D3DCompiler_47.dll\"")
-						}
-					}
-					else
-					{
-						RENDERER_LOG(mDirect3D11Renderer.getContext(), CRITICAL, "Failed to load in the shared Direct3D 11 library \"d3dx11_43.dll\"")
+						RENDERER_LOG(mDirect3D11Renderer.getContext(), CRITICAL, "Failed to load in the shared Direct3D 11 library \"D3DCompiler_47.dll\"")
 					}
 				}
 				else
@@ -3315,7 +3307,7 @@ namespace Direct3D11Renderer
 			}
 
 			// Done
-			return (nullptr != mDxgiSharedLibrary && nullptr != mD3D11SharedLibrary && nullptr != mD3DX11SharedLibrary && nullptr != mD3DCompilerSharedLibrary);
+			return (nullptr != mDxgiSharedLibrary && nullptr != mD3D11SharedLibrary && nullptr != mD3DCompilerSharedLibrary);
 		}
 
 		/**
@@ -3390,46 +3382,6 @@ namespace Direct3D11Renderer
 
 			// Load the entry points
 			IMPORT_FUNC(D3D11CreateDevice);
-
-			// Undefine the helper macro
-			#undef IMPORT_FUNC
-
-			// Done
-			return result;
-		}
-
-		/**
-		*  @brief
-		*    Load the D3DX11 entry points
-		*
-		*  @return
-		*    "true" if all went fine, else "false"
-		*/
-		[[nodiscard]] bool loadD3DX11EntryPoints()
-		{
-			bool result = true;	// Success by default
-
-			// Define a helper macro
-			#define IMPORT_FUNC(funcName)																																							\
-				if (result)																																											\
-				{																																													\
-					void* symbol = ::GetProcAddress(static_cast<HMODULE>(mD3DX11SharedLibrary), #funcName);																							\
-					if (nullptr != symbol)																																							\
-					{																																												\
-						*(reinterpret_cast<void**>(&(funcName))) = symbol;																															\
-					}																																												\
-					else																																											\
-					{																																												\
-						wchar_t moduleFilename[MAX_PATH];																																			\
-						moduleFilename[0] = '\0';																																					\
-						::GetModuleFileNameW(static_cast<HMODULE>(mD3DX11SharedLibrary), moduleFilename, MAX_PATH);																					\
-						RENDERER_LOG(mDirect3D11Renderer.getContext(), CRITICAL, "Failed to locate the entry point \"%s\" within the Direct3D 11 shared library \"%s\"", #funcName, moduleFilename)	\
-						result = false;																																								\
-					}																																												\
-				}
-
-			// Load the entry points
-			IMPORT_FUNC(D3DX11FilterTexture);
 
 			// Undefine the helper macro
 			#undef IMPORT_FUNC
@@ -3620,7 +3572,6 @@ namespace Direct3D11Renderer
 		Direct3D11Renderer&	mDirect3D11Renderer;		///< Owner Direct3D 11 renderer instance
 		void*				mDxgiSharedLibrary;			///< DXGI shared library, can be a null pointer
 		void*				mD3D11SharedLibrary;		///< D3D11 shared library, can be a null pointer
-		void*				mD3DX11SharedLibrary;		///< D3DX11 shared library, can be a null pointer
 		void*				mD3DCompilerSharedLibrary;	///< D3DCompiler shared library, can be a null pointer
 		#ifdef DYNAMIC_AMD_AGS
 			void*			mAmdAgsSharedLibrary;		///< AMD AGS shared library, can be a null pointer
@@ -3705,7 +3656,7 @@ namespace Direct3D11Renderer
 		RENDERER_ASSERT(context, nullptr != sourceCode, "Invalid Direct3D 11 shader source code")
 
 		// Get compile flags
-		UINT compileFlags = D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_WARNINGS_ARE_ERRORS;
+		UINT compileFlags = (D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_WARNINGS_ARE_ERRORS);
 		switch (optimizationLevel)
 		{
 			case Renderer::IShaderLanguage::OptimizationLevel::Debug:
@@ -6129,20 +6080,20 @@ namespace Direct3D11Renderer
 			// Direct3D 11 1D texture description
 			D3D11_TEXTURE1D_DESC d3d11Texture1DDesc;
 			d3d11Texture1DDesc.Width		  = width;
-			d3d11Texture1DDesc.MipLevels	  = (generateMipmaps ? 0u : numberOfMipmaps);	// 0 = Let Direct3D 11 allocate the complete mipmap chain for us
+			d3d11Texture1DDesc.MipLevels	  = numberOfMipmaps;
 			d3d11Texture1DDesc.ArraySize	  = 1;
 			d3d11Texture1DDesc.Format		  = Mapping::getDirect3D11ResourceFormat(textureFormat);
 			d3d11Texture1DDesc.Usage		  = static_cast<D3D11_USAGE>(textureUsage);	// These constants directly map to Direct3D constants, do not change them
 			d3d11Texture1DDesc.BindFlags	  = 0;
 			d3d11Texture1DDesc.CPUAccessFlags = (Renderer::TextureUsage::DYNAMIC == textureUsage) ? D3D11_CPU_ACCESS_WRITE : 0u;
-			d3d11Texture1DDesc.MiscFlags	  = (generateMipmaps && ((textureFlags & Renderer::TextureFlag::RENDER_TARGET) || (textureFlags & Renderer::TextureFlag::UNORDERED_ACCESS)) && !isDepthFormat) ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0u;
+			d3d11Texture1DDesc.MiscFlags	  = (generateMipmaps && !isDepthFormat) ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0u;
 
 			// Set bind flags
 			if (textureFlags & Renderer::TextureFlag::SHADER_RESOURCE)
 			{
 				d3d11Texture1DDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
 			}
-			if (textureFlags & Renderer::TextureFlag::RENDER_TARGET)
+			if ((textureFlags & Renderer::TextureFlag::RENDER_TARGET) || generateMipmaps)
 			{
 				if (isDepthFormat)
 				{
@@ -6158,68 +6109,42 @@ namespace Direct3D11Renderer
 				d3d11Texture1DDesc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
 			}
 
-			// Create the Direct3D 11 1D texture instance
-			// Did the user provided us with any texture data?
+			// Create the Direct3D 11 1D texture instance: Did the user provided us with any texture data?
 			if (nullptr != data)
 			{
-				if (generateMipmaps)
+				// We don't want dynamic allocations, so we limit the maximum number of mipmaps and hence are able to use the efficient C runtime stack
+				static constexpr uint32_t MAXIMUM_NUMBER_OF_MIPMAPS = 15;	// A 16384x16384 texture has 15 mipmaps
+				RENDERER_ASSERT(getRenderer().getContext(), numberOfMipmaps <= MAXIMUM_NUMBER_OF_MIPMAPS, "Invalid Direct3D 11 number of mipmaps")
+				D3D11_SUBRESOURCE_DATA d3d11SubresourceData[MAXIMUM_NUMBER_OF_MIPMAPS];
+
+				// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
+				if (dataContainsMipmaps || generateMipmaps)
 				{
-					// Let Direct3D 11 generate the mipmaps for us automatically
-					// -> Sadly, it's impossible to use initialization data in this use-case
-					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture1D(&d3d11Texture1DDesc, nullptr, &mD3D11Texture1D));
-					if (nullptr != mD3D11Texture1D)
+					// Upload all mipmaps
+					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
 					{
-						ID3D11DeviceContext* d3d11DeviceContext = direct3D11Renderer.getD3D11DeviceContext();
+						// Upload the current mipmap
+						D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[mipmap];
+						currentD3d11SubresourceData.pSysMem			 = data;
+						currentD3d11SubresourceData.SysMemPitch		 = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+						currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
 
-						// Begin debug event
-						RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D11Renderer)
-
-						{ // Update Direct3D 11 subresource data of the base-map
-							const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-							const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1);
-							d3d11DeviceContext->UpdateSubresource(mD3D11Texture1D, 0, nullptr, data, bytesPerRow, bytesPerSlice);
+						// Move on to the next mipmap and ensure the size is always at least 1
+						if (dataContainsMipmaps)
+						{
+							data = static_cast<const uint8_t*>(data) + currentD3d11SubresourceData.SysMemPitch;
 						}
-
-						// Let Direct3D 11 generate the mipmaps for us automatically
-						D3DX11FilterTexture(d3d11DeviceContext, mD3D11Texture1D, 0, D3DX11_DEFAULT);
-
-						// End debug event
-						RENDERER_END_DEBUG_EVENT(&direct3D11Renderer)
+						width = getHalfSize(width);
 					}
 				}
 				else
 				{
-					// We don't want dynamic allocations, so we limit the maximum number of mipmaps and hence are able to use the efficient C runtime stack
-					static constexpr uint32_t MAXIMUM_NUMBER_OF_MIPMAPS = 15;	// A 16384x16384 texture has 15 mipmaps
-					RENDERER_ASSERT(getRenderer().getContext(), numberOfMipmaps <= MAXIMUM_NUMBER_OF_MIPMAPS, "Invalid Direct3D 11 number of mipmaps")
-					D3D11_SUBRESOURCE_DATA d3d11SubresourceData[MAXIMUM_NUMBER_OF_MIPMAPS];
-
-					// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
-					if (dataContainsMipmaps)
-					{
-						// Upload all mipmaps
-						for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
-						{
-							// Upload the current mipmap
-							D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[mipmap];
-							currentD3d11SubresourceData.pSysMem			 = data;
-							currentD3d11SubresourceData.SysMemPitch		 = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-							currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
-
-							// Move on to the next mipmap and ensure the size is always at least 1
-							data = static_cast<const uint8_t*>(data) + currentD3d11SubresourceData.SysMemPitch;
-							width = getHalfSize(width);
-						}
-					}
-					else
-					{
-						// The user only provided us with the base texture, no mipmaps
-						d3d11SubresourceData->pSysMem		   = data;
-						d3d11SubresourceData->SysMemPitch	   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-						d3d11SubresourceData->SysMemSlicePitch = 0;	// Only relevant for 3D textures
-					}
-					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture1D(&d3d11Texture1DDesc, d3d11SubresourceData, &mD3D11Texture1D));
+					// The user only provided us with the base texture, no mipmaps
+					d3d11SubresourceData->pSysMem		   = data;
+					d3d11SubresourceData->SysMemPitch	   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+					d3d11SubresourceData->SysMemSlicePitch = 0;	// Only relevant for 3D textures
 				}
+				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture1D(&d3d11Texture1DDesc, d3d11SubresourceData, &mD3D11Texture1D));
 			}
 			else
 			{
@@ -6254,6 +6179,12 @@ namespace Direct3D11Renderer
 					// Create the Direct3D 11 unordered access view instance
 					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateUnorderedAccessView(mD3D11Texture1D, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
 				}
+			}
+
+			// Let Direct3D 11 generate the mipmaps for us automatically, if necessary
+			if (nullptr != data && generateMipmaps)
+			{
+				direct3D11Renderer.generateAsynchronousDeferredMipmaps(*this, *mD3D11ShaderResourceView);
 			}
 
 			// Assign a default name to the resource for debugging purposes
@@ -6469,7 +6400,7 @@ namespace Direct3D11Renderer
 			D3D11_TEXTURE2D_DESC d3d11Texture2DDesc;
 			d3d11Texture2DDesc.Width			  = width;
 			d3d11Texture2DDesc.Height			  = height;
-			d3d11Texture2DDesc.MipLevels		  = (generateMipmaps ? 0u : numberOfMipmaps);	// 0 = Let Direct3D 11 allocate the complete mipmap chain for us
+			d3d11Texture2DDesc.MipLevels		  = numberOfMipmaps;
 			d3d11Texture2DDesc.ArraySize		  = 1;
 			d3d11Texture2DDesc.Format			  = Mapping::getDirect3D11ResourceFormat(textureFormat);
 			d3d11Texture2DDesc.SampleDesc.Count	  = numberOfMultisamples;
@@ -6477,14 +6408,14 @@ namespace Direct3D11Renderer
 			d3d11Texture2DDesc.Usage			  = static_cast<D3D11_USAGE>(textureUsage);	// These constants directly map to Direct3D constants, do not change them
 			d3d11Texture2DDesc.BindFlags		  = 0;
 			d3d11Texture2DDesc.CPUAccessFlags	  = (Renderer::TextureUsage::DYNAMIC == textureUsage) ? D3D11_CPU_ACCESS_WRITE : 0u;
-			d3d11Texture2DDesc.MiscFlags		  = (generateMipmaps && ((textureFlags & Renderer::TextureFlag::RENDER_TARGET) || (textureFlags & Renderer::TextureFlag::UNORDERED_ACCESS)) && !isDepthFormat) ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0u;
+			d3d11Texture2DDesc.MiscFlags		  = (generateMipmaps && !isDepthFormat) ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0u;
 
 			// Set bind flags
 			if (textureFlags & Renderer::TextureFlag::SHADER_RESOURCE)
 			{
 				d3d11Texture2DDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
 			}
-			if (textureFlags & Renderer::TextureFlag::RENDER_TARGET)
+			if ((textureFlags & Renderer::TextureFlag::RENDER_TARGET) || generateMipmaps)
 			{
 				if (isDepthFormat)
 				{
@@ -6500,69 +6431,43 @@ namespace Direct3D11Renderer
 				d3d11Texture2DDesc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
 			}
 
-			// Create the Direct3D 11 2D texture instance
-			// Did the user provided us with any texture data?
+			// Create the Direct3D 11 2D texture instance: Did the user provided us with any texture data?
 			if (nullptr != data)
 			{
-				if (generateMipmaps)
+				// We don't want dynamic allocations, so we limit the maximum number of mipmaps and hence are able to use the efficient C runtime stack
+				static constexpr uint32_t MAXIMUM_NUMBER_OF_MIPMAPS = 15;	// A 16384x16384 texture has 15 mipmaps
+				RENDERER_ASSERT(direct3D11Renderer.getContext(), numberOfMipmaps <= MAXIMUM_NUMBER_OF_MIPMAPS, "Invalid Direct3D 11 number of mipmaps")
+				D3D11_SUBRESOURCE_DATA d3d11SubresourceData[MAXIMUM_NUMBER_OF_MIPMAPS];
+
+				// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
+				if (dataContainsMipmaps || generateMipmaps)
 				{
-					// Let Direct3D 11 generate the mipmaps for us automatically
-					// -> Sadly, it's impossible to use initialization data in this use-case
-					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, nullptr, &mD3D11Texture2D));
-					if (nullptr != mD3D11Texture2D)
+					// Upload all mipmaps
+					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
 					{
-						ID3D11DeviceContext* d3d11DeviceContext = direct3D11Renderer.getD3D11DeviceContext();
+						// Upload the current mipmap
+						D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[mipmap];
+						currentD3d11SubresourceData.pSysMem			 = data;
+						currentD3d11SubresourceData.SysMemPitch		 = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+						currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
 
-						// Begin debug event
-						RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D11Renderer)
-
-						{ // Update Direct3D 11 subresource data of the base-map
-							const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-							const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
-							d3d11DeviceContext->UpdateSubresource(mD3D11Texture2D, 0, nullptr, data, bytesPerRow, bytesPerSlice);
+						// Move on to the next mipmap and ensure the size is always at least 1x1
+						if (dataContainsMipmaps)
+						{
+							data = static_cast<const uint8_t*>(data) + Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
 						}
-
-						// Let Direct3D 11 generate the mipmaps for us automatically
-						D3DX11FilterTexture(d3d11DeviceContext, mD3D11Texture2D, 0, D3DX11_DEFAULT);
-
-						// End debug event
-						RENDERER_END_DEBUG_EVENT(&direct3D11Renderer)
+						width = getHalfSize(width);
+						height = getHalfSize(height);
 					}
 				}
 				else
 				{
-					// We don't want dynamic allocations, so we limit the maximum number of mipmaps and hence are able to use the efficient C runtime stack
-					static constexpr uint32_t MAXIMUM_NUMBER_OF_MIPMAPS = 15;	// A 16384x16384 texture has 15 mipmaps
-					RENDERER_ASSERT(direct3D11Renderer.getContext(), numberOfMipmaps <= MAXIMUM_NUMBER_OF_MIPMAPS, "Invalid Direct3D 11 number of mipmaps")
-					D3D11_SUBRESOURCE_DATA d3d11SubresourceData[MAXIMUM_NUMBER_OF_MIPMAPS];
-
-					// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
-					if (dataContainsMipmaps)
-					{
-						// Upload all mipmaps
-						for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
-						{
-							// Upload the current mipmap
-							D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[mipmap];
-							currentD3d11SubresourceData.pSysMem			 = data;
-							currentD3d11SubresourceData.SysMemPitch		 = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-							currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
-
-							// Move on to the next mipmap and ensure the size is always at least 1x1
-							data = static_cast<const uint8_t*>(data) + Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
-							width = getHalfSize(width);
-							height = getHalfSize(height);
-						}
-					}
-					else
-					{
-						// The user only provided us with the base texture, no mipmaps
-						d3d11SubresourceData->pSysMem		   = data;
-						d3d11SubresourceData->SysMemPitch	   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-						d3d11SubresourceData->SysMemSlicePitch = 0;	// Only relevant for 3D textures
-					}
-					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, d3d11SubresourceData, &mD3D11Texture2D));
+					// The user only provided us with the base texture, no mipmaps
+					d3d11SubresourceData->pSysMem		   = data;
+					d3d11SubresourceData->SysMemPitch	   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+					d3d11SubresourceData->SysMemSlicePitch = 0;	// Only relevant for 3D textures
 				}
+				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, d3d11SubresourceData, &mD3D11Texture2D));
 			}
 			else
 			{
@@ -6597,6 +6502,12 @@ namespace Direct3D11Renderer
 					// Create the Direct3D 11 unordered access view instance
 					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateUnorderedAccessView(mD3D11Texture2D, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
 				}
+			}
+
+			// Let Direct3D 11 generate the mipmaps for us automatically, if necessary
+			if (nullptr != data && generateMipmaps)
+			{
+				direct3D11Renderer.generateAsynchronousDeferredMipmaps(*this, *mD3D11ShaderResourceView);
 			}
 
 			// Assign a default name to the resource for debugging purposes
@@ -6849,7 +6760,7 @@ namespace Direct3D11Renderer
 			D3D11_TEXTURE2D_DESC d3d11Texture2DDesc;
 			d3d11Texture2DDesc.Width			  = width;
 			d3d11Texture2DDesc.Height			  = height;
-			d3d11Texture2DDesc.MipLevels		  = (generateMipmaps ? 0u : numberOfMipmaps);	// 0 = Let Direct3D 11 allocate the complete mipmap chain for us
+			d3d11Texture2DDesc.MipLevels		  = numberOfMipmaps;
 			d3d11Texture2DDesc.ArraySize		  = numberOfSlices;
 			d3d11Texture2DDesc.Format			  = Mapping::getDirect3D11ResourceFormat(textureFormat);
 			d3d11Texture2DDesc.SampleDesc.Count	  = 1;
@@ -6857,14 +6768,14 @@ namespace Direct3D11Renderer
 			d3d11Texture2DDesc.Usage			  = static_cast<D3D11_USAGE>(textureUsage);	// These constants directly map to Direct3D constants, do not change them
 			d3d11Texture2DDesc.BindFlags		  = 0;
 			d3d11Texture2DDesc.CPUAccessFlags	  = (Renderer::TextureUsage::DYNAMIC == textureUsage) ? D3D11_CPU_ACCESS_WRITE : 0u;
-			d3d11Texture2DDesc.MiscFlags		  = (generateMipmaps && ((textureFlags & Renderer::TextureFlag::RENDER_TARGET) || (textureFlags & Renderer::TextureFlag::UNORDERED_ACCESS)) && !isDepthFormat) ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0u;
+			d3d11Texture2DDesc.MiscFlags		  = (generateMipmaps && !isDepthFormat) ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0u;
 
 			// Set bind flags
 			if (textureFlags & Renderer::TextureFlag::SHADER_RESOURCE)
 			{
 				d3d11Texture2DDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
 			}
-			if (textureFlags & Renderer::TextureFlag::RENDER_TARGET)
+			if ((textureFlags & Renderer::TextureFlag::RENDER_TARGET) || generateMipmaps)
 			{
 				if (isDepthFormat)
 				{
@@ -6880,107 +6791,75 @@ namespace Direct3D11Renderer
 				d3d11Texture2DDesc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
 			}
 
-			// Create the Direct3D 11 2D texture instance
-			// Did the user provided us with any texture data?
+			// Create the Direct3D 11 2D texture instance: Did the user provided us with any texture data?
 			if (nullptr != data)
 			{
-				if (generateMipmaps)
+				// We don't want dynamic allocations, so we limit the maximum number of mipmaps and hence are able to use the efficient C runtime stack
+				static constexpr uint32_t MAXIMUM_NUMBER_OF_MIPMAPS = 15;	// A 16384x16384 texture has 15 mipmaps
+				static constexpr uint32_t MAXIMUM_NUMBER_OF_SLICES = 10;
+				const Renderer::Context& context = direct3D11Renderer.getContext();
+				RENDERER_ASSERT(context, numberOfMipmaps <= MAXIMUM_NUMBER_OF_MIPMAPS, "Invalid Direct3D 11 number of mipmaps")
+				D3D11_SUBRESOURCE_DATA d3d11SubresourceDataStack[MAXIMUM_NUMBER_OF_SLICES * MAXIMUM_NUMBER_OF_MIPMAPS];
+				D3D11_SUBRESOURCE_DATA* d3d11SubresourceData = (numberOfSlices <= MAXIMUM_NUMBER_OF_SLICES) ? d3d11SubresourceDataStack : RENDERER_MALLOC_TYPED(context, D3D11_SUBRESOURCE_DATA, numberOfSlices);
+
+				// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
+				if (dataContainsMipmaps || generateMipmaps)
 				{
-					// Let Direct3D 11 generate the mipmaps for us automatically
-					// -> Sadly, it's impossible to use initialization data in this use-case
-					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, nullptr, &mD3D11Texture2D));
-					if (nullptr != mD3D11Texture2D)
+					// Data layout
+					// - Direct3D 11 wants: DDS files are organized in slice-major order, like this:
+					//     Slice0: Mip0, Mip1, Mip2, etc.
+					//     Slice1: Mip0, Mip1, Mip2, etc.
+					//     etc.
+					// - The renderer interface provides: CRN and KTX files are organized in mip-major order, like this:
+					//     Mip0: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
+					//     Mip1: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
+					//     etc.
+
+					// Upload all mipmaps
+					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
 					{
-						ID3D11DeviceContext* d3d11DeviceContext = direct3D11Renderer.getD3D11DeviceContext();
+						const uint32_t numberOfBytesPerRow = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+						const uint32_t numberOfBytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
+						for (uint32_t arraySlice = 0; arraySlice < numberOfSlices; ++arraySlice)
+						{
+							// Upload the current slice
+							D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[arraySlice * numberOfMipmaps + mipmap];
+							currentD3d11SubresourceData.pSysMem			 = data;
+							currentD3d11SubresourceData.SysMemPitch		 = numberOfBytesPerRow;
+							currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
 
-						// Begin debug event
-						RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D11Renderer)
-
-						{ // Update Direct3D 11 subresource data of the base-map
-							const uint32_t  bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-							const uint32_t  bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
-							for (uint32_t arraySlice = 0; arraySlice < numberOfSlices; ++arraySlice)
+							// Move on to the next slice
+							if (dataContainsMipmaps)
 							{
-								d3d11DeviceContext->UpdateSubresource(mD3D11Texture2D, D3D11CalcSubresource(0, arraySlice, numberOfMipmaps), nullptr, data, bytesPerRow, bytesPerSlice);
-
-								// Move on to the next slice
-								data = static_cast<const uint8_t*>(data) + bytesPerSlice;
+								data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
 							}
 						}
 
-						// Let Direct3D 11 generate the mipmaps for us automatically
-						D3DX11FilterTexture(d3d11DeviceContext, mD3D11Texture2D, 0, D3DX11_DEFAULT);
-
-						// End debug event
-						RENDERER_END_DEBUG_EVENT(&direct3D11Renderer)
+						// Move on to the next mipmap and ensure the size is always at least 1x1
+						width = getHalfSize(width);
+						height = getHalfSize(height);
 					}
 				}
 				else
 				{
-					// We don't want dynamic allocations, so we limit the maximum number of mipmaps and hence are able to use the efficient C runtime stack
-					static constexpr uint32_t MAXIMUM_NUMBER_OF_MIPMAPS = 15;	// A 16384x16384 texture has 15 mipmaps
-					static constexpr uint32_t MAXIMUM_NUMBER_OF_SLICES = 10;
-					const Renderer::Context& context = direct3D11Renderer.getContext();
-					RENDERER_ASSERT(context, numberOfMipmaps <= MAXIMUM_NUMBER_OF_MIPMAPS, "Invalid Direct3D 11 number of mipmaps")
-					D3D11_SUBRESOURCE_DATA d3d11SubresourceDataStack[MAXIMUM_NUMBER_OF_SLICES * MAXIMUM_NUMBER_OF_MIPMAPS];
-					D3D11_SUBRESOURCE_DATA* d3d11SubresourceData = (numberOfSlices <= MAXIMUM_NUMBER_OF_SLICES) ? d3d11SubresourceDataStack : RENDERER_MALLOC_TYPED(context, D3D11_SUBRESOURCE_DATA, numberOfSlices);
-
-					// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
-					if (dataContainsMipmaps)
+					// The user only provided us with the base texture, no mipmaps
+					const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+					const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
+					for (uint32_t arraySlice = 0; arraySlice < numberOfSlices; ++arraySlice)
 					{
-						// Data layout
-						// - Direct3D 11 wants: DDS files are organized in slice-major order, like this:
-						//     Slice0: Mip0, Mip1, Mip2, etc.
-						//     Slice1: Mip0, Mip1, Mip2, etc.
-						//     etc.
-						// - The renderer interface provides: CRN and KTX files are organized in mip-major order, like this:
-						//     Mip0: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
-						//     Mip1: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
-						//     etc.
+						D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[arraySlice];
+						currentD3d11SubresourceData.pSysMem			 = data;
+						currentD3d11SubresourceData.SysMemPitch		 = bytesPerRow;
+						currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
 
-						// Upload all mipmaps
-						for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
-						{
-							const uint32_t numberOfBytesPerRow = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-							const uint32_t numberOfBytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
-							for (uint32_t arraySlice = 0; arraySlice < numberOfSlices; ++arraySlice)
-							{
-								// Upload the current slice
-								D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[arraySlice * numberOfMipmaps + mipmap];
-								currentD3d11SubresourceData.pSysMem			 = data;
-								currentD3d11SubresourceData.SysMemPitch		 = numberOfBytesPerRow;
-								currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
-
-								// Move on to the next slice
-								data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
-							}
-
-							// Move on to the next mipmap and ensure the size is always at least 1x1
-							width = getHalfSize(width);
-							height = getHalfSize(height);
-						}
+						// Move on to the next slice
+						data = static_cast<const uint8_t*>(data) + bytesPerSlice;
 					}
-					else
-					{
-						// The user only provided us with the base texture, no mipmaps
-						const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-						const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
-						for (uint32_t arraySlice = 0; arraySlice < numberOfSlices; ++arraySlice)
-						{
-							D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[arraySlice];
-							currentD3d11SubresourceData.pSysMem			 = data;
-							currentD3d11SubresourceData.SysMemPitch		 = bytesPerRow;
-							currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
-
-							// Move on to the next slice
-							data = static_cast<const uint8_t*>(data) + bytesPerSlice;
-						}
-					}
-					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, d3d11SubresourceData, &mD3D11Texture2D));
-					if (numberOfSlices > MAXIMUM_NUMBER_OF_SLICES)
-					{
-						RENDERER_FREE(context, d3d11SubresourceData);
-					}
+				}
+				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, d3d11SubresourceData, &mD3D11Texture2D));
+				if (numberOfSlices > MAXIMUM_NUMBER_OF_SLICES)
+				{
+					RENDERER_FREE(context, d3d11SubresourceData);
 				}
 			}
 			else
@@ -7018,6 +6897,12 @@ namespace Direct3D11Renderer
 					// Create the Direct3D 11 unordered access view instance
 					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateUnorderedAccessView(mD3D11Texture2D, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
 				}
+			}
+
+			// Let Direct3D 11 generate the mipmaps for us automatically, if necessary
+			if (nullptr != data && generateMipmaps)
+			{
+				direct3D11Renderer.generateAsynchronousDeferredMipmaps(*this, *mD3D11ShaderResourceView);
 			}
 
 			// Assign a default name to the resource for debugging purposes
@@ -7236,19 +7121,19 @@ namespace Direct3D11Renderer
 			d3d11Texture3DDesc.Width		  = width;
 			d3d11Texture3DDesc.Height		  = height;
 			d3d11Texture3DDesc.Depth		  = depth;
-			d3d11Texture3DDesc.MipLevels	  = (generateMipmaps ? 0u : numberOfMipmaps);	// 0 = Let Direct3D 11 allocate the complete mipmap chain for us
+			d3d11Texture3DDesc.MipLevels	  = numberOfMipmaps;
 			d3d11Texture3DDesc.Format		  = Mapping::getDirect3D11ResourceFormat(textureFormat);
 			d3d11Texture3DDesc.Usage		  = static_cast<D3D11_USAGE>(textureUsage);	// These constants directly map to Direct3D constants, do not change them
 			d3d11Texture3DDesc.BindFlags	  = 0;
 			d3d11Texture3DDesc.CPUAccessFlags = (Renderer::TextureUsage::DYNAMIC == textureUsage) ? D3D11_CPU_ACCESS_WRITE : 0u;
-			d3d11Texture3DDesc.MiscFlags	  = (generateMipmaps && ((textureFlags & Renderer::TextureFlag::RENDER_TARGET) || (textureFlags & Renderer::TextureFlag::UNORDERED_ACCESS)) && !isDepthFormat) ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0u;
+			d3d11Texture3DDesc.MiscFlags	  = (generateMipmaps && !isDepthFormat) ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0u;
 
 			// Set bind flags
 			if (textureFlags & Renderer::TextureFlag::SHADER_RESOURCE)
 			{
 				d3d11Texture3DDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
 			}
-			if (textureFlags & Renderer::TextureFlag::RENDER_TARGET)
+			if ((textureFlags & Renderer::TextureFlag::RENDER_TARGET) || generateMipmaps)
 			{
 				if (isDepthFormat)
 				{
@@ -7264,75 +7149,49 @@ namespace Direct3D11Renderer
 				d3d11Texture3DDesc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
 			}
 
-			// Create the Direct3D 11 3D texture instance
-			// Did the user provided us with any texture data?
+			// Create the Direct3D 11 3D texture instance: Did the user provided us with any texture data?
 			if (nullptr != data)
 			{
-				if (generateMipmaps)
+				// We don't want dynamic allocations, so we limit the maximum number of mipmaps and hence are able to use the efficient C runtime stack
+				static constexpr uint32_t MAXIMUM_NUMBER_OF_MIPMAPS = 15;	// A 16384x16384 texture has 15 mipmaps
+				RENDERER_ASSERT(getRenderer().getContext(), numberOfMipmaps <= MAXIMUM_NUMBER_OF_MIPMAPS, "Invalid Direct3D 11 number of mipmaps")
+				D3D11_SUBRESOURCE_DATA d3d11SubresourceData[MAXIMUM_NUMBER_OF_MIPMAPS];
+
+				// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
+				if (dataContainsMipmaps || generateMipmaps)
 				{
-					// Let Direct3D 11 generate the mipmaps for us automatically
-					// -> Sadly, it's impossible to use initialization data in this use-case
-					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture3D(&d3d11Texture3DDesc, nullptr, &mD3D11Texture3D));
-					if (nullptr != mD3D11Texture3D)
+					// Data layout: The renderer interface provides: CRN and KTX files are organized in mip-major order, like this:
+					//   Mip0: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
+					//   Mip1: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
+					//   etc.
+
+					// Upload all mipmaps
+					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
 					{
-						ID3D11DeviceContext* d3d11DeviceContext = direct3D11Renderer.getD3D11DeviceContext();
+						// Upload the current mipmap
+						D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[mipmap];
+						currentD3d11SubresourceData.pSysMem			 = data;
+						currentD3d11SubresourceData.SysMemPitch		 = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+						currentD3d11SubresourceData.SysMemSlicePitch = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
 
-						// Begin debug event
-						RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D11Renderer)
-
-						{ // Update Direct3D 11 subresource data of the base-map
-							const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-							const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
-							d3d11DeviceContext->UpdateSubresource(mD3D11Texture3D, 0, nullptr, data, bytesPerRow, bytesPerSlice);
+						// Move on to the next mipmap and ensure the size is always at least 1x1x1
+						if (dataContainsMipmaps)
+						{
+							data = static_cast<const uint8_t*>(data) + currentD3d11SubresourceData.SysMemSlicePitch * depth;
 						}
-
-						// Let Direct3D 11 generate the mipmaps for us automatically
-						D3DX11FilterTexture(d3d11DeviceContext, mD3D11Texture3D, 0, D3DX11_DEFAULT);
-
-						// End debug event
-						RENDERER_END_DEBUG_EVENT(&direct3D11Renderer)
+						width = getHalfSize(width);
+						height = getHalfSize(height);
+						depth = getHalfSize(depth);
 					}
 				}
 				else
 				{
-					// We don't want dynamic allocations, so we limit the maximum number of mipmaps and hence are able to use the efficient C runtime stack
-					static constexpr uint32_t MAXIMUM_NUMBER_OF_MIPMAPS = 15;	// A 16384x16384 texture has 15 mipmaps
-					RENDERER_ASSERT(getRenderer().getContext(), numberOfMipmaps <= MAXIMUM_NUMBER_OF_MIPMAPS, "Invalid Direct3D 11 number of mipmaps")
-					D3D11_SUBRESOURCE_DATA d3d11SubresourceData[MAXIMUM_NUMBER_OF_MIPMAPS];
-
-					// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
-					if (dataContainsMipmaps)
-					{
-						// Data layout: The renderer interface provides: CRN and KTX files are organized in mip-major order, like this:
-						//   Mip0: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
-						//   Mip1: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
-						//   etc.
-
-						// Upload all mipmaps
-						for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
-						{
-							// Upload the current mipmap
-							D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[mipmap];
-							currentD3d11SubresourceData.pSysMem			 = data;
-							currentD3d11SubresourceData.SysMemPitch		 = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-							currentD3d11SubresourceData.SysMemSlicePitch = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
-
-							// Move on to the next mipmap and ensure the size is always at least 1x1x1
-							data = static_cast<const uint8_t*>(data) + currentD3d11SubresourceData.SysMemSlicePitch * depth;
-							width = getHalfSize(width);
-							height = getHalfSize(height);
-							depth = getHalfSize(depth);
-						}
-					}
-					else
-					{
-						// The user only provided us with the base texture, no mipmaps
-						d3d11SubresourceData->pSysMem		   = data;
-						d3d11SubresourceData->SysMemPitch	   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-						d3d11SubresourceData->SysMemSlicePitch = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
-					}
-					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture3D(&d3d11Texture3DDesc, d3d11SubresourceData, &mD3D11Texture3D));
+					// The user only provided us with the base texture, no mipmaps
+					d3d11SubresourceData->pSysMem		   = data;
+					d3d11SubresourceData->SysMemPitch	   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+					d3d11SubresourceData->SysMemSlicePitch = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
 				}
+				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture3D(&d3d11Texture3DDesc, d3d11SubresourceData, &mD3D11Texture3D));
 			}
 			else
 			{
@@ -7368,6 +7227,12 @@ namespace Direct3D11Renderer
 					// Create the Direct3D 11 unordered access view instance
 					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateUnorderedAccessView(mD3D11Texture3D, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
 				}
+			}
+
+			// Let Direct3D 11 generate the mipmaps for us automatically, if necessary
+			if (nullptr != data && generateMipmaps)
+			{
+				direct3D11Renderer.generateAsynchronousDeferredMipmaps(*this, *mD3D11ShaderResourceView);
 			}
 
 			// Assign a default name to the resource for debugging purposes
@@ -7575,7 +7440,7 @@ namespace Direct3D11Renderer
 			D3D11_TEXTURE2D_DESC d3d11Texture2DDesc;
 			d3d11Texture2DDesc.Width			  = width;
 			d3d11Texture2DDesc.Height			  = height;
-			d3d11Texture2DDesc.MipLevels		  = (generateMipmaps ? 0u : numberOfMipmaps);	// 0 = Let Direct3D 11 allocate the complete mipmap chain for us
+			d3d11Texture2DDesc.MipLevels		  = numberOfMipmaps;
 			d3d11Texture2DDesc.ArraySize		  = NUMBER_OF_SLICES;
 			d3d11Texture2DDesc.Format			  = Mapping::getDirect3D11ResourceFormat(textureFormat);
 			d3d11Texture2DDesc.SampleDesc.Count	  = 1;
@@ -7583,14 +7448,14 @@ namespace Direct3D11Renderer
 			d3d11Texture2DDesc.Usage			  = static_cast<D3D11_USAGE>(textureUsage);	// These constants directly map to Direct3D constants, do not change them
 			d3d11Texture2DDesc.BindFlags		  = 0;
 			d3d11Texture2DDesc.CPUAccessFlags	  = (Renderer::TextureUsage::DYNAMIC == textureUsage) ? D3D11_CPU_ACCESS_WRITE : 0u;
-			d3d11Texture2DDesc.MiscFlags		  = ((generateMipmaps && ((textureFlags & Renderer::TextureFlag::RENDER_TARGET) || (textureFlags & Renderer::TextureFlag::UNORDERED_ACCESS))) ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0u) | D3D11_RESOURCE_MISC_TEXTURECUBE;
+			d3d11Texture2DDesc.MiscFlags		  = (generateMipmaps ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0u) | D3D11_RESOURCE_MISC_TEXTURECUBE;
 
 			// Set bind flags
 			if (textureFlags & Renderer::TextureFlag::SHADER_RESOURCE)
 			{
 				d3d11Texture2DDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
 			}
-			if (textureFlags & Renderer::TextureFlag::RENDER_TARGET)
+			if ((textureFlags & Renderer::TextureFlag::RENDER_TARGET) || generateMipmaps)
 			{
 				d3d11Texture2DDesc.BindFlags |= D3D11_BIND_RENDER_TARGET;
 			}
@@ -7599,101 +7464,69 @@ namespace Direct3D11Renderer
 				d3d11Texture2DDesc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
 			}
 
-			// Create the Direct3D 11 2D texture instance
-			// Did the user provided us with any texture data?
+			// Create the Direct3D 11 2D texture instance: Did the user provided us with any texture data?
 			if (nullptr != data)
 			{
-				if (generateMipmaps)
+				// We don't want dynamic allocations, so we limit the maximum number of mipmaps and hence are able to use the efficient C runtime stack
+				static constexpr uint32_t MAXIMUM_NUMBER_OF_MIPMAPS = 15;	// A 16384x16384 texture has 15 mipmaps
+				RENDERER_ASSERT(direct3D11Renderer.getContext(), numberOfMipmaps <= MAXIMUM_NUMBER_OF_MIPMAPS, "Invalid Direct3D 11 number of mipmaps")
+				D3D11_SUBRESOURCE_DATA d3d11SubresourceData[NUMBER_OF_SLICES * MAXIMUM_NUMBER_OF_MIPMAPS];
+
+				// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
+				if (dataContainsMipmaps || generateMipmaps)
 				{
-					// Let Direct3D 11 generate the mipmaps for us automatically
-					// -> Sadly, it's impossible to use initialization data in this use-case
-					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, nullptr, &mD3D11TextureCube));
-					if (nullptr != mD3D11TextureCube)
+					// Data layout
+					// - Direct3D 11 wants: DDS files are organized in face-major order, like this:
+					//     Face0: Mip0, Mip1, Mip2, etc.
+					//     Face1: Mip0, Mip1, Mip2, etc.
+					//     etc.
+					// - The renderer interface provides: CRN and KTX files are organized in mip-major order, like this:
+					//     Mip0: Face0, Face1, Face2, Face3, Face4, Face5
+					//     Mip1: Face0, Face1, Face2, Face3, Face4, Face5
+					//     etc.
+
+					// Upload all mipmaps
+					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
 					{
-						ID3D11DeviceContext* d3d11DeviceContext = direct3D11Renderer.getD3D11DeviceContext();
+						const uint32_t numberOfBytesPerRow = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+						const uint32_t numberOfBytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
+						for (uint32_t arraySlice = 0; arraySlice < NUMBER_OF_SLICES; ++arraySlice)
+						{
+							// Upload the current mipmap
+							D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[arraySlice * numberOfMipmaps + mipmap];
+							currentD3d11SubresourceData.pSysMem			 = data;
+							currentD3d11SubresourceData.SysMemPitch		 = numberOfBytesPerRow;
+							currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
 
-						// Begin debug event
-						RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D11Renderer)
-
-						{ // Update Direct3D 11 subresource data of the base-map
-							const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-							const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
-							for (uint32_t arraySlice = 0; arraySlice < NUMBER_OF_SLICES; ++arraySlice)
+							// Move on to the cube map face
+							if (dataContainsMipmaps)
 							{
-								d3d11DeviceContext->UpdateSubresource(mD3D11TextureCube, D3D11CalcSubresource(0, arraySlice, numberOfMipmaps), nullptr, data, bytesPerRow, bytesPerSlice);
-
-								// Move on to the next slice
-								data = static_cast<const uint8_t*>(data) + bytesPerSlice;
+								data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
 							}
 						}
 
-						// Let Direct3D 11 generate the mipmaps for us automatically
-						D3DX11FilterTexture(d3d11DeviceContext, mD3D11TextureCube, 0, D3DX11_DEFAULT);
-
-						// End debug event
-						RENDERER_END_DEBUG_EVENT(&direct3D11Renderer)
+						// Move on to the next mipmap and ensure the size is always at least 1x1
+						width = getHalfSize(width);
+						height = getHalfSize(height);
 					}
 				}
 				else
 				{
-					// We don't want dynamic allocations, so we limit the maximum number of mipmaps and hence are able to use the efficient C runtime stack
-					static constexpr uint32_t MAXIMUM_NUMBER_OF_MIPMAPS = 15;	// A 16384x16384 texture has 15 mipmaps
-					RENDERER_ASSERT(direct3D11Renderer.getContext(), numberOfMipmaps <= MAXIMUM_NUMBER_OF_MIPMAPS, "Invalid Direct3D 11 number of mipmaps")
-					D3D11_SUBRESOURCE_DATA d3d11SubresourceData[NUMBER_OF_SLICES * MAXIMUM_NUMBER_OF_MIPMAPS];
-
-					// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
-					if (dataContainsMipmaps)
+					// The user only provided us with the base texture, no mipmaps
+					const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+					const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
+					for (uint32_t arraySlice = 0; arraySlice < NUMBER_OF_SLICES; ++arraySlice)
 					{
-						// Data layout
-						// - Direct3D 11 wants: DDS files are organized in face-major order, like this:
-						//     Face0: Mip0, Mip1, Mip2, etc.
-						//     Face1: Mip0, Mip1, Mip2, etc.
-						//     etc.
-						// - The renderer interface provides: CRN and KTX files are organized in mip-major order, like this:
-						//     Mip0: Face0, Face1, Face2, Face3, Face4, Face5
-						//     Mip1: Face0, Face1, Face2, Face3, Face4, Face5
-						//     etc.
+						D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[arraySlice];
+						currentD3d11SubresourceData.pSysMem			 = data;
+						currentD3d11SubresourceData.SysMemPitch		 = bytesPerRow;
+						currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
 
-						// Upload all mipmaps
-						for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
-						{
-							const uint32_t numberOfBytesPerRow = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-							const uint32_t numberOfBytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
-							for (uint32_t arraySlice = 0; arraySlice < NUMBER_OF_SLICES; ++arraySlice)
-							{
-								// Upload the current mipmap
-								D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[arraySlice * numberOfMipmaps + mipmap];
-								currentD3d11SubresourceData.pSysMem			 = data;
-								currentD3d11SubresourceData.SysMemPitch		 = numberOfBytesPerRow;
-								currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
-
-								// Move on to the cube map face
-								data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
-							}
-
-							// Move on to the next mipmap and ensure the size is always at least 1x1
-							width = getHalfSize(width);
-							height = getHalfSize(height);
-						}
+						// Move on to the next slice
+						data = static_cast<const uint8_t*>(data) + bytesPerSlice;
 					}
-					else
-					{
-						// The user only provided us with the base texture, no mipmaps
-						const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-						const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
-						for (uint32_t arraySlice = 0; arraySlice < NUMBER_OF_SLICES; ++arraySlice)
-						{
-							D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[arraySlice];
-							currentD3d11SubresourceData.pSysMem			 = data;
-							currentD3d11SubresourceData.SysMemPitch		 = bytesPerRow;
-							currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
-
-							// Move on to the next slice
-							data = static_cast<const uint8_t*>(data) + bytesPerSlice;
-						}
-					}
-					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, d3d11SubresourceData, &mD3D11TextureCube));
 				}
+				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, d3d11SubresourceData, &mD3D11TextureCube));
 			}
 			else
 			{
@@ -7730,6 +7563,12 @@ namespace Direct3D11Renderer
 					// Create the Direct3D 11 unordered access view instance
 					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateUnorderedAccessView(mD3D11TextureCube, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
 				}
+			}
+
+			// Let Direct3D 11 generate the mipmaps for us automatically, if necessary
+			if (nullptr != data && generateMipmaps)
+			{
+				direct3D11Renderer.generateAsynchronousDeferredMipmaps(*this, *mD3D11ShaderResourceView);
 			}
 
 			// Assign a default name to the resource for debugging purposes
@@ -12030,6 +11869,10 @@ namespace Direct3D11Renderer
 	Direct3D11Renderer::~Direct3D11Renderer()
 	{
 		// Release instances
+		for (Renderer::ITexture* texture : mGenerateAsynchronousMipmapsForTextures)
+		{
+			texture->releaseReference();
+		}
 		if (nullptr != mRenderTarget)
 		{
 			mRenderTarget->releaseReference();
@@ -13587,8 +13430,21 @@ namespace Direct3D11Renderer
 		RENDERER_ASSERT(mContext, resource.getResourceType() == Renderer::ResourceType::TEXTURE_2D, "TODO(co) Mipmaps can only be generated for Direct3D 11 2D texture resources")
 
 		// Generate mipmaps
-		Texture2D& texture2D = static_cast<Texture2D&>(resource);
-		mD3D11DeviceContext->GenerateMips(texture2D.getD3D11ShaderResourceView());
+		mD3D11DeviceContext->GenerateMips(static_cast<Texture2D&>(resource).getD3D11ShaderResourceView());
+	}
+
+	void Direct3D11Renderer::generateAsynchronousDeferredMipmaps(Renderer::ITexture& texture, ID3D11ShaderResourceView& d3d11ShaderResourceView)
+	{
+		if (mCapabilities.nativeMultiThreading)
+		{
+			std::lock_guard<std::mutex> generateAsynchronousMipmapsForTexturesMutexLock(mGenerateAsynchronousMipmapsForTexturesMutex);
+			mGenerateAsynchronousMipmapsForTextures.push_back(&texture);
+			texture.addReference();
+		}
+		else
+		{
+			mD3D11DeviceContext->GenerateMips(&d3d11ShaderResourceView);
+		}
 	}
 
 
@@ -14126,6 +13982,75 @@ namespace Direct3D11Renderer
 
 	void Direct3D11Renderer::submitCommandBuffer(const Renderer::CommandBuffer& commandBuffer)
 	{
+		// Generate asynchronous mipmaps for textures
+		// -> For multithreading we could also use a deferred context, but in first tests there were random "FinishCommandList()"/"ExecuteCommandList()" state glitches
+		//    when not fully resetting the context states. On the other hand, fully resetting the context states isn't recommended. Since we just need to be able to
+		//    trigger the generation of mipmaps for textures asynchronously it's not really worth using those more complex deferred contexts for such a simple task.
+		if (mCapabilities.nativeMultiThreading)
+		{
+			std::lock_guard<std::mutex> generateAsynchronousMipmapsForTexturesMutexLock(mGenerateAsynchronousMipmapsForTexturesMutex);
+			if (!mGenerateAsynchronousMipmapsForTextures.empty())
+			{
+				for (Renderer::ITexture* texture : mGenerateAsynchronousMipmapsForTextures)
+				{
+					ID3D11ShaderResourceView* d3d11ShaderResourceView = nullptr;
+					switch (texture->getResourceType())
+					{
+						case Renderer::ResourceType::TEXTURE_1D:
+							d3d11ShaderResourceView = static_cast<Texture1D*>(texture)->getD3D11ShaderResourceView();
+							break;
+
+						case Renderer::ResourceType::TEXTURE_2D:
+							d3d11ShaderResourceView = static_cast<Texture2D*>(texture)->getD3D11ShaderResourceView();
+							break;
+
+						case Renderer::ResourceType::TEXTURE_2D_ARRAY:
+							d3d11ShaderResourceView = static_cast<Texture2DArray*>(texture)->getD3D11ShaderResourceView();
+							break;
+
+						case Renderer::ResourceType::TEXTURE_3D:
+							d3d11ShaderResourceView = static_cast<Texture3D*>(texture)->getD3D11ShaderResourceView();
+							break;
+
+						case Renderer::ResourceType::TEXTURE_CUBE:
+							d3d11ShaderResourceView = static_cast<TextureCube*>(texture)->getD3D11ShaderResourceView();
+							break;
+
+						case Renderer::ResourceType::ROOT_SIGNATURE:
+						case Renderer::ResourceType::RESOURCE_GROUP:
+						case Renderer::ResourceType::GRAPHICS_PROGRAM:
+						case Renderer::ResourceType::VERTEX_ARRAY:
+						case Renderer::ResourceType::RENDER_PASS:
+						case Renderer::ResourceType::QUERY_POOL:
+						case Renderer::ResourceType::SWAP_CHAIN:
+						case Renderer::ResourceType::FRAMEBUFFER:
+						case Renderer::ResourceType::INDEX_BUFFER:
+						case Renderer::ResourceType::VERTEX_BUFFER:
+						case Renderer::ResourceType::TEXTURE_BUFFER:
+						case Renderer::ResourceType::STRUCTURED_BUFFER:
+						case Renderer::ResourceType::INDIRECT_BUFFER:
+						case Renderer::ResourceType::UNIFORM_BUFFER:
+						case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+						case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
+						case Renderer::ResourceType::SAMPLER_STATE:
+						case Renderer::ResourceType::VERTEX_SHADER:
+						case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
+						case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
+						case Renderer::ResourceType::GEOMETRY_SHADER:
+						case Renderer::ResourceType::FRAGMENT_SHADER:
+						case Renderer::ResourceType::COMPUTE_SHADER:
+						default:
+							RENDERER_ASSERT(mContext, false, "Direct3D 11: Invalid resource type")
+							break;
+					}
+					RENDERER_ASSERT(mContext, nullptr != d3d11ShaderResourceView, "Direct3D 11: Invalid shader resource view")
+					mD3D11DeviceContext->GenerateMips(d3d11ShaderResourceView);
+					texture->releaseReference();
+				}
+				mGenerateAsynchronousMipmapsForTextures.clear();
+			}
+		}
+
 		// Loop through all commands
 		const uint8_t* commandPacketBuffer = commandBuffer.getCommandPacketBuffer();
 		Renderer::ConstCommandPacket constCommandPacket = commandPacketBuffer;
