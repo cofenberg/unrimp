@@ -196,9 +196,7 @@ MAIN_BEGIN
 			// Apply jitter offset for dither temporal anti aliasing
 			// -> The jitter offset is using "Hammersley 4x" from "MSAA Resolve + Temporal AA" from https://github.com/TheRealMJP/MSAAFilter with background information at https://mynameismjp.wordpress.com/2012/10/28/msaa-resolve-filters/
 			// -> Approach as seen inside a material graph at https://wiki.unrealengine.com/Parallax_Occlusion_Mapping
-			@property(!SinglePassStereoInstancing)
-				float maximumNumberOfSteps = LERP(material.MinimumNumberOfPomSteps, material.MaximumNumberOfPomSteps, PassData.JitterOffset.x * PassData.JitterOffset.y);
-			@end
+			float maximumNumberOfSteps = LERP(material.MinimumNumberOfPomSteps, material.MaximumNumberOfPomSteps, PassData.JitterOffset.x * PassData.JitterOffset.y);
 
 			// Get new texture coordinates from parallax occlusion mapping
 			float parallaxHeight = 0.0f;

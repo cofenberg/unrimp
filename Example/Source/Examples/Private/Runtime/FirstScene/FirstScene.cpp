@@ -137,7 +137,7 @@ FirstScene::FirstScene() :
 	mResolutionScale(1.0f),
 	mUseVerticalSynchronization(false),
 	mCurrentUseVerticalSynchronization(false),
-	mCurrentMsaa(static_cast<int>(Msaa::FOUR)),
+	mCurrentMsaa(static_cast<int>(Msaa::TWO)),
 	// Graphics
 	mInstancedCompositor(Compositor::FORWARD),
 	mCurrentCompositor(static_cast<int>(mInstancedCompositor)),
@@ -241,13 +241,20 @@ void FirstScene::onInitialization()
 				{
 					// Select the VR compositor and enable MSAA by default since image stability is quite important for VR
 					// -> "Advanced VR Rendering" by Alex Vlachos, Valve -> page 26 -> "4xMSAA Minimum Quality" ( http://media.steampowered.com/apps/valve/2015/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf )
+					// -> We're using temporal MSAA which looks quite stable with 2xMSAA as well
 					if (Compositor::DEBUG != static_cast<Compositor>(mCurrentCompositor))
 					{
 						mInstancedCompositor = Compositor::VR;
 						mCurrentCompositor = static_cast<int>(mInstancedCompositor);
 					}
-					mCurrentMsaa = static_cast<int>(Msaa::FOUR);
-					mCurrentTextureFiltering = static_cast<int>(TextureFiltering::ANISOTROPIC_4);
+					if (mCurrentMsaa < static_cast<int>(Msaa::TWO))
+					{
+						mCurrentMsaa = static_cast<int>(Msaa::TWO);
+					}
+					if (mCurrentTextureFiltering < static_cast<int>(TextureFiltering::ANISOTROPIC_4))
+					{
+						mCurrentTextureFiltering = static_cast<int>(TextureFiltering::ANISOTROPIC_4);
+					}
 				}
 			}
 		}

@@ -35,9 +35,8 @@
 			"Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget":
 			{
 				"Description": "Hierarchical depth buffer (aka Hi-Z map or HZB), useful for GPU occlusion culling, screen space reflections as well as using the second depth buffer mipmap for e.g. a half-sized volumetric light/fog bilateral upsampling",
-				"Note": "Inside this compositor only the top depth buffer mipmap is accessed, hence there's no need for mipmap generation",
 				"TextureFormat": "D32_FLOAT",
-				"Flags": "SHADER_RESOURCE | ALLOW_RESOLUTION_SCALE"
+				"Flags": "SHADER_RESOURCE | RENDER_TARGET | GENERATE_MIPMAPS | ALLOW_RESOLUTION_SCALE"
 			},
 			"Example/Texture/Dynamic/MultisampleNormalRenderTarget":
 			{
@@ -45,13 +44,23 @@
 				"TextureFormat": "R16G16B16A16F",
 				"Flags": "SHADER_RESOURCE | RENDER_TARGET | ALLOW_MULTISAMPLE | ALLOW_RESOLUTION_SCALE"
 			},
+			"Example/Texture/Dynamic/MultisampleVelocityRenderTarget":
+			{
+				"TextureFormat": "R16G16_SNORM",
+				"Flags": "SHADER_RESOURCE | RENDER_TARGET | ALLOW_MULTISAMPLE | ALLOW_RESOLUTION_SCALE"
+			},
 			"Example/Texture/Dynamic/HdrColorRenderTarget0":
 			{
-				"TextureFormat": "R16G16B16A16F"
+				"TextureFormat": "R11G11B10F"
 			},
 			"Example/Texture/Dynamic/HdrColorRenderTarget1":
 			{
 				"TextureFormat": "R11G11B10F"
+			},
+			"Example/Texture/Dynamic/PreviousHdrColorRenderTarget":
+			{
+				"TextureFormat": "R11G11B10F",
+				"Flags": "SHADER_RESOURCE | ALLOW_RESOLUTION_SCALE"
 			},
 			"Example/Texture/Dynamic/LuminanceRenderTarget":
 			{
@@ -127,16 +136,18 @@
 			},
 			"HdrMultisampleFramebuffer":
 			{
-				"ColorTextures": [ "Example/Texture/Dynamic/HdrMultisampleColorRenderTarget", "Example/Texture/Dynamic/MultisampleNormalRenderTarget" ],
+				"ColorTextures": [ "Example/Texture/Dynamic/HdrMultisampleColorRenderTarget", "Example/Texture/Dynamic/MultisampleNormalRenderTarget", "Example/Texture/Dynamic/MultisampleVelocityRenderTarget" ],
 				"DepthStencilTexture": "Example/Texture/Dynamic/MultisampleDepthStencilRenderTarget"
 			},
-			"MsaaResolveDepthFramebuffer":
+			"HdrSkyMultisampleFramebuffer":
 			{
-				"DepthStencilTexture": "Example/Texture/Dynamic/DepthStencilRenderTarget"
+				"ColorTextures": [ "Example/Texture/Dynamic/HdrMultisampleColorRenderTarget", "Example/Texture/Dynamic/MultisampleVelocityRenderTarget" ],
+				"DepthStencilTexture": "Example/Texture/Dynamic/MultisampleDepthStencilRenderTarget"
 			},
-			"HdrFramebuffer0":
+			"MsaaResolveFramebuffer":
 			{
-				"ColorTextures": [ "Example/Texture/Dynamic/HdrColorRenderTarget0" ]
+				"ColorTextures": [ "Example/Texture/Dynamic/HdrColorRenderTarget0" ],
+				"DepthStencilTexture": "Example/Texture/Dynamic/DepthStencilRenderTarget"
 			},
 			"HdrFramebuffer1":
 			{
@@ -145,7 +156,7 @@
 			"TransparentFramebuffer":
 			{
 				"ColorTextures": [ "Example/Texture/Dynamic/HdrColorRenderTarget1" ],
-				"DepthStencilTexture": "Example/Texture/Dynamic/DepthStencilRenderTarget"
+				"DepthStencilTexture": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget"
 			},
 			"LdrFramebuffer1":
 			{
@@ -212,7 +223,10 @@
 					"MinimumRenderQueueIndex": "253",
 					"MaximumRenderQueueIndex": "253",
 					"MaterialTechnique": "Forward"
-				},
+				}
+			},
+			"HdrSkyMultisampleFramebuffer":
+			{
 				"Scene":
 				{
 					"Name": "Sky",
@@ -223,23 +237,19 @@
 					"MaterialTechnique": "Default"
 				}
 			},
-			"HdrFramebuffer0":
-			{
-				"ResolveMultisample":
-				{
-					"SourceMultisampleFramebuffer": "HdrMultisampleFramebuffer"
-				}
-			},
-			"MsaaResolveDepthFramebuffer":
+			"MsaaResolveFramebuffer":
 			{
 				"Compute":
 				{
 					"Name": "MSAA resolve",
 					"Description": "The MSAA resolve is using a graphics material blueprint instead of compute material blueprint since we're dealing with a depth buffer format which doesn't work that well with unordered access",
-					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_MsaaResolveDepth.asset",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_MsaaResolve.asset",
 					"SetMaterialProperties":
 					{
-						"DepthMap": "Example/Texture/Dynamic/MultisampleDepthStencilRenderTarget"
+						"ColorMap": "Example/Texture/Dynamic/HdrMultisampleColorRenderTarget",
+						"DepthMap": "Example/Texture/Dynamic/MultisampleDepthStencilRenderTarget",
+						"VelocityMap": "Example/Texture/Dynamic/MultisampleVelocityRenderTarget",
+						"PreviousColorMap": "Example/Texture/Dynamic/PreviousHdrColorRenderTarget"
 					}
 				}
 			},
@@ -247,10 +257,24 @@
 			{
 				"Copy":
 				{
+					"Name": "Backup color",
+					"DestinationTexture": "Example/Texture/Dynamic/PreviousHdrColorRenderTarget",
+					"SourceTexture": "Example/Texture/Dynamic/HdrColorRenderTarget0"
+				},
+				"Copy":
+				{
 					"Name": "HZB depth map copy",
 					"Description": "Sadly even with read-only it's impossible to read from a depth map while it's bound as depth buffer, so we need a copy",
 					"DestinationTexture": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
 					"SourceTexture": "Example/Texture/Dynamic/DepthStencilRenderTarget"
+				},
+				"GenerateMipmaps":
+				{
+					"Name": "Generate HZB mipmap chain",
+					"Description": "Generate the mipmap chain of the hierarchical depth buffer. Is using a graphics material blueprint instead of compute material blueprint since we're dealing with a depth buffer format which doesn't work that well with unordered access.",
+					"Texture": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_DepthGenerateMipmap.asset",
+					"TextureMaterialBlueprintProperty": "DepthMap"
 				}
 			},
 			"HdrFramebuffer1":
