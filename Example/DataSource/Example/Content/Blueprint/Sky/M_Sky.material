@@ -8,10 +8,9 @@
 	{
 		"Techniques":
 		{
-			"Default": "./MB_Sky.asset",
-			"Debug": "./MB_DebugSky.asset",
-			"Forward": "./MB_Sky.asset",
-			"Deferred": "./MB_Sky.asset"
+			"Debug": "./MB_Debug.asset",
+			"Forward": "./MB_Forward.asset",
+			"Deferred": "./MB_Deferred.asset"
 		}
 	}
 }

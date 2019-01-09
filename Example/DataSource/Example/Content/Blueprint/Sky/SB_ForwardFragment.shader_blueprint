@@ -34,10 +34,12 @@ INPUT_BEGIN
 	INPUT_TEXTURE_COORDINATE(1, float3, TexCoordVS, 				 0)	// Texture coordinate
 	INPUT_TEXTURE_COORDINATE(2, float3, PreviousClipSpacePositionVS, 1)	// Previous clip space position
 	DECLARE_FRAGMENT_POSITION
+	DECLARE_COVERAGE_MASK
 INPUT_END
 OUTPUT_BEGIN
 	OUTPUT_COLOR(0)	// rgb = albedo color, a = alpha
-	OUTPUT_COLOR(1)	// rg  = screen space velocity
+	OUTPUT_COLOR(1)	// rgb = view space normal, a = roughness
+	OUTPUT_COLOR(2)	// rg  = screen space velocity
 OUTPUT_END
 
 // Uniform buffers
@@ -54,6 +56,7 @@ struct PassDataStruct
 	float3   SunlightColor;
 	float	 CloudsIntensity;
 	float2   ViewportSize;
+	uint	 FullCoverageMask;
 };
 UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
 	PassDataStruct PassData;
@@ -175,11 +178,16 @@ MAIN_BEGIN
 		float3 color = SAMPLE_CUBE_LOD(EnvironmentCubeMap, SamplerLinearClamp, float4(-MAIN_INPUT(TexCoordVS), 0.0f)).rgb;
 	@end
 
+	// Complex pixel detection
+	// -> See "Antialiased Deferred Rendering" - https://docs.nvidia.com/gameworks/content/gameworkslibrary/graphicssamples/d3d_samples/antialiaseddeferredrendering.htm
+	float edgePixel = (COVERAGE_MASK != PassData.FullCoverageMask) ? 1.0f : 0.0f;
+
 	// Calculate screen space velocity
 	@insertpiece(DefineCalculateScreenSpaceVelocity)
 
 	// Done
 	// -> Simple performance trick: No need to write out 0 (we're using Reversed-Z) as depth, we're telling via compositor node that the maximum depth is 0.0 so the GPU automatially writes out zero depth for us
-	MAIN_OUTPUT_COLOR(0) = float4(color, 1.0f);
-	MAIN_OUTPUT_COLOR(1) = float4(velocity.x, velocity.y, 0.0f, 0.0f);
+	MAIN_OUTPUT_COLOR(0) = float4(color, edgePixel);
+	MAIN_OUTPUT_COLOR(1) = float4(0.0f, 0.0f, 1.0f, 0.0f);
+	MAIN_OUTPUT_COLOR(2) = float4(velocity.x, velocity.y, 0.0f, 0.0f);
 MAIN_END

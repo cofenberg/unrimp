@@ -63,7 +63,7 @@
 			"ShaderBlueprints":
 			{
 				"VertexShaderBlueprint": "./SB_Vertex.asset",
-				"FragmentShaderBlueprint": "./SB_Fragment.asset"
+				"FragmentShaderBlueprint": "./SB_ForwardFragment.asset"
 			},
 			"RasterizerState":
 			{
@@ -154,6 +154,12 @@
 							"Usage": "PASS_REFERENCE",
 							"ValueType": "FLOAT_2",
 							"Value": "@VIEWPORT_SIZE"
+						},
+						"FullCoverageMask":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "INTEGER",
+							"Value": "@FULL_COVERAGE_MASK"
 						}
 					}
 				}

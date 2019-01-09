@@ -139,11 +139,6 @@
 				"ColorTextures": [ "Example/Texture/Dynamic/HdrMultisampleColorRenderTarget", "Example/Texture/Dynamic/MultisampleNormalRenderTarget", "Example/Texture/Dynamic/MultisampleVelocityRenderTarget" ],
 				"DepthStencilTexture": "Example/Texture/Dynamic/MultisampleDepthStencilRenderTarget"
 			},
-			"HdrSkyMultisampleFramebuffer":
-			{
-				"ColorTextures": [ "Example/Texture/Dynamic/HdrMultisampleColorRenderTarget", "Example/Texture/Dynamic/MultisampleVelocityRenderTarget" ],
-				"DepthStencilTexture": "Example/Texture/Dynamic/MultisampleDepthStencilRenderTarget"
-			},
 			"MsaaResolveFramebuffer":
 			{
 				"ColorTextures": [ "Example/Texture/Dynamic/HdrColorRenderTarget0" ],
@@ -223,10 +218,7 @@
 					"MinimumRenderQueueIndex": "253",
 					"MaximumRenderQueueIndex": "253",
 					"MaterialTechnique": "Forward"
-				}
-			},
-			"HdrSkyMultisampleFramebuffer":
-			{
+				},
 				"Scene":
 				{
 					"Name": "Sky",
@@ -234,7 +226,7 @@
 					"MaximumDepth": "0.0",
 					"MinimumRenderQueueIndex": "254",
 					"MaximumRenderQueueIndex": "254",
-					"MaterialTechnique": "Default"
+					"MaterialTechnique": "Forward"
 				}
 			},
 			"MsaaResolveFramebuffer":

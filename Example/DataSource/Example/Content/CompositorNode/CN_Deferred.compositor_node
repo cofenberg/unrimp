@@ -209,11 +209,6 @@
 				"ColorTextures": [ "Example/Texture/Dynamic/MultisampleGBufferRenderTarget0", "Example/Texture/Dynamic/MultisampleGBufferRenderTarget1", "Example/Texture/Dynamic/MultisampleGBufferRenderTarget2", "Example/Texture/Dynamic/MultisampleVelocityRenderTarget" ],
 				"DepthStencilTexture": "Example/Texture/Dynamic/MultisampleDepthStencilRenderTarget"
 			},
-			"GBufferSkyFramebuffer":
-			{
-				"ColorTextures": [ "Example/Texture/Dynamic/MultisampleGBufferRenderTarget0", "Example/Texture/Dynamic/MultisampleVelocityRenderTarget" ],
-				"DepthStencilTexture": "Example/Texture/Dynamic/MultisampleDepthStencilRenderTarget"
-			},
 			"MsaaResolveDepthFramebuffer":
 			{
 				"DepthStencilTexture": "Example/Texture/Dynamic/DepthStencilRenderTarget"
@@ -282,10 +277,7 @@
 					"MinimumRenderQueueIndex": "253",
 					"MaximumRenderQueueIndex": "253",
 					"MaterialTechnique": "Deferred"
-				}
-			},
-			"GBufferSkyFramebuffer":
-			{
+				},
 				"Scene":
 				{
 					"Name": "Sky to GBuffer",
@@ -293,7 +285,7 @@
 					"MaximumDepth": "0.0",
 					"MinimumRenderQueueIndex": "254",
 					"MaximumRenderQueueIndex": "254",
-					"MaterialTechnique": "Default"
+					"MaterialTechnique": "Deferred"
 				}
 			},
 			"MsaaResolveDepthFramebuffer":
