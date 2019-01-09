@@ -41,9 +41,9 @@ OUTPUT_END_VERTEX
 // Uniform buffers
 struct PassDataStruct
 {
-	float4x4 WorldSpaceToViewSpaceMatrix;
-	float4x4 PreviousWorldSpaceToViewSpaceMatrix;
-	float4x4 ViewSpaceToClipSpaceMatrix;
+	float4x4 WorldSpaceToViewSpaceMatrix[2];
+	float4x4 PreviousWorldSpaceToViewSpaceMatrix[2];
+	float4x4 ViewSpaceToClipSpaceMatrix[2];
 	float4   HosekWilkieSkyCoefficients1[4];
 	float4   HosekWilkieSkyCoefficients2[4];
 	float4	 WindDirectionStrength;
@@ -64,12 +64,20 @@ UNIFORM_BUFFER_END
 //[-------------------------------------------------------]
 MAIN_BEGIN_VERTEX
 	// Rotate into view-space, centered on the camera
-	float3 viewSpacePosition = (MATRIX_MUL(CAST_TO(PassData.WorldSpaceToViewSpaceMatrix, float3x3), MAIN_INPUT(Position))).xyz;
-	float3 previousViewSpacePosition = (MATRIX_MUL(CAST_TO(PassData.PreviousWorldSpaceToViewSpaceMatrix, float3x3), MAIN_INPUT(Position))).xyz;
+	float3 viewSpacePosition = (MATRIX_MUL(CAST_TO(PassData.WorldSpaceToViewSpaceMatrix[MAIN_INPUT_STEREO_EYE_INDEX], float3x3), MAIN_INPUT(Position))).xyz;
+	float3 previousViewSpacePosition = (MATRIX_MUL(CAST_TO(PassData.PreviousWorldSpaceToViewSpaceMatrix[MAIN_INPUT_STEREO_EYE_INDEX], float3x3), MAIN_INPUT(Position))).xyz;
 
 	// Transform to clip-space
-	MAIN_OUTPUT_POSITION = MATRIX_MUL(PassData.ViewSpaceToClipSpaceMatrix, float4(viewSpacePosition, 1.0f));
-	MAIN_OUTPUT(PreviousClipSpacePositionVS) = MATRIX_MUL(PassData.ViewSpaceToClipSpaceMatrix, float4(previousViewSpacePosition, 1.0f)).xyw;
+	MAIN_OUTPUT_POSITION = MATRIX_MUL(PassData.ViewSpaceToClipSpaceMatrix[MAIN_INPUT_STEREO_EYE_INDEX], float4(viewSpacePosition, 1.0f));
+	MAIN_OUTPUT(PreviousClipSpacePositionVS) = MATRIX_MUL(PassData.ViewSpaceToClipSpaceMatrix[MAIN_INPUT_STEREO_EYE_INDEX], float4(previousViewSpacePosition, 1.0f)).xyw;
+	@property(SinglePassStereoInstancing)
+	{
+		// Replicate the "MAIN_END_VERTEX(MAIN_OUTPUT_POSITION)" part for the previous clip space position used for velocity calculation
+		float StereoEyeOffsetScale[2] = { 0.5f, -0.5f };
+		MAIN_OUTPUT(PreviousClipSpacePositionVS).x *= 0.5f;
+		MAIN_OUTPUT(PreviousClipSpacePositionVS).x += StereoEyeOffsetScale[MAIN_INPUT_STEREO_EYE_INDEX] * MAIN_OUTPUT(PreviousClipSpacePositionVS).z;
+	}
+	@end
 
 	// Pass through the object space position as texture coordinate
 	MAIN_OUTPUT(TexCoordVS) = MAIN_INPUT(Position);

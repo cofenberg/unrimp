@@ -73,7 +73,7 @@ namespace
 		#define DEFINE_CONSTANT(name) static constexpr uint32_t name = STRING_ID(#name);
 			// Pass data influenced by single pass stereo rendering via instancing as described in "High Performance Stereo Rendering For VR", Timothy Wilson, San Diego, Virtual Reality Meetup
 			DEFINE_CONSTANT(WORLD_SPACE_TO_VIEW_SPACE_MATRIX)				///< "FLOAT_4_4"-type
-			DEFINE_CONSTANT(WORLD_SPACE_TO_VIEW_SPACE_MATRIX2)				///< "FLOAT_4_4"-type
+			DEFINE_CONSTANT(WORLD_SPACE_TO_VIEW_SPACE_MATRIX_2)				///< "FLOAT_4_4"-type
 			DEFINE_CONSTANT(VIEW_SPACE_TO_WORLD_SPACE_MATRIX)				///< "FLOAT_4_4"-type
 			DEFINE_CONSTANT(WORLD_SPACE_TO_VIEW_SPACE_QUATERNION)			///< "FLOAT_4"-type
 			DEFINE_CONSTANT(WORLD_SPACE_TO_VIEW_SPACE_QUATERNION_2)			///< "FLOAT_4"-type
@@ -86,7 +86,7 @@ namespace
 			DEFINE_CONSTANT(PREVIOUS_WORLD_SPACE_TO_VIEW_SPACE_MATRIX)		///< "FLOAT_4_4"-type, only valid for graphics pipeline
 			DEFINE_CONSTANT(PREVIOUS_WORLD_SPACE_TO_VIEW_SPACE_MATRIX_2)	///< "FLOAT_4_4"-type
 			DEFINE_CONSTANT(VIEW_SPACE_TO_CLIP_SPACE_MATRIX)				///< "FLOAT_4_4"-type, only valid for graphics pipeline
-			DEFINE_CONSTANT(VIEW_SPACE_TO_CLIP_SPACE_MATRIX2)				///< "FLOAT_4_4"-type, only valid for graphics pipeline
+			DEFINE_CONSTANT(VIEW_SPACE_TO_CLIP_SPACE_MATRIX_2)				///< "FLOAT_4_4"-type, only valid for graphics pipeline
 			DEFINE_CONSTANT(VIEW_SPACE_TO_TEXTURE_SPACE_MATRIX)				///< "FLOAT_4_4"-type, only valid for graphics pipeline
 			DEFINE_CONSTANT(CLIP_SPACE_TO_VIEW_SPACE_MATRIX)				///< "FLOAT_4_4"-type, only valid for graphics pipeline
 			DEFINE_CONSTANT(CLIP_SPACE_TO_WORLD_SPACE_MATRIX)				///< "FLOAT_4_4"-type, only valid for graphics pipeline
@@ -472,7 +472,7 @@ namespace RendererRuntime
 				memcpy(buffer, glm::value_ptr(mPassData->cameraRelativeWorldSpaceToViewSpaceMatrix[0]), numberOfBytes);
 				break;
 
-			case ::detail::WORLD_SPACE_TO_VIEW_SPACE_MATRIX2:
+			case ::detail::WORLD_SPACE_TO_VIEW_SPACE_MATRIX_2:
 				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
 				memcpy(buffer, glm::value_ptr(mPassData->cameraRelativeWorldSpaceToViewSpaceMatrix[1]), numberOfBytes);
 				break;
@@ -548,7 +548,7 @@ namespace RendererRuntime
 				break;
 
 			// Only valid for graphics pipeline
-			case ::detail::VIEW_SPACE_TO_CLIP_SPACE_MATRIX2:
+			case ::detail::VIEW_SPACE_TO_CLIP_SPACE_MATRIX_2:
 				RENDERER_ASSERT(mRendererRuntime->getContext(), !mIsComputePipeline, "\"VIEW_SPACE_TO_CLIP_SPACE_MATRIX2\" is only valid for graphics pipeline")
 				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
 				memcpy(buffer, glm::value_ptr(mPassData->viewSpaceToClipSpaceMatrixReversedZ[1]), numberOfBytes);

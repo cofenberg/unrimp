@@ -71,11 +71,23 @@
 							"ValueType": "FLOAT_4_4",
 							"Value": "@WORLD_SPACE_TO_VIEW_SPACE_MATRIX"
 						},
+						"WorldSpaceToViewSpaceMatrix2":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4_4",
+							"Value": "@WORLD_SPACE_TO_VIEW_SPACE_MATRIX_2"
+						},
 						"ViewSpaceToClipSpaceMatrix":
 						{
 							"Usage": "PASS_REFERENCE",
 							"ValueType": "FLOAT_4_4",
 							"Value": "@VIEW_SPACE_TO_CLIP_SPACE_MATRIX"
+						},
+						"ViewSpaceToClipSpaceMatrix2":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4_4",
+							"Value": "@VIEW_SPACE_TO_CLIP_SPACE_MATRIX_2"
 						},
 						"HosekWilkieSkyCoefficients1":
 						{

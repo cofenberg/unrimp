@@ -45,9 +45,9 @@ OUTPUT_END
 // Uniform buffers
 struct PassDataStruct
 {
-	float4x4 WorldSpaceToViewSpaceMatrix;
-	float4x4 PreviousWorldSpaceToViewSpaceMatrix;
-	float4x4 ViewSpaceToClipSpaceMatrix;
+	float4x4 WorldSpaceToViewSpaceMatrix[2];
+	float4x4 PreviousWorldSpaceToViewSpaceMatrix[2];
+	float4x4 ViewSpaceToClipSpaceMatrix[2];
 	float4   HosekWilkieSkyCoefficients1[4];
 	float4   HosekWilkieSkyCoefficients2[4];
 	float4	 WindDirectionStrength;

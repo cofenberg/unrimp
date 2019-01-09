@@ -130,7 +130,7 @@ MAIN_BEGIN_VERTEX
 		// Replicate the "MAIN_END_VERTEX(MAIN_OUTPUT_POSITION)" part for the previous clip space position used for velocity calculation
 		float StereoEyeOffsetScale[2] = { 0.5f, -0.5f };
 		MAIN_OUTPUT(PreviousClipSpacePositionVS).x *= 0.5f;
-		MAIN_OUTPUT(PreviousClipSpacePositionVS).x += StereoEyeOffsetScale[stereoEyeIndex] * MAIN_OUTPUT(PreviousClipSpacePositionVS).z;
+		MAIN_OUTPUT(PreviousClipSpacePositionVS).x += StereoEyeOffsetScale[MAIN_INPUT_STEREO_EYE_INDEX] * MAIN_OUTPUT(PreviousClipSpacePositionVS).z;
 	}
 	@end
 
