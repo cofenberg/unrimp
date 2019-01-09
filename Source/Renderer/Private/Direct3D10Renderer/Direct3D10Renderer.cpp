@@ -9939,6 +9939,7 @@ namespace Direct3D10Renderer
 		else
 		{
 			mD3D10Device->IASetInputLayout(nullptr);
+			mCurrentGraphicsPipelineState.d3d10InputLayout = nullptr;
 		}
 	}
 

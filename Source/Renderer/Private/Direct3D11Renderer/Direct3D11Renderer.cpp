@@ -12483,6 +12483,7 @@ namespace Direct3D11Renderer
 		{
 			// Set no Direct3D 11 input layout
 			mD3D11DeviceContext->IASetInputLayout(nullptr);
+			mCurrentGraphicsPipelineState.d3d11InputLayout = nullptr;
 		}
 	}
 
