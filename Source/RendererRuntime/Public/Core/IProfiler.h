@@ -383,7 +383,8 @@
 	*  @param[in] name
 	*    Section name
 	*/
-	#define RENDERER_SCOPED_PROFILER_EVENT(context, commandBuffer, name)
+	#define RENDERER_SCOPED_PROFILER_EVENT(context, commandBuffer, name) \
+		COMMAND_SCOPED_DEBUG_EVENT(commandBuffer, name)
 
 	/**
 	*  @brief
@@ -396,7 +397,8 @@
 	*  @param[in] name
 	*    Section name
 	*/
-	#define RENDERER_SCOPED_PROFILER_EVENT_DYNAMIC(context, commandBuffer, name)
+	#define RENDERER_SCOPED_PROFILER_EVENT_DYNAMIC(context, commandBuffer, name) \
+		COMMAND_SCOPED_DEBUG_EVENT(commandBuffer, name)
 
 	/**
 	*  @brief
