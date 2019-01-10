@@ -12158,8 +12158,8 @@ namespace VulkanRenderer
 		// Base vertex supported for draw calls?
 		mCapabilities.baseVertex = true;
 
-		// Vulkan has native multi-threading
-		mCapabilities.nativeMultiThreading = false;	// TODO(co) Enable native multi-threading when done
+		// Vulkan has native multithreading
+		mCapabilities.nativeMultithreading = false;	// TODO(co) Enable native multithreading when done
 
 		// Vulkan has shader bytecode support
 		mCapabilities.shaderBytecode = false;	// TODO(co) Vulkan has shader bytecode support, set "mCapabilities.shaderBytecode" to true later on

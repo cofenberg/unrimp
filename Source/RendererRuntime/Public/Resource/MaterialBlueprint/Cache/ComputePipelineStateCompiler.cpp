@@ -117,7 +117,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	ComputePipelineStateCompiler::ComputePipelineStateCompiler(IRendererRuntime& rendererRuntime) :
 		mRendererRuntime(rendererRuntime),
-		mAsynchronousCompilationEnabled(rendererRuntime.getRenderer().getCapabilities().nativeMultiThreading),
+		mAsynchronousCompilationEnabled(rendererRuntime.getRenderer().getCapabilities().nativeMultithreading),
 		mNumberOfCompilerThreads(0),
 		mNumberOfInFlightCompilerRequests(0),
 		mShutdownBuilderThread(false),

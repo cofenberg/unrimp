@@ -149,8 +149,8 @@ namespace RendererRuntime
 		mMemoryFile.read(&sceneHeader, sizeof(v1Scene::SceneHeader));
 
 		// Can we create the renderer resource asynchronous as well?
-		// -> For example scene items might create renderer resources, so we have to check for native renderer multi threading support in here
-		if (mRendererRuntime.getRenderer().getCapabilities().nativeMultiThreading)
+		// -> For example scene items might create renderer resources, so we have to check for native renderer multithreading support in here
+		if (mRendererRuntime.getRenderer().getCapabilities().nativeMultithreading)
 		{
 			// Read in the scene resource nodes
 			::detail::nodesDeserialization(mMemoryFile, *mSceneResource);
@@ -160,8 +160,8 @@ namespace RendererRuntime
 	bool SceneResourceLoader::onDispatch()
 	{
 		// Can we create the renderer resource asynchronous as well?
-		// -> For example scene items might create renderer resources, so we have to check for native renderer multi threading support in here
-		if (!mRendererRuntime.getRenderer().getCapabilities().nativeMultiThreading)
+		// -> For example scene items might create renderer resources, so we have to check for native renderer multithreading support in here
+		if (!mRendererRuntime.getRenderer().getCapabilities().nativeMultithreading)
 		{
 			// Read in the scene resource nodes
 			::detail::nodesDeserialization(mMemoryFile, *mSceneResource);

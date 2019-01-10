@@ -655,7 +655,7 @@ namespace Renderer
 	*    Abstract log interface
 	*
 	*  @note
-	*    - The implementation must be multi-threading safe since the renderer is allowed to internally use multiple threads
+	*    - The implementation must be multithreading safe since the renderer is allowed to internally use multiple threads
 	*/
 	class ILog
 	{
@@ -761,7 +761,7 @@ namespace Renderer
 	*    Abstract assert interface
 	*
 	*  @note
-	*    - The implementation must be multi-threading safe since the renderer is allowed to internally use multiple threads
+	*    - The implementation must be multithreading safe since the renderer is allowed to internally use multiple threads
 	*/
 	class IAssert
 	{
@@ -853,7 +853,7 @@ namespace Renderer
 	*    Abstract memory allocator interface
 	*
 	*  @note
-	*    - The implementation must be multi-threading safe since the renderer is allowed to internally use multiple threads
+	*    - The implementation must be multithreading safe since the renderer is allowed to internally use multiple threads
 	*    - The interface design is basing on "Nicholas Frechette's Blog Raw bits" - "A memory allocator interface" - http://nfrechette.github.io/2015/05/11/memory_allocator_interface/
 	*/
 	class IAllocator
@@ -3726,7 +3726,7 @@ namespace Renderer
 		bool				instancedArrays;								///< Instanced arrays supported? (shader model 3 feature, vertex array element advancing per-instance instead of per-vertex)
 		bool				drawInstanced;									///< Draw instanced supported? (shader model 4 feature, build in shader variable holding the current instance ID)
 		bool				baseVertex;										///< Base vertex supported for draw calls?
-		bool				nativeMultiThreading;							///< Does the renderer support native multi-threading? For example Direct3D 11 does meaning we can also create renderer resources asynchronous while for OpenGL we have to create an separate OpenGL context (less efficient, more complex to implement).
+		bool				nativeMultithreading;							///< Does the renderer support native multithreading? For example Direct3D 11 does meaning we can also create renderer resources asynchronous while for OpenGL we have to create an separate OpenGL context (less efficient, more complex to implement).
 		bool				shaderBytecode;									///< Shader bytecode supported?
 		// Vertex-shader (VS) stage
 		bool				vertexShader;									///< Is there support for vertex shaders (VS)?
@@ -3765,7 +3765,7 @@ namespace Renderer
 			instancedArrays(false),
 			drawInstanced(false),
 			baseVertex(false),
-			nativeMultiThreading(false),
+			nativeMultithreading(false),
 			shaderBytecode(false),
 			vertexShader(false),
 			maximumNumberOfPatchVertices(0),

@@ -280,7 +280,7 @@ namespace RendererRuntime
 		}
 
 		// Can we create the renderer resources asynchronous as well?
-		if (mRendererRuntime.getRenderer().getCapabilities().nativeMultiThreading)
+		if (mRendererRuntime.getRenderer().getCapabilities().nativeMultithreading)
 		{
 			createRendererResources();
 		}
@@ -289,7 +289,7 @@ namespace RendererRuntime
 	bool MaterialBlueprintResourceLoader::onDispatch()
 	{
 		// Create the renderer resources, in case it wasn't already done asynchronously
-		if (!mRendererRuntime.getRenderer().getCapabilities().nativeMultiThreading)
+		if (!mRendererRuntime.getRenderer().getCapabilities().nativeMultithreading)
 		{
 			createRendererResources();
 		}

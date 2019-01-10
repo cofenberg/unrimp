@@ -13435,7 +13435,7 @@ namespace Direct3D11Renderer
 
 	void Direct3D11Renderer::generateAsynchronousDeferredMipmaps(Renderer::ITexture& texture, ID3D11ShaderResourceView& d3d11ShaderResourceView)
 	{
-		if (mCapabilities.nativeMultiThreading)
+		if (mCapabilities.nativeMultithreading)
 		{
 			std::lock_guard<std::mutex> generateAsynchronousMipmapsForTexturesMutexLock(mGenerateAsynchronousMipmapsForTexturesMutex);
 			mGenerateAsynchronousMipmapsForTextures.push_back(&texture);
@@ -13986,7 +13986,7 @@ namespace Direct3D11Renderer
 		// -> For multithreading we could also use a deferred context, but in first tests there were random "FinishCommandList()"/"ExecuteCommandList()" state glitches
 		//    when not fully resetting the context states. On the other hand, fully resetting the context states isn't recommended. Since we just need to be able to
 		//    trigger the generation of mipmaps for textures asynchronously it's not really worth using those more complex deferred contexts for such a simple task.
-		if (mCapabilities.nativeMultiThreading)
+		if (mCapabilities.nativeMultithreading)
 		{
 			std::lock_guard<std::mutex> generateAsynchronousMipmapsForTexturesMutexLock(mGenerateAsynchronousMipmapsForTexturesMutex);
 			if (!mGenerateAsynchronousMipmapsForTextures.empty())
@@ -14401,8 +14401,8 @@ namespace Direct3D11Renderer
 		// Base vertex supported for draw calls?
 		mCapabilities.baseVertex = true;
 
-		// Direct3D 11 has native multi-threading
-		mCapabilities.nativeMultiThreading = true;
+		// Direct3D 11 has native multithreading
+		mCapabilities.nativeMultithreading = true;
 
 		// Direct3D 11 has shader bytecode support
 		mCapabilities.shaderBytecode = true;

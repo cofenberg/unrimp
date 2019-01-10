@@ -381,7 +381,7 @@ namespace RendererRuntime
 		}
 
 		// Can we create the renderer resource asynchronous as well?
-		if (mRendererRuntime.getRenderer().getCapabilities().nativeMultiThreading)
+		if (mRendererRuntime.getRenderer().getCapabilities().nativeMultithreading)
 		{
 			mTexture = createRendererTexture();
 		}

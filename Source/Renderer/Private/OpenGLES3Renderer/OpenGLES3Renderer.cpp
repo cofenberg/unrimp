@@ -10863,8 +10863,8 @@ namespace OpenGLES3Renderer
 		// Base vertex supported for draw calls?
 		mCapabilities.baseVertex = mOpenGLES3Context->getExtensions().isGL_EXT_draw_elements_base_vertex();
 
-		// OpenGL ES 3 has no native multi-threading
-		mCapabilities.nativeMultiThreading = false;
+		// OpenGL ES 3 has no native multithreading
+		mCapabilities.nativeMultithreading = false;
 
 		// We don't support the OpenGL ES 3 program binaries since those are operation system and graphics driver version dependent, which renders them useless for pre-compiled shaders shipping
 		mCapabilities.shaderBytecode = false;

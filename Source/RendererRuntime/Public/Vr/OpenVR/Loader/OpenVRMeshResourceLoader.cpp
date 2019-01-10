@@ -331,7 +331,7 @@ namespace RendererRuntime
 		}
 
 		// Can we create the renderer resource asynchronous as well?
-		if (mRendererRuntime.getRenderer().getCapabilities().nativeMultiThreading)
+		if (mRendererRuntime.getRenderer().getCapabilities().nativeMultithreading)
 		{
 			mVertexArray = createVertexArray();
 		}
@@ -345,7 +345,7 @@ namespace RendererRuntime
 		mMeshResource->setBoundingSpherePositionRadius((mMinimumBoundingBoxPosition + mMaximumBoundingBoxPosition) * 0.5f, Math::calculateInnerBoundingSphereRadius(mMinimumBoundingBoxPosition, mMaximumBoundingBoxPosition));
 
 		// Create vertex array object (VAO)
-		mMeshResource->setVertexArray(mRendererRuntime.getRenderer().getCapabilities().nativeMultiThreading ? mVertexArray : createVertexArray());
+		mMeshResource->setVertexArray(mRendererRuntime.getRenderer().getCapabilities().nativeMultithreading ? mVertexArray : createVertexArray());
 
 		{ // Create sub-meshes
 			// Load the render model texture and setup the material asset

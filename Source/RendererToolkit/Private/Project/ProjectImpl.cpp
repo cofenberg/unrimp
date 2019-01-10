@@ -210,7 +210,7 @@ namespace RendererToolkit
 			const IAssetCompiler* assetCompiler = getSourceAssetCompilerAndRapidJsonDocument(virtualAssetFilename, rapidJsonDocument);
 
 			// Dispatch asset compiler
-			// TODO(co) Add multi-threading support: Add compiler queue which is processed in the background, ensure compiler instances are reused
+			// TODO(co) Add multithreading support: Add compiler queue which is processed in the background, ensure compiler instances are reused
 
 			// Get the asset input directory and asset output directory
 			const std::string virtualAssetPackageInputDirectory = mProjectName + '/' + mAssetPackageDirectoryName;
@@ -259,7 +259,7 @@ namespace RendererToolkit
 			const IAssetCompiler* assetCompiler = getSourceAssetCompilerAndRapidJsonDocument(virtualAssetFilename, rapidJsonDocument);
 
 			// Dispatch asset compiler
-			// TODO(co) Add multi-threading support: Add compiler queue which is processed in the background, ensure compiler instances are reused
+			// TODO(co) Add multithreading support: Add compiler queue which is processed in the background, ensure compiler instances are reused
 
 			// Get the asset input directory and asset output directory
 			const std::string virtualAssetPackageInputDirectory = mProjectName + '/' + mAssetPackageDirectoryName;

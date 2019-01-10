@@ -84,7 +84,7 @@ namespace RendererRuntime
 			mSliceFileMetadata.reserve(mNumberOfSlices);
 			for (uint32_t i = 0; i < mNumberOfSlices; ++i)
 			{
-				const Asset& asset = assetManager.getAssetByAssetId(mAssetIds[i]);	// TODO(co) Usually considered to be multi-threading safe, but better review this
+				const Asset& asset = assetManager.getAssetByAssetId(mAssetIds[i]);	// TODO(co) Usually considered to be multithreading safe, but better review this
 				const int64_t fileSize = fileManager.getFileSize(asset.virtualFilename);
 				RENDERER_ASSERT(mRendererRuntime.getContext(), fileSize > 0, "Invalid file size")
 				mSliceFileMetadata.emplace_back(asset, mNumberOfUsedFileDataBytes, static_cast<uint32_t>(fileSize));
@@ -314,7 +314,7 @@ namespace RendererRuntime
 		}
 
 		// Can we create the renderer resource asynchronous as well?
-		if (mRendererRuntime.getRenderer().getCapabilities().nativeMultiThreading)
+		if (mRendererRuntime.getRenderer().getCapabilities().nativeMultithreading)
 		{
 			mTexture = createRendererTexture();
 		}

@@ -138,7 +138,7 @@ namespace RendererRuntime
 		}
 
 		// Can we create the renderer resource asynchronous as well?
-		if (mRendererRuntime.getRenderer().getCapabilities().nativeMultiThreading)
+		if (mRendererRuntime.getRenderer().getCapabilities().nativeMultithreading)
 		{
 			mVertexArray = createVertexArray();
 		}
@@ -147,7 +147,7 @@ namespace RendererRuntime
 	bool MeshResourceLoader::onDispatch()
 	{
 		// Create vertex array object (VAO)
-		mMeshResource->setVertexArray(mRendererRuntime.getRenderer().getCapabilities().nativeMultiThreading ? mVertexArray : createVertexArray());
+		mMeshResource->setVertexArray(mRendererRuntime.getRenderer().getCapabilities().nativeMultithreading ? mVertexArray : createVertexArray());
 
 		{ // Create sub-meshes
 			MaterialResourceManager& materialResourceManager = mRendererRuntime.getMaterialResourceManager();

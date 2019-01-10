@@ -4137,8 +4137,8 @@ namespace NullRenderer
 		// Base vertex supported for draw calls?
 		mCapabilities.baseVertex = true;
 
-		// The null renderer has native multi-threading
-		mCapabilities.nativeMultiThreading = true;
+		// The null renderer has native multithreading
+		mCapabilities.nativeMultithreading = true;
 
 		// The null renderer has no shader bytecode support
 		mCapabilities.shaderBytecode = false;

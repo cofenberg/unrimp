@@ -69,7 +69,7 @@ namespace RendererRuntime
 	*               This isn't practical, of course, and in reality one has multiple animation sources at one and the same time which
 	*               are blended together. But well, as mentioned, one has to start somewhere.
 	*    - TODO(co) Currently "RendererRuntime::SkeletonAnimationEvaluator" is directly used, probably it makes sense to manage those
-	*               and then update all of them in parallel using multi-threading
+	*               and then update all of them in parallel using multithreading
 	*    - TODO(co) It might make sense to let the skeleton animation resource manager manage skeleton animation controller instances as well
 	*/
 	class SkeletonAnimationController final : public IResourceListener

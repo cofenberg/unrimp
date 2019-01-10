@@ -12558,8 +12558,8 @@ namespace Direct3D12Renderer
 		// Base vertex supported for draw calls?
 		mCapabilities.baseVertex = true;
 
-		// Direct3D 12 has native multi-threading // TODO(co) But do only set this to true if it has been tested
-		mCapabilities.nativeMultiThreading = false;
+		// Direct3D 12 has native multithreading // TODO(co) But do only set this to true if it has been tested
+		mCapabilities.nativeMultithreading = false;
 
 		// Direct3D 12 has shader bytecode support
 		// TODO(co) Implement shader bytecode support

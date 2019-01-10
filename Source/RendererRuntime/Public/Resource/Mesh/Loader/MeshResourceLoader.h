@@ -119,7 +119,7 @@ namespace RendererRuntime
 		Renderer::IBufferManager& mBufferManager;	///< Buffer manager instance, do not destroy the instance
 
 		// Temporary data
-		Renderer::IVertexArray* mVertexArray;	///< In case the used renderer backend supports native multi-threading we also create the renderer resource asynchronous, but the final resource pointer reassignment must still happen synchronous
+		Renderer::IVertexArray* mVertexArray;	///< In case the used renderer backend supports native multithreading we also create the renderer resource asynchronous, but the final resource pointer reassignment must still happen synchronous
 		MemoryFile				mMemoryFile;
 
 		// Temporary vertex buffer

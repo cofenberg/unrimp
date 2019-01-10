@@ -125,7 +125,7 @@ namespace RendererRuntime
 	protected:
 		IRendererRuntime&	mRendererRuntime;	///< Renderer runtime instance, do not destroy the instance
 		TextureResource*	mTextureResource;	///< Destination resource
-		Renderer::ITexture*	mTexture;			///< In case the used renderer backend supports native multi-threading we also create the renderer resource asynchronous, but the final resource pointer reassignment must still happen synchronous
+		Renderer::ITexture*	mTexture;			///< In case the used renderer backend supports native multithreading we also create the renderer resource asynchronous, but the final resource pointer reassignment must still happen synchronous
 
 
 	};
