@@ -338,7 +338,7 @@ void FirstScene::onUpdate()
 				bool hasWindowFocus = true;
 			#endif
 			#ifdef RENDERER_RUNTIME_IMGUI
-				const bool isAnyWindowHovered = ImGui::IsAnyWindowHovered();
+				const bool isAnyWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
 			#else
 				const bool isAnyWindowHovered = false;
 			#endif

@@ -266,7 +266,8 @@ namespace RendererRuntime
 			// -> Update ImGui style to not have a visible round border
 			ImGui::PushStyleColor(ImGuiCol_WindowBg, 0);
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-			if (ImGui::Begin("skeleton", nullptr, ImGui::GetIO().DisplaySize, 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus))
+			ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize, ImGuiCond_FirstUseEver);
+			if (ImGui::Begin("skeleton", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus))
 			{
 				static const ImColor WHITE_COLOR(255, 255, 255);
 				ImDrawList* imDrawList = ImGui::GetWindowDrawList();
@@ -285,7 +286,8 @@ namespace RendererRuntime
 
 	void DebugGuiHelper::drawGrid(const CameraSceneItem& cameraSceneItem, float cellSize, float yPosition)
 	{
-		if (ImGui::Begin("grid", nullptr, ImGui::GetIO().DisplaySize, 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus))
+		ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize, ImGuiCond_FirstUseEver);
+		if (ImGui::Begin("grid", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus))
 		{
 			const int32_t NUMBER_OF_LINES_PER_DIRECTION = 10;
 			static const ImColor GREY_COLOR(0.5f, 0.5f, 0.5f, 1.0f);

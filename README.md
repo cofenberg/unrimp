@@ -301,7 +301,7 @@ Useful Microsoft Windows Developer Tools
 		- ["Sizer - executable size breakdown (2007)"](http://aras-p.info/projSizer.html): "Command line tool that reports size of things (functions, data, classes, templates, object files) in a Visual Studio compiled exe/dll. Extracts info from debug information (.pdb) file."
 			- As of October 14, 2017: Doesn't work with Visual Studio 2017 (v141), compile for Visual Studio 2015 (v140) if you want to analyze the binaries using Sizer
 - Static code analysis: [Cppcheck](http://cppcheck.sourceforge.net/)
-- Checking external dependencies of exe and dll: [Dependency Walker](http://www.dependencywalker.com/)
+- Checking external dependencies of exe and dll: [Dependencies](https://github.com/lucasg/Dependencies) which is a rewrite of the old legacy software [Dependency Walker](http://www.dependencywalker.com/)
 - Texture handling related: [Compressonator](https://github.com/GPUOpen-Tools/Compressonator)
 - When shipping a product, use a static build and e.g. [UPX](https://upx.github.io/) to get executables even more compact on end-user-systems
 - OpenGL ES 3 development: PowerVR (SDK 2017 R2 or newer) works well. [Copy "libEGL.dll" and "libGLESv2.dll" from e.g. "<Installation>/PowerVR_Graphics/PowerVR_Tools/PVRVFrame/Library/Windows_x86_32" e.g. into "unrimp/Binary/Windows_x86d_Shared".](https://www.imgtec.com/blog/5-easy-steps-to-add-pvrtrace-libraries-to-your-own-opengl-es-application/)
