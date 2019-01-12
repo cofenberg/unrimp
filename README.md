@@ -306,6 +306,7 @@ Useful Microsoft Windows Developer Tools
 - When shipping a product, use a static build and e.g. [UPX](https://upx.github.io/) to get executables even more compact on end-user-systems
 - OpenGL ES 3 development: PowerVR (SDK 2017 R2 or newer) works well. [Copy "libEGL.dll" and "libGLESv2.dll" from e.g. "<Installation>/PowerVR_Graphics/PowerVR_Tools/PVRVFrame/Library/Windows_x86_32" e.g. into "unrimp/Binary/Windows_x86d_Shared".](https://www.imgtec.com/blog/5-easy-steps-to-add-pvrtrace-libraries-to-your-own-opengl-es-application/)
 - ["Visual Studio Spell Checker"](https://marketplace.visualstudio.com/items?itemName=EWoodruff.VisualStudioSpellCheckerVS2017andLater) extension to reduce the risk automatically detectable typos get into APIs were they might stay forever
+- [Visual Studio Markdown Editor Plugin](https://marketplace.visualstudio.com/items?itemName=MadsKristensen.MarkdownEditor) for editing "README.md"
 
 
 Useful Online Asset Data Sources
