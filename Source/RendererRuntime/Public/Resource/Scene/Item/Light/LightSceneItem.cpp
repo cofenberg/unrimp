@@ -53,6 +53,7 @@ namespace RendererRuntime
 		mPackedShaderData.radius = lightItem->radius;
 		setInnerOuterAngle(lightItem->innerAngle, lightItem->outerAngle);
 		mPackedShaderData.nearClipDistance = lightItem->nearClipDistance;
+		mPackedShaderData.iesLightProfileIndex = static_cast<float>(lightItem->iesLightProfileIndex);
 
 		// Sanity checks
 		RENDERER_ASSERT(getContext(), mPackedShaderData.color.x >= 0.0f && mPackedShaderData.color.y >= 0.0f && mPackedShaderData.color.z >= 0.0f, "Invalid data")

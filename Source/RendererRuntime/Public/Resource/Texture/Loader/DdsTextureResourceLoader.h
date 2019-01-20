@@ -90,6 +90,7 @@ namespace RendererRuntime
 			mWidth(0),
 			mHeight(0),
 			mDepth(0),
+			mNumberOfSlices(0),
 			mTextureFormat(0),
 			mDataContainsMipmaps(false),
 			mNumberOfImageDataBytes(0),
@@ -116,6 +117,7 @@ namespace RendererRuntime
 		uint32_t mWidth;
 		uint32_t mHeight;
 		uint32_t mDepth;
+		uint32_t mNumberOfSlices;
 		uint8_t  mTextureFormat;	// "Renderer::TextureFormat", don't want to include the header in here
 		bool	 mDataContainsMipmaps;
 

@@ -339,6 +339,7 @@ namespace RendererToolkit
 											JsonHelper::optionalAngleProperty(rapidJsonValueItem, "InnerAngle", lightItem.innerAngle);
 											JsonHelper::optionalAngleProperty(rapidJsonValueItem, "OuterAngle", lightItem.outerAngle);
 											JsonHelper::optionalUnitNProperty(rapidJsonValueItem, "NearClipDistance", &lightItem.nearClipDistance, 1);
+											JsonHelper::optionalIntegerNProperty(rapidJsonValueItem, "IesLightProfileIndex", &lightItem.iesLightProfileIndex, 1);
 
 											// Sanity checks
 											if (lightItem.color[0] < 0.0f || lightItem.color[1] < 0.0f || lightItem.color[2] < 0.0f)
@@ -368,6 +369,10 @@ namespace RendererToolkit
 											if (lightItem.nearClipDistance < 0.0f)
 											{
 												throw std::runtime_error("The spot light near clip distance must be greater as zero");
+											}
+											if (lightItem.iesLightProfileIndex >= 0 && (rapidJsonValueItem.HasMember("InnerAngle") || rapidJsonValueItem.HasMember("OuterAngle")))
+											{
+												throw std::runtime_error("\"InnerAngle\" and \"OuterAngle\" are unused if \"IesLightProfileIndex\" is used");
 											}
 
 											// Write down

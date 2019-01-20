@@ -252,14 +252,14 @@ namespace RendererRuntime
 			// float4 0: xyz = world space light position, w = light radius
 			glm::vec3 position{0.0f, 0.0f, 0.0f};	///< Parent scene node world space position
 			float	  radius = 1.0f;
-			// float4 1: xyz = RGB light diffuse color, w = unused
+			// float4 1: xyz = RGB light diffuse color, w = light type
 			glm::vec3 color{1.0f, 1.0f, 1.0f};
 			float	  lightType = static_cast<float>(LightType::POINT);
-			// float4 2: Only used for spot-light: x = spot-light inner angle in radians, y = spot-light outer angle in radians, z = spot-light near clip distance, w = unused
-			float innerAngle       = 0.0f;	///< Cosine of the inner angle in radians; interval in degrees: 0..90, must be smaller as the outer angle
-			float outerAngle       = 0.0f;	///< Cosine of the outer angle in radians; interval in degrees: 0..90, must be greater as the inner angle
-			float nearClipDistance = 0.0f;
-			float unused           = 0.0f;
+			// float4 2: Only used for spot-light: x = spot-light inner angle in radians, y = spot-light outer angle in radians, z = spot-light near clip distance, w = IES light profile index (<0 = no IES)
+			float innerAngle		   =  0.0f;	///< Cosine of the inner angle in radians; interval in degrees: 0..90, must be smaller as the outer angle, ignored if IES light profile index is used
+			float outerAngle		   =  0.0f;	///< Cosine of the outer angle in radians; interval in degrees: 0..90, must be greater as the inner angle, ignored if IES light profile index is used
+			float nearClipDistance	   =  0.0f;
+			float iesLightProfileIndex = -1.0f;	///< Illuminating Engineering Society (IES) light profile index (<0 = no IES)
 			// float4 3: Only used for spot-light: xyz = normalized view space light direction, w = unused
 			glm::vec3 direction{0.0f, 0.0f, 1.0f};	///< Derived from the parent scene node world space rotation
 			uint32_t  visible = 1;					///< Boolean, not used inside the shader but well, there's currently space left in here so we're using it

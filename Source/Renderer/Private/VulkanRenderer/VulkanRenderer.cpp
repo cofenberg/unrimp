@@ -4577,6 +4577,7 @@ namespace VulkanRenderer
 									break;
 
 								case Renderer::ResourceType::TEXTURE_1D:
+								case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 								case Renderer::ResourceType::TEXTURE_2D:
 								case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 								case Renderer::ResourceType::TEXTURE_3D:
@@ -6184,6 +6185,136 @@ namespace VulkanRenderer
 
 
 	//[-------------------------------------------------------]
+	//[ VulkanRenderer/Texture/Texture1DArray.h               ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Vulkan 1D array texture interface
+	*/
+	class Texture1DArray final : public Renderer::ITexture1DArray
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] vulkanRenderer
+		*    Owner Vulkan renderer instance
+		*  @param[in] width
+		*    Texture width, must be >0
+		*  @param[in] numberOfSlices
+		*    Number of slices, must be >0
+		*  @param[in] textureFormat
+		*    Texture format
+		*  @param[in] data
+		*    Texture data, can be a null pointer
+		*  @param[in] textureFlags
+		*    Texture flags, see "Renderer::TextureFlag::Enum"
+		*/
+		Texture1DArray(VulkanRenderer& vulkanRenderer, uint32_t width, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags) :
+			ITexture1DArray(vulkanRenderer, width, numberOfSlices),
+			mVkImage(VK_NULL_HANDLE),
+			mVkImageLayout(Helper::getVkImageLayoutByTextureFlags(textureFlags)),
+			mVkDeviceMemory(VK_NULL_HANDLE),
+			mVkImageView(VK_NULL_HANDLE),
+			mVkFormat(Helper::createAndFillVkImage(vulkanRenderer, VK_IMAGE_TYPE_1D, VK_IMAGE_VIEW_TYPE_1D_ARRAY, { width, 1, numberOfSlices }, textureFormat, data, textureFlags, 1, mVkImage, mVkDeviceMemory, mVkImageView))
+		{
+			SET_DEFAULT_DEBUG_NAME	// setDebugName("");
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~Texture1DArray() override
+		{
+			Helper::destroyAndFreeVkImage(static_cast<VulkanRenderer&>(getRenderer()), mVkImage, mVkDeviceMemory, mVkImageView);
+		}
+
+		/**
+		*  @brief
+		*    Return the Vulkan image view
+		*
+		*  @return
+		*    The Vulkan image view
+		*/
+		[[nodiscard]] inline VkImageView getVkImageView() const
+		{
+			return mVkImageView;
+		}
+
+		/**
+		*  @brief
+		*    Return the Vulkan image layout
+		*
+		*  @return
+		*    The Vulkan image layout
+		*/
+		[[nodiscard]] inline VkImageLayout getVkImageLayout() const
+		{
+			return mVkImageLayout;
+		}
+
+		/**
+		*  @brief
+		*    Return the Vulkan format
+		*
+		*  @return
+		*    The Vulkan format
+		*/
+		[[nodiscard]] inline VkFormat getVkFormat() const
+		{
+			return mVkFormat;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		DEFINE_SET_DEBUG_NAME_TEXTURE()
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), Texture1DArray, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit Texture1DArray(const Texture1DArray& source) = delete;
+		Texture1DArray& operator =(const Texture1DArray& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		VkImage		   mVkImage;
+		VkImageLayout  mVkImageLayout;
+		VkDeviceMemory mVkDeviceMemory;
+		VkImageView	   mVkImageView;
+		VkFormat	   mVkFormat;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ VulkanRenderer/Texture/Texture2D.h                    ]
 	//[-------------------------------------------------------]
 	/**
@@ -6798,6 +6929,16 @@ namespace VulkanRenderer
 			// Create 1D texture resource
 			// -> The indication of the texture usage is only relevant for Direct3D, Vulkan has no texture usage indication
 			return RENDERER_NEW(getRenderer().getContext(), Texture1D)(static_cast<VulkanRenderer&>(getRenderer()), width, textureFormat, data, textureFlags);
+		}
+
+		[[nodiscard]] virtual Renderer::ITexture1DArray* createTexture1DArray(uint32_t width, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), width > 0 && numberOfSlices > 0, "Vulkan create texture 1D array was called with invalid parameters")
+
+			// Create 1D texture array resource
+			// -> The indication of the texture usage is only relevant for Direct3D, Vulkan has no texture usage indication
+			return RENDERER_NEW(getRenderer().getContext(), Texture1DArray)(static_cast<VulkanRenderer&>(getRenderer()), width, numberOfSlices, textureFormat, data, textureFlags);
 		}
 
 		[[nodiscard]] virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
@@ -8231,6 +8372,7 @@ namespace VulkanRenderer
 						case Renderer::ResourceType::INDIRECT_BUFFER:
 						case Renderer::ResourceType::UNIFORM_BUFFER:
 						case Renderer::ResourceType::TEXTURE_1D:
+						case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 						case Renderer::ResourceType::TEXTURE_3D:
 						case Renderer::ResourceType::TEXTURE_CUBE:
 						case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -8304,6 +8446,7 @@ namespace VulkanRenderer
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
+					case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -10310,6 +10453,7 @@ namespace VulkanRenderer
 					}
 
 					case Renderer::ResourceType::TEXTURE_1D:
+					case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_2D:
 					case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
@@ -10325,6 +10469,14 @@ namespace VulkanRenderer
 								const Texture1D* texture1D = static_cast<Texture1D*>(resource);
 								vkImageView = texture1D->getVkImageView();
 								vkImageLayout = texture1D->getVkImageLayout();
+								break;
+							}
+
+							case Renderer::ResourceType::TEXTURE_1D_ARRAY:
+							{
+								const Texture1DArray* texture1DArray = static_cast<Texture1DArray*>(resource);
+								vkImageView = texture1DArray->getVkImageView();
+								vkImageLayout = texture1DArray->getVkImageLayout();
 								break;
 							}
 
@@ -11791,6 +11943,12 @@ namespace VulkanRenderer
 				return false;
 			}
 
+			case Renderer::ResourceType::TEXTURE_1D_ARRAY:
+			{
+				// TODO(co) Implement me
+				return false;
+			}
+
 			case Renderer::ResourceType::TEXTURE_2D:
 			{
 				// TODO(co) Implement me
@@ -11885,6 +12043,12 @@ namespace VulkanRenderer
 			}
 
 			case Renderer::ResourceType::TEXTURE_1D:
+			{
+				// TODO(co) Implement me
+				break;
+			}
+
+			case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 			{
 				// TODO(co) Implement me
 				break;
@@ -12114,6 +12278,9 @@ namespace VulkanRenderer
 			// Maximum texture dimension
 			mCapabilities.maximumTextureDimension = 16384;
 
+			// Maximum number of 1D texture array slices (usually 512, in case there's no support for 1D texture arrays it's 0)
+			mCapabilities.maximumNumberOf1DTextureArraySlices = 512;
+
 			// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 			mCapabilities.maximumNumberOf2DTextureArraySlices = 512;
 
@@ -12226,6 +12393,7 @@ namespace VulkanRenderer
 			case Renderer::ResourceType::INDIRECT_BUFFER:
 			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_1D:
+			case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 			case Renderer::ResourceType::TEXTURE_2D:
 			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 			case Renderer::ResourceType::TEXTURE_3D:

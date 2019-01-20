@@ -880,6 +880,10 @@ namespace RendererRuntime
 							compositorContextData.mGlobalComputeSize[0] = static_cast<const Renderer::ITexture1D*>(texture)->getWidth();
 							break;
 
+						case Renderer::ResourceType::TEXTURE_1D_ARRAY:
+							compositorContextData.mGlobalComputeSize[0] = static_cast<const Renderer::ITexture1DArray*>(texture)->getWidth();
+							break;
+
 						case Renderer::ResourceType::TEXTURE_2D:
 						{
 							const Renderer::ITexture2D* texture2D = static_cast<const Renderer::ITexture2D*>(texture);

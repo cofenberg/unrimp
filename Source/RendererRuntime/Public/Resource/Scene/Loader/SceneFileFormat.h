@@ -58,7 +58,7 @@ namespace RendererRuntime
 		//[ Definitions                                           ]
 		//[-------------------------------------------------------]
 		static constexpr uint32_t FORMAT_TYPE	 = STRING_ID("Scene");
-		static constexpr uint32_t FORMAT_VERSION = 4;
+		static constexpr uint32_t FORMAT_VERSION = 5;
 
 		#pragma pack(push)
 		#pragma pack(1)
@@ -90,12 +90,13 @@ namespace RendererRuntime
 
 			struct LightItem final
 			{
-				LightSceneItem::LightType lightType		   = LightSceneItem::LightType::POINT;
-				float					  color[3]		   = { 1.0f, 1.0f, 1.0f };
-				float					  radius		   = 1.0f;
-				float					  innerAngle	   = glm::radians(40.0f);
-				float					  outerAngle	   = glm::radians(50.0f);
-				float					  nearClipDistance = 0.0f;
+				LightSceneItem::LightType lightType			   = LightSceneItem::LightType::POINT;
+				float					  color[3]			   = { 1.0f, 1.0f, 1.0f };
+				float					  radius			   = 1.0f;
+				float					  innerAngle		   = glm::radians(40.0f);
+				float					  outerAngle		   = glm::radians(50.0f);
+				float					  nearClipDistance	   = 0.0f;
+				int32_t					  iesLightProfileIndex = -1;	///< Illuminating Engineering Society (IES) light profile index (<0 = no IES)
 			};
 
 			struct SunlightItem final

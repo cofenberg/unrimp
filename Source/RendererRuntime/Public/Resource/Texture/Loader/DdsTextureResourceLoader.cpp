@@ -142,6 +142,22 @@ namespace RendererRuntime
 			// with this value in the size field, so we support reading them...
 			(ddsHeader.size == 124 || ddsHeader.size != MCHAR4('D', 'D', 'S', ' ')))
 		{
+			mWidth = ddsHeader.width;
+			mHeight = ddsHeader.height;
+			mDepth = ddsHeader.depth ? ddsHeader.depth : 1;
+			mNumberOfSlices = 1;
+
+			// Check for DX10 extension
+			bool hasDX10Header = false;
+			::detail::DdsHeaderDX10 ddsHeaderDX10;
+			if (((ddsHeader.ddpfPixelFormat.flags & ::detail::DDPF_FOURCC)) && ddsHeader.ddpfPixelFormat.fourCC == MCHAR4('D', 'X', '1', '0'))
+			{
+				// Read the DX10 header
+				file.read(&ddsHeaderDX10, sizeof(::detail::DdsHeaderDX10));
+				mNumberOfSlices = ddsHeaderDX10.arraySize;
+				hasDX10Header = true;
+			}
+
 			// Get the color format and compression
 			// TODO(co)
 		//	EDataFormat  nDataFormat = DataByte;
@@ -156,12 +172,8 @@ namespace RendererRuntime
 			if (ddsHeader.ddpfPixelFormat.flags & ::detail::DDS_FOURCC)
 			{
 				// The image is compressed
-				if (ddsHeader.ddpfPixelFormat.fourCC == MCHAR4('D', 'X', '1', '0'))
+				if (hasDX10Header)
 				{
-					// Read the DX10 header
-					::detail::DdsHeaderDX10 ddsHeaderDX10;
-					file.read(&ddsHeaderDX10, sizeof(::detail::DdsHeaderDX10));
-
 					// Get the color format and compression
 					switch (ddsHeaderDX10.DXGIFormat)
 					{
@@ -464,15 +476,19 @@ namespace RendererRuntime
 			// Cube map?
 			const uint32_t numberOfFaces = (ddsHeader.ddsCaps.caps2 & ::detail::DDSCAPS2_CUBEMAP) ? 6u : 1u;
 
-			mWidth = ddsHeader.width;
-			mHeight = ddsHeader.height;
-			mDepth = ddsHeader.depth ? ddsHeader.depth : 1;
-
 			// TODO(co) Make this dynamic
 			if (1 == mWidth || 1 == mHeight)
 			{
-				// The 4x4 block size based DXT compression format has no support for 1D textures
-				mTextureFormat = static_cast<uint8_t>(mTextureResource->isRgbHardwareGammaCorrection() ? Renderer::TextureFormat::R8G8B8A8_SRGB : Renderer::TextureFormat::R8G8B8A8);
+				if ((ddsHeader.ddpfPixelFormat.flags & ::detail::DDS_LUMINANCE) != 0)
+				{
+					// 32-bit floating point as used for IES light profile
+					mTextureFormat = Renderer::TextureFormat::R32_FLOAT;
+				}
+				else
+				{
+					// The 4x4 block size based DXT compression format has no support for 1D textures
+					mTextureFormat = static_cast<uint8_t>(mTextureResource->isRgbHardwareGammaCorrection() ? Renderer::TextureFormat::R8G8B8A8_SRGB : Renderer::TextureFormat::R8G8B8A8);
+				}
 			}
 			else
 			{
@@ -508,14 +524,14 @@ namespace RendererRuntime
 					// Take mipmaps into account
 					while (width > 1 && height > 1 && depth > 1)
 					{
-						mNumberOfUsedImageDataBytes += Renderer::TextureFormat::getNumberOfBytesPerSlice(static_cast<Renderer::TextureFormat::Enum>(mTextureFormat), width, height) * depth;
+						mNumberOfUsedImageDataBytes += Renderer::TextureFormat::getNumberOfBytesPerSlice(static_cast<Renderer::TextureFormat::Enum>(mTextureFormat), width, height) * depth * mNumberOfSlices;
 
 						width /= 2;
 						height /= 2;
 						depth /= 2;
 					}
 				}
-				mNumberOfUsedImageDataBytes += Renderer::TextureFormat::getNumberOfBytesPerSlice(static_cast<Renderer::TextureFormat::Enum>(mTextureFormat), width, height) * depth;
+				mNumberOfUsedImageDataBytes += Renderer::TextureFormat::getNumberOfBytesPerSlice(static_cast<Renderer::TextureFormat::Enum>(mTextureFormat), width, height) * depth * mNumberOfSlices;
 
 				if (mNumberOfImageDataBytes < mNumberOfUsedImageDataBytes)
 				{
@@ -689,7 +705,14 @@ namespace RendererRuntime
 		if (1 == mWidth || 1 == mHeight)
 		{
 			// 1D texture
-			texture = mRendererRuntime.getTextureManager().createTexture1D((1 == mWidth) ? mHeight : mWidth, static_cast<Renderer::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Renderer::TextureUsage::IMMUTABLE);
+			if (mNumberOfSlices > 0)
+			{
+				texture = mRendererRuntime.getTextureManager().createTexture1DArray((1 == mWidth) ? mHeight : mWidth, mNumberOfSlices, static_cast<Renderer::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Renderer::TextureUsage::IMMUTABLE);
+			}
+			else
+			{
+				texture = mRendererRuntime.getTextureManager().createTexture1D((1 == mWidth) ? mHeight : mWidth, static_cast<Renderer::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Renderer::TextureUsage::IMMUTABLE);
+			}
 		}
 		else if (mDepth > 1)
 		{

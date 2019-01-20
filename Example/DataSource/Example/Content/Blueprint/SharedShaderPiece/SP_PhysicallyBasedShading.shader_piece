@@ -312,16 +312,25 @@
 			// Spot-light attenuation
 			FLATTEN if (2.0f == lightColorType.w)
 			{
-				float4 innerOuterNearClip = TEXTURE_BUFFER_FETCH(LightTextureBuffer, lightIndex * 4u + 2u);
-				FLATTEN if (lightDistance < innerOuterNearClip.z)
+				float4 innerOuterNearClipIesIndex = TEXTURE_BUFFER_FETCH(LightTextureBuffer, lightIndex * 4u + 2u);
+				FLATTEN if (lightDistance < innerOuterNearClipIesIndex.z)
 				{
 					// Early escape: Not influenced by the light
 					continue;
 				}
 				float3 spotlightDirection = TEXTURE_BUFFER_FETCH(LightTextureBuffer, lightIndex * 4u + 3u).xyz;
 				float spotlightAngle = SATURATE(dot(spotlightDirection, -lightDirection));
-				float spotlightFalloff = SATURATE((spotlightAngle - innerOuterNearClip.x) / (innerOuterNearClip.y - innerOuterNearClip.x));
-				lightIntensity *= (1.0f - spotlightFalloff);
+				if (innerOuterNearClipIesIndex.w < 0.0f)
+				{
+					// Spotlight falloff
+					float spotlightFalloff = SATURATE((spotlightAngle - innerOuterNearClipIesIndex.x) / (innerOuterNearClipIesIndex.y - innerOuterNearClipIesIndex.x));
+					lightIntensity *= (1.0f - spotlightFalloff);
+				}
+				else
+				{
+					// IES light profile
+					lightIntensity *= SAMPLE_1D_LOD_ARRAY(IesLightProfileMap, SamplerLinear, float4(acos(spotlightAngle) * (1.0f / PI), innerOuterNearClipIesIndex.w, 0.0f, 0.0f)).r;
+				}
 			}
 
 			// Attenuation by using inverse-square falloff for higher quality falloff

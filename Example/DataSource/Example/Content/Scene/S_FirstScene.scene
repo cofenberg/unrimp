@@ -137,6 +137,151 @@
 			{
 				"Properties":
 				{
+					"Position": "0.0 0.1 -1.5 METER"
+				},
+				"Items":
+				{
+					"LightSceneItem":
+					{
+						"LightType": "SPOT",
+						"Color": "10.0 INTENSITY 6600.0 KELVIN",
+						"Radius": "5.0 METER",
+						"InnerAngle": "45.0 DEGREE",
+						"OuterAngle": "50.0 DEGREE"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "-4.3 3.8 6.0 METER",
+					"Rotation": "90.0 0.0 0.0 DEGREE"
+				},
+				"Items":
+				{
+					"LightSceneItem":
+					{
+						"LightType": "SPOT",
+						"Color": "10.0 INTENSITY 6600.0 KELVIN",
+						"Radius": "5.0 METER",
+						"IesLightProfileIndex": "0"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "6.8 3.8 6.0 METER",
+					"Rotation": "90.0 0.0 0.0 DEGREE"
+				},
+				"Items":
+				{
+					"LightSceneItem":
+					{
+						"LightType": "SPOT",
+						"Color": "10.0 INTENSITY 6600.0 KELVIN",
+						"Radius": "5.0 METER",
+						"IesLightProfileIndex": "1"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "-4.3 3.8 -5.5 METER",
+					"Rotation": "90.0 0.0 0.0 DEGREE"
+				},
+				"Items":
+				{
+					"LightSceneItem":
+					{
+						"LightType": "SPOT",
+						"Color": "10.0 INTENSITY 6600.0 KELVIN",
+						"Radius": "5.0 METER",
+						"IesLightProfileIndex": "2"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "6.8 3.8 -5.5 METER",
+					"Rotation": "90.0 0.0 0.0 DEGREE"
+				},
+				"Items":
+				{
+					"LightSceneItem":
+					{
+						"LightType": "SPOT",
+						"Color": "10.0 INTENSITY 6600.0 KELVIN",
+						"Radius": "5.0 METER",
+						"IesLightProfileIndex": "8"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "11.2 1.39 4.5 METER"
+				},
+				"Items":
+				{
+					"LightSceneItem":
+					{
+						"LightType": "POINT",
+						"Color": "FFFFFF HEX",
+						"Radius": "2.5 METER"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "-12.0 1.39 4.5 METER"
+				},
+				"Items":
+				{
+					"LightSceneItem":
+					{
+						"LightType": "POINT",
+						"Color": "0000FF HEX",
+						"Radius": "2.5 METER"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "-12.0 1.39 -4.0 METER"
+				},
+				"Items":
+				{
+					"LightSceneItem":
+					{
+						"LightType": "POINT",
+						"Color": "FF0000 HEX",
+						"Radius": "2.5 METER"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "11.2 1.39 -4.0 METER"
+				},
+				"Items":
+				{
+					"LightSceneItem":
+					{
+						"LightType": "POINT",
+						"Color": "00FF00 HEX",
+						"Radius": "2.5 METER"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
 					"Scale": "1.0 1.0 1.0 PERCENTAGE"
 				},
 				"Items":
@@ -144,6 +289,140 @@
 					"MeshSceneItem":
 					{
 						"Mesh": "${PROJECT_NAME}/Mesh/Sponza/sponza.asset"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "12.7 0.1 3.0 METER",
+					"Rotation": "0.0 180.0 0.0 DEGREE"
+				},
+				"Items":
+				{
+					"LightSceneItem":
+					{
+						"LightType": "SPOT",
+						"Color": "10.0 INTENSITY 6600.0 KELVIN",
+						"Radius": "5.0 METER",
+						"IesLightProfileIndex": "9"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "12.7 0.1 -3.0 METER"
+				},
+				"Items":
+				{
+					"LightSceneItem":
+					{
+						"LightType": "SPOT",
+						"Color": "10.0 INTENSITY 6600.0 KELVIN",
+						"Radius": "5.0 METER",
+						"IesLightProfileIndex": "10"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "12.7 3.8 -4.0 METER",
+					"Rotation": "90.0 0.0 0.0 DEGREE"
+				},
+				"Items":
+				{
+					"LightSceneItem":
+					{
+						"LightType": "SPOT",
+						"Color": "10.0 INTENSITY 6600.0 KELVIN",
+						"Radius": "5.0 METER",
+						"IesLightProfileIndex": "12"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "-14.0 3.8 -4.0 METER",
+					"Rotation": "90.0 0.0 0.0 DEGREE"
+				},
+				"Items":
+				{
+					"LightSceneItem":
+					{
+						"LightType": "SPOT",
+						"Color": "10.0 INTENSITY 6600.0 KELVIN",
+						"Radius": "5.0 METER",
+						"IesLightProfileIndex": "15"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "12.7 3.8 4.7 METER",
+					"Rotation": "90.0 0.0 0.0 DEGREE"
+				},
+				"Items":
+				{
+					"LightSceneItem":
+					{
+						"LightType": "SPOT",
+						"Color": "10.0 INTENSITY 6600.0 KELVIN",
+						"Radius": "5.0 METER",
+						"IesLightProfileIndex": "19"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "-14.0 3.8 4.7 METER",
+					"Rotation": "90.0 0.0 0.0 DEGREE"
+				},
+				"Items":
+				{
+					"LightSceneItem":
+					{
+						"LightType": "SPOT",
+						"Color": "10.0 INTENSITY 6600.0 KELVIN",
+						"Radius": "5.0 METER",
+						"IesLightProfileIndex": "21"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "-14.0 0.1 3.0 METER",
+					"Rotation": "0.0 180.0 0.0 DEGREE"
+				},
+				"Items":
+				{
+					"LightSceneItem":
+					{
+						"LightType": "SPOT",
+						"Color": "10.0 INTENSITY 6600.0 KELVIN",
+						"Radius": "5.0 METER",
+						"IesLightProfileIndex": "22"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
+					"Position": "-14.0 0.1 -3.0 METER"
+				},
+				"Items":
+				{
+					"LightSceneItem":
+					{
+						"LightType": "SPOT",
+						"Color": "10.0 INTENSITY 6600.0 KELVIN",
+						"Radius": "5.0 METER",
+						"IesLightProfileIndex": "23"
 					}
 				}
 			},
@@ -210,21 +489,6 @@
 			{
 				"Properties":
 				{
-					"Position": "12.5456219 0.492846817 -5.29046202 METER"
-				},
-				"Items":
-				{
-					"LightSceneItem":
-					{
-						"LightType": "POINT",
-						"Color": "FF00FF HEX",
-						"Radius": "2.5 METER"
-					}
-				}
-			},
-			{
-				"Properties":
-				{
 					"Position": "8.0 0.0 1.5 METER",
 					"Scale": "0.03 0.03 0.03 FACTOR"
 				},
@@ -234,23 +498,6 @@
 					{
 						"Mesh": "${PROJECT_NAME}/Mesh/Bob/SM_Bob.asset",
 						"SkeletonAnimation": "${PROJECT_NAME}/Mesh/Bob/SA_Bob.asset"
-					}
-				}
-			},
-			{
-				"Properties":
-				{
-					"Position": "0.0 0.1 -1.5 METER"
-				},
-				"Items":
-				{
-					"LightSceneItem":
-					{
-						"LightType": "SPOT",
-						"Color": "10.0 INTENSITY 6600.0 KELVIN",
-						"Radius": "5.0 METER",
-						"InnerAngle": "45.0 DEGREE",
-						"OuterAngle": "50.0 DEGREE"
 					}
 				}
 			},

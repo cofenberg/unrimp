@@ -6337,6 +6337,346 @@ namespace Direct3D11Renderer
 
 
 	//[-------------------------------------------------------]
+	//[ Direct3D11Renderer/Texture/Texture1DArray.h           ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Direct3D 11 1D array texture class
+	*/
+	class Texture1DArray final : public Renderer::ITexture1DArray
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] direct3D11Renderer
+		*    Owner Direct3D 11 renderer instance
+		*  @param[in] width
+		*    Texture width, must be >0
+		*  @param[in] numberOfSlices
+		*    Number of slices, must be >0
+		*  @param[in] textureFormat
+		*    Texture format
+		*  @param[in] data
+		*    Texture data, can be a null pointer
+		*  @param[in] textureFlags
+		*    Texture flags, see "Renderer::TextureFlag::Enum"
+		*  @param[in] textureUsage
+		*    Indication of the texture usage
+		*/
+		Texture1DArray(Direct3D11Renderer& direct3D11Renderer, uint32_t width, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) :
+			ITexture1DArray(direct3D11Renderer, width, numberOfSlices),
+			mTextureFormat(textureFormat),
+			mD3D11Texture1D(nullptr),
+			mD3D11ShaderResourceView(nullptr),
+			mD3D11UnorderedAccessView(nullptr)
+		{
+			// Sanity checks
+			RENDERER_ASSERT(direct3D11Renderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 11 render target textures can't be filled using provided data")
+
+			// Calculate the number of mipmaps
+			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
+			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
+			RENDERER_ASSERT(direct3D11Renderer.getContext(), Renderer::TextureUsage::IMMUTABLE != textureUsage || !generateMipmaps, "Direct3D 11 immutable texture usage can't be combined with automatic mipmap generation")
+			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width) : 1;
+			const bool isDepthFormat = Renderer::TextureFormat::isDepth(textureFormat);
+
+			// Direct3D 11 1D array texture description
+			D3D11_TEXTURE1D_DESC d3d11Texture1DDesc;
+			d3d11Texture1DDesc.Width		  = width;
+			d3d11Texture1DDesc.MipLevels	  = numberOfMipmaps;
+			d3d11Texture1DDesc.ArraySize	  = numberOfSlices;
+			d3d11Texture1DDesc.Format		  = Mapping::getDirect3D11ResourceFormat(textureFormat);
+			d3d11Texture1DDesc.Usage		  = static_cast<D3D11_USAGE>(textureUsage);	// These constants directly map to Direct3D constants, do not change them
+			d3d11Texture1DDesc.BindFlags	  = 0;
+			d3d11Texture1DDesc.CPUAccessFlags = (Renderer::TextureUsage::DYNAMIC == textureUsage) ? D3D11_CPU_ACCESS_WRITE : 0u;
+			d3d11Texture1DDesc.MiscFlags	  = (generateMipmaps && !isDepthFormat) ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0u;
+
+			// Set bind flags
+			if (textureFlags & Renderer::TextureFlag::SHADER_RESOURCE)
+			{
+				d3d11Texture1DDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
+			}
+			if ((textureFlags & Renderer::TextureFlag::RENDER_TARGET) || generateMipmaps)
+			{
+				if (isDepthFormat)
+				{
+					d3d11Texture1DDesc.BindFlags |= D3D11_BIND_DEPTH_STENCIL;
+				}
+				else
+				{
+					d3d11Texture1DDesc.BindFlags |= D3D11_BIND_RENDER_TARGET;
+				}
+			}
+			if (textureFlags & Renderer::TextureFlag::UNORDERED_ACCESS)
+			{
+				d3d11Texture1DDesc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
+			}
+
+			// Create the Direct3D 11 1D texture instance: Did the user provided us with any texture data?
+			if (nullptr != data)
+			{
+				// We don't want dynamic allocations, so we limit the maximum number of mipmaps and hence are able to use the efficient C runtime stack
+				static constexpr uint32_t MAXIMUM_NUMBER_OF_MIPMAPS = 15;	// A 16384x16384 texture has 15 mipmaps
+				static constexpr uint32_t MAXIMUM_NUMBER_OF_SLICES = 10;
+				const Renderer::Context& context = direct3D11Renderer.getContext();
+				RENDERER_ASSERT(context, numberOfMipmaps <= MAXIMUM_NUMBER_OF_MIPMAPS, "Invalid Direct3D 11 number of mipmaps")
+				D3D11_SUBRESOURCE_DATA d3d11SubresourceDataStack[MAXIMUM_NUMBER_OF_SLICES * MAXIMUM_NUMBER_OF_MIPMAPS];
+				D3D11_SUBRESOURCE_DATA* d3d11SubresourceData = (numberOfSlices <= MAXIMUM_NUMBER_OF_SLICES) ? d3d11SubresourceDataStack : RENDERER_MALLOC_TYPED(context, D3D11_SUBRESOURCE_DATA, numberOfSlices);
+
+				// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
+				if (dataContainsMipmaps || generateMipmaps)
+				{
+					// Data layout
+					// - Direct3D 11 wants: DDS files are organized in slice-major order, like this:
+					//     Slice0: Mip0, Mip1, Mip2, etc.
+					//     Slice1: Mip0, Mip1, Mip2, etc.
+					//     etc.
+					// - The renderer interface provides: CRN and KTX files are organized in mip-major order, like this:
+					//     Mip0: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
+					//     Mip1: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
+					//     etc.
+
+					// Upload all mipmaps
+					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
+					{
+						const uint32_t numberOfBytesPerRow = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+						const uint32_t numberOfBytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1);
+						for (uint32_t arraySlice = 0; arraySlice < numberOfSlices; ++arraySlice)
+						{
+							// Upload the current slice
+							D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[arraySlice * numberOfMipmaps + mipmap];
+							currentD3d11SubresourceData.pSysMem			 = data;
+							currentD3d11SubresourceData.SysMemPitch		 = numberOfBytesPerRow;
+							currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
+
+							// Move on to the next slice
+							if (dataContainsMipmaps)
+							{
+								data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
+							}
+						}
+
+						// Move on to the next mipmap and ensure the size is always at least 1x1
+						width = getHalfSize(width);
+					}
+				}
+				else
+				{
+					// The user only provided us with the base texture, no mipmaps
+					const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+					const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1);
+					for (uint32_t arraySlice = 0; arraySlice < numberOfSlices; ++arraySlice)
+					{
+						D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[arraySlice];
+						currentD3d11SubresourceData.pSysMem			 = data;
+						currentD3d11SubresourceData.SysMemPitch		 = bytesPerRow;
+						currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
+
+						// Move on to the next slice
+						data = static_cast<const uint8_t*>(data) + bytesPerSlice;
+					}
+				}
+				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture1D(&d3d11Texture1DDesc, d3d11SubresourceData, &mD3D11Texture1D));
+				if (numberOfSlices > MAXIMUM_NUMBER_OF_SLICES)
+				{
+					RENDERER_FREE(context, d3d11SubresourceData);
+				}
+			}
+			else
+			{
+				// The user did not provide us with texture data
+				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture1D(&d3d11Texture1DDesc, nullptr, &mD3D11Texture1D));
+			}
+
+			// Create requested views
+			if (nullptr != mD3D11Texture1D)
+			{
+				// Create the Direct3D 11 shader resource view instance
+				if (textureFlags & Renderer::TextureFlag::SHADER_RESOURCE)
+				{
+					// Direct3D 11 shader resource view description
+					D3D11_SHADER_RESOURCE_VIEW_DESC d3d11ShaderResourceViewDesc = {};
+					d3d11ShaderResourceViewDesc.Format					 = Mapping::getDirect3D11ShaderResourceViewFormat(textureFormat);
+					d3d11ShaderResourceViewDesc.ViewDimension			 = D3D11_SRV_DIMENSION_TEXTURE1DARRAY;
+					d3d11ShaderResourceViewDesc.Texture1DArray.MipLevels = numberOfMipmaps;
+					d3d11ShaderResourceViewDesc.Texture1DArray.ArraySize = numberOfSlices;
+
+					// Create the Direct3D 11 shader resource view instance
+					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateShaderResourceView(mD3D11Texture1D, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView));
+				}
+
+				// Create the Direct3D 11 unordered access view instance
+				if (textureFlags & Renderer::TextureFlag::UNORDERED_ACCESS)
+				{
+					// Direct3D 11 unordered access view description
+					D3D11_UNORDERED_ACCESS_VIEW_DESC d3d11UnorderedAccessViewDesc = {};
+					d3d11UnorderedAccessViewDesc.Format					  = Mapping::getDirect3D11ShaderResourceViewFormat(textureFormat);
+					d3d11UnorderedAccessViewDesc.ViewDimension			  = D3D11_UAV_DIMENSION_TEXTURE1DARRAY;
+					d3d11UnorderedAccessViewDesc.Texture1DArray.ArraySize = numberOfSlices;
+
+					// Create the Direct3D 11 unordered access view instance
+					FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateUnorderedAccessView(mD3D11Texture1D, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
+				}
+			}
+
+			// Let Direct3D 11 generate the mipmaps for us automatically, if necessary
+			if (nullptr != data && generateMipmaps)
+			{
+				direct3D11Renderer.generateAsynchronousDeferredMipmaps(*this, *mD3D11ShaderResourceView);
+			}
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RENDERER_DEBUG
+				setDebugName("1D texture array");
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~Texture1DArray() override
+		{
+			if (nullptr != mD3D11ShaderResourceView)
+			{
+				mD3D11ShaderResourceView->Release();
+			}
+			if (nullptr != mD3D11UnorderedAccessView)
+			{
+				mD3D11UnorderedAccessView->Release();
+			}
+			if (nullptr != mD3D11Texture1D)
+			{
+				mD3D11Texture1D->Release();
+			}
+		}
+
+		/**
+		*  @brief
+		*    Return the texture format
+		*
+		*  @return
+		*    The texture format
+		*/
+		[[nodiscard]] inline Renderer::TextureFormat::Enum getTextureFormat() const
+		{
+			return mTextureFormat;
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D texture 1D resource instance
+		*
+		*  @return
+		*    The Direct3D texture 1D resource instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*/
+		[[nodiscard]] inline ID3D11Texture1D* getD3D11Texture1D() const
+		{
+			return mD3D11Texture1D;
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D shader resource view instance
+		*
+		*  @return
+		*    The Direct3D shader resource view instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*
+		*  @note
+		*    - It's not recommended to manipulate the returned Direct3D 11 resource
+		*      view by e.g. assigning another Direct3D 11 resource to it
+		*/
+		[[nodiscard]] inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
+		{
+			return mD3D11ShaderResourceView;
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D unordered access view instance
+		*
+		*  @return
+		*    The Direct3D unordered access view instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*
+		*  @note
+		*    - It's not recommended to manipulate the returned Direct3D 11 resource
+		*      view by e.g. assigning another Direct3D 11 resource to it
+		*/
+		[[nodiscard]] inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
+		{
+			return mD3D11UnorderedAccessView;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		#ifdef RENDERER_DEBUG
+			virtual void setDebugName(const char* name) override
+			{
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
+				if (nullptr != mD3D11Texture1D)
+				{
+					FAILED_DEBUG_BREAK(mD3D11Texture1D->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D11Texture1D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
+				}
+				if (nullptr != mD3D11ShaderResourceView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
+				}
+				if (nullptr != mD3D11UnorderedAccessView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
+				}
+			}
+		#endif
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), Texture1DArray, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit Texture1DArray(const Texture1DArray& source) = delete;
+		Texture1DArray& operator =(const Texture1DArray& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		Renderer::TextureFormat::Enum  mTextureFormat;
+		ID3D11Texture1D*			   mD3D11Texture1D;				///< Direct3D 11 texture 1D resource, can be a null pointer
+		ID3D11ShaderResourceView*	   mD3D11ShaderResourceView;	///< Direct3D 11 shader resource view, can be a null pointer
+		ID3D11UnorderedAccessView*	   mD3D11UnorderedAccessView;	///< Direct3D 11 unordered access view, can be a null pointer
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ Direct3D11Renderer/Texture/Texture2D.h                ]
 	//[-------------------------------------------------------]
 	/**
@@ -7765,6 +8105,15 @@ namespace Direct3D11Renderer
 
 			// Create 1D texture resource
 			return RENDERER_NEW(getRenderer().getContext(), Texture1D)(static_cast<Direct3D11Renderer&>(getRenderer()), width, textureFormat, data, textureFlags, textureUsage);
+		}
+
+		[[nodiscard]] virtual Renderer::ITexture1DArray* createTexture1DArray(uint32_t width, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), width > 0 && numberOfSlices > 0, "Direct3D 11 create texture 1D array was called with invalid parameters")
+
+			// Create 1D texture array resource
+			return RENDERER_NEW(getRenderer().getContext(), Texture1DArray)(static_cast<Direct3D11Renderer&>(getRenderer()), width, numberOfSlices, textureFormat, data, textureFlags, textureUsage);
 		}
 
 		[[nodiscard]] virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
@@ -9358,6 +9707,7 @@ namespace Direct3D11Renderer
 						case Renderer::ResourceType::INDIRECT_BUFFER:
 						case Renderer::ResourceType::UNIFORM_BUFFER:
 						case Renderer::ResourceType::TEXTURE_1D:
+						case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 						case Renderer::ResourceType::TEXTURE_3D:
 						case Renderer::ResourceType::TEXTURE_CUBE:
 						case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -9439,6 +9789,7 @@ namespace Direct3D11Renderer
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
+					case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -12115,6 +12466,7 @@ namespace Direct3D11Renderer
 					case Renderer::ResourceType::STRUCTURED_BUFFER:
 					case Renderer::ResourceType::TEXTURE_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
+					case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_2D:
 					case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
@@ -12133,6 +12485,10 @@ namespace Direct3D11Renderer
 
 							case Renderer::ResourceType::TEXTURE_1D:
 								d3d11ShaderResourceView = static_cast<const Texture1D*>(resource)->getD3D11ShaderResourceView();
+								break;
+
+							case Renderer::ResourceType::TEXTURE_1D_ARRAY:
+								d3d11ShaderResourceView = static_cast<const Texture1DArray*>(resource)->getD3D11ShaderResourceView();
 								break;
 
 							case Renderer::ResourceType::TEXTURE_2D:
@@ -12419,6 +12775,7 @@ namespace Direct3D11Renderer
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
+					case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_2D:
 					case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
@@ -12545,6 +12902,7 @@ namespace Direct3D11Renderer
 				case Renderer::ResourceType::INDIRECT_BUFFER:
 				case Renderer::ResourceType::UNIFORM_BUFFER:
 				case Renderer::ResourceType::TEXTURE_1D:
+				case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 				case Renderer::ResourceType::TEXTURE_2D:
 				case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 				case Renderer::ResourceType::TEXTURE_3D:
@@ -12947,6 +13305,7 @@ namespace Direct3D11Renderer
 					case Renderer::ResourceType::TEXTURE_BUFFER:
 					case Renderer::ResourceType::STRUCTURED_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
+					case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_2D:
 					case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
@@ -12969,6 +13328,10 @@ namespace Direct3D11Renderer
 
 									case Renderer::ResourceType::TEXTURE_1D:
 										d3d11ShaderResourceView = static_cast<const Texture1D*>(resource)->getD3D11ShaderResourceView();
+										break;
+
+									case Renderer::ResourceType::TEXTURE_1D_ARRAY:
+										d3d11ShaderResourceView = static_cast<const Texture1DArray*>(resource)->getD3D11ShaderResourceView();
 										break;
 
 									case Renderer::ResourceType::TEXTURE_2D:
@@ -13061,6 +13424,10 @@ namespace Direct3D11Renderer
 
 									case Renderer::ResourceType::TEXTURE_1D:
 										d3d11UnorderedAccessView = static_cast<const Texture1D*>(resource)->getD3D11UnorderedAccessView();
+										break;
+
+									case Renderer::ResourceType::TEXTURE_1D_ARRAY:
+										d3d11UnorderedAccessView = static_cast<const Texture1DArray*>(resource)->getD3D11UnorderedAccessView();
 										break;
 
 									case Renderer::ResourceType::TEXTURE_2D:
@@ -13345,6 +13712,7 @@ namespace Direct3D11Renderer
 			case Renderer::ResourceType::INDIRECT_BUFFER:
 			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_1D:
+			case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 			case Renderer::ResourceType::TEXTURE_2D:
 			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 			case Renderer::ResourceType::TEXTURE_3D:
@@ -13405,6 +13773,7 @@ namespace Direct3D11Renderer
 			case Renderer::ResourceType::INDIRECT_BUFFER:
 			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_1D:
+			case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 			case Renderer::ResourceType::TEXTURE_3D:
 			case Renderer::ResourceType::TEXTURE_CUBE:
@@ -13779,6 +14148,7 @@ namespace Direct3D11Renderer
 				return (S_OK == mD3D11DeviceContext->Map(static_cast<UniformBuffer&>(resource).getD3D11Buffer(), subresource, static_cast<D3D11_MAP>(mapType), mapFlags, reinterpret_cast<D3D11_MAPPED_SUBRESOURCE*>(&mappedSubresource)));
 
 			TEXTURE_RESOURCE(Renderer::ResourceType::TEXTURE_1D, Texture1D)
+			TEXTURE_RESOURCE(Renderer::ResourceType::TEXTURE_1D_ARRAY, Texture1DArray)
 			TEXTURE_RESOURCE(Renderer::ResourceType::TEXTURE_2D, Texture2D)
 			TEXTURE_RESOURCE(Renderer::ResourceType::TEXTURE_2D_ARRAY, Texture2DArray)
 			TEXTURE_RESOURCE(Renderer::ResourceType::TEXTURE_3D, Texture3D)
@@ -13864,6 +14234,7 @@ namespace Direct3D11Renderer
 				break;
 
 			TEXTURE_RESOURCE(Renderer::ResourceType::TEXTURE_1D, Texture1D)
+			TEXTURE_RESOURCE(Renderer::ResourceType::TEXTURE_1D_ARRAY, Texture1DArray)
 			TEXTURE_RESOURCE(Renderer::ResourceType::TEXTURE_2D, Texture2D)
 			TEXTURE_RESOURCE(Renderer::ResourceType::TEXTURE_2D_ARRAY, Texture2DArray)
 			TEXTURE_RESOURCE(Renderer::ResourceType::TEXTURE_3D, Texture3D)
@@ -13998,6 +14369,10 @@ namespace Direct3D11Renderer
 					{
 						case Renderer::ResourceType::TEXTURE_1D:
 							d3d11ShaderResourceView = static_cast<Texture1D*>(texture)->getD3D11ShaderResourceView();
+							break;
+
+						case Renderer::ResourceType::TEXTURE_1D_ARRAY:
+							d3d11ShaderResourceView = static_cast<Texture1DArray*>(texture)->getD3D11ShaderResourceView();
 							break;
 
 						case Renderer::ResourceType::TEXTURE_2D:
@@ -14165,6 +14540,9 @@ namespace Direct3D11Renderer
 				// Maximum texture dimension
 				mCapabilities.maximumTextureDimension = 2048;
 
+				// Maximum number of 1D texture array slices (usually 512, in case there's no support for 1D texture arrays it's 0)
+				mCapabilities.maximumNumberOf1DTextureArraySlices = 0;
+
 				// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 0;
 
@@ -14202,6 +14580,9 @@ namespace Direct3D11Renderer
 
 				// Maximum texture dimension
 				mCapabilities.maximumTextureDimension = 2048;
+
+				// Maximum number of 1D texture array slices (usually 512, in case there's no support for 1D texture arrays it's 0)
+				mCapabilities.maximumNumberOf1DTextureArraySlices = 0;
 
 				// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 0;
@@ -14241,6 +14622,9 @@ namespace Direct3D11Renderer
 				// Maximum texture dimension
 				mCapabilities.maximumTextureDimension = 4096;
 
+				// Maximum number of 1D texture array slices (usually 512, in case there's no support for 1D texture arrays it's 0)
+				mCapabilities.maximumNumberOf1DTextureArraySlices = 0;
+
 				// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 0;
 
@@ -14278,6 +14662,9 @@ namespace Direct3D11Renderer
 
 				// Maximum texture dimension
 				mCapabilities.maximumTextureDimension = 8192;
+
+				// Maximum number of 1D texture array slices (usually 512, in case there's no support for 1D texture arrays it's 0)
+				mCapabilities.maximumNumberOf1DTextureArraySlices = 512;
 
 				// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 512;
@@ -14317,6 +14704,9 @@ namespace Direct3D11Renderer
 				// Maximum texture dimension
 				mCapabilities.maximumTextureDimension = 8192;
 
+				// Maximum number of 1D texture array slices (usually 512, in case there's no support for 1D texture arrays it's 0)
+				mCapabilities.maximumNumberOf1DTextureArraySlices = 512;
+
 				// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 512;
 
@@ -14355,6 +14745,9 @@ namespace Direct3D11Renderer
 
 				// Maximum texture dimension
 				mCapabilities.maximumTextureDimension = 16384;
+
+				// Maximum number of 1D texture array slices (usually 512, in case there's no support for 1D texture arrays it's 0)
+				mCapabilities.maximumNumberOf1DTextureArraySlices = 512;
 
 				// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 512;

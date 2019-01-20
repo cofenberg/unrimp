@@ -91,7 +91,7 @@ Renderer API and Backends
 	- Indirect buffer object with optional internal emulation, draw methods always use an indirect buffer to have an unified draw call API
 	- Uniform buffer object (UBO, "constant buffer" in Direct3D terminology)
 	- Command buffer mandatory by design, not just build on top
-- Textures: 1D, 2D, 2D array, 3D, cube
+- Textures: 1D, 1D array, 2D, 2D array, 3D, cube
 - State objects with mapping to API specific settings during creation, not runtime
 	- Graphics pipeline state object (PSO) which directly maps to Direct3D 12, other backends internally subdivide into
 		- Rasterizer state object (rasterizer stage (RS))
@@ -149,6 +149,7 @@ Renderer Runtime (e.g. "The Game")
 - Light
 	- Types: Directional, point and spot
 	- High-level sunlight controlled via time-of-day
+	- Support for [Illuminating Engineering Society (IES) light profiles](http://www.cgarena.com/freestuff/tutorials/max/ieslights/) (photometric light data, use e.g. [IESviewer](http://photometricviewer.com/) as viewer)
 - Skeleton animation
 - Particles rendering
 - Terrain

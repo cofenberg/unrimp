@@ -76,6 +76,7 @@ namespace
 			ELSE_IF_VALUE("STRUCTURED_BUFFER", numberOfStructuredBuffers)
 			ELSE_IF_VALUE("SAMPLER_STATE",	   numberOfSamplerStates)
 			ELSE_IF_VALUE("TEXTURE_1D",		   numberOfTextures)
+			ELSE_IF_VALUE("TEXTURE_1D_ARRAY",  numberOfTextures)
 			ELSE_IF_VALUE("TEXTURE_2D",		   numberOfTextures)
 			ELSE_IF_VALUE("TEXTURE_2D_ARRAY",  numberOfTextures)
 			ELSE_IF_VALUE("TEXTURE_3D",		   numberOfTextures)

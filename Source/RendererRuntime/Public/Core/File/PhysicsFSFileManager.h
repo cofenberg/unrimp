@@ -149,6 +149,9 @@ namespace
 		public:
 			inline explicit PhysicsFSReadFile(const char* virtualFilename) :
 				mPhysicsFSFile(PHYSFS_openRead(virtualFilename))
+				#ifdef _DEBUG
+					, mDebugName(virtualFilename)
+				#endif
 			{
 				assert((nullptr != mPhysicsFSFile) && "Failed to open PhysicsFS file for reading");
 			}
@@ -212,6 +215,13 @@ namespace
 				assert(false && "File write method not supported by the PhysicsFS implementation");
 			}
 
+			#ifdef _DEBUG
+				[[nodiscard]] inline virtual const char* getDebugFilename() const override
+				{
+					return mDebugName.c_str();
+				}
+			#endif
+
 
 		//[-------------------------------------------------------]
 		//[ Protected methods                                     ]
@@ -226,6 +236,9 @@ namespace
 		//[-------------------------------------------------------]
 		private:
 			PHYSFS_File* mPhysicsFSFile;
+			#ifdef _DEBUG
+				std::string mDebugName;	///< Debug name for easier file identification when debugging
+			#endif
 
 
 		};
@@ -240,6 +253,9 @@ namespace
 		public:
 			inline explicit PhysicsFSWriteFile(const char* virtualFilename) :
 				mPhysicsFSFile(PHYSFS_openWrite(virtualFilename))
+				#ifdef _DEBUG
+					, mDebugName(virtualFilename)
+				#endif
 			{
 				assert((nullptr != mPhysicsFSFile) && "Failed to open PhysicsFS file for writing");
 			}
@@ -294,6 +310,13 @@ namespace
 				assert((static_cast<size_t>(numberOfWrittenBytes) == numberOfBytes) && "PhysicsFS failed to write all requested bytes");	// We're restrictive by intent
 			}
 
+			#ifdef _DEBUG
+				[[nodiscard]] inline virtual const char* getDebugFilename() const override
+				{
+					return mDebugName.c_str();
+				}
+			#endif
+
 
 		//[-------------------------------------------------------]
 		//[ Protected methods                                     ]
@@ -308,6 +331,9 @@ namespace
 		//[-------------------------------------------------------]
 		private:
 			PHYSFS_File* mPhysicsFSFile;
+			#ifdef _DEBUG
+				std::string mDebugName;	///< Debug name for easier file identification when debugging
+			#endif
 
 
 		};

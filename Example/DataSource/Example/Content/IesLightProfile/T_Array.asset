@@ -1,0 +1,52 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"Metadata":
+		{
+			"Copyright": "IES light profile from http://mayazest.blogspot.com/2012/02/free-light-ies-files.html"
+		},
+		"Compiler":
+		{
+			"ClassName": "RendererToolkit::TextureAssetCompiler",
+			"TextureSemantic": "IES_LIGHT_PROFILE_ARRAY",
+			"InputFiles":
+			[
+				"./1.ies",
+				"./2.ies",
+				"./3.ies",
+				"./4.ies",
+				"./5.ies",
+				"./6.ies",
+				"./7.ies",
+				"./8.ies",
+				"./9.ies",
+				"./10.ies",
+				"./11.ies",
+				"./12.ies",
+				"./13.ies",
+				"./14.ies",
+				"./15.ies",
+				"./16.ies",
+				"./17.ies",
+				"./18.ies",
+				"./19.ies",
+				"./20.ies",
+				"./21.ies",
+				"./22.ies",
+				"./23.ies",
+				"./24.ies",
+				"./25.ies",
+				"./26.ies",
+				"./27.ies",
+				"./28.ies",
+				"./29.ies",
+				"./30.ies"
+			]
+		}
+	}
+}

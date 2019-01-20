@@ -4913,6 +4913,12 @@ namespace Direct3D9Renderer
 			return RENDERER_NEW(getRenderer().getContext(), Texture1D)(static_cast<Direct3D9Renderer&>(getRenderer()), width, textureFormat, data, textureFlags, textureUsage);
 		}
 
+		[[nodiscard]] virtual Renderer::ITexture1DArray* createTexture1DArray([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t numberOfSlices, [[maybe_unused]] Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		{
+			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 9 has no 1D texture arrays")
+			return nullptr;
+		}
+
 		[[nodiscard]] virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, [[maybe_unused]] uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
 		{
 			// Sanity check
@@ -6131,6 +6137,7 @@ namespace Direct3D9Renderer
 						case Renderer::ResourceType::INDIRECT_BUFFER:
 						case Renderer::ResourceType::UNIFORM_BUFFER:
 						case Renderer::ResourceType::TEXTURE_1D:
+						case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 						case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 						case Renderer::ResourceType::TEXTURE_3D:
 						case Renderer::ResourceType::TEXTURE_CUBE:
@@ -6192,6 +6199,7 @@ namespace Direct3D9Renderer
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
+					case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
@@ -7874,6 +7882,7 @@ namespace Direct3D9Renderer
 						break;
 
 					case Renderer::ResourceType::TEXTURE_1D:
+					case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_2D:
 					case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
@@ -7887,6 +7896,10 @@ namespace Direct3D9Renderer
 						{
 							case Renderer::ResourceType::TEXTURE_1D:
 								direct3DBaseTexture9 = static_cast<Texture1D*>(resource)->getDirect3DTexture9();
+								break;
+
+							case Renderer::ResourceType::TEXTURE_1D_ARRAY:
+								RENDERER_LOG(mContext, CRITICAL, "Direct3D 9 has no 1D array textures support")
 								break;
 
 							case Renderer::ResourceType::TEXTURE_2D:
@@ -8220,6 +8233,7 @@ namespace Direct3D9Renderer
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
+					case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_2D:
 					case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
@@ -8987,6 +9001,7 @@ namespace Direct3D9Renderer
 			case Renderer::ResourceType::TEXTURE_BUFFER:
 			case Renderer::ResourceType::STRUCTURED_BUFFER:
 			case Renderer::ResourceType::UNIFORM_BUFFER:
+			case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 			case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
@@ -9055,6 +9070,7 @@ namespace Direct3D9Renderer
 			case Renderer::ResourceType::TEXTURE_BUFFER:
 			case Renderer::ResourceType::STRUCTURED_BUFFER:
 			case Renderer::ResourceType::UNIFORM_BUFFER:
+			case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 			case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
 			case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
@@ -9190,6 +9206,9 @@ namespace Direct3D9Renderer
 
 		// Maximum texture dimension
 		mCapabilities.maximumTextureDimension = d3dCaps9.MaxTextureWidth;	// Width and height are usually identical, usually...
+
+		// Maximum number of 1D texture array slices (usually 512, in case there's no support for 1D texture arrays it's 0)
+		mCapabilities.maximumNumberOf1DTextureArraySlices = 0;
 
 		// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 		mCapabilities.maximumNumberOf2DTextureArraySlices = 0;

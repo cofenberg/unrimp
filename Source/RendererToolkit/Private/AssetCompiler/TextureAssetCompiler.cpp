@@ -75,6 +75,8 @@ PRAGMA_WARNING_PUSH
 	#include <../src/crn_console.h>
 PRAGMA_WARNING_POP
 
+#include <ies_loader.h>
+
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: '=': conversion from 'int' to 'rapidjson::internal::BigInteger::Type', signed/unsigned mismatch
@@ -210,19 +212,20 @@ namespace
 			ALBEDO_MAP,
 			ALPHA_MAP,
 			NORMAL_MAP,
-			ROUGHNESS_MAP,	///< Roughness map ('_r'-postfix, aka specular F0, roughness = 1 - glossiness (= smoothness))
-			GLOSS_MAP,		///< Gloss map (glossiness = 1 - roughness), during runtime only roughness map should be used hence gloss map is automatically converted into reflection map so artists don't need to manipulate texture source assets
+			ROUGHNESS_MAP,					///< Roughness map ('_r'-postfix, aka specular F0, roughness = 1 - glossiness (= smoothness))
+			GLOSS_MAP,						///< Gloss map (glossiness = 1 - roughness), during runtime only roughness map should be used hence gloss map is automatically converted into reflection map so artists don't need to manipulate texture source assets
 			METALLIC_MAP,
 			EMISSIVE_MAP,
 			HEIGHT_MAP,
-			TERRAIN_HEIGHT_MAP,	///< 16-bit height map
+			TERRAIN_HEIGHT_MAP,				///< 16-bit height map
 			TINT_MAP,
 			AMBIENT_OCCLUSION_MAP,
 			REFLECTION_2D_MAP,
 			REFLECTION_CUBE_MAP,
-			COLOR_CORRECTION_LOOKUP_TABLE,
+			COLOR_CORRECTION_LOOKUP_TABLE,	///< Lookup table (LUT)
 			PACKED_CHANNELS,
-			VOLUME,	///< 3D volume data
+			VOLUME,							///< 3D volume data
+			IES_LIGHT_PROFILE_ARRAY,		///< Illuminating Engineering Society (IES) light profile (photometric light data, use e.g. IESviewer ( http://photometricviewer.com/ ) as viewer)
 			CRN_ARRAY,
 			UNKNOWN
 		};
@@ -230,6 +233,15 @@ namespace
 		static constexpr uint16_t TEXTURE_FORMAT_VERSION = 0;
 
 		typedef std::vector<std::string> Filenames;
+
+		struct DdsHeaderDX10 final
+		{
+			uint32_t DXGIFormat; // See http://msdn.microsoft.com/en-us/library/bb173059.aspx
+			uint32_t resourceDimension;
+			uint32_t miscFlag;
+			uint32_t arraySize;
+			uint32_t reserved;
+		};
 
 
 		//[-------------------------------------------------------]
@@ -446,7 +458,7 @@ namespace
 			}
 
 			// Handle DDS LZ4 compression
-			if (::detail::TextureSemantic::TERRAIN_HEIGHT_MAP == textureSemantic || ::detail::TextureSemantic::VOLUME == textureSemantic)
+			if (::detail::TextureSemantic::TERRAIN_HEIGHT_MAP == textureSemantic || ::detail::TextureSemantic::VOLUME == textureSemantic || ::detail::TextureSemantic::IES_LIGHT_PROFILE_ARRAY == textureSemantic)
 			{
 				RendererToolkit::StringHelper::replaceFirstString(virtualOutputAssetFilename, ".dds", ".lz4dds");
 			}
@@ -478,6 +490,7 @@ namespace
 			ELSE_IF_VALUE(COLOR_CORRECTION_LOOKUP_TABLE)
 			ELSE_IF_VALUE(PACKED_CHANNELS)
 			ELSE_IF_VALUE(VOLUME)
+			ELSE_IF_VALUE(IES_LIGHT_PROFILE_ARRAY)
 			ELSE_IF_VALUE(CRN_ARRAY)
 			else
 			{
@@ -927,9 +940,7 @@ namespace
 								case TextureSemantic::EMISSIVE_MAP:
 								case TextureSemantic::TERRAIN_HEIGHT_MAP:
 								case TextureSemantic::REFLECTION_CUBE_MAP:
-								case TextureSemantic::COLOR_CORRECTION_LOOKUP_TABLE:
 								case TextureSemantic::PACKED_CHANNELS:
-								case TextureSemantic::VOLUME:
 								case TextureSemantic::CRN_ARRAY:
 								case TextureSemantic::UNKNOWN:
 									crunchResampleParams.m_srgb  = true;
@@ -943,6 +954,9 @@ namespace
 								case TextureSemantic::HEIGHT_MAP:
 								case TextureSemantic::TINT_MAP:
 								case TextureSemantic::AMBIENT_OCCLUSION_MAP:
+								case TextureSemantic::COLOR_CORRECTION_LOOKUP_TABLE:
+								case TextureSemantic::VOLUME:
+								case TextureSemantic::IES_LIGHT_PROFILE_ARRAY:
 									crunchResampleParams.m_gamma = 1.0f;	// Mipmap gamma correction value, default=2.2, use 1.0 for linear
 									break;
 
@@ -1179,6 +1193,7 @@ namespace
 					return false;
 				}
 
+				case TextureSemantic::IES_LIGHT_PROFILE_ARRAY:
 				case TextureSemantic::CRN_ARRAY:
 				{
 					const rapidjson::Value& rapidJsonValueInputFiles = rapidJsonValueTextureAssetCompiler["InputFiles"];
@@ -1421,6 +1436,7 @@ namespace
 				case TextureSemantic::COLOR_CORRECTION_LOOKUP_TABLE:
 				case TextureSemantic::PACKED_CHANNELS:
 				case TextureSemantic::VOLUME:
+				case TextureSemantic::IES_LIGHT_PROFILE_ARRAY:
 					// Nothing here, handled elsewhere
 					break;
 
@@ -1609,7 +1625,7 @@ namespace
 			ddsSurfaceDesc2.ddsCaps.dwCaps						= crnlib::DDSCAPS_TEXTURE | crnlib::DDSCAPS_COMPLEX;
 			ddsSurfaceDesc2.ddsCaps.dwCaps2						= crnlib::DDSCAPS2_VOLUME;
 			ddsSurfaceDesc2.ddpfPixelFormat.dwSize				= sizeof(crnlib::DDPIXELFORMAT);
-			ddsSurfaceDesc2.ddpfPixelFormat.dwFlags			   |= (crnlib::DDPF_RGB | crnlib::DDPF_ALPHAPIXELS);
+			ddsSurfaceDesc2.ddpfPixelFormat.dwFlags				= (crnlib::DDPF_RGB | crnlib::DDPF_ALPHAPIXELS);
 			ddsSurfaceDesc2.ddpfPixelFormat.dwRGBBitCount		= 32;
 			ddsSurfaceDesc2.ddpfPixelFormat.dwRBitMask			= 0xFF0000;
 			ddsSurfaceDesc2.ddpfPixelFormat.dwGBitMask			= 0x00FF00;
@@ -1661,7 +1677,7 @@ namespace
 					ddsSurfaceDesc2.ddsCaps.dwCaps						= crnlib::DDSCAPS_TEXTURE | crnlib::DDSCAPS_COMPLEX;
 					ddsSurfaceDesc2.ddsCaps.dwCaps2						= 0;
 					ddsSurfaceDesc2.ddpfPixelFormat.dwSize				= sizeof(crnlib::DDPIXELFORMAT);
-					ddsSurfaceDesc2.ddpfPixelFormat.dwFlags			   |= crnlib::DDPF_LUMINANCE;
+					ddsSurfaceDesc2.ddpfPixelFormat.dwFlags				= crnlib::DDPF_LUMINANCE;
 					ddsSurfaceDesc2.ddpfPixelFormat.dwRGBBitCount		= 32;
 					ddsSurfaceDesc2.ddpfPixelFormat.dwRBitMask			= 0xFF0000;
 					ddsSurfaceDesc2.ddpfPixelFormat.dwGBitMask			= 0x00FF00;
@@ -1766,7 +1782,7 @@ namespace
 			ddsSurfaceDesc2.ddsCaps.dwCaps						= crnlib::DDSCAPS_TEXTURE | crnlib::DDSCAPS_COMPLEX;
 			ddsSurfaceDesc2.ddsCaps.dwCaps2						= crnlib::DDSCAPS2_VOLUME;
 			ddsSurfaceDesc2.ddpfPixelFormat.dwSize				= sizeof(crnlib::DDPIXELFORMAT);
-			ddsSurfaceDesc2.ddpfPixelFormat.dwFlags			   |= crnlib::DDPF_LUMINANCE;
+			ddsSurfaceDesc2.ddpfPixelFormat.dwFlags				= crnlib::DDPF_LUMINANCE;
 			ddsSurfaceDesc2.ddpfPixelFormat.dwRGBBitCount		= 8;
 			ddsSurfaceDesc2.ddpfPixelFormat.dwRBitMask			= 0xFF0000;
 			ddsSurfaceDesc2.ddpfPixelFormat.dwGBitMask			= 0x00FF00;
@@ -1779,6 +1795,137 @@ namespace
 				memoryFile.write("DDS ", sizeof(uint32_t));
 				memoryFile.write(reinterpret_cast<const char*>(&ddsSurfaceDesc2), sizeof(crnlib::DDSURFACEDESC2));
 				memoryFile.write(rawVoumeData.data(), rawVoumeDataNumberOfBytes);
+				if (!memoryFile.writeLz4CompressedDataByVirtualFilename(RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_TYPE, RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_VERSION, fileManager, virtualOutputAssetFilename))
+				{
+					throw std::runtime_error("Failed to write to destination file \"" + std::string(virtualOutputAssetFilename) + '\"');
+				}
+			}
+		}
+
+		/**
+		*  @brief
+		*    Texture compiler implementation for Illuminating Engineering Society (IES) light profile (photometric light data, use e.g. IESviewer ( http://photometricviewer.com/ ) as viewer)
+		*/
+		void convertIesLightProfile(const RendererToolkit::IAssetCompiler::Input& input, const RendererToolkit::IAssetCompiler::Configuration& configuration, RendererRuntime::VirtualFilename virtualOutputAssetFilename)
+		{
+			// Get the JSON "IesLightProfile" object
+			uint32_t resolution[2] = { 256, 1 };
+			const rapidjson::Value& rapidJsonValueTextureAssetCompiler = configuration.rapidJsonDocumentAsset["Asset"]["Compiler"];
+			if (rapidJsonValueTextureAssetCompiler.HasMember("IesLightProfile"))
+			{
+				const rapidjson::Value& rapidJsonValueIesLightProfile = rapidJsonValueTextureAssetCompiler["IesLightProfile"];
+
+				{ // Get the resolution
+					std::vector<std::string> elements;
+					RendererToolkit::StringHelper::splitString(rapidJsonValueIesLightProfile["Resolution"].GetString(), ' ', elements);
+					if (elements.size() != 2)
+					{
+						throw std::runtime_error("Failed to convert IES light profile " + std::string(input.virtualAssetFilename) + ": Texture asset JSON file \"IesLightProfile\" resolution needs two components");
+					}
+					for (uint32_t i = 0; i < 2; ++i)
+					{
+						resolution[i] = static_cast<uint32_t>(std::atoi(elements[i].c_str()));
+					}
+					if (resolution[1] != 1)
+					{
+						throw std::runtime_error("Failed to convert IES light profile " + std::string(input.virtualAssetFilename) + ": Currently only 1D IES light profiles are supported, height must be one");
+					}
+				}
+			}
+
+			// Read in the IES light profile data using the external library "ies" ( https://github.com/ray-cast/ies )
+			const rapidjson::Value& rapidJsonValueInputFiles = rapidJsonValueTextureAssetCompiler["InputFiles"];
+			struct IESOutputData
+			{
+				uint32_t width;
+				uint32_t height;
+				uint8_t channel;
+				std::vector<float> stream;
+			};
+			std::vector<IESOutputData> iesOutputData;
+			const uint32_t numberOfFiles = rapidJsonValueInputFiles.Size();
+			iesOutputData.resize(numberOfFiles);
+			RendererRuntime::IFileManager& fileManager = input.context.getFileManager();
+			for (uint32_t i = 0; i < numberOfFiles; ++i)
+			{
+				// Get virtual input asset filename
+				const std::string inputFile = rapidJsonValueInputFiles[i].GetString();
+				std::string extension = std_filesystem::path(inputFile).extension().generic_string();
+				RendererToolkit::StringHelper::toLowerCase(extension);
+				if (".ies" != extension)
+				{
+					throw std::runtime_error("Failed to convert IES light profile " + std::string(inputFile) + ": Only IES light profile data is supported");
+				}
+				const std::string virtualInputAssetFilename = input.virtualAssetInputDirectory + '/' + inputFile;
+
+				// Load file content into memory
+				std::vector<char> iesBuffer;
+				{
+					RendererRuntime::IFile* file = fileManager.openFile(RendererRuntime::IFileManager::FileMode::READ, virtualInputAssetFilename.c_str());
+					if (nullptr == file)
+					{
+						throw std::runtime_error("Failed to open source file \"" + std::string(virtualInputAssetFilename) + '\"');
+					}
+					const std::size_t numberOfFileBytes = file->getNumberOfBytes();
+					iesBuffer.resize(numberOfFileBytes);
+					file->read(iesBuffer.data(), numberOfFileBytes);
+					fileManager.closeFile(*file);
+				}
+
+				// Load IES light profile
+				IESLoadHelper iesLoadHelper;
+				IESFileInfo iesFileInfo;
+				if (!iesLoadHelper.load(iesBuffer.data(), iesBuffer.size(), iesFileInfo))
+				{
+					throw std::runtime_error("Failed to load IES light profile content from \"" + std::string(virtualInputAssetFilename) + "\": " + iesFileInfo.error());
+				}
+
+				// Convert IES light profile to 1D texture data
+				IESOutputData& currentIesOutputData = iesOutputData[i];
+				currentIesOutputData.width = resolution[0];
+				currentIesOutputData.height = 1;
+				currentIesOutputData.channel = 1;
+				currentIesOutputData.stream.resize(currentIesOutputData.width * currentIesOutputData.channel);
+				if (!iesLoadHelper.saveAs1D(iesFileInfo, currentIesOutputData.stream.data(), currentIesOutputData.width, currentIesOutputData.channel))
+				{
+					throw std::runtime_error("Failed to convert IES light profile content from \"" + std::string(virtualInputAssetFilename) + '\"');
+				}
+			}
+
+			// Fill dds header ("DXGI_FORMAT_R32_FLOAT" pixel format)
+			crnlib::DDSURFACEDESC2 ddsSurfaceDesc2 = {};
+			ddsSurfaceDesc2.dwSize								= sizeof(crnlib::DDSURFACEDESC2);
+			ddsSurfaceDesc2.dwFlags								= crnlib::DDSD_WIDTH | crnlib::DDSD_PIXELFORMAT | crnlib::DDSD_CAPS | crnlib::DDSD_LINEARSIZE;
+			ddsSurfaceDesc2.dwHeight							= resolution[1];
+			ddsSurfaceDesc2.dwWidth								= resolution[0];
+			ddsSurfaceDesc2.dwBackBufferCount					= 1;
+			ddsSurfaceDesc2.ddsCaps.dwCaps						= crnlib::DDSCAPS_TEXTURE | crnlib::DDSCAPS_COMPLEX;
+			ddsSurfaceDesc2.ddsCaps.dwCaps2						= 0;
+			ddsSurfaceDesc2.ddpfPixelFormat.dwSize				= sizeof(crnlib::DDPIXELFORMAT);
+			ddsSurfaceDesc2.ddpfPixelFormat.dwFlags				= crnlib::DDPF_LUMINANCE | crnlib::DDPF_FOURCC;
+			ddsSurfaceDesc2.ddpfPixelFormat.dwFourCC			= CRNLIB_PIXEL_FMT_FOURCC('D', 'X', '1', '0');
+			ddsSurfaceDesc2.ddpfPixelFormat.dwRGBBitCount		= 32;
+			ddsSurfaceDesc2.ddpfPixelFormat.dwRBitMask			= 0xFF0000;
+			ddsSurfaceDesc2.ddpfPixelFormat.dwGBitMask			= 0x00FF00;
+			ddsSurfaceDesc2.ddpfPixelFormat.dwBBitMask			= 0x0000FF;
+			ddsSurfaceDesc2.ddpfPixelFormat.dwRGBAlphaBitMask	= 0xFF000000;
+			ddsSurfaceDesc2.lPitch								= static_cast<crn_int32>((ddsSurfaceDesc2.dwWidth * ddsSurfaceDesc2.ddpfPixelFormat.dwRGBBitCount) >> 3);
+
+			// Fill dds DX10 header
+			::detail::DdsHeaderDX10 ddsHeaderDX10 = {};
+			ddsHeaderDX10.DXGIFormat = 41;	// DXGI_FORMAT_R32_FLOAT
+			ddsHeaderDX10.arraySize  = numberOfFiles;
+
+			{ // Write down the 1D destination texture
+				RendererRuntime::MemoryFile memoryFile(0, 4096);
+				memoryFile.write("DDS ", sizeof(uint32_t));
+				memoryFile.write(reinterpret_cast<const char*>(&ddsSurfaceDesc2), sizeof(crnlib::DDSURFACEDESC2));
+				memoryFile.write(reinterpret_cast<const char*>(&ddsHeaderDX10), sizeof(::detail::DdsHeaderDX10));
+				for (uint32_t i = 0; i < numberOfFiles; ++i)
+				{
+					const IESOutputData& currentIesOutputData = iesOutputData[i];
+					memoryFile.write(currentIesOutputData.stream.data(), currentIesOutputData.stream.size() * sizeof(float));
+				}
 				if (!memoryFile.writeLz4CompressedDataByVirtualFilename(RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_TYPE, RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_VERSION, fileManager, virtualOutputAssetFilename))
 				{
 					throw std::runtime_error("Failed to write to destination file \"" + std::string(virtualOutputAssetFilename) + '\"');
@@ -1857,7 +2004,7 @@ namespace RendererToolkit
 		{
 			assetFileFormat = rapidJsonValueTextureAssetCompiler["FileFormat"].GetString();
 		}
-		if (::detail::TextureSemantic::COLOR_CORRECTION_LOOKUP_TABLE == textureSemantic || ::detail::TextureSemantic::TERRAIN_HEIGHT_MAP == textureSemantic || ::detail::TextureSemantic::VOLUME == textureSemantic)
+		if (::detail::TextureSemantic::COLOR_CORRECTION_LOOKUP_TABLE == textureSemantic || ::detail::TextureSemantic::TERRAIN_HEIGHT_MAP == textureSemantic || ::detail::TextureSemantic::VOLUME == textureSemantic || ::detail::TextureSemantic::IES_LIGHT_PROFILE_ARRAY == textureSemantic)
 		{
 			assetFileFormat = "dds";
 		}
@@ -1914,7 +2061,7 @@ namespace RendererToolkit
 			}
 
 			// Texture semantic overrules manual settings
-			if (::detail::TextureSemantic::COLOR_CORRECTION_LOOKUP_TABLE == textureSemantic ||::detail::TextureSemantic::TERRAIN_HEIGHT_MAP == textureSemantic ||::detail::TextureSemantic::VOLUME == textureSemantic)
+			if (::detail::TextureSemantic::COLOR_CORRECTION_LOOKUP_TABLE == textureSemantic || ::detail::TextureSemantic::TERRAIN_HEIGHT_MAP == textureSemantic || ::detail::TextureSemantic::VOLUME == textureSemantic || ::detail::TextureSemantic::IES_LIGHT_PROFILE_ARRAY == textureSemantic)
 			{
 				assetFileFormat = "dds";
 				createMipmaps = false;
@@ -1943,9 +2090,9 @@ namespace RendererToolkit
 				// If a normal map input file is provided roughness maps can be calculated automatically using Toksvig specular anti-aliasing to reduce shimmering, in this case a input file is optional
 				throwException = normalMapInputFile.empty();
 			}
-			else if (::detail::TextureSemantic::CRN_ARRAY == textureSemantic)
+			else if (::detail::TextureSemantic::IES_LIGHT_PROFILE_ARRAY == textureSemantic || ::detail::TextureSemantic::CRN_ARRAY == textureSemantic)
 			{
-				// CRN array textures don't have a single input file, they're composed of multiple input files
+				// IES light profile array and CRN array textures don't have a single input file, they're composed of multiple input files
 				throwException = false;
 			}
 			if (throwException)
@@ -1979,6 +2126,10 @@ namespace RendererToolkit
 
 				case ::detail::TextureSemantic::VOLUME:
 					detail::convertVolume(configuration, input.context.getFileManager(), virtualInputAssetFilename.c_str(), virtualOutputAssetFilename.c_str());
+					break;
+
+				case ::detail::TextureSemantic::IES_LIGHT_PROFILE_ARRAY:
+					detail::convertIesLightProfile(input, configuration, virtualOutputAssetFilename.c_str());
 					break;
 
 				case ::detail::TextureSemantic::CRN_ARRAY:

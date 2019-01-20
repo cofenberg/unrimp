@@ -6485,6 +6485,262 @@ namespace Direct3D12Renderer
 
 
 	//[-------------------------------------------------------]
+	//[ Direct3D12Renderer/Texture/Texture1DArray.h           ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Direct3D 12 1D array texture class
+	*/
+	class Texture1DArray final : public Renderer::ITexture1DArray
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] direct3D12Renderer
+		*    Owner Direct3D 12 renderer instance
+		*  @param[in] width
+		*    Texture width, must be >0
+		*  @param[in] numberOfSlices
+		*    Number of slices, must be >0
+		*  @param[in] textureFormat
+		*    Texture format
+		*  @param[in] data
+		*    Texture data, can be a null pointer
+		*  @param[in] textureFlags
+		*    Texture flags, see "Renderer::TextureFlag::Enum"
+		*  @param[in] textureUsage
+		*    Indication of the texture usage
+		*/
+		Texture1DArray(Direct3D12Renderer& direct3D12Renderer, uint32_t width, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data, [[maybe_unused]] uint32_t textureFlags, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) :
+			ITexture1DArray(direct3D12Renderer, width, numberOfSlices),
+			mDxgiFormat(Mapping::getDirect3D12Format(textureFormat)),
+			mD3D12Resource(nullptr)
+		//	mD3D12ShaderResourceViewTexture(nullptr)	// TODO(co) Direct3D 12 update
+		{
+			// TODO(co) Direct3D 12 update
+			/*
+			// Sanity checks
+			RENDERER_ASSERT(direct3D12Renderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 12 render target textures can't be filled using provided data")
+
+			// Begin debug event
+			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D12Renderer)
+
+			// Generate mipmaps?
+			const bool mipmaps = (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS) != 0;
+
+			// Direct3D 12 1D array texture description
+			D3D12_TEXTURE1D_DESC d3d12Texture1DDesc;
+			d3d12Texture1DDesc.Width		  = width;
+			d3d12Texture1DDesc.MipLevels	  = mipmaps ? 0u : 1u;	// 0 = Let Direct3D 12 allocate the complete mipmap chain for us
+			d3d12Texture1DDesc.ArraySize	  = numberOfSlices;
+			d3d12Texture1DDesc.Format		  = Mapping::getDirect3D12ResourceFormat(textureFormat);
+			d3d12Texture1DDesc.Usage		  = static_cast<D3D12_USAGE>(textureUsage);	// These constants directly map to Direct3D constants, do not change them
+			d3d12Texture1DDesc.BindFlags	  = D3D12_BIND_SHADER_RESOURCE;
+			d3d12Texture1DDesc.CPUAccessFlags = (Renderer::TextureUsage::DYNAMIC == textureUsage) ? D3D12_CPU_ACCESS_WRITE : 0u;
+			d3d12Texture1DDesc.MiscFlags	  = 0;
+
+			// Use this texture as render target?
+			if (textureFlags & Renderer::TextureFlag::RENDER_TARGET)
+			{
+				d3d12Texture1DDesc.BindFlags |= D3D12_BIND_RENDER_TARGET;
+			}
+
+			// Create the Direct3D 12 1D array texture instance
+			// -> Do not provide the data at once or creating mipmaps will get somewhat complicated
+			ID3D12Texture1D *d3d12Texture1D = nullptr;
+			direct3D12Renderer.getD3D11Device()->CreateTexture1D(&d3d12Texture1DDesc, nullptr, &d3d12Texture1D);
+			if (nullptr != d3d12Texture1D)
+			{
+				// Calculate the number of mipmaps
+				const uint32_t numberOfMipmaps = mipmaps ? getNumberOfMipmaps(width) : 1;
+
+				// Data given?
+				if (nullptr != data)
+				{
+					{ // Update Direct3D 12 subresource data of the base-map
+						const uint32_t  bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+						const uint32_t  bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1);
+						const uint8_t  *dataCurrent   = static_cast<uint8_t*>(data);
+						for (uint32_t arraySlice = 0; arraySlice < numberOfSlices; ++arraySlice, dataCurrent += bytesPerSlice)
+						{
+							direct3D12Renderer.getD3D11DeviceContext()->UpdateSubresource(d3d12Texture1D, D3D12CalcSubresource(0, arraySlice, numberOfMipmaps), nullptr, dataCurrent, bytesPerRow, bytesPerSlice);
+						}
+					}
+
+					// Let Direct3D 12 generate the mipmaps for us automatically?
+					if (mipmaps)
+					{
+						// TODO(co) Direct3D 12 update
+						// D3DX12FilterTexture(direct3D12Renderer.getD3D12DeviceContext(), d3d12Texture1D, 0, D3DX12_DEFAULT);
+					}
+				}
+
+				// Direct3D 12 shader resource view description
+				D3D12_SHADER_RESOURCE_VIEW_DESC d3d12ShaderResourceViewDesc = {};
+				d3d12ShaderResourceViewDesc.Format							= d3d12Texture1DDesc.Format;
+				d3d12ShaderResourceViewDesc.ViewDimension					= D3D12_SRV_DIMENSION_TEXTURE1DARRAY;
+				d3d12ShaderResourceViewDesc.Texture1DArray.MipLevels		= numberOfMipmaps;
+				d3d12ShaderResourceViewDesc.Texture1DArray.MostDetailedMip	= 0;
+				d3d12ShaderResourceViewDesc.Texture1DArray.ArraySize		= numberOfSlices;
+
+				// Create the Direct3D 12 shader resource view instance
+				direct3D12Renderer.getD3D12Device()->CreateShaderResourceView(d3d12Texture1D, &d3d12ShaderResourceViewDesc, &mD3D12ShaderResourceViewTexture);
+
+				// Release the Direct3D 12 1D array texture instance
+				d3d12Texture1D->Release();
+			}
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RENDERER_DEBUG
+				setDebugName("1D texture array");
+			#endif
+
+			// End debug event
+			RENDERER_END_DEBUG_EVENT(&direct3D12Renderer)
+			*/
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~Texture1DArray() override
+		{
+			// TODO(co) Direct3D 12 update
+			/*
+			if (nullptr != mD3D12ShaderResourceViewTexture)
+			{
+				mD3D12ShaderResourceViewTexture->Release();
+			}
+			if (nullptr != mD3D12Texture1D)
+			{
+				mD3D12Texture1D->Release();
+			}
+			*/
+		}
+
+		/**
+		*  @brief
+		*    Return the DXGI format
+		*
+		*  @return
+		*    The DDXGI format
+		*/
+		[[nodiscard]] inline DXGI_FORMAT getDxgiFormat() const
+		{
+			return mDxgiFormat;
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D 12 resource instance
+		*
+		*  @return
+		*    The Direct3D 12 resource instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*/
+		[[nodiscard]] inline ID3D12Resource* getD3D12Resource() const
+		{
+			return mD3D12Resource;
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D shader resource view instance
+		*
+		*  @return
+		*    The Direct3D shader resource view instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*
+		*  @note
+		*    - It's not recommended to manipulate the returned Direct3D 12 resource
+		*      view by e.g. assigning another Direct3D 12 resource to it
+		*/
+		// TODO(co) Direct3D 12 update
+		//[[nodiscard]] inline ID3D12ShaderResourceView *getD3D12ShaderResourceView() const
+		//{
+		//	return mD3D12ShaderResourceViewTexture;
+		//}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		#ifdef RENDERER_DEBUG
+			virtual void setDebugName(const char*) override
+			{
+				// TODO(co) Direct3D 12 update
+				/*
+				// Valid Direct3D 12 shader resource view?
+				if (nullptr != mD3D12ShaderResourceViewTexture)
+				{
+					// Set the debug name
+					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
+					mD3D12ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr);
+					mD3D12ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name);
+
+					// Do also set the given debug name to the Direct3D 12 resource referenced by the Direct3D resource view
+					// -> In our use case, this resource is tightly coupled with the view
+					// -> In principle the user can assign another resource to the view, but our interface documentation
+					//    asks the user to not do so, so we ignore this situation when assigning the name
+					ID3D12Resource *d3d12Resource = nullptr;
+					mD3D12ShaderResourceViewTexture->GetResource(&d3d12Resource);
+					if (nullptr != d3d12Resource)
+					{
+						// Set the debug name
+						// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
+						d3d12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr);
+						d3d12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name);
+
+						// Release the Direct3D 12 resource instance
+						d3d12Resource->Release();
+					}
+				}
+			*/
+			}
+		#endif
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), Texture1DArray, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit Texture1DArray(const Texture1DArray& source) = delete;
+		Texture1DArray& operator =(const Texture1DArray& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		DXGI_FORMAT			  mDxgiFormat;	//// DXGI format
+		ID3D12Resource*		  mD3D12Resource;
+		// TODO(co) Direct3D 12 update
+		//ID3D12ShaderResourceView *mD3D12ShaderResourceViewTexture;	///< Direct3D 12 shader resource view, can be a null pointer
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ Direct3D12Renderer/Texture/Texture2D.h                ]
 	//[-------------------------------------------------------]
 	/**
@@ -7444,6 +7700,15 @@ namespace Direct3D12Renderer
 
 			// Create 1D texture resource
 			return RENDERER_NEW(getRenderer().getContext(), Texture1D)(static_cast<Direct3D12Renderer&>(getRenderer()), width, textureFormat, data, textureFlags, textureUsage);
+		}
+
+		[[nodiscard]] virtual Renderer::ITexture1DArray* createTexture1DArray(uint32_t width, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), width > 0 && numberOfSlices > 0, "Direct3D 12 create texture 1D array was called with invalid parameters")
+
+			// Create 1D texture array resource
+			return RENDERER_NEW(getRenderer().getContext(), Texture1DArray)(static_cast<Direct3D12Renderer&>(getRenderer()), width, numberOfSlices, textureFormat, data, textureFlags, textureUsage);
 		}
 
 		[[nodiscard]] virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
@@ -8685,6 +8950,7 @@ namespace Direct3D12Renderer
 						case Renderer::ResourceType::INDIRECT_BUFFER:
 						case Renderer::ResourceType::UNIFORM_BUFFER:
 						case Renderer::ResourceType::TEXTURE_1D:
+						case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 						case Renderer::ResourceType::TEXTURE_3D:
 						case Renderer::ResourceType::TEXTURE_CUBE:
 						case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -8785,6 +9051,7 @@ namespace Direct3D12Renderer
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
+					case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -11094,6 +11361,21 @@ namespace Direct3D12Renderer
 					break;
 				}
 
+				case Renderer::ResourceType::TEXTURE_1D_ARRAY:
+				{
+					// TODO(co) Implement 1D texture array
+				//	ID3D12DescriptorHeap* d3D12DescriptorHeap = static_cast<Texture1DArray*>(resource)->getD3D12DescriptorHeap();
+				//	if (nullptr != d3D12DescriptorHeap)
+				//	{
+				//		// TODO(co) Just a first Direct3D 12 test, don't call "ID3D12GraphicsCommandList::SetDescriptorHeaps()" that often (pipeline flush)
+				//		ID3D12DescriptorHeap* ppHeaps[] = { d3D12DescriptorHeap };
+				//		mD3D12GraphicsCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+
+				//		mD3D12GraphicsCommandList->SetGraphicsRootDescriptorTable(rootParameterIndex, d3D12DescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+				//	}
+					break;
+				}
+
 				case Renderer::ResourceType::TEXTURE_2D:
 				{
 					ID3D12DescriptorHeap* d3D12DescriptorHeap = static_cast<Texture2D*>(resource)->getD3D12DescriptorHeap();
@@ -11308,6 +11590,7 @@ namespace Direct3D12Renderer
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
+					case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_2D:
 					case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
@@ -11418,6 +11701,7 @@ namespace Direct3D12Renderer
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
+					case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_2D:
 					case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
@@ -11540,6 +11824,7 @@ namespace Direct3D12Renderer
 				case Renderer::ResourceType::INDIRECT_BUFFER:
 				case Renderer::ResourceType::UNIFORM_BUFFER:
 				case Renderer::ResourceType::TEXTURE_1D:
+				case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 				case Renderer::ResourceType::TEXTURE_2D:
 				case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 				case Renderer::ResourceType::TEXTURE_3D:
@@ -12310,6 +12595,12 @@ namespace Direct3D12Renderer
 				// Maximum texture dimension
 				mCapabilities.maximumTextureDimension = 2048;
 
+				// Maximum number of 1D texture array slices (usually 512, in case there's no support for 1D texture arrays it's 0)
+				mCapabilities.maximumNumberOf1DTextureArraySlices = 0;
+
+				// Maximum number of 1D texture array slices (usually 512, in case there's no support for 1D texture arrays it's 0)
+				mCapabilities.maximumNumberOf1DTextureArraySlices = 0;
+
 				// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 0;
 
@@ -12348,6 +12639,12 @@ namespace Direct3D12Renderer
 				// Maximum texture dimension
 				mCapabilities.maximumTextureDimension = 2048;
 
+				// Maximum number of 1D texture array slices (usually 512, in case there's no support for 1D texture arrays it's 0)
+				mCapabilities.maximumNumberOf1DTextureArraySlices = 0;
+
+				// Maximum number of 1D texture array slices (usually 512, in case there's no support for 1D texture arrays it's 0)
+				mCapabilities.maximumNumberOf1DTextureArraySlices = 0;
+
 				// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 0;
 
@@ -12385,6 +12682,12 @@ namespace Direct3D12Renderer
 
 				// Maximum texture dimension
 				mCapabilities.maximumTextureDimension = 4096;
+
+				// Maximum number of 1D texture array slices (usually 512, in case there's no support for 1D texture arrays it's 0)
+				mCapabilities.maximumNumberOf1DTextureArraySlices = 0;
+
+				// Maximum number of 1D texture array slices (usually 512, in case there's no support for 1D texture arrays it's 0)
+				mCapabilities.maximumNumberOf1DTextureArraySlices = 0;
 
 				// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 0;
@@ -12428,6 +12731,9 @@ namespace Direct3D12Renderer
 				// Maximum texture dimension
 				mCapabilities.maximumTextureDimension = 8192;
 
+				// Maximum number of 1D texture array slices (usually 512, in case there's no support for 1D texture arrays it's 0)
+				mCapabilities.maximumNumberOf1DTextureArraySlices = 512;
+
 				// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 512;
 
@@ -12469,6 +12775,9 @@ namespace Direct3D12Renderer
 
 				// Maximum texture dimension
 				mCapabilities.maximumTextureDimension = 8192;
+
+				// Maximum number of 1D texture array slices (usually 512, in case there's no support for 1D texture arrays it's 0)
+				mCapabilities.maximumNumberOf1DTextureArraySlices = 512;
 
 				// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 512;
@@ -12512,6 +12821,9 @@ namespace Direct3D12Renderer
 
 				// Maximum texture dimension
 				mCapabilities.maximumTextureDimension = 16384;
+
+				// Maximum number of 1D texture array slices (usually 512, in case there's no support for 1D texture arrays it's 0)
+				mCapabilities.maximumNumberOf1DTextureArraySlices = 512;
 
 				// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 512;

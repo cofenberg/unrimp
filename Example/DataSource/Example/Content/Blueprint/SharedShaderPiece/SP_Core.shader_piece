@@ -152,6 +152,7 @@
 
 		// Texture
 		#define TEXTURE_1D(resourceGroupIndex, resourceIndex, name, registerIndex) Texture1D name : register(t##registerIndex);
+		#define TEXTURE_1D_ARRAY(resourceGroupIndex, resourceIndex, name, registerIndex) Texture1DArray name : register(t##registerIndex);
 		#define TEXTURE_2D(resourceGroupIndex, resourceIndex, name, registerIndex) Texture2D name : register(t##registerIndex);
 		#define TEXTURE_2D_MS(resourceGroupIndex, resourceIndex, name, numberOfMultisamples, registerIndex) Texture2DMS<float4, numberOfMultisamples> name : register(t##registerIndex);
 		#define TEXTURE_2D_ARRAY(resourceGroupIndex, resourceIndex, name, registerIndex) Texture2DArray name : register(t##registerIndex);
@@ -182,6 +183,7 @@
 
 		// Texture parameter
 		#define TEXTURE_1D_PARAMETER Texture1D
+		#define TEXTURE_1D_ARRAY_PARAMETER Texture1DArray
 		#define TEXTURE_2D_PARAMETER Texture2D
 		#define TEXTURE_2D_MS_PARAMETER(numberOfMultisamples) Texture2DMS<float4, numberOfMultisamples>
 		#define TEXTURE_2D_ARRAY_PARAMETER Texture2DArray
@@ -194,6 +196,8 @@
 		#define SAMPLER_COMPARISON_STATE(resourceGroupIndex, resourceIndex, name, registerIndex) SamplerComparisonState name : register(s##registerIndex);
 		#define SAMPLE_1D(textureObject, samplerObject, coordinate) textureObject.Sample(samplerObject, coordinate)
 		#define SAMPLE_1D_LOD(textureObject, samplerObject, coordinate) textureObject.SampleLevel(samplerObject, (coordinate).x, (coordinate).w)
+		#define SAMPLE_1D_ARRAY(textureObject, samplerObject, coordinate) textureObject.Sample(samplerObject, coordinate)
+		#define SAMPLE_1D_LOD_ARRAY(textureObject, samplerObject, coordinate) textureObject.SampleLevel(samplerObject, (coordinate).xy, (coordinate).w)
 		#define SAMPLE_2D(textureObject, samplerObject, coordinate) textureObject.Sample(samplerObject, coordinate)
 		#define SAMPLE_2D_LOD(textureObject, samplerObject, coordinate) textureObject.SampleLevel(samplerObject, (coordinate).xy, (coordinate).w)
 		#define SAMPLE_2D_GRAD(textureObject, samplerObject, coordinate, _ddx, _ddy) textureObject.SampleGrad(samplerObject, coordinate, _ddx, _ddy)
@@ -382,6 +386,7 @@
 
 		// Texture
 		#define TEXTURE_1D(resourceGroupIndex, resourceIndex, name, registerIndex) layout(set = resourceGroupIndex, binding = resourceIndex) uniform sampler1D name;
+		#define TEXTURE_1D_ARRAY(resourceGroupIndex, resourceIndex, name, registerIndex) layout(set = resourceGroupIndex, binding = resourceIndex) uniform sampler1DArray name;
 		#define TEXTURE_2D(resourceGroupIndex, resourceIndex, name, registerIndex) layout(set = resourceGroupIndex, binding = resourceIndex) uniform sampler2D name;
 		#define TEXTURE_2D_MS(resourceGroupIndex, resourceIndex, name, numberOfMultisamples, registerIndex) layout(set = resourceGroupIndex, binding = resourceIndex) uniform sampler2DMS name;
 		#define TEXTURE_2D_ARRAY(resourceGroupIndex, resourceIndex, name, registerIndex) layout(set = resourceGroupIndex, binding = resourceIndex) uniform sampler2DArray name;
@@ -396,6 +401,7 @@
 
 		// Texture parameter
 		#define TEXTURE_1D_PARAMETER sampler1D
+		#define TEXTURE_1D_ARRAY_PARAMETER sampler1DArray
 		#define TEXTURE_2D_PARAMETER sampler2D
 		#define TEXTURE_2D_MS_PARAMETER(numberOfMultisamples) sampler2DMS
 		#define TEXTURE_2D_ARRAY_PARAMETER sampler2DArray
@@ -408,6 +414,8 @@
 		#define SAMPLER_COMPARISON_STATE(resourceGroupIndex, resourceIndex, name, registerIndex)
 		#define SAMPLE_1D(textureObject, samplerObject, coordinate) texture(textureObject, coordinate)
 		#define SAMPLE_1D_LOD(textureObject, samplerObject, coordinate) textureLod(textureObject, (coordinate).x, (coordinate).w)
+		#define SAMPLE_1D_ARRAY(textureObject, samplerObject, coordinate) texture(textureObject, coordinate)
+		#define SAMPLE_1D_LOD_ARRAY(textureObject, samplerObject, coordinate) textureLod(textureObject, (coordinate).xy, (coordinate).w)
 		#define SAMPLE_2D(textureObject, samplerObject, coordinate) texture(textureObject, coordinate)
 		#define SAMPLE_2D_LOD(textureObject, samplerObject, coordinate) textureLod(textureObject, (coordinate).xy, (coordinate).w)
 		#define SAMPLE_2D_GRAD(textureObject, samplerObject, coordinate, _ddx, _ddy) textureGrad(textureObject, coordinate, _ddx, _ddy)
@@ -619,6 +627,7 @@
 
 		// Texture
 		#define TEXTURE_1D(resourceGroupIndex, resourceIndex, name, registerIndex) uniform sampler1D name;
+		#define TEXTURE_1D_ARRAY(resourceGroupIndex, resourceIndex, name, registerIndex) uniform sampler1DArray name;
 		#define TEXTURE_2D(resourceGroupIndex, resourceIndex, name, registerIndex) uniform sampler2D name;
 		#define TEXTURE_2D_MS(resourceGroupIndex, resourceIndex, name, numberOfMultisamples, registerIndex) uniform sampler2DMS name;
 		#define TEXTURE_2D_ARRAY(resourceGroupIndex, resourceIndex, name, registerIndex) uniform sampler2DArray name;
@@ -633,6 +642,7 @@
 
 		// Texture parameter
 		#define TEXTURE_1D_PARAMETER sampler1D
+		#define TEXTURE_1D_ARRAY_PARAMETER sampler1DArray
 		#define TEXTURE_2D_PARAMETER sampler2D
 		#define TEXTURE_2D_MS_PARAMETER(numberOfMultisamples) sampler2DMS
 		#define TEXTURE_2D_ARRAY_PARAMETER sampler2DArray
@@ -645,6 +655,8 @@
 		#define SAMPLER_COMPARISON_STATE(resourceGroupIndex, resourceIndex, name, registerIndex)
 		#define SAMPLE_1D(textureObject, samplerObject, coordinate) texture(textureObject, coordinate)
 		#define SAMPLE_1D_LOD(textureObject, samplerObject, coordinate) textureLod(textureObject, (coordinate).x, (coordinate).w)
+		#define SAMPLE_1D_ARRAY(textureObject, samplerObject, coordinate) texture(textureObject, coordinate)
+		#define SAMPLE_1D_LOD_ARRAY(textureObject, samplerObject, coordinate) textureLod(textureObject, (coordinate).xy, (coordinate).w)
 		#define SAMPLE_2D(textureObject, samplerObject, coordinate) texture(textureObject, coordinate)
 		#define SAMPLE_2D_LOD(textureObject, samplerObject, coordinate) textureLod(textureObject, (coordinate).xy, (coordinate).w)
 		#define SAMPLE_2D_GRAD(textureObject, samplerObject, coordinate, _ddx, _ddy) textureGrad(textureObject, coordinate, _ddx, _ddy)
@@ -852,7 +864,8 @@
 		#define STRUCTURED_BUFFER_GET(name, memberName, index) memberName[index]
 
 		// Texture
-		#define TEXTURE_1D(resourceGroupIndex, resourceIndex, name, registerIndex) uniform highp sampler2D name;	// OpenGL ES 3 has no 1D textures, just use a 2D texture with a height of one
+		#define TEXTURE_1D(resourceGroupIndex, resourceIndex, name, registerIndex) uniform highp sampler2D name;			// OpenGL ES 3 has no 1D textures, just use a 2D texture with a height of one
+		#define TEXTURE_1D_ARRAY(resourceGroupIndex, resourceIndex, name, registerIndex) uniform highp sampler2DArray name;	// OpenGL ES 3 has no 1D textures, just use a 2D texture with a height of one
 		#define TEXTURE_2D(resourceGroupIndex, resourceIndex, name, registerIndex) uniform highp sampler2D name;
 		#define TEXTURE_2D_MS(resourceGroupIndex, resourceIndex, name, numberOfMultisamples, registerIndex) uniform sampler2DMS name;
 		#define TEXTURE_2D_ARRAY(resourceGroupIndex, resourceIndex, name, registerIndex) uniform highp sampler2DArray name;
@@ -867,6 +880,7 @@
 
 		// Texture parameter
 		#define TEXTURE_1D_PARAMETER sampler1D
+		#define TEXTURE_1D_ARRAY_PARAMETER sampler1D
 		#define TEXTURE_2D_PARAMETER sampler2D
 		#define TEXTURE_2D_MS_PARAMETER(numberOfMultisamples) sampler2DMS
 		#define TEXTURE_2D_ARRAY_PARAMETER sampler2DArray
@@ -877,8 +891,10 @@
 		// Sampler
 		#define SAMPLER_STATE(resourceGroupIndex, resourceIndex, name, registerIndex) int name = registerIndex;	// We need something to pass into functions
 		#define SAMPLER_COMPARISON_STATE(resourceGroupIndex, resourceIndex, name, registerIndex)
-		#define SAMPLE_1D(textureObject, samplerObject, coordinate) texture(textureObject, vec2(coordinate, 0.0f))								// OpenGL ES 3 has no 1D textures, just use a 2D texture with a height of one
-		#define SAMPLE_1D_LOD(textureObject, samplerObject, coordinate) textureLod(textureObject, vec2((coordinate).x, 0.0f), (coordinate).w)	// OpenGL ES 3 has no 1D textures, just use a 2D texture with a height of one
+		#define SAMPLE_1D(textureObject, samplerObject, coordinate) texture(textureObject, vec2(coordinate, 0.0f))													// OpenGL ES 3 has no 1D textures, just use a 2D texture with a height of one
+		#define SAMPLE_1D_LOD(textureObject, samplerObject, coordinate) textureLod(textureObject, vec2((coordinate).x, 0.0f), (coordinate).w)						// OpenGL ES 3 has no 1D textures, just use a 2D texture with a height of one
+		#define SAMPLE_1D_ARRAY(textureObject, samplerObject, coordinate) texture(textureObject, vec2(coordinate, 0.0f), (coordinate).w)							// OpenGL ES 3 has no 1D textures, just use a 2D texture with a height of one
+		#define SAMPLE_1D_LOD_ARRAY(textureObject, samplerObject, coordinate) textureLod(textureObject, vec2((coordinate).x, 0.0f), (coordinate).y, (coordinate).w)	// OpenGL ES 3 has no 1D textures, just use a 2D texture with a height of one
 		#define SAMPLE_2D(textureObject, samplerObject, coordinate) texture(textureObject, coordinate)
 		#define SAMPLE_2D_LOD(textureObject, samplerObject, coordinate) textureLod(textureObject, (coordinate).xy, (coordinate).w)
 		#define SAMPLE_2D_GRAD(textureObject, samplerObject, coordinate, _ddx, _ddy) textureGrad(textureObject, coordinate, _ddx, _ddy)

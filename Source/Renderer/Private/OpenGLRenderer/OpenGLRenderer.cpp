@@ -8662,6 +8662,463 @@ namespace OpenGLRenderer
 
 
 	//[-------------------------------------------------------]
+	//[ OpenGLRenderer/Texture/Texture1DArray.h               ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Abstract OpenGL 1D array texture interface
+	*/
+	class Texture1DArray : public Renderer::ITexture1DArray
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~Texture1DArray() override
+		{
+			// Destroy the OpenGL texture instance
+			// -> Silently ignores 0's and names that do not correspond to existing textures
+			glDeleteTextures(1, &mOpenGLTexture);
+		}
+
+		/**
+		*  @brief
+		*    Return the OpenGL texture
+		*
+		*  @return
+		*    The OpenGL texture, can be zero if no resource is allocated, do not destroy the returned resource
+		*/
+		[[nodiscard]] inline GLuint getOpenGLTexture() const
+		{
+			return mOpenGLTexture;
+		}
+
+		/**
+		*  @brief
+		*    Return the OpenGL internal format
+		*
+		*  @return
+		*    The OpenGL internal format
+		*/
+		[[nodiscard]] inline GLuint getOpenGLInternalFormat() const
+		{
+			return mOpenGLInternalFormat;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		#ifdef RENDERER_DEBUG
+			virtual void setDebugName(const char* name) override
+			{
+				// Valid OpenGL texture and "GL_KHR_debug"-extension available?
+				if (0 != mOpenGLTexture && static_cast<OpenGLRenderer&>(getRenderer()).getExtensions().isGL_KHR_debug())
+				{
+					glObjectLabel(GL_TEXTURE, mOpenGLTexture, -1, name);
+				}
+			}
+		#endif
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), Texture1DArray, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected methods                                     ]
+	//[-------------------------------------------------------]
+	protected:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] openGLRenderer
+		*    Owner OpenGL renderer instance
+		*  @param[in] width
+		*    The width of the texture
+		*  @param[in] numberOfSlices
+		*    The number of slices
+		*  @param[in] textureFormat
+		*    Texture format
+		*/
+		inline Texture1DArray(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat) :
+			ITexture1DArray(static_cast<Renderer::IRenderer&>(openGLRenderer), width, numberOfSlices),
+			mOpenGLTexture(0),
+			mOpenGLInternalFormat(Mapping::getOpenGLInternalFormat(textureFormat))
+		{}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected data                                        ]
+	//[-------------------------------------------------------]
+	protected:
+		GLuint mOpenGLTexture;			///< OpenGL texture, can be zero if no resource is allocated
+		GLuint mOpenGLInternalFormat;	///< OpenGL internal format
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit Texture1DArray(const Texture1DArray& source) = delete;
+		Texture1DArray& operator =(const Texture1DArray& source) = delete;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ OpenGLRenderer/Texture/Texture1DArrayBind.h           ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    OpenGL 1D array texture class, traditional bind version
+	*/
+	class Texture1DArrayBind final : public Texture1DArray
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] openGLRenderer
+		*    Owner OpenGL renderer instance
+		*  @param[in] width
+		*    Texture width, must be >0
+		*  @param[in] numberOfSlices
+		*    Number of slices, must be >0
+		*  @param[in] textureFormat
+		*    Texture format
+		*  @param[in] data
+		*    Texture data, can be a null pointer
+		*  @param[in] textureFlags
+		*    Texture flags, see "Renderer::TextureFlag::Enum"
+		*/
+		Texture1DArrayBind(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags) :
+			Texture1DArray(openGLRenderer, width, numberOfSlices, textureFormat)
+		{
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
+				// Backup the currently set alignment
+				GLint openGLAlignmentBackup = 0;
+				glGetIntegerv(GL_UNPACK_ALIGNMENT, &openGLAlignmentBackup);
+
+				// Backup the currently bound OpenGL texture
+				GLint openGLTextureBackup = 0;
+				glGetIntegerv(GL_TEXTURE_BINDING_1D_ARRAY_EXT, &openGLTextureBackup);
+			#endif
+
+			// Set correct unpack alignment
+			glPixelStorei(GL_UNPACK_ALIGNMENT, (Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat) & 3) ? 1 : 4);
+
+			// Create the OpenGL texture instance
+			glGenTextures(1, &mOpenGLTexture);
+
+			// Make this OpenGL texture instance to the currently used one
+			glBindTexture(GL_TEXTURE_1D_ARRAY_EXT, mOpenGLTexture);
+
+			// TODO(co) Add support for user provided mipmaps
+			// Data layout: The renderer interface provides: CRN and KTX files are organized in mip-major order, like this:
+			//   Mip0: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
+			//   Mip1: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
+			//   etc.
+
+			// Upload the base map of the texture (mipmaps are automatically created as soon as the base map is changed)
+			glTexImage2D(GL_TEXTURE_1D_ARRAY_EXT, 0, static_cast<GLint>(mOpenGLInternalFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(numberOfSlices), 0, Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
+
+			// Build mipmaps automatically on the GPU? (or GPU driver)
+			if ((textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS) && openGLRenderer.getExtensions().isGL_ARB_framebuffer_object())
+			{
+				glGenerateMipmap(GL_TEXTURE_1D_ARRAY_EXT);
+				glTexParameteri(GL_TEXTURE_1D_ARRAY_EXT, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+			}
+			else
+			{
+				glTexParameteri(GL_TEXTURE_1D_ARRAY_EXT, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			}
+			glTexParameteri(GL_TEXTURE_1D_ARRAY_EXT, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
+				// Be polite and restore the previous bound OpenGL texture
+				glBindTexture(GL_TEXTURE_1D_ARRAY_EXT, static_cast<GLuint>(openGLTextureBackup));
+
+				// Restore previous alignment
+				glPixelStorei(GL_UNPACK_ALIGNMENT, openGLAlignmentBackup);
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~Texture1DArrayBind() override
+		{}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit Texture1DArrayBind(const Texture1DArrayBind& source) = delete;
+		Texture1DArrayBind& operator =(const Texture1DArrayBind& source) = delete;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ OpenGLRenderer/Texture/Texture1DArrayDsa.h            ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    OpenGL 1D array texture class, effective direct state access (DSA)
+	*/
+	class Texture1DArrayDsa final : public Texture1DArray
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] openGLRenderer
+		*    Owner OpenGL renderer instance
+		*  @param[in] width
+		*    Texture width, must be >0
+		*  @param[in] numberOfSlices
+		*    Number of slices, must be >0
+		*  @param[in] textureFormat
+		*    Texture format
+		*  @param[in] data
+		*    Texture data, can be a null pointer
+		*  @param[in] textureFlags
+		*    Texture flags, see "Renderer::TextureFlag::Enum"
+		*/
+		Texture1DArrayDsa(OpenGLRenderer& openGLRenderer, uint32_t width, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags) :
+			Texture1DArray(openGLRenderer, width, numberOfSlices, textureFormat)
+		{
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
+				// Backup the currently set alignment
+				GLint openGLAlignmentBackup = 0;
+				glGetIntegerv(GL_UNPACK_ALIGNMENT, &openGLAlignmentBackup);
+			#endif
+
+			// Set correct unpack alignment
+			glPixelStorei(GL_UNPACK_ALIGNMENT, (Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat) & 3) ? 1 : 4);
+
+			// Calculate the number of mipmaps
+			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
+			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
+			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width) : 1;
+
+			// Create the OpenGL texture instance
+			#ifdef _WIN32
+				// TODO(co) It appears that DSA "glGenerateTextureMipmap()" is not working (one notices the noise) or we're using it wrong, tested with
+				//			- "InstancedCubes"-example -> "CubeRendereDrawInstanced"
+				//		    - AMD 290X Radeon software version 17.7.2 as well as with GeForce 980m 384.94
+				//		    - Windows 10 x64
+				const bool isArbDsa = (openGLRenderer.getExtensions().isGL_ARB_direct_state_access() && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS) == 0);
+			#else
+				const bool isArbDsa = openGLRenderer.getExtensions().isGL_ARB_direct_state_access();
+			#endif
+			if (isArbDsa)
+			{
+				glCreateTextures(GL_TEXTURE_1D_ARRAY_EXT, 1, &mOpenGLTexture);
+				glTextureStorage2D(mOpenGLTexture, static_cast<GLsizei>(numberOfMipmaps), mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(numberOfSlices));
+			}
+			else
+			{
+				glGenTextures(1, &mOpenGLTexture);
+			}
+
+			// Upload the texture data
+			if (Renderer::TextureFormat::isCompressed(textureFormat))
+			{
+				// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
+				if (dataContainsMipmaps)
+				{
+					// Data layout: The renderer interface provides: CRN and KTX files are organized in mip-major order, like this:
+					//   Mip0: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
+					//   Mip1: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
+					//   etc.
+
+					// Upload all mipmaps
+					const uint32_t format = Mapping::getOpenGLFormat(textureFormat);
+					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
+					{
+						// Upload the current mipmap
+						const GLsizei numberOfBytesPerSlice = static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1) * numberOfSlices);
+						if (isArbDsa)
+						{
+							// We know that "data" must be valid when we're in here due to the "Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS"-flag
+							glCompressedTextureSubImage2D(mOpenGLTexture, static_cast<GLint>(mipmap), 0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(numberOfSlices), format, numberOfBytesPerSlice, data);
+						}
+						else
+						{
+							glCompressedTextureImage2DEXT(mOpenGLTexture, GL_TEXTURE_1D_ARRAY_EXT, static_cast<GLint>(mipmap), format, static_cast<GLsizei>(width), static_cast<GLsizei>(numberOfSlices), 0, numberOfBytesPerSlice, data);
+						}
+
+						// Move on to the next mipmap and ensure the size is always at least 1x1
+						data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
+						width = getHalfSize(width);
+					}
+				}
+				else
+				{
+					// The user only provided us with the base texture, no mipmaps
+					if (isArbDsa)
+					{
+						if (nullptr != data)
+						{
+							glCompressedTextureSubImage2D(mOpenGLTexture, 0, 0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(numberOfSlices), Mapping::getOpenGLFormat(textureFormat), static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1) * numberOfSlices), data);
+						}
+					}
+					else
+					{
+						glCompressedTextureImage2DEXT(mOpenGLTexture, GL_TEXTURE_1D_ARRAY_EXT, 0, mOpenGLInternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(numberOfSlices), 0, static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1) * numberOfSlices), data);
+					}
+				}
+			}
+			else
+			{
+				// Texture format is not compressed
+
+				// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
+				if (dataContainsMipmaps)
+				{
+					// Data layout: The renderer interface provides: CRN and KTX files are organized in mip-major order, like this:
+					//   Mip0: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
+					//   Mip1: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
+					//   etc.
+
+					// Upload all mipmaps
+					const uint32_t format = Mapping::getOpenGLFormat(textureFormat);
+					const uint32_t type = Mapping::getOpenGLType(textureFormat);
+					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
+					{
+						// Upload the current mipmap
+						const GLsizei numberOfBytesPerSlice = static_cast<GLsizei>(Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1) * numberOfSlices);
+						if (isArbDsa)
+						{
+							// We know that "data" must be valid when we're in here due to the "Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS"-flag
+							glTextureSubImage2D(mOpenGLTexture, static_cast<GLint>(mipmap), 0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(numberOfSlices), format, type, data);
+						}
+						else
+						{
+							glTextureImage2DEXT(mOpenGLTexture, GL_TEXTURE_1D_ARRAY_EXT, static_cast<GLint>(mipmap), static_cast<GLint>(mOpenGLInternalFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(numberOfSlices), 0, format, type, data);
+						}
+
+						// Move on to the next mipmap and ensure the size is always at least 1x1
+						data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
+						width = getHalfSize(width);
+					}
+				}
+				else
+				{
+					// The user only provided us with the base texture, no mipmaps
+					if (isArbDsa)
+					{
+						if (nullptr != data)
+						{
+							glTextureSubImage2D(mOpenGLTexture, 0, 0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(numberOfSlices), Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
+						}
+					}
+					else
+					{
+						glTextureImage2DEXT(mOpenGLTexture, GL_TEXTURE_1D_ARRAY_EXT, 0, static_cast<GLint>(mOpenGLInternalFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(numberOfSlices), 0, Mapping::getOpenGLFormat(textureFormat), Mapping::getOpenGLType(textureFormat), data);
+					}
+				}
+			}
+
+			// Build mipmaps automatically on the GPU? (or GPU driver)
+			if (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS)
+			{
+				if (isArbDsa)
+				{
+					glGenerateTextureMipmap(mOpenGLTexture);
+					glTextureParameteri(mOpenGLTexture, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+				}
+				else
+				{
+					glGenerateTextureMipmapEXT(mOpenGLTexture, GL_TEXTURE_1D_ARRAY_EXT);
+					glTextureParameteriEXT(mOpenGLTexture, GL_TEXTURE_1D_ARRAY_EXT, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+				}
+			}
+			else
+			{
+				if (isArbDsa)
+				{
+					glTextureParameteri(mOpenGLTexture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				}
+				else
+				{
+					glTextureParameteriEXT(mOpenGLTexture, GL_TEXTURE_1D_ARRAY_EXT, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				}
+			}
+
+			if (isArbDsa)
+			{
+				glTextureParameteri(mOpenGLTexture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			}
+			else
+			{
+				glTextureParameteriEXT(mOpenGLTexture, GL_TEXTURE_1D_ARRAY_EXT, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			}
+
+			#ifdef RENDERER_OPENGL_STATE_CLEANUP
+				// Restore previous alignment
+				glPixelStorei(GL_UNPACK_ALIGNMENT, openGLAlignmentBackup);
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~Texture1DArrayDsa() override
+		{}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit Texture1DArrayDsa(const Texture1DArrayDsa& source) = delete;
+		Texture1DArrayDsa& operator =(const Texture1DArrayDsa& source) = delete;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ OpenGLRenderer/Texture/Texture2D.h                    ]
 	//[-------------------------------------------------------]
 	/**
@@ -11049,6 +11506,33 @@ namespace OpenGLRenderer
 			}
 		}
 
+		[[nodiscard]] virtual Renderer::ITexture1DArray* createTexture1DArray(uint32_t width, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), width > 0 && numberOfSlices > 0, "OpenGL create texture 1D array was called with invalid parameters")
+
+			// Create 1D texture array resource, "GL_EXT_texture_array"-extension required
+			// -> The indication of the texture usage is only relevant for Direct3D, OpenGL has no texture usage indication
+			if (mExtensions->isGL_EXT_texture_array())
+			{
+				// Is "GL_EXT_direct_state_access" there?
+				if (mExtensions->isGL_EXT_direct_state_access() || mExtensions->isGL_ARB_direct_state_access())
+				{
+					// Effective direct state access (DSA)
+					return RENDERER_NEW(getRenderer().getContext(), Texture1DArrayDsa)(static_cast<OpenGLRenderer&>(getRenderer()), width, numberOfSlices, textureFormat, data, textureFlags);
+				}
+				else
+				{
+					// Traditional bind version
+					return RENDERER_NEW(getRenderer().getContext(), Texture1DArrayBind)(static_cast<OpenGLRenderer&>(getRenderer()), width, numberOfSlices, textureFormat, data, textureFlags);
+				}
+			}
+			else
+			{
+				return nullptr;
+			}
+		}
+
 		[[nodiscard]] virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
 		{
 			// Sanity check
@@ -13006,6 +13490,7 @@ namespace OpenGLRenderer
 						case Renderer::ResourceType::INDIRECT_BUFFER:
 						case Renderer::ResourceType::UNIFORM_BUFFER:
 						case Renderer::ResourceType::TEXTURE_1D:
+						case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 						case Renderer::ResourceType::TEXTURE_3D:
 						case Renderer::ResourceType::TEXTURE_CUBE:
 						case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -13070,6 +13555,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
+					case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -13236,6 +13722,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
+					case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -13312,6 +13799,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
+					case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -13529,6 +14017,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
+					case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -13619,6 +14108,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
+					case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -18724,6 +19214,7 @@ namespace OpenGLRenderer
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
+					case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_2D:
 					case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
@@ -19237,6 +19728,7 @@ namespace OpenGLRenderer
 			case Renderer::ResourceType::INDIRECT_BUFFER:
 			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_1D:
+			case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 			case Renderer::ResourceType::TEXTURE_2D:
 			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 			case Renderer::ResourceType::TEXTURE_3D:
@@ -19334,6 +19826,7 @@ namespace OpenGLRenderer
 			case Renderer::ResourceType::INDIRECT_BUFFER:
 			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_1D:
+			case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 			case Renderer::ResourceType::TEXTURE_3D:
 			case Renderer::ResourceType::TEXTURE_CUBE:
@@ -19831,6 +20324,12 @@ namespace OpenGLRenderer
 				return false;
 			}
 
+			case Renderer::ResourceType::TEXTURE_1D_ARRAY:
+			{
+				// TODO(co) Implement me
+				return false;
+			}
+
 			case Renderer::ResourceType::TEXTURE_2D:
 			{
 				bool result = false;
@@ -19956,6 +20455,12 @@ namespace OpenGLRenderer
 				break;
 
 			case Renderer::ResourceType::TEXTURE_1D:
+			{
+				// TODO(co) Implement me
+				break;
+			}
+
+			case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 			{
 				// TODO(co) Implement me
 				break;
@@ -20370,14 +20875,17 @@ namespace OpenGLRenderer
 		glGetIntegerv(GL_MAX_TEXTURE_SIZE, &openGLValue);
 		mCapabilities.maximumTextureDimension = static_cast<uint32_t>(openGLValue);
 
+		// Maximum number of 1D texture array slices (usually 512, in case there's no support for 1D texture arrays it's 0)
 		// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 		if (mExtensions->isGL_EXT_texture_array())
 		{
 			glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS_EXT, &openGLValue);
+			mCapabilities.maximumNumberOf1DTextureArraySlices = static_cast<uint32_t>(openGLValue);
 			mCapabilities.maximumNumberOf2DTextureArraySlices = static_cast<uint32_t>(openGLValue);
 		}
 		else
 		{
+			mCapabilities.maximumNumberOf1DTextureArraySlices = 0;
 			mCapabilities.maximumNumberOf2DTextureArraySlices = 0;
 		}
 
@@ -20555,6 +21063,7 @@ namespace OpenGLRenderer
 				{
 					case Renderer::ResourceType::TEXTURE_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
+					case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_2D:
 					case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
@@ -20600,6 +21109,19 @@ namespace OpenGLRenderer
 												// "GL_TEXTURE0_ARB" is the first texture unit, while the unit we received is zero based
 												const Texture1D* texture1D = static_cast<Texture1D*>(resource);
 												glBindMultiTextureEXT(GL_TEXTURE0_ARB + unit, GL_TEXTURE_1D, texture1D->getOpenGLTexture());
+											}
+											break;
+
+										case Renderer::ResourceType::TEXTURE_1D_ARRAY:
+											// No texture 1D array extension check required, if we in here we already know it must exist
+											if (isArbDsa)
+											{
+												glBindTextureUnit(unit, static_cast<Texture1DArray*>(resource)->getOpenGLTexture());
+											}
+											else
+											{
+												// "GL_TEXTURE0_ARB" is the first texture unit, while the unit we received is zero based
+												glBindMultiTextureEXT(GL_TEXTURE0_ARB + unit, GL_TEXTURE_1D_ARRAY_EXT, static_cast<Texture1DArray*>(resource)->getOpenGLTexture());
 											}
 											break;
 
@@ -20755,6 +21277,11 @@ namespace OpenGLRenderer
 												glBindTexture(GL_TEXTURE_1D, static_cast<Texture1D*>(resource)->getOpenGLTexture());
 												break;
 
+											case Renderer::ResourceType::TEXTURE_1D_ARRAY:
+												// No extension check required, if we in here we already know it must exist
+												glBindTexture(GL_TEXTURE_1D_ARRAY_EXT, static_cast<Texture1DArray*>(resource)->getOpenGLTexture());
+												break;
+
 											case Renderer::ResourceType::TEXTURE_2D:
 											{
 												const Texture2D* texture2D = static_cast<Texture2D*>(resource);
@@ -20860,6 +21387,13 @@ namespace OpenGLRenderer
 										{
 											const Texture1D* texture1D = static_cast<Texture1D*>(resource);
 											glBindImageTextureEXT(unit, texture1D->getOpenGLTexture(), 0, GL_FALSE, 0, GL_WRITE_ONLY, static_cast<GLint>(texture1D->getOpenGLInternalFormat()));
+											break;
+										}
+
+										case Renderer::ResourceType::TEXTURE_1D_ARRAY:
+										{
+											const Texture1DArray* texture1DArray = static_cast<Texture1DArray*>(resource);
+											glBindImageTextureEXT(unit, texture1DArray->getOpenGLTexture(), 0, GL_FALSE, 0, GL_WRITE_ONLY, static_cast<GLint>(texture1DArray->getOpenGLInternalFormat()));
 											break;
 										}
 

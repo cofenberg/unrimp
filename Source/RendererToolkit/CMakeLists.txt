@@ -42,6 +42,7 @@ include_directories(${CMAKE_SOURCE_DIR}/External/glm/include)
 include_directories(${CMAKE_SOURCE_DIR}/External/RapidJSON/configuration)	# RapidJSON configuration and assert to exception
 include_directories(${CMAKE_SOURCE_DIR}/External/RapidJSON/include)
 include_directories(${CMAKE_SOURCE_DIR}/External/SimpleFileWatcher/src)
+include_directories(${CMAKE_SOURCE_DIR}/External/ies/src)
 link_directories(${CMAKE_SOURCE_DIR}/Library/${OS_ARCHITECTURE})
 
 
@@ -49,13 +50,6 @@ link_directories(${CMAKE_SOURCE_DIR}/Library/${OS_ARCHITECTURE})
 ## Source codes
 ##################################################
 set(EXTERNAL_SOURCE_CODES
-	# SimpleFileWatcher external library
-	${CMAKE_SOURCE_DIR}/External/SimpleFileWatcher/src/FileWatcher/FileWatcher.cpp
-	# mikktspace external library
-	${CMAKE_SOURCE_DIR}/External/mikktspace/src/mikktspace.c
-	# crunch external library
-	${CMAKE_SOURCE_DIR}/External/crunch/crunchUnityBuild1.cpp
-	${CMAKE_SOURCE_DIR}/External/crunch/crunchUnityBuild2.cpp
 	# Assimp external library
 	${CMAKE_SOURCE_DIR}/External/Assimp/AssimpUnityBuild1.cpp
 	${CMAKE_SOURCE_DIR}/External/Assimp/AssimpUnityBuild2.cpp
@@ -83,6 +77,15 @@ set(EXTERNAL_SOURCE_CODES
 			${CMAKE_SOURCE_DIR}/External/Assimp/contrib/zlib/trees.c
 			${CMAKE_SOURCE_DIR}/External/Assimp/contrib/zlib/uncompr.c
 			${CMAKE_SOURCE_DIR}/External/Assimp/contrib/zlib/zutil.c
+	# crunch external library
+	${CMAKE_SOURCE_DIR}/External/crunch/crunchUnityBuild1.cpp
+	${CMAKE_SOURCE_DIR}/External/crunch/crunchUnityBuild2.cpp
+	# mikktspace external library
+	${CMAKE_SOURCE_DIR}/External/mikktspace/src/mikktspace.c
+	# SimpleFileWatcher external library
+	${CMAKE_SOURCE_DIR}/External/SimpleFileWatcher/src/FileWatcher/FileWatcher.cpp
+	# ies external library
+	${CMAKE_SOURCE_DIR}/External/ies/src/ies_loader.cpp
 )
 if(WIN32)
 	set(EXTERNAL_SOURCE_CODES

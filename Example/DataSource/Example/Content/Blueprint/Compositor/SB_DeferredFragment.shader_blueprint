@@ -89,9 +89,10 @@ TEXTURE_2D(2, 5, ScreenSpaceAmbientOcclusionMap, 6)
 TEXTURE_2D(2, 6, VolumetricLightMap, 7)
 TEXTURE_2D(2, 7, ReflectionMap, 8)
 TEXTURE_3D_UINT(2, 8, LightClustersMap3D, 9)
+TEXTURE_1D_ARRAY(2, 9, IesLightProfileMap, 10)
 @property(UseWetSurfaces)
-	TEXTURE_2D(2, 9, WaterRipplesMap, 10)	// r = droplet mask, gb = ripples xy normal map, a = random grey value constant
-	TEXTURE_2D(2, 10, WaterStreaksMap, 11)	// r = streak pattern, g = gradient, ba = streak xy normal map
+	TEXTURE_2D(2, 10, WaterRipplesMap, 11)	// r = droplet mask, gb = ripples xy normal map, a = random grey value constant
+	TEXTURE_2D(2, 11, WaterStreaksMap, 12)	// r = streak pattern, g = gradient, ba = streak xy normal map
 @end
 
 // Samplers

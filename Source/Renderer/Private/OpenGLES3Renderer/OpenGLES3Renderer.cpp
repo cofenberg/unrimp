@@ -5509,6 +5509,163 @@ namespace OpenGLES3Renderer
 
 
 	//[-------------------------------------------------------]
+	//[ OpenGLES3Renderer/Texture/Texture1DArray.h            ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    OpenGL ES 3 1D array texture class
+	*/
+	class Texture1DArray final : public Renderer::ITexture1DArray
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] openGLES3Renderer
+		*    Owner OpenGL ES 3 renderer instance
+		*  @param[in] width
+		*    Texture width, must be >0
+		*  @param[in] numberOfSlices
+		*    Number of slices, must be >0
+		*  @param[in] textureFormat
+		*    Texture format
+		*  @param[in] data
+		*    Texture data, can be a null pointer
+		*  @param[in] textureFlags
+		*    Texture flags, see "Renderer::TextureFlag::Enum"
+		*/
+		Texture1DArray(OpenGLES3Renderer& openGLES3Renderer, uint32_t width, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags) :
+			ITexture1DArray(openGLES3Renderer, width, numberOfSlices),
+			mOpenGLES3Texture(0)
+		{
+			// OpenGL ES 3 has no 1D texture arrays, just use a 2D texture array with a height of one
+
+			// TODO(co) Check support formats
+
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
+				// Backup the currently set alignment
+				GLint openGLES3AlignmentBackup = 0;
+				glGetIntegerv(GL_UNPACK_ALIGNMENT, &openGLES3AlignmentBackup);
+
+				// Backup the currently bound OpenGL ES 3 texture
+				GLint openGLES3TextureBackup = 0;
+				glGetIntegerv(GL_TEXTURE_BINDING_2D_ARRAY, &openGLES3TextureBackup);
+			#endif
+
+			// Set correct alignment
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+			// Create the OpenGL ES 3 texture instance
+			glGenTextures(1, &mOpenGLES3Texture);
+			glBindTexture(GL_TEXTURE_2D_ARRAY, mOpenGLES3Texture);
+
+			// TODO(co) Add support for user provided mipmaps
+			// Data layout: The renderer interface provides: CRN and KTX files are organized in mip-major order, like this:
+			//   Mip0: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
+			//   Mip1: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
+			//   etc.
+
+			// Upload the base map of the texture (mipmaps are automatically created as soon as the base map is changed)
+			glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, Mapping::getOpenGLES3InternalFormat(textureFormat), static_cast<GLsizei>(width), 1, static_cast<GLsizei>(numberOfSlices), 0, Mapping::getOpenGLES3Format(textureFormat), Mapping::getOpenGLES3Type(textureFormat), data);
+
+			// Build mipmaps automatically on the GPU? (or GPU driver)
+			if (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS)
+			{
+				glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
+				glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+			}
+			else
+			{
+				glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			}
+			glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+			#ifdef RENDERER_OPENGLES3_STATE_CLEANUP
+				// Be polite and restore the previous bound OpenGL ES 3 texture
+				glBindTexture(GL_TEXTURE_2D_ARRAY, static_cast<GLuint>(openGLES3TextureBackup));
+
+				// Restore previous alignment
+				glPixelStorei(GL_UNPACK_ALIGNMENT, openGLES3AlignmentBackup);
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~Texture1DArray() override
+		{
+			// Destroy the OpenGL ES 3 texture instance
+			// -> Silently ignores 0's and names that do not correspond to existing textures
+			glDeleteTextures(1, &mOpenGLES3Texture);
+		}
+
+		/**
+		*  @brief
+		*    Return the OpenGL ES 3 texture
+		*
+		*  @return
+		*    The OpenGL ES 3 texture, can be zero if no resource is allocated, do not destroy the returned resource
+		*/
+		[[nodiscard]] inline GLuint getOpenGLES3Texture() const
+		{
+			return mOpenGLES3Texture;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		#ifdef RENDERER_DEBUG
+			virtual void setDebugName(const char* name) override
+			{
+				// Valid OpenGL ES 3 texture and "GL_KHR_debug"-extension available?
+				if (0 != mOpenGLES3Texture && static_cast<OpenGLES3Renderer&>(getRenderer()).getOpenGLES3Context().getExtensions().isGL_KHR_debug())
+				{
+					glObjectLabelKHR(GL_TEXTURE, mOpenGLES3Texture, -1, name);
+				}
+			}
+		#endif
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), Texture1DArray, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit Texture1DArray(const Texture1DArray& source) = delete;
+		Texture1DArray& operator =(const Texture1DArray& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		GLuint mOpenGLES3Texture;	///< OpenGL ES 3 texture, can be zero if no resource is allocated
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ OpenGLES3Renderer/Texture/Texture2D.h                 ]
 	//[-------------------------------------------------------]
 	/**
@@ -6446,6 +6603,16 @@ namespace OpenGLES3Renderer
 			// Create 1D texture resource
 			// -> The indication of the texture usage is only relevant for Direct3D, OpenGL ES 3 has no texture usage indication
 			return RENDERER_NEW(getRenderer().getContext(), Texture1D)(static_cast<OpenGLES3Renderer&>(getRenderer()), width, textureFormat, data, textureFlags);
+		}
+
+		[[nodiscard]] virtual Renderer::ITexture1DArray* createTexture1DArray(uint32_t width, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), width > 0 && numberOfSlices > 0, "OpenGL ES 3 create texture 1D array was called with invalid parameters")
+
+			// Create 1D texture array resource
+			// -> The indication of the texture usage is only relevant for Direct3D, OpenGL ES 3 has no texture usage indication
+			return RENDERER_NEW(getRenderer().getContext(), Texture1DArray)(static_cast<OpenGLES3Renderer&>(getRenderer()), width, numberOfSlices, textureFormat, data, textureFlags);
 		}
 
 		[[nodiscard]] virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, [[maybe_unused]] uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
@@ -7497,6 +7664,7 @@ namespace OpenGLES3Renderer
 						case Renderer::ResourceType::INDIRECT_BUFFER:
 						case Renderer::ResourceType::UNIFORM_BUFFER:
 						case Renderer::ResourceType::TEXTURE_1D:
+						case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 						case Renderer::ResourceType::TEXTURE_3D:
 						case Renderer::ResourceType::TEXTURE_CUBE:
 						case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -7567,6 +7735,7 @@ namespace OpenGLES3Renderer
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
+					case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -9403,6 +9572,7 @@ namespace OpenGLES3Renderer
 						break;
 
 					case Renderer::ResourceType::TEXTURE_1D:
+					case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_2D:
 					case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
@@ -9434,6 +9604,12 @@ namespace OpenGLES3Renderer
 								{
 									// OpenGL ES 3 has no 1D textures, just use a 2D texture with a height of one
 									glBindTexture(GL_TEXTURE_2D, static_cast<Texture1D*>(resource)->getOpenGLES3Texture());
+								}
+								else if (resourceType == Renderer::ResourceType::TEXTURE_1D_ARRAY)
+								{
+									// OpenGL ES 3 has no 1D textures, just use a 2D texture with a height of one
+									// No extension check required, if we in here we already know it must exist
+									glBindTexture(GL_TEXTURE_2D_ARRAY, static_cast<Texture1DArray*>(resource)->getOpenGLES3Texture());
 								}
 								else if (resourceType == Renderer::ResourceType::TEXTURE_2D_ARRAY)
 								{
@@ -9701,6 +9877,7 @@ namespace OpenGLES3Renderer
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
+					case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_2D:
 					case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
@@ -10030,6 +10207,7 @@ namespace OpenGLES3Renderer
 			case Renderer::ResourceType::INDIRECT_BUFFER:
 			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_1D:
+			case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 			case Renderer::ResourceType::TEXTURE_3D:
 			case Renderer::ResourceType::TEXTURE_CUBE:
@@ -10366,6 +10544,12 @@ namespace OpenGLES3Renderer
 				return false;
 			}
 
+			case Renderer::ResourceType::TEXTURE_1D_ARRAY:
+			{
+				// TODO(co) Implement me
+				return false;
+			}
+
 			case Renderer::ResourceType::TEXTURE_2D:
 			{
 				bool result = false;
@@ -10494,6 +10678,12 @@ namespace OpenGLES3Renderer
 				break;
 
 			case Renderer::ResourceType::TEXTURE_1D:
+			{
+				// TODO(co) Implement me
+				break;
+			}
+
+			case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 			{
 				// TODO(co) Implement me
 				break;
@@ -10799,8 +10989,11 @@ namespace OpenGLES3Renderer
 		glGetIntegerv(GL_MAX_TEXTURE_SIZE, &openGLValue);
 		mCapabilities.maximumTextureDimension = static_cast<uint32_t>(openGLValue);
 
-		// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
+		// Maximum number of 1D texture array slices (usually 512, in case there's no support for 1D texture arrays it's 0)
 		glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &openGLValue);
+		mCapabilities.maximumNumberOf1DTextureArraySlices = static_cast<uint32_t>(openGLValue);
+
+		// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 		mCapabilities.maximumNumberOf2DTextureArraySlices = static_cast<uint32_t>(openGLValue);
 
 		// Maximum uniform buffer (UBO) size in bytes (usually at least 16384 bytes, in case there's no support for uniform buffer it's 0)

@@ -109,6 +109,20 @@ namespace RendererRuntime
 		*/
 		virtual void write(const void* sourceBuffer, size_t numberOfBytes) = 0;
 
+		//[-------------------------------------------------------]
+		//[ Debug                                                 ]
+		//[-------------------------------------------------------]
+		#ifdef _DEBUG
+			/**
+			*  @brief
+			*    Get debug filename
+			*
+			*  @return
+			*    The debug filename, can be a null pointer, do not free the memory
+			*/
+			[[nodiscard]] virtual const char* getDebugFilename() const = 0;
+		#endif
+
 
 	//[-------------------------------------------------------]
 	//[ Protected methods                                     ]

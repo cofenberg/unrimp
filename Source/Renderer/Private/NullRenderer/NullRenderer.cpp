@@ -1596,6 +1596,67 @@ namespace NullRenderer
 
 
 	//[-------------------------------------------------------]
+	//[ NullRenderer/Texture/Texture1DArray.h                 ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Null 1D array texture class
+	*/
+	class Texture1DArray final : public Renderer::ITexture1DArray
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] nullRenderer
+		*    Owner null renderer instance
+		*  @param[in] width
+		*    The width of the texture
+		*  @param[in] numberOfSlices
+		*    The number of slices
+		*/
+		inline Texture1DArray(NullRenderer& nullRenderer, uint32_t width, uint32_t numberOfSlices) :
+			ITexture1DArray(nullRenderer, width, numberOfSlices)
+		{}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~Texture1DArray() override
+		{}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), Texture1DArray, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit Texture1DArray(const Texture1DArray& source) = delete;
+		Texture1DArray& operator =(const Texture1DArray& source) = delete;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ NullRenderer/Texture/Texture2D.h                      ]
 	//[-------------------------------------------------------]
 	/**
@@ -1888,6 +1949,15 @@ namespace NullRenderer
 
 			// Create 1D texture resource
 			return RENDERER_NEW(getRenderer().getContext(), Texture1D)(static_cast<NullRenderer&>(getRenderer()), width);
+		}
+
+		[[nodiscard]] virtual Renderer::ITexture1DArray* createTexture1DArray(uint32_t width, uint32_t numberOfSlices, [[maybe_unused]] Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), width > 0 && numberOfSlices > 0, "Null create texture 1D array was called with invalid parameters")
+
+			// Create 1D texture array resource
+			return RENDERER_NEW(getRenderer().getContext(), Texture1DArray)(static_cast<NullRenderer&>(getRenderer()), width, numberOfSlices);
 		}
 
 		[[nodiscard]] virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, [[maybe_unused]] Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, [[maybe_unused]] uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
@@ -4101,6 +4171,9 @@ namespace NullRenderer
 
 		// Maximum texture dimension
 		mCapabilities.maximumTextureDimension = 42;
+
+		// Maximum number of 1D texture array slices (usually 512, in case there's no support for 1D texture arrays it's 0)
+		mCapabilities.maximumNumberOf1DTextureArraySlices = 42;
 
 		// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 		mCapabilities.maximumNumberOf2DTextureArraySlices = 42;

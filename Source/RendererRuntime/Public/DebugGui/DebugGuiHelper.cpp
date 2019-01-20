@@ -467,6 +467,7 @@ namespace RendererRuntime
 						ImGui::Text("Indirect buffers: %s", ::detail::stringFormatCommas(statistics.currentNumberOfIndirectBuffers.load(), temporary));
 						ImGui::Text("Uniform buffers: %s", ::detail::stringFormatCommas(statistics.currentNumberOfUniformBuffers.load(), temporary));
 						ImGui::Text("1D textures: %s", ::detail::stringFormatCommas(statistics.currentNumberOfTexture1Ds.load(), temporary));
+						ImGui::Text("1D texture arrays: %s", ::detail::stringFormatCommas(statistics.currentNumberOfTexture1DArrays.load(), temporary));
 						ImGui::Text("2D textures: %s", ::detail::stringFormatCommas(statistics.currentNumberOfTexture2Ds.load(), temporary));
 						ImGui::Text("2D texture arrays: %s", ::detail::stringFormatCommas(statistics.currentNumberOfTexture2DArrays.load(), temporary));
 						ImGui::Text("3D textures: %s", ::detail::stringFormatCommas(statistics.currentNumberOfTexture3Ds.load(), temporary));

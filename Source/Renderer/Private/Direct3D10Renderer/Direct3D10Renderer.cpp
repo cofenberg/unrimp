@@ -4878,6 +4878,325 @@ namespace Direct3D10Renderer
 
 
 	//[-------------------------------------------------------]
+	//[ Direct3D10Renderer/Texture/Texture1DArray.h           ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Direct3D 10 1D array texture class
+	*/
+	class Texture1DArray final : public Renderer::ITexture1DArray
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] direct3D10Renderer
+		*    Owner Direct3D 10 renderer instance
+		*  @param[in] width
+		*    Texture width, must be >0
+		*  @param[in] numberOfSlices
+		*    Number of slices, must be >0
+		*  @param[in] textureFormat
+		*    Texture format
+		*  @param[in] data
+		*    Texture data, can be a null pointer
+		*  @param[in] textureFlags
+		*    Texture flags, see "Renderer::TextureFlag::Enum"
+		*  @param[in] textureUsage
+		*    Indication of the texture usage
+		*/
+		Texture1DArray(Direct3D10Renderer& direct3D10Renderer, uint32_t width, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) :
+			ITexture1DArray(direct3D10Renderer, width, numberOfSlices),
+			mTextureFormat(textureFormat),
+			mD3D10Texture1D(nullptr),
+			mD3D10ShaderResourceView(nullptr)
+		{
+			// Sanity checks
+			RENDERER_ASSERT(direct3D10Renderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 10 render target textures can't be filled using provided data")
+
+			// Calculate the number of mipmaps
+			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
+			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
+			RENDERER_ASSERT(direct3D10Renderer.getContext(), Renderer::TextureUsage::IMMUTABLE != textureUsage || !generateMipmaps, "Direct3D 10 immutable texture usage can't be combined with automatic mipmap generation")
+			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width) : 1;
+			const bool isDepthFormat = Renderer::TextureFormat::isDepth(textureFormat);
+
+			// Direct3D 10 1D array texture description
+			D3D10_TEXTURE1D_DESC d3d10Texture1DDesc;
+			d3d10Texture1DDesc.Width		  = width;
+			d3d10Texture1DDesc.MipLevels	  = (generateMipmaps ? 0u : numberOfMipmaps);	// 0 = Let Direct3D 10 allocate the complete mipmap chain for us
+			d3d10Texture1DDesc.ArraySize	  = numberOfSlices;
+			d3d10Texture1DDesc.Format		  = Mapping::getDirect3D10ResourceFormat(textureFormat);
+			d3d10Texture1DDesc.Usage		  = static_cast<D3D10_USAGE>(textureUsage);	// These constants directly map to Direct3D constants, do not change them
+			d3d10Texture1DDesc.BindFlags	  = 0;
+			d3d10Texture1DDesc.CPUAccessFlags = (Renderer::TextureUsage::DYNAMIC == textureUsage) ? D3D10_CPU_ACCESS_WRITE : 0u;
+			d3d10Texture1DDesc.MiscFlags	  = (generateMipmaps && (textureFlags & Renderer::TextureFlag::RENDER_TARGET) && !isDepthFormat) ? D3D10_RESOURCE_MISC_GENERATE_MIPS : 0u;
+
+			// Set bind flags
+			if (textureFlags & Renderer::TextureFlag::SHADER_RESOURCE)
+			{
+				d3d10Texture1DDesc.BindFlags |= D3D10_BIND_SHADER_RESOURCE;
+			}
+			if (textureFlags & Renderer::TextureFlag::RENDER_TARGET)
+			{
+				if (isDepthFormat)
+				{
+					d3d10Texture1DDesc.BindFlags |= D3D10_BIND_DEPTH_STENCIL;
+				}
+				else
+				{
+					d3d10Texture1DDesc.BindFlags |= D3D10_BIND_RENDER_TARGET;
+				}
+			}
+
+			// Create the Direct3D 10 1D texture instance
+			// Did the user provided us with any texture data?
+			ID3D10Device *d3d10Device = direct3D10Renderer.getD3D10Device();
+			if (nullptr != data)
+			{
+				if (generateMipmaps)
+				{
+					// Let Direct3D 10 generate the mipmaps for us automatically
+					// -> Sadly, it's impossible to use initialization data in this use-case
+					FAILED_DEBUG_BREAK(d3d10Device->CreateTexture1D(&d3d10Texture1DDesc, nullptr, &mD3D10Texture1D));
+					if (nullptr != mD3D10Texture1D)
+					{
+						// Begin debug event
+						RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D10Renderer)
+
+						{ // Update Direct3D 10 subresource data of the base-map
+							const uint32_t  bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+							const uint32_t  bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1);
+							for (uint32_t arraySlice = 0; arraySlice < numberOfSlices; ++arraySlice)
+							{
+								d3d10Device->UpdateSubresource(mD3D10Texture1D, D3D10CalcSubresource(0, arraySlice, numberOfMipmaps), nullptr, data, bytesPerRow, bytesPerSlice);
+
+								// Move on to the next slice
+								data = static_cast<const uint8_t*>(data) + bytesPerSlice;
+							}
+						}
+
+						// Let Direct3D 10 generate the mipmaps for us automatically
+						D3DX10FilterTexture(mD3D10Texture1D, 0, D3DX10_DEFAULT);
+
+						// End debug event
+						RENDERER_END_DEBUG_EVENT(&direct3D10Renderer)
+					}
+				}
+				else
+				{
+					// We don't want dynamic allocations, so we limit the maximum number of mipmaps and hence are able to use the efficient C runtime stack
+					static constexpr uint32_t MAXIMUM_NUMBER_OF_MIPMAPS = 15;	// A 16384x16384 texture has 15 mipmaps
+					static constexpr uint32_t MAXIMUM_NUMBER_OF_SLICES = 10;
+					RENDERER_ASSERT(direct3D10Renderer.getContext(), numberOfMipmaps <= MAXIMUM_NUMBER_OF_MIPMAPS, "Invalid Direct3D 10 number of mipmaps")
+					D3D10_SUBRESOURCE_DATA d3d10SubresourceDataStack[MAXIMUM_NUMBER_OF_SLICES * MAXIMUM_NUMBER_OF_MIPMAPS];
+					const Renderer::Context& context = getRenderer().getContext();
+					D3D10_SUBRESOURCE_DATA* d3d10SubresourceData = (numberOfSlices <= MAXIMUM_NUMBER_OF_SLICES) ? d3d10SubresourceDataStack : RENDERER_MALLOC_TYPED(context, D3D10_SUBRESOURCE_DATA, numberOfSlices);
+
+					// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
+					if (dataContainsMipmaps)
+					{
+						// Data layout
+						// - Direct3D 10 wants: DDS files are organized in slice-major order, like this:
+						//     Slice0: Mip0, Mip1, Mip2, etc.
+						//     Slice1: Mip0, Mip1, Mip2, etc.
+						//     etc.
+						// - The renderer interface provides: CRN and KTX files are organized in mip-major order, like this:
+						//     Mip0: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
+						//     Mip1: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
+						//     etc.
+
+						// Upload all mipmaps
+						for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
+						{
+							const uint32_t numberOfBytesPerRow = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+							const uint32_t numberOfBytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1);
+							for (uint32_t arraySlice = 0; arraySlice < numberOfSlices; ++arraySlice)
+							{
+								// Upload the current slice
+								D3D10_SUBRESOURCE_DATA& currentD3d10SubresourceData = d3d10SubresourceData[arraySlice * numberOfMipmaps + mipmap];
+								currentD3d10SubresourceData.pSysMem			 = data;
+								currentD3d10SubresourceData.SysMemPitch		 = numberOfBytesPerRow;
+								currentD3d10SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
+
+								// Move on to the next slice
+								data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
+							}
+
+							// Move on to the next mipmap and ensure the size is always at least 1x1
+							width = getHalfSize(width);
+						}
+					}
+					else
+					{
+						// The user only provided us with the base texture, no mipmaps
+						const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+						const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1);
+						for (uint32_t arraySlice = 0; arraySlice < numberOfSlices; ++arraySlice)
+						{
+							D3D10_SUBRESOURCE_DATA& currentD3d10SubresourceData = d3d10SubresourceData[arraySlice];
+							currentD3d10SubresourceData.pSysMem			 = data;
+							currentD3d10SubresourceData.SysMemPitch		 = bytesPerRow;
+							currentD3d10SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
+
+							// Move on to the next slice
+							data = static_cast<const uint8_t*>(data) + bytesPerSlice;
+						}
+					}
+					FAILED_DEBUG_BREAK(d3d10Device->CreateTexture1D(&d3d10Texture1DDesc, d3d10SubresourceData, &mD3D10Texture1D));
+					if (numberOfSlices > MAXIMUM_NUMBER_OF_SLICES)
+					{
+						RENDERER_FREE(context, d3d10SubresourceData);
+					}
+				}
+			}
+			else
+			{
+				// The user did not provide us with texture data
+				FAILED_DEBUG_BREAK(d3d10Device->CreateTexture1D(&d3d10Texture1DDesc, nullptr, &mD3D10Texture1D));
+			}
+
+			// Create the Direct3D 10 shader resource view instance
+			if (nullptr != mD3D10Texture1D)
+			{
+				// Direct3D 10 shader resource view description
+				D3D10_SHADER_RESOURCE_VIEW_DESC d3d10ShaderResourceViewDesc = {};
+				d3d10ShaderResourceViewDesc.Format							= Mapping::getDirect3D10ShaderResourceViewFormat(textureFormat);
+				d3d10ShaderResourceViewDesc.ViewDimension					= D3D10_SRV_DIMENSION_TEXTURE1DARRAY;
+				d3d10ShaderResourceViewDesc.Texture1DArray.MostDetailedMip	= 0;
+				d3d10ShaderResourceViewDesc.Texture1DArray.MipLevels		= numberOfMipmaps;
+				d3d10ShaderResourceViewDesc.Texture1DArray.FirstArraySlice	= 0;
+				d3d10ShaderResourceViewDesc.Texture1DArray.ArraySize		= numberOfSlices;
+
+				// Create the Direct3D 10 shader resource view instance
+				FAILED_DEBUG_BREAK(direct3D10Renderer.getD3D10Device()->CreateShaderResourceView(mD3D10Texture1D, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceView));
+			}
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RENDERER_DEBUG
+				setDebugName("1D texture array");
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~Texture1DArray() override
+		{
+			if (nullptr != mD3D10ShaderResourceView)
+			{
+				mD3D10ShaderResourceView->Release();
+			}
+			if (nullptr != mD3D10Texture1D)
+			{
+				mD3D10Texture1D->Release();
+			}
+		}
+
+		/**
+		*  @brief
+		*    Return the texture format
+		*
+		*  @return
+		*    The texture format
+		*/
+		[[nodiscard]] inline Renderer::TextureFormat::Enum getTextureFormat() const
+		{
+			return mTextureFormat;
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D texture 1D resource instance
+		*
+		*  @return
+		*    The Direct3D texture 1D resource instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*/
+		[[nodiscard]] inline ID3D10Texture1D* getD3D10Texture1D() const
+		{
+			return mD3D10Texture1D;
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D shader resource view instance
+		*
+		*  @return
+		*    The Direct3D shader resource view instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*
+		*  @note
+		*    - It's not recommended to manipulate the returned Direct3D 10 resource
+		*      view by e.g. assigning another Direct3D 10 resource to it
+		*/
+		[[nodiscard]] inline ID3D10ShaderResourceView* getD3D10ShaderResourceView() const
+		{
+			return mD3D10ShaderResourceView;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		#ifdef RENDERER_DEBUG
+			virtual void setDebugName(const char* name) override
+			{
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
+				if (nullptr != mD3D10Texture1D)
+				{
+					FAILED_DEBUG_BREAK(mD3D10Texture1D->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D10Texture1D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
+				}
+				if (nullptr != mD3D10ShaderResourceView)
+				{
+					FAILED_DEBUG_BREAK(mD3D10ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D10ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
+				}
+			}
+		#endif
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), Texture1DArray, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit Texture1DArray(const Texture1DArray& source) = delete;
+		Texture1DArray& operator =(const Texture1DArray& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		Renderer::TextureFormat::Enum mTextureFormat;
+		ID3D10Texture1D*			  mD3D10Texture1D;			///< Direct3D 10 texture 1D resource, can be a null pointer
+		ID3D10ShaderResourceView*	  mD3D10ShaderResourceView;	///< Direct3D 10 shader resource view, can be a null pointer
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ Direct3D10Renderer/Texture/Texture2D.h                ]
 	//[-------------------------------------------------------]
 	/**
@@ -6205,6 +6524,15 @@ namespace Direct3D10Renderer
 
 			// Create 1D texture resource
 			return RENDERER_NEW(getRenderer().getContext(), Texture1D)(static_cast<Direct3D10Renderer&>(getRenderer()), width, textureFormat, data, textureFlags, textureUsage);
+		}
+
+		[[nodiscard]] virtual Renderer::ITexture1DArray* createTexture1DArray(uint32_t width, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) override
+		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), width > 0 && numberOfSlices > 0, "Direct3D 10 create texture 1D array was called with invalid parameters")
+
+			// Create 1D texture array resource
+			return RENDERER_NEW(getRenderer().getContext(), Texture1DArray)(static_cast<Direct3D10Renderer&>(getRenderer()), width, numberOfSlices, textureFormat, data, textureFlags, textureUsage);
 		}
 
 		[[nodiscard]] virtual Renderer::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
@@ -7761,6 +8089,7 @@ namespace Direct3D10Renderer
 						case Renderer::ResourceType::INDIRECT_BUFFER:
 						case Renderer::ResourceType::UNIFORM_BUFFER:
 						case Renderer::ResourceType::TEXTURE_1D:
+						case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 						case Renderer::ResourceType::TEXTURE_3D:
 						case Renderer::ResourceType::TEXTURE_CUBE:
 						case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -7842,6 +8171,7 @@ namespace Direct3D10Renderer
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
+					case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
 					case Renderer::ResourceType::TEXTURE_CUBE:
 					case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -9745,6 +10075,7 @@ namespace Direct3D10Renderer
 					case Renderer::ResourceType::TEXTURE_BUFFER:
 					case Renderer::ResourceType::STRUCTURED_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
+					case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_2D:
 					case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
@@ -9763,6 +10094,10 @@ namespace Direct3D10Renderer
 
 							case Renderer::ResourceType::TEXTURE_1D:
 								d3d10ShaderResourceView = static_cast<const Texture1D*>(resource)->getD3D10ShaderResourceView();
+								break;
+
+							case Renderer::ResourceType::TEXTURE_1D_ARRAY:
+								d3d10ShaderResourceView = static_cast<const Texture1DArray*>(resource)->getD3D10ShaderResourceView();
 								break;
 
 							case Renderer::ResourceType::TEXTURE_2D:
@@ -10048,6 +10383,7 @@ namespace Direct3D10Renderer
 					case Renderer::ResourceType::INDIRECT_BUFFER:
 					case Renderer::ResourceType::UNIFORM_BUFFER:
 					case Renderer::ResourceType::TEXTURE_1D:
+					case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_2D:
 					case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 					case Renderer::ResourceType::TEXTURE_3D:
@@ -10174,6 +10510,7 @@ namespace Direct3D10Renderer
 				case Renderer::ResourceType::INDIRECT_BUFFER:
 				case Renderer::ResourceType::UNIFORM_BUFFER:
 				case Renderer::ResourceType::TEXTURE_1D:
+				case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 				case Renderer::ResourceType::TEXTURE_2D:
 				case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 				case Renderer::ResourceType::TEXTURE_3D:
@@ -10374,6 +10711,7 @@ namespace Direct3D10Renderer
 			case Renderer::ResourceType::INDIRECT_BUFFER:
 			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_1D:
+			case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 			case Renderer::ResourceType::TEXTURE_2D:
 			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 			case Renderer::ResourceType::TEXTURE_3D:
@@ -10434,6 +10772,7 @@ namespace Direct3D10Renderer
 			case Renderer::ResourceType::INDIRECT_BUFFER:
 			case Renderer::ResourceType::UNIFORM_BUFFER:
 			case Renderer::ResourceType::TEXTURE_1D:
+			case Renderer::ResourceType::TEXTURE_1D_ARRAY:
 			case Renderer::ResourceType::TEXTURE_2D_ARRAY:
 			case Renderer::ResourceType::TEXTURE_3D:
 			case Renderer::ResourceType::TEXTURE_CUBE:
@@ -10845,6 +11184,10 @@ namespace Direct3D10Renderer
 				// TODO(co) Implement Direct3D 10 1D texture
 				return false;
 
+			case Renderer::ResourceType::TEXTURE_1D_ARRAY:
+				// TODO(co) Implement Direct3D 10 1D texture array
+				return false;
+
 			TEXTURE_RESOURCE(Renderer::ResourceType::TEXTURE_2D, Texture2D, ID3D10Texture2D, D3D10_MAPPED_TEXTURE2D)
 			TEXTURE_RESOURCE(Renderer::ResourceType::TEXTURE_2D_ARRAY, Texture2DArray, ID3D10Texture2D, D3D10_MAPPED_TEXTURE2D)
 			TEXTURE_RESOURCE(Renderer::ResourceType::TEXTURE_3D, Texture3D, ID3D10Texture3D, D3D10_MAPPED_TEXTURE3D)
@@ -10931,6 +11274,10 @@ namespace Direct3D10Renderer
 
 			case Renderer::ResourceType::TEXTURE_1D:
 				// TODO(co) Implement Direct3D 10 1D texture
+				break;
+
+			case Renderer::ResourceType::TEXTURE_1D_ARRAY:
+				// TODO(co) Implement Direct3D 10 1D texture array
 				break;
 
 			TEXTURE_RESOURCE(Renderer::ResourceType::TEXTURE_2D, Texture2D, ID3D10Texture2D)
@@ -11178,6 +11525,9 @@ namespace Direct3D10Renderer
 
 		// Maximum texture dimension
 		mCapabilities.maximumTextureDimension = 8192;
+
+		// Maximum number of 1D texture array slices (usually 512, in case there's no support for 1D texture arrays it's 0)
+		mCapabilities.maximumNumberOf1DTextureArraySlices = 512;
 
 		// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 		mCapabilities.maximumNumberOf2DTextureArraySlices = 512;

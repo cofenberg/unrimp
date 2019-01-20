@@ -312,6 +312,7 @@ namespace Renderer
 		class ITextureManager;
 		class ITexture;
 			class ITexture1D;
+			class ITexture1DArray;
 			class ITexture2D;
 			class ITexture2DArray;
 			class ITexture3D;
@@ -1156,22 +1157,23 @@ namespace Renderer
 		UNIFORM_BUFFER				   = 13,	///< Uniform buffer object (UBO, "constant buffer" in Direct3D terminology)
 		// ITexture
 		TEXTURE_1D					   = 14,	///< Texture 1D
-		TEXTURE_2D					   = 15,	///< Texture 2D
-		TEXTURE_2D_ARRAY			   = 16,	///< Texture 2D array
-		TEXTURE_3D					   = 17,	///< Texture 3D
-		TEXTURE_CUBE				   = 18,	///< Texture cube
+		TEXTURE_1D_ARRAY			   = 15,	///< Texture 1D array
+		TEXTURE_2D					   = 16,	///< Texture 2D
+		TEXTURE_2D_ARRAY			   = 17,	///< Texture 2D array
+		TEXTURE_3D					   = 18,	///< Texture 3D
+		TEXTURE_CUBE				   = 19,	///< Texture cube
 		// IState
 			// IPipelineState
-			GRAPHICS_PIPELINE_STATE	   = 19,	///< Graphics pipeline state (PSO)
-			COMPUTE_PIPELINE_STATE	   = 20,	///< Compute pipeline state (PSO)
-		SAMPLER_STATE				   = 21,	///< Sampler state
+			GRAPHICS_PIPELINE_STATE	   = 20,	///< Graphics pipeline state (PSO)
+			COMPUTE_PIPELINE_STATE	   = 21,	///< Compute pipeline state (PSO)
+		SAMPLER_STATE				   = 22,	///< Sampler state
 		// IShader
-		VERTEX_SHADER				   = 22,	///< Vertex shader (VS)
-		TESSELLATION_CONTROL_SHADER	   = 23,	///< Tessellation control shader (TCS, "hull shader" in Direct3D terminology)
-		TESSELLATION_EVALUATION_SHADER = 24,	///< Tessellation evaluation shader (TES, "domain shader" in Direct3D terminology)
-		GEOMETRY_SHADER				   = 25,	///< Geometry shader (GS)
-		FRAGMENT_SHADER				   = 26,	///< Fragment shader (FS, "pixel shader" in Direct3D terminology)
-		COMPUTE_SHADER				   = 27		///< Compute shader (CS)
+		VERTEX_SHADER				   = 23,	///< Vertex shader (VS)
+		TESSELLATION_CONTROL_SHADER	   = 24,	///< Tessellation control shader (TCS, "hull shader" in Direct3D terminology)
+		TESSELLATION_EVALUATION_SHADER = 25,	///< Tessellation evaluation shader (TES, "domain shader" in Direct3D terminology)
+		GEOMETRY_SHADER				   = 26,	///< Geometry shader (GS)
+		FRAGMENT_SHADER				   = 27,	///< Fragment shader (FS, "pixel shader" in Direct3D terminology)
+		COMPUTE_SHADER				   = 28		///< Compute shader (CS)
 	};
 
 
@@ -1372,6 +1374,7 @@ namespace Renderer
 						break;
 
 					case ResourceType::TEXTURE_1D:
+					case ResourceType::TEXTURE_1D_ARRAY:
 					case ResourceType::TEXTURE_2D:
 					case ResourceType::TEXTURE_2D_ARRAY:
 					case ResourceType::TEXTURE_3D:
@@ -3713,6 +3716,7 @@ namespace Renderer
 		uint32_t			maximumNumberOfViewports;						///< Maximum number of viewports (always at least 1)
 		uint32_t			maximumNumberOfSimultaneousRenderTargets;		///< Maximum number of simultaneous render targets (if <1 render to texture is not supported)
 		uint32_t			maximumTextureDimension;						///< Maximum texture dimension (usually 2048, 4096, 8192 or 16384)
+		uint32_t			maximumNumberOf1DTextureArraySlices;			///< Maximum number of 1D texture array slices (usually 512 up to 8192, in case there's no support for 1D texture arrays it's 0)
 		uint32_t			maximumNumberOf2DTextureArraySlices;			///< Maximum number of 2D texture array slices (usually 512 up to 8192, in case there's no support for 2D texture arrays it's 0)
 		uint32_t			maximumTextureBufferSize;						///< Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
 		uint32_t			maximumStructuredBufferSize;					///< Maximum structured buffer size in bytes (>65536, typically much larger than that of one-dimensional texture, in case there's no support for structured buffer it's 0)
@@ -3752,6 +3756,7 @@ namespace Renderer
 			maximumNumberOfViewports(0),
 			maximumNumberOfSimultaneousRenderTargets(0),
 			maximumTextureDimension(0),
+			maximumNumberOf1DTextureArraySlices(0),
 			maximumNumberOf2DTextureArraySlices(0),
 			maximumTextureBufferSize(0),
 			maximumStructuredBufferSize(0),
@@ -3842,6 +3847,8 @@ namespace Renderer
 			// ITexture
 			std::atomic<uint32_t> currentNumberOfTexture1Ds;					///< Current number of texture 1D instances
 			std::atomic<uint32_t> numberOfCreatedTexture1Ds;					///< Number of created texture 1D instances
+			std::atomic<uint32_t> currentNumberOfTexture1DArrays;				///< Current number of texture 1D array instances
+			std::atomic<uint32_t> numberOfCreatedTexture1DArrays;				///< Number of created texture 1D array instances
 			std::atomic<uint32_t> currentNumberOfTexture2Ds;					///< Current number of texture 2D instances
 			std::atomic<uint32_t> numberOfCreatedTexture2Ds;					///< Number of created texture 2D instances
 			std::atomic<uint32_t> currentNumberOfTexture2DArrays;				///< Current number of texture 2D array instances
@@ -3911,6 +3918,8 @@ namespace Renderer
 				// ITexture
 				currentNumberOfTexture1Ds(0),
 				numberOfCreatedTexture1Ds(0),
+				currentNumberOfTexture1DArrays(0),
+				numberOfCreatedTexture1DArrays(0),
 				currentNumberOfTexture2Ds(0),
 				numberOfCreatedTexture2Ds(0),
 				currentNumberOfTexture2DArrays(0),
@@ -3980,6 +3989,7 @@ namespace Renderer
 						currentNumberOfUniformBuffers +
 						// ITexture
 						currentNumberOfTexture1Ds +
+						currentNumberOfTexture1DArrays +
 						currentNumberOfTexture2Ds +
 						currentNumberOfTexture2DArrays +
 						currentNumberOfTexture3Ds +
@@ -4034,6 +4044,7 @@ namespace Renderer
 
 				// ITexture
 				RENDERER_LOG(context, INFORMATION, "1D textures: %u", currentNumberOfTexture1Ds.load())
+				RENDERER_LOG(context, INFORMATION, "1D texture arrays: %u", currentNumberOfTexture1DArrays.load())
 				RENDERER_LOG(context, INFORMATION, "2D textures: %u", currentNumberOfTexture2Ds.load())
 				RENDERER_LOG(context, INFORMATION, "2D texture arrays: %u", currentNumberOfTexture2DArrays.load())
 				RENDERER_LOG(context, INFORMATION, "3D textures: %u", currentNumberOfTexture3Ds.load())
@@ -4109,6 +4120,7 @@ namespace Renderer
 		friend class IIndirectBuffer;
 		friend class IUniformBuffer;
 		friend class ITexture1D;
+		friend class ITexture1DArray;
 		friend class ITexture2D;
 		friend class ITexture2DArray;
 		friend class ITexture3D;
@@ -6658,6 +6670,7 @@ namespace Renderer
 	*  @remarks
 	*    The texture manager is responsible for managing fine granular instances of
 	*    - 1D texture ("Renderer::ITexture1D")
+	*    - 1D texture array ("Renderer::ITexture1DArray")
 	*    - 2D texture ("Renderer::ITexture2D")
 	*    - 2D texture array ("Renderer::ITexture2DArray")
 	*    - 3D texture ("Renderer::ITexture3D")
@@ -6714,6 +6727,38 @@ namespace Renderer
 		*    - The following texture data layout is expected: Mip0, Mip1, Mip2, Mip3 ...
 		*/
 		[[nodiscard]] virtual ITexture1D* createTexture1D(uint32_t width, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT) = 0;
+
+		/**
+		*  @brief
+		*    Create a 1D array texture instance
+		*
+		*  @param[in] width
+		*    Texture width, must be >0 else a null pointer is returned
+		*  @param[in] numberOfSlices
+		*    Number of slices, must be >0 else a null pointer is returned
+		*  @param[in] textureFormat
+		*    Texture format
+		*  @param[in] data
+		*    Texture data, can be a null pointer, the data is internally copied and you have to free your memory if you no longer need it
+		*  @param[in] textureFlags
+		*    Texture flags, see "Renderer::TextureFlag::Enum"
+		*  @param[in] textureUsage
+		*    Indication of the texture usage
+		*
+		*  @return
+		*    The created 1D array texture instance, null pointer on error. Release the returned instance if you no longer need it.
+		*
+		*  @remarks
+		*    The texture array data consists of a sequence of texture slices. Each the texture slice data of a single texture slice has to
+		*    be in CRN-texture layout, which means organized in mip-major order, like this:
+		*    - Mip0: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
+		*    - Mip1: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
+		*    (DDS-texture layout is using face-major order)
+		*
+		*  @note
+		*    - Only supported if "Renderer::Capabilities::maximumNumberOf1DTextureArraySlices" is not 0
+		*/
+		[[nodiscard]] virtual ITexture1DArray* createTexture1DArray(uint32_t width, uint32_t numberOfSlices, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT) = 0;
 
 		/**
 		*  @brief
@@ -7105,6 +7150,94 @@ namespace Renderer
 	};
 
 	typedef SmartRefCount<ITexture1D> ITexture1DPtr;
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ Renderer/Texture/ITexture1DArray.h                    ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Abstract 1D array texture interface
+	*/
+	class ITexture1DArray : public ITexture
+	{
+
+	// Public methods
+	public:
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~ITexture1DArray() override
+		{
+			#ifdef RENDERER_STATISTICS
+				// Update the statistics
+				--getRenderer().getStatistics().currentNumberOfTexture1DArrays;
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Return the width of the texture
+		*
+		*  @return
+		*    The width of the texture
+		*/
+		[[nodiscard]] inline uint32_t getWidth() const
+		{
+			return mWidth;
+		}
+
+		/**
+		*  @brief
+		*    Return the number of slices
+		*
+		*  @return
+		*    The number of slices
+		*/
+		[[nodiscard]] inline uint32_t getNumberOfSlices() const
+		{
+			return mNumberOfSlices;
+		}
+
+	// Protected methods
+	protected:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] renderer
+		*    Owner renderer instance
+		*  @param[in] width
+		*    The width of the texture
+		*  @param[in] numberOfSlices
+		*    The number of slices
+		*/
+		inline ITexture1DArray(IRenderer& renderer, uint32_t width, uint32_t numberOfSlices) :
+			ITexture(ResourceType::TEXTURE_1D_ARRAY, renderer),
+			mWidth(width),
+			mNumberOfSlices(numberOfSlices)
+		{
+			#ifdef RENDERER_STATISTICS
+				// Update the statistics
+				++getRenderer().getStatistics().numberOfCreatedTexture1DArrays;
+				++getRenderer().getStatistics().currentNumberOfTexture1DArrays;
+			#endif
+		}
+
+		explicit ITexture1DArray(const ITexture1DArray& source) = delete;
+		ITexture1DArray& operator =(const ITexture1DArray& source) = delete;
+
+	// Private data
+	private:
+		uint32_t mWidth;			///< The width of the texture
+		uint32_t mNumberOfSlices;	///< The number of slices
+
+	};
+
+	typedef SmartRefCount<ITexture1DArray> ITexture1DArrayPtr;
 
 
 

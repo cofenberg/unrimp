@@ -125,6 +125,9 @@ namespace
 		public:
 			inline explicit DefaultReadFile(const std::string& absoluteFilename) :
 				mFileStream(std_filesystem::u8path(absoluteFilename), std::ios::binary)
+				#ifdef _DEBUG
+					, mDebugName(absoluteFilename)
+				#endif
 			{
 				assert(mFileStream && "Failed to open default file for reading");
 			}
@@ -182,6 +185,13 @@ namespace
 				assert(false && "File write method not supported by the default implementation");
 			}
 
+			#ifdef _DEBUG
+				[[nodiscard]] inline virtual const char* getDebugFilename() const override
+				{
+					return mDebugName.c_str();
+				}
+			#endif
+
 
 		//[-------------------------------------------------------]
 		//[ Protected methods                                     ]
@@ -196,6 +206,9 @@ namespace
 		//[-------------------------------------------------------]
 		private:
 			std::ifstream mFileStream;
+			#ifdef _DEBUG
+				std::string mDebugName;	///< Debug name for easier file identification when debugging
+			#endif
 
 
 		};
@@ -210,6 +223,9 @@ namespace
 		public:
 			inline explicit DefaultWriteFile(const std::string& absoluteFilename) :
 				mFileStream(std_filesystem::u8path(absoluteFilename), std::ios::binary)
+				#ifdef _DEBUG
+					, mDebugName(absoluteFilename)
+				#endif
 			{
 				assert(mFileStream && "Failed to open default file for writing");
 			}
@@ -264,6 +280,13 @@ namespace
 				mFileStream.write(reinterpret_cast<const char*>(sourceBuffer), static_cast<std::streamsize>(numberOfBytes));
 			}
 
+			#ifdef _DEBUG
+				[[nodiscard]] inline virtual const char* getDebugFilename() const override
+				{
+					return mDebugName.c_str();
+				}
+			#endif
+
 
 		//[-------------------------------------------------------]
 		//[ Protected methods                                     ]
@@ -278,6 +301,9 @@ namespace
 		//[-------------------------------------------------------]
 		private:
 			std::ofstream mFileStream;
+			#ifdef _DEBUG
+				std::string mDebugName;	///< Debug name for easier file identification when debugging
+			#endif
 
 
 		};

@@ -29,6 +29,7 @@ Renderer toolkit.
 - RapidJSON (header only library)
 - mikktspace (directly compiled and linked in)
 - SimpleFileWatcher (directly compiled and linked in)
+- ies (directly compiled and linked in)
 
 
 == Preprocessor Definitions ==

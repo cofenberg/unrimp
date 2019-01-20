@@ -178,6 +178,7 @@ namespace
 			ELSE_IF_VALUE(INDIRECT_BUFFER)
 			ELSE_IF_VALUE(UNIFORM_BUFFER)
 			ELSE_IF_VALUE(TEXTURE_1D)
+			ELSE_IF_VALUE(TEXTURE_1D_ARRAY)
 			ELSE_IF_VALUE(TEXTURE_2D)
 			ELSE_IF_VALUE(TEXTURE_2D_ARRAY)
 			ELSE_IF_VALUE(TEXTURE_3D)
@@ -823,6 +824,7 @@ namespace RendererToolkit
 									CASE_VALUE(STRUCTURED_BUFFER, SRV)
 									CASE_VALUE(UNIFORM_BUFFER,	  UBV)
 									CASE_VALUE(TEXTURE_1D,		  SRV)
+									CASE_VALUE(TEXTURE_1D_ARRAY,  SRV)
 									CASE_VALUE(TEXTURE_2D,		  SRV)
 									CASE_VALUE(TEXTURE_2D_ARRAY,  SRV)
 									CASE_VALUE(TEXTURE_3D,		  SRV)
@@ -847,7 +849,7 @@ namespace RendererToolkit
 									CASE(GEOMETRY_SHADER)
 									CASE(FRAGMENT_SHADER)
 									CASE(COMPUTE_SHADER)
-										throw std::runtime_error("Invalid resource type \"" + std::string(rapidJsonValue["ResourceType"].GetString()) + "\", must be \"TEXTURE_BUFFER\", \"STRUCTURED_BUFFER\", \"UNIFORM_BUFFER\", \"TEXTURE_1D\", \"TEXTURE_2D\", \"TEXTURE_2D_ARRAY\", \"TEXTURE_3D\", \"TEXTURE_CUBE\" or \"SAMPLER_STATE\"");
+										throw std::runtime_error("Invalid resource type \"" + std::string(rapidJsonValue["ResourceType"].GetString()) + "\", must be \"TEXTURE_BUFFER\", \"STRUCTURED_BUFFER\", \"UNIFORM_BUFFER\", \"TEXTURE_1D\", \"TEXTURE_1D_ARRAY\", \"TEXTURE_2D\", \"TEXTURE_2D_ARRAY\", \"TEXTURE_3D\", \"TEXTURE_CUBE\" or \"SAMPLER_STATE\"");
 								}
 
 								// Undefine helper macro
@@ -862,12 +864,13 @@ namespace RendererToolkit
 									if (Renderer::ResourceType::TEXTURE_BUFFER != descriptorRange.resourceType &&
 										Renderer::ResourceType::STRUCTURED_BUFFER != descriptorRange.resourceType &&
 										Renderer::ResourceType::TEXTURE_1D != descriptorRange.resourceType &&
+										Renderer::ResourceType::TEXTURE_1D_ARRAY != descriptorRange.resourceType &&
 										Renderer::ResourceType::TEXTURE_2D != descriptorRange.resourceType &&
 										Renderer::ResourceType::TEXTURE_2D_ARRAY != descriptorRange.resourceType &&
 										Renderer::ResourceType::TEXTURE_3D != descriptorRange.resourceType &&
 										Renderer::ResourceType::TEXTURE_CUBE != descriptorRange.resourceType)
 									{
-										throw std::runtime_error("Descriptor range type \"SRV\" is only possible for the resource type \"TEXTURE_BUFFER\", \"STRUCTURED_BUFFER\", \"TEXTURE_1D\", \"TEXTURE_2D\", \"TEXTURE_2D_ARRAY\", \"TEXTURE_3D\" and \"TEXTURE_CUBE\"");
+										throw std::runtime_error("Descriptor range type \"SRV\" is only possible for the resource type \"TEXTURE_BUFFER\", \"STRUCTURED_BUFFER\", \"TEXTURE_1D\", \"TEXTURE_1D_ARRAY\", \"TEXTURE_2D\", \"TEXTURE_2D_ARRAY\", \"TEXTURE_3D\" and \"TEXTURE_CUBE\"");
 									}
 									break;
 
@@ -875,12 +878,13 @@ namespace RendererToolkit
 									if (Renderer::ResourceType::TEXTURE_BUFFER != descriptorRange.resourceType &&
 										Renderer::ResourceType::STRUCTURED_BUFFER != descriptorRange.resourceType &&
 										Renderer::ResourceType::TEXTURE_1D != descriptorRange.resourceType &&
+										Renderer::ResourceType::TEXTURE_1D_ARRAY != descriptorRange.resourceType &&
 										Renderer::ResourceType::TEXTURE_2D != descriptorRange.resourceType &&
 										Renderer::ResourceType::TEXTURE_2D_ARRAY != descriptorRange.resourceType &&
 										Renderer::ResourceType::TEXTURE_3D != descriptorRange.resourceType &&
 										Renderer::ResourceType::TEXTURE_CUBE != descriptorRange.resourceType)
 									{
-										throw std::runtime_error("Descriptor range type \"UAV\" is only possible for the resource type \"TEXTURE_BUFFER\", \"STRUCTURED_BUFFER\", \"TEXTURE_1D\", \"TEXTURE_2D\", \"TEXTURE_2D_ARRAY\", \"TEXTURE_3D\" and \"TEXTURE_CUBE\"");
+										throw std::runtime_error("Descriptor range type \"UAV\" is only possible for the resource type \"TEXTURE_BUFFER\", \"STRUCTURED_BUFFER\", \"TEXTURE_1D\", \"TEXTURE_1D_ARRAY\", \"TEXTURE_2D\", \"TEXTURE_2D_ARRAY\", \"TEXTURE_3D\" and \"TEXTURE_CUBE\"");
 									}
 									break;
 
@@ -1612,7 +1616,7 @@ namespace RendererToolkit
 	void JsonMaterialBlueprintHelper::readTexturesByResourceGroups(const IAssetCompiler::Input& input, const RendererRuntime::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector, const rapidjson::Value& rapidJsonValueResourceGroups, const SamplerBaseShaderRegisterNameToIndex& samplerBaseShaderRegisterNameToIndex, RendererRuntime::IFile& file)
 	{
 		// Iterate through all resource groups, we're only interested in the following resource parameters
-		// - "ResourceType" = "TEXTURE_1D", "TEXTURE_2D", "TEXTURE_2D_ARRAY", "TEXTURE_3D", "TEXTURE_CUBE"
+		// - "ResourceType" = "TEXTURE_1D", "TEXTURE_1D_ARRAY", "TEXTURE_2D", "TEXTURE_2D_ARRAY", "TEXTURE_3D", "TEXTURE_CUBE"
 		// - "BufferUsage"
 		// - "ValueType"
 		// - "Value"
@@ -1642,6 +1646,7 @@ namespace RendererToolkit
 				const rapidjson::Value& rapidJsonValue = rapidJsonMemberIteratorResource->value;
 				const char* resourceTypeAsString = rapidJsonValue["ResourceType"].GetString();
 				if (strcmp(resourceTypeAsString, "TEXTURE_1D") == 0 ||
+					strcmp(resourceTypeAsString, "TEXTURE_1D_ARRAY") == 0 ||
 					strcmp(resourceTypeAsString, "TEXTURE_2D") == 0 ||
 					strcmp(resourceTypeAsString, "TEXTURE_2D_ARRAY") == 0 ||
 					strcmp(resourceTypeAsString, "TEXTURE_3D") == 0 ||
