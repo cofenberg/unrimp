@@ -55,36 +55,29 @@ endif()
 ## Includes
 ##################################################
 include_directories(${CMAKE_SOURCE_DIR}/Source)
-include_directories(${CMAKE_SOURCE_DIR}/External/crunch/inc)
-include_directories(${CMAKE_SOURCE_DIR}/External/glm/include)
-include_directories(${CMAKE_SOURCE_DIR}/External/xsimd/include)
-include_directories(${CMAKE_SOURCE_DIR}/External/lz4/include)
-include_directories(${CMAKE_SOURCE_DIR}/External/mikktspace/include)
-if(RENDERER_RUNTIME_IMGUI)
-	include_directories(${CMAKE_SOURCE_DIR}/External/ImGui/include)
-	include_directories(${CMAKE_SOURCE_DIR}/External/ImGuizmo/include)
-endif()
-if(RENDERER_RUNTIME_OPENVR)
-	include_directories(${CMAKE_SOURCE_DIR}/External/OpenVR/include)
-endif()
+include_directories(${CMAKE_SOURCE_DIR}/External/RendererRuntime)	# For "glm", "lz4", "xsimd", "MojoShader", "mikktspace", "ImGui", "ImGuizmo" and "OpenVR"
+include_directories(${CMAKE_SOURCE_DIR}/External/RendererRuntime/crunch/inc)
 
 
 ##################################################
 ## Source codes
 ##################################################
 set(EXTERNAL_SOURCE_CODES
-	${CMAKE_SOURCE_DIR}/External/lz4/src/lz4.c
-	${CMAKE_SOURCE_DIR}/External/lz4/src/lz4frame.c
-	${CMAKE_SOURCE_DIR}/External/lz4/src/lz4hc.c
-	${CMAKE_SOURCE_DIR}/External/lz4/src/xxhash.c
-	${CMAKE_SOURCE_DIR}/External/mikktspace/src/mikktspace.c
+	${CMAKE_SOURCE_DIR}/External/RendererRuntime/lz4/lz4.c
+	${CMAKE_SOURCE_DIR}/External/RendererRuntime/lz4/lz4frame.c
+	${CMAKE_SOURCE_DIR}/External/RendererRuntime/lz4/lz4hc.c
+	${CMAKE_SOURCE_DIR}/External/RendererRuntime/lz4/xxhash.c
+	${CMAKE_SOURCE_DIR}/External/RendererRuntime/MojoShader/mojoshader_common.cpp
+	${CMAKE_SOURCE_DIR}/External/RendererRuntime/MojoShader/mojoshader_lexer.cpp
+	${CMAKE_SOURCE_DIR}/External/RendererRuntime/MojoShader/mojoshader_preprocessor.cpp
+	${CMAKE_SOURCE_DIR}/External/RendererRuntime/mikktspace/mikktspace.c
 )
 if(RENDERER_RUNTIME_IMGUI)
 	set(EXTERNAL_SOURCE_CODES
 		${EXTERNAL_SOURCE_CODES}
-		${CMAKE_SOURCE_DIR}/External/ImGui/src/imgui.cpp
-		${CMAKE_SOURCE_DIR}/External/ImGui/src/imgui_draw.cpp
-		${CMAKE_SOURCE_DIR}/External/ImGuizmo/src/ImGuizmo.cpp
+		${CMAKE_SOURCE_DIR}/External/RendererRuntime/ImGui/imgui.cpp
+		${CMAKE_SOURCE_DIR}/External/RendererRuntime/ImGui/imgui_draw.cpp
+		${CMAKE_SOURCE_DIR}/External/RendererRuntime/ImGuizmo/ImGuizmo.cpp
 	)
 endif()
 set(SOURCE_CODES
@@ -130,7 +123,7 @@ if(WIN32)
 	
 	# Copy OpenVR dll
 	if(RENDERER_RUNTIME_OPENVR)
-		add_custom_command(TARGET RendererRuntime COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/External/Windows_${ARCHITECTURE}/OpenVR/Binary/openvr_api.dll" ${OUTPUT_BINARY_DIRECTORY})
+		add_custom_command(TARGET RendererRuntime COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/External/RendererRuntime/OpenVR/Windows_${ARCHITECTURE}/openvr_api.dll" ${OUTPUT_BINARY_DIRECTORY})
 	endif()
 endif()
 

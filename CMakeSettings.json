@@ -4,7 +4,7 @@
     {
       // Optional "Simple DirectMedia Layer" (SDL, https://www.libsdl.org/ ) support inside the example framework
       "EXAMPLE_SDL2_ENABLED": "0",
-      "SDL2_DIR": "${workspaceRoot}\\External\\SDL2", // Ease-of-use on Microsoft Windows: Download e.g. "SDL2-devel-2.0.8-VC.zip" from https://www.libsdl.org/download-2.0.php and extract it into "unrimp/External/SDL2" (directory contains "include" and "lib")
+      "SDL2_DIR": "${workspaceRoot}\\External\\Example\\SDL2", // Ease-of-use on Microsoft Windows: Download e.g. "SDL2-devel-2.0.8-VC.zip" from https://www.libsdl.org/download-2.0.php and extract it into "unrimp/External/Example/SDL2" (directory contains "include" and "lib")
 
       // Usually fixed directories
       "BUILD_ROOT": "${workspaceRoot}\\.vs\\unrimp\\CMakeBuilds\\build\\${name}",

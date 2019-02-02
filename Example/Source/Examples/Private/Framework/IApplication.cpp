@@ -46,21 +46,22 @@ int IApplication::run()
 {
 	// Call application implementation initialization method
 	mApplicationImpl->onInitialization();
-	onInitialization();
-
-	// Main loop - Process OS messages (non-blocking) first
-	while (!mExit && !mApplicationImpl->processMessages())
+	if (onInitialization())
 	{
-		// Update the application logic
-		onUpdate();
+		// Main loop - Process OS messages (non-blocking) first
+		while (!mExit && !mApplicationImpl->processMessages())
+		{
+			// Update the application logic
+			onUpdate();
 
-		// Redraw request
-		redraw();
+			// Redraw request
+			redraw();
+		}
+
+		// Call application implementation de-initialization method
+		onDeinitialization();
+		mApplicationImpl->onDeinitialization();
 	}
-
-	// Call application implementation de-initialization method
-	onDeinitialization();
-	mApplicationImpl->onDeinitialization();
 
 	// Done, no error
 	return 0;

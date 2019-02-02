@@ -25,7 +25,7 @@
 *  @remarks
 *    == Dependencies ==
 *    - Vulkan capable graphics driver
-*    - Vulkan headers which can be found at "<unrimp>\External\Vulkan\include\"
+*    - Vulkan headers which can be found at "<unrimp>\External\Renderer\Vulkan\include\"
 *    - smol-v (directly compiled and linked in)
 *    - glslang if "RENDERER_VULKAN_GLSLTOSPIRV" is set (directly compiled and linked in)
 *

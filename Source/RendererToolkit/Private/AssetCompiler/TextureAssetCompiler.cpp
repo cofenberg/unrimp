@@ -75,7 +75,7 @@ PRAGMA_WARNING_PUSH
 	#include <../src/crn_console.h>
 PRAGMA_WARNING_POP
 
-#include <ies_loader.h>
+#include <ies/ies_loader.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH

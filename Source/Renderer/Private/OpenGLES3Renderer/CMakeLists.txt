@@ -46,7 +46,7 @@ unrimp_add_conditional_definition(RENDERER_OPENGLES3_STATE_CLEANUP)
 ## Includes
 ##################################################
 include_directories(${CMAKE_SOURCE_DIR}/Source)
-include_directories(${CMAKE_SOURCE_DIR}/External/OpenGLES/include)
+include_directories(${CMAKE_SOURCE_DIR}/External/Renderer/OpenGLES)
 
 
 ##################################################

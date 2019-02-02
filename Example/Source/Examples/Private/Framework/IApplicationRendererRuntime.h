@@ -145,7 +145,7 @@ public:
 //[ Public virtual IApplication methods                   ]
 //[-------------------------------------------------------]
 public:
-	virtual void onInitialization() override;
+	[[nodiscard]] virtual bool onInitialization() override;
 	virtual void onDeinitialization() override;
 	virtual void onUpdate() override;
 
@@ -156,6 +156,7 @@ public:
 private:
 	explicit IApplicationRendererRuntime(const IApplicationRendererRuntime& source) = delete;
 	IApplicationRendererRuntime& operator =(const IApplicationRendererRuntime& source) = delete;
+	void deinitialization();
 
 
 //[-------------------------------------------------------]

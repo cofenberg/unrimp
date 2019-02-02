@@ -33,7 +33,7 @@
 #include "RendererRuntime/Public/Resource/CompositorWorkspace/CompositorWorkspaceInstance.h"
 #include "RendererRuntime/Public/IRendererRuntime.h"
 
-#include <imguizmo/ImGuizmo.h>
+#include <ImGuizmo/ImGuizmo.h>
 
 #include <imgui/imgui.h>
 

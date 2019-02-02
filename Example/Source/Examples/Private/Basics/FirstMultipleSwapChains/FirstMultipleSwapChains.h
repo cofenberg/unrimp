@@ -90,7 +90,7 @@ public:
 //[ Public virtual IApplication methods                   ]
 //[-------------------------------------------------------]
 public:
-	virtual void onInitialization() override;
+	[[nodiscard]] virtual bool onInitialization() override;
 	virtual void onDeinitialization() override;
 	virtual void onDrawRequest() override;
 	virtual void onEscapeKey() override;

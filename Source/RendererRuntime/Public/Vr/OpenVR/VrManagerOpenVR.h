@@ -32,7 +32,7 @@
 
 #include <Renderer/Public/Renderer.h>
 
-#include <openvr/openvr.h>
+#include <OpenVR/openvr.h>
 
 
 //[-------------------------------------------------------]

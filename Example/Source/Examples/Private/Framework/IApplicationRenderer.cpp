@@ -109,10 +109,13 @@ void IApplicationRenderer::switchExample(const char* exampleName, const char* re
 //[-------------------------------------------------------]
 //[ Public virtual IApplication methods                   ]
 //[-------------------------------------------------------]
-void IApplicationRenderer::onInitialization()
+bool IApplicationRenderer::onInitialization()
 {
 	createRenderer();
 	mExampleBase.onInitialization();
+
+	// Done
+	return true;
 }
 
 void IApplicationRenderer::onDeinitialization()

@@ -153,12 +153,16 @@ public:
 	*  @brief
 	*    Called on application initialization
 	*
+	*  @return
+	*    - "true" if all went fine, else "false"
+	*
 	*  @note
 	*    - The base implementation is empty
 	*/
-	inline virtual void onInitialization()
+	[[nodiscard]] inline virtual bool onInitialization()
 	{
-		// Nothing here
+		// Done
+		return true;
 	}
 
 	/**

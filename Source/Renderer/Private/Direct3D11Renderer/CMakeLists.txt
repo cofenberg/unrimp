@@ -38,7 +38,7 @@ unrimp_replace_cmake_cxx_flags(/GR /GR-)
 ## Includes
 ##################################################
 include_directories(${CMAKE_SOURCE_DIR}/Source)
-link_directories(${CMAKE_SOURCE_DIR}/External/Windows_${ARCHITECTURE}/AGS_SDK/Library)
+link_directories(${CMAKE_SOURCE_DIR}/External/Renderer/AGS_SDK/Windows_${ARCHITECTURE}/Library)
 
 
 ##################################################
@@ -65,7 +65,7 @@ endif()
 
 # Copy AMD AGS dll (for debug builds there are no static AMD AGS libraries available)
 if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
-	add_custom_command(TARGET Direct3D11Renderer COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/External/Windows_${ARCHITECTURE}/AGS_SDK/Binary/amd_ags_${ARCHITECTURE}.dll" ${OUTPUT_BINARY_DIRECTORY})
+	add_custom_command(TARGET Direct3D11Renderer COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/External/Renderer/AGS_SDK/Windows_${ARCHITECTURE}/Binary/amd_ags_${ARCHITECTURE}.dll" ${OUTPUT_BINARY_DIRECTORY})
 endif()
 
 

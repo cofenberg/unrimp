@@ -28,7 +28,7 @@
 #include <RendererRuntime/Public/IRendererRuntime.h>
 #include <RendererRuntime/Public/Core/Platform/PlatformManager.h>
 
-#include <FileWatcher/FileWatcher.h>
+#include <SimpleFileWatcher/FileWatcher.h>
 
 
 //[-------------------------------------------------------]

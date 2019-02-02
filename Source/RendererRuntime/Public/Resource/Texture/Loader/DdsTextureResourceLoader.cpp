@@ -149,7 +149,7 @@ namespace RendererRuntime
 
 			// Check for DX10 extension
 			bool hasDX10Header = false;
-			::detail::DdsHeaderDX10 ddsHeaderDX10;
+			::detail::DdsHeaderDX10 ddsHeaderDX10 = {};
 			if (((ddsHeader.ddpfPixelFormat.flags & ::detail::DDPF_FOURCC)) && ddsHeader.ddpfPixelFormat.fourCC == MCHAR4('D', 'X', '1', '0'))
 			{
 				// Read the DX10 header

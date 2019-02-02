@@ -25,7 +25,7 @@
 *  @remarks
 *    == Dependencies ==
 *    - OpenGL ES 3 capable graphics driver or emulator
-*    - EGL, GLES3 and KHR headers which can be found at "<unrimp>\External\OpenGLES\include\"
+*    - EGL, GLES3 and KHR headers which can be found at "<unrimp>\External\Renderer\OpenGLES\include\"
 *
 *    == Preprocessor Definitions ==
 *    - Set "RENDERER_OPENGLES3_EXPORTS" as preprocessor definition when building this library as shared library

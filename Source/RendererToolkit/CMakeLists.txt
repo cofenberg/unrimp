@@ -35,14 +35,12 @@ unrimp_add_conditional_renderer_definitions()
 ## Includes
 ##################################################
 include_directories(${CMAKE_SOURCE_DIR}/Source)
-include_directories(${CMAKE_SOURCE_DIR}/External/Assimp/include)
-include_directories(${CMAKE_SOURCE_DIR}/External/crunch/inc)
-include_directories(${CMAKE_SOURCE_DIR}/External/mikktspace/include)
-include_directories(${CMAKE_SOURCE_DIR}/External/glm/include)
-include_directories(${CMAKE_SOURCE_DIR}/External/RapidJSON/configuration)	# RapidJSON configuration and assert to exception
-include_directories(${CMAKE_SOURCE_DIR}/External/RapidJSON/include)
-include_directories(${CMAKE_SOURCE_DIR}/External/SimpleFileWatcher/src)
-include_directories(${CMAKE_SOURCE_DIR}/External/ies/src)
+include_directories(${CMAKE_SOURCE_DIR}/External/RendererRuntime)	# For "glm" and "mikktspace"
+include_directories(${CMAKE_SOURCE_DIR}/External/RendererRuntime/crunch/inc)
+include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit)	# For "SimpleFileWatcher" and "ies"
+include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit/RapidJSON/configuration)	# RapidJSON configuration and assert to exception
+include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit/RapidJSON/include)
+include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/include)
 link_directories(${CMAKE_SOURCE_DIR}/Library/${OS_ARCHITECTURE})
 
 
@@ -50,54 +48,54 @@ link_directories(${CMAKE_SOURCE_DIR}/Library/${OS_ARCHITECTURE})
 ## Source codes
 ##################################################
 set(EXTERNAL_SOURCE_CODES
+	# crunch external library
+	${CMAKE_SOURCE_DIR}/External/RendererRuntime/crunch/crunchUnityBuild1.cpp
+	${CMAKE_SOURCE_DIR}/External/RendererRuntime/crunch/crunchUnityBuild2.cpp
+	# mikktspace external library
+	${CMAKE_SOURCE_DIR}/External/RendererRuntime/mikktspace/mikktspace.c
 	# Assimp external library
-	${CMAKE_SOURCE_DIR}/External/Assimp/AssimpUnityBuild1.cpp
-	${CMAKE_SOURCE_DIR}/External/Assimp/AssimpUnityBuild2.cpp
-	${CMAKE_SOURCE_DIR}/External/Assimp/AssimpUnityBuild3.cpp
-	${CMAKE_SOURCE_DIR}/External/Assimp/AssimpUnityBuild4.cpp
-	${CMAKE_SOURCE_DIR}/External/Assimp/AssimpUnityBuild5.cpp
-	${CMAKE_SOURCE_DIR}/External/Assimp/AssimpUnityBuild6.cpp
-	${CMAKE_SOURCE_DIR}/External/Assimp/AssimpUnityBuild7.cpp
-	${CMAKE_SOURCE_DIR}/External/Assimp/AssimpUnityBuild8.cpp
-	${CMAKE_SOURCE_DIR}/External/Assimp/AssimpUnityBuild9.cpp
+	${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/AssimpUnityBuild1.cpp
+	${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/AssimpUnityBuild2.cpp
+	${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/AssimpUnityBuild3.cpp
+	${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/AssimpUnityBuild4.cpp
+	${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/AssimpUnityBuild5.cpp
+	${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/AssimpUnityBuild6.cpp
+	${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/AssimpUnityBuild7.cpp
+	${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/AssimpUnityBuild8.cpp
+	${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/AssimpUnityBuild9.cpp
 		# contrib
 			# zlib (at least FBX importer is using it)
-			${CMAKE_SOURCE_DIR}/External/Assimp/contrib/zlib/adler32.c
-			${CMAKE_SOURCE_DIR}/External/Assimp/contrib/zlib/compress.c
-			${CMAKE_SOURCE_DIR}/External/Assimp/contrib/zlib/crc32.c
-			${CMAKE_SOURCE_DIR}/External/Assimp/contrib/zlib/deflate.c
-			${CMAKE_SOURCE_DIR}/External/Assimp/contrib/zlib/gzclose.c
-			${CMAKE_SOURCE_DIR}/External/Assimp/contrib/zlib/gzlib.c
-			${CMAKE_SOURCE_DIR}/External/Assimp/contrib/zlib/gzread.c
-			${CMAKE_SOURCE_DIR}/External/Assimp/contrib/zlib/gzwrite.c
-			${CMAKE_SOURCE_DIR}/External/Assimp/contrib/zlib/infback.c
-			${CMAKE_SOURCE_DIR}/External/Assimp/contrib/zlib/inffast.c
-			${CMAKE_SOURCE_DIR}/External/Assimp/contrib/zlib/inflate.c
-			${CMAKE_SOURCE_DIR}/External/Assimp/contrib/zlib/inftrees.c
-			${CMAKE_SOURCE_DIR}/External/Assimp/contrib/zlib/trees.c
-			${CMAKE_SOURCE_DIR}/External/Assimp/contrib/zlib/uncompr.c
-			${CMAKE_SOURCE_DIR}/External/Assimp/contrib/zlib/zutil.c
-	# crunch external library
-	${CMAKE_SOURCE_DIR}/External/crunch/crunchUnityBuild1.cpp
-	${CMAKE_SOURCE_DIR}/External/crunch/crunchUnityBuild2.cpp
-	# mikktspace external library
-	${CMAKE_SOURCE_DIR}/External/mikktspace/src/mikktspace.c
+			${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/zlib/adler32.c
+			${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/zlib/compress.c
+			${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/zlib/crc32.c
+			${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/zlib/deflate.c
+			${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/zlib/gzclose.c
+			${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/zlib/gzlib.c
+			${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/zlib/gzread.c
+			${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/zlib/gzwrite.c
+			${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/zlib/infback.c
+			${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/zlib/inffast.c
+			${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/zlib/inflate.c
+			${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/zlib/inftrees.c
+			${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/zlib/trees.c
+			${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/zlib/uncompr.c
+			${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/zlib/zutil.c
 	# SimpleFileWatcher external library
-	${CMAKE_SOURCE_DIR}/External/SimpleFileWatcher/src/FileWatcher/FileWatcher.cpp
+	${CMAKE_SOURCE_DIR}/External/RendererToolkit/SimpleFileWatcher/FileWatcher.cpp
 	# ies external library
-	${CMAKE_SOURCE_DIR}/External/ies/src/ies_loader.cpp
+	${CMAKE_SOURCE_DIR}/External/RendererToolkit/ies/ies_loader.cpp
 )
 if(WIN32)
 	set(EXTERNAL_SOURCE_CODES
 		${EXTERNAL_SOURCE_CODES}
 		# SimpleFileWatcher external library
-		${CMAKE_SOURCE_DIR}/External/SimpleFileWatcher/src/FileWatcher/FileWatcherWin32.cpp
+		${CMAKE_SOURCE_DIR}/External/RendererToolkit/SimpleFileWatcher/FileWatcherWin32.cpp
 	)
 elseif(UNIX)
 	set(EXTERNAL_SOURCE_CODES
 		${EXTERNAL_SOURCE_CODES}
 		# SimpleFileWatcher external library
-		${CMAKE_SOURCE_DIR}/External/SimpleFileWatcher/src/FileWatcher/FileWatcherLinux.cpp
+		${CMAKE_SOURCE_DIR}/External/RendererToolkit/SimpleFileWatcher/FileWatcherLinux.cpp
 	)
 endif()
 set(SOURCE_CODES

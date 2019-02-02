@@ -26,7 +26,7 @@
 #include "RendererRuntime/Public/IRendererRuntime.h"
 #include "RendererRuntime/Public/Context.h"
 
-#include <openvr/openvr.h>
+#include <OpenVR/openvr.h>
 
 #include <chrono>
 #include <thread>

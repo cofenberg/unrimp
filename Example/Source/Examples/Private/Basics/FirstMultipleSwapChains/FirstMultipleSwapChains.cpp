@@ -120,10 +120,10 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Public virtual IApplication methods                   ]
 //[-------------------------------------------------------]
-void FirstMultipleSwapChains::onInitialization()
+bool FirstMultipleSwapChains::onInitialization()
 {
 	// Call the base implementation
-	IApplicationRenderer::onInitialization();
+	const bool result = IApplicationRenderer::onInitialization();
 
 	// Get and check the renderer instance
 	Renderer::IRendererPtr renderer(getRenderer());
@@ -290,6 +290,9 @@ void FirstMultipleSwapChains::onInitialization()
 			#endif
 		}
 	}
+
+	// Done
+	return result;
 }
 
 void FirstMultipleSwapChains::onDeinitialization()

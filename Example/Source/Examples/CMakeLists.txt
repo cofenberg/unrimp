@@ -68,31 +68,17 @@ endif()
 ##################################################
 include_directories(${CMAKE_SOURCE_DIR}/Example/Source)
 include_directories(${CMAKE_SOURCE_DIR}/Source)
-include_directories(${CMAKE_SOURCE_DIR}/External/glm/include)
-include_directories(${CMAKE_SOURCE_DIR}/External)	# For "DeviceInput"
-if(RENDERER_RUNTIME_GRAPHICS_DEBUGGER)
-	include_directories(${CMAKE_SOURCE_DIR}/External/RenderDoc/include)
-endif()
-if(RENDERER_RUNTIME_PROFILER)
-	include_directories(${CMAKE_SOURCE_DIR}/External/Remotery)
-endif()
-if(RENDERER_RUNTIME_IMGUI)
-	include_directories(${CMAKE_SOURCE_DIR}/External/ImGui/include)
-endif()
-if(RENDERER_RUNTIME_OPENVR)
-	include_directories(${CMAKE_SOURCE_DIR}/External/OpenVR/include)
-endif()
+include_directories(${CMAKE_SOURCE_DIR}/External/Example)	# For "DeviceInput"
 if(ANDROID)
-	include_directories(${CMAKE_SOURCE_DIR}/External/Android)
-else()
-	include_directories(${CMAKE_SOURCE_DIR}/External/PhysicsFS/include)
+	include_directories(${CMAKE_SOURCE_DIR}/External/Example/Android)
 endif()
+include_directories(${CMAKE_SOURCE_DIR}/External/RendererRuntime)	# "glm", "PhysicsFS", "ImGui", "OpenVR", "RenderDoc" and "Remotery"
 if(RENDERER_TOOLKIT)
 	include_directories(${CMAKE_SOURCE_DIR}/Renderer/RendererToolkit/include)
 endif()
 link_directories(${CMAKE_SOURCE_DIR}/Library/${OS_ARCHITECTURE})
 if(RENDERER_DIRECT3D11)
-	link_directories(${CMAKE_SOURCE_DIR}/External/Windows_${ARCHITECTURE}/AGS_SDK/Library)
+	link_directories(${CMAKE_SOURCE_DIR}/External/Renderer/AGS_SDK/Windows_${ARCHITECTURE}/Library)
 endif()
 if(SDL2_FOUND)
 	include_directories(${SDL2_INCLUDE_DIR})
@@ -104,39 +90,39 @@ endif()
 ##################################################
 set(EXTERNAL_SOURCE_CODES
 	# DeviceInput external library
-	${CMAKE_SOURCE_DIR}/External/DeviceInput/DeviceInput.cpp
+	${CMAKE_SOURCE_DIR}/External/Example/DeviceInput/DeviceInput.cpp
 )
 if(NOT ANDROID)
 	set(EXTERNAL_SOURCE_CODES
 		${EXTERNAL_SOURCE_CODES}
 		# PhysicsFS external library
-		${CMAKE_SOURCE_DIR}/External/PhysicsFS/src/physfs.c
-		${CMAKE_SOURCE_DIR}/External/PhysicsFS/src/physfs_archiver_zip.c
-		${CMAKE_SOURCE_DIR}/External/PhysicsFS/src/physfs_archiver_dir.c
-		${CMAKE_SOURCE_DIR}/External/PhysicsFS/src/physfs_archiver_unpacked.c
-		${CMAKE_SOURCE_DIR}/External/PhysicsFS/src/physfs_byteorder.c
-		${CMAKE_SOURCE_DIR}/External/PhysicsFS/src/physfs_unicode.c
-	)
-endif()
-if(RENDERER_RUNTIME_PROFILER)
-	set(EXTERNAL_SOURCE_CODES
-		${EXTERNAL_SOURCE_CODES}
-		# Remotery external library
-		${CMAKE_SOURCE_DIR}/External/Remotery/Remotery/Remotery.c
+		${CMAKE_SOURCE_DIR}/External/RendererRuntime/PhysicsFS/physfs.c
+		${CMAKE_SOURCE_DIR}/External/RendererRuntime/PhysicsFS/physfs_archiver_zip.c
+		${CMAKE_SOURCE_DIR}/External/RendererRuntime/PhysicsFS/physfs_archiver_dir.c
+		${CMAKE_SOURCE_DIR}/External/RendererRuntime/PhysicsFS/physfs_archiver_unpacked.c
+		${CMAKE_SOURCE_DIR}/External/RendererRuntime/PhysicsFS/physfs_byteorder.c
+		${CMAKE_SOURCE_DIR}/External/RendererRuntime/PhysicsFS/physfs_unicode.c
 	)
 endif()
 if(WIN32)
 	set(EXTERNAL_SOURCE_CODES
 		${EXTERNAL_SOURCE_CODES}
 		# PhysicsFS external library
-		${CMAKE_SOURCE_DIR}/External/PhysicsFS/src/physfs_platform_windows.c
+		${CMAKE_SOURCE_DIR}/External/RendererRuntime/PhysicsFS/physfs_platform_windows.c
 	)
 elseif(UNIX AND NOT ANDROID)
 	set(EXTERNAL_SOURCE_CODES
 		${EXTERNAL_SOURCE_CODES}
 		# PhysicsFS external library
-		${CMAKE_SOURCE_DIR}/External/PhysicsFS/src/physfs_platform_unix.c
-		${CMAKE_SOURCE_DIR}/External/PhysicsFS/src/physfs_platform_posix.c
+		${CMAKE_SOURCE_DIR}/External/RendererRuntime/PhysicsFS/physfs_platform_unix.c
+		${CMAKE_SOURCE_DIR}/External/RendererRuntime/PhysicsFS/physfs_platform_posix.c
+	)
+endif()
+if(RENDERER_RUNTIME_PROFILER)
+	set(EXTERNAL_SOURCE_CODES
+		${EXTERNAL_SOURCE_CODES}
+		# Remotery external library
+		${CMAKE_SOURCE_DIR}/External/RendererRuntime/Remotery/Remotery.c
 	)
 endif()
 set(SOURCE_CODES
@@ -252,8 +238,8 @@ endif()
 ##################################################
 # Copy the SDL2 shared library, if necessary
 if(WIN32 AND SDL2_FOUND)
-	message("SDL copy " "${CMAKE_SOURCE_DIR}/External/SDL2/lib/${ARCHITECTURE}/SDL2.dll")
-	add_custom_command(TARGET Examples COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/External/SDL2/lib/${ARCHITECTURE}/SDL2.dll" ${OUTPUT_BINARY_DIRECTORY})
+	message("SDL copy " "${CMAKE_SOURCE_DIR}/External/Example/SDL2/lib/${ARCHITECTURE}/SDL2.dll")
+	add_custom_command(TARGET Examples COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/External/Example/SDL2/lib/${ARCHITECTURE}/SDL2.dll" ${OUTPUT_BINARY_DIRECTORY})
 endif()
 
 

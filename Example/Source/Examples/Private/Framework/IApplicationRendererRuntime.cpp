@@ -80,7 +80,7 @@ RendererToolkit::IRendererToolkit* IApplicationRendererRuntime::getRendererToolk
 //[-------------------------------------------------------]
 //[ Public virtual IApplication methods                   ]
 //[-------------------------------------------------------]
-void IApplicationRendererRuntime::onInitialization()
+bool IApplicationRendererRuntime::onInitialization()
 {
 	// Create the renderer instance
 	createRenderer();
@@ -114,37 +114,31 @@ void IApplicationRendererRuntime::onInitialization()
 			RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
 			if (nullptr != rendererRuntime)
 			{
-				// Get the absolute directory name of the asset package to mount
-				RendererRuntime::AbsoluteDirectoryName absoluteAssetPackageDirectoryName = nullptr;
+				// Mount asset package
+				bool mountAssetPackageResult = false;
+				RendererRuntime::AssetManager& assetManager = rendererRuntime->getAssetManager();
 				bool rendererIsOpenGLES = (renderer->getNameId() == Renderer::NameId::OPENGLES3);
 				if (rendererIsOpenGLES)
 				{
 					// Handy fallback for development: If the mobile data isn't there, use the PC data
-					if (mFileManager->doesFileExist("../DataMobile/Example/Content"))
-					{
-						absoluteAssetPackageDirectoryName = "../DataMobile/Example/Content";
-					}
-					else
+					mountAssetPackageResult = assetManager.mountAssetPackage("../DataMobile/Example/Content", "Example");
+					if (!mountAssetPackageResult)
 					{
 						RENDERER_LOG(rendererRuntime->getContext(), COMPATIBILITY_WARNING, "The examples application failed to find \"../DataMobile/Example/Content\", using \"../DataPc/Example/Content\" as fallback")
-						absoluteAssetPackageDirectoryName = "../DataPc/Example/Content";
+						mountAssetPackageResult = assetManager.mountAssetPackage("../DataPc/Example/Content", "Example");
 						rendererIsOpenGLES = false;
 					}
 				}
 				else
 				{
-					absoluteAssetPackageDirectoryName = "../DataPc/Example/Content";
+					mountAssetPackageResult = assetManager.mountAssetPackage("../DataPc/Example/Content", "Example");
 				}
-
-				// Add used asset package
-				if (mFileManager->doesFileExist(absoluteAssetPackageDirectoryName))
+				if (!mountAssetPackageResult)
 				{
-					rendererRuntime->getAssetManager().mountAssetPackage(absoluteAssetPackageDirectoryName, "Example");
-				}
-				else
-				{
+					// Error!
 					showUrgentMessage("Please start \"ExampleProjectCompiler\" before starting \"Examples\" for the first time");
-					return;
+					deinitialization();
+					return false;
 				}
 				rendererRuntime->loadPipelineStateObjectCache();
 
@@ -178,14 +172,35 @@ void IApplicationRendererRuntime::onInitialization()
 
 	// Initialize the example now that the renderer instance should be created successfully
 	mExampleBase.onInitialization();
+
+	// Done
+	return true;
 }
 
 void IApplicationRendererRuntime::onDeinitialization()
 {
-	// Deinitialize example before we tear down any dependencies
 	mExampleBase.onDeinitialization();
+	deinitialization();
+}
 
-	// Delete the renderer runtime instance
+void IApplicationRendererRuntime::onUpdate()
+{
+	RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
+	if (nullptr != rendererRuntime)
+	{
+		rendererRuntime->update();
+	}
+
+	// Call base implementation
+	IApplicationRenderer::onUpdate();
+}
+
+
+//[-------------------------------------------------------]
+//[ Private methods                                       ]
+//[-------------------------------------------------------]
+void IApplicationRendererRuntime::deinitialization()
+{
 	delete mRendererRuntimeInstance;
 	mRendererRuntimeInstance = nullptr;
 	delete mRendererRuntimeContext;
@@ -221,19 +236,5 @@ void IApplicationRendererRuntime::onDeinitialization()
 			mRendererToolkitFileManager = nullptr;
 		}
 	#endif
-
-	// Destroy renderer
 	destroyRenderer();
-}
-
-void IApplicationRendererRuntime::onUpdate()
-{
-	RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
-	if (nullptr != rendererRuntime)
-	{
-		rendererRuntime->update();
-	}
-
-	// Call base implementation
-	IApplicationRenderer::onUpdate();
 }

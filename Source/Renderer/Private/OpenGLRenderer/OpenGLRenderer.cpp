@@ -25,7 +25,7 @@
 *  @remarks
 *    == Dependencies ==
 *    - OpenGL capable graphics driver
-*    - OpenGL headers which can be found at "<unrimp>\External\OpenGL\include\"
+*    - OpenGL headers which can be found at "<unrimp>\External\Renderer\OpenGL\include\"
 *    - smol-v (directly compiled and linked in)
 *    - glslang if "RENDERER_OPENGL_GLSLTOSPIRV" is set (directly compiled and linked in)
 *

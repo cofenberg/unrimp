@@ -29,7 +29,7 @@
 #include "RendererRuntime/Public/IRendererRuntime.h"
 #include "RendererRuntime/Public/Context.h"
 
-#include <imguizmo/ImGuizmo.h>
+#include <ImGuizmo/ImGuizmo.h>
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>

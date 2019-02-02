@@ -1855,7 +1855,7 @@ namespace Renderer
 	*/
 	struct TextureFormat final
 	{
-		enum Enum
+		enum Enum : uint8_t
 		{
 			R8				  = 0,	///< 8-bit pixel format, all bits red
 			R8G8B8			  = 1,	///< 24-bit pixel format, 8 bits for red, green and blue
@@ -2223,7 +2223,7 @@ namespace Renderer
 	*/
 	struct TextureFlag final
 	{
-		enum Enum
+		enum Enum : uint32_t
 		{
 			UNORDERED_ACCESS      = 1 << 0,	///< This texture can be used for unordered access which is needed for compute shader read/write textures (when using Direct3D 11 a unordered access view (UAV) will be generated)
 			SHADER_RESOURCE       = 1 << 1,	///< This texture can be used as shader resource (when using Direct3D 11 a shader resource view (SRV) will be generated)

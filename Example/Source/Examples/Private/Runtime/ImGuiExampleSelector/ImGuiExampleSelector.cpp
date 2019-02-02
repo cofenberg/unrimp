@@ -36,7 +36,7 @@
 	#include <RendererRuntime/Public/Vr/IVrManager.h>
 #endif
 
-#include <imgui/imgui.h>
+#include <ImGui/imgui.h>
 
 
 //[-------------------------------------------------------]
