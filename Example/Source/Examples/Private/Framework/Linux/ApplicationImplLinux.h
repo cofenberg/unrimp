@@ -84,6 +84,7 @@ public:
 	virtual void getWindowSize(int& width, int& height) const override;
 	[[nodiscard]] virtual handle getNativeWindowHandle() const override;
 	virtual void redraw() override;
+	virtual void showUrgentMessage(const char* message, const char* title = "Urgent Message") const override;
 	[[nodiscard]] virtual Display* getX11Display() const override;
 
 

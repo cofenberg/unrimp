@@ -244,6 +244,11 @@ void ApplicationImplLinux::redraw()
 	}
 }
 
+void ApplicationImplLinux::showUrgentMessage([[maybe_unused]] const char* message, [[maybe_unused]] const char* title) const
+{
+	// TODO(co) Implement me
+}
+
 Display* ApplicationImplLinux::getX11Display() const
 {
 	return mX11EventLoop->getDisplay();

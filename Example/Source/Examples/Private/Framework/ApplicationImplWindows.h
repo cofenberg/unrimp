@@ -90,6 +90,7 @@ public:
 	}
 
 	virtual void redraw() override;
+	virtual void showUrgentMessage(const char* message, const char* title = "Urgent Message") const override;
 
 
 //[-------------------------------------------------------]

@@ -131,10 +131,10 @@ namespace RendererRuntime
 		// Platform specific part
 		#ifdef _WIN32
 			// Define a helper macro: Convert UTF-8 string to UTF-16
-			#define UTF8_TO_UTF16(utf8Command, utf16Command) \
-				std::wstring utf16Command; \
-				utf16Command.resize(static_cast<std::wstring::size_type>(::MultiByteToWideChar(CP_UTF8, 0, utf8Command, -1, nullptr , 0))); \
-				::MultiByteToWideChar(CP_UTF8, 0, utf8Command, -1, utf16Command.data(), static_cast<int>(utf16Command.size()));
+			#define UTF8_TO_UTF16(utf8String, utf16String) \
+				std::wstring utf16String; \
+				utf16String.resize(static_cast<std::wstring::size_type>(::MultiByteToWideChar(CP_UTF8, 0, utf8String, -1, nullptr , 0))); \
+				::MultiByteToWideChar(CP_UTF8, 0, utf8String, -1, utf16String.data(), static_cast<int>(utf16String.size()));
 
 			// Execute command
 			UTF8_TO_UTF16(command, utf16Command)

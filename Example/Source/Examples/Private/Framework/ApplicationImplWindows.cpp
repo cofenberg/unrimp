@@ -28,6 +28,8 @@
 	#include <RendererRuntime/Public/DebugGui/Detail/DebugGuiManagerWindows.h>
 #endif
 
+#include <iostream>
+
 
 //[-------------------------------------------------------]
 //[ Anonymous detail namespace                            ]
@@ -235,6 +237,26 @@ void ApplicationImplWindows::redraw()
 		// Redraw window
 		::RedrawWindow(mNativeWindowHandle, nullptr, nullptr, RDW_INVALIDATE);
 	}
+}
+
+void ApplicationImplWindows::showUrgentMessage(const char* message, const char* title) const
+{
+	// Define a helper macro: Convert UTF-8 string to UTF-16
+	#define UTF8_TO_UTF16(utf8String, utf16String) \
+		std::wstring utf16String; \
+		utf16String.resize(static_cast<std::wstring::size_type>(::MultiByteToWideChar(CP_UTF8, 0, utf8String, -1, nullptr , 0))); \
+		::MultiByteToWideChar(CP_UTF8, 0, utf8String, -1, utf16String.data(), static_cast<int>(utf16String.size()));
+
+	// MS Windows message box
+	UTF8_TO_UTF16(message, utf16Message)
+	UTF8_TO_UTF16(title, utf16title)
+	::MessageBoxW(nullptr, utf16Message.c_str(), utf16title.c_str(), MB_OK | MB_ICONERROR);
+
+	// Do also feed the output stream
+	std::wcout << utf16Message;
+
+	// Undefine the helper macro
+	#undef UTF8_TO_UTF16
 }
 
 

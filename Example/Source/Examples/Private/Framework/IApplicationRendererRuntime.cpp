@@ -114,25 +114,37 @@ void IApplicationRendererRuntime::onInitialization()
 			RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
 			if (nullptr != rendererRuntime)
 			{
-				// Add used asset package
+				// Get the absolute directory name of the asset package to mount
+				RendererRuntime::AbsoluteDirectoryName absoluteAssetPackageDirectoryName = nullptr;
 				bool rendererIsOpenGLES = (renderer->getNameId() == Renderer::NameId::OPENGLES3);
 				if (rendererIsOpenGLES)
 				{
 					// Handy fallback for development: If the mobile data isn't there, use the PC data
 					if (mFileManager->doesFileExist("../DataMobile/Example/Content"))
 					{
-						rendererRuntime->getAssetManager().mountAssetPackage("../DataMobile/Example/Content", "Example");
+						absoluteAssetPackageDirectoryName = "../DataMobile/Example/Content";
 					}
 					else
 					{
 						RENDERER_LOG(rendererRuntime->getContext(), COMPATIBILITY_WARNING, "The examples application failed to find \"../DataMobile/Example/Content\", using \"../DataPc/Example/Content\" as fallback")
-						rendererRuntime->getAssetManager().mountAssetPackage("../DataPc/Example/Content", "Example");
+						absoluteAssetPackageDirectoryName = "../DataPc/Example/Content";
 						rendererIsOpenGLES = false;
 					}
 				}
 				else
 				{
-					rendererRuntime->getAssetManager().mountAssetPackage("../DataPc/Example/Content", "Example");
+					absoluteAssetPackageDirectoryName = "../DataPc/Example/Content";
+				}
+
+				// Add used asset package
+				if (mFileManager->doesFileExist(absoluteAssetPackageDirectoryName))
+				{
+					rendererRuntime->getAssetManager().mountAssetPackage(absoluteAssetPackageDirectoryName, "Example");
+				}
+				else
+				{
+					showUrgentMessage("Please start \"ExampleProjectCompiler\" before starting \"Examples\" for the first time");
+					return;
 				}
 				rendererRuntime->loadPipelineStateObjectCache();
 

@@ -248,6 +248,17 @@ void ApplicationImplSdl2::redraw()
 	mApplication->onDrawRequest();
 }
 
+void ApplicationImplSdl2::showUrgentMessage(const char* message, const char* title) const
+{
+	static const constexpr SDL_MessageBoxButtonData sdlMessageBoxButtonData[] =
+	{
+		{ SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, "OK" }
+	};
+	const SDL_MessageBoxData sdlMessageBoxData = { SDL_MESSAGEBOX_INFORMATION, nullptr, title, message, SDL_arraysize(sdlMessageBoxButtonData), sdlMessageBoxButtonData, nullptr };
+	int buttonid = 0;
+	SDL_ShowMessageBox(&sdlMessageBoxData, &buttonid);
+}
+
 
 //[-------------------------------------------------------]
 //[ Private methods                                       ]
