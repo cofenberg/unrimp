@@ -270,8 +270,7 @@ Microsoft Windows: First Example Kickoff
 
 Microsoft Windows: Using the Unrimp examples together with [SDL2](https://www.libsdl.org/)
 ======
-- Download e.g. "SDL2-devel-2.0.8-VC.zip" from https://www.libsdl.org/download-2.0.php and extract it into "unrimp/External/Example/SDL2" (directory contains "include" and "lib")
-- Inside "unrimp/CMakeSettings.json", set "EXAMPLE_SDL2_ENABLED" to "1"
+- Download e.g. "SDL2-devel-2.0.9-VC.zip" from https://www.libsdl.org/download-2.0.php and extract it into "unrimp/External/Example/SDL2" (directory contains "include" and "lib")
 
 
 Microsoft Windows: Targeting Android

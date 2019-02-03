@@ -111,9 +111,14 @@ set(EXAMPLES "1" CACHE BOOL "Build examples?")
 if(NOT ANDROID)
 	set(EXAMPLE_PROJECT_COMPILER "1" CACHE BOOL "Build example project compiler?")
 
-	# Optional "Simple DirectMedia Layer" (SDL, https://www.libsdl.org/ ) support inside the example framework
-	set(EXAMPLE_SDL2_ENABLED "0" CACHE BOOL "Enable SDL 2 example support? If '1' you also need to set 'SDL2_DIR'.")
-	set(SDL2_DIR			 ""  CACHE PATH "SDL2 directory to use in case 'EXAMPLE_SDL2_ENABLED' is set to '1'. On Microsoft Windows, download e.g. 'SDL2-devel-2.0.8-VC.zip' from https://www.libsdl.org/download-2.0.php and extract it and set 'SDL2_DIR' to '<your path>/SDL2-devel-2.0.8-VC/SDL2-2.0.8' (directory contains 'include' and 'lib').")
+	# Optional "Simple DirectMedia Layer" (SDL, https://www.libsdl.org/ ) support inside the example framework, automatically enabled if the "SDL2_DIR"-directory exists
+	set(SDL2_DIR "${CMAKE_SOURCE_DIR}/External/Example/SDL2" CACHE PATH "SDL2 directory to use. On Microsoft Windows, download e.g. 'SDL2-devel-2.0.9-VC.zip' from https://www.libsdl.org/download-2.0.php and extract it to 'unrimp/External/Example/SDL2' (directory contains 'include' and 'lib').")
+	if (EXISTS ${SDL2_DIR})
+		set(EXAMPLE_SDL2_ENABLED TRUE)
+	else()
+		set(EXAMPLE_SDL2_ENABLED FALSE)
+	endif()
+	message(STATUS "SDL2 support enabled: ${EXAMPLE_SDL2_ENABLED}")
 endif()
 
 

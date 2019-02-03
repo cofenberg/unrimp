@@ -254,7 +254,7 @@ void ApplicationImplSdl2::showUrgentMessage(const char* message, const char* tit
 	{
 		{ SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, "OK" }
 	};
-	const SDL_MessageBoxData sdlMessageBoxData = { SDL_MESSAGEBOX_INFORMATION, nullptr, title, message, SDL_arraysize(sdlMessageBoxButtonData), sdlMessageBoxButtonData, nullptr };
+	const SDL_MessageBoxData sdlMessageBoxData = { SDL_MESSAGEBOX_ERROR, nullptr, title, message, SDL_arraysize(sdlMessageBoxButtonData), sdlMessageBoxButtonData, nullptr };
 	int buttonid = 0;
 	SDL_ShowMessageBox(&sdlMessageBoxData, &buttonid);
 }
