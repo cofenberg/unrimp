@@ -54,7 +54,7 @@ SAMPLER_STATE(2, 0, SamplerLinear, 0)
 //[ Main                                                  ]
 //[-------------------------------------------------------]
 MAIN_BEGIN_COMPUTE(32, 32, 1)
-	// Compute dispatch is using groups of a multiple of the local size, ensure we don't access ouf of global compute size which musn't be a multiple of the local size and hence might be smaller
+	// Compute dispatch is using groups of a multiple of the local size, ensure we don't access out of global compute size which mustn't be a multiple of the local size and hence might be smaller
 	// -> The Gaussian blur implementation is basing on http://rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/
 	BRANCH if (GLOBAL_INVOCATION_ID.x < PassData.GlobalComputeSize.x && GLOBAL_INVOCATION_ID.y < PassData.GlobalComputeSize.y)
 	{
@@ -76,8 +76,7 @@ MAIN_BEGIN_COMPUTE(32, 32, 1)
 		{
 			@property(VerticalBlur)
 				float2 texelOffset = float2(offset[i], 0.0f) * inverseColorMapSize;
-			@end
-			@property(!VerticalBlur)
+			@else
 				float2 texelOffset = float2(0.0f, offset[i]) * inverseColorMapSize;
 			@end
 			color += SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(texCoord + texelOffset, 0.0f, 0.0f)) * weight[i];

@@ -53,8 +53,7 @@ UNIFORM_BUFFER_END
 // Textures
 @property(VerticalBlur)
 	TEXTURE_2D(1, 0, ColorMap, 0)
-@end
-@property(!VerticalBlur)
+@else
 	TEXTURE_2D_ARRAY(1, 0, ColorMap, 0)
 @end
 
@@ -68,8 +67,7 @@ float4 BlurSample(float2 screenPosition, float offset, float mapSize)
 		float2 samplePosition = screenPosition;
 		samplePosition.y = clamp(screenPosition.y + offset, 0.0f, mapSize);
 		return TEXTURE_FETCH_2D(ColorMap, int3(samplePosition, 0)); 
-	@end
-	@property(!VerticalBlur)
+	@else
 		float2 samplePosition = screenPosition;
 		samplePosition.x = clamp(screenPosition.x + offset, 0.0f, mapSize);
 		const int INTERMEDIATE_CASCADE_INDEX = 3;

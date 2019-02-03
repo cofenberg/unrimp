@@ -115,8 +115,7 @@
 				#define MAIN_INPUT_DRAW_ID_VERTEX (ShaderInput.drawId - stereoEyeIndex)
 				#define MAIN_INPUT_STEREO_EYE_INDEX stereoEyeIndex
 			#define MAIN_END_VERTEX(vertexOutputPosition) { float4 StereoEyeClipEdge[2]; StereoEyeClipEdge[0] = float4(1.0f, 0.0f, 0.0f, 1.0f); StereoEyeClipEdge[1] = float4(-1.0f, 0.0f, 0.0f, 1.0f); float StereoEyeOffsetScale[2] = { 0.5f, -0.5f }; shaderOutput.stereoCullDistance = shaderOutput.stereoClipDistance = dot(StereoEyeClipEdge[stereoEyeIndex], vertexOutputPosition); vertexOutputPosition.x *= 0.5f; vertexOutputPosition.x += StereoEyeOffsetScale[stereoEyeIndex] * vertexOutputPosition.w; } return shaderOutput; }
-		@end
-		@property(!SinglePassStereoInstancing)
+		@else
 			#define INPUT_BEGIN_VERTEX struct SHADER_INPUT {
 			#define INPUT_END_VERTEX };
 			#define OUTPUT_BEGIN_VERTEX struct SHADER_OUTPUT {
@@ -671,8 +670,7 @@
 		@property(ZeroToOneClipZ)
 			#define SAMPLE_DEPTH_2D_LOD(textureObject, samplerObject, coordinate) REVERSED_Z(textureLod(textureObject, (coordinate).xy, (coordinate).w).r)
 			#define SAMPLE_DEPTH_2D_MS(textureObject, coordinate, sampleIndex) REVERSED_Z(texelFetch(textureObject, coordinate, sampleIndex).r)
-		@end
-		@property(!ZeroToOneClipZ)
+		@else
 			#define SAMPLE_DEPTH_2D_LOD(textureObject, samplerObject, coordinate) (REVERSED_Z(textureLod(textureObject, (coordinate).xy, (coordinate).w).r) * 2.0f - 1.0f)	// 0..1 -> -1..1
 			#define SAMPLE_DEPTH_2D_MS(textureObject, coordinate, sampleIndex) (REVERSED_Z(texelFetch(textureObject, coordinate, sampleIndex).r) * 2.0f - 1.0f)	// 0..1 -> -1..1
 		@end
@@ -909,8 +907,7 @@
 		@property(ZeroToOneClipZ)
 			#define SAMPLE_DEPTH_2D_LOD(textureObject, samplerObject, coordinate) REVERSED_Z(textureLod(textureObject, (coordinate).xy, (coordinate).w).r)
 			#define SAMPLE_DEPTH_2D_MS(textureObject, coordinate, sampleIndex) REVERSED_Z(texelFetch(textureObject, coordinate, sampleIndex).r)
-		@end
-		@property(!ZeroToOneClipZ)
+		@else
 			#define SAMPLE_DEPTH_2D_LOD(textureObject, samplerObject, coordinate) (REVERSED_Z(textureLod(textureObject, (coordinate).xy, (coordinate).w).r) * 2.0f - 1.0f)	// 0..1 -> -1..1
 			#define SAMPLE_DEPTH_2D_MS(textureObject, coordinate, sampleIndex) (REVERSED_Z(texelFetch(textureObject, coordinate, sampleIndex).r) * 2.0f - 1.0f)	// 0..1 -> -1..1
 		@end

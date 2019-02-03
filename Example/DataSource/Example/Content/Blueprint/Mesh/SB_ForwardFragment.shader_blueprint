@@ -135,8 +135,7 @@ SAMPLER_STATE(5, 0, SamplerLinear, 0)
 @includepiece(../SharedShaderPiece/SP_PhysicallyBasedShading.asset)
 	@property(HighQualityLighting)
 		@insertpiece(DefinePhysicallyBasedShading)
-	@end
-	@property(!HighQualityLighting)
+	@else
 		@insertpiece(DefineBlinnPhongBasedShading)
 	@end
 @includepiece(../SharedShaderPiece/SP_Depth.asset)
@@ -176,8 +175,7 @@ MAIN_BEGIN
 	float3 worldSpacePosition = MAIN_INPUT(WorldSpacePositionVS);
 	@property(SinglePassStereoInstancing)
 		float3 worldSpaceIncident = PassData.WorldSpaceCameraPosition[stereoEyeIndex] - worldSpacePosition;
-	@end
-	@property(!SinglePassStereoInstancing)
+	@else
 		// Possible optimization when not using stereo rendering: Since we're using camera relative rendering, "PassData.WorldSpaceCameraPosition - worldSpacePosition" becomes just "-worldSpacePosition"
 		float3 worldSpaceIncident = -worldSpacePosition;
 	@end
@@ -265,8 +263,7 @@ MAIN_BEGIN
 		@property(SinglePassStereoInstancing)
 			// No screen edge attenuation necessary for single pass stereo instancing since due to lens distortion we don't see the edges anyway
 			reflectionColor = SAMPLE_2D(ReflectionMap, SamplerLinear, reflectionTexCoord).rgb;
-		@end
-		@property(!SinglePassStereoInstancing)
+		@else
 			float2 coordinateEdgeAttenuation = float2(1.0f, 1.0f) - pow(SATURATE(abs(reflectionTexCoord - float2(0.5f, 0.5f)) * 2), float2(8.0f, 8.0f));
 			float screenEdgeAttenuation = SATURATE(min(coordinateEdgeAttenuation.x, coordinateEdgeAttenuation.y));
 			reflectionColor = SAMPLE_2D(ReflectionMap, SamplerLinear, reflectionTexCoord).rgb * float3(screenEdgeAttenuation, screenEdgeAttenuation, screenEdgeAttenuation);

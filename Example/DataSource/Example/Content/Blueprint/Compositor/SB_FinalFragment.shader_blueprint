@@ -109,8 +109,7 @@ MAIN_BEGIN
 	// -> This isn't a real problem since the point of the effects is mutually exclusive as well sense wise
 	@property(OldCrtEffect)
 		@insertpiece(ApplyOldCrtEffect)
-	@end
-	@property(!OldCrtEffect)
+	@else
 		// Fast Approximate Anti-Aliasing (FXAA)
 		@property(Fxaa)
 			// Shader language dependent texture handling
@@ -143,8 +142,7 @@ MAIN_BEGIN
 				float4(0.0f, 0.0f, 0.0f, 0.0f)		// fxaaConsole360ConstDir
 			);
 			color.w = 1.0f;
-		@end
-		@property(!Fxaa)
+		@else
 			@property(Sharpen)
 			{
 				float2 inverseViewportSize = 1.0f / viewportSize;
@@ -155,13 +153,11 @@ MAIN_BEGIN
 				float4 bottom = SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(MAIN_INPUT(TexCoordVS) + float2( 0.0f,  1.0f) * inverseViewportSize, 0.0f, 0.0f));
 				color = SATURATE(center + (4 * center - top - bottom - left - right) * PassData.SharpenIntensity);
 			}
-			@end
-			@property(!Sharpen)
+			@else
 				// Chromatic aberration
 				@property(ChromaticAberration)
 					@insertpiece(ApplyChromaticAberration)
-				@end
-				@property(!ChromaticAberration)
+				@else
 					// Just get the boring color value
 					color = SAMPLE_2D_LOD(ColorMap, SamplerLinear, float4(MAIN_INPUT(TexCoordVS), 0.0f, 0.0f));
 				@end

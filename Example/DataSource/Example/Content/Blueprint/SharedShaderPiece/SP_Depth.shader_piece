@@ -45,8 +45,7 @@
 	{
 		@property(ZeroToOneClipZ)
 			return PassData.ProjectionParametersReversedZ.y / (depth - PassData.ProjectionParametersReversedZ.x);
-		@end
-		@property(!ZeroToOneClipZ)
+		@else
 			// 0..1 -> -1..1
 			return PassData.ProjectionParametersReversedZ.y / ((depth * 2.0f - 1.0f) - PassData.ProjectionParametersReversedZ.x);
 		@end

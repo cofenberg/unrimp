@@ -70,8 +70,7 @@ UNIFORM_BUFFER_END
 	@property(UseTemporalReprojection)
 		TEXTURE_2D_MS(1, 1, VelocityMap, @value(NumberOfMultisamples), 1)
 	@end
-@end
-@property(!NumberOfMultisamples)
+@else
 	TEXTURE_2D(1, 0, NormalMap, 0)	// rgb = view space normal, a = roughness
 	@property(UseTemporalReprojection)
 		TEXTURE_2D(1, 1, VelocityMap, 1)
@@ -94,8 +93,7 @@ float4 GetNormalFromNormalMap(float2 textureCoordinate, int sampleIndex)
 	@property(NumberOfMultisamples)
 		// *2 = For performance reasons the screen space reflection ray tracing is done at half-size
 		return SAMPLE_2D_MS(NormalMap, int2(textureCoordinate * PassData.ViewportSize * 2), sampleIndex);
-	@end
-	@property(!NumberOfMultisamples)
+	@else
 		return SAMPLE_2D_LOD(NormalMap, SamplerPointClamp, float4(textureCoordinate, 0.0f, 0.0f));
 	@end
 }
@@ -106,8 +104,7 @@ float4 GetNormalFromNormalMap(float2 textureCoordinate, int sampleIndex)
 		@property(NumberOfMultisamples)
 			// *2 = For performance reasons the screen space reflection ray tracing is done at half-size
 			return SAMPLE_2D_MS(VelocityMap, int2(textureCoordinate * PassData.ViewportSize * 2), sampleIndex).rg;
-		@end
-		@property(!NumberOfMultisamples)
+		@else
 			return SAMPLE_2D_LOD(VelocityMap, SamplerPointClamp, float4(textureCoordinate, 0.0f, 0.0f)).rg;
 		@end
 	}

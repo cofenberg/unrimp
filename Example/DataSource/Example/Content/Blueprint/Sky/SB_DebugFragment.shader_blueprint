@@ -132,8 +132,7 @@ MAIN_BEGIN
 	@property(UseProceduralSky)
 		// Sky
 		float3 color = CalculateHosekWilkieSkyColor(normalize(MAIN_INPUT(TexCoordVS)));
-	@end
-	@property(!UseProceduralSky)
+	@else
 		// Sample the environment cube map
 		float3 color = SAMPLE_CUBE_LOD(EnvironmentCubeMap, SamplerLinearClamp, float4(-MAIN_INPUT(TexCoordVS), 0.0f)).rgb;
 	@end

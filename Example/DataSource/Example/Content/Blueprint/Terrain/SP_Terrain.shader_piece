@@ -183,8 +183,7 @@
 		@property(UseTriplanarMapping)
 			float4 layer_argb_nxa = SampleTerrainTriplanar(LayerArray_argb_nxa, CAST_TO(layerIndex, float), triplanarWeights, worldSpacePosition * uvMultiplier);
 			float4 layer_hr_rg_mb_nya = SampleTerrainTriplanar(LayerArray_hr_rg_mb_nya, CAST_TO(layerIndex, float), triplanarWeights, worldSpacePosition * uvMultiplier);
-		@end
-		@property(!UseTriplanarMapping)
+		@else
 			float3 layerTexCoord = float3(worldSpacePosition.xz * uvMultiplier, CAST_TO(layerIndex, float));
 			float4 layer_argb_nxa = SAMPLE_2D_ARRAY(LayerArray_argb_nxa, SamplerLinear, layerTexCoord);
 			float4 layer_hr_rg_mb_nya = SAMPLE_2D_ARRAY(LayerArray_hr_rg_mb_nya, SamplerLinear, layerTexCoord);

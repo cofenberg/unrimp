@@ -49,8 +49,7 @@ UNIFORM_BUFFER_END
 TEXTURE_2D(1, 0, ColorMap, 0)
 @property(NumberOfMultisamples)
 	TEXTURE_2D_MS(1, 1, VelocityMap, @value(NumberOfMultisamples), 1)
-@end
-@property(!NumberOfMultisamples)
+@else
 	TEXTURE_2D(1, 1, VelocityMap, 1)
 @end
 RW_TEXTURE_2D(1, 2, OutputTexture2D, 2, r11f_g11f_b10f, writeonly)
@@ -60,7 +59,7 @@ RW_TEXTURE_2D(1, 2, OutputTexture2D, 2, r11f_g11f_b10f, writeonly)
 //[ Main                                                  ]
 //[-------------------------------------------------------]
 MAIN_BEGIN_COMPUTE(32, 32, 1)
-	// Compute dispatch is using groups of a multiple of the local size, ensure we don't access ouf of global compute size which musn't be a multiple of the local size and hence might be smaller
+	// Compute dispatch is using groups of a multiple of the local size, ensure we don't access out of global compute size which mustn't be a multiple of the local size and hence might be smaller
 	BRANCH if (GLOBAL_INVOCATION_ID.x < PassData.GlobalComputeSize.x && GLOBAL_INVOCATION_ID.y < PassData.GlobalComputeSize.y)
 	{
 		int3 globalInvocationId = CAST_TO(GLOBAL_INVOCATION_ID, int3);
@@ -81,8 +80,7 @@ MAIN_BEGIN_COMPUTE(32, 32, 1)
 			{
 				velocity = SAMPLE_2D_MS(VelocityMap, globalInvocationId.xy, 0).xy;
 			}
-		@end
-		@property(!NumberOfMultisamples)
+		@else
 			float2 velocity = TEXTURE_FETCH_2D(VelocityMap, globalInvocationId).xy;
 		@end
 

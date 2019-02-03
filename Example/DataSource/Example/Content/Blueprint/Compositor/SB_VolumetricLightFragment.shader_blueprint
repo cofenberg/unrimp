@@ -151,9 +151,7 @@ MAIN_BEGIN
 			float shadowVisibility = CalculateShadowVisibility(currentPosition, linearDepth);
 			FLATTEN if (shadowVisibility > 0.0f)
 		@end
-		{
-			accumulatedFog += mieScatter;
-		}
+		accumulatedFog += mieScatter;
 		currentPosition -= step;
 	}
 	accumulatedFog /= NUMBER_OF_STEPS;

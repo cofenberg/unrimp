@@ -53,8 +53,7 @@ UNIFORM_BUFFER_END
 // Textures
 @property(NumberOfMultisamples)
 	TEXTURE_2D_MS(1, 0, NormalMap, @value(NumberOfMultisamples), 0)	// Normal map: rgb = view space normal
-@end
-@property(!NumberOfMultisamples)
+@else
 	TEXTURE_2D(1, 0, NormalMap, 0)	// rgb = view space normal, a = roughness
 @end
 @property(UseScreenSpaceReflectionMap)
@@ -83,8 +82,7 @@ float4 GetNormalFromNormalMap(float2 textureCoordinate, int sampleIndex)
 {
 	@property(NumberOfMultisamples)
 		return SAMPLE_2D_MS(NormalMap, int2(textureCoordinate * PassData.ViewportSize), sampleIndex);
-	@end
-	@property(!NumberOfMultisamples)
+	@else
 		return SAMPLE_2D_LOD(NormalMap, SamplerPointClamp, float4(textureCoordinate, 0.0f, 0.0f));
 	@end
 }
@@ -143,8 +141,7 @@ MAIN_BEGIN
 	@property(UseScreenSpaceReflectionMap)	
 		// Mix screen space reflection (SSR) and cube map reflection color
 		MAIN_OUTPUT_COLOR(0) = float4(LERP(cubeReflectionColor, reflectionColor, reflectionIntensity), 0.0f);
-	@end
-	@property(!UseScreenSpaceReflectionMap)	
+	@else
 		MAIN_OUTPUT_COLOR(0) = float4(cubeReflectionColor, 0.0f);
 	@end
 MAIN_END

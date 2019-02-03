@@ -29,7 +29,7 @@
 	{
 		const float MAXIMUM_EXPONENT = 42.0f;
 
-		// Make sure exponents say consistent in light space regardless of partition scaling. This prevents the exponentials from ever getting too rediculous and maintains consistency across partitions.
+		// Make sure exponents say consistent in light space regardless of partition scaling. This prevents the exponentials from ever getting too ridiculous and maintains consistency across partitions.
 		// -> Clamp to maximum range of fp32/fp16 to prevent overflow/underflow
 		float2 lightSpaceExponents = float2(positiveExponent, negativeExponent);
 		return min(lightSpaceExponents / cascadeScale.z, MAXIMUM_EXPONENT);

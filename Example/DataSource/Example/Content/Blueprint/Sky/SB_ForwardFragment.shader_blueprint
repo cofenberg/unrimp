@@ -68,8 +68,7 @@ UNIFORM_BUFFER_END
 
 	// Samplers
 	SAMPLER_STATE(2, 1, SamplerLinearWrap, 1)
-@end
-@property(!UseProceduralSky)
+@else
 	// Textures
 	TEXTURE_CUBE(1, 0, EnvironmentCubeMap, 0)
 
@@ -172,8 +171,7 @@ MAIN_BEGIN
 				color = LERP(color, cloudsColor, 0.5f * smoothstep(0.4f, 1.0f, cloudsIntensity));
 			}
 		}
-	@end
-	@property(!UseProceduralSky)
+	@else
 		// Sample the environment cube map
 		float3 color = SAMPLE_CUBE_LOD(EnvironmentCubeMap, SamplerLinearClamp, float4(-MAIN_INPUT(TexCoordVS), 0.0f)).rgb;
 	@end

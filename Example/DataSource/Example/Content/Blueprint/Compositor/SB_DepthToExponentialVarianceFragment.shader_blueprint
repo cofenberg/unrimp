@@ -48,8 +48,7 @@ UNIFORM_BUFFER_END
 // Textures
 @property(NumberOfMultisamples)
 	TEXTURE_2D_MS(1, 0, DepthMap, @value(NumberOfMultisamples), 0)
-@end
-@property(!NumberOfMultisamples)
+@else
 	TEXTURE_2D(1, 0, DepthMap, 0)
 @end
 
@@ -79,8 +78,7 @@ MAIN_BEGIN
 			float2 warpedDepth = WarpDepth(depth, exponents);
 			average += sampleWeight * float4(warpedDepth.xy, warpedDepth.xy * warpedDepth.xy);
 		}
-	@end
-	@property(!NumberOfMultisamples)
+	@else
 		float depth = REVERSED_Z(TEXTURE_FETCH_2D(DepthMap, int3(int2(FRAGMENT_POSITION.xy), 0)).r);
 		float2 warpedDepth = WarpDepth(depth, exponents);
 		float4 average = float4(warpedDepth.xy, warpedDepth.xy * warpedDepth.xy);

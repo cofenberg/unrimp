@@ -180,6 +180,64 @@ namespace
 		typedef std::vector<Expression> ExpressionVec;
 		typedef std::vector<std::string> StringVector;
 
+		template<uint32_t _N, typename _internalDataType, uint32_t _bits, uint32_t _mask> class cbitsetN
+		{
+			_internalDataType mValues[_N >> _bits];
+		public:
+			cbitsetN()
+			{
+				clear();
+			}
+
+			void clear()
+			{
+				memset(mValues, 0, sizeof(mValues));
+			}
+
+			void setValue(uint32_t position, bool bValue)
+			{
+				assert(position < _N);
+				const uint32_t idx  = (position >> _bits);
+				const uint32_t mask = (1u << (position & _mask));
+				if (bValue)
+				{
+					mValues[idx] |= mask;
+				}
+				else
+				{
+					mValues[idx] &= ~mask;
+				}
+			}
+
+			void set(uint32_t position)
+			{
+				assert(position < _N);
+				const uint32_t idx  = (position >> _bits);
+				const uint32_t mask = (1u << (position & _mask));
+				mValues[idx] |= mask;
+			}
+
+			void unset(uint32_t position)
+			{
+				assert(position < _N);
+				const uint32_t idx  = (position >> _bits);
+				const uint32_t mask = (1u << (position & _mask));
+				mValues[idx] &= ~mask;
+			}
+
+			bool test(uint32_t position) const
+			{
+				assert(position < _N);
+				const uint32_t idx  = (position >> _bits);
+				const uint32_t mask = (1u << (position & _mask));
+				return (mValues[idx] & mask) != 0u;
+			}
+		};
+
+		// This is similar to "std::bitset", except way less bloat. cbitset32 stands for constant/compile-time bitset with an internal representation of 32-bits.
+		template<uint32_t _N> class cbitset32 : public cbitsetN<_N, uint32_t, 5u, 0x1Fu>
+		{ };
+
 		class SubStringRef
 		{
 
@@ -337,14 +395,24 @@ namespace
 			return calculateLineCount(subString.getOriginalBuffer(), subString.getStart());
 		}
 
-		void findBlockEnd(const Renderer::Context& context, SubStringRef& outSubString, bool& syntaxError)
+		// Returns true if we found an @end, false if we found
+		// \@else instead (can only happen if allowsElse=true).
+		bool findBlockEnd(const Renderer::Context& context, SubStringRef& outSubString, bool& syntaxError, bool allowsElse = false)
 		{
-			static constexpr const char* blockNames[] =
+			bool isElse = false;
+			static const constexpr char* blockNames[] =
 			{
 				"foreach",
 				"property",
-				"piece"
+				"piece",
+				"else"
 			};
+
+			cbitset32<2048> allowedElses;
+			if (allowsElse)
+			{
+				allowedElses.set(0);
+			}
 
 			std::string::const_iterator it = outSubString.begin();
 			std::string::const_iterator en = outSubString.end();
@@ -357,7 +425,7 @@ namespace
 				{
 					const SubStringRef subString(&outSubString.getOriginalBuffer(), it + 1);
 
-					const size_t idx = subString.find("end");
+					size_t idx = subString.find("end");
 					if (0 == idx)
 					{
 						--nesting;
@@ -366,14 +434,55 @@ namespace
 					}
 					else
 					{
-						for (size_t i = 0; i < sizeof(blockNames) / sizeof(char*); ++i)
+						if (allowsElse)
 						{
-							const size_t idxBlock = subString.find(blockNames[i]);
-							if (0 == idxBlock)
+							idx = subString.find("else");
+						}
+						if (0 == idx)
+						{
+							if (!allowedElses.test(static_cast<size_t>(nesting)))
 							{
-								it = subString.begin() + static_cast<int>(strlen(blockNames[i]));
-								++nesting;
-								break;
+								syntaxError = true;
+								RENDERER_LOG(context, CRITICAL, "Unexpected @else while looking for @end\nNear: \"%s\"\n", &(*subString.begin()))
+							}
+							if (0 == nesting)
+							{
+								// Decrement nesting so that we're out and tell caller we went from "@property()" through "@else". Caller will later have to go from "@else" to "@end".
+								isElse = true;
+								--nesting;
+							}
+							else
+							{
+								// Do not decrease "nesting", as we now need to look for "@end" but unset "allowedElses", so that we do not allow two consecutive "@else"
+								allowedElses.setValue(static_cast<size_t>(nesting), 0u);
+							}
+							it += sizeof("else") - 1;
+							continue;
+						}
+						else
+						{
+							for (size_t i = 0; i < sizeof(blockNames) / sizeof(char*); ++i)
+							{
+								const size_t idxBlock = subString.find(blockNames[i]);
+								if (0 == idxBlock)
+								{
+									it = subString.begin() + static_cast<int64_t>(strlen(blockNames[i]));
+									if (3 == i)
+									{
+										// Do not increase "nesting" for "@else"
+										if (!allowedElses.test(static_cast<size_t>(nesting)))
+										{
+											syntaxError = true;
+											RENDERER_LOG(context, CRITICAL, "Unexpected @else while looking for @end\nNear: \"%s\"\n", &(*subString.begin()))
+										}
+									}
+									else
+									{
+										++nesting;
+									}
+									allowedElses.setValue(static_cast<size_t>(nesting), 1u == i);
+									break;
+								}
 							}
 						}
 					}
@@ -386,13 +495,18 @@ namespace
 
 			if (it != en && nesting < 0)
 			{
-				outSubString.setEnd(it - outSubString.getOriginalBuffer().begin() - (sizeof("end") - 1));
+				const size_t keywordLength = (isElse ? sizeof("else") : sizeof("end")) - 1;
+				outSubString.setEnd(it - outSubString.getOriginalBuffer().begin() - keywordLength);
 			}
 			else
 			{
 				syntaxError = true;
-				RENDERER_LOG(context, CRITICAL, "Renderer runtime shader builder: Syntax error at line %lu: Start block (e.g. @foreach; @property) without matching @end\n", static_cast<unsigned long>(calculateLineCount(outSubString)))
+				char tmpData[64] = {};
+				strncpy(tmpData, &(*outSubString.begin()), std::min<size_t>(63u, outSubString.getSize()));
+				RENDERER_LOG(context, CRITICAL, "Syntax error at line %lu: Start block (e.g. @foreach; @property) without matching @end\nNear: \"%s\"\n", calculateLineCount(outSubString), tmpData)
 			}
+
+			return isElse;
 		}
 
 		[[nodiscard]] size_t evaluateExpressionEnd(const Renderer::Context& context, const SubStringRef& outSubString)
@@ -589,7 +703,7 @@ namespace
 				{
 					textStarted = false;
 				}
-				else if ('!' == c)
+				else if ('!' == c && ((it + 1) == en || *(it + 1) != '='))	// Avoid treating "!=" as a negation of variable
 				{
 					nextExpressionNegates = true;
 				}
@@ -602,13 +716,13 @@ namespace
 						currentExpression->children.back().negated = nextExpressionNegates;
 					}
 
-					if ('&' == c || '|' == c)
+					if ('&' == c || '|' == c || '=' == c || '<' == c || '>' == c || '!' == c)	// ! can only mean "!="
 					{
 						if (currentExpression->children.empty() || nextExpressionNegates)
 						{
 							syntaxError = true;
 						}
-						else if (!currentExpression->children.back().value.empty() && c != *(currentExpression->children.back().value.end() - 1))
+						else if (!currentExpression->children.back().value.empty() && *(currentExpression->children.back().value.end() - 1) != c && '=' != c)
 						{
 							currentExpression->children.push_back(Expression());
 						}
@@ -622,22 +736,19 @@ namespace
 			}
 
 			bool retVal = false;
-
 			if (!expressionParents.empty())
 			{
 				syntaxError = true;
 			}
 			if (!syntaxError)
 			{
-				retVal = evaluateExpressionRecursive(context, shaderProperties, outExpressions, syntaxError);
+				retVal = evaluateExpressionRecursive(context, shaderProperties, outExpressions, syntaxError) != 0;
 			}
 			if (syntaxError)
 			{
 				RENDERER_LOG(context, CRITICAL, "Renderer runtime shader builder: Syntax error at line %lu\n", static_cast<unsigned long>(calculateLineCount(subString)))
 			}
-
 			outSyntaxError = syntaxError;
-
 			return retVal;
 		}
 
@@ -1033,15 +1144,30 @@ namespace RendererRuntime
 			const bool result = evaluateExpression(mContext, mShaderProperties, subString, syntaxError);
 
 			::detail::SubStringRef blockSubString = subString;
-			::detail::findBlockEnd(mContext, blockSubString, syntaxError);
+			const bool isElse = ::detail::findBlockEnd(mContext, blockSubString, syntaxError, true);
 
 			if (result && !syntaxError)
 			{
-				::detail::copy(outBuffer, blockSubString, blockSubString.getSize());
+				copy(outBuffer, blockSubString, blockSubString.getSize());
 			}
 
-			subString.setStart(blockSubString.getEnd() + sizeof("@end"));
-			pos = subString.find("@property");
+			if (isElse)
+			{
+				subString.setStart(blockSubString.getEnd() + sizeof("@else"));
+				blockSubString = subString;
+				::detail::findBlockEnd(mContext, blockSubString, syntaxError);
+				if (!syntaxError && !result)
+				{
+					copy(outBuffer, blockSubString, blockSubString.getSize());
+				}
+				subString.setStart(blockSubString.getEnd() + sizeof("@end"));
+				pos = subString.find("@property");
+			}
+			else
+			{
+				subString.setStart(blockSubString.getEnd() + sizeof("@end"));
+				pos = subString.find("@property");
+			}
 		}
 
 		copy(outBuffer, subString, subString.getSize());

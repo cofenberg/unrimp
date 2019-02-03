@@ -58,8 +58,7 @@ MAIN_BEGIN_COMPUTE(1, 1, 1)
 	// During the first execution there's no valid previous adaptive luminance available, so use the just calculated luminance as previous luminance
 	@property(FirstExecution)
 		float adaptiveLuminance = currentAverageLuminance;
-	@end
-	@property(!FirstExecution)
+	@else
 		float previousAverageLuminance = TEXTURE_FETCH_2D(PreviousLuminanceMap, int3(0, 0, 0)).r;
 
 		// Adapt the luminance using Pattanaik's technique

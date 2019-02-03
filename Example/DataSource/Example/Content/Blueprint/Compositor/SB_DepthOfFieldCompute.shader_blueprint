@@ -91,7 +91,7 @@ float4 CalculateSum(float2 textureCoordinate,
 {
 	// Depth of field basing on https://developer.amd.com/wordpress/media/2012/10/Scheuermann_DepthOfField.pdf
 	float2 pixelSizeBlur = float2(1.0f, 1.0f) / CAST_TO(GET_TEXTURE_2D_LOD_SIZE(BlurMap, 0), float2);	// Pixel size of downsampled and blurred image
-	float2 poisson[12];	// Containts poisson-distributed positions on the unit circle for 12 taps
+	float2 poisson[12];	// Contains poisson-distributed positions on the unit circle for 12 taps
 	poisson[ 0] = float2( 0.00f,  0.00f);
 	poisson[ 1] = float2( 0.07f, -0.45f);
 	poisson[ 2] = float2(-0.15f, -0.33f);
@@ -149,7 +149,7 @@ float4 CalculateSum(float2 textureCoordinate,
 //[ Main                                                  ]
 //[-------------------------------------------------------]
 MAIN_BEGIN_COMPUTE(32, 32, 1)
-	// Compute dispatch is using groups of a multiple of the local size, ensure we don't access ouf of global compute size which musn't be a multiple of the local size and hence might be smaller
+	// Compute dispatch is using groups of a multiple of the local size, ensure we don't access out of global compute size which mustn't be a multiple of the local size and hence might be smaller
 	BRANCH if (GLOBAL_INVOCATION_ID.x < PassData.GlobalComputeSize.x && GLOBAL_INVOCATION_ID.y < PassData.GlobalComputeSize.y)
 	{
 		float2 inverseGlobalComputeSize = float2(1.0f, 1.0f) / CAST_TO(PassData.GlobalComputeSize.xy, float2);

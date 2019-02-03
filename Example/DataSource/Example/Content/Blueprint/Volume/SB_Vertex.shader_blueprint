@@ -98,8 +98,7 @@ MAIN_BEGIN_VERTEX
 	float4 worldSpaceToObjectSpaceRotationQuaternion = float4(-rotationQuaternion.x, -rotationQuaternion.y, -rotationQuaternion.z, rotationQuaternion.w);
 	@property(SinglePassStereoInstancing)
 		position = PassData.WorldSpaceCameraPosition[MAIN_INPUT_STEREO_EYE_INDEX] - position;
-	@end
-	@property(!SinglePassStereoInstancing)
+	@else
 		// Possible optimization when not using stereo rendering: Since we're using camera relative rendering, "PassData.WorldSpaceCameraPosition - position" becomes just "-position"
 		position = -position;
 	@end

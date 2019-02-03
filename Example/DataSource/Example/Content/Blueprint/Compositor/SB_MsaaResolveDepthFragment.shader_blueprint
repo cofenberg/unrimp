@@ -26,8 +26,7 @@
 
 @property(NumberOfMultisamples)
 	#define NUMBER_OF_MSAA_SAMPLES @value(NumberOfMultisamples)
-@end
-@property(!NumberOfMultisamples)
+@else
 	#define NUMBER_OF_MSAA_SAMPLES 1
 @end
 
@@ -46,8 +45,7 @@ OUTPUT_END
 // Textures
 @property(NumberOfMultisamples)
 	TEXTURE_2D_MS(0, 0, DepthMap, NUMBER_OF_MSAA_SAMPLES, 0)
-@end
-@property(!NumberOfMultisamples)
+@else
 	TEXTURE_2D(0, 0, DepthMap, 0)
 @end
 
@@ -64,8 +62,7 @@ MAIN_BEGIN
 		{
 			depth = max(depth, SAMPLE_2D_MS(DepthMap, int2(FRAGMENT_POSITION.xy), sampleIndex).r);
 		}
-	@end
-	@property(!NumberOfMultisamples)
+	@else
 		float depth = TEXTURE_FETCH_2D(DepthMap, int3(FRAGMENT_POSITION.xy, 0)).r;
 	@end
 

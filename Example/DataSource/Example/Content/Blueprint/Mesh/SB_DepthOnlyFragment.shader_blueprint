@@ -56,8 +56,7 @@
 
 	// Samplers
 	SAMPLER_STATE(4, 0, SamplerLinear, 0)
-@end
-@property(!UseAlphaMap)
+@else
 	//[-------------------------------------------------------]
 	//[ Input / output                                        ]
 	//[-------------------------------------------------------]

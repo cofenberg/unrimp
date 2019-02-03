@@ -69,8 +69,7 @@
 	{
 		@property(UpperLeftOrigin)
 			float globalTimeInSeconds = -PassData.GlobalTimeInSeconds;
-		@end
-		@property(!UpperLeftOrigin)
+		@else
 			float globalTimeInSeconds = PassData.GlobalTimeInSeconds;
 		@end
 		float scan1 = clamp(cos(uv.y * 2.0f + globalTimeInSeconds), 0.0f, 1.0f);

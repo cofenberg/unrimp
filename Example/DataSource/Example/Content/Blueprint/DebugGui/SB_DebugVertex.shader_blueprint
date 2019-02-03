@@ -60,8 +60,7 @@ MAIN_BEGIN
 	// Pass through the texture coordinates
 	@property(UpperLeftOrigin)
 		float y = -MAIN_OUTPUT_POSITION.y;
-	@end
-	@property(!UpperLeftOrigin)
+	@else
 		float y = MAIN_OUTPUT_POSITION.y;
 	@end
 	MAIN_OUTPUT(TexCoordVS) = float4(MAIN_INPUT(TexCoord), MAIN_OUTPUT_POSITION.x * 0.5f + 0.5f, y * 0.5f + 0.5f);

@@ -55,8 +55,7 @@ UNIFORM_BUFFER_END
 // Textures
 @property(NumberOfMultisamples)
 	TEXTURE_2D_MS(1, 0, NormalMap, @value(NumberOfMultisamples), 0)	// Normal map: rgb = view space normal
-@end
-@property(!NumberOfMultisamples)
+@else
 	TEXTURE_2D(1, 0, NormalMap, 0)	// Normal map: rgb = view space normal
 @end
 TEXTURE_2D(1, 1, DepthMap, 1)
@@ -86,8 +85,7 @@ float3 GetNormalFromNormalMap(float2 textureCoordinate, int sampleIndex)
 {
 	@property(NumberOfMultisamples)
 		return SAMPLE_2D_MS(NormalMap, int2(textureCoordinate * (1.0f / PassData.InverseViewportSize)), sampleIndex).xyz;
-	@end
-	@property(!NumberOfMultisamples)
+	@else
 		return SAMPLE_2D_LOD(NormalMap, SamplerPointClamp, float4(textureCoordinate, 0.0f, 0.0f)).xyz;
 	@end
 }

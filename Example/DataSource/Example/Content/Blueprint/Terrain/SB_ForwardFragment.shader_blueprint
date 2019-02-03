@@ -92,8 +92,7 @@ SAMPLER_STATE(3, 1, SamplerLinearClamp, 1)
 @includepiece(../SharedShaderPiece/SP_PhysicallyBasedShading.asset)
 	@property(HighQualityLighting)
 		@insertpiece(DefinePhysicallyBasedShading)
-	@end
-	@property(!HighQualityLighting)
+	@else
 		@insertpiece(DefineBlinnPhongBasedShading)
 	@end
 @includepiece(../SharedShaderPiece/SP_Depth.asset)

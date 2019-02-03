@@ -75,8 +75,7 @@ TEXTURE_BUFFER(1, 0, float4, LightTextureBuffer, 0)	// "LIGHT"
 	TEXTURE_2D_MS(2, 1, GBufferMap1, @value(NumberOfMultisamples), 2)	// GBuffer 1: rgb = view space normal, a = roughness
 	TEXTURE_2D_MS(2, 2, GBufferMap2, @value(NumberOfMultisamples), 3)	// GBuffer 2: rgb = emissive color, a = metallic
 	TEXTURE_2D_MS(2, 3, DepthMap, @value(NumberOfMultisamples), 4)
-@end
-@property(!NumberOfMultisamples)
+@else
 	TEXTURE_2D(2, 0, GBufferMap0, 1)	// GBuffer 0: rgb = albedo color, a = alpha unused (required for blend operations)
 	TEXTURE_2D(2, 1, GBufferMap1, 2)	// GBuffer 1: rgb = view space normal, a = roughness
 	TEXTURE_2D(2, 2, GBufferMap2, 3)	// GBuffer 2: rgb = emissive color, a = metallic
@@ -111,8 +110,7 @@ SAMPLER_STATE(2, 0, SamplerLinear, 0)
 @includepiece(../SharedShaderPiece/SP_PhysicallyBasedShading.asset)
 	@property(HighQualityLighting)
 		@insertpiece(DefinePhysicallyBasedShading)
-	@end
-	@property(!HighQualityLighting)
+	@else
 		@insertpiece(DefineBlinnPhongBasedShading)
 	@end
 @includepiece(../SharedShaderPiece/SP_Depth.asset)
@@ -252,8 +250,7 @@ MAIN_BEGIN
 		}
 		@end
 		color /= @value(NumberOfMultisamples);
-	@end
-	@property(!NumberOfMultisamples)
+	@else
 		// Read GBuffer data
 		float4 gbuffer0Value = TEXTURE_FETCH_2D(GBufferMap0, int3(textureCoordinate, 0));
 

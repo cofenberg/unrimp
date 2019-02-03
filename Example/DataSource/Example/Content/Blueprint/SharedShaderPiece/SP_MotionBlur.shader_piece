@@ -25,8 +25,7 @@
 	float2 previousClipSpacePosition = (MAIN_INPUT(PreviousClipSpacePositionVS).xy / MAIN_INPUT(PreviousClipSpacePositionVS).z);
 	@property(UpperLeftOrigin)
 		previousClipSpacePosition = previousClipSpacePosition * float2(0.5f, -0.5f) + 0.5f;
-	@end
-	@property(!UpperLeftOrigin)
+	@else
 		previousClipSpacePosition = previousClipSpacePosition * float2(0.5f, 0.5f) + 0.5f;
 	@end
 	previousClipSpacePosition *= PassData.ViewportSize;

@@ -28,8 +28,7 @@
 		// -> The texture asset compiler handles the visual alpha test problems described at "The Witness - Explore an abandoned island." - "Computing Alpha Mipmaps" - http://the-witness.net/news/2010/09/computing-alpha-mipmaps/
 		float alpha = SAMPLE_2D(AlphaMap, SamplerLinear, MAIN_INPUT(TexCoordVS)).r;
 		float edgePixel = (alpha - material.AlphaReference) / max(fwidth(alpha), 0.0001f) + 0.5f;
-	@end
-	@property(!UseAlphaMap)
+	@else
 		// See "Antialiased Deferred Rendering" - https://docs.nvidia.com/gameworks/content/gameworkslibrary/graphicssamples/d3d_samples/antialiaseddeferredrendering.htm
 		float edgePixel = (COVERAGE_MASK != PassData.FullCoverageMask) ? 1.0f : 0.0f;
 	@end

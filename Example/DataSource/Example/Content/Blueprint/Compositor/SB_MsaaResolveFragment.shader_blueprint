@@ -31,8 +31,7 @@
 @property(NumberOfMultisamples)
 	#define MSAA_LOAD(name, coordinate, sampleIndex) SAMPLE_2D_MS(name, int2(coordinate), sampleIndex)
 	#define NUMBER_OF_MSAA_SAMPLES @value(NumberOfMultisamples)
-@end
-@property(!NumberOfMultisamples)
+@else
 	#define MSAA_LOAD(name, coordinate, sampleIndex) TEXTURE_FETCH_2D(name, int3(coordinate, 0))
 	#define NUMBER_OF_MSAA_SAMPLES 1
 @end
@@ -65,8 +64,7 @@ UNIFORM_BUFFER_END
 	TEXTURE_2D_MS(1, 0, ColorMap, NUMBER_OF_MSAA_SAMPLES, 0)
 	TEXTURE_2D_MS(1, 1, DepthMap, NUMBER_OF_MSAA_SAMPLES, 1)
 	TEXTURE_2D_MS(1, 2, VelocityMap, NUMBER_OF_MSAA_SAMPLES, 2)
-@end
-@property(!NumberOfMultisamples)
+@else
 	TEXTURE_2D(1, 0, ColorMap, 0)
 	TEXTURE_2D(1, 1, DepthMap, 1)
 	TEXTURE_2D(1, 2, VelocityMap, 2)
@@ -126,7 +124,7 @@ float FilterCubic(float x, float b, float c)
 float ResolveFilter(float x)
 {
 	// B-Spline
-	// -> Cubic filters naturually work in a [-2, 2] domain. For the resolve case we want to rescale the filter so that it works in [-1, 1] instead
+	// -> Cubic filters naturally work in a [-2, 2] domain. For the resolve case we want to rescale the filter so that it works in [-1, 1] instead
 	return FilterCubic(x * 2.0f, 1.0f, 0.0f);
 }
 
@@ -244,8 +242,7 @@ MAIN_BEGIN
 
 	@property(NumberOfMultisamples)
 		const int SAMPLE_RADIUS = 3;
-	@end
-	@property(!NumberOfMultisamples)
+	@else
 		const int SAMPLE_RADIUS = 1;
 	@end
 
@@ -266,8 +263,7 @@ MAIN_BEGIN
 
 				@property(NumberOfMultisamples)
 					bool useSample = (sampleDist.x <= 1.0f && sampleDist.y <= 1.0f);
-				@end
-				@property(!NumberOfMultisamples)
+				@else
 					bool useSample = true;
 				@end
 
@@ -299,8 +295,7 @@ MAIN_BEGIN
 	@property(NumberOfMultisamples)
 		float3 result = sum / max(totalWeight, 0.00001f);
 		float alpha = SAMPLE_2D_MS(ColorMap, int2(FRAGMENT_POSITION.xy), 0).a;
-	@end
-	@property(!NumberOfMultisamples)
+	@else
 		float4 color = TEXTURE_FETCH_2D(ColorMap, int3(FRAGMENT_POSITION.xy, 0));
 		float3 result = color.rgb;
 		float alpha = color.a;
@@ -344,8 +339,7 @@ MAIN_BEGIN
 		{
 			depth = max(depth, SAMPLE_2D_MS(DepthMap, int2(FRAGMENT_POSITION.xy), sampleIndex).r);
 		}
-	@end
-	@property(!NumberOfMultisamples)
+	@else
 		float depth = TEXTURE_FETCH_2D(DepthMap, int3(FRAGMENT_POSITION.xy, 0)).r;
 	@end
 
