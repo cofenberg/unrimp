@@ -68,7 +68,7 @@ endif()
 ##################################################
 include_directories(${CMAKE_SOURCE_DIR}/Example/Source)
 include_directories(${CMAKE_SOURCE_DIR}/Source)
-include_directories(${CMAKE_SOURCE_DIR}/External/Example)	# For "DeviceInput"
+include_directories(${CMAKE_SOURCE_DIR}/External/Example)	# For "DeviceInput" and "ini.h"
 if(ANDROID)
 	include_directories(${CMAKE_SOURCE_DIR}/External/Example/Android)
 endif()

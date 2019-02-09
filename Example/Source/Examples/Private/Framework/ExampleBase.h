@@ -171,6 +171,15 @@ public:
 
 	/**
 	*  @brief
+	*    Return the renderer runtime instance
+	*
+	*  @return
+	*    The renderer runtime instance
+	*/
+	[[nodiscard]] RendererRuntime::IRendererRuntime& getRendererRuntimeSafe() const;
+
+	/**
+	*  @brief
 	*    Return the renderer toolkit instance
 	*
 	*  @return

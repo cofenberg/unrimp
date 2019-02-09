@@ -131,18 +131,15 @@ namespace RendererRuntime
 		RENDERERRUNTIME_API_EXPORT void fillGraphicsCommandBuffer(Renderer::CommandBuffer& commandBuffer);
 		RENDERERRUNTIME_API_EXPORT void fillGraphicsCommandBufferUsingFixedBuildInRendererConfiguration(Renderer::CommandBuffer& commandBuffer);
 
-		// Ini-settings
-		[[nodiscard]] RENDERERRUNTIME_API_EXPORT bool getIniSetting(const char* name, float value[4]);
-		RENDERERRUNTIME_API_EXPORT void setIniSetting(const char* name, const float value[4]);
-
 		// Helper
+		inline bool hasOpenMetricsWindow() const
+		{
+			return mOpenMetricsWindow;
+		}
+
 		inline void openMetricsWindow()
 		{
-			if (!mOpenMetricsWindow)
-			{
-				mOpenMetricsWindow = true;
-				setOpenMetricsWindowIniSetting();
-			}
+			mOpenMetricsWindow = true;
 		}
 
 
@@ -164,7 +161,6 @@ namespace RendererRuntime
 		explicit DebugGuiManager(const DebugGuiManager&) = delete;
 		DebugGuiManager& operator=(const DebugGuiManager&) = delete;
 		void createFixedBuildInRendererConfigurationResources();
-		RENDERERRUNTIME_API_EXPORT void setOpenMetricsWindowIniSetting();
 
 
 	//[-------------------------------------------------------]

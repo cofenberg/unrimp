@@ -109,41 +109,6 @@ namespace
 			static_cast<Renderer::IAllocator*>(user_data)->reallocate(ptr, 0, 0, 1);
 		}
 
-		// From "imgui.cpp"
-		[[nodiscard]] ImGuiWindowSettings* FindWindowSettings(const char* name)
-		{
-			ImGuiContext& g = *GImGui;
-			ImGuiID id = ImHash(name, 0);
-			for (int i = 0; i != g.SettingsWindows.Size; i++)
-			{
-				ImGuiWindowSettings* ini = &g.SettingsWindows[i];
-				if (ini->Id == id)
-					return ini;
-			}
-			return NULL;
-		}
-
-		// From "imgui.cpp"
-		[[nodiscard]] ImGuiWindowSettings* AddWindowSettings(const char* name)
-		{
-			GImGui->SettingsWindows.resize(GImGui->SettingsWindows.Size + 1);
-			ImGuiWindowSettings* ini = &GImGui->SettingsWindows.back();
-			ini->Name = ImStrdup(name);
-			ini->Id = ImHash(name, 0);
-			ini->Collapsed = false;
-			ini->Pos = ImVec2(FLT_MAX,FLT_MAX);
-			ini->Size = ImVec2(0,0);
-			return ini;
-		}
-
-		// From "imgui.cpp"
-		void MarkIniSettingsDirty()
-		{
-			ImGuiContext& g = *GImGui;
-			if (g.SettingsDirtyTimer <= 0.0f)
-				g.SettingsDirtyTimer = g.IO.IniSavingRate;
-		}
-
 
 //[-------------------------------------------------------]
 //[ Anonymous detail namespace                            ]
@@ -201,12 +166,7 @@ namespace RendererRuntime
 		DebugGuiHelper::beginFrame();
 		if (mOpenMetricsWindow)
 		{
-			const bool previousOpenMetricsWindow = mOpenMetricsWindow;
 			DebugGuiHelper::drawMetricsWindow(mOpenMetricsWindow, compositorWorkspaceInstance);
-			if (previousOpenMetricsWindow != mOpenMetricsWindow)
-			{
-				setOpenMetricsWindowIniSetting();
-			}
 		}
 	}
 
@@ -379,42 +339,6 @@ namespace RendererRuntime
 		}
 	}
 
-	bool DebugGuiManager::getIniSetting(const char* name, float value[4])
-	{
-		ImGuiWindowSettings* settings = ::detail::FindWindowSettings(name);
-		if (nullptr != settings)
-		{
-			value[0] = settings->Pos.x;
-			value[1] = settings->Pos.y;
-			value[2] = settings->Size.x;
-			value[3] = settings->Size.y;
-
-			// Done
-			return true;
-		}
-
-		// Ini setting not found
-		return false;
-	}
-
-	void DebugGuiManager::setIniSetting(const char* name, const float value[4])
-	{
-		ImGuiWindowSettings* settings = ::detail::FindWindowSettings(name);
-		if (nullptr == settings)
-		{
-			settings = ::detail::AddWindowSettings(name);
-		}
-		if (settings->Pos.x != value[0] || settings->Pos.y != value[1] ||
-			settings->Size.x != value[2] || settings->Size.y != value[3])
-		{
-			settings->Pos.x = value[0];
-			settings->Pos.y = value[1];
-			settings->Size.x = value[2];
-			settings->Size.y = value[3];
-			::detail::MarkIniSettingsDirty();
-		}
-	}
-
 
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::DebugGuiManager methods ]
@@ -464,39 +388,19 @@ namespace RendererRuntime
 		ImGuiIO& imGuiIo = ImGui::GetIO();
 		imGuiIo.IniFilename = nullptr;
 		imGuiIo.LogFilename = nullptr;
-		if (nullptr != localDataMountPoint)
+		if (nullptr != localDataMountPoint && fileManager.createDirectories(localDataMountPoint))
 		{
-			// TODO(sw) These files don't get read/written via an file interface -> can break on mobile devices
-			// TODO(co) The file manager now works with virtual filenames, this might resolve the issue since the local data mount point is considered to map to a file location were the application is allowed to write
-			const std::string virtualDebugGuiDirectoryName = std::string(localDataMountPoint) + "/DebugGui";
-			if (fileManager.createDirectories(virtualDebugGuiDirectoryName.c_str()))
-			{
-				// ImGui has no file system abstraction and needs absolute filenames
-				mAbsoluteIniFilename = fileManager.mapVirtualToAbsoluteFilename(IFileManager::FileMode::WRITE, (virtualDebugGuiDirectoryName + "/UnrimpDebugGuiLayout.ini").c_str());
-				mAbsoluteLogFilename = fileManager.mapVirtualToAbsoluteFilename(IFileManager::FileMode::WRITE, (virtualDebugGuiDirectoryName + "/UnrimpDebugGuiLog.txt").c_str());
-				imGuiIo.IniFilename = mAbsoluteIniFilename.c_str();
-				imGuiIo.LogFilename = mAbsoluteLogFilename.c_str();
-			}
+			// ImGui has no file system abstraction and needs absolute filenames
+			const std::string virtualDebugGuiDirectoryName = localDataMountPoint;
+			mAbsoluteIniFilename = fileManager.mapVirtualToAbsoluteFilename(IFileManager::FileMode::WRITE, (virtualDebugGuiDirectoryName + "/UnrimpImGuiLayout.ini").c_str());
+			mAbsoluteLogFilename = fileManager.mapVirtualToAbsoluteFilename(IFileManager::FileMode::WRITE, (virtualDebugGuiDirectoryName + "/UnrimpImGuiLog.txt").c_str());
+			imGuiIo.IniFilename = mAbsoluteIniFilename.c_str();
+			imGuiIo.LogFilename = mAbsoluteLogFilename.c_str();
 		}
 
 		// Setup ImGui style and explicitly load the settings at once
-		// -> "imgui.cpp" -> "LoadIniSettingsFromDisk()" will clamp values, we don't want this
-		{
-			ImGuiStyle& imGuiStyle = ImGui::GetStyle();
-			const ImVec2 windowMinSizeBackup = imGuiStyle.WindowMinSize;
-			imGuiStyle.WindowMinSize.x = imGuiStyle.WindowMinSize.y = std::numeric_limits<float>::lowest();
-			ImGui::StyleColorsDark();
-			imGuiIo.LoadIniSettings();
-			imGuiStyle.WindowMinSize = windowMinSizeBackup;
-		}
-
-		{ // Read ini-settings
-			float value[4] = {};
-			if (getIniSetting("OpenMetricsWindow", value))
-			{
-				mOpenMetricsWindow = (0 != value[0]);
-			}
-		}
+		ImGui::StyleColorsDark();
+		imGuiIo.LoadIniSettings();
 	}
 
 	DebugGuiManager::~DebugGuiManager()
@@ -608,13 +512,6 @@ namespace RendererRuntime
 			Renderer::ISamplerState* samplerStates[2] = { nullptr, static_cast<Renderer::ISamplerState*>(samplerStateResource) };
 			mResourceGroup = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources, samplerStates);
 		}
-	}
-
-	void DebugGuiManager::setOpenMetricsWindowIniSetting()
-	{
-		// Update ini-settings
-		const float value[4] = { mOpenMetricsWindow ? 1.0f : 0.0f, 0.0f, 0.0f, 0.0f };
-		setIniSetting("OpenMetricsWindow", value);
 	}
 
 

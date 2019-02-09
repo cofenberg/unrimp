@@ -94,7 +94,7 @@ namespace
 		//[-------------------------------------------------------]
 		void getPipelineStateObjectCacheFilename(const RendererRuntime::IRendererRuntime& rendererRuntime, std::string& virtualDirectoryName, std::string& virtualFilename)
 		{
-			virtualDirectoryName = std::string(rendererRuntime.getFileManager().getLocalDataMountPoint()) + "/PipelineStateObjectCache";
+			virtualDirectoryName = rendererRuntime.getFileManager().getLocalDataMountPoint();
 			virtualFilename = virtualDirectoryName + '/' + rendererRuntime.getRenderer().getName() + ".pso_cache";
 		}
 

@@ -66,139 +66,136 @@ FirstMesh::FirstMesh() :
 void FirstMesh::onInitialization()
 {
 	// Get and check the renderer runtime instance
-	RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
-	if (nullptr != rendererRuntime)
+	RendererRuntime::IRendererRuntime& rendererRuntime = getRendererRuntimeSafe();
+	Renderer::IRendererPtr renderer(getRenderer());
+
+	// Don't create initial pipeline state caches after a material blueprint has been loaded since this example isn't using the material blueprint system
+	rendererRuntime.getMaterialBlueprintResourceManager().setCreateInitialPipelineStateCaches(false);
+
+	// Decide which shader language should be used (for example "GLSL" or "HLSL")
+	Renderer::IShaderLanguagePtr shaderLanguage(renderer->getShaderLanguage());
+	if (nullptr != shaderLanguage)
 	{
-		Renderer::IRendererPtr renderer(getRenderer());
+		{ // Create the root signature
+			Renderer::DescriptorRangeBuilder ranges[5];
+			ranges[0].initialize(Renderer::ResourceType::UNIFORM_BUFFER, 0, "UniformBlockDynamicVs", Renderer::ShaderVisibility::VERTEX);
+			ranges[1].initialize(Renderer::ResourceType::TEXTURE_2D,	 0, "_argb_nxa",			 Renderer::ShaderVisibility::FRAGMENT);
+			ranges[2].initialize(Renderer::ResourceType::TEXTURE_2D,	 1, "_hr_rg_mb_nya",		 Renderer::ShaderVisibility::FRAGMENT);
+			ranges[3].initialize(Renderer::ResourceType::TEXTURE_2D,	 2, "EmissiveMap",			 Renderer::ShaderVisibility::FRAGMENT);
+			ranges[4].initializeSampler(0, Renderer::ShaderVisibility::FRAGMENT);
 
-		// Don't create initial pipeline state caches after a material blueprint has been loaded since this example isn't using the material blueprint system
-		rendererRuntime->getMaterialBlueprintResourceManager().setCreateInitialPipelineStateCaches(false);
+			Renderer::RootParameterBuilder rootParameters[2];
+			rootParameters[0].initializeAsDescriptorTable(4, &ranges[0]);
+			rootParameters[1].initializeAsDescriptorTable(1, &ranges[4]);
 
-		// Decide which shader language should be used (for example "GLSL" or "HLSL")
-		Renderer::IShaderLanguagePtr shaderLanguage(renderer->getShaderLanguage());
-		if (nullptr != shaderLanguage)
+			// Setup
+			Renderer::RootSignatureBuilder rootSignature;
+			rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Renderer::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+			// Create the instance
+			mRootSignature = renderer->createRootSignature(rootSignature);
+		}
+
+		// Create uniform buffer
+		// -> Direct3D 9 does not support uniform buffers
+		// -> Direct3D 10, 11 and 12 do not support individual uniforms
+		// -> The renderer is just a light weight abstraction layer, so we need to handle the differences
+		// -> Allocate enough memory for two 4x4 floating point matrices
+		mUniformBuffer = rendererRuntime.getBufferManager().createUniformBuffer(2 * 4 * 4 * sizeof(float), nullptr, Renderer::BufferUsage::DYNAMIC_DRAW);
+
+		// Vertex input layout
+		static constexpr Renderer::VertexAttribute vertexAttributesLayout[] =
 		{
-			{ // Create the root signature
-				Renderer::DescriptorRangeBuilder ranges[5];
-				ranges[0].initialize(Renderer::ResourceType::UNIFORM_BUFFER, 0, "UniformBlockDynamicVs", Renderer::ShaderVisibility::VERTEX);
-				ranges[1].initialize(Renderer::ResourceType::TEXTURE_2D,	 0, "_argb_nxa",			 Renderer::ShaderVisibility::FRAGMENT);
-				ranges[2].initialize(Renderer::ResourceType::TEXTURE_2D,	 1, "_hr_rg_mb_nya",		 Renderer::ShaderVisibility::FRAGMENT);
-				ranges[3].initialize(Renderer::ResourceType::TEXTURE_2D,	 2, "EmissiveMap",			 Renderer::ShaderVisibility::FRAGMENT);
-				ranges[4].initializeSampler(0, Renderer::ShaderVisibility::FRAGMENT);
-
-				Renderer::RootParameterBuilder rootParameters[2];
-				rootParameters[0].initializeAsDescriptorTable(4, &ranges[0]);
-				rootParameters[1].initializeAsDescriptorTable(1, &ranges[4]);
-
-				// Setup
-				Renderer::RootSignatureBuilder rootSignature;
-				rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Renderer::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-
-				// Create the instance
-				mRootSignature = renderer->createRootSignature(rootSignature);
+			{ // Attribute 0
+				// Data destination
+				Renderer::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
+				"Position",									// name[32] (char)
+				"POSITION",									// semanticName[32] (char)
+				0,											// semanticIndex (uint32_t)
+				// Data source
+				0,											// inputSlot (uint32_t)
+				0,											// alignedByteOffset (uint32_t)
+				sizeof(float) * 5 + sizeof(short) * 4,		// strideInBytes (uint32_t)
+				0											// instancesPerElement (uint32_t)
+			},
+			{ // Attribute 1
+				// Data destination
+				Renderer::VertexAttributeFormat::FLOAT_2,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
+				"TexCoord",									// name[32] (char)
+				"TEXCOORD",									// semanticName[32] (char)
+				0,											// semanticIndex (uint32_t)
+				// Data source
+				0,											// inputSlot (uint32_t)
+				sizeof(float) * 3,							// alignedByteOffset (uint32_t)
+				sizeof(float) * 5 + sizeof(short) * 4,		// strideInBytes (uint32_t)
+				0											// instancesPerElement (uint32_t)
+			},
+			{ // Attribute 2
+				// Data destination
+				Renderer::VertexAttributeFormat::SHORT_4,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
+				"QTangent",									// name[32] (char)
+				"TEXCOORD",									// semanticName[32] (char)
+				1,											// semanticIndex (uint32_t)
+				// Data source
+				0,											// inputSlot (uint32_t)
+				sizeof(float) * 5,							// alignedByteOffset (uint32_t)
+				sizeof(float) * 5 + sizeof(short) * 4,		// strideInBytes (uint32_t)
+				0											// instancesPerElement (uint32_t)
 			}
+		};
+		const Renderer::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
 
-			// Create uniform buffer
-			// -> Direct3D 9 does not support uniform buffers
-			// -> Direct3D 10, 11 and 12 do not support individual uniforms
-			// -> The renderer is just a light weight abstraction layer, so we need to handle the differences
-			// -> Allocate enough memory for two 4x4 floating point matrices
-			mUniformBuffer = rendererRuntime->getBufferManager().createUniformBuffer(2 * 4 * 4 * sizeof(float), nullptr, Renderer::BufferUsage::DYNAMIC_DRAW);
+		{ // Create sampler state and wrap it into a resource group instance
+			Renderer::SamplerState samplerStateSettings = Renderer::ISamplerState::getDefaultSamplerState();
+			samplerStateSettings.addressU = Renderer::TextureAddressMode::WRAP;
+			samplerStateSettings.addressV = Renderer::TextureAddressMode::WRAP;
+			Renderer::IResource* samplerStateResource = mSamplerStatePtr = renderer->createSamplerState(samplerStateSettings);
+			mSamplerStateGroup = mRootSignature->createResourceGroup(1, 1, &samplerStateResource);
+		}
 
-			// Vertex input layout
-			static constexpr Renderer::VertexAttribute vertexAttributesLayout[] =
-			{
-				{ // Attribute 0
-					// Data destination
-					Renderer::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-					"Position",									// name[32] (char)
-					"POSITION",									// semanticName[32] (char)
-					0,											// semanticIndex (uint32_t)
-					// Data source
-					0,											// inputSlot (uint32_t)
-					0,											// alignedByteOffset (uint32_t)
-					sizeof(float) * 5 + sizeof(short) * 4,		// strideInBytes (uint32_t)
-					0											// instancesPerElement (uint32_t)
-				},
-				{ // Attribute 1
-					// Data destination
-					Renderer::VertexAttributeFormat::FLOAT_2,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-					"TexCoord",									// name[32] (char)
-					"TEXCOORD",									// semanticName[32] (char)
-					0,											// semanticIndex (uint32_t)
-					// Data source
-					0,											// inputSlot (uint32_t)
-					sizeof(float) * 3,							// alignedByteOffset (uint32_t)
-					sizeof(float) * 5 + sizeof(short) * 4,		// strideInBytes (uint32_t)
-					0											// instancesPerElement (uint32_t)
-				},
-				{ // Attribute 2
-					// Data destination
-					Renderer::VertexAttributeFormat::SHORT_4,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-					"QTangent",									// name[32] (char)
-					"TEXCOORD",									// semanticName[32] (char)
-					1,											// semanticIndex (uint32_t)
-					// Data source
-					0,											// inputSlot (uint32_t)
-					sizeof(float) * 5,							// alignedByteOffset (uint32_t)
-					sizeof(float) * 5 + sizeof(short) * 4,		// strideInBytes (uint32_t)
-					0											// instancesPerElement (uint32_t)
-				}
-			};
-			const Renderer::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
-
-			{ // Create sampler state and wrap it into a resource group instance
-				Renderer::SamplerState samplerStateSettings = Renderer::ISamplerState::getDefaultSamplerState();
-				samplerStateSettings.addressU = Renderer::TextureAddressMode::WRAP;
-				samplerStateSettings.addressV = Renderer::TextureAddressMode::WRAP;
-				Renderer::IResource* samplerStateResource = mSamplerStatePtr = renderer->createSamplerState(samplerStateSettings);
-				mSamplerStateGroup = mRootSignature->createResourceGroup(1, 1, &samplerStateResource);
-			}
+		// Create the graphics program
+		Renderer::IGraphicsProgramPtr graphicsProgram;
+		{
+			// Get the shader source code (outsourced to keep an overview)
+			const char* vertexShaderSourceCode = nullptr;
+			const char* fragmentShaderSourceCode = nullptr;
+			#include "FirstMesh_GLSL_450.h"	// For Vulkan
+			#include "FirstMesh_GLSL_410.h"	// macOS 10.11 only supports OpenGL 4.1 hence it's our OpenGL minimum
+			#include "FirstMesh_GLSL_ES3.h"
+			#include "FirstMesh_HLSL_D3D9.h"
+			#include "FirstMesh_HLSL_D3D10_D3D11_D3D12.h"
+			#include "FirstMesh_Null.h"
 
 			// Create the graphics program
-			Renderer::IGraphicsProgramPtr graphicsProgram;
+			mGraphicsProgram = graphicsProgram = shaderLanguage->createGraphicsProgram(
+				*mRootSignature,
+				vertexAttributes,
+				shaderLanguage->createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode),
+				shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
+		}
+
+		// Is there a valid graphics program?
+		if (nullptr != graphicsProgram)
+		{
+			// Create the graphics pipeline state object (PSO)
+			mGraphicsPipelineState = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass()));
+
+			// Optimization: Cached data to not bother the renderer API too much
+			if (nullptr == mUniformBuffer)
 			{
-				// Get the shader source code (outsourced to keep an overview)
-				const char* vertexShaderSourceCode = nullptr;
-				const char* fragmentShaderSourceCode = nullptr;
-				#include "FirstMesh_GLSL_450.h"	// For Vulkan
-				#include "FirstMesh_GLSL_410.h"	// macOS 10.11 only supports OpenGL 4.1 hence it's our OpenGL minimum
-				#include "FirstMesh_GLSL_ES3.h"
-				#include "FirstMesh_HLSL_D3D9.h"
-				#include "FirstMesh_HLSL_D3D10_D3D11_D3D12.h"
-				#include "FirstMesh_Null.h"
-
-				// Create the graphics program
-				mGraphicsProgram = graphicsProgram = shaderLanguage->createGraphicsProgram(
-					*mRootSignature,
-					vertexAttributes,
-					shaderLanguage->createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode),
-					shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
+				mObjectSpaceToClipSpaceMatrixUniformHandle = graphicsProgram->getUniformHandle("ObjectSpaceToClipSpaceMatrix");
+				mObjectSpaceToViewSpaceMatrixUniformHandle = graphicsProgram->getUniformHandle("ObjectSpaceToViewSpaceMatrix");
 			}
+		}
 
-			// Is there a valid graphics program?
-			if (nullptr != graphicsProgram)
-			{
-				// Create the graphics pipeline state object (PSO)
-				mGraphicsPipelineState = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass()));
+		// Create mesh instance
+		rendererRuntime.getMeshResourceManager().loadMeshResourceByAssetId(ASSET_ID("Example/Mesh/Imrod/SM_Imrod"), mMeshResourceId);
 
-				// Optimization: Cached data to not bother the renderer API too much
-				if (nullptr == mUniformBuffer)
-				{
-					mObjectSpaceToClipSpaceMatrixUniformHandle = graphicsProgram->getUniformHandle("ObjectSpaceToClipSpaceMatrix");
-					mObjectSpaceToViewSpaceMatrixUniformHandle = graphicsProgram->getUniformHandle("ObjectSpaceToViewSpaceMatrix");
-				}
-			}
-
-			// Create mesh instance
-			rendererRuntime->getMeshResourceManager().loadMeshResourceByAssetId(ASSET_ID("Example/Mesh/Imrod/SM_Imrod"), mMeshResourceId);
-
-			{ // Load in the albedo, emissive, normal and roughness texture
-				RendererRuntime::TextureResourceManager& textureResourceManager = rendererRuntime->getTextureResourceManager();
-				textureResourceManager.loadTextureResourceByAssetId(ASSET_ID("Example/Mesh/Imrod/T_Imrod_argb_nxa"),     ASSET_ID("Unrimp/Texture/DynamicByCode/Identity_argb_nxa2D"),     m_argb_nxaTextureResourceId, this);
-				textureResourceManager.loadTextureResourceByAssetId(ASSET_ID("Example/Mesh/Imrod/T_Imrod_hr_rg_mb_nya"), ASSET_ID("Unrimp/Texture/DynamicByCode/Identity_hr_rg_mb_nya2D"), m_hr_rg_mb_nyaTextureResourceId, this);
-				textureResourceManager.loadTextureResourceByAssetId(ASSET_ID("Example/Mesh/Imrod/T_Imrod_e"),            ASSET_ID("Unrimp/Texture/DynamicByCode/IdentityEmissiveMap2D"),   mEmissiveTextureResourceId, this);
-			}
+		{ // Load in the albedo, emissive, normal and roughness texture
+			RendererRuntime::TextureResourceManager& textureResourceManager = rendererRuntime.getTextureResourceManager();
+			textureResourceManager.loadTextureResourceByAssetId(ASSET_ID("Example/Mesh/Imrod/T_Imrod_argb_nxa"),     ASSET_ID("Unrimp/Texture/DynamicByCode/Identity_argb_nxa2D"),     m_argb_nxaTextureResourceId, this);
+			textureResourceManager.loadTextureResourceByAssetId(ASSET_ID("Example/Mesh/Imrod/T_Imrod_hr_rg_mb_nya"), ASSET_ID("Unrimp/Texture/DynamicByCode/Identity_hr_rg_mb_nya2D"), m_hr_rg_mb_nyaTextureResourceId, this);
+			textureResourceManager.loadTextureResourceByAssetId(ASSET_ID("Example/Mesh/Imrod/T_Imrod_e"),            ASSET_ID("Unrimp/Texture/DynamicByCode/IdentityEmissiveMap2D"),   mEmissiveTextureResourceId, this);
 		}
 	}
 }
@@ -236,14 +233,9 @@ void FirstMesh::onUpdate()
 
 void FirstMesh::onDraw()
 {
-	RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
-	if (nullptr == rendererRuntime)
-	{
-		return;
-	}
-
 	// Due to background texture loading, some textures might not be ready, yet
-	const RendererRuntime::TextureResourceManager& textureResourceManager = rendererRuntime->getTextureResourceManager();
+	RendererRuntime::IRendererRuntime& rendererRuntime = getRendererRuntimeSafe();
+	const RendererRuntime::TextureResourceManager& textureResourceManager = rendererRuntime.getTextureResourceManager();
 	const RendererRuntime::TextureResource* _argb_nxaTextureResource = textureResourceManager.tryGetById(m_argb_nxaTextureResourceId);
 	const RendererRuntime::TextureResource* _hr_rg_mb_nyaTextureResource = textureResourceManager.tryGetById(m_hr_rg_mb_nyaTextureResourceId);
 	const RendererRuntime::TextureResource* emissiveTextureResource = textureResourceManager.tryGetById(mEmissiveTextureResourceId);
@@ -266,7 +258,7 @@ void FirstMesh::onDraw()
 	if (nullptr != renderer && nullptr != mGraphicsPipelineState)
 	{
 		// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
-		RENDERER_SCOPED_PROFILER_EVENT(rendererRuntime->getContext(), mCommandBuffer, "First mesh")
+		RENDERER_SCOPED_PROFILER_EVENT(rendererRuntime.getContext(), mCommandBuffer, "First mesh")
 
 		// Set the viewport and get the aspect ratio
 		float aspectRatio = 4.0f / 3.0f;
@@ -341,7 +333,7 @@ void FirstMesh::onDraw()
 		}
 
 		{ // Draw mesh instance
-			const RendererRuntime::MeshResource* meshResource = rendererRuntime->getMeshResourceManager().tryGetById(mMeshResourceId);
+			const RendererRuntime::MeshResource* meshResource = rendererRuntime.getMeshResourceManager().tryGetById(mMeshResourceId);
 			if (nullptr != meshResource && nullptr != meshResource->getVertexArrayPtr())
 			{
 				// Input assembly (IA): Set the used vertex array

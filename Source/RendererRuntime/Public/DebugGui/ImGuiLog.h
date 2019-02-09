@@ -167,30 +167,26 @@ namespace RendererRuntime
 											ImGui::SetClipboardText(entry.attachment.c_str());
 
 											// Try to open the content as file in e.g. inside a text editor to make it possible to review e.g. shader issues as fast as possible
-											if (nullptr != fileManager.getLocalDataMountPoint())
+											if (nullptr != fileManager.getLocalDataMountPoint() && fileManager.createDirectories(fileManager.getLocalDataMountPoint()))
 											{
-												const std::string virtualDirectoryName = std::string(fileManager.getLocalDataMountPoint()) + "/DebugGui";
-												if (fileManager.createDirectories(virtualDirectoryName.c_str()))
+												const std::string virtualFilename = std::string(fileManager.getLocalDataMountPoint()) + "/TemporaryLogAttachment.txt";
+												IFile* file = fileManager.openFile(IFileManager::FileMode::WRITE, virtualFilename.c_str());
+												if (nullptr != file)
 												{
-													const std::string virtualFilename = virtualDirectoryName + "/TemporaryLogAttachment.txt";
-													IFile* file = fileManager.openFile(IFileManager::FileMode::WRITE, virtualFilename.c_str());
-													if (nullptr != file)
-													{
-														file->write(entry.attachment.data(), entry.attachment.size());
+													file->write(entry.attachment.data(), entry.attachment.size());
 
-														// Close file
-														fileManager.closeFile(*file);
+													// Close file
+													fileManager.closeFile(*file);
 
-														// Try to open the content as file in e.g. inside a text editor
-														PlatformManager::openUrlExternal(("file://" + fileManager.mapVirtualToAbsoluteFilename(IFileManager::FileMode::READ, virtualFilename.c_str())).c_str());
-													}
-													else
+													// Try to open the content as file in e.g. inside a text editor
+													PlatformManager::openUrlExternal(("file://" + fileManager.mapVirtualToAbsoluteFilename(IFileManager::FileMode::READ, virtualFilename.c_str())).c_str());
+												}
+												else
+												{
+													// Error!
+													if (print(Renderer::ILog::Type::CRITICAL, nullptr, __FILE__, static_cast<uint32_t>(__LINE__), "Failed to open the file \"%s\" for writing", virtualFilename.c_str()))
 													{
-														// Error!
-														if (print(Renderer::ILog::Type::CRITICAL, nullptr, __FILE__, static_cast<uint32_t>(__LINE__), "Failed to open the file \"%s\" for writing", virtualFilename.c_str()))
-														{
-															DEBUG_BREAK;
-														}
+														DEBUG_BREAK;
 													}
 												}
 											}

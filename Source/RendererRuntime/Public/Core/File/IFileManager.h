@@ -145,10 +145,10 @@ namespace RendererRuntime
 		*
 		*  @remarks
 		*    Examples for local data
-		*    - "DebugGui": ImGui "ini"-files storing session information
-		*    - "PipelineStateObjectCache": Locally updated and saved pipeline state object cache in case the shipped one had cache misses
-		*    - "RendererToolkit": Used e.g. for renderer toolkit cache which is used to detect source data changes for incremental asset compilation instead of time consuming full asset compilation
-		*    - "Log": Log files, Unrimp itself won't save log files
+		*    - Log files, Unrimp itself won't save log files
+		*    - ImGui "ini"-files storing session information
+		*    - Locally updated and saved pipeline state object cache in case the shipped one had cache misses
+		*    - Renderer toolkit cache which is used to detect source data changes for incremental asset compilation instead of time consuming full asset compilation
 		*/
 		[[nodiscard]] virtual const char* getLocalDataMountPoint() const = 0;
 

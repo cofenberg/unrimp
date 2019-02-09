@@ -43,6 +43,14 @@ RendererRuntime::IRendererRuntime* ExampleBase::getRendererRuntime() const
 	return (nullptr != mApplicationFrontend) ? mApplicationFrontend->getRendererRuntime() : nullptr;
 }
 
+RendererRuntime::IRendererRuntime& ExampleBase::getRendererRuntimeSafe() const
+{
+	assert(nullptr != mApplicationFrontend);
+	RendererRuntime::IRendererRuntime* rendererRuntime = mApplicationFrontend->getRendererRuntime();
+	assert(nullptr != rendererRuntime);
+	return *rendererRuntime;
+}
+
 RendererToolkit::IRendererToolkit* ExampleBase::getRendererToolkit()
 {
 	return (nullptr != mApplicationFrontend) ? mApplicationFrontend->getRendererToolkit() : nullptr;

@@ -56,8 +56,8 @@ namespace
 		//[-------------------------------------------------------]
 		void getRendererToolkitCacheFilename(const RendererRuntime::IFileManager& fileManager, const std::string& projectName, std::string& virtualDirectoryName, std::string& virtualFilename)
 		{
-			virtualDirectoryName = std::string(fileManager.getLocalDataMountPoint()) + "/RendererToolkit";
-			virtualFilename = virtualDirectoryName + '/' + projectName + ".cache";
+			virtualDirectoryName = fileManager.getLocalDataMountPoint();
+			virtualFilename = virtualDirectoryName + '/' + projectName + ".renderer_toolkit_cache";
 		}
 
 		[[nodiscard]] bool loadRendererToolkitCacheFile(const RendererRuntime::IFileManager& fileManager, const std::string& projectName, RendererRuntime::MemoryFile& memoryFile)

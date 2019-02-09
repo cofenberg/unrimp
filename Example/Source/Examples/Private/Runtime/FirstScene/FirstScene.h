@@ -38,6 +38,7 @@
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
 class IController;
+typedef struct ini_t ini_t;
 namespace DeviceInput
 {
 	class InputManager;
@@ -126,6 +127,9 @@ protected:
 private:
 	explicit FirstScene(const FirstScene&) = delete;
 	FirstScene& operator=(const FirstScene&) = delete;
+	void loadIni();
+	void saveIni();
+	void destroyIni();
 	void applyCurrentSettings(Renderer::IRenderTarget& mainRenderTarget);
 	void createCompositorWorkspace();
 	void createDebugGui(Renderer::IRenderTarget& mainRenderTarget);
@@ -231,6 +235,12 @@ private:
 	// Scene hot-reloading memory
 	bool					   mHasCameraTransformBackup;
 	RendererRuntime::Transform mCameraTransformBackup;
+	// Ini settings indices
+	std::vector<char> mIniFileContent;	// Defined here to avoid reallocations
+	ini_t*			  mIni;
+	int				  mMainWindowPositionSizeIniProperty;
+	int				  mCameraPositionRotationIniProperty;
+	int				  mOpenMetricsWindowIniProperty;
 
 
 };

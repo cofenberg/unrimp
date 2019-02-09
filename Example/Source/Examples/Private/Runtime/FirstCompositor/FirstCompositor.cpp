@@ -57,15 +57,13 @@ namespace
 void FirstCompositor::onInitialization()
 {
 	// Get and check the renderer runtime instance
-	RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
-	if (nullptr != rendererRuntime)
-	{
-		// Set our custom compositor pass factory
-		rendererRuntime->getCompositorNodeResourceManager().setCompositorPassFactory(&::detail::compositorPassFactoryFirst);
+	RendererRuntime::IRendererRuntime& rendererRuntime = getRendererRuntimeSafe();
 
-		// Create the compositor workspace instance
-		mCompositorWorkspaceInstance = new RendererRuntime::CompositorWorkspaceInstance(*rendererRuntime, ASSET_ID("Example/CompositorWorkspace/CW_First"));
-	}
+	// Set our custom compositor pass factory
+	rendererRuntime.getCompositorNodeResourceManager().setCompositorPassFactory(&::detail::compositorPassFactoryFirst);
+
+	// Create the compositor workspace instance
+	mCompositorWorkspaceInstance = new RendererRuntime::CompositorWorkspaceInstance(rendererRuntime, ASSET_ID("Example/CompositorWorkspace/CW_First"));
 }
 
 void FirstCompositor::onDeinitialization()
@@ -75,11 +73,7 @@ void FirstCompositor::onDeinitialization()
 	mCompositorWorkspaceInstance = nullptr;
 
 	// Be polite and unset our custom compositor pass factory
-	RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
-	if (nullptr != rendererRuntime)
-	{
-		rendererRuntime->getCompositorNodeResourceManager().setCompositorPassFactory(nullptr);
-	}
+	getRendererRuntimeSafe().getCompositorNodeResourceManager().setCompositorPassFactory(nullptr);
 }
 
 void FirstCompositor::onDraw()

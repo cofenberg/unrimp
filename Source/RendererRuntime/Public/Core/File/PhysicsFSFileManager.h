@@ -499,7 +499,7 @@ namespace RendererRuntime
 
 		[[nodiscard]] inline virtual std::string mapVirtualToAbsoluteFilename(FileMode fileMode, VirtualFilename virtualFilename) const override
 		{
-			// Figure out where in the search path a file resides (e.g. "LocalData/DebugGui/UnrimpDebugGuiLayout.ini" -> "c:/MyProject/Binary/LocalData")
+			// Figure out where in the search path a file resides (e.g. "LocalData/UnrimpImGuiLayout.ini" -> "c:/MyProject/Binary/LocalData")
 			const char* realDirectory = PHYSFS_getRealDir(virtualFilename);
 			if (nullptr != realDirectory)
 			{
@@ -517,9 +517,9 @@ namespace RendererRuntime
 					if (std::string::npos != index)
 					{
 						// Now that we have all information we need, transform the given virtual filename into an absolute filename
-						// -> Example: The virtual filename "LocalData/DebugGui/UnrimpDebugGuiLayout.ini" will result in the absolute filename "c:/MyProject/Binary/LocalData/DebugGui/UnrimpDebugGuiLayout.ini"
+						// -> Example: The virtual filename "LocalData/UnrimpImGuiLayout.ini" will result in the absolute filename "c:/MyProject/Binary/LocalData/UnrimpImGuiLayout.ini"
 						std::string absoluteFilename = virtualFilename;
-						absoluteFilename.erase(index, strlen(mountPoint));	// Example: "LocalData/DebugGui/UnrimpDebugGuiLayout.ini" to "DebugGui/UnrimpDebugGuiLayout.ini"
+						absoluteFilename.erase(index, strlen(mountPoint));	// Example: "LocalData/UnrimpImGuiLayout.ini" to "UnrimpImGuiLayout.ini"
 						absoluteFilename = FileSystemHelper::lexicallyNormal(std::string(realDirectory) + '/' + absoluteFilename).generic_string();
 
 						// Done
@@ -532,7 +532,7 @@ namespace RendererRuntime
 			else if (FileMode::WRITE == fileMode)
 			{
 				// Get the absolute filename of the directory a newly created file would be in
-				// -> Example: The virtual filename "LocalData/DebugGui/UnrimpDebugGuiLayout.ini" will result in the absolute directory name "c:/MyProject/Binary/LocalData/DebugGui"
+				// -> Example: The virtual filename "LocalData/UnrimpImGuiLayout.ini" will result in the absolute directory name "c:/MyProject/Binary/LocalData"
 				const std_filesystem::path path(virtualFilename);
 				const std::string absoluteDirectoryName = mapVirtualToAbsoluteFilename(fileMode, path.parent_path().generic_string().c_str());
 				if (!absoluteDirectoryName.empty())

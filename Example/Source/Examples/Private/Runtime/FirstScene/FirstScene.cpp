@@ -70,6 +70,11 @@
 
 #include <DeviceInput/DeviceInput.h>
 
+#define INI_IMPLEMENTATION
+#define INI_MALLOC(ctx, size) (static_cast<Renderer::IAllocator*>(ctx)->reallocate(nullptr, 0, size, 1))
+#define INI_FREE(ctx, ptr) (static_cast<Renderer::IAllocator*>(ctx)->reallocate(ptr, 0, 0, 1))
+#include <ini/ini.h>
+
 #ifdef RENDERER_RUNTIME_IMGUI
 	#include <imgui/imgui.h>
 #endif
@@ -102,8 +107,9 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
-		static constexpr uint32_t SCENE_ASSET_ID		  = ASSET_ID("Example/Scene/S_FirstScene");
-		static constexpr uint32_t IMROD_MATERIAL_ASSET_ID = ASSET_ID("Example/Mesh/Imrod/M_Imrod");
+		static constexpr char*    VIRTUAL_SETTINGS_FILENAME	= "LocalData/FirstSceneExample.ini";
+		static constexpr uint32_t SCENE_ASSET_ID			= ASSET_ID("Example/Scene/S_FirstScene");
+		static constexpr uint32_t IMROD_MATERIAL_ASSET_ID	= ASSET_ID("Example/Mesh/Imrod/M_Imrod");
 
 
 //[-------------------------------------------------------]
@@ -169,7 +175,12 @@ FirstScene::FirstScene() :
 	mRotationSpeed(0.5f),
 	mShowSkeleton(false),
 	// Scene hot-reloading memory
-	mHasCameraTransformBackup(false)
+	mHasCameraTransformBackup(false),
+	// Ini settings indices
+	mIni(nullptr),
+	mMainWindowPositionSizeIniProperty(INI_NOT_FOUND),
+	mCameraPositionRotationIniProperty(INI_NOT_FOUND),
+	mOpenMetricsWindowIniProperty(INI_NOT_FOUND)
 {
 	#ifdef RENDERER_RUNTIME_IMGUI
 		RendererRuntime::DebugGuiManager::setImGuiAllocatorFunctions(g_DefaultAllocator);
@@ -197,96 +208,113 @@ FirstScene::~FirstScene()
 //[-------------------------------------------------------]
 void FirstScene::onInitialization()
 {
+	loadIni();
+
 	// Get and check the renderer runtime instance
-	RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
-	if (nullptr != rendererRuntime)
+	RendererRuntime::IRendererRuntime& rendererRuntime = getRendererRuntimeSafe();
+
+	// Usability: Restore the position and size of the main window from a previous session
+	#if defined(_WIN32) && !defined(SDL2_FOUND) && defined(RENDERER_RUNTIME_IMGUI)
+		if (INI_NOT_FOUND != mMainWindowPositionSizeIniProperty)
+		{
+			const char* propertyValue = ini_property_value(mIni, INI_GLOBAL_SECTION, mMainWindowPositionSizeIniProperty);
+			if (nullptr != propertyValue)
+			{
+				int value[4] = { 0, 0, 1024, 768 };
+				sscanf(propertyValue, "%d %d %d %d", &value[0], &value[1], &value[2], &value[3]);
+				::SetWindowPos(reinterpret_cast<HWND>(rendererRuntime.getRenderer().getContext().getNativeWindowHandle()), HWND_TOP, static_cast<int>(value[0]), static_cast<int>(value[1]), static_cast<int>(value[2]), static_cast<int>(value[3]), 0);
+			}
+		}
+	#endif
+
+	// Usability: Restore open metrics window
+	if (INI_NOT_FOUND != mOpenMetricsWindowIniProperty)
 	{
-		// Usability: Restore the position and size of the main window from a previous session
-		#if defined(_WIN32) && !defined(SDL2_FOUND) && defined(RENDERER_RUNTIME_IMGUI)
+		const char* propertyValue = ini_property_value(mIni, INI_GLOBAL_SECTION, mOpenMetricsWindowIniProperty);
+		if (nullptr != propertyValue)
 		{
-			float value[4] = {};
-			if (rendererRuntime->getDebugGuiManager().getIniSetting("MainWindowPositionSize", value))
+			int value = 0;
+			sscanf(propertyValue, "%d", &value);
+			if (0 != value)
 			{
-				::SetWindowPos(reinterpret_cast<HWND>(rendererRuntime->getRenderer().getContext().getNativeWindowHandle()), HWND_TOP, static_cast<int>(value[0]), static_cast<int>(value[1]), static_cast<int>(value[2]), static_cast<int>(value[3]), 0);
+				rendererRuntime.getDebugGuiManager().openMetricsWindow();
 			}
 		}
-		#endif
+	}
 
-		// TODO(co) Remove this after the Vulkan renderer backend is fully up-and-running. Or better, add asset properties so one can e.g. add asset information regarding e.g. supported renderer backends.
-		const Renderer::NameId nameId = rendererRuntime->getRenderer().getNameId();
-		if (Renderer::NameId::VULKAN == nameId || Renderer::NameId::DIRECT3D10 == nameId || Renderer::NameId::DIRECT3D9 == nameId)
+	// TODO(co) Remove this after the Vulkan renderer backend is fully up-and-running. Or better, add asset properties so one can e.g. add asset information regarding e.g. supported renderer backends.
+	const Renderer::NameId nameId = rendererRuntime.getRenderer().getNameId();
+	if (Renderer::NameId::VULKAN == nameId || Renderer::NameId::DIRECT3D10 == nameId || Renderer::NameId::DIRECT3D9 == nameId)
+	{
+		mInstancedCompositor = Compositor::DEBUG;
+		mCurrentCompositor = static_cast<int>(mInstancedCompositor);
+		if (Renderer::NameId::VULKAN == nameId)
 		{
-			mInstancedCompositor = Compositor::DEBUG;
-			mCurrentCompositor = static_cast<int>(mInstancedCompositor);
-			if (Renderer::NameId::VULKAN == nameId)
-			{
-				rendererRuntime->getMaterialBlueprintResourceManager().setCreateInitialPipelineStateCaches(false);
-			}
+			rendererRuntime.getMaterialBlueprintResourceManager().setCreateInitialPipelineStateCaches(false);
 		}
+	}
 
-		// Create the scene resource
-		rendererRuntime->getSceneResourceManager().loadSceneResourceByAssetId(::detail::SCENE_ASSET_ID, mSceneResourceId, this);
+	// Create the scene resource
+	rendererRuntime.getSceneResourceManager().loadSceneResourceByAssetId(::detail::SCENE_ASSET_ID, mSceneResourceId, this);
 
-		// Load the material resource we're going to clone
-		rendererRuntime->getMaterialResourceManager().loadMaterialResourceByAssetId(::detail::IMROD_MATERIAL_ASSET_ID, mMaterialResourceId, this);
+	// Load the material resource we're going to clone
+	rendererRuntime.getMaterialResourceManager().loadMaterialResourceByAssetId(::detail::IMROD_MATERIAL_ASSET_ID, mMaterialResourceId, this);
 
-		// Try to startup the VR-manager if a HMD is present
-		#ifdef RENDERER_RUNTIME_OPENVR
+	// Try to startup the VR-manager if a HMD is present
+	#ifdef RENDERER_RUNTIME_OPENVR
+	{
+		RendererRuntime::IVrManager& vrManager = rendererRuntime.getVrManager();
+		if (vrManager.isHmdPresent())
 		{
-			RendererRuntime::IVrManager& vrManager = rendererRuntime->getVrManager();
-			if (vrManager.isHmdPresent())
+			vrManager.setSceneResourceId(mSceneResourceId);
+			if (vrManager.startup(ASSET_ID("Example/Blueprint/Mesh/M_VrDevice")))
 			{
-				vrManager.setSceneResourceId(mSceneResourceId);
-				if (vrManager.startup(ASSET_ID("Example/Blueprint/Mesh/M_VrDevice")))
+				// Select the VR compositor and enable MSAA by default since image stability is quite important for VR
+				// -> "Advanced VR Rendering" by Alex Vlachos, Valve -> page 26 -> "4xMSAA Minimum Quality" ( http://media.steampowered.com/apps/valve/2015/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf )
+				// -> We're using temporal MSAA which looks quite stable with 2xMSAA as well
+				if (Compositor::DEBUG != static_cast<Compositor>(mCurrentCompositor))
 				{
-					// Select the VR compositor and enable MSAA by default since image stability is quite important for VR
-					// -> "Advanced VR Rendering" by Alex Vlachos, Valve -> page 26 -> "4xMSAA Minimum Quality" ( http://media.steampowered.com/apps/valve/2015/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf )
-					// -> We're using temporal MSAA which looks quite stable with 2xMSAA as well
-					if (Compositor::DEBUG != static_cast<Compositor>(mCurrentCompositor))
-					{
-						mInstancedCompositor = Compositor::VR;
-						mCurrentCompositor = static_cast<int>(mInstancedCompositor);
-					}
-					if (mCurrentMsaa < static_cast<int>(Msaa::TWO))
-					{
-						mCurrentMsaa = static_cast<int>(Msaa::TWO);
-					}
-					if (mCurrentTextureFiltering < static_cast<int>(TextureFiltering::ANISOTROPIC_4))
-					{
-						mCurrentTextureFiltering = static_cast<int>(TextureFiltering::ANISOTROPIC_4);
-					}
+					mInstancedCompositor = Compositor::VR;
+					mCurrentCompositor = static_cast<int>(mInstancedCompositor);
+				}
+				if (mCurrentMsaa < static_cast<int>(Msaa::TWO))
+				{
+					mCurrentMsaa = static_cast<int>(Msaa::TWO);
+				}
+				if (mCurrentTextureFiltering < static_cast<int>(TextureFiltering::ANISOTROPIC_4))
+				{
+					mCurrentTextureFiltering = static_cast<int>(TextureFiltering::ANISOTROPIC_4);
 				}
 			}
 		}
-		#endif
-
-		// When using OpenGL ES 3, switch to a compositor which is designed for mobile devices
-		// TODO(co) The Vulkan renderer backend is under construction, so debug compositor for now
-		if (rendererRuntime->getRenderer().getNameId() == Renderer::NameId::VULKAN || rendererRuntime->getRenderer().getNameId() == Renderer::NameId::OPENGLES3)
-		{
-			// TODO(co) Add compositor designed for mobile devices, for now we're using the most simple debug compositor to have something on the screen
-			mInstancedCompositor = Compositor::DEBUG;
-			mCurrentCompositor = static_cast<int>(mInstancedCompositor);
-			mCurrentMsaa = static_cast<int>(Msaa::NONE);
-			mCurrentTextureFiltering = static_cast<int>(TextureFiltering::BILINEAR);
-		}
-
-		// Create the compositor workspace instance
-		createCompositorWorkspace();
 	}
+	#endif
+
+	// When using OpenGL ES 3, switch to a compositor which is designed for mobile devices
+	// TODO(co) The Vulkan renderer backend is under construction, so debug compositor for now
+	if (rendererRuntime.getRenderer().getNameId() == Renderer::NameId::VULKAN || rendererRuntime.getRenderer().getNameId() == Renderer::NameId::OPENGLES3)
+	{
+		// TODO(co) Add compositor designed for mobile devices, for now we're using the most simple debug compositor to have something on the screen
+		mInstancedCompositor = Compositor::DEBUG;
+		mCurrentCompositor = static_cast<int>(mInstancedCompositor);
+		mCurrentMsaa = static_cast<int>(Msaa::NONE);
+		mCurrentTextureFiltering = static_cast<int>(TextureFiltering::BILINEAR);
+	}
+
+	// Create the compositor workspace instance
+	createCompositorWorkspace();
 }
 
 void FirstScene::onDeinitialization()
 {
+	saveIni();
+	destroyIni();
+
 	// Release the used resources
 	delete mCompositorWorkspaceInstance;
 	mCompositorWorkspaceInstance = nullptr;
-	RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
-	if (nullptr != rendererRuntime)
-	{
-		rendererRuntime->getSceneResourceManager().destroySceneResource(mSceneResourceId);
-		RendererRuntime::setInvalid(mSceneResourceId);
-	}
+	getRendererRuntimeSafe().getSceneResourceManager().destroySceneResource(mSceneResourceId);
+	RendererRuntime::setInvalid(mSceneResourceId);
 
 	// Destroy controller instance
 	if (nullptr != mController)
@@ -298,85 +326,57 @@ void FirstScene::onDeinitialization()
 
 void FirstScene::onUpdate()
 {
-	const RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
-	if (nullptr != rendererRuntime)
+	const RendererRuntime::IRendererRuntime& rendererRuntime = getRendererRuntimeSafe();
+
+	{ // Tell the material blueprint resource manager about our global material properties
+		RendererRuntime::MaterialProperties& globalMaterialProperties = rendererRuntime.getMaterialBlueprintResourceManager().getGlobalMaterialProperties();
+		// Graphics
+		globalMaterialProperties.setPropertyById(STRING_ID("GlobalReceiveShadows"), RendererRuntime::MaterialPropertyValue::fromBoolean(ShadowQuality::NONE != mShadowQuality));
+		globalMaterialProperties.setPropertyById(STRING_ID("GlobalHighQualityRendering"), RendererRuntime::MaterialPropertyValue::fromBoolean(mHighQualityRendering));
+		globalMaterialProperties.setPropertyById(STRING_ID("GlobalHighQualityLighting"), RendererRuntime::MaterialPropertyValue::fromBoolean(mHighQualityLighting));
+		globalMaterialProperties.setPropertyById(STRING_ID("GlobalSoftParticles"), RendererRuntime::MaterialPropertyValue::fromBoolean(mSoftParticles));
+		globalMaterialProperties.setPropertyById(STRING_ID("GlobalTessellatedTriangleWidth"), RendererRuntime::MaterialPropertyValue::fromFloat(static_cast<float>(mTerrainTessellatedTriangleWidth)));
+		// Environment
+		globalMaterialProperties.setPropertyById(STRING_ID("GlobalCloudsIntensity"), RendererRuntime::MaterialPropertyValue::fromFloat(mCloudsIntensity));
+		globalMaterialProperties.setPropertyById(STRING_ID("GlobalWindDirectionStrength"), RendererRuntime::MaterialPropertyValue::fromFloat4(1.0f, 0.0f, 0.0f, mWindSpeed));
+		globalMaterialProperties.setPropertyById(STRING_ID("GlobalUseWetSurfaces"), RendererRuntime::MaterialPropertyValue::fromBoolean(mWetSurfaces[0] > 0.0f));
+		globalMaterialProperties.setPropertyById(STRING_ID("GlobalWetSurfaces"), RendererRuntime::MaterialPropertyValue::fromFloat4(mWetSurfaces));
+	}
+
+	// Update the scene node rotation
+	if (nullptr != mSceneNode && mRotationSpeed > 0.0f)
 	{
-		{ // Tell the material blueprint resource manager about our global material properties
-			RendererRuntime::MaterialProperties& globalMaterialProperties = rendererRuntime->getMaterialBlueprintResourceManager().getGlobalMaterialProperties();
-			// Graphics
-			globalMaterialProperties.setPropertyById(STRING_ID("GlobalReceiveShadows"), RendererRuntime::MaterialPropertyValue::fromBoolean(ShadowQuality::NONE != mShadowQuality));
-			globalMaterialProperties.setPropertyById(STRING_ID("GlobalHighQualityRendering"), RendererRuntime::MaterialPropertyValue::fromBoolean(mHighQualityRendering));
-			globalMaterialProperties.setPropertyById(STRING_ID("GlobalHighQualityLighting"), RendererRuntime::MaterialPropertyValue::fromBoolean(mHighQualityLighting));
-			globalMaterialProperties.setPropertyById(STRING_ID("GlobalSoftParticles"), RendererRuntime::MaterialPropertyValue::fromBoolean(mSoftParticles));
-			globalMaterialProperties.setPropertyById(STRING_ID("GlobalTessellatedTriangleWidth"), RendererRuntime::MaterialPropertyValue::fromFloat(static_cast<float>(mTerrainTessellatedTriangleWidth)));
-			// Environment
-			globalMaterialProperties.setPropertyById(STRING_ID("GlobalCloudsIntensity"), RendererRuntime::MaterialPropertyValue::fromFloat(mCloudsIntensity));
-			globalMaterialProperties.setPropertyById(STRING_ID("GlobalWindDirectionStrength"), RendererRuntime::MaterialPropertyValue::fromFloat4(1.0f, 0.0f, 0.0f, mWindSpeed));
-			globalMaterialProperties.setPropertyById(STRING_ID("GlobalUseWetSurfaces"), RendererRuntime::MaterialPropertyValue::fromBoolean(mWetSurfaces[0] > 0.0f));
-			globalMaterialProperties.setPropertyById(STRING_ID("GlobalWetSurfaces"), RendererRuntime::MaterialPropertyValue::fromFloat4(mWetSurfaces));
-		}
+		glm::vec3 eulerAngles = RendererRuntime::EulerAngles::matrixToEuler(glm::mat3_cast(mSceneNode->getGlobalTransform().rotation));
+		eulerAngles.x += rendererRuntime.getTimeManager().getPastSecondsSinceLastFrame() * mRotationSpeed;
+		mSceneNode->setRotation(RendererRuntime::EulerAngles::eulerToQuaternion(eulerAngles));
+	}
 
-		// Update the scene node rotation
-		if (nullptr != mSceneNode && mRotationSpeed > 0.0f)
-		{
-			glm::vec3 eulerAngles = RendererRuntime::EulerAngles::matrixToEuler(glm::mat3_cast(mSceneNode->getGlobalTransform().rotation));
-			eulerAngles.x += rendererRuntime->getTimeManager().getPastSecondsSinceLastFrame() * mRotationSpeed;
-			mSceneNode->setRotation(RendererRuntime::EulerAngles::eulerToQuaternion(eulerAngles));
-		}
-
-		// Update controller
-		if (nullptr != mController)
-		{
-			// Simple GUI <-> ingame input distribution
-			// -> Do only enable input as long as this example application has the operation system window focus
-			// -> While the mouse is hovering over an GUI element, disable the ingame controller
-			// -> Avoid that while looking around with the mouse the mouse is becoming considered hovering over an GUI element
-			// -> Remember: Unrimp is about rendering related topics, it's not an all-in-one-framework including an advanced input framework, so a simple non-generic solution is sufficient in here
-			#ifdef _WIN32
-				const bool hasWindowFocus = (::GetFocus() == reinterpret_cast<HWND>(rendererRuntime->getRenderer().getContext().getNativeWindowHandle()));
-			#else
-				bool hasWindowFocus = true;
-			#endif
-			#ifdef RENDERER_RUNTIME_IMGUI
-				const bool isAnyWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
-			#else
-				const bool isAnyWindowHovered = false;
-			#endif
-			mController->onUpdate(rendererRuntime->getTimeManager().getPastSecondsSinceLastFrame(), hasWindowFocus && (mController->isMouseControlInProgress() || !isAnyWindowHovered));
-		}
-
-		// Scene hot-reloading memory
-		if (nullptr != mCameraSceneItem)
-		{
-			mHasCameraTransformBackup = true;
-			mCameraTransformBackup = mCameraSceneItem->getParentSceneNodeSafe().getGlobalTransform();
-
-			// Backup camera position and rotation for a following session, but only if VR isn't running right now
-			#ifdef RENDERER_RUNTIME_IMGUI
-				#ifdef RENDERER_RUNTIME_OPENVR
-					if (!rendererRuntime->getVrManager().isRunning())
-				#endif
-				{
-					RendererRuntime::DebugGuiManager& debugGuiManager = mCompositorWorkspaceInstance->getRendererRuntime().getDebugGuiManager();
-					{
-						// TODO(co) Use a configuration serialization which supports double
-						const float value[4] = { static_cast<float>(mCameraTransformBackup.position.x), static_cast<float>(mCameraTransformBackup.position.y), static_cast<float>(mCameraTransformBackup.position.z), 0.0f };
-						debugGuiManager.setIniSetting("CameraPosition", value);
-					}
-					debugGuiManager.setIniSetting("CameraRotation", glm::value_ptr(mCameraTransformBackup.rotation));
-				}
-			#endif
-		}
-
-		// Usability: Backup the position and size of the main window so we can restore it in the next session
-		#if defined(_WIN32) && defined(RENDERER_RUNTIME_IMGUI)
-		{
-			RECT rect;
-			::GetWindowRect(reinterpret_cast<HWND>(rendererRuntime->getRenderer().getContext().getNativeWindowHandle()), &rect);
-			const float value[4] = { static_cast<float>(rect.left), static_cast<float>(rect.top), static_cast<float>(rect.right - rect.left), static_cast<float>(rect.bottom - rect.top) };
-			rendererRuntime->getDebugGuiManager().setIniSetting("MainWindowPositionSize", value);
-		}
+	// Update controller
+	if (nullptr != mController)
+	{
+		// Simple GUI <-> ingame input distribution
+		// -> Do only enable input as long as this example application has the operation system window focus
+		// -> While the mouse is hovering over an GUI element, disable the ingame controller
+		// -> Avoid that while looking around with the mouse the mouse is becoming considered hovering over an GUI element
+		// -> Remember: Unrimp is about rendering related topics, it's not an all-in-one-framework including an advanced input framework, so a simple non-generic solution is sufficient in here
+		#ifdef _WIN32
+			const bool hasWindowFocus = (::GetFocus() == reinterpret_cast<HWND>(rendererRuntime.getRenderer().getContext().getNativeWindowHandle()));
+		#else
+			bool hasWindowFocus = true;
 		#endif
+		#ifdef RENDERER_RUNTIME_IMGUI
+			const bool isAnyWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
+		#else
+			const bool isAnyWindowHovered = false;
+		#endif
+		mController->onUpdate(rendererRuntime.getTimeManager().getPastSecondsSinceLastFrame(), hasWindowFocus && (mController->isMouseControlInProgress() || !isAnyWindowHovered));
+	}
+
+	// Scene hot-reloading memory
+	if (nullptr != mCameraSceneItem)
+	{
+		mHasCameraTransformBackup = true;
+		mCameraTransformBackup = mCameraSceneItem->getParentSceneNodeSafe().getGlobalTransform();
 	}
 
 	// TODO(co) We need to get informed when the mesh scene item received the mesh resource loading finished signal
@@ -384,23 +384,41 @@ void FirstScene::onUpdate()
 
 	// Update the input system
 	mInputManager->Update();
+
+	// Usability: Backup the position and size of the main window so we can restore it in the next session
+	#if defined(_WIN32) && defined(RENDERER_RUNTIME_IMGUI)
+	{
+		RECT rect;
+		::GetWindowRect(reinterpret_cast<HWND>(rendererRuntime.getRenderer().getContext().getNativeWindowHandle()), &rect);
+		char temp[256];
+		sprintf_s(temp, GLM_COUNTOF(temp), "%d %d %d %d", static_cast<int>(rect.left), static_cast<int>(rect.top), static_cast<int>(rect.right - rect.left), static_cast<int>(rect.bottom - rect.top));
+		if (INI_NOT_FOUND == mMainWindowPositionSizeIniProperty)
+		{
+			mMainWindowPositionSizeIniProperty = ini_property_add(mIni, INI_GLOBAL_SECTION, "MainWindowPositionSize", 0, temp, 0);
+		}
+		else
+		{
+			ini_property_value_set(mIni, INI_GLOBAL_SECTION, mMainWindowPositionSizeIniProperty, temp, 0);
+		}
+	}
+	#endif
 }
 
 void FirstScene::onDraw()
 {
 	Renderer::IRenderTarget* mainRenderTarget = getMainRenderTarget();
-	RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
-	if (nullptr != mainRenderTarget && nullptr != rendererRuntime && nullptr != mCompositorWorkspaceInstance)
+	if (nullptr != mainRenderTarget && nullptr != mCompositorWorkspaceInstance)
 	{
 		applyCurrentSettings(*mainRenderTarget);
-		RendererRuntime::SceneResource* sceneResource = rendererRuntime->getSceneResourceManager().tryGetById(mSceneResourceId);
+		RendererRuntime::IRendererRuntime& rendererRuntime = getRendererRuntimeSafe();
+		RendererRuntime::SceneResource* sceneResource = rendererRuntime.getSceneResourceManager().tryGetById(mSceneResourceId);
 		if (nullptr != sceneResource && sceneResource->getLoadingState() == RendererRuntime::IResource::LoadingState::LOADED)
 		{
 			// Flush all queues to have less visible glitches on the first visible frame
 			if (mFirstFrame)
 			{
 				mFirstFrame = false;
-				rendererRuntime->flushAllQueues();
+				rendererRuntime.flushAllQueues();
 			}
 
 			// Execute the compositor workspace instance
@@ -495,18 +513,15 @@ void FirstScene::onLoadingStateChange(const RendererRuntime::IResource& resource
 
 					// Restore camera position and rotation from a previous session if virtual reality is disabled
 					#ifdef RENDERER_RUNTIME_IMGUI
-						if (!mHasCameraTransformBackup)
+						if (!mHasCameraTransformBackup && INI_NOT_FOUND != mCameraPositionRotationIniProperty)
 						{
-							// TODO(co) Use a configuration serialization which supports double
-							float value[4] = {};
-							RendererRuntime::DebugGuiManager& debugGuiManager = mCompositorWorkspaceInstance->getRendererRuntime().getDebugGuiManager();
-							if (debugGuiManager.getIniSetting("CameraPosition", value))
+							const char* propertyValue = ini_property_value(mIni, INI_GLOBAL_SECTION, mCameraPositionRotationIniProperty);
+							if (nullptr != propertyValue)
 							{
-								mCameraSceneItem->getParentSceneNode()->setPosition(glm::dvec3(value[0], value[1], value[2]));
-							}
-							if (debugGuiManager.getIniSetting("CameraRotation", value))
-							{
-								mCameraSceneItem->getParentSceneNode()->setRotation(glm::quat(value[3], value[0], value[1], value[2]));
+								glm::dvec3 position = RendererRuntime::Math::DVEC3_ZERO;
+								glm::quat rotation = RendererRuntime::Math::QUAT_IDENTITY;
+								sscanf(propertyValue, "%lf %lf %lf %f %f %f %f", &position.x, &position.y, &position.z, &rotation.w, &rotation.x, &rotation.y, &rotation.z);
+								mCameraSceneItem->getParentSceneNode()->setPositionRotation(position, rotation);
 							}
 						}
 					#endif
@@ -529,12 +544,8 @@ void FirstScene::onLoadingStateChange(const RendererRuntime::IResource& resource
 	else if (RendererRuntime::IResource::LoadingState::LOADED == loadingState && resource.getAssetId() == ::detail::IMROD_MATERIAL_ASSET_ID)
 	{
 		// Create our material resource clone
-		RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
-		if (nullptr != rendererRuntime)
-		{
-			mCloneMaterialResourceId = rendererRuntime->getMaterialResourceManager().createMaterialResourceByCloning(resource.getId());
-			trySetCustomMaterialResource();
-		}
+		mCloneMaterialResourceId = getRendererRuntimeSafe().getMaterialResourceManager().createMaterialResourceByCloning(resource.getId());
+		trySetCustomMaterialResource();
 	}
 }
 
@@ -542,10 +553,98 @@ void FirstScene::onLoadingStateChange(const RendererRuntime::IResource& resource
 //[-------------------------------------------------------]
 //[ Private methods                                       ]
 //[-------------------------------------------------------]
+void FirstScene::loadIni()
+{
+	// Reset ini
+	destroyIni();
+
+	// Try to load ini settings from file
+	RendererRuntime::IRendererRuntime& rendererRuntime = getRendererRuntimeSafe();
+	const RendererRuntime::IFileManager& fileManager = rendererRuntime.getFileManager();
+	if (fileManager.doesFileExist(::detail::VIRTUAL_SETTINGS_FILENAME))
+	{
+		RendererRuntime::IFile* file = fileManager.openFile(RendererRuntime::IFileManager::FileMode::READ, ::detail::VIRTUAL_SETTINGS_FILENAME);
+		if (nullptr != file)
+		{
+			mIniFileContent.resize(file->getNumberOfBytes());
+			file->read(mIniFileContent.data(), mIniFileContent.size());
+			fileManager.closeFile(*file);
+			mIni = ini_load(mIniFileContent.data(), &rendererRuntime.getContext().getAllocator());
+			mMainWindowPositionSizeIniProperty = ini_find_property(mIni, INI_GLOBAL_SECTION, "MainWindowPositionSize", 0);
+			mCameraPositionRotationIniProperty = ini_find_property(mIni, INI_GLOBAL_SECTION, "CameraPositionRotation", 0);
+			mOpenMetricsWindowIniProperty = ini_find_property(mIni, INI_GLOBAL_SECTION, "OpenMetricsWindow", 0);
+		}
+	}
+	if (nullptr == mIni)
+	{
+		mIni = ini_create(&rendererRuntime.getContext().getAllocator());
+	}
+}
+
+void FirstScene::saveIni()
+{
+	if (nullptr != mIni)
+	{
+		const RendererRuntime::IFileManager& fileManager = getRendererRuntimeSafe().getFileManager();
+		RendererRuntime::IFile* file = fileManager.openFile(RendererRuntime::IFileManager::FileMode::WRITE, ::detail::VIRTUAL_SETTINGS_FILENAME);
+		if (nullptr != file)
+		{
+			RendererRuntime::IRendererRuntime& rendererRuntime = getRendererRuntimeSafe();
+			char temp[256];
+
+			// Backup camera position and rotation for a following session, but only if VR isn't running right now
+			#ifdef RENDERER_RUNTIME_IMGUI
+				#ifdef RENDERER_RUNTIME_OPENVR
+					if (!rendererRuntime.getVrManager().isRunning())
+				#endif
+				{
+					sprintf_s(temp, GLM_COUNTOF(temp), "%lf %lf %lf %f %f %f %f", mCameraTransformBackup.position.x, mCameraTransformBackup.position.y, mCameraTransformBackup.position.z, mCameraTransformBackup.rotation.w, mCameraTransformBackup.rotation.x, mCameraTransformBackup.rotation.y, mCameraTransformBackup.rotation.z);
+					if (INI_NOT_FOUND == mCameraPositionRotationIniProperty)
+					{
+						mCameraPositionRotationIniProperty = ini_property_add(mIni, INI_GLOBAL_SECTION, "CameraPositionRotation", 0, temp, 0);
+					}
+					else
+					{
+						ini_property_value_set(mIni, INI_GLOBAL_SECTION, mCameraPositionRotationIniProperty, temp, 0);
+					}
+				}
+			#endif
+
+			// Backup open metrics window
+			sprintf_s(temp, GLM_COUNTOF(temp), "%d", rendererRuntime.getDebugGuiManager().hasOpenMetricsWindow());
+			if (INI_NOT_FOUND == mOpenMetricsWindowIniProperty)
+			{
+				mOpenMetricsWindowIniProperty = ini_property_add(mIni, INI_GLOBAL_SECTION, "OpenMetricsWindow", 0, temp, 0);
+			}
+			else
+			{
+				ini_property_value_set(mIni, INI_GLOBAL_SECTION, mOpenMetricsWindowIniProperty, temp, 0);
+			}
+
+			// Save ini
+			mIniFileContent.resize(static_cast<size_t>(ini_save(mIni, nullptr, 0)));
+			ini_save(mIni, mIniFileContent.data(), static_cast<int>(mIniFileContent.size()));
+			file->write(mIniFileContent.data(), mIniFileContent.size() - 1);
+			fileManager.closeFile(*file);
+		}
+	}
+}
+
+void FirstScene::destroyIni()
+{
+	if (nullptr != mIni)
+	{
+		ini_destroy(mIni);
+		mIni = nullptr;
+		mMainWindowPositionSizeIniProperty = INI_NOT_FOUND;
+		mCameraPositionRotationIniProperty = INI_NOT_FOUND;
+		mOpenMetricsWindowIniProperty = INI_NOT_FOUND;
+	}
+}
+
 void FirstScene::applyCurrentSettings(Renderer::IRenderTarget& mainRenderTarget)
 {
-	RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
-	if (nullptr != mCompositorWorkspaceInstance && RendererRuntime::isValid(mSceneResourceId) && nullptr != rendererRuntime)
+	if (nullptr != mCompositorWorkspaceInstance && RendererRuntime::isValid(mSceneResourceId))
 	{
 		// Changes in main swap chain?
 		if (mCurrentFullscreen != mFullscreen)
@@ -567,8 +666,9 @@ void FirstScene::applyCurrentSettings(Renderer::IRenderTarget& mainRenderTarget)
 		}
 
 		// Update texture related settings
+		RendererRuntime::IRendererRuntime& rendererRuntime = getRendererRuntimeSafe();
 		{ // Default texture filtering
-			RendererRuntime::MaterialBlueprintResourceManager& materialBlueprintResourceManager = rendererRuntime->getMaterialBlueprintResourceManager();
+			RendererRuntime::MaterialBlueprintResourceManager& materialBlueprintResourceManager = rendererRuntime.getMaterialBlueprintResourceManager();
 			switch (mCurrentTextureFiltering)
 			{
 				case TextureFiltering::POINT:
@@ -600,10 +700,10 @@ void FirstScene::applyCurrentSettings(Renderer::IRenderTarget& mainRenderTarget)
 					break;
 			}
 		}
-		rendererRuntime->getTextureResourceManager().setNumberOfTopMipmapsToRemove(static_cast<uint8_t>(mNumberOfTopTextureMipmapsToRemove));
+		rendererRuntime.getTextureResourceManager().setNumberOfTopMipmapsToRemove(static_cast<uint8_t>(mNumberOfTopTextureMipmapsToRemove));
 
 		{ // Update compositor workspace
-			const uint8_t maximumNumberOfMultisamples = rendererRuntime->getRenderer().getCapabilities().maximumNumberOfMultisamples;
+			const uint8_t maximumNumberOfMultisamples = rendererRuntime.getRenderer().getCapabilities().maximumNumberOfMultisamples;
 
 			{ // MSAA
 				static constexpr uint8_t NUMBER_OF_MULTISAMPLES[4] = { 1, 2, 4, 8 };
@@ -676,7 +776,7 @@ void FirstScene::applyCurrentSettings(Renderer::IRenderTarget& mainRenderTarget)
 		}
 
 		{ // Update the material resource instance
-			const RendererRuntime::MaterialResourceManager& materialResourceManager = rendererRuntime->getMaterialResourceManager();
+			const RendererRuntime::MaterialResourceManager& materialResourceManager = rendererRuntime.getMaterialResourceManager();
 
 			// Depth of field compositor material
 			RendererRuntime::MaterialResource* materialResource = materialResourceManager.getMaterialResourceByAssetId(ASSET_ID("Example/Blueprint/Compositor/MB_DepthOfField"));
@@ -713,35 +813,32 @@ void FirstScene::applyCurrentSettings(Renderer::IRenderTarget& mainRenderTarget)
 
 void FirstScene::createCompositorWorkspace()
 {
-	RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
-	if (nullptr != rendererRuntime)
+	// Create/recreate the compositor workspace instance
+	static constexpr uint32_t COMPOSITOR_WORKSPACE_ASSET_ID[4] =
 	{
-		// Create/recreate the compositor workspace instance
-		static constexpr uint32_t COMPOSITOR_WORKSPACE_ASSET_ID[4] = {
-			ASSET_ID("Example/CompositorWorkspace/CW_Debug"),
-			ASSET_ID("Example/CompositorWorkspace/CW_Forward"),
-			ASSET_ID("Example/CompositorWorkspace/CW_Deferred"),
-			ASSET_ID("Example/CompositorWorkspace/CW_Vr")
-		};
-		delete mCompositorWorkspaceInstance;
-		mCompositorWorkspaceInstance = new RendererRuntime::CompositorWorkspaceInstance(*rendererRuntime, COMPOSITOR_WORKSPACE_ASSET_ID[static_cast<int>(mInstancedCompositor)]);
-	}
+		ASSET_ID("Example/CompositorWorkspace/CW_Debug"),
+		ASSET_ID("Example/CompositorWorkspace/CW_Forward"),
+		ASSET_ID("Example/CompositorWorkspace/CW_Deferred"),
+		ASSET_ID("Example/CompositorWorkspace/CW_Vr")
+	};
+	delete mCompositorWorkspaceInstance;
+	mCompositorWorkspaceInstance = new RendererRuntime::CompositorWorkspaceInstance(getRendererRuntimeSafe(), COMPOSITOR_WORKSPACE_ASSET_ID[static_cast<int>(mInstancedCompositor)]);
 }
 
 void FirstScene::createDebugGui([[maybe_unused]] Renderer::IRenderTarget& mainRenderTarget)
 {
 	#ifdef RENDERER_RUNTIME_IMGUI
-		RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
-		if (nullptr != mCompositorWorkspaceInstance && RendererRuntime::isValid(mSceneResourceId) && nullptr != rendererRuntime)
+		if (nullptr != mCompositorWorkspaceInstance && RendererRuntime::isValid(mSceneResourceId))
 		{
 			// Get the render target the debug GUI is rendered into, use the provided main render target as fallback
 			const RendererRuntime::ICompositorInstancePass* compositorInstancePass = mCompositorWorkspaceInstance->getFirstCompositorInstancePassByCompositorPassTypeId(RendererRuntime::CompositorResourcePassDebugGui::TYPE_ID);
 			if (nullptr != compositorInstancePass)
 			{
 				// Setup GUI
-				RendererRuntime::DebugGuiManager& debugGuiManager = rendererRuntime->getDebugGuiManager();
+				RendererRuntime::IRendererRuntime& rendererRuntime = getRendererRuntimeSafe();
+				RendererRuntime::DebugGuiManager& debugGuiManager = rendererRuntime.getDebugGuiManager();
 				debugGuiManager.newFrame(((nullptr != compositorInstancePass->getRenderTarget()) ? *compositorInstancePass->getRenderTarget() : mainRenderTarget), mCompositorWorkspaceInstance);
-				mImGuiLog->draw(rendererRuntime->getContext().getFileManager());
+				mImGuiLog->draw(rendererRuntime.getContext().getFileManager());
 				if (ImGui::Begin("Options"))
 				{
 					// Status
@@ -763,13 +860,13 @@ void FirstScene::createDebugGui([[maybe_unused]] Renderer::IRenderTarget& mainRe
 						}
 						#endif
 						{ // Resource streamer
-							const bool idle = (0 == rendererRuntime->getResourceStreamer().getNumberOfInFlightLoadRequests());
+							const bool idle = (0 == rendererRuntime.getResourceStreamer().getNumberOfInFlightLoadRequests());
 							ImGui::PushStyleColor(ImGuiCol_Text, idle ? GREY_COLOR : RED_COLOR);
 								ImGui::Text("Resource Streamer: %s", idle ? "Idle" : "Busy");
 							ImGui::PopStyleColor();
 						}
 						{ // Pipeline state compiler
-							const bool idle = (0 == rendererRuntime->getGraphicsPipelineStateCompiler().getNumberOfInFlightCompilerRequests() && 0 == rendererRuntime->getComputePipelineStateCompiler().getNumberOfInFlightCompilerRequests());
+							const bool idle = (0 == rendererRuntime.getGraphicsPipelineStateCompiler().getNumberOfInFlightCompilerRequests() && 0 == rendererRuntime.getComputePipelineStateCompiler().getNumberOfInFlightCompilerRequests());
 							ImGui::PushStyleColor(ImGuiCol_Text, idle ? GREY_COLOR : RED_COLOR);
 								ImGui::Text("Pipeline State Compiler: %s", idle ? "Idle" : "Busy");
 							ImGui::PopStyleColor();
@@ -786,7 +883,7 @@ void FirstScene::createDebugGui([[maybe_unused]] Renderer::IRenderTarget& mainRe
 					}
 					#ifdef RENDERER_RUNTIME_GRAPHICS_DEBUGGER
 					{
-						RendererRuntime::IGraphicsDebugger& graphicsDebugger = rendererRuntime->getContext().getGraphicsDebugger();
+						RendererRuntime::IGraphicsDebugger& graphicsDebugger = rendererRuntime.getContext().getGraphicsDebugger();
 						if (graphicsDebugger.isInitialized())
 						{
 							ImGui::SameLine();
@@ -812,7 +909,7 @@ void FirstScene::createDebugGui([[maybe_unused]] Renderer::IRenderTarget& mainRe
 						// TODO(co) Add resolution and refresh rate combo box
 						ImGui::SliderFloat("Resolution Scale", &mResolutionScale, 0.05f, 4.0f, "%.3f");
 						ImGui::Checkbox("Vertical Synchronization", &mUseVerticalSynchronization);
-						if (rendererRuntime->getRenderer().getCapabilities().maximumNumberOfMultisamples > 1)
+						if (rendererRuntime.getRenderer().getCapabilities().maximumNumberOfMultisamples > 1)
 						{
 							static constexpr const char* items[] = { "None", "2x", "4x", "8x" };
 							ImGui::Combo("MSAA", &mCurrentMsaa, items, static_cast<int>(GLM_COUNTOF(items)));
@@ -955,20 +1052,16 @@ void FirstScene::trySetCustomMaterialResource()
 {
 	if (!mCustomMaterialResourceSet && nullptr != mSceneNode && RendererRuntime::isValid(mCloneMaterialResourceId))
 	{
-		const RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
-		if (nullptr != rendererRuntime)
+		for (RendererRuntime::ISceneItem* sceneItem : mSceneNode->getAttachedSceneItems())
 		{
-			for (RendererRuntime::ISceneItem* sceneItem : mSceneNode->getAttachedSceneItems())
+			if (sceneItem->getSceneItemTypeId() == RendererRuntime::MeshSceneItem::TYPE_ID)
 			{
-				if (sceneItem->getSceneItemTypeId() == RendererRuntime::MeshSceneItem::TYPE_ID)
+				// Tell the mesh scene item about our custom material resource
+				RendererRuntime::MeshSceneItem* meshSceneItem = static_cast<RendererRuntime::MeshSceneItem*>(sceneItem);
+				if (RendererRuntime::IResource::LoadingState::LOADED == getRendererRuntimeSafe().getMeshResourceManager().getResourceByResourceId(meshSceneItem->getMeshResourceId()).getLoadingState())
 				{
-					// Tell the mesh scene item about our custom material resource
-					RendererRuntime::MeshSceneItem* meshSceneItem = static_cast<RendererRuntime::MeshSceneItem*>(sceneItem);
-					if (RendererRuntime::IResource::LoadingState::LOADED == rendererRuntime->getMeshResourceManager().getResourceByResourceId(meshSceneItem->getMeshResourceId()).getLoadingState())
-					{
-						meshSceneItem->setMaterialResourceIdOfAllSubMeshes(mCloneMaterialResourceId);
-						mCustomMaterialResourceSet = true;
-					}
+					meshSceneItem->setMaterialResourceIdOfAllSubMeshes(mCloneMaterialResourceId);
+					mCustomMaterialResourceSet = true;
 				}
 			}
 		}

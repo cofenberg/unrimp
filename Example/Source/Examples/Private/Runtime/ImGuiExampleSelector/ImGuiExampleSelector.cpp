@@ -46,13 +46,10 @@ void ImGuiExampleSelector::onInitialization()
 {
 	// Ease-of-use: If a HMD is present automatically start the "FirstScene"-example so the user can see something
 	#ifdef RENDERER_RUNTIME_OPENVR
-	{
-		RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
-		if (nullptr != rendererRuntime && rendererRuntime->getVrManager().isHmdPresent())
+		if (getRendererRuntimeSafe().getVrManager().isHmdPresent())
 		{
 			switchExample("FirstScene");
 		}
-	}
 	#endif
 }
 
@@ -65,15 +62,13 @@ void ImGuiExampleSelector::onDraw()
 		// Clear the graphics color buffer of the current render target with gray, do also clear the depth buffer
 		Renderer::Command::ClearGraphics::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
 
-		{ // GUI
-			RendererRuntime::IRendererRuntime* rendererRuntime = getRendererRuntime();
-			if (nullptr != rendererRuntime && nullptr != getMainRenderTarget())
-			{
-				RendererRuntime::DebugGuiManager& debugGuiManager = rendererRuntime->getDebugGuiManager();
-				debugGuiManager.newFrame(*getMainRenderTarget());
-				createDebugGui();
-				debugGuiManager.fillGraphicsCommandBufferUsingFixedBuildInRendererConfiguration(mCommandBuffer);
-			}
+		// GUI
+		if (nullptr != getMainRenderTarget())
+		{
+			RendererRuntime::DebugGuiManager& debugGuiManager = getRendererRuntimeSafe().getDebugGuiManager();
+			debugGuiManager.newFrame(*getMainRenderTarget());
+			createDebugGui();
+			debugGuiManager.fillGraphicsCommandBufferUsingFixedBuildInRendererConfiguration(mCommandBuffer);
 		}
 
 		// Submit command buffer to the renderer backend
