@@ -348,7 +348,7 @@ void VrController::onUpdate(float, bool)
 	if (mRendererRuntime.getVrManager().getVrManagerTypeId() == RendererRuntime::VrManagerOpenVR::TYPE_ID && ::detail::defaultVrManagerOpenVRListener.getNumberOfVrControllers() >= 1 && nullptr != mTeleportIndicationLightSceneItem)
 	{
 		const RendererRuntime::VrManagerOpenVR& vrManagerOpenVR = static_cast<RendererRuntime::VrManagerOpenVR&>(mRendererRuntime.getVrManager());
-		const bool hasFocus = !vrManagerOpenVR.getVrSystem()->IsInputFocusCapturedByAnotherProcess();
+		const bool hasFocus = vrManagerOpenVR.getVrSystem()->IsInputAvailable();
 		bool teleportIndicationLightSceneItemVisible = hasFocus;
 
 		// Do only show the teleport indication light scene item visible if the input focus is captured by our process

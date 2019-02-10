@@ -10,6 +10,7 @@
 #define XSIMD_SSE_DOUBLE_HPP
 
 #include "xsimd_base.hpp"
+#include <array>
 
 namespace xsimd
 {
@@ -40,11 +41,18 @@ namespace xsimd
 
         operator __m128d() const;
 
+        bool_proxy<double> operator[](std::size_t index);
         bool operator[](std::size_t index) const;
+
+        __m128d get_value() const;
 
     private:
 
-        __m128d m_value;
+        union
+        {
+            __m128d m_value;
+            double m_array[2];
+        };
     };
 
     /********************
@@ -79,19 +87,24 @@ namespace xsimd
 
         operator __m128d() const;
 
-        XSIMD_DECLARE_LOAD_STORE_ALL(double, 2);
-        XSIMD_DECLARE_LOAD_STORE_LONG(double, 2);
+        XSIMD_DECLARE_LOAD_STORE_ALL(double, 2)
+        XSIMD_DECLARE_LOAD_STORE_LONG(double, 2)
 
         using base_type::load_aligned;
         using base_type::load_unaligned;
         using base_type::store_aligned;
         using base_type::store_unaligned;
 
-        double operator[](std::size_t index) const;
+        double& operator[](std::size_t index);
+        const double& operator[](std::size_t index) const;
 
     private:
 
-        __m128d m_value;
+        union
+        {
+            __m128d m_value;
+            double m_array[2];
+        };
     };
 
     /****************************************
@@ -103,18 +116,18 @@ namespace xsimd
     }
 
     inline batch_bool<double, 2>::batch_bool(bool b)
-        : m_value(_mm_castsi128_pd(_mm_set1_epi32(-(int)b)))
     {
+        m_value = _mm_castsi128_pd(_mm_set1_epi32(-(int)b));
     }
 
     inline batch_bool<double, 2>::batch_bool(bool b0, bool b1)
-        : m_value(_mm_castsi128_pd(_mm_setr_epi32(-(int)b0, -(int)b0, -(int)b1, -(int)b1)))
     {
+        m_value = _mm_castsi128_pd(_mm_setr_epi32(-(int)b0, -(int)b0, -(int)b1, -(int)b1));
     }
 
     inline batch_bool<double, 2>::batch_bool(const __m128d& rhs)
-        : m_value(rhs)
     {
+        m_value = rhs;
     }
 
     inline batch_bool<double, 2>& batch_bool<double, 2>::operator=(const __m128d& rhs)
@@ -128,11 +141,19 @@ namespace xsimd
         return m_value;
     }
 
+    inline bool_proxy<double> batch_bool<double, 2>::operator[](std::size_t index)
+    {
+        return bool_proxy<double>(m_array[index & 1]);
+    }
+
     inline bool batch_bool<double, 2>::operator[](std::size_t index) const
     {
-        alignas(16) double x[2];
-        _mm_store_pd(x, m_value);
-        return static_cast<bool>(x[index & 1]);
+        return static_cast<bool>(m_array[index & 1]);
+    }
+
+    inline __m128d batch_bool<double, 2>::get_value() const
+    {
+        return m_value;
     }
 
     namespace detail
@@ -398,11 +419,14 @@ namespace xsimd
         _mm_storeu_pd(dst, m_value);
     }
 
-    inline double batch<double, 2>::operator[](std::size_t index) const
+    inline double& batch<double, 2>::operator[](std::size_t index)
     {
-        alignas(16) double x[2];
-        store_aligned(x);
-        return x[index & 1];
+        return m_array[index & 1];
+    }
+
+    inline const double& batch<double, 2>::operator[](std::size_t index) const
+    {
+        return m_array[index & 1];
     }
 
     namespace detail

@@ -49,19 +49,24 @@ namespace xsimd
 
         operator simd_type() const;
 
-        XSIMD_DECLARE_LOAD_STORE_ALL(float, 4);
-        XSIMD_DECLARE_LOAD_STORE_LONG(float, 4);
+        XSIMD_DECLARE_LOAD_STORE_ALL(float, 4)
+        XSIMD_DECLARE_LOAD_STORE_LONG(float, 4)
 
         using base_type::load_aligned;
         using base_type::load_unaligned;
         using base_type::store_aligned;
         using base_type::store_unaligned;
 
-        float operator[](std::size_t index) const;
+        float& operator[](std::size_t index);
+        const float& operator[](std::size_t index) const;
 
     private:
 
-        simd_type m_value;
+        union
+        {
+            simd_type m_value;
+            float m_array[4];
+        };
     };
 
     /**********************************
@@ -413,9 +418,14 @@ namespace xsimd
         return m_value;
     }
 
-    inline float batch<float, 4>::operator[](std::size_t index) const
+    inline float& batch<float, 4>::operator[](std::size_t index)
     {
-        return m_value[index];
+        return m_array[index & 3];
+    }
+
+    inline const float& batch<float, 4>::operator[](std::size_t index) const
+    {
+        return m_array[index & 3];
     }
 
     namespace detail

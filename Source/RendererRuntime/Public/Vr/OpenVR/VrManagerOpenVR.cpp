@@ -582,7 +582,7 @@ namespace RendererRuntime
 		const glm::dvec3& cameraPosition = (nullptr != cameraSceneItem && nullptr != cameraSceneItem->getParentSceneNode()) ? cameraSceneItem->getParentSceneNode()->getGlobalTransform().position : Math::DVEC3_ZERO;
 
 		// Don't draw controllers if somebody else has input focus
-		const bool showControllers = (mShowRenderModels && !mVrSystem->IsInputFocusCapturedByAnotherProcess());
+		const bool showControllers = (mShowRenderModels && mVrSystem->IsInputAvailable());
 
 		// Gather all valid poses
 		mNumberOfValidDevicePoses = 0;

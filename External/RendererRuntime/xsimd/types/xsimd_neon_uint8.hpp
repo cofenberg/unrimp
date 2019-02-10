@@ -71,14 +71,19 @@ namespace xsimd
         using base_type::store_aligned;
         using base_type::store_unaligned;
 
-        XSIMD_DECLARE_LOAD_STORE_INT8(uint8_t, 16);
-        XSIMD_DECLARE_LOAD_STORE_LONG(uint8_t, 16);
+        XSIMD_DECLARE_LOAD_STORE_INT8(uint8_t, 16)
+        XSIMD_DECLARE_LOAD_STORE_LONG(uint8_t, 16)
 
-        uint8_t operator[](std::size_t index) const;
+        uint8_t& operator[](std::size_t index);
+        const uint8_t& operator[](std::size_t index) const;
 
     private:
 
-        simd_type m_value;
+        union
+        {
+            simd_type m_value;
+            uint8_t m_array[16];
+        };
     };
 
     batch<uint8_t, 16> operator<<(const batch<uint8_t, 16>& lhs, uint8_t rhs);
@@ -131,7 +136,7 @@ namespace xsimd
 
     inline batch<uint8_t, 16>& batch<uint8_t, 16>::load_aligned(const int8_t* src)
     {
-        m_value = vld1q_s8(src);
+        m_value = vreinterpretq_u8_s8(vld1q_s8(src));
         return *this;
     }
 
@@ -154,7 +159,7 @@ namespace xsimd
 
     inline void batch<uint8_t, 16>::store_aligned(int8_t* dst) const
     {
-        vst1q_s8(dst, m_value);
+        vst1q_s8(dst, vreinterpretq_s8_u8(m_value));
     }
 
     inline void batch<uint8_t, 16>::store_unaligned(int8_t* dst) const
@@ -180,9 +185,14 @@ namespace xsimd
         return m_value;
     }
 
-    inline uint8_t batch<uint8_t, 16>::operator[](std::size_t index) const
+    inline uint8_t& batch<uint8_t, 16>::operator[](std::size_t index)
     {
-        return m_value[index];
+        return m_array[index & 15];
+    }
+
+    inline const uint8_t& batch<uint8_t, 16>::operator[](std::size_t index) const
+    {
+        return m_array[index & 15];
     }
 
     namespace detail
@@ -315,7 +325,7 @@ namespace xsimd
 #if XSIMD_ARM_INSTR_SET >= XSIMD_ARM8_64_NEON_VERSION
                 return vaddvq_u8(rhs);
 #else
-                int8x8_t tmp = vpadd_u8(vget_low_u8(rhs), vget_high_u8(rhs));
+                uint8x8_t tmp = vpadd_u8(vget_low_u8(rhs), vget_high_u8(rhs));
                 value_type res = 0;
                 for (std::size_t i = 0; i < 8; ++i)
                 {
@@ -369,7 +379,7 @@ namespace xsimd
 
     inline batch<uint8_t, 16> operator<<(const batch<uint8_t, 16>& lhs, const batch<uint8_t, 16>& rhs)
     {
-        return vshlq_u8(lhs, rhs);
+        return vshlq_u8(lhs, vreinterpretq_s8_u8(rhs));
     }
 
 }

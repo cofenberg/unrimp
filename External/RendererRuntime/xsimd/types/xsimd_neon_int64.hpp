@@ -51,19 +51,24 @@ namespace xsimd
 
         operator simd_type() const;
 
-        XSIMD_DECLARE_LOAD_STORE_ALL(int64_t, 2);
-        XSIMD_DECLARE_LOAD_STORE_LONG(int64_t, 2);
+        XSIMD_DECLARE_LOAD_STORE_ALL(int64_t, 2)
+        XSIMD_DECLARE_LOAD_STORE_LONG(int64_t, 2)
 
         using base_type::load_aligned;
         using base_type::load_unaligned;
         using base_type::store_aligned;
         using base_type::store_unaligned;
 
-        int64_t operator[](std::size_t index) const;
+        int64_t& operator[](std::size_t index);
+        const int64_t& operator[](std::size_t index) const;
 
     private:
 
-        simd_type m_value;
+        union
+        {
+            simd_type m_value;
+            int64_t m_array[2];
+        };
     };
 
     batch<int64_t, 2> operator<<(const batch<int64_t, 2>& lhs, int64_t rhs);
@@ -115,10 +120,10 @@ namespace xsimd
         return *this;
     }
 
-    XSIMD_DEFINE_LOAD_STORE(int64_t, 2, int8_t, XSIMD_DEFAULT_ALIGNMENT);
-    XSIMD_DEFINE_LOAD_STORE(int64_t, 2, uint8_t, XSIMD_DEFAULT_ALIGNMENT);
-    XSIMD_DEFINE_LOAD_STORE(int64_t, 2, int16_t, XSIMD_DEFAULT_ALIGNMENT);
-    XSIMD_DEFINE_LOAD_STORE(int64_t, 2, uint16_t, XSIMD_DEFAULT_ALIGNMENT);
+    XSIMD_DEFINE_LOAD_STORE(int64_t, 2, int8_t, XSIMD_DEFAULT_ALIGNMENT)
+    XSIMD_DEFINE_LOAD_STORE(int64_t, 2, uint8_t, XSIMD_DEFAULT_ALIGNMENT)
+    XSIMD_DEFINE_LOAD_STORE(int64_t, 2, int16_t, XSIMD_DEFAULT_ALIGNMENT)
+    XSIMD_DEFINE_LOAD_STORE(int64_t, 2, uint16_t, XSIMD_DEFAULT_ALIGNMENT)
 
     inline batch<int64_t, 2>& batch<int64_t, 2>::load_aligned(const int32_t* src)
     {
@@ -277,9 +282,14 @@ namespace xsimd
         return m_value;
     }
 
-    inline int64_t batch<int64_t, 2>::operator[](std::size_t index) const
+    inline int64_t& batch<int64_t, 2>::operator[](std::size_t index)
     {
-        return m_value[index];
+        return m_array[index & 1];
+    }
+
+    inline const int64_t& batch<int64_t, 2>::operator[](std::size_t index) const
+    {
+        return m_array[index & 1];
     }
 
     namespace detail

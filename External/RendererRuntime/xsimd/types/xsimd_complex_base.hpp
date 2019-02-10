@@ -144,10 +144,14 @@ namespace xsimd
      * @sa simd_complex_batch_bool
      */
     template <class X>
-    class simd_complex_batch
+    class simd_complex_batch : public simd_base<X>
     {
     public:
 
+        using base_type = simd_base<X>;
+        using batch_reference = typename base_type::batch_reference;
+        using const_batch_reference = typename base_type::const_batch_reference;
+        using batch_type = X;
         using value_type = typename simd_batch_traits<X>::value_type;
         static constexpr std::size_t size = simd_batch_traits<X>::size;
         using real_batch = typename simd_batch_traits<X>::real_batch;
@@ -216,8 +220,8 @@ namespace xsimd
 
         value_type operator[](std::size_t index) const;
 
-        X& operator()();
-        const X& operator()() const;
+        batch_reference get();
+        const_batch_reference get() const;
 
     protected:
 
@@ -870,28 +874,17 @@ namespace xsimd
         return value_type(m_real[index], m_imag[index]);
     }
 
-    /**
-     * @name Static downcast functions
-     */
-    //@{
-    /**
-     * Returns a reference to the actual derived type of the simd_batch_bool.
-     */
     template <class X>
-    inline X& simd_complex_batch<X>::operator()()
+    inline auto simd_complex_batch<X>::get() -> batch_reference
     {
-        return *static_cast<X*>(this);
+        return this->derived_cast();
     }
 
-    /**
-     * Returns a constant reference to the actual derived type of the simd_batch_bool.
-     */
     template <class X>
-    inline const X& simd_complex_batch<X>::operator()() const
+    inline auto simd_complex_batch<X>::get() const -> const_batch_reference
     {
-        return *static_cast<const X*>(this);
+        return this->derived_cast();
     }
-    //@}
 
     /********************************
      * simd_complex_batch operators *

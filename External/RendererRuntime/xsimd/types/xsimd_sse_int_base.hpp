@@ -34,11 +34,18 @@ namespace xsimd
 
         operator __m128i() const;
 
+        bool_proxy<T> operator[](std::size_t index);
         bool operator[](std::size_t index) const;
+
+        __m128i get_value() const;
 
     private:
 
-        __m128i m_value;
+        union
+        {
+            __m128i m_value;
+            T m_array[N];
+        };
     };
 
     /***********************
@@ -81,11 +88,16 @@ namespace xsimd
         using base_type::store_aligned;
         using base_type::store_unaligned;
 
-        T operator[](std::size_t index) const;
+        T& operator[](std::size_t index);
+        const T& operator[](std::size_t index) const;
 
     protected:
 
-        __m128i m_value;
+        union
+        {
+            __m128i m_value;
+            T m_array[N];
+        };
     };
 
     /********************
@@ -170,7 +182,8 @@ namespace xsimd
     template <class T, std::size_t N>
     template <class... Args, class>
     inline sse_int_batch_bool<T, N>::sse_int_batch_bool(Args... args)
-        : m_value(sse_detail::int_init(std::integral_constant<std::size_t, sizeof(T)>{}, -static_cast<T>(static_cast<bool>(args))...))
+        : m_value(sse_detail::int_init(std::integral_constant<std::size_t, sizeof(T)>{},
+                                       static_cast<T>(args ? typename std::make_signed<T>::type{-1} : 0)...))
     {
     }
 
@@ -194,11 +207,21 @@ namespace xsimd
     }
 
     template <class T, std::size_t N>
+    inline bool_proxy<T> sse_int_batch_bool<T, N>::operator[](std::size_t index)
+    {
+        return bool_proxy<T>(m_array[index & (N - 1)]);
+    }
+
+    template <class T, std::size_t N>
     inline bool sse_int_batch_bool<T, N>::operator[](std::size_t index) const
     {
-        alignas(16) T x[N];
-        _mm_store_si128((__m128i*)x, m_value);
-        return static_cast<bool>(x[index & (N - 1)]);
+        return static_cast<bool>(m_array[index & (N - 1)]);
+    }
+
+    template <class T, std::size_t N>
+    inline __m128i sse_int_batch_bool<T, N>::get_value() const
+    {
+        return m_value;
     }
 
     namespace detail
@@ -387,11 +410,15 @@ namespace xsimd
     }
 
     template <class T, std::size_t N>
-    inline T sse_int_batch<T, N>::operator[](std::size_t index) const
+    inline T& sse_int_batch<T, N>::operator[](std::size_t index)
     {
-        alignas(16) T x[N];
-        store_aligned(x);
-        return x[index & (N - 1)];
+        return m_array[index & (N - 1)];
+    }
+
+    template <class T, std::size_t N>
+    inline const T& sse_int_batch<T, N>::operator[](std::size_t index) const
+    {
+        return m_array[index & (N - 1)];
     }
 
     namespace detail

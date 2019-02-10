@@ -47,11 +47,18 @@ namespace xsimd
 
         operator __m256i() const;
 
+        bool_proxy<T> operator[](std::size_t index);
         bool operator[](std::size_t index) const;
+
+        __m256i get_value() const;
 
     private:
 
-        __m256i m_value;
+        union
+        {
+            __m256i m_value;
+            T m_array[N];
+        };
     };
 
     template <class T, std::size_t N>
@@ -92,11 +99,16 @@ namespace xsimd
         using base_type::store_aligned;
         using base_type::store_unaligned;
 
-        T operator[](std::size_t index) const;
+        T& operator[](std::size_t index);
+        const T& operator[](std::size_t index) const;
 
     protected:
 
-        __m256i m_value;
+        union
+        {
+            __m256i m_value;
+            T m_array[N];
+        };
     };
 
     namespace avx_detail
@@ -168,7 +180,8 @@ namespace xsimd
     template <class T, std::size_t N>
     template <class... Args, class>
     inline avx_int_batch_bool<T, N>::avx_int_batch_bool(Args... args)
-        : m_value(avx_detail::int_init(std::integral_constant<std::size_t, sizeof(T)>{}, -static_cast<T>(static_cast<bool>(args))...))
+        : m_value(avx_detail::int_init(std::integral_constant<std::size_t, sizeof(T)>{},
+                                       static_cast<T>(args ? typename std::make_signed<T>::type{-1} : 0)...))
     {
     }
 
@@ -192,11 +205,21 @@ namespace xsimd
     }
 
     template <class T, std::size_t N>
+    inline bool_proxy<T> avx_int_batch_bool<T, N>::operator[](std::size_t index)
+    {
+        return bool_proxy<T>(m_array[index & (N - 1)]);
+    }
+
+    template <class T, std::size_t N>
     inline bool avx_int_batch_bool<T, N>::operator[](std::size_t index) const
     {
-        alignas(32) T x[N];
-        _mm256_store_si256((__m256i*)x, m_value);
-        return static_cast<bool>(x[index & (N - 1)]);
+        return static_cast<bool>(m_array[index & (N - 1)]);
+    }
+
+    template <class T, std::size_t N>
+    inline __m256i avx_int_batch_bool<T, N>::get_value() const
+    {
+        return m_value;
     }
 
     namespace detail
@@ -419,13 +442,16 @@ namespace xsimd
         _mm256_storeu_si256((__m256i*) dst, m_value);
     }
 
+    template <class T, std::size_t N>
+    inline T& avx_int_batch<T, N>::operator[](std::size_t index)
+    {
+        return m_array[index & (N - 1)];
+    }
 
     template <class T, std::size_t N>
-    inline T avx_int_batch<T, N>::operator[](std::size_t index) const
+    inline const T& avx_int_batch<T, N>::operator[](std::size_t index) const
     {
-        alignas(32) T x[N];
-        store_aligned(x);
-        return x[index & (N - 1)];
+        return m_array[index & (N - 1)];
     }
 
     namespace detail

@@ -55,19 +55,24 @@ namespace xsimd
 
         operator simd_type() const;
 
-        XSIMD_DECLARE_LOAD_STORE_ALL(int32_t, 4);
-        XSIMD_DECLARE_LOAD_STORE_LONG(int32_t, 4);
+        XSIMD_DECLARE_LOAD_STORE_ALL(int32_t, 4)
+        XSIMD_DECLARE_LOAD_STORE_LONG(int32_t, 4)
 
         using base_type::load_aligned;
         using base_type::load_unaligned;
         using base_type::store_aligned;
         using base_type::store_unaligned;
 
-        int32_t operator[](std::size_t index) const;
+        int32_t& operator[](std::size_t index);
+        const int32_t& operator[](std::size_t index) const;
 
     private:
 
-        simd_type m_value;
+        union
+        {
+            simd_type m_value;
+            int32_t m_array[4];
+        };
     };
 
     batch<int32_t, 4> operator<<(const batch<int32_t, 4>& lhs, int32_t rhs);
@@ -119,8 +124,8 @@ namespace xsimd
         return *this;
     }
 
-    XSIMD_DEFINE_LOAD_STORE(int32_t, 4, int8_t, XSIMD_DEFAULT_ALIGNMENT);
-    XSIMD_DEFINE_LOAD_STORE(int32_t, 4, uint8_t, XSIMD_DEFAULT_ALIGNMENT);
+    XSIMD_DEFINE_LOAD_STORE(int32_t, 4, int8_t, XSIMD_DEFAULT_ALIGNMENT)
+    XSIMD_DEFINE_LOAD_STORE(int32_t, 4, uint8_t, XSIMD_DEFAULT_ALIGNMENT)
 
     inline batch<int32_t, 4>& batch<int32_t, 4>::load_aligned(const int16_t* src)
     {
@@ -168,8 +173,8 @@ namespace xsimd
         return load_aligned(src);
     }
 
-    XSIMD_DEFINE_LOAD_STORE(int32_t, 4, int64_t, XSIMD_DEFAULT_ALIGNMENT);
-    XSIMD_DEFINE_LOAD_STORE(int32_t, 4, uint64_t, XSIMD_DEFAULT_ALIGNMENT);
+    XSIMD_DEFINE_LOAD_STORE(int32_t, 4, int64_t, XSIMD_DEFAULT_ALIGNMENT)
+    XSIMD_DEFINE_LOAD_STORE(int32_t, 4, uint64_t, XSIMD_DEFAULT_ALIGNMENT)
     XSIMD_DEFINE_LOAD_STORE_LONG(int32_t, 4, 64)
 
     inline batch<int32_t, 4>& batch<int32_t, 4>::load_aligned(const float* src)
@@ -279,9 +284,14 @@ namespace xsimd
         return m_value;
     }
 
-    inline int32_t batch<int32_t, 4>::operator[](std::size_t index) const
+    inline int32_t& batch<int32_t, 4>::operator[](std::size_t index)
     {
-        return m_value[index];
+        return m_array[index & 3];
+    }
+
+    inline const int32_t& batch<int32_t, 4>::operator[](std::size_t index) const
+    {
+        return m_array[index & 3];
     }
 
     namespace detail

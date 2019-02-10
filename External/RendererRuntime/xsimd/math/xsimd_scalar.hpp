@@ -42,8 +42,6 @@ namespace xsimd
     using std::floor;
     using std::fmod;
     using std::hypot;
-    using std::isfinite;
-    using std::isinf;
     using std::lgamma;
     using std::ldexp;
     using std::log10;
@@ -65,7 +63,34 @@ namespace xsimd
     using std::tanh;
     using std::tgamma;
     using std::trunc;
-    using std::trunc;
+
+#ifndef _WIN32
+    using std::isfinite;
+    using std::isinf;
+    using std::isnan;
+#else
+    // Windows defines catch all templates
+    template <class T>
+    typename std::enable_if<std::is_scalar<T>::value, bool>::type
+    isfinite(T var)
+    {
+        return std::isfinite(var);
+    }
+
+    template <class T>
+    typename std::enable_if<std::is_scalar<T>::value, bool>::type
+    isinf(T var)
+    {
+        return std::isinf(var);
+    }
+
+    template <class T>
+    typename std::enable_if<std::is_scalar<T>::value, bool>::type
+    isnan(T var)
+    {
+        return std::isnan(var);
+    }
+#endif
 
 #ifdef XSIMD_ENABLE_XTL_COMPLEX
     using xtl::abs;
@@ -90,25 +115,25 @@ namespace xsimd
     using xtl::atanh;
 #endif
 
-    template <class T>
+    template <class T, class = typename std::enable_if<std::is_scalar<T>::value>::type>
     inline bool is_flint(const T& x)
     {
         return std::isnan(x - x) ? std::numeric_limits<T>::quiet_NaN() : x - std::trunc(x);
     }
 
-    template <class T>
+    template <class T, class = typename std::enable_if<std::is_scalar<T>::value>::type>
     inline bool is_odd(const T& x)
     {
         return is_even(x - 1.);
     }
 
-    template <class T>
+    template <class T, class = typename std::enable_if<std::is_scalar<T>::value>::type>
     inline bool is_even(const T& x)
     {
         return is_flint(x * T(0.5));
     }
 
-    template <class T>
+    template <class T, class = typename std::enable_if<std::is_scalar<T>::value>::type>
     inline T exp10(const T& x)
     {
         // FIXME: faster alternatives exist
@@ -151,8 +176,9 @@ namespace xsimd
     }
 
     template <class T0, class T1>
-    inline typename std::enable_if<std::is_floating_point<T1>::value, T0>::type
+    inline auto
     pow(const T0& t0, const T1& t1)
+        -> typename std::enable_if<std::is_scalar<T0>::value && std::is_floating_point<T1>::value, decltype(std::pow(t0, t1))>::type
     {
         return std::pow(t0, t1);
     }
@@ -196,7 +222,7 @@ namespace xsimd
         return v;
     }
 
-    template <class T>
+    template <class T, class = typename std::enable_if<std::is_scalar<T>::value>::type>
     inline T sign(const T& v)
     {
         return v < T(0) ? T(-1.) : v == T(0) ? T(0.) : T(1.);

@@ -52,19 +52,24 @@ namespace xsimd
 
         operator simd_type() const;
 
-        XSIMD_DECLARE_LOAD_STORE_ALL(uint64_t, 2);
-        XSIMD_DECLARE_LOAD_STORE_LONG(uint64_t, 2);
+        XSIMD_DECLARE_LOAD_STORE_ALL(uint64_t, 2)
+        XSIMD_DECLARE_LOAD_STORE_LONG(uint64_t, 2)
 
         using base_type::load_aligned;
         using base_type::load_unaligned;
         using base_type::store_aligned;
         using base_type::store_unaligned;
 
-        uint64_t operator[](std::size_t index) const;
+        uint64_t& operator[](std::size_t index);
+        const uint64_t& operator[](std::size_t index) const;
 
     private:
 
-        simd_type m_value;
+        union
+        {
+            simd_type m_value;
+            uint64_t m_array[2];
+        };
     };
 
     batch<uint64_t, 2> operator<<(const batch<uint64_t, 2>& lhs, int64_t rhs);
@@ -116,10 +121,10 @@ namespace xsimd
         return *this;
     }
 
-    XSIMD_DEFINE_LOAD_STORE(uint64_t, 2, int8_t, XSIMD_DEFAULT_ALIGNMENT);
-    XSIMD_DEFINE_LOAD_STORE(uint64_t, 2, uint8_t, XSIMD_DEFAULT_ALIGNMENT);
-    XSIMD_DEFINE_LOAD_STORE(uint64_t, 2, int16_t, XSIMD_DEFAULT_ALIGNMENT);
-    XSIMD_DEFINE_LOAD_STORE(uint64_t, 2, uint16_t, XSIMD_DEFAULT_ALIGNMENT);
+    XSIMD_DEFINE_LOAD_STORE(uint64_t, 2, int8_t, XSIMD_DEFAULT_ALIGNMENT)
+    XSIMD_DEFINE_LOAD_STORE(uint64_t, 2, uint8_t, XSIMD_DEFAULT_ALIGNMENT)
+    XSIMD_DEFINE_LOAD_STORE(uint64_t, 2, int16_t, XSIMD_DEFAULT_ALIGNMENT)
+    XSIMD_DEFINE_LOAD_STORE(uint64_t, 2, uint16_t, XSIMD_DEFAULT_ALIGNMENT)
 
     inline batch<uint64_t, 2>& batch<uint64_t, 2>::load_aligned(const int32_t* src)
     {
@@ -282,9 +287,14 @@ namespace xsimd
         return m_value;
     }
 
-    inline uint64_t batch<uint64_t, 2>::operator[](std::size_t index) const
+    inline uint64_t& batch<uint64_t, 2>::operator[](std::size_t index)
     {
-        return m_value[index];
+        return m_array[index & 1];
+    }
+
+    inline const uint64_t& batch<uint64_t, 2>::operator[](std::size_t index) const
+    {
+        return m_array[index & 1];
     }
 
     namespace detail
@@ -317,7 +327,43 @@ namespace xsimd
 
             static batch_type mul(const batch_type& lhs, const batch_type& rhs)
             {
+#if XSIMD_ARM_INSTR_SET >= XSIMD_ARM8_64_NEON_VERSION
                 return { lhs[0] * rhs[0], lhs[1] * rhs[1] };
+#else
+                /*
+                 * Clang 7 and GCC 8 both generate highly inefficient code here for
+                 * ARMv7. They will repeatedly extract and reinsert lanes.
+                 * While bug reports have been opened, for now, this is an efficient
+                 * workaround.
+                 *
+                 * It is unknown if there is a benefit for aarch64 (I do not have
+                 * a device), but I presume it would be lower considering aarch64
+                 * has a native uint64_t multiply.
+                 *
+                 * Effective code:
+                 *
+                 *     uint32x2_t lhs_lo = lhs & 0xFFFFFFFF;
+                 *     uint32x2_t lhs_hi = lhs >> 32;
+                 *     uint32x2_t rhs_lo = rhs & 0xFFFFFFFF;
+                 *     uint32x2_t rhs_hi = rhs >> 32;
+                 *
+                 *     uint64x2_t result   = (uint64x2_t)lhs_hi * (uint64x2_t)rhs_lo;
+                 *                result  += (uint64x2_t)lhs_lo * (uint64x2_t)rhs_hi;
+                 *                result <<= 32;
+                 *                result  += (uint64x2_t)lhs_lo * (uint64x2_t)rhs_lo;
+                 *     return result;
+                 */
+                uint32x2_t lhs_lo = vmovn_u64   (lhs);
+                uint32x2_t lhs_hi = vshrn_n_u64 (lhs,    32);
+                uint32x2_t rhs_lo = vmovn_u64   (rhs);
+                uint32x2_t rhs_hi = vshrn_n_u64 (rhs,    32);
+
+                uint64x2_t result = vmull_u32   (lhs_hi, rhs_lo);
+                           result = vmlal_u32   (result, lhs_lo, rhs_hi);
+                           result = vshlq_n_u64 (result, 32);
+                           result = vmlal_u32   (result, lhs_lo, rhs_lo);
+                return result;
+#endif
             }
 
             static batch_type div(const batch_type& lhs, const batch_type& rhs)
