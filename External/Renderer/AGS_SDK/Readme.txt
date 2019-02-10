@@ -1,4 +1,4 @@
-AMD AGS v5.2.0 - May 23, 2018
+AMD AGS v5.3.0 - November 22, 2018
 	AMD GPU Services (AGS) library, used to add multi-indirect-draw support to the Direct3D 11 renderer backend for AMD GPUs
 - License: "MIT"
 - Online: https://github.com/GPUOpen-LibrariesAndSDKs/AGS_SDK

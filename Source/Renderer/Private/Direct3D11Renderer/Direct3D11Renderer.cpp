@@ -2913,7 +2913,7 @@ namespace Direct3D11Renderer
 	//[-------------------------------------------------------]
 	}
 	extern "C" {
-	// -> Using AMD AGS v5.2.0 - May 23, 2018
+	// -> Using AMD AGS v5.3.0 - November 22, 2018
 	// -> From https://github.com/GPUOpen-LibrariesAndSDKs/AGS_SDK and https://raw.githubusercontent.com/GPUOpen-LibrariesAndSDKs/Barycentrics12/master/ags_lib/inc/amd_ags.h
 	// -> We're using the static linked version of AMD AGS in order to reduce the number of individual shipped files
 	// -> For debug builds there are no static AMD AGS libraries available
@@ -2974,7 +2974,8 @@ namespace Direct3D11Renderer
 		AGS_ERROR_MISSING_DLL,
 		AGS_ERROR_LEGACY_DRIVER,
 		AGS_EXTENSION_NOT_SUPPORTED,
-		AGS_ADL_FAILURE
+		AGS_ADL_FAILURE,
+		AGS_DX_FAILURE
 	};
 	#ifdef DYNAMIC_AMD_AGS
 		#define FNDEF_AMD_AGS(retType, funcName, args) retType (WINAPIV *funcPtr_##funcName) args
@@ -2985,8 +2986,8 @@ namespace Direct3D11Renderer
 	FNDEF_AMD_AGS(AGSReturnCode,	agsDeInit,													(AGSContext* context));
 	FNDEF_AMD_AGS(AGSReturnCode,	agsDriverExtensionsDX11_CreateDevice,						(AGSContext* context, AGSDX11DeviceCreationParams* creationParams, AGSDX11ExtensionParams* extensionParams, AGSDX11ReturnedParams* returnedParams));
 	FNDEF_AMD_AGS(AGSReturnCode,	agsDriverExtensionsDX11_DestroyDevice,						(AGSContext* context, ID3D11Device* device, unsigned int* deviceReferences, ID3D11DeviceContext* immediateContext, unsigned int* immediateContextReferences));
-	FNDEF_AMD_AGS(AGSReturnCode,	agsDriverExtensionsDX11_MultiDrawInstancedIndirect,			(AGSContext* context, unsigned int drawCount, ID3D11Buffer* pBufferForArgs, unsigned int alignedByteOffsetForArgs, unsigned int byteStrideForArgs));
-	FNDEF_AMD_AGS(AGSReturnCode,	agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect,	(AGSContext* context, unsigned int drawCount, ID3D11Buffer* pBufferForArgs, unsigned int alignedByteOffsetForArgs, unsigned int byteStrideForArgs));
+	FNDEF_AMD_AGS(AGSReturnCode,	agsDriverExtensionsDX11_MultiDrawInstancedIndirect,			(AGSContext* context, ID3D11DeviceContext* dxContext, unsigned int drawCount, ID3D11Buffer* pBufferForArgs, unsigned int alignedByteOffsetForArgs, unsigned int byteStrideForArgs));
+	FNDEF_AMD_AGS(AGSReturnCode,	agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect,	(AGSContext* context, ID3D11DeviceContext* dxContext, unsigned int drawCount, ID3D11Buffer* pBufferForArgs, unsigned int alignedByteOffsetForArgs, unsigned int byteStrideForArgs));
 	#ifdef DYNAMIC_AMD_AGS
 		#define agsInit														FNPTR(agsInit)
 		#define agsDeInit													FNPTR(agsDeInit)
@@ -12287,7 +12288,7 @@ namespace Direct3D11Renderer
 				unsigned int deviceReferences = 0;
 				unsigned int immediateContextReferences = 0;
 				agsDriverExtensionsDX11_DestroyDevice(agsContext, mD3D11Device, &deviceReferences, mD3D11DeviceContext, &immediateContextReferences);
-				// TODO(co) AMD AGS v5.2.0 - May 23, 2018 behaves odd when it comes to the reference counters, "deviceReferences" handles as "immediateContextReferences"?
+				// TODO(co) AMD AGS v5.3.0 - November 22, 2018 behaves odd when it comes to the reference counters, "deviceReferences" handles as "immediateContextReferences"?
 				//          When done in any other way there will be crashes or resource leaks.
 				if (nullptr != mD3D11DeviceContext && deviceReferences > 0)
 				{
@@ -12975,7 +12976,7 @@ namespace Direct3D11Renderer
 		else if (numberOfDraws > 1)
 		{
 			// AMD: "agsDriverExtensionsDX11_MultiDrawInstancedIndirect()" - https://gpuopen-librariesandsdks.github.io/ags/group__mdi.html
-			agsDriverExtensionsDX11_MultiDrawInstancedIndirect(mDirect3D11RuntimeLinking->getAgsContext(), numberOfDraws, d3D11Buffer, indirectBufferOffset, sizeof(Renderer::DrawArguments));
+			agsDriverExtensionsDX11_MultiDrawInstancedIndirect(mDirect3D11RuntimeLinking->getAgsContext(), mD3D11DeviceContext, numberOfDraws, d3D11Buffer, indirectBufferOffset, sizeof(Renderer::DrawArguments));
 		}
 	}
 
@@ -13095,7 +13096,7 @@ namespace Direct3D11Renderer
 		else if (numberOfDraws > 1)
 		{
 			// AMD: "agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect()" - https://gpuopen-librariesandsdks.github.io/ags/group__mdi.html
-			agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect(mDirect3D11RuntimeLinking->getAgsContext(), numberOfDraws, d3D11Buffer, indirectBufferOffset, sizeof(Renderer::DrawIndexedArguments));
+			agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect(mDirect3D11RuntimeLinking->getAgsContext(), mD3D11DeviceContext, numberOfDraws, d3D11Buffer, indirectBufferOffset, sizeof(Renderer::DrawIndexedArguments));
 		}
 	}
 
