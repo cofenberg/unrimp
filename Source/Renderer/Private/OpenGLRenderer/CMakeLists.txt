@@ -47,7 +47,8 @@ unrimp_add_conditional_definition(RENDERER_OPENGL_GLSLTOSPIRV)
 ## Includes
 ##################################################
 include_directories(${CMAKE_SOURCE_DIR}/Source)
-include_directories(${CMAKE_SOURCE_DIR}/External/Renderer)	# For "GL" and "smol-v"
+include_directories(${CMAKE_SOURCE_DIR}/External/Renderer)	# For "smol-v"
+include_directories(${CMAKE_SOURCE_DIR}/External/Renderer/OpenGL)
 if(RENDERER_OPENGL_GLSLTOSPIRV)
 	set(GLSLANG_DIR ${CMAKE_SOURCE_DIR}/External/Renderer/glslang/src)
 	include_directories(${GLSLANG_DIR})

@@ -28,17 +28,17 @@ extern "C" {
 ** MATERIALS OR THE USE OR OTHER DEALINGS IN THE MATERIALS.
 */
 /*
-** This header is generated from the Khronos OpenGL / OpenGL ES XML
-** API Registry. The current version of the Registry, generator scripts
+** This header is generated from the Khronos EGL XML API Registry.
+** The current version of the Registry, generator scripts
 ** used to make the header, and the header can be found at
 **   http://www.khronos.org/registry/egl
 **
-** Khronos $Git commit SHA1: 4f069bd5f6 $ on $Git commit date: 2018-04-11 03:43:24 -0700 $
+** Khronos $Git commit SHA1: 726475c203 $ on $Git commit date: 2018-10-03 23:51:49 -0700 $
 */
 
 #include <EGL/eglplatform.h>
 
-/* Generated on date 20180411 */
+/* Generated on date 20181204 */
 
 /* Generated C header for:
  * API: egl
