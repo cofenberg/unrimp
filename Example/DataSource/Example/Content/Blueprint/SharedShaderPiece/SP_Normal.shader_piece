@@ -85,6 +85,7 @@
 
 @piece(DefineCalculateCotangentFrame)
 	// From "Followup: Normal Mapping Without Precomputed Tangents" by Christian Schueler published on 2013-01-20 at http://www.thetenthplanet.de/archives/1180
+	// -> Similar but more specialized: "Parallax/POM mapping and no tangent space." by Morten S. Mikkelsen published on Friday, February 24, 2012 at http://mmikkelsen3d.blogspot.com/2012/02/parallaxpoc-mapping-and-no-tangent.html
 	float3x3 CalculateCotangentFrame(float3 normal, float3 incidentVector, float2 uv)
 	{
 		// Get edge vectors of the pixel triangle

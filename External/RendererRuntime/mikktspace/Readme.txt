@@ -1,4 +1,4 @@
-mikktspace - result of master's thesis "Simulation of Wrinkled Surfaces Revisited" by Morten S. Mikkelsen
+mikktspace - result of master's thesis "Simulation of Wrinkled Surfaces Revisited" by Morten S. Mikkelsen ( http://mmikkelsen3d.blogspot.com/ )
 	Semi-standard for tangent space generation
 	http://image.diku.dk/projects/media/morten.mikkelsen.08.pdf
 - License
