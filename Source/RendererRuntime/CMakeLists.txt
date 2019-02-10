@@ -77,6 +77,7 @@ if(RENDERER_RUNTIME_IMGUI)
 		${EXTERNAL_SOURCE_CODES}
 		${CMAKE_SOURCE_DIR}/External/RendererRuntime/ImGui/imgui.cpp
 		${CMAKE_SOURCE_DIR}/External/RendererRuntime/ImGui/imgui_draw.cpp
+		${CMAKE_SOURCE_DIR}/External/RendererRuntime/ImGui/imgui_widgets.cpp
 		${CMAKE_SOURCE_DIR}/External/RendererRuntime/ImGuizmo/ImGuizmo.cpp
 	)
 endif()
@@ -92,10 +93,12 @@ if(WIN32)
 	# - Disable "warning C4201: nonstandard extension used: nameless struct/union""
 	# - Disable "warning C4204: nonstandard extension used: non-constant aggregate initializer"
 	# - Disable "warning C4255: '__slwpcb': no function prototype given: converting '()' to '(void)'"
+	# - Disable "warning C4365: '=': conversion from 'ImGuiTabItemFlags' to 'ImGuiID', signed/unsigned mismatch""
 	# - Disable "warning C4456: declaration of 'i' hides previous local declaration"
 	# - Disable "warning C4530: C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc"
 	# - Disable "warning C4668: '__GNUC__' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'"
-	set_source_files_properties(${EXTERNAL_SOURCE_CODES} PROPERTIES COMPILE_FLAGS "/wd4201 /wd4204 /wd4255 /wd4456 /wd4530 /wd4668")
+	# - Disable "warning C4774: 'sscanf' : format string expected in argument 2 is not a string literal"
+	set_source_files_properties(${EXTERNAL_SOURCE_CODES} PROPERTIES COMPILE_FLAGS "/wd4201 /wd4204 /wd4255 /wd4365 /wd4456 /wd4530 /wd4668 /wd4774")
 endif()
 
 

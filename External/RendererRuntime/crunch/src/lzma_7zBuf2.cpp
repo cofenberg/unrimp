@@ -7,26 +7,22 @@
 
 namespace crnlib {
 
-void DynBuf_Construct(CDynBuf *p)
-{
+void DynBuf_Construct(CDynBuf* p) {
   p->data = 0;
   p->size = 0;
   p->pos = 0;
 }
 
-void DynBuf_SeekToBeg(CDynBuf *p)
-{
+void DynBuf_SeekToBeg(CDynBuf* p) {
   p->pos = 0;
 }
 
-int DynBuf_Write(CDynBuf *p, const Byte *buf, size_t size, ISzAlloc *alloc)
-{
-  if (size > p->size - p->pos)
-  {
+int DynBuf_Write(CDynBuf* p, const Byte* buf, size_t size, ISzAlloc* alloc) {
+  if (size > p->size - p->pos) {
     size_t newSize = p->pos + size;
-    Byte *data;
+    Byte* data;
     newSize += newSize / 4;
-    data = (Byte *)alloc->Alloc(alloc, newSize);
+    data = (Byte*)alloc->Alloc(alloc, newSize);
     if (data == 0)
       return 0;
     p->size = newSize;
@@ -39,12 +35,10 @@ int DynBuf_Write(CDynBuf *p, const Byte *buf, size_t size, ISzAlloc *alloc)
   return 1;
 }
 
-void DynBuf_Free(CDynBuf *p, ISzAlloc *alloc)
-{
+void DynBuf_Free(CDynBuf* p, ISzAlloc* alloc) {
   alloc->Free(alloc, p->data);
   p->data = 0;
   p->size = 0;
   p->pos = 0;
 }
-
 }

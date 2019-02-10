@@ -33,8 +33,10 @@
 
 	// Disable warnings in external headers, we can't fix them
 	PRAGMA_WARNING_PUSH
+		PRAGMA_WARNING_DISABLE_MSVC(4018)	// warning C4018: '<': signed/unsigned mismatch
 		PRAGMA_WARNING_DISABLE_MSVC(4061)	// warning C4061: enumerator 'cCRNFmtTotal' in switch of enum 'crn_format' is not explicitly handled by a case label
 		PRAGMA_WARNING_DISABLE_MSVC(4242)	// warning C4242: '=': conversion from 'crnd::uint32' to 'crnd::uint8', possible loss of data
+		PRAGMA_WARNING_DISABLE_MSVC(4244)	// warning C4244: 'initializing': conversion from 'crnd::uint' to 'crnd::uint8', possible loss of data
 		PRAGMA_WARNING_DISABLE_MSVC(4302)	// warning C4302: 'type cast': truncation from 'crnd::uint8 *' to 'crnd::uint32'
 		PRAGMA_WARNING_DISABLE_MSVC(4311)	// warning C4311: 'type cast': pointer truncation from 'crnd::uint8 *' to 'crnd::uint32'
 		PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: '<x>': conversion from '<y>' to '<z>', signed/unsigned mismatch
@@ -171,10 +173,14 @@ namespace RendererRuntime
 				mTextureFormat = Renderer::TextureFormat::BC5;
 				break;
 
-			case cCRNFmtETC1:	// Not supported by CRN	// TODO(co) CRN now supports "cCRNFmtETC1"
+			case cCRNFmtDXT5A:
+			case cCRNFmtETC1:
+			case cCRNFmtETC2:
+			case cCRNFmtETC2A:
+			case cCRNFmtETC1S:
+			case cCRNFmtETC2AS:
 			case cCRNFmtTotal:
 			case cCRNFmtForceDWORD:
-			case cCRNFmtDXT5A:
 			default:
 				// Error!
 				// TODO(co)

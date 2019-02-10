@@ -1,4 +1,4 @@
-ImGuizmo (latest commit c068da8e633c1c4f227a7d133c885f8d39d8a9c0 - May 19, 2018)
+ImGuizmo (latest commit 7b26972d04104255c90205cee690a66631acd721 - January 11, 2019)
 - License: "MIT License"
 - Online: https://github.com/CedricGuillemet/ImGuizmo
-- Directly compiled and linked inside renderer runtime, hence "src" sub-directory
+- Directly compiled and linked inside renderer runtime

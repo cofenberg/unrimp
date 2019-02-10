@@ -208,7 +208,7 @@ namespace RendererRuntime
 				}
 				if (mScrollToBottom)
 				{
-					ImGui::SetScrollHere(1.0f);
+					ImGui::SetScrollHereY(1.0f);
 				}
 				mScrollToBottom = false;
 				ImGui::PopTextWrapPos();

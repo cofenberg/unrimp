@@ -398,9 +398,8 @@ namespace RendererRuntime
 			imGuiIo.LogFilename = mAbsoluteLogFilename.c_str();
 		}
 
-		// Setup ImGui style and explicitly load the settings at once
+		// Setup ImGui style
 		ImGui::StyleColorsDark();
-		imGuiIo.LoadIniSettings();
 	}
 
 	DebugGuiManager::~DebugGuiManager()

@@ -28,13 +28,13 @@
 	__pragma(warning(disable: 4334))	// warning C4334: '<<': result of 32-bit shift implicitly converted to 64 bits (was 64-bit shift intended?)
 	__pragma(warning(disable: 4365))	// warning C4365: '=': conversion from 'int' to '::size_t', signed/unsigned mismatch
 	__pragma(warning(disable: 4456))	// warning C4456: declaration of 'lc' hides previous local declaration
-	__pragma(warning(disable: 4458))	// warning C4458: declaration of 'c' hides class member
+	__pragma(warning(disable: 4456))	// warning C4456: declaration of 'lc' hides previous local declaration
+	__pragma(warning(disable: 4457))	// warning C4457: declaration of 'm' hides function parameter
 	__pragma(warning(disable: 4464))	// warning C4464: relative include path contains '..'
 	__pragma(warning(disable: 4548))	// warning C4548: expression before comma has no effect; expected expression with side-effect
 	__pragma(warning(disable: 4555))	// warning C4555: expression has no effect; expected expression with side-effect
 	__pragma(warning(disable: 4571))	// warning C4571: Informational: catch(...) semantics changed since Visual C++ 7.1; structured exceptions (SEH) are no longer caught
 	__pragma(warning(disable: 4574))	// warning C4574: '_HAS_ITERATOR_DEBUGGING' is defined to be '0': did you mean to use '#if _HAS_ITERATOR_DEBUGGING'?
-	__pragma(warning(disable: 4457))	// warning C4457: declaration of 'n' hides function parameter
 	__pragma(warning(disable: 4625))	// warning C4625: 'std::codecvt_base': copy constructor was implicitly defined as deleted
 	__pragma(warning(disable: 4626))	// warning C4626: 'std::codecvt_base': assignment operator was implicitly defined as deleted
 	__pragma(warning(disable: 4668))	// warning C4668: 'defined_WINBASE_' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'

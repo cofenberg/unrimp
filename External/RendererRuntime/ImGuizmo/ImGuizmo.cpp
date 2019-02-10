@@ -20,19 +20,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// Disable warnings
-#ifdef WIN32
-	#pragma warning(disable: 4063)	// warning C4063: case '<x>' is not a valid value for switch of enum '<y>'
-	#pragma warning(disable: 4365)	// warning C4365: 'argument': conversion from '<x>' to '<y>', signed/unsigned mismatch
-	#pragma warning(disable: 4668)	// warning C4668: '_M_HYBRID_X86_ARM64' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
-#endif
-
-#include <imgui/imgui.h>
+#include "ImGui/imgui.h"
 #ifndef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS
 #endif
-#include <imgui/imgui_internal.h>
-#include <ImGuizmo/ImGuizmo.h>
+#include "ImGui/imgui_internal.h"
+#include "ImGuizmo.h"
 
 // includes patches for multiview from
 // https://github.com/CedricGuillemet/ImGuizmo/issues/15
@@ -748,14 +741,17 @@ namespace ImGuizmo
 
       const ImU32 flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus;
       ImGui::SetNextWindowSize(io.DisplaySize);
-
+      ImGui::SetNextWindowPos(ImVec2(0, 0));
+      
       ImGui::PushStyleColor(ImGuiCol_WindowBg, 0);
-      ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+      ImGui::PushStyleColor(ImGuiCol_Border, 0);
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+     
       ImGui::Begin("gizmo", NULL, flags);
       gContext.mDrawList = ImGui::GetWindowDrawList();
       ImGui::End();
       ImGui::PopStyleVar();
-      ImGui::PopStyleColor();
+      ImGui::PopStyleColor(2);
    }
 
    bool IsUsing()
@@ -874,8 +870,9 @@ namespace ImGuizmo
          belowAxisLimit = gContext.mBelowAxisLimit[axisIndex];
          belowPlaneLimit = gContext.mBelowPlaneLimit[axisIndex];
 
-         dirPlaneX *= gContext.mAxisFactor[axisIndex];
-         dirPlaneY *= gContext.mAxisFactor[(axisIndex + 1) % 3];
+         dirAxis *= gContext.mAxisFactor[axisIndex];
+         dirPlaneX *= gContext.mAxisFactor[(axisIndex + 1) % 3];
+         dirPlaneY *= gContext.mAxisFactor[(axisIndex + 2) % 3];
       }
       else
       {
@@ -905,7 +902,7 @@ namespace ImGuizmo
 
          // and store values
          gContext.mAxisFactor[axisIndex] = mulAxis;
-         gContext.mAxisFactor[(axisIndex + 1) % 3] = mulAxisY;
+         gContext.mAxisFactor[(axisIndex + 1) % 3] = mulAxisX;
          gContext.mAxisFactor[(axisIndex + 2) % 3] = mulAxisY;
          gContext.mBelowAxisLimit[axisIndex] = belowAxisLimit;
          gContext.mBelowPlaneLimit[axisIndex] = belowPlaneLimit;

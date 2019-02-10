@@ -46,9 +46,13 @@ PRAGMA_WARNING_POP
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4005)						// warning C4005: '_HAS_EXCEPTIONS': macro redefinition
+	PRAGMA_WARNING_DISABLE_MSVC(4018)						// warning C4018: '<': signed/unsigned mismatch
 	PRAGMA_WARNING_DISABLE_MSVC(4061)						// warning C4061: enumerator 'crnlib::PIXEL_FMT_INVALID' in switch of enum 'crnlib::pixel_format' is not explicitly handled by a case label
+	PRAGMA_WARNING_DISABLE_MSVC(4242)						// warning C4242: '=': conversion from 'crnd::uint32' to 'T', possible loss of data
+	PRAGMA_WARNING_DISABLE_MSVC(4244)						// warning C4244: '=': conversion from 'crnd::uint32' to 'T', possible loss of data
 	PRAGMA_WARNING_DISABLE_MSVC(4302)						// warning C4302: 'type cast': truncation from 'crnd::uint8 *' to 'crnd::uint32'
 	PRAGMA_WARNING_DISABLE_MSVC(4311)						// warning C4311: 'type cast': pointer truncation from 'crnd::uint8 *' to 'crnd::uint32'
+	PRAGMA_WARNING_DISABLE_MSVC(4312)						// warning C4312: 'type cast': conversion from 'int' to 'unsigned char *' of greater size
 	PRAGMA_WARNING_DISABLE_MSVC(4365)						// warning C4365: 'argument': conversion from 'long' to 'crnlib::uint', signed/unsigned mismatch
 	PRAGMA_WARNING_DISABLE_MSVC(4464)						// warning C4464: relative include path contains '..'
 	PRAGMA_WARNING_DISABLE_MSVC(4555)						// warning C4555: result of expression not used
@@ -65,14 +69,12 @@ PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_GCC("-Wunused-value")			// warning: expression result unused [-Wunused-value]
 	PRAGMA_WARNING_DISABLE_GCC("-Wunused-local-typedefs")	// warning: typedef ‘<x>’ locally defined but not used [-Wunused-value]
 	#include <crnlib.h>
-	#ifdef SHARED_LIBRARIES
-		#include <crn_decomp.h>
-	#endif
 	#include <dds_defs.h>
 	#include <../src/crn_texture_conversion.h>
 	#include <../src/crn_command_line_params.h>
 	#include <../src/crn_stb_image.cpp>
 	#include <../src/crn_console.h>
+	#undef e	// Get rid of "unrimp\external\renderertoolkit\rapidjson\include\rapidjson\internal\diyfp.h(45): warning C4003: not enough arguments for function-like macro invocation 'e'"
 PRAGMA_WARNING_POP
 
 #include <ies/ies_loader.h>

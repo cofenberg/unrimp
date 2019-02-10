@@ -192,11 +192,11 @@ namespace RendererRuntime
 			glm::vec3 eulerAngles = glm::degrees(EulerAngles::matrixToEuler(glm::mat3_cast(transform.rotation)));
 			{ // TODO(co) We're using a 64 bit position, ImGui can only process 32 bit floating point values
 				glm::vec3 position = transform.position;
-				ImGui::InputFloat3("Tr", glm::value_ptr(position), 3);
+				ImGui::InputFloat3("Tr", glm::value_ptr(position), "%.3f");
 				transform.position = position;
 			}
-			ImGui::InputFloat3("Rt", glm::value_ptr(eulerAngles), 3);
-			ImGui::InputFloat3("Sc", glm::value_ptr(transform.scale), 3);
+			ImGui::InputFloat3("Rt", glm::value_ptr(eulerAngles), "%.3f");
+			ImGui::InputFloat3("Sc", glm::value_ptr(transform.scale), "%.3f");
 			transform.rotation = EulerAngles::eulerToQuaternion(glm::radians(eulerAngles));
 		}
 		if (gizmoSettings.currentGizmoOperation != GizmoOperation::SCALE)

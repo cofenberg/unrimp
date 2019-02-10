@@ -18,32 +18,30 @@
 
 namespace crnlib {
 
-
 /* ---------- File ---------- */
 
 typedef struct
 {
-  #ifdef USE_WINDOWS_FILE
+#ifdef USE_WINDOWS_FILE
   HANDLE handle;
-  #else
-  FILE *file;
-  #endif
+#else
+  FILE* file;
+#endif
 } CSzFile;
 
-void File_Construct(CSzFile *p);
-WRes InFile_Open(CSzFile *p, const char *name);
-WRes OutFile_Open(CSzFile *p, const char *name);
-WRes File_Close(CSzFile *p);
+void File_Construct(CSzFile* p);
+WRes InFile_Open(CSzFile* p, const char* name);
+WRes OutFile_Open(CSzFile* p, const char* name);
+WRes File_Close(CSzFile* p);
 
 /* reads max(*size, remain file's size) bytes */
-WRes File_Read(CSzFile *p, void *data, size_t *size);
+WRes File_Read(CSzFile* p, void* data, size_t* size);
 
 /* writes *size bytes */
-WRes File_Write(CSzFile *p, const void *data, size_t *size);
+WRes File_Write(CSzFile* p, const void* data, size_t* size);
 
-WRes File_Seek(CSzFile *p, Int64 *pos, ESzSeek origin);
-WRes File_GetLength(CSzFile *p, UInt64 *length);
-
+WRes File_Seek(CSzFile* p, Int64* pos, ESzSeek origin);
+WRes File_GetLength(CSzFile* p, UInt64* length);
 
 /* ---------- FileInStream ---------- */
 
@@ -53,8 +51,7 @@ typedef struct
   CSzFile file;
 } CFileSeqInStream;
 
-void FileSeqInStream_CreateVTable(CFileSeqInStream *p);
-
+void FileSeqInStream_CreateVTable(CFileSeqInStream* p);
 
 typedef struct
 {
@@ -62,8 +59,7 @@ typedef struct
   CSzFile file;
 } CFileInStream;
 
-void FileInStream_CreateVTable(CFileInStream *p);
-
+void FileInStream_CreateVTable(CFileInStream* p);
 
 typedef struct
 {
@@ -71,8 +67,7 @@ typedef struct
   CSzFile file;
 } CFileOutStream;
 
-void FileOutStream_CreateVTable(CFileOutStream *p);
-
+void FileOutStream_CreateVTable(CFileOutStream* p);
 }
 
 #endif

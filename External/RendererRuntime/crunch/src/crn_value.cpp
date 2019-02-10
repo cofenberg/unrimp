@@ -3,20 +3,19 @@
 #include "crn_core.h"
 #include "crn_value.h"
 
-namespace crnlib
-{
-   const char* gValueDataTypeStrings[cDTTotal + 1] =
-   {
-      "invalid",
-      "string",
-      "bool",
-      "int",
-      "uint",
-      "float",
-      "vec3f",
-      "vec3i",
+namespace crnlib {
+const char* gValueDataTypeStrings[cDTTotal + 1] =
+    {
+        "invalid",
+        "string",
+        "bool",
+        "int",
+        "uint",
+        "float",
+        "vec3f",
+        "vec3i",
 
-      NULL,
-   };
+        NULL,
+};
 
-} // namespace crnlib
+}  // namespace crnlib

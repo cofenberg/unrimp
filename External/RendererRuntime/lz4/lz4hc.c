@@ -61,9 +61,21 @@
 #  pragma clang diagnostic ignored "-Wunused-function"
 #endif
 
-#define LZ4_COMMONDEFS_ONLY
-#include "lz4.c"   /* LZ4_count, constants, mem */
+/*===   Enums   ===*/
+typedef enum { noDictCtx, usingDictCtxHc } dictCtx_directive;
+#ifndef LZ4_SRC_INCLUDED
+typedef enum {
+    noLimit = 0,
+    limitedOutput = 1,
+    limitedDestSize = 2
+} limitedOutput_directive;
+#endif
 
+
+#define LZ4_COMMONDEFS_ONLY
+#ifndef LZ4_SRC_INCLUDED
+#include "lz4.c"   /* LZ4_count, constants, mem */
+#endif
 
 /*===   Constants   ===*/
 #define OPTIMAL_ML (int)((ML_MASK-1)+MINMATCH)
@@ -76,11 +88,10 @@
 #define HASH_FUNCTION(i)         (((i) * 2654435761U) >> ((MINMATCH*8)-LZ4HC_HASH_LOG))
 #define DELTANEXTMAXD(p)         chainTable[(p) & LZ4HC_MAXD_MASK]    /* flexible, LZ4HC_MAXD dependent */
 #define DELTANEXTU16(table, pos) table[(U16)(pos)]   /* faster */
+/* Make fields passed to, and updated by LZ4HC_encodeSequence explicit */
+#define UPDATABLE(ip, op, anchor) &ip, &op, &anchor
 
 static U32 LZ4HC_hashPtr(const void* ptr) { return HASH_FUNCTION(LZ4_read32(ptr)); }
-
-/*===   Enums   ===*/
-typedef enum { noDictCtx, usingDictCtx } dictCtx_directive;
 
 
 /**************************************
@@ -231,7 +242,6 @@ LZ4HC_InsertAndGetWiderMatch (
     int matchChainPos = 0;
     U32 const pattern = LZ4_read32(ip);
     U32 matchIndex;
-    U32 dictMatchIndex;
     repeat_state_e repeat = rep_untested;
     size_t srcPatternLength = 0;
 
@@ -327,6 +337,8 @@ LZ4HC_InsertAndGetWiderMatch (
                             if (lookBackLength==0) {  /* no back possible */
                                 size_t const maxML = MIN(currentSegmentLength, srcPatternLength);
                                 if ((size_t)longest < maxML) {
+                                    assert(base + matchIndex < ip);
+                                    if (ip - (base+matchIndex) > MAX_DISTANCE) break;
                                     assert(maxML < 2 GB);
                                     longest = (int)maxML;
                                     *matchpos = base + matchIndex;   /* virtual pos, relative to ip, to retrieve offset */
@@ -345,10 +357,10 @@ LZ4HC_InsertAndGetWiderMatch (
 
     }  /* while ((matchIndex>=lowestMatchIndex) && (nbAttempts)) */
 
-    if (dict == usingDictCtx && nbAttempts && ipIndex - lowestMatchIndex < MAX_DISTANCE) {
+    if (dict == usingDictCtxHc && nbAttempts && ipIndex - lowestMatchIndex < MAX_DISTANCE) {
         size_t const dictEndOffset = dictCtx->end - dictCtx->base;
+        U32 dictMatchIndex = dictCtx->hashTable[LZ4HC_hashPtr(ip)];
         assert(dictEndOffset <= 1 GB);
-        dictMatchIndex = dictCtx->hashTable[LZ4HC_hashPtr(ip)];
         matchIndex = dictMatchIndex + lowestMatchIndex - (U32)dictEndOffset;
         while (ipIndex - matchIndex <= MAX_DISTANCE && nbAttempts--) {
             const BYTE* const matchPtr = dictCtx->base + dictMatchIndex;
@@ -393,14 +405,6 @@ int LZ4HC_InsertAndFindBestMatch(LZ4HC_CCtx_internal* const hc4,   /* Index tabl
     return LZ4HC_InsertAndGetWiderMatch(hc4, ip, ip, iLimit, MINMATCH-1, matchpos, &uselessPtr, maxNbAttempts, patternAnalysis, 0 /*chainSwap*/, dict, favorCompressionRatio);
 }
 
-
-
-typedef enum {
-    noLimit = 0,
-    limitedOutput = 1,
-    limitedDestSize = 2,
-} limitedOutput_directive;
-
 /* LZ4HC_encodeSequence() :
  * @return : 0 if ok,
  *           1 if buffer issue detected */
@@ -435,7 +439,7 @@ LZ4_FORCE_INLINE int LZ4HC_encodeSequence (
 
     /* Encode Literal length */
     length = (size_t)(*ip - *anchor);
-    if ((limit) && ((*op + (length >> 8) + length + (2 + 1 + LASTLITERALS)) > oend)) return 1;   /* Check output limit */
+    if ((limit) && ((*op + (length / 255) + length + (2 + 1 + LASTLITERALS)) > oend)) return 1;   /* Check output limit */
     if (length >= RUN_MASK) {
         size_t len = length - RUN_MASK;
         *token = (RUN_MASK << ML_BITS);
@@ -450,12 +454,13 @@ LZ4_FORCE_INLINE int LZ4HC_encodeSequence (
     *op += length;
 
     /* Encode Offset */
+    assert( (*ip - match) <= MAX_DISTANCE );   /* note : consider providing offset as a value, rather than as a pointer difference */
     LZ4_writeLE16(*op, (U16)(*ip-match)); *op += 2;
 
     /* Encode MatchLength */
     assert(matchLength >= MINMATCH);
     length = (size_t)(matchLength - MINMATCH);
-    if ((limit) && (*op + (length >> 8) + (1 + LASTLITERALS) > oend)) return 1;   /* Check output limit */
+    if ((limit) && (*op + (length / 255) + (1 + LASTLITERALS) > oend)) return 1;   /* Check output limit */
     if (length >= ML_MASK) {
         *token += ML_MASK;
         length -= ML_MASK;
@@ -530,7 +535,7 @@ _Search2:
 
         if (ml2 == ml) { /* No better match => encode ML1 */
             optr = op;
-            if (LZ4HC_encodeSequence(&ip, &op, &anchor, ml, ref, limit, oend)) goto _dest_overflow;
+            if (LZ4HC_encodeSequence(UPDATABLE(ip, op, anchor), ml, ref, limit, oend)) goto _dest_overflow;
             continue;
         }
 
@@ -578,10 +583,10 @@ _Search3:
             if (start2 < ip+ml)  ml = (int)(start2 - ip);
             /* Now, encode 2 sequences */
             optr = op;
-            if (LZ4HC_encodeSequence(&ip, &op, &anchor, ml, ref, limit, oend)) goto _dest_overflow;
+            if (LZ4HC_encodeSequence(UPDATABLE(ip, op, anchor), ml, ref, limit, oend)) goto _dest_overflow;
             ip = start2;
             optr = op;
-            if (LZ4HC_encodeSequence(&ip, &op, &anchor, ml2, ref2, limit, oend)) goto _dest_overflow;
+            if (LZ4HC_encodeSequence(UPDATABLE(ip, op, anchor), ml2, ref2, limit, oend)) goto _dest_overflow;
             continue;
         }
 
@@ -600,7 +605,7 @@ _Search3:
                 }
 
                 optr = op;
-                if (LZ4HC_encodeSequence(&ip, &op, &anchor, ml, ref, limit, oend)) goto _dest_overflow;
+                if (LZ4HC_encodeSequence(UPDATABLE(ip, op, anchor), ml, ref, limit, oend)) goto _dest_overflow;
                 ip  = start3;
                 ref = ref3;
                 ml  = ml3;
@@ -638,7 +643,7 @@ _Search3:
             }
         }
         optr = op;
-        if (LZ4HC_encodeSequence(&ip, &op, &anchor, ml, ref, limit, oend)) goto _dest_overflow;
+        if (LZ4HC_encodeSequence(UPDATABLE(ip, op, anchor), ml, ref, limit, oend)) goto _dest_overflow;
 
         /* ML2 becomes ML1 */
         ip = start2; ref = ref2; ml = ml2;
@@ -742,16 +747,22 @@ LZ4_FORCE_INLINE int LZ4HC_compress_generic_internal (
     cLevel = MIN(LZ4HC_CLEVEL_MAX, cLevel);
     {   cParams_t const cParam = clTable[cLevel];
         HCfavor_e const favor = ctx->favorDecSpeed ? favorDecompressionSpeed : favorCompressionRatio;
-        if (cParam.strat == lz4hc)
-            return LZ4HC_compress_hashChain(ctx,
+        int result;
+
+        if (cParam.strat == lz4hc) {
+            result = LZ4HC_compress_hashChain(ctx,
                                 src, dst, srcSizePtr, dstCapacity,
                                 cParam.nbSearches, limit, dict);
-        assert(cParam.strat == lz4opt);
-        return LZ4HC_compress_optimal(ctx,
-                            src, dst, srcSizePtr, dstCapacity,
-                            cParam.nbSearches, cParam.targetLength, limit,
-                            cLevel == LZ4HC_CLEVEL_MAX,   /* ultra mode */
-                            dict, favor);
+        } else {
+            assert(cParam.strat == lz4opt);
+            result = LZ4HC_compress_optimal(ctx,
+                                src, dst, srcSizePtr, dstCapacity,
+                                cParam.nbSearches, cParam.targetLength, limit,
+                                cLevel == LZ4HC_CLEVEL_MAX,   /* ultra mode */
+                                dict, favor);
+        }
+        if (result <= 0) ctx->dirty = 1;
+        return result;
     }
 }
 
@@ -792,7 +803,7 @@ static int LZ4HC_compress_generic_dictCtx (
         ctx->compressionLevel = (short)cLevel;
         return LZ4HC_compress_generic_noDictCtx(ctx, src, dst, srcSizePtr, dstCapacity, cLevel, limit);
     } else {
-        return LZ4HC_compress_generic_internal(ctx, src, dst, srcSizePtr, dstCapacity, cLevel, limit, usingDictCtx);
+        return LZ4HC_compress_generic_internal(ctx, src, dst, srcSizePtr, dstCapacity, cLevel, limit, usingDictCtxHc);
     }
 }
 
@@ -890,16 +901,21 @@ void LZ4_resetStreamHC (LZ4_streamHC_t* LZ4_streamHCPtr, int compressionLevel)
     LZ4_streamHCPtr->internal_donotuse.base = NULL;
     LZ4_streamHCPtr->internal_donotuse.dictCtx = NULL;
     LZ4_streamHCPtr->internal_donotuse.favorDecSpeed = 0;
+    LZ4_streamHCPtr->internal_donotuse.dirty = 0;
     LZ4_setCompressionLevel(LZ4_streamHCPtr, compressionLevel);
 }
 
 void LZ4_resetStreamHC_fast (LZ4_streamHC_t* LZ4_streamHCPtr, int compressionLevel)
 {
     DEBUGLOG(4, "LZ4_resetStreamHC_fast(%p, %d)", LZ4_streamHCPtr, compressionLevel);
-    LZ4_streamHCPtr->internal_donotuse.end -= (uptrval)LZ4_streamHCPtr->internal_donotuse.base;
-    LZ4_streamHCPtr->internal_donotuse.base = NULL;
-    LZ4_streamHCPtr->internal_donotuse.dictCtx = NULL;
-    LZ4_setCompressionLevel(LZ4_streamHCPtr, compressionLevel);
+    if (LZ4_streamHCPtr->internal_donotuse.dirty) {
+        LZ4_resetStreamHC(LZ4_streamHCPtr, compressionLevel);
+    } else {
+        LZ4_streamHCPtr->internal_donotuse.end -= (uptrval)LZ4_streamHCPtr->internal_donotuse.base;
+        LZ4_streamHCPtr->internal_donotuse.base = NULL;
+        LZ4_streamHCPtr->internal_donotuse.dictCtx = NULL;
+        LZ4_setCompressionLevel(LZ4_streamHCPtr, compressionLevel);
+    }
 }
 
 void LZ4_setCompressionLevel(LZ4_streamHC_t* LZ4_streamHCPtr, int compressionLevel)
@@ -1192,7 +1208,7 @@ static int LZ4HC_compress_optimal ( LZ4HC_CCtx_internal* ctx,
              int const firstML = firstMatch.len;
              const BYTE* const matchPos = ip - firstMatch.off;
              opSaved = op;
-             if ( LZ4HC_encodeSequence(&ip, &op, &anchor, firstML, matchPos, limit, oend) )   /* updates ip, op and anchor */
+             if ( LZ4HC_encodeSequence(UPDATABLE(ip, op, anchor), firstML, matchPos, limit, oend) )   /* updates ip, op and anchor */
                  goto _dest_overflow;
              continue;
          }
@@ -1364,7 +1380,7 @@ static int LZ4HC_compress_optimal ( LZ4HC_CCtx_internal* ctx,
                  assert(ml >= MINMATCH);
                  assert((offset >= 1) && (offset <= MAX_DISTANCE));
                  opSaved = op;
-                 if ( LZ4HC_encodeSequence(&ip, &op, &anchor, ml, ip - offset, limit, oend) )   /* updates ip, op and anchor */
+                 if ( LZ4HC_encodeSequence(UPDATABLE(ip, op, anchor), ml, ip - offset, limit, oend) )   /* updates ip, op and anchor */
                      goto _dest_overflow;
          }   }
      }  /* while (ip <= mflimit) */
