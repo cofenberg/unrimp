@@ -53,6 +53,7 @@
 		PRAGMA_WARNING_DISABLE_MSVC(4625)	// warning C4625: '<x>': copy constructor was implicitly defined as deleted
 		PRAGMA_WARNING_DISABLE_MSVC(4626)	// warning C4626: 'std::codecvt_base': assignment operator was implicitly defined as deleted
 		PRAGMA_WARNING_DISABLE_MSVC(4774)	// warning C4774: 'sprintf_s' : format string expected in argument 3 is not a string literal
+		PRAGMA_WARNING_DISABLE_MSVC(5026)	// warning C5026: 'std::_Generic_error_category': move constructor was implicitly defined as deleted
 		PRAGMA_WARNING_DISABLE_MSVC(5027)	// warning C5027: 'std::_Generic_error_category': move assignment operator was implicitly defined as deleted
 		#include <SPIRV/GlslangToSpv.h>
 		#include <glslang/MachineIndependent/localintermediate.h>
@@ -1117,6 +1118,15 @@ namespace
 				8,		///< MaxCullDistances
 				8,		///< MaxCombinedClipAndCullDistances
 				4,		///< MaxSamples
+				256,	///< MaxMeshOutputVerticesNV
+				512,	///< MaxMeshOutputPrimitivesNV
+				32,		///< MaxMeshWorkGroupSizeX_NV
+				1,		///< MaxMeshWorkGroupSizeY_NV
+				1,		///< MaxMeshWorkGroupSizeZ_NV
+				32,		///< MaxTaskWorkGroupSizeX_NV
+				1,		///< MaxTaskWorkGroupSizeY_NV
+				1,		///< MaxTaskWorkGroupSizeZ_NV
+				4,		///< MaxMeshViewCountNV
 				{		///< limits
 					1,	///< nonInductiveForLoops
 					1,	///< whileLoops

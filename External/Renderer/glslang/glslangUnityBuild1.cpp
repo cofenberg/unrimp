@@ -82,6 +82,7 @@
 #include "SPIRV/InReadableOrder.cpp"
 #include "SPIRV/Logger.cpp"
 #include "SPIRV/SpvBuilder.cpp"
+#include "SPIRV/SpvPostProcess.cpp"
 
 // Moved into "glslangUnityBuild3.cpp" since it doesn't play well together with the other source codes
 #ifdef _WIN32
