@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2018, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 All rights reserved.
@@ -222,7 +222,7 @@ void D3MFExporter::writeMetaData() {
         return;
     }
 
-    const aiString *key;
+	const aiString *key = nullptr;
     const aiMetadataEntry *entry(nullptr);
     for ( size_t i = 0; i < numMetaEntries; ++i ) {
         mScene->mMetaData->Get( i, key, entry );

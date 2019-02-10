@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2018, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 All rights reserved.
@@ -120,11 +120,11 @@ public:
     SharedPostProcessInfo* mPPShared;
 
     /// The default class constructor.
-    ImporterPimpl();
+    ImporterPimpl() AI_NO_EXCEPT;
 };
 
 inline
-ImporterPimpl::ImporterPimpl()
+ImporterPimpl::ImporterPimpl() AI_NO_EXCEPT
 : mIOHandler( nullptr )
 , mIsDefaultHandler( false )
 , mProgressHandler( nullptr )

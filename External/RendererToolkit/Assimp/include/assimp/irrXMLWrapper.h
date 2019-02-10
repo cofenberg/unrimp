@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2018, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 All rights reserved.
@@ -45,7 +45,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // some long includes ....
 #include "../../contrib/irrXML/irrXML.h"
-#include "./../include/assimp/IOStream.hpp"
+#include "IOStream.hpp"
 #include "BaseImporter.h"
 #include <vector>
 

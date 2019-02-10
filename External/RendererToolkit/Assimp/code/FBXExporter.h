@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2018, assimp team
+Copyright (c) 2006-2019, assimp team
 
 All rights reserved.
 
@@ -90,7 +90,7 @@ namespace Assimp
         const ExportProperties* mProperties; // currently unused
         std::shared_ptr<IOStream> outfile; // file to write to
 
-        std::vector<FBX::Node> connections; // conection storage
+        std::vector<FBX::Node> connections; // connection storage
 
         std::vector<int64_t> mesh_uids;
         std::vector<int64_t> material_uids;

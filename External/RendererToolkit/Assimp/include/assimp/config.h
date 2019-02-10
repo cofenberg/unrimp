@@ -498,6 +498,13 @@ enum aiComponent
 #define AI_CONFIG_PP_FID_ANIM_ACCURACY              \
     "PP_FID_ANIM_ACCURACY"
 
+// ---------------------------------------------------------------------------
+/** @brief Input parameter to the #aiProcess_FindInvalidData step:
+ *  Set to true to ignore texture coordinates. This may be useful if you have
+ *  to assign different kind of textures like one for the summer or one for the winter.
+ */
+#define AI_CONFIG_PP_FID_IGNORE_TEXTURECOORDS        \
+    "PP_FID_IGNORE_TEXTURECOORDS"
 
 // TransformUVCoords evaluates UV scalings
 #define AI_UVTRAFO_SCALING 0x1
@@ -673,6 +680,12 @@ enum aiComponent
 #define AI_CONFIG_IMPORT_SMD_KEYFRAME       "IMPORT_SMD_KEYFRAME"
 #define AI_CONFIG_IMPORT_UNREAL_KEYFRAME    "IMPORT_UNREAL_KEYFRAME"
 
+// ---------------------------------------------------------------------------
+/** Smd load multiple animations
+ *
+ *  Property type: bool. Default value: true.
+ */
+#define AI_CONFIG_IMPORT_SMD_LOAD_ANIMATION_LIST "IMPORT_SMD_LOAD_ANIMATION_LIST"
 
 // ---------------------------------------------------------------------------
 /** @brief  Configures the AC loader to collect all surfaces which have the
@@ -952,6 +965,11 @@ enum aiComponent
  */
 
 #define AI_CONFIG_EXPORT_XFILE_64BIT "EXPORT_XFILE_64BIT"
+
+/**
+ *
+ */
+#define AI_CONFIG_EXPORT_POINT_CLOUDS "EXPORT_POINT_CLOUDS"
 
 /**
  *  @brief  Specifies a gobal key factor for scale, float value

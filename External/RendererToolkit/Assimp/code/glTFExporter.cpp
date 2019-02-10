@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2018, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 All rights reserved.
@@ -101,17 +101,17 @@ glTFExporter::glTFExporter(const char* filename, IOSystem* pIOSystem, const aiSc
 {
     aiScene* sceneCopy_tmp;
     SceneCombiner::CopyScene(&sceneCopy_tmp, pScene);
-    std::unique_ptr<aiScene> sceneCopy(sceneCopy_tmp);
+    aiScene *sceneCopy(sceneCopy_tmp);
 
     SplitLargeMeshesProcess_Triangle tri_splitter;
     tri_splitter.SetLimit(0xffff);
-    tri_splitter.Execute(sceneCopy.get());
+    tri_splitter.Execute(sceneCopy);
 
     SplitLargeMeshesProcess_Vertex vert_splitter;
     vert_splitter.SetLimit(0xffff);
-    vert_splitter.Execute(sceneCopy.get());
+    vert_splitter.Execute(sceneCopy);
 
-    mScene = sceneCopy.get();
+    mScene = sceneCopy;
 
     mAsset.reset( new glTF::Asset( pIOSystem ) );
 
@@ -568,7 +568,7 @@ void glTFExporter::ExportMeshes()
 			else
 				msg = "mesh must has vertices and faces.";
 
-			DefaultLogger::get()->warn("GLTF: can not use Open3DGC-compression: " + msg);
+            ASSIMP_LOG_WARN_F("GLTF: can not use Open3DGC-compression: ", msg);
             comp_allow = false;
 		}
 
@@ -703,7 +703,7 @@ void glTFExporter::ExportMeshes()
 			// Coordinates indices
 			comp_o3dgc_ifs.SetNCoordIndex(aim->mNumFaces);
 			comp_o3dgc_ifs.SetCoordIndex((IndicesType* const)&b->GetPointer()[idx_srcdata_ind]);
-			// Prepare to enconding
+			// Prepare to encoding
 			comp_o3dgc_params.SetNumFloatAttributes(comp_o3dgc_ifs.GetNumFloatAttributes());
 			if(mProperties->GetPropertyBool("extensions.Open3DGC.binary", true))
 				comp_o3dgc_params.SetStreamType(o3dgc::O3DGC_STREAM_TYPE_BINARY);

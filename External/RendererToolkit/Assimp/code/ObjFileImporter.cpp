@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2018, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 
@@ -76,41 +76,36 @@ using namespace std;
 
 // ------------------------------------------------------------------------------------------------
 //  Default constructor
-ObjFileImporter::ObjFileImporter() :
-    m_Buffer(),
-    m_pRootObject( NULL ),
-    m_strAbsPath( "" )
-{
+ObjFileImporter::ObjFileImporter()
+: m_Buffer()
+, m_pRootObject( nullptr )
+, m_strAbsPath( "" ) {
     DefaultIOSystem io;
     m_strAbsPath = io.getOsSeparator();
 }
 
 // ------------------------------------------------------------------------------------------------
 //  Destructor.
-ObjFileImporter::~ObjFileImporter()
-{
+ObjFileImporter::~ObjFileImporter() {
     delete m_pRootObject;
-    m_pRootObject = NULL;
+    m_pRootObject = nullptr;
 }
 
 // ------------------------------------------------------------------------------------------------
 //  Returns true, if file is an obj file.
-bool ObjFileImporter::CanRead( const std::string& pFile, IOSystem*  pIOHandler , bool checkSig ) const
-{
-    if(!checkSig) //Check File Extension
-    {
+bool ObjFileImporter::CanRead( const std::string& pFile, IOSystem*  pIOHandler , bool checkSig ) const {
+    if(!checkSig)  {
+        //Check File Extension
         return SimpleExtensionCheck(pFile,"obj");
-    }
-    else //Check file Header
-    {
+    } else {
+        // Check file Header
         static const char *pTokens[] = { "mtllib", "usemtl", "v ", "vt ", "vn ", "o ", "g ", "s ", "f " };
-        return BaseImporter::SearchFileHeaderForToken(pIOHandler, pFile, pTokens, 9 );
+        return BaseImporter::SearchFileHeaderForToken(pIOHandler, pFile, pTokens, 9, 200, false, true );
     }
 }
 
 // ------------------------------------------------------------------------------------------------
-const aiImporterDesc* ObjFileImporter::GetInfo () const
-{
+const aiImporterDesc* ObjFileImporter::GetInfo() const {
     return &desc;
 }
 
@@ -149,38 +144,6 @@ void ObjFileImporter::InternReadFile( const std::string &file, aiScene* pScene, 
         modelName = file;
     }
 
-    // This next stage takes ~ 1/3th of the total readFile task
-    // so should amount for 1/3th of the progress
-    // only update every 100KB or it'll be too slow
-    /*unsigned int progress = 0;
-    unsigned int progressCounter = 0;
-    const unsigned int updateProgressEveryBytes = 100 * 1024;
-    const unsigned int progressTotal = static_cast<unsigned int>(3*m_Buffer.size()/updateProgressEveryBytes);*/
-    // process all '\'
-    /*std::vector<char> ::iterator iter = m_Buffer.begin();
-    while (iter != m_Buffer.end())
-    {
-        if (*iter == '\\')
-        {
-            // remove '\'
-            iter = m_Buffer.erase(iter);
-            // remove next character
-            while (*iter == '\r' || *iter == '\n')
-                iter = m_Buffer.erase(iter);
-        }
-        else
-            ++iter;
-
-        if (++progressCounter >= updateProgressEveryBytes)
-        {
-            m_progress->UpdateFileRead(++progress, progressTotal);
-            progressCounter = 0;
-        }
-    }*/
-
-    // 1/3rd progress
-    m_progress->UpdateFileRead(1, 3);
-
     // parse the file into a temporary representation
     ObjFileParser parser( streamedBuffer, modelName, pIOHandler, m_progress, file);
 
@@ -215,22 +178,80 @@ void ObjFileImporter::CreateDataFromImport(const ObjFile::Model* pModel, aiScene
         ai_assert(false);
     }
 
-    // Create nodes for the whole scene
-    std::vector<aiMesh*> MeshArray;
-    for (size_t index = 0; index < pModel->m_Objects.size(); ++index ) {
-        createNodes(pModel, pModel->m_Objects[ index ], pScene->mRootNode, pScene, MeshArray);
-    }
+    if (pModel->m_Objects.size() > 0) {
 
-    // Create mesh pointer buffer for this scene
-    if (pScene->mNumMeshes > 0) {
-        pScene->mMeshes = new aiMesh*[ MeshArray.size() ];
-        for (size_t index =0; index < MeshArray.size(); ++index ) {
-            pScene->mMeshes[ index ] = MeshArray[ index ];
+        unsigned int meshCount = 0;
+        unsigned int childCount = 0;
+
+        for(size_t index = 0; index < pModel->m_Objects.size(); ++index) {
+            if(pModel->m_Objects[index]) {
+                ++childCount;
+                meshCount += (unsigned int)pModel->m_Objects[index]->m_Meshes.size();
+            }
         }
-    }
 
-    // Create all materials
-    createMaterials( pModel, pScene );
+        // Allocate space for the child nodes on the root node
+        pScene->mRootNode->mChildren = new aiNode*[ childCount ];
+
+        // Create nodes for the whole scene
+        std::vector<aiMesh*> MeshArray;
+        MeshArray.reserve(meshCount);
+        for (size_t index = 0; index < pModel->m_Objects.size(); ++index) {
+            createNodes(pModel, pModel->m_Objects[index], pScene->mRootNode, pScene, MeshArray);
+        }
+
+        ai_assert(pScene->mRootNode->mNumChildren == childCount);
+
+        // Create mesh pointer buffer for this scene
+        if (pScene->mNumMeshes > 0) {
+            pScene->mMeshes = new aiMesh*[MeshArray.size()];
+            for (size_t index = 0; index < MeshArray.size(); ++index) {
+                pScene->mMeshes[index] = MeshArray[index];
+            }
+        }
+
+        // Create all materials
+        createMaterials(pModel, pScene);
+    }else {
+		if (pModel->m_Vertices.empty()){
+			return;
+		}
+
+		std::unique_ptr<aiMesh> mesh( new aiMesh );
+        mesh->mPrimitiveTypes = aiPrimitiveType_POINT;
+        unsigned int n = (unsigned int)pModel->m_Vertices.size();
+        mesh->mNumVertices = n;
+
+        mesh->mVertices = new aiVector3D[n];
+        memcpy(mesh->mVertices, pModel->m_Vertices.data(), n*sizeof(aiVector3D) );
+
+        if ( !pModel->m_Normals.empty() ) {
+            mesh->mNormals = new aiVector3D[n];
+            if (pModel->m_Normals.size() < n) {
+                throw DeadlyImportError("OBJ: vertex normal index out of range");
+            }
+            memcpy(mesh->mNormals, pModel->m_Normals.data(), n*sizeof(aiVector3D));
+        }
+
+        if ( !pModel->m_VertexColors.empty() ){
+            mesh->mColors[0] = new aiColor4D[mesh->mNumVertices];
+            for (unsigned int i = 0; i < n; ++i) {
+                if (i < pModel->m_VertexColors.size() ) {
+                    const aiVector3D& color = pModel->m_VertexColors[i];
+                    mesh->mColors[0][i] = aiColor4D(color.x, color.y, color.z, 1.0);
+                }else {
+                    throw DeadlyImportError("OBJ: vertex color index out of range");
+                }
+            }
+        }
+
+        pScene->mRootNode->mNumMeshes = 1;
+        pScene->mRootNode->mMeshes = new unsigned int[1];
+        pScene->mRootNode->mMeshes[0] = 0;
+        pScene->mMeshes = new aiMesh*[1];
+        pScene->mNumMeshes = 1;
+        pScene->mMeshes[0] = mesh.release();
+    }
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -251,9 +272,8 @@ aiNode *ObjFileImporter::createNodes(const ObjFile::Model* pModel, const ObjFile
     pNode->mName = pObject->m_strObjName;
 
     // If we have a parent node, store it
-    if( pParent != NULL ) {
-        appendChildToParentNode( pParent, pNode );
-    }
+    ai_assert( NULL != pParent );
+    appendChildToParentNode( pParent, pNode );
 
     for ( size_t i=0; i< pObject->m_Meshes.size(); ++i ) {
         unsigned int meshId = pObject->m_Meshes[ i ];
@@ -406,8 +426,8 @@ void ObjFileImporter::createVertexArray(const ObjFile::Model* pModel,
     pMesh->mNumVertices = numIndices;
     if (pMesh->mNumVertices == 0) {
         throw DeadlyImportError( "OBJ: no vertices" );
-    } else if (pMesh->mNumVertices > AI_MAX_ALLOC(aiVector3D)) {
-        throw DeadlyImportError( "OBJ: Too many vertices, would run out of memory" );
+    } else if (pMesh->mNumVertices > AI_MAX_VERTICES) {
+        throw DeadlyImportError( "OBJ: Too many vertices" );
     }
     pMesh->mVertices = new aiVector3D[ pMesh->mNumVertices ];
 
@@ -457,7 +477,7 @@ void ObjFileImporter::createVertexArray(const ObjFile::Model* pModel,
             // Copy all vertex colors
             if ( !pModel->m_VertexColors.empty())
             {
-                const aiVector3D color = pModel->m_VertexColors[ vertex ];
+                const aiVector3D& color = pModel->m_VertexColors[ vertex ];
                 pMesh->mColors[0][ newIndex ] = aiColor4D(color.x, color.y, color.z, 1.0);
             }
 
@@ -557,7 +577,7 @@ void ObjFileImporter::createMaterials(const ObjFile::Model* pModel, aiScene* pSc
     const unsigned int numMaterials = (unsigned int) pModel->m_MaterialLib.size();
     pScene->mNumMaterials = 0;
     if ( pModel->m_MaterialLib.empty() ) {
-        DefaultLogger::get()->debug("OBJ: no materials specified");
+        ASSIMP_LOG_DEBUG("OBJ: no materials specified");
         return;
     }
 
@@ -591,7 +611,7 @@ void ObjFileImporter::createMaterials(const ObjFile::Model* pModel, aiScene* pSc
             break;
         default:
             sm = aiShadingMode_Gouraud;
-            DefaultLogger::get()->error("OBJ: unexpected illumination model (0-2 recognized)");
+            ASSIMP_LOG_ERROR("OBJ: unexpected illumination model (0-2 recognized)");
         }
 
         mat->AddProperty<int>( &sm, 1, AI_MATKEY_SHADING_MODEL);
@@ -734,25 +754,8 @@ void ObjFileImporter::appendChildToParentNode(aiNode *pParent, aiNode *pChild)
     // Assign parent to child
     pChild->mParent = pParent;
 
-    // If already children was assigned to the parent node, store them in a
-    std::vector<aiNode*> temp;
-    if (pParent->mChildren != NULL)
-    {
-        ai_assert( 0 != pParent->mNumChildren );
-        for (size_t index = 0; index < pParent->mNumChildren; index++)
-        {
-            temp.push_back(pParent->mChildren [ index ] );
-        }
-        delete [] pParent->mChildren;
-    }
-
     // Copy node instances into parent node
     pParent->mNumChildren++;
-    pParent->mChildren = new aiNode*[ pParent->mNumChildren ];
-    for (size_t index = 0; index < pParent->mNumChildren-1; index++)
-    {
-        pParent->mChildren[ index ] = temp [ index ];
-    }
     pParent->mChildren[ pParent->mNumChildren-1 ] = pChild;
 }
 

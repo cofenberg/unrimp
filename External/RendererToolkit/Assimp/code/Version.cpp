@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2018, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 All rights reserved.
@@ -50,7 +50,7 @@ static const unsigned int MajorVersion = 4;
 static const unsigned int MinorVersion = 1;
 
 // --------------------------------------------------------------------------------
-// Legal information string - dont't remove this.
+// Legal information string - don't remove this.
 static const char* LEGAL_INFORMATION =
 
 "Open Asset Import Library (Assimp).\n"
@@ -105,19 +105,15 @@ ASSIMP_API unsigned int aiGetCompileFlags ()    {
 }
 
 // include current build revision, which is even updated from time to time -- :-)
-// #include "revision.h" // TODO(co) Manual change
+#include "revision.h"
 
 // ------------------------------------------------------------------------------------------------
 ASSIMP_API unsigned int aiGetVersionRevision() {
-    // TODO(co) Manual change
-    // return GitVersion;
-    return 0;
+    return GitVersion;
 }
 
 ASSIMP_API const char *aiGetBranchName() {
-    // TODO(co) Manual change
-    // return GitBranch;
-    return "master";
+    return GitBranch;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -154,9 +150,11 @@ ASSIMP_API aiScene::~aiScene() {
             delete mMeshes[a];
     delete [] mMeshes;
 
-    if (mNumMaterials && mMaterials)
-        for( unsigned int a = 0; a < mNumMaterials; a++)
-            delete mMaterials[a];
+    if (mNumMaterials && mMaterials) {
+        for (unsigned int a = 0; a < mNumMaterials; ++a ) {
+            delete mMaterials[ a ];
+        }
+    }
     delete [] mMaterials;
 
     if (mNumAnimations && mAnimations)

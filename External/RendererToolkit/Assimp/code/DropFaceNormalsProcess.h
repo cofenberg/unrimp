@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2018, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 All rights reserved.
@@ -40,27 +40,47 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ----------------------------------------------------------------------
 */
 
-#ifndef INCLUDED_AI_STEPFILEREADER_H
-#define INCLUDED_AI_STEPFILEREADER_H
+/** @file Defines a post processing step to compute face normals for all loaded faces*/
+#ifndef AI_DROPFACENORMALPROCESS_H_INC
+#define AI_DROPFACENORMALPROCESS_H_INC
 
-#include "code/STEPFile.h"
+#include "BaseProcess.h"
+#include <assimp/mesh.h>
 
-namespace Assimp {
-namespace STEP {
+namespace Assimp
+{
 
-    // ### Parsing a STEP file is a twofold procedure ###
-    // --------------------------------------------------------------------------
-    // 1) read file header and return to caller, who checks if the
-    //    file is of a supported schema ..
-    DB* ReadFileHeader(std::shared_ptr<IOStream> stream);
-    // --------------------------------------------------------------------------
-    // 2) read the actual file contents using a user-supplied set of
-    //    conversion functions to interpret the data.
-    void ReadFile(DB& db,const EXPRESS::ConversionSchema& scheme, const char* const* types_to_track, size_t len, const char* const* inverse_indices_to_track, size_t len2);
-    template <size_t N, size_t N2> inline void ReadFile(DB& db,const EXPRESS::ConversionSchema& scheme, const char* const (&arr)[N], const char* const (&arr2)[N2]) {
-        return ReadFile(db,scheme,arr,N,arr2,N2);
-    }
-} // ! STEP
-} // ! Assimp
+// ---------------------------------------------------------------------------
+/** The DropFaceNormalsProcess computes face normals for all faces of all meshes
+*/
+class ASSIMP_API_WINONLY DropFaceNormalsProcess : public BaseProcess
+{
+public:
 
-#endif
+    DropFaceNormalsProcess();
+    ~DropFaceNormalsProcess();
+
+public:
+    // -------------------------------------------------------------------
+    /** Returns whether the processing step is present in the given flag field.
+    * @param pFlags The processing flags the importer was called with. A bitwise
+    *   combination of #aiPostProcessSteps.
+    * @return true if the process is present in this flag fields, false if not.
+    */
+    bool IsActive( unsigned int pFlags) const;
+
+    // -------------------------------------------------------------------
+    /** Executes the post processing step on the given imported data.
+    * At the moment a process is not supposed to fail.
+    * @param pScene The imported data to work at.
+    */
+    void Execute( aiScene* pScene);
+
+
+private:
+    bool DropMeshFaceNormals(aiMesh* pcMesh);
+};
+
+} // end of namespace Assimp
+
+#endif // !!AI_DROPFACENORMALPROCESS_H_INC

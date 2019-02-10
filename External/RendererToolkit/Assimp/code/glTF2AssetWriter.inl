@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2018, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 All rights reserved.
@@ -98,10 +98,10 @@ namespace glTF2 {
     inline void Write(Value& obj, Accessor& a, AssetWriter& w)
     {
         obj.AddMember("bufferView", a.bufferView->index, w.mAl);
-        obj.AddMember("byteOffset", a.byteOffset, w.mAl);
+        obj.AddMember("byteOffset", (unsigned int)a.byteOffset, w.mAl);
 
         obj.AddMember("componentType", int(a.componentType), w.mAl);
-        obj.AddMember("count", a.count, w.mAl);
+        obj.AddMember("count", (unsigned int)a.count, w.mAl);
         obj.AddMember("type", StringRef(AttribType::ToString(a.type)), w.mAl);
 
         Value vTmpMax, vTmpMin;
@@ -114,10 +114,10 @@ namespace glTF2 {
         /****************** Channels *******************/
         Value channels;
         channels.SetArray();
-        channels.Reserve(unsigned(a.Channels.size()), w.mAl);
+        channels.Reserve(unsigned(a.channels.size()), w.mAl);
 
-        for (size_t i = 0; i < unsigned(a.Channels.size()); ++i) {
-            Animation::AnimChannel& c = a.Channels[i];
+        for (size_t i = 0; i < unsigned(a.channels.size()); ++i) {
+            Animation::Channel& c = a.channels[i];
             Value valChannel;
             valChannel.SetObject();
             {
@@ -127,7 +127,20 @@ namespace glTF2 {
                 valTarget.SetObject();
                 {
                     valTarget.AddMember("node", c.target.node->index, w.mAl);
-                    valTarget.AddMember("path", c.target.path, w.mAl);
+                    switch (c.target.path) {
+                        case AnimationPath_TRANSLATION:
+                            valTarget.AddMember("path", "translation", w.mAl);
+                            break;
+                        case AnimationPath_ROTATION:
+                            valTarget.AddMember("path", "rotation", w.mAl);
+                            break;
+                        case AnimationPath_SCALE:
+                            valTarget.AddMember("path", "scale", w.mAl);
+                            break;
+                        case AnimationPath_WEIGHTS:
+                            valTarget.AddMember("path", "weights", w.mAl);
+                            break;
+                    }
                 }
                 valChannel.AddMember("target", valTarget, w.mAl);
             }
@@ -139,16 +152,24 @@ namespace glTF2 {
         Value valSamplers;
         valSamplers.SetArray();
 
-        for (size_t i = 0; i < unsigned(a.Samplers.size()); ++i) {
-            Animation::AnimSampler& s = a.Samplers[i];
+        for (size_t i = 0; i < unsigned(a.samplers.size()); ++i) {
+            Animation::Sampler& s = a.samplers[i];
             Value valSampler;
             valSampler.SetObject();
             {
-                Ref<Accessor> inputAccessor = a.GetAccessor(s.input);
-                Ref<Accessor> outputAccessor = a.GetAccessor(s.output);
-                valSampler.AddMember("input", inputAccessor->index, w.mAl);
-                valSampler.AddMember("interpolation", s.interpolation, w.mAl);
-                valSampler.AddMember("output", outputAccessor->index, w.mAl);
+                valSampler.AddMember("input", s.input->index, w.mAl);
+                switch (s.interpolation) {
+                    case Interpolation_LINEAR:
+                        valSampler.AddMember("path", "LINEAR", w.mAl);
+                        break;
+                    case Interpolation_STEP:
+                        valSampler.AddMember("path", "STEP", w.mAl);
+                        break;
+                    case Interpolation_CUBICSPLINE:
+                        valSampler.AddMember("path", "CUBICSPLINE", w.mAl);
+                        break;
+                }
+                valSampler.AddMember("output", s.output->index, w.mAl);
             }
             valSamplers.PushBack(valSampler, w.mAl);
         }
@@ -342,6 +363,12 @@ namespace glTF2 {
             if (!pbrSpecularGlossiness.ObjectEmpty()) {
                 exts.AddMember("KHR_materials_pbrSpecularGlossiness", pbrSpecularGlossiness, w.mAl);
             }
+        }
+
+        if (m.unlit) {
+          Value unlit;
+          unlit.SetObject();
+          exts.AddMember("KHR_materials_unlit", unlit, w.mAl);
         }
 
         if (!exts.ObjectEmpty()) {
@@ -684,6 +711,10 @@ namespace glTF2 {
             if (this->mAsset.extensionsUsed.KHR_materials_pbrSpecularGlossiness) {
                 exts.PushBack(StringRef("KHR_materials_pbrSpecularGlossiness"), mAl);
             }
+
+            if (this->mAsset.extensionsUsed.KHR_materials_unlit) {
+              exts.PushBack(StringRef("KHR_materials_unlit"), mAl);
+            }
         }
 
         if (!exts.Empty())
@@ -714,6 +745,9 @@ namespace glTF2 {
         if (!(dict = FindArray(*container, d.mDictId))) {
             container->AddMember(StringRef(d.mDictId), Value().SetArray().Move(), mDoc.GetAllocator());
             dict = FindArray(*container, d.mDictId);
+            if (nullptr == dict) {
+                return;
+            }
         }
 
         for (size_t i = 0; i < d.mObjs.size(); ++i) {

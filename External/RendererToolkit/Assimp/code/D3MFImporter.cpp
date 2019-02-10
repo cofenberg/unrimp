@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2018, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 All rights reserved.
@@ -115,10 +115,10 @@ public:
         // import the metadata
         if ( !mMetaData.empty() ) {
             const size_t numMeta( mMetaData.size() );
-            scene->mMetaData = aiMetadata::Alloc( numMeta );
+            scene->mMetaData = aiMetadata::Alloc(static_cast<unsigned int>( numMeta ) );
             for ( size_t i = 0; i < numMeta; ++i ) {
                 aiString val( mMetaData[ i ].value );
-                scene->mMetaData->Set( i, mMetaData[ i ].name, val );
+                scene->mMetaData->Set(static_cast<unsigned int>( i ), mMetaData[ i ].name, val );
             }
         }
 
@@ -297,8 +297,9 @@ private:
             return false;
         }
 
+        //format of the color string: #RRGGBBAA or #RRGGBB (3MF Core chapter 5.1.1)
         const size_t len( strlen( color ) );
-        if ( 9 != len ) {
+        if ( 9 != len && 7 != len) {
             return false;
         }
 
@@ -313,26 +314,28 @@ private:
         ++buf;
         comp[ 1 ] = *buf;
         ++buf;
-        diffuse.r = static_cast<ai_real>( strtol( comp, NULL, 16 ) );
+        diffuse.r = static_cast<ai_real>( strtol( comp, NULL, 16 ) ) / ai_real(255.0);
 
 
         comp[ 0 ] = *buf;
         ++buf;
         comp[ 1 ] = *buf;
         ++buf;
-        diffuse.g = static_cast< ai_real >( strtol( comp, NULL, 16 ) );
+        diffuse.g = static_cast< ai_real >( strtol( comp, NULL, 16 ) ) / ai_real(255.0);
 
         comp[ 0 ] = *buf;
         ++buf;
         comp[ 1 ] = *buf;
         ++buf;
-        diffuse.b = static_cast< ai_real >( strtol( comp, NULL, 16 ) );
+        diffuse.b = static_cast< ai_real >( strtol( comp, NULL, 16 ) ) / ai_real(255.0);
 
+        if(7 == len)
+            return true;
         comp[ 0 ] = *buf;
         ++buf;
         comp[ 1 ] = *buf;
         ++buf;
-        diffuse.a = static_cast< ai_real >( strtol( comp, NULL, 16 ) );
+        diffuse.a = static_cast< ai_real >( strtol( comp, NULL, 16 ) ) / ai_real(255.0);
 
         return true;
     }
@@ -396,7 +399,7 @@ private:
                 return false;
             }
         }
-        DefaultLogger::get()->error("unexpected EOF, expected closing <" + closeTag + "> tag");
+        ASSIMP_LOG_ERROR("unexpected EOF, expected closing <" + closeTag + "> tag");
 
         return false;
     }
@@ -416,8 +419,6 @@ private:
 
 } //namespace D3MF
 
-static const std::string Extension = "3mf";
-
 static const aiImporterDesc desc = {
     "3mf Importer",
     "",
@@ -428,7 +429,7 @@ static const aiImporterDesc desc = {
     0,
     0,
     0,
-    Extension.c_str()
+    "3mf"
 };
 
 D3MFImporter::D3MFImporter()
@@ -442,7 +443,7 @@ D3MFImporter::~D3MFImporter() {
 
 bool D3MFImporter::CanRead(const std::string &filename, IOSystem *pIOHandler, bool checkSig) const {
     const std::string extension( GetExtension( filename ) );
-    if(extension == Extension ) {
+    if(extension == desc.mFileExtensions ) {
         return true;
     } else if ( !extension.length() || checkSig ) {
         if ( nullptr == pIOHandler ) {

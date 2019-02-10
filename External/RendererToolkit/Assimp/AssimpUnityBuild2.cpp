@@ -87,3 +87,5 @@
 	#include "code/TextureTransform.cpp"
 	#include "code/TriangulateProcess.cpp"
 	#include "code/ValidateDataStructure.cpp"
+	#include "code/DropFaceNormalsProcess.cpp"
+

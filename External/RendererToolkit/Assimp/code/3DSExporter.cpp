@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2018, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 All rights reserved.
@@ -381,7 +381,7 @@ void Discreet3DSExporter::WriteTexture(const aiMaterial& mat, aiTextureType type
 
     // TODO: handle embedded textures properly
     if (path.data[0] == '*') {
-        DefaultLogger::get()->error("Ignoring embedded texture for export: " + std::string(path.C_Str()));
+        ASSIMP_LOG_ERROR("Ignoring embedded texture for export: " + std::string(path.C_Str()));
         return;
     }
 

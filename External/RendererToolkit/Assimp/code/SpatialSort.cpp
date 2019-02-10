@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2018, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 
@@ -223,7 +223,7 @@ namespace {
         if( (-42 == (~42 + 1)) && (binValue & 0x80000000))
             return BinFloat(1 << (CHAR_BIT * sizeof(BinFloat) - 1)) - binValue;
         // One's complement?
-        else if( (-42 == ~42) && (binValue & 0x80000000))
+        else if ( (-42 == ~42) && (binValue & 0x80000000))
             return BinFloat(-0) - binValue;
         // Sign-magnitude?
         else if( (-42 == (42 | (-0))) && (binValue & 0x80000000)) // -0 = 1000... binary

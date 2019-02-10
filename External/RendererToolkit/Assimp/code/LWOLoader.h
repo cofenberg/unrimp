@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2018, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 All rights reserved.
@@ -473,7 +473,7 @@ inline void LWOImporter::GetS0(std::string& out,unsigned int max)
     {
         if (++iCursor > max)
         {
-            DefaultLogger::get()->warn("LWO: Invalid file, string is is too long");
+            ASSIMP_LOG_WARN("LWO: Invalid file, string is is too long");
             break;
         }
         ++mFileBuffer;

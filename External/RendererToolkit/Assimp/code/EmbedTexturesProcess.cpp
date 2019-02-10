@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2018, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 All rights reserved.
@@ -93,9 +93,7 @@ void EmbedTexturesProcess::Execute(aiScene* pScene) {
         }
     }
 
-    char stringBuffer[128];
-    ::ai_snprintf(stringBuffer, 128, "EmbedTexturesProcess finished. Embedded %u textures.", embeddedTexturesCount);
-    DefaultLogger::get()->info(stringBuffer);
+    ASSIMP_LOG_INFO_F("EmbedTexturesProcess finished. Embedded ", embeddedTexturesCount, " textures." );
 }
 
 bool EmbedTexturesProcess::addTexture(aiScene* pScene, std::string path) const {
@@ -105,7 +103,7 @@ bool EmbedTexturesProcess::addTexture(aiScene* pScene, std::string path) const {
     // Test path directly
     std::ifstream file(imagePath, std::ios::binary | std::ios::ate);
     if ((imageSize = file.tellg()) == std::streampos(-1)) {
-        DefaultLogger::get()->warn("EmbedTexturesProcess: Cannot find image: " + imagePath + ". Will try to find it in root folder.");
+        ASSIMP_LOG_WARN_F("EmbedTexturesProcess: Cannot find image: ", imagePath, ". Will try to find it in root folder.");
 
         // Test path in root path
         imagePath = mRootPath + path;
@@ -115,33 +113,39 @@ bool EmbedTexturesProcess::addTexture(aiScene* pScene, std::string path) const {
             imagePath = mRootPath + path.substr(path.find_last_of("\\/") + 1u);
             file.open(imagePath, std::ios::binary | std::ios::ate);
             if ((imageSize = file.tellg()) == std::streampos(-1)) {
-                DefaultLogger::get()->error("EmbedTexturesProcess: Unable to embed texture: " + path + ".");
+                ASSIMP_LOG_ERROR_F("EmbedTexturesProcess: Unable to embed texture: ", path, ".");
                 return false;
             }
         }
     }
 
-    aiTexel* imageContent = new aiTexel[1u + imageSize / sizeof(aiTexel)];
+    aiTexel* imageContent = new aiTexel[ 1ul + static_cast<unsigned long>( imageSize ) / sizeof(aiTexel)];
     file.seekg(0, std::ios::beg);
     file.read(reinterpret_cast<char*>(imageContent), imageSize);
 
     // Enlarging the textures table
-    auto textureId = pScene->mNumTextures++;
+    unsigned int textureId = pScene->mNumTextures++;
     auto oldTextures = pScene->mTextures;
     pScene->mTextures = new aiTexture*[pScene->mNumTextures];
-    memmove(pScene->mTextures, oldTextures, sizeof(aiTexture*) * (pScene->mNumTextures - 1u));
+    ::memmove(pScene->mTextures, oldTextures, sizeof(aiTexture*) * (pScene->mNumTextures - 1u));
 
     // Add the new texture
-    auto pTexture = new aiTexture();
+    auto pTexture = new aiTexture;
     pTexture->mHeight = 0; // Means that this is still compressed
     pTexture->mWidth = static_cast<uint32_t>(imageSize);
     pTexture->pcData = imageContent;
 
     auto extension = path.substr(path.find_last_of('.') + 1u);
     std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
-    if (extension == "jpeg") extension = "jpg";
-    strcpy(pTexture->achFormatHint, extension.c_str());
+    if (extension == "jpeg") {
+        extension = "jpg";
+    }
 
+    size_t len = extension.size();
+    if (len > HINTMAXTEXTURELEN -1 ) {
+        len = HINTMAXTEXTURELEN - 1;
+    }
+    ::strncpy(pTexture->achFormatHint, extension.c_str(), len);
     pScene->mTextures[textureId] = pTexture;
 
     return true;

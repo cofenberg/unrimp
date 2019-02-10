@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2018, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 
@@ -233,7 +233,7 @@ void CSMImporter::InternReadFile( const std::string& pFile,
 
                         if (TokenMatchI(buffer, "DROPOUT", 7))  {
                             // seems this is invalid marker data; at least the doc says it's possible
-                            DefaultLogger::get()->warn("CSM: Encountered invalid marker data (DROPOUT)");
+                            ASSIMP_LOG_WARN("CSM: Encountered invalid marker data (DROPOUT)");
                         }
                         else    {
                             aiVectorKey* sub = s->mPositionKeys + s->mNumPositionKeys;

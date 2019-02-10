@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2018, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 All rights reserved.
@@ -86,7 +86,7 @@ public:
         const Scene& /*in*/,
         const Object& /*orig_object*/
     ) {
-        DefaultLogger::get()->warn((Formatter::format("This modifier is not supported, skipping: "),orig_modifier.dna_type));
+        ASSIMP_LOG_INFO_F("This modifier is not supported, skipping: ",orig_modifier.dna_type );
         return;
     }
 };

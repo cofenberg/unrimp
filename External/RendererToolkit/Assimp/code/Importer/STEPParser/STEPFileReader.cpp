@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2018, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 All rights reserved.
@@ -63,7 +63,6 @@ std::string AddLineNumber(const std::string& s,uint64_t line /*= LINE_NOT_SPECIF
     return line == STEP::SyntaxError::LINE_NOT_SPECIFIED ? prefix+s : static_cast<std::string>( (Formatter::format(),prefix,"(line ",line,") ",s) );
 }
 
-
 // ------------------------------------------------------------------------------------------------
 std::string AddEntityID(const std::string& s,uint64_t entity /*= ENTITY_NOT_SPECIFIED*/, const std::string& prefix = "")
 {
@@ -85,16 +84,16 @@ STEP::TypeError::TypeError (const std::string& s,uint64_t entity /* = ENTITY_NOT
 
 }
 
-
+static const char *ISO_Token         = "ISO-10303-21;";
+static const char *FILE_SCHEMA_Token = "FILE_SCHEMA";
 // ------------------------------------------------------------------------------------------------
-STEP::DB* STEP::ReadFileHeader(std::shared_ptr<IOStream> stream)
-{
+STEP::DB* STEP::ReadFileHeader(std::shared_ptr<IOStream> stream) {
     std::shared_ptr<StreamReaderLE> reader = std::shared_ptr<StreamReaderLE>(new StreamReaderLE(stream));
     std::unique_ptr<STEP::DB> db = std::unique_ptr<STEP::DB>(new STEP::DB(reader));
 
-    LineSplitter& splitter = db->GetSplitter();
-    if (!splitter || *splitter != "ISO-10303-21;") {
-        throw STEP::SyntaxError("expected magic token: ISO-10303-21",1);
+    LineSplitter &splitter = db->GetSplitter();
+    if (!splitter || *splitter != ISO_Token ) {
+        throw STEP::SyntaxError("expected magic token: " + std::string( ISO_Token ), 1);
     }
 
     HeaderInfo& head = db->GetHeader();
@@ -109,7 +108,7 @@ STEP::DB* STEP::ReadFileHeader(std::shared_ptr<IOStream> stream)
         // want one-based line numbers for human readers, so +1
         const uint64_t line = splitter.get_index()+1;
 
-        if (s.substr(0,11) == "FILE_SCHEMA") {
+        if (s.substr(0,11) == FILE_SCHEMA_Token) {
             const char* sz = s.c_str()+11;
             SkipSpaces(sz,&sz);
             std::shared_ptr< const EXPRESS::DataType > schema = EXPRESS::DataType::Parse(sz);
@@ -126,7 +125,7 @@ STEP::DB* STEP::ReadFileHeader(std::shared_ptr<IOStream> stream)
 
                 // XXX need support for multiple schemas?
                 if (list->GetSize() > 1)    {
-                    DefaultLogger::get()->warn(AddLineNumber("multiple schemas currently not supported",line));
+                    ASSIMP_LOG_WARN(AddLineNumber("multiple schemas currently not supported",line));
                 }
                 const EXPRESS::STRING* string( nullptr );
                 if (!list->GetSize() || !(string=dynamic_cast<const EXPRESS::STRING*>( (*list)[0].get() ))) {
@@ -192,7 +191,7 @@ void STEP::ReadFile(DB& db,const EXPRESS::ConversionSchema& scheme,
         // LineSplitter already ignores empty lines
         ai_assert(s.length());
         if (s[0] != '#') {
-            DefaultLogger::get()->warn(AddLineNumber("expected token \'#\'",line));
+            ASSIMP_LOG_WARN(AddLineNumber("expected token \'#\'",line));
             ++splitter;
             continue;
         }
@@ -202,14 +201,14 @@ void STEP::ReadFile(DB& db,const EXPRESS::ConversionSchema& scheme,
         // ---
         const std::string::size_type n0 = s.find_first_of('=');
         if (n0 == std::string::npos) {
-            DefaultLogger::get()->warn(AddLineNumber("expected token \'=\'",line));
+            ASSIMP_LOG_WARN(AddLineNumber("expected token \'=\'",line));
             ++splitter;
             continue;
         }
 
         const uint64_t id = strtoul10_64(s.substr(1,n0-1).c_str());
         if (!id) {
-            DefaultLogger::get()->warn(AddLineNumber("expected positive, numeric entity id",line));
+            ASSIMP_LOG_WARN(AddLineNumber("expected positive, numeric entity id",line));
             ++splitter;
             continue;
         }
@@ -236,14 +235,13 @@ void STEP::ReadFile(DB& db,const EXPRESS::ConversionSchema& scheme,
             }
 
             if(!ok) {
-                DefaultLogger::get()->warn(AddLineNumber("expected token \'(\'",line));
+                ASSIMP_LOG_WARN(AddLineNumber("expected token \'(\'",line));
                 continue;
             }
         }
 
         std::string::size_type n2 = s.find_last_of(')');
         if (n2 == std::string::npos || n2 < n1 || n2 == s.length() - 1 || s[n2 + 1] != ';') {
-
             has_next = true;
             bool ok = false;
             for( ++splitter; splitter; ++splitter) {
@@ -251,25 +249,25 @@ void STEP::ReadFile(DB& db,const EXPRESS::ConversionSchema& scheme,
                 if (snext.empty()) {
                     continue;
                 }
+
                 // the next line doesn't start an entity, so maybe it is
                 // just a continuation  for this line, keep going
                 if (!IsEntityDef(snext)) {
                     s.append(snext);
                     n2 = s.find_last_of(')');
                     ok = !(n2 == std::string::npos || n2 < n1 || n2 == s.length() - 1 || s[n2 + 1] != ';');
-                }
-                else {
+                } else {
                     break;
                 }
             }
             if(!ok) {
-                DefaultLogger::get()->warn(AddLineNumber("expected token \')\'",line));
+                ASSIMP_LOG_WARN(AddLineNumber("expected token \')\'",line));
                 continue;
             }
         }
 
         if (map.find(id) != map.end()) {
-            DefaultLogger::get()->warn(AddLineNumber((Formatter::format(),"an object with the id #",id," already exists"),line));
+            ASSIMP_LOG_WARN(AddLineNumber((Formatter::format(),"an object with the id #",id," already exists"),line));
         }
 
         std::string::size_type ns = n0;
@@ -292,11 +290,11 @@ void STEP::ReadFile(DB& db,const EXPRESS::ConversionSchema& scheme,
     }
 
     if (!splitter) {
-        DefaultLogger::get()->warn("STEP: ignoring unexpected EOF");
+        ASSIMP_LOG_WARN("STEP: ignoring unexpected EOF");
     }
 
     if ( !DefaultLogger::isNullLogger()){
-        DefaultLogger::get()->debug((Formatter::format(),"STEP: got ",map.size()," object records with ",
+        ASSIMP_LOG_DEBUG((Formatter::format(),"STEP: got ",map.size()," object records with ",
             db.GetRefs().size()," inverse index entries"));
     }
 }
@@ -392,7 +390,7 @@ std::shared_ptr<const EXPRESS::DataType> EXPRESS::DataType::Parse(const char*& i
         std::string stemp = std::string(start, static_cast<size_t>(cur - start));
         if(!StringToUTF8(stemp)) {
             // TODO: route this to a correct logger with line numbers etc., better error messages
-            DefaultLogger::get()->error("an error occurred reading escape sequences in ASCII text");
+            ASSIMP_LOG_ERROR("an error occurred reading escape sequences in ASCII text");
         }
 
         return std::make_shared<EXPRESS::STRING>(stemp);
@@ -424,10 +422,8 @@ std::shared_ptr<const EXPRESS::DataType> EXPRESS::DataType::Parse(const char*& i
     return std::make_shared<EXPRESS::INTEGER>(neg?-num:num);
 }
 
-
 // ------------------------------------------------------------------------------------------------
-std::shared_ptr<const EXPRESS::LIST> EXPRESS::LIST::Parse(const char*& inout,uint64_t line, const EXPRESS::ConversionSchema* schema /*= NULL*/)
-{
+std::shared_ptr<const EXPRESS::LIST> EXPRESS::LIST::Parse(const char*& inout,uint64_t line, const EXPRESS::ConversionSchema* schema /*= NULL*/) {
     const std::shared_ptr<EXPRESS::LIST> list = std::make_shared<EXPRESS::LIST>();
     EXPRESS::LIST::MemberList& members = list->members;
 
@@ -468,61 +464,73 @@ std::shared_ptr<const EXPRESS::LIST> EXPRESS::LIST::Parse(const char*& inout,uin
     return list;
 }
 
+// ------------------------------------------------------------------------------------------------
+static void handleSkippedDepthFromToken(const char *a, int64_t &skip_depth ) {
+    if (*a == '(') {
+        ++skip_depth;
+    } else if (*a == ')') {
+        --skip_depth;
+    }
+}
+
+// ------------------------------------------------------------------------------------------------
+static int64_t getIdFromToken(const char *a) {
+    const char *tmp;
+    const int64_t num = static_cast<int64_t>(strtoul10_64(a + 1, &tmp));
+
+    return num;
+}
 
 // ------------------------------------------------------------------------------------------------
 STEP::LazyObject::LazyObject(DB& db, uint64_t id,uint64_t /*line*/, const char* const type,const char* args)
-    : id(id)
-    , type(type)
-    , db(db)
-    , args(args)
-    , obj()
-{
+: id(id)
+, type(type)
+, db(db)
+, args(args)
+, obj() {
     // find any external references and store them in the database.
     // this helps us emulate STEPs INVERSE fields.
-    if (db.KeepInverseIndicesForType(type)) {
-        const char* a  = args;
+    if (!db.KeepInverseIndicesForType(type)) {
+        return;
+    }
 
-        // do a quick scan through the argument tuple and watch out for entity references
-        int64_t skip_depth = 0;
-        while(*a) {
-            if (*a == '(') {
-                ++skip_depth;
-            }
-            else if (*a == ')') {
-                --skip_depth;
-            }
+    // do a quick scan through the argument tuple and watch out for entity references
+    const char *a( args );
+    int64_t skip_depth( 0 );
+    while ( *a ) {
+        handleSkippedDepthFromToken(a, skip_depth);
+        /*if (*a == '(') {
+            ++skip_depth;
+        } else if (*a == ')') {
+            --skip_depth;
+        }*/
 
-			if (skip_depth >= 1 && *a=='#') {
-				if (*(a + 1) != '#')
-				{
-					const char* tmp;
-					const int64_t num = static_cast<int64_t>(strtoul10_64(a + 1, &tmp));
-					db.MarkRef(num, id);
-				}
-				else
-				{
-					++a;
-				}
-            }
-            ++a;
+		if (skip_depth >= 1 && *a=='#') {
+			if (*(a + 1) != '#') {
+				/*const char *tmp;
+				const int64_t num = static_cast<int64_t>(strtoul10_64(a + 1, &tmp));
+				db.MarkRef(num, id);*/
+                db.MarkRef(getIdFromToken(a), id);
+			} else {
+				++a;
+			}
         }
-
+        ++a;
     }
 }
 
 // ------------------------------------------------------------------------------------------------
-STEP::LazyObject::~LazyObject()
-{
+STEP::LazyObject::~LazyObject() {
     // make sure the right dtor/operator delete get called
     if (obj) {
         delete obj;
+    } else {
+        delete[] args;
     }
-    else delete[] args;
 }
 
 // ------------------------------------------------------------------------------------------------
-void STEP::LazyObject::LazyInit() const
-{
+void STEP::LazyObject::LazyInit() const {
     const EXPRESS::ConversionSchema& schema = db.GetSchema();
     STEP::ConvertObjectProc proc = schema.GetConverterProc(type);
 
@@ -549,4 +557,3 @@ void STEP::LazyObject::LazyInit() const
     // store the original id in the object instance
     obj->SetID(id);
 }
-

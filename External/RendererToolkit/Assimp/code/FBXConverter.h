@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2018, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 All rights reserved.
@@ -63,12 +63,18 @@ struct aiScene;
 struct aiNode;
 struct aiMaterial;
 
+struct morphKeyData {
+    std::vector<unsigned int> values;
+    std::vector<float> weights;
+};
+typedef std::map<int64_t, morphKeyData*> morphAnimData;
+
 namespace Assimp {
 namespace FBX {
 
 class Document;
 
-using NodeNameCache = std::vector<std::string>;
+using NodeNameCache = std::set<std::string>;
 
 /** 
  *  Convert a FBX #Document to #aiScene
@@ -78,7 +84,7 @@ using NodeNameCache = std::vector<std::string>;
 void ConvertToAssimpScene(aiScene* out, const Document& doc);
 
 /** Dummy class to encapsulate the conversion process */
-class Converter {
+class FBXConverter {
 public:
     /**
     *  The different parts that make up the final local transformation of a fbx-node
@@ -106,8 +112,8 @@ public:
     };
 
 public:
-    Converter(aiScene* out, const Document& doc);
-    ~Converter();
+    FBXConverter(aiScene* out, const Document& doc);
+    ~FBXConverter();
 
 private:
     // ------------------------------------------------------------------------------------------------
@@ -131,7 +137,7 @@ private:
     void ConvertCamera( const Camera& cam, const std::string &orig_name );
 
     // ------------------------------------------------------------------------------------------------
-    void GetUniqueName( const std::string &name, std::string uniqueName );
+    void GetUniqueName( const std::string &name, std::string& uniqueName );
 
     // ------------------------------------------------------------------------------------------------
     // this returns unified names usable within assimp identifiers (i.e. no space characters -
@@ -168,27 +174,31 @@ private:
 
     // ------------------------------------------------------------------------------------------------
     void ConvertModel(const Model& model, aiNode& nd, const aiMatrix4x4& node_global_transform);
-
+    
     // ------------------------------------------------------------------------------------------------
     // MeshGeometry -> aiMesh, return mesh index + 1 or 0 if the conversion failed
     std::vector<unsigned int> ConvertMesh(const MeshGeometry& mesh, const Model& model,
-        const aiMatrix4x4& node_global_transform);
+        const aiMatrix4x4& node_global_transform, aiNode& nd);
 
     // ------------------------------------------------------------------------------------------------
-    aiMesh* SetupEmptyMesh(const MeshGeometry& mesh);
+    std::vector<unsigned int> ConvertLine(const LineGeometry& line, const Model& model,
+        const aiMatrix4x4& node_global_transform, aiNode& nd);
+
+    // ------------------------------------------------------------------------------------------------
+    aiMesh* SetupEmptyMesh(const Geometry& mesh, aiNode& nd);
 
     // ------------------------------------------------------------------------------------------------
     unsigned int ConvertMeshSingleMaterial(const MeshGeometry& mesh, const Model& model,
-        const aiMatrix4x4& node_global_transform);
+        const aiMatrix4x4& node_global_transform, aiNode& nd);
 
     // ------------------------------------------------------------------------------------------------
     std::vector<unsigned int> ConvertMeshMultiMaterial(const MeshGeometry& mesh, const Model& model,
-        const aiMatrix4x4& node_global_transform);
+        const aiMatrix4x4& node_global_transform, aiNode& nd);
 
     // ------------------------------------------------------------------------------------------------
     unsigned int ConvertMeshMultiMaterial(const MeshGeometry& mesh, const Model& model,
         MatIndexArray::value_type index,
-        const aiMatrix4x4& node_global_transform);
+        const aiMatrix4x4& node_global_transform, aiNode& nd);
 
     // ------------------------------------------------------------------------------------------------
     static const unsigned int NO_MATERIAL_SEPARATION = /* std::numeric_limits<unsigned int>::max() */
@@ -229,6 +239,10 @@ private:
     unsigned int ConvertVideo(const Video& video);
 
     // ------------------------------------------------------------------------------------------------
+    // convert embedded texture if necessary and return actual texture path
+    aiString GetTexturePath(const Texture* tex);
+
+    // ------------------------------------------------------------------------------------------------
     void TrySetTextureProperties(aiMaterial* out_mat, const TextureMap& textures,
         const std::string& propName,
         aiTextureType target, const MeshGeometry* const mesh);
@@ -254,6 +268,7 @@ private:
 
     // ------------------------------------------------------------------------------------------------
     void SetShadingPropertiesCommon(aiMaterial* out_mat, const PropertyTable& props);
+    void SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTable& props, const TextureMap& textures, const MeshGeometry* const mesh);
 
     // ------------------------------------------------------------------------------------------------
     // get the number of fps for a FrameRate enumerated value
@@ -268,6 +283,7 @@ private:
     // the function is guaranteed to provide consistent results over multiple invocations
     // UNLESS RenameNode() is called for a particular node name.
     std::string FixNodeName(const std::string& name);
+    std::string FixAnimMeshName(const std::string& name);
 
     typedef std::map<const AnimationCurveNode*, const AnimationLayer*> LayerMap;
 
@@ -276,6 +292,9 @@ private:
 
     // ------------------------------------------------------------------------------------------------
     void ConvertAnimationStack(const AnimationStack& st);
+
+    // ------------------------------------------------------------------------------------------------
+    void ProcessMorphAnimDatas(std::map<std::string, morphAnimData*>* morphAnimDatas, const BlendShapeChannel* bsc, const AnimationCurveNode* node);
 
     // ------------------------------------------------------------------------------------------------
     void GenerateNodeAnimations(std::vector<aiNodeAnim*>& node_anims,
@@ -410,6 +429,7 @@ private:
     std::vector<aiLight*> lights;
     std::vector<aiCamera*> cameras;
     std::vector<aiTexture*> textures;
+    
 
     typedef std::map<const Material*, unsigned int> MaterialMap;
     MaterialMap materials_converted;

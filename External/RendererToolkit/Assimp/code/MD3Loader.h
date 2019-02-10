@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2018, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 All rights reserved.
@@ -125,7 +125,7 @@ enum AlphaTestFunc
  */
 struct ShaderMapBlock
 {
-    ShaderMapBlock()
+    ShaderMapBlock() AI_NO_EXCEPT
          :  blend_src   (BLEND_NONE)
          ,  blend_dest  (BLEND_NONE)
          ,  alpha_test  (AT_NONE)
@@ -150,7 +150,7 @@ struct ShaderMapBlock
  */
 struct ShaderDataBlock
 {
-    ShaderDataBlock()
+    ShaderDataBlock() AI_NO_EXCEPT
         :   cull    (CULL_CW)
     {}
 

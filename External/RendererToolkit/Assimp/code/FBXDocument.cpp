@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2018, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 All rights reserved.
@@ -146,6 +146,12 @@ const Object* LazyObject::Get(bool dieOnError)
             if (!strcmp(classtag.c_str(),"Mesh")) {
                 object.reset(new MeshGeometry(id,element,name,doc));
             }
+            if (!strcmp(classtag.c_str(), "Shape")) {
+                object.reset(new ShapeGeometry(id, element, name, doc));
+            }
+            if (!strcmp(classtag.c_str(), "Line")) {
+                object.reset(new LineGeometry(id, element, name, doc));
+            }
         }
         else if (!strncmp(obtype,"NodeAttribute",length)) {
             if (!strcmp(classtag.c_str(),"Camera")) {
@@ -170,6 +176,12 @@ const Object* LazyObject::Get(bool dieOnError)
             }
             else if (!strcmp(classtag.c_str(),"Skin")) {
                 object.reset(new Skin(id,element,doc,name));
+            }
+            else if (!strcmp(classtag.c_str(), "BlendShape")) {
+                object.reset(new BlendShape(id, element, doc, name));
+            }
+            else if (!strcmp(classtag.c_str(), "BlendShapeChannel")) {
+                object.reset(new BlendShapeChannel(id, element, doc, name));
             }
         }
         else if ( !strncmp( obtype, "Model", length ) ) {
@@ -214,7 +226,7 @@ const Object* LazyObject::Get(bool dieOnError)
 
         // note: the error message is already formatted, so raw logging is ok
         if(!DefaultLogger::isNullLogger()) {
-            DefaultLogger::get()->error(ex.what());
+            ASSIMP_LOG_ERROR(ex.what());
         }
         return NULL;
     }
@@ -575,11 +587,11 @@ std::vector<const Connection*> Document::GetConnectionsSequenced(uint64_t id, bo
     ai_assert( count != 0 );
     ai_assert( count <= MAX_CLASSNAMES);
 
-    size_t lenghts[MAX_CLASSNAMES];
+    size_t lengths[MAX_CLASSNAMES];
 
     const size_t c = count;
     for (size_t i = 0; i < c; ++i) {
-        lenghts[ i ] = strlen(classnames[i]);
+        lengths[ i ] = strlen(classnames[i]);
     }
 
     std::vector<const Connection*> temp;
@@ -597,7 +609,7 @@ std::vector<const Connection*> Document::GetConnectionsSequenced(uint64_t id, bo
 
         for (size_t i = 0; i < c; ++i) {
             ai_assert(classnames[i]);
-            if(static_cast<size_t>(std::distance(key.begin(),key.end())) == lenghts[i] && !strncmp(classnames[i],obtype,lenghts[i])) {
+            if(static_cast<size_t>(std::distance(key.begin(),key.end())) == lengths[i] && !strncmp(classnames[i],obtype,lengths[i])) {
                 obtype = NULL;
                 break;
             }

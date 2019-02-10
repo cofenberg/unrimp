@@ -60,6 +60,7 @@
 // BLEND
 	#include "code/BlenderBMesh.cpp"
 	#include "code/BlenderDNA.cpp"
+	#include "code/BlenderCustomData.cpp"
 	#include "code/BlenderLoader.cpp"
 	#include "code/BlenderModifier.cpp"
 	#include "code/BlenderTessellator.cpp"

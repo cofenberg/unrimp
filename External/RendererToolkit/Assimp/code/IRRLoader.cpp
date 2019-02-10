@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2018, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 
@@ -89,14 +89,16 @@ static const aiImporterDesc desc = {
 // ------------------------------------------------------------------------------------------------
 // Constructor to be privately used by Importer
 IRRImporter::IRRImporter()
-    : fps(),
-    configSpeedFlag()
-{}
+: fps()
+, configSpeedFlag(){
+    // empty
+}
 
 // ------------------------------------------------------------------------------------------------
 // Destructor, private as well
-IRRImporter::~IRRImporter()
-{}
+IRRImporter::~IRRImporter() {
+    // empty
+}
 
 // ------------------------------------------------------------------------------------------------
 // Returns whether the class can handle the format of the given file.
@@ -107,9 +109,9 @@ bool IRRImporter::CanRead( const std::string& pFile, IOSystem* pIOHandler, bool 
     } else if (extension == "xml" || checkSig) {
         /*  If CanRead() is called in order to check whether we
          *  support a specific file extension in general pIOHandler
-         *  might be NULL and it's our duty to return true here.
+         *  might be nullptr and it's our duty to return true here.
          */
-        if ( nullptr == pIOHandler ) {
+        if (nullptr == pIOHandler ) {
             return true;
         }
         const char* tokens[] = {"irr_scene"};
@@ -131,7 +133,7 @@ void IRRImporter::SetupProperties(const Importer* pImp)
     // read the output frame rate of all node animation channels
     fps = pImp->GetPropertyInteger(AI_CONFIG_IMPORT_IRR_ANIM_FPS,100);
     if (fps < 10.)  {
-        DefaultLogger::get()->error("IRR: Invalid FPS configuration");
+        ASSIMP_LOG_ERROR("IRR: Invalid FPS configuration");
         fps = 100;
     }
 
@@ -281,7 +283,7 @@ void IRRImporter::CopyMaterial(std::vector<aiMaterial*>& materials,
         return;
     }
     else if (inmaterials.size() > 1)    {
-        DefaultLogger::get()->info("IRR: Skipping additional materials");
+        ASSIMP_LOG_INFO("IRR: Skipping additional materials");
     }
 
     mesh->mMaterialIndex = (unsigned int)materials.size();
@@ -290,8 +292,8 @@ void IRRImporter::CopyMaterial(std::vector<aiMaterial*>& materials,
 
 
 // ------------------------------------------------------------------------------------------------
-inline int ClampSpline(int idx, int size)
-{
+inline
+int ClampSpline(int idx, int size) {
     return ( idx<0 ? size+idx : ( idx>=size ? idx-size : idx ) );
 }
 
@@ -310,7 +312,7 @@ inline void FindSuitableMultiple(int& angle)
 // ------------------------------------------------------------------------------------------------
 void IRRImporter::ComputeAnimations(Node* root, aiNode* real, std::vector<aiNodeAnim*>& anims)
 {
-    ai_assert(NULL != root && NULL != real);
+    ai_assert(nullptr != root && nullptr != real);
 
     // XXX totally WIP - doesn't produce proper results, need to evaluate
     // whether there's any use for Irrlicht's proprietary scene format
@@ -319,17 +321,18 @@ void IRRImporter::ComputeAnimations(Node* root, aiNode* real, std::vector<aiNode
     if (root->animators.empty()) {
         return;
     }
-    unsigned int total = 0;
+    unsigned int total( 0 );
     for (std::list<Animator>::iterator it = root->animators.begin();it != root->animators.end(); ++it)  {
         if ((*it).type == Animator::UNKNOWN || (*it).type == Animator::OTHER)   {
-            DefaultLogger::get()->warn("IRR: Skipping unknown or unsupported animator");
+            ASSIMP_LOG_WARN("IRR: Skipping unknown or unsupported animator");
             continue;
         }
         ++total;
     }
-    if (!total)return;
-    else if (1 == total)    {
-        DefaultLogger::get()->warn("IRR: Adding dummy nodes to simulate multiple animators");
+    if (!total) {
+        return;
+    } else if (1 == total)    {
+        ASSIMP_LOG_WARN("IRR: Adding dummy nodes to simulate multiple animators");
     }
 
     // NOTE: 1 tick == i millisecond
@@ -518,9 +521,10 @@ void IRRImporter::ComputeAnimations(Node* root, aiNode* real, std::vector<aiNode
                 const int size = (int)in.splineKeys.size();
                 if (!size)  {
                     // We have no point in the spline. That's bad. Really bad.
-                    DefaultLogger::get()->warn("IRR: Spline animators with no points defined");
+                    ASSIMP_LOG_WARN("IRR: Spline animators with no points defined");
 
-                    delete anim;anim = NULL;
+                    delete anim;
+                    anim = nullptr;
                     break;
                 }
                 else if (size == 1) {
@@ -672,7 +676,7 @@ void IRRImporter::GenerateGraph(Node* root,aiNode* rootOut ,aiScene* scene,
             // graph we're currently building
             aiScene* scene = batch.GetImport(root->id);
             if (!scene) {
-                DefaultLogger::get()->error("IRR: Unable to load external file: " + root->meshPath);
+                ASSIMP_LOG_ERROR("IRR: Unable to load external file: " + root->meshPath);
                 break;
             }
             attach.push_back(AttachmentInfo(scene,rootOut));
@@ -683,7 +687,7 @@ void IRRImporter::GenerateGraph(Node* root,aiNode* rootOut ,aiScene* scene,
             // should be equal. If they are not, we can impossibly
             // do this  ...
             if (root->materials.size() != (unsigned int)scene->mNumMaterials)   {
-                DefaultLogger::get()->warn("IRR: Failed to match imported materials "
+                ASSIMP_LOG_WARN("IRR: Failed to match imported materials "
                     "with the materials found in the IRR scene file");
 
                 break;
@@ -722,7 +726,7 @@ void IRRImporter::GenerateGraph(Node* root,aiNode* rootOut ,aiScene* scene,
                         }
                     }
                     if (bdo)    {
-                        DefaultLogger::get()->info("IRR: Replacing mesh vertex alpha with common opacity");
+                        ASSIMP_LOG_INFO("IRR: Replacing mesh vertex alpha with common opacity");
 
                         for (unsigned int a = 0; a < mesh->mNumVertices;++a)
                             mesh->mColors[0][a].a = 1.f;
@@ -806,7 +810,7 @@ void IRRImporter::GenerateGraph(Node* root,aiNode* rootOut ,aiScene* scene,
         {
             // A skybox is defined by six materials
             if (root->materials.size() < 6) {
-                DefaultLogger::get()->error("IRR: There should be six materials for a skybox");
+                ASSIMP_LOG_ERROR("IRR: There should be six materials for a skybox");
                 break;
             }
 
@@ -823,7 +827,7 @@ void IRRImporter::GenerateGraph(Node* root,aiNode* rootOut ,aiScene* scene,
             // for IRR skyboxes. We add a 'IRR.SkyBox_' prefix to the node.
             // *************************************************************
             root->name = "IRR.SkyBox_" + root->name;
-            DefaultLogger::get()->info("IRR: Loading skybox, this will "
+            ASSIMP_LOG_INFO("IRR: Loading skybox, this will "
                 "require special handling to be displayed correctly");
         }
         break;
@@ -831,7 +835,7 @@ void IRRImporter::GenerateGraph(Node* root,aiNode* rootOut ,aiScene* scene,
     case Node::TERRAIN:
         {
             // to support terrains, we'd need to have a texture decoder
-            DefaultLogger::get()->error("IRR: Unsupported node - TERRAIN");
+            ASSIMP_LOG_ERROR("IRR: Unsupported node - TERRAIN");
         }
         break;
     default:
@@ -904,8 +908,9 @@ void IRRImporter::InternReadFile( const std::string& pFile,
     std::unique_ptr<IOStream> file( pIOHandler->Open( pFile));
 
     // Check whether we can read from the file
-    if( file.get() == NULL)
-        throw DeadlyImportError( "Failed to open IRR file " + pFile + "");
+    if (file.get() == nullptr) {
+        throw DeadlyImportError("Failed to open IRR file " + pFile + "");
+    }
 
     // Construct the irrXML parser
     CIrrXML_IOStreamReader st(file.get());
@@ -913,14 +918,14 @@ void IRRImporter::InternReadFile( const std::string& pFile,
 
     // The root node of the scene
     Node* root = new Node(Node::DUMMY);
-    root->parent = NULL;
+    root->parent = nullptr;
     root->name = "<IRRSceneRoot>";
 
     // Current node parent
     Node* curParent = root;
 
     // Scenegraph node we're currently working on
-    Node* curNode = NULL;
+    Node* curNode = nullptr;
 
     // List of output cameras
     std::vector<aiCamera*> cameras;
@@ -1010,11 +1015,11 @@ void IRRImporter::InternReadFile( const std::string& pFile,
                 }
                 else if (!ASSIMP_stricmp(sz,"billBoard"))   {
                     // We don't support billboards, so ignore them
-                    DefaultLogger::get()->error("IRR: Billboards are not supported by Assimp");
+                    ASSIMP_LOG_ERROR("IRR: Billboards are not supported by Assimp");
                     nd = new Node(Node::DUMMY);
                 }
                 else    {
-                    DefaultLogger::get()->warn("IRR: Found unknown node: " + std::string(sz));
+                    ASSIMP_LOG_WARN("IRR: Found unknown node: " + std::string(sz));
 
                     /*  We skip the contents of nodes we don't know.
                      *  We parse the transformation and all animators
@@ -1041,13 +1046,13 @@ void IRRImporter::InternReadFile( const std::string& pFile,
                  */
                 if (!curNode)   {
 #if 0
-                    DefaultLogger::get()->error("IRR: Encountered <attributes> element, but "
+                    ASSIMP_LOG_ERROR("IRR: Encountered <attributes> element, but "
                         "there is no node active");
 #endif
                     continue;
                 }
 
-                Animator* curAnim = NULL;
+                Animator* curAnim = nullptr;
 
                 // Materials can occur for nearly any type of node
                 if (inMaterials && curNode->type != Node::DUMMY)    {
@@ -1269,7 +1274,7 @@ void IRRImporter::InternReadFile( const std::string& pFile,
                                         lights.pop_back();
                                         curNode->type = Node::DUMMY;
 
-                                        DefaultLogger::get()->error("Ignoring light of unknown type: " + prop.value);
+                                        ASSIMP_LOG_ERROR("Ignoring light of unknown type: " + prop.value);
                                     }
                                 }
                                 else if ((prop.name == "Mesh" && Node::MESH == curNode->type) ||
@@ -1277,7 +1282,7 @@ void IRRImporter::InternReadFile( const std::string& pFile,
                                 {
                                     /*  This is the file name of the mesh - either
                                      *  animated or not. We need to make sure we setup
-                                     *  the correct postprocessing settings here.
+                                     *  the correct post-processing settings here.
                                      */
                                     unsigned int pp = 0;
                                     BatchLoader::PropertyMap map;
@@ -1299,7 +1304,7 @@ void IRRImporter::InternReadFile( const std::string& pFile,
 
                                     const std::string extension = GetExtension(prop.value);
                                     if ("irr" == extension) {
-                                        DefaultLogger::get()->error("IRR: Can't load another IRR file recursively");
+                                        ASSIMP_LOG_ERROR("IRR: Can't load another IRR file recursively");
                                     }
                                     else
                                     {
@@ -1323,7 +1328,7 @@ void IRRImporter::InternReadFile( const std::string& pFile,
                                         curAnim->type = Animator::FOLLOW_SPLINE;
                                     }
                                     else    {
-                                        DefaultLogger::get()->warn("IRR: Ignoring unknown animator: "
+                                        ASSIMP_LOG_WARN("IRR: Ignoring unknown animator: "
                                             + prop.value);
 
                                         curAnim->type = Animator::UNKNOWN;
@@ -1348,11 +1353,11 @@ void IRRImporter::InternReadFile( const std::string& pFile,
                     // back in the node hierarchy
                     if (!curParent) {
                         curParent = root;
-                        DefaultLogger::get()->error("IRR: Too many closing <node> elements");
+                        ASSIMP_LOG_ERROR("IRR: Too many closing <node> elements");
                     }
                     else curParent = curParent->parent;
                 }
-                else curNode = NULL;
+                else curNode = nullptr;
             }
             // clear all flags
             else if (!ASSIMP_stricmp(reader->getNodeName(),"materials"))    {
@@ -1369,15 +1374,14 @@ void IRRImporter::InternReadFile( const std::string& pFile,
         }
     }
 
-    /*  Now iterate through all cameras and compute their final (horizontal) FOV
-     */
+    //  Now iterate through all cameras and compute their final (horizontal) FOV
     for (aiCamera *cam : cameras) {
-
         // screen aspect could be missing
         if (cam->mAspect)   {
             cam->mHorizontalFOV *= cam->mAspect;
+        } else {
+            ASSIMP_LOG_WARN("IRR: Camera aspect is not given, can't compute horizontal FOV");
         }
-        else DefaultLogger::get()->warn("IRR: Camera aspect is not given, can't compute horizontal FOV");
     }
 
     batch.LoadAll();
@@ -1472,14 +1476,15 @@ void IRRImporter::InternReadFile( const std::string& pFile,
      *  models from external files
      */
     if (!pScene->mNumMeshes || !pScene->mNumMaterials)  {
-        DefaultLogger::get()->warn("IRR: No meshes loaded, setting AI_SCENE_FLAGS_INCOMPLETE");
+        ASSIMP_LOG_WARN("IRR: No meshes loaded, setting AI_SCENE_FLAGS_INCOMPLETE");
         pScene->mFlags |= AI_SCENE_FLAGS_INCOMPLETE;
     }
 
     /* Finished ... everything destructs automatically and all
      * temporary scenes have already been deleted by MergeScenes()
      */
-    return;
+
+    delete root;
 }
 
 #endif // !! ASSIMP_BUILD_NO_IRR_IMPORTER

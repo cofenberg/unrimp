@@ -67,6 +67,8 @@
 	#include "code/DefaultIOSystem.cpp"
 	#undef min
 	#undef max
+	#undef CreateDirectory
+	#undef DeleteFile
 	#include "code/Importer.cpp"
 	#include "code/ImporterRegistry.cpp"
 	#include "code/PostStepRegistry.cpp"

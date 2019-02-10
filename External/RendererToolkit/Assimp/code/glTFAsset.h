@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2018, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 All rights reserved.
@@ -170,7 +170,7 @@ namespace glTF
     #define AI_GLB_MAGIC_NUMBER "glTF"
 
     #ifdef ASSIMP_API
-        #include "./../include/assimp/Compiler/pushpack1.h"
+        #include <assimp/Compiler/pushpack1.h>
     #endif
 
     //! For the KHR_binary_glTF extension (binary .glb file)
@@ -185,7 +185,7 @@ namespace glTF
     } PACK_STRUCT;
 
     #ifdef ASSIMP_API
-        #include "./../include/assimp/Compiler/poppack1.h"
+        #include <assimp/Compiler/poppack1.h>
     #endif
 
 
@@ -381,7 +381,7 @@ namespace glTF
     };
 
 
-    //! Base classe for all glTF top-level objects
+    //! Base class for all glTF top-level objects
     struct Object
     {
         std::string id;   //!< The globally unique ID used to reference this object
@@ -537,7 +537,7 @@ namespace glTF
 
 		shared_ptr<uint8_t> mData; //!< Pointer to the data
 		bool mIsSpecial; //!< Set to true for special cases (e.g. the body buffer)
-
+        size_t capacity = 0; //!< The capacity of the buffer in bytes. (default: 0)
 		/// \var EncodedRegion_List
 		/// List of encoded regions.
 		std::list<SEncodedRegion*> EncodedRegion_List;

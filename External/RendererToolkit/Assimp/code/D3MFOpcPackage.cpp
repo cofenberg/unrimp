@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2018, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 All rights reserved.
@@ -465,7 +465,7 @@ D3MFOpcPackage::D3MFOpcPackage(IOSystem* pIOHandler, const std::string& rFile)
                 }
             }
 
-            DefaultLogger::get()->debug(rootFile);
+            ASSIMP_LOG_DEBUG(rootFile);
 
             mRootStream = mZipArchive->Open(rootFile.c_str());
             ai_assert( mRootStream != nullptr );

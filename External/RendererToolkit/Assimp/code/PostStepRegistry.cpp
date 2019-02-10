@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2018, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 
@@ -61,6 +61,9 @@ corresponding preprocessor flag to selectively disable steps.
 #endif
 #ifndef ASSIMP_BUILD_NO_TRIANGULATE_PROCESS
 #   include "TriangulateProcess.h"
+#endif
+#ifndef ASSIMP_BUILD_NO_DROPFACENORMALS_PROCESS
+#   include "DropFaceNormalsProcess.h"
 #endif
 #ifndef ASSIMP_BUILD_NO_GENFACENORMALS_PROCESS
 #   include "GenFaceNormalsProcess.h"
@@ -164,9 +167,6 @@ void GetPostProcessingStepInstanceList(std::vector< BaseProcess* >& out)
 #if (!defined ASSIMP_BUILD_NO_OPTIMIZEGRAPH_PROCESS)
     out.push_back( new OptimizeGraphProcess());
 #endif
-#if (!defined ASSIMP_BUILD_NO_FINDDEGENERATES_PROCESS)
-    out.push_back( new FindDegeneratesProcess());
-#endif
 #ifndef ASSIMP_BUILD_NO_GENUVCOORDS_PROCESS
     out.push_back( new ComputeUVMappingProcess());
 #endif
@@ -178,6 +178,12 @@ void GetPostProcessingStepInstanceList(std::vector< BaseProcess* >& out)
 #endif
 #if (!defined ASSIMP_BUILD_NO_TRIANGULATE_PROCESS)
     out.push_back( new TriangulateProcess());
+#endif
+#if (!defined ASSIMP_BUILD_NO_FINDDEGENERATES_PROCESS)
+    //find degenerates should run after triangulation (to sort out small
+    //generated triangles) but before sort by p types (in case there are lines
+    //and points generated and inserted into a mesh)
+    out.push_back( new FindDegeneratesProcess());
 #endif
 #if (!defined ASSIMP_BUILD_NO_SORTBYPTYPE_PROCESS)
     out.push_back( new SortByPTypeProcess());
@@ -196,6 +202,9 @@ void GetPostProcessingStepInstanceList(std::vector< BaseProcess* >& out)
 #endif
 #if (!defined ASSIMP_BUILD_NO_SPLITLARGEMESHES_PROCESS)
     out.push_back( new SplitLargeMeshesProcess_Triangle());
+#endif
+#if (!defined ASSIMP_BUILD_NO_GENFACENORMALS_PROCESS)
+    out.push_back( new DropFaceNormalsProcess());
 #endif
 #if (!defined ASSIMP_BUILD_NO_GENFACENORMALS_PROCESS)
     out.push_back( new GenFaceNormalsProcess());

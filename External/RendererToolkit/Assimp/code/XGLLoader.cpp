@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2018, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 
@@ -370,7 +370,7 @@ aiLight* XGLImporter::ReadDirectionalLight()
 // ------------------------------------------------------------------------------------------------
 aiNode* XGLImporter::ReadObject(TempScope& scope, bool skipFirst, const char* closetag)
 {
-    std::unique_ptr<aiNode> nd(new aiNode());
+    aiNode *nd = new aiNode;
     std::vector<aiNode*> children;
     std::vector<unsigned int> meshes;
 
@@ -453,11 +453,11 @@ aiNode* XGLImporter::ReadObject(TempScope& scope, bool skipFirst, const char* cl
         nd->mChildren = new aiNode*[nd->mNumChildren]();
         for(unsigned int i = 0; i < nd->mNumChildren; ++i) {
             nd->mChildren[i] = children[i];
-            children[i]->mParent = nd.get();
+            children[i]->mParent = nd;
         }
     }
 
-    return nd.release();
+    return nd;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -498,7 +498,7 @@ aiMatrix4x4 XGLImporter::ReadTrafo()
     right = forward ^ up;
     if (std::fabs(up * forward) > 1e-4) {
         // this is definitely wrong - a degenerate coordinate space ruins everything
-        // so subtitute identity transform.
+        // so substitute identity transform.
         LogError("<forward> and <up> vectors in <transform> are skewing, ignoring trafo");
         return m;
     }
@@ -731,11 +731,10 @@ unsigned int XGLImporter::ResolveMaterialRef(TempScope& scope)
 }
 
 // ------------------------------------------------------------------------------------------------
-void XGLImporter::ReadMaterial(TempScope& scope)
-{
+void XGLImporter::ReadMaterial(TempScope& scope) {
     const unsigned int mat_id = ReadIDAttr();
 
-    std::unique_ptr<aiMaterial> mat(new aiMaterial());
+    aiMaterial *mat(new aiMaterial );
     while (ReadElementUpToClosing("mat"))  {
         const std::string& s = GetElementName();
         if (s == "amb") {
@@ -764,10 +763,9 @@ void XGLImporter::ReadMaterial(TempScope& scope)
         }
     }
 
-    scope.materials[mat_id] = mat.get();
-    scope.materials_linear.push_back(mat.release());
+    scope.materials[mat_id] = mat;
+    scope.materials_linear.push_back(mat);
 }
-
 
 // ----------------------------------------------------------------------------------------------
 void XGLImporter::ReadFaceVertex(const TempMesh& t, TempFace& out)

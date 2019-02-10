@@ -116,6 +116,7 @@
 // BLEND
 	// #include "code/BlenderBMesh.cpp"			// Moved into "AssimpUnityBuild4.cpp" since it doesn't play well together with the other source codes
 	// #include "code/BlenderDNA.cpp"			// Moved into "AssimpUnityBuild4.cpp" since it doesn't play well together with the other source codes
+	// #include "code/BlenderCustomData.cpp"	// Moved into "AssimpUnityBuild4.cpp" since it doesn't play well together with the other source codes
 	// #include "code/BlenderLoader.cpp"		// Moved into "AssimpUnityBuild4.cpp" since it doesn't play well together with the other source codes
 	// #include "code/BlenderModifier.cpp"		// Moved into "AssimpUnityBuild4.cpp" since it doesn't play well together with the other source codes
 	// #include "code/BlenderScene.cpp"			// Moved into "AssimpUnityBuild5.cpp" since it doesn't play well together with the other source codes

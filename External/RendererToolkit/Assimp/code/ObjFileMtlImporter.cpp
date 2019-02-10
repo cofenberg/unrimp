@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2018, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 
@@ -83,8 +83,6 @@ static const std::string ClampOption        = "-clamp";
 static const std::string BumpOption         = "-bm";
 static const std::string ChannelOption      = "-imfchan";
 static const std::string TypeOption         = "-type";
-
-
 
 // -------------------------------------------------------------------
 //  Constructor
@@ -334,6 +332,11 @@ void ObjFileMtlImporter::getTexture() {
         // Specular texture
         out = & m_pModel->m_pCurrentMaterial->textureSpecular;
         clampIndex = ObjFile::Material::TextureSpecularType;
+    } else if ( !ASSIMP_strincmp( pPtr, DisplacementTexture1.c_str(), static_cast<unsigned int>(DisplacementTexture1.size()) ) ||
+                !ASSIMP_strincmp( pPtr, DisplacementTexture2.c_str(), static_cast<unsigned int>(DisplacementTexture2.size()) ) ) {
+        // Displacement texture
+        out = &m_pModel->m_pCurrentMaterial->textureDisp;
+        clampIndex = ObjFile::Material::TextureDispType;
     } else if ( !ASSIMP_strincmp( pPtr, OpacityTexture.c_str(), static_cast<unsigned int>(OpacityTexture.size()) ) ) {
         // Opacity texture
         out = & m_pModel->m_pCurrentMaterial->textureOpacity;
@@ -356,17 +359,12 @@ void ObjFileMtlImporter::getTexture() {
         // Reflection texture(s)
         //Do nothing here
         return;
-    } else if ( !ASSIMP_strincmp( pPtr, DisplacementTexture1.c_str(), static_cast<unsigned int>(DisplacementTexture1.size()) ) ||
-                !ASSIMP_strincmp( pPtr, DisplacementTexture2.c_str(), static_cast<unsigned int>(DisplacementTexture2.size()) ) ) {
-        // Displacement texture
-        out = &m_pModel->m_pCurrentMaterial->textureDisp;
-        clampIndex = ObjFile::Material::TextureDispType;
     } else if ( !ASSIMP_strincmp( pPtr, SpecularityTexture.c_str(), static_cast<unsigned int>(SpecularityTexture.size()) ) ) {
         // Specularity scaling (glossiness)
         out = & m_pModel->m_pCurrentMaterial->textureSpecularity;
         clampIndex = ObjFile::Material::TextureSpecularityType;
     } else {
-        DefaultLogger::get()->error("OBJ/MTL: Encountered unknown texture type");
+        ASSIMP_LOG_ERROR("OBJ/MTL: Encountered unknown texture type");
         return;
     }
 
