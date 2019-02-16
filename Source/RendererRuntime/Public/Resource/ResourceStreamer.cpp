@@ -266,11 +266,20 @@ namespace RendererRuntime
 							if (loadRequest.resourceLoader->onDeserialization(*file))
 							{
 								// Push the load request into the queue of the next resource streamer pipeline stage
-								// -> Resource streamer stage: 2. Asynchronous processing
-								std::unique_lock<std::mutex> processingMutexLock(mProcessingMutex);
-								mProcessingQueue.push_back(loadRequest);
-								processingMutexLock.unlock();
-								mProcessingConditionVariable.notify_one();
+								if (loadRequest.resourceLoader->hasProcessing())
+								{
+									// Resource streamer stage: 2. Asynchronous processing
+									std::unique_lock<std::mutex> processingMutexLock(mProcessingMutex);
+									mProcessingQueue.push_back(loadRequest);
+									processingMutexLock.unlock();
+									mProcessingConditionVariable.notify_one();
+								}
+								else
+								{
+									// Resource streamer stage: 3. Synchronous dispatch to e.g. the renderer backend
+									std::lock_guard<std::mutex> dispatchMutexLock(mDispatchMutex);
+									mDispatchQueue.push_back(loadRequest);
+								}
 							}
 							fileManager.closeFile(*file);
 						}

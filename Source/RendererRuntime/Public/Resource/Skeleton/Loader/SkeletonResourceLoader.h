@@ -92,6 +92,11 @@ namespace RendererRuntime
 
 		[[nodiscard]] virtual bool onDeserialization(IFile& file) override;
 
+		[[nodiscard]] inline virtual bool hasProcessing() const override
+		{
+			return false;
+		}
+
 		inline virtual void onProcessing() override
 		{
 			// Nothing here

@@ -28,6 +28,12 @@
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
+	PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'initializing': conversion from 'int' to 'uint8_t', signed/unsigned mismatch
+	#include <acl/algorithm/uniformly_sampled/decoder.h>
+PRAGMA_WARNING_POP
+
+// Disable warnings in external headers, we can't fix them
+PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4464)	// warning C4464: relative include path contains '..'
 	#include <glm/gtx/quaternion.hpp>
 	#include <glm/gtc/matrix_transform.hpp>
@@ -44,17 +50,61 @@ namespace
 
 
 		//[-------------------------------------------------------]
-		//[ Global functions                                      ]
+		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
-		inline void convertQuaternion(const float in[3], glm::quat& out)
+		typedef acl::uniformly_sampled::DecompressionContext<acl::uniformly_sampled::DefaultDecompressionSettings> AclDecompressionContext;
+
+
+		//[-------------------------------------------------------]
+		//[ Classes                                               ]
+		//[-------------------------------------------------------]
+		class AclAllocator final : public acl::IAllocator
 		{
-			// We only store the xyz quaternion value of this key, w will be reconstructed during runtime
-			out.x = in[0];
-			out.y = in[1];
-			out.z = in[2];
-			const float t = 1.0f - (in[0] * in[0]) - (in[1] * in[1]) - (in[2] * in[2]);
-			out.w = (t < 0.0f) ? 0.0f : -std::sqrt(t);
-		}
+
+
+		//[-------------------------------------------------------]
+		//[ Public methods                                        ]
+		//[-------------------------------------------------------]
+		public:
+			inline explicit AclAllocator(Renderer::IAllocator& allocator) :
+				mAllocator(allocator)
+			{
+				// Nothing here
+			}
+
+			explicit AclAllocator(const AclAllocator&) = delete;
+
+			virtual ~AclAllocator() override
+			{
+				// Nothing here
+			}
+
+			AclAllocator& operator=(const AclAllocator&) = delete;
+
+
+		//[-------------------------------------------------------]
+		//[ Public virtual acl::IAllocator methods                ]
+		//[-------------------------------------------------------]
+		public:
+			virtual void* allocate(size_t size, size_t alignment = k_default_alignment) override
+			{
+				return mAllocator.reallocate(nullptr, 0, size, alignment);
+			}
+
+			virtual void deallocate(void* ptr, size_t size) override
+			{
+				mAllocator.reallocate(ptr, size, 0, 1);
+			}
+
+
+		//[-------------------------------------------------------]
+		//[ Private data                                          ]
+		//[-------------------------------------------------------]
+		private:
+			Renderer::IAllocator& mAllocator;
+
+
+	};
 
 
 //[-------------------------------------------------------]
@@ -74,164 +124,53 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
+	SkeletonAnimationEvaluator::SkeletonAnimationEvaluator(Renderer::IAllocator& allocator, SkeletonAnimationResourceManager& skeletonAnimationResourceManager, SkeletonAnimationResourceId skeletonAnimationResourceId) :
+		mSkeletonAnimationResourceManager(skeletonAnimationResourceManager),
+		mSkeletonAnimationResourceId(skeletonAnimationResourceId)
+	{
+		mAclAllocator = new ::detail::AclAllocator(allocator);
+		mAclDecompressionContext = new ::detail::AclDecompressionContext();
+//		mAclDecompressionContext = new ::detail::AclDecompressionContext(static_cast<acl::IAllocator*>(mAclAllocator));	// TODO(co) When using ACL decompression context with custom allocator there are reports about damaged blocks on destruction
+		const SkeletonAnimationResource& skeletonAnimationResource = mSkeletonAnimationResourceManager.getById(mSkeletonAnimationResourceId);
+		static_cast<::detail::AclDecompressionContext*>(mAclDecompressionContext)->initialize(*reinterpret_cast<const acl::CompressedClip*>(skeletonAnimationResource.getAclCompressedClip().data()));
+		mBoneIds = skeletonAnimationResource.getBoneIds();
+		mTransformMatrices.resize(skeletonAnimationResource.getNumberOfChannels());
+	}
+
+	SkeletonAnimationEvaluator::~SkeletonAnimationEvaluator()
+	{
+		delete static_cast<::detail::AclDecompressionContext*>(mAclDecompressionContext);
+		delete static_cast<::detail::AclAllocator*>(mAclAllocator);
+	}
+
 	void SkeletonAnimationEvaluator::evaluate(float timeInSeconds)
 	{
 		const SkeletonAnimationResource& skeletonAnimationResource = mSkeletonAnimationResourceManager.getById(mSkeletonAnimationResourceId);
 		const uint8_t numberOfChannels = skeletonAnimationResource.getNumberOfChannels();
-		const float durationInTicks = skeletonAnimationResource.getDurationInTicks();
-		const SkeletonAnimationResource::ChannelByteOffsets& channelByteOffsets = skeletonAnimationResource.getChannelByteOffsets();
-		const SkeletonAnimationResource::ChannelData& channelData = skeletonAnimationResource.getChannelData();
-		if (mTransformMatrices.empty())
+
+		// Decompress the ACL compressed skeleton animation clip
+		::detail::AclDecompressionContext* aclDecompressionContext = static_cast<::detail::AclDecompressionContext*>(mAclDecompressionContext);
+		const float duration = skeletonAnimationResource.getDurationInTicks() / skeletonAnimationResource.getTicksPerSecond();
+		while (timeInSeconds > duration)
 		{
-			// Allocate memory
-			mBoneIds.resize(numberOfChannels);
-			mTransformMatrices.resize(numberOfChannels);
-			mLastPositions.resize(numberOfChannels, std::make_tuple(0, 0, 0));
-
-			// Backup bone IDs
-			for (uint8_t i = 0; i < numberOfChannels; ++i)
-			{
-				mBoneIds[i] = reinterpret_cast<const SkeletonAnimationResource::ChannelHeader&>(*(channelData.data() + channelByteOffsets[i])).boneId;
-			}
+			timeInSeconds -= duration;
 		}
-
-		// Extract ticks per second; assume default value if not given
-		const float ticksPerSecond = (0.0f != skeletonAnimationResource.getTicksPerSecond()) ? skeletonAnimationResource.getTicksPerSecond() : 25.0f;
-
-		// Every following time calculation happens in ticks
-		float timeInTicks = timeInSeconds * ticksPerSecond;
-
-		// Map the time into the duration of the animation
-		timeInTicks = (durationInTicks > 0.0f) ? fmod(timeInTicks, durationInTicks) : 0.0f;
-
-		// Calculate the transformations for each animation channel
+		static_cast<::detail::AclDecompressionContext*>(mAclDecompressionContext)->seek(timeInSeconds, acl::SampleRoundingPolicy::None);
 		for (uint8_t i = 0; i < numberOfChannels; ++i)
 		{
-			const uint8_t* currentChannelData = channelData.data() + channelByteOffsets[i];
+			acl::Quat_32 rotation;
+			acl::Vector4_32 translation;
+			acl::Vector4_32 scale;
+			aclDecompressionContext->decompress_bone(i, &rotation, &translation, &scale);
 
-			// Get channel header
-			const SkeletonAnimationResource::ChannelHeader& channelHeader = reinterpret_cast<const SkeletonAnimationResource::ChannelHeader&>(*currentChannelData);
-			currentChannelData += sizeof(SkeletonAnimationResource::ChannelHeader);
-
-			// Sanity checks
-			assert(channelHeader.numberOfPositionKeys > 0);
-			assert(channelHeader.numberOfRotationKeys > 0);
-			// assert(channelHeader.numberOfScaleKeys > 0);	Scale is optional
-
-			// Get channel keys
-			const SkeletonAnimationResource::Vector3Key* positionKeys = reinterpret_cast<const SkeletonAnimationResource::Vector3Key*>(currentChannelData);
-			currentChannelData += sizeof(SkeletonAnimationResource::Vector3Key) * channelHeader.numberOfPositionKeys;
-			const SkeletonAnimationResource::QuaternionKey* rotationKeys = reinterpret_cast<const SkeletonAnimationResource::QuaternionKey*>(currentChannelData);
-			currentChannelData += sizeof(SkeletonAnimationResource::QuaternionKey) * channelHeader.numberOfRotationKeys;
-			const SkeletonAnimationResource::Vector3Key* scaleKeys = reinterpret_cast<const SkeletonAnimationResource::Vector3Key*>(currentChannelData);
-
-			// Position
-			glm::vec3 presentPosition;
-			{
-				// Look for present frame number. Search from last position if time is after the last time, else from beginning
-				// Should be much quicker than always looking from start for the average use case.
-				uint32_t frame = (timeInTicks >= mLastTimeInTicks) ? std::get<0>(mLastPositions[i]) : 0;
-				while (frame < channelHeader.numberOfPositionKeys - 1)
-				{
-					if (timeInTicks < positionKeys[frame + 1].timeInTicks)
-					{
-						break;
-					}
-					++frame;
-				}
-
-				// Interpolate between this frame's value and next frame's value
-				const uint32_t nextFrame = (frame + 1) % channelHeader.numberOfPositionKeys;
-				const SkeletonAnimationResource::Vector3Key& key = positionKeys[frame];
-				const SkeletonAnimationResource::Vector3Key& nextKey = positionKeys[nextFrame];
-				float timeDifference = nextKey.timeInTicks - key.timeInTicks;
-				if (timeDifference < 0.0f)
-				{
-					timeDifference += durationInTicks;
-				}
-				if (timeDifference > 0.0f)
-				{
-					const float factor = float((timeInTicks - key.timeInTicks) / timeDifference);
-					presentPosition = glm::mix(key.value, nextKey.value, factor);
-				}
-				else
-				{
-					presentPosition = key.value;
-				}
-				std::get<0>(mLastPositions[i]) = frame;
-			}
-
-			// Rotation
-			glm::quat presentRotation;
-			{
-				uint32_t frame = (timeInTicks >= mLastTimeInTicks) ? std::get<1>(mLastPositions[i]) : 0;
-				while (frame < channelHeader.numberOfRotationKeys - 1)
-				{
-					if (timeInTicks < rotationKeys[frame + 1].timeInTicks)
-					{
-						break;
-					}
-					++frame;
-				}
-
-				// Interpolate between this frame's value and next frame's value
-				const uint32_t nextFrame = (frame + 1) % channelHeader.numberOfRotationKeys;
-				const SkeletonAnimationResource::QuaternionKey& key = rotationKeys[frame];
-				const SkeletonAnimationResource::QuaternionKey& nextKey = rotationKeys[nextFrame];
-				float timeDifference = nextKey.timeInTicks - key.timeInTicks;
-				if (timeDifference < 0.0f)
-				{
-					timeDifference += durationInTicks;
-				}
-				if (timeDifference > 0.0f)
-				{
-					const float factor = float((timeInTicks - key.timeInTicks) / timeDifference);
-					glm::quat keyQuaternion;
-					::detail::convertQuaternion(key.value, keyQuaternion);
-					glm::quat nextKeyQuaternion;
-					::detail::convertQuaternion(nextKey.value, nextKeyQuaternion);
-					presentRotation = glm::slerp(keyQuaternion, nextKeyQuaternion, factor);
-				}
-				else
-				{
-					::detail::convertQuaternion(key.value, presentRotation);
-				}
-				std::get<1>(mLastPositions[i]) = frame;
-			}
-
-			// Scale is optional
-			if (channelHeader.numberOfScaleKeys > 0)
-			{
-				glm::vec3 presentScale;
-				{
-					uint32_t frame = (timeInTicks >= mLastTimeInTicks) ? std::get<2>(mLastPositions[i]) : 0;
-					while (frame < channelHeader.numberOfScaleKeys - 1)
-					{
-						if (timeInTicks < scaleKeys[frame + 1].timeInTicks)
-						{
-							break;
-						}
-						++frame;
-					}
-
-					// TODO(co) Interpolation maybe? This time maybe even logarithmic, not linear.
-					presentScale = scaleKeys[frame].value;
-					std::get<2>(mLastPositions[i]) = frame;
-				}
-
-				// Build a transformation matrix from it
-				// TODO(co) Review temporary matrix instances on the C-runtime stack
-				mTransformMatrices[i] = glm::translate(Math::MAT4_IDENTITY, presentPosition) * glm::toMat4(presentRotation) * glm::scale(Math::MAT4_IDENTITY, presentScale);
-			}
-			else
-			{
-				// Build a transformation matrix from it
-				// TODO(co) Review temporary matrix instances on the C-runtime stack
-				mTransformMatrices[i] = glm::translate(Math::MAT4_IDENTITY, presentPosition) * glm::toMat4(presentRotation);
-			}
+			// Build a transformation matrix from it
+			// TODO(co) Handle case of no scale
+			// TODO(co) Review temporary matrix instances on the C-runtime stack
+			glm::quat presentRotation(acl::quat_get_w(rotation), acl::quat_get_x(rotation), acl::quat_get_y(rotation), acl::quat_get_z(rotation));
+			glm::vec3 presentPosition(acl::vector_get_x(translation), acl::vector_get_y(translation), acl::vector_get_z(translation));
+			glm::vec3 presentScale(acl::vector_get_x(scale), acl::vector_get_y(scale), acl::vector_get_z(scale));
+			mTransformMatrices[i] = glm::translate(Math::MAT4_IDENTITY, presentPosition) * glm::toMat4(presentRotation) * glm::scale(Math::MAT4_IDENTITY, presentScale);
 		}
-
-		mLastTimeInTicks = timeInTicks;
 	}
 
 

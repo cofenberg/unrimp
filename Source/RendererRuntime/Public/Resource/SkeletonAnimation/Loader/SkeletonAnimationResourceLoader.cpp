@@ -44,35 +44,43 @@ namespace RendererRuntime
 
 	bool SkeletonAnimationResourceLoader::onDeserialization(IFile& file)
 	{
-		// Tell the memory mapped file about the LZ4 compressed data
-		return mMemoryFile.loadLz4CompressedDataFromFile(v1SkeletonAnimation::FORMAT_TYPE, v1SkeletonAnimation::FORMAT_VERSION, file);
-	}
+		// Read in the file format header
+		struct FileFormatHeader final
+		{
+			uint32_t formatType;
+			uint32_t formatVersion;
+		};
+		FileFormatHeader fileFormatHeader;
+		file.read(&fileFormatHeader, sizeof(FileFormatHeader));
+		if (v1SkeletonAnimation::FORMAT_TYPE == fileFormatHeader.formatType && v1SkeletonAnimation::FORMAT_VERSION == fileFormatHeader.formatVersion)
+		{
+			// Read in the skeleton animation header
+			v1SkeletonAnimation::SkeletonAnimationHeader skeletonAnimationHeader;
+			file.read(&skeletonAnimationHeader, sizeof(v1SkeletonAnimation::SkeletonAnimationHeader));
+			mSkeletonAnimationResource->mNumberOfChannels = skeletonAnimationHeader.numberOfChannels;
+			mSkeletonAnimationResource->mDurationInTicks  = skeletonAnimationHeader.durationInTicks;
+			mSkeletonAnimationResource->mTicksPerSecond   = skeletonAnimationHeader.ticksPerSecond;
 
-	void SkeletonAnimationResourceLoader::onProcessing()
-	{
-		// Decompress LZ4 compressed data
-		mMemoryFile.decompress();
+			// Sanity checks
+			RENDERER_ASSERT(mRendererRuntime.getContext(), skeletonAnimationHeader.numberOfChannels > 0, "Invalid skeleton animation asset with zero channels detected")
+			RENDERER_ASSERT(mRendererRuntime.getContext(), skeletonAnimationHeader.aclCompressedClipSize > 0, "Invalid skeleton animation asset with zero ACL compressed clip size detected")
 
-		// Read in the skeleton animation header
-		v1SkeletonAnimation::SkeletonAnimationHeader skeletonAnimationHeader;
-		mMemoryFile.read(&skeletonAnimationHeader, sizeof(v1SkeletonAnimation::SkeletonAnimationHeader));
-		mSkeletonAnimationResource->mNumberOfChannels = skeletonAnimationHeader.numberOfChannels;
-		mSkeletonAnimationResource->mDurationInTicks  = skeletonAnimationHeader.durationInTicks;
-		mSkeletonAnimationResource->mTicksPerSecond   = skeletonAnimationHeader.ticksPerSecond;
+			// Read in bone IDs
+			mSkeletonAnimationResource->mBoneIds.resize(skeletonAnimationHeader.numberOfChannels);
+			file.read(mSkeletonAnimationResource->mBoneIds.data(), sizeof(uint32_t) * skeletonAnimationHeader.numberOfChannels);
 
-		// Sanity checks
-		RENDERER_ASSERT(mRendererRuntime.getContext(), skeletonAnimationHeader.numberOfChannels > 0, "Invalid skeleton animation asset with zero channels detected")
-		RENDERER_ASSERT(mRendererRuntime.getContext(), skeletonAnimationHeader.numberOfChannelDataBytes > 0, "Invalid skeleton animation asset with zero channel data bytes detected")
+			// Read in the ACL ( https://github.com/nfrechette/acl ) compressed skeleton animation clip
+			mSkeletonAnimationResource->mAclCompressedClip.resize(skeletonAnimationHeader.aclCompressedClipSize);
+			file.read(mSkeletonAnimationResource->mAclCompressedClip.data(), skeletonAnimationHeader.aclCompressedClipSize);
 
-		// Read in the channel byte offsets
-		mSkeletonAnimationResource->mChannelByteOffsets.resize(skeletonAnimationHeader.numberOfChannels);
-		mMemoryFile.read(mSkeletonAnimationResource->mChannelByteOffsets.data(), sizeof(uint32_t) * mSkeletonAnimationResource->mChannelByteOffsets.size());
-
-		// Read in the data of all bone channels in one big chunk
-		mSkeletonAnimationResource->mChannelData.resize(skeletonAnimationHeader.numberOfChannelDataBytes);
-		mMemoryFile.read(mSkeletonAnimationResource->mChannelData.data(), sizeof(uint8_t) * mSkeletonAnimationResource->mChannelData.size());
-
-		// That's all folks. There are no more memory allocations to see here. Please go on.
+			// Done
+			return true;
+		}
+		else
+		{
+			// Error!
+			return false;
+		}
 	}
 
 

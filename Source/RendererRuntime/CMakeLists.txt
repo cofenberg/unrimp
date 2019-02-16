@@ -55,7 +55,7 @@ endif()
 ## Includes
 ##################################################
 include_directories(${CMAKE_SOURCE_DIR}/Source)
-include_directories(${CMAKE_SOURCE_DIR}/External/RendererRuntime)	# For "glm", "lz4", "xsimd", "MojoShader", "mikktspace", "ImGui", "ImGuizmo" and "OpenVR"
+include_directories(${CMAKE_SOURCE_DIR}/External/RendererRuntime)	# For "glm", "lz4", "xsimd", "MojoShader", "mikktspace", "acl", "ImGui", "ImGuizmo" and "OpenVR"
 include_directories(${CMAKE_SOURCE_DIR}/External/RendererRuntime/crunch/inc)
 
 

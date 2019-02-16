@@ -28,7 +28,6 @@
 //[ Includes                                              ]
 //[-------------------------------------------------------]
 #include "RendererRuntime/Public/Resource/IResourceLoader.h"
-#include "RendererRuntime/Public/Core/File/MemoryFile.h"
 
 
 //[-------------------------------------------------------]
@@ -38,7 +37,6 @@ namespace RendererRuntime
 {
 	class IRendererRuntime;
 	class SkeletonAnimationResource;
-	template <class TYPE, class LOADER_TYPE, typename ID_TYPE, uint32_t MAXIMUM_NUMBER_OF_ELEMENTS> class ResourceManagerTemplate;
 }
 
 
@@ -47,12 +45,6 @@ namespace RendererRuntime
 //[-------------------------------------------------------]
 namespace RendererRuntime
 {
-
-
-	//[-------------------------------------------------------]
-	//[ Global definitions                                    ]
-	//[-------------------------------------------------------]
-	typedef uint32_t SkeletonAnimationResourceId;	///< POD skeleton animation resource identifier
 
 
 	//[-------------------------------------------------------]
@@ -65,7 +57,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Friends                                               ]
 	//[-------------------------------------------------------]
-		friend ResourceManagerTemplate<SkeletonAnimationResource, SkeletonAnimationResourceLoader, SkeletonAnimationResourceId, 2048>;	// Type definition of template class
+		friend class SkeletonAnimationResourceManager;
 
 
 	//[-------------------------------------------------------]
@@ -92,7 +84,16 @@ namespace RendererRuntime
 		}
 
 		[[nodiscard]] virtual bool onDeserialization(IFile& file) override;
-		virtual void onProcessing() override;
+
+		[[nodiscard]] inline virtual bool hasProcessing() const override
+		{
+			return false;
+		}
+
+		inline virtual void onProcessing() override
+		{
+			// Nothing here
+		}
 
 		[[nodiscard]] inline virtual bool onDispatch() override
 		{
@@ -111,13 +112,22 @@ namespace RendererRuntime
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		inline SkeletonAnimationResourceLoader(IResourceManager& resourceManager, IRendererRuntime& rendererRuntime) :
-			IResourceLoader(resourceManager),
-			mRendererRuntime(rendererRuntime),
-			mSkeletonAnimationResource(nullptr)
-		{
-			// Nothing here
-		}
+		#ifdef RENDERER_DEBUG
+			inline SkeletonAnimationResourceLoader(IResourceManager& resourceManager, IRendererRuntime& rendererRuntime) :
+				IResourceLoader(resourceManager),
+				mRendererRuntime(rendererRuntime),
+				mSkeletonAnimationResource(nullptr)
+			{
+				// Nothing here
+			}
+		#else
+			inline explicit SkeletonAnimationResourceLoader(IResourceManager& resourceManager) :
+				IResourceLoader(resourceManager),
+				mSkeletonAnimationResource(nullptr)
+			{
+				// Nothing here
+			}
+		#endif
 
 		inline virtual ~SkeletonAnimationResourceLoader() override
 		{
@@ -132,11 +142,10 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		IRendererRuntime&		   mRendererRuntime;			///< Renderer runtime instance, do not destroy the instance
+		#ifdef RENDERER_DEBUG
+			IRendererRuntime& mRendererRuntime;	///< Renderer runtime instance, do not destroy the instance
+		#endif
 		SkeletonAnimationResource* mSkeletonAnimationResource;	///< Destination resource
-
-		// Temporary data
-		MemoryFile mMemoryFile;
 
 
 	};

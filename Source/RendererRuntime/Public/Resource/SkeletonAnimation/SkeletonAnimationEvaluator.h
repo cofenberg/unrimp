@@ -75,9 +75,6 @@ namespace RendererRuntime
 	/**
 	*  @brief
 	*    Rigid skeleton animation evaluator which calculates transformations for a given timestamp
-	*
-	*  @note
-	*    - Basing on "AssimpView::AnimEvaluator" ( https://github.com/assimp/assimp/blob/master/tools/assimp_view/AnimEvaluator.cpp )
 	*/
 	class SkeletonAnimationEvaluator final
 	{
@@ -99,27 +96,20 @@ namespace RendererRuntime
 		*  @brief
 		*    Constructor on a given animation; the animation is fixed throughout the lifetime of the object
 		*
+		*  @param[in] allocator
+		*    Allocator
 		*  @param[in] skeletonAnimationResourceManager
 		*    Skeleton animation resource manager to use
 		*  @param[in] skeletonAnimationResourceId
 		*    Skeleton animation resource ID
 		*/
-		inline SkeletonAnimationEvaluator(SkeletonAnimationResourceManager& skeletonAnimationResourceManager, SkeletonAnimationResourceId skeletonAnimationResourceId) :
-			mSkeletonAnimationResourceManager(skeletonAnimationResourceManager),
-			mSkeletonAnimationResourceId(skeletonAnimationResourceId),
-			mLastTimeInTicks(0.0f)
-		{
-			// Nothing here
-		}
+		SkeletonAnimationEvaluator(Renderer::IAllocator& allocator, SkeletonAnimationResourceManager& skeletonAnimationResourceManager, SkeletonAnimationResourceId skeletonAnimationResourceId);
 
 		/**
 		*  @brief
 		*    Destructor
 		*/
-		inline ~SkeletonAnimationEvaluator()
-		{
-			// Nothing here
-		}
+		~SkeletonAnimationEvaluator();
 
 		/**
 		*  @brief
@@ -164,13 +154,6 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
-	//[ Private definitions                                   ]
-	//[-------------------------------------------------------]
-	private:
-		typedef std::vector<std::tuple<uint32_t, uint32_t, uint32_t>> LastPositions;
-
-
-	//[-------------------------------------------------------]
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
@@ -178,8 +161,8 @@ namespace RendererRuntime
 		SkeletonAnimationResourceId		  mSkeletonAnimationResourceId;			///< Skeleton animation resource ID
 		BoneIds							  mBoneIds;								///< Bone IDs ("RendererRuntime::StringId" on bone name)
 		TransformMatrices				  mTransformMatrices;					///< The transform matrices calculated at the last "RendererRuntime::SkeletonAnimationEvaluator::evaluate()" call
-		float							  mLastTimeInTicks;
-		LastPositions					  mLastPositions;						///< At which frame the last evaluation happened for each channel; useful to quickly find the corresponding frame for slightly increased time stamps
+		void*							  mAclAllocator;
+		void*							  mAclDecompressionContext;
 
 
 	};

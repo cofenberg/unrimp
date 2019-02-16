@@ -81,6 +81,11 @@ namespace RendererRuntime
 			return true;
 		}
 
+		[[nodiscard]] inline virtual bool hasProcessing() const override
+		{
+			return true;
+		}
+
 		[[nodiscard]] virtual bool onDispatch() override;
 
 		[[nodiscard]] inline virtual bool isFullyLoaded() override

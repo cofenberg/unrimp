@@ -156,6 +156,15 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
+		*    Asynchronous called to check whether or not the resource loader has to perform processing
+		*
+		*  @return
+		*    "true" if processing has to be called, else "false" (if for example deserialized compressed data stays compressed in memory)
+		*/
+		[[nodiscard]] virtual bool hasProcessing() const = 0;
+
+		/**
+		*  @brief
 		*    Asynchronous called when the resource loader has to perform internal in-memory data processing
 		*/
 		virtual void onProcessing() = 0;

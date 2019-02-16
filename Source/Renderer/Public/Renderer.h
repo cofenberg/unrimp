@@ -937,7 +937,8 @@ namespace Renderer
 		{ \
 			if (nullptr != oldPointer) \
 			{ \
-				oldPointer->~type(); \
+				typedef type destructor; \
+				static_cast<type*>(oldPointer)->~destructor(); \
 				(context).getAllocator().reallocate(oldPointer, 0, 0, 1); \
 			} \
 		} while (0)
@@ -953,7 +954,8 @@ namespace Renderer
 			{ \
 				for (size_t allocatorArrayIndex = 0; allocatorArrayIndex < count; ++allocatorArrayIndex) \
 				{ \
-					(oldPointer)[allocatorArrayIndex].~type(); \
+					typedef type destructor; \
+					(static_cast<type*>(oldPointer))[allocatorArrayIndex].~destructor(); \
 				} \
 				(context).getAllocator().reallocate(oldPointer, 0, 0, 1); \
 			} \

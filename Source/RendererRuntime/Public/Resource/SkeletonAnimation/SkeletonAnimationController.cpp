@@ -90,7 +90,7 @@ namespace RendererRuntime
 	{
 		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr == mSkeletonAnimationEvaluator, "No useless update calls, please")
 		SkeletonAnimationResourceManager& skeletonAnimationResourceManager = mRendererRuntime.getSkeletonAnimationResourceManager();
-		mSkeletonAnimationEvaluator = new SkeletonAnimationEvaluator(skeletonAnimationResourceManager, mSkeletonAnimationResourceId);
+		mSkeletonAnimationEvaluator = new SkeletonAnimationEvaluator(mRendererRuntime.getContext().getAllocator(), skeletonAnimationResourceManager, mSkeletonAnimationResourceId);
 
 		// Register skeleton animation controller
 		skeletonAnimationResourceManager.mSkeletonAnimationControllers.push_back(this);

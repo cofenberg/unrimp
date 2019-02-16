@@ -88,6 +88,11 @@ namespace RendererRuntime
 			return true;
 		}
 
+		[[nodiscard]] inline virtual bool hasProcessing() const override
+		{
+			return true;
+		}
+
 		virtual void onProcessing() override;
 
 

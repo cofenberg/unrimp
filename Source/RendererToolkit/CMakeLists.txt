@@ -35,7 +35,7 @@ unrimp_add_conditional_renderer_definitions()
 ## Includes
 ##################################################
 include_directories(${CMAKE_SOURCE_DIR}/Source)
-include_directories(${CMAKE_SOURCE_DIR}/External/RendererRuntime)	# For "glm" and "mikktspace"
+include_directories(${CMAKE_SOURCE_DIR}/External/RendererRuntime)	# For "glm", "mikktspace" and "acl"
 include_directories(${CMAKE_SOURCE_DIR}/External/RendererRuntime/crunch/inc)
 include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit)	# For "SimpleFileWatcher" and "ies"
 include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit/RapidJSON/configuration)	# RapidJSON configuration and assert to exception

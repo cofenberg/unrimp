@@ -29,19 +29,6 @@
 //[-------------------------------------------------------]
 #include "RendererRuntime/Public/Core/Platform/PlatformTypes.h"
 
-// Disable warnings in external headers, we can't fix them
-PRAGMA_WARNING_PUSH
-	PRAGMA_WARNING_DISABLE_MSVC(4201)	// warning C4201: nonstandard extension used: nameless struct/union
-	PRAGMA_WARNING_DISABLE_MSVC(4464)	// warning C4464: relative include path contains '..'
-	#include <glm/gtc/quaternion.hpp>
-PRAGMA_WARNING_POP
-
-// Disable warnings in external headers, we can't fix them
-PRAGMA_WARNING_PUSH
-	PRAGMA_WARNING_DISABLE_MSVC(4668)	// warning C4668: '_M_HYBRID_X86_ARM64' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
-	#include <inttypes.h>	// For uint32_t, uint64_t etc.
-PRAGMA_WARNING_POP
-
 
 //[-------------------------------------------------------]
 //[ Namespace                                             ]
@@ -53,11 +40,8 @@ namespace RendererRuntime
 	// Rigid skeleton animation clip file format content:
 	// - File format header
 	// - Skeleton animation header
-	// - Channel byte offsets
-	// - n bone channels, all the skeleton animation data in one big chunk
-	//   - 1..n position keys
-	//   - 1..n rotation keys
-	//   - 1..n scale keys
+	// - Bone IDs
+	// - ACL ( https://github.com/nfrechette/acl ) compressed skeleton animation clip
 	namespace v1SkeletonAnimation
 	{
 
@@ -66,18 +50,17 @@ namespace RendererRuntime
 		//[ Definitions                                           ]
 		//[-------------------------------------------------------]
 		static constexpr uint32_t FORMAT_TYPE	 = STRING_ID("SkeletonAnimation");
-		static constexpr uint32_t FORMAT_VERSION = 2;
+		static constexpr uint32_t FORMAT_VERSION = 3;
 
 		#pragma pack(push)
 		#pragma pack(1)
 			struct SkeletonAnimationHeader final
 			{
-				uint8_t  numberOfChannels;			///< The number of bone animation channels; each channel affects a single node
-				float	 durationInTicks;			///< Duration of the animation in ticks
-				float	 ticksPerSecond;			///< Ticks per second; 0 if not specified in the imported file
-				uint32_t numberOfChannelDataBytes;	///< The number of bytes required to store the complete animation data
+				uint8_t  numberOfChannels;		///< The number of bone animation channels; each channel affects a single bone
+				float	 durationInTicks;		///< Duration of the animation in ticks
+				float	 ticksPerSecond;		///< Ticks per second; 0 if not specified in the imported file
+				uint32_t aclCompressedClipSize;	///< ACL compressed clip size in bytes
 			};
-			// TODO(co) We also need to store the skeleton hierarchy so we can perform a runtime matching and retargeting if required
 		#pragma pack(pop)
 
 

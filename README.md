@@ -151,6 +151,8 @@ Renderer Runtime (e.g. "The Game")
 	- High-level sunlight controlled via time-of-day
 	- Support for [Illuminating Engineering Society (IES) light profiles](http://www.cgarena.com/freestuff/tutorials/max/ieslights/) (photometric light data, use e.g. [IESviewer](http://photometricviewer.com/) as viewer)
 - Skeleton animation
+	- [ACL](https://github.com/nfrechette/acl) compressed skeleton animation clip
+	- GPU dual quaternion skinning (DQS), linear blend skinning (LBS) using matrices path is available as well
 - Particles rendering
 - Terrain
 	- This software contains source code provided by NVIDIA Corporation. The height map terrain tessellation implementation is basing on ["DirectX 11 Terrain Tessellation"](https://developer.nvidia.com/sites/default/files/akamai/gamedev/files/sdk/11/TerrainTessellation_WhitePaper.pdf) by Iain Cantlay and the concrete implementation "TerrainTessellation"-sample inside ["NVIDIA Direct3D SDK 11"](https://developer.nvidia.com/dx11-samples).
@@ -197,7 +199,6 @@ Examples (just some high level keywords)
 - [Hierarchical depth buffer (aka Hi-Z map or HZB)](http://rastergrid.com/blog/2010/10/hierarchical-z-map-based-occlusion-culling/), useful for GPU occlusion culling, screen space reflections as well as using the second depth buffer mipmap for e.g. a half-sized volumetric light/fog bilateral upsampling
 - Physically based shading (PBS) using "metallic workflow" (aka "metal-rough-workflow" aka "Albedo/Metallic/Roughness") instead of "specular workflow" (aka "specular-gloss-workflow" aka "Diffuse/Specular/Glossines")
 - Microsoft Windows: ["NVIDIA Optimus"](http://developer.download.nvidia.com/devzone/devcenter/gamegraphics/files/OptimusRenderingPolicies.pdf) and ["AMD Dynamic Switchable Graphic"](https://community.amd.com/message/1307599#comment-1307599) awareness to reduce the risk of getting the integrated graphics unit assigned when there's a dedicated graphics card as well
-- GPU dual quaternion skinning (DQS), linear blend skinning (LBS) using matrices path is available as well
 - [Volumetric light/fog](https://fr.slideshare.net/BenjaminGlatzel/volumetric-lighting-for-many-lights-in-lords-of-the-fallen) (aka crepuscular rays, god rays, sunbeams, sunbursts, light shafts or star flare)
 - [Dynamic rain accumulated water in a hole/cracks with puddle and rain drops](https://seblagarde.wordpress.com/2013/04/14/water-drop-3b-physically-based-wet-surfaces/) [and water streaks](https://deepspacebanana.github.io/deepspacebanana.github.io/blog/shader/art/unreal%20engine/Rainy-Surface-Shader-Part-2)
 - [Custom resolved MSAA for antialiased deferred rendering and temporal anti-aliasing](https://mynameismjp.wordpress.com/2012/10/28/msaa-resolve-filters/)
