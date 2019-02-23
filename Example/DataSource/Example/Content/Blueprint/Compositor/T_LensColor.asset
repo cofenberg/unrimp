@@ -15,7 +15,7 @@
 			"ClassName": "RendererToolkit::TextureAssetCompiler",
 			"Description": "We're dealing with a 1D-texture. DXT is a 4x4 block based format which can't handle compressed 1D textures. Use dds file format to be able to save an uncompressed texture.",
 			"InputFile": "./T_LensColor.png",
-			"FileFormat": "dds",
+			"FileFormat": "lz4dds",
 			"CreateMipmaps": "FALSE"
 		}
 	}

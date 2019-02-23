@@ -475,8 +475,14 @@ static bool convert_and_write_normal_texture(mipmapped_texture& work_tex, conver
   } else {
     console::message("Writing texture to file: \"%s\"", params.m_dst_filename.get_ptr());
 
-    if (!work_tex.write_to_file(params.m_dst_filename.get_ptr(), params.m_dst_file_type, NULL, NULL, NULL))
+    if (params.m_dst_stream) {
+      if (!work_tex.write_to_stream(params.m_dst_stream, params.m_dst_file_type, NULL, NULL, NULL)) {
+        return convert_error(params, "Failed writing output stream!");
+	  }
+	}
+	else if (!work_tex.write_to_file(params.m_dst_filename.get_ptr(), params.m_dst_file_type, NULL, NULL, NULL)) {
       return convert_error(params, "Failed writing output file!");
+    }
 
     if (!params.m_no_stats) {
       if (!stats.init(params.m_pInput_texture->get_source_filename().get_ptr(), params.m_dst_filename.get_ptr(), *params.m_pIntermediate_texture, params.m_dst_file_type, params.m_lzma_stats)) {

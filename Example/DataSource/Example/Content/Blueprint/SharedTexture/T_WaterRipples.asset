@@ -17,7 +17,7 @@
 			"ClassName": "RendererToolkit::TextureAssetCompiler",
 			"Description": "Use dds file format to be able to save an uncompressed texture",
 			"InputFile": "./T_WaterRipples.png",
-			"FileFormat": "dds",
+			"FileFormat": "lz4dds",
 			"CreateMipmaps": "FALSE",
 			"Compression": "FALSE"
 		}

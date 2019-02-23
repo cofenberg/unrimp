@@ -25,8 +25,8 @@
 #include "RendererRuntime/Public/Resource/Texture/TextureResource.h"
 #include "RendererRuntime/Public/Resource/Texture/Loader/CrnTextureResourceLoader.h"
 #include "RendererRuntime/Public/Resource/Texture/Loader/CrnArrayTextureResourceLoader.h"
-#include "RendererRuntime/Public/Resource/Texture/Loader/KtxTextureResourceLoader.h"
 #include "RendererRuntime/Public/Resource/Texture/Loader/Lz4DdsTextureResourceLoader.h"
+#include "RendererRuntime/Public/Resource/Texture/Loader/KtxTextureResourceLoader.h"
 #include "RendererRuntime/Public/Resource/ResourceManagerTemplate.h"
 #ifdef RENDERER_RUNTIME_OPENVR
 	#include "RendererRuntime/Public/Vr/OpenVR/Loader/OpenVRTextureResourceLoader.h"
@@ -388,9 +388,6 @@ namespace RendererRuntime
 
 			case Lz4DdsTextureResourceLoader::TYPE_ID:
 				return new Lz4DdsTextureResourceLoader(*this, mInternalResourceManager->getRendererRuntime());
-
-			case DdsTextureResourceLoader::TYPE_ID:
-				return new DdsTextureResourceLoader(*this, mInternalResourceManager->getRendererRuntime());
 
 			case KtxTextureResourceLoader::TYPE_ID:
 				return new KtxTextureResourceLoader(*this, mInternalResourceManager->getRendererRuntime());

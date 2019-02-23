@@ -151,7 +151,7 @@
 #include "Public/Resource/Texture/TextureResourceManager.cpp"
 #include "Public/Resource/Texture/Loader/CrnTextureResourceLoader.cpp"
 #include "Public/Resource/Texture/Loader/CrnArrayTextureResourceLoader.cpp"
-#include "Public/Resource/Texture/Loader/DdsTextureResourceLoader.cpp"
+#include "Public/Resource/Texture/Loader/Lz4DdsTextureResourceLoader.cpp"
 #include "Public/Resource/Texture/Loader/ITextureResourceLoader.cpp"
 #include "Public/Resource/Texture/Loader/KtxTextureResourceLoader.cpp"
 #include "Public/Resource/VertexAttributes/VertexAttributesResourceManager.cpp"

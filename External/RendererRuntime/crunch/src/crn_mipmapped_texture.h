@@ -196,6 +196,13 @@ class mipmapped_texture {
   bool read_from_file(const char* pFilename, texture_file_types::format file_format = texture_file_types::cFormatInvalid);
   bool read_from_stream(data_stream_serializer& serializer, texture_file_types::format file_format = texture_file_types::cFormatInvalid);
 
+  bool write_to_stream(
+      data_stream* pStream,
+      texture_file_types::format file_format = texture_file_types::cFormatInvalid,
+      crn_comp_params* pComp_params = NULL,
+      uint32* pActual_quality_level = NULL, float* pActual_bitrate = NULL,
+      uint32 image_write_flags = 0);
+
   bool write_to_file(
       const char* pFilename,
       texture_file_types::format file_format = texture_file_types::cFormatInvalid,

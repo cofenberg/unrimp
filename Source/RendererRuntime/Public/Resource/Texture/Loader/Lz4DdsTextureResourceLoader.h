@@ -27,8 +27,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/Public/Resource/Texture/Loader/DdsTextureResourceLoader.h"
-#include "RendererRuntime/Public/Core/File/MemoryFile.h"
+#include "RendererRuntime/Public/Resource/Texture/Loader/ITextureResourceLoader.h"
 
 
 //[-------------------------------------------------------]
@@ -41,7 +40,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Classes                                               ]
 	//[-------------------------------------------------------]
-	class Lz4DdsTextureResourceLoader final : public DdsTextureResourceLoader
+	class Lz4DdsTextureResourceLoader final : public ITextureResourceLoader
 	{
 
 
@@ -75,29 +74,38 @@ namespace RendererRuntime
 			return mMemoryFile.loadLz4CompressedDataFromFile(FORMAT_TYPE, FORMAT_VERSION, file);
 		}
 
-		inline virtual void onProcessing() override
-		{
-			// Decompress LZ4 compressed data
-			mMemoryFile.decompress();
-
-			// Call the deserialization base implementation
-			[[maybe_unused]] const bool result = DdsTextureResourceLoader::onDeserialization(mMemoryFile);
-		}
+		virtual void onProcessing() override;
 
 
 	//[-------------------------------------------------------]
-	//[ Private methods                                       ]
+	//[ Protected RendererRuntime::ITextureResourceLoader methods ]
 	//[-------------------------------------------------------]
-	private:
+	protected:
+		[[nodiscard]] virtual Renderer::ITexture* createRendererTexture() override;
+
+
+	//[-------------------------------------------------------]
+	//[ Protected methods                                     ]
+	//[-------------------------------------------------------]
+	protected:
 		inline Lz4DdsTextureResourceLoader(IResourceManager& resourceManager, IRendererRuntime& rendererRuntime) :
-			DdsTextureResourceLoader(resourceManager, rendererRuntime)
+			ITextureResourceLoader(resourceManager, rendererRuntime),
+			mWidth(0),
+			mHeight(0),
+			mDepth(0),
+			mNumberOfSlices(0),
+			mTextureFormat(0),
+			mDataContainsMipmaps(false),
+			mNumberOfImageDataBytes(0),
+			mNumberOfUsedImageDataBytes(0),
+			mImageData(nullptr)
 		{
 			// Nothing here
 		}
 
 		inline virtual ~Lz4DdsTextureResourceLoader() override
 		{
-			// Nothing here
+			delete [] mImageData;
 		}
 
 		explicit Lz4DdsTextureResourceLoader(const Lz4DdsTextureResourceLoader&) = delete;
@@ -110,6 +118,17 @@ namespace RendererRuntime
 	private:
 		// Temporary data
 		MemoryFile mMemoryFile;
+		uint32_t   mWidth;
+		uint32_t   mHeight;
+		uint32_t   mDepth;
+		uint32_t   mNumberOfSlices;
+		uint8_t    mTextureFormat;	// "Renderer::TextureFormat", don't want to include the header in here
+		bool	   mDataContainsMipmaps;
+
+		// Temporary image data
+		uint32_t mNumberOfImageDataBytes;
+		uint32_t mNumberOfUsedImageDataBytes;
+		uint8_t* mImageData;
 
 
 	};

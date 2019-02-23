@@ -71,7 +71,7 @@ namespace
 			{
 				*pActual_size = size;
 			}
-			return static_cast<Renderer::IAllocator*>(pUser_data)->reallocate(p, 0, size, 1);
+			return static_cast<Renderer::IAllocator*>(pUser_data)->reallocate(p, 0, size, CRNLIB_MIN_ALLOC_ALIGNMENT);
 		}
 
 		size_t crunchMsize(void*, void*)

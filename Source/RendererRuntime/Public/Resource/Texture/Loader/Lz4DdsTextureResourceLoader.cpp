@@ -21,7 +21,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/Public/Resource/Texture/Loader/DdsTextureResourceLoader.h"
+#include "RendererRuntime/Public/Resource/Texture/Loader/Lz4DdsTextureResourceLoader.h"
 #include "RendererRuntime/Public/Resource/Texture/TextureResource.h"
 #include "RendererRuntime/Public/Core/File/IFile.h"
 #include "RendererRuntime/Public/IRendererRuntime.h"
@@ -126,8 +126,11 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public virtual RendererRuntime::IResourceLoader methods ]
 	//[-------------------------------------------------------]
-	bool DdsTextureResourceLoader::onDeserialization(IFile& file)
+	void Lz4DdsTextureResourceLoader::onProcessing()
 	{
+		// Decompress LZ4 compressed data
+		mMemoryFile.decompress();
+
 		// TODO(co) Cleanup and complete, currently just a prototype
 		// TODO(co) Add optional top mipmap removal support (see "RendererRuntime::TextureResourceManager::NumberOfTopMipmapsToRemove")
 
@@ -135,7 +138,7 @@ namespace RendererRuntime
 
 		// Read the header
 		::detail::DdsHeader ddsHeader;
-		file.read(&ddsHeader, sizeof(::detail::DdsHeader));
+		mMemoryFile.read(&ddsHeader, sizeof(::detail::DdsHeader));
 		if (ddsHeader.magic[0] == 'D' && ddsHeader.magic[1] == 'D' && ddsHeader.magic[2] == 'S' && ddsHeader.magic[3] == ' ' &&
 			// Note that if "size" is "DDS " this is not a valid dds file according
 			// to the file spec. Some broken tool out there seems to produce files
@@ -153,7 +156,7 @@ namespace RendererRuntime
 			if (((ddsHeader.ddpfPixelFormat.flags & ::detail::DDPF_FOURCC)) && ddsHeader.ddpfPixelFormat.fourCC == MCHAR4('D', 'X', '1', '0'))
 			{
 				// Read the DX10 header
-				file.read(&ddsHeaderDX10, sizeof(::detail::DdsHeaderDX10));
+				mMemoryFile.read(&ddsHeaderDX10, sizeof(::detail::DdsHeaderDX10));
 				mNumberOfSlices = ddsHeaderDX10.arraySize;
 				hasDX10Header = true;
 			}
@@ -288,7 +291,7 @@ namespace RendererRuntime
 						default:
 							// Error!
 							RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Unsupported format")
-							return false;
+							return;
 					}
 				}
 				else
@@ -396,7 +399,7 @@ namespace RendererRuntime
 									{
 										// Error
 										RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Unsupported format")
-										return false;
+										return;
 									}
 									break;
 
@@ -419,14 +422,14 @@ namespace RendererRuntime
 									{
 										// Error
 										RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Unsupported format")
-										return false;
+										return;
 									}
 									break;
 
 								default:
 									// Error
 									RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Unsupported format")
-									return false;
+									return;
 							}
 					}
 				}
@@ -556,7 +559,7 @@ namespace RendererRuntime
 
 				// TODO(co) Data layout handling
 				// A simple one: Just read in the whole compressed data
-				file.read(mImageData, mNumberOfUsedImageDataBytes);
+				mMemoryFile.read(mImageData, mNumberOfUsedImageDataBytes);
 
 
 
@@ -689,16 +692,13 @@ namespace RendererRuntime
 		{
 			mTexture = createRendererTexture();
 		}
-
-		// Done
-		return true;
 	}
 
 
 	//[-------------------------------------------------------]
 	//[ Protected RendererRuntime::ITextureResourceLoader methods ]
 	//[-------------------------------------------------------]
-	Renderer::ITexture* DdsTextureResourceLoader::createRendererTexture()
+	Renderer::ITexture* Lz4DdsTextureResourceLoader::createRendererTexture()
 	{
 		Renderer::ITexture* texture = nullptr;
 		const uint32_t flags = (mDataContainsMipmaps ? (Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS | Renderer::TextureFlag::SHADER_RESOURCE) : Renderer::TextureFlag::SHADER_RESOURCE);

@@ -44,6 +44,7 @@ class convert_params {
   convert_params()
       : m_pInput_texture(NULL),
         m_texture_type(cTextureTypeUnknown),
+        m_dst_stream(NULL),
         m_dst_file_type(texture_file_types::cFormatInvalid),
         m_dst_format(PIXEL_FMT_INVALID),
         m_pProgress_func(NULL),
@@ -73,6 +74,7 @@ class convert_params {
 
   texture_type m_texture_type;
 
+  data_stream* m_dst_stream;
   dynamic_string m_dst_filename;
   texture_file_types::format m_dst_file_type;
   pixel_format m_dst_format;

@@ -2807,6 +2807,66 @@ bool mipmapped_texture::read_crn(data_stream_serializer& serializer) {
   return read_crn_from_memory(crn_data.get_ptr(), crn_data.size(), serializer.get_name().get_ptr());
 }
 
+bool mipmapped_texture::write_to_stream(
+    data_stream* pStream,
+    texture_file_types::format file_format,
+    crn_comp_params* pComp_params,
+    uint32* pActual_quality_level, float* pActual_bitrate,
+    uint32 image_write_flags) {
+  if (pActual_quality_level)
+    *pActual_quality_level = 0;
+  if (pActual_bitrate)
+    *pActual_bitrate = 0.0f;
+
+  if (!is_valid()) {
+    set_last_error("Unable to write empty texture");
+    return false;
+  }
+
+  if (file_format == texture_file_types::cFormatInvalid) {
+    set_last_error("Unable to write empty texture due to invalid file format");
+    return false;
+  }
+
+  if (file_format == texture_file_types::cFormatInvalid) {
+    set_last_error("Unknown file format");
+    return false;
+  }
+
+  bool success = false;
+
+  if (((pComp_params) && (file_format == texture_file_types::cFormatDDS)) ||
+      (file_format == texture_file_types::cFormatCRN)) {
+    if (!pComp_params)
+      return false;
+    set_last_error("TODO(co) Writing compressed image into data stream isn't implemented yet");	// success = write_comp_texture(pFilename, *pComp_params, pActual_quality_level, pActual_bitrate);
+  } else if (!texture_file_types::supports_mipmaps(file_format)) {
+    set_last_error("TODO(co) Writing regular image into data stream isn't implemented yet");	// success = write_regular_image(pFilename, image_write_flags);
+  } else {
+    if (pComp_params) {
+      console::warning("mipmapped_texture::write_to_file: Ignoring CRN compression parameters (currently unsupported for this file type).");
+    }
+
+    data_stream_serializer serializer(pStream);
+
+    switch (file_format) {
+      case texture_file_types::cFormatDDS: {
+        success = write_dds(serializer);
+        break;
+      }
+      case texture_file_types::cFormatKTX: {
+        success = write_ktx(serializer);
+        break;
+      }
+      default: {
+        break;
+      }
+    }
+  }
+
+  return success;
+}
+
 bool mipmapped_texture::write_to_file(
     const char* pFilename,
     texture_file_types::format file_format,

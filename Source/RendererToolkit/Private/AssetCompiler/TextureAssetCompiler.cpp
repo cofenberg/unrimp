@@ -28,6 +28,7 @@
 #include "RendererToolkit/Private/Context.h"
 
 #include <RendererRuntime/Public/Asset/AssetPackage.h>
+#include <RendererRuntime/Public/Core/File/MemoryFile.h>
 #include <RendererRuntime/Public/Core/File/IFileManager.h>
 #include <RendererRuntime/Public/Core/File/FileSystemHelper.h>
 #include <RendererRuntime/Public/Resource/Texture/Loader/CrnArrayFileFormat.h>
@@ -257,6 +258,123 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global classes                                        ]
 		//[-------------------------------------------------------]
+		class MemoryStream final : public crnlib::data_stream
+		{
+
+
+		//[-------------------------------------------------------]
+		//[ Public methods                                        ]
+		//[-------------------------------------------------------]
+		public:
+			MemoryStream() :
+				crnlib::data_stream("MemoryStream", crnlib::cDataStreamWritable),
+				mFileSize(0),
+				mOffset(0)
+			{
+				m_opened = true;
+			}
+
+			inline virtual ~MemoryStream() override
+			{
+				close();
+			}
+
+			[[nodiscard]] inline RendererRuntime::MemoryFile& getMemoryFile()
+			{
+				return mMemoryFile;
+			}
+
+
+		//[-------------------------------------------------------]
+		//[ Public virtual crnlib::data_stream methods            ]
+		//[-------------------------------------------------------]
+		public:
+			virtual bool close() override
+			{
+				// Reset data
+				mMemoryFile.getByteVector().clear();
+				mFileSize = 0;
+				mOffset	  = 0;
+				m_opened  = false;
+				m_error   = false;
+				m_got_cr  = false;
+
+				// Done
+				return true;
+			}
+
+			[[nodiscard]] virtual crnlib::uint read(void*, crnlib::uint) override
+			{
+				// Write only
+				CRNLIB_ASSERT(false);
+				return 0;
+			}
+
+			[[nodiscard]] virtual crnlib::uint write(const void* pBuf, crnlib::uint len) override
+			{
+				CRNLIB_ASSERT(pBuf && (len <= 0x7FFFFFFF));
+				if (!m_opened || !is_writable() || !len)
+				{
+					return 0;
+				}
+				mMemoryFile.write(pBuf, len);
+				mOffset += len;
+				mFileSize = crnlib::math::maximum(mFileSize, mOffset);
+				return len;
+			}
+
+			inline virtual bool flush() override
+			{
+				// Nothing here
+				return true;
+			}
+
+			[[nodiscard]] inline virtual crnlib::uint64 get_size() override
+			{
+				return m_opened ? mFileSize : 0;
+			}
+
+			[[nodiscard]] virtual crnlib::uint64 get_remaining() override
+			{
+				if (!m_opened)
+				{
+					return 0;
+				}
+				CRNLIB_ASSERT(mOffset <= mFileSize);
+				return mFileSize - mOffset;
+			}
+
+			[[nodiscard]] inline virtual crnlib::uint64 get_ofs() override
+			{
+				return m_opened ? mOffset : 0;
+			}
+
+			inline virtual bool seek(crnlib::int64, bool) override
+			{
+				// Nothing here
+				return false;
+			}
+
+
+		//[-------------------------------------------------------]
+		//[ Private methods                                       ]
+		//[-------------------------------------------------------]
+		private:
+			explicit MemoryStream(const MemoryStream& fileStream) = delete;
+			MemoryStream& operator =(const MemoryStream& fileStream) = delete;
+
+
+		//[-------------------------------------------------------]
+		//[ Private data                                          ]
+		//[-------------------------------------------------------]
+		private:
+			RendererRuntime::MemoryFile	mMemoryFile;
+			uint64_t					mFileSize;
+			uint64_t					mOffset;
+
+
+		};
+
 		class FileStream final : public crnlib::data_stream
 		{
 
@@ -427,7 +545,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		void getVirtualOutputAssetFilenameAndCrunchOutputTextureFileType(const RendererToolkit::IAssetCompiler::Configuration& configuration, const std::string& assetFileFormat, const std::string& assetName, const std::string& virtualAssetOutputDirectory, TextureSemantic textureSemantic, std::string& virtualOutputAssetFilename, crnlib::texture_file_types::format& crunchOutputTextureFileType)
+		void getVirtualOutputAssetFilenameAndCrunchOutputTextureFileType(const RendererToolkit::IAssetCompiler::Configuration& configuration, const std::string& assetFileFormat, const std::string& assetName, const std::string& virtualAssetOutputDirectory, std::string& virtualOutputAssetFilename, crnlib::texture_file_types::format& crunchOutputTextureFileType)
 		{
 			const rapidjson::Value& rapidJsonValueTargets = configuration.rapidJsonValueTargets;
 
@@ -451,7 +569,7 @@ namespace
 				{
 					crunchOutputTextureFileType = crnlib::texture_file_types::cFormatCRN;
 				}
-				else if (fileFormat == "dds")
+				else if (fileFormat == "lz4dds")
 				{
 					crunchOutputTextureFileType = crnlib::texture_file_types::cFormatDDS;
 				}
@@ -459,12 +577,6 @@ namespace
 				{
 					crunchOutputTextureFileType = crnlib::texture_file_types::cFormatKTX;
 				}
-			}
-
-			// Handle DDS LZ4 compression
-			if (::detail::TextureSemantic::TERRAIN_HEIGHT_MAP == textureSemantic || ::detail::TextureSemantic::VOLUME == textureSemantic || ::detail::TextureSemantic::IES_LIGHT_PROFILE_ARRAY == textureSemantic)
-			{
-				RendererToolkit::StringHelper::replaceFirstString(virtualOutputAssetFilename, ".dds", ".lz4dds");
 			}
 		}
 
@@ -1071,13 +1183,12 @@ namespace
 			{
 				*pActual_size = size;
 			}
-			return static_cast<Renderer::IAllocator*>(pUser_data)->reallocate(p, 0, size, 1);
+			return static_cast<Renderer::IAllocator*>(pUser_data)->reallocate(p, 0, size, CRNLIB_MIN_ALLOC_ALIGNMENT);
 		}
 
 		size_t crunchMsize(void*, void*)
 		{
-			// Not supported, used only if "CRNLIB_MEM_STATS" preprocessor definition is set
-			return 0;
+			throw std::runtime_error("\"crn_msize_func\" isn't supported, used only if \"CRNLIB_MEM_STATS\" preprocessor definition is set");
 		}
 
 		void initializeCrunch(const RendererToolkit::Context& context)
@@ -1387,8 +1498,10 @@ namespace
 			}
 
 			// Setup Crunch parameters
+			MemoryStream memoryStream;
 			crunchConvertParams.m_pInput_texture = &crunchMipmappedTexture;
-			crunchConvertParams.m_dst_filename = absoluteDestinationFilename.c_str();
+			crunchConvertParams.m_dst_stream = (crnlib::texture_file_types::cFormatDDS == outputCrunchTextureFileType) ? &memoryStream : nullptr;
+			crunchConvertParams.m_dst_filename = (crnlib::texture_file_types::cFormatDDS == outputCrunchTextureFileType) ? "MemoryStream" : absoluteDestinationFilename.c_str();
 			crunchConvertParams.m_dst_file_type = outputCrunchTextureFileType;
 			crunchConvertParams.m_y_flip = true;
 			crunchConvertParams.m_no_stats = true;
@@ -1581,7 +1694,7 @@ namespace
 			}
 
 			// Silence "Target bitrate/quality level is not supported for this output file format." warnings
-			if (crnlib::texture_file_types::format::cFormatKTX == outputCrunchTextureFileType)
+			if (crnlib::texture_file_types::format::cFormatDDS == outputCrunchTextureFileType || crnlib::texture_file_types::format::cFormatKTX == outputCrunchTextureFileType)
 			{
 				crunchConvertParams.m_comp_params.m_quality_level = cCRNMaxQualityLevel;
 			}
@@ -1598,6 +1711,12 @@ namespace
 				{
 					throw std::runtime_error(crunchConvertParams.m_error_message.get_ptr());
 				}
+			}
+
+			// Write LZ4 compressed memory file
+			if (crnlib::texture_file_types::cFormatDDS == outputCrunchTextureFileType && !memoryStream.getMemoryFile().writeLz4CompressedDataByVirtualFilename(RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_TYPE, RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_VERSION, input.context.getFileManager(), virtualDestinationFilename))
+			{
+				throw std::runtime_error("Failed to write LZ4 compressed output file \"" + std::string(virtualDestinationFilename) + '\"');
 			}
 		}
 
@@ -2027,7 +2146,7 @@ namespace RendererToolkit
 		}
 		if (::detail::TextureSemantic::COLOR_CORRECTION_LOOKUP_TABLE == textureSemantic || ::detail::TextureSemantic::TERRAIN_HEIGHT_MAP == textureSemantic || ::detail::TextureSemantic::VOLUME == textureSemantic || ::detail::TextureSemantic::IES_LIGHT_PROFILE_ARRAY == textureSemantic)
 		{
-			assetFileFormat = "dds";
+			assetFileFormat = "lz4dds";
 		}
 		else if (::detail::TextureSemantic::CRN_ARRAY == textureSemantic)
 		{
@@ -2036,7 +2155,7 @@ namespace RendererToolkit
 		const std::string assetName = std_filesystem::path(input.virtualAssetFilename).stem().generic_string();
 		std::string virtualOutputAssetFilename;
 		crnlib::texture_file_types::format crunchOutputTextureFileType = crnlib::texture_file_types::cFormatCRN;
-		::detail::getVirtualOutputAssetFilenameAndCrunchOutputTextureFileType(configuration, assetFileFormat, assetName, input.virtualAssetOutputDirectory, textureSemantic, virtualOutputAssetFilename, crunchOutputTextureFileType);
+		::detail::getVirtualOutputAssetFilenameAndCrunchOutputTextureFileType(configuration, assetFileFormat, assetName, input.virtualAssetOutputDirectory, virtualOutputAssetFilename, crunchOutputTextureFileType);
 		return virtualOutputAssetFilename;
 	}
 
@@ -2084,7 +2203,7 @@ namespace RendererToolkit
 			// Texture semantic overrules manual settings
 			if (::detail::TextureSemantic::COLOR_CORRECTION_LOOKUP_TABLE == textureSemantic || ::detail::TextureSemantic::TERRAIN_HEIGHT_MAP == textureSemantic || ::detail::TextureSemantic::VOLUME == textureSemantic || ::detail::TextureSemantic::IES_LIGHT_PROFILE_ARRAY == textureSemantic)
 			{
-				assetFileFormat = "dds";
+				assetFileFormat = "lz4dds";
 				createMipmaps = false;
 			}
 			else if (::detail::TextureSemantic::CRN_ARRAY == textureSemantic)
@@ -2129,7 +2248,7 @@ namespace RendererToolkit
 		// Get output related settings
 		std::string virtualOutputAssetFilename;
 		crnlib::texture_file_types::format crunchOutputTextureFileType = crnlib::texture_file_types::cFormatCRN;
-		::detail::getVirtualOutputAssetFilenameAndCrunchOutputTextureFileType(configuration, assetFileFormat, assetName, input.virtualAssetOutputDirectory, textureSemantic, virtualOutputAssetFilename, crunchOutputTextureFileType);
+		::detail::getVirtualOutputAssetFilenameAndCrunchOutputTextureFileType(configuration, assetFileFormat, assetName, input.virtualAssetOutputDirectory, virtualOutputAssetFilename, crunchOutputTextureFileType);
 
 		// Ask the cache manager whether or not we need to compile the source file (e.g. source changed or target not there)
 		std::vector<CacheManager::CacheEntries> cacheEntries;
