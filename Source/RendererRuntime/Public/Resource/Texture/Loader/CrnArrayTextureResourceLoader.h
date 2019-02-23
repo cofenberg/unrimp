@@ -27,8 +27,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "RendererRuntime/Public/Resource/Texture/Loader/ITextureResourceLoader.h"
-#include "RendererRuntime/Public/Core/File/MemoryFile.h"
+#include "RendererRuntime/Public/Resource/Texture/Loader/CrnTextureResourceLoader.h"
 
 
 //[-------------------------------------------------------]
@@ -41,7 +40,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Classes                                               ]
 	//[-------------------------------------------------------]
-	class CrnArrayTextureResourceLoader final : public ITextureResourceLoader
+	class CrnArrayTextureResourceLoader final : public CrnTextureResourceLoader
 	{
 
 
@@ -83,27 +82,15 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	private:
 		inline CrnArrayTextureResourceLoader(IResourceManager& resourceManager, IRendererRuntime& rendererRuntime) :
-			ITextureResourceLoader(resourceManager, rendererRuntime),
-			mWidth(0),
-			mHeight(0),
-			mNumberOfSlices(0),
-			mTextureFormat(0),
-			mCubeMap(false),
-			mDataContainsMipmaps(false),
-			mNumberOfFileDataBytes(0),
-			mNumberOfUsedFileDataBytes(0),
-			mFileData(nullptr),
-			mNumberOfImageDataBytes(0),
-			mNumberOfUsedImageDataBytes(0),
-			mImageData(nullptr)
+			CrnTextureResourceLoader(resourceManager, rendererRuntime),
+			mNumberOfSlices(0)
 		{
 			// Nothing here
 		}
 
 		inline virtual ~CrnArrayTextureResourceLoader() override
 		{
-			delete [] mFileData;
-			delete [] mImageData;
+			// Nothing here
 		}
 
 		explicit CrnArrayTextureResourceLoader(const CrnArrayTextureResourceLoader&) = delete;
@@ -134,25 +121,12 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	private:
 		// Temporary data
-		uint32_t mWidth;
-		uint32_t mHeight;
 		uint32_t mNumberOfSlices;
-		uint8_t  mTextureFormat;	// "Renderer::TextureFormat", don't want to include the header in here
-		bool	 mCubeMap;
-		bool	 mDataContainsMipmaps;
 
 		// Temporary file data
 		MemoryFile					   mMemoryFile;
-		uint32_t					   mNumberOfFileDataBytes;
-		uint32_t					   mNumberOfUsedFileDataBytes;
-		uint8_t*					   mFileData;
 		std::vector<AssetId>		   mAssetIds;
 		std::vector<SliceFileMetadata> mSliceFileMetadata;
-
-		// Temporary image data
-		uint32_t mNumberOfImageDataBytes;
-		uint32_t mNumberOfUsedImageDataBytes;
-		uint8_t* mImageData;
 
 
 	};

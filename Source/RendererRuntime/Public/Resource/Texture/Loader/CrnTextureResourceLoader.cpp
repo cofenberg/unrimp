@@ -54,6 +54,41 @@
 
 
 //[-------------------------------------------------------]
+//[ Anonymous detail namespace                            ]
+//[-------------------------------------------------------]
+namespace
+{
+	namespace detail
+	{
+
+
+		//[-------------------------------------------------------]
+		//[ Global functions                                      ]
+		//[-------------------------------------------------------]
+		void* crunchRealloc(void* p, size_t size, size_t* pActual_size, bool, void* pUser_data)
+		{
+			if (nullptr != pActual_size)
+			{
+				*pActual_size = size;
+			}
+			return static_cast<Renderer::IAllocator*>(pUser_data)->reallocate(p, 0, size, 1);
+		}
+
+		size_t crunchMsize(void*, void*)
+		{
+			// Not supported, used only if "CRNLIB_MEM_STATS" preprocessor definition is set
+			return 0;
+		}
+
+
+//[-------------------------------------------------------]
+//[ Anonymous detail namespace                            ]
+//[-------------------------------------------------------]
+	} // detail
+}
+
+
+//[-------------------------------------------------------]
 //[ Namespace                                             ]
 //[-------------------------------------------------------]
 namespace RendererRuntime
@@ -272,6 +307,34 @@ namespace RendererRuntime
 		}
 		RENDERER_SET_RESOURCE_DEBUG_NAME(texture, getAsset().virtualFilename)
 		return texture;
+	}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected methods                                     ]
+	//[-------------------------------------------------------]
+	CrnTextureResourceLoader::CrnTextureResourceLoader(IResourceManager& resourceManager, IRendererRuntime& rendererRuntime) :
+		ITextureResourceLoader(resourceManager, rendererRuntime),
+		mWidth(0),
+		mHeight(0),
+		mTextureFormat(0),
+		mCubeMap(false),
+		mDataContainsMipmaps(false),
+		mNumberOfFileDataBytes(0),
+		mNumberOfUsedFileDataBytes(0),
+		mFileData(nullptr),
+		mNumberOfImageDataBytes(0),
+		mNumberOfUsedImageDataBytes(0),
+		mImageData(nullptr)
+	{
+		static std::atomic<bool> crunchAllocatorSet = false;
+		if (!crunchAllocatorSet)
+		{
+			crnd::g_pRealloc   = ::detail::crunchRealloc;
+			crnd::g_pMSize	   = ::detail::crunchMsize;
+			crnd::g_pUser_data = &rendererRuntime.getContext().getAllocator();
+			crunchAllocatorSet = true;
+		}
 	}
 
 

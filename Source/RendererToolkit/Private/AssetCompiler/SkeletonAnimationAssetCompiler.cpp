@@ -403,7 +403,7 @@ namespace RendererToolkit
 							uint32_t formatType;
 							uint32_t formatVersion;
 						};
-						FileFormatHeader fileFormatHeader{RendererRuntime::v1SkeletonAnimation::FORMAT_TYPE, RendererRuntime::v1SkeletonAnimation::FORMAT_VERSION};
+						const FileFormatHeader fileFormatHeader{RendererRuntime::v1SkeletonAnimation::FORMAT_TYPE, RendererRuntime::v1SkeletonAnimation::FORMAT_VERSION};
 						file->write(&fileFormatHeader, sizeof(FileFormatHeader));
 					}
 

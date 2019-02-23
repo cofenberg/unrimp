@@ -40,7 +40,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Classes                                               ]
 	//[-------------------------------------------------------]
-	class CrnTextureResourceLoader final : public ITextureResourceLoader
+	class CrnTextureResourceLoader : public ITextureResourceLoader
 	{
 
 
@@ -78,25 +78,10 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
-	//[ Private methods                                       ]
+	//[ Protected methods                                     ]
 	//[-------------------------------------------------------]
-	private:
-		inline CrnTextureResourceLoader(IResourceManager& resourceManager, IRendererRuntime& rendererRuntime) :
-			ITextureResourceLoader(resourceManager, rendererRuntime),
-			mWidth(0),
-			mHeight(0),
-			mTextureFormat(0),
-			mCubeMap(false),
-			mDataContainsMipmaps(false),
-			mNumberOfFileDataBytes(0),
-			mNumberOfUsedFileDataBytes(0),
-			mFileData(nullptr),
-			mNumberOfImageDataBytes(0),
-			mNumberOfUsedImageDataBytes(0),
-			mImageData(nullptr)
-		{
-			// Nothing here
-		}
+	protected:
+		CrnTextureResourceLoader(IResourceManager& resourceManager, IRendererRuntime& rendererRuntime);
 
 		inline virtual ~CrnTextureResourceLoader() override
 		{
@@ -109,9 +94,9 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
-	//[ Private data                                          ]
+	//[ Protected data                                        ]
 	//[-------------------------------------------------------]
-	private:
+	protected:
 		// Temporary data
 		uint32_t mWidth;
 		uint32_t mHeight;

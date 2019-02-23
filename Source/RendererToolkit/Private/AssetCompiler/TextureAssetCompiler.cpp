@@ -94,6 +94,8 @@ PRAGMA_WARNING_PUSH
 	#include <rapidjson/document.h>
 PRAGMA_WARNING_POP
 
+#include <atomic>
+
 
 //[-------------------------------------------------------]
 //[ Anonymous detail namespace                            ]
@@ -249,7 +251,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global variables                                      ]
 		//[-------------------------------------------------------]
-		static bool g_CrunchInitialized = false;
+		static std::atomic<bool> g_CrunchInitialized = false;
 
 
 		//[-------------------------------------------------------]
@@ -1063,12 +1065,28 @@ namespace
 			return true;
 		}
 
+		void* crunchRealloc(void* p, size_t size, size_t* pActual_size, bool, void* pUser_data)
+		{
+			if (nullptr != pActual_size)
+			{
+				*pActual_size = size;
+			}
+			return static_cast<Renderer::IAllocator*>(pUser_data)->reallocate(p, 0, size, 1);
+		}
+
+		size_t crunchMsize(void*, void*)
+		{
+			// Not supported, used only if "CRNLIB_MEM_STATS" preprocessor definition is set
+			return 0;
+		}
+
 		void initializeCrunch(const RendererToolkit::Context& context)
 		{
 			if (!g_CrunchInitialized)
 			{
 				// The Crunch console is using "printf()" by default if no console output function handles Crunch console output
 				// -> Redirect the Crunch console output into our log so we have an uniform handling of such information
+				crn_set_memory_callbacks(::detail::crunchRealloc, ::detail::crunchMsize, &context.getAllocator());
 				crnlib::console::add_console_output_func(crunchConsoleOutput, &const_cast<RendererToolkit::Context&>(context));
 				g_CrunchInitialized = true;
 			}
@@ -1080,6 +1098,7 @@ namespace
 			{
 				crnlib::console::remove_console_output_func(crunchConsoleOutput);
 				crnlib::console::deinit();
+				crn_set_memory_callbacks(nullptr, nullptr, nullptr);
 				g_CrunchInitialized = false;
 			}
 		}
