@@ -17862,6 +17862,9 @@ namespace OpenGLRenderer
 
 		[[nodiscard]] virtual Renderer::IVertexShader* createVertexShaderFromBytecode(const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderBytecode& shaderBytecode) override
 		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "OpenGL vertex shader bytecode is invalid")
+
 			// Check whether or not there's vertex shader support
 			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(getRenderer());
 			const Extensions& extensions = openGLRenderer.getExtensions();
@@ -17894,6 +17897,9 @@ namespace OpenGLRenderer
 
 		[[nodiscard]] virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
 		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "OpenGL tessellation control shader bytecode is invalid")
+
 			// Check whether or not there's tessellation support
 			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(getRenderer());
 			const Extensions& extensions = openGLRenderer.getExtensions();
@@ -17926,6 +17932,9 @@ namespace OpenGLRenderer
 
 		[[nodiscard]] virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
 		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "OpenGL tessellation evaluation shader bytecode is invalid")
+
 			// Check whether or not there's tessellation support
 			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(getRenderer());
 			const Extensions& extensions = openGLRenderer.getExtensions();
@@ -17958,6 +17967,9 @@ namespace OpenGLRenderer
 
 		[[nodiscard]] virtual Renderer::IGeometryShader* createGeometryShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode, Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices) override
 		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "OpenGL geometry shader bytecode is invalid")
+
 			// Check whether or not there's geometry shader support
 			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(getRenderer());
 			const Extensions& extensions = openGLRenderer.getExtensions();
@@ -17998,6 +18010,9 @@ namespace OpenGLRenderer
 
 		[[nodiscard]] virtual Renderer::IFragmentShader* createFragmentShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
 		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "OpenGL fragment shader bytecode is invalid")
+
 			// Check whether or not there's fragment shader support
 			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(getRenderer());
 			const Extensions& extensions = openGLRenderer.getExtensions();
@@ -18030,6 +18045,9 @@ namespace OpenGLRenderer
 
 		[[nodiscard]] virtual Renderer::IComputeShader* createComputeShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
 		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "OpenGL compute shader bytecode is invalid")
+
 			// Check whether or not there's compute shader support
 			OpenGLRenderer& openGLRenderer = static_cast<OpenGLRenderer&>(getRenderer());
 			const Extensions& extensions = openGLRenderer.getExtensions();

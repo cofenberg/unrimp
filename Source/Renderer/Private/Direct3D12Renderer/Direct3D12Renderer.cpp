@@ -10272,6 +10272,9 @@ namespace Direct3D12Renderer
 
 		[[nodiscard]] inline virtual Renderer::IVertexShader* createVertexShaderFromBytecode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderBytecode& shaderBytecode) override
 		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Direct3D 12 vertex shader bytecode is invalid")
+
 			// There's no need to check for "Renderer::Capabilities::vertexShader", we know there's vertex shader support
 			return RENDERER_NEW(getRenderer().getContext(), VertexShaderHlsl)(static_cast<Direct3D12Renderer&>(getRenderer()), shaderBytecode);
 		}
@@ -10285,6 +10288,9 @@ namespace Direct3D12Renderer
 		[[nodiscard]] inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
 		{
 			// "hull shader" in Direct3D terminology
+
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Direct3D 12 tessellation control shader bytecode is invalid")
 
 			// There's no need to check for "Renderer::Capabilities::maximumNumberOfPatchVertices", we know there's tessellation control shader support
 			return RENDERER_NEW(getRenderer().getContext(), TessellationControlShaderHlsl)(static_cast<Direct3D12Renderer&>(getRenderer()), shaderBytecode);
@@ -10302,6 +10308,9 @@ namespace Direct3D12Renderer
 		{
 			// "domain shader" in Direct3D terminology
 
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Direct3D 12 tessellation evaluation shader bytecode is invalid")
+
 			// There's no need to check for "Renderer::Capabilities::maximumNumberOfPatchVertices", we know there's tessellation evaluation shader support
 			return RENDERER_NEW(getRenderer().getContext(), TessellationEvaluationShaderHlsl)(static_cast<Direct3D12Renderer&>(getRenderer()), shaderBytecode);
 		}
@@ -10316,6 +10325,9 @@ namespace Direct3D12Renderer
 
 		[[nodiscard]] inline virtual Renderer::IGeometryShader* createGeometryShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode, [[maybe_unused]] Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices) override
 		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Direct3D 12 geometry shader bytecode is invalid")
+
 			// There's no need to check for "Renderer::Capabilities::maximumNumberOfGsOutputVertices", we know there's geometry shader support
 			// Ignore "gsInputPrimitiveTopology", it's directly set within HLSL
 			// Ignore "gsOutputPrimitiveTopology", it's directly set within HLSL
@@ -10334,6 +10346,9 @@ namespace Direct3D12Renderer
 
 		[[nodiscard]] inline virtual Renderer::IFragmentShader* createFragmentShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
 		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Direct3D 12 fragment shader bytecode is invalid")
+
 			// There's no need to check for "Renderer::Capabilities::fragmentShader", we know there's fragment shader support
 			return RENDERER_NEW(getRenderer().getContext(), FragmentShaderHlsl)(static_cast<Direct3D12Renderer&>(getRenderer()), shaderBytecode);
 		}
@@ -10346,6 +10361,9 @@ namespace Direct3D12Renderer
 
 		[[nodiscard]] inline virtual Renderer::IComputeShader* createComputeShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
 		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Direct3D 12 compute shader bytecode is invalid")
+
 			// There's no need to check for "Renderer::Capabilities::computeShader", we know there's compute shader support
 			return RENDERER_NEW(getRenderer().getContext(), ComputeShaderHlsl)(static_cast<Direct3D12Renderer&>(getRenderer()), shaderBytecode);
 		}

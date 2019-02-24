@@ -7022,6 +7022,9 @@ namespace Direct3D9Renderer
 
 		[[nodiscard]] inline virtual Renderer::IVertexShader* createVertexShaderFromBytecode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderBytecode& shaderBytecode) override
 		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Direct3D 9 vertex shader bytecode is invalid")
+
 			// There's no need to check for "Renderer::Capabilities::vertexShader", we know there's vertex shader support
 			return RENDERER_NEW(getRenderer().getContext(), VertexShaderHlsl)(static_cast<Direct3D9Renderer&>(getRenderer()), shaderBytecode);
 		}
@@ -7070,6 +7073,9 @@ namespace Direct3D9Renderer
 
 		[[nodiscard]] inline virtual Renderer::IFragmentShader* createFragmentShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
 		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Direct3D 9 fragment shader bytecode is invalid")
+
 			// There's no need to check for "Renderer::Capabilities::fragmentShader", we know there's fragment shader support
 			return RENDERER_NEW(getRenderer().getContext(), FragmentShaderHlsl)(static_cast<Direct3D9Renderer&>(getRenderer()), shaderBytecode);
 		}

@@ -70,32 +70,35 @@ namespace RendererRuntime
 				// Create renderer shader instance using the shader bytecode, if necessary
 				if (nullptr == shaderCache->mShaderPtr.getPointer())
 				{
-					assert((0 != shaderCache->mShaderBytecode.getNumberOfBytes()) && "A shader cache must always have a valid shader bytecode, else it's a pointless shader cache");
-					switch (graphicsShaderType)
+					assert((0 != shaderCache->mShaderBytecode.getNumberOfBytes()) && "A shader cache must always have a valid shader bytecode, else it's a pointless shader cache. This might be the result of a shader compilation error.");
+					if (0 != shaderCache->mShaderBytecode.getNumberOfBytes())
 					{
-						case GraphicsShaderType::Vertex:
+						switch (graphicsShaderType)
 						{
-							const Renderer::VertexAttributes& vertexAttributes = mShaderBlueprintResourceManager.getRendererRuntime().getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes();
-							shaderCache->mShaderPtr = shaderLanguage.createVertexShaderFromBytecode(vertexAttributes, shaderCache->mShaderBytecode);
-							break;
+							case GraphicsShaderType::Vertex:
+							{
+								const Renderer::VertexAttributes& vertexAttributes = mShaderBlueprintResourceManager.getRendererRuntime().getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes();
+								shaderCache->mShaderPtr = shaderLanguage.createVertexShaderFromBytecode(vertexAttributes, shaderCache->mShaderBytecode);
+								break;
+							}
+
+							case GraphicsShaderType::TessellationControl:
+								shaderCache->mShaderPtr = shaderLanguage.createTessellationControlShaderFromBytecode(shaderCache->mShaderBytecode);
+								break;
+
+							case GraphicsShaderType::TessellationEvaluation:
+								shaderCache->mShaderPtr = shaderLanguage.createTessellationEvaluationShaderFromBytecode(shaderCache->mShaderBytecode);
+								break;
+
+							case GraphicsShaderType::Geometry:
+								// TODO(co) "RendererRuntime::ShaderCacheManager::getGraphicsShaderCache()" needs to provide additional geometry shader information
+								// shaderCache->mShaderPtr = shaderLanguage.createGeometryShaderFromBytecode(shaderCache->mShaderBytecode);
+								break;
+
+							case GraphicsShaderType::Fragment:
+								shaderCache->mShaderPtr = shaderLanguage.createFragmentShaderFromBytecode(shaderCache->mShaderBytecode);
+								break;
 						}
-
-						case GraphicsShaderType::TessellationControl:
-							shaderCache->mShaderPtr = shaderLanguage.createTessellationControlShaderFromBytecode(shaderCache->mShaderBytecode);
-							break;
-
-						case GraphicsShaderType::TessellationEvaluation:
-							shaderCache->mShaderPtr = shaderLanguage.createTessellationEvaluationShaderFromBytecode(shaderCache->mShaderBytecode);
-							break;
-
-						case GraphicsShaderType::Geometry:
-							// TODO(co) "RendererRuntime::ShaderCacheManager::getGraphicsShaderCache()" needs to provide additional geometry shader information
-							// shaderCache->mShaderPtr = shaderLanguage.createGeometryShaderFromBytecode(shaderCache->mShaderBytecode);
-							break;
-
-						case GraphicsShaderType::Fragment:
-							shaderCache->mShaderPtr = shaderLanguage.createFragmentShaderFromBytecode(shaderCache->mShaderBytecode);
-							break;
 					}
 				}
 			}
@@ -227,7 +230,7 @@ namespace RendererRuntime
 				// Create renderer shader instance using the shader bytecode, if necessary
 				if (nullptr == shaderCache->mShaderPtr.getPointer())
 				{
-					assert((0 != shaderCache->mShaderBytecode.getNumberOfBytes()) && "A shader cache must always have a valid shader bytecode, else it's a pointless shader cache");
+					assert((0 != shaderCache->mShaderBytecode.getNumberOfBytes()) && "A shader cache must always have a valid shader bytecode, else it's a pointless shader cache. This might be the result of a shader compilation error.");
 					shaderCache->mShaderPtr = shaderLanguage.createComputeShaderFromBytecode(shaderCache->mShaderBytecode);
 				}
 			}
@@ -384,9 +387,13 @@ namespace RendererRuntime
 						shaderCache->mCombinedAssetFileHashes = combinedAssetFileHashes;
 
 						// Load shader bytecode
-						bytecode.resize(numberOfBytes);
-						file.read(bytecode.data(), numberOfBytes);
-						shaderCache->mShaderBytecode.setBytecodeCopy(numberOfBytes, bytecode.data());
+						assert((0 != numberOfBytes) && "A shader cache must always have a valid shader bytecode, else it's a pointless shader cache. This might be the result of a shader compilation error.");
+						if (0 != numberOfBytes)
+						{
+							bytecode.resize(numberOfBytes);
+							file.read(bytecode.data(), numberOfBytes);
+							shaderCache->mShaderBytecode.setBytecodeCopy(numberOfBytes, bytecode.data());
+						}
 					}
 				}
 				else
@@ -461,20 +468,20 @@ namespace RendererRuntime
 					// Master shader cache
 					const Renderer::ShaderBytecode& shaderBytecode = shaderCache->mShaderBytecode;
 					const uint32_t numberOfBytes = shaderBytecode.getNumberOfBytes();
-					assert((0 != numberOfBytes) && "A shader cache must always have a valid shader bytecode, else it's a pointless shader cache");
+					assert((0 != numberOfBytes) && "A shader cache must always have a valid shader bytecode, else it's a pointless shader cache. This might be the result of a shader compilation error.");
+					file.write(&shaderCache->mShaderCacheId, sizeof(ShaderCacheId));
+					file.write(&numberOfBytes, sizeof(uint32_t));
+
+					// Write list of IDs of the assets (shader blueprint, shader piece) which took part in the shader cache creation
+					const uint32_t numberOfAssetIds = static_cast<uint32_t>(shaderCache->mAssetIds.size());
+					assert(0 != numberOfAssetIds);
+					file.write(&numberOfAssetIds, sizeof(uint32_t));
+					file.write(shaderCache->mAssetIds.data(), sizeof(uint32_t) * numberOfAssetIds);
+					file.write(&shaderCache->mCombinedAssetFileHashes, sizeof(uint64_t));
+
+					// Write shader bytecode
 					if (0 != numberOfBytes)
 					{
-						file.write(&shaderCache->mShaderCacheId, sizeof(ShaderCacheId));
-						file.write(&numberOfBytes, sizeof(uint32_t));
-
-						// Write list of IDs of the assets (shader blueprint, shader piece) which took part in the shader cache creation
-						const uint32_t numberOfAssetIds = static_cast<uint32_t>(shaderCache->mAssetIds.size());
-						assert(0 != numberOfAssetIds);
-						file.write(&numberOfAssetIds, sizeof(uint32_t));
-						file.write(shaderCache->mAssetIds.data(), sizeof(uint32_t) * numberOfAssetIds);
-						file.write(&shaderCache->mCombinedAssetFileHashes, sizeof(uint64_t));
-
-						// Write shader bytecode
 						file.write(shaderBytecode.getBytecode(), numberOfBytes);
 					}
 				}

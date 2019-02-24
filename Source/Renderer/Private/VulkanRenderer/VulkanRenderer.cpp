@@ -9626,6 +9626,10 @@ namespace VulkanRenderer
 
 		[[nodiscard]] inline virtual Renderer::IVertexShader* createVertexShaderFromBytecode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderBytecode& shaderBytecode) override
 		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Vulkan vertex shader bytecode is invalid")
+
+			// Create shader instance
 			return RENDERER_NEW(getRenderer().getContext(), VertexShaderGlsl)(static_cast<VulkanRenderer&>(getRenderer()), shaderBytecode);
 		}
 
@@ -9636,6 +9640,10 @@ namespace VulkanRenderer
 
 		[[nodiscard]] inline virtual Renderer::ITessellationControlShader* createTessellationControlShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
 		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Vulkan tessellation control shader bytecode is invalid")
+
+			// Create shader instance
 			return RENDERER_NEW(getRenderer().getContext(), TessellationControlShaderGlsl)(static_cast<VulkanRenderer&>(getRenderer()), shaderBytecode);
 		}
 
@@ -9646,6 +9654,10 @@ namespace VulkanRenderer
 
 		[[nodiscard]] inline virtual Renderer::ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
 		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Vulkan tessellation evaluation shader bytecode is invalid")
+
+			// Create shader instance
 			return RENDERER_NEW(getRenderer().getContext(), TessellationEvaluationShaderGlsl)(static_cast<VulkanRenderer&>(getRenderer()), shaderBytecode);
 		}
 
@@ -9656,6 +9668,10 @@ namespace VulkanRenderer
 
 		[[nodiscard]] inline virtual Renderer::IGeometryShader* createGeometryShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode, Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices) override
 		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Vulkan geometry shader bytecode is invalid")
+
+			// Create shader instance
 			return RENDERER_NEW(getRenderer().getContext(), GeometryShaderGlsl)(static_cast<VulkanRenderer&>(getRenderer()), shaderBytecode, gsInputPrimitiveTopology, gsOutputPrimitiveTopology, numberOfOutputVertices);
 		}
 
@@ -9666,6 +9682,10 @@ namespace VulkanRenderer
 
 		[[nodiscard]] inline virtual Renderer::IFragmentShader* createFragmentShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
 		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Vulkan fragment shader bytecode is invalid")
+
+			// Create shader instance
 			return RENDERER_NEW(getRenderer().getContext(), FragmentShaderGlsl)(static_cast<VulkanRenderer&>(getRenderer()), shaderBytecode);
 		}
 
@@ -9676,6 +9696,10 @@ namespace VulkanRenderer
 
 		[[nodiscard]] inline virtual Renderer::IComputeShader* createComputeShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
 		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Vulkan compute shader bytecode is invalid")
+
+			// Create shader instance
 			return RENDERER_NEW(getRenderer().getContext(), ComputeShaderGlsl)(static_cast<VulkanRenderer&>(getRenderer()), shaderBytecode);
 		}
 

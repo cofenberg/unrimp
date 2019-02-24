@@ -9077,6 +9077,9 @@ namespace Direct3D10Renderer
 
 		[[nodiscard]] inline virtual Renderer::IVertexShader* createVertexShaderFromBytecode([[maybe_unused]] const Renderer::VertexAttributes& vertexAttributes, const Renderer::ShaderBytecode& shaderBytecode) override
 		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Direct3D 10 vertex shader bytecode is invalid")
+
 			// There's no need to check for "Renderer::Capabilities::vertexShader", we know there's vertex shader support
 			return RENDERER_NEW(getRenderer().getContext(), VertexShaderHlsl)(static_cast<Direct3D10Renderer&>(getRenderer()), shaderBytecode);
 		}
@@ -9113,6 +9116,9 @@ namespace Direct3D10Renderer
 
 		[[nodiscard]] inline virtual Renderer::IGeometryShader* createGeometryShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode, [[maybe_unused]] Renderer::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Renderer::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices) override
 		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Direct3D 10 geometry shader bytecode is invalid")
+
 			// There's no need to check for "Renderer::Capabilities::maximumNumberOfGsOutputVertices", we know there's geometry shader support
 			// Ignore "gsInputPrimitiveTopology", it's directly set within HLSL
 			// Ignore "gsOutputPrimitiveTopology", it's directly set within HLSL
@@ -9131,6 +9137,9 @@ namespace Direct3D10Renderer
 
 		[[nodiscard]] inline virtual Renderer::IFragmentShader* createFragmentShaderFromBytecode(const Renderer::ShaderBytecode& shaderBytecode) override
 		{
+			// Sanity check
+			RENDERER_ASSERT(getRenderer().getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Direct3D 10 fragment shader bytecode is invalid")
+
 			// There's no need to check for "Renderer::Capabilities::fragmentShader", we know there's fragment shader support
 			return RENDERER_NEW(getRenderer().getContext(), FragmentShaderHlsl)(static_cast<Direct3D10Renderer&>(getRenderer()), shaderBytecode);
 		}
