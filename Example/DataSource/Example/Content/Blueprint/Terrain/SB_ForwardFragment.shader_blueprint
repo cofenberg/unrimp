@@ -41,8 +41,9 @@ INPUT_BEGIN
 INPUT_END
 OUTPUT_BEGIN
 	OUTPUT_COLOR(0)	// rgb = albedo color, a = alpha
-	OUTPUT_COLOR(1)	// rgb = view space normal, a = roughness
-	OUTPUT_COLOR(2)	// rg  = screen space velocity
+	OUTPUT_COLOR(1)	// rgb = specular color, a = roughness
+	OUTPUT_COLOR(2)	// rgb = view space normal
+	OUTPUT_COLOR(3)	// rg  = screen space velocity
 OUTPUT_END
 
 // Uniform buffers
@@ -63,12 +64,11 @@ TEXTURE_2D		(2, 5, SplashMap,				6)
 @property(ReceiveShadows)
 	TEXTURE_2D_ARRAY(2, 6, ShadowMap, 7)
 @end
-TEXTURE_2D(2, 7, ReflectionMap, 8)
-TEXTURE_3D_UINT(2, 8, LightClustersMap3D, 9)
-TEXTURE_1D_ARRAY(2, 9, IesLightProfileMap, 10)
+TEXTURE_3D_UINT(2, 7, LightClustersMap3D, 8)
+TEXTURE_1D_ARRAY(2, 8, IesLightProfileMap, 9)
 @property(UseWetSurfaces)
-	TEXTURE_2D(2, 10, WaterRipplesMap, 11)	// r = droplet mask, gb = ripples xy normal map, a = random grey value constant
-	TEXTURE_2D(2, 11, WaterStreaksMap, 12)	// r = streak pattern, g = gradient, ba = streak xy normal map
+	TEXTURE_2D(2, 9, WaterRipplesMap, 10)	// r = droplet mask, gb = ripples xy normal map, a = random grey value constant
+	TEXTURE_2D(2, 10, WaterStreaksMap, 11)	// r = streak pattern, g = gradient, ba = streak xy normal map
 @end
 
 // Samplers
@@ -128,11 +128,12 @@ MAIN_BEGIN
 
 	// Water influence on material BRDF
 	// -> Wet surfaces parameter layout: x=wet level, y=hole/cracks flood level, z=puddle flood level, w=rain intensity
+	float specularFactor = 1.0f;
 	@property(UseWetSurfaces)
 		BRANCH if (0.0f != PassData.WetSurfaces.x)
 		{
 			float3x3 TBN = CalculateCotangentFrame(viewSpaceNormal, viewSpaceIncident, texCoord);
-			DoWaterProcess(worldSpacePosition, TBN, PassData.GlobalTimeInSeconds, PassData.WorldSpaceToViewSpaceQuaternion, shadowVisibility, blended_hr_rg_mb_nya.r, multipleOctavesNoise3D(worldSpacePosition), PassData.WetSurfaces.x, PassData.WetSurfaces.y, PassData.WetSurfaces.z, PassData.WetSurfaces.w, albedo, roughness, metallic, viewSpaceNormal);
+			specularFactor = DoWaterProcess(worldSpacePosition, TBN, PassData.GlobalTimeInSeconds, PassData.WorldSpaceToViewSpaceQuaternion, shadowVisibility, blended_hr_rg_mb_nya.r, multipleOctavesNoise3D(worldSpacePosition), PassData.WetSurfaces.x, PassData.WetSurfaces.y, PassData.WetSurfaces.z, PassData.WetSurfaces.w, albedo, roughness, metallic, viewSpaceNormal);
 		}
 	@end
 
@@ -140,24 +141,13 @@ MAIN_BEGIN
 	worldSpacePosition -= PassData.UnmodifiedWorldSpaceCameraPosition;
 	@insertpiece(DefineCalculateScreenSpaceVelocity)
 
-	// Get reflection color
-	float3 reflectionColor;
-	{
-		// Temporal reprojection: We're using data from the previous frame for the reflection color. In order to hide that
-		// the reflections lag one frame behind we're reprojecting the reflection basing on previous camera related data.
-		float2 reflectionTexCoord = (FRAGMENT_POSITION.xy / PassData.ViewportSize) - velocity;
-		float2 coordinateEdgeAttenuation = float2(1.0f, 1.0f) - pow(SATURATE(abs(reflectionTexCoord - float2(0.5f, 0.5f)) * 2), float2(8.0f, 8.0f));
-		float screenEdgeAttenuation = SATURATE(min(coordinateEdgeAttenuation.x, coordinateEdgeAttenuation.y));
-		reflectionColor = SAMPLE_2D(ReflectionMap, SamplerLinear, reflectionTexCoord).rgb * float3(screenEdgeAttenuation, screenEdgeAttenuation, screenEdgeAttenuation);
-	}
-
 	// Ambient term
-	float3 color = (reflectionColor * metallic + albedo) * (PassData.AmbientColor.rgb + CalculateHemisphereLighting(worldSpaceNormal.xyz, PassData.AmbientColor.rgb * 0.7f, PassData.AmbientColor.rgb * 0.2f));
+	float3 color = albedo * (PassData.AmbientColor.rgb + CalculateHemisphereLighting(worldSpaceNormal.xyz, PassData.AmbientColor.rgb * 0.7f, PassData.AmbientColor.rgb * 0.2f));
 
 	// Directional sunlight, our primary light
 	BRANCH if (shadowVisibility > 0.0f)
 	{
-		color += shadowVisibility * CalculateLighting(albedo, roughness, metallic, viewSpaceNormal, viewSpaceIncident, reflectionColor, PassData.ViewSpaceSunlightDirection, PassData.SunlightColor);
+		color += shadowVisibility * CalculateLighting(albedo, roughness, metallic, viewSpaceNormal, viewSpaceIncident, PassData.ViewSpaceSunlightDirection, PassData.SunlightColor);
 	}
 
 	// Perform clustered shading
@@ -176,7 +166,8 @@ MAIN_BEGIN
 	// @end
 
 	// Done
-	MAIN_OUTPUT_COLOR(0) = float4(color, edgePixel);
-	MAIN_OUTPUT_COLOR(1) = float4(viewSpaceNormal, roughness);
-	MAIN_OUTPUT_COLOR(2) = float4(velocity.x, velocity.y, 0.0f, 0.0f);
+	MAIN_OUTPUT_COLOR(0) = float4(color, edgePixel);															// rgb = albedo color, a = alpha
+	MAIN_OUTPUT_COLOR(1) = float4(specularFactor * ALBEDO_METALLIC_TO_SPECULAR(albedo, metallic), roughness);	// rgb = specular color, a = roughness
+	MAIN_OUTPUT_COLOR(2) = float4(viewSpaceNormal, 0.0f);														// rgb = view space normal
+	MAIN_OUTPUT_COLOR(3) = float4(velocity.x, velocity.y, 0.0f, 0.0f);											// rg  = screen space velocity
 MAIN_END

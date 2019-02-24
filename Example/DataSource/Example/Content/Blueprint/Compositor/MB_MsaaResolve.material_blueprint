@@ -32,6 +32,13 @@
 				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
 				"Description": "2D depth map"
 			},
+			"SpecularMap":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+				"Description": "2D specular map"
+			},
 			"VelocityMap":
 			{
 				"Usage": "TEXTURE_REFERENCE",
@@ -122,8 +129,20 @@
 				"2":
 				{
 					"ResourceType": "TEXTURE_2D",
-					"BaseShaderRegisterName": "VelocityMap",
+					"BaseShaderRegisterName": "SpecularMap",
 					"BaseShaderRegister": "2",
+					"ShaderVisibility": "FRAGMENT",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@SpecularMap",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+					"MipmapsUsed": "FALSE"
+				},
+				"3":
+				{
+					"ResourceType": "TEXTURE_2D",
+					"BaseShaderRegisterName": "VelocityMap",
+					"BaseShaderRegister": "3",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
@@ -131,11 +150,11 @@
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
 					"MipmapsUsed": "FALSE"
 				},
-				"3":
+				"4":
 				{
 					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "PreviousColorMap",
-					"BaseShaderRegister": "3",
+					"BaseShaderRegister": "4",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",

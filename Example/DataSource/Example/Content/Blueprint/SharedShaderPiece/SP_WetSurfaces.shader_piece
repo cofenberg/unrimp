@@ -29,7 +29,7 @@
 	void DoWetProcess(float wetLevel, inout float3 albedo, inout float roughness, float metallic)
 	{
 		// Calculate albedo factor
-		float porosity = SATURATE((roughness - 0.5f) / 0.4f);
+		float porosity = SATURATE((roughness - 0.5f) / 0.2f);
 		float factor = LERP(1.0f, 0.2f, porosity);
 
 		// Water influence on material BRDF
@@ -88,7 +88,7 @@
 	// Basing on "Water drop 2b – Dynamic rain and its effects" by Sébastien Lagarde ( https://seblagarde.wordpress.com/2013/04/14/water-drop-3b-physically-based-wet-surfaces/ )
 	// -> "puddleFactor": 0 means puddle and 1 means no puddle
 	// -> Lookout with camera relative rendering, the world space position must be the real one and not the camera relative one
-	void DoWaterProcess(float3 wrappedWorldSpacePosition, float3x3 TBN, float globalTimeInSeconds, float4 worldSpaceToViewSpaceQuaternion, float shadowVisibility, float heightMapValue, float puddleFactor, float wetLevel, float cracksFloodLevel, float puddleFloodLevel, float rainIntensity, inout float3 albedo, inout float roughness, inout float metallic, inout float3 viewSpaceNormal)
+	float DoWaterProcess(float3 wrappedWorldSpacePosition, float3x3 TBN, float globalTimeInSeconds, float4 worldSpaceToViewSpaceQuaternion, float shadowVisibility, float heightMapValue, float puddleFactor, float wetLevel, float cracksFloodLevel, float puddleFloodLevel, float rainIntensity, inout float3 albedo, inout float roughness, inout float metallic, inout float3 viewSpaceNormal)
 	{
 		heightMapValue = 1.0f - heightMapValue;
 
@@ -199,5 +199,8 @@
 				viewSpaceNormal = normalize(viewSpaceNormal);
 			}
 		}
+
+		// Return specular factor
+		return accumulatedWater * 4;
 	}
 @end

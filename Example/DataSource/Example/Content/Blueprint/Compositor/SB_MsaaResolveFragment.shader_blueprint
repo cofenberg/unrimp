@@ -46,6 +46,7 @@ INPUT_BEGIN
 INPUT_END
 OUTPUT_BEGIN
 	OUTPUT_COLOR(0)	// Resolved color
+	OUTPUT_COLOR(1)	// Resolved specular
 	OUTPUT_DEPTH	// Resolved depth
 OUTPUT_END
 
@@ -63,13 +64,15 @@ UNIFORM_BUFFER_END
 @property(NumberOfMultisamples)
 	TEXTURE_2D_MS(1, 0, ColorMap, NUMBER_OF_MSAA_SAMPLES, 0)
 	TEXTURE_2D_MS(1, 1, DepthMap, NUMBER_OF_MSAA_SAMPLES, 1)
-	TEXTURE_2D_MS(1, 2, VelocityMap, NUMBER_OF_MSAA_SAMPLES, 2)
+	TEXTURE_2D_MS(1, 2, SpecularMap, NUMBER_OF_MSAA_SAMPLES, 2)
+	TEXTURE_2D_MS(1, 3, VelocityMap, NUMBER_OF_MSAA_SAMPLES, 3)
 @else
 	TEXTURE_2D(1, 0, ColorMap, 0)
 	TEXTURE_2D(1, 1, DepthMap, 1)
-	TEXTURE_2D(1, 2, VelocityMap, 2)
+	TEXTURE_2D(1, 2, SpecularMap, 2)
+	TEXTURE_2D(1, 3, VelocityMap, 3)
 @end
-TEXTURE_2D(1, 3, PreviousColorMap, 3)
+TEXTURE_2D(1, 4, PreviousColorMap, 4)
 
 
 //[-------------------------------------------------------]
@@ -339,6 +342,20 @@ MAIN_BEGIN
 		result = (currentColor * weightA + previousColor * weightB) / (weightA + weightB);
 	}
 
+	// Resolve specular
+	@property(NumberOfMultisamples)
+		float4 specular = SAMPLE_2D_MS(SpecularMap, int2(FRAGMENT_POSITION.xy), 0);
+		{
+			UNROLL for (int sampleIndex = 1; sampleIndex < NUMBER_OF_MSAA_SAMPLES; ++sampleIndex)
+			{
+				specular += SAMPLE_2D_MS(SpecularMap, int2(FRAGMENT_POSITION.xy), sampleIndex);
+			}
+			specular /= NUMBER_OF_MSAA_SAMPLES;
+		}
+	@else
+		float4 specular = TEXTURE_FETCH_2D(SpecularMap, int3(FRAGMENT_POSITION.xy, 0));
+	@end
+
 	// Resolve depth
 	@property(NumberOfMultisamples)
 		// Maximum operator due to the usage of Reversed-Z (see e.g. https://developer.nvidia.com/content/depth-precision-visualized and https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/)
@@ -353,5 +370,6 @@ MAIN_BEGIN
 
 	// Done
 	MAIN_OUTPUT_COLOR(0) = float4(result.rgb, alpha);
+	MAIN_OUTPUT_COLOR(1) = specular;
 	MAIN_OUTPUT_DEPTH = depth;
 MAIN_END

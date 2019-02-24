@@ -29,6 +29,13 @@
 	//[ Constants                                             ]
 	//[-------------------------------------------------------]
 	#define PI 3.14159265359f
+	#define F_DIELECTRIC float3(0.04f, 0.04f, 0.04f)	// Constant normal incidence Fresnel factor for all dielectrics
+
+
+	//[-------------------------------------------------------]
+	//[ Macros                                                ]
+	//[-------------------------------------------------------]
+	#define ALBEDO_METALLIC_TO_SPECULAR(albedo, metallic) LERP(F_DIELECTRIC, albedo, metallic)
 
 
 	//[-------------------------------------------------------]
@@ -140,14 +147,12 @@
 	*    N = Surface normal
 	*  @param[in] V
 	*    V = Outgoing light direction (vector from fragment position to the "eye").
-	*  @param[in] reflectionColor
-	*    Reflection color, has horizon occlusion build in
 	*  @param[in] L
 	*    L = Light direction
 	*  @param[in] lightColor
 	*    Light color
 	*/
-	float3 CalculateLighting(float3 albedo, float roughness, float metallic, float3 N, float3 V, float3 reflectionColor, float3 L, float3 lightColor)
+	float3 CalculateLighting(float3 albedo, float roughness, float metallic, float3 N, float3 V, float3 L, float3 lightColor)
 	{
 		// Angle between surface normal and outgoing light direction
 		float NdotV = SATURATE(dot(N, V));
@@ -156,7 +161,6 @@
 		float3 R = 2.0f * NdotV * N - V;
 
 		// Fresnel reflectance at normal incidence (for metals use albedo color)
-		float3 F_DIELECTRIC = float3(0.04f, 0.04f, 0.04f);	// Constant normal incidence Fresnel factor for all dielectrics
 		float3 F0 = LERP(F_DIELECTRIC, albedo, metallic);
 
 		// Half-vector between L and V
@@ -194,12 +198,7 @@
 		float horizon = SATURATE(1.0f + HORIZON_FADE * dot(R, N));
 		specularBRDF *= horizon * horizon;
 
-		// Adjust reflection color
-		reflectionColor *= lightColor;
-		reflectionColor -= specularBRDF;
-
 		// Final output mixes based on material metalness
-		diffuseBRDF = LERP(diffuseBRDF, reflectionColor, metallic);
 		return (diffuseBRDF * NdotL + specularBRDF) * lightColor;
 	}
 @end
@@ -209,6 +208,13 @@
 	//[ Constants                                             ]
 	//[-------------------------------------------------------]
 	#define PI 3.14159265359f
+	#define F_DIELECTRIC float3(0.04f, 0.04f, 0.04f)	// Constant normal incidence Fresnel factor for all dielectrics
+
+
+	//[-------------------------------------------------------]
+	//[ Macros                                                ]
+	//[-------------------------------------------------------]
+	#define ALBEDO_METALLIC_TO_SPECULAR(albedo, metallic) LERP(F_DIELECTRIC, albedo, metallic)
 
 
 	//[-------------------------------------------------------]
@@ -248,14 +254,12 @@
 	*    N = Surface normal
 	*  @param[in] V
 	*    V = Camera direction
-	*  @param[in] reflectionColor
-	*    Reflection color, has horizon occlusion build in
 	*  @param[in] L
 	*    L = Light direction
 	*  @param[in] lightColor
 	*    Light color
 	*/
-	float3 CalculateLighting(float3 albedo, float roughness, float metallic, float3 N, float3 V, float3 reflectionColor, float3 L, float3 lightColor)
+	float3 CalculateLighting(float3 albedo, float roughness, float metallic, float3 N, float3 V, float3 L, float3 lightColor)
 	{
 		// Perform traditional Blinn-Phong diffuse and specular lighting
 
@@ -342,7 +346,7 @@
 			// Calculate lighting
 			BRANCH if (lightIntensity > 0.0f && dot(worldSpaceNormal, lightDirection) > 0.0f)
 			{
-				color += CalculateLighting(albedo, roughness, metallic, worldSpaceNormal, worldSpaceIncident, reflectionColor, lightDirection, lightColorType.rgb * lightIntensity);
+				color += CalculateLighting(albedo, roughness, metallic, worldSpaceNormal, worldSpaceIncident, lightDirection, lightColorType.rgb * lightIntensity);
 			}
 		}
 	}

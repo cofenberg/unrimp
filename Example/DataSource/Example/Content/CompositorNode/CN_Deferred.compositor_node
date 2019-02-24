@@ -386,9 +386,9 @@
 					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_ScreenSpaceReflectionRayTracing.asset",
 					"SetMaterialProperties":
 					{
+						"DepthMap": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
 						"NormalMap": "Example/Texture/Dynamic/MultisampleGBufferRenderTarget1",
-						"VelocityMap": "Example/Texture/Dynamic/MultisampleVelocityRenderTarget",
-						"DepthMap": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget"
+						"VelocityMap": "Example/Texture/Dynamic/MultisampleVelocityRenderTarget"
 					}
 				}
 			},
@@ -406,9 +406,9 @@
 					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_Reflection.asset",
 					"SetMaterialProperties":
 					{
+						"DepthMap": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
 						"NormalMap": "Example/Texture/Dynamic/MultisampleGBufferRenderTarget1",
 						"ScreenSpaceReflectionMap": "Example/Texture/Dynamic/ScreenSpaceReflectionRayTracingRenderTarget",
-						"DepthMap": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
 						"ColorMap": "Example/Texture/Dynamic/PreviousHdrColorRenderTarget",
 						"ReflectionCubeMap": "${PROJECT_NAME}/Texture/T_Maskonaive3_rcube.asset"
 					}

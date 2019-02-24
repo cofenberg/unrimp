@@ -239,7 +239,7 @@ namespace RendererRuntime
 								// Build the shader source code
 								ShaderBuilder::BuildShader buildShader;
 								shaderBuilder.createSourceCode(shaderPieceResourceManager, *shaderBlueprintResource, computePipelineStateSignature.getShaderProperties(), buildShader);
-								const std::string& sourceCode = buildShader.sourceCode;
+								std::string& sourceCode = buildShader.sourceCode;
 								if (sourceCode.empty())
 								{
 									// TODO(co) Error handling
@@ -247,6 +247,9 @@ namespace RendererRuntime
 								}
 								else
 								{
+									// Add the virtual filename of the shader blueprint asset as first shader source code line to make shader debugging easier
+									sourceCode = std::string("// ") + mRendererRuntime.getAssetManager().getAssetByAssetId(shaderBlueprintResource->getAssetId()).virtualFilename + '\n' + sourceCode;
+
 									// Generate the shader source code ID
 									// -> Especially in complex shaders, there are situations where different shader combinations result in one and the same shader source code
 									// -> Shader compilation is considered to be expensive, so we need to be pretty sure that we really need to perform this heavy work

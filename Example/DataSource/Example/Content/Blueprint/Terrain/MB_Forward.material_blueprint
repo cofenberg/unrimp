@@ -442,34 +442,21 @@
 				},
 				"7":
 				{
-					"ResourceType": "TEXTURE_2D",
-					"BaseShaderRegisterName": "ReflectionMap",
-					"BaseShaderRegister": "8",
-					"ShaderVisibility": "FRAGMENT",
-					"Usage": "STATIC",
-					"ValueType": "TEXTURE_ASSET_ID",
-					"Value": "Example/Texture/Dynamic/ReflectionRenderTarget",
-					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
-					"MipmapsUsed": "FALSE",
-					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
-				},
-				"8":
-				{
 					"ResourceType": "TEXTURE_3D",
 					"BaseShaderRegisterName": "LightClustersMap3D",
-					"BaseShaderRegister": "9",
+					"BaseShaderRegister": "8",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "STATIC",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "Unrimp/Texture/DynamicByCode/LightClustersMap3D",
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/LightClustersMap3D"
 				},
-				"9":
+				"8":
 				{
 					"Description": "Illuminating Engineering Society (IES) light profile",
 					"ResourceType": "TEXTURE_1D_ARRAY",
 					"BaseShaderRegisterName": "IesLightProfileMap",
-					"BaseShaderRegister": "10",
+					"BaseShaderRegister": "9",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "STATIC",
 					"ValueType": "TEXTURE_ASSET_ID",
@@ -478,12 +465,12 @@
 					"MipmapsUsed": "FALSE",
 					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
 				},
-				"10":
+				"9":
 				{
 					"Description": "r = droplet mask, gb = ripples xy normal map, a = random grey value constant",
 					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "WaterRipplesMap",
-					"BaseShaderRegister": "11",
+					"BaseShaderRegister": "10",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "STATIC",
 					"ValueType": "TEXTURE_ASSET_ID",
@@ -492,12 +479,12 @@
 					"MipmapsUsed": "FALSE",
 					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
 				},
-				"11":
+				"10":
 				{
 					"Description": "r = streak pattern, g = gradient, ba = streak xy normal map",
 					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "WaterStreaksMap",
-					"BaseShaderRegister": "12",
+					"BaseShaderRegister": "11",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "STATIC",
 					"ValueType": "TEXTURE_ASSET_ID",

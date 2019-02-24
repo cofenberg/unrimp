@@ -26,6 +26,13 @@
 				"Description": "'true' if the screen space reflection map should be used, else 'false'",
 				"VisualImportance": "100"
 			},
+			"SpecularMap":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+				"Description": "2D specular map"
+			},
 			"NormalMap":
 			{
 				"Usage": "TEXTURE_REFERENCE",
@@ -126,8 +133,33 @@
 				"0":
 				{
 					"ResourceType": "TEXTURE_2D",
-					"BaseShaderRegisterName": "NormalMap",
+					"BaseShaderRegisterName": "DepthMap",
 					"BaseShaderRegister": "0",
+					"ShaderVisibility": "FRAGMENT",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@DepthMap",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+					"SamplerStateBaseShaderRegisterName": "SamplerPointClamp"
+				},
+				"1":
+				{
+					"ResourceType": "TEXTURE_2D",
+					"BaseShaderRegisterName": "SpecularMap",
+					"BaseShaderRegister": "1",
+					"ShaderVisibility": "FRAGMENT",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@SpecularMap",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+					"MipmapsUsed": "FALSE",
+					"SamplerStateBaseShaderRegisterName": "SamplerPointClamp"
+				},
+				"2":
+				{
+					"ResourceType": "TEXTURE_2D",
+					"BaseShaderRegisterName": "NormalMap",
+					"BaseShaderRegister": "2",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
@@ -136,11 +168,11 @@
 					"MipmapsUsed": "FALSE",
 					"SamplerStateBaseShaderRegisterName": "SamplerPointClamp"
 				},
-				"1":
+				"3":
 				{
 					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "ScreenSpaceReflectionMap",
-					"BaseShaderRegister": "1",
+					"BaseShaderRegister": "3",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
@@ -149,23 +181,11 @@
 					"MipmapsUsed": "FALSE",
 					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
 				},
-				"2":
-				{
-					"ResourceType": "TEXTURE_2D",
-					"BaseShaderRegisterName": "DepthMap",
-					"BaseShaderRegister": "2",
-					"ShaderVisibility": "FRAGMENT",
-					"Usage": "MATERIAL_REFERENCE",
-					"ValueType": "TEXTURE_ASSET_ID",
-					"Value": "@DepthMap",
-					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
-					"SamplerStateBaseShaderRegisterName": "SamplerPointClamp"
-				},
-				"3":
+				"4":
 				{
 					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "ColorMap",
-					"BaseShaderRegister": "3",
+					"BaseShaderRegister": "4",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
@@ -174,11 +194,11 @@
 					"MipmapsUsed": "FALSE",
 					"SamplerStateBaseShaderRegisterName": "SamplerPointClamp"
 				},
-				"4":
+				"5":
 				{
 					"ResourceType": "TEXTURE_CUBE",
 					"BaseShaderRegisterName": "ReflectionCubeMap",
-					"BaseShaderRegister": "4",
+					"BaseShaderRegister": "5",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",

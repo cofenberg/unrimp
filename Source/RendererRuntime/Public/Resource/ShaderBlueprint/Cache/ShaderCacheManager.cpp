@@ -122,8 +122,7 @@ namespace RendererRuntime
 					else
 					{
 						// Add the virtual filename of the shader blueprint asset as first shader source code line to make shader debugging easier
-						const AssetManager& assetManager = rendererRuntime.getAssetManager();
-						const Asset& shaderBlueprintAsset = assetManager.getAssetByAssetId(shaderBlueprintResource->getAssetId());
+						const Asset& shaderBlueprintAsset = rendererRuntime.getAssetManager().getAssetByAssetId(shaderBlueprintResource->getAssetId());
 						sourceCode = std::string("// ") + shaderBlueprintAsset.virtualFilename + '\n' + sourceCode;
 
 						// Generate the shader source code ID
@@ -254,8 +253,7 @@ namespace RendererRuntime
 					else
 					{
 						// Add the virtual filename of the shader blueprint asset as first shader source code line to make shader debugging easier
-						const AssetManager& assetManager = rendererRuntime.getAssetManager();
-						const Asset& shaderBlueprintAsset = assetManager.getAssetByAssetId(shaderBlueprintResource->getAssetId());
+						const Asset& shaderBlueprintAsset = rendererRuntime.getAssetManager().getAssetByAssetId(shaderBlueprintResource->getAssetId());
 						sourceCode = std::string("// ") + shaderBlueprintAsset.virtualFilename + '\n' + sourceCode;
 
 						// Generate the shader source code ID

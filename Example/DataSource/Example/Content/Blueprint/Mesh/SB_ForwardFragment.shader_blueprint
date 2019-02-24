@@ -52,8 +52,9 @@ INPUT_BEGIN
 INPUT_END
 OUTPUT_BEGIN
 	OUTPUT_COLOR(0)	// rgb = albedo color, a = alpha
-	OUTPUT_COLOR(1)	// rgb = view space normal, a = roughness
-	OUTPUT_COLOR(2)	// rg  = screen space velocity
+	OUTPUT_COLOR(1)	// rgb = specular color, a = roughness
+	OUTPUT_COLOR(2)	// rgb = view space normal
+	OUTPUT_COLOR(3)	// rg  = screen space velocity
 OUTPUT_END
 
 // Uniform buffers
@@ -106,20 +107,19 @@ TEXTURE_BUFFER(3, 0, float4, LightTextureBuffer, 1)	// "LIGHT"
 @property(ReceiveShadows)
 	TEXTURE_2D_ARRAY(4, 0, ShadowMap, 2)
 @end
-TEXTURE_2D(4, 1, ReflectionMap, 3)
-TEXTURE_3D_UINT(4, 2, LightClustersMap3D, 4)
-TEXTURE_1D_ARRAY(4, 3, IesLightProfileMap, 5)
-TEXTURE_2D(4, 4, _argb_nxa, 6)		// RGB channel = Albedo map ("_a"-postfix), A channel = x component of normal map ("_n"-postfix)
-TEXTURE_2D(4, 5, _hr_rg_mb_nya, 7)	// R channel = Height map ("_h"-postfix), G channel = Roughness map ("_r"-postfix), B channel = Metallic map ("_m"-postfix), A channel = y component of normal map ("_n"-postfix)
+TEXTURE_3D_UINT(4, 1, LightClustersMap3D, 3)
+TEXTURE_1D_ARRAY(4, 2, IesLightProfileMap, 4)
+TEXTURE_2D(4, 3, _argb_nxa, 5)		// RGB channel = Albedo map ("_a"-postfix), A channel = x component of normal map ("_n"-postfix)
+TEXTURE_2D(4, 4, _hr_rg_mb_nya, 6)	// R channel = Height map ("_h"-postfix), G channel = Roughness map ("_r"-postfix), B channel = Metallic map ("_m"-postfix), A channel = y component of normal map ("_n"-postfix)
 @property(UseAlphaMap)
-	TEXTURE_2D(4, 6, AlphaMap, 8)
+	TEXTURE_2D(4, 5, AlphaMap, 7)
 @end
 @property(UseEmissiveMap)
-	TEXTURE_2D(4, 7, EmissiveMap, 9)
+	TEXTURE_2D(4, 6, EmissiveMap, 8)
 @end
 @property(UseWetSurfaces)
-	TEXTURE_2D(4, 8, WaterRipplesMap, 10)	// r = droplet mask, gb = ripples xy normal map, a = random grey value constant
-	TEXTURE_2D(4, 9, WaterStreaksMap, 11)	// r = streak pattern, g = gradient, ba = streak xy normal map
+	TEXTURE_2D(4, 7, WaterRipplesMap, 9)	// r = droplet mask, gb = ripples xy normal map, a = random grey value constant
+	TEXTURE_2D(4, 8, WaterStreaksMap, 10)	// r = streak pattern, g = gradient, ba = streak xy normal map
 @end
 
 // Samplers
@@ -238,46 +238,27 @@ MAIN_BEGIN
 
 	// Water influence on material BRDF
 	// -> Wet surfaces parameter layout: x=wet level, y=hole/cracks flood level, z=puddle flood level, w=rain intensity
+	float specularFactor = 1.0f;
 	@property(UseWetSurfaces)
 		BRANCH if (0.0f != PassData.WetSurfaces.x)
 		{
 			// Handle camera relative rendering
 			float3 wrappedWorldSpacePosition = worldSpacePosition + PassData.WrappedWorldSpaceCameraPosition;
-			DoWaterProcess(wrappedWorldSpacePosition, TBN, PassData.GlobalTimeInSeconds, PassData.WorldSpaceToViewSpaceQuaternion[stereoEyeIndex], shadowVisibility, value_hr_rg_mb_nya.r, multipleOctavesNoise3D(wrappedWorldSpacePosition), PassData.WetSurfaces.x, PassData.WetSurfaces.y, PassData.WetSurfaces.z, PassData.WetSurfaces.w, albedo, roughness, metallic, viewSpaceNormal);
+			specularFactor = DoWaterProcess(wrappedWorldSpacePosition, TBN, PassData.GlobalTimeInSeconds, PassData.WorldSpaceToViewSpaceQuaternion[stereoEyeIndex], shadowVisibility, value_hr_rg_mb_nya.r, multipleOctavesNoise3D(wrappedWorldSpacePosition), PassData.WetSurfaces.x, PassData.WetSurfaces.y, PassData.WetSurfaces.z, PassData.WetSurfaces.w, albedo, roughness, metallic, viewSpaceNormal);
 		}
 	@end
 
 	// Calculate screen space velocity
 	@insertpiece(DefineCalculateScreenSpaceVelocity)
 
-	// Get reflection color
-	float3 reflectionColor;
-	{
-		float2 reflectionTexCoord = (FRAGMENT_POSITION.xy / PassData.ViewportSize);
-
-		// Temporal reprojection: We're using data from the previous frame for the reflection color. In order to hide that
-		// the reflections lag one frame behind we're reprojecting the reflection basing on previous camera related data.
-		reflectionTexCoord -= velocity;
-
-		// Get reflection color
-		@property(SinglePassStereoInstancing)
-			// No screen edge attenuation necessary for single pass stereo instancing since due to lens distortion we don't see the edges anyway
-			reflectionColor = SAMPLE_2D(ReflectionMap, SamplerLinear, reflectionTexCoord).rgb;
-		@else
-			float2 coordinateEdgeAttenuation = float2(1.0f, 1.0f) - pow(SATURATE(abs(reflectionTexCoord - float2(0.5f, 0.5f)) * 2), float2(8.0f, 8.0f));
-			float screenEdgeAttenuation = SATURATE(min(coordinateEdgeAttenuation.x, coordinateEdgeAttenuation.y));
-			reflectionColor = SAMPLE_2D(ReflectionMap, SamplerLinear, reflectionTexCoord).rgb * float3(screenEdgeAttenuation, screenEdgeAttenuation, screenEdgeAttenuation);
-		@end
-	}
-
 	// Ambient term
 	float3 worldSpaceNormal = MultiplyQuaternionVector(PassData.ViewSpaceToWorldSpaceQuaternion[stereoEyeIndex], viewSpaceNormal);
-	float3 color = (reflectionColor * metallic + albedo) * (PassData.AmbientColor.rgb + CalculateHemisphereLighting(worldSpaceNormal.xyz, PassData.AmbientColor.rgb * 0.7f, PassData.AmbientColor.rgb * 0.2f));
+	float3 color = albedo * (PassData.AmbientColor.rgb + CalculateHemisphereLighting(worldSpaceNormal.xyz, PassData.AmbientColor.rgb * 0.7f, PassData.AmbientColor.rgb * 0.2f));
 
 	// Directional sunlight, our primary light
 	BRANCH if (shadowVisibility > 0.0f)
 	{
-		color += shadowVisibility * CalculateLighting(albedo, roughness, metallic, viewSpaceNormal, viewSpaceIncident, reflectionColor, PassData.ViewSpaceSunlightDirection, PassData.SunlightColor);
+		color += shadowVisibility * CalculateLighting(albedo, roughness, metallic, viewSpaceNormal, viewSpaceIncident, PassData.ViewSpaceSunlightDirection, PassData.SunlightColor);
 	}
 
 	// Perform clustered shading
@@ -297,7 +278,8 @@ MAIN_BEGIN
 	// @end
 
 	// Done
-	MAIN_OUTPUT_COLOR(0) = float4(color, edgePixel);
-	MAIN_OUTPUT_COLOR(1) = float4(viewSpaceNormal, roughness);
-	MAIN_OUTPUT_COLOR(2) = float4(velocity.x, velocity.y, 0.0f, 0.0f);
+	MAIN_OUTPUT_COLOR(0) = float4(color, edgePixel);															// rgb = albedo color, a = alpha
+	MAIN_OUTPUT_COLOR(1) = float4(specularFactor * ALBEDO_METALLIC_TO_SPECULAR(albedo, metallic), roughness);	// rgb = specular color, a = roughness
+	MAIN_OUTPUT_COLOR(2) = float4(viewSpaceNormal, 0.0f);														// rgb = view space normal
+	MAIN_OUTPUT_COLOR(3) = float4(velocity.x, velocity.y, 0.0f, 0.0f);											// rg  = screen space velocity
 MAIN_END

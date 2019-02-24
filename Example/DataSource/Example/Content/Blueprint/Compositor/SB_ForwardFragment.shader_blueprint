@@ -59,6 +59,8 @@ TEXTURE_2D(1, 0, ColorMap, 0)
 TEXTURE_2D(1, 1, DepthMap, 1)
 TEXTURE_2D(1, 2, ScreenSpaceAmbientOcclusionMap, 2)
 TEXTURE_2D(1, 3, VolumetricLightMap, 3)
+TEXTURE_2D(1, 4, ReflectionMap, 4)
+TEXTURE_2D(1, 5, SpecularMap, 5)
 
 // Samplers
 SAMPLER_STATE(2, 0, SamplerPointClamp, 0)
@@ -75,13 +77,12 @@ SAMPLER_STATE(2, 1, SamplerLinearClamp, 1)
 
 // Upscale volumetric light/fog using bilateral upsampling (aka "nearest depth up-sampling")
 // -> The implementation is basing on "Volumetric lights" by Alexandre Pestana ( http://www.alexandre-pestana.com/volumetric-lights/ )
-float3 VolumetricLightBilateralUpsampling(float2 screenSpacePosition, float upSampledDepth)
+float3 VolumetricLightBilateralUpsampling(uint2 coordinate, float2 screenSpacePosition, float upSampledDepth)
 {
 	float3 color = float3(0.0f, 0.0f, 0.0f);
 	float totalWeight = 0.0f;
 
 	// Select the closest downscaled pixels
-	uint2 coordinate = CAST_TO(screenSpacePosition * PassData.ViewportSize, uint2);
 	float xOffset = (((coordinate.x % 2u) == 0) ? -1.0f : 1.0f) / PassData.ViewportSize.x;
 	float yOffset = (((coordinate.y % 2u) == 0) ? -1.0f : 1.0f) / PassData.ViewportSize.y;
 	float2 offset[4];
@@ -113,11 +114,15 @@ float3 CalculateColor(float3 viewRay, float3 color, float screenSpaceAmbientOccl
 		// -> For details see "The Danger Zone" - "Position From Depth 3: Back In The Habit" - "Written by MJPSeptember 5, 2010" - https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
 		float3 viewSpacePosition = viewRay * (GetLinearDepth(depth) / dot(float3(0.0f, 0.0f, 1.0f), viewRay));
 
+		// Apply reflection color
+		uint2 coordinate = CAST_TO(screenSpacePosition * PassData.ViewportSize, uint2);
+		color += TEXTURE_FETCH_2D(ReflectionMap, int3(coordinate, 0)).rgb * TEXTURE_FETCH_2D(SpecularMap, int3(coordinate, 0)).rgb;
+
 		// Calculate fogged color
 		float3 foggedColor = CalculateFoggedColor(viewSpacePosition, color * screenSpaceAmbientOcclusion, PassData.AtmosphereFogDensity, PassData.ViewSpaceSunlightDirection, PassData.AmbientColor, PassData.SunlightColor, PassData.DiffuseFogColor);
 
 		// Apply volumetric light
-		foggedColor += VolumetricLightBilateralUpsampling(screenSpacePosition, depth);
+		foggedColor += VolumetricLightBilateralUpsampling(coordinate, screenSpacePosition, depth);
 
 		// Done
 		return foggedColor;

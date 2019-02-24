@@ -485,34 +485,21 @@
 				},
 				"1":
 				{
-					"ResourceType": "TEXTURE_2D",
-					"BaseShaderRegisterName": "ReflectionMap",
-					"BaseShaderRegister": "3",
-					"ShaderVisibility": "FRAGMENT",
-					"Usage": "STATIC",
-					"ValueType": "TEXTURE_ASSET_ID",
-					"Value": "Example/Texture/Dynamic/ReflectionRenderTarget",
-					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
-					"MipmapsUsed": "FALSE",
-					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
-				},
-				"2":
-				{
 					"ResourceType": "TEXTURE_3D",
 					"BaseShaderRegisterName": "LightClustersMap3D",
-					"BaseShaderRegister": "4",
+					"BaseShaderRegister": "3",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "STATIC",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "Unrimp/Texture/DynamicByCode/LightClustersMap3D",
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/LightClustersMap3D"
 				},
-				"3":
+				"2":
 				{
 					"Description": "Illuminating Engineering Society (IES) light profile",
 					"ResourceType": "TEXTURE_1D_ARRAY",
 					"BaseShaderRegisterName": "IesLightProfileMap",
-					"BaseShaderRegister": "5",
+					"BaseShaderRegister": "4",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "STATIC",
 					"ValueType": "TEXTURE_ASSET_ID",
@@ -521,11 +508,11 @@
 					"MipmapsUsed": "FALSE",
 					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
 				},
-				"4":
+				"3":
 				{
 					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "_argb_nxa",
-					"BaseShaderRegister": "6",
+					"BaseShaderRegister": "5",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
@@ -534,11 +521,11 @@
 					"RgbHardwareGammaCorrection": "TRUE",
 					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
 				},
-				"5":
+				"4":
 				{
 					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "_hr_rg_mb_nya",
-					"BaseShaderRegister": "7",
+					"BaseShaderRegister": "6",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
@@ -546,11 +533,11 @@
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/Identity_hr_rg_mb_nya2D",
 					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
 				},
-				"6":
+				"5":
 				{
 					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "AlphaMap",
-					"BaseShaderRegister": "8",
+					"BaseShaderRegister": "7",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
@@ -558,11 +545,11 @@
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/IdentityAlphaMap2D",
 					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
 				},
-				"7":
+				"6":
 				{
 					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "EmissiveMap",
-					"BaseShaderRegister": "9",
+					"BaseShaderRegister": "8",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
@@ -571,12 +558,12 @@
 					"RgbHardwareGammaCorrection": "TRUE",
 					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
 				},
-				"8":
+				"7":
 				{
 					"Description": "r = droplet mask, gb = ripples xy normal map, a = random grey value constant",
 					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "WaterRipplesMap",
-					"BaseShaderRegister": "10",
+					"BaseShaderRegister": "9",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "STATIC",
 					"ValueType": "TEXTURE_ASSET_ID",
@@ -585,17 +572,30 @@
 					"MipmapsUsed": "FALSE",
 					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
 				},
-				"9":
+				"8":
 				{
 					"Description": "r = streak pattern, g = gradient, ba = streak xy normal map",
 					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "WaterStreaksMap",
-					"BaseShaderRegister": "11",
+					"BaseShaderRegister": "10",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "STATIC",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "../SharedTexture/T_WaterStreaks.asset",
 					"FallbackTexture": "../SharedTexture/T_WaterStreaks.asset",
+					"MipmapsUsed": "FALSE",
+					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
+				},
+				"9":
+				{
+					"ResourceType": "TEXTURE_2D",
+					"BaseShaderRegisterName": "ReflectionMap",
+					"BaseShaderRegister": "11",
+					"ShaderVisibility": "FRAGMENT",
+					"Usage": "STATIC",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "Example/Texture/Dynamic/ReflectionRenderTarget",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
 					"MipmapsUsed": "FALSE",
 					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
 				}

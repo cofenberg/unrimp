@@ -43,6 +43,18 @@
 				"TextureFormat": "D32_FLOAT",
 				"Flags": "SHADER_RESOURCE | RENDER_TARGET | GENERATE_MIPMAPS | ALLOW_RESOLUTION_SCALE"
 			},
+			"Example/Texture/Dynamic/MultisampleSpecularRenderTarget":
+			{
+				"Description": "rgb = specular color, a = roughness",
+				"TextureFormat": "R8G8B8A8",
+				"Flags": "SHADER_RESOURCE | RENDER_TARGET | ALLOW_MULTISAMPLE | ALLOW_RESOLUTION_SCALE"
+			},
+			"Example/Texture/Dynamic/SpecularRenderTarget":
+			{
+				"Description": "rgb = specular color, a = roughness",
+				"TextureFormat": "R8G8B8A8",
+				"Flags": "SHADER_RESOURCE | RENDER_TARGET | ALLOW_RESOLUTION_SCALE"
+			},
 			"Example/Texture/Dynamic/MultisampleNormalRenderTarget":
 			{
 				"Description": "rgb = view space normal",
@@ -201,12 +213,12 @@
 			},
 			"HdrMultisampleFramebuffer":
 			{
-				"ColorTextures": [ "Example/Texture/Dynamic/HdrMultisampleColorRenderTarget", "Example/Texture/Dynamic/MultisampleNormalRenderTarget", "Example/Texture/Dynamic/MultisampleVelocityRenderTarget" ],
+				"ColorTextures": [ "Example/Texture/Dynamic/HdrMultisampleColorRenderTarget", "Example/Texture/Dynamic/MultisampleSpecularRenderTarget", "Example/Texture/Dynamic/MultisampleNormalRenderTarget", "Example/Texture/Dynamic/MultisampleVelocityRenderTarget" ],
 				"DepthStencilTexture": "Example/Texture/Dynamic/MultisampleDepthStencilRenderTarget"
 			},
 			"MsaaResolveFramebuffer":
 			{
-				"ColorTextures": [ "Example/Texture/Dynamic/HdrColorRenderTarget0" ],
+				"ColorTextures": [ "Example/Texture/Dynamic/HdrColorRenderTarget0", "Example/Texture/Dynamic/SpecularRenderTarget" ],
 				"DepthStencilTexture": "Example/Texture/Dynamic/DepthStencilRenderTarget"
 			},
 			"HdrFramebuffer1":
@@ -248,44 +260,6 @@
 					"Texture": "Example/Texture/Dynamic/ShadowMapRenderTarget",
 					"DepthToExponentialVarianceMaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_DepthToExponentialVariance.asset",
 					"BlurMaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_ShadowBlur.asset"
-				}
-			},
-			"ScreenSpaceReflectionRayTracingFramebuffer":
-			{
-				"Compute":
-				{
-					"Name": "SSR ray tracing",
-					"Description": "Screen space reflection (SSR) ray tracing",
-					"SkipFirstExecution": "TRUE",
-					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_ScreenSpaceReflectionRayTracing.asset",
-					"SetMaterialProperties":
-					{
-						"UseTemporalReprojection": "FALSE",
-						"NormalMap": "Example/Texture/Dynamic/MultisampleNormalRenderTarget",
-						"DepthMap": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget"
-					}
-				}
-			},
-			"ReflectionFramebuffer":
-			{
-				"Clear":
-				{
-					"NumberOfExecutions": "1",
-					"Flags": "COLOR"
-				},
-				"Compute":
-				{
-					"Name": "Generate reflection",
-					"SkipFirstExecution": "TRUE",
-					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_Reflection.asset",
-					"SetMaterialProperties":
-					{
-						"NormalMap": "Example/Texture/Dynamic/MultisampleNormalRenderTarget",
-						"ScreenSpaceReflectionMap": "Example/Texture/Dynamic/ScreenSpaceReflectionRayTracingRenderTarget",
-						"DepthMap": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
-						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget1",
-						"ReflectionCubeMap": "${PROJECT_NAME}/Texture/T_Maskonaive3_rcube.asset"
-					}
 				}
 			},
 			"HdrMultisampleFramebuffer":
@@ -330,6 +304,7 @@
 					{
 						"ColorMap": "Example/Texture/Dynamic/HdrMultisampleColorRenderTarget",
 						"DepthMap": "Example/Texture/Dynamic/MultisampleDepthStencilRenderTarget",
+						"SpecularMap": "Example/Texture/Dynamic/MultisampleSpecularRenderTarget",
 						"VelocityMap": "Example/Texture/Dynamic/MultisampleVelocityRenderTarget",
 						"PreviousColorMap": "Example/Texture/Dynamic/PreviousHdrColorRenderTarget"
 					}
@@ -429,6 +404,46 @@
 					}
 				}
 			},
+			"ScreenSpaceReflectionRayTracingFramebuffer":
+			{
+				"Compute":
+				{
+					"Name": "SSR ray tracing",
+					"Description": "Screen space reflection (SSR) ray tracing",
+					"SkipFirstExecution": "TRUE",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_ScreenSpaceReflectionRayTracing.asset",
+					"SetMaterialProperties":
+					{
+						"UseTemporalReprojection": "FALSE",
+						"DepthMap": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
+						"SpecularMap": "Example/Texture/Dynamic/SpecularRenderTarget",
+						"NormalMap": "Example/Texture/Dynamic/MultisampleNormalRenderTarget"
+					}
+				}
+			},
+			"ReflectionFramebuffer":
+			{
+				"Clear":
+				{
+					"NumberOfExecutions": "1",
+					"Flags": "COLOR"
+				},
+				"Compute":
+				{
+					"Name": "Generate reflection",
+					"SkipFirstExecution": "TRUE",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_Reflection.asset",
+					"SetMaterialProperties":
+					{
+						"DepthMap": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
+						"SpecularMap": "Example/Texture/Dynamic/SpecularRenderTarget",
+						"NormalMap": "Example/Texture/Dynamic/MultisampleNormalRenderTarget",
+						"ScreenSpaceReflectionMap": "Example/Texture/Dynamic/ScreenSpaceReflectionRayTracingRenderTarget",
+						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget1",
+						"ReflectionCubeMap": "${PROJECT_NAME}/Texture/T_Maskonaive3_rcube.asset"
+					}
+				}
+			},
 			"HdrFramebuffer1":
 			{
 				"Compute":
@@ -440,7 +455,9 @@
 						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget0",
 						"DepthMap": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
 						"ScreenSpaceAmbientOcclusionMap": "Example/Texture/Dynamic/BlurredScreenSpaceAmbientOcclusionRenderTarget",
-						"VolumetricLightMap": "Example/Texture/Dynamic/BlurredVolumetricLightRenderTarget"
+						"VolumetricLightMap": "Example/Texture/Dynamic/BlurredVolumetricLightRenderTarget",
+						"ReflectionMap": "Example/Texture/Dynamic/ReflectionRenderTarget",
+						"SpecularMap": "Example/Texture/Dynamic/SpecularRenderTarget"
 					}
 				}
 			},
