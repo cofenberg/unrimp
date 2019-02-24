@@ -321,8 +321,16 @@ MAIN_BEGIN
 			previousColor = ClipAabb(minc, maxc, previousColor);
 		}
 
-		float weightA = SATURATE(1.0f - TEMPORAL_AA_BLEND_FACTOR);
-		float weightB = SATURATE(TEMPORAL_AA_BLEND_FACTOR);
+		float3 weightA = float3(1.0f - TEMPORAL_AA_BLEND_FACTOR, 1.0f - TEMPORAL_AA_BLEND_FACTOR, 1.0f - TEMPORAL_AA_BLEND_FACTOR);
+		float3 weightB = float3(TEMPORAL_AA_BLEND_FACTOR, TEMPORAL_AA_BLEND_FACTOR, TEMPORAL_AA_BLEND_FACTOR);
+
+        { // Temporal color weighting
+            float3 temporalWeight = SATURATE(abs(clrMax - clrMin) / currentColor);
+			float LowFreqWeight = 0.25f;
+			float HiFreqWeight = 0.85f;
+            weightB = SATURATE(LERP(float3(LowFreqWeight, LowFreqWeight, LowFreqWeight), float3(HiFreqWeight, HiFreqWeight, HiFreqWeight), temporalWeight));
+            weightA = 1.0f - weightB;
+        }
 
 		// Inverse luminance filtering
 		weightA *= 1.0f / (1.0f + ColorToLuminance(currentColor));

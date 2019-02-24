@@ -43,7 +43,7 @@
 			},
 			"Example/Texture/Dynamic/MultisampleVelocityRenderTarget":
 			{
-				"TextureFormat": "R16G16_SNORM",
+				"TextureFormat": "R16G16_FLOAT",
 				"Flags": "SHADER_RESOURCE | RENDER_TARGET | ALLOW_MULTISAMPLE | ALLOW_RESOLUTION_SCALE"
 			},
 			"Example/Texture/Dynamic/MultisampleDepthStencilRenderTarget":
