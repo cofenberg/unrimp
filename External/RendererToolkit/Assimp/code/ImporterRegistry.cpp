@@ -50,7 +50,6 @@ corresponding preprocessor flag to selectively disable formats.
 
 #include <vector>
 #include <assimp/BaseImporter.h>
-#include "configuration.h"
 
 // ------------------------------------------------------------------------------------------------
 // Importers

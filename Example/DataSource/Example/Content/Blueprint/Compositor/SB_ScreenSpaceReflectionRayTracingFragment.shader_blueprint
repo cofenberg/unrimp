@@ -67,17 +67,7 @@ UNIFORM_BUFFER_END
 // Textures
 TEXTURE_2D(1, 0, DepthMap, 0)
 TEXTURE_2D(1, 1, SpecularMap, 1)	// rgb = specular color, a = roughness
-@property(NumberOfMultisamples)
-	TEXTURE_2D_MS(1, 2, NormalMap, @value(NumberOfMultisamples), 2)	// Normal map: rgb = view space normal
-	@property(UseTemporalReprojection)
-		TEXTURE_2D_MS(1, 3, VelocityMap, @value(NumberOfMultisamples), 3)
-	@end
-@else
-	TEXTURE_2D(1, 2, NormalMap, 2)	// rgb = view space normal
-	@property(UseTemporalReprojection)
-		TEXTURE_2D(1, 3, VelocityMap, 3)
-	@end
-@end
+TEXTURE_2D(1, 2, NormalMap, 2)		// rgb = view space normal
 
 // Samplers
 SAMPLER_STATE(2, 0, SamplerPointClamp, 0)
@@ -88,28 +78,6 @@ SAMPLER_STATE(2, 0, SamplerPointClamp, 0)
 //[-------------------------------------------------------]
 @includepiece(../SharedShaderPiece/SP_Depth.asset)
 	@insertpiece(DefineGetLinearDepth)
-
-float4 GetNormalFromNormalMap(float2 textureCoordinate, int sampleIndex)
-{
-	@property(NumberOfMultisamples)
-		// *2 = For performance reasons the screen space reflection ray tracing is done at half-size
-		return SAMPLE_2D_MS(NormalMap, int2(textureCoordinate * PassData.ViewportSize * 2), sampleIndex);
-	@else
-		return SAMPLE_2D_LOD(NormalMap, SamplerPointClamp, float4(textureCoordinate, 0.0f, 0.0f));
-	@end
-}
-
-@property(UseTemporalReprojection)
-	float2 GetVelocityFromVelocityMap(float2 textureCoordinate, int sampleIndex)
-	{
-		@property(NumberOfMultisamples)
-			// *2 = For performance reasons the screen space reflection ray tracing is done at half-size
-			return SAMPLE_2D_MS(VelocityMap, int2(textureCoordinate * PassData.ViewportSize * 2), sampleIndex).rg;
-		@else
-			return SAMPLE_2D_LOD(VelocityMap, SamplerPointClamp, float4(textureCoordinate, 0.0f, 0.0f)).rg;
-		@end
-	}
-@end
 
 float GetDistanceSquared(float2 a, float2 b)
 {
@@ -293,14 +261,12 @@ bool TraceScreenSpaceRay(
 //[-------------------------------------------------------]
 MAIN_BEGIN
 	// Get depth and normal of the fragment
-	// -> No complex pixel detection since it doesn't make a notable visual difference here
-	// -> Depth map LOD = 1 = For performance reasons the screen space reflection ray tracing is done at half-size
 	float2 texCoord = MAIN_INPUT(TexCoordVS);
-	int3 sampleCoord = int3(texCoord * PassData.ViewportSize, 0);
+	int3 sampleCoord = int3(texCoord * PassData.ViewportSize * 2, 0);	// *2 = For performance reasons the screen space reflection ray tracing is done at half-size
 	float depth = SAMPLE_DEPTH_2D_LOD(DepthMap, SamplerPointClamp, float4(texCoord, 0.0f, 1.0f));
-	float4 normalMapValue = GetNormalFromNormalMap(texCoord, 0);
-	float3 viewSpaceNormal = normalMapValue.xyz;
-	float roughness = TEXTURE_FETCH_2D(SpecularMap, sampleCoord).a;
+	float4 normalMapValue = TEXTURE_FETCH_2D(NormalMap, int3(sampleCoord.xy, 0));
+	float3 viewSpaceNormal = normalMapValue.rgb;
+	float roughness = TEXTURE_FETCH_2D(SpecularMap, sampleCoord).a;	// TODO(co) Currently unused
 
 	// Get the normalized view ray
 	float3 viewRay = normalize(MAIN_INPUT(ViewRayVS));
@@ -311,15 +277,14 @@ MAIN_BEGIN
 	float3 viewSpacePosition = viewRay * linearDepth;
 
 	// Derive data
-	float3 viewSpaceIncident = -normalize(viewSpacePosition);	// In view space, the camera is at the origin
+	float3 viewSpaceIncident = normalize(viewSpacePosition);	// In view space, the camera is at the origin
 
 	// Calculate screen space reflection (SSR)
 	float2 hitPixel = float2(-1.0f, -1.0f);
 	float reflectionIntensity = 0.0f;
 	{
 		// Reflection vector
-		float3 viewSpaceDirection = normalize(viewSpacePosition);
-		float3 viewSpaceReflectDirection = normalize(reflect(viewSpaceDirection, viewSpaceNormal));
+		float3 viewSpaceReflectDirection = reflect(viewSpaceIncident, viewSpaceNormal);
 
 		// Early escape: Viewer facing reflections
 		// -> Modulate the reflection intensity basing on "Screen Space Reflections in Killing Floor 2" by Sakib Saikia ( https://sakibsaikia.github.io/graphics/2016/12/25/Screen-Space-Reflection-in-Killing-Floor-2.html )
@@ -327,7 +292,7 @@ MAIN_BEGIN
 		//    and if they are pointing in the same direction, it will drown out those reflections
 		//    since we are limited to pixels visible on screen. Attenuate reflections for angles between
 		//    60 degrees and 75 degrees, and drop all contribution beyond the (-60,60) degree range.
-		float cameraFacingReflectionAttenuation = 1 - smoothstep(0.25f, 0.5f, dot(-viewSpaceDirection, viewSpaceReflectDirection));
+		float cameraFacingReflectionAttenuation = 1 - smoothstep(0.25f, 0.5f, dot(-viewSpaceIncident, viewSpaceReflectDirection));
 
 		// Reject if the reflection vector is pointing back at the viewer
 		BRANCH if (cameraFacingReflectionAttenuation > 0.0f)
@@ -353,11 +318,6 @@ MAIN_BEGIN
 					hitPoint))					// View space location of the ray hit
 				{
 					hitPixel.xy /= PassData.ViewportSize;
-					@property(UseTemporalReprojection)
-						// Temporal reprojection: We're using color data from the previous frame for the screen space reflection color. In order to
-						// hide that the reflections lag one frame behind we're reprojecting the hit pixel basing on previous camera related data.
-						hitPixel.xy -= GetVelocityFromVelocityMap(hitPixel.xy, 0);
-					@end
 
 					// Reflections of back faces
 					// -> Modulate the reflection intensity basing on "Screen Space Reflections in Killing Floor 2" by Sakib Saikia ( https://sakibsaikia.github.io/graphics/2016/12/25/Screen-Space-Reflection-in-Killing-Floor-2.html )
@@ -366,7 +326,7 @@ MAIN_BEGIN
 					//    it will drown out those reflections since backward facing pixels are not available
 					//    for screen space reflection. Attenuate reflections for angles between 90 degrees
 					//    and 100 degrees, and drop all contribution beyond the (-100,100) degree range.
-					float3 reflectionNormalColor = GetNormalFromNormalMap(hitPixel.xy, 0).xyz;
+					float3 reflectionNormalColor = TEXTURE_FETCH_2D(NormalMap, int3(hitPixel.xy * 2, 0)).xyz;	// *2 = For performance reasons the screen space reflection ray tracing is done at half-size
 					float3 reflectionNormal = reflectionNormalColor * float3(2, 2, 2) - float3(1, 1, 1);
 					float directionBasedAttenuation = smoothstep(-0.17f, 0.0f, dot(reflectionNormal, -viewSpaceReflectDirection));
 

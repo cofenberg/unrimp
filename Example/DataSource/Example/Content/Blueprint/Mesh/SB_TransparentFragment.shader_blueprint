@@ -215,7 +215,7 @@ MAIN_BEGIN
 	@insertpiece(PerformClusteredShading)
 
 	// Apply reflection color
-	color += SAMPLE_2D(ReflectionMap, SamplerLinear, FRAGMENT_POSITION.xy / PassData.ViewportSize).rgb * specularFactor * ALBEDO_METALLIC_TO_SPECULAR(albedo, metallic);
+	color = LERP(color, SAMPLE_2D(ReflectionMap, SamplerLinear, FRAGMENT_POSITION.xy / PassData.ViewportSize).rgb, specularFactor * ALBEDO_METALLIC_TO_SPECULAR(albedo, metallic));
 
 	// Emissive term
 	@property(UseEmissiveMap)

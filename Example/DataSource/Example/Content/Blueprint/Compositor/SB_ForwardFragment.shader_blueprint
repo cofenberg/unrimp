@@ -40,15 +40,14 @@ OUTPUT_END
 // Uniform buffers
 struct PassDataStruct
 {
-	float4   ViewSpaceFrustumCorners[4];
-	float4x4 ClipSpaceToViewSpaceMatrix;
-	float3	 ViewSpaceSunlightDirection;
-	float	 AtmosphereFogDensity;
-	float3	 AmbientColor;
-	float3	 SunlightColor;
-	float3   DiffuseFogColor;
-	float2   ViewportSize;
-	float2	 ProjectionParameters;
+	float4 ViewSpaceFrustumCorners[4];
+	float3 ViewSpaceSunlightDirection;
+	float  AtmosphereFogDensity;
+	float3 AmbientColor;
+	float3 SunlightColor;
+	float3 DiffuseFogColor;
+	float2 ViewportSize;
+	float2 ProjectionParameters;
 };
 UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
 	PassDataStruct PassData;
@@ -116,7 +115,7 @@ float3 CalculateColor(float3 viewRay, float3 color, float screenSpaceAmbientOccl
 
 		// Apply reflection color
 		uint2 coordinate = CAST_TO(screenSpacePosition * PassData.ViewportSize, uint2);
-		color += TEXTURE_FETCH_2D(ReflectionMap, int3(coordinate, 0)).rgb * TEXTURE_FETCH_2D(SpecularMap, int3(coordinate, 0)).rgb;
+		color = LERP(color, TEXTURE_FETCH_2D(ReflectionMap, int3(coordinate, 0)).rgb, TEXTURE_FETCH_2D(SpecularMap, int3(coordinate, 0)).rgb);
 
 		// Calculate fogged color
 		float3 foggedColor = CalculateFoggedColor(viewSpacePosition, color * screenSpaceAmbientOcclusion, PassData.AtmosphereFogDensity, PassData.ViewSpaceSunlightDirection, PassData.AmbientColor, PassData.SunlightColor, PassData.DiffuseFogColor);

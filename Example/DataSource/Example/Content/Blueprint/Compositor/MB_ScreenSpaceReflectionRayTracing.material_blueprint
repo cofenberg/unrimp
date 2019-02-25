@@ -8,24 +8,6 @@
 	{
 		"Properties":
 		{
-			"NumberOfMultisamples":
-			{
-				"Usage": "SHADER_COMBINATION",
-				"ValueType": "GLOBAL_MATERIAL_PROPERTY_ID",
-				"Value": "@GlobalNumberOfMultisamples",
-				"Description": "Number of multisamples. Valid values are 0, 2, 4, 8. Use 0 to disable multisample.",
-				"VisualImportance": "MANDATORY",
-				"MaximumIntegerValue": "8",
-				"ValidIntegerValues": [ 0, 2, 4, 8 ]
-			},
-			"UseTemporalReprojection":
-			{
-				"Usage": "SHADER_COMBINATION",
-				"ValueType": "BOOLEAN",
-				"Value": "TRUE",
-				"Description": "'true' if temporal reprojection should be used, else 'false' in case e.g. a forward renderer will apply the temporal reprojection instead",
-				"VisualImportance": "100"
-			},
 			"Stride":
 			{
 				"Usage": "SHADER_UNIFORM",
@@ -79,13 +61,6 @@
 				"ValueType": "TEXTURE_ASSET_ID",
 				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
 				"Description": "2D normal map: rgb = view space normal"
-			},
-			"VelocityMap":
-			{
-				"Usage": "TEXTURE_REFERENCE",
-				"ValueType": "TEXTURE_ASSET_ID",
-				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
-				"Description": "2D velocity map, only used if 'UseTemporalReprojection' is 'true'"
 			},
 			"DepthMap":
 			{
@@ -226,19 +201,6 @@
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@NormalMap",
-					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
-					"MipmapsUsed": "FALSE",
-					"SamplerStateBaseShaderRegisterName": "SamplerPointClamp"
-				},
-				"3":
-				{
-					"ResourceType": "TEXTURE_2D",
-					"BaseShaderRegisterName": "VelocityMap",
-					"BaseShaderRegister": "3",
-					"ShaderVisibility": "FRAGMENT",
-					"Usage": "MATERIAL_REFERENCE",
-					"ValueType": "TEXTURE_ASSET_ID",
-					"Value": "@VelocityMap",
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
 					"MipmapsUsed": "FALSE",
 					"SamplerStateBaseShaderRegisterName": "SamplerPointClamp"

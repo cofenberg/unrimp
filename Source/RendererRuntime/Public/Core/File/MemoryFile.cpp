@@ -110,6 +110,7 @@ namespace RendererRuntime
 		else
 		{
 			// Error!
+			assert(false);
 			return false;
 		}
 	}

@@ -113,12 +113,6 @@
 							"ValueType": "FLOAT_4_4",
 							"Value": "@VIEW_SPACE_FRUSTUM_CORNERS"
 						},
-						"ClipSpaceToViewSpaceMatrix":
-						{
-							"Usage": "PASS_REFERENCE",
-							"ValueType": "FLOAT_4_4",
-							"Value": "@CLIP_SPACE_TO_VIEW_SPACE_MATRIX"
-						},
 						"ViewSpaceSunlightDirection":
 						{
 							"Usage": "PASS_REFERENCE",

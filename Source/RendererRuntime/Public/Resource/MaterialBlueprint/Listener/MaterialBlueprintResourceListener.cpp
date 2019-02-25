@@ -994,6 +994,11 @@ namespace RendererRuntime
 					// Copy over
 					memcpy(buffer, glm::value_ptr(jitterOffset), numberOfBytes);
 				}
+				else
+				{
+					// Copy over
+					memcpy(buffer, glm::value_ptr(mPreviousJitter), numberOfBytes);
+				}
 				break;
 			}
 

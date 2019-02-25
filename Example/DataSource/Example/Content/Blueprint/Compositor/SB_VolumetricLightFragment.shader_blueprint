@@ -44,7 +44,6 @@ OUTPUT_END
 struct PassDataStruct
 {
 	float4   ViewSpaceFrustumCorners[4];
-	float4x4 ClipSpaceToViewSpaceMatrix;
 	float4x4 ViewSpaceToWorldSpaceMatrix;
 	float4x4 WorldSpaceToViewSpaceMatrix;
 	float4x4 ShadowMatrix;

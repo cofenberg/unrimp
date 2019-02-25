@@ -8,16 +8,6 @@
 	{
 		"Properties":
 		{
-			"NumberOfMultisamples":
-			{
-				"Usage": "SHADER_COMBINATION",
-				"ValueType": "GLOBAL_MATERIAL_PROPERTY_ID",
-				"Value": "@GlobalNumberOfMultisamples",
-				"Description": "Number of multisamples. Valid values are 0, 2, 4, 8. Use 0 to disable multisample.",
-				"VisualImportance": "MANDATORY",
-				"MaximumIntegerValue": "8",
-				"ValidIntegerValues": [ 0, 2, 4, 8 ]
-			},
 			"UseScreenSpaceReflectionMap":
 			{
 				"Usage": "SHADER_COMBINATION",
@@ -25,6 +15,13 @@
 				"Value": "TRUE",
 				"Description": "'true' if the screen space reflection map should be used, else 'false'",
 				"VisualImportance": "100"
+			},
+			"DepthMap":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+				"Description": "2D depth map"
 			},
 			"SpecularMap":
 			{
@@ -40,6 +37,13 @@
 				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
 				"Description": "2D normal map: rgb = view space normal"
 			},
+			"ReflectionCubeMap":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "Unrimp/Texture/DynamicByCode/BlackMapCube",
+				"Description": "Reflection cube map"
+			},
 			"ScreenSpaceReflectionMap":
 			{
 				"Usage": "TEXTURE_REFERENCE",
@@ -47,26 +51,19 @@
 				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
 				"Description": "2D screen space reflection ray tracing map, only used if 'UseScreenSpaceReflectionMap' is 'true'"
 			},
-			"DepthMap":
+			"PreviousColorMap":
 			{
 				"Usage": "TEXTURE_REFERENCE",
 				"ValueType": "TEXTURE_ASSET_ID",
 				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
-				"Description": "2D depth map"
+				"Description": "Previous 2D color map, only used if 'UseScreenSpaceReflectionMap' is 'true'"
 			},
-			"ColorMap":
+			"VelocityMap":
 			{
 				"Usage": "TEXTURE_REFERENCE",
 				"ValueType": "TEXTURE_ASSET_ID",
 				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
-				"Description": "2D color map, only used if 'UseScreenSpaceReflectionMap' is 'true'"
-			},
-			"ReflectionCubeMap":
-			{
-				"Usage": "TEXTURE_REFERENCE",
-				"ValueType": "TEXTURE_ASSET_ID",
-				"Value": "Unrimp/Texture/DynamicByCode/BlackMapCube",
-				"Description": "Reflection cube map"
+				"Description": "2D velocity map"
 			}
 		},
 		"GraphicsPipelineState":
@@ -170,9 +167,22 @@
 				},
 				"3":
 				{
+					"ResourceType": "TEXTURE_CUBE",
+					"BaseShaderRegisterName": "ReflectionCubeMap",
+					"BaseShaderRegister": "3",
+					"ShaderVisibility": "FRAGMENT",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@ReflectionCubeMap",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/WhiteMapCube",
+					"RgbHardwareGammaCorrection": "TRUE",
+					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
+				},
+				"4":
+				{
 					"ResourceType": "TEXTURE_2D",
 					"BaseShaderRegisterName": "ScreenSpaceReflectionMap",
-					"BaseShaderRegister": "3",
+					"BaseShaderRegister": "4",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
@@ -181,31 +191,31 @@
 					"MipmapsUsed": "FALSE",
 					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
 				},
-				"4":
-				{
-					"ResourceType": "TEXTURE_2D",
-					"BaseShaderRegisterName": "ColorMap",
-					"BaseShaderRegister": "4",
-					"ShaderVisibility": "FRAGMENT",
-					"Usage": "MATERIAL_REFERENCE",
-					"ValueType": "TEXTURE_ASSET_ID",
-					"Value": "@ColorMap",
-					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
-					"MipmapsUsed": "FALSE",
-					"SamplerStateBaseShaderRegisterName": "SamplerPointClamp"
-				},
 				"5":
 				{
-					"ResourceType": "TEXTURE_CUBE",
-					"BaseShaderRegisterName": "ReflectionCubeMap",
+					"ResourceType": "TEXTURE_2D",
+					"BaseShaderRegisterName": "PreviousColorMap",
 					"BaseShaderRegister": "5",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
-					"Value": "@ReflectionCubeMap",
-					"FallbackTexture": "Unrimp/Texture/DynamicByCode/WhiteMapCube",
-					"RgbHardwareGammaCorrection": "TRUE",
-					"SamplerStateBaseShaderRegisterName": "SamplerLinear"
+					"Value": "@PreviousColorMap",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+					"MipmapsUsed": "FALSE",
+					"SamplerStateBaseShaderRegisterName": "SamplerPointClamp"
+				},
+				"6":
+				{
+					"ResourceType": "TEXTURE_2D",
+					"BaseShaderRegisterName": "VelocityMap",
+					"BaseShaderRegister": "6",
+					"ShaderVisibility": "FRAGMENT",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@VelocityMap",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+					"MipmapsUsed": "FALSE",
+					"SamplerStateBaseShaderRegisterName": "SamplerPointClamp"
 				}
 			},
 			"2":

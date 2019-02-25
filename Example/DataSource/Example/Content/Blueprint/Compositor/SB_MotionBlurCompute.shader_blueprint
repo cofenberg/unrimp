@@ -47,11 +47,7 @@ UNIFORM_BUFFER_END
 
 // Textures
 TEXTURE_2D(1, 0, ColorMap, 0)
-@property(NumberOfMultisamples)
-	TEXTURE_2D_MS(1, 1, VelocityMap, @value(NumberOfMultisamples), 1)
-@else
-	TEXTURE_2D(1, 1, VelocityMap, 1)
-@end
+TEXTURE_2D(1, 1, VelocityMap, 1)
 RW_TEXTURE_2D(1, 2, OutputTexture2D, 2, r11f_g11f_b10f, writeonly)
 
 
@@ -63,26 +59,7 @@ MAIN_BEGIN_COMPUTE(32, 32, 1)
 	BRANCH if (GLOBAL_INVOCATION_ID.x < PassData.GlobalComputeSize.x && GLOBAL_INVOCATION_ID.y < PassData.GlobalComputeSize.y)
 	{
 		int3 globalInvocationId = CAST_TO(GLOBAL_INVOCATION_ID, int3);
-		@property(NumberOfMultisamples)
-			// Complex pixel detection
-			float2 velocity = float2(0.0f, 0.0f);
-			BRANCH if (0 != TEXTURE_FETCH_2D(ColorMap, globalInvocationId).a)
-			{
-				// Custom MSAA resolve
-				@foreach(NumberOfMultisamples, i, 0)
-				{
-					velocity += SAMPLE_2D_MS(VelocityMap, globalInvocationId.xy, @i).xy;
-				}
-				@end
-				velocity /= @value(NumberOfMultisamples);
-			}
-			else
-			{
-				velocity = SAMPLE_2D_MS(VelocityMap, globalInvocationId.xy, 0).xy;
-			}
-		@else
-			float2 velocity = TEXTURE_FETCH_2D(VelocityMap, globalInvocationId).xy;
-		@end
+		float2 velocity = TEXTURE_FETCH_2D(VelocityMap, globalInvocationId).xy;
 
 		// Apply strength to velocity
 		velocity *= PassData.Strength;
@@ -104,7 +81,7 @@ MAIN_BEGIN_COMPUTE(32, 32, 1)
 		LOOP for (int i = 0; i < PassData.NumberOfSamples; ++i)
 		{
 			// Sample texture in a new spot based on velocity vector and average it with the other samples
-			float2 sampleTexCoord = globalInvocationId.xy + (velocity * (float(i) / float(PassData.NumberOfSamples)));
+			float2 sampleTexCoord = globalInvocationId.xy + (velocity * (float(i) / float(PassData.NumberOfSamples))) + float2(0.5f, 0.5f);
 
 			// Clamp to border
 			sampleTexCoord = clamp(sampleTexCoord, float2(0.0f, 0.0f), CAST_TO(PassData.GlobalComputeSize.xy - uint2(1, 1), float2));

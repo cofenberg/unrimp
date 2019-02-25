@@ -57,6 +57,7 @@
 	__pragma(warning(disable: 5027))	// warning C5027: 'std::_Generic_error_category': move assignment operator was implicitly defined as deleted
 	__pragma(warning(disable: 5039))	// warning C5039: 'TpSetCallbackCleanupGroup': pointer or reference to potentially throwing function passed to extern C function under -EHc. Undefined behavior may occur if this function throws an exception.
 #endif
+#include "Configuration.h"
 // Common
 	#include "code/Subdivision.cpp"
 // GLTF

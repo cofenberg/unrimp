@@ -58,6 +58,7 @@
 	__pragma(warning(disable: 5039))	// warning C5039: 'TpSetCallbackCleanupGroup': pointer or reference to potentially throwing function passed to extern C function under -EHc. Undefined behavior may occur if this function throws an exception.
 #endif
 // Common - Moved into "AssimpUnityBuild8.cpp" since "AssimpUnityBuild1.cpp" gets to huge in some configurations
+#include "Configuration.h"
 // contrib
 	// irrXML (at least OGRE importer is using it)
 	#include "contrib/irrXML/irrXML.cpp"

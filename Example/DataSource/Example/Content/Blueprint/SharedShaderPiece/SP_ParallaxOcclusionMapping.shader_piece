@@ -25,7 +25,7 @@
 	// Distance based reduction of parallax occlusion mapping height map scale, the number of steps will not be manipulated distance based to avoid introducing additional artifacts
 	float ParallaxOcclusionMappingHeightMapScale(float pomHeightMapScale, float3 viewSpacePosition)
 	{
-		float maximumPomDistance = 20.0f;
+		float maximumPomDistance = 5.0f;	// Beside the negative performance impact, parallax occlusion mapping introduces additional aliasing especially in the distance, so don't make the maximum distance too huge
 		float pomDistanceFactor = 1.0f - (min(abs(length(viewSpacePosition)), maximumPomDistance) / maximumPomDistance);
 		return pomHeightMapScale * pomDistanceFactor;
 	}

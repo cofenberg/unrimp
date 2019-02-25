@@ -347,22 +347,6 @@
 					}
 				}
 			},
-			"DistortionFramebuffer":
-			{
-				"Clear":
-				{
-					"Flags": "COLOR"
-				},
-				"Scene":
-				{
-					"Name": "Distortion objects",
-					"Description": "Render distortion objects",
-					"MinimumRenderQueueIndex": "255",
-					"MaximumRenderQueueIndex": "255",
-					"TransparentPass": "TRUE",
-					"MaterialTechnique": "Distortion"
-				}
-			},
 			"VolumetricLightFramebuffer":
 			{
 				"Compute":
@@ -387,8 +371,7 @@
 					"SetMaterialProperties":
 					{
 						"DepthMap": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
-						"NormalMap": "Example/Texture/Dynamic/MultisampleGBufferRenderTarget1",
-						"VelocityMap": "Example/Texture/Dynamic/MultisampleVelocityRenderTarget"
+						"NormalMap": "Example/Texture/Dynamic/MultisampleGBufferRenderTarget1"
 					}
 				}
 			},
@@ -407,9 +390,10 @@
 					"SetMaterialProperties":
 					{
 						"DepthMap": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
+						"SpecularMap": "Example/Texture/Dynamic/MultisampleGBufferRenderTarget1",
 						"NormalMap": "Example/Texture/Dynamic/MultisampleGBufferRenderTarget1",
 						"ScreenSpaceReflectionMap": "Example/Texture/Dynamic/ScreenSpaceReflectionRayTracingRenderTarget",
-						"ColorMap": "Example/Texture/Dynamic/PreviousHdrColorRenderTarget",
+						"PreviousColorMap": "Example/Texture/Dynamic/PreviousHdrColorRenderTarget",
 						"ReflectionCubeMap": "${PROJECT_NAME}/Texture/T_Maskonaive3_rcube.asset"
 					}
 				}
@@ -662,6 +646,22 @@
 							"OutputTexture2D": "Example/Texture/Dynamic/BloomDownscale8ColorRenderTarget"
 						}
 					}
+				}
+			},
+			"DistortionFramebuffer":
+			{
+				"Clear":
+				{
+					"Flags": "COLOR"
+				},
+				"Scene":
+				{
+					"Name": "Distortion objects",
+					"Description": "Render distortion objects",
+					"MinimumRenderQueueIndex": "255",
+					"MaximumRenderQueueIndex": "255",
+					"TransparentPass": "TRUE",
+					"MaterialTechnique": "Distortion"
 				}
 			},
 			"":

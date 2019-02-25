@@ -41,7 +41,6 @@ OUTPUT_END
 struct PassDataStruct
 {
 	float4   ViewSpaceFrustumCorners[4];
-	float4x4 ClipSpaceToViewSpaceMatrix;
 	float4x4 ViewSpaceToWorldSpaceMatrix;
 	float4x4 ShadowMatrix;
 	float4   ShadowCascadeOffsets[4];
@@ -182,7 +181,7 @@ float3 CalculateColorByGBuffer(float2 texCoord, float3 viewRay, float4 gbuffer0V
 	@insertpiece(PerformClusteredShading)
 
 	// Apply reflection color
-	color += reflectionColor * specularFactor * ALBEDO_METALLIC_TO_SPECULAR(albedo, metallic);
+	color = LERP(color, reflectionColor, specularFactor * ALBEDO_METALLIC_TO_SPECULAR(albedo, metallic));
 
 	// Apply screen space ambient occlusion
 	color *= float3(screenSpaceAmbientOcclusion, screenSpaceAmbientOcclusion, screenSpaceAmbientOcclusion);

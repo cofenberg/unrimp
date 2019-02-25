@@ -22,26 +22,6 @@
 				"Value": "@OutputTexture2D",
 				"Description": "Fixed build in material property for the compute shader global size, reads the size dynamically from the referenced texture asset"
 			},
-			"NumberOfSamples":
-			{
-				"Usage": "SHADER_UNIFORM",
-				"ValueType": "INTEGER",
-				"Value": "12",
-				"MinimumValue": "4",
-				"MaximumValue": "16",
-				"StepSize": "1",
-				"Description": "Number of samples"
-			},
-			"Strength":
-			{
-				"Usage": "SHADER_UNIFORM",
-				"ValueType": "FLOAT",
-				"Value": "1.0",
-				"MinimumValue": "0.0",
-				"MaximumValue": "2.0",
-				"StepSize": "0.01",
-				"Description": "Motion blur strength"
-			},
 			"ColorMap":
 			{
 				"Usage": "TEXTURE_REFERENCE",
@@ -49,12 +29,26 @@
 				"Value": "Unrimp/Texture/DynamicByCode/WhiteMap2D",
 				"Description": "2D color map"
 			},
+			"DepthMap":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+				"Description": "2D depth map"
+			},
 			"VelocityMap":
 			{
 				"Usage": "TEXTURE_REFERENCE",
 				"ValueType": "TEXTURE_ASSET_ID",
 				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
 				"Description": "2D screen space velocity map"
+			},
+			"PreviousColorMap":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "Unrimp/Texture/DynamicByCode/WhiteMap2D",
+				"Description": "Previous resolved 2D HDR color map"
 			},
 			"OutputTexture2D":
 			{
@@ -66,7 +60,7 @@
 		},
 		"ComputePipelineState":
 		{
-			"ComputeShaderBlueprint": "./SB_MotionBlurCompute.asset"
+			"ComputeShaderBlueprint": "./SB_TemporalAntiAliasingCompute.asset"
 		},
 		"ResourceGroups":
 		{
@@ -87,23 +81,11 @@
 							"ValueType": "INTEGER_3",
 							"Value": "@GLOBAL_COMPUTE_SIZE"
 						},
-						"PastSecondsSinceLastFrame":
+						"JitterOffset":
 						{
-							"Usage": "GLOBAL_REFERENCE",
-							"ValueType": "FLOAT",
-							"Value": "@GlobalPastSecondsSinceLastFrame"
-						},
-						"Strength":
-						{
-							"Usage": "MATERIAL_REFERENCE",
-							"ValueType": "FLOAT",
-							"Value": "@Strength"
-						},
-						"NumberOfSamples":
-						{
-							"Usage": "MATERIAL_REFERENCE",
-							"ValueType": "INTEGER",
-							"Value": "@NumberOfSamples"
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_2",
+							"Value": "@JITTER_OFFSET"
 						}
 					}
 				}
@@ -124,20 +106,42 @@
 				"1":
 				{
 					"ResourceType": "TEXTURE_2D",
-					"BaseShaderRegisterName": "VelocityMap",
+					"BaseShaderRegisterName": "DepthMap",
 					"BaseShaderRegister": "1",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
-					"Value": "@VelocityMap",
+					"Value": "@DepthMap",
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
 					"MipmapsUsed": "FALSE"
 				},
 				"2":
 				{
 					"ResourceType": "TEXTURE_2D",
+					"BaseShaderRegisterName": "VelocityMap",
+					"BaseShaderRegister": "2",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@VelocityMap",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+					"MipmapsUsed": "FALSE"
+				},
+				"3":
+				{
+					"ResourceType": "TEXTURE_2D",
+					"BaseShaderRegisterName": "PreviousColorMap",
+					"BaseShaderRegister": "3",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@PreviousColorMap",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/WhiteMap2D",
+					"MipmapsUsed": "FALSE"
+				},
+				"4":
+				{
+					"ResourceType": "TEXTURE_2D",
 					"DescriptorRangeType": "UAV",
 					"BaseShaderRegisterName": "OutputTexture2D",
-					"BaseShaderRegister": "2",
+					"BaseShaderRegister": "4",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@OutputTexture2D",

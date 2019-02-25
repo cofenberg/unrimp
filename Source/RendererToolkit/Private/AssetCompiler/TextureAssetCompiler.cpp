@@ -1774,16 +1774,15 @@ namespace
 			ddsSurfaceDesc2.lPitch								= static_cast<crn_int32>((ddsSurfaceDesc2.dwWidth * ddsSurfaceDesc2.ddpfPixelFormat.dwRGBBitCount) >> 3);
 
 			// Write down the 3D destination texture
-			// -> Since usually tiny, not really worth to apply LZ4 compression here
-			RendererRuntime::IFile* file = fileManager.openFile(RendererRuntime::IFileManager::FileMode::WRITE, virtualOutputAssetFilename);
-			if (nullptr == file)
+			RendererRuntime::MemoryFile memoryFile(0, 4096);
+			memoryFile.write("DDS ", sizeof(uint32_t));
+			memoryFile.write(reinterpret_cast<const char*>(&ddsSurfaceDesc2), sizeof(crnlib::DDSURFACEDESC2));
+			memoryFile.write(reinterpret_cast<const char*>(destinationData), sizeof(crnlib::color_quad_u8) * numberOfTexelsPerLayer * depth);
+			if (!memoryFile.writeLz4CompressedDataByVirtualFilename(RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_TYPE, RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_VERSION, fileManager, virtualOutputAssetFilename))
 			{
-				throw std::runtime_error("Failed to open destination file \"" + std::string(virtualOutputAssetFilename) + '\"');
+				delete [] destinationData;
+				throw std::runtime_error("Failed to write to destination file \"" + std::string(virtualOutputAssetFilename) + '\"');
 			}
-			file->write("DDS ", sizeof(uint32_t));
-			file->write(reinterpret_cast<const char*>(&ddsSurfaceDesc2), sizeof(crnlib::DDSURFACEDESC2));
-			file->write(reinterpret_cast<const char*>(destinationData), sizeof(crnlib::color_quad_u8) * numberOfTexelsPerLayer * depth);
-			fileManager.closeFile(*file);
 
 			// Done
 			delete [] destinationData;

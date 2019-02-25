@@ -37,7 +37,7 @@ INPUT_BEGIN
 	DECLARE_COVERAGE_MASK
 INPUT_END
 OUTPUT_BEGIN
-	OUTPUT_COLOR(0)	// GBuffer 0: rgb = albedo color, a = alpha unused (required for blend operations)
+	OUTPUT_COLOR(0)	// GBuffer 0: rgb = albedo color, a = edge pixel
 	OUTPUT_COLOR(1)	// GBuffer 1: rgb = view space normal, a = roughness
 	OUTPUT_COLOR(2)	// GBuffer 2: rgb = emissive color, a = metallic
 	OUTPUT_COLOR(3)	// 			  rg  = screen space velocity

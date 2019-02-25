@@ -81,26 +81,52 @@ void GetPostProcessingStepInstanceList(std::vector< BaseProcess* >& out);
 // ------------------------------------------------------------------------------------------------
 // Exporter worker function prototypes. Should not be necessary to #ifndef them, it's just a prototype
 // do not use const, because some exporter need to convert the scene temporary
-void ExportSceneCollada(const char*,IOSystem*, const aiScene*, const ExportProperties*);
-void ExportSceneXFile(const char*,IOSystem*, const aiScene*, const ExportProperties*);
-void ExportSceneStep(const char*,IOSystem*, const aiScene*, const ExportProperties*);
-void ExportSceneObj(const char*,IOSystem*, const aiScene*, const ExportProperties*);
-void ExportSceneObjNoMtl(const char*,IOSystem*, const aiScene*, const ExportProperties*);
-void ExportSceneSTL(const char*,IOSystem*, const aiScene*, const ExportProperties*);
-void ExportSceneSTLBinary(const char*,IOSystem*, const aiScene*, const ExportProperties*);
-void ExportScenePly(const char*,IOSystem*, const aiScene*, const ExportProperties*);
-void ExportScenePlyBinary(const char*, IOSystem*, const aiScene*, const ExportProperties*);
-void ExportScene3DS(const char*, IOSystem*, const aiScene*, const ExportProperties*);
-void ExportSceneGLTF(const char*, IOSystem*, const aiScene*, const ExportProperties*);
-void ExportSceneGLB(const char*, IOSystem*, const aiScene*, const ExportProperties*);
-void ExportSceneGLTF2(const char*, IOSystem*, const aiScene*, const ExportProperties*);
-void ExportSceneGLB2(const char*, IOSystem*, const aiScene*, const ExportProperties*);
-void ExportSceneAssbin(const char*, IOSystem*, const aiScene*, const ExportProperties*);
-void ExportSceneAssxml(const char*, IOSystem*, const aiScene*, const ExportProperties*);
-void ExportSceneX3D(const char*, IOSystem*, const aiScene*, const ExportProperties*);
-void ExportSceneFBX(const char*, IOSystem*, const aiScene*, const ExportProperties*);
-void ExportSceneFBXA(const char*, IOSystem*, const aiScene*, const ExportProperties*);
-void ExportScene3MF( const char*, IOSystem*, const aiScene*, const ExportProperties* );
+#ifndef ASSIMP_BUILD_NO_COLLADA_EXPORTER
+    void ExportSceneCollada(const char*,IOSystem*, const aiScene*, const ExportProperties*);
+#endif
+#ifndef ASSIMP_BUILD_NO_X_EXPORTER
+    void ExportSceneXFile(const char*,IOSystem*, const aiScene*, const ExportProperties*);
+#endif
+#ifndef ASSIMP_BUILD_NO_STEP_EXPORTER
+    void ExportSceneStep(const char*,IOSystem*, const aiScene*, const ExportProperties*);
+#endif
+#ifndef ASSIMP_BUILD_NO_OBJ_EXPORTER
+    void ExportSceneObj(const char*,IOSystem*, const aiScene*, const ExportProperties*);
+    void ExportSceneObjNoMtl(const char*,IOSystem*, const aiScene*, const ExportProperties*);
+#endif
+#ifndef ASSIMP_BUILD_NO_STL_EXPORTER
+    void ExportSceneSTL(const char*,IOSystem*, const aiScene*, const ExportProperties*);
+    void ExportSceneSTLBinary(const char*,IOSystem*, const aiScene*, const ExportProperties*);
+#endif
+#ifndef ASSIMP_BUILD_NO_PLY_EXPORTER
+    void ExportScenePly(const char*,IOSystem*, const aiScene*, const ExportProperties*);
+    void ExportScenePlyBinary(const char*, IOSystem*, const aiScene*, const ExportProperties*);
+#endif
+#ifndef ASSIMP_BUILD_NO_3DS_EXPORTER
+    void ExportScene3DS(const char*, IOSystem*, const aiScene*, const ExportProperties*);
+#endif
+#ifndef ASSIMP_BUILD_NO_GLTF_EXPORTER
+    void ExportSceneGLTF(const char*, IOSystem*, const aiScene*, const ExportProperties*);
+    void ExportSceneGLB(const char*, IOSystem*, const aiScene*, const ExportProperties*);
+    void ExportSceneGLTF2(const char*, IOSystem*, const aiScene*, const ExportProperties*);
+    void ExportSceneGLB2(const char*, IOSystem*, const aiScene*, const ExportProperties*);
+#endif
+#ifndef ASSIMP_BUILD_NO_ASSBIN_EXPORTER
+    void ExportSceneAssbin(const char*, IOSystem*, const aiScene*, const ExportProperties*);
+#endif
+#ifndef ASSIMP_BUILD_NO_ASSXML_EXPORTER
+    void ExportSceneAssxml(const char*, IOSystem*, const aiScene*, const ExportProperties*);
+#endif
+#ifndef ASSIMP_BUILD_NO_X3D_EXPORTER
+    void ExportSceneX3D(const char*, IOSystem*, const aiScene*, const ExportProperties*);
+#endif
+#ifndef ASSIMP_BUILD_NO_FBX_EXPORTER
+    void ExportSceneFBX(const char*, IOSystem*, const aiScene*, const ExportProperties*);
+    void ExportSceneFBXA(const char*, IOSystem*, const aiScene*, const ExportProperties*);
+#endif
+#ifndef ASSIMP_BUILD_NO_3MF_EXPORTER
+    void ExportScene3MF( const char*, IOSystem*, const aiScene*, const ExportProperties* );
+#endif
 
 // ------------------------------------------------------------------------------------------------
 // global array of all export formats which Assimp supports in its current build

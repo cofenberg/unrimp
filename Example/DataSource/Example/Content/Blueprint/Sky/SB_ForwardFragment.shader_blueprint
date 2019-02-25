@@ -37,7 +37,7 @@ INPUT_BEGIN
 	DECLARE_COVERAGE_MASK
 INPUT_END
 OUTPUT_BEGIN
-	OUTPUT_COLOR(0)	// rgb = albedo color, a = alpha
+	OUTPUT_COLOR(0)	// rgb = albedo color, a = edge pixel
 	OUTPUT_COLOR(1)	// rgb = specular color, a = roughness
 	OUTPUT_COLOR(2)	// rgb = view space normal
 	OUTPUT_COLOR(3)	// rg  = screen space velocity
@@ -186,7 +186,7 @@ MAIN_BEGIN
 
 	// Done
 	// -> Simple performance trick: No need to write out 0 (we're using Reversed-Z) as depth, we're telling via compositor node that the maximum depth is 0.0 so the GPU automatially writes out zero depth for us
-	MAIN_OUTPUT_COLOR(0) = float4(color, edgePixel);					// rgb = albedo color, a = alpha
+	MAIN_OUTPUT_COLOR(0) = float4(color, edgePixel);					// rgb = albedo color, a = edge pixel
 	MAIN_OUTPUT_COLOR(1) = float4(0.0f, 0.0f, 0.0f, 0.0f);				// rgb = specular color, a = roughness
 	MAIN_OUTPUT_COLOR(2) = float4(0.0f, 0.0f, 1.0f, 0.0f);				// rgb = view space normal
 	MAIN_OUTPUT_COLOR(3) = float4(velocity.x, velocity.y, 0.0f, 0.0f);	// rg  = screen space velocity

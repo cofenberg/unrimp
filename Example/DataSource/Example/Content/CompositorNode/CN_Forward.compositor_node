@@ -14,15 +14,6 @@
 		},
 		"RenderTargetTextures":
 		{
-			"Example/Texture/Dynamic/ScreenSpaceReflectionRayTracingRenderTarget":
-			{
-				"TextureFormat": "R16G16B16A16F",
-				"Scale": "0.5"
-			},
-			"Example/Texture/Dynamic/ReflectionRenderTarget":
-			{
-				"TextureFormat": "R11G11B10F"
-			},
 			"Example/Texture/Dynamic/HdrMultisampleColorRenderTarget":
 			{
 				"TextureFormat": "R16G16B16A16F",
@@ -61,10 +52,30 @@
 				"TextureFormat": "R32G32B32A32F",
 				"Flags": "SHADER_RESOURCE | RENDER_TARGET | ALLOW_MULTISAMPLE | ALLOW_RESOLUTION_SCALE"
 			},
+			"Example/Texture/Dynamic/NormalRenderTarget":
+			{
+				"Description": "rgb = view space normal",
+				"TextureFormat": "R32G32B32A32F",
+				"Flags": "SHADER_RESOURCE | RENDER_TARGET | ALLOW_RESOLUTION_SCALE"
+			},
 			"Example/Texture/Dynamic/MultisampleVelocityRenderTarget":
 			{
 				"TextureFormat": "R16G16_FLOAT",
 				"Flags": "SHADER_RESOURCE | RENDER_TARGET | ALLOW_MULTISAMPLE | ALLOW_RESOLUTION_SCALE"
+			},
+			"Example/Texture/Dynamic/VelocityRenderTarget":
+			{
+				"TextureFormat": "R16G16_FLOAT",
+				"Flags": "SHADER_RESOURCE | RENDER_TARGET | ALLOW_RESOLUTION_SCALE"
+			},
+			"Example/Texture/Dynamic/ScreenSpaceReflectionRayTracingRenderTarget":
+			{
+				"TextureFormat": "R16G16B16A16F",
+				"Scale": "0.5"
+			},
+			"Example/Texture/Dynamic/ReflectionRenderTarget":
+			{
+				"TextureFormat": "R11G11B10F"
 			},
 			"Example/Texture/Dynamic/HdrColorRenderTarget0":
 			{
@@ -89,12 +100,6 @@
 			{
 				"TextureFormat": "R32_FLOAT",
 				"Flags": "SHADER_RESOURCE | UNORDERED_ACCESS | ALLOW_RESOLUTION_SCALE"
-			},
-			"Example/Texture/Dynamic/DistortionRenderTarget":
-			{
-				"Description": "Distortion which can e.g. be used for heat haze",
-				"TextureFormat": "R16G16_FLOAT",
-				"Scale": "0.5"
 			},
 			"Example/Texture/Dynamic/VolumetricLightRenderTarget":
 			{
@@ -199,18 +204,16 @@
 				"TextureFormat": "R11G11B10F",
 				"Flags": "SHADER_RESOURCE | UNORDERED_ACCESS | ALLOW_RESOLUTION_SCALE",
 				"Scale": "0.25"
+			},
+			"Example/Texture/Dynamic/DistortionRenderTarget":
+			{
+				"Description": "Distortion which can e.g. be used for heat haze",
+				"TextureFormat": "R16G16_FLOAT",
+				"Scale": "0.5"
 			}
 		},
 		"Framebuffers":
 		{
-			"ScreenSpaceReflectionRayTracingFramebuffer":
-			{
-				"ColorTextures": [ "Example/Texture/Dynamic/ScreenSpaceReflectionRayTracingRenderTarget" ]
-			},
-			"ReflectionFramebuffer":
-			{
-				"ColorTextures": [ "Example/Texture/Dynamic/ReflectionRenderTarget" ]
-			},
 			"HdrMultisampleFramebuffer":
 			{
 				"ColorTextures": [ "Example/Texture/Dynamic/HdrMultisampleColorRenderTarget", "Example/Texture/Dynamic/MultisampleSpecularRenderTarget", "Example/Texture/Dynamic/MultisampleNormalRenderTarget", "Example/Texture/Dynamic/MultisampleVelocityRenderTarget" ],
@@ -218,8 +221,24 @@
 			},
 			"MsaaResolveFramebuffer":
 			{
-				"ColorTextures": [ "Example/Texture/Dynamic/HdrColorRenderTarget0", "Example/Texture/Dynamic/SpecularRenderTarget" ],
+				"ColorTextures": [ "Example/Texture/Dynamic/HdrColorRenderTarget0", "Example/Texture/Dynamic/SpecularRenderTarget", "Example/Texture/Dynamic/NormalRenderTarget", "Example/Texture/Dynamic/VelocityRenderTarget" ],
 				"DepthStencilTexture": "Example/Texture/Dynamic/DepthStencilRenderTarget"
+			},
+			"ScreenSpaceAmbientOcclusionFramebuffer":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/ScreenSpaceAmbientOcclusionRenderTarget" ]
+			},
+			"VolumetricLightFramebuffer":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/VolumetricLightRenderTarget" ]
+			},
+			"ScreenSpaceReflectionRayTracingFramebuffer":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/ScreenSpaceReflectionRayTracingRenderTarget" ]
+			},
+			"ReflectionFramebuffer":
+			{
+				"ColorTextures": [ "Example/Texture/Dynamic/ReflectionRenderTarget" ]
 			},
 			"HdrFramebuffer1":
 			{
@@ -230,10 +249,6 @@
 				"ColorTextures": [ "Example/Texture/Dynamic/HdrColorRenderTarget1" ],
 				"DepthStencilTexture": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget"
 			},
-			"ScreenSpaceAmbientOcclusionFramebuffer":
-			{
-				"ColorTextures": [ "Example/Texture/Dynamic/ScreenSpaceAmbientOcclusionRenderTarget" ]
-			},
 			"DistortionFramebuffer":
 			{
 				"ColorTextures": [ "Example/Texture/Dynamic/DistortionRenderTarget" ],
@@ -242,10 +257,6 @@
 					"DepthStencilTexture": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
 					"MipmapIndex": "1"
 				}
-			},
-			"VolumetricLightFramebuffer":
-			{
-				"ColorTextures": [ "Example/Texture/Dynamic/VolumetricLightRenderTarget" ]
 			}
 		},
 		"Targets":
@@ -305,19 +316,13 @@
 						"ColorMap": "Example/Texture/Dynamic/HdrMultisampleColorRenderTarget",
 						"DepthMap": "Example/Texture/Dynamic/MultisampleDepthStencilRenderTarget",
 						"SpecularMap": "Example/Texture/Dynamic/MultisampleSpecularRenderTarget",
-						"VelocityMap": "Example/Texture/Dynamic/MultisampleVelocityRenderTarget",
-						"PreviousColorMap": "Example/Texture/Dynamic/PreviousHdrColorRenderTarget"
+						"NormalMap": "Example/Texture/Dynamic/MultisampleNormalRenderTarget",
+						"VelocityMap": "Example/Texture/Dynamic/MultisampleVelocityRenderTarget"
 					}
 				}
 			},
 			"":
 			{
-				"Copy":
-				{
-					"Name": "Backup color",
-					"DestinationTexture": "Example/Texture/Dynamic/PreviousHdrColorRenderTarget",
-					"SourceTexture": "Example/Texture/Dynamic/HdrColorRenderTarget0"
-				},
 				"Copy":
 				{
 					"Name": "HZB depth map copy",
@@ -343,7 +348,7 @@
 					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_ScreenSpaceAmbientOcclusionGeneration.asset",
 					"SetMaterialProperties":
 					{
-						"NormalMap": "Example/Texture/Dynamic/MultisampleNormalRenderTarget",
+						"NormalMap": "Example/Texture/Dynamic/NormalRenderTarget",
 						"DepthMap": "Example/Texture/Dynamic/DepthStencilRenderTarget"
 					}
 				}
@@ -360,22 +365,6 @@
 						"ScreenSpaceAmbientOcclusionMap": "Example/Texture/Dynamic/ScreenSpaceAmbientOcclusionRenderTarget",
 						"OutputTexture2D": "Example/Texture/Dynamic/BlurredScreenSpaceAmbientOcclusionRenderTarget"
 					}
-				}
-			},
-			"DistortionFramebuffer":
-			{
-				"Clear":
-				{
-					"Flags": "COLOR"
-				},
-				"Scene":
-				{
-					"Name": "Distortion objects",
-					"Description": "Render distortion objects",
-					"MinimumRenderQueueIndex": "255",
-					"MaximumRenderQueueIndex": "255",
-					"TransparentPass": "TRUE",
-					"MaterialTechnique": "Distortion"
 				}
 			},
 			"VolumetricLightFramebuffer":
@@ -414,10 +403,9 @@
 					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_ScreenSpaceReflectionRayTracing.asset",
 					"SetMaterialProperties":
 					{
-						"UseTemporalReprojection": "FALSE",
 						"DepthMap": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
 						"SpecularMap": "Example/Texture/Dynamic/SpecularRenderTarget",
-						"NormalMap": "Example/Texture/Dynamic/MultisampleNormalRenderTarget"
+						"NormalMap": "Example/Texture/Dynamic/NormalRenderTarget"
 					}
 				}
 			},
@@ -437,10 +425,11 @@
 					{
 						"DepthMap": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
 						"SpecularMap": "Example/Texture/Dynamic/SpecularRenderTarget",
-						"NormalMap": "Example/Texture/Dynamic/MultisampleNormalRenderTarget",
+						"NormalMap": "Example/Texture/Dynamic/NormalRenderTarget",
+						"ReflectionCubeMap": "${PROJECT_NAME}/Texture/T_Maskonaive3_rcube.asset",
 						"ScreenSpaceReflectionMap": "Example/Texture/Dynamic/ScreenSpaceReflectionRayTracingRenderTarget",
-						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget1",
-						"ReflectionCubeMap": "${PROJECT_NAME}/Texture/T_Maskonaive3_rcube.asset"
+						"PreviousColorMap": "Example/Texture/Dynamic/PreviousHdrColorRenderTarget",
+						"VelocityMap": "Example/Texture/Dynamic/VelocityRenderTarget"
 					}
 				}
 			},
@@ -476,11 +465,30 @@
 			{
 				"Compute":
 				{
+					"Name": "Temporal anti aliasing",
+					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_TemporalAntiAliasing.asset",
+					"SetMaterialProperties":
+					{
+						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget1",
+						"DepthMap": "Example/Texture/Dynamic/HierarchicalDepthStencilRenderTarget",
+						"VelocityMap": "Example/Texture/Dynamic/VelocityRenderTarget",
+						"PreviousColorMap": "Example/Texture/Dynamic/PreviousHdrColorRenderTarget",
+						"OutputTexture2D": "Example/Texture/Dynamic/HdrColorRenderTarget0"
+					}
+				},
+				"Copy":
+				{
+					"Name": "Backup color",
+					"DestinationTexture": "Example/Texture/Dynamic/PreviousHdrColorRenderTarget",
+					"SourceTexture": "Example/Texture/Dynamic/HdrColorRenderTarget0"
+				},
+				"Compute":
+				{
 					"Name": "Calculate luminance",
 					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_CalculateLuminance.asset",
 					"SetMaterialProperties":
 					{
-						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget1",
+						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget0",
 						"OutputTexture2D": "Example/Texture/Dynamic/LuminanceRenderTarget"
 					}
 				},
@@ -529,7 +537,7 @@
 					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_Scale.asset",
 					"SetMaterialProperties":
 					{
-						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget1",
+						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget0",
 						"OutputTexture2D": "Example/Texture/Dynamic/GaussianBlurDownscale2ColorRenderTarget"
 					}
 				},
@@ -592,10 +600,10 @@
 					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_DepthOfField.asset",
 					"SetMaterialProperties":
 					{
-						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget1",
+						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget0",
 						"DepthMap": "Example/Texture/Dynamic/DepthStencilRenderTarget",
 						"BlurMap": "Example/Texture/Dynamic/GaussianBlurDownscale2ColorRenderTarget",
-						"OutputTexture2D": "Example/Texture/Dynamic/HdrColorRenderTarget0"
+						"OutputTexture2D": "Example/Texture/Dynamic/HdrColorRenderTarget1"
 					}
 				},
 				"Compute":
@@ -604,9 +612,9 @@
 					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_MotionBlur.asset",
 					"SetMaterialProperties":
 					{
-						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget0",
-						"VelocityMap": "Example/Texture/Dynamic/MultisampleVelocityRenderTarget",
-						"OutputTexture2D": "Example/Texture/Dynamic/HdrColorRenderTarget1"
+						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget1",
+						"VelocityMap": "Example/Texture/Dynamic/VelocityRenderTarget",
+						"OutputTexture2D": "Example/Texture/Dynamic/HdrColorRenderTarget0"
 					}
 				},
 				"Compute":
@@ -616,7 +624,7 @@
 					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_HdrToLdrBloomThreshold.asset",
 					"SetMaterialProperties":
 					{
-						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget1",
+						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget0",
 						"LuminanceMap": "Example/Texture/Dynamic/AdaptiveLuminanceRenderTarget",
 						"OutputTexture2D": "Example/Texture/Dynamic/BloomColorRenderTarget"
 					}
@@ -682,6 +690,22 @@
 					}
 				}
 			},
+			"DistortionFramebuffer":
+			{
+				"Clear":
+				{
+					"Flags": "COLOR"
+				},
+				"Scene":
+				{
+					"Name": "Distortion objects",
+					"Description": "Render distortion objects",
+					"MinimumRenderQueueIndex": "255",
+					"MaximumRenderQueueIndex": "255",
+					"TransparentPass": "TRUE",
+					"MaterialTechnique": "Distortion"
+				}
+			},
 			"":
 			{
 				"Compute":
@@ -711,7 +735,7 @@
 					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_LensFlareThreshold.asset",
 					"SetMaterialProperties":
 					{
-						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget1",
+						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget0",
 						"OutputTexture2D": "Example/Texture/Dynamic/BloomColorRenderTarget"
 					}
 				},
@@ -755,7 +779,7 @@
 					"MaterialBlueprint": "${PROJECT_NAME}/Blueprint/Compositor/MB_HdrToLdr.asset",
 					"SetMaterialProperties":
 					{
-						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget1",
+						"ColorMap": "Example/Texture/Dynamic/HdrColorRenderTarget0",
 						"DistortionMap": "Example/Texture/Dynamic/DistortionRenderTarget",
 						"LuminanceMap": "Example/Texture/Dynamic/AdaptiveLuminanceRenderTarget",
 						"BloomMap": "Example/Texture/Dynamic/BloomDownscale2ColorRenderTarget",

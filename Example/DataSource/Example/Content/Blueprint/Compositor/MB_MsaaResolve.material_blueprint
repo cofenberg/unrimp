@@ -39,19 +39,19 @@
 				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
 				"Description": "2D specular map"
 			},
+			"NormalMap":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
+				"Description": "2D screen space normal map"
+			},
 			"VelocityMap":
 			{
 				"Usage": "TEXTURE_REFERENCE",
 				"ValueType": "TEXTURE_ASSET_ID",
 				"Value": "Unrimp/Texture/DynamicByCode/BlackMap2D",
 				"Description": "2D screen space velocity map"
-			},
-			"PreviousColorMap":
-			{
-				"Usage": "TEXTURE_REFERENCE",
-				"ValueType": "TEXTURE_ASSET_ID",
-				"Value": "Unrimp/Texture/DynamicByCode/WhiteMap2D",
-				"Description": "Previous resolved 2D HDR color map"
 			}
 		},
 		"GraphicsPipelineState":
@@ -74,33 +74,6 @@
 		"ResourceGroups":
 		{
 			"0":
-			{
-				"0":
-				{
-					"ResourceType": "UNIFORM_BUFFER",
-					"BaseShaderRegisterName": "PassUniformBuffer",
-					"BaseShaderRegister": "0",
-					"ShaderVisibility": "FRAGMENT",
-					"BufferUsage": "PASS",
-					"NumberOfElements": "1",
-					"ElementProperties":
-					{
-						"ViewportSize":
-						{
-							"Usage": "PASS_REFERENCE",
-							"ValueType": "FLOAT_2",
-							"Value": "@VIEWPORT_SIZE"
-						},
-						"JitterOffset":
-						{
-							"Usage": "PASS_REFERENCE",
-							"ValueType": "FLOAT_2",
-							"Value": "@JITTER_OFFSET"
-						}
-					}
-				}
-			},
-			"1":
 			{
 				"0":
 				{
@@ -141,25 +114,25 @@
 				"3":
 				{
 					"ResourceType": "TEXTURE_2D",
-					"BaseShaderRegisterName": "VelocityMap",
+					"BaseShaderRegisterName": "NormalMap",
 					"BaseShaderRegister": "3",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
-					"Value": "@VelocityMap",
+					"Value": "@NormalMap",
 					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
 					"MipmapsUsed": "FALSE"
 				},
 				"4":
 				{
 					"ResourceType": "TEXTURE_2D",
-					"BaseShaderRegisterName": "PreviousColorMap",
+					"BaseShaderRegisterName": "VelocityMap",
 					"BaseShaderRegister": "4",
 					"ShaderVisibility": "FRAGMENT",
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
-					"Value": "@PreviousColorMap",
-					"FallbackTexture": "Unrimp/Texture/DynamicByCode/WhiteMap2D",
+					"Value": "@VelocityMap",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/BlackMap2D",
 					"MipmapsUsed": "FALSE"
 				}
 			}

@@ -1,0 +1,277 @@
+/*********************************************************\
+ * Copyright (c) 2012-2019 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+// Unrimp port of "MSAA Resolve + Temporal AA" from https://github.com/TheRealMJP/MSAAFilter with background information at https://mynameismjp.wordpress.com/2012/10/28/msaa-resolve-filters/
+// -> Have a look at the original MSAA filter example for much more options and a nice GUI for experimenting with settings
+
+
+//[-------------------------------------------------------]
+//[ Definitions                                           ]
+//[-------------------------------------------------------]
+@includepiece(../SharedShaderPiece/SP_Core.asset)
+	@insertpiece(SetCrossPlatformSettings)
+
+
+//[-------------------------------------------------------]
+//[ Input / output                                        ]
+//[-------------------------------------------------------]
+// Attribute input / output
+INPUT_BEGIN
+	DECLARE_GLOBAL_INVOCATION_ID
+INPUT_END
+
+// Uniform buffers
+struct PassDataStruct
+{
+	uint3  GlobalComputeSize;
+	float2 JitterOffset;
+};
+UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
+	PassDataStruct PassData;
+UNIFORM_BUFFER_END
+
+// Textures
+TEXTURE_2D(1, 0, ColorMap, 0)
+TEXTURE_2D(1, 1, DepthMap, 1)
+TEXTURE_2D(1, 2, VelocityMap, 2)
+TEXTURE_2D(1, 3, PreviousColorMap, 3)
+RW_TEXTURE_2D(1, 4, OutputTexture2D, 4, r11f_g11f_b10f, writeonly)
+
+
+//[-------------------------------------------------------]
+//[ Functions                                             ]
+//[-------------------------------------------------------]
+@includepiece(../SharedShaderPiece/SP_Color.asset)
+	@insertpiece(DefineColorToLuminance)
+
+// From "Temporal Reprojection Anti-Aliasing": https://github.com/playdeadgames/temporal
+float3 ClipAabb(float3 aabbMin, float3 aabbMax, float3 previousSample)
+{
+	// Note: Only clips towards AABB center (but fast!)
+	float3 pClip = 0.5f * (aabbMax + aabbMin);
+	float3 eClip = 0.5f * (aabbMax - aabbMin);
+
+	// Avoid floating point division by zero
+	eClip = max(float3(0.001f, 0.001f, 0.001f), eClip);
+
+	float3 vClip = previousSample - pClip;
+	float3 vUnit = vClip.xyz / eClip;
+	float3 aUnit = abs(vUnit);
+	float maUnit = max(aUnit.x, max(aUnit.y, aUnit.z));
+
+	FLATTEN if (maUnit > 1.0f)
+	{
+		return pClip + vClip / maUnit;
+	}
+	else
+	{
+		// Point inside AABB
+		return previousSample;
+	}
+}
+
+float FilterCubic(float x, float b, float c)
+{
+	float y = 0.0f;
+	float x2 = x * x;
+	float x3 = x * x * x;
+	FLATTEN if (x < 1.0f)
+	{
+		y = (12.0f - 9.0f * b - 6.0f * c) * x3 + (-18.0f + 12.0f * b + 6.0f * c) * x2 + (6.0f - 2.0f * b);
+	}
+	else FLATTEN if (x <= 2.0f)
+	{
+		y = (-b - 6.0f * c) * x3 + (6.0f * b + 30.0f * c) * x2 + (-12.0f * b - 48.0f * c) * x + (8.0f * b + 24.0f * c);
+	}
+
+	return y / 6.0f;
+}
+
+float ResolveFilter(float x)
+{
+	// B-Spline
+	// -> Cubic filters naturally work in a [-2, 2] domain. For the resolve case we want to rescale the filter so that it works in [-1, 1] instead
+	return FilterCubic(x * 2.0f, 1.0f, 0.0f);
+}
+
+float ReprojectionFilter(float x)
+{
+	// Catmull-Rom
+	return FilterCubic(x, 0.0f, 0.5f);
+}
+
+float3 Reproject(int2 globalInvocationId)
+{
+	float2 velocity = float2(0.0f, 0.0f);
+
+	{ // Dilation mode: Dilate nearest depth
+		float closestDepth = 10.0f;
+		UNROLL
+		for (int vy = -1; vy <= 1; ++vy)
+		{
+			UNROLL
+			for (int vx = -1; vx <= 1; ++vx)
+			{
+				float2 neighborVelocity = TEXTURE_FETCH_2D(VelocityMap, int3(globalInvocationId + int2(vx, vy), 0)).xy;
+				float neighborDepth = REVERSED_Z(TEXTURE_FETCH_2D(DepthMap, int3(globalInvocationId + int2(vx, vy), 0)).r);
+				FLATTEN if (neighborDepth < closestDepth)
+				{
+					velocity = neighborVelocity;
+					closestDepth = neighborDepth;
+				}
+			}
+		}
+	}
+
+	velocity = velocity * PassData.GlobalComputeSize.xy + PassData.JitterOffset;
+	float2 reprojectedPos = globalInvocationId + float2(0.5f, 0.5f) - velocity;
+	float2 reprojectedUV = reprojectedPos / PassData.GlobalComputeSize.xy;
+
+	{ // None standard reprojection
+		float3 sum = float3(0.0f, 0.0f, 0.0f);
+		float totalWeight = 0.0f;
+
+		UNROLL for (int ty = -1; ty <= 2; ++ty)
+		{
+			UNROLL for (int tx = -1; tx <= 2; ++tx)
+			{
+				float2 samplePosition = floor(reprojectedPos + float2(tx, ty)) + float2(0.5f, 0.5f);
+				float3 reprojectedSample = TEXTURE_FETCH_2D(PreviousColorMap, int3(samplePosition, 0)).xyz;
+
+				float2 sampleDist = abs(samplePosition - reprojectedPos);
+				float filterWeight = ReprojectionFilter(sampleDist.x) * ReprojectionFilter(sampleDist.y);
+
+				float sampleLum = ColorToLuminance(reprojectedSample);
+
+				// Inverse luminance filtering
+				filterWeight *= 1.0f / (1.0f + sampleLum);
+
+				sum += reprojectedSample * filterWeight;
+				totalWeight += filterWeight;
+			}
+		}
+
+		return max(sum / totalWeight, 0.0f);
+	}
+}
+
+
+//[-------------------------------------------------------]
+//[ Main                                                  ]
+//[-------------------------------------------------------]
+MAIN_BEGIN_COMPUTE(32, 32, 1)
+	// Compute dispatch is using groups of a multiple of the local size, ensure we don't access out of global compute size which mustn't be a multiple of the local size and hence might be smaller
+	BRANCH if (GLOBAL_INVOCATION_ID.x < PassData.GlobalComputeSize.x && GLOBAL_INVOCATION_ID.y < PassData.GlobalComputeSize.y)
+	{
+		int3 globalInvocationId = CAST_TO(GLOBAL_INVOCATION_ID, int3);
+
+		// Fixed build in settings, too technical for an artist to be tweakable
+		const float RESOLVE_FILTER_DIAMETER = 2.0f;
+		const float VARIANCE_CLIP_GAMMA = 1.5f;
+		const float TEMPORAL_AA_BLEND_FACTOR = 0.9f;
+
+		float3 sum = float3(0.0f, 0.0f, 0.0f);
+		float totalWeight = 0.0f;
+
+		float3 clrMin = float3(99999999.0f, 99999999.0f, 99999999.0f);
+		float3 clrMax = float3(-99999999.0f, -99999999.0f, -99999999.0f);
+
+		float3 m1 = float3(0.0f, 0.0f, 0.0f);
+		float3 m2 = float3(0.0f, 0.0f, 0.0f);
+		float mWeight = 0.0f;
+
+		const float filterRadius = RESOLVE_FILTER_DIAMETER / 2.0f;
+
+		UNROLL for (int y = -1; y <= 1; ++y)
+		{
+			UNROLL for (int x = -1; x <= 1; ++x)
+			{
+				float2 sampleOffset = float2(x, y);
+				float2 samplePosition = globalInvocationId.xy + float2(0.5f, 0.5f) + sampleOffset;
+				samplePosition = clamp(samplePosition, float2(0.0f, 0.0f), PassData.GlobalComputeSize.xy - 1.0f);
+
+				float2 sampleDist = abs(sampleOffset) / (RESOLVE_FILTER_DIAMETER / 2.0f);
+
+				float3 sampleValue = TEXTURE_FETCH_2D(ColorMap, int3(samplePosition, 0)).xyz;
+				sampleValue = max(sampleValue, 0.0f);
+
+				float weight = ResolveFilter(sampleDist.x) * ResolveFilter(sampleDist.y);
+				clrMin = min(clrMin, sampleValue);
+				clrMax = max(clrMax, sampleValue);
+
+				float sampleLum = ColorToLuminance(sampleValue);
+
+				// Inverse luminance filtering
+				weight *= 1.0f / (1.0f + sampleLum);
+
+				sum += sampleValue * weight;
+				totalWeight += weight;
+
+				m1 += sampleValue;
+				m2 += sampleValue * sampleValue;
+				mWeight += 1.0f;
+			}
+		}
+
+		float4 color = TEXTURE_FETCH_2D(ColorMap, globalInvocationId);
+		float3 result = color.rgb;
+		float edgePixel = color.a;
+		result = max(result, float3(0.0f, 0.0f, 0.0f));
+
+		// Avoid floating point division by zero
+		FLATTEN if (0.0f == mWeight)
+		{
+			mWeight = 0.001f;
+		}
+
+		{ // Temporal AA
+			float3 currentColor = result;
+			float3 previousColor = Reproject(globalInvocationId.xy);
+
+			{ // Clamp mode: Variance clip
+				float3 mu = m1 / mWeight;
+				float3 sigma = sqrt(abs(m2 / mWeight - mu * mu));
+				float3 minc = mu - VARIANCE_CLIP_GAMMA * sigma;
+				float3 maxc = mu + VARIANCE_CLIP_GAMMA * sigma;
+				previousColor = ClipAabb(minc, maxc, previousColor);
+			}
+
+			float3 weightA = float3(1.0f - TEMPORAL_AA_BLEND_FACTOR, 1.0f - TEMPORAL_AA_BLEND_FACTOR, 1.0f - TEMPORAL_AA_BLEND_FACTOR);
+			float3 weightB = float3(TEMPORAL_AA_BLEND_FACTOR, TEMPORAL_AA_BLEND_FACTOR, TEMPORAL_AA_BLEND_FACTOR);
+
+			{ // Temporal color weighting
+				float3 temporalWeight = SATURATE(abs(clrMax - clrMin) / currentColor);
+				float LowFreqWeight = 0.25f;
+				float HiFreqWeight = 0.85f;
+				weightB = SATURATE(LERP(float3(LowFreqWeight, LowFreqWeight, LowFreqWeight), float3(HiFreqWeight, HiFreqWeight, HiFreqWeight), temporalWeight));
+				weightA = 1.0f - weightB;
+			}
+
+			// Inverse luminance filtering
+			weightA *= 1.0f / (1.0f + ColorToLuminance(currentColor));
+			weightB *= 1.0f / (1.0f + ColorToLuminance(previousColor));
+
+			result = (currentColor * weightA + previousColor * weightB) / (weightA + weightB);
+		}
+
+		// Done
+		IMAGE_STORE(OutputTexture2D, globalInvocationId.xy, float4(result.rgb, 1.0f));	// rgb = albedo color, a = unused
+	}
+MAIN_END_NO_OUTPUT
