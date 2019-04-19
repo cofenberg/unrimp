@@ -123,10 +123,10 @@ namespace RendererRuntime
 	void IResource::deinitializeElement()
 	{
 		// Sanity check
-		assert((LoadingState::LOADED == mLoadingState || LoadingState::UNLOADED == mLoadingState) && "Resource deinitialized while in-flight inside the resource streamer");
+		assert((LoadingState::LOADING != mLoadingState || LoadingState::UNLOADING != mLoadingState) && "Resource deinitialized while in-flight inside the resource streamer");
 
 		// Update loading state, if necessary
-		if (LoadingState::UNLOADED != mLoadingState)
+		if (LoadingState::UNLOADED != mLoadingState && LoadingState::FAILED != mLoadingState)
 		{
 			setLoadingState(LoadingState::UNLOADED);
 		}

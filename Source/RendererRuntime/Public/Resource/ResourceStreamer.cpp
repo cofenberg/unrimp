@@ -123,8 +123,7 @@ namespace RendererRuntime
 			dispatchMutexLock.unlock();
 
 			// Do the work
-			IResourceLoader* resourceLoader = loadRequest.resourceLoader;
-			if (resourceLoader->onDispatch())
+			if (loadRequest.loadingFailed || loadRequest.resourceLoader->onDispatch())
 			{
 				// Load request is finished now
 				finalizeLoadRequest(loadRequest);
@@ -281,6 +280,13 @@ namespace RendererRuntime
 									mDispatchQueue.push_back(loadRequest);
 								}
 							}
+							else
+							{
+								// Resource streamer stage: 3. Synchronous dispatch to finish off the failed loading attempt
+								loadRequest.loadingFailed = true;
+								std::lock_guard<std::mutex> dispatchMutexLock(mDispatchMutex);
+								mDispatchQueue.push_back(loadRequest);
+							}
 							fileManager.closeFile(*file);
 						}
 						else
@@ -346,7 +352,7 @@ namespace RendererRuntime
 			if (mResourceLoaderTypeManager.cend() != iterator)
 			{
 				#ifdef _DEBUG
-					loadRequest.getResource().mDebugName = loadRequest.resourceLoader->getAsset().virtualFilename;
+					loadRequest.getResource().setDebugName(std::string(loadRequest.resourceLoader->getAsset().virtualFilename) + IFileManager::INVALID_CHARACTER + "[Loaded]");
 				#endif
 
 				// The resource loader instance is free now and ready to be reused
@@ -378,7 +384,7 @@ namespace RendererRuntime
 		}
 
 		// The last thing we do: Update the resource loading state
-		loadRequest.getResource().setLoadingState(IResource::LoadingState::LOADED);
+		loadRequest.getResource().setLoadingState(loadRequest.loadingFailed ? IResource::LoadingState::FAILED : IResource::LoadingState::LOADED);
 		RENDERER_ASSERT(mRendererRuntime.getContext(), 0 != mNumberOfInFlightLoadRequests, "Invalid number of in flight load requests")
 		--mNumberOfInFlightLoadRequests;
 	}

@@ -118,6 +118,7 @@ namespace RendererRuntime
 			ResourceId			 resourceId;			///< Must be valid
 			// In-flight data
 			mutable IResourceLoader* resourceLoader;	///< Null pointer at first, must be valid as soon as the load request is in-flight, do not destroy the instance
+			bool					 loadingFailed;		///< "true" if loading failed, else "false"
 
 			// Methods
 			inline LoadRequest(const Asset& _asset, ResourceLoaderTypeId _resourceLoaderTypeId, bool _reload, IResourceManager& _resourceManager, ResourceId _resourceId) :
@@ -126,7 +127,8 @@ namespace RendererRuntime
 				reload(_reload),
 				resourceManager(&_resourceManager),
 				resourceId(_resourceId),
-				resourceLoader(nullptr)
+				resourceLoader(nullptr),
+				loadingFailed(false)
 			{
 				// Nothing here
 			}

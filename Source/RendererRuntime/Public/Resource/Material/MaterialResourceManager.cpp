@@ -65,6 +65,27 @@ namespace RendererRuntime
 		MaterialResource& materialResource = mInternalResourceManager->getResources().addElement();
 		materialResource.setResourceManager(this);
 		materialResource.setAssetId(assetId);
+		#ifdef _DEBUG
+		{
+			const AssetManager& assetManager = mRendererRuntime.getAssetManager();
+			const VirtualFilename virtualFilename = assetManager.tryGetVirtualFilenameByAssetId(assetId);
+			if (nullptr != virtualFilename)
+			{
+				if (assetId == materialBlueprintAssetId)
+				{
+					materialResource.setDebugName(IFileManager::INVALID_CHARACTER + std::string("[CreatedMaterial][InstanceOfMaterialBlueprintAsset=\"") + std::string(virtualFilename) + "\"]");
+				}
+				else
+				{
+					materialResource.setDebugName(IFileManager::INVALID_CHARACTER + std::string("[CreatedMaterial][Asset=\"") + std::string(virtualFilename) + "\"][MaterialBlueprintAsset=\"" + assetManager.getAssetByAssetId(materialBlueprintAssetId).virtualFilename + "\"]");
+				}
+			}
+			else
+			{
+				materialResource.setDebugName(IFileManager::INVALID_CHARACTER + std::string("[CreatedMaterial][AssetId=") + std::to_string(assetId) + "][MaterialBlueprintAsset=\"" + assetManager.getAssetByAssetId(materialBlueprintAssetId).virtualFilename + "\"]");
+			}
+		}
+		#endif
 
 		{ // Setup material resource instance
 			// Copy over the material properties of the material blueprint resource
@@ -103,6 +124,9 @@ namespace RendererRuntime
 		materialResource.setResourceManager(this);
 		materialResource.setAssetId(assetId);
 		materialResource.setParentMaterialResourceId(parentMaterialResourceId);
+		#ifdef _DEBUG
+			materialResource.setDebugName(mInternalResourceManager->getResources().getElementById(parentMaterialResourceId).getDebugName() + "[Clone]");
+		#endif
 
 		// Done
 		setResourceLoadingState(materialResource, IResource::LoadingState::LOADED);

@@ -29,6 +29,7 @@
 *    In order to make it easier to use the renderer, the header "Renderer.h" puts everything together within a single header without any additional third party dependencies.
 *
 *    == Preprocessor Definitions ==
+*    - Set "_DEBUG" as preprocessor definition when building for debugging
 *    - Set "_WIN32" as preprocessor definition when building for Microsoft Windows
 *    - Set "LINUX" as preprocessor definition when building for Linux or similar platforms
 *        - For Linux or similar platforms: Set "HAVE_VISIBILITY_ATTR" as preprocessor definition to use the visibility attribute (the used compiler must support it)

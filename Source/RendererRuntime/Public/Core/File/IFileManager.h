@@ -113,6 +113,7 @@ namespace RendererRuntime
 			FILES,		///< Do only enumerate files
 			DIRECTORIES	///< Do only enumerate directories
 		};
+		static const constexpr char INVALID_CHARACTER = '?';	///< Invalid character ( "Windows Dev Center" -> "Naming Files, Paths, and Namespaces" -> "File and Directory Names" -> "Naming Conventions" published on 31.05.2018 at https://docs.microsoft.com/de-de/windows/desktop/FileIO/naming-a-file ) which can e.g. be used as separator in debug names ("<filename>?[<attribute 0>][<attribute n>]")
 
 
 	//[-------------------------------------------------------]

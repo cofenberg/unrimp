@@ -88,7 +88,8 @@ namespace RendererRuntime
 			UNLOADED,	///< Not loaded
 			LOADING,	///< Loading is in progress
 			LOADED,		///< Fully loaded
-			UNLOADING	///< Currently unloading	// TODO(co) Currently unused
+			UNLOADING,	///< Currently unloading	// TODO(co) Currently unused
+			FAILED		///< The last loading attempt failed
 		};
 
 
@@ -133,9 +134,15 @@ namespace RendererRuntime
 		RENDERERRUNTIME_API_EXPORT void disconnectResourceListener(IResourceListener& resourceListener);
 
 		#ifdef _DEBUG
+			// If possible, the resource debug name should use the following convention: "<filename>?[<attribute 0>][<attribute n>]" (for "?" see "RendererRuntime::IFileManager::INVALID_CHARACTER")
 			[[nodiscard]] inline const std::string& getDebugName() const
 			{
 				return mDebugName;
+			}
+
+			inline void setDebugName(const std::string& debugName)
+			{
+				mDebugName = debugName;
 			}
 		#endif
 
@@ -161,7 +168,7 @@ namespace RendererRuntime
 			assert(isInvalid(mResourceId));
 			assert(isInvalid(mAssetId));
 			assert(isInvalid(mResourceLoaderTypeId));
-			assert(LoadingState::UNLOADED == mLoadingState);
+			assert(LoadingState::UNLOADED == mLoadingState || LoadingState::FAILED == mLoadingState);
 			assert(mSortedResourceListeners.empty());
 			#ifdef _DEBUG
 				assert(mDebugName.empty());

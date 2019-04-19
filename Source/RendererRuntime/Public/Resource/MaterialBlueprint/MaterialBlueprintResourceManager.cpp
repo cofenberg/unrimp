@@ -254,8 +254,7 @@ namespace RendererRuntime
 				loadMaterialBlueprintResourceByAssetId(assetId, materialBlueprintResourceId, nullptr, true, materialBlueprintResource.getResourceLoaderTypeId());
 
 				// Clear pipeline state cache manager
-				materialBlueprintResource.getGraphicsPipelineStateCacheManager().clearCache();
-				materialBlueprintResource.getComputePipelineStateCacheManager().clearCache();
+				materialBlueprintResource.clearPipelineStateObjectCache();
 
 				{ // Make the texture resource groups of all material techniques
 					MaterialBufferManager* materialBufferManager = materialBlueprintResource.mMaterialBufferManager;
