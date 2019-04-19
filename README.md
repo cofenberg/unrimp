@@ -102,7 +102,7 @@ Renderer API and Backends
 	- Instanced arrays (shader model 3 feature, vertex array element advancing per-instance instead of per-vertex)
 	- Draw instanced (shader model 4 feature, build in shader variable holding the current instance ID)
 - Debug methods
-	- When using Direct3D <11.1, those methods map to the Direct3D 9 PIX functions (D3DPERF_* functions, also works directly within VisualStudio 2017 out-of-the-box)
+	- When using Direct3D <11.1, those methods map to the Direct3D 9 PIX functions (D3DPERF_* functions, also works directly within VisualStudio 2019 out-of-the-box)
 	- Used inside the renderer implementations for better renderer debugging
 - Supported asynchronous queries: Occlusion, pipeline statistics and timestamp
 - Renderer implementation specific optimizations
@@ -195,7 +195,7 @@ Renderer Toolkit (e.g. "The Editor")
 
 Examples (just some high level keywords)
 ======
-- Memory leaks: On Microsoft Windows, "_CrtMemCheckpoint()" and "_CrtMemDumpAllObjectsSince()" is used by default to detect memory leaks while developing and not later on. In case something triggers, use the [diagnostic tools provided by Visual Studio 2017](http://blogs.microsoft.co.il/sasha/2014/12/01/native-memory-leak-diagnostics-visual-studio-2015/) or third parts tools to locate the memory leak in detail.
+- Memory leaks: On Microsoft Windows, "_CrtMemCheckpoint()" and "_CrtMemDumpAllObjectsSince()" is used by default to detect memory leaks while developing and not later on. In case something triggers, use the [diagnostic tools provided by Visual Studio 2019](http://blogs.microsoft.co.il/sasha/2014/12/01/native-memory-leak-diagnostics-visual-studio-2015/) or third parts tools to locate the memory leak in detail.
 - [Hierarchical depth buffer (aka Hi-Z map or HZB)](http://rastergrid.com/blog/2010/10/hierarchical-z-map-based-occlusion-culling/), useful for GPU occlusion culling, screen space reflections as well as using the second depth buffer mipmap for e.g. a half-sized volumetric light/fog bilateral upsampling
 - Physically based shading (PBS) using "metallic workflow" (aka "metal-rough-workflow" aka "Albedo/Metallic/Roughness") instead of "specular workflow" (aka "specular-gloss-workflow" aka "Diffuse/Specular/Glossines")
 - Microsoft Windows: ["NVIDIA Optimus"](http://developer.download.nvidia.com/devzone/devcenter/gamegraphics/files/OptimusRenderingPolicies.pdf) and ["AMD Dynamic Switchable Graphic"](https://community.amd.com/message/1307599#comment-1307599) awareness to reduce the risk of getting the integrated graphics unit assigned when there's a dedicated graphics card as well
@@ -261,11 +261,11 @@ Terminology and Acronyms
 
 Microsoft Windows: First Example Kickoff
 ======
-- [Open Visual Studio 2017 and select "File -> Open -> CMake..." -> "unrimp/CMakeLists.txt"](https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studio/)
+- [Open Visual Studio 2019 and select "File -> Open -> CMake..." -> "unrimp/CMakeLists.txt"](https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studio/)
 - Build "Windows_x64_Shared" project settings and when done use Visual Studio menu -> CMake -> Install -> Unrimp
 - Compile the runtime assets by starting "unrimp/Binary/Windows_x64_Shared/ExampleProjectCompiler.exe"
 - Run "unrimp/Binary/Windows_x64_Shared/Examples.exe" (is using default command line arguments "unrimp/Binary/Windows_x64_Shared/Examples.exe ImGuiExampleSelector -r Direct3D11")
-- For debugging with Visual Studio 2017, use "Examples.exe (Install with Arguments)" or "ExampleProjectCompiler.exe (Install with Arguments)" as startup item
+- For debugging with Visual Studio 2019, use "Examples.exe (Install with Arguments)" or "ExampleProjectCompiler.exe (Install with Arguments)" as startup item
 - Modify ["launch.vs.json"](https://github.com/Microsoft/vscode-cpptools/blob/master/launch.md) to change the Visual Studio application launch options, e.g. to start the "FirstScene"-example by default
 
 
@@ -276,10 +276,10 @@ Microsoft Windows: Using the Unrimp examples together with [SDL2](https://www.li
 
 Microsoft Windows: Targeting Android
 ======
-- Install the Visual Studio 2017 ["Mobile development with C++"-workload](https://blogs.msdn.microsoft.com/vcblog/2017/04/18/android-and-ios-development-with-c-in-visual-studio/)
+- Install the Visual Studio 2019 ["Mobile development with C++"-workload](https://blogs.msdn.microsoft.com/vcblog/2019/04/18/android-and-ios-development-with-c-in-visual-studio/)
 - Build and run the ["Native Activity Application (Android)"-template](https://docs.microsoft.com/en-us/visualstudio/cross-platform/create-an-android-native-activity-app) to verify your installation and setup
 - Unrimp needs at least ["android-ndk-r17"](https://developer.android.com/ndk/downloads/) due to the usage of C++17 features like the filesystem, download this Android NDK if needed
-- [Open Visual Studio 2017 and select "File -> Open -> CMake..." -> "unrimp/CMakeLists.txt"](https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studio/)
+- [Open Visual Studio 2019 and select "File -> Open -> CMake..." -> "unrimp/CMakeLists.txt"](https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studio/)
 - Build "Android_arm64_Static" project settings
 - TODO(co) Work-in-progress: Compile data for mobile target, upload to device to test and debug
 
@@ -288,11 +288,11 @@ Useful Microsoft Windows Developer Tools
 ======
 - When profiling a product
 	- Memory
-		- [Diagnostic tools provided by Visual Studio 2017](http://blogs.microsoft.co.il/sasha/2014/12/01/native-memory-leak-diagnostics-visual-studio-2015/)
+		- [Diagnostic tools provided by Visual Studio 2019](http://blogs.microsoft.co.il/sasha/2014/12/01/native-memory-leak-diagnostics-visual-studio-2015/)
 		- Free and open-source: [MTuner](https://github.com/milostosic/MTuner)
-			- As of October 14, 2017: Doesn't work with Visual Studio 2017 (v141) x86 but works with x64
+			- As of October 14, 2019: Doesn't work with Visual Studio 2017 (v141) x86 but works with x64
 	- Graphics
-		- Direct3D 11 graphics debugging can be done directly inside Visual Studio 2017
+		- Direct3D 11 graphics debugging can be done directly inside Visual Studio 2019
 	- CPU
 		- For CPU profiling the tool [Very Sleepy](http://www.codersnotes.com/sleepy/) is easy to use while providing useful results
 	- Compile time
@@ -361,8 +361,8 @@ Hints
 - Error strategy
 	- Inside renderer toolkit: Exceptions in extreme, up to no error tolerance. If something smells odd, blame it to make it possible to detect problems as early as possible in the production pipeline.
 	- Inside renderer runtime: The show must go on. If the floor breaks, just keep smiling and continue dancing.
-- Windows using Visual Studio 2017 C++ Open Folder and CMake: IntelliSense keeps failing
-	- Visual Studio 2017 -> Menu bar -> "Options" -> "Text Editor" -> "C/C++" -> "Advanced" -> "Inactive Platform IntelliSense Limit" -> Set it to e.g. 16 (see https://blogs.msdn.microsoft.com/vcblog/2018/01/10/intellisense-enhancements-for-cpp-open-folder-and-cmake/ )
+- Windows using Visual Studio 2019 C++ Open Folder and CMake: IntelliSense keeps failing
+	- Visual Studio 2019 -> Menu bar -> "Options" -> "Text Editor" -> "C/C++" -> "Advanced" -> "Inactive Platform IntelliSense Limit" -> Set it to e.g. 16 (see https://blogs.msdn.microsoft.com/vcblog/2018/01/10/intellisense-enhancements-for-cpp-open-folder-and-cmake/ )
 - How to test the 64 bit world space position support?
 	- Inside "SceneResourceLoader.cpp" -> "nodeDeserialization()" after reading a node, add an 100.000.000 offset to the node transform position
 

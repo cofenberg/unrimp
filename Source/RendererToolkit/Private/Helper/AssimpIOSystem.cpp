@@ -29,6 +29,7 @@
 #include <assimp/IOStream.hpp>
 
 #include <assert.h>
+#include <stdexcept>
 
 
 //[-------------------------------------------------------]

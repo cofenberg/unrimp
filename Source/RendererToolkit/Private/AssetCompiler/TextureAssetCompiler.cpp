@@ -1517,7 +1517,7 @@ namespace
 			}
 
 			// Evaluate texture semantic and figure out whether or not the destination format will be DXT compressed
-			bool dxtCompressed = (crnlib::pixel_format::PIXEL_FMT_INVALID == crunchConvertParams.m_dst_format) ? true : crnlib::pixel_format_helpers::is_dxt(crunchConvertParams.m_dst_format);
+			bool dxtCompressed = (crnlib::pixel_format::PIXEL_FMT_INVALID == crunchConvertParams.m_dst_format) ? true : static_cast<bool>(crnlib::pixel_format_helpers::is_dxt(crunchConvertParams.m_dst_format));	// TODO(co) Buggy external function signature "int crnlib::pixel_format_helpers::is_dxt(pixel_format fmt)", should probably return boolean
 			switch (textureSemantic)
 			{
 				case TextureSemantic::ALBEDO_MAP:

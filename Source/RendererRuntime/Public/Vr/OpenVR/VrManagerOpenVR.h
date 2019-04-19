@@ -34,6 +34,12 @@
 
 #include <OpenVR/openvr.h>
 
+// Disable warnings in external headers, we can't fix them
+PRAGMA_WARNING_PUSH
+	PRAGMA_WARNING_DISABLE_MSVC(4774)	// warning C4774: 'sprintf_s' : format string expected in argument 3 is not a string literal
+	#include <string>
+PRAGMA_WARNING_POP
+
 
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]

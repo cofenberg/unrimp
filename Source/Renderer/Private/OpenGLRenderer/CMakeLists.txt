@@ -84,7 +84,8 @@ if(WIN32)
 	# - Disable "warning C4365: 'initializing': conversion from 'int' to 'size_t', signed/unsigned mismatch"
 	# - Disable "warning C4530: C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc"
 	# - Disable "warning C4574: '_HAS_ITERATOR_DEBUGGING' is defined to be '0': did you mean to use '#if _HAS_ITERATOR_DEBUGGING'?""
-	set_source_files_properties(${CMAKE_SOURCE_DIR}/External/Renderer/smol-v/smolv.cpp PROPERTIES COMPILE_FLAGS "/wd4018 /wd4242 /wd4244 /wd4389 /wd4365 /wd4530 /wd4574")
+	# - Disable "warning C4626: 'std::_Basic_container_proxy_ptr12': assignment operator was implicitly defined as deleted"
+	set_source_files_properties(${CMAKE_SOURCE_DIR}/External/Renderer/smol-v/smolv.cpp PROPERTIES COMPILE_FLAGS "/wd4018 /wd4242 /wd4244 /wd4389 /wd4365 /wd4530 /wd4574 /wd4626")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 	set_source_files_properties(${CMAKE_SOURCE_DIR}/External/Renderer/smol-v/smolv.cpp PROPERTIES COMPILE_FLAGS "-Wno-sign-compare")
 	if(RENDERER_OPENGL_GLSLTOSPIRV)

@@ -121,17 +121,17 @@ bool IApplicationRendererRuntime::onInitialization()
 				if (rendererIsOpenGLES)
 				{
 					// Handy fallback for development: If the mobile data isn't there, use the PC data
-					mountAssetPackageResult = assetManager.mountAssetPackage("../DataMobile/Example/Content", "Example");
+					mountAssetPackageResult = (assetManager.mountAssetPackage("../DataMobile/Example/Content", "Example") != nullptr);
 					if (!mountAssetPackageResult)
 					{
 						RENDERER_LOG(rendererRuntime->getContext(), COMPATIBILITY_WARNING, "The examples application failed to find \"../DataMobile/Example/Content\", using \"../DataPc/Example/Content\" as fallback")
-						mountAssetPackageResult = assetManager.mountAssetPackage("../DataPc/Example/Content", "Example");
+						mountAssetPackageResult = (assetManager.mountAssetPackage("../DataPc/Example/Content", "Example") != nullptr);
 						rendererIsOpenGLES = false;
 					}
 				}
 				else
 				{
-					mountAssetPackageResult = assetManager.mountAssetPackage("../DataPc/Example/Content", "Example");
+					mountAssetPackageResult = (assetManager.mountAssetPackage("../DataPc/Example/Content", "Example") != nullptr);
 				}
 				if (!mountAssetPackageResult)
 				{
