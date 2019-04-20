@@ -355,138 +355,130 @@ namespace RendererRuntime
 
 	void GraphicsPipelineStateCompiler::compilerThreadWorker()
 	{
-		Renderer::IShaderLanguagePtr shaderLanguage(mRendererRuntime.getRenderer().getShaderLanguage());
-		if (nullptr != shaderLanguage)
+		Renderer::IShaderLanguage& shaderLanguage = mRendererRuntime.getRenderer().getDefaultShaderLanguage();
+		const MaterialBlueprintResourceManager& materialBlueprintResourceManager = mRendererRuntime.getMaterialBlueprintResourceManager();
+		RENDERER_RUNTIME_SET_CURRENT_THREAD_DEBUG_NAME("PSC: Stage 2", "Renderer runtime: Pipeline state compiler stage: 2. Asynchronous shader compilation");
+		while (!mShutdownCompilerThread)
 		{
-			const MaterialBlueprintResourceManager& materialBlueprintResourceManager = mRendererRuntime.getMaterialBlueprintResourceManager();
-			RENDERER_RUNTIME_SET_CURRENT_THREAD_DEBUG_NAME("PSC: Stage 2", "Renderer runtime: Pipeline state compiler stage: 2. Asynchronous shader compilation");
-			while (!mShutdownCompilerThread)
+			// Continue as long as there's a compiler request left inside the queue, if it's empty go to sleep
+			std::unique_lock<std::mutex> compilerMutexLock(mCompilerMutex);
+			mCompilerConditionVariable.wait(compilerMutexLock);
+			while (!mCompilerQueue.empty() && !mShutdownCompilerThread)
 			{
-				// Continue as long as there's a compiler request left inside the queue, if it's empty go to sleep
-				std::unique_lock<std::mutex> compilerMutexLock(mCompilerMutex);
-				mCompilerConditionVariable.wait(compilerMutexLock);
-				while (!mCompilerQueue.empty() && !mShutdownCompilerThread)
+				// Get the compiler request
+				CompilerRequest compilerRequest(mCompilerQueue.back());
+				mCompilerQueue.pop_back();
+				compilerMutexLock.unlock();
+
+				// Do the work: Compiling the shader source code it in order to get the shader bytecode
+				bool needToWaitForShaderCache = false;
+				Renderer::IShader* shaders[NUMBER_OF_GRAPHICS_SHADER_TYPES] = {};
+				for (uint8_t i = 0; i < NUMBER_OF_GRAPHICS_SHADER_TYPES && !needToWaitForShaderCache; ++i)
 				{
-					// Get the compiler request
-					CompilerRequest compilerRequest(mCompilerQueue.back());
-					mCompilerQueue.pop_back();
-					compilerMutexLock.unlock();
-
-					// Do the work: Compiling the shader source code it in order to get the shader bytecode
-					bool needToWaitForShaderCache = false;
-					Renderer::IShader* shaders[NUMBER_OF_GRAPHICS_SHADER_TYPES] = {};
-					for (uint8_t i = 0; i < NUMBER_OF_GRAPHICS_SHADER_TYPES && !needToWaitForShaderCache; ++i)
+					ShaderCache* shaderCache = compilerRequest.shaderCache[i];
+					if (nullptr != shaderCache)
 					{
-						ShaderCache* shaderCache = compilerRequest.shaderCache[i];
-						if (nullptr != shaderCache)
+						shaders[i] = shaderCache->getShaderPtr();
+						if (nullptr == shaders[i])
 						{
-							shaders[i] = shaderCache->getShaderPtr();
-							if (nullptr == shaders[i])
+							// The shader instance is not ready, do we need to compile it right now or is this the job of a shader cache master?
+							const std::string& shaderSourceCode = compilerRequest.shaderSourceCode[i];
+							if (shaderSourceCode.empty())
 							{
-								// The shader instance is not ready, do we need to compile it right now or is this the job of a shader cache master?
-								const std::string& shaderSourceCode = compilerRequest.shaderSourceCode[i];
-								if (shaderSourceCode.empty())
+								// We're not aware of any shader source code but we need a shader cache, so, there must be a shader cache master we need to wait for
+								// RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != shaderCache->getMasterShaderCache(), "Invalid master shader cache")	// No assert by intent
+								needToWaitForShaderCache = true;
+							}
+							else
+							{
+								// Create the shader instance
+								Renderer::IShader* shader = nullptr;
+								switch (static_cast<GraphicsShaderType>(i))
 								{
-									// We're not aware of any shader source code but we need a shader cache, so, there must be a shader cache master we need to wait for
-									// RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != shaderCache->getMasterShaderCache(), "Invalid master shader cache")	// No assert by intent
-									needToWaitForShaderCache = true;
-								}
-								else
-								{
-									// Create the shader instance
-									Renderer::IShader* shader = nullptr;
-									switch (static_cast<GraphicsShaderType>(i))
+									case GraphicsShaderType::Vertex:
 									{
-										case GraphicsShaderType::Vertex:
-										{
-											const MaterialBlueprintResource& materialBlueprintResource = materialBlueprintResourceManager.getById(compilerRequest.graphicsPipelineStateCache.getGraphicsPipelineStateSignature().getMaterialBlueprintResourceId());
-											const Renderer::VertexAttributes& vertexAttributes = mRendererRuntime.getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes();
-											shader = shaderLanguage->createVertexShaderFromSourceCode(vertexAttributes, shaderSourceCode.c_str(), &shaderCache->mShaderBytecode);
-											break;
-										}
-
-										case GraphicsShaderType::TessellationControl:
-											shader = shaderLanguage->createTessellationControlShaderFromSourceCode(shaderSourceCode.c_str(), &shaderCache->mShaderBytecode);
-											break;
-
-										case GraphicsShaderType::TessellationEvaluation:
-											shader = shaderLanguage->createTessellationEvaluationShaderFromSourceCode(shaderSourceCode.c_str(), &shaderCache->mShaderBytecode);
-											break;
-
-										case GraphicsShaderType::Geometry:
-											// TODO(co) "RendererRuntime::ShaderCacheManager::getGraphicsShaderCache()" needs to provide additional geometry shader information
-											// shader = shaderLanguage->createGeometryShaderFromSourceCode(shaderSourceCode.c_str(), &shaderCache->mShaderBytecode);
-											break;
-
-										case GraphicsShaderType::Fragment:
-											shader = shaderLanguage->createFragmentShaderFromSourceCode(shaderSourceCode.c_str(), &shaderCache->mShaderBytecode);
-											break;
+										const MaterialBlueprintResource& materialBlueprintResource = materialBlueprintResourceManager.getById(compilerRequest.graphicsPipelineStateCache.getGraphicsPipelineStateSignature().getMaterialBlueprintResourceId());
+										const Renderer::VertexAttributes& vertexAttributes = mRendererRuntime.getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes();
+										shader = shaderLanguage.createVertexShaderFromSourceCode(vertexAttributes, shaderSourceCode.c_str(), &shaderCache->mShaderBytecode);
+										break;
 									}
-									RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != shader, "Invalid shader")	// TODO(co) Error handling
-									RENDERER_SET_RESOURCE_DEBUG_NAME(shader, "Pipeline state compiler")
-									shaderCache->mShaderPtr = shaders[i] = shader;
+
+									case GraphicsShaderType::TessellationControl:
+										shader = shaderLanguage.createTessellationControlShaderFromSourceCode(shaderSourceCode.c_str(), &shaderCache->mShaderBytecode);
+										break;
+
+									case GraphicsShaderType::TessellationEvaluation:
+										shader = shaderLanguage.createTessellationEvaluationShaderFromSourceCode(shaderSourceCode.c_str(), &shaderCache->mShaderBytecode);
+										break;
+
+									case GraphicsShaderType::Geometry:
+										// TODO(co) "RendererRuntime::ShaderCacheManager::getGraphicsShaderCache()" needs to provide additional geometry shader information
+										// shader = shaderLanguage->createGeometryShaderFromSourceCode(shaderSourceCode.c_str(), &shaderCache->mShaderBytecode);
+										break;
+
+									case GraphicsShaderType::Fragment:
+										shader = shaderLanguage.createFragmentShaderFromSourceCode(shaderSourceCode.c_str(), &shaderCache->mShaderBytecode);
+										break;
 								}
+								RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != shader, "Invalid shader")	// TODO(co) Error handling
+								RENDERER_SET_RESOURCE_DEBUG_NAME(shader, "Pipeline state compiler")
+								shaderCache->mShaderPtr = shaders[i] = shader;
 							}
 						}
-					}
-
-					// Are all required shader caches ready for rumble?
-					if (!needToWaitForShaderCache)
-					{
-						{ // Create the graphics pipeline state object (PSO)
-							const GraphicsPipelineStateSignature& graphicsPipelineStateSignature = compilerRequest.graphicsPipelineStateCache.getGraphicsPipelineStateSignature();
-							MaterialBlueprintResource& materialBlueprintResource = materialBlueprintResourceManager.getById(graphicsPipelineStateSignature.getMaterialBlueprintResourceId());
-
-							// Create the graphics program
-							Renderer::IGraphicsProgram* graphicsProgram = shaderLanguage->createGraphicsProgram(*materialBlueprintResource.getRootSignaturePtr(),
-								mRendererRuntime.getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes(),
-								static_cast<Renderer::IVertexShader*>(shaders[static_cast<int>(GraphicsShaderType::Vertex)]),
-								static_cast<Renderer::ITessellationControlShader*>(shaders[static_cast<int>(GraphicsShaderType::TessellationControl)]),
-								static_cast<Renderer::ITessellationEvaluationShader*>(shaders[static_cast<int>(GraphicsShaderType::TessellationEvaluation)]),
-								static_cast<Renderer::IGeometryShader*>(shaders[static_cast<int>(GraphicsShaderType::Geometry)]),
-								static_cast<Renderer::IFragmentShader*>(shaders[static_cast<int>(GraphicsShaderType::Fragment)]));
-							RENDERER_SET_RESOURCE_DEBUG_NAME(graphicsProgram, "Graphics pipeline state compiler")
-
-							// Create the graphics pipeline state object (PSO)
-							compilerRequest.graphicsPipelineStateObject = createGraphicsPipelineState(materialBlueprintResource, graphicsPipelineStateSignature.getSerializedGraphicsPipelineStateHash(), *graphicsProgram);
-
-							{ // Graphics program cache entry
-								GraphicsProgramCacheManager& graphicsProgramCacheManager = materialBlueprintResource.getGraphicsPipelineStateCacheManager().getGraphicsProgramCacheManager();
-								const GraphicsProgramCacheId graphicsProgramCacheId = compilerRequest.graphicsProgramCacheId;
-								RENDERER_ASSERT(mRendererRuntime.getContext(), isValid(graphicsProgramCacheId), "Invalid graphics program cache ID")
-								std::unique_lock<std::mutex> mutexLock(graphicsProgramCacheManager.mMutex);
-								RENDERER_ASSERT(mRendererRuntime.getContext(), graphicsProgramCacheManager.mGraphicsProgramCacheById.find(graphicsProgramCacheId) == graphicsProgramCacheManager.mGraphicsProgramCacheById.cend(), "Invalid graphics program cache ID")	// TODO(co) Error handling
-								graphicsProgramCacheManager.mGraphicsProgramCacheById.emplace(graphicsProgramCacheId, new GraphicsProgramCache(graphicsProgramCacheId, *graphicsProgram));
-
-								{ // The graphics program cache is no longer in flight
-									std::unique_lock<std::mutex> inFlightGraphicsProgramCachesMutexLock(mInFlightGraphicsProgramCachesMutex);
-									const InFlightGraphicsProgramCaches::const_iterator iterator = mInFlightGraphicsProgramCaches.find(graphicsProgramCacheId);
-									RENDERER_ASSERT(mRendererRuntime.getContext(), mInFlightGraphicsProgramCaches.end() != iterator, "Invalid graphics program cache ID")
-									mInFlightGraphicsProgramCaches.erase(iterator);
-								}
-								mBuilderConditionVariable.notify_one();
-							}
-						}
-
-						// Push the compiler request into the queue of the synchronous shader dispatch
-						std::lock_guard<std::mutex> dispatchMutexLock(mDispatchMutex);
-						mDispatchQueue.emplace_back(compilerRequest);
-					}
-
-					// We're ready for the next round
-					compilerMutexLock.lock();
-					if (needToWaitForShaderCache)
-					{
-						// At least one shader cache instance we need is referencing a master shader cache which hasn't finished processing yet, so we need to wait a while before we can continue with our request
-						mCompilerQueue.emplace_front(compilerRequest);
 					}
 				}
+
+				// Are all required shader caches ready for rumble?
+				if (!needToWaitForShaderCache)
+				{
+					{ // Create the graphics pipeline state object (PSO)
+						const GraphicsPipelineStateSignature& graphicsPipelineStateSignature = compilerRequest.graphicsPipelineStateCache.getGraphicsPipelineStateSignature();
+						MaterialBlueprintResource& materialBlueprintResource = materialBlueprintResourceManager.getById(graphicsPipelineStateSignature.getMaterialBlueprintResourceId());
+
+						// Create the graphics program
+						Renderer::IGraphicsProgram* graphicsProgram = shaderLanguage.createGraphicsProgram(*materialBlueprintResource.getRootSignaturePtr(),
+							mRendererRuntime.getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes(),
+							static_cast<Renderer::IVertexShader*>(shaders[static_cast<int>(GraphicsShaderType::Vertex)]),
+							static_cast<Renderer::ITessellationControlShader*>(shaders[static_cast<int>(GraphicsShaderType::TessellationControl)]),
+							static_cast<Renderer::ITessellationEvaluationShader*>(shaders[static_cast<int>(GraphicsShaderType::TessellationEvaluation)]),
+							static_cast<Renderer::IGeometryShader*>(shaders[static_cast<int>(GraphicsShaderType::Geometry)]),
+							static_cast<Renderer::IFragmentShader*>(shaders[static_cast<int>(GraphicsShaderType::Fragment)]));
+						RENDERER_SET_RESOURCE_DEBUG_NAME(graphicsProgram, "Graphics pipeline state compiler")
+
+						// Create the graphics pipeline state object (PSO)
+						compilerRequest.graphicsPipelineStateObject = createGraphicsPipelineState(materialBlueprintResource, graphicsPipelineStateSignature.getSerializedGraphicsPipelineStateHash(), *graphicsProgram);
+
+						{ // Graphics program cache entry
+							GraphicsProgramCacheManager& graphicsProgramCacheManager = materialBlueprintResource.getGraphicsPipelineStateCacheManager().getGraphicsProgramCacheManager();
+							const GraphicsProgramCacheId graphicsProgramCacheId = compilerRequest.graphicsProgramCacheId;
+							RENDERER_ASSERT(mRendererRuntime.getContext(), isValid(graphicsProgramCacheId), "Invalid graphics program cache ID")
+							std::unique_lock<std::mutex> mutexLock(graphicsProgramCacheManager.mMutex);
+							RENDERER_ASSERT(mRendererRuntime.getContext(), graphicsProgramCacheManager.mGraphicsProgramCacheById.find(graphicsProgramCacheId) == graphicsProgramCacheManager.mGraphicsProgramCacheById.cend(), "Invalid graphics program cache ID")	// TODO(co) Error handling
+							graphicsProgramCacheManager.mGraphicsProgramCacheById.emplace(graphicsProgramCacheId, new GraphicsProgramCache(graphicsProgramCacheId, *graphicsProgram));
+
+							{ // The graphics program cache is no longer in flight
+								std::unique_lock<std::mutex> inFlightGraphicsProgramCachesMutexLock(mInFlightGraphicsProgramCachesMutex);
+								const InFlightGraphicsProgramCaches::const_iterator iterator = mInFlightGraphicsProgramCaches.find(graphicsProgramCacheId);
+								RENDERER_ASSERT(mRendererRuntime.getContext(), mInFlightGraphicsProgramCaches.end() != iterator, "Invalid graphics program cache ID")
+								mInFlightGraphicsProgramCaches.erase(iterator);
+							}
+							mBuilderConditionVariable.notify_one();
+						}
+					}
+
+					// Push the compiler request into the queue of the synchronous shader dispatch
+					std::lock_guard<std::mutex> dispatchMutexLock(mDispatchMutex);
+					mDispatchQueue.emplace_back(compilerRequest);
+				}
+
+				// We're ready for the next round
+				compilerMutexLock.lock();
+				if (needToWaitForShaderCache)
+				{
+					// At least one shader cache instance we need is referencing a master shader cache which hasn't finished processing yet, so we need to wait a while before we can continue with our request
+					mCompilerQueue.emplace_front(compilerRequest);
+				}
 			}
-		}
-		else
-		{
-			// TODO(co) Error handling
-			RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Invalid shader language")
 		}
 	}
 

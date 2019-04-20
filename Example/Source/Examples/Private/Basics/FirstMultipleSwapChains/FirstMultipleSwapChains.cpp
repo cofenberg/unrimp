@@ -180,9 +180,6 @@ bool FirstMultipleSwapChains::onInitialization()
 			mVertexArray = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
 		}
 
-		// Create the graphics programs: Decide which shader language should be used (for example "GLSL" or "HLSL")
-		Renderer::IShaderLanguagePtr shaderLanguage(renderer->getShaderLanguage());
-		if (nullptr != shaderLanguage)
 		{
 			// Create the graphics program
 			Renderer::IGraphicsProgramPtr graphicsProgram;
@@ -197,11 +194,12 @@ bool FirstMultipleSwapChains::onInitialization()
 				#include "FirstMultipleSwapChains_Null.h"
 
 				// Create the graphics program
-				graphicsProgram = shaderLanguage->createGraphicsProgram(
+				Renderer::IShaderLanguage& shaderLanguage = renderer->getDefaultShaderLanguage();
+				graphicsProgram = shaderLanguage.createGraphicsProgram(
 					*mRootSignature,
 					vertexAttributes,
-					shaderLanguage->createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode),
-					shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
+					shaderLanguage.createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode),
+					shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 			}
 
 			// Create the graphics pipeline state object (PSO)

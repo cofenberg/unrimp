@@ -72,9 +72,6 @@ void FirstMesh::onInitialization()
 	// Don't create initial pipeline state caches after a material blueprint has been loaded since this example isn't using the material blueprint system
 	rendererRuntime.getMaterialBlueprintResourceManager().setCreateInitialPipelineStateCaches(false);
 
-	// Decide which shader language should be used (for example "GLSL" or "HLSL")
-	Renderer::IShaderLanguagePtr shaderLanguage(renderer->getShaderLanguage());
-	if (nullptr != shaderLanguage)
 	{
 		{ // Create the root signature
 			Renderer::DescriptorRangeBuilder ranges[5];
@@ -167,11 +164,12 @@ void FirstMesh::onInitialization()
 			#include "FirstMesh_Null.h"
 
 			// Create the graphics program
-			mGraphicsProgram = graphicsProgram = shaderLanguage->createGraphicsProgram(
+			Renderer::IShaderLanguage& shaderLanguage = renderer->getDefaultShaderLanguage();
+			mGraphicsProgram = graphicsProgram = shaderLanguage.createGraphicsProgram(
 				*mRootSignature,
 				vertexAttributes,
-				shaderLanguage->createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode),
-				shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
+				shaderLanguage.createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode),
+				shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 		}
 
 		// Is there a valid graphics program?

@@ -432,55 +432,51 @@ namespace RendererRuntime
 			RENDERER_SET_RESOURCE_DEBUG_NAME(mRootSignature, "Debug GUI")
 		}
 
-		// Decide which shader language should be used (for example "GLSL" or "HLSL")
-		Renderer::IShaderLanguage* shaderLanguage = renderer.getShaderLanguage();
-		if (nullptr != shaderLanguage)
-		{
-			{ // Create the graphics pipeline state instance
-				{ // Create the graphics program
-					// Get the shader source code (outsourced to keep an overview)
-					const char* vertexShaderSourceCode = nullptr;
-					const char* fragmentShaderSourceCode = nullptr;
-					#include "Detail/Shader/DebugGui_GLSL_450.h"	// For Vulkan
-					#include "Detail/Shader/DebugGui_GLSL_410.h"	// macOS 10.11 only supports OpenGL 4.1 hence it's our OpenGL minimum
-					#include "Detail/Shader/DebugGui_GLSL_ES3.h"
-					#include "Detail/Shader/DebugGui_HLSL_D3D9.h"
-					#include "Detail/Shader/DebugGui_HLSL_D3D10_D3D11_D3D12.h"
-					#include "Detail/Shader/DebugGui_Null.h"
+		{ // Create the graphics pipeline state instance
+			{ // Create the graphics program
+				// Get the shader source code (outsourced to keep an overview)
+				const char* vertexShaderSourceCode = nullptr;
+				const char* fragmentShaderSourceCode = nullptr;
+				#include "Detail/Shader/DebugGui_GLSL_450.h"	// For Vulkan
+				#include "Detail/Shader/DebugGui_GLSL_410.h"	// macOS 10.11 only supports OpenGL 4.1 hence it's our OpenGL minimum
+				#include "Detail/Shader/DebugGui_GLSL_ES3.h"
+				#include "Detail/Shader/DebugGui_HLSL_D3D9.h"
+				#include "Detail/Shader/DebugGui_HLSL_D3D10_D3D11_D3D12.h"
+				#include "Detail/Shader/DebugGui_Null.h"
 
-					// Create the shaders
-					Renderer::IVertexShader* vertexShader = shaderLanguage->createVertexShaderFromSourceCode(::detail::VertexAttributes, vertexShaderSourceCode);
-					RENDERER_SET_RESOURCE_DEBUG_NAME(vertexShader, "Debug GUI")
-					Renderer::IFragmentShader* fragmentShader = shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode);
-					RENDERER_SET_RESOURCE_DEBUG_NAME(fragmentShader, "Debug GUI")
+				// Create the shaders
+				Renderer::IShaderLanguage& shaderLanguage = renderer.getDefaultShaderLanguage();
+				Renderer::IVertexShader* vertexShader = shaderLanguage.createVertexShaderFromSourceCode(::detail::VertexAttributes, vertexShaderSourceCode);
+				RENDERER_SET_RESOURCE_DEBUG_NAME(vertexShader, "Debug GUI")
+				Renderer::IFragmentShader* fragmentShader = shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode);
+				RENDERER_SET_RESOURCE_DEBUG_NAME(fragmentShader, "Debug GUI")
 
-					// Create the graphics program
-					mGraphicsProgram = shaderLanguage->createGraphicsProgram(
-						*mRootSignature,
-						::detail::VertexAttributes,
-						vertexShader,
-						fragmentShader);
-					RENDERER_SET_RESOURCE_DEBUG_NAME(mGraphicsProgram, "Debug GUI")
-				}
+				// Create the graphics program
+				mGraphicsProgram = shaderLanguage.createGraphicsProgram(
+					*mRootSignature,
+					::detail::VertexAttributes,
+					vertexShader,
+					fragmentShader);
+				RENDERER_SET_RESOURCE_DEBUG_NAME(mGraphicsProgram, "Debug GUI")
+			}
 
-				// Create the graphics pipeline state object (PSO)
-				if (nullptr != mGraphicsProgram)
-				{
-					// TODO(co) Render pass related update, the render pass in here is currently just a dummy so the debug compositor works
-					Renderer::IRenderPass* renderPass = renderer.createRenderPass(1, &renderer.getCapabilities().preferredSwapChainColorTextureFormat, renderer.getCapabilities().preferredSwapChainDepthStencilTextureFormat);
+			// Create the graphics pipeline state object (PSO)
+			if (nullptr != mGraphicsProgram)
+			{
+				// TODO(co) Render pass related update, the render pass in here is currently just a dummy so the debug compositor works
+				Renderer::IRenderPass* renderPass = renderer.createRenderPass(1, &renderer.getCapabilities().preferredSwapChainColorTextureFormat, renderer.getCapabilities().preferredSwapChainDepthStencilTextureFormat);
 
-					Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(mRootSignature, mGraphicsProgram, ::detail::VertexAttributes, *renderPass);
-					graphicsPipelineState.rasterizerState.cullMode				   = Renderer::CullMode::NONE;
-					graphicsPipelineState.rasterizerState.scissorEnable			   = 1;
-					graphicsPipelineState.depthStencilState.depthEnable			   = false;
-					graphicsPipelineState.depthStencilState.depthWriteMask		   = Renderer::DepthWriteMask::ZERO;
-					graphicsPipelineState.blendState.renderTarget[0].blendEnable   = true;
-					graphicsPipelineState.blendState.renderTarget[0].srcBlend	   = Renderer::Blend::SRC_ALPHA;
-					graphicsPipelineState.blendState.renderTarget[0].destBlend	   = Renderer::Blend::INV_SRC_ALPHA;
-					graphicsPipelineState.blendState.renderTarget[0].srcBlendAlpha = Renderer::Blend::INV_SRC_ALPHA;
-					mGraphicsPipelineState = renderer.createGraphicsPipelineState(graphicsPipelineState);
-					RENDERER_SET_RESOURCE_DEBUG_NAME(mGraphicsPipelineState, "Debug GUI")
-				}
+				Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(mRootSignature, mGraphicsProgram, ::detail::VertexAttributes, *renderPass);
+				graphicsPipelineState.rasterizerState.cullMode				   = Renderer::CullMode::NONE;
+				graphicsPipelineState.rasterizerState.scissorEnable			   = 1;
+				graphicsPipelineState.depthStencilState.depthEnable			   = false;
+				graphicsPipelineState.depthStencilState.depthWriteMask		   = Renderer::DepthWriteMask::ZERO;
+				graphicsPipelineState.blendState.renderTarget[0].blendEnable   = true;
+				graphicsPipelineState.blendState.renderTarget[0].srcBlend	   = Renderer::Blend::SRC_ALPHA;
+				graphicsPipelineState.blendState.renderTarget[0].destBlend	   = Renderer::Blend::INV_SRC_ALPHA;
+				graphicsPipelineState.blendState.renderTarget[0].srcBlendAlpha = Renderer::Blend::INV_SRC_ALPHA;
+				mGraphicsPipelineState = renderer.createGraphicsPipelineState(graphicsPipelineState);
+				RENDERER_SET_RESOURCE_DEBUG_NAME(mGraphicsPipelineState, "Debug GUI")
 			}
 		}
 

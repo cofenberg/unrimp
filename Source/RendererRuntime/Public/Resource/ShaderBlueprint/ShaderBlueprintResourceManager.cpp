@@ -99,15 +99,11 @@ namespace RendererRuntime
 		// -> Write the renderer name as well as the shader language name into the shader properties so shaders can perform renderer specific handling if required
 		// -> We really need both, usually shader language name is sufficient, but if more fine granular information is required it's accessible
 		Renderer::IRenderer& renderer = mRendererRuntime.getRenderer();
-		const Renderer::Capabilities& capabilities = mRendererRuntime.getRenderer().getCapabilities();
+		const Renderer::Capabilities& capabilities = renderer.getCapabilities();
 		mRendererShaderProperties.setPropertyValue(static_cast<uint32_t>(renderer.getNameId()), 1);
 		mRendererShaderProperties.setPropertyValue(STRING_ID("ZeroToOneClipZ"), capabilities.zeroToOneClipZ ? 1 : 0);
 		mRendererShaderProperties.setPropertyValue(STRING_ID("UpperLeftOrigin"), capabilities.upperLeftOrigin ? 1 : 0);
-		const Renderer::IShaderLanguage* shaderLanguage = renderer.getShaderLanguage();
-		if (nullptr != shaderLanguage)
-		{
-			mRendererShaderProperties.setPropertyValue(StringId(shaderLanguage->getShaderLanguageName()), 1);
-		}
+		mRendererShaderProperties.setPropertyValue(StringId(renderer.getDefaultShaderLanguage().getShaderLanguageName()), 1);
 	}
 
 	ShaderBlueprintResourceManager::~ShaderBlueprintResourceManager()

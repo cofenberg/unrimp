@@ -283,9 +283,6 @@ void FirstComputeShader::onInitialization()
 			}
 		}
 
-		// Create the graphics program: Decide which shader language should be used (for example "GLSL" or "HLSL")
-		Renderer::IShaderLanguagePtr shaderLanguage(renderer->getShaderLanguage());
-		if (nullptr != shaderLanguage)
 		{
 			// Create the graphics program
 			Renderer::IGraphicsProgramPtr graphicsProgram;
@@ -301,15 +298,16 @@ void FirstComputeShader::onInitialization()
 				#include "FirstComputeShader_Null.h"
 
 				// Create the graphics program
-				graphicsProgram = shaderLanguage->createGraphicsProgram(
+				Renderer::IShaderLanguage& shaderLanguage = renderer->getDefaultShaderLanguage();
+				graphicsProgram = shaderLanguage.createGraphicsProgram(
 					*mGraphicsRootSignature,
 					vertexAttributes,
-					shaderLanguage->createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode),
-					shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
+					shaderLanguage.createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode),
+					shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 
 				// Create the compute pipeline state objects (PSO)
-				mComputePipelineState1 = renderer->createComputePipelineState(*mComputeRootSignature1, *shaderLanguage->createComputeShaderFromSourceCode(computeShaderSourceCode1));
-				mComputePipelineState2 = renderer->createComputePipelineState(*mComputeRootSignature2, *shaderLanguage->createComputeShaderFromSourceCode(computeShaderSourceCode2));
+				mComputePipelineState1 = renderer->createComputePipelineState(*mComputeRootSignature1, *shaderLanguage.createComputeShaderFromSourceCode(computeShaderSourceCode1));
+				mComputePipelineState2 = renderer->createComputePipelineState(*mComputeRootSignature2, *shaderLanguage.createComputeShaderFromSourceCode(computeShaderSourceCode2));
 			}
 
 			// Create the graphics pipeline state object (PSO)

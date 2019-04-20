@@ -11788,8 +11788,9 @@ namespace VulkanRenderer
 		return 1;
 	}
 
-	const char* VulkanRenderer::getShaderLanguageName(uint32_t) const
+	const char* VulkanRenderer::getShaderLanguageName([[maybe_unused]] uint32_t index) const
 	{
+		RENDERER_ASSERT(mContext, index < getNumberOfShaderLanguages(), "Vulkan: Shader language index is out-of-bounds")
 		return ::detail::GLSL_NAME;
 	}
 

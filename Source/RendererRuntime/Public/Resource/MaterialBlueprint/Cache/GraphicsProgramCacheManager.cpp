@@ -79,48 +79,45 @@ namespace RendererRuntime
 			// Create the renderer program: Decide which shader language should be used (for example "GLSL" or "HLSL")
 			const MaterialBlueprintResource& materialBlueprintResource = mGraphicsPipelineStateCacheManager.getMaterialBlueprintResource();
 			const Renderer::IRootSignaturePtr& rootSignaturePtr = materialBlueprintResource.getRootSignaturePtr();
-			Renderer::IShaderLanguagePtr shaderLanguage(rootSignaturePtr->getRenderer().getShaderLanguage());
-			if (nullptr != shaderLanguage)
+			Renderer::IShaderLanguage& shaderLanguage = rootSignaturePtr->getRenderer().getDefaultShaderLanguage();
+			const IRendererRuntime& rendererRuntime = materialBlueprintResource.getResourceManager<MaterialBlueprintResourceManager>().getRendererRuntime();
+
+			// Create the shaders
+			ShaderCacheManager& shaderCacheManager = rendererRuntime.getShaderBlueprintResourceManager().getShaderCacheManager();
+			Renderer::IShader* shaders[NUMBER_OF_GRAPHICS_SHADER_TYPES] = {};
+			for (uint8_t i = 0; i < NUMBER_OF_GRAPHICS_SHADER_TYPES; ++i)
 			{
-				const IRendererRuntime& rendererRuntime = materialBlueprintResource.getResourceManager<MaterialBlueprintResourceManager>().getRendererRuntime();
-
-				// Create the shaders
-				ShaderCacheManager& shaderCacheManager = rendererRuntime.getShaderBlueprintResourceManager().getShaderCacheManager();
-				Renderer::IShader* shaders[NUMBER_OF_GRAPHICS_SHADER_TYPES] = {};
-				for (uint8_t i = 0; i < NUMBER_OF_GRAPHICS_SHADER_TYPES; ++i)
+				ShaderCache* shaderCache = shaderCacheManager.getGraphicsShaderCache(graphicsPipelineStateSignature, materialBlueprintResource, shaderLanguage, static_cast<GraphicsShaderType>(i));
+				if (nullptr != shaderCache)
 				{
-					ShaderCache* shaderCache = shaderCacheManager.getGraphicsShaderCache(graphicsPipelineStateSignature, materialBlueprintResource, *shaderLanguage, static_cast<GraphicsShaderType>(i));
-					if (nullptr != shaderCache)
-					{
-						shaders[i] = shaderCache->getShaderPtr();
-					}
-					else
-					{
-						// No error, just means there's no shader cache because e.g. there's no shader of the requested type
-					}
-				}
-
-				// Create the graphics program
-				Renderer::IGraphicsProgram* graphicsProgram = shaderLanguage->createGraphicsProgram(*rootSignaturePtr,
-					rendererRuntime.getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes(),
-					static_cast<Renderer::IVertexShader*>(shaders[static_cast<int>(GraphicsShaderType::Vertex)]),
-					static_cast<Renderer::ITessellationControlShader*>(shaders[static_cast<int>(GraphicsShaderType::TessellationControl)]),
-					static_cast<Renderer::ITessellationEvaluationShader*>(shaders[static_cast<int>(GraphicsShaderType::TessellationEvaluation)]),
-					static_cast<Renderer::IGeometryShader*>(shaders[static_cast<int>(GraphicsShaderType::Geometry)]),
-					static_cast<Renderer::IFragmentShader*>(shaders[static_cast<int>(GraphicsShaderType::Fragment)]));
-				RENDERER_SET_RESOURCE_DEBUG_NAME(graphicsProgram, "Graphics program cache manager")
-
-				// Create the new graphics program cache instance
-				if (nullptr != graphicsProgram)
-				{
-					graphicsProgramCache = new GraphicsProgramCache(graphicsProgramCacheId, *graphicsProgram);
-					mGraphicsProgramCacheById.emplace(graphicsProgramCacheId, graphicsProgramCache);
+					shaders[i] = shaderCache->getShaderPtr();
 				}
 				else
 				{
-					// TODO(co) Error handling
-					RENDERER_ASSERT(materialBlueprintResource.getResourceManager<MaterialBlueprintResourceManager>().getRendererRuntime().getContext(), false, "Invalid graphics program")
+					// No error, just means there's no shader cache because e.g. there's no shader of the requested type
 				}
+			}
+
+			// Create the graphics program
+			Renderer::IGraphicsProgram* graphicsProgram = shaderLanguage.createGraphicsProgram(*rootSignaturePtr,
+				rendererRuntime.getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes(),
+				static_cast<Renderer::IVertexShader*>(shaders[static_cast<int>(GraphicsShaderType::Vertex)]),
+				static_cast<Renderer::ITessellationControlShader*>(shaders[static_cast<int>(GraphicsShaderType::TessellationControl)]),
+				static_cast<Renderer::ITessellationEvaluationShader*>(shaders[static_cast<int>(GraphicsShaderType::TessellationEvaluation)]),
+				static_cast<Renderer::IGeometryShader*>(shaders[static_cast<int>(GraphicsShaderType::Geometry)]),
+				static_cast<Renderer::IFragmentShader*>(shaders[static_cast<int>(GraphicsShaderType::Fragment)]));
+			RENDERER_SET_RESOURCE_DEBUG_NAME(graphicsProgram, "Graphics program cache manager")
+
+			// Create the new graphics program cache instance
+			if (nullptr != graphicsProgram)
+			{
+				graphicsProgramCache = new GraphicsProgramCache(graphicsProgramCacheId, *graphicsProgram);
+				mGraphicsProgramCacheById.emplace(graphicsProgramCacheId, graphicsProgramCache);
+			}
+			else
+			{
+				// TODO(co) Error handling
+				RENDERER_ASSERT(materialBlueprintResource.getResourceManager<MaterialBlueprintResourceManager>().getRendererRuntime().getContext(), false, "Invalid graphics program")
 			}
 		}
 

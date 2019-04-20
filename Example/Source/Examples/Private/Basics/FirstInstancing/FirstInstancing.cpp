@@ -56,9 +56,6 @@ void FirstInstancing::onInitialization()
 			mRootSignature = renderer->createRootSignature(rootSignature);
 		}
 
-		// Decide which shader language should be used (for example "GLSL" or "HLSL")
-		Renderer::IShaderLanguagePtr shaderLanguage(renderer->getShaderLanguage());
-		if (nullptr != shaderLanguage)
 		{
 			// There are two instancing approaches available
 			// - Instanced arrays (shader model 3 feature, vertex array element advancing per-instance instead of per-vertex)
@@ -70,6 +67,7 @@ void FirstInstancing::onInitialization()
 			// -> OpenGL 3.1 introduced draw instance ("GL_ARB_draw_instanced"-extension)
 			// -> OpenGL 3.3 introduced instance array ("GL_ARB_instanced_arrays"-extension)
 			// -> OpenGL ES 3.0 support both approaches
+			Renderer::IShaderLanguage& shaderLanguage = renderer->getDefaultShaderLanguage();
 
 			// Left side (green): Instanced arrays (shader model 3 feature, vertex array element advancing per-instance instead of per-vertex)
 			if (renderer->getCapabilities().instancedArrays)
@@ -156,11 +154,11 @@ void FirstInstancing::onInitialization()
 					#include "FirstInstancing_InstancedArrays_Null.h"
 
 					// Create the graphics program
-					graphicsProgram = shaderLanguage->createGraphicsProgram(
+					graphicsProgram = shaderLanguage.createGraphicsProgram(
 						*mRootSignature,
 						vertexAttributes,
-						shaderLanguage->createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode),
-						shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
+						shaderLanguage.createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode),
+						shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 				}
 
 				// Create the graphics pipeline state object (PSO)
@@ -225,11 +223,11 @@ void FirstInstancing::onInitialization()
 					#include "FirstInstancing_DrawInstanced_Null.h"
 
 					// Create the graphics program
-					graphicsProgram = shaderLanguage->createGraphicsProgram(
+					graphicsProgram = shaderLanguage.createGraphicsProgram(
 						*mRootSignature,
 						vertexAttributes,
-						shaderLanguage->createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode),
-						shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
+						shaderLanguage.createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode),
+						shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 				}
 
 				// Create the graphics pipeline state object (PSO)

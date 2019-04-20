@@ -4185,6 +4185,20 @@ namespace Renderer
 			return mCapabilities;
 		}
 
+		/**
+		*  @brief
+		*    Return default shader language instance
+		*
+		*  @return
+		*    The default shader language instance, do not release the returned instance unless you added an own reference to it
+		*/
+		[[nodiscard]] inline IShaderLanguage& getDefaultShaderLanguage()
+		{
+			IShaderLanguage* shaderLanguage = getShaderLanguage();
+			RENDERER_ASSERT(mContext, nullptr != shaderLanguage, "There's no default shader language")
+			return *shaderLanguage;
+		}
+
 		#ifdef RENDERER_STATISTICS
 			/**
 			*  @brief

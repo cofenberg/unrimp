@@ -182,9 +182,6 @@ void IcosahedronTessellation::onInitialization()
 			mUniformBufferGroup = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources);
 		}
 
-		// Decide which shader language should be used (for example "GLSL" or "HLSL")
-		Renderer::IShaderLanguagePtr shaderLanguage(renderer->getShaderLanguage());
-		if (nullptr != shaderLanguage)
 		{
 			// Create the graphics program
 			Renderer::IGraphicsProgramPtr graphicsProgram;
@@ -201,14 +198,15 @@ void IcosahedronTessellation::onInitialization()
 				#include "IcosahedronTessellation_Null.h"
 
 				// Create the graphics program
-				graphicsProgram = shaderLanguage->createGraphicsProgram(
+				Renderer::IShaderLanguage& shaderLanguage = renderer->getDefaultShaderLanguage();
+				graphicsProgram = shaderLanguage.createGraphicsProgram(
 					*mRootSignature,
 					vertexAttributes,
-					shaderLanguage->createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode),
-					shaderLanguage->createTessellationControlShaderFromSourceCode(tessellationControlShaderSourceCode),
-					shaderLanguage->createTessellationEvaluationShaderFromSourceCode(tessellationEvaluationShaderSourceCode),
-					shaderLanguage->createGeometryShaderFromSourceCode(geometryShaderSourceCode, Renderer::GsInputPrimitiveTopology::TRIANGLES, Renderer::GsOutputPrimitiveTopology::TRIANGLES_STRIP, 3),
-					shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
+					shaderLanguage.createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode),
+					shaderLanguage.createTessellationControlShaderFromSourceCode(tessellationControlShaderSourceCode),
+					shaderLanguage.createTessellationEvaluationShaderFromSourceCode(tessellationEvaluationShaderSourceCode),
+					shaderLanguage.createGeometryShaderFromSourceCode(geometryShaderSourceCode, Renderer::GsInputPrimitiveTopology::TRIANGLES, Renderer::GsOutputPrimitiveTopology::TRIANGLES_STRIP, 3),
+					shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 			}
 
 			// Create the graphics pipeline state object (PSO)

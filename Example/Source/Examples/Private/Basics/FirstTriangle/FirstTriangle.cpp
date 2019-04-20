@@ -97,9 +97,6 @@ void FirstTriangle::onInitialization()
 			RENDERER_SET_RESOURCE_DEBUG_NAME(mVertexArray, "Triangle VAO")
 		}
 
-		// Decide which shader language should be used (for example "GLSL" or "HLSL")
-		Renderer::IShaderLanguagePtr shaderLanguage(renderer->getShaderLanguage());
-		if (nullptr != shaderLanguage)
 		{
 			// Create the graphics program
 			Renderer::IGraphicsProgramPtr graphicsProgram;
@@ -114,15 +111,16 @@ void FirstTriangle::onInitialization()
 				#include "FirstTriangle_Null.h"
 
 				// Create the vertex shader
-				Renderer::IVertexShader* vertexShader = shaderLanguage->createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode);
+				Renderer::IShaderLanguage& shaderLanguage = renderer->getDefaultShaderLanguage();
+				Renderer::IVertexShader* vertexShader = shaderLanguage.createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode);
 				RENDERER_SET_RESOURCE_DEBUG_NAME(vertexShader, "Triangle VS")
 
 				// Create the fragment shader
-				Renderer::IFragmentShader* fragmentShader = shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode);
+				Renderer::IFragmentShader* fragmentShader = shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode);
 				RENDERER_SET_RESOURCE_DEBUG_NAME(fragmentShader, "Triangle FS")
 
 				// Create the graphics program
-				graphicsProgram = shaderLanguage->createGraphicsProgram(*mRootSignature, vertexAttributes, vertexShader, fragmentShader);
+				graphicsProgram = shaderLanguage.createGraphicsProgram(*mRootSignature, vertexAttributes, vertexShader, fragmentShader);
 				RENDERER_SET_RESOURCE_DEBUG_NAME(graphicsProgram, "Triangle graphics program")
 			}
 

@@ -307,9 +307,6 @@ CubeRendererDrawInstanced::CubeRendererDrawInstanced(Renderer::IRenderer& render
 		mResourceGroup = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources, samplerStates);
 	}
 
-	// Create the graphics program: Decide which shader language should be used (for example "GLSL" or "HLSL")
-	Renderer::IShaderLanguagePtr shaderLanguage(mRenderer->getShaderLanguage());
-	if (nullptr != shaderLanguage)
 	{
 		// Get the shader source code (outsourced to keep an overview)
 		const char* vertexShaderSourceCode = nullptr;
@@ -321,11 +318,12 @@ CubeRendererDrawInstanced::CubeRendererDrawInstanced(Renderer::IRenderer& render
 		#include "CubeRendererDrawInstanced_Null.h"
 
 		// Create the graphics program
-		mGraphicsProgram = shaderLanguage->createGraphicsProgram(
+		Renderer::IShaderLanguage& shaderLanguage = mRenderer->getDefaultShaderLanguage();
+		mGraphicsProgram = shaderLanguage.createGraphicsProgram(
 			*mRootSignature,
 			detail::CubeRendererDrawInstancedVertexAttributes,
-			shaderLanguage->createVertexShaderFromSourceCode(detail::CubeRendererDrawInstancedVertexAttributes, vertexShaderSourceCode),
-			shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
+			shaderLanguage.createVertexShaderFromSourceCode(detail::CubeRendererDrawInstancedVertexAttributes, vertexShaderSourceCode),
+			shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 	}
 }
 

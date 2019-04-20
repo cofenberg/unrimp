@@ -20085,6 +20085,8 @@ namespace OpenGLRenderer
 
 	const char* OpenGLRenderer::getShaderLanguageName(uint32_t index) const
 	{
+		RENDERER_ASSERT(mContext, index < getNumberOfShaderLanguages(), "OpenGL: Shader language index is out-of-bounds")
+
 		// "GL_ARB_shader_objects" or "GL_ARB_separate_shader_objects" required
 		if (mExtensions->isGL_ARB_shader_objects() || mExtensions->isGL_ARB_separate_shader_objects())
 		{

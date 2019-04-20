@@ -164,9 +164,6 @@ void VertexBuffer::onInitialization()
 			mVertexArrayVBOs = mBufferManager->createVertexArray(vertexAttributesVBOs, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
 		}
 
-		// Decide which shader language should be used (for example "GLSL" or "HLSL")
-		Renderer::IShaderLanguagePtr shaderLanguage(renderer->getShaderLanguage());
-		if (nullptr != shaderLanguage)
 		{
 			// Get the shader source code (outsourced to keep an overview)
 			const char* vertexShaderSourceCode = nullptr;
@@ -176,15 +173,16 @@ void VertexBuffer::onInitialization()
 			#include "VertexBuffer_GLSL_ES3.h"
 			#include "VertexBuffer_HLSL_D3D9_D3D10_D3D11_D3D12.h"
 			#include "VertexBuffer_Null.h"
+			Renderer::IShaderLanguage& shaderLanguage = renderer->getDefaultShaderLanguage();
 
 			{ // Create pipeline state objects (PSO) using one vertex buffer object (VBO)
 				// Create the graphics program
 				Renderer::IGraphicsProgramPtr graphicsProgram;
-				graphicsProgram = shaderLanguage->createGraphicsProgram(
+				graphicsProgram = shaderLanguage.createGraphicsProgram(
 					*mRootSignature,
 					vertexAttributesVBO,
-					shaderLanguage->createVertexShaderFromSourceCode(vertexAttributesVBO, vertexShaderSourceCode),
-					shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
+					shaderLanguage.createVertexShaderFromSourceCode(vertexAttributesVBO, vertexShaderSourceCode),
+					shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 
 				// Create the graphics pipeline state objects (PSO)
 				if (nullptr != graphicsProgram)
@@ -196,11 +194,11 @@ void VertexBuffer::onInitialization()
 			{ // Create graphics pipeline state objects (PSO) using multiple vertex buffer object (VBO)
 				// Create the graphics program
 				Renderer::IGraphicsProgramPtr graphicsProgram;
-				graphicsProgram = shaderLanguage->createGraphicsProgram(
+				graphicsProgram = shaderLanguage.createGraphicsProgram(
 					*mRootSignature,
 					vertexAttributesVBOs,
-					shaderLanguage->createVertexShaderFromSourceCode(vertexAttributesVBOs, vertexShaderSourceCode),
-					shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
+					shaderLanguage.createVertexShaderFromSourceCode(vertexAttributesVBOs, vertexShaderSourceCode),
+					shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 
 				// Create the graphics pipeline state objects (PSO)
 				if (nullptr != graphicsProgram)

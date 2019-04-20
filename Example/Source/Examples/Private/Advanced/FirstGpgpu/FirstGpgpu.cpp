@@ -226,9 +226,6 @@ void FirstGpgpu::onInitialization()
 		mVertexArrayContentProcessing = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
 	}
 
-	// Create the graphics programs: Decide which shader language should be used (for example "GLSL" or "HLSL")
-	Renderer::IShaderLanguagePtr shaderLanguage(mRenderer->getShaderLanguage());
-	if (nullptr != shaderLanguage)
 	{
 		// Create the graphics programs
 		Renderer::IGraphicsProgramPtr graphicsProgramContentGeneration;
@@ -248,9 +245,10 @@ void FirstGpgpu::onInitialization()
 			// -> Depending on the used graphics API and whether or not the shader compiler & linker is clever,
 			//    the unused texture coordinate might get optimized out
 			// -> In a real world application you shouldn't rely on shader compiler & linker behaviour assumptions
-			Renderer::IVertexShaderPtr vertexShader(shaderLanguage->createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode));
-			graphicsProgramContentGeneration = shaderLanguage->createGraphicsProgram(*mRootSignature, vertexAttributes, vertexShader, shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode_ContentGeneration));
-			graphicsProgramContentProcessing = shaderLanguage->createGraphicsProgram(*mRootSignature, vertexAttributes, vertexShader, shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode_ContentProcessing));
+			Renderer::IShaderLanguage& shaderLanguage = mRenderer->getDefaultShaderLanguage();
+			Renderer::IVertexShaderPtr vertexShader(shaderLanguage.createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode));
+			graphicsProgramContentGeneration = shaderLanguage.createGraphicsProgram(*mRootSignature, vertexAttributes, vertexShader, shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode_ContentGeneration));
+			graphicsProgramContentProcessing = shaderLanguage.createGraphicsProgram(*mRootSignature, vertexAttributes, vertexShader, shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode_ContentProcessing));
 		}
 
 		// Create the graphics pipeline state objects (PSO)

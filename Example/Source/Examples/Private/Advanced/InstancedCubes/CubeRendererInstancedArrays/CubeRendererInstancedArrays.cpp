@@ -255,9 +255,6 @@ CubeRendererInstancedArrays::CubeRendererInstancedArrays(Renderer::IRenderer& re
 		mResourceGroup = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources, samplerStates);
 	}
 
-	// Create the graphics program: Decide which shader language should be used (for example "GLSL" or "HLSL")
-	Renderer::IShaderLanguagePtr shaderLanguage(mRenderer->getShaderLanguage());
-	if (nullptr != shaderLanguage)
 	{
 		// Get the shader source code (outsourced to keep an overview)
 		const char* vertexShaderSourceCode = nullptr;
@@ -271,11 +268,12 @@ CubeRendererInstancedArrays::CubeRendererInstancedArrays(Renderer::IRenderer& re
 		#include "CubeRendererInstancedArrays_Null.h"
 
 		// Create the graphics program
-		mGraphicsProgram = shaderLanguage->createGraphicsProgram(
+		Renderer::IShaderLanguage& shaderLanguage = mRenderer->getDefaultShaderLanguage();
+		mGraphicsProgram = shaderLanguage.createGraphicsProgram(
 			*mRootSignature,
 			detail::CubeRendererInstancedArraysVertexAttributes,
-			shaderLanguage->createVertexShaderFromSourceCode(detail::CubeRendererInstancedArraysVertexAttributes, vertexShaderSourceCode),
-			shaderLanguage->createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
+			shaderLanguage.createVertexShaderFromSourceCode(detail::CubeRendererInstancedArraysVertexAttributes, vertexShaderSourceCode),
+			shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 	}
 
 	{ // Create the vertex buffer object (VBO)
