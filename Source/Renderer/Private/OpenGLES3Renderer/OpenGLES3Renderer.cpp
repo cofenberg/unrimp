@@ -10359,7 +10359,7 @@ namespace OpenGLES3Renderer
 		return 1;
 	}
 
-	const char* OpenGLES3Renderer::getShaderLanguageName(uint32_t index) const
+	const char* OpenGLES3Renderer::getShaderLanguageName([[maybe_unused]] uint32_t index) const
 	{
 		RENDERER_ASSERT(mContext, index < getNumberOfShaderLanguages(), "OpenGL ES 3: Shader language index is out-of-bounds")
 		return ::detail::GLSLES_NAME;

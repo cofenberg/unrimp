@@ -3907,7 +3907,7 @@ namespace NullRenderer
 		return 1;
 	}
 
-	const char* NullRenderer::getShaderLanguageName(uint32_t index) const
+	const char* NullRenderer::getShaderLanguageName([[maybe_unused]] uint32_t index) const
 	{
 		RENDERER_ASSERT(mContext, index < getNumberOfShaderLanguages(), "Null: Shader language index is out-of-bounds")
 		return ::detail::NULL_NAME;

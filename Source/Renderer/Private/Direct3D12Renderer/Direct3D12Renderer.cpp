@@ -12112,7 +12112,7 @@ namespace Direct3D12Renderer
 		return numberOfShaderLanguages;
 	}
 
-	const char* Direct3D12Renderer::getShaderLanguageName(uint32_t index) const
+	const char* Direct3D12Renderer::getShaderLanguageName([[maybe_unused]] uint32_t index) const
 	{
 		RENDERER_ASSERT(mContext, index < getNumberOfShaderLanguages(), "Direct3D 12: Shader language index is out-of-bounds")
 		return ::detail::HLSL_NAME;
