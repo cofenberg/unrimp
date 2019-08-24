@@ -2588,7 +2588,7 @@ namespace Direct3D11Renderer
 	//[-------------------------------------------------------]
 	//[ Direct3D11Renderer/Direct3D11Renderer.h               ]
 	//[-------------------------------------------------------]
-	struct CurrentGraphicsPipelineState
+	struct CurrentGraphicsPipelineState final
 	{
 		Renderer::IGraphicsProgram*	graphicsProgram			= nullptr;
 		ID3D11InputLayout*			d3d11InputLayout		= nullptr;

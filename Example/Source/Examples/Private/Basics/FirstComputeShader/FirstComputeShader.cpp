@@ -144,7 +144,7 @@ void FirstComputeShader::onInitialization()
 		}
 
 		{ // Structured buffer
-			struct Vertex
+			struct Vertex final
 			{
 				float position[2];
 				float padding[2];

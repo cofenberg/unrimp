@@ -7180,6 +7180,9 @@ namespace Renderer
 	/**
 	*  @brief
 	*    Abstract 1D array texture interface
+	*
+	*  @note
+	*    - An 1D array texture is for example useful for storing multiple 1D Illuminating Engineering Society (IES) light profiles packed together in a single texture in order to avoid renderer state changes
 	*/
 	class ITexture1DArray : public ITexture
 	{

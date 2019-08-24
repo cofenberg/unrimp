@@ -27,7 +27,6 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "Examples/Private/Framework/PlatformTypes.h"
 #include "Examples/Private/Framework/IApplicationImpl.h"
 
 

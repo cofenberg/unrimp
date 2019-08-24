@@ -2128,7 +2128,7 @@ namespace Direct3D10Renderer
 	//[-------------------------------------------------------]
 	//[ Direct3D10Renderer/Direct3D10Renderer.h               ]
 	//[-------------------------------------------------------]
-	struct CurrentGraphicsPipelineState
+	struct CurrentGraphicsPipelineState final
 	{
 		Renderer::IGraphicsProgram*	graphicsProgram			= nullptr;
 		ID3D10InputLayout*			d3d10InputLayout		= nullptr;

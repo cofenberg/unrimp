@@ -53,6 +53,9 @@ namespace RendererToolkit
 	/**
 	*  @brief
 	*    Abstract renderer toolkit interface
+	*
+	*  @note
+	*    - The implementation must be multithreading safe since the renderer runtime is allowed to internally use multiple threads
 	*/
 	class IRendererToolkit : public Renderer::RefCount<IRendererToolkit>
 	{
