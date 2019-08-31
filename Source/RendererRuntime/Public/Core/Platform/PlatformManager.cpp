@@ -28,13 +28,6 @@
 	#include <sys/prctl.h>
 #endif
 
-// Disable warnings in external headers, we can't fix them
-PRAGMA_WARNING_PUSH
-	PRAGMA_WARNING_DISABLE_MSVC(4668)	// warning C4668: '_M_HYBRID_X86_ARM64' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
-	#include <cassert>
-	#include <inttypes.h>	// For uint32_t, uint64_t etc.
-PRAGMA_WARNING_POP
-
 
 //[-------------------------------------------------------]
 //[ Anonymous detail namespace                            ]
@@ -104,8 +97,8 @@ namespace RendererRuntime
 	void PlatformManager::setCurrentThreadName([[maybe_unused]] const char* shortName, [[maybe_unused]] const char* descriptiveName)
 	{
 		// "pthread_setname_np()" support only up to 16 characters (including the terminating zero), so this is our limiting factor
-		assert((strlen(shortName) + 1) <= 16);	// +1 for the terminating zero
-		assert(strlen(descriptiveName) >= strlen(shortName));
+		ASSERT((strlen(shortName) + 1) <= 16);	// +1 for the terminating zero
+		ASSERT(strlen(descriptiveName) >= strlen(shortName));
 
 		// Platform specific part
 		#ifdef _WIN32
@@ -123,10 +116,10 @@ namespace RendererRuntime
 	bool PlatformManager::execute([[maybe_unused]] const char* command, [[maybe_unused]] const char* parameters, [[maybe_unused]] AbsoluteDirectoryName workingDirectory)
 	{
 		// Sanity checks
-		assert(nullptr != command);
-		assert(strlen(command) != 0);
-		assert(nullptr != parameters);
-		assert(nullptr != workingDirectory);
+		ASSERT(nullptr != command);
+		ASSERT(strlen(command) != 0);
+		ASSERT(nullptr != parameters);
+		ASSERT(nullptr != workingDirectory);
 
 		// Platform specific part
 		#ifdef _WIN32
@@ -160,8 +153,8 @@ namespace RendererRuntime
 	bool PlatformManager::openUrlExternal([[maybe_unused]] const char* url)
 	{
 		// Sanity checks
-		assert(nullptr != url);
-		assert(strlen(url) != 0);
+		ASSERT(nullptr != url);
+		ASSERT(strlen(url) != 0);
 
 		// Platform specific part
 		#ifdef _WIN32

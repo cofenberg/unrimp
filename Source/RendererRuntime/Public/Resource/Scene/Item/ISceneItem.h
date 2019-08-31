@@ -99,13 +99,13 @@ namespace RendererRuntime
 
 		[[nodiscard]] inline SceneNode& getParentSceneNodeSafe()	// Just safe in context known as safe
 		{
-			assert(nullptr != mParentSceneNode);
+			ASSERT(nullptr != mParentSceneNode);
 			return *mParentSceneNode;
 		}
 
 		[[nodiscard]] inline const SceneNode& getParentSceneNodeSafe() const	// Just safe in context known as safe
 		{
-			assert(nullptr != mParentSceneNode);
+			ASSERT(nullptr != mParentSceneNode);
 			return *mParentSceneNode;
 		}
 
@@ -119,13 +119,13 @@ namespace RendererRuntime
 
 		inline virtual void onAttachedToSceneNode(SceneNode& sceneNode)
 		{
-			assert(nullptr == mParentSceneNode);
+			ASSERT(nullptr == mParentSceneNode);
 			mParentSceneNode = &sceneNode;
 		}
 
 		inline virtual void onDetachedFromSceneNode([[maybe_unused]] SceneNode& sceneNode)
 		{
-			assert(nullptr != mParentSceneNode);
+			ASSERT(nullptr != mParentSceneNode);
 			mParentSceneNode = nullptr;
 		}
 

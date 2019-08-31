@@ -134,7 +134,7 @@ namespace RendererRuntime
 
 		[[nodiscard]] inline uint32_t getTotalNumberOfBoneSpaceDataBytes() const
 		{
-			assert((0 != mNumberOfBones) && "Each skeleton must have at least one bone");
+			ASSERT((0 != mNumberOfBones) && "Each skeleton must have at least one bone");
 			return static_cast<uint32_t>(NUMBER_OF_BONE_SPACE_DATA_BYTES * mNumberOfBones);
 		}
 
@@ -166,13 +166,13 @@ namespace RendererRuntime
 		inline virtual ~SkeletonResource() override
 		{
 			// Sanity checks
-			assert(0 == mNumberOfBones);
-			assert(nullptr == mBoneParentIndices);
-			assert(nullptr == mBoneIds);
-			assert(nullptr == mLocalBoneMatrices);
-			assert(nullptr == mBoneOffsetMatrices);
-			assert(nullptr == mGlobalBoneMatrices);
-			assert(nullptr == mBoneSpaceData);
+			ASSERT(0 == mNumberOfBones);
+			ASSERT(nullptr == mBoneParentIndices);
+			ASSERT(nullptr == mBoneIds);
+			ASSERT(nullptr == mLocalBoneMatrices);
+			ASSERT(nullptr == mBoneOffsetMatrices);
+			ASSERT(nullptr == mGlobalBoneMatrices);
+			ASSERT(nullptr == mBoneSpaceData);
 		}
 
 		explicit SkeletonResource(const SkeletonResource&) = delete;
@@ -201,13 +201,13 @@ namespace RendererRuntime
 		inline void initializeElement(SkeletonResourceId skeletonResourceId)
 		{
 			// Sanity checks
-			assert(0 == mNumberOfBones);
-			assert(nullptr == mBoneParentIndices);
-			assert(nullptr == mBoneIds);
-			assert(nullptr == mLocalBoneMatrices);
-			assert(nullptr == mBoneOffsetMatrices);
-			assert(nullptr == mGlobalBoneMatrices);
-			assert(nullptr == mBoneSpaceData);
+			ASSERT(0 == mNumberOfBones);
+			ASSERT(nullptr == mBoneParentIndices);
+			ASSERT(nullptr == mBoneIds);
+			ASSERT(nullptr == mLocalBoneMatrices);
+			ASSERT(nullptr == mBoneOffsetMatrices);
+			ASSERT(nullptr == mGlobalBoneMatrices);
+			ASSERT(nullptr == mBoneSpaceData);
 
 			// Call base implementation
 			IResource::initializeElement(skeletonResourceId);

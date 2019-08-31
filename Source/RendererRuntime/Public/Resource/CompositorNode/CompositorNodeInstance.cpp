@@ -102,7 +102,7 @@ namespace RendererRuntime
 		}
 
 		// Sanity check: At least for now a compositor node must end with a valid current render target
-		assert(nullptr != currentRenderTarget);
+		ASSERT(nullptr != currentRenderTarget);
 
 		// Done
 		return *currentRenderTarget;

@@ -79,19 +79,19 @@ namespace RendererRuntime
 
 		[[nodiscard]] inline RenderTargetTextureManager& getRenderTargetTextureManager()
 		{
-			assert(nullptr != mRenderTargetTextureManager);
+			ASSERT(nullptr != mRenderTargetTextureManager);
 			return *mRenderTargetTextureManager;
 		}
 
 		[[nodiscard]] inline RenderPassManager& getRenderPassManager()
 		{
-			assert(nullptr != mRenderPassManager);
+			ASSERT(nullptr != mRenderPassManager);
 			return *mRenderPassManager;
 		}
 
 		[[nodiscard]] inline FramebufferManager& getFramebufferManager()
 		{
-			assert(nullptr != mFramebufferManager);
+			ASSERT(nullptr != mFramebufferManager);
 			return *mFramebufferManager;
 		}
 

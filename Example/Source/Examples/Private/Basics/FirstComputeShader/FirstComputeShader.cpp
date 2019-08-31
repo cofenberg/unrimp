@@ -371,32 +371,32 @@ void FirstComputeShader::onDraw()
 void FirstComputeShader::fillCommandBuffer()
 {
 	// Sanity checks
-	assert(nullptr != getRenderer());
-	assert(nullptr != getMainRenderTarget());
-	assert(mCommandBuffer.isEmpty());
-	assert(nullptr != mGraphicsRootSignature);
-	assert(nullptr != mComputeRootSignature1);
-	assert(nullptr != mComputeRootSignature2);
-	assert(nullptr != mFramebuffer);
-	assert(nullptr != mComputeResourceGroup1);
-	assert(nullptr != mComputeResourceGroup2);
-	assert(nullptr != mGraphicsResourceGroup);
-	assert(nullptr != mGraphicsSamplerStateGroup);
-	assert(nullptr != mGraphicsPipelineState);
-	assert(nullptr != mComputePipelineState1);
-	assert(nullptr != mComputePipelineState2);
-	assert(nullptr != mComputeInputIndexBuffer);
-	assert(nullptr != mComputeOutputIndexBuffer);
-	assert(nullptr != mComputeInputVertexBuffer);
-	assert(nullptr != mComputeOutputVertexBuffer);
-	assert(nullptr != mVertexArray);
-	assert(nullptr != mComputeOutputTextureBuffer);
-	assert(nullptr != mComputeInputTextureBuffer);
-	assert(nullptr != mComputeOutputStructuredBuffer);
-	assert(nullptr != mComputeInputStructuredBuffer);
-	assert(nullptr != mComputeOutputIndirectBuffer);
-	assert(nullptr != mComputeInputIndirectBuffer);
-	assert(nullptr != mComputeInputUniformBuffer);
+	ASSERT(nullptr != getRenderer());
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != getMainRenderTarget(), "Invalid main render target");
+	RENDERER_ASSERT(getRenderer()->getContext(), mCommandBuffer.isEmpty(), "The command buffer is already filled");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mGraphicsRootSignature, "Invalid graphics root signature");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeRootSignature1, "Invalid compute root signature 1");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeRootSignature2, "Invalid compute root signature 2");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mFramebuffer, "Invalid framebuffer");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeResourceGroup1, "Invalid compute resource group 1");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeResourceGroup2, "Invalid compute resource group 2");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mGraphicsResourceGroup, "Invalid graphics resource group");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mGraphicsSamplerStateGroup, "Invalid graphics sampler state group");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mGraphicsPipelineState, "Invalid graphics pipeline state");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputePipelineState1, "Invalid compute pipeline state 1");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputePipelineState2, "Invalid compute pipeline state 2");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeInputIndexBuffer, "Invalid compute input index buffer");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeOutputIndexBuffer, "Invalid compute output index buffer");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeInputVertexBuffer, "Invalid compute input vertex buffer");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeOutputVertexBuffer, "Invalid compute output vertex buffer");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mVertexArray, "Invalid vertex array");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeOutputTextureBuffer, "Invalid compute output texture buffer");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeInputTextureBuffer, "Invalid compute input texture buffer");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeOutputStructuredBuffer, "Invalid compute output structured buffer");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeInputStructuredBuffer, "Invalid compute input structured buffer");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeOutputIndirectBuffer, "Invalid compute output indirect buffer");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeInputIndirectBuffer, "Invalid compute input indirect buffer");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeInputUniformBuffer, "Invalid compute input uniform buffer");
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)

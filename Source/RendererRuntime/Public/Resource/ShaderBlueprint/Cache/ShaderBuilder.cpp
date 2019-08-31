@@ -196,7 +196,7 @@ namespace
 
 			void setValue(uint32_t position, bool bValue)
 			{
-				assert(position < _N);
+				ASSERT(position < _N);
 				const uint32_t idx  = (position >> _bits);
 				const uint32_t mask = (1u << (position & _mask));
 				if (bValue)
@@ -211,7 +211,7 @@ namespace
 
 			void set(uint32_t position)
 			{
-				assert(position < _N);
+				ASSERT(position < _N);
 				const uint32_t idx  = (position >> _bits);
 				const uint32_t mask = (1u << (position & _mask));
 				mValues[idx] |= mask;
@@ -219,7 +219,7 @@ namespace
 
 			void unset(uint32_t position)
 			{
-				assert(position < _N);
+				ASSERT(position < _N);
 				const uint32_t idx  = (position >> _bits);
 				const uint32_t mask = (1u << (position & _mask));
 				mValues[idx] &= ~mask;
@@ -227,7 +227,7 @@ namespace
 
 			bool test(uint32_t position) const
 			{
-				assert(position < _N);
+				ASSERT(position < _N);
 				const uint32_t idx  = (position >> _bits);
 				const uint32_t mask = (1u << (position & _mask));
 				return (mValues[idx] & mask) != 0u;
@@ -253,7 +253,7 @@ namespace
 				mStart(start),
 				mEnd(original->size())
 			{
-				assert(start <= original->size());
+				ASSERT(start <= original->size());
 			}
 
 			SubStringRef(const std::string* original, size_t _start, size_t _end) :
@@ -261,8 +261,8 @@ namespace
 				mStart(_start),
 				mEnd(_end)
 			{
-				assert(_start <= _end);
-				assert(_end <= original->size());
+				ASSERT(_start <= _end);
+				ASSERT(_end <= original->size());
 			}
 
 			SubStringRef(const std::string* original, std::string::const_iterator _start) :
@@ -491,7 +491,7 @@ namespace
 				++it;
 			}
 
-			assert(nesting >= -1);
+			ASSERT(nesting >= -1);
 
 			if (it != en && nesting < 0)
 			{
@@ -529,7 +529,7 @@ namespace
 				++it;
 			}
 
-			assert(nesting >= -1);
+			ASSERT(nesting >= -1);
 
 			size_t returnValue = std::string::npos;
 			if (it != en && nesting < 0)
@@ -913,7 +913,7 @@ namespace RendererRuntime
 				else
 				{
 					// TODO(co) Error handling
-					assert(false);
+					ASSERT(false);
 				}
 			}
 		}

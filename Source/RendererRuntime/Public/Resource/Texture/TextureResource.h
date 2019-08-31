@@ -91,7 +91,7 @@ namespace RendererRuntime
 		inline void setTexture(Renderer::ITexture* texture)
 		{
 			// Sanity check
-			assert((LoadingState::LOADED == getLoadingState() || LoadingState::UNLOADED == getLoadingState()) && "Texture resource change while in-flight inside the resource streamer");
+			ASSERT((LoadingState::LOADED == getLoadingState() || LoadingState::UNLOADED == getLoadingState()) && "Texture resource change while in-flight inside the resource streamer");
 
 			// Set new renderer texture
 			if (nullptr != mTexture)
@@ -116,7 +116,7 @@ namespace RendererRuntime
 		inline virtual ~TextureResource() override
 		{
 			// Sanity checks
-			assert(nullptr == mTexture.getPointer());
+			ASSERT(nullptr == mTexture.getPointer());
 		}
 
 		explicit TextureResource(const TextureResource&) = delete;
@@ -141,7 +141,7 @@ namespace RendererRuntime
 		inline void initializeElement(TextureResourceId textureResourceId)
 		{
 			// Sanity checks
-			assert(nullptr == mTexture.getPointer());
+			ASSERT(nullptr == mTexture.getPointer());
 
 			// Call base implementation
 			IResource::initializeElement(textureResourceId);

@@ -100,7 +100,7 @@ IApplicationRenderer::IApplicationRenderer(const char* rendererName, ExampleBase
 //[-------------------------------------------------------]
 void IApplicationRenderer::switchExample(const char* exampleName, const char* rendererName)
 {
-	assert(nullptr != exampleName);
+	ASSERT(nullptr != exampleName);
 	mExampleBase.getExampleRunner().switchExample(exampleName, rendererName);
 	exit();
 }
@@ -224,7 +224,7 @@ void IApplicationRenderer::onEscapeKey()
 //[-------------------------------------------------------]
 void IApplicationRenderer::createRenderer()
 {
-	assert(nullptr == mRenderer);
+	ASSERT(nullptr == mRenderer);
 
 	// Create the renderer instance
 	mRenderer = createRendererInstance(mRendererName);

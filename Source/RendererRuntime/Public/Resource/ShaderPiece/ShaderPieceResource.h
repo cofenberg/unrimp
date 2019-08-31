@@ -114,7 +114,7 @@ namespace RendererRuntime
 		inline virtual ~ShaderPieceResource() override
 		{
 			// Sanity checks
-			assert(mShaderSourceCode.empty());
+			ASSERT(mShaderSourceCode.empty());
 		}
 
 		explicit ShaderPieceResource(const ShaderPieceResource&) = delete;
@@ -126,7 +126,7 @@ namespace RendererRuntime
 		inline void initializeElement(ShaderPieceResourceId shaderPieceResourceId)
 		{
 			// Sanity checks
-			assert(mShaderSourceCode.empty());
+			ASSERT(mShaderSourceCode.empty());
 
 			// Call base implementation
 			IResource::initializeElement(shaderPieceResourceId);

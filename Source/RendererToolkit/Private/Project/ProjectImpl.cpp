@@ -230,7 +230,7 @@ namespace RendererToolkit
 			IAssetCompiler::Input input(mContext, mProjectName, *mCacheManager, virtualAssetPackageInputDirectory, virtualAssetFilename, virtualAssetInputDirectory, virtualAssetOutputDirectory, mSourceAssetIdToCompiledAssetId, mCompiledAssetIdToSourceAssetId, mSourceAssetIdToVirtualFilename, mDefaultTextureAssetIds);
 
 			// Compile the asset
-			assert(nullptr != assetCompiler);
+			RENDERER_ASSERT(getContext(), nullptr != assetCompiler, "Invalid asset compiler");
 			RENDERER_ASSERT(getContext(), nullptr != mRapidJsonDocument, "Invalid renderer toolkit Rapid JSON document")
 			const IAssetCompiler::Configuration configuration(rapidJsonDocument, (*mRapidJsonDocument)["Targets"], rendererTarget, mQualityStrategy);
 			return assetCompiler->checkIfChanged(input, configuration);
@@ -286,7 +286,7 @@ namespace RendererToolkit
 			const IAssetCompiler::Configuration configuration(rapidJsonDocument, (*mRapidJsonDocument)["Targets"], rendererTarget, mQualityStrategy);
 
 			// Compile the asset
-			assert(nullptr != assetCompiler);
+			RENDERER_ASSERT(getContext(), nullptr != assetCompiler, "Invalid asset compiler");
 			assetCompiler->compile(input, configuration);
 
 			{ // Update the output asset package
@@ -463,7 +463,7 @@ namespace RendererToolkit
 					memoryFile.read(&assetPackageHeader, sizeof(RendererRuntime::v1AssetPackage::AssetPackageHeader));
 
 					// Sanity check
-					assert((assetPackageHeader.numberOfAssets > 0) && "Invalid empty asset package detected");
+					ASSERT((assetPackageHeader.numberOfAssets > 0) && "Invalid empty asset package detected");
 
 					// Read in the asset package content in one single burst
 					RendererRuntime::AssetPackage::SortedAssetVector& sortedOutputAssetVector = outputAssetPackage.getWritableSortedAssetVector();

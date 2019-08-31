@@ -38,7 +38,7 @@ namespace RendererRuntime
 	void CompositorResourcePassScene::deserialize([[maybe_unused]] uint32_t numberOfBytes, const uint8_t* data)
 	{
 		// Sanity check
-		assert(sizeof(v1CompositorNode::PassScene) == numberOfBytes);
+		ASSERT(sizeof(v1CompositorNode::PassScene) == numberOfBytes);
 
 		// Call the base implementation
 		ICompositorResourcePass::deserialize(sizeof(v1CompositorNode::Pass), data);
@@ -51,7 +51,7 @@ namespace RendererRuntime
 		mMaterialTechniqueId	 = passScene->materialTechniqueId;
 
 		// Sanity check
-		assert(mMaximumRenderQueueIndex >= mMinimumRenderQueueIndex);
+		ASSERT(mMaximumRenderQueueIndex >= mMinimumRenderQueueIndex);
 	}
 
 	bool CompositorResourcePassScene::getRenderQueueIndexRange(uint8_t& minimumRenderQueueIndex, uint8_t& maximumRenderQueueIndex) const

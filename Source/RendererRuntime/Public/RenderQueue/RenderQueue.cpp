@@ -110,7 +110,7 @@ namespace
 				case RendererRuntime::MaterialPropertyValue::ValueType::TEXTURE_ASSET_ID:
 				case RendererRuntime::MaterialPropertyValue::ValueType::GLOBAL_MATERIAL_PROPERTY_ID:
 				default:
-					assert(false);	// TODO(co) Error handling
+					ASSERT(false);	// TODO(co) Error handling
 					break;
 			}
 		}
@@ -155,7 +155,7 @@ namespace
 									else
 									{
 										// Error, can't resolve reference
-										assert(false);	// TODO(co) Error handling
+										ASSERT(false);	// TODO(co) Error handling
 									}
 								}
 								break;
@@ -183,7 +183,7 @@ namespace
 							case RendererRuntime::MaterialPropertyValue::ValueType::TEXTURE_ADDRESS_MODE:
 							case RendererRuntime::MaterialPropertyValue::ValueType::TEXTURE_ASSET_ID:
 							default:
-								assert(false);	// TODO(co) Error handling
+								ASSERT(false);	// TODO(co) Error handling
 								break;
 						}
 					}

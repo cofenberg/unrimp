@@ -48,7 +48,7 @@ namespace
 			file.read(&nodes, sizeof(RendererRuntime::v1CompositorWorkspace::Nodes));
 
 			// Sanity check
-			assert((nodes.numberOfNodes > 0) && "Invalid compositor workspace asset without any nodes detected");
+			ASSERT((nodes.numberOfNodes > 0) && "Invalid compositor workspace asset without any nodes detected");
 
 			// Read in the compositor node asset IDs
 			compositorWorkspaceResource.reserveCompositorNodes(nodes.numberOfNodes);

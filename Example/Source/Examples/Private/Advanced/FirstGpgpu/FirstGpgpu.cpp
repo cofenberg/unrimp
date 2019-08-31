@@ -297,11 +297,12 @@ void FirstGpgpu::onDeinitialization()
 void FirstGpgpu::fillCommandBufferContentGeneration()
 {
 	// Sanity checks
-	assert(nullptr != mFramebuffer[0]);
-	assert(nullptr != mRootSignature);
-	assert(nullptr != mGraphicsPipelineStateContentGeneration);
-	assert(nullptr != mVertexArrayContentGeneration);
-	assert(mCommandBufferContentGeneration.isEmpty());
+	ASSERT(nullptr != mRenderer);
+	RENDERER_ASSERT(mRenderer->getContext(), nullptr != mFramebuffer[0], "Invalid framebuffer at index 0");
+	RENDERER_ASSERT(mRenderer->getContext(), nullptr != mRootSignature, "Invalid root signature");
+	RENDERER_ASSERT(mRenderer->getContext(), nullptr != mGraphicsPipelineStateContentGeneration, "Invalid graphics pipeline state content generation");
+	RENDERER_ASSERT(mRenderer->getContext(), nullptr != mVertexArrayContentGeneration, "Invalid vertex array content generation");
+	RENDERER_ASSERT(mRenderer->getContext(), mCommandBufferContentGeneration.isEmpty(), "Command buffer content generation is already filled");
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT(mCommandBufferContentGeneration, "Generate the content of the 2D texture to process later on")
@@ -342,13 +343,14 @@ void FirstGpgpu::fillCommandBufferContentGeneration()
 void FirstGpgpu::fillCommandBufferContentProcessing()
 {
 	// Sanity checks
-	assert(nullptr != mFramebuffer[1]);
-	assert(nullptr != mRootSignature);
-	assert(nullptr != mGraphicsPipelineStateContentProcessing);
-	assert(nullptr != mTextureGroup);
-	assert(nullptr != mSamplerStateGroup);
-	assert(nullptr != mTexture2D[0]);
-	assert(mCommandBufferContentProcessing.isEmpty());
+	ASSERT(nullptr != mRenderer);
+	RENDERER_ASSERT(mRenderer->getContext(), nullptr != mFramebuffer[1], "Invalid framebuffer at index 1");
+	RENDERER_ASSERT(mRenderer->getContext(), nullptr != mRootSignature, "Invalid root signature");
+	RENDERER_ASSERT(mRenderer->getContext(), nullptr != mGraphicsPipelineStateContentProcessing, "Invalid graphics pipeline state content processing");
+	RENDERER_ASSERT(mRenderer->getContext(), nullptr != mTextureGroup, "Invalid texture group");
+	RENDERER_ASSERT(mRenderer->getContext(), nullptr != mSamplerStateGroup, "Invalid sampler state group");
+	RENDERER_ASSERT(mRenderer->getContext(), nullptr != mTexture2D[0], "Invalid texture 2D at index 0");
+	RENDERER_ASSERT(mRenderer->getContext(), mCommandBufferContentProcessing.isEmpty(), "Command buffer content processing is already filled");
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT(mCommandBufferContentProcessing, "Content processing")

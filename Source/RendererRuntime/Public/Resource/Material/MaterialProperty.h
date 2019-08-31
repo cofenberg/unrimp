@@ -229,7 +229,7 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		[[nodiscard]] inline uint32_t getReferenceValue() const
 		{
-			assert(isReferenceUsage());
+			ASSERT(isReferenceUsage());
 			return static_cast<uint32_t>(mValue.Integer);
 		}
 

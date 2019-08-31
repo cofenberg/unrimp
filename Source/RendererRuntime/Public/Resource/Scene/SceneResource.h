@@ -102,7 +102,7 @@ namespace RendererRuntime
 		[[nodiscard]] inline SceneCullingManager& getSceneCullingManager() const
 		{
 			// We know that this pointer is always valid
-			assert(nullptr != mSceneCullingManager);
+			ASSERT(nullptr != mSceneCullingManager);
 			return *mSceneCullingManager;
 		}
 
@@ -154,10 +154,10 @@ namespace RendererRuntime
 		inline virtual ~SceneResource() override
 		{
 			// Sanity checks
-			assert(nullptr == mSceneFactory);
-			assert(nullptr == mSceneCullingManager);
-			assert(mSceneNodes.empty());
-			assert(mSceneItems.empty());
+			ASSERT(nullptr == mSceneFactory);
+			ASSERT(nullptr == mSceneCullingManager);
+			ASSERT(mSceneNodes.empty());
+			ASSERT(mSceneItems.empty());
 		}
 
 		explicit SceneResource(const SceneResource&) = delete;

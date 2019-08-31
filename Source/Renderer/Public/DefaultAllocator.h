@@ -30,7 +30,6 @@
 #include <Renderer/Public/Renderer.h>
 
 #include <stdlib.h>
-#include <cassert>
 
 
 //[-------------------------------------------------------]
@@ -48,7 +47,7 @@ namespace
 		[[nodiscard]] void* reallocate(Renderer::IAllocator&, void* oldPointer, size_t, size_t newNumberOfBytes, size_t alignment)
 		{
 			// Sanity check
-			assert((0 != alignment && !(alignment & (alignment - 1))) && "The alignment must be a power of two");
+			ASSERT((0 != alignment && !(alignment & (alignment - 1))) && "The alignment must be a power of two");
 
 			// Do the work
 			if (nullptr != oldPointer && 0 != newNumberOfBytes)

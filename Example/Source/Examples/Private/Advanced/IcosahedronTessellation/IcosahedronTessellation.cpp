@@ -271,12 +271,13 @@ void IcosahedronTessellation::onDraw()
 void IcosahedronTessellation::fillCommandBuffer()
 {
 	// Sanity checks
-	assert(mCommandBuffer.isEmpty());
-	assert(nullptr != mRootSignature);
-	assert(nullptr != mUniformBufferDynamicTcs);
-	assert(nullptr != mUniformBufferGroup);
-	assert(nullptr != mGraphicsPipelineState);
-	assert(nullptr != mVertexArray);
+	ASSERT(nullptr != getRenderer());
+	RENDERER_ASSERT(getRenderer()->getContext(), mCommandBuffer.isEmpty(), "The command buffer is already filled");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mRootSignature, "Invalid root signature");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mUniformBufferDynamicTcs, "Invalid uniform buffer dynamic TCS");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mUniformBufferGroup, "Invalid uniform buffer group");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mGraphicsPipelineState, "Invalid graphics pipeline state");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mVertexArray, "Invalid vertex array");
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)

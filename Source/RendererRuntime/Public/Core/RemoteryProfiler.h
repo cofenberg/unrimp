@@ -36,8 +36,6 @@
 
 #include <Remotery/Remotery.h>
 
-#include <cassert>
-
 
 //[-------------------------------------------------------]
 //[ Anonymous detail namespace                            ]
@@ -125,7 +123,7 @@ namespace RendererRuntime
 			rmt_CreateGlobalInstance(&mRemotery);
 
 			// Bind Remotery renderer API
-			assert((nullptr != mRemotery) && "Failed to create global Remotery profiler instance");
+			ASSERT((nullptr != mRemotery) && "Failed to create global Remotery profiler instance");
 			#if RMT_USE_D3D11
 				if (enableGpuProfiling && renderer.getD3D11DevicePointer() != nullptr && renderer.getD3D11ImmediateContextPointer() != nullptr)
 				{
@@ -144,9 +142,7 @@ namespace RendererRuntime
 
 		inline virtual ~RemoteryProfiler() override
 		{
-			#ifdef _DEBUG
-				assert((0 == mNumberOfCurrentlyBegunCpuSamples && 0 == mNumberOfCurrentlyBegunGpuSamples) && "Profiler sampling leak detected, not all begun samples were ended");
-			#endif
+			ASSERT((0 == mNumberOfCurrentlyBegunCpuSamples && 0 == mNumberOfCurrentlyBegunGpuSamples) && "Profiler sampling leak detected, not all begun samples were ended");
 			#if RMT_USE_D3D11
 				if (mUseD3D11)
 				{

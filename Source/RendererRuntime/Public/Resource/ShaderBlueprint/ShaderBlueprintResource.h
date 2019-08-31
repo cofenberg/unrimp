@@ -147,9 +147,9 @@ namespace RendererRuntime
 		inline virtual ~ShaderBlueprintResource() override
 		{
 			// Sanity checks
-			assert(mIncludeShaderPieceResourceIds.empty());
-			assert(mReferencedShaderProperties.getSortedPropertyVector().empty());
-			assert(mShaderSourceCode.empty());
+			ASSERT(mIncludeShaderPieceResourceIds.empty());
+			ASSERT(mReferencedShaderProperties.getSortedPropertyVector().empty());
+			ASSERT(mShaderSourceCode.empty());
 		}
 
 		explicit ShaderBlueprintResource(const ShaderBlueprintResource&) = delete;
@@ -161,9 +161,9 @@ namespace RendererRuntime
 		inline void initializeElement(ShaderBlueprintResourceId shaderBlueprintResourceId)
 		{
 			// Sanity checks
-			assert(mIncludeShaderPieceResourceIds.empty());
-			assert(mReferencedShaderProperties.getSortedPropertyVector().empty());
-			assert(mShaderSourceCode.empty());
+			ASSERT(mIncludeShaderPieceResourceIds.empty());
+			ASSERT(mReferencedShaderProperties.getSortedPropertyVector().empty());
+			ASSERT(mShaderSourceCode.empty());
 
 			// Call base implementation
 			IResource::initializeElement(shaderBlueprintResourceId);

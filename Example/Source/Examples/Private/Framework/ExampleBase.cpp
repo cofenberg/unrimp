@@ -45,9 +45,9 @@ RendererRuntime::IRendererRuntime* ExampleBase::getRendererRuntime() const
 
 RendererRuntime::IRendererRuntime& ExampleBase::getRendererRuntimeSafe() const
 {
-	assert(nullptr != mApplicationFrontend);
+	ASSERT(nullptr != mApplicationFrontend);
 	RendererRuntime::IRendererRuntime* rendererRuntime = mApplicationFrontend->getRendererRuntime();
-	assert(nullptr != rendererRuntime);
+	ASSERT(nullptr != rendererRuntime);
 	return *rendererRuntime;
 }
 
@@ -58,7 +58,7 @@ RendererToolkit::IRendererToolkit* ExampleBase::getRendererToolkit()
 
 void ExampleBase::switchExample(const char* exampleName, const char* rendererName)
 {
-	assert(nullptr != exampleName);
+	ASSERT(nullptr != exampleName);
 	if (nullptr != mApplicationFrontend)
 	{
 		mApplicationFrontend->switchExample(exampleName, rendererName);

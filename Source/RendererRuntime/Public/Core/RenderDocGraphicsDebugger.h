@@ -81,7 +81,6 @@
 #endif
 
 #include <stdio.h>
-#include <cassert>
 
 
 //[-------------------------------------------------------]
@@ -198,9 +197,7 @@ namespace RendererRuntime
 
 		inline virtual ~RenderDocGraphicsDebugger() override
 		{
-			#ifdef _DEBUG
-				assert((0 == mNumberOfCurrentlyStartedFrameCaptures) && "Graphics debugger capturing leak detected, not all started frame capturings were ended");
-			#endif
+			ASSERT((0 == mNumberOfCurrentlyStartedFrameCaptures) && "Graphics debugger capturing leak detected, not all started frame capturings were ended");
 
 			// Unload the shared library instance
 			#ifdef _WIN32
@@ -231,8 +228,8 @@ namespace RendererRuntime
 		virtual void startFrameCapture(Renderer::handle nativeWindowHandle) override
 		{
 			#ifdef _DEBUG
-				assert(nullptr != mRenderDocApi);
-				assert(getCaptureNextFrame());
+				ASSERT(nullptr != mRenderDocApi);
+				ASSERT(getCaptureNextFrame());
 				++mNumberOfCurrentlyStartedFrameCaptures;
 			#endif
 			mRenderDocApi->StartFrameCapture(nullptr, reinterpret_cast<RENDERDOC_WindowHandle>(nativeWindowHandle));
@@ -241,8 +238,8 @@ namespace RendererRuntime
 		virtual void endFrameCapture(Renderer::handle nativeWindowHandle) override
 		{
 			#ifdef _DEBUG
-				assert(nullptr != mRenderDocApi);
-				assert(getCaptureNextFrame());
+				ASSERT(nullptr != mRenderDocApi);
+				ASSERT(getCaptureNextFrame());
 				--mNumberOfCurrentlyStartedFrameCaptures;
 			#endif
 			mRenderDocApi->EndFrameCapture(nullptr, reinterpret_cast<RENDERDOC_WindowHandle>(nativeWindowHandle));

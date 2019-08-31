@@ -193,11 +193,11 @@ namespace RendererRuntime
 		inline virtual ~CompositorNodeResource() override
 		{
 			// Sanity checks
-			assert(mInputChannels.empty());
-			assert(mCompositorRenderTargetTextures.empty());
-			assert(mCompositorFramebuffers.empty());
-			assert(mCompositorTargets.empty());
-			assert(mOutputChannels.empty());
+			ASSERT(mInputChannels.empty());
+			ASSERT(mCompositorRenderTargetTextures.empty());
+			ASSERT(mCompositorFramebuffers.empty());
+			ASSERT(mCompositorTargets.empty());
+			ASSERT(mOutputChannels.empty());
 		}
 
 		explicit CompositorNodeResource(const CompositorNodeResource&) = delete;
@@ -209,11 +209,11 @@ namespace RendererRuntime
 		inline void initializeElement(CompositorNodeResourceId compositorNodeResourceId)
 		{
 			// Sanity checks
-			assert(mInputChannels.empty());
-			assert(mCompositorRenderTargetTextures.empty());
-			assert(mCompositorFramebuffers.empty());
-			assert(mCompositorTargets.empty());
-			assert(mOutputChannels.empty());
+			ASSERT(mInputChannels.empty());
+			ASSERT(mCompositorRenderTargetTextures.empty());
+			ASSERT(mCompositorFramebuffers.empty());
+			ASSERT(mCompositorTargets.empty());
+			ASSERT(mOutputChannels.empty());
 
 			// Call base implementation
 			IResource::initializeElement(compositorNodeResourceId);

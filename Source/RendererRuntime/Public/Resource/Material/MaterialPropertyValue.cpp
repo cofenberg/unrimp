@@ -219,7 +219,7 @@ namespace RendererRuntime
 		}
 
 		// Not identical
-		assert(false);
+		ASSERT(false);
 		return false;
 	}
 

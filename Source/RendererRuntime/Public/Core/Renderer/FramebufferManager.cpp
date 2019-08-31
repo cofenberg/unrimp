@@ -122,12 +122,12 @@ namespace RendererRuntime
 					break;
 				}
 			}
-			assert(nullptr != framebuffer);
+			ASSERT(nullptr != framebuffer);
 		}
 		else
 		{
 			// Error! Unknown compositor framebuffer ID, this shouldn't have happened.
-			assert(false);
+			ASSERT(false);
 		}
 
 		// Done
@@ -155,7 +155,7 @@ namespace RendererRuntime
 						// Get the color texture instances
 						Renderer::TextureFormat::Enum colorTextureFormats[8] = { Renderer::TextureFormat::Enum::UNKNOWN, Renderer::TextureFormat::Enum::UNKNOWN, Renderer::TextureFormat::Enum::UNKNOWN, Renderer::TextureFormat::Enum::UNKNOWN, Renderer::TextureFormat::Enum::UNKNOWN, Renderer::TextureFormat::Enum::UNKNOWN, Renderer::TextureFormat::Enum::UNKNOWN, Renderer::TextureFormat::Enum::UNKNOWN };
 						const uint8_t numberOfColorAttachments = framebufferSignature.getNumberOfColorAttachments();
-						assert(numberOfColorAttachments < 8);
+						ASSERT(numberOfColorAttachments < 8);
 						Renderer::FramebufferAttachment colorFramebufferAttachments[8];
 						uint8_t usedNumberOfMultisamples = 0;
 						for (uint8_t i = 0; i < numberOfColorAttachments; ++i)
@@ -165,17 +165,17 @@ namespace RendererRuntime
 							const RenderTargetTextureSignature* colorRenderTargetTextureSignature = nullptr;
 							Renderer::FramebufferAttachment& framebufferAttachment = colorFramebufferAttachments[i];
 							framebufferAttachment.texture = isValid(colorTextureAssetId) ? mRenderTargetTextureManager.getTextureByAssetId(colorTextureAssetId, renderTarget, numberOfMultisamples, resolutionScale, &colorRenderTargetTextureSignature) : nullptr;
-							assert(nullptr != framebufferAttachment.texture);
+							ASSERT(nullptr != framebufferAttachment.texture);
 							framebufferAttachment.mipmapIndex = framebufferSignatureAttachment.mipmapIndex;
 							framebufferAttachment.layerIndex = framebufferSignatureAttachment.layerIndex;
-							assert(nullptr != colorRenderTargetTextureSignature);
+							ASSERT(nullptr != colorRenderTargetTextureSignature);
 							if (0 == usedNumberOfMultisamples)
 							{
 								usedNumberOfMultisamples = ((colorRenderTargetTextureSignature->getFlags() & RenderTargetTextureSignature::Flag::ALLOW_MULTISAMPLE) != 0) ? numberOfMultisamples : 1u;
 							}
 							else
 							{
-								assert(1 == usedNumberOfMultisamples || ((colorRenderTargetTextureSignature->getFlags() & RenderTargetTextureSignature::Flag::ALLOW_MULTISAMPLE) != 0));
+								ASSERT(1 == usedNumberOfMultisamples || ((colorRenderTargetTextureSignature->getFlags() & RenderTargetTextureSignature::Flag::ALLOW_MULTISAMPLE) != 0));
 							}
 							colorTextureFormats[i] = colorRenderTargetTextureSignature->getTextureFormat();
 						}
@@ -192,14 +192,14 @@ namespace RendererRuntime
 							}
 							else
 							{
-								assert(1 == usedNumberOfMultisamples || ((depthStencilRenderTargetTextureSignature->getFlags() & RenderTargetTextureSignature::Flag::ALLOW_MULTISAMPLE) != 0));
+								ASSERT(1 == usedNumberOfMultisamples || ((depthStencilRenderTargetTextureSignature->getFlags() & RenderTargetTextureSignature::Flag::ALLOW_MULTISAMPLE) != 0));
 							}
 						}
 						const Renderer::TextureFormat::Enum depthStencilTextureFormat = (nullptr != depthStencilRenderTargetTextureSignature) ? depthStencilRenderTargetTextureSignature->getTextureFormat() : Renderer::TextureFormat::Enum::UNKNOWN;
 
 						// Get or create the managed render pass
 						Renderer::IRenderPass* renderPass = mRenderPassManager.getOrCreateRenderPass(numberOfColorAttachments, colorTextureFormats, depthStencilTextureFormat, usedNumberOfMultisamples);
-						assert(nullptr != renderPass);
+						ASSERT(nullptr != renderPass);
 
 						// Create the framebuffer object (FBO) instance
 						// -> The framebuffer automatically adds a reference to the provided textures
@@ -211,12 +211,12 @@ namespace RendererRuntime
 					break;
 				}
 			}
-			assert(nullptr != framebuffer);
+			ASSERT(nullptr != framebuffer);
 		}
 		else
 		{
 			// Error! Unknown compositor framebuffer ID, this shouldn't have happened.
-			assert(false);
+			ASSERT(false);
 		}
 
 		// Done
@@ -246,7 +246,7 @@ namespace RendererRuntime
 		else
 		{
 			// Error! Framebuffer signature isn't registered.
-			assert(false);
+			ASSERT(false);
 		}
 	}
 

@@ -288,7 +288,7 @@ namespace
 		void gatherMaterialTextureFilenames(const RendererToolkit::IAssetImporter::Input& input, const TextureFilenames& textureFilenames, MaterialTextureFilenames& materialTextureFilenames)
 		{
 			// Sanity check
-			assert(!textureFilenames.empty());
+			ASSERT(!textureFilenames.empty());
 
 			// Let's first see which materials and types of texture maps we have
 			for (const std::string& textureFilename : textureFilenames)
@@ -419,7 +419,7 @@ namespace
 						else
 						{
 							// Error!
-							assert(false && "Broken implementation, we should never ever be in here");
+							ASSERT(false && "Broken implementation, we should never ever be in here");
 						}
 						rapidJsonValueCompiler.AddMember("InputFiles", rapidJsonValueInputFiles, rapidJsonAllocatorType);
 					}
@@ -436,7 +436,7 @@ namespace
 				else
 				{
 					// Error!
-					assert(false && "Broken implementation, we should never ever be in here");
+					ASSERT(false && "Broken implementation, we should never ever be in here");
 				}
 
 				// Add texture asset compiler member

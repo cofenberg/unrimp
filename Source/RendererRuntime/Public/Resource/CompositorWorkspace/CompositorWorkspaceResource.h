@@ -116,7 +116,7 @@ namespace RendererRuntime
 		inline virtual ~CompositorWorkspaceResource() override
 		{
 			// Sanity checks
-			assert(mCompositorNodeAssetIds.empty());
+			ASSERT(mCompositorNodeAssetIds.empty());
 		}
 
 		explicit CompositorWorkspaceResource(const CompositorWorkspaceResource&) = delete;
@@ -128,7 +128,7 @@ namespace RendererRuntime
 		inline void initializeElement(CompositorWorkspaceResourceId compositorWorkspaceResourceId)
 		{
 			// Sanity checks
-			assert(mCompositorNodeAssetIds.empty());
+			ASSERT(mCompositorNodeAssetIds.empty());
 
 			// Call base implementation
 			IResource::initializeElement(compositorWorkspaceResourceId);

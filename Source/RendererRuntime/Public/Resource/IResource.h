@@ -99,14 +99,14 @@ namespace RendererRuntime
 	public:
 		[[nodiscard]] inline IResourceManager& getResourceManager() const
 		{
-			assert(nullptr != mResourceManager);
+			ASSERT(nullptr != mResourceManager);
 			return *mResourceManager;
 		}
 
 		template <typename T>
 		[[nodiscard]] inline T& getResourceManager() const
 		{
-			assert(nullptr != mResourceManager);
+			ASSERT(nullptr != mResourceManager);
 			return *static_cast<T*>(mResourceManager);
 		}
 
@@ -164,15 +164,13 @@ namespace RendererRuntime
 		inline virtual ~IResource()
 		{
 			// Sanity checks
-			assert(nullptr == mResourceManager);
-			assert(isInvalid(mResourceId));
-			assert(isInvalid(mAssetId));
-			assert(isInvalid(mResourceLoaderTypeId));
-			assert(LoadingState::UNLOADED == mLoadingState || LoadingState::FAILED == mLoadingState);
-			assert(mSortedResourceListeners.empty());
-			#ifdef _DEBUG
-				assert(mDebugName.empty());
-			#endif
+			ASSERT(nullptr == mResourceManager);
+			ASSERT(isInvalid(mResourceId));
+			ASSERT(isInvalid(mAssetId));
+			ASSERT(isInvalid(mResourceLoaderTypeId));
+			ASSERT(LoadingState::UNLOADED == mLoadingState || LoadingState::FAILED == mLoadingState);
+			ASSERT(mSortedResourceListeners.empty());
+			ASSERT(mDebugName.empty());
 		}
 
 		explicit IResource(const IResource&) = delete;
@@ -202,15 +200,13 @@ namespace RendererRuntime
 		inline void initializeElement(ResourceId resourceId)
 		{
 			// Sanity checks
-			assert(nullptr == mResourceManager);
-			assert(isInvalid(mResourceId));
-			assert(isInvalid(mAssetId));
-			assert(isInvalid(mResourceLoaderTypeId));
-			assert(LoadingState::UNLOADED == mLoadingState);
-			assert(mSortedResourceListeners.empty());
-			#ifdef _DEBUG
-				assert(mDebugName.empty());
-			#endif
+			ASSERT(nullptr == mResourceManager);
+			ASSERT(isInvalid(mResourceId));
+			ASSERT(isInvalid(mAssetId));
+			ASSERT(isInvalid(mResourceLoaderTypeId));
+			ASSERT(LoadingState::UNLOADED == mLoadingState);
+			ASSERT(mSortedResourceListeners.empty());
+			ASSERT(mDebugName.empty());
 
 			// Set data
 			mResourceId = resourceId;

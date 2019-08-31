@@ -24,8 +24,6 @@
 #include "Examples/Private/Basics/FirstGeometryShader/FirstGeometryShader.h"
 #include "Examples/Private/Framework/Color4.h"
 
-#include <cassert>
-
 
 //[-------------------------------------------------------]
 //[ Public virtual IApplication methods                   ]
@@ -117,9 +115,10 @@ void FirstGeometryShader::onDraw()
 void FirstGeometryShader::fillCommandBuffer()
 {
 	// Sanity checks
-	assert(mCommandBuffer.isEmpty());
-	assert(nullptr != mRootSignature);
-	assert(nullptr != mGraphicsPipelineState);
+	ASSERT(nullptr != getRenderer());
+	RENDERER_ASSERT(getRenderer()->getContext(), mCommandBuffer.isEmpty(), "Command buffer is already filled");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mRootSignature, "Invalid root signature");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mGraphicsPipelineState, "Invalid graphics pipeline state");
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)

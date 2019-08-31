@@ -96,7 +96,7 @@ namespace RendererRuntime
 		{
 			mSceneFactory = &getResourceManager<SceneResourceManager>().getSceneFactory();
 		}
-		assert(nullptr != mSceneFactory);
+		ASSERT(nullptr != mSceneFactory);
 		ISceneItem* sceneItem = mSceneFactory->createSceneItem(sceneItemTypeId, *this);
 		if (nullptr != sceneItem)
 		{
@@ -141,10 +141,10 @@ namespace RendererRuntime
 	void SceneResource::initializeElement(SceneResourceId sceneResourceId)
 	{
 		// Sanity checks
-		assert(nullptr == mSceneFactory);
-		assert(nullptr == mSceneCullingManager);
-		assert(mSceneNodes.empty());
-		assert(mSceneItems.empty());
+		ASSERT(nullptr == mSceneFactory);
+		ASSERT(nullptr == mSceneCullingManager);
+		ASSERT(mSceneNodes.empty());
+		ASSERT(mSceneItems.empty());
 
 		// Create scene culling manager
 		mSceneCullingManager = new SceneCullingManager();

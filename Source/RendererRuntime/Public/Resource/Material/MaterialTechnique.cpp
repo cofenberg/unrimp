@@ -91,7 +91,7 @@ namespace RendererRuntime
 		if (isValid(getAssignedMaterialSlot()))
 		{
 			MaterialBufferManager* materialBufferManager = getMaterialBufferManager();
-			assert(nullptr != materialBufferManager);
+			ASSERT(nullptr != materialBufferManager);
 			materialBufferManager->releaseSlot(*this);
 		}
 	}

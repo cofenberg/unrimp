@@ -30,13 +30,6 @@
 #include "RendererRuntime/Public/Core/Manager.h"
 #include "RendererRuntime/Public/Core/GetInvalid.h"
 
-// Disable warnings in external headers, we can't fix them
-PRAGMA_WARNING_PUSH
-	PRAGMA_WARNING_DISABLE_MSVC(4668)	// warning C4668: '_M_HYBRID_X86_ARM64' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
-	#include <limits.h>		// For "USHRT_MAX"
-	#include <inttypes.h>	// For uint32_t, uint64_t etc.
-PRAGMA_WARNING_POP
-
 
 //[-------------------------------------------------------]
 //[ Namespace                                             ]
@@ -107,7 +100,7 @@ namespace RendererRuntime
 
 		[[nodiscard]] inline ELEMENT_TYPE& getElementById(ID_TYPE id) const
 		{
-			assert(isElementIdValid(id));
+			ASSERT(isElementIdValid(id));
 			return mElements[mIndices[id & INDEX_MASK].index];
 		}
 
@@ -139,7 +132,7 @@ namespace RendererRuntime
 
 		inline void removeElement(ID_TYPE id)
 		{
-			assert(isElementIdValid(id));
+			ASSERT(isElementIdValid(id));
 			Index& index = mIndices[id & INDEX_MASK];
 			ELEMENT_TYPE& element = mElements[index.index];
 

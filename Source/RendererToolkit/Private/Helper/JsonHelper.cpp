@@ -437,15 +437,15 @@ namespace RendererToolkit
 	void JsonHelper::mergeObjects(rapidjson::Value& destinationObject, rapidjson::Value& sourceObject, rapidjson::Document& allocatorRapidJsonDocument)
 	{
 		// The implementation is basing on https://stackoverflow.com/a/42491356
-		assert(&destinationObject != &sourceObject);
-		assert(destinationObject.IsObject() && sourceObject.IsObject());
+		ASSERT(&destinationObject != &sourceObject);
+		ASSERT(destinationObject.IsObject() && sourceObject.IsObject());
 		rapidjson::Document::AllocatorType& allocatorType = allocatorRapidJsonDocument.GetAllocator();
 		for (rapidjson::Value::MemberIterator sourceIterator = sourceObject.MemberBegin(); sourceObject.MemberEnd() != sourceIterator; ++sourceIterator)
 		{
 			rapidjson::Value::MemberIterator destinationIterator = destinationObject.FindMember(sourceIterator->name);
 			if (destinationObject.MemberEnd() != destinationIterator)
 			{
-				assert(destinationIterator->value.GetType() == sourceIterator->value.GetType());
+				ASSERT(destinationIterator->value.GetType() == sourceIterator->value.GetType());
 				if (sourceIterator->value.IsArray())
 				{
 					for (rapidjson::Value::ValueIterator arrayIterator = sourceIterator->value.Begin(); sourceIterator->value.End() != arrayIterator; ++arrayIterator)

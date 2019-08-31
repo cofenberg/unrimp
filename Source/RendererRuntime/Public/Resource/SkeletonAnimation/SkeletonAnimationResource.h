@@ -118,9 +118,9 @@ namespace RendererRuntime
 		inline virtual ~SkeletonAnimationResource() override
 		{
 			// Sanity checks
-			assert(0 == mNumberOfChannels);
-			assert(0.0f == mDurationInTicks);
-			assert(0.0f == mTicksPerSecond);
+			ASSERT(0 == mNumberOfChannels);
+			ASSERT(0.0f == mDurationInTicks);
+			ASSERT(0.0f == mTicksPerSecond);
 		}
 
 		explicit SkeletonAnimationResource(const SkeletonAnimationResource&) = delete;
@@ -139,9 +139,9 @@ namespace RendererRuntime
 		inline void initializeElement(SkeletonAnimationResourceId skeletonAnimationResourceId)
 		{
 			// Sanity checks
-			assert(0 == mNumberOfChannels);
-			assert(0.0f == mDurationInTicks);
-			assert(0.0f == mTicksPerSecond);
+			ASSERT(0 == mNumberOfChannels);
+			ASSERT(0.0f == mDurationInTicks);
+			ASSERT(0.0f == mTicksPerSecond);
 
 			// Call base implementation
 			IResource::initializeElement(skeletonAnimationResourceId);

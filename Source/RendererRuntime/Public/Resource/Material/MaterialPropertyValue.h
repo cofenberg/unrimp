@@ -426,55 +426,55 @@ namespace RendererRuntime
 
 		[[nodiscard]] inline bool getBooleanValue() const
 		{
-			assert(ValueType::BOOLEAN == mValueType);
+			ASSERT(ValueType::BOOLEAN == mValueType);
 			return mValue.Boolean;
 		}
 
 		[[nodiscard]] inline int getIntegerValue() const
 		{
-			assert(ValueType::INTEGER == mValueType);
+			ASSERT(ValueType::INTEGER == mValueType);
 			return mValue.Integer;
 		}
 
 		[[nodiscard]] inline const int* getInteger2Value() const
 		{
-			assert(ValueType::INTEGER_2 == mValueType);
+			ASSERT(ValueType::INTEGER_2 == mValueType);
 			return &mValue.Integer2[0];
 		}
 
 		[[nodiscard]] inline const int* getInteger3Value() const
 		{
-			assert(ValueType::INTEGER_3 == mValueType);
+			ASSERT(ValueType::INTEGER_3 == mValueType);
 			return &mValue.Integer3[0];
 		}
 
 		[[nodiscard]] inline const int* getInteger4Value() const
 		{
-			assert(ValueType::INTEGER_4 == mValueType);
+			ASSERT(ValueType::INTEGER_4 == mValueType);
 			return &mValue.Integer4[0];
 		}
 
 		[[nodiscard]] inline float getFloatValue() const
 		{
-			assert(ValueType::FLOAT == mValueType);
+			ASSERT(ValueType::FLOAT == mValueType);
 			return mValue.Float;
 		}
 
 		[[nodiscard]] inline const float* getFloat2Value() const
 		{
-			assert(ValueType::FLOAT_2 == mValueType);
+			ASSERT(ValueType::FLOAT_2 == mValueType);
 			return &mValue.Float2[0];
 		}
 
 		[[nodiscard]] inline const float* getFloat3Value() const
 		{
-			assert(ValueType::FLOAT_3 == mValueType);
+			ASSERT(ValueType::FLOAT_3 == mValueType);
 			return &mValue.Float3[0];
 		}
 
 		[[nodiscard]] inline const float* getFloat4Value() const
 		{
-			assert(ValueType::FLOAT_4 == mValueType);
+			ASSERT(ValueType::FLOAT_4 == mValueType);
 			return &mValue.Float4[0];
 		}
 
@@ -484,79 +484,79 @@ namespace RendererRuntime
 		// For graphics pipeline rasterizer state property usage
 		[[nodiscard]] inline Renderer::FillMode getFillModeValue() const
 		{
-			assert(ValueType::FILL_MODE == mValueType);
+			ASSERT(ValueType::FILL_MODE == mValueType);
 			return mValue.FillMode;
 		}
 
 		[[nodiscard]] inline Renderer::CullMode getCullModeValue() const
 		{
-			assert(ValueType::CULL_MODE == mValueType);
+			ASSERT(ValueType::CULL_MODE == mValueType);
 			return mValue.CullMode;
 		}
 
 		[[nodiscard]] inline Renderer::ConservativeRasterizationMode getConservativeRasterizationModeValue() const
 		{
-			assert(ValueType::CONSERVATIVE_RASTERIZATION_MODE == mValueType);
+			ASSERT(ValueType::CONSERVATIVE_RASTERIZATION_MODE == mValueType);
 			return mValue.ConservativeRasterizationMode;
 		}
 
 		// For graphics pipeline depth stencil state property usage
 		[[nodiscard]] inline Renderer::DepthWriteMask getDepthWriteMaskValue() const
 		{
-			assert(ValueType::DEPTH_WRITE_MASK == mValueType);
+			ASSERT(ValueType::DEPTH_WRITE_MASK == mValueType);
 			return mValue.DepthWriteMask;
 		}
 
 		[[nodiscard]] inline Renderer::StencilOp getStencilOpValue() const
 		{
-			assert(ValueType::STENCIL_OP == mValueType);
+			ASSERT(ValueType::STENCIL_OP == mValueType);
 			return mValue.StencilOp;
 		}
 
 		// For graphics pipeline depth stencil state and sampler state property usage
 		[[nodiscard]] inline Renderer::ComparisonFunc getComparisonFuncValue() const
 		{
-			assert(ValueType::COMPARISON_FUNC == mValueType);
+			ASSERT(ValueType::COMPARISON_FUNC == mValueType);
 			return mValue.ComparisonFunc;
 		}
 
 		// For graphics pipeline blend state property usage
 		[[nodiscard]] inline Renderer::Blend getBlendValue() const
 		{
-			assert(ValueType::BLEND == mValueType);
+			ASSERT(ValueType::BLEND == mValueType);
 			return mValue.Blend;
 		}
 
 		[[nodiscard]] inline Renderer::BlendOp getBlendOpValue() const
 		{
-			assert(ValueType::BLEND_OP == mValueType);
+			ASSERT(ValueType::BLEND_OP == mValueType);
 			return mValue.BlendOp;
 		}
 
 		// For sampler state property usage
 		[[nodiscard]] inline Renderer::FilterMode getFilterMode() const
 		{
-			assert(ValueType::FILTER_MODE == mValueType);
+			ASSERT(ValueType::FILTER_MODE == mValueType);
 			return mValue.FilterMode;
 		}
 
 		[[nodiscard]] inline Renderer::TextureAddressMode getTextureAddressModeValue() const
 		{
-			assert(ValueType::TEXTURE_ADDRESS_MODE == mValueType);
+			ASSERT(ValueType::TEXTURE_ADDRESS_MODE == mValueType);
 			return mValue.TextureAddressMode;
 		}
 
 		// For texture property usage
 		[[nodiscard]] inline AssetId getTextureAssetIdValue() const
 		{
-			assert(ValueType::TEXTURE_ASSET_ID == mValueType);
+			ASSERT(ValueType::TEXTURE_ASSET_ID == mValueType);
 			return mValue.TextureAssetId;
 		}
 
 		// For shader combination property usage
 		[[nodiscard]] inline MaterialPropertyId getGlobalMaterialPropertyId() const
 		{
-			assert(ValueType::GLOBAL_MATERIAL_PROPERTY_ID == mValueType);
+			ASSERT(ValueType::GLOBAL_MATERIAL_PROPERTY_ID == mValueType);
 			return mValue.GlobalMaterialPropertyId;
 		}
 

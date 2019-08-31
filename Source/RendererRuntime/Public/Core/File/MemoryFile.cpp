@@ -110,7 +110,7 @@ namespace RendererRuntime
 		else
 		{
 			// Error!
-			assert(false);
+			ASSERT(false);
 			return false;
 		}
 	}
@@ -118,8 +118,8 @@ namespace RendererRuntime
 	void MemoryFile::setLz4CompressedDataByFile(IFile& file, uint32_t numberOfCompressedBytes, uint32_t numberOfDecompressedBytes)
 	{
 		// Sanity checks
-		assert((0 != numberOfCompressedBytes) && "Zero LZ4 compressed bytes are invalid");
-		assert((0 != numberOfDecompressedBytes) && "Zero LZ4 decompressed bytes are invalid");
+		ASSERT((0 != numberOfCompressedBytes) && "Zero LZ4 compressed bytes are invalid");
+		ASSERT((0 != numberOfDecompressedBytes) && "Zero LZ4 decompressed bytes are invalid");
 
 		// Read data
 		mNumberOfDecompressedBytes = numberOfDecompressedBytes;
@@ -133,7 +133,7 @@ namespace RendererRuntime
 	{
 		mDecompressedData.resize(mNumberOfDecompressedBytes);
 		[[maybe_unused]] const int numberOfDecompressedBytes = LZ4_decompress_safe(reinterpret_cast<const char*>(mCompressedData.data()), reinterpret_cast<char*>(mDecompressedData.data()), static_cast<int>(mCompressedData.size()), static_cast<int>(mNumberOfDecompressedBytes));
-		assert(mNumberOfDecompressedBytes == static_cast<uint32_t>(numberOfDecompressedBytes));
+		ASSERT(mNumberOfDecompressedBytes == static_cast<uint32_t>(numberOfDecompressedBytes));
 		mCurrentDataPointer = mDecompressedData.data();
 	}
 

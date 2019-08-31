@@ -93,7 +93,7 @@ namespace RendererRuntime
 		*/
 		[[nodiscard]] inline const Asset& getAsset() const
 		{
-			assert(nullptr != mAsset);
+			ASSERT(nullptr != mAsset);
 			return *mAsset;
 		}
 

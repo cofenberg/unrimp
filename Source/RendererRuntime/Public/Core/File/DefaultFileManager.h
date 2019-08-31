@@ -45,7 +45,6 @@ PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(5027)	// warning C5027: 'std::_Generic_error_category': move assignment operator was implicitly defined as deleted
 	#include <string>
 	#include <fstream>
-	#include <cassert>
 	#include <unordered_map>
 PRAGMA_WARNING_POP
 
@@ -129,7 +128,7 @@ namespace
 					, mDebugName(absoluteFilename)
 				#endif
 			{
-				assert(mFileStream && "Failed to open default file for reading");
+				ASSERT(mFileStream && "Failed to open default file for reading");
 			}
 
 			inline virtual ~DefaultReadFile() override
@@ -154,7 +153,7 @@ namespace
 		public:
 			[[nodiscard]] inline virtual size_t getNumberOfBytes() override
 			{
-				assert(mFileStream && "Invalid default file access");
+				ASSERT(mFileStream && "Invalid default file access");
 				size_t numberOfBytes = 0;
 				mFileStream.seekg(0, std::istream::end);
 				numberOfBytes = static_cast<size_t>(mFileStream.tellg());
@@ -164,25 +163,25 @@ namespace
 
 			inline virtual void read(void* destinationBuffer, size_t numberOfBytes) override
 			{
-				assert((nullptr != destinationBuffer) && "Letting a file read into a null destination buffer is not allowed");
-				assert((0 != numberOfBytes) && "Letting a file read zero bytes is not allowed");
-				assert(mFileStream && "Invalid default file access");
+				ASSERT((nullptr != destinationBuffer) && "Letting a file read into a null destination buffer is not allowed");
+				ASSERT((0 != numberOfBytes) && "Letting a file read zero bytes is not allowed");
+				ASSERT(mFileStream && "Invalid default file access");
 				mFileStream.read(reinterpret_cast<char*>(destinationBuffer), static_cast<std::streamsize>(numberOfBytes));
 			}
 
 			inline virtual void skip(size_t numberOfBytes) override
 			{
-				assert((0 != numberOfBytes) && "Letting a file skip zero bytes is not allowed");
-				assert(mFileStream && "Invalid default file access");
+				ASSERT((0 != numberOfBytes) && "Letting a file skip zero bytes is not allowed");
+				ASSERT(mFileStream && "Invalid default file access");
 				mFileStream.ignore(static_cast<std::streamsize>(numberOfBytes));
 			}
 
 			inline virtual void write([[maybe_unused]] const void* sourceBuffer, [[maybe_unused]] size_t numberOfBytes) override
 			{
-				assert((nullptr != sourceBuffer) && "Letting a file write from a null source buffer is not allowed");
-				assert((0 != numberOfBytes) && "Letting a file write zero bytes is not allowed");
-				assert(mFileStream && "Invalid default file access");
-				assert(false && "File write method not supported by the default implementation");
+				ASSERT((nullptr != sourceBuffer) && "Letting a file write from a null source buffer is not allowed");
+				ASSERT((0 != numberOfBytes) && "Letting a file write zero bytes is not allowed");
+				ASSERT(mFileStream && "Invalid default file access");
+				ASSERT(false && "File write method not supported by the default implementation");
 			}
 
 			#ifdef _DEBUG
@@ -227,7 +226,7 @@ namespace
 					, mDebugName(absoluteFilename)
 				#endif
 			{
-				assert(mFileStream && "Failed to open default file for writing");
+				ASSERT(mFileStream && "Failed to open default file for writing");
 			}
 
 			inline virtual ~DefaultWriteFile() override
@@ -252,31 +251,31 @@ namespace
 		public:
 			[[nodiscard]] inline virtual size_t getNumberOfBytes() override
 			{
-				assert(mFileStream && "Invalid default file access");
-				assert(false && "File get number of bytes method not supported by the default implementation");
+				ASSERT(mFileStream && "Invalid default file access");
+				ASSERT(false && "File get number of bytes method not supported by the default implementation");
 				return 0;
 			}
 
 			inline virtual void read([[maybe_unused]] void* destinationBuffer, [[maybe_unused]] size_t numberOfBytes) override
 			{
-				assert((nullptr != destinationBuffer) && "Letting a file read into a null destination buffer is not allowed");
-				assert((0 != numberOfBytes) && "Letting a file read zero bytes is not allowed");
-				assert(mFileStream && "Invalid default file access");
-				assert(false && "File read method not supported by the default implementation");
+				ASSERT((nullptr != destinationBuffer) && "Letting a file read into a null destination buffer is not allowed");
+				ASSERT((0 != numberOfBytes) && "Letting a file read zero bytes is not allowed");
+				ASSERT(mFileStream && "Invalid default file access");
+				ASSERT(false && "File read method not supported by the default implementation");
 			}
 
 			inline virtual void skip([[maybe_unused]] size_t numberOfBytes) override
 			{
-				assert((0 != numberOfBytes) && "Letting a file skip zero bytes is not allowed");
-				assert(mFileStream && "Invalid default file access");
-				assert(false && "File skip method not supported by the default implementation");
+				ASSERT((0 != numberOfBytes) && "Letting a file skip zero bytes is not allowed");
+				ASSERT(mFileStream && "Invalid default file access");
+				ASSERT(false && "File skip method not supported by the default implementation");
 			}
 
 			inline virtual void write(const void* sourceBuffer, size_t numberOfBytes) override
 			{
-				assert((nullptr != sourceBuffer) && "Letting a file write from a null source buffer is not allowed");
-				assert((0 != numberOfBytes) && "Letting a file write zero bytes is not allowed");
-				assert(mFileStream && "Invalid default file access");
+				ASSERT((nullptr != sourceBuffer) && "Letting a file write from a null source buffer is not allowed");
+				ASSERT((0 != numberOfBytes) && "Letting a file write zero bytes is not allowed");
+				ASSERT(mFileStream && "Invalid default file access");
 				mFileStream.write(reinterpret_cast<const char*>(sourceBuffer), static_cast<std::streamsize>(numberOfBytes));
 			}
 
@@ -356,9 +355,7 @@ namespace RendererRuntime
 
 		inline virtual ~DefaultFileManager() override
 		{
-			#ifdef _DEBUG
-				assert((0 == mNumberOfCurrentlyOpenedFiles) && "File leak detected, not all opened files were closed");
-			#endif
+			ASSERT((0 == mNumberOfCurrentlyOpenedFiles) && "File leak detected, not all opened files were closed");
 		}
 
 
@@ -373,7 +370,7 @@ namespace RendererRuntime
 
 		[[nodiscard]] inline virtual const char* getMountPoint(const char* mountPoint) const override
 		{
-			assert(nullptr != mountPoint);
+			ASSERT(nullptr != mountPoint);
 			const MountedDirectories::const_iterator mountedDirectoriesIterator = mMountedDirectories.find(mountPoint);
 			if (mMountedDirectories.cend() != mountedDirectoriesIterator)
 			{
@@ -390,8 +387,8 @@ namespace RendererRuntime
 		inline virtual bool mountDirectory(AbsoluteDirectoryName absoluteDirectoryName, const char* mountPoint, bool appendToPath = false) override
 		{
 			// Sanity check
-			assert(nullptr != absoluteDirectoryName);
-			assert(nullptr != mountPoint);
+			ASSERT(nullptr != absoluteDirectoryName);
+			ASSERT(nullptr != mountPoint);
 			#ifdef _DEBUG
 				// Additional sanity check: The same absolute directory name shouldn't be added to too different mount points
 				for (const auto& pair : mMountedDirectories)
@@ -399,7 +396,7 @@ namespace RendererRuntime
 					if (pair.first != mountPoint)
 					{
 						const AbsoluteDirectoryNames& absoluteDirectoryNames = pair.second;
-						assert((absoluteDirectoryNames.cend() == std::find(absoluteDirectoryNames.begin(), absoluteDirectoryNames.end(), absoluteDirectoryName)) && "The same absolute directory name shouldn't be added to too different default mount points");
+						ASSERT((absoluteDirectoryNames.cend() == std::find(absoluteDirectoryNames.begin(), absoluteDirectoryNames.end(), absoluteDirectoryName)) && "The same absolute directory name shouldn't be added to too different default mount points");
 					}
 				}
 			#endif
@@ -431,7 +428,7 @@ namespace RendererRuntime
 				}
 				else
 				{
-					assert(false && "Duplicate absolute default directory name detected, this situation should be avoided by the caller");
+					ASSERT(false && "Duplicate absolute default directory name detected, this situation should be avoided by the caller");
 				}
 			}
 
@@ -504,7 +501,7 @@ namespace RendererRuntime
 		inline virtual bool createDirectories(VirtualDirectoryName virtualDirectoryName) const override
 		{
 			// Sanity check
-			assert(nullptr != virtualDirectoryName);
+			ASSERT(nullptr != virtualDirectoryName);
 
 			// Create directories
 			const AbsoluteDirectoryNames* absoluteDirectoryNames = nullptr;
@@ -552,7 +549,7 @@ namespace RendererRuntime
 				{
 					#ifdef _DEBUG
 						++mNumberOfCurrentlyOpenedFiles;
-						assert((mNumberOfCurrentlyOpenedFiles < 256) && "Too many simultaneously opened files. The default limit on Microsoft Windows is 512 (can be changed via _setmaxstdio()) and on Mac OS X 256.");
+						ASSERT((mNumberOfCurrentlyOpenedFiles < 256) && "Too many simultaneously opened files. The default limit on Microsoft Windows is 512 (can be changed via _setmaxstdio()) and on Mac OS X 256.");
 					#endif
 				}
 			}
@@ -565,7 +562,7 @@ namespace RendererRuntime
 		{
 			#ifdef _DEBUG
 				--mNumberOfCurrentlyOpenedFiles;
-				assert((mNumberOfCurrentlyOpenedFiles >= 0) && "Error, more files closed as opened");
+				ASSERT((mNumberOfCurrentlyOpenedFiles >= 0) && "Error, more files closed as opened");
 			#endif
 			delete static_cast< ::detail::DefaultFile*>(&file);
 		}
@@ -593,7 +590,7 @@ namespace RendererRuntime
 	private:
 		[[nodiscard]] inline bool getAbsoluteDirectoryNamesByMountPoint(VirtualFilename virtualFilename, const AbsoluteDirectoryNames** absoluteDirectoryNames, std::string& relativeFilename, std::string& mountPoint) const
 		{
-			assert(nullptr != absoluteDirectoryNames);
+			ASSERT(nullptr != absoluteDirectoryNames);
 
 			// Get mount point
 			const std::string_view stdVirtualFilename = virtualFilename;
@@ -631,7 +628,7 @@ namespace RendererRuntime
 		[[nodiscard]] inline std::string mapVirtualToAbsoluteFilenameAndMountPoint(FileMode fileMode, VirtualFilename virtualFilename, std::string& mountPoint) const
 		{
 			// Sanity check
-			assert(nullptr != virtualFilename);
+			ASSERT(nullptr != virtualFilename);
 
 			// Get absolute directory names
 			const AbsoluteDirectoryNames* absoluteDirectoryNames = nullptr;

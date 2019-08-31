@@ -165,7 +165,7 @@ namespace RendererRuntime
 
 		[[nodiscard]] inline const FramebufferSignatureAttachment& getColorFramebufferSignatureAttachment(uint8_t index) const
 		{
-			assert(index < mNumberOfColorAttachments);
+			ASSERT(index < mNumberOfColorAttachments);
 			return mColorFramebufferSignatureAttachments[index];
 		}
 

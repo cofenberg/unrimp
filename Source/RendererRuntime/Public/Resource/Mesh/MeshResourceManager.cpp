@@ -159,7 +159,7 @@ namespace RendererRuntime
 
 			default:
 				// TODO(co) Error handling
-				assert(false);
+				ASSERT(false);
 				return nullptr;
 		}
 	}

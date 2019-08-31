@@ -32,12 +32,22 @@
 	__pragma(warning(push))
 		__pragma(warning(disable: 4574)) // warning C4574: '_HAS_ITERATOR_DEBUGGING' is defined to be '0': did you mean to use '#if _HAS_ITERATOR_DEBUGGING'?
 		__pragma(warning(disable: 4668)) // warning C4668: '_M_HYBRID_X86_ARM64' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
-		#include <cassert>
+		#ifdef RENDERER_DEBUG
+			#include <cassert>
+			#define ASSERT assert	// TODO(co) "RENDERER_ASSERT()" should be used everywhere
+		#else
+			#define ASSERT(x)	// TODO(co) "RENDERER_ASSERT()" should be used everywhere
+		#endif
 		#include <inttypes.h>	// For uint32_t, uint64_t etc.
 		#include <type_traits>	// For "std::integral_constant"
 	__pragma(warning(pop))
 #else
-	#include <cassert>
+	#ifdef RENDERER_DEBUG
+		#include <cassert>
+		#define ASSERT assert	// TODO(co) "RENDERER_ASSERT()" should be used everywhere
+	#else
+		#define ASSERT(x)	// TODO(co) "RENDERER_ASSERT()" should be used everywhere
+	#endif
 	#include <inttypes.h>	// For uint32_t, uint64_t etc.
 	#include <type_traits>	// For "std::integral_constant"
 #endif
@@ -141,7 +151,7 @@ namespace RendererRuntime
 		[[nodiscard]] static inline uint32_t calculateFNV(const char* string)
 		{
 			// Sanity check
-			assert((nullptr != string) && "The string must be valid to be able to calculate a FNV1a32 hash");
+			ASSERT((nullptr != string) && "The string must be valid to be able to calculate a FNV1a32 hash");
 
 			// 32-bit FNV-1a implementation basing on http://www.isthe.com/chongo/tech/comp/fnv/
 			uint32_t hash = FNV1a_INITIAL_HASH_32;

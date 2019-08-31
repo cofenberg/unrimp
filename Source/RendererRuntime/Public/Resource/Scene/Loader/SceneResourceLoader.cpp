@@ -99,7 +99,7 @@ namespace
 			file.read(&nodes, sizeof(RendererRuntime::v1Scene::Nodes));
 
 			// Sanity check
-			assert((nodes.numberOfNodes > 0) && "Invalid scene asset without any nodes detected");
+			ASSERT((nodes.numberOfNodes > 0) && "Invalid scene asset without any nodes detected");
 
 			// Read in the scene nodes
 			for (uint32_t i = 0; i < nodes.numberOfNodes; ++i)

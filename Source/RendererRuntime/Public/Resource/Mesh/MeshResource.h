@@ -221,15 +221,15 @@ namespace RendererRuntime
 		inline virtual ~MeshResource() override
 		{
 			// Sanity checks
-			assert(isInvalid(mMinimumBoundingBoxPosition.x) && isInvalid(mMinimumBoundingBoxPosition.y) && isInvalid(mMinimumBoundingBoxPosition.z));
-			assert(isInvalid(mMaximumBoundingBoxPosition.x) && isInvalid(mMaximumBoundingBoxPosition.y) && isInvalid(mMaximumBoundingBoxPosition.z));
-			assert(isInvalid(mBoundingSpherePosition.x) && isInvalid(mBoundingSpherePosition.y) && isInvalid(mBoundingSpherePosition.z));
-			assert(isInvalid(mBoundingSphereRadius));
-			assert(0 == mNumberOfVertices);
-			assert(0 == mNumberOfIndices);
-			assert(nullptr == mVertexArray.getPointer());
-			assert(mSubMeshes.empty());
-			assert(isInvalid(mSkeletonResourceId));
+			ASSERT(isInvalid(mMinimumBoundingBoxPosition.x) && isInvalid(mMinimumBoundingBoxPosition.y) && isInvalid(mMinimumBoundingBoxPosition.z));
+			ASSERT(isInvalid(mMaximumBoundingBoxPosition.x) && isInvalid(mMaximumBoundingBoxPosition.y) && isInvalid(mMaximumBoundingBoxPosition.z));
+			ASSERT(isInvalid(mBoundingSpherePosition.x) && isInvalid(mBoundingSpherePosition.y) && isInvalid(mBoundingSpherePosition.z));
+			ASSERT(isInvalid(mBoundingSphereRadius));
+			ASSERT(0 == mNumberOfVertices);
+			ASSERT(0 == mNumberOfIndices);
+			ASSERT(nullptr == mVertexArray.getPointer());
+			ASSERT(mSubMeshes.empty());
+			ASSERT(isInvalid(mSkeletonResourceId));
 		}
 
 		explicit MeshResource(const MeshResource&) = delete;
@@ -241,15 +241,15 @@ namespace RendererRuntime
 		inline void initializeElement(MeshResourceId meshResourceId)
 		{
 			// Sanity checks
-			assert(isInvalid(mMinimumBoundingBoxPosition.x) && isInvalid(mMinimumBoundingBoxPosition.y) && isInvalid(mMinimumBoundingBoxPosition.z));
-			assert(isInvalid(mMaximumBoundingBoxPosition.x) && isInvalid(mMaximumBoundingBoxPosition.y) && isInvalid(mMaximumBoundingBoxPosition.z));
-			assert(isInvalid(mBoundingSpherePosition.x) && isInvalid(mBoundingSpherePosition.y) && isInvalid(mBoundingSpherePosition.z));
-			assert(isInvalid(mBoundingSphereRadius));
-			assert(0 == mNumberOfVertices);
-			assert(0 == mNumberOfIndices);
-			assert(nullptr == mVertexArray.getPointer());
-			assert(mSubMeshes.empty());
-			assert(isInvalid(mSkeletonResourceId));
+			ASSERT(isInvalid(mMinimumBoundingBoxPosition.x) && isInvalid(mMinimumBoundingBoxPosition.y) && isInvalid(mMinimumBoundingBoxPosition.z));
+			ASSERT(isInvalid(mMaximumBoundingBoxPosition.x) && isInvalid(mMaximumBoundingBoxPosition.y) && isInvalid(mMaximumBoundingBoxPosition.z));
+			ASSERT(isInvalid(mBoundingSpherePosition.x) && isInvalid(mBoundingSpherePosition.y) && isInvalid(mBoundingSpherePosition.z));
+			ASSERT(isInvalid(mBoundingSphereRadius));
+			ASSERT(0 == mNumberOfVertices);
+			ASSERT(0 == mNumberOfIndices);
+			ASSERT(nullptr == mVertexArray.getPointer());
+			ASSERT(mSubMeshes.empty());
+			ASSERT(isInvalid(mSkeletonResourceId));
 
 			// Call base implementation
 			IResource::initializeElement(meshResourceId);

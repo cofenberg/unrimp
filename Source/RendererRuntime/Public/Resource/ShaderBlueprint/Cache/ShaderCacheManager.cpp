@@ -70,7 +70,7 @@ namespace RendererRuntime
 				// Create renderer shader instance using the shader bytecode, if necessary
 				if (nullptr == shaderCache->mShaderPtr.getPointer())
 				{
-					assert((0 != shaderCache->mShaderBytecode.getNumberOfBytes()) && "A shader cache must always have a valid shader bytecode, else it's a pointless shader cache. This might be the result of a shader compilation error.");
+					ASSERT((0 != shaderCache->mShaderBytecode.getNumberOfBytes()) && "A shader cache must always have a valid shader bytecode, else it's a pointless shader cache. This might be the result of a shader compilation error.");
 					if (0 != shaderCache->mShaderBytecode.getNumberOfBytes())
 					{
 						switch (graphicsShaderType)
@@ -117,7 +117,7 @@ namespace RendererRuntime
 					if (sourceCode.empty())
 					{
 						// TODO(co) Error handling
-						assert(false);
+						ASSERT(false);
 					}
 					else
 					{
@@ -176,7 +176,7 @@ namespace RendererRuntime
 							if (nullptr != shader)
 							{
 								RENDERER_SET_RESOURCE_DEBUG_NAME(shader, shaderBlueprintAsset.virtualFilename)
-								assert((!shaderLanguage.getRenderer().getCapabilities().shaderBytecode || 0 != shaderCache->mShaderBytecode.getNumberOfBytes()) && "Invalid shader bytecode received from renderer implementation");
+								ASSERT((!shaderLanguage.getRenderer().getCapabilities().shaderBytecode || 0 != shaderCache->mShaderBytecode.getNumberOfBytes()) && "Invalid shader bytecode received from renderer implementation");
 								shaderCache->mShaderPtr = shader;
 								mShaderCacheByShaderCacheId.emplace(shaderCacheId, shaderCache);
 								mShaderCacheByShaderSourceCodeId.emplace(shaderSourceCodeId, shaderCacheId);
@@ -187,7 +187,7 @@ namespace RendererRuntime
 								// TODO(co) Error handling
 								delete shaderCache;
 								shaderCache = nullptr;
-								assert(false);
+								ASSERT(false);
 							}
 						}
 					}
@@ -195,7 +195,7 @@ namespace RendererRuntime
 				else
 				{
 					// TODO(co) Error handling
-					assert(false);
+					ASSERT(false);
 				}
 			}
 		}
@@ -229,7 +229,7 @@ namespace RendererRuntime
 				// Create renderer shader instance using the shader bytecode, if necessary
 				if (nullptr == shaderCache->mShaderPtr.getPointer())
 				{
-					assert((0 != shaderCache->mShaderBytecode.getNumberOfBytes()) && "A shader cache must always have a valid shader bytecode, else it's a pointless shader cache. This might be the result of a shader compilation error.");
+					ASSERT((0 != shaderCache->mShaderBytecode.getNumberOfBytes()) && "A shader cache must always have a valid shader bytecode, else it's a pointless shader cache. This might be the result of a shader compilation error.");
 					shaderCache->mShaderPtr = shaderLanguage.createComputeShaderFromBytecode(shaderCache->mShaderBytecode);
 				}
 			}
@@ -248,7 +248,7 @@ namespace RendererRuntime
 					if (sourceCode.empty())
 					{
 						// TODO(co) Error handling
-						assert(false);
+						ASSERT(false);
 					}
 					else
 					{
@@ -281,7 +281,7 @@ namespace RendererRuntime
 							if (nullptr != shader)
 							{
 								RENDERER_SET_RESOURCE_DEBUG_NAME(shader, shaderBlueprintAsset.virtualFilename)
-								assert((!shaderLanguage.getRenderer().getCapabilities().shaderBytecode || 0 != shaderCache->mShaderBytecode.getNumberOfBytes()) && "Invalid shader bytecode received from renderer implementation");
+								ASSERT((!shaderLanguage.getRenderer().getCapabilities().shaderBytecode || 0 != shaderCache->mShaderBytecode.getNumberOfBytes()) && "Invalid shader bytecode received from renderer implementation");
 								shaderCache->mShaderPtr = shader;
 								mShaderCacheByShaderCacheId.emplace(shaderCacheId, shaderCache);
 								mShaderCacheByShaderSourceCodeId.emplace(shaderSourceCodeId, shaderCacheId);
@@ -292,7 +292,7 @@ namespace RendererRuntime
 								// TODO(co) Error handling
 								delete shaderCache;
 								shaderCache = nullptr;
-								assert(false);
+								ASSERT(false);
 							}
 						}
 					}
@@ -300,7 +300,7 @@ namespace RendererRuntime
 				else
 				{
 					// TODO(co) Error handling
-					assert(false);
+					ASSERT(false);
 				}
 			}
 		}
@@ -353,7 +353,7 @@ namespace RendererRuntime
 					// Load list of IDs of the assets (shader blueprint, shader piece) which took part in the shader cache creation
 					uint32_t numberOfAssetIds = getInvalid<uint32_t>();
 					file.read(&numberOfAssetIds, sizeof(uint32_t));
-					assert(0 != numberOfAssetIds);
+					ASSERT(0 != numberOfAssetIds);
 					assetIds.resize(numberOfAssetIds);
 					file.read(assetIds.data(), sizeof(uint32_t) * numberOfAssetIds);
 					uint64_t combinedAssetFileHashes = getInvalid<uint64_t>();
@@ -385,7 +385,7 @@ namespace RendererRuntime
 						shaderCache->mCombinedAssetFileHashes = combinedAssetFileHashes;
 
 						// Load shader bytecode
-						assert((0 != numberOfBytes) && "A shader cache must always have a valid shader bytecode, else it's a pointless shader cache. This might be the result of a shader compilation error.");
+						ASSERT((0 != numberOfBytes) && "A shader cache must always have a valid shader bytecode, else it's a pointless shader cache. This might be the result of a shader compilation error.");
 						if (0 != numberOfBytes)
 						{
 							bytecode.resize(numberOfBytes);
@@ -411,7 +411,7 @@ namespace RendererRuntime
 						else
 						{
 							// Error!
-							assert(false && "The shader cache is corrupt since a master shader cache is referenced which doesn't exist");
+							ASSERT(false && "The shader cache is corrupt since a master shader cache is referenced which doesn't exist");
 						}
 					}
 					else
@@ -466,13 +466,13 @@ namespace RendererRuntime
 					// Master shader cache
 					const Renderer::ShaderBytecode& shaderBytecode = shaderCache->mShaderBytecode;
 					const uint32_t numberOfBytes = shaderBytecode.getNumberOfBytes();
-					assert((0 != numberOfBytes) && "A shader cache must always have a valid shader bytecode, else it's a pointless shader cache. This might be the result of a shader compilation error.");
+					ASSERT((0 != numberOfBytes) && "A shader cache must always have a valid shader bytecode, else it's a pointless shader cache. This might be the result of a shader compilation error.");
 					file.write(&shaderCache->mShaderCacheId, sizeof(ShaderCacheId));
 					file.write(&numberOfBytes, sizeof(uint32_t));
 
 					// Write list of IDs of the assets (shader blueprint, shader piece) which took part in the shader cache creation
 					const uint32_t numberOfAssetIds = static_cast<uint32_t>(shaderCache->mAssetIds.size());
-					assert(0 != numberOfAssetIds);
+					ASSERT(0 != numberOfAssetIds);
 					file.write(&numberOfAssetIds, sizeof(uint32_t));
 					file.write(shaderCache->mAssetIds.data(), sizeof(uint32_t) * numberOfAssetIds);
 					file.write(&shaderCache->mCombinedAssetFileHashes, sizeof(uint64_t));
@@ -491,7 +491,7 @@ namespace RendererRuntime
 			for (const ShaderCache* shaderCache : shaderCachesWithMaster)
 			{
 				const ShaderCache* masterShaderCache = shaderCache->getMasterShaderCache();
-				assert((nullptr != masterShaderCache->getShaderPtr().getPointer()) && "A shader cache must always have a valid shader instance, else it's a pointless shader cache");
+				ASSERT((nullptr != masterShaderCache->getShaderPtr().getPointer()) && "A shader cache must always have a valid shader instance, else it's a pointless shader cache");
 				file.write(&shaderCache->mShaderCacheId, sizeof(ShaderCacheId));
 				const uint32_t numberOfBytes = getInvalid<uint32_t>();
 				file.write(&numberOfBytes, sizeof(uint32_t));

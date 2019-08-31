@@ -38,7 +38,7 @@ namespace RendererRuntime
 	void CompositorResourcePassResolveMultisample::deserialize([[maybe_unused]] uint32_t numberOfBytes, const uint8_t* data)
 	{
 		// Sanity check
-		assert(sizeof(v1CompositorNode::PassResolveMultisample) == numberOfBytes);
+		ASSERT(sizeof(v1CompositorNode::PassResolveMultisample) == numberOfBytes);
 
 		// Call the base implementation
 		ICompositorResourcePass::deserialize(sizeof(v1CompositorNode::Pass), data);

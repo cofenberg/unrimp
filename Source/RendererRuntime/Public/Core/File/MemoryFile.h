@@ -41,7 +41,6 @@ PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(5026)	// warning C5026: 'std::_Generic_error_category': move constructor was implicitly defined as deleted
 	PRAGMA_WARNING_DISABLE_MSVC(5027)	// warning C5027: 'std::_Generic_error_category': move assignment operator was implicitly defined as deleted
 	#include <vector>
-	#include <cassert>
 	#include <cstring>		// For "memcpy()"
 	#include <iterator>		// For "std::back_inserter()"
 	#include <algorithm>	// For "std::copy()"
@@ -144,24 +143,24 @@ namespace RendererRuntime
 
 		inline virtual void read(void* destinationBuffer, size_t numberOfBytes) override
 		{
-			assert((nullptr != destinationBuffer) && "Letting a file read into a null destination buffer is not allowed");
-			assert((0 != numberOfBytes) && "Letting a file read zero bytes is not allowed");
-			assert((mCurrentDataPointer - mDecompressedData.data()) + numberOfBytes <= mDecompressedData.size());
+			ASSERT((nullptr != destinationBuffer) && "Letting a file read into a null destination buffer is not allowed");
+			ASSERT((0 != numberOfBytes) && "Letting a file read zero bytes is not allowed");
+			ASSERT((mCurrentDataPointer - mDecompressedData.data()) + numberOfBytes <= mDecompressedData.size());
 			memcpy(destinationBuffer, mCurrentDataPointer, numberOfBytes);
 			mCurrentDataPointer += numberOfBytes;
 		}
 
 		inline virtual void skip(size_t numberOfBytes) override
 		{
-			assert((0 != numberOfBytes) && "Letting a file skip zero bytes is not allowed");
-			assert((mCurrentDataPointer - mDecompressedData.data()) + numberOfBytes <= mDecompressedData.size());
+			ASSERT((0 != numberOfBytes) && "Letting a file skip zero bytes is not allowed");
+			ASSERT((mCurrentDataPointer - mDecompressedData.data()) + numberOfBytes <= mDecompressedData.size());
 			mCurrentDataPointer += numberOfBytes;
 		}
 
 		inline virtual void write(const void* sourceBuffer, size_t numberOfBytes) override
 		{
-			assert((nullptr != sourceBuffer) && "Letting a file write from a null source buffer is not allowed");
-			assert((0 != numberOfBytes) && "Letting a file write zero bytes is not allowed");
+			ASSERT((nullptr != sourceBuffer) && "Letting a file write from a null source buffer is not allowed");
+			ASSERT((0 != numberOfBytes) && "Letting a file write zero bytes is not allowed");
 			std::copy(static_cast<const uint8_t*>(sourceBuffer), static_cast<const uint8_t*>(sourceBuffer) + numberOfBytes, std::back_inserter(mDecompressedData));
 		}
 

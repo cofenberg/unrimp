@@ -95,7 +95,7 @@ namespace RendererRuntime
 		[[nodiscard]] inline const Transform& getTransform() const
 		{
 			// We know that this pointer is always valid
-			assert(nullptr != mTransform);
+			ASSERT(nullptr != mTransform);
 			return *mTransform;
 		}
 

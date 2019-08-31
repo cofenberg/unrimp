@@ -138,7 +138,7 @@ namespace RendererRuntime
 			#pragma pack(pop)
 
 			// Sanity check
-			assert(sizeof(PassData) == numberOfBytes);
+			ASSERT(sizeof(PassData) == numberOfBytes);
 
 			// Read data
 			const PassData* pass = reinterpret_cast<const PassData*>(data);
@@ -151,8 +151,8 @@ namespace RendererRuntime
 			mSkipFirstExecution = pass->skipFirstExecution;
 
 			// Sanity checks
-			assert(mNumberOfExecutions > 0);
-			assert(!mSkipFirstExecution || mNumberOfExecutions > 1);
+			ASSERT(mNumberOfExecutions > 0);
+			ASSERT(!mSkipFirstExecution || mNumberOfExecutions > 1);
 		}
 
 		/**

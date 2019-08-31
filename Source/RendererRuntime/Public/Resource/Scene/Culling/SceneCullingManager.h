@@ -85,7 +85,7 @@ namespace RendererRuntime
 		[[nodiscard]] inline SceneItemSet& getCullableSceneItemSet() const
 		{
 			// We know that this pointer is always valid
-			assert(nullptr != mCullableSceneItemSet);
+			ASSERT(nullptr != mCullableSceneItemSet);
 			return *mCullableSceneItemSet;
 		}
 

@@ -29,12 +29,6 @@
 //[-------------------------------------------------------]
 #include "Examples/Private/Framework/PlatformTypes.h"
 
-// Disable warnings in external headers, we can't fix them
-PRAGMA_WARNING_PUSH
-	PRAGMA_WARNING_DISABLE_MSVC(4574)	// warning C4574: '_HAS_ITERATOR_DEBUGGING' is defined to be '0': did you mean to use '#if _HAS_ITERATOR_DEBUGGING'?
-	#include <cassert>
-PRAGMA_WARNING_POP
-
 
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
@@ -108,7 +102,7 @@ public:
 	*/
 	[[nodiscard]] inline ExampleRunner& getExampleRunner()
 	{
-		assert((nullptr != mExampleRunner) && "Don't call this method inside constructors");
+		ASSERT((nullptr != mExampleRunner) && "Don't call this method inside constructors");
 		return *mExampleRunner;
 	}
 
