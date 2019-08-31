@@ -40,6 +40,7 @@
 
 #ifdef RENDERER_TOOLKIT
 	#include <RendererRuntime/Public/Core/File/DefaultFileManager.h>
+	#include <RendererRuntime/Public/Core/Platform/PlatformManager.h>
 
 	#include <RendererToolkit/Public/RendererToolkitInstance.h>
 
@@ -148,21 +149,8 @@ bool IApplicationRendererRuntime::onInitialization()
 					RendererToolkit::IRendererToolkit* rendererToolkit = getRendererToolkit();
 					if (nullptr != rendererToolkit)
 					{
-						mProject = rendererToolkit->createProject();
-						if (nullptr != mProject)
-						{
-							try
-							{
-								// Load project: Shippable executable binaries are inside e.g. "unrimp/Binary/Windows_x64_Shared" while development data source is located
-								// at "unrimp/Example/DataSource/Example" and the resulting compiled/baked data ends up inside e.g. "unrimp/Binary/DataPc/Example"
-								mProject->load("../../Example/DataSource/Example");
-								mProject->startupAssetMonitor(*rendererRuntime, rendererIsOpenGLES ? "OpenGLES3_300" : "Direct3D11_50");
-							}
-							catch (const std::exception& e)
-							{
-								RENDERER_LOG(renderer->getContext(), CRITICAL, "Failed to load renderer toolkit project: %s", e.what())
-							}
-						}
+						// The renderer toolkit project startup is done inside a background thread to not block the main thread
+						mRendererToolkitProjectStartupThread = std::thread(&IApplicationRendererRuntime::rendererToolkitProjectStartupThreadWorker, this, rendererRuntime, rendererToolkit, rendererIsOpenGLES);
 					}
 				}
 				#endif
@@ -215,10 +203,14 @@ void IApplicationRendererRuntime::deinitialization()
 	#endif
 	mFileManager = nullptr;
 	#ifdef RENDERER_TOOLKIT
-		if (nullptr != mProject)
 		{
-			delete mProject;
-			mProject = nullptr;
+			mRendererToolkitProjectStartupThread.join();
+			std::lock_guard<std::mutex> projectMutexLock(mProjectMutex);
+			if (nullptr != mProject)
+			{
+				delete mProject;
+				mProject = nullptr;
+			}
 		}
 		if (nullptr != mRendererToolkitInstance)
 		{
@@ -238,3 +230,26 @@ void IApplicationRendererRuntime::deinitialization()
 	#endif
 	destroyRenderer();
 }
+
+#ifdef RENDERER_TOOLKIT
+	void IApplicationRendererRuntime::rendererToolkitProjectStartupThreadWorker(RendererRuntime::IRendererRuntime* rendererRuntime, RendererToolkit::IRendererToolkit* rendererToolkit, bool rendererIsOpenGLES)
+	{
+		RENDERER_RUNTIME_SET_CURRENT_THREAD_DEBUG_NAME("Project startup", "Renderer toolkit: Project startup");
+		std::lock_guard<std::mutex> projectMutexLock(mProjectMutex);
+		mProject = rendererToolkit->createProject();
+		if (nullptr != mProject)
+		{
+			try
+			{
+				// Load project: Shippable executable binaries are inside e.g. "unrimp/Binary/Windows_x64_Shared" while development data source is located
+				// at "unrimp/Example/DataSource/Example" and the resulting compiled/baked data ends up inside e.g. "unrimp/Binary/DataPc/Example"
+				mProject->load("../../Example/DataSource/Example");
+				mProject->startupAssetMonitor(*rendererRuntime, rendererIsOpenGLES ? "OpenGLES3_300" : "Direct3D11_50");
+			}
+			catch (const std::exception& e)
+			{
+				RENDERER_LOG(rendererRuntime->getContext(), CRITICAL, "Failed to load renderer toolkit project: %s", e.what())
+			}
+		}
+	}
+#endif

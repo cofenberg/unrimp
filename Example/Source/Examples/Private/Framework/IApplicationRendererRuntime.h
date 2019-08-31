@@ -29,6 +29,20 @@
 //[-------------------------------------------------------]
 #include "Examples/Private/Framework/IApplicationRenderer.h"
 
+// Disable warnings in external headers, we can't fix them
+PRAGMA_WARNING_PUSH
+	PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: '=': conversion from 'int' to '::size_t', signed/unsigned mismatch
+	PRAGMA_WARNING_DISABLE_MSVC(4371)	// warning C4371: 'std::_Tuple_val<_This>': layout of class may have changed from a previous version of the compiler due to better packing of member 'std::_Tuple_val<_This>::_Val'
+	PRAGMA_WARNING_DISABLE_MSVC(4571)	// warning C4571: Informational: catch(...) semantics changed since Visual C++ 7.1; structured exceptions (SEH) are no longer caught
+	PRAGMA_WARNING_DISABLE_MSVC(4623)	// warning C4623: 'std::_UInt_is_zero': default constructor was implicitly defined as deleted
+	PRAGMA_WARNING_DISABLE_MSVC(4625)	// warning C4625: 'std::codecvt_base': copy constructor was implicitly defined as deleted
+	PRAGMA_WARNING_DISABLE_MSVC(4626)	// warning C4626: 'std::codecvt_base': assignment operator was implicitly defined as deleted
+	PRAGMA_WARNING_DISABLE_MSVC(5026)	// warning C5026: 'std::_Generic_error_category': move constructor was implicitly defined as deleted
+	PRAGMA_WARNING_DISABLE_MSVC(5027)	// warning C5027: 'std::_Generic_error_category': move assignment operator was implicitly defined as deleted
+	#include <mutex>
+	#include <thread>
+PRAGMA_WARNING_POP
+
 
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
@@ -157,6 +171,9 @@ private:
 	explicit IApplicationRendererRuntime(const IApplicationRendererRuntime& source) = delete;
 	IApplicationRendererRuntime& operator =(const IApplicationRendererRuntime& source) = delete;
 	void deinitialization();
+	#ifdef RENDERER_TOOLKIT
+		void rendererToolkitProjectStartupThreadWorker(RendererRuntime::IRendererRuntime* rendererRuntime, RendererToolkit::IRendererToolkit* rendererToolkit, bool rendererIsOpenGLES);
+	#endif
 
 
 //[-------------------------------------------------------]
@@ -173,7 +190,9 @@ private:
 		RendererRuntime::IFileManager*			  mRendererToolkitFileManager;	///< Renderer toolkit file manager instance to avoid intermixing virtual filenames with the renderer runtime, can be a null pointer
 		RendererToolkit::Context*				  mRendererToolkitContext;		///< Renderer toolkit context instance, can be a null pointer
 		RendererToolkit::RendererToolkitInstance* mRendererToolkitInstance;		///< Renderer toolkit instance, can be a null pointer
-		RendererToolkit::IProject*				  mProject;
+		std::mutex								  mProjectMutex;
+		std::thread								  mRendererToolkitProjectStartupThread;
+		RendererToolkit::IProject*				  mProject;						///< Use "mProjectMutex" when accessing it
 	#endif
 
 

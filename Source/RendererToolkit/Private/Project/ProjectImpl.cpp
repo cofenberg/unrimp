@@ -338,13 +338,14 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	void ProjectImpl::load(RendererRuntime::AbsoluteDirectoryName absoluteProjectDirectoryName)
 	{
+		// The renderer toolkit is now considered to be busy
+		mRendererToolkitImpl.setState(IRendererToolkit::State::BUSY);
+
+		// Initialize, if necessary
 		if (!isInitialized())
 		{
 			initialize();
 		}
-
-		// The renderer toolkit is now considered to be busy
-		mRendererToolkitImpl.setState(IRendererToolkit::State::BUSY);
 
 		// Clear the previous project
 		clear();
