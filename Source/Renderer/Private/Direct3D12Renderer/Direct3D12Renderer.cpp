@@ -4646,9 +4646,9 @@ namespace Direct3D12Renderer
 
 							// Copy the descriptor table data and determine the shader visibility of the Direct3D 12 root parameter
 							uint32_t shaderVisibility = ~0u;
-							if (D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE == d3dRootParameter.ParameterType)
+							if (Renderer::RootParameterType::DESCRIPTOR_TABLE == rootParameter.parameterType)
 							{
-								const uint32_t numberOfDescriptorRanges = d3dRootParameter.DescriptorTable.NumDescriptorRanges;
+								const uint32_t numberOfDescriptorRanges = rootParameter.descriptorTable.numberOfDescriptorRanges;
 								d3dRootParameter.DescriptorTable.NumDescriptorRanges = numberOfDescriptorRanges;
 								d3dRootParameter.DescriptorTable.pDescriptorRanges = RENDERER_MALLOC_TYPED(context, D3D12_DESCRIPTOR_RANGE, numberOfDescriptorRanges);
 
@@ -4673,8 +4673,8 @@ namespace Direct3D12Renderer
 							}
 
 							// Set root parameter
-							d3dRootParameters->ParameterType = static_cast<D3D12_ROOT_PARAMETER_TYPE>(rootParameter.parameterType);
-							d3dRootParameters->ShaderVisibility = static_cast<D3D12_SHADER_VISIBILITY>(shaderVisibility);
+							d3dRootParameter.ParameterType = static_cast<D3D12_ROOT_PARAMETER_TYPE>(rootParameter.parameterType);
+							d3dRootParameter.ShaderVisibility = static_cast<D3D12_SHADER_VISIBILITY>(shaderVisibility);
 						}
 					}
 					else
@@ -4717,7 +4717,10 @@ namespace Direct3D12Renderer
 				else
 				{
 					RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Failed to create the Direct3D 12 root signature instance")
-					d3dBlobError->Release();
+					if (nullptr != d3dBlobError)
+					{
+						d3dBlobError->Release();
+					}
 				}
 			}
 
