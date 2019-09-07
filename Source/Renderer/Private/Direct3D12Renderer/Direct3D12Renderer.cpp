@@ -4873,9 +4873,6 @@ namespace Direct3D12Renderer
 			}
 			else
 			{
-				// Begin debug event
-				RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D12Renderer)
-
 				// TODO(co) This is only meant for the Direct3D 12 renderer backend kickoff.
 				// Note: using upload heaps to transfer static data like vert buffers is not 
 				// recommended. Every time the GPU needs it, the upload heap will be marshalled 
@@ -4923,9 +4920,6 @@ namespace Direct3D12Renderer
 					mD3D12IndexBufferView.SizeInBytes	 = 0;
 					mD3D12IndexBufferView.Format		 = DXGI_FORMAT_UNKNOWN;
 				}
-
-				// End debug event
-				RENDERER_END_DEBUG_EVENT(&direct3D12Renderer)
 			}
 
 			// Assign a default name to the resource for debugging purposes
@@ -5054,9 +5048,6 @@ namespace Direct3D12Renderer
 			mNumberOfBytes(numberOfBytes),
 			mD3D12Resource(nullptr)
 		{
-			// Begin debug event
-			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D12Renderer)
-
 			// TODO(co) This is only meant for the Direct3D 12 renderer backend kickoff.
 			// Note: using upload heaps to transfer static data like vert buffers is not 
 			// recommended. Every time the GPU needs it, the upload heap will be marshalled 
@@ -5101,9 +5092,6 @@ namespace Direct3D12Renderer
 			#ifdef RENDERER_DEBUG
 				setDebugName("");
 			#endif
-
-			// End debug event
-			RENDERER_END_DEBUG_EVENT(&direct3D12Renderer)
 		}
 
 		/**
@@ -6038,9 +6026,6 @@ namespace Direct3D12Renderer
 			mD3D12DescriptorHeap(nullptr),
 			mMappedData(nullptr)
 		{
-			// Begin debug event
-			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D12Renderer)
-
 			ID3D12Device* d3d12Device = direct3D12Renderer.getD3D12Device();
 
 			// Constant buffer size is required to be 256-byte aligned
@@ -6103,9 +6088,6 @@ namespace Direct3D12Renderer
 			#ifdef RENDERER_DEBUG
 				setDebugName("");
 			#endif
-
-			// End debug event
-			RENDERER_END_DEBUG_EVENT(&direct3D12Renderer)
 		}
 
 		/**
@@ -6529,9 +6511,6 @@ namespace Direct3D12Renderer
 			// Sanity checks
 			RENDERER_ASSERT(direct3D12Renderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 12 render target textures can't be filled using provided data")
 
-			// Begin debug event
-			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D12Renderer)
-
 			// Generate mipmaps?
 			const bool mipmaps = (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS) != 0;
 
@@ -6601,9 +6580,6 @@ namespace Direct3D12Renderer
 			#ifdef RENDERER_DEBUG
 				setDebugName("1D texture array");
 			#endif
-
-			// End debug event
-			RENDERER_END_DEBUG_EVENT(&direct3D12Renderer)
 			*/
 		}
 
@@ -6793,9 +6769,6 @@ namespace Direct3D12Renderer
 			RENDERER_ASSERT(direct3D12Renderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 12 texture parameters")
 			RENDERER_ASSERT(direct3D12Renderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 12 render target textures can't be filled using provided data")
 
-			// Begin debug event
-			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D12Renderer)
-
 			ID3D12Device* d3d12Device = direct3D12Renderer.getD3D12Device();
 
 			// TODO(co) Add buffer usage setting support
@@ -6953,9 +6926,6 @@ namespace Direct3D12Renderer
 			#ifdef RENDERER_DEBUG
 				setDebugName("2D texture");
 			#endif
-
-			// End debug event
-			RENDERER_END_DEBUG_EVENT(&direct3D12Renderer)
 		}
 
 		/**
@@ -7127,9 +7097,6 @@ namespace Direct3D12Renderer
 			// Sanity checks
 			RENDERER_ASSERT(direct3D12Renderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 12 render target textures can't be filled using provided data")
 
-			// Begin debug event
-			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D12Renderer)
-
 			// Generate mipmaps?
 			const bool mipmaps = (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS) != 0;
 
@@ -7202,9 +7169,6 @@ namespace Direct3D12Renderer
 			#ifdef RENDERER_DEBUG
 				setDebugName("2D texture array");
 			#endif
-
-			// End debug event
-			RENDERER_END_DEBUG_EVENT(&direct3D12Renderer)
 			*/
 		}
 
@@ -7803,9 +7767,6 @@ namespace Direct3D12Renderer
 			RENDERER_ASSERT(direct3D12Renderer.getContext(), samplerState.filter != Renderer::FilterMode::UNKNOWN, "Direct3D 12 filter mode must not be unknown")
 			RENDERER_ASSERT(direct3D12Renderer.getContext(), samplerState.maxAnisotropy <= direct3D12Renderer.getCapabilities().maximumAnisotropy, "Maximum Direct3D 12 anisotropy value violated")
 
-			// Begin debug event
-			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D12Renderer)
-
 			ID3D12Device* d3d12Device = direct3D12Renderer.getD3D12Device();
 
 			// Describe and create a sampler object descriptor heap.
@@ -7829,9 +7790,6 @@ namespace Direct3D12Renderer
 			#ifdef RENDERER_DEBUG
 				setDebugName("Sampler state");
 			#endif
-
-			// End debug event
-			RENDERER_END_DEBUG_EVENT(&direct3D12Renderer)
 		}
 
 		/**
@@ -8138,9 +8096,9 @@ namespace Direct3D12Renderer
 			FAILED_DEBUG_BREAK(dxgiFactory4.CreateSwapChain(direct3D12Renderer.getD3D12CommandQueue(), &dxgiSwapChainDesc, &dxgiSwapChain));
 			if (FAILED(dxgiSwapChain->QueryInterface(IID_PPV_ARGS(&mDxgiSwapChain3))))
 			{
-				dxgiSwapChain->Release();
 				RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Failed to retrieve the Direct3D 12 DXGI swap chain 3")
 			}
+			dxgiSwapChain->Release();
 
 			// Disable alt-return for automatic fullscreen state change
 			// -> We handle this manually to have more control over it
@@ -8154,29 +8112,24 @@ namespace Direct3D12Renderer
 
 			{ // Create synchronization objects
 				// Get the Direct3D 12 device instance
-				ID3D12Device* d3d12Device = nullptr;
-				FAILED_DEBUG_BREAK(mDxgiSwapChain3->GetDevice(__uuidof(ID3D12Device), (void**)&d3d12Device));
-				if (nullptr != d3d12Device)
-				{
-					if (SUCCEEDED(d3d12Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mD3D12Fence))))
-					{
-						mFenceValue = 1;
+				ID3D12Device* d3d12Device = static_cast<Direct3D12Renderer&>(getRenderer()).getD3D12Device();
+				RENDERER_ASSERT(getRenderer().getContext(), nullptr != d3d12Device, "Invalid Direct3D 12 device instance")
 
-						// Create an event handle to use for frame synchronization
-						mFenceEvent = ::CreateEvent(nullptr, FALSE, FALSE, nullptr);
-						if (nullptr == mFenceEvent)
-						{
-							RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Failed to create an Direct3D 12 event handle to use for frame synchronization. Error code %u", ::GetLastError())
-						}
-					}
-					else
+				// Create synchronization objects
+				if (SUCCEEDED(d3d12Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mD3D12Fence))))
+				{
+					mFenceValue = 1;
+
+					// Create an event handle to use for frame synchronization
+					mFenceEvent = ::CreateEvent(nullptr, FALSE, FALSE, nullptr);
+					if (nullptr == mFenceEvent)
 					{
-						RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Failed to create Direct3D 12 fence instance")
+						RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Failed to create an Direct3D 12 event handle to use for frame synchronization. Error code %u", ::GetLastError())
 					}
 				}
 				else
 				{
-					RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Failed to retrieve the Direct3D 12 device instance from the swap chain")
+					RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Failed to create Direct3D 12 fence instance")
 				}
 			}
 
@@ -8621,97 +8574,91 @@ namespace Direct3D12Renderer
 			// TODO(co) Debug name gets lost when resizing a window, fix this
 
 			// Get the Direct3D 12 device instance
-			ID3D12Device* d3d12Device = nullptr;
-			FAILED_DEBUG_BREAK(mDxgiSwapChain3->GetDevice(__uuidof(ID3D12Device), (void**)&d3d12Device));
-			if (nullptr != d3d12Device)
-			{
-				{ // Describe and create a render target view (RTV) descriptor heap
-					D3D12_DESCRIPTOR_HEAP_DESC d3d12DescriptorHeapDesc = {};
-					d3d12DescriptorHeapDesc.NumDescriptors	= NUMBER_OF_FRAMES;
-					d3d12DescriptorHeapDesc.Type			= D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-					d3d12DescriptorHeapDesc.Flags			= D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-					if (SUCCEEDED(d3d12Device->CreateDescriptorHeap(&d3d12DescriptorHeapDesc, IID_PPV_ARGS(&mD3D12DescriptorHeapRenderTargetView))))
-					{
-						mRenderTargetViewDescriptorSize = d3d12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+			ID3D12Device* d3d12Device = static_cast<Direct3D12Renderer&>(getRenderer()).getD3D12Device();
+			RENDERER_ASSERT(getRenderer().getContext(), nullptr != d3d12Device, "Invalid Direct3D 12 device instance")
 
-						{ // Create frame resources
-							CD3DX12_CPU_DESCRIPTOR_HANDLE d3d12XCpuDescriptorHandle(mD3D12DescriptorHeapRenderTargetView->GetCPUDescriptorHandleForHeapStart());
+			{ // Describe and create a render target view (RTV) descriptor heap
+				D3D12_DESCRIPTOR_HEAP_DESC d3d12DescriptorHeapDesc = {};
+				d3d12DescriptorHeapDesc.NumDescriptors	= NUMBER_OF_FRAMES;
+				d3d12DescriptorHeapDesc.Type			= D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+				d3d12DescriptorHeapDesc.Flags			= D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+				if (SUCCEEDED(d3d12Device->CreateDescriptorHeap(&d3d12DescriptorHeapDesc, IID_PPV_ARGS(&mD3D12DescriptorHeapRenderTargetView))))
+				{
+					mRenderTargetViewDescriptorSize = d3d12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
-							// Create a RTV for each frame
-							for (UINT frame = 0; frame < NUMBER_OF_FRAMES; ++frame)
+					{ // Create frame resources
+						CD3DX12_CPU_DESCRIPTOR_HANDLE d3d12XCpuDescriptorHandle(mD3D12DescriptorHeapRenderTargetView->GetCPUDescriptorHandleForHeapStart());
+
+						// Create a RTV for each frame
+						for (UINT frame = 0; frame < NUMBER_OF_FRAMES; ++frame)
+						{
+							if (SUCCEEDED(mDxgiSwapChain3->GetBuffer(frame, IID_PPV_ARGS(&mD3D12ResourceRenderTargets[frame]))))
 							{
-								if (SUCCEEDED(mDxgiSwapChain3->GetBuffer(frame, IID_PPV_ARGS(&mD3D12ResourceRenderTargets[frame]))))
-								{
-									d3d12Device->CreateRenderTargetView(mD3D12ResourceRenderTargets[frame], nullptr, d3d12XCpuDescriptorHandle);
-									d3d12XCpuDescriptorHandle.Offset(1, mRenderTargetViewDescriptorSize);
-								}
-								else
-								{
-									RENDERER_LOG(static_cast<Direct3D12Renderer&>(getRenderer()).getContext(), CRITICAL, "Failed to retrieve frame buffer from Direct3D 12 DXGI swap chain")
-								}
+								d3d12Device->CreateRenderTargetView(mD3D12ResourceRenderTargets[frame], nullptr, d3d12XCpuDescriptorHandle);
+								d3d12XCpuDescriptorHandle.Offset(1, mRenderTargetViewDescriptorSize);
+							}
+							else
+							{
+								RENDERER_LOG(static_cast<Direct3D12Renderer&>(getRenderer()).getContext(), CRITICAL, "Failed to retrieve frame buffer from Direct3D 12 DXGI swap chain")
 							}
 						}
+					}
 
-						mFrameIndex = mDxgiSwapChain3->GetCurrentBackBufferIndex();
-					}
-					else
-					{
-						RENDERER_LOG(static_cast<Direct3D12Renderer&>(getRenderer()).getContext(), CRITICAL, "Failed to describe and create a Direct3D 12 render target view (RTV) descriptor heap")
-					}
+					mFrameIndex = mDxgiSwapChain3->GetCurrentBackBufferIndex();
 				}
-
-				// Describe and create a depth stencil view (DSV) descriptor heap
-				const Renderer::TextureFormat::Enum depthStencilAttachmentTextureFormat = static_cast<RenderPass&>(getRenderPass()).getDepthStencilAttachmentTextureFormat();
-				if (Renderer::TextureFormat::Enum::UNKNOWN != depthStencilAttachmentTextureFormat)
+				else
 				{
-					D3D12_DESCRIPTOR_HEAP_DESC d3d12DescriptorHeapDesc = {};
-					d3d12DescriptorHeapDesc.NumDescriptors	= 1;
-					d3d12DescriptorHeapDesc.Type			= D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-					d3d12DescriptorHeapDesc.Flags			= D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-					if (SUCCEEDED(d3d12Device->CreateDescriptorHeap(&d3d12DescriptorHeapDesc, IID_PPV_ARGS(&mD3D12DescriptorHeapDepthStencilView))))
-					{
-						D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc = {};
-						depthStencilDesc.Format = Mapping::getDirect3D12Format(depthStencilAttachmentTextureFormat);
-						depthStencilDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-						depthStencilDesc.Flags = D3D12_DSV_FLAG_NONE;
-
-						D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
-						depthOptimizedClearValue.Format = depthStencilDesc.Format;
-						depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
-						depthOptimizedClearValue.DepthStencil.Stencil = 0;
-
-						// Get the swap chain width and height, ensures they are never ever zero
-						UINT width  = 1;
-						UINT height = 1;
-						getSafeWidthAndHeight(width, height);
-
-						const CD3DX12_HEAP_PROPERTIES d3d12XHeapProperties(D3D12_HEAP_TYPE_DEFAULT);
-						const CD3DX12_RESOURCE_DESC d3d12XResourceDesc = CD3DX12_RESOURCE_DESC::Tex2D(depthStencilDesc.Format, width, height, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
-						if (SUCCEEDED(d3d12Device->CreateCommittedResource(
-							&d3d12XHeapProperties,
-							D3D12_HEAP_FLAG_NONE,
-							&d3d12XResourceDesc,
-							D3D12_RESOURCE_STATE_DEPTH_WRITE,
-							&depthOptimizedClearValue,
-							IID_PPV_ARGS(&mD3D12ResourceDepthStencil)
-							)))
-						{
-							d3d12Device->CreateDepthStencilView(mD3D12ResourceDepthStencil, &depthStencilDesc, mD3D12DescriptorHeapDepthStencilView->GetCPUDescriptorHandleForHeapStart());
-						}
-						else
-						{
-							RENDERER_LOG(static_cast<Direct3D12Renderer&>(getRenderer()).getContext(), CRITICAL, "Failed to create the Direct3D 12 depth stencil view (DSV) resource")
-						}
-					}
-					else
-					{
-						RENDERER_LOG(static_cast<Direct3D12Renderer&>(getRenderer()).getContext(), CRITICAL, "Failed to describe and create a Direct3D 12 depth stencil view (DSV) descriptor heap")
-					}
+					RENDERER_LOG(static_cast<Direct3D12Renderer&>(getRenderer()).getContext(), CRITICAL, "Failed to describe and create a Direct3D 12 render target view (RTV) descriptor heap")
 				}
 			}
-			else
+
+			// Describe and create a depth stencil view (DSV) descriptor heap
+			const Renderer::TextureFormat::Enum depthStencilAttachmentTextureFormat = static_cast<RenderPass&>(getRenderPass()).getDepthStencilAttachmentTextureFormat();
+			if (Renderer::TextureFormat::Enum::UNKNOWN != depthStencilAttachmentTextureFormat)
 			{
-				RENDERER_LOG(static_cast<Direct3D12Renderer&>(getRenderer()).getContext(), CRITICAL, "Failed to retrieve the Direct3D 12 device instance from the swap chain")
+				D3D12_DESCRIPTOR_HEAP_DESC d3d12DescriptorHeapDesc = {};
+				d3d12DescriptorHeapDesc.NumDescriptors	= 1;
+				d3d12DescriptorHeapDesc.Type			= D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+				d3d12DescriptorHeapDesc.Flags			= D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+				if (SUCCEEDED(d3d12Device->CreateDescriptorHeap(&d3d12DescriptorHeapDesc, IID_PPV_ARGS(&mD3D12DescriptorHeapDepthStencilView))))
+				{
+					D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc = {};
+					depthStencilDesc.Format = Mapping::getDirect3D12Format(depthStencilAttachmentTextureFormat);
+					depthStencilDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+					depthStencilDesc.Flags = D3D12_DSV_FLAG_NONE;
+
+					D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
+					depthOptimizedClearValue.Format = depthStencilDesc.Format;
+					depthOptimizedClearValue.DepthStencil.Depth = 0.0f;	// z = 0 instead of 1 due to usage of Reversed-Z (see e.g. https://developer.nvidia.com/content/depth-precision-visualized and https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/)
+					depthOptimizedClearValue.DepthStencil.Stencil = 0;
+
+					// Get the swap chain width and height, ensures they are never ever zero
+					UINT width  = 1;
+					UINT height = 1;
+					getSafeWidthAndHeight(width, height);
+
+					const CD3DX12_HEAP_PROPERTIES d3d12XHeapProperties(D3D12_HEAP_TYPE_DEFAULT);
+					const CD3DX12_RESOURCE_DESC d3d12XResourceDesc = CD3DX12_RESOURCE_DESC::Tex2D(depthStencilDesc.Format, width, height, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
+					if (SUCCEEDED(d3d12Device->CreateCommittedResource(
+						&d3d12XHeapProperties,
+						D3D12_HEAP_FLAG_NONE,
+						&d3d12XResourceDesc,
+						D3D12_RESOURCE_STATE_DEPTH_WRITE,
+						&depthOptimizedClearValue,
+						IID_PPV_ARGS(&mD3D12ResourceDepthStencil)
+						)))
+					{
+						d3d12Device->CreateDepthStencilView(mD3D12ResourceDepthStencil, &depthStencilDesc, mD3D12DescriptorHeapDepthStencilView->GetCPUDescriptorHandleForHeapStart());
+					}
+					else
+					{
+						RENDERER_LOG(static_cast<Direct3D12Renderer&>(getRenderer()).getContext(), CRITICAL, "Failed to create the Direct3D 12 depth stencil view (DSV) resource")
+					}
+				}
+				else
+				{
+					RENDERER_LOG(static_cast<Direct3D12Renderer&>(getRenderer()).getContext(), CRITICAL, "Failed to describe and create a Direct3D 12 depth stencil view (DSV) descriptor heap")
+				}
 			}
 		}
 
@@ -11750,6 +11697,9 @@ namespace Direct3D12Renderer
 		// Unlike Direct3D 9, OpenGL or OpenGL ES 3, Direct3D 12 clears a given render target view and not the currently bound
 		// -> No resource transition required in here, it's handled inside "Direct3D12Renderer::omSetRenderTarget()"
 
+		// Sanity check
+		RENDERER_ASSERT(mContext, z >= 0.0f && z <= 1.0f, "The Direct3D 12 clear graphics z value must be between [0, 1] (inclusive)")
+
 		// Begin debug event
 		RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(this)
 
@@ -11771,20 +11721,21 @@ namespace Direct3D12Renderer
 						mD3D12GraphicsCommandList->ClearRenderTargetView(rtvHandle, color, 0, nullptr);
 					}
 
-					// Clear the Direct3D 12 depth stencil view?
-					ID3D12DescriptorHeap* d3d12DescriptorHeapDepthStencilView = swapChain->getD3D12DescriptorHeapDepthStencilView();
-					if (nullptr != d3d12DescriptorHeapDepthStencilView)
-					{
-						// Get the Direct3D 12 clear flags
-						UINT direct3D12ClearFlags = (clearFlags & Renderer::ClearFlag::DEPTH) ? D3D12_CLEAR_FLAG_DEPTH : 0u;
-						if (clearFlags & Renderer::ClearFlag::STENCIL)
+					{ // Clear the Direct3D 12 depth stencil view?
+						ID3D12DescriptorHeap* d3d12DescriptorHeapDepthStencilView = swapChain->getD3D12DescriptorHeapDepthStencilView();
+						if (nullptr != d3d12DescriptorHeapDepthStencilView)
 						{
-							direct3D12ClearFlags |= D3D12_CLEAR_FLAG_STENCIL;
-						}
-						if (0 != direct3D12ClearFlags)
-						{
-							// Clear the Direct3D 12 depth stencil view
-							mD3D12GraphicsCommandList->ClearDepthStencilView(d3d12DescriptorHeapDepthStencilView->GetCPUDescriptorHandleForHeapStart(), static_cast<D3D12_CLEAR_FLAGS>(direct3D12ClearFlags), z, static_cast<UINT8>(stencil), 0, nullptr);
+							// Get the Direct3D 12 clear flags
+							UINT direct3D12ClearFlags = (clearFlags & Renderer::ClearFlag::DEPTH) ? D3D12_CLEAR_FLAG_DEPTH : 0u;
+							if (clearFlags & Renderer::ClearFlag::STENCIL)
+							{
+								direct3D12ClearFlags |= D3D12_CLEAR_FLAG_STENCIL;
+							}
+							if (0 != direct3D12ClearFlags)
+							{
+								// Clear the Direct3D 12 depth stencil view
+								mD3D12GraphicsCommandList->ClearDepthStencilView(d3d12DescriptorHeapDepthStencilView->GetCPUDescriptorHandleForHeapStart(), static_cast<D3D12_CLEAR_FLAGS>(direct3D12ClearFlags), z, static_cast<UINT8>(stencil), 0, nullptr);
+							}
 						}
 					}
 					break;
@@ -12447,9 +12398,6 @@ namespace Direct3D12Renderer
 	{
 		bool result = false;	// Error by default
 
-		// Begin debug event
-		RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(this)
-
 		// Not required when using Direct3D 12
 		// TODO(co) Until we have a command list interface, we must perform the command list handling in here
 
@@ -12464,8 +12412,8 @@ namespace Direct3D12Renderer
 			result = SUCCEEDED(mD3D12GraphicsCommandList->Reset(mD3D12CommandAllocator, nullptr));
 		}
 
-		// End debug event
-		RENDERER_END_DEBUG_EVENT(this)
+		// Reset our cached states where needed
+		mD3D12PrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
 
 		// Done
 		return result;
@@ -12502,15 +12450,15 @@ namespace Direct3D12Renderer
 		// We need to forget about the currently set render target
 		setGraphicsRenderTarget(nullptr);
 
+		// End debug event
+		RENDERER_END_DEBUG_EVENT(this)
+
 		// Close and execute the command list
 		if (SUCCEEDED(mD3D12GraphicsCommandList->Close()))
 		{
 			ID3D12CommandList* commandLists[] = { mD3D12GraphicsCommandList };
 			mD3D12CommandQueue->ExecuteCommandLists(_countof(commandLists), commandLists);
 		}
-
-		// End debug event
-		RENDERER_END_DEBUG_EVENT(this)
 	}
 
 

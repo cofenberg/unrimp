@@ -3736,8 +3736,11 @@ namespace NullRenderer
 		}
 	}
 
-	void NullRenderer::clearGraphics(uint32_t, const float [4], float, uint32_t)
-	{}
+	void NullRenderer::clearGraphics(uint32_t, const float [4], [[maybe_unused]] float z, uint32_t)
+	{
+		// Sanity check
+		RENDERER_ASSERT(mContext, z >= 0.0f && z <= 1.0f, "The null clear graphics z value must be between [0, 1] (inclusive)")
+	}
 
 	void NullRenderer::drawGraphicsEmulated([[maybe_unused]] const uint8_t* emulationData, uint32_t, [[maybe_unused]] uint32_t numberOfDraws)
 	{

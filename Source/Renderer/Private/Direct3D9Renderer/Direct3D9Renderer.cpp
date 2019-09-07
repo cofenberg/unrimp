@@ -8288,6 +8288,9 @@ namespace Direct3D9Renderer
 
 	void Direct3D9Renderer::clearGraphics(uint32_t clearFlags, const float color[4], float z, uint32_t stencil)
 	{
+		// Sanity check
+		RENDERER_ASSERT(mContext, z >= 0.0f && z <= 1.0f, "The Direct3D 9 clear graphics z value must be between [0, 1] (inclusive)")
+
 		// Begin debug event
 		RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(this)
 

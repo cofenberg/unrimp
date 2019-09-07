@@ -9924,6 +9924,9 @@ namespace OpenGLES3Renderer
 
 	void OpenGLES3Renderer::clearGraphics(uint32_t clearFlags, const float color[4], float z, uint32_t stencil)
 	{
+		// Sanity check
+		RENDERER_ASSERT(mContext, z >= 0.0f && z <= 1.0f, "The OpenGL ES 3 clear graphics z value must be between [0, 1] (inclusive)")
+
 		// Get API flags
 		uint32_t flagsApi = 0;
 		if (clearFlags & Renderer::ClearFlag::COLOR)

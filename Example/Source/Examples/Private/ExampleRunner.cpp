@@ -44,6 +44,8 @@
 // Advanced
 #include "Examples/Private/Advanced/FirstGpgpu/FirstGpgpu.h"
 #include "Examples/Private/Advanced/IcosahedronTessellation/IcosahedronTessellation.h"
+#include "Examples/Private/Advanced/InstancedCubes/InstancedCubes.h"
+// Renderer runtime
 #ifdef RENDERER_RUNTIME
 	#ifdef RENDERER_RUNTIME_IMGUI
 		#include "Examples/Private/Runtime/ImGuiExampleSelector/ImGuiExampleSelector.h"
@@ -51,7 +53,6 @@
 	#include "Examples/Private/Runtime/FirstMesh/FirstMesh.h"
 	#include "Examples/Private/Runtime/FirstCompositor/FirstCompositor.h"
 	#include "Examples/Private/Runtime/FirstScene/FirstScene.h"
-	#include "Examples/Private/Advanced/InstancedCubes/InstancedCubes.h"
 #endif
 
 // Disable warnings in external headers, we can't fix them
@@ -122,15 +123,16 @@ ExampleRunner::ExampleRunner() :
 	// Advanced
 	addExample("FirstGpgpu",					&runBasicExample<FirstGpgpu>,					supportsAllRenderer);
 	addExample("IcosahedronTessellation",		&runRenderExample<IcosahedronTessellation>,		onlyShaderModel5Plus);
+	addExample("InstancedCubes",				&runRenderRuntimeExample<InstancedCubes>,		supportsAllRenderer);
+
+	// Renderer runtime
 	#ifdef RENDERER_RUNTIME
-		// Renderer runtime
 		#ifdef RENDERER_RUNTIME_IMGUI
 			addExample("ImGuiExampleSelector",	&runRenderRuntimeExample<ImGuiExampleSelector>,	supportsAllRenderer);
 		#endif
 		addExample("FirstMesh",					&runRenderRuntimeExample<FirstMesh>,			supportsAllRenderer);
 		addExample("FirstCompositor",			&runRenderRuntimeExample<FirstCompositor>,		supportsAllRenderer);
 		addExample("FirstScene",				&runRenderRuntimeExample<FirstScene>,			supportsAllRenderer);
-		addExample("InstancedCubes",			&runRenderRuntimeExample<InstancedCubes>,		supportsAllRenderer);
 		mDefaultExampleName = "ImGuiExampleSelector";
 	#else
 		mDefaultExampleName = "FirstTriangle";

@@ -148,7 +148,7 @@ Standalone renderer examples.
 		- Vertex shader (VS), tessellation control shader (TCS), tessellation evaluation shader (TES), geometry shader (GS) and fragment shader (FS)
 		- Root signature
 		- Graphics pipeline state object (PSO)
-- Runtime
+- Renderer runtime
 	- "ImGuiExampleSelector"demonstrates:
 		- ImGui usage to select the example to start
 	- "FirstMesh" demonstrates:

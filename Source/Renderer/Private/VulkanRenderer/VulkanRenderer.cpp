@@ -11421,9 +11421,10 @@ namespace VulkanRenderer
 
 	void VulkanRenderer::clearGraphics(uint32_t clearFlags, const float color[4], float z, uint32_t stencil)
 	{
-		// Sanity check
+		// Sanity checks
 		RENDERER_ASSERT(mContext, nullptr != mRenderTarget, "Can't execute Vulkan clear command without a render target set")
 		RENDERER_ASSERT(mContext, !mInsideVulkanRenderPass, "Can't execute clear command inside a Vulkan render pass")
+		RENDERER_ASSERT(mContext, z >= 0.0f && z <= 1.0f, "The Vulkan clear graphics z value must be between [0, 1] (inclusive)")
 
 		// Clear color
 		const uint32_t numberOfColorAttachments = static_cast<const RenderPass&>(mRenderTarget->getRenderPass()).getNumberOfColorAttachments();

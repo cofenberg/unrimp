@@ -47,7 +47,7 @@
 	#include "Private/Advanced/InstancedCubes/InstancedCubes.cpp"
 	#include "Private/Advanced/IcosahedronTessellation/IcosahedronTessellation.cpp"
 
-// Runtime
+// Renderer runtime
 #ifdef RENDERER_RUNTIME
 	#ifdef RENDERER_RUNTIME_IMGUI
 		#include "Private/Runtime/ImGuiExampleSelector/ImGuiExampleSelector.cpp"

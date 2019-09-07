@@ -12833,6 +12833,9 @@ namespace Direct3D11Renderer
 	{
 		// Unlike Direct3D 9, OpenGL or OpenGL ES 3, Direct3D 11 clears a given render target view and not the currently bound
 
+		// Sanity check
+		RENDERER_ASSERT(mContext, z >= 0.0f && z <= 1.0f, "The Direct3D 11 clear graphics z value must be between [0, 1] (inclusive)")
+
 		// Begin debug event
 		RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(this)
 
