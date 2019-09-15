@@ -1347,6 +1347,9 @@ namespace OpenGLES3Renderer
 		// Draw ID uniform location for "GL_EXT_base_instance"-emulation (see "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html)
 		GLint	 mDrawIdUniformLocation;		///< Draw ID uniform location
 		uint32_t mCurrentStartInstanceLocation;	///< Currently set start instance location
+		#ifdef RENDERER_DEBUG
+			bool mDebugBetweenBeginEndScene;	///< Just here for state tracking in debug builds
+		#endif
 
 
 	};
@@ -9325,6 +9328,9 @@ namespace OpenGLES3Renderer
 		// Draw ID uniform location for "GL_EXT_base_instance"-emulation (see "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html)
 		mDrawIdUniformLocation(-1),
 		mCurrentStartInstanceLocation(~0u)
+		#ifdef RENDERER_DEBUG
+			, mDebugBetweenBeginEndScene(false)
+		#endif
 	{
 		// Initialize the OpenGL ES 3 context
 		mOpenGLES3Context = RENDERER_NEW(mContext, OpenGLES3ContextRuntimeLinking)(*this, context.getNativeWindowHandle(), context.isUsingExternalContext());
@@ -10775,6 +10781,12 @@ namespace OpenGLES3Renderer
 	{
 		// Not required when using OpenGL ES 3
 
+		// Sanity check
+		#ifdef RENDERER_DEBUG
+			RENDERER_ASSERT(mContext, false == mDebugBetweenBeginEndScene, "OpenGL ES 3: Begin scene was called while scene rendering is already in progress, missing end scene call?")
+			mDebugBetweenBeginEndScene = true;
+		#endif
+
 		// Done
 		return true;
 	}
@@ -10801,6 +10813,12 @@ namespace OpenGLES3Renderer
 
 	void OpenGLES3Renderer::endScene()
 	{
+		// Sanity check
+		#ifdef RENDERER_DEBUG
+			RENDERER_ASSERT(mContext, true == mDebugBetweenBeginEndScene, "OpenGL ES 3: End scene was called while scene rendering isn't in progress, missing start scene call?")
+			mDebugBetweenBeginEndScene = false;
+		#endif
+
 		// We need to forget about the currently set render target
 		setGraphicsRenderTarget(nullptr);
 

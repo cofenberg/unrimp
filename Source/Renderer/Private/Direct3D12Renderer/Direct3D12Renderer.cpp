@@ -496,7 +496,6 @@ struct D3D12_TILE_REGION_SIZE;
 struct D3D12_TILE_RANGE_FLAGS;
 struct D3D12_SUBRESOURCE_TILING;
 struct D3D12_SO_DECLARATION_ENTRY;
-struct D3D12_COMMAND_SIGNATURE_DESC;
 struct D3D12_STREAM_OUTPUT_BUFFER_VIEW;
 struct D3D12_TILED_RESOURCE_COORDINATE;
 struct D3D12_UNORDERED_ACCESS_VIEW_DESC;
@@ -506,7 +505,6 @@ struct ID3D12Heap;
 struct ID3D12Resource;
 struct ID3D12QueryHeap;
 struct ID3D12RootSignature;
-struct ID3D12CommandSignature;
 
 // TODO(co) Direct3D 12 update
 struct ID3D10Blob;
@@ -2116,6 +2114,60 @@ typedef struct D3D12_COMPUTE_PIPELINE_STATE_DESC
 	D3D12_PIPELINE_STATE_FLAGS Flags;
 } D3D12_COMPUTE_PIPELINE_STATE_DESC;
 
+// "Microsoft Windows 10 SDK" -> "10.0.10240.0" -> "D3D12.h"
+typedef enum D3D12_INDIRECT_ARGUMENT_TYPE
+{
+	D3D12_INDIRECT_ARGUMENT_TYPE_DRAW					= 0,
+	D3D12_INDIRECT_ARGUMENT_TYPE_DRAW_INDEXED			= (D3D12_INDIRECT_ARGUMENT_TYPE_DRAW + 1),
+	D3D12_INDIRECT_ARGUMENT_TYPE_DISPATCH				= (D3D12_INDIRECT_ARGUMENT_TYPE_DRAW_INDEXED + 1),
+	D3D12_INDIRECT_ARGUMENT_TYPE_VERTEX_BUFFER_VIEW		= (D3D12_INDIRECT_ARGUMENT_TYPE_DISPATCH + 1),
+	D3D12_INDIRECT_ARGUMENT_TYPE_INDEX_BUFFER_VIEW		= (D3D12_INDIRECT_ARGUMENT_TYPE_VERTEX_BUFFER_VIEW + 1),
+	D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT				= (D3D12_INDIRECT_ARGUMENT_TYPE_INDEX_BUFFER_VIEW + 1),
+	D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT_BUFFER_VIEW	= (D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT + 1),
+	D3D12_INDIRECT_ARGUMENT_TYPE_SHADER_RESOURCE_VIEW	= (D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT_BUFFER_VIEW + 1),
+	D3D12_INDIRECT_ARGUMENT_TYPE_UNORDERED_ACCESS_VIEW	= (D3D12_INDIRECT_ARGUMENT_TYPE_SHADER_RESOURCE_VIEW + 1)
+} D3D12_INDIRECT_ARGUMENT_TYPE;
+
+// "Microsoft Windows 10 SDK" -> "10.0.10240.0" -> "D3D12.h"
+typedef struct D3D12_INDIRECT_ARGUMENT_DESC
+{
+	D3D12_INDIRECT_ARGUMENT_TYPE Type;
+	union
+	{
+		struct
+		{
+			UINT Slot;
+		} VertexBuffer;
+		struct
+		{
+			UINT RootParameterIndex;
+			UINT DestOffsetIn32BitValues;
+			UINT Num32BitValuesToSet;
+		} Constant;
+		struct
+		{
+			UINT RootParameterIndex;
+		} ConstantBufferView;
+		struct
+		{
+			UINT RootParameterIndex;
+		} ShaderResourceView;
+		struct
+		{
+			UINT RootParameterIndex;
+		} UnorderedAccessView;
+	};
+} D3D12_INDIRECT_ARGUMENT_DESC;
+
+// "Microsoft Windows 10 SDK" -> "10.0.10240.0" -> "D3D12.h"
+typedef struct D3D12_COMMAND_SIGNATURE_DESC
+{
+	UINT ByteStride;
+	UINT NumArgumentDescs;
+	_Field_size_full_(NumArgumentDescs) const D3D12_INDIRECT_ARGUMENT_DESC *pArgumentDescs;
+	UINT NodeMask;
+} D3D12_COMMAND_SIGNATURE_DESC;
+
 #ifdef RENDERER_DEBUG
 	// "Microsoft Windows 10 SDK" -> "10.0.10240.0" -> "d3d12sdklayers.h"
 	typedef enum D3D12_DEBUG_FEATURE
@@ -2406,6 +2458,12 @@ ID3D12CommandAllocator : public ID3D12Pageable
 };
 
 // "Microsoft Windows 10 SDK" -> "10.0.10240.0" -> "D3D12.h"
+MIDL_INTERFACE("c36a797c-ec80-4f0a-8985-a7b2475082d1")
+ID3D12CommandSignature : public ID3D12Pageable
+{
+};
+
+// "Microsoft Windows 10 SDK" -> "10.0.10240.0" -> "D3D12.h"
 MIDL_INTERFACE("7116d91c-e7e4-47ce-b8c6-ec8168f437e5")
 ID3D12CommandList : public ID3D12DeviceChild
 {
@@ -2557,7 +2615,7 @@ ID3D12Device : public ID3D12Object
 
 
 //[-------------------------------------------------------]
-//[ Direct3D11Renderer/D3D12X.h                           ]
+//[ Direct3D12Renderer/D3D12X.h                           ]
 //[-------------------------------------------------------]
 // TODO(co) Remove unused stuff when done with the Direct3D 12 renderer backend implementation
 
@@ -3546,10 +3604,110 @@ inline void MemcpySubresource(
 
 
 //[-------------------------------------------------------]
+//[ Direct3D12Renderer/DescriptorHeap.h                   ]
+//[-------------------------------------------------------]
+/*
+*  @brief
+*    Descriptor heap
+*/
+class DescriptorHeap final
+{
+//[-------------------------------------------------------]
+//[ Public methods                                        ]
+//[-------------------------------------------------------]
+public:
+	inline DescriptorHeap(Renderer::IAllocator& allocator, ID3D12Device& d3d12Device, D3D12_DESCRIPTOR_HEAP_TYPE d3d12DescriptorHeapType, uint16_t size, bool shaderVisible) :
+		mD3D12DescriptorHeap(nullptr),
+		mD3D12CpuDescriptorHandleForHeapStart{},
+		mD3D12GpuDescriptorHandleForHeapStart{},
+		mDescriptorSize(0),
+		mMakeIDAllocator(allocator, size - 1u)
+	{
+		D3D12_DESCRIPTOR_HEAP_DESC d3d12DescriptorHeadDescription = {};
+		d3d12DescriptorHeadDescription.Type			  = d3d12DescriptorHeapType;
+		d3d12DescriptorHeadDescription.NumDescriptors = size;
+		d3d12DescriptorHeadDescription.Flags		  = shaderVisible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+		d3d12Device.CreateDescriptorHeap(&d3d12DescriptorHeadDescription, __uuidof(ID3D12DescriptorHeap), reinterpret_cast<void**>(&mD3D12DescriptorHeap));
+		mD3D12CpuDescriptorHandleForHeapStart = mD3D12DescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+		mD3D12GpuDescriptorHandleForHeapStart = mD3D12DescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+		mDescriptorSize = d3d12Device.GetDescriptorHandleIncrementSize(d3d12DescriptorHeapType);
+	}
+
+	inline ~DescriptorHeap()
+	{
+		mD3D12DescriptorHeap->Release();
+	}
+
+	inline uint16_t allocate(uint16_t count)
+	{
+		uint16_t index = 0;
+		[[maybe_unused]] const bool result = mMakeIDAllocator.CreateRangeID(index, count);
+		ASSERT(result);
+		return index;
+	}
+
+	inline void release(uint16_t offset, uint16_t count)
+	{
+		[[maybe_unused]] const bool result = mMakeIDAllocator.DestroyRangeID(offset, count);
+		ASSERT(result);
+	}
+
+	inline ID3D12DescriptorHeap* getD3D12DescriptorHeap() const
+	{
+		return mD3D12DescriptorHeap;
+	}
+
+	inline D3D12_CPU_DESCRIPTOR_HANDLE getD3D12CpuDescriptorHandleForHeapStart() const
+	{
+		return mD3D12CpuDescriptorHandleForHeapStart;
+	}
+
+	inline D3D12_CPU_DESCRIPTOR_HANDLE getOffsetD3D12CpuDescriptorHandleForHeapStart(uint16_t offset) const
+	{
+		D3D12_CPU_DESCRIPTOR_HANDLE d3d12CpuDescriptorHandle = mD3D12CpuDescriptorHandleForHeapStart;
+		d3d12CpuDescriptorHandle.ptr += offset * mDescriptorSize;
+		return d3d12CpuDescriptorHandle;
+	}
+
+	inline D3D12_GPU_DESCRIPTOR_HANDLE getD3D12GpuDescriptorHandleForHeapStart() const
+	{
+		return mD3D12GpuDescriptorHandleForHeapStart;
+	}
+
+	inline uint32_t getDescriptorSize() const
+	{
+		return mDescriptorSize;
+	}
+
+
+//[-------------------------------------------------------]
+//[ Private methods                                       ]
+//[-------------------------------------------------------]
+private:
+	explicit DescriptorHeap(const DescriptorHeap& source) = delete;
+	DescriptorHeap& operator =(const DescriptorHeap& source) = delete;
+
+//[-------------------------------------------------------]
+//[ Private data                                          ]
+//[-------------------------------------------------------]
+private:
+	ID3D12DescriptorHeap*		mD3D12DescriptorHeap;
+	D3D12_CPU_DESCRIPTOR_HANDLE mD3D12CpuDescriptorHandleForHeapStart;
+	D3D12_GPU_DESCRIPTOR_HANDLE mD3D12GpuDescriptorHandleForHeapStart;
+	uint32_t					mDescriptorSize;
+	MakeID						mMakeIDAllocator;
+};
+
+
+
+
+//[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
 namespace Direct3D12Renderer
 {
+	class VertexArray;
+	class RootSignature;
 	class Direct3D12RuntimeLinking;
 }
 
@@ -3607,7 +3765,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		void updateWidthHeight(uint32_t mipmapIndex, uint32_t textureWidth, uint32_t textureHeight, uint32_t& width, uint32_t& height)
+		inline void updateWidthHeight(uint32_t mipmapIndex, uint32_t textureWidth, uint32_t textureHeight, uint32_t& width, uint32_t& height)
 		{
 			Renderer::ITexture::getMipmapSize(mipmapIndex, textureWidth, textureHeight);
 			if (width > textureWidth)
@@ -3683,26 +3841,14 @@ namespace Direct3D12Renderer
 
 		/**
 		*  @brief
-		*    Return the DXGI factory instance as pointer
-		*
-		*  @return
-		*    The DXGI factory instance, null pointer on error (but always valid for a correctly initialized renderer), do not release the returned instance unless you added an own reference to it
-		*/
-		[[nodiscard]] inline IDXGIFactory4 *getDxgiFactory4() const
-		{
-			return mDxgiFactory4;
-		}
-
-		/**
-		*  @brief
-		*    Return the DXGI factory instance as reference
+		*    Return the DXGI factory instance
 		*
 		*  @return
 		*    The DXGI factory instance, do not release the returned instance unless you added an own reference to it
 		*/
-		[[nodiscard]] inline IDXGIFactory4 &getDxgiFactory4Safe() const
+		[[nodiscard]] inline IDXGIFactory4& getDxgiFactory4() const
 		{
-			RENDERER_ASSERT(mContext, nullptr != mDxgiFactory4, "Invalid Direct3D 12 DXGI factory 3")
+			RENDERER_ASSERT(mContext, nullptr != mDxgiFactory4, "Invalid Direct3D 12 DXGI factory 4")
 			return *mDxgiFactory4;
 		}
 
@@ -3711,11 +3857,12 @@ namespace Direct3D12Renderer
 		*    Return the Direct3D 12 device
 		*
 		*  @return
-		*    The Direct3D 12 device, null pointer on error, do not release the returned instance unless you added an own reference to it
+		*    The Direct3D 12 device, do not release the returned instance unless you added an own reference to it
 		*/
-		[[nodiscard]] inline ID3D12Device *getD3D12Device() const
+		[[nodiscard]] inline ID3D12Device& getD3D12Device() const
 		{
-			return mD3D12Device;
+			RENDERER_ASSERT(mContext, nullptr != mD3D12Device, "Invalid Direct3D 12 device")
+			return *mD3D12Device;
 		}
 
 		/**
@@ -3725,7 +3872,7 @@ namespace Direct3D12Renderer
 		*  @return
 		*    The Direct3D 12 command queue, null pointer on error, do not release the returned instance unless you added an own reference to it
 		*/
-		[[nodiscard]] inline ID3D12CommandQueue *getD3D12CommandQueue() const
+		[[nodiscard]] inline ID3D12CommandQueue* getD3D12CommandQueue() const
 		{
 			return mD3D12CommandQueue;
 		}
@@ -3737,7 +3884,7 @@ namespace Direct3D12Renderer
 		*  @return
 		*    The Direct3D 12 graphics command list, null pointer on error, do not release the returned instance unless you added an own reference to it
 		*/
-		[[nodiscard]] inline ID3D12GraphicsCommandList *getD3D12GraphicsCommandList() const
+		[[nodiscard]] inline ID3D12GraphicsCommandList* getD3D12GraphicsCommandList() const
 		{
 			return mD3D12GraphicsCommandList;
 		}
@@ -3755,6 +3902,33 @@ namespace Direct3D12Renderer
 		}
 
 		//[-------------------------------------------------------]
+		//[ Descriptor heaps                                      ]
+		//[-------------------------------------------------------]
+		[[nodiscard]] inline DescriptorHeap& getShaderResourceViewDescriptorHeap() const
+		{
+			RENDERER_ASSERT(mContext, nullptr != mShaderResourceViewDescriptorHeap, "Invalid Direct3D 12 shader resource view descriptor heap")
+			return *mShaderResourceViewDescriptorHeap;
+		}
+
+		[[nodiscard]] inline DescriptorHeap& getRenderTargetViewDescriptorHeap() const
+		{
+			RENDERER_ASSERT(mContext, nullptr != mShaderResourceViewDescriptorHeap, "Invalid Direct3D 12 render target view descriptor heap")
+			return *mRenderTargetViewDescriptorHeap;
+		}
+
+		[[nodiscard]] inline DescriptorHeap& getDepthStencilViewDescriptorHeap() const
+		{
+			RENDERER_ASSERT(mContext, nullptr != mShaderResourceViewDescriptorHeap, "Invalid Direct3D 12 depth stencil target view descriptor heap")
+			return *mDepthStencilViewDescriptorHeap;
+		}
+
+		[[nodiscard]] inline DescriptorHeap& getSamplerDescriptorHeap() const
+		{
+			RENDERER_ASSERT(mContext, nullptr != mSamplerDescriptorHeap, "Invalid Direct3D 12 sampler descriptor heap")
+			return *mSamplerDescriptorHeap;
+		}
+
+		//[-------------------------------------------------------]
 		//[ Graphics                                              ]
 		//[-------------------------------------------------------]
 		void setGraphicsRootSignature(Renderer::IRootSignature* rootSignature);
@@ -3765,7 +3939,9 @@ namespace Direct3D12Renderer
 		void setGraphicsScissorRectangles(uint32_t numberOfScissorRectangles, const Renderer::ScissorRectangle* scissorRectangles);	// Rasterizer (RS) stage
 		void setGraphicsRenderTarget(Renderer::IRenderTarget* renderTarget);														// Output-merger (OM) stage
 		void clearGraphics(uint32_t clearFlags, const float color[4], float z, uint32_t stencil);
+		void drawGraphics(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		void drawGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
+		void drawIndexedGraphics(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		void drawIndexedGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		//[-------------------------------------------------------]
 		//[ Compute                                               ]
@@ -3874,6 +4050,12 @@ namespace Direct3D12Renderer
 		*/
 		void initializeCapabilities();
 
+		/**
+		*  @brief
+		*    Unset the currently used vertex array
+		*/
+		void unsetGraphicsVertexArray();
+
 		#ifdef RENDERER_DEBUG
 			/**
 			*  @brief
@@ -3895,12 +4077,21 @@ namespace Direct3D12Renderer
 		ID3D12GraphicsCommandList* mD3D12GraphicsCommandList;
 		Renderer::IShaderLanguage* mShaderLanguageHlsl;			///< HLSL shader language instance (we keep a reference to it), can be a null pointer
 		// ID3D12Query*			   mD3D12QueryFlush;			///< Direct3D 12 query used for flush, can be a null pointer	// TODO(co) Direct3D 12 update
+		DescriptorHeap* mShaderResourceViewDescriptorHeap;
+		DescriptorHeap* mRenderTargetViewDescriptorHeap;
+		DescriptorHeap* mDepthStencilViewDescriptorHeap;
+		DescriptorHeap* mSamplerDescriptorHeap;
 		//[-------------------------------------------------------]
-		//[ Output-merger (OM) stage                              ]
+		//[ State related                                         ]
 		//[-------------------------------------------------------]
-		Renderer::IRenderTarget* mRenderTarget;		///< Currently set render target (we keep a reference to it), can be a null pointer
-		// State cache to avoid making redundant Direct3D 11 calls
-		D3D12_PRIMITIVE_TOPOLOGY mD3D12PrimitiveTopology;
+		Renderer::IRenderTarget* mRenderTarget;				///< Output-merger (OM) stage: Currently set render target (we keep a reference to it), can be a null pointer
+		D3D12_PRIMITIVE_TOPOLOGY mD3D12PrimitiveTopology;	///< State cache to avoid making redundant Direct3D 12 calls
+		RootSignature*			 mGraphicsRootSignature;	///< Currently set graphics root signature (we keep a reference to it), can be a null pointer
+		RootSignature*			 mComputeRootSignature;		///< Currently set compute root signature (we keep a reference to it), can be a null pointer
+		VertexArray*			 mVertexArray;				///< Currently set vertex array (we keep a reference to it), can be a null pointer
+		#ifdef RENDERER_DEBUG
+			bool mDebugBetweenBeginEndScene;	///< Just here for state tracking in debug builds
+		#endif
 
 
 	};
@@ -3914,7 +4105,7 @@ namespace Direct3D12Renderer
 	//[-------------------------------------------------------]
 	//[ Macros & definitions                                  ]
 	//[-------------------------------------------------------]
-	// Redirect D3D12* and D3DX11* function calls to funcPtr_D3D12* and funcPtr_D3DX11*
+	// Redirect D3D12* function calls to funcPtr_D3D12*
 	#ifndef FNPTR
 		#define FNPTR(name) funcPtr_##name
 	#endif
@@ -3940,13 +4131,6 @@ namespace Direct3D12Renderer
 	#endif
 
 	//[-------------------------------------------------------]
-	//[ D3DX11 functions                                      ]
-	//[-------------------------------------------------------]
-	#define FNDEF_D3DX11(retType, funcName, args) retType (WINAPI *funcPtr_##funcName) args
-	// FNDEF_D3DX11(HRESULT,	D3DX11FilterTexture,		(ID3D12DeviceContext *, ID3D12Resource *, UINT, UINT));	// TODO(co) Direct3D 12 update
-	// #define D3DX11FilterTexture		FNPTR(D3DX11FilterTexture)	// TODO(co) Direct3D 12 update
-
-	//[-------------------------------------------------------]
 	//[ D3DCompiler functions                                 ]
 	//[-------------------------------------------------------]
 	#define FNDEF_D3DX12(retType, funcName, args) retType (WINAPI *funcPtr_##funcName) args
@@ -3960,9 +4144,6 @@ namespace Direct3D12Renderer
 	/**
 	*  @brief
 	*    Direct3D 12 runtime linking
-	*
-	*  @todo
-	*    - TODO(co) Looks like there's no "D3DX12", so we stick to "D3DX11" for now
 	*/
 	class Direct3D12RuntimeLinking final
 	{
@@ -3983,7 +4164,6 @@ namespace Direct3D12Renderer
 			mDirect3D12Renderer(direct3D12Renderer),
 			mDxgiSharedLibrary(nullptr),
 			mD3D12SharedLibrary(nullptr),
-			mD3DX11SharedLibrary(nullptr),
 			mD3DCompilerSharedLibrary(nullptr),
 			mEntryPointsRegistered(false),
 			mInitialized(false)
@@ -4003,10 +4183,6 @@ namespace Direct3D12Renderer
 			if (nullptr != mD3D12SharedLibrary)
 			{
 				::FreeLibrary(static_cast<HMODULE>(mD3D12SharedLibrary));
-			}
-			if (nullptr != mD3DX11SharedLibrary)
-			{
-				::FreeLibrary(static_cast<HMODULE>(mD3DX11SharedLibrary));
 			}
 			if (nullptr != mD3DCompilerSharedLibrary)
 			{
@@ -4032,8 +4208,8 @@ namespace Direct3D12Renderer
 				// Load the shared libraries
 				if (loadSharedLibraries())
 				{
-					// Load the DXGI, D3D12, D3DX11 and D3DCompiler entry points
-					mEntryPointsRegistered = (loadDxgiEntryPoints() && loadD3D12EntryPoints() && loadD3DX11EntryPoints() && loadD3DCompilerEntryPoints());
+					// Load the DXGI, D3D12 and D3DCompiler entry points
+					mEntryPointsRegistered = (loadDxgiEntryPoints() && loadD3D12EntryPoints() && loadD3DCompilerEntryPoints());
 				}
 			}
 
@@ -4065,18 +4241,10 @@ namespace Direct3D12Renderer
 				mD3D12SharedLibrary = ::LoadLibraryExA("d3d12.dll", nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
 				if (nullptr != mD3D12SharedLibrary)
 				{
-					mD3DX11SharedLibrary = ::LoadLibraryExA("d3dx11_43.dll", nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
-					if (nullptr != mD3DX11SharedLibrary)
+					mD3DCompilerSharedLibrary = ::LoadLibraryExA("D3DCompiler_47.dll", nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
+					if (nullptr == mD3DCompilerSharedLibrary)
 					{
-						mD3DCompilerSharedLibrary = ::LoadLibraryExA("D3DCompiler_47.dll", nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
-						if (nullptr == mD3DCompilerSharedLibrary)
-						{
-							RENDERER_LOG(mDirect3D12Renderer.getContext(), CRITICAL, "Failed to load in the shared Direct3D 12 library \"D3DCompiler_47.dll\"")
-						}
-					}
-					else
-					{
-						RENDERER_LOG(mDirect3D12Renderer.getContext(), CRITICAL, "Failed to load in the shared Direct3D 12 library \"d3dx11_43.dll\"")
+						RENDERER_LOG(mDirect3D12Renderer.getContext(), CRITICAL, "Failed to load in the shared Direct3D 12 library \"D3DCompiler_47.dll\"")
 					}
 				}
 				else
@@ -4090,7 +4258,7 @@ namespace Direct3D12Renderer
 			}
 
 			// Done
-			return (nullptr != mDxgiSharedLibrary && nullptr != mD3D12SharedLibrary && nullptr != mD3DX11SharedLibrary && nullptr != mD3DCompilerSharedLibrary);
+			return (nullptr != mDxgiSharedLibrary && nullptr != mD3D12SharedLibrary && nullptr != mD3DCompilerSharedLibrary);
 		}
 
 		/**
@@ -4179,46 +4347,6 @@ namespace Direct3D12Renderer
 
 		/**
 		*  @brief
-		*    Load the D3DX11 entry points
-		*
-		*  @return
-		*    "true" if all went fine, else "false"
-		*/
-		[[nodiscard]] bool loadD3DX11EntryPoints()
-		{
-			bool result = true;	// Success by default
-
-			// Define a helper macro
-			#define IMPORT_FUNC(funcName)																																							\
-				if (result)																																											\
-				{																																													\
-					void* symbol = ::GetProcAddress(static_cast<HMODULE>(mD3DX11SharedLibrary), #funcName);																							\
-					if (nullptr != symbol)																																							\
-					{																																												\
-						*(reinterpret_cast<void**>(&(funcName))) = symbol;																															\
-					}																																												\
-					else																																											\
-					{																																												\
-						wchar_t moduleFilename[MAX_PATH];																																			\
-						moduleFilename[0] = '\0';																																					\
-						::GetModuleFileNameW(static_cast<HMODULE>(mD3DX11SharedLibrary), moduleFilename, MAX_PATH);																					\
-						RENDERER_LOG(mDirect3D12Renderer.getContext(), CRITICAL, "Failed to locate the entry point \"%s\" within the Direct3D 12 shared library \"%s\"", #funcName, moduleFilename)	\
-						result = false;																																								\
-					}																																												\
-				}
-
-			// Load the entry points
-			// IMPORT_FUNC(D3DX11FilterTexture);	// TODO(co) Direct3D 12 update
-
-			// Undefine the helper macro
-			#undef IMPORT_FUNC
-
-			// Done
-			return result;
-		}
-
-		/**
-		*  @brief
 		*    Load the D3DCompiler entry points
 		*
 		*  @return
@@ -4266,7 +4394,6 @@ namespace Direct3D12Renderer
 		Direct3D12Renderer&	mDirect3D12Renderer;		///< Owner Direct3D 12 renderer instance
 		void*				mDxgiSharedLibrary;			///< DXGI shared library, can be a null pointer
 		void*				mD3D12SharedLibrary;		///< D3D12 shared library, can be a null pointer
-		void*				mD3DX11SharedLibrary;		///< D3DX11 shared library, can be a null pointer
 		void*				mD3DCompilerSharedLibrary;	///< D3DCompiler shared library, can be a null pointer
 		bool				mEntryPointsRegistered;		///< Entry points successfully registered?
 		bool				mInitialized;				///< Already initialized?
@@ -4346,7 +4473,7 @@ namespace Direct3D12Renderer
 		RENDERER_ASSERT(context, nullptr != sourceCode, "Invalid Direct3D 12 shader source code")
 
 		// Get compile flags
-		UINT compileFlags = D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_WARNINGS_ARE_ERRORS;
+		UINT compileFlags = (D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_WARNINGS_ARE_ERRORS);
 		switch (optimizationLevel)
 		{
 			case Renderer::IShaderLanguage::OptimizationLevel::Debug:
@@ -4410,7 +4537,7 @@ namespace Direct3D12Renderer
 		{
 			if (DXGI_ERROR_DEVICE_REMOVED == result)
 			{
-				result = direct3D12Renderer.getD3D12Device()->GetDeviceRemovedReason();
+				result = direct3D12Renderer.getD3D12Device().GetDeviceRemovedReason();
 			}
 			RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Direct3D 12 device lost on present: Reason code 0x%08X", static_cast<unsigned int>(result))
 
@@ -4591,14 +4718,6 @@ namespace Direct3D12Renderer
 
 
 	//[-------------------------------------------------------]
-	//[ Direct3D12Renderer/ResourceGroup.h                    ]
-	//[-------------------------------------------------------]
-	// TODO(co) Direct3D 12 resource group creation isn't implemented, yet
-
-
-
-
-	//[-------------------------------------------------------]
 	//[ Direct3D12Renderer/RootSignature.h                    ]
 	//[-------------------------------------------------------]
 	/**
@@ -4624,6 +4743,7 @@ namespace Direct3D12Renderer
 		*/
 		RootSignature(Direct3D12Renderer& direct3D12Renderer, const Renderer::RootSignature& rootSignature) :
 			IRootSignature(direct3D12Renderer),
+			mRootSignature(rootSignature),
 			mD3D12RootSignature(nullptr)
 		{
 			const Renderer::Context& context = direct3D12Renderer.getContext();
@@ -4708,7 +4828,7 @@ namespace Direct3D12Renderer
 				ID3DBlob* d3dBlobError = nullptr;
 				if (SUCCEEDED(D3D12SerializeRootSignature(&d3d12RootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &d3dBlobSignature, &d3dBlobError)))
 				{
-					if (FAILED(direct3D12Renderer.getD3D12Device()->CreateRootSignature(0, d3dBlobSignature->GetBufferPointer(), d3dBlobSignature->GetBufferSize(), IID_PPV_ARGS(&mD3D12RootSignature))))
+					if (FAILED(direct3D12Renderer.getD3D12Device().CreateRootSignature(0, d3dBlobSignature->GetBufferPointer(), d3dBlobSignature->GetBufferSize(), IID_PPV_ARGS(&mD3D12RootSignature))))
 					{
 						RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Failed to create the Direct3D 12 root signature instance")
 					}
@@ -4760,12 +4880,24 @@ namespace Direct3D12Renderer
 
 		/**
 		*  @brief
+		*    Return the root signature data
+		*
+		*  @return
+		*    The root signature data
+		*/
+		[[nodiscard]] inline const Renderer::RootSignature& getRootSignature() const
+		{
+			return mRootSignature;
+		}
+
+		/**
+		*  @brief
 		*    Return the Direct3D 12 root signature
 		*
 		*  @return
 		*    The Direct3D 12 root signature, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		[[nodiscard]] inline ID3D12RootSignature *getD3D12RootSignature() const
+		[[nodiscard]] inline ID3D12RootSignature* getD3D12RootSignature() const
 		{
 			return mD3D12RootSignature;
 		}
@@ -4775,12 +4907,7 @@ namespace Direct3D12Renderer
 	//[ Public virtual Renderer::IRootSignature methods       ]
 	//[-------------------------------------------------------]
 	public:
-		[[nodiscard]] inline virtual Renderer::IResourceGroup* createResourceGroup([[maybe_unused]] uint32_t rootParameterIndex, [[maybe_unused]] uint32_t numberOfResources, [[maybe_unused]] Renderer::IResource** resources, [[maybe_unused]] Renderer::ISamplerState** samplerStates = nullptr) override
-		{
-			// TODO(co) Implement resource group
-			RENDERER_ASSERT(getRenderer().getContext(), false, "Direct3D 12 resource group creation isn't implemented, yet")
-			return nullptr;
-		}
+		[[nodiscard]] virtual Renderer::IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, Renderer::IResource** resources, Renderer::ISamplerState** samplerStates = nullptr) override;
 
 
 	//[-------------------------------------------------------]
@@ -4823,7 +4950,8 @@ namespace Direct3D12Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		ID3D12RootSignature* mD3D12RootSignature;	///< Direct3D 12 root signature, can be a null pointer
+		Renderer::RootSignature	mRootSignature;
+		ID3D12RootSignature*	mD3D12RootSignature;	///< Direct3D 12 root signature, can be a null pointer
 
 
 	};
@@ -4886,7 +5014,7 @@ namespace Direct3D12Renderer
 
 				const CD3DX12_HEAP_PROPERTIES d3d12XHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
 				const CD3DX12_RESOURCE_DESC d3d12XResourceDesc = CD3DX12_RESOURCE_DESC::Buffer(numberOfBytes);
-				if (SUCCEEDED(direct3D12Renderer.getD3D12Device()->CreateCommittedResource(
+				if (SUCCEEDED(direct3D12Renderer.getD3D12Device().CreateCommittedResource(
 					&d3d12XHeapProperties,
 					D3D12_HEAP_FLAG_NONE,
 					&d3d12XResourceDesc,
@@ -4950,7 +5078,7 @@ namespace Direct3D12Renderer
 		*  @return
 		*    The Direct3D index buffer resource instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		[[nodiscard]] inline ID3D12Resource* getID3D12Resource() const
+		[[nodiscard]] inline ID3D12Resource* getD3D12Resource() const
 		{
 			return mD3D12Resource;
 		}
@@ -5061,7 +5189,7 @@ namespace Direct3D12Renderer
 
 			const CD3DX12_HEAP_PROPERTIES d3d12XHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
 			const CD3DX12_RESOURCE_DESC d3d12XResourceDesc = CD3DX12_RESOURCE_DESC::Buffer(mNumberOfBytes);
-			if (SUCCEEDED(direct3D12Renderer.getD3D12Device()->CreateCommittedResource(
+			if (SUCCEEDED(direct3D12Renderer.getD3D12Device().CreateCommittedResource(
 				&d3d12XHeapProperties,
 				D3D12_HEAP_FLAG_NONE,
 				&d3d12XResourceDesc,
@@ -5128,7 +5256,7 @@ namespace Direct3D12Renderer
 		*  @return
 		*    The Direct3D vertex buffer resource instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		[[nodiscard]] inline ID3D12Resource *getID3D12Resource() const
+		[[nodiscard]] inline ID3D12Resource* getD3D12Resource() const
 		{
 			return mD3D12Resource;
 		}
@@ -5245,7 +5373,7 @@ namespace Direct3D12Renderer
 						// TODO(co) Add security check: Is the given resource one of the currently used renderer?
 						*currentVertexBuffer = static_cast<VertexBuffer*>(vertexBuffer->vertexBuffer);
 						(*currentVertexBuffer)->addReference();
-						currentD3D12VertexBufferView->BufferLocation = (*currentVertexBuffer)->getID3D12Resource()->GetGPUVirtualAddress();
+						currentD3D12VertexBufferView->BufferLocation = (*currentVertexBuffer)->getD3D12Resource()->GetGPUVirtualAddress();
 						currentD3D12VertexBufferView->SizeInBytes = (*currentVertexBuffer)->getNumberOfBytes();
 					}
 				}
@@ -5302,6 +5430,18 @@ namespace Direct3D12Renderer
 
 		/**
 		*  @brief
+		*    Return the used index buffer
+		*
+		*  @return
+		*    The used index buffer, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*/
+		[[nodiscard]] inline IndexBuffer* getIndexBuffer() const
+		{
+			return mIndexBuffer;
+		}
+
+		/**
+		*  @brief
 		*    Set the Direct3D 12 vertex declaration and stream source
 		*
 		*  @param[in] d3d12GraphicsCommandList
@@ -5343,7 +5483,7 @@ namespace Direct3D12Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		IndexBuffer				 *mIndexBuffer;				///< Optional index buffer to use, can be a null pointer, the vertex array instance keeps a reference to the index buffer
+		IndexBuffer*			  mIndexBuffer;				///< Optional index buffer to use, can be a null pointer, the vertex array instance keeps a reference to the index buffer
 		// Direct3D 12 input slots
 		UINT					  mNumberOfSlots;			///< Number of used Direct3D 12 input slots
 		D3D12_VERTEX_BUFFER_VIEW* mD3D12VertexBufferViews;
@@ -5390,7 +5530,6 @@ namespace Direct3D12Renderer
 			ITextureBuffer(direct3D12Renderer)
 			// TODO(co) Direct3D 12 update
 		//	mD3D12Buffer(nullptr),
-		//	mD3D12ShaderResourceViewTexture(nullptr)
 		{
 			// Sanity check
 			RENDERER_ASSERT(direct3D12Renderer.getContext(), (numberOfBytes % Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat)) == 0, "The Direct3D 12 texture buffer size must be a multiple of the selected texture format bytes per texel")
@@ -5417,12 +5556,12 @@ namespace Direct3D12Renderer
 					d3d12SubresourceData.SysMemSlicePitch = 0;
 
 					// Create the Direct3D 12 constant buffer
-					FAILED_DEBUG_BREAK(direct3D12Renderer.getD3D12Device()->CreateBuffer(&d3d12BufferDesc, &d3d12SubresourceData, &mD3D12Buffer));
+					FAILED_DEBUG_BREAK(direct3D12Renderer.getD3D12Device().CreateBuffer(&d3d12BufferDesc, &d3d12SubresourceData, &mD3D12Buffer));
 				}
 				else
 				{
 					// Create the Direct3D 12 constant buffer
-					FAILED_DEBUG_BREAK(direct3D12Renderer.getD3D12Device()->CreateBuffer(&d3d12BufferDesc, nullptr, &mD3D12Buffer));
+					FAILED_DEBUG_BREAK(direct3D12Renderer.getD3D12Device().CreateBuffer(&d3d12BufferDesc, nullptr, &mD3D12Buffer));
 				}
 			}
 
@@ -5435,7 +5574,7 @@ namespace Direct3D12Renderer
 				d3d12ShaderResourceViewDesc.Buffer.ElementWidth	 = numberOfBytes / Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat);
 
 				// Create the Direct3D 12 shader resource view instance
-				FAILED_DEBUG_BREAK(direct3D12Renderer.getD3D12Device()->CreateShaderResourceView(mD3D12Buffer, &d3d12ShaderResourceViewDesc, &mD3D12ShaderResourceViewTexture));
+				FAILED_DEBUG_BREAK(direct3D12Renderer.getD3D12Device().CreateShaderResourceView(mD3D12Buffer, &d3d12ShaderResourceViewDesc, &mD3D12ShaderResourceViewTexture));
 			}
 
 			// Assign a default name to the resource for debugging purposes
@@ -5454,11 +5593,6 @@ namespace Direct3D12Renderer
 			// TODO(co) Direct3D 12 update
 			/*
 			// Release the used resources
-			if (nullptr != mD3D12ShaderResourceViewTexture)
-			{
-				mD3D12ShaderResourceViewTexture->Release();
-				mD3D12ShaderResourceViewTexture = nullptr;
-			}
 			if (nullptr != mD3D12Buffer)
 			{
 				mD3D12Buffer->Release();
@@ -5475,22 +5609,9 @@ namespace Direct3D12Renderer
 		*    The Direct3D texture buffer instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
 		// TODO(co) Direct3D 12 update
-		//[[nodiscard]] inline ID3D12Buffer *getD3D12Buffer() const
+		//[[nodiscard]] inline ID3D12Buffer* getD3D12Buffer() const
 		//{
 		//	return mD3D12Buffer;
-		//}
-
-		/**
-		*  @brief
-		*    Return the Direct3D shader resource view instance
-		*
-		*  @return
-		*    The Direct3D shader resource view instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
-		*/
-		// TODO(co) Direct3D 12 update
-		//[[nodiscard]] inline ID3D12ShaderResourceView *getD3D12ShaderResourceView() const
-		//{
-		//	return mD3D12ShaderResourceViewTexture;
 		//}
 
 
@@ -5507,11 +5628,6 @@ namespace Direct3D12Renderer
 
 				// Set the debug name
 				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D12ShaderResourceViewTexture)
-				{
-					FAILED_DEBUG_BREAK(mD3D12ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D12ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
-				}
 				if (nullptr != mD3D12Buffer)
 				{
 					FAILED_DEBUG_BREAK(mD3D12Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
@@ -5545,8 +5661,7 @@ namespace Direct3D12Renderer
 	//[-------------------------------------------------------]
 	private:
 		// TODO(co) Direct3D 12 update
-		//ID3D12Buffer			 *mD3D12Buffer;						///< Direct3D texture buffer instance, can be a null pointer
-		//ID3D12ShaderResourceView *mD3D12ShaderResourceViewTexture;	///< Direct3D 12 shader resource view, can be a null pointer
+		//ID3D12Buffer* mD3D12Buffer;	///< Direct3D texture buffer instance, can be a null pointer
 
 
 	};
@@ -5616,12 +5731,12 @@ namespace Direct3D12Renderer
 					d3d12SubresourceData.SysMemSlicePitch = 0;
 
 					// Create the Direct3D 12 constant buffer
-					FAILED_DEBUG_BREAK(direct3D12Renderer.getD3D12Device()->CreateBuffer(&d3d12BufferDesc, &d3d12SubresourceData, &mD3D12Buffer));
+					FAILED_DEBUG_BREAK(direct3D12Renderer.getD3D12Device().CreateBuffer(&d3d12BufferDesc, &d3d12SubresourceData, &mD3D12Buffer));
 				}
 				else
 				{
 					// Create the Direct3D 12 constant buffer
-					FAILED_DEBUG_BREAK(direct3D12Renderer.getD3D12Device()->CreateBuffer(&d3d12BufferDesc, nullptr, &mD3D12Buffer));
+					FAILED_DEBUG_BREAK(direct3D12Renderer.getD3D12Device().CreateBuffer(&d3d12BufferDesc, nullptr, &mD3D12Buffer));
 				}
 			}
 
@@ -5634,7 +5749,7 @@ namespace Direct3D12Renderer
 				d3d12ShaderResourceViewDesc.Buffer.ElementWidth	 = numberOfBytes / Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat);
 
 				// Create the Direct3D 12 shader resource view instance
-				FAILED_DEBUG_BREAK(direct3D12Renderer.getD3D12Device()->CreateShaderResourceView(mD3D12Buffer, &d3d12ShaderResourceViewDesc, &mD3D12ShaderResourceViewTexture));
+				FAILED_DEBUG_BREAK(direct3D12Renderer.getD3D12Device().CreateShaderResourceView(mD3D12Buffer, &d3d12ShaderResourceViewDesc, &mD3D12ShaderResourceViewTexture));
 			}
 
 			// Assign a default name to the resource for debugging purposes
@@ -5653,11 +5768,6 @@ namespace Direct3D12Renderer
 			// TODO(co) Direct3D 12 update
 			/*
 			// Release the used resources
-			if (nullptr != mD3D12ShaderResourceViewTexture)
-			{
-				mD3D12ShaderResourceViewTexture->Release();
-				mD3D12ShaderResourceViewTexture = nullptr;
-			}
 			if (nullptr != mD3D12Buffer)
 			{
 				mD3D12Buffer->Release();
@@ -5674,22 +5784,9 @@ namespace Direct3D12Renderer
 		*    The Direct3D structured buffer instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
 		// TODO(co) Direct3D 12 update
-		//[[nodiscard]] inline ID3D12Buffer *getD3D12Buffer() const
+		//[[nodiscard]] inline ID3D12Buffer* getD3D12Buffer() const
 		//{
 		//	return mD3D12Buffer;
-		//}
-
-		/**
-		*  @brief
-		*    Return the Direct3D shader resource view instance
-		*
-		*  @return
-		*    The Direct3D shader resource view instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
-		*/
-		// TODO(co) Direct3D 12 update
-		//[[nodiscard]] inline ID3D12ShaderResourceView *getD3D12ShaderResourceView() const
-		//{
-		//	return mD3D12ShaderResourceViewTexture;
 		//}
 
 
@@ -5706,11 +5803,6 @@ namespace Direct3D12Renderer
 
 				// Set the debug name
 				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D12ShaderResourceViewTexture)
-				{
-					FAILED_DEBUG_BREAK(mD3D12ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D12ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
-				}
 				if (nullptr != mD3D12Buffer)
 				{
 					FAILED_DEBUG_BREAK(mD3D12Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
@@ -5744,8 +5836,7 @@ namespace Direct3D12Renderer
 	//[-------------------------------------------------------]
 	private:
 		// TODO(co) Direct3D 12 update
-		//ID3D12Buffer			 *mD3D12Buffer;						///< Direct3D texture buffer instance, can be a null pointer
-		//ID3D12ShaderResourceView *mD3D12ShaderResourceViewTexture;	///< Direct3D 12 shader resource view, can be a null pointer
+		//ID3D12Buffer* mD3D12Buffer;	///< Direct3D texture buffer instance, can be a null pointer
 
 
 	};
@@ -5780,16 +5871,11 @@ namespace Direct3D12Renderer
 		*    Indirect buffer data, can be a null pointer (empty buffer)
 		*  @param[in] indirectBufferFlags
 		*    Indirect buffer flags, see "Renderer::IndirectBufferFlag"
-		*  @param[in] bufferUsage
-		*    Indication of the buffer usage
 		*/
-		IndirectBuffer(Direct3D12Renderer& direct3D12Renderer, uint32_t numberOfBytes, const void* data, [[maybe_unused]] uint32_t indirectBufferFlags, [[maybe_unused]] Renderer::BufferUsage bufferUsage) :
+		IndirectBuffer(Direct3D12Renderer& direct3D12Renderer, uint32_t numberOfBytes, const void* data, uint32_t indirectBufferFlags) :
 			IIndirectBuffer(direct3D12Renderer),
-			mNumberOfBytes(numberOfBytes),
-			mData(nullptr)
-			// TODO(co) Direct3D 12 update
-		//	mD3D12Buffer(nullptr),
-		//	mD3D12ShaderResourceViewIndirect(nullptr)
+			mD3D12CommandSignature(nullptr),
+			mD3D12Resource(nullptr)
 		{
 			// Sanity checks
 			RENDERER_ASSERT(direct3D12Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_ARGUMENTS) != 0 || (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS) != 0, "Invalid Direct3D 12 flags, indirect buffer element type specification \"DRAW_ARGUMENTS\" or \"DRAW_INDEXED_ARGUMENTS\" is missing")
@@ -5797,67 +5883,62 @@ namespace Direct3D12Renderer
 			RENDERER_ASSERT(direct3D12Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawArguments)) == 0, "Direct3D 12 indirect buffer element type flags specification is \"DRAW_ARGUMENTS\" but the given number of bytes don't align to this")
 			RENDERER_ASSERT(direct3D12Renderer.getContext(), (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Renderer::DrawIndexedArguments)) == 0, "Direct3D 12 indirect buffer element type flags specification is \"DRAW_INDEXED_ARGUMENTS\" but the given number of bytes don't align to this")
 
-			// TODO(co) Direct3D 12 update
-			if (mNumberOfBytes > 0)
+			// TODO(co) This is only meant for the Direct3D 12 renderer backend kickoff.
+			// Note: using upload heaps to transfer static data like vert buffers is not 
+			// recommended. Every time the GPU needs it, the upload heap will be marshalled 
+			// over. Please read up on Default Heap usage. An upload heap is used here for 
+			// code simplicity and because there are very few verts to actually transfer.
+			const CD3DX12_HEAP_PROPERTIES d3d12XHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
+			const CD3DX12_RESOURCE_DESC d3d12XResourceDesc = CD3DX12_RESOURCE_DESC::Buffer(numberOfBytes);
+			ID3D12Device& d3d12Device = direct3D12Renderer.getD3D12Device();
+			if (SUCCEEDED(d3d12Device.CreateCommittedResource(
+				&d3d12XHeapProperties,
+				D3D12_HEAP_FLAG_NONE,
+				&d3d12XResourceDesc,
+				D3D12_RESOURCE_STATE_GENERIC_READ,
+				nullptr,
+				IID_PPV_ARGS(&mD3D12Resource))))
 			{
-				mData = RENDERER_MALLOC_TYPED(direct3D12Renderer.getContext(), uint8_t, mNumberOfBytes);
+				// Data given?
 				if (nullptr != data)
 				{
-					memcpy(mData, data, mNumberOfBytes);
+					// Copy the data to the indirect buffer
+					UINT8* pIndirectDataBegin;
+					CD3DX12_RANGE readRange(0, 0);	// We do not intend to read from this resource on the CPU
+					if (SUCCEEDED(mD3D12Resource->Map(0, &readRange, reinterpret_cast<void**>(&pIndirectDataBegin))))
+					{
+						memcpy(pIndirectDataBegin, data, numberOfBytes);
+						mD3D12Resource->Unmap(0, nullptr);
+					}
+					else
+					{
+						RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Failed to map Direct3D 12 indirect buffer")
+					}
+				}
+
+				D3D12_INDIRECT_ARGUMENT_DESC d3dIndirectArgumentDescription[1];
+				d3dIndirectArgumentDescription[0].Type = (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_ARGUMENTS) ? D3D12_INDIRECT_ARGUMENT_TYPE_DRAW : D3D12_INDIRECT_ARGUMENT_TYPE_DRAW_INDEXED;
+
+				D3D12_COMMAND_SIGNATURE_DESC d3d12CommandSignatureDescription;
+				d3d12CommandSignatureDescription.ByteStride		  = (indirectBufferFlags & Renderer::IndirectBufferFlag::DRAW_ARGUMENTS) ? sizeof(Renderer::DrawArguments) : sizeof(Renderer::DrawIndexedArguments);
+				d3d12CommandSignatureDescription.NumArgumentDescs = 1;
+				d3d12CommandSignatureDescription.pArgumentDescs   = d3dIndirectArgumentDescription;
+				d3d12CommandSignatureDescription.NodeMask = 0;
+
+				if (FAILED(d3d12Device.CreateCommandSignature(&d3d12CommandSignatureDescription, nullptr, IID_PPV_ARGS(&mD3D12CommandSignature))))
+				{
+					RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Failed to create Direct3D 12 command signature")
 				}
 			}
 			else
 			{
-				RENDERER_ASSERT(direct3D12Renderer.getContext(), nullptr == data, "Invalid Direct3D 12 indirect buffer data")
-			}
-
-			/*
-			{ // Buffer part
-				// Direct3D 12 buffer description
-				D3D12_BUFFER_DESC d3d12BufferDesc;
-				d3d12BufferDesc.ByteWidth           = numberOfBytes;
-				d3d12BufferDesc.Usage               = Mapping::getDirect3D12UsageAndCPUAccessFlags(bufferUsage, d3d12BufferDesc.CPUAccessFlags);
-				d3d12BufferDesc.BindFlags           = D3D12_BIND_SHADER_RESOURCE;
-				//d3d12BufferDesc.CPUAccessFlags    = <filled above>;
-				d3d12BufferDesc.MiscFlags           = 0;
-				d3d12BufferDesc.StructureByteStride = 0;
-
-				// Data given?
-				if (nullptr != data)
-				{
-					// Direct3D 12 subresource data
-					D3D12_SUBRESOURCE_DATA d3d12SubresourceData;
-					d3d12SubresourceData.pSysMem          = data;
-					d3d12SubresourceData.SysMemPitch      = 0;
-					d3d12SubresourceData.SysMemSlicePitch = 0;
-
-					// Create the Direct3D 12 constant buffer
-					FAILED_DEBUG_BREAK(direct3D12Renderer.getD3D12Device()->CreateBuffer(&d3d12BufferDesc, &d3d12SubresourceData, &mD3D12Buffer));
-				}
-				else
-				{
-					// Create the Direct3D 12 constant buffer
-					FAILED_DEBUG_BREAK(direct3D12Renderer.getD3D12Device()->CreateBuffer(&d3d12BufferDesc, nullptr, &mD3D12Buffer));
-				}
-			}
-
-			{ // Shader resource view part
-				// Direct3D 12 shader resource view description
-				D3D12_SHADER_RESOURCE_VIEW_DESC d3d12ShaderResourceViewDesc = {};
-				d3d12ShaderResourceViewDesc.Format				 = Mapping::getDirect3D12Format(textureFormat);
-				d3d12ShaderResourceViewDesc.ViewDimension		 = D3D12_SRV_DIMENSION_BUFFER;
-				d3d12ShaderResourceViewDesc.Buffer.ElementOffset = 0;
-				d3d12ShaderResourceViewDesc.Buffer.ElementWidth	 = numberOfBytes / Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat);
-
-				// Create the Direct3D 12 shader resource view instance
-				FAILED_DEBUG_BREAK(direct3D12Renderer.getD3D12Device()->CreateShaderResourceView(mD3D12Buffer, &d3d12ShaderResourceViewDesc, &mD3D12ShaderResourceViewTexture));
+				RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Failed to create Direct3D 12 indirect buffer resource")
 			}
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RENDERER_DEBUG
 				setDebugName("");
 			#endif
-			*/
 		}
 
 		/**
@@ -5866,61 +5947,40 @@ namespace Direct3D12Renderer
 		*/
 		virtual ~IndirectBuffer() override
 		{
-			RENDERER_FREE(getRenderer().getContext(), mData);
-
-			// TODO(co) Direct3D 12 update
-			/*
 			// Release the used resources
-			if (nullptr != mD3D12ShaderResourceViewIndirect)
+			if (nullptr != mD3D12CommandSignature)
 			{
-				mD3D12ShaderResourceViewIndirect->Release();
-				mD3D12ShaderResourceViewIndirect = nullptr;
+				mD3D12CommandSignature->Release();
 			}
-			if (nullptr != mD3D12Buffer)
+			if (nullptr != mD3D12Resource)
 			{
-				mD3D12Buffer->Release();
-				mD3D12Buffer = nullptr;
+				mD3D12Resource->Release();
 			}
-			*/
 		}
 
 		/**
 		*  @brief
-		*    Return writable indirect buffer emulation data pointer
+		*    Return the Direct3D 12 command signature instance
 		*
 		*  @return
-		*    Writable indirect buffer emulation data pointer, can be a null pointer, don't destroy the returned instance
+		*    The Direct3D 12 command signature instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		[[nodiscard]] inline uint8_t* getWritableEmulationData() const
+		[[nodiscard]] inline ID3D12CommandSignature* getD3D12CommandSignature() const
 		{
-			return mData;
+			return mD3D12CommandSignature;
 		}
 
 		/**
 		*  @brief
-		*    Return the Direct3D indirect buffer instance
+		*    Return the Direct3D 12 indirect buffer resource instance
 		*
 		*  @return
-		*    The Direct3D indirect buffer instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*    The Direct3D 12 indirect buffer resource instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		// TODO(co) Direct3D 12 update
-		//[[nodiscard]] inline ID3D12Buffer *getD3D12Buffer() const
-		//{
-		//	return mD3D12Buffer;
-		//}
-
-		/**
-		*  @brief
-		*    Return the Direct3D shader resource view instance
-		*
-		*  @return
-		*    The Direct3D shader resource view instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
-		*/
-		// TODO(co) Direct3D 12 update
-		//[[nodiscard]] inline ID3D12ShaderResourceView *getD3D12ShaderResourceView() const
-		//{
-		//	return mD3D12ShaderResourceViewIndirect;
-		//}
+		[[nodiscard]] inline ID3D12Resource* getD3D12Resource() const
+		{
+			return mD3D12Resource;
+		}
 
 
 	//[-------------------------------------------------------]
@@ -5928,25 +5988,21 @@ namespace Direct3D12Renderer
 	//[-------------------------------------------------------]
 	public:
 		#ifdef RENDERER_DEBUG
-			virtual void setDebugName(const char*) override
+			virtual void setDebugName(const char* name) override
 			{
-				// TODO(co) Direct3D 12 update
-				/*
-				RENDERER_DECORATED_DEBUG_NAME(name, detailedName, "IndirectBufferObject", 23);	// 23 = "IndirectBufferObject: " including terminating zero
-
 				// Set the debug name
 				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D12ShaderResourceViewIndirect)
+				RENDERER_DECORATED_DEBUG_NAME(name, detailedName, "IndirectBufferObject", 23);	// 23 = "IndirectBufferObject: " including terminating zero
+				if (nullptr != mD3D12CommandSignature)
 				{
-					FAILED_DEBUG_BREAK(mD3D12ShaderResourceViewIndirect->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D12ShaderResourceViewIndirect->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
+					FAILED_DEBUG_BREAK(mD3D12CommandSignature->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D12CommandSignature->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
 				}
-				if (nullptr != mD3D12Buffer)
+				if (nullptr != mD3D12Resource)
 				{
-					FAILED_DEBUG_BREAK(mD3D12Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D12Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
+					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
 				}
-			*/
 			}
 		#endif
 
@@ -5957,7 +6013,7 @@ namespace Direct3D12Renderer
 	public:
 		[[nodiscard]] inline virtual const uint8_t* getEmulationData() const override
 		{
-			return mData;
+			return nullptr;
 		}
 
 
@@ -5983,11 +6039,8 @@ namespace Direct3D12Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		uint32_t				  mNumberOfBytes;
-		uint8_t*				  mData;							///< Indirect buffer data, can be a null pointer
-		// TODO(co) Direct3D 12 update
-		//ID3D12Buffer			 *mD3D12Buffer;							///< Direct3D indirect buffer instance, can be a null pointer
-		//ID3D12ShaderResourceView *mD3D12ShaderResourceViewIndirect;	///< Direct3D 12 shader resource view, can be a null pointer
+		ID3D12CommandSignature* mD3D12CommandSignature;
+		ID3D12Resource*			mD3D12Resource;
 
 
 	};
@@ -6026,11 +6079,8 @@ namespace Direct3D12Renderer
 		UniformBuffer(Direct3D12Renderer& direct3D12Renderer, uint32_t numberOfBytes, const void* data, [[maybe_unused]] Renderer::BufferUsage bufferUsage) :
 			Renderer::IUniformBuffer(direct3D12Renderer),
 			mD3D12Resource(nullptr),
-			mD3D12DescriptorHeap(nullptr),
 			mMappedData(nullptr)
 		{
-			ID3D12Device* d3d12Device = direct3D12Renderer.getD3D12Device();
-
 			// Constant buffer size is required to be 256-byte aligned
 			// - See "ID3D12Device::CreateConstantBufferView method": https://msdn.microsoft.com/de-de/library/windows/desktop/dn788659%28v=vs.85%29.aspx
 			// - No assert because other renderer APIs have another alignment (DirectX 11 e.g. 16)
@@ -6040,7 +6090,7 @@ namespace Direct3D12Renderer
 
 			const CD3DX12_HEAP_PROPERTIES d3d12XHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
 			const CD3DX12_RESOURCE_DESC d3d12XResourceDesc = CD3DX12_RESOURCE_DESC::Buffer(numberOfBytesOnGpu);
-			if (SUCCEEDED(d3d12Device->CreateCommittedResource(
+			if (SUCCEEDED(direct3D12Renderer.getD3D12Device().CreateCommittedResource(
 				&d3d12XHeapProperties,
 				D3D12_HEAP_FLAG_NONE,
 				&d3d12XResourceDesc,
@@ -6048,21 +6098,9 @@ namespace Direct3D12Renderer
 				nullptr,
 				IID_PPV_ARGS(&mD3D12Resource))))
 			{
-				// Describe and create a constant buffer view (CBV) descriptor heap.
-				// Flags indicate that this descriptor heap can be bound to the pipeline 
-				// and that descriptors contained in it can be referenced by a root table.
-				D3D12_DESCRIPTOR_HEAP_DESC d3d12DescriptorHeapDesc = {};
-				d3d12DescriptorHeapDesc.NumDescriptors = 1;
-				d3d12DescriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-				d3d12DescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-				if (SUCCEEDED(d3d12Device->CreateDescriptorHeap(&d3d12DescriptorHeapDesc, IID_PPV_ARGS(&mD3D12DescriptorHeap))))
+				// Data given?
+				if (nullptr != data)
 				{
-					// Describe and create a constant buffer view
-					D3D12_CONSTANT_BUFFER_VIEW_DESC d3dConstantBufferViewDesc = {};
-					d3dConstantBufferViewDesc.BufferLocation = mD3D12Resource->GetGPUVirtualAddress();
-					d3dConstantBufferViewDesc.SizeInBytes = numberOfBytesOnGpu;
-					d3d12Device->CreateConstantBufferView(&d3dConstantBufferViewDesc, mD3D12DescriptorHeap->GetCPUDescriptorHandleForHeapStart());
-
 					CD3DX12_RANGE readRange(0, 0);	// We do not intend to read from this resource on the CPU
 					if (SUCCEEDED(mD3D12Resource->Map(0, &readRange, reinterpret_cast<void**>(&mMappedData))))
 					{
@@ -6076,10 +6114,6 @@ namespace Direct3D12Renderer
 					{
 						RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Failed to map Direct3D 12 uniform buffer")
 					}
-				}
-				else
-				{
-					RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Failed to create Direct3D 12 uniform buffer descriptor heap")
 				}
 			}
 			else
@@ -6104,22 +6138,6 @@ namespace Direct3D12Renderer
 			{
 				mD3D12Resource->Release();
 			}
-			if (nullptr != mD3D12DescriptorHeap)
-			{
-				mD3D12DescriptorHeap->Release();
-			}
-		}
-
-		/**
-		*  @brief
-		*    Return the Direct3D descriptor heap instance
-		*
-		*  @return
-		*    The Direct3D descriptor heap instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
-		*/
-		[[nodiscard]] inline ID3D12DescriptorHeap* getD3D12DescriptorHeap() const
-		{
-			return mD3D12DescriptorHeap;
 		}
 
 
@@ -6138,11 +6156,6 @@ namespace Direct3D12Renderer
 				{
 					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
-				}
-				if (nullptr != mD3D12DescriptorHeap)
-				{
-					FAILED_DEBUG_BREAK(mD3D12DescriptorHeap->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D12DescriptorHeap->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
 				}
 			}
 		#endif
@@ -6170,9 +6183,8 @@ namespace Direct3D12Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		ID3D12Resource*		  mD3D12Resource;
-		ID3D12DescriptorHeap* mD3D12DescriptorHeap;
-		uint8_t*			  mMappedData;
+		ID3D12Resource* mD3D12Resource;
+		uint8_t*		mMappedData;
 
 
 	};
@@ -6276,9 +6288,9 @@ namespace Direct3D12Renderer
 			return RENDERER_NEW(getRenderer().getContext(), StructuredBuffer)(static_cast<Direct3D12Renderer&>(getRenderer()), numberOfBytes, data, bufferUsage, numberOfStructureBytes);
 		}
 
-		[[nodiscard]] inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
+		[[nodiscard]] inline virtual Renderer::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, [[maybe_unused]] Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
 		{
-			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<Direct3D12Renderer&>(getRenderer()), numberOfBytes, data, indirectBufferFlags, bufferUsage);
+			return RENDERER_NEW(getRenderer().getContext(), IndirectBuffer)(static_cast<Direct3D12Renderer&>(getRenderer()), numberOfBytes, data, indirectBufferFlags);
 		}
 
 		[[nodiscard]] inline virtual Renderer::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, Renderer::BufferUsage bufferUsage = Renderer::BufferUsage::STATIC_DRAW) override
@@ -6347,13 +6359,130 @@ namespace Direct3D12Renderer
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		Texture1D(Direct3D12Renderer& direct3D12Renderer, uint32_t width, Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data, [[maybe_unused]] uint32_t textureFlags, [[maybe_unused]] Renderer::TextureUsage textureUsage) :
+		Texture1D(Direct3D12Renderer& direct3D12Renderer, uint32_t width, Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data, uint32_t textureFlags, [[maybe_unused]] Renderer::TextureUsage textureUsage) :
 			ITexture1D(direct3D12Renderer, width),
 			mDxgiFormat(Mapping::getDirect3D12Format(textureFormat)),
-			mD3D12Resource(nullptr),
-			mD3D12DescriptorHeap(nullptr)
+			mNumberOfMipmaps(0),
+			mD3D12Resource(nullptr)
 		{
-			// TODO(co) Implement me
+			// Calculate the number of mipmaps
+			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
+			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
+			mNumberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? Renderer::ITexture::getNumberOfMipmaps(width) : 1;
+
+			// Describe and create a texture 1D
+			D3D12_RESOURCE_DESC d3d12ResourceDesc = {};
+			d3d12ResourceDesc.MipLevels = static_cast<UINT16>(mNumberOfMipmaps);
+			d3d12ResourceDesc.Format = static_cast<DXGI_FORMAT>(mDxgiFormat);
+			d3d12ResourceDesc.Width = width;
+			d3d12ResourceDesc.Height = 1;
+			d3d12ResourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+			d3d12ResourceDesc.DepthOrArraySize = 1;
+			d3d12ResourceDesc.SampleDesc.Count = 1;
+			d3d12ResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE1D;
+
+			// TODO(co) This is just first Direct3D 12 texture test, so don't wonder about the nasty synchronization handling
+			ID3D12Device& d3d12Device = direct3D12Renderer.getD3D12Device();
+			const CD3DX12_HEAP_PROPERTIES d3d12XHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
+			if (SUCCEEDED(d3d12Device.CreateCommittedResource(
+				&d3d12XHeapProperties,
+				D3D12_HEAP_FLAG_NONE,
+				&d3d12ResourceDesc,
+				D3D12_RESOURCE_STATE_GENERIC_READ,
+				nullptr,
+				IID_PPV_ARGS(&mD3D12Resource))))
+			/*
+			const CD3DX12_HEAP_PROPERTIES d3d12XHeapProperties(D3D12_HEAP_TYPE_DEFAULT);
+			if (SUCCEEDED(d3d12Device.CreateCommittedResource(
+				&d3d12XHeapProperties,
+				D3D12_HEAP_FLAG_NONE,
+				&d3d12ResourceDesc,
+				D3D12_RESOURCE_STATE_COPY_DEST,
+				nullptr,
+				IID_PPV_ARGS(&mD3D12Resource))))
+			*/
+			{
+				// Upload the texture data?
+				if (nullptr != data)
+				{
+					// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
+					if (dataContainsMipmaps)
+					{
+						// Upload all mipmaps
+						for (uint32_t mipmap = 0; mipmap < mNumberOfMipmaps; ++mipmap)
+						{
+							// Upload the current mipmap
+							const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+							const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1);
+							FAILED_DEBUG_BREAK(mD3D12Resource->WriteToSubresource(mipmap, nullptr, data, bytesPerRow, bytesPerSlice));
+
+							// Move on to the next mipmap and ensure the size is always at least 1x1
+							data = static_cast<const uint8_t*>(data) + bytesPerSlice;
+							width = getHalfSize(width);
+						}
+					}
+					else if (generateMipmaps)
+					{
+						// TODO(co) Implement me
+					}
+					else
+					{
+						// The user only provided us with the base texture, no mipmaps
+						const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+						const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1);
+						FAILED_DEBUG_BREAK(mD3D12Resource->WriteToSubresource(0, nullptr, data, bytesPerRow, bytesPerSlice));
+					}
+				}
+
+				// TODO(co) This is just first Direct3D 12 texture test, so don't wonder about the nasty synchronization handling
+				/*
+				if (nullptr != data)
+				{
+					ID3D12GraphicsCommandList* d3d12GraphicsCommandList = direct3D12Renderer.getD3D12GraphicsCommandList();
+				//	direct3D12Renderer.beginScene();
+
+					// Create an upload heap to load the texture onto the GPU. ComPtr's are CPU objects
+					// but this heap needs to stay in scope until the GPU work is complete. We will
+					// synchronize with the GPU at the end of this method before the ComPtr is destroyed.
+					ID3D12Resource* d3d12ResourceTextureUploadHeap = nullptr;
+
+					{ // Upload the texture data
+						const UINT64 uploadBufferSize = GetRequiredIntermediateSize(mD3D12Resource, 0, 1);
+
+						// Create the GPU upload buffer
+						const CD3DX12_HEAP_PROPERTIES d3d12XHeapPropertiesUpload(D3D12_HEAP_TYPE_UPLOAD);
+						const CD3DX12_RESOURCE_DESC d3d12XResourceDesc = CD3DX12_RESOURCE_DESC::Buffer(uploadBufferSize);
+						if (SUCCEEDED(d3d12Device.CreateCommittedResource(
+							&d3d12XHeapPropertiesUpload,
+							D3D12_HEAP_FLAG_NONE,
+							&d3d12XResourceDesc,
+							D3D12_RESOURCE_STATE_GENERIC_READ,
+							nullptr,
+							IID_PPV_ARGS(&d3d12ResourceTextureUploadHeap))))
+						{
+							// Copy data to the intermediate upload heap and then schedule a copy from the upload heap to the texture 2D
+							D3D12_SUBRESOURCE_DATA textureData = {};
+							textureData.pData = data;
+							textureData.RowPitch = static_cast<LONG_PTR>(width * Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat));
+							textureData.SlicePitch = static_cast<LONG_PTR>(textureData.RowPitch * height);
+
+							UpdateSubresources(d3d12GraphicsCommandList, mD3D12Resource, d3d12ResourceTextureUploadHeap, 0, 0, 1, &textureData);
+
+		//					CD3DX12_RESOURCE_BARRIER d3d12XResourceBarrier = CD3DX12_RESOURCE_BARRIER::Transition(mD3D12Resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		//					d3d12GraphicsCommandList->ResourceBarrier(1, &d3d12XResourceBarrier);
+						}
+					}
+	
+	//				direct3D12Renderer.endScene();
+					<Swap Chain>->waitForPreviousFrame();
+					d3d12ResourceTextureUploadHeap->Release();
+				}
+				*/
+			}
+			else
+			{
+				RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Failed to create the Direct3D 12 texture 1D resource")
+			}
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RENDERER_DEBUG
@@ -6371,10 +6500,6 @@ namespace Direct3D12Renderer
 			{
 				mD3D12Resource->Release();
 			}
-			if (nullptr != mD3D12DescriptorHeap)
-			{
-				mD3D12DescriptorHeap->Release();
-			}
 		}
 
 		/**
@@ -6391,6 +6516,18 @@ namespace Direct3D12Renderer
 
 		/**
 		*  @brief
+		*    Return the number of mipmaps
+		*
+		*  @return
+		*    The number of mipmaps
+		*/
+		[[nodiscard]] inline uint32_t getNumberOfMipmaps() const
+		{
+			return mNumberOfMipmaps;
+		}
+
+		/**
+		*  @brief
 		*    Return the Direct3D 12 resource instance
 		*
 		*  @return
@@ -6399,18 +6536,6 @@ namespace Direct3D12Renderer
 		[[nodiscard]] inline ID3D12Resource* getD3D12Resource() const
 		{
 			return mD3D12Resource;
-		}
-
-		/**
-		*  @brief
-		*    Return the Direct3D 12 descriptor heap instance
-		*
-		*  @return
-		*    The Direct3D 12 descriptor heap instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
-		*/
-		[[nodiscard]] inline ID3D12DescriptorHeap* getD3D12DescriptorHeap() const
-		{
-			return mD3D12DescriptorHeap;
 		}
 
 
@@ -6427,11 +6552,6 @@ namespace Direct3D12Renderer
 				{
 					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-				if (nullptr != mD3D12DescriptorHeap)
-				{
-					FAILED_DEBUG_BREAK(mD3D12DescriptorHeap->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D12DescriptorHeap->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
 			}
 		#endif
@@ -6459,9 +6579,9 @@ namespace Direct3D12Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		DXGI_FORMAT			  mDxgiFormat;	//// DXGI format
-		ID3D12Resource*		  mD3D12Resource;
-		ID3D12DescriptorHeap* mD3D12DescriptorHeap;
+		DXGI_FORMAT		mDxgiFormat;
+		uint32_t		mNumberOfMipmaps;
+		ID3D12Resource* mD3D12Resource;
 
 
 	};
@@ -6503,12 +6623,17 @@ namespace Direct3D12Renderer
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		Texture1DArray(Direct3D12Renderer& direct3D12Renderer, uint32_t width, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data, [[maybe_unused]] uint32_t textureFlags, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) :
+		Texture1DArray(Direct3D12Renderer& direct3D12Renderer, uint32_t width, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data, uint32_t textureFlags, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) :
 			ITexture1DArray(direct3D12Renderer, width, numberOfSlices),
 			mDxgiFormat(Mapping::getDirect3D12Format(textureFormat)),
+			mNumberOfMipmaps(0),
 			mD3D12Resource(nullptr)
-		//	mD3D12ShaderResourceViewTexture(nullptr)	// TODO(co) Direct3D 12 update
 		{
+			// Calculate the number of mipmaps
+			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
+			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
+			mNumberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? Renderer::ITexture::getNumberOfMipmaps(width) : 1;
+
 			// TODO(co) Direct3D 12 update
 			/*
 			// Sanity checks
@@ -6592,17 +6717,10 @@ namespace Direct3D12Renderer
 		*/
 		virtual ~Texture1DArray() override
 		{
-			// TODO(co) Direct3D 12 update
-			/*
-			if (nullptr != mD3D12ShaderResourceViewTexture)
+			if (nullptr != mD3D12Resource)
 			{
-				mD3D12ShaderResourceViewTexture->Release();
+				mD3D12Resource->Release();
 			}
-			if (nullptr != mD3D12Texture1D)
-			{
-				mD3D12Texture1D->Release();
-			}
-			*/
 		}
 
 		/**
@@ -6619,6 +6737,18 @@ namespace Direct3D12Renderer
 
 		/**
 		*  @brief
+		*    Return the number of mipmaps
+		*
+		*  @return
+		*    The number of mipmaps
+		*/
+		[[nodiscard]] inline uint32_t getNumberOfMipmaps() const
+		{
+			return mNumberOfMipmaps;
+		}
+
+		/**
+		*  @brief
 		*    Return the Direct3D 12 resource instance
 		*
 		*  @return
@@ -6629,59 +6759,21 @@ namespace Direct3D12Renderer
 			return mD3D12Resource;
 		}
 
-		/**
-		*  @brief
-		*    Return the Direct3D shader resource view instance
-		*
-		*  @return
-		*    The Direct3D shader resource view instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
-		*
-		*  @note
-		*    - It's not recommended to manipulate the returned Direct3D 12 resource
-		*      view by e.g. assigning another Direct3D 12 resource to it
-		*/
-		// TODO(co) Direct3D 12 update
-		//[[nodiscard]] inline ID3D12ShaderResourceView *getD3D12ShaderResourceView() const
-		//{
-		//	return mD3D12ShaderResourceViewTexture;
-		//}
-
 
 	//[-------------------------------------------------------]
 	//[ Public virtual Renderer::IResource methods            ]
 	//[-------------------------------------------------------]
 	public:
 		#ifdef RENDERER_DEBUG
-			virtual void setDebugName(const char*) override
+			virtual void setDebugName(const char* name) override
 			{
-				// TODO(co) Direct3D 12 update
-				/*
-				// Valid Direct3D 12 shader resource view?
-				if (nullptr != mD3D12ShaderResourceViewTexture)
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
+				if (nullptr != mD3D12Resource)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-					mD3D12ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr);
-					mD3D12ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name);
-
-					// Do also set the given debug name to the Direct3D 12 resource referenced by the Direct3D resource view
-					// -> In our use case, this resource is tightly coupled with the view
-					// -> In principle the user can assign another resource to the view, but our interface documentation
-					//    asks the user to not do so, so we ignore this situation when assigning the name
-					ID3D12Resource *d3d12Resource = nullptr;
-					mD3D12ShaderResourceViewTexture->GetResource(&d3d12Resource);
-					if (nullptr != d3d12Resource)
-					{
-						// Set the debug name
-						// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-						d3d12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr);
-						d3d12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name);
-
-						// Release the Direct3D 12 resource instance
-						d3d12Resource->Release();
-					}
+					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
-			*/
 			}
 		#endif
 
@@ -6708,10 +6800,9 @@ namespace Direct3D12Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		DXGI_FORMAT			  mDxgiFormat;	//// DXGI format
-		ID3D12Resource*		  mD3D12Resource;
-		// TODO(co) Direct3D 12 update
-		//ID3D12ShaderResourceView *mD3D12ShaderResourceViewTexture;	///< Direct3D 12 shader resource view, can be a null pointer
+		DXGI_FORMAT		mDxgiFormat;
+		uint32_t		mNumberOfMipmaps;
+		ID3D12Resource* mD3D12Resource;
 
 
 	};
@@ -6760,8 +6851,8 @@ namespace Direct3D12Renderer
 		Texture2D(Direct3D12Renderer& direct3D12Renderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, [[maybe_unused]] Renderer::TextureUsage textureUsage, uint8_t numberOfMultisamples, const Renderer::OptimizedTextureClearValue* optimizedTextureClearValue) :
 			ITexture2D(direct3D12Renderer, width, height),
 			mDxgiFormat(Mapping::getDirect3D12Format(textureFormat)),
-			mD3D12Resource(nullptr),
-			mD3D12DescriptorHeap(nullptr)
+			mNumberOfMipmaps(0),
+			mD3D12Resource(nullptr)
 		{
 			// Sanity checks
 			RENDERER_ASSERT(direct3D12Renderer.getContext(), numberOfMultisamples == 1 || numberOfMultisamples == 2 || numberOfMultisamples == 4 || numberOfMultisamples == 8, "Invalid Direct3D 12 texture parameters")
@@ -6772,19 +6863,17 @@ namespace Direct3D12Renderer
 			RENDERER_ASSERT(direct3D12Renderer.getContext(), 0 == (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 12 texture parameters")
 			RENDERER_ASSERT(direct3D12Renderer.getContext(), (textureFlags & Renderer::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 12 render target textures can't be filled using provided data")
 
-			ID3D12Device* d3d12Device = direct3D12Renderer.getD3D12Device();
-
 			// TODO(co) Add buffer usage setting support
 			// TODO(co) Add "Renderer::TextureFlag::GENERATE_MIPMAPS" support, also for render target textures
 
 			// Calculate the number of mipmaps
 			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
 			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
-			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height) : 1;
+			mNumberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? Renderer::ITexture::getNumberOfMipmaps(width, height) : 1;
 
 			// Describe and create a texture 2D
 			D3D12_RESOURCE_DESC d3d12ResourceDesc = {};
-			d3d12ResourceDesc.MipLevels = static_cast<UINT16>(numberOfMipmaps);
+			d3d12ResourceDesc.MipLevels = static_cast<UINT16>(mNumberOfMipmaps);
 			d3d12ResourceDesc.Format = static_cast<DXGI_FORMAT>(mDxgiFormat);
 			d3d12ResourceDesc.Width = width;
 			d3d12ResourceDesc.Height = height;
@@ -6803,8 +6892,9 @@ namespace Direct3D12Renderer
 			}
 
 			// TODO(co) This is just first Direct3D 12 texture test, so don't wonder about the nasty synchronization handling
+			ID3D12Device& d3d12Device = direct3D12Renderer.getD3D12Device();
 			const CD3DX12_HEAP_PROPERTIES d3d12XHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
-			if (SUCCEEDED(d3d12Device->CreateCommittedResource(
+			if (SUCCEEDED(d3d12Device.CreateCommittedResource(
 				&d3d12XHeapProperties,
 				D3D12_HEAP_FLAG_NONE,
 				&d3d12ResourceDesc,
@@ -6813,7 +6903,7 @@ namespace Direct3D12Renderer
 				IID_PPV_ARGS(&mD3D12Resource))))
 			/*
 			const CD3DX12_HEAP_PROPERTIES d3d12XHeapProperties(D3D12_HEAP_TYPE_DEFAULT);
-			if (SUCCEEDED(d3d12Device->CreateCommittedResource(
+			if (SUCCEEDED(d3d12Device.CreateCommittedResource(
 				&d3d12XHeapProperties,
 				D3D12_HEAP_FLAG_NONE,
 				&d3d12ResourceDesc,
@@ -6822,103 +6912,83 @@ namespace Direct3D12Renderer
 				IID_PPV_ARGS(&mD3D12Resource))))
 			*/
 			{
-				// Describe and create a shader resource view (SRV) heap for the texture
-				D3D12_DESCRIPTOR_HEAP_DESC d3d12DescriptorHeapDesc = {};
-				d3d12DescriptorHeapDesc.NumDescriptors = 1;
-				d3d12DescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-				d3d12DescriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-				if (SUCCEEDED(d3d12Device->CreateDescriptorHeap(&d3d12DescriptorHeapDesc, IID_PPV_ARGS(&mD3D12DescriptorHeap))))
+				// Upload the texture data?
+				if (nullptr != data)
 				{
-					// Upload the texture data?
-					if (nullptr != data)
+					// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
+					if (dataContainsMipmaps)
 					{
-						// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
-						if (dataContainsMipmaps)
+						// Upload all mipmaps
+						for (uint32_t mipmap = 0; mipmap < mNumberOfMipmaps; ++mipmap)
 						{
-							// Upload all mipmaps
-							for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
-							{
-								// Upload the current mipmap
-								const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-								const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
-								FAILED_DEBUG_BREAK(mD3D12Resource->WriteToSubresource(mipmap, nullptr, data, bytesPerRow, bytesPerSlice));
-
-								// Move on to the next mipmap and ensure the size is always at least 1x1
-								data = static_cast<const uint8_t*>(data) + bytesPerSlice;
-								width = getHalfSize(width);
-								height = getHalfSize(height);
-							}
-						}
-						else if (generateMipmaps)
-						{
-							// TODO(co) Implement me
-						}
-						else
-						{
-							// The user only provided us with the base texture, no mipmaps
+							// Upload the current mipmap
 							const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
 							const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
-							FAILED_DEBUG_BREAK(mD3D12Resource->WriteToSubresource(0, nullptr, data, bytesPerRow, bytesPerSlice));
+							FAILED_DEBUG_BREAK(mD3D12Resource->WriteToSubresource(mipmap, nullptr, data, bytesPerRow, bytesPerSlice));
+
+							// Move on to the next mipmap and ensure the size is always at least 1x1
+							data = static_cast<const uint8_t*>(data) + bytesPerSlice;
+							width = getHalfSize(width);
+							height = getHalfSize(height);
 						}
 					}
-
-					// TODO(co) This is just first Direct3D 12 texture test, so don't wonder about the nasty synchronization handling
-					/*
-					if (nullptr != data)
+					else if (generateMipmaps)
 					{
-						ID3D12GraphicsCommandList* d3d12GraphicsCommandList = direct3D12Renderer.getD3D12GraphicsCommandList();
-					//	direct3D12Renderer.beginScene();
-
-						// Create an upload heap to load the texture onto the GPU. ComPtr's are CPU objects
-						// but this heap needs to stay in scope until the GPU work is complete. We will
-						// synchronize with the GPU at the end of this method before the ComPtr is destroyed.
-						ID3D12Resource* d3d12ResourceTextureUploadHeap = nullptr;
-
-						{ // Upload the texture data
-							const UINT64 uploadBufferSize = GetRequiredIntermediateSize(mD3D12Resource, 0, 1);
-
-							// Create the GPU upload buffer
-							const CD3DX12_HEAP_PROPERTIES d3d12XHeapPropertiesUpload(D3D12_HEAP_TYPE_UPLOAD);
-							const CD3DX12_RESOURCE_DESC d3d12XResourceDesc = CD3DX12_RESOURCE_DESC::Buffer(uploadBufferSize);
-							if (SUCCEEDED(d3d12Device->CreateCommittedResource(
-								&d3d12XHeapPropertiesUpload,
-								D3D12_HEAP_FLAG_NONE,
-								&d3d12XResourceDesc,
-								D3D12_RESOURCE_STATE_GENERIC_READ,
-								nullptr,
-								IID_PPV_ARGS(&d3d12ResourceTextureUploadHeap))))
-							{
-								// Copy data to the intermediate upload heap and then schedule a copy from the upload heap to the texture 2D
-								D3D12_SUBRESOURCE_DATA textureData = {};
-								textureData.pData = data;
-								textureData.RowPitch = static_cast<LONG_PTR>(width * Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat));
-								textureData.SlicePitch = static_cast<LONG_PTR>(textureData.RowPitch * height);
-
-								UpdateSubresources(d3d12GraphicsCommandList, mD3D12Resource, d3d12ResourceTextureUploadHeap, 0, 0, 1, &textureData);
-
-			//					CD3DX12_RESOURCE_BARRIER d3d12XResourceBarrier = CD3DX12_RESOURCE_BARRIER::Transition(mD3D12Resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-			//					d3d12GraphicsCommandList->ResourceBarrier(1, &d3d12XResourceBarrier);
-							}
-						}
-	
-		//				direct3D12Renderer.endScene();
-						<Swap Chain>->waitForPreviousFrame();
-						d3d12ResourceTextureUploadHeap->Release();
+						// TODO(co) Implement me
 					}
-					*/
+					else
+					{
+						// The user only provided us with the base texture, no mipmaps
+						const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+						const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
+						FAILED_DEBUG_BREAK(mD3D12Resource->WriteToSubresource(0, nullptr, data, bytesPerRow, bytesPerSlice));
+					}
+				}
 
-					// Describe and create a SRV for the texture
-					D3D12_SHADER_RESOURCE_VIEW_DESC d3d12ShaderResourceViewDesc = {};
-					d3d12ShaderResourceViewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-					d3d12ShaderResourceViewDesc.Format = d3d12ResourceDesc.Format;
-					d3d12ShaderResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-					d3d12ShaderResourceViewDesc.Texture2D.MipLevels = numberOfMipmaps;
-					d3d12Device->CreateShaderResourceView(mD3D12Resource, &d3d12ShaderResourceViewDesc, mD3D12DescriptorHeap->GetCPUDescriptorHandleForHeapStart());
-				}
-				else
+				// TODO(co) This is just first Direct3D 12 texture test, so don't wonder about the nasty synchronization handling
+				/*
+				if (nullptr != data)
 				{
-					RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Failed to create the Direct3D 12 texture 2D descriptor heap")
+					ID3D12GraphicsCommandList* d3d12GraphicsCommandList = direct3D12Renderer.getD3D12GraphicsCommandList();
+				//	direct3D12Renderer.beginScene();
+
+					// Create an upload heap to load the texture onto the GPU. ComPtr's are CPU objects
+					// but this heap needs to stay in scope until the GPU work is complete. We will
+					// synchronize with the GPU at the end of this method before the ComPtr is destroyed.
+					ID3D12Resource* d3d12ResourceTextureUploadHeap = nullptr;
+
+					{ // Upload the texture data
+						const UINT64 uploadBufferSize = GetRequiredIntermediateSize(mD3D12Resource, 0, 1);
+
+						// Create the GPU upload buffer
+						const CD3DX12_HEAP_PROPERTIES d3d12XHeapPropertiesUpload(D3D12_HEAP_TYPE_UPLOAD);
+						const CD3DX12_RESOURCE_DESC d3d12XResourceDesc = CD3DX12_RESOURCE_DESC::Buffer(uploadBufferSize);
+						if (SUCCEEDED(d3d12Device.CreateCommittedResource(
+							&d3d12XHeapPropertiesUpload,
+							D3D12_HEAP_FLAG_NONE,
+							&d3d12XResourceDesc,
+							D3D12_RESOURCE_STATE_GENERIC_READ,
+							nullptr,
+							IID_PPV_ARGS(&d3d12ResourceTextureUploadHeap))))
+						{
+							// Copy data to the intermediate upload heap and then schedule a copy from the upload heap to the texture 2D
+							D3D12_SUBRESOURCE_DATA textureData = {};
+							textureData.pData = data;
+							textureData.RowPitch = static_cast<LONG_PTR>(width * Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat));
+							textureData.SlicePitch = static_cast<LONG_PTR>(textureData.RowPitch * height);
+
+							UpdateSubresources(d3d12GraphicsCommandList, mD3D12Resource, d3d12ResourceTextureUploadHeap, 0, 0, 1, &textureData);
+
+		//					CD3DX12_RESOURCE_BARRIER d3d12XResourceBarrier = CD3DX12_RESOURCE_BARRIER::Transition(mD3D12Resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		//					d3d12GraphicsCommandList->ResourceBarrier(1, &d3d12XResourceBarrier);
+						}
+					}
+	
+	//				direct3D12Renderer.endScene();
+					<Swap Chain>->waitForPreviousFrame();
+					d3d12ResourceTextureUploadHeap->Release();
 				}
+				*/
 			}
 			else
 			{
@@ -6941,10 +7011,6 @@ namespace Direct3D12Renderer
 			{
 				mD3D12Resource->Release();
 			}
-			if (nullptr != mD3D12DescriptorHeap)
-			{
-				mD3D12DescriptorHeap->Release();
-			}
 		}
 
 		/**
@@ -6961,6 +7027,18 @@ namespace Direct3D12Renderer
 
 		/**
 		*  @brief
+		*    Return the number of mipmaps
+		*
+		*  @return
+		*    The number of mipmaps
+		*/
+		[[nodiscard]] inline uint32_t getNumberOfMipmaps() const
+		{
+			return mNumberOfMipmaps;
+		}
+
+		/**
+		*  @brief
 		*    Return the Direct3D 12 resource instance
 		*
 		*  @return
@@ -6969,18 +7047,6 @@ namespace Direct3D12Renderer
 		[[nodiscard]] inline ID3D12Resource* getD3D12Resource() const
 		{
 			return mD3D12Resource;
-		}
-
-		/**
-		*  @brief
-		*    Return the Direct3D 12 descriptor heap instance
-		*
-		*  @return
-		*    The Direct3D 12 descriptor heap instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
-		*/
-		[[nodiscard]] inline ID3D12DescriptorHeap* getD3D12DescriptorHeap() const
-		{
-			return mD3D12DescriptorHeap;
 		}
 
 		/**
@@ -7012,11 +7078,6 @@ namespace Direct3D12Renderer
 					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
 					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
-				if (nullptr != mD3D12DescriptorHeap)
-				{
-					FAILED_DEBUG_BREAK(mD3D12DescriptorHeap->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D12DescriptorHeap->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
 			}
 		#endif
 
@@ -7043,9 +7104,9 @@ namespace Direct3D12Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		DXGI_FORMAT			  mDxgiFormat;	//// DXGI format
-		ID3D12Resource*		  mD3D12Resource;
-		ID3D12DescriptorHeap* mD3D12DescriptorHeap;
+		DXGI_FORMAT		mDxgiFormat;
+		uint32_t		mNumberOfMipmaps;
+		ID3D12Resource* mD3D12Resource;
 
 
 	};
@@ -7089,12 +7150,17 @@ namespace Direct3D12Renderer
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		Texture2DArray(Direct3D12Renderer& direct3D12Renderer, uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data, [[maybe_unused]] uint32_t textureFlags, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) :
+		Texture2DArray(Direct3D12Renderer& direct3D12Renderer, uint32_t width, uint32_t height, uint32_t numberOfSlices, Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data, uint32_t textureFlags, [[maybe_unused]] Renderer::TextureUsage textureUsage = Renderer::TextureUsage::DEFAULT) :
 			ITexture2DArray(direct3D12Renderer, width, height, numberOfSlices),
 			mDxgiFormat(Mapping::getDirect3D12Format(textureFormat)),
+			mNumberOfMipmaps(0),
 			mD3D12Resource(nullptr)
-		//	mD3D12ShaderResourceViewTexture(nullptr)	// TODO(co) Direct3D 12 update
 		{
+			// Calculate the number of mipmaps
+			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
+			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
+			mNumberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? Renderer::ITexture::getNumberOfMipmaps(width, height) : 1;
+
 			// TODO(co) Direct3D 12 update
 			/*
 			// Sanity checks
@@ -7181,17 +7247,10 @@ namespace Direct3D12Renderer
 		*/
 		virtual ~Texture2DArray() override
 		{
-			// TODO(co) Direct3D 12 update
-			/*
-			if (nullptr != mD3D12ShaderResourceViewTexture)
+			if (nullptr != mD3D12Resource)
 			{
-				mD3D12ShaderResourceViewTexture->Release();
+				mD3D12Resource->Release();
 			}
-			if (nullptr != mD3D12Texture2D)
-			{
-				mD3D12Texture2D->Release();
-			}
-			*/
 		}
 
 		/**
@@ -7208,6 +7267,18 @@ namespace Direct3D12Renderer
 
 		/**
 		*  @brief
+		*    Return the number of mipmaps
+		*
+		*  @return
+		*    The number of mipmaps
+		*/
+		[[nodiscard]] inline uint32_t getNumberOfMipmaps() const
+		{
+			return mNumberOfMipmaps;
+		}
+
+		/**
+		*  @brief
 		*    Return the Direct3D 12 resource instance
 		*
 		*  @return
@@ -7218,59 +7289,21 @@ namespace Direct3D12Renderer
 			return mD3D12Resource;
 		}
 
-		/**
-		*  @brief
-		*    Return the Direct3D shader resource view instance
-		*
-		*  @return
-		*    The Direct3D shader resource view instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
-		*
-		*  @note
-		*    - It's not recommended to manipulate the returned Direct3D 12 resource
-		*      view by e.g. assigning another Direct3D 12 resource to it
-		*/
-		// TODO(co) Direct3D 12 update
-		//[[nodiscard]] inline ID3D12ShaderResourceView *getD3D12ShaderResourceView() const
-		//{
-		//	return mD3D12ShaderResourceViewTexture;
-		//}
-
 
 	//[-------------------------------------------------------]
 	//[ Public virtual Renderer::IResource methods            ]
 	//[-------------------------------------------------------]
 	public:
 		#ifdef RENDERER_DEBUG
-			virtual void setDebugName(const char*) override
+			virtual void setDebugName(const char* name) override
 			{
-				// TODO(co) Direct3D 12 update
-				/*
-				// Valid Direct3D 12 shader resource view?
-				if (nullptr != mD3D12ShaderResourceViewTexture)
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
+				if (nullptr != mD3D12Resource)
 				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-					mD3D12ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr);
-					mD3D12ShaderResourceViewTexture->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name);
-
-					// Do also set the given debug name to the Direct3D 12 resource referenced by the Direct3D resource view
-					// -> In our use case, this resource is tightly coupled with the view
-					// -> In principle the user can assign another resource to the view, but our interface documentation
-					//    asks the user to not do so, so we ignore this situation when assigning the name
-					ID3D12Resource *d3d12Resource = nullptr;
-					mD3D12ShaderResourceViewTexture->GetResource(&d3d12Resource);
-					if (nullptr != d3d12Resource)
-					{
-						// Set the debug name
-						// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-						d3d12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr);
-						d3d12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name);
-
-						// Release the Direct3D 12 resource instance
-						d3d12Resource->Release();
-					}
+					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
 				}
-			*/
 			}
 		#endif
 
@@ -7297,10 +7330,9 @@ namespace Direct3D12Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		DXGI_FORMAT			  mDxgiFormat;	//// DXGI format
-		ID3D12Resource*		  mD3D12Resource;
-		// TODO(co) Direct3D 12 update
-		//ID3D12ShaderResourceView *mD3D12ShaderResourceViewTexture;	///< Direct3D 12 shader resource view, can be a null pointer
+		DXGI_FORMAT		mDxgiFormat;
+		uint32_t		mNumberOfMipmaps;
+		ID3D12Resource* mD3D12Resource;
 
 
 	};
@@ -7344,12 +7376,17 @@ namespace Direct3D12Renderer
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		Texture3D(Direct3D12Renderer& direct3D12Renderer, uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data, [[maybe_unused]] uint32_t textureFlags, [[maybe_unused]] Renderer::TextureUsage textureUsage) :
+		Texture3D(Direct3D12Renderer& direct3D12Renderer, uint32_t width, uint32_t height, uint32_t depth, Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data, uint32_t textureFlags, [[maybe_unused]] Renderer::TextureUsage textureUsage) :
 			ITexture3D(direct3D12Renderer, width, height, depth),
 			mDxgiFormat(Mapping::getDirect3D12Format(textureFormat)),
-			mD3D12Resource(nullptr),
-			mD3D12DescriptorHeap(nullptr)
+			mNumberOfMipmaps(0),
+			mD3D12Resource(nullptr)
 		{
+			// Calculate the number of mipmaps
+			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
+			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
+			mNumberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? Renderer::ITexture::getNumberOfMipmaps(width, height) : 1;
+
 			// TODO(co) Implement me
 
 			// Assign a default name to the resource for debugging purposes
@@ -7368,10 +7405,6 @@ namespace Direct3D12Renderer
 			{
 				mD3D12Resource->Release();
 			}
-			if (nullptr != mD3D12DescriptorHeap)
-			{
-				mD3D12DescriptorHeap->Release();
-			}
 		}
 
 		/**
@@ -7388,6 +7421,18 @@ namespace Direct3D12Renderer
 
 		/**
 		*  @brief
+		*    Return the number of mipmaps
+		*
+		*  @return
+		*    The number of mipmaps
+		*/
+		[[nodiscard]] inline uint32_t getNumberOfMipmaps() const
+		{
+			return mNumberOfMipmaps;
+		}
+
+		/**
+		*  @brief
 		*    Return the Direct3D 12 resource instance
 		*
 		*  @return
@@ -7396,18 +7441,6 @@ namespace Direct3D12Renderer
 		[[nodiscard]] inline ID3D12Resource* getD3D12Resource() const
 		{
 			return mD3D12Resource;
-		}
-
-		/**
-		*  @brief
-		*    Return the Direct3D 12 descriptor heap instance
-		*
-		*  @return
-		*    The Direct3D 12 descriptor heap instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
-		*/
-		[[nodiscard]] inline ID3D12DescriptorHeap* getD3D12DescriptorHeap() const
-		{
-			return mD3D12DescriptorHeap;
 		}
 
 
@@ -7424,11 +7457,6 @@ namespace Direct3D12Renderer
 				{
 					mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr);
 					mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name);
-				}
-				if (nullptr != mD3D12DescriptorHeap)
-				{
-					mD3D12DescriptorHeap->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr);
-					mD3D12DescriptorHeap->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name);
 				}
 			}
 		#endif
@@ -7456,9 +7484,9 @@ namespace Direct3D12Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		DXGI_FORMAT			  mDxgiFormat;	//// DXGI format
-		ID3D12Resource*		  mD3D12Resource;
-		ID3D12DescriptorHeap* mD3D12DescriptorHeap;
+		DXGI_FORMAT		mDxgiFormat;
+		uint32_t		mNumberOfMipmaps;
+		ID3D12Resource* mD3D12Resource;
 
 
 	};
@@ -7500,12 +7528,17 @@ namespace Direct3D12Renderer
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		TextureCube(Direct3D12Renderer& direct3D12Renderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data, [[maybe_unused]] uint32_t textureFlags, [[maybe_unused]] Renderer::TextureUsage textureUsage) :
+		TextureCube(Direct3D12Renderer& direct3D12Renderer, uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data, uint32_t textureFlags, [[maybe_unused]] Renderer::TextureUsage textureUsage) :
 			ITextureCube(direct3D12Renderer, width, height),
 			mDxgiFormat(Mapping::getDirect3D12Format(textureFormat)),
-			mD3D12Resource(nullptr),
-			mD3D12DescriptorHeap(nullptr)
+			mNumberOfMipmaps(0),
+			mD3D12Resource(nullptr)
 		{
+			// Calculate the number of mipmaps
+			const bool dataContainsMipmaps = (textureFlags & Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS);
+			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Renderer::TextureFlag::GENERATE_MIPMAPS));
+			mNumberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? Renderer::ITexture::getNumberOfMipmaps(width, height) : 1;
+
 			// TODO(co) Implement me
 
 			// Assign a default name to the resource for debugging purposes
@@ -7524,10 +7557,6 @@ namespace Direct3D12Renderer
 			{
 				mD3D12Resource->Release();
 			}
-			if (nullptr != mD3D12DescriptorHeap)
-			{
-				mD3D12DescriptorHeap->Release();
-			}
 		}
 
 		/**
@@ -7544,6 +7573,18 @@ namespace Direct3D12Renderer
 
 		/**
 		*  @brief
+		*    Return the number of mipmaps
+		*
+		*  @return
+		*    The number of mipmaps
+		*/
+		[[nodiscard]] inline uint32_t getNumberOfMipmaps() const
+		{
+			return mNumberOfMipmaps;
+		}
+
+		/**
+		*  @brief
 		*    Return the Direct3D 12 resource instance
 		*
 		*  @return
@@ -7552,18 +7593,6 @@ namespace Direct3D12Renderer
 		[[nodiscard]] inline ID3D12Resource* getD3D12Resource() const
 		{
 			return mD3D12Resource;
-		}
-
-		/**
-		*  @brief
-		*    Return the Direct3D 12 descriptor heap instance
-		*
-		*  @return
-		*    The Direct3D 12 descriptor heap instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
-		*/
-		[[nodiscard]] inline ID3D12DescriptorHeap* getD3D12DescriptorHeap() const
-		{
-			return mD3D12DescriptorHeap;
 		}
 
 
@@ -7580,11 +7609,6 @@ namespace Direct3D12Renderer
 				{
 					mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr);
 					mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name);
-				}
-				if (nullptr != mD3D12DescriptorHeap)
-				{
-					mD3D12DescriptorHeap->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr);
-					mD3D12DescriptorHeap->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name);
 				}
 			}
 		#endif
@@ -7612,9 +7636,9 @@ namespace Direct3D12Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		DXGI_FORMAT			  mDxgiFormat;	//// DXGI format
-		ID3D12Resource*		  mD3D12Resource;
-		ID3D12DescriptorHeap* mD3D12DescriptorHeap;
+		DXGI_FORMAT		mDxgiFormat;
+		uint32_t		mNumberOfMipmaps;
+		ID3D12Resource* mD3D12Resource;
 
 
 	};
@@ -7764,35 +7788,11 @@ namespace Direct3D12Renderer
 		*/
 		SamplerState(Direct3D12Renderer& direct3D12Renderer, const Renderer::SamplerState& samplerState) :
 			ISamplerState(direct3D12Renderer),
-			mD3D12DescriptorHeap(nullptr)
+			mSamplerState(samplerState)
 		{
 			// Sanity checks
 			RENDERER_ASSERT(direct3D12Renderer.getContext(), samplerState.filter != Renderer::FilterMode::UNKNOWN, "Direct3D 12 filter mode must not be unknown")
 			RENDERER_ASSERT(direct3D12Renderer.getContext(), samplerState.maxAnisotropy <= direct3D12Renderer.getCapabilities().maximumAnisotropy, "Maximum Direct3D 12 anisotropy value violated")
-
-			ID3D12Device* d3d12Device = direct3D12Renderer.getD3D12Device();
-
-			// Describe and create a sampler object descriptor heap.
-			// Flags indicate that this descriptor heap can be bound to the pipeline 
-			// and that descriptors contained in it can be referenced by a root table.
-			D3D12_DESCRIPTOR_HEAP_DESC d3d12DescriptorHeapDesc = {};
-			d3d12DescriptorHeapDesc.NumDescriptors = 1;
-			d3d12DescriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-			d3d12DescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
-			if (SUCCEEDED(d3d12Device->CreateDescriptorHeap(&d3d12DescriptorHeapDesc, IID_PPV_ARGS(&mD3D12DescriptorHeap))))
-			{
-				// Create the sampler
-				d3d12Device->CreateSampler(reinterpret_cast<const D3D12_SAMPLER_DESC*>(&samplerState), mD3D12DescriptorHeap->GetCPUDescriptorHandleForHeapStart());
-			}
-			else
-			{
-				RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Failed to create the Direct3D 12 sampler state descriptor heap")
-			}
-
-			// Assign a default name to the resource for debugging purposes
-			#ifdef RENDERER_DEBUG
-				setDebugName("Sampler state");
-			#endif
 		}
 
 		/**
@@ -7801,23 +7801,19 @@ namespace Direct3D12Renderer
 		*/
 		virtual ~SamplerState() override
 		{
-			// Release the Direct3D 12 sampler state
-			if (nullptr != mD3D12DescriptorHeap)
-			{
-				mD3D12DescriptorHeap->Release();
-			}
+			// Nothing here
 		}
 
 		/**
 		*  @brief
-		*    Return the Direct3D descriptor heap instance
+		*    Return the sampler state
 		*
 		*  @return
-		*    The Direct3D descriptor heap instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*    The sampler state
 		*/
-		[[nodiscard]] inline ID3D12DescriptorHeap* getD3D12DescriptorHeap() const
+		[[nodiscard]] inline const Renderer::SamplerState& getSamplerState() const
 		{
-			return mD3D12DescriptorHeap;
+			return mSamplerState;
 		}
 
 
@@ -7826,15 +7822,9 @@ namespace Direct3D12Renderer
 	//[-------------------------------------------------------]
 	public:
 		#ifdef RENDERER_DEBUG
-			virtual void setDebugName(const char* name) override
+			virtual void setDebugName(const char*) override
 			{
-				// Set the debug name
-				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D12DescriptorHeap)
-				{
-					FAILED_DEBUG_BREAK(mD3D12DescriptorHeap->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D12DescriptorHeap->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
+				// Nothing here, all sampler states are inside a descriptor heap
 			}
 		#endif
 
@@ -7861,7 +7851,7 @@ namespace Direct3D12Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		ID3D12DescriptorHeap* mD3D12DescriptorHeap;
+		Renderer::SamplerState mSamplerState;
 
 
 	};
@@ -8051,7 +8041,7 @@ namespace Direct3D12Renderer
 			const HWND hWnd = reinterpret_cast<HWND>(windowHandle.nativeWindowHandle);
 
 			// Get our IDXGI factory instance
-			IDXGIFactory4& dxgiFactory4 = direct3D12Renderer.getDxgiFactory4Safe();
+			IDXGIFactory4& dxgiFactory4 = direct3D12Renderer.getDxgiFactory4();
 
 			// Get the width and height of the given native window and ensure they are never ever zero
 			// -> See "getSafeWidthAndHeight()"-method comments for details
@@ -8113,27 +8103,21 @@ namespace Direct3D12Renderer
 				createDirect3D12Views();
 			}
 
-			{ // Create synchronization objects
-				// Get the Direct3D 12 device instance
-				ID3D12Device* d3d12Device = static_cast<Direct3D12Renderer&>(getRenderer()).getD3D12Device();
-				RENDERER_ASSERT(getRenderer().getContext(), nullptr != d3d12Device, "Invalid Direct3D 12 device instance")
+			// Create synchronization objects
+			if (SUCCEEDED(direct3D12Renderer.getD3D12Device().CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mD3D12Fence))))
+			{
+				mFenceValue = 1;
 
-				// Create synchronization objects
-				if (SUCCEEDED(d3d12Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mD3D12Fence))))
+				// Create an event handle to use for frame synchronization
+				mFenceEvent = ::CreateEvent(nullptr, FALSE, FALSE, nullptr);
+				if (nullptr == mFenceEvent)
 				{
-					mFenceValue = 1;
-
-					// Create an event handle to use for frame synchronization
-					mFenceEvent = ::CreateEvent(nullptr, FALSE, FALSE, nullptr);
-					if (nullptr == mFenceEvent)
-					{
-						RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Failed to create an Direct3D 12 event handle to use for frame synchronization. Error code %u", ::GetLastError())
-					}
+					RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Failed to create an Direct3D 12 event handle to use for frame synchronization. Error code %u", ::GetLastError())
 				}
-				else
-				{
-					RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Failed to create Direct3D 12 fence instance")
-				}
+			}
+			else
+			{
+				RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Failed to create Direct3D 12 fence instance")
 			}
 
 			// Assign a default name to the resource for debugging purposes
@@ -8577,17 +8561,16 @@ namespace Direct3D12Renderer
 			// TODO(co) Debug name gets lost when resizing a window, fix this
 
 			// Get the Direct3D 12 device instance
-			ID3D12Device* d3d12Device = static_cast<Direct3D12Renderer&>(getRenderer()).getD3D12Device();
-			RENDERER_ASSERT(getRenderer().getContext(), nullptr != d3d12Device, "Invalid Direct3D 12 device instance")
+			ID3D12Device& d3d12Device = static_cast<Direct3D12Renderer&>(getRenderer()).getD3D12Device();
 
 			{ // Describe and create a render target view (RTV) descriptor heap
 				D3D12_DESCRIPTOR_HEAP_DESC d3d12DescriptorHeapDesc = {};
 				d3d12DescriptorHeapDesc.NumDescriptors	= NUMBER_OF_FRAMES;
 				d3d12DescriptorHeapDesc.Type			= D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 				d3d12DescriptorHeapDesc.Flags			= D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-				if (SUCCEEDED(d3d12Device->CreateDescriptorHeap(&d3d12DescriptorHeapDesc, IID_PPV_ARGS(&mD3D12DescriptorHeapRenderTargetView))))
+				if (SUCCEEDED(d3d12Device.CreateDescriptorHeap(&d3d12DescriptorHeapDesc, IID_PPV_ARGS(&mD3D12DescriptorHeapRenderTargetView))))
 				{
-					mRenderTargetViewDescriptorSize = d3d12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+					mRenderTargetViewDescriptorSize = d3d12Device.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
 					{ // Create frame resources
 						CD3DX12_CPU_DESCRIPTOR_HANDLE d3d12XCpuDescriptorHandle(mD3D12DescriptorHeapRenderTargetView->GetCPUDescriptorHandleForHeapStart());
@@ -8597,7 +8580,7 @@ namespace Direct3D12Renderer
 						{
 							if (SUCCEEDED(mDxgiSwapChain3->GetBuffer(frame, IID_PPV_ARGS(&mD3D12ResourceRenderTargets[frame]))))
 							{
-								d3d12Device->CreateRenderTargetView(mD3D12ResourceRenderTargets[frame], nullptr, d3d12XCpuDescriptorHandle);
+								d3d12Device.CreateRenderTargetView(mD3D12ResourceRenderTargets[frame], nullptr, d3d12XCpuDescriptorHandle);
 								d3d12XCpuDescriptorHandle.Offset(1, mRenderTargetViewDescriptorSize);
 							}
 							else
@@ -8623,7 +8606,7 @@ namespace Direct3D12Renderer
 				d3d12DescriptorHeapDesc.NumDescriptors	= 1;
 				d3d12DescriptorHeapDesc.Type			= D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 				d3d12DescriptorHeapDesc.Flags			= D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-				if (SUCCEEDED(d3d12Device->CreateDescriptorHeap(&d3d12DescriptorHeapDesc, IID_PPV_ARGS(&mD3D12DescriptorHeapDepthStencilView))))
+				if (SUCCEEDED(d3d12Device.CreateDescriptorHeap(&d3d12DescriptorHeapDesc, IID_PPV_ARGS(&mD3D12DescriptorHeapDepthStencilView))))
 				{
 					D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc = {};
 					depthStencilDesc.Format = Mapping::getDirect3D12Format(depthStencilAttachmentTextureFormat);
@@ -8642,7 +8625,7 @@ namespace Direct3D12Renderer
 
 					const CD3DX12_HEAP_PROPERTIES d3d12XHeapProperties(D3D12_HEAP_TYPE_DEFAULT);
 					const CD3DX12_RESOURCE_DESC d3d12XResourceDesc = CD3DX12_RESOURCE_DESC::Tex2D(depthStencilDesc.Format, width, height, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
-					if (SUCCEEDED(d3d12Device->CreateCommittedResource(
+					if (SUCCEEDED(d3d12Device.CreateCommittedResource(
 						&d3d12XHeapProperties,
 						D3D12_HEAP_FLAG_NONE,
 						&d3d12XResourceDesc,
@@ -8651,7 +8634,7 @@ namespace Direct3D12Renderer
 						IID_PPV_ARGS(&mD3D12ResourceDepthStencil)
 						)))
 					{
-						d3d12Device->CreateDepthStencilView(mD3D12ResourceDepthStencil, &depthStencilDesc, mD3D12DescriptorHeapDepthStencilView->GetCPUDescriptorHandleForHeapStart());
+						d3d12Device.CreateDepthStencilView(mD3D12ResourceDepthStencil, &depthStencilDesc, mD3D12DescriptorHeapDepthStencilView->GetCPUDescriptorHandleForHeapStart());
 					}
 					else
 					{
@@ -8805,7 +8788,7 @@ namespace Direct3D12Renderer
 		{
 			// Get the Direct3D 12 device instance
 			Direct3D12Renderer& direct3D12Renderer = static_cast<Direct3D12Renderer&>(renderPass.getRenderer());
-			ID3D12Device* d3d12Device = direct3D12Renderer.getD3D12Device();
+			ID3D12Device& d3d12Device = direct3D12Renderer.getD3D12Device();
 
 			// Add a reference to the used color textures
 			if (mNumberOfColorTextures > 0)
@@ -8815,7 +8798,7 @@ namespace Direct3D12Renderer
 				mD3D12DescriptorHeapRenderTargetViews = RENDERER_MALLOC_TYPED(context, ID3D12DescriptorHeap*, mNumberOfColorTextures);
 
 				// Loop through all color textures
-				ID3D12DescriptorHeap **d3d12DescriptorHeapRenderTargetView = mD3D12DescriptorHeapRenderTargetViews;
+				ID3D12DescriptorHeap** d3d12DescriptorHeapRenderTargetView = mD3D12DescriptorHeapRenderTargetViews;
 				Renderer::ITexture** colorTexturesEnd = mColorTextures + mNumberOfColorTextures;
 				for (Renderer::ITexture** colorTexture = mColorTextures; colorTexture < colorTexturesEnd; ++colorTexture, ++colorFramebufferAttachments, ++d3d12DescriptorHeapRenderTargetView)
 				{
@@ -8834,7 +8817,7 @@ namespace Direct3D12Renderer
 							const Texture2D* texture2D = static_cast<Texture2D*>(*colorTexture);
 
 							// Sanity checks
-							RENDERER_ASSERT(renderPass.getRenderer().getContext(), colorFramebufferAttachments->mipmapIndex < Texture2D::getNumberOfMipmaps(texture2D->getWidth(), texture2D->getHeight()), "Invalid Direct3D 12 color framebuffer attachment mipmap index")
+							RENDERER_ASSERT(renderPass.getRenderer().getContext(), colorFramebufferAttachments->mipmapIndex < Renderer::ITexture2D::getNumberOfMipmaps(texture2D->getWidth(), texture2D->getHeight()), "Invalid Direct3D 12 color framebuffer attachment mipmap index")
 							RENDERER_ASSERT(renderPass.getRenderer().getContext(), 0 == colorFramebufferAttachments->layerIndex, "Invalid Direct3D 12 color framebuffer attachment layer index")
 
 							// Update the framebuffer width and height if required
@@ -8847,13 +8830,13 @@ namespace Direct3D12Renderer
 							D3D12_DESCRIPTOR_HEAP_DESC d3d12DescriptorHeapDesc = {};
 							d3d12DescriptorHeapDesc.NumDescriptors = 1;
 							d3d12DescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-							if (SUCCEEDED(d3d12Device->CreateDescriptorHeap(&d3d12DescriptorHeapDesc, IID_PPV_ARGS(d3d12DescriptorHeapRenderTargetView))))
+							if (SUCCEEDED(d3d12Device.CreateDescriptorHeap(&d3d12DescriptorHeapDesc, IID_PPV_ARGS(d3d12DescriptorHeapRenderTargetView))))
 							{
 								D3D12_RENDER_TARGET_VIEW_DESC d3d12RenderTargetViewDesc = {};
 								d3d12RenderTargetViewDesc.Format = static_cast<DXGI_FORMAT>(texture2D->getDxgiFormat());
 								d3d12RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 								d3d12RenderTargetViewDesc.Texture2D.MipSlice = colorFramebufferAttachments->mipmapIndex;
-								d3d12Device->CreateRenderTargetView(d3d12Resource, &d3d12RenderTargetViewDesc, (*d3d12DescriptorHeapRenderTargetView)->GetCPUDescriptorHandleForHeapStart());
+								d3d12Device.CreateRenderTargetView(d3d12Resource, &d3d12RenderTargetViewDesc, (*d3d12DescriptorHeapRenderTargetView)->GetCPUDescriptorHandleForHeapStart());
 							}
 							break;
 						}
@@ -8871,7 +8854,7 @@ namespace Direct3D12Renderer
 							D3D12_DESCRIPTOR_HEAP_DESC d3d12DescriptorHeapDesc = {};
 							d3d12DescriptorHeapDesc.NumDescriptors = 1;
 							d3d12DescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-							if (SUCCEEDED(d3d12Device->CreateDescriptorHeap(&d3d12DescriptorHeapDesc, IID_PPV_ARGS(d3d12DescriptorHeapRenderTargetView))))
+							if (SUCCEEDED(d3d12Device.CreateDescriptorHeap(&d3d12DescriptorHeapDesc, IID_PPV_ARGS(d3d12DescriptorHeapRenderTargetView))))
 							{
 								D3D12_RENDER_TARGET_VIEW_DESC d3d12RenderTargetViewDesc = {};
 								d3d12RenderTargetViewDesc.Format = static_cast<DXGI_FORMAT>(texture2DArray->getDxgiFormat());
@@ -8880,7 +8863,7 @@ namespace Direct3D12Renderer
 								d3d12RenderTargetViewDesc.Texture2DArray.FirstArraySlice = colorFramebufferAttachments->layerIndex;
 								d3d12RenderTargetViewDesc.Texture2DArray.ArraySize		 = 1;
 								d3d12RenderTargetViewDesc.Texture2DArray.PlaneSlice		 = 0;
-								d3d12Device->CreateRenderTargetView(d3d12Resource, &d3d12RenderTargetViewDesc, (*d3d12DescriptorHeapRenderTargetView)->GetCPUDescriptorHandleForHeapStart());
+								d3d12Device.CreateRenderTargetView(d3d12Resource, &d3d12RenderTargetViewDesc, (*d3d12DescriptorHeapRenderTargetView)->GetCPUDescriptorHandleForHeapStart());
 							}
 							break;
 						}
@@ -8935,7 +8918,7 @@ namespace Direct3D12Renderer
 						const Texture2D* texture2D = static_cast<Texture2D*>(mDepthStencilTexture);
 
 						// Sanity checks
-						RENDERER_ASSERT(renderPass.getRenderer().getContext(), depthStencilFramebufferAttachment->mipmapIndex < Texture2D::getNumberOfMipmaps(texture2D->getWidth(), texture2D->getHeight()), "Invalid Direct3D 12 depth stencil framebuffer attachment mipmap index")
+						RENDERER_ASSERT(renderPass.getRenderer().getContext(), depthStencilFramebufferAttachment->mipmapIndex < Renderer::ITexture2D::getNumberOfMipmaps(texture2D->getWidth(), texture2D->getHeight()), "Invalid Direct3D 12 depth stencil framebuffer attachment mipmap index")
 						RENDERER_ASSERT(renderPass.getRenderer().getContext(), 0 == depthStencilFramebufferAttachment->layerIndex, "Invalid Direct3D 12 depth stencil framebuffer attachment layer index")
 
 						// Update the framebuffer width and height if required
@@ -8948,13 +8931,13 @@ namespace Direct3D12Renderer
 						D3D12_DESCRIPTOR_HEAP_DESC d3d12DescriptorHeapDesc = {};
 						d3d12DescriptorHeapDesc.NumDescriptors = 1;
 						d3d12DescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-						if (SUCCEEDED(d3d12Device->CreateDescriptorHeap(&d3d12DescriptorHeapDesc, IID_PPV_ARGS(&mD3D12DescriptorHeapDepthStencilView))))
+						if (SUCCEEDED(d3d12Device.CreateDescriptorHeap(&d3d12DescriptorHeapDesc, IID_PPV_ARGS(&mD3D12DescriptorHeapDepthStencilView))))
 						{
 							D3D12_RENDER_TARGET_VIEW_DESC d3d12RenderTargetViewDesc = {};
 							d3d12RenderTargetViewDesc.Format = static_cast<DXGI_FORMAT>(texture2D->getDxgiFormat());
 							d3d12RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 							d3d12RenderTargetViewDesc.Texture2D.MipSlice = depthStencilFramebufferAttachment->mipmapIndex;
-							d3d12Device->CreateRenderTargetView(d3d12Resource, &d3d12RenderTargetViewDesc, mD3D12DescriptorHeapDepthStencilView->GetCPUDescriptorHandleForHeapStart());
+							d3d12Device.CreateRenderTargetView(d3d12Resource, &d3d12RenderTargetViewDesc, mD3D12DescriptorHeapDepthStencilView->GetCPUDescriptorHandleForHeapStart());
 						}
 						break;
 					}
@@ -8972,7 +8955,7 @@ namespace Direct3D12Renderer
 						D3D12_DESCRIPTOR_HEAP_DESC d3d12DescriptorHeapDesc = {};
 						d3d12DescriptorHeapDesc.NumDescriptors = 1;
 						d3d12DescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-						if (SUCCEEDED(d3d12Device->CreateDescriptorHeap(&d3d12DescriptorHeapDesc, IID_PPV_ARGS(&mD3D12DescriptorHeapDepthStencilView))))
+						if (SUCCEEDED(d3d12Device.CreateDescriptorHeap(&d3d12DescriptorHeapDesc, IID_PPV_ARGS(&mD3D12DescriptorHeapDepthStencilView))))
 						{
 							D3D12_RENDER_TARGET_VIEW_DESC d3d12RenderTargetViewDesc = {};
 							d3d12RenderTargetViewDesc.Format = static_cast<DXGI_FORMAT>(texture2DArray->getDxgiFormat());
@@ -8981,7 +8964,7 @@ namespace Direct3D12Renderer
 							d3d12RenderTargetViewDesc.Texture2DArray.FirstArraySlice = depthStencilFramebufferAttachment->layerIndex;
 							d3d12RenderTargetViewDesc.Texture2DArray.ArraySize		 = 1;
 							d3d12RenderTargetViewDesc.Texture2DArray.PlaneSlice		 = 0;
-							d3d12Device->CreateRenderTargetView(d3d12Resource, &d3d12RenderTargetViewDesc, mD3D12DescriptorHeapDepthStencilView->GetCPUDescriptorHandleForHeapStart());
+							d3d12Device.CreateRenderTargetView(d3d12Resource, &d3d12RenderTargetViewDesc, mD3D12DescriptorHeapDepthStencilView->GetCPUDescriptorHandleForHeapStart());
 						}
 						break;
 					}
@@ -9048,8 +9031,8 @@ namespace Direct3D12Renderer
 			if (nullptr != mD3D12DescriptorHeapRenderTargetViews)
 			{
 				// Release references
-				ID3D12DescriptorHeap **d3d12DescriptorHeapRenderTargetViewsEnd = mD3D12DescriptorHeapRenderTargetViews + mNumberOfColorTextures;
-				for (ID3D12DescriptorHeap **d3d12DescriptorHeapRenderTargetView = mD3D12DescriptorHeapRenderTargetViews; d3d12DescriptorHeapRenderTargetView < d3d12DescriptorHeapRenderTargetViewsEnd; ++d3d12DescriptorHeapRenderTargetView)
+				ID3D12DescriptorHeap** d3d12DescriptorHeapRenderTargetViewsEnd = mD3D12DescriptorHeapRenderTargetViews + mNumberOfColorTextures;
+				for (ID3D12DescriptorHeap** d3d12DescriptorHeapRenderTargetView = mD3D12DescriptorHeapRenderTargetViews; d3d12DescriptorHeapRenderTargetView < d3d12DescriptorHeapRenderTargetViewsEnd; ++d3d12DescriptorHeapRenderTargetView)
 				{
 					(*d3d12DescriptorHeapRenderTargetView)->Release();
 				}
@@ -9155,8 +9138,8 @@ namespace Direct3D12Renderer
 					const size_t nameLength = strlen(name) + 5;	// Direct3D 12 supports 8 render targets ("D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT", so: One digit + one [ + one ] + one space + terminating zero = 5 characters)
 					const Renderer::Context& context = getRenderer().getContext();
 					char* nameWithIndex = RENDERER_MALLOC_TYPED(context, char, nameLength);
-					ID3D12DescriptorHeap **d3d12DescriptorHeapRenderTargetViewsEnd = mD3D12DescriptorHeapRenderTargetViews + mNumberOfColorTextures;
-					for (ID3D12DescriptorHeap **d3d12DescriptorHeapRenderTargetView = mD3D12DescriptorHeapRenderTargetViews; d3d12DescriptorHeapRenderTargetView < d3d12DescriptorHeapRenderTargetViewsEnd; ++d3d12DescriptorHeapRenderTargetView)
+					ID3D12DescriptorHeap** d3d12DescriptorHeapRenderTargetViewsEnd = mD3D12DescriptorHeapRenderTargetViews + mNumberOfColorTextures;
+					for (ID3D12DescriptorHeap** d3d12DescriptorHeapRenderTargetView = mD3D12DescriptorHeapRenderTargetViews; d3d12DescriptorHeapRenderTargetView < d3d12DescriptorHeapRenderTargetViewsEnd; ++d3d12DescriptorHeapRenderTargetView)
 					{
 						// Set the debug name
 						// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
@@ -9215,8 +9198,8 @@ namespace Direct3D12Renderer
 	private:
 		// Generic part
 		uint32_t			 mNumberOfColorTextures;	///< Number of color render target textures
-		Renderer::ITexture **mColorTextures;			///< The color render target textures (we keep a reference to it), can be a null pointer or can contain null pointers, if not a null pointer there must be at least "m_nNumberOfColorTextures" textures in the provided C-array of pointers
-		Renderer::ITexture  *mDepthStencilTexture;		///< The depth stencil render target texture (we keep a reference to it), can be a null pointer
+		Renderer::ITexture** mColorTextures;			///< The color render target textures (we keep a reference to it), can be a null pointer or can contain null pointers, if not a null pointer there must be at least "m_nNumberOfColorTextures" textures in the provided C-array of pointers
+		Renderer::ITexture*  mDepthStencilTexture;		///< The depth stencil render target texture (we keep a reference to it), can be a null pointer
 		uint32_t			 mWidth;					///< The framebuffer width
 		uint32_t			 mHeight;					///< The framebuffer height
 		// Direct3D 12 part
@@ -10165,11 +10148,11 @@ namespace Direct3D12Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		VertexShaderHlsl				 *mVertexShaderHlsl;					///< Vertex shader the graphics program is using (we keep a reference to it), can be a null pointer
-		TessellationControlShaderHlsl	 *mTessellationControlShaderHlsl;		///< Tessellation control shader the graphics program is using (we keep a reference to it), can be a null pointer
+		VertexShaderHlsl*				  mVertexShaderHlsl;					///< Vertex shader the graphics program is using (we keep a reference to it), can be a null pointer
+		TessellationControlShaderHlsl*	  mTessellationControlShaderHlsl;		///< Tessellation control shader the graphics program is using (we keep a reference to it), can be a null pointer
 		TessellationEvaluationShaderHlsl* mTessellationEvaluationShaderHlsl;	///< Tessellation evaluation shader the graphics program is using (we keep a reference to it), can be a null pointer
-		GeometryShaderHlsl				 *mGeometryShaderHlsl;					///< Geometry shader the graphics program is using (we keep a reference to it), can be a null pointer
-		FragmentShaderHlsl				 *mFragmentShaderHlsl;					///< Fragment shader the graphics program is using (we keep a reference to it), can be a null pointer
+		GeometryShaderHlsl*				  mGeometryShaderHlsl;					///< Geometry shader the graphics program is using (we keep a reference to it), can be a null pointer
+		FragmentShaderHlsl*				  mFragmentShaderHlsl;					///< Fragment shader the graphics program is using (we keep a reference to it), can be a null pointer
 
 
 	};
@@ -10497,7 +10480,7 @@ namespace Direct3D12Renderer
 			}
 			d3d12GraphicsPipelineState.DSVFormat = Mapping::getDirect3D12Format(graphicsPipelineState.depthStencilViewFormat);
 			d3d12GraphicsPipelineState.SampleDesc.Count = 1;
-			if (FAILED(direct3D12Renderer.getD3D12Device()->CreateGraphicsPipelineState(&d3d12GraphicsPipelineState, IID_PPV_ARGS(&mD3D12GraphicsPipelineState))))
+			if (FAILED(direct3D12Renderer.getD3D12Device().CreateGraphicsPipelineState(&d3d12GraphicsPipelineState, IID_PPV_ARGS(&mD3D12GraphicsPipelineState))))
 			{
 				RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Failed to create the Direct3D 12 graphics pipeline state object")
 			}
@@ -10548,7 +10531,7 @@ namespace Direct3D12Renderer
 		*  @return
 		*    The Direct3D 12 graphics pipeline state, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		[[nodiscard]] inline ID3D12PipelineState *getD3D12GraphicsPipelineState() const
+		[[nodiscard]] inline ID3D12PipelineState* getD3D12GraphicsPipelineState() const
 		{
 			return mD3D12GraphicsPipelineState;
 		}
@@ -10651,7 +10634,7 @@ namespace Direct3D12Renderer
 				ID3DBlob* d3dBlobComputeShader = static_cast<ComputeShaderHlsl&>(computeShader).getD3DBlobComputeShader();
 				d3d12ComputePipelineState.CS = { reinterpret_cast<UINT8*>(d3dBlobComputeShader->GetBufferPointer()), d3dBlobComputeShader->GetBufferSize() };
 			}
-			if (FAILED(direct3D12Renderer.getD3D12Device()->CreateComputePipelineState(&d3d12ComputePipelineState, IID_PPV_ARGS(&mD3D12ComputePipelineState))))
+			if (FAILED(direct3D12Renderer.getD3D12Device().CreateComputePipelineState(&d3d12ComputePipelineState, IID_PPV_ARGS(&mD3D12ComputePipelineState))))
 			{
 				RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Failed to create the Direct3D 12 compute pipeline state object")
 			}
@@ -10741,6 +10724,587 @@ namespace Direct3D12Renderer
 
 
 	};
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ Direct3D12Renderer/ResourceGroup.h                    ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Direct3D 12 resource group class
+	*/
+	class ResourceGroup final : public Renderer::IResourceGroup
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] rootSignature
+		*    Root signature
+		*  @param[in] d3d12DescriptorHeapType
+		*    Direct3D 12 descriptor heap type
+		*  @param[in] numberOfResources
+		*    Number of resources, having no resources is invalid
+		*  @param[in] resources
+		*    At least "numberOfResources" resource pointers, must be valid, the resource group will keep a reference to the resources
+		*  @param[in] samplerStates
+		*    If not a null pointer at least "numberOfResources" sampler state pointers, must be valid if there's at least one texture resource, the resource group will keep a reference to the sampler states
+		*/
+		ResourceGroup(RootSignature& rootSignature, D3D12_DESCRIPTOR_HEAP_TYPE d3d12DescriptorHeapType, uint32_t numberOfResources, Renderer::IResource** resources, Renderer::ISamplerState** samplerStates) :
+			IResourceGroup(static_cast<Direct3D12Renderer&>(rootSignature.getRenderer())),
+			mRootSignature(rootSignature),
+			mD3D12DescriptorHeapType(d3d12DescriptorHeapType),
+			mNumberOfResources(numberOfResources),
+			mResources(RENDERER_MALLOC_TYPED(rootSignature.getRenderer().getContext(), Renderer::IResource*, mNumberOfResources)),
+			mSamplerStates(nullptr),
+			mDescriptorHeapOffset(0),
+			mDescriptorHeapSize(static_cast<uint16_t>(numberOfResources))
+		{
+			mRootSignature.addReference();
+
+			// Sanity check
+			const Direct3D12Renderer& direct3D12Renderer = static_cast<Direct3D12Renderer&>(getRenderer());
+			RENDERER_ASSERT(direct3D12Renderer.getContext(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV == mD3D12DescriptorHeapType || D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER == mD3D12DescriptorHeapType, "Invalid Direct3D 12 descriptor heap type, must be \"D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV\" or \"D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER\"")
+
+			// Process all resources and add our reference to the renderer resource
+			if (nullptr != samplerStates)
+			{
+				mSamplerStates = RENDERER_MALLOC_TYPED(direct3D12Renderer.getContext(), Renderer::ISamplerState*, mNumberOfResources);
+				for (uint32_t resourceIndex = 0; resourceIndex < mNumberOfResources; ++resourceIndex)
+				{
+					Renderer::ISamplerState* samplerState = mSamplerStates[resourceIndex] = samplerStates[resourceIndex];
+					if (nullptr != samplerState)
+					{
+						samplerState->addReference();
+					}
+				}
+			}
+			ID3D12Device& d3d12Device = direct3D12Renderer.getD3D12Device();
+			if (D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV == d3d12DescriptorHeapType)
+			{
+				DescriptorHeap& descriptorHeap = direct3D12Renderer.getShaderResourceViewDescriptorHeap();
+				mDescriptorHeapOffset = descriptorHeap.allocate(static_cast<uint16_t>(numberOfResources));
+				const uint32_t descriptorSize = descriptorHeap.getDescriptorSize();
+				D3D12_CPU_DESCRIPTOR_HANDLE d3d12CpuDescriptorHandle = descriptorHeap.getD3D12CpuDescriptorHandleForHeapStart();
+				d3d12CpuDescriptorHandle.ptr += mDescriptorHeapOffset * descriptorSize;
+				for (uint32_t resourceIndex = 0; resourceIndex < mNumberOfResources; ++resourceIndex, ++resources)
+				{
+					Renderer::IResource* resource = *resources;
+					RENDERER_ASSERT(direct3D12Renderer.getContext(), nullptr != resource, "Invalid Direct3D 12 resource")
+					mResources[resourceIndex] = resource;
+					resource->addReference();
+
+					// Check the type of resource to set
+					// TODO(co) Some additional resource type root signature security checks in debug build?
+					const Renderer::ResourceType resourceType = resource->getResourceType();
+					switch (resourceType)
+					{
+						case Renderer::ResourceType::INDEX_BUFFER:
+						{
+							/*
+							// TODO(co)
+							const VkDescriptorBufferInfo vkDescriptorBufferInfo =
+							{
+								static_cast<IndexBuffer*>(resource)->getVkBuffer(),	// buffer (VkBuffer)
+								0,													// offset (VkDeviceSize)
+								VK_WHOLE_SIZE										// range (VkDeviceSize)
+							};
+							const VkWriteDescriptorSet vkWriteDescriptorSet =
+							{
+								VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,		// sType (VkStructureType)
+								nullptr,									// pNext (const void*)
+								mVkDescriptorSet,							// dstSet (VkDescriptorSet)
+								resourceIndex,								// dstBinding (uint32_t)
+								0,											// dstArrayElement (uint32_t)
+								1,											// descriptorCount (uint32_t)
+								VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,			// descriptorType (VkDescriptorType)
+								nullptr,									// pImageInfo (const VkDescriptorImageInfo*)
+								&vkDescriptorBufferInfo,					// pBufferInfo (const VkDescriptorBufferInfo*)
+								nullptr										// pTexelBufferView (const VkBufferView*)
+							};
+							vkUpdateDescriptorSets(vkDevice, 1, &vkWriteDescriptorSet, 0, nullptr);
+							*/
+							break;
+						}
+
+						case Renderer::ResourceType::VERTEX_BUFFER:
+						{
+							/*
+							// TODO(co)
+							const VkDescriptorBufferInfo vkDescriptorBufferInfo =
+							{
+								static_cast<VertexBuffer*>(resource)->getVkBuffer(),	// buffer (VkBuffer)
+								0,														// offset (VkDeviceSize)
+								VK_WHOLE_SIZE											// range (VkDeviceSize)
+							};
+							const VkWriteDescriptorSet vkWriteDescriptorSet =
+							{
+								VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,		// sType (VkStructureType)
+								nullptr,									// pNext (const void*)
+								mVkDescriptorSet,							// dstSet (VkDescriptorSet)
+								resourceIndex,								// dstBinding (uint32_t)
+								0,											// dstArrayElement (uint32_t)
+								1,											// descriptorCount (uint32_t)
+								VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,			// descriptorType (VkDescriptorType)
+								nullptr,									// pImageInfo (const VkDescriptorImageInfo*)
+								&vkDescriptorBufferInfo,					// pBufferInfo (const VkDescriptorBufferInfo*)
+								nullptr										// pTexelBufferView (const VkBufferView*)
+							};
+							vkUpdateDescriptorSets(vkDevice, 1, &vkWriteDescriptorSet, 0, nullptr);
+							*/
+							break;
+						}
+
+						case Renderer::ResourceType::TEXTURE_BUFFER:
+						{
+							/*
+							// TODO(co)
+							const Renderer::DescriptorRange& descriptorRange = reinterpret_cast<const Renderer::DescriptorRange*>(rootSignature.getRootSignature().parameters[rootParameterIndex].descriptorTable.descriptorRanges)[resourceIndex];
+							RENDERER_ASSERT(vulkanRenderer.getContext(), Renderer::DescriptorRangeType::SRV == descriptorRange.rangeType || Renderer::DescriptorRangeType::UAV == descriptorRange.rangeType, "Vulkan texture buffer must bound at SRV or UAV descriptor range type")
+							const VkBufferView vkBufferView = static_cast<TextureBuffer*>(resource)->getVkBufferView();
+							const VkWriteDescriptorSet vkWriteDescriptorSet =
+							{
+								VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,																													// sType (VkStructureType)
+								nullptr,																																				// pNext (const void*)
+								mVkDescriptorSet,																																		// dstSet (VkDescriptorSet)
+								resourceIndex,																																			// dstBinding (uint32_t)
+								0,																																						// dstArrayElement (uint32_t)
+								1,																																						// descriptorCount (uint32_t)
+								(Renderer::DescriptorRangeType::SRV == descriptorRange.rangeType) ? VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER : VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER,	// descriptorType (VkDescriptorType)
+								nullptr,																																				// pImageInfo (const VkDescriptorImageInfo*)
+								nullptr,																																				// pBufferInfo (const VkDescriptorBufferInfo*)
+								&vkBufferView																																			// pTexelBufferView (const VkBufferView*)
+							};
+							vkUpdateDescriptorSets(vkDevice, 1, &vkWriteDescriptorSet, 0, nullptr);
+							*/
+							break;
+						}
+
+						case Renderer::ResourceType::STRUCTURED_BUFFER:
+						{
+							/*
+							// TODO(co)
+							[[maybe_unused]] const Renderer::DescriptorRange& descriptorRange = reinterpret_cast<const Renderer::DescriptorRange*>(rootSignature.getRootSignature().parameters[rootParameterIndex].descriptorTable.descriptorRanges)[resourceIndex];
+							RENDERER_ASSERT(vulkanRenderer.getContext(), Renderer::DescriptorRangeType::SRV == descriptorRange.rangeType || Renderer::DescriptorRangeType::UAV == descriptorRange.rangeType, "Vulkan structured buffer must bound at SRV or UAV descriptor range type")
+							const VkDescriptorBufferInfo vkDescriptorBufferInfo =
+							{
+								static_cast<StructuredBuffer*>(resource)->getVkBuffer(),	// buffer (VkBuffer)
+								0,															// offset (VkDeviceSize)
+								VK_WHOLE_SIZE												// range (VkDeviceSize)
+							};
+							const VkWriteDescriptorSet vkWriteDescriptorSet =
+							{
+								VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,	// sType (VkStructureType)
+								nullptr,								// pNext (const void*)
+								mVkDescriptorSet,						// dstSet (VkDescriptorSet)
+								resourceIndex,							// dstBinding (uint32_t)
+								0,										// dstArrayElement (uint32_t)
+								1,										// descriptorCount (uint32_t)
+								VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,		// descriptorType (VkDescriptorType)
+								nullptr,								// pImageInfo (const VkDescriptorImageInfo*)
+								&vkDescriptorBufferInfo,				// pBufferInfo (const VkDescriptorBufferInfo*)
+								nullptr									// pTexelBufferView (const VkBufferView*)
+							};
+							vkUpdateDescriptorSets(vkDevice, 1, &vkWriteDescriptorSet, 0, nullptr);
+							*/
+							break;
+						}
+
+						case Renderer::ResourceType::INDIRECT_BUFFER:
+						{
+							/*
+							// TODO(co)
+							const VkDescriptorBufferInfo vkDescriptorBufferInfo =
+							{
+								static_cast<IndirectBuffer*>(resource)->getVkBuffer(),	// buffer (VkBuffer)
+								0,														// offset (VkDeviceSize)
+								VK_WHOLE_SIZE											// range (VkDeviceSize)
+							};
+							const VkWriteDescriptorSet vkWriteDescriptorSet =
+							{
+								VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,		// sType (VkStructureType)
+								nullptr,									// pNext (const void*)
+								mVkDescriptorSet,							// dstSet (VkDescriptorSet)
+								resourceIndex,								// dstBinding (uint32_t)
+								0,											// dstArrayElement (uint32_t)
+								1,											// descriptorCount (uint32_t)
+								VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,			// descriptorType (VkDescriptorType)
+								nullptr,									// pImageInfo (const VkDescriptorImageInfo*)
+								&vkDescriptorBufferInfo,					// pBufferInfo (const VkDescriptorBufferInfo*)
+								nullptr										// pTexelBufferView (const VkBufferView*)
+							};
+							vkUpdateDescriptorSets(vkDevice, 1, &vkWriteDescriptorSet, 0, nullptr);
+							*/
+							break;
+						}
+
+						case Renderer::ResourceType::UNIFORM_BUFFER:
+						{
+							/*
+							// TODO(co)
+							const VkDescriptorBufferInfo vkDescriptorBufferInfo =
+							{
+								static_cast<UniformBuffer*>(resource)->getVkBuffer(),	// buffer (VkBuffer)
+								0,														// offset (VkDeviceSize)
+								VK_WHOLE_SIZE											// range (VkDeviceSize)
+							};
+							const VkWriteDescriptorSet vkWriteDescriptorSet =
+							{
+								VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,	// sType (VkStructureType)
+								nullptr,								// pNext (const void*)
+								mVkDescriptorSet,						// dstSet (VkDescriptorSet)
+								resourceIndex,							// dstBinding (uint32_t)
+								0,										// dstArrayElement (uint32_t)
+								1,										// descriptorCount (uint32_t)
+								VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,		// descriptorType (VkDescriptorType)
+								nullptr,								// pImageInfo (const VkDescriptorImageInfo*)
+								&vkDescriptorBufferInfo,				// pBufferInfo (const VkDescriptorBufferInfo*)
+								nullptr									// pTexelBufferView (const VkBufferView*)
+							};
+							vkUpdateDescriptorSets(vkDevice, 1, &vkWriteDescriptorSet, 0, nullptr);
+							*/
+							break;
+						}
+
+						case Renderer::ResourceType::TEXTURE_1D:
+						case Renderer::ResourceType::TEXTURE_1D_ARRAY:
+						case Renderer::ResourceType::TEXTURE_2D:
+						case Renderer::ResourceType::TEXTURE_2D_ARRAY:
+						case Renderer::ResourceType::TEXTURE_3D:
+						case Renderer::ResourceType::TEXTURE_CUBE:
+						{
+							// Evaluate the texture type and create the Direct3D 12 shader resource view
+							ID3D12Resource* d3d12Resource = nullptr;
+							D3D12_SHADER_RESOURCE_VIEW_DESC d3d12ShaderResourceViewDesc = {};
+							d3d12ShaderResourceViewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+							switch (resourceType)
+							{
+								case Renderer::ResourceType::TEXTURE_1D:
+								{
+									const Texture1D* texture1D = static_cast<Texture1D*>(resource);
+									d3d12ShaderResourceViewDesc.Format = texture1D->getDxgiFormat();
+									d3d12ShaderResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE1D;
+									d3d12ShaderResourceViewDesc.Texture2D.MipLevels = texture1D->getNumberOfMipmaps();
+									d3d12Resource = texture1D->getD3D12Resource();
+									break;
+								}
+
+								case Renderer::ResourceType::TEXTURE_1D_ARRAY:
+								{
+									const Texture1DArray* texture1DArray = static_cast<Texture1DArray*>(resource);
+									d3d12ShaderResourceViewDesc.Format = texture1DArray->getDxgiFormat();
+									d3d12ShaderResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE1DARRAY;
+									d3d12ShaderResourceViewDesc.Texture2D.MipLevels = texture1DArray->getNumberOfMipmaps();
+									d3d12Resource = texture1DArray->getD3D12Resource();
+									break;
+								}
+
+								case Renderer::ResourceType::TEXTURE_2D:
+								{
+									const Texture2D* texture2D = static_cast<Texture2D*>(resource);
+									d3d12ShaderResourceViewDesc.Format = texture2D->getDxgiFormat();
+									d3d12ShaderResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+									d3d12ShaderResourceViewDesc.Texture2D.MipLevels = texture2D->getNumberOfMipmaps();
+									d3d12Resource = texture2D->getD3D12Resource();
+									break;
+								}
+
+								case Renderer::ResourceType::TEXTURE_2D_ARRAY:
+								{
+									const Texture2DArray* texture2DArray = static_cast<Texture2DArray*>(resource);
+									d3d12ShaderResourceViewDesc.Format = texture2DArray->getDxgiFormat();
+									d3d12ShaderResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
+									d3d12ShaderResourceViewDesc.Texture2D.MipLevels = texture2DArray->getNumberOfMipmaps();
+									d3d12Resource = texture2DArray->getD3D12Resource();
+									break;
+								}
+
+								case Renderer::ResourceType::TEXTURE_3D:
+								{
+									const Texture3D* texture3D = static_cast<Texture3D*>(resource);
+									d3d12ShaderResourceViewDesc.Format = texture3D->getDxgiFormat();
+									d3d12ShaderResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
+									d3d12ShaderResourceViewDesc.Texture2D.MipLevels = texture3D->getNumberOfMipmaps();
+									d3d12Resource = texture3D->getD3D12Resource();
+									break;
+								}
+
+								case Renderer::ResourceType::TEXTURE_CUBE:
+								{
+									const TextureCube* textureCube = static_cast<TextureCube*>(resource);
+									d3d12ShaderResourceViewDesc.Format = textureCube->getDxgiFormat();
+									d3d12ShaderResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+									d3d12ShaderResourceViewDesc.Texture2D.MipLevels = textureCube->getNumberOfMipmaps();
+									d3d12Resource = textureCube->getD3D12Resource();
+									break;
+								}
+
+								case Renderer::ResourceType::ROOT_SIGNATURE:
+								case Renderer::ResourceType::RESOURCE_GROUP:
+								case Renderer::ResourceType::GRAPHICS_PROGRAM:
+								case Renderer::ResourceType::VERTEX_ARRAY:
+								case Renderer::ResourceType::RENDER_PASS:
+								case Renderer::ResourceType::QUERY_POOL:
+								case Renderer::ResourceType::SWAP_CHAIN:
+								case Renderer::ResourceType::FRAMEBUFFER:
+								case Renderer::ResourceType::INDEX_BUFFER:
+								case Renderer::ResourceType::VERTEX_BUFFER:
+								case Renderer::ResourceType::INDIRECT_BUFFER:
+								case Renderer::ResourceType::TEXTURE_BUFFER:
+								case Renderer::ResourceType::STRUCTURED_BUFFER:
+								case Renderer::ResourceType::UNIFORM_BUFFER:
+								case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+								case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
+								case Renderer::ResourceType::SAMPLER_STATE:
+								case Renderer::ResourceType::VERTEX_SHADER:
+								case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
+								case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
+								case Renderer::ResourceType::GEOMETRY_SHADER:
+								case Renderer::ResourceType::FRAGMENT_SHADER:
+								case Renderer::ResourceType::COMPUTE_SHADER:
+									RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Invalid Direct3D 12 renderer backend resource type")
+									break;
+							}
+							RENDERER_ASSERT(direct3D12Renderer.getContext(), nullptr != d3d12Resource, "Invalid Direct3D 12 resource")
+							d3d12Device.CreateShaderResourceView(d3d12Resource, &d3d12ShaderResourceViewDesc, d3d12CpuDescriptorHandle);
+							break;
+						}
+
+						case Renderer::ResourceType::SAMPLER_STATE:
+						case Renderer::ResourceType::ROOT_SIGNATURE:
+						case Renderer::ResourceType::RESOURCE_GROUP:
+						case Renderer::ResourceType::GRAPHICS_PROGRAM:
+						case Renderer::ResourceType::VERTEX_ARRAY:
+						case Renderer::ResourceType::RENDER_PASS:
+						case Renderer::ResourceType::QUERY_POOL:
+						case Renderer::ResourceType::SWAP_CHAIN:
+						case Renderer::ResourceType::FRAMEBUFFER:
+						case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+						case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
+						case Renderer::ResourceType::VERTEX_SHADER:
+						case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
+						case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
+						case Renderer::ResourceType::GEOMETRY_SHADER:
+						case Renderer::ResourceType::FRAGMENT_SHADER:
+						case Renderer::ResourceType::COMPUTE_SHADER:
+							RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Invalid Direct3D 12 renderer backend resource type")
+							break;
+					}
+					d3d12CpuDescriptorHandle.ptr += descriptorSize;
+				}
+				RENDERER_ASSERT(direct3D12Renderer.getContext(), d3d12CpuDescriptorHandle.ptr == descriptorHeap.getD3D12CpuDescriptorHandleForHeapStart().ptr + (mDescriptorHeapOffset + mNumberOfResources) * descriptorSize, "Direct3D 12 descriptor heap invalid");
+			}
+			else
+			{
+				DescriptorHeap& descriptorHeap = direct3D12Renderer.getSamplerDescriptorHeap();
+				mDescriptorHeapOffset = descriptorHeap.allocate(static_cast<uint16_t>(numberOfResources));
+				const uint32_t descriptorSize = descriptorHeap.getDescriptorSize();
+				D3D12_CPU_DESCRIPTOR_HANDLE d3d12CpuDescriptorHandle = descriptorHeap.getD3D12CpuDescriptorHandleForHeapStart();
+				d3d12CpuDescriptorHandle.ptr += mDescriptorHeapOffset * descriptorSize;
+				for (uint32_t resourceIndex = 0; resourceIndex < mNumberOfResources; ++resourceIndex, ++resources)
+				{
+					Renderer::IResource* resource = *resources;
+					RENDERER_ASSERT(direct3D12Renderer.getContext(), nullptr != resource, "Invalid Direct3D 12 resource")
+					mResources[resourceIndex] = resource;
+					resource->addReference();
+
+					// Check the type of resource to set
+					// TODO(co) Some additional resource type root signature security checks in debug build?
+					switch (resource->getResourceType())
+					{
+						case Renderer::ResourceType::SAMPLER_STATE:
+							d3d12Device.CreateSampler(reinterpret_cast<const D3D12_SAMPLER_DESC*>(&static_cast<SamplerState*>(resource)->getSamplerState()), d3d12CpuDescriptorHandle);
+							break;
+
+						case Renderer::ResourceType::INDEX_BUFFER:
+						case Renderer::ResourceType::VERTEX_BUFFER:
+						case Renderer::ResourceType::TEXTURE_BUFFER:
+						case Renderer::ResourceType::STRUCTURED_BUFFER:
+						case Renderer::ResourceType::INDIRECT_BUFFER:
+						case Renderer::ResourceType::UNIFORM_BUFFER:
+						case Renderer::ResourceType::TEXTURE_1D:
+						case Renderer::ResourceType::TEXTURE_1D_ARRAY:
+						case Renderer::ResourceType::TEXTURE_2D:
+						case Renderer::ResourceType::TEXTURE_2D_ARRAY:
+						case Renderer::ResourceType::TEXTURE_3D:
+						case Renderer::ResourceType::TEXTURE_CUBE:
+						case Renderer::ResourceType::ROOT_SIGNATURE:
+						case Renderer::ResourceType::RESOURCE_GROUP:
+						case Renderer::ResourceType::GRAPHICS_PROGRAM:
+						case Renderer::ResourceType::VERTEX_ARRAY:
+						case Renderer::ResourceType::RENDER_PASS:
+						case Renderer::ResourceType::QUERY_POOL:
+						case Renderer::ResourceType::SWAP_CHAIN:
+						case Renderer::ResourceType::FRAMEBUFFER:
+						case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
+						case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
+						case Renderer::ResourceType::VERTEX_SHADER:
+						case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
+						case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
+						case Renderer::ResourceType::GEOMETRY_SHADER:
+						case Renderer::ResourceType::FRAGMENT_SHADER:
+						case Renderer::ResourceType::COMPUTE_SHADER:
+							RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Invalid Direct3D 12 renderer backend resource type")
+							break;
+					}
+					d3d12CpuDescriptorHandle.ptr += descriptorSize;
+				}
+				RENDERER_ASSERT(direct3D12Renderer.getContext(), d3d12CpuDescriptorHandle.ptr == descriptorHeap.getD3D12CpuDescriptorHandleForHeapStart().ptr + (mDescriptorHeapOffset + mNumberOfResources) * descriptorSize, "Direct3D 12 descriptor heap invalid");
+			}
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~ResourceGroup() override
+		{
+			// Remove our reference from the renderer resources
+			const Renderer::Context& context = getRenderer().getContext();
+			if (nullptr != mSamplerStates)
+			{
+				for (uint32_t resourceIndex = 0; resourceIndex < mNumberOfResources; ++resourceIndex)
+				{
+					Renderer::ISamplerState* samplerState = mSamplerStates[resourceIndex];
+					if (nullptr != samplerState)
+					{
+						samplerState->releaseReference();
+					}
+				}
+				RENDERER_FREE(context, mSamplerStates);
+			}
+			for (uint32_t resourceIndex = 0; resourceIndex < mNumberOfResources; ++resourceIndex)
+			{
+				mResources[resourceIndex]->releaseReference();
+			}
+			RENDERER_FREE(context, mResources);
+			mRootSignature.releaseReference();
+
+			// Release descriptor heap
+			const Direct3D12Renderer& direct3D12Renderer = static_cast<Direct3D12Renderer&>(getRenderer());
+			((D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV == mD3D12DescriptorHeapType) ? direct3D12Renderer.getShaderResourceViewDescriptorHeap() : direct3D12Renderer.getSamplerDescriptorHeap()).release(mDescriptorHeapOffset, mDescriptorHeapSize);
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D 12 descriptor heap type
+		*
+		*  @return
+		*    The Direct3D 12 descriptor heap type ("D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV" or "D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER")
+		*/
+		[[nodiscard]] inline D3D12_DESCRIPTOR_HEAP_TYPE getD3D12DescriptorHeapType() const
+		{
+			return mD3D12DescriptorHeapType;
+		}
+
+		/**
+		*  @brief
+		*    Return the descriptor heap offset
+		*
+		*  @return
+		*    The descriptor heap offset
+		*/
+		[[nodiscard]] inline uint16_t getDescriptorHeapOffset() const
+		{
+			return mDescriptorHeapOffset;
+		}
+
+		/**
+		*  @brief
+		*    Return the descriptor heap size
+		*
+		*  @return
+		*    The descriptor heap size
+		*/
+		[[nodiscard]] inline uint16_t getDescriptorHeapSize() const
+		{
+			return mDescriptorHeapSize;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		#ifdef RENDERER_DEBUG
+			virtual void setDebugName(const char*) override
+			{
+				// Not possible since there's only a shared Direct3D 12 descriptor heap for the resource groups
+			}
+		#endif
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), ResourceGroup, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit ResourceGroup(const ResourceGroup& source) = delete;
+		ResourceGroup& operator =(const ResourceGroup& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		RootSignature&			   mRootSignature;				///< Root signature
+		D3D12_DESCRIPTOR_HEAP_TYPE mD3D12DescriptorHeapType;	///< The Direct3D 12 descriptor heap type ("D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV" or "D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER")
+		uint32_t				   mNumberOfResources;			///< Number of resources this resource group groups together
+		Renderer::IResource**	   mResources;					///< Renderer resource, we keep a reference to it
+		Renderer::ISamplerState**  mSamplerStates;				///< Sampler states, we keep a reference to it
+		uint16_t				   mDescriptorHeapOffset;
+		uint16_t				   mDescriptorHeapSize;
+
+
+	};
+
+	Renderer::IResourceGroup* RootSignature::createResourceGroup([[maybe_unused]] uint32_t rootParameterIndex, uint32_t numberOfResources, Renderer::IResource** resources, [[maybe_unused]] Renderer::ISamplerState** samplerStates)
+	{
+		// Sanity checks
+		Direct3D12Renderer& direct3D12Renderer = static_cast<Direct3D12Renderer&>(getRenderer());
+		const Renderer::Context& context = direct3D12Renderer.getContext();
+		RENDERER_ASSERT(context, numberOfResources > 0, "The number of Direct3D 12 resources must not be zero")
+		RENDERER_ASSERT(context, nullptr != resources, "The Direct3D 12 resource pointers must be valid")
+
+		// Figure out the Direct3D 12 descriptor heap type
+		D3D12_DESCRIPTOR_HEAP_TYPE d3d12DescriptorHeapType = D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES;
+		for (uint32_t resourceIndex = 0; resourceIndex < numberOfResources; ++resourceIndex)
+		{
+			Renderer::IResource* resource = *resources;
+			RENDERER_ASSERT(context, nullptr != resource, "Invalid Direct3D 12 resource")
+			const Renderer::ResourceType resourceType = resource->getResourceType();
+			if (Renderer::ResourceType::SAMPLER_STATE == resourceType)
+			{
+				RENDERER_ASSERT(context, D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES == d3d12DescriptorHeapType || D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER == d3d12DescriptorHeapType, "Direct3D 12 resource groups can't mix samplers with other resource types")
+				d3d12DescriptorHeapType = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
+			}
+			else
+			{
+				RENDERER_ASSERT(context, D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES == d3d12DescriptorHeapType || D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV == d3d12DescriptorHeapType, "Direct3D 12 resource groups can't mix samplers with other resource types")
+				d3d12DescriptorHeapType = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+			}
+		}
+
+		// Create resource group
+		return RENDERER_NEW(context, ResourceGroup)(*this, d3d12DescriptorHeapType, numberOfResources, resources, samplerStates);
+	}
 
 
 
@@ -10839,9 +11403,7 @@ namespace
 				const Renderer::Command::DrawGraphics* realData = static_cast<const Renderer::Command::DrawGraphics*>(data);
 				if (nullptr != realData->indirectBuffer)
 				{
-					// No resource owner security check in here, we only support emulated indirect buffer
-					// TODO(co) Implement indirect buffer support, see e.g. "Voxel visualization using DrawIndexedInstancedIndirect" - http://www.alexandre-pestana.com/tag/directx/ for hints
-					static_cast<Direct3D12Renderer::Direct3D12Renderer&>(renderer).drawGraphicsEmulated(realData->indirectBuffer->getEmulationData(), realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<Direct3D12Renderer::Direct3D12Renderer&>(renderer).drawGraphics(*realData->indirectBuffer, realData->indirectBufferOffset, realData->numberOfDraws);
 				}
 				else
 				{
@@ -10854,9 +11416,7 @@ namespace
 				const Renderer::Command::DrawIndexedGraphics* realData = static_cast<const Renderer::Command::DrawIndexedGraphics*>(data);
 				if (nullptr != realData->indirectBuffer)
 				{
-					// No resource owner security check in here, we only support emulated indirect buffer
-					// TODO(co) Implement indirect buffer support, see e.g. "Voxel visualization using DrawIndexedInstancedIndirect" - http://www.alexandre-pestana.com/tag/directx/ for hints
-					static_cast<Direct3D12Renderer::Direct3D12Renderer&>(renderer).drawIndexedGraphicsEmulated(realData->indirectBuffer->getEmulationData(), realData->indirectBufferOffset, realData->numberOfDraws);
+					static_cast<Direct3D12Renderer::Direct3D12Renderer&>(renderer).drawIndexedGraphics(*realData->indirectBuffer, realData->indirectBufferOffset, realData->numberOfDraws);
 				}
 				else
 				{
@@ -11064,8 +11624,18 @@ namespace Direct3D12Renderer
 		mD3D12GraphicsCommandList(nullptr),
 		mShaderLanguageHlsl(nullptr),
 		// mD3D12QueryFlush(nullptr),	// TODO(co) Direct3D 12 update
+		mShaderResourceViewDescriptorHeap(nullptr),
+		mRenderTargetViewDescriptorHeap(nullptr),
+		mDepthStencilViewDescriptorHeap(nullptr),
+		mSamplerDescriptorHeap(nullptr),
 		mRenderTarget(nullptr),
-		mD3D12PrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_UNDEFINED)
+		mD3D12PrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_UNDEFINED),
+		mGraphicsRootSignature(nullptr),
+		mComputeRootSignature(nullptr),
+		mVertexArray(nullptr)
+		#ifdef RENDERER_DEBUG
+			, mDebugBetweenBeginEndScene(false)
+		#endif
 	{
 		mDirect3D12RuntimeLinking = RENDERER_NEW(mContext, Direct3D12RuntimeLinking)(*this);
 
@@ -11137,6 +11707,13 @@ namespace Direct3D12Renderer
 							// Command lists are created in the recording state, but there is nothing to record yet. The main loop expects it to be closed, so close it now.
 							if (SUCCEEDED(mD3D12GraphicsCommandList->Close()))
 							{
+								// Create descriptor heaps
+								// TODO(co) The initial descriptor heap sizes are probably too small, additionally the descriptor heap should be able to dynamically grow during runtime (in case it can't be avoided)
+								mShaderResourceViewDescriptorHeap = RENDERER_NEW(mContext, DescriptorHeap)(mContext.getAllocator(), *mD3D12Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 64, true);
+								mRenderTargetViewDescriptorHeap   = RENDERER_NEW(mContext, DescriptorHeap)(mContext.getAllocator(), *mD3D12Device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV,		   16, false);
+								mDepthStencilViewDescriptorHeap	  = RENDERER_NEW(mContext, DescriptorHeap)(mContext.getAllocator(), *mD3D12Device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV,		   16, false);
+								mSamplerDescriptorHeap			  = RENDERER_NEW(mContext, DescriptorHeap)(mContext.getAllocator(), *mD3D12Device, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER,	   16, true);
+
 								// Initialize the capabilities
 								initializeCapabilities();
 							}
@@ -11165,6 +11742,9 @@ namespace Direct3D12Renderer
 
 	Direct3D12Renderer::~Direct3D12Renderer()
 	{
+		// Set no vertex array reference, in case we have one
+		setGraphicsVertexArray(nullptr);
+
 		// Release instances
 		if (nullptr != mRenderTarget)
 		{
@@ -11202,6 +11782,22 @@ namespace Direct3D12Renderer
 			mD3D12QueryFlush->Release();
 		}
 		*/
+
+		// Release the graphics and compute root signature instance, in case we have one
+		if (nullptr != mGraphicsRootSignature)
+		{
+			mGraphicsRootSignature->releaseReference();
+		}
+		if (nullptr != mComputeRootSignature)
+		{
+			mComputeRootSignature->releaseReference();
+		}
+
+		// Release descriptor heaps
+		RENDERER_DELETE(mContext, DescriptorHeap, mShaderResourceViewDescriptorHeap);
+		RENDERER_DELETE(mContext, DescriptorHeap, mRenderTargetViewDescriptorHeap);
+		RENDERER_DELETE(mContext, DescriptorHeap, mDepthStencilViewDescriptorHeap);
+		RENDERER_DELETE(mContext, DescriptorHeap, mSamplerDescriptorHeap);
 
 		// Release the HLSL shader language instance, in case we have one
 		if (nullptr != mShaderLanguageHlsl)
@@ -11250,17 +11846,20 @@ namespace Direct3D12Renderer
 	//[-------------------------------------------------------]
 	void Direct3D12Renderer::setGraphicsRootSignature(Renderer::IRootSignature* rootSignature)
 	{
-		if (nullptr != rootSignature)
+		if (nullptr != mGraphicsRootSignature)
 		{
+			mGraphicsRootSignature->releaseReference();
+		}
+		mGraphicsRootSignature = static_cast<RootSignature*>(rootSignature);
+		if (nullptr != mGraphicsRootSignature)
+		{
+			mGraphicsRootSignature->addReference();
+
 			// Sanity check
 			DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *rootSignature)
 
 			// Set graphics root signature
-			mD3D12GraphicsCommandList->SetGraphicsRootSignature(static_cast<RootSignature*>(rootSignature)->getD3D12RootSignature());
-		}
-		else
-		{
-			// TODO(co) Handle this situation?
+			mD3D12GraphicsCommandList->SetGraphicsRootSignature(mGraphicsRootSignature->getD3D12RootSignature());
 		}
 	}
 
@@ -11289,184 +11888,86 @@ namespace Direct3D12Renderer
 		}
 	}
 
-	void Direct3D12Renderer::setGraphicsResourceGroup(uint32_t, Renderer::IResourceGroup*)
+	void Direct3D12Renderer::setGraphicsResourceGroup(uint32_t rootParameterIndex, Renderer::IResourceGroup* resourceGroup)
 	{
-		// TODO(co) Implement resource group
-		RENDERER_ASSERT(mContext, false, "Direct3D 12 setGraphicsResourceGroup() isn't implemented, yet")
-		/*
-		if (nullptr != resource)
+		// Security checks
+		#ifdef RENDERER_DEBUG
+		{
+			if (nullptr == mGraphicsRootSignature)
+			{
+				RENDERER_LOG(mContext, CRITICAL, "No Direct3D 12 renderer backend graphics root signature set")
+				return;
+			}
+			const Renderer::RootSignature& rootSignature = mGraphicsRootSignature->getRootSignature();
+			if (rootParameterIndex >= rootSignature.numberOfParameters)
+			{
+				RENDERER_LOG(mContext, CRITICAL, "The Direct3D 12 renderer backend root parameter index is out of bounds")
+				return;
+			}
+			const Renderer::RootParameter& rootParameter = rootSignature.parameters[rootParameterIndex];
+			if (Renderer::RootParameterType::DESCRIPTOR_TABLE != rootParameter.parameterType)
+			{
+				RENDERER_LOG(mContext, CRITICAL, "The Direct3D 12 renderer backend root parameter index doesn't reference a descriptor table")
+				return;
+			}
+			if (nullptr == reinterpret_cast<const Renderer::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges))
+			{
+				RENDERER_LOG(mContext, CRITICAL, "The Direct3D 12 renderer backend descriptor ranges is a null pointer")
+				return;
+			}
+		}
+		#endif
+
+		if (nullptr != resourceGroup)
 		{
 			// Sanity check
-			DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *resource)
+			DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *resourceGroup)
 
-			switch (resource->getResourceType())
-			{
-				case Renderer::ResourceType::UNIFORM_BUFFER:
-				{
-					ID3D12DescriptorHeap* d3D12DescriptorHeap = static_cast<UniformBuffer*>(resource)->getD3D12DescriptorHeap();
-					if (nullptr != d3D12DescriptorHeap)
-					{
-						// TODO(co) Just a first Direct3D 12 test, don't call "ID3D12GraphicsCommandList::SetDescriptorHeaps()" that often (pipeline flush)
-						ID3D12DescriptorHeap* ppHeaps[] = { d3D12DescriptorHeap };
-						mD3D12GraphicsCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
-
-						mD3D12GraphicsCommandList->SetGraphicsRootDescriptorTable(rootParameterIndex, d3D12DescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-					}
-					break;
-				}
-
-				case Renderer::ResourceType::TEXTURE_1D:
-				{
-					ID3D12DescriptorHeap* d3D12DescriptorHeap = static_cast<Texture1D*>(resource)->getD3D12DescriptorHeap();
-					if (nullptr != d3D12DescriptorHeap)
-					{
-						// TODO(co) Just a first Direct3D 12 test, don't call "ID3D12GraphicsCommandList::SetDescriptorHeaps()" that often (pipeline flush)
-						ID3D12DescriptorHeap* ppHeaps[] = { d3D12DescriptorHeap };
-						mD3D12GraphicsCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
-
-						mD3D12GraphicsCommandList->SetGraphicsRootDescriptorTable(rootParameterIndex, d3D12DescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-					}
-					break;
-				}
-
-				case Renderer::ResourceType::TEXTURE_1D_ARRAY:
-				{
-					// TODO(co) Implement 1D texture array
-				//	ID3D12DescriptorHeap* d3D12DescriptorHeap = static_cast<Texture1DArray*>(resource)->getD3D12DescriptorHeap();
-				//	if (nullptr != d3D12DescriptorHeap)
-				//	{
-				//		// TODO(co) Just a first Direct3D 12 test, don't call "ID3D12GraphicsCommandList::SetDescriptorHeaps()" that often (pipeline flush)
-				//		ID3D12DescriptorHeap* ppHeaps[] = { d3D12DescriptorHeap };
-				//		mD3D12GraphicsCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
-
-				//		mD3D12GraphicsCommandList->SetGraphicsRootDescriptorTable(rootParameterIndex, d3D12DescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-				//	}
-					break;
-				}
-
-				case Renderer::ResourceType::TEXTURE_2D:
-				{
-					ID3D12DescriptorHeap* d3D12DescriptorHeap = static_cast<Texture2D*>(resource)->getD3D12DescriptorHeap();
-					if (nullptr != d3D12DescriptorHeap)
-					{
-						// TODO(co) Just a first Direct3D 12 test, don't call "ID3D12GraphicsCommandList::SetDescriptorHeaps()" that often (pipeline flush)
-						ID3D12DescriptorHeap* ppHeaps[] = { d3D12DescriptorHeap };
-						mD3D12GraphicsCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
-
-						mD3D12GraphicsCommandList->SetGraphicsRootDescriptorTable(rootParameterIndex, d3D12DescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-					}
-					break;
-				}
-
-				case Renderer::ResourceType::TEXTURE_2D_ARRAY:
-				{
-					// TODO(co) Implement 2D texture array
-				//	ID3D12DescriptorHeap* d3D12DescriptorHeap = static_cast<Texture2DArray*>(resource)->getD3D12DescriptorHeap();
-				//	if (nullptr != d3D12DescriptorHeap)
-				//	{
-				//		// TODO(co) Just a first Direct3D 12 test, don't call "ID3D12GraphicsCommandList::SetDescriptorHeaps()" that often (pipeline flush)
-				//		ID3D12DescriptorHeap* ppHeaps[] = { d3D12DescriptorHeap };
-				//		mD3D12GraphicsCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
-
-				//		mD3D12GraphicsCommandList->SetGraphicsRootDescriptorTable(rootParameterIndex, d3D12DescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-				//	}
-					break;
-				}
-
-				case Renderer::ResourceType::TEXTURE_3D:
-				{
-					ID3D12DescriptorHeap* d3D12DescriptorHeap = static_cast<Texture3D*>(resource)->getD3D12DescriptorHeap();
-					if (nullptr != d3D12DescriptorHeap)
-					{
-						// TODO(co) Just a first Direct3D 12 test, don't call "ID3D12GraphicsCommandList::SetDescriptorHeaps()" that often (pipeline flush)
-						ID3D12DescriptorHeap* ppHeaps[] = { d3D12DescriptorHeap };
-						mD3D12GraphicsCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
-
-						mD3D12GraphicsCommandList->SetGraphicsRootDescriptorTable(rootParameterIndex, d3D12DescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-					}
-					break;
-				}
-
-				case Renderer::ResourceType::TEXTURE_CUBE:
-				{
-					ID3D12DescriptorHeap* d3D12DescriptorHeap = static_cast<TextureCube*>(resource)->getD3D12DescriptorHeap();
-					if (nullptr != d3D12DescriptorHeap)
-					{
-						// TODO(co) Just a first Direct3D 12 test, don't call "ID3D12GraphicsCommandList::SetDescriptorHeaps()" that often (pipeline flush)
-						ID3D12DescriptorHeap* ppHeaps[] = { d3D12DescriptorHeap };
-						mD3D12GraphicsCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
-
-						mD3D12GraphicsCommandList->SetGraphicsRootDescriptorTable(rootParameterIndex, d3D12DescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-					}
-					break;
-				}
-
-				case Renderer::ResourceType::SAMPLER_STATE:
-				{
-					ID3D12DescriptorHeap* d3D12DescriptorHeap = static_cast<SamplerState*>(resource)->getD3D12DescriptorHeap();
-					if (nullptr != d3D12DescriptorHeap)
-					{
-						// TODO(co) Just a first Direct3D 12 test, don't call "ID3D12GraphicsCommandList::SetDescriptorHeaps()" that often (pipeline flush)
-						ID3D12DescriptorHeap* ppHeaps[] = { d3D12DescriptorHeap };
-						mD3D12GraphicsCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
-
-						mD3D12GraphicsCommandList->SetGraphicsRootDescriptorTable(rootParameterIndex, d3D12DescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-					}
-					break;
-				}
-
-				case Renderer::ResourceType::ROOT_SIGNATURE:
-				case Renderer::ResourceType::RESOURCE_GROUP:
-				case Renderer::ResourceType::GRAPHICS_PROGRAM:
-				case Renderer::ResourceType::VERTEX_ARRAY:
-				case Renderer::ResourceType::RENDER_PASS:
-				case Renderer::ResourceType::QUERY_POOL:
-				case Renderer::ResourceType::SWAP_CHAIN:
-				case Renderer::ResourceType::FRAMEBUFFER:
-				case Renderer::ResourceType::INDEX_BUFFER:
-				case Renderer::ResourceType::VERTEX_BUFFER:
-				case Renderer::ResourceType::TEXTURE_BUFFER:
-				case Renderer::ResourceType::STRUCTURED_BUFFER:
-				case Renderer::ResourceType::INDIRECT_BUFFER:
-				case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
-				case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
-				case Renderer::ResourceType::VERTEX_SHADER:
-				case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
-				case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
-				case Renderer::ResourceType::GEOMETRY_SHADER:
-				case Renderer::ResourceType::FRAGMENT_SHADER:
-				case Renderer::ResourceType::COMPUTE_SHADER:
-					RENDERER_LOG(mContext, CRITICAL, "Invalid Direct3D 12 renderer backend resource type")
-					break;
-			}
+			// Set Direct3D 12 graphics root descriptor table
+			const ResourceGroup* direct3D12ResourceGroup = static_cast<ResourceGroup*>(resourceGroup);
+			const DescriptorHeap& descriptorHeap =  (direct3D12ResourceGroup->getD3D12DescriptorHeapType() == D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) ? *mShaderResourceViewDescriptorHeap : *mSamplerDescriptorHeap;
+			D3D12_GPU_DESCRIPTOR_HANDLE d3d12GpuDescriptorHandle = descriptorHeap.getD3D12GpuDescriptorHandleForHeapStart();
+			d3d12GpuDescriptorHandle.ptr += direct3D12ResourceGroup->getDescriptorHeapOffset() * descriptorHeap.getDescriptorSize();
+			mD3D12GraphicsCommandList->SetGraphicsRootDescriptorTable(rootParameterIndex, d3d12GpuDescriptorHandle);
 		}
 		else
 		{
 			// TODO(co) Handle this situation?
 		}
-		*/
 	}
 
 	void Direct3D12Renderer::setGraphicsVertexArray(Renderer::IVertexArray* vertexArray)
 	{
 		// Input-assembler (IA) stage
-		if (nullptr != vertexArray)
+
+		// New vertex array?
+		if (mVertexArray != vertexArray)
 		{
-			// Sanity check
-			DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *vertexArray)
+			if (nullptr != vertexArray)
+			{
+				// Sanity check
+				DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *vertexArray)
 
-			// Begin debug event
-			RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(this)
+				// Begin debug event
+				RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(this)
 
-			static_cast<VertexArray*>(vertexArray)->setDirect3DIASetInputLayoutAndStreamSource(*mD3D12GraphicsCommandList);
+				// Unset the currently used vertex array
+				unsetGraphicsVertexArray();
 
-			// End debug event
-			RENDERER_END_DEBUG_EVENT(this)
-		}
-		else
-		{
-			// Set no Direct3D 12 input layout
-			mD3D12GraphicsCommandList->IASetVertexBuffers(0, 0, nullptr);
+				// Set new vertex array and add a reference to it
+				mVertexArray = static_cast<VertexArray*>(vertexArray);
+				mVertexArray->addReference();
+
+				mVertexArray->setDirect3DIASetInputLayoutAndStreamSource(*mD3D12GraphicsCommandList);
+
+				// End debug event
+				RENDERER_END_DEBUG_EVENT(this)
+			}
+			else
+			{
+				// Unset the currently used vertex array
+				unsetGraphicsVertexArray();
+			}
 		}
 	}
 
@@ -11824,6 +12325,18 @@ namespace Direct3D12Renderer
 		RENDERER_END_DEBUG_EVENT(this)
 	}
 
+	void Direct3D12Renderer::drawGraphics(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
+	{
+		// Sanity checks
+		DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
+		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of Direct3D 12 draws must not be zero")
+		// It's possible to draw without "mVertexArray"
+
+		// Execute Direct3D 12 indirect
+		const IndirectBuffer& d3d12IndirectBuffer = static_cast<const IndirectBuffer&>(indirectBuffer);
+		mD3D12GraphicsCommandList->ExecuteIndirect(d3d12IndirectBuffer.getD3D12CommandSignature(), numberOfDraws, d3d12IndirectBuffer.getD3D12Resource(), indirectBufferOffset, nullptr, 0);
+	}
+
 	void Direct3D12Renderer::drawGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
 		// Sanity checks
@@ -11834,7 +12347,6 @@ namespace Direct3D12Renderer
 		emulationData += indirectBufferOffset;
 
 		// Emit the draw calls
-		// TODD(co) Add multi-draw-indirect support
 		#ifdef RENDERER_DEBUG
 			if (numberOfDraws > 1)
 			{
@@ -11864,6 +12376,19 @@ namespace Direct3D12Renderer
 		#endif
 	}
 
+	void Direct3D12Renderer::drawIndexedGraphics(const Renderer::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
+	{
+		// Sanity checks
+		DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, indirectBuffer)
+		RENDERER_ASSERT(mContext, numberOfDraws > 0, "Number of Direct3D 12 draws must not be zero")
+		RENDERER_ASSERT(mContext, nullptr != mVertexArray, "Direct3D 12 draw indexed needs a set vertex array")
+		RENDERER_ASSERT(mContext, nullptr != mVertexArray->getIndexBuffer(), "Direct3D 12 draw indexed needs a set vertex array which contains an index buffer")
+
+		// Execute Direct3D 12 indirect
+		const IndirectBuffer& d3d12IndirectBuffer = static_cast<const IndirectBuffer&>(indirectBuffer);
+		mD3D12GraphicsCommandList->ExecuteIndirect(d3d12IndirectBuffer.getD3D12CommandSignature(), numberOfDraws, d3d12IndirectBuffer.getD3D12Resource(), indirectBufferOffset, nullptr, 0);
+	}
+
 	void Direct3D12Renderer::drawIndexedGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
 		// Sanity checks
@@ -11874,7 +12399,6 @@ namespace Direct3D12Renderer
 		emulationData += indirectBufferOffset;
 
 		// Emit the draw calls
-		// TODD(co) Add multi-indexed-draw-indirect support
 		#ifdef RENDERER_DEBUG
 			if (numberOfDraws > 1)
 			{
@@ -11911,17 +12435,20 @@ namespace Direct3D12Renderer
 	//[-------------------------------------------------------]
 	void Direct3D12Renderer::setComputeRootSignature(Renderer::IRootSignature* rootSignature)
 	{
-		if (nullptr != rootSignature)
+		if (nullptr != mComputeRootSignature)
 		{
+			mComputeRootSignature->releaseReference();
+		}
+		mComputeRootSignature = static_cast<RootSignature*>(rootSignature);
+		if (nullptr != mComputeRootSignature)
+		{
+			mComputeRootSignature->addReference();
+
 			// Sanity check
 			DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *rootSignature)
 
 			// Set compute root signature
-			mD3D12GraphicsCommandList->SetComputeRootSignature(static_cast<RootSignature*>(rootSignature)->getD3D12RootSignature());
-		}
-		else
-		{
-			// TODO(co) Handle this situation?
+			mD3D12GraphicsCommandList->SetComputeRootSignature(mComputeRootSignature->getD3D12RootSignature());
 		}
 	}
 
@@ -11941,10 +12468,52 @@ namespace Direct3D12Renderer
 		}
 	}
 
-	void Direct3D12Renderer::setComputeResourceGroup(uint32_t, Renderer::IResourceGroup*)
+	void Direct3D12Renderer::setComputeResourceGroup(uint32_t rootParameterIndex, Renderer::IResourceGroup* resourceGroup)
 	{
-		// TODO(co) Implement resource group
-		RENDERER_ASSERT(mContext, false, "Direct3D 12 setComputeResourceGroup() isn't implemented, yet")
+		// Security checks
+		#ifdef RENDERER_DEBUG
+		{
+			if (nullptr == mComputeRootSignature)
+			{
+				RENDERER_LOG(mContext, CRITICAL, "No Direct3D 12 renderer backend compute root signature set")
+				return;
+			}
+			const Renderer::RootSignature& rootSignature = mComputeRootSignature->getRootSignature();
+			if (rootParameterIndex >= rootSignature.numberOfParameters)
+			{
+				RENDERER_LOG(mContext, CRITICAL, "The Direct3D 12 renderer backend root parameter index is out of bounds")
+				return;
+			}
+			const Renderer::RootParameter& rootParameter = rootSignature.parameters[rootParameterIndex];
+			if (Renderer::RootParameterType::DESCRIPTOR_TABLE != rootParameter.parameterType)
+			{
+				RENDERER_LOG(mContext, CRITICAL, "The Direct3D 12 renderer backend root parameter index doesn't reference a descriptor table")
+				return;
+			}
+			if (nullptr == reinterpret_cast<const Renderer::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges))
+			{
+				RENDERER_LOG(mContext, CRITICAL, "The Direct3D 12 renderer backend descriptor ranges is a null pointer")
+				return;
+			}
+		}
+		#endif
+
+		if (nullptr != resourceGroup)
+		{
+			// Sanity check
+			DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, *resourceGroup)
+
+			// Set Direct3D 12 compute root descriptor table
+			const ResourceGroup* direct3D12ResourceGroup = static_cast<ResourceGroup*>(resourceGroup);
+			const DescriptorHeap& descriptorHeap =  (direct3D12ResourceGroup->getD3D12DescriptorHeapType() == D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) ? *mShaderResourceViewDescriptorHeap : *mSamplerDescriptorHeap;
+			D3D12_GPU_DESCRIPTOR_HANDLE d3d12GpuDescriptorHandle = descriptorHeap.getD3D12GpuDescriptorHandleForHeapStart();
+			d3d12GpuDescriptorHandle.ptr += direct3D12ResourceGroup->getDescriptorHeapOffset() * descriptorHeap.getDescriptorSize();
+			mD3D12GraphicsCommandList->SetComputeRootDescriptorTable(rootParameterIndex, d3d12GpuDescriptorHandle);
+		}
+		else
+		{
+			// TODO(co) Handle this situation?
+		}
 	}
 
 	void Direct3D12Renderer::dispatchCompute(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
@@ -12401,6 +12970,12 @@ namespace Direct3D12Renderer
 	{
 		bool result = false;	// Error by default
 
+		// Sanity check
+		#ifdef RENDERER_DEBUG
+			RENDERER_ASSERT(mContext, false == mDebugBetweenBeginEndScene, "Direct3D 12: Begin scene was called while scene rendering is already in progress, missing end scene call?")
+			mDebugBetweenBeginEndScene = true;
+		#endif
+
 		// Not required when using Direct3D 12
 		// TODO(co) Until we have a command list interface, we must perform the command list handling in here
 
@@ -12413,6 +12988,12 @@ namespace Direct3D12Renderer
 			// list, that command list can then be reset at any time and must be before
 			// re-recording.
 			result = SUCCEEDED(mD3D12GraphicsCommandList->Reset(mD3D12CommandAllocator, nullptr));
+			if (result)
+			{
+				// Set descriptor heaps
+				ID3D12DescriptorHeap* d3d12DescriptorHeaps[] = { mShaderResourceViewDescriptorHeap->getD3D12DescriptorHeap(), mSamplerDescriptorHeap->getD3D12DescriptorHeap() };
+				mD3D12GraphicsCommandList->SetDescriptorHeaps(2, d3d12DescriptorHeaps);
+			}
 		}
 
 		// Reset our cached states where needed
@@ -12444,14 +13025,20 @@ namespace Direct3D12Renderer
 
 	void Direct3D12Renderer::endScene()
 	{
-		// Not required when using Direct3D 12
-		// TODO(co) Until we have a command list interface, we must perform the command list handling in here
+		// Sanity check
+		#ifdef RENDERER_DEBUG
+			RENDERER_ASSERT(mContext, true == mDebugBetweenBeginEndScene, "Direct3D 12: End scene was called while scene rendering isn't in progress, missing start scene call?")
+			mDebugBetweenBeginEndScene = false;
+		#endif
 
 		// Begin debug event
 		RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(this)
 
 		// We need to forget about the currently set render target
 		setGraphicsRenderTarget(nullptr);
+
+		// We need to forget about the currently set vertex array
+		unsetGraphicsVertexArray();
 
 		// End debug event
 		RENDERER_END_DEBUG_EVENT(this)
@@ -12461,6 +13048,18 @@ namespace Direct3D12Renderer
 		{
 			ID3D12CommandList* commandLists[] = { mD3D12GraphicsCommandList };
 			mD3D12CommandQueue->ExecuteCommandLists(_countof(commandLists), commandLists);
+		}
+
+		// Release the graphics and compute root signature instance, in case we have one
+		if (nullptr != mGraphicsRootSignature)
+		{
+			mGraphicsRootSignature->releaseReference();
+			mGraphicsRootSignature = nullptr;
+		}
+		if (nullptr != mComputeRootSignature)
+		{
+			mComputeRootSignature->releaseReference();
+			mComputeRootSignature = nullptr;
 		}
 	}
 
@@ -12848,6 +13447,20 @@ namespace Direct3D12Renderer
 
 		// Is there support for compute shaders (CS)?
 		mCapabilities.computeShader = true;
+	}
+
+	void Direct3D12Renderer::unsetGraphicsVertexArray()
+	{
+		// Release the currently used vertex array reference, in case we have one
+		if (nullptr != mVertexArray)
+		{
+			// Set no Direct3D 12 input layout
+			mD3D12GraphicsCommandList->IASetVertexBuffers(0, 0, nullptr);
+
+			// Release reference
+			mVertexArray->releaseReference();
+			mVertexArray = nullptr;
+		}
 	}
 
 	#ifdef RENDERER_DEBUG

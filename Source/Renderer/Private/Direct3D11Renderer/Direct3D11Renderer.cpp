@@ -2866,6 +2866,9 @@ namespace Direct3D11Renderer
 		// Generate asynchronous mipmaps for textures
 		std::mutex						 mGenerateAsynchronousMipmapsForTexturesMutex;
 		std::vector<Renderer::ITexture*> mGenerateAsynchronousMipmapsForTextures;
+		#ifdef RENDERER_DEBUG
+			bool mDebugBetweenBeginEndScene;	///< Just here for state tracking in debug builds
+		#endif
 
 
 	};
@@ -12133,6 +12136,9 @@ namespace Direct3D11Renderer
 		mD3d11GeometryShader(nullptr),
 		mD3d11PixelShader(nullptr),
 		mD3d11ComputeShader(nullptr)
+		#ifdef RENDERER_DEBUG
+			, mDebugBetweenBeginEndScene(false)
+		#endif
 	{
 		mDirect3D11RuntimeLinking = RENDERER_NEW(context, Direct3D11RuntimeLinking)(*this);
 
@@ -14364,6 +14370,12 @@ namespace Direct3D11Renderer
 	{
 		// Not required when using Direct3D 11
 
+		// Sanity check
+		#ifdef RENDERER_DEBUG
+			RENDERER_ASSERT(mContext, false == mDebugBetweenBeginEndScene, "Direct3D 11: Begin scene was called while scene rendering is already in progress, missing end scene call?")
+			mDebugBetweenBeginEndScene = true;
+		#endif
+
 		// Done
 		return true;
 	}
@@ -14463,6 +14475,12 @@ namespace Direct3D11Renderer
 
 	void Direct3D11Renderer::endScene()
 	{
+		// Sanity check
+		#ifdef RENDERER_DEBUG
+			RENDERER_ASSERT(mContext, true == mDebugBetweenBeginEndScene, "Direct3D 11: End scene was called while scene rendering isn't in progress, missing start scene call?")
+			mDebugBetweenBeginEndScene = false;
+		#endif
+
 		// We need to forget about the currently set render target
 		setGraphicsRenderTarget(nullptr);
 	}

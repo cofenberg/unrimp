@@ -1972,6 +1972,9 @@ namespace Direct3D9Renderer
 		// State cache to avoid making redundant Direct3D 9 calls
 		IDirect3DVertexShader9* mDirect3DVertexShader9;
 		IDirect3DPixelShader9*  mDirect3DPixelShader9;
+		#ifdef RENDERER_DEBUG
+			bool mDebugBetweenBeginEndScene;	///< Just here for state tracking in debug builds
+		#endif
 
 
 	};
@@ -7652,6 +7655,9 @@ namespace Direct3D9Renderer
 		// State cache to avoid making redundant Direct3D 9 calls
 		mDirect3DVertexShader9(nullptr),
 		mDirect3DPixelShader9(nullptr)
+		#ifdef RENDERER_DEBUG
+			, mDebugBetweenBeginEndScene(false)
+		#endif
 	{
 		// Is Direct3D 9 available?
 		mDirect3D9RuntimeLinking = RENDERER_NEW(mContext, Direct3D9RuntimeLinking)(*this);
@@ -9105,6 +9111,13 @@ namespace Direct3D9Renderer
 	//[-------------------------------------------------------]
 	bool Direct3D9Renderer::beginScene()
 	{
+		// Sanity check
+		#ifdef RENDERER_DEBUG
+			RENDERER_ASSERT(mContext, false == mDebugBetweenBeginEndScene, "Direct3D 9: Begin scene was called while scene rendering is already in progress, missing end scene call?")
+			mDebugBetweenBeginEndScene = true;
+		#endif
+
+		// Begin scene
 		return SUCCEEDED(mDirect3DDevice9->BeginScene());
 	}
 
@@ -9130,6 +9143,12 @@ namespace Direct3D9Renderer
 
 	void Direct3D9Renderer::endScene()
 	{
+		// Sanity check
+		#ifdef RENDERER_DEBUG
+			RENDERER_ASSERT(mContext, true == mDebugBetweenBeginEndScene, "Direct3D 9: End scene was called while scene rendering isn't in progress, missing start scene call?")
+			mDebugBetweenBeginEndScene = false;
+		#endif
+
 		// We need to forget about the currently set render target
 		setGraphicsRenderTarget(nullptr);
 

@@ -678,6 +678,9 @@ namespace NullRenderer
 		Renderer::IRenderTarget*   mRenderTarget;			///< Currently set render target (we keep a reference to it), can be a null pointer
 		RootSignature*			   mGraphicsRootSignature;	///< Currently set graphics root signature (we keep a reference to it), can be a null pointer
 		RootSignature*			   mComputeRootSignature;	///< Currently set compute root signature (we keep a reference to it), can be a null pointer
+		#ifdef RENDERER_DEBUG
+			bool mDebugBetweenBeginEndScene;	///< Just here for state tracking in debug builds
+		#endif
 
 
 	};
@@ -3540,6 +3543,9 @@ namespace NullRenderer
 		mRenderTarget(nullptr),
 		mGraphicsRootSignature(nullptr),
 		mComputeRootSignature(nullptr)
+		#ifdef RENDERER_DEBUG
+			, mDebugBetweenBeginEndScene(false)
+		#endif
 	{
 		// Initialize the capabilities
 		initializeCapabilities();
@@ -4097,6 +4103,12 @@ namespace NullRenderer
 	{
 		// Nothing here
 
+		// Sanity check
+		#ifdef RENDERER_DEBUG
+			RENDERER_ASSERT(mContext, false == mDebugBetweenBeginEndScene, "Null: Begin scene was called while scene rendering is already in progress, missing end scene call?")
+			mDebugBetweenBeginEndScene = true;
+		#endif
+
 		// Done
 		return true;
 	}
@@ -4123,6 +4135,12 @@ namespace NullRenderer
 
 	void NullRenderer::endScene()
 	{
+		// Sanity check
+		#ifdef RENDERER_DEBUG
+			RENDERER_ASSERT(mContext, true == mDebugBetweenBeginEndScene, "Null: End scene was called while scene rendering isn't in progress, missing start scene call?")
+			mDebugBetweenBeginEndScene = false;
+		#endif
+
 		// We need to forget about the currently set render target
 		setGraphicsRenderTarget(nullptr);
 	}

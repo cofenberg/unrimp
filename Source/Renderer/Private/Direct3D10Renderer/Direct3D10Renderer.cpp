@@ -2345,8 +2345,9 @@ namespace Direct3D10Renderer
 		ID3D10VertexShader*			 mD3d10VertexShader;
 		ID3D10GeometryShader*		 mD3d10GeometryShader;
 		ID3D10PixelShader*			 mD3d10PixelShader;
-
-
+		#ifdef RENDERER_DEBUG
+			bool mDebugBetweenBeginEndScene;	///< Just here for state tracking in debug builds
+		#endif
 	};
 
 
@@ -9787,6 +9788,9 @@ namespace Direct3D10Renderer
 		mD3d10VertexShader(nullptr),
 		mD3d10GeometryShader(nullptr),
 		mD3d10PixelShader(nullptr)
+		#ifdef RENDERER_DEBUG
+			, mDebugBetweenBeginEndScene(false)
+		#endif
 	{
 		mDirect3D10RuntimeLinking = RENDERER_NEW(mContext, Direct3D10RuntimeLinking)(*this);
 
@@ -11416,6 +11420,12 @@ namespace Direct3D10Renderer
 	{
 		// Not required when using Direct3D 10
 
+		// Sanity check
+		#ifdef RENDERER_DEBUG
+			RENDERER_ASSERT(mContext, false == mDebugBetweenBeginEndScene, "Direct3D 10: Begin scene was called while scene rendering is already in progress, missing end scene call?")
+			mDebugBetweenBeginEndScene = true;
+		#endif
+
 		// Done
 		return true;
 	}
@@ -11442,6 +11452,12 @@ namespace Direct3D10Renderer
 
 	void Direct3D10Renderer::endScene()
 	{
+		// Sanity check
+		#ifdef RENDERER_DEBUG
+			RENDERER_ASSERT(mContext, true == mDebugBetweenBeginEndScene, "Direct3D 10: End scene was called while scene rendering isn't in progress, missing start scene call?")
+			mDebugBetweenBeginEndScene = false;
+		#endif
+
 		// We need to forget about the currently set render target
 		setGraphicsRenderTarget(nullptr);
 	}

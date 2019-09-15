@@ -79,16 +79,12 @@ int FirstGpgpu::run()
 		onInitialization();
 
 		// Begin scene rendering
-		// -> Required for Direct3D 9 and Direct3D 12
-		// -> Not required for Direct3D 10, Direct3D 11, OpenGL and OpenGL ES 3
 		if (mRenderer->beginScene())
 		{
 			// Let the application to its job
 			onDoJob();
 
 			// End scene rendering
-			// -> Required for Direct3D 9 and Direct3D 12
-			// -> Not required for Direct3D 10, Direct3D 11, OpenGL and OpenGL ES 3
 			mRenderer->endScene();
 		}
 

@@ -2043,6 +2043,9 @@ namespace OpenGLRenderer
 		GLuint	 mOpenGLVertexProgram;			///< Currently set OpenGL vertex program, can be zero if no resource is set
 		GLint	 mDrawIdUniformLocation;		///< Draw ID uniform location
 		uint32_t mCurrentStartInstanceLocation;	///< Currently set start instance location
+		#ifdef RENDERER_DEBUG
+			bool mDebugBetweenBeginEndScene;	///< Just here for state tracking in debug builds
+		#endif
 
 
 	};
@@ -18799,6 +18802,9 @@ namespace OpenGLRenderer
 		mOpenGLVertexProgram(0),
 		mDrawIdUniformLocation(-1),
 		mCurrentStartInstanceLocation(~0u)
+		#ifdef RENDERER_DEBUG
+			, mDebugBetweenBeginEndScene(false)
+		#endif
 	{
 		// Is OpenGL available?
 		mOpenGLRuntimeLinking = RENDERER_NEW(mContext, OpenGLRuntimeLinking)(*this);
@@ -20694,6 +20700,12 @@ namespace OpenGLRenderer
 	{
 		// Not required when using OpenGL
 
+		// Sanity check
+		#ifdef RENDERER_DEBUG
+			RENDERER_ASSERT(mContext, false == mDebugBetweenBeginEndScene, "OpenGL: Begin scene was called while scene rendering is already in progress, missing end scene call?")
+			mDebugBetweenBeginEndScene = true;
+		#endif
+
 		// Done
 		return true;
 	}
@@ -20720,6 +20732,12 @@ namespace OpenGLRenderer
 
 	void OpenGLRenderer::endScene()
 	{
+		// Sanity check
+		#ifdef RENDERER_DEBUG
+			RENDERER_ASSERT(mContext, true == mDebugBetweenBeginEndScene, "OpenGL: End scene was called while scene rendering isn't in progress, missing start scene call?")
+			mDebugBetweenBeginEndScene = false;
+		#endif
+
 		// We need to forget about the currently set render target
 		setGraphicsRenderTarget(nullptr);
 

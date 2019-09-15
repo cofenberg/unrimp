@@ -163,8 +163,6 @@ void IApplicationRenderer::onDrawRequest()
 	else if (nullptr != mRenderer && nullptr != mMainSwapChain)
 	{
 		// Begin scene rendering
-		// -> Required for Direct3D 9 and Direct3D 12
-		// -> Not required for Direct3D 10, Direct3D 11, OpenGL and OpenGL ES 3
 		if (mRenderer->beginScene())
 		{
 			{ // Scene rendering
@@ -196,8 +194,6 @@ void IApplicationRenderer::onDrawRequest()
 			mCommandBuffer.submitToRendererAndClear(*mRenderer);
 
 			// End scene rendering
-			// -> Required for Direct3D 9 and Direct3D 12
-			// -> Not required for Direct3D 10, Direct3D 11, OpenGL and OpenGL ES 3
 			mRenderer->endScene();
 		}
 

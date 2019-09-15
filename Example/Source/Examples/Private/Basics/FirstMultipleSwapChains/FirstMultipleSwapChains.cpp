@@ -352,8 +352,6 @@ void FirstMultipleSwapChains::onDrawRequest()
 			if (nullptr != mainRenderTarget)
 			{
 				// Begin scene rendering
-				// -> Required for Direct3D 9 and Direct3D 12
-				// -> Not required for Direct3D 10, Direct3D 11, OpenGL and OpenGL ES 3
 				if (renderer->beginScene())
 				{
 					{ // Fill the command buffer
@@ -381,8 +379,6 @@ void FirstMultipleSwapChains::onDrawRequest()
 					mCommandBuffer.submitToRendererAndClear(*renderer);
 
 					// End scene rendering
-					// -> Required for Direct3D 9 and Direct3D 12
-					// -> Not required for Direct3D 10, Direct3D 11, OpenGL and OpenGL ES 3
 					renderer->endScene();
 
 					// Present the content of the current back buffer
@@ -395,8 +391,6 @@ void FirstMultipleSwapChains::onDrawRequest()
 		}
 
 		// Render to the swap chain created in this example, but only if it's valid: Begin scene rendering
-		// -> Required for Direct3D 9 and Direct3D 12
-		// -> Not required for Direct3D 10, Direct3D 11, OpenGL and OpenGL ES 3
 		if (nullptr != mSwapChain && renderer->beginScene())
 		{
 			{ // Fill the command buffer
@@ -435,8 +429,6 @@ void FirstMultipleSwapChains::onDrawRequest()
 			mCommandBuffer.submitToRendererAndClear(*renderer);
 
 			// End scene rendering
-			// -> Required for Direct3D 9 and Direct3D 12
-			// -> Not required for Direct3D 10, Direct3D 11, OpenGL and OpenGL ES 3
 			renderer->endScene();
 
 			// Present the content of the current back buffer

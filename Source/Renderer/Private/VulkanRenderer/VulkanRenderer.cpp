@@ -2244,6 +2244,9 @@ namespace VulkanRenderer
 		//[ Output-merger (OM) stage                              ]
 		//[-------------------------------------------------------]
 		Renderer::IRenderTarget* mRenderTarget;	///< Currently set render target (we keep a reference to it), can be a null pointer
+		#ifdef RENDERER_DEBUG
+			bool mDebugBetweenBeginEndScene;	///< Just here for state tracking in debug builds
+		#endif
 
 
 	};
@@ -11121,6 +11124,9 @@ namespace VulkanRenderer
 		mVkClearValues{},
 		mVertexArray(nullptr),
 		mRenderTarget(nullptr)
+		#ifdef RENDERER_DEBUG
+			, mDebugBetweenBeginEndScene(false)
+		#endif
 	{
 		// TODO(co) Make it possible to enable/disable validation from the outside?
 		#ifdef RENDERER_DEBUG
@@ -11158,10 +11164,7 @@ namespace VulkanRenderer
 	VulkanRenderer::~VulkanRenderer()
 	{
 		// Set no vertex array reference, in case we have one
-		if (nullptr != mVertexArray)
-		{
-			setGraphicsVertexArray(nullptr);
-		}
+		setGraphicsVertexArray(nullptr);
 
 		// Release instances
 		if (nullptr != mRenderTarget)
@@ -11325,7 +11328,7 @@ namespace VulkanRenderer
 				mVertexArray->addReference();
 
 				// Bind Vulkan buffers
-				static_cast<VertexArray*>(vertexArray)->bindVulkanBuffers(getVulkanContext().getVkCommandBuffer());
+				mVertexArray->bindVulkanBuffers(getVulkanContext().getVkCommandBuffer());
 			}
 			else
 			{
@@ -12200,6 +12203,12 @@ namespace VulkanRenderer
 	//[-------------------------------------------------------]
 	bool VulkanRenderer::beginScene()
 	{
+		// Sanity check
+		#ifdef RENDERER_DEBUG
+			RENDERER_ASSERT(mContext, false == mDebugBetweenBeginEndScene, "Vulkan: Begin scene was called while scene rendering is already in progress, missing end scene call?")
+			mDebugBetweenBeginEndScene = true;
+		#endif
+
 		// Begin Vulkan command buffer
 		// -> This automatically resets the Vulkan command buffer in case it was previously already recorded
 		static constexpr VkCommandBufferBeginInfo vkCommandBufferBeginInfo =
@@ -12244,6 +12253,12 @@ namespace VulkanRenderer
 
 	void VulkanRenderer::endScene()
 	{
+		// Sanity check
+		#ifdef RENDERER_DEBUG
+			RENDERER_ASSERT(mContext, true == mDebugBetweenBeginEndScene, "Vulkan: End scene was called while scene rendering isn't in progress, missing start scene call?")
+			mDebugBetweenBeginEndScene = false;
+		#endif
+
 		// We need to forget about the currently set render target
 		setGraphicsRenderTarget(nullptr);
 
