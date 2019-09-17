@@ -490,7 +490,6 @@ struct D3D12_HEAP_DESC;
 struct D3D12_TILE_SHAPE;
 struct D3D12_SAMPLER_DESC;
 struct D3D12_DISCARD_REGION;
-struct D3D12_QUERY_HEAP_DESC;
 struct D3D12_PACKED_MIP_INFO;
 struct D3D12_TILE_REGION_SIZE;
 struct D3D12_TILE_RANGE_FLAGS;
@@ -503,7 +502,6 @@ struct D3D12_COMPUTE_PIPELINE_STATE_DESC;
 struct D3D12_PLACED_SUBRESOURCE_FOOTPRINT;
 struct ID3D12Heap;
 struct ID3D12Resource;
-struct ID3D12QueryHeap;
 struct ID3D12RootSignature;
 
 // TODO(co) Direct3D 12 update
@@ -1370,6 +1368,15 @@ typedef enum D3D12_CLEAR_FLAGS
 } D3D12_CLEAR_FLAGS;
 
 // "Microsoft Windows 10 SDK" -> "10.0.10240.0" -> "D3D12.h"
+typedef enum D3D12_QUERY_HEAP_TYPE
+{
+	D3D12_QUERY_HEAP_TYPE_OCCLUSION				= 0,
+	D3D12_QUERY_HEAP_TYPE_TIMESTAMP				= 1,
+	D3D12_QUERY_HEAP_TYPE_PIPELINE_STATISTICS	= 2,
+	D3D12_QUERY_HEAP_TYPE_SO_STATISTICS			= 3
+} D3D12_QUERY_HEAP_TYPE;
+
+// "Microsoft Windows 10 SDK" -> "10.0.10240.0" -> "D3D12.h"
 typedef enum D3D12_QUERY_TYPE
 {
 	D3D12_QUERY_TYPE_OCCLUSION				= 0,
@@ -1383,11 +1390,35 @@ typedef enum D3D12_QUERY_TYPE
 } D3D12_QUERY_TYPE;
 
 // "Microsoft Windows 10 SDK" -> "10.0.10240.0" -> "D3D12.h"
+typedef struct D3D12_QUERY_HEAP_DESC
+{
+	D3D12_QUERY_HEAP_TYPE Type;
+	UINT Count;
+	UINT NodeMask;
+} D3D12_QUERY_HEAP_DESC;
+
+// "Microsoft Windows 10 SDK" -> "10.0.10240.0" -> "D3D12.h"
 typedef enum D3D12_PREDICATION_OP
 {
 	D3D12_PREDICATION_OP_EQUAL_ZERO		= 0,
 	D3D12_PREDICATION_OP_NOT_EQUAL_ZERO	= 1
 } D3D12_PREDICATION_OP;
+
+// "Microsoft Windows 10 SDK" -> "10.0.10240.0" -> "D3D12.h"
+typedef struct D3D12_QUERY_DATA_PIPELINE_STATISTICS
+{
+	UINT64 IAVertices;
+	UINT64 IAPrimitives;
+	UINT64 VSInvocations;
+	UINT64 GSInvocations;
+	UINT64 GSPrimitives;
+	UINT64 CInvocations;
+	UINT64 CPrimitives;
+	UINT64 PSInvocations;
+	UINT64 HSInvocations;
+	UINT64 DSInvocations;
+	UINT64 CSInvocations;
+} D3D12_QUERY_DATA_PIPELINE_STATISTICS;
 
 // "Microsoft Windows 10 SDK" -> "10.0.10240.0" -> "D3D12.h"
 typedef struct D3D12_VERTEX_BUFFER_VIEW
@@ -2408,6 +2439,13 @@ ID3D12Pageable : public ID3D12DeviceChild
 };
 
 // "Microsoft Windows 10 SDK" -> "10.0.10240.0" -> "D3D12.h"
+MIDL_INTERFACE("0d9658ae-ed45-469e-a61d-970ec583cab4")
+ID3D12QueryHeap : public ID3D12Pageable
+{
+	// Nothing here
+};
+
+// "Microsoft Windows 10 SDK" -> "10.0.10240.0" -> "D3D12.h"
 MIDL_INTERFACE("0a753dcf-c4d8-4b91-adf6-be5a60d95a76")
 ID3D12Fence : public ID3D12Pageable
 {
@@ -2461,6 +2499,7 @@ ID3D12CommandAllocator : public ID3D12Pageable
 MIDL_INTERFACE("c36a797c-ec80-4f0a-8985-a7b2475082d1")
 ID3D12CommandSignature : public ID3D12Pageable
 {
+	// Nothing here
 };
 
 // "Microsoft Windows 10 SDK" -> "10.0.10240.0" -> "D3D12.h"
@@ -3806,6 +3845,13 @@ namespace Direct3D12Renderer
 	*/
 	class Direct3D12Renderer final : public Renderer::IRenderer
 	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public definitions                                    ]
+	//[-------------------------------------------------------]
+	public:
+		static constexpr uint32_t NUMBER_OF_FRAMES = 2;
 
 
 	//[-------------------------------------------------------]
@@ -7994,6 +8040,277 @@ namespace Direct3D12Renderer
 
 
 	//[-------------------------------------------------------]
+	//[ Direct3D12Renderer/QueryPool.h                        ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Direct3D 12 asynchronous query pool interface
+	*/
+	class QueryPool final : public Renderer::IQueryPool
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] direct3D12Renderer
+		*    Owner Direct3D 12 renderer instance
+		*  @param[in] queryType
+		*    Query type
+		*  @param[in] numberOfQueries
+		*    Number of queries
+		*/
+		QueryPool(Direct3D12Renderer& direct3D12Renderer, Renderer::QueryType queryType, uint32_t numberOfQueries) :
+			IQueryPool(direct3D12Renderer),
+			mQueryType(queryType),
+			mNumberOfQueries(numberOfQueries),
+			mD3D12QueryHeap(nullptr),
+			mD3D12ResourceQueryHeapResultReadback(nullptr),
+			mResolveToFrameNumber(0)
+		{
+			ID3D12Device& d3d12Device = direct3D12Renderer.getD3D12Device();
+			uint32_t numberOfBytesPerQuery = 0;
+
+			{ // Get Direct3D 12 query description
+				D3D12_QUERY_HEAP_DESC d3d12QueryHeapDesc = {};
+				switch (queryType)
+				{
+					case Renderer::QueryType::OCCLUSION:
+						d3d12QueryHeapDesc.Type = D3D12_QUERY_HEAP_TYPE_OCCLUSION;
+						numberOfBytesPerQuery = sizeof(uint64_t);
+						break;
+
+					case Renderer::QueryType::PIPELINE_STATISTICS:
+						d3d12QueryHeapDesc.Type = D3D12_QUERY_HEAP_TYPE_PIPELINE_STATISTICS;
+						numberOfBytesPerQuery = sizeof(D3D12_QUERY_DATA_PIPELINE_STATISTICS);
+						break;
+
+					case Renderer::QueryType::TIMESTAMP:
+						d3d12QueryHeapDesc.Type = D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
+						numberOfBytesPerQuery = sizeof(uint64_t);
+						break;
+				}
+				d3d12QueryHeapDesc.Count = numberOfQueries;
+
+				// Create Direct3D 12 query heap
+				FAILED_DEBUG_BREAK(d3d12Device.CreateQueryHeap(&d3d12QueryHeapDesc, IID_PPV_ARGS(&mD3D12QueryHeap)));
+			}
+
+			{ // Create the Direct3D 12 resource for query heap result readback
+			  // -> Due to the asynchronous nature of queries (see "ID3D12GraphicsCommandList::ResolveQueryData()"), we need a result readback buffer which can hold enough frames
+			  // +1 = One more frame as an instance is guaranteed to be written to if "Direct3D12Renderer::NUMBER_OF_FRAMES" frames have been submitted since. This is due to a fact that present stalls when none of the maximum number of frames are done/available.
+				const CD3DX12_HEAP_PROPERTIES d3d12XHeapProperties(D3D12_HEAP_TYPE_READBACK);
+				const D3D12_RESOURCE_DESC d3d12ResourceDesc = CD3DX12_RESOURCE_DESC::Buffer(numberOfBytesPerQuery * numberOfQueries * (Direct3D12Renderer::NUMBER_OF_FRAMES + 1));
+				FAILED_DEBUG_BREAK(d3d12Device.CreateCommittedResource(&d3d12XHeapProperties, D3D12_HEAP_FLAG_NONE, &d3d12ResourceDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&mD3D12ResourceQueryHeapResultReadback)));
+			}
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RENDERER_DEBUG
+				switch (queryType)
+				{
+					case Renderer::QueryType::OCCLUSION:
+						setDebugName("Occlusion query");
+						break;
+
+					case Renderer::QueryType::PIPELINE_STATISTICS:
+						setDebugName("Pipeline statistics query");
+						break;
+
+					case Renderer::QueryType::TIMESTAMP:
+						setDebugName("Timestamp query");
+						break;
+				}
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~QueryPool() override
+		{
+			if (nullptr != mD3D12QueryHeap)
+			{
+				mD3D12QueryHeap->Release();
+			}
+			if (nullptr != mD3D12ResourceQueryHeapResultReadback)
+			{
+				mD3D12ResourceQueryHeapResultReadback->Release();
+			}
+		}
+
+		/**
+		*  @brief
+		*    Return the query type
+		*
+		*  @return
+		*    The query type
+		*/
+		[[nodiscard]] inline Renderer::QueryType getQueryType() const
+		{
+			return mQueryType;
+		}
+
+		/**
+		*  @brief
+		*    Return the number of queries
+		*
+		*  @return
+		*    The number of queries
+		*/
+		[[nodiscard]] inline uint32_t getNumberOfQueries() const
+		{
+			return mNumberOfQueries;
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D 12 query heap
+		*
+		*  @return
+		*    The Direct3D 12 query heap
+		*/
+		[[nodiscard]] inline ID3D12QueryHeap* getD3D12QueryHeap() const
+		{
+			return mD3D12QueryHeap;
+		}
+
+		/**
+		*  @brief
+		*    Get asynchronous query pool results
+		*
+		*  @param[in] numberOfDataBytes
+		*    Number of data bytes
+		*  @param[out] data
+		*    Receives the query data
+		*  @param[in] firstQueryIndex
+		*    First query index (e.g. 0)
+		*  @param[in] numberOfQueries
+		*    Number of queries (e.g. 1)
+		*  @param[in] strideInBytes
+		*    Stride in bytes, 0 is only valid in case there's just a single query
+		*  @param[in] d3d12GraphicsCommandList
+		*    Direct3D 12 graphics command list
+		*/
+		void getQueryPoolResults(uint32_t numberOfDataBytes, uint8_t* data, uint32_t firstQueryIndex, uint32_t numberOfQueries, uint32_t strideInBytes, ID3D12GraphicsCommandList& d3d12GraphicsCommandList)
+		{
+			// Query pool type dependent processing
+			// -> We don't support "Renderer::QueryResultFlags::WAIT"
+			RENDERER_ASSERT(getRenderer().getContext(), firstQueryIndex < mNumberOfQueries, "Direct3D 12 out-of-bounds query index")
+			RENDERER_ASSERT(getRenderer().getContext(), (firstQueryIndex + numberOfQueries) <= mNumberOfQueries, "Direct3D 12 out-of-bounds query index")
+			D3D12_QUERY_TYPE d3d12QueryType = D3D12_QUERY_TYPE_OCCLUSION;
+			uint32_t numberOfBytesPerQuery = 0;
+			switch (mQueryType)
+			{
+				case Renderer::QueryType::OCCLUSION:
+				{
+					RENDERER_ASSERT(getRenderer().getContext(), 1 == numberOfQueries || sizeof(uint64_t) == strideInBytes, "Direct3D 12 stride in bytes must be 8 bytes for occlusion query type");
+					d3d12QueryType = D3D12_QUERY_TYPE_OCCLUSION;
+					numberOfBytesPerQuery = sizeof(uint64_t);
+					break;
+				}
+
+				case Renderer::QueryType::PIPELINE_STATISTICS:
+				{
+					static_assert(sizeof(Renderer::PipelineStatisticsQueryResult) == sizeof(D3D12_QUERY_DATA_PIPELINE_STATISTICS), "Direct3D 12 structure mismatch detected");
+					RENDERER_ASSERT(getRenderer().getContext(), numberOfDataBytes >= sizeof(Renderer::PipelineStatisticsQueryResult), "Direct3D 12 out-of-memory query access")
+					RENDERER_ASSERT(getRenderer().getContext(), 1 == numberOfQueries || strideInBytes >= sizeof(Renderer::PipelineStatisticsQueryResult), "Direct3D 12 out-of-memory query access")
+					RENDERER_ASSERT(getRenderer().getContext(), 1 == numberOfQueries || sizeof(D3D12_QUERY_DATA_PIPELINE_STATISTICS) == strideInBytes, "Direct3D 12 stride in bytes must be 88 bytes for pipeline statistics query type");
+					d3d12QueryType = D3D12_QUERY_TYPE_PIPELINE_STATISTICS;
+					numberOfBytesPerQuery = sizeof(D3D12_QUERY_DATA_PIPELINE_STATISTICS);
+					break;
+				}
+
+				case Renderer::QueryType::TIMESTAMP:	// TODO(co) Convert time to nanoseconds, see e.g. http://reedbeta.com/blog/gpu-profiling-101/
+				{
+					RENDERER_ASSERT(getRenderer().getContext(), 1 == numberOfQueries || sizeof(uint64_t) == strideInBytes, "Direct3D 12 stride in bytes must be 8 bytes for timestamp query type");
+					d3d12QueryType = D3D12_QUERY_TYPE_TIMESTAMP;
+					numberOfBytesPerQuery = sizeof(uint64_t);
+					break;
+				}
+			}
+
+ 			{ // Resolve query data from the current frame
+				const uint64_t resolveToBaseAddress = numberOfBytesPerQuery * mNumberOfQueries * mResolveToFrameNumber + numberOfBytesPerQuery * firstQueryIndex;
+				d3d12GraphicsCommandList.ResolveQueryData(mD3D12QueryHeap, d3d12QueryType, firstQueryIndex, numberOfQueries, mD3D12ResourceQueryHeapResultReadback, numberOfBytesPerQuery * firstQueryIndex);
+			}
+
+			// Readback query result by grabbing readback data for the queries from a finished frame "Direct3D12Renderer::NUMBER_OF_FRAMES" ago
+			// +1 = One more frame as an instance is guaranteed to be written to if "Direct3D12Renderer::NUMBER_OF_FRAMES" frames have been submitted since. This is due to a fact that present stalls when none of the maximum number of frames are done/available.
+			const uint32_t readbackFrameNumber = (mResolveToFrameNumber + 1) % (Direct3D12Renderer::NUMBER_OF_FRAMES + 1);
+			const uint32_t readbackBaseOffset = numberOfBytesPerQuery * mNumberOfQueries * readbackFrameNumber + numberOfBytesPerQuery * firstQueryIndex;
+			const D3D12_RANGE d3d12Range = { readbackBaseOffset, readbackBaseOffset + numberOfBytesPerQuery * numberOfQueries };
+			uint64_t* timingData = nullptr;
+			FAILED_DEBUG_BREAK(mD3D12ResourceQueryHeapResultReadback->Map(0, &d3d12Range, reinterpret_cast<void**>(&timingData)));
+			memcpy(data, timingData, numberOfBytesPerQuery * numberOfQueries);
+			mD3D12ResourceQueryHeapResultReadback->Unmap(0, nullptr);
+			mResolveToFrameNumber = readbackFrameNumber;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::IResource methods            ]
+	//[-------------------------------------------------------]
+	public:
+		#ifdef RENDERER_DEBUG
+			virtual void setDebugName(const char* name) override
+			{
+				// Set the debug name
+				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
+				if (nullptr != mD3D12QueryHeap)
+				{
+					FAILED_DEBUG_BREAK(mD3D12QueryHeap->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D12QueryHeap->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
+				}
+				if (nullptr != mD3D12ResourceQueryHeapResultReadback)
+				{
+					FAILED_DEBUG_BREAK(mD3D12ResourceQueryHeapResultReadback->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D12ResourceQueryHeapResultReadback->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
+				}
+			}
+		#endif
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::RefCount methods          ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RENDERER_DELETE(getRenderer().getContext(), QueryPool, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit QueryPool(const QueryPool& source) = delete;
+		QueryPool& operator =(const QueryPool& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		Renderer::QueryType mQueryType;
+		uint32_t			mNumberOfQueries;
+		ID3D12QueryHeap*	mD3D12QueryHeap;
+		ID3D12Resource*		mD3D12ResourceQueryHeapResultReadback;
+		uint32_t			mResolveToFrameNumber;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ Direct3D12Renderer/RenderTarget/SwapChain.h           ]
 	//[-------------------------------------------------------]
 	/**
@@ -8074,7 +8391,7 @@ namespace Direct3D12Renderer
 
 			// Create the swap chain
 			DXGI_SWAP_CHAIN_DESC dxgiSwapChainDesc = {};
-			dxgiSwapChainDesc.BufferCount							= NUMBER_OF_FRAMES;
+			dxgiSwapChainDesc.BufferCount							= Direct3D12Renderer::NUMBER_OF_FRAMES;
 			dxgiSwapChainDesc.BufferDesc.Width						= static_cast<UINT>(width);
 			dxgiSwapChainDesc.BufferDesc.Height						= static_cast<UINT>(height);
 			dxgiSwapChainDesc.BufferDesc.Format						= Mapping::getDirect3D12Format(d3d12RenderPass.getColorAttachmentTextureFormat(0));
@@ -8264,7 +8581,7 @@ namespace Direct3D12Renderer
 				}
 
 				// Assign a debug name to the Direct3D 12 frame resources
-				for (int frame = 0; frame < NUMBER_OF_FRAMES; ++frame)
+				for (int frame = 0; frame < Direct3D12Renderer::NUMBER_OF_FRAMES; ++frame)
 				{
 					if (nullptr != mD3D12ResourceRenderTargets[frame])
 					{
@@ -8421,7 +8738,7 @@ namespace Direct3D12Renderer
 
 				// Resize the Direct3D 12 swap chain
 				// -> Preserve the existing buffer count and format
-				const HRESULT result = mDxgiSwapChain3->ResizeBuffers(NUMBER_OF_FRAMES, width, height, Mapping::getDirect3D12Format(static_cast<RenderPass&>(getRenderPass()).getColorAttachmentTextureFormat(0)), 0);
+				const HRESULT result = mDxgiSwapChain3->ResizeBuffers(Direct3D12Renderer::NUMBER_OF_FRAMES, width, height, Mapping::getDirect3D12Format(static_cast<RenderPass&>(getRenderPass()).getColorAttachmentTextureFormat(0)), 0);
 				if (SUCCEEDED(result))
 				{
 					// Create the Direct3D 12 views
@@ -8483,13 +8800,6 @@ namespace Direct3D12Renderer
 		{
 			RENDERER_DELETE(getRenderer().getContext(), SwapChain, this);
 		}
-
-
-	//[-------------------------------------------------------]
-	//[ Private definitions                                   ]
-	//[-------------------------------------------------------]
-	private:
-		static constexpr uint32_t NUMBER_OF_FRAMES = 2;
 
 
 	//[-------------------------------------------------------]
@@ -8565,7 +8875,7 @@ namespace Direct3D12Renderer
 
 			{ // Describe and create a render target view (RTV) descriptor heap
 				D3D12_DESCRIPTOR_HEAP_DESC d3d12DescriptorHeapDesc = {};
-				d3d12DescriptorHeapDesc.NumDescriptors	= NUMBER_OF_FRAMES;
+				d3d12DescriptorHeapDesc.NumDescriptors	= Direct3D12Renderer::NUMBER_OF_FRAMES;
 				d3d12DescriptorHeapDesc.Type			= D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 				d3d12DescriptorHeapDesc.Flags			= D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 				if (SUCCEEDED(d3d12Device.CreateDescriptorHeap(&d3d12DescriptorHeapDesc, IID_PPV_ARGS(&mD3D12DescriptorHeapRenderTargetView))))
@@ -8576,7 +8886,7 @@ namespace Direct3D12Renderer
 						CD3DX12_CPU_DESCRIPTOR_HANDLE d3d12XCpuDescriptorHandle(mD3D12DescriptorHeapRenderTargetView->GetCPUDescriptorHandleForHeapStart());
 
 						// Create a RTV for each frame
-						for (UINT frame = 0; frame < NUMBER_OF_FRAMES; ++frame)
+						for (UINT frame = 0; frame < Direct3D12Renderer::NUMBER_OF_FRAMES; ++frame)
 						{
 							if (SUCCEEDED(mDxgiSwapChain3->GetBuffer(frame, IID_PPV_ARGS(&mD3D12ResourceRenderTargets[frame]))))
 							{
@@ -8658,7 +8968,7 @@ namespace Direct3D12Renderer
 			waitForPreviousFrame();
 
 			// Release Direct3D 12 resources
-			for (int frame = 0; frame < NUMBER_OF_FRAMES; ++frame)
+			for (int frame = 0; frame < Direct3D12Renderer::NUMBER_OF_FRAMES; ++frame)
 			{
 				if (nullptr != mD3D12ResourceRenderTargets[frame])
 				{
@@ -8723,12 +9033,12 @@ namespace Direct3D12Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		IDXGISwapChain3*	  mDxgiSwapChain3;									///< The DXGI swap chain 3 instance, null pointer on error
-		ID3D12DescriptorHeap* mD3D12DescriptorHeapRenderTargetView;				///< The Direct3D 12 render target view descriptor heap instance, null pointer on error
-		ID3D12DescriptorHeap* mD3D12DescriptorHeapDepthStencilView;				///< The Direct3D 12 depth stencil view descriptor heap instance, null pointer on error
-		UINT				  mRenderTargetViewDescriptorSize;					///< Render target view descriptor size
-		ID3D12Resource*		  mD3D12ResourceRenderTargets[NUMBER_OF_FRAMES];	///< The Direct3D 12 render target instances, null pointer on error
-		ID3D12Resource*		  mD3D12ResourceDepthStencil;						///< The Direct3D 12 depth stencil instance, null pointer on error
+		IDXGISwapChain3*	  mDxgiSwapChain3;														///< The DXGI swap chain 3 instance, null pointer on error
+		ID3D12DescriptorHeap* mD3D12DescriptorHeapRenderTargetView;									///< The Direct3D 12 render target view descriptor heap instance, null pointer on error
+		ID3D12DescriptorHeap* mD3D12DescriptorHeapDepthStencilView;									///< The Direct3D 12 depth stencil view descriptor heap instance, null pointer on error
+		UINT				  mRenderTargetViewDescriptorSize;										///< Render target view descriptor size
+		ID3D12Resource*		  mD3D12ResourceRenderTargets[Direct3D12Renderer::NUMBER_OF_FRAMES];	///< The Direct3D 12 render target instances, null pointer on error
+		ID3D12Resource*		  mD3D12ResourceDepthStencil;											///< The Direct3D 12 depth stencil instance, null pointer on error
 
 		// Synchronization objects
 		uint32_t	 mSynchronizationInterval;
@@ -12546,34 +12856,84 @@ namespace Direct3D12Renderer
 	//[-------------------------------------------------------]
 	void Direct3D12Renderer::resetQueryPool([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t firstQueryIndex, [[maybe_unused]] uint32_t numberOfQueries)
 	{
-		// Sanity check
+		// Sanity checks
 		DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
+		RENDERER_ASSERT(mContext, firstQueryIndex < static_cast<QueryPool&>(queryPool).getNumberOfQueries(), "Direct3D 12 out-of-bounds query index")
+		RENDERER_ASSERT(mContext, (firstQueryIndex + numberOfQueries) <= static_cast<QueryPool&>(queryPool).getNumberOfQueries(), "Direct3D 12 out-of-bounds query index")
 
-		// TODO(co) Implement me
+		// Nothing to do in here for Direct3D 12
 	}
 
-	void Direct3D12Renderer::beginQuery([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t queryIndex, [[maybe_unused]] uint32_t queryControlFlags)
+	void Direct3D12Renderer::beginQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex, uint32_t)
 	{
 		// Sanity check
 		DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
-		// TODO(co) Implement me
+		// Query pool type dependent processing
+		QueryPool& d3d12QueryPool = static_cast<QueryPool&>(queryPool);
+		RENDERER_ASSERT(mContext, queryIndex < d3d12QueryPool.getNumberOfQueries(), "Direct3D 12 out-of-bounds query index")
+		switch (d3d12QueryPool.getQueryType())
+		{
+			case Renderer::QueryType::OCCLUSION:
+				mD3D12GraphicsCommandList->BeginQuery(d3d12QueryPool.getD3D12QueryHeap(), D3D12_QUERY_TYPE_OCCLUSION, queryIndex);
+				break;
+
+			case Renderer::QueryType::PIPELINE_STATISTICS:
+				mD3D12GraphicsCommandList->BeginQuery(d3d12QueryPool.getD3D12QueryHeap(), D3D12_QUERY_TYPE_PIPELINE_STATISTICS, queryIndex);
+				break;
+
+			case Renderer::QueryType::TIMESTAMP:
+				RENDERER_ASSERT(mContext, false, "Direct3D 12 begin query isn't allowed for timestamp queries, use \"Renderer::Command::WriteTimestampQuery\" instead")
+				break;
+		}
 	}
 
-	void Direct3D12Renderer::endQuery([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t queryIndex)
+	void Direct3D12Renderer::endQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex)
 	{
 		// Sanity check
 		DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
-		// TODO(co) Implement me
+		// Query pool type dependent processing
+		QueryPool& d3d12QueryPool = static_cast<QueryPool&>(queryPool);
+		RENDERER_ASSERT(mContext, queryIndex < d3d12QueryPool.getNumberOfQueries(), "Direct3D 12 out-of-bounds query index")
+		switch (d3d12QueryPool.getQueryType())
+		{
+			case Renderer::QueryType::OCCLUSION:
+				mD3D12GraphicsCommandList->EndQuery(d3d12QueryPool.getD3D12QueryHeap(), D3D12_QUERY_TYPE_OCCLUSION, queryIndex);
+				break;
+
+			case Renderer::QueryType::PIPELINE_STATISTICS:
+				mD3D12GraphicsCommandList->EndQuery(d3d12QueryPool.getD3D12QueryHeap(), D3D12_QUERY_TYPE_PIPELINE_STATISTICS, queryIndex);
+				break;
+
+			case Renderer::QueryType::TIMESTAMP:
+				RENDERER_ASSERT(mContext, false, "Direct3D 12 end query isn't allowed for timestamp queries, use \"Renderer::Command::WriteTimestampQuery\" instead")
+				break;
+		}
 	}
 
-	void Direct3D12Renderer::writeTimestampQuery([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t queryIndex)
+	void Direct3D12Renderer::writeTimestampQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex)
 	{
 		// Sanity check
 		DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
-		// TODO(co) Implement me
+		// Query pool type dependent processing
+		QueryPool& d3d12QueryPool = static_cast<QueryPool&>(queryPool);
+		RENDERER_ASSERT(mContext, queryIndex < d3d12QueryPool.getNumberOfQueries(), "Direct3D 12 out-of-bounds query index")
+		switch (d3d12QueryPool.getQueryType())
+		{
+			case Renderer::QueryType::OCCLUSION:
+				RENDERER_ASSERT(mContext, false, "Direct3D 12 write timestamp query isn't allowed for occlusion queries, use \"Renderer::Command::BeginQuery\" and \"Renderer::Command::EndQuery\" instead")
+				break;
+
+			case Renderer::QueryType::PIPELINE_STATISTICS:
+				RENDERER_ASSERT(mContext, false, "Direct3D 12 write timestamp query isn't allowed for pipeline statistics queries, use \"Renderer::Command::BeginQuery\" and \"Renderer::Command::EndQuery\" instead")
+				break;
+
+			case Renderer::QueryType::TIMESTAMP:
+				mD3D12GraphicsCommandList->EndQuery(d3d12QueryPool.getD3D12QueryHeap(), D3D12_QUERY_TYPE_TIMESTAMP, queryIndex);
+				break;
+		}
 	}
 
 
@@ -12679,8 +13039,8 @@ namespace Direct3D12Renderer
 
 	Renderer::IQueryPool* Direct3D12Renderer::createQueryPool([[maybe_unused]] Renderer::QueryType queryType, [[maybe_unused]] uint32_t numberOfQueries)
 	{
-		// TODO(co) Implement me
-		return nullptr;
+		RENDERER_ASSERT(mContext, numberOfQueries > 0, "Direct3D 12: Number of queries mustn't be zero")
+		return RENDERER_NEW(mContext, QueryPool)(*this, queryType, numberOfQueries);
 	}
 
 	Renderer::ISwapChain* Direct3D12Renderer::createSwapChain(Renderer::IRenderPass& renderPass, Renderer::WindowHandle windowHandle, bool)
@@ -12953,13 +13313,21 @@ namespace Direct3D12Renderer
 		*/
 	}
 
-	bool Direct3D12Renderer::getQueryPoolResults([[maybe_unused]] Renderer::IQueryPool& queryPool, [[maybe_unused]] uint32_t numberOfDataBytes, [[maybe_unused]] uint8_t* data, [[maybe_unused]] uint32_t firstQueryIndex, [[maybe_unused]] uint32_t numberOfQueries, [[maybe_unused]] uint32_t strideInBytes, [[maybe_unused]] uint32_t queryResultFlags)
+	bool Direct3D12Renderer::getQueryPoolResults(Renderer::IQueryPool& queryPool, uint32_t numberOfDataBytes, uint8_t* data, uint32_t firstQueryIndex, uint32_t numberOfQueries, uint32_t strideInBytes, uint32_t)
 	{
-		// Sanity check
+		// Sanity checks
 		DIRECT3D12RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
+		RENDERER_ASSERT(mContext, numberOfDataBytes >= sizeof(UINT64), "Direct3D 12 out-of-memory query access")
+		RENDERER_ASSERT(mContext, 1 == numberOfQueries || strideInBytes > 0, "Direct3D 12 invalid stride in bytes")
+		RENDERER_ASSERT(mContext, numberOfDataBytes >= strideInBytes * numberOfQueries, "Direct3D 12 out-of-memory query access")
+		RENDERER_ASSERT(mContext, nullptr != data, "Direct3D 12 out-of-memory query access")
+		RENDERER_ASSERT(mContext, numberOfQueries > 0, "Direct3D 12 number of queries mustn't be zero")
 
-		// TODO(co) Implement me
-		return false;
+		// Get query pool results
+		static_cast<QueryPool&>(queryPool).getQueryPoolResults(numberOfDataBytes, data, firstQueryIndex, numberOfQueries, strideInBytes, *mD3D12GraphicsCommandList);
+
+		// Done
+		return true;
 	}
 
 

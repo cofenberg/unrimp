@@ -3296,7 +3296,7 @@ namespace Renderer
 	*    Asynchronous pipeline statistics query result
 	*
 	*  @note
-	*    - This pipeline statistics structure maps directly to Direct3D 11, do not change it
+	*    - This pipeline statistics structure maps directly to Direct3D 11 and Direct3D 12, do not change it
 	*
 	*  @see
 	*    - "D3D11_QUERY_DATA_PIPELINE_STATISTICS"-documentation for details
