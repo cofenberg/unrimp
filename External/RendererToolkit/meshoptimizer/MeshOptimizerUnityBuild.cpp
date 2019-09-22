@@ -18,21 +18,18 @@
 \*********************************************************/
 
 
-== Description ==
-Renderer toolkit.
-
-
-== Dependencies ==
-- GLM (header only library)
-- RapidJSON (header only library)
-- SimpleFileWatcher (directly compiled and linked in)
-- Assimp (directly compiled and linked in)
-- meshoptimizer (directly compiled and linked in)
-- mikktspace (directly compiled and linked in)
-- crunch (directly compiled and linked in)
-- ies (directly compiled and linked in)
-
-
-== Preprocessor Definitions ==
-- Set "RENDERER_TOOLKIT_EXPORTS" as preprocessor definition when building this library as shared library
-- Do also have a look into the renderer header file for renderer backend preprocessor definitions
+// Amalgamated/unity build
+#include "allocator.cpp"
+#include "clusterizer.cpp"
+#include "indexcodec.cpp"
+#include "indexgenerator.cpp"
+#include "overdrawanalyzer.cpp"
+#include "overdrawoptimizer.cpp"
+#include "simplifier.cpp"
+#include "spatialorder.cpp"
+#include "stripifier.cpp"
+#include "vcacheanalyzer.cpp"
+#include "vcacheoptimizer.cpp"
+#include "vertexcodec.cpp"
+#include "vfetchanalyzer.cpp"
+#include "vfetchoptimizer.cpp"

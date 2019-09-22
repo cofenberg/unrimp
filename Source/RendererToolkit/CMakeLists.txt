@@ -80,6 +80,8 @@ set(EXTERNAL_SOURCE_CODES
 			${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/zlib/trees.c
 			${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/zlib/uncompr.c
 			${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/zlib/zutil.c
+	# meshoptimizer external library
+	${CMAKE_SOURCE_DIR}/External/RendererToolkit/meshoptimizer/MeshOptimizerUnityBuild.cpp
 	# SimpleFileWatcher external library
 	${CMAKE_SOURCE_DIR}/External/RendererToolkit/SimpleFileWatcher/FileWatcher.cpp
 	# ies external library

@@ -181,6 +181,7 @@ Renderer Toolkit (e.g. "The Editor")
 - Mesh compiler
 	- Using [Assimp](http://www.assimp.org/) (Open Asset Import Library) for mesh import and post processing like joining identical vertices, vertex cache optimization etc.
 	- Using [mikktspace](https://wiki.blender.org/index.php/Dev:Shading/Tangent_Space_Normal_Maps) by Morten S. Mikkelsen for semi-standard mesh tangent space generation
+	- Using [meshoptimizer](https://github.com/zeux/meshoptimizer) for mesh optimization
 - Texture compiler
 	- Using enhanced [Unity Crunch](https://github.com/Unity-Technologies/crunch/tree/unity) (better encoder performance and ETC2 support) version of [Crunch](https://github.com/BinomialLLC/crunch) for mipmap generation and compression
 	- Support for [normal map compression](http://www.nvidia.com/object/real-time-normal-map-dxt-compression.html)
