@@ -91,6 +91,7 @@ namespace RendererRuntime
 		[[nodiscard]] RENDERERRUNTIME_API_EXPORT MaterialResourceId createMaterialResourceByAssetId(AssetId assetId, AssetId materialBlueprintAssetId, MaterialTechniqueId materialTechniqueId);	// Material resource is not allowed to exist, yet
 		[[nodiscard]] RENDERERRUNTIME_API_EXPORT MaterialResourceId createMaterialResourceByCloning(MaterialResourceId parentMaterialResourceId, AssetId assetId = getInvalid<AssetId>());	// Parent material resource must be fully loaded
 		RENDERERRUNTIME_API_EXPORT void destroyMaterialResource(MaterialResourceId materialResourceId);
+		RENDERERRUNTIME_API_EXPORT void setInvalidResourceId(MaterialResourceId& materialResourceId, IResourceListener& resourceListener) const;
 
 
 	//[-------------------------------------------------------]

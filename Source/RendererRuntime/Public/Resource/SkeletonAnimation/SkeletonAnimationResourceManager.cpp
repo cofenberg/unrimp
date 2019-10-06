@@ -56,6 +56,16 @@ namespace RendererRuntime
 		return skeletonAnimationResource.getId();
 	}
 
+	void SkeletonAnimationResourceManager::setInvalidResourceId(SkeletonAnimationResourceId& skeletonAnimationResourceId, IResourceListener& resourceListener) const
+	{
+		SkeletonAnimationResource* skeletonAnimationResource = tryGetById(skeletonAnimationResourceId);
+		if (nullptr != skeletonAnimationResource)
+		{
+			skeletonAnimationResource->disconnectResourceListener(resourceListener);
+		}
+		setInvalid(skeletonAnimationResourceId);
+	}
+
 
 	//[-------------------------------------------------------]
 	//[ Public virtual RendererRuntime::IResourceManager methods ]

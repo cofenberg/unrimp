@@ -11675,7 +11675,7 @@ namespace VulkanRenderer
 		VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// Reset Vulkan query pool
-		vkCmdResetQueryPool(getVulkanContext().getVkCommandBuffer(), static_cast<QueryPool&>(queryPool).getVkQueryPool(), firstQueryIndex, numberOfQueries);
+		vkCmdResetQueryPool(getVulkanContext().getVkCommandBuffer(), static_cast<const QueryPool&>(queryPool).getVkQueryPool(), firstQueryIndex, numberOfQueries);
 	}
 
 	void VulkanRenderer::beginQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex, uint32_t queryControlFlags)
@@ -11684,7 +11684,7 @@ namespace VulkanRenderer
 		VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// Begin Vulkan query
-		vkCmdBeginQuery(getVulkanContext().getVkCommandBuffer(), static_cast<QueryPool&>(queryPool).getVkQueryPool(), queryIndex, ((queryControlFlags & Renderer::QueryControlFlags::PRECISE) != 0) ? VK_QUERY_CONTROL_PRECISE_BIT : 0u);
+		vkCmdBeginQuery(getVulkanContext().getVkCommandBuffer(), static_cast<const QueryPool&>(queryPool).getVkQueryPool(), queryIndex, ((queryControlFlags & Renderer::QueryControlFlags::PRECISE) != 0) ? VK_QUERY_CONTROL_PRECISE_BIT : 0u);
 	}
 
 	void VulkanRenderer::endQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex)
@@ -11693,7 +11693,7 @@ namespace VulkanRenderer
 		VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// End Vulkan query
-		vkCmdEndQuery(getVulkanContext().getVkCommandBuffer(), static_cast<QueryPool&>(queryPool).getVkQueryPool(), queryIndex);
+		vkCmdEndQuery(getVulkanContext().getVkCommandBuffer(), static_cast<const QueryPool&>(queryPool).getVkQueryPool(), queryIndex);
 	}
 
 	void VulkanRenderer::writeTimestampQuery(Renderer::IQueryPool& queryPool, uint32_t queryIndex)
@@ -11702,7 +11702,7 @@ namespace VulkanRenderer
 		VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// Write Vulkan timestamp query
-		vkCmdWriteTimestamp(getVulkanContext().getVkCommandBuffer(), VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, static_cast<QueryPool&>(queryPool).getVkQueryPool(), queryIndex);
+		vkCmdWriteTimestamp(getVulkanContext().getVkCommandBuffer(), VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, static_cast<const QueryPool&>(queryPool).getVkQueryPool(), queryIndex);
 	}
 
 
@@ -12172,7 +12172,7 @@ namespace VulkanRenderer
 		VULKANRENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// Query pool type dependent processing
-		QueryPool& vulkanQueryPool = static_cast<QueryPool&>(queryPool);
+		const QueryPool& vulkanQueryPool = static_cast<const QueryPool&>(queryPool);
 		switch (vulkanQueryPool.getQueryType())
 		{
 			case Renderer::QueryType::OCCLUSION:

@@ -332,6 +332,16 @@ namespace RendererRuntime
 		mInternalResourceManager->getResources().removeElement(textureResourceId);
 	}
 
+	void TextureResourceManager::setInvalidResourceId(TextureResourceId& textureResourceId, IResourceListener& resourceListener) const
+	{
+		TextureResource* textureResource = tryGetById(textureResourceId);
+		if (nullptr != textureResource)
+		{
+			textureResource->disconnectResourceListener(resourceListener);
+		}
+		setInvalid(textureResourceId);
+	}
+
 
 	//[-------------------------------------------------------]
 	//[ Public virtual RendererRuntime::IResourceManager methods ]

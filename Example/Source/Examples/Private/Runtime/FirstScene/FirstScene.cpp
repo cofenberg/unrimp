@@ -242,9 +242,9 @@ void FirstScene::onInitialization()
 		}
 	}
 
-	// TODO(co) Remove this after the Vulkan renderer backend is fully up-and-running. Or better, add asset properties so one can e.g. add asset information regarding e.g. supported renderer backends.
+	// TODO(co) Remove this after the Vulkan/Direct3D 12 renderer backend is fully up-and-running. Or better, add asset properties so one can e.g. add asset information regarding e.g. supported renderer backends.
 	const Renderer::NameId nameId = rendererRuntime.getRenderer().getNameId();
-	if (Renderer::NameId::VULKAN == nameId || Renderer::NameId::DIRECT3D10 == nameId || Renderer::NameId::DIRECT3D9 == nameId)
+	if (Renderer::NameId::VULKAN == nameId || Renderer::NameId::DIRECT3D12 == nameId || Renderer::NameId::DIRECT3D10 == nameId || Renderer::NameId::DIRECT3D9 == nameId)
 	{
 		mInstancedCompositor = Compositor::DEBUG;
 		mCurrentCompositor = static_cast<int>(mInstancedCompositor);

@@ -57,9 +57,9 @@ protected:
 
 
 //[-------------------------------------------------------]
-//[ Protected methods                                     ]
+//[ Private methods                                       ]
 //[-------------------------------------------------------]
-protected:
+private:
 	CompositorInstancePassFirst(const CompositorResourcePassFirst& compositorResourcePassFirst, const RendererRuntime::CompositorNodeInstance& compositorNodeInstance);
 
 	inline virtual ~CompositorInstancePassFirst() override

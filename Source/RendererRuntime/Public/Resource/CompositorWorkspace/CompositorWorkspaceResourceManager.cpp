@@ -45,6 +45,16 @@ namespace RendererRuntime
 		mInternalResourceManager->loadResourceByAssetId(assetId, compositorWorkspaceResourceId, resourceListener, reload, resourceLoaderTypeId);
 	}
 
+	void CompositorWorkspaceResourceManager::setInvalidResourceId(CompositorWorkspaceResourceId& compositorWorkspaceResourceId, IResourceListener& resourceListener) const
+	{
+		CompositorWorkspaceResource* compositorWorkspaceResource = tryGetById(compositorWorkspaceResourceId);
+		if (nullptr != compositorWorkspaceResource)
+		{
+			compositorWorkspaceResource->disconnectResourceListener(resourceListener);
+		}
+		setInvalid(compositorWorkspaceResourceId);
+	}
+
 
 	//[-------------------------------------------------------]
 	//[ Public virtual RendererRuntime::IResourceManager methods ]

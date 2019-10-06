@@ -82,6 +82,7 @@ namespace RendererRuntime
 		}
 
 		RENDERERRUNTIME_API_EXPORT void loadShaderPieceResourceByAssetId(AssetId assetId, ShaderPieceResourceId& shaderPieceResourceId, IResourceListener* resourceListener = nullptr, bool reload = false, ResourceLoaderTypeId resourceLoaderTypeId = getInvalid<ResourceLoaderTypeId>());	// Asynchronous
+		RENDERERRUNTIME_API_EXPORT void setInvalidResourceId(ShaderPieceResourceId& shaderPieceResourceId, IResourceListener& resourceListener) const;
 
 
 	//[-------------------------------------------------------]

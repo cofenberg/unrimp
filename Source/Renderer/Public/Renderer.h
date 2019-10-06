@@ -8780,7 +8780,7 @@ namespace Renderer
 				*commandBuffer.addCommand<ExecuteCommandBuffer>() = ExecuteCommandBuffer(commandBufferToExecute);
 			}
 			// Constructor
-			inline ExecuteCommandBuffer(CommandBuffer* _commandBufferToExecute) :
+			inline explicit ExecuteCommandBuffer(CommandBuffer* _commandBufferToExecute) :
 				commandBufferToExecute(_commandBufferToExecute)
 			{}
 			// Data
@@ -8807,7 +8807,7 @@ namespace Renderer
 				*commandBuffer.addCommand<SetGraphicsRootSignature>() = SetGraphicsRootSignature(rootSignature);
 			}
 			// Constructor
-			inline SetGraphicsRootSignature(IRootSignature* _rootSignature) :
+			inline explicit SetGraphicsRootSignature(IRootSignature* _rootSignature) :
 				rootSignature(_rootSignature)
 			{}
 			// Data
@@ -8831,7 +8831,7 @@ namespace Renderer
 				*commandBuffer.addCommand<SetGraphicsPipelineState>() = SetGraphicsPipelineState(graphicsPipelineState);
 			}
 			// Constructor
-			inline SetGraphicsPipelineState(IGraphicsPipelineState* _graphicsPipelineState) :
+			inline explicit SetGraphicsPipelineState(IGraphicsPipelineState* _graphicsPipelineState) :
 				graphicsPipelineState(_graphicsPipelineState)
 			{}
 			// Data
@@ -8883,7 +8883,7 @@ namespace Renderer
 				*commandBuffer.addCommand<SetGraphicsVertexArray>() = SetGraphicsVertexArray(vertexArray);
 			}
 			// Constructor
-			inline SetGraphicsVertexArray(IVertexArray* _vertexArray) :
+			inline explicit SetGraphicsVertexArray(IVertexArray* _vertexArray) :
 				vertexArray(_vertexArray)
 			{}
 			// Data
@@ -9038,7 +9038,7 @@ namespace Renderer
 				*commandBuffer.addCommand<SetGraphicsRenderTarget>() = SetGraphicsRenderTarget(renderTarget);
 			}
 			// Constructor
-			inline SetGraphicsRenderTarget(IRenderTarget* _renderTarget) :
+			inline explicit SetGraphicsRenderTarget(IRenderTarget* _renderTarget) :
 				renderTarget(_renderTarget)
 			{}
 			// Data
@@ -9222,7 +9222,7 @@ namespace Renderer
 				*commandBuffer.addCommand<SetComputeRootSignature>() = SetComputeRootSignature(rootSignature);
 			}
 			// Constructor
-			inline SetComputeRootSignature(IRootSignature* _rootSignature) :
+			inline explicit SetComputeRootSignature(IRootSignature* _rootSignature) :
 				rootSignature(_rootSignature)
 			{}
 			// Data
@@ -9249,7 +9249,7 @@ namespace Renderer
 				*commandBuffer.addCommand<SetComputePipelineState>() = SetComputePipelineState(computePipelineState);
 			}
 			// Constructor
-			inline SetComputePipelineState(IComputePipelineState* _computePipelineState) :
+			inline explicit SetComputePipelineState(IComputePipelineState* _computePipelineState) :
 				computePipelineState(_computePipelineState)
 			{}
 			// Data
@@ -9430,7 +9430,7 @@ namespace Renderer
 				*commandBuffer.addCommand<GenerateMipmaps>() = GenerateMipmaps(resource);
 			}
 			// Constructor
-			inline GenerateMipmaps(IResource& _resource) :
+			inline explicit GenerateMipmaps(IResource& _resource) :
 				resource(&_resource)
 			{}
 			// Data
@@ -9604,7 +9604,7 @@ namespace Renderer
 				*commandBuffer.addCommand<SetDebugMarker>() = SetDebugMarker(name);
 			}
 			// Constructor
-			inline SetDebugMarker(const char* _name)
+			inline explicit SetDebugMarker(const char* _name)
 			{
 				ASSERT(strlen(_name) < 128);
 				strncpy(name, _name, 128);
@@ -9634,7 +9634,7 @@ namespace Renderer
 				*commandBuffer.addCommand<BeginDebugEvent>() = BeginDebugEvent(name);
 			}
 			// Constructor
-			inline BeginDebugEvent(const char* _name)
+			inline explicit BeginDebugEvent(const char* _name)
 			{
 				ASSERT(strlen(_name) < 128);
 				strncpy(name, _name, 128);

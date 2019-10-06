@@ -140,6 +140,16 @@ namespace RendererRuntime
 		}
 	}
 
+	void MaterialBlueprintResourceManager::setInvalidResourceId(MaterialBlueprintResourceId& materialBlueprintResourceId, IResourceListener& resourceListener) const
+	{
+		MaterialBlueprintResource* materialBlueprintResource = tryGetById(materialBlueprintResourceId);
+		if (nullptr != materialBlueprintResource)
+		{
+			materialBlueprintResource->disconnectResourceListener(resourceListener);
+		}
+		setInvalid(materialBlueprintResourceId);
+	}
+
 	void MaterialBlueprintResourceManager::setMaterialBlueprintResourceListener(IMaterialBlueprintResourceListener* materialBlueprintResourceListener)
 	{
 		// There must always be a valid material blueprint resource listener instance

@@ -54,6 +54,16 @@ namespace RendererRuntime
 		return vertexAttributesResource.getId();
 	}
 
+	void VertexAttributesResourceManager::setInvalidResourceId(VertexAttributesResourceId& vertexAttributesResourceId, IResourceListener& resourceListener) const
+	{
+		VertexAttributesResource* vertexAttributesResource = tryGetById(vertexAttributesResourceId);
+		if (nullptr != vertexAttributesResource)
+		{
+			vertexAttributesResource->disconnectResourceListener(resourceListener);
+		}
+		setInvalid(vertexAttributesResourceId);
+	}
+
 
 	//[-------------------------------------------------------]
 	//[ Public virtual RendererRuntime::IResourceManager methods ]

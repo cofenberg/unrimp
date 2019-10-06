@@ -107,6 +107,16 @@ namespace RendererRuntime
 		return meshResource.getId();
 	}
 
+	void MeshResourceManager::setInvalidResourceId(MeshResourceId& meshResourceId, IResourceListener& resourceListener) const
+	{
+		MeshResource* meshResource = tryGetById(meshResourceId);
+		if (nullptr != meshResource)
+		{
+			meshResource->disconnectResourceListener(resourceListener);
+		}
+		setInvalid(meshResourceId);
+	}
+
 
 	//[-------------------------------------------------------]
 	//[ Public virtual RendererRuntime::IResourceManager methods ]

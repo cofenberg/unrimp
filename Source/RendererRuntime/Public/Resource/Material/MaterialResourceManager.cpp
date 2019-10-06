@@ -138,6 +138,16 @@ namespace RendererRuntime
 		mInternalResourceManager->getResources().removeElement(materialResourceId);
 	}
 
+	void MaterialResourceManager::setInvalidResourceId(MaterialResourceId& materialResourceId, IResourceListener& resourceListener) const
+	{
+		MaterialResource* materialResource = tryGetById(materialResourceId);
+		if (nullptr != materialResource)
+		{
+			materialResource->disconnectResourceListener(resourceListener);
+		}
+		setInvalid(materialResourceId);
+	}
+
 
 	//[-------------------------------------------------------]
 	//[ Public virtual RendererRuntime::IResourceManager methods ]

@@ -70,6 +70,16 @@ namespace RendererRuntime
 		mInternalResourceManager->loadResourceByAssetId(assetId, compositorNodeResourceId, resourceListener, reload, resourceLoaderTypeId);
 	}
 
+	void CompositorNodeResourceManager::setInvalidResourceId(CompositorNodeResourceId& compositorNodeResourceId, IResourceListener& resourceListener) const
+	{
+		CompositorNodeResource* compositorNodeResource = tryGetById(compositorNodeResourceId);
+		if (nullptr != compositorNodeResource)
+		{
+			compositorNodeResource->disconnectResourceListener(resourceListener);
+		}
+		setInvalid(compositorNodeResourceId);
+	}
+
 	void CompositorNodeResourceManager::setCompositorPassFactory(const ICompositorPassFactory* compositorPassFactory)
 	{
 		// There must always be a valid compositor pass factory instance

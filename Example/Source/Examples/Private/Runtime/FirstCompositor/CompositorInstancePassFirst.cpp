@@ -55,7 +55,7 @@ void CompositorInstancePassFirst::onFillCommandBuffer([[maybe_unused]] const Ren
 
 
 //[-------------------------------------------------------]
-//[ Protected methods                                     ]
+//[ Private methods                                       ]
 //[-------------------------------------------------------]
 CompositorInstancePassFirst::CompositorInstancePassFirst(const CompositorResourcePassFirst& compositorResourcePassFirst, const RendererRuntime::CompositorNodeInstance& compositorNodeInstance) :
 	ICompositorInstancePass(compositorResourcePassFirst, compositorNodeInstance)

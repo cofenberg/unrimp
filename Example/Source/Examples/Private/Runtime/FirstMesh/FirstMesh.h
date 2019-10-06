@@ -110,36 +110,39 @@ protected:
 	{
 		// Forget about the resource group so it's rebuild
 		mResourceGroup = nullptr;
+		mCommandBuffer.clear();
+		fillCommandBuffer();
 	}
 
 
 //[-------------------------------------------------------]
-//[ Protected methods                                     ]
+//[ Private methods                                       ]
 //[-------------------------------------------------------]
-protected:
+private:
 	explicit FirstMesh(const FirstMesh&) = delete;
 	FirstMesh& operator=(const FirstMesh&) = delete;
+	void fillCommandBuffer();
 
 
 //[-------------------------------------------------------]
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
-	Renderer::CommandBuffer				  mCommandBuffer;			///< Command buffer
-	Renderer::IRootSignaturePtr			  mRootSignature;			///< Root signature, can be a null pointer
-	Renderer::IUniformBufferPtr			  mUniformBuffer;			///< Uniform buffer object (UBO), can be a null pointer
-	Renderer::IGraphicsPipelineStatePtr	  mGraphicsPipelineState;	///< Graphics pipeline state object (PSO), can be a null pointer
-	Renderer::IGraphicsProgramPtr		  mGraphicsProgram;			///< Graphics program, can be a null pointer
-	RendererRuntime::MeshResourceId		  mMeshResourceId;			///< Mesh resource ID, can be set to invalid value
-	RendererRuntime::TextureResourceId	  m_argb_nxaTextureResourceId;
-	RendererRuntime::TextureResourceId	  m_hr_rg_mb_nyaTextureResourceId;
-	RendererRuntime::TextureResourceId	  mEmissiveTextureResourceId;
-	Renderer::IResourceGroupPtr			  mResourceGroup;			///< Resource group, can be a null pointer
-	Renderer::ISamplerStatePtr			  mSamplerStatePtr;			///< Sampler state, can be a null pointer
-	Renderer::IResourceGroupPtr			  mSamplerStateGroup;		///< Sampler state resource group, can be a null pointer
+	Renderer::CommandBuffer				mCommandBuffer;				///< Command buffer
+	Renderer::IRootSignaturePtr			mRootSignature;				///< Root signature, can be a null pointer
+	Renderer::IUniformBufferPtr			mUniformBuffer;				///< Uniform buffer object (UBO), can be a null pointer
+	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineState;		///< Graphics pipeline state object (PSO), can be a null pointer
+	Renderer::IGraphicsProgramPtr		mGraphicsProgram;			///< Graphics program, can be a null pointer
+	RendererRuntime::MeshResourceId		mMeshResourceId;			///< Mesh resource ID, can be set to invalid value
+	RendererRuntime::TextureResourceId	m_argb_nxaTextureResourceId;
+	RendererRuntime::TextureResourceId	m_hr_rg_mb_nyaTextureResourceId;
+	RendererRuntime::TextureResourceId	mEmissiveTextureResourceId;
+	Renderer::IResourceGroupPtr			mResourceGroup;				///< Resource group, can be a null pointer
+	Renderer::ISamplerStatePtr			mSamplerStatePtr;			///< Sampler state, can be a null pointer
+	Renderer::IResourceGroupPtr			mSamplerStateGroup;			///< Sampler state resource group, can be a null pointer
 	// Optimization: Cache data to not bother the renderer API to much
-	handle	 mObjectSpaceToClipSpaceMatrixUniformHandle;	///< Object space to clip space matrix uniform handle, can be NULL_HANDLE
-	handle	 mObjectSpaceToViewSpaceMatrixUniformHandle;	///< Object space to view space matrix uniform handle, can be NULL_HANDLE
+	handle mObjectSpaceToClipSpaceMatrixUniformHandle;	///< Object space to clip space matrix uniform handle, can be "NULL_HANDLE"
+	handle mObjectSpaceToViewSpaceMatrixUniformHandle;	///< Object space to view space matrix uniform handle, can be "NULL_HANDLE"
 	// For timing
 	RendererRuntime::Stopwatch mStopwatch;		///< Stopwatch instance
 	float					   mGlobalTimer;	///< Global timer

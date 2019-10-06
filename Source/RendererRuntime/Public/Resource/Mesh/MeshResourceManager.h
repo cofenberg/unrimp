@@ -84,6 +84,7 @@ namespace RendererRuntime
 		[[nodiscard]] RENDERERRUNTIME_API_EXPORT MeshResource* getMeshResourceByAssetId(AssetId assetId) const;	// Considered to be inefficient, avoid method whenever possible
 		RENDERERRUNTIME_API_EXPORT void loadMeshResourceByAssetId(AssetId assetId, MeshResourceId& meshResourceId, IResourceListener* resourceListener = nullptr, bool reload = false, ResourceLoaderTypeId resourceLoaderTypeId = getInvalid<ResourceLoaderTypeId>());	// Asynchronous
 		[[nodiscard]] RENDERERRUNTIME_API_EXPORT MeshResourceId createEmptyMeshResourceByAssetId(AssetId assetId);	// Mesh resource is not allowed to exist, yet, prefer asynchronous mesh resource loading over this method
+		RENDERERRUNTIME_API_EXPORT void setInvalidResourceId(MeshResourceId& textureResourceId, IResourceListener& resourceListener) const;
 
 		[[nodiscard]] inline const Renderer::IVertexBufferPtr& getDrawIdVertexBufferPtr() const
 		{

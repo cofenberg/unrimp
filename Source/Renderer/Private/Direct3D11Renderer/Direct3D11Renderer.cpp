@@ -567,6 +567,7 @@ struct D3D11_UNORDERED_ACCESS_VIEW_DESC;
 #define D3DCOMPILE_OPTIMIZATION_LEVEL2	((1 << 14) | (1 << 15))
 #define D3DCOMPILE_OPTIMIZATION_LEVEL3	(1 << 15)
 #define D3DCOMPILE_WARNINGS_ARE_ERRORS	(1 << 18)
+#define D3DCOMPILE_ALL_RESOURCES_BOUND	(1 << 21)
 
 // "Microsoft DirectX SDK (June 2010)" -> "d3d9types.h"
 typedef DWORD D3DCOLOR;
@@ -3661,7 +3662,8 @@ namespace Direct3D11Renderer
 		RENDERER_ASSERT(context, nullptr != sourceCode, "Invalid Direct3D 11 shader source code")
 
 		// Get compile flags
-		UINT compileFlags = (D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_WARNINGS_ARE_ERRORS);
+		// -> "DX12 Do's And Don'ts" ( https://developer.nvidia.com/dx12-dos-and-donts ) "Use the /all_resources_bound / D3DCOMPILE_ALL_RESOURCES_BOUND compile flag if possible"
+		UINT compileFlags = (D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_WARNINGS_ARE_ERRORS | D3DCOMPILE_ALL_RESOURCES_BOUND);
 		switch (optimizationLevel)
 		{
 			case Renderer::IShaderLanguage::OptimizationLevel::Debug:
@@ -6135,10 +6137,8 @@ namespace Direct3D11Renderer
 						currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
 
 						// Move on to the next mipmap and ensure the size is always at least 1
-						if (dataContainsMipmaps)
-						{
-							data = static_cast<const uint8_t*>(data) + currentD3d11SubresourceData.SysMemPitch;
-						}
+						// -> If the data doesn't contain mipmaps, we don't need to care about this in here
+						data = static_cast<const uint8_t*>(data) + currentD3d11SubresourceData.SysMemPitch;
 						width = getHalfSize(width);
 					}
 				}
@@ -6462,10 +6462,8 @@ namespace Direct3D11Renderer
 							currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
 
 							// Move on to the next slice
-							if (dataContainsMipmaps)
-							{
-								data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
-							}
+							// -> If the data doesn't contain mipmaps, we don't need to care about this in here
+							data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
 						}
 
 						// Move on to the next mipmap and ensure the size is always at least 1x1
@@ -6475,17 +6473,17 @@ namespace Direct3D11Renderer
 				else
 				{
 					// The user only provided us with the base texture, no mipmaps
-					const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-					const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1);
+					const uint32_t numberOfBytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+					const uint32_t numberOfBytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1);
 					for (uint32_t arraySlice = 0; arraySlice < numberOfSlices; ++arraySlice)
 					{
 						D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[arraySlice];
 						currentD3d11SubresourceData.pSysMem			 = data;
-						currentD3d11SubresourceData.SysMemPitch		 = bytesPerRow;
+						currentD3d11SubresourceData.SysMemPitch		 = numberOfBytesPerRow;
 						currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
 
 						// Move on to the next slice
-						data = static_cast<const uint8_t*>(data) + bytesPerSlice;
+						data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
 					}
 				}
 				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture1D(&d3d11Texture1DDesc, d3d11SubresourceData, &mD3D11Texture1D));
@@ -6797,10 +6795,8 @@ namespace Direct3D11Renderer
 						currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
 
 						// Move on to the next mipmap and ensure the size is always at least 1x1
-						if (dataContainsMipmaps)
-						{
-							data = static_cast<const uint8_t*>(data) + Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
-						}
+						// -> If the data doesn't contain mipmaps, we don't need to care about this in here
+						data = static_cast<const uint8_t*>(data) + Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
 						width = getHalfSize(width);
 						height = getHalfSize(height);
 					}
@@ -7174,10 +7170,8 @@ namespace Direct3D11Renderer
 							currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
 
 							// Move on to the next slice
-							if (dataContainsMipmaps)
-							{
-								data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
-							}
+							// -> If the data doesn't contain mipmaps, we don't need to care about this in here
+							data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
 						}
 
 						// Move on to the next mipmap and ensure the size is always at least 1x1
@@ -7188,17 +7182,17 @@ namespace Direct3D11Renderer
 				else
 				{
 					// The user only provided us with the base texture, no mipmaps
-					const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-					const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
+					const uint32_t numberOfBytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+					const uint32_t numberOfBytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
 					for (uint32_t arraySlice = 0; arraySlice < numberOfSlices; ++arraySlice)
 					{
 						D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[arraySlice];
 						currentD3d11SubresourceData.pSysMem			 = data;
-						currentD3d11SubresourceData.SysMemPitch		 = bytesPerRow;
+						currentD3d11SubresourceData.SysMemPitch		 = numberOfBytesPerRow;
 						currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
 
 						// Move on to the next slice
-						data = static_cast<const uint8_t*>(data) + bytesPerSlice;
+						data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
 					}
 				}
 				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, d3d11SubresourceData, &mD3D11Texture2D));
@@ -7520,10 +7514,8 @@ namespace Direct3D11Renderer
 						currentD3d11SubresourceData.SysMemSlicePitch = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
 
 						// Move on to the next mipmap and ensure the size is always at least 1x1x1
-						if (dataContainsMipmaps)
-						{
-							data = static_cast<const uint8_t*>(data) + currentD3d11SubresourceData.SysMemSlicePitch * depth;
-						}
+						// -> If the data doesn't contain mipmaps, we don't need to care about this in here
+						data = static_cast<const uint8_t*>(data) + currentD3d11SubresourceData.SysMemSlicePitch * depth;
 						width = getHalfSize(width);
 						height = getHalfSize(height);
 						depth = getHalfSize(depth);
@@ -7844,10 +7836,8 @@ namespace Direct3D11Renderer
 							currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
 
 							// Move on to the cube map face
-							if (dataContainsMipmaps)
-							{
-								data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
-							}
+							// -> If the data doesn't contain mipmaps, we don't need to care about this in here
+							data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
 						}
 
 						// Move on to the next mipmap and ensure the size is always at least 1x1
@@ -7858,17 +7848,17 @@ namespace Direct3D11Renderer
 				else
 				{
 					// The user only provided us with the base texture, no mipmaps
-					const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-					const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
+					const uint32_t numberOfBytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+					const uint32_t numberOfBytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
 					for (uint32_t arraySlice = 0; arraySlice < NUMBER_OF_SLICES; ++arraySlice)
 					{
 						D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[arraySlice];
 						currentD3d11SubresourceData.pSysMem			 = data;
-						currentD3d11SubresourceData.SysMemPitch		 = bytesPerRow;
+						currentD3d11SubresourceData.SysMemPitch		 = numberOfBytesPerRow;
 						currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
 
 						// Move on to the next slice
-						data = static_cast<const uint8_t*>(data) + bytesPerSlice;
+						data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
 					}
 				}
 				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, d3d11SubresourceData, &mD3D11TextureCube));
@@ -13853,8 +13843,8 @@ namespace Direct3D11Renderer
 	{
 		// Sanity checks
 		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
-		RENDERER_ASSERT(mContext, firstQueryIndex < static_cast<QueryPool&>(queryPool).getNumberOfQueries(), "Direct3D 11 out-of-bounds query index")
-		RENDERER_ASSERT(mContext, (firstQueryIndex + numberOfQueries) <= static_cast<QueryPool&>(queryPool).getNumberOfQueries(), "Direct3D 11 out-of-bounds query index")
+		RENDERER_ASSERT(mContext, firstQueryIndex < static_cast<const QueryPool&>(queryPool).getNumberOfQueries(), "Direct3D 11 out-of-bounds query index")
+		RENDERER_ASSERT(mContext, (firstQueryIndex + numberOfQueries) <= static_cast<const QueryPool&>(queryPool).getNumberOfQueries(), "Direct3D 11 out-of-bounds query index")
 
 		// Nothing to do in here for Direct3D 11
 	}
@@ -13865,7 +13855,7 @@ namespace Direct3D11Renderer
 		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// Query pool type dependent processing
-		QueryPool& d3d11QueryPool = static_cast<QueryPool&>(queryPool);
+		const QueryPool& d3d11QueryPool = static_cast<const QueryPool&>(queryPool);
 		RENDERER_ASSERT(mContext, queryIndex < d3d11QueryPool.getNumberOfQueries(), "Direct3D 11 out-of-bounds query index")
 		switch (d3d11QueryPool.getQueryType())
 		{
@@ -13886,7 +13876,7 @@ namespace Direct3D11Renderer
 		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// Query pool type dependent processing
-		QueryPool& d3d11QueryPool = static_cast<QueryPool&>(queryPool);
+		const QueryPool& d3d11QueryPool = static_cast<const QueryPool&>(queryPool);
 		RENDERER_ASSERT(mContext, queryIndex < d3d11QueryPool.getNumberOfQueries(), "Direct3D 11 out-of-bounds query index")
 		switch (d3d11QueryPool.getQueryType())
 		{
@@ -13907,7 +13897,7 @@ namespace Direct3D11Renderer
 		DIRECT3D11RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// Query pool type dependent processing
-		QueryPool& d3d11QueryPool = static_cast<QueryPool&>(queryPool);
+		const QueryPool& d3d11QueryPool = static_cast<const QueryPool&>(queryPool);
 		RENDERER_ASSERT(mContext, queryIndex < d3d11QueryPool.getNumberOfQueries(), "Direct3D 11 out-of-bounds query index")
 		switch (d3d11QueryPool.getQueryType())
 		{
@@ -14301,7 +14291,7 @@ namespace Direct3D11Renderer
 
 		// Query pool type dependent processing
 		bool resultAvailable = true;
-		QueryPool& d3d11QueryPool = static_cast<QueryPool&>(queryPool);
+		const QueryPool& d3d11QueryPool = static_cast<const QueryPool&>(queryPool);
 		RENDERER_ASSERT(mContext, firstQueryIndex < d3d11QueryPool.getNumberOfQueries(), "Direct3D 11 out-of-bounds query index")
 		RENDERER_ASSERT(mContext, (firstQueryIndex + numberOfQueries) <= d3d11QueryPool.getNumberOfQueries(), "Direct3D 11 out-of-bounds query index")
 		const bool waitForResult = ((queryResultFlags & Renderer::QueryResultFlags::WAIT) != 0);

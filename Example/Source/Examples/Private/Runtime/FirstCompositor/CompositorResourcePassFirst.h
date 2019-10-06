@@ -61,9 +61,9 @@ public:
 
 
 //[-------------------------------------------------------]
-//[ Protected methods                                     ]
+//[ Private methods                                       ]
 //[-------------------------------------------------------]
-protected:
+private:
 	inline explicit CompositorResourcePassFirst(const RendererRuntime::CompositorTarget& compositorTarget) :
 		RendererRuntime::ICompositorResourcePass(compositorTarget)
 	{

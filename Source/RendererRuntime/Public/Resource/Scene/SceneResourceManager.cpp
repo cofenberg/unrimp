@@ -94,6 +94,16 @@ namespace RendererRuntime
 		mInternalResourceManager->getResources().removeElement(sceneResourceId);
 	}
 
+	void SceneResourceManager::setInvalidResourceId(SceneResourceId& sceneResourceId, IResourceListener& resourceListener) const
+	{
+		SceneResource* sceneResource = tryGetById(sceneResourceId);
+		if (nullptr != sceneResource)
+		{
+			sceneResource->disconnectResourceListener(resourceListener);
+		}
+		setInvalid(sceneResourceId);
+	}
+
 
 	//[-------------------------------------------------------]
 	//[ Public virtual RendererRuntime::IResourceManager methods ]

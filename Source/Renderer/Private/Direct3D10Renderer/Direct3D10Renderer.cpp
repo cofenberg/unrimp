@@ -4689,9 +4689,9 @@ namespace Direct3D10Renderer
 						RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D10Renderer)
 
 						{ // Update Direct3D 10 subresource data of the base-map
-							const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-							const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1);
-							direct3D10Renderer.getD3D10Device()->UpdateSubresource(mD3D10Texture1D, 0, nullptr, data, bytesPerRow, bytesPerSlice);
+							const uint32_t numberOfBytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+							const uint32_t numberOfBytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1);
+							direct3D10Renderer.getD3D10Device()->UpdateSubresource(mD3D10Texture1D, 0, nullptr, data, numberOfBytesPerRow, numberOfBytesPerSlice);
 						}
 
 						// Let Direct3D 10 generate the mipmaps for us automatically
@@ -4972,14 +4972,14 @@ namespace Direct3D10Renderer
 						RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D10Renderer)
 
 						{ // Update Direct3D 10 subresource data of the base-map
-							const uint32_t  bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-							const uint32_t  bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1);
+							const uint32_t numberOfBytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+							const uint32_t numberOfBytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1);
 							for (uint32_t arraySlice = 0; arraySlice < numberOfSlices; ++arraySlice)
 							{
-								d3d10Device->UpdateSubresource(mD3D10Texture1D, D3D10CalcSubresource(0, arraySlice, numberOfMipmaps), nullptr, data, bytesPerRow, bytesPerSlice);
+								d3d10Device->UpdateSubresource(mD3D10Texture1D, D3D10CalcSubresource(0, arraySlice, numberOfMipmaps), nullptr, data, numberOfBytesPerRow, numberOfBytesPerSlice);
 
 								// Move on to the next slice
-								data = static_cast<const uint8_t*>(data) + bytesPerSlice;
+								data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
 							}
 						}
 
@@ -5037,17 +5037,17 @@ namespace Direct3D10Renderer
 					else
 					{
 						// The user only provided us with the base texture, no mipmaps
-						const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-						const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1);
+						const uint32_t numberOfBytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+						const uint32_t numberOfBytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1);
 						for (uint32_t arraySlice = 0; arraySlice < numberOfSlices; ++arraySlice)
 						{
 							D3D10_SUBRESOURCE_DATA& currentD3d10SubresourceData = d3d10SubresourceData[arraySlice];
 							currentD3d10SubresourceData.pSysMem			 = data;
-							currentD3d10SubresourceData.SysMemPitch		 = bytesPerRow;
+							currentD3d10SubresourceData.SysMemPitch		 = numberOfBytesPerRow;
 							currentD3d10SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
 
 							// Move on to the next slice
-							data = static_cast<const uint8_t*>(data) + bytesPerSlice;
+							data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
 						}
 					}
 					FAILED_DEBUG_BREAK(d3d10Device->CreateTexture1D(&d3d10Texture1DDesc, d3d10SubresourceData, &mD3D10Texture1D));
@@ -5302,9 +5302,9 @@ namespace Direct3D10Renderer
 						RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D10Renderer)
 
 						{ // Update Direct3D 10 subresource data of the base-map
-							const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-							const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
-							direct3D10Renderer.getD3D10Device()->UpdateSubresource(mD3D10Texture2D, 0, nullptr, data, bytesPerRow, bytesPerSlice);
+							const uint32_t numberOfBytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+							const uint32_t numberOfBytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
+							direct3D10Renderer.getD3D10Device()->UpdateSubresource(mD3D10Texture2D, 0, nullptr, data, numberOfBytesPerRow, numberOfBytesPerSlice);
 						}
 
 						// Let Direct3D 10 generate the mipmaps for us automatically
@@ -5635,14 +5635,14 @@ namespace Direct3D10Renderer
 						RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D10Renderer)
 
 						{ // Update Direct3D 10 subresource data of the base-map
-							const uint32_t  bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-							const uint32_t  bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
+							const uint32_t numberOfBytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+							const uint32_t numberOfBytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
 							for (uint32_t arraySlice = 0; arraySlice < numberOfSlices; ++arraySlice)
 							{
-								d3d10Device->UpdateSubresource(mD3D10Texture2D, D3D10CalcSubresource(0, arraySlice, numberOfMipmaps), nullptr, data, bytesPerRow, bytesPerSlice);
+								d3d10Device->UpdateSubresource(mD3D10Texture2D, D3D10CalcSubresource(0, arraySlice, numberOfMipmaps), nullptr, data, numberOfBytesPerRow, numberOfBytesPerSlice);
 
 								// Move on to the next slice
-								data = static_cast<const uint8_t*>(data) + bytesPerSlice;
+								data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
 							}
 						}
 
@@ -5701,17 +5701,17 @@ namespace Direct3D10Renderer
 					else
 					{
 						// The user only provided us with the base texture, no mipmaps
-						const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-						const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
+						const uint32_t numberOfBytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+						const uint32_t numberOfBytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
 						for (uint32_t arraySlice = 0; arraySlice < numberOfSlices; ++arraySlice)
 						{
 							D3D10_SUBRESOURCE_DATA& currentD3d10SubresourceData = d3d10SubresourceData[arraySlice];
 							currentD3d10SubresourceData.pSysMem			 = data;
-							currentD3d10SubresourceData.SysMemPitch		 = bytesPerRow;
+							currentD3d10SubresourceData.SysMemPitch		 = numberOfBytesPerRow;
 							currentD3d10SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
 
 							// Move on to the next slice
-							data = static_cast<const uint8_t*>(data) + bytesPerSlice;
+							data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
 						}
 					}
 					FAILED_DEBUG_BREAK(d3d10Device->CreateTexture2D(&d3d10Texture2DDesc, d3d10SubresourceData, &mD3D10Texture2D));
@@ -5971,9 +5971,9 @@ namespace Direct3D10Renderer
 						RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D10Renderer)
 
 						{ // Update Direct3D 10 subresource data of the base-map
-							const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-							const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
-							direct3D10Renderer.getD3D10Device()->UpdateSubresource(mD3D10Texture3D, 0, nullptr, data, bytesPerRow, bytesPerSlice);
+							const uint32_t numberOfBytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+							const uint32_t numberOfBytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
+							direct3D10Renderer.getD3D10Device()->UpdateSubresource(mD3D10Texture3D, 0, nullptr, data, numberOfBytesPerRow, numberOfBytesPerSlice);
 						}
 
 						// Let Direct3D 10 generate the mipmaps for us automatically
@@ -6258,14 +6258,14 @@ namespace Direct3D10Renderer
 						RENDERER_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D10Renderer)
 
 						{ // Update Direct3D 10 subresource data of the base-map
-							const uint32_t  bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-							const uint32_t  bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
+							const uint32_t numberOfBytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+							const uint32_t numberOfBytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
 							for (uint32_t arraySlice = 0; arraySlice < NUMBER_OF_SLICES; ++arraySlice)
 							{
-								d3d10Device->UpdateSubresource(mD3D10TextureCube, D3D10CalcSubresource(0, arraySlice, numberOfMipmaps), nullptr, data, bytesPerRow, bytesPerSlice);
+								d3d10Device->UpdateSubresource(mD3D10TextureCube, D3D10CalcSubresource(0, arraySlice, numberOfMipmaps), nullptr, data, numberOfBytesPerRow, numberOfBytesPerSlice);
 
 								// Move on to the next slice
-								data = static_cast<const uint8_t*>(data) + bytesPerSlice;
+								data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
 							}
 						}
 
@@ -6321,17 +6321,17 @@ namespace Direct3D10Renderer
 					else
 					{
 						// The user only provided us with the base texture, no mipmaps
-						const uint32_t bytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-						const uint32_t bytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
+						const uint32_t numberOfBytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+						const uint32_t numberOfBytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
 						for (uint32_t arraySlice = 0; arraySlice < NUMBER_OF_SLICES; ++arraySlice)
 						{
 							D3D10_SUBRESOURCE_DATA& currentD3d10SubresourceData = d3d10SubresourceData[arraySlice];
 							currentD3d10SubresourceData.pSysMem			 = data;
-							currentD3d10SubresourceData.SysMemPitch		 = bytesPerRow;
+							currentD3d10SubresourceData.SysMemPitch		 = numberOfBytesPerRow;
 							currentD3d10SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
 
 							// Move on to the next slice
-							data = static_cast<const uint8_t*>(data) + bytesPerSlice;
+							data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
 						}
 					}
 					FAILED_DEBUG_BREAK(d3d10Device->CreateTexture2D(&d3d10Texture2DDesc, d3d10SubresourceData, &mD3D10TextureCube));
@@ -10826,8 +10826,8 @@ namespace Direct3D10Renderer
 	{
 		// Sanity checks
 		DIRECT3D10RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
-		RENDERER_ASSERT(mContext, firstQueryIndex < static_cast<QueryPool&>(queryPool).getNumberOfQueries(), "Direct3D 10 out-of-bounds query index")
-		RENDERER_ASSERT(mContext, (firstQueryIndex + numberOfQueries) <= static_cast<QueryPool&>(queryPool).getNumberOfQueries(), "Direct3D 10 out-of-bounds query index")
+		RENDERER_ASSERT(mContext, firstQueryIndex < static_cast<const QueryPool&>(queryPool).getNumberOfQueries(), "Direct3D 10 out-of-bounds query index")
+		RENDERER_ASSERT(mContext, (firstQueryIndex + numberOfQueries) <= static_cast<const QueryPool&>(queryPool).getNumberOfQueries(), "Direct3D 10 out-of-bounds query index")
 
 		// Nothing to do in here for Direct3D 10
 	}
@@ -10838,7 +10838,7 @@ namespace Direct3D10Renderer
 		DIRECT3D10RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// Query pool type dependent processing
-		QueryPool& d3d10QueryPool = static_cast<QueryPool&>(queryPool);
+		const QueryPool& d3d10QueryPool = static_cast<const QueryPool&>(queryPool);
 		RENDERER_ASSERT(mContext, queryIndex < d3d10QueryPool.getNumberOfQueries(), "Direct3D 10 out-of-bounds query index")
 		switch (d3d10QueryPool.getQueryType())
 		{
@@ -10859,7 +10859,7 @@ namespace Direct3D10Renderer
 		DIRECT3D10RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// Query pool type dependent processing
-		QueryPool& d3d10QueryPool = static_cast<QueryPool&>(queryPool);
+		const QueryPool& d3d10QueryPool = static_cast<const QueryPool&>(queryPool);
 		RENDERER_ASSERT(mContext, queryIndex < d3d10QueryPool.getNumberOfQueries(), "Direct3D 10 out-of-bounds query index")
 		switch (d3d10QueryPool.getQueryType())
 		{
@@ -10880,7 +10880,7 @@ namespace Direct3D10Renderer
 		DIRECT3D10RENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// Query pool type dependent processing
-		QueryPool& d3d10QueryPool = static_cast<QueryPool&>(queryPool);
+		const QueryPool& d3d10QueryPool = static_cast<const QueryPool&>(queryPool);
 		RENDERER_ASSERT(mContext, queryIndex < d3d10QueryPool.getNumberOfQueries(), "Direct3D 10 out-of-bounds query index")
 		switch (d3d10QueryPool.getQueryType())
 		{
@@ -11336,7 +11336,7 @@ namespace Direct3D10Renderer
 
 		// Query pool type dependent processing
 		bool resultAvailable = true;
-		QueryPool& d3d10QueryPool = static_cast<QueryPool&>(queryPool);
+		const QueryPool& d3d10QueryPool = static_cast<const QueryPool&>(queryPool);
 		RENDERER_ASSERT(mContext, firstQueryIndex < d3d10QueryPool.getNumberOfQueries(), "Direct3D 10 out-of-bounds query index")
 		RENDERER_ASSERT(mContext, (firstQueryIndex + numberOfQueries) <= d3d10QueryPool.getNumberOfQueries(), "Direct3D 10 out-of-bounds query index")
 		const bool waitForResult = ((queryResultFlags & Renderer::QueryResultFlags::WAIT) != 0);

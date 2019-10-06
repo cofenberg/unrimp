@@ -81,6 +81,7 @@ namespace RendererRuntime
 		[[nodiscard]] RENDERERRUNTIME_API_EXPORT SkeletonAnimationResource* getSkeletonAnimationResourceByAssetId(AssetId assetId) const;	// Considered to be inefficient, avoid method whenever possible
 		RENDERERRUNTIME_API_EXPORT void loadSkeletonAnimationResourceByAssetId(AssetId assetId, SkeletonAnimationResourceId& skeletonAnimationResourceId, IResourceListener* resourceListener = nullptr, bool reload = false, ResourceLoaderTypeId resourceLoaderTypeId = getInvalid<ResourceLoaderTypeId>());	// Asynchronous
 		[[nodiscard]] RENDERERRUNTIME_API_EXPORT SkeletonAnimationResourceId createSkeletonAnimationResourceByAssetId(AssetId assetId);	// Skeleton animation resource is not allowed to exist, yet
+		RENDERERRUNTIME_API_EXPORT void setInvalidResourceId(SkeletonAnimationResourceId& skeletonAnimationResourceId, IResourceListener& resourceListener) const;
 
 
 	//[-------------------------------------------------------]

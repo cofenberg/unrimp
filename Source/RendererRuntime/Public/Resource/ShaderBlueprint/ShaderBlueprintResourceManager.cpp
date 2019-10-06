@@ -47,6 +47,16 @@ namespace RendererRuntime
 		mInternalResourceManager->loadResourceByAssetId(assetId, shaderBlueprintResourceId, resourceListener, reload, resourceLoaderTypeId);
 	}
 
+	void ShaderBlueprintResourceManager::setInvalidResourceId(ShaderBlueprintResourceId& shaderBlueprintResourceId, IResourceListener& resourceListener) const
+	{
+		ShaderBlueprintResource* shaderBlueprintResource = tryGetById(shaderBlueprintResourceId);
+		if (nullptr != shaderBlueprintResource)
+		{
+			shaderBlueprintResource->disconnectResourceListener(resourceListener);
+		}
+		setInvalid(shaderBlueprintResourceId);
+	}
+
 
 	//[-------------------------------------------------------]
 	//[ Public virtual RendererRuntime::IResourceManager methods ]

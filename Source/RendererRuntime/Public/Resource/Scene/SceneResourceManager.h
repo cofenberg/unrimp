@@ -90,6 +90,7 @@ namespace RendererRuntime
 		[[nodiscard]] RENDERERRUNTIME_API_EXPORT SceneResourceId getSceneResourceIdByAssetId(AssetId assetId) const;	// Considered to be inefficient, avoid method whenever possible
 		RENDERERRUNTIME_API_EXPORT void loadSceneResourceByAssetId(AssetId assetId, SceneResourceId& sceneResourceId, IResourceListener* resourceListener = nullptr, bool reload = false, ResourceLoaderTypeId resourceLoaderTypeId = getInvalid<ResourceLoaderTypeId>());	// Asynchronous
 		RENDERERRUNTIME_API_EXPORT void destroySceneResource(SceneResourceId sceneResourceId);
+		RENDERERRUNTIME_API_EXPORT void setInvalidResourceId(SceneResourceId& sceneResourceId, IResourceListener& resourceListener) const;
 
 
 	//[-------------------------------------------------------]

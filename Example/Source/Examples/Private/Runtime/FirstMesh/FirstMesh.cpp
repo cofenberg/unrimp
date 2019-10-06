@@ -187,7 +187,7 @@ void FirstMesh::onInitialization()
 		}
 
 		// Create mesh instance
-		rendererRuntime.getMeshResourceManager().loadMeshResourceByAssetId(ASSET_ID("Example/Mesh/Imrod/SM_Imrod"), mMeshResourceId);
+		rendererRuntime.getMeshResourceManager().loadMeshResourceByAssetId(ASSET_ID("Example/Mesh/Imrod/SM_Imrod"), mMeshResourceId, this);
 
 		{ // Load in the albedo, emissive, normal and roughness texture
 			RendererRuntime::TextureResourceManager& textureResourceManager = rendererRuntime.getTextureResourceManager();
@@ -196,20 +196,28 @@ void FirstMesh::onInitialization()
 			textureResourceManager.loadTextureResourceByAssetId(ASSET_ID("Example/Mesh/Imrod/T_Imrod_e"),            ASSET_ID("Unrimp/Texture/DynamicByCode/IdentityEmissiveMap2D"),   mEmissiveTextureResourceId, this);
 		}
 	}
+
+	// Since we're always submitting the same commands to the renderer, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
+	fillCommandBuffer();
 }
 
 void FirstMesh::onDeinitialization()
 {
+	{ // Disconnect resource listeners
+		const RendererRuntime::IRendererRuntime& rendererRuntime = getRendererRuntimeSafe();
+		const RendererRuntime::TextureResourceManager& textureResourceManager = rendererRuntime.getTextureResourceManager();
+		textureResourceManager.setInvalidResourceId(m_argb_nxaTextureResourceId, *this);
+		textureResourceManager.setInvalidResourceId(m_hr_rg_mb_nyaTextureResourceId, *this);
+		textureResourceManager.setInvalidResourceId(mEmissiveTextureResourceId, *this);
+		rendererRuntime.getMeshResourceManager().setInvalidResourceId(mMeshResourceId, *this);
+	}
+
 	// Release the used renderer resources
 	mObjectSpaceToViewSpaceMatrixUniformHandle = NULL_HANDLE;
 	mObjectSpaceToClipSpaceMatrixUniformHandle = NULL_HANDLE;
 	mSamplerStateGroup = nullptr;
 	mSamplerStatePtr = nullptr;
 	mResourceGroup = nullptr;
-	RendererRuntime::setInvalid(mEmissiveTextureResourceId);
-	RendererRuntime::setInvalid(m_hr_rg_mb_nyaTextureResourceId);
-	RendererRuntime::setInvalid(m_argb_nxaTextureResourceId);
-	RendererRuntime::setInvalid(mMeshResourceId);
 	mGraphicsProgram = nullptr;
 	mGraphicsPipelineState = nullptr;
 	mUniformBuffer = nullptr;
@@ -231,63 +239,27 @@ void FirstMesh::onUpdate()
 
 void FirstMesh::onDraw()
 {
-	// Due to background texture loading, some textures might not be ready, yet
-	RendererRuntime::IRendererRuntime& rendererRuntime = getRendererRuntimeSafe();
-	const RendererRuntime::TextureResourceManager& textureResourceManager = rendererRuntime.getTextureResourceManager();
-	const RendererRuntime::TextureResource* _argb_nxaTextureResource = textureResourceManager.tryGetById(m_argb_nxaTextureResourceId);
-	const RendererRuntime::TextureResource* _hr_rg_mb_nyaTextureResource = textureResourceManager.tryGetById(m_hr_rg_mb_nyaTextureResourceId);
-	const RendererRuntime::TextureResource* emissiveTextureResource = textureResourceManager.tryGetById(mEmissiveTextureResourceId);
-	if (nullptr == _argb_nxaTextureResource || nullptr == _argb_nxaTextureResource->getTexturePtr() ||
-		nullptr == _hr_rg_mb_nyaTextureResource || nullptr == _hr_rg_mb_nyaTextureResource->getTexturePtr() ||
-		nullptr == emissiveTextureResource || nullptr == emissiveTextureResource->getTexturePtr())
-	{
-		return;
-	}
-	if (nullptr == mResourceGroup)
-	{
-		// Create resource group
-		Renderer::IResource* resources[4] = { mUniformBuffer, _argb_nxaTextureResource->getTexturePtr(), _hr_rg_mb_nyaTextureResource->getTexturePtr(), emissiveTextureResource->getTexturePtr() };
-		Renderer::ISamplerState* samplerStates[4] = { nullptr, mSamplerStatePtr, mSamplerStatePtr, mSamplerStatePtr };
-		mResourceGroup = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources, samplerStates);
-	}
-
 	// Get and check the renderer instance
 	Renderer::IRendererPtr renderer(getRenderer());
-	if (nullptr != renderer && nullptr != mGraphicsPipelineState)
+	if (nullptr != renderer)
 	{
-		// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
-		RENDERER_SCOPED_PROFILER_EVENT(rendererRuntime.getContext(), mCommandBuffer, "First mesh")
-
-		// Set the viewport and get the aspect ratio
-		float aspectRatio = 4.0f / 3.0f;
-		{
-			// Get the render target with and height
-			const Renderer::IRenderTarget* renderTarget = getMainRenderTarget();
-			if (nullptr != renderTarget)
-			{
-				uint32_t width  = 1;
-				uint32_t height = 1;
-				renderTarget->getWidthAndHeight(width, height);
-
-				// Get the aspect ratio
-				aspectRatio = static_cast<float>(width) / height;
-			}
-		}
-
-		// Clear the graphics color buffer of the current render target with gray, do also clear the depth buffer
-		Renderer::Command::ClearGraphics::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
-
-		// Set the used graphics root signature
-		Renderer::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
-
-		// Set the used graphics pipeline state object (PSO)
-		Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineState);
-
-		// Set graphics resource groups
-		Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 0, mResourceGroup);
-		Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 1, mSamplerStateGroup);
-
 		{ // Set uniform
+			// Get the aspect ratio
+			float aspectRatio = 4.0f / 3.0f;
+			{
+				// Get the render target with and height
+				const Renderer::IRenderTarget* renderTarget = getMainRenderTarget();
+				if (nullptr != renderTarget)
+				{
+					uint32_t width  = 1;
+					uint32_t height = 1;
+					renderTarget->getWidthAndHeight(width, height);
+
+					// Get the aspect ratio
+					aspectRatio = static_cast<float>(width) / height;
+				}
+			}
+
 			// Calculate the object space to clip space matrix
 			const glm::mat4 viewSpaceToClipSpace	= glm::perspective(45.0f, aspectRatio, 100.0f, 0.1f);	// Near and far flipped due to usage of Reversed-Z (see e.g. https://developer.nvidia.com/content/depth-precision-visualized and https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/)
 			const glm::mat4 viewTranslate			= glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -7.0f, 25.0f));
@@ -330,10 +302,59 @@ void FirstMesh::onDraw()
 			}
 		}
 
-		{ // Draw mesh instance
-			const RendererRuntime::MeshResource* meshResource = rendererRuntime.getMeshResourceManager().tryGetById(mMeshResourceId);
-			if (nullptr != meshResource && nullptr != meshResource->getVertexArrayPtr())
+		// Submit command buffer to the renderer backend
+		mCommandBuffer.submitToRenderer(*renderer);
+	}
+}
+
+void FirstMesh::fillCommandBuffer()
+{
+	const RendererRuntime::IRendererRuntime& rendererRuntime = getRendererRuntimeSafe();
+	const RendererRuntime::MeshResource* meshResource = rendererRuntime.getMeshResourceManager().tryGetById(mMeshResourceId);
+	if (nullptr != meshResource && nullptr != meshResource->getVertexArrayPtr())
+	{
+		// Due to background texture loading, some textures might not be ready yet resulting in fallback texture usage
+		// -> "FirstMesh::onLoadingStateChange()" will invalidate the resource group as soon as a texture resource finishes loading 
+		if (nullptr == mResourceGroup)
+		{
+			const RendererRuntime::TextureResourceManager& textureResourceManager = rendererRuntime.getTextureResourceManager();
+			const RendererRuntime::TextureResource* _argb_nxaTextureResource = textureResourceManager.tryGetById(m_argb_nxaTextureResourceId);
+			const RendererRuntime::TextureResource* _hr_rg_mb_nyaTextureResource = textureResourceManager.tryGetById(m_hr_rg_mb_nyaTextureResourceId);
+			const RendererRuntime::TextureResource* emissiveTextureResource = textureResourceManager.tryGetById(mEmissiveTextureResourceId);
+			if (nullptr == _argb_nxaTextureResource || nullptr == _argb_nxaTextureResource->getTexturePtr() ||
+				nullptr == _hr_rg_mb_nyaTextureResource || nullptr == _hr_rg_mb_nyaTextureResource->getTexturePtr() ||
+				nullptr == emissiveTextureResource || nullptr == emissiveTextureResource->getTexturePtr())
 			{
+				return;
+			}
+
+			// Create resource group
+			Renderer::IResource* resources[4] = { mUniformBuffer, _argb_nxaTextureResource->getTexturePtr(), _hr_rg_mb_nyaTextureResource->getTexturePtr(), emissiveTextureResource->getTexturePtr() };
+			Renderer::ISamplerState* samplerStates[4] = { nullptr, mSamplerStatePtr, mSamplerStatePtr, mSamplerStatePtr };
+			mResourceGroup = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources, samplerStates);
+		}
+
+		// Get and check the renderer instance
+		Renderer::IRendererPtr renderer(getRenderer());
+		if (nullptr != renderer && nullptr != mGraphicsPipelineState)
+		{
+			// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
+			RENDERER_SCOPED_PROFILER_EVENT(rendererRuntime.getContext(), mCommandBuffer, "First mesh")
+
+			// Clear the graphics color buffer of the current render target with gray, do also clear the depth buffer
+			Renderer::Command::ClearGraphics::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
+
+			// Set the used graphics root signature
+			Renderer::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
+
+			// Set the used graphics pipeline state object (PSO)
+			Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineState);
+
+			// Set graphics resource groups
+			Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 0, mResourceGroup);
+			Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 1, mSamplerStateGroup);
+
+			{ // Draw mesh instance
 				// Input assembly (IA): Set the used vertex array
 				Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, meshResource->getVertexArrayPtr());
 
@@ -341,8 +362,5 @@ void FirstMesh::onDraw()
 				Renderer::Command::DrawIndexedGraphics::create(mCommandBuffer, meshResource->getNumberOfIndices());
 			}
 		}
-
-		// Submit command buffer to the renderer backend
-		mCommandBuffer.submitToRendererAndClear(*renderer);
 	}
 }

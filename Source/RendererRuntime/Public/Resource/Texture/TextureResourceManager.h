@@ -126,6 +126,7 @@ namespace RendererRuntime
 		RENDERERRUNTIME_API_EXPORT void loadTextureResourceByAssetId(AssetId assetId, AssetId fallbackTextureAssetId, TextureResourceId& textureResourceId, IResourceListener* resourceListener = nullptr, bool rgbHardwareGammaCorrection = false, bool reload = false, ResourceLoaderTypeId resourceLoaderTypeId = getInvalid<ResourceLoaderTypeId>());	// Asynchronous
 		RENDERERRUNTIME_API_EXPORT TextureResourceId createTextureResourceByAssetId(AssetId assetId, Renderer::ITexture& texture, bool rgbHardwareGammaCorrection = false);	// Texture resource is not allowed to exist, yet
 		RENDERERRUNTIME_API_EXPORT void destroyTextureResource(TextureResourceId textureResourceId);
+		RENDERERRUNTIME_API_EXPORT void setInvalidResourceId(TextureResourceId& textureResourceId, IResourceListener& resourceListener) const;
 
 
 	//[-------------------------------------------------------]

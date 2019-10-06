@@ -12735,7 +12735,7 @@ namespace OpenGLRenderer
 		*  @return
 		*    The OpenGL queries
 		*/
-		[[nodiscard]] inline GLuint* getOpenGLQueries() const
+		[[nodiscard]] inline const GLuint* getOpenGLQueries() const
 		{
 			return mOpenGLQueries;
 		}
@@ -19932,8 +19932,8 @@ namespace OpenGLRenderer
 	{
 		// Sanity checks
 		OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
-		RENDERER_ASSERT(mContext, firstQueryIndex < static_cast<QueryPool&>(queryPool).getNumberOfQueries(), "OpenGL out-of-bounds query index")
-		RENDERER_ASSERT(mContext, (firstQueryIndex + numberOfQueries) <= static_cast<QueryPool&>(queryPool).getNumberOfQueries(), "OpenGL out-of-bounds query index")
+		RENDERER_ASSERT(mContext, firstQueryIndex < static_cast<const QueryPool&>(queryPool).getNumberOfQueries(), "OpenGL out-of-bounds query index")
+		RENDERER_ASSERT(mContext, (firstQueryIndex + numberOfQueries) <= static_cast<const QueryPool&>(queryPool).getNumberOfQueries(), "OpenGL out-of-bounds query index")
 
 		// Nothing to do in here for OpenGL
 	}
@@ -19944,18 +19944,18 @@ namespace OpenGLRenderer
 		OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// Query pool type dependent processing
-		QueryPool& openGLQueryPool = static_cast<QueryPool&>(queryPool);
+		const QueryPool& openGLQueryPool = static_cast<const QueryPool&>(queryPool);
 		RENDERER_ASSERT(mContext, queryIndex < openGLQueryPool.getNumberOfQueries(), "OpenGL out-of-bounds query index")
 		switch (openGLQueryPool.getQueryType())
 		{
 			case Renderer::QueryType::OCCLUSION:
 				// At this point in time we know that the "GL_ARB_occlusion_query"-extension is supported
-				glBeginQueryARB(GL_SAMPLES_PASSED_ARB, static_cast<OcclusionTimestampQueryPool&>(openGLQueryPool).getOpenGLQueries()[queryIndex]);
+				glBeginQueryARB(GL_SAMPLES_PASSED_ARB, static_cast<const OcclusionTimestampQueryPool&>(openGLQueryPool).getOpenGLQueries()[queryIndex]);
 				break;
 
 			case Renderer::QueryType::PIPELINE_STATISTICS:
 				// At this point in time we know that the "GL_ARB_pipeline_statistics_query"-extension is supported
-				static_cast<PipelineStatisticsQueryPool&>(openGLQueryPool).beginQuery(queryIndex);
+				static_cast<const PipelineStatisticsQueryPool&>(openGLQueryPool).beginQuery(queryIndex);
 				break;
 
 			case Renderer::QueryType::TIMESTAMP:
@@ -19970,7 +19970,7 @@ namespace OpenGLRenderer
 		OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// Query pool type dependent processing
-		QueryPool& openGLQueryPool = static_cast<QueryPool&>(queryPool);
+		const QueryPool& openGLQueryPool = static_cast<const QueryPool&>(queryPool);
 		RENDERER_ASSERT(mContext, queryIndex < openGLQueryPool.getNumberOfQueries(), "OpenGL out-of-bounds query index")
 		switch (openGLQueryPool.getQueryType())
 		{
@@ -19981,7 +19981,7 @@ namespace OpenGLRenderer
 
 			case Renderer::QueryType::PIPELINE_STATISTICS:
 				// At this point in time we know that the "GL_ARB_pipeline_statistics_query"-extension is supported
-				static_cast<PipelineStatisticsQueryPool&>(openGLQueryPool).endQuery();
+				static_cast<const PipelineStatisticsQueryPool&>(openGLQueryPool).endQuery();
 				break;
 
 			case Renderer::QueryType::TIMESTAMP:
@@ -19996,7 +19996,7 @@ namespace OpenGLRenderer
 		OPENGLRENDERER_RENDERERMATCHCHECK_ASSERT(*this, queryPool)
 
 		// Query pool type dependent processing
-		QueryPool& openGLQueryPool = static_cast<QueryPool&>(queryPool);
+		const QueryPool& openGLQueryPool = static_cast<const QueryPool&>(queryPool);
 		RENDERER_ASSERT(mContext, queryIndex < openGLQueryPool.getNumberOfQueries(), "OpenGL out-of-bounds query index")
 		switch (openGLQueryPool.getQueryType())
 		{
@@ -20010,7 +20010,7 @@ namespace OpenGLRenderer
 
 			case Renderer::QueryType::TIMESTAMP:
 				// At this point in time we know that the "GL_ARB_timer_query"-extension is supported
-				glQueryCounter(static_cast<OcclusionTimestampQueryPool&>(openGLQueryPool).getOpenGLQueries()[queryIndex], GL_TIMESTAMP);
+				glQueryCounter(static_cast<const OcclusionTimestampQueryPool&>(openGLQueryPool).getOpenGLQueries()[queryIndex], GL_TIMESTAMP);
 				break;
 		}
 	}
@@ -20645,7 +20645,7 @@ namespace OpenGLRenderer
 
 		// Query pool type dependent processing
 		bool resultAvailable = true;
-		const QueryPool& openGLQueryPool = static_cast<QueryPool&>(queryPool);
+		const QueryPool& openGLQueryPool = static_cast<const QueryPool&>(queryPool);
 		RENDERER_ASSERT(mContext, firstQueryIndex < openGLQueryPool.getNumberOfQueries(), "OpenGL out-of-bounds query index")
 		RENDERER_ASSERT(mContext, (firstQueryIndex + numberOfQueries) <= openGLQueryPool.getNumberOfQueries(), "OpenGL out-of-bounds query index")
 		const bool waitForResult = ((queryResultFlags & Renderer::QueryResultFlags::WAIT) != 0);

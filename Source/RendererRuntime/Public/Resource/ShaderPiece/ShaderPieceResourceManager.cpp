@@ -42,6 +42,16 @@ namespace RendererRuntime
 		mInternalResourceManager->loadResourceByAssetId(assetId, shaderPieceResourceId, resourceListener, reload, resourceLoaderTypeId);
 	}
 
+	void ShaderPieceResourceManager::setInvalidResourceId(ShaderPieceResourceId& shaderPieceResourceId, IResourceListener& resourceListener) const
+	{
+		ShaderPieceResource* shaderPieceResource = tryGetById(shaderPieceResourceId);
+		if (nullptr != shaderPieceResource)
+		{
+			shaderPieceResource->disconnectResourceListener(resourceListener);
+		}
+		setInvalid(shaderPieceResourceId);
+	}
+
 
 	//[-------------------------------------------------------]
 	//[ Public virtual RendererRuntime::IResourceManager methods ]
