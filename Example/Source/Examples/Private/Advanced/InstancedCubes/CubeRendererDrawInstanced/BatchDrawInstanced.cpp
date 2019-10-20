@@ -103,7 +103,7 @@ void BatchDrawInstanced::initialize(Renderer::IBufferManager& bufferManager, Ren
 
 		{ // Create the texture buffer instance and wrap it into a resource group instance
 			Renderer::IResource* resource = bufferManager.createTextureBuffer(sizeof(float) * numberOfElements, data);
-			mTextureBufferGroup = rootSignature.createResourceGroup(1, 1, &resource);
+			mTextureBufferGroup = rootSignature.createResourceGroup(2, 1, &resource);
 		}
 
 		// Free local per instance data
@@ -128,7 +128,7 @@ void BatchDrawInstanced::fillCommandBuffer(Renderer::CommandBuffer& commandBuffe
 	Renderer::Command::SetGraphicsPipelineState::create(commandBuffer, mGraphicsPipelineState);
 
 	// Set graphics resource groups
-	Renderer::Command::SetGraphicsResourceGroup::create(commandBuffer, 1, mTextureBufferGroup);
+	Renderer::Command::SetGraphicsResourceGroup::create(commandBuffer, 2, mTextureBufferGroup);
 
 	// Use instancing in order to draw multiple cubes with just a single draw call
 	// -> Draw calls are one of the most expensive rendering, avoid them if possible

@@ -100,7 +100,7 @@ layout(location = 1) out vec3 tePosition;		// Interpolated object space vertex p
 layout(location = 2) out vec3 tePatchDistance;	// The barycentric coordinate inside the patch we received from the tessellator as output
 
 // Uniforms
-layout(std140, set = 0, binding = 1) uniform UniformBlockStaticTes
+layout(std140, set = 1, binding = 0) uniform UniformBlockStaticTes
 {
 	mat4 ObjectSpaceToClipSpaceMatrix;	// Object space to clip space matrix
 };
@@ -150,7 +150,7 @@ layout(location = 2) out vec3 gPatchDistance;		// The barycentric coordinate ins
 layout(location = 3) out vec3 gTriDistance;			// Local triangle vertex position as output
 
 // Uniforms
-layout(std140, set = 0, binding = 2) uniform UniformBlockStaticGs
+layout(std140, set = 2, binding = 0) uniform UniformBlockStaticGs
 {
 	// TODO(co) mat3
 	mat4 NormalMatrix;	// Object space to clip space rotation matrix
@@ -202,7 +202,7 @@ layout(location = 3) in  vec3 gTriDistance;		// Local triangle vertex position w
 layout(location = 0) out vec4 OutputColor;		// Output variable for fragment color
 
 // Uniforms
-layout(std140, set = 0, binding = 3) uniform UniformBlockStaticFs
+layout(std140, set = 3, binding = 0) uniform UniformBlockStaticFs
 {
 	// TODO(co) vec3
 	vec4 LightPosition;

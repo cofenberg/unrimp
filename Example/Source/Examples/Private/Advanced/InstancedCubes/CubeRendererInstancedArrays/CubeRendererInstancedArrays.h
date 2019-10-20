@@ -113,7 +113,8 @@ private:
 	Renderer::IUniformBufferPtr	  mUniformBufferStaticVs;				///< Static vertex shader uniform buffer object (UBO), can be a null pointer
 	Renderer::IUniformBufferPtr	  mUniformBufferDynamicVs;				///< Dynamic vertex shader uniform buffer object (UBO), can be a null pointer
 	Renderer::IUniformBufferPtr	  mUniformBufferDynamicFs;				///< Dynamic fragment shader uniform buffer object (UBO), can be a null pointer
-	Renderer::IResourceGroupPtr	  mResourceGroup;						///< Resource group, can be a null pointer
+	Renderer::IResourceGroupPtr	  mResourceGroupVS;						///< Resource group with vertex shader visibility, can be a null pointer
+	Renderer::IResourceGroupPtr	  mResourceGroupFS;						///< Resource group with fragment shader visibility, can be a null pointer
 	Renderer::IResourceGroupPtr	  mSamplerStateGroup;					///< Sampler state resource group, can be a null pointer
 	Renderer::IGraphicsProgramPtr mGraphicsProgram;						///< Graphics program, can be a null pointer
 	Renderer::IVertexBufferPtr	  mVertexBuffer;						///< Vertex buffer object (VBO), can be a null pointer

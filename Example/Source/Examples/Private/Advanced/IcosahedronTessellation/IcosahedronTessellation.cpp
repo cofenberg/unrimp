@@ -63,8 +63,11 @@ void IcosahedronTessellation::onInitialization()
 			ranges[2].initialize(Renderer::ResourceType::UNIFORM_BUFFER, 0, "UniformBlockStaticGs",   Renderer::ShaderVisibility::GEOMETRY);
 			ranges[3].initialize(Renderer::ResourceType::UNIFORM_BUFFER, 0, "UniformBlockStaticFs",   Renderer::ShaderVisibility::FRAGMENT);
 
-			Renderer::RootParameterBuilder rootParameters[1];
-			rootParameters[0].initializeAsDescriptorTable(4, &ranges[0]);
+			Renderer::RootParameterBuilder rootParameters[4];
+			rootParameters[0].initializeAsDescriptorTable(1, &ranges[0]);
+			rootParameters[1].initializeAsDescriptorTable(1, &ranges[1]);
+			rootParameters[2].initializeAsDescriptorTable(1, &ranges[2]);
+			rootParameters[3].initializeAsDescriptorTable(1, &ranges[3]);
 
 			// Setup
 			Renderer::RootSignatureBuilder rootSignature;
@@ -149,37 +152,38 @@ void IcosahedronTessellation::onInitialization()
 			mVertexArray = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBuffer);
 		}
 
-		{ // Create the uniform buffer group
-			Renderer::IResource* resources[4];
+		{ // Create the uniform buffer group with tessellation control shader visibility
+			Renderer::IResource* resources[1] = { mUniformBufferDynamicTcs = mBufferManager->createUniformBuffer(sizeof(float) * 2, nullptr, Renderer::BufferUsage::DYNAMIC_DRAW) };
+			mUniformBufferGroupTcs = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources);
+		}
 
-			// Create uniform buffers and fill the static buffers at once
-			resources[0] = mUniformBufferDynamicTcs = mBufferManager->createUniformBuffer(sizeof(float) * 2, nullptr, Renderer::BufferUsage::DYNAMIC_DRAW);
-			{ // "ObjectSpaceToClipSpaceMatrix"
-				glm::mat4 worldSpaceToViewSpaceMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 3.0f));		// Also known as "view matrix"
-				glm::mat4 viewSpaceToClipSpaceMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 1000.0f, 0.001f);	// Also known as "projection matrix", near and far flipped due to usage of Reversed-Z (see e.g. https://developer.nvidia.com/content/depth-precision-visualized and https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/)
-				glm::mat4 objectSpaceToClipSpaceMatrix = viewSpaceToClipSpaceMatrix * worldSpaceToViewSpaceMatrix;			// Also known as "model view projection matrix"
-				resources[1] = mBufferManager->createUniformBuffer(sizeof(float) * 4 * 4, glm::value_ptr(objectSpaceToClipSpaceMatrix));
-				{ // "NormalMatrix"
-					worldSpaceToViewSpaceMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-					viewSpaceToClipSpaceMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 1000.0f, 0.001f);	// Near and far flipped due to usage of Reversed-Z (see e.g. https://developer.nvidia.com/content/depth-precision-visualized and https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/)
-					objectSpaceToClipSpaceMatrix = viewSpaceToClipSpaceMatrix * worldSpaceToViewSpaceMatrix;
-					glm::mat3 nMVP(objectSpaceToClipSpaceMatrix);
-					glm::mat4 tMVP(nMVP);
-					resources[2] = mBufferManager->createUniformBuffer(sizeof(float) * 4 * 4, glm::value_ptr(tMVP));
-				}
-			}
-			{ // Light and material
-				static constexpr float LIGHT_AND_MATERIAL[] =
-				{
-					0.25f, 0.25f, 1.0f,  1.0,	// "LightPosition"
-					 0.0f, 0.75f, 0.75f, 1.0, 	// "DiffuseMaterial"
-					0.04f, 0.04f, 0.04f, 1.0,	// "AmbientMaterial"
-				};
-				resources[3] = mBufferManager->createUniformBuffer(sizeof(LIGHT_AND_MATERIAL), LIGHT_AND_MATERIAL);
-			}
+		{ // Create the uniform buffer group with tessellation evaluation shader visibility: "ObjectSpaceToClipSpaceMatrix"
+			const glm::mat4 worldSpaceToViewSpaceMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 3.0f));			// Also known as "view matrix"
+			const glm::mat4 viewSpaceToClipSpaceMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 1000.0f, 0.001f);	// Also known as "projection matrix", near and far flipped due to usage of Reversed-Z (see e.g. https://developer.nvidia.com/content/depth-precision-visualized and https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/)
+			const glm::mat4 objectSpaceToClipSpaceMatrix = viewSpaceToClipSpaceMatrix * worldSpaceToViewSpaceMatrix;			// Also known as "model view projection matrix"
+			Renderer::IResource* resources[1] = { mBufferManager->createUniformBuffer(sizeof(float) * 4 * 4, glm::value_ptr(objectSpaceToClipSpaceMatrix)) };
+			mUniformBufferGroupTes = mRootSignature->createResourceGroup(1, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources);
+		}
 
-			// Create the uniform buffer group
-			mUniformBufferGroup = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources);
+		{ // Create the uniform buffer group with geometry visibility: "NormalMatrix"
+			const glm::mat4 worldSpaceToViewSpaceMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+			const glm::mat4 viewSpaceToClipSpaceMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 1000.0f, 0.001f);	// Near and far flipped due to usage of Reversed-Z (see e.g. https://developer.nvidia.com/content/depth-precision-visualized and https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/)
+			const glm::mat4 objectSpaceToClipSpaceMatrix = viewSpaceToClipSpaceMatrix * worldSpaceToViewSpaceMatrix;
+			const glm::mat3 nMVP(objectSpaceToClipSpaceMatrix);
+			const glm::mat4 tMVP(nMVP);
+			Renderer::IResource* resources[1] = { mBufferManager->createUniformBuffer(sizeof(float) * 4 * 4, glm::value_ptr(tMVP)) };
+			mUniformBufferGroupGs = mRootSignature->createResourceGroup(2, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources);
+		}
+
+		{ // Create the uniform buffer group with fragment shader visibility: Light and material
+			static constexpr float LIGHT_AND_MATERIAL[] =
+			{
+				0.25f, 0.25f, 1.0f,  1.0,	// "LightPosition"
+				 0.0f, 0.75f, 0.75f, 1.0, 	// "DiffuseMaterial"
+				0.04f, 0.04f, 0.04f, 1.0,	// "AmbientMaterial"
+			};
+			Renderer::IResource* resources[1] = { mBufferManager->createUniformBuffer(sizeof(LIGHT_AND_MATERIAL), LIGHT_AND_MATERIAL) };
+			mUniformBufferGroupFs = mRootSignature->createResourceGroup(3, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources);
 		}
 
 		{
@@ -229,7 +233,10 @@ void IcosahedronTessellation::onDeinitialization()
 	// Release the used resources
 	mVertexArray = nullptr;
 	mGraphicsPipelineState = nullptr;
-	mUniformBufferGroup = nullptr;
+	mUniformBufferGroupTcs = nullptr;
+	mUniformBufferGroupTes = nullptr;
+	mUniformBufferGroupGs = nullptr;
+	mUniformBufferGroupFs = nullptr;
 	mUniformBufferDynamicTcs = nullptr;
 	mRootSignature = nullptr;
 	mCommandBuffer.clear();
@@ -275,7 +282,7 @@ void IcosahedronTessellation::fillCommandBuffer()
 	RENDERER_ASSERT(getRenderer()->getContext(), mCommandBuffer.isEmpty(), "The command buffer is already filled");
 	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mRootSignature, "Invalid root signature");
 	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mUniformBufferDynamicTcs, "Invalid uniform buffer dynamic TCS");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mUniformBufferGroup, "Invalid uniform buffer group");
+	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mUniformBufferGroupTcs && nullptr != mUniformBufferGroupTes && nullptr != mUniformBufferGroupGs && nullptr != mUniformBufferGroupFs, "Invalid uniform buffer group");
 	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mGraphicsPipelineState, "Invalid graphics pipeline state");
 	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mVertexArray, "Invalid vertex array");
 
@@ -292,7 +299,10 @@ void IcosahedronTessellation::fillCommandBuffer()
 	Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineState);
 
 	// Set graphics resource groups
-	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 0, mUniformBufferGroup);
+	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 0, mUniformBufferGroupTcs);
+	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 1, mUniformBufferGroupTes);
+	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 2, mUniformBufferGroupGs);
+	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 3, mUniformBufferGroupFs);
 
 	// Input assembly (IA): Set the used vertex array
 	Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArray);

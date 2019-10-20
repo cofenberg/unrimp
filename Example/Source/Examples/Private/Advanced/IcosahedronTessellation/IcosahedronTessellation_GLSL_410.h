@@ -106,7 +106,7 @@ layout(std140) uniform UniformBlockStaticTes
 };
 
 // Programs
-layout(triangles, equal_spacing, cw) in;
+layout(triangles, equal_spacing, ccw) in;
 void main()
 {
 	// The barycentric coordinate "gl_TessCoord" we received from the tessellator defines a location

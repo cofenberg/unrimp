@@ -173,8 +173,8 @@ layout(location = 3) in vec3 NormalVs;
 layout(location = 0, index = 0) out vec4 Color0;
 
 // Uniforms
-layout(set = 0, binding = 2) uniform sampler2D AlbedoMap;
-layout(std140, set = 0, binding = 3) uniform UniformBlockDynamicFs
+layout(set = 1, binding = 0) uniform sampler2D AlbedoMap;
+layout(std140, set = 1, binding = 1) uniform UniformBlockDynamicFs
 {
 	vec3 LightPosition;	// World space light position
 };

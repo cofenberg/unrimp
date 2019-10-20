@@ -6058,62 +6058,57 @@ namespace Direct3D12Renderer
 		*  @param[in] textureFormat
 		*    Texture buffer data format
 		*/
-		TextureBuffer(Direct3D12Renderer& direct3D12Renderer, [[maybe_unused]] uint32_t numberOfBytes, [[maybe_unused]] const void* data, [[maybe_unused]] Renderer::BufferUsage bufferUsage, [[maybe_unused]] Renderer::TextureFormat::Enum textureFormat) :
-			ITextureBuffer(direct3D12Renderer)
-			// TODO(co) Direct3D 12 update
-		//	mD3D12Buffer(nullptr),
+		TextureBuffer(Direct3D12Renderer& direct3D12Renderer, uint32_t numberOfBytes, const void* data, [[maybe_unused]] Renderer::BufferUsage bufferUsage, Renderer::TextureFormat::Enum textureFormat) :
+			ITextureBuffer(direct3D12Renderer),
+			mNumberOfBytes(numberOfBytes),
+			mTextureFormat(textureFormat),
+			mD3D12Resource(nullptr)
 		{
 			// Sanity check
 			RENDERER_ASSERT(direct3D12Renderer.getContext(), (numberOfBytes % Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat)) == 0, "The Direct3D 12 texture buffer size must be a multiple of the selected texture format bytes per texel")
 
-			// TODO(co) Direct3D 12 update
-			/*
-			{ // Buffer part
-				// Direct3D 12 buffer description
-				D3D12_BUFFER_DESC d3d12BufferDesc;
-				d3d12BufferDesc.ByteWidth           = numberOfBytes;
-				d3d12BufferDesc.Usage               = Mapping::getDirect3D12UsageAndCPUAccessFlags(bufferUsage, d3d12BufferDesc.CPUAccessFlags);
-				d3d12BufferDesc.BindFlags           = D3D12_BIND_SHADER_RESOURCE;
-				//d3d12BufferDesc.CPUAccessFlags    = <filled above>;
-				d3d12BufferDesc.MiscFlags           = 0;
-				d3d12BufferDesc.StructureByteStride = 0;
-
+			// TODO(co) This is only meant for the Direct3D 12 renderer backend kickoff.
+			// Note: using upload heaps to transfer static data like vert buffers is not 
+			// recommended. Every time the GPU needs it, the upload heap will be marshalled 
+			// over. Please read up on Default Heap usage. An upload heap is used here for 
+			// code simplicity and because there are very few verts to actually transfer.
+			const CD3DX12_HEAP_PROPERTIES d3d12XHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
+			const CD3DX12_RESOURCE_DESC d3d12XResourceDesc = CD3DX12_RESOURCE_DESC::Buffer(numberOfBytes);
+			ID3D12Device& d3d12Device = direct3D12Renderer.getD3D12Device();
+			if (SUCCEEDED(d3d12Device.CreateCommittedResource(
+				&d3d12XHeapProperties,
+				D3D12_HEAP_FLAG_NONE,
+				&d3d12XResourceDesc,
+				D3D12_RESOURCE_STATE_GENERIC_READ,
+				nullptr,
+				IID_PPV_ARGS(&mD3D12Resource))))
+			{
 				// Data given?
 				if (nullptr != data)
 				{
-					// Direct3D 12 subresource data
-					D3D12_SUBRESOURCE_DATA d3d12SubresourceData;
-					d3d12SubresourceData.pSysMem          = data;
-					d3d12SubresourceData.SysMemPitch      = 0;
-					d3d12SubresourceData.SysMemSlicePitch = 0;
-
-					// Create the Direct3D 12 constant buffer
-					FAILED_DEBUG_BREAK(direct3D12Renderer.getD3D12Device().CreateBuffer(&d3d12BufferDesc, &d3d12SubresourceData, &mD3D12Buffer));
-				}
-				else
-				{
-					// Create the Direct3D 12 constant buffer
-					FAILED_DEBUG_BREAK(direct3D12Renderer.getD3D12Device().CreateBuffer(&d3d12BufferDesc, nullptr, &mD3D12Buffer));
+					// Copy the data to the texture buffer
+					UINT8* pTextureDataBegin;
+					CD3DX12_RANGE readRange(0, 0);	// We do not intend to read from this resource on the CPU
+					if (SUCCEEDED(mD3D12Resource->Map(0, &readRange, reinterpret_cast<void**>(&pTextureDataBegin))))
+					{
+						memcpy(pTextureDataBegin, data, numberOfBytes);
+						mD3D12Resource->Unmap(0, nullptr);
+					}
+					else
+					{
+						RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Failed to map Direct3D 12 texture buffer")
+					}
 				}
 			}
-
-			{ // Shader resource view part
-				// Direct3D 12 shader resource view description
-				D3D12_SHADER_RESOURCE_VIEW_DESC d3d12ShaderResourceViewDesc = {};
-				d3d12ShaderResourceViewDesc.Format				 = Mapping::getDirect3D12Format(textureFormat);
-				d3d12ShaderResourceViewDesc.ViewDimension		 = D3D12_SRV_DIMENSION_BUFFER;
-				d3d12ShaderResourceViewDesc.Buffer.ElementOffset = 0;
-				d3d12ShaderResourceViewDesc.Buffer.ElementWidth	 = numberOfBytes / Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat);
-
-				// Create the Direct3D 12 shader resource view instance
-				FAILED_DEBUG_BREAK(direct3D12Renderer.getD3D12Device().CreateShaderResourceView(mD3D12Buffer, &d3d12ShaderResourceViewDesc, &mD3D12ShaderResourceViewTexture));
+			else
+			{
+				RENDERER_LOG(direct3D12Renderer.getContext(), CRITICAL, "Failed to create Direct3D 12 texture buffer resource")
 			}
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RENDERER_DEBUG
 				setDebugName("");
 			#endif
-			*/
 		}
 
 		/**
@@ -6122,29 +6117,47 @@ namespace Direct3D12Renderer
 		*/
 		virtual ~TextureBuffer() override
 		{
-			// TODO(co) Direct3D 12 update
-			/*
-			// Release the used resources
-			if (nullptr != mD3D12Buffer)
+			if (nullptr != mD3D12Resource)
 			{
-				mD3D12Buffer->Release();
-				mD3D12Buffer = nullptr;
+				mD3D12Resource->Release();
 			}
-			*/
 		}
 
 		/**
 		*  @brief
-		*    Return the Direct3D texture buffer instance
+		*    Return the number of bytes
 		*
 		*  @return
-		*    The Direct3D texture buffer instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*    The number of bytes
 		*/
-		// TODO(co) Direct3D 12 update
-		//[[nodiscard]] inline ID3D12Buffer* getD3D12Buffer() const
-		//{
-		//	return mD3D12Buffer;
-		//}
+		[[nodiscard]] inline uint32_t getNumberOfBytes() const
+		{
+			return mNumberOfBytes;
+		}
+
+		/**
+		*  @brief
+		*    Return the texture format
+		*
+		*  @return
+		*    The texture format
+		*/
+		[[nodiscard]] inline Renderer::TextureFormat::Enum getTextureFormat() const
+		{
+			return mTextureFormat;
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D 12 texture buffer resource instance
+		*
+		*  @return
+		*    The Direct3D 12 texture buffer resource instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*/
+		[[nodiscard]] inline ID3D12Resource* getD3D12Resource() const
+		{
+			return mD3D12Resource;
+		}
 
 
 	//[-------------------------------------------------------]
@@ -6152,20 +6165,16 @@ namespace Direct3D12Renderer
 	//[-------------------------------------------------------]
 	public:
 		#ifdef RENDERER_DEBUG
-			virtual void setDebugName(const char*) override
+			virtual void setDebugName(const char* name) override
 			{
-				// TODO(co) Direct3D 12 update
-				/*
-				RENDERER_DECORATED_DEBUG_NAME(name, detailedName, "TBO", 6);	// 6 = "TBO: " including terminating zero!
-
 				// Set the debug name
 				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D12Buffer)
+				RENDERER_DECORATED_DEBUG_NAME(name, detailedName, "TBO", 6);	// 6 = "TBO: " including terminating zero
+				if (nullptr != mD3D12Resource)
 				{
-					FAILED_DEBUG_BREAK(mD3D12Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D12Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
+					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
+					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
 				}
-			*/
 			}
 		#endif
 
@@ -6192,8 +6201,9 @@ namespace Direct3D12Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		// TODO(co) Direct3D 12 update
-		//ID3D12Buffer* mD3D12Buffer;	///< Direct3D texture buffer instance, can be a null pointer
+		uint32_t					  mNumberOfBytes;
+		Renderer::TextureFormat::Enum mTextureFormat;
+		ID3D12Resource*				  mD3D12Resource;
 
 
 	};
@@ -6631,11 +6641,7 @@ namespace Direct3D12Renderer
 					CD3DX12_RANGE readRange(0, 0);	// We do not intend to read from this resource on the CPU
 					if (SUCCEEDED(mD3D12Resource->Map(0, &readRange, reinterpret_cast<void**>(&mMappedData))))
 					{
-						// Data given?
-						if (nullptr != data)
-						{
-							memcpy(mMappedData, &data, numberOfBytes);
-						}
+						memcpy(mMappedData, data, numberOfBytes);
 						mD3D12Resource->Unmap(0, nullptr);
 					}
 					else
@@ -7086,6 +7092,7 @@ namespace Direct3D12Renderer
 			ITexture1DArray(direct3D12Renderer, width, numberOfSlices),
 			mDxgiFormat(Mapping::getDirect3D12Format(textureFormat)),
 			mNumberOfMipmaps(0),
+			mNumberOfSlices(numberOfSlices),
 			mD3D12Resource(nullptr)
 		{
 			// TODO(co) Add "Renderer::TextureFlag::GENERATE_MIPMAPS" support, also for render target textures
@@ -7177,6 +7184,18 @@ namespace Direct3D12Renderer
 
 		/**
 		*  @brief
+		*    Return the number of slices
+		*
+		*  @return
+		*    The number of slices
+		*/
+		[[nodiscard]] inline uint32_t getNumberOfSlices() const
+		{
+			return mNumberOfSlices;
+		}
+
+		/**
+		*  @brief
 		*    Return the Direct3D 12 resource instance
 		*
 		*  @return
@@ -7230,6 +7249,7 @@ namespace Direct3D12Renderer
 	private:
 		DXGI_FORMAT		mDxgiFormat;
 		uint32_t		mNumberOfMipmaps;
+		uint32_t		mNumberOfSlices;
 		ID3D12Resource* mD3D12Resource;
 
 
@@ -7478,6 +7498,7 @@ namespace Direct3D12Renderer
 			ITexture2DArray(direct3D12Renderer, width, height, numberOfSlices),
 			mDxgiFormat(Mapping::getDirect3D12Format(textureFormat)),
 			mNumberOfMipmaps(0),
+			mNumberOfSlices(numberOfSlices),
 			mD3D12Resource(nullptr)
 		{
 			// TODO(co) Add "Renderer::TextureFlag::GENERATE_MIPMAPS" support, also for render target textures
@@ -7570,6 +7591,18 @@ namespace Direct3D12Renderer
 
 		/**
 		*  @brief
+		*    Return the number of slices
+		*
+		*  @return
+		*    The number of slices
+		*/
+		[[nodiscard]] inline uint32_t getNumberOfSlices() const
+		{
+			return mNumberOfSlices;
+		}
+
+		/**
+		*  @brief
 		*    Return the Direct3D 12 resource instance
 		*
 		*  @return
@@ -7623,6 +7656,7 @@ namespace Direct3D12Renderer
 	private:
 		DXGI_FORMAT		mDxgiFormat;
 		uint32_t		mNumberOfMipmaps;
+		uint32_t		mNumberOfSlices;
 		ID3D12Resource* mD3D12Resource;
 
 
@@ -11094,7 +11128,55 @@ namespace Direct3D12Renderer
 			d3d12GraphicsPipelineState.PrimitiveTopologyType = static_cast<D3D12_PRIMITIVE_TOPOLOGY_TYPE>(graphicsPipelineState.primitiveTopologyType);
 			memcpy(&d3d12GraphicsPipelineState.RasterizerState, &graphicsPipelineState.rasterizerState, sizeof(D3D12_RASTERIZER_DESC));
 			memcpy(&d3d12GraphicsPipelineState.DepthStencilState, &graphicsPipelineState.depthStencilState, sizeof(D3D12_DEPTH_STENCIL_DESC));
-			d3d12GraphicsPipelineState.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+			{
+				// TODO(co) "D3D12_RENDER_TARGET_BLEND_DESC" and "D3D11_RENDER_TARGET_BLEND_DESC" are different, we probably want to switch to "D3D12_RENDER_TARGET_BLEND_DESC"
+				/*
+					typedef struct D3D12_RENDER_TARGET_BLEND_DESC
+					{
+						BOOL BlendEnable;
+						BOOL LogicOpEnable;
+						D3D12_BLEND SrcBlend;
+						D3D12_BLEND DestBlend;
+						D3D12_BLEND_OP BlendOp;
+						D3D12_BLEND SrcBlendAlpha;
+						D3D12_BLEND DestBlendAlpha;
+						D3D12_BLEND_OP BlendOpAlpha;
+						D3D12_LOGIC_OP LogicOp;
+						UINT8 RenderTargetWriteMask;
+					} D3D12_RENDER_TARGET_BLEND_DESC;
+
+					typedef struct D3D11_RENDER_TARGET_BLEND_DESC
+					{
+						BOOL			BlendEnable;
+						D3D11_BLEND		SrcBlend;
+						D3D11_BLEND		DestBlend;
+						D3D11_BLEND_OP	BlendOp;
+						D3D11_BLEND		SrcBlendAlpha;
+						D3D11_BLEND		DestBlendAlpha;
+						D3D11_BLEND_OP	BlendOpAlpha;
+						UINT8			RenderTargetWriteMask;
+					} D3D11_RENDER_TARGET_BLEND_DESC;
+				*/
+				D3D12_BLEND_DESC& d3d12BlendDesc = d3d12GraphicsPipelineState.BlendState;
+				const Renderer::BlendState& blendState = graphicsPipelineState.blendState;
+				d3d12BlendDesc.AlphaToCoverageEnable = blendState.alphaToCoverageEnable;
+				d3d12BlendDesc.IndependentBlendEnable = blendState.independentBlendEnable;
+				for (uint32_t renderTargetIndex = 0; renderTargetIndex < 8; ++renderTargetIndex)
+				{
+					D3D12_RENDER_TARGET_BLEND_DESC& d3d12RenderTargetBlendDesc = d3d12BlendDesc.RenderTarget[renderTargetIndex];
+					const Renderer::RenderTargetBlendDesc& renderTargetBlendDesc = blendState.renderTarget[renderTargetIndex];
+					d3d12RenderTargetBlendDesc.BlendEnable			 = renderTargetBlendDesc.blendEnable;
+					d3d12RenderTargetBlendDesc.LogicOpEnable		 = false;
+					d3d12RenderTargetBlendDesc.SrcBlend				 = static_cast<D3D12_BLEND>(renderTargetBlendDesc.srcBlend);
+					d3d12RenderTargetBlendDesc.DestBlend			 = static_cast<D3D12_BLEND>(renderTargetBlendDesc.destBlend);
+					d3d12RenderTargetBlendDesc.BlendOp				 = static_cast<D3D12_BLEND_OP>(renderTargetBlendDesc.blendOp);
+					d3d12RenderTargetBlendDesc.SrcBlendAlpha		 = static_cast<D3D12_BLEND>(renderTargetBlendDesc.srcBlendAlpha);
+					d3d12RenderTargetBlendDesc.DestBlendAlpha		 = static_cast<D3D12_BLEND>(renderTargetBlendDesc.destBlendAlpha);
+					d3d12RenderTargetBlendDesc.BlendOpAlpha			 = static_cast<D3D12_BLEND_OP>(renderTargetBlendDesc.blendOpAlpha);
+					d3d12RenderTargetBlendDesc.LogicOp				 = D3D12_LOGIC_OP_CLEAR;
+					d3d12RenderTargetBlendDesc.RenderTargetWriteMask = renderTargetBlendDesc.renderTargetWriteMask;
+				}
+			}
 			d3d12GraphicsPipelineState.SampleMask = UINT_MAX;
 			d3d12GraphicsPipelineState.NumRenderTargets = graphicsPipelineState.numberOfRenderTargets;
 			for (uint32_t i = 0; i < graphicsPipelineState.numberOfRenderTargets; ++i)
@@ -11458,14 +11540,16 @@ namespace Direct3D12Renderer
 
 						case Renderer::ResourceType::TEXTURE_BUFFER:
 						{
-							// TODO(co)
-							RENDERER_ASSERT(direct3D12Renderer.getContext(), false, "TODO(co) Implement me")
-							/*
 							const TextureBuffer* textureBuffer = static_cast<TextureBuffer*>(resource);
 							RENDERER_ASSERT(direct3D12Renderer.getContext(), nullptr != textureBuffer->getD3D12Resource(), "Invalid Direct3D 12 texture buffer resource")
-							const D3D12_CONSTANT_BUFFER_VIEW_DESC d3d12ConstantBufferViewDesc = { textureBuffer->getD3D12Resource()->GetGPUVirtualAddress(), textureBuffer->getNumberOfBytesOnGpu() };
-							d3d12Device.CreateConstantBufferView(&d3d12ConstantBufferViewDesc, d3d12CpuDescriptorHandle);
-							*/
+							const Renderer::TextureFormat::Enum textureFormat = textureBuffer->getTextureFormat();
+							D3D12_SHADER_RESOURCE_VIEW_DESC d3d12ShaderResourceViewDesc = {};
+							d3d12ShaderResourceViewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+							d3d12ShaderResourceViewDesc.Format = Mapping::getDirect3D12Format(textureFormat);
+							d3d12ShaderResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+							d3d12ShaderResourceViewDesc.Buffer.FirstElement = 0;
+							d3d12ShaderResourceViewDesc.Buffer.NumElements = textureBuffer->getNumberOfBytes() / Renderer::TextureFormat::getNumberOfBytesPerElement(textureFormat);
+							d3d12Device.CreateShaderResourceView(textureBuffer->getD3D12Resource(), &d3d12ShaderResourceViewDesc, d3d12CpuDescriptorHandle);
 							break;
 						}
 
@@ -11522,7 +11606,7 @@ namespace Direct3D12Renderer
 									const Texture1D* texture1D = static_cast<Texture1D*>(resource);
 									d3d12ShaderResourceViewDesc.Format = texture1D->getDxgiFormat();
 									d3d12ShaderResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE1D;
-									d3d12ShaderResourceViewDesc.Texture2D.MipLevels = texture1D->getNumberOfMipmaps();
+									d3d12ShaderResourceViewDesc.Texture1D.MipLevels = texture1D->getNumberOfMipmaps();
 									d3d12Resource = texture1D->getD3D12Resource();
 									break;
 								}
@@ -11532,7 +11616,8 @@ namespace Direct3D12Renderer
 									const Texture1DArray* texture1DArray = static_cast<Texture1DArray*>(resource);
 									d3d12ShaderResourceViewDesc.Format = texture1DArray->getDxgiFormat();
 									d3d12ShaderResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE1DARRAY;
-									d3d12ShaderResourceViewDesc.Texture2D.MipLevels = texture1DArray->getNumberOfMipmaps();
+									d3d12ShaderResourceViewDesc.Texture1DArray.MipLevels = texture1DArray->getNumberOfMipmaps();
+									d3d12ShaderResourceViewDesc.Texture1DArray.ArraySize = texture1DArray->getNumberOfSlices();
 									d3d12Resource = texture1DArray->getD3D12Resource();
 									break;
 								}
@@ -11552,7 +11637,8 @@ namespace Direct3D12Renderer
 									const Texture2DArray* texture2DArray = static_cast<Texture2DArray*>(resource);
 									d3d12ShaderResourceViewDesc.Format = texture2DArray->getDxgiFormat();
 									d3d12ShaderResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
-									d3d12ShaderResourceViewDesc.Texture2D.MipLevels = texture2DArray->getNumberOfMipmaps();
+									d3d12ShaderResourceViewDesc.Texture2DArray.MipLevels = texture2DArray->getNumberOfMipmaps();
+									d3d12ShaderResourceViewDesc.Texture2DArray.ArraySize = texture2DArray->getNumberOfSlices();
 									d3d12Resource = texture2DArray->getD3D12Resource();
 									break;
 								}
@@ -11562,7 +11648,7 @@ namespace Direct3D12Renderer
 									const Texture3D* texture3D = static_cast<Texture3D*>(resource);
 									d3d12ShaderResourceViewDesc.Format = texture3D->getDxgiFormat();
 									d3d12ShaderResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
-									d3d12ShaderResourceViewDesc.Texture2D.MipLevels = texture3D->getNumberOfMipmaps();
+									d3d12ShaderResourceViewDesc.Texture3D.MipLevels = texture3D->getNumberOfMipmaps();
 									d3d12Resource = texture3D->getD3D12Resource();
 									break;
 								}
@@ -11572,7 +11658,7 @@ namespace Direct3D12Renderer
 									const TextureCube* textureCube = static_cast<TextureCube*>(resource);
 									d3d12ShaderResourceViewDesc.Format = textureCube->getDxgiFormat();
 									d3d12ShaderResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
-									d3d12ShaderResourceViewDesc.Texture2D.MipLevels = textureCube->getNumberOfMipmaps();
+									d3d12ShaderResourceViewDesc.TextureCube.MipLevels = textureCube->getNumberOfMipmaps();
 									d3d12Resource = textureCube->getD3D12Resource();
 									break;
 								}

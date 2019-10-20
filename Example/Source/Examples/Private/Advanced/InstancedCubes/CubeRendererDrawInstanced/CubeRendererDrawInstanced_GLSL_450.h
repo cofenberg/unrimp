@@ -53,7 +53,7 @@ layout(std140, set = 0, binding = 1) uniform UniformBlockDynamicVs
 {
 	vec2 TimerAndGlobalScale;	// x=Timer, y=Global scale
 };
-layout(set = 1, binding = 0) uniform samplerBuffer PerInstanceTextureBufferVs;	// Texture buffer with per instance data (used via vertex texture fetch)
+layout(set = 2, binding = 0) uniform samplerBuffer PerInstanceTextureBufferVs;	// Texture buffer with per instance data (used via vertex texture fetch)
 																				// -> Layout: [Position][Rotation][Position][Rotation]...
 																				//    - Position: xyz=Position, w=Slice of the 2D texture array to use
 																				//    - Rotation: Rotation quaternion (xyz) and scale (w)
@@ -178,8 +178,8 @@ layout(location = 3) in vec3 NormalVs;
 layout(location = 0, index = 0) out vec4 Color0;
 
 // Uniforms
-layout(set = 0, binding = 2) uniform sampler2DArray AlbedoMap;
-layout(std140, set = 0, binding = 3) uniform UniformBlockDynamicFs
+layout(set = 1, binding = 0) uniform sampler2DArray AlbedoMap;
+layout(std140, set = 1, binding = 1) uniform UniformBlockDynamicFs
 {
 	vec3 LightPosition;	// World space light position
 };

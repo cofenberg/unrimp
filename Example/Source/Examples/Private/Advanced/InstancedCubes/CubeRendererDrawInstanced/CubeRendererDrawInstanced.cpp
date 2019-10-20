@@ -141,10 +141,11 @@ CubeRendererDrawInstanced::CubeRendererDrawInstanced(Renderer::IRenderer& render
 		ranges[4].initialize(Renderer::ResourceType::TEXTURE_BUFFER, 0, "PerInstanceTextureBufferVs", Renderer::ShaderVisibility::VERTEX);
 		ranges[5].initializeSampler(0, Renderer::ShaderVisibility::FRAGMENT);
 
-		Renderer::RootParameterBuilder rootParameters[3];
-		rootParameters[0].initializeAsDescriptorTable(4, &ranges[0]);
-		rootParameters[1].initializeAsDescriptorTable(1, &ranges[4]);
-		rootParameters[2].initializeAsDescriptorTable(1, &ranges[5]);
+		Renderer::RootParameterBuilder rootParameters[4];
+		rootParameters[0].initializeAsDescriptorTable(2, &ranges[0]);
+		rootParameters[1].initializeAsDescriptorTable(2, &ranges[2]);
+		rootParameters[2].initializeAsDescriptorTable(1, &ranges[4]);
+		rootParameters[3].initializeAsDescriptorTable(1, &ranges[5]);
 
 		// Setup
 		Renderer::RootSignatureBuilder rootSignature;
@@ -301,10 +302,15 @@ CubeRendererDrawInstanced::CubeRendererDrawInstanced(Renderer::IRenderer& render
 		mUniformBufferDynamicFs = mBufferManager->createUniformBuffer(sizeof(float) * 3, nullptr, Renderer::BufferUsage::DYNAMIC_DRAW);
 	}
 
-	{ // Create resource group
-		Renderer::IResource* resources[4] = { mUniformBufferStaticVs, mUniformBufferDynamicVs, mTexture2DArray, mUniformBufferDynamicFs };
-		Renderer::ISamplerState* samplerStates[4] = { nullptr, nullptr, static_cast<Renderer::ISamplerState*>(samplerStateResource), nullptr };
-		mResourceGroup = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources, samplerStates);
+	{ // Create resource group with vertex shader visibility
+		Renderer::IResource* resources[2] = { mUniformBufferStaticVs, mUniformBufferDynamicVs };
+		mResourceGroupVS = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources);
+	}
+
+	{ // Create resource group with fragment shader visibility
+		Renderer::IResource* resources[2] = { mTexture2DArray, mUniformBufferDynamicFs };
+		Renderer::ISamplerState* samplerStates[2] = { static_cast<Renderer::ISamplerState*>(samplerStateResource), nullptr };
+		mResourceGroupFS = mRootSignature->createResourceGroup(1, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources, samplerStates);
 	}
 
 	{
@@ -459,7 +465,7 @@ void CubeRendererDrawInstanced::fillReusableCommandBuffer()
 	assert(0 == mRenderer->getCapabilities().maximumUniformBufferSize || nullptr != mUniformBufferStaticVs);
 	assert(0 == mRenderer->getCapabilities().maximumUniformBufferSize || nullptr != mUniformBufferDynamicVs);
 	assert(0 == mRenderer->getCapabilities().maximumUniformBufferSize || nullptr != mUniformBufferDynamicFs);
-	assert(nullptr != mResourceGroup);
+	assert(nullptr != mResourceGroupVS && nullptr != mResourceGroupFS);
 	assert(nullptr != mSamplerStateGroup);
 	assert(nullptr != mVertexArray);
 
@@ -470,9 +476,10 @@ void CubeRendererDrawInstanced::fillReusableCommandBuffer()
 	Renderer::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
 
 	// Set resource groups
-	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 0, mResourceGroup);
-	// Graphics root descriptor table 1 is set inside "BatchDrawInstanced::draw()"
-	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 2, mSamplerStateGroup);
+	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 0, mResourceGroupVS);
+	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 1, mResourceGroupFS);
+ 	// Graphics root descriptor table 2 is set inside "BatchDrawInstanced::draw()"
+	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 3, mSamplerStateGroup);
 
 	// Input assembly (IA): Set the used vertex array
 	Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArray);

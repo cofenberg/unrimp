@@ -6125,7 +6125,7 @@ namespace Direct3D11Renderer
 				D3D11_SUBRESOURCE_DATA d3d11SubresourceData[MAXIMUM_NUMBER_OF_MIPMAPS];
 
 				// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
-				if (dataContainsMipmaps || generateMipmaps)
+				if (dataContainsMipmaps)
 				{
 					// Upload all mipmaps
 					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
@@ -6145,9 +6145,17 @@ namespace Direct3D11Renderer
 				else
 				{
 					// The user only provided us with the base texture, no mipmaps
-					d3d11SubresourceData->pSysMem		   = data;
-					d3d11SubresourceData->SysMemPitch	   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-					d3d11SubresourceData->SysMemSlicePitch = 0;	// Only relevant for 3D textures
+					// -> When uploading data, we still need to upload the whole mipmap chain, so provide dummy data
+					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
+					{
+						D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[mipmap];
+						currentD3d11SubresourceData.pSysMem			 = data;
+						currentD3d11SubresourceData.SysMemPitch		 = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+						currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
+
+						// Move on to the next mipmap and ensure the size is always at least 1x1
+						width = getHalfSize(width);
+					}
 				}
 				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture1D(&d3d11Texture1DDesc, d3d11SubresourceData, &mD3D11Texture1D));
 			}
@@ -6436,7 +6444,7 @@ namespace Direct3D11Renderer
 				D3D11_SUBRESOURCE_DATA* d3d11SubresourceData = (numberOfSlices <= MAXIMUM_NUMBER_OF_SLICES) ? d3d11SubresourceDataStack : RENDERER_MALLOC_TYPED(context, D3D11_SUBRESOURCE_DATA, numberOfSlices);
 
 				// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
-				if (dataContainsMipmaps || generateMipmaps)
+				if (dataContainsMipmaps)
 				{
 					// Data layout
 					// - Direct3D 11 wants: DDS files are organized in slice-major order, like this:
@@ -6473,17 +6481,22 @@ namespace Direct3D11Renderer
 				else
 				{
 					// The user only provided us with the base texture, no mipmaps
-					const uint32_t numberOfBytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-					const uint32_t numberOfBytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1);
-					for (uint32_t arraySlice = 0; arraySlice < numberOfSlices; ++arraySlice)
+					// -> When uploading data, we still need to upload the whole mipmap chain, so provide dummy data
+					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
 					{
-						D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[arraySlice];
-						currentD3d11SubresourceData.pSysMem			 = data;
-						currentD3d11SubresourceData.SysMemPitch		 = numberOfBytesPerRow;
-						currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
+						const void* currentData = data;
+						const uint32_t numberOfBytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+						const uint32_t numberOfBytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, 1);
+						for (uint32_t arraySlice = 0; arraySlice < numberOfSlices; ++arraySlice)
+						{
+							D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[arraySlice * numberOfMipmaps + mipmap];
+							currentD3d11SubresourceData.pSysMem			 = currentData;
+							currentD3d11SubresourceData.SysMemPitch		 = numberOfBytesPerRow;
+							currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
 
-						// Move on to the next slice
-						data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
+							// Move on to the next slice
+							currentData = static_cast<const uint8_t*>(currentData) + numberOfBytesPerSlice;
+						}
 					}
 				}
 				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture1D(&d3d11Texture1DDesc, d3d11SubresourceData, &mD3D11Texture1D));
@@ -6783,7 +6796,7 @@ namespace Direct3D11Renderer
 				D3D11_SUBRESOURCE_DATA d3d11SubresourceData[MAXIMUM_NUMBER_OF_MIPMAPS];
 
 				// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
-				if (dataContainsMipmaps || generateMipmaps)
+				if (dataContainsMipmaps)
 				{
 					// Upload all mipmaps
 					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
@@ -6804,9 +6817,17 @@ namespace Direct3D11Renderer
 				else
 				{
 					// The user only provided us with the base texture, no mipmaps
-					d3d11SubresourceData->pSysMem		   = data;
-					d3d11SubresourceData->SysMemPitch	   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-					d3d11SubresourceData->SysMemSlicePitch = 0;	// Only relevant for 3D textures
+					// -> When uploading data, we still need to upload the whole mipmap chain, so provide dummy data
+					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
+					{
+						D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[mipmap];
+						currentD3d11SubresourceData.pSysMem			 = data;
+						currentD3d11SubresourceData.SysMemPitch		 = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+						currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
+
+						// Move on to the next mipmap and ensure the size is always at least 1x1
+						width = getHalfSize(width);
+					}
 				}
 				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, d3d11SubresourceData, &mD3D11Texture2D));
 			}
@@ -7144,7 +7165,7 @@ namespace Direct3D11Renderer
 				D3D11_SUBRESOURCE_DATA* d3d11SubresourceData = (numberOfSlices <= MAXIMUM_NUMBER_OF_SLICES) ? d3d11SubresourceDataStack : RENDERER_MALLOC_TYPED(context, D3D11_SUBRESOURCE_DATA, numberOfSlices);
 
 				// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
-				if (dataContainsMipmaps || generateMipmaps)
+				if (dataContainsMipmaps)
 				{
 					// Data layout
 					// - Direct3D 11 wants: DDS files are organized in slice-major order, like this:
@@ -7182,17 +7203,26 @@ namespace Direct3D11Renderer
 				else
 				{
 					// The user only provided us with the base texture, no mipmaps
-					const uint32_t numberOfBytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-					const uint32_t numberOfBytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
-					for (uint32_t arraySlice = 0; arraySlice < numberOfSlices; ++arraySlice)
+					// -> When uploading data, we still need to upload the whole mipmap chain, so provide dummy data
+					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
 					{
-						D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[arraySlice];
-						currentD3d11SubresourceData.pSysMem			 = data;
-						currentD3d11SubresourceData.SysMemPitch		 = numberOfBytesPerRow;
-						currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
+						const void* currentData = data;
+						const uint32_t numberOfBytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+						const uint32_t numberOfBytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
+						for (uint32_t arraySlice = 0; arraySlice < numberOfSlices; ++arraySlice)
+						{
+							D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[arraySlice * numberOfMipmaps + mipmap];
+							currentD3d11SubresourceData.pSysMem			 = currentData;
+							currentD3d11SubresourceData.SysMemPitch		 = numberOfBytesPerRow;
+							currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
 
-						// Move on to the next slice
-						data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
+							// Move on to the next slice
+							currentData = static_cast<const uint8_t*>(currentData) + numberOfBytesPerSlice;
+						}
+
+						// Move on to the next mipmap and ensure the size is always at least 1x1
+						width = getHalfSize(width);
+						height = getHalfSize(height);
 					}
 				}
 				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, d3d11SubresourceData, &mD3D11Texture2D));
@@ -7497,7 +7527,7 @@ namespace Direct3D11Renderer
 				D3D11_SUBRESOURCE_DATA d3d11SubresourceData[MAXIMUM_NUMBER_OF_MIPMAPS];
 
 				// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
-				if (dataContainsMipmaps || generateMipmaps)
+				if (dataContainsMipmaps)
 				{
 					// Data layout: The renderer interface provides: CRN and KTX files are organized in mip-major order, like this:
 					//   Mip0: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
@@ -7524,9 +7554,18 @@ namespace Direct3D11Renderer
 				else
 				{
 					// The user only provided us with the base texture, no mipmaps
-					d3d11SubresourceData->pSysMem		   = data;
-					d3d11SubresourceData->SysMemPitch	   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-					d3d11SubresourceData->SysMemSlicePitch = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
+					// -> When uploading data, we still need to upload the whole mipmap chain, so provide dummy data
+					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
+					{
+						D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[mipmap];
+						currentD3d11SubresourceData.pSysMem			 = data;
+						currentD3d11SubresourceData.SysMemPitch		 = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+						currentD3d11SubresourceData.SysMemSlicePitch = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
+
+						// Move on to the next mipmap and ensure the size is always at least 1x1
+						width = getHalfSize(width);
+						height = getHalfSize(height);
+					}
 				}
 				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture3D(&d3d11Texture3DDesc, d3d11SubresourceData, &mD3D11Texture3D));
 			}
@@ -7810,7 +7849,7 @@ namespace Direct3D11Renderer
 				D3D11_SUBRESOURCE_DATA d3d11SubresourceData[NUMBER_OF_SLICES * MAXIMUM_NUMBER_OF_MIPMAPS];
 
 				// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
-				if (dataContainsMipmaps || generateMipmaps)
+				if (dataContainsMipmaps)
 				{
 					// Data layout
 					// - Direct3D 11 wants: DDS files are organized in face-major order, like this:
@@ -7848,17 +7887,26 @@ namespace Direct3D11Renderer
 				else
 				{
 					// The user only provided us with the base texture, no mipmaps
-					const uint32_t numberOfBytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-					const uint32_t numberOfBytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
-					for (uint32_t arraySlice = 0; arraySlice < NUMBER_OF_SLICES; ++arraySlice)
+					// -> When uploading data, we still need to upload the whole mipmap chain, so provide dummy data
+					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
 					{
-						D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[arraySlice];
-						currentD3d11SubresourceData.pSysMem			 = data;
-						currentD3d11SubresourceData.SysMemPitch		 = numberOfBytesPerRow;
-						currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
+						const void* currentData = data;
+						const uint32_t numberOfBytesPerRow   = Renderer::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+						const uint32_t numberOfBytesPerSlice = Renderer::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
+						for (uint32_t arraySlice = 0; arraySlice < NUMBER_OF_SLICES; ++arraySlice)
+						{
+							D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[arraySlice];
+							currentD3d11SubresourceData.pSysMem			 = currentData;
+							currentD3d11SubresourceData.SysMemPitch		 = numberOfBytesPerRow;
+							currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
 
-						// Move on to the next slice
-						data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
+							// Move on to the next slice
+							currentData = static_cast<const uint8_t*>(currentData) + numberOfBytesPerSlice;
+						}
+
+						// Move on to the next mipmap and ensure the size is always at least 1x1
+						width = getHalfSize(width);
+						height = getHalfSize(height);
 					}
 				}
 				FAILED_DEBUG_BREAK(direct3D11Renderer.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, d3d11SubresourceData, &mD3D11TextureCube));
