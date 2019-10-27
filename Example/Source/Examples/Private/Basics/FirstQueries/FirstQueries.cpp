@@ -33,16 +33,16 @@ void FirstQueries::onInitialization()
 	// Call the base implementation
 	FirstTriangle::onInitialization();
 
-	// Get and check the renderer instance
-	Renderer::IRendererPtr renderer(getRenderer());
-	if (nullptr != renderer)
+	// Get and check the RHI instance
+	Rhi::IRhiPtr rhi(getRhi());
+	if (nullptr != rhi)
 	{
 		// Create the queries
-		mOcclusionQueryPool = renderer->createQueryPool(Renderer::QueryType::OCCLUSION);
-		mPipelineStatisticsQueryPool = renderer->createQueryPool(Renderer::QueryType::PIPELINE_STATISTICS);
-		mTimestampQueryPool = renderer->createQueryPool(Renderer::QueryType::TIMESTAMP, 2);
+		mOcclusionQueryPool = rhi->createQueryPool(Rhi::QueryType::OCCLUSION);
+		mPipelineStatisticsQueryPool = rhi->createQueryPool(Rhi::QueryType::PIPELINE_STATISTICS);
+		mTimestampQueryPool = rhi->createQueryPool(Rhi::QueryType::TIMESTAMP, 2);
 
-		// Since we're always submitting the same commands to the renderer, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
+		// Since we're always submitting the same commands to the RHI, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
 		mCommandBuffer.clear();	// Throw away "FirstTriangle"-stuff
 		fillCommandBuffer();
 	}
@@ -65,25 +65,25 @@ void FirstQueries::onDraw()
 	FirstTriangle::onDraw();
 
 	// Get query results
-	Renderer::IRendererPtr renderer(getRenderer());
-	if (nullptr != renderer)
+	Rhi::IRhiPtr rhi(getRhi());
+	if (nullptr != rhi)
 	{
 		// Sanity checks
-		RENDERER_ASSERT(renderer->getContext(), nullptr != mOcclusionQueryPool, "Invalid occlusion query pool");
-		RENDERER_ASSERT(renderer->getContext(), nullptr != mPipelineStatisticsQueryPool, "Invalid pipeline statistics query pool");
-		RENDERER_ASSERT(renderer->getContext(), nullptr != mTimestampQueryPool, "Invalid timestamp query pool");
+		RHI_ASSERT(rhi->getContext(), nullptr != mOcclusionQueryPool, "Invalid occlusion query pool");
+		RHI_ASSERT(rhi->getContext(), nullptr != mPipelineStatisticsQueryPool, "Invalid pipeline statistics query pool");
+		RHI_ASSERT(rhi->getContext(), nullptr != mTimestampQueryPool, "Invalid timestamp query pool");
 
 		{ // Occlusion query pool
 			uint64_t numberOfSamples = 0;
-			if (renderer->getQueryPoolResults(*mOcclusionQueryPool, sizeof(uint64_t), reinterpret_cast<uint8_t*>(&numberOfSamples)))
+			if (rhi->getQueryPoolResults(*mOcclusionQueryPool, sizeof(uint64_t), reinterpret_cast<uint8_t*>(&numberOfSamples)))
 			{
 				NOP;	// TODO(co) Process result
 			}
 		}
 
 		{ // Pipeline statistics query pool
-			Renderer::PipelineStatisticsQueryResult pipelineStatisticsQueryResult = {};
-			if (renderer->getQueryPoolResults(*mPipelineStatisticsQueryPool, sizeof(Renderer::PipelineStatisticsQueryResult), reinterpret_cast<uint8_t*>(&pipelineStatisticsQueryResult)))
+			Rhi::PipelineStatisticsQueryResult pipelineStatisticsQueryResult = {};
+			if (rhi->getQueryPoolResults(*mPipelineStatisticsQueryPool, sizeof(Rhi::PipelineStatisticsQueryResult), reinterpret_cast<uint8_t*>(&pipelineStatisticsQueryResult)))
 			{
 				NOP;	// TODO(co) Process result
 			}
@@ -91,7 +91,7 @@ void FirstQueries::onDraw()
 
 		{ // Timestamp query pool
 			uint64_t timestamp[2] = {};
-			if (renderer->getQueryPoolResults(*mTimestampQueryPool, sizeof(uint64_t) * 2, reinterpret_cast<uint8_t*>(&timestamp), 0, 2, sizeof(uint64_t)))
+			if (rhi->getQueryPoolResults(*mTimestampQueryPool, sizeof(uint64_t) * 2, reinterpret_cast<uint8_t*>(&timestamp), 0, 2, sizeof(uint64_t)))
 			{
 				NOP;	// TODO(co) Process result
 			}
@@ -106,35 +106,35 @@ void FirstQueries::onDraw()
 void FirstQueries::fillCommandBuffer()
 {
 	// Sanity checks
-	ASSERT(nullptr != getRenderer());
-	RENDERER_ASSERT(getRenderer()->getContext(), mCommandBuffer.isEmpty(), "Command buffer is already filled");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mRootSignature, "Invalid root signature");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mGraphicsPipelineState, "Invalid graphics pipeline state");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mVertexArray, "Invalid vertex array");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mOcclusionQueryPool, "Invalid occlusion query pool");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mPipelineStatisticsQueryPool, "Invalid pipeline statistics query pool");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mTimestampQueryPool, "Invalid timestamp query pool");
+	ASSERT(nullptr != getRhi());
+	RHI_ASSERT(getRhi()->getContext(), mCommandBuffer.isEmpty(), "Command buffer is already filled");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mRootSignature, "Invalid root signature");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mGraphicsPipelineState, "Invalid graphics pipeline state");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mVertexArray, "Invalid vertex array");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mOcclusionQueryPool, "Invalid occlusion query pool");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mPipelineStatisticsQueryPool, "Invalid pipeline statistics query pool");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mTimestampQueryPool, "Invalid timestamp query pool");
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
 
 	// Reset and begin queries
-	Renderer::Command::ResetQueryPool::create(mCommandBuffer, *mTimestampQueryPool, 0, 2);
-	Renderer::Command::WriteTimestampQuery::create(mCommandBuffer, *mTimestampQueryPool, 0);
-	Renderer::Command::ResetAndBeginQuery::create(mCommandBuffer, *mOcclusionQueryPool);
-	Renderer::Command::ResetAndBeginQuery::create(mCommandBuffer, *mPipelineStatisticsQueryPool, 0, Renderer::QueryControlFlags::PRECISE);
+	Rhi::Command::ResetQueryPool::create(mCommandBuffer, *mTimestampQueryPool, 0, 2);
+	Rhi::Command::WriteTimestampQuery::create(mCommandBuffer, *mTimestampQueryPool, 0);
+	Rhi::Command::ResetAndBeginQuery::create(mCommandBuffer, *mOcclusionQueryPool);
+	Rhi::Command::ResetAndBeginQuery::create(mCommandBuffer, *mPipelineStatisticsQueryPool, 0, Rhi::QueryControlFlags::PRECISE);
 
 	// Clear the graphics color buffer of the current render target with gray, do also clear the depth buffer
-	Renderer::Command::ClearGraphics::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
+	Rhi::Command::ClearGraphics::create(mCommandBuffer, Rhi::ClearFlag::COLOR_DEPTH, Color4::GRAY);
 
 	// Set the used graphics root signature
-	Renderer::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
+	Rhi::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
 
 	// Set the used graphics pipeline state object (PSO)
-	Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineState);
+	Rhi::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineState);
 
 	// Input assembly (IA): Set the used vertex array
-	Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArray);
+	Rhi::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArray);
 
 	// Set debug marker
 	// -> Debug methods: When using Direct3D <11.1, these methods map to the Direct3D 9 PIX functions
@@ -146,11 +146,11 @@ void FirstQueries::fillCommandBuffer()
 		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Drawing the fancy triangle")
 
 		// Render the specified geometric primitive, based on an array of vertices
-		Renderer::Command::DrawGraphics::create(mCommandBuffer, 3);
+		Rhi::Command::DrawGraphics::create(mCommandBuffer, 3);
 	}
 
 	// End queries
-	Renderer::Command::EndQuery::create(mCommandBuffer, *mOcclusionQueryPool);
-	Renderer::Command::EndQuery::create(mCommandBuffer, *mPipelineStatisticsQueryPool);
-	Renderer::Command::WriteTimestampQuery::create(mCommandBuffer, *mTimestampQueryPool, 1);
+	Rhi::Command::EndQuery::create(mCommandBuffer, *mOcclusionQueryPool);
+	Rhi::Command::EndQuery::create(mCommandBuffer, *mPipelineStatisticsQueryPool);
+	Rhi::Command::WriteTimestampQuery::create(mCommandBuffer, *mTimestampQueryPool, 1);
 }

@@ -29,7 +29,7 @@
 //[-------------------------------------------------------]
 #include "Examples/Private/Framework/ExampleBase.h"
 
-#include <Renderer/Public/Renderer.h>
+#include <Rhi/Public/Rhi.h>
 
 
 //[-------------------------------------------------------]
@@ -97,14 +97,14 @@ private:
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
-	Renderer::IBufferManagerPtr			mBufferManager;			///< Buffer manager, can be a null pointer
-	Renderer::ITextureManagerPtr		mTextureManager;		///< Texture manager, can be a null pointer
-	Renderer::CommandBuffer				mCommandBuffer;			///< Command buffer
-	Renderer::IRootSignaturePtr			mRootSignature;			///< Root signature, can be a null pointer
-	Renderer::IResourceGroupPtr			mTextureGroup;			///< Texture group, can be a null pointer
-	Renderer::IResourceGroupPtr			mSamplerStateGroup;		///< Sampler state resource group, can be a null pointer
-	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineState;	///< Graphics pipeline state object (PSO), can be a null pointer
-	Renderer::IVertexArrayPtr			mVertexArray;			///< Vertex array object (VAO), can be a null pointer
+	Rhi::IBufferManagerPtr			mBufferManager;			///< Buffer manager, can be a null pointer
+	Rhi::ITextureManagerPtr			mTextureManager;		///< Texture manager, can be a null pointer
+	Rhi::CommandBuffer				mCommandBuffer;			///< Command buffer
+	Rhi::IRootSignaturePtr			mRootSignature;			///< Root signature, can be a null pointer
+	Rhi::IResourceGroupPtr			mTextureGroup;			///< Texture group, can be a null pointer
+	Rhi::IResourceGroupPtr			mSamplerStateGroup;		///< Sampler state resource group, can be a null pointer
+	Rhi::IGraphicsPipelineStatePtr	mGraphicsPipelineState;	///< Graphics pipeline state object (PSO), can be a null pointer
+	Rhi::IVertexArrayPtr			mVertexArray;			///< Vertex array object (VAO), can be a null pointer
 
 
 };

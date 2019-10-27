@@ -47,7 +47,7 @@ namespace
 		//[-------------------------------------------------------]
 		void createDefaultDynamicTextureAssets(RendererRuntime::IRendererRuntime& rendererRuntime, RendererRuntime::TextureResourceManager& textureResourceManager)
 		{
-			Renderer::ITextureManager& textureManager = rendererRuntime.getTextureManager();
+			Rhi::ITextureManager& textureManager = rendererRuntime.getTextureManager();
 
 			// White RGBA texture
 			const uint8_t whiteRgbaData[] = {
@@ -58,24 +58,24 @@ namespace
 				255, 255, 255, 255,	// Face 4
 				255, 255, 255, 255	// Face 5
 			};
-			Renderer::ITexturePtr whiteRgba1DTexturePtr(textureManager.createTexture1D(1, Renderer::TextureFormat::R8G8B8A8, whiteRgbaData, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
-			RENDERER_SET_RESOURCE_DEBUG_NAME(whiteRgba1DTexturePtr, "White 1D RGBA texture")
-			Renderer::ITexturePtr whiteRgba2DTexturePtr(textureManager.createTexture2D(1, 1, Renderer::TextureFormat::R8G8B8A8, whiteRgbaData, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
-			RENDERER_SET_RESOURCE_DEBUG_NAME(whiteRgba2DTexturePtr, "White 2D RGBA texture")
-			Renderer::ITexturePtr whiteRgbaCubeTexturePtr(textureManager.createTextureCube(1, 1, Renderer::TextureFormat::R8G8B8A8, whiteRgbaData, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
-			RENDERER_SET_RESOURCE_DEBUG_NAME(whiteRgbaCubeTexturePtr, "White cube RGBA texture")
-			Renderer::ITexturePtr whiteRgba3DTexturePtr(textureManager.createTexture3D(1, 1, 1, Renderer::TextureFormat::R8G8B8A8, whiteRgbaData, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
-			RENDERER_SET_RESOURCE_DEBUG_NAME(whiteRgbaCubeTexturePtr, "White 3D RGBA texture")
+			Rhi::ITexturePtr whiteRgba1DTexturePtr(textureManager.createTexture1D(1, Rhi::TextureFormat::R8G8B8A8, whiteRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
+			RHI_SET_RESOURCE_DEBUG_NAME(whiteRgba1DTexturePtr, "White 1D RGBA texture")
+			Rhi::ITexturePtr whiteRgba2DTexturePtr(textureManager.createTexture2D(1, 1, Rhi::TextureFormat::R8G8B8A8, whiteRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
+			RHI_SET_RESOURCE_DEBUG_NAME(whiteRgba2DTexturePtr, "White 2D RGBA texture")
+			Rhi::ITexturePtr whiteRgbaCubeTexturePtr(textureManager.createTextureCube(1, 1, Rhi::TextureFormat::R8G8B8A8, whiteRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
+			RHI_SET_RESOURCE_DEBUG_NAME(whiteRgbaCubeTexturePtr, "White cube RGBA texture")
+			Rhi::ITexturePtr whiteRgba3DTexturePtr(textureManager.createTexture3D(1, 1, 1, Rhi::TextureFormat::R8G8B8A8, whiteRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
+			RHI_SET_RESOURCE_DEBUG_NAME(whiteRgbaCubeTexturePtr, "White 3D RGBA texture")
 
 			// Normal map identity texture
 			const uint8_t normalMapIdentityData[] = { 128, 128, 255, 255 };
-			Renderer::ITexturePtr normalMapIdentity2DTexturePtr(textureManager.createTexture2D(1, 1, Renderer::TextureFormat::R8G8B8A8, normalMapIdentityData, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
-			RENDERER_SET_RESOURCE_DEBUG_NAME(normalMapIdentity2DTexturePtr, "2D normal map identity texture")
+			Rhi::ITexturePtr normalMapIdentity2DTexturePtr(textureManager.createTexture2D(1, 1, Rhi::TextureFormat::R8G8B8A8, normalMapIdentityData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
+			RHI_SET_RESOURCE_DEBUG_NAME(normalMapIdentity2DTexturePtr, "2D normal map identity texture")
 
 			// White alpha texture
 			const uint8_t whiteAData[] = { 255 };
-			Renderer::ITexturePtr whiteA2DTexturePtr(textureManager.createTexture2D(1, 1, Renderer::TextureFormat::R8, whiteAData, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
-			RENDERER_SET_RESOURCE_DEBUG_NAME(whiteA2DTexturePtr, "White 2D alpha texture")
+			Rhi::ITexturePtr whiteA2DTexturePtr(textureManager.createTexture2D(1, 1, Rhi::TextureFormat::R8, whiteAData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
+			RHI_SET_RESOURCE_DEBUG_NAME(whiteA2DTexturePtr, "White 2D alpha texture")
 
 			// Black RGBA texture
 			const uint8_t blackRgbaData[] = {
@@ -86,30 +86,30 @@ namespace
 				0, 0, 0, 0,	// Face 4
 				0, 0, 0, 0	// Face 5
 			};
-			Renderer::ITexturePtr blackRgba1DTexturePtr(textureManager.createTexture1D(1, Renderer::TextureFormat::R8G8B8A8, blackRgbaData, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
-			RENDERER_SET_RESOURCE_DEBUG_NAME(blackRgba1DTexturePtr, "Black 1D RGBA texture")
-			Renderer::ITexturePtr blackRgba2DTexturePtr(textureManager.createTexture2D(1, 1, Renderer::TextureFormat::R8G8B8A8, blackRgbaData, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
-			RENDERER_SET_RESOURCE_DEBUG_NAME(blackRgba2DTexturePtr, "Black 2D RGBA texture")
-			Renderer::ITexturePtr blackRgbaCubeTexturePtr(textureManager.createTextureCube(1, 1, Renderer::TextureFormat::R8G8B8A8, blackRgbaData, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
-			RENDERER_SET_RESOURCE_DEBUG_NAME(blackRgbaCubeTexturePtr, "Black cube RGBA texture")
-			Renderer::ITexturePtr blackRgba3DTexturePtr(textureManager.createTexture3D(1, 1, 1, Renderer::TextureFormat::R8G8B8A8, blackRgbaData, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
-			RENDERER_SET_RESOURCE_DEBUG_NAME(blackRgba3DTexturePtr, "Black 3D RGBA texture")
+			Rhi::ITexturePtr blackRgba1DTexturePtr(textureManager.createTexture1D(1, Rhi::TextureFormat::R8G8B8A8, blackRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
+			RHI_SET_RESOURCE_DEBUG_NAME(blackRgba1DTexturePtr, "Black 1D RGBA texture")
+			Rhi::ITexturePtr blackRgba2DTexturePtr(textureManager.createTexture2D(1, 1, Rhi::TextureFormat::R8G8B8A8, blackRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
+			RHI_SET_RESOURCE_DEBUG_NAME(blackRgba2DTexturePtr, "Black 2D RGBA texture")
+			Rhi::ITexturePtr blackRgbaCubeTexturePtr(textureManager.createTextureCube(1, 1, Rhi::TextureFormat::R8G8B8A8, blackRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
+			RHI_SET_RESOURCE_DEBUG_NAME(blackRgbaCubeTexturePtr, "Black cube RGBA texture")
+			Rhi::ITexturePtr blackRgba3DTexturePtr(textureManager.createTexture3D(1, 1, 1, Rhi::TextureFormat::R8G8B8A8, blackRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
+			RHI_SET_RESOURCE_DEBUG_NAME(blackRgba3DTexturePtr, "Black 3D RGBA texture")
 
 			// Black alpha texture
 			const uint8_t blackAData[] = { 0 };
-			Renderer::ITexturePtr blackA2DTexturePtr(textureManager.createTexture2D(1, 1, Renderer::TextureFormat::R8, blackAData, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
-			RENDERER_SET_RESOURCE_DEBUG_NAME(blackA2DTexturePtr, "Black 2D alpha texture")
+			Rhi::ITexturePtr blackA2DTexturePtr(textureManager.createTexture2D(1, 1, Rhi::TextureFormat::R8, blackAData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
+			RHI_SET_RESOURCE_DEBUG_NAME(blackA2DTexturePtr, "Black 2D alpha texture")
 
 			// "_argb_nxa"-texture
 			// -> Must be white so e.g. albedo color can be multiplied in
 			const uint8_t _argb_nxaIdentityData[] = { 255, 255, 255, 128 };
-			Renderer::ITexturePtr _argb_nxaIdentity2DTexturePtr(textureManager.createTexture2D(1, 1, Renderer::TextureFormat::R8G8B8A8, _argb_nxaIdentityData, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
-			RENDERER_SET_RESOURCE_DEBUG_NAME(_argb_nxaIdentity2DTexturePtr, "2D _argb_nxa identity texture")
+			Rhi::ITexturePtr _argb_nxaIdentity2DTexturePtr(textureManager.createTexture2D(1, 1, Rhi::TextureFormat::R8G8B8A8, _argb_nxaIdentityData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
+			RHI_SET_RESOURCE_DEBUG_NAME(_argb_nxaIdentity2DTexturePtr, "2D _argb_nxa identity texture")
 
 			// "_hr_rg_mb_nya"-texture
 			const uint8_t _hr_rg_mb_nyaIdentityData[] = { 0, 255, 0, 128 };
-			Renderer::ITexturePtr _hr_rg_mb_nyaIdentity2DTexturePtr(textureManager.createTexture2D(1, 1, Renderer::TextureFormat::R8G8B8A8, _hr_rg_mb_nyaIdentityData, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
-			RENDERER_SET_RESOURCE_DEBUG_NAME(_hr_rg_mb_nyaIdentity2DTexturePtr, "2D _hr_rg_mb_nya identity texture")
+			Rhi::ITexturePtr _hr_rg_mb_nyaIdentity2DTexturePtr(textureManager.createTexture2D(1, 1, Rhi::TextureFormat::R8G8B8A8, _hr_rg_mb_nyaIdentityData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
+			RHI_SET_RESOURCE_DEBUG_NAME(_hr_rg_mb_nyaIdentity2DTexturePtr, "2D _hr_rg_mb_nya identity texture")
 
 			// Define helper macro
 			#define CREATE_TEXTURE(name, texturePtr) textureResourceManager.createTextureResourceByAssetId(ASSET_ID("Unrimp/Texture/DynamicByCode/"#name), *texturePtr);
@@ -228,7 +228,7 @@ namespace RendererRuntime
 		// -> Please note that the fallback texture asset ID is intentionally only used if the texture asset ID is valid, it's a fallback as long as the real texture data has not been loaded yet
 		const IRendererRuntime& rendererRuntime = mInternalResourceManager->getRendererRuntime();
 		const Asset* asset = rendererRuntime.getAssetManager().tryGetAssetByAssetId(assetId);
-		// RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != asset, "Unknown asset ID")	// For texture assets there's no assert by intent since it's not unusual that e.g. referenced compositor texture assets get created later on
+		// RHI_ASSERT(rendererRuntime.getContext(), nullptr != asset, "Unknown asset ID")	// For texture assets there's no assert by intent since it's not unusual that e.g. referenced compositor texture assets get created later on
 		bool load = (reload && nullptr != asset);
 		if (nullptr == textureResource && nullptr != asset)
 		{
@@ -269,7 +269,7 @@ namespace RendererRuntime
 				else
 				{
 					// Error!
-					RENDERER_ASSERT(rendererRuntime.getContext(), false, "We should never ever be able to be in here, it's the renderer toolkit responsible to ensure the renderer runtime only works with sane data")
+					RHI_ASSERT(rendererRuntime.getContext(), false, "We should never ever be able to be in here, it's the renderer toolkit responsible to ensure the renderer runtime only works with sane data")
 				}
 			}
 			if (isValid(resourceLoaderTypeId))
@@ -277,8 +277,8 @@ namespace RendererRuntime
 				// Commit resource streamer asset load request
 				rendererRuntime.getResourceStreamer().commitLoadRequest(ResourceStreamer::LoadRequest(*asset, resourceLoaderTypeId, reload, *this, textureResourceId));
 
-				// Since it might take a moment to load the texture resource, we'll use a fallback placeholder renderer texture resource so we don't have to wait until the real thing is there
-				// -> In case there's already a renderer texture, keep that as long as possible (for example there might be a change in the number of top mipmaps to remove)
+				// Since it might take a moment to load the texture resource, we'll use a fallback placeholder RHI texture resource so we don't have to wait until the real thing is there
+				// -> In case there's already a RHI texture, keep that as long as possible (for example there might be a change in the number of top mipmaps to remove)
 				if (nullptr == textureResource->mTexture)
 				{
 					if (isValid(fallbackTextureAssetId))
@@ -292,34 +292,34 @@ namespace RendererRuntime
 						else
 						{
 							// Error! 
-							RENDERER_ASSERT(rendererRuntime.getContext(), false, "Fallback texture asset ID not found")
+							RHI_ASSERT(rendererRuntime.getContext(), false, "Fallback texture asset ID not found")
 						}
 					}
 					else
 					{
 						// Hiccups / lags warning
-						RENDERER_ASSERT(rendererRuntime.getContext(), false, "There should always be a fallback texture asset ID (better be safe than sorry)")
+						RHI_ASSERT(rendererRuntime.getContext(), false, "There should always be a fallback texture asset ID (better be safe than sorry)")
 					}
 				}
 			}
 			else
 			{
 				// Error!
-				RENDERER_ASSERT(rendererRuntime.getContext(), false, "We should never ever be able to be in here, it's the renderer toolkit responsible to ensure the renderer runtime only works with sane data")
+				RHI_ASSERT(rendererRuntime.getContext(), false, "We should never ever be able to be in here, it's the renderer toolkit responsible to ensure the renderer runtime only works with sane data")
 			}
 		}
 	}
 
-	TextureResourceId TextureResourceManager::createTextureResourceByAssetId(AssetId assetId, Renderer::ITexture& texture, bool rgbHardwareGammaCorrection)
+	TextureResourceId TextureResourceManager::createTextureResourceByAssetId(AssetId assetId, Rhi::ITexture& texture, bool rgbHardwareGammaCorrection)
 	{
 		// Sanity check
-		RENDERER_ASSERT(mInternalResourceManager->getRendererRuntime().getContext(), nullptr == getTextureResourceByAssetId(assetId), "The texture resource isn't allowed to exist, yet")
+		RHI_ASSERT(mInternalResourceManager->getRendererRuntime().getContext(), nullptr == getTextureResourceByAssetId(assetId), "The texture resource isn't allowed to exist, yet")
 
 		// Create the texture resource instance
 		TextureResource& textureResource = mInternalResourceManager->getResources().addElement();
 		textureResource.setResourceManager(this);
 		textureResource.setAssetId(assetId);
-		textureResource.mRgbHardwareGammaCorrection = rgbHardwareGammaCorrection;	// TODO(co) We might need to extend "Renderer::ITexture" so we can readback the texture format
+		textureResource.mRgbHardwareGammaCorrection = rgbHardwareGammaCorrection;	// TODO(co) We might need to extend "Rhi::ITexture" so we can readback the texture format
 		textureResource.mTexture = &texture;
 
 		// Done
@@ -409,7 +409,7 @@ namespace RendererRuntime
 
 			default:
 				// TODO(co) Error handling
-				RENDERER_ASSERT(mInternalResourceManager->getRendererRuntime().getContext(), false, "Invalid resource loader type ID")
+				RHI_ASSERT(mInternalResourceManager->getRendererRuntime().getContext(), false, "Invalid resource loader type ID")
 				return nullptr;
 		}
 	}

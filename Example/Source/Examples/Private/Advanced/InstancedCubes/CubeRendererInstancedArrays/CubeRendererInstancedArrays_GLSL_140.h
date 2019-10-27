@@ -21,9 +21,9 @@
 //[-------------------------------------------------------]
 //[ Shader start                                          ]
 //[-------------------------------------------------------]
-#ifdef RENDERER_OPENGL
+#ifdef RHI_OPENGL
 // Uniform buffer version (Direct3D 10 and Direct3D 11 only support uniform buffers and no individual uniform access)
-if (renderer.getNameId() == Renderer::NameId::OPENGL && mRenderer->getCapabilities().maximumUniformBufferSize > 0)
+if (rhi.getNameId() == Rhi::NameId::OPENGL && mRhi->getCapabilities().maximumUniformBufferSize > 0)
 {
 
 

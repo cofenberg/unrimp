@@ -151,16 +151,16 @@ namespace
 			return static_cast<uint32_t>((strncmp(instructionAsString, "@counter(", 7) == 0) ? executeCounterInstruction(instructionAsString, shaderProperties) : std::atoi(instructionAsString));
 		}
 
-		[[nodiscard]] Renderer::ResourceType mandatoryResourceType(const rapidjson::Value& rapidJsonValue)
+		[[nodiscard]] Rhi::ResourceType mandatoryResourceType(const rapidjson::Value& rapidJsonValue)
 		{
 			const rapidjson::Value& rapidJsonValueUsage = rapidJsonValue["ResourceType"];
 			const char* valueAsString = rapidJsonValueUsage.GetString();
 			const rapidjson::SizeType valueStringLength = rapidJsonValueUsage.GetStringLength();
-			Renderer::ResourceType resourceType = Renderer::ResourceType::ROOT_SIGNATURE;
+			Rhi::ResourceType resourceType = Rhi::ResourceType::ROOT_SIGNATURE;
 
 			// Define helper macros
-			#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) resourceType = Renderer::ResourceType::name;
-			#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) resourceType = Renderer::ResourceType::name;
+			#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) resourceType = Rhi::ResourceType::name;
+			#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) resourceType = Rhi::ResourceType::name;
 
 			// Evaluate value
 			IF_VALUE(ROOT_SIGNATURE)
@@ -205,7 +205,7 @@ namespace
 			return resourceType;
 		}
 
-		void optionalDescriptorRangeType(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::DescriptorRangeType& value)
+		void optionalDescriptorRangeType(const rapidjson::Value& rapidJsonValue, const char* propertyName, Rhi::DescriptorRangeType& value)
 		{
 			if (rapidJsonValue.HasMember(propertyName))
 			{
@@ -214,8 +214,8 @@ namespace
 				const rapidjson::SizeType valueStringLength = rapidJsonValueUsage.GetStringLength();
 
 				// Define helper macros
-				#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::DescriptorRangeType::name;
-				#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::DescriptorRangeType::name;
+				#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Rhi::DescriptorRangeType::name;
+				#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Rhi::DescriptorRangeType::name;
 
 				// Evaluate value
 				IF_VALUE(SRV)
@@ -295,7 +295,7 @@ namespace RendererToolkit
 		}
 	}
 
-	void JsonMaterialBlueprintHelper::optionalPrimitiveTopology(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::PrimitiveTopology& value)
+	void JsonMaterialBlueprintHelper::optionalPrimitiveTopology(const rapidjson::Value& rapidJsonValue, const char* propertyName, Rhi::PrimitiveTopology& value)
 	{
 		if (rapidJsonValue.HasMember(propertyName))
 		{
@@ -304,8 +304,8 @@ namespace RendererToolkit
 			const rapidjson::SizeType valueStringLength = rapidJsonValueUsage.GetStringLength();
 
 			// Define helper macros
-			#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::PrimitiveTopology::name;
-			#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::PrimitiveTopology::name;
+			#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Rhi::PrimitiveTopology::name;
+			#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Rhi::PrimitiveTopology::name;
 
 			// Evaluate value
 			IF_VALUE(POINT_LIST)
@@ -356,62 +356,62 @@ namespace RendererToolkit
 		}
 	}
 
-	Renderer::PrimitiveTopologyType JsonMaterialBlueprintHelper::getPrimitiveTopologyTypeByPrimitiveTopology(Renderer::PrimitiveTopology primitiveTopology)
+	Rhi::PrimitiveTopologyType JsonMaterialBlueprintHelper::getPrimitiveTopologyTypeByPrimitiveTopology(Rhi::PrimitiveTopology primitiveTopology)
 	{
 		switch (primitiveTopology)
 		{
 			default:
-			case Renderer::PrimitiveTopology::UNKNOWN:
-				return Renderer::PrimitiveTopologyType::UNDEFINED;
+			case Rhi::PrimitiveTopology::UNKNOWN:
+				return Rhi::PrimitiveTopologyType::UNDEFINED;
 
-			case Renderer::PrimitiveTopology::POINT_LIST:
-				return Renderer::PrimitiveTopologyType::POINT;
+			case Rhi::PrimitiveTopology::POINT_LIST:
+				return Rhi::PrimitiveTopologyType::POINT;
 
-			case Renderer::PrimitiveTopology::LINE_LIST:
-			case Renderer::PrimitiveTopology::LINE_STRIP:
-				return Renderer::PrimitiveTopologyType::LINE;
+			case Rhi::PrimitiveTopology::LINE_LIST:
+			case Rhi::PrimitiveTopology::LINE_STRIP:
+				return Rhi::PrimitiveTopologyType::LINE;
 
-			case Renderer::PrimitiveTopology::TRIANGLE_LIST:
-			case Renderer::PrimitiveTopology::TRIANGLE_STRIP:
-				return Renderer::PrimitiveTopologyType::TRIANGLE;
+			case Rhi::PrimitiveTopology::TRIANGLE_LIST:
+			case Rhi::PrimitiveTopology::TRIANGLE_STRIP:
+				return Rhi::PrimitiveTopologyType::TRIANGLE;
 
-			case Renderer::PrimitiveTopology::PATCH_LIST_1:
-			case Renderer::PrimitiveTopology::PATCH_LIST_2:
-			case Renderer::PrimitiveTopology::PATCH_LIST_3:
-			case Renderer::PrimitiveTopology::PATCH_LIST_4:
-			case Renderer::PrimitiveTopology::PATCH_LIST_5:
-			case Renderer::PrimitiveTopology::PATCH_LIST_6:
-			case Renderer::PrimitiveTopology::PATCH_LIST_7:
-			case Renderer::PrimitiveTopology::PATCH_LIST_8:
-			case Renderer::PrimitiveTopology::PATCH_LIST_9:
-			case Renderer::PrimitiveTopology::PATCH_LIST_10:
-			case Renderer::PrimitiveTopology::PATCH_LIST_11:
-			case Renderer::PrimitiveTopology::PATCH_LIST_12:
-			case Renderer::PrimitiveTopology::PATCH_LIST_13:
-			case Renderer::PrimitiveTopology::PATCH_LIST_14:
-			case Renderer::PrimitiveTopology::PATCH_LIST_15:
-			case Renderer::PrimitiveTopology::PATCH_LIST_16:
-			case Renderer::PrimitiveTopology::PATCH_LIST_17:
-			case Renderer::PrimitiveTopology::PATCH_LIST_18:
-			case Renderer::PrimitiveTopology::PATCH_LIST_19:
-			case Renderer::PrimitiveTopology::PATCH_LIST_20:
-			case Renderer::PrimitiveTopology::PATCH_LIST_21:
-			case Renderer::PrimitiveTopology::PATCH_LIST_22:
-			case Renderer::PrimitiveTopology::PATCH_LIST_23:
-			case Renderer::PrimitiveTopology::PATCH_LIST_24:
-			case Renderer::PrimitiveTopology::PATCH_LIST_25:
-			case Renderer::PrimitiveTopology::PATCH_LIST_26:
-			case Renderer::PrimitiveTopology::PATCH_LIST_27:
-			case Renderer::PrimitiveTopology::PATCH_LIST_28:
-			case Renderer::PrimitiveTopology::PATCH_LIST_29:
-			case Renderer::PrimitiveTopology::PATCH_LIST_30:
-			case Renderer::PrimitiveTopology::PATCH_LIST_31:
-			case Renderer::PrimitiveTopology::PATCH_LIST_32:
-				return Renderer::PrimitiveTopologyType::PATCH;
+			case Rhi::PrimitiveTopology::PATCH_LIST_1:
+			case Rhi::PrimitiveTopology::PATCH_LIST_2:
+			case Rhi::PrimitiveTopology::PATCH_LIST_3:
+			case Rhi::PrimitiveTopology::PATCH_LIST_4:
+			case Rhi::PrimitiveTopology::PATCH_LIST_5:
+			case Rhi::PrimitiveTopology::PATCH_LIST_6:
+			case Rhi::PrimitiveTopology::PATCH_LIST_7:
+			case Rhi::PrimitiveTopology::PATCH_LIST_8:
+			case Rhi::PrimitiveTopology::PATCH_LIST_9:
+			case Rhi::PrimitiveTopology::PATCH_LIST_10:
+			case Rhi::PrimitiveTopology::PATCH_LIST_11:
+			case Rhi::PrimitiveTopology::PATCH_LIST_12:
+			case Rhi::PrimitiveTopology::PATCH_LIST_13:
+			case Rhi::PrimitiveTopology::PATCH_LIST_14:
+			case Rhi::PrimitiveTopology::PATCH_LIST_15:
+			case Rhi::PrimitiveTopology::PATCH_LIST_16:
+			case Rhi::PrimitiveTopology::PATCH_LIST_17:
+			case Rhi::PrimitiveTopology::PATCH_LIST_18:
+			case Rhi::PrimitiveTopology::PATCH_LIST_19:
+			case Rhi::PrimitiveTopology::PATCH_LIST_20:
+			case Rhi::PrimitiveTopology::PATCH_LIST_21:
+			case Rhi::PrimitiveTopology::PATCH_LIST_22:
+			case Rhi::PrimitiveTopology::PATCH_LIST_23:
+			case Rhi::PrimitiveTopology::PATCH_LIST_24:
+			case Rhi::PrimitiveTopology::PATCH_LIST_25:
+			case Rhi::PrimitiveTopology::PATCH_LIST_26:
+			case Rhi::PrimitiveTopology::PATCH_LIST_27:
+			case Rhi::PrimitiveTopology::PATCH_LIST_28:
+			case Rhi::PrimitiveTopology::PATCH_LIST_29:
+			case Rhi::PrimitiveTopology::PATCH_LIST_30:
+			case Rhi::PrimitiveTopology::PATCH_LIST_31:
+			case Rhi::PrimitiveTopology::PATCH_LIST_32:
+				return Rhi::PrimitiveTopologyType::PATCH;
 		}
 	}
 
-	void JsonMaterialBlueprintHelper::optionalShaderVisibilityProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::ShaderVisibility& value)
+	void JsonMaterialBlueprintHelper::optionalShaderVisibilityProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Rhi::ShaderVisibility& value)
 	{
 		if (rapidJsonValue.HasMember(propertyName))
 		{
@@ -420,8 +420,8 @@ namespace RendererToolkit
 			const rapidjson::SizeType valueStringLength = rapidJsonValueUsage.GetStringLength();
 
 			// Define helper macros
-			#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::ShaderVisibility::name;
-			#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::ShaderVisibility::name;
+			#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Rhi::ShaderVisibility::name;
+			#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Rhi::ShaderVisibility::name;
 
 			// Evaluate value
 			IF_VALUE(ALL)
@@ -652,70 +652,70 @@ namespace RendererToolkit
 
 			case RendererRuntime::MaterialPropertyValue::ValueType::FILL_MODE:
 			{
-				Renderer::FillMode value = Renderer::FillMode::SOLID;
+				Rhi::FillMode value = Rhi::FillMode::SOLID;
 				JsonMaterialHelper::optionalFillModeProperty(rapidJsonValue, propertyName, value);
 				return RendererRuntime::MaterialPropertyValue::fromFillMode(value);
 			}
 
 			case RendererRuntime::MaterialPropertyValue::ValueType::CULL_MODE:
 			{
-				Renderer::CullMode value = Renderer::CullMode::BACK;
+				Rhi::CullMode value = Rhi::CullMode::BACK;
 				JsonMaterialHelper::optionalCullModeProperty(rapidJsonValue, propertyName, value);
 				return RendererRuntime::MaterialPropertyValue::fromCullMode(value);
 			}
 
 			case RendererRuntime::MaterialPropertyValue::ValueType::CONSERVATIVE_RASTERIZATION_MODE:
 			{
-				Renderer::ConservativeRasterizationMode value = Renderer::ConservativeRasterizationMode::OFF;
+				Rhi::ConservativeRasterizationMode value = Rhi::ConservativeRasterizationMode::OFF;
 				JsonMaterialHelper::optionalConservativeRasterizationModeProperty(rapidJsonValue, propertyName, value);
 				return RendererRuntime::MaterialPropertyValue::fromConservativeRasterizationMode(value);
 			}
 
 			case RendererRuntime::MaterialPropertyValue::ValueType::DEPTH_WRITE_MASK:
 			{
-				Renderer::DepthWriteMask value = Renderer::DepthWriteMask::ALL;
+				Rhi::DepthWriteMask value = Rhi::DepthWriteMask::ALL;
 				JsonMaterialHelper::optionalDepthWriteMaskProperty(rapidJsonValue, propertyName, value);
 				return RendererRuntime::MaterialPropertyValue::fromDepthWriteMask(value);
 			}
 
 			case RendererRuntime::MaterialPropertyValue::ValueType::STENCIL_OP:
 			{
-				Renderer::StencilOp value = Renderer::StencilOp::KEEP;
+				Rhi::StencilOp value = Rhi::StencilOp::KEEP;
 				JsonMaterialHelper::optionalStencilOpProperty(rapidJsonValue, propertyName, value);
 				return RendererRuntime::MaterialPropertyValue::fromStencilOp(value);
 			}
 
 			case RendererRuntime::MaterialPropertyValue::ValueType::COMPARISON_FUNC:
 			{
-				Renderer::ComparisonFunc value = Renderer::ComparisonFunc::GREATER;	// "Renderer::ComparisonFunc::GREATER" instead of "Renderer::ComparisonFunc::LESS" due to usage of Reversed-Z (see e.g. https://developer.nvidia.com/content/depth-precision-visualized and https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/)
+				Rhi::ComparisonFunc value = Rhi::ComparisonFunc::GREATER;	// "Rhi::ComparisonFunc::GREATER" instead of "Rhi::ComparisonFunc::LESS" due to usage of Reversed-Z (see e.g. https://developer.nvidia.com/content/depth-precision-visualized and https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/)
 				JsonMaterialHelper::optionalComparisonFuncProperty(rapidJsonValue, propertyName, value);
 				return RendererRuntime::MaterialPropertyValue::fromComparisonFunc(value);
 			}
 
 			case RendererRuntime::MaterialPropertyValue::ValueType::BLEND:
 			{
-				Renderer::Blend value = Renderer::Blend::ONE;
+				Rhi::Blend value = Rhi::Blend::ONE;
 				JsonMaterialHelper::optionalBlendProperty(rapidJsonValue, propertyName, value);
 				return RendererRuntime::MaterialPropertyValue::fromBlend(value);
 			}
 
 			case RendererRuntime::MaterialPropertyValue::ValueType::BLEND_OP:
 			{
-				Renderer::BlendOp value = Renderer::BlendOp::ADD;
+				Rhi::BlendOp value = Rhi::BlendOp::ADD;
 				JsonMaterialHelper::optionalBlendOpProperty(rapidJsonValue, propertyName, value);
 				return RendererRuntime::MaterialPropertyValue::fromBlendOp(value);
 			}
 
 			case RendererRuntime::MaterialPropertyValue::ValueType::FILTER_MODE:
 			{
-				Renderer::FilterMode value = Renderer::FilterMode::MIN_MAG_MIP_LINEAR;
+				Rhi::FilterMode value = Rhi::FilterMode::MIN_MAG_MIP_LINEAR;
 				JsonMaterialHelper::optionalFilterProperty(rapidJsonValue, propertyName, value);
 				return RendererRuntime::MaterialPropertyValue::fromFilterMode(value);
 			}
 
 			case RendererRuntime::MaterialPropertyValue::ValueType::TEXTURE_ADDRESS_MODE:
 			{
-				Renderer::TextureAddressMode value = Renderer::TextureAddressMode::CLAMP;
+				Rhi::TextureAddressMode value = Rhi::TextureAddressMode::CLAMP;
 				JsonMaterialHelper::optionalTextureAddressModeProperty(rapidJsonValue, propertyName, value);
 				return RendererRuntime::MaterialPropertyValue::fromTextureAddressMode(value);
 			}
@@ -776,8 +776,8 @@ namespace RendererToolkit
 	void JsonMaterialBlueprintHelper::readRootSignatureByResourceGroups(const rapidjson::Value& rapidJsonValueResourceGroups, RendererRuntime::IFile& file, bool isComputeMaterialBlueprint)
 	{
 		// First: Collect everything we need instead of directly writing it down using an inefficient data layout
-		std::vector<Renderer::RootParameterData> rootParameters;
-		std::vector<Renderer::DescriptorRange> descriptorRanges;
+		std::vector<Rhi::RootParameterData> rootParameters;
+		std::vector<Rhi::DescriptorRange> descriptorRanges;
 		{
 			// Iterate through all resource groups, we're only interested in the following resource parameters
 			// - "BaseShaderRegisterName"
@@ -806,7 +806,7 @@ namespace RendererToolkit
 
 					{ // Process resource
 						const rapidjson::Value& rapidJsonValue = rapidJsonMemberIteratorResource->value;
-						Renderer::DescriptorRange descriptorRange;
+						Rhi::DescriptorRange descriptorRange;
 
 						{ // Mandatory resource and range type
 							// Resource type
@@ -814,8 +814,8 @@ namespace RendererToolkit
 
 							{ // Get descriptor range type default value basing on the resource type
 								// Define helper macro
-								#define CASE_VALUE(name, rangeTypeValue) case Renderer::ResourceType::name: descriptorRange.rangeType = Renderer::DescriptorRangeType::rangeTypeValue; break;
-								#define CASE(name) case Renderer::ResourceType::name:
+								#define CASE_VALUE(name, rangeTypeValue) case Rhi::ResourceType::name: descriptorRange.rangeType = Rhi::DescriptorRangeType::rangeTypeValue; break;
+								#define CASE(name) case Rhi::ResourceType::name:
 
 								// Evaluate value
 								switch (descriptorRange.resourceType)
@@ -860,49 +860,49 @@ namespace RendererToolkit
 							::detail::optionalDescriptorRangeType(rapidJsonValue, "DescriptorRangeType", descriptorRange.rangeType);
 							switch (descriptorRange.rangeType)
 							{
-								case Renderer::DescriptorRangeType::SRV:
-									if (Renderer::ResourceType::TEXTURE_BUFFER != descriptorRange.resourceType &&
-										Renderer::ResourceType::STRUCTURED_BUFFER != descriptorRange.resourceType &&
-										Renderer::ResourceType::TEXTURE_1D != descriptorRange.resourceType &&
-										Renderer::ResourceType::TEXTURE_1D_ARRAY != descriptorRange.resourceType &&
-										Renderer::ResourceType::TEXTURE_2D != descriptorRange.resourceType &&
-										Renderer::ResourceType::TEXTURE_2D_ARRAY != descriptorRange.resourceType &&
-										Renderer::ResourceType::TEXTURE_3D != descriptorRange.resourceType &&
-										Renderer::ResourceType::TEXTURE_CUBE != descriptorRange.resourceType)
+								case Rhi::DescriptorRangeType::SRV:
+									if (Rhi::ResourceType::TEXTURE_BUFFER != descriptorRange.resourceType &&
+										Rhi::ResourceType::STRUCTURED_BUFFER != descriptorRange.resourceType &&
+										Rhi::ResourceType::TEXTURE_1D != descriptorRange.resourceType &&
+										Rhi::ResourceType::TEXTURE_1D_ARRAY != descriptorRange.resourceType &&
+										Rhi::ResourceType::TEXTURE_2D != descriptorRange.resourceType &&
+										Rhi::ResourceType::TEXTURE_2D_ARRAY != descriptorRange.resourceType &&
+										Rhi::ResourceType::TEXTURE_3D != descriptorRange.resourceType &&
+										Rhi::ResourceType::TEXTURE_CUBE != descriptorRange.resourceType)
 									{
 										throw std::runtime_error("Descriptor range type \"SRV\" is only possible for the resource type \"TEXTURE_BUFFER\", \"STRUCTURED_BUFFER\", \"TEXTURE_1D\", \"TEXTURE_1D_ARRAY\", \"TEXTURE_2D\", \"TEXTURE_2D_ARRAY\", \"TEXTURE_3D\" and \"TEXTURE_CUBE\"");
 									}
 									break;
 
-								case Renderer::DescriptorRangeType::UAV:
-									if (Renderer::ResourceType::TEXTURE_BUFFER != descriptorRange.resourceType &&
-										Renderer::ResourceType::STRUCTURED_BUFFER != descriptorRange.resourceType &&
-										Renderer::ResourceType::TEXTURE_1D != descriptorRange.resourceType &&
-										Renderer::ResourceType::TEXTURE_1D_ARRAY != descriptorRange.resourceType &&
-										Renderer::ResourceType::TEXTURE_2D != descriptorRange.resourceType &&
-										Renderer::ResourceType::TEXTURE_2D_ARRAY != descriptorRange.resourceType &&
-										Renderer::ResourceType::TEXTURE_3D != descriptorRange.resourceType &&
-										Renderer::ResourceType::TEXTURE_CUBE != descriptorRange.resourceType)
+								case Rhi::DescriptorRangeType::UAV:
+									if (Rhi::ResourceType::TEXTURE_BUFFER != descriptorRange.resourceType &&
+										Rhi::ResourceType::STRUCTURED_BUFFER != descriptorRange.resourceType &&
+										Rhi::ResourceType::TEXTURE_1D != descriptorRange.resourceType &&
+										Rhi::ResourceType::TEXTURE_1D_ARRAY != descriptorRange.resourceType &&
+										Rhi::ResourceType::TEXTURE_2D != descriptorRange.resourceType &&
+										Rhi::ResourceType::TEXTURE_2D_ARRAY != descriptorRange.resourceType &&
+										Rhi::ResourceType::TEXTURE_3D != descriptorRange.resourceType &&
+										Rhi::ResourceType::TEXTURE_CUBE != descriptorRange.resourceType)
 									{
 										throw std::runtime_error("Descriptor range type \"UAV\" is only possible for the resource type \"TEXTURE_BUFFER\", \"STRUCTURED_BUFFER\", \"TEXTURE_1D\", \"TEXTURE_1D_ARRAY\", \"TEXTURE_2D\", \"TEXTURE_2D_ARRAY\", \"TEXTURE_3D\" and \"TEXTURE_CUBE\"");
 									}
 									break;
 
-								case Renderer::DescriptorRangeType::UBV:
-									if (Renderer::ResourceType::UNIFORM_BUFFER != descriptorRange.resourceType)
+								case Rhi::DescriptorRangeType::UBV:
+									if (Rhi::ResourceType::UNIFORM_BUFFER != descriptorRange.resourceType)
 									{
 										throw std::runtime_error("Descriptor range type \"UBV\" is only possible for the resource type \"UNIFORM_BUFFER\"");
 									}
 									break;
 
-								case Renderer::DescriptorRangeType::SAMPLER:
-									if (Renderer::ResourceType::SAMPLER_STATE != descriptorRange.resourceType)
+								case Rhi::DescriptorRangeType::SAMPLER:
+									if (Rhi::ResourceType::SAMPLER_STATE != descriptorRange.resourceType)
 									{
 										throw std::runtime_error("Descriptor range type \"SAMPLER\" is only possible for the resource type \"SAMPLER_STATE\"");
 									}
 									break;
 
-								case Renderer::DescriptorRangeType::NUMBER_OF_RANGE_TYPES:
+								case Rhi::DescriptorRangeType::NUMBER_OF_RANGE_TYPES:
 									// Impossible to end up in here
 									break;
 							}
@@ -922,12 +922,12 @@ namespace RendererToolkit
 
 						// Optional base shader register name
 						descriptorRange.baseShaderRegisterName[0] = '\0';
-						JsonHelper::optionalStringProperty(rapidJsonValue, "BaseShaderRegisterName", descriptorRange.baseShaderRegisterName, Renderer::DescriptorRange::NAME_LENGTH);
+						JsonHelper::optionalStringProperty(rapidJsonValue, "BaseShaderRegisterName", descriptorRange.baseShaderRegisterName, Rhi::DescriptorRange::NAME_LENGTH);
 
 						// Optional shader visibility
-						descriptorRange.shaderVisibility = isComputeMaterialBlueprint ? Renderer::ShaderVisibility::COMPUTE : Renderer::ShaderVisibility::ALL;
+						descriptorRange.shaderVisibility = isComputeMaterialBlueprint ? Rhi::ShaderVisibility::COMPUTE : Rhi::ShaderVisibility::ALL;
 						optionalShaderVisibilityProperty(rapidJsonValue, "ShaderVisibility", descriptorRange.shaderVisibility);
-						if (isComputeMaterialBlueprint && Renderer::ShaderVisibility::COMPUTE != descriptorRange.shaderVisibility)
+						if (isComputeMaterialBlueprint && Rhi::ShaderVisibility::COMPUTE != descriptorRange.shaderVisibility)
 						{
 							// Remember, the renderer toolkit isn't error tolerant at all by intent, so don't soften this
 							throw std::runtime_error("For compute material blueprints, only compute shader visibility is valid");
@@ -942,8 +942,8 @@ namespace RendererToolkit
 				}
 
 				{ // Add the root parameter
-					Renderer::RootParameterData rootParameter;
-					rootParameter.parameterType = Renderer::RootParameterType::DESCRIPTOR_TABLE;
+					Rhi::RootParameterData rootParameter;
+					rootParameter.parameterType = Rhi::RootParameterType::DESCRIPTOR_TABLE;
 					rootParameter.numberOfDescriptorRanges = static_cast<uint32_t>(resourceIndex);
 					rootParameters.push_back(rootParameter);
 				}
@@ -958,8 +958,8 @@ namespace RendererToolkit
 		  //    a 2D texture at fragment shader stage 0. OpenGL doesn't support something like this and one has to ensure there are no base shader register clashes between separate shader
 		  //    stages. Horrible error prone and inflexible restriction, but we can't change that so we have to check for it and sparing the material blueprint editor crazy debugging efforts.
 			typedef std::unordered_set<uint32_t> BaseShaderRegisterUsed;	// Key = Base shader register
-			BaseShaderRegisterUsed rangeTypeBaseShaderRegisterUsed[static_cast<uint32_t>(Renderer::DescriptorRangeType::NUMBER_OF_RANGE_TYPES)];
-			for (const Renderer::DescriptorRange& descriptorRange : descriptorRanges)
+			BaseShaderRegisterUsed rangeTypeBaseShaderRegisterUsed[static_cast<uint32_t>(Rhi::DescriptorRangeType::NUMBER_OF_RANGE_TYPES)];
+			for (const Rhi::DescriptorRange& descriptorRange : descriptorRanges)
 			{
 				BaseShaderRegisterUsed& baseShaderRegisterUsed = rangeTypeBaseShaderRegisterUsed[static_cast<uint32_t>(descriptorRange.rangeType)];
 				if (baseShaderRegisterUsed.find(descriptorRange.baseShaderRegister) == baseShaderRegisterUsed.cend())
@@ -968,7 +968,7 @@ namespace RendererToolkit
 				}
 				else
 				{
-					throw std::runtime_error("Base shader register " + std::to_string(descriptorRange.baseShaderRegister) + " is already used. Please note that to be renderer API independent, base shader register usage is considered to be across all shader stages like OpenGL does.");
+					throw std::runtime_error("Base shader register " + std::to_string(descriptorRange.baseShaderRegister) + " is already used. Please note that to be RHI implementation independent, base shader register usage is considered to be across all shader stages like OpenGL does.");
 				}
 			}
 		}
@@ -983,8 +983,8 @@ namespace RendererToolkit
 			RendererRuntime::v1MaterialBlueprint::RootSignatureHeader rootSignatureHeader;
 			rootSignatureHeader.numberOfRootParameters	 = static_cast<uint32_t>(rootParameters.size());
 			rootSignatureHeader.numberOfDescriptorRanges = static_cast<uint32_t>(descriptorRanges.size());
-			rootSignatureHeader.numberOfStaticSamplers	 = 0;									// TODO(co) Add support for static samplers
-			rootSignatureHeader.flags					 = Renderer::RootSignatureFlags::NONE;	// TODO(co) Add support for flags
+			rootSignatureHeader.numberOfStaticSamplers	 = 0;								// TODO(co) Add support for static samplers
+			rootSignatureHeader.flags					 = Rhi::RootSignatureFlags::NONE;	// TODO(co) Add support for flags
 			file.write(&rootSignatureHeader, sizeof(RendererRuntime::v1MaterialBlueprint::RootSignatureHeader));
 		}
 
@@ -992,10 +992,10 @@ namespace RendererToolkit
 		if (!rootParameters.empty())
 		{
 			// Write down the root parameters
-			file.write(rootParameters.data(), sizeof(Renderer::RootParameterData) * rootParameters.size());
+			file.write(rootParameters.data(), sizeof(Rhi::RootParameterData) * rootParameters.size());
 
 			// Write down the descriptor ranges
-			file.write(descriptorRanges.data(), sizeof(Renderer::DescriptorRange) * descriptorRanges.size());
+			file.write(descriptorRanges.data(), sizeof(Rhi::DescriptorRange) * descriptorRanges.size());
 		}
 	}
 
@@ -1241,7 +1241,7 @@ namespace RendererToolkit
 		}
 
 		// Start with the default settings
-		Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder();
+		Rhi::GraphicsPipelineState graphicsPipelineState = Rhi::GraphicsPipelineStateBuilder();
 
 		// Optional primitive topology
 		optionalPrimitiveTopology(rapidJsonValueGraphicsPipelineState, "PrimitiveTopology", graphicsPipelineState.primitiveTopology);
@@ -1251,7 +1251,7 @@ namespace RendererToolkit
 		if (rapidJsonValueGraphicsPipelineState.HasMember("RasterizerState"))
 		{
 			const rapidjson::Value& rapidJsonValueRasterizerState = rapidJsonValueGraphicsPipelineState["RasterizerState"];
-			Renderer::RasterizerState& rasterizerState = graphicsPipelineState.rasterizerState;
+			Rhi::RasterizerState& rasterizerState = graphicsPipelineState.rasterizerState;
 
 			// The optional properties
 			JsonMaterialHelper::optionalFillModeProperty(rapidJsonValueRasterizerState, "FillMode", rasterizerState.fillMode, &sortedMaterialPropertyVector);
@@ -1272,7 +1272,7 @@ namespace RendererToolkit
 		if (rapidJsonValueGraphicsPipelineState.HasMember("DepthStencilState"))
 		{
 			const rapidjson::Value& rapidJsonValueDepthStencilState = rapidJsonValueGraphicsPipelineState["DepthStencilState"];
-			Renderer::DepthStencilState& depthStencilState = graphicsPipelineState.depthStencilState;
+			Rhi::DepthStencilState& depthStencilState = graphicsPipelineState.depthStencilState;
 
 			// The optional properties
 			JsonHelper::optionalBooleanProperty(rapidJsonValueDepthStencilState, "DepthEnable", depthStencilState.depthEnable);
@@ -1308,7 +1308,7 @@ namespace RendererToolkit
 		if (rapidJsonValueGraphicsPipelineState.HasMember("BlendState"))
 		{
 			const rapidjson::Value& rapidJsonValueBlendState = rapidJsonValueGraphicsPipelineState["BlendState"];
-			Renderer::BlendState& blendState = graphicsPipelineState.blendState;
+			Rhi::BlendState& blendState = graphicsPipelineState.blendState;
 
 			// The optional properties
 			JsonHelper::optionalBooleanProperty(rapidJsonValueBlendState, "AlphaToCoverageEnable", blendState.alphaToCoverageEnable, RendererRuntime::MaterialProperty::Usage::BLEND_STATE, &sortedMaterialPropertyVector);
@@ -1321,7 +1321,7 @@ namespace RendererToolkit
 				if (rapidJsonValueBlendState.HasMember(renderTarget))
 				{
 					const rapidjson::Value& rapidJsonValueRenderTarget = rapidJsonValueBlendState[renderTarget];
-					Renderer::RenderTargetBlendDesc& renderTargetBlendDesc = blendState.renderTarget[i];
+					Rhi::RenderTargetBlendDesc& renderTargetBlendDesc = blendState.renderTarget[i];
 
 					// The optional properties
 					JsonHelper::optionalBooleanProperty(rapidJsonValueRenderTarget, "BlendEnable", renderTargetBlendDesc.blendEnable);
@@ -1346,7 +1346,7 @@ namespace RendererToolkit
 		}
 
 		// Write down the graphics pipeline state object (PSO)
-		file.write(&graphicsPipelineState, sizeof(Renderer::SerializedGraphicsPipelineState));
+		file.write(&graphicsPipelineState, sizeof(Rhi::SerializedGraphicsPipelineState));
 	}
 
 	void JsonMaterialBlueprintHelper::readUniformBuffersByResourceGroups(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValueResourceGroups, RendererRuntime::IFile& file)
@@ -1567,12 +1567,12 @@ namespace RendererToolkit
 					// Start with the default sampler state
 					RendererRuntime::v1MaterialBlueprint::SamplerState materialBlueprintSamplerState;
 					materialBlueprintSamplerState.rootParameterIndex = 0;
-					Renderer::SamplerState& samplerState = materialBlueprintSamplerState.samplerState;
-					samplerState = Renderer::ISamplerState::getDefaultSamplerState();
+					Rhi::SamplerState& samplerState = materialBlueprintSamplerState.samplerState;
+					samplerState = Rhi::ISamplerState::getDefaultSamplerState();
 
 					{ // Mandatory base shader register name
-						char baseShaderRegisterName[Renderer::DescriptorRange::NAME_LENGTH] = {};
-						JsonHelper::mandatoryStringProperty(rapidJsonValue, "BaseShaderRegisterName", baseShaderRegisterName, Renderer::DescriptorRange::NAME_LENGTH);
+						char baseShaderRegisterName[Rhi::DescriptorRange::NAME_LENGTH] = {};
+						JsonHelper::mandatoryStringProperty(rapidJsonValue, "BaseShaderRegisterName", baseShaderRegisterName, Rhi::DescriptorRange::NAME_LENGTH);
 						const uint32_t key = RendererRuntime::StringId::calculateFNV(baseShaderRegisterName);
 						if (samplerBaseShaderRegisterNameToIndex.find(key) != samplerBaseShaderRegisterNameToIndex.cend())
 						{
@@ -1584,7 +1584,7 @@ namespace RendererToolkit
 
 					// By default, inside the material blueprint system the texture filter and maximum anisotropy are set to invalid. Unless explicitly
 					// set by a material blueprint author, those values are dynamic during runtime so the user can decide about the performance/quality trade-off.
-					samplerState.filter = Renderer::FilterMode::UNKNOWN;
+					samplerState.filter = Rhi::FilterMode::UNKNOWN;
 					RendererRuntime::setInvalid(samplerState.maxAnisotropy);
 
 					// The optional properties
@@ -1670,8 +1670,8 @@ namespace RendererToolkit
 					uint32_t samplerStateIndex = RendererRuntime::getInvalid<uint32_t>();
 					if (rapidJsonValue.HasMember("SamplerStateBaseShaderRegisterName"))
 					{
-						char baseShaderRegisterName[Renderer::DescriptorRange::NAME_LENGTH] = {};
-						JsonHelper::mandatoryStringProperty(rapidJsonValue, "SamplerStateBaseShaderRegisterName", baseShaderRegisterName, Renderer::DescriptorRange::NAME_LENGTH);
+						char baseShaderRegisterName[Rhi::DescriptorRange::NAME_LENGTH] = {};
+						JsonHelper::mandatoryStringProperty(rapidJsonValue, "SamplerStateBaseShaderRegisterName", baseShaderRegisterName, Rhi::DescriptorRange::NAME_LENGTH);
 						const uint32_t key = RendererRuntime::StringId::calculateFNV(baseShaderRegisterName);
 						SamplerBaseShaderRegisterNameToIndex::const_iterator iterator = samplerBaseShaderRegisterNameToIndex.find(RendererRuntime::StringId::calculateFNV(baseShaderRegisterName));
 						if (iterator == samplerBaseShaderRegisterNameToIndex.cend())

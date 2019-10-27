@@ -30,8 +30,6 @@
 #include "RendererRuntime/Public/Export.h"
 #include "RendererRuntime/Public/Core/StringId.h"
 
-#include <Renderer/Public/Renderer.h>
-
 
 //[-------------------------------------------------------]
 //[ Namespace                                             ]
@@ -288,7 +286,7 @@ namespace RendererRuntime
 		}
 
 		// For graphics pipeline rasterizer state property usage
-		[[nodiscard]] static inline MaterialPropertyValue fromFillMode(Renderer::FillMode value)
+		[[nodiscard]] static inline MaterialPropertyValue fromFillMode(Rhi::FillMode value)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType	  = ValueType::FILL_MODE;
@@ -296,7 +294,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		[[nodiscard]] static inline MaterialPropertyValue fromCullMode(Renderer::CullMode value)
+		[[nodiscard]] static inline MaterialPropertyValue fromCullMode(Rhi::CullMode value)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType	  = ValueType::CULL_MODE;
@@ -304,7 +302,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		[[nodiscard]] static inline MaterialPropertyValue fromConservativeRasterizationMode(Renderer::ConservativeRasterizationMode value)
+		[[nodiscard]] static inline MaterialPropertyValue fromConservativeRasterizationMode(Rhi::ConservativeRasterizationMode value)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType						   = ValueType::CONSERVATIVE_RASTERIZATION_MODE;
@@ -313,7 +311,7 @@ namespace RendererRuntime
 		}
 
 		// For graphics pipeline depth stencil state property usage
-		[[nodiscard]] static inline MaterialPropertyValue fromDepthWriteMask(Renderer::DepthWriteMask value)
+		[[nodiscard]] static inline MaterialPropertyValue fromDepthWriteMask(Rhi::DepthWriteMask value)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType			= ValueType::DEPTH_WRITE_MASK;
@@ -321,7 +319,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		[[nodiscard]] static inline MaterialPropertyValue fromStencilOp(Renderer::StencilOp value)
+		[[nodiscard]] static inline MaterialPropertyValue fromStencilOp(Rhi::StencilOp value)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType	   = ValueType::STENCIL_OP;
@@ -330,7 +328,7 @@ namespace RendererRuntime
 		}
 
 		// For graphics pipeline depth stencil state and sampler state property usage
-		[[nodiscard]] static inline MaterialPropertyValue fromComparisonFunc(Renderer::ComparisonFunc value)
+		[[nodiscard]] static inline MaterialPropertyValue fromComparisonFunc(Rhi::ComparisonFunc value)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType			= ValueType::COMPARISON_FUNC;
@@ -339,7 +337,7 @@ namespace RendererRuntime
 		}
 
 		// For graphics pipeline blend state property usage
-		[[nodiscard]] static inline MaterialPropertyValue fromBlend(Renderer::Blend value)
+		[[nodiscard]] static inline MaterialPropertyValue fromBlend(Rhi::Blend value)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType   = ValueType::BLEND;
@@ -347,7 +345,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		[[nodiscard]] static inline MaterialPropertyValue fromBlendOp(Renderer::BlendOp value)
+		[[nodiscard]] static inline MaterialPropertyValue fromBlendOp(Rhi::BlendOp value)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType	 = ValueType::BLEND_OP;
@@ -356,7 +354,7 @@ namespace RendererRuntime
 		}
 
 		// For sampler state property usage
-		[[nodiscard]] static inline MaterialPropertyValue fromFilterMode(Renderer::FilterMode value)
+		[[nodiscard]] static inline MaterialPropertyValue fromFilterMode(Rhi::FilterMode value)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType		= ValueType::FILTER_MODE;
@@ -364,7 +362,7 @@ namespace RendererRuntime
 			return materialPropertyValue;
 		}
 
-		[[nodiscard]] static inline MaterialPropertyValue fromTextureAddressMode(Renderer::TextureAddressMode value)
+		[[nodiscard]] static inline MaterialPropertyValue fromTextureAddressMode(Rhi::TextureAddressMode value)
 		{
 			MaterialPropertyValue materialPropertyValue;
 			materialPropertyValue.mValueType				= ValueType::TEXTURE_ADDRESS_MODE;
@@ -482,65 +480,65 @@ namespace RendererRuntime
 		// [[nodiscard]] inline const float* getFloat4_4Value() const;	// Declaration property only
 
 		// For graphics pipeline rasterizer state property usage
-		[[nodiscard]] inline Renderer::FillMode getFillModeValue() const
+		[[nodiscard]] inline Rhi::FillMode getFillModeValue() const
 		{
 			ASSERT(ValueType::FILL_MODE == mValueType);
 			return mValue.FillMode;
 		}
 
-		[[nodiscard]] inline Renderer::CullMode getCullModeValue() const
+		[[nodiscard]] inline Rhi::CullMode getCullModeValue() const
 		{
 			ASSERT(ValueType::CULL_MODE == mValueType);
 			return mValue.CullMode;
 		}
 
-		[[nodiscard]] inline Renderer::ConservativeRasterizationMode getConservativeRasterizationModeValue() const
+		[[nodiscard]] inline Rhi::ConservativeRasterizationMode getConservativeRasterizationModeValue() const
 		{
 			ASSERT(ValueType::CONSERVATIVE_RASTERIZATION_MODE == mValueType);
 			return mValue.ConservativeRasterizationMode;
 		}
 
 		// For graphics pipeline depth stencil state property usage
-		[[nodiscard]] inline Renderer::DepthWriteMask getDepthWriteMaskValue() const
+		[[nodiscard]] inline Rhi::DepthWriteMask getDepthWriteMaskValue() const
 		{
 			ASSERT(ValueType::DEPTH_WRITE_MASK == mValueType);
 			return mValue.DepthWriteMask;
 		}
 
-		[[nodiscard]] inline Renderer::StencilOp getStencilOpValue() const
+		[[nodiscard]] inline Rhi::StencilOp getStencilOpValue() const
 		{
 			ASSERT(ValueType::STENCIL_OP == mValueType);
 			return mValue.StencilOp;
 		}
 
 		// For graphics pipeline depth stencil state and sampler state property usage
-		[[nodiscard]] inline Renderer::ComparisonFunc getComparisonFuncValue() const
+		[[nodiscard]] inline Rhi::ComparisonFunc getComparisonFuncValue() const
 		{
 			ASSERT(ValueType::COMPARISON_FUNC == mValueType);
 			return mValue.ComparisonFunc;
 		}
 
 		// For graphics pipeline blend state property usage
-		[[nodiscard]] inline Renderer::Blend getBlendValue() const
+		[[nodiscard]] inline Rhi::Blend getBlendValue() const
 		{
 			ASSERT(ValueType::BLEND == mValueType);
 			return mValue.Blend;
 		}
 
-		[[nodiscard]] inline Renderer::BlendOp getBlendOpValue() const
+		[[nodiscard]] inline Rhi::BlendOp getBlendOpValue() const
 		{
 			ASSERT(ValueType::BLEND_OP == mValueType);
 			return mValue.BlendOp;
 		}
 
 		// For sampler state property usage
-		[[nodiscard]] inline Renderer::FilterMode getFilterMode() const
+		[[nodiscard]] inline Rhi::FilterMode getFilterMode() const
 		{
 			ASSERT(ValueType::FILTER_MODE == mValueType);
 			return mValue.FilterMode;
 		}
 
-		[[nodiscard]] inline Renderer::TextureAddressMode getTextureAddressModeValue() const
+		[[nodiscard]] inline Rhi::TextureAddressMode getTextureAddressModeValue() const
 		{
 			ASSERT(ValueType::TEXTURE_ADDRESS_MODE == mValueType);
 			return mValue.TextureAddressMode;
@@ -583,36 +581,36 @@ namespace RendererRuntime
 		*/
 		union Value
 		{
-			bool											  Boolean;
-			int												  Integer;
-			int												  Integer2[2];
-			int												  Integer3[3];
-			int												  Integer4[4];
-			float											  Float;
-			float											  Float2[2];
-			float											  Float3[3];
-			float											  Float4[4];
-			// float										  Float3_3[9];	// Declaration property only
-			// float										  Float4_4[16];	// Declaration property only
+			bool								Boolean;
+			int									Integer;
+			int									Integer2[2];
+			int									Integer3[3];
+			int									Integer4[4];
+			float								Float;
+			float								Float2[2];
+			float								Float3[3];
+			float								Float4[4];
+			// float							Float3_3[9];	// Declaration property only
+			// float							Float4_4[16];	// Declaration property only
 			// For graphics pipeline rasterizer state property usage
-			Renderer::FillMode								  FillMode;
-			Renderer::CullMode								  CullMode;
-			Renderer::ConservativeRasterizationMode			  ConservativeRasterizationMode;
+			Rhi::FillMode						FillMode;
+			Rhi::CullMode						CullMode;
+			Rhi::ConservativeRasterizationMode	ConservativeRasterizationMode;
 			// For graphics pipeline depth stencil state property usage
-			Renderer::DepthWriteMask						  DepthWriteMask;
-			Renderer::StencilOp								  StencilOp;
+			Rhi::DepthWriteMask					DepthWriteMask;
+			Rhi::StencilOp						StencilOp;
 			// For graphics pipeline depth stencil state and sampler state property usage
-			Renderer::ComparisonFunc						  ComparisonFunc;
+			Rhi::ComparisonFunc					ComparisonFunc;
 			// // For graphics pipeline blend state property usage
-			Renderer::Blend									  Blend;
-			Renderer::BlendOp								  BlendOp;
+			Rhi::Blend							Blend;
+			Rhi::BlendOp						BlendOp;
 			// For sampler state property usage
-			Renderer::FilterMode							  FilterMode;
-			Renderer::TextureAddressMode					  TextureAddressMode;
+			Rhi::FilterMode						FilterMode;
+			Rhi::TextureAddressMode				TextureAddressMode;
 			// For texture property usage
-			uint32_t										  TextureAssetId;
+			uint32_t							TextureAssetId;
 			// For shader combination property usage
-			uint32_t										  GlobalMaterialPropertyId;	///< "uint32_t" instead of "MaterialPropertyId" since there's no default constructor
+			uint32_t							GlobalMaterialPropertyId;	///< "uint32_t" instead of "MaterialPropertyId" since there's no default constructor
 		} mValue;
 
 

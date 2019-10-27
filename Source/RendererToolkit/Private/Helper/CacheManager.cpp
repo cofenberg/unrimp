@@ -87,7 +87,7 @@ namespace
 			getRendererToolkitCacheFilename(fileManager, projectName, virtualDirectoryName, virtualFilename);
 			if (fileManager.createDirectories(virtualDirectoryName.c_str()) && !memoryFile.writeLz4CompressedDataByVirtualFilename(RendererToolkitCache::FORMAT_TYPE, RendererToolkitCache::FORMAT_VERSION, fileManager, virtualFilename.c_str()))
 			{
-				RENDERER_LOG(context, CRITICAL, "The renderer toolkit failed to save the cache to \"%s\"", virtualFilename.c_str())
+				RHI_LOG(context, CRITICAL, "The renderer toolkit failed to save the cache to \"%s\"", virtualFilename.c_str())
 			}
 		}
 
@@ -122,14 +122,14 @@ namespace RendererToolkit
 		saveCache();
 	}
 
-	bool CacheManager::needsToBeCompiled(const std::string& rendererTarget, const std::string& virtualAssetFilename, const std::string& virtualSourceFilename, const std::string& virtualDestinationFilename, uint32_t compilerVersion, CacheEntries& cacheEntries)
+	bool CacheManager::needsToBeCompiled(const std::string& rhiTarget, const std::string& virtualAssetFilename, const std::string& virtualSourceFilename, const std::string& virtualDestinationFilename, uint32_t compilerVersion, CacheEntries& cacheEntries)
 	{
 		std::vector<std::string> virtualSourceFilenames;
 		virtualSourceFilenames.push_back(virtualSourceFilename);
-		return needsToBeCompiled(rendererTarget, virtualAssetFilename, virtualSourceFilenames, virtualDestinationFilename, compilerVersion, cacheEntries);
+		return needsToBeCompiled(rhiTarget, virtualAssetFilename, virtualSourceFilenames, virtualDestinationFilename, compilerVersion, cacheEntries);
 	}
 
-	bool CacheManager::needsToBeCompiled(const std::string& rendererTarget, const std::string& virtualAssetFilename, const std::vector<std::string>& virtualSourceFilenames, const std::string& virtualDestinationFilename, uint32_t compilerVersion, CacheEntries& cacheEntries)
+	bool CacheManager::needsToBeCompiled(const std::string& rhiTarget, const std::string& virtualAssetFilename, const std::vector<std::string>& virtualSourceFilenames, const std::string& virtualDestinationFilename, uint32_t compilerVersion, CacheEntries& cacheEntries)
 	{
 		if (virtualSourceFilenames.empty())
 		{
@@ -157,7 +157,7 @@ namespace RendererToolkit
 		for (const std::string& virtualSourceFilename : virtualSourceFilenames)
 		{
 			cacheEntries.sourceCacheEntries.emplace_back(CacheEntry{});
-			if (checkIfFileChanged(rendererTarget, virtualSourceFilename.c_str(), compilerVersion, cacheEntries.sourceCacheEntries.back()))
+			if (checkIfFileChanged(rhiTarget, virtualSourceFilename.c_str(), compilerVersion, cacheEntries.sourceCacheEntries.back()))
 			{
 				// One of the source files has changed
 				sourceFilesChanged = true;
@@ -166,7 +166,7 @@ namespace RendererToolkit
 
 		// Check if also the asset file (*.asset) has changed, e.g. compile options has changed
 		// -> ".asset"-check for automatically in-memory generated ".asset"-file support
-		const bool assetFileChanged = (virtualAssetFilename.find(".asset") != std::string::npos && checkIfFileChanged(rendererTarget, virtualAssetFilename.c_str(), IAssetCompiler::ASSET_FORMAT_VERSION, cacheEntries.assetCacheEntry));
+		const bool assetFileChanged = (virtualAssetFilename.find(".asset") != std::string::npos && checkIfFileChanged(rhiTarget, virtualAssetFilename.c_str(), IAssetCompiler::ASSET_FORMAT_VERSION, cacheEntries.assetCacheEntry));
 		if (!assetFileChanged && (sourceFilesChanged || !destinationExists))
 		{
 			// Mark the asset file as changed when asset needs to be compiled and asset file itself didn't changed
@@ -189,7 +189,7 @@ namespace RendererToolkit
 		storeOrUpdateCacheEntry(cacheEntries.assetCacheEntry);
 	}
 
-	bool CacheManager::checkIfFileIsModified(const std::string& rendererTarget, const std::string& virtualAssetFilename, const std::vector<std::string>& virtualSourceFilenames, const std::string& virtualDestinationFilename, uint32_t compilerVersion)
+	bool CacheManager::checkIfFileIsModified(const std::string& rhiTarget, const std::string& virtualAssetFilename, const std::vector<std::string>& virtualSourceFilenames, const std::string& virtualDestinationFilename, uint32_t compilerVersion)
 	{
 		bool result = false;
 		CacheEntry dummyEntry;
@@ -200,7 +200,7 @@ namespace RendererToolkit
 			// Check the source files
 			for (const std::string& virtualSourceFilename : virtualSourceFilenames)
 			{
-				if (checkIfFileChanged(rendererTarget, virtualSourceFilename.c_str(), compilerVersion, dummyEntry))
+				if (checkIfFileChanged(rhiTarget, virtualSourceFilename.c_str(), compilerVersion, dummyEntry))
 				{
 					result = true;
 				}
@@ -208,7 +208,7 @@ namespace RendererToolkit
 		
 			// Check the asset file
 			// -> ".asset"-check for automatically in-memory generated ".asset"-file support
-			if (virtualAssetFilename.find(".asset") != std::string::npos && checkIfFileChanged(rendererTarget, virtualAssetFilename.c_str(), IAssetCompiler::ASSET_FORMAT_VERSION, dummyEntry))
+			if (virtualAssetFilename.find(".asset") != std::string::npos && checkIfFileChanged(rhiTarget, virtualAssetFilename.c_str(), IAssetCompiler::ASSET_FORMAT_VERSION, dummyEntry))
 			{
 				result = true;
 			}
@@ -299,9 +299,9 @@ namespace RendererToolkit
 		}
 	}
 
-	bool CacheManager::fillEntryForFile(const std::string& rendererTarget, RendererRuntime::StringId fileId, CacheEntry& cacheEntry)
+	bool CacheManager::fillEntryForFile(const std::string& rhiTarget, RendererRuntime::StringId fileId, CacheEntry& cacheEntry)
 	{
-		const StoredCacheEntries::const_iterator iterator = mStoredCacheEntries.find(CacheEntry::generateKey(rendererTarget, fileId));
+		const StoredCacheEntries::const_iterator iterator = mStoredCacheEntries.find(CacheEntry::generateKey(rhiTarget, fileId));
 		if (mStoredCacheEntries.cend() == iterator)
 		{
 			// No stored cache entry found
@@ -321,7 +321,7 @@ namespace RendererToolkit
 		}
 	}
 
-	bool CacheManager::checkIfFileChanged(const std::string& rendererTarget, RendererRuntime::VirtualFilename virtualFilename, uint32_t compilerVersion, CacheEntry& cacheEntry)
+	bool CacheManager::checkIfFileChanged(const std::string& rhiTarget, RendererRuntime::VirtualFilename virtualFilename, uint32_t compilerVersion, CacheEntry& cacheEntry)
 	{
 		// Get the last write time
 		const RendererRuntime::IFileManager& fileManager = mContext.getFileManager();
@@ -330,7 +330,7 @@ namespace RendererToolkit
 
 		// Get cache entry data if an entry exists
 		RendererRuntime::StringId fileId(virtualFilename);
-		const bool hasFileEntry = fillEntryForFile(rendererTarget, fileId, cacheEntry);
+		const bool hasFileEntry = fillEntryForFile(rhiTarget, fileId, cacheEntry);
 		if (hasFileEntry)
 		{
 			// A file might be referenced by different assets so first check if the file was already checked by a previous call to this method
@@ -397,7 +397,7 @@ namespace RendererToolkit
 		else
 		{
 			// No cache entry exists yet: Store the data
-			cacheEntry.rendererTargetId	= RendererRuntime::StringId::calculateFNV(rendererTarget.c_str());
+			cacheEntry.rhiTargetId		= RendererRuntime::StringId::calculateFNV(rhiTarget.c_str());
 			cacheEntry.fileId			= fileId;
 			cacheEntry.fileSize			= fileSize;
 			cacheEntry.fileTime			= fileTime;

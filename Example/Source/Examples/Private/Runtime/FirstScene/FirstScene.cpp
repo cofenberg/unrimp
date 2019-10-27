@@ -66,13 +66,13 @@
 #include <RendererRuntime/Public/Resource/ResourceStreamer.h>
 #include <RendererRuntime/Public/Context.h>
 
-#include <Renderer/Public/DefaultAllocator.h>
+#include <Rhi/Public/DefaultAllocator.h>
 
 #include <DeviceInput/DeviceInput.h>
 
 #define INI_IMPLEMENTATION
-#define INI_MALLOC(ctx, size) (static_cast<Renderer::IAllocator*>(ctx)->reallocate(nullptr, 0, size, 1))
-#define INI_FREE(ctx, ptr) (static_cast<Renderer::IAllocator*>(ctx)->reallocate(ptr, 0, 0, 1))
+#define INI_MALLOC(ctx, size) (static_cast<Rhi::IAllocator*>(ctx)->reallocate(nullptr, 0, size, 1))
+#define INI_FREE(ctx, ptr) (static_cast<Rhi::IAllocator*>(ctx)->reallocate(ptr, 0, 0, 1))
 #include <ini/ini.h>
 
 #ifdef RENDERER_RUNTIME_IMGUI
@@ -92,7 +92,7 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Global variables                                      ]
 //[-------------------------------------------------------]
-extern Renderer::DefaultAllocator g_DefaultAllocator;
+extern Rhi::DefaultAllocator g_DefaultAllocator;
 
 
 //[-------------------------------------------------------]
@@ -222,7 +222,7 @@ void FirstScene::onInitialization()
 			{
 				int value[4] = { 0, 0, 1024, 768 };
 				sscanf(propertyValue, "%d %d %d %d", &value[0], &value[1], &value[2], &value[3]);
-				::SetWindowPos(reinterpret_cast<HWND>(rendererRuntime.getRenderer().getContext().getNativeWindowHandle()), HWND_TOP, static_cast<int>(value[0]), static_cast<int>(value[1]), static_cast<int>(value[2]), static_cast<int>(value[3]), 0);
+				::SetWindowPos(reinterpret_cast<HWND>(rendererRuntime.getRhi().getContext().getNativeWindowHandle()), HWND_TOP, static_cast<int>(value[0]), static_cast<int>(value[1]), static_cast<int>(value[2]), static_cast<int>(value[3]), 0);
 			}
 		}
 	#endif
@@ -242,13 +242,13 @@ void FirstScene::onInitialization()
 		}
 	}
 
-	// TODO(co) Remove this after the Vulkan/Direct3D 12 renderer backend is fully up-and-running. Or better, add asset properties so one can e.g. add asset information regarding e.g. supported renderer backends.
-	const Renderer::NameId nameId = rendererRuntime.getRenderer().getNameId();
-	if (Renderer::NameId::VULKAN == nameId || Renderer::NameId::DIRECT3D12 == nameId || Renderer::NameId::DIRECT3D10 == nameId || Renderer::NameId::DIRECT3D9 == nameId)
+	// TODO(co) Remove this after the Vulkan/Direct3D 12 RHI implementation is fully up-and-running. Or better, add asset properties so one can e.g. add asset information regarding e.g. supported RHI implementations.
+	const Rhi::NameId nameId = rendererRuntime.getRhi().getNameId();
+	if (Rhi::NameId::VULKAN == nameId || Rhi::NameId::DIRECT3D12 == nameId || Rhi::NameId::DIRECT3D10 == nameId || Rhi::NameId::DIRECT3D9 == nameId)
 	{
 		mInstancedCompositor = Compositor::DEBUG;
 		mCurrentCompositor = static_cast<int>(mInstancedCompositor);
-		if (Renderer::NameId::VULKAN == nameId)
+		if (Rhi::NameId::VULKAN == nameId)
 		{
 			rendererRuntime.getMaterialBlueprintResourceManager().setCreateInitialPipelineStateCaches(false);
 		}
@@ -291,8 +291,8 @@ void FirstScene::onInitialization()
 	#endif
 
 	// When using OpenGL ES 3, switch to a compositor which is designed for mobile devices
-	// TODO(co) The Vulkan renderer backend is under construction, so debug compositor for now
-	if (rendererRuntime.getRenderer().getNameId() == Renderer::NameId::VULKAN || rendererRuntime.getRenderer().getNameId() == Renderer::NameId::OPENGLES3)
+	// TODO(co) The Vulkan/Direct3D 12 RHI implementation is under construction, so debug compositor for now
+	if (Rhi::NameId::VULKAN == nameId || Rhi::NameId::DIRECT3D12 == nameId || Rhi::NameId::OPENGLES3 == nameId)
 	{
 		// TODO(co) Add compositor designed for mobile devices, for now we're using the most simple debug compositor to have something on the screen
 		mInstancedCompositor = Compositor::DEBUG;
@@ -360,7 +360,7 @@ void FirstScene::onUpdate()
 		// -> Avoid that while looking around with the mouse the mouse is becoming considered hovering over an GUI element
 		// -> Remember: Unrimp is about rendering related topics, it's not an all-in-one-framework including an advanced input framework, so a simple non-generic solution is sufficient in here
 		#ifdef _WIN32
-			const bool hasWindowFocus = (::GetFocus() == reinterpret_cast<HWND>(rendererRuntime.getRenderer().getContext().getNativeWindowHandle()));
+			const bool hasWindowFocus = (::GetFocus() == reinterpret_cast<HWND>(rendererRuntime.getRhi().getContext().getNativeWindowHandle()));
 		#else
 			bool hasWindowFocus = true;
 		#endif
@@ -389,7 +389,7 @@ void FirstScene::onUpdate()
 	#if defined(_WIN32) && defined(RENDERER_RUNTIME_IMGUI)
 	{
 		RECT rect;
-		::GetWindowRect(reinterpret_cast<HWND>(rendererRuntime.getRenderer().getContext().getNativeWindowHandle()), &rect);
+		::GetWindowRect(reinterpret_cast<HWND>(rendererRuntime.getRhi().getContext().getNativeWindowHandle()), &rect);
 		char temp[256];
 		sprintf_s(temp, GLM_COUNTOF(temp), "%d %d %d %d", static_cast<int>(rect.left), static_cast<int>(rect.top), static_cast<int>(rect.right - rect.left), static_cast<int>(rect.bottom - rect.top));
 		if (INI_NOT_FOUND == mMainWindowPositionSizeIniProperty)
@@ -406,7 +406,7 @@ void FirstScene::onUpdate()
 
 void FirstScene::onDraw()
 {
-	Renderer::IRenderTarget* mainRenderTarget = getMainRenderTarget();
+	Rhi::IRenderTarget* mainRenderTarget = getMainRenderTarget();
 	if (nullptr != mainRenderTarget && nullptr != mCompositorWorkspaceInstance)
 	{
 		applyCurrentSettings(*mainRenderTarget);
@@ -642,7 +642,7 @@ void FirstScene::destroyIni()
 	}
 }
 
-void FirstScene::applyCurrentSettings(Renderer::IRenderTarget& mainRenderTarget)
+void FirstScene::applyCurrentSettings(Rhi::IRenderTarget& mainRenderTarget)
 {
 	if (nullptr != mCompositorWorkspaceInstance && RendererRuntime::isValid(mSceneResourceId))
 	{
@@ -650,12 +650,12 @@ void FirstScene::applyCurrentSettings(Renderer::IRenderTarget& mainRenderTarget)
 		if (mCurrentFullscreen != mFullscreen)
 		{
 			mCurrentFullscreen = mFullscreen;
-			static_cast<Renderer::ISwapChain&>(mainRenderTarget).setFullscreenState(mCurrentFullscreen);
+			static_cast<Rhi::ISwapChain&>(mainRenderTarget).setFullscreenState(mCurrentFullscreen);
 		}
 		if (mCurrentUseVerticalSynchronization != mUseVerticalSynchronization)
 		{
 			mCurrentUseVerticalSynchronization = mUseVerticalSynchronization;
-			static_cast<Renderer::ISwapChain&>(mainRenderTarget).setVerticalSynchronizationInterval(mCurrentUseVerticalSynchronization ? 1u : 0u);
+			static_cast<Rhi::ISwapChain&>(mainRenderTarget).setVerticalSynchronizationInterval(mCurrentUseVerticalSynchronization ? 1u : 0u);
 		}
 
 		// Recreate the compositor workspace instance, if required
@@ -672,38 +672,38 @@ void FirstScene::applyCurrentSettings(Renderer::IRenderTarget& mainRenderTarget)
 			switch (mCurrentTextureFiltering)
 			{
 				case TextureFiltering::POINT:
-					materialBlueprintResourceManager.setDefaultTextureFiltering(Renderer::FilterMode::MIN_MAG_MIP_POINT, 1);
+					materialBlueprintResourceManager.setDefaultTextureFiltering(Rhi::FilterMode::MIN_MAG_MIP_POINT, 1);
 					break;
 
 				case TextureFiltering::BILINEAR:
-					materialBlueprintResourceManager.setDefaultTextureFiltering(Renderer::FilterMode::MIN_MAG_LINEAR_MIP_POINT, 1);
+					materialBlueprintResourceManager.setDefaultTextureFiltering(Rhi::FilterMode::MIN_MAG_LINEAR_MIP_POINT, 1);
 					break;
 
 				case TextureFiltering::TRILINEAR:
-					materialBlueprintResourceManager.setDefaultTextureFiltering(Renderer::FilterMode::MIN_MAG_MIP_LINEAR, 1);
+					materialBlueprintResourceManager.setDefaultTextureFiltering(Rhi::FilterMode::MIN_MAG_MIP_LINEAR, 1);
 					break;
 
 				case TextureFiltering::ANISOTROPIC_2:
-					materialBlueprintResourceManager.setDefaultTextureFiltering(Renderer::FilterMode::ANISOTROPIC, 2);
+					materialBlueprintResourceManager.setDefaultTextureFiltering(Rhi::FilterMode::ANISOTROPIC, 2);
 					break;
 
 				case TextureFiltering::ANISOTROPIC_4:
-					materialBlueprintResourceManager.setDefaultTextureFiltering(Renderer::FilterMode::ANISOTROPIC, 4);
+					materialBlueprintResourceManager.setDefaultTextureFiltering(Rhi::FilterMode::ANISOTROPIC, 4);
 					break;
 
 				case TextureFiltering::ANISOTROPIC_8:
-					materialBlueprintResourceManager.setDefaultTextureFiltering(Renderer::FilterMode::ANISOTROPIC, 8);
+					materialBlueprintResourceManager.setDefaultTextureFiltering(Rhi::FilterMode::ANISOTROPIC, 8);
 					break;
 
 				case TextureFiltering::ANISOTROPIC_16:
-					materialBlueprintResourceManager.setDefaultTextureFiltering(Renderer::FilterMode::ANISOTROPIC, 16);
+					materialBlueprintResourceManager.setDefaultTextureFiltering(Rhi::FilterMode::ANISOTROPIC, 16);
 					break;
 			}
 		}
 		rendererRuntime.getTextureResourceManager().setNumberOfTopMipmapsToRemove(static_cast<uint8_t>(mNumberOfTopTextureMipmapsToRemove));
 
 		{ // Update compositor workspace
-			const uint8_t maximumNumberOfMultisamples = rendererRuntime.getRenderer().getCapabilities().maximumNumberOfMultisamples;
+			const uint8_t maximumNumberOfMultisamples = rendererRuntime.getRhi().getCapabilities().maximumNumberOfMultisamples;
 
 			{ // MSAA
 				static constexpr uint8_t NUMBER_OF_MULTISAMPLES[4] = { 1, 2, 4, 8 };
@@ -825,7 +825,7 @@ void FirstScene::createCompositorWorkspace()
 	mCompositorWorkspaceInstance = new RendererRuntime::CompositorWorkspaceInstance(getRendererRuntimeSafe(), COMPOSITOR_WORKSPACE_ASSET_ID[static_cast<int>(mInstancedCompositor)]);
 }
 
-void FirstScene::createDebugGui([[maybe_unused]] Renderer::IRenderTarget& mainRenderTarget)
+void FirstScene::createDebugGui([[maybe_unused]] Rhi::IRenderTarget& mainRenderTarget)
 {
 	#ifdef RENDERER_RUNTIME_IMGUI
 		if (nullptr != mCompositorWorkspaceInstance && RendererRuntime::isValid(mSceneResourceId))
@@ -845,8 +845,8 @@ void FirstScene::createDebugGui([[maybe_unused]] Renderer::IRenderTarget& mainRe
 					static const ImVec4 GREY_COLOR(0.5f, 0.5f, 0.5f, 1.0f);
 					static const ImVec4 RED_COLOR(1.0f, 0.0f, 0.0f, 1.0f);
 					ImGui::PushStyleColor(ImGuiCol_Text, GREY_COLOR);
-						ImGui::Text("Renderer: %s", mainRenderTarget.getRenderer().getName());
-						ImGui::Text("GPU: %s", mainRenderTarget.getRenderer().getCapabilities().deviceName);
+						ImGui::Text("RHI: %s", mainRenderTarget.getRhi().getName());
+						ImGui::Text("GPU: %s", mainRenderTarget.getRhi().getCapabilities().deviceName);
 						#ifdef RENDERER_TOOLKIT
 						{ // Renderer toolkit
 							const RendererToolkit::IRendererToolkit* rendererToolkit = getRendererToolkit();
@@ -904,12 +904,12 @@ void FirstScene::createDebugGui([[maybe_unused]] Renderer::IRenderTarget& mainRe
 					if (ImGui::BeginMenu("Video"))
 					{
 						// TODO(co) Add fullscreen combo box (window, borderless window, native fullscreen)
-						mFullscreen = static_cast<Renderer::ISwapChain&>(mainRenderTarget).getFullscreenState();	// It's possible to toggle fullscreen by using ALT-return, take this into account
+						mFullscreen = static_cast<Rhi::ISwapChain&>(mainRenderTarget).getFullscreenState();	// It's possible to toggle fullscreen by using ALT-return, take this into account
 						ImGui::Checkbox("Fullscreen", &mFullscreen);
 						// TODO(co) Add resolution and refresh rate combo box
 						ImGui::SliderFloat("Resolution Scale", &mResolutionScale, 0.05f, 4.0f, "%.3f");
 						ImGui::Checkbox("Vertical Synchronization", &mUseVerticalSynchronization);
-						if (rendererRuntime.getRenderer().getCapabilities().maximumNumberOfMultisamples > 1)
+						if (rendererRuntime.getRhi().getCapabilities().maximumNumberOfMultisamples > 1)
 						{
 							static constexpr const char* items[] = { "None", "2x", "4x", "8x" };
 							ImGui::Combo("MSAA", &mCurrentMsaa, items, static_cast<int>(GLM_COUNTOF(items)));

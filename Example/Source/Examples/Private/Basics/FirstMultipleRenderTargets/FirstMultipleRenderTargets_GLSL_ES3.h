@@ -21,15 +21,15 @@
 //[-------------------------------------------------------]
 //[ Shader start                                          ]
 //[-------------------------------------------------------]
-#ifdef RENDERER_OPENGLES3
-if (renderer->getNameId() == Renderer::NameId::OPENGLES3)
+#ifdef RHI_OPENGLES3
+if (rhi->getNameId() == Rhi::NameId::OPENGLES3)
 {
 
 
 //[-------------------------------------------------------]
 //[ Vertex shader source code                             ]
 //[-------------------------------------------------------]
-if (renderer->getCapabilities().upperLeftOrigin)
+if (rhi->getCapabilities().upperLeftOrigin)
 {
 	// One vertex shader invocation per vertex
 	vertexShaderSourceCode = R"(#version 300 es	// OpenGL ES 3.0

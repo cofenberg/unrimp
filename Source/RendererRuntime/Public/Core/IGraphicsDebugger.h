@@ -30,7 +30,7 @@
 	//[-------------------------------------------------------]
 	//[ Includes                                              ]
 	//[-------------------------------------------------------]
-	#include <Renderer/Public/Renderer.h>
+	#include <Rhi/Public/Rhi.h>
 
 
 	//[-------------------------------------------------------]
@@ -84,18 +84,18 @@
 			*    Start frame capture
 			*
 			*  @param[in] nativeWindowHandle
-			*    Native window handle
+			*    Native RHI window handle
 			*/
-			virtual void startFrameCapture(Renderer::handle nativeWindowHandle) = 0;
+			virtual void startFrameCapture(Rhi::handle nativeWindowHandle) = 0;
 
 			/**
 			*  @brief
 			*    End frame capture
 			*
 			*  @param[in] nativeWindowHandle
-			*    Native window handle
+			*    Native RHI window handle
 			*/
-			virtual void endFrameCapture(Renderer::handle nativeWindowHandle) = 0;
+			virtual void endFrameCapture(Rhi::handle nativeWindowHandle) = 0;
 
 
 		//[-------------------------------------------------------]

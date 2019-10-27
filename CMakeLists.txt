@@ -37,55 +37,55 @@ set(SHARED_LIBRARY "1" CACHE BOOL "'true' to build as shared library (dynamic li
 
 # Advanced options
 	if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
-		set(RENDERER_DEBUG "1" CACHE BOOL "If false, the e.g. Direct3D 9 PIX functions (D3DPERF_* functions) debug features are disabled (disabling support just reduces the binary size slightly but makes debugging more difficult)")
+		set(RHI_DEBUG "1" CACHE BOOL "If false, the e.g. Direct3D 9 PIX functions (D3DPERF_* functions) debug features are disabled (disabling support just reduces the binary size slightly but makes debugging more difficult)")
 	else()
-		set(RENDERER_DEBUG "0" CACHE BOOL "If false, the e.g. Direct3D 9 PIX functions (D3DPERF_* functions) debug features are disabled (disabling support just reduces the binary size slightly but makes debugging more difficult)")
+		set(RHI_DEBUG "0" CACHE BOOL "If false, the e.g. Direct3D 9 PIX functions (D3DPERF_* functions) debug features are disabled (disabling support just reduces the binary size slightly but makes debugging more difficult)")
 	endif()
-	mark_as_advanced(RENDERER_DEBUG)
+	mark_as_advanced(RHI_DEBUG)
 
-# Renderer backends
-	# Null renderer backend
-		# Null renderer doesn't compile under Android for now disable it
+# RHI implementations
+	# Null RHI implementation
+		# Null implementation doesn't compile under Android for now disable it
 		if(NOT ANDROID)
-			set(RENDERER_NULL "1" CACHE BOOL "Build null renderer?")
+			set(RHI_NULL "1" CACHE BOOL "Build null RHI?")
 		endif()
 
-	# Vulkan renderer backend
-	# TODO(co) The Vulkan renderer backend under Android isn't ready, yet
+	# Vulkan RHI implementation
+	# TODO(co) The Vulkan RHI implementation under Android isn't ready, yet
 	if(NOT ANDROID)
-		set(RENDERER_VULKAN "1" CACHE BOOL "Build Vulkan renderer?")
+		set(RHI_VULKAN "1" CACHE BOOL "Build Vulkan RHI?")
 
-		# Advanced Vulkan renderer options
-		set(RENDERER_VULKAN_GLSLTOSPIRV "1" CACHE BOOL "If true, GLSL to SPIR-V compiler is included for online shader compilation, increases the binary size around one MiB")
-		mark_as_advanced(RENDERER_VULKAN_GLSLTOSPIRV)
+		# Advanced Vulkan RHI options
+		set(RHI_VULKAN_GLSLTOSPIRV "1" CACHE BOOL "If true, GLSL to SPIR-V compiler is included for online shader compilation, increases the binary size around one MiB")
+		mark_as_advanced(RHI_VULKAN_GLSLTOSPIRV)
 	endif()
 
-	# OpenGL renderer backend
-		# OpenGL renderer is not for Android
+	# OpenGL RHI implementation
+		# OpenGL RHI is not for Android
 		if(NOT ANDROID)
-			set(RENDERER_OPENGL "1" CACHE BOOL "Build OpenGL renderer?")
+			set(RHI_OPENGL "1" CACHE BOOL "Build OpenGL RHI?")
 
-			# Advanced OpenGL renderer options
-			set(RENDERER_OPENGL_STATE_CLEANUP "0" CACHE BOOL "If true, the previous OpenGL state will be restored after performing an operation (worse performance, increases the binary size slightly, might avoid unexpected behaviour when using OpenGL directly beside this renderer)")
-			mark_as_advanced(RENDERER_OPENGL_STATE_CLEANUP)
+			# Advanced OpenGL RHI options
+			set(RHI_OPENGL_STATE_CLEANUP "0" CACHE BOOL "If true, the previous OpenGL state will be restored after performing an operation (worse performance, increases the binary size slightly, might avoid unexpected behaviour when using OpenGL directly beside this RHI)")
+			mark_as_advanced(RHI_OPENGL_STATE_CLEANUP)
 
-			set(RENDERER_OPENGL_GLSLTOSPIRV "1" CACHE BOOL "If true, GLSL to SPIR-V compiler is included for online shader compilation, increases the binary size around one MiB")
-			mark_as_advanced(RENDERER_OPENGL_GLSLTOSPIRV)
+			set(RHI_OPENGL_GLSLTOSPIRV "1" CACHE BOOL "If true, GLSL to SPIR-V compiler is included for online shader compilation, increases the binary size around one MiB")
+			mark_as_advanced(RHI_OPENGL_GLSLTOSPIRV)
 		endif()
 
-	# OpenGL ES 3 renderer backend
-		set(RENDERER_OPENGLES3 "1" CACHE BOOL "Build OpenGL ES 3 renderer?")
+	# OpenGL ES 3 RHI implementation
+		set(RHI_OPENGLES3 "1" CACHE BOOL "Build OpenGL ES 3 RHI?")
 
-		# Advanced OpenGL ES 3 renderer options
-		set(RENDERER_OPENGLES3_STATE_CLEANUP "1" CACHE BOOL "If true, the previous OpenGL ES 3 state will be restored after performing an operation (worse performance, increases the binary size slightly, might avoid unexpected behaviour when using OpenGL ES 3 directly beside this renderer)")
-		mark_as_advanced(RENDERER_OPENGLES3_STATE_CLEANUP)
+		# Advanced OpenGL ES 3 RHI options
+		set(RHI_OPENGLES3_STATE_CLEANUP "1" CACHE BOOL "If true, the previous OpenGL ES 3 state will be restored after performing an operation (worse performance, increases the binary size slightly, might avoid unexpected behaviour when using OpenGL ES 3 directly beside this RHI)")
+		mark_as_advanced(RHI_OPENGLES3_STATE_CLEANUP)
 
-	# Microsoft Windows only Direct3D renderer backends
+	# Microsoft Windows only Direct3D RHI implementations
 	if(WIN32)
-		set(RENDERER_DIRECT3D9  "1" CACHE BOOL "Build Direct3D 9 renderer?")
-		set(RENDERER_DIRECT3D10 "1" CACHE BOOL "Build Direct3D 10 renderer?")
-		set(RENDERER_DIRECT3D11 "1" CACHE BOOL "Build Direct3D 11 renderer?")
-		set(RENDERER_DIRECT3D12 "1" CACHE BOOL "Build Direct3D 12 renderer?")
+		set(RHI_DIRECT3D9  "1" CACHE BOOL "Build Direct3D 9 RHI?")
+		set(RHI_DIRECT3D10 "1" CACHE BOOL "Build Direct3D 10 RHI?")
+		set(RHI_DIRECT3D11 "1" CACHE BOOL "Build Direct3D 11 RHI?")
+		set(RHI_DIRECT3D12 "1" CACHE BOOL "Build Direct3D 12 RHI?")
 	endif()
 
 # Renderer runtime
@@ -158,25 +158,25 @@ macro(unrimp_add_conditional_definition definition)
 endmacro()
 
 ##################################################
-## MACRO: "unrimp_add_conditional_renderer_definitions()" for setting a conditional renderer preprocessor definitions
+## MACRO: "unrimp_add_conditional_rhi_definitions()" for setting a conditional RHI preprocessor definitions
 #
-# Usage example: "unrimp_add_conditional_renderer_definitions()"
+# Usage example: "unrimp_add_conditional_rhi_definitions()"
 ##################################################
-macro(unrimp_add_conditional_renderer_definitions)
-	unrimp_add_conditional_definition(RENDERER_NULL)
-	unrimp_add_conditional_definition(RENDERER_VULKAN)
-	unrimp_add_conditional_definition(RENDERER_OPENGL)
-	unrimp_add_conditional_definition(RENDERER_OPENGLES3)
-	unrimp_add_conditional_definition(RENDERER_DIRECT3D9)
-	unrimp_add_conditional_definition(RENDERER_DIRECT3D10)
-	unrimp_add_conditional_definition(RENDERER_DIRECT3D11)
-	unrimp_add_conditional_definition(RENDERER_DIRECT3D12)
+macro(unrimp_add_conditional_rhi_definitions)
+	unrimp_add_conditional_definition(RHI_NULL)
+	unrimp_add_conditional_definition(RHI_VULKAN)
+	unrimp_add_conditional_definition(RHI_OPENGL)
+	unrimp_add_conditional_definition(RHI_OPENGLES3)
+	unrimp_add_conditional_definition(RHI_DIRECT3D9)
+	unrimp_add_conditional_definition(RHI_DIRECT3D10)
+	unrimp_add_conditional_definition(RHI_DIRECT3D11)
+	unrimp_add_conditional_definition(RHI_DIRECT3D12)
 endmacro()
 
 ##################################################
 ## MACRO: "unrimp_add_conditional_library_dependency()" for setting a conditional library and dependency definition
 #
-# Usage example: "unrimp_add_conditional_library_dependency(Examples RENDERER_NULL NullRenderer)"
+# Usage example: "unrimp_add_conditional_library_dependency(Examples RHI_NULL NullRhi)"
 ##################################################
 macro(unrimp_add_conditional_library_dependency targetName definition libraryName)
 	if(${definition})
@@ -376,9 +376,9 @@ message(STATUS "Output library binary directory: ${OUTPUT_LIBRARY_BINARY_DIRECTO
 ## Preprocessor definitions
 ##################################################
 unrimp_add_conditional_definition(ARCHITECTURE_X64)
-if(RENDERER_DEBUG)
-	add_definitions(-DRENDERER_DEBUG)
-	add_definitions(-DRENDERER_STATISTICS)
+if(RHI_DEBUG)
+	add_definitions(-DRHI_DEBUG)
+	add_definitions(-DRHI_STATISTICS)
 endif()
 
 

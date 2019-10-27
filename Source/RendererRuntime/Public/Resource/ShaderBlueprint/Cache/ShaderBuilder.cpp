@@ -397,7 +397,7 @@ namespace
 
 		// Returns true if we found an @end, false if we found
 		// \@else instead (can only happen if allowsElse=true).
-		bool findBlockEnd(const Renderer::Context& context, SubStringRef& outSubString, bool& syntaxError, bool allowsElse = false)
+		bool findBlockEnd(const Rhi::Context& context, SubStringRef& outSubString, bool& syntaxError, bool allowsElse = false)
 		{
 			bool isElse = false;
 			static const constexpr char* blockNames[] =
@@ -443,7 +443,7 @@ namespace
 							if (!allowedElses.test(static_cast<size_t>(nesting)))
 							{
 								syntaxError = true;
-								RENDERER_LOG(context, CRITICAL, "Unexpected @else while looking for @end\nNear: \"%s\"\n", &(*subString.begin()))
+								RHI_LOG(context, CRITICAL, "Unexpected @else while looking for @end\nNear: \"%s\"\n", &(*subString.begin()))
 							}
 							if (0 == nesting)
 							{
@@ -473,7 +473,7 @@ namespace
 										if (!allowedElses.test(static_cast<size_t>(nesting)))
 										{
 											syntaxError = true;
-											RENDERER_LOG(context, CRITICAL, "Unexpected @else while looking for @end\nNear: \"%s\"\n", &(*subString.begin()))
+											RHI_LOG(context, CRITICAL, "Unexpected @else while looking for @end\nNear: \"%s\"\n", &(*subString.begin()))
 										}
 									}
 									else
@@ -503,13 +503,13 @@ namespace
 				syntaxError = true;
 				char tmpData[64] = {};
 				strncpy(tmpData, &(*outSubString.begin()), std::min<size_t>(63u, outSubString.getSize()));
-				RENDERER_LOG(context, CRITICAL, "Syntax error at line %lu: Start block (e.g. @foreach; @property) without matching @end\nNear: \"%s\"\n", calculateLineCount(outSubString), tmpData)
+				RHI_LOG(context, CRITICAL, "Syntax error at line %lu: Start block (e.g. @foreach; @property) without matching @end\nNear: \"%s\"\n", calculateLineCount(outSubString), tmpData)
 			}
 
 			return isElse;
 		}
 
-		[[nodiscard]] size_t evaluateExpressionEnd(const Renderer::Context& context, const SubStringRef& outSubString)
+		[[nodiscard]] size_t evaluateExpressionEnd(const Rhi::Context& context, const SubStringRef& outSubString)
 		{
 			std::string::const_iterator it = outSubString.begin();
 			std::string::const_iterator en = outSubString.end();
@@ -538,13 +538,13 @@ namespace
 			}
 			else
 			{
-				RENDERER_LOG(context, CRITICAL, "Renderer runtime shader builder: Syntax error at line %lu: Opening parenthesis without matching closure\n", static_cast<unsigned long>(calculateLineCount(outSubString)))
+				RHI_LOG(context, CRITICAL, "Renderer runtime shader builder: Syntax error at line %lu: Opening parenthesis without matching closure\n", static_cast<unsigned long>(calculateLineCount(outSubString)))
 			}
 
 			return returnValue;
 		}
 
-		[[nodiscard]] bool evaluateExpressionRecursive(const Renderer::Context& context, const RendererRuntime::ShaderProperties& shaderProperties, ExpressionVec& expression, bool& outSyntaxError)
+		[[nodiscard]] bool evaluateExpressionRecursive(const Rhi::Context& context, const RendererRuntime::ShaderProperties& shaderProperties, ExpressionVec& expression, bool& outSyntaxError)
 		{
 			ExpressionVec::iterator itor = expression.begin();
 			ExpressionVec::iterator end  = expression.end();
@@ -582,7 +582,7 @@ namespace
 				if (((EXPR_OPERATOR_OR == exp.type || EXPR_OPERATOR_AND == exp.type) && lastExpWasOperator) || ((EXPR_VAR == exp.type || EXPR_OBJECT == exp.type) && !lastExpWasOperator))
 				{
 					syntaxError = true;
-					RENDERER_LOG(context, CRITICAL, "Renderer runtime shader builder: Unrecognized token '%s'", exp.value.c_str())
+					RHI_LOG(context, CRITICAL, "Renderer runtime shader builder: Unrecognized token '%s'", exp.value.c_str())
 				}
 				else if (EXPR_OPERATOR_OR == exp.type || EXPR_OPERATOR_AND == exp.type)
 				{
@@ -642,7 +642,7 @@ namespace
 			return retVal;
 		}
 
-		[[nodiscard]] bool evaluateExpression(const Renderer::Context& context, const RendererRuntime::ShaderProperties& shaderProperties, SubStringRef& outSubString, bool& outSyntaxError)
+		[[nodiscard]] bool evaluateExpression(const Rhi::Context& context, const RendererRuntime::ShaderProperties& shaderProperties, SubStringRef& outSubString, bool& outSyntaxError)
 		{
 			const size_t expEnd = evaluateExpressionEnd(context, outSubString);
 			if (std::string::npos == expEnd)
@@ -746,13 +746,13 @@ namespace
 			}
 			if (syntaxError)
 			{
-				RENDERER_LOG(context, CRITICAL, "Renderer runtime shader builder: Syntax error at line %lu\n", static_cast<unsigned long>(calculateLineCount(subString)))
+				RHI_LOG(context, CRITICAL, "Renderer runtime shader builder: Syntax error at line %lu\n", static_cast<unsigned long>(calculateLineCount(subString)))
 			}
 			outSyntaxError = syntaxError;
 			return retVal;
 		}
 
-		void evaluateParamArgs(const Renderer::Context& context, SubStringRef& outSubString, StringVector& outArgs, bool& outSyntaxError)
+		void evaluateParamArgs(const Rhi::Context& context, SubStringRef& outSubString, StringVector& outArgs, bool& outSyntaxError)
 		{
 			const size_t expEnd = evaluateExpressionEnd(context, outSubString);
 			if (std::string::npos == expEnd)
@@ -798,7 +798,7 @@ namespace
 				{
 					if (2 == expressionState)
 					{
-						RENDERER_LOG(context, CRITICAL, "Renderer runtime shader builder: Syntax Error at line %lu: ',' or ')' expected\n", static_cast<unsigned long>(calculateLineCount(subString)))
+						RHI_LOG(context, CRITICAL, "Renderer runtime shader builder: Syntax Error at line %lu: ',' or ')' expected\n", static_cast<unsigned long>(calculateLineCount(subString)))
 						syntaxError = true;
 					}
 					else
@@ -813,7 +813,7 @@ namespace
 
 			if (syntaxError)
 			{
-				RENDERER_LOG(context, CRITICAL, "Renderer runtime shader builder: Syntax error at line %lu\n", static_cast<unsigned long>(calculateLineCount(subString)))
+				RHI_LOG(context, CRITICAL, "Renderer runtime shader builder: Syntax error at line %lu\n", static_cast<unsigned long>(calculateLineCount(subString)))
 			}
 
 			outSyntaxError = syntaxError;
@@ -882,7 +882,7 @@ namespace RendererRuntime
 	void ShaderBuilder::createSourceCode(const ShaderPieceResourceManager& shaderPieceResourceManager, const ShaderBlueprintResource& shaderBlueprintResource, const ShaderProperties& shaderProperties, BuildShader& buildShader)
 	{
 		mShaderProperties = shaderProperties;
-		mShaderProperties.setPropertyValues(static_cast<const ShaderBlueprintResourceManager&>(shaderBlueprintResource.getResourceManager()).getRendererShaderProperties());
+		mShaderProperties.setPropertyValues(static_cast<const ShaderBlueprintResourceManager&>(shaderBlueprintResource.getResourceManager()).getRhiShaderProperties());
 		mDynamicShaderPieces.clear();
 		buildShader.assetIds.push_back(shaderBlueprintResource.getAssetId());
 		const AssetManager& assetManager = shaderPieceResourceManager.getRendererRuntime().getAssetManager();
@@ -996,11 +996,11 @@ namespace RendererRuntime
 				const unsigned long lineCount = static_cast<unsigned long>(calculateLineCount(subString));
 				if (keyword <= 1)
 				{
-					RENDERER_LOG(mContext, CRITICAL, "Renderer runtime shader builder: Syntax error at line %lu: @%s expects one parameter", lineCount, ::detail::c_operations[keyword].opName)
+					RHI_LOG(mContext, CRITICAL, "Renderer runtime shader builder: Syntax error at line %lu: @%s expects one parameter", lineCount, ::detail::c_operations[keyword].opName)
 				}
 				else
 				{
-					RENDERER_LOG(mContext, CRITICAL, "Renderer runtime shader builder: Syntax error at line %lu: @%s expects two or three parameters", lineCount, ::detail::c_operations[keyword].opName)
+					RHI_LOG(mContext, CRITICAL, "Renderer runtime shader builder: Syntax error at line %lu: @%s expects two or three parameters", lineCount, ::detail::c_operations[keyword].opName)
 				}
 			}
 			else
@@ -1102,7 +1102,7 @@ namespace RendererRuntime
 						// This isn't a number. Let's try if it's a property.
 						if (!mShaderProperties.getPropertyValue(StringId(argValues[2].c_str()), start, -1))
 						{
-							RENDERER_LOG(mContext, CRITICAL, "Renderer runtime shader builder: Invalid parameter at line %lu (@foreach). '%s' is not a number nor a variable\n", static_cast<unsigned long>(calculateLineCount(blockSubString)), argValues[2].c_str())
+							RHI_LOG(mContext, CRITICAL, "Renderer runtime shader builder: Invalid parameter at line %lu (@foreach). '%s' is not a number nor a variable\n", static_cast<unsigned long>(calculateLineCount(blockSubString)), argValues[2].c_str())
 							syntaxError = true;
 							start = 0;
 							count = 0;
@@ -1204,7 +1204,7 @@ namespace RendererRuntime
 
 			if (syntaxError)
 			{
-				RENDERER_LOG(mContext, CRITICAL, "Renderer runtime shader builder: Syntax error at line %lu: @piece expects one parameter", static_cast<unsigned long>(calculateLineCount(subString)))
+				RHI_LOG(mContext, CRITICAL, "Renderer runtime shader builder: Syntax error at line %lu: @piece expects one parameter", static_cast<unsigned long>(calculateLineCount(subString)))
 			}
 			else
 			{
@@ -1213,7 +1213,7 @@ namespace RendererRuntime
 				if (it != mDynamicShaderPieces.end())
 				{
 					syntaxError = true;
-					RENDERER_LOG(mContext, CRITICAL, "Renderer runtime shader builder: Error at line %lu: @piece '%s' already defined", static_cast<unsigned long>(calculateLineCount(subString)), argValues[0].c_str())
+					RHI_LOG(mContext, CRITICAL, "Renderer runtime shader builder: Error at line %lu: @piece '%s' already defined", static_cast<unsigned long>(calculateLineCount(subString)), argValues[0].c_str())
 				}
 				else
 				{
@@ -1259,7 +1259,7 @@ namespace RendererRuntime
 
 			if (syntaxError)
 			{
-				RENDERER_LOG(mContext, CRITICAL, "Renderer runtime shader builder: Syntax error at line %lu: @insertpiece expects one parameter", static_cast<unsigned long>(calculateLineCount(subString)))
+				RHI_LOG(mContext, CRITICAL, "Renderer runtime shader builder: Syntax error at line %lu: @insertpiece expects one parameter", static_cast<unsigned long>(calculateLineCount(subString)))
 			}
 			else
 			{
@@ -1334,11 +1334,11 @@ namespace RendererRuntime
 				const unsigned long lineCount = static_cast<unsigned long>(calculateLineCount(subString));
 				if (keyword <= 1)
 				{
-					RENDERER_LOG(mContext, CRITICAL, "Renderer runtime shader builder: Syntax error at line %lu: @%s expects one parameter", lineCount, ::detail::c_counterOperations[keyword].opName)
+					RHI_LOG(mContext, CRITICAL, "Renderer runtime shader builder: Syntax error at line %lu: @%s expects one parameter", lineCount, ::detail::c_counterOperations[keyword].opName)
 				}
 				else
 				{
-					RENDERER_LOG(mContext, CRITICAL, "Renderer runtime shader builder: Syntax error at line %lu: @%s expects two or three parameters", lineCount, ::detail::c_counterOperations[keyword].opName)
+					RHI_LOG(mContext, CRITICAL, "Renderer runtime shader builder: Syntax error at line %lu: @%s expects two or three parameters", lineCount, ::detail::c_counterOperations[keyword].opName)
 				}
 			}
 			else

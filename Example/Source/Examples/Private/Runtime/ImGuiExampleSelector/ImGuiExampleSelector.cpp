@@ -55,12 +55,12 @@ void ImGuiExampleSelector::onInitialization()
 
 void ImGuiExampleSelector::onDraw()
 {
-	// Get and check the renderer instance
-	Renderer::IRendererPtr renderer(getRenderer());
-	if (nullptr != renderer)
+	// Get and check the RHI instance
+	Rhi::IRhiPtr rhi(getRhi());
+	if (nullptr != rhi)
 	{
 		// Clear the graphics color buffer of the current render target with gray, do also clear the depth buffer
-		Renderer::Command::ClearGraphics::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
+		Rhi::Command::ClearGraphics::create(mCommandBuffer, Rhi::ClearFlag::COLOR_DEPTH, Color4::GRAY);
 
 		// GUI
 		if (nullptr != getMainRenderTarget())
@@ -68,11 +68,11 @@ void ImGuiExampleSelector::onDraw()
 			RendererRuntime::DebugGuiManager& debugGuiManager = getRendererRuntimeSafe().getDebugGuiManager();
 			debugGuiManager.newFrame(*getMainRenderTarget());
 			createDebugGui();
-			debugGuiManager.fillGraphicsCommandBufferUsingFixedBuildInRendererConfiguration(mCommandBuffer);
+			debugGuiManager.fillGraphicsCommandBufferUsingFixedBuildInRhiConfiguration(mCommandBuffer);
 		}
 
-		// Submit command buffer to the renderer backend
-		mCommandBuffer.submitToRendererAndClear(*renderer);
+		// Submit command buffer to the RHI implementation
+		mCommandBuffer.submitToRhiAndClear(*rhi);
 	}
 }
 
@@ -85,36 +85,36 @@ void ImGuiExampleSelector::createDebugGui()
 	ImGui::SetNextWindowSize(ImVec2(260.0f, 100.0f), ImGuiCond_FirstUseEver);
 	if (ImGui::Begin("Example Selector"))
 	{
-		// Selection of renderer
-		std::string selectedRendererName;
-		static int selectedRendererIndex = -1;
+		// Selection of RHI
+		std::string selectedRhiName;
+		static int selectedRhiIndex = -1;
 		{
-			// Fill list of renderer names
+			// Fill list of RHI names
 			std::string itemsSeparatedByZeros;
-			const ExampleRunner::AvailableRenderers& availableRenderers = getExampleRunner().getAvailableRenderers();
+			const ExampleRunner::AvailableRhis& availableRhis = getExampleRunner().getAvailableRhis();
 			{
-				int rendererIndex = 0;
-				const std::string& defaultRendererName = getExampleRunner().getDefaultRendererName();
-				for (const std::string_view& rendererName : availableRenderers)
+				int rhiIndex = 0;
+				const std::string& defaultRhiName = getExampleRunner().getDefaultRhiName();
+				for (const std::string_view& rhiName : availableRhis)
 				{
-					itemsSeparatedByZeros += rendererName;
+					itemsSeparatedByZeros += rhiName;
 					itemsSeparatedByZeros += '\0';
-					if (-1 == selectedRendererIndex && defaultRendererName == rendererName)
+					if (-1 == selectedRhiIndex && defaultRhiName == rhiName)
 					{
-						// Set initially selected renderer index
-						selectedRendererIndex = rendererIndex;
+						// Set initially selected RHI index
+						selectedRhiIndex = rhiIndex;
 					}
-					if (rendererIndex == selectedRendererIndex)
+					if (rhiIndex == selectedRhiIndex)
 					{
-						selectedRendererName = rendererName;
+						selectedRhiName = rhiName;
 					}
-					++rendererIndex;
+					++rhiIndex;
 				}
 				itemsSeparatedByZeros += '\0';
 			}
 
 			// Tell ImGui
-			ImGui::Combo("Renderer", &selectedRendererIndex, itemsSeparatedByZeros.c_str());
+			ImGui::Combo("RHI", &selectedRhiIndex, itemsSeparatedByZeros.c_str());
 		}
 
 		// Selection of example
@@ -122,15 +122,15 @@ void ImGuiExampleSelector::createDebugGui()
 		{
 			static int selectedExampleIndex = -1;
 
-			// Fill list of examples supported by the currently selected renderer
+			// Fill list of examples supported by the currently selected RHI
 			std::string itemsSeparatedByZeros;
 			{
 				int exampleIndex = 0;
-				const ExampleRunner::ExampleToSupportedRenderers& exampleToSupportedRenderers = getExampleRunner().getExampleToSupportedRenderers();
-				for (const auto& pair : exampleToSupportedRenderers)
+				const ExampleRunner::ExampleToSupportedRhis& exampleToSupportedRhis = getExampleRunner().getExampleToSupportedRhis();
+				for (const auto& pair : exampleToSupportedRhis)
 				{
-					const ExampleRunner::SupportedRenderers& supportedRendererList = pair.second;
-					if (pair.first != "ImGuiExampleSelector" && std::find(supportedRendererList.begin(), supportedRendererList.end(), selectedRendererName) != supportedRendererList.end())
+					const ExampleRunner::SupportedRhis& supportedRhiList = pair.second;
+					if (pair.first != "ImGuiExampleSelector" && std::find(supportedRhiList.begin(), supportedRhiList.end(), selectedRhiName) != supportedRhiList.end())
 					{
 						itemsSeparatedByZeros += pair.first;
 						itemsSeparatedByZeros += '\0';
@@ -148,7 +148,7 @@ void ImGuiExampleSelector::createDebugGui()
 				}
 				itemsSeparatedByZeros += '\0';
 
-				// In case the default example isn't supported by the selected renderer, initially select the first best supported example
+				// In case the default example isn't supported by the selected RHI, initially select the first best supported example
 				if (-1 == selectedExampleIndex && 0 != exampleIndex)
 				{
 					selectedExampleIndex = 0;
@@ -163,7 +163,7 @@ void ImGuiExampleSelector::createDebugGui()
 		// Start selected example
 		if (ImGui::Button("Start"))
 		{
-			switchExample(selectedExampleName.c_str(), selectedRendererName.c_str());
+			switchExample(selectedExampleName.c_str(), selectedRhiName.c_str());
 		}
 
 		// Exit

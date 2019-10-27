@@ -96,8 +96,8 @@ namespace RendererRuntime
 	//[ Public definitions                                    ]
 	//[-------------------------------------------------------]
 	public:
-		RENDERERRUNTIME_API_EXPORT static const Renderer::VertexAttributes VERTEX_ATTRIBUTES;			///< Default vertex attributes layout, whenever possible stick to this to be as compatible as possible to the rest
-		RENDERERRUNTIME_API_EXPORT static const Renderer::VertexAttributes SKINNED_VERTEX_ATTRIBUTES;	///< Default skinned vertex attributes layout, whenever possible stick to this to be as compatible as possible to the rest
+		RENDERERRUNTIME_API_EXPORT static const Rhi::VertexAttributes VERTEX_ATTRIBUTES;			///< Default vertex attributes layout, whenever possible stick to this to be as compatible as possible to the rest
+		RENDERERRUNTIME_API_EXPORT static const Rhi::VertexAttributes SKINNED_VERTEX_ATTRIBUTES;	///< Default skinned vertex attributes layout, whenever possible stick to this to be as compatible as possible to the rest
 
 
 	//[-------------------------------------------------------]
@@ -162,12 +162,12 @@ namespace RendererRuntime
 			mNumberOfIndices = numberOfIndices;
 		}
 
-		[[nodiscard]] inline const Renderer::IVertexArrayPtr& getVertexArrayPtr() const
+		[[nodiscard]] inline const Rhi::IVertexArrayPtr& getVertexArrayPtr() const
 		{
 			return mVertexArray;
 		}
 
-		inline void setVertexArray(Renderer::IVertexArray* vertexArray)
+		inline void setVertexArray(Rhi::IVertexArray* vertexArray)
 		{
 			mVertexArray = vertexArray;
 		}
@@ -289,13 +289,13 @@ namespace RendererRuntime
 		glm::vec3 mBoundingSpherePosition;
 		float	  mBoundingSphereRadius;
 		// Vertex and index data
-		uint32_t				  mNumberOfVertices;	///< Number of vertices
-		uint32_t				  mNumberOfIndices;		///< Number of indices
-		Renderer::IVertexArrayPtr mVertexArray;			///< Vertex array object (VAO), can be a null pointer
+		uint32_t			 mNumberOfVertices;		///< Number of vertices
+		uint32_t			 mNumberOfIndices;		///< Number of indices
+		Rhi::IVertexArrayPtr mVertexArray;			///< Vertex array object (VAO), can be a null pointer
 		// Sub-meshes
-		SubMeshes				  mSubMeshes;			///< Sub-meshes
+		SubMeshes			 mSubMeshes;			///< Sub-meshes
 		// Optional skeleton
-		SkeletonResourceId		  mSkeletonResourceId;	///< Resource ID of the used skeleton, can be invalid
+		SkeletonResourceId	 mSkeletonResourceId;	///< Resource ID of the used skeleton, can be invalid
 
 
 	};

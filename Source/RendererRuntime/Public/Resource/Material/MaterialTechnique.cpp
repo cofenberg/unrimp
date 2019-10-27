@@ -81,7 +81,7 @@ namespace RendererRuntime
 			materialBufferManager->requestSlot(*this);
 		}
 
-		// Calculate FNV1a hash of "Renderer::SerializedGraphicsPipelineState"
+		// Calculate FNV1a hash of "Rhi::SerializedGraphicsPipelineState"
 		calculateSerializedGraphicsPipelineStateHash();
 	}
 
@@ -96,11 +96,11 @@ namespace RendererRuntime
 		}
 	}
 
-	void MaterialTechnique::fillGraphicsCommandBuffer(const IRendererRuntime& rendererRuntime, Renderer::CommandBuffer& commandBuffer, uint32_t& resourceGroupRootParameterIndex, Renderer::IResourceGroup** resourceGroup)
+	void MaterialTechnique::fillGraphicsCommandBuffer(const IRendererRuntime& rendererRuntime, Rhi::CommandBuffer& commandBuffer, uint32_t& resourceGroupRootParameterIndex, Rhi::IResourceGroup** resourceGroup)
 	{
 		// Sanity check
-		RENDERER_ASSERT(rendererRuntime.getContext(), isValid(mMaterialBlueprintResourceId), "Invalid material blueprint resource ID")
-		RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != resourceGroup, "The renderer resource group pointer must be valid")
+		RHI_ASSERT(rendererRuntime.getContext(), isValid(mMaterialBlueprintResourceId), "Invalid material blueprint resource ID")
+		RHI_ASSERT(rendererRuntime.getContext(), nullptr != resourceGroup, "The RHI resource group pointer must be valid")
 
 		{ // Bind the material buffer manager
 			MaterialBufferManager* materialBufferManager = getMaterialBufferManager();
@@ -114,11 +114,11 @@ namespace RendererRuntime
 		fillCommandBuffer(rendererRuntime, resourceGroupRootParameterIndex, resourceGroup);
 	}
 
-	void MaterialTechnique::fillComputeCommandBuffer(const IRendererRuntime& rendererRuntime, Renderer::CommandBuffer& commandBuffer, uint32_t& resourceGroupRootParameterIndex, Renderer::IResourceGroup** resourceGroup)
+	void MaterialTechnique::fillComputeCommandBuffer(const IRendererRuntime& rendererRuntime, Rhi::CommandBuffer& commandBuffer, uint32_t& resourceGroupRootParameterIndex, Rhi::IResourceGroup** resourceGroup)
 	{
 		// Sanity check
-		RENDERER_ASSERT(rendererRuntime.getContext(), isValid(mMaterialBlueprintResourceId), "Invalid material blueprint resource ID")
-		RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != resourceGroup, "The renderer resource group pointer must be valid")
+		RHI_ASSERT(rendererRuntime.getContext(), isValid(mMaterialBlueprintResourceId), "Invalid material blueprint resource ID")
+		RHI_ASSERT(rendererRuntime.getContext(), nullptr != resourceGroup, "The RHI resource group pointer must be valid")
 
 		{ // Bind the material buffer manager
 			MaterialBufferManager* materialBufferManager = getMaterialBufferManager();
@@ -203,7 +203,7 @@ namespace RendererRuntime
 		if (nullptr != materialBlueprintResource)
 		{
 			// Start with the graphics pipeline state of the material blueprint resource
-			Renderer::SerializedGraphicsPipelineState serializedGraphicsPipelineState = materialBlueprintResource->getGraphicsPipelineState();
+			Rhi::SerializedGraphicsPipelineState serializedGraphicsPipelineState = materialBlueprintResource->getGraphicsPipelineState();
 
 			// Apply material properties
 			// -> Renderer toolkit counterpart is "RendererToolkit::JsonMaterialBlueprintHelper::readPipelineStateObject()"
@@ -259,10 +259,10 @@ namespace RendererRuntime
 				}
 			}
 
-			// Calculate the FNV1a hash of "Renderer::SerializedGraphicsPipelineState"
-			mSerializedGraphicsPipelineStateHash = Math::calculateFNV1a32(reinterpret_cast<const uint8_t*>(&serializedGraphicsPipelineState), sizeof(Renderer::SerializedGraphicsPipelineState));
+			// Calculate the FNV1a hash of "Rhi::SerializedGraphicsPipelineState"
+			mSerializedGraphicsPipelineStateHash = Math::calculateFNV1a32(reinterpret_cast<const uint8_t*>(&serializedGraphicsPipelineState), sizeof(Rhi::SerializedGraphicsPipelineState));
 
-			// Register the FNV1a hash of "Renderer::SerializedGraphicsPipelineState" inside the material blueprint resource manager so it's sufficient to pass around the tiny hash instead the over 400 bytes full serialized pipeline state
+			// Register the FNV1a hash of "Rhi::SerializedGraphicsPipelineState" inside the material blueprint resource manager so it's sufficient to pass around the tiny hash instead the over 400 bytes full serialized pipeline state
 			getMaterialResourceManager().getRendererRuntime().getMaterialBlueprintResourceManager().addSerializedGraphicsPipelineState(mSerializedGraphicsPipelineStateHash, serializedGraphicsPipelineState);
 		}
 		else
@@ -280,7 +280,7 @@ namespace RendererRuntime
 		}
 	}
 
-	void MaterialTechnique::fillCommandBuffer(const IRendererRuntime& rendererRuntime, uint32_t& resourceGroupRootParameterIndex, Renderer::IResourceGroup** resourceGroup)
+	void MaterialTechnique::fillCommandBuffer(const IRendererRuntime& rendererRuntime, uint32_t& resourceGroupRootParameterIndex, Rhi::IResourceGroup** resourceGroup)
 	{
 		// Set textures
 		const Textures& textures = getTextures(rendererRuntime);
@@ -322,11 +322,11 @@ namespace RendererRuntime
 
 				// Get material blueprint resource
 				const MaterialBlueprintResource* materialBlueprintResource = getMaterialResourceManager().getRendererRuntime().getMaterialBlueprintResourceManager().tryGetById(mMaterialBlueprintResourceId);
-				RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != materialBlueprintResource, "Invalid material blueprint resource")
+				RHI_ASSERT(rendererRuntime.getContext(), nullptr != materialBlueprintResource, "Invalid material blueprint resource")
 
 				// Create texture resource group
-				std::vector<Renderer::IResource*> resources;
-				std::vector<Renderer::ISamplerState*> samplerStates;
+				std::vector<Rhi::IResource*> resources;
+				std::vector<Rhi::ISamplerState*> samplerStates;
 				uint32_t textureStartIndex = 0;
 				if (nullptr != mStructuredBufferPtr)
 				{
@@ -348,14 +348,14 @@ namespace RendererRuntime
 				{
 					// Set texture resource
 					TextureResource* textureResource = textureResourceManager.tryGetById(textures[i].textureResourceId);
-					RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != textureResource, "Invalid texture resource")
+					RHI_ASSERT(rendererRuntime.getContext(), nullptr != textureResource, "Invalid texture resource")
 					resources[i + textureStartIndex] = textureResource->getTexturePtr();
-					RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != resources[i + textureStartIndex], "Invalid resource")
+					RHI_ASSERT(rendererRuntime.getContext(), nullptr != resources[i + textureStartIndex], "Invalid resource")
 
 					// Set sampler state, if there's one (e.g. texel fetch instead of sampling might be used)
 					if (isValid(materialBlueprintResourceTextures[i].samplerStateIndex))
 					{
-						RENDERER_ASSERT(rendererRuntime.getContext(), materialBlueprintResourceTextures[i].samplerStateIndex < materialBlueprintResourceSamplerStates.size(), "Invalid sampler state index")
+						RHI_ASSERT(rendererRuntime.getContext(), materialBlueprintResourceTextures[i].samplerStateIndex < materialBlueprintResourceSamplerStates.size(), "Invalid sampler state index")
 						samplerStates[i + textureStartIndex] = materialBlueprintResourceSamplerStates[materialBlueprintResourceTextures[i].samplerStateIndex].samplerStatePtr;
 					}
 					else
@@ -365,7 +365,7 @@ namespace RendererRuntime
 				}
 				// TODO(co) All resources need to be inside the same resource group, this needs to be guaranteed by design
 				mResourceGroup = rendererRuntime.getRendererResourceManager().createResourceGroup(*materialBlueprintResource->getRootSignaturePtr(), textures[0].rootParameterIndex, static_cast<uint32_t>(resources.size()), resources.data(), samplerStates.data());
-				RENDERER_SET_RESOURCE_DEBUG_NAME(mResourceGroup, "Material technique")
+				RHI_SET_RESOURCE_DEBUG_NAME(mResourceGroup, "Material technique")
 			}
 
 			// Tell the caller about the resource group

@@ -88,7 +88,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void SkeletonAnimationController::createSkeletonAnimationEvaluator()
 	{
-		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr == mSkeletonAnimationEvaluator, "No useless update calls, please")
+		RHI_ASSERT(mRendererRuntime.getContext(), nullptr == mSkeletonAnimationEvaluator, "No useless update calls, please")
 		SkeletonAnimationResourceManager& skeletonAnimationResourceManager = mRendererRuntime.getSkeletonAnimationResourceManager();
 		mSkeletonAnimationEvaluator = new SkeletonAnimationEvaluator(mRendererRuntime.getContext().getAllocator(), skeletonAnimationResourceManager, mSkeletonAnimationResourceId);
 
@@ -103,7 +103,7 @@ namespace RendererRuntime
 			{ // Unregister skeleton animation controller
 				SkeletonAnimationResourceManager::SkeletonAnimationControllers& skeletonAnimationControllers = mRendererRuntime.getSkeletonAnimationResourceManager().mSkeletonAnimationControllers;
 				SkeletonAnimationResourceManager::SkeletonAnimationControllers::iterator iterator = std::find(skeletonAnimationControllers.begin(), skeletonAnimationControllers.end(), this);
-				RENDERER_ASSERT(mRendererRuntime.getContext(), iterator != skeletonAnimationControllers.end(), "Invalid skeleton animation controller")
+				RHI_ASSERT(mRendererRuntime.getContext(), iterator != skeletonAnimationControllers.end(), "Invalid skeleton animation controller")
 				skeletonAnimationControllers.erase(iterator);
 			}
 
@@ -116,8 +116,8 @@ namespace RendererRuntime
 	void SkeletonAnimationController::update(float pastSecondsSinceLastFrame)
 	{
 		// Sanity check
-		RENDERER_ASSERT(mRendererRuntime.getContext(), pastSecondsSinceLastFrame > 0.0f, "No negative time, please")
-		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mSkeletonAnimationEvaluator, "No useless update calls, please")
+		RHI_ASSERT(mRendererRuntime.getContext(), pastSecondsSinceLastFrame > 0.0f, "No negative time, please")
+		RHI_ASSERT(mRendererRuntime.getContext(), nullptr != mSkeletonAnimationEvaluator, "No useless update calls, please")
 
 		// Advance time and evaluate state
 		mTimeInSeconds += pastSecondsSinceLastFrame;

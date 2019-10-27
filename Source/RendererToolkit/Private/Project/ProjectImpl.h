@@ -132,9 +132,9 @@ namespace RendererToolkit
 		}
 
 		[[nodiscard]] RendererRuntime::VirtualFilename tryGetVirtualFilenameByAssetId(RendererRuntime::AssetId assetId) const;
-		[[nodiscard]] bool checkAssetIsChanged(const RendererRuntime::Asset& asset, const char* rendererTarget);
-		void compileAsset(const RendererRuntime::Asset& asset, const char* rendererTarget, RendererRuntime::AssetPackage& outputAssetPackage);
-		void compileAssetIncludingDependencies(const RendererRuntime::Asset& asset, const char* rendererTarget, RendererRuntime::AssetPackage& outputAssetPackage) noexcept;
+		[[nodiscard]] bool checkAssetIsChanged(const RendererRuntime::Asset& asset, const char* rhiTarget);
+		void compileAsset(const RendererRuntime::Asset& asset, const char* rhiTarget, RendererRuntime::AssetPackage& outputAssetPackage);
+		void compileAssetIncludingDependencies(const RendererRuntime::Asset& asset, const char* rhiTarget, RendererRuntime::AssetPackage& outputAssetPackage) noexcept;
 
 		/**
 		*  @brief
@@ -151,14 +151,14 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	public:
 		virtual void load(RendererRuntime::AbsoluteDirectoryName absoluteProjectDirectoryName) override;
-		virtual void compileAllAssets(const char* rendererTarget) override;
+		virtual void compileAllAssets(const char* rhiTarget) override;
 		virtual void importAssets(const AbsoluteFilenames& absoluteSourceFilenames, const std::string& targetAssetPackageName, const std::string& targetDirectoryName = "Imported") override;
-		virtual void startupAssetMonitor(RendererRuntime::IRendererRuntime& rendererRuntime, const char* rendererTarget) override;
+		virtual void startupAssetMonitor(RendererRuntime::IRendererRuntime& rendererRuntime, const char* rhiTarget) override;
 		virtual void shutdownAssetMonitor() override;
 
 
 	//[-------------------------------------------------------]
-	//[ Protected virtual Renderer::RefCount methods          ]
+	//[ Protected virtual Rhi::RefCount methods               ]
 	//[-------------------------------------------------------]
 	protected:
 		virtual void selfDestruct() override;
@@ -180,7 +180,7 @@ namespace RendererToolkit
 		void clear();
 		void readAssetPackageByDirectory(const std::string& directoryName);	// Directory name has no "/" at the end
 		void readTargetsByFilename(const std::string& relativeFilename);
-		[[nodiscard]] std::string getRenderTargetDataRootDirectory(const char* rendererTarget) const;	// Directory name has no "/" at the end
+		[[nodiscard]] std::string getRenderTargetDataRootDirectory(const char* rhiTarget) const;	// Directory name has no "/" at the end
 		void buildSourceAssetIdToCompiledAssetId();
 		const IAssetCompiler* getSourceAssetCompilerAndRapidJsonDocument(const std::string& virtualAssetFilename, rapidjson::Document& rapidJsonDocument) const;
 		void threadWorker();

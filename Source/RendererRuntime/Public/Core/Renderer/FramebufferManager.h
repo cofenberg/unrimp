@@ -43,11 +43,6 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace Renderer
-{
-	class IFramebuffer;
-	class IRenderTarget;
-}
 namespace RendererRuntime
 {
 	class RenderPassManager;
@@ -81,9 +76,9 @@ namespace RendererRuntime
 	public:
 		struct FramebufferElement final
 		{
-			FramebufferSignature    framebufferSignature;
-			Renderer::IFramebuffer* framebuffer;		///< Can be a null pointer, no "Renderer::IFramebufferPtr" to not have overhead when internally reallocating
-			uint32_t				numberOfReferences;	///< Number of framebuffer references (don't misuse the renderer framebuffer reference counter for this)
+			FramebufferSignature framebufferSignature;
+			Rhi::IFramebuffer*	 framebuffer;			///< Can be a null pointer, no "Rhi::IFramebufferPtr" to not have overhead when internally reallocating
+			uint32_t			 numberOfReferences;	///< Number of framebuffer references (don't misuse the RHI framebuffer reference counter for this)
 
 			inline FramebufferElement() :
 				framebuffer(nullptr),
@@ -100,7 +95,7 @@ namespace RendererRuntime
 				// Nothing here
 			}
 
-			inline FramebufferElement(const FramebufferSignature& _framebufferSignature, Renderer::IFramebuffer& _framebuffer) :
+			inline FramebufferElement(const FramebufferSignature& _framebufferSignature, Rhi::IFramebuffer& _framebuffer) :
 				framebufferSignature(_framebufferSignature),
 				framebuffer(&_framebuffer),
 				numberOfReferences(0)
@@ -129,10 +124,10 @@ namespace RendererRuntime
 		explicit FramebufferManager(const FramebufferManager&) = delete;
 		FramebufferManager& operator=(const FramebufferManager&) = delete;
 		void clear();
-		void clearRendererResources();
+		void clearRhiResources();
 		void addFramebuffer(CompositorFramebufferId compositorFramebufferId, const FramebufferSignature& framebufferSignature);
-		[[nodiscard]] Renderer::IFramebuffer* getFramebufferByCompositorFramebufferId(CompositorFramebufferId compositorFramebufferId) const;
-		[[nodiscard]] Renderer::IFramebuffer* getFramebufferByCompositorFramebufferId(CompositorFramebufferId compositorFramebufferId, const Renderer::IRenderTarget& mainRenderTarget, uint8_t numberOfMultisamples, float resolutionScale);
+		[[nodiscard]] Rhi::IFramebuffer* getFramebufferByCompositorFramebufferId(CompositorFramebufferId compositorFramebufferId) const;
+		[[nodiscard]] Rhi::IFramebuffer* getFramebufferByCompositorFramebufferId(CompositorFramebufferId compositorFramebufferId, const Rhi::IRenderTarget& mainRenderTarget, uint8_t numberOfMultisamples, float resolutionScale);
 		void releaseFramebufferBySignature(const FramebufferSignature& framebufferSignature);
 
 

@@ -29,7 +29,7 @@
 //[-------------------------------------------------------]
 #include "RendererRuntime/Public/Resource/IResource.h"
 
-#include <Renderer/Public/Renderer.h>
+#include <Rhi/Public/Rhi.h>
 
 
 //[-------------------------------------------------------]
@@ -86,7 +86,7 @@ namespace RendererRuntime
 		*  @return
 		*    The vertex attributes
 		*/
-		[[nodiscard]] inline const Renderer::VertexAttributes& getVertexAttributes() const
+		[[nodiscard]] inline const Rhi::VertexAttributes& getVertexAttributes() const
 		{
 			return mVertexAttributes;
 		}
@@ -134,7 +134,7 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		Renderer::VertexAttributes mVertexAttributes;
+		Rhi::VertexAttributes mVertexAttributes;
 
 
 	};

@@ -32,8 +32,6 @@
 #include "RendererRuntime/Public/Core/GetInvalid.h"
 #include "RendererRuntime/Public/Core/File/MemoryFile.h"
 
-#include <Renderer/Public/Renderer.h>
-
 
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
@@ -136,7 +134,7 @@ namespace RendererRuntime
 		virtual ~MaterialBlueprintResourceLoader() override;
 		explicit MaterialBlueprintResourceLoader(const MaterialBlueprintResourceLoader&) = delete;
 		MaterialBlueprintResourceLoader& operator=(const MaterialBlueprintResourceLoader&) = delete;
-		void createRendererResources();
+		void createRhiResources();
 
 
 	//[-------------------------------------------------------]
@@ -150,11 +148,11 @@ namespace RendererRuntime
 		MemoryFile mMemoryFile;
 
 		// Temporary data: Root signature
-		uint32_t							   mMaximumNumberOfRootParameters;
-		std::vector<Renderer::RootParameter>   mRootParameters;
-		uint32_t							   mMaximumNumberOfDescriptorRanges;
-		std::vector<Renderer::DescriptorRange> mDescriptorRanges;
-		Renderer::RootSignature				   mRootSignature;
+		uint32_t						  mMaximumNumberOfRootParameters;
+		std::vector<Rhi::RootParameter>   mRootParameters;
+		uint32_t						  mMaximumNumberOfDescriptorRanges;
+		std::vector<Rhi::DescriptorRange> mDescriptorRanges;
+		Rhi::RootSignature				  mRootSignature;
 
 		// Temporary data for graphics pipeline state: Vertex attributes and graphics shader blueprints
 		AssetId mVertexAttributesAssetId;

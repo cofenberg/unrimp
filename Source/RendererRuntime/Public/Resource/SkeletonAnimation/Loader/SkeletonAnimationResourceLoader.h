@@ -112,7 +112,7 @@ namespace RendererRuntime
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		#ifdef RENDERER_DEBUG
+		#ifdef RHI_DEBUG
 			inline SkeletonAnimationResourceLoader(IResourceManager& resourceManager, IRendererRuntime& rendererRuntime) :
 				IResourceLoader(resourceManager),
 				mRendererRuntime(rendererRuntime),
@@ -142,7 +142,7 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		#ifdef RENDERER_DEBUG
+		#ifdef RHI_DEBUG
 			IRendererRuntime& mRendererRuntime;	///< Renderer runtime instance, do not destroy the instance
 		#endif
 		SkeletonAnimationResource* mSkeletonAnimationResource;	///< Destination resource

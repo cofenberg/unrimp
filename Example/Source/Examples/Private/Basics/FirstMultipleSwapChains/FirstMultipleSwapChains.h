@@ -28,7 +28,7 @@
 //[ Includes                                              ]
 //[-------------------------------------------------------]
 #include "Examples/Private/Framework/ExampleBase.h"
-#include "Examples/Private/Framework/IApplicationRenderer.h"
+#include "Examples/Private/Framework/IApplicationRhi.h"
 
 
 //[-------------------------------------------------------]
@@ -50,7 +50,7 @@
 *  @note
 *    - This example is intentionally using OS dependent native window creation in order to keep the example "close to metal"
 */
-class FirstMultipleSwapChains final : public IApplicationRenderer
+class FirstMultipleSwapChains final : public IApplicationRhi
 {
 
 
@@ -64,12 +64,12 @@ public:
 	*
 	*  @param[in] exampleRunner
 	*    Example runner
-	*  @param[in] rendererName
-	*    Case sensitive ASCII name of the renderer to instance, if null pointer or unknown renderer no renderer will be used.
-	*    Example renderer names: "Null", "OpenGL", "OpenGLES3", "Vulkan", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"
+	*  @param[in] rhiName
+	*    Case sensitive ASCII name of the RHI to instance, if null pointer or unknown RHI no RHI will be used.
+	*    Example RHI names: "Null", "OpenGL", "OpenGLES3", "Vulkan", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"
 	*/
-	inline explicit FirstMultipleSwapChains(ExampleRunner& exampleRunner, const char* rendererName) :
-		IApplicationRenderer(rendererName, mExampleBaseDummy),
+	inline explicit FirstMultipleSwapChains(ExampleRunner& exampleRunner, const char* rhiName) :
+		IApplicationRhi(rhiName, mExampleBaseDummy),
 		mExampleBaseDummy(exampleRunner)
 	{
 		// Nothing here
@@ -110,22 +110,22 @@ private:
 	*  @param[in] color
 	*    RGBA clear color
 	*  @param[out] commandBuffer
-	*    Command buffer to fill
+	*    RHI command buffer to fill
 	*/
-	void fillCommandBuffer(const float color[4], Renderer::CommandBuffer& commandBuffer) const;
+	void fillCommandBuffer(const float color[4], Rhi::CommandBuffer& commandBuffer) const;
 
 
 //[-------------------------------------------------------]
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
-	ExampleBase							mExampleBaseDummy;
-	Renderer::IBufferManagerPtr			mBufferManager;			///< Buffer manager, can be a null pointer
-	Renderer::CommandBuffer				mCommandBuffer;			///< Command buffer
-	Renderer::IRootSignaturePtr			mRootSignature;			///< Root signature, can be a null pointer
-	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineState;	///< Graphics pipeline state object (PSO), can be a null pointer
-	Renderer::IVertexArrayPtr			mVertexArray;			///< Vertex array object (VAO), can be a null pointer
-	Renderer::ISwapChainPtr				mSwapChain;				///< Swap chain, can be a null pointer
+	ExampleBase						mExampleBaseDummy;
+	Rhi::IBufferManagerPtr			mBufferManager;			///< Buffer manager, can be a null pointer
+	Rhi::CommandBuffer				mCommandBuffer;			///< Command buffer
+	Rhi::IRootSignaturePtr			mRootSignature;			///< Root signature, can be a null pointer
+	Rhi::IGraphicsPipelineStatePtr	mGraphicsPipelineState;	///< Graphics pipeline state object (PSO), can be a null pointer
+	Rhi::IVertexArrayPtr			mVertexArray;			///< Vertex array object (VAO), can be a null pointer
+	Rhi::ISwapChainPtr				mSwapChain;				///< Swap chain, can be a null pointer
 
 
 };

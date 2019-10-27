@@ -29,7 +29,7 @@
 //[-------------------------------------------------------]
 #include "Examples/Private/Framework/ExampleBase.h"
 
-#include <Renderer/Public/Renderer.h>
+#include <Rhi/Public/Rhi.h>
 
 
 //[-------------------------------------------------------]
@@ -97,15 +97,15 @@ private:
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
-	Renderer::IBufferManagerPtr	mBufferManager;		///< Buffer manager, can be a null pointer
-	Renderer::CommandBuffer		mCommandBuffer;		///< Command buffer
-	Renderer::IRootSignaturePtr	mRootSignature;		///< Root signature, can be a null pointer
+	Rhi::IBufferManagerPtr	mBufferManager;		///< Buffer manager, can be a null pointer
+	Rhi::CommandBuffer		mCommandBuffer;		///< Command buffer
+	Rhi::IRootSignaturePtr	mRootSignature;		///< Root signature, can be a null pointer
 	// Using one vertex buffer object (VBO)
-	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineStateVBO;	///< Graphics pipeline state object (PSO), can be a null pointer
-	Renderer::IVertexArrayPtr			mVertexArrayVBO;			///< Vertex array object (VAO), can be a null pointer
+	Rhi::IGraphicsPipelineStatePtr	mGraphicsPipelineStateVbo;	///< Graphics pipeline state object (PSO), can be a null pointer
+	Rhi::IVertexArrayPtr			mVertexArrayVbo;			///< Vertex array object (VAO), can be a null pointer
 	// Using multiple vertex buffer objects (VBO)
-	Renderer::IVertexArrayPtr			mVertexArrayVBOs;			///< Vertex array object (VAO), can be a null pointer
-	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineStateVBOs;	///< Graphics pipeline state object (PSO), can be a null pointer
+	Rhi::IVertexArrayPtr			mVertexArrayVbos;			///< Vertex array object (VAO), can be a null pointer
+	Rhi::IGraphicsPipelineStatePtr	mGraphicsPipelineStateVbos;	///< Graphics pipeline state object (PSO), can be a null pointer
 
 
 };

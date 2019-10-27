@@ -96,7 +96,7 @@ namespace RendererRuntime
 	//[ Public definitions                                    ]
 	//[-------------------------------------------------------]
 	public:
-		typedef std::unordered_map<uint32_t, Renderer::SerializedGraphicsPipelineState> SerializedGraphicsPipelineStates;	///< Key = FNV1a hash of "Renderer::SerializedGraphicsPipelineState"
+		typedef std::unordered_map<uint32_t, Rhi::SerializedGraphicsPipelineState> SerializedGraphicsPipelineStates;	///< Key = FNV1a hash of "Rhi::SerializedGraphicsPipelineState"
 
 
 	//[-------------------------------------------------------]
@@ -124,7 +124,7 @@ namespace RendererRuntime
 		[[nodiscard]] inline IMaterialBlueprintResourceListener& getMaterialBlueprintResourceListener() const
 		{
 			// We know this pointer must always be valid
-			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mMaterialBlueprintResourceListener, "Invalid material blueprint resource listener")
+			RHI_ASSERT(mRendererRuntime.getContext(), nullptr != mMaterialBlueprintResourceListener, "Invalid material blueprint resource listener")
 			return *mMaterialBlueprintResourceListener;
 		}
 
@@ -163,7 +163,7 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Default texture filtering                             ]
 		//[-------------------------------------------------------]
-		[[nodiscard]] inline Renderer::FilterMode getDefaultTextureFilterMode() const
+		[[nodiscard]] inline Rhi::FilterMode getDefaultTextureFilterMode() const
 		{
 			return mDefaultTextureFilterMode;
 		}
@@ -173,7 +173,7 @@ namespace RendererRuntime
 			return mDefaultMaximumTextureAnisotropy;
 		}
 
-		RENDERERRUNTIME_API_EXPORT void setDefaultTextureFiltering(Renderer::FilterMode filterMode, uint8_t maximumAnisotropy);
+		RENDERERRUNTIME_API_EXPORT void setDefaultTextureFiltering(Rhi::FilterMode filterMode, uint8_t maximumAnisotropy);
 
 		//[-------------------------------------------------------]
 		//[ Manager                                               ]
@@ -181,28 +181,28 @@ namespace RendererRuntime
 		[[nodiscard]] inline UniformInstanceBufferManager& getUniformInstanceBufferManager() const
 		{
 			// We know this pointer must always be valid
-			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mUniformInstanceBufferManager, "Invalid uniform instance buffer manager")
+			RHI_ASSERT(mRendererRuntime.getContext(), nullptr != mUniformInstanceBufferManager, "Invalid uniform instance buffer manager")
 			return *mUniformInstanceBufferManager;
 		}
 
 		[[nodiscard]] inline TextureInstanceBufferManager& getTextureInstanceBufferManager() const
 		{
 			// We know this pointer must always be valid
-			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mTextureInstanceBufferManager, "Invalid texture instance buffer manager")
+			RHI_ASSERT(mRendererRuntime.getContext(), nullptr != mTextureInstanceBufferManager, "Invalid texture instance buffer manager")
 			return *mTextureInstanceBufferManager;
 		}
 
 		[[nodiscard]] inline IndirectBufferManager& getIndirectBufferManager() const
 		{
 			// We know this pointer must always be valid
-			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mIndirectBufferManager, "Invalid indirect buffer manager")
+			RHI_ASSERT(mRendererRuntime.getContext(), nullptr != mIndirectBufferManager, "Invalid indirect buffer manager")
 			return *mIndirectBufferManager;
 		}
 
 		[[nodiscard]] inline LightBufferManager& getLightBufferManager() const
 		{
 			// We know this pointer must always be valid
-			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mLightBufferManager, "Invalid light buffer manager")
+			RHI_ASSERT(mRendererRuntime.getContext(), nullptr != mLightBufferManager, "Invalid light buffer manager")
 			return *mLightBufferManager;
 		}
 
@@ -238,8 +238,8 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Pipeline state object cache                           ]
 		//[-------------------------------------------------------]
-		void addSerializedGraphicsPipelineState(uint32_t serializedGraphicsPipelineStateHash, const Renderer::SerializedGraphicsPipelineState& serializedGraphicsPipelineState);
-		void applySerializedGraphicsPipelineState(uint32_t serializedGraphicsPipelineStateHash, Renderer::GraphicsPipelineState& graphicsPipelineState);
+		void addSerializedGraphicsPipelineState(uint32_t serializedGraphicsPipelineStateHash, const Rhi::SerializedGraphicsPipelineState& serializedGraphicsPipelineState);
+		void applySerializedGraphicsPipelineState(uint32_t serializedGraphicsPipelineStateHash, Rhi::GraphicsPipelineState& graphicsPipelineState);
 		void clearPipelineStateObjectCache();
 		void loadPipelineStateObjectCache(IFile& file);
 		[[nodiscard]] bool doesPipelineStateObjectCacheNeedSaving() const;
@@ -254,7 +254,7 @@ namespace RendererRuntime
 		bool								mCreateInitialPipelineStateCaches;			///< Create initial graphics and compute pipeline state caches after a material blueprint has been loaded?
 		IMaterialBlueprintResourceListener*	mMaterialBlueprintResourceListener;			///< Material blueprint resource listener, always valid, do not destroy the instance
 		MaterialProperties					mGlobalMaterialProperties;					///< Global material properties
-		Renderer::FilterMode				mDefaultTextureFilterMode;					///< Default texture filter mode
+		Rhi::FilterMode						mDefaultTextureFilterMode;					///< Default texture filter mode
 		uint8_t								mDefaultMaximumTextureAnisotropy;			///< Default maximum texture anisotropy
 		std::mutex							mSerializedGraphicsPipelineStatesMutex;		///< "RendererRuntime::GraphicsPipelineStateCompiler" is running asynchronous, hence we need to synchronize the serialized graphics pipeline states access
 		SerializedGraphicsPipelineStates	mSerializedGraphicsPipelineStates;			///< Serialized pipeline states

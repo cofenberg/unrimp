@@ -29,21 +29,10 @@
 //[-------------------------------------------------------]
 #include "RendererRuntime/Public/Core/Platform/PlatformTypes.h"
 
-// Disable warnings in external headers, we can't fix them
-PRAGMA_WARNING_PUSH
-	PRAGMA_WARNING_DISABLE_MSVC(4668)	// warning C4668: '_M_HYBRID_X86_ARM64' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
-	#include <inttypes.h>	// For uint32_t, uint64_t etc.
-PRAGMA_WARNING_POP
-
 
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace Renderer
-{
-	class IRenderTarget;
-	class CommandBuffer;
-}
 namespace RendererRuntime
 {
 	class CompositorContextData;
@@ -87,7 +76,7 @@ namespace RendererRuntime
 			return mCompositorNodeInstance;
 		}
 
-		[[nodiscard]] inline Renderer::IRenderTarget* getRenderTarget() const
+		[[nodiscard]] inline Rhi::IRenderTarget* getRenderTarget() const
 		{
 			return mRenderTarget;
 		}
@@ -115,13 +104,13 @@ namespace RendererRuntime
 		*    Fill the compositor pass into the given command buffer
 		*
 		*  @param[in] renderTarget
-		*    Render target to render into, can be a null pointer (e.g. for compute shader or resource copy compositor passes)
+		*    RHI render target to render into, can be a null pointer (e.g. for compute shader or resource copy compositor passes)
 		*  @param[in] compositorContextData
 		*    Compositor context data
 		*  @param[out] commandBuffer
-		*    Command buffer to fill
+		*    RHI command buffer to fill
 		*/
-		virtual void onFillCommandBuffer(const Renderer::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer) = 0;
+		virtual void onFillCommandBuffer(const Rhi::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, Rhi::CommandBuffer& commandBuffer) = 0;
 
 		/**
 		*  @brief
@@ -164,7 +153,7 @@ namespace RendererRuntime
 	private:
 		const ICompositorResourcePass& mCompositorResourcePass;
 		const CompositorNodeInstance&  mCompositorNodeInstance;
-		Renderer::IRenderTarget*	   mRenderTarget;	/// Render target, can be a null pointer, don't destroy the instance
+		Rhi::IRenderTarget*			   mRenderTarget;	/// Render target, can be a null pointer, don't destroy the instance
 		uint32_t					   mNumberOfExecutionRequests;
 
 

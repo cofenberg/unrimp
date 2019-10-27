@@ -290,7 +290,7 @@ namespace RendererRuntime
 
 						default:
 							// Error!
-							RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Unsupported format")
+							RHI_ASSERT(mRendererRuntime.getContext(), false, "Unsupported format")
 							return;
 					}
 				}
@@ -398,7 +398,7 @@ namespace RendererRuntime
 									else
 									{
 										// Error
-										RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Unsupported format")
+										RHI_ASSERT(mRendererRuntime.getContext(), false, "Unsupported format")
 										return;
 									}
 									break;
@@ -421,14 +421,14 @@ namespace RendererRuntime
 									else
 									{
 										// Error
-										RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Unsupported format")
+										RHI_ASSERT(mRendererRuntime.getContext(), false, "Unsupported format")
 										return;
 									}
 									break;
 
 								default:
 									// Error
-									RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Unsupported format")
+									RHI_ASSERT(mRendererRuntime.getContext(), false, "Unsupported format")
 									return;
 							}
 					}
@@ -485,34 +485,34 @@ namespace RendererRuntime
 				if ((ddsHeader.ddpfPixelFormat.flags & ::detail::DDS_LUMINANCE) != 0)
 				{
 					// 32-bit floating point as used for IES light profile
-					mTextureFormat = Renderer::TextureFormat::R32_FLOAT;
+					mTextureFormat = Rhi::TextureFormat::R32_FLOAT;
 				}
 				else
 				{
 					// The 4x4 block size based DXT compression format has no support for 1D textures
-					mTextureFormat = static_cast<uint8_t>(mTextureResource->isRgbHardwareGammaCorrection() ? Renderer::TextureFormat::R8G8B8A8_SRGB : Renderer::TextureFormat::R8G8B8A8);
+					mTextureFormat = static_cast<uint8_t>(mTextureResource->isRgbHardwareGammaCorrection() ? Rhi::TextureFormat::R8G8B8A8_SRGB : Rhi::TextureFormat::R8G8B8A8);
 				}
 			}
 			else
 			{
 				if (mDepth > 1)
 				{
-					mTextureFormat = (8 == ddsHeader.ddpfPixelFormat.RGBBitCount) ? Renderer::TextureFormat::R8 : Renderer::TextureFormat::R8G8B8A8;
+					mTextureFormat = (8 == ddsHeader.ddpfPixelFormat.RGBBitCount) ? Rhi::TextureFormat::R8 : Rhi::TextureFormat::R8G8B8A8;
 				}
 				else
 				{
 					if ((ddsHeader.ddpfPixelFormat.flags & ::detail::DDS_LUMINANCE) != 0)
 					{
 						// 16-bit height map
-						mTextureFormat = Renderer::TextureFormat::R16_UNORM;
+						mTextureFormat = Rhi::TextureFormat::R16_UNORM;
 					}
 					else if (ddsHeader.ddpfPixelFormat.flags & ::detail::DDS_FOURCC)
 					{
-						mTextureFormat = static_cast<uint8_t>(mTextureResource->isRgbHardwareGammaCorrection() ? Renderer::TextureFormat::BC1_SRGB : Renderer::TextureFormat::BC1);
+						mTextureFormat = static_cast<uint8_t>(mTextureResource->isRgbHardwareGammaCorrection() ? Rhi::TextureFormat::BC1_SRGB : Rhi::TextureFormat::BC1);
 					}
 					else
 					{
-						mTextureFormat = Renderer::TextureFormat::R8G8B8A8;
+						mTextureFormat = Rhi::TextureFormat::R8G8B8A8;
 					}
 				}
 			}
@@ -527,14 +527,14 @@ namespace RendererRuntime
 					// Take mipmaps into account
 					while (width > 1 && height > 1 && depth > 1)
 					{
-						mNumberOfUsedImageDataBytes += Renderer::TextureFormat::getNumberOfBytesPerSlice(static_cast<Renderer::TextureFormat::Enum>(mTextureFormat), width, height) * depth * mNumberOfSlices;
+						mNumberOfUsedImageDataBytes += Rhi::TextureFormat::getNumberOfBytesPerSlice(static_cast<Rhi::TextureFormat::Enum>(mTextureFormat), width, height) * depth * mNumberOfSlices;
 
 						width /= 2;
 						height /= 2;
 						depth /= 2;
 					}
 				}
-				mNumberOfUsedImageDataBytes += Renderer::TextureFormat::getNumberOfBytesPerSlice(static_cast<Renderer::TextureFormat::Enum>(mTextureFormat), width, height) * depth * mNumberOfSlices;
+				mNumberOfUsedImageDataBytes += Rhi::TextureFormat::getNumberOfBytesPerSlice(static_cast<Rhi::TextureFormat::Enum>(mTextureFormat), width, height) * depth * mNumberOfSlices;
 
 				if (mNumberOfImageDataBytes < mNumberOfUsedImageDataBytes)
 				{
@@ -552,7 +552,7 @@ namespace RendererRuntime
 				//     Face0: Mip0, Mip1, Mip2, etc.
 				//     Face1: Mip0, Mip1, Mip2, etc.
 				//     etc.
-				// - The renderer interface expects: CRN and KTX files are organized in mip-major order, like this:
+				// - The RHI expects: CRN and KTX files are organized in mip-major order, like this:
 				//     Mip0: Face0, Face1, Face2, Face3, Face4, Face5
 				//     Mip1: Face0, Face1, Face2, Face3, Face4, Face5
 				//     etc.
@@ -687,10 +687,10 @@ namespace RendererRuntime
 
 		#undef MCHAR4
 
-		// Can we create the renderer resource asynchronous as well?
-		if (mRendererRuntime.getRenderer().getCapabilities().nativeMultithreading)
+		// Can we create the RHI resource asynchronous as well?
+		if (mRendererRuntime.getRhi().getCapabilities().nativeMultithreading)
 		{
-			mTexture = createRendererTexture();
+			mTexture = createRhiTexture();
 		}
 	}
 
@@ -698,33 +698,33 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Protected RendererRuntime::ITextureResourceLoader methods ]
 	//[-------------------------------------------------------]
-	Renderer::ITexture* Lz4DdsTextureResourceLoader::createRendererTexture()
+	Rhi::ITexture* Lz4DdsTextureResourceLoader::createRhiTexture()
 	{
-		Renderer::ITexture* texture = nullptr;
-		const uint32_t flags = (mDataContainsMipmaps ? (Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS | Renderer::TextureFlag::SHADER_RESOURCE) : Renderer::TextureFlag::SHADER_RESOURCE);
+		Rhi::ITexture* texture = nullptr;
+		const uint32_t flags = (mDataContainsMipmaps ? (Rhi::TextureFlag::DATA_CONTAINS_MIPMAPS | Rhi::TextureFlag::SHADER_RESOURCE) : Rhi::TextureFlag::SHADER_RESOURCE);
 		if (1 == mWidth || 1 == mHeight)
 		{
 			// 1D texture
 			if (mNumberOfSlices > 0)
 			{
-				texture = mRendererRuntime.getTextureManager().createTexture1DArray((1 == mWidth) ? mHeight : mWidth, mNumberOfSlices, static_cast<Renderer::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Renderer::TextureUsage::IMMUTABLE);
+				texture = mRendererRuntime.getTextureManager().createTexture1DArray((1 == mWidth) ? mHeight : mWidth, mNumberOfSlices, static_cast<Rhi::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Rhi::TextureUsage::IMMUTABLE);
 			}
 			else
 			{
-				texture = mRendererRuntime.getTextureManager().createTexture1D((1 == mWidth) ? mHeight : mWidth, static_cast<Renderer::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Renderer::TextureUsage::IMMUTABLE);
+				texture = mRendererRuntime.getTextureManager().createTexture1D((1 == mWidth) ? mHeight : mWidth, static_cast<Rhi::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Rhi::TextureUsage::IMMUTABLE);
 			}
 		}
 		else if (mDepth > 1)
 		{
 			// 3D texture
-			texture = mRendererRuntime.getTextureManager().createTexture3D(mWidth, mHeight, mDepth, static_cast<Renderer::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Renderer::TextureUsage::IMMUTABLE);
+			texture = mRendererRuntime.getTextureManager().createTexture3D(mWidth, mHeight, mDepth, static_cast<Rhi::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Rhi::TextureUsage::IMMUTABLE);
 		}
 		else
 		{
 			// 2D texture
-			texture = mRendererRuntime.getTextureManager().createTexture2D(mWidth, mHeight, static_cast<Renderer::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Renderer::TextureUsage::IMMUTABLE);
+			texture = mRendererRuntime.getTextureManager().createTexture2D(mWidth, mHeight, static_cast<Rhi::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Rhi::TextureUsage::IMMUTABLE);
 		}
-		RENDERER_SET_RESOURCE_DEBUG_NAME(texture, getAsset().virtualFilename)
+		RHI_SET_RESOURCE_DEBUG_NAME(texture, getAsset().virtualFilename)
 		return texture;
 	}
 

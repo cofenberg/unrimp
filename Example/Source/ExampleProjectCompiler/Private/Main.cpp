@@ -28,9 +28,9 @@
 #include <RendererRuntime/Public/Core/File/FileSystemHelper.h>
 #include <RendererRuntime/Public/Core/File/DefaultFileManager.h>
 
-#include <Renderer/Public/DefaultLog.h>
-#include <Renderer/Public/DefaultAssert.h>
-#include <Renderer/Public/DefaultAllocator.h>
+#include <Rhi/Public/DefaultLog.h>
+#include <Rhi/Public/DefaultAssert.h>
+#include <Rhi/Public/DefaultAllocator.h>
 
 
 //[-------------------------------------------------------]
@@ -38,9 +38,9 @@
 //[-------------------------------------------------------]
 [[nodiscard]] int programEntryPoint(const CommandLineArguments& commandLineArguments)
 {
-	Renderer::DefaultLog defaultLog;
-	Renderer::DefaultAssert defaultAssert;
-	Renderer::DefaultAllocator defaultAllocator;
+	Rhi::DefaultLog defaultLog;
+	Rhi::DefaultAssert defaultAssert;
+	Rhi::DefaultAllocator defaultAllocator;
 	RendererRuntime::DefaultFileManager defaultFileManager(defaultLog, defaultAssert, defaultAllocator, std_filesystem::canonical(std_filesystem::current_path() / "..").generic_string());
 	RendererToolkit::Context rendererToolkitContext(defaultLog, defaultAssert, defaultAllocator, defaultFileManager);
 	RendererToolkit::RendererToolkitInstance rendererToolkitInstance(rendererToolkitContext);
@@ -68,16 +68,16 @@
 				for (const std::string_view& renderTarget : commandLineArguments.getArguments())
 				{
 					const std::string renderTargetString(renderTarget);
-					RENDERER_LOG(rendererToolkitContext, INFORMATION, "Compiling for target: \"%s\"", renderTargetString.c_str())
+					RHI_LOG(rendererToolkitContext, INFORMATION, "Compiling for target: \"%s\"", renderTargetString.c_str())
 					project->compileAllAssets(renderTargetString.c_str());
-					RENDERER_LOG(rendererToolkitContext, INFORMATION, "Compilation done")
+					RHI_LOG(rendererToolkitContext, INFORMATION, "Compilation done")
 				}
 			}
 		}
 		catch (const std::exception& e)
 		{
-			RENDERER_LOG(rendererToolkitContext, CRITICAL, "Project compilation failed: %s", e.what())
-			RENDERER_LOG(rendererToolkitContext, INFORMATION, "Press any key to continue")
+			RHI_LOG(rendererToolkitContext, CRITICAL, "Project compilation failed: %s", e.what())
+			RHI_LOG(rendererToolkitContext, INFORMATION, "Press any key to continue")
 			getchar();
 		}
 		delete project;
@@ -103,7 +103,7 @@
 		#endif
 			{
 				// For memory leak detection
-				#ifdef _DEBUG
+				#ifdef RHI_DEBUG
 					// "_CrtDumpMemoryLeaks()" reports false positive memory leak with static variables, so use a memory difference instead
 					_CrtMemState crtMemState = { 0 };
 					_CrtMemCheckpoint(&crtMemState);
@@ -114,7 +114,7 @@
 				const int result = programEntryPoint(CommandLineArguments());
 
 				// For memory leak detection
-				#ifdef _DEBUG
+				#ifdef RHI_DEBUG
 					_CrtMemDumpAllObjectsSince(&crtMemState);
 				#endif
 
@@ -133,7 +133,7 @@
 				const int result = programEntryPoint(CommandLineArguments());
 
 				// For memory leak detection
-				#ifdef _DEBUG
+				#ifdef RHI_DEBUG
 					_CrtDumpMemoryLeaks();
 				#endif
 

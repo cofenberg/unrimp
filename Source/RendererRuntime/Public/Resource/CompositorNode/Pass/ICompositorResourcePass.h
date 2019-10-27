@@ -82,7 +82,7 @@ namespace RendererRuntime
 			return mCompositorTarget;
 		}
 
-		#if defined(_DEBUG) || defined(RENDERER_RUNTIME_PROFILER)
+		#if defined(RHI_DEBUG) || defined(RENDERER_RUNTIME_PROFILER)
 			[[nodiscard]] inline const char* getDebugName() const
 			{
 				return mDebugName;
@@ -142,7 +142,7 @@ namespace RendererRuntime
 
 			// Read data
 			const PassData* pass = reinterpret_cast<const PassData*>(data);
-			#if defined(_DEBUG) || defined(RENDERER_RUNTIME_PROFILER)
+			#if defined(RHI_DEBUG) || defined(RENDERER_RUNTIME_PROFILER)
 				strncpy(mDebugName, pass->name, MAXIMUM_PASS_NAME_LENGTH);
 			#endif
 			mMinimumDepth		= pass->minimumDepth;
@@ -180,7 +180,7 @@ namespace RendererRuntime
 	protected:
 		inline explicit ICompositorResourcePass(const CompositorTarget& compositorTarget) :
 			mCompositorTarget(compositorTarget),
-			#if defined(_DEBUG) || defined(RENDERER_RUNTIME_PROFILER)
+			#if defined(RHI_DEBUG) || defined(RENDERER_RUNTIME_PROFILER)
 				mDebugName{ "Compositor pass" },
 			#endif
 			mMinimumDepth(0.0f),
@@ -205,7 +205,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	private:
 		const CompositorTarget& mCompositorTarget;
-		#if defined(_DEBUG) || defined(RENDERER_RUNTIME_PROFILER)
+		#if defined(RHI_DEBUG) || defined(RENDERER_RUNTIME_PROFILER)
 			char				mDebugName[MAXIMUM_PASS_NAME_LENGTH];	///< Human readable ASCII pass name for debugging and profiling, contains terminating zero
 		#endif
 		float					mMinimumDepth;

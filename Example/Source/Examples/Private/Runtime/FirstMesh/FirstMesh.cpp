@@ -67,45 +67,45 @@ void FirstMesh::onInitialization()
 {
 	// Get and check the renderer runtime instance
 	RendererRuntime::IRendererRuntime& rendererRuntime = getRendererRuntimeSafe();
-	Renderer::IRendererPtr renderer(getRenderer());
+	Rhi::IRhiPtr rhi(getRhi());
 
 	// Don't create initial pipeline state caches after a material blueprint has been loaded since this example isn't using the material blueprint system
 	rendererRuntime.getMaterialBlueprintResourceManager().setCreateInitialPipelineStateCaches(false);
 
 	{
 		{ // Create the root signature
-			Renderer::DescriptorRangeBuilder ranges[5];
-			ranges[0].initialize(Renderer::ResourceType::UNIFORM_BUFFER, 0, "UniformBlockDynamicVs", Renderer::ShaderVisibility::VERTEX);
-			ranges[1].initialize(Renderer::ResourceType::TEXTURE_2D,	 0, "_argb_nxa",			 Renderer::ShaderVisibility::FRAGMENT);
-			ranges[2].initialize(Renderer::ResourceType::TEXTURE_2D,	 1, "_hr_rg_mb_nya",		 Renderer::ShaderVisibility::FRAGMENT);
-			ranges[3].initialize(Renderer::ResourceType::TEXTURE_2D,	 2, "EmissiveMap",			 Renderer::ShaderVisibility::FRAGMENT);
-			ranges[4].initializeSampler(0, Renderer::ShaderVisibility::FRAGMENT);
+			Rhi::DescriptorRangeBuilder ranges[5];
+			ranges[0].initialize(Rhi::ResourceType::UNIFORM_BUFFER, 0, "UniformBlockDynamicVs", Rhi::ShaderVisibility::VERTEX);
+			ranges[1].initialize(Rhi::ResourceType::TEXTURE_2D,		0, "_argb_nxa",				Rhi::ShaderVisibility::FRAGMENT);
+			ranges[2].initialize(Rhi::ResourceType::TEXTURE_2D,		1, "_hr_rg_mb_nya",			Rhi::ShaderVisibility::FRAGMENT);
+			ranges[3].initialize(Rhi::ResourceType::TEXTURE_2D,		2, "EmissiveMap",			Rhi::ShaderVisibility::FRAGMENT);
+			ranges[4].initializeSampler(0, Rhi::ShaderVisibility::FRAGMENT);
 
-			Renderer::RootParameterBuilder rootParameters[2];
+			Rhi::RootParameterBuilder rootParameters[2];
 			rootParameters[0].initializeAsDescriptorTable(4, &ranges[0]);
 			rootParameters[1].initializeAsDescriptorTable(1, &ranges[4]);
 
 			// Setup
-			Renderer::RootSignatureBuilder rootSignature;
-			rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Renderer::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+			Rhi::RootSignatureBuilder rootSignature;
+			rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Rhi::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 			// Create the instance
-			mRootSignature = renderer->createRootSignature(rootSignature);
+			mRootSignature = rhi->createRootSignature(rootSignature);
 		}
 
 		// Create uniform buffer
 		// -> Direct3D 9 does not support uniform buffers
 		// -> Direct3D 10, 11 and 12 do not support individual uniforms
-		// -> The renderer is just a light weight abstraction layer, so we need to handle the differences
+		// -> The RHI is just a light weight abstraction layer, so we need to handle the differences
 		// -> Allocate enough memory for two 4x4 floating point matrices
-		mUniformBuffer = rendererRuntime.getBufferManager().createUniformBuffer(2 * 4 * 4 * sizeof(float), nullptr, Renderer::BufferUsage::DYNAMIC_DRAW);
+		mUniformBuffer = rendererRuntime.getBufferManager().createUniformBuffer(2 * 4 * 4 * sizeof(float), nullptr, Rhi::BufferUsage::DYNAMIC_DRAW);
 
 		// Vertex input layout
-		static constexpr Renderer::VertexAttribute vertexAttributesLayout[] =
+		static constexpr Rhi::VertexAttribute vertexAttributesLayout[] =
 		{
 			{ // Attribute 0
 				// Data destination
-				Renderer::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
+				Rhi::VertexAttributeFormat::FLOAT_3,		// vertexAttributeFormat (Rhi::VertexAttributeFormat)
 				"Position",									// name[32] (char)
 				"POSITION",									// semanticName[32] (char)
 				0,											// semanticIndex (uint32_t)
@@ -117,7 +117,7 @@ void FirstMesh::onInitialization()
 			},
 			{ // Attribute 1
 				// Data destination
-				Renderer::VertexAttributeFormat::FLOAT_2,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
+				Rhi::VertexAttributeFormat::FLOAT_2,		// vertexAttributeFormat (Rhi::VertexAttributeFormat)
 				"TexCoord",									// name[32] (char)
 				"TEXCOORD",									// semanticName[32] (char)
 				0,											// semanticIndex (uint32_t)
@@ -129,7 +129,7 @@ void FirstMesh::onInitialization()
 			},
 			{ // Attribute 2
 				// Data destination
-				Renderer::VertexAttributeFormat::SHORT_4,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
+				Rhi::VertexAttributeFormat::SHORT_4,		// vertexAttributeFormat (Rhi::VertexAttributeFormat)
 				"QTangent",									// name[32] (char)
 				"TEXCOORD",									// semanticName[32] (char)
 				1,											// semanticIndex (uint32_t)
@@ -140,18 +140,18 @@ void FirstMesh::onInitialization()
 				0											// instancesPerElement (uint32_t)
 			}
 		};
-		const Renderer::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
+		const Rhi::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
 
 		{ // Create sampler state and wrap it into a resource group instance
-			Renderer::SamplerState samplerStateSettings = Renderer::ISamplerState::getDefaultSamplerState();
-			samplerStateSettings.addressU = Renderer::TextureAddressMode::WRAP;
-			samplerStateSettings.addressV = Renderer::TextureAddressMode::WRAP;
-			Renderer::IResource* samplerStateResource = mSamplerStatePtr = renderer->createSamplerState(samplerStateSettings);
+			Rhi::SamplerState samplerStateSettings = Rhi::ISamplerState::getDefaultSamplerState();
+			samplerStateSettings.addressU = Rhi::TextureAddressMode::WRAP;
+			samplerStateSettings.addressV = Rhi::TextureAddressMode::WRAP;
+			Rhi::IResource* samplerStateResource = mSamplerStatePtr = rhi->createSamplerState(samplerStateSettings);
 			mSamplerStateGroup = mRootSignature->createResourceGroup(1, 1, &samplerStateResource);
 		}
 
 		// Create the graphics program
-		Renderer::IGraphicsProgramPtr graphicsProgram;
+		Rhi::IGraphicsProgramPtr graphicsProgram;
 		{
 			// Get the shader source code (outsourced to keep an overview)
 			const char* vertexShaderSourceCode = nullptr;
@@ -164,7 +164,7 @@ void FirstMesh::onInitialization()
 			#include "FirstMesh_Null.h"
 
 			// Create the graphics program
-			Renderer::IShaderLanguage& shaderLanguage = renderer->getDefaultShaderLanguage();
+			Rhi::IShaderLanguage& shaderLanguage = rhi->getDefaultShaderLanguage();
 			mGraphicsProgram = graphicsProgram = shaderLanguage.createGraphicsProgram(
 				*mRootSignature,
 				vertexAttributes,
@@ -176,9 +176,9 @@ void FirstMesh::onInitialization()
 		if (nullptr != graphicsProgram)
 		{
 			// Create the graphics pipeline state object (PSO)
-			mGraphicsPipelineState = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass()));
+			mGraphicsPipelineState = rhi->createGraphicsPipelineState(Rhi::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass()));
 
-			// Optimization: Cached data to not bother the renderer API too much
+			// Optimization: Cached data to not bother the RHI too much
 			if (nullptr == mUniformBuffer)
 			{
 				mObjectSpaceToClipSpaceMatrixUniformHandle = graphicsProgram->getUniformHandle("ObjectSpaceToClipSpaceMatrix");
@@ -197,7 +197,7 @@ void FirstMesh::onInitialization()
 		}
 	}
 
-	// Since we're always submitting the same commands to the renderer, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
+	// Since we're always submitting the same commands to the RHI, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
 	fillCommandBuffer();
 }
 
@@ -212,7 +212,7 @@ void FirstMesh::onDeinitialization()
 		rendererRuntime.getMeshResourceManager().setInvalidResourceId(mMeshResourceId, *this);
 	}
 
-	// Release the used renderer resources
+	// Release the used RHI resources
 	mObjectSpaceToViewSpaceMatrixUniformHandle = NULL_HANDLE;
 	mObjectSpaceToClipSpaceMatrixUniformHandle = NULL_HANDLE;
 	mSamplerStateGroup = nullptr;
@@ -239,16 +239,16 @@ void FirstMesh::onUpdate()
 
 void FirstMesh::onDraw()
 {
-	// Get and check the renderer instance
-	Renderer::IRendererPtr renderer(getRenderer());
-	if (nullptr != renderer)
+	// Get and check the RHI instance
+	Rhi::IRhiPtr rhi(getRhi());
+	if (nullptr != rhi)
 	{
 		{ // Set uniform
 			// Get the aspect ratio
 			float aspectRatio = 4.0f / 3.0f;
 			{
 				// Get the render target with and height
-				const Renderer::IRenderTarget* renderTarget = getMainRenderTarget();
+				const Rhi::IRenderTarget* renderTarget = getMainRenderTarget();
 				if (nullptr != renderTarget)
 				{
 					uint32_t width  = 1;
@@ -286,11 +286,11 @@ void FirstMesh::onDraw()
 				memcpy(uniformBlockDynamicVS.objectSpaceToViewSpaceMatrix, glm::value_ptr(objectSpaceToViewSpace), sizeof(float) * 4 * 4);
 
 				// Copy data
-				Renderer::MappedSubresource mappedSubresource;
-				if (renderer->map(*mUniformBuffer, 0, Renderer::MapType::WRITE_DISCARD, 0, mappedSubresource))
+				Rhi::MappedSubresource mappedSubresource;
+				if (rhi->map(*mUniformBuffer, 0, Rhi::MapType::WRITE_DISCARD, 0, mappedSubresource))
 				{
 					memcpy(mappedSubresource.data, &uniformBlockDynamicVS, sizeof(UniformBlockDynamicVs));
-					renderer->unmap(*mUniformBuffer, 0);
+					rhi->unmap(*mUniformBuffer, 0);
 				}
 			}
 			else
@@ -302,8 +302,8 @@ void FirstMesh::onDraw()
 			}
 		}
 
-		// Submit command buffer to the renderer backend
-		mCommandBuffer.submitToRenderer(*renderer);
+		// Submit command buffer to the RHI implementation
+		mCommandBuffer.submitToRhi(*rhi);
 	}
 }
 
@@ -329,37 +329,37 @@ void FirstMesh::fillCommandBuffer()
 			}
 
 			// Create resource group
-			Renderer::IResource* resources[4] = { mUniformBuffer, _argb_nxaTextureResource->getTexturePtr(), _hr_rg_mb_nyaTextureResource->getTexturePtr(), emissiveTextureResource->getTexturePtr() };
-			Renderer::ISamplerState* samplerStates[4] = { nullptr, mSamplerStatePtr, mSamplerStatePtr, mSamplerStatePtr };
+			Rhi::IResource* resources[4] = { mUniformBuffer, _argb_nxaTextureResource->getTexturePtr(), _hr_rg_mb_nyaTextureResource->getTexturePtr(), emissiveTextureResource->getTexturePtr() };
+			Rhi::ISamplerState* samplerStates[4] = { nullptr, mSamplerStatePtr, mSamplerStatePtr, mSamplerStatePtr };
 			mResourceGroup = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources, samplerStates);
 		}
 
-		// Get and check the renderer instance
-		Renderer::IRendererPtr renderer(getRenderer());
-		if (nullptr != renderer && nullptr != mGraphicsPipelineState)
+		// Get and check the RHI instance
+		Rhi::IRhiPtr rhi(getRhi());
+		if (nullptr != rhi && nullptr != mGraphicsPipelineState)
 		{
 			// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
 			RENDERER_SCOPED_PROFILER_EVENT(rendererRuntime.getContext(), mCommandBuffer, "First mesh")
 
 			// Clear the graphics color buffer of the current render target with gray, do also clear the depth buffer
-			Renderer::Command::ClearGraphics::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
+			Rhi::Command::ClearGraphics::create(mCommandBuffer, Rhi::ClearFlag::COLOR_DEPTH, Color4::GRAY);
 
 			// Set the used graphics root signature
-			Renderer::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
+			Rhi::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
 
 			// Set the used graphics pipeline state object (PSO)
-			Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineState);
+			Rhi::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineState);
 
 			// Set graphics resource groups
-			Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 0, mResourceGroup);
-			Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 1, mSamplerStateGroup);
+			Rhi::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 0, mResourceGroup);
+			Rhi::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 1, mSamplerStateGroup);
 
 			{ // Draw mesh instance
 				// Input assembly (IA): Set the used vertex array
-				Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, meshResource->getVertexArrayPtr());
+				Rhi::Command::SetGraphicsVertexArray::create(mCommandBuffer, meshResource->getVertexArrayPtr());
 
 				// Render the specified geometric primitive, based on indexing into an array of vertices
-				Renderer::Command::DrawIndexedGraphics::create(mCommandBuffer, meshResource->getNumberOfIndices());
+				Rhi::Command::DrawIndexedGraphics::create(mCommandBuffer, meshResource->getNumberOfIndices());
 			}
 		}
 	}

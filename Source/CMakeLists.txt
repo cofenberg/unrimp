@@ -27,7 +27,7 @@ cmake_minimum_required(VERSION 3.11.0)
 ##################################################
 ## Subdirectories
 ##################################################
-add_subdirectory(Renderer)
+add_subdirectory(Rhi)
 if(RENDERER_RUNTIME)
 	add_subdirectory(RendererRuntime)
 endif()

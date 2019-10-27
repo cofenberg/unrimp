@@ -34,7 +34,7 @@
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace Renderer
+namespace Rhi
 {
 	class IVertexArray;
 	class IBufferManager;
@@ -115,18 +115,18 @@ namespace RendererRuntime
 		virtual ~MeshResourceLoader() override;
 		explicit MeshResourceLoader(const MeshResourceLoader&) = delete;
 		MeshResourceLoader& operator=(const MeshResourceLoader&) = delete;
-		[[nodiscard]] Renderer::IVertexArray* createVertexArray() const;
+		[[nodiscard]] Rhi::IVertexArray* createVertexArray() const;
 
 
 	//[-------------------------------------------------------]
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		Renderer::IBufferManager& mBufferManager;	///< Buffer manager instance, do not destroy the instance
+		Rhi::IBufferManager& mBufferManager;	///< Buffer manager instance, do not destroy the instance
 
 		// Temporary data
-		Renderer::IVertexArray* mVertexArray;	///< In case the used renderer backend supports native multithreading we also create the renderer resource asynchronous, but the final resource pointer reassignment must still happen synchronous
-		MemoryFile				mMemoryFile;
+		Rhi::IVertexArray* mVertexArray;	///< In case the used RHI implementation supports native multithreading we also create the RHI resource asynchronous, but the final resource pointer reassignment must still happen synchronous
+		MemoryFile		   mMemoryFile;
 
 		// Temporary vertex buffer
 		uint32_t mNumberOfVertexBufferDataBytes;
@@ -137,12 +137,12 @@ namespace RendererRuntime
 		uint32_t mNumberOfIndexBufferDataBytes;
 		uint32_t mNumberOfUsedIndexBufferDataBytes;
 		uint8_t* mIndexBufferData;
-		uint8_t  mIndexBufferFormat;	// "Renderer::IndexBufferFormat", don't want to include the header in here
+		uint8_t  mIndexBufferFormat;	// "Rhi::IndexBufferFormat", don't want to include the header in here
 
 		// Temporary vertex attributes
-		uint32_t				   mNumberOfVertexAttributes;
-		uint32_t				   mNumberOfUsedVertexAttributes;
-		Renderer::VertexAttribute* mVertexAttributes;
+		uint32_t			  mNumberOfVertexAttributes;
+		uint32_t			  mNumberOfUsedVertexAttributes;
+		Rhi::VertexAttribute* mVertexAttributes;
 
 		// Temporary sub-meshes
 		uint32_t		 mNumberOfSubMeshes;

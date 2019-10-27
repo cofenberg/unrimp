@@ -58,7 +58,7 @@ namespace RendererRuntime
 		{
 			for (int i = 0; i < preprocessData->error_count; ++i)
 			{
-				RENDERER_LOG(rendererRuntime.getContext(), CRITICAL, "Renderer runtime shader preprocessor %s:%d: Error: %s", preprocessData->errors[i].filename ? preprocessData->errors[i].filename : "???", preprocessData->errors[i].error_position, preprocessData->errors[i].error)
+				RHI_LOG(rendererRuntime.getContext(), CRITICAL, "Renderer runtime shader preprocessor %s:%d: Error: %s", preprocessData->errors[i].filename ? preprocessData->errors[i].filename : "???", preprocessData->errors[i].error_position, preprocessData->errors[i].error)
 			}
 		}
 		else

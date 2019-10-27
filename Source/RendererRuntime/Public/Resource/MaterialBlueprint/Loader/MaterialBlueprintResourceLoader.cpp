@@ -109,7 +109,7 @@ namespace RendererRuntime
 			// Read in the root signature header
 			v1MaterialBlueprint::RootSignatureHeader rootSignatureHeader;
 			mMemoryFile.read(&rootSignatureHeader, sizeof(v1MaterialBlueprint::RootSignatureHeader));
-			RENDERER_ASSERT(mRendererRuntime.getContext(), rootSignatureHeader.numberOfRootParameters > 0 || 0 == rootSignatureHeader.numberOfDescriptorRanges, "Invalid root signature without root parameters but with descriptor ranges detected")
+			RHI_ASSERT(mRendererRuntime.getContext(), rootSignatureHeader.numberOfRootParameters > 0 || 0 == rootSignatureHeader.numberOfDescriptorRanges, "Invalid root signature without root parameters but with descriptor ranges detected")
 
 			// Load in root signature data
 			if (rootSignatureHeader.numberOfRootParameters > 0)
@@ -127,9 +127,9 @@ namespace RendererRuntime
 				}
 
 				// Load in the root parameters
-				std::vector<Renderer::RootParameterData> rootParameterData;
+				std::vector<Rhi::RootParameterData> rootParameterData;
 				rootParameterData.resize(rootSignatureHeader.numberOfRootParameters);
-				mMemoryFile.read(rootParameterData.data(), sizeof(Renderer::RootParameterData) * rootSignatureHeader.numberOfRootParameters);
+				mMemoryFile.read(rootParameterData.data(), sizeof(Rhi::RootParameterData) * rootSignatureHeader.numberOfRootParameters);
 				for (size_t index = 0; index < rootSignatureHeader.numberOfRootParameters; ++index)
 				{
 					mRootParameters[index].parameterType = rootParameterData[index].parameterType;
@@ -139,7 +139,7 @@ namespace RendererRuntime
 				// Load in the descriptor ranges
 				if (rootSignatureHeader.numberOfDescriptorRanges > 0)
 				{
-					mMemoryFile.read(mDescriptorRanges.data(), sizeof(Renderer::DescriptorRange) * rootSignatureHeader.numberOfDescriptorRanges);
+					mMemoryFile.read(mDescriptorRanges.data(), sizeof(Rhi::DescriptorRange) * rootSignatureHeader.numberOfDescriptorRanges);
 				}
 				else
 				{
@@ -157,14 +157,14 @@ namespace RendererRuntime
 			mRootSignature.parameters			  = mRootParameters.data();
 			mRootSignature.numberOfStaticSamplers = rootSignatureHeader.numberOfStaticSamplers;
 			mRootSignature.staticSamplers		  = nullptr;	// TODO(co) Add support for static samplers
-			mRootSignature.flags				  = static_cast<Renderer::RootSignatureFlags::Enum>(rootSignatureHeader.flags);
+			mRootSignature.flags				  = static_cast<Rhi::RootSignatureFlags::Enum>(rootSignatureHeader.flags);
 
 			{ // Tell the temporary root signature about the descriptor ranges
-				Renderer::DescriptorRange* descriptorRange = mDescriptorRanges.data();
+				Rhi::DescriptorRange* descriptorRange = mDescriptorRanges.data();
 				for (uint32_t i = 0; i < rootSignatureHeader.numberOfRootParameters; ++i)
 				{
-					Renderer::RootParameter& rootParameter = mRootParameters[i];
-					if (Renderer::RootParameterType::DESCRIPTOR_TABLE == rootParameter.parameterType)
+					Rhi::RootParameter& rootParameter = mRootParameters[i];
+					if (Rhi::RootParameterType::DESCRIPTOR_TABLE == rootParameter.parameterType)
 					{
 						rootParameter.descriptorTable.descriptorRanges = reinterpret_cast<uintptr_t>(descriptorRange);
 						descriptorRange += rootParameter.descriptorTable.numberOfDescriptorRanges;
@@ -187,7 +187,7 @@ namespace RendererRuntime
 			mMemoryFile.read(&mGraphicsShaderBlueprintAssetId, sizeof(AssetId) * NUMBER_OF_GRAPHICS_SHADER_TYPES);
 
 			// Read in the graphics pipeline state
-			mMemoryFile.read(&mMaterialBlueprintResource->mGraphicsPipelineState, sizeof(Renderer::SerializedGraphicsPipelineState));
+			mMemoryFile.read(&mMaterialBlueprintResource->mGraphicsPipelineState, sizeof(Rhi::SerializedGraphicsPipelineState));
 			mMaterialBlueprintResource->mGraphicsPipelineState.rootSignature = nullptr;
 			mMaterialBlueprintResource->mGraphicsPipelineState.graphicsProgram = nullptr;
 			mMaterialBlueprintResource->mGraphicsPipelineState.vertexAttributes.numberOfAttributes = 0;
@@ -210,7 +210,7 @@ namespace RendererRuntime
 				uniformBuffer.uniformBufferNumberOfBytes = uniformBufferHeader.uniformBufferNumberOfBytes;
 
 				// Sanity check
-				RENDERER_ASSERT(mRendererRuntime.getContext(), uniformBufferHeader.numberOfElementProperties > 0, "Invalid uniform buffer without any element properties detected")
+				RHI_ASSERT(mRendererRuntime.getContext(), uniformBufferHeader.numberOfElementProperties > 0, "Invalid uniform buffer without any element properties detected")
 
 				// Read in the uniform buffer property elements
 				MaterialBlueprintResource::UniformBufferElementProperties& uniformBufferElementProperties = uniformBuffer.uniformBufferElementProperties;
@@ -279,19 +279,19 @@ namespace RendererRuntime
 			mMaterialBlueprintResource->mTextures.clear();
 		}
 
-		// Can we create the renderer resources asynchronous as well?
-		if (mRendererRuntime.getRenderer().getCapabilities().nativeMultithreading)
+		// Can we create the RHI resources asynchronous as well?
+		if (mRendererRuntime.getRhi().getCapabilities().nativeMultithreading)
 		{
-			createRendererResources();
+			createRhiResources();
 		}
 	}
 
 	bool MaterialBlueprintResourceLoader::onDispatch()
 	{
-		// Create the renderer resources, in case it wasn't already done asynchronously
-		if (!mRendererRuntime.getRenderer().getCapabilities().nativeMultithreading)
+		// Create the RHI resources, in case it wasn't already done asynchronously
+		if (!mRendererRuntime.getRhi().getCapabilities().nativeMultithreading)
 		{
-			createRendererResources();
+			createRhiResources();
 		}
 
 		{ // Graphics pipeline state
@@ -345,7 +345,7 @@ namespace RendererRuntime
 
 					case MaterialBlueprintResource::BufferUsage::LIGHT:
 						// Error!
-						RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Invalid buffer usage")
+						RHI_ASSERT(mRendererRuntime.getContext(), false, "Invalid buffer usage")
 						break;
 				}
 			}
@@ -388,7 +388,7 @@ namespace RendererRuntime
 		}
 		{ // It's valid if a material blueprint resource doesn't contain a material uniform buffer (usually the case for compositor material blueprint resources)
 			const MaterialBlueprintResource::UniformBuffer* uniformBuffer = mMaterialBlueprintResource->getMaterialUniformBuffer();
-			if (nullptr != uniformBuffer && mRendererRuntime.getRenderer().getCapabilities().maximumUniformBufferSize > 0)
+			if (nullptr != uniformBuffer && mRendererRuntime.getRhi().getCapabilities().maximumUniformBufferSize > 0)
 			{
 				mMaterialBlueprintResource->mMaterialBufferManager = new MaterialBufferManager(mRendererRuntime, *mMaterialBlueprintResource);
 			}
@@ -448,9 +448,9 @@ namespace RendererRuntime
 						}
 
 						// Sanity check
-						#ifdef _DEBUG
+						#ifdef RHI_DEBUG
 							GET_MATERIAL_PROPERTY_USAGE
-							RENDERER_ASSERT(mRendererRuntime.getContext(), globalMaterialProperty->getValueType() == materialProperty.getValueType() && globalMaterialProperty->getUsage() == materialPropertyUsage, "Invalid property")
+							RHI_ASSERT(mRendererRuntime.getContext(), globalMaterialProperty->getValueType() == materialProperty.getValueType() && globalMaterialProperty->getUsage() == materialPropertyUsage, "Invalid property")
 						#endif
 					}
 				}
@@ -512,17 +512,17 @@ namespace RendererRuntime
 		delete [] mMaterialBlueprintTextures;
 	}
 
-	void MaterialBlueprintResourceLoader::createRendererResources()
+	void MaterialBlueprintResourceLoader::createRhiResources()
 	{
-		Renderer::IRenderer& renderer = mRendererRuntime.getRenderer();
+		Rhi::IRhi& rhi = mRendererRuntime.getRhi();
 
 		// Create the root signature
-		mMaterialBlueprintResource->mRootSignaturePtr = renderer.createRootSignature(mRootSignature);
-		RENDERER_SET_RESOURCE_DEBUG_NAME(mMaterialBlueprintResource->mRootSignaturePtr, getAsset().virtualFilename);
+		mMaterialBlueprintResource->mRootSignaturePtr = rhi.createRootSignature(mRootSignature);
+		RHI_SET_RESOURCE_DEBUG_NAME(mMaterialBlueprintResource->mRootSignaturePtr, getAsset().virtualFilename);
 
 		// Create the sampler states
 		const MaterialBlueprintResourceManager& materialBlueprintResourceManager = mMaterialBlueprintResource->getResourceManager<MaterialBlueprintResourceManager>();
-		const Renderer::FilterMode defaultTextureFilterMode = materialBlueprintResourceManager.getDefaultTextureFilterMode();
+		const Rhi::FilterMode defaultTextureFilterMode = materialBlueprintResourceManager.getDefaultTextureFilterMode();
 		const uint8_t defaultMaximumTextureAnisotropy = materialBlueprintResourceManager.getDefaultMaximumTextureAnisotropy();
 		MaterialBlueprintResource::SamplerStates& samplerStates = mMaterialBlueprintResource->mSamplerStates;
 		const size_t numberOfSamplerStates = samplerStates.size();
@@ -530,9 +530,9 @@ namespace RendererRuntime
 		for (size_t i = 0; i < numberOfSamplerStates; ++i, ++materialBlueprintSamplerState)
 		{
 			MaterialBlueprintResource::SamplerState& samplerState = samplerStates[i];
-			memcpy(&samplerState.rendererSamplerState, &materialBlueprintSamplerState->samplerState, sizeof(Renderer::SamplerState));
+			memcpy(&samplerState.rhiSamplerState, &materialBlueprintSamplerState->samplerState, sizeof(Rhi::SamplerState));
 			samplerState.rootParameterIndex = materialBlueprintSamplerState->rootParameterIndex;
-			if (Renderer::FilterMode::UNKNOWN == materialBlueprintSamplerState->samplerState.filter)
+			if (Rhi::FilterMode::UNKNOWN == materialBlueprintSamplerState->samplerState.filter)
 			{
 				materialBlueprintSamplerState->samplerState.filter = defaultTextureFilterMode;
 			}
@@ -540,8 +540,8 @@ namespace RendererRuntime
 			{
 				materialBlueprintSamplerState->samplerState.maxAnisotropy = defaultMaximumTextureAnisotropy;
 			}
-			samplerState.samplerStatePtr = renderer.createSamplerState(materialBlueprintSamplerState->samplerState);
-			RENDERER_SET_RESOURCE_DEBUG_NAME(samplerState.samplerStatePtr, getAsset().virtualFilename)
+			samplerState.samplerStatePtr = rhi.createSamplerState(materialBlueprintSamplerState->samplerState);
+			RHI_SET_RESOURCE_DEBUG_NAME(samplerState.samplerStatePtr, getAsset().virtualFilename)
 		}
 		mMaterialBlueprintResource->mSamplerStateGroup = nullptr;
 	}

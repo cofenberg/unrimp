@@ -66,13 +66,13 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void RenderTargetTextureManager::clear()
 	{
-		clearRendererResources();
+		clearRhiResources();
 		mSortedRenderTargetTextureVector.clear();
 		mAssetIdToRenderTargetTextureSignatureId.clear();
 		mAssetIdToIndex.clear();
 	}
 
-	void RenderTargetTextureManager::clearRendererResources()
+	void RenderTargetTextureManager::clearRhiResources()
 	{
 		TextureResourceManager& textureResourceManager = mRendererRuntime.getTextureResourceManager();
 		for (RenderTargetTextureElement& renderTargetTextureElement : mSortedRenderTargetTextureVector)
@@ -85,7 +85,7 @@ namespace RendererRuntime
 				}
 			}
 
-			// Release renderer texture reference
+			// Release RHI texture reference
 			if (nullptr != renderTargetTextureElement.texture)
 			{
 				renderTargetTextureElement.texture->releaseReference();
@@ -98,7 +98,7 @@ namespace RendererRuntime
 	{
 		RenderTargetTextureElement renderTargetTextureElement(assetId, renderTargetTextureSignature);
 
-		// TODO(co) The render target texture and framebuffer handling is still under construction regarding recycling renderer resources etc. - so for now, just add render target textures to have something to start with
+		// TODO(co) The render target texture and framebuffer handling is still under construction regarding recycling RHI resources etc. - so for now, just add render target textures to have something to start with
 		{ // Add new render target texture
 			// Register the new render target texture element
 			++renderTargetTextureElement.numberOfReferences;
@@ -124,12 +124,12 @@ namespace RendererRuntime
 		*/
 	}
 
-	Renderer::ITexture* RenderTargetTextureManager::getTextureByAssetId(AssetId assetId, const Renderer::IRenderTarget& renderTarget, uint8_t numberOfMultisamples, float resolutionScale, const RenderTargetTextureSignature** outRenderTargetTextureSignature)
+	Rhi::ITexture* RenderTargetTextureManager::getTextureByAssetId(AssetId assetId, const Rhi::IRenderTarget& renderTarget, uint8_t numberOfMultisamples, float resolutionScale, const RenderTargetTextureSignature** outRenderTargetTextureSignature)
 	{
-		Renderer::ITexture* texture = nullptr;
+		Rhi::ITexture* texture = nullptr;
 
 		// Map asset ID to render target texture signature ID
-		// TODO(co) The render target texture and framebuffer handling is still under construction regarding recycling renderer resources etc. - so for now, just add render target textures to have something to start with
+		// TODO(co) The render target texture and framebuffer handling is still under construction regarding recycling RHI resources etc. - so for now, just add render target textures to have something to start with
 		/*
 		AssetIdToRenderTargetTextureSignatureId::const_iterator iterator = mAssetIdToRenderTargetTextureSignatureId.find(assetId);
 		if (mAssetIdToRenderTargetTextureSignatureId.cend() != iterator)
@@ -147,9 +147,9 @@ namespace RendererRuntime
 			{
 				*outRenderTargetTextureSignature = &renderTargetTextureSignature;
 			}
-			// if (renderTargetTextureSignature.getRenderTargetTextureSignatureId() == renderTargetTextureSignatureId)	// TODO(co) The render target texture and framebuffer handling is still under construction regarding recycling renderer resources etc. - so for now, just add render target textures to have something to start with
+			// if (renderTargetTextureSignature.getRenderTargetTextureSignatureId() == renderTargetTextureSignatureId)	// TODO(co) The render target texture and framebuffer handling is still under construction regarding recycling RHI resources etc. - so for now, just add render target textures to have something to start with
 			{
-				// Do we need to create the renderer texture instance right now?
+				// Do we need to create the RHI texture instance right now?
 				if (nullptr == renderTargetTextureElement.texture)
 				{
 					// Get the texture width and height and apply resolution scale in case the main compositor workspace render target is used
@@ -186,29 +186,29 @@ namespace RendererRuntime
 					uint32_t textureFlags = 0;
 					if ((renderTargetTextureSignature.getFlags() & RenderTargetTextureSignature::Flag::UNORDERED_ACCESS) != 0)
 					{
-						textureFlags |= Renderer::TextureFlag::UNORDERED_ACCESS;
+						textureFlags |= Rhi::TextureFlag::UNORDERED_ACCESS;
 					}
 					if ((renderTargetTextureSignature.getFlags() & RenderTargetTextureSignature::Flag::SHADER_RESOURCE) != 0)
 					{
-						textureFlags |= Renderer::TextureFlag::SHADER_RESOURCE;
+						textureFlags |= Rhi::TextureFlag::SHADER_RESOURCE;
 					}
 					if ((renderTargetTextureSignature.getFlags() & RenderTargetTextureSignature::Flag::RENDER_TARGET) != 0)
 					{
-						textureFlags |= Renderer::TextureFlag::RENDER_TARGET;
+						textureFlags |= Rhi::TextureFlag::RENDER_TARGET;
 					}
 					if ((renderTargetTextureSignature.getFlags() & RenderTargetTextureSignature::Flag::GENERATE_MIPMAPS) != 0)
 					{
-						textureFlags |= Renderer::TextureFlag::GENERATE_MIPMAPS;
-						textureFlags |= Renderer::TextureFlag::RENDER_TARGET;	// Needed when generating mipmaps
+						textureFlags |= Rhi::TextureFlag::GENERATE_MIPMAPS;
+						textureFlags |= Rhi::TextureFlag::RENDER_TARGET;	// Needed when generating mipmaps
 					}
 
 					// Create the texture instance, but without providing texture data (we use the texture as render target)
-					// -> Use the "Renderer::TextureFlag::RENDER_TARGET"-flag to mark this texture as a render target
+					// -> Use the "Rhi::TextureFlag::RENDER_TARGET"-flag to mark this texture as a render target
 					// -> Required for Vulkan, Direct3D 9, Direct3D 10, Direct3D 11 and Direct3D 12
 					// -> Not required for OpenGL and OpenGL ES 3
 					// -> The optimized texture clear value is a Direct3D 12 related option
-					renderTargetTextureElement.texture = mRendererRuntime.getTextureManager().createTexture2D(width, height, renderTargetTextureSignature.getTextureFormat(), nullptr, textureFlags, Renderer::TextureUsage::DEFAULT, ((renderTargetTextureSignature.getFlags() & RenderTargetTextureSignature::Flag::ALLOW_MULTISAMPLE) != 0) ? numberOfMultisamples : 1u);
-					RENDERER_SET_RESOURCE_DEBUG_NAME(renderTargetTextureElement.texture, "Render target texture manager")
+					renderTargetTextureElement.texture = mRendererRuntime.getTextureManager().createTexture2D(width, height, renderTargetTextureSignature.getTextureFormat(), nullptr, textureFlags, Rhi::TextureUsage::DEFAULT, ((renderTargetTextureSignature.getFlags() & RenderTargetTextureSignature::Flag::ALLOW_MULTISAMPLE) != 0) ? numberOfMultisamples : 1u);
+					RHI_SET_RESOURCE_DEBUG_NAME(renderTargetTextureElement.texture, "Render target texture manager")
 					renderTargetTextureElement.texture->addReference();
 
 					{ // Tell the texture resource manager about our render target texture so it can be referenced inside e.g. compositor nodes
@@ -227,7 +227,7 @@ namespace RendererRuntime
 					}
 				}
 				texture = renderTargetTextureElement.texture;
-				// break;	// TODO(co) The render target texture and framebuffer handling is still under construction regarding recycling renderer resources etc. - so for now, just add render target textures to have something to start with
+				// break;	// TODO(co) The render target texture and framebuffer handling is still under construction regarding recycling RHI resources etc. - so for now, just add render target textures to have something to start with
 			}
 			ASSERT(nullptr != texture);
 		}
@@ -262,7 +262,7 @@ namespace RendererRuntime
 					}
 				}
 
-				// Release renderer texture reference
+				// Release RHI texture reference
 				if (nullptr != iterator->texture)
 				{
 					iterator->texture->releaseReference();

@@ -78,7 +78,7 @@ namespace RendererRuntime
 	//[ Protected RendererRuntime::ITextureResourceLoader methods ]
 	//[-------------------------------------------------------]
 	protected:
-		[[nodiscard]] virtual Renderer::ITexture* createRendererTexture() override;
+		[[nodiscard]] virtual Rhi::ITexture* createRhiTexture() override;
 
 
 	//[-------------------------------------------------------]
@@ -115,7 +115,7 @@ namespace RendererRuntime
 		// Temporary data
 		uint32_t mWidth;
 		uint32_t mHeight;
-		uint8_t  mTextureFormat;	// "Renderer::TextureFormat", don't want to include the header in here
+		uint8_t  mTextureFormat;	// "Rhi::TextureFormat", don't want to include the header in here
 		bool	 mCubeMap;
 		bool	 mDataContainsMipmaps;
 

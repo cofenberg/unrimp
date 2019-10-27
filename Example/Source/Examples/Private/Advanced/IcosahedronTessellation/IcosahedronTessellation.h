@@ -29,7 +29,7 @@
 //[-------------------------------------------------------]
 #include "Examples/Private/Framework/ExampleBase.h"
 
-#include <Renderer/Public/Renderer.h>
+#include <Rhi/Public/Rhi.h>
 
 
 //[-------------------------------------------------------]
@@ -99,18 +99,18 @@ private:
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
-	Renderer::IBufferManagerPtr			mBufferManager;				///< Buffer manager, can be a null pointer
-	Renderer::CommandBuffer				mCommandBuffer;				///< Command buffer
-	Renderer::IRootSignaturePtr			mRootSignature;				///< Root signature, can be a null pointer
-	Renderer::IUniformBufferPtr			mUniformBufferDynamicTcs;	///< Dynamic tessellation control shader uniform buffer object (UBO), can be a null pointer
-	Renderer::IResourceGroupPtr			mUniformBufferGroupTcs;		///< Uniform buffer group with tessellation control shader visibility, can be a null pointer
-	Renderer::IResourceGroupPtr			mUniformBufferGroupTes;		///< Uniform buffer group with tessellation evaluation shader visibility, can be a null pointer
-	Renderer::IResourceGroupPtr			mUniformBufferGroupGs;		///< Uniform buffer group with geometry visibility, can be a null pointer
-	Renderer::IResourceGroupPtr			mUniformBufferGroupFs;		///< Uniform buffer group with fragment shader visibility, can be a null pointer
-	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineState;		///< Graphics pipeline state object (PSO), can be a null pointer
-	Renderer::IVertexArrayPtr			mVertexArray;				///< Vertex array object (VAO), can be a null pointer
-	float								mTessellationLevelOuter;	///< Outer tessellation level
-	float								mTessellationLevelInner;	///< Inner tessellation level
+	Rhi::IBufferManagerPtr			mBufferManager;				///< Buffer manager, can be a null pointer
+	Rhi::CommandBuffer				mCommandBuffer;				///< Command buffer
+	Rhi::IRootSignaturePtr			mRootSignature;				///< Root signature, can be a null pointer
+	Rhi::IUniformBufferPtr			mUniformBufferDynamicTcs;	///< Dynamic tessellation control shader uniform buffer object (UBO), can be a null pointer
+	Rhi::IResourceGroupPtr			mUniformBufferGroupTcs;		///< Uniform buffer group with tessellation control shader visibility, can be a null pointer
+	Rhi::IResourceGroupPtr			mUniformBufferGroupTes;		///< Uniform buffer group with tessellation evaluation shader visibility, can be a null pointer
+	Rhi::IResourceGroupPtr			mUniformBufferGroupGs;		///< Uniform buffer group with geometry visibility, can be a null pointer
+	Rhi::IResourceGroupPtr			mUniformBufferGroupFs;		///< Uniform buffer group with fragment shader visibility, can be a null pointer
+	Rhi::IGraphicsPipelineStatePtr	mGraphicsPipelineState;		///< Graphics pipeline state object (PSO), can be a null pointer
+	Rhi::IVertexArrayPtr			mVertexArray;				///< Vertex array object (VAO), can be a null pointer
+	float							mTessellationLevelOuter;	///< Outer tessellation level
+	float							mTessellationLevelInner;	///< Inner tessellation level
 
 
 };

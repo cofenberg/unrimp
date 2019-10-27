@@ -40,8 +40,6 @@
 #endif
 #include "RendererRuntime/Public/IRendererRuntime.h"
 
-#include <Renderer/Public/Renderer.h>
-
 #ifdef RENDERER_RUNTIME_IMGUI
 	#include <imgui/imgui.h>
 #endif
@@ -167,9 +165,9 @@ namespace
 				}
 			}
 
-			// Create the renderer texture resource
-			Renderer::ITexturePtr texturePtr(rendererRuntime.getTextureManager().createTexture3D(SIZE, SIZE, SIZE, Renderer::TextureFormat::R8G8B8A8, data, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
-			RENDERER_SET_RESOURCE_DEBUG_NAME(texturePtr, "3D identity color correction lookup table (LUT) texture")
+			// Create the RHI texture resource
+			Rhi::ITexturePtr texturePtr(rendererRuntime.getTextureManager().createTexture3D(SIZE, SIZE, SIZE, Rhi::TextureFormat::R8G8B8A8, data, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
+			RHI_SET_RESOURCE_DEBUG_NAME(texturePtr, "3D identity color correction lookup table (LUT) texture")
 
 			// Create dynamic texture asset
 			return rendererRuntime.getTextureResourceManager().createTextureResourceByAssetId(ASSET_ID("Unrimp/Texture/DynamicByCode/IdentityColorCorrectionLookupTable3D"), *texturePtr);
@@ -215,9 +213,9 @@ namespace
 				}
 			}
 
-			// Create the renderer texture resource
-			Renderer::ITexturePtr texturePtr(rendererRuntime.getTextureManager().createTexture1D(KERNEL_SIZE, Renderer::TextureFormat::R32G32B32A32F, kernel, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
-			RENDERER_SET_RESOURCE_DEBUG_NAME(texturePtr, "1D screen space ambient occlusion sample kernel texture")
+			// Create the RHI texture resource
+			Rhi::ITexturePtr texturePtr(rendererRuntime.getTextureManager().createTexture1D(KERNEL_SIZE, Rhi::TextureFormat::R32G32B32A32F, kernel, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
+			RHI_SET_RESOURCE_DEBUG_NAME(texturePtr, "1D screen space ambient occlusion sample kernel texture")
 
 			// Create dynamic texture asset
 			return rendererRuntime.getTextureResourceManager().createTextureResourceByAssetId(ASSET_ID("Unrimp/Texture/DynamicByCode/SsaoSampleKernel"), *texturePtr);
@@ -254,9 +252,9 @@ namespace
 				}
 			}
 
-			// Create the renderer texture resource
-			Renderer::ITexturePtr texturePtr(rendererRuntime.getTextureManager().createTexture2D(NOISE_SIZE, NOISE_SIZE, Renderer::TextureFormat::R32G32B32A32F, noise, Renderer::TextureFlag::SHADER_RESOURCE, Renderer::TextureUsage::IMMUTABLE));
-			RENDERER_SET_RESOURCE_DEBUG_NAME(texturePtr, "2D screen space ambient occlusion 4x4 noise texture")
+			// Create the RHI texture resource
+			Rhi::ITexturePtr texturePtr(rendererRuntime.getTextureManager().createTexture2D(NOISE_SIZE, NOISE_SIZE, Rhi::TextureFormat::R32G32B32A32F, noise, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
+			RHI_SET_RESOURCE_DEBUG_NAME(texturePtr, "2D screen space ambient occlusion 4x4 noise texture")
 
 			// Create dynamic texture asset
 			return rendererRuntime.getTextureResourceManager().createTextureResourceByAssetId(ASSET_ID("Unrimp/Texture/DynamicByCode/SsaoNoise4x4"), *texturePtr);
@@ -352,12 +350,12 @@ namespace RendererRuntime
 		textureResourceManager.destroyTextureResource(mSsaoNoiseTexture4x4ResourceId);
 	}
 
-	void MaterialBlueprintResourceListener::beginFillPass(IRendererRuntime& rendererRuntime, const Renderer::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, PassBufferManager::PassData& passData)
+	void MaterialBlueprintResourceListener::beginFillPass(IRendererRuntime& rendererRuntime, const Rhi::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, PassBufferManager::PassData& passData)
 	{
 		// Sanity checks: The render target to render into must be valid for graphics pipeline and must be a null pointer for compute pipeline
-		RENDERER_ASSERT(mRendererRuntime->getContext(), compositorContextData.getCurrentlyBoundMaterialBlueprintResource() != nullptr, "Invalid currently bound material blueprint resource")
-		RENDERER_ASSERT(mRendererRuntime->getContext(), isValid(compositorContextData.getCurrentlyBoundMaterialBlueprintResource()->getComputeShaderBlueprintResourceId()) || nullptr != renderTarget, "Graphics pipeline used but render target is invalid")
-		RENDERER_ASSERT(mRendererRuntime->getContext(), isInvalid(compositorContextData.getCurrentlyBoundMaterialBlueprintResource()->getComputeShaderBlueprintResourceId()) || nullptr == renderTarget, "Compute pipeline used but render target is valid")
+		RHI_ASSERT(mRendererRuntime->getContext(), compositorContextData.getCurrentlyBoundMaterialBlueprintResource() != nullptr, "Invalid currently bound material blueprint resource")
+		RHI_ASSERT(mRendererRuntime->getContext(), isValid(compositorContextData.getCurrentlyBoundMaterialBlueprintResource()->getComputeShaderBlueprintResourceId()) || nullptr != renderTarget, "Graphics pipeline used but render target is invalid")
+		RHI_ASSERT(mRendererRuntime->getContext(), isInvalid(compositorContextData.getCurrentlyBoundMaterialBlueprintResource()->getComputeShaderBlueprintResourceId()) || nullptr == renderTarget, "Compute pipeline used but render target is valid")
 
 		// Remember the pass data memory address of the current scope
 		mRendererRuntime = &rendererRuntime;
@@ -369,7 +367,7 @@ namespace RendererRuntime
 		if (nullptr != renderTarget)
 		{
 			// Graphics pipeline
-			#ifdef _DEBUG
+			#ifdef RHI_DEBUG
 				mIsComputePipeline = false;
 			#endif
 			renderTarget->getWidthAndHeight(mRenderTargetWidth, mRenderTargetHeight);
@@ -377,7 +375,7 @@ namespace RendererRuntime
 		else
 		{
 			// Compute pipeline: Just a fallback render target width and height to not having things horrible broken in case of misuse or an error
-			#ifdef _DEBUG
+			#ifdef RHI_DEBUG
 				mIsComputePipeline = true;
 			#endif
 			mRenderTargetWidth = compositorContextData.getGlobalComputeSize()[0];
@@ -468,130 +466,130 @@ namespace RendererRuntime
 		switch (referenceValue)
 		{
 			case ::detail::WORLD_SPACE_TO_VIEW_SPACE_MATRIX:
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
 				memcpy(buffer, glm::value_ptr(mPassData->cameraRelativeWorldSpaceToViewSpaceMatrix[0]), numberOfBytes);
 				break;
 
 			case ::detail::WORLD_SPACE_TO_VIEW_SPACE_MATRIX_2:
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
 				memcpy(buffer, glm::value_ptr(mPassData->cameraRelativeWorldSpaceToViewSpaceMatrix[1]), numberOfBytes);
 				break;
 
 			case ::detail::VIEW_SPACE_TO_WORLD_SPACE_MATRIX:
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
 				memcpy(buffer, glm::value_ptr(glm::inverse(mPassData->cameraRelativeWorldSpaceToViewSpaceMatrix[0])), numberOfBytes);
 				break;
 
 			case ::detail::WORLD_SPACE_TO_VIEW_SPACE_QUATERNION:
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 == numberOfBytes, "Invalid number of bytes")
 				memcpy(buffer, glm::value_ptr(mPassData->cameraRelativeWorldSpaceToViewSpaceQuaternion[0]), numberOfBytes);
 				break;
 
 			case ::detail::WORLD_SPACE_TO_VIEW_SPACE_QUATERNION_2:
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 == numberOfBytes, "Invalid number of bytes")
 				memcpy(buffer, glm::value_ptr(mPassData->cameraRelativeWorldSpaceToViewSpaceQuaternion[1]), numberOfBytes);
 				break;
 
 			case ::detail::VIEW_SPACE_TO_WORLD_SPACE_QUATERNION:
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 == numberOfBytes, "Invalid number of bytes")
 				memcpy(buffer, glm::value_ptr(glm::inverse(mPassData->cameraRelativeWorldSpaceToViewSpaceQuaternion[0])), numberOfBytes);
 				break;
 
 			case ::detail::VIEW_SPACE_TO_WORLD_SPACE_QUATERNION_2:
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 == numberOfBytes, "Invalid number of bytes")
 				memcpy(buffer, glm::value_ptr(glm::inverse(mPassData->cameraRelativeWorldSpaceToViewSpaceQuaternion[1])), numberOfBytes);
 				break;
 
 			// Only valid for graphics pipeline
 			case ::detail::WORLD_SPACE_TO_CLIP_SPACE_MATRIX:
-				RENDERER_ASSERT(mRendererRuntime->getContext(), !mIsComputePipeline, "\"WORLD_SPACE_TO_CLIP_SPACE_MATRIX\" is only valid for graphics pipeline")
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), !mIsComputePipeline, "\"WORLD_SPACE_TO_CLIP_SPACE_MATRIX\" is only valid for graphics pipeline")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
 				memcpy(buffer, glm::value_ptr(mPassData->cameraRelativeWorldSpaceToClipSpaceMatrixReversedZ[0]), numberOfBytes);
 				break;
 
 			// Only valid for graphics pipeline
 			case ::detail::WORLD_SPACE_TO_CLIP_SPACE_MATRIX_2:
-				RENDERER_ASSERT(mRendererRuntime->getContext(), !mIsComputePipeline, "\"WORLD_SPACE_TO_CLIP_SPACE_MATRIX_2\" is only valid for graphics pipeline")
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), !mIsComputePipeline, "\"WORLD_SPACE_TO_CLIP_SPACE_MATRIX_2\" is only valid for graphics pipeline")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
 				memcpy(buffer, glm::value_ptr(mPassData->cameraRelativeWorldSpaceToClipSpaceMatrixReversedZ[1]), numberOfBytes);
 				break;
 
 			// Only valid for graphics pipeline
 			case ::detail::PREVIOUS_WORLD_SPACE_TO_CLIP_SPACE_MATRIX:
-				RENDERER_ASSERT(mRendererRuntime->getContext(), !mIsComputePipeline, "\"PREVIOUS_WORLD_SPACE_TO_CLIP_SPACE_MATRIX\" is only valid for graphics pipeline")
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), !mIsComputePipeline, "\"PREVIOUS_WORLD_SPACE_TO_CLIP_SPACE_MATRIX\" is only valid for graphics pipeline")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
 				memcpy(buffer, glm::value_ptr(mPassData->previousCameraRelativeWorldSpaceToClipSpaceMatrixReversedZ[0]), numberOfBytes);
 				break;
 
 			// Only valid for graphics pipeline
 			case ::detail::PREVIOUS_WORLD_SPACE_TO_CLIP_SPACE_MATRIX_2:
-				RENDERER_ASSERT(mRendererRuntime->getContext(), !mIsComputePipeline, "\"PREVIOUS_WORLD_SPACE_TO_CLIP_SPACE_MATRIX\" is only valid for graphics pipeline")
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), !mIsComputePipeline, "\"PREVIOUS_WORLD_SPACE_TO_CLIP_SPACE_MATRIX\" is only valid for graphics pipeline")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
 				memcpy(buffer, glm::value_ptr(mPassData->previousCameraRelativeWorldSpaceToClipSpaceMatrixReversedZ[1]), numberOfBytes);
 				break;
 
 			case ::detail::PREVIOUS_WORLD_SPACE_TO_VIEW_SPACE_MATRIX:
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
 				memcpy(buffer, glm::value_ptr(mPassData->previousCameraRelativeWorldSpaceToViewSpaceMatrix[0]), numberOfBytes);
 				break;
 
 			case ::detail::PREVIOUS_WORLD_SPACE_TO_VIEW_SPACE_MATRIX_2:
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
 				memcpy(buffer, glm::value_ptr(mPassData->previousCameraRelativeWorldSpaceToViewSpaceMatrix[1]), numberOfBytes);
 				break;
 
 			// Only valid for graphics pipeline
 			case ::detail::VIEW_SPACE_TO_CLIP_SPACE_MATRIX:
-				RENDERER_ASSERT(mRendererRuntime->getContext(), !mIsComputePipeline, "\"VIEW_SPACE_TO_CLIP_SPACE_MATRIX\" is only valid for graphics pipeline")
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), !mIsComputePipeline, "\"VIEW_SPACE_TO_CLIP_SPACE_MATRIX\" is only valid for graphics pipeline")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
 				memcpy(buffer, glm::value_ptr(mPassData->viewSpaceToClipSpaceMatrixReversedZ[0]), numberOfBytes);
 				break;
 
 			// Only valid for graphics pipeline
 			case ::detail::VIEW_SPACE_TO_CLIP_SPACE_MATRIX_2:
-				RENDERER_ASSERT(mRendererRuntime->getContext(), !mIsComputePipeline, "\"VIEW_SPACE_TO_CLIP_SPACE_MATRIX2\" is only valid for graphics pipeline")
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), !mIsComputePipeline, "\"VIEW_SPACE_TO_CLIP_SPACE_MATRIX2\" is only valid for graphics pipeline")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
 				memcpy(buffer, glm::value_ptr(mPassData->viewSpaceToClipSpaceMatrixReversedZ[1]), numberOfBytes);
 				break;
 
 			// Only valid for graphics pipeline
 			case ::detail::VIEW_SPACE_TO_TEXTURE_SPACE_MATRIX:
-				RENDERER_ASSERT(mRendererRuntime->getContext(), !mIsComputePipeline, "\"VIEW_SPACE_TO_TEXTURE_SPACE_MATRIX\" is only valid for graphics pipeline")
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
-				memcpy(buffer, glm::value_ptr(Math::getTextureScaleBiasMatrix(mRendererRuntime->getRenderer()) * mPassData->viewSpaceToClipSpaceMatrixReversedZ[0]), numberOfBytes);
+				RHI_ASSERT(mRendererRuntime->getContext(), !mIsComputePipeline, "\"VIEW_SPACE_TO_TEXTURE_SPACE_MATRIX\" is only valid for graphics pipeline")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
+				memcpy(buffer, glm::value_ptr(Math::getTextureScaleBiasMatrix(mRendererRuntime->getRhi()) * mPassData->viewSpaceToClipSpaceMatrixReversedZ[0]), numberOfBytes);
 				break;
 
 			// Only valid for graphics pipeline
 			case ::detail::CLIP_SPACE_TO_VIEW_SPACE_MATRIX:
-				RENDERER_ASSERT(mRendererRuntime->getContext(), !mIsComputePipeline, "\"CLIP_SPACE_TO_VIEW_SPACE_MATRIX\" is only valid for graphics pipeline")
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), !mIsComputePipeline, "\"CLIP_SPACE_TO_VIEW_SPACE_MATRIX\" is only valid for graphics pipeline")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
 				memcpy(buffer, glm::value_ptr(glm::inverse(mPassData->viewSpaceToClipSpaceMatrixReversedZ[0])), numberOfBytes);
 				break;
 
 			// Only valid for graphics pipeline
 			case ::detail::CLIP_SPACE_TO_WORLD_SPACE_MATRIX:
-				RENDERER_ASSERT(mRendererRuntime->getContext(), !mIsComputePipeline, "\"CLIP_SPACE_TO_WORLD_SPACE_MATRIX\" is only valid for graphics pipeline")
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), !mIsComputePipeline, "\"CLIP_SPACE_TO_WORLD_SPACE_MATRIX\" is only valid for graphics pipeline")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
 				memcpy(buffer, glm::value_ptr(glm::inverse(mPassData->cameraRelativeWorldSpaceToClipSpaceMatrixReversedZ[0])), numberOfBytes);
 				break;
 
 			case ::detail::WORLD_SPACE_CAMERA_POSITION:
 			{
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 3 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 3 == numberOfBytes, "Invalid number of bytes")
 				memcpy(buffer, glm::value_ptr(mCameraRelativeWorldSpaceCameraPosition[0]), numberOfBytes);
 				break;
 			}
 
 			case ::detail::WORLD_SPACE_CAMERA_POSITION_2:
 			{
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 3 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 3 == numberOfBytes, "Invalid number of bytes")
 				memcpy(buffer, glm::value_ptr(mCameraRelativeWorldSpaceCameraPosition[1]), numberOfBytes);
 				break;
 			}
 
 			case ::detail::UNMODIFIED_WORLD_SPACE_CAMERA_POSITION:
 			{
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 3 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 3 == numberOfBytes, "Invalid number of bytes")
 				// TODO(co) "UNMODIFIED_WORLD_SPACE_CAMERA_POSITION" shouldn't be used due to the loss of precision
 				const glm::vec3 worldSpaceCameraPosition = mWorldSpaceCameraPosition;
 				memcpy(buffer, glm::value_ptr(worldSpaceCameraPosition), numberOfBytes);
@@ -600,7 +598,7 @@ namespace RendererRuntime
 
 			case ::detail::WRAPPED_WORLD_SPACE_CAMERA_POSITION:
 			{
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 3 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 3 == numberOfBytes, "Invalid number of bytes")
 				const double minimum = -1000.0;
 				const double maximum =  1000.0;
 				const glm::vec3 worldSpaceCameraPosition(Math::wrapToInterval(mWorldSpaceCameraPosition.x, minimum, maximum), Math::wrapToInterval(mWorldSpaceCameraPosition.y, minimum, maximum), Math::wrapToInterval(mWorldSpaceCameraPosition.z, minimum, maximum));
@@ -611,13 +609,13 @@ namespace RendererRuntime
 			// Only valid for graphics pipeline
 			case ::detail::VIEW_SPACE_FRUSTUM_CORNERS:
 			{
-				RENDERER_ASSERT(mRendererRuntime->getContext(), !mIsComputePipeline, "\"VIEW_SPACE_FRUSTUM_CORNERS\" is only valid for graphics pipeline")
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), !mIsComputePipeline, "\"VIEW_SPACE_FRUSTUM_CORNERS\" is only valid for graphics pipeline")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
 
 				// Coordinate system related adjustments
 				// -> Vulkan and Direct3D: Left-handed coordinate system with clip space depth value range 0..1
 				// -> OpenGL without "GL_ARB_clip_control"-extension: Right-handed coordinate system with clip space depth value range -1..1
-				const float nearZ = mRendererRuntime->getRenderer().getCapabilities().zeroToOneClipZ ? 0.0f : -1.0f;
+				const float nearZ = mRendererRuntime->getRhi().getCapabilities().zeroToOneClipZ ? 0.0f : -1.0f;
 				static constexpr float FAR_Z = 1.0f;
 
 				// Calculate the view space frustum corners
@@ -655,7 +653,7 @@ namespace RendererRuntime
 					glm::vec4& bottomLeft = viewSpaceFrustumCorners[6];	// Vertex ID 2
 					topRight.x   = glm::mix(topLeft.x, topRight.x, 2.0f);
 					bottomLeft.y = glm::mix(topLeft.y, bottomLeft.y, 2.0f);
-					if (mRendererRuntime->getRenderer().getCapabilities().upperLeftOrigin)
+					if (mRendererRuntime->getRhi().getCapabilities().upperLeftOrigin)
 					{
 						topLeft.y = 1.0f - topLeft.y;
 						topRight.y = 1.0f - topRight.y;
@@ -670,7 +668,7 @@ namespace RendererRuntime
 
 			case ::detail::VIEW_SPACE_SUNLIGHT_DIRECTION:
 			{
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 3 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 3 == numberOfBytes, "Invalid number of bytes")
 				const glm::vec3 viewSpaceSunlightDirection = glm::normalize(mPassData->cameraRelativeWorldSpaceToViewSpaceQuaternion[0] * getWorldSpaceSunlightDirection());	// Normalize shouldn't be necessary, but last chance here to correct rounding errors before the shader is using the normalized direction vector
 				memcpy(buffer, glm::value_ptr(viewSpaceSunlightDirection), numberOfBytes);
 				break;
@@ -679,15 +677,15 @@ namespace RendererRuntime
 			// Only valid for compute pipeline
 			case ::detail::GLOBAL_COMPUTE_SIZE:
 			{
-				RENDERER_ASSERT(mRendererRuntime->getContext(), mIsComputePipeline, "\"GLOBAL_COMPUTE_SIZE\" is only valid for compute pipeline")
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(int32_t) * 3 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), mIsComputePipeline, "\"GLOBAL_COMPUTE_SIZE\" is only valid for compute pipeline")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(int32_t) * 3 == numberOfBytes, "Invalid number of bytes")
 				memcpy(buffer, mCompositorContextData->getGlobalComputeSize(), numberOfBytes);
 				break;
 			}
 
 			case ::detail::IMGUI_OBJECT_SPACE_TO_CLIP_SPACE_MATRIX:
 			{
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
 				#ifdef RENDERER_RUNTIME_IMGUI
 					const ImGuiIO& imGuiIo = ImGui::GetIO();
 					const float objectSpaceToClipSpaceMatrix[4][4] =
@@ -711,14 +709,14 @@ namespace RendererRuntime
 			}
 
 			case ::detail::WORLD_SPACE_SUNLIGHT_DIRECTION:
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 3 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 3 == numberOfBytes, "Invalid number of bytes")
 				memcpy(buffer, glm::value_ptr(getWorldSpaceSunlightDirection()), numberOfBytes);
 				break;
 
 			case ::detail::PROJECTION_PARAMETERS:
 			{
 				// For details see "The Danger Zone" - "Position From Depth 3: Back In The Habit" - "Written by MJPSeptember 5, 2010" - https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 2 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 2 == numberOfBytes, "Invalid number of bytes")
 				const float projectionParameters[2] = { mFarZ / (mFarZ - mNearZ), (-mFarZ * mNearZ) / (mFarZ - mNearZ) };
 				memcpy(buffer, &projectionParameters[0], numberOfBytes);
 				break;
@@ -728,7 +726,7 @@ namespace RendererRuntime
 			{
 				// For details see "The Danger Zone" - "Position From Depth 3: Back In The Habit" - "Written by MJPSeptember 5, 2010" - https://mynameismjp.wordpress.com/2010/09/05/position-from-depth-3/
 				// -> Near and far flipped due to usage of Reversed-Z (see e.g. https://developer.nvidia.com/content/depth-precision-visualized and https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/)
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 2 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 2 == numberOfBytes, "Invalid number of bytes")
 				const float projectionParameters[2] = { mNearZ / (mNearZ - mFarZ), (-mNearZ * mFarZ) / (mNearZ - mFarZ) };
 				memcpy(buffer, &projectionParameters[0], numberOfBytes);
 				break;
@@ -736,7 +734,7 @@ namespace RendererRuntime
 
 			case ::detail::NEAR_FAR_Z:
 			{
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 2 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 2 == numberOfBytes, "Invalid number of bytes")
 				const float nearFarZ[2] = { mNearZ, mFarZ };
 				memcpy(buffer, &nearFarZ[0], numberOfBytes);
 				break;
@@ -744,7 +742,7 @@ namespace RendererRuntime
 
 			case ::detail::SUNLIGHT_COLOR:
 			{
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 3 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 3 == numberOfBytes, "Invalid number of bytes")
 				const LightSceneItem* lightSceneItem = mCompositorContextData->getLightSceneItem();
 				if (nullptr != lightSceneItem)
 				{
@@ -760,8 +758,8 @@ namespace RendererRuntime
 			// Only valid for graphics pipeline
 			case ::detail::VIEWPORT_SIZE:
 			{
-				RENDERER_ASSERT(mRendererRuntime->getContext(), !mIsComputePipeline, "\"VIEWPORT_SIZE\" is only valid for graphics pipeline")
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 2 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), !mIsComputePipeline, "\"VIEWPORT_SIZE\" is only valid for graphics pipeline")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 2 == numberOfBytes, "Invalid number of bytes")
 				float* floatBuffer = reinterpret_cast<float*>(buffer);
 
 				// 0 = Viewport width
@@ -774,8 +772,8 @@ namespace RendererRuntime
 			// Only valid for graphics pipeline
 			case ::detail::INVERSE_VIEWPORT_SIZE:
 			{
-				RENDERER_ASSERT(mRendererRuntime->getContext(), !mIsComputePipeline, "\"INVERSE_VIEWPORT_SIZE\" is only valid for graphics pipeline")
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 2 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), !mIsComputePipeline, "\"INVERSE_VIEWPORT_SIZE\" is only valid for graphics pipeline")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 2 == numberOfBytes, "Invalid number of bytes")
 				float* floatBuffer = reinterpret_cast<float*>(buffer);
 
 				// 0 = Inverse viewport width
@@ -786,18 +784,18 @@ namespace RendererRuntime
 			}
 
 			case ::detail::LIGHT_CLUSTERS_SCALE:
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 3 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 3 == numberOfBytes, "Invalid number of bytes")
 				memcpy(buffer, glm::value_ptr(mRendererRuntime->getMaterialBlueprintResourceManager().getLightBufferManager().getLightClustersScale()), numberOfBytes);
 				break;
 
 			case ::detail::LIGHT_CLUSTERS_BIAS:
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 3 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 3 == numberOfBytes, "Invalid number of bytes")
 				memcpy(buffer, glm::value_ptr(mRendererRuntime->getMaterialBlueprintResourceManager().getLightBufferManager().getLightClustersBias()), numberOfBytes);
 				break;
 
 			case ::detail::FULL_COVERAGE_MASK:
 			{
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(int) == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(int) == numberOfBytes, "Invalid number of bytes")
 				const int fullCoverageMask = (1 << mCompositorContextData->getCompositorWorkspaceInstance()->getNumberOfMultisamples()) - 1;	// 0xF for 4x MSAA
 				memcpy(buffer, &fullCoverageMask, numberOfBytes);
 				break;
@@ -805,7 +803,7 @@ namespace RendererRuntime
 
 			case ::detail::SHADOW_MATRIX:
 			{
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
 				const CompositorInstancePassShadowMap* compositorInstancePassShadowMap = mCompositorContextData->getCompositorInstancePassShadowMap();
 				if (nullptr != compositorInstancePassShadowMap)
 				{
@@ -814,7 +812,7 @@ namespace RendererRuntime
 				else
 				{
 					// Error!
-					RENDERER_ASSERT(mRendererRuntime->getContext(), false, "Invalid compositor instance pass shadow map")
+					RHI_ASSERT(mRendererRuntime->getContext(), false, "Invalid compositor instance pass shadow map")
 					memset(buffer, 0, numberOfBytes);
 				}
 				break;
@@ -822,7 +820,7 @@ namespace RendererRuntime
 
 			case ::detail::SHADOW_CASCADE_SPLITS:
 			{
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 == numberOfBytes, "Invalid number of bytes")
 				const CompositorInstancePassShadowMap* compositorInstancePassShadowMap = mCompositorContextData->getCompositorInstancePassShadowMap();
 				if (nullptr != compositorInstancePassShadowMap)
 				{
@@ -831,7 +829,7 @@ namespace RendererRuntime
 				else
 				{
 					// Error!
-					RENDERER_ASSERT(mRendererRuntime->getContext(), false, "Invalid compositor instance pass shadow map")
+					RHI_ASSERT(mRendererRuntime->getContext(), false, "Invalid compositor instance pass shadow map")
 					memset(buffer, 0, numberOfBytes);
 				}
 				break;
@@ -839,7 +837,7 @@ namespace RendererRuntime
 
 			case ::detail::SHADOW_CASCADE_OFFSETS:
 			{
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
 				const CompositorInstancePassShadowMap* compositorInstancePassShadowMap = mCompositorContextData->getCompositorInstancePassShadowMap();
 				if (nullptr != compositorInstancePassShadowMap)
 				{
@@ -848,7 +846,7 @@ namespace RendererRuntime
 				else
 				{
 					// Error!
-					RENDERER_ASSERT(mRendererRuntime->getContext(), false, "Invalid compositor instance pass shadow map")
+					RHI_ASSERT(mRendererRuntime->getContext(), false, "Invalid compositor instance pass shadow map")
 					memset(buffer, 0, numberOfBytes);
 				}
 				break;
@@ -856,7 +854,7 @@ namespace RendererRuntime
 
 			case ::detail::SHADOW_CASCADE_SCALES:
 			{
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
 				const CompositorInstancePassShadowMap* compositorInstancePassShadowMap = mCompositorContextData->getCompositorInstancePassShadowMap();
 				if (nullptr != compositorInstancePassShadowMap)
 				{
@@ -865,7 +863,7 @@ namespace RendererRuntime
 				else
 				{
 					// Error!
-					RENDERER_ASSERT(mRendererRuntime->getContext(), false, "Invalid compositor instance pass shadow map")
+					RHI_ASSERT(mRendererRuntime->getContext(), false, "Invalid compositor instance pass shadow map")
 					memset(buffer, 0, numberOfBytes);
 				}
 				break;
@@ -873,7 +871,7 @@ namespace RendererRuntime
 
 			case ::detail::CURRENT_SHADOW_CASCADE_SCALE:
 			{
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 3 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 3 == numberOfBytes, "Invalid number of bytes")
 				const CompositorInstancePassShadowMap* compositorInstancePassShadowMap = mCompositorContextData->getCompositorInstancePassShadowMap();
 				if (nullptr != compositorInstancePassShadowMap)
 				{
@@ -883,7 +881,7 @@ namespace RendererRuntime
 				else
 				{
 					// Error!
-					RENDERER_ASSERT(mRendererRuntime->getContext(), false, "Invalid compositor instance pass shadow map")
+					RHI_ASSERT(mRendererRuntime->getContext(), false, "Invalid compositor instance pass shadow map")
 					memset(buffer, 0, numberOfBytes);
 				}
 				break;
@@ -891,7 +889,7 @@ namespace RendererRuntime
 
 			case ::detail::SHADOW_MAP_SIZE:
 			{
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(int) == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(int) == numberOfBytes, "Invalid number of bytes")
 				const CompositorInstancePassShadowMap* compositorInstancePassShadowMap = mCompositorContextData->getCompositorInstancePassShadowMap();
 				if (nullptr != compositorInstancePassShadowMap)
 				{
@@ -900,7 +898,7 @@ namespace RendererRuntime
 				else
 				{
 					// Error!
-					RENDERER_ASSERT(mRendererRuntime->getContext(), false, "Invalid compositor instance pass shadow map")
+					RHI_ASSERT(mRendererRuntime->getContext(), false, "Invalid compositor instance pass shadow map")
 					memset(buffer, 0, numberOfBytes);
 				}
 				break;
@@ -908,7 +906,7 @@ namespace RendererRuntime
 
 			case ::detail::SHADOW_FILTER_SIZE:
 			{
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) == numberOfBytes, "Invalid number of bytes")
 				const CompositorInstancePassShadowMap* compositorInstancePassShadowMap = mCompositorContextData->getCompositorInstancePassShadowMap();
 				if (nullptr != compositorInstancePassShadowMap)
 				{
@@ -917,7 +915,7 @@ namespace RendererRuntime
 				else
 				{
 					// Error!
-					RENDERER_ASSERT(mRendererRuntime->getContext(), false, "Invalid compositor instance pass shadow map")
+					RHI_ASSERT(mRendererRuntime->getContext(), false, "Invalid compositor instance pass shadow map")
 					memset(buffer, 0, numberOfBytes);
 				}
 				break;
@@ -925,7 +923,7 @@ namespace RendererRuntime
 
 			case ::detail::SHADOW_SAMPLE_RADIUS:
 			{
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(int) == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(int) == numberOfBytes, "Invalid number of bytes")
 				const CompositorInstancePassShadowMap* compositorInstancePassShadowMap = mCompositorContextData->getCompositorInstancePassShadowMap();
 				if (nullptr != compositorInstancePassShadowMap)
 				{
@@ -935,7 +933,7 @@ namespace RendererRuntime
 				else
 				{
 					// Error!
-					RENDERER_ASSERT(mRendererRuntime->getContext(), false, "Invalid compositor instance pass shadow map")
+					RHI_ASSERT(mRendererRuntime->getContext(), false, "Invalid compositor instance pass shadow map")
 					memset(buffer, 0, numberOfBytes);
 				}
 				break;
@@ -943,7 +941,7 @@ namespace RendererRuntime
 
 			case ::detail::LENS_STAR_MATRIX:
 			{
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
 
 				// The following is basing on 'Pseudo Lens Flare' from John Chapman - http://john-chapman-graphics.blogspot.de/2013/02/pseudo-lens-flare.html
 
@@ -978,7 +976,7 @@ namespace RendererRuntime
 
 			case ::detail::JITTER_OFFSET:
 			{
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 2 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 2 == numberOfBytes, "Invalid number of bytes")
 
 				// Calculate the jitter offset using "Hammersley 4x" from "MSAA Resolve + Temporal AA" from https://github.com/TheRealMJP/MSAAFilter with background information at https://mynameismjp.wordpress.com/2012/10/28/msaa-resolve-filters/
 				const uint64_t numberOfRenderedFrames = mRendererRuntime->getTimeManager().getNumberOfRenderedFrames();
@@ -1003,7 +1001,7 @@ namespace RendererRuntime
 			}
 
 			case ::detail::HOSEK_WILKIE_SKY_COEFFICIENTS_1:
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
 
 				// Calculate the data
 				if (nullptr == mHosekWilkieSky)
@@ -1017,7 +1015,7 @@ namespace RendererRuntime
 				break;
 
 			case ::detail::HOSEK_WILKIE_SKY_COEFFICIENTS_2:
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
 
 				// Calculate the data
 				if (nullptr == mHosekWilkieSky)
@@ -1057,8 +1055,8 @@ namespace RendererRuntime
 		{
 			case ::detail::INSTANCE_INDICES:
 			{
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(uint32_t) * 4 == numberOfBytes, "Invalid number of bytes")
-				RENDERER_ASSERT(mRendererRuntime->getContext(), ~0u != instanceTextureBufferStartIndex, "Invalid instance texture buffer start index")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(uint32_t) * 4 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), ~0u != instanceTextureBufferStartIndex, "Invalid instance texture buffer start index")
 				uint32_t* integerBuffer = reinterpret_cast<uint32_t*>(buffer);
 
 				// 0 = x = The instance texture buffer start index
@@ -1077,8 +1075,8 @@ namespace RendererRuntime
 
 			case ::detail::WORLD_POSITION_MATERIAL_INDEX:
 			{
-				RENDERER_ASSERT(mRendererRuntime->getContext(), sizeof(uint32_t) * 4 == numberOfBytes, "Invalid number of bytes")
-				RENDERER_ASSERT(mRendererRuntime->getContext(), ~0u == instanceTextureBufferStartIndex, "Invalid instance texture buffer start index")
+				RHI_ASSERT(mRendererRuntime->getContext(), sizeof(uint32_t) * 4 == numberOfBytes, "Invalid number of bytes")
+				RHI_ASSERT(mRendererRuntime->getContext(), ~0u == instanceTextureBufferStartIndex, "Invalid instance texture buffer start index")
 				uint32_t* integerBuffer = reinterpret_cast<uint32_t*>(buffer);
 
 				// xyz world position adjusted for camera relative rendering: While we're using a 64 bit world space position in general, for relative positions 32 bit are sufficient
@@ -1118,7 +1116,7 @@ namespace RendererRuntime
 		else
 		{
 			// Error!
-			RENDERER_ASSERT(mRendererRuntime->getContext(), false, "Invalid light scene item")
+			RHI_ASSERT(mRendererRuntime->getContext(), false, "Invalid light scene item")
 			return Math::VEC3_FORWARD;
 		}
 	}

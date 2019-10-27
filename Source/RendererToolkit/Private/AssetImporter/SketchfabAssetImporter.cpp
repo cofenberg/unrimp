@@ -281,7 +281,7 @@ namespace
 			}
 			else
 			{
-				RENDERER_LOG(input.context, WARNING, "The Sketchfab ZIP-archive \"%s\" contains multiple texture files named \"%s\", ignoring duplicates", input.absoluteSourceFilename.c_str(), textureFilename.c_str())
+				RHI_LOG(input.context, WARNING, "The Sketchfab ZIP-archive \"%s\" contains multiple texture files named \"%s\", ignoring duplicates", input.absoluteSourceFilename.c_str(), textureFilename.c_str())
 			}
 		}
 
@@ -582,7 +582,7 @@ namespace
 
 				// Add an empty entry so the user knowns which materials need to be assigned manually
 				materialNameToAssetId.emplace(assimpMaterialName, "");
-				RENDERER_LOG(input.context, WARNING, "The Sketchfab asset importer failed to automatically find a material name to asset ID mapping of mesh material \"%s\" from the Sketchfab ZIP-archive \"%s\"", assimpMaterialName.c_str(), input.absoluteSourceFilename.c_str())
+				RHI_LOG(input.context, WARNING, "The Sketchfab asset importer failed to automatically find a material name to asset ID mapping of mesh material \"%s\" from the Sketchfab ZIP-archive \"%s\"", assimpMaterialName.c_str(), input.absoluteSourceFilename.c_str())
 			}
 		}
 

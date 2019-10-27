@@ -196,7 +196,7 @@ namespace RendererToolkit
 		return mAssetPackage.tryGetVirtualFilenameByAssetId(assetId);
 	}
 
-	bool ProjectImpl::checkAssetIsChanged(const RendererRuntime::Asset& asset, const char* rendererTarget)
+	bool ProjectImpl::checkAssetIsChanged(const RendererRuntime::Asset& asset, const char* rhiTarget)
 	{
 		const std::string virtualAssetFilename = asset.virtualFilename;
 
@@ -216,7 +216,7 @@ namespace RendererToolkit
 			const std::string virtualAssetPackageInputDirectory = mProjectName + '/' + mAssetPackageDirectoryName;
 			const std::string virtualAssetInputDirectory = std_filesystem::path(virtualAssetFilename).parent_path().generic_string();
 			const std::string assetDirectory = virtualAssetInputDirectory.substr(virtualAssetInputDirectory.find('/') + 1);
-			const std::string renderTargetDataRootDirectory = getRenderTargetDataRootDirectory(rendererTarget);
+			const std::string renderTargetDataRootDirectory = getRenderTargetDataRootDirectory(rhiTarget);
 			const std::string virtualAssetOutputDirectory = renderTargetDataRootDirectory + '/' + mProjectName + '/' + mAssetPackageDirectoryName + '/' + assetDirectory;
 
 			// Do we need to mount a directory now? (e.g. "DataPc", "DataMobile" etc.)
@@ -230,15 +230,15 @@ namespace RendererToolkit
 			IAssetCompiler::Input input(mContext, mProjectName, *mCacheManager, virtualAssetPackageInputDirectory, virtualAssetFilename, virtualAssetInputDirectory, virtualAssetOutputDirectory, mSourceAssetIdToCompiledAssetId, mCompiledAssetIdToSourceAssetId, mSourceAssetIdToVirtualFilename, mDefaultTextureAssetIds);
 
 			// Compile the asset
-			RENDERER_ASSERT(getContext(), nullptr != assetCompiler, "Invalid asset compiler");
-			RENDERER_ASSERT(getContext(), nullptr != mRapidJsonDocument, "Invalid renderer toolkit Rapid JSON document")
-			const IAssetCompiler::Configuration configuration(rapidJsonDocument, (*mRapidJsonDocument)["Targets"], rendererTarget, mQualityStrategy);
+			RHI_ASSERT(getContext(), nullptr != assetCompiler, "Invalid asset compiler");
+			RHI_ASSERT(getContext(), nullptr != mRapidJsonDocument, "Invalid renderer toolkit Rapid JSON document")
+			const IAssetCompiler::Configuration configuration(rapidJsonDocument, (*mRapidJsonDocument)["Targets"], rhiTarget, mQualityStrategy);
 			return assetCompiler->checkIfChanged(input, configuration);
 		}
 		catch (const std::exception& e)
 		{
 			// In case of an "RendererToolkit::IAssetCompiler::checkIfChanged()"-exception, consider the asset as changed and write at least an informative log message
-			RENDERER_LOG(mContext, TRACE, "Failed to check asset with filename \"%s\" for change: \"%s\". Considered the asset as changed.", asset.virtualFilename, e.what())
+			RHI_LOG(mContext, TRACE, "Failed to check asset with filename \"%s\" for change: \"%s\". Considered the asset as changed.", asset.virtualFilename, e.what())
 			return true;
 		}
 
@@ -246,7 +246,7 @@ namespace RendererToolkit
 		return false;
 	}
 
-	void ProjectImpl::compileAsset(const RendererRuntime::Asset& asset, const char* rendererTarget, RendererRuntime::AssetPackage& outputAssetPackage)
+	void ProjectImpl::compileAsset(const RendererRuntime::Asset& asset, const char* rhiTarget, RendererRuntime::AssetPackage& outputAssetPackage)
 	{
 		try
 		{
@@ -265,7 +265,7 @@ namespace RendererToolkit
 			const std::string virtualAssetPackageInputDirectory = mProjectName + '/' + mAssetPackageDirectoryName;
 			const std::string virtualAssetInputDirectory = std_filesystem::path(virtualAssetFilename).parent_path().generic_string();
 			const std::string assetDirectory = virtualAssetInputDirectory.substr(virtualAssetInputDirectory.find('/') + 1);
-			const std::string renderTargetDataRootDirectory = getRenderTargetDataRootDirectory(rendererTarget);
+			const std::string renderTargetDataRootDirectory = getRenderTargetDataRootDirectory(rhiTarget);
 			const std::string virtualAssetOutputDirectory = renderTargetDataRootDirectory + '/' + mProjectName + '/' + mAssetPackageDirectoryName + '/' + assetDirectory;
 
 			// Ensure that the asset output directory exists, else creating output file streams will fail
@@ -282,11 +282,11 @@ namespace RendererToolkit
 			IAssetCompiler::Input input(mContext, mProjectName, *mCacheManager, virtualAssetPackageInputDirectory, virtualAssetFilename, virtualAssetInputDirectory, virtualAssetOutputDirectory, mSourceAssetIdToCompiledAssetId, mCompiledAssetIdToSourceAssetId, mSourceAssetIdToVirtualFilename, mDefaultTextureAssetIds);
 
 			// Asset compiler configuration
-			RENDERER_ASSERT(getContext(), nullptr != mRapidJsonDocument, "Invalid renderer toolkit Rapid JSON document")
-			const IAssetCompiler::Configuration configuration(rapidJsonDocument, (*mRapidJsonDocument)["Targets"], rendererTarget, mQualityStrategy);
+			RHI_ASSERT(getContext(), nullptr != mRapidJsonDocument, "Invalid renderer toolkit Rapid JSON document")
+			const IAssetCompiler::Configuration configuration(rapidJsonDocument, (*mRapidJsonDocument)["Targets"], rhiTarget, mQualityStrategy);
 
 			// Compile the asset
-			RENDERER_ASSERT(getContext(), nullptr != assetCompiler, "Invalid asset compiler");
+			RHI_ASSERT(getContext(), nullptr != assetCompiler, "Invalid asset compiler");
 			assetCompiler->compile(input, configuration);
 
 			{ // Update the output asset package
@@ -304,10 +304,10 @@ namespace RendererToolkit
 		mCacheManager->saveCache();
 	}
 
-	void ProjectImpl::compileAssetIncludingDependencies(const RendererRuntime::Asset& asset, const char* rendererTarget, RendererRuntime::AssetPackage& outputAssetPackage) noexcept
+	void ProjectImpl::compileAssetIncludingDependencies(const RendererRuntime::Asset& asset, const char* rhiTarget, RendererRuntime::AssetPackage& outputAssetPackage) noexcept
 	{
 		// Compile the given asset
-		compileAsset(asset, rendererTarget, outputAssetPackage);
+		compileAsset(asset, rhiTarget, outputAssetPackage);
 
 		// Compile other assets depending on the given asset, if necessary
 		const RendererRuntime::AssetPackage::SortedAssetVector& sortedAssetVector = mAssetPackage.getSortedAssetVector();
@@ -315,9 +315,9 @@ namespace RendererToolkit
 		for (size_t i = 0; i < numberOfAssets; ++i)
 		{
 			const RendererRuntime::Asset& dependedAsset = sortedAssetVector[i];
-			if (checkAssetIsChanged(dependedAsset, rendererTarget) && &dependedAsset != &asset)
+			if (checkAssetIsChanged(dependedAsset, rhiTarget) && &dependedAsset != &asset)
 			{
-				compileAsset(dependedAsset, rendererTarget, outputAssetPackage);
+				compileAsset(dependedAsset, rhiTarget, outputAssetPackage);
 			}
 		}
 	}
@@ -368,7 +368,7 @@ namespace RendererToolkit
 		const rapidjson::Value& rapidJsonValueProject = rapidJsonDocument["Project"];
 
 		{ // Read project data
-			RENDERER_LOG(mContext, INFORMATION, "Gather asset from %s...", mAbsoluteProjectDirectory.c_str())
+			RHI_LOG(mContext, INFORMATION, "Gather asset from %s...", mAbsoluteProjectDirectory.c_str())
 			{ // Asset packages
 				const rapidjson::Value& rapidJsonValueAssetPackages = rapidJsonValueProject["AssetPackages"];
 				if (rapidJsonValueAssetPackages.Size() > 1)
@@ -382,7 +382,7 @@ namespace RendererToolkit
 			}
 			readTargetsByFilename(rapidJsonValueProject["TargetsFilename"].GetString());
 			::detail::optionalQualityStrategy(rapidJsonValueProject, "QualityStrategy", mQualityStrategy);
-			RENDERER_LOG(mContext, INFORMATION, "Found %u assets", mAssetPackage.getSortedAssetVector().size())
+			RHI_LOG(mContext, INFORMATION, "Found %u assets", mAssetPackage.getSortedAssetVector().size())
 		}
 
 		// Setup project folder for cache manager, it will store there its data
@@ -404,10 +404,10 @@ namespace RendererToolkit
 		// Import all assets
 		const size_t numberOfSourceAssets = absoluteSourceFilenames.size();
 		size_t currentSourceAsset = 0;
-		RENDERER_LOG(mContext, INFORMATION, "Starting import of %u assets", numberOfSourceAssets)
+		RHI_LOG(mContext, INFORMATION, "Starting import of %u assets", numberOfSourceAssets)
 		for (const std::string& absoluteSourceFilename : absoluteSourceFilenames)
 		{
-			RENDERER_LOG(mContext, INFORMATION, "Importing asset %u of %u: \"%s\"", currentSourceAsset + 1, absoluteSourceFilenames.size(), absoluteSourceFilename.c_str())
+			RHI_LOG(mContext, INFORMATION, "Importing asset %u of %u: \"%s\"", currentSourceAsset + 1, absoluteSourceFilenames.size(), absoluteSourceFilename.c_str())
 			IAssetImporter::Input input(mContext, mProjectName, absoluteSourceFilename, mProjectName + '/' + targetDirectoryName + '/' + std_filesystem::path(absoluteSourceFilename).stem().generic_string());
 
 			// TODO(co) Implement automatic asset importer selection
@@ -415,10 +415,10 @@ namespace RendererToolkit
 
 			++currentSourceAsset;
 		}
-		RENDERER_LOG(mContext, INFORMATION, "Finished import of %u assets", numberOfSourceAssets)
+		RHI_LOG(mContext, INFORMATION, "Finished import of %u assets", numberOfSourceAssets)
 	}
 
-	void ProjectImpl::compileAllAssets(const char* rendererTarget)
+	void ProjectImpl::compileAllAssets(const char* rhiTarget)
 	{
 		const RendererRuntime::AssetPackage::SortedAssetVector& sortedAssetVector = mAssetPackage.getSortedAssetVector();
 		const size_t numberOfAssets = sortedAssetVector.size();
@@ -426,27 +426,27 @@ namespace RendererToolkit
 		// Discover changed assets
 		std::vector<RendererRuntime::AssetId> changedAssetIds;
 		changedAssetIds.reserve(numberOfAssets);
-		RENDERER_LOG(mContext, INFORMATION, "Checking %u assets for changes", numberOfAssets)
+		RHI_LOG(mContext, INFORMATION, "Checking %u assets for changes", numberOfAssets)
 		for (size_t i = 0; i < numberOfAssets; ++i)
 		{
 			const RendererRuntime::Asset& asset = sortedAssetVector[i];
-			if (checkAssetIsChanged(asset, rendererTarget))
+			if (checkAssetIsChanged(asset, rhiTarget))
 			{
 				changedAssetIds.push_back(asset.assetId);
 			}
 		}
-		RENDERER_LOG(mContext, INFORMATION, "Found %u changed assets", changedAssetIds.size())
+		RHI_LOG(mContext, INFORMATION, "Found %u changed assets", changedAssetIds.size())
 
 		// Compile all changed assets
 		if (!changedAssetIds.empty())
 		{
-			const std::string virtualAssetPackageFilename = getRenderTargetDataRootDirectory(rendererTarget) + '/' + mProjectName + '/' + mAssetPackageDirectoryName + '/' + mAssetPackageDirectoryName + ".assets";
+			const std::string virtualAssetPackageFilename = getRenderTargetDataRootDirectory(rhiTarget) + '/' + mProjectName + '/' + mAssetPackageDirectoryName + '/' + mAssetPackageDirectoryName + ".assets";
 			RendererRuntime::IFileManager& fileManager = mContext.getFileManager();
 			RendererRuntime::AssetPackage outputAssetPackage;
 
 			{ // Try to load an already compiled asset package to speed up the asset compilation
 				// Do we need to mount a directory now? (e.g. "DataPc", "DataMobile" etc.)
-				const std::string renderTargetDataRootDirectory = getRenderTargetDataRootDirectory(rendererTarget);
+				const std::string renderTargetDataRootDirectory = getRenderTargetDataRootDirectory(rhiTarget);
 				if (fileManager.getMountPoint(renderTargetDataRootDirectory.c_str()) == nullptr)
 				{
 					fileManager.mountDirectory((fileManager.getAbsoluteRootDirectory() + '/' + renderTargetDataRootDirectory).c_str(), renderTargetDataRootDirectory.c_str());
@@ -480,9 +480,9 @@ namespace RendererToolkit
 				for (size_t i = 0; i < numberOfAssets; ++i)
 				{
 					// Reminder: Assets might not be fully compiled but just collect needed information
-					RENDERER_LOG(mContext, INFORMATION, "Compiling asset %u of %u", i + 1, numberOfAssets)
+					RHI_LOG(mContext, INFORMATION, "Compiling asset %u of %u", i + 1, numberOfAssets)
 					const RendererRuntime::Asset& asset = sortedAssetVector[i];
-					compileAsset(asset, rendererTarget, outputAssetPackage);
+					compileAsset(asset, rhiTarget, outputAssetPackage);
 
 					// Call "RendererRuntime::IRendererRuntime::reloadResourceByAssetId()" directly after an asset has been compiled to see changes as early as possible
 					if (nullptr != mProjectAssetMonitor)
@@ -512,8 +512,8 @@ namespace RendererToolkit
 					{
 						throw std::runtime_error(std::string("Source asset ID ") + std::to_string(sourceAssetId) + " is unknown");
 					}
-					RENDERER_LOG(mContext, INFORMATION, "Compiling asset %u of %u", i + 1, numberOfChangedAssets)
-					compileAsset(*asset, rendererTarget, outputAssetPackage);
+					RHI_LOG(mContext, INFORMATION, "Compiling asset %u of %u", i + 1, numberOfChangedAssets)
+					compileAsset(*asset, rhiTarget, outputAssetPackage);
 
 					// Call "RendererRuntime::IRendererRuntime::reloadResourceByAssetId()" directly after an asset has been compiled to see changes as early as possible
 					if (nullptr != mProjectAssetMonitor)
@@ -560,11 +560,11 @@ namespace RendererToolkit
 		onCompilationRunFinished();
 	}
 
-	void ProjectImpl::startupAssetMonitor(RendererRuntime::IRendererRuntime& rendererRuntime, const char* rendererTarget)
+	void ProjectImpl::startupAssetMonitor(RendererRuntime::IRendererRuntime& rendererRuntime, const char* rhiTarget)
 	{
 		if (nullptr == mProjectAssetMonitor)
 		{
-			mProjectAssetMonitor = new ProjectAssetMonitor(*this, rendererRuntime, rendererTarget);
+			mProjectAssetMonitor = new ProjectAssetMonitor(*this, rendererRuntime, rhiTarget);
 		}
 	}
 
@@ -579,7 +579,7 @@ namespace RendererToolkit
 
 
 	//[-------------------------------------------------------]
-	//[ Protected virtual Renderer::RefCount methods          ]
+	//[ Protected virtual Rhi::RefCount methods               ]
 	//[-------------------------------------------------------]
 	void ProjectImpl::selfDestruct()
 	{
@@ -738,18 +738,18 @@ namespace RendererToolkit
 		JsonHelper::loadDocumentByFilename(mContext.getFileManager(), mProjectName + '/' + relativeFilename, "Targets", "1", *mRapidJsonDocument);
 	}
 
-	std::string ProjectImpl::getRenderTargetDataRootDirectory(const char* rendererTarget) const
+	std::string ProjectImpl::getRenderTargetDataRootDirectory(const char* rhiTarget) const
 	{
-		RENDERER_ASSERT(getContext(), nullptr != mRapidJsonDocument, "Invalid renderer toolkit Rapid JSON document")
-		const rapidjson::Value& rapidJsonValueRendererTargets = (*mRapidJsonDocument)["Targets"]["RendererTargets"];
-		const rapidjson::Value& rapidJsonValueRendererTarget = rapidJsonValueRendererTargets[rendererTarget];
-		return "Data" + std::string(rapidJsonValueRendererTarget["Platform"].GetString());
+		RHI_ASSERT(getContext(), nullptr != mRapidJsonDocument, "Invalid renderer toolkit Rapid JSON document")
+		const rapidjson::Value& rapidJsonValueRhiTargets = (*mRapidJsonDocument)["Targets"]["RhiTargets"];
+		const rapidjson::Value& rapidJsonValueRhiTarget = rapidJsonValueRhiTargets[rhiTarget];
+		return "Data" + std::string(rapidJsonValueRhiTarget["Platform"].GetString());
 	}
 
 	void ProjectImpl::buildSourceAssetIdToCompiledAssetId()
 	{
-		RENDERER_ASSERT(getContext(), 0 == mSourceAssetIdToCompiledAssetId.size(), "Renderer toolkit source asset ID to compiled asset ID should be empty at this point in time")
-		RENDERER_ASSERT(getContext(), 0 == mSourceAssetIdToVirtualFilename.size(), "Renderer toolkit source asset ID to virtual filename should be empty at this point in time")
+		RHI_ASSERT(getContext(), 0 == mSourceAssetIdToCompiledAssetId.size(), "Renderer toolkit source asset ID to compiled asset ID should be empty at this point in time")
+		RHI_ASSERT(getContext(), 0 == mSourceAssetIdToVirtualFilename.size(), "Renderer toolkit source asset ID to virtual filename should be empty at this point in time")
 
 		const RendererRuntime::AssetPackage::SortedAssetVector& sortedAssetVector = mAssetPackage.getSortedAssetVector();
 		const size_t numberOfAssets = sortedAssetVector.size();

@@ -493,7 +493,7 @@
 // -> If the "GL_ARB_clip_control"-extension isn't available: Right-handed coordinate system with clip space depth value range -1..1
 @property(OpenGL)
 	@piece(SetCrossPlatformSettings)
-		// TODO(co) OpenGL GLSL 430 instead of 410 for e.g. "GL_ARB_shader_image_load_store" build in support. Apply dropped OpenGL support so we can probably drop Apple support. If at once point Unrimp should run on Apple hardware, we probably will use MoltenVK for Vulkan (yet another renderer API Metal just for Apple hardware is probably to much work for a spare time project).
+		// TODO(co) OpenGL GLSL 430 instead of 410 for e.g. "GL_ARB_shader_image_load_store" build in support. Apply dropped OpenGL support so we can probably drop Apple support. If at once point Unrimp should run on Apple hardware, we probably will use MoltenVK for Vulkan (yet another RHI implementation Metal just for Apple hardware is probably to much work for a spare time project).
 		// #version 410 core	// This is what Mac OS X 10.11 and similar support, no fancy 420, no "#extension GL_ARB_shading_language_420pack : enable" and hence no "layout(binding)" usage possible (no problem, we're using material blueprints with a root signature)
 		#version 430 core
 		#define HAS_BASE_INSTANCE	// "GL_ARB_base_instance" is there

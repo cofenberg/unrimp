@@ -29,7 +29,7 @@
 //[-------------------------------------------------------]
 #include "RendererRuntime/Public/Core/StringId.h"
 
-#include <Renderer/Public/Renderer.h>
+#include <Rhi/Public/Rhi.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -102,7 +102,7 @@ namespace RendererRuntime
 	*  @brief
 	*    Abstract renderer runtime interface
 	*/
-	class IRendererRuntime : public Renderer::RefCount<IRendererRuntime>
+	class IRendererRuntime : public Rhi::RefCount<IRendererRuntime>
 	{
 
 
@@ -143,14 +143,14 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Return the used renderer instance
+		*    Return the used RHI instance
 		*
 		*  @return
-		*    The used renderer instance, do not release the returned instance unless you added an own reference to it
+		*    The used RHI instance, do not release the returned instance unless you added an own reference to it
 		*/
-		[[nodiscard]] inline Renderer::IRenderer& getRenderer() const
+		[[nodiscard]] inline Rhi::IRhi& getRhi() const
 		{
-			return *mRenderer;
+			return *mRhi;
 		}
 
 		/**
@@ -160,7 +160,7 @@ namespace RendererRuntime
 		*  @return
 		*    The used buffer manager instance, do not release the returned instance unless you added an own reference to it
 		*/
-		[[nodiscard]] inline Renderer::IBufferManager& getBufferManager() const
+		[[nodiscard]] inline Rhi::IBufferManager& getBufferManager() const
 		{
 			return *mBufferManager;
 		}
@@ -172,7 +172,7 @@ namespace RendererRuntime
 		*  @return
 		*    The used texture manager instance, do not release the returned instance unless you added an own reference to it
 		*/
-		[[nodiscard]] inline Renderer::ITextureManager& getTextureManager() const
+		[[nodiscard]] inline Rhi::ITextureManager& getTextureManager() const
 		{
 			return *mTextureManager;
 		}
@@ -230,10 +230,10 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		/**
 		*  @brief
-		*    Return the renderer resource manager instance
+		*    Return the renderer runtime resource manager instance
 		*
 		*  @return
-		*    The renderer resource manager instance, do not release the returned instance
+		*    The renderer runtime resource manager instance, do not release the returned instance
 		*/
 		[[nodiscard]] inline RendererResourceManager& getRendererResourceManager() const
 		{
@@ -520,7 +520,7 @@ namespace RendererRuntime
 		inline explicit IRendererRuntime(Context& context) :
 			// Core
 			mContext(context),
-			mRenderer(nullptr),
+			mRhi(nullptr),
 			mBufferManager(nullptr),
 			mTextureManager(nullptr),
 			mFileManager(nullptr),
@@ -564,14 +564,14 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	protected:
 		// Core
-		Context&				   mContext;		///< Renderer runtime context
-		Renderer::IRenderer*	   mRenderer;		///< The used renderer instance (we keep a reference to it), always valid
-		Renderer::IBufferManager*  mBufferManager;	///< The used buffer manager instance (we keep a reference to it), always valid
-		Renderer::ITextureManager* mTextureManager;	///< The used texture manager instance (we keep a reference to it), always valid
-		IFileManager*			   mFileManager;	///< The used file manager instance, always valid
-		DefaultThreadPool*		   mDefaultThreadPool;
-		AssetManager*			   mAssetManager;
-		TimeManager*			   mTimeManager;
+		Context&			  mContext;			///< Renderer runtime context
+		Rhi::IRhi*			  mRhi;				///< The used RHI instance (we keep a reference to it), always valid
+		Rhi::IBufferManager*  mBufferManager;	///< The used RHI buffer manager instance (we keep a reference to it), always valid
+		Rhi::ITextureManager* mTextureManager;	///< The used RHI texture manager instance (we keep a reference to it), always valid
+		IFileManager*		  mFileManager;		///< The used file manager instance, always valid
+		DefaultThreadPool*	  mDefaultThreadPool;
+		AssetManager*		  mAssetManager;
+		TimeManager*		  mTimeManager;
 		// Resource
 		RendererResourceManager*			mRendererResourceManager;
 		ResourceStreamer*					mResourceStreamer;
@@ -606,7 +606,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Type definitions                                      ]
 	//[-------------------------------------------------------]
-	typedef Renderer::SmartRefCount<IRendererRuntime> IRendererRuntimePtr;
+	typedef Rhi::SmartRefCount<IRendererRuntime> IRendererRuntimePtr;
 
 
 //[-------------------------------------------------------]

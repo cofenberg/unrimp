@@ -30,29 +30,29 @@
 //[-------------------------------------------------------]
 void FirstGeometryShader::onInitialization()
 {
-	// Get and check the renderer instance
+	// Get and check the RHI instance
 	// -> Geometry shaders supported?
-	Renderer::IRendererPtr renderer(getRenderer());
-	if (nullptr != renderer && renderer->getCapabilities().maximumNumberOfGsOutputVertices)
+	Rhi::IRhiPtr rhi(getRhi());
+	if (nullptr != rhi && rhi->getCapabilities().maximumNumberOfGsOutputVertices)
 	{
 		// Create the buffer manager
-		mBufferManager = renderer->createBufferManager();
+		mBufferManager = rhi->createBufferManager();
 
 		{ // Create the root signature
 			// Setup
-			Renderer::RootSignatureBuilder rootSignature;
-			rootSignature.initialize(0, nullptr, 0, nullptr, Renderer::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+			Rhi::RootSignatureBuilder rootSignature;
+			rootSignature.initialize(0, nullptr, 0, nullptr, Rhi::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 			// Create the instance
-			mRootSignature = renderer->createRootSignature(rootSignature);
+			mRootSignature = rhi->createRootSignature(rootSignature);
 		}
 
 		// Vertex input layout
-		const Renderer::VertexAttributes vertexAttributes(0, nullptr);
+		const Rhi::VertexAttributes vertexAttributes(0, nullptr);
 
 		{
 			// Create the graphics program
-			Renderer::IGraphicsProgramPtr graphicsProgram;
+			Rhi::IGraphicsProgramPtr graphicsProgram;
 			{
 				// Get the shader source code (outsourced to keep an overview)
 				const char* vertexShaderSourceCode = nullptr;
@@ -64,26 +64,26 @@ void FirstGeometryShader::onInitialization()
 				#include "FirstGeometryShader_Null.h"
 
 				// Create the graphics program
-				Renderer::IShaderLanguage& shaderLanguage = renderer->getDefaultShaderLanguage();
+				Rhi::IShaderLanguage& shaderLanguage = rhi->getDefaultShaderLanguage();
 				graphicsProgram = shaderLanguage.createGraphicsProgram(
 					*mRootSignature,
 					vertexAttributes,
 					shaderLanguage.createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode),
-					shaderLanguage.createGeometryShaderFromSourceCode(geometryShaderSourceCode, Renderer::GsInputPrimitiveTopology::POINTS, Renderer::GsOutputPrimitiveTopology::TRIANGLES_STRIP, 3),
+					shaderLanguage.createGeometryShaderFromSourceCode(geometryShaderSourceCode, Rhi::GsInputPrimitiveTopology::POINTS, Rhi::GsOutputPrimitiveTopology::TRIANGLES_STRIP, 3),
 					shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 			}
 
 			// Create the graphics pipeline state object (PSO)
 			if (nullptr != graphicsProgram)
 			{
-				Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass());
-				graphicsPipelineState.primitiveTopology = Renderer::PrimitiveTopology::POINT_LIST;
-				graphicsPipelineState.primitiveTopologyType = Renderer::PrimitiveTopologyType::POINT;
-				mGraphicsPipelineState = renderer->createGraphicsPipelineState(graphicsPipelineState);
+				Rhi::GraphicsPipelineState graphicsPipelineState = Rhi::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass());
+				graphicsPipelineState.primitiveTopology = Rhi::PrimitiveTopology::POINT_LIST;
+				graphicsPipelineState.primitiveTopologyType = Rhi::PrimitiveTopologyType::POINT;
+				mGraphicsPipelineState = rhi->createGraphicsPipelineState(graphicsPipelineState);
 			}
 		}
 
-		// Since we're always submitting the same commands to the renderer, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
+		// Since we're always submitting the same commands to the RHI, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
 		fillCommandBuffer();
 	}
 }
@@ -99,12 +99,12 @@ void FirstGeometryShader::onDeinitialization()
 
 void FirstGeometryShader::onDraw()
 {
-	// Get and check the renderer instance
-	Renderer::IRendererPtr renderer(getRenderer());
-	if (nullptr != renderer)
+	// Get and check the RHI instance
+	Rhi::IRhiPtr rhi(getRhi());
+	if (nullptr != rhi)
 	{
-		// Submit command buffer to the renderer backend
-		mCommandBuffer.submitToRenderer(*renderer);
+		// Submit command buffer to the RHI implementation
+		mCommandBuffer.submitToRhi(*rhi);
 	}
 }
 
@@ -115,25 +115,25 @@ void FirstGeometryShader::onDraw()
 void FirstGeometryShader::fillCommandBuffer()
 {
 	// Sanity checks
-	ASSERT(nullptr != getRenderer());
-	RENDERER_ASSERT(getRenderer()->getContext(), mCommandBuffer.isEmpty(), "Command buffer is already filled");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mRootSignature, "Invalid root signature");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mGraphicsPipelineState, "Invalid graphics pipeline state");
+	ASSERT(nullptr != getRhi());
+	RHI_ASSERT(getRhi()->getContext(), mCommandBuffer.isEmpty(), "Command buffer is already filled");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mRootSignature, "Invalid root signature");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mGraphicsPipelineState, "Invalid graphics pipeline state");
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
 
 	// Clear the graphics color buffer of the current render target with gray, do also clear the depth buffer
-	Renderer::Command::ClearGraphics::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
+	Rhi::Command::ClearGraphics::create(mCommandBuffer, Rhi::ClearFlag::COLOR_DEPTH, Color4::GRAY);
 
 	// Set the used graphics root signature
-	Renderer::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
+	Rhi::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
 
 	// Set the used graphics pipeline state object (PSO)
-	Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineState);
+	Rhi::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineState);
 
 	// Render the specified geometric primitive, based on an array of vertices
 	// -> Emit a single point in order to generate a draw call, the geometry shader does the rest
 	// -> Attribute-less rendering (aka "drawing without data")
-	Renderer::Command::DrawGraphics::create(mCommandBuffer, 1);
+	Rhi::Command::DrawGraphics::create(mCommandBuffer, 1);
 }

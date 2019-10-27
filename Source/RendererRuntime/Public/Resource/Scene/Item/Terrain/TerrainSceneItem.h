@@ -78,7 +78,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	public:
 		static constexpr uint32_t TYPE_ID = STRING_ID("TerrainSceneItem");
-		RENDERERRUNTIME_API_EXPORT static const Renderer::VertexAttributes VERTEX_ATTRIBUTES;
+		RENDERERRUNTIME_API_EXPORT static const Rhi::VertexAttributes VERTEX_ATTRIBUTES;
 
 
 	//[-------------------------------------------------------]
@@ -106,8 +106,8 @@ namespace RendererRuntime
 		static constexpr int MAXIMUM_NUMBER_OF_TERRAIN_TILE_RINGS = 6;
 		struct TerrainTileRing final
 		{
-			int						  numberOfTiles;
-			Renderer::IVertexArrayPtr vertexArrayPtr;	///< Vertex array object (VAO), considered to be always valid
+			int					 numberOfTiles;
+			Rhi::IVertexArrayPtr vertexArrayPtr;	///< Vertex array object (VAO), considered to be always valid
 		};
 
 
@@ -124,17 +124,17 @@ namespace RendererRuntime
 
 		explicit TerrainSceneItem(const TerrainSceneItem&) = delete;
 		TerrainSceneItem& operator=(const TerrainSceneItem&) = delete;
-		void createIndexBuffer(Renderer::IBufferManager& bufferManager);
-		void createTerrainTileRing(TerrainTileRing& terrainTileRing, Renderer::IBufferManager& bufferManager, int holeWidth, int outerWidth, float tileSize) const;
+		void createIndexBuffer(Rhi::IBufferManager& bufferManager);
+		void createTerrainTileRing(TerrainTileRing& terrainTileRing, Rhi::IBufferManager& bufferManager, int holeWidth, int outerWidth, float tileSize) const;
 
 
 	//[-------------------------------------------------------]
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		Renderer::IIndexBufferPtr mIndexBufferPtr;				///< Index buffer which is shared between all terrain tile ring vertex array buffers
-		int						  mNumberOfTerrainTileRings;	///< Number of terrain tile rings
-		TerrainTileRing			  mTerrainTileRings[MAXIMUM_NUMBER_OF_TERRAIN_TILE_RINGS];
+		Rhi::IIndexBufferPtr mIndexBufferPtr;			///< Index buffer which is shared between all terrain tile ring vertex array buffers
+		int					 mNumberOfTerrainTileRings;	///< Number of terrain tile rings
+		TerrainTileRing		 mTerrainTileRings[MAXIMUM_NUMBER_OF_TERRAIN_TILE_RINGS];
 
 
 	};

@@ -66,12 +66,12 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void FramebufferManager::clear()
 	{
-		clearRendererResources();
+		clearRhiResources();
 		mSortedFramebufferVector.clear();
 		mCompositorFramebufferIdToFramebufferSignatureId.clear();
 	}
 
-	void FramebufferManager::clearRendererResources()
+	void FramebufferManager::clearRhiResources()
 	{
 		for (FramebufferElement& framebufferElement : mSortedFramebufferVector)
 		{
@@ -103,9 +103,9 @@ namespace RendererRuntime
 		mCompositorFramebufferIdToFramebufferSignatureId.emplace(compositorFramebufferId, framebufferSignature.getFramebufferSignatureId());
 	}
 
-	Renderer::IFramebuffer* FramebufferManager::getFramebufferByCompositorFramebufferId(CompositorFramebufferId compositorFramebufferId) const
+	Rhi::IFramebuffer* FramebufferManager::getFramebufferByCompositorFramebufferId(CompositorFramebufferId compositorFramebufferId) const
 	{
-		Renderer::IFramebuffer* framebuffer = nullptr;
+		Rhi::IFramebuffer* framebuffer = nullptr;
 
 		// Map compositor framebuffer ID to framebuffer signature ID
 		CompositorFramebufferIdToFramebufferSignatureId::const_iterator iterator = mCompositorFramebufferIdToFramebufferSignatureId.find(compositorFramebufferId);
@@ -134,9 +134,9 @@ namespace RendererRuntime
 		return framebuffer;
 	}
 
-	Renderer::IFramebuffer* FramebufferManager::getFramebufferByCompositorFramebufferId(CompositorFramebufferId compositorFramebufferId, const Renderer::IRenderTarget& renderTarget, uint8_t numberOfMultisamples, float resolutionScale)
+	Rhi::IFramebuffer* FramebufferManager::getFramebufferByCompositorFramebufferId(CompositorFramebufferId compositorFramebufferId, const Rhi::IRenderTarget& renderTarget, uint8_t numberOfMultisamples, float resolutionScale)
 	{
-		Renderer::IFramebuffer* framebuffer = nullptr;
+		Rhi::IFramebuffer* framebuffer = nullptr;
 
 		// Map compositor framebuffer ID to framebuffer signature ID
 		CompositorFramebufferIdToFramebufferSignatureId::const_iterator iterator = mCompositorFramebufferIdToFramebufferSignatureId.find(compositorFramebufferId);
@@ -149,21 +149,21 @@ namespace RendererRuntime
 				const FramebufferSignature& framebufferSignature = framebufferElement.framebufferSignature;
 				if (framebufferSignature.getFramebufferSignatureId() == framebufferSignatureId)
 				{
-					// Do we need to create the renderer framebuffer instance right now?
+					// Do we need to create the RHI framebuffer instance right now?
 					if (nullptr == framebufferElement.framebuffer)
 					{
 						// Get the color texture instances
-						Renderer::TextureFormat::Enum colorTextureFormats[8] = { Renderer::TextureFormat::Enum::UNKNOWN, Renderer::TextureFormat::Enum::UNKNOWN, Renderer::TextureFormat::Enum::UNKNOWN, Renderer::TextureFormat::Enum::UNKNOWN, Renderer::TextureFormat::Enum::UNKNOWN, Renderer::TextureFormat::Enum::UNKNOWN, Renderer::TextureFormat::Enum::UNKNOWN, Renderer::TextureFormat::Enum::UNKNOWN };
+						Rhi::TextureFormat::Enum colorTextureFormats[8] = { Rhi::TextureFormat::Enum::UNKNOWN, Rhi::TextureFormat::Enum::UNKNOWN, Rhi::TextureFormat::Enum::UNKNOWN, Rhi::TextureFormat::Enum::UNKNOWN, Rhi::TextureFormat::Enum::UNKNOWN, Rhi::TextureFormat::Enum::UNKNOWN, Rhi::TextureFormat::Enum::UNKNOWN, Rhi::TextureFormat::Enum::UNKNOWN };
 						const uint8_t numberOfColorAttachments = framebufferSignature.getNumberOfColorAttachments();
 						ASSERT(numberOfColorAttachments < 8);
-						Renderer::FramebufferAttachment colorFramebufferAttachments[8];
+						Rhi::FramebufferAttachment colorFramebufferAttachments[8];
 						uint8_t usedNumberOfMultisamples = 0;
 						for (uint8_t i = 0; i < numberOfColorAttachments; ++i)
 						{
 							const FramebufferSignatureAttachment& framebufferSignatureAttachment = framebufferSignature.getColorFramebufferSignatureAttachment(i);
 							const AssetId colorTextureAssetId = framebufferSignatureAttachment.textureAssetId;
 							const RenderTargetTextureSignature* colorRenderTargetTextureSignature = nullptr;
-							Renderer::FramebufferAttachment& framebufferAttachment = colorFramebufferAttachments[i];
+							Rhi::FramebufferAttachment& framebufferAttachment = colorFramebufferAttachments[i];
 							framebufferAttachment.texture = isValid(colorTextureAssetId) ? mRenderTargetTextureManager.getTextureByAssetId(colorTextureAssetId, renderTarget, numberOfMultisamples, resolutionScale, &colorRenderTargetTextureSignature) : nullptr;
 							ASSERT(nullptr != framebufferAttachment.texture);
 							framebufferAttachment.mipmapIndex = framebufferSignatureAttachment.mipmapIndex;
@@ -183,7 +183,7 @@ namespace RendererRuntime
 						// Get the depth stencil texture instances
 						const FramebufferSignatureAttachment& depthStencilFramebufferSignatureAttachment = framebufferSignature.getDepthStencilFramebufferSignatureAttachment();
 						const RenderTargetTextureSignature* depthStencilRenderTargetTextureSignature = nullptr;
-						Renderer::FramebufferAttachment depthStencilFramebufferAttachment(isValid(depthStencilFramebufferSignatureAttachment.textureAssetId) ? mRenderTargetTextureManager.getTextureByAssetId(depthStencilFramebufferSignatureAttachment.textureAssetId, renderTarget, numberOfMultisamples, resolutionScale, &depthStencilRenderTargetTextureSignature) : nullptr, depthStencilFramebufferSignatureAttachment.mipmapIndex, depthStencilFramebufferSignatureAttachment.layerIndex);
+						Rhi::FramebufferAttachment depthStencilFramebufferAttachment(isValid(depthStencilFramebufferSignatureAttachment.textureAssetId) ? mRenderTargetTextureManager.getTextureByAssetId(depthStencilFramebufferSignatureAttachment.textureAssetId, renderTarget, numberOfMultisamples, resolutionScale, &depthStencilRenderTargetTextureSignature) : nullptr, depthStencilFramebufferSignatureAttachment.mipmapIndex, depthStencilFramebufferSignatureAttachment.layerIndex);
 						if (nullptr != depthStencilRenderTargetTextureSignature)
 						{
 							if (0 == usedNumberOfMultisamples)
@@ -195,16 +195,16 @@ namespace RendererRuntime
 								ASSERT(1 == usedNumberOfMultisamples || ((depthStencilRenderTargetTextureSignature->getFlags() & RenderTargetTextureSignature::Flag::ALLOW_MULTISAMPLE) != 0));
 							}
 						}
-						const Renderer::TextureFormat::Enum depthStencilTextureFormat = (nullptr != depthStencilRenderTargetTextureSignature) ? depthStencilRenderTargetTextureSignature->getTextureFormat() : Renderer::TextureFormat::Enum::UNKNOWN;
+						const Rhi::TextureFormat::Enum depthStencilTextureFormat = (nullptr != depthStencilRenderTargetTextureSignature) ? depthStencilRenderTargetTextureSignature->getTextureFormat() : Rhi::TextureFormat::Enum::UNKNOWN;
 
 						// Get or create the managed render pass
-						Renderer::IRenderPass* renderPass = mRenderPassManager.getOrCreateRenderPass(numberOfColorAttachments, colorTextureFormats, depthStencilTextureFormat, usedNumberOfMultisamples);
+						Rhi::IRenderPass* renderPass = mRenderPassManager.getOrCreateRenderPass(numberOfColorAttachments, colorTextureFormats, depthStencilTextureFormat, usedNumberOfMultisamples);
 						ASSERT(nullptr != renderPass);
 
 						// Create the framebuffer object (FBO) instance
 						// -> The framebuffer automatically adds a reference to the provided textures
-						framebufferElement.framebuffer = mRenderTargetTextureManager.getRendererRuntime().getRenderer().createFramebuffer(*renderPass, colorFramebufferAttachments, (nullptr != depthStencilFramebufferAttachment.texture) ? &depthStencilFramebufferAttachment : nullptr);
-						RENDERER_SET_RESOURCE_DEBUG_NAME(framebufferElement.framebuffer, "Framebuffer manager")
+						framebufferElement.framebuffer = mRenderTargetTextureManager.getRendererRuntime().getRhi().createFramebuffer(*renderPass, colorFramebufferAttachments, (nullptr != depthStencilFramebufferAttachment.texture) ? &depthStencilFramebufferAttachment : nullptr);
+						RHI_SET_RESOURCE_DEBUG_NAME(framebufferElement.framebuffer, "Framebuffer manager")
 						framebufferElement.framebuffer->addReference();
 					}
 					framebuffer = framebufferElement.framebuffer;

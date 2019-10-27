@@ -29,18 +29,9 @@
 //[-------------------------------------------------------]
 #include "RendererRuntime/Public/Core/Manager.h"
 
-#include <Renderer/Public/Renderer.h>
+#include <Rhi/Public/Rhi.h>
 
 #include <unordered_map>
-
-
-//[-------------------------------------------------------]
-//[ Forward declarations                                  ]
-//[-------------------------------------------------------]
-namespace Renderer
-{
-	class IRenderPass;
-}
 
 
 //[-------------------------------------------------------]
@@ -61,8 +52,8 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline explicit RenderPassManager(Renderer::IRenderer& renderer) :
-			mRenderer(renderer)
+		inline explicit RenderPassManager(Rhi::IRhi& rhi) :
+			mRhi(rhi)
 		{
 			// Nothing here
 		}
@@ -70,22 +61,22 @@ namespace RendererRuntime
 		~RenderPassManager();
 		explicit RenderPassManager(const RenderPassManager&) = delete;
 		RenderPassManager& operator=(const RenderPassManager&) = delete;
-		[[nodiscard]] Renderer::IRenderPass* getOrCreateRenderPass(uint32_t numberOfColorAttachments, const Renderer::TextureFormat::Enum* colorAttachmentTextureFormats, Renderer::TextureFormat::Enum depthStencilAttachmentTextureFormat = Renderer::TextureFormat::UNKNOWN, uint8_t numberOfMultisamples = 1);
+		[[nodiscard]] Rhi::IRenderPass* getOrCreateRenderPass(uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat = Rhi::TextureFormat::UNKNOWN, uint8_t numberOfMultisamples = 1);
 
 
 	//[-------------------------------------------------------]
 	//[ Private definitions                                   ]
 	//[-------------------------------------------------------]
 	private:
-		typedef std::unordered_map<uint32_t, Renderer::IRenderPass*> RenderPasses;
+		typedef std::unordered_map<uint32_t, Rhi::IRenderPass*> RenderPasses;
 
 
 	//[-------------------------------------------------------]
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		Renderer::IRenderer& mRenderer;
-		RenderPasses		 mRenderPasses;
+		Rhi::IRhi&   mRhi;
+		RenderPasses mRenderPasses;
 
 
 	};

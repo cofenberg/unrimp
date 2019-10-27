@@ -34,8 +34,6 @@
 #include "RendererRuntime/Public/Resource/MaterialBlueprint/Cache/GraphicsPipelineStateCacheManager.h"
 #include "RendererRuntime/Public/Resource/MaterialBlueprint/Cache/ComputePipelineStateCacheManager.h"
 
-#include <Renderer/Public/Renderer.h>
-
 
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
@@ -168,9 +166,9 @@ namespace RendererRuntime
 
 		struct SamplerState final
 		{
-			Renderer::SamplerState	   rendererSamplerState;
-			uint32_t				   rootParameterIndex;	///< Root parameter index = resource group index
-			Renderer::ISamplerStatePtr samplerStatePtr;
+			Rhi::SamplerState	  rhiSamplerState;
+			uint32_t			  rootParameterIndex;	///< Root parameter index = resource group index
+			Rhi::ISamplerStatePtr samplerStatePtr;
 		};
 		typedef std::vector<SamplerState> SamplerStates;
 
@@ -292,12 +290,12 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Return the root signature
+		*    Return the RHI root signature
 		*
 		*  @return
-		*    The root signature, can be a null pointer, do not destroy the instance
+		*    The RHI root signature, can be a null pointer, do not destroy the instance
 		*/
-		[[nodiscard]] inline const Renderer::IRootSignaturePtr& getRootSignaturePtr() const
+		[[nodiscard]] inline const Rhi::IRootSignaturePtr& getRootSignaturePtr() const
 		{
 			return mRootSignaturePtr;
 		}
@@ -312,7 +310,7 @@ namespace RendererRuntime
 		*  @return
 		*    The graphics pipeline state
 		*/
-		[[nodiscard]] inline const Renderer::GraphicsPipelineState& getGraphicsPipelineState() const
+		[[nodiscard]] inline const Rhi::GraphicsPipelineState& getGraphicsPipelineState() const
 		{
 			return mGraphicsPipelineState;
 		}
@@ -514,18 +512,18 @@ namespace RendererRuntime
 		*    Bind the graphics material blueprint resource into the given command buffer
 		*
 		*  @param[out] commandBuffer
-		*    Command buffer to fill
+		*    RHI command buffer to fill
 		*/
-		RENDERERRUNTIME_API_EXPORT void fillGraphicsCommandBuffer(Renderer::CommandBuffer& commandBuffer);
+		RENDERERRUNTIME_API_EXPORT void fillGraphicsCommandBuffer(Rhi::CommandBuffer& commandBuffer);
 
 		/**
 		*  @brief
 		*    Bind the compute material blueprint resource into the given command buffer
 		*
 		*  @param[out] commandBuffer
-		*    Command buffer to fill
+		*    RHI command buffer to fill
 		*/
-		RENDERERRUNTIME_API_EXPORT void fillComputeCommandBuffer(Renderer::CommandBuffer& commandBuffer);
+		RENDERERRUNTIME_API_EXPORT void fillComputeCommandBuffer(Rhi::CommandBuffer& commandBuffer);
 
 		/**
 		*  @brief
@@ -561,7 +559,7 @@ namespace RendererRuntime
 		virtual ~MaterialBlueprintResource() override;
 		explicit MaterialBlueprintResource(const MaterialBlueprintResource&) = delete;
 		MaterialBlueprintResource& operator=(const MaterialBlueprintResource&) = delete;
-		void onDefaultTextureFilteringChanged(Renderer::FilterMode defaultFilterMode, uint8_t maximumDefaultAnisotropy);
+		void onDefaultTextureFilteringChanged(Rhi::FilterMode defaultFilterMode, uint8_t maximumDefaultAnisotropy);
 
 		//[-------------------------------------------------------]
 		//[ Pipeline state object cache                           ]
@@ -587,9 +585,9 @@ namespace RendererRuntime
 		MaterialProperties				  mMaterialProperties;
 		ShaderProperties				  mVisualImportanceOfShaderProperties;		///< Every shader property known to the material blueprint has a visual importance entry in here
 		ShaderProperties				  mMaximumIntegerValueOfShaderProperties;	///< The maximum integer value (inclusive) of a shader property
-		Renderer::IRootSignaturePtr		  mRootSignaturePtr;						///< Root signature, can be a null pointer
+		Rhi::IRootSignaturePtr			  mRootSignaturePtr;						///< RHI root signature, can be a null pointer
 		// Graphics pipeline state
-		Renderer::GraphicsPipelineState	mGraphicsPipelineState;
+		Rhi::GraphicsPipelineState		mGraphicsPipelineState;
 		VertexAttributesResourceId		mVertexAttributesResourceId;
 		ShaderBlueprintResourceId		mGraphicsShaderBlueprintResourceId[NUMBER_OF_GRAPHICS_SHADER_TYPES];
 		// Compute pipeline state
@@ -600,7 +598,7 @@ namespace RendererRuntime
 		SamplerStates  mSamplerStates;
 		Textures	   mTextures;
 		// Resource groups
-		Renderer::IResourceGroupPtr mSamplerStateGroup;
+		Rhi::IResourceGroupPtr mSamplerStateGroup;
 		// Ease-of-use direct access
 		UniformBuffer* mPassUniformBuffer;		///< Can be a null pointer, don't destroy the instance
 		UniformBuffer* mMaterialUniformBuffer;	///< Can be a null pointer, don't destroy the instance

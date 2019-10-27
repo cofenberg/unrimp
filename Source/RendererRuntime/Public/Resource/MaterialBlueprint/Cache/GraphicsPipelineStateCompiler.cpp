@@ -107,7 +107,7 @@ namespace RendererRuntime
 			GraphicsPipelineStateCache& graphicsPipelineStateCache = compilerRequest.graphicsPipelineStateCache;
 			graphicsPipelineStateCache.mGraphicsPipelineStateObjectPtr = compilerRequest.graphicsPipelineStateObject;
 			graphicsPipelineStateCache.mIsUsingFallback = false;
-			RENDERER_ASSERT(mRendererRuntime.getContext(), 0 != mNumberOfInFlightCompilerRequests, "Invalid number of in flight compiler requests")
+			RHI_ASSERT(mRendererRuntime.getContext(), 0 != mNumberOfInFlightCompilerRequests, "Invalid number of in flight compiler requests")
 			--mNumberOfInFlightCompilerRequests;
 		}
 	}
@@ -118,7 +118,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	GraphicsPipelineStateCompiler::GraphicsPipelineStateCompiler(IRendererRuntime& rendererRuntime) :
 		mRendererRuntime(rendererRuntime),
-		mAsynchronousCompilationEnabled(rendererRuntime.getRenderer().getCapabilities().nativeMultithreading),
+		mAsynchronousCompilationEnabled(rendererRuntime.getRhi().getCapabilities().nativeMultithreading),
 		mNumberOfCompilerThreads(0),
 		mNumberOfInFlightCompilerRequests(0),
 		mShutdownBuilderThread(false),
@@ -143,7 +143,7 @@ namespace RendererRuntime
 	void GraphicsPipelineStateCompiler::addAsynchronousCompilerRequest(GraphicsPipelineStateCache& graphicsPipelineStateCache)
 	{
 		// Push the load request into the builder queue
-		RENDERER_ASSERT(mRendererRuntime.getContext(), mAsynchronousCompilationEnabled, "Asynchronous compilation isn't enabled")
+		RHI_ASSERT(mRendererRuntime.getContext(), mAsynchronousCompilationEnabled, "Asynchronous compilation isn't enabled")
 		++mNumberOfInFlightCompilerRequests;
 		std::unique_lock<std::mutex> builderMutexLock(mBuilderMutex);
 		mBuilderQueue.emplace_back(CompilerRequest(graphicsPipelineStateCache));
@@ -158,7 +158,7 @@ namespace RendererRuntime
 		const GraphicsProgramCache* graphicsProgramCache = materialBlueprintResource.getGraphicsPipelineStateCacheManager().getGraphicsProgramCacheManager().getGraphicsProgramCacheByGraphicsPipelineStateSignature(graphicsPipelineStateSignature);
 		if (nullptr != graphicsProgramCache)
 		{
-			const Renderer::IGraphicsProgramPtr& graphicsProgramPtr = graphicsProgramCache->getGraphicsProgramPtr();
+			const Rhi::IGraphicsProgramPtr& graphicsProgramPtr = graphicsProgramCache->getGraphicsProgramPtr();
 			if (nullptr != graphicsProgramPtr)
 			{
 				graphicsPipelineStateCache.mGraphicsPipelineStateObjectPtr = createGraphicsPipelineState(materialBlueprintResource, graphicsPipelineStateSignature.getSerializedGraphicsPipelineStateHash(), *graphicsProgramPtr);
@@ -192,7 +192,7 @@ namespace RendererRuntime
 		ShaderBlueprintResourceManager& shaderBlueprintResourceManager = mRendererRuntime.getShaderBlueprintResourceManager();
 		ShaderCacheManager& shaderCacheManager = shaderBlueprintResourceManager.getShaderCacheManager();
 		const ShaderPieceResourceManager& shaderPieceResourceManager = mRendererRuntime.getShaderPieceResourceManager();
-		ShaderBuilder shaderBuilder(mRendererRuntime.getRenderer().getContext());
+		ShaderBuilder shaderBuilder(mRendererRuntime.getRhi().getContext());
 
 		RENDERER_RUNTIME_SET_CURRENT_THREAD_DEBUG_NAME("PSC: Stage 1", "Renderer runtime: Pipeline state compiler stage: 1. Asynchronous shader building");
 		while (!mShutdownBuilderThread)
@@ -278,7 +278,7 @@ namespace RendererRuntime
 											if (sourceCode.empty())
 											{
 												// TODO(co) Error handling
-												RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Invalid source code")
+												RHI_ASSERT(mRendererRuntime.getContext(), false, "Invalid source code")
 											}
 											else
 											{
@@ -312,7 +312,7 @@ namespace RendererRuntime
 										else
 										{
 											// TODO(co) Error handling
-											RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Invalid shader blueprint resource")
+											RHI_ASSERT(mRendererRuntime.getContext(), false, "Invalid shader blueprint resource")
 										}
 									}
 									compilerRequest.shaderCache[i] = shaderCache;
@@ -355,7 +355,7 @@ namespace RendererRuntime
 
 	void GraphicsPipelineStateCompiler::compilerThreadWorker()
 	{
-		Renderer::IShaderLanguage& shaderLanguage = mRendererRuntime.getRenderer().getDefaultShaderLanguage();
+		Rhi::IShaderLanguage& shaderLanguage = mRendererRuntime.getRhi().getDefaultShaderLanguage();
 		const MaterialBlueprintResourceManager& materialBlueprintResourceManager = mRendererRuntime.getMaterialBlueprintResourceManager();
 		RENDERER_RUNTIME_SET_CURRENT_THREAD_DEBUG_NAME("PSC: Stage 2", "Renderer runtime: Pipeline state compiler stage: 2. Asynchronous shader compilation");
 		while (!mShutdownCompilerThread)
@@ -372,7 +372,7 @@ namespace RendererRuntime
 
 				// Do the work: Compiling the shader source code it in order to get the shader bytecode
 				bool needToWaitForShaderCache = false;
-				Renderer::IShader* shaders[NUMBER_OF_GRAPHICS_SHADER_TYPES] = {};
+				Rhi::IShader* shaders[NUMBER_OF_GRAPHICS_SHADER_TYPES] = {};
 				for (uint8_t i = 0; i < NUMBER_OF_GRAPHICS_SHADER_TYPES && !needToWaitForShaderCache; ++i)
 				{
 					ShaderCache* shaderCache = compilerRequest.shaderCache[i];
@@ -386,19 +386,19 @@ namespace RendererRuntime
 							if (shaderSourceCode.empty())
 							{
 								// We're not aware of any shader source code but we need a shader cache, so, there must be a shader cache master we need to wait for
-								// RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != shaderCache->getMasterShaderCache(), "Invalid master shader cache")	// No assert by intent
+								// RHI_ASSERT(mRendererRuntime.getContext(), nullptr != shaderCache->getMasterShaderCache(), "Invalid master shader cache")	// No assert by intent
 								needToWaitForShaderCache = true;
 							}
 							else
 							{
 								// Create the shader instance
-								Renderer::IShader* shader = nullptr;
+								Rhi::IShader* shader = nullptr;
 								switch (static_cast<GraphicsShaderType>(i))
 								{
 									case GraphicsShaderType::Vertex:
 									{
 										const MaterialBlueprintResource& materialBlueprintResource = materialBlueprintResourceManager.getById(compilerRequest.graphicsPipelineStateCache.getGraphicsPipelineStateSignature().getMaterialBlueprintResourceId());
-										const Renderer::VertexAttributes& vertexAttributes = mRendererRuntime.getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes();
+										const Rhi::VertexAttributes& vertexAttributes = mRendererRuntime.getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes();
 										shader = shaderLanguage.createVertexShaderFromSourceCode(vertexAttributes, shaderSourceCode.c_str(), &shaderCache->mShaderBytecode);
 										break;
 									}
@@ -420,8 +420,8 @@ namespace RendererRuntime
 										shader = shaderLanguage.createFragmentShaderFromSourceCode(shaderSourceCode.c_str(), &shaderCache->mShaderBytecode);
 										break;
 								}
-								RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != shader, "Invalid shader")	// TODO(co) Error handling
-								RENDERER_SET_RESOURCE_DEBUG_NAME(shader, "Pipeline state compiler")
+								RHI_ASSERT(mRendererRuntime.getContext(), nullptr != shader, "Invalid shader")	// TODO(co) Error handling
+								RHI_SET_RESOURCE_DEBUG_NAME(shader, "Pipeline state compiler")
 								shaderCache->mShaderPtr = shaders[i] = shader;
 							}
 						}
@@ -436,14 +436,14 @@ namespace RendererRuntime
 						MaterialBlueprintResource& materialBlueprintResource = materialBlueprintResourceManager.getById(graphicsPipelineStateSignature.getMaterialBlueprintResourceId());
 
 						// Create the graphics program
-						Renderer::IGraphicsProgram* graphicsProgram = shaderLanguage.createGraphicsProgram(*materialBlueprintResource.getRootSignaturePtr(),
+						Rhi::IGraphicsProgram* graphicsProgram = shaderLanguage.createGraphicsProgram(*materialBlueprintResource.getRootSignaturePtr(),
 							mRendererRuntime.getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes(),
-							static_cast<Renderer::IVertexShader*>(shaders[static_cast<int>(GraphicsShaderType::Vertex)]),
-							static_cast<Renderer::ITessellationControlShader*>(shaders[static_cast<int>(GraphicsShaderType::TessellationControl)]),
-							static_cast<Renderer::ITessellationEvaluationShader*>(shaders[static_cast<int>(GraphicsShaderType::TessellationEvaluation)]),
-							static_cast<Renderer::IGeometryShader*>(shaders[static_cast<int>(GraphicsShaderType::Geometry)]),
-							static_cast<Renderer::IFragmentShader*>(shaders[static_cast<int>(GraphicsShaderType::Fragment)]));
-						RENDERER_SET_RESOURCE_DEBUG_NAME(graphicsProgram, "Graphics pipeline state compiler")
+							static_cast<Rhi::IVertexShader*>(shaders[static_cast<int>(GraphicsShaderType::Vertex)]),
+							static_cast<Rhi::ITessellationControlShader*>(shaders[static_cast<int>(GraphicsShaderType::TessellationControl)]),
+							static_cast<Rhi::ITessellationEvaluationShader*>(shaders[static_cast<int>(GraphicsShaderType::TessellationEvaluation)]),
+							static_cast<Rhi::IGeometryShader*>(shaders[static_cast<int>(GraphicsShaderType::Geometry)]),
+							static_cast<Rhi::IFragmentShader*>(shaders[static_cast<int>(GraphicsShaderType::Fragment)]));
+						RHI_SET_RESOURCE_DEBUG_NAME(graphicsProgram, "Graphics pipeline state compiler")
 
 						// Create the graphics pipeline state object (PSO)
 						compilerRequest.graphicsPipelineStateObject = createGraphicsPipelineState(materialBlueprintResource, graphicsPipelineStateSignature.getSerializedGraphicsPipelineStateHash(), *graphicsProgram);
@@ -451,15 +451,15 @@ namespace RendererRuntime
 						{ // Graphics program cache entry
 							GraphicsProgramCacheManager& graphicsProgramCacheManager = materialBlueprintResource.getGraphicsPipelineStateCacheManager().getGraphicsProgramCacheManager();
 							const GraphicsProgramCacheId graphicsProgramCacheId = compilerRequest.graphicsProgramCacheId;
-							RENDERER_ASSERT(mRendererRuntime.getContext(), isValid(graphicsProgramCacheId), "Invalid graphics program cache ID")
+							RHI_ASSERT(mRendererRuntime.getContext(), isValid(graphicsProgramCacheId), "Invalid graphics program cache ID")
 							std::unique_lock<std::mutex> mutexLock(graphicsProgramCacheManager.mMutex);
-							RENDERER_ASSERT(mRendererRuntime.getContext(), graphicsProgramCacheManager.mGraphicsProgramCacheById.find(graphicsProgramCacheId) == graphicsProgramCacheManager.mGraphicsProgramCacheById.cend(), "Invalid graphics program cache ID")	// TODO(co) Error handling
+							RHI_ASSERT(mRendererRuntime.getContext(), graphicsProgramCacheManager.mGraphicsProgramCacheById.find(graphicsProgramCacheId) == graphicsProgramCacheManager.mGraphicsProgramCacheById.cend(), "Invalid graphics program cache ID")	// TODO(co) Error handling
 							graphicsProgramCacheManager.mGraphicsProgramCacheById.emplace(graphicsProgramCacheId, new GraphicsProgramCache(graphicsProgramCacheId, *graphicsProgram));
 
 							{ // The graphics program cache is no longer in flight
 								std::unique_lock<std::mutex> inFlightGraphicsProgramCachesMutexLock(mInFlightGraphicsProgramCachesMutex);
 								const InFlightGraphicsProgramCaches::const_iterator iterator = mInFlightGraphicsProgramCaches.find(graphicsProgramCacheId);
-								RENDERER_ASSERT(mRendererRuntime.getContext(), mInFlightGraphicsProgramCaches.end() != iterator, "Invalid graphics program cache ID")
+								RHI_ASSERT(mRendererRuntime.getContext(), mInFlightGraphicsProgramCaches.end() != iterator, "Invalid graphics program cache ID")
 								mInFlightGraphicsProgramCaches.erase(iterator);
 							}
 							mBuilderConditionVariable.notify_one();
@@ -482,27 +482,27 @@ namespace RendererRuntime
 		}
 	}
 
-	Renderer::IGraphicsPipelineState* GraphicsPipelineStateCompiler::createGraphicsPipelineState(const RendererRuntime::MaterialBlueprintResource& materialBlueprintResource, uint32_t serializedGraphicsPipelineStateHash, Renderer::IGraphicsProgram& graphicsProgram) const
+	Rhi::IGraphicsPipelineState* GraphicsPipelineStateCompiler::createGraphicsPipelineState(const RendererRuntime::MaterialBlueprintResource& materialBlueprintResource, uint32_t serializedGraphicsPipelineStateHash, Rhi::IGraphicsProgram& graphicsProgram) const
 	{
 		// Start with the graphics pipeline state of the material blueprint resource, then copy over serialized graphics pipeline state
-		Renderer::GraphicsPipelineState graphicsPipelineState = materialBlueprintResource.getGraphicsPipelineState();
+		Rhi::GraphicsPipelineState graphicsPipelineState = materialBlueprintResource.getGraphicsPipelineState();
 		materialBlueprintResource.getResourceManager<RendererRuntime::MaterialBlueprintResourceManager>().applySerializedGraphicsPipelineState(serializedGraphicsPipelineStateHash, graphicsPipelineState);
 
 		// Setup the dynamic part of the pipeline state
 		const RendererRuntime::IRendererRuntime& rendererRuntime = materialBlueprintResource.getResourceManager<RendererRuntime::MaterialBlueprintResourceManager>().getRendererRuntime();
-		const Renderer::IRootSignaturePtr& rootSignaturePtr = materialBlueprintResource.getRootSignaturePtr();
+		const Rhi::IRootSignaturePtr& rootSignaturePtr = materialBlueprintResource.getRootSignaturePtr();
 		graphicsPipelineState.rootSignature	   = rootSignaturePtr;
 		graphicsPipelineState.graphicsProgram  = &graphicsProgram;
 		graphicsPipelineState.vertexAttributes = rendererRuntime.getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes();
 
 		{ // TODO(co) Render pass related update, the render pass in here is currently just a dummy so the debug compositor works
-			Renderer::IRenderer& renderer = rootSignaturePtr->getRenderer();
-			graphicsPipelineState.renderPass = renderer.createRenderPass(1, &renderer.getCapabilities().preferredSwapChainColorTextureFormat, renderer.getCapabilities().preferredSwapChainDepthStencilTextureFormat);
+			Rhi::IRhi& rhi = rootSignaturePtr->getRhi();
+			graphicsPipelineState.renderPass = rhi.createRenderPass(1, &rhi.getCapabilities().preferredSwapChainColorTextureFormat, rhi.getCapabilities().preferredSwapChainDepthStencilTextureFormat);
 		}
 
 		// Create the graphics pipeline state object (PSO)
-		Renderer::IGraphicsPipelineState* graphicsPipelineStateResource = rootSignaturePtr->getRenderer().createGraphicsPipelineState(graphicsPipelineState);
-		RENDERER_SET_RESOURCE_DEBUG_NAME(graphicsPipelineStateResource, "Graphics pipeline state compiler")
+		Rhi::IGraphicsPipelineState* graphicsPipelineStateResource = rootSignaturePtr->getRhi().createGraphicsPipelineState(graphicsPipelineState);
+		RHI_SET_RESOURCE_DEBUG_NAME(graphicsPipelineStateResource, "Graphics pipeline state compiler")
 
 		// Done
 		return graphicsPipelineStateResource;

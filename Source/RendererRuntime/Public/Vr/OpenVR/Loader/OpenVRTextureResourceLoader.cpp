@@ -59,7 +59,7 @@ namespace RendererRuntime
 		}
 		if (vr::VRRenderModelError_None != vrRenderModelError)
 		{
-			RENDERER_LOG(mRendererRuntime.getContext(), CRITICAL, "The renderer runtime was unable to load OpenVR albedo texture %d: %s", albedoTextureId, vrRenderModels->GetRenderModelErrorNameFromEnum(vrRenderModelError))
+			RHI_LOG(mRendererRuntime.getContext(), CRITICAL, "The renderer runtime was unable to load OpenVR albedo texture %d: %s", albedoTextureId, vrRenderModels->GetRenderModelErrorNameFromEnum(vrRenderModelError))
 			return;
 		}
 
@@ -72,10 +72,10 @@ namespace RendererRuntime
 			}
 		}
 
-		// Can we create the renderer resource asynchronous as well?
-		if (mRendererRuntime.getRenderer().getCapabilities().nativeMultithreading)
+		// Can we create the RHI resource asynchronous as well?
+		if (mRendererRuntime.getRhi().getCapabilities().nativeMultithreading)
 		{
-			mTexture = createRendererTexture();
+			mTexture = createRhiTexture();
 		}
 	}
 
@@ -83,15 +83,15 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Protected RendererRuntime::ITextureResourceLoader methods ]
 	//[-------------------------------------------------------]
-	Renderer::ITexture* OpenVRTextureResourceLoader::createRendererTexture()
+	Rhi::ITexture* OpenVRTextureResourceLoader::createRhiTexture()
 	{
-		Renderer::ITexture2D* texture2D = nullptr;
+		Rhi::ITexture2D* texture2D = nullptr;
 		if (nullptr != mVrRenderModelTextureMap)
 		{
-			// Create the renderer texture instance
+			// Create the RHI texture instance
 			const bool rgbHardwareGammaCorrection = true;	// TODO(co) It must be possible to set the property name from the outside: Ask the material blueprint whether or not hardware gamma correction should be used
-			texture2D = mRendererRuntime.getTextureManager().createTexture2D(mVrRenderModelTextureMap->unWidth, mVrRenderModelTextureMap->unHeight, rgbHardwareGammaCorrection ? Renderer::TextureFormat::R8G8B8A8_SRGB : Renderer::TextureFormat::R8G8B8A8, static_cast<const void*>(mVrRenderModelTextureMap->rubTextureMapData), Renderer::TextureFlag::GENERATE_MIPMAPS | Renderer::TextureFlag::SHADER_RESOURCE);
-			RENDERER_SET_RESOURCE_DEBUG_NAME(texture2D, getAsset().virtualFilename)
+			texture2D = mRendererRuntime.getTextureManager().createTexture2D(mVrRenderModelTextureMap->unWidth, mVrRenderModelTextureMap->unHeight, rgbHardwareGammaCorrection ? Rhi::TextureFormat::R8G8B8A8_SRGB : Rhi::TextureFormat::R8G8B8A8, static_cast<const void*>(mVrRenderModelTextureMap->rubTextureMapData), Rhi::TextureFlag::GENERATE_MIPMAPS | Rhi::TextureFlag::SHADER_RESOURCE);
+			RHI_SET_RESOURCE_DEBUG_NAME(texture2D, getAsset().virtualFilename)
 
 			// Free the render model texture
 			vr::VRRenderModels()->FreeTexture(mVrRenderModelTextureMap);

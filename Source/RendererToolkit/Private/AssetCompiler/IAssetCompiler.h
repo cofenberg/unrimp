@@ -29,7 +29,7 @@
 //[-------------------------------------------------------]
 #include <RendererRuntime/Public/Core/StringId.h>
 
-#include <Renderer/Public/Renderer.h>
+#include <Rhi/Public/Rhi.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -220,12 +220,12 @@ namespace RendererToolkit
 		{
 			const rapidjson::Document& rapidJsonDocumentAsset;
 			const rapidjson::Value&    rapidJsonValueTargets;
-			std::string				   rendererTarget;
+			std::string				   rhiTarget;
 			QualityStrategy			   qualityStrategy;
-			Configuration(const rapidjson::Document& _rapidJsonDocumentAsset, const rapidjson::Value& _rapidJsonValueTargets, const std::string& _rendererTarget, QualityStrategy _qualityStrategy) :
+			Configuration(const rapidjson::Document& _rapidJsonDocumentAsset, const rapidjson::Value& _rapidJsonValueTargets, const std::string& _rhiTarget, QualityStrategy _qualityStrategy) :
 				rapidJsonDocumentAsset(_rapidJsonDocumentAsset),
 				rapidJsonValueTargets(_rapidJsonValueTargets),
-				rendererTarget(_rendererTarget),
+				rhiTarget(_rhiTarget),
 				qualityStrategy(_qualityStrategy)
 			{
 				// Nothing here
@@ -266,7 +266,7 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	//[ Type definitions                                      ]
 	//[-------------------------------------------------------]
-	typedef Renderer::SmartRefCount<IAssetCompiler> IAssetCompilerPtr;
+	typedef Rhi::SmartRefCount<IAssetCompiler> IAssetCompilerPtr;
 
 
 //[-------------------------------------------------------]

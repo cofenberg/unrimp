@@ -120,7 +120,7 @@ namespace RendererRuntime
 //[ Debug                                                 ]
 //[-------------------------------------------------------]
 // Debug macros
-#ifdef _DEBUG
+#ifdef RHI_DEBUG
 	/**
 	*  @brief
 	*    Set the name of the current thread

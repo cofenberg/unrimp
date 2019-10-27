@@ -125,7 +125,7 @@ Standalone renderer examples.
 		- Root signature
 		- Graphics pipeline state object (PSO)
 		- Framebuffer object (FBO) used for render to texture
-		- General Purpose Computation on Graphics Processing Unit (GPGPU) by using the renderer interface and shaders without having any output window (also known as headless rendering)
+		- General Purpose Computation on Graphics Processing Unit (GPGPU) by using the RHI and shaders without having any output window (also known as headless rendering)
 	- "InstancedCubes" demonstrates:
 		- Index buffer object (IBO)
 		- Vertex buffer object (VBO)
@@ -163,7 +163,7 @@ Standalone renderer examples.
 		- Graphics pipeline state object (PSO)
 		- Blinn-Phong shading
 		- Albedo, normal, roughness and emissive mapping
-		- Optimization: Cache data to not bother the renderer API to much
+		- Optimization: Cache data to not bother the RHI to much
 		- Compact vertex format (32 bit texture coordinate, 16 bit QTangent, 56 bytes vs. 28 bytes per vertex)
 	- "FirstCompositor" demonstrates:
 		- Compositor
@@ -182,18 +182,18 @@ Standalone renderer examples.
 
 
 == Preprocessor Definitions ==
-For supporting a particular renderer backend:
-- "RENDERER_NULL":		 Enable Null renderer backend support
-- "RENDERER_VULKAN":	 Enable Vulkan renderer backend support
-- "RENDERER_OPENGL":	 Enable OpenGL renderer backend support
-- "RENDERER_OPENGLES3":	 Enable OpenGL ES 3 renderer backend support
-- "RENDERER_DIRECT3D9":	 Enable Direct3D 9 renderer backend support
-- "RENDERER_DIRECT3D10": Enable Direct3D 10 renderer backend support
-- "RENDERER_DIRECT3D11": Enable Direct3D 11 renderer backend support
-- "RENDERER_DIRECT3D12": Enable Direct3D 12 renderer backend support
-- "UNICODE":			 Enable Microsoft Windows command line Unicode support
-- "SHARED_LIBRARIES":	 Use renderers via shared libraries, if this is not defined, the renderers are statically linked
-- "RENDERER_RUNTIME":	 Enable renderer runtime support
-- "RENDERER_TOOLKIT":	 Enable renderer toolkit support
-- "SDL2_FOUND":"		 Enable SDL2 ( https://www.libsdl.org/ ) support
-- Do also have a look into the renderer header file for renderer backend preprocessor definitions
+For supporting a particular RHI implementations:
+- "RHI_NULL":		  Enable Null RHI implementation support
+- "RHI_VULKAN":		  Enable Vulkan RHI implementation support
+- "RHI_OPENGL":		  Enable OpenGL RHI implementation support
+- "RHI_OPENGLES3":	  Enable OpenGL ES 3 RHI implementation support
+- "RHI_DIRECT3D9":	  Enable Direct3D 9 RHI implementation support
+- "RHI_DIRECT3D10":	  Enable Direct3D 10 RHI implementation support
+- "RHI_DIRECT3D11":	  Enable Direct3D 11 RHI implementation support
+- "RHI_DIRECT3D12":	  Enable Direct3D 12 RHI implementation support
+- "UNICODE":		  Enable Microsoft Windows command line Unicode support
+- "SHARED_LIBRARIES": Use RHIs via shared libraries, if this is not defined, the RHIs are statically linked
+- "RENDERER_RUNTIME": Enable renderer runtime support
+- "RENDERER_TOOLKIT": Enable renderer toolkit support
+- "SDL2_FOUND":"	  Enable SDL2 ( https://www.libsdl.org/ ) support
+- Do also have a look into the RHI header file for RHI implementation preprocessor definitions

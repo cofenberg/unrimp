@@ -62,11 +62,11 @@ RendererToolkit::IRendererToolkit* IApplicationRendererRuntime::getRendererToolk
 		// Create the renderer toolkit instance, if required
 		if (nullptr == mRendererToolkitInstance)
 		{
-			assert((nullptr != mRendererRuntimeInstance) && "The renderer runtime instance must be valid");
+			ASSERT((nullptr != mRendererRuntimeInstance) && "The renderer runtime instance must be valid");
 			const RendererRuntime::IRendererRuntime* rendererRuntime = mRendererRuntimeInstance->getRendererRuntime();
-			Renderer::ILog& log = rendererRuntime->getRenderer().getContext().getLog();
-			Renderer::IAssert& assert = rendererRuntime->getRenderer().getContext().getAssert();
-			Renderer::IAllocator& allocator = rendererRuntime->getRenderer().getContext().getAllocator();
+			Rhi::ILog& log = rendererRuntime->getRhi().getContext().getLog();
+			Rhi::IAssert& assert = rendererRuntime->getRhi().getContext().getAssert();
+			Rhi::IAllocator& allocator = rendererRuntime->getRhi().getContext().getAllocator();
 			mRendererToolkitFileManager = new RendererRuntime::DefaultFileManager(log, assert, allocator, mFileManager->getAbsoluteRootDirectory());
 			mRendererToolkitContext = new RendererToolkit::Context(log, assert, allocator, *mRendererToolkitFileManager);
 			mRendererToolkitInstance = new RendererToolkit::RendererToolkitInstance(*mRendererToolkitContext);
@@ -83,31 +83,31 @@ RendererToolkit::IRendererToolkit* IApplicationRendererRuntime::getRendererToolk
 //[-------------------------------------------------------]
 bool IApplicationRendererRuntime::onInitialization()
 {
-	// Create the renderer instance
-	createRenderer();
+	// Create the RHI instance
+	createRhi();
 
-	// Is there a valid renderer instance?
-	Renderer::IRenderer* renderer = getRenderer();
-	if (nullptr != renderer)
+	// Is there a valid RHI instance?
+	Rhi::IRhi* rhi = getRhi();
+	if (nullptr != rhi)
 	{
 		// Create the renderer runtime instance
 		#ifdef __ANDROID__
 			struct android_app androidApp;	// TODO(co) Get Android app instance
 			assert((nullptr != androidApp.activity->assetManager) && "Invalid Android asset manager instance");
-			mFileManager = new RendererRuntime::AndroidFileManager(renderer->getContext().getLog(), renderer->getContext().getAssert(), renderer->getContext().getAllocator(), std_filesystem::canonical(std_filesystem::current_path() / "..").generic_string(), *androidApp.activity->assetManager);
+			mFileManager = new RendererRuntime::AndroidFileManager(rhi->getContext().getLog(), rhi->getContext().getAssert(), rhi->getContext().getAllocator(), std_filesystem::canonical(std_filesystem::current_path() / "..").generic_string(), *androidApp.activity->assetManager);
 		#else
-			mFileManager = new RendererRuntime::PhysicsFSFileManager(renderer->getContext().getLog(), std_filesystem::canonical(std_filesystem::current_path() / "..").generic_string());
+			mFileManager = new RendererRuntime::PhysicsFSFileManager(rhi->getContext().getLog(), std_filesystem::canonical(std_filesystem::current_path() / "..").generic_string());
 		#endif
 		#if defined(RENDERER_RUNTIME_GRAPHICS_DEBUGGER) && defined(RENDERER_RUNTIME_PROFILER)
-			mProfiler = new RendererRuntime::RemoteryProfiler(*renderer);
-			mRendererRuntimeContext = new RendererRuntime::Context(*renderer, *mFileManager, *mGraphicsDebugger, *mProfiler);
+			mProfiler = new RendererRuntime::RemoteryProfiler(*rhi);
+			mRendererRuntimeContext = new RendererRuntime::Context(*rhi, *mFileManager, *mGraphicsDebugger, *mProfiler);
 		#elif defined RENDERER_RUNTIME_GRAPHICS_DEBUGGER
-			mRendererRuntimeContext = new RendererRuntime::Context(*renderer, *mFileManager, *mGraphicsDebugger);
+			mRendererRuntimeContext = new RendererRuntime::Context(*rhi, *mFileManager, *mGraphicsDebugger);
 		#elif defined RENDERER_RUNTIME_PROFILER
-			mProfiler = new RendererRuntime::RemoteryProfiler(*renderer);
-			mRendererRuntimeContext = new RendererRuntime::Context(*renderer, *mFileManager, *mProfiler);
+			mProfiler = new RendererRuntime::RemoteryProfiler(*rhi);
+			mRendererRuntimeContext = new RendererRuntime::Context(*rhi, *mFileManager, *mProfiler);
 		#else
-			mRendererRuntimeContext = new RendererRuntime::Context(*renderer, *mFileManager);
+			mRendererRuntimeContext = new RendererRuntime::Context(*rhi, *mFileManager);
 		#endif
 		mRendererRuntimeInstance = new RendererRuntime::RendererRuntimeInstance(*mRendererRuntimeContext);
 
@@ -118,16 +118,16 @@ bool IApplicationRendererRuntime::onInitialization()
 				// Mount asset package
 				bool mountAssetPackageResult = false;
 				RendererRuntime::AssetManager& assetManager = rendererRuntime->getAssetManager();
-				bool rendererIsOpenGLES = (renderer->getNameId() == Renderer::NameId::OPENGLES3);
-				if (rendererIsOpenGLES)
+				bool rhiIsOpenGLES = (rhi->getNameId() == Rhi::NameId::OPENGLES3);
+				if (rhiIsOpenGLES)
 				{
 					// Handy fallback for development: If the mobile data isn't there, use the PC data
 					mountAssetPackageResult = (assetManager.mountAssetPackage("../DataMobile/Example/Content", "Example") != nullptr);
 					if (!mountAssetPackageResult)
 					{
-						RENDERER_LOG(rendererRuntime->getContext(), COMPATIBILITY_WARNING, "The examples application failed to find \"../DataMobile/Example/Content\", using \"../DataPc/Example/Content\" as fallback")
+						RHI_LOG(rendererRuntime->getContext(), COMPATIBILITY_WARNING, "The examples application failed to find \"../DataMobile/Example/Content\", using \"../DataPc/Example/Content\" as fallback")
 						mountAssetPackageResult = (assetManager.mountAssetPackage("../DataPc/Example/Content", "Example") != nullptr);
-						rendererIsOpenGLES = false;
+						rhiIsOpenGLES = false;
 					}
 				}
 				else
@@ -150,7 +150,7 @@ bool IApplicationRendererRuntime::onInitialization()
 					if (nullptr != rendererToolkit)
 					{
 						// The renderer toolkit project startup is done inside a background thread to not block the main thread
-						mRendererToolkitProjectStartupThread = std::thread(&IApplicationRendererRuntime::rendererToolkitProjectStartupThreadWorker, this, rendererRuntime, rendererToolkit, rendererIsOpenGLES);
+						mRendererToolkitProjectStartupThread = std::thread(&IApplicationRendererRuntime::rendererToolkitProjectStartupThreadWorker, this, rendererRuntime, rendererToolkit, rhiIsOpenGLES);
 					}
 				}
 				#endif
@@ -158,7 +158,7 @@ bool IApplicationRendererRuntime::onInitialization()
 		}
 	}
 
-	// Initialize the example now that the renderer instance should be created successfully
+	// Initialize the example now that the RHI instance should be created successfully
 	mExampleBase.onInitialization();
 
 	// Done
@@ -180,7 +180,7 @@ void IApplicationRendererRuntime::onUpdate()
 	}
 
 	// Call base implementation
-	IApplicationRenderer::onUpdate();
+	IApplicationRhi::onUpdate();
 }
 
 
@@ -228,11 +228,11 @@ void IApplicationRendererRuntime::deinitialization()
 			mRendererToolkitFileManager = nullptr;
 		}
 	#endif
-	destroyRenderer();
+	destroyRhi();
 }
 
 #ifdef RENDERER_TOOLKIT
-	void IApplicationRendererRuntime::rendererToolkitProjectStartupThreadWorker(RendererRuntime::IRendererRuntime* rendererRuntime, RendererToolkit::IRendererToolkit* rendererToolkit, bool rendererIsOpenGLES)
+	void IApplicationRendererRuntime::rendererToolkitProjectStartupThreadWorker(RendererRuntime::IRendererRuntime* rendererRuntime, RendererToolkit::IRendererToolkit* rendererToolkit, bool rhiIsOpenGLES)
 	{
 		RENDERER_RUNTIME_SET_CURRENT_THREAD_DEBUG_NAME("Project startup", "Renderer toolkit: Project startup");
 		std::lock_guard<std::mutex> projectMutexLock(mProjectMutex);
@@ -244,11 +244,11 @@ void IApplicationRendererRuntime::deinitialization()
 				// Load project: Shippable executable binaries are inside e.g. "unrimp/Binary/Windows_x64_Shared" while development data source is located
 				// at "unrimp/Example/DataSource/Example" and the resulting compiled/baked data ends up inside e.g. "unrimp/Binary/DataPc/Example"
 				mProject->load("../../Example/DataSource/Example");
-				mProject->startupAssetMonitor(*rendererRuntime, rendererIsOpenGLES ? "OpenGLES3_300" : "Direct3D11_50");
+				mProject->startupAssetMonitor(*rendererRuntime, rhiIsOpenGLES ? "OpenGLES3_300" : "Direct3D11_50");
 			}
 			catch (const std::exception& e)
 			{
-				RENDERER_LOG(rendererRuntime->getContext(), CRITICAL, "Failed to load renderer toolkit project: %s", e.what())
+				RHI_LOG(rendererRuntime->getContext(), CRITICAL, "Failed to load renderer toolkit project: %s", e.what())
 			}
 		}
 	}

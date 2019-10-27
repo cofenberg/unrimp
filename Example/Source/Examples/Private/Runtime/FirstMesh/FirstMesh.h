@@ -64,7 +64,7 @@ namespace RendererRuntime
 *    - Graphics pipeline state object (PSO)
 *    - Blinn-Phong shading
 *    - Albedo, normal, roughness and emissive mapping
-*    - Optimization: Cache data to not bother the renderer API to much
+*    - Optimization: Cache data to not bother the RHI to much
 *    - Compact vertex format (32 bit texture coordinate, QTangent, 56 bytes vs. 28 bytes per vertex)
 */
 class FirstMesh final : public ExampleBase, public RendererRuntime::IResourceListener
@@ -128,19 +128,19 @@ private:
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
-	Renderer::CommandBuffer				mCommandBuffer;				///< Command buffer
-	Renderer::IRootSignaturePtr			mRootSignature;				///< Root signature, can be a null pointer
-	Renderer::IUniformBufferPtr			mUniformBuffer;				///< Uniform buffer object (UBO), can be a null pointer
-	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineState;		///< Graphics pipeline state object (PSO), can be a null pointer
-	Renderer::IGraphicsProgramPtr		mGraphicsProgram;			///< Graphics program, can be a null pointer
-	RendererRuntime::MeshResourceId		mMeshResourceId;			///< Mesh resource ID, can be set to invalid value
-	RendererRuntime::TextureResourceId	m_argb_nxaTextureResourceId;
-	RendererRuntime::TextureResourceId	m_hr_rg_mb_nyaTextureResourceId;
-	RendererRuntime::TextureResourceId	mEmissiveTextureResourceId;
-	Renderer::IResourceGroupPtr			mResourceGroup;				///< Resource group, can be a null pointer
-	Renderer::ISamplerStatePtr			mSamplerStatePtr;			///< Sampler state, can be a null pointer
-	Renderer::IResourceGroupPtr			mSamplerStateGroup;			///< Sampler state resource group, can be a null pointer
-	// Optimization: Cache data to not bother the renderer API to much
+	Rhi::CommandBuffer				   mCommandBuffer;				///< Command buffer
+	Rhi::IRootSignaturePtr			   mRootSignature;				///< Root signature, can be a null pointer
+	Rhi::IUniformBufferPtr			   mUniformBuffer;				///< Uniform buffer object (UBO), can be a null pointer
+	Rhi::IGraphicsPipelineStatePtr	   mGraphicsPipelineState;		///< Graphics pipeline state object (PSO), can be a null pointer
+	Rhi::IGraphicsProgramPtr		   mGraphicsProgram;			///< Graphics program, can be a null pointer
+	RendererRuntime::MeshResourceId	   mMeshResourceId;				///< Mesh resource ID, can be set to invalid value
+	RendererRuntime::TextureResourceId m_argb_nxaTextureResourceId;
+	RendererRuntime::TextureResourceId m_hr_rg_mb_nyaTextureResourceId;
+	RendererRuntime::TextureResourceId mEmissiveTextureResourceId;
+	Rhi::IResourceGroupPtr			   mResourceGroup;				///< Resource group, can be a null pointer
+	Rhi::ISamplerStatePtr			   mSamplerStatePtr;			///< Sampler state, can be a null pointer
+	Rhi::IResourceGroupPtr			   mSamplerStateGroup;			///< Sampler state resource group, can be a null pointer
+	// Optimization: Cache data to not bother the RHI implementation to much
 	handle mObjectSpaceToClipSpaceMatrixUniformHandle;	///< Object space to clip space matrix uniform handle, can be "NULL_HANDLE"
 	handle mObjectSpaceToViewSpaceMatrixUniformHandle;	///< Object space to view space matrix uniform handle, can be "NULL_HANDLE"
 	// For timing

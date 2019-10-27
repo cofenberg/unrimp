@@ -559,9 +559,9 @@ namespace
 			// Get the JSON targets object
 			std::string textureTargetName;
 			{
-				const rapidjson::Value& rapidJsonValueRendererTargets = rapidJsonValueTargets["RendererTargets"];
-				const rapidjson::Value& rapidJsonValueRendererTarget = rapidJsonValueRendererTargets[configuration.rendererTarget];
-				textureTargetName = rapidJsonValueRendererTarget["TextureTarget"].GetString();
+				const rapidjson::Value& rapidJsonValueRhiTargets = rapidJsonValueTargets["RhiTargets"];
+				const rapidjson::Value& rapidJsonValueRhiTarget = rapidJsonValueRhiTargets[configuration.rhiTarget];
+				textureTargetName = rapidJsonValueRhiTarget["TextureTarget"].GetString();
 			}
 			{
 				std::string fileFormat = assetFileFormat;
@@ -1134,36 +1134,36 @@ namespace
 		[[nodiscard]] bool crunchConsoleOutput(crnlib::eConsoleMessageType crunchType, const char* message, void* data)
 		{
 			// Map the log message type
-			Renderer::ILog::Type type = Renderer::ILog::Type::TRACE;
+			Rhi::ILog::Type type = Rhi::ILog::Type::TRACE;
 			switch (crunchType)
 			{
 				case crnlib::cDebugConsoleMessage:
-					type = Renderer::ILog::Type::DEBUG;
+					type = Rhi::ILog::Type::DEBUG;
 					break;
 
 				case crnlib::cProgressConsoleMessage:
 					// Ignored by intent since Crunch writes empty message here (search for "console::progress("");" inside Crunch source codes)
-					// type = Renderer::ILog::Type::TRACE;
+					// type = Rhi::ILog::Type::TRACE;
 					break;
 
 				case crnlib::cInfoConsoleMessage:
-					type = Renderer::ILog::Type::INFORMATION;
+					type = Rhi::ILog::Type::INFORMATION;
 					break;
 
 				case crnlib::cConsoleConsoleMessage:
-					type = Renderer::ILog::Type::INFORMATION;
+					type = Rhi::ILog::Type::INFORMATION;
 					break;
 
 				case crnlib::cMessageConsoleMessage:
-					type = Renderer::ILog::Type::INFORMATION;
+					type = Rhi::ILog::Type::INFORMATION;
 					break;
 
 				case crnlib::cWarningConsoleMessage:
-					type = Renderer::ILog::Type::WARNING;
+					type = Rhi::ILog::Type::WARNING;
 					break;
 
 				case crnlib::cErrorConsoleMessage:
-					type = Renderer::ILog::Type::CRITICAL;
+					type = Rhi::ILog::Type::CRITICAL;
 					break;
 
 				case crnlib::cCMTTotal:
@@ -1171,7 +1171,7 @@ namespace
 					break;
 			}
 
-			// Write renderer log
+			// Write RHI log
 			// TODO(co) More context information like which asset is compiled right now might be useful. We need to keep in mind that there can be multiple texture compiler instances
 			//          running at one and the same time. We could use the Crunch console output data to transport this information, on the other hand we need to ensure that we can
 			//          unregister our function when we're done. "crnlib::console::remove_console_output_func() only checks the function pointer.
@@ -1190,7 +1190,7 @@ namespace
 			{
 				*pActual_size = size;
 			}
-			return static_cast<Renderer::IAllocator*>(pUser_data)->reallocate(p, 0, size, CRNLIB_MIN_ALLOC_ALIGNMENT);
+			return static_cast<Rhi::IAllocator*>(pUser_data)->reallocate(p, 0, size, CRNLIB_MIN_ALLOC_ALIGNMENT);
 		}
 
 		size_t crunchMsize(void*, void*)
@@ -1283,7 +1283,7 @@ namespace
 					}
 
 					RendererToolkit::CacheManager::CacheEntries cacheEntriesCandidate;
-					if (input.cacheManager.needsToBeCompiled(configuration.rendererTarget, input.virtualAssetFilename, virtualInputFilenames, virtualOutputAssetFilename, TEXTURE_FORMAT_VERSION, cacheEntriesCandidate))
+					if (input.cacheManager.needsToBeCompiled(configuration.rhiTarget, input.virtualAssetFilename, virtualInputFilenames, virtualOutputAssetFilename, TEXTURE_FORMAT_VERSION, cacheEntriesCandidate))
 					{
 						// Changed
 						cacheEntries.push_back(cacheEntriesCandidate);
@@ -1300,7 +1300,7 @@ namespace
 					// -> "virtualInputAssetFilename" specifies the base directory of the faces source files
 					const Filenames faceFilenames = getCubemapFilenames(rapidJsonValueTextureAssetCompiler, virtualInputAssetFilename);
 					RendererToolkit::CacheManager::CacheEntries cacheEntriesCandidate;
-					if (input.cacheManager.needsToBeCompiled(configuration.rendererTarget, input.virtualAssetFilename, faceFilenames, virtualOutputAssetFilename, TEXTURE_FORMAT_VERSION, cacheEntriesCandidate))
+					if (input.cacheManager.needsToBeCompiled(configuration.rhiTarget, input.virtualAssetFilename, faceFilenames, virtualOutputAssetFilename, TEXTURE_FORMAT_VERSION, cacheEntriesCandidate))
 					{
 						// Changed
 						cacheEntries.push_back(cacheEntriesCandidate);
@@ -1321,7 +1321,7 @@ namespace
 						filenames.emplace_back(virtualInputAssetFilename + RendererToolkit::JsonHelper::getAssetFile(rapidJsonMemberIteratorInputFile->value));
 					}
 					RendererToolkit::CacheManager::CacheEntries cacheEntriesCandidate;
-					if (input.cacheManager.needsToBeCompiled(configuration.rendererTarget, input.virtualAssetFilename, filenames, virtualOutputAssetFilename, TEXTURE_FORMAT_VERSION, cacheEntriesCandidate))
+					if (input.cacheManager.needsToBeCompiled(configuration.rhiTarget, input.virtualAssetFilename, filenames, virtualOutputAssetFilename, TEXTURE_FORMAT_VERSION, cacheEntriesCandidate))
 					{
 						// Changed
 						cacheEntries.push_back(cacheEntriesCandidate);
@@ -1344,7 +1344,7 @@ namespace
 						filenames.emplace_back(virtualInputAssetFilename + RendererToolkit::JsonHelper::getAssetFile(rapidJsonValueInputFiles[i]));
 					}
 					RendererToolkit::CacheManager::CacheEntries cacheEntriesCandidate;
-					if (input.cacheManager.needsToBeCompiled(configuration.rendererTarget, input.virtualAssetFilename, filenames, virtualOutputAssetFilename, RendererToolkit::IAssetCompiler::ASSET_FORMAT_VERSION, cacheEntriesCandidate))
+					if (input.cacheManager.needsToBeCompiled(configuration.rhiTarget, input.virtualAssetFilename, filenames, virtualOutputAssetFilename, RendererToolkit::IAssetCompiler::ASSET_FORMAT_VERSION, cacheEntriesCandidate))
 					{
 						// Changed
 						cacheEntries.push_back(cacheEntriesCandidate);
@@ -1372,7 +1372,7 @@ namespace
 				{
 					// Asset has single source file
 					RendererToolkit::CacheManager::CacheEntries cacheEntriesCandidate;
-					if (input.cacheManager.needsToBeCompiled(configuration.rendererTarget, input.virtualAssetFilename, virtualInputAssetFilename, virtualOutputAssetFilename, TEXTURE_FORMAT_VERSION, cacheEntriesCandidate))
+					if (input.cacheManager.needsToBeCompiled(configuration.rhiTarget, input.virtualAssetFilename, virtualInputAssetFilename, virtualOutputAssetFilename, TEXTURE_FORMAT_VERSION, cacheEntriesCandidate))
 					{
 						// Changed
 						cacheEntries.push_back(cacheEntriesCandidate);
@@ -1609,14 +1609,14 @@ namespace
 							const std::string warning = "4x4 block size based DXT compression used, but the texture dimension " + widthHeightToString(width, height) +
 														" at mipmap level " + std::to_string(mipmap) + " is no multiple of four. Texture dimension is " +
 														widthHeightToString(crunchMipmappedTexture.get_width(), crunchMipmappedTexture.get_height()) + ". Dynamic texture resolution scale will be limited to mipmap level " + std::to_string(mipmap - 1) + '.';
-							RENDERER_LOG(input.context, WARNING, warning.c_str())
+							RHI_LOG(input.context, WARNING, warning.c_str())
 							break;
 						}
 
 						// Move on to the next mipmap and ensure the size is always at least 1x1
 						++mipmap;
-						width = Renderer::ITexture::getHalfSize(width);
-						height = Renderer::ITexture::getHalfSize(height);
+						width = Rhi::ITexture::getHalfSize(width);
+						height = Rhi::ITexture::getHalfSize(height);
 					}
 				}
 			}
@@ -1634,7 +1634,7 @@ namespace
 					{
 						// 4x4 block size based DXT compression means the texture dimension must be a multiple of four, for all mipmaps if mipmaps are used
 						// -> Ensure we don't go below 4x4 to not get into troubles with 4x4 blocked based compression
-						// -> Ensure the base mipmap we tell the renderer about is a multiple of four. Even if the original base mipmap is a multiple of four, one of the lower mipmaps might not be.
+						// -> Ensure the base mipmap we tell the RHI about is a multiple of four. Even if the original base mipmap is a multiple of four, one of the lower mipmaps might not be.
 						const uint32_t width = crunchMipmappedTexture.get_width();
 						const uint32_t height = crunchMipmappedTexture.get_height();
 						static const int NUMBER_OF_TOP_MIPMAPS_TO_REMOVE = 2;

@@ -29,7 +29,7 @@
 //[-------------------------------------------------------]
 #include "Examples/Private/Framework/ExampleBase.h"
 
-#include <Renderer/Public/Renderer.h>
+#include <Rhi/Public/Rhi.h>
 
 
 //[-------------------------------------------------------]
@@ -98,15 +98,15 @@ private:
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
-	Renderer::IBufferManagerPtr	mBufferManager;	///< Buffer manager, can be a null pointer
-	Renderer::CommandBuffer		mCommandBuffer;	///< Command buffer
-	Renderer::IRootSignaturePtr	mRootSignature;	///< Root signature, can be a null pointer
+	Rhi::IBufferManagerPtr	mBufferManager;	///< Buffer manager, can be a null pointer
+	Rhi::CommandBuffer		mCommandBuffer;	///< Command buffer
+	Rhi::IRootSignaturePtr	mRootSignature;	///< Root signature, can be a null pointer
 	// Left side (green): Instanced arrays (shader model 3 feature, vertex array element advancing per-instance instead of per-vertex)
-	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineStateInstancedArrays;	///< Graphics pipeline state object (PSO), can be a null pointer
-	Renderer::IVertexArrayPtr			mVertexArrayInstancedArrays;			///< Vertex array object (VAO), can be a null pointer
+	Rhi::IGraphicsPipelineStatePtr	mGraphicsPipelineStateInstancedArrays;	///< Graphics pipeline state object (PSO), can be a null pointer
+	Rhi::IVertexArrayPtr			mVertexArrayInstancedArrays;			///< Vertex array object (VAO), can be a null pointer
 	// Right side (blue): Draw instanced (shader model 4 feature, build in shader variable holding the current instance ID)
-	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineStateDrawInstanced;	///< Graphics pipeline state object (PSO), can be a null pointer
-	Renderer::IVertexArrayPtr			mVertexArrayDrawInstanced;				///< Vertex array object (VAO), can be a null pointer
+	Rhi::IGraphicsPipelineStatePtr	mGraphicsPipelineStateDrawInstanced;	///< Graphics pipeline state object (PSO), can be a null pointer
+	Rhi::IVertexArrayPtr			mVertexArrayDrawInstanced;				///< Vertex array object (VAO), can be a null pointer
 
 
 };

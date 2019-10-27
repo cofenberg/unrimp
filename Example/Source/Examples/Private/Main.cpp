@@ -62,7 +62,7 @@ int programEntryPoint(const CommandLineArguments& commandLineArguments)
 		#endif
 			{
 				// For memory leak detection
-				#ifdef _DEBUG
+				#ifdef RHI_DEBUG
 					// "_CrtDumpMemoryLeaks()" reports false positive memory leak with static variables, so use a memory difference instead
 					_CrtMemState crtMemState = { 0 };
 					_CrtMemCheckpoint(&crtMemState);
@@ -73,7 +73,7 @@ int programEntryPoint(const CommandLineArguments& commandLineArguments)
 				const int result = programEntryPoint(CommandLineArguments());
 
 				// For memory leak detection
-				#ifdef _DEBUG
+				#ifdef RHI_DEBUG
 					_CrtMemDumpAllObjectsSince(&crtMemState);
 				#endif
 
@@ -88,7 +88,7 @@ int programEntryPoint(const CommandLineArguments& commandLineArguments)
 		#endif
 			{
 				// For memory leak detection
-				#ifdef _DEBUG
+				#ifdef RHI_DEBUG
 					// "_CrtDumpMemoryLeaks()" reports false positive memory leak with static variables, so use a memory difference instead
 					_CrtMemState crtMemState = { 0 };
 					_CrtMemCheckpoint(&crtMemState);
@@ -99,7 +99,7 @@ int programEntryPoint(const CommandLineArguments& commandLineArguments)
 				const int result = programEntryPoint(CommandLineArguments());
 
 				// For memory leak detection
-				#ifdef _DEBUG
+				#ifdef RHI_DEBUG
 					_CrtMemDumpAllObjectsSince(&crtMemState);
 				#endif
 

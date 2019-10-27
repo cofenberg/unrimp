@@ -65,7 +65,7 @@ namespace RendererToolkit
 	bool SkeletonAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const
 	{
 		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFileByRapidJsonDocument(configuration.rapidJsonDocumentAsset);
-		return input.cacheManager.checkIfFileIsModified(configuration.rendererTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), RendererRuntime::v1Skeleton::FORMAT_VERSION);
+		return input.cacheManager.checkIfFileIsModified(configuration.rhiTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), RendererRuntime::v1Skeleton::FORMAT_VERSION);
 	}
 
 	void SkeletonAssetCompiler::compile(const Input& input, const Configuration& configuration) const
@@ -76,7 +76,7 @@ namespace RendererToolkit
 
 		// Ask the cache manager whether or not we need to compile the source file (e.g. source changed or target not there)
 		CacheManager::CacheEntries cacheEntries;
-		if (input.cacheManager.needsToBeCompiled(configuration.rendererTarget, input.virtualAssetFilename, virtualInputFilename, virtualOutputAssetFilename, RendererRuntime::v1Skeleton::FORMAT_VERSION, cacheEntries))
+		if (input.cacheManager.needsToBeCompiled(configuration.rhiTarget, input.virtualAssetFilename, virtualInputFilename, virtualOutputAssetFilename, RendererRuntime::v1Skeleton::FORMAT_VERSION, cacheEntries))
 		{
 			// TODO(co) Right now, there's no standalone skeleton asset, only the skeleton which is part of a mesh
 

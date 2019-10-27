@@ -43,7 +43,7 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace Renderer
+namespace Rhi
 {
 	class IRenderTarget;
 }
@@ -140,7 +140,7 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Render (only valid if manager is running)             ]
 		//[-------------------------------------------------------]
-		virtual void executeCompositorWorkspaceInstance(CompositorWorkspaceInstance& compositorWorkspaceInstance, Renderer::IRenderTarget& renderTarget, CameraSceneItem* cameraSceneItem, const LightSceneItem* lightSceneItem) = 0;
+		virtual void executeCompositorWorkspaceInstance(CompositorWorkspaceInstance& compositorWorkspaceInstance, Rhi::IRenderTarget& renderTarget, CameraSceneItem* cameraSceneItem, const LightSceneItem* lightSceneItem) = 0;
 
 
 	//[-------------------------------------------------------]

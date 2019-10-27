@@ -44,8 +44,8 @@ namespace RendererRuntime
 
 	bool ITextureResourceLoader::onDispatch()
 	{
-		// Create the renderer texture instance
-		mTextureResource->mTexture = (mRendererRuntime.getRenderer().getCapabilities().nativeMultithreading ? mTexture : createRendererTexture());
+		// Create the RHI texture instance
+		mTextureResource->mTexture = (mRendererRuntime.getRhi().getCapabilities().nativeMultithreading ? mTexture : createRhiTexture());
 
 		// Fully loaded
 		return true;

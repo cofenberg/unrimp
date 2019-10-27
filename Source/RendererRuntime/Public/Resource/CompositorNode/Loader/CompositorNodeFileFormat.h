@@ -117,7 +117,7 @@ namespace RendererRuntime
 
 			struct PassClear final : public Pass
 			{
-				uint32_t flags	  = 0;		///< Combination of "Renderer::ClearFlag"
+				uint32_t flags	  = 0;		///< Combination of "Rhi::ClearFlag"
 				float	 color[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 				float	 z		  = 0.0f;	///< 0 instead of 1 due to usage of Reversed-Z (see e.g. https://developer.nvidia.com/content/depth-precision-visualized and https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/)
 				uint32_t stencil  = 0;
@@ -125,7 +125,7 @@ namespace RendererRuntime
 
 			struct PassVrHiddenAreaMesh final : public Pass
 			{
-				uint32_t flags	 = 0;	///< Combination of "Renderer::ClearFlag", except for color-flag
+				uint32_t flags	 = 0;	///< Combination of "Rhi::ClearFlag", except for color-flag
 				uint32_t stencil = 0;
 			};
 
@@ -170,7 +170,7 @@ namespace RendererRuntime
 				uint32_t			numberOfMaterialProperties = 0;
 			};
 
-			// The material definition is not mandatory for the debug GUI, if nothing is defined the fixed build in renderer configuration resources will be used instead
+			// The material definition is not mandatory for the debug GUI, if nothing is defined the fixed build in RHI configuration resources will be used instead
 			struct PassDebugGui final : public PassCompute
 			{
 			};

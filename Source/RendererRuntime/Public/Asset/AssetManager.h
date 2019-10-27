@@ -107,7 +107,7 @@ namespace RendererRuntime
 		[[nodiscard]] inline const Asset& getAssetByAssetId(AssetId assetId) const
 		{
 			const Asset* asset = tryGetAssetByAssetId(assetId);
-			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != asset, "Invalid asset")
+			RHI_ASSERT(mRendererRuntime.getContext(), nullptr != asset, "Invalid asset")
 			return *asset;
 		}
 

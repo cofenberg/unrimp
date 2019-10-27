@@ -29,7 +29,7 @@
 //[-------------------------------------------------------]
 #include <RendererRuntime/Public/Core/StringId.h>
 
-#include <Renderer/Public/Renderer.h>
+#include <Rhi/Public/Rhi.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -129,7 +129,7 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	//[ Type definitions                                      ]
 	//[-------------------------------------------------------]
-	typedef Renderer::SmartRefCount<IAssetImporter> IAssetImporterPtr;
+	typedef Rhi::SmartRefCount<IAssetImporter> IAssetImporterPtr;
 
 
 //[-------------------------------------------------------]

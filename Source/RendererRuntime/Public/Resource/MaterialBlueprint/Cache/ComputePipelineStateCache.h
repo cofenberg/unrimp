@@ -29,8 +29,6 @@
 //[-------------------------------------------------------]
 #include "RendererRuntime/Public/Resource/MaterialBlueprint/Cache/ComputePipelineStateSignature.h"
 
-#include <Renderer/Public/Renderer.h>
-
 
 //[-------------------------------------------------------]
 //[ Namespace                                             ]
@@ -76,7 +74,7 @@ namespace RendererRuntime
 		*  @return
 		*    The compute pipeline state object
 		*/
-		[[nodiscard]] inline const Renderer::IComputePipelineStatePtr& getComputePipelineStateObjectPtr() const
+		[[nodiscard]] inline const Rhi::IComputePipelineStatePtr& getComputePipelineStateObjectPtr() const
 		{
 			return mComputePipelineStateObjectPtr;
 		}
@@ -118,9 +116,9 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		ComputePipelineStateSignature		mComputePipelineStateSignature;
-		Renderer::IComputePipelineStatePtr	mComputePipelineStateObjectPtr;
-		bool								mIsUsingFallback;					///< If "true", this compute pipeline state cache is currently using fallback data because it's in asynchronous compilation
+		ComputePipelineStateSignature mComputePipelineStateSignature;
+		Rhi::IComputePipelineStatePtr mComputePipelineStateObjectPtr;
+		bool						  mIsUsingFallback;					///< If "true", this compute pipeline state cache is currently using fallback data because it's in asynchronous compilation
 
 
 	};

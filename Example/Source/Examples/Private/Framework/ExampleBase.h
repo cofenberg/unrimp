@@ -33,10 +33,10 @@
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace Renderer
+namespace Rhi
 {
 	class ILog;
-	class IRenderer;
+	class IRhi;
 	class IRenderTarget;
 }
 namespace RendererRuntime
@@ -113,7 +113,7 @@ public:
 	*  @return
 	*    Custom log instance, can be a null pointer, don't destroy the instance
 	*/
-	[[nodiscard]] inline Renderer::ILog* getCustomLog() const
+	[[nodiscard]] inline Rhi::ILog* getCustomLog() const
 	{
 		return mCustomLog;
 	}
@@ -138,21 +138,21 @@ public:
 
 	/**
 	*  @brief
-	*    Return the renderer instance
+	*    Return the RHI instance
 	*
 	*  @return
-	*    The renderer instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+	*    The RHI instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 	*/
-	[[nodiscard]] Renderer::IRenderer* getRenderer() const;
+	[[nodiscard]] Rhi::IRhi* getRhi() const;
 
 	/**
 	*  @brief
-	*    Return the main renderer target
+	*    Return the main RHI target
 	*
 	*  @return
-	*    The main renderer target instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+	*    The main RHI target instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 	*/
-	[[nodiscard]] Renderer::IRenderTarget* getMainRenderTarget() const;
+	[[nodiscard]] Rhi::IRenderTarget* getMainRenderTarget() const;
 
 	/**
 	*  @brief
@@ -196,10 +196,10 @@ public:
 	*
 	*  @param[in] exampleName
 	*    Example name, must be valid
-	*  @param[in] rendererName
-	*    Renderer name, if null pointer the default renderer will be used
+	*  @param[in] rhiName
+	*    RHI name, if null pointer the default RHI will be used
 	*/
-	void switchExample(const char* exampleName, const char* rendererName = nullptr);
+	void switchExample(const char* exampleName, const char* rhiName = nullptr);
 
 	/**
 	*  @brief
@@ -234,10 +234,10 @@ public:
 
 	/**
 	*  @brief
-	*    Return if the examples does the drawing completely on its own; thus no draw handling in frontend (aka draw request handling in IApplicationRenderer)
+	*    Return if the examples does the drawing completely on its own; thus no draw handling in frontend (aka draw request handling in "IApplicationRhi")
 	*
 	*  @return
-	*    "true" if the example does it's complete draw handling, otherwise "false"
+	*    "true" if the example does its complete draw handling, otherwise "false"
 	*/
 	[[nodiscard]] inline virtual bool doesCompleteOwnDrawing() const
 	{
@@ -269,7 +269,7 @@ protected:
 	*  @param[in] customLog
 	*    Optional custom log instance, can be a null pointer, the instance must be valid as long as the example base instance exists
 	*/
-	inline void setCustomLog(Renderer::ILog* customLog = nullptr)
+	inline void setCustomLog(Rhi::ILog* customLog = nullptr)
 	{
 		mCustomLog = customLog;
 	}
@@ -280,8 +280,8 @@ protected:
 //[-------------------------------------------------------]
 private:
 	ExampleRunner*		  mExampleRunner;
-	Renderer::ILog*		  mCustomLog;			///< Optional custom log instance, can be a null pointer, don't destroy the instance
-	IApplicationFrontend* mApplicationFrontend;	///< Renderer instance, can be a null pointer, do not destroy the instance
+	Rhi::ILog*			  mCustomLog;			///< Optional custom log instance, can be a null pointer, don't destroy the instance
+	IApplicationFrontend* mApplicationFrontend;	///< RHI instance, can be a null pointer, do not destroy the instance
 
 
 };

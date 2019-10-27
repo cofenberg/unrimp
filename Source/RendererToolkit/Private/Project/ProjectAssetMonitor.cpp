@@ -83,12 +83,12 @@ namespace RendererToolkit
 							const RendererRuntime::Asset& asset = sortedAssetVector[i];
 							try
 							{
-								if (mProjectAssetMonitor.mProjectImpl.checkAssetIsChanged(asset, mProjectAssetMonitor.mRendererTarget.c_str()))
+								if (mProjectAssetMonitor.mProjectImpl.checkAssetIsChanged(asset, mProjectAssetMonitor.mRhiTarget.c_str()))
 								{
 									// TODO(co) Performance: Add asset compiler queue so we can compile more then one asset at a time in background
 									// TODO(co) At the moment, we only support modifying already existing asset data, we should add support for changes inside the runtime asset package as well
 									RendererRuntime::AssetPackage outputAssetPackage;
-									mProjectAssetMonitor.mProjectImpl.compileAssetIncludingDependencies(asset, mProjectAssetMonitor.mRendererTarget.c_str(), outputAssetPackage);
+									mProjectAssetMonitor.mProjectImpl.compileAssetIncludingDependencies(asset, mProjectAssetMonitor.mRhiTarget.c_str(), outputAssetPackage);
 
 									// Inform the asset manager about the modified assets (just pass them individually, there's no real benefit in trying to apply "were's one, there are many" in this situation)
 									const RendererRuntime::AssetPackage::SortedAssetVector& sortedOutputAssetVector = outputAssetPackage.getSortedAssetVector();
@@ -105,7 +105,7 @@ namespace RendererToolkit
 							}
 							catch (const std::exception& e)
 							{
-								RENDERER_LOG(mProjectAssetMonitor.mProjectImpl.getContext(), CRITICAL, e.what())
+								RHI_LOG(mProjectAssetMonitor.mProjectImpl.getContext(), CRITICAL, e.what())
 							}
 
 							// A compilation run has been finished do cleanup
@@ -174,10 +174,10 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
-	ProjectAssetMonitor::ProjectAssetMonitor(ProjectImpl& projectImpl, RendererRuntime::IRendererRuntime& rendererRuntime, const std::string& rendererTarget) :
+	ProjectAssetMonitor::ProjectAssetMonitor(ProjectImpl& projectImpl, RendererRuntime::IRendererRuntime& rendererRuntime, const std::string& rhiTarget) :
 		mProjectImpl(projectImpl),
 		mRendererRuntime(rendererRuntime),
-		mRendererTarget(rendererTarget),
+		mRhiTarget(rhiTarget),
 		mShutdownThread(false)
 	{
 		mThread = std::thread(&ProjectAssetMonitor::threadWorker, this);
@@ -205,11 +205,11 @@ namespace RendererToolkit
 		// On startup we need to check for changes which were done while the project asset monitor wasn't running
 		try
 		{
-			mProjectImpl.compileAllAssets(mRendererTarget.c_str());
+			mProjectImpl.compileAllAssets(mRhiTarget.c_str());
 		}
 		catch (const std::exception& e)
 		{
-			RENDERER_LOG(mProjectImpl.getContext(), CRITICAL, "Project compilation failed: %s", e.what())
+			RHI_LOG(mProjectImpl.getContext(), CRITICAL, "Project compilation failed: %s", e.what())
 			mProjectImpl.onCompilationRunFinished();
 		}
 

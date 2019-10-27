@@ -192,7 +192,7 @@ namespace RendererToolkit
 	bool SceneAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const
 	{
 		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFileByRapidJsonDocument(configuration.rapidJsonDocumentAsset);
-		return input.cacheManager.checkIfFileIsModified(configuration.rendererTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), RendererRuntime::v1Scene::FORMAT_VERSION);
+		return input.cacheManager.checkIfFileIsModified(configuration.rhiTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), RendererRuntime::v1Scene::FORMAT_VERSION);
 	}
 
 	void SceneAssetCompiler::compile(const Input& input, const Configuration& configuration) const
@@ -203,7 +203,7 @@ namespace RendererToolkit
 
 		// Ask the cache manager whether or not we need to compile the source file (e.g. source changed or target not there)
 		CacheManager::CacheEntries cacheEntries;
-		if (input.cacheManager.needsToBeCompiled(configuration.rendererTarget, input.virtualAssetFilename, virtualInputFilename, virtualOutputAssetFilename, RendererRuntime::v1Scene::FORMAT_VERSION, cacheEntries))
+		if (input.cacheManager.needsToBeCompiled(configuration.rhiTarget, input.virtualAssetFilename, virtualInputFilename, virtualOutputAssetFilename, RendererRuntime::v1Scene::FORMAT_VERSION, cacheEntries))
 		{
 			RendererRuntime::MemoryFile memoryFile(0, 4096);
 

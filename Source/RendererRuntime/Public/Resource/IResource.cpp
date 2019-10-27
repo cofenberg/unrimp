@@ -103,7 +103,7 @@ namespace RendererRuntime
 		std::swap(mResourceLoaderTypeId,	resource.mResourceLoaderTypeId);
 		std::swap(mLoadingState,			resource.mLoadingState);
 		std::swap(mSortedResourceListeners,	resource.mSortedResourceListeners);	// This is fine, resource listeners store a resource ID instead of a raw pointer
-		#ifdef _DEBUG
+		#ifdef RHI_DEBUG
 			std::swap(mDebugName,			resource.mDebugName);
 		#endif
 
@@ -149,7 +149,7 @@ namespace RendererRuntime
 		setInvalid(mAssetId);
 		setInvalid(mResourceLoaderTypeId);
 		mSortedResourceListeners.clear();
-		#ifdef _DEBUG
+		#ifdef RHI_DEBUG
 			mDebugName.clear();
 		#endif
 	}

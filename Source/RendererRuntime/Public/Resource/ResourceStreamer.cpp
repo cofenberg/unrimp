@@ -83,7 +83,7 @@ namespace RendererRuntime
 					everythingFlushed = mProcessingQueue.empty();
 				}
 
-				// Resource streamer stage: 3. Synchronous dispatch to e.g. the renderer backend
+				// Resource streamer stage: 3. Synchronous dispatch to e.g. the RHI implementation
 				if (everythingFlushed)
 				{
 					std::lock_guard<std::mutex> dispatchMutexLock(mDispatchMutex);
@@ -101,12 +101,12 @@ namespace RendererRuntime
 		} while (!everythingFlushed);
 
 		// Sanity check
-		RENDERER_ASSERT(mRendererRuntime.getContext(), 0 == mNumberOfInFlightLoadRequests, "Invalid number of in flight load requests")
+		RHI_ASSERT(mRendererRuntime.getContext(), 0 == mNumberOfInFlightLoadRequests, "Invalid number of in flight load requests")
 	}
 
 	void ResourceStreamer::dispatch()
 	{
-		// Resource streamer stage: 3. Synchronous dispatch to e.g. the renderer backend
+		// Resource streamer stage: 3. Synchronous dispatch to e.g. the RHI implementation
 
 		// Continue as long as there's a load request left inside the queue
 		bool stillInTimeBudget = true;	// TODO(co) Add a maximum time budget so we're not blocking too long (the show must go on)
@@ -231,7 +231,7 @@ namespace RendererRuntime
 							if (resourceLoaderType.numberOfInstances < 5)
 							{
 								loadRequest.resourceLoader = loadRequest.resourceManager->createResourceLoaderInstance(resourceLoaderTypeId);
-								RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != loadRequest.resourceLoader, "Invalid load request resource loader")
+								RHI_ASSERT(mRendererRuntime.getContext(), nullptr != loadRequest.resourceLoader, "Invalid load request resource loader")
 								++resourceLoaderType.numberOfInstances;
 							}
 							else
@@ -275,7 +275,7 @@ namespace RendererRuntime
 								}
 								else
 								{
-									// Resource streamer stage: 3. Synchronous dispatch to e.g. the renderer backend
+									// Resource streamer stage: 3. Synchronous dispatch to e.g. the RHI implementation
 									std::lock_guard<std::mutex> dispatchMutexLock(mDispatchMutex);
 									mDispatchQueue.push_back(loadRequest);
 								}
@@ -292,7 +292,7 @@ namespace RendererRuntime
 						else
 						{
 							// Error! This is horrible, now we've got a zombie inside the resource streamer. We could let it crash, but maybe the zombie won't directly eat brains.
-							RENDERER_ASSERT(mRendererRuntime.getContext(), false, "We should never end up in here")
+							RHI_ASSERT(mRendererRuntime.getContext(), false, "We should never end up in here")
 						}
 					}
 					else
@@ -333,7 +333,7 @@ namespace RendererRuntime
 				loadRequest.resourceLoader->onProcessing();
 
 				{ // Push the load request into the queue of the next resource streamer pipeline stage
-				  // -> Resource streamer stage: 3. Synchronous dispatch to e.g. the renderer backend
+				  // -> Resource streamer stage: 3. Synchronous dispatch to e.g. the RHI implementation
 					std::lock_guard<std::mutex> dispatchMutexLock(mDispatchMutex);
 					mDispatchQueue.push_back(loadRequest);
 				}
@@ -351,7 +351,7 @@ namespace RendererRuntime
 			ResourceLoaderTypeManager::iterator iterator = mResourceLoaderTypeManager.find(loadRequest.resourceLoaderTypeId);
 			if (mResourceLoaderTypeManager.cend() != iterator)
 			{
-				#ifdef _DEBUG
+				#ifdef RHI_DEBUG
 					loadRequest.getResource().setDebugName(std::string(loadRequest.resourceLoader->getAsset().virtualFilename) + IFileManager::INVALID_CHARACTER + "[Loaded]");
 				#endif
 
@@ -365,7 +365,7 @@ namespace RendererRuntime
 					// Get the waiting resource streamer load request and immediately release our resource manager mutex
 					LoadRequest waitingLoadRequest = waitingLoadRequests.front();
 					waitingLoadRequests.pop_front();
-					RENDERER_ASSERT(mRendererRuntime.getContext(), 0 != mDeserializationWaitingQueueRequests, "Invalid deserialization waiting queue requests")
+					RHI_ASSERT(mRendererRuntime.getContext(), 0 != mDeserializationWaitingQueueRequests, "Invalid deserialization waiting queue requests")
 					--mDeserializationWaitingQueueRequests;
 					resourceManagerMutexLock.unlock();
 
@@ -379,13 +379,13 @@ namespace RendererRuntime
 			else
 			{
 				// Error! This shouldn't be possible if we're in here
-				RENDERER_ASSERT(mRendererRuntime.getContext(), false, "We should never end up in here")
+				RHI_ASSERT(mRendererRuntime.getContext(), false, "We should never end up in here")
 			}
 		}
 
 		// The last thing we do: Update the resource loading state
 		loadRequest.getResource().setLoadingState(loadRequest.loadingFailed ? IResource::LoadingState::FAILED : IResource::LoadingState::LOADED);
-		RENDERER_ASSERT(mRendererRuntime.getContext(), 0 != mNumberOfInFlightLoadRequests, "Invalid number of in flight load requests")
+		RHI_ASSERT(mRendererRuntime.getContext(), 0 != mNumberOfInFlightLoadRequests, "Invalid number of in flight load requests")
 		--mNumberOfInFlightLoadRequests;
 	}
 

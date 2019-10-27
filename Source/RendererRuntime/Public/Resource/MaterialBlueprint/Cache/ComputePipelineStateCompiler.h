@@ -31,12 +31,6 @@
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
-	PRAGMA_WARNING_DISABLE_MSVC(4668)	// warning C4668: '_M_HYBRID_X86_ARM64' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
-	#include <inttypes.h>	// For uint32_t, uint64_t etc.
-PRAGMA_WARNING_POP
-
-// Disable warnings in external headers, we can't fix them
-PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'argument': conversion from 'long' to 'unsigned int', signed/unsigned mismatch
 	PRAGMA_WARNING_DISABLE_MSVC(4571)	// warning C4571: Informational: catch(...) semantics changed since Visual C++ 7.1; structured exceptions (SEH) are no longer caught
 	PRAGMA_WARNING_DISABLE_MSVC(4623)	// warning C4623: 'std::_UInt_is_zero': default constructor was implicitly defined as deleted
@@ -60,10 +54,6 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace Renderer
-{
-	class IComputePipelineState;
-}
 namespace RendererRuntime
 {
 	class ShaderCache;
@@ -91,7 +81,7 @@ namespace RendererRuntime
 	*    A compute pipeline state must master the following stages in order to archive the inner wisdom:
 	*    1. Asynchronous shader building
 	*    2. Asynchronous shader compilation
-	*    3. Synchronous renderer backend dispatch TODO(co) Asynchronous renderer backend dispatch if supported by the renderer API
+	*    3. Synchronous RHI implementation dispatch TODO(co) Asynchronous RHI implementation dispatch if supported by the RHI implementation
 	*
 	*  @note
 	*    - Takes care of asynchronous compute pipeline state compilation
@@ -156,11 +146,11 @@ namespace RendererRuntime
 		struct CompilerRequest final
 		{
 			// Input
-			ComputePipelineStateCache&		 computePipelineStateCache;
+			ComputePipelineStateCache&	computePipelineStateCache;
 			// Internal
-			ShaderCache*					 shaderCache;
-			std::string						 shaderSourceCode;
-			Renderer::IComputePipelineState* computePipelineStateObject;
+			ShaderCache*				shaderCache;
+			std::string					shaderSourceCode;
+			Rhi::IComputePipelineState* computePipelineStateObject;
 
 			inline explicit CompilerRequest(ComputePipelineStateCache& _computePipelineStateCache) :
 				computePipelineStateCache(_computePipelineStateCache),
@@ -197,7 +187,7 @@ namespace RendererRuntime
 		void flushQueue(std::mutex& mutex, const CompilerRequests& compilerRequests);
 		void builderThreadWorker();
 		void compilerThreadWorker();
-		[[nodiscard]] Renderer::IComputePipelineState* createComputePipelineState(const RendererRuntime::MaterialBlueprintResource& materialBlueprintResource, Renderer::IShader& shader) const;
+		[[nodiscard]] Rhi::IComputePipelineState* createComputePipelineState(const RendererRuntime::MaterialBlueprintResource& materialBlueprintResource, Rhi::IShader& shader) const;
 
 
 	//[-------------------------------------------------------]

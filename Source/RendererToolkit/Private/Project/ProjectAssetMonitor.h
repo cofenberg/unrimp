@@ -27,7 +27,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include <Renderer/Public/Renderer.h>
+#include <Rhi/Public/Rhi.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -92,7 +92,7 @@ namespace RendererToolkit
 		*  @brief
 		*    Constructor
 		*/
-		ProjectAssetMonitor(ProjectImpl& projectImpl, RendererRuntime::IRendererRuntime& rendererRuntime, const std::string& rendererTarget);
+		ProjectAssetMonitor(ProjectImpl& projectImpl, RendererRuntime::IRendererRuntime& rendererRuntime, const std::string& rhiTarget);
 
 		/**
 		*  @brief
@@ -126,7 +126,7 @@ namespace RendererToolkit
 	private:
 		ProjectImpl&					   mProjectImpl;
 		RendererRuntime::IRendererRuntime& mRendererRuntime;
-		std::string						   mRendererTarget;
+		std::string						   mRhiTarget;
 		std::atomic<bool>				   mShutdownThread;
 		std::thread						   mThread;
 

@@ -61,7 +61,7 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		[[nodiscard]] inline uint32_t getFlags() const	// Combination of "Renderer::ClearFlag", except for color-flag
+		[[nodiscard]] inline uint32_t getFlags() const	// Combination of "Rhi::ClearFlag", except for color-flag
 		{
 			return mFlags;
 		}
@@ -109,7 +109,7 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		uint32_t mFlags;	///< Combination of "Renderer::ClearFlag", except for color-flag
+		uint32_t mFlags;	///< Combination of "Rhi::ClearFlag", except for color-flag
 		uint32_t mStencil;
 
 

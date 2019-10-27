@@ -21,8 +21,8 @@
 //[-------------------------------------------------------]
 //[ Shader start                                          ]
 //[-------------------------------------------------------]
-#ifdef RENDERER_OPENGLES3
-if (renderer.getNameId() == Renderer::NameId::OPENGLES3)
+#ifdef RHI_OPENGLES3
+if (rhi.getNameId() == Rhi::NameId::OPENGLES3)
 {
 
 

@@ -30,8 +30,6 @@
 #include "RendererRuntime/Public/Export.h"
 #include "RendererRuntime/Public/Core/GetInvalid.h"
 
-#include <Renderer/Public/Renderer.h>
-
 
 //[-------------------------------------------------------]
 //[ Namespace                                             ]
@@ -86,7 +84,7 @@ namespace RendererRuntime
 		inline RenderTargetTextureSignature() :
 			mWidth(getInvalid<uint32_t>()),
 			mHeight(getInvalid<uint32_t>()),
-			mTextureFormat(Renderer::TextureFormat::UNKNOWN),
+			mTextureFormat(Rhi::TextureFormat::UNKNOWN),
 			mFlags(Flag::SHADER_RESOURCE | Flag::RENDER_TARGET | Flag::ALLOW_RESOLUTION_SCALE),
 			mWidthScale(1.0f),
 			mHeightScale(1.0f),
@@ -112,7 +110,7 @@ namespace RendererRuntime
 		*  @param[in] heightScale
 		*    Height scale
 		*/
-		RENDERERRUNTIME_API_EXPORT RenderTargetTextureSignature(uint32_t width, uint32_t height, Renderer::TextureFormat::Enum textureFormat, uint8_t flags, float widthScale, float heightScale);
+		RENDERERRUNTIME_API_EXPORT RenderTargetTextureSignature(uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, uint8_t flags, float widthScale, float heightScale);
 
 		/**
 		*  @brief
@@ -173,7 +171,7 @@ namespace RendererRuntime
 			return mHeight;
 		}
 
-		[[nodiscard]] inline Renderer::TextureFormat::Enum getTextureFormat() const
+		[[nodiscard]] inline Rhi::TextureFormat::Enum getTextureFormat() const
 		{
 			return mTextureFormat;
 		}
@@ -207,12 +205,12 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	private:
 		// Input data
-		uint32_t					  mWidth;
-		uint32_t					  mHeight;
-		Renderer::TextureFormat::Enum mTextureFormat;
-		uint8_t						  mFlags;			///< Flags (see "RendererRuntime::RenderTargetTextureSignature::Flag")
-		float						  mWidthScale;
-		float						  mHeightScale;
+		uint32_t				 mWidth;
+		uint32_t				 mHeight;
+		Rhi::TextureFormat::Enum mTextureFormat;
+		uint8_t					 mFlags;			///< Flags (see "RendererRuntime::RenderTargetTextureSignature::Flag")
+		float					 mWidthScale;
+		float					 mHeightScale;
 		// Derived data
 		RenderTargetTextureSignatureId mRenderTargetTextureSignatureId;
 

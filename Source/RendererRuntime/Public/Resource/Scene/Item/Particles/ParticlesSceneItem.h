@@ -106,8 +106,8 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		uint32_t					   mMaximumNumberOfParticles;	///< Maximum number of particles
-		Renderer::IStructuredBufferPtr mStructuredBufferPtr;		///< Structured buffer the data of the individual particles ("RendererRuntime::ParticlesSceneItem::ParticleDataStruct")
+		uint32_t				  mMaximumNumberOfParticles;	///< Maximum number of particles
+		Rhi::IStructuredBufferPtr mStructuredBufferPtr;			///< Structured buffer the data of the individual particles ("RendererRuntime::ParticlesSceneItem::ParticleDataStruct")
 
 
 	};

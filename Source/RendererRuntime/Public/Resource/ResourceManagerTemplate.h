@@ -106,7 +106,7 @@ namespace RendererRuntime
 		[[nodiscard]] inline LOADER_TYPE* createResourceLoaderInstance([[maybe_unused]] ResourceLoaderTypeId resourceLoaderTypeId)
 		{
 			// We only support our own format
-			RENDERER_ASSERT(mRendererRuntime.getContext(), resourceLoaderTypeId == LOADER_TYPE::TYPE_ID, "Invalid resource loader type ID")
+			RHI_ASSERT(mRendererRuntime.getContext(), resourceLoaderTypeId == LOADER_TYPE::TYPE_ID, "Invalid resource loader type ID")
 			return new LOADER_TYPE(mResourceManager, mRendererRuntime);
 		}
 
@@ -130,7 +130,7 @@ namespace RendererRuntime
 		[[nodiscard]] inline TYPE& createEmptyResourceByAssetId(AssetId assetId)	// Resource is not allowed to exist, yet
 		{
 			// Sanity check
-			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr == getResourceByAssetId(assetId), "The resource isn't allowed to exist, yet")
+			RHI_ASSERT(mRendererRuntime.getContext(), nullptr == getResourceByAssetId(assetId), "The resource isn't allowed to exist, yet")
 
 			// Create the resource instance
 			TYPE& resource = mResources.addElement();
@@ -154,7 +154,7 @@ namespace RendererRuntime
 
 			// Create the resource instance
 			const Asset* asset = mRendererRuntime.getAssetManager().tryGetAssetByAssetId(assetId);
-			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != asset, "Unknown asset ID")
+			RHI_ASSERT(mRendererRuntime.getContext(), nullptr != asset, "Unknown asset ID")
 			bool load = (reload && nullptr != asset);
 			if (nullptr == resource && nullptr != asset)
 			{

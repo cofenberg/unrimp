@@ -27,7 +27,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include <Renderer/Public/Renderer.h>
+#include <Rhi/Public/Rhi.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -76,7 +76,7 @@ namespace RendererToolkit
 	*  @note
 	*    - One of the major project responsibilities is "Content Cooking" (optimization of assets for target runtime)
 	*/
-	class IProject : public Renderer::RefCount<IProject>
+	class IProject : public Rhi::RefCount<IProject>
 	{
 
 
@@ -107,8 +107,8 @@ namespace RendererToolkit
 	public:
 		virtual void load(RendererRuntime::AbsoluteDirectoryName absoluteDirectoryName) = 0;
 		virtual void importAssets(const AbsoluteFilenames& absoluteSourceFilenames, const std::string& targetAssetPackageName, const std::string& targetDirectoryName = "Imported") = 0;
-		virtual void compileAllAssets(const char* rendererTarget) = 0;
-		virtual void startupAssetMonitor(RendererRuntime::IRendererRuntime& rendererRuntime, const char* rendererTarget) = 0;
+		virtual void compileAllAssets(const char* rhiTarget) = 0;
+		virtual void startupAssetMonitor(RendererRuntime::IRendererRuntime& rendererRuntime, const char* rhiTarget) = 0;
 		virtual void shutdownAssetMonitor() = 0;
 
 
@@ -135,7 +135,7 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	//[ Type definitions                                      ]
 	//[-------------------------------------------------------]
-	typedef Renderer::SmartRefCount<IProject> IProjectPtr;
+	typedef Rhi::SmartRefCount<IProject> IProjectPtr;
 
 
 //[-------------------------------------------------------]

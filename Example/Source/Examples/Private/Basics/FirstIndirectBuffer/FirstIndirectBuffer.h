@@ -29,7 +29,7 @@
 //[-------------------------------------------------------]
 #include "Examples/Private/Basics/FirstTriangle/FirstTriangle.h"
 
-#include <Renderer/Public/Renderer.h>
+#include <Rhi/Public/Rhi.h>
 
 
 //[-------------------------------------------------------]
@@ -91,7 +91,7 @@ private:
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
-	Renderer::IIndirectBufferPtr mIndirectBuffer;	///< Indirect buffer, can be a null pointer
+	Rhi::IIndirectBufferPtr mIndirectBuffer;	///< Indirect buffer, can be a null pointer
 
 
 };

@@ -30,7 +30,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include <Renderer/Public/Renderer.h>
+#include <Rhi/Public/Rhi.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -72,7 +72,7 @@ namespace RendererToolkit
 	//[ Types                                                 ]
 	//[-------------------------------------------------------]
 	// RendererToolkit/IRendererToolkit.h
-	class IRendererToolkit : public Renderer::RefCount<IRendererToolkit>
+	class IRendererToolkit : public Rhi::RefCount<IRendererToolkit>
 	{
 	public:
 		enum class State
@@ -90,10 +90,10 @@ namespace RendererToolkit
 		explicit IRendererToolkit(const IRendererToolkit& source) = delete;
 		IRendererToolkit& operator =(const IRendererToolkit& source) = delete;
 	};
-	typedef Renderer::SmartRefCount<IRendererToolkit> IRendererToolkitPtr;
+	typedef Rhi::SmartRefCount<IRendererToolkit> IRendererToolkitPtr;
 
 	// RendererToolkit/IProject.h
-	class IProject : public Renderer::RefCount<IProject>
+	class IProject : public Rhi::RefCount<IProject>
 	{
 	public:
 		typedef std::vector<std::string> AbsoluteFilenames;
@@ -102,15 +102,15 @@ namespace RendererToolkit
 	public:
 		virtual void load(RendererRuntime::AbsoluteDirectoryName absoluteProjectDirectoryName) = 0;
 		virtual void importAssets(const AbsoluteFilenames& absoluteSourceFilenames, const std::string& targetAssetPackageName, const std::string& targetDirectoryName = "Imported") = 0;
-		virtual void compileAllAssets(const char* rendererTarget) = 0;
-		virtual void startupAssetMonitor(RendererRuntime::IRendererRuntime& rendererRuntime, const char* rendererTarget) = 0;
+		virtual void compileAllAssets(const char* rhiTarget) = 0;
+		virtual void startupAssetMonitor(RendererRuntime::IRendererRuntime& rendererRuntime, const char* rhiTarget) = 0;
 		virtual void shutdownAssetMonitor() = 0;
 	protected:
 		IProject();
 		explicit IProject(const IProject& source) = delete;
 		IProject& operator =(const IProject& source) = delete;
 	};
-	typedef Renderer::SmartRefCount<IProject> IProjectPtr;
+	typedef Rhi::SmartRefCount<IProject> IProjectPtr;
 
 
 //[-------------------------------------------------------]

@@ -31,8 +31,6 @@
 #include "RendererRuntime/Public/Core/File/IFileManager.h"
 #include "RendererRuntime/Public/Core/File/FileSystemHelper.h"
 
-#include <Renderer/Public/Renderer.h>
-
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'argument': conversion from 'long' to 'unsigned int', signed/unsigned mismatch
@@ -47,17 +45,6 @@ PRAGMA_WARNING_PUSH
 	#include <fstream>
 	#include <unordered_map>
 PRAGMA_WARNING_POP
-
-
-//[-------------------------------------------------------]
-//[ Forward declarations                                  ]
-//[-------------------------------------------------------]
-namespace Renderer
-{
-	class ILog;
-	class IAssert;
-	class IAllocator;
-}
 
 
 //[-------------------------------------------------------]
@@ -124,7 +111,7 @@ namespace
 		public:
 			inline explicit DefaultReadFile(const std::string& absoluteFilename) :
 				mFileStream(std_filesystem::u8path(absoluteFilename), std::ios::binary)
-				#ifdef _DEBUG
+				#ifdef RHI_DEBUG
 					, mDebugName(absoluteFilename)
 				#endif
 			{
@@ -184,7 +171,7 @@ namespace
 				ASSERT(false && "File write method not supported by the default implementation");
 			}
 
-			#ifdef _DEBUG
+			#ifdef RHI_DEBUG
 				[[nodiscard]] inline virtual const char* getDebugFilename() const override
 				{
 					return mDebugName.c_str();
@@ -205,7 +192,7 @@ namespace
 		//[-------------------------------------------------------]
 		private:
 			std::ifstream mFileStream;
-			#ifdef _DEBUG
+			#ifdef RHI_DEBUG
 				std::string mDebugName;	///< Debug name for easier file identification when debugging
 			#endif
 
@@ -222,7 +209,7 @@ namespace
 		public:
 			inline explicit DefaultWriteFile(const std::string& absoluteFilename) :
 				mFileStream(std_filesystem::u8path(absoluteFilename), std::ios::binary)
-				#ifdef _DEBUG
+				#ifdef RHI_DEBUG
 					, mDebugName(absoluteFilename)
 				#endif
 			{
@@ -279,7 +266,7 @@ namespace
 				mFileStream.write(reinterpret_cast<const char*>(sourceBuffer), static_cast<std::streamsize>(numberOfBytes));
 			}
 
-			#ifdef _DEBUG
+			#ifdef RHI_DEBUG
 				[[nodiscard]] inline virtual const char* getDebugFilename() const override
 				{
 					return mDebugName.c_str();
@@ -300,7 +287,7 @@ namespace
 		//[-------------------------------------------------------]
 		private:
 			std::ofstream mFileStream;
-			#ifdef _DEBUG
+			#ifdef RHI_DEBUG
 				std::string mDebugName;	///< Debug name for easier file identification when debugging
 			#endif
 
@@ -341,7 +328,7 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline DefaultFileManager(Renderer::ILog& log, Renderer::IAssert& assert, Renderer::IAllocator& allocator, const std::string& absoluteRootDirectory) :
+		inline DefaultFileManager(Rhi::ILog& log, Rhi::IAssert& assert, Rhi::IAllocator& allocator, const std::string& absoluteRootDirectory) :
 			IFileManager(absoluteRootDirectory),
 			mLog(log),
 			mAssert(assert),
@@ -389,7 +376,7 @@ namespace RendererRuntime
 			// Sanity check
 			ASSERT(nullptr != absoluteDirectoryName);
 			ASSERT(nullptr != mountPoint);
-			#ifdef _DEBUG
+			#ifdef RHI_DEBUG
 				// Additional sanity check: The same absolute directory name shouldn't be added to too different mount points
 				for (const auto& pair : mMountedDirectories)
 				{
@@ -538,7 +525,7 @@ namespace RendererRuntime
 				}
 				if (file->isInvalid())
 				{
-					if (mLog.print(Renderer::ILog::Type::CRITICAL, nullptr, __FILE__, static_cast<uint32_t>(__LINE__), "Failed to open file %s", virtualFilename))
+					if (mLog.print(Rhi::ILog::Type::CRITICAL, nullptr, __FILE__, static_cast<uint32_t>(__LINE__), "Failed to open file %s", virtualFilename))
 					{
 						DEBUG_BREAK;
 					}
@@ -547,7 +534,7 @@ namespace RendererRuntime
 				}
 				else
 				{
-					#ifdef _DEBUG
+					#ifdef RHI_DEBUG
 						++mNumberOfCurrentlyOpenedFiles;
 						ASSERT((mNumberOfCurrentlyOpenedFiles < 256) && "Too many simultaneously opened files. The default limit on Microsoft Windows is 512 (can be changed via _setmaxstdio()) and on Mac OS X 256.");
 					#endif
@@ -560,7 +547,7 @@ namespace RendererRuntime
 
 		inline virtual void closeFile(IFile& file) const override
 		{
-			#ifdef _DEBUG
+			#ifdef RHI_DEBUG
 				--mNumberOfCurrentlyOpenedFiles;
 				ASSERT((mNumberOfCurrentlyOpenedFiles >= 0) && "Error, more files closed as opened");
 			#endif
@@ -671,12 +658,12 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		Renderer::ILog&		   mLog;
-		Renderer::IAssert&	   mAssert;
-		Renderer::IAllocator&  mAllocator;
+		Rhi::ILog&			   mLog;
+		Rhi::IAssert&		   mAssert;
+		Rhi::IAllocator&	   mAllocator;
 		AbsoluteDirectoryNames mAbsoluteBaseDirectory;	///< Absolute UTF-8 base directory, without "/" at the end
 		MountedDirectories	   mMountedDirectories;
-		#ifdef _DEBUG
+		#ifdef RHI_DEBUG
 			mutable int mNumberOfCurrentlyOpenedFiles = 0;	///< For leak detection
 		#endif
 

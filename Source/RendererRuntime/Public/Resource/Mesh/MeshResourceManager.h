@@ -29,8 +29,6 @@
 //[-------------------------------------------------------]
 #include "RendererRuntime/Public/Resource/ResourceManager.h"
 
-#include <Renderer/Public/Renderer.h>
-
 
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
@@ -74,7 +72,7 @@ namespace RendererRuntime
 	//[ Public definitions                                    ]
 	//[-------------------------------------------------------]
 	public:
-		RENDERERRUNTIME_API_EXPORT static const Renderer::VertexAttributes DRAW_ID_VERTEX_ATTRIBUTES;
+		RENDERERRUNTIME_API_EXPORT static const Rhi::VertexAttributes DRAW_ID_VERTEX_ATTRIBUTES;
 
 
 	//[-------------------------------------------------------]
@@ -86,12 +84,12 @@ namespace RendererRuntime
 		[[nodiscard]] RENDERERRUNTIME_API_EXPORT MeshResourceId createEmptyMeshResourceByAssetId(AssetId assetId);	// Mesh resource is not allowed to exist, yet, prefer asynchronous mesh resource loading over this method
 		RENDERERRUNTIME_API_EXPORT void setInvalidResourceId(MeshResourceId& textureResourceId, IResourceListener& resourceListener) const;
 
-		[[nodiscard]] inline const Renderer::IVertexBufferPtr& getDrawIdVertexBufferPtr() const
+		[[nodiscard]] inline const Rhi::IVertexBufferPtr& getDrawIdVertexBufferPtr() const
 		{
 			return mDrawIdVertexBufferPtr;
 		}
 
-		[[nodiscard]] inline const Renderer::IVertexArrayPtr& getDrawIdVertexArrayPtr() const
+		[[nodiscard]] inline const Rhi::IVertexArrayPtr& getDrawIdVertexArrayPtr() const
 		{
 			return mDrawIdVertexArrayPtr;
 		}
@@ -131,8 +129,8 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	private:
 		ResourceManagerTemplate<MeshResource, IMeshResourceLoader, MeshResourceId, 4096>* mInternalResourceManager;
-		Renderer::IVertexBufferPtr mDrawIdVertexBufferPtr;	///< Draw ID vertex buffer, see "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html
-		Renderer::IVertexArrayPtr  mDrawIdVertexArrayPtr;	///< Draw ID vertex array, see "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html
+		Rhi::IVertexBufferPtr mDrawIdVertexBufferPtr;	///< Draw ID vertex buffer, see "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html
+		Rhi::IVertexArrayPtr  mDrawIdVertexArrayPtr;	///< Draw ID vertex array, see "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html
 
 
 	};

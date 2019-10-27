@@ -30,8 +30,6 @@
 #include "RendererRuntime/Public/Core/StringId.h"
 #include "RendererRuntime/Public/Resource/IResourceListener.h"
 
-#include <Renderer/Public/Renderer.h>
-
 
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
@@ -121,14 +119,14 @@ namespace RendererRuntime
 			return mNumberOfMultisamples;
 		}
 
-		RENDERERRUNTIME_API_EXPORT void setNumberOfMultisamples(uint8_t numberOfMultisamples);	// The number of multisamples per pixel (valid values: 1, 2, 4, 8); Changes are considered to be expensive since internal renderer resources might need to be updated when rendering the next time
+		RENDERERRUNTIME_API_EXPORT void setNumberOfMultisamples(uint8_t numberOfMultisamples);	// The number of multisamples per pixel (valid values: 1, 2, 4, 8); Changes are considered to be expensive since internal RHI resources might need to be updated when rendering the next time
 
 		[[nodiscard]] inline float getResolutionScale() const
 		{
 			return mResolutionScale;
 		}
 
-		inline void setResolutionScale(float resolutionScale)	// Changes are considered to be expensive since internal renderer resources might need to be updated when rendering the next time
+		inline void setResolutionScale(float resolutionScale)	// Changes are considered to be expensive since internal RHI resources might need to be updated when rendering the next time
 		{
 			mResolutionScale = resolutionScale;
 		}
@@ -140,10 +138,10 @@ namespace RendererRuntime
 
 		[[nodiscard]] RENDERERRUNTIME_API_EXPORT const RenderQueueIndexRange* getRenderQueueIndexRangeByRenderQueueIndex(uint8_t renderQueueIndex) const;	// Can be a null pointer, don't destroy the instance
 		[[nodiscard]] RENDERERRUNTIME_API_EXPORT const ICompositorInstancePass* getFirstCompositorInstancePassByCompositorPassTypeId(CompositorPassTypeId compositorPassTypeId) const;
-		RENDERERRUNTIME_API_EXPORT void executeVr(Renderer::IRenderTarget& renderTarget, CameraSceneItem* cameraSceneItem, const LightSceneItem* lightSceneItem);	// If "RendererRuntime::IVrManager::isRunning()" is true, virtual reality rendering is used, don't use this method if you want to render e.g. into a texture for other purposes
-		RENDERERRUNTIME_API_EXPORT void execute(Renderer::IRenderTarget& renderTarget, const CameraSceneItem* cameraSceneItem, const LightSceneItem* lightSceneItem, bool singlePassStereoInstancing = false);
+		RENDERERRUNTIME_API_EXPORT void executeVr(Rhi::IRenderTarget& renderTarget, CameraSceneItem* cameraSceneItem, const LightSceneItem* lightSceneItem);	// If "RendererRuntime::IVrManager::isRunning()" is true, virtual reality rendering is used, don't use this method if you want to render e.g. into a texture for other purposes
+		RENDERERRUNTIME_API_EXPORT void execute(Rhi::IRenderTarget& renderTarget, const CameraSceneItem* cameraSceneItem, const LightSceneItem* lightSceneItem, bool singlePassStereoInstancing = false);
 
-		[[nodiscard]] inline Renderer::IRenderTarget* getExecutionRenderTarget() const	// Only valid during compositor workspace instance execution
+		[[nodiscard]] inline Rhi::IRenderTarget* getExecutionRenderTarget() const	// Only valid during compositor workspace instance execution
 		{
 			return mExecutionRenderTarget;
 		}
@@ -153,13 +151,13 @@ namespace RendererRuntime
 			return mSequentialCompositorNodeInstances;
 		}
 
-		[[nodiscard]] inline const Renderer::CommandBuffer& getCommandBuffer() const
+		[[nodiscard]] inline const Rhi::CommandBuffer& getCommandBuffer() const
 		{
 			return mCommandBuffer;
 		}
 
-		#ifdef RENDERER_STATISTICS
-			[[nodiscard]] inline const Renderer::PipelineStatisticsQueryResult& getPipelineStatisticsQueryResult() const
+		#ifdef RHI_STATISTICS
+			[[nodiscard]] inline const Rhi::PipelineStatisticsQueryResult& getPipelineStatisticsQueryResult() const
 			{
 				return mPipelineStatisticsQueryResult;
 			}
@@ -181,7 +179,7 @@ namespace RendererRuntime
 		explicit CompositorWorkspaceInstance(const CompositorWorkspaceInstance&) = delete;
 		CompositorWorkspaceInstance& operator=(const CompositorWorkspaceInstance&) = delete;
 		void destroySequentialCompositorNodeInstances();
-		void createFramebuffersAndRenderTargetTextures(const Renderer::IRenderTarget& mainRenderTarget);
+		void createFramebuffersAndRenderTargetTextures(const Rhi::IRenderTarget& mainRenderTarget);
 		void destroyFramebuffersAndRenderTargetTextures(bool clearManagers = false);
 		void clearRenderQueueIndexRangesRenderableManagers();
 
@@ -196,18 +194,18 @@ namespace RendererRuntime
 		float							 mResolutionScale;
 		uint32_t						 mRenderTargetWidth;
 		uint32_t						 mRenderTargetHeight;
-		Renderer::IRenderTarget*		 mExecutionRenderTarget;				///< Only valid during compositor workspace instance execution
+		Rhi::IRenderTarget*				 mExecutionRenderTarget;				///< Only valid during compositor workspace instance execution
 		CompositorWorkspaceResourceId	 mCompositorWorkspaceResourceId;
 		CompositorNodeInstances			 mSequentialCompositorNodeInstances;	///< We're responsible to destroy the compositor node instances if we no longer need them
 		bool							 mFramebufferManagerInitialized;
 		RenderQueueIndexRanges			 mRenderQueueIndexRanges;				///< The render queue index ranges layout is fixed during runtime
-		Renderer::CommandBuffer			 mCommandBuffer;						///< Command buffer
+		Rhi::CommandBuffer				 mCommandBuffer;						///< RHI command buffer
 		CompositorInstancePassShadowMap* mCompositorInstancePassShadowMap;		///< Can be a null pointer, don't destroy the instance
-		#ifdef RENDERER_STATISTICS
-			Renderer::IQueryPoolPtr					mPipelineStatisticsQueryPoolPtr;				///< Double buffered asynchronous pipeline statistics query pool, can be a null pointer
-			uint32_t								mPreviousCurrentPipelineStatisticsQueryIndex;	///< Can be "RendererRuntime::getInvalid<uint32_t>()"
-			uint32_t								mCurrentPipelineStatisticsQueryIndex;			///< Toggles between 0 or 1
-			Renderer::PipelineStatisticsQueryResult mPipelineStatisticsQueryResult;					///< Due to double buffered asynchronous pipeline statistics query pool, this is the pipeline statistics query result of the previous frame
+		#ifdef RHI_STATISTICS
+			Rhi::IQueryPoolPtr				   mPipelineStatisticsQueryPoolPtr;					///< Double buffered asynchronous pipeline statistics query pool, can be a null pointer
+			uint32_t						   mPreviousCurrentPipelineStatisticsQueryIndex;	///< Can be "RendererRuntime::getInvalid<uint32_t>()"
+			uint32_t						   mCurrentPipelineStatisticsQueryIndex;			///< Toggles between 0 or 1
+			Rhi::PipelineStatisticsQueryResult mPipelineStatisticsQueryResult;					///< Due to double buffered asynchronous pipeline statistics query pool, this is the pipeline statistics query result of the previous frame
 		#endif
 
 

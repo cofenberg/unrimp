@@ -34,7 +34,7 @@
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace Renderer
+namespace Rhi
 {
 	class IRenderTarget;
 }
@@ -80,7 +80,7 @@ namespace RendererRuntime
 	public:
 		SceneCullingManager();
 		~SceneCullingManager();
-		void gatherRenderQueueIndexRangesRenderableManagers(const Renderer::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, CompositorWorkspaceInstance::RenderQueueIndexRanges& renderQueueIndexRanges);
+		void gatherRenderQueueIndexRangesRenderableManagers(const Rhi::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, CompositorWorkspaceInstance::RenderQueueIndexRanges& renderQueueIndexRanges);
 
 		[[nodiscard]] inline SceneItemSet& getCullableSceneItemSet() const
 		{

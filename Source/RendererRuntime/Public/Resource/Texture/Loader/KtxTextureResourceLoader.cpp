@@ -259,7 +259,7 @@ namespace RendererRuntime
 			::detail::KTX_texinfo ktxTexinfo;
 			if (!checkHeader(ktxHeader, ktxTexinfo))
 			{
-				RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Invalid KTX header")
+				RHI_ASSERT(mRendererRuntime.getContext(), false, "Invalid KTX header")
 			}
 		}
 		file.skip(ktxHeader.bytesOfKeyValueData);
@@ -271,7 +271,7 @@ namespace RendererRuntime
 		// Check if the file contains data for one texture or for 6 textures
 		if (1 != ktxHeader.numberOfFaces && 6 != ktxHeader.numberOfFaces)
 		{
-			RENDERER_ASSERT(mRendererRuntime.getContext(), false, "The number of faces must be one or six")
+			RHI_ASSERT(mRendererRuntime.getContext(), false, "The number of faces must be one or six")
 		}
 
 		// Texture format
@@ -281,9 +281,9 @@ namespace RendererRuntime
 			// -> For now we only support ETC1 compression
 			if (GL_ETC1_RGB8_OES != ktxHeader.glInternalFormat)
 			{
-				RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Unsupported compressed \"glInternalFormat\"")
+				RHI_ASSERT(mRendererRuntime.getContext(), false, "Unsupported compressed \"glInternalFormat\"")
 			}
-			mTextureFormat = Renderer::TextureFormat::ETC1;
+			mTextureFormat = Rhi::TextureFormat::ETC1;
 		}
 		else
 		{
@@ -291,11 +291,11 @@ namespace RendererRuntime
 			// -> For now we only support R8G8B8A8
 			if (GL_RGBA8 == ktxHeader.glInternalFormat)
 			{
-				mTextureFormat = Renderer::TextureFormat::R8G8B8A8;
+				mTextureFormat = Rhi::TextureFormat::R8G8B8A8;
 			}
 			else
 			{
-				RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Unsupported uncompressed \"glInternalFormat\"")
+				RHI_ASSERT(mRendererRuntime.getContext(), false, "Unsupported uncompressed \"glInternalFormat\"")
 			}
 		}
 
@@ -321,8 +321,8 @@ namespace RendererRuntime
 						mNumberOfUsedImageDataBytes += (width * height * 4);
 					}
 				}
-				width = Renderer::ITexture::getHalfSize(width);
-				height = Renderer::ITexture::getHalfSize(height);
+				width = Rhi::ITexture::getHalfSize(width);
+				height = Rhi::ITexture::getHalfSize(height);
 			}
 		}
 		if (mNumberOfImageDataBytes < mNumberOfUsedImageDataBytes)
@@ -332,7 +332,7 @@ namespace RendererRuntime
 			mImageData = new uint8_t[mNumberOfImageDataBytes];
 		}
 
-		// Data layout: The renderer interface expects: CRN and KTX files are organized in mip-major order, like this:
+		// Data layout: The RHI expects: CRN and KTX files are organized in mip-major order, like this:
 		//   Mip0: Face0, Face1, Face2, Face3, Face4, Face5
 		//   Mip1: Face0, Face1, Face2, Face3, Face4, Face5
 		//   etc.
@@ -376,14 +376,14 @@ namespace RendererRuntime
 			file.skip(paddingBytes);
 
 			// Move on to the next mipmap
-			width = Renderer::ITexture::getHalfSize(width);
-			height = Renderer::ITexture::getHalfSize(height);
+			width = Rhi::ITexture::getHalfSize(width);
+			height = Rhi::ITexture::getHalfSize(height);
 		}
 
-		// Can we create the renderer resource asynchronous as well?
-		if (mRendererRuntime.getRenderer().getCapabilities().nativeMultithreading)
+		// Can we create the RHI resource asynchronous as well?
+		if (mRendererRuntime.getRhi().getCapabilities().nativeMultithreading)
 		{
-			mTexture = createRendererTexture();
+			mTexture = createRhiTexture();
 		}
 
 		// Done
@@ -394,26 +394,26 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Protected RendererRuntime::ITextureResourceLoader methods ]
 	//[-------------------------------------------------------]
-	Renderer::ITexture* KtxTextureResourceLoader::createRendererTexture()
+	Rhi::ITexture* KtxTextureResourceLoader::createRhiTexture()
 	{
-		Renderer::ITexture* texture = nullptr;
-		const uint32_t flags = (mDataContainsMipmaps ? (Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS | Renderer::TextureFlag::SHADER_RESOURCE) : Renderer::TextureFlag::SHADER_RESOURCE);
+		Rhi::ITexture* texture = nullptr;
+		const uint32_t flags = (mDataContainsMipmaps ? (Rhi::TextureFlag::DATA_CONTAINS_MIPMAPS | Rhi::TextureFlag::SHADER_RESOURCE) : Rhi::TextureFlag::SHADER_RESOURCE);
 		if (mCubeMap)
 		{
 			// Cube texture
-			texture = mRendererRuntime.getTextureManager().createTextureCube(mWidth, mHeight, static_cast<Renderer::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Renderer::TextureUsage::IMMUTABLE);
+			texture = mRendererRuntime.getTextureManager().createTextureCube(mWidth, mHeight, static_cast<Rhi::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Rhi::TextureUsage::IMMUTABLE);
 		}
 		else if (1 == mWidth || 1 == mHeight)
 		{
 			// 1D texture
-			texture = mRendererRuntime.getTextureManager().createTexture1D((1 == mWidth) ? mHeight : mWidth, static_cast<Renderer::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Renderer::TextureUsage::IMMUTABLE);
+			texture = mRendererRuntime.getTextureManager().createTexture1D((1 == mWidth) ? mHeight : mWidth, static_cast<Rhi::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Rhi::TextureUsage::IMMUTABLE);
 		}
 		else
 		{
 			// 2D texture
-			texture = mRendererRuntime.getTextureManager().createTexture2D(mWidth, mHeight, static_cast<Renderer::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Renderer::TextureUsage::IMMUTABLE);
+			texture = mRendererRuntime.getTextureManager().createTexture2D(mWidth, mHeight, static_cast<Rhi::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Rhi::TextureUsage::IMMUTABLE);
 		}
-		RENDERER_SET_RESOURCE_DEBUG_NAME(texture, getAsset().virtualFilename)
+		RHI_SET_RESOURCE_DEBUG_NAME(texture, getAsset().virtualFilename)
 		return texture;
 	}
 

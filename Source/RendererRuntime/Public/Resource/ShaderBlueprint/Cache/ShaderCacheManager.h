@@ -45,7 +45,7 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace Renderer
+namespace Rhi
 {
 	class IShaderLanguage;
 }
@@ -121,14 +121,14 @@ namespace RendererRuntime
 		*  @param[in] materialBlueprintResource
 		*    Material blueprint resource
 		*  @param[in] shaderLanguage
-		*    Shader language
+		*    RHI shader language
 		*  @param[in] graphicsShaderType
 		*    Graphics shader type
 		*
 		*  @return
 		*    The shader cache, null pointer on error
 		*/
-		[[nodiscard]] ShaderCache* getGraphicsShaderCache(const GraphicsPipelineStateSignature& graphicsPipelineStateSignature, const MaterialBlueprintResource& materialBlueprintResource, Renderer::IShaderLanguage& shaderLanguage, GraphicsShaderType graphicsShaderType);
+		[[nodiscard]] ShaderCache* getGraphicsShaderCache(const GraphicsPipelineStateSignature& graphicsPipelineStateSignature, const MaterialBlueprintResource& materialBlueprintResource, Rhi::IShaderLanguage& shaderLanguage, GraphicsShaderType graphicsShaderType);
 
 		/**
 		*  @brief
@@ -139,12 +139,12 @@ namespace RendererRuntime
 		*  @param[in] materialBlueprintResource
 		*    Material blueprint resource
 		*  @param[in] shaderLanguage
-		*    Shader language
+		*    RHI shader language
 		*
 		*  @return
 		*    The shader cache, null pointer on error
 		*/
-		[[nodiscard]] ShaderCache* getComputeShaderCache(const ComputePipelineStateSignature& computePipelineStateSignature, const MaterialBlueprintResource& materialBlueprintResource, Renderer::IShaderLanguage& shaderLanguage);
+		[[nodiscard]] ShaderCache* getComputeShaderCache(const ComputePipelineStateSignature& computePipelineStateSignature, const MaterialBlueprintResource& materialBlueprintResource, Rhi::IShaderLanguage& shaderLanguage);
 
 
 	//[-------------------------------------------------------]

@@ -170,7 +170,7 @@ namespace RendererRuntime
 		DebugGuiManager::startup();
 	}
 
-	void DebugGuiManagerWindows::onNewFrame(Renderer::IRenderTarget& renderTarget)
+	void DebugGuiManagerWindows::onNewFrame(Rhi::IRenderTarget& renderTarget)
 	{
 		ImGuiIO& imGuiIo = ImGui::GetIO();
 

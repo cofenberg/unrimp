@@ -33,7 +33,7 @@
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace Renderer
+namespace Rhi
 {
 	class ITexture;
 }
@@ -99,7 +99,7 @@ namespace RendererRuntime
 	//[ Protected RendererRuntime::ITextureResourceLoader methods ]
 	//[-------------------------------------------------------]
 	protected:
-		[[nodiscard]] virtual Renderer::ITexture* createRendererTexture() = 0;
+		[[nodiscard]] virtual Rhi::ITexture* createRhiTexture() = 0;
 
 
 	//[-------------------------------------------------------]
@@ -128,9 +128,9 @@ namespace RendererRuntime
 	//[ Protected data                                        ]
 	//[-------------------------------------------------------]
 	protected:
-		IRendererRuntime&	mRendererRuntime;	///< Renderer runtime instance, do not destroy the instance
-		TextureResource*	mTextureResource;	///< Destination resource
-		Renderer::ITexture*	mTexture;			///< In case the used renderer backend supports native multithreading we also create the renderer resource asynchronous, but the final resource pointer reassignment must still happen synchronous
+		IRendererRuntime& mRendererRuntime;	///< Renderer runtime instance, do not destroy the instance
+		TextureResource*  mTextureResource;	///< Destination resource
+		Rhi::ITexture*	  mTexture;			///< In case the used RHI implementation supports native multithreading we also create the RHI resource asynchronous, but the final resource pointer reassignment must still happen synchronous
 
 
 	};

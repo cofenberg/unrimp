@@ -86,18 +86,18 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Return the renderer shader properties
+		*    Return the RHI shader properties
 		*
 		*  @return
-		*    The renderer shader properties
+		*    The RHI shader properties
 		*
 		*  @note
-		*    - The renderer shader properties depend on the current renderer backend, contains e.g. "OpenGL", "GLSL", "ZeroToOneClipZ", "UpperLeftOrigin" etc.
-		*    - The renderer shader properties are added during shader source code building and hence are not part of the pipeline state signature
+		*    - The RHI shader properties depend on the current RHI implementation, contains e.g. "OpenGL", "GLSL", "ZeroToOneClipZ", "UpperLeftOrigin" etc.
+		*    - The RHI shader properties are added during shader source code building and hence are not part of the pipeline state signature
 		*/
-		[[nodiscard]] inline const ShaderProperties& getRendererShaderProperties() const
+		[[nodiscard]] inline const ShaderProperties& getRhiShaderProperties() const
 		{
-			return mRendererShaderProperties;
+			return mRhiShaderProperties;
 		}
 
 		RENDERERRUNTIME_API_EXPORT void loadShaderBlueprintResourceByAssetId(AssetId assetId, ShaderBlueprintResourceId& shaderBlueprintResourceId, IResourceListener* resourceListener = nullptr, bool reload = false, ResourceLoaderTypeId resourceLoaderTypeId = getInvalid<ResourceLoaderTypeId>());	// Asynchronous
@@ -177,7 +177,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	private:
 		IRendererRuntime&  mRendererRuntime;
-		ShaderProperties   mRendererShaderProperties;
+		ShaderProperties   mRhiShaderProperties;
 		ShaderCacheManager mShaderCacheManager;
 
 		// Internal resource manager implementation

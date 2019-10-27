@@ -97,13 +97,13 @@ namespace RendererRuntime
 		*    Constructor on a given animation; the animation is fixed throughout the lifetime of the object
 		*
 		*  @param[in] allocator
-		*    Allocator
+		*    RHI allocator
 		*  @param[in] skeletonAnimationResourceManager
 		*    Skeleton animation resource manager to use
 		*  @param[in] skeletonAnimationResourceId
 		*    Skeleton animation resource ID
 		*/
-		SkeletonAnimationEvaluator(Renderer::IAllocator& allocator, SkeletonAnimationResourceManager& skeletonAnimationResourceManager, SkeletonAnimationResourceId skeletonAnimationResourceId);
+		SkeletonAnimationEvaluator(Rhi::IAllocator& allocator, SkeletonAnimationResourceManager& skeletonAnimationResourceManager, SkeletonAnimationResourceId skeletonAnimationResourceId);
 
 		/**
 		*  @brief

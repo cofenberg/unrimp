@@ -80,23 +80,23 @@ InstancedCubes::~InstancedCubes()
 //[-------------------------------------------------------]
 void InstancedCubes::onInitialization()
 {
-	// Get and check the renderer instance
-	Renderer::IRendererPtr renderer(getRenderer());
-	if (nullptr != renderer)
+	// Get and check the RHI instance
+	Rhi::IRhiPtr rhi(getRhi());
+	if (nullptr != rhi)
 	{
 		// Create the cube renderer instance
-		// -> Evaluate the feature set of the used renderer
+		// -> Evaluate the feature set of the used RHI
 		// TODO(co) This example doesn't support texture buffer emulation, which for OpenGL ES 3 is currently used
-		const Renderer::Capabilities& capabilities = renderer->getCapabilities();
-		if (capabilities.drawInstanced && capabilities.maximumNumberOf2DTextureArraySlices > 0 && capabilities.maximumTextureBufferSize > 0 && renderer->getNameId() != Renderer::NameId::OPENGLES3)
+		const Rhi::Capabilities& capabilities = rhi->getCapabilities();
+		if (capabilities.drawInstanced && capabilities.maximumNumberOf2DTextureArraySlices > 0 && capabilities.maximumTextureBufferSize > 0 && rhi->getNameId() != Rhi::NameId::OPENGLES3)
 		{
 			// Render cubes by using draw instanced (shader model 4 feature, build in shader variable holding the current instance ID)
-			mCubeRenderer = new CubeRendererDrawInstanced(*renderer, getMainRenderTarget()->getRenderPass(), NUMBER_OF_TEXTURES, SCENE_RADIUS);
+			mCubeRenderer = new CubeRendererDrawInstanced(*rhi, getMainRenderTarget()->getRenderPass(), NUMBER_OF_TEXTURES, SCENE_RADIUS);
 		}
 		else if (capabilities.instancedArrays)
 		{
 			// Render cubes by using instanced arrays (shader model 3 feature, vertex array element advancing per-instance instead of per-vertex)
-			mCubeRenderer = new CubeRendererInstancedArrays(*renderer, getMainRenderTarget()->getRenderPass(), NUMBER_OF_TEXTURES, SCENE_RADIUS);
+			mCubeRenderer = new CubeRendererInstancedArrays(*rhi, getMainRenderTarget()->getRenderPass(), NUMBER_OF_TEXTURES, SCENE_RADIUS);
 		}
 
 		// Tell the cube renderer about the number of cubes
@@ -217,12 +217,12 @@ void InstancedCubes::onUpdate()
 
 void InstancedCubes::onDraw()
 {
-	// Get and check the renderer instance
-	Renderer::IRendererPtr renderer(getRenderer());
-	if (nullptr != renderer)
+	// Get and check the RHI instance
+	Rhi::IRhiPtr rhi(getRhi());
+	if (nullptr != rhi)
 	{
 		// Clear the graphics color buffer of the current render target with gray, do also clear the depth buffer
-		Renderer::Command::ClearGraphics::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
+		Rhi::Command::ClearGraphics::create(mCommandBuffer, Rhi::ClearFlag::COLOR_DEPTH, Color4::GRAY);
 
 		// Draw the cubes
 		if (nullptr != mCubeRenderer)
@@ -260,11 +260,11 @@ void InstancedCubes::onDraw()
 				{
 					RendererRuntime::DebugGuiHelper::drawText("No cube renderer instance", 10.0f, 10.0f);
 				}
-				debugGuiManager.fillGraphicsCommandBufferUsingFixedBuildInRendererConfiguration(mCommandBuffer);
+				debugGuiManager.fillGraphicsCommandBufferUsingFixedBuildInRhiConfiguration(mCommandBuffer);
 			}
 		#endif
 
-		// Submit command buffer to the renderer backend
-		mCommandBuffer.submitToRendererAndClear(*renderer);
+		// Submit command buffer to the RHI implementation
+		mCommandBuffer.submitToRhiAndClear(*rhi);
 	}
 }

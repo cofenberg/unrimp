@@ -1033,8 +1033,8 @@ namespace RendererToolkit
 			if (!flagsAsString.empty())
 			{
 				// Define helper macros
-				#define IF_VALUE(name)			 if (flagAsString == #name) value = Renderer::ClearFlag::name;
-				#define ELSE_IF_VALUE(name) else if (flagAsString == #name) value = Renderer::ClearFlag::name;
+				#define IF_VALUE(name)			 if (flagAsString == #name) value = Rhi::ClearFlag::name;
+				#define ELSE_IF_VALUE(name) else if (flagAsString == #name) value = Rhi::ClearFlag::name;
 
 				// Evaluate flags
 				const size_t numberOfFlags = flagsAsString.size();
@@ -1079,15 +1079,15 @@ namespace RendererToolkit
 		return StringHelper::getAssetIdByString(rapidJsonValue[propertyName].GetString(), input);
 	}
 
-	Renderer::TextureFormat::Enum JsonHelper::mandatoryTextureFormat(const rapidjson::Value& rapidJsonValue)
+	Rhi::TextureFormat::Enum JsonHelper::mandatoryTextureFormat(const rapidjson::Value& rapidJsonValue)
 	{
 		const rapidjson::Value& rapidJsonValueUsage = rapidJsonValue["TextureFormat"];
 		const char* valueAsString = rapidJsonValueUsage.GetString();
 		const rapidjson::SizeType valueStringLength = rapidJsonValueUsage.GetStringLength();
 
 		// Define helper macros
-		#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) return Renderer::TextureFormat::name;
-		#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) return Renderer::TextureFormat::name;
+		#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) return Rhi::TextureFormat::name;
+		#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) return Rhi::TextureFormat::name;
 
 		// Evaluate value
 		IF_VALUE(R8)

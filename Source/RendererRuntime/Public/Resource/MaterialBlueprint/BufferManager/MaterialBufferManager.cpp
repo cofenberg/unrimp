@@ -52,10 +52,10 @@ namespace RendererRuntime
 		mLastComputeBoundPool(nullptr)
 	{
 		const MaterialBlueprintResource::UniformBuffer* materialUniformBuffer = mMaterialBlueprintResource.getMaterialUniformBuffer();
-		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != materialUniformBuffer, "Invalid material uniform buffer")
+		RHI_ASSERT(mRendererRuntime.getContext(), nullptr != materialUniformBuffer, "Invalid material uniform buffer")
 
 		// Get the buffer size
-		mBufferSize = std::min<uint32_t>(rendererRuntime.getRenderer().getCapabilities().maximumUniformBufferSize, 64 * 1024);
+		mBufferSize = std::min<uint32_t>(rendererRuntime.getRhi().getCapabilities().maximumUniformBufferSize, 64 * 1024);
 		mScratchBuffer.resize(mBufferSize);
 
 		// Calculate the number of slots per pool
@@ -107,12 +107,12 @@ namespace RendererRuntime
 		BufferPool* bufferPool = static_cast<BufferPool*>(materialBufferSlot.mAssignedMaterialPool);
 
 		// Sanity checks
-		RENDERER_ASSERT(mRendererRuntime.getContext(), isValid(materialBufferSlot.mAssignedMaterialPool), "Invalid assigned material pool")
-		RENDERER_ASSERT(mRendererRuntime.getContext(), isValid(materialBufferSlot.mAssignedMaterialSlot), "Invalid assigned material slot")
-		RENDERER_ASSERT(mRendererRuntime.getContext(), materialBufferSlot.mAssignedMaterialSlot < mSlotsPerPool, "Invalid assigned material slot")
-		RENDERER_ASSERT(mRendererRuntime.getContext(), std::find(bufferPool->freeSlots.begin(), bufferPool->freeSlots.end(), materialBufferSlot.mAssignedMaterialSlot) == bufferPool->freeSlots.end(), "Invalid assigned material slot")
-		RENDERER_ASSERT(mRendererRuntime.getContext(), materialBufferSlot.mGlobalIndex < static_cast<int>(mMaterialBufferSlots.size()), "Invalid global index")
-		RENDERER_ASSERT(mRendererRuntime.getContext(), &materialBufferSlot == *(mMaterialBufferSlots.begin() + materialBufferSlot.mGlobalIndex), "Invalid global index")
+		RHI_ASSERT(mRendererRuntime.getContext(), isValid(materialBufferSlot.mAssignedMaterialPool), "Invalid assigned material pool")
+		RHI_ASSERT(mRendererRuntime.getContext(), isValid(materialBufferSlot.mAssignedMaterialSlot), "Invalid assigned material slot")
+		RHI_ASSERT(mRendererRuntime.getContext(), materialBufferSlot.mAssignedMaterialSlot < mSlotsPerPool, "Invalid assigned material slot")
+		RHI_ASSERT(mRendererRuntime.getContext(), std::find(bufferPool->freeSlots.begin(), bufferPool->freeSlots.end(), materialBufferSlot.mAssignedMaterialSlot) == bufferPool->freeSlots.end(), "Invalid assigned material slot")
+		RHI_ASSERT(mRendererRuntime.getContext(), materialBufferSlot.mGlobalIndex < static_cast<int>(mMaterialBufferSlots.size()), "Invalid global index")
+		RHI_ASSERT(mRendererRuntime.getContext(), &materialBufferSlot == *(mMaterialBufferSlots.begin() + materialBufferSlot.mGlobalIndex), "Invalid global index")
 
 		// If the slot is dirty, remove it from the list of dirty slots
 		if (materialBufferSlot.mDirty)
@@ -165,31 +165,31 @@ namespace RendererRuntime
 		}
 	}
 
-	void MaterialBufferManager::fillGraphicsCommandBuffer(MaterialBufferSlot& materialBufferSlot, Renderer::CommandBuffer& commandBuffer)
+	void MaterialBufferManager::fillGraphicsCommandBuffer(MaterialBufferSlot& materialBufferSlot, Rhi::CommandBuffer& commandBuffer)
 	{
 		if (mLastGraphicsBoundPool != materialBufferSlot.mAssignedMaterialPool)
 		{
 			mLastGraphicsBoundPool = static_cast<BufferPool*>(materialBufferSlot.mAssignedMaterialPool);
-			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mLastGraphicsBoundPool, "Invalid last graphics bound pool")
+			RHI_ASSERT(mRendererRuntime.getContext(), nullptr != mLastGraphicsBoundPool, "Invalid last graphics bound pool")
 
 			// Set resource group
 			const MaterialBlueprintResource::UniformBuffer* materialUniformBuffer = mMaterialBlueprintResource.getMaterialUniformBuffer();
-			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != materialUniformBuffer, "Invalid material uniform buffer")
-			Renderer::Command::SetGraphicsResourceGroup::create(commandBuffer, materialUniformBuffer->rootParameterIndex, mLastGraphicsBoundPool->resourceGroup);
+			RHI_ASSERT(mRendererRuntime.getContext(), nullptr != materialUniformBuffer, "Invalid material uniform buffer")
+			Rhi::Command::SetGraphicsResourceGroup::create(commandBuffer, materialUniformBuffer->rootParameterIndex, mLastGraphicsBoundPool->resourceGroup);
 		}
 	}
 
-	void MaterialBufferManager::fillComputeCommandBuffer(MaterialBufferSlot& materialBufferSlot, Renderer::CommandBuffer& commandBuffer)
+	void MaterialBufferManager::fillComputeCommandBuffer(MaterialBufferSlot& materialBufferSlot, Rhi::CommandBuffer& commandBuffer)
 	{
 		if (mLastComputeBoundPool != materialBufferSlot.mAssignedMaterialPool)
 		{
 			mLastComputeBoundPool = static_cast<BufferPool*>(materialBufferSlot.mAssignedMaterialPool);
-			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mLastComputeBoundPool, "Invalid last compute bound pool")
+			RHI_ASSERT(mRendererRuntime.getContext(), nullptr != mLastComputeBoundPool, "Invalid last compute bound pool")
 
 			// Set resource group
 			const MaterialBlueprintResource::UniformBuffer* materialUniformBuffer = mMaterialBlueprintResource.getMaterialUniformBuffer();
-			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != materialUniformBuffer, "Invalid material uniform buffer")
-			Renderer::Command::SetComputeResourceGroup::create(commandBuffer, materialUniformBuffer->rootParameterIndex, mLastComputeBoundPool->resourceGroup);
+			RHI_ASSERT(mRendererRuntime.getContext(), nullptr != materialUniformBuffer, "Invalid material uniform buffer")
+			Rhi::Command::SetComputeResourceGroup::create(commandBuffer, materialUniformBuffer->rootParameterIndex, mLastComputeBoundPool->resourceGroup);
 		}
 	}
 
@@ -199,16 +199,16 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void MaterialBufferManager::uploadDirtySlots()
 	{
-		RENDERER_ASSERT(mRendererRuntime.getContext(), !mDirtyMaterialBufferSlots.empty(), "Invalid dirty material buffer slots")
+		RHI_ASSERT(mRendererRuntime.getContext(), !mDirtyMaterialBufferSlots.empty(), "Invalid dirty material buffer slots")
 		const MaterialBlueprintResource::UniformBuffer* materialUniformBuffer = mMaterialBlueprintResource.getMaterialUniformBuffer();
-		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != materialUniformBuffer, "Invalid material uniform buffer")
+		RHI_ASSERT(mRendererRuntime.getContext(), nullptr != materialUniformBuffer, "Invalid material uniform buffer")
 		const MaterialBlueprintResourceManager& materialBlueprintResourceManager = mMaterialBlueprintResource.getResourceManager<MaterialBlueprintResourceManager>();
 		const MaterialProperties& globalMaterialProperties = materialBlueprintResourceManager.getGlobalMaterialProperties();
 		IMaterialBlueprintResourceListener& materialBlueprintResourceListener = materialBlueprintResourceManager.getMaterialBlueprintResourceListener();
 		materialBlueprintResourceListener.beginFillMaterial();
 
 		// Update the scratch buffer
-		Renderer::IUniformBuffer* uniformBuffer = nullptr;	// TODO(co) Implement proper uniform buffer handling and only update dirty sections
+		Rhi::IUniformBuffer* uniformBuffer = nullptr;	// TODO(co) Implement proper uniform buffer handling and only update dirty sections
 		{
 			const MaterialBlueprintResource::UniformBufferElementProperties& uniformBufferElementProperties = materialUniformBuffer->uniformBufferElementProperties;
 			const size_t numberOfUniformBufferElementProperties = uniformBufferElementProperties.size();
@@ -251,7 +251,7 @@ namespace RendererRuntime
 						else if (!materialBlueprintResourceListener.fillMaterialValue(uniformBufferElementProperty.getReferenceValue(), scratchBufferPointer, valueTypeNumberOfBytes))
 						{
 							// Error!
-							RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Can't resolve reference")
+							RHI_ASSERT(mRendererRuntime.getContext(), false, "Can't resolve reference")
 						}
 					}
 					else if (MaterialProperty::Usage::GLOBAL_REFERENCE == usage)
@@ -277,7 +277,7 @@ namespace RendererRuntime
 							else
 							{
 								// Error
-								RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Can't resolve reference")
+								RHI_ASSERT(mRendererRuntime.getContext(), false, "Can't resolve reference")
 							}
 						}
 					}
@@ -291,7 +291,7 @@ namespace RendererRuntime
 					else
 					{
 						// Error!
-						RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Invalid property")
+						RHI_ASSERT(mRendererRuntime.getContext(), false, "Invalid property")
 					}
 
 					// Next property
@@ -306,12 +306,12 @@ namespace RendererRuntime
 		// Update the uniform buffer by using our scratch buffer
 		if (nullptr != uniformBuffer)
 		{
-			Renderer::MappedSubresource mappedSubresource;
-			Renderer::IRenderer& renderer = mRendererRuntime.getRenderer();
-			if (renderer.map(*uniformBuffer, 0, Renderer::MapType::WRITE_DISCARD, 0, mappedSubresource))
+			Rhi::MappedSubresource mappedSubresource;
+			Rhi::IRhi& rhi = mRendererRuntime.getRhi();
+			if (rhi.map(*uniformBuffer, 0, Rhi::MapType::WRITE_DISCARD, 0, mappedSubresource))
 			{
 				memcpy(mappedSubresource.data, mScratchBuffer.data(), static_cast<uint32_t>(mScratchBuffer.size()));
-				renderer.unmap(*uniformBuffer, 0);
+				rhi.unmap(*uniformBuffer, 0);
 			}
 		}
 
@@ -323,15 +323,15 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public RendererRuntime::MaterialBufferManager::BufferPool methods ]
 	//[-------------------------------------------------------]
-	MaterialBufferManager::BufferPool::BufferPool(uint32_t bufferSize, uint32_t slotsPerPool, Renderer::IBufferManager& bufferManager, const MaterialBlueprintResource& materialBlueprintResource) :
-		uniformBuffer(bufferManager.createUniformBuffer(bufferSize, nullptr, Renderer::BufferUsage::DYNAMIC_DRAW)),
+	MaterialBufferManager::BufferPool::BufferPool(uint32_t bufferSize, uint32_t slotsPerPool, Rhi::IBufferManager& bufferManager, const MaterialBlueprintResource& materialBlueprintResource) :
+		uniformBuffer(bufferManager.createUniformBuffer(bufferSize, nullptr, Rhi::BufferUsage::DYNAMIC_DRAW)),
 		resourceGroup(nullptr)
 	{
-		RENDERER_SET_RESOURCE_DEBUG_NAME(uniformBuffer, "Material buffer manager")
+		RHI_SET_RESOURCE_DEBUG_NAME(uniformBuffer, "Material buffer manager")
 		uniformBuffer->addReference();
-		Renderer::IResource* resource = static_cast<Renderer::IResource*>(uniformBuffer);
+		Rhi::IResource* resource = static_cast<Rhi::IResource*>(uniformBuffer);
 		resourceGroup = materialBlueprintResource.getRootSignaturePtr()->createResourceGroup(materialBlueprintResource.getMaterialUniformBuffer()->rootParameterIndex, 1, &resource);
-		RENDERER_SET_RESOURCE_DEBUG_NAME(resourceGroup, "Material buffer manager")
+		RHI_SET_RESOURCE_DEBUG_NAME(resourceGroup, "Material buffer manager")
 		resourceGroup->addReference();
 		freeSlots.reserve(slotsPerPool);
 		for (uint32_t i = 0; i < slotsPerPool; ++i)

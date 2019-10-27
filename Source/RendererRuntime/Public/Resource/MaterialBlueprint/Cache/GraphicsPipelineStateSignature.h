@@ -100,7 +100,7 @@ namespace RendererRuntime
 		*  @param[in] materialBlueprintResource
 		*    Material blueprint resource to use
 		*  @param[in] serializedGraphicsPipelineStateHash
-		*    FNV1a hash of "Renderer::SerializedGraphicsPipelineState"
+		*    FNV1a hash of "Rhi::SerializedGraphicsPipelineState"
 		*  @param[in] shaderProperties
 		*    Shader properties to use, you should ensure that this shader properties are already optimized by using e.g. "RendererRuntime::MaterialBlueprintResource::optimizeShaderProperties()"
 		*/
@@ -140,7 +140,7 @@ namespace RendererRuntime
 		*  @param[in] materialBlueprintResource
 		*    Material blueprint resource to use
 		*  @param[in] serializedGraphicsPipelineStateHash
-		*    FNV1a hash of "Renderer::SerializedGraphicsPipelineState"
+		*    FNV1a hash of "Rhi::SerializedGraphicsPipelineState"
 		*  @param[in] shaderProperties
 		*    Shader properties to use, you should ensure that this shader properties are already optimized by using e.g. "RendererRuntime::MaterialBlueprintResource::optimizeShaderProperties()"
 		*/

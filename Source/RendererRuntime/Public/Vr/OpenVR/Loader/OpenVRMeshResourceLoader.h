@@ -61,7 +61,7 @@ namespace vr
 {
 	struct RenderModel_t;
 }
-namespace Renderer
+namespace Rhi
 {
 	class IVertexArray;
 }
@@ -165,7 +165,7 @@ namespace RendererRuntime
 
 		explicit OpenVRMeshResourceLoader(const OpenVRMeshResourceLoader&) = delete;
 		OpenVRMeshResourceLoader& operator=(const OpenVRMeshResourceLoader&) = delete;
-		[[nodiscard]] Renderer::IVertexArray* createVertexArray() const;
+		[[nodiscard]] Rhi::IVertexArray* createVertexArray() const;
 		[[nodiscard]] const std::string& getRenderModelName() const;
 
 
@@ -182,14 +182,14 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	private:
 		// Temporary data
-		vr::RenderModel_t*		mVrRenderModel;
-		BufferData				mTangentsData;
-		BufferData				mBinormalsData;
-		VertexBufferData		mVertexBufferData;
-		IndexBufferData			mIndexBufferData;
-		Renderer::IVertexArray*	mVertexArray;
-		glm::vec3				mMinimumBoundingBoxPosition;
-		glm::vec3				mMaximumBoundingBoxPosition;
+		vr::RenderModel_t* mVrRenderModel;
+		BufferData		   mTangentsData;
+		BufferData		   mBinormalsData;
+		VertexBufferData   mVertexBufferData;
+		IndexBufferData	   mIndexBufferData;
+		Rhi::IVertexArray* mVertexArray;
+		glm::vec3		   mMinimumBoundingBoxPosition;
+		glm::vec3		   mMaximumBoundingBoxPosition;
 
 
 	};

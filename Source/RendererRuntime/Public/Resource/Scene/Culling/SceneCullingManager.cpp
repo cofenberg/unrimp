@@ -40,8 +40,6 @@
 #include "RendererRuntime/Public/IRendererRuntime.h"
 #include "RendererRuntime/Public/Context.h"
 
-#include <Renderer/Public/Renderer.h>
-
 
 //[-------------------------------------------------------]
 //[ Anonymous detail namespace                            ]
@@ -556,7 +554,7 @@ namespace RendererRuntime
 		delete mCullableShadowCastersSceneItemSet;
 	}
 
-	void SceneCullingManager::gatherRenderQueueIndexRangesRenderableManagers(const Renderer::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, CompositorWorkspaceInstance::RenderQueueIndexRanges& renderQueueIndexRanges)
+	void SceneCullingManager::gatherRenderQueueIndexRangesRenderableManagers(const Rhi::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, CompositorWorkspaceInstance::RenderQueueIndexRanges& renderQueueIndexRanges)
 	{
 		// Overview over the basic workflow of "The Implementation of Frustum Culling in Stingray" - http://bitsquid.blogspot.de/2016/10/the-implementation-of-frustum-culling.html
 		// - Kick jobs to do frustum vs sphere culling
@@ -569,10 +567,10 @@ namespace RendererRuntime
 
 		// Get the camera scene item
 		const CameraSceneItem* cameraSceneItem = compositorContextData.getCameraSceneItem();
-		RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != cameraSceneItem, "Invalid camera")
+		RHI_ASSERT(rendererRuntime.getContext(), nullptr != cameraSceneItem, "Invalid camera")
 
 		// Get view space to clip space matrix
-		RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != compositorContextData.getCompositorWorkspaceInstance(), "Invalid compositor workspace instance")
+		RHI_ASSERT(rendererRuntime.getContext(), nullptr != compositorContextData.getCompositorWorkspaceInstance(), "Invalid compositor workspace instance")
 		glm::mat4 viewSpaceToClipSpaceMatrix;
 		{
 			#ifdef RENDERER_RUNTIME_OPENVR

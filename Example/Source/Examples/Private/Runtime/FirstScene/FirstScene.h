@@ -130,9 +130,9 @@ private:
 	void loadIni();
 	void saveIni();
 	void destroyIni();
-	void applyCurrentSettings(Renderer::IRenderTarget& mainRenderTarget);
+	void applyCurrentSettings(Rhi::IRenderTarget& mainRenderTarget);
 	void createCompositorWorkspace();
-	void createDebugGui(Renderer::IRenderTarget& mainRenderTarget);
+	void createDebugGui(Rhi::IRenderTarget& mainRenderTarget);
 	void trySetCustomMaterialResource();
 
 

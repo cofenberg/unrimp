@@ -41,10 +41,10 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::ICompositorInstancePass methods ]
 	//[-------------------------------------------------------]
-	void CompositorInstancePassDebugGui::onFillCommandBuffer([[maybe_unused]] const Renderer::IRenderTarget* renderTarget, [[maybe_unused]] const CompositorContextData& compositorContextData, [[maybe_unused]] Renderer::CommandBuffer& commandBuffer)
+	void CompositorInstancePassDebugGui::onFillCommandBuffer([[maybe_unused]] const Rhi::IRenderTarget* renderTarget, [[maybe_unused]] const CompositorContextData& compositorContextData, [[maybe_unused]] Rhi::CommandBuffer& commandBuffer)
 	{
 		// Sanity check
-		RENDERER_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), nullptr != renderTarget, "The debug GUI compositor instance pass needs a valid render target")
+		RHI_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), nullptr != renderTarget, "The debug GUI compositor instance pass needs a valid render target")
 
 		#ifdef RENDERER_RUNTIME_IMGUI
 			// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
@@ -57,14 +57,14 @@ namespace RendererRuntime
 			compositorContextData.resetCurrentlyBoundMaterialBlueprintResource();
 			if (renderables.empty())
 			{
-				// Fill command buffer using fixed build in renderer configuration resources
-				debugGuiManager.fillGraphicsCommandBufferUsingFixedBuildInRendererConfiguration(commandBuffer);
+				// Fill command buffer using fixed build in RHI configuration resources
+				debugGuiManager.fillGraphicsCommandBufferUsingFixedBuildInRhiConfiguration(commandBuffer);
 			}
 			else
 			{
 				// Fill command buffer, this sets the material resource blueprint
 				{
-					const Renderer::IVertexArrayPtr& vertexArrayPtr = debugGuiManager.getFillVertexArrayPtr();
+					const Rhi::IVertexArrayPtr& vertexArrayPtr = debugGuiManager.getFillVertexArrayPtr();
 					if (vertexArrayPtr != renderables[0].getVertexArrayPtr())
 					{
 						renderables[0].setVertexArrayPtr(vertexArrayPtr);
@@ -83,7 +83,7 @@ namespace RendererRuntime
 				}
 			}
 		#else
-			RENDERER_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), false, "ImGui support is disabled")
+			RHI_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), false, "ImGui support is disabled")
 		#endif
 	}
 

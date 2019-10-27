@@ -115,7 +115,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void CameraSceneItem::deserialize([[maybe_unused]] uint32_t numberOfBytes, const uint8_t*)
 	{
-		RENDERER_ASSERT(getContext(), sizeof(v1Scene::CameraItem) == numberOfBytes, "Invalid number of bytes")
+		RHI_ASSERT(getContext(), sizeof(v1Scene::CameraItem) == numberOfBytes, "Invalid number of bytes")
 
 		// No FOV Y, near z and far z deserialization by intent, those are usually application controlled values
 	}

@@ -29,7 +29,7 @@
 //[-------------------------------------------------------]
 #include "Examples/Private/Framework/ExampleBase.h"
 
-#include <Renderer/Public/Renderer.h>
+#include <Rhi/Public/Rhi.h>
 
 
 //[-------------------------------------------------------]
@@ -86,7 +86,7 @@ private:
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
-	Renderer::CommandBuffer mCommandBuffer;	///< Command buffer
+	Rhi::CommandBuffer mCommandBuffer;	///< RHI command buffer
 
 
 };

@@ -116,7 +116,7 @@ namespace RendererToolkit
 
 
 	//[-------------------------------------------------------]
-	//[ Protected virtual Renderer::RefCount methods          ]
+	//[ Protected virtual Rhi::RefCount methods               ]
 	//[-------------------------------------------------------]
 	protected:
 		virtual void selfDestruct() override;

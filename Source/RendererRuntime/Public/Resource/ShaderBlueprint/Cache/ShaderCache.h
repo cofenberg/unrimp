@@ -30,8 +30,6 @@
 #include "RendererRuntime/Public/Core/StringId.h"
 #include "RendererRuntime/Public/Core/GetInvalid.h"
 
-#include <Renderer/Public/Renderer.h>
-
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'argument': conversion from 'long' to 'unsigned int', signed/unsigned mismatch
@@ -101,24 +99,24 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Return shader bytecode
+		*    Return RHI shader bytecode
 		*
 		*  @return
-		*    The shader bytecode
+		*    The RHI shader bytecode
 		*/
-		[[nodiscard]] inline const Renderer::ShaderBytecode& getShaderBytecode() const
+		[[nodiscard]] inline const Rhi::ShaderBytecode& getShaderBytecode() const
 		{
 			return mShaderBytecode;
 		}
 
 		/**
 		*  @brief
-		*    Return shader
+		*    Return RHI shader
 		*
 		*  @return
-		*    The shader
+		*    The RHI shader
 		*/
-		[[nodiscard]] inline const Renderer::IShaderPtr& getShaderPtr() const
+		[[nodiscard]] inline const Rhi::IShaderPtr& getShaderPtr() const
 		{
 			return (nullptr != mMasterShaderCache) ? mMasterShaderCache->mShaderPtr : mShaderPtr;
 		}
@@ -162,12 +160,12 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		ShaderCacheId			 mShaderCacheId;
-		ShaderCache*			 mMasterShaderCache;		///< If there's a master shader cache instance, we don't own the references shader but only redirect to it (multiple shader combinations resulting in same shader source code topic), don't destroy the instance
-		AssetIds				 mAssetIds;					///< List of IDs of the assets (shader blueprint, shader piece) which took part in the shader cache creation
-		uint64_t				 mCombinedAssetFileHashes;	///< Combination of the file hash of all assets (shader blueprint, shader piece) which took part in the shader cache creation
-		Renderer::ShaderBytecode mShaderBytecode;
-		Renderer::IShaderPtr	 mShaderPtr;
+		ShaderCacheId		mShaderCacheId;
+		ShaderCache*		mMasterShaderCache;			///< If there's a master shader cache instance, we don't own the references shader but only redirect to it (multiple shader combinations resulting in same shader source code topic), don't destroy the instance
+		AssetIds			mAssetIds;					///< List of IDs of the assets (shader blueprint, shader piece) which took part in the shader cache creation
+		uint64_t			mCombinedAssetFileHashes;	///< Combination of the file hash of all assets (shader blueprint, shader piece) which took part in the shader cache creation
+		Rhi::ShaderBytecode mShaderBytecode;
+		Rhi::IShaderPtr		mShaderPtr;
 
 
 	};

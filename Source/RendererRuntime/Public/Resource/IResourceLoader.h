@@ -171,7 +171,7 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Synchronous called when the resource loader has to dispatch the data (e.g. to the renderer backend)
+		*    Synchronous called when the resource loader has to dispatch the data (e.g. to the RHI implementation)
 		*
 		*  @return
 		*    "true" if the resource is fully loaded, else "false" (e.g. asset dependencies are not fully loaded, yet) meaning this method will be called later on again

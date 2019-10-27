@@ -33,9 +33,9 @@
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace Renderer
+namespace Rhi
 {
-	class IRenderer;
+	class IRhi;
 	class IRenderTarget;
 }
 namespace RendererRuntime
@@ -78,10 +78,10 @@ public:
 	*
 	*  @param[in] exampleName
 	*    Example name, must be valid
-	*  @param[in] rendererName
-	*    Renderer name, if null pointer the default renderer will be used
+	*  @param[in] rhiName
+	*    RHI name, if null pointer the default RHI will be used
 	*/
-	virtual void switchExample(const char* exampleName, const char* rendererName = nullptr) = 0;
+	virtual void switchExample(const char* exampleName, const char* rhiName = nullptr) = 0;
 
 	/**
 	*  @brief
@@ -91,21 +91,21 @@ public:
 
 	/**
 	*  @brief
-	*    Return the renderer instance
+	*    Return the RHI instance
 	*
 	*  @return
-	*    The renderer instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+	*    The RHI instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 	*/
-	[[nodiscard]] virtual Renderer::IRenderer* getRenderer() const = 0;
+	[[nodiscard]] virtual Rhi::IRhi* getRhi() const = 0;
 
 	/**
 	*  @brief
-	*    Return the main renderer target
+	*    Return the main RHI target
 	*
 	*  @return
-	*    The main renderer target instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+	*    The main RHI target instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 	*/
-	[[nodiscard]] virtual Renderer::IRenderTarget* getMainRenderTarget() const = 0;
+	[[nodiscard]] virtual Rhi::IRenderTarget* getMainRenderTarget() const = 0;
 
 	/**
 	*  @brief

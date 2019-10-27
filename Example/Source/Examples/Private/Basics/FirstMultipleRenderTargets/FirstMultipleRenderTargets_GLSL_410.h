@@ -21,8 +21,8 @@
 //[-------------------------------------------------------]
 //[ Shader start                                          ]
 //[-------------------------------------------------------]
-#ifdef RENDERER_OPENGL
-if (renderer->getNameId() == Renderer::NameId::OPENGL)
+#ifdef RHI_OPENGL
+if (rhi->getNameId() == Rhi::NameId::OPENGL)
 {
 
 
@@ -30,7 +30,7 @@ if (renderer->getNameId() == Renderer::NameId::OPENGL)
 //[ Vertex shader source code                             ]
 //[-------------------------------------------------------]
 // One vertex shader invocation per vertex
-if (renderer->getCapabilities().upperLeftOrigin)
+if (rhi->getCapabilities().upperLeftOrigin)
 {
 	vertexShaderSourceCode = R"(#version 410 core	// OpenGL 4.1
 

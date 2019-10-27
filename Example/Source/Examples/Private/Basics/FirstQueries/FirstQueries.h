@@ -29,7 +29,7 @@
 //[-------------------------------------------------------]
 #include "Examples/Private/Basics/FirstTriangle/FirstTriangle.h"
 
-#include <Renderer/Public/Renderer.h>
+#include <Rhi/Public/Rhi.h>
 
 
 //[-------------------------------------------------------]
@@ -92,9 +92,9 @@ private:
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
-	Renderer::IQueryPoolPtr mOcclusionQueryPool;			///< Asynchronous occlusion query pool, can be a null pointer
-	Renderer::IQueryPoolPtr mPipelineStatisticsQueryPool;	///< Asynchronous pipeline statistics query pool, can be a null pointer
-	Renderer::IQueryPoolPtr mTimestampQueryPool;			///< Asynchronous timestamp query pool, can be a null pointer
+	Rhi::IQueryPoolPtr mOcclusionQueryPool;				///< Asynchronous occlusion query pool, can be a null pointer
+	Rhi::IQueryPoolPtr mPipelineStatisticsQueryPool;	///< Asynchronous pipeline statistics query pool, can be a null pointer
+	Rhi::IQueryPoolPtr mTimestampQueryPool;				///< Asynchronous timestamp query pool, can be a null pointer
 
 
 };

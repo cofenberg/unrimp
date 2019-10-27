@@ -94,7 +94,7 @@ namespace RendererRuntime
 
 		// Create the resource instance
 		const Asset* asset = mRendererRuntime.getAssetManager().tryGetAssetByAssetId(assetId);
-		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != asset, "Unknown asset ID")
+		RHI_ASSERT(mRendererRuntime.getContext(), nullptr != asset, "Unknown asset ID")
 		bool load = (reload && nullptr != asset);
 		if (nullptr == materialBlueprintResource && nullptr != asset)
 		{
@@ -156,7 +156,7 @@ namespace RendererRuntime
 		if (mMaterialBlueprintResourceListener != materialBlueprintResourceListener)
 		{
 			// We know there must be a currently set material blueprint resource listener
-			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mMaterialBlueprintResourceListener, "Invalid material blueprint resource listener")
+			RHI_ASSERT(mRendererRuntime.getContext(), nullptr != mMaterialBlueprintResourceListener, "Invalid material blueprint resource listener")
 			mMaterialBlueprintResourceListener->onShutdown(mRendererRuntime);
 			mMaterialBlueprintResourceListener = (nullptr != materialBlueprintResourceListener) ? materialBlueprintResourceListener : &::detail::defaultMaterialBlueprintResourceListener;
 			mMaterialBlueprintResourceListener->onStartup(mRendererRuntime);
@@ -179,7 +179,7 @@ namespace RendererRuntime
 		}
 	}
 
-	void MaterialBlueprintResourceManager::setDefaultTextureFiltering(Renderer::FilterMode filterMode, uint8_t maximumAnisotropy)
+	void MaterialBlueprintResourceManager::setDefaultTextureFiltering(Rhi::FilterMode filterMode, uint8_t maximumAnisotropy)
 	{
 		// State change?
 		if (mDefaultTextureFilterMode != filterMode || mDefaultMaximumTextureAnisotropy != maximumAnisotropy)
@@ -334,9 +334,9 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	MaterialBlueprintResourceManager::MaterialBlueprintResourceManager(IRendererRuntime& rendererRuntime) :
 		mRendererRuntime(rendererRuntime),
-		mCreateInitialPipelineStateCaches(rendererRuntime.getRenderer().getNameId() != Renderer::NameId::OPENGLES3),	// TODO(co) Not all example material blueprints are OpenGL ES 3 ready, yet
+		mCreateInitialPipelineStateCaches(rendererRuntime.getRhi().getNameId() != Rhi::NameId::OPENGLES3),	// TODO(co) Not all example material blueprints are OpenGL ES 3 ready, yet
 		mMaterialBlueprintResourceListener(&::detail::defaultMaterialBlueprintResourceListener),
-		mDefaultTextureFilterMode(Renderer::FilterMode::MIN_MAG_MIP_LINEAR),
+		mDefaultTextureFilterMode(Rhi::FilterMode::MIN_MAG_MIP_LINEAR),
 		mDefaultMaximumTextureAnisotropy(1),
 		mUniformInstanceBufferManager(nullptr),
 		mTextureInstanceBufferManager(nullptr),
@@ -350,7 +350,7 @@ namespace RendererRuntime
 		mMaterialBlueprintResourceListener->onStartup(mRendererRuntime);
 
 		// Create buffer managers
-		const Renderer::Capabilities& capabilities = rendererRuntime.getRenderer().getCapabilities();
+		const Rhi::Capabilities& capabilities = rendererRuntime.getRhi().getCapabilities();
 		if (capabilities.maximumUniformBufferSize > 0 && capabilities.maximumTextureBufferSize > 0)
 		{
 			mUniformInstanceBufferManager = new UniformInstanceBufferManager(rendererRuntime);
@@ -373,7 +373,7 @@ namespace RendererRuntime
 		delete mLightBufferManager;
 
 		// Shutdown material blueprint resource listener (we know there must be such an instance)
-		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mMaterialBlueprintResourceListener, "Invalid material blueprint resource listener")
+		RHI_ASSERT(mRendererRuntime.getContext(), nullptr != mMaterialBlueprintResourceListener, "Invalid material blueprint resource listener")
 		mMaterialBlueprintResourceListener->onShutdown(mRendererRuntime);
 
 		// Destroy internal resource manager
@@ -383,7 +383,7 @@ namespace RendererRuntime
 		::detail::defaultMaterialBlueprintResourceListener.clear();
 	}
 
-	void MaterialBlueprintResourceManager::addSerializedGraphicsPipelineState(uint32_t serializedGraphicsPipelineStateHash, const Renderer::SerializedGraphicsPipelineState& serializedGraphicsPipelineState)
+	void MaterialBlueprintResourceManager::addSerializedGraphicsPipelineState(uint32_t serializedGraphicsPipelineStateHash, const Rhi::SerializedGraphicsPipelineState& serializedGraphicsPipelineState)
 	{
 		std::lock_guard<std::mutex> serializedGraphicsPipelineStatesMutexLock(mSerializedGraphicsPipelineStatesMutex);
 		SerializedGraphicsPipelineStates::iterator iterator = mSerializedGraphicsPipelineStates.find(serializedGraphicsPipelineStateHash);
@@ -393,13 +393,13 @@ namespace RendererRuntime
 		}
 	}
 
-	void MaterialBlueprintResourceManager::applySerializedGraphicsPipelineState(uint32_t serializedGraphicsPipelineStateHash, Renderer::GraphicsPipelineState& graphicsPipelineState)
+	void MaterialBlueprintResourceManager::applySerializedGraphicsPipelineState(uint32_t serializedGraphicsPipelineStateHash, Rhi::GraphicsPipelineState& graphicsPipelineState)
 	{
 		std::lock_guard<std::mutex> serializedGraphicsPipelineStatesMutexLock(mSerializedGraphicsPipelineStatesMutex);
 		RendererRuntime::MaterialBlueprintResourceManager::SerializedGraphicsPipelineStates::const_iterator iterator = mSerializedGraphicsPipelineStates.find(serializedGraphicsPipelineStateHash);
 		if (iterator != mSerializedGraphicsPipelineStates.cend())
 		{
-			static_cast<Renderer::SerializedGraphicsPipelineState&>(graphicsPipelineState) = iterator->second;
+			static_cast<Rhi::SerializedGraphicsPipelineState&>(graphicsPipelineState) = iterator->second;
 		}
 		else
 		{
@@ -427,8 +427,8 @@ namespace RendererRuntime
 			{
 				uint32_t key = getInvalid<uint32_t>();
 				file.read(&key, sizeof(uint32_t));
-				Renderer::SerializedGraphicsPipelineState serializedGraphicsPipelineState = {};
-				file.read(&serializedGraphicsPipelineState, sizeof(Renderer::SerializedGraphicsPipelineState));
+				Rhi::SerializedGraphicsPipelineState serializedGraphicsPipelineState = {};
+				file.read(&serializedGraphicsPipelineState, sizeof(Rhi::SerializedGraphicsPipelineState));
 				mSerializedGraphicsPipelineStates.emplace(key, serializedGraphicsPipelineState);
 			}
 		}
@@ -455,7 +455,7 @@ namespace RendererRuntime
 					}
 					else
 					{
-						RENDERER_LOG(mRendererRuntime.getContext(), COMPATIBILITY_WARNING, "The pipeline state object cache contains an unknown material blueprint asset. Might have happened due to renaming or removal which can be considered normal during development, but not in shipped builds.")
+						RHI_LOG(mRendererRuntime.getContext(), COMPATIBILITY_WARNING, "The pipeline state object cache contains an unknown material blueprint asset. Might have happened due to renaming or removal which can be considered normal during development, but not in shipped builds.")
 
 						// TODO(co) Enable file skip after "RendererRuntime::MaterialBlueprintResource::savePipelineStateObjectCache()" has been implemented
 						// file.skip(materialBlueprintCacheEntry.numberOfBytes);
@@ -464,7 +464,7 @@ namespace RendererRuntime
 			}
 			else
 			{
-				RENDERER_LOG(mRendererRuntime.getContext(), WARNING, "The pipeline state object cache contains no elements which is a bit unusual")
+				RHI_LOG(mRendererRuntime.getContext(), WARNING, "The pipeline state object cache contains no elements which is a bit unusual")
 			}
 		}
 	}
@@ -493,7 +493,7 @@ namespace RendererRuntime
 			for (const auto& elementPair : mSerializedGraphicsPipelineStates)
 			{
 				memoryFile.write(&elementPair.first, sizeof(uint32_t));
-				memoryFile.write(&elementPair.second, sizeof(Renderer::SerializedGraphicsPipelineState));
+				memoryFile.write(&elementPair.second, sizeof(Rhi::SerializedGraphicsPipelineState));
 			}
 		}
 

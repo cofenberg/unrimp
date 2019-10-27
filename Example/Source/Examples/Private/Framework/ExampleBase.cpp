@@ -28,12 +28,12 @@
 //[-------------------------------------------------------]
 //[ Public methods                                        ]
 //[-------------------------------------------------------]
-Renderer::IRenderer* ExampleBase::getRenderer() const
+Rhi::IRhi* ExampleBase::getRhi() const
 {
-	return (nullptr != mApplicationFrontend) ? mApplicationFrontend->getRenderer() : nullptr;
+	return (nullptr != mApplicationFrontend) ? mApplicationFrontend->getRhi() : nullptr;
 }
 
-Renderer::IRenderTarget* ExampleBase::getMainRenderTarget() const
+Rhi::IRenderTarget* ExampleBase::getMainRenderTarget() const
 {
 	return (nullptr != mApplicationFrontend) ? mApplicationFrontend->getMainRenderTarget() : nullptr;
 }

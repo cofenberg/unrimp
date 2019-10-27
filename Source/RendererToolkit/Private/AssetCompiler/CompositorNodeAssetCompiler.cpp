@@ -390,11 +390,11 @@ namespace
 											{
 												throw std::runtime_error("The VR hidden area mesh compositor resource pass flags must not be null");
 											}
-											if ((passVrHiddenAreaMesh.flags & Renderer::ClearFlag::COLOR) != 0)
+											if ((passVrHiddenAreaMesh.flags & Rhi::ClearFlag::COLOR) != 0)
 											{
 												throw std::runtime_error("The VR hidden area mesh compositor resource pass doesn't support the color flag");
 											}
-											if ((passVrHiddenAreaMesh.flags & Renderer::ClearFlag::STENCIL) != 0)
+											if ((passVrHiddenAreaMesh.flags & Rhi::ClearFlag::STENCIL) != 0)
 											{
 												throw std::runtime_error("TODO(co) The VR hidden area mesh compositor resource pass doesn't support the stencil flag, yet");
 											}
@@ -508,7 +508,7 @@ namespace
 
 										case RendererRuntime::CompositorResourcePassDebugGui::TYPE_ID:
 										{
-											// The material definition is not mandatory for the debug GUI, if nothing is defined the fixed build in renderer configuration resources will be used instead
+											// The material definition is not mandatory for the debug GUI, if nothing is defined the fixed build in RHI configuration resources will be used instead
 											RendererRuntime::v1CompositorNode::PassDebugGui passDebugGui;
 											strcpy(passDebugGui.name, "Debug GUI compositor pass");
 											readPass(rapidJsonValuePass, passDebugGui);
@@ -611,7 +611,7 @@ namespace RendererToolkit
 	bool CompositorNodeAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const
 	{
 		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFileByRapidJsonDocument(configuration.rapidJsonDocumentAsset);
-		return input.cacheManager.checkIfFileIsModified(configuration.rendererTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), RendererRuntime::v1CompositorNode::FORMAT_VERSION);
+		return input.cacheManager.checkIfFileIsModified(configuration.rhiTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), RendererRuntime::v1CompositorNode::FORMAT_VERSION);
 	}
 
 	void CompositorNodeAssetCompiler::compile(const Input& input, const Configuration& configuration) const
@@ -622,7 +622,7 @@ namespace RendererToolkit
 
 		// Ask the cache manager whether or not we need to compile the source file (e.g. source changed or target not there)
 		CacheManager::CacheEntries cacheEntries;
-		if (input.cacheManager.needsToBeCompiled(configuration.rendererTarget, input.virtualAssetFilename, virtualInputFilename, virtualOutputAssetFilename, RendererRuntime::v1CompositorNode::FORMAT_VERSION, cacheEntries))
+		if (input.cacheManager.needsToBeCompiled(configuration.rhiTarget, input.virtualAssetFilename, virtualInputFilename, virtualOutputAssetFilename, RendererRuntime::v1CompositorNode::FORMAT_VERSION, cacheEntries))
 		{
 			RendererRuntime::MemoryFile memoryFile(0, 4096);
 
@@ -677,7 +677,7 @@ namespace RendererToolkit
 							const uint32_t height = ::detail::getRenderTargetTextureSize(rapidJsonValueRenderTargetTexture, "Height", "TARGET_HEIGHT");
 
 							// Texture format
-							const Renderer::TextureFormat::Enum textureFormat = JsonHelper::mandatoryTextureFormat(rapidJsonValueRenderTargetTexture);
+							const Rhi::TextureFormat::Enum textureFormat = JsonHelper::mandatoryTextureFormat(rapidJsonValueRenderTargetTexture);
 
 							// Flags
 							uint8_t flags = (RendererRuntime::RenderTargetTextureSignature::Flag::SHADER_RESOURCE | RendererRuntime::RenderTargetTextureSignature::Flag::RENDER_TARGET);

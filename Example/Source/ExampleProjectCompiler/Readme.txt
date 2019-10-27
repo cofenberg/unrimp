@@ -25,5 +25,5 @@ Standalone renderer project compiler example.
 == Preprocessor Definitions ==
 Other
 - "UNICODE":		   Enable Microsoft Windows command line Unicode support
-- "SHARED_LIBRARIES":  Use renderers via shared libraries, if this is not defined, the renderers are statically linked
-- Do also have a look into the renderer header file for renderer backend preprocessor definitions
+- "SHARED_LIBRARIES":  Use RHIs via shared libraries, if this is not defined, the RHIs are statically linked
+- Do also have a look into the RHI header file for RHI implementation preprocessor definitions

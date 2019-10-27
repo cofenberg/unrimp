@@ -33,8 +33,6 @@
 #include "RendererRuntime/Public/IRendererRuntime.h"
 #include "RendererRuntime/Public/Context.h"
 
-#include <Renderer/Public/Renderer.h>
-
 
 #ifdef RENDERER_RUNTIME_OPENVR
 	//[-------------------------------------------------------]
@@ -49,7 +47,7 @@
 			//[-------------------------------------------------------]
 			//[ Classes                                               ]
 			//[-------------------------------------------------------]
-			class Mesh : public Renderer::RefCount<Mesh>
+			class Mesh : public Rhi::RefCount<Mesh>
 			{
 
 
@@ -60,37 +58,37 @@
 				explicit Mesh(const RendererRuntime::IRendererRuntime& rendererRuntime) :
 					mNumberOfTriangles(0)
 				{
-					Renderer::IRenderer& renderer = rendererRuntime.getRenderer();
+					Rhi::IRhi& rhi = rendererRuntime.getRhi();
 
 					{ // Create the root signature
 						// Setup
-						Renderer::RootSignatureBuilder rootSignature;
-						rootSignature.initialize(0, nullptr, 0, nullptr, Renderer::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+						Rhi::RootSignatureBuilder rootSignature;
+						rootSignature.initialize(0, nullptr, 0, nullptr, Rhi::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 						// Create the instance
-						mRootSignature = renderer.createRootSignature(rootSignature);
+						mRootSignature = rhi.createRootSignature(rootSignature);
 					}
 
 					// Vertex input layout
-					static constexpr Renderer::VertexAttribute vertexAttributesLayout[] =
+					static constexpr Rhi::VertexAttribute vertexAttributesLayout[] =
 					{
 						{ // Attribute 0
 							// Data destination
-							Renderer::VertexAttributeFormat::FLOAT_2,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-							"Position",									// name[32] (char)
-							"POSITION",									// semanticName[32] (char)
-							0,											// semanticIndex (uint32_t)
+							Rhi::VertexAttributeFormat::FLOAT_2,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+							"Position",								// name[32] (char)
+							"POSITION",								// semanticName[32] (char)
+							0,										// semanticIndex (uint32_t)
 							// Data source
-							0,											// inputSlot (uint32_t)
-							0,											// alignedByteOffset (uint32_t)
-							sizeof(float) * 2,							// strideInBytes (uint32_t)
-							0											// instancesPerElement (uint32_t)
+							0,										// inputSlot (uint32_t)
+							0,										// alignedByteOffset (uint32_t)
+							sizeof(float) * 2,						// strideInBytes (uint32_t)
+							0										// instancesPerElement (uint32_t)
 						}
 					};
-					const Renderer::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
+					const Rhi::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
 
 					{ // Create vertex array and merge both meshes into a single mesh since we're using single pass stereo rendering via instancing as described in "High Performance Stereo Rendering For VR", Timothy Wilson, San Diego, Virtual Reality Meetup
-						Renderer::IBufferManager& bufferManager = rendererRuntime.getBufferManager();
+						Rhi::IBufferManager& bufferManager = rendererRuntime.getBufferManager();
 						vr::IVRSystem* vrSystem = static_cast<RendererRuntime::VrManagerOpenVR&>(rendererRuntime.getVrManager()).getVrSystem();
 
 						// Get the combined number of vertex buffer bytes and triangles
@@ -125,13 +123,13 @@
 						}
 
 						// Create the vertex buffer object (VBO)
-						Renderer::IVertexBufferPtr vertexBuffer(bufferManager.createVertexBuffer(numberOfBytes, temporaryMemory));
-						RENDERER_SET_RESOURCE_DEBUG_NAME(vertexBuffer, "Compositor instance pass VR hidden area mesh")
+						Rhi::IVertexBufferPtr vertexBuffer(bufferManager.createVertexBuffer(numberOfBytes, temporaryMemory));
+						RHI_SET_RESOURCE_DEBUG_NAME(vertexBuffer, "Compositor instance pass VR hidden area mesh")
 
 						// Create vertex array object (VAO)
-						const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
+						const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
 						mVertexArrayPtr = bufferManager.createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
-						RENDERER_SET_RESOURCE_DEBUG_NAME(mVertexArrayPtr, "Compositor instance pass VR hidden area mesh")
+						RHI_SET_RESOURCE_DEBUG_NAME(mVertexArrayPtr, "Compositor instance pass VR hidden area mesh")
 
 						// Free allocated temporary vertex buffer memory, if necessary
 						if (temporaryMemory != stackMemory)
@@ -142,7 +140,7 @@
 
 					{
 						// Create the graphics program
-						Renderer::IGraphicsProgramPtr graphicsProgram;
+						Rhi::IGraphicsProgramPtr graphicsProgram;
 						{
 							// Get the shader source code (outsourced to keep an overview)
 							const char* vertexShaderSourceCode = nullptr;
@@ -154,29 +152,29 @@
 							#include "Shader/VrHiddenAreaMesh_Null.h"
 
 							// Create the vertex shader
-							Renderer::IShaderLanguage& shaderLanguage = renderer.getDefaultShaderLanguage();
-							Renderer::IVertexShader* vertexShader = shaderLanguage.createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode);
-							RENDERER_SET_RESOURCE_DEBUG_NAME(vertexShader, "Compositor instance pass VR hidden area mesh VS")
+							Rhi::IShaderLanguage& shaderLanguage = rhi.getDefaultShaderLanguage();
+							Rhi::IVertexShader* vertexShader = shaderLanguage.createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode);
+							RHI_SET_RESOURCE_DEBUG_NAME(vertexShader, "Compositor instance pass VR hidden area mesh VS")
 
 							// Create the fragment shader
-							Renderer::IFragmentShader* fragmentShader = shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode);
-							RENDERER_SET_RESOURCE_DEBUG_NAME(fragmentShader, "Compositor instance pass VR hidden area mesh FS")
+							Rhi::IFragmentShader* fragmentShader = shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode);
+							RHI_SET_RESOURCE_DEBUG_NAME(fragmentShader, "Compositor instance pass VR hidden area mesh FS")
 
 							// Create the graphics program
 							graphicsProgram = shaderLanguage.createGraphicsProgram(*mRootSignature, vertexAttributes, vertexShader, fragmentShader);
-							RENDERER_SET_RESOURCE_DEBUG_NAME(graphicsProgram, "Compositor instance pass VR hidden area mesh graphics program")
+							RHI_SET_RESOURCE_DEBUG_NAME(graphicsProgram, "Compositor instance pass VR hidden area mesh graphics program")
 						}
 
 						// Create the graphics pipeline state object (PSO)
 						if (nullptr != graphicsProgram)
 						{
 							// TODO(co) Render pass related update, the render pass in here is currently just a dummy so the debug compositor works
-							Renderer::IRenderPass* renderPass = renderer.createRenderPass(1, &renderer.getCapabilities().preferredSwapChainColorTextureFormat, renderer.getCapabilities().preferredSwapChainDepthStencilTextureFormat);
+							Rhi::IRenderPass* renderPass = rhi.createRenderPass(1, &rhi.getCapabilities().preferredSwapChainColorTextureFormat, rhi.getCapabilities().preferredSwapChainDepthStencilTextureFormat);
 
-							Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, *renderPass);
-							graphicsPipelineState.rasterizerState.cullMode = Renderer::CullMode::NONE;
-							mGraphicsPipelineState = renderer.createGraphicsPipelineState(graphicsPipelineState);
-							RENDERER_SET_RESOURCE_DEBUG_NAME(mGraphicsPipelineState, "Compositor instance pass VR hidden area mesh PSO")
+							Rhi::GraphicsPipelineState graphicsPipelineState = Rhi::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, *renderPass);
+							graphicsPipelineState.rasterizerState.cullMode = Rhi::CullMode::NONE;
+							mGraphicsPipelineState = rhi.createGraphicsPipelineState(graphicsPipelineState);
+							RHI_SET_RESOURCE_DEBUG_NAME(mGraphicsPipelineState, "Compositor instance pass VR hidden area mesh PSO")
 						}
 					}
 				}
@@ -188,24 +186,24 @@
 					mGraphicsPipelineState->releaseReference();
 				}
 
-				void onFillCommandBuffer(Renderer::CommandBuffer& commandBuffer)
+				void onFillCommandBuffer(Rhi::CommandBuffer& commandBuffer)
 				{
 					// Set the used graphics root signature
-					Renderer::Command::SetGraphicsRootSignature::create(commandBuffer, mRootSignature);
+					Rhi::Command::SetGraphicsRootSignature::create(commandBuffer, mRootSignature);
 
 					// Set the used graphics pipeline state object (PSO)
-					Renderer::Command::SetGraphicsPipelineState::create(commandBuffer, mGraphicsPipelineState);
+					Rhi::Command::SetGraphicsPipelineState::create(commandBuffer, mGraphicsPipelineState);
 
 					// Setup input assembly (IA): Set the used vertex array
-					Renderer::Command::SetGraphicsVertexArray::create(commandBuffer, mVertexArrayPtr);
+					Rhi::Command::SetGraphicsVertexArray::create(commandBuffer, mVertexArrayPtr);
 
 					// Render the specified geometric primitive, based on an array of vertices
-					Renderer::Command::DrawGraphics::create(commandBuffer, mNumberOfTriangles * 3);
+					Rhi::Command::DrawGraphics::create(commandBuffer, mNumberOfTriangles * 3);
 				}
 
 
 			//[-------------------------------------------------------]
-			//[ Protected virtual Renderer::RefCount methods          ]
+			//[ Protected virtual Rhi::RefCount methods               ]
 			//[-------------------------------------------------------]
 			protected:
 				virtual void selfDestruct() override
@@ -226,14 +224,14 @@
 			//[ Private data                                          ]
 			//[-------------------------------------------------------]
 			private:
-				Renderer::IRootSignaturePtr			mRootSignature;
-				Renderer::IVertexArrayPtr			mVertexArrayPtr;
-				uint32_t							mNumberOfTriangles;
-				Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineState;	// TODO(co) As soon as we support stencil in here, instance might need different graphics pipeline states
+				Rhi::IRootSignaturePtr			mRootSignature;
+				Rhi::IVertexArrayPtr			mVertexArrayPtr;
+				uint32_t						mNumberOfTriangles;
+				Rhi::IGraphicsPipelineStatePtr	mGraphicsPipelineState;	// TODO(co) As soon as we support stencil in here, instance might need different graphics pipeline states
 
 
 			};
-			typedef Renderer::SmartRefCount<Mesh> MeshPtr;
+			typedef Rhi::SmartRefCount<Mesh> MeshPtr;
 
 
 			//[-------------------------------------------------------]
@@ -260,10 +258,10 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::ICompositorInstancePass methods ]
 	//[-------------------------------------------------------]
-	void CompositorInstancePassVrHiddenAreaMesh::onFillCommandBuffer([[maybe_unused]] const Renderer::IRenderTarget* renderTarget, [[maybe_unused]] const CompositorContextData& compositorContextData, [[maybe_unused]] Renderer::CommandBuffer& commandBuffer)
+	void CompositorInstancePassVrHiddenAreaMesh::onFillCommandBuffer([[maybe_unused]] const Rhi::IRenderTarget* renderTarget, [[maybe_unused]] const CompositorContextData& compositorContextData, [[maybe_unused]] Rhi::CommandBuffer& commandBuffer)
 	{
 		// Sanity check
-		RENDERER_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), nullptr != renderTarget, "The VR hidden area mesh compositor instance pass needs a valid render target")
+		RHI_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), nullptr != renderTarget, "The VR hidden area mesh compositor instance pass needs a valid render target")
 
 		#ifdef RENDERER_RUNTIME_OPENVR
 			if (nullptr != ::detail::g_MeshPtr)
@@ -276,7 +274,7 @@ namespace RendererRuntime
 				::detail::g_MeshPtr->onFillCommandBuffer(commandBuffer);
 			}
 		#else
-			RENDERER_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), false, "OpenVR support is disabled")
+			RHI_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), false, "OpenVR support is disabled")
 		#endif
 	}
 

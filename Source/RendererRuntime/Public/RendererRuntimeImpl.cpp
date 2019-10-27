@@ -66,7 +66,7 @@
 // Export the instance creation function
 RENDERERRUNTIME_FUNCTION_EXPORT RendererRuntime::IRendererRuntime* createRendererRuntimeInstance(RendererRuntime::Context& context)
 {
-	return RENDERER_NEW(context, RendererRuntime::RendererRuntimeImpl)(context);
+	return RHI_NEW(context, RendererRuntime::RendererRuntimeImpl)(context);
 }
 
 
@@ -95,7 +95,7 @@ namespace
 		void getPipelineStateObjectCacheFilename(const RendererRuntime::IRendererRuntime& rendererRuntime, std::string& virtualDirectoryName, std::string& virtualFilename)
 		{
 			virtualDirectoryName = rendererRuntime.getFileManager().getLocalDataMountPoint();
-			virtualFilename = virtualDirectoryName + '/' + rendererRuntime.getRenderer().getName() + ".pso_cache";
+			virtualFilename = virtualDirectoryName + '/' + rendererRuntime.getRhi().getName() + ".pso_cache";
 		}
 
 		[[nodiscard]] bool loadPipelineStateObjectCacheFile(const RendererRuntime::IRendererRuntime& rendererRuntime, RendererRuntime::MemoryFile& memoryFile)
@@ -126,7 +126,7 @@ namespace
 			RendererRuntime::IFileManager& fileManager = rendererRuntime.getFileManager();
 			if (fileManager.createDirectories(virtualDirectoryName.c_str()) && !memoryFile.writeLz4CompressedDataByVirtualFilename(PipelineStateCache::FORMAT_TYPE, PipelineStateCache::FORMAT_VERSION, fileManager, virtualFilename.c_str()))
 			{
-				RENDERER_LOG(rendererRuntime.getContext(), CRITICAL, "The renderer runtime failed to save the pipeline state object cache to \"%s\"", virtualFilename.c_str())
+				RHI_LOG(rendererRuntime.getContext(), CRITICAL, "The renderer runtime failed to save the pipeline state object cache to \"%s\"", virtualFilename.c_str())
 			}
 		}
 
@@ -165,14 +165,14 @@ namespace RendererRuntime
 	RendererRuntimeImpl::RendererRuntimeImpl(Context& context) :
 		IRendererRuntime(context)
 	{
-		// Backup the given renderer and add our reference
-		mRenderer = &context.getRenderer();
-		mRenderer->addReference();
+		// Backup the given RHI and add our reference
+		mRhi = &context.getRhi();
+		mRhi->addReference();
 
 		// Create the buffer and texture manager instance and add our reference
-		mBufferManager = mRenderer->createBufferManager();
+		mBufferManager = mRhi->createBufferManager();
 		mBufferManager->addReference();
-		mTextureManager = mRenderer->createTextureManager();
+		mTextureManager = mRhi->createTextureManager();
 		mTextureManager->addReference();
 
 		// Backup the given file manager instance
@@ -275,8 +275,8 @@ namespace RendererRuntime
 		mBufferManager->releaseReference();
 		delete mRendererResourceManager;
 
-		// Release our renderer reference
-		mRenderer->releaseReference();
+		// Release our RHI reference
+		mRhi->releaseReference();
 	}
 
 
@@ -344,7 +344,7 @@ namespace RendererRuntime
 
 	void RendererRuntimeImpl::loadPipelineStateObjectCache()
 	{
-		if (mRenderer->getCapabilities().shaderBytecode)
+		if (mRhi->getCapabilities().shaderBytecode)
 		{
 			clearPipelineStateObjectCache();
 
@@ -358,7 +358,7 @@ namespace RendererRuntime
 			else
 			{
 				// TODO(co) As soon as everything is in place, we might want to enable this assert
-				// RENDERER_ASSERT(getContext(), false, "Renderer runtime is unable to load the pipeline state object cache. This will possibly result decreased runtime performance up to runtime hiccups. You might want to create the pipeline state object cache via the renderer toolkit.")
+				// RHI_ASSERT(getContext(), false, "Renderer runtime is unable to load the pipeline state object cache. This will possibly result decreased runtime performance up to runtime hiccups. You might want to create the pipeline state object cache via the renderer toolkit.")
 			}
 		}
 	}
@@ -367,7 +367,7 @@ namespace RendererRuntime
 	{
 		// Do only save the pipeline state object cache if writing local data is allowed
 		// -> We only support saving material blueprint based shader bytecodes, creating shaders without material blueprint is supposed to be only used for debugging and tiny shaders which are compiled at the very beginning of rendering
-		if (mRenderer->getCapabilities().shaderBytecode && nullptr != mFileManager->getLocalDataMountPoint() && (mShaderBlueprintResourceManager->doesPipelineStateObjectCacheNeedSaving() || mMaterialBlueprintResourceManager->doesPipelineStateObjectCacheNeedSaving()))
+		if (mRhi->getCapabilities().shaderBytecode && nullptr != mFileManager->getLocalDataMountPoint() && (mShaderBlueprintResourceManager->doesPipelineStateObjectCacheNeedSaving() || mMaterialBlueprintResourceManager->doesPipelineStateObjectCacheNeedSaving()))
 		{
 			MemoryFile memoryFile;
 			mShaderBlueprintResourceManager->savePipelineStateObjectCache(memoryFile);
@@ -378,11 +378,11 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
-	//[ Protected virtual Renderer::RefCount methods          ]
+	//[ Protected virtual Rhi::RefCount methods               ]
 	//[-------------------------------------------------------]
 	void RendererRuntimeImpl::selfDestruct()
 	{
-		RENDERER_DELETE(mRenderer->getContext(), RendererRuntimeImpl, this);
+		RHI_DELETE(mRhi->getContext(), RendererRuntimeImpl, this);
 	}
 
 

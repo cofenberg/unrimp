@@ -27,15 +27,15 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include <Renderer/Public/Renderer.h>
+#include <Rhi/Public/Rhi.h>
 
 
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace Renderer
+namespace Rhi
 {
-	class RendererInstance;
+	class RhiInstance;
 }
 class ExampleRunner;
 
@@ -45,7 +45,7 @@ class ExampleRunner;
 //[-------------------------------------------------------]
 /**
 *  @brief
-*    A first example showing how to use do General Purpose Computation on Graphics Processing Unit (GPGPU) by using the renderer interface and shaders without having any output window (also known as headless rendering)
+*    A first example showing how to use do General Purpose Computation on Graphics Processing Unit (GPGPU) by using the RHI and shaders without having any output window (also known as headless rendering)
 *
 *  @remarks
 *    Demonstrates:
@@ -57,7 +57,7 @@ class ExampleRunner;
 *    - Root signature
 *    - Graphics pipeline state object (PSO)
 *    - Framebuffer object (FBO) used for render to texture
-*    - General Purpose Computation on Graphics Processing Unit (GPGPU) by using the renderer interface and shaders without having any output window
+*    - General Purpose Computation on Graphics Processing Unit (GPGPU) by using the RHI and shaders without having any output window
 */
 class FirstGpgpu final
 {
@@ -73,11 +73,11 @@ public:
 	*
 	*  @param[in] exampleRunner
 	*    Example runner
-	*  @param[in] rendererName
-	*    Case sensitive ASCII name of the renderer to instance, if null pointer or unknown renderer no renderer will be used.
-	*    Example renderer names: "Null", "Vulkan", "OpenGL", "OpenGLES3", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"
+	*  @param[in] rhiName
+	*    Case sensitive ASCII name of the RHI to instance, if null pointer or unknown RHI no RHI will be used.
+	*    Example RHI names: "Null", "Vulkan", "OpenGL", "OpenGLES3", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"
 	*/
-	FirstGpgpu(ExampleRunner& exampleRunner, const char* rendererName);
+	FirstGpgpu(ExampleRunner& exampleRunner, const char* rhiName);
 
 	/**
 	*  @brief
@@ -110,7 +110,7 @@ private:
 	*    Called on application initialization
 	*
 	*  @note
-	*    - When this method is called it's ensured that the renderer instance "mRenderer" is valid
+	*    - When this method is called it's ensured that the RHI instance "mRhi" is valid
 	*/
 	void onInitialization();
 
@@ -119,7 +119,7 @@ private:
 	*    Called on application de-initialization
 	*
 	*  @note
-	*    - When this method is called it's ensured that the renderer instance "mRenderer" is valid
+	*    - When this method is called it's ensured that the RHI instance "mRhi" is valid
 	*/
 	void onDeinitialization();
 
@@ -128,7 +128,7 @@ private:
 	*    Fill command buffer content generation
 	*
 	*  @note
-	*    - When this method is called it's ensured that the renderer instance "mRenderer" is valid
+	*    - When this method is called it's ensured that the RHI instance "mRhi" is valid
 	*/
 	void fillCommandBufferContentGeneration();
 
@@ -137,7 +137,7 @@ private:
 	*    Fill command buffer content processing
 	*
 	*  @note
-	*    - When this method is called it's ensured that the renderer instance "mRenderer" is valid
+	*    - When this method is called it's ensured that the RHI instance "mRhi" is valid
 	*/
 	void fillCommandBufferContentProcessing();
 
@@ -146,7 +146,7 @@ private:
 	*    Called on application should to its job
 	*
 	*  @note
-	*    - When this method is called it's ensured that the renderer instance "mRenderer" is valid
+	*    - When this method is called it's ensured that the RHI instance "mRhi" is valid
 	*/
 	void onDoJob();
 
@@ -155,25 +155,25 @@ private:
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
-	ExampleRunner&				 mExampleRunner;
-	char						 mRendererName[32];		///< Case sensitive ASCII name of the renderer to instance
-	Renderer::RendererInstance*	 mRendererInstance;		///< Renderer instance, can be a null pointer
-	Renderer::IRendererPtr		 mRenderer;				///< Renderer instance, can be a null pointer
-	Renderer::IBufferManagerPtr	 mBufferManager;		///< Buffer manager, can be a null pointer
-	Renderer::ITextureManagerPtr mTextureManager;		///< Buffer manager, can be a null pointer
-	Renderer::IRootSignaturePtr	 mRootSignature;		///< Root signature, can be a null pointer
-	Renderer::ITexture2DPtr		 mTexture2D[2];			///< 2D texture, can be a null pointer
-	Renderer::IFramebufferPtr	 mFramebuffer[2];		///< Framebuffer object (FBO), can be a null pointer
-	Renderer::IResourceGroupPtr	 mTextureGroup;			///< Texture group, can be a null pointer
-	Renderer::IResourceGroupPtr	 mSamplerStateGroup;	///< Sampler state resource group, can be a null pointer
+	ExampleRunner&			mExampleRunner;
+	char					mRhiName[32];		///< Case sensitive ASCII name of the RHI to instance
+	Rhi::RhiInstance*		mRhiInstance;		///< RHI instance, can be a null pointer
+	Rhi::IRhiPtr			mRhi;				///< RHI instance, can be a null pointer
+	Rhi::IBufferManagerPtr	mBufferManager;		///< Buffer manager, can be a null pointer
+	Rhi::ITextureManagerPtr mTextureManager;	///< Buffer manager, can be a null pointer
+	Rhi::IRootSignaturePtr	mRootSignature;		///< Root signature, can be a null pointer
+	Rhi::ITexture2DPtr		mTexture2D[2];		///< 2D texture, can be a null pointer
+	Rhi::IFramebufferPtr	mFramebuffer[2];	///< Framebuffer object (FBO), can be a null pointer
+	Rhi::IResourceGroupPtr	mTextureGroup;		///< Texture group, can be a null pointer
+	Rhi::IResourceGroupPtr	mSamplerStateGroup;	///< Sampler state resource group, can be a null pointer
 	// Content generation
-	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineStateContentGeneration;	///< Graphics pipeline state object (PSO) for content generation, can be a null pointer
-	Renderer::IVertexArrayPtr			mVertexArrayContentGeneration;				///< Vertex array object (VAO) for content generation, can be a null pointer
-	Renderer::CommandBuffer				mCommandBufferContentGeneration;			///< Command buffer for content generation
+	Rhi::IGraphicsPipelineStatePtr	mGraphicsPipelineStateContentGeneration;	///< Graphics pipeline state object (PSO) for content generation, can be a null pointer
+	Rhi::IVertexArrayPtr			mVertexArrayContentGeneration;				///< Vertex array object (VAO) for content generation, can be a null pointer
+	Rhi::CommandBuffer				mCommandBufferContentGeneration;			///< Command buffer for content generation
 	// Content processing
-	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineStateContentProcessing;	///< Graphics pipeline state object (PSO) for content processing, can be a null pointer
-	Renderer::IVertexArrayPtr			mVertexArrayContentProcessing;				///< Vertex array object (VAO) for content processing, can be a null pointer
-	Renderer::CommandBuffer				mCommandBufferContentProcessing;			///< Command buffer for content processing
+	Rhi::IGraphicsPipelineStatePtr	mGraphicsPipelineStateContentProcessing;	///< Graphics pipeline state object (PSO) for content processing, can be a null pointer
+	Rhi::IVertexArrayPtr			mVertexArrayContentProcessing;				///< Vertex array object (VAO) for content processing, can be a null pointer
+	Rhi::CommandBuffer				mCommandBufferContentProcessing;			///< Command buffer for content processing
 
 
 };

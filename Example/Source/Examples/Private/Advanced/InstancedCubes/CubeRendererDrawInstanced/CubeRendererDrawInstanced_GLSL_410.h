@@ -21,8 +21,8 @@
 //[-------------------------------------------------------]
 //[ Shader start                                          ]
 //[-------------------------------------------------------]
-#ifdef RENDERER_OPENGL
-if (renderer.getNameId() == Renderer::NameId::OPENGL)
+#ifdef RHI_OPENGL
+if (rhi.getNameId() == Rhi::NameId::OPENGL)
 {
 
 
@@ -160,7 +160,7 @@ void main()
 
 // Uniform buffer version (Direct3D 10 and Direct3D 11 only support uniform buffers and no individual uniform access)
 // One vertex shader invocation per vertex
-if (mRenderer->getCapabilities().maximumUniformBufferSize > 0)
+if (mRhi->getCapabilities().maximumUniformBufferSize > 0)
 vertexShaderSourceCode = R"(#version 410 core	// OpenGL 4.1
 
 // Attribute input/output
@@ -327,7 +327,7 @@ void main()
 )";
 
 // Uniform buffer version (Direct3D 10 and Direct3D 11 only support uniform buffers and no individual uniform access)
-if (mRenderer->getCapabilities().maximumUniformBufferSize > 0)
+if (mRhi->getCapabilities().maximumUniformBufferSize > 0)
 fragmentShaderSourceCode = R"(#version 410 core	// OpenGL 4.1
 #extension GL_EXT_texture_array : enable
 #extension GL_ARB_explicit_attrib_location : enable	// Required for 'layout(location = 0)' etc.

@@ -29,8 +29,6 @@
 //[-------------------------------------------------------]
 #include "RendererRuntime/Public/Resource/CompositorNode/Pass/ICompositorInstancePass.h"
 
-#include <Renderer/Public/Renderer.h>
-
 #include <vector>
 
 
@@ -69,7 +67,7 @@ namespace RendererRuntime
 	//[ Protected virtual RendererRuntime::ICompositorInstancePass methods ]
 	//[-------------------------------------------------------]
 	protected:
-		virtual void onFillCommandBuffer(const Renderer::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer) override;
+		virtual void onFillCommandBuffer(const Rhi::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, Rhi::CommandBuffer& commandBuffer) override;
 
 
 	//[-------------------------------------------------------]
@@ -86,7 +84,7 @@ namespace RendererRuntime
 	//[ Private definitions                                   ]
 	//[-------------------------------------------------------]
 	private:
-		typedef std::vector<Renderer::IFramebufferPtr> FramebufferPtrs;
+		typedef std::vector<Rhi::IFramebufferPtr> FramebufferPtrs;
 
 
 	//[-------------------------------------------------------]
@@ -94,7 +92,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	private:
 		// For texture mipmap generation via custom material blueprint
-		Renderer::CommandBuffer		   mCommandBuffer;
+		Rhi::CommandBuffer			   mCommandBuffer;
 		CompositorResourcePassCompute* mCompositorResourcePassCompute;
 		CompositorInstancePassCompute* mCompositorInstancePassCompute;
 		uint32_t					   mRenderTargetWidth;

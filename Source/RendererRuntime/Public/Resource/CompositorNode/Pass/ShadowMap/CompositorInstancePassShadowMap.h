@@ -192,7 +192,7 @@ namespace RendererRuntime
 	//[ Protected virtual RendererRuntime::ICompositorInstancePass methods ]
 	//[-------------------------------------------------------]
 	protected:
-		virtual void onFillCommandBuffer(const Renderer::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer) override;
+		virtual void onFillCommandBuffer(const Rhi::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, Rhi::CommandBuffer& commandBuffer) override;
 
 
 	//[-------------------------------------------------------]
@@ -228,9 +228,9 @@ namespace RendererRuntime
 		uint32_t					   mSettingsGenerationCounter;	// Most simple solution to detect settings changes which make internal data invalid
 		uint32_t					   mUsedSettingsGenerationCounter;
 		PassData					   mPassData;
-		Renderer::IFramebufferPtr	   mDepthFramebufferPtr;
-		Renderer::IFramebufferPtr	   mVarianceFramebufferPtr[CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES];
-		Renderer::IFramebufferPtr	   mIntermediateFramebufferPtr;
+		Rhi::IFramebufferPtr		   mDepthFramebufferPtr;
+		Rhi::IFramebufferPtr		   mVarianceFramebufferPtr[CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES];
+		Rhi::IFramebufferPtr		   mIntermediateFramebufferPtr;
 		TextureResourceId			   mDepthTextureResourceId;
 		TextureResourceId			   mVarianceTextureResourceId;
 		TextureResourceId			   mIntermediateDepthBlurTextureResourceId;

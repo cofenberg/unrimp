@@ -260,10 +260,10 @@ namespace RendererRuntime
 		inline void initializeElement(MaterialResourceId materialResourceId)
 		{
 			// Sanity checks
-			RENDERER_ASSERT(getContext(), isInvalid(mParentMaterialResourceId), "Invalid parent material resource ID")
-			RENDERER_ASSERT(getContext(), mSortedChildMaterialResourceIds.empty(), "Invalid sorted child material resource IDs")
-			RENDERER_ASSERT(getContext(), mSortedMaterialTechniqueVector.empty(), "Invalid sorted material technique vector")
-			RENDERER_ASSERT(getContext(), mMaterialProperties.getSortedPropertyVector().empty(), "Invalid material properties")
+			RHI_ASSERT(getContext(), isInvalid(mParentMaterialResourceId), "Invalid parent material resource ID")
+			RHI_ASSERT(getContext(), mSortedChildMaterialResourceIds.empty(), "Invalid sorted child material resource IDs")
+			RHI_ASSERT(getContext(), mSortedMaterialTechniqueVector.empty(), "Invalid sorted material technique vector")
+			RHI_ASSERT(getContext(), mMaterialProperties.getSortedPropertyVector().empty(), "Invalid material properties")
 
 			// Call base implementation
 			IResource::initializeElement(materialResourceId);

@@ -62,8 +62,8 @@ namespace RendererRuntime
 			mSkeletonAnimationResource->mTicksPerSecond   = skeletonAnimationHeader.ticksPerSecond;
 
 			// Sanity checks
-			RENDERER_ASSERT(mRendererRuntime.getContext(), skeletonAnimationHeader.numberOfChannels > 0, "Invalid skeleton animation asset with zero channels detected")
-			RENDERER_ASSERT(mRendererRuntime.getContext(), skeletonAnimationHeader.aclCompressedClipSize > 0, "Invalid skeleton animation asset with zero ACL compressed clip size detected")
+			RHI_ASSERT(mRendererRuntime.getContext(), skeletonAnimationHeader.numberOfChannels > 0, "Invalid skeleton animation asset with zero channels detected")
+			RHI_ASSERT(mRendererRuntime.getContext(), skeletonAnimationHeader.aclCompressedClipSize > 0, "Invalid skeleton animation asset with zero ACL compressed clip size detected")
 
 			// Read in bone IDs
 			mSkeletonAnimationResource->mBoneIds.resize(skeletonAnimationHeader.numberOfChannels);

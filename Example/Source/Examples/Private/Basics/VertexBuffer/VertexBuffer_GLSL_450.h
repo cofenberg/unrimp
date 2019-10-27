@@ -21,8 +21,8 @@
 //[-------------------------------------------------------]
 //[ Shader start                                          ]
 //[-------------------------------------------------------]
-#ifdef RENDERER_VULKAN
-if (renderer->getNameId() == Renderer::NameId::VULKAN)
+#ifdef RHI_VULKAN
+if (rhi->getNameId() == Rhi::NameId::VULKAN)
 {
 
 

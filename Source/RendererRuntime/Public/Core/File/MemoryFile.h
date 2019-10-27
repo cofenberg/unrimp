@@ -164,7 +164,7 @@ namespace RendererRuntime
 			std::copy(static_cast<const uint8_t*>(sourceBuffer), static_cast<const uint8_t*>(sourceBuffer) + numberOfBytes, std::back_inserter(mDecompressedData));
 		}
 
-		#ifdef _DEBUG
+		#ifdef RHI_DEBUG
 			[[nodiscard]] inline virtual const char* getDebugFilename() const override
 			{
 				return mDebugName.c_str();
@@ -188,7 +188,7 @@ namespace RendererRuntime
 		ByteVector mDecompressedData;	///< Owns the data
 		uint32_t   mNumberOfDecompressedBytes;
 		uint8_t*   mCurrentDataPointer;	///< Pointer to the current uncompressed data position, doesn't own the data
-		#ifdef _DEBUG
+		#ifdef RHI_DEBUG
 			std::string mDebugName;	///< Debug name for easier file identification when debugging
 		#endif
 

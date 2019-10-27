@@ -68,7 +68,7 @@ namespace RendererRuntime
 					wchar_t moduleFilename[MAX_PATH];																																							\
 					moduleFilename[0] = '\0';																																									\
 					::GetModuleFileNameW(static_cast<HMODULE>(mOpenVRSharedLibrary), moduleFilename, MAX_PATH);																									\
-					RENDERER_LOG(mRendererRuntime.getContext(), CRITICAL, "The renderer runtime failed to locate the entry point \"%s\" within the OpenVR shared library \"%s\"", #funcName, moduleFilename)	\
+					RHI_LOG(mRendererRuntime.getContext(), CRITICAL, "The renderer runtime failed to locate the entry point \"%s\" within the OpenVR shared library \"%s\"", #funcName, moduleFilename)	\
 					result = false;																																												\
 				}																																																\
 			}
@@ -89,7 +89,7 @@ namespace RendererRuntime
 					{																																														\
 						libraryName = linkMap->l_name;																																						\
 					}																																														\
-					RENDERER_LOG(mRendererRuntime.getContext(), CRITICAL, "The renderer runtime failed to locate the entry point \"%s\" within the OpenVR shared library \"%s\"", #funcName, libraryName)	\
+					RHI_LOG(mRendererRuntime.getContext(), CRITICAL, "The renderer runtime failed to locate the entry point \"%s\" within the OpenVR shared library \"%s\"", #funcName, libraryName)	\
 					result = false;																																											\
 				}																																															\
 			}
@@ -155,13 +155,13 @@ namespace RendererRuntime
 			mOpenVRSharedLibrary = ::LoadLibraryExA("openvr_api.dll", nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
 			if (nullptr == mOpenVRSharedLibrary)
 			{
-				RENDERER_LOG(mRendererRuntime.getContext(), COMPATIBILITY_WARNING, "The renderer runtime failed to load in the shared OpenVR library \"openvr_api.dll\", OpenVR support disabled")
+				RHI_LOG(mRendererRuntime.getContext(), COMPATIBILITY_WARNING, "The renderer runtime failed to load in the shared OpenVR library \"openvr_api.dll\", OpenVR support disabled")
 			}
 		#elif defined LINUX
 			mOpenVRSharedLibrary = ::dlopen("libopenvr_api.so", RTLD_NOW);
 			if (nullptr == mOpenVRSharedLibrary)
 			{
-				RENDERER_LOG(mRendererRuntime.getContext(), COMPATIBILITY_WARNING, "The renderer runtime failed to load in the shared OpenVR library \"libopenvr_api.so\", OpenVR support disabled")
+				RHI_LOG(mRendererRuntime.getContext(), COMPATIBILITY_WARNING, "The renderer runtime failed to load in the shared OpenVR library \"libopenvr_api.so\", OpenVR support disabled")
 			}
 		#else
 			#error "Unsupported platform"

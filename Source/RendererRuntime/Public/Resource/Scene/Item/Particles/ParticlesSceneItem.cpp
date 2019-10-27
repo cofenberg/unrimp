@@ -70,9 +70,9 @@ namespace RendererRuntime
 		MaterialSceneItem(sceneResource, false),	// TODO(co) Set bounding box
 		mMaximumNumberOfParticles(8)				// TODO(co) Make this dynamic
 	{
-		// The renderer backend must support structured buffers
+		// The RHI implementation must support structured buffers
 		const IRendererRuntime& rendererRuntime = getSceneResource().getRendererRuntime();
-		if (rendererRuntime.getRenderer().getCapabilities().maximumStructuredBufferSize > 0)
+		if (rendererRuntime.getRhi().getCapabilities().maximumStructuredBufferSize > 0)
 		{
 			// Create vertex array object (VAO)
 			// Create the vertex buffer object (VBO)
@@ -114,13 +114,13 @@ namespace RendererRuntime
 			};
 
 			// Create the structured buffer
-			mStructuredBufferPtr = rendererRuntime.getBufferManager().createStructuredBuffer(sizeof(ParticleDataStruct) * mMaximumNumberOfParticles, particlesData, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::STATIC_DRAW, sizeof(ParticleDataStruct));
-			RENDERER_SET_RESOURCE_DEBUG_NAME(mStructuredBufferPtr, "Particles structured buffer")
+			mStructuredBufferPtr = rendererRuntime.getBufferManager().createStructuredBuffer(sizeof(ParticleDataStruct) * mMaximumNumberOfParticles, particlesData, Rhi::BufferFlag::SHADER_RESOURCE, Rhi::BufferUsage::STATIC_DRAW, sizeof(ParticleDataStruct));
+			RHI_SET_RESOURCE_DEBUG_NAME(mStructuredBufferPtr, "Particles structured buffer")
 		}
 		else
 		{
 			mMaximumNumberOfParticles = 0;
-			RENDERER_LOG_ONCE(rendererRuntime.getContext(), COMPATIBILITY_WARNING, "The renderer runtime particles scene item needs a renderer backend with structured buffer support")
+			RHI_LOG_ONCE(rendererRuntime.getContext(), COMPATIBILITY_WARNING, "The renderer runtime particles scene item needs a RHI implementation with structured buffer support")
 		}
 	}
 

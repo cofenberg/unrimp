@@ -93,7 +93,7 @@ namespace RendererRuntime
 	{
 		if (mNumberOfShadowCascades != numberOfShadowCascades)
 		{
-			RENDERER_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), numberOfShadowCascades <= CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES, "Invalid number of shadow cascades")
+			RHI_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), numberOfShadowCascades <= CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES, "Invalid number of shadow cascades")
 			mNumberOfShadowCascades = numberOfShadowCascades;
 			++mSettingsGenerationCounter;
 		}
@@ -103,8 +103,8 @@ namespace RendererRuntime
 	{
 		if (mNumberOfShadowMultisamples != numberOfShadowMultisamples)
 		{
-			RENDERER_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), numberOfShadowMultisamples >= 1, "Invalid number of shadow multisamples")
-			RENDERER_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), numberOfShadowMultisamples <= getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getRenderer().getCapabilities().maximumNumberOfMultisamples, "Invalid number of shadow multisamples")
+			RHI_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), numberOfShadowMultisamples >= 1, "Invalid number of shadow multisamples")
+			RHI_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), numberOfShadowMultisamples <= getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getRhi().getCapabilities().maximumNumberOfMultisamples, "Invalid number of shadow multisamples")
 			mNumberOfShadowMultisamples = numberOfShadowMultisamples;
 			++mSettingsGenerationCounter;
 		}
@@ -114,13 +114,13 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::ICompositorInstancePass methods ]
 	//[-------------------------------------------------------]
-	void CompositorInstancePassShadowMap::onFillCommandBuffer([[maybe_unused]] const Renderer::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
+	void CompositorInstancePassShadowMap::onFillCommandBuffer([[maybe_unused]] const Rhi::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, Rhi::CommandBuffer& commandBuffer)
 	{
 		const CompositorWorkspaceInstance& compositorWorkspaceInstance = getCompositorNodeInstance().getCompositorWorkspaceInstance();
 		const IRendererRuntime& rendererRuntime = compositorWorkspaceInstance.getRendererRuntime();
 
 		// Sanity check
-		RENDERER_ASSERT(rendererRuntime.getContext(), nullptr == renderTarget, "The shadow map compositor instance pass needs an invalid render target")
+		RHI_ASSERT(rendererRuntime.getContext(), nullptr == renderTarget, "The shadow map compositor instance pass needs an invalid render target")
 
 		// Settings update handling
 		if (mUsedSettingsGenerationCounter != mSettingsGenerationCounter)
@@ -176,7 +176,7 @@ namespace RendererRuntime
 			// Coordinate system related adjustments
 			// -> Vulkan and Direct3D: Left-handed coordinate system with clip space depth value range 0..1
 			// -> OpenGL without "GL_ARB_clip_control"-extension: Right-handed coordinate system with clip space depth value range -1..1
-			const float nearZ = rendererRuntime.getRenderer().getCapabilities().zeroToOneClipZ ? 0.0f : -1.0f;
+			const float nearZ = rendererRuntime.getRhi().getCapabilities().zeroToOneClipZ ? 0.0f : -1.0f;
 
 			// Get the 8 points of the view frustum in world space
 			glm::vec4 worldSpaceFrustumCorners[8] =
@@ -195,7 +195,7 @@ namespace RendererRuntime
 			{
 				uint32_t renderTargetWidth = 0;
 				uint32_t renderTargetHeight = 0;
-				RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != compositorWorkspaceInstance.getExecutionRenderTarget(), "Invalid compositor workspace instance execution render target")
+				RHI_ASSERT(rendererRuntime.getContext(), nullptr != compositorWorkspaceInstance.getExecutionRenderTarget(), "Invalid compositor workspace instance execution render target")
 				compositorWorkspaceInstance.getExecutionRenderTarget()->getWidthAndHeight(renderTargetWidth, renderTargetHeight);
 				if (compositorContextData.getSinglePassStereoInstancing())
 				{
@@ -329,19 +329,19 @@ namespace RendererRuntime
 					RENDERER_SCOPED_PROFILER_EVENT(rendererRuntime.getContext(), commandBuffer, "Render shadow casters")
 
 					// Set graphics render target
-					Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mDepthFramebufferPtr);
+					Rhi::Command::SetGraphicsRenderTarget::create(commandBuffer, mDepthFramebufferPtr);
 
 					// Set the graphics viewport and scissor rectangle
-					Renderer::Command::SetGraphicsViewportAndScissorRectangle::create(commandBuffer, 0, 0, mShadowMapSize, mShadowMapSize);
+					Rhi::Command::SetGraphicsViewportAndScissorRectangle::create(commandBuffer, 0, 0, mShadowMapSize, mShadowMapSize);
 
 					{ // Clear the graphics depth buffer of the current render target
 						const float color[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-						Renderer::Command::ClearGraphics::create(commandBuffer, Renderer::ClearFlag::DEPTH, color);
+						Rhi::Command::ClearGraphics::create(commandBuffer, Rhi::ClearFlag::DEPTH, color);
 					}
 
 					// Render shadow casters
 					// TODO(co) Optimization: Do only render stuff which calls into the current shadow cascade
-					RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != mRenderQueueIndexRange, "Invalid render queue index range")
+					RHI_ASSERT(rendererRuntime.getContext(), nullptr != mRenderQueueIndexRange, "Invalid render queue index range")
 					const MaterialTechniqueId materialTechniqueId = static_cast<const CompositorResourcePassScene&>(getCompositorResourcePass()).getMaterialTechniqueId();
 					for (const RenderableManager* renderableManager : mRenderQueueIndexRange->renderableManagers)
 					{
@@ -365,7 +365,7 @@ namespace RendererRuntime
 				const_cast<CameraSceneItem*>(cameraSceneItem)->unsetCustomViewSpaceToClipSpaceMatrix();
 
 				// Apply the scale/offset matrix, which transforms from [-1,1] post-projection space to [0,1] UV space
-				const glm::mat4 shadowMatrix = Math::getTextureScaleBiasMatrix(rendererRuntime.getRenderer()) * viewSpaceToClipSpace;
+				const glm::mat4 shadowMatrix = Math::getTextureScaleBiasMatrix(rendererRuntime.getRhi()) * viewSpaceToClipSpace;
 
 				// Store the split distance in terms of view space depth
 				const float clipDistance = cameraSceneItem->getFarZ() - cameraSceneItem->getNearZ();
@@ -401,29 +401,29 @@ namespace RendererRuntime
 				if (filterSizeX > 1.0f || filterSizeY > 1.0f)
 				{
 					// Execute compositor instance pass compute, use cascade index three as intermediate render target
-					RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != mVarianceFramebufferPtr[::detail::INTERMEDIATE_CASCADE_INDEX], "Invalid variance framebuffer")
-					Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[::detail::INTERMEDIATE_CASCADE_INDEX]);
+					RHI_ASSERT(rendererRuntime.getContext(), nullptr != mVarianceFramebufferPtr[::detail::INTERMEDIATE_CASCADE_INDEX], "Invalid variance framebuffer")
+					Rhi::Command::SetGraphicsRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[::detail::INTERMEDIATE_CASCADE_INDEX]);
 					mDepthToExponentialVarianceCompositorInstancePassCompute->onFillCommandBuffer(mVarianceFramebufferPtr[::detail::INTERMEDIATE_CASCADE_INDEX], shadowCompositorContextData, commandBuffer);
 					mDepthToExponentialVarianceCompositorInstancePassCompute->onPostCommandBufferExecution();
 
 					// Horizontal blur
 					mPassData.shadowFilterSize = filterSizeX;
-					Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mIntermediateFramebufferPtr);
+					Rhi::Command::SetGraphicsRenderTarget::create(commandBuffer, mIntermediateFramebufferPtr);
 					mHorizontalBlurCompositorInstancePassCompute->onFillCommandBuffer(mIntermediateFramebufferPtr, shadowCompositorContextData, commandBuffer);
 					mHorizontalBlurCompositorInstancePassCompute->onPostCommandBufferExecution();
 
 					// Vertical blur
 					mPassData.shadowFilterSize = filterSizeY;
-					RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != mVarianceFramebufferPtr[cascadeIndex], "Invalid variance framebuffer")
-					Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[cascadeIndex]);
+					RHI_ASSERT(rendererRuntime.getContext(), nullptr != mVarianceFramebufferPtr[cascadeIndex], "Invalid variance framebuffer")
+					Rhi::Command::SetGraphicsRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[cascadeIndex]);
 					mVerticalBlurCompositorInstancePassCompute->onFillCommandBuffer(mVarianceFramebufferPtr[cascadeIndex], shadowCompositorContextData, commandBuffer);
 					mVerticalBlurCompositorInstancePassCompute->onPostCommandBufferExecution();
 				}
 				else
 				{
 					// Execute compositor instance pass compute
-					RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != mVarianceFramebufferPtr[cascadeIndex], "Invalid variance framebuffer")
-					Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[cascadeIndex]);
+					RHI_ASSERT(rendererRuntime.getContext(), nullptr != mVarianceFramebufferPtr[cascadeIndex], "Invalid variance framebuffer")
+					Rhi::Command::SetGraphicsRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[cascadeIndex]);
 					mDepthToExponentialVarianceCompositorInstancePassCompute->onFillCommandBuffer(mVarianceFramebufferPtr[cascadeIndex], shadowCompositorContextData, commandBuffer);
 					mDepthToExponentialVarianceCompositorInstancePassCompute->onPostCommandBufferExecution();
 				}
@@ -432,7 +432,7 @@ namespace RendererRuntime
 		else
 		{
 			// Error!
-			RENDERER_ASSERT(rendererRuntime.getContext(), false, "We should never end up in here")
+			RHI_ASSERT(rendererRuntime.getContext(), false, "We should never end up in here")
 		}
 	}
 
@@ -482,31 +482,31 @@ namespace RendererRuntime
 		TextureResource* textureResource = textureResourceManager.getTextureResourceByAssetId(assetId);
 		if (nullptr == textureResource)
 		{
-			Renderer::IRenderer& renderer = rendererRuntime.getRenderer();
+			Rhi::IRhi& rhi = rendererRuntime.getRhi();
 			if (mEnabled)
 			{
 				// Check shadow map settings
-				RENDERER_ASSERT(rendererRuntime.getContext(), mNumberOfShadowCascades <= CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES, "Invalid number of shadow cascades")
-				RENDERER_ASSERT(rendererRuntime.getContext(), mNumberOfShadowMultisamples >= 1, "Invalid number of shadow multisamples")
+				RHI_ASSERT(rendererRuntime.getContext(), mNumberOfShadowCascades <= CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES, "Invalid number of shadow cascades")
+				RHI_ASSERT(rendererRuntime.getContext(), mNumberOfShadowMultisamples >= 1, "Invalid number of shadow multisamples")
 				uint8_t numberOfShadowMultisamples = mNumberOfShadowMultisamples;
 				{ // Multisamples sanity check
-					const uint8_t maximumNumberOfMultisamples = renderer.getCapabilities().maximumNumberOfMultisamples;
+					const uint8_t maximumNumberOfMultisamples = rhi.getCapabilities().maximumNumberOfMultisamples;
 					if (numberOfShadowMultisamples > maximumNumberOfMultisamples)
 					{
-						RENDERER_ASSERT(rendererRuntime.getContext(), false, "Number of shadow multisamples not supported by the renderer backend")
+						RHI_ASSERT(rendererRuntime.getContext(), false, "Number of shadow multisamples not supported by the RHI implementation")
 						numberOfShadowMultisamples = maximumNumberOfMultisamples;
 					}
 				}
 
 				{ // Depth shadow map
-					const Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::D32_FLOAT;
-					Renderer::ITexture* texture = rendererRuntime.getTextureManager().createTexture2D(mShadowMapSize, mShadowMapSize, textureFormat, nullptr, Renderer::TextureFlag::SHADER_RESOURCE | Renderer::TextureFlag::RENDER_TARGET, Renderer::TextureUsage::DEFAULT, numberOfShadowMultisamples);
-					RENDERER_SET_RESOURCE_DEBUG_NAME(texture, "Compositor instance pass depth shadow map")
+					const Rhi::TextureFormat::Enum textureFormat = Rhi::TextureFormat::D32_FLOAT;
+					Rhi::ITexture* texture = rendererRuntime.getTextureManager().createTexture2D(mShadowMapSize, mShadowMapSize, textureFormat, nullptr, Rhi::TextureFlag::SHADER_RESOURCE | Rhi::TextureFlag::RENDER_TARGET, Rhi::TextureUsage::DEFAULT, numberOfShadowMultisamples);
+					RHI_SET_RESOURCE_DEBUG_NAME(texture, "Compositor instance pass depth shadow map")
 
 					// Create the framebuffer object (FBO) instance
-					const Renderer::FramebufferAttachment depthStencilFramebufferAttachment(texture);
-					mDepthFramebufferPtr = renderer.createFramebuffer(*renderer.createRenderPass(0, nullptr, textureFormat), nullptr, &depthStencilFramebufferAttachment);
-					RENDERER_SET_RESOURCE_DEBUG_NAME(mDepthFramebufferPtr, "Compositor instance pass depth shadow map")
+					const Rhi::FramebufferAttachment depthStencilFramebufferAttachment(texture);
+					mDepthFramebufferPtr = rhi.createFramebuffer(*rhi.createRenderPass(0, nullptr, textureFormat), nullptr, &depthStencilFramebufferAttachment);
+					RHI_SET_RESOURCE_DEBUG_NAME(mDepthFramebufferPtr, "Compositor instance pass depth shadow map")
 
 					// Create texture resource
 					mDepthTextureResourceId = textureResourceManager.createTextureResourceByAssetId(::detail::DEPTH_SHADOW_MAP_TEXTURE_ASSET_ID, *texture);
@@ -517,24 +517,24 @@ namespace RendererRuntime
 					materialProperties.setPropertyById(STRING_ID("DepthMap"), MaterialPropertyValue::fromTextureAssetId(::detail::DEPTH_SHADOW_MAP_TEXTURE_ASSET_ID), MaterialProperty::Usage::UNKNOWN, true);
 					materialProperties.setPropertyById(STRING_ID("NumberOfMultisamples"), MaterialPropertyValue::fromInteger((numberOfShadowMultisamples == 1) ? 0 : numberOfShadowMultisamples), MaterialProperty::Usage::UNKNOWN, true);
 					mDepthToExponentialVarianceCompositorResourcePassCompute = new CompositorResourcePassCompute(compositorResourcePassShadowMap.getCompositorTarget(), compositorResourcePassShadowMap.getDepthToExponentialVarianceMaterialBlueprintAssetId(), materialProperties);
-					#if defined(_DEBUG) || defined(RENDERER_RUNTIME_PROFILER)
+					#if defined(RHI_DEBUG) || defined(RENDERER_RUNTIME_PROFILER)
 						mDepthToExponentialVarianceCompositorResourcePassCompute->setDebugName("Depth to exponential variance");
 					#endif
 					mDepthToExponentialVarianceCompositorInstancePassCompute = new CompositorInstancePassCompute(*mDepthToExponentialVarianceCompositorResourcePassCompute, getCompositorNodeInstance());
 				}
 
 				{ // Variance shadow map
-					const Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F;
-					Renderer::ITexture* texture = rendererRuntime.getTextureManager().createTexture2DArray(mShadowMapSize, mShadowMapSize, CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES, textureFormat, nullptr, Renderer::TextureFlag::SHADER_RESOURCE | Renderer::TextureFlag::RENDER_TARGET);
-					RENDERER_SET_RESOURCE_DEBUG_NAME(texture, "Compositor instance pass variance shadow map")
+					const Rhi::TextureFormat::Enum textureFormat = Rhi::TextureFormat::R32G32B32A32F;
+					Rhi::ITexture* texture = rendererRuntime.getTextureManager().createTexture2DArray(mShadowMapSize, mShadowMapSize, CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES, textureFormat, nullptr, Rhi::TextureFlag::SHADER_RESOURCE | Rhi::TextureFlag::RENDER_TARGET);
+					RHI_SET_RESOURCE_DEBUG_NAME(texture, "Compositor instance pass variance shadow map")
 
 					// Create the framebuffer object (FBO) instances
-					Renderer::IRenderPass* renderPass = renderer.createRenderPass(1, &textureFormat);
+					Rhi::IRenderPass* renderPass = rhi.createRenderPass(1, &textureFormat);
 					for (uint8_t cascadeIndex = 0; cascadeIndex < CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES; ++cascadeIndex)
 					{
-						const Renderer::FramebufferAttachment colorFramebufferAttachment(texture, 0, cascadeIndex);
-						mVarianceFramebufferPtr[cascadeIndex] = renderer.createFramebuffer(*renderPass, &colorFramebufferAttachment);
-						RENDERER_SET_RESOURCE_DEBUG_NAME(mVarianceFramebufferPtr[cascadeIndex], ("Compositor instance pass variance shadow map " + std::to_string(cascadeIndex)).c_str())
+						const Rhi::FramebufferAttachment colorFramebufferAttachment(texture, 0, cascadeIndex);
+						mVarianceFramebufferPtr[cascadeIndex] = rhi.createFramebuffer(*renderPass, &colorFramebufferAttachment);
+						RHI_SET_RESOURCE_DEBUG_NAME(mVarianceFramebufferPtr[cascadeIndex], ("Compositor instance pass variance shadow map " + std::to_string(cascadeIndex)).c_str())
 					}
 					for (uint8_t cascadeIndex = CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES; cascadeIndex < CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES; ++cascadeIndex)
 					{
@@ -546,14 +546,14 @@ namespace RendererRuntime
 				}
 
 				{ // Intermediate depth blur shadow map
-					const Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F;
-					Renderer::ITexture* texture = rendererRuntime.getTextureManager().createTexture2D(mShadowMapSize, mShadowMapSize, textureFormat, nullptr, Renderer::TextureFlag::SHADER_RESOURCE | Renderer::TextureFlag::RENDER_TARGET);
-					RENDERER_SET_RESOURCE_DEBUG_NAME(texture, "Compositor instance pass intermediate depth blur shadow map")
+					const Rhi::TextureFormat::Enum textureFormat = Rhi::TextureFormat::R32G32B32A32F;
+					Rhi::ITexture* texture = rendererRuntime.getTextureManager().createTexture2D(mShadowMapSize, mShadowMapSize, textureFormat, nullptr, Rhi::TextureFlag::SHADER_RESOURCE | Rhi::TextureFlag::RENDER_TARGET);
+					RHI_SET_RESOURCE_DEBUG_NAME(texture, "Compositor instance pass intermediate depth blur shadow map")
 
 					// Create the framebuffer object (FBO) instance
-					const Renderer::FramebufferAttachment colorFramebufferAttachment(texture);
-					mIntermediateFramebufferPtr = renderer.createFramebuffer(*renderer.createRenderPass(1, &textureFormat), &colorFramebufferAttachment);
-					RENDERER_SET_RESOURCE_DEBUG_NAME(mIntermediateFramebufferPtr, "Compositor instance pass intermediate depth blur shadow map")
+					const Rhi::FramebufferAttachment colorFramebufferAttachment(texture);
+					mIntermediateFramebufferPtr = rhi.createFramebuffer(*rhi.createRenderPass(1, &textureFormat), &colorFramebufferAttachment);
+					RHI_SET_RESOURCE_DEBUG_NAME(mIntermediateFramebufferPtr, "Compositor instance pass intermediate depth blur shadow map")
 
 					// Create texture resource
 					mIntermediateDepthBlurTextureResourceId = textureResourceManager.createTextureResourceByAssetId(::detail::INTERMEDIATE_DEPTH_BLUR_SHADOW_MAP_TEXTURE_ASSET_ID, *texture);
@@ -564,7 +564,7 @@ namespace RendererRuntime
 					materialProperties.setPropertyById(STRING_ID("VerticalBlur"), MaterialPropertyValue::fromBoolean(false), MaterialProperty::Usage::UNKNOWN, true);
 					materialProperties.setPropertyById(STRING_ID("ColorMap"), MaterialPropertyValue::fromTextureAssetId(assetId), MaterialProperty::Usage::UNKNOWN, true);
 					mHorizontalBlurCompositorResourcePassCompute = new CompositorResourcePassCompute(compositorResourcePassShadowMap.getCompositorTarget(), compositorResourcePassShadowMap.getBlurMaterialBlueprintAssetId(), materialProperties);
-					#if defined(_DEBUG) || defined(RENDERER_RUNTIME_PROFILER)
+					#if defined(RHI_DEBUG) || defined(RENDERER_RUNTIME_PROFILER)
 						mHorizontalBlurCompositorResourcePassCompute->setDebugName("Horizontal blur");
 					#endif
 					mHorizontalBlurCompositorInstancePassCompute = new CompositorInstancePassCompute(*mHorizontalBlurCompositorResourcePassCompute, getCompositorNodeInstance());
@@ -575,7 +575,7 @@ namespace RendererRuntime
 					materialProperties.setPropertyById(STRING_ID("VerticalBlur"), MaterialPropertyValue::fromBoolean(true), MaterialProperty::Usage::UNKNOWN, true);
 					materialProperties.setPropertyById(STRING_ID("ColorMap"), MaterialPropertyValue::fromTextureAssetId(::detail::INTERMEDIATE_DEPTH_BLUR_SHADOW_MAP_TEXTURE_ASSET_ID), MaterialProperty::Usage::UNKNOWN, true);
 					mVerticalBlurCompositorResourcePassCompute = new CompositorResourcePassCompute(compositorResourcePassShadowMap.getCompositorTarget(), compositorResourcePassShadowMap.getBlurMaterialBlueprintAssetId(), materialProperties);
-					#if defined(_DEBUG) || defined(RENDERER_RUNTIME_PROFILER)
+					#if defined(RHI_DEBUG) || defined(RENDERER_RUNTIME_PROFILER)
 						mVerticalBlurCompositorResourcePassCompute->setDebugName("Vertical blur");
 					#endif
 					mVerticalBlurCompositorInstancePassCompute = new CompositorInstancePassCompute(*mVerticalBlurCompositorResourcePassCompute, getCompositorNodeInstance());
@@ -584,10 +584,10 @@ namespace RendererRuntime
 			else
 			{
 				// If shadow is disabled, we still need to create at least a dummy for the resulting main variance shadow map resource
-				const Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::R32G32B32A32F;
+				const Rhi::TextureFormat::Enum textureFormat = Rhi::TextureFormat::R32G32B32A32F;
 				const float data[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-				Renderer::ITexture* texture = rendererRuntime.getTextureManager().createTexture2DArray(1, 1, 1, textureFormat, data, Renderer::TextureFlag::SHADER_RESOURCE);
-				RENDERER_SET_RESOURCE_DEBUG_NAME(texture, "Compositor instance pass variance shadow map")
+				Rhi::ITexture* texture = rendererRuntime.getTextureManager().createTexture2DArray(1, 1, 1, textureFormat, data, Rhi::TextureFlag::SHADER_RESOURCE);
+				RHI_SET_RESOURCE_DEBUG_NAME(texture, "Compositor instance pass variance shadow map")
 
 				// Create texture resource
 				mVarianceTextureResourceId = textureResourceManager.createTextureResourceByAssetId(assetId, *texture);
@@ -596,13 +596,13 @@ namespace RendererRuntime
 		else
 		{
 			// This is not allowed to happen
-			RENDERER_ASSERT(rendererRuntime.getContext(), false, "We should never end up in here")
+			RHI_ASSERT(rendererRuntime.getContext(), false, "We should never end up in here")
 		}
 	}
 
 	void CompositorInstancePassShadowMap::destroyShadowMapRenderTarget()
 	{
-		RENDERER_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), isValid(mVarianceTextureResourceId), "Invalid compositor instance pass resource")
+		RHI_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), isValid(mVarianceTextureResourceId), "Invalid compositor instance pass resource")
 
 		// Depth to exponential variance
 		delete mDepthToExponentialVarianceCompositorInstancePassCompute;
@@ -622,7 +622,7 @@ namespace RendererRuntime
 		delete mVerticalBlurCompositorInstancePassCompute;
 		mVerticalBlurCompositorInstancePassCompute = nullptr;
 
-		// Release the framebuffers and other renderer resources referenced by the framebuffers
+		// Release the framebuffers and other RHI resources referenced by the framebuffers
 		mDepthFramebufferPtr = nullptr;
 		for (uint8_t cascadeIndex = 0; cascadeIndex < CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES; ++cascadeIndex)
 		{

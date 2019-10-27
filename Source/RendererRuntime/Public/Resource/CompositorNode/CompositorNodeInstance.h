@@ -41,11 +41,6 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace Renderer
-{
-	class IRenderTarget;
-	class CommandBuffer;
-}
 namespace RendererRuntime
 {
 	class CompositorContextData;
@@ -122,7 +117,7 @@ namespace RendererRuntime
 		explicit CompositorNodeInstance(const CompositorNodeInstance&) = delete;
 		CompositorNodeInstance& operator=(const CompositorNodeInstance&) = delete;
 		void compositorWorkspaceInstanceLoadingFinished() const;
-		[[nodiscard]] Renderer::IRenderTarget& fillCommandBuffer(Renderer::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer) const;
+		[[nodiscard]] Rhi::IRenderTarget& fillCommandBuffer(Rhi::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, Rhi::CommandBuffer& commandBuffer) const;
 
 		/**
 		*  @brief

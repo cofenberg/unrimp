@@ -156,7 +156,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global variables                                      ]
 		//[-------------------------------------------------------]
-		Renderer::IAllocator* allocator = nullptr;
+		Rhi::IAllocator* allocator = nullptr;
 
 
 		//[-------------------------------------------------------]
@@ -689,7 +689,7 @@ namespace RendererToolkit
 	bool MeshAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const
 	{
 		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFileByRapidJsonDocument(configuration.rapidJsonDocumentAsset);
-		return input.cacheManager.checkIfFileIsModified(configuration.rendererTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), RendererRuntime::v1Mesh::FORMAT_VERSION);
+		return input.cacheManager.checkIfFileIsModified(configuration.rhiTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), RendererRuntime::v1Mesh::FORMAT_VERSION);
 	}
 
 	void MeshAssetCompiler::compile(const Input& input, const Configuration& configuration) const
@@ -701,7 +701,7 @@ namespace RendererToolkit
 
 		// Ask the cache manager whether or not we need to compile the source file (e.g. source changed or target not there)
 		CacheManager::CacheEntries cacheEntries;
-		if (input.cacheManager.needsToBeCompiled(configuration.rendererTarget, input.virtualAssetFilename, virtualInputFilename, virtualOutputAssetFilename, RendererRuntime::v1Mesh::FORMAT_VERSION, cacheEntries))
+		if (input.cacheManager.needsToBeCompiled(configuration.rhiTarget, input.virtualAssetFilename, virtualInputFilename, virtualOutputAssetFilename, RendererRuntime::v1Mesh::FORMAT_VERSION, cacheEntries))
 		{
 			RendererRuntime::MemoryFile memoryFile(0, 42 * 1024);
 
@@ -778,10 +778,10 @@ namespace RendererToolkit
 				{
 					throw std::runtime_error("The maximum number of supported sub-meshes is " + std::to_string(std::numeric_limits<uint16_t>::max()));
 				}
-				const Renderer::IndexBufferFormat::Enum indexBufferFormat = (numberOfVertices > std::numeric_limits<uint16_t>::max()) ? Renderer::IndexBufferFormat::UNSIGNED_INT : Renderer::IndexBufferFormat::UNSIGNED_SHORT;
+				const Rhi::IndexBufferFormat::Enum indexBufferFormat = (numberOfVertices > std::numeric_limits<uint16_t>::max()) ? Rhi::IndexBufferFormat::UNSIGNED_INT : Rhi::IndexBufferFormat::UNSIGNED_SHORT;
 
 				// Is there an optional skeleton?
-				const Renderer::VertexAttributes& vertexAttributes = (numberOfBones > 0) ? RendererRuntime::MeshResource::SKINNED_VERTEX_ATTRIBUTES : RendererRuntime::MeshResource::VERTEX_ATTRIBUTES;
+				const Rhi::VertexAttributes& vertexAttributes = (numberOfBones > 0) ? RendererRuntime::MeshResource::SKINNED_VERTEX_ATTRIBUTES : RendererRuntime::MeshResource::VERTEX_ATTRIBUTES;
 				const uint8_t numberOfBytesPerVertex = (numberOfBones > 0) ? ::detail::NUMBER_OF_BYTES_PER_SKINNED_VERTEX : ::detail::NUMBER_OF_BYTES_PER_VERTEX;
 
 				// Allocate memory for the local vertex and index buffer data
@@ -938,7 +938,7 @@ namespace RendererToolkit
 				memoryFile.write(vertexBufferData, numberOfBytesPerVertex * numberOfVertices);
 				if (numberOfIndices > 0)
 				{
-					if (Renderer::IndexBufferFormat::UNSIGNED_INT == indexBufferFormat)
+					if (Rhi::IndexBufferFormat::UNSIGNED_INT == indexBufferFormat)
 					{
 						// Dump the 32-bit indices we have in memory
 						memoryFile.write(&indexBufferData[0], sizeof(uint32_t) * numberOfIndices);
@@ -961,7 +961,7 @@ namespace RendererToolkit
 				indexBufferData.clear();
 
 				// Write down the vertex array attributes
-				memoryFile.write(vertexAttributes.attributes, sizeof(Renderer::VertexAttribute) * vertexAttributes.numberOfAttributes);
+				memoryFile.write(vertexAttributes.attributes, sizeof(Rhi::VertexAttribute) * vertexAttributes.numberOfAttributes);
 
 				// Write down the sub-meshes
 				memoryFile.write(subMeshes.data(), sizeof(RendererRuntime::v1Mesh::SubMesh) * subMeshes.size());

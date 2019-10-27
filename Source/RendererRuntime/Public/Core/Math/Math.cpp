@@ -118,7 +118,7 @@ namespace RendererRuntime
 		return static_cast<uint32_t>(std::ceil(static_cast<float>(value) / static_cast<float>(primaryValue))) * primaryValue;
 	}
 
-	const glm::mat4& Math::getTextureScaleBiasMatrix(const Renderer::IRenderer& renderer)
+	const glm::mat4& Math::getTextureScaleBiasMatrix(const Rhi::IRhi& rhi)
 	{
 		static const glm::mat4 SHADOW_SCALE_BIAS_MATRIX_DIRECT3D = glm::mat4(0.5f,  0.0f, 0.0f, 0.0f,
 																			 0.0f, -0.5f, 0.0f, 0.0f,
@@ -128,8 +128,8 @@ namespace RendererRuntime
 																		   0.0f,  0.5f, 0.0f, 0.0f,
 																		   0.0f,  0.0f, 0.5f, 0.0f,
 																		   0.5f,  0.5f, 0.5f, 1.0f);
-		// TODO(co) Currently we just assume that "upperLeftOrigin" and "zeroToOneClipZ" renderer capabilities are always set together to the same value
-		const Renderer::Capabilities& capabilities = renderer.getCapabilities();
+		// TODO(co) Currently we just assume that "upperLeftOrigin" and "zeroToOneClipZ" RHI capabilities are always set together to the same value
+		const Rhi::Capabilities& capabilities = rhi.getCapabilities();
 		return (capabilities.upperLeftOrigin && capabilities.zeroToOneClipZ) ? SHADOW_SCALE_BIAS_MATRIX_DIRECT3D : SHADOW_SCALE_BIAS_MATRIX_OPENGL;
 	}
 

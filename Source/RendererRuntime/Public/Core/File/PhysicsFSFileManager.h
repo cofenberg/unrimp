@@ -31,8 +31,6 @@
 #include "RendererRuntime/Public/Core/File/IFileManager.h"
 #include "RendererRuntime/Public/Core/File/FileSystemHelper.h"
 
-#include <Renderer/Public/Renderer.h>
-
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4668)	// warning C4668: '__GNUC__' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
@@ -59,7 +57,7 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace Renderer
+namespace Rhi
 {
 	class ILog;
 }
@@ -83,12 +81,12 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		void writePhysicsFSErrorToLog(Renderer::ILog& log)
+		void writePhysicsFSErrorToLog(Rhi::ILog& log)
 		{
 			const char* errorAsString = PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode());
 			if (nullptr != errorAsString)
 			{
-				if (log.print(Renderer::ILog::Type::CRITICAL, nullptr, __FILE__, static_cast<uint32_t>(__LINE__), "PhysicsFS error: %s", errorAsString))
+				if (log.print(Rhi::ILog::Type::CRITICAL, nullptr, __FILE__, static_cast<uint32_t>(__LINE__), "PhysicsFS error: %s", errorAsString))
 				{
 					DEBUG_BREAK;
 				}
@@ -149,7 +147,7 @@ namespace
 		public:
 			inline explicit PhysicsFSReadFile(const char* virtualFilename) :
 				mPhysicsFSFile(PHYSFS_openRead(virtualFilename))
-				#ifdef _DEBUG
+				#ifdef RHI_DEBUG
 					, mDebugName(virtualFilename)
 				#endif
 			{
@@ -215,7 +213,7 @@ namespace
 				ASSERT(false && "File write method not supported by the PhysicsFS implementation");
 			}
 
-			#ifdef _DEBUG
+			#ifdef RHI_DEBUG
 				[[nodiscard]] inline virtual const char* getDebugFilename() const override
 				{
 					return mDebugName.c_str();
@@ -236,7 +234,7 @@ namespace
 		//[-------------------------------------------------------]
 		private:
 			PHYSFS_File* mPhysicsFSFile;
-			#ifdef _DEBUG
+			#ifdef RHI_DEBUG
 				std::string mDebugName;	///< Debug name for easier file identification when debugging
 			#endif
 
@@ -253,7 +251,7 @@ namespace
 		public:
 			inline explicit PhysicsFSWriteFile(const char* virtualFilename) :
 				mPhysicsFSFile(PHYSFS_openWrite(virtualFilename))
-				#ifdef _DEBUG
+				#ifdef RHI_DEBUG
 					, mDebugName(virtualFilename)
 				#endif
 			{
@@ -310,7 +308,7 @@ namespace
 				ASSERT((static_cast<size_t>(numberOfWrittenBytes) == numberOfBytes) && "PhysicsFS failed to write all requested bytes");	// We're restrictive by intent
 			}
 
-			#ifdef _DEBUG
+			#ifdef RHI_DEBUG
 				[[nodiscard]] inline virtual const char* getDebugFilename() const override
 				{
 					return mDebugName.c_str();
@@ -331,7 +329,7 @@ namespace
 		//[-------------------------------------------------------]
 		private:
 			PHYSFS_File* mPhysicsFSFile;
-			#ifdef _DEBUG
+			#ifdef RHI_DEBUG
 				std::string mDebugName;	///< Debug name for easier file identification when debugging
 			#endif
 
@@ -372,7 +370,7 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline PhysicsFSFileManager(Renderer::ILog& log, const std::string& absoluteRootDirectory, bool ownsPhysicsFSInstance = true) :
+		inline PhysicsFSFileManager(Rhi::ILog& log, const std::string& absoluteRootDirectory, bool ownsPhysicsFSInstance = true) :
 			IFileManager(absoluteRootDirectory),
 			mLog(log),
 			mOwnsPhysicsFSInstance(ownsPhysicsFSInstance)
@@ -613,7 +611,7 @@ namespace RendererRuntime
 			}
 			if (file->isInvalid())
 			{
-				if (mLog.print(Renderer::ILog::Type::CRITICAL, nullptr, __FILE__, static_cast<uint32_t>(__LINE__), "Failed to open file %s", virtualFilename))
+				if (mLog.print(Rhi::ILog::Type::CRITICAL, nullptr, __FILE__, static_cast<uint32_t>(__LINE__), "Failed to open file %s", virtualFilename))
 				{
 					DEBUG_BREAK;
 				}
@@ -622,7 +620,7 @@ namespace RendererRuntime
 			}
 			else
 			{
-				#ifdef _DEBUG
+				#ifdef RHI_DEBUG
 					++mNumberOfCurrentlyOpenedFiles;
 					ASSERT((mNumberOfCurrentlyOpenedFiles < 256) && "Too many simultaneously opened files. The default limit on Microsoft Windows is 512 (can be changed via _setmaxstdio()) and on Mac OS X 256.");
 				#endif
@@ -632,7 +630,7 @@ namespace RendererRuntime
 
 		inline virtual void closeFile(IFile& file) const override
 		{
-			#ifdef _DEBUG
+			#ifdef RHI_DEBUG
 				--mNumberOfCurrentlyOpenedFiles;
 				ASSERT((mNumberOfCurrentlyOpenedFiles >= 0) && "Error, more files closed as opened");
 			#endif
@@ -652,9 +650,9 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		Renderer::ILog& mLog;
-		bool			mOwnsPhysicsFSInstance;
-		#ifdef _DEBUG
+		Rhi::ILog& mLog;
+		bool	   mOwnsPhysicsFSInstance;
+		#ifdef RHI_DEBUG
 			mutable int mNumberOfCurrentlyOpenedFiles = 0;	///< For leak detection
 		#endif
 

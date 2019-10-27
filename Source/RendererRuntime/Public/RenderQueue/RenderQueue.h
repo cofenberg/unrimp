@@ -29,8 +29,6 @@
 //[-------------------------------------------------------]
 #include "RendererRuntime/Public/Resource/ShaderBlueprint/Cache/ShaderProperties.h"
 
-#include <Renderer/Public/Renderer.h>
-
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'argument': conversion from 'long' to 'unsigned int', signed/unsigned mismatch
@@ -132,8 +130,8 @@ namespace RendererRuntime
 
 		void clear();
 		void addRenderablesFromRenderableManager(const RenderableManager& renderableManager, MaterialTechniqueId materialTechniqueId, const CompositorContextData& compositorContextData, bool castShadows = false);
-		void fillGraphicsCommandBuffer(const Renderer::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer);
-		void fillComputeCommandBuffer(const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer);
+		void fillGraphicsCommandBuffer(const Rhi::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, Rhi::CommandBuffer& commandBuffer);
+		void fillComputeCommandBuffer(const CompositorContextData& compositorContextData, Rhi::CommandBuffer& commandBuffer);
 
 
 	//[-------------------------------------------------------]
@@ -154,7 +152,7 @@ namespace RendererRuntime
 			const MaterialResource*	   materialResource;			///< Always valid, don't destroy the instance
 			MaterialTechnique*		   materialTechnique;			///< Always valid, don't destroy the instance
 			MaterialBlueprintResource* materialBlueprintResource;	///< Always valid, don't destroy the instance
-			Renderer::IPipelineState*  foundPipelineState;			///< Always valid, don't destroy the instance
+			Rhi::IPipelineState*	   foundPipelineState;			///< Always valid, don't destroy the instance
 			uint64_t				   sortingKey;					///< Key used for sorting
 
 			inline QueuedRenderable() :
@@ -165,7 +163,7 @@ namespace RendererRuntime
 				foundPipelineState(nullptr),
 				sortingKey(0)
 			{}
-			inline QueuedRenderable(const Renderable& _renderable, const MaterialResource& _materialResource, MaterialTechnique& _materialTechnique, MaterialBlueprintResource& _materialBlueprintResource, Renderer::IPipelineState& _foundPipelineState, uint64_t _sortingKey) :
+			inline QueuedRenderable(const Renderable& _renderable, const MaterialResource& _materialResource, MaterialTechnique& _materialTechnique, MaterialBlueprintResource& _materialBlueprintResource, Rhi::IPipelineState& _foundPipelineState, uint64_t _sortingKey) :
 				renderable(&_renderable),
 				materialResource(&_materialResource),
 				materialTechnique(&_materialTechnique),
@@ -203,7 +201,7 @@ namespace RendererRuntime
 		bool					mTransparentPass;
 		bool					mDoSort;
 		// Scratch buffers to reduce dynamic memory allocations
-		Renderer::CommandBuffer	mScratchCommandBuffer;
+		Rhi::CommandBuffer		mScratchCommandBuffer;
 		ShaderProperties		mScratchShaderProperties;
 		ShaderProperties		mScratchOptimizedShaderProperties;
 

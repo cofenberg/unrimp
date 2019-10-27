@@ -68,7 +68,7 @@ namespace RendererRuntime
 	protected:
 		virtual void initializeImGuiKeyMap() override;
 		virtual void startup() override;
-		virtual void onNewFrame(Renderer::IRenderTarget& renderTarget) override;
+		virtual void onNewFrame(Rhi::IRenderTarget& renderTarget) override;
 
 
 	//[-------------------------------------------------------]

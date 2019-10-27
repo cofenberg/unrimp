@@ -57,7 +57,7 @@ Notes:
 */
 
 
-#ifdef _DEBUG
+#ifdef RHI_DEBUG
 	#include <cstdio>  // For printf(). Remove if you don't need the PrintRanges() function (mostly for debugging anyway).
 #endif
 
@@ -321,7 +321,7 @@ public:
 		return max_count;
 	}
 
-	#ifdef _DEBUG
+	#ifdef RHI_DEBUG
 		void PrintRanges() const
 		{
 			uint i = 0;

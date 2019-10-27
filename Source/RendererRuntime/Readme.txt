@@ -39,4 +39,4 @@ Renderer runtime.
 - Set "RENDERER_RUNTIME_PROFILER" as preprocessor definition to enable profiler support
 - Set "RENDERER_RUNTIME_IMGUI" as preprocessor definition to enable ImGui support
 - Set "RENDERER_RUNTIME_OPENVR" as preprocessor definition to enable OpenVR support
-- Do also have a look into the renderer header file for renderer backend preprocessor definitions
+- Do also have a look into the RHI header file for RHI implementation preprocessor definitions

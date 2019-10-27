@@ -33,11 +33,11 @@
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace Renderer
+namespace Rhi
 {
+	class IRhi;
 	class ILog;
 	class IAssert;
-	class IRenderer;
 	class IAllocator;
 }
 namespace RendererRuntime
@@ -78,8 +78,8 @@ namespace RendererRuntime
 		*  @brief
 		*    Constructor
 		*
-		*  @param[in] renderer
-		*    Renderer instance to use, the render instance must stay valid as long as the renderer runtime instance exists
+		*  @param[in] rhi
+		*    RHI instance to use, the render instance must stay valid as long as the renderer runtime instance exists
 		*  @param[in] fileManager
 		*    File manager instance to use, the file manager instance must stay valid as long as the renderer runtime instance exists
 		*  @param[in] graphicsDebugger
@@ -88,13 +88,13 @@ namespace RendererRuntime
 		*    Profiler instance to use, the profiler instance must stay valid as long as the renderer runtime instance exists
 		*/
 		#if defined(RENDERER_RUNTIME_GRAPHICS_DEBUGGER) && defined(RENDERER_RUNTIME_PROFILER)
-			RENDERERRUNTIME_API_EXPORT Context(Renderer::IRenderer& renderer, IFileManager& fileManager, IGraphicsDebugger& graphicsDebugger, IProfiler& profiler);
+			RENDERERRUNTIME_API_EXPORT Context(Rhi::IRhi& rhi, IFileManager& fileManager, IGraphicsDebugger& graphicsDebugger, IProfiler& profiler);
 		#elif defined RENDERER_RUNTIME_GRAPHICS_DEBUGGER
-			RENDERERRUNTIME_API_EXPORT Context(Renderer::IRenderer& renderer, IFileManager& fileManager, IGraphicsDebugger& graphicsDebugger);
+			RENDERERRUNTIME_API_EXPORT Context(Rhi::IRhi& rhi, IFileManager& fileManager, IGraphicsDebugger& graphicsDebugger);
 		#elif defined RENDERER_RUNTIME_PROFILER
-			RENDERERRUNTIME_API_EXPORT Context(Renderer::IRenderer& renderer, IFileManager& fileManager, IProfiler& profiler);
+			RENDERERRUNTIME_API_EXPORT Context(Rhi::IRhi& rhi, IFileManager& fileManager, IProfiler& profiler);
 		#else
-			RENDERERRUNTIME_API_EXPORT Context(Renderer::IRenderer& renderer, IFileManager& fileManager);
+			RENDERERRUNTIME_API_EXPORT Context(Rhi::IRhi& rhi, IFileManager& fileManager);
 		#endif
 
 		/**
@@ -108,50 +108,50 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Return the log instance
+		*    Return the RHI log instance
 		*
 		*  @return
-		*    The log instance
+		*    The RHI log instance
 		*/
-		[[nodiscard]] inline Renderer::ILog& getLog() const
+		[[nodiscard]] inline Rhi::ILog& getLog() const
 		{
 			return mLog;
 		}
 
 		/**
 		*  @brief
-		*    Return the assert instance
+		*    Return the RHI assert instance
 		*
 		*  @return
-		*    The assert instance
+		*    The RHI assert instance
 		*/
-		[[nodiscard]] inline Renderer::IAssert& getAssert() const
+		[[nodiscard]] inline Rhi::IAssert& getAssert() const
 		{
 			return mAssert;
 		}
 
 		/**
 		*  @brief
-		*    Return the allocator instance
+		*    Return the RHI allocator instance
 		*
 		*  @return
-		*    The allocator instance
+		*    The RHI allocator instance
 		*/
-		[[nodiscard]] inline Renderer::IAllocator& getAllocator() const
+		[[nodiscard]] inline Rhi::IAllocator& getAllocator() const
 		{
 			return mAllocator;
 		}
 
 		/**
 		*  @brief
-		*    Return the used renderer instance
+		*    Return the used RHI instance
 		*
 		*  @return
-		*    The used renderer instance
+		*    The used RHI instance
 		*/
-		[[nodiscard]] inline Renderer::IRenderer& getRenderer() const
+		[[nodiscard]] inline Rhi::IRhi& getRhi() const
 		{
-			return mRenderer;
+			return mRhi;
 		}
 
 		/**
@@ -207,10 +207,10 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		Renderer::ILog&		  mLog;
-		Renderer::IAssert&	  mAssert;
-		Renderer::IAllocator& mAllocator;
-		Renderer::IRenderer&  mRenderer;
+		Rhi::ILog&			  mLog;
+		Rhi::IAssert&		  mAssert;
+		Rhi::IAllocator&	  mAllocator;
+		Rhi::IRhi&			  mRhi;
 		IFileManager&		  mFileManager;
 		#ifdef RENDERER_RUNTIME_GRAPHICS_DEBUGGER
 			IGraphicsDebugger& mGraphicsDebugger;

@@ -44,7 +44,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	UniformInstanceBufferManager::UniformInstanceBufferManager(IRendererRuntime& rendererRuntime) :
 		mRendererRuntime(rendererRuntime),
-		mMaximumUniformBufferSize(std::min(rendererRuntime.getRenderer().getCapabilities().maximumUniformBufferSize, 64u * 1024u)),	// Default uniform buffer number of bytes: 64 KiB
+		mMaximumUniformBufferSize(std::min(rendererRuntime.getRhi().getCapabilities().maximumUniformBufferSize, 64u * 1024u)),	// Default uniform buffer number of bytes: 64 KiB
 		// Current instance buffer related data
 		mCurrentInstanceBufferIndex(getInvalid<size_t>()),
 		mCurrentInstanceBuffer(nullptr),
@@ -69,11 +69,11 @@ namespace RendererRuntime
 		}
 	}
 
-	void UniformInstanceBufferManager::startupBufferFilling(const MaterialBlueprintResource& materialBlueprintResource, Renderer::CommandBuffer& commandBuffer)
+	void UniformInstanceBufferManager::startupBufferFilling(const MaterialBlueprintResource& materialBlueprintResource, Rhi::CommandBuffer& commandBuffer)
 	{
 		// Sanity checks
-		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mCurrentInstanceBuffer, "Invalid current instance buffer")
-		RENDERER_ASSERT(mRendererRuntime.getContext(), isInvalid(materialBlueprintResource.getComputeShaderBlueprintResourceId()), "Invalid compute shader blueprint resource ID")
+		RHI_ASSERT(mRendererRuntime.getContext(), nullptr != mCurrentInstanceBuffer, "Invalid current instance buffer")
+		RHI_ASSERT(mRendererRuntime.getContext(), isInvalid(materialBlueprintResource.getComputeShaderBlueprintResourceId()), "Invalid compute shader blueprint resource ID")
 
 		// Map the current instance buffer
 		mapCurrentInstanceBuffer();
@@ -85,25 +85,25 @@ namespace RendererRuntime
 			// Create resource group, if needed
 			if (nullptr == mCurrentInstanceBuffer->resourceGroup)
 			{
-				Renderer::IResource* resources[1] = { mCurrentInstanceBuffer->uniformBuffer };
+				Rhi::IResource* resources[1] = { mCurrentInstanceBuffer->uniformBuffer };
 				mCurrentInstanceBuffer->resourceGroup = materialBlueprintResource.getRootSignaturePtr()->createResourceGroup(instanceUniformBuffer->rootParameterIndex, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources);
-				RENDERER_SET_RESOURCE_DEBUG_NAME(mCurrentInstanceBuffer->resourceGroup, "Uniform instance buffer manager")
+				RHI_SET_RESOURCE_DEBUG_NAME(mCurrentInstanceBuffer->resourceGroup, "Uniform instance buffer manager")
 				mCurrentInstanceBuffer->resourceGroup->addReference();
 			}
 
 			// Set graphics resource group
-			Renderer::Command::SetGraphicsResourceGroup::create(commandBuffer, instanceUniformBuffer->rootParameterIndex, mCurrentInstanceBuffer->resourceGroup);
+			Rhi::Command::SetGraphicsResourceGroup::create(commandBuffer, instanceUniformBuffer->rootParameterIndex, mCurrentInstanceBuffer->resourceGroup);
 		}
 	}
 
-	uint32_t UniformInstanceBufferManager::fillBuffer(const MaterialBlueprintResource& materialBlueprintResource, PassBufferManager* passBufferManager, const MaterialBlueprintResource::UniformBuffer& instanceUniformBuffer, const Renderable& renderable, MaterialTechnique& materialTechnique, Renderer::CommandBuffer& commandBuffer)
+	uint32_t UniformInstanceBufferManager::fillBuffer(const MaterialBlueprintResource& materialBlueprintResource, PassBufferManager* passBufferManager, const MaterialBlueprintResource::UniformBuffer& instanceUniformBuffer, const Renderable& renderable, MaterialTechnique& materialTechnique, Rhi::CommandBuffer& commandBuffer)
 	{
 		// Sanity checks
-		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mCurrentInstanceBuffer, "Invalid current instance buffer")
-		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mStartUniformBufferPointer, "Invalid start uniform buffer pointer")
-		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mCurrentUniformBufferPointer, "Invalid current uniform buffer pointer")
-		// RENDERER_ASSERT(mRendererRuntime.getContext(), 0 == mStartInstanceLocation, "Invalid start instance location")	// Not done by intent
-		RENDERER_ASSERT(mRendererRuntime.getContext(), MaterialBlueprintResource::BufferUsage::INSTANCE == instanceUniformBuffer.bufferUsage, "Currently only the uniform buffer instance buffer usage is supported")
+		RHI_ASSERT(mRendererRuntime.getContext(), nullptr != mCurrentInstanceBuffer, "Invalid current instance buffer")
+		RHI_ASSERT(mRendererRuntime.getContext(), nullptr != mStartUniformBufferPointer, "Invalid start uniform buffer pointer")
+		RHI_ASSERT(mRendererRuntime.getContext(), nullptr != mCurrentUniformBufferPointer, "Invalid current uniform buffer pointer")
+		// RHI_ASSERT(mRendererRuntime.getContext(), 0 == mStartInstanceLocation, "Invalid start instance location")	// Not done by intent
+		RHI_ASSERT(mRendererRuntime.getContext(), MaterialBlueprintResource::BufferUsage::INSTANCE == instanceUniformBuffer.bufferUsage, "Currently only the uniform buffer instance buffer usage is supported")
 
 		// Get relevant data
 		const Transform& objectSpaceToWorldSpaceTransform = renderable.getRenderableManager().getTransform();
@@ -171,7 +171,7 @@ namespace RendererRuntime
 				if (!materialBlueprintResourceListener.fillInstanceValue(uniformBufferElementProperty.getReferenceValue(), mCurrentUniformBufferPointer, valueTypeNumberOfBytes, ~0u))
 				{
 					// Error!
-					RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Can't resolve reference")
+					RHI_ASSERT(mRendererRuntime.getContext(), false, "Can't resolve reference")
 				}
 			}
 			else if (MaterialProperty::Usage::GLOBAL_REFERENCE == usage)
@@ -197,7 +197,7 @@ namespace RendererRuntime
 					else
 					{
 						// Error!
-						RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Can't resolve reference")
+						RHI_ASSERT(mRendererRuntime.getContext(), false, "Can't resolve reference")
 					}
 				}
 			}
@@ -211,7 +211,7 @@ namespace RendererRuntime
 			else
 			{
 				// Error!
-				RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Invalid property")
+				RHI_ASSERT(mRendererRuntime.getContext(), false, "Invalid property")
 			}
 
 			// Next property
@@ -240,7 +240,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void UniformInstanceBufferManager::createInstanceBuffer()
 	{
-		Renderer::IBufferManager& bufferManager = mRendererRuntime.getBufferManager();
+		Rhi::IBufferManager& bufferManager = mRendererRuntime.getBufferManager();
 
 		// Before doing anything else: Unmap the current instance buffer
 		unmapCurrentInstanceBuffer();
@@ -250,8 +250,8 @@ namespace RendererRuntime
 		if (mCurrentInstanceBufferIndex >= mInstanceBuffers.size())
 		{
 			// Create uniform buffer instance
-			Renderer::IUniformBuffer* uniformBuffer = bufferManager.createUniformBuffer(mMaximumUniformBufferSize, nullptr, Renderer::BufferUsage::DYNAMIC_DRAW);
-			RENDERER_SET_RESOURCE_DEBUG_NAME(uniformBuffer, "Uniform instance buffer manager")
+			Rhi::IUniformBuffer* uniformBuffer = bufferManager.createUniformBuffer(mMaximumUniformBufferSize, nullptr, Rhi::BufferUsage::DYNAMIC_DRAW);
+			RHI_SET_RESOURCE_DEBUG_NAME(uniformBuffer, "Uniform instance buffer manager")
 			uniformBuffer->addReference();
 
 			// Create instance buffer instance
@@ -265,19 +265,19 @@ namespace RendererRuntime
 		if (nullptr != mCurrentInstanceBuffer && !mCurrentInstanceBuffer->mapped)
 		{
 			// Sanity checks: Only one mapped instance buffer at a time
-			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr == mStartUniformBufferPointer, "Invalid start uniform buffer pointer")
-			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr == mCurrentUniformBufferPointer, "Invalid current uniform buffer pointer")
-			RENDERER_ASSERT(mRendererRuntime.getContext(), 0 == mStartInstanceLocation, "Invalid start instance location")
+			RHI_ASSERT(mRendererRuntime.getContext(), nullptr == mStartUniformBufferPointer, "Invalid start uniform buffer pointer")
+			RHI_ASSERT(mRendererRuntime.getContext(), nullptr == mCurrentUniformBufferPointer, "Invalid current uniform buffer pointer")
+			RHI_ASSERT(mRendererRuntime.getContext(), 0 == mStartInstanceLocation, "Invalid start instance location")
 
 			// Map instance buffer
-			Renderer::IRenderer& renderer = mRendererRuntime.getRenderer();
-			Renderer::MappedSubresource mappedSubresource;
-			if (renderer.map(*mCurrentInstanceBuffer->uniformBuffer, 0, Renderer::MapType::WRITE_DISCARD, 0, mappedSubresource))
+			Rhi::IRhi& rhi = mRendererRuntime.getRhi();
+			Rhi::MappedSubresource mappedSubresource;
+			if (rhi.map(*mCurrentInstanceBuffer->uniformBuffer, 0, Rhi::MapType::WRITE_DISCARD, 0, mappedSubresource))
 			{
 				mStartUniformBufferPointer = mCurrentUniformBufferPointer = static_cast<uint8_t*>(mappedSubresource.data);
 				mCurrentInstanceBuffer->mapped = true;
 			}
-			RENDERER_ASSERT(mRendererRuntime.getContext(), mCurrentInstanceBuffer->mapped, "Current instance buffer isn't mapped")
+			RHI_ASSERT(mRendererRuntime.getContext(), mCurrentInstanceBuffer->mapped, "Current instance buffer isn't mapped")
 		}
 	}
 
@@ -286,13 +286,13 @@ namespace RendererRuntime
 		if (nullptr != mCurrentInstanceBuffer && mCurrentInstanceBuffer->mapped)
 		{
 			// Sanity checks
-			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mStartUniformBufferPointer, "Invalid start uniform buffer pointer")
-			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mCurrentUniformBufferPointer, "Invalid current uniform buffer pointer")
-			// RENDERER_ASSERT(mRendererRuntime.getContext(), 0 == mStartInstanceLocation, "Invalid start instance location")	// Not done by intent
+			RHI_ASSERT(mRendererRuntime.getContext(), nullptr != mStartUniformBufferPointer, "Invalid start uniform buffer pointer")
+			RHI_ASSERT(mRendererRuntime.getContext(), nullptr != mCurrentUniformBufferPointer, "Invalid current uniform buffer pointer")
+			// RHI_ASSERT(mRendererRuntime.getContext(), 0 == mStartInstanceLocation, "Invalid start instance location")	// Not done by intent
 
 			// Unmap instance buffer
-			Renderer::IRenderer& renderer = mRendererRuntime.getRenderer();
-			renderer.unmap(*mCurrentInstanceBuffer->uniformBuffer, 0);
+			Rhi::IRhi& rhi = mRendererRuntime.getRhi();
+			rhi.unmap(*mCurrentInstanceBuffer->uniformBuffer, 0);
 			mCurrentInstanceBuffer->mapped = false;
 			mStartUniformBufferPointer = nullptr;
 			mCurrentUniformBufferPointer = nullptr;

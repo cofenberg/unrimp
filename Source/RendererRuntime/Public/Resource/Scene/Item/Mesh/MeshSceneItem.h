@@ -85,7 +85,7 @@ namespace RendererRuntime
 
 		[[nodiscard]] inline MaterialResourceId getMaterialResourceIdOfSubMesh(uint32_t subMeshIndex) const
 		{
-			RENDERER_ASSERT(getContext(), subMeshIndex < mRenderableManager.getRenderables().size(), "Invalid sub mesh index")
+			RHI_ASSERT(getContext(), subMeshIndex < mRenderableManager.getRenderables().size(), "Invalid sub mesh index")
 			return mRenderableManager.getRenderables()[subMeshIndex].getMaterialResourceId();
 		}
 

@@ -196,14 +196,14 @@ PRAGMA_WARNING_PUSH
 	#include <inttypes.h>	// For uint32_t, uint64_t etc.
 PRAGMA_WARNING_POP
 
-#ifdef RENDERER_DEBUG
+#ifdef RHI_DEBUG
 	PRAGMA_WARNING_PUSH
 		PRAGMA_WARNING_DISABLE_MSVC(4574)	// warning C4574: '_HAS_ITERATOR_DEBUGGING' is defined to be '0': did you mean to use '#if _HAS_ITERATOR_DEBUGGING'?
 		#include <cassert>
 	PRAGMA_WARNING_POP
-	#define ASSERT assert	// TODO(co) "RENDERER_ASSERT()" should be used everywhere
+	#define ASSERT assert	// TODO(co) "RHI_ASSERT()" should be used everywhere
 #else
-	#define ASSERT(x)	// TODO(co) "RENDERER_ASSERT()" should be used everywhere
+	#define ASSERT(x)	// TODO(co) "RHI_ASSERT()" should be used everywhere
 #endif
 
 

@@ -62,7 +62,7 @@ UNIFORM_BUFFER_BEGIN(2, 0, InstanceUniformBuffer, 2)
 UNIFORM_BUFFER_END
 
 // Texture buffers
-// -> We're using base shader register 3 instead of 0 to be compatible to the OpenGL ES 3 renderer backend texture buffer emulation, which is using an uniform buffer for the emulation
+// -> We're using base shader register 3 instead of 0 to be compatible to the OpenGL ES 3 RHI implementation texture buffer emulation, which is using an uniform buffer for the emulation
 TEXTURE_BUFFER(2, 1, float4, InstanceTextureBuffer, 3)	// "POSITION_ROTATION_SCALE"
 
 

@@ -43,52 +43,52 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 void FirstTexture::onInitialization()
 {
-	// Get and check the renderer instance
-	Renderer::IRendererPtr renderer(getRenderer());
-	if (nullptr != renderer)
+	// Get and check the RHI instance
+	Rhi::IRhiPtr rhi(getRhi());
+	if (nullptr != rhi)
 	{
 		// Create the buffer and texture manager
-		mBufferManager = renderer->createBufferManager();
-		mTextureManager = renderer->createTextureManager();
+		mBufferManager = rhi->createBufferManager();
+		mTextureManager = rhi->createTextureManager();
 
 		{ // Create the root signature
-			Renderer::DescriptorRangeBuilder ranges[4];
-			ranges[0].initialize(Renderer::ResourceType::TEXTURE_1D, 0, "GradientMap", Renderer::ShaderVisibility::FRAGMENT);
-			ranges[1].initialize(Renderer::ResourceType::TEXTURE_2D, 1, "AlbedoMap",   Renderer::ShaderVisibility::FRAGMENT);
-			ranges[2].initializeSampler(0, Renderer::ShaderVisibility::FRAGMENT);
-			ranges[3].initializeSampler(1, Renderer::ShaderVisibility::FRAGMENT);
+			Rhi::DescriptorRangeBuilder ranges[4];
+			ranges[0].initialize(Rhi::ResourceType::TEXTURE_1D, 0, "GradientMap", Rhi::ShaderVisibility::FRAGMENT);
+			ranges[1].initialize(Rhi::ResourceType::TEXTURE_2D, 1, "AlbedoMap",   Rhi::ShaderVisibility::FRAGMENT);
+			ranges[2].initializeSampler(0, Rhi::ShaderVisibility::FRAGMENT);
+			ranges[3].initializeSampler(1, Rhi::ShaderVisibility::FRAGMENT);
 
-			Renderer::RootParameterBuilder rootParameters[2];
+			Rhi::RootParameterBuilder rootParameters[2];
 			rootParameters[0].initializeAsDescriptorTable(2, &ranges[0]);
 			rootParameters[1].initializeAsDescriptorTable(2, &ranges[2]);
 
 			// Setup
-			Renderer::RootSignatureBuilder rootSignature;
-			rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Renderer::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+			Rhi::RootSignatureBuilder rootSignature;
+			rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Rhi::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 			// Create the instance
-			mRootSignature = renderer->createRootSignature(rootSignature);
+			mRootSignature = rhi->createRootSignature(rootSignature);
 		}
 
 		// Create sampler state and wrap it into a resource group instance
-		Renderer::ISamplerState* linearSamplerResource = nullptr;
-		Renderer::ISamplerState* pointSamplerResource = nullptr;
+		Rhi::ISamplerState* linearSamplerResource = nullptr;
+		Rhi::ISamplerState* pointSamplerResource = nullptr;
 		{
 			// Create the sampler resources
-			Renderer::SamplerState samplerState = Renderer::ISamplerState::getDefaultSamplerState();
-			samplerState.addressU = Renderer::TextureAddressMode::WRAP;
-			samplerState.addressV = Renderer::TextureAddressMode::WRAP;
-			linearSamplerResource = renderer->createSamplerState(samplerState);
-			samplerState.filter = Renderer::FilterMode::MIN_MAG_MIP_POINT;
-			pointSamplerResource = renderer->createSamplerState(samplerState);
+			Rhi::SamplerState samplerState = Rhi::ISamplerState::getDefaultSamplerState();
+			samplerState.addressU = Rhi::TextureAddressMode::WRAP;
+			samplerState.addressV = Rhi::TextureAddressMode::WRAP;
+			linearSamplerResource = rhi->createSamplerState(samplerState);
+			samplerState.filter = Rhi::FilterMode::MIN_MAG_MIP_POINT;
+			pointSamplerResource = rhi->createSamplerState(samplerState);
 
 			// Create the resource group
-			Renderer::IResource* resources[2] = { linearSamplerResource, pointSamplerResource };
+			Rhi::IResource* resources[2] = { linearSamplerResource, pointSamplerResource };
 			mSamplerStateGroup = mRootSignature->createResourceGroup(1, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources);
 		}
 
 		{ // Create the texture group
-			Renderer::IResource* resources[2];
+			Rhi::IResource* resources[2];
 
 			{ // Create the 1D texture
 				static constexpr uint32_t TEXTURE_WIDTH   = 256;
@@ -103,7 +103,7 @@ void FirstTexture::onInitialization()
 				}
 
 				// Create the texture instance
-				resources[0] = mTextureManager->createTexture1D(TEXTURE_WIDTH, Renderer::TextureFormat::R8, data, Renderer::TextureFlag::GENERATE_MIPMAPS | Renderer::TextureFlag::SHADER_RESOURCE);
+				resources[0] = mTextureManager->createTexture1D(TEXTURE_WIDTH, Rhi::TextureFormat::R8, data, Rhi::TextureFlag::GENERATE_MIPMAPS | Rhi::TextureFlag::SHADER_RESOURCE);
 			}
 
 			{ // Create the 2D texture
@@ -144,31 +144,31 @@ void FirstTexture::onInitialization()
 				}
 
 				// Create the texture instance
-				resources[1] = mTextureManager->createTexture2D(TEXTURE_WIDTH, TEXTURE_HEIGHT, Renderer::TextureFormat::R8G8B8A8, data, Renderer::TextureFlag::GENERATE_MIPMAPS | Renderer::TextureFlag::SHADER_RESOURCE);
+				resources[1] = mTextureManager->createTexture2D(TEXTURE_WIDTH, TEXTURE_HEIGHT, Rhi::TextureFormat::R8G8B8A8, data, Rhi::TextureFlag::GENERATE_MIPMAPS | Rhi::TextureFlag::SHADER_RESOURCE);
 			}
 
 			// Create the texture group
-			Renderer::ISamplerState* samplerStates[2] = { linearSamplerResource, pointSamplerResource };
+			Rhi::ISamplerState* samplerStates[2] = { linearSamplerResource, pointSamplerResource };
 			mTextureGroup = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources, samplerStates);
 		}
 
 		// Vertex input layout
-		static constexpr Renderer::VertexAttribute vertexAttributesLayout[] =
+		static constexpr Rhi::VertexAttribute vertexAttributesLayout[] =
 		{
 			{ // Attribute 0
 				// Data destination
-				Renderer::VertexAttributeFormat::FLOAT_2,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-				"Position",									// name[32] (char)
-				"POSITION",									// semanticName[32] (char)
-				0,											// semanticIndex (uint32_t)
+				Rhi::VertexAttributeFormat::FLOAT_2,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+				"Position",								// name[32] (char)
+				"POSITION",								// semanticName[32] (char)
+				0,										// semanticIndex (uint32_t)
 				// Data source
-				0,											// inputSlot (uint32_t)
-				0,											// alignedByteOffset (uint32_t)
-				sizeof(float) * 2,							// strideInBytes (uint32_t)
-				0											// instancesPerElement (uint32_t)
+				0,										// inputSlot (uint32_t)
+				0,										// alignedByteOffset (uint32_t)
+				sizeof(float) * 2,						// strideInBytes (uint32_t)
+				0										// instancesPerElement (uint32_t)
 			}
 		};
-		const Renderer::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
+		const Rhi::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
 
 		{ // Create vertex array object (VAO)
 			// Create the vertex buffer object (VBO)
@@ -179,7 +179,7 @@ void FirstTexture::onInitialization()
 				 1.0f, 0.0f,	// 1			   .   .
 				-0.5f, 0.0f		// 2			  2.......1
 			};
-			Renderer::IVertexBufferPtr vertexBuffer(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION));
+			Rhi::IVertexBufferPtr vertexBuffer(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION));
 
 			// Create vertex array object (VAO)
 			// -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)
@@ -187,13 +187,13 @@ void FirstTexture::onInitialization()
 			// -> When the vertex array object (VAO) is destroyed, it automatically decreases the
 			//    reference of the used vertex buffer objects (VBO). If the reference counter of a
 			//    vertex buffer object (VBO) reaches zero, it's automatically destroyed.
-			const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
+			const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
 			mVertexArray = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
 		}
 
 		{
 			// Create the graphics program
-			Renderer::IGraphicsProgramPtr graphicsProgram;
+			Rhi::IGraphicsProgramPtr graphicsProgram;
 			{
 				// Get the shader source code (outsourced to keep an overview)
 				const char* vertexShaderSourceCode = nullptr;
@@ -206,7 +206,7 @@ void FirstTexture::onInitialization()
 				#include "FirstTexture_Null.h"
 
 				// Create the graphics program
-				Renderer::IShaderLanguage& shaderLanguage = renderer->getDefaultShaderLanguage();
+				Rhi::IShaderLanguage& shaderLanguage = rhi->getDefaultShaderLanguage();
 				graphicsProgram = shaderLanguage.createGraphicsProgram(
 					*mRootSignature,
 					vertexAttributes,
@@ -217,11 +217,11 @@ void FirstTexture::onInitialization()
 			// Create the graphics pipeline state object (PSO)
 			if (nullptr != graphicsProgram)
 			{
-				mGraphicsPipelineState = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass()));
+				mGraphicsPipelineState = rhi->createGraphicsPipelineState(Rhi::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass()));
 			}
 		}
 
-		// Since we're always submitting the same commands to the renderer, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
+		// Since we're always submitting the same commands to the RHI, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
 		fillCommandBuffer();
 	}
 }
@@ -241,12 +241,12 @@ void FirstTexture::onDeinitialization()
 
 void FirstTexture::onDraw()
 {
-	// Get and check the renderer instance
-	Renderer::IRendererPtr renderer(getRenderer());
-	if (nullptr != renderer)
+	// Get and check the RHI instance
+	Rhi::IRhiPtr rhi(getRhi());
+	if (nullptr != rhi)
 	{
-		// Submit command buffer to the renderer backend
-		mCommandBuffer.submitToRenderer(*renderer);
+		// Submit command buffer to the RHI implementation
+		mCommandBuffer.submitToRhi(*rhi);
 	}
 }
 
@@ -268,21 +268,21 @@ void FirstTexture::fillCommandBuffer()
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
 
 	// Clear the graphics color buffer of the current render target with gray, do also clear the depth buffer
-	Renderer::Command::ClearGraphics::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
+	Rhi::Command::ClearGraphics::create(mCommandBuffer, Rhi::ClearFlag::COLOR_DEPTH, Color4::GRAY);
 
 	// Set the used graphics root signature
-	Renderer::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
+	Rhi::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
 
 	// Set the used graphics pipeline state object (PSO)
-	Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineState);
+	Rhi::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineState);
 
 	// Set graphics resource groups
-	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 0, mTextureGroup);
-	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 1, mSamplerStateGroup);
+	Rhi::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 0, mTextureGroup);
+	Rhi::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 1, mSamplerStateGroup);
 
 	// Input assembly (IA): Set the used vertex array
-	Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArray);
+	Rhi::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArray);
 
 	// Render the specified geometric primitive, based on an array of vertices
-	Renderer::Command::DrawGraphics::create(mCommandBuffer, 3);
+	Rhi::Command::DrawGraphics::create(mCommandBuffer, 3);
 }

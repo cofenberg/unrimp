@@ -42,10 +42,10 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Public methods                                        ]
 //[-------------------------------------------------------]
-void BatchInstancedArrays::initialize(Renderer::IBufferManager& bufferManager, Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexBuffer& vertexBuffer, Renderer::IIndexBuffer& indexBuffer, Renderer::IGraphicsProgram& graphicsProgram, Renderer::IRenderPass& renderPass, uint32_t numberOfCubeInstances, bool alphaBlending, uint32_t numberOfTextures, uint32_t sceneRadius)
+void BatchInstancedArrays::initialize(Rhi::IBufferManager& bufferManager, Rhi::IRootSignature& rootSignature, const Rhi::VertexAttributes& vertexAttributes, Rhi::IVertexBuffer& vertexBuffer, Rhi::IIndexBuffer& indexBuffer, Rhi::IGraphicsProgram& graphicsProgram, Rhi::IRenderPass& renderPass, uint32_t numberOfCubeInstances, bool alphaBlending, uint32_t numberOfTextures, uint32_t sceneRadius)
 {
-	// Set owner renderer instance
-	mRenderer = &graphicsProgram.getRenderer();
+	// Set owner RHI instance
+	mRhi = &graphicsProgram.getRhi();
 
 	// Release previous data if required
 	mVertexArray = nullptr;
@@ -102,7 +102,7 @@ void BatchInstancedArrays::initialize(Renderer::IBufferManager& bufferManager, R
 		}
 
 		// Create the vertex buffer object (VBO) instance containing the per-instance-data
-		Renderer::IVertexBuffer *vertexBufferPerInstanceData = bufferManager.createVertexBuffer(sizeof(float) * numberOfElements, data);
+		Rhi::IVertexBuffer *vertexBufferPerInstanceData = bufferManager.createVertexBuffer(sizeof(float) * numberOfElements, data);
 
 		{ // Create vertex array object (VAO)
 			// -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)
@@ -110,7 +110,7 @@ void BatchInstancedArrays::initialize(Renderer::IBufferManager& bufferManager, R
 			// -> When the vertex array object (VAO) is destroyed, it automatically decreases the
 			//    reference of the used vertex buffer objects (VBO). If the reference counter of a
 			//    vertex buffer object (VBO) reaches zero, it's automatically destroyed.
-			const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { &vertexBuffer, vertexBufferPerInstanceData };
+			const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { &vertexBuffer, vertexBufferPerInstanceData };
 			mVertexArray = bufferManager.createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, &indexBuffer);
 		}
 
@@ -119,26 +119,26 @@ void BatchInstancedArrays::initialize(Renderer::IBufferManager& bufferManager, R
 	}
 
 	{ // Create the graphics pipeline state object (PSO)
-		Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(&rootSignature, &graphicsProgram, vertexAttributes, renderPass);
+		Rhi::GraphicsPipelineState graphicsPipelineState = Rhi::GraphicsPipelineStateBuilder(&rootSignature, &graphicsProgram, vertexAttributes, renderPass);
 		graphicsPipelineState.blendState.renderTarget[0].blendEnable = alphaBlending;
-		graphicsPipelineState.blendState.renderTarget[0].srcBlend    = Renderer::Blend::SRC_ALPHA;
-		graphicsPipelineState.blendState.renderTarget[0].destBlend   = Renderer::Blend::ONE;
-		mGraphicsPipelineState = mRenderer->createGraphicsPipelineState(graphicsPipelineState);
+		graphicsPipelineState.blendState.renderTarget[0].srcBlend    = Rhi::Blend::SRC_ALPHA;
+		graphicsPipelineState.blendState.renderTarget[0].destBlend   = Rhi::Blend::ONE;
+		mGraphicsPipelineState = mRhi->createGraphicsPipelineState(graphicsPipelineState);
 	}
 }
 
-void BatchInstancedArrays::fillCommandBuffer(Renderer::CommandBuffer& commandBuffer) const
+void BatchInstancedArrays::fillCommandBuffer(Rhi::CommandBuffer& commandBuffer) const
 {
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)
 
 	// Set the used graphics pipeline state object (PSO)
-	Renderer::Command::SetGraphicsPipelineState::create(commandBuffer, mGraphicsPipelineState);
+	Rhi::Command::SetGraphicsPipelineState::create(commandBuffer, mGraphicsPipelineState);
 
 	// Setup input assembly (IA): Set the used vertex array
-	Renderer::Command::SetGraphicsVertexArray::create(commandBuffer, mVertexArray);
+	Rhi::Command::SetGraphicsVertexArray::create(commandBuffer, mVertexArray);
 
 	// Use instancing in order to draw multiple cubes with just a single draw call
 	// -> Draw calls are one of the most expensive rendering, avoid them if possible
-	Renderer::Command::DrawIndexedGraphics::create(commandBuffer, 36, mNumberOfCubeInstances);
+	Rhi::Command::DrawIndexedGraphics::create(commandBuffer, 36, mNumberOfCubeInstances);
 }

@@ -41,27 +41,27 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::ICompositorInstancePass methods ]
 	//[-------------------------------------------------------]
-	void CompositorInstancePassResolveMultisample::onFillCommandBuffer(const Renderer::IRenderTarget* renderTarget, const CompositorContextData&, Renderer::CommandBuffer& commandBuffer)
+	void CompositorInstancePassResolveMultisample::onFillCommandBuffer(const Rhi::IRenderTarget* renderTarget, const CompositorContextData&, Rhi::CommandBuffer& commandBuffer)
 	{
 		const IRendererRuntime& rendererRuntime = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime();
 
 		// Sanity check
-		RENDERER_ASSERT(rendererRuntime.getContext(), nullptr != renderTarget, "The resolve multisample compositor instance pass needs a valid render target")
+		RHI_ASSERT(rendererRuntime.getContext(), nullptr != renderTarget, "The resolve multisample compositor instance pass needs a valid render target")
 
 		// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
 		RENDERER_SCOPED_PROFILER_EVENT_DYNAMIC(rendererRuntime.getContext(), commandBuffer, getCompositorResourcePass().getDebugName())
 
 		// Resolve
-		Renderer::IFramebuffer* framebuffer = rendererRuntime.getCompositorWorkspaceResourceManager().getFramebufferManager().getFramebufferByCompositorFramebufferId(static_cast<const CompositorResourcePassResolveMultisample&>(getCompositorResourcePass()).getSourceMultisampleCompositorFramebufferId());
+		Rhi::IFramebuffer* framebuffer = rendererRuntime.getCompositorWorkspaceResourceManager().getFramebufferManager().getFramebufferByCompositorFramebufferId(static_cast<const CompositorResourcePassResolveMultisample&>(getCompositorResourcePass()).getSourceMultisampleCompositorFramebufferId());
 		if (nullptr != framebuffer)
 		{
 			// TODO(co) Get rid of the evil const-cast
-			Renderer::Command::ResolveMultisampleFramebuffer::create(commandBuffer, const_cast<Renderer::IRenderTarget&>(*renderTarget), *framebuffer);
+			Rhi::Command::ResolveMultisampleFramebuffer::create(commandBuffer, const_cast<Rhi::IRenderTarget&>(*renderTarget), *framebuffer);
 		}
 		else
 		{
 			// Error!
-			RENDERER_ASSERT(rendererRuntime.getContext(), false, "We should never end up in here")
+			RHI_ASSERT(rendererRuntime.getContext(), false, "We should never end up in here")
 		}
 	}
 

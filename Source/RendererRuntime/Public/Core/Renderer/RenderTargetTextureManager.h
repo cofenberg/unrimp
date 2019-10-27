@@ -78,8 +78,8 @@ namespace RendererRuntime
 		{
 			AssetId						 assetId;
 			RenderTargetTextureSignature renderTargetTextureSignature;
-			Renderer::ITexture*			 texture;				///< Can be a null pointer, no "Renderer::ITexturePtr" to not have overhead when internally reallocating
-			uint32_t					 numberOfReferences;	///< Number of texture references (don't misuse the renderer texture reference counter for this)
+			Rhi::ITexture*				 texture;				///< Can be a null pointer, no "Rhi::ITexturePtr" to not have overhead when internally reallocating
+			uint32_t					 numberOfReferences;	///< Number of texture references (don't misuse the RHI texture reference counter for this)
 
 			inline RenderTargetTextureElement() :
 				assetId(getInvalid<AssetId>()),
@@ -107,7 +107,7 @@ namespace RendererRuntime
 				// Nothing here
 			}
 
-			inline RenderTargetTextureElement(AssetId _assetId, const RenderTargetTextureSignature& _renderTargetTextureSignature, Renderer::ITexture& _texture) :
+			inline RenderTargetTextureElement(AssetId _assetId, const RenderTargetTextureSignature& _renderTargetTextureSignature, Rhi::ITexture& _texture) :
 				assetId(_assetId),
 				renderTargetTextureSignature(_renderTargetTextureSignature),
 				texture(&_texture),
@@ -142,9 +142,9 @@ namespace RendererRuntime
 		}
 
 		void clear();
-		void clearRendererResources();
+		void clearRhiResources();
 		void addRenderTargetTexture(AssetId assetId, const RenderTargetTextureSignature& renderTargetTextureSignature);
-		[[nodiscard]] Renderer::ITexture* getTextureByAssetId(AssetId assetId, const Renderer::IRenderTarget& renderTarget, uint8_t numberOfMultisamples, float resolutionScale, const RenderTargetTextureSignature** outRenderTargetTextureSignature);
+		[[nodiscard]] Rhi::ITexture* getTextureByAssetId(AssetId assetId, const Rhi::IRenderTarget& renderTarget, uint8_t numberOfMultisamples, float resolutionScale, const RenderTargetTextureSignature** outRenderTargetTextureSignature);
 		void releaseRenderTargetTextureBySignature(const RenderTargetTextureSignature& renderTargetTextureSignature);
 
 

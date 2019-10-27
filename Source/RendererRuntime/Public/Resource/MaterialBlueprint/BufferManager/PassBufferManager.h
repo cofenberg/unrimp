@@ -29,7 +29,7 @@
 //[-------------------------------------------------------]
 #include "RendererRuntime/Public/Core/Manager.h"
 
-#include <Renderer/Public/Renderer.h>
+#include <Rhi/Public/Rhi.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -129,13 +129,13 @@ namespace RendererRuntime
 		*    Fill the pass buffer
 		*
 		*  @param[in] renderTarget
-		*    Render target to render into, must be valid for graphics pipeline and must be a null pointer for compute pipeline
+		*    RHI render target to render into, must be valid for graphics pipeline and must be a null pointer for compute pipeline
 		*  @param[in] compositorContextData
 		*    Compositor context data
 		*  @param[in] materialResource
 		*    Currently used material resource
 		*/
-		void fillBuffer(const Renderer::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, const MaterialResource& materialResource);
+		void fillBuffer(const Rhi::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, const MaterialResource& materialResource);
 
 		/**
 		*  @brief
@@ -154,18 +154,18 @@ namespace RendererRuntime
 		*    Bind the currently used pass buffer into the given graphics command buffer
 		*
 		*  @param[out] commandBuffer
-		*    Command buffer to fill
+		*    RHI command buffer to fill
 		*/
-		void fillGraphicsCommandBuffer(Renderer::CommandBuffer& commandBuffer) const;
+		void fillGraphicsCommandBuffer(Rhi::CommandBuffer& commandBuffer) const;
 
 		/**
 		*  @brief
 		*    Bind the currently used pass buffer into the given compute command buffer
 		*
 		*  @param[out] commandBuffer
-		*    Command buffer to fill
+		*    RHI command buffer to fill
 		*/
-		void fillComputeCommandBuffer(Renderer::CommandBuffer& commandBuffer) const;
+		void fillComputeCommandBuffer(Rhi::CommandBuffer& commandBuffer) const;
 
 		/**
 		*  @brief
@@ -191,10 +191,10 @@ namespace RendererRuntime
 	private:
 		struct UniformBuffer final
 		{
-			Renderer::IUniformBuffer* uniformBuffer;
-			Renderer::IResourceGroup* resourceGroup;
+			Rhi::IUniformBuffer* uniformBuffer;
+			Rhi::IResourceGroup* resourceGroup;
 
-			UniformBuffer(Renderer::IUniformBuffer* _uniformBuffer, Renderer::IResourceGroup* _resourceGroup) :
+			UniformBuffer(Rhi::IUniformBuffer* _uniformBuffer, Rhi::IResourceGroup* _resourceGroup) :
 				uniformBuffer(_uniformBuffer),
 				resourceGroup(_resourceGroup)
 			{
@@ -211,7 +211,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	private:
 		IRendererRuntime&						mRendererRuntime;
-		Renderer::IBufferManager&				mBufferManager;
+		Rhi::IBufferManager&					mBufferManager;
 		const MaterialBlueprintResource&		mMaterialBlueprintResource;
 		const MaterialBlueprintResourceManager&	mMaterialBlueprintResourceManager;
 		PassData								mPassData;

@@ -29,8 +29,6 @@
 //[-------------------------------------------------------]
 #include "RendererRuntime/Public/Resource/MaterialBlueprint/Cache/GraphicsPipelineStateSignature.h"
 
-#include <Renderer/Public/Renderer.h>
-
 
 //[-------------------------------------------------------]
 //[ Namespace                                             ]
@@ -76,7 +74,7 @@ namespace RendererRuntime
 		*  @return
 		*    The graphics pipeline state object
 		*/
-		[[nodiscard]] inline const Renderer::IGraphicsPipelineStatePtr& getGraphicsPipelineStateObjectPtr() const
+		[[nodiscard]] inline const Rhi::IGraphicsPipelineStatePtr& getGraphicsPipelineStateObjectPtr() const
 		{
 			return mGraphicsPipelineStateObjectPtr;
 		}
@@ -118,9 +116,9 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		GraphicsPipelineStateSignature		mGraphicsPipelineStateSignature;
-		Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineStateObjectPtr;
-		bool								mIsUsingFallback;					///< If "true", this graphics pipeline state cache is currently using fallback data because it's in asynchronous compilation
+		GraphicsPipelineStateSignature mGraphicsPipelineStateSignature;
+		Rhi::IGraphicsPipelineStatePtr mGraphicsPipelineStateObjectPtr;
+		bool						   mIsUsingFallback;					///< If "true", this graphics pipeline state cache is currently using fallback data because it's in asynchronous compilation
 
 
 	};

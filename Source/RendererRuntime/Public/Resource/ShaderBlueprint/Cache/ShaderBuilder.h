@@ -48,7 +48,7 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace Renderer
+namespace Rhi
 {
 	class Context;
 }
@@ -108,7 +108,7 @@ namespace RendererRuntime
 		*  @brief
 		*    Constructor
 		*/
-		inline explicit ShaderBuilder(const Renderer::Context& context) :
+		inline explicit ShaderBuilder(const Rhi::Context& context) :
 			mContext(context)
 		{
 			// Nothing here
@@ -158,11 +158,11 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		const Renderer::Context& mContext;
-		ShaderProperties		 mShaderProperties;
-		DynamicShaderPieces		 mDynamicShaderPieces;
-		std::string				 mInString;		///< Could be a local variable, but when making it to a member we reduce memory allocations
-		std::string				 mOutString;	///< Could be a local variable, but when making it to a member we reduce memory allocations
+		const Rhi::Context& mContext;
+		ShaderProperties	mShaderProperties;
+		DynamicShaderPieces	mDynamicShaderPieces;
+		std::string			mInString;	///< Could be a local variable, but when making it to a member we reduce memory allocations
+		std::string			mOutString;	///< Could be a local variable, but when making it to a member we reduce memory allocations
 
 
 	};

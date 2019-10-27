@@ -67,31 +67,31 @@ namespace
 		//[-------------------------------------------------------]
 		// Vertex input layout
 		// TODO(co) Optimization: We could probably reduce stuff to 16-bit instead of 32-bit to save a little bit of memory, might not really be worth it
-		static constexpr Renderer::VertexAttribute TerrainVertexAttributesLayout[] =
+		static constexpr Rhi::VertexAttribute TerrainVertexAttributesLayout[] =
 		{
 			{ // Attribute 0
 				// Data destination
-				Renderer::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-				"Position",									// name[32] (char)
-				"POSITION",									// semanticName[32] (char)
-				0,											// semanticIndex (uint32_t)
+				Rhi::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+				"Position",								// name[32] (char)
+				"POSITION",								// semanticName[32] (char)
+				0,										// semanticIndex (uint32_t)
 				// Data source
-				0,											// inputSlot (uint32_t)
-				0,											// alignedByteOffset (uint32_t)
-				sizeof(float) * 7,							// strideInBytes (uint32_t)
-				1											// instancesPerElement (uint32_t)
+				0,										// inputSlot (uint32_t)
+				0,										// alignedByteOffset (uint32_t)
+				sizeof(float) * 7,						// strideInBytes (uint32_t)
+				1										// instancesPerElement (uint32_t)
 			},
 			{ // Attribute 1
 				// Data destination
-				Renderer::VertexAttributeFormat::FLOAT_4,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-				"Adjacency",								// name[32] (char)
-				"TEXCOORD",									// semanticName[32] (char)
-				0,											// semanticIndex (uint32_t)
+				Rhi::VertexAttributeFormat::FLOAT_4,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+				"Adjacency",							// name[32] (char)
+				"TEXCOORD",								// semanticName[32] (char)
+				0,										// semanticIndex (uint32_t)
 				// Data source
-				0,											// inputSlot (uint32_t)
-				sizeof(float) * 3,							// alignedByteOffset (uint32_t)
-				sizeof(float) * 7,							// strideInBytes (uint32_t)
-				1											// instancesPerElement (uint32_t)
+				0,										// inputSlot (uint32_t)
+				sizeof(float) * 3,						// alignedByteOffset (uint32_t)
+				sizeof(float) * 7,						// strideInBytes (uint32_t)
+				1										// instancesPerElement (uint32_t)
 			}
 		};
 
@@ -113,7 +113,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public definitions                                    ]
 	//[-------------------------------------------------------]
-	const Renderer::VertexAttributes TerrainSceneItem::VERTEX_ATTRIBUTES(static_cast<uint32_t>(GLM_COUNTOF(::detail::TerrainVertexAttributesLayout)), ::detail::TerrainVertexAttributesLayout);
+	const Rhi::VertexAttributes TerrainSceneItem::VERTEX_ATTRIBUTES(static_cast<uint32_t>(GLM_COUNTOF(::detail::TerrainVertexAttributesLayout)), ::detail::TerrainVertexAttributesLayout);
 
 
 	//[-------------------------------------------------------]
@@ -152,15 +152,15 @@ namespace RendererRuntime
 		mNumberOfTerrainTileRings(0),
 		mTerrainTileRings{}
 	{
-		// The renderer backend must support tessellation shaders
+		// The RHI implementation must support tessellation shaders
 		const IRendererRuntime& rendererRuntime = getSceneResource().getRendererRuntime();
-		if (rendererRuntime.getRenderer().getCapabilities().maximumNumberOfPatchVertices > 0)
+		if (rendererRuntime.getRhi().getCapabilities().maximumNumberOfPatchVertices > 0)
 		{
 			// This array defines the outer width of each successive ring
 			const int widths[] = { 0, 16, 16, 16, 16, 16 };
 			mNumberOfTerrainTileRings = sizeof(widths) / sizeof(widths[0]) - 1;	// "widths[0]" doesn't define a ring hence -1
-			RENDERER_ASSERT(getContext(), mNumberOfTerrainTileRings <= MAXIMUM_NUMBER_OF_TERRAIN_TILE_RINGS, "Invalid number of terrain tile rings")
-			Renderer::IBufferManager& bufferManager = rendererRuntime.getBufferManager();
+			RHI_ASSERT(getContext(), mNumberOfTerrainTileRings <= MAXIMUM_NUMBER_OF_TERRAIN_TILE_RINGS, "Invalid number of terrain tile rings")
+			Rhi::IBufferManager& bufferManager = rendererRuntime.getBufferManager();
 			createIndexBuffer(bufferManager);
 			float tileWidth = 0.125f;
 			for (int i = 0; i != mNumberOfTerrainTileRings && i != MAXIMUM_NUMBER_OF_TERRAIN_TILE_RINGS; ++i)
@@ -171,7 +171,7 @@ namespace RendererRuntime
 		}
 		else
 		{
-			RENDERER_LOG_ONCE(rendererRuntime.getContext(), COMPATIBILITY_WARNING, "The renderer runtime terrain scene item needs a renderer backend with tessellation shader support")
+			RHI_LOG_ONCE(rendererRuntime.getContext(), COMPATIBILITY_WARNING, "The renderer runtime terrain scene item needs a RHI implementation with tessellation shader support")
 		}
 	}
 
@@ -179,7 +179,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
-	void TerrainSceneItem::createIndexBuffer(Renderer::IBufferManager& bufferManager)
+	void TerrainSceneItem::createIndexBuffer(Rhi::IBufferManager& bufferManager)
 	{
 		// The index buffer describes one tile of NxN patches: Four vertices per quad, with "::detail::VERTICES_PER_TILE_EDGE" - 1 quads per tile edge
 		int index = 0;
@@ -195,25 +195,25 @@ namespace RendererRuntime
 				indices[index++] = static_cast<uint16_t>(rowStart + x + 1);
 			}
 		}
-		RENDERER_ASSERT(getContext(), ::detail::NUMBER_OF_INDICES == index, "Invalid index")
+		RHI_ASSERT(getContext(), ::detail::NUMBER_OF_INDICES == index, "Invalid index")
 
 		// Create the index buffer object (IBO)
 		mIndexBufferPtr = bufferManager.createIndexBuffer(sizeof(uint16_t) * ::detail::NUMBER_OF_INDICES, indices);
-		RENDERER_SET_RESOURCE_DEBUG_NAME(mIndexBufferPtr, "Terrain tile ring")
+		RHI_SET_RESOURCE_DEBUG_NAME(mIndexBufferPtr, "Terrain tile ring")
 	}
 
-	void TerrainSceneItem::createTerrainTileRing(TerrainTileRing& terrainTileRing, Renderer::IBufferManager& bufferManager, int holeWidth, int outerWidth, float tileSize) const
+	void TerrainSceneItem::createTerrainTileRing(TerrainTileRing& terrainTileRing, Rhi::IBufferManager& bufferManager, int holeWidth, int outerWidth, float tileSize) const
 	{
 		// Sanity checks
-		RENDERER_ASSERT(getContext(), nullptr != mIndexBufferPtr, "The index buffer must be created before this method is called")
-		RENDERER_ASSERT(getContext(), (outerWidth - holeWidth) % 2 == 0, "Invalid outer/hole width")
+		RHI_ASSERT(getContext(), nullptr != mIndexBufferPtr, "The index buffer must be created before this method is called")
+		RHI_ASSERT(getContext(), (outerWidth - holeWidth) % 2 == 0, "Invalid outer/hole width")
 
 		// Derive data
 		const int ringWidth = (outerWidth - holeWidth) / 2;	// No remainder - see assert above
 		const int numberOfTiles = terrainTileRing.numberOfTiles = outerWidth * outerWidth - holeWidth * holeWidth;
 
 		// Create the vertex buffer object (VBO)
-		Renderer::IVertexBufferPtr vertexBuffer;
+		Rhi::IVertexBufferPtr vertexBuffer;
 		{
 			// Create the vertex buffer data
 			int index = 0;
@@ -224,8 +224,8 @@ namespace RendererRuntime
 				for (int x = 0; x < outerWidth; ++x)
 				{
 					// Is in ring?
-					RENDERER_ASSERT(getContext(), x >= 0 && x < outerWidth, "Invalid x")
-					RENDERER_ASSERT(getContext(), y >= 0 && y < outerWidth, "Invalid y")
+					RHI_ASSERT(getContext(), x >= 0 && x < outerWidth, "Invalid x")
+					RHI_ASSERT(getContext(), y >= 0 && y < outerWidth, "Invalid y")
 					if (x < ringWidth || y < ringWidth || x >= outerWidth - ringWidth || y >= outerWidth - ringWidth)
 					{
 						::detail::InstanceData& instanceData = vertexBufferData[index];
@@ -295,20 +295,20 @@ namespace RendererRuntime
 					}
 				}
 			}
-			RENDERER_ASSERT(getContext(), index == numberOfTiles, "Invalid index")
+			RHI_ASSERT(getContext(), index == numberOfTiles, "Invalid index")
 
 			// Create the vertex buffer object (VBO)
 			vertexBuffer = bufferManager.createVertexBuffer(sizeof(::detail::InstanceData) * numberOfTiles, vertexBufferData);
-			RENDERER_SET_RESOURCE_DEBUG_NAME(vertexBuffer, "Terrain tile ring")
+			RHI_SET_RESOURCE_DEBUG_NAME(vertexBuffer, "Terrain tile ring")
 
 			// Destroy temporary vertex buffer data
 			delete[] vertexBufferData;
 		}
 
 		// Create vertex array object (VAO)
-		const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
+		const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
 		terrainTileRing.vertexArrayPtr = bufferManager.createVertexArray(TerrainSceneItem::VERTEX_ATTRIBUTES, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, mIndexBufferPtr);
-		RENDERER_SET_RESOURCE_DEBUG_NAME(terrainTileRing.vertexArrayPtr, "Terrain tile ring")
+		RHI_SET_RESOURCE_DEBUG_NAME(terrainTileRing.vertexArrayPtr, "Terrain tile ring")
 	}
 
 

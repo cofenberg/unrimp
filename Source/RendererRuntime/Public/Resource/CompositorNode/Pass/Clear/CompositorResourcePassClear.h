@@ -70,7 +70,7 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		[[nodiscard]] inline uint32_t getFlags() const	// Combination of "Renderer::ClearFlag"
+		[[nodiscard]] inline uint32_t getFlags() const	// Combination of "Rhi::ClearFlag"
 		{
 			return mFlags;
 		}
@@ -130,7 +130,7 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		uint32_t  mFlags;	///< Combination of "Renderer::ClearFlag"
+		uint32_t  mFlags;	///< Combination of "Rhi::ClearFlag"
 		glm::vec4 mColor;
 		float	  mZ;
 		uint32_t  mStencil;

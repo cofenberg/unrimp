@@ -99,7 +99,7 @@ namespace RendererToolkit
 		static void optionalClearFlagsProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, uint32_t& clearFlags);
 		static void optionalCompiledAssetId(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValue, const char* propertyName, RendererRuntime::AssetId& compiledAssetId);
 		[[nodiscard]] static RendererRuntime::AssetId getCompiledAssetId(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValue, const char* propertyName);
-		[[nodiscard]] static Renderer::TextureFormat::Enum mandatoryTextureFormat(const rapidjson::Value& rapidJsonValue);
+		[[nodiscard]] static Rhi::TextureFormat::Enum mandatoryTextureFormat(const rapidjson::Value& rapidJsonValue);
 
 
 	//[-------------------------------------------------------]

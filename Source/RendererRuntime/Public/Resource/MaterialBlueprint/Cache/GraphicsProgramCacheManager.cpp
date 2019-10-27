@@ -76,15 +76,15 @@ namespace RendererRuntime
 		}
 		else
 		{
-			// Create the renderer program: Decide which shader language should be used (for example "GLSL" or "HLSL")
+			// Create the RHI program: Decide which shader language should be used (for example "GLSL" or "HLSL")
 			const MaterialBlueprintResource& materialBlueprintResource = mGraphicsPipelineStateCacheManager.getMaterialBlueprintResource();
-			const Renderer::IRootSignaturePtr& rootSignaturePtr = materialBlueprintResource.getRootSignaturePtr();
-			Renderer::IShaderLanguage& shaderLanguage = rootSignaturePtr->getRenderer().getDefaultShaderLanguage();
+			const Rhi::IRootSignaturePtr& rootSignaturePtr = materialBlueprintResource.getRootSignaturePtr();
+			Rhi::IShaderLanguage& shaderLanguage = rootSignaturePtr->getRhi().getDefaultShaderLanguage();
 			const IRendererRuntime& rendererRuntime = materialBlueprintResource.getResourceManager<MaterialBlueprintResourceManager>().getRendererRuntime();
 
 			// Create the shaders
 			ShaderCacheManager& shaderCacheManager = rendererRuntime.getShaderBlueprintResourceManager().getShaderCacheManager();
-			Renderer::IShader* shaders[NUMBER_OF_GRAPHICS_SHADER_TYPES] = {};
+			Rhi::IShader* shaders[NUMBER_OF_GRAPHICS_SHADER_TYPES] = {};
 			for (uint8_t i = 0; i < NUMBER_OF_GRAPHICS_SHADER_TYPES; ++i)
 			{
 				ShaderCache* shaderCache = shaderCacheManager.getGraphicsShaderCache(graphicsPipelineStateSignature, materialBlueprintResource, shaderLanguage, static_cast<GraphicsShaderType>(i));
@@ -99,14 +99,14 @@ namespace RendererRuntime
 			}
 
 			// Create the graphics program
-			Renderer::IGraphicsProgram* graphicsProgram = shaderLanguage.createGraphicsProgram(*rootSignaturePtr,
+			Rhi::IGraphicsProgram* graphicsProgram = shaderLanguage.createGraphicsProgram(*rootSignaturePtr,
 				rendererRuntime.getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes(),
-				static_cast<Renderer::IVertexShader*>(shaders[static_cast<int>(GraphicsShaderType::Vertex)]),
-				static_cast<Renderer::ITessellationControlShader*>(shaders[static_cast<int>(GraphicsShaderType::TessellationControl)]),
-				static_cast<Renderer::ITessellationEvaluationShader*>(shaders[static_cast<int>(GraphicsShaderType::TessellationEvaluation)]),
-				static_cast<Renderer::IGeometryShader*>(shaders[static_cast<int>(GraphicsShaderType::Geometry)]),
-				static_cast<Renderer::IFragmentShader*>(shaders[static_cast<int>(GraphicsShaderType::Fragment)]));
-			RENDERER_SET_RESOURCE_DEBUG_NAME(graphicsProgram, "Graphics program cache manager")
+				static_cast<Rhi::IVertexShader*>(shaders[static_cast<int>(GraphicsShaderType::Vertex)]),
+				static_cast<Rhi::ITessellationControlShader*>(shaders[static_cast<int>(GraphicsShaderType::TessellationControl)]),
+				static_cast<Rhi::ITessellationEvaluationShader*>(shaders[static_cast<int>(GraphicsShaderType::TessellationEvaluation)]),
+				static_cast<Rhi::IGeometryShader*>(shaders[static_cast<int>(GraphicsShaderType::Geometry)]),
+				static_cast<Rhi::IFragmentShader*>(shaders[static_cast<int>(GraphicsShaderType::Fragment)]));
+			RHI_SET_RESOURCE_DEBUG_NAME(graphicsProgram, "Graphics program cache manager")
 
 			// Create the new graphics program cache instance
 			if (nullptr != graphicsProgram)
@@ -117,7 +117,7 @@ namespace RendererRuntime
 			else
 			{
 				// TODO(co) Error handling
-				RENDERER_ASSERT(materialBlueprintResource.getResourceManager<MaterialBlueprintResourceManager>().getRendererRuntime().getContext(), false, "Invalid graphics program")
+				RHI_ASSERT(materialBlueprintResource.getResourceManager<MaterialBlueprintResourceManager>().getRendererRuntime().getContext(), false, "Invalid graphics program")
 			}
 		}
 

@@ -32,8 +32,6 @@
 #include <RendererRuntime/Public/Resource/Material/MaterialProperties.h>
 #include <RendererRuntime/Public/Resource/Material/Loader/MaterialFileFormat.h>
 
-#include <Renderer/Public/Renderer.h>
-
 
 //[-------------------------------------------------------]
 //[ Namespace                                             ]
@@ -53,16 +51,16 @@ namespace RendererToolkit
 	//[ Public static methods                                 ]
 	//[-------------------------------------------------------]
 	public:
-		static void optionalFillModeProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::FillMode& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector = nullptr);
-		static void optionalCullModeProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::CullMode& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector = nullptr);
-		static void optionalConservativeRasterizationModeProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::ConservativeRasterizationMode& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector = nullptr);
-		static void optionalDepthWriteMaskProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::DepthWriteMask& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector = nullptr);
-		static void optionalStencilOpProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::StencilOp& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector = nullptr);
-		static void optionalBlendProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::Blend& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector = nullptr);
-		static void optionalBlendOpProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::BlendOp& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector = nullptr);
-		static void optionalFilterProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::FilterMode& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector = nullptr);
-		static void optionalTextureAddressModeProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::TextureAddressMode& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector = nullptr);
-		static void optionalComparisonFuncProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::ComparisonFunc& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector = nullptr);
+		static void optionalFillModeProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Rhi::FillMode& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector = nullptr);
+		static void optionalCullModeProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Rhi::CullMode& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector = nullptr);
+		static void optionalConservativeRasterizationModeProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Rhi::ConservativeRasterizationMode& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector = nullptr);
+		static void optionalDepthWriteMaskProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Rhi::DepthWriteMask& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector = nullptr);
+		static void optionalStencilOpProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Rhi::StencilOp& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector = nullptr);
+		static void optionalBlendProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Rhi::Blend& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector = nullptr);
+		static void optionalBlendOpProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Rhi::BlendOp& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector = nullptr);
+		static void optionalFilterProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Rhi::FilterMode& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector = nullptr);
+		static void optionalTextureAddressModeProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Rhi::TextureAddressMode& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector = nullptr);
+		static void optionalComparisonFuncProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Rhi::ComparisonFunc& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector = nullptr);
 		static void readMaterialPropertyValues(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValueProperties, RendererRuntime::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector);
 		static void getTechniquesAndPropertiesByMaterialAssetId(const IAssetCompiler::Input& input, rapidjson::Document& rapidJsonDocument, std::vector<RendererRuntime::v1Material::Technique>& techniques, RendererRuntime::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector);
 		static void getPropertiesByMaterialAssetId(const IAssetCompiler::Input& input, RendererRuntime::AssetId materialAssetId, RendererRuntime::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector, std::vector<RendererRuntime::v1Material::Technique>* techniques = nullptr);

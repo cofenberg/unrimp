@@ -40,79 +40,79 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 void VertexBuffer::onInitialization()
 {
-	// Get and check the renderer instance
-	Renderer::IRendererPtr renderer(getRenderer());
-	if (nullptr != renderer)
+	// Get and check the RHI instance
+	Rhi::IRhiPtr rhi(getRhi());
+	if (nullptr != rhi)
 	{
 		// Create the buffer manager
-		mBufferManager = renderer->createBufferManager();
+		mBufferManager = rhi->createBufferManager();
 
 		{ // Create the root signature
 			// Setup
-			Renderer::RootSignatureBuilder rootSignature;
-			rootSignature.initialize(0, nullptr, 0, nullptr, Renderer::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+			Rhi::RootSignatureBuilder rootSignature;
+			rootSignature.initialize(0, nullptr, 0, nullptr, Rhi::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 			// Create the instance
-			mRootSignature = renderer->createRootSignature(rootSignature);
+			mRootSignature = rhi->createRootSignature(rootSignature);
 		}
 
 		// Vertex input layout
-		static constexpr Renderer::VertexAttribute vertexAttributesLayoutVBO[] =
+		static constexpr Rhi::VertexAttribute vertexAttributesLayoutVBO[] =
 		{
 			{ // Attribute 0
 				// Data destination
-				Renderer::VertexAttributeFormat::FLOAT_2,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-				"Position",									// name[32] (char)
-				"POSITION",									// semanticName[32] (char)
-				0,											// semanticIndex (uint32_t)
+				Rhi::VertexAttributeFormat::FLOAT_2,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+				"Position",								// name[32] (char)
+				"POSITION",								// semanticName[32] (char)
+				0,										// semanticIndex (uint32_t)
 				// Data source
-				0,											// inputSlot (uint32_t)
-				0,											// alignedByteOffset (uint32_t)
-				sizeof(float) * 5,							// strideInBytes (uint32_t)
-				0											// instancesPerElement (uint32_t)
+				0,										// inputSlot (uint32_t)
+				0,										// alignedByteOffset (uint32_t)
+				sizeof(float) * 5,						// strideInBytes (uint32_t)
+				0										// instancesPerElement (uint32_t)
 			},
 			{ // Attribute 1
 				// Data destination
-				Renderer::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-				"Color",									// name[32] (char)
-				"COLOR",									// semanticName[32] (char)
-				0,											// semanticIndex (uint32_t)
+				Rhi::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+				"Color",								// name[32] (char)
+				"COLOR",								// semanticName[32] (char)
+				0,										// semanticIndex (uint32_t)
 				// Data source
-				0,											// inputSlot (uint32_t)
-				sizeof(float) * 2,							// alignedByteOffset (uint32_t)
-				sizeof(float) * 5,							// strideInBytes (uint32_t)
-				0											// instancesPerElement (uint32_t)
+				0,										// inputSlot (uint32_t)
+				sizeof(float) * 2,						// alignedByteOffset (uint32_t)
+				sizeof(float) * 5,						// strideInBytes (uint32_t)
+				0										// instancesPerElement (uint32_t)
 			}
 		};
-		const Renderer::VertexAttributes vertexAttributesVBO(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayoutVBO)), vertexAttributesLayoutVBO);
-		static constexpr Renderer::VertexAttribute vertexAttributesLayoutVBOs[] =
+		const Rhi::VertexAttributes vertexAttributesVBO(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayoutVBO)), vertexAttributesLayoutVBO);
+		static constexpr Rhi::VertexAttribute vertexAttributesLayoutVBOs[] =
 		{
 			{ // Attribute 0
 				// Data destination
-				Renderer::VertexAttributeFormat::FLOAT_2,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-				"Position",									// name[32] (char)
-				"POSITION",									// semanticName[32] (char)
-				0,											// semanticIndex (uint32_t)
+				Rhi::VertexAttributeFormat::FLOAT_2,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+				"Position",								// name[32] (char)
+				"POSITION",								// semanticName[32] (char)
+				0,										// semanticIndex (uint32_t)
 				// Data source
-				0,											// inputSlot (uint32_t)
-				0,											// alignedByteOffset (uint32_t)
-				sizeof(float) * 2,							// strideInBytes (uint32_t)
-				0											// instancesPerElement (uint32_t)
+				0,										// inputSlot (uint32_t)
+				0,										// alignedByteOffset (uint32_t)
+				sizeof(float) * 2,						// strideInBytes (uint32_t)
+				0										// instancesPerElement (uint32_t)
 			},
 			{ // Attribute 1
 				// Data destination
-				Renderer::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-				"Color",									// name[32] (char)
-				"COLOR",									// semanticName[32] (char)
-				0,											// semanticIndex (uint32_t)
+				Rhi::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+				"Color",								// name[32] (char)
+				"COLOR",								// semanticName[32] (char)
+				0,										// semanticIndex (uint32_t)
 				// Data source
-				1,											// inputSlot (uint32_t)
-				0,											// alignedByteOffset (uint32_t)
-				sizeof(float) * 3,							// strideInBytes (uint32_t)
-				0											// instancesPerElement (uint32_t)
+				1,										// inputSlot (uint32_t)
+				0,										// alignedByteOffset (uint32_t)
+				sizeof(float) * 3,						// strideInBytes (uint32_t)
+				0										// instancesPerElement (uint32_t)
 			}
 		};
-		const Renderer::VertexAttributes vertexAttributesVBOs(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayoutVBOs)), vertexAttributesLayoutVBOs);
+		const Rhi::VertexAttributes vertexAttributesVBOs(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayoutVBOs)), vertexAttributesLayoutVBOs);
 
 		// Vertex array object (VAO)
 		// -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)
@@ -131,11 +131,11 @@ void VertexBuffer::onInitialization()
 				 1.0f, 0.0f,	0.0f, 1.0f, 0.0f,	// 1			   .   .
 				-0.5f, 0.0f,	0.0f, 0.0f, 1.0f	// 2			  2.......1
 			};
-			Renderer::IVertexBufferPtr vertexBufferPositionColor(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION_COLOR), VERTEX_POSITION_COLOR));
+			Rhi::IVertexBufferPtr vertexBufferPositionColor(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION_COLOR), VERTEX_POSITION_COLOR));
 
 			// Create vertex array object (VAO)
-			const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBufferPositionColor };
-			mVertexArrayVBO = mBufferManager->createVertexArray(vertexAttributesVBO, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
+			const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBufferPositionColor };
+			mVertexArrayVbo = mBufferManager->createVertexArray(vertexAttributesVBO, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
 		}
 
 		{ // Create vertex array object (VAO) using multiple vertex buffer object (VBO)
@@ -147,7 +147,7 @@ void VertexBuffer::onInitialization()
 				0.0f, 1.0f, 0.0f,	// 1			   .   .
 				0.0f, 0.0f, 1.0f	// 2			  	2
 			};
-			Renderer::IVertexBufferPtr vertexBufferColor(mBufferManager->createVertexBuffer(sizeof(VERTEX_COLOR), VERTEX_COLOR));
+			Rhi::IVertexBufferPtr vertexBufferColor(mBufferManager->createVertexBuffer(sizeof(VERTEX_COLOR), VERTEX_COLOR));
 
 			// Create the vertex buffer object (VBO) holding position data
 			// -> Clip space vertex positions, left/bottom is (-1,-1) and right/top is (1,1)
@@ -157,11 +157,11 @@ void VertexBuffer::onInitialization()
 				 1.0f,  0.0f,	// 1			   .   .
 				 0.0f, -1.0f	// 2			  	2
 			};
-			Renderer::IVertexBufferPtr vertexBufferPosition(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION));
+			Rhi::IVertexBufferPtr vertexBufferPosition(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION));
 
 			// Create vertex array object (VAO)
-			const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBufferPosition, vertexBufferColor };
-			mVertexArrayVBOs = mBufferManager->createVertexArray(vertexAttributesVBOs, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
+			const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBufferPosition, vertexBufferColor };
+			mVertexArrayVbos = mBufferManager->createVertexArray(vertexAttributesVBOs, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
 		}
 
 		{
@@ -173,11 +173,11 @@ void VertexBuffer::onInitialization()
 			#include "VertexBuffer_GLSL_ES3.h"
 			#include "VertexBuffer_HLSL_D3D9_D3D10_D3D11_D3D12.h"
 			#include "VertexBuffer_Null.h"
-			Renderer::IShaderLanguage& shaderLanguage = renderer->getDefaultShaderLanguage();
+			Rhi::IShaderLanguage& shaderLanguage = rhi->getDefaultShaderLanguage();
 
 			{ // Create pipeline state objects (PSO) using one vertex buffer object (VBO)
 				// Create the graphics program
-				Renderer::IGraphicsProgramPtr graphicsProgram;
+				Rhi::IGraphicsProgramPtr graphicsProgram;
 				graphicsProgram = shaderLanguage.createGraphicsProgram(
 					*mRootSignature,
 					vertexAttributesVBO,
@@ -187,13 +187,13 @@ void VertexBuffer::onInitialization()
 				// Create the graphics pipeline state objects (PSO)
 				if (nullptr != graphicsProgram)
 				{
-					mGraphicsPipelineStateVBO = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributesVBO, getMainRenderTarget()->getRenderPass()));
+					mGraphicsPipelineStateVbo = rhi->createGraphicsPipelineState(Rhi::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributesVBO, getMainRenderTarget()->getRenderPass()));
 				}
 			}
 
 			{ // Create graphics pipeline state objects (PSO) using multiple vertex buffer object (VBO)
 				// Create the graphics program
-				Renderer::IGraphicsProgramPtr graphicsProgram;
+				Rhi::IGraphicsProgramPtr graphicsProgram;
 				graphicsProgram = shaderLanguage.createGraphicsProgram(
 					*mRootSignature,
 					vertexAttributesVBOs,
@@ -203,12 +203,12 @@ void VertexBuffer::onInitialization()
 				// Create the graphics pipeline state objects (PSO)
 				if (nullptr != graphicsProgram)
 				{
-					mGraphicsPipelineStateVBOs = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributesVBOs, getMainRenderTarget()->getRenderPass()));
+					mGraphicsPipelineStateVbos = rhi->createGraphicsPipelineState(Rhi::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributesVBOs, getMainRenderTarget()->getRenderPass()));
 				}
 			}
 		}
 
-		// Since we're always submitting the same commands to the renderer, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
+		// Since we're always submitting the same commands to the RHI, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
 		fillCommandBuffer();
 	}
 }
@@ -216,10 +216,10 @@ void VertexBuffer::onInitialization()
 void VertexBuffer::onDeinitialization()
 {
 	// Release the used resources
-	mGraphicsPipelineStateVBOs = nullptr;
-	mVertexArrayVBOs = nullptr;
-	mVertexArrayVBO = nullptr;
-	mGraphicsPipelineStateVBO = nullptr;
+	mGraphicsPipelineStateVbos = nullptr;
+	mVertexArrayVbos = nullptr;
+	mVertexArrayVbo = nullptr;
+	mGraphicsPipelineStateVbo = nullptr;
 	mRootSignature = nullptr;
 	mCommandBuffer.clear();
 	mBufferManager = nullptr;
@@ -227,12 +227,12 @@ void VertexBuffer::onDeinitialization()
 
 void VertexBuffer::onDraw()
 {
-	// Get and check the renderer instance
-	Renderer::IRendererPtr renderer(getRenderer());
-	if (nullptr != renderer)
+	// Get and check the RHI instance
+	Rhi::IRhiPtr rhi(getRhi());
+	if (nullptr != rhi)
 	{
-		// Submit command buffer to the renderer backend
-		mCommandBuffer.submitToRenderer(*renderer);
+		// Submit command buffer to the RHI implementation
+		mCommandBuffer.submitToRhi(*rhi);
 	}
 }
 
@@ -245,49 +245,49 @@ void VertexBuffer::fillCommandBuffer()
 	// Sanity checks
 	assert(mCommandBuffer.isEmpty());
 	assert(nullptr != mRootSignature);
-	assert(nullptr != mGraphicsPipelineStateVBO);
-	assert(nullptr != mVertexArrayVBO);
-	assert(nullptr != mGraphicsPipelineStateVBOs);
-	assert(nullptr != mVertexArrayVBOs);
+	assert(nullptr != mGraphicsPipelineStateVbo);
+	assert(nullptr != mVertexArrayVbo);
+	assert(nullptr != mGraphicsPipelineStateVbos);
+	assert(nullptr != mVertexArrayVbos);
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
 
 	// Clear the graphics color buffer of the current render target with gray, do also clear the depth buffer
-	Renderer::Command::ClearGraphics::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
+	Rhi::Command::ClearGraphics::create(mCommandBuffer, Rhi::ClearFlag::COLOR_DEPTH, Color4::GRAY);
 
 	// Set the used graphics root signature
-	Renderer::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
+	Rhi::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
 
 	// First lower triangle using one vertex buffer object (VBO)
-	if (nullptr != mGraphicsPipelineStateVBO)
+	if (nullptr != mGraphicsPipelineStateVbo)
 	{
 		// Scoped debug event
 		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Draw using one VBO")
 
 		// Set the used graphics pipeline state object (PSO)
-		Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineStateVBO);
+		Rhi::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineStateVbo);
 
 		// Input assembly (IA): Set the used vertex array
-		Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArrayVBO);
+		Rhi::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArrayVbo);
 
 		// Render the specified geometric primitive, based on an array of vertices
-		Renderer::Command::DrawGraphics::create(mCommandBuffer, 3);
+		Rhi::Command::DrawGraphics::create(mCommandBuffer, 3);
 	}
 
 	// Second upper triangle using multiple vertex buffer object (VBO)
-	if (nullptr != mGraphicsPipelineStateVBOs)
+	if (nullptr != mGraphicsPipelineStateVbos)
 	{
 		// Scoped debug event
 		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Draw using multiple VBOs")
 
 		// Set the used graphics pipeline state object (PSO)
-		Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineStateVBOs);
+		Rhi::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineStateVbos);
 
 		// Input assembly (IA): Set the used vertex array
-		Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArrayVBOs);
+		Rhi::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArrayVbos);
 
 		// Render the specified geometric primitive, based on an array of vertices
-		Renderer::Command::DrawGraphics::create(mCommandBuffer, 3);
+		Rhi::Command::DrawGraphics::create(mCommandBuffer, 3);
 	}
 }

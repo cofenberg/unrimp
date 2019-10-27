@@ -29,7 +29,7 @@
 //[-------------------------------------------------------]
 #include "Examples/Private/Framework/ExampleBase.h"
 
-#include <Renderer/Public/Renderer.h>
+#include <Rhi/Public/Rhi.h>
 
 
 //[-------------------------------------------------------]
@@ -110,32 +110,32 @@ private:
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
-	Renderer::IBufferManagerPtr			mBufferManager;					///< Buffer manager, can be a null pointer
-	Renderer::ITextureManagerPtr		mTextureManager;				///< Texture manager, can be a null pointer
-	Renderer::CommandBuffer				mCommandBuffer;					///< Command buffer
-	Renderer::IRootSignaturePtr			mGraphicsRootSignature;			///< Graphics root signature, can be a null pointer
-	Renderer::IRootSignaturePtr			mComputeRootSignature1;			///< First compute root signature, can be a null pointer
-	Renderer::IRootSignaturePtr			mComputeRootSignature2;			///< Second compute root signature, can be a null pointer
-	Renderer::IFramebufferPtr			mFramebuffer;					///< Graphics framebuffer object (FBO), can be a null pointer
-	Renderer::IResourceGroupPtr			mComputeResourceGroup1;			///< First compute resource group, can be a null pointer
-	Renderer::IResourceGroupPtr			mComputeResourceGroup2;			///< Second compute resource group, can be a null pointer
-	Renderer::IResourceGroupPtr			mGraphicsResourceGroup;			///< Graphics resource group, can be a null pointer
-	Renderer::IResourceGroupPtr			mGraphicsSamplerStateGroup;		///< Graphics sampler state resource group, can be a null pointer
-	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineState;			///< Graphics pipeline state object (PSO), can be a null pointer
-	Renderer::IComputePipelineStatePtr	mComputePipelineState1;			///< First compute pipeline state object (PSO), can be a null pointer
-	Renderer::IComputePipelineStatePtr	mComputePipelineState2;			///< Second compute pipeline state object (PSO), can be a null pointer
-	Renderer::IIndexBufferPtr			mComputeInputIndexBuffer;		///< Graphics index buffer object (IBO) read by compute shader, can be a null pointer
-	Renderer::IIndexBufferPtr			mComputeOutputIndexBuffer;		///< Graphics index buffer object (IBO) written by compute shader, can be a null pointer
-	Renderer::IVertexBufferPtr			mComputeInputVertexBuffer;		///< Graphics vertex buffer object (VBO) read by compute shader, can be a null pointer
-	Renderer::IVertexBufferPtr			mComputeOutputVertexBuffer;		///< Graphics vertex buffer object (VBO) written by compute shader, can be a null pointer
-	Renderer::IVertexArrayPtr			mVertexArray;					///< Graphics vertex array object (VAO), can be a null pointer
-	Renderer::ITextureBufferPtr			mComputeInputTextureBuffer;		///< Graphics texture buffer (TBO) read by compute shader, can be a null pointer
-	Renderer::ITextureBufferPtr			mComputeOutputTextureBuffer;	///< Graphics texture buffer (TBO) written by compute shader, can be a null pointer
-	Renderer::IStructuredBufferPtr		mComputeInputStructuredBuffer;	///< Graphics structured buffer read by compute shader, can be a null pointer
-	Renderer::IStructuredBufferPtr		mComputeOutputStructuredBuffer;	///< Graphics structured buffer written by compute shader, can be a null pointer
-	Renderer::IIndirectBufferPtr		mComputeInputIndirectBuffer;	///< Graphics indirect buffer read by compute shader, can be a null pointer
-	Renderer::IIndirectBufferPtr		mComputeOutputIndirectBuffer;	///< Graphics indirect buffer written by compute shader, can be a null pointer
-	Renderer::IUniformBufferPtr			mComputeInputUniformBuffer;		///< Graphics uniform buffer (UBO) read by compute shader, can be a null pointer
+	Rhi::IBufferManagerPtr			mBufferManager;					///< Buffer manager, can be a null pointer
+	Rhi::ITextureManagerPtr			mTextureManager;				///< Texture manager, can be a null pointer
+	Rhi::CommandBuffer				mCommandBuffer;					///< Command buffer
+	Rhi::IRootSignaturePtr			mGraphicsRootSignature;			///< Graphics root signature, can be a null pointer
+	Rhi::IRootSignaturePtr			mComputeRootSignature1;			///< First compute root signature, can be a null pointer
+	Rhi::IRootSignaturePtr			mComputeRootSignature2;			///< Second compute root signature, can be a null pointer
+	Rhi::IFramebufferPtr			mFramebuffer;					///< Graphics framebuffer object (FBO), can be a null pointer
+	Rhi::IResourceGroupPtr			mComputeResourceGroup1;			///< First compute resource group, can be a null pointer
+	Rhi::IResourceGroupPtr			mComputeResourceGroup2;			///< Second compute resource group, can be a null pointer
+	Rhi::IResourceGroupPtr			mGraphicsResourceGroup;			///< Graphics resource group, can be a null pointer
+	Rhi::IResourceGroupPtr			mGraphicsSamplerStateGroup;		///< Graphics sampler state resource group, can be a null pointer
+	Rhi::IGraphicsPipelineStatePtr	mGraphicsPipelineState;			///< Graphics pipeline state object (PSO), can be a null pointer
+	Rhi::IComputePipelineStatePtr	mComputePipelineState1;			///< First compute pipeline state object (PSO), can be a null pointer
+	Rhi::IComputePipelineStatePtr	mComputePipelineState2;			///< Second compute pipeline state object (PSO), can be a null pointer
+	Rhi::IIndexBufferPtr			mComputeInputIndexBuffer;		///< Graphics index buffer object (IBO) read by compute shader, can be a null pointer
+	Rhi::IIndexBufferPtr			mComputeOutputIndexBuffer;		///< Graphics index buffer object (IBO) written by compute shader, can be a null pointer
+	Rhi::IVertexBufferPtr			mComputeInputVertexBuffer;		///< Graphics vertex buffer object (VBO) read by compute shader, can be a null pointer
+	Rhi::IVertexBufferPtr			mComputeOutputVertexBuffer;		///< Graphics vertex buffer object (VBO) written by compute shader, can be a null pointer
+	Rhi::IVertexArrayPtr			mVertexArray;					///< Graphics vertex array object (VAO), can be a null pointer
+	Rhi::ITextureBufferPtr			mComputeInputTextureBuffer;		///< Graphics texture buffer (TBO) read by compute shader, can be a null pointer
+	Rhi::ITextureBufferPtr			mComputeOutputTextureBuffer;	///< Graphics texture buffer (TBO) written by compute shader, can be a null pointer
+	Rhi::IStructuredBufferPtr		mComputeInputStructuredBuffer;	///< Graphics structured buffer read by compute shader, can be a null pointer
+	Rhi::IStructuredBufferPtr		mComputeOutputStructuredBuffer;	///< Graphics structured buffer written by compute shader, can be a null pointer
+	Rhi::IIndirectBufferPtr			mComputeInputIndirectBuffer;	///< Graphics indirect buffer read by compute shader, can be a null pointer
+	Rhi::IIndirectBufferPtr			mComputeOutputIndirectBuffer;	///< Graphics indirect buffer written by compute shader, can be a null pointer
+	Rhi::IUniformBufferPtr			mComputeInputUniformBuffer;		///< Graphics uniform buffer (UBO) read by compute shader, can be a null pointer
 
 
 };

@@ -39,43 +39,43 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global variables                                      ]
 		//[-------------------------------------------------------]
-		static Renderer::IVertexArrayPtr VolumeVertexArrayPtr;	///< Vertex array object (VAO), can be a null pointer, shared between all volume instances
+		static Rhi::IVertexArrayPtr VolumeVertexArrayPtr;	///< Vertex array object (VAO), can be a null pointer, shared between all volume instances
 
 
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		[[nodiscard]] Renderer::IVertexArray* createVolumeVertexArray(const RendererRuntime::IRendererRuntime& rendererRuntime)
+		[[nodiscard]] Rhi::IVertexArray* createVolumeVertexArray(const RendererRuntime::IRendererRuntime& rendererRuntime)
 		{
 			// Vertex input layout
-			static constexpr Renderer::VertexAttribute vertexAttributesLayout[] =
+			static constexpr Rhi::VertexAttribute vertexAttributesLayout[] =
 			{
 				{ // Attribute 0
 					// Data destination
-					Renderer::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-					"Position",									// name[32] (char)
-					"POSITION",									// semanticName[32] (char)
-					0,											// semanticIndex (uint32_t)
+					Rhi::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+					"Position",								// name[32] (char)
+					"POSITION",								// semanticName[32] (char)
+					0,										// semanticIndex (uint32_t)
 					// Data source
-					0,											// inputSlot (uint32_t)
-					0,											// alignedByteOffset (uint32_t)
-					sizeof(float) * 3,							// strideInBytes (uint32_t)
-					0											// instancesPerElement (uint32_t)
+					0,										// inputSlot (uint32_t)
+					0,										// alignedByteOffset (uint32_t)
+					sizeof(float) * 3,						// strideInBytes (uint32_t)
+					0										// instancesPerElement (uint32_t)
 				},
 				{ // Attribute 1, see "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html
 					// Data destination
-					Renderer::VertexAttributeFormat::UINT_1,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-					"drawId",									// name[32] (char)
-					"DRAWID",									// semanticName[32] (char)
-					0,											// semanticIndex (uint32_t)
+					Rhi::VertexAttributeFormat::UINT_1,		// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+					"drawId",								// name[32] (char)
+					"DRAWID",								// semanticName[32] (char)
+					0,										// semanticIndex (uint32_t)
 					// Data source
-					1,											// inputSlot (uint32_t)
-					0,											// alignedByteOffset (uint32_t)
-					sizeof(uint32_t),							// strideInBytes (uint32_t)
-					1											// instancesPerElement (uint32_t)
+					1,										// inputSlot (uint32_t)
+					0,										// alignedByteOffset (uint32_t)
+					sizeof(uint32_t),						// strideInBytes (uint32_t)
+					1										// instancesPerElement (uint32_t)
 				}
 			};
-			const Renderer::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
+			const Rhi::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
 
 			// Our cube is constructed like this
 			/*
@@ -102,9 +102,9 @@ namespace
 				 0.5f,  0.5f,  0.5f,	// 6
 				-0.5f,  0.5f,  0.5f,	// 7
 			};
-			Renderer::IBufferManager& bufferManager = rendererRuntime.getBufferManager();
-			Renderer::IVertexBufferPtr vertexBuffer(bufferManager.createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION));
-			RENDERER_SET_RESOURCE_DEBUG_NAME(vertexBuffer, "Volume")
+			Rhi::IBufferManager& bufferManager = rendererRuntime.getBufferManager();
+			Rhi::IVertexBufferPtr vertexBuffer(bufferManager.createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION));
+			RHI_SET_RESOURCE_DEBUG_NAME(vertexBuffer, "Volume")
 
 			// Create the index buffer object (IBO)
 			static constexpr uint16_t INDICES[] =
@@ -128,13 +128,13 @@ namespace
 				0, 4, 5,	// 0
 				5, 1, 0		// 1
 			};
-			Renderer::IIndexBuffer* indexBuffer = bufferManager.createIndexBuffer(sizeof(INDICES), INDICES);
-			RENDERER_SET_RESOURCE_DEBUG_NAME(indexBuffer, "Volume")
+			Rhi::IIndexBuffer* indexBuffer = bufferManager.createIndexBuffer(sizeof(INDICES), INDICES);
+			RHI_SET_RESOURCE_DEBUG_NAME(indexBuffer, "Volume")
 
 			// Create vertex array object (VAO)
-			const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer, rendererRuntime.getMeshResourceManager().getDrawIdVertexBufferPtr() };
-			Renderer::IVertexArray* vertexArray = bufferManager.createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBuffer);
-			RENDERER_SET_RESOURCE_DEBUG_NAME(vertexArray, "Volume")
+			const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer, rendererRuntime.getMeshResourceManager().getDrawIdVertexBufferPtr() };
+			Rhi::IVertexArray* vertexArray = bufferManager.createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBuffer);
+			RHI_SET_RESOURCE_DEBUG_NAME(vertexArray, "Volume")
 
 			// Done
 			return vertexArray;
@@ -161,7 +161,7 @@ namespace RendererRuntime
 	const RenderableManager* VolumeSceneItem::getRenderableManager() const
 	{
 		// Sanity check
-		RENDERER_ASSERT(getContext(), mRenderableManager.getTransform().scale.x == mRenderableManager.getTransform().scale.y && mRenderableManager.getTransform().scale.y == mRenderableManager.getTransform().scale.z, "Only uniform scale is supported to keep things simple")
+		RHI_ASSERT(getContext(), mRenderableManager.getTransform().scale.x == mRenderableManager.getTransform().scale.y && mRenderableManager.getTransform().scale.y == mRenderableManager.getTransform().scale.z, "Only uniform scale is supported to keep things simple")
 
 		// Call the base implementation
 		return MaterialSceneItem::getRenderableManager();
@@ -189,7 +189,7 @@ namespace RendererRuntime
 		if (nullptr == ::detail::VolumeVertexArrayPtr)
 		{
 			::detail::VolumeVertexArrayPtr = ::detail::createVolumeVertexArray(getSceneResource().getRendererRuntime());
-			RENDERER_ASSERT(getContext(), nullptr != ::detail::VolumeVertexArrayPtr, "Invalid volume vertex array")
+			RHI_ASSERT(getContext(), nullptr != ::detail::VolumeVertexArrayPtr, "Invalid volume vertex array")
 		}
 		::detail::VolumeVertexArrayPtr->addReference();
 	}

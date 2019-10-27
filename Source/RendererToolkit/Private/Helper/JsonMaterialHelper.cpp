@@ -81,7 +81,7 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	//[ Public static methods                                 ]
 	//[-------------------------------------------------------]
-	void JsonMaterialHelper::optionalFillModeProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::FillMode& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector)
+	void JsonMaterialHelper::optionalFillModeProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Rhi::FillMode& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector)
 	{
 		if (rapidJsonValue.HasMember(propertyName))
 		{
@@ -90,8 +90,8 @@ namespace RendererToolkit
 			const rapidjson::SizeType valueStringLength = rapidJsonValueValueType.GetStringLength();
 
 			// Define helper macros
-			#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::FillMode::name;
-			#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::FillMode::name;
+			#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Rhi::FillMode::name;
+			#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Rhi::FillMode::name;
 
 			// Evaluate value
 			IF_VALUE(WIREFRAME)
@@ -112,7 +112,7 @@ namespace RendererToolkit
 		}
 	}
 
-	void JsonMaterialHelper::optionalCullModeProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::CullMode& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector)
+	void JsonMaterialHelper::optionalCullModeProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Rhi::CullMode& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector)
 	{
 		if (rapidJsonValue.HasMember(propertyName))
 		{
@@ -121,8 +121,8 @@ namespace RendererToolkit
 			const rapidjson::SizeType valueStringLength = rapidJsonValueValueType.GetStringLength();
 
 			// Define helper macros
-			#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::CullMode::name;
-			#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::CullMode::name;
+			#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Rhi::CullMode::name;
+			#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Rhi::CullMode::name;
 
 			// Evaluate value
 			IF_VALUE(NONE)
@@ -144,7 +144,7 @@ namespace RendererToolkit
 		}
 	}
 
-	void JsonMaterialHelper::optionalConservativeRasterizationModeProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::ConservativeRasterizationMode& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector)
+	void JsonMaterialHelper::optionalConservativeRasterizationModeProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Rhi::ConservativeRasterizationMode& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector)
 	{
 		if (rapidJsonValue.HasMember(propertyName))
 		{
@@ -153,8 +153,8 @@ namespace RendererToolkit
 			const rapidjson::SizeType valueStringLength = rapidJsonValueValueType.GetStringLength();
 
 			// Define helper macros
-			#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::ConservativeRasterizationMode::name;
-			#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::ConservativeRasterizationMode::name;
+			#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Rhi::ConservativeRasterizationMode::name;
+			#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Rhi::ConservativeRasterizationMode::name;
 
 			// Evaluate value
 			IF_VALUE(OFF)
@@ -175,7 +175,7 @@ namespace RendererToolkit
 		}
 	}
 
-	void JsonMaterialHelper::optionalDepthWriteMaskProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::DepthWriteMask& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector)
+	void JsonMaterialHelper::optionalDepthWriteMaskProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Rhi::DepthWriteMask& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector)
 	{
 		if (rapidJsonValue.HasMember(propertyName))
 		{
@@ -184,8 +184,8 @@ namespace RendererToolkit
 			const rapidjson::SizeType valueStringLength = rapidJsonValueValueType.GetStringLength();
 
 			// Define helper macros
-			#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::DepthWriteMask::name;
-			#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::DepthWriteMask::name;
+			#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Rhi::DepthWriteMask::name;
+			#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Rhi::DepthWriteMask::name;
 
 			// Evaluate value
 			IF_VALUE(ZERO)
@@ -206,7 +206,7 @@ namespace RendererToolkit
 		}
 	}
 
-	void JsonMaterialHelper::optionalStencilOpProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::StencilOp& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector)
+	void JsonMaterialHelper::optionalStencilOpProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Rhi::StencilOp& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector)
 	{
 		if (rapidJsonValue.HasMember(propertyName))
 		{
@@ -215,8 +215,8 @@ namespace RendererToolkit
 			const rapidjson::SizeType valueStringLength = rapidJsonValueValueType.GetStringLength();
 
 			// Define helper macros
-			#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::StencilOp::name;
-			#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::StencilOp::name;
+			#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Rhi::StencilOp::name;
+			#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Rhi::StencilOp::name;
 
 			// Evaluate value
 			IF_VALUE(KEEP)
@@ -243,7 +243,7 @@ namespace RendererToolkit
 		}
 	}
 
-	void JsonMaterialHelper::optionalBlendProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::Blend& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector)
+	void JsonMaterialHelper::optionalBlendProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Rhi::Blend& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector)
 	{
 		if (rapidJsonValue.HasMember(propertyName))
 		{
@@ -252,8 +252,8 @@ namespace RendererToolkit
 			const rapidjson::SizeType valueStringLength = rapidJsonValueValueType.GetStringLength();
 
 			// Define helper macros
-			#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::Blend::name;
-			#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::Blend::name;
+			#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Rhi::Blend::name;
+			#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Rhi::Blend::name;
 
 			// Evaluate value
 			IF_VALUE(ZERO)
@@ -289,7 +289,7 @@ namespace RendererToolkit
 		}
 	}
 
-	void JsonMaterialHelper::optionalBlendOpProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::BlendOp& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector)
+	void JsonMaterialHelper::optionalBlendOpProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Rhi::BlendOp& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector)
 	{
 		if (rapidJsonValue.HasMember(propertyName))
 		{
@@ -298,8 +298,8 @@ namespace RendererToolkit
 			const rapidjson::SizeType valueStringLength = rapidJsonValueValueType.GetStringLength();
 
 			// Define helper macros
-			#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::BlendOp::name;
-			#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::BlendOp::name;
+			#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Rhi::BlendOp::name;
+			#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Rhi::BlendOp::name;
 
 			// Evaluate value
 			IF_VALUE(ADD)
@@ -323,7 +323,7 @@ namespace RendererToolkit
 		}
 	}
 
-	void JsonMaterialHelper::optionalFilterProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::FilterMode& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector)
+	void JsonMaterialHelper::optionalFilterProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Rhi::FilterMode& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector)
 	{
 		if (rapidJsonValue.HasMember(propertyName))
 		{
@@ -332,8 +332,8 @@ namespace RendererToolkit
 			const rapidjson::SizeType valueStringLength = rapidJsonValueValueType.GetStringLength();
 
 			// Define helper macros
-			#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::FilterMode::name;
-			#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::FilterMode::name;
+			#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Rhi::FilterMode::name;
+			#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Rhi::FilterMode::name;
 
 			// Evaluate value
 			IF_VALUE(MIN_MAG_MIP_POINT)
@@ -371,7 +371,7 @@ namespace RendererToolkit
 		}
 	}
 
-	void JsonMaterialHelper::optionalTextureAddressModeProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::TextureAddressMode& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector)
+	void JsonMaterialHelper::optionalTextureAddressModeProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Rhi::TextureAddressMode& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector)
 	{
 		if (rapidJsonValue.HasMember(propertyName))
 		{
@@ -380,8 +380,8 @@ namespace RendererToolkit
 			const rapidjson::SizeType valueStringLength = rapidJsonValueValueType.GetStringLength();
 
 			// Define helper macros
-			#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::TextureAddressMode::name;
-			#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::TextureAddressMode::name;
+			#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Rhi::TextureAddressMode::name;
+			#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Rhi::TextureAddressMode::name;
 
 			// Evaluate value
 			IF_VALUE(WRAP)
@@ -405,7 +405,7 @@ namespace RendererToolkit
 		}
 	}
 
-	void JsonMaterialHelper::optionalComparisonFuncProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::ComparisonFunc& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector)
+	void JsonMaterialHelper::optionalComparisonFuncProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Rhi::ComparisonFunc& value, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector)
 	{
 		if (rapidJsonValue.HasMember(propertyName))
 		{
@@ -414,8 +414,8 @@ namespace RendererToolkit
 			const rapidjson::SizeType valueStringLength = rapidJsonValueValueType.GetStringLength();
 
 			// Define helper macros
-			#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::ComparisonFunc::name;
-			#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::ComparisonFunc::name;
+			#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Rhi::ComparisonFunc::name;
+			#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Rhi::ComparisonFunc::name;
 
 			// Evaluate value
 			IF_VALUE(NEVER)

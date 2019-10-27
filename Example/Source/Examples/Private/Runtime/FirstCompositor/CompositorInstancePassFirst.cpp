@@ -36,7 +36,7 @@
 //[-------------------------------------------------------]
 //[ Protected virtual RendererRuntime::ICompositorInstancePass methods ]
 //[-------------------------------------------------------]
-void CompositorInstancePassFirst::onFillCommandBuffer([[maybe_unused]] const Renderer::IRenderTarget* renderTarget, const RendererRuntime::CompositorContextData&, [[maybe_unused]] Renderer::CommandBuffer& commandBuffer)
+void CompositorInstancePassFirst::onFillCommandBuffer([[maybe_unused]] const Rhi::IRenderTarget* renderTarget, const RendererRuntime::CompositorContextData&, [[maybe_unused]] Rhi::CommandBuffer& commandBuffer)
 {
 	// Sanity check
 	assert((nullptr != renderTarget) && "The first example compositor instance pass needs a valid render target");
@@ -47,7 +47,7 @@ void CompositorInstancePassFirst::onFillCommandBuffer([[maybe_unused]] const Ren
 		RendererRuntime::DebugGuiManager& debugGuiManager = compositorWorkspaceInstance.getRendererRuntime().getDebugGuiManager();
 		debugGuiManager.newFrame(*compositorWorkspaceInstance.getExecutionRenderTarget());	// We know that the render target must be valid if we're in here
 		RendererRuntime::DebugGuiHelper::drawText("42", 100.0f, 100.0f);
-		debugGuiManager.fillGraphicsCommandBufferUsingFixedBuildInRendererConfiguration(commandBuffer);
+		debugGuiManager.fillGraphicsCommandBufferUsingFixedBuildInRhiConfiguration(commandBuffer);
 	#else
 		assert(false && "ImGui support is disabled");
 	#endif

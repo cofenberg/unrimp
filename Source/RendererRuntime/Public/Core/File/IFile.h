@@ -106,7 +106,7 @@ namespace RendererRuntime
 		//[-------------------------------------------------------]
 		//[ Debug                                                 ]
 		//[-------------------------------------------------------]
-		#ifdef _DEBUG
+		#ifdef RHI_DEBUG
 			/**
 			*  @brief
 			*    Get debug filename

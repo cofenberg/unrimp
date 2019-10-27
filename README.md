@@ -24,19 +24,19 @@ Features
 ======
 - General
 	- C++ 17 and above, no legacy compiler support, compiled with wall warning level
-	- Compact user-header for the renderer backend API
+	- Compact user-header for the rendering hardware interface (RHI)
 		- A single all in one header for ease-of-use and best possible compile times
-		- No need to links against the renderer library itself, load renderer interface implementations dynamically during runtime
+		- No need to links against the RHI library itself, load RHI implementations dynamically during runtime
 	- Usage of [Amalgamated](https://blog.forrestthewoods.com/improving-open-source-with-amalgamation-cf293592c5f4)/[Unity](http://buffered.io/posts/the-magic-of-unity-builds/) builds for best possible compile times
 	- Using [CMake](https://cmake.org/) for the build process
 	- Using [Doxygen](http://www.doxygen.org) for code documentation
-	- Lightweight renderer implementations
+	- Lightweight RHI implementations
 		- Designed with [AZDO ("Almost Zero Driver Overhead")](https://de.slideshare.net/CassEveritt/approaching-zero-driver-overhead) in mind
 		- Implementations try to stick as best as possible close-to-the-metal and as a result are just a few KiB instead of MiB in memory size
-		- Implementations load the entry points of Vulkan, Direct3D, OpenGL and so on during runtime, meaning it's possible to react on system failures by e.g. dynamically switching to another renderer implementation
+		- Implementations load the entry points of Vulkan, Direct3D, OpenGL and so on during runtime, meaning it's possible to react on system failures by e.g. dynamically switching to another RHI implementation
 	- Support for static and shared build
-	- Separation into backend, runtime and toolkit for asset cooking
-		- Backend abstracts way the underlying renderer API like Vulkan/OpenGL/DirectX
+	- Separation into RHI, runtime and toolkit for asset cooking
+		- RHI abstracts way the underlying API like Vulkan/OpenGL/DirectX
 		- Runtime designed with end-user and middleware-user in mind
 			- Efficiency and responsiveness over flexibility (were it isn't useful in practice)
 			- Intended to be controlled by a high-level entity-component system, no unused implementation feature overkill in the basic runtime
@@ -54,11 +54,11 @@ Features
 		- Mac OS X in mind (nothing more at the moment, but in mind is important because Mac OS X 10.11 only supports OpenGL 4.1 and has some other nasty issues)
 
 
-Renderer API and Backends
+Rendering hardware interface (RHI) and implementations
 ======
-- Renderer implementations for
+- RHI implementations for
 	- Vulkan (not feature complete, yet)
-	- Direct3D 12 (early phase)
+	- Direct3D 12 (not feature complete, yet)
 	- Direct3D 11
 	- OpenGL (by default a OpenGL 4.1 context is created, the best OpenGL version Mac OS X 10.11 supports, so lowest version we have to support)
 	- OpenGL ES 3
@@ -93,7 +93,7 @@ Renderer API and Backends
 	- Command buffer mandatory by design, not just build on top
 - Textures: 1D, 1D array, 2D, 2D array, 3D, cube
 - State objects with mapping to API specific settings during creation, not runtime
-	- Graphics pipeline state object (PSO) which directly maps to Direct3D 12, other backends internally subdivide into
+	- Graphics pipeline state object (PSO) which directly maps to Direct3D 12, other RHI implementations internally subdivide into
 		- Rasterizer state object (rasterizer stage (RS))
 		- Depth stencil state object (output-merger (OM) stage)
 		- Blend state object (output-merger (OM) stage)
@@ -103,23 +103,23 @@ Renderer API and Backends
 	- Draw instanced (shader model 4 feature, build in shader variable holding the current instance ID)
 - Debug methods
 	- When using Direct3D <11.1, those methods map to the Direct3D 9 PIX functions (D3DPERF_* functions, also works directly within VisualStudio 2019 out-of-the-box)
-	- Used inside the renderer implementations for better renderer debugging
+	- Used inside the RHI implementations for better RHI debugging
 - Supported asynchronous queries: Occlusion, pipeline statistics and timestamp
-- Renderer implementation specific optimizations
+- RHI implementation specific optimizations: 
 	- OpenGL: Usage of direct state access (DSA), if available
 
 
 Renderer Runtime (e.g. "The Game")
 ======
 - During runtime, only platform optimized and compressed binary assets are used
-	- No inefficient generic stuff, no e.g. endianess handling, primarily raw chunks which can be fed into memory and GPU as efficient as possible
+	- No inefficient generic stuff, no e.g. endianness handling, primarily raw chunks which can be fed into memory and GPU as efficient as possible
 	- Efficient [CRN](https://github.com/BinomialLLC/crunch) textures are used by default, DDS is supported as well
 	- Using [LZ4](http://lz4.github.io/lz4/) compression
 - Asynchronous loading for all resources: To fight lags, micro stutter / judder, especially for virtual reality applications one needs a constant framerate
 - Material and shader blueprint system which was designed from ground up for pipeline state object (PSO) architecture
 	- New material types can be added without a single line of C++ source code, meaning technical artists can create and fine-tune the shaders in realtime
 	- Materials reference material blueprints and are just a list of key-value-pairs
-	- Shader language specifics are abstracted away: Write shaders once, use them across multiple renderer APIs
+	- Shader language specifics are abstracted away: Write shaders once, use them across multiple RHI implementations
 	- Support for shader combinations (Uber-shaders)
 	- Support for reusable shader pieces
 	- Material inheritance for materials which should share common properties, but differ in other properties
@@ -233,7 +233,9 @@ Examples (just some high level keywords)
 
 Terminology and Acronyms
 ======
-- Renderer backend
+- General
+	- Plain old data (POD)
+- Rendering hardware interface (RHI)
 	- Vertex buffer object (VBO)
 	- Index buffer object (IBO)
 	- Vertex array object (VAO)
@@ -367,7 +369,7 @@ Hints
 - How to test the 64 bit world space position support?
 	- Inside "SceneResourceLoader.cpp" -> "nodeDeserialization()" after reading a node, add an 100.000.000 offset to the node transform position
 
-The unified renderer interface can't unify some graphics API behaviour differences. Here's a list of hints you might want to know:
+The unified RHI can't unify some RHI implementation behaviour differences. Here's a list of hints you might want to know:
 - Texel coordinate system origin
 	- OpenGL: Left/bottom
 	- Direct3D: Left/top

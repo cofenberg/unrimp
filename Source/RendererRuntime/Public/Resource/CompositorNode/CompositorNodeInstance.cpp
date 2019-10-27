@@ -26,8 +26,6 @@
 #include "RendererRuntime/Public/Resource/CompositorNode/Pass/ICompositorInstancePass.h"
 #include "RendererRuntime/Public/Resource/CompositorNode/Pass/ICompositorResourcePass.h"
 
-#include <Renderer/Public/Renderer.h>
-
 #include <limits>
 
 
@@ -57,9 +55,9 @@ namespace RendererRuntime
 		}
 	}
 
-	Renderer::IRenderTarget& CompositorNodeInstance::fillCommandBuffer(Renderer::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer) const
+	Rhi::IRenderTarget& CompositorNodeInstance::fillCommandBuffer(Rhi::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, Rhi::CommandBuffer& commandBuffer) const
 	{
-		Renderer::IRenderTarget* currentRenderTarget = nullptr;
+		Rhi::IRenderTarget* currentRenderTarget = nullptr;
 		for (ICompositorInstancePass* compositorInstancePass : mCompositorInstancePasses)
 		{
 			// Check whether or not to execute the compositor pass instance
@@ -69,11 +67,11 @@ namespace RendererRuntime
 			{
 				{ // Set the current graphics render target
 					// TODO(co) For now: In case if it's a compositor channel ID (input/output node) use the given render target
-					Renderer::IRenderTarget* newRenderTarget = isValid(compositorResourcePass.getCompositorTarget().getCompositorChannelId()) ? &renderTarget : compositorInstancePass->getRenderTarget();
+					Rhi::IRenderTarget* newRenderTarget = isValid(compositorResourcePass.getCompositorTarget().getCompositorChannelId()) ? &renderTarget : compositorInstancePass->getRenderTarget();
 					if (newRenderTarget != currentRenderTarget)
 					{
 						currentRenderTarget = newRenderTarget;
-						Renderer::Command::SetGraphicsRenderTarget::create(commandBuffer, currentRenderTarget);
+						Rhi::Command::SetGraphicsRenderTarget::create(commandBuffer, currentRenderTarget);
 					}
 
 					// Set the graphics viewport and scissor rectangle
@@ -86,7 +84,7 @@ namespace RendererRuntime
 						currentRenderTarget->getWidthAndHeight(width, height);
 
 						// Set the graphics viewport and scissor rectangle
-						Renderer::Command::SetGraphicsViewportAndScissorRectangle::create(commandBuffer, 0, 0, width, height, compositorResourcePass.getMinimumDepth(), compositorResourcePass.getMaximumDepth());
+						Rhi::Command::SetGraphicsViewportAndScissorRectangle::create(commandBuffer, 0, 0, width, height, compositorResourcePass.getMinimumDepth(), compositorResourcePass.getMaximumDepth());
 					}
 				}
 

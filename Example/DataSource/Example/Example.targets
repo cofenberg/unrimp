@@ -328,27 +328,27 @@
 			},
 			"OpenGL_120":
 			{
-				"RendererBackend": "OpenGL",
+				"Rhi": "OpenGL",
 				"ShaderVersion": "1.2"
 			},
 			"OpenGL_330":
 			{
-				"RendererBackend": "OpenGL",
+				"Rhi": "OpenGL",
 				"ShaderVersion": "3.30"
 			},
 			"OpenGL_440":
 			{
-				"RendererBackend": "OpenGL",
+				"Rhi": "OpenGL",
 				"ShaderVersion": "4.40"
 			},
 			"OpenGLES_100":
 			{
-				"RendererBackend": "OpenGLES3",
+				"Rhi": "OpenGLES3",
 				"ShaderVersion": "1.00"
 			},
 			"OpenGLES_300":
 			{
-				"RendererBackend": "OpenGLES3",
+				"Rhi": "OpenGLES3",
 				"ShaderVersion": "3.00"
 			}
 		},
@@ -366,12 +366,12 @@
 				"VertexLayout": "Default"
 			}
 		},
-		"RendererTargets":
+		"RhiTargets":
 		{
 			"Direct3D9_30":
 			{
 				"Platform": "Pc",
-				"RendererBackend": "Direct3D9",
+				"Rhi": "Direct3D9",
 				"TextureTarget": "PcLegacy",
 				"ShaderTarget": "Direct3D_30",
 				"MaterialTarget": "Default",
@@ -380,7 +380,7 @@
 			"Direct3D10_40":
 			{
 				"Platform": "Pc",
-				"RendererBackend": "Direct3D10",
+				"Rhi": "Direct3D10",
 				"TextureTarget": "Pc",
 				"ShaderTarget": "Direct3D_40",
 				"MaterialTarget": "Default",
@@ -389,7 +389,7 @@
 			"Direct3D11_50":
 			{
 				"Platform": "Pc",
-				"RendererBackend": "Direct3D11",
+				"Rhi": "Direct3D11",
 				"TextureTarget": "Pc",
 				"ShaderTarget": "Direct3D_50",
 				"MaterialTarget": "Default",
@@ -398,7 +398,7 @@
 			"OpenGL_120":
 			{
 				"Platform": "Pc",
-				"RendererBackend": "OpenGL",
+				"Rhi": "OpenGL",
 				"TextureTarget": "PcLegacy",
 				"ShaderTarget": "OpenGL_120",
 				"MaterialTarget": "Default",
@@ -407,7 +407,7 @@
 			"OpenGL_330":
 			{
 				"Platform": "Pc",
-				"RendererBackend": "OpenGL",
+				"Rhi": "OpenGL",
 				"TextureTarget": "Pc",
 				"ShaderTarget": "OpenGL_330",
 				"MaterialTarget": "Default",
@@ -416,7 +416,7 @@
 			"OpenGL_440":
 			{
 				"Platform": "Pc",
-				"RendererBackend": "OpenGL",
+				"Rhi": "OpenGL",
 				"TextureTarget": "Pc",
 				"ShaderTarget": "OpenGL_440",
 				"MaterialTarget": "Default",
@@ -425,7 +425,7 @@
 			"OpenGLES2_100":
 			{
 				"Platform": "Mobile",
-				"RendererBackend": "OpenGLES2",
+				"Rhi": "OpenGLES2",
 				"TextureTarget": "Mobile",
 				"ShaderTarget": "OpenGLES_100",
 				"MaterialTarget": "Default",
@@ -434,7 +434,7 @@
 			"OpenGLES3_300":
 			{
 				"Platform": "Mobile",
-				"RendererBackend": "OpenGLES2",
+				"Rhi": "OpenGLES2",
 				"TextureTarget": "Mobile",
 				"ShaderTarget": "OpenGLES_300",
 				"MaterialTarget": "Default",

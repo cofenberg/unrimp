@@ -70,9 +70,9 @@ namespace RendererRuntime
 		MaterialSceneItem(sceneResource, false),	// TODO(co) Set bounding box
 		mMaximumNumberOfGrass(3)	// TODO(co) Make this dynamic
 	{
-		// The renderer backend must support structured buffers
+		// The RHI implementation must support structured buffers
 		const IRendererRuntime& rendererRuntime = getSceneResource().getRendererRuntime();
-		if (rendererRuntime.getRenderer().getCapabilities().maximumStructuredBufferSize > 0)
+		if (rendererRuntime.getRhi().getCapabilities().maximumStructuredBufferSize > 0)
 		{
 			// Create vertex array object (VAO)
 			// Create the vertex buffer object (VBO)
@@ -92,28 +92,28 @@ namespace RendererRuntime
 					1.0f,  1.0f,   1.0f, 1.2f
 				}
 			};
-			Renderer::IBufferManager& bufferManager = rendererRuntime.getBufferManager();
+			Rhi::IBufferManager& bufferManager = rendererRuntime.getBufferManager();
 
 			// Create the structured buffer
-			mStructuredBufferPtr = bufferManager.createStructuredBuffer(sizeof(GrassDataStruct) * mMaximumNumberOfGrass, grassData, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::STATIC_DRAW, sizeof(GrassDataStruct));
-			RENDERER_SET_RESOURCE_DEBUG_NAME(mStructuredBufferPtr, "Grass structured buffer")
+			mStructuredBufferPtr = bufferManager.createStructuredBuffer(sizeof(GrassDataStruct) * mMaximumNumberOfGrass, grassData, Rhi::BufferFlag::SHADER_RESOURCE, Rhi::BufferUsage::STATIC_DRAW, sizeof(GrassDataStruct));
+			RHI_SET_RESOURCE_DEBUG_NAME(mStructuredBufferPtr, "Grass structured buffer")
 
 			{ // Create the indirect buffer: Twelve vertices per grass (two quads), grass index = instance index
-				const Renderer::DrawArguments drawArguments =
+				const Rhi::DrawArguments drawArguments =
 				{
 					12,						// vertexCountPerInstance (uint32_t)
 					mMaximumNumberOfGrass,	// instanceCount (uint32_t)
 					0,						// startVertexLocation (uint32_t)
 					0						// startInstanceLocation (uint32_t)
 				};
-				mIndirectBufferPtr = bufferManager.createIndirectBuffer(sizeof(Renderer::DrawArguments), &drawArguments, Renderer::IndirectBufferFlag::UNORDERED_ACCESS | Renderer::IndirectBufferFlag::DRAW_ARGUMENTS);
-				RENDERER_SET_RESOURCE_DEBUG_NAME(mIndirectBufferPtr, "Grass indirect buffer")
+				mIndirectBufferPtr = bufferManager.createIndirectBuffer(sizeof(Rhi::DrawArguments), &drawArguments, Rhi::IndirectBufferFlag::UNORDERED_ACCESS | Rhi::IndirectBufferFlag::DRAW_ARGUMENTS);
+				RHI_SET_RESOURCE_DEBUG_NAME(mIndirectBufferPtr, "Grass indirect buffer")
 			}
 		}
 		else
 		{
 			mMaximumNumberOfGrass = 0;
-			RENDERER_LOG_ONCE(rendererRuntime.getContext(), COMPATIBILITY_WARNING, "The renderer runtime grass scene item needs a renderer backend with structured buffer support")
+			RHI_LOG_ONCE(rendererRuntime.getContext(), COMPATIBILITY_WARNING, "The renderer runtime grass scene item needs a RHI implementation with structured buffer support")
 		}
 	}
 

@@ -82,7 +82,7 @@ void FirstCompositor::onDraw()
 	if (nullptr != mCompositorWorkspaceInstance)
 	{
 		// Get the main render target and ensure there's one
-		Renderer::IRenderTarget* mainRenderTarget = getMainRenderTarget();
+		Rhi::IRenderTarget* mainRenderTarget = getMainRenderTarget();
 		if (nullptr != mainRenderTarget)
 		{
 			// Execute the compositor workspace instance

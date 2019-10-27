@@ -21,8 +21,8 @@
 //[-------------------------------------------------------]
 //[ Shader start                                          ]
 //[-------------------------------------------------------]
-#if defined(RENDERER_DIRECT3D10) || defined(RENDERER_DIRECT3D11) || defined(RENDERER_DIRECT3D12)
-if (renderer->getNameId() == Renderer::NameId::DIRECT3D10 || renderer->getNameId() == Renderer::NameId::DIRECT3D11 || renderer->getNameId() == Renderer::NameId::DIRECT3D12)
+#if defined(RHI_DIRECT3D10) || defined(RHI_DIRECT3D11) || defined(RHI_DIRECT3D12)
+if (rhi->getNameId() == Rhi::NameId::DIRECT3D10 || rhi->getNameId() == Rhi::NameId::DIRECT3D11 || rhi->getNameId() == Rhi::NameId::DIRECT3D12)
 {
 
 
@@ -190,11 +190,11 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID)
 		// Output indirect buffer values (draw calls)
 		// -> Using a structured indirect buffer would be handy inside shader source codes, sadly this isn't possible with Direct3D 11 and will result in the following error:
 		//    "D3D11 ERROR: ID3D11Device::CreateBuffer: A resource cannot created with both D3D11_RESOURCE_MISC_DRAWINDIRECT_ARGS and D3D11_RESOURCE_MISC_BUFFER_STRUCTURED. [ STATE_CREATION ERROR #68: CREATEBUFFER_INVALIDMISCFLAGS]"
-	//	OutputIndirectBuffer[0] = inputIndirectBuffer[0];	// Renderer::DrawIndexedArguments::indexCountPerInstance	- Filled by compute shader via atomics counting
-		OutputIndirectBuffer[1] = inputIndirectBuffer[1];	// Renderer::DrawIndexedArguments::instanceCount
-		OutputIndirectBuffer[2] = inputIndirectBuffer[2];	// Renderer::DrawIndexedArguments::startIndexLocation
-		OutputIndirectBuffer[3] = inputIndirectBuffer[3];	// Renderer::DrawIndexedArguments::baseVertexLocation
-		OutputIndirectBuffer[4] = inputIndirectBuffer[4];	// Renderer::DrawIndexedArguments::startInstanceLocation
+	//	OutputIndirectBuffer[0] = inputIndirectBuffer[0];	// Rhi::DrawIndexedArguments::indexCountPerInstance	- Filled by compute shader via atomics counting
+		OutputIndirectBuffer[1] = inputIndirectBuffer[1];	// Rhi::DrawIndexedArguments::instanceCount
+		OutputIndirectBuffer[2] = inputIndirectBuffer[2];	// Rhi::DrawIndexedArguments::startIndexLocation
+		OutputIndirectBuffer[3] = inputIndirectBuffer[3];	// Rhi::DrawIndexedArguments::baseVertexLocation
+		OutputIndirectBuffer[4] = inputIndirectBuffer[4];	// Rhi::DrawIndexedArguments::startInstanceLocation
 	}
 
 	// Atomics for counting usage example

@@ -21,9 +21,9 @@
 //[-------------------------------------------------------]
 //[ Shader start                                          ]
 //[-------------------------------------------------------]
-#ifdef RENDERER_OPENGLES3
+#ifdef RHI_OPENGLES3
 // Uniform buffer version (Direct3D 10 and Direct3D 11 only support uniform buffers and no individual uniform access)
-if (renderer.getNameId() == Renderer::NameId::OPENGLES3 && mRenderer->getCapabilities().maximumUniformBufferSize > 0)
+if (rhi.getNameId() == Rhi::NameId::OPENGLES3 && mRhi->getCapabilities().maximumUniformBufferSize > 0)
 {
 
 

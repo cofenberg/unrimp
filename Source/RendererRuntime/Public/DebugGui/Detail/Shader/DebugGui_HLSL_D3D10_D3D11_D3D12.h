@@ -21,8 +21,8 @@
 //[-------------------------------------------------------]
 //[ Shader start                                          ]
 //[-------------------------------------------------------]
-#if defined(RENDERER_DIRECT3D10) || defined(RENDERER_DIRECT3D11) || defined(RENDERER_DIRECT3D12)
-if (renderer.getNameId() == Renderer::NameId::DIRECT3D10 || renderer.getNameId() == Renderer::NameId::DIRECT3D11 || renderer.getNameId() == Renderer::NameId::DIRECT3D12)
+#if defined(RHI_DIRECT3D10) || defined(RHI_DIRECT3D11) || defined(RHI_DIRECT3D12)
+if (rhi.getNameId() == Rhi::NameId::DIRECT3D10 || rhi.getNameId() == Rhi::NameId::DIRECT3D11 || rhi.getNameId() == Rhi::NameId::DIRECT3D12)
 {
 
 

@@ -366,21 +366,21 @@ namespace RendererRuntime
 				ImGui::Text("Rendered renderables %s", ::detail::stringFormatCommas(static_cast<uint64_t>(numberOfRenderables), temporary));
 
 				// Command buffer metrics
-				const Renderer::CommandBuffer& commandBuffer = compositorWorkspaceInstance->getCommandBuffer();
-				#ifdef RENDERER_STATISTICS
+				const Rhi::CommandBuffer& commandBuffer = compositorWorkspaceInstance->getCommandBuffer();
+				#ifdef RHI_STATISTICS
 					const uint32_t numberOfCommands = commandBuffer.getNumberOfCommands();
 				#else
 					uint32_t numberOfCommands = 0;
 					{
 						const uint8_t* commandPacketBuffer = commandBuffer.getCommandPacketBuffer();
-						Renderer::ConstCommandPacket constCommandPacket = commandPacketBuffer;
+						Rhi::ConstCommandPacket constCommandPacket = commandPacketBuffer;
 						while (nullptr != constCommandPacket)
 						{
 							// Count command packet
 							++numberOfCommands;
 
 							{ // Next command
-								const uint32_t nextCommandPacketByteIndex = Renderer::CommandPacketHelper::getNextCommandPacketByteIndex(constCommandPacket);
+								const uint32_t nextCommandPacketByteIndex = Rhi::CommandPacketHelper::getNextCommandPacketByteIndex(constCommandPacket);
 								constCommandPacket = (~0u != nextCommandPacketByteIndex) ? &commandPacketBuffer[nextCommandPacketByteIndex] : nullptr;
 							}
 						}
@@ -389,22 +389,22 @@ namespace RendererRuntime
 				if (ImGui::TreeNode("EmittedCommands", "Emitted commands: %s", ::detail::stringFormatCommas(numberOfCommands, temporary)))
 				{
 					// Loop through all commands and count them
-					uint32_t numberOfCommandFunctions[Renderer::CommandDispatchFunctionIndex::NumberOfFunctions] = {};
+					uint32_t numberOfCommandFunctions[Rhi::CommandDispatchFunctionIndex::NumberOfFunctions] = {};
 					const uint8_t* commandPacketBuffer = commandBuffer.getCommandPacketBuffer();
-					Renderer::ConstCommandPacket constCommandPacket = commandPacketBuffer;
+					Rhi::ConstCommandPacket constCommandPacket = commandPacketBuffer;
 					while (nullptr != constCommandPacket)
 					{
 						// Count command packet
-						++numberOfCommandFunctions[Renderer::CommandPacketHelper::loadCommandDispatchFunctionIndex(constCommandPacket)];
+						++numberOfCommandFunctions[Rhi::CommandPacketHelper::loadCommandDispatchFunctionIndex(constCommandPacket)];
 
 						{ // Next command
-							const uint32_t nextCommandPacketByteIndex = Renderer::CommandPacketHelper::getNextCommandPacketByteIndex(constCommandPacket);
+							const uint32_t nextCommandPacketByteIndex = Rhi::CommandPacketHelper::getNextCommandPacketByteIndex(constCommandPacket);
 							constCommandPacket = (~0u != nextCommandPacketByteIndex) ? &commandPacketBuffer[nextCommandPacketByteIndex] : nullptr;
 						}
 					}
 
 					// Print the number of emitted command functions
-					static constexpr const char* commandFunction[Renderer::CommandDispatchFunctionIndex::NumberOfFunctions] =
+					static constexpr const char* commandFunction[Rhi::CommandDispatchFunctionIndex::NumberOfFunctions] =
 					{
 						// Command buffer
 						"ExecuteCommandBuffer",
@@ -439,18 +439,18 @@ namespace RendererRuntime
 						"BeginDebugEvent",
 						"EndDebugEvent"
 					};
-					for (uint32_t i = 0; i < Renderer::CommandDispatchFunctionIndex::NumberOfFunctions; ++i)
+					for (uint32_t i = 0; i < Rhi::CommandDispatchFunctionIndex::NumberOfFunctions; ++i)
 					{
 						ImGui::Text("%s: %s", commandFunction[i], ::detail::stringFormatCommas(numberOfCommandFunctions[i], temporary));
 					}
 					ImGui::TreePop();
 				}
 
-				// Renderer and pipeline statistics
-				#ifdef RENDERER_STATISTICS
-				{ // Renderer statistics
-					const Renderer::Statistics& statistics = static_cast<const Renderer::IRenderer&>(compositorWorkspaceInstance->getRendererRuntime().getRenderer()).getStatistics();
-					if (ImGui::TreeNode("RendererResources", "Renderer resources: %s", ::detail::stringFormatCommas(statistics.getNumberOfCurrentResources(), temporary)))
+				// RHI and pipeline statistics
+				#ifdef RHI_STATISTICS
+				{ // RHI statistics
+					const Rhi::Statistics& statistics = static_cast<const Rhi::IRhi&>(compositorWorkspaceInstance->getRendererRuntime().getRhi()).getStatistics();
+					if (ImGui::TreeNode("RhiResources", "RHI resources: %s", ::detail::stringFormatCommas(statistics.getNumberOfCurrentResources(), temporary)))
 					{
 						ImGui::Text("Root signatures: %s", ::detail::stringFormatCommas(statistics.currentNumberOfRootSignatures.load(), temporary));
 						ImGui::Text("Resource groups: %s", ::detail::stringFormatCommas(statistics.currentNumberOfResourceGroups.load(), temporary));
@@ -488,7 +488,7 @@ namespace RendererRuntime
 				// Pipeline statistics
 				if (ImGui::TreeNode("PipelineStatistics", "Pipeline statistics"))
 				{
-					const Renderer::PipelineStatisticsQueryResult& pipelineStatisticsQueryResult = compositorWorkspaceInstance->getPipelineStatisticsQueryResult();
+					const Rhi::PipelineStatisticsQueryResult& pipelineStatisticsQueryResult = compositorWorkspaceInstance->getPipelineStatisticsQueryResult();
 					ImGui::Text("Input assembler vertices: %s", ::detail::stringFormatCommas(pipelineStatisticsQueryResult.numberOfInputAssemblerVertices, temporary));
 					ImGui::Text("Input assembler primitives: %s", ::detail::stringFormatCommas(pipelineStatisticsQueryResult.numberOfInputAssemblerPrimitives, temporary));
 					ImGui::Text("Vertex shader invocations: %s", ::detail::stringFormatCommas(pipelineStatisticsQueryResult.numberOfVertexShaderInvocations, temporary));

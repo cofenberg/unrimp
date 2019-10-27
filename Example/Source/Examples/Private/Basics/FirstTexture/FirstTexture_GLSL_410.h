@@ -21,8 +21,8 @@
 //[-------------------------------------------------------]
 //[ Shader start                                          ]
 //[-------------------------------------------------------]
-#ifdef RENDERER_OPENGL
-if (renderer->getNameId() == Renderer::NameId::OPENGL)
+#ifdef RHI_OPENGL
+if (rhi->getNameId() == Rhi::NameId::OPENGL)
 {
 
 

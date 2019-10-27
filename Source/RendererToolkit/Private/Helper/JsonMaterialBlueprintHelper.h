@@ -70,9 +70,9 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	public:
 		static void loadDocumentByFilename(const IAssetCompiler::Input& input, const std::string& virtualFilename, rapidjson::Document& rapidJsonDocument);
-		static void optionalPrimitiveTopology(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::PrimitiveTopology& value);
-		[[nodiscard]] static Renderer::PrimitiveTopologyType getPrimitiveTopologyTypeByPrimitiveTopology(Renderer::PrimitiveTopology primitiveTopology);
-		static void optionalShaderVisibilityProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::ShaderVisibility& value);
+		static void optionalPrimitiveTopology(const rapidjson::Value& rapidJsonValue, const char* propertyName, Rhi::PrimitiveTopology& value);
+		[[nodiscard]] static Rhi::PrimitiveTopologyType getPrimitiveTopologyTypeByPrimitiveTopology(Rhi::PrimitiveTopology primitiveTopology);
+		static void optionalShaderVisibilityProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Rhi::ShaderVisibility& value);
 		[[nodiscard]] static RendererRuntime::MaterialProperty::Usage mandatoryMaterialPropertyUsage(const rapidjson::Value& rapidJsonValue);
 		[[nodiscard]] static RendererRuntime::MaterialProperty::ValueType mandatoryMaterialPropertyValueType(const rapidjson::Value& rapidJsonValue);
 		static void getPropertiesByMaterialBlueprintAssetId(const IAssetCompiler::Input& input, RendererRuntime::AssetId materialBlueprintAssetId, RendererRuntime::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector, MaterialPropertyIdToName* materialPropertyIdToName = nullptr);

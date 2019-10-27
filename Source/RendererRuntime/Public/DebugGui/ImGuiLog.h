@@ -31,7 +31,7 @@
 #include <RendererRuntime/Public/Core/File/IFileManager.h>
 #include <RendererRuntime/Public/Core/Platform/PlatformManager.h>
 
-#include <Renderer/Public/DefaultLog.h>
+#include <Rhi/Public/DefaultLog.h>
 
 #include <imgui/imgui.h>
 
@@ -63,7 +63,7 @@ namespace RendererRuntime
 	*    - Designed to be instanced and used inside a single C++ file
 	*    - Basing on "Tip/Demo: Log example as helper class. #300" - https://github.com/ocornut/imgui/issues/300
 	*/
-	class ImGuiLog final : public Renderer::DefaultLog
+	class ImGuiLog final : public Rhi::DefaultLog
 	{
 
 
@@ -142,22 +142,22 @@ namespace RendererRuntime
 							const Entry& entry = mEntries[lineNumber];
 							switch (entry.type)
 							{
-								case Renderer::ILog::Type::TRACE:
-								case Renderer::ILog::Type::DEBUG:
+								case Rhi::ILog::Type::TRACE:
+								case Rhi::ILog::Type::DEBUG:
 									color = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
 									break;
 
-								case Renderer::ILog::Type::INFORMATION:
+								case Rhi::ILog::Type::INFORMATION:
 									color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 									break;
 
-								case Renderer::ILog::Type::WARNING:
-								case Renderer::ILog::Type::PERFORMANCE_WARNING:
-								case Renderer::ILog::Type::COMPATIBILITY_WARNING:
+								case Rhi::ILog::Type::WARNING:
+								case Rhi::ILog::Type::PERFORMANCE_WARNING:
+								case Rhi::ILog::Type::COMPATIBILITY_WARNING:
 									color = ImVec4(0.5f, 0.5f, 1.0f, 1.0f);
 									break;
 
-								case Renderer::ILog::Type::CRITICAL:
+								case Rhi::ILog::Type::CRITICAL:
 									color = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
 									if (!entry.attachment.empty())
 									{
@@ -184,7 +184,7 @@ namespace RendererRuntime
 												else
 												{
 													// Error!
-													if (print(Renderer::ILog::Type::CRITICAL, nullptr, __FILE__, static_cast<uint32_t>(__LINE__), "Failed to open the file \"%s\" for writing", virtualFilename.c_str()))
+													if (print(Rhi::ILog::Type::CRITICAL, nullptr, __FILE__, static_cast<uint32_t>(__LINE__), "Failed to open the file \"%s\" for writing", virtualFilename.c_str()))
 													{
 														DEBUG_BREAK;
 													}
@@ -220,7 +220,7 @@ namespace RendererRuntime
 
 
 	//[-------------------------------------------------------]
-	//[ Protected virtual Renderer::DefaultLog methods        ]
+	//[ Protected virtual Rhi::DefaultLog methods             ]
 	//[-------------------------------------------------------]
 	protected:
 		[[nodiscard]] inline virtual bool printInternal(Type type, const char* attachment, const char* file, uint32_t line, const char* message, uint32_t numberOfCharacters) override
@@ -229,7 +229,7 @@ namespace RendererRuntime
 			const bool requestDebugBreak = DefaultLog::printInternal(type, attachment, file, line, message, numberOfCharacters);
 
 			// Construct the full UTF-8 message text
-			#ifdef _DEBUG
+			#ifdef RHI_DEBUG
 				std::string fullMessage = "File \"" + std::string(file) + "\" | Line " + std::to_string(line) + " | " + std::string(typeToString(type)) + message;
 			#else
 				std::string fullMessage = std::string(typeToString(type)) + message;
@@ -264,16 +264,16 @@ namespace RendererRuntime
 			// Open the log automatically on warning or error
 			switch (type)
 			{
-				case Renderer::ILog::Type::TRACE:
-				case Renderer::ILog::Type::DEBUG:
-				case Renderer::ILog::Type::INFORMATION:
+				case Rhi::ILog::Type::TRACE:
+				case Rhi::ILog::Type::DEBUG:
+				case Rhi::ILog::Type::INFORMATION:
 					// Nothing here
 					break;
 
-				case Renderer::ILog::Type::WARNING:
-				case Renderer::ILog::Type::PERFORMANCE_WARNING:
-				case Renderer::ILog::Type::COMPATIBILITY_WARNING:
-				case Renderer::ILog::Type::CRITICAL:
+				case Rhi::ILog::Type::WARNING:
+				case Rhi::ILog::Type::PERFORMANCE_WARNING:
+				case Rhi::ILog::Type::COMPATIBILITY_WARNING:
+				case Rhi::ILog::Type::CRITICAL:
 					// ImGui might not have been initialized yet
 					if (nullptr != ImGui::GetCurrentContext())
 					{

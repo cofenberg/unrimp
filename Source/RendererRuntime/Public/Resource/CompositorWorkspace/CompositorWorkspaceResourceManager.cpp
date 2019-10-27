@@ -99,7 +99,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	CompositorWorkspaceResourceManager::CompositorWorkspaceResourceManager(IRendererRuntime& rendererRuntime) :
 		mRenderTargetTextureManager(new RenderTargetTextureManager(rendererRuntime)),
-		mRenderPassManager(new RenderPassManager(rendererRuntime.getRenderer())),
+		mRenderPassManager(new RenderPassManager(rendererRuntime.getRhi())),
 		mFramebufferManager(new FramebufferManager(*mRenderTargetTextureManager, *mRenderPassManager))
 	{
 		mInternalResourceManager = new ResourceManagerTemplate<CompositorWorkspaceResource, CompositorWorkspaceResourceLoader, CompositorWorkspaceResourceId, 32>(rendererRuntime, *this);

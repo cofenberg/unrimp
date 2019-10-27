@@ -27,7 +27,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "Examples/Private/Framework/IApplicationRenderer.h"
+#include "Examples/Private/Framework/IApplicationRhi.h"
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -75,7 +75,7 @@ namespace RendererToolkit
 *  @brief
 *    Renderer runtime application interface
 */
-class IApplicationRendererRuntime final : public IApplicationRenderer
+class IApplicationRendererRuntime final : public IApplicationRhi
 {
 
 
@@ -87,14 +87,14 @@ public:
 	*  @brief
 	*    Constructor
 	*
-	*  @param[in] rendererName
-	*    Case sensitive ASCII name of the renderer to instance, if null pointer or unknown renderer no renderer will be used.
-	*    Example renderer names: "Null", "Vulkan", "OpenGL", "OpenGLES3", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"
+	*  @param[in] rhiName
+	*    Case sensitive ASCII name of the RHI to instance, if null pointer or unknown RHI no RHI will be used.
+	*    Example RHI names: "Null", "Vulkan", "OpenGL", "OpenGLES3", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"
 	*  @param[in] exampleBase
 	*    Reference to an example which should be used
 	*/
-	inline IApplicationRendererRuntime(const char* rendererName, ExampleBase& exampleBase) :
-		IApplicationRenderer(rendererName, exampleBase),
+	inline IApplicationRendererRuntime(const char* rhiName, ExampleBase& exampleBase) :
+		IApplicationRhi(rhiName, exampleBase),
 		mFileManager(nullptr),
 		#ifdef RENDERER_RUNTIME_PROFILER
 			mProfiler(nullptr),
@@ -172,7 +172,7 @@ private:
 	IApplicationRendererRuntime& operator =(const IApplicationRendererRuntime& source) = delete;
 	void deinitialization();
 	#ifdef RENDERER_TOOLKIT
-		void rendererToolkitProjectStartupThreadWorker(RendererRuntime::IRendererRuntime* rendererRuntime, RendererToolkit::IRendererToolkit* rendererToolkit, bool rendererIsOpenGLES);
+		void rendererToolkitProjectStartupThreadWorker(RendererRuntime::IRendererRuntime* rendererRuntime, RendererToolkit::IRendererToolkit* rendererToolkit, bool rhiIsOpenGLES);
 	#endif
 
 

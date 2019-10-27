@@ -81,7 +81,7 @@ namespace RendererRuntime
 		[[nodiscard]] inline const ISceneFactory& getSceneFactory() const
 		{
 			// We know that this pointer is always valid
-			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mSceneFactory, "Invalid scene factory")
+			RHI_ASSERT(mRendererRuntime.getContext(), nullptr != mSceneFactory, "Invalid scene factory")
 			return *mSceneFactory;
 		}
 

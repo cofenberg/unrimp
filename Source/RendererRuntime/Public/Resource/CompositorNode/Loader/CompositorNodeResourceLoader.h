@@ -34,10 +34,6 @@
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace Renderer
-{
-	class IRenderer;
-}
 namespace RendererRuntime
 {
 	class IRendererRuntime;

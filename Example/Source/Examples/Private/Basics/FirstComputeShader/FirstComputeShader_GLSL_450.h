@@ -21,8 +21,8 @@
 //[-------------------------------------------------------]
 //[ Shader start                                          ]
 //[-------------------------------------------------------]
-#ifdef RENDERER_OPENGL
-if (renderer->getNameId() == Renderer::NameId::VULKAN)
+#ifdef RHI_OPENGL
+if (rhi->getNameId() == Rhi::NameId::VULKAN)
 {
 
 
@@ -164,7 +164,7 @@ struct Vertex
 	vec2 padding;
 };
 
-// Same layout as "Renderer::DrawIndexedArguments"
+// Same layout as "Rhi::DrawIndexedArguments"
 struct DrawIndexedArguments
 {
 	uint indexCountPerInstance;

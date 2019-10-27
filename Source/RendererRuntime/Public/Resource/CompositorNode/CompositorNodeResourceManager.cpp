@@ -162,7 +162,7 @@ namespace RendererRuntime
 		mRendererRuntime(rendererRuntime),
 		mCompositorPassFactory(&::detail::defaultCompositorPassFactory),
 		mRenderTargetTextureManager(new RenderTargetTextureManager(mRendererRuntime)),
-		mRenderPassManager(new RenderPassManager(mRendererRuntime.getRenderer())),
+		mRenderPassManager(new RenderPassManager(mRendererRuntime.getRhi())),
 		mFramebufferManager(new FramebufferManager(*mRenderTargetTextureManager, *mRenderPassManager))
 	{
 		mInternalResourceManager = new ResourceManagerTemplate<CompositorNodeResource, CompositorNodeResourceLoader, CompositorNodeResourceId, 32>(rendererRuntime, *this);

@@ -35,67 +35,67 @@ PRAGMA_WARNING_PUSH
 	#include <glm/glm.hpp>
 PRAGMA_WARNING_POP
 
-#include <Renderer/Public/DefaultLog.h>
-#include <Renderer/Public/DefaultAssert.h>
-#include <Renderer/Public/DefaultAllocator.h>
-#include <Renderer/Public/RendererInstance.h>
+#include <Rhi/Public/DefaultLog.h>
+#include <Rhi/Public/DefaultAssert.h>
+#include <Rhi/Public/DefaultAllocator.h>
+#include <Rhi/Public/RhiInstance.h>
 
 
 //[-------------------------------------------------------]
 //[ Public methods                                        ]
 //[-------------------------------------------------------]
-FirstGpgpu::FirstGpgpu(ExampleRunner& exampleRunner, const char* rendererName) :
+FirstGpgpu::FirstGpgpu(ExampleRunner& exampleRunner, const char* rhiName) :
 	mExampleRunner(exampleRunner),
-	mRendererInstance(nullptr)
+	mRhiInstance(nullptr)
 {
-	// Copy the given renderer name
-	if (nullptr != rendererName)
+	// Copy the given RHI name
+	if (nullptr != rhiName)
 	{
-		strncpy(mRendererName, rendererName, 32);
+		strncpy(mRhiName, rhiName, 32);
 
 		// In case the source string is longer then 32 bytes (including null terminator) make sure that the string is null terminated
-		mRendererName[31] = '\0';
+		mRhiName[31] = '\0';
 	}
 	else
 	{
-		mRendererName[0] = '\0';
+		mRhiName[0] = '\0';
 	}
 }
 
 int FirstGpgpu::run()
 {
-	// Create renderer instance
-	Renderer::DefaultLog defaultLog;
-	Renderer::DefaultAssert defaultAssert;
-	Renderer::DefaultAllocator defaultAllocator;
-	Renderer::Context rendererContext(defaultLog, defaultAssert, defaultAllocator);
-	mRendererInstance = new Renderer::RendererInstance(mRendererName, rendererContext);
+	// Create RHI instance
+	Rhi::DefaultLog defaultLog;
+	Rhi::DefaultAssert defaultAssert;
+	Rhi::DefaultAllocator defaultAllocator;
+	Rhi::Context rhiContext(defaultLog, defaultAssert, defaultAllocator);
+	mRhiInstance = new Rhi::RhiInstance(mRhiName, rhiContext);
 
-	// Get the renderer instance and ensure it's valid
-	mRenderer = mRendererInstance->getRenderer();
-	if (nullptr != mRenderer && mRenderer->isInitialized())
+	// Get the RHI instance and ensure it's valid
+	mRhi = mRhiInstance->getRhi();
+	if (nullptr != mRhi && mRhi->isInitialized())
 	{
 		// Call initialization method
 		onInitialization();
 
 		// Begin scene rendering
-		if (mRenderer->beginScene())
+		if (mRhi->beginScene())
 		{
 			// Let the application to its job
 			onDoJob();
 
 			// End scene rendering
-			mRenderer->endScene();
+			mRhi->endScene();
 		}
 
 		// Call de-initialization method
 		onDeinitialization();
 	}
 
-	// Destroy the renderer instance
-	mRenderer = nullptr;
-	delete mRendererInstance;
-	mRendererInstance = nullptr;
+	// Destroy the RHI instance
+	mRhi = nullptr;
+	delete mRhiInstance;
+	mRhiInstance = nullptr;
 
 	// Done, no error
 	mExampleRunner.switchExample("ImGuiExampleSelector");
@@ -109,75 +109,75 @@ int FirstGpgpu::run()
 void FirstGpgpu::onInitialization()
 {
 	// Create the buffer and texture manager
-	mBufferManager = mRenderer->createBufferManager();
-	mTextureManager = mRenderer->createTextureManager();
+	mBufferManager = mRhi->createBufferManager();
+	mTextureManager = mRhi->createTextureManager();
 
 	{ // Create the root signature
-		Renderer::DescriptorRangeBuilder ranges[2];
-		ranges[0].initialize(Renderer::ResourceType::TEXTURE_2D, 0, "ContentMap", Renderer::ShaderVisibility::FRAGMENT);
-		ranges[1].initializeSampler(0, Renderer::ShaderVisibility::FRAGMENT);
+		Rhi::DescriptorRangeBuilder ranges[2];
+		ranges[0].initialize(Rhi::ResourceType::TEXTURE_2D, 0, "ContentMap", Rhi::ShaderVisibility::FRAGMENT);
+		ranges[1].initializeSampler(0, Rhi::ShaderVisibility::FRAGMENT);
 
-		Renderer::RootParameterBuilder rootParameters[2];
+		Rhi::RootParameterBuilder rootParameters[2];
 		rootParameters[0].initializeAsDescriptorTable(1, &ranges[0]);
 		rootParameters[1].initializeAsDescriptorTable(1, &ranges[1]);
 
 		// Setup
-		Renderer::RootSignatureBuilder rootSignature;
-		rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Renderer::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+		Rhi::RootSignatureBuilder rootSignature;
+		rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Rhi::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		// Create the instance
-		mRootSignature = mRenderer->createRootSignature(rootSignature);
+		mRootSignature = mRhi->createRootSignature(rootSignature);
 	}
 
 	// Create the 2D texture and framebuffer object (FBO) instances
-	const Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::Enum::R8G8B8A8;
-	Renderer::IRenderPass* renderPass = mRenderer->createRenderPass(1, &textureFormat);
+	const Rhi::TextureFormat::Enum textureFormat = Rhi::TextureFormat::Enum::R8G8B8A8;
+	Rhi::IRenderPass* renderPass = mRhi->createRenderPass(1, &textureFormat);
 	for (int i = 0; i < 2; ++i)
 	{
 		// Create the texture instance, but without providing texture data (we use the texture as render target)
-		// -> Use the "Renderer::TextureFlag::RENDER_TARGET"-flag to mark this texture as a render target
+		// -> Use the "Rhi::TextureFlag::RENDER_TARGET"-flag to mark this texture as a render target
 		// -> Required for Vulkan, Direct3D 9, Direct3D 10, Direct3D 11 and Direct3D 12
 		// -> Not required for OpenGL and OpenGL ES 3
 		// -> The optimized texture clear value is a Direct3D 12 related option
-		Renderer::ITexture* texture2D = mTexture2D[i] = mTextureManager->createTexture2D(64, 64, textureFormat, nullptr, Renderer::TextureFlag::SHADER_RESOURCE | Renderer::TextureFlag::RENDER_TARGET, Renderer::TextureUsage::DEFAULT, 1, reinterpret_cast<const Renderer::OptimizedTextureClearValue*>(&Color4::BLUE));
+		Rhi::ITexture* texture2D = mTexture2D[i] = mTextureManager->createTexture2D(64, 64, textureFormat, nullptr, Rhi::TextureFlag::SHADER_RESOURCE | Rhi::TextureFlag::RENDER_TARGET, Rhi::TextureUsage::DEFAULT, 1, reinterpret_cast<const Rhi::OptimizedTextureClearValue*>(&Color4::BLUE));
 
 		// Create the framebuffer object (FBO) instance
-		const Renderer::FramebufferAttachment colorFramebufferAttachment(texture2D);
-		mFramebuffer[i] = mRenderer->createFramebuffer(*renderPass, &colorFramebufferAttachment);
+		const Rhi::FramebufferAttachment colorFramebufferAttachment(texture2D);
+		mFramebuffer[i] = mRhi->createFramebuffer(*renderPass, &colorFramebufferAttachment);
 	}
 
 	// Create sampler state and wrap it into a resource group instance: We don't use mipmaps
-	Renderer::IResource* samplerStateResource = nullptr;
+	Rhi::IResource* samplerStateResource = nullptr;
 	{
-		Renderer::SamplerState samplerState = Renderer::ISamplerState::getDefaultSamplerState();
+		Rhi::SamplerState samplerState = Rhi::ISamplerState::getDefaultSamplerState();
 		samplerState.maxLOD = 0.0f;
-		samplerStateResource = mRenderer->createSamplerState(samplerState);
+		samplerStateResource = mRhi->createSamplerState(samplerState);
 		mSamplerStateGroup = mRootSignature->createResourceGroup(1, 1, &samplerStateResource);
 	}
 
 	{ // Create texture group
-		Renderer::IResource* resource = mTexture2D[0];
-		Renderer::ISamplerState* samplerState = static_cast<Renderer::ISamplerState*>(samplerStateResource);
+		Rhi::IResource* resource = mTexture2D[0];
+		Rhi::ISamplerState* samplerState = static_cast<Rhi::ISamplerState*>(samplerStateResource);
 		mTextureGroup = mRootSignature->createResourceGroup(0, 1, &resource, &samplerState);
 	}
 
 	// Vertex input layout
-	static constexpr Renderer::VertexAttribute vertexAttributesLayout[] =
+	static constexpr Rhi::VertexAttribute vertexAttributesLayout[] =
 	{
 		{ // Attribute 0
 			// Data destination
-			Renderer::VertexAttributeFormat::FLOAT_2,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-			"Position",									// name[32] (char)
-			"POSITION",									// semanticName[32] (char)
-			0,											// semanticIndex (uint32_t)
+			Rhi::VertexAttributeFormat::FLOAT_2,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+			"Position",								// name[32] (char)
+			"POSITION",								// semanticName[32] (char)
+			0,										// semanticIndex (uint32_t)
 			// Data source
-			0,											// inputSlot (uint32_t)
-			0,											// alignedByteOffset (uint32_t)
-			sizeof(float) * 2,							// strideInBytes (uint32_t)
-			0											// instancesPerElement (uint32_t)
+			0,										// inputSlot (uint32_t)
+			0,										// alignedByteOffset (uint32_t)
+			sizeof(float) * 2,						// strideInBytes (uint32_t)
+			0										// instancesPerElement (uint32_t)
 		}
 	};
-	const Renderer::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
+	const Rhi::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
 
 	{ // Create vertex array object (VAO) for content generation
 		// Create the vertex buffer object (VBO)
@@ -188,7 +188,7 @@ void FirstGpgpu::onInitialization()
 			 1.0f, 0.0f,	// 1			   .   .
 			-0.5f, 0.0f		// 2			  2.......1
 		};
-		Renderer::IVertexBufferPtr vertexBuffer(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION));
+		Rhi::IVertexBufferPtr vertexBuffer(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION));
 
 		// Create vertex array object (VAO)
 		// -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)
@@ -196,7 +196,7 @@ void FirstGpgpu::onInitialization()
 		// -> When the vertex array object (VAO) is destroyed, it automatically decreases the
 		//    reference of the used vertex buffer objects (VBO). If the reference counter of a
 		//    vertex buffer object (VBO) reaches zero, it's automatically destroyed.
-		const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
+		const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
 		mVertexArrayContentGeneration = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
 	}
 
@@ -210,7 +210,7 @@ void FirstGpgpu::onInitialization()
 			 1.0f, -1.0f,	// 2			  0.......2
 			 1.0f,  1.0f	// 3
 		};
-		Renderer::IVertexBufferPtr vertexBuffer(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION));
+		Rhi::IVertexBufferPtr vertexBuffer(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION));
 
 		// Create vertex array object (VAO)
 		// -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)
@@ -218,14 +218,14 @@ void FirstGpgpu::onInitialization()
 		// -> When the vertex array object (VAO) is destroyed, it automatically decreases the
 		//    reference of the used vertex buffer objects (VBO). If the reference counter of a
 		//    vertex buffer object (VBO) reaches zero, it's automatically destroyed.
-		const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
+		const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
 		mVertexArrayContentProcessing = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
 	}
 
 	{
 		// Create the graphics programs
-		Renderer::IGraphicsProgramPtr graphicsProgramContentGeneration;
-		Renderer::IGraphicsProgramPtr graphicsProgramContentProcessing;
+		Rhi::IGraphicsProgramPtr graphicsProgramContentGeneration;
+		Rhi::IGraphicsProgramPtr graphicsProgramContentProcessing;
 		{
 			// Get the shader source code (outsourced to keep an overview)
 			const char* vertexShaderSourceCode = nullptr;
@@ -241,8 +241,8 @@ void FirstGpgpu::onInitialization()
 			// -> Depending on the used graphics API and whether or not the shader compiler & linker is clever,
 			//    the unused texture coordinate might get optimized out
 			// -> In a real world application you shouldn't rely on shader compiler & linker behaviour assumptions
-			Renderer::IShaderLanguage& shaderLanguage = mRenderer->getDefaultShaderLanguage();
-			Renderer::IVertexShaderPtr vertexShader(shaderLanguage.createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode));
+			Rhi::IShaderLanguage& shaderLanguage = mRhi->getDefaultShaderLanguage();
+			Rhi::IVertexShaderPtr vertexShader(shaderLanguage.createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode));
 			graphicsProgramContentGeneration = shaderLanguage.createGraphicsProgram(*mRootSignature, vertexAttributes, vertexShader, shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode_ContentGeneration));
 			graphicsProgramContentProcessing = shaderLanguage.createGraphicsProgram(*mRootSignature, vertexAttributes, vertexShader, shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode_ContentProcessing));
 		}
@@ -251,20 +251,20 @@ void FirstGpgpu::onInitialization()
 		if (nullptr != graphicsProgramContentGeneration && nullptr != graphicsProgramContentProcessing)
 		{
 			{ // Content generation
-				Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgramContentGeneration, vertexAttributes, mFramebuffer[0]->getRenderPass());
+				Rhi::GraphicsPipelineState graphicsPipelineState = Rhi::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgramContentGeneration, vertexAttributes, mFramebuffer[0]->getRenderPass());
 				graphicsPipelineState.depthStencilState.depthEnable = false;
-				mGraphicsPipelineStateContentGeneration = mRenderer->createGraphicsPipelineState(graphicsPipelineState);
+				mGraphicsPipelineStateContentGeneration = mRhi->createGraphicsPipelineState(graphicsPipelineState);
 			}
 			{ // Content processing
-				Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgramContentProcessing, vertexAttributes, mFramebuffer[0]->getRenderPass());
-				graphicsPipelineState.primitiveTopology = Renderer::PrimitiveTopology::TRIANGLE_STRIP;
+				Rhi::GraphicsPipelineState graphicsPipelineState = Rhi::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgramContentProcessing, vertexAttributes, mFramebuffer[0]->getRenderPass());
+				graphicsPipelineState.primitiveTopology = Rhi::PrimitiveTopology::TRIANGLE_STRIP;
 				graphicsPipelineState.depthStencilState.depthEnable = false;
-				mGraphicsPipelineStateContentProcessing = mRenderer->createGraphicsPipelineState(graphicsPipelineState);
+				mGraphicsPipelineStateContentProcessing = mRhi->createGraphicsPipelineState(graphicsPipelineState);
 			}
 		}
 	}
 
-	// Since we're always submitting the same commands to the renderer, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
+	// Since we're always submitting the same commands to the RHI, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
 	fillCommandBufferContentGeneration();
 	fillCommandBufferContentProcessing();
 }
@@ -293,100 +293,100 @@ void FirstGpgpu::onDeinitialization()
 void FirstGpgpu::fillCommandBufferContentGeneration()
 {
 	// Sanity checks
-	ASSERT(nullptr != mRenderer);
-	RENDERER_ASSERT(mRenderer->getContext(), nullptr != mFramebuffer[0], "Invalid framebuffer at index 0");
-	RENDERER_ASSERT(mRenderer->getContext(), nullptr != mRootSignature, "Invalid root signature");
-	RENDERER_ASSERT(mRenderer->getContext(), nullptr != mGraphicsPipelineStateContentGeneration, "Invalid graphics pipeline state content generation");
-	RENDERER_ASSERT(mRenderer->getContext(), nullptr != mVertexArrayContentGeneration, "Invalid vertex array content generation");
-	RENDERER_ASSERT(mRenderer->getContext(), mCommandBufferContentGeneration.isEmpty(), "Command buffer content generation is already filled");
+	ASSERT(nullptr != mRhi);
+	RHI_ASSERT(mRhi->getContext(), nullptr != mFramebuffer[0], "Invalid framebuffer at index 0");
+	RHI_ASSERT(mRhi->getContext(), nullptr != mRootSignature, "Invalid root signature");
+	RHI_ASSERT(mRhi->getContext(), nullptr != mGraphicsPipelineStateContentGeneration, "Invalid graphics pipeline state content generation");
+	RHI_ASSERT(mRhi->getContext(), nullptr != mVertexArrayContentGeneration, "Invalid vertex array content generation");
+	RHI_ASSERT(mRhi->getContext(), mCommandBufferContentGeneration.isEmpty(), "Command buffer content generation is already filled");
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT(mCommandBufferContentGeneration, "Generate the content of the 2D texture to process later on")
 
 	// Set the graphics render target to render into
-	Renderer::Command::SetGraphicsRenderTarget::create(mCommandBufferContentGeneration, mFramebuffer[0]);
+	Rhi::Command::SetGraphicsRenderTarget::create(mCommandBufferContentGeneration, mFramebuffer[0]);
 
 	// Clear the graphics color buffer of the current render target with blue
-	Renderer::Command::ClearGraphics::create(mCommandBufferContentGeneration, Renderer::ClearFlag::COLOR, Color4::BLUE);
+	Rhi::Command::ClearGraphics::create(mCommandBufferContentGeneration, Rhi::ClearFlag::COLOR, Color4::BLUE);
 
 	// Set the used graphics root signature
-	Renderer::Command::SetGraphicsRootSignature::create(mCommandBufferContentGeneration, mRootSignature);
+	Rhi::Command::SetGraphicsRootSignature::create(mCommandBufferContentGeneration, mRootSignature);
 
 	{ // Set the viewport and scissor rectangle
 		// Get the render target with and height
 		uint32_t width  = 1;
 		uint32_t height = 1;
-		Renderer::IRenderTarget* renderTarget = mFramebuffer[0];
+		Rhi::IRenderTarget* renderTarget = mFramebuffer[0];
 		if (nullptr != renderTarget)
 		{
 			renderTarget->getWidthAndHeight(width, height);
 		}
 
 		// Set the graphics viewport and scissor rectangle
-		Renderer::Command::SetGraphicsViewportAndScissorRectangle::create(mCommandBufferContentGeneration, 0, 0, width, height);
+		Rhi::Command::SetGraphicsViewportAndScissorRectangle::create(mCommandBufferContentGeneration, 0, 0, width, height);
 	}
 
 	// Set the used graphics pipeline state object (PSO)
-	Renderer::Command::SetGraphicsPipelineState::create(mCommandBufferContentGeneration, mGraphicsPipelineStateContentGeneration);
+	Rhi::Command::SetGraphicsPipelineState::create(mCommandBufferContentGeneration, mGraphicsPipelineStateContentGeneration);
 
 	// Input assembly (IA): Set the used vertex array
-	Renderer::Command::SetGraphicsVertexArray::create(mCommandBufferContentGeneration, mVertexArrayContentGeneration);
+	Rhi::Command::SetGraphicsVertexArray::create(mCommandBufferContentGeneration, mVertexArrayContentGeneration);
 
 	// Render the specified geometric primitive, based on indexing into an array of vertices
-	Renderer::Command::DrawGraphics::create(mCommandBufferContentGeneration, 3);
+	Rhi::Command::DrawGraphics::create(mCommandBufferContentGeneration, 3);
 }
 
 void FirstGpgpu::fillCommandBufferContentProcessing()
 {
 	// Sanity checks
-	ASSERT(nullptr != mRenderer);
-	RENDERER_ASSERT(mRenderer->getContext(), nullptr != mFramebuffer[1], "Invalid framebuffer at index 1");
-	RENDERER_ASSERT(mRenderer->getContext(), nullptr != mRootSignature, "Invalid root signature");
-	RENDERER_ASSERT(mRenderer->getContext(), nullptr != mGraphicsPipelineStateContentProcessing, "Invalid graphics pipeline state content processing");
-	RENDERER_ASSERT(mRenderer->getContext(), nullptr != mTextureGroup, "Invalid texture group");
-	RENDERER_ASSERT(mRenderer->getContext(), nullptr != mSamplerStateGroup, "Invalid sampler state group");
-	RENDERER_ASSERT(mRenderer->getContext(), nullptr != mTexture2D[0], "Invalid texture 2D at index 0");
-	RENDERER_ASSERT(mRenderer->getContext(), mCommandBufferContentProcessing.isEmpty(), "Command buffer content processing is already filled");
+	ASSERT(nullptr != mRhi);
+	RHI_ASSERT(mRhi->getContext(), nullptr != mFramebuffer[1], "Invalid framebuffer at index 1");
+	RHI_ASSERT(mRhi->getContext(), nullptr != mRootSignature, "Invalid root signature");
+	RHI_ASSERT(mRhi->getContext(), nullptr != mGraphicsPipelineStateContentProcessing, "Invalid graphics pipeline state content processing");
+	RHI_ASSERT(mRhi->getContext(), nullptr != mTextureGroup, "Invalid texture group");
+	RHI_ASSERT(mRhi->getContext(), nullptr != mSamplerStateGroup, "Invalid sampler state group");
+	RHI_ASSERT(mRhi->getContext(), nullptr != mTexture2D[0], "Invalid texture 2D at index 0");
+	RHI_ASSERT(mRhi->getContext(), mCommandBufferContentProcessing.isEmpty(), "Command buffer content processing is already filled");
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT(mCommandBufferContentProcessing, "Content processing")
 
 	// Set the graphics render target to render into
-	Renderer::Command::SetGraphicsRenderTarget::create(mCommandBufferContentProcessing, mFramebuffer[1]);
+	Rhi::Command::SetGraphicsRenderTarget::create(mCommandBufferContentProcessing, mFramebuffer[1]);
 
 	// We don't need to clear the current render target because our fullscreen quad covers the full screen
 
 	// Set the used graphics root signature
-	Renderer::Command::SetGraphicsRootSignature::create(mCommandBufferContentProcessing, mRootSignature);
+	Rhi::Command::SetGraphicsRootSignature::create(mCommandBufferContentProcessing, mRootSignature);
 
 	// Set the used graphics pipeline state object (PSO)
-	Renderer::Command::SetGraphicsPipelineState::create(mCommandBufferContentProcessing, mGraphicsPipelineStateContentProcessing);
+	Rhi::Command::SetGraphicsPipelineState::create(mCommandBufferContentProcessing, mGraphicsPipelineStateContentProcessing);
 
 	// Set graphics resource groups
-	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBufferContentProcessing, 0, mTextureGroup);
-	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBufferContentProcessing, 1, mSamplerStateGroup);
+	Rhi::Command::SetGraphicsResourceGroup::create(mCommandBufferContentProcessing, 0, mTextureGroup);
+	Rhi::Command::SetGraphicsResourceGroup::create(mCommandBufferContentProcessing, 1, mSamplerStateGroup);
 
 	// Input assembly (IA): Set the used vertex array
-	Renderer::Command::SetGraphicsVertexArray::create(mCommandBufferContentProcessing, mVertexArrayContentProcessing);
+	Rhi::Command::SetGraphicsVertexArray::create(mCommandBufferContentProcessing, mVertexArrayContentProcessing);
 
 	// Render the specified geometric primitive, based on indexing into an array of vertices
-	Renderer::Command::DrawGraphics::create(mCommandBufferContentProcessing, 4);
+	Rhi::Command::DrawGraphics::create(mCommandBufferContentProcessing, 4);
 }
 
 void FirstGpgpu::onDoJob()
 {
 	// Generate the content of the 2D texture to process later on
 	// -> After this step, "mTexture2D[0]" holds the content we want to process later on
-	mCommandBufferContentGeneration.submitToRenderer(*mRenderer);
+	mCommandBufferContentGeneration.submitToRhi(*mRhi);
 
 	// Content processing
 	// -> After this step, "mTexture2D[1]" holds the processed content
-	mCommandBufferContentProcessing.submitToRenderer(*mRenderer);
+	mCommandBufferContentProcessing.submitToRhi(*mRhi);
 
-	// TODO(co) "Renderer::IRenderer::map()"/"Renderer::IRenderer::unmap()" are currently under construction
+	// TODO(co) "Rhi::IRhi::map()"/"Rhi::IRhi::unmap()" are currently under construction
 	// Map the texture holding the processed content
-	Renderer::MappedSubresource mappedSubresource;
-	if (mRenderer->map(*mTexture2D[1], 0, Renderer::MapType::READ, 0, mappedSubresource))
+	Rhi::MappedSubresource mappedSubresource;
+	if (mRhi->map(*mTexture2D[1], 0, Rhi::MapType::READ, 0, mappedSubresource))
 	{
 		// Get the processed content pointer
 //		const uint8_t* data = static_cast<uint8_t*>(mappedSubresource.data);
@@ -394,6 +394,6 @@ void FirstGpgpu::onDoJob()
 		// TODO(co) Write it out as image?
 
 		// Unmap the texture holding the processed content
-		mRenderer->unmap(*mTexture2D[1], 0);
+		mRhi->unmap(*mTexture2D[1], 0);
 	}
 }

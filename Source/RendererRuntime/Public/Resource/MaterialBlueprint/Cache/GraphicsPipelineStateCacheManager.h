@@ -30,8 +30,6 @@
 #include "RendererRuntime/Public/Resource/MaterialBlueprint/Cache/GraphicsPipelineStateSignature.h"
 #include "RendererRuntime/Public/Resource/MaterialBlueprint/Cache/GraphicsProgramCacheManager.h"
 
-#include <Renderer/Public/Renderer.h>
-
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'argument': conversion from 'long' to 'unsigned int', signed/unsigned mismatch
@@ -157,7 +155,7 @@ namespace RendererRuntime
 		*    Request a graphics pipeline state cache instance by combination
 		*
 		*  @param[in] serializeGraphicsdPipelineStateHash
-		*    FNV1a hash of "Renderer::SerializedGraphicsPipelineState"
+		*    FNV1a hash of "Rhi::SerializedGraphicsPipelineState"
 		*  @param[in] shaderProperties
 		*    Shader properties to use
 		*  @param[in] allowEmergencySynchronousCompilation

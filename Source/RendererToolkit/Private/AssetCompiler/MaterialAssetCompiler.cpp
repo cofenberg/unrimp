@@ -68,7 +68,7 @@ namespace RendererToolkit
 		std::vector<std::string> virtualDependencyFilenames;
 		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFileByRapidJsonDocument(configuration.rapidJsonDocumentAsset);
 		JsonMaterialHelper::getDependencyFiles(input, virtualInputFilename, virtualDependencyFilenames);
-		return (input.cacheManager.checkIfFileIsModified(configuration.rendererTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), RendererRuntime::v1Material::FORMAT_VERSION) || input.cacheManager.dependencyFilesChanged(virtualDependencyFilenames));
+		return (input.cacheManager.checkIfFileIsModified(configuration.rhiTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), RendererRuntime::v1Material::FORMAT_VERSION) || input.cacheManager.dependencyFilesChanged(virtualDependencyFilenames));
 	}
 
 	void MaterialAssetCompiler::compile(const Input& input, const Configuration& configuration) const
@@ -85,7 +85,7 @@ namespace RendererToolkit
 		CacheManager::CacheEntries cacheEntries;
 		std::vector<std::string> virtualInputFilenames;
 		virtualInputFilenames.emplace_back(virtualInputFilename);
-		if (input.cacheManager.needsToBeCompiled(configuration.rendererTarget, input.virtualAssetFilename, virtualInputFilenames, virtualOutputAssetFilename, RendererRuntime::v1Material::FORMAT_VERSION, cacheEntries) || input.cacheManager.dependencyFilesChanged(virtualDependencyFilenames))
+		if (input.cacheManager.needsToBeCompiled(configuration.rhiTarget, input.virtualAssetFilename, virtualInputFilenames, virtualOutputAssetFilename, RendererRuntime::v1Material::FORMAT_VERSION, cacheEntries) || input.cacheManager.dependencyFilesChanged(virtualDependencyFilenames))
 		{
 			RendererRuntime::MemoryFile memoryFile(0, 1024);
 

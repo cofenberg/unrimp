@@ -30,7 +30,7 @@
 #include "RendererRuntime/Public/Vr/IVrManager.h"
 #include "RendererRuntime/Public/Resource/IResourceListener.h"
 
-#include <Renderer/Public/Renderer.h>
+#include <Rhi/Public/Rhi.h>
 
 #include <OpenVR/openvr.h>
 
@@ -101,7 +101,7 @@ namespace RendererRuntime
 		[[nodiscard]] inline IVrManagerOpenVRListener& getVrManagerOpenVRListener() const
 		{
 			// We know this pointer must always be valid
-			RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mVrManagerOpenVRListener, "Invalid VR manager OpenVR listener")
+			RHI_ASSERT(mRendererRuntime.getContext(), nullptr != mVrManagerOpenVRListener, "Invalid VR manager OpenVR listener")
 			return *mVrManagerOpenVRListener;
 		}
 
@@ -124,13 +124,13 @@ namespace RendererRuntime
 
 		[[nodiscard]] inline const vr::TrackedDevicePose_t& getVrTrackedDevicePose(vr::TrackedDeviceIndex_t trackedDeviceIndex) const
 		{
-			RENDERER_ASSERT(mRendererRuntime.getContext(), trackedDeviceIndex < vr::k_unMaxTrackedDeviceCount, "Maximum tracked device count exceeded")
+			RHI_ASSERT(mRendererRuntime.getContext(), trackedDeviceIndex < vr::k_unMaxTrackedDeviceCount, "Maximum tracked device count exceeded")
 			return mVrTrackedDevicePose[trackedDeviceIndex];
 		}
 
 		[[nodiscard]] inline const glm::mat4& getDevicePoseMatrix(vr::TrackedDeviceIndex_t trackedDeviceIndex) const
 		{
-			RENDERER_ASSERT(mRendererRuntime.getContext(), trackedDeviceIndex < vr::k_unMaxTrackedDeviceCount, "Maximum tracked device count exceeded")
+			RHI_ASSERT(mRendererRuntime.getContext(), trackedDeviceIndex < vr::k_unMaxTrackedDeviceCount, "Maximum tracked device count exceeded")
 			return mDevicePoseMatrix[trackedDeviceIndex];
 		}
 
@@ -169,7 +169,7 @@ namespace RendererRuntime
 	//[ Private virtual RendererRuntime::IVrManager methods   ]
 	//[-------------------------------------------------------]
 	private:
-		virtual void executeCompositorWorkspaceInstance(CompositorWorkspaceInstance& compositorWorkspaceInstance, Renderer::IRenderTarget& renderTarget, CameraSceneItem* cameraSceneItem, const LightSceneItem* lightSceneItem) override;
+		virtual void executeCompositorWorkspaceInstance(CompositorWorkspaceInstance& compositorWorkspaceInstance, Rhi::IRenderTarget& renderTarget, CameraSceneItem* cameraSceneItem, const LightSceneItem* lightSceneItem) override;
 
 
 	//[-------------------------------------------------------]
@@ -234,9 +234,9 @@ namespace RendererRuntime
 		uint32_t				mNumberOfValidDevicePoses;
 		glm::mat4				mHmdHeadSpaceToWorldSpaceMatrix;
 		glm::mat4				mPreviousHmdHeadSpaceToWorldSpaceMatrix;
-		// Renderer resources
-		Renderer::ITexture2DPtr	  mColorTexture2D;	///< Color 2D texture, can be a null pointer
-		Renderer::IFramebufferPtr mFramebuffer;		///< Framebuffer object (FBO), can be a null pointer
+		// RHI resources
+		Rhi::ITexture2DPtr	 mColorTexture2D;	///< Color 2D texture, can be a null pointer
+		Rhi::IFramebufferPtr mFramebuffer;		///< Framebuffer object (FBO), can be a null pointer
 
 
 	};

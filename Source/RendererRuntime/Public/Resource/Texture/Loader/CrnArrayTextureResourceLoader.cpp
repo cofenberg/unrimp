@@ -74,7 +74,7 @@ namespace RendererRuntime
 
 			// Read CRN array
 			mMemoryFile.read(&mNumberOfSlices, sizeof(uint32_t));
-			RENDERER_ASSERT(mRendererRuntime.getContext(), mNumberOfSlices > 0, "Invalid number of slices")
+			RHI_ASSERT(mRendererRuntime.getContext(), mNumberOfSlices > 0, "Invalid number of slices")
 			mAssetIds.resize(mNumberOfSlices);
 			mMemoryFile.read(mAssetIds.data(), sizeof(AssetId) * mNumberOfSlices);
 
@@ -88,7 +88,7 @@ namespace RendererRuntime
 			{
 				const Asset& asset = assetManager.getAssetByAssetId(mAssetIds[i]);	// TODO(co) Usually considered to be multithreading safe, but better review this
 				const int64_t fileSize = fileManager.getFileSize(asset.virtualFilename);
-				RENDERER_ASSERT(mRendererRuntime.getContext(), fileSize > 0, "Invalid file size")
+				RHI_ASSERT(mRendererRuntime.getContext(), fileSize > 0, "Invalid file size")
 				mSliceFileMetadata.emplace_back(asset, mNumberOfUsedFileDataBytes, static_cast<uint32_t>(fileSize));
 				mNumberOfUsedFileDataBytes += static_cast<uint32_t>(fileSize);
 			}
@@ -111,7 +111,7 @@ namespace RendererRuntime
 				else
 				{
 					// Error! This is horrible, now we've got a zombie inside the resource streamer. We could let it crash, but maybe the zombie won't directly eat brains.
-					RENDERER_ASSERT(mRendererRuntime.getContext(), false, "We should never end up in here")
+					RHI_ASSERT(mRendererRuntime.getContext(), false, "We should never end up in here")
 				}
 			}
 
@@ -134,7 +134,7 @@ namespace RendererRuntime
 		crnd::crn_texture_info masterCrnTextureInfo;
 		if (!crnd::crnd_get_texture_info(mFileData + masterSliceFileMetadata.offset, masterSliceFileMetadata.numberOfBytes, &masterCrnTextureInfo))
 		{
-			RENDERER_ASSERT(mRendererRuntime.getContext(), false, "crnd_get_texture_info() failed")
+			RHI_ASSERT(mRendererRuntime.getContext(), false, "crnd_get_texture_info() failed")
 			return;
 		}
 		mWidth  = masterCrnTextureInfo.m_width;
@@ -143,19 +143,19 @@ namespace RendererRuntime
 		mCubeMap = (numberOfFaces > 1);
 
 		// Sanity check
-		RENDERER_ASSERT(mRendererRuntime.getContext(), !mCubeMap || mWidth == mHeight, "The width and height of a cube map must be identical")
+		RHI_ASSERT(mRendererRuntime.getContext(), !mCubeMap || mWidth == mHeight, "The width and height of a cube map must be identical")
 
-		// Get the renderer texture format
+		// Get the RHI texture format
 		switch (masterCrnTextureInfo.m_format)
 		{
 			// DXT1 compression (known as BC1 in DirectX 10, RGB compression: 8:1, 8 bytes per block)
 			case cCRNFmtDXT1:
-				mTextureFormat = static_cast<uint8_t>(mTextureResource->isRgbHardwareGammaCorrection() ? Renderer::TextureFormat::BC1_SRGB : Renderer::TextureFormat::BC1);
+				mTextureFormat = static_cast<uint8_t>(mTextureResource->isRgbHardwareGammaCorrection() ? Rhi::TextureFormat::BC1_SRGB : Rhi::TextureFormat::BC1);
 				break;
 
 			// DXT3 compression (known as BC2 in DirectX 10, RGBA compression: 4:1, 16 bytes per block)
 			case cCRNFmtDXT3:
-				mTextureFormat = static_cast<uint8_t>(mTextureResource->isRgbHardwareGammaCorrection() ? Renderer::TextureFormat::BC2_SRGB : Renderer::TextureFormat::BC2);
+				mTextureFormat = static_cast<uint8_t>(mTextureResource->isRgbHardwareGammaCorrection() ? Rhi::TextureFormat::BC2_SRGB : Rhi::TextureFormat::BC2);
 				break;
 
 			// DXT5 compression (known as BC3 in DirectX 10, RGBA compression: 4:1, 16 bytes per block)
@@ -164,13 +164,13 @@ namespace RendererRuntime
 			case cCRNFmtDXT5_xGxR:
 			case cCRNFmtDXT5_xGBR:
 			case cCRNFmtDXT5_AGBR:
-				mTextureFormat = static_cast<uint8_t>(mTextureResource->isRgbHardwareGammaCorrection() ? Renderer::TextureFormat::BC3_SRGB : Renderer::TextureFormat::BC3);
+				mTextureFormat = static_cast<uint8_t>(mTextureResource->isRgbHardwareGammaCorrection() ? Rhi::TextureFormat::BC3_SRGB : Rhi::TextureFormat::BC3);
 				break;
 
 			// 2 component texture compression (luminance & alpha compression 4:1 -> normal map compression, also known as 3DC/ATI2N, known as BC5 in DirectX 10, 16 bytes per block)
 			case cCRNFmtDXN_XY:
 			case cCRNFmtDXN_YX:
-				mTextureFormat = Renderer::TextureFormat::BC5;
+				mTextureFormat = Rhi::TextureFormat::BC5;
 				break;
 
 			case cCRNFmtDXT5A:
@@ -184,7 +184,7 @@ namespace RendererRuntime
 			default:
 				// Error!
 				// TODO(co)
-				RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Invalid format")
+				RHI_ASSERT(mRendererRuntime.getContext(), false, "Invalid format")
 				return;
 		}
 
@@ -195,7 +195,7 @@ namespace RendererRuntime
 		crnd::crnd_unpack_context crndUnpackContext = crnd::crnd_unpack_begin(mFileData + masterSliceFileMetadata.offset, masterSliceFileMetadata.numberOfBytes);
 		if (nullptr == crndUnpackContext)
 		{
-			RENDERER_ASSERT(mRendererRuntime.getContext(), false, "crnd_unpack_begin() failed")
+			RHI_ASSERT(mRendererRuntime.getContext(), false, "crnd_unpack_begin() failed")
 			return;
 		}
 
@@ -209,7 +209,7 @@ namespace RendererRuntime
 
 		// Optional top mipmap removal security checks
 		// -> Ensure we don't go below 4x4 to not get into troubles with 4x4 blocked based compression
-		// -> Ensure the base mipmap we tell the renderer about is a multiple of four. Even if the original base mipmap is a multiple of four, one of the lower mipmaps might not be.
+		// -> Ensure the base mipmap we tell the RHI about is a multiple of four. Even if the original base mipmap is a multiple of four, one of the lower mipmaps might not be.
 		while (startLevelIndex > 0 && (std::max(1U, mWidth >> startLevelIndex) < 4 || std::max(1U, mHeight >> startLevelIndex) < 4))
 		{
 			--startLevelIndex;
@@ -243,7 +243,7 @@ namespace RendererRuntime
 			}
 		}
 
-		// Data layout: The renderer interface expects: CRN and KTX files are organized in mip-major order, like this:
+		// Data layout: The RHI expects: CRN and KTX files are organized in mip-major order, like this:
 		//   Mip0: Face0, Face1, Face2, Face3, Face4, Face5
 		//   Mip1: Face0, Face1, Face2, Face3, Face4, Face5
 		//   etc.
@@ -257,15 +257,15 @@ namespace RendererRuntime
 				const SliceFileMetadata& sliceFileMetadata = mSliceFileMetadata[sliceIndex];
 
 				// Ensure the texture data matches the master texture data
-				#ifdef _DEBUG
+				#ifdef RHI_DEBUG
 				{
 					crnd::crn_texture_info crnTextureInfo;
 					if (!crnd::crnd_get_texture_info(mFileData + sliceFileMetadata.offset, sliceFileMetadata.numberOfBytes, &crnTextureInfo))
 					{
-						RENDERER_ASSERT(mRendererRuntime.getContext(), false, "crnd_get_texture_info() failed")
+						RHI_ASSERT(mRendererRuntime.getContext(), false, "crnd_get_texture_info() failed")
 						return;
 					}
-					RENDERER_ASSERT(mRendererRuntime.getContext(), memcmp(&masterCrnTextureInfo, &crnTextureInfo, sizeof(crnd::crn_texture_info)) == 0, "CRN texture information mismatch")
+					RHI_ASSERT(mRendererRuntime.getContext(), memcmp(&masterCrnTextureInfo, &crnTextureInfo, sizeof(crnd::crn_texture_info)) == 0, "CRN texture information mismatch")
 				}
 				#endif
 
@@ -273,7 +273,7 @@ namespace RendererRuntime
 				crndUnpackContext = crnd::crnd_unpack_begin(mFileData + sliceFileMetadata.offset, sliceFileMetadata.numberOfBytes);
 				if (nullptr == crndUnpackContext)
 				{
-					RENDERER_ASSERT(mRendererRuntime.getContext(), false, "crnd_unpack_begin() failed")
+					RHI_ASSERT(mRendererRuntime.getContext(), false, "crnd_unpack_begin() failed")
 					return;
 				}
 			}
@@ -303,7 +303,7 @@ namespace RendererRuntime
 				{
 					// Free allocated memory
 					crnd::crnd_unpack_end(crndUnpackContext);
-					RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Failed transcoding texture")
+					RHI_ASSERT(mRendererRuntime.getContext(), false, "Failed transcoding texture")
 					return;
 				}
 			}
@@ -319,10 +319,10 @@ namespace RendererRuntime
 			mHeight = std::max(1U, mHeight >> startLevelIndex);
 		}
 
-		// Can we create the renderer resource asynchronous as well?
-		if (mRendererRuntime.getRenderer().getCapabilities().nativeMultithreading)
+		// Can we create the RHI resource asynchronous as well?
+		if (mRendererRuntime.getRhi().getCapabilities().nativeMultithreading)
 		{
-			mTexture = createRendererTexture();
+			mTexture = createRhiTexture();
 		}
 	}
 
@@ -330,26 +330,26 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Protected RendererRuntime::ITextureResourceLoader methods ]
 	//[-------------------------------------------------------]
-	Renderer::ITexture* CrnArrayTextureResourceLoader::createRendererTexture()
+	Rhi::ITexture* CrnArrayTextureResourceLoader::createRhiTexture()
 	{
-		Renderer::ITexture* texture = nullptr;
-		const uint32_t flags = (mDataContainsMipmaps ? (Renderer::TextureFlag::DATA_CONTAINS_MIPMAPS | Renderer::TextureFlag::SHADER_RESOURCE) : Renderer::TextureFlag::SHADER_RESOURCE);
+		Rhi::ITexture* texture = nullptr;
+		const uint32_t flags = (mDataContainsMipmaps ? (Rhi::TextureFlag::DATA_CONTAINS_MIPMAPS | Rhi::TextureFlag::SHADER_RESOURCE) : Rhi::TextureFlag::SHADER_RESOURCE);
 		if (mCubeMap)
 		{
 			// TODO(co) Cube array texture
-			RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Renderer runtime CRN array cube texture isn't implemented, yet")
+			RHI_ASSERT(mRendererRuntime.getContext(), false, "Renderer runtime CRN array cube texture isn't implemented, yet")
 		}
 		else if (1 == mWidth || 1 == mHeight)
 		{
 			// TODO(co) 1D array texture
-			RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Renderer runtime CRN array 1D texture isn't implemented, yet")
+			RHI_ASSERT(mRendererRuntime.getContext(), false, "Renderer runtime CRN array 1D texture isn't implemented, yet")
 		}
 		else
 		{
 			// 2D texture array
-			texture = mRendererRuntime.getTextureManager().createTexture2DArray(mWidth, mHeight, mNumberOfSlices, static_cast<Renderer::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Renderer::TextureUsage::IMMUTABLE);
+			texture = mRendererRuntime.getTextureManager().createTexture2DArray(mWidth, mHeight, mNumberOfSlices, static_cast<Rhi::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Rhi::TextureUsage::IMMUTABLE);
 		}
-		RENDERER_SET_RESOURCE_DEBUG_NAME(texture, getAsset().virtualFilename)
+		RHI_SET_RESOURCE_DEBUG_NAME(texture, getAsset().virtualFilename)
 		return texture;
 	}
 

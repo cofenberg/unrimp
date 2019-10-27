@@ -40,20 +40,20 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 void FirstInstancing::onInitialization()
 {
-	// Get and check the renderer instance
-	Renderer::IRendererPtr renderer(getRenderer());
-	if (nullptr != renderer)
+	// Get and check the RHI instance
+	Rhi::IRhiPtr rhi(getRhi());
+	if (nullptr != rhi)
 	{
 		// Create the buffer manager
-		mBufferManager = renderer->createBufferManager();
+		mBufferManager = rhi->createBufferManager();
 
 		{ // Create the root signature
 			// Setup
-			Renderer::RootSignatureBuilder rootSignature;
-			rootSignature.initialize(0, nullptr, 0, nullptr, Renderer::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+			Rhi::RootSignatureBuilder rootSignature;
+			rootSignature.initialize(0, nullptr, 0, nullptr, Rhi::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 			// Create the instance
-			mRootSignature = renderer->createRootSignature(rootSignature);
+			mRootSignature = rhi->createRootSignature(rootSignature);
 		}
 
 		{
@@ -67,40 +67,40 @@ void FirstInstancing::onInitialization()
 			// -> OpenGL 3.1 introduced draw instance ("GL_ARB_draw_instanced"-extension)
 			// -> OpenGL 3.3 introduced instance array ("GL_ARB_instanced_arrays"-extension)
 			// -> OpenGL ES 3.0 support both approaches
-			Renderer::IShaderLanguage& shaderLanguage = renderer->getDefaultShaderLanguage();
+			Rhi::IShaderLanguage& shaderLanguage = rhi->getDefaultShaderLanguage();
 
 			// Left side (green): Instanced arrays (shader model 3 feature, vertex array element advancing per-instance instead of per-vertex)
-			if (renderer->getCapabilities().instancedArrays)
+			if (rhi->getCapabilities().instancedArrays)
 			{
 				// Vertex input layout
-				static constexpr Renderer::VertexAttribute vertexAttributesLayout[] =
+				static constexpr Rhi::VertexAttribute vertexAttributesLayout[] =
 				{
 					{ // Attribute 0
 						// Data destination
-						Renderer::VertexAttributeFormat::FLOAT_2,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-						"Position",									// name[32] (char)
-						"POSITION",									// semanticName[32] (char)
-						0,											// semanticIndex (uint32_t)
+						Rhi::VertexAttributeFormat::FLOAT_2,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+						"Position",								// name[32] (char)
+						"POSITION",								// semanticName[32] (char)
+						0,										// semanticIndex (uint32_t)
 						// Data source
-						0,											// inputSlot (uint32_t)
-						0,											// alignedByteOffset (uint32_t)
-						sizeof(float) * 2,							// strideInBytes (uint32_t)
-						0											// instancesPerElement (uint32_t)
+						0,										// inputSlot (uint32_t)
+						0,										// alignedByteOffset (uint32_t)
+						sizeof(float) * 2,						// strideInBytes (uint32_t)
+						0										// instancesPerElement (uint32_t)
 					},
 					{ // Attribute 1
 						// Data destination
-						Renderer::VertexAttributeFormat::FLOAT_1,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-						"InstanceID",								// name[32] (char)
-						"TEXCOORD",									// semanticName[32] (char)
-						0,											// semanticIndex (uint32_t)
+						Rhi::VertexAttributeFormat::FLOAT_1,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+						"InstanceID",							// name[32] (char)
+						"TEXCOORD",								// semanticName[32] (char)
+						0,										// semanticIndex (uint32_t)
 						// Data source
-						1,											// inputSlot (uint32_t)
-						0,											// alignedByteOffset (uint32_t)
-						sizeof(float),								// strideInBytes (uint32_t)
-						1											// instancesPerElement (uint32_t)
+						1,										// inputSlot (uint32_t)
+						0,										// alignedByteOffset (uint32_t)
+						sizeof(float),							// strideInBytes (uint32_t)
+						1										// instancesPerElement (uint32_t)
 					}
 				};
-				const Renderer::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
+				const Rhi::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
 
 				{ // Create vertex array object (VAO)
 					// Create the vertex buffer object (VBO)
@@ -111,7 +111,7 @@ void FirstInstancing::onInitialization()
 						 0.0f, 0.0f,	// 1				 .    .
 						-1.0f, 0.0f		// 2			  2.......1
 					};
-					Renderer::IVertexBufferPtr vertexBufferPosition(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION));
+					Rhi::IVertexBufferPtr vertexBufferPosition(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION));
 
 					// Create the per-instance-data vertex buffer object (VBO)
 					// -> Simple instance ID in order to keep it similar to the "draw instanced" version on the right side (blue)
@@ -119,7 +119,7 @@ void FirstInstancing::onInitialization()
 					{
 						0.0f, 1.0f
 					};
-					Renderer::IVertexBufferPtr vertexBufferInstanceId(mBufferManager->createVertexBuffer(sizeof(INSTANCE_ID), INSTANCE_ID));
+					Rhi::IVertexBufferPtr vertexBufferInstanceId(mBufferManager->createVertexBuffer(sizeof(INSTANCE_ID), INSTANCE_ID));
 
 					// Create the index buffer object (IBO)
 					// -> In this example, we only draw a simple triangle and therefore usually do not need an index buffer
@@ -129,7 +129,7 @@ void FirstInstancing::onInitialization()
 					{
 						0, 1, 2
 					};
-					Renderer::IIndexBuffer* indexBufferInstancedArrays = mBufferManager->createIndexBuffer(sizeof(INDICES), INDICES);
+					Rhi::IIndexBuffer* indexBufferInstancedArrays = mBufferManager->createIndexBuffer(sizeof(INDICES), INDICES);
 
 					// Create vertex array object (VAO)
 					// -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)
@@ -137,12 +137,12 @@ void FirstInstancing::onInitialization()
 					// -> When the vertex array object (VAO) is destroyed, it automatically decreases the
 					//    reference of the used vertex buffer objects (VBO). If the reference counter of a
 					//    vertex buffer object (VBO) reaches zero, it's automatically destroyed.
-					const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBufferPosition, vertexBufferInstanceId, };
+					const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBufferPosition, vertexBufferInstanceId, };
 					mVertexArrayInstancedArrays = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBufferInstancedArrays);
 				}
 
 				// Create the graphics program
-				Renderer::IGraphicsProgramPtr graphicsProgram;
+				Rhi::IGraphicsProgramPtr graphicsProgram;
 				{
 					// Get the shader source code (outsourced to keep an overview)
 					const char* vertexShaderSourceCode = nullptr;
@@ -164,30 +164,30 @@ void FirstInstancing::onInitialization()
 				// Create the graphics pipeline state object (PSO)
 				if (nullptr != graphicsProgram)
 				{
-					mGraphicsPipelineStateInstancedArrays = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass()));
+					mGraphicsPipelineStateInstancedArrays = rhi->createGraphicsPipelineState(Rhi::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass()));
 				}
 			}
 
 			// Right side (blue): Draw instanced (shader model 4 feature, build in shader variable holding the current instance ID)
-			if (renderer->getCapabilities().drawInstanced)
+			if (rhi->getCapabilities().drawInstanced)
 			{
 				// Vertex input layout
-				static constexpr Renderer::VertexAttribute vertexAttributesLayout[] =
+				static constexpr Rhi::VertexAttribute vertexAttributesLayout[] =
 				{
 					{ // Attribute 0
 						// Data destination
-						Renderer::VertexAttributeFormat::FLOAT_2,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-						"Position",									// name[32] (char)
-						"POSITION",									// semanticName[32] (char)
-						0,											// semanticIndex (uint32_t)
+						Rhi::VertexAttributeFormat::FLOAT_2,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+						"Position",								// name[32] (char)
+						"POSITION",								// semanticName[32] (char)
+						0,										// semanticIndex (uint32_t)
 						// Data source
-						0,											// inputSlot (uint32_t)
-						0,											// alignedByteOffset (uint32_t)
-						sizeof(float) * 2,							// strideInBytes (uint32_t)
-						0											// instancesPerElement (uint32_t)
+						0,										// inputSlot (uint32_t)
+						0,										// alignedByteOffset (uint32_t)
+						sizeof(float) * 2,						// strideInBytes (uint32_t)
+						0										// instancesPerElement (uint32_t)
 					}
 				};
-				const Renderer::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
+				const Rhi::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
 
 				{ // Create vertex array object (VAO)
 					// Create the vertex buffer object (VBO)
@@ -198,7 +198,7 @@ void FirstInstancing::onInitialization()
 						1.0f, 0.0f,	// 1			  .    .
 						0.0f, 0.0f	// 2			  2.......1
 					};
-					Renderer::IVertexBufferPtr vertexBuffer(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION));
+					Rhi::IVertexBufferPtr vertexBuffer(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION));
 
 					// Create vertex array object (VAO)
 					// -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)
@@ -206,12 +206,12 @@ void FirstInstancing::onInitialization()
 					// -> When the vertex array object (VAO) is destroyed, it automatically decreases the
 					//    reference of the used vertex buffer objects (VBO). If the reference counter of a
 					//    vertex buffer object (VBO) reaches zero, it's automatically destroyed.
-					const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
+					const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
 					mVertexArrayDrawInstanced = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
 				}
 
 				// Create the graphics program
-				Renderer::IGraphicsProgramPtr graphicsProgram;
+				Rhi::IGraphicsProgramPtr graphicsProgram;
 				{
 					// Get the shader source code (outsourced to keep an overview)
 					const char* vertexShaderSourceCode = nullptr;
@@ -233,12 +233,12 @@ void FirstInstancing::onInitialization()
 				// Create the graphics pipeline state object (PSO)
 				if (nullptr != graphicsProgram)
 				{
-					mGraphicsPipelineStateDrawInstanced = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass()));
+					mGraphicsPipelineStateDrawInstanced = rhi->createGraphicsPipelineState(Rhi::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass()));
 				}
 			}
 		}
 
-		// Since we're always submitting the same commands to the renderer, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
+		// Since we're always submitting the same commands to the RHI, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
 		fillCommandBuffer();
 	}
 }
@@ -257,12 +257,12 @@ void FirstInstancing::onDeinitialization()
 
 void FirstInstancing::onDraw()
 {
-	// Get and check the renderer instance
-	Renderer::IRendererPtr renderer(getRenderer());
-	if (nullptr != renderer)
+	// Get and check the RHI instance
+	Rhi::IRhiPtr rhi(getRhi());
+	if (nullptr != rhi)
 	{
-		// Submit command buffer to the renderer backend
-		mCommandBuffer.submitToRenderer(*renderer);
+		// Submit command buffer to the RHI implementation
+		mCommandBuffer.submitToRhi(*rhi);
 	}
 }
 
@@ -273,55 +273,55 @@ void FirstInstancing::onDraw()
 void FirstInstancing::fillCommandBuffer()
 {
 	// Sanity checks
-	assert(nullptr != getRenderer());
+	assert(nullptr != getRhi());
 	assert(mCommandBuffer.isEmpty());
 	assert(nullptr != mRootSignature);
 	assert(nullptr != mGraphicsPipelineStateInstancedArrays);
 	assert(nullptr != mVertexArrayInstancedArrays);
-	assert(!getRenderer()->getCapabilities().drawInstanced || nullptr != mGraphicsPipelineStateDrawInstanced);
-	assert(!getRenderer()->getCapabilities().drawInstanced || nullptr != mVertexArrayDrawInstanced);
+	assert(!getRhi()->getCapabilities().drawInstanced || nullptr != mGraphicsPipelineStateDrawInstanced);
+	assert(!getRhi()->getCapabilities().drawInstanced || nullptr != mVertexArrayDrawInstanced);
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
 
 	// Clear the graphics color buffer of the current render target with gray, do also clear the depth buffer
-	Renderer::Command::ClearGraphics::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
+	Rhi::Command::ClearGraphics::create(mCommandBuffer, Rhi::ClearFlag::COLOR_DEPTH, Color4::GRAY);
 
 	// Set the used graphics root signature
-	Renderer::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
+	Rhi::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
 
 	// Left side (green): Instanced arrays (shader model 3 feature, vertex array element advancing per-instance instead of per-vertex)
-	if (getRenderer()->getCapabilities().instancedArrays)
+	if (getRhi()->getCapabilities().instancedArrays)
 	{
 		// Scoped debug event
 		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Draw using instanced arrays")
 
 		// Set the used graphics pipeline state object (PSO)
-		Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineStateInstancedArrays);
+		Rhi::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineStateInstancedArrays);
 
 		// Input assembly (IA): Set the used vertex array
-		Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArrayInstancedArrays);
+		Rhi::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArrayInstancedArrays);
 
 		// Render the specified geometric primitive, based on an array of vertices
 		// -> In this example, we only draw a simple triangle and therefore usually do not need an index buffer
 		// -> In Direct3D 9, instanced arrays with hardware support is only possible when drawing indexed primitives, see
 		//    "Efficiently Drawing Multiple Instances of Geometry (Direct3D 9)"-article at MSDN: http://msdn.microsoft.com/en-us/library/windows/desktop/bb173349%28v=vs.85%29.aspx#Drawing_Non_Indexed_Geometry
-		Renderer::Command::DrawIndexedGraphics::create(mCommandBuffer, 3, 2);
+		Rhi::Command::DrawIndexedGraphics::create(mCommandBuffer, 3, 2);
 	}
 
 	// Right side (blue): Draw instanced (shader model 4 feature, build in shader variable holding the current instance ID)
-	if (getRenderer()->getCapabilities().drawInstanced)
+	if (getRhi()->getCapabilities().drawInstanced)
 	{
 		// Scoped debug event
 		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Draw instanced")
 
 		// Set the used graphics pipeline state object (PSO)
-		Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineStateDrawInstanced);
+		Rhi::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineStateDrawInstanced);
 
 		// Input assembly (IA): Set the used vertex array
-		Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArrayDrawInstanced);
+		Rhi::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArrayDrawInstanced);
 
 		// Render the specified geometric primitive, based on an array of vertices
-		Renderer::Command::DrawGraphics::create(mCommandBuffer, 3, 2);
+		Rhi::Command::DrawGraphics::create(mCommandBuffer, 3, 2);
 	}
 }

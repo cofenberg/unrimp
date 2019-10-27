@@ -54,11 +54,11 @@ namespace
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
 		// Vertex input layout
-		static constexpr Renderer::VertexAttribute VertexAttributesLayout[] =
+		static constexpr Rhi::VertexAttribute VertexAttributesLayout[] =
 		{
 			{ // Attribute 0
 				// Data destination
-				Renderer::VertexAttributeFormat::FLOAT_2,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
+				Rhi::VertexAttributeFormat::FLOAT_2,		// vertexAttributeFormat (Rhi::VertexAttributeFormat)
 				"Position",									// name[32] (char)
 				"POSITION",									// semanticName[32] (char)
 				0,											// semanticIndex (uint32_t)
@@ -70,7 +70,7 @@ namespace
 			},
 			{ // Attribute 1
 				// Data destination
-				Renderer::VertexAttributeFormat::FLOAT_2,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
+				Rhi::VertexAttributeFormat::FLOAT_2,		// vertexAttributeFormat (Rhi::VertexAttributeFormat)
 				"TexCoord",									// name[32] (char)
 				"TEXCOORD",									// semanticName[32] (char)
 				0,											// semanticIndex (uint32_t)
@@ -82,18 +82,18 @@ namespace
 			},
 			{ // Attribute 2
 				// Data destination
-				Renderer::VertexAttributeFormat::R8G8B8A8_UNORM,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-				"Color",											// name[32] (char)
-				"COLOR",											// semanticName[32] (char)
-				0,													// semanticIndex (uint32_t)
+				Rhi::VertexAttributeFormat::R8G8B8A8_UNORM,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+				"Color",									// name[32] (char)
+				"COLOR",									// semanticName[32] (char)
+				0,											// semanticIndex (uint32_t)
 				// Data source
-				0,													// inputSlot (uint32_t)
-				sizeof(float) * 4,									// alignedByteOffset (uint32_t)
-				sizeof(float) * 4 + sizeof(uint8_t) * 4,			// strideInBytes (uint32_t)
-				0													// instancesPerElement (uint32_t)
+				0,											// inputSlot (uint32_t)
+				sizeof(float) * 4,							// alignedByteOffset (uint32_t)
+				sizeof(float) * 4 + sizeof(uint8_t) * 4,	// strideInBytes (uint32_t)
+				0											// instancesPerElement (uint32_t)
 			}
 		};
-		const Renderer::VertexAttributes VertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(VertexAttributesLayout)), VertexAttributesLayout);
+		const Rhi::VertexAttributes VertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(VertexAttributesLayout)), VertexAttributesLayout);
 
 
 		//[-------------------------------------------------------]
@@ -101,12 +101,12 @@ namespace
 		//[-------------------------------------------------------]
 		[[nodiscard]] void* AllocFunc(size_t sz, void* user_data)
 		{
-			return static_cast<Renderer::IAllocator*>(user_data)->reallocate(nullptr, 0, sz, 1);
+			return static_cast<Rhi::IAllocator*>(user_data)->reallocate(nullptr, 0, sz, 1);
 		}
 
 		void FreeFunc(void* ptr, void* user_data)
 		{
-			static_cast<Renderer::IAllocator*>(user_data)->reallocate(ptr, 0, 0, 1);
+			static_cast<Rhi::IAllocator*>(user_data)->reallocate(ptr, 0, 0, 1);
 		}
 
 
@@ -127,7 +127,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public static methods                                 ]
 	//[-------------------------------------------------------]
-	void DebugGuiManager::setImGuiAllocatorFunctions(Renderer::IAllocator& allocator)
+	void DebugGuiManager::setImGuiAllocatorFunctions(Rhi::IAllocator& allocator)
 	{
 		ImGui::SetAllocatorFunctions(::detail::AllocFunc, ::detail::FreeFunc, &allocator);
 	}
@@ -148,7 +148,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
-	void DebugGuiManager::newFrame(Renderer::IRenderTarget& renderTarget, CompositorWorkspaceInstance* compositorWorkspaceInstance)
+	void DebugGuiManager::newFrame(Rhi::IRenderTarget& renderTarget, CompositorWorkspaceInstance* compositorWorkspaceInstance)
 	{
 		// Startup the debug GUI manager now?
 		if (!mIsRunning)
@@ -170,49 +170,49 @@ namespace RendererRuntime
 		}
 	}
 
-	const Renderer::IVertexArrayPtr& DebugGuiManager::getFillVertexArrayPtr()
+	const Rhi::IVertexArrayPtr& DebugGuiManager::getFillVertexArrayPtr()
 	{
 		if (GImGui->Initialized)
 		{
 			// Ask ImGui to render into the internal command buffer and then request the resulting draw data
 			ImGui::Render();
 			const ImDrawData* imDrawData = ImGui::GetDrawData();
-			Renderer::IRenderer& renderer = mRendererRuntime.getRenderer();
-			Renderer::IBufferManager& bufferManager = mRendererRuntime.getBufferManager();
+			Rhi::IRhi& rhi = mRendererRuntime.getRhi();
+			Rhi::IBufferManager& bufferManager = mRendererRuntime.getBufferManager();
 
 			{ // Vertex and index buffers
 				// Create and grow vertex/index buffers if needed
 				if (nullptr == mVertexBufferPtr || mNumberOfAllocatedVertices < static_cast<uint32_t>(imDrawData->TotalVtxCount))
 				{
 					mNumberOfAllocatedVertices = static_cast<uint32_t>(imDrawData->TotalVtxCount + 5000);	// Add some reserve to reduce reallocations
-					mVertexBufferPtr = bufferManager.createVertexBuffer(mNumberOfAllocatedVertices * sizeof(ImDrawVert), nullptr, 0, Renderer::BufferUsage::DYNAMIC_DRAW);
-					RENDERER_SET_RESOURCE_DEBUG_NAME(mVertexBufferPtr, "Debug GUI")
+					mVertexBufferPtr = bufferManager.createVertexBuffer(mNumberOfAllocatedVertices * sizeof(ImDrawVert), nullptr, 0, Rhi::BufferUsage::DYNAMIC_DRAW);
+					RHI_SET_RESOURCE_DEBUG_NAME(mVertexBufferPtr, "Debug GUI")
 					mVertexArrayPtr = nullptr;
 				}
 				if (nullptr == mIndexBufferPtr || mNumberOfAllocatedIndices < static_cast<uint32_t>(imDrawData->TotalIdxCount))
 				{
 					mNumberOfAllocatedIndices = static_cast<uint32_t>(imDrawData->TotalIdxCount + 10000);	// Add some reserve to reduce reallocations
-					mIndexBufferPtr = bufferManager.createIndexBuffer(mNumberOfAllocatedIndices * sizeof(ImDrawIdx), nullptr, 0, Renderer::BufferUsage::DYNAMIC_DRAW);
-					RENDERER_SET_RESOURCE_DEBUG_NAME(mIndexBufferPtr, "Debug GUI")
+					mIndexBufferPtr = bufferManager.createIndexBuffer(mNumberOfAllocatedIndices * sizeof(ImDrawIdx), nullptr, 0, Rhi::BufferUsage::DYNAMIC_DRAW);
+					RHI_SET_RESOURCE_DEBUG_NAME(mIndexBufferPtr, "Debug GUI")
 					mVertexArrayPtr = nullptr;
 				}
 				if (nullptr == mVertexArrayPtr)
 				{
-					RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mVertexBufferPtr, "Invalid vertex buffer")
-					RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mIndexBufferPtr, "Invalid index buffer")
+					RHI_ASSERT(mRendererRuntime.getContext(), nullptr != mVertexBufferPtr, "Invalid vertex buffer")
+					RHI_ASSERT(mRendererRuntime.getContext(), nullptr != mIndexBufferPtr, "Invalid index buffer")
 
 					// Create vertex array object (VAO)
-					const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { mVertexBufferPtr };
+					const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { mVertexBufferPtr };
 					mVertexArrayPtr = bufferManager.createVertexArray(::detail::VertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, mIndexBufferPtr);
-					RENDERER_SET_RESOURCE_DEBUG_NAME(mVertexArrayPtr, "Debug GUI")
+					RHI_SET_RESOURCE_DEBUG_NAME(mVertexArrayPtr, "Debug GUI")
 				}
 
 				{ // Copy and convert all vertices and indices into a single contiguous buffer
-					Renderer::MappedSubresource vertexBufferMappedSubresource;
-					if (renderer.map(*mVertexBufferPtr, 0, Renderer::MapType::WRITE_DISCARD, 0, vertexBufferMappedSubresource))
+					Rhi::MappedSubresource vertexBufferMappedSubresource;
+					if (rhi.map(*mVertexBufferPtr, 0, Rhi::MapType::WRITE_DISCARD, 0, vertexBufferMappedSubresource))
 					{
-						Renderer::MappedSubresource indexBufferMappedSubresource;
-						if (renderer.map(*mIndexBufferPtr, 0, Renderer::MapType::WRITE_DISCARD, 0, indexBufferMappedSubresource))
+						Rhi::MappedSubresource indexBufferMappedSubresource;
+						if (rhi.map(*mIndexBufferPtr, 0, Rhi::MapType::WRITE_DISCARD, 0, indexBufferMappedSubresource))
 						{
 							ImDrawVert* imDrawVert = static_cast<ImDrawVert*>(vertexBufferMappedSubresource.data);
 							ImDrawIdx* imDrawIdx = static_cast<ImDrawIdx*>(indexBufferMappedSubresource.data);
@@ -226,11 +226,11 @@ namespace RendererRuntime
 							}
 
 							// Unmap the index buffer
-							renderer.unmap(*mIndexBufferPtr, 0);
+							rhi.unmap(*mIndexBufferPtr, 0);
 						}
 
 						// Unmap the vertex buffer
-						renderer.unmap(*mVertexBufferPtr, 0);
+						rhi.unmap(*mVertexBufferPtr, 0);
 					}
 				}
 			}
@@ -240,7 +240,7 @@ namespace RendererRuntime
 		return mVertexArrayPtr;
 	}
 
-	void DebugGuiManager::fillGraphicsCommandBuffer(Renderer::CommandBuffer& commandBuffer)
+	void DebugGuiManager::fillGraphicsCommandBuffer(Rhi::CommandBuffer& commandBuffer)
 	{
 		if (GImGui->Initialized)
 		{
@@ -265,10 +265,10 @@ namespace RendererRuntime
 					else
 					{
 						// Set graphics scissor rectangle
-						Renderer::Command::SetGraphicsScissorRectangles::create(commandBuffer, static_cast<long>(pcmd->ClipRect.x), static_cast<long>(pcmd->ClipRect.y), static_cast<long>(pcmd->ClipRect.z), static_cast<long>(pcmd->ClipRect.w));
+						Rhi::Command::SetGraphicsScissorRectangles::create(commandBuffer, static_cast<long>(pcmd->ClipRect.x), static_cast<long>(pcmd->ClipRect.y), static_cast<long>(pcmd->ClipRect.z), static_cast<long>(pcmd->ClipRect.w));
 
 						// Draw graphics
-						Renderer::Command::DrawIndexedGraphics::create(commandBuffer, static_cast<uint32_t>(pcmd->ElemCount), 1, static_cast<uint32_t>(indexOffset), static_cast<int32_t>(vertexOffset));
+						Rhi::Command::DrawIndexedGraphics::create(commandBuffer, static_cast<uint32_t>(pcmd->ElemCount), 1, static_cast<uint32_t>(indexOffset), static_cast<int32_t>(vertexOffset));
 					}
 					indexOffset += pcmd->ElemCount;
 				}
@@ -277,17 +277,17 @@ namespace RendererRuntime
 		}
 	}
 
-	void DebugGuiManager::fillGraphicsCommandBufferUsingFixedBuildInRendererConfiguration(Renderer::CommandBuffer& commandBuffer)
+	void DebugGuiManager::fillGraphicsCommandBufferUsingFixedBuildInRhiConfiguration(Rhi::CommandBuffer& commandBuffer)
 	{
 		if (GImGui->Initialized)
 		{
 			// No combined scoped profiler CPU and GPU sample as well as renderer debug event command by intent, this is something the caller has to take care of
 			// RENDERER_SCOPED_PROFILER_EVENT(mRendererRuntime.getContext(), commandBuffer, "Fixed debug GUI")
 
-			// Create fixed build in renderer configuration resources, if required
+			// Create fixed build in RHI configuration resources, if required
 			if (nullptr == mRootSignature)
 			{
-				createFixedBuildInRendererConfigurationResources();
+				createFixedBuildInRhiConfigurationResources();
 			}
 
 			{ // Setup orthographic projection matrix into our vertex shader uniform buffer
@@ -304,12 +304,12 @@ namespace RendererRuntime
 				// TODO(co) Since the data copy isn't performed via commands, we better manage it somehow to ensure no problems come up when the following is executed multiple times per frame (which usually isn't the case)
 				if (nullptr != mVertexShaderUniformBuffer)
 				{
-					Renderer::MappedSubresource mappedSubresource;
-					Renderer::IRenderer& renderer = mRendererRuntime.getRenderer();
-					if (renderer.map(*mVertexShaderUniformBuffer, 0, Renderer::MapType::WRITE_DISCARD, 0, mappedSubresource))
+					Rhi::MappedSubresource mappedSubresource;
+					Rhi::IRhi& rhi = mRendererRuntime.getRhi();
+					if (rhi.map(*mVertexShaderUniformBuffer, 0, Rhi::MapType::WRITE_DISCARD, 0, mappedSubresource))
 					{
 						memcpy(mappedSubresource.data, objectSpaceToClipSpaceMatrix, sizeof(objectSpaceToClipSpaceMatrix));
-						renderer.unmap(*mVertexShaderUniformBuffer, 0);
+						rhi.unmap(*mVertexShaderUniformBuffer, 0);
 					}
 				}
 				else
@@ -319,20 +319,20 @@ namespace RendererRuntime
 				}
 			}
 
-			{ // Renderer configuration
+			{ // RHI configuration
 				// Set the used graphics root signature
-				Renderer::Command::SetGraphicsRootSignature::create(commandBuffer, mRootSignature);
+				Rhi::Command::SetGraphicsRootSignature::create(commandBuffer, mRootSignature);
 
 				// Set the used graphics pipeline state object (PSO)
-				Renderer::Command::SetGraphicsPipelineState::create(commandBuffer, mGraphicsPipelineState);
+				Rhi::Command::SetGraphicsPipelineState::create(commandBuffer, mGraphicsPipelineState);
 
 				// Set graphics resource groups
-				Renderer::Command::SetGraphicsResourceGroup::create(commandBuffer, 0, mResourceGroup);
-				Renderer::Command::SetGraphicsResourceGroup::create(commandBuffer, 1, mSamplerStateGroup);
+				Rhi::Command::SetGraphicsResourceGroup::create(commandBuffer, 0, mResourceGroup);
+				Rhi::Command::SetGraphicsResourceGroup::create(commandBuffer, 1, mSamplerStateGroup);
 			}
 
 			// Setup input assembly (IA): Set the used vertex array
-			Renderer::Command::SetGraphicsVertexArray::create(commandBuffer, getFillVertexArrayPtr());
+			Rhi::Command::SetGraphicsVertexArray::create(commandBuffer, getFillVertexArrayPtr());
 
 			// Render command lists
 			fillGraphicsCommandBuffer(commandBuffer);
@@ -345,7 +345,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void DebugGuiManager::startup()
 	{
-		RENDERER_ASSERT(mRendererRuntime.getContext(), !mIsRunning, "The debug GUI manager is already running")
+		RHI_ASSERT(mRendererRuntime.getContext(), !mIsRunning, "The debug GUI manager is already running")
 
 		{ // Create texture instance
 			// Build texture atlas
@@ -354,9 +354,9 @@ namespace RendererRuntime
 			int height = 0;
 			ImGui::GetIO().Fonts->GetTexDataAsAlpha8(&pixels, &width, &height);
 
-			// Upload texture to renderer
-			mTexture2D = mRendererRuntime.getTextureManager().createTexture2D(static_cast<uint32_t>(width), static_cast<uint32_t>(height), Renderer::TextureFormat::R8, pixels, Renderer::TextureFlag::GENERATE_MIPMAPS | Renderer::TextureFlag::SHADER_RESOURCE);
-			RENDERER_SET_RESOURCE_DEBUG_NAME(mTexture2D, "Debug 2D GUI glyph texture atlas")
+			// Upload texture to RHI
+			mTexture2D = mRendererRuntime.getTextureManager().createTexture2D(static_cast<uint32_t>(width), static_cast<uint32_t>(height), Rhi::TextureFormat::R8, pixels, Rhi::TextureFlag::GENERATE_MIPMAPS | Rhi::TextureFlag::SHADER_RESOURCE);
+			RHI_SET_RESOURCE_DEBUG_NAME(mTexture2D, "Debug 2D GUI glyph texture atlas")
 
 			// Tell the texture resource manager about our render target texture so it can be referenced inside e.g. compositor nodes
 			mRendererRuntime.getTextureResourceManager().createTextureResourceByAssetId(ASSET_ID("Unrimp/Texture/DynamicByCode/ImGuiGlyphMap2D"), *mTexture2D);
@@ -407,29 +407,29 @@ namespace RendererRuntime
 		ImGui::DestroyContext(mImGuiContext);
 	}
 
-	void DebugGuiManager::createFixedBuildInRendererConfigurationResources()
+	void DebugGuiManager::createFixedBuildInRhiConfigurationResources()
 	{
-		Renderer::IRenderer& renderer = mRendererRuntime.getRenderer();
-		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr == mRootSignature, "The debug GUI manager has already root signature")
+		Rhi::IRhi& rhi = mRendererRuntime.getRhi();
+		RHI_ASSERT(mRendererRuntime.getContext(), nullptr == mRootSignature, "The debug GUI manager has already root signature")
 
 		{ // Create the root signature instance
 			// Create the root signature
-			Renderer::DescriptorRangeBuilder ranges[3];
-			ranges[0].initialize(Renderer::ResourceType::UNIFORM_BUFFER, 0, "UniformBlockDynamicVs", Renderer::ShaderVisibility::VERTEX);
-			ranges[1].initialize(Renderer::ResourceType::TEXTURE_2D,	 0, "GlyphMap",				 Renderer::ShaderVisibility::FRAGMENT);
-			ranges[2].initializeSampler(0, Renderer::ShaderVisibility::FRAGMENT);
+			Rhi::DescriptorRangeBuilder ranges[3];
+			ranges[0].initialize(Rhi::ResourceType::UNIFORM_BUFFER, 0, "UniformBlockDynamicVs", Rhi::ShaderVisibility::VERTEX);
+			ranges[1].initialize(Rhi::ResourceType::TEXTURE_2D,		0, "GlyphMap",				Rhi::ShaderVisibility::FRAGMENT);
+			ranges[2].initializeSampler(0, Rhi::ShaderVisibility::FRAGMENT);
 
-			Renderer::RootParameterBuilder rootParameters[2];
+			Rhi::RootParameterBuilder rootParameters[2];
 			rootParameters[0].initializeAsDescriptorTable(2, &ranges[0]);
 			rootParameters[1].initializeAsDescriptorTable(1, &ranges[2]);
 
 			// Setup
-			Renderer::RootSignatureBuilder rootSignature;
-			rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Renderer::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+			Rhi::RootSignatureBuilder rootSignature;
+			rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Rhi::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 			// Create the instance
-			mRootSignature = renderer.createRootSignature(rootSignature);
-			RENDERER_SET_RESOURCE_DEBUG_NAME(mRootSignature, "Debug GUI")
+			mRootSignature = rhi.createRootSignature(rootSignature);
+			RHI_SET_RESOURCE_DEBUG_NAME(mRootSignature, "Debug GUI")
 		}
 
 		{ // Create the graphics pipeline state instance
@@ -445,11 +445,11 @@ namespace RendererRuntime
 				#include "Detail/Shader/DebugGui_Null.h"
 
 				// Create the shaders
-				Renderer::IShaderLanguage& shaderLanguage = renderer.getDefaultShaderLanguage();
-				Renderer::IVertexShader* vertexShader = shaderLanguage.createVertexShaderFromSourceCode(::detail::VertexAttributes, vertexShaderSourceCode);
-				RENDERER_SET_RESOURCE_DEBUG_NAME(vertexShader, "Debug GUI")
-				Renderer::IFragmentShader* fragmentShader = shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode);
-				RENDERER_SET_RESOURCE_DEBUG_NAME(fragmentShader, "Debug GUI")
+				Rhi::IShaderLanguage& shaderLanguage = rhi.getDefaultShaderLanguage();
+				Rhi::IVertexShader* vertexShader = shaderLanguage.createVertexShaderFromSourceCode(::detail::VertexAttributes, vertexShaderSourceCode);
+				RHI_SET_RESOURCE_DEBUG_NAME(vertexShader, "Debug GUI")
+				Rhi::IFragmentShader* fragmentShader = shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode);
+				RHI_SET_RESOURCE_DEBUG_NAME(fragmentShader, "Debug GUI")
 
 				// Create the graphics program
 				mGraphicsProgram = shaderLanguage.createGraphicsProgram(
@@ -457,34 +457,34 @@ namespace RendererRuntime
 					::detail::VertexAttributes,
 					vertexShader,
 					fragmentShader);
-				RENDERER_SET_RESOURCE_DEBUG_NAME(mGraphicsProgram, "Debug GUI")
+				RHI_SET_RESOURCE_DEBUG_NAME(mGraphicsProgram, "Debug GUI")
 			}
 
 			// Create the graphics pipeline state object (PSO)
 			if (nullptr != mGraphicsProgram)
 			{
 				// TODO(co) Render pass related update, the render pass in here is currently just a dummy so the debug compositor works
-				Renderer::IRenderPass* renderPass = renderer.createRenderPass(1, &renderer.getCapabilities().preferredSwapChainColorTextureFormat, renderer.getCapabilities().preferredSwapChainDepthStencilTextureFormat);
+				Rhi::IRenderPass* renderPass = rhi.createRenderPass(1, &rhi.getCapabilities().preferredSwapChainColorTextureFormat, rhi.getCapabilities().preferredSwapChainDepthStencilTextureFormat);
 
-				Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(mRootSignature, mGraphicsProgram, ::detail::VertexAttributes, *renderPass);
-				graphicsPipelineState.rasterizerState.cullMode				   = Renderer::CullMode::NONE;
+				Rhi::GraphicsPipelineState graphicsPipelineState = Rhi::GraphicsPipelineStateBuilder(mRootSignature, mGraphicsProgram, ::detail::VertexAttributes, *renderPass);
+				graphicsPipelineState.rasterizerState.cullMode				   = Rhi::CullMode::NONE;
 				graphicsPipelineState.rasterizerState.scissorEnable			   = 1;
 				graphicsPipelineState.depthStencilState.depthEnable			   = false;
-				graphicsPipelineState.depthStencilState.depthWriteMask		   = Renderer::DepthWriteMask::ZERO;
+				graphicsPipelineState.depthStencilState.depthWriteMask		   = Rhi::DepthWriteMask::ZERO;
 				graphicsPipelineState.blendState.renderTarget[0].blendEnable   = true;
-				graphicsPipelineState.blendState.renderTarget[0].srcBlend	   = Renderer::Blend::SRC_ALPHA;
-				graphicsPipelineState.blendState.renderTarget[0].destBlend	   = Renderer::Blend::INV_SRC_ALPHA;
-				graphicsPipelineState.blendState.renderTarget[0].srcBlendAlpha = Renderer::Blend::INV_SRC_ALPHA;
-				mGraphicsPipelineState = renderer.createGraphicsPipelineState(graphicsPipelineState);
-				RENDERER_SET_RESOURCE_DEBUG_NAME(mGraphicsPipelineState, "Debug GUI")
+				graphicsPipelineState.blendState.renderTarget[0].srcBlend	   = Rhi::Blend::SRC_ALPHA;
+				graphicsPipelineState.blendState.renderTarget[0].destBlend	   = Rhi::Blend::INV_SRC_ALPHA;
+				graphicsPipelineState.blendState.renderTarget[0].srcBlendAlpha = Rhi::Blend::INV_SRC_ALPHA;
+				mGraphicsPipelineState = rhi.createGraphicsPipelineState(graphicsPipelineState);
+				RHI_SET_RESOURCE_DEBUG_NAME(mGraphicsPipelineState, "Debug GUI")
 			}
 		}
 
 		// Create vertex uniform buffer instance
-		if (renderer.getCapabilities().maximumUniformBufferSize > 0)
+		if (rhi.getCapabilities().maximumUniformBufferSize > 0)
 		{
-			mVertexShaderUniformBuffer = mRendererRuntime.getBufferManager().createUniformBuffer(sizeof(float) * 4 * 4, nullptr, Renderer::BufferUsage::DYNAMIC_DRAW);
-			RENDERER_SET_RESOURCE_DEBUG_NAME(mVertexShaderUniformBuffer, "Debug GUI")
+			mVertexShaderUniformBuffer = mRendererRuntime.getBufferManager().createUniformBuffer(sizeof(float) * 4 * 4, nullptr, Rhi::BufferUsage::DYNAMIC_DRAW);
+			RHI_SET_RESOURCE_DEBUG_NAME(mVertexShaderUniformBuffer, "Debug GUI")
 		}
 		else if (nullptr != mGraphicsProgram)
 		{
@@ -492,19 +492,19 @@ namespace RendererRuntime
 		}
 
 		// Create sampler state instance and wrap it into a resource group instance
-		Renderer::IResource* samplerStateResource = nullptr;
+		Rhi::IResource* samplerStateResource = nullptr;
 		{
-			Renderer::SamplerState samplerState = Renderer::ISamplerState::getDefaultSamplerState();
-			samplerState.addressU = Renderer::TextureAddressMode::WRAP;
-			samplerState.addressV = Renderer::TextureAddressMode::WRAP;
-			samplerStateResource = renderer.createSamplerState(samplerState);
-			RENDERER_SET_RESOURCE_DEBUG_NAME(samplerStateResource, "Debug GUI")
+			Rhi::SamplerState samplerState = Rhi::ISamplerState::getDefaultSamplerState();
+			samplerState.addressU = Rhi::TextureAddressMode::WRAP;
+			samplerState.addressV = Rhi::TextureAddressMode::WRAP;
+			samplerStateResource = rhi.createSamplerState(samplerState);
+			RHI_SET_RESOURCE_DEBUG_NAME(samplerStateResource, "Debug GUI")
 			mSamplerStateGroup = mRootSignature->createResourceGroup(1, 1, &samplerStateResource);
 		}
 
 		{ // Create resource group
-			Renderer::IResource* resources[2] = { mVertexShaderUniformBuffer, mTexture2D };
-			Renderer::ISamplerState* samplerStates[2] = { nullptr, static_cast<Renderer::ISamplerState*>(samplerStateResource) };
+			Rhi::IResource* resources[2] = { mVertexShaderUniformBuffer, mTexture2D };
+			Rhi::ISamplerState* samplerStates[2] = { nullptr, static_cast<Rhi::ISamplerState*>(samplerStateResource) };
 			mResourceGroup = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources, samplerStates);
 		}
 	}

@@ -104,8 +104,8 @@ namespace RendererRuntime
 
 			struct SamplerState final
 			{
-				Renderer::SamplerState samplerState;
-				uint32_t			   rootParameterIndex;	///< Root parameter index = resource group index
+				Rhi::SamplerState samplerState;
+				uint32_t		  rootParameterIndex;	///< Root parameter index = resource group index
 			};
 
 			struct Texture final

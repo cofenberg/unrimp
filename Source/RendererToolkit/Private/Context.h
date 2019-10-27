@@ -27,7 +27,7 @@
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace Renderer
+namespace Rhi
 {
 	class ILog;
 	class IAssert;
@@ -66,15 +66,15 @@ namespace RendererToolkit
 		*    Constructor
 		*
 		*  @param[in] log
-		*    Log instance to use, the log instance must stay valid as long as the renderer toolkit instance exists
+		*    RHI log instance to use, the log instance must stay valid as long as the renderer toolkit instance exists
 		*  @param[in] assert
-		*    Assert instance to use, the assert instance must stay valid as long as the renderer toolkit instance exists
+		*    RHI assert instance to use, the assert instance must stay valid as long as the renderer toolkit instance exists
 		*  @param[in] allocator
-		*    Allocator instance to use, the allocator instance must stay valid as long as the renderer toolkit instance exists
+		*    RHI allocator instance to use, the allocator instance must stay valid as long as the renderer toolkit instance exists
 		*  @param[in] fileManager
-		*    File manager instance to use, the file manager instance must stay valid as long as the renderer toolkit instance exists
+		*    Renderer runtime file manager instance to use, the file manager instance must stay valid as long as the renderer toolkit instance exists
 		*/
-		inline Context(Renderer::ILog& log, Renderer::IAssert& assert, Renderer::IAllocator& allocator, RendererRuntime::IFileManager& fileManager) :
+		inline Context(Rhi::ILog& log, Rhi::IAssert& assert, Rhi::IAllocator& allocator, RendererRuntime::IFileManager& fileManager) :
 			mLog(log),
 			mAssert(assert),
 			mAllocator(allocator),
@@ -94,46 +94,46 @@ namespace RendererToolkit
 
 		/**
 		*  @brief
-		*    Return the used log instance
+		*    Return the used RHI log instance
 		*
 		*  @return
-		*    The used log instance
+		*    The used RHI log instance
 		*/
-		[[nodiscard]] inline Renderer::ILog& getLog() const
+		[[nodiscard]] inline Rhi::ILog& getLog() const
 		{
 			return mLog;
 		}
 
 		/**
 		*  @brief
-		*    Return the used assert instance
+		*    Return the used RHI assert instance
 		*
 		*  @return
-		*    The used assert instance
+		*    The used RHI assert instance
 		*/
-		[[nodiscard]] inline Renderer::IAssert& getAssert() const
+		[[nodiscard]] inline Rhi::IAssert& getAssert() const
 		{
 			return mAssert;
 		}
 
 		/**
 		*  @brief
-		*    Return the used allocator instance
+		*    Return the used RHI allocator instance
 		*
 		*  @return
-		*    The used allocator instance
+		*    The used RHI allocator instance
 		*/
-		[[nodiscard]] inline Renderer::IAllocator& getAllocator() const
+		[[nodiscard]] inline Rhi::IAllocator& getAllocator() const
 		{
 			return mAllocator;
 		}
 
 		/**
 		*  @brief
-		*    Return the used file manager instance
+		*    Return the used renderer runtime file manager instance
 		*
 		*  @return
-		*    The used file manager instance
+		*    The used renderer runtime file manager instance
 		*/
 		[[nodiscard]] inline RendererRuntime::IFileManager& getFileManager() const
 		{
@@ -153,9 +153,9 @@ namespace RendererToolkit
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		Renderer::ILog&				   mLog;
-		Renderer::IAssert&			   mAssert;
-		Renderer::IAllocator&		   mAllocator;
+		Rhi::ILog&					   mLog;
+		Rhi::IAssert&				   mAssert;
+		Rhi::IAllocator&			   mAllocator;
 		RendererRuntime::IFileManager& mFileManager;
 
 

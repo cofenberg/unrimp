@@ -52,12 +52,6 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace Renderer
-{
-	class CommandBuffer;
-	class ITextureBuffer;
-	class IResourceGroup;
-}
 namespace RendererRuntime
 {
 	class SceneResource;
@@ -138,9 +132,9 @@ namespace RendererRuntime
 		*  @param[in] sceneResource
 		*    Scene resource to use
 		*  @param[out] commandBuffer
-		*    Command buffer to fill
+		*    RHI command buffer to fill
 		*/
-		void fillBuffer(const glm::dvec3& worldSpaceCameraPosition, SceneResource& sceneResource, Renderer::CommandBuffer& commandBuffer);
+		void fillBuffer(const glm::dvec3& worldSpaceCameraPosition, SceneResource& sceneResource, Rhi::CommandBuffer& commandBuffer);
 
 		/**
 		*  @brief
@@ -149,9 +143,9 @@ namespace RendererRuntime
 		*  @param[in] materialBlueprintResource
 		*    Graphics material blueprint resource
 		*  @param[out] commandBuffer
-		*    Command buffer to fill
+		*    RHI command buffer to fill
 		*/
-		void fillGraphicsCommandBuffer(const MaterialBlueprintResource& materialBlueprintResource, Renderer::CommandBuffer& commandBuffer);
+		void fillGraphicsCommandBuffer(const MaterialBlueprintResource& materialBlueprintResource, Rhi::CommandBuffer& commandBuffer);
 
 		/**
 		*  @brief
@@ -160,9 +154,9 @@ namespace RendererRuntime
 		*  @param[in] materialBlueprintResource
 		*    Compute material blueprint resource
 		*  @param[out] commandBuffer
-		*    Command buffer to fill
+		*    RHI command buffer to fill
 		*/
-		void fillComputeCommandBuffer(const MaterialBlueprintResource& materialBlueprintResource, Renderer::CommandBuffer& commandBuffer);
+		void fillComputeCommandBuffer(const MaterialBlueprintResource& materialBlueprintResource, Rhi::CommandBuffer& commandBuffer);
 
 		/**
 		*  @brief
@@ -190,7 +184,7 @@ namespace RendererRuntime
 		explicit LightBufferManager(const LightBufferManager&) = delete;
 		LightBufferManager& operator=(const LightBufferManager&) = delete;
 		void fillTextureBuffer(const glm::dvec3& worldSpaceCameraPosition, SceneResource& sceneResource);	// 64 bit world space position of the camera
-		void fillClusters3DTexture(SceneResource& sceneResource, Renderer::CommandBuffer& commandBuffer);
+		void fillClusters3DTexture(SceneResource& sceneResource, Rhi::CommandBuffer& commandBuffer);
 
 
 	//[-------------------------------------------------------]
@@ -204,13 +198,13 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		IRendererRuntime&		  mRendererRuntime;	///< Renderer runtime instance to use
-		Renderer::ITextureBuffer* mTextureBuffer;	///< Texture buffer instance, always valid
-		ScratchBuffer			  mTextureScratchBuffer;
-		TextureResourceId		  mClusters3DTextureResourceId;
-		glm::vec3				  mLightClustersAabbMinimum;
-		glm::vec3				  mLightClustersAabbMaximum;
-		Renderer::IResourceGroup* mResourceGroup;	///< Resource group instance, always valid
+		IRendererRuntime&	 mRendererRuntime;	///< Renderer runtime instance to use
+		Rhi::ITextureBuffer* mTextureBuffer;	///< RHI texture buffer instance, always valid
+		ScratchBuffer		 mTextureScratchBuffer;
+		TextureResourceId	 mClusters3DTextureResourceId;
+		glm::vec3			 mLightClustersAabbMinimum;
+		glm::vec3			 mLightClustersAabbMaximum;
+		Rhi::IResourceGroup* mResourceGroup;	///< RHI resource group instance, always valid
 
 
 	};

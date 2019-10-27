@@ -66,7 +66,7 @@ namespace
 		//[ Public methods                                        ]
 		//[-------------------------------------------------------]
 		public:
-			inline explicit AclAllocator(Renderer::IAllocator& allocator) :
+			inline explicit AclAllocator(Rhi::IAllocator& allocator) :
 				mAllocator(allocator)
 			{
 				// Nothing here
@@ -101,7 +101,7 @@ namespace
 		//[ Private data                                          ]
 		//[-------------------------------------------------------]
 		private:
-			Renderer::IAllocator& mAllocator;
+			Rhi::IAllocator& mAllocator;
 
 
 	};
@@ -124,7 +124,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
-	SkeletonAnimationEvaluator::SkeletonAnimationEvaluator(Renderer::IAllocator& allocator, SkeletonAnimationResourceManager& skeletonAnimationResourceManager, SkeletonAnimationResourceId skeletonAnimationResourceId) :
+	SkeletonAnimationEvaluator::SkeletonAnimationEvaluator(Rhi::IAllocator& allocator, SkeletonAnimationResourceManager& skeletonAnimationResourceManager, SkeletonAnimationResourceId skeletonAnimationResourceId) :
 		mSkeletonAnimationResourceManager(skeletonAnimationResourceManager),
 		mSkeletonAnimationResourceId(skeletonAnimationResourceId)
 	{

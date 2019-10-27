@@ -43,19 +43,19 @@ namespace
 		//[ Global variables                                      ]
 		//[-------------------------------------------------------]
 		// Vertex input layout
-		static constexpr Renderer::VertexAttribute DrawIdVertexAttributesLayout[] =
+		static constexpr Rhi::VertexAttribute DrawIdVertexAttributesLayout[] =
 		{
 			{ // Attribute 0, see "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html
 				// Data destination
-				Renderer::VertexAttributeFormat::UINT_1,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-				"drawId",									// name[32] (char)
-				"DRAWID",									// semanticName[32] (char)
-				0,											// semanticIndex (uint32_t)
+				Rhi::VertexAttributeFormat::UINT_1,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+				"drawId",							// name[32] (char)
+				"DRAWID",							// semanticName[32] (char)
+				0,									// semanticIndex (uint32_t)
 				// Data source
-				0,											// inputSlot (uint32_t)
-				0,											// alignedByteOffset (uint32_t)
-				sizeof(uint32_t),							// strideInBytes (uint32_t)
-				1											// instancesPerElement (uint32_t)
+				0,									// inputSlot (uint32_t)
+				0,									// alignedByteOffset (uint32_t)
+				sizeof(uint32_t),					// strideInBytes (uint32_t)
+				1									// instancesPerElement (uint32_t)
 			}
 		};
 
@@ -77,7 +77,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public definitions                                    ]
 	//[-------------------------------------------------------]
-	const Renderer::VertexAttributes MeshResourceManager::DRAW_ID_VERTEX_ATTRIBUTES(static_cast<uint32_t>(GLM_COUNTOF(::detail::DrawIdVertexAttributesLayout)), ::detail::DrawIdVertexAttributesLayout);
+	const Rhi::VertexAttributes MeshResourceManager::DRAW_ID_VERTEX_ATTRIBUTES(static_cast<uint32_t>(GLM_COUNTOF(::detail::DrawIdVertexAttributesLayout)), ::detail::DrawIdVertexAttributesLayout);
 
 
 	//[-------------------------------------------------------]
@@ -188,9 +188,9 @@ namespace RendererRuntime
 		{
 			drawIds[i] = i;
 		}
-		Renderer::IBufferManager& bufferManager = rendererRuntime.getBufferManager();
+		Rhi::IBufferManager& bufferManager = rendererRuntime.getBufferManager();
 		mDrawIdVertexBufferPtr = bufferManager.createVertexBuffer(sizeof(drawIds), drawIds);
-		RENDERER_SET_RESOURCE_DEBUG_NAME(mDrawIdVertexBufferPtr, "Draw ID VBO")
+		RHI_SET_RESOURCE_DEBUG_NAME(mDrawIdVertexBufferPtr, "Draw ID VBO")
 
 		// Create vertex array object (VAO)
 		// -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)
@@ -198,9 +198,9 @@ namespace RendererRuntime
 		// -> When the vertex array object (VAO) is destroyed, it automatically decreases the
 		//    reference of the used vertex buffer objects (VBO). If the reference counter of a
 		//    vertex buffer object (VBO) reaches zero, it's automatically destroyed.
-		const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { mDrawIdVertexBufferPtr };
+		const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { mDrawIdVertexBufferPtr };
 		mDrawIdVertexArrayPtr = bufferManager.createVertexArray(DRAW_ID_VERTEX_ATTRIBUTES, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
-		RENDERER_SET_RESOURCE_DEBUG_NAME(mDrawIdVertexArrayPtr, "Draw ID VAO")
+		RHI_SET_RESOURCE_DEBUG_NAME(mDrawIdVertexArrayPtr, "Draw ID VAO")
 	}
 
 	MeshResourceManager::~MeshResourceManager()

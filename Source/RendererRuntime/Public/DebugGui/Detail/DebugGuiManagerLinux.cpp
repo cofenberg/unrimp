@@ -155,7 +155,7 @@ namespace RendererRuntime
 		#endif
 	}
 
-	void DebugGuiManagerLinux::onNewFrame(Renderer::IRenderTarget& renderTarget)
+	void DebugGuiManagerLinux::onNewFrame(Rhi::IRenderTarget& renderTarget)
 	{
 		ImGuiIO& imGuiIo = ImGui::GetIO();
 

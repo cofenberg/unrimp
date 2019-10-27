@@ -66,7 +66,7 @@ namespace RendererRuntime
 		mMemoryFile.read(&shaderBlueprintHeader, sizeof(v1ShaderBlueprint::ShaderBlueprintHeader));
 
 		// Sanity check
-		RENDERER_ASSERT(mRendererRuntime.getContext(), shaderBlueprintHeader.numberOfShaderSourceCodeBytes > 0, "Invalid shader blueprint asset without any shader source code detected")
+		RHI_ASSERT(mRendererRuntime.getContext(), shaderBlueprintHeader.numberOfShaderSourceCodeBytes > 0, "Invalid shader blueprint asset without any shader source code detected")
 
 		// Read the asset IDs of the shader pieces to include
 		if (shaderBlueprintHeader.numberOfIncludeShaderPieceAssetIds > 0)

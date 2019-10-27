@@ -29,8 +29,6 @@
 //[-------------------------------------------------------]
 #include "RendererRuntime/Public/Export.h"
 
-#include <Renderer/Public/Renderer.h>
-
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'argument': conversion from 'long' to 'unsigned int', signed/unsigned mismatch
@@ -91,8 +89,8 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	public:
 		RENDERERRUNTIME_API_EXPORT Renderable();
-		RENDERERRUNTIME_API_EXPORT Renderable(RenderableManager& renderableManager, const Renderer::IVertexArrayPtr& vertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, uint32_t startIndexLocation, uint32_t numberOfIndices, uint32_t instanceCount = 1);
-		RENDERERRUNTIME_API_EXPORT Renderable(RenderableManager& renderableManager, const Renderer::IVertexArrayPtr& vertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, const Renderer::IIndirectBufferPtr& indirectBufferPtr, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
+		RENDERERRUNTIME_API_EXPORT Renderable(RenderableManager& renderableManager, const Rhi::IVertexArrayPtr& vertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, uint32_t startIndexLocation, uint32_t numberOfIndices, uint32_t instanceCount = 1);
+		RENDERERRUNTIME_API_EXPORT Renderable(RenderableManager& renderableManager, const Rhi::IVertexArrayPtr& vertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, const Rhi::IIndirectBufferPtr& indirectBufferPtr, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 
 		inline ~Renderable()
 		{
@@ -107,22 +105,22 @@ namespace RendererRuntime
 			return mRenderableManager;
 		}
 
-		[[nodiscard]] inline const Renderer::IVertexArrayPtr& getVertexArrayPtr() const
+		[[nodiscard]] inline const Rhi::IVertexArrayPtr& getVertexArrayPtr() const
 		{
 			return mVertexArrayPtr;
 		}
 
-		inline void setVertexArrayPtr(const Renderer::IVertexArrayPtr& vertexArrayPtr)
+		inline void setVertexArrayPtr(const Rhi::IVertexArrayPtr& vertexArrayPtr)
 		{
 			mVertexArrayPtr = vertexArrayPtr;
 		}
 
-		[[nodiscard]] inline const Renderer::IIndirectBufferPtr& getIndirectBufferPtr() const
+		[[nodiscard]] inline const Rhi::IIndirectBufferPtr& getIndirectBufferPtr() const
 		{
 			return mIndirectBufferPtr;
 		}
 
-		inline void setIndirectBufferPtr(const Renderer::IIndirectBufferPtr& indirectBufferPtr)
+		inline void setIndirectBufferPtr(const Rhi::IIndirectBufferPtr& indirectBufferPtr)
 		{
 			mIndirectBufferPtr = indirectBufferPtr;
 		}
@@ -237,15 +235,15 @@ namespace RendererRuntime
 	public:
 		struct PipelineStateCache
 		{
-			MaterialTechniqueId			materialTechniqueId;
-			uint32_t					generationCounter;	// Most simple solution to detect e.g. shader combination changes which make the pipeline state cache invalid
-			Renderer::IPipelineStatePtr	pipelineStatePtr;
-			inline PipelineStateCache(MaterialTechniqueId _materialTechniqueId, uint32_t _generationCounter, const Renderer::IGraphicsPipelineStatePtr& graphicsPipelineStatePtr) :
+			MaterialTechniqueId	   materialTechniqueId;
+			uint32_t			   generationCounter;	// Most simple solution to detect e.g. shader combination changes which make the pipeline state cache invalid
+			Rhi::IPipelineStatePtr pipelineStatePtr;
+			inline PipelineStateCache(MaterialTechniqueId _materialTechniqueId, uint32_t _generationCounter, const Rhi::IGraphicsPipelineStatePtr& graphicsPipelineStatePtr) :
 				materialTechniqueId(_materialTechniqueId),
 				generationCounter(_generationCounter),
 				pipelineStatePtr(graphicsPipelineStatePtr)
 			{};
-			inline PipelineStateCache(MaterialTechniqueId _materialTechniqueId, uint32_t _generationCounter, const Renderer::IComputePipelineStatePtr& computePipelineStatePtr) :
+			inline PipelineStateCache(MaterialTechniqueId _materialTechniqueId, uint32_t _generationCounter, const Rhi::IComputePipelineStatePtr& computePipelineStatePtr) :
 				materialTechniqueId(_materialTechniqueId),
 				generationCounter(_generationCounter),
 				pipelineStatePtr(computePipelineStatePtr)
@@ -260,8 +258,8 @@ namespace RendererRuntime
 	private:
 		// Data
 		RenderableManager&				mRenderableManager;
-		Renderer::IVertexArrayPtr		mVertexArrayPtr;		///< Optional vertex array object (VAO), can be a null pointer
-		Renderer::IIndirectBufferPtr	mIndirectBufferPtr;		///< Optional indirect buffer, can be a null pointer
+		Rhi::IVertexArrayPtr			mVertexArrayPtr;		///< Optional vertex array object (VAO), can be a null pointer
+		Rhi::IIndirectBufferPtr			mIndirectBufferPtr;		///< Optional indirect buffer, can be a null pointer
 		union
 		{
 			uint32_t					mStartIndexLocation;	///< Used in case there's no indirect buffer

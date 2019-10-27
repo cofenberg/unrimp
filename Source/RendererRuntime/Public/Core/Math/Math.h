@@ -45,9 +45,9 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace Renderer
+namespace Rhi
 {
-	class IRenderer;
+	class IRhi;
 }
 namespace RendererRuntime
 {
@@ -193,15 +193,15 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Get renderer dependent texture scale bias matrix
+		*    Get RHI dependent texture scale bias matrix
 		*
-		*  @param[in] renderer
-		*    Used renderer
+		*  @param[in] rhi
+		*    Used RHI
 		*
 		*  @return
-		*    Renderer dependent texture scale bias matrix
+		*    RHI dependent texture scale bias matrix
 		*/
-		[[nodiscard]] RENDERERRUNTIME_API_EXPORT static const glm::mat4& getTextureScaleBiasMatrix(const Renderer::IRenderer& renderer);
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT static const glm::mat4& getTextureScaleBiasMatrix(const Rhi::IRhi& rhi);
 
 		//[-------------------------------------------------------]
 		//[ Hash                                                  ]

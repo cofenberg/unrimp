@@ -83,7 +83,7 @@ namespace RendererToolkit
 	class Context final
 	{
 	public:
-		inline Context(Renderer::ILog& log, Renderer::IAssert& assert, Renderer::IAllocator& allocator, RendererRuntime::IFileManager& fileManager) :
+		inline Context(Rhi::ILog& log, Rhi::IAssert& assert, Rhi::IAllocator& allocator, RendererRuntime::IFileManager& fileManager) :
 			mLog(log),
 			mAssert(assert),
 			mAllocator(allocator),
@@ -91,15 +91,15 @@ namespace RendererToolkit
 		{ }
 		inline ~Context()
 		{ }
-		[[nodiscard]] inline Renderer::ILog& getLog() const
+		[[nodiscard]] inline Rhi::ILog& getLog() const
 		{
 			return mLog;
 		}
-		[[nodiscard]] inline Renderer::IAssert& getAssert() const
+		[[nodiscard]] inline Rhi::IAssert& getAssert() const
 		{
 			return mAssert;
 		}
-		[[nodiscard]] inline Renderer::IAllocator& getAllocator() const
+		[[nodiscard]] inline Rhi::IAllocator& getAllocator() const
 		{
 			return mAllocator;
 		}
@@ -111,9 +111,9 @@ namespace RendererToolkit
 		explicit Context(const Context&) = delete;
 		Context& operator=(const Context&) = delete;
 	private:
-		Renderer::ILog&				   mLog;
-		Renderer::IAssert&			   mAssert;
-		Renderer::IAllocator&		   mAllocator;
+		Rhi::ILog&					   mLog;
+		Rhi::IAssert&				   mAssert;
+		Rhi::IAllocator&			   mAllocator;
 		RendererRuntime::IFileManager& mFileManager;
 	};
 
@@ -162,13 +162,13 @@ namespace RendererToolkit
 						else
 						{
 							// Error!
-							RENDERER_LOG(context, CRITICAL, "Failed to locate the entry point \"createRendererToolkitInstance\" within the shared renderer toolkit library \"%s\"", RENDERER_TOOLKIT_FILENAME)
+							RHI_LOG(context, CRITICAL, "Failed to locate the entry point \"createRendererToolkitInstance\" within the shared renderer toolkit library \"%s\"", RENDERER_TOOLKIT_FILENAME)
 						}
 					}
 					else
 					{
 						// Error!
-						RENDERER_LOG(context, CRITICAL, "Failed to load in the shared renderer toolkit library \"%s\"", RENDERER_TOOLKIT_FILENAME)
+						RHI_LOG(context, CRITICAL, "Failed to load in the shared renderer toolkit library \"%s\"", RENDERER_TOOLKIT_FILENAME)
 					}
 				#elif defined LINUX
 					// Load in the shared library
@@ -189,13 +189,13 @@ namespace RendererToolkit
 						else
 						{
 							// Error!
-							RENDERER_LOG(context, CRITICAL, "Failed to locate the entry point \"createRendererToolkitInstance\" within the renderer toolkit shared renderer toolkit library \"%s\"", RENDERER_TOOLKIT_FILENAME)
+							RHI_LOG(context, CRITICAL, "Failed to locate the entry point \"createRendererToolkitInstance\" within the renderer toolkit shared renderer toolkit library \"%s\"", RENDERER_TOOLKIT_FILENAME)
 						}
 					}
 					else
 					{
 						// Error!
-						RENDERER_LOG(context, CRITICAL, "Failed to load in the shared renderer toolkit library \"%s\"", RENDERER_TOOLKIT_FILENAME)
+						RHI_LOG(context, CRITICAL, "Failed to load in the shared renderer toolkit library \"%s\"", RENDERER_TOOLKIT_FILENAME)
 					}
 				#else
 					#error "Unsupported platform"

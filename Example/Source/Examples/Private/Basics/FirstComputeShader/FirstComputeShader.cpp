@@ -40,91 +40,91 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 void FirstComputeShader::onInitialization()
 {
-	// Get and check the renderer instance
-	Renderer::IRendererPtr renderer(getRenderer());
-	if (nullptr != renderer)
+	// Get and check the RHI instance
+	Rhi::IRhiPtr rhi(getRhi());
+	if (nullptr != rhi)
 	{
 		// Create the buffer and texture manager
-		mBufferManager = renderer->createBufferManager();
-		mTextureManager = renderer->createTextureManager();
+		mBufferManager = rhi->createBufferManager();
+		mTextureManager = rhi->createTextureManager();
 
 		{ // Create the graphics root signature
 			// TODO(co) Compute shader: Get rid of the OpenGL/Direct3D 11 variation here
-			const uint32_t offset = (renderer->getNameId() == Renderer::NameId::VULKAN || renderer->getNameId() == Renderer::NameId::OPENGL) ? 1u : 0u;
-			Renderer::DescriptorRangeBuilder ranges[5];
-			ranges[0].initialize(Renderer::ResourceType::UNIFORM_BUFFER,	0,			 "UniformBuffer",		  Renderer::ShaderVisibility::FRAGMENT);
-			ranges[1].initialize(Renderer::ResourceType::TEXTURE_BUFFER,	0,			 "InputTextureBuffer",	  Renderer::ShaderVisibility::VERTEX);
-			ranges[2].initialize(Renderer::ResourceType::STRUCTURED_BUFFER, 1u + offset, "InputStructuredBuffer", Renderer::ShaderVisibility::VERTEX);
-			ranges[3].initialize(Renderer::ResourceType::TEXTURE_2D,		1,			 "AlbedoMap",			  Renderer::ShaderVisibility::FRAGMENT);
-			ranges[4].initializeSampler(0, Renderer::ShaderVisibility::FRAGMENT);
+			const uint32_t offset = (rhi->getNameId() == Rhi::NameId::VULKAN || rhi->getNameId() == Rhi::NameId::OPENGL) ? 1u : 0u;
+			Rhi::DescriptorRangeBuilder ranges[5];
+			ranges[0].initialize(Rhi::ResourceType::UNIFORM_BUFFER,	   0,			"UniformBuffer",		 Rhi::ShaderVisibility::FRAGMENT);
+			ranges[1].initialize(Rhi::ResourceType::TEXTURE_BUFFER,	   0,			"InputTextureBuffer",	 Rhi::ShaderVisibility::VERTEX);
+			ranges[2].initialize(Rhi::ResourceType::STRUCTURED_BUFFER, 1u + offset, "InputStructuredBuffer", Rhi::ShaderVisibility::VERTEX);
+			ranges[3].initialize(Rhi::ResourceType::TEXTURE_2D,		   1,			"AlbedoMap",			 Rhi::ShaderVisibility::FRAGMENT);
+			ranges[4].initializeSampler(0, Rhi::ShaderVisibility::FRAGMENT);
 
-			Renderer::RootParameterBuilder rootParameters[2];
+			Rhi::RootParameterBuilder rootParameters[2];
 			rootParameters[0].initializeAsDescriptorTable(4, &ranges[0]);
 			rootParameters[1].initializeAsDescriptorTable(1, &ranges[4]);
 
 			// Setup
-			Renderer::RootSignatureBuilder rootSignature;
-			rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Renderer::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+			Rhi::RootSignatureBuilder rootSignature;
+			rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Rhi::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 			// Create the instance
-			mGraphicsRootSignature = renderer->createRootSignature(rootSignature);
+			mGraphicsRootSignature = rhi->createRootSignature(rootSignature);
 		}
 
 		{ // Create the first compute root signature
-			Renderer::DescriptorRangeBuilder ranges[7];
+			Rhi::DescriptorRangeBuilder ranges[7];
 			// Input
-			ranges[0].initialize(Renderer::ResourceType::TEXTURE_2D,	  0,			"InputTexture2D",	  Renderer::ShaderVisibility::COMPUTE);
-			ranges[1].initialize(Renderer::ResourceType::INDEX_BUFFER,    1,			"InputIndexBuffer",	  Renderer::ShaderVisibility::COMPUTE);
-			ranges[2].initialize(Renderer::ResourceType::VERTEX_BUFFER,   2,			"InputVertexBuffer",  Renderer::ShaderVisibility::COMPUTE);
-			ranges[3].initialize(Renderer::ResourceType::UNIFORM_BUFFER,  0,			"InputUniformBuffer", Renderer::ShaderVisibility::COMPUTE);
+			ranges[0].initialize(Rhi::ResourceType::TEXTURE_2D,		 0,	"InputTexture2D",	  Rhi::ShaderVisibility::COMPUTE);
+			ranges[1].initialize(Rhi::ResourceType::INDEX_BUFFER,    1,	"InputIndexBuffer",	  Rhi::ShaderVisibility::COMPUTE);
+			ranges[2].initialize(Rhi::ResourceType::VERTEX_BUFFER,   2,	"InputVertexBuffer",  Rhi::ShaderVisibility::COMPUTE);
+			ranges[3].initialize(Rhi::ResourceType::UNIFORM_BUFFER,  0,	"InputUniformBuffer", Rhi::ShaderVisibility::COMPUTE);
 			// Output
 			// TODO(co) Compute shader: Get rid of the OpenGL/Direct3D 11 variation here
-			const uint32_t offset = (renderer->getNameId() == Renderer::NameId::VULKAN || renderer->getNameId() == Renderer::NameId::OPENGL) ? 4u : 0u;
-			ranges[4].initialize(Renderer::ResourceType::TEXTURE_2D,	  0u + offset, "OutputTexture2D",	  Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
-			ranges[5].initialize(Renderer::ResourceType::INDEX_BUFFER,    1u + offset, "OutputIndexBuffer",	  Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
-			ranges[6].initialize(Renderer::ResourceType::VERTEX_BUFFER,   2u + offset, "OutputVertexBuffer",  Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
+			const uint32_t offset = (rhi->getNameId() == Rhi::NameId::VULKAN || rhi->getNameId() == Rhi::NameId::OPENGL) ? 4u : 0u;
+			ranges[4].initialize(Rhi::ResourceType::TEXTURE_2D,		 0u + offset, "OutputTexture2D",	 Rhi::ShaderVisibility::COMPUTE, Rhi::DescriptorRangeType::UAV);
+			ranges[5].initialize(Rhi::ResourceType::INDEX_BUFFER,    1u + offset, "OutputIndexBuffer",	 Rhi::ShaderVisibility::COMPUTE, Rhi::DescriptorRangeType::UAV);
+			ranges[6].initialize(Rhi::ResourceType::VERTEX_BUFFER,   2u + offset, "OutputVertexBuffer",  Rhi::ShaderVisibility::COMPUTE, Rhi::DescriptorRangeType::UAV);
 
-			Renderer::RootParameterBuilder rootParameters[1];
+			Rhi::RootParameterBuilder rootParameters[1];
 			rootParameters[0].initializeAsDescriptorTable(7, &ranges[0]);
 
 			// Setup
-			Renderer::RootSignatureBuilder rootSignature;
-			rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Renderer::RootSignatureFlags::NONE);
+			Rhi::RootSignatureBuilder rootSignature;
+			rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Rhi::RootSignatureFlags::NONE);
 
 			// Create the instance
-			mComputeRootSignature1 = renderer->createRootSignature(rootSignature);
+			mComputeRootSignature1 = rhi->createRootSignature(rootSignature);
 		}
 
 		{ // Create the second compute root signature
-			Renderer::DescriptorRangeBuilder ranges[6];
+			Rhi::DescriptorRangeBuilder ranges[6];
 			// Input
-			ranges[0].initialize(Renderer::ResourceType::TEXTURE_BUFFER,	0,			 "InputTextureBuffer",	   Renderer::ShaderVisibility::COMPUTE);
-			ranges[1].initialize(Renderer::ResourceType::STRUCTURED_BUFFER, 1,			 "InputStructuredBuffer",  Renderer::ShaderVisibility::COMPUTE);
-			ranges[2].initialize(Renderer::ResourceType::INDIRECT_BUFFER,	2,			 "InputIndirectBuffer",	   Renderer::ShaderVisibility::COMPUTE);
+			ranges[0].initialize(Rhi::ResourceType::TEXTURE_BUFFER,	   0, "InputTextureBuffer",	    Rhi::ShaderVisibility::COMPUTE);
+			ranges[1].initialize(Rhi::ResourceType::STRUCTURED_BUFFER, 1, "InputStructuredBuffer",  Rhi::ShaderVisibility::COMPUTE);
+			ranges[2].initialize(Rhi::ResourceType::INDIRECT_BUFFER,   2, "InputIndirectBuffer",	Rhi::ShaderVisibility::COMPUTE);
 			// Output
 			// TODO(co) Compute shader: Get rid of the OpenGL/Direct3D 11 variation here
-			const uint32_t offset = (renderer->getNameId() == Renderer::NameId::VULKAN || renderer->getNameId() == Renderer::NameId::OPENGL) ? 3u : 0u;
-			ranges[3].initialize(Renderer::ResourceType::TEXTURE_BUFFER,	0u + offset, "OutputTextureBuffer",	   Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
-			ranges[4].initialize(Renderer::ResourceType::STRUCTURED_BUFFER, 1u + offset, "OutputStructuredBuffer", Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
-			ranges[5].initialize(Renderer::ResourceType::INDIRECT_BUFFER,	2u + offset, "OutputIndirectBuffer",   Renderer::ShaderVisibility::COMPUTE, Renderer::DescriptorRangeType::UAV);
+			const uint32_t offset = (rhi->getNameId() == Rhi::NameId::VULKAN || rhi->getNameId() == Rhi::NameId::OPENGL) ? 3u : 0u;
+			ranges[3].initialize(Rhi::ResourceType::TEXTURE_BUFFER,	   0u + offset, "OutputTextureBuffer",	  Rhi::ShaderVisibility::COMPUTE, Rhi::DescriptorRangeType::UAV);
+			ranges[4].initialize(Rhi::ResourceType::STRUCTURED_BUFFER, 1u + offset, "OutputStructuredBuffer", Rhi::ShaderVisibility::COMPUTE, Rhi::DescriptorRangeType::UAV);
+			ranges[5].initialize(Rhi::ResourceType::INDIRECT_BUFFER,   2u + offset, "OutputIndirectBuffer",   Rhi::ShaderVisibility::COMPUTE, Rhi::DescriptorRangeType::UAV);
 
-			Renderer::RootParameterBuilder rootParameters[1];
+			Rhi::RootParameterBuilder rootParameters[1];
 			rootParameters[0].initializeAsDescriptorTable(6, &ranges[0]);
 
 			// Setup
-			Renderer::RootSignatureBuilder rootSignature;
-			rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Renderer::RootSignatureFlags::NONE);
+			Rhi::RootSignatureBuilder rootSignature;
+			rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Rhi::RootSignatureFlags::NONE);
 
 			// Create the instance
-			mComputeRootSignature2 = renderer->createRootSignature(rootSignature);
+			mComputeRootSignature2 = rhi->createRootSignature(rootSignature);
 		}
 
 		// Create sampler state and wrap it into a resource group instance
-		Renderer::IResource* samplerStateResource = nullptr;
+		Rhi::IResource* samplerStateResource = nullptr;
 		{
-			Renderer::SamplerState samplerState = Renderer::ISamplerState::getDefaultSamplerState();
+			Rhi::SamplerState samplerState = Rhi::ISamplerState::getDefaultSamplerState();
 			samplerState.maxLOD = 0.0f;
-			samplerStateResource = renderer->createSamplerState(samplerState);
+			samplerStateResource = rhi->createSamplerState(samplerState);
 			mGraphicsSamplerStateGroup = mGraphicsRootSignature->createResourceGroup(1, 1, &samplerStateResource);
 		}
 
@@ -140,7 +140,7 @@ void FirstComputeShader::onInitialization()
 			mComputeInputTextureBuffer = mBufferManager->createTextureBuffer(sizeof(VERTEX_POSITION_OFFSET), VERTEX_POSITION_OFFSET);
 
 			// Create the texture buffer which will be filled by a compute shader
-			mComputeOutputTextureBuffer = mBufferManager->createTextureBuffer(sizeof(VERTEX_POSITION_OFFSET), nullptr, Renderer::BufferFlag::UNORDERED_ACCESS | Renderer::BufferFlag::SHADER_RESOURCE);
+			mComputeOutputTextureBuffer = mBufferManager->createTextureBuffer(sizeof(VERTEX_POSITION_OFFSET), nullptr, Rhi::BufferFlag::UNORDERED_ACCESS | Rhi::BufferFlag::SHADER_RESOURCE);
 		}
 
 		{ // Structured buffer
@@ -157,15 +157,15 @@ void FirstComputeShader::onInitialization()
 			};
 
 			// Create the structured buffer which will be read by a compute shader
-			mComputeInputStructuredBuffer = mBufferManager->createStructuredBuffer(sizeof(VERTICES), VERTICES, Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::STATIC_DRAW, sizeof(Vertex));
+			mComputeInputStructuredBuffer = mBufferManager->createStructuredBuffer(sizeof(VERTICES), VERTICES, Rhi::BufferFlag::SHADER_RESOURCE, Rhi::BufferUsage::STATIC_DRAW, sizeof(Vertex));
 
 			// Create the structured buffer which will be filled by a compute shader
-			mComputeOutputStructuredBuffer = mBufferManager->createStructuredBuffer(sizeof(VERTICES), nullptr, Renderer::BufferFlag::UNORDERED_ACCESS | Renderer::BufferFlag::SHADER_RESOURCE, Renderer::BufferUsage::STATIC_DRAW, sizeof(Vertex));
+			mComputeOutputStructuredBuffer = mBufferManager->createStructuredBuffer(sizeof(VERTICES), nullptr, Rhi::BufferFlag::UNORDERED_ACCESS | Rhi::BufferFlag::SHADER_RESOURCE, Rhi::BufferUsage::STATIC_DRAW, sizeof(Vertex));
 		}
 
 		{ // Indirect buffer
 			{ // Create the indirect buffer which will be read by a compute shader
-				const Renderer::DrawIndexedArguments drawIndexedArguments =
+				const Rhi::DrawIndexedArguments drawIndexedArguments =
 				{
 					0, // indexCountPerInstance (uint32_t)	- Filled by compute shader via atomics counting
 					1, // instanceCount (uint32_t)
@@ -173,38 +173,38 @@ void FirstComputeShader::onInitialization()
 					0, // baseVertexLocation (int32_t)
 					0  // startInstanceLocation (uint32_t)
 				};
-				mComputeInputIndirectBuffer = mBufferManager->createIndirectBuffer(sizeof(Renderer::DrawIndexedArguments), &drawIndexedArguments, Renderer::IndirectBufferFlag::SHADER_RESOURCE | Renderer::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS);
+				mComputeInputIndirectBuffer = mBufferManager->createIndirectBuffer(sizeof(Rhi::DrawIndexedArguments), &drawIndexedArguments, Rhi::IndirectBufferFlag::SHADER_RESOURCE | Rhi::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS);
 			}
 
 			// Create the indirect buffer which will be filled by a compute shader
-			mComputeOutputIndirectBuffer = mBufferManager->createIndirectBuffer(sizeof(Renderer::DrawIndexedArguments), nullptr, Renderer::IndirectBufferFlag::UNORDERED_ACCESS | Renderer::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS);
+			mComputeOutputIndirectBuffer = mBufferManager->createIndirectBuffer(sizeof(Rhi::DrawIndexedArguments), nullptr, Rhi::IndirectBufferFlag::UNORDERED_ACCESS | Rhi::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS);
 		}
 
 		// Vertex input layout
-		static constexpr Renderer::VertexAttribute vertexAttributesLayout[] =
+		static constexpr Rhi::VertexAttribute vertexAttributesLayout[] =
 		{
 			{ // Attribute 0
 				// Data destination
-				Renderer::VertexAttributeFormat::FLOAT_2,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-				"Position",									// name[32] (char)
-				"POSITION",									// semanticName[32] (char)
-				0,											// semanticIndex (uint32_t)
+				Rhi::VertexAttributeFormat::FLOAT_2,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+				"Position",								// name[32] (char)
+				"POSITION",								// semanticName[32] (char)
+				0,										// semanticIndex (uint32_t)
 				// Data source
-				0,											// inputSlot (uint32_t)
-				0,											// alignedByteOffset (uint32_t)
-				sizeof(float) * 2,							// strideInBytes (uint32_t)
-				0											// instancesPerElement (uint32_t)
+				0,										// inputSlot (uint32_t)
+				0,										// alignedByteOffset (uint32_t)
+				sizeof(float) * 2,						// strideInBytes (uint32_t)
+				0										// instancesPerElement (uint32_t)
 			}
 		};
-		const Renderer::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
+		const Rhi::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
 
 		{ // Create the index buffer object (IBO)
 			static constexpr uint16_t INDICES[] =
 			{
 				0, 1, 2
 			};
-			mComputeInputIndexBuffer = mBufferManager->createIndexBuffer(sizeof(INDICES), INDICES, Renderer::BufferFlag::SHADER_RESOURCE);
-			mComputeOutputIndexBuffer = mBufferManager->createIndexBuffer(sizeof(INDICES), nullptr, Renderer::BufferFlag::UNORDERED_ACCESS);
+			mComputeInputIndexBuffer = mBufferManager->createIndexBuffer(sizeof(INDICES), INDICES, Rhi::BufferFlag::SHADER_RESOURCE);
+			mComputeOutputIndexBuffer = mBufferManager->createIndexBuffer(sizeof(INDICES), nullptr, Rhi::BufferFlag::UNORDERED_ACCESS);
 		}
 
 		{ // Create vertex array object (VAO)
@@ -216,8 +216,8 @@ void FirstComputeShader::onInitialization()
 				 1.0f, 0.0f,	// 1			   .   .
 				-0.5f, 0.0f		// 2			  2.......1
 			};
-			mComputeInputVertexBuffer = mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION, Renderer::BufferFlag::SHADER_RESOURCE);
-			mComputeOutputVertexBuffer = mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), nullptr, Renderer::BufferFlag::UNORDERED_ACCESS);
+			mComputeInputVertexBuffer = mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION, Rhi::BufferFlag::SHADER_RESOURCE);
+			mComputeOutputVertexBuffer = mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), nullptr, Rhi::BufferFlag::UNORDERED_ACCESS);
 		}
 
 		{ // Create vertex array object (VAO)
@@ -226,7 +226,7 @@ void FirstComputeShader::onInitialization()
 		  // -> When the vertex array object (VAO) is destroyed, it automatically decreases the
 		  //    reference of the used vertex buffer objects (VBO). If the reference counter of a
 		  //    vertex buffer object (VBO) reaches zero, it's automatically destroyed.
-			const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { mComputeOutputVertexBuffer };
+			const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { mComputeOutputVertexBuffer };
 			mVertexArray = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, mComputeOutputIndexBuffer);
 		}
 
@@ -237,29 +237,29 @@ void FirstComputeShader::onInitialization()
 
 		{ // Resource group related
 			// Create the texture instance, but without providing texture data (we use the texture as render target)
-			// -> Use the "Renderer::TextureFlag::RENDER_TARGET"-flag to mark this texture as a render target
+			// -> Use the "Rhi::TextureFlag::RENDER_TARGET"-flag to mark this texture as a render target
 			// -> Required for Vulkan, Direct3D 9, Direct3D 10, Direct3D 11 and Direct3D 12
 			// -> Not required for OpenGL and OpenGL ES 3
 			// -> The optimized texture clear value is a Direct3D 12 related option
-			const Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::Enum::R8G8B8A8;
-			Renderer::ITexture* computeInputTexture2D = mTextureManager->createTexture2D(16, 16, textureFormat, nullptr, Renderer::TextureFlag::SHADER_RESOURCE | Renderer::TextureFlag::RENDER_TARGET, Renderer::TextureUsage::DEFAULT, 1, reinterpret_cast<const Renderer::OptimizedTextureClearValue*>(&Color4::GREEN));
-			Renderer::ITexture* computeOutputTexture2D = mTextureManager->createTexture2D(16, 16, textureFormat, nullptr, Renderer::TextureFlag::SHADER_RESOURCE | Renderer::TextureFlag::UNORDERED_ACCESS);
+			const Rhi::TextureFormat::Enum textureFormat = Rhi::TextureFormat::Enum::R8G8B8A8;
+			Rhi::ITexture* computeInputTexture2D = mTextureManager->createTexture2D(16, 16, textureFormat, nullptr, Rhi::TextureFlag::SHADER_RESOURCE | Rhi::TextureFlag::RENDER_TARGET, Rhi::TextureUsage::DEFAULT, 1, reinterpret_cast<const Rhi::OptimizedTextureClearValue*>(&Color4::GREEN));
+			Rhi::ITexture* computeOutputTexture2D = mTextureManager->createTexture2D(16, 16, textureFormat, nullptr, Rhi::TextureFlag::SHADER_RESOURCE | Rhi::TextureFlag::UNORDERED_ACCESS);
 
 			{ // Create the framebuffer object (FBO) instance
-				const Renderer::FramebufferAttachment colorFramebufferAttachment(computeInputTexture2D);
-				mFramebuffer = renderer->createFramebuffer(*renderer->createRenderPass(1, &textureFormat), &colorFramebufferAttachment);
+				const Rhi::FramebufferAttachment colorFramebufferAttachment(computeInputTexture2D);
+				mFramebuffer = rhi->createFramebuffer(*rhi->createRenderPass(1, &textureFormat), &colorFramebufferAttachment);
 			}
 
 			{ // Create first compute resource group
-				Renderer::IResource* resources[7] = {
+				Rhi::IResource* resources[7] = {
 					// Input
 					computeInputTexture2D, mComputeInputIndexBuffer, mComputeInputVertexBuffer, mComputeInputUniformBuffer,
 					// Output
 					computeOutputTexture2D, mComputeOutputIndexBuffer, mComputeOutputVertexBuffer
 				};
-				Renderer::ISamplerState* samplerStates[7] = {
+				Rhi::ISamplerState* samplerStates[7] = {
 					// Input
-					static_cast<Renderer::ISamplerState*>(samplerStateResource), nullptr, nullptr, nullptr,
+					static_cast<Rhi::ISamplerState*>(samplerStateResource), nullptr, nullptr, nullptr,
 					// Output
 					nullptr, nullptr, nullptr
 				};
@@ -267,7 +267,7 @@ void FirstComputeShader::onInitialization()
 			}
 
 			{ // Create second compute resource group
-				Renderer::IResource* resources[6] = {
+				Rhi::IResource* resources[6] = {
 					// Input
 					mComputeInputTextureBuffer, mComputeInputStructuredBuffer, mComputeInputIndirectBuffer,
 					// Output
@@ -277,15 +277,15 @@ void FirstComputeShader::onInitialization()
 			}
 
 			{ // Create graphics resource group
-				Renderer::IResource* resources[4] = { mComputeInputUniformBuffer, mComputeOutputTextureBuffer, mComputeOutputStructuredBuffer, computeOutputTexture2D };
-				Renderer::ISamplerState* samplerStates[4] = { nullptr, nullptr, nullptr, static_cast<Renderer::ISamplerState*>(samplerStateResource) };
+				Rhi::IResource* resources[4] = { mComputeInputUniformBuffer, mComputeOutputTextureBuffer, mComputeOutputStructuredBuffer, computeOutputTexture2D };
+				Rhi::ISamplerState* samplerStates[4] = { nullptr, nullptr, nullptr, static_cast<Rhi::ISamplerState*>(samplerStateResource) };
 				mGraphicsResourceGroup = mGraphicsRootSignature->createResourceGroup(0, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources, samplerStates);
 			}
 		}
 
 		{
 			// Create the graphics program
-			Renderer::IGraphicsProgramPtr graphicsProgram;
+			Rhi::IGraphicsProgramPtr graphicsProgram;
 			{
 				// Get the shader source code (outsourced to keep an overview)
 				const char* vertexShaderSourceCode = nullptr;
@@ -298,7 +298,7 @@ void FirstComputeShader::onInitialization()
 				#include "FirstComputeShader_Null.h"
 
 				// Create the graphics program
-				Renderer::IShaderLanguage& shaderLanguage = renderer->getDefaultShaderLanguage();
+				Rhi::IShaderLanguage& shaderLanguage = rhi->getDefaultShaderLanguage();
 				graphicsProgram = shaderLanguage.createGraphicsProgram(
 					*mGraphicsRootSignature,
 					vertexAttributes,
@@ -306,18 +306,18 @@ void FirstComputeShader::onInitialization()
 					shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 
 				// Create the compute pipeline state objects (PSO)
-				mComputePipelineState1 = renderer->createComputePipelineState(*mComputeRootSignature1, *shaderLanguage.createComputeShaderFromSourceCode(computeShaderSourceCode1));
-				mComputePipelineState2 = renderer->createComputePipelineState(*mComputeRootSignature2, *shaderLanguage.createComputeShaderFromSourceCode(computeShaderSourceCode2));
+				mComputePipelineState1 = rhi->createComputePipelineState(*mComputeRootSignature1, *shaderLanguage.createComputeShaderFromSourceCode(computeShaderSourceCode1));
+				mComputePipelineState2 = rhi->createComputePipelineState(*mComputeRootSignature2, *shaderLanguage.createComputeShaderFromSourceCode(computeShaderSourceCode2));
 			}
 
 			// Create the graphics pipeline state object (PSO)
 			if (nullptr != graphicsProgram)
 			{
-				mGraphicsPipelineState = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mGraphicsRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass()));
+				mGraphicsPipelineState = rhi->createGraphicsPipelineState(Rhi::GraphicsPipelineStateBuilder(mGraphicsRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass()));
 			}
 		}
 
-		// Since we're always submitting the same commands to the renderer, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
+		// Since we're always submitting the same commands to the RHI, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
 		fillCommandBuffer();
 	}
 }
@@ -355,12 +355,12 @@ void FirstComputeShader::onDeinitialization()
 
 void FirstComputeShader::onDraw()
 {
-	// Get and check the renderer instance
-	Renderer::IRendererPtr renderer(getRenderer());
-	if (nullptr != renderer)
+	// Get and check the RHI instance
+	Rhi::IRhiPtr rhi(getRhi());
+	if (nullptr != rhi)
 	{
-		// Submit command buffer to the renderer backend
-		mCommandBuffer.submitToRenderer(*renderer);
+		// Submit command buffer to the RHI implementation
+		mCommandBuffer.submitToRhi(*rhi);
 	}
 }
 
@@ -371,32 +371,32 @@ void FirstComputeShader::onDraw()
 void FirstComputeShader::fillCommandBuffer()
 {
 	// Sanity checks
-	ASSERT(nullptr != getRenderer());
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != getMainRenderTarget(), "Invalid main render target");
-	RENDERER_ASSERT(getRenderer()->getContext(), mCommandBuffer.isEmpty(), "The command buffer is already filled");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mGraphicsRootSignature, "Invalid graphics root signature");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeRootSignature1, "Invalid compute root signature 1");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeRootSignature2, "Invalid compute root signature 2");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mFramebuffer, "Invalid framebuffer");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeResourceGroup1, "Invalid compute resource group 1");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeResourceGroup2, "Invalid compute resource group 2");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mGraphicsResourceGroup, "Invalid graphics resource group");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mGraphicsSamplerStateGroup, "Invalid graphics sampler state group");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mGraphicsPipelineState, "Invalid graphics pipeline state");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputePipelineState1, "Invalid compute pipeline state 1");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputePipelineState2, "Invalid compute pipeline state 2");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeInputIndexBuffer, "Invalid compute input index buffer");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeOutputIndexBuffer, "Invalid compute output index buffer");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeInputVertexBuffer, "Invalid compute input vertex buffer");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeOutputVertexBuffer, "Invalid compute output vertex buffer");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mVertexArray, "Invalid vertex array");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeOutputTextureBuffer, "Invalid compute output texture buffer");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeInputTextureBuffer, "Invalid compute input texture buffer");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeOutputStructuredBuffer, "Invalid compute output structured buffer");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeInputStructuredBuffer, "Invalid compute input structured buffer");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeOutputIndirectBuffer, "Invalid compute output indirect buffer");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeInputIndirectBuffer, "Invalid compute input indirect buffer");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mComputeInputUniformBuffer, "Invalid compute input uniform buffer");
+	ASSERT(nullptr != getRhi());
+	RHI_ASSERT(getRhi()->getContext(), nullptr != getMainRenderTarget(), "Invalid main render target");
+	RHI_ASSERT(getRhi()->getContext(), mCommandBuffer.isEmpty(), "The command buffer is already filled");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mGraphicsRootSignature, "Invalid graphics root signature");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeRootSignature1, "Invalid compute root signature 1");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeRootSignature2, "Invalid compute root signature 2");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mFramebuffer, "Invalid framebuffer");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeResourceGroup1, "Invalid compute resource group 1");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeResourceGroup2, "Invalid compute resource group 2");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mGraphicsResourceGroup, "Invalid graphics resource group");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mGraphicsSamplerStateGroup, "Invalid graphics sampler state group");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mGraphicsPipelineState, "Invalid graphics pipeline state");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputePipelineState1, "Invalid compute pipeline state 1");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputePipelineState2, "Invalid compute pipeline state 2");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeInputIndexBuffer, "Invalid compute input index buffer");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeOutputIndexBuffer, "Invalid compute output index buffer");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeInputVertexBuffer, "Invalid compute input vertex buffer");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeOutputVertexBuffer, "Invalid compute output vertex buffer");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mVertexArray, "Invalid vertex array");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeOutputTextureBuffer, "Invalid compute output texture buffer");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeInputTextureBuffer, "Invalid compute input texture buffer");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeOutputStructuredBuffer, "Invalid compute output structured buffer");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeInputStructuredBuffer, "Invalid compute input structured buffer");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeOutputIndirectBuffer, "Invalid compute output indirect buffer");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeInputIndirectBuffer, "Invalid compute input indirect buffer");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeInputUniformBuffer, "Invalid compute input uniform buffer");
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
@@ -410,13 +410,13 @@ void FirstComputeShader::fillCommandBuffer()
 		// without having any real change.
 
 		// Set the graphics render target to render into
-		Renderer::Command::SetGraphicsRenderTarget::create(mCommandBuffer, mFramebuffer);
+		Rhi::Command::SetGraphicsRenderTarget::create(mCommandBuffer, mFramebuffer);
 
 		// Clear the graphics color buffer of the current render target with green
-		Renderer::Command::ClearGraphics::create(mCommandBuffer, Renderer::ClearFlag::COLOR, Color4::GREEN);
+		Rhi::Command::ClearGraphics::create(mCommandBuffer, Rhi::ClearFlag::COLOR, Color4::GREEN);
 
 		// Restore graphics main swap chain as current render target
-		Renderer::Command::SetGraphicsRenderTarget::create(mCommandBuffer, getMainRenderTarget());
+		Rhi::Command::SetGraphicsRenderTarget::create(mCommandBuffer, getMainRenderTarget());
 	}
 
 	{ // Compute: Use the graphics render to texture result for compute
@@ -424,22 +424,22 @@ void FirstComputeShader::fillCommandBuffer()
 		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Use the render to texture result for compute")
 
 		// Set the used compute root signature
-		Renderer::Command::SetComputeRootSignature::create(mCommandBuffer, mComputeRootSignature1);
+		Rhi::Command::SetComputeRootSignature::create(mCommandBuffer, mComputeRootSignature1);
 
 		// Set the used compute pipeline state object (PSO)
-		Renderer::Command::SetComputePipelineState::create(mCommandBuffer, mComputePipelineState1);
+		Rhi::Command::SetComputePipelineState::create(mCommandBuffer, mComputePipelineState1);
 
 		// Set compute resource groups
-		Renderer::Command::SetComputeResourceGroup::create(mCommandBuffer, 0, mComputeResourceGroup1);
+		Rhi::Command::SetComputeResourceGroup::create(mCommandBuffer, 0, mComputeResourceGroup1);
 
 		// Dispatch compute call
-		Renderer::Command::DispatchCompute::create(mCommandBuffer, 1, 1, 1);
+		Rhi::Command::DispatchCompute::create(mCommandBuffer, 1, 1, 1);
 
 		// Repeat everything for the second compute shader
-		Renderer::Command::SetComputeRootSignature::create(mCommandBuffer, mComputeRootSignature2);
-		Renderer::Command::SetComputePipelineState::create(mCommandBuffer, mComputePipelineState2);
-		Renderer::Command::SetComputeResourceGroup::create(mCommandBuffer, 0, mComputeResourceGroup2);
-		Renderer::Command::DispatchCompute::create(mCommandBuffer, 1, 1, 1);
+		Rhi::Command::SetComputeRootSignature::create(mCommandBuffer, mComputeRootSignature2);
+		Rhi::Command::SetComputePipelineState::create(mCommandBuffer, mComputePipelineState2);
+		Rhi::Command::SetComputeResourceGroup::create(mCommandBuffer, 0, mComputeResourceGroup2);
+		Rhi::Command::DispatchCompute::create(mCommandBuffer, 1, 1, 1);
 	}
 
 	{ // Graphics: Use the compute result for graphics
@@ -447,22 +447,22 @@ void FirstComputeShader::fillCommandBuffer()
 		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Use the compute result")
 
 		// Clear the graphics color buffer of the current render target with gray, do also clear the depth buffer
-		Renderer::Command::ClearGraphics::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
+		Rhi::Command::ClearGraphics::create(mCommandBuffer, Rhi::ClearFlag::COLOR_DEPTH, Color4::GRAY);
 
 		// Set the used graphics root signature
-		Renderer::Command::SetGraphicsRootSignature::create(mCommandBuffer, mGraphicsRootSignature);
+		Rhi::Command::SetGraphicsRootSignature::create(mCommandBuffer, mGraphicsRootSignature);
 
 		// Set the used graphics pipeline state object (PSO)
-		Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineState);
+		Rhi::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineState);
 
 		// Set graphics resource groups
-		Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 0, mGraphicsResourceGroup);
-		Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 1, mGraphicsSamplerStateGroup);
+		Rhi::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 0, mGraphicsResourceGroup);
+		Rhi::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 1, mGraphicsSamplerStateGroup);
 
 		// Input assembly (IA): Set the used vertex array
-		Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArray);
+		Rhi::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArray);
 
 		// Render the specified geometric primitive, based on indexing into an array of vertices
-		Renderer::Command::DrawIndexedGraphics::create(mCommandBuffer, *mComputeOutputIndirectBuffer);
+		Rhi::Command::DrawIndexedGraphics::create(mCommandBuffer, *mComputeOutputIndirectBuffer);
 	}
 }

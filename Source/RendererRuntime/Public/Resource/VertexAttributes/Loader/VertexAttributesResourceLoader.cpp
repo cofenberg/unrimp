@@ -68,24 +68,24 @@ namespace RendererRuntime
 		// TODO(co) Implement vertex attributes file format. This here is just a fixed build in dummy.
 		if (ASSET_ID("Example/Blueprint/Compositor/VA_Compositor") == getAsset().assetId)
 		{
-			mVertexAttributesResource->mVertexAttributes = Renderer::VertexAttributes(0, nullptr);
+			mVertexAttributesResource->mVertexAttributes = Rhi::VertexAttributes(0, nullptr);
 		}
 		else if (ASSET_ID("Example/Blueprint/Sky/VA_Sky") == getAsset().assetId)
 		{
-			Renderer::VertexAttributes& vertexAttributes = const_cast<Renderer::VertexAttributes&>(mVertexAttributesResource->mVertexAttributes);
-			static constexpr Renderer::VertexAttribute vertexAttributesLayout[] =
+			Rhi::VertexAttributes& vertexAttributes = const_cast<Rhi::VertexAttributes&>(mVertexAttributesResource->mVertexAttributes);
+			static constexpr Rhi::VertexAttribute vertexAttributesLayout[] =
 			{
 				{ // Attribute 0
 					// Data destination
-					Renderer::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-					"Position",									// name[32] (char)
-					"POSITION",									// semanticName[32] (char)
-					0,											// semanticIndex (uint32_t)
+					Rhi::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+					"Position",								// name[32] (char)
+					"POSITION",								// semanticName[32] (char)
+					0,										// semanticIndex (uint32_t)
 					// Data source
-					0,											// inputSlot (uint32_t)
-					0,											// alignedByteOffset (uint32_t)
-					sizeof(float) * 3,							// strideInBytes (uint32_t)
-					0											// instancesPerElement (uint32_t)
+					0,										// inputSlot (uint32_t)
+					0,										// alignedByteOffset (uint32_t)
+					sizeof(float) * 3,						// strideInBytes (uint32_t)
+					0										// instancesPerElement (uint32_t)
 				}
 			};
 			vertexAttributes.numberOfAttributes = static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout));
@@ -93,32 +93,32 @@ namespace RendererRuntime
 		}
 		else if (ASSET_ID("Example/Blueprint/Volume/VA_Volume") == getAsset().assetId)
 		{
-			Renderer::VertexAttributes& vertexAttributes = const_cast<Renderer::VertexAttributes&>(mVertexAttributesResource->mVertexAttributes);
-			static constexpr Renderer::VertexAttribute vertexAttributesLayout[] =
+			Rhi::VertexAttributes& vertexAttributes = const_cast<Rhi::VertexAttributes&>(mVertexAttributesResource->mVertexAttributes);
+			static constexpr Rhi::VertexAttribute vertexAttributesLayout[] =
 			{
 				{ // Attribute 0
 					// Data destination
-					Renderer::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-					"Position",									// name[32] (char)
-					"POSITION",									// semanticName[32] (char)
-					0,											// semanticIndex (uint32_t)
+					Rhi::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+					"Position",								// name[32] (char)
+					"POSITION",								// semanticName[32] (char)
+					0,										// semanticIndex (uint32_t)
 					// Data source
-					0,											// inputSlot (uint32_t)
-					0,											// alignedByteOffset (uint32_t)
-					sizeof(float) * 3,							// strideInBytes (uint32_t)
-					0											// instancesPerElement (uint32_t)
+					0,										// inputSlot (uint32_t)
+					0,										// alignedByteOffset (uint32_t)
+					sizeof(float) * 3,						// strideInBytes (uint32_t)
+					0										// instancesPerElement (uint32_t)
 				},
 				{ // Attribute 1, see "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html
 					// Data destination
-					Renderer::VertexAttributeFormat::UINT_1,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-					"drawId",									// name[32] (char)
-					"DRAWID",									// semanticName[32] (char)
-					0,											// semanticIndex (uint32_t)
+					Rhi::VertexAttributeFormat::UINT_1,		// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+					"drawId",								// name[32] (char)
+					"DRAWID",								// semanticName[32] (char)
+					0,										// semanticIndex (uint32_t)
 					// Data source
-					1,											// inputSlot (uint32_t)
-					0,											// alignedByteOffset (uint32_t)
-					sizeof(uint32_t),							// strideInBytes (uint32_t)
-					1											// instancesPerElement (uint32_t)
+					1,										// inputSlot (uint32_t)
+					0,										// alignedByteOffset (uint32_t)
+					sizeof(uint32_t),						// strideInBytes (uint32_t)
+					1										// instancesPerElement (uint32_t)
 				}
 			};
 			vertexAttributes.numberOfAttributes = static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout));
@@ -126,12 +126,12 @@ namespace RendererRuntime
 		}
 		else if (ASSET_ID("Example/Blueprint/DebugGui/VA_DebugGui") == getAsset().assetId)
 		{
-			Renderer::VertexAttributes& vertexAttributes = const_cast<Renderer::VertexAttributes&>(mVertexAttributesResource->mVertexAttributes);
-			static constexpr Renderer::VertexAttribute vertexAttributesLayout[] =
+			Rhi::VertexAttributes& vertexAttributes = const_cast<Rhi::VertexAttributes&>(mVertexAttributesResource->mVertexAttributes);
+			static constexpr Rhi::VertexAttribute vertexAttributesLayout[] =
 			{
 				{ // Attribute 0
 					// Data destination
-					Renderer::VertexAttributeFormat::FLOAT_2,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
+					Rhi::VertexAttributeFormat::FLOAT_2,		// vertexAttributeFormat (Rhi::VertexAttributeFormat)
 					"Position",									// name[32] (char)
 					"POSITION",									// semanticName[32] (char)
 					0,											// semanticIndex (uint32_t)
@@ -143,7 +143,7 @@ namespace RendererRuntime
 				},
 				{ // Attribute 1
 					// Data destination
-					Renderer::VertexAttributeFormat::FLOAT_2,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
+					Rhi::VertexAttributeFormat::FLOAT_2,		// vertexAttributeFormat (Rhi::VertexAttributeFormat)
 					"TexCoord",									// name[32] (char)
 					"TEXCOORD",									// semanticName[32] (char)
 					0,											// semanticIndex (uint32_t)
@@ -155,15 +155,15 @@ namespace RendererRuntime
 				},
 				{ // Attribute 2
 					// Data destination
-					Renderer::VertexAttributeFormat::R8G8B8A8_UNORM,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-					"Color",											// name[32] (char)
-					"COLOR",											// semanticName[32] (char)
-					0,													// semanticIndex (uint32_t)
+					Rhi::VertexAttributeFormat::R8G8B8A8_UNORM,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+					"Color",									// name[32] (char)
+					"COLOR",									// semanticName[32] (char)
+					0,											// semanticIndex (uint32_t)
 					// Data source
-					0,													// inputSlot (uint32_t)
-					sizeof(float) * 4,									// alignedByteOffset (uint32_t)
-					sizeof(float) * 4 + sizeof(uint8_t) * 4,			// strideInBytes (uint32_t)
-					0													// instancesPerElement (uint32_t)
+					0,											// inputSlot (uint32_t)
+					sizeof(float) * 4,							// alignedByteOffset (uint32_t)
+					sizeof(float) * 4 + sizeof(uint8_t) * 4,	// strideInBytes (uint32_t)
+					0											// instancesPerElement (uint32_t)
 				}
 			};
 			vertexAttributes.numberOfAttributes = static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout));
@@ -171,24 +171,24 @@ namespace RendererRuntime
 		}
 		else if (ASSET_ID("Example/Blueprint/Mesh/VA_Mesh") == getAsset().assetId)
 		{
-			mVertexAttributesResource->mVertexAttributes = Renderer::VertexAttributes(MeshResource::VERTEX_ATTRIBUTES.numberOfAttributes, MeshResource::VERTEX_ATTRIBUTES.attributes);
+			mVertexAttributesResource->mVertexAttributes = Rhi::VertexAttributes(MeshResource::VERTEX_ATTRIBUTES.numberOfAttributes, MeshResource::VERTEX_ATTRIBUTES.attributes);
 		}
 		else if (ASSET_ID("Example/Blueprint/Mesh/VA_SkinnedMesh") == getAsset().assetId)
 		{
-			mVertexAttributesResource->mVertexAttributes = Renderer::VertexAttributes(MeshResource::SKINNED_VERTEX_ATTRIBUTES.numberOfAttributes, MeshResource::SKINNED_VERTEX_ATTRIBUTES.attributes);
+			mVertexAttributesResource->mVertexAttributes = Rhi::VertexAttributes(MeshResource::SKINNED_VERTEX_ATTRIBUTES.numberOfAttributes, MeshResource::SKINNED_VERTEX_ATTRIBUTES.attributes);
 		}
 		else if (ASSET_ID("Example/Blueprint/Particles/VA_Particles") == getAsset().assetId ||
 				 ASSET_ID("Example/Blueprint/Grass/VA_Grass") == getAsset().assetId)
 		{
-			mVertexAttributesResource->mVertexAttributes = Renderer::VertexAttributes(MeshResourceManager::DRAW_ID_VERTEX_ATTRIBUTES.numberOfAttributes, MeshResourceManager::DRAW_ID_VERTEX_ATTRIBUTES.attributes);
+			mVertexAttributesResource->mVertexAttributes = Rhi::VertexAttributes(MeshResourceManager::DRAW_ID_VERTEX_ATTRIBUTES.numberOfAttributes, MeshResourceManager::DRAW_ID_VERTEX_ATTRIBUTES.attributes);
 		}
 		else if (ASSET_ID("Example/Blueprint/Terrain/VA_Terrain") == getAsset().assetId)
 		{
-			mVertexAttributesResource->mVertexAttributes = Renderer::VertexAttributes(TerrainSceneItem::VERTEX_ATTRIBUTES.numberOfAttributes, TerrainSceneItem::VERTEX_ATTRIBUTES.attributes);
+			mVertexAttributesResource->mVertexAttributes = Rhi::VertexAttributes(TerrainSceneItem::VERTEX_ATTRIBUTES.numberOfAttributes, TerrainSceneItem::VERTEX_ATTRIBUTES.attributes);
 		}
 		else
 		{
-			RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Unknown vertex attributes asset")
+			RHI_ASSERT(mRendererRuntime.getContext(), false, "Unknown vertex attributes asset")
 		}
 	}
 

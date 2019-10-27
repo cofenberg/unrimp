@@ -92,9 +92,9 @@ namespace RendererRuntime
 		*  @param[in] materialBlueprintResource
 		*    Material blueprint resource
 		*  @param[out] commandBuffer
-		*    Command buffer to fill
+		*    RHI command buffer to fill
 		*/
-		void startupBufferFilling(const MaterialBlueprintResource& materialBlueprintResource, Renderer::CommandBuffer& commandBuffer);
+		void startupBufferFilling(const MaterialBlueprintResource& materialBlueprintResource, Rhi::CommandBuffer& commandBuffer);
 
 		/**
 		*  @brief
@@ -111,12 +111,12 @@ namespace RendererRuntime
 		*  @param[in] materialTechnique
 		*    Used material technique
 		*  @param[out] commandBuffer
-		*    Command buffer to fill
+		*    RHI command buffer to fill
 		*
 		*  @return
 		*    Start instance location, used for draw ID (see "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html)
 		*/
-		[[nodiscard]] uint32_t fillBuffer(const MaterialBlueprintResource& materialBlueprintResource, PassBufferManager* passBufferManager, const MaterialBlueprintResource::UniformBuffer& instanceUniformBuffer, const Renderable& renderable, MaterialTechnique& materialTechnique, Renderer::CommandBuffer& commandBuffer);
+		[[nodiscard]] uint32_t fillBuffer(const MaterialBlueprintResource& materialBlueprintResource, PassBufferManager* passBufferManager, const MaterialBlueprintResource::UniformBuffer& instanceUniformBuffer, const Renderable& renderable, MaterialTechnique& materialTechnique, Rhi::CommandBuffer& commandBuffer);
 
 		/**
 		*  @brief
@@ -142,10 +142,10 @@ namespace RendererRuntime
 	private:
 		struct InstanceBuffer final
 		{
-			Renderer::IUniformBuffer* uniformBuffer;	///< Uniform buffer instance, always valid
-			Renderer::IResourceGroup* resourceGroup;	///< Resource group instance, can be a null pointer
-			bool					  mapped;
-			explicit InstanceBuffer(Renderer::IUniformBuffer& _uniformBuffer) :
+			Rhi::IUniformBuffer* uniformBuffer;	///< Uniform buffer instance, always valid
+			Rhi::IResourceGroup* resourceGroup;	///< Resource group instance, can be a null pointer
+			bool				 mapped;
+			explicit InstanceBuffer(Rhi::IUniformBuffer& _uniformBuffer) :
 				uniformBuffer(&_uniformBuffer),
 				resourceGroup(nullptr),
 				mapped(false)

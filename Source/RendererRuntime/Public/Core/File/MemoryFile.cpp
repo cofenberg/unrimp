@@ -79,7 +79,7 @@ namespace RendererRuntime
 		{
 			// Tell the memory mapped file about the LZ4 compressed data
 			result = loadLz4CompressedDataFromFile(formatType, formatVersion, *file);
-			#ifdef _DEBUG
+			#ifdef RHI_DEBUG
 				mDebugName = virtualFilename;
 			#endif
 
@@ -100,7 +100,7 @@ namespace RendererRuntime
 		{
 			// Tell the memory mapped file about the LZ4 compressed data
 			setLz4CompressedDataByFile(file, fileFormatHeader.numberOfCompressedBytes, fileFormatHeader.numberOfDecompressedBytes);
-			#ifdef _DEBUG
+			#ifdef RHI_DEBUG
 				mDebugName = file.getDebugFilename();
 			#endif
 

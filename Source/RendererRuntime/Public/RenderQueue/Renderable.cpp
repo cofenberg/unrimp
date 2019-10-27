@@ -79,7 +79,7 @@ namespace RendererRuntime
 		// Nothing here
 	}
 
-	Renderable::Renderable(RenderableManager& renderableManager, const Renderer::IVertexArrayPtr& vertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, uint32_t startIndexLocation, uint32_t numberOfIndices, uint32_t instanceCount) :
+	Renderable::Renderable(RenderableManager& renderableManager, const Rhi::IVertexArrayPtr& vertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, uint32_t startIndexLocation, uint32_t numberOfIndices, uint32_t instanceCount) :
 		// Data
 		mRenderableManager(renderableManager),
 		mVertexArrayPtr(vertexArrayPtr),
@@ -102,7 +102,7 @@ namespace RendererRuntime
 		}
 	}
 
-	Renderable::Renderable(RenderableManager& renderableManager, const Renderer::IVertexArrayPtr& vertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, const Renderer::IIndirectBufferPtr& indirectBufferPtr, uint32_t indirectBufferOffset, uint32_t numberOfDraws) :
+	Renderable::Renderable(RenderableManager& renderableManager, const Rhi::IVertexArrayPtr& vertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, const Rhi::IIndirectBufferPtr& indirectBufferPtr, uint32_t indirectBufferOffset, uint32_t numberOfDraws) :
 		// Data
 		mRenderableManager(renderableManager),
 		mVertexArrayPtr(vertexArrayPtr),
@@ -139,8 +139,8 @@ namespace RendererRuntime
 			if (nullptr != materialResource)
 			{
 				// Sanity checks
-				RENDERER_ASSERT(materialResourceManager.getRendererRuntime().getContext(), isInvalid(mMaterialResourceAttachmentIndex), "Invalid material resource attachment index")
-				RENDERER_ASSERT(materialResourceManager.getRendererRuntime().getContext(), nullptr == mMaterialResourceManager, "Invalid material resource manager instance")
+				RHI_ASSERT(materialResourceManager.getRendererRuntime().getContext(), isInvalid(mMaterialResourceAttachmentIndex), "Invalid material resource attachment index")
+				RHI_ASSERT(materialResourceManager.getRendererRuntime().getContext(), nullptr == mMaterialResourceManager, "Invalid material resource manager instance")
 
 				// Attach the renderable from the material resource
 				mMaterialResourceId = materialResourceId;
@@ -156,9 +156,9 @@ namespace RendererRuntime
 						const int renderQueueIndex = materialProperty->getIntegerValue();
 
 						// Sanity checks
-						RENDERER_ASSERT(materialResourceManager.getRendererRuntime().getContext(), materialProperty->getUsage() == MaterialProperty::Usage::STATIC, "Invalid material property usage")
-						RENDERER_ASSERT(materialResourceManager.getRendererRuntime().getContext(), renderQueueIndex >= 0, "Invalid render queue index")
-						RENDERER_ASSERT(materialResourceManager.getRendererRuntime().getContext(), renderQueueIndex <= 255, "Invalid render queue index")
+						RHI_ASSERT(materialResourceManager.getRendererRuntime().getContext(), materialProperty->getUsage() == MaterialProperty::Usage::STATIC, "Invalid material property usage")
+						RHI_ASSERT(materialResourceManager.getRendererRuntime().getContext(), renderQueueIndex >= 0, "Invalid render queue index")
+						RHI_ASSERT(materialResourceManager.getRendererRuntime().getContext(), renderQueueIndex <= 255, "Invalid render queue index")
 
 						// Set value
 						mRenderQueueIndex = static_cast<uint8_t>(renderQueueIndex);
@@ -173,7 +173,7 @@ namespace RendererRuntime
 					if (nullptr != materialProperty)
 					{
 						// Sanity checks
-						RENDERER_ASSERT(materialResourceManager.getRendererRuntime().getContext(), materialProperty->getUsage() == MaterialProperty::Usage::STATIC, "Invalid material property usage")
+						RHI_ASSERT(materialResourceManager.getRendererRuntime().getContext(), materialProperty->getUsage() == MaterialProperty::Usage::STATIC, "Invalid material property usage")
 
 						// Set value
 						mCastShadows = materialProperty->getBooleanValue();
@@ -187,13 +187,13 @@ namespace RendererRuntime
 			else
 			{
 				// Error!
-				RENDERER_ASSERT(materialResourceManager.getRendererRuntime().getContext(), false, "We should never end up in here")
+				RHI_ASSERT(materialResourceManager.getRendererRuntime().getContext(), false, "We should never end up in here")
 			}
 		}
 		else
 		{
 			// Sanity check
-			RENDERER_ASSERT(materialResourceManager.getRendererRuntime().getContext(), (isValid(mMaterialResourceId) && &materialResourceManager == mMaterialResourceManager) || (isInvalid(mMaterialResourceId) && nullptr == mMaterialResourceManager), "Invalid renderable configuration")
+			RHI_ASSERT(materialResourceManager.getRendererRuntime().getContext(), (isValid(mMaterialResourceId) && &materialResourceManager == mMaterialResourceManager) || (isInvalid(mMaterialResourceId) && nullptr == mMaterialResourceManager), "Invalid renderable configuration")
 		}
 	}
 

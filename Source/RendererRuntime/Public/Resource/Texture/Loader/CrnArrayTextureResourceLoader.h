@@ -74,7 +74,7 @@ namespace RendererRuntime
 	//[ Protected RendererRuntime::ITextureResourceLoader methods ]
 	//[-------------------------------------------------------]
 	protected:
-		[[nodiscard]] virtual Renderer::ITexture* createRendererTexture() override;
+		[[nodiscard]] virtual Rhi::ITexture* createRhiTexture() override;
 
 
 	//[-------------------------------------------------------]

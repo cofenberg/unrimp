@@ -42,13 +42,13 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::ICompositorInstancePass methods ]
 	//[-------------------------------------------------------]
-	void CompositorInstancePassCopy::onFillCommandBuffer([[maybe_unused]] const Renderer::IRenderTarget* renderTarget, const CompositorContextData&, Renderer::CommandBuffer& commandBuffer)
+	void CompositorInstancePassCopy::onFillCommandBuffer([[maybe_unused]] const Rhi::IRenderTarget* renderTarget, const CompositorContextData&, Rhi::CommandBuffer& commandBuffer)
 	{
 		const CompositorResourcePassCopy& compositorResourcePassCopy = static_cast<const CompositorResourcePassCopy&>(getCompositorResourcePass());
 		const IRendererRuntime& rendererRuntime = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime();
 
 		// Sanity check
-		RENDERER_ASSERT(rendererRuntime.getContext(), nullptr == renderTarget, "The copy compositor instance pass needs an invalid render target")
+		RHI_ASSERT(rendererRuntime.getContext(), nullptr == renderTarget, "The copy compositor instance pass needs an invalid render target")
 
 		// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
 		RENDERER_SCOPED_PROFILER_EVENT_DYNAMIC(rendererRuntime.getContext(), commandBuffer, compositorResourcePassCopy.getDebugName())
@@ -60,22 +60,22 @@ namespace RendererRuntime
 		const TextureResource* sourceTextureResource = textureResourceManager.getTextureResourceByAssetId(compositorResourcePassCopy.getSourceTextureAssetId());
 		if (nullptr != destinationTextureResource && nullptr != sourceTextureResource)
 		{
-			const Renderer::ITexturePtr& destinationTexturePtr = destinationTextureResource->getTexturePtr();
-			const Renderer::ITexturePtr& sourceTexturePtr = sourceTextureResource->getTexturePtr();
+			const Rhi::ITexturePtr& destinationTexturePtr = destinationTextureResource->getTexturePtr();
+			const Rhi::ITexturePtr& sourceTexturePtr = sourceTextureResource->getTexturePtr();
 			if (nullptr != destinationTexturePtr && nullptr != sourceTexturePtr)
 			{
-				Renderer::Command::CopyResource::create(commandBuffer, *destinationTexturePtr, *sourceTexturePtr);
+				Rhi::Command::CopyResource::create(commandBuffer, *destinationTexturePtr, *sourceTexturePtr);
 			}
 			else
 			{
 				// Error!
-				RENDERER_ASSERT(rendererRuntime.getContext(), false, "We should never end up in here")
+				RHI_ASSERT(rendererRuntime.getContext(), false, "We should never end up in here")
 			}
 		}
 		else
 		{
 			// Error!
-			RENDERER_ASSERT(rendererRuntime.getContext(), false, "We should never end up in here")
+			RHI_ASSERT(rendererRuntime.getContext(), false, "We should never end up in here")
 		}
 	}
 

@@ -74,7 +74,7 @@ namespace RendererRuntime
 
 	void MeshSceneItem::setMaterialResourceIdOfSubMesh(uint32_t subMeshIndex, MaterialResourceId materialResourceId)
 	{
-		RENDERER_ASSERT(getContext(), subMeshIndex < mRenderableManager.getRenderables().size(), "Invalid sub mesh index")
+		RHI_ASSERT(getContext(), subMeshIndex < mRenderableManager.getRenderables().size(), "Invalid sub mesh index")
 		mRenderableManager.getRenderables()[subMeshIndex].setMaterialResourceId(getSceneResource().getRendererRuntime().getMaterialResourceManager(), materialResourceId);
 	}
 
@@ -94,9 +94,9 @@ namespace RendererRuntime
 	void MeshSceneItem::deserialize([[maybe_unused]] uint32_t numberOfBytes, const uint8_t* data)
 	{
 		// Sanity checks
-		RENDERER_ASSERT(getContext(), sizeof(v1Scene::MeshItem) <= numberOfBytes, "Invalid number of bytes")
+		RHI_ASSERT(getContext(), sizeof(v1Scene::MeshItem) <= numberOfBytes, "Invalid number of bytes")
 		const v1Scene::MeshItem* meshItem = reinterpret_cast<const v1Scene::MeshItem*>(data);
-		RENDERER_ASSERT(getContext(), (sizeof(v1Scene::MeshItem) + sizeof(AssetId) * meshItem->numberOfSubMeshMaterialAssetIds) == numberOfBytes, "Invalid number of bytes")
+		RHI_ASSERT(getContext(), (sizeof(v1Scene::MeshItem) + sizeof(AssetId) * meshItem->numberOfSubMeshMaterialAssetIds) == numberOfBytes, "Invalid number of bytes")
 
 		// Read data
 		setMeshResourceIdByAssetId(meshItem->meshAssetId);
@@ -187,7 +187,7 @@ namespace RendererRuntime
 					}
 
 					// Get vertex array instance
-					const Renderer::IVertexArrayPtr& vertexArrayPtr = meshResource->getVertexArrayPtr();
+					const Rhi::IVertexArrayPtr& vertexArrayPtr = meshResource->getVertexArrayPtr();
 
 					// Set material resource ID of each sub-mesh
 					const SkeletonResourceId skeletonResourceId = meshResource->getSkeletonResourceId();

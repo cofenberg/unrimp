@@ -89,7 +89,7 @@ namespace RendererRuntime
 	*    A resource must master the following stages in order to archive the inner wisdom:
 	*    1. Asynchronous deserialization
 	*    2. Asynchronous processing
-	*    3. Synchronous dispatch, e.g. to the renderer backend
+	*    3. Synchronous dispatch, e.g. to the RHI implementation
 	*
 	*  @todo
 	*    - TODO(co) It might make sense to use lock-free-queues in here
@@ -150,7 +150,7 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Resource streamer update performing dispatch to e.g. the renderer backend
+		*    Resource streamer update performing dispatch to e.g. the RHI implementation
 		*
 		*  @note
 		*    - Call this once per frame
@@ -207,7 +207,7 @@ namespace RendererRuntime
 		std::condition_variable mProcessingConditionVariable;
 		LoadRequests			mProcessingQueue;
 		std::thread				mProcessingThread;
-		// Resource streamer stage: 3. Synchronous dispatch to e.g. the renderer backend
+		// Resource streamer stage: 3. Synchronous dispatch to e.g. the RHI implementation
 		std::mutex	 mDispatchMutex;
 		LoadRequests mDispatchQueue;
 		LoadRequests mFullyLoadedWaitingQueue;

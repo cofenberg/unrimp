@@ -127,7 +127,7 @@ namespace RendererRuntime
 			mPreviousJitter(0.0f, 0.0f),
 			mPreviousNumberOfRenderedFrames(getInvalid<uint64_t>()),
 			mHosekWilkieSky(nullptr),
-			#ifdef _DEBUG
+			#ifdef RHI_DEBUG
 				mIsComputePipeline(false),
 			#endif
 			mObjectSpaceToWorldSpaceTransform(nullptr),
@@ -161,7 +161,7 @@ namespace RendererRuntime
 
 		[[nodiscard]] inline const PassBufferManager::PassData& getPassData() const	// Memory address received via "RendererRuntime::MaterialBlueprintResourceListener::beginFillPass()", can be invalid outside the correct scope, don't destroy the memory
 		{
-			RENDERER_ASSERT(mRendererRuntime->getContext(), nullptr != mPassData, "Invalid pass data")
+			RHI_ASSERT(mRendererRuntime->getContext(), nullptr != mPassData, "Invalid pass data")
 			return *mPassData;
 		}
 
@@ -186,7 +186,7 @@ namespace RendererRuntime
 			return false;
 		}
 
-		RENDERERRUNTIME_API_EXPORT virtual void beginFillPass(IRendererRuntime& rendererRuntime, const Renderer::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, PassBufferManager::PassData& passData) override;
+		RENDERERRUNTIME_API_EXPORT virtual void beginFillPass(IRendererRuntime& rendererRuntime, const Rhi::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, PassBufferManager::PassData& passData) override;
 		[[nodiscard]] RENDERERRUNTIME_API_EXPORT virtual bool fillPassValue(uint32_t referenceValue, uint8_t* buffer, uint32_t numberOfBytes) override;
 
 		inline virtual void beginFillMaterial() override
@@ -245,7 +245,7 @@ namespace RendererRuntime
 		glm::vec2					 mPreviousJitter;
 		uint64_t					 mPreviousNumberOfRenderedFrames;
 		HosekWilkieSky*				 mHosekWilkieSky;
-		#ifdef _DEBUG
+		#ifdef RHI_DEBUG
 			bool					 mIsComputePipeline;
 		#endif
 

@@ -106,9 +106,9 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		uint32_t					   mMaximumNumberOfGrass;	///< Maximum number of grass
-		Renderer::IStructuredBufferPtr mStructuredBufferPtr;	///< Structured buffer the data of the individual grass ("RendererRuntime::GrassSceneItem::GrassDataStruct")
-		Renderer::IIndirectBufferPtr   mIndirectBufferPtr;		///< Indirect buffer holding data related to the current grass "Renderer::DrawArguments" draw call
+		uint32_t				  mMaximumNumberOfGrass;	///< Maximum number of grass
+		Rhi::IStructuredBufferPtr mStructuredBufferPtr;		///< Structured buffer the data of the individual grass ("RendererRuntime::GrassSceneItem::GrassDataStruct")
+		Rhi::IIndirectBufferPtr   mIndirectBufferPtr;		///< Indirect buffer holding data related to the current grass "Rhi::DrawArguments" draw call
 
 
 	};

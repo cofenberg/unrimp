@@ -65,10 +65,10 @@ namespace RendererRuntime
 		mMemoryFile.read(&meshHeader, sizeof(v1Mesh::MeshHeader));
 
 		// Sanity checks
-		RENDERER_ASSERT(mRendererRuntime.getContext(), 0 != meshHeader.numberOfBytesPerVertex, "Invalid mesh with zero bytes per vertex")
-		RENDERER_ASSERT(mRendererRuntime.getContext(), 0 != meshHeader.numberOfVertices, "Invalid mesh which has no vertices")
-		RENDERER_ASSERT(mRendererRuntime.getContext(), 0 != meshHeader.numberOfVertexAttributes, "Invalid mesh which has no vertex attributes")
-		RENDERER_ASSERT(mRendererRuntime.getContext(), 0 != meshHeader.numberOfSubMeshes, "Invalid mesh which has no sub-meshes")
+		RHI_ASSERT(mRendererRuntime.getContext(), 0 != meshHeader.numberOfBytesPerVertex, "Invalid mesh with zero bytes per vertex")
+		RHI_ASSERT(mRendererRuntime.getContext(), 0 != meshHeader.numberOfVertices, "Invalid mesh which has no vertices")
+		RHI_ASSERT(mRendererRuntime.getContext(), 0 != meshHeader.numberOfVertexAttributes, "Invalid mesh which has no vertex attributes")
+		RHI_ASSERT(mRendererRuntime.getContext(), 0 != meshHeader.numberOfSubMeshes, "Invalid mesh which has no sub-meshes")
 
 		// Set basic mesh resource data
 		mMeshResource->setBoundingBoxPosition(meshHeader.minimumBoundingBoxPosition, meshHeader.maximumBoundingBoxPosition);
@@ -92,7 +92,7 @@ namespace RendererRuntime
 
 		// Read in the index buffer
 		mIndexBufferFormat = meshHeader.indexBufferFormat;
-		mNumberOfUsedIndexBufferDataBytes = Renderer::IndexBufferFormat::getNumberOfBytesPerElement(static_cast<Renderer::IndexBufferFormat::Enum>(mIndexBufferFormat)) * mMeshResource->getNumberOfIndices();
+		mNumberOfUsedIndexBufferDataBytes = Rhi::IndexBufferFormat::getNumberOfBytesPerElement(static_cast<Rhi::IndexBufferFormat::Enum>(mIndexBufferFormat)) * mMeshResource->getNumberOfIndices();
 		if (mNumberOfUsedIndexBufferDataBytes > 0)
 		{
 			// Allocate memory for the local index buffer data
@@ -113,9 +113,9 @@ namespace RendererRuntime
 		{
 			mNumberOfVertexAttributes = mNumberOfUsedVertexAttributes;
 			delete [] mVertexAttributes;
-			mVertexAttributes = new Renderer::VertexAttribute[mNumberOfVertexAttributes];
+			mVertexAttributes = new Rhi::VertexAttribute[mNumberOfVertexAttributes];
 		}
-		mMemoryFile.read(mVertexAttributes, sizeof(Renderer::VertexAttribute) * mNumberOfUsedVertexAttributes);
+		mMemoryFile.read(mVertexAttributes, sizeof(Rhi::VertexAttribute) * mNumberOfUsedVertexAttributes);
 
 		// Read in the sub-meshes
 		mNumberOfUsedSubMeshes = meshHeader.numberOfSubMeshes;
@@ -137,8 +137,8 @@ namespace RendererRuntime
 			mMemoryFile.read(mSkeletonData, numberOfSkeletonDataBytes);
 		}
 
-		// Can we create the renderer resource asynchronous as well?
-		if (mRendererRuntime.getRenderer().getCapabilities().nativeMultithreading)
+		// Can we create the RHI resource asynchronous as well?
+		if (mRendererRuntime.getRhi().getCapabilities().nativeMultithreading)
 		{
 			mVertexArray = createVertexArray();
 		}
@@ -147,7 +147,7 @@ namespace RendererRuntime
 	bool MeshResourceLoader::onDispatch()
 	{
 		// Create vertex array object (VAO)
-		mMeshResource->setVertexArray(mRendererRuntime.getRenderer().getCapabilities().nativeMultithreading ? mVertexArray : createVertexArray());
+		mMeshResource->setVertexArray(mRendererRuntime.getRhi().getCapabilities().nativeMultithreading ? mVertexArray : createVertexArray());
 
 		{ // Create sub-meshes
 			MaterialResourceManager& materialResourceManager = mRendererRuntime.getMaterialResourceManager();
@@ -167,7 +167,7 @@ namespace RendererRuntime
 				subMesh.setNumberOfIndices(v1SubMesh.numberOfIndices);
 
 				// Sanity check
-				RENDERER_ASSERT(mRendererRuntime.getContext(), isValid(subMesh.getMaterialResourceId()), "Invalid sub mesh material resource ID")
+				RHI_ASSERT(mRendererRuntime.getContext(), isValid(subMesh.getMaterialResourceId()), "Invalid sub mesh material resource ID")
 			}
 		}
 
@@ -256,20 +256,20 @@ namespace RendererRuntime
 		delete [] mSkeletonData;	// In case the mesh resource loaded was never dispatched
 	}
 
-	Renderer::IVertexArray* MeshResourceLoader::createVertexArray() const
+	Rhi::IVertexArray* MeshResourceLoader::createVertexArray() const
 	{
 		// Create the vertex buffer object (VBO)
-		Renderer::IVertexBufferPtr vertexBuffer(mBufferManager.createVertexBuffer(mNumberOfUsedVertexBufferDataBytes, mVertexBufferData));
-		RENDERER_SET_RESOURCE_DEBUG_NAME(vertexBuffer, getAsset().virtualFilename)
+		Rhi::IVertexBufferPtr vertexBuffer(mBufferManager.createVertexBuffer(mNumberOfUsedVertexBufferDataBytes, mVertexBufferData));
+		RHI_SET_RESOURCE_DEBUG_NAME(vertexBuffer, getAsset().virtualFilename)
 
 		// Create the index buffer object (IBO)
-		Renderer::IIndexBuffer* indexBuffer = mBufferManager.createIndexBuffer(mNumberOfUsedIndexBufferDataBytes, mIndexBufferData, 0, Renderer::BufferUsage::STATIC_DRAW, static_cast<Renderer::IndexBufferFormat::Enum>(mIndexBufferFormat));
-		RENDERER_SET_RESOURCE_DEBUG_NAME(indexBuffer, getAsset().virtualFilename)
+		Rhi::IIndexBuffer* indexBuffer = mBufferManager.createIndexBuffer(mNumberOfUsedIndexBufferDataBytes, mIndexBufferData, 0, Rhi::BufferUsage::STATIC_DRAW, static_cast<Rhi::IndexBufferFormat::Enum>(mIndexBufferFormat));
+		RHI_SET_RESOURCE_DEBUG_NAME(indexBuffer, getAsset().virtualFilename)
 
 		// Create vertex array object (VAO)
-		const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer, mRendererRuntime.getMeshResourceManager().getDrawIdVertexBufferPtr() };
-		Renderer::IVertexArray* vertexArray = mBufferManager.createVertexArray(Renderer::VertexAttributes(mNumberOfUsedVertexAttributes, mVertexAttributes), static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBuffer);
-		RENDERER_SET_RESOURCE_DEBUG_NAME(vertexArray, getAsset().virtualFilename)
+		const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer, mRendererRuntime.getMeshResourceManager().getDrawIdVertexBufferPtr() };
+		Rhi::IVertexArray* vertexArray = mBufferManager.createVertexArray(Rhi::VertexAttributes(mNumberOfUsedVertexAttributes, mVertexAttributes), static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBuffer);
+		RHI_SET_RESOURCE_DEBUG_NAME(vertexArray, getAsset().virtualFilename)
 
 		// Done
 		return vertexArray;

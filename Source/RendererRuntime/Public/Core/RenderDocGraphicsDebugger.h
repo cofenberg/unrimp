@@ -99,7 +99,7 @@ namespace RendererRuntime
 	*
 	*  @note
 	*    - Designed to be instanced and used inside a single C++ file
-	*    - Must be instanced before the renderer gets instantiated
+	*    - Must be instanced before the RHI gets instantiated
 	*    - See https://renderdoc.org/docs/in_application_api.html for RenderDoc integration details
 	*/
 	class RenderDocGraphicsDebugger final : public IGraphicsDebugger
@@ -110,13 +110,13 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline RenderDocGraphicsDebugger(Renderer::Context& context) :
+		inline RenderDocGraphicsDebugger(Rhi::Context& context) :
 			mRenderDocSharedLibrary(nullptr),
 			mRenderDocApi(nullptr)
 		{
 			// Sanity check
-			#if !defined(_DEBUG) && !defined(SHARED_LIBRARIES)
-				RENDERER_LOG(context, PERFORMANCE_WARNING, "Reminder: You might not want to ship products with enabled RenderDoc graphics debugging")
+			#if !defined(RHI_DEBUG) && !defined(SHARED_LIBRARIES)
+				RHI_LOG(context, PERFORMANCE_WARNING, "Reminder: You might not want to ship products with enabled RenderDoc graphics debugging")
 			#endif
 
 			// Load in the RenderDoc shared library
@@ -136,7 +136,7 @@ namespace RendererRuntime
 					else
 					{
 						// Error!
-						RENDERER_LOG(context, CRITICAL, "Failed to locate the entry point \"RENDERDOC_GetAPI\" within the shared RenderDoc library \"%s\"", renderDocFilename)
+						RHI_LOG(context, CRITICAL, "Failed to locate the entry point \"RENDERDOC_GetAPI\" within the shared RenderDoc library \"%s\"", renderDocFilename)
 					}
 				}
 				if (nullptr != hModule)
@@ -149,7 +149,7 @@ namespace RendererRuntime
 					else
 					{
 						// Error!
-						RENDERER_LOG(context, CRITICAL, "Failed to locate the entry point \"RENDERDOC_GetAPI\" within the shared RenderDoc library \"renderdoc.dll\"")
+						RHI_LOG(context, CRITICAL, "Failed to locate the entry point \"RENDERDOC_GetAPI\" within the shared RenderDoc library \"renderdoc.dll\"")
 					}
 				}
 			}
@@ -170,12 +170,12 @@ namespace RendererRuntime
 					else
 					{
 						// Error!
-						RENDERER_LOG(context, CRITICAL, "Failed to locate the entry point \"RENDERDOC_GetAPI\" within the shared RenderDoc library \"%s\"", renderDocFilename)
+						RHI_LOG(context, CRITICAL, "Failed to locate the entry point \"RENDERDOC_GetAPI\" within the shared RenderDoc library \"%s\"", renderDocFilename)
 					}
 				}
 				else
 				{
-					RENDERER_LOG(context, CRITICAL, "Failed to load in the shared RenderDoc library \"%s\"", renderDocFilename)
+					RHI_LOG(context, CRITICAL, "Failed to load in the shared RenderDoc library \"%s\"", renderDocFilename)
 				}
 			}
 			#else
@@ -191,7 +191,7 @@ namespace RendererRuntime
 			else
 			{
 				// Error!
-				RENDERER_LOG(context, CRITICAL, "Failed to get the RenderDoc API 1.3.0 instance")
+				RHI_LOG(context, CRITICAL, "Failed to get the RenderDoc API 1.3.0 instance")
 			}
 		}
 
@@ -225,9 +225,9 @@ namespace RendererRuntime
 			return (nullptr != mRenderDocApi);
 		}
 
-		virtual void startFrameCapture(Renderer::handle nativeWindowHandle) override
+		virtual void startFrameCapture(Rhi::handle nativeWindowHandle) override
 		{
-			#ifdef _DEBUG
+			#ifdef RHI_DEBUG
 				ASSERT(nullptr != mRenderDocApi);
 				ASSERT(getCaptureNextFrame());
 				++mNumberOfCurrentlyStartedFrameCaptures;
@@ -235,9 +235,9 @@ namespace RendererRuntime
 			mRenderDocApi->StartFrameCapture(nullptr, reinterpret_cast<RENDERDOC_WindowHandle>(nativeWindowHandle));
 		}
 
-		virtual void endFrameCapture(Renderer::handle nativeWindowHandle) override
+		virtual void endFrameCapture(Rhi::handle nativeWindowHandle) override
 		{
-			#ifdef _DEBUG
+			#ifdef RHI_DEBUG
 				ASSERT(nullptr != mRenderDocApi);
 				ASSERT(getCaptureNextFrame());
 				--mNumberOfCurrentlyStartedFrameCaptures;
@@ -266,7 +266,7 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		#ifdef _DEBUG
+		#ifdef RHI_DEBUG
 			int mNumberOfCurrentlyStartedFrameCaptures = 0;	///< For leak detection
 		#endif
 		void*				 mRenderDocSharedLibrary;	///< Shared RenderDoc library, can be a null pointer

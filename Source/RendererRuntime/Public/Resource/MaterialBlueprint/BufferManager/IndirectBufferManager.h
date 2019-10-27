@@ -41,7 +41,7 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace Renderer
+namespace Rhi
 {
 	class IIndirectBuffer;
 }
@@ -75,10 +75,10 @@ namespace RendererRuntime
 	public:
 		struct IndirectBuffer final
 		{
-			Renderer::IIndirectBuffer* indirectBuffer;			///< Indirect buffer instance, always valid
-			uint32_t				   indirectBufferOffset;	///< Current indirect buffer offset
-			uint8_t*				   mappedData;				///< Currently mapped data, don't destroy the data
-			explicit IndirectBuffer(Renderer::IIndirectBuffer* _indirectBuffer) :
+			Rhi::IIndirectBuffer* indirectBuffer;		///< RHI indirect buffer instance, always valid
+			uint32_t			  indirectBufferOffset;	///< Current indirect buffer offset
+			uint8_t*			  mappedData;			///< Currently mapped data, don't destroy the data
+			explicit IndirectBuffer(Rhi::IIndirectBuffer* _indirectBuffer) :
 				indirectBuffer(_indirectBuffer),
 				indirectBufferOffset(0),
 				mappedData(nullptr)

@@ -52,73 +52,73 @@ namespace
 		//[ Global variables                                      ]
 		//[-------------------------------------------------------]
 		// Vertex input layout
-		static constexpr Renderer::VertexAttribute CubeRendererInstancedArraysVertexAttributesLayout[] =
+		static constexpr Rhi::VertexAttribute CubeRendererInstancedArraysVertexAttributesLayout[] =
 		{
 			// Mesh data
 			{ // Attribute 0
 				// Data destination
-				Renderer::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-				"Position",									// name[32] (char)
-				"POSITION",									// semanticName[32] (char)
-				0,											// semanticIndex (uint32_t)
+				Rhi::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+				"Position",								// name[32] (char)
+				"POSITION",								// semanticName[32] (char)
+				0,										// semanticIndex (uint32_t)
 				// Data source
-				0,											// inputSlot (uint32_t)
-				0,											// alignedByteOffset (uint32_t)
-				sizeof(float) * 8,							// strideInBytes (uint32_t)
-				0											// instancesPerElement (uint32_t)
+				0,										// inputSlot (uint32_t)
+				0,										// alignedByteOffset (uint32_t)
+				sizeof(float) * 8,						// strideInBytes (uint32_t)
+				0										// instancesPerElement (uint32_t)
 			},
 			{ // Attribute 1
 				// Data destination
-				Renderer::VertexAttributeFormat::FLOAT_2,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-				"TexCoord",									// name[32] (char)
-				"TEXCOORD",									// semanticName[32] (char)
-				0,											// semanticIndex (uint32_t)
+				Rhi::VertexAttributeFormat::FLOAT_2,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+				"TexCoord",								// name[32] (char)
+				"TEXCOORD",								// semanticName[32] (char)
+				0,										// semanticIndex (uint32_t)
 				// Data source
-				0,											// inputSlot (uint32_t)
-				sizeof(float) * 3,							// alignedByteOffset (uint32_t)
-				sizeof(float) * 8,							// strideInBytes (uint32_t)
-				0											// instancesPerElement (uint32_t)
+				0,										// inputSlot (uint32_t)
+				sizeof(float) * 3,						// alignedByteOffset (uint32_t)
+				sizeof(float) * 8,						// strideInBytes (uint32_t)
+				0										// instancesPerElement (uint32_t)
 			},
 			{ // Attribute 2
 				// Data destination
-				Renderer::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-				"Normal",									// name[32] (char)
-				"NORMAL",									// semanticName[32] (char)
-				0,											// semanticIndex (uint32_t)
+				Rhi::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+				"Normal",								// name[32] (char)
+				"NORMAL",								// semanticName[32] (char)
+				0,										// semanticIndex (uint32_t)
 				// Data source
-				0,											// inputSlot (uint32_t)
-				sizeof(float) * 5,							// alignedByteOffset (uint32_t)
-				sizeof(float) * 8,							// strideInBytes (uint32_t)
-				0											// instancesPerElement (uint32_t)
+				0,										// inputSlot (uint32_t)
+				sizeof(float) * 5,						// alignedByteOffset (uint32_t)
+				sizeof(float) * 8,						// strideInBytes (uint32_t)
+				0										// instancesPerElement (uint32_t)
 			},
 
 			// Per-instance data
 			{ // Attribute 3
 				// Data destination
-				Renderer::VertexAttributeFormat::FLOAT_4,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-				"PerInstancePositionTexture",				// name[32] (char)
-				"TEXCOORD",									// semanticName[32] (char)
-				1,											// semanticIndex (uint32_t)
+				Rhi::VertexAttributeFormat::FLOAT_4,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+				"PerInstancePositionTexture",			// name[32] (char)
+				"TEXCOORD",								// semanticName[32] (char)
+				1,										// semanticIndex (uint32_t)
 				// Data source
-				1,											// inputSlot (uint32_t)
-				0,											// alignedByteOffset (uint32_t)
-				sizeof(float) * 8,							// strideInBytes (uint32_t)
-				1											// instancesPerElement (uint32_t)
+				1,										// inputSlot (uint32_t)
+				0,										// alignedByteOffset (uint32_t)
+				sizeof(float) * 8,						// strideInBytes (uint32_t)
+				1										// instancesPerElement (uint32_t)
 			},
 			{ // Attribute 4
 				// Data destination
-				Renderer::VertexAttributeFormat::FLOAT_4,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-				"PerInstanceRotationScale",					// name[32] (char)
-				"TEXCOORD",									// semanticName[32] (char)
-				2,											// semanticIndex (uint32_t)
+				Rhi::VertexAttributeFormat::FLOAT_4,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+				"PerInstanceRotationScale",				// name[32] (char)
+				"TEXCOORD",								// semanticName[32] (char)
+				2,										// semanticIndex (uint32_t)
 				// Data source
-				1,											// inputSlot (uint32_t)
-				sizeof(float) * 4,							// alignedByteOffset (uint32_t)
-				sizeof(float) * 8,							// strideInBytes (uint32_t)
-				1											// instancesPerElement (uint32_t)
+				1,										// inputSlot (uint32_t)
+				sizeof(float) * 4,						// alignedByteOffset (uint32_t)
+				sizeof(float) * 8,						// strideInBytes (uint32_t)
+				1										// instancesPerElement (uint32_t)
 			}
 		};
-		const Renderer::VertexAttributes CubeRendererInstancedArraysVertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(CubeRendererInstancedArraysVertexAttributesLayout)), CubeRendererInstancedArraysVertexAttributesLayout);
+		const Rhi::VertexAttributes CubeRendererInstancedArraysVertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(CubeRendererInstancedArraysVertexAttributesLayout)), CubeRendererInstancedArraysVertexAttributesLayout);
 
 
 //[-------------------------------------------------------]
@@ -131,8 +131,8 @@ namespace
 //[-------------------------------------------------------]
 //[ Public methods                                        ]
 //[-------------------------------------------------------]
-CubeRendererInstancedArrays::CubeRendererInstancedArrays(Renderer::IRenderer& renderer, Renderer::IRenderPass& renderPass, uint32_t numberOfTextures, uint32_t sceneRadius) :
-	mRenderer(&renderer),
+CubeRendererInstancedArrays::CubeRendererInstancedArrays(Rhi::IRhi& rhi, Rhi::IRenderPass& renderPass, uint32_t numberOfTextures, uint32_t sceneRadius) :
+	mRhi(&rhi),
 	mRenderPass(renderPass),
 	mNumberOfTextures(numberOfTextures),
 	mSceneRadius(sceneRadius),
@@ -141,10 +141,10 @@ CubeRendererInstancedArrays::CubeRendererInstancedArrays(Renderer::IRenderer& re
 	mBatches(nullptr)
 {
 	// Create the buffer and texture manager
-	mBufferManager = mRenderer->createBufferManager();
-	mTextureManager = mRenderer->createTextureManager();
+	mBufferManager = mRhi->createBufferManager();
+	mTextureManager = mRhi->createTextureManager();
 
-	// Check number of textures (limit of this implementation and renderer limit)
+	// Check number of textures (limit of this implementation and RHI limit)
 	if (mNumberOfTextures > MAXIMUM_NUMBER_OF_TEXTURES)
 	{
 		mNumberOfTextures = MAXIMUM_NUMBER_OF_TEXTURES;
@@ -156,24 +156,24 @@ CubeRendererInstancedArrays::CubeRendererInstancedArrays(Renderer::IRenderer& re
 	mMaximumNumberOfInstancesPerBatch = 65536;
 
 	{ // Create the root signature
-		Renderer::DescriptorRangeBuilder ranges[5];
-		ranges[0].initialize(Renderer::ResourceType::UNIFORM_BUFFER, 0, "UniformBlockStaticVs",  Renderer::ShaderVisibility::VERTEX);
-		ranges[1].initialize(Renderer::ResourceType::UNIFORM_BUFFER, 1, "UniformBlockDynamicVs", Renderer::ShaderVisibility::VERTEX);
-		ranges[2].initialize(Renderer::ResourceType::TEXTURE_2D,	 0, "AlbedoMap",			 Renderer::ShaderVisibility::FRAGMENT);
-		ranges[3].initialize(Renderer::ResourceType::UNIFORM_BUFFER, 0, "UniformBlockDynamicFs", Renderer::ShaderVisibility::FRAGMENT);
-		ranges[4].initializeSampler(0, Renderer::ShaderVisibility::FRAGMENT);
+		Rhi::DescriptorRangeBuilder ranges[5];
+		ranges[0].initialize(Rhi::ResourceType::UNIFORM_BUFFER, 0, "UniformBlockStaticVs",  Rhi::ShaderVisibility::VERTEX);
+		ranges[1].initialize(Rhi::ResourceType::UNIFORM_BUFFER, 1, "UniformBlockDynamicVs", Rhi::ShaderVisibility::VERTEX);
+		ranges[2].initialize(Rhi::ResourceType::TEXTURE_2D,		0, "AlbedoMap",				Rhi::ShaderVisibility::FRAGMENT);
+		ranges[3].initialize(Rhi::ResourceType::UNIFORM_BUFFER, 0, "UniformBlockDynamicFs", Rhi::ShaderVisibility::FRAGMENT);
+		ranges[4].initializeSampler(0, Rhi::ShaderVisibility::FRAGMENT);
 
-		Renderer::RootParameterBuilder rootParameters[3];
+		Rhi::RootParameterBuilder rootParameters[3];
 		rootParameters[0].initializeAsDescriptorTable(2, &ranges[0]);
 		rootParameters[1].initializeAsDescriptorTable(2, &ranges[2]);
 		rootParameters[2].initializeAsDescriptorTable(1, &ranges[4]);
 
 		// Setup
-		Renderer::RootSignatureBuilder rootSignature;
-		rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Renderer::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+		Rhi::RootSignatureBuilder rootSignature;
+		rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Rhi::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		// Create the instance
-		mRootSignature = mRenderer->createRootSignature(rootSignature);
+		mRootSignature = mRhi->createRootSignature(rootSignature);
 	}
 
 	{ // Create the textures
@@ -218,19 +218,19 @@ CubeRendererInstancedArrays::CubeRendererInstancedArrays(Renderer::IRenderer& re
 		// Create the texture instance
 		// -> This implementation has to support Direct3D 9 which has no 2D array textures
 		// -> We simply create a single simple 2D texture atlas with the textures aligned along the vertical axis
-		mTexture2D = mTextureManager->createTexture2D(TEXTURE_WIDTH, TEXTURE_HEIGHT * mNumberOfTextures, Renderer::TextureFormat::R8G8B8A8, data, Renderer::TextureFlag::GENERATE_MIPMAPS | Renderer::TextureFlag::SHADER_RESOURCE);
+		mTexture2D = mTextureManager->createTexture2D(TEXTURE_WIDTH, TEXTURE_HEIGHT * mNumberOfTextures, Rhi::TextureFormat::R8G8B8A8, data, Rhi::TextureFlag::GENERATE_MIPMAPS | Rhi::TextureFlag::SHADER_RESOURCE);
 
 		// Free texture memory
 		delete [] data;
 	}
 
 	// Create sampler state instance and wrap it into a resource group instance
-	Renderer::IResource* samplerStateResource = mRenderer->createSamplerState(Renderer::ISamplerState::getDefaultSamplerState());
+	Rhi::IResource* samplerStateResource = mRhi->createSamplerState(Rhi::ISamplerState::getDefaultSamplerState());
 	mSamplerStateGroup = mRootSignature->createResourceGroup(1, 1, &samplerStateResource);
 
 	// Uniform buffer object (UBO, "constant buffer" in Direct3D terminology) supported?
 	// -> If they are there, we really want to use them (performance and ease of use)
-	if (mRenderer->getCapabilities().maximumUniformBufferSize > 0)
+	if (mRhi->getCapabilities().maximumUniformBufferSize > 0)
 	{
 		{ // Create and set constant graphics program uniform buffer at once
 			// TODO(co) Ugly fixed hacked in model-view-projection matrix
@@ -246,19 +246,19 @@ CubeRendererInstancedArrays::CubeRendererInstancedArrays(Renderer::IRenderer& re
 		}
 
 		// Create dynamic uniform buffers
-		mUniformBufferDynamicVs = mBufferManager->createUniformBuffer(sizeof(float) * 2, nullptr, Renderer::BufferUsage::DYNAMIC_DRAW);
-		mUniformBufferDynamicFs = mBufferManager->createUniformBuffer(sizeof(float) * 3, nullptr, Renderer::BufferUsage::DYNAMIC_DRAW);
+		mUniformBufferDynamicVs = mBufferManager->createUniformBuffer(sizeof(float) * 2, nullptr, Rhi::BufferUsage::DYNAMIC_DRAW);
+		mUniformBufferDynamicFs = mBufferManager->createUniformBuffer(sizeof(float) * 3, nullptr, Rhi::BufferUsage::DYNAMIC_DRAW);
 	}
 
 	{ // Create resource group with vertex shader visibility
-		Renderer::IResource* resources[2] = { mUniformBufferStaticVs, mUniformBufferDynamicVs };
-		mResourceGroupVS = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources);
+		Rhi::IResource* resources[2] = { mUniformBufferStaticVs, mUniformBufferDynamicVs };
+		mResourceGroupVs = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources);
 	}
 
 	{ // Create resource group with fragment shader visibility
-		Renderer::IResource* resources[2] = { mTexture2D, mUniformBufferDynamicFs };
-		Renderer::ISamplerState* samplerStates[2] = { static_cast<Renderer::ISamplerState*>(samplerStateResource), nullptr };
-		mResourceGroupFS = mRootSignature->createResourceGroup(1, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources, samplerStates);
+		Rhi::IResource* resources[2] = { mTexture2D, mUniformBufferDynamicFs };
+		Rhi::ISamplerState* samplerStates[2] = { static_cast<Rhi::ISamplerState*>(samplerStateResource), nullptr };
+		mResourceGroupFs = mRootSignature->createResourceGroup(1, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources, samplerStates);
 	}
 
 	{
@@ -274,7 +274,7 @@ CubeRendererInstancedArrays::CubeRendererInstancedArrays(Renderer::IRenderer& re
 		#include "CubeRendererInstancedArrays_Null.h"
 
 		// Create the graphics program
-		Renderer::IShaderLanguage& shaderLanguage = mRenderer->getDefaultShaderLanguage();
+		Rhi::IShaderLanguage& shaderLanguage = mRhi->getDefaultShaderLanguage();
 		mGraphicsProgram = shaderLanguage.createGraphicsProgram(
 			*mRootSignature,
 			detail::CubeRendererInstancedArraysVertexAttributes,
@@ -348,7 +348,7 @@ CubeRendererInstancedArrays::CubeRendererInstancedArrays(Renderer::IRenderer& re
 
 CubeRendererInstancedArrays::~CubeRendererInstancedArrays()
 {
-	// The renderer resource pointers are released automatically
+	// The RHI resource pointers are released automatically
 
 	// Destroy the batches, if needed
 	delete [] mBatches;
@@ -399,12 +399,12 @@ void CubeRendererInstancedArrays::setNumberOfCubes(uint32_t numberOfCubes)
 		batch->initialize(*mBufferManager, *mRootSignature, detail::CubeRendererInstancedArraysVertexAttributes, *mVertexBuffer, *mIndexBuffer, *mGraphicsProgram, mRenderPass, currentNumberOfCubes, true, mNumberOfTextures, mSceneRadius);
 	}
 
-	// Since we're always submitting the same commands to the renderer, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
+	// Since we're always submitting the same commands to the RHI, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
 	mCommandBuffer.clear();
 	fillReusableCommandBuffer();
 }
 
-void CubeRendererInstancedArrays::fillCommandBuffer(float globalTimer, float globalScale, float lightPositionX, float lightPositionY, float lightPositionZ, Renderer::CommandBuffer& commandBuffer)
+void CubeRendererInstancedArrays::fillCommandBuffer(float globalTimer, float globalScale, float lightPositionX, float lightPositionY, float lightPositionZ, Rhi::CommandBuffer& commandBuffer)
 {
 	// Sanity checks
 	assert(nullptr != mGraphicsProgram);
@@ -420,16 +420,16 @@ void CubeRendererInstancedArrays::fillCommandBuffer(float globalTimer, float glo
 		if (nullptr != mUniformBufferDynamicVs)
 		{
 			// Copy data into the uniform buffer
-			Renderer::MappedSubresource mappedSubresource;
-			if (mRenderer->map(*mUniformBufferDynamicVs, 0, Renderer::MapType::WRITE_DISCARD, 0, mappedSubresource))
+			Rhi::MappedSubresource mappedSubresource;
+			if (mRhi->map(*mUniformBufferDynamicVs, 0, Rhi::MapType::WRITE_DISCARD, 0, mappedSubresource))
 			{
 				memcpy(mappedSubresource.data, timerAndGlobalScale, sizeof(timerAndGlobalScale));
-				mRenderer->unmap(*mUniformBufferDynamicVs, 0);
+				mRhi->unmap(*mUniformBufferDynamicVs, 0);
 			}
-			if (nullptr != mUniformBufferDynamicFs && mRenderer->map(*mUniformBufferDynamicFs, 0, Renderer::MapType::WRITE_DISCARD, 0, mappedSubresource))
+			if (nullptr != mUniformBufferDynamicFs && mRhi->map(*mUniformBufferDynamicFs, 0, Rhi::MapType::WRITE_DISCARD, 0, mappedSubresource))
 			{
 				memcpy(mappedSubresource.data, lightPosition, sizeof(lightPosition));
-				mRenderer->unmap(*mUniformBufferDynamicFs, 0);
+				mRhi->unmap(*mUniformBufferDynamicFs, 0);
 			}
 		}
 		else
@@ -462,7 +462,7 @@ void CubeRendererInstancedArrays::fillCommandBuffer(float globalTimer, float glo
 	}
 
 	// Execute pre-recorded command buffer
-	Renderer::Command::ExecuteCommandBuffer::create(commandBuffer, &mCommandBuffer);
+	Rhi::Command::ExecuteCommandBuffer::create(commandBuffer, &mCommandBuffer);
 }
 
 
@@ -475,22 +475,22 @@ void CubeRendererInstancedArrays::fillReusableCommandBuffer()
 	assert(mCommandBuffer.isEmpty());
 	assert(nullptr != mRootSignature);
 	assert(nullptr != mTexture2D);
-	assert(0 == mRenderer->getCapabilities().maximumUniformBufferSize || nullptr != mUniformBufferStaticVs);
-	assert(0 == mRenderer->getCapabilities().maximumUniformBufferSize || nullptr != mUniformBufferDynamicVs);
-	assert(0 == mRenderer->getCapabilities().maximumUniformBufferSize || nullptr != mUniformBufferDynamicFs);
-	assert(nullptr != mResourceGroupVS && nullptr != mResourceGroupFS);
+	assert(0 == mRhi->getCapabilities().maximumUniformBufferSize || nullptr != mUniformBufferStaticVs);
+	assert(0 == mRhi->getCapabilities().maximumUniformBufferSize || nullptr != mUniformBufferDynamicVs);
+	assert(0 == mRhi->getCapabilities().maximumUniformBufferSize || nullptr != mUniformBufferDynamicFs);
+	assert(nullptr != mResourceGroupVs && nullptr != mResourceGroupFs);
 	assert(nullptr != mSamplerStateGroup);
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
 
 	// Set the used graphics root signature
-	Renderer::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
+	Rhi::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
 
 	// Set resource groups
-	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 0, mResourceGroupVS);
-	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 1, mResourceGroupFS);
-	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 2, mSamplerStateGroup);
+	Rhi::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 0, mResourceGroupVs);
+	Rhi::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 1, mResourceGroupFs);
+	Rhi::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 2, mSamplerStateGroup);
 
 	// Draw the batches
 	if (nullptr != mBatches)

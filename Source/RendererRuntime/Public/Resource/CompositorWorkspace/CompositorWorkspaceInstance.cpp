@@ -78,8 +78,8 @@ namespace RendererRuntime
 		mCompositorWorkspaceResourceId(getInvalid<CompositorWorkspaceResourceId>()),
 		mFramebufferManagerInitialized(false),
 		mCompositorInstancePassShadowMap(nullptr)
-		#ifdef RENDERER_STATISTICS
-			, mPipelineStatisticsQueryPoolPtr((rendererRuntime.getRenderer().getNameId() == Renderer::NameId::OPENGL && strstr(rendererRuntime.getRenderer().getCapabilities().deviceName, "AMD ") != nullptr) ? nullptr : rendererRuntime.getRenderer().createQueryPool(Renderer::QueryType::PIPELINE_STATISTICS, 2)),	// TODO(co) When using OpenGL "GL_ARB_pipeline_statistics_query" features, "glCopyImageSubData()" will horribly stall/freeze on Windows using AMD Radeon 18.12.2 (tested on 16 December 2018). No issues with NVIDIA GeForce game ready driver 417.35 (release data 12/12/2018).
+		#ifdef RHI_STATISTICS
+			, mPipelineStatisticsQueryPoolPtr((rendererRuntime.getRhi().getNameId() == Rhi::NameId::OPENGL && strstr(rendererRuntime.getRhi().getCapabilities().deviceName, "AMD ") != nullptr) ? nullptr : rendererRuntime.getRhi().createQueryPool(Rhi::QueryType::PIPELINE_STATISTICS, 2)),	// TODO(co) When using OpenGL "GL_ARB_pipeline_statistics_query" features, "glCopyImageSubData()" will horribly stall/freeze on Windows using AMD Radeon 18.12.2 (tested on 16 December 2018). No issues with NVIDIA GeForce game ready driver 417.35 (release data 12/12/2018).
 			mPreviousCurrentPipelineStatisticsQueryIndex(getInvalid<uint32_t>()),
 			mCurrentPipelineStatisticsQueryIndex(0),
 			mPipelineStatisticsQueryResult{}
@@ -97,8 +97,8 @@ namespace RendererRuntime
 	void CompositorWorkspaceInstance::setNumberOfMultisamples(uint8_t numberOfMultisamples)
 	{
 		// Sanity checks
-		RENDERER_ASSERT(mRendererRuntime.getContext(), numberOfMultisamples == 1 || numberOfMultisamples == 2 || numberOfMultisamples == 4 || numberOfMultisamples == 8, "Invalid number of multisamples")
-		RENDERER_ASSERT(mRendererRuntime.getContext(), numberOfMultisamples <= mRendererRuntime.getRenderer().getCapabilities().maximumNumberOfMultisamples, "Invalid number of multisamples")
+		RHI_ASSERT(mRendererRuntime.getContext(), numberOfMultisamples == 1 || numberOfMultisamples == 2 || numberOfMultisamples == 4 || numberOfMultisamples == 8, "Invalid number of multisamples")
+		RHI_ASSERT(mRendererRuntime.getContext(), numberOfMultisamples <= mRendererRuntime.getRhi().getCapabilities().maximumNumberOfMultisamples, "Invalid number of multisamples")
 
 		// Set the value
 		mNumberOfMultisamples = numberOfMultisamples;
@@ -133,7 +133,7 @@ namespace RendererRuntime
 		return nullptr;
 	}
 
-	void CompositorWorkspaceInstance::executeVr(Renderer::IRenderTarget& renderTarget, CameraSceneItem* cameraSceneItem, const LightSceneItem* lightSceneItem)
+	void CompositorWorkspaceInstance::executeVr(Rhi::IRenderTarget& renderTarget, CameraSceneItem* cameraSceneItem, const LightSceneItem* lightSceneItem)
 	{
 		// Decide whether or not the VR-manager is used for rendering
 		#ifdef RENDERER_RUNTIME_OPENVR
@@ -154,7 +154,7 @@ namespace RendererRuntime
 		}
 	}
 
-	void CompositorWorkspaceInstance::execute(Renderer::IRenderTarget& renderTarget, const CameraSceneItem* cameraSceneItem, const LightSceneItem* lightSceneItem, bool singlePassStereoInstancing)
+	void CompositorWorkspaceInstance::execute(Rhi::IRenderTarget& renderTarget, const CameraSceneItem* cameraSceneItem, const LightSceneItem* lightSceneItem, bool singlePassStereoInstancing)
 	{
 		// Clear the command buffer from the previous frame
 		mCommandBuffer.clear();
@@ -213,20 +213,20 @@ namespace RendererRuntime
 			}
 
 			// Begin scene rendering
-			Renderer::IRenderer& renderer = renderTarget.getRenderer();
-			if (renderer.beginScene())
+			Rhi::IRhi& rhi = renderTarget.getRhi();
+			if (rhi.beginScene())
 			{
 				#ifdef RENDERER_RUNTIME_GRAPHICS_DEBUGGER
 					IGraphicsDebugger& graphicsDebugger = mRendererRuntime.getContext().getGraphicsDebugger();
 					if (graphicsDebugger.getCaptureNextFrame())
 					{
-						graphicsDebugger.startFrameCapture((renderTarget.getResourceType() == Renderer::ResourceType::SWAP_CHAIN) ? static_cast<Renderer::ISwapChain&>(renderTarget).getNativeWindowHandle() : NULL_HANDLE);
+						graphicsDebugger.startFrameCapture((renderTarget.getResourceType() == Rhi::ResourceType::SWAP_CHAIN) ? static_cast<Rhi::ISwapChain&>(renderTarget).getNativeWindowHandle() : NULL_HANDLE);
 					}
 				#endif
-				#ifdef RENDERER_STATISTICS
+				#ifdef RHI_STATISTICS
 					if (nullptr != mPipelineStatisticsQueryPoolPtr)
 					{
-						Renderer::Command::ResetAndBeginQuery::create(mCommandBuffer, *mPipelineStatisticsQueryPoolPtr, mCurrentPipelineStatisticsQueryIndex);
+						Rhi::Command::ResetAndBeginQuery::create(mCommandBuffer, *mPipelineStatisticsQueryPoolPtr, mCurrentPipelineStatisticsQueryIndex);
 					}
 				#endif
 
@@ -241,29 +241,29 @@ namespace RendererRuntime
 				}
 
 				{ // Scene rendering
-					// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
+					// Combined scoped profiler CPU and GPU sample as well as RHI debug event command
 					RENDERER_SCOPED_PROFILER_EVENT(mRendererRuntime.getContext(), mCommandBuffer, "Compositor workspace")
 
 					// Fill command buffer
-					Renderer::IRenderTarget* currentRenderTarget = &renderTarget;
+					Rhi::IRenderTarget* currentRenderTarget = &renderTarget;
 					for (const CompositorNodeInstance* compositorNodeInstance : mSequentialCompositorNodeInstances)
 					{
 						currentRenderTarget = &compositorNodeInstance->fillCommandBuffer(*currentRenderTarget, compositorContextData, mCommandBuffer);
 					}
 				}
 
-				{ // Submit command buffer to the renderer backend
+				{ // Submit command buffer to the RHI implementation
 					// The command buffer is about to be submitted, inform everyone who cares about this
 					materialBlueprintResourceManager.onPreCommandBufferExecution();
 
-					// Submit command buffer to the renderer backend
-					#ifdef RENDERER_STATISTICS
+					// Submit command buffer to the RHI implementation
+					#ifdef RHI_STATISTICS
 						if (nullptr != mPipelineStatisticsQueryPoolPtr)
 						{
-							Renderer::Command::EndQuery::create(mCommandBuffer, *mPipelineStatisticsQueryPoolPtr, mCurrentPipelineStatisticsQueryIndex);
+							Rhi::Command::EndQuery::create(mCommandBuffer, *mPipelineStatisticsQueryPoolPtr, mCurrentPipelineStatisticsQueryIndex);
 						}
 					#endif
-					mCommandBuffer.submitToRenderer(renderer);
+					mCommandBuffer.submitToRhi(rhi);
 
 					// The command buffer has been submitted, inform everyone who cares about this
 					for (const CompositorNodeInstance* compositorNodeInstance : mSequentialCompositorNodeInstances)
@@ -287,25 +287,25 @@ namespace RendererRuntime
 				#ifdef RENDERER_RUNTIME_GRAPHICS_DEBUGGER
 					if (graphicsDebugger.getCaptureNextFrame())
 					{
-						graphicsDebugger.endFrameCapture((renderTarget.getResourceType() == Renderer::ResourceType::SWAP_CHAIN) ? static_cast<Renderer::ISwapChain&>(renderTarget).getNativeWindowHandle() : NULL_HANDLE);
+						graphicsDebugger.endFrameCapture((renderTarget.getResourceType() == Rhi::ResourceType::SWAP_CHAIN) ? static_cast<Rhi::ISwapChain&>(renderTarget).getNativeWindowHandle() : NULL_HANDLE);
 					}
 				#endif
-				renderer.endScene();
+				rhi.endScene();
 			}
 
 			// In case the render target is a swap chain, present the content of the current back buffer
-			if (renderTarget.getResourceType() == Renderer::ResourceType::SWAP_CHAIN)
+			if (renderTarget.getResourceType() == Rhi::ResourceType::SWAP_CHAIN)
 			{
-				static_cast<Renderer::ISwapChain&>(renderTarget).present();
+				static_cast<Rhi::ISwapChain&>(renderTarget).present();
 			}
 
 			// Pipeline statistics query pool
-			#ifdef RENDERER_STATISTICS
+			#ifdef RHI_STATISTICS
 				if (nullptr != mPipelineStatisticsQueryPoolPtr)
 				{
-					// We explicitly wait ("Renderer::QueryResultFlags::WAIT" default value) if the previous result isn't available yet to avoid
+					// We explicitly wait ("Rhi::QueryResultFlags::WAIT" default value) if the previous result isn't available yet to avoid
 					// "D3D11 WARNING: ID3D10Query::Begin: Begin is being invoked on a Query, where the previous results have not been obtained with GetData. This is valid; but unusual. The previous results are being abandoned, and new Query results will be generated. [ EXECUTION WARNING #408: QUERY_BEGIN_ABANDONING_PREVIOUS_RESULTS]"
-					if (isValid(mPreviousCurrentPipelineStatisticsQueryIndex) && !renderer.getQueryPoolResults(*mPipelineStatisticsQueryPoolPtr, sizeof(Renderer::PipelineStatisticsQueryResult), reinterpret_cast<uint8_t*>(&mPipelineStatisticsQueryResult), mPreviousCurrentPipelineStatisticsQueryIndex))
+					if (isValid(mPreviousCurrentPipelineStatisticsQueryIndex) && !rhi.getQueryPoolResults(*mPipelineStatisticsQueryPoolPtr, sizeof(Rhi::PipelineStatisticsQueryResult), reinterpret_cast<uint8_t*>(&mPipelineStatisticsQueryResult), mPreviousCurrentPipelineStatisticsQueryIndex))
 					{
 						mPipelineStatisticsQueryResult = {};
 					}
@@ -356,7 +356,7 @@ namespace RendererRuntime
 				// TODO(co) Ensure compositor node resource loading is done. Such blocking waiting is no good thing.
 				compositorNodeResource.enforceFullyLoaded();
 
-				// Add render target textures and framebuffers (doesn't directly allocate renderer resources, just announces them)
+				// Add render target textures and framebuffers (doesn't directly allocate RHI resources, just announces them)
 				for (const CompositorRenderTargetTexture& compositorRenderTargetTexture : compositorNodeResource.getRenderTargetTextures())
 				{
 					renderTargetTextureManager.addRenderTargetTexture(compositorRenderTargetTexture.getAssetId(), compositorRenderTargetTexture.getRenderTargetTextureSignature());
@@ -393,7 +393,7 @@ namespace RendererRuntime
 									ICompositorInstancePass* compositorInstancePass = compositorPassFactory.createCompositorInstancePass(*compositorResourcePass, *compositorNodeInstance);
 									if (compositorResourcePass->getTypeId() == CompositorResourcePassShadowMap::TYPE_ID)
 									{
-										RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr == mCompositorInstancePassShadowMap, "Invalid compositor instance pass shadow map")
+										RHI_ASSERT(mRendererRuntime.getContext(), nullptr == mCompositorInstancePassShadowMap, "Invalid compositor instance pass shadow map")
 										mCompositorInstancePassShadowMap = static_cast<CompositorInstancePassShadowMap*>(compositorInstancePass);
 									}
 									compositorNodeInstance->mCompositorInstancePasses.push_back(compositorInstancePass);
@@ -469,9 +469,9 @@ namespace RendererRuntime
 		destroyFramebuffersAndRenderTargetTextures(true);
 	}
 
-	void CompositorWorkspaceInstance::createFramebuffersAndRenderTargetTextures(const Renderer::IRenderTarget& mainRenderTarget)
+	void CompositorWorkspaceInstance::createFramebuffersAndRenderTargetTextures(const Rhi::IRenderTarget& mainRenderTarget)
 	{
-		RENDERER_ASSERT(mRendererRuntime.getContext(), !mFramebufferManagerInitialized, "Framebuffer manager is already initialized")
+		RHI_ASSERT(mRendererRuntime.getContext(), !mFramebufferManagerInitialized, "Framebuffer manager is already initialized")
 		CompositorWorkspaceResourceManager& compositorWorkspaceResourceManager = mRendererRuntime.getCompositorWorkspaceResourceManager();
 
 		{ // Framebuffers
@@ -501,7 +501,7 @@ namespace RendererRuntime
 					if ((renderTargetTextureSignature.getFlags() & RenderTargetTextureSignature::Flag::RENDER_TARGET) == 0)
 					{
 						// Force creating the texture in case it doesn't exist yet
-						[[maybe_unused]] Renderer::ITexture* texture = renderTargetTextureManager.getTextureByAssetId(compositorRenderTargetTexture.getAssetId(), mainRenderTarget, mCurrentlyUsedNumberOfMultisamples, mResolutionScale, nullptr);
+						[[maybe_unused]] Rhi::ITexture* texture = renderTargetTextureManager.getTextureByAssetId(compositorRenderTargetTexture.getAssetId(), mainRenderTarget, mCurrentlyUsedNumberOfMultisamples, mResolutionScale, nullptr);
 					}
 				}
 			}
@@ -522,7 +522,7 @@ namespace RendererRuntime
 			}
 		}
 
-		// Destroy renderer resources of framebuffers and render target textures
+		// Destroy RHI resources of framebuffers and render target textures
 		CompositorWorkspaceResourceManager& compositorWorkspaceResourceManager = mRendererRuntime.getCompositorWorkspaceResourceManager();
 		if (clearManagers)
 		{
@@ -531,8 +531,8 @@ namespace RendererRuntime
 		}
 		else
 		{
-			compositorWorkspaceResourceManager.getFramebufferManager().clearRendererResources();
-			compositorWorkspaceResourceManager.getRenderTargetTextureManager().clearRendererResources();
+			compositorWorkspaceResourceManager.getFramebufferManager().clearRhiResources();
+			compositorWorkspaceResourceManager.getRenderTargetTextureManager().clearRhiResources();
 		}
 		mFramebufferManagerInitialized = false;
 	}

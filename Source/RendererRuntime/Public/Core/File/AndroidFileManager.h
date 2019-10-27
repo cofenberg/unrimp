@@ -31,8 +31,6 @@
 #include "RendererRuntime/Public/Core/File/IFileManager.h"
 #include "RendererRuntime/Public/Core/File/FileSystemHelper.h"
 
-#include <Renderer/Public/Renderer.h>
-
 #include <android/asset_manager.h>
 
 // Disable warnings in external headers, we can't fix them
@@ -48,17 +46,6 @@ PRAGMA_WARNING_PUSH
 	#include <string>
 	#include <unordered_map>
 PRAGMA_WARNING_POP
-
-
-//[-------------------------------------------------------]
-//[ Forward declarations                                  ]
-//[-------------------------------------------------------]
-namespace Renderer
-{
-	class ILog;
-	class IAssert;
-	class IAllocator;
-}
 
 
 //[-------------------------------------------------------]
@@ -262,7 +249,7 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline AndroidFileManager(Renderer::ILog& log, Renderer::IAssert& assert, Renderer::IAllocator& allocator, const std::string& absoluteRootDirectory, AAssetManager& aAssetManager) :
+		inline AndroidFileManager(Rhi::ILog& log, Rhi::IAssert& assert, Rhi::IAllocator& allocator, const std::string& absoluteRootDirectory, AAssetManager& aAssetManager) :
 			IFileManager(absoluteRootDirectory),
 			mLog(log),
 			mAssert(assert),
@@ -311,7 +298,7 @@ namespace RendererRuntime
 			// Sanity check
 			ASSERT(nullptr != absoluteDirectoryName);
 			ASSERT(nullptr != mountPoint);
-			#ifdef _DEBUG
+			#ifdef RHI_DEBUG
 				// Additional sanity check: The same absolute directory name shouldn't be added to too different mount points
 				for (const auto& pair : mMountedDirectories)
 				{
@@ -451,7 +438,7 @@ namespace RendererRuntime
 				}
 				if (file->isInvalid())
 				{
-					if (mLog.print(Renderer::ILog::Type::CRITICAL, nullptr, __FILE__, static_cast<uint32_t>(__LINE__), "Failed to open file %s", virtualFilename))
+					if (mLog.print(Rhi::ILog::Type::CRITICAL, nullptr, __FILE__, static_cast<uint32_t>(__LINE__), "Failed to open file %s", virtualFilename))
 					{
 						DEBUG_BREAK;
 					}
@@ -460,7 +447,7 @@ namespace RendererRuntime
 				}
 				else
 				{
-					#ifdef _DEBUG
+					#ifdef RHI_DEBUG
 						++mNumberOfCurrentlyOpenedFiles;
 						ASSERT((mNumberOfCurrentlyOpenedFiles < 256) && "Too many simultaneously opened files");
 					#endif
@@ -473,7 +460,7 @@ namespace RendererRuntime
 
 		inline virtual void closeFile(IFile& file) const override
 		{
-			#ifdef _DEBUG
+			#ifdef RHI_DEBUG
 				--mNumberOfCurrentlyOpenedFiles;
 				ASSERT((mNumberOfCurrentlyOpenedFiles >= 0) && "Error, more files closed as opened");
 			#endif
@@ -585,12 +572,12 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	private:
 		AAssetManager&		   mAAssetManager;			///< Android asset manager
-		Renderer::ILog&		   mLog;
-		Renderer::IAssert&	   mAssert;
-		Renderer::IAllocator&  mAllocator;
+		Rhi::ILog&			   mLog;
+		Rhi::IAssert&		   mAssert;
+		Rhi::IAllocator&	   mAllocator;
 		AbsoluteDirectoryNames mAbsoluteBaseDirectory;	///< Absolute UTF-8 base directory, without "/" at the end
 		MountedDirectories	   mMountedDirectories;
-		#ifdef _DEBUG
+		#ifdef RHI_DEBUG
 			mutable int mNumberOfCurrentlyOpenedFiles = 0;	///< For leak detection
 		#endif
 

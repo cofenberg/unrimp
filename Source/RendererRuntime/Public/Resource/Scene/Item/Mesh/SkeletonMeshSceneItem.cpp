@@ -53,7 +53,7 @@ namespace RendererRuntime
 	void SkeletonMeshSceneItem::deserialize(uint32_t numberOfBytes, const uint8_t* data)
 	{
 		// Sanity check
-		RENDERER_ASSERT(getContext(), sizeof(v1Scene::SkeletonMeshItem) <= numberOfBytes, "Invalid number of bytes")
+		RHI_ASSERT(getContext(), sizeof(v1Scene::SkeletonMeshItem) <= numberOfBytes, "Invalid number of bytes")
 		const v1Scene::SkeletonMeshItem* skeletonMeshItem = reinterpret_cast<const v1Scene::SkeletonMeshItem*>(data);
 
 		// Read data
@@ -86,7 +86,7 @@ namespace RendererRuntime
 			{
 				if (isValid(mSkeletonAnimationAssetId))
 				{
-					RENDERER_ASSERT(getContext(), nullptr == mSkeletonAnimationController, "Invalid skeleton animation controller")
+					RHI_ASSERT(getContext(), nullptr == mSkeletonAnimationController, "Invalid skeleton animation controller")
 					mSkeletonAnimationController = new SkeletonAnimationController(getSceneResource().getRendererRuntime(), static_cast<const MeshResource&>(resource).getSkeletonResourceId());
 					mSkeletonAnimationController->startSkeletonAnimationByAssetId(mSkeletonAnimationAssetId);
 				}

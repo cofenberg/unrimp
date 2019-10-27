@@ -31,8 +31,6 @@
 #include "RendererRuntime/Public/Core/Manager.h"
 #include "RendererRuntime/Public/Core/StringId.h"
 
-#include <Renderer/Public/Renderer.h>
-
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'argument': conversion from 'long' to 'unsigned int', signed/unsigned mismatch
@@ -82,7 +80,7 @@ namespace RendererRuntime
 	*
 	*  @remarks
 	*    Supports two command buffer fill modes:
-	*    - Using fixed build in renderer configuration, including shaders
+	*    - Using fixed build in RHI configuration, including shaders
 	*    - Using a material resource blueprint set by the caller
 	*/
 	class DebugGuiManager : private Manager
@@ -104,9 +102,9 @@ namespace RendererRuntime
 		*    Set ImGui allocator functions
 		*
 		*  @param[in] allocator
-		*    Allocator to use
+		*    RHI allocator to use
 		*/
-		RENDERERRUNTIME_API_EXPORT static void setImGuiAllocatorFunctions(Renderer::IAllocator& allocator);
+		RENDERERRUNTIME_API_EXPORT static void setImGuiAllocatorFunctions(Rhi::IAllocator& allocator);
 
 		/**
 		*  @brief
@@ -126,10 +124,10 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		RENDERERRUNTIME_API_EXPORT void newFrame(Renderer::IRenderTarget& renderTarget, CompositorWorkspaceInstance* compositorWorkspaceInstance = nullptr);
-		[[nodiscard]] RENDERERRUNTIME_API_EXPORT const Renderer::IVertexArrayPtr& getFillVertexArrayPtr();
-		RENDERERRUNTIME_API_EXPORT void fillGraphicsCommandBuffer(Renderer::CommandBuffer& commandBuffer);
-		RENDERERRUNTIME_API_EXPORT void fillGraphicsCommandBufferUsingFixedBuildInRendererConfiguration(Renderer::CommandBuffer& commandBuffer);
+		RENDERERRUNTIME_API_EXPORT void newFrame(Rhi::IRenderTarget& renderTarget, CompositorWorkspaceInstance* compositorWorkspaceInstance = nullptr);
+		[[nodiscard]] RENDERERRUNTIME_API_EXPORT const Rhi::IVertexArrayPtr& getFillVertexArrayPtr();
+		RENDERERRUNTIME_API_EXPORT void fillGraphicsCommandBuffer(Rhi::CommandBuffer& commandBuffer);
+		RENDERERRUNTIME_API_EXPORT void fillGraphicsCommandBufferUsingFixedBuildInRhiConfiguration(Rhi::CommandBuffer& commandBuffer);
 
 		// Helper
 		inline bool hasOpenMetricsWindow() const
@@ -149,7 +147,7 @@ namespace RendererRuntime
 	protected:
 		virtual void initializeImGuiKeyMap() = 0;
 		virtual void startup();
-		virtual void onNewFrame(Renderer::IRenderTarget& renderTarget) = 0;
+		virtual void onNewFrame(Rhi::IRenderTarget& renderTarget) = 0;
 
 
 	//[-------------------------------------------------------]
@@ -160,33 +158,33 @@ namespace RendererRuntime
 		virtual ~DebugGuiManager();
 		explicit DebugGuiManager(const DebugGuiManager&) = delete;
 		DebugGuiManager& operator=(const DebugGuiManager&) = delete;
-		void createFixedBuildInRendererConfigurationResources();
+		void createFixedBuildInRhiConfigurationResources();
 
 
 	//[-------------------------------------------------------]
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		IRendererRuntime&		mRendererRuntime;		///< Renderer runtime instance, do not destroy the instance
-		ImGuiContext*			mImGuiContext;			///< ImGui context, always valid
-		std::string				mAbsoluteIniFilename;	///< Absolute UTF-8 ImGui ini-filename, class member since ImGui just keeps a pointer to this string instance
-		std::string				mAbsoluteLogFilename;	///< Absolute UTF-8 ImGui log-filename, class member since ImGui just keeps a pointer to this string instance
-		bool					mIsRunning;				///< The debug GUI manager will be initialized lazy when "RendererRuntime::DebugGuiManager::newFrame()" is called for the first time
-		Renderer::ITexture2DPtr	mTexture2D;
-		// Fixed build in renderer configuration resources
-		Renderer::IRootSignaturePtr			mRootSignature;
-		Renderer::IGraphicsProgramPtr		mGraphicsProgram;
-		Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineState;
-		Renderer::IUniformBufferPtr			mVertexShaderUniformBuffer;
-		Renderer::handle					mObjectSpaceToClipSpaceMatrixUniformHandle;
-		Renderer::IResourceGroupPtr			mResourceGroup;		///< Resource group, can be a null pointer
-		Renderer::IResourceGroupPtr			mSamplerStateGroup;	///< Sampler state resource group, can be a null pointer
+		IRendererRuntime&	mRendererRuntime;		///< Renderer runtime instance, do not destroy the instance
+		ImGuiContext*		mImGuiContext;			///< ImGui context, always valid
+		std::string			mAbsoluteIniFilename;	///< Absolute UTF-8 ImGui ini-filename, class member since ImGui just keeps a pointer to this string instance
+		std::string			mAbsoluteLogFilename;	///< Absolute UTF-8 ImGui log-filename, class member since ImGui just keeps a pointer to this string instance
+		bool				mIsRunning;				///< The debug GUI manager will be initialized lazy when "RendererRuntime::DebugGuiManager::newFrame()" is called for the first time
+		Rhi::ITexture2DPtr	mTexture2D;
+		// Fixed build in RHI configuration resources
+		Rhi::IRootSignaturePtr			mRootSignature;
+		Rhi::IGraphicsProgramPtr		mGraphicsProgram;
+		Rhi::IGraphicsPipelineStatePtr	mGraphicsPipelineState;
+		Rhi::IUniformBufferPtr			mVertexShaderUniformBuffer;
+		Rhi::handle						mObjectSpaceToClipSpaceMatrixUniformHandle;
+		Rhi::IResourceGroupPtr			mResourceGroup;		///< Resource group, can be a null pointer
+		Rhi::IResourceGroupPtr			mSamplerStateGroup;	///< Sampler state resource group, can be a null pointer
 		// Vertex and index buffer
-		Renderer::IVertexBufferPtr	mVertexBufferPtr;
-		uint32_t					mNumberOfAllocatedVertices;
-		Renderer::IIndexBufferPtr	mIndexBufferPtr;
-		uint32_t					mNumberOfAllocatedIndices;
-		Renderer::IVertexArrayPtr	mVertexArrayPtr;
+		Rhi::IVertexBufferPtr mVertexBufferPtr;
+		uint32_t			  mNumberOfAllocatedVertices;
+		Rhi::IIndexBufferPtr  mIndexBufferPtr;
+		uint32_t			  mNumberOfAllocatedIndices;
+		Rhi::IVertexArrayPtr  mVertexArrayPtr;
 		// Helper
 		bool mOpenMetricsWindow;
 

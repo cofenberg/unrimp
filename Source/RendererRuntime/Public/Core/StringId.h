@@ -32,21 +32,21 @@
 	__pragma(warning(push))
 		__pragma(warning(disable: 4574)) // warning C4574: '_HAS_ITERATOR_DEBUGGING' is defined to be '0': did you mean to use '#if _HAS_ITERATOR_DEBUGGING'?
 		__pragma(warning(disable: 4668)) // warning C4668: '_M_HYBRID_X86_ARM64' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
-		#ifdef RENDERER_DEBUG
+		#ifdef RHI_DEBUG
 			#include <cassert>
-			#define ASSERT assert	// TODO(co) "RENDERER_ASSERT()" should be used everywhere
+			#define ASSERT assert	// TODO(co) "RHI_ASSERT()" should be used everywhere
 		#else
-			#define ASSERT(x)	// TODO(co) "RENDERER_ASSERT()" should be used everywhere
+			#define ASSERT(x)	// TODO(co) "RHI_ASSERT()" should be used everywhere
 		#endif
 		#include <inttypes.h>	// For uint32_t, uint64_t etc.
 		#include <type_traits>	// For "std::integral_constant"
 	__pragma(warning(pop))
 #else
-	#ifdef RENDERER_DEBUG
+	#ifdef RHI_DEBUG
 		#include <cassert>
-		#define ASSERT assert	// TODO(co) "RENDERER_ASSERT()" should be used everywhere
+		#define ASSERT assert	// TODO(co) "RHI_ASSERT()" should be used everywhere
 	#else
-		#define ASSERT(x)	// TODO(co) "RENDERER_ASSERT()" should be used everywhere
+		#define ASSERT(x)	// TODO(co) "RHI_ASSERT()" should be used everywhere
 	#endif
 	#include <inttypes.h>	// For uint32_t, uint64_t etc.
 	#include <type_traits>	// For "std::integral_constant"

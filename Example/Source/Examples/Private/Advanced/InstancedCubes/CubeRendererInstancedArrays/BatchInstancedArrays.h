@@ -27,7 +27,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include <Renderer/Public/Renderer.h>
+#include <Rhi/Public/Rhi.h>
 
 
 //[-------------------------------------------------------]
@@ -61,7 +61,7 @@ public:
 	*/
 	inline ~BatchInstancedArrays()
 	{
-		// The renderer resource pointers are released automatically
+		// The RHI resource pointers are released automatically
 	}
 
 	/**
@@ -91,16 +91,16 @@ public:
 	*  @param[in] sceneRadius
 	*    Scene radius
 	*/
-	void initialize(Renderer::IBufferManager& bufferManager, Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, Renderer::IVertexBuffer& vertexBuffer, Renderer::IIndexBuffer& indexBuffer, Renderer::IGraphicsProgram& graphicsProgram, Renderer::IRenderPass& renderPass, uint32_t numberOfCubeInstances, bool alphaBlending, uint32_t numberOfTextures, uint32_t sceneRadius);
+	void initialize(Rhi::IBufferManager& bufferManager, Rhi::IRootSignature& rootSignature, const Rhi::VertexAttributes& vertexAttributes, Rhi::IVertexBuffer& vertexBuffer, Rhi::IIndexBuffer& indexBuffer, Rhi::IGraphicsProgram& graphicsProgram, Rhi::IRenderPass& renderPass, uint32_t numberOfCubeInstances, bool alphaBlending, uint32_t numberOfTextures, uint32_t sceneRadius);
 
 	/**
 	*  @brief
 	*    Fill the batch into the given commando buffer
 	*
 	*  @param[out] commandBuffer
-	*    Command buffer to fill
+	*    RHI command buffer to fill
 	*/
-	void fillCommandBuffer(Renderer::CommandBuffer& commandBuffer) const;
+	void fillCommandBuffer(Rhi::CommandBuffer& commandBuffer) const;
 
 
 //[-------------------------------------------------------]
@@ -115,10 +115,10 @@ private:
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
-	Renderer::IRendererPtr				mRenderer;				///< Owner renderer instance, can be a null pointer
-	uint32_t							mNumberOfCubeInstances;	///< Number of cube instances
-	Renderer::IVertexArrayPtr			mVertexArray;			///< Vertex array object (VAO), can be a null pointer
-	Renderer::IGraphicsPipelineStatePtr	mGraphicsPipelineState;	///< Graphics pipeline state object (PSO), can be a null pointer
+	Rhi::IRhiPtr					mRhi;					///< Owner RHI instance, can be a null pointer
+	uint32_t						mNumberOfCubeInstances;	///< Number of cube instances
+	Rhi::IVertexArrayPtr			mVertexArray;			///< Vertex array object (VAO), can be a null pointer
+	Rhi::IGraphicsPipelineStatePtr	mGraphicsPipelineState;	///< Graphics pipeline state object (PSO), can be a null pointer
 
 
 };

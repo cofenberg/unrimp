@@ -24,7 +24,7 @@
 #include "RendererRuntime/Public/Resource/RendererResourceManager.h"
 #include "RendererRuntime/Public/Core/Math/Math.h"
 
-#include <Renderer/Public/Renderer.h>
+#include <Rhi/Public/Rhi.h>
 
 
 //[-------------------------------------------------------]
@@ -37,18 +37,18 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
-	Renderer::IResourceGroup* RendererResourceManager::createResourceGroup(Renderer::IRootSignature& rootSignature, uint32_t rootParameterIndex, uint32_t numberOfResources, Renderer::IResource** resources, Renderer::ISamplerState** samplerStates)
+	Rhi::IResourceGroup* RendererResourceManager::createResourceGroup(Rhi::IRootSignature& rootSignature, uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates)
 	{
 		// Create hash
-		uint32_t hash = Math::calculateFNV1a32(reinterpret_cast<const uint8_t*>(&rootSignature), sizeof(Renderer::IRootSignature&));
+		uint32_t hash = Math::calculateFNV1a32(reinterpret_cast<const uint8_t*>(&rootSignature), sizeof(Rhi::IRootSignature&));
 		hash = Math::calculateFNV1a32(reinterpret_cast<const uint8_t*>(&rootParameterIndex), sizeof(uint32_t), hash);
 		hash = Math::calculateFNV1a32(reinterpret_cast<const uint8_t*>(&numberOfResources), sizeof(uint32_t), hash);
 		for (uint32_t i = 0; i < numberOfResources; ++i)
 		{
-			hash = Math::calculateFNV1a32(reinterpret_cast<const uint8_t*>(&resources[i]), sizeof(Renderer::IResource*), hash);
+			hash = Math::calculateFNV1a32(reinterpret_cast<const uint8_t*>(&resources[i]), sizeof(Rhi::IResource*), hash);
 			if (nullptr != samplerStates && nullptr != samplerStates[i])
 			{
-				hash = Math::calculateFNV1a32(reinterpret_cast<const uint8_t*>(&samplerStates[i]), sizeof(Renderer::ISamplerState*), hash);
+				hash = Math::calculateFNV1a32(reinterpret_cast<const uint8_t*>(&samplerStates[i]), sizeof(Rhi::ISamplerState*), hash);
 			}
 			else
 			{
@@ -63,8 +63,8 @@ namespace RendererRuntime
 		}
 		else
 		{
-			// Create renderer resource and add the managers reference
-			Renderer::IResourceGroup* resourceGroup = rootSignature.createResourceGroup(rootParameterIndex, numberOfResources, resources, samplerStates);
+			// Create RHI resource and add the managers reference
+			Rhi::IResourceGroup* resourceGroup = rootSignature.createResourceGroup(rootParameterIndex, numberOfResources, resources, samplerStates);
 			resourceGroup->addReference();
 			mResourceGroups.emplace(hash, resourceGroup);
 			return resourceGroup;
@@ -73,7 +73,7 @@ namespace RendererRuntime
 
 	void RendererResourceManager::garbageCollection()
 	{
-		// TODO(co) "RendererRuntime::RendererResourceManager": From time to time, look for orphaned renderer resources and free them. Currently a trivial approach is used which might cause hiccups. For example distribute the traversal over time.
+		// TODO(co) "RendererRuntime::RendererResourceManager": From time to time, look for orphaned RHI resources and free them. Currently a trivial approach is used which might cause hiccups. For example distribute the traversal over time.
 		++mGarbageCollectionCounter;
 		if (mGarbageCollectionCounter > 100)
 		{
@@ -100,7 +100,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	RendererResourceManager::~RendererResourceManager()
 	{
-		// Release manager renderer resource references
+		// Release manager RHI resource references
 		for (auto& pair : mResourceGroups)
 		{
 			pair.second->releaseReference();

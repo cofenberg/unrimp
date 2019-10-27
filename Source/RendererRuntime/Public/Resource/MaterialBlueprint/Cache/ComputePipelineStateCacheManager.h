@@ -30,8 +30,6 @@
 #include "RendererRuntime/Public/Resource/MaterialBlueprint/Cache/ComputePipelineStateSignature.h"
 #include "RendererRuntime/Public/Core/Manager.h"
 
-#include <Renderer/Public/Renderer.h>
-
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'argument': conversion from 'long' to 'unsigned int', signed/unsigned mismatch

@@ -56,7 +56,7 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace Renderer
+namespace Rhi
 {
 	class IGraphicsProgram;
 	class IGraphicsPipelineState;
@@ -94,7 +94,7 @@ namespace RendererRuntime
 	*    A graphics pipeline state must master the following stages in order to archive the inner wisdom:
 	*    1. Asynchronous shader building
 	*    2. Asynchronous shader compilation
-	*    3. Synchronous renderer backend dispatch TODO(co) Asynchronous renderer backend dispatch if supported by the renderer API
+	*    3. Synchronous RHI implementation dispatch TODO(co) Asynchronous RHI implementation dispatch if supported by the RHI implementation
 	*
 	*  @note
 	*    - Takes care of asynchronous graphics pipeline state compilation
@@ -159,12 +159,12 @@ namespace RendererRuntime
 		struct CompilerRequest final
 		{
 			// Input
-			GraphicsPipelineStateCache&		  graphicsPipelineStateCache;
+			GraphicsPipelineStateCache&	 graphicsPipelineStateCache;
 			// Internal
-			GraphicsProgramCacheId			  graphicsProgramCacheId;
-			ShaderCache*					  shaderCache[NUMBER_OF_GRAPHICS_SHADER_TYPES];
-			std::string						  shaderSourceCode[NUMBER_OF_GRAPHICS_SHADER_TYPES];
-			Renderer::IGraphicsPipelineState* graphicsPipelineStateObject;
+			GraphicsProgramCacheId		 graphicsProgramCacheId;
+			ShaderCache*				 shaderCache[NUMBER_OF_GRAPHICS_SHADER_TYPES];
+			std::string					 shaderSourceCode[NUMBER_OF_GRAPHICS_SHADER_TYPES];
+			Rhi::IGraphicsPipelineState* graphicsPipelineStateObject;
 
 			inline explicit CompilerRequest(GraphicsPipelineStateCache& _graphicsPipelineStateCache) :
 				graphicsPipelineStateCache(_graphicsPipelineStateCache),
@@ -208,7 +208,7 @@ namespace RendererRuntime
 		void flushQueue(std::mutex& mutex, const CompilerRequests& compilerRequests);
 		void builderThreadWorker();
 		void compilerThreadWorker();
-		[[nodiscard]] Renderer::IGraphicsPipelineState* createGraphicsPipelineState(const RendererRuntime::MaterialBlueprintResource& materialBlueprintResource, uint32_t serializedGraphicsPipelineStateHash, Renderer::IGraphicsProgram& graphicsProgram) const;
+		[[nodiscard]] Rhi::IGraphicsPipelineState* createGraphicsPipelineState(const RendererRuntime::MaterialBlueprintResource& materialBlueprintResource, uint32_t serializedGraphicsPipelineStateHash, Rhi::IGraphicsProgram& graphicsProgram) const;
 
 
 	//[-------------------------------------------------------]

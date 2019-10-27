@@ -29,8 +29,6 @@
 //[-------------------------------------------------------]
 #include "RendererRuntime/Public/Resource/IResource.h"
 
-#include <Renderer/Public/Renderer.h>
-
 
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
@@ -83,17 +81,17 @@ namespace RendererRuntime
 			return mRgbHardwareGammaCorrection;
 		}
 
-		[[nodiscard]] inline const Renderer::ITexturePtr& getTexturePtr() const
+		[[nodiscard]] inline const Rhi::ITexturePtr& getTexturePtr() const
 		{
 			return mTexture;
 		}
 
-		inline void setTexture(Renderer::ITexture* texture)
+		inline void setTexture(Rhi::ITexture* texture)
 		{
 			// Sanity check
 			ASSERT((LoadingState::LOADED == getLoadingState() || LoadingState::UNLOADED == getLoadingState()) && "Texture resource change while in-flight inside the resource streamer");
 
-			// Set new renderer texture
+			// Set new RHI texture
 			if (nullptr != mTexture)
 			{
 				setLoadingState(LoadingState::UNLOADED);
@@ -161,8 +159,8 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		bool				  mRgbHardwareGammaCorrection;	///< If true, sRGB texture formats will be used meaning the GPU will return linear space colors instead of gamma space colors when fetching texels inside a shader (the alpha channel always remains linear)
-		Renderer::ITexturePtr mTexture;						///< Texture, can be a null pointer
+		bool			 mRgbHardwareGammaCorrection;	///< If true, sRGB texture formats will be used meaning the GPU will return linear space colors instead of gamma space colors when fetching texels inside a shader (the alpha channel always remains linear)
+		Rhi::ITexturePtr mTexture;						///< RHI texture, can be a null pointer
 
 
 	};

@@ -112,8 +112,8 @@ namespace RendererRuntime
 	IResourceLoader* SkeletonAnimationResourceManager::createResourceLoaderInstance([[maybe_unused]] ResourceLoaderTypeId resourceLoaderTypeId)
 	{
 		// We only support our own format
-		RENDERER_ASSERT(mInternalResourceManager->getRendererRuntime().getContext(), resourceLoaderTypeId == SkeletonAnimationResourceLoader::TYPE_ID, "Invalid resource loader type ID")
-		#ifdef RENDERER_DEBUG
+		RHI_ASSERT(mInternalResourceManager->getRendererRuntime().getContext(), resourceLoaderTypeId == SkeletonAnimationResourceLoader::TYPE_ID, "Invalid resource loader type ID")
+		#ifdef RHI_DEBUG
 			return new SkeletonAnimationResourceLoader(mInternalResourceManager->getResourceManager(), mInternalResourceManager->getRendererRuntime());
 		#else
 			return new SkeletonAnimationResourceLoader(mInternalResourceManager->getResourceManager());

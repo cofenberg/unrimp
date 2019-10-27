@@ -33,22 +33,22 @@ void FirstIndirectBuffer::onInitialization()
 	// Call the base implementation
 	FirstTriangle::onInitialization();
 
-	// Get and check the renderer instance
-	Renderer::IRendererPtr renderer(getRenderer());
-	if (nullptr != renderer)
+	// Get and check the RHI instance
+	Rhi::IRhiPtr rhi(getRhi());
+	if (nullptr != rhi)
 	{
 		{ // Create the indirect buffer
-			const Renderer::DrawArguments drawArguments =
+			const Rhi::DrawArguments drawArguments =
 			{
 				3,	// vertexCountPerInstance (uint32_t)
 				1,	// instanceCount (uint32_t)
 				0,	// startVertexLocation (uint32_t)
 				0	// startInstanceLocation (uint32_t)
 			};
-			mIndirectBuffer = mBufferManager->createIndirectBuffer(sizeof(Renderer::DrawArguments), &drawArguments, Renderer::IndirectBufferFlag::DRAW_ARGUMENTS);
+			mIndirectBuffer = mBufferManager->createIndirectBuffer(sizeof(Rhi::DrawArguments), &drawArguments, Rhi::IndirectBufferFlag::DRAW_ARGUMENTS);
 		}
 
-		// Since we're always submitting the same commands to the renderer, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
+		// Since we're always submitting the same commands to the RHI, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
 		mCommandBuffer.clear();	// Throw away "FirstTriangle"-stuff
 		fillCommandBuffer();
 	}
@@ -70,27 +70,27 @@ void FirstIndirectBuffer::onDeinitialization()
 void FirstIndirectBuffer::fillCommandBuffer()
 {
 	// Sanity checks
-	ASSERT(nullptr != getRenderer());
-	RENDERER_ASSERT(getRenderer()->getContext(), mCommandBuffer.isEmpty(), "Command buffer is already filled");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mRootSignature, "Invalid root signature");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mGraphicsPipelineState, "Invalid graphics pipeline state");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mVertexArray, "Invalid vertex array");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mIndirectBuffer, "Invalid indirect buffer");
+	ASSERT(nullptr != getRhi());
+	RHI_ASSERT(getRhi()->getContext(), mCommandBuffer.isEmpty(), "Command buffer is already filled");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mRootSignature, "Invalid root signature");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mGraphicsPipelineState, "Invalid graphics pipeline state");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mVertexArray, "Invalid vertex array");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mIndirectBuffer, "Invalid indirect buffer");
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
 
 	// Clear the graphics color buffer of the current render target with gray, do also clear the depth buffer
-	Renderer::Command::ClearGraphics::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
+	Rhi::Command::ClearGraphics::create(mCommandBuffer, Rhi::ClearFlag::COLOR_DEPTH, Color4::GRAY);
 
 	// Set the used graphics root signature
-	Renderer::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
+	Rhi::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
 
 	// Set the used graphics pipeline state object (PSO)
-	Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineState);
+	Rhi::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineState);
 
 	// Input assembly (IA): Set the used vertex array
-	Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArray);
+	Rhi::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArray);
 
 	// Set debug marker
 	// -> Debug methods: When using Direct3D <11.1, these methods map to the Direct3D 9 PIX functions
@@ -102,6 +102,6 @@ void FirstIndirectBuffer::fillCommandBuffer()
 		COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Drawing the fancy triangle")
 
 		// Render the specified geometric primitive, based on an array of vertices
-		Renderer::Command::DrawGraphics::create(mCommandBuffer, *mIndirectBuffer);
+		Rhi::Command::DrawGraphics::create(mCommandBuffer, *mIndirectBuffer);
 	}
 }

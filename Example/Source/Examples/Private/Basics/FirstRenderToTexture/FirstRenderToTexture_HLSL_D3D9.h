@@ -21,8 +21,8 @@
 //[-------------------------------------------------------]
 //[ Shader start                                          ]
 //[-------------------------------------------------------]
-#ifdef RENDERER_DIRECT3D9
-if (renderer->getNameId() == Renderer::NameId::DIRECT3D9)
+#ifdef RHI_DIRECT3D9
+if (rhi->getNameId() == Rhi::NameId::DIRECT3D9)
 {
 
 

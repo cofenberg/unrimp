@@ -39,31 +39,31 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global variables                                      ]
 		//[-------------------------------------------------------]
-		static Renderer::IVertexArrayPtr SkyVertexArrayPtr;	///< Vertex array object (VAO), can be a null pointer, shared between all sky instances
+		static Rhi::IVertexArrayPtr SkyVertexArrayPtr;	///< Vertex array object (VAO), can be a null pointer, shared between all sky instances
 
 
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		[[nodiscard]] Renderer::IVertexArray* createSkyVertexArray(Renderer::IBufferManager& bufferManager)
+		[[nodiscard]] Rhi::IVertexArray* createSkyVertexArray(Rhi::IBufferManager& bufferManager)
 		{
 			// Vertex input layout
-			static constexpr Renderer::VertexAttribute vertexAttributesLayout[] =
+			static constexpr Rhi::VertexAttribute vertexAttributesLayout[] =
 			{
 				{ // Attribute 0
 					// Data destination
-					Renderer::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-					"Position",									// name[32] (char)
-					"POSITION",									// semanticName[32] (char)
-					0,											// semanticIndex (uint32_t)
+					Rhi::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+					"Position",								// name[32] (char)
+					"POSITION",								// semanticName[32] (char)
+					0,										// semanticIndex (uint32_t)
 					// Data source
-					0,											// inputSlot (uint32_t)
-					0,											// alignedByteOffset (uint32_t)
-					sizeof(float) * 3,							// strideInBytes (uint32_t)
-					0											// instancesPerElement (uint32_t)
+					0,										// inputSlot (uint32_t)
+					0,										// alignedByteOffset (uint32_t)
+					sizeof(float) * 3,						// strideInBytes (uint32_t)
+					0										// instancesPerElement (uint32_t)
 				}
 			};
-			const Renderer::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
+			const Rhi::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
 
 			// Create the vertex buffer object (VBO)
 			// -> Clip space vertex positions, left/bottom is (-1,-1) and right/top is (1,1)
@@ -78,8 +78,8 @@ namespace
 				-1.0f, -1.0f, -1.0f,
 				 1.0f, -1.0f,- 1.0f
 			};
-			Renderer::IVertexBufferPtr vertexBuffer(bufferManager.createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION));
-			RENDERER_SET_RESOURCE_DEBUG_NAME(vertexBuffer, "Sky")
+			Rhi::IVertexBufferPtr vertexBuffer(bufferManager.createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION));
+			RHI_SET_RESOURCE_DEBUG_NAME(vertexBuffer, "Sky")
 
 			// Create the index buffer object (IBO)
 			static constexpr uint16_t INDICES[] =
@@ -91,13 +91,13 @@ namespace
 				5, 4, 1, 1, 0, 5,	// Top
 				3, 2, 7, 7, 6, 3	// Bottom
 			};
-			Renderer::IIndexBuffer* indexBuffer = bufferManager.createIndexBuffer(sizeof(INDICES), INDICES);
-			RENDERER_SET_RESOURCE_DEBUG_NAME(indexBuffer, "Sky")
+			Rhi::IIndexBuffer* indexBuffer = bufferManager.createIndexBuffer(sizeof(INDICES), INDICES);
+			RHI_SET_RESOURCE_DEBUG_NAME(indexBuffer, "Sky")
 
 			// Create vertex array object (VAO)
-			const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
-			Renderer::IVertexArray* vertexArray = bufferManager.createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBuffer);
-			RENDERER_SET_RESOURCE_DEBUG_NAME(vertexArray, "Sky")
+			const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
+			Rhi::IVertexArray* vertexArray = bufferManager.createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBuffer);
+			RHI_SET_RESOURCE_DEBUG_NAME(vertexArray, "Sky")
 
 			// Done
 			return vertexArray;
@@ -139,7 +139,7 @@ namespace RendererRuntime
 		if (nullptr == ::detail::SkyVertexArrayPtr)
 		{
 			::detail::SkyVertexArrayPtr = ::detail::createSkyVertexArray(getSceneResource().getRendererRuntime().getBufferManager());
-			RENDERER_ASSERT(getContext(), nullptr != ::detail::SkyVertexArrayPtr, "Invalid sky vertex array")
+			RHI_ASSERT(getContext(), nullptr != ::detail::SkyVertexArrayPtr, "Invalid sky vertex array")
 		}
 		::detail::SkyVertexArrayPtr->addReference();
 	}

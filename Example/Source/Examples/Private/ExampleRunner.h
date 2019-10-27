@@ -66,10 +66,10 @@ class ExampleRunner final
 //[-------------------------------------------------------]
 public:
 	typedef int(*RunnerMethod)(ExampleRunner&, const char*);
-	typedef std::map<std::string_view, RunnerMethod>	   AvailableExamples;
-	typedef std::set<std::string_view>					   AvailableRenderers;
-	typedef std::vector<std::string_view>				   SupportedRenderers;
-	typedef std::map<std::string_view, SupportedRenderers> ExampleToSupportedRenderers;
+	typedef std::map<std::string_view, RunnerMethod>  AvailableExamples;
+	typedef std::set<std::string_view>				  AvailableRhis;
+	typedef std::vector<std::string_view>			  SupportedRhis;
+	typedef std::map<std::string_view, SupportedRhis> ExampleToSupportedRhis;
 
 
 //[-------------------------------------------------------]
@@ -81,19 +81,19 @@ public:
 	inline ~ExampleRunner()
 	{}
 
-	[[nodiscard]] inline const AvailableRenderers& getAvailableRenderers() const
+	[[nodiscard]] inline const AvailableRhis& getAvailableRhis() const
 	{
-		return mAvailableRenderers;
+		return mAvailableRhis;
 	}
 
-	[[nodiscard]] inline const ExampleToSupportedRenderers& getExampleToSupportedRenderers() const
+	[[nodiscard]] inline const ExampleToSupportedRhis& getExampleToSupportedRhis() const
 	{
-		return mExampleToSupportedRenderers;
+		return mExampleToSupportedRhis;
 	}
 
-	[[nodiscard]] inline const std::string& getDefaultRendererName() const
+	[[nodiscard]] inline const std::string& getDefaultRhiName() const
 	{
-		return mDefaultRendererName;
+		return mDefaultRhiName;
 	}
 
 	[[nodiscard]] inline const std::string& getDefaultExampleName() const
@@ -101,9 +101,9 @@ public:
 		return mDefaultExampleName;
 	}
 
-	[[nodiscard]] inline const std::string& getCurrentRendererName() const
+	[[nodiscard]] inline const std::string& getCurrentRhiName() const
 	{
-		return mCurrentRendererName;
+		return mCurrentRhiName;
 	}
 
 	[[nodiscard]] inline const std::string& getCurrentExampleName() const
@@ -119,10 +119,10 @@ public:
 	*
 	*  @param[in] exampleName
 	*    Example name, must be valid
-	*  @param[in] rendererName
-	*    Renderer name, if null pointer the default renderer will be used
+	*  @param[in] rhiName
+	*    RHI name, if null pointer the default RHI will be used
 	*/
-	void switchExample(const char* exampleName, const char* rendererName = nullptr);
+	void switchExample(const char* exampleName, const char* rhiName = nullptr);
 
 
 //[-------------------------------------------------------]
@@ -130,25 +130,25 @@ public:
 //[-------------------------------------------------------]
 private:
 	template <class ExampleClass>
-	[[nodiscard]] static int runRenderExample(ExampleRunner& exampleRunner, const char* rendererName)
+	[[nodiscard]] static int runRenderExample(ExampleRunner& exampleRunner, const char* rhiName)
 	{
 		ExampleClass exampleClass;
 		exampleClass.mExampleRunner = &exampleRunner;
-		return IApplicationRenderer(rendererName, exampleClass).run();
+		return IApplicationRhi(rhiName, exampleClass).run();
 	}
 
 	template <class ExampleClass>
-	[[nodiscard]] static int runRenderRuntimeExample(ExampleRunner& exampleRunner, const char* rendererName)
+	[[nodiscard]] static int runRenderRuntimeExample(ExampleRunner& exampleRunner, const char* rhiName)
 	{
 		ExampleClass exampleClass;
 		exampleClass.mExampleRunner = &exampleRunner;
-		return IApplicationRendererRuntime(rendererName, exampleClass).run();
+		return IApplicationRendererRuntime(rhiName, exampleClass).run();
 	}
 
 	template <class ExampleClass>
-	[[nodiscard]] static int runBasicExample(ExampleRunner& exampleRunner, const char* rendererName)
+	[[nodiscard]] static int runBasicExample(ExampleRunner& exampleRunner, const char* rhiName)
 	{
-		ExampleClass exampleClass(exampleRunner, rendererName);
+		ExampleClass exampleClass(exampleRunner, rhiName);
 		return exampleClass.run();
 	}
 
@@ -158,20 +158,20 @@ private:
 //[-------------------------------------------------------]
 private:
 	[[nodiscard]] bool parseCommandLineArguments(const CommandLineArguments& commandLineArguments);
-	void printUsage(const AvailableExamples& availableExamples, const AvailableRenderers& availableRenderers);
+	void printUsage(const AvailableExamples& availableExamples, const AvailableRhis& availableRhis);
 	void showError(const std::string& errorMessage);
-	[[nodiscard]] int runExample(const std::string_view& rendererName, const std::string_view& exampleName);
+	[[nodiscard]] int runExample(const std::string_view& rhiName, const std::string_view& exampleName);
 
 	template<typename T>
-	void addExample(const std::string_view& name, RunnerMethod runnerMethod, const T& supportedRendererList)
+	void addExample(const std::string_view& name, RunnerMethod runnerMethod, const T& supportedRhiList)
 	{
 		mAvailableExamples.insert(std::pair<std::string_view, RunnerMethod>(name, runnerMethod));
-		SupportedRenderers supportedRenderers;
-		for (const std::string_view& supportedRenderer : supportedRendererList)
+		SupportedRhis supportedRhis;
+		for (const std::string_view& supportedRhi : supportedRhiList)
 		{
-			supportedRenderers.push_back(supportedRenderer);
+			supportedRhis.push_back(supportedRhi);
 		}
-		mExampleToSupportedRenderers.insert(std::pair<std::string_view, SupportedRenderers>(name, std::move(supportedRenderers)));
+		mExampleToSupportedRhis.insert(std::pair<std::string_view, SupportedRhis>(name, std::move(supportedRhis)));
 	}
 
 
@@ -179,15 +179,15 @@ private:
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
-	AvailableExamples 			mAvailableExamples;
-	AvailableRenderers			mAvailableRenderers;
-	ExampleToSupportedRenderers	mExampleToSupportedRenderers;
-	std::string					mDefaultRendererName;
-	std::string					mDefaultExampleName;
-	std::string					mCurrentRendererName;
-	std::string					mCurrentExampleName;
-	std::string					mNextRendererName;
-	std::string					mNextExampleName;
+	AvailableExamples 	   mAvailableExamples;
+	AvailableRhis		   mAvailableRhis;
+	ExampleToSupportedRhis mExampleToSupportedRhis;
+	std::string			   mDefaultRhiName;
+	std::string			   mDefaultExampleName;
+	std::string			   mCurrentRhiName;
+	std::string			   mCurrentExampleName;
+	std::string			   mNextRhiName;
+	std::string			   mNextExampleName;
 
 
 };

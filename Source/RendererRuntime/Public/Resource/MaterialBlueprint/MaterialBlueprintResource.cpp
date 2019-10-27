@@ -251,10 +251,10 @@ namespace RendererRuntime
 		}
 	}
 
-	void MaterialBlueprintResource::fillGraphicsCommandBuffer(Renderer::CommandBuffer& commandBuffer)
+	void MaterialBlueprintResource::fillGraphicsCommandBuffer(Rhi::CommandBuffer& commandBuffer)
 	{
 		// Set the used graphics root signature
-		Renderer::Command::SetGraphicsRootSignature::create(commandBuffer, mRootSignaturePtr);
+		Rhi::Command::SetGraphicsRootSignature::create(commandBuffer, mRootSignaturePtr);
 
 		// Bind pass buffer manager, if required
 		if (nullptr != mPassBufferManager)
@@ -268,7 +268,7 @@ namespace RendererRuntime
 			// Create sampler resource group, if needed
 			if (nullptr == mSamplerStateGroup)
 			{
-				std::vector<Renderer::IResource*> resources;
+				std::vector<Rhi::IResource*> resources;
 				const size_t numberOfSamplerStates = mSamplerStates.size();
 				resources.resize(numberOfSamplerStates);
 				for (size_t i = 0; i < numberOfSamplerStates; ++i)
@@ -277,11 +277,11 @@ namespace RendererRuntime
 				}
 				// TODO(co) All sampler states need to be inside the same resource group, this needs to be guaranteed by design
 				mSamplerStateGroup = mRootSignaturePtr->createResourceGroup(mSamplerStates[0].rootParameterIndex, static_cast<uint32_t>(numberOfSamplerStates), resources.data());
-				RENDERER_SET_RESOURCE_DEBUG_NAME(mSamplerStateGroup, "Material blueprint")
+				RHI_SET_RESOURCE_DEBUG_NAME(mSamplerStateGroup, "Material blueprint")
 			}
 
 			// Set graphics resource group
-			Renderer::Command::SetGraphicsResourceGroup::create(commandBuffer, mSamplerStates[0].rootParameterIndex, mSamplerStateGroup);
+			Rhi::Command::SetGraphicsResourceGroup::create(commandBuffer, mSamplerStates[0].rootParameterIndex, mSamplerStateGroup);
 		}
 
 		// It's valid if a graphics material blueprint resource doesn't contain a material uniform buffer (usually the case for compositor material blueprint resources)
@@ -291,10 +291,10 @@ namespace RendererRuntime
 		}
 	}
 
-	void MaterialBlueprintResource::fillComputeCommandBuffer(Renderer::CommandBuffer& commandBuffer)
+	void MaterialBlueprintResource::fillComputeCommandBuffer(Rhi::CommandBuffer& commandBuffer)
 	{
 		// Set the used compute root signature
-		Renderer::Command::SetComputeRootSignature::create(commandBuffer, mRootSignaturePtr);
+		Rhi::Command::SetComputeRootSignature::create(commandBuffer, mRootSignaturePtr);
 
 		// Bind pass buffer manager, if required
 		if (nullptr != mPassBufferManager)
@@ -308,7 +308,7 @@ namespace RendererRuntime
 			// Create sampler resource group, if needed
 			if (nullptr == mSamplerStateGroup)
 			{
-				std::vector<Renderer::IResource*> resources;
+				std::vector<Rhi::IResource*> resources;
 				const size_t numberOfSamplerStates = mSamplerStates.size();
 				resources.resize(numberOfSamplerStates);
 				for (size_t i = 0; i < numberOfSamplerStates; ++i)
@@ -317,11 +317,11 @@ namespace RendererRuntime
 				}
 				// TODO(co) All sampler states need to be inside the same resource group, this needs to be guaranteed by design
 				mSamplerStateGroup = mRootSignaturePtr->createResourceGroup(mSamplerStates[0].rootParameterIndex, static_cast<uint32_t>(numberOfSamplerStates), resources.data());
-				RENDERER_SET_RESOURCE_DEBUG_NAME(mSamplerStateGroup, "Material blueprint")
+				RHI_SET_RESOURCE_DEBUG_NAME(mSamplerStateGroup, "Material blueprint")
 			}
 
 			// Set compute resource group
-			Renderer::Command::SetComputeResourceGroup::create(commandBuffer, mSamplerStates[0].rootParameterIndex, mSamplerStateGroup);
+			Rhi::Command::SetComputeResourceGroup::create(commandBuffer, mSamplerStates[0].rootParameterIndex, mSamplerStateGroup);
 		}
 
 		// It's valid if a compute material blueprint resource doesn't contain a material uniform buffer (usually the case for compositor material blueprint resources)
@@ -334,7 +334,7 @@ namespace RendererRuntime
 	void MaterialBlueprintResource::createPipelineStateCaches(bool mandatoryOnly)
 	{
 		// Sanity check
-		RENDERER_ASSERT(getResourceManager<MaterialBlueprintResourceManager>().getRendererRuntime().getContext(), LoadingState::LOADED == getLoadingState(), "Material blueprint resource must be fully loaded, meaning also all referenced shader resources")
+		RHI_ASSERT(getResourceManager<MaterialBlueprintResourceManager>().getRendererRuntime().getContext(), LoadingState::LOADED == getLoadingState(), "Material blueprint resource must be fully loaded, meaning also all referenced shader resources")
 
 		// TODO(co) Optimization: Avoid constant allocations/deallocations, can't use a static instance to not get false-positive memory-leaks, add maybe some kind of context?
 		::detail::ShaderCombinationIterator shaderCombinationIterator(128);
@@ -379,7 +379,7 @@ namespace RendererRuntime
 								else
 								{
 									// Error!
-									RENDERER_ASSERT(getResourceManager<MaterialBlueprintResourceManager>().getRendererRuntime().getContext(), false, "Can't resolve reference")
+									RHI_ASSERT(getResourceManager<MaterialBlueprintResourceManager>().getRendererRuntime().getContext(), false, "Can't resolve reference")
 								}
 							}
 							break;
@@ -408,7 +408,7 @@ namespace RendererRuntime
 						case MaterialProperty::ValueType::TEXTURE_ASSET_ID:
 						default:
 							// Error!
-							RENDERER_ASSERT(getResourceManager<MaterialBlueprintResourceManager>().getRendererRuntime().getContext(), false, "Unsupported shader combination material property value type")
+							RHI_ASSERT(getResourceManager<MaterialBlueprintResourceManager>().getRendererRuntime().getContext(), false, "Unsupported shader combination material property value type")
 							break;
 					}
 				}
@@ -453,7 +453,7 @@ namespace RendererRuntime
 	MaterialBlueprintResource::MaterialBlueprintResource() :
 		mGraphicsPipelineStateCacheManager(*this),
 		mComputePipelineStateCacheManager(*this),
-		mGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder()),
+		mGraphicsPipelineState(Rhi::GraphicsPipelineStateBuilder()),
 		mVertexAttributesResourceId(getInvalid<VertexAttributesResourceId>()),
 		mGraphicsShaderBlueprintResourceId{getInvalid<ShaderBlueprintResourceId>(), getInvalid<ShaderBlueprintResourceId>(), getInvalid<ShaderBlueprintResourceId>(), getInvalid<ShaderBlueprintResourceId>(), getInvalid<ShaderBlueprintResourceId>()},
 		mComputeShaderBlueprintResourceId(getInvalid<ShaderBlueprintResourceId>()),
@@ -482,7 +482,7 @@ namespace RendererRuntime
 		ShaderProperties				  mVisualImportanceOfShaderProperties;	///< Every shader property known to the material blueprint has a visual importance entry in here
 		ShaderProperties				  mMaximumIntegerValueOfShaderProperties;
 		// Graphics pipeline state
-		Renderer::GraphicsPipelineState	mGraphicsPipelineState;
+		Rhi::GraphicsPipelineState		mGraphicsPipelineState;
 		VertexAttributesResourceId		mVertexAttributesResourceId;
 		ShaderBlueprintResourceId		mGraphicsShaderBlueprintResourceId[NUMBER_OF_GRAPHICS_SHADER_TYPES];
 		// Compute pipeline state
@@ -500,29 +500,29 @@ namespace RendererRuntime
 		*/
 	}
 
-	void MaterialBlueprintResource::onDefaultTextureFilteringChanged(Renderer::FilterMode defaultFilterMode, uint8_t maximumDefaultAnisotropy)
+	void MaterialBlueprintResource::onDefaultTextureFilteringChanged(Rhi::FilterMode defaultFilterMode, uint8_t maximumDefaultAnisotropy)
 	{
 		const IRendererRuntime& rendererRuntime = getResourceManager<MaterialBlueprintResourceManager>().getRendererRuntime();
-		Renderer::IRenderer& renderer = rendererRuntime.getRenderer();
+		Rhi::IRhi& rhi = rendererRuntime.getRhi();
 		const Asset* asset = rendererRuntime.getAssetManager().tryGetAssetByAssetId(getAssetId());
 		if (nullptr != asset)
 		{
 			for (SamplerState& samplerState : mSamplerStates)
 			{
-				if (Renderer::FilterMode::UNKNOWN == samplerState.rendererSamplerState.filter || isInvalid(samplerState.rendererSamplerState.maxAnisotropy))
+				if (Rhi::FilterMode::UNKNOWN == samplerState.rhiSamplerState.filter || isInvalid(samplerState.rhiSamplerState.maxAnisotropy))
 				{
 					mSamplerStateGroup = nullptr;
-					Renderer::SamplerState rendererSamplerState = samplerState.rendererSamplerState;
-					if (Renderer::FilterMode::UNKNOWN == rendererSamplerState.filter)
+					Rhi::SamplerState rhiSamplerState = samplerState.rhiSamplerState;
+					if (Rhi::FilterMode::UNKNOWN == rhiSamplerState.filter)
 					{
-						rendererSamplerState.filter = defaultFilterMode;
+						rhiSamplerState.filter = defaultFilterMode;
 					}
-					if (isInvalid(rendererSamplerState.maxAnisotropy))
+					if (isInvalid(rhiSamplerState.maxAnisotropy))
 					{
-						rendererSamplerState.maxAnisotropy = maximumDefaultAnisotropy;
+						rhiSamplerState.maxAnisotropy = maximumDefaultAnisotropy;
 					}
-					samplerState.samplerStatePtr = renderer.createSamplerState(rendererSamplerState);
-					RENDERER_SET_RESOURCE_DEBUG_NAME(samplerState.samplerStatePtr, asset->virtualFilename)
+					samplerState.samplerStatePtr = rhi.createSamplerState(rhiSamplerState);
+					RHI_SET_RESOURCE_DEBUG_NAME(samplerState.samplerStatePtr, asset->virtualFilename)
 				}
 			}
 		}

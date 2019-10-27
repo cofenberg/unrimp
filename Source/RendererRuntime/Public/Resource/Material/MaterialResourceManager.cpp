@@ -59,13 +59,13 @@ namespace RendererRuntime
 	MaterialResourceId MaterialResourceManager::createMaterialResourceByAssetId(AssetId assetId, AssetId materialBlueprintAssetId, MaterialTechniqueId materialTechniqueId)
 	{
 		// Sanity check
-		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr == getMaterialResourceByAssetId(assetId), "Material resource is not allowed to exist, yet")
+		RHI_ASSERT(mRendererRuntime.getContext(), nullptr == getMaterialResourceByAssetId(assetId), "Material resource is not allowed to exist, yet")
 
 		// Create the material resource instance
 		MaterialResource& materialResource = mInternalResourceManager->getResources().addElement();
 		materialResource.setResourceManager(this);
 		materialResource.setAssetId(assetId);
-		#ifdef _DEBUG
+		#ifdef RHI_DEBUG
 		{
 			const AssetManager& assetManager = mRendererRuntime.getAssetManager();
 			const VirtualFilename virtualFilename = assetManager.tryGetVirtualFilenameByAssetId(assetId);
@@ -106,7 +106,7 @@ namespace RendererRuntime
 			else
 			{
 				// Error!
-				RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Invalid material blueprint resource")
+				RHI_ASSERT(mRendererRuntime.getContext(), false, "Invalid material blueprint resource")
 			}
 		}
 
@@ -117,14 +117,14 @@ namespace RendererRuntime
 
 	MaterialResourceId MaterialResourceManager::createMaterialResourceByCloning(MaterialResourceId parentMaterialResourceId, AssetId assetId)
 	{
-		RENDERER_ASSERT(mRendererRuntime.getContext(), mInternalResourceManager->getResources().getElementById(parentMaterialResourceId).getLoadingState() == IResource::LoadingState::LOADED, "Invalid parent material resource ID")
+		RHI_ASSERT(mRendererRuntime.getContext(), mInternalResourceManager->getResources().getElementById(parentMaterialResourceId).getLoadingState() == IResource::LoadingState::LOADED, "Invalid parent material resource ID")
 
 		// Create the material resource instance
 		MaterialResource& materialResource = mInternalResourceManager->getResources().addElement();
 		materialResource.setResourceManager(this);
 		materialResource.setAssetId(assetId);
 		materialResource.setParentMaterialResourceId(parentMaterialResourceId);
-		#ifdef _DEBUG
+		#ifdef RHI_DEBUG
 			materialResource.setDebugName(mInternalResourceManager->getResources().getElementById(parentMaterialResourceId).getDebugName() + "[Clone]");
 		#endif
 

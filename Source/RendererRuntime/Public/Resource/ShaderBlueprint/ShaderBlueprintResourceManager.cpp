@@ -105,15 +105,15 @@ namespace RendererRuntime
 	{
 		mInternalResourceManager = new ResourceManagerTemplate<ShaderBlueprintResource, ShaderBlueprintResourceLoader, ShaderBlueprintResourceId, 64>(rendererRuntime, *this);
 
-		// Gather renderer shader properties
-		// -> Write the renderer name as well as the shader language name into the shader properties so shaders can perform renderer specific handling if required
+		// Gather RHI shader properties
+		// -> Write the RHI name as well as the shader language name into the shader properties so shaders can perform RHI specific handling if required
 		// -> We really need both, usually shader language name is sufficient, but if more fine granular information is required it's accessible
-		Renderer::IRenderer& renderer = mRendererRuntime.getRenderer();
-		const Renderer::Capabilities& capabilities = renderer.getCapabilities();
-		mRendererShaderProperties.setPropertyValue(static_cast<uint32_t>(renderer.getNameId()), 1);
-		mRendererShaderProperties.setPropertyValue(STRING_ID("ZeroToOneClipZ"), capabilities.zeroToOneClipZ ? 1 : 0);
-		mRendererShaderProperties.setPropertyValue(STRING_ID("UpperLeftOrigin"), capabilities.upperLeftOrigin ? 1 : 0);
-		mRendererShaderProperties.setPropertyValue(StringId(renderer.getDefaultShaderLanguage().getShaderLanguageName()), 1);
+		Rhi::IRhi& rhi = mRendererRuntime.getRhi();
+		const Rhi::Capabilities& capabilities = rhi.getCapabilities();
+		mRhiShaderProperties.setPropertyValue(static_cast<uint32_t>(rhi.getNameId()), 1);
+		mRhiShaderProperties.setPropertyValue(STRING_ID("ZeroToOneClipZ"), capabilities.zeroToOneClipZ ? 1 : 0);
+		mRhiShaderProperties.setPropertyValue(STRING_ID("UpperLeftOrigin"), capabilities.upperLeftOrigin ? 1 : 0);
+		mRhiShaderProperties.setPropertyValue(StringId(rhi.getDefaultShaderLanguage().getShaderLanguageName()), 1);
 	}
 
 	ShaderBlueprintResourceManager::~ShaderBlueprintResourceManager()

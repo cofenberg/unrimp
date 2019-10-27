@@ -125,7 +125,7 @@
 	*    Begin profiler CPU sample section, must be ended by using "RENDERER_PROFILER_END_CPU_SAMPLE()"
 	*
 	*  @param[in] context
-	*    Renderer context to ask for the profiler interface
+	*    Renderer runtime context to ask for the profiler interface
 	*  @param[in] name
 	*    Section name
 	*/
@@ -136,7 +136,7 @@
 	*    End profiler CPU sample section
 	*
 	*  @param[in] context
-	*    Renderer context to ask for the profiler interface
+	*    Renderer runtime context to ask for the profiler interface
 	*/
 	#define RENDERER_PROFILER_END_CPU_SAMPLE(context) (context).getProfiler().endCpuSample();
 
@@ -175,7 +175,7 @@
 	*    Scoped profiler CPU sample section, minor internal overhead compared to manual begin/end
 	*
 	*  @param[in] context
-	*    Renderer context to ask for the profiler interface
+	*    Renderer runtime context to ask for the profiler interface
 	*  @param[in] name
 	*    Section name
 	*/
@@ -191,7 +191,7 @@
 	*    Begin profiler GPU sample section, must be ended by using "RENDERER_PROFILER_END_GPU_SAMPLE()"
 	*
 	*  @param[in] context
-	*    Renderer context to ask for the profiler interface
+	*    Renderer runtime context to ask for the profiler interface
 	*  @param[in] name
 	*    Section name
 	*/
@@ -202,7 +202,7 @@
 	*    End profiler GPU sample section
 	*
 	*  @param[in] context
-	*    Renderer context to ask for the profiler interface
+	*    Renderer runtime context to ask for the profiler interface
 	*/
 	#define RENDERER_PROFILER_END_GPU_SAMPLE(context) (context).getProfiler().endGpuSample();
 
@@ -241,7 +241,7 @@
 	*    Scoped profiler GPU sample section, minor internal overhead compared to manual begin/end
 	*
 	*  @param[in] context
-	*    Renderer context to ask for the profiler interface
+	*    Renderer runtime context to ask for the profiler interface
 	*  @param[in] name
 	*    Section name
 	*/
@@ -257,9 +257,9 @@
 	*    Combined scoped profiler CPU and GPU sample as well as renderer debug event command and a constant name (more efficient)
 	*
 	*  @param[in] context
-	*    Renderer context to ask for the profiler interface
+	*    Renderer runtime context to ask for the profiler interface
 	*  @param[in] commandBuffer
-	*    Reference to the renderer instance to use
+	*    Reference to the RHI command buffer instance to use
 	*  @param[in] name
 	*    Section name
 	*/
@@ -277,9 +277,9 @@
 	*    Combined scoped profiler CPU and GPU sample as well as renderer debug event command and a dynamic name (less efficient)
 	*
 	*  @param[in] context
-	*    Renderer context to ask for the profiler interface
+	*    Renderer runtime context to ask for the profiler interface
 	*  @param[in] commandBuffer
-	*    Reference to the renderer instance to use
+	*    Reference to the RHI command buffer instance to use
 	*  @param[in] name
 	*    Section name
 	*/
@@ -298,9 +298,9 @@
 	*    Combined scoped profiler CPU and GPU sample as well as renderer debug event command, the current function name ("__FUNCTION__") as event name
 	*
 	*  @param[in] context
-	*    Renderer context to ask for the profiler interface
+	*    Renderer runtime context to ask for the profiler interface
 	*  @param[in] commandBuffer
-	*    Reference to the renderer instance to use
+	*    Reference to the RHI command buffer instance to use
 	*
 	*  @note
 	*    - Often using this macro results in too long names which make things confusing to read, you might want to use "RENDERER_SCOPED_PROFILER_EVENT()" instead for explicit names
@@ -315,7 +315,7 @@
 	*    Begin profiler CPU sample section, must be ended by using "RENDERER_PROFILER_END_CPU_SAMPLE()"
 	*
 	*  @param[in] context
-	*    Renderer context to ask for the profiler interface
+	*    Renderer runtime context to ask for the profiler interface
 	*  @param[in] name
 	*    Section name
 	*/
@@ -326,7 +326,7 @@
 	*    End profiler CPU sample section
 	*
 	*  @param[in] context
-	*    Renderer context to ask for the profiler interface
+	*    Renderer runtime context to ask for the profiler interface
 	*/
 	#define RENDERER_PROFILER_END_CPU_SAMPLE(context)
 
@@ -335,7 +335,7 @@
 	*    Scoped profiler CPU sample section, minor internal overhead compared to manual begin/end
 	*
 	*  @param[in] context
-	*    Renderer context to ask for the profiler interface
+	*    Renderer runtime context to ask for the profiler interface
 	*  @param[in] name
 	*    Section name
 	*/
@@ -346,7 +346,7 @@
 	*    Begin profiler GPU sample section, must be ended by using "RENDERER_PROFILER_END_GPU_SAMPLE()"
 	*
 	*  @param[in] context
-	*    Renderer context to ask for the profiler interface
+	*    Renderer runtime context to ask for the profiler interface
 	*  @param[in] name
 	*    Section name
 	*/
@@ -357,7 +357,7 @@
 	*    End profiler GPU sample section
 	*
 	*  @param[in] context
-	*    Renderer context to ask for the profiler interface
+	*    Renderer runtime context to ask for the profiler interface
 	*/
 	#define RENDERER_PROFILER_END_GPU_SAMPLE(context)
 
@@ -366,7 +366,7 @@
 	*    Scoped profiler GPU sample section, minor internal overhead compared to manual begin/end
 	*
 	*  @param[in] context
-	*    Renderer context to ask for the profiler interface
+	*    Renderer runtime context to ask for the profiler interface
 	*  @param[in] name
 	*    Section name
 	*/
@@ -377,9 +377,9 @@
 	*    Combined scoped profiler CPU and GPU sample as well as renderer debug event command and a constant name (more efficient)
 	*
 	*  @param[in] context
-	*    Renderer context to ask for the profiler interface
+	*    Renderer runtime context to ask for the profiler interface
 	*  @param[in] commandBuffer
-	*    Reference to the renderer instance to use
+	*    Reference to the RHI command buffer instance to use
 	*  @param[in] name
 	*    Section name
 	*/
@@ -391,9 +391,9 @@
 	*    Combined scoped profiler CPU and GPU sample as well as renderer debug event command and a dynamic name (less efficient)
 	*
 	*  @param[in] context
-	*    Renderer context to ask for the profiler interface
+	*    Renderer runtime context to ask for the profiler interface
 	*  @param[in] commandBuffer
-	*    Reference to the renderer instance to use
+	*    Reference to the RHI command buffer instance to use
 	*  @param[in] name
 	*    Section name
 	*/
@@ -405,9 +405,9 @@
 	*    Combined scoped profiler CPU and GPU sample as well as renderer debug event command, the current function name ("__FUNCTION__") as event name
 	*
 	*  @param[in] context
-	*    Renderer context to ask for the profiler interface
+	*    Renderer runtime context to ask for the profiler interface
 	*  @param[in] commandBuffer
-	*    Reference to the renderer instance to use
+	*    Reference to the RHI command buffer instance to use
 	*
 	*  @note
 	*    - Often using this macro results in too long names which make things confusing to read, you might want to use "RENDERER_SCOPED_PROFILER_EVENT()" instead for explicit names

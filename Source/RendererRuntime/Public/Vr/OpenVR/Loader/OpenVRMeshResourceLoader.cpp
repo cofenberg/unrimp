@@ -226,7 +226,7 @@ namespace RendererRuntime
 		}
 		if (vr::VRRenderModelError_None != vrRenderModelError)
 		{
-			RENDERER_LOG(mRendererRuntime.getContext(), CRITICAL, "The renderer runtime was unable to load OpenVR render model \"%s\": %s", renderModelName.c_str(), vrRenderModels->GetRenderModelErrorNameFromEnum(vrRenderModelError))
+			RHI_LOG(mRendererRuntime.getContext(), CRITICAL, "The renderer runtime was unable to load OpenVR render model \"%s\": %s", renderModelName.c_str(), vrRenderModels->GetRenderModelErrorNameFromEnum(vrRenderModelError))
 			return;
 		}
 
@@ -262,7 +262,7 @@ namespace RendererRuntime
 				if (genTangSpaceDefault(&mikktspace::g_MikkTSpaceContext) == 0)
 				{
 					// TODO(co) Error handling
-					RENDERER_ASSERT(mRendererRuntime.getContext(), false, "mikktspace for semi-standard tangent space generation failed")
+					RHI_ASSERT(mRendererRuntime.getContext(), false, "mikktspace for semi-standard tangent space generation failed")
 				}
 				for (uint32_t i = 0; i < numberOfVertices; ++i, ++currentVrRenderModelVertex)
 				{
@@ -330,8 +330,8 @@ namespace RendererRuntime
 			}
 		}
 
-		// Can we create the renderer resource asynchronous as well?
-		if (mRendererRuntime.getRenderer().getCapabilities().nativeMultithreading)
+		// Can we create the RHI resource asynchronous as well?
+		if (mRendererRuntime.getRhi().getCapabilities().nativeMultithreading)
 		{
 			mVertexArray = createVertexArray();
 		}
@@ -345,7 +345,7 @@ namespace RendererRuntime
 		mMeshResource->setBoundingSpherePositionRadius((mMinimumBoundingBoxPosition + mMaximumBoundingBoxPosition) * 0.5f, Math::calculateInnerBoundingSphereRadius(mMinimumBoundingBoxPosition, mMaximumBoundingBoxPosition));
 
 		// Create vertex array object (VAO)
-		mMeshResource->setVertexArray(mRendererRuntime.getRenderer().getCapabilities().nativeMultithreading ? mVertexArray : createVertexArray());
+		mMeshResource->setVertexArray(mRendererRuntime.getRhi().getCapabilities().nativeMultithreading ? mVertexArray : createVertexArray());
 
 		{ // Create sub-meshes
 			// Load the render model texture and setup the material asset
@@ -372,22 +372,22 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
-	Renderer::IVertexArray* OpenVRMeshResourceLoader::createVertexArray() const
+	Rhi::IVertexArray* OpenVRMeshResourceLoader::createVertexArray() const
 	{
-		Renderer::IBufferManager& bufferManager = mRendererRuntime.getBufferManager();
+		Rhi::IBufferManager& bufferManager = mRendererRuntime.getBufferManager();
 
 		// Create the vertex buffer
-		Renderer::IVertexBuffer* vertexBuffer = bufferManager.createVertexBuffer(static_cast<uint32_t>(mVertexBufferData.size()), mVertexBufferData.data());
-		RENDERER_SET_RESOURCE_DEBUG_NAME(vertexBuffer, getRenderModelName().c_str())
+		Rhi::IVertexBuffer* vertexBuffer = bufferManager.createVertexBuffer(static_cast<uint32_t>(mVertexBufferData.size()), mVertexBufferData.data());
+		RHI_SET_RESOURCE_DEBUG_NAME(vertexBuffer, getRenderModelName().c_str())
 
 		// Create the index buffer
-		Renderer::IIndexBuffer* indexBuffer = bufferManager.createIndexBuffer(static_cast<uint32_t>(mIndexBufferData.size() * sizeof(uint16_t)), mIndexBufferData.data());
-		RENDERER_SET_RESOURCE_DEBUG_NAME(indexBuffer, getRenderModelName().c_str())
+		Rhi::IIndexBuffer* indexBuffer = bufferManager.createIndexBuffer(static_cast<uint32_t>(mIndexBufferData.size() * sizeof(uint16_t)), mIndexBufferData.data());
+		RHI_SET_RESOURCE_DEBUG_NAME(indexBuffer, getRenderModelName().c_str())
 
 		// Create vertex array object (VAO)
-		const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer, mRendererRuntime.getMeshResourceManager().getDrawIdVertexBufferPtr() };
-		Renderer::IVertexArray* vertexArray = bufferManager.createVertexArray(MeshResource::VERTEX_ATTRIBUTES, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBuffer);
-		RENDERER_SET_RESOURCE_DEBUG_NAME(vertexArray, getRenderModelName().c_str())
+		const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer, mRendererRuntime.getMeshResourceManager().getDrawIdVertexBufferPtr() };
+		Rhi::IVertexArray* vertexArray = bufferManager.createVertexArray(MeshResource::VERTEX_ATTRIBUTES, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBuffer);
+		RHI_SET_RESOURCE_DEBUG_NAME(vertexArray, getRenderModelName().c_str())
 
 		// Done
 		return vertexArray;
@@ -398,7 +398,7 @@ namespace RendererRuntime
 		// OpenVR render model names can get awful long due to absolute path information, so, we need to store them inside a separate list and tell the asset just about the render model name index
 		const VrManagerOpenVR::RenderModelNames& renderModelNames = static_cast<const VrManagerOpenVR&>(mRendererRuntime.getVrManager()).getRenderModelNames();
 		const uint32_t renderModelNameIndex = static_cast<uint32_t>(std::atoi(getAsset().virtualFilename));
-		RENDERER_ASSERT(mRendererRuntime.getContext(), renderModelNameIndex < static_cast<uint32_t>(renderModelNames.size()), "Invalid model name index")
+		RHI_ASSERT(mRendererRuntime.getContext(), renderModelNameIndex < static_cast<uint32_t>(renderModelNames.size()), "Invalid model name index")
 		return renderModelNames[renderModelNameIndex];
 	}
 

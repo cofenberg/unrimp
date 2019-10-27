@@ -41,7 +41,7 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace Renderer
+namespace Rhi
 {
 	class CommandBuffer;
 	class IUniformBuffer;
@@ -136,9 +136,9 @@ namespace RendererRuntime
 		*  @param[in] materialBufferSlot
 		*    Graphics material buffer slot to bind
 		*  @param[out] commandBuffer
-		*    Command buffer to fill
+		*    RHI command buffer to fill
 		*/
-		void fillGraphicsCommandBuffer(MaterialBufferSlot& materialBufferSlot, Renderer::CommandBuffer& commandBuffer);
+		void fillGraphicsCommandBuffer(MaterialBufferSlot& materialBufferSlot, Rhi::CommandBuffer& commandBuffer);
 
 		/**
 		*  @brief
@@ -147,9 +147,9 @@ namespace RendererRuntime
 		*  @param[in] materialBufferSlot
 		*    Compute material buffer slot to bind
 		*  @param[out] commandBuffer
-		*    Command buffer to fill
+		*    RHI command buffer to fill
 		*/
-		void fillComputeCommandBuffer(MaterialBufferSlot& materialBufferSlot, Renderer::CommandBuffer& commandBuffer);
+		void fillComputeCommandBuffer(MaterialBufferSlot& materialBufferSlot, Rhi::CommandBuffer& commandBuffer);
 
 
 	//[-------------------------------------------------------]
@@ -167,11 +167,11 @@ namespace RendererRuntime
 	private:
 		struct BufferPool final
 		{
-			std::vector<uint32_t>	  freeSlots;
-			Renderer::IUniformBuffer* uniformBuffer;	///< Memory is managed by this buffer pool instance
-			Renderer::IResourceGroup* resourceGroup;	///< Memory is managed by this buffer pool instance
+			std::vector<uint32_t> freeSlots;
+			Rhi::IUniformBuffer*  uniformBuffer;	///< Memory is managed by this buffer pool instance
+			Rhi::IResourceGroup*  resourceGroup;	///< Memory is managed by this buffer pool instance
 
-			BufferPool(uint32_t bufferSize, uint32_t slotsPerPool, Renderer::IBufferManager& bufferManager, const MaterialBlueprintResource& materialBlueprintResource);
+			BufferPool(uint32_t bufferSize, uint32_t slotsPerPool, Rhi::IBufferManager& bufferManager, const MaterialBlueprintResource& materialBlueprintResource);
 			~BufferPool();
 		};
 

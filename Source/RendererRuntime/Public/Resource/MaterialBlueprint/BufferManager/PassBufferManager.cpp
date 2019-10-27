@@ -74,13 +74,13 @@ namespace RendererRuntime
 		}
 	}
 
-	void PassBufferManager::fillBuffer(const Renderer::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, const MaterialResource& materialResource)
+	void PassBufferManager::fillBuffer(const Rhi::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, const MaterialResource& materialResource)
 	{
 		// Even if there's no pass uniform buffer, there must still be a pass buffer manager filling "RendererRuntime::PassBufferManager::PassData" which is used to fill the instances texture buffer
 
 		// Sanity checks: The render target to render into must be valid for graphics pipeline and must be a null pointer for compute pipeline
-		RENDERER_ASSERT(mRendererRuntime.getContext(), isValid(mMaterialBlueprintResource.getComputeShaderBlueprintResourceId()) || nullptr != renderTarget, "Graphics pipeline used but render target is invalid")
-		RENDERER_ASSERT(mRendererRuntime.getContext(), isInvalid(mMaterialBlueprintResource.getComputeShaderBlueprintResourceId()) || nullptr == renderTarget, "Compute pipeline used but render target is valid")
+		RHI_ASSERT(mRendererRuntime.getContext(), isValid(mMaterialBlueprintResource.getComputeShaderBlueprintResourceId()) || nullptr != renderTarget, "Graphics pipeline used but render target is invalid")
+		RHI_ASSERT(mRendererRuntime.getContext(), isInvalid(mMaterialBlueprintResource.getComputeShaderBlueprintResourceId()) || nullptr == renderTarget, "Compute pipeline used but render target is valid")
 
 		// Tell the material blueprint resource listener that we're about to fill a pass uniform buffer
 		IMaterialBlueprintResourceListener& materialBlueprintResourceListener = mMaterialBlueprintResourceManager.getMaterialBlueprintResourceListener();
@@ -120,7 +120,7 @@ namespace RendererRuntime
 						if (!materialBlueprintResourceListener.fillPassValue(uniformBufferElementProperty.getReferenceValue(), scratchBufferPointer, valueTypeNumberOfBytes))
 						{
 							// Error!
-							RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Can't resolve reference")
+							RHI_ASSERT(mRendererRuntime.getContext(), false, "Can't resolve reference")
 						}
 					}
 					else if (MaterialProperty::Usage::GLOBAL_REFERENCE == usage)
@@ -144,7 +144,7 @@ namespace RendererRuntime
 							else
 							{
 								// Error!
-								RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Can't resolve reference")
+								RHI_ASSERT(mRendererRuntime.getContext(), false, "Can't resolve reference")
 							}
 						}
 					}
@@ -160,7 +160,7 @@ namespace RendererRuntime
 						else if (!materialBlueprintResourceListener.fillMaterialValue(uniformBufferElementProperty.getReferenceValue(), scratchBufferPointer, valueTypeNumberOfBytes))
 						{
 							// Error!
-							RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Can't resolve reference")
+							RHI_ASSERT(mRendererRuntime.getContext(), false, "Can't resolve reference")
 						}
 					}
 					else if (!uniformBufferElementProperty.isReferenceUsage())
@@ -171,7 +171,7 @@ namespace RendererRuntime
 					else
 					{
 						// Error!
-						RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Invalid property")
+						RHI_ASSERT(mRendererRuntime.getContext(), false, "Invalid property")
 					}
 
 					// Next property
@@ -183,28 +183,28 @@ namespace RendererRuntime
 			if (mCurrentUniformBufferIndex >= static_cast<uint32_t>(mUniformBuffers.size()))
 			{
 				// Don't directly pass along data or the GPU driver might get confused about the usage and might output performance warnings
-				Renderer::IResource* uniformBuffer = mBufferManager.createUniformBuffer(passUniformBuffer->uniformBufferNumberOfBytes, nullptr, Renderer::BufferUsage::DYNAMIC_DRAW);
-				RENDERER_SET_RESOURCE_DEBUG_NAME(uniformBuffer, "Pass buffer manager")
-				Renderer::IResourceGroup* resourceGroup = mMaterialBlueprintResource.getRootSignaturePtr()->createResourceGroup(passUniformBuffer->rootParameterIndex, 1, &uniformBuffer);
-				RENDERER_SET_RESOURCE_DEBUG_NAME(resourceGroup, "Pass buffer manager")
-				mUniformBuffers.emplace_back(static_cast<Renderer::IUniformBuffer*>(uniformBuffer), resourceGroup);
+				Rhi::IResource* uniformBuffer = mBufferManager.createUniformBuffer(passUniformBuffer->uniformBufferNumberOfBytes, nullptr, Rhi::BufferUsage::DYNAMIC_DRAW);
+				RHI_SET_RESOURCE_DEBUG_NAME(uniformBuffer, "Pass buffer manager")
+				Rhi::IResourceGroup* resourceGroup = mMaterialBlueprintResource.getRootSignaturePtr()->createResourceGroup(passUniformBuffer->rootParameterIndex, 1, &uniformBuffer);
+				RHI_SET_RESOURCE_DEBUG_NAME(resourceGroup, "Pass buffer manager")
+				mUniformBuffers.emplace_back(static_cast<Rhi::IUniformBuffer*>(uniformBuffer), resourceGroup);
 			}
 
 			{ // Update the uniform buffer by using our scratch buffer
-				Renderer::IUniformBuffer* uniformBuffer = mUniformBuffers[mCurrentUniformBufferIndex].uniformBuffer;
-				Renderer::MappedSubresource mappedSubresource;
-				Renderer::IRenderer& renderer = mRendererRuntime.getRenderer();
-				if (renderer.map(*uniformBuffer, 0, Renderer::MapType::WRITE_DISCARD, 0, mappedSubresource))
+				Rhi::IUniformBuffer* uniformBuffer = mUniformBuffers[mCurrentUniformBufferIndex].uniformBuffer;
+				Rhi::MappedSubresource mappedSubresource;
+				Rhi::IRhi& rhi = mRendererRuntime.getRhi();
+				if (rhi.map(*uniformBuffer, 0, Rhi::MapType::WRITE_DISCARD, 0, mappedSubresource))
 				{
 					memcpy(mappedSubresource.data, mScratchBuffer.data(), static_cast<uint32_t>(mScratchBuffer.size()));
-					renderer.unmap(*uniformBuffer, 0);
+					rhi.unmap(*uniformBuffer, 0);
 				}
 			}
 			++mCurrentUniformBufferIndex;
 		}
 	}
 
-	void PassBufferManager::fillGraphicsCommandBuffer(Renderer::CommandBuffer& commandBuffer) const
+	void PassBufferManager::fillGraphicsCommandBuffer(Rhi::CommandBuffer& commandBuffer) const
 	{
 		// Set resource group
 		if (!mUniformBuffers.empty())
@@ -212,12 +212,12 @@ namespace RendererRuntime
 			const MaterialBlueprintResource::UniformBuffer* passUniformBuffer = mMaterialBlueprintResource.getPassUniformBuffer();
 			if (nullptr != passUniformBuffer)
 			{
-				Renderer::Command::SetGraphicsResourceGroup::create(commandBuffer, passUniformBuffer->rootParameterIndex, mUniformBuffers[mCurrentUniformBufferIndex - 1].resourceGroup);
+				Rhi::Command::SetGraphicsResourceGroup::create(commandBuffer, passUniformBuffer->rootParameterIndex, mUniformBuffers[mCurrentUniformBufferIndex - 1].resourceGroup);
 			}
 		}
 	}
 
-	void PassBufferManager::fillComputeCommandBuffer(Renderer::CommandBuffer& commandBuffer) const
+	void PassBufferManager::fillComputeCommandBuffer(Rhi::CommandBuffer& commandBuffer) const
 	{
 		// Set resource group
 		if (!mUniformBuffers.empty())
@@ -225,7 +225,7 @@ namespace RendererRuntime
 			const MaterialBlueprintResource::UniformBuffer* passUniformBuffer = mMaterialBlueprintResource.getPassUniformBuffer();
 			if (nullptr != passUniformBuffer)
 			{
-				Renderer::Command::SetComputeResourceGroup::create(commandBuffer, passUniformBuffer->rootParameterIndex, mUniformBuffers[mCurrentUniformBufferIndex - 1].resourceGroup);
+				Rhi::Command::SetComputeResourceGroup::create(commandBuffer, passUniformBuffer->rootParameterIndex, mUniformBuffers[mCurrentUniformBufferIndex - 1].resourceGroup);
 			}
 		}
 	}

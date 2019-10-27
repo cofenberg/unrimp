@@ -96,7 +96,7 @@ namespace
 		//[ Public methods                                        ]
 		//[-------------------------------------------------------]
 		public:
-			inline explicit AclAllocator(Renderer::IAllocator& allocator) :
+			inline explicit AclAllocator(Rhi::IAllocator& allocator) :
 				mAllocator(allocator)
 			{
 				// Nothing here
@@ -131,7 +131,7 @@ namespace
 		//[ Private data                                          ]
 		//[-------------------------------------------------------]
 		private:
-			Renderer::IAllocator& mAllocator;
+			Rhi::IAllocator& mAllocator;
 
 
 	};
@@ -162,7 +162,7 @@ namespace RendererToolkit
 	bool SkeletonAnimationAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const
 	{
 		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFileByRapidJsonDocument(configuration.rapidJsonDocumentAsset);
-		return input.cacheManager.checkIfFileIsModified(configuration.rendererTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), RendererRuntime::v1SkeletonAnimation::FORMAT_VERSION);
+		return input.cacheManager.checkIfFileIsModified(configuration.rhiTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), RendererRuntime::v1SkeletonAnimation::FORMAT_VERSION);
 	}
 
 	void SkeletonAnimationAssetCompiler::compile(const Input& input, const Configuration& configuration) const
@@ -174,7 +174,7 @@ namespace RendererToolkit
 
 		// Ask the cache manager whether or not we need to compile the source file (e.g. source changed or target not there)
 		CacheManager::CacheEntries cacheEntries;
-		if (input.cacheManager.needsToBeCompiled(configuration.rendererTarget, input.virtualAssetFilename, virtualInputFilename, virtualOutputAssetFilename, RendererRuntime::v1SkeletonAnimation::FORMAT_VERSION, cacheEntries))
+		if (input.cacheManager.needsToBeCompiled(configuration.rhiTarget, input.virtualAssetFilename, virtualInputFilename, virtualOutputAssetFilename, RendererRuntime::v1SkeletonAnimation::FORMAT_VERSION, cacheEntries))
 		{
 			// Create an instance of the Assimp importer class
 			AssimpLogStream assimpLogStream;
@@ -252,13 +252,13 @@ namespace RendererToolkit
 					for (uint16_t boneIndex = 0; boneIndex < numberOfBones; ++boneIndex)
 					{
 						acl::RigidBone& aclRigidBone = aclRigidBones[boneIndex];
-						#ifdef _DEBUG
+						#ifdef RHI_DEBUG
 						{
 							const aiNodeAnim* assimpNodeAnim = assimpAnimation->mChannels[boneIndex];
 							aclRigidBone.name = acl::String(aclAllocator, assimpNodeAnim->mNodeName.C_Str());
-							RENDERER_ASSERT(context, 1 == assimpNodeAnim->mNumRotationKeys || numberOfSamples == assimpNodeAnim->mNumRotationKeys, "Number of animation rotation keys mismatch")
-							RENDERER_ASSERT(context, 1 == assimpNodeAnim->mNumPositionKeys || numberOfSamples == assimpNodeAnim->mNumPositionKeys, "Number of animation position keys mismatch")
-							RENDERER_ASSERT(context, ignoreBoneScale || 1 == assimpNodeAnim->mNumScalingKeys || numberOfSamples == assimpNodeAnim->mNumScalingKeys, "Number of animation scaling keys mismatch")
+							RHI_ASSERT(context, 1 == assimpNodeAnim->mNumRotationKeys || numberOfSamples == assimpNodeAnim->mNumRotationKeys, "Number of animation rotation keys mismatch")
+							RHI_ASSERT(context, 1 == assimpNodeAnim->mNumPositionKeys || numberOfSamples == assimpNodeAnim->mNumPositionKeys, "Number of animation position keys mismatch")
+							RHI_ASSERT(context, ignoreBoneScale || 1 == assimpNodeAnim->mNumScalingKeys || numberOfSamples == assimpNodeAnim->mNumScalingKeys, "Number of animation scaling keys mismatch")
 						}
 						#endif
 						aclRigidBone.vertex_distance = CENTIMETER_TO_METER(3.0f);	// "A value of 3cm is good enough for cinematographic quality for most characters" - https://github.com/nfrechette/acl/blob/develop/docs/creating_a_skeleton.md
@@ -267,7 +267,7 @@ namespace RendererToolkit
 
 					// Create ACL raw animation clip
 					// -> See ACL documentation https://github.com/nfrechette/acl/blob/develop/docs/creating_a_raw_clip.md
-					#ifdef _DEBUG
+					#ifdef RHI_DEBUG
 						acl::String name(aclAllocator, assimpAnimation->mName.C_Str());
 					#else
 						acl::String name;
@@ -387,7 +387,7 @@ namespace RendererToolkit
 					{
 						throw std::runtime_error("ACL failed to compress the given skeleton animation clip \"" + virtualInputFilename + "\": " + aclErrorResult.c_str());
 					}
-					RENDERER_ASSERT(context, nullptr != aclCompressedClip && aclCompressedClip->is_valid(true).empty(), "Compressed ACL clip is invalid");
+					RHI_ASSERT(context, nullptr != aclCompressedClip && aclCompressedClip->is_valid(true).empty(), "Compressed ACL clip is invalid");
 
 					// Open file
 					// -> There's no need for additional LZ4 compression when using ACL

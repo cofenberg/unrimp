@@ -133,7 +133,7 @@ namespace RendererRuntime
 		RENDERERRUNTIME_API_EXPORT void connectResourceListener(IResourceListener& resourceListener);	// No guaranteed resource listener caller order, if already connected nothing happens (no double registration)
 		RENDERERRUNTIME_API_EXPORT void disconnectResourceListener(IResourceListener& resourceListener);
 
-		#ifdef _DEBUG
+		#ifdef RHI_DEBUG
 			// If possible, the resource debug name should use the following convention: "<filename>?[<attribute 0>][<attribute n>]" (for "?" see "RendererRuntime::IFileManager::INVALID_CHARACTER")
 			[[nodiscard]] inline const std::string& getDebugName() const
 			{
@@ -232,7 +232,7 @@ namespace RendererRuntime
 		ResourceLoaderTypeId	mResourceLoaderTypeId;
 		LoadingState			mLoadingState;
 		SortedResourceListeners mSortedResourceListeners;
-		#ifdef _DEBUG
+		#ifdef RHI_DEBUG
 			std::string			mDebugName;				///< Debug name for easier resource identification when debugging
 		#endif
 

@@ -42,10 +42,10 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Public methods                                        ]
 //[-------------------------------------------------------]
-void BatchDrawInstanced::initialize(Renderer::IBufferManager& bufferManager, Renderer::IRootSignature& rootSignature, const Renderer::VertexAttributes& vertexAttributes, Renderer::IGraphicsProgram& graphicsProgram, Renderer::IRenderPass& renderPass, uint32_t numberOfCubeInstances, bool alphaBlending, uint32_t numberOfTextures, uint32_t sceneRadius)
+void BatchDrawInstanced::initialize(Rhi::IBufferManager& bufferManager, Rhi::IRootSignature& rootSignature, const Rhi::VertexAttributes& vertexAttributes, Rhi::IGraphicsProgram& graphicsProgram, Rhi::IRenderPass& renderPass, uint32_t numberOfCubeInstances, bool alphaBlending, uint32_t numberOfTextures, uint32_t sceneRadius)
 {
-	// Set owner renderer instance
-	mRenderer = &graphicsProgram.getRenderer();
+	// Set owner RHI instance
+	mRhi = &graphicsProgram.getRhi();
 
 	// Release previous data if required
 	mTextureBufferGroup = nullptr;
@@ -102,7 +102,7 @@ void BatchDrawInstanced::initialize(Renderer::IBufferManager& bufferManager, Ren
 		}
 
 		{ // Create the texture buffer instance and wrap it into a resource group instance
-			Renderer::IResource* resource = bufferManager.createTextureBuffer(sizeof(float) * numberOfElements, data);
+			Rhi::IResource* resource = bufferManager.createTextureBuffer(sizeof(float) * numberOfElements, data);
 			mTextureBufferGroup = rootSignature.createResourceGroup(2, 1, &resource);
 		}
 
@@ -111,26 +111,26 @@ void BatchDrawInstanced::initialize(Renderer::IBufferManager& bufferManager, Ren
 	}
 
 	{ // Create the graphics pipeline state object (PSO)
-		Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(&rootSignature, &graphicsProgram, vertexAttributes, renderPass);
+		Rhi::GraphicsPipelineState graphicsPipelineState = Rhi::GraphicsPipelineStateBuilder(&rootSignature, &graphicsProgram, vertexAttributes, renderPass);
 		graphicsPipelineState.blendState.renderTarget[0].blendEnable = alphaBlending;
-		graphicsPipelineState.blendState.renderTarget[0].srcBlend    = Renderer::Blend::SRC_ALPHA;
-		graphicsPipelineState.blendState.renderTarget[0].destBlend   = Renderer::Blend::ONE;
-		mGraphicsPipelineState = mRenderer->createGraphicsPipelineState(graphicsPipelineState);
+		graphicsPipelineState.blendState.renderTarget[0].srcBlend    = Rhi::Blend::SRC_ALPHA;
+		graphicsPipelineState.blendState.renderTarget[0].destBlend   = Rhi::Blend::ONE;
+		mGraphicsPipelineState = mRhi->createGraphicsPipelineState(graphicsPipelineState);
 	}
 }
 
-void BatchDrawInstanced::fillCommandBuffer(Renderer::CommandBuffer& commandBuffer) const
+void BatchDrawInstanced::fillCommandBuffer(Rhi::CommandBuffer& commandBuffer) const
 {
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)
 
 	// Set the used graphics pipeline state object (PSO)
-	Renderer::Command::SetGraphicsPipelineState::create(commandBuffer, mGraphicsPipelineState);
+	Rhi::Command::SetGraphicsPipelineState::create(commandBuffer, mGraphicsPipelineState);
 
 	// Set graphics resource groups
-	Renderer::Command::SetGraphicsResourceGroup::create(commandBuffer, 2, mTextureBufferGroup);
+	Rhi::Command::SetGraphicsResourceGroup::create(commandBuffer, 2, mTextureBufferGroup);
 
 	// Use instancing in order to draw multiple cubes with just a single draw call
 	// -> Draw calls are one of the most expensive rendering, avoid them if possible
-	Renderer::Command::DrawIndexedGraphics::create(commandBuffer, 36, mNumberOfCubeInstances);
+	Rhi::Command::DrawIndexedGraphics::create(commandBuffer, 36, mNumberOfCubeInstances);
 }

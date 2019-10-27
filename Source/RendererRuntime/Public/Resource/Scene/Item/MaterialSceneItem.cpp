@@ -43,11 +43,11 @@ namespace RendererRuntime
 	void MaterialSceneItem::deserialize([[maybe_unused]] uint32_t numberOfBytes, const uint8_t* data)
 	{
 		// Sanity check
-		RENDERER_ASSERT(getContext(), sizeof(v1Scene::MaterialItem) <= numberOfBytes, "Invalid number of bytes")
+		RHI_ASSERT(getContext(), sizeof(v1Scene::MaterialItem) <= numberOfBytes, "Invalid number of bytes")
 
 		// Read data
 		const v1Scene::MaterialItem* materialItem = reinterpret_cast<const v1Scene::MaterialItem*>(data);
-		RENDERER_ASSERT(getContext(), sizeof(v1Scene::MaterialItem) + sizeof(MaterialProperty) * materialItem->numberOfMaterialProperties == numberOfBytes, "Invalid number of bytes")
+		RHI_ASSERT(getContext(), sizeof(v1Scene::MaterialItem) + sizeof(MaterialProperty) * materialItem->numberOfMaterialProperties == numberOfBytes, "Invalid number of bytes")
 		mMaterialAssetId = materialItem->materialAssetId;
 		mMaterialTechniqueId = materialItem->materialTechniqueId;
 		mMaterialBlueprintAssetId = materialItem->materialBlueprintAssetId;
@@ -60,8 +60,8 @@ namespace RendererRuntime
 		}
 
 		// Sanity checks
-		RENDERER_ASSERT(getContext(), isValid(mMaterialAssetId) || isValid(mMaterialBlueprintAssetId), "Invalid data")
-		RENDERER_ASSERT(getContext(), !(isValid(mMaterialAssetId) && isValid(mMaterialBlueprintAssetId)), "Invalid data")
+		RHI_ASSERT(getContext(), isValid(mMaterialAssetId) || isValid(mMaterialBlueprintAssetId), "Invalid data")
+		RHI_ASSERT(getContext(), !(isValid(mMaterialAssetId) && isValid(mMaterialBlueprintAssetId)), "Invalid data")
 	}
 
 	void MaterialSceneItem::onAttachedToSceneNode(SceneNode& sceneNode)
@@ -89,8 +89,8 @@ namespace RendererRuntime
 	void MaterialSceneItem::initialize()
 	{
 		// Sanity checks
-		RENDERER_ASSERT(getContext(), isValid(mMaterialAssetId) || isValid(mMaterialBlueprintAssetId), "Invalid data")
-		RENDERER_ASSERT(getContext(), !(isValid(mMaterialAssetId) && isValid(mMaterialBlueprintAssetId)), "Invalid data")
+		RHI_ASSERT(getContext(), isValid(mMaterialAssetId) || isValid(mMaterialBlueprintAssetId), "Invalid data")
+		RHI_ASSERT(getContext(), !(isValid(mMaterialAssetId) && isValid(mMaterialBlueprintAssetId)), "Invalid data")
 
 		// Get parent material resource ID and initiate creating the material resource
 		MaterialResourceManager& materialResourceManager = getSceneResource().getRendererRuntime().getMaterialResourceManager();
@@ -122,7 +122,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	void MaterialSceneItem::onLoadingStateChange(const IResource& resource)
 	{
-		RENDERER_ASSERT(getContext(), resource.getAssetId() == mMaterialAssetId, "Invalid asset ID")
+		RHI_ASSERT(getContext(), resource.getAssetId() == mMaterialAssetId, "Invalid asset ID")
 		if (resource.getLoadingState() == IResource::LoadingState::LOADED)
 		{
 			mRenderableManager.getRenderables().clear();
@@ -158,8 +158,8 @@ namespace RendererRuntime
 	void MaterialSceneItem::createMaterialResource(MaterialResourceId parentMaterialResourceId)
 	{
 		// Sanity checks
-		RENDERER_ASSERT(getContext(), isInvalid(mMaterialResourceId), "Invalid data")
-		RENDERER_ASSERT(getContext(), isValid(parentMaterialResourceId), "Invalid data")
+		RHI_ASSERT(getContext(), isInvalid(mMaterialResourceId), "Invalid data")
+		RHI_ASSERT(getContext(), isValid(parentMaterialResourceId), "Invalid data")
 
 		// Each material user instance must have its own material resource since material property values might vary
 		MaterialResourceManager& materialResourceManager = getSceneResource().getRendererRuntime().getMaterialResourceManager();

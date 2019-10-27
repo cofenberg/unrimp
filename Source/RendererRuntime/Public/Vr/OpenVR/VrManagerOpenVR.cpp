@@ -375,33 +375,33 @@ namespace RendererRuntime
 
 	bool VrManagerOpenVR::startup(AssetId vrDeviceMaterialAssetId)
 	{
-		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr == mVrSystem, "The VR system is already running")
+		RHI_ASSERT(mRendererRuntime.getContext(), nullptr == mVrSystem, "The VR system is already running")
 		if (nullptr == mVrSystem)
 		{
-			// TODO(co) Add support for "vr::TextureType_DirectX12" as soon as the renderer backend is ready
-			Renderer::IRenderer& renderer = mRendererRuntime.getRenderer();
-			switch (renderer.getNameId())
+			// TODO(co) Add support for "vr::TextureType_DirectX12" as soon as the RHI implementation is ready
+			Rhi::IRhi& rhi = mRendererRuntime.getRhi();
+			switch (rhi.getNameId())
 			{
-				case Renderer::NameId::VULKAN:
+				case Rhi::NameId::VULKAN:
 					mVrTextureType = vr::TextureType_Vulkan;
 					break;
 
-				case Renderer::NameId::OPENGL:
+				case Rhi::NameId::OPENGL:
 					mVrTextureType = vr::TextureType_OpenGL;
 					break;
 
-				case Renderer::NameId::DIRECT3D11:
+				case Rhi::NameId::DIRECT3D11:
 					mVrTextureType = vr::TextureType_DirectX;
 					break;
 
-				case Renderer::NameId::DIRECT3D12:
-				case Renderer::NameId::DIRECT3D10:
-				case Renderer::NameId::DIRECT3D9:
-				case Renderer::NameId::OPENGLES3:
-				case Renderer::NameId::NULL_DUMMY:
+				case Rhi::NameId::DIRECT3D12:
+				case Rhi::NameId::DIRECT3D10:
+				case Rhi::NameId::DIRECT3D9:
+				case Rhi::NameId::OPENGLES3:
+				case Rhi::NameId::NULL_DUMMY:
 				default:
 					// Error!
-					RENDERER_LOG(mRendererRuntime.getContext(), CRITICAL, "The renderer runtime VR OpenVR manager currently only supports Vulkan, OpenGL and Direct3D 11")
+					RHI_LOG(mRendererRuntime.getContext(), CRITICAL, "The renderer runtime VR OpenVR manager currently only supports Vulkan, OpenGL and Direct3D 11")
 					return false;
 			}
 
@@ -411,7 +411,7 @@ namespace RendererRuntime
 			if (vr::VRInitError_None != vrInitError)
 			{
 				// Error!
-				RENDERER_LOG(mRendererRuntime.getContext(), CRITICAL, "The renderer runtime was unable to initialize OpenVR runtime: %s", vr::VR_GetVRInitErrorAsEnglishDescription(vrInitError))
+				RHI_LOG(mRendererRuntime.getContext(), CRITICAL, "The renderer runtime was unable to initialize OpenVR runtime: %s", vr::VR_GetVRInitErrorAsEnglishDescription(vrInitError))
 				return false;
 			}
 			if (vr::TextureType_Vulkan == mVrTextureType)
@@ -422,7 +422,7 @@ namespace RendererRuntime
 				std::vector<std::string> outInstanceExtensionList;
 				if (!::detail::getVulkanInstanceExtensionsRequired(outInstanceExtensionList) || !outInstanceExtensionList.empty())
 				{
-					RENDERER_LOG(mRendererRuntime.getContext(), CRITICAL, "OpenVR needs Vulkan instance extensions which are currently not supported")
+					RHI_LOG(mRendererRuntime.getContext(), CRITICAL, "OpenVR needs Vulkan instance extensions which are currently not supported")
 					outInstanceExtensionList.clear();
 				}
 				/*
@@ -430,7 +430,7 @@ namespace RendererRuntime
 				::detail::getVulkanDeviceExtensionsRequired(vkPhysicalDevice_T, outInstanceExtensionList);
 				if (!outInstanceExtensionList.empty())
 				{
-					RENDERER_LOG(mRendererRuntime.getContext(), CRITICAL, "OpenVR needs Vulkan device extensions which are currently not supported")
+					RHI_LOG(mRendererRuntime.getContext(), CRITICAL, "OpenVR needs Vulkan device extensions which are currently not supported")
 				}
 				*/
 			}
@@ -444,7 +444,7 @@ namespace RendererRuntime
 				mVrSystem = nullptr;
 
 				// Error!
-				RENDERER_LOG(mRendererRuntime.getContext(), CRITICAL, "The renderer runtime was unable to retrieve the OpenVR render models interface: %s", vr::VR_GetVRInitErrorAsEnglishDescription(vrInitError))
+				RHI_LOG(mRendererRuntime.getContext(), CRITICAL, "The renderer runtime was unable to retrieve the OpenVR render models interface: %s", vr::VR_GetVRInitErrorAsEnglishDescription(vrInitError))
 				return false;
 			}
 
@@ -456,23 +456,23 @@ namespace RendererRuntime
 				mRendererRuntime.getMaterialResourceManager().loadMaterialResourceByAssetId(vrDeviceMaterialAssetId, mVrDeviceMaterialResourceId, this);
 			}
 
-			{ // Create renderer resources
+			{ // Create RHI resources
 				// Create the texture instance
 				uint32_t width = 0;
 				uint32_t height = 0;
 				mVrSystem->GetRecommendedRenderTargetSize(&width, &height);
 				width *= 2;	// Twice the width for single pass stereo rendering via instancing as described in "High Performance Stereo Rendering For VR", Timothy Wilson, San Diego, Virtual Reality Meetup
-				const Renderer::TextureFormat::Enum textureFormat = Renderer::TextureFormat::Enum::R8G8B8A8;
-				Renderer::ITexture* colorTexture2D = mColorTexture2D = mRendererRuntime.getTextureManager().createTexture2D(width, height, textureFormat, nullptr, Renderer::TextureFlag::SHADER_RESOURCE | Renderer::TextureFlag::RENDER_TARGET);
-				RENDERER_SET_RESOURCE_DEBUG_NAME(colorTexture2D, "OpenVR color render target texture")
-				Renderer::ITexture* depthStencilTexture2D = mRendererRuntime.getTextureManager().createTexture2D(width, height, Renderer::TextureFormat::D32_FLOAT, nullptr, Renderer::TextureFlag::SHADER_RESOURCE | Renderer::TextureFlag::RENDER_TARGET);
-				RENDERER_SET_RESOURCE_DEBUG_NAME(depthStencilTexture2D, "OpenVR depth stencil render target texture")
+				const Rhi::TextureFormat::Enum textureFormat = Rhi::TextureFormat::Enum::R8G8B8A8;
+				Rhi::ITexture* colorTexture2D = mColorTexture2D = mRendererRuntime.getTextureManager().createTexture2D(width, height, textureFormat, nullptr, Rhi::TextureFlag::SHADER_RESOURCE | Rhi::TextureFlag::RENDER_TARGET);
+				RHI_SET_RESOURCE_DEBUG_NAME(colorTexture2D, "OpenVR color render target texture")
+				Rhi::ITexture* depthStencilTexture2D = mRendererRuntime.getTextureManager().createTexture2D(width, height, Rhi::TextureFormat::D32_FLOAT, nullptr, Rhi::TextureFlag::SHADER_RESOURCE | Rhi::TextureFlag::RENDER_TARGET);
+				RHI_SET_RESOURCE_DEBUG_NAME(depthStencilTexture2D, "OpenVR depth stencil render target texture")
 
 				// Create the framebuffer object (FBO) instance
-				const Renderer::FramebufferAttachment colorFramebufferAttachment(colorTexture2D);
-				const Renderer::FramebufferAttachment depthStencilFramebufferAttachment(depthStencilTexture2D);
-				mFramebuffer = renderer.createFramebuffer(*renderer.createRenderPass(1, &textureFormat), &colorFramebufferAttachment, &depthStencilFramebufferAttachment);
-				RENDERER_SET_RESOURCE_DEBUG_NAME(mFramebuffer, "OpenVR framebuffer")
+				const Rhi::FramebufferAttachment colorFramebufferAttachment(colorTexture2D);
+				const Rhi::FramebufferAttachment depthStencilFramebufferAttachment(depthStencilTexture2D);
+				mFramebuffer = rhi.createFramebuffer(*rhi.createRenderPass(1, &textureFormat), &colorFramebufferAttachment, &depthStencilFramebufferAttachment);
+				RHI_SET_RESOURCE_DEBUG_NAME(mFramebuffer, "OpenVR framebuffer")
 			}
 
 			{ // Add dynamic OpenVR asset package
@@ -503,7 +503,7 @@ namespace RendererRuntime
 						::detail::registerRenderModel(context, renderModelName, mRenderModelNames, assetPackage);
 					}
 				}
-				RENDERER_ASSERT(mRendererRuntime.getContext(), assetPackage.getSortedAssetVector().size() == mRenderModelNames.size(), "Size mismatch")
+				RHI_ASSERT(mRendererRuntime.getContext(), assetPackage.getSortedAssetVector().size() == mRenderModelNames.size(), "Size mismatch")
 
 				// Register render model textures
 				// -> Sadly, there's no way to determine all available albedo texture IDs upfront without loading the render models
@@ -534,7 +534,7 @@ namespace RendererRuntime
 			vr::VR_Shutdown();
 			mVrSystem = nullptr;
 
-			// Release renderer resources
+			// Release RHI resources
 			mFramebuffer = nullptr;
 			mColorTexture2D = nullptr;
 		}
@@ -543,7 +543,7 @@ namespace RendererRuntime
 	void VrManagerOpenVR::updateHmdMatrixPose(CameraSceneItem* cameraSceneItem)
 	{
 		// Sanity check
-		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mVrSystem, "The VR system isn't running")
+		RHI_ASSERT(mRendererRuntime.getContext(), nullptr != mVrSystem, "The VR system isn't running")
 
 		// Process OpenVR events
 		if (mVrDeviceMaterialResourceLoaded)
@@ -624,9 +624,9 @@ namespace RendererRuntime
 					vr::IVRRenderModels* vrRenderModels = vr::VRRenderModels();
 					for (const Component& component : trackedDeviceInformation.components)
 					{
-						RENDERER_ASSERT(mRendererRuntime.getContext(), !component.name.empty(), "The component name mustn't be empty")
+						RHI_ASSERT(mRendererRuntime.getContext(), !component.name.empty(), "The component name mustn't be empty")
 						SceneNode* sceneNode = component.sceneNode;
-						RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != sceneNode, "Invalid scene node")
+						RHI_ASSERT(mRendererRuntime.getContext(), nullptr != sceneNode, "Invalid scene node")
 						vr::RenderModel_ControllerMode_State_t renderModelControllerModeState;
 						renderModelControllerModeState.bScrollWheelVisible = false;
 						vr::RenderModel_ComponentState_t renderModelComponentState;
@@ -668,7 +668,7 @@ namespace RendererRuntime
 	glm::mat4 VrManagerOpenVR::getHmdViewSpaceToClipSpaceMatrix(VrEye vrEye, float nearZ, float farZ) const
 	{
 		// Sanity check
-		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mVrSystem, "The VR system isn't running")
+		RHI_ASSERT(mRendererRuntime.getContext(), nullptr != mVrSystem, "The VR system isn't running")
 
 		// Transform the OpenGL style projection matrix into a Direct3D style projection matrix as described at http://cv4mar.blogspot.de/2009/03/transformation-matrices-between-opengl.html
 		// -> Direct3D: Left-handed coordinate system with clip space depth value range 0..1
@@ -684,7 +684,7 @@ namespace RendererRuntime
 
 	glm::mat4 VrManagerOpenVR::getHmdEyeSpaceToHeadSpaceMatrix(VrEye vrEye) const
 	{
-		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mVrSystem, "The VR system isn't running")
+		RHI_ASSERT(mRendererRuntime.getContext(), nullptr != mVrSystem, "The VR system isn't running")
 		return ::detail::convertOpenVrMatrixToGlmMat34(mVrSystem->GetEyeToHeadTransform(static_cast<vr::Hmd_Eye>(vrEye)));
 	}
 
@@ -692,10 +692,10 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Private virtual RendererRuntime::IVrManager methods   ]
 	//[-------------------------------------------------------]
-	void VrManagerOpenVR::executeCompositorWorkspaceInstance(CompositorWorkspaceInstance& compositorWorkspaceInstance, Renderer::IRenderTarget&, CameraSceneItem* cameraSceneItem, const LightSceneItem* lightSceneItem)
+	void VrManagerOpenVR::executeCompositorWorkspaceInstance(CompositorWorkspaceInstance& compositorWorkspaceInstance, Rhi::IRenderTarget&, CameraSceneItem* cameraSceneItem, const LightSceneItem* lightSceneItem)
 	{
 		// Sanity check
-		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != mVrSystem, "The VR system isn't running")
+		RHI_ASSERT(mRendererRuntime.getContext(), nullptr != mVrSystem, "The VR system isn't running")
 
 		// Execute the compositor workspace instance
 		// -> Using single pass stereo rendering via instancing as described in "High Performance Stereo Rendering For VR", Timothy Wilson, San Diego, Virtual Reality Meetup
@@ -768,7 +768,7 @@ namespace RendererRuntime
 
 	void VrManagerOpenVR::setupRenderModelForTrackedDevice(vr::TrackedDeviceIndex_t trackedDeviceIndex)
 	{
-		RENDERER_ASSERT(mRendererRuntime.getContext(), trackedDeviceIndex < vr::k_unMaxTrackedDeviceCount, "Maximum tracked device count exceeded")
+		RHI_ASSERT(mRendererRuntime.getContext(), trackedDeviceIndex < vr::k_unMaxTrackedDeviceCount, "Maximum tracked device count exceeded")
 
 		// Create and setup scene node with mesh item, this is what's controlled during runtime
 		SceneResource* sceneResource = mRendererRuntime.getSceneResourceManager().tryGetById(mSceneResourceId);

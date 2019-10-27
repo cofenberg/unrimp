@@ -21,9 +21,9 @@
 //[-------------------------------------------------------]
 //[ Shader start                                          ]
 //[-------------------------------------------------------]
-#ifdef RENDERER_OPENGLES3
+#ifdef RHI_OPENGLES3
 // These shaders need texture buffer support
-if (renderer.getNameId() == Renderer::NameId::OPENGLES3 && mRenderer->getCapabilities().maximumTextureBufferSize > 0)
+if (rhi.getNameId() == Rhi::NameId::OPENGLES3 && mRhi->getCapabilities().maximumTextureBufferSize > 0)
 {
 
 
@@ -159,7 +159,7 @@ void main()
 // Uniform buffer version (Direct3D 10 and Direct3D 11 only support uniform buffers and no individual uniform access)
 // One vertex shader invocation per vertex
 // Needs texture buffers so check if supported too
-if (mRenderer->getCapabilities().maximumUniformBufferSize > 0)
+if (mRhi->getCapabilities().maximumUniformBufferSize > 0)
 vertexShaderSourceCode = R"(#version 310 es	// OpenGL ES 3.1
 #extension GL_EXT_texture_buffer : enable
 precision highp float;
@@ -323,7 +323,7 @@ void main()
 )";
 
 // Uniform buffer version (Direct3D 10 and Direct3D 11 only support uniform buffers and no individual uniform access)
-if (mRenderer->getCapabilities().maximumUniformBufferSize > 0)
+if (mRhi->getCapabilities().maximumUniformBufferSize > 0)
 fragmentShaderSourceCode = R"(#version 310 es	// OpenGL ES 3.1
 precision highp float;
 

@@ -18,14 +18,14 @@
 \*********************************************************/
 
 
-#ifdef RENDERER_NULL
-	if (mRenderer->getNameId() == Renderer::NameId::NULL_DUMMY)
+#ifdef RHI_NULL
+	if (mRhi->getNameId() == Rhi::NameId::NULL_DUMMY)
 	{
 		vertexShaderSourceCode = fragmentShaderSourceCode = "42";
 	}
 	else
 #endif
 {
-	// Error! (unsupported renderer)
-	RENDERER_LOG(mRenderer->getContext(), CRITICAL, "Error: Unsupported renderer")
+	// Error! (unsupported RHI)
+	RHI_LOG(mRhi->getContext(), CRITICAL, "Error: Unsupported RHI")
 }

@@ -135,19 +135,19 @@ namespace RendererRuntime
 		*    Set structured buffer pointer
 		*
 		*  @param[in] structuredBufferPtr
-		*    Structured buffer pointer
+		*    RHI structured buffer pointer
 		*/
-		inline void setStructuredBufferPtr(Renderer::IStructuredBufferPtr& structuredBufferPtr)
+		inline void setStructuredBufferPtr(Rhi::IStructuredBufferPtr& structuredBufferPtr)
 		{
 			mStructuredBufferPtr = structuredBufferPtr;
 		}
 
 		/**
 		*  @brief
-		*    Return the FNV1a hash of "Renderer::SerializedGraphicsPipelineState"
+		*    Return the FNV1a hash of "Rhi::SerializedGraphicsPipelineState"
 		*
 		*  @return
-		*    The FNV1a hash of "Renderer::SerializedGraphicsPipelineState"
+		*    The FNV1a hash of "Rhi::SerializedGraphicsPipelineState"
 		*/
 		[[nodiscard]] inline uint32_t getSerializedGraphicsPipelineStateHash() const
 		{
@@ -161,13 +161,13 @@ namespace RendererRuntime
 		*  @param[in] rendererRuntime
 		*    Renderer runtime to use
 		*  @param[out] commandBuffer
-		*    Command buffer to fill
+		*    RHI command buffer to fill
 		*  @param[out] resourceGroupRootParameterIndex
 		*    Root parameter index to bind the resource group to, can be "RendererRuntime::getInvalid<uint32_t>()"
 		*  @param[out] resourceGroup
-		*    Renderer resource group to set
+		*    RHI resource group to set, must be valid
 		*/
-		void fillGraphicsCommandBuffer(const IRendererRuntime& rendererRuntime, Renderer::CommandBuffer& commandBuffer, uint32_t& resourceGroupRootParameterIndex, Renderer::IResourceGroup** resourceGroup);
+		void fillGraphicsCommandBuffer(const IRendererRuntime& rendererRuntime, Rhi::CommandBuffer& commandBuffer, uint32_t& resourceGroupRootParameterIndex, Rhi::IResourceGroup** resourceGroup);
 
 		/**
 		*  @brief
@@ -176,13 +176,13 @@ namespace RendererRuntime
 		*  @param[in] rendererRuntime
 		*    Renderer runtime to use
 		*  @param[out] commandBuffer
-		*    Command buffer to fill
+		*    RHI command buffer to fill
 		*  @param[out] resourceGroupRootParameterIndex
 		*    Root parameter index to bind the resource group to, can be "RendererRuntime::getInvalid<uint32_t>()"
 		*  @param[out] resourceGroup
-		*    Renderer resource group to set
+		*    RHI resource group to set, must be valid
 		*/
-		void fillComputeCommandBuffer(const IRendererRuntime& rendererRuntime, Renderer::CommandBuffer& commandBuffer, uint32_t& resourceGroupRootParameterIndex, Renderer::IResourceGroup** resourceGroup);
+		void fillComputeCommandBuffer(const IRendererRuntime& rendererRuntime, Rhi::CommandBuffer& commandBuffer, uint32_t& resourceGroupRootParameterIndex, Rhi::IResourceGroup** resourceGroup);
 
 
 	//[-------------------------------------------------------]
@@ -240,7 +240,7 @@ namespace RendererRuntime
 
 		/**
 		*  @brief
-		*    Calculate FNV1a hash of "Renderer::SerializedGraphicsPipelineState"
+		*    Calculate FNV1a hash of "Rhi::SerializedGraphicsPipelineState"
 		*/
 		void calculateSerializedGraphicsPipelineStateHash();
 
@@ -259,21 +259,21 @@ namespace RendererRuntime
 		*  @param[out] resourceGroupRootParameterIndex
 		*    Root parameter index to bind the resource group to, can be "RendererRuntime::getInvalid<uint32_t>()"
 		*  @param[out] resourceGroup
-		*    Renderer resource group to set
+		*    RHI resource group to set, must be valid
 		*/
-		void fillCommandBuffer(const IRendererRuntime& rendererRuntime, uint32_t& resourceGroupRootParameterIndex, Renderer::IResourceGroup** resourceGroup);
+		void fillCommandBuffer(const IRendererRuntime& rendererRuntime, uint32_t& resourceGroupRootParameterIndex, Rhi::IResourceGroup** resourceGroup);
 
 
 	//[-------------------------------------------------------]
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		MaterialTechniqueId			   mMaterialTechniqueId;					///< Material technique ID
-		MaterialBlueprintResourceId	   mMaterialBlueprintResourceId;			///< Material blueprint resource ID, can be set to invalid value
-		Renderer::IStructuredBufferPtr mStructuredBufferPtr;
-		Textures					   mTextures;
-		uint32_t					   mSerializedGraphicsPipelineStateHash;	///< FNV1a hash of "Renderer::SerializedGraphicsPipelineState"
-		Renderer::IResourceGroupPtr	   mResourceGroup;							///< Resource group, can be a null pointer
+		MaterialTechniqueId			mMaterialTechniqueId;					///< Material technique ID
+		MaterialBlueprintResourceId	mMaterialBlueprintResourceId;			///< Material blueprint resource ID, can be set to invalid value
+		Rhi::IStructuredBufferPtr	mStructuredBufferPtr;
+		Textures					mTextures;
+		uint32_t					mSerializedGraphicsPipelineStateHash;	///< FNV1a hash of "Rhi::SerializedGraphicsPipelineState"
+		Rhi::IResourceGroupPtr		mResourceGroup;							///< Resource group, can be a null pointer
 
 
 	};

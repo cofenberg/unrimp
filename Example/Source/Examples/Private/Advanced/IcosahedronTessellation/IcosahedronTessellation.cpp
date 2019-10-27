@@ -45,55 +45,55 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 void IcosahedronTessellation::onInitialization()
 {
-	// Get and check the renderer instance
+	// Get and check the RHI instance
 	// -> Uniform buffer object (UBO, "constant buffer" in Direct3D terminology) supported?
 	// -> Geometry shaders supported?
 	// -> Tessellation control and tessellation evaluation shaders supported?
-	Renderer::IRendererPtr renderer(getRenderer());
-	if (nullptr != renderer && renderer->getCapabilities().maximumUniformBufferSize > 0 && renderer->getCapabilities().maximumNumberOfGsOutputVertices > 0 && renderer->getCapabilities().maximumNumberOfPatchVertices > 0)
+	Rhi::IRhiPtr rhi(getRhi());
+	if (nullptr != rhi && rhi->getCapabilities().maximumUniformBufferSize > 0 && rhi->getCapabilities().maximumNumberOfGsOutputVertices > 0 && rhi->getCapabilities().maximumNumberOfPatchVertices > 0)
 	{
 		// Create the buffer manager
-		mBufferManager = renderer->createBufferManager();
+		mBufferManager = rhi->createBufferManager();
 
 		{ // Create the root signature
 			// Setup
-			Renderer::DescriptorRangeBuilder ranges[4];
-			ranges[0].initialize(Renderer::ResourceType::UNIFORM_BUFFER, 0, "UniformBlockDynamicTcs", Renderer::ShaderVisibility::TESSELLATION_CONTROL);
-			ranges[1].initialize(Renderer::ResourceType::UNIFORM_BUFFER, 0, "UniformBlockStaticTes",  Renderer::ShaderVisibility::TESSELLATION_EVALUATION);
-			ranges[2].initialize(Renderer::ResourceType::UNIFORM_BUFFER, 0, "UniformBlockStaticGs",   Renderer::ShaderVisibility::GEOMETRY);
-			ranges[3].initialize(Renderer::ResourceType::UNIFORM_BUFFER, 0, "UniformBlockStaticFs",   Renderer::ShaderVisibility::FRAGMENT);
+			Rhi::DescriptorRangeBuilder ranges[4];
+			ranges[0].initialize(Rhi::ResourceType::UNIFORM_BUFFER, 0, "UniformBlockDynamicTcs", Rhi::ShaderVisibility::TESSELLATION_CONTROL);
+			ranges[1].initialize(Rhi::ResourceType::UNIFORM_BUFFER, 0, "UniformBlockStaticTes",  Rhi::ShaderVisibility::TESSELLATION_EVALUATION);
+			ranges[2].initialize(Rhi::ResourceType::UNIFORM_BUFFER, 0, "UniformBlockStaticGs",   Rhi::ShaderVisibility::GEOMETRY);
+			ranges[3].initialize(Rhi::ResourceType::UNIFORM_BUFFER, 0, "UniformBlockStaticFs",   Rhi::ShaderVisibility::FRAGMENT);
 
-			Renderer::RootParameterBuilder rootParameters[4];
+			Rhi::RootParameterBuilder rootParameters[4];
 			rootParameters[0].initializeAsDescriptorTable(1, &ranges[0]);
 			rootParameters[1].initializeAsDescriptorTable(1, &ranges[1]);
 			rootParameters[2].initializeAsDescriptorTable(1, &ranges[2]);
 			rootParameters[3].initializeAsDescriptorTable(1, &ranges[3]);
 
 			// Setup
-			Renderer::RootSignatureBuilder rootSignature;
-			rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Renderer::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+			Rhi::RootSignatureBuilder rootSignature;
+			rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Rhi::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 			// Create the instance
-			mRootSignature = renderer->createRootSignature(rootSignature);
+			mRootSignature = rhi->createRootSignature(rootSignature);
 		}
 
 		// Vertex input layout
-		static constexpr Renderer::VertexAttribute vertexAttributesLayout[] =
+		static constexpr Rhi::VertexAttribute vertexAttributesLayout[] =
 		{
 			{ // Attribute 0
 				// Data destination
-				Renderer::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-				"Position",									// name[32] (char)
-				"POSITION",									// semanticName[32] (char)
-				0,											// semanticIndex (uint32_t)
+				Rhi::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+				"Position",								// name[32] (char)
+				"POSITION",								// semanticName[32] (char)
+				0,										// semanticIndex (uint32_t)
 				// Data source
-				0,											// inputSlot (uint32_t)
-				0,											// alignedByteOffset (uint32_t)
-				sizeof(float) * 3,							// strideInBytes (uint32_t)
-				0											// instancesPerElement (uint32_t)
+				0,										// inputSlot (uint32_t)
+				0,										// alignedByteOffset (uint32_t)
+				sizeof(float) * 3,						// strideInBytes (uint32_t)
+				0										// instancesPerElement (uint32_t)
 			}
 		};
-		const Renderer::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
+		const Rhi::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
 
 		{ // Create vertex array object (VAO)
 			// Create the vertex buffer object (VBO)
@@ -113,7 +113,7 @@ void IcosahedronTessellation::onInitialization()
 				 0.724f, -0.526f, -0.447f,	// 10
 				 0.000f,  0.000f, -1.000f	// 11
 			};
-			Renderer::IVertexBufferPtr vertexBuffer(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION));
+			Rhi::IVertexBufferPtr vertexBuffer(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION));
 
 			// Create the index buffer object (IBO)
 			// -> Geometry is from: http://prideout.net/blog/?p=48 (Philip Rideout, "The Little Grasshopper - Graphics Programming Tips")
@@ -140,7 +140,7 @@ void IcosahedronTessellation::onInitialization()
 				9, 10,  5,	// 18
 				10,  6, 1	// 19
 			};
-			Renderer::IIndexBuffer* indexBuffer = mBufferManager->createIndexBuffer(sizeof(INDICES), INDICES);
+			Rhi::IIndexBuffer* indexBuffer = mBufferManager->createIndexBuffer(sizeof(INDICES), INDICES);
 
 			// Create vertex array object (VAO)
 			// -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)
@@ -148,12 +148,12 @@ void IcosahedronTessellation::onInitialization()
 			// -> When the vertex array object (VAO) is destroyed, it automatically decreases the
 			//    reference of the used vertex buffer objects (VBO). If the reference counter of a
 			//    vertex buffer object (VBO) reaches zero, it's automatically destroyed.
-			const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
+			const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
 			mVertexArray = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBuffer);
 		}
 
 		{ // Create the uniform buffer group with tessellation control shader visibility
-			Renderer::IResource* resources[1] = { mUniformBufferDynamicTcs = mBufferManager->createUniformBuffer(sizeof(float) * 2, nullptr, Renderer::BufferUsage::DYNAMIC_DRAW) };
+			Rhi::IResource* resources[1] = { mUniformBufferDynamicTcs = mBufferManager->createUniformBuffer(sizeof(float) * 2, nullptr, Rhi::BufferUsage::DYNAMIC_DRAW) };
 			mUniformBufferGroupTcs = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources);
 		}
 
@@ -161,7 +161,7 @@ void IcosahedronTessellation::onInitialization()
 			const glm::mat4 worldSpaceToViewSpaceMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 3.0f));			// Also known as "view matrix"
 			const glm::mat4 viewSpaceToClipSpaceMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 1000.0f, 0.001f);	// Also known as "projection matrix", near and far flipped due to usage of Reversed-Z (see e.g. https://developer.nvidia.com/content/depth-precision-visualized and https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/)
 			const glm::mat4 objectSpaceToClipSpaceMatrix = viewSpaceToClipSpaceMatrix * worldSpaceToViewSpaceMatrix;			// Also known as "model view projection matrix"
-			Renderer::IResource* resources[1] = { mBufferManager->createUniformBuffer(sizeof(float) * 4 * 4, glm::value_ptr(objectSpaceToClipSpaceMatrix)) };
+			Rhi::IResource* resources[1] = { mBufferManager->createUniformBuffer(sizeof(float) * 4 * 4, glm::value_ptr(objectSpaceToClipSpaceMatrix)) };
 			mUniformBufferGroupTes = mRootSignature->createResourceGroup(1, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources);
 		}
 
@@ -171,7 +171,7 @@ void IcosahedronTessellation::onInitialization()
 			const glm::mat4 objectSpaceToClipSpaceMatrix = viewSpaceToClipSpaceMatrix * worldSpaceToViewSpaceMatrix;
 			const glm::mat3 nMVP(objectSpaceToClipSpaceMatrix);
 			const glm::mat4 tMVP(nMVP);
-			Renderer::IResource* resources[1] = { mBufferManager->createUniformBuffer(sizeof(float) * 4 * 4, glm::value_ptr(tMVP)) };
+			Rhi::IResource* resources[1] = { mBufferManager->createUniformBuffer(sizeof(float) * 4 * 4, glm::value_ptr(tMVP)) };
 			mUniformBufferGroupGs = mRootSignature->createResourceGroup(2, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources);
 		}
 
@@ -182,13 +182,13 @@ void IcosahedronTessellation::onInitialization()
 				 0.0f, 0.75f, 0.75f, 1.0, 	// "DiffuseMaterial"
 				0.04f, 0.04f, 0.04f, 1.0,	// "AmbientMaterial"
 			};
-			Renderer::IResource* resources[1] = { mBufferManager->createUniformBuffer(sizeof(LIGHT_AND_MATERIAL), LIGHT_AND_MATERIAL) };
+			Rhi::IResource* resources[1] = { mBufferManager->createUniformBuffer(sizeof(LIGHT_AND_MATERIAL), LIGHT_AND_MATERIAL) };
 			mUniformBufferGroupFs = mRootSignature->createResourceGroup(3, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources);
 		}
 
 		{
 			// Create the graphics program
-			Renderer::IGraphicsProgramPtr graphicsProgram;
+			Rhi::IGraphicsProgramPtr graphicsProgram;
 			{
 				// Get the shader source code (outsourced to keep an overview)
 				const char* vertexShaderSourceCode = nullptr;
@@ -202,28 +202,28 @@ void IcosahedronTessellation::onInitialization()
 				#include "IcosahedronTessellation_Null.h"
 
 				// Create the graphics program
-				Renderer::IShaderLanguage& shaderLanguage = renderer->getDefaultShaderLanguage();
+				Rhi::IShaderLanguage& shaderLanguage = rhi->getDefaultShaderLanguage();
 				graphicsProgram = shaderLanguage.createGraphicsProgram(
 					*mRootSignature,
 					vertexAttributes,
 					shaderLanguage.createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode),
 					shaderLanguage.createTessellationControlShaderFromSourceCode(tessellationControlShaderSourceCode),
 					shaderLanguage.createTessellationEvaluationShaderFromSourceCode(tessellationEvaluationShaderSourceCode),
-					shaderLanguage.createGeometryShaderFromSourceCode(geometryShaderSourceCode, Renderer::GsInputPrimitiveTopology::TRIANGLES, Renderer::GsOutputPrimitiveTopology::TRIANGLES_STRIP, 3),
+					shaderLanguage.createGeometryShaderFromSourceCode(geometryShaderSourceCode, Rhi::GsInputPrimitiveTopology::TRIANGLES, Rhi::GsOutputPrimitiveTopology::TRIANGLES_STRIP, 3),
 					shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 			}
 
 			// Create the graphics pipeline state object (PSO)
 			if (nullptr != graphicsProgram)
 			{
-				Renderer::GraphicsPipelineState graphicsPipelineState = Renderer::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass());
-				graphicsPipelineState.primitiveTopology = Renderer::PrimitiveTopology::PATCH_LIST_3;	// Patch list with 3 vertices per patch (tessellation relevant topology type) - "Renderer::PrimitiveTopology::TriangleList" used for tessellation
-				graphicsPipelineState.primitiveTopologyType = Renderer::PrimitiveTopologyType::PATCH;
-				mGraphicsPipelineState = renderer->createGraphicsPipelineState(graphicsPipelineState);
+				Rhi::GraphicsPipelineState graphicsPipelineState = Rhi::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass());
+				graphicsPipelineState.primitiveTopology = Rhi::PrimitiveTopology::PATCH_LIST_3;	// Patch list with 3 vertices per patch (tessellation relevant topology type) - "Rhi::PrimitiveTopology::TriangleList" used for tessellation
+				graphicsPipelineState.primitiveTopologyType = Rhi::PrimitiveTopologyType::PATCH;
+				mGraphicsPipelineState = rhi->createGraphicsPipelineState(graphicsPipelineState);
 			}
 		}
 
-		// Since we're always submitting the same commands to the renderer, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
+		// Since we're always submitting the same commands to the RHI, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
 		fillCommandBuffer();
 	}
 }
@@ -245,16 +245,16 @@ void IcosahedronTessellation::onDeinitialization()
 
 void IcosahedronTessellation::onDraw()
 {
-	// Get and check the renderer instance
-	Renderer::IRendererPtr renderer(getRenderer());
-	if (nullptr != renderer)
+	// Get and check the RHI instance
+	Rhi::IRhiPtr rhi(getRhi());
+	if (nullptr != rhi)
 	{
 		// Update the uniform buffer content
 		if (nullptr != mUniformBufferDynamicTcs)
 		{
 			// Copy data into the uniform buffer
-			Renderer::MappedSubresource mappedSubresource;
-			if (renderer->map(*mUniformBufferDynamicTcs, 0, Renderer::MapType::WRITE_DISCARD, 0, mappedSubresource))
+			Rhi::MappedSubresource mappedSubresource;
+			if (rhi->map(*mUniformBufferDynamicTcs, 0, Rhi::MapType::WRITE_DISCARD, 0, mappedSubresource))
 			{
 				const float data[] =
 				{
@@ -262,12 +262,12 @@ void IcosahedronTessellation::onDraw()
 					mTessellationLevelInner		// "TessellationLevelInner"
 				};
 				memcpy(mappedSubresource.data, data, sizeof(data));
-				renderer->unmap(*mUniformBufferDynamicTcs, 0);
+				rhi->unmap(*mUniformBufferDynamicTcs, 0);
 			}
 		}
 
-		// Submit command buffer to the renderer backend
-		mCommandBuffer.submitToRenderer(*renderer);
+		// Submit command buffer to the RHI implementation
+		mCommandBuffer.submitToRhi(*rhi);
 	}
 }
 
@@ -278,35 +278,35 @@ void IcosahedronTessellation::onDraw()
 void IcosahedronTessellation::fillCommandBuffer()
 {
 	// Sanity checks
-	ASSERT(nullptr != getRenderer());
-	RENDERER_ASSERT(getRenderer()->getContext(), mCommandBuffer.isEmpty(), "The command buffer is already filled");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mRootSignature, "Invalid root signature");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mUniformBufferDynamicTcs, "Invalid uniform buffer dynamic TCS");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mUniformBufferGroupTcs && nullptr != mUniformBufferGroupTes && nullptr != mUniformBufferGroupGs && nullptr != mUniformBufferGroupFs, "Invalid uniform buffer group");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mGraphicsPipelineState, "Invalid graphics pipeline state");
-	RENDERER_ASSERT(getRenderer()->getContext(), nullptr != mVertexArray, "Invalid vertex array");
+	ASSERT(nullptr != getRhi());
+	RHI_ASSERT(getRhi()->getContext(), mCommandBuffer.isEmpty(), "The command buffer is already filled");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mRootSignature, "Invalid root signature");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mUniformBufferDynamicTcs, "Invalid uniform buffer dynamic TCS");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mUniformBufferGroupTcs && nullptr != mUniformBufferGroupTes && nullptr != mUniformBufferGroupGs && nullptr != mUniformBufferGroupFs, "Invalid uniform buffer group");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mGraphicsPipelineState, "Invalid graphics pipeline state");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mVertexArray, "Invalid vertex array");
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
 
 	// Clear the graphics color buffer of the current render target with gray, do also clear the depth buffer
-	Renderer::Command::ClearGraphics::create(mCommandBuffer, Renderer::ClearFlag::COLOR_DEPTH, Color4::GRAY);
+	Rhi::Command::ClearGraphics::create(mCommandBuffer, Rhi::ClearFlag::COLOR_DEPTH, Color4::GRAY);
 
 	// Set the used graphics root signature
-	Renderer::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
+	Rhi::Command::SetGraphicsRootSignature::create(mCommandBuffer, mRootSignature);
 
 	// Set the used graphics pipeline state object (PSO)
-	Renderer::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineState);
+	Rhi::Command::SetGraphicsPipelineState::create(mCommandBuffer, mGraphicsPipelineState);
 
 	// Set graphics resource groups
-	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 0, mUniformBufferGroupTcs);
-	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 1, mUniformBufferGroupTes);
-	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 2, mUniformBufferGroupGs);
-	Renderer::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 3, mUniformBufferGroupFs);
+	Rhi::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 0, mUniformBufferGroupTcs);
+	Rhi::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 1, mUniformBufferGroupTes);
+	Rhi::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 2, mUniformBufferGroupGs);
+	Rhi::Command::SetGraphicsResourceGroup::create(mCommandBuffer, 3, mUniformBufferGroupFs);
 
 	// Input assembly (IA): Set the used vertex array
-	Renderer::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArray);
+	Rhi::Command::SetGraphicsVertexArray::create(mCommandBuffer, mVertexArray);
 
 	// Render the specified geometric primitive, based on indexing into an array of vertices
-	Renderer::Command::DrawIndexedGraphics::create(mCommandBuffer, 60);
+	Rhi::Command::DrawIndexedGraphics::create(mCommandBuffer, 60);
 }

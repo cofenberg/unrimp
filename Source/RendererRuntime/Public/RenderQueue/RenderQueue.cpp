@@ -239,7 +239,7 @@ namespace RendererRuntime
 		mTransparentPass(transparentPass),
 		mDoSort(doSort)
 	{
-		RENDERER_ASSERT(mRendererRuntime.getContext(), mMaximumRenderQueueIndex >= mMinimumRenderQueueIndex, "Invalid minimum/maximum render queue index")
+		RHI_ASSERT(mRendererRuntime.getContext(), mMaximumRenderQueueIndex >= mMinimumRenderQueueIndex, "Invalid minimum/maximum render queue index")
 		mQueues.resize(static_cast<size_t>(mMaximumRenderQueueIndex - mMinimumRenderQueueIndex + 1));
 	}
 
@@ -259,7 +259,7 @@ namespace RendererRuntime
 	void RenderQueue::addRenderablesFromRenderableManager(const RenderableManager& renderableManager, MaterialTechniqueId materialTechniqueId, const CompositorContextData& compositorContextData, bool castShadows)
 	{
 		// Sanity check
-		RENDERER_ASSERT(mRendererRuntime.getContext(), renderableManager.isVisible(), "Invalid renderable manager visibility")
+		RHI_ASSERT(mRendererRuntime.getContext(), renderableManager.isVisible(), "Invalid renderable manager visibility")
 
 		// Sorting key bits
 		static constexpr uint32_t PIPELINE_STATE_NUMBER_OF_BITS	= 16;
@@ -309,7 +309,7 @@ namespace RendererRuntime
 							if (nullptr != materialBlueprintResource && IResource::LoadingState::LOADED == materialBlueprintResource->getLoadingState())
 							{
 								// Get the pipeline state object (PSO) to use, preferably by using cached information
-								Renderer::IPipelineState* foundPipelineState = nullptr;
+								Rhi::IPipelineState* foundPipelineState = nullptr;
 								if (isValid(materialBlueprintResource->getComputeShaderBlueprintResourceId()))
 								{
 									// Compute material blueprint resource
@@ -335,8 +335,8 @@ namespace RendererRuntime
 													pipelineStateCache.pipelineStatePtr = computePipelineStateCache->getComputePipelineStateObjectPtr();
 												}
 											}
-											foundPipelineState = static_cast<Renderer::IComputePipelineState*>(pipelineStateCache.pipelineStatePtr->getPointer());
-											RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != foundPipelineState, "Invalid found compute pipeline state")
+											foundPipelineState = static_cast<Rhi::IComputePipelineState*>(pipelineStateCache.pipelineStatePtr->getPointer());
+											RHI_ASSERT(mRendererRuntime.getContext(), nullptr != foundPipelineState, "Invalid found compute pipeline state")
 											break;
 										}
 									}
@@ -349,13 +349,13 @@ namespace RendererRuntime
 											// As long as we received a fallback compute pipeline state cache, we can't put it into the renderable pipeline state cache
 											if (computePipelineStateCache->isUsingFallback())
 											{
-												foundPipelineState = static_cast<Renderer::IComputePipelineState*>(computePipelineStateCache->getComputePipelineStateObjectPtr());
+												foundPipelineState = static_cast<Rhi::IComputePipelineState*>(computePipelineStateCache->getComputePipelineStateObjectPtr());
 											}
 											else
 											{
-												foundPipelineState = static_cast<Renderer::IComputePipelineState*>(pipelineStateCaches.emplace_back(materialTechniqueId, generationCounter, computePipelineStateCache->getComputePipelineStateObjectPtr()).pipelineStatePtr.getPointer());
+												foundPipelineState = static_cast<Rhi::IComputePipelineState*>(pipelineStateCaches.emplace_back(materialTechniqueId, generationCounter, computePipelineStateCache->getComputePipelineStateObjectPtr()).pipelineStatePtr.getPointer());
 											}
-											RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != foundPipelineState, "Invalid found compute pipeline state")
+											RHI_ASSERT(mRendererRuntime.getContext(), nullptr != foundPipelineState, "Invalid found compute pipeline state")
 										}
 									}
 								}
@@ -384,8 +384,8 @@ namespace RendererRuntime
 													pipelineStateCache.pipelineStatePtr = graphicsPipelineStateCache->getGraphicsPipelineStateObjectPtr();
 												}
 											}
-											foundPipelineState = static_cast<Renderer::IGraphicsPipelineState*>(pipelineStateCache.pipelineStatePtr->getPointer());
-											RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != foundPipelineState, "Invalid found graphics pipeline state")
+											foundPipelineState = static_cast<Rhi::IGraphicsPipelineState*>(pipelineStateCache.pipelineStatePtr->getPointer());
+											RHI_ASSERT(mRendererRuntime.getContext(), nullptr != foundPipelineState, "Invalid found graphics pipeline state")
 											break;
 										}
 									}
@@ -398,13 +398,13 @@ namespace RendererRuntime
 											// As long as we received a fallback graphics pipeline state cache, we can't put it into the renderable pipeline state cache
 											if (graphicsPipelineStateCache->isUsingFallback())
 											{
-												foundPipelineState = static_cast<Renderer::IGraphicsPipelineState*>(graphicsPipelineStateCache->getGraphicsPipelineStateObjectPtr());
+												foundPipelineState = static_cast<Rhi::IGraphicsPipelineState*>(graphicsPipelineStateCache->getGraphicsPipelineStateObjectPtr());
 											}
 											else
 											{
-												foundPipelineState = static_cast<Renderer::IGraphicsPipelineState*>(pipelineStateCaches.emplace_back(materialTechniqueId, generationCounter, graphicsPipelineStateCache->getGraphicsPipelineStateObjectPtr()).pipelineStatePtr.getPointer());
+												foundPipelineState = static_cast<Rhi::IGraphicsPipelineState*>(pipelineStateCaches.emplace_back(materialTechniqueId, generationCounter, graphicsPipelineStateCache->getGraphicsPipelineStateObjectPtr()).pipelineStatePtr.getPointer());
 											}
-											RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != foundPipelineState, "Invalid found graphics pipeline state")
+											RHI_ASSERT(mRendererRuntime.getContext(), nullptr != foundPipelineState, "Invalid found graphics pipeline state")
 										}
 									}
 								}
@@ -445,7 +445,7 @@ namespace RendererRuntime
 
 									// Register the renderable inside our renderables queue
 									Queue& queue = mQueues[static_cast<size_t>(renderQueueIndex - mMinimumRenderQueueIndex)];
-									RENDERER_ASSERT(mRendererRuntime.getContext(), !queue.sorted, "Ensure render queue is still in filling state and not already in rendering state")
+									RHI_ASSERT(mRendererRuntime.getContext(), !queue.sorted, "Ensure render queue is still in filling state and not already in rendering state")
 									queue.queuedRenderables.emplace_back(renderable, *materialResource, *materialTechnique, *materialBlueprintResource, *foundPipelineState, sortingKey);
 									if (0 != renderable.getNumberOfIndices())
 									{
@@ -471,11 +471,11 @@ namespace RendererRuntime
 		}
 	}
 
-	void RenderQueue::fillGraphicsCommandBuffer(const Renderer::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
+	void RenderQueue::fillGraphicsCommandBuffer(const Rhi::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, Rhi::CommandBuffer& commandBuffer)
 	{
 		// Sanity check
-		RENDERER_ASSERT(mRendererRuntime.getContext(), getNumberOfDrawCalls() > 0, "Don't call the fill command buffer method if there's no work to be done")
-		RENDERER_ASSERT(mRendererRuntime.getContext(), mScratchCommandBuffer.isEmpty(), "Scratch command buffer should be empty at this point in time")
+		RHI_ASSERT(mRendererRuntime.getContext(), getNumberOfDrawCalls() > 0, "Don't call the fill command buffer method if there's no work to be done")
+		RHI_ASSERT(mRendererRuntime.getContext(), mScratchCommandBuffer.isEmpty(), "Scratch command buffer should be empty at this point in time")
 
 		// No combined scoped profiler CPU and GPU sample as well as renderer debug event command by intent, this is something the caller has to take care of
 		// RENDERER_SCOPED_PROFILER_EVENT(mRendererRuntime.getContext(), commandBuffer, "Graphics render queue")
@@ -494,19 +494,19 @@ namespace RendererRuntime
 		if (mQueues.size() == 1 && mQueues[0].queuedRenderables.size() == 1)
 		{
 			// Get queued renderable data
-			const QueuedRenderable&					queuedRenderable		   = mQueues[0].queuedRenderables[0];
-			const Renderable&						renderable				   = *queuedRenderable.renderable;
-			const MaterialResource&					materialResource		   = *queuedRenderable.materialResource;
-				  MaterialTechnique&				materialTechnique		   = *queuedRenderable.materialTechnique;
-				  MaterialBlueprintResource&		materialBlueprintResource  = *queuedRenderable.materialBlueprintResource;
-				  Renderer::IGraphicsPipelineState&	foundGraphicsPipelineState = *static_cast<Renderer::IGraphicsPipelineState*>(queuedRenderable.foundPipelineState);
+			const QueuedRenderable&			   queuedRenderable			   = mQueues[0].queuedRenderables[0];
+			const Renderable&				   renderable				   = *queuedRenderable.renderable;
+			const MaterialResource&			   materialResource			   = *queuedRenderable.materialResource;
+				  MaterialTechnique&		   materialTechnique		   = *queuedRenderable.materialTechnique;
+				  MaterialBlueprintResource&   materialBlueprintResource   = *queuedRenderable.materialBlueprintResource;
+				  Rhi::IGraphicsPipelineState& foundGraphicsPipelineState  = *static_cast<Rhi::IGraphicsPipelineState*>(queuedRenderable.foundPipelineState);
 			compositorContextData.mCurrentlyBoundMaterialBlueprintResource = &materialBlueprintResource;
 
 			// Set the used graphics pipeline state object (PSO)
-			Renderer::Command::SetGraphicsPipelineState::create(commandBuffer, &foundGraphicsPipelineState);
+			Rhi::Command::SetGraphicsPipelineState::create(commandBuffer, &foundGraphicsPipelineState);
 
 			// Setup input assembly (IA): Set the used vertex array
-			Renderer::Command::SetGraphicsVertexArray::create(commandBuffer, renderable.getVertexArrayPtr());
+			Rhi::Command::SetGraphicsVertexArray::create(commandBuffer, renderable.getVertexArrayPtr());
 
 			{ // Fill the pass buffer manager
 				PassBufferManager* passBufferManager = materialBlueprintResource.getPassBufferManager();
@@ -516,13 +516,13 @@ namespace RendererRuntime
 				}
 			}
 
-			// Bind the graphics material blueprint resource and instance and light buffer manager to the used renderer
+			// Bind the graphics material blueprint resource and instance and light buffer manager to the used RHI
 			materialBlueprintResource.fillGraphicsCommandBuffer(commandBuffer);
 			const MaterialBlueprintResource::UniformBuffer* instanceUniformBuffer = materialBlueprintResource.getInstanceUniformBuffer();
 			const MaterialBlueprintResource::TextureBuffer* instanceTextureBuffer = materialBlueprintResource.getInstanceTextureBuffer();
 			if (nullptr != instanceTextureBuffer)
 			{
-				RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != instanceUniformBuffer, "Invalid instance uniform buffer")
+				RHI_ASSERT(mRendererRuntime.getContext(), nullptr != instanceUniformBuffer, "Invalid instance uniform buffer")
 				textureInstanceBufferManager.startupBufferFilling(materialBlueprintResource, commandBuffer);
 			}
 			else if (nullptr != instanceUniformBuffer)
@@ -531,13 +531,13 @@ namespace RendererRuntime
 			}
 			lightBufferManager.fillGraphicsCommandBuffer(materialBlueprintResource, commandBuffer);
 
-			{ // Cheap state change: Bind the material technique to the used renderer
+			{ // Cheap state change: Bind the material technique to the used RHI
 				uint32_t resourceGroupRootParameterIndex = getInvalid<uint32_t>();
-				Renderer::IResourceGroup* resourceGroup = nullptr;
+				Rhi::IResourceGroup* resourceGroup = nullptr;
 				materialTechnique.fillGraphicsCommandBuffer(mRendererRuntime, commandBuffer, resourceGroupRootParameterIndex, &resourceGroup);
 				if (isValid(resourceGroupRootParameterIndex) && nullptr != resourceGroup)
 				{
-					Renderer::Command::SetGraphicsResourceGroup::create(commandBuffer, resourceGroupRootParameterIndex, resourceGroup);
+					Rhi::Command::SetGraphicsResourceGroup::create(commandBuffer, resourceGroupRootParameterIndex, resourceGroup);
 				}
 			}
 
@@ -545,7 +545,7 @@ namespace RendererRuntime
 			uint32_t startInstanceLocation = 0;
 			if (nullptr != instanceTextureBuffer)
 			{
-				RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != instanceUniformBuffer, "Invalid instance uniform buffer")
+				RHI_ASSERT(mRendererRuntime.getContext(), nullptr != instanceUniformBuffer, "Invalid instance uniform buffer")
 				startInstanceLocation = textureInstanceBufferManager.fillBuffer(compositorContextData.getWorldSpaceCameraPosition(), materialBlueprintResource, materialBlueprintResource.getPassBufferManager(), *instanceUniformBuffer, renderable, materialTechnique, commandBuffer);
 			}
 			else if (nullptr != instanceUniformBuffer)
@@ -560,40 +560,40 @@ namespace RendererRuntime
 				// Fill indirect buffer
 				if (renderable.getDrawIndexed())
 				{
-					Renderer::Command::DrawIndexedGraphics::create(commandBuffer, renderable.getNumberOfIndices(), instanceCount * renderable.getInstanceCount(), renderable.getStartIndexLocation(), 0, startInstanceLocation);
+					Rhi::Command::DrawIndexedGraphics::create(commandBuffer, renderable.getNumberOfIndices(), instanceCount * renderable.getInstanceCount(), renderable.getStartIndexLocation(), 0, startInstanceLocation);
 				}
 				else
 				{
-					Renderer::Command::DrawGraphics::create(commandBuffer, renderable.getNumberOfIndices(), instanceCount * renderable.getInstanceCount(), renderable.getStartIndexLocation(), startInstanceLocation);
+					Rhi::Command::DrawGraphics::create(commandBuffer, renderable.getNumberOfIndices(), instanceCount * renderable.getInstanceCount(), renderable.getStartIndexLocation(), startInstanceLocation);
 				}
 			}
 		}
 		else
 		{
-			// Track currently bound renderer resources and states to void generating redundant commands
+			// Track currently bound RHI resources and states to void generating redundant commands
 			bool vertexArraySet = false;
-			Renderer::IVertexArray* currentVertexArray = nullptr;
-			Renderer::IGraphicsPipelineState* currentGraphicsPipelineState = nullptr;
+			Rhi::IVertexArray* currentVertexArray = nullptr;
+			Rhi::IGraphicsPipelineState* currentGraphicsPipelineState = nullptr;
 
 			// We try to minimize state changes across multiple render queue fill command buffer calls, but while doing so we still need to take into account
 			// that pass data like world space to clip space transform might have been changed and needs to be updated inside the pass uniform buffer
 			bool enforcePassBufferManagerFillBuffer = true;
 
 			// Get indirect buffer
-			Renderer::IIndirectBuffer* indirectBuffer = nullptr;
+			Rhi::IIndirectBuffer* indirectBuffer = nullptr;
 			uint32_t indirectBufferOffset = 0;
 			uint8_t* indirectBufferData = nullptr;
 			if (mNumberOfDrawIndexedCalls > 0 || mNumberOfDrawCalls > 0 )
 			{
-				IndirectBufferManager::IndirectBuffer* managedIndirectBuffer = mIndirectBufferManager.getIndirectBuffer(sizeof(Renderer::DrawIndexedArguments) * mNumberOfDrawIndexedCalls + sizeof(Renderer::DrawArguments) * mNumberOfDrawCalls);
-				RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != managedIndirectBuffer, "Invalid managed indirect buffer")
+				IndirectBufferManager::IndirectBuffer* managedIndirectBuffer = mIndirectBufferManager.getIndirectBuffer(sizeof(Rhi::DrawIndexedArguments) * mNumberOfDrawIndexedCalls + sizeof(Rhi::DrawArguments) * mNumberOfDrawCalls);
+				RHI_ASSERT(mRendererRuntime.getContext(), nullptr != managedIndirectBuffer, "Invalid managed indirect buffer")
 				indirectBuffer		 = managedIndirectBuffer->indirectBuffer;
 				indirectBufferOffset = managedIndirectBuffer->indirectBufferOffset;
 				indirectBufferData   = managedIndirectBuffer->mappedData;
 			}
 
 			// For gathering multi-draw-indirect data
-			std::array<Renderer::IResourceGroup*, 16> currentSetGraphicsResourceGroup;	// TODO(co) Use maximum number of graphics resource groups here, 16 is considered a save number of root parameters
+			std::array<Rhi::IResourceGroup*, 16> currentSetGraphicsResourceGroup;	// TODO(co) Use maximum number of graphics resource groups here, 16 is considered a save number of root parameters
 			uint32_t currentDrawIndirectBufferOffset = indirectBufferOffset;
 			uint32_t currentNumberOfDraws = 0;
 			bool currentDrawIndexed = false;
@@ -619,32 +619,32 @@ namespace RendererRuntime
 						queue.sorted = true;
 					}
 
-					// Inject queued renderables into the renderer
+					// Inject queued renderables into the RHI
 					for (const QueuedRenderable& queuedRenderable : queuedRenderables)
 					{
-						RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != queuedRenderable.renderable, "Invalid renderable")
+						RHI_ASSERT(mRendererRuntime.getContext(), nullptr != queuedRenderable.renderable, "Invalid renderable")
 
 						// Get queued renderable data
-						const Renderable&						renderable				   = *queuedRenderable.renderable;
-						const MaterialResource&					materialResource		   = *queuedRenderable.materialResource;
-							  MaterialTechnique&				materialTechnique		   = *queuedRenderable.materialTechnique;
-							  MaterialBlueprintResource&		materialBlueprintResource  = *queuedRenderable.materialBlueprintResource;
-							  Renderer::IGraphicsPipelineState&	foundGraphicsPipelineState = *static_cast<Renderer::IGraphicsPipelineState*>(queuedRenderable.foundPipelineState);
+						const Renderable&				   renderable				  = *queuedRenderable.renderable;
+						const MaterialResource&			   materialResource			  = *queuedRenderable.materialResource;
+							  MaterialTechnique&		   materialTechnique		  = *queuedRenderable.materialTechnique;
+							  MaterialBlueprintResource&   materialBlueprintResource  = *queuedRenderable.materialBlueprintResource;
+							  Rhi::IGraphicsPipelineState& foundGraphicsPipelineState = *static_cast<Rhi::IGraphicsPipelineState*>(queuedRenderable.foundPipelineState);
 
 						// Set the used graphics pipeline state object (PSO)
 						if (currentGraphicsPipelineState != &foundGraphicsPipelineState)
 						{
 							currentGraphicsPipelineState = &foundGraphicsPipelineState;
-							Renderer::Command::SetGraphicsPipelineState::create(mScratchCommandBuffer, currentGraphicsPipelineState);
+							Rhi::Command::SetGraphicsPipelineState::create(mScratchCommandBuffer, currentGraphicsPipelineState);
 						}
 
 						{ // Setup input assembly (IA): Set the used vertex array
-							const Renderer::IVertexArrayPtr& vertexArrayPtr = renderable.getVertexArrayPtr();
+							const Rhi::IVertexArrayPtr& vertexArrayPtr = renderable.getVertexArrayPtr();
 							if (!vertexArraySet || currentVertexArray != vertexArrayPtr)
 							{
 								vertexArraySet = true;
 								currentVertexArray = vertexArrayPtr;
-								Renderer::Command::SetGraphicsVertexArray::create(mScratchCommandBuffer, currentVertexArray);
+								Rhi::Command::SetGraphicsVertexArray::create(mScratchCommandBuffer, currentVertexArray);
 							}
 						}
 
@@ -672,11 +672,11 @@ namespace RendererRuntime
 						}
 						if (bindMaterialBlueprint)
 						{
-							// Bind the graphics material blueprint resource and instance and light buffer manager to the used renderer
+							// Bind the graphics material blueprint resource and instance and light buffer manager to the used RHI
 							materialBlueprintResource.fillGraphicsCommandBuffer(mScratchCommandBuffer);
 							if (nullptr != instanceTextureBuffer)
 							{
-								RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != instanceUniformBuffer, "Invalid instance uniform buffer")
+								RHI_ASSERT(mRendererRuntime.getContext(), nullptr != instanceUniformBuffer, "Invalid instance uniform buffer")
 								textureInstanceBufferManager.startupBufferFilling(materialBlueprintResource, mScratchCommandBuffer);
 							}
 							else if (nullptr != instanceUniformBuffer)
@@ -691,14 +691,14 @@ namespace RendererRuntime
 							passBufferManager->fillGraphicsCommandBuffer(mScratchCommandBuffer);
 						}
 
-						{ // Cheap state change: Bind the material technique to the used renderer
+						{ // Cheap state change: Bind the material technique to the used RHI
 							uint32_t resourceGroupRootParameterIndex = getInvalid<uint32_t>();
-							Renderer::IResourceGroup* resourceGroup = nullptr;
+							Rhi::IResourceGroup* resourceGroup = nullptr;
 							materialTechnique.fillGraphicsCommandBuffer(mRendererRuntime, mScratchCommandBuffer, resourceGroupRootParameterIndex, &resourceGroup);
 							if (isValid(resourceGroupRootParameterIndex) && nullptr != resourceGroup && currentSetGraphicsResourceGroup[resourceGroupRootParameterIndex] != resourceGroup)
 							{
 								currentSetGraphicsResourceGroup[resourceGroupRootParameterIndex] = resourceGroup;
-								Renderer::Command::SetGraphicsResourceGroup::create(mScratchCommandBuffer, resourceGroupRootParameterIndex, resourceGroup);
+								Rhi::Command::SetGraphicsResourceGroup::create(mScratchCommandBuffer, resourceGroupRootParameterIndex, resourceGroup);
 							}
 						}
 
@@ -706,7 +706,7 @@ namespace RendererRuntime
 						uint32_t startInstanceLocation = 0;
 						if (nullptr != instanceTextureBuffer)
 						{
-							RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != instanceUniformBuffer, "Invalid instance uniform buffer")
+							RHI_ASSERT(mRendererRuntime.getContext(), nullptr != instanceUniformBuffer, "Invalid instance uniform buffer")
 							startInstanceLocation = textureInstanceBufferManager.fillBuffer(compositorContextData.getWorldSpaceCameraPosition(), materialBlueprintResource, materialBlueprintResource.getPassBufferManager(), *instanceUniformBuffer, renderable, materialTechnique, mScratchCommandBuffer);
 						}
 						else if (nullptr != instanceUniformBuffer)
@@ -715,20 +715,20 @@ namespace RendererRuntime
 						}
 
 						// Emit draw command, if necessary
-						const Renderer::IIndirectBufferPtr& renderableIndirectBufferPtr = renderable.getIndirectBufferPtr();
+						const Rhi::IIndirectBufferPtr& renderableIndirectBufferPtr = renderable.getIndirectBufferPtr();
 						if (renderable.getDrawIndexed() != currentDrawIndexed || !mScratchCommandBuffer.isEmpty() || nullptr != renderableIndirectBufferPtr)
 						{
 							if (currentDrawIndexed)
 							{
 								if (currentNumberOfDraws)
 								{
-									Renderer::Command::DrawIndexedGraphics::create(commandBuffer, *indirectBuffer, currentDrawIndirectBufferOffset, currentNumberOfDraws);
+									Rhi::Command::DrawIndexedGraphics::create(commandBuffer, *indirectBuffer, currentDrawIndirectBufferOffset, currentNumberOfDraws);
 									currentNumberOfDraws = 0;
 								}
 							}
 							else if (currentNumberOfDraws)
 							{
-								Renderer::Command::DrawGraphics::create(commandBuffer, *indirectBuffer, currentDrawIndirectBufferOffset, currentNumberOfDraws);
+								Rhi::Command::DrawGraphics::create(commandBuffer, *indirectBuffer, currentDrawIndirectBufferOffset, currentNumberOfDraws);
 								currentNumberOfDraws = 0;
 							}
 							currentDrawIndirectBufferOffset = indirectBufferOffset;
@@ -746,25 +746,25 @@ namespace RendererRuntime
 							// Use a given indirect buffer which content is e.g. filled by a compute shader
 							if (renderable.getDrawIndexed())
 							{
-								Renderer::Command::DrawIndexedGraphics::create(commandBuffer, *renderableIndirectBufferPtr, renderable.getIndirectBufferOffset(), renderable.getNumberOfDraws());
+								Rhi::Command::DrawIndexedGraphics::create(commandBuffer, *renderableIndirectBufferPtr, renderable.getIndirectBufferOffset(), renderable.getNumberOfDraws());
 							}
 							else
 							{
-								Renderer::Command::DrawGraphics::create(commandBuffer, *renderableIndirectBufferPtr, renderable.getIndirectBufferOffset(), renderable.getNumberOfDraws());
+								Rhi::Command::DrawGraphics::create(commandBuffer, *renderableIndirectBufferPtr, renderable.getIndirectBufferOffset(), renderable.getNumberOfDraws());
 							}
 						}
 						// Please note that it's valid that there are no indices, for example "RendererRuntime::CompositorInstancePassDebugGui" is using the render queue only to set the material resource blueprint
 						else if (0 != renderable.getNumberOfIndices())
 						{
 							// Sanity checks
-							RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != indirectBuffer, "Invalid indirect buffer")
-							RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != indirectBuffer, "Invalid indirect buffer data")
+							RHI_ASSERT(mRendererRuntime.getContext(), nullptr != indirectBuffer, "Invalid indirect buffer")
+							RHI_ASSERT(mRendererRuntime.getContext(), nullptr != indirectBuffer, "Invalid indirect buffer data")
 
 							// Fill indirect buffer
 							if (renderable.getDrawIndexed())
 							{
 								// Fill indirect buffer
-								Renderer::DrawIndexedArguments* drawIndexedArguments = reinterpret_cast<Renderer::DrawIndexedArguments*>(indirectBufferData + indirectBufferOffset);
+								Rhi::DrawIndexedArguments* drawIndexedArguments = reinterpret_cast<Rhi::DrawIndexedArguments*>(indirectBufferData + indirectBufferOffset);
 								drawIndexedArguments->indexCountPerInstance	= renderable.getNumberOfIndices();
 								drawIndexedArguments->instanceCount			= instanceCount * renderable.getInstanceCount();
 								drawIndexedArguments->startIndexLocation	= renderable.getStartIndexLocation();
@@ -772,20 +772,20 @@ namespace RendererRuntime
 								drawIndexedArguments->startInstanceLocation	= startInstanceLocation;
 
 								// Advance indirect buffer offset
-								indirectBufferOffset += sizeof(Renderer::DrawIndexedArguments);
+								indirectBufferOffset += sizeof(Rhi::DrawIndexedArguments);
 								currentDrawIndexed = true;
 							}
 							else
 							{
 								// Fill indirect buffer
-								Renderer::DrawArguments* drawArguments = reinterpret_cast<Renderer::DrawArguments*>(indirectBufferData + indirectBufferOffset);
+								Rhi::DrawArguments* drawArguments = reinterpret_cast<Rhi::DrawArguments*>(indirectBufferData + indirectBufferOffset);
 								drawArguments->vertexCountPerInstance = renderable.getNumberOfIndices();
 								drawArguments->instanceCount		  = instanceCount * renderable.getInstanceCount();
 								drawArguments->startVertexLocation	  = renderable.getStartIndexLocation();
 								drawArguments->startInstanceLocation  = startInstanceLocation;
 
 								// Advance indirect buffer offset
-								indirectBufferOffset += sizeof(Renderer::DrawArguments);
+								indirectBufferOffset += sizeof(Rhi::DrawArguments);
 								currentDrawIndexed = false;
 							}
 							++currentNumberOfDraws;
@@ -799,21 +799,21 @@ namespace RendererRuntime
 			{
 				if (currentDrawIndexed)
 				{
-					Renderer::Command::DrawIndexedGraphics::create(commandBuffer, *indirectBuffer, currentDrawIndirectBufferOffset, currentNumberOfDraws);
+					Rhi::Command::DrawIndexedGraphics::create(commandBuffer, *indirectBuffer, currentDrawIndirectBufferOffset, currentNumberOfDraws);
 				}
 				else
 				{
-					Renderer::Command::DrawGraphics::create(commandBuffer, *indirectBuffer, currentDrawIndirectBufferOffset, currentNumberOfDraws);
+					Rhi::Command::DrawGraphics::create(commandBuffer, *indirectBuffer, currentDrawIndirectBufferOffset, currentNumberOfDraws);
 				}
 			}
 		}
 	}
 
-	void RenderQueue::fillComputeCommandBuffer(const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
+	void RenderQueue::fillComputeCommandBuffer(const CompositorContextData& compositorContextData, Rhi::CommandBuffer& commandBuffer)
 	{
 		// Sanity check
-		RENDERER_ASSERT(mRendererRuntime.getContext(), getNumberOfDrawCalls() > 0, "Don't call the fill command buffer method if there's no work to be done")
-		RENDERER_ASSERT(mRendererRuntime.getContext(), mScratchCommandBuffer.isEmpty(), "Scratch command buffer should be empty at this point in time")
+		RHI_ASSERT(mRendererRuntime.getContext(), getNumberOfDrawCalls() > 0, "Don't call the fill command buffer method if there's no work to be done")
+		RHI_ASSERT(mRendererRuntime.getContext(), mScratchCommandBuffer.isEmpty(), "Scratch command buffer should be empty at this point in time")
 
 		// No combined scoped profiler CPU and GPU sample as well as renderer debug event command by intent, this is something the caller has to take care of
 		// RENDERER_SCOPED_PROFILER_EVENT(mRendererRuntime.getContext(), commandBuffer, "Compute render queue")
@@ -831,10 +831,10 @@ namespace RendererRuntime
 		if (mQueues.size() == 1 && mQueues[0].queuedRenderables.size() == 1)
 		{
 			// Get queued renderable data
-			const QueuedRenderable&					queuedRenderable		  = mQueues[0].queuedRenderables[0];
-			const MaterialResource&					materialResource		  = *queuedRenderable.materialResource;
-				  MaterialBlueprintResource&		materialBlueprintResource = *queuedRenderable.materialBlueprintResource;
-				  Renderer::IComputePipelineState&	foundComputePipelineState = *static_cast<Renderer::IComputePipelineState*>(queuedRenderable.foundPipelineState);
+			const QueuedRenderable&			  queuedRenderable			= mQueues[0].queuedRenderables[0];
+			const MaterialResource&			  materialResource			= *queuedRenderable.materialResource;
+				  MaterialBlueprintResource&  materialBlueprintResource = *queuedRenderable.materialBlueprintResource;
+				  Rhi::IComputePipelineState& foundComputePipelineState = *static_cast<Rhi::IComputePipelineState*>(queuedRenderable.foundPipelineState);
 			compositorContextData.mCurrentlyBoundMaterialBlueprintResource = &materialBlueprintResource;
 
 			// Determine group count for dispatch compute
@@ -844,14 +844,14 @@ namespace RendererRuntime
 			{
 				// Use mandatory fixed build in material property "LocalComputeSize" for the compute shader local size (also known as number of threads)
 				const MaterialProperty* materialProperty = materialResource.getPropertyById(MaterialResource::LOCAL_COMPUTE_SIZE_PROPERTY_ID);
-				RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != materialProperty, "Invalid material property")
-				RENDERER_ASSERT(mRendererRuntime.getContext(), materialProperty->getUsage() == MaterialProperty::Usage::STATIC, "Invalid material property usage")
+				RHI_ASSERT(mRendererRuntime.getContext(), nullptr != materialProperty, "Invalid material property")
+				RHI_ASSERT(mRendererRuntime.getContext(), materialProperty->getUsage() == MaterialProperty::Usage::STATIC, "Invalid material property usage")
 				const int* localComputeSizeInteger3Value = materialProperty->getInteger3Value();
 
 				// Use mandatory fixed build in material property "GlobalComputeSize" for the compute shader global size
 				materialProperty = materialResource.getPropertyById(MaterialResource::GLOBAL_COMPUTE_SIZE_PROPERTY_ID);
-				RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != materialProperty, "Invalid material property")
-				RENDERER_ASSERT(mRendererRuntime.getContext(), materialProperty->getUsage() == MaterialProperty::Usage::STATIC || materialProperty->getUsage() == MaterialProperty::Usage::MATERIAL_REFERENCE, "Invalid material property usage")
+				RHI_ASSERT(mRendererRuntime.getContext(), nullptr != materialProperty, "Invalid material property")
+				RHI_ASSERT(mRendererRuntime.getContext(), materialProperty->getUsage() == MaterialProperty::Usage::STATIC || materialProperty->getUsage() == MaterialProperty::Usage::MATERIAL_REFERENCE, "Invalid material property usage")
 				compositorContextData.mGlobalComputeSize[0] = 1;
 				compositorContextData.mGlobalComputeSize[1] = 1;
 				compositorContextData.mGlobalComputeSize[2] = 1;
@@ -868,82 +868,82 @@ namespace RendererRuntime
 					// Material property reference
 					const MaterialPropertyId materialPropertyId = materialProperty->getReferenceValue();
 					materialProperty = materialResource.getPropertyById(materialPropertyId);
-					RENDERER_ASSERT(mRendererRuntime.getContext(), materialProperty->getValueType() == MaterialPropertyValue::ValueType::TEXTURE_ASSET_ID, "Invalid material property value type")
-					RENDERER_ASSERT(mRendererRuntime.getContext(), materialProperty->getUsage() == MaterialProperty::Usage::TEXTURE_REFERENCE, "Invalid material property usage")
+					RHI_ASSERT(mRendererRuntime.getContext(), materialProperty->getValueType() == MaterialPropertyValue::ValueType::TEXTURE_ASSET_ID, "Invalid material property value type")
+					RHI_ASSERT(mRendererRuntime.getContext(), materialProperty->getUsage() == MaterialProperty::Usage::TEXTURE_REFERENCE, "Invalid material property usage")
 					const TextureResource* textureResource = textureResourceManager.getTextureResourceByAssetId(materialProperty->getTextureAssetIdValue());
-					RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != textureResource, "Invalid texture resource")
-					const Renderer::ITexture* texture = textureResource->getTexturePtr();
-					RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr != texture, "Invalid texture")
+					RHI_ASSERT(mRendererRuntime.getContext(), nullptr != textureResource, "Invalid texture resource")
+					const Rhi::ITexture* texture = textureResource->getTexturePtr();
+					RHI_ASSERT(mRendererRuntime.getContext(), nullptr != texture, "Invalid texture")
 					switch (texture->getResourceType())
 					{
-						case Renderer::ResourceType::TEXTURE_1D:
-							compositorContextData.mGlobalComputeSize[0] = static_cast<const Renderer::ITexture1D*>(texture)->getWidth();
+						case Rhi::ResourceType::TEXTURE_1D:
+							compositorContextData.mGlobalComputeSize[0] = static_cast<const Rhi::ITexture1D*>(texture)->getWidth();
 							break;
 
-						case Renderer::ResourceType::TEXTURE_1D_ARRAY:
-							compositorContextData.mGlobalComputeSize[0] = static_cast<const Renderer::ITexture1DArray*>(texture)->getWidth();
+						case Rhi::ResourceType::TEXTURE_1D_ARRAY:
+							compositorContextData.mGlobalComputeSize[0] = static_cast<const Rhi::ITexture1DArray*>(texture)->getWidth();
 							break;
 
-						case Renderer::ResourceType::TEXTURE_2D:
+						case Rhi::ResourceType::TEXTURE_2D:
 						{
-							const Renderer::ITexture2D* texture2D = static_cast<const Renderer::ITexture2D*>(texture);
+							const Rhi::ITexture2D* texture2D = static_cast<const Rhi::ITexture2D*>(texture);
 							compositorContextData.mGlobalComputeSize[0] = texture2D->getWidth();
 							compositorContextData.mGlobalComputeSize[1] = texture2D->getHeight();
 							break;
 						}
 
-						case Renderer::ResourceType::TEXTURE_2D_ARRAY:
+						case Rhi::ResourceType::TEXTURE_2D_ARRAY:
 						{
-							const Renderer::ITexture2DArray* texture2DArray = static_cast<const Renderer::ITexture2DArray*>(texture);
+							const Rhi::ITexture2DArray* texture2DArray = static_cast<const Rhi::ITexture2DArray*>(texture);
 							compositorContextData.mGlobalComputeSize[0] = texture2DArray->getWidth();
 							compositorContextData.mGlobalComputeSize[1] = texture2DArray->getHeight();
 							break;
 						}
 
-						case Renderer::ResourceType::TEXTURE_3D:
+						case Rhi::ResourceType::TEXTURE_3D:
 						{
-							const Renderer::ITexture3D* texture3D = static_cast<const Renderer::ITexture3D*>(texture);
+							const Rhi::ITexture3D* texture3D = static_cast<const Rhi::ITexture3D*>(texture);
 							compositorContextData.mGlobalComputeSize[0] = texture3D->getWidth();
 							compositorContextData.mGlobalComputeSize[1] = texture3D->getHeight();
 							compositorContextData.mGlobalComputeSize[2] = texture3D->getDepth();
 							break;
 						}
 
-						case Renderer::ResourceType::TEXTURE_CUBE:
+						case Rhi::ResourceType::TEXTURE_CUBE:
 						{
-							const Renderer::ITexture2D* texture2D = static_cast<const Renderer::ITexture2D*>(texture);
+							const Rhi::ITexture2D* texture2D = static_cast<const Rhi::ITexture2D*>(texture);
 							compositorContextData.mGlobalComputeSize[0] = texture2D->getWidth();
 							compositorContextData.mGlobalComputeSize[1] = texture2D->getHeight();
 							compositorContextData.mGlobalComputeSize[2] = 6;	// TODO(co) Or better 1?
 							break;
 						}
 
-						case Renderer::ResourceType::ROOT_SIGNATURE:
-						case Renderer::ResourceType::RESOURCE_GROUP:
-						case Renderer::ResourceType::GRAPHICS_PROGRAM:
-						case Renderer::ResourceType::VERTEX_ARRAY:
-						case Renderer::ResourceType::RENDER_PASS:
-						case Renderer::ResourceType::QUERY_POOL:
-						case Renderer::ResourceType::SWAP_CHAIN:
-						case Renderer::ResourceType::FRAMEBUFFER:
-						case Renderer::ResourceType::INDEX_BUFFER:
-						case Renderer::ResourceType::VERTEX_BUFFER:
-						case Renderer::ResourceType::TEXTURE_BUFFER:
-						case Renderer::ResourceType::STRUCTURED_BUFFER:
-						case Renderer::ResourceType::INDIRECT_BUFFER:
-						case Renderer::ResourceType::UNIFORM_BUFFER:
-						case Renderer::ResourceType::GRAPHICS_PIPELINE_STATE:
-						case Renderer::ResourceType::COMPUTE_PIPELINE_STATE:
-						case Renderer::ResourceType::SAMPLER_STATE:
-						case Renderer::ResourceType::VERTEX_SHADER:
-						case Renderer::ResourceType::TESSELLATION_CONTROL_SHADER:
-						case Renderer::ResourceType::TESSELLATION_EVALUATION_SHADER:
-						case Renderer::ResourceType::GEOMETRY_SHADER:
-						case Renderer::ResourceType::FRAGMENT_SHADER:
-						case Renderer::ResourceType::COMPUTE_SHADER:
+						case Rhi::ResourceType::ROOT_SIGNATURE:
+						case Rhi::ResourceType::RESOURCE_GROUP:
+						case Rhi::ResourceType::GRAPHICS_PROGRAM:
+						case Rhi::ResourceType::VERTEX_ARRAY:
+						case Rhi::ResourceType::RENDER_PASS:
+						case Rhi::ResourceType::QUERY_POOL:
+						case Rhi::ResourceType::SWAP_CHAIN:
+						case Rhi::ResourceType::FRAMEBUFFER:
+						case Rhi::ResourceType::INDEX_BUFFER:
+						case Rhi::ResourceType::VERTEX_BUFFER:
+						case Rhi::ResourceType::TEXTURE_BUFFER:
+						case Rhi::ResourceType::STRUCTURED_BUFFER:
+						case Rhi::ResourceType::INDIRECT_BUFFER:
+						case Rhi::ResourceType::UNIFORM_BUFFER:
+						case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
+						case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
+						case Rhi::ResourceType::SAMPLER_STATE:
+						case Rhi::ResourceType::VERTEX_SHADER:
+						case Rhi::ResourceType::TESSELLATION_CONTROL_SHADER:
+						case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
+						case Rhi::ResourceType::GEOMETRY_SHADER:
+						case Rhi::ResourceType::FRAGMENT_SHADER:
+						case Rhi::ResourceType::COMPUTE_SHADER:
 						default:
 							// Error!
-							RENDERER_ASSERT(mRendererRuntime.getContext(), false, "We should never end up in here")
+							RHI_ASSERT(mRendererRuntime.getContext(), false, "We should never end up in here")
 							break;
 					}
 				}
@@ -955,7 +955,7 @@ namespace RendererRuntime
 			}
 
 			// Set the used compute pipeline state object (PSO)
-			Renderer::Command::SetComputePipelineState::create(commandBuffer, &foundComputePipelineState);
+			Rhi::Command::SetComputePipelineState::create(commandBuffer, &foundComputePipelineState);
 
 			{ // Fill the pass buffer manager
 				PassBufferManager* passBufferManager = materialBlueprintResource.getPassBufferManager();
@@ -965,24 +965,24 @@ namespace RendererRuntime
 				}
 			}
 
-			// Bind the compute material blueprint resource and instance and light buffer manager to the used renderer
+			// Bind the compute material blueprint resource and instance and light buffer manager to the used RHI
 			materialBlueprintResource.fillComputeCommandBuffer(commandBuffer);
 			const MaterialBlueprintResource::UniformBuffer* instanceUniformBuffer = materialBlueprintResource.getInstanceUniformBuffer();
 			if (nullptr != instanceUniformBuffer)
 			{
 				// TODO(co) Think about compute instance buffer support
-				RENDERER_ASSERT(mRendererRuntime.getContext(), false, "We should never end up in here")
+				RHI_ASSERT(mRendererRuntime.getContext(), false, "We should never end up in here")
 				// textureInstanceBufferManager.startupBufferFilling(*materialBlueprintResource, commandBuffer);
 			}
 			lightBufferManager.fillComputeCommandBuffer(materialBlueprintResource, commandBuffer);
 
-			{ // Cheap state change: Bind the material technique to the used renderer
+			{ // Cheap state change: Bind the material technique to the used RHI
 				uint32_t resourceGroupRootParameterIndex = getInvalid<uint32_t>();
-				Renderer::IResourceGroup* resourceGroup = nullptr;
+				Rhi::IResourceGroup* resourceGroup = nullptr;
 				queuedRenderable.materialTechnique->fillComputeCommandBuffer(mRendererRuntime, commandBuffer, resourceGroupRootParameterIndex, &resourceGroup);
 				if (isValid(resourceGroupRootParameterIndex) && nullptr != resourceGroup)
 				{
-					Renderer::Command::SetComputeResourceGroup::create(commandBuffer, resourceGroupRootParameterIndex, resourceGroup);
+					Rhi::Command::SetComputeResourceGroup::create(commandBuffer, resourceGroupRootParameterIndex, resourceGroup);
 				}
 			}
 
@@ -991,11 +991,11 @@ namespace RendererRuntime
 			// [[maybe_unused]] const uint32_t startInstanceLocation = (nullptr != instanceUniformBuffer) ? textureInstanceBufferManager.fillBuffer(materialBlueprintResource, materialBlueprintResource.getPassBufferManager(), *instanceUniformBuffer, renderable, *materialTechnique, commandBuffer) : 0;
 
 			// Dispatch compute
-			Renderer::Command::DispatchCompute::create(commandBuffer, groupCountX, groupCountY, groupCountZ);
+			Rhi::Command::DispatchCompute::create(commandBuffer, groupCountX, groupCountY, groupCountZ);
 		}
 		else
 		{
-			RENDERER_ASSERT(mRendererRuntime.getContext(), false, "We should never end up in here")
+			RHI_ASSERT(mRendererRuntime.getContext(), false, "We should never end up in here")
 		}
 	}
 

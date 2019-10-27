@@ -46,21 +46,21 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Protected virtual RendererRuntime::ICompositorInstancePass methods ]
 	//[-------------------------------------------------------]
-	void CompositorInstancePassGenerateMipmaps::onFillCommandBuffer([[maybe_unused]] const Renderer::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, Renderer::CommandBuffer& commandBuffer)
+	void CompositorInstancePassGenerateMipmaps::onFillCommandBuffer([[maybe_unused]] const Rhi::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, Rhi::CommandBuffer& commandBuffer)
 	{
 		const IRendererRuntime& rendererRuntime = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime();
 
 		// Sanity check
-		RENDERER_ASSERT(rendererRuntime.getContext(), nullptr == renderTarget, "The generate mipmaps compositor instance pass needs an invalid render target")
+		RHI_ASSERT(rendererRuntime.getContext(), nullptr == renderTarget, "The generate mipmaps compositor instance pass needs an invalid render target")
 
 		// Handle texture mipmap generation via custom material blueprint
 		const CompositorResourcePassGenerateMipmaps& compositorResourcePassGenerateMipmaps = static_cast<const CompositorResourcePassGenerateMipmaps&>(getCompositorResourcePass());
-		RENDERER_ASSERT(rendererRuntime.getContext(), isValid(compositorResourcePassGenerateMipmaps.getTextureAssetId()), "Invalid compositor resource pass generate mipmaps texture asset ID")
+		RHI_ASSERT(rendererRuntime.getContext(), isValid(compositorResourcePassGenerateMipmaps.getTextureAssetId()), "Invalid compositor resource pass generate mipmaps texture asset ID")
 		const AssetId materialBlueprintAssetId = compositorResourcePassGenerateMipmaps.getMaterialBlueprintAssetId();
 		if (isValid(materialBlueprintAssetId))
 		{
 			// Sanity check
-			RENDERER_ASSERT(rendererRuntime.getContext(), isValid(compositorResourcePassGenerateMipmaps.getTextureMaterialBlueprintProperty()), "Invalid compositor resource pass generate mipmaps texture material blueprint property")
+			RHI_ASSERT(rendererRuntime.getContext(), isValid(compositorResourcePassGenerateMipmaps.getTextureMaterialBlueprintProperty()), "Invalid compositor resource pass generate mipmaps texture material blueprint property")
 
 			{ // Record reusable command buffer, if necessary
 				const TextureResourceManager& textureResourceManager = rendererRuntime.getTextureResourceManager();
@@ -68,29 +68,29 @@ namespace RendererRuntime
 				TextureResource* textureResource = textureResourceManager.getTextureResourceByAssetId(compositorResourcePassGenerateMipmaps.getTextureAssetId());
 				if (nullptr != textureResource)
 				{
-					Renderer::ITexture* texture = textureResource->getTexturePtr();
+					Rhi::ITexture* texture = textureResource->getTexturePtr();
 					if (nullptr != texture)
 					{
 						// Sanity check
-						RENDERER_ASSERT(rendererRuntime.getContext(), texture->getResourceType() == Renderer::ResourceType::TEXTURE_2D, "The generate mipmaps compositor instance pass needs an 2D texture as texture")
+						RHI_ASSERT(rendererRuntime.getContext(), texture->getResourceType() == Rhi::ResourceType::TEXTURE_2D, "The generate mipmaps compositor instance pass needs an 2D texture as texture")
 
 						// Render target size changed?
-						Renderer::ITexture2D* texture2D = static_cast<Renderer::ITexture2D*>(texture);
+						Rhi::ITexture2D* texture2D = static_cast<Rhi::ITexture2D*>(texture);
 						const uint32_t renderTargetWidth = texture2D->getWidth();
 						const uint32_t renderTargetHeight = texture2D->getHeight();
-						const uint32_t numberOfMipmaps = Renderer::ITexture::getNumberOfMipmaps(renderTargetWidth, renderTargetHeight);
+						const uint32_t numberOfMipmaps = Rhi::ITexture::getNumberOfMipmaps(renderTargetWidth, renderTargetHeight);
 						if (mRenderTargetWidth != renderTargetWidth || mRenderTargetHeight != renderTargetHeight)
 						{
 							mRenderTargetWidth = renderTargetWidth;
 							mRenderTargetHeight = renderTargetHeight;
 							mFramebuffersPtrs.resize(numberOfMipmaps);
-							Renderer::IRenderer& renderer = rendererRuntime.getRenderer();
-							Renderer::IRenderPass* renderPass = renderer.createRenderPass(0, nullptr, Renderer::TextureFormat::D32_FLOAT);	// TODO(co) Make the texture format flexible, custom mipmap generation also makes sense for color textures
+							Rhi::IRhi& rhi = rendererRuntime.getRhi();
+							Rhi::IRenderPass* renderPass = rhi.createRenderPass(0, nullptr, Rhi::TextureFormat::D32_FLOAT);	// TODO(co) Make the texture format flexible, custom mipmap generation also makes sense for color textures
 							for (uint32_t mipmapIndex = 1; mipmapIndex < numberOfMipmaps; ++mipmapIndex)
 							{
-								const Renderer::FramebufferAttachment depthFramebufferAttachment(texture, mipmapIndex, 0);
-								mFramebuffersPtrs[mipmapIndex] = renderer.createFramebuffer(*renderPass, nullptr, &depthFramebufferAttachment);
-								RENDERER_SET_RESOURCE_DEBUG_NAME(mFramebuffersPtrs[mipmapIndex], ("Compositor instance pass generate mipmap " + std::to_string(mipmapIndex)).c_str())
+								const Rhi::FramebufferAttachment depthFramebufferAttachment(texture, mipmapIndex, 0);
+								mFramebuffersPtrs[mipmapIndex] = rhi.createFramebuffer(*renderPass, nullptr, &depthFramebufferAttachment);
+								RHI_SET_RESOURCE_DEBUG_NAME(mFramebuffersPtrs[mipmapIndex], ("Compositor instance pass generate mipmap " + std::to_string(mipmapIndex)).c_str())
 							}
 						}
 
@@ -109,17 +109,17 @@ namespace RendererRuntime
 							for (uint32_t mipmapIndex = 1; mipmapIndex < numberOfMipmaps; ++mipmapIndex)
 							{
 								// Calculate next viewport size and ensure that the viewport size is always at least 1x1
-								currentWidth = Renderer::ITexture::getHalfSize(currentWidth);
-								currentHeight = Renderer::ITexture::getHalfSize(currentHeight);
+								currentWidth = Rhi::ITexture::getHalfSize(currentWidth);
+								currentHeight = Rhi::ITexture::getHalfSize(currentHeight);
 
 								// Set graphics render target
-								Renderer::Command::SetGraphicsRenderTarget::create(mCommandBuffer, mFramebuffersPtrs[mipmapIndex]);
+								Rhi::Command::SetGraphicsRenderTarget::create(mCommandBuffer, mFramebuffersPtrs[mipmapIndex]);
 
 								// Set the graphics viewport and scissor rectangle
-								Renderer::Command::SetGraphicsViewportAndScissorRectangle::create(mCommandBuffer, 0, 0, currentWidth, currentHeight);
+								Rhi::Command::SetGraphicsViewportAndScissorRectangle::create(mCommandBuffer, 0, 0, currentWidth, currentHeight);
 
 								// Restrict fetches only to previous depth texture mipmap level
-								Renderer::Command::SetTextureMinimumMaximumMipmapIndex::create(mCommandBuffer, *texture, mipmapIndex - 1, mipmapIndex - 1);
+								Rhi::Command::SetTextureMinimumMaximumMipmapIndex::create(mCommandBuffer, *texture, mipmapIndex - 1, mipmapIndex - 1);
 
 								// Execute the compute pass
 								CompositorContextData localCompositorContextData(compositorContextData.getCompositorWorkspaceInstance(), nullptr);
@@ -128,19 +128,19 @@ namespace RendererRuntime
 							}
 
 							// Reset mipmap level range for the depth texture
-							Renderer::Command::SetTextureMinimumMaximumMipmapIndex::create(mCommandBuffer, *texture, 0, numberOfMipmaps - 1);
+							Rhi::Command::SetTextureMinimumMaximumMipmapIndex::create(mCommandBuffer, *texture, 0, numberOfMipmaps - 1);
 						}
 					}
 					else
 					{
 						// Error!
-						RENDERER_ASSERT(rendererRuntime.getContext(), false, "Texture resource has no renderer texture instance")
+						RHI_ASSERT(rendererRuntime.getContext(), false, "Texture resource has no RHI texture instance")
 					}
 				}
 				else
 				{
 					// Error!
-					RENDERER_ASSERT(rendererRuntime.getContext(), false, "Failed to get texture resource by asset ID")
+					RHI_ASSERT(rendererRuntime.getContext(), false, "Failed to get texture resource by asset ID")
 				}
 			}
 
@@ -153,17 +153,17 @@ namespace RendererRuntime
 		else
 		{
 			// Sanity check
-			RENDERER_ASSERT(rendererRuntime.getContext(), isInvalid(compositorResourcePassGenerateMipmaps.getTextureMaterialBlueprintProperty()), "Invalid compositor resource pass generate mipmaps texture material blueprint property")
+			RHI_ASSERT(rendererRuntime.getContext(), isInvalid(compositorResourcePassGenerateMipmaps.getTextureMaterialBlueprintProperty()), "Invalid compositor resource pass generate mipmaps texture material blueprint property")
 
 			// Generate mipmaps
 			// TODO(co) "RendererRuntime::TextureResourceManager::getTextureResourceByAssetId()" is considered to be inefficient, don't use it in here
 			TextureResource* textureResource = getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getTextureResourceManager().getTextureResourceByAssetId(compositorResourcePassGenerateMipmaps.getTextureAssetId());
 			if (nullptr != textureResource)
 			{
-				Renderer::ITexture* texture = textureResource->getTexturePtr();
+				Rhi::ITexture* texture = textureResource->getTexturePtr();
 				if (nullptr != texture)
 				{
-					Renderer::Command::GenerateMipmaps::create(commandBuffer, *texture);
+					Rhi::Command::GenerateMipmaps::create(commandBuffer, *texture);
 				}
 			}
 		}
@@ -185,12 +185,12 @@ namespace RendererRuntime
 		if (isValid(materialBlueprintAssetId))
 		{
 			// Sanity check
-			RENDERER_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), isValid(compositorResourcePassGenerateMipmaps.getTextureMaterialBlueprintProperty()), "Invalid compositor resource pass generate mipmaps texture material blueprint property")
+			RHI_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), isValid(compositorResourcePassGenerateMipmaps.getTextureMaterialBlueprintProperty()), "Invalid compositor resource pass generate mipmaps texture material blueprint property")
 
 			// Create compositor pass compute
 			MaterialProperties materialProperties;
 			mCompositorResourcePassCompute = new CompositorResourcePassCompute(compositorResourcePassGenerateMipmaps.getCompositorTarget(), materialBlueprintAssetId, materialProperties);
-			#if defined(_DEBUG) || defined(RENDERER_RUNTIME_PROFILER)
+			#if defined(RHI_DEBUG) || defined(RENDERER_RUNTIME_PROFILER)
 				mCompositorResourcePassCompute->setDebugName("Generate mipmap");
 			#endif
 			mCompositorInstancePassCompute = new CompositorInstancePassCompute(*mCompositorResourcePassCompute, getCompositorNodeInstance());
@@ -199,7 +199,7 @@ namespace RendererRuntime
 		else
 		{
 			// Sanity check
-			RENDERER_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), isInvalid(compositorResourcePassGenerateMipmaps.getTextureMaterialBlueprintProperty()), "Invalid compositor resource pass generate mipmaps texture material blueprint property")
+			RHI_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), isInvalid(compositorResourcePassGenerateMipmaps.getTextureMaterialBlueprintProperty()), "Invalid compositor resource pass generate mipmaps texture material blueprint property")
 		}
 	}
 
@@ -210,7 +210,7 @@ namespace RendererRuntime
 		{
 			delete mCompositorInstancePassCompute;
 			mCompositorInstancePassCompute = nullptr;
-			RENDERER_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), nullptr != mCompositorResourcePassCompute, "Invalid compositor resource pass compute")
+			RHI_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRendererRuntime().getContext(), nullptr != mCompositorResourcePassCompute, "Invalid compositor resource pass compute")
 			delete mCompositorResourcePassCompute;
 			mCompositorResourcePassCompute = nullptr;
 		}

@@ -35,4 +35,4 @@ Renderer toolkit.
 
 == Preprocessor Definitions ==
 - Set "RENDERER_TOOLKIT_EXPORTS" as preprocessor definition when building this library as shared library
-- Do also have a look into the renderer header file for renderer backend preprocessor definitions
+- Do also have a look into the RHI header file for RHI implementation preprocessor definitions

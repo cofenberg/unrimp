@@ -34,7 +34,7 @@
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace Renderer
+namespace Rhi
 {
 	class IResource;
 	class ISamplerState;
@@ -75,7 +75,7 @@ namespace RendererRuntime
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		[[nodiscard]] Renderer::IResourceGroup* createResourceGroup(Renderer::IRootSignature& rootSignature, uint32_t rootParameterIndex, uint32_t numberOfResources, Renderer::IResource** resources, Renderer::ISamplerState** samplerStates = nullptr);
+		[[nodiscard]] Rhi::IResourceGroup* createResourceGroup(Rhi::IRootSignature& rootSignature, uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates = nullptr);
 		void garbageCollection();
 
 
@@ -99,7 +99,7 @@ namespace RendererRuntime
 	//[ Private definitions                                   ]
 	//[-------------------------------------------------------]
 	private:
-		typedef std::unordered_map<uint32_t, Renderer::IResourceGroup*> ResourceGroups;
+		typedef std::unordered_map<uint32_t, Rhi::IResourceGroup*> ResourceGroups;
 
 
 	//[-------------------------------------------------------]

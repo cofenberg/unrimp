@@ -75,34 +75,34 @@ namespace RendererRuntime
 				return sizeof(float) * 4 * 4;
 
 			case ValueType::FILL_MODE:
-				return sizeof(Renderer::FillMode);
+				return sizeof(Rhi::FillMode);
 
 			case ValueType::CULL_MODE:
-				return sizeof(Renderer::CullMode);
+				return sizeof(Rhi::CullMode);
 
 			case ValueType::CONSERVATIVE_RASTERIZATION_MODE:
-				return sizeof(Renderer::ConservativeRasterizationMode);
+				return sizeof(Rhi::ConservativeRasterizationMode);
 
 			case ValueType::DEPTH_WRITE_MASK:
-				return sizeof(Renderer::DepthWriteMask);
+				return sizeof(Rhi::DepthWriteMask);
 
 			case ValueType::STENCIL_OP:
-				return sizeof(Renderer::StencilOp);
+				return sizeof(Rhi::StencilOp);
 
 			case ValueType::COMPARISON_FUNC:
-				return sizeof(Renderer::ComparisonFunc);
+				return sizeof(Rhi::ComparisonFunc);
 
 			case ValueType::BLEND:
-				return sizeof(Renderer::Blend);
+				return sizeof(Rhi::Blend);
 
 			case ValueType::BLEND_OP:
-				return sizeof(Renderer::BlendOp);
+				return sizeof(Rhi::BlendOp);
 
 			case ValueType::FILTER_MODE:
-				return sizeof(Renderer::FilterMode);
+				return sizeof(Rhi::FilterMode);
 
 			case ValueType::TEXTURE_ADDRESS_MODE:
-				return sizeof(Renderer::TextureAddressMode);
+				return sizeof(Rhi::TextureAddressMode);
 
 			case ValueType::TEXTURE_ASSET_ID:
 				return sizeof(AssetId);

@@ -27,7 +27,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include <Renderer/Public/Renderer.h>
+#include <Rhi/Public/Rhi.h>
 
 
 //[-------------------------------------------------------]
@@ -80,7 +80,7 @@ namespace RendererRuntime
 		*  @return
 		*    The graphics program
 		*/
-		[[nodiscard]] inline const Renderer::IGraphicsProgramPtr& getGraphicsProgramPtr() const
+		[[nodiscard]] inline const Rhi::IGraphicsProgramPtr& getGraphicsProgramPtr() const
 		{
 			return mGraphicsProgramPtr;
 		}
@@ -90,7 +90,7 @@ namespace RendererRuntime
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		inline GraphicsProgramCache(GraphicsProgramCacheId graphicsProgramCacheId, Renderer::IGraphicsProgram& graphicsProgram) :
+		inline GraphicsProgramCache(GraphicsProgramCacheId graphicsProgramCacheId, Rhi::IGraphicsProgram& graphicsProgram) :
 			mGraphicsProgramCacheId(graphicsProgramCacheId),
 			mGraphicsProgramPtr(&graphicsProgram)
 		{
@@ -110,8 +110,8 @@ namespace RendererRuntime
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		GraphicsProgramCacheId		  mGraphicsProgramCacheId;
-		Renderer::IGraphicsProgramPtr mGraphicsProgramPtr;
+		GraphicsProgramCacheId	 mGraphicsProgramCacheId;
+		Rhi::IGraphicsProgramPtr mGraphicsProgramPtr;
 
 
 	};

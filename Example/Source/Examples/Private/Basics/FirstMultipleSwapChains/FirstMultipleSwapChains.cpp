@@ -53,7 +53,7 @@ PRAGMA_WARNING_POP
 	[[nodiscard]] LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		// Get pointer to the swap chain implementation
-		Renderer::ISwapChain* swapChain = (NULL_HANDLE != hWnd) ? reinterpret_cast<Renderer::ISwapChain*>(GetWindowLongPtr(hWnd, GWLP_USERDATA)) : nullptr;
+		Rhi::ISwapChain* swapChain = (NULL_HANDLE != hWnd) ? reinterpret_cast<Rhi::ISwapChain*>(GetWindowLongPtr(hWnd, GWLP_USERDATA)) : nullptr;
 
 		// Evaluate message
 		switch (message)
@@ -89,7 +89,7 @@ PRAGMA_WARNING_POP
 			// Nothing here
 		}
 
-		void setSwapChain(Renderer::ISwapChain* swapChain)
+		void setSwapChain(Rhi::ISwapChain* swapChain)
 		{
 			mSwapChain = swapChain;
 		}
@@ -110,7 +110,7 @@ PRAGMA_WARNING_POP
 			return false;
 		}
 	private:
-		Renderer::ISwapChain* mSwapChain;
+		Rhi::ISwapChain* mSwapChain;
 	};
 	// TODO(co) Even inside an example, we might not want to use global variables
 	SwapChainWindow *gSwapChainWindow = nullptr;
@@ -123,41 +123,41 @@ PRAGMA_WARNING_POP
 bool FirstMultipleSwapChains::onInitialization()
 {
 	// Call the base implementation
-	const bool result = IApplicationRenderer::onInitialization();
+	const bool result = IApplicationRhi::onInitialization();
 
-	// Get and check the renderer instance
-	Renderer::IRendererPtr renderer(getRenderer());
-	if (nullptr != renderer)
+	// Get and check the RHI instance
+	Rhi::IRhiPtr rhi(getRhi());
+	if (nullptr != rhi)
 	{
 		// Create the buffer manager
-		mBufferManager = renderer->createBufferManager();
+		mBufferManager = rhi->createBufferManager();
 
 		{ // Create the root signature
 			// Setup
-			Renderer::RootSignatureBuilder rootSignature;
-			rootSignature.initialize(0, nullptr, 0, nullptr, Renderer::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+			Rhi::RootSignatureBuilder rootSignature;
+			rootSignature.initialize(0, nullptr, 0, nullptr, Rhi::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 			// Create the instance
-			mRootSignature = renderer->createRootSignature(rootSignature);
+			mRootSignature = rhi->createRootSignature(rootSignature);
 		}
 
 		// Vertex input layout
-		static constexpr Renderer::VertexAttribute vertexAttributesLayout[] =
+		static constexpr Rhi::VertexAttribute vertexAttributesLayout[] =
 		{
 			{ // Attribute 0
 				// Data destination
-				Renderer::VertexAttributeFormat::FLOAT_2,	// vertexAttributeFormat (Renderer::VertexAttributeFormat)
-				"Position",									// name[32] (char)
-				"POSITION",									// semanticName[32] (char)
-				0,											// semanticIndex (uint32_t)
+				Rhi::VertexAttributeFormat::FLOAT_2,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+				"Position",								// name[32] (char)
+				"POSITION",								// semanticName[32] (char)
+				0,										// semanticIndex (uint32_t)
 				// Data source
-				0,											// inputSlot (uint32_t)
-				0,											// alignedByteOffset (uint32_t)
-				sizeof(float) * 2,							// strideInBytes (uint32_t)
-				0											// instancesPerElement (uint32_t)
+				0,										// inputSlot (uint32_t)
+				0,										// alignedByteOffset (uint32_t)
+				sizeof(float) * 2,						// strideInBytes (uint32_t)
+				0										// instancesPerElement (uint32_t)
 			}
 		};
-		const Renderer::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
+		const Rhi::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayout)), vertexAttributesLayout);
 
 		{ // Create vertex array object (VAO)
 			// Create the vertex buffer object (VBO)
@@ -168,7 +168,7 @@ bool FirstMultipleSwapChains::onInitialization()
 				 1.0f, 0.0f,	// 1			   .   .
 				-0.5f, 0.0f		// 2			  2.......1
 			};
-			Renderer::IVertexBufferPtr vertexBuffer(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION));
+			Rhi::IVertexBufferPtr vertexBuffer(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION));
 
 			// Create vertex array object (VAO)
 			// -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)
@@ -176,13 +176,13 @@ bool FirstMultipleSwapChains::onInitialization()
 			// -> When the vertex array object (VAO) is destroyed, it automatically decreases the
 			//    reference of the used vertex buffer objects (VBO). If the reference counter of a
 			//    vertex buffer object (VBO) reaches zero, it's automatically destroyed.
-			const Renderer::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
+			const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
 			mVertexArray = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
 		}
 
 		{
 			// Create the graphics program
-			Renderer::IGraphicsProgramPtr graphicsProgram;
+			Rhi::IGraphicsProgramPtr graphicsProgram;
 			{
 				// Get the shader source code (outsourced to keep an overview)
 				const char* vertexShaderSourceCode = nullptr;
@@ -194,7 +194,7 @@ bool FirstMultipleSwapChains::onInitialization()
 				#include "FirstMultipleSwapChains_Null.h"
 
 				// Create the graphics program
-				Renderer::IShaderLanguage& shaderLanguage = renderer->getDefaultShaderLanguage();
+				Rhi::IShaderLanguage& shaderLanguage = rhi->getDefaultShaderLanguage();
 				graphicsProgram = shaderLanguage.createGraphicsProgram(
 					*mRootSignature,
 					vertexAttributes,
@@ -205,7 +205,7 @@ bool FirstMultipleSwapChains::onInitialization()
 			// Create the graphics pipeline state object (PSO)
 			if (nullptr != graphicsProgram)
 			{
-				mGraphicsPipelineState = renderer->createGraphicsPipelineState(Renderer::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass()));
+				mGraphicsPipelineState = rhi->createGraphicsPipelineState(Rhi::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass()));
 			}
 		}
 
@@ -251,7 +251,7 @@ bool FirstMultipleSwapChains::onInitialization()
 			#endif
 
 			// Create the swap chain
-			mSwapChain = renderer->createSwapChain(getMainRenderTarget()->getRenderPass(), Renderer::WindowHandle{nativeWindowHandle, nullptr, nullptr});
+			mSwapChain = rhi->createSwapChain(getMainRenderTarget()->getRenderPass(), Rhi::WindowHandle{nativeWindowHandle, nullptr, nullptr});
 
 			// This is only a simple and close-to-the-metal example, don't use OS stuff directly in more complex projects
 			#ifdef _WIN32
@@ -327,14 +327,14 @@ void FirstMultipleSwapChains::onDeinitialization()
 	mBufferManager = nullptr;
 
 	// Call the base implementation
-	IApplicationRenderer::onDeinitialization();
+	IApplicationRhi::onDeinitialization();
 }
 
 void FirstMultipleSwapChains::onDrawRequest()
 {
-	// Get and check the renderer instance
-	Renderer::IRendererPtr renderer(getRenderer());
-	if (nullptr != renderer && nullptr != mGraphicsPipelineState)
+	// Get and check the RHI instance
+	Rhi::IRhiPtr rhi(getRhi());
+	if (nullptr != rhi && nullptr != mGraphicsPipelineState)
 	{
 		// Usually you draw into a swap chain when getting informed by the OS that the
 		// used native OS window requests a redraw of it's content. In order to avoid
@@ -343,23 +343,23 @@ void FirstMultipleSwapChains::onDrawRequest()
 
 		// Debug methods: When using Direct3D <11.1, these methods map to the Direct3D 9 PIX functions
 		// (D3DPERF_* functions, also works directly within VisualStudio 2017 out-of-the-box)
-		// -> In this example we're using multiple swap chains and calling "Renderer::ISwapChain::present()" twice per application
+		// -> In this example we're using multiple swap chains and calling "Rhi::ISwapChain::present()" twice per application
 		// -> Usually, a swap chain present is interpreted by the debug/profile tool as a single frame, which is of course correct
 		// -> In this example this behaviour makes it difficult to catch the desired frame of the desired native OS window
 
 		{ // Draw into the main swap chain
-			Renderer::IRenderTarget* mainRenderTarget = getMainRenderTarget();
+			Rhi::IRenderTarget* mainRenderTarget = getMainRenderTarget();
 			if (nullptr != mainRenderTarget)
 			{
 				// Begin scene rendering
-				if (renderer->beginScene())
+				if (rhi->beginScene())
 				{
 					{ // Fill the command buffer
 						// Scoped debug event
 						COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Draw into the main swap chain")
 
 						// Set the graphics render target to render into
-						Renderer::Command::SetGraphicsRenderTarget::create(mCommandBuffer, mainRenderTarget);
+						Rhi::Command::SetGraphicsRenderTarget::create(mCommandBuffer, mainRenderTarget);
 
 						{ // Set the graphics viewport
 							// Get the render target with and height
@@ -368,37 +368,37 @@ void FirstMultipleSwapChains::onDrawRequest()
 							mainRenderTarget->getWidthAndHeight(width, height);
 
 							// Set the graphics viewport and scissor rectangle
-							Renderer::Command::SetGraphicsViewportAndScissorRectangle::create(mCommandBuffer, 0, 0, width, height);
+							Rhi::Command::SetGraphicsViewportAndScissorRectangle::create(mCommandBuffer, 0, 0, width, height);
 						}
 
 						// Draw into the main swap chain
 						fillCommandBuffer(Color4::GRAY, mCommandBuffer);
 					}
 
-					// Submit command buffer to the renderer backend
-					mCommandBuffer.submitToRendererAndClear(*renderer);
+					// Submit command buffer to the RHI implementation
+					mCommandBuffer.submitToRhiAndClear(*rhi);
 
 					// End scene rendering
-					renderer->endScene();
+					rhi->endScene();
 
 					// Present the content of the current back buffer
-					if (mainRenderTarget->getResourceType() == Renderer::ResourceType::SWAP_CHAIN)
+					if (mainRenderTarget->getResourceType() == Rhi::ResourceType::SWAP_CHAIN)
 					{
-						static_cast<Renderer::ISwapChain*>(mainRenderTarget)->present();
+						static_cast<Rhi::ISwapChain*>(mainRenderTarget)->present();
 					}
 				}
 			}
 		}
 
 		// Render to the swap chain created in this example, but only if it's valid: Begin scene rendering
-		if (nullptr != mSwapChain && renderer->beginScene())
+		if (nullptr != mSwapChain && rhi->beginScene())
 		{
 			{ // Fill the command buffer
 				// Scoped debug event
 				COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Render to the swap chain created in this example")
 
 				// Set the graphics render target to render into
-				Renderer::Command::SetGraphicsRenderTarget::create(mCommandBuffer, mSwapChain);
+				Rhi::Command::SetGraphicsRenderTarget::create(mCommandBuffer, mSwapChain);
 
 				{ // Set the graphics viewport
 					// Please note that for some graphics APIs its really important that the viewport
@@ -418,18 +418,18 @@ void FirstMultipleSwapChains::onDrawRequest()
 					mSwapChain->getWidthAndHeight(width, height);
 
 					// Set the graphics viewport and scissor rectangle
-					Renderer::Command::SetGraphicsViewportAndScissorRectangle::create(mCommandBuffer, 0, 0, width, height);
+					Rhi::Command::SetGraphicsViewportAndScissorRectangle::create(mCommandBuffer, 0, 0, width, height);
 				}
 
 				// Draw into the swap chain created in this example
 				fillCommandBuffer(Color4::GREEN, mCommandBuffer);
 			}
 
-			// Submit command buffer to the renderer backend
-			mCommandBuffer.submitToRendererAndClear(*renderer);
+			// Submit command buffer to the RHI implementation
+			mCommandBuffer.submitToRhiAndClear(*rhi);
 
 			// End scene rendering
-			renderer->endScene();
+			rhi->endScene();
 
 			// Present the content of the current back buffer
 			mSwapChain->present();
@@ -446,7 +446,7 @@ void FirstMultipleSwapChains::onEscapeKey()
 //[-------------------------------------------------------]
 //[ Private methods                                       ]
 //[-------------------------------------------------------]
-void FirstMultipleSwapChains::fillCommandBuffer(const float color[4], Renderer::CommandBuffer& commandBuffer) const
+void FirstMultipleSwapChains::fillCommandBuffer(const float color[4], Rhi::CommandBuffer& commandBuffer) const
 {
 	// Sanity checks
 	assert(nullptr != mRootSignature);
@@ -457,17 +457,17 @@ void FirstMultipleSwapChains::fillCommandBuffer(const float color[4], Renderer::
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)
 
 	// Clear the graphics color buffer of the current render target with the provided color, do also clear the depth buffer
-	Renderer::Command::ClearGraphics::create(commandBuffer, Renderer::ClearFlag::COLOR_DEPTH, color);
+	Rhi::Command::ClearGraphics::create(commandBuffer, Rhi::ClearFlag::COLOR_DEPTH, color);
 
 	// Set the used graphics root signature
-	Renderer::Command::SetGraphicsRootSignature::create(commandBuffer, mRootSignature);
+	Rhi::Command::SetGraphicsRootSignature::create(commandBuffer, mRootSignature);
 
 	// Set the used graphics pipeline state object (PSO)
-	Renderer::Command::SetGraphicsPipelineState::create(commandBuffer, mGraphicsPipelineState);
+	Rhi::Command::SetGraphicsPipelineState::create(commandBuffer, mGraphicsPipelineState);
 
 	// Input assembly (IA): Set the used vertex array
-	Renderer::Command::SetGraphicsVertexArray::create(commandBuffer, mVertexArray);
+	Rhi::Command::SetGraphicsVertexArray::create(commandBuffer, mVertexArray);
 
 	// Render the specified geometric primitive, based on an array of vertices
-	Renderer::Command::DrawGraphics::create(commandBuffer, 3);
+	Rhi::Command::DrawGraphics::create(commandBuffer, 3);
 }

@@ -45,7 +45,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
-	ShaderCache* ShaderCacheManager::getGraphicsShaderCache(const GraphicsPipelineStateSignature& graphicsPipelineStateSignature, const MaterialBlueprintResource& materialBlueprintResource, Renderer::IShaderLanguage& shaderLanguage, GraphicsShaderType graphicsShaderType)
+	ShaderCache* ShaderCacheManager::getGraphicsShaderCache(const GraphicsPipelineStateSignature& graphicsPipelineStateSignature, const MaterialBlueprintResource& materialBlueprintResource, Rhi::IShaderLanguage& shaderLanguage, GraphicsShaderType graphicsShaderType)
 	{
 		ShaderCache* shaderCache = nullptr;
 
@@ -67,7 +67,7 @@ namespace RendererRuntime
 					shaderCache = shaderCache->getMasterShaderCache();
 				}
 
-				// Create renderer shader instance using the shader bytecode, if necessary
+				// Create RHI shader instance using the shader bytecode, if necessary
 				if (nullptr == shaderCache->mShaderPtr.getPointer())
 				{
 					ASSERT((0 != shaderCache->mShaderBytecode.getNumberOfBytes()) && "A shader cache must always have a valid shader bytecode, else it's a pointless shader cache. This might be the result of a shader compilation error.");
@@ -77,7 +77,7 @@ namespace RendererRuntime
 						{
 							case GraphicsShaderType::Vertex:
 							{
-								const Renderer::VertexAttributes& vertexAttributes = mShaderBlueprintResourceManager.getRendererRuntime().getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes();
+								const Rhi::VertexAttributes& vertexAttributes = mShaderBlueprintResourceManager.getRendererRuntime().getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes();
 								shaderCache->mShaderPtr = shaderLanguage.createVertexShaderFromBytecode(vertexAttributes, shaderCache->mShaderBytecode);
 								break;
 							}
@@ -110,7 +110,7 @@ namespace RendererRuntime
 				{
 					// Build the shader source code
 					const IRendererRuntime& rendererRuntime = mShaderBlueprintResourceManager.getRendererRuntime();
-					ShaderBuilder shaderBuilder(rendererRuntime.getRenderer().getContext());
+					ShaderBuilder shaderBuilder(rendererRuntime.getRhi().getContext());
 					ShaderBuilder::BuildShader buildShader;
 					shaderBuilder.createSourceCode(rendererRuntime.getShaderPieceResourceManager(), *shaderBlueprintResource, graphicsPipelineStateSignature.getShaderProperties(), buildShader);
 					std::string& sourceCode = buildShader.sourceCode;
@@ -140,8 +140,8 @@ namespace RendererRuntime
 						}
 						else
 						{
-							// Create the shader instance
-							Renderer::IShader* shader = nullptr;
+							// Create the RHI shader instance
+							Rhi::IShader* shader = nullptr;
 							shaderCache = new ShaderCache(shaderCacheId);
 							shaderCache->mAssetIds = buildShader.assetIds;
 							shaderCache->mCombinedAssetFileHashes = buildShader.combinedAssetFileHashes;
@@ -149,7 +149,7 @@ namespace RendererRuntime
 							{
 								case GraphicsShaderType::Vertex:
 								{
-									const Renderer::VertexAttributes& vertexAttributes = mShaderBlueprintResourceManager.getRendererRuntime().getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes();
+									const Rhi::VertexAttributes& vertexAttributes = mShaderBlueprintResourceManager.getRendererRuntime().getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes();
 									shader = shaderLanguage.createVertexShaderFromSourceCode(vertexAttributes, sourceCode.c_str(), &shaderCache->mShaderBytecode);
 									break;
 								}
@@ -175,8 +175,8 @@ namespace RendererRuntime
 							// Create the new shader cache instance
 							if (nullptr != shader)
 							{
-								RENDERER_SET_RESOURCE_DEBUG_NAME(shader, shaderBlueprintAsset.virtualFilename)
-								ASSERT((!shaderLanguage.getRenderer().getCapabilities().shaderBytecode || 0 != shaderCache->mShaderBytecode.getNumberOfBytes()) && "Invalid shader bytecode received from renderer implementation");
+								RHI_SET_RESOURCE_DEBUG_NAME(shader, shaderBlueprintAsset.virtualFilename)
+								ASSERT((!shaderLanguage.getRhi().getCapabilities().shaderBytecode || 0 != shaderCache->mShaderBytecode.getNumberOfBytes()) && "Invalid shader bytecode received from RHI implementation");
 								shaderCache->mShaderPtr = shader;
 								mShaderCacheByShaderCacheId.emplace(shaderCacheId, shaderCache);
 								mShaderCacheByShaderSourceCodeId.emplace(shaderSourceCodeId, shaderCacheId);
@@ -204,7 +204,7 @@ namespace RendererRuntime
 		return shaderCache;
 	}
 
-	ShaderCache* ShaderCacheManager::getComputeShaderCache(const ComputePipelineStateSignature& computePipelineStateSignature, const MaterialBlueprintResource& materialBlueprintResource, Renderer::IShaderLanguage& shaderLanguage)
+	ShaderCache* ShaderCacheManager::getComputeShaderCache(const ComputePipelineStateSignature& computePipelineStateSignature, const MaterialBlueprintResource& materialBlueprintResource, Rhi::IShaderLanguage& shaderLanguage)
 	{
 		ShaderCache* shaderCache = nullptr;
 
@@ -226,7 +226,7 @@ namespace RendererRuntime
 					shaderCache = shaderCache->getMasterShaderCache();
 				}
 
-				// Create renderer shader instance using the shader bytecode, if necessary
+				// Create RHI shader instance using the shader bytecode, if necessary
 				if (nullptr == shaderCache->mShaderPtr.getPointer())
 				{
 					ASSERT((0 != shaderCache->mShaderBytecode.getNumberOfBytes()) && "A shader cache must always have a valid shader bytecode, else it's a pointless shader cache. This might be the result of a shader compilation error.");
@@ -241,7 +241,7 @@ namespace RendererRuntime
 				{
 					// Build the shader source code
 					const IRendererRuntime& rendererRuntime = mShaderBlueprintResourceManager.getRendererRuntime();
-					ShaderBuilder shaderBuilder(rendererRuntime.getRenderer().getContext());
+					ShaderBuilder shaderBuilder(rendererRuntime.getRhi().getContext());
 					ShaderBuilder::BuildShader buildShader;
 					shaderBuilder.createSourceCode(rendererRuntime.getShaderPieceResourceManager(), *shaderBlueprintResource, computePipelineStateSignature.getShaderProperties(), buildShader);
 					std::string& sourceCode = buildShader.sourceCode;
@@ -271,17 +271,17 @@ namespace RendererRuntime
 						}
 						else
 						{
-							// Create the shader instance
+							// Create the RHI shader instance
 							shaderCache = new ShaderCache(shaderCacheId);
 							shaderCache->mAssetIds = buildShader.assetIds;
 							shaderCache->mCombinedAssetFileHashes = buildShader.combinedAssetFileHashes;
-							Renderer::IShader* shader = shaderLanguage.createComputeShaderFromSourceCode(sourceCode.c_str(), &shaderCache->mShaderBytecode);
+							Rhi::IShader* shader = shaderLanguage.createComputeShaderFromSourceCode(sourceCode.c_str(), &shaderCache->mShaderBytecode);
 
 							// Create the new shader cache instance
 							if (nullptr != shader)
 							{
-								RENDERER_SET_RESOURCE_DEBUG_NAME(shader, shaderBlueprintAsset.virtualFilename)
-								ASSERT((!shaderLanguage.getRenderer().getCapabilities().shaderBytecode || 0 != shaderCache->mShaderBytecode.getNumberOfBytes()) && "Invalid shader bytecode received from renderer implementation");
+								RHI_SET_RESOURCE_DEBUG_NAME(shader, shaderBlueprintAsset.virtualFilename)
+								ASSERT((!shaderLanguage.getRhi().getCapabilities().shaderBytecode || 0 != shaderCache->mShaderBytecode.getNumberOfBytes()) && "Invalid shader bytecode received from RHI implementation");
 								shaderCache->mShaderPtr = shader;
 								mShaderCacheByShaderCacheId.emplace(shaderCacheId, shaderCache);
 								mShaderCacheByShaderSourceCodeId.emplace(shaderSourceCodeId, shaderCacheId);
@@ -464,7 +464,7 @@ namespace RendererRuntime
 				if (nullptr == shaderCache->getMasterShaderCache())
 				{
 					// Master shader cache
-					const Renderer::ShaderBytecode& shaderBytecode = shaderCache->mShaderBytecode;
+					const Rhi::ShaderBytecode& shaderBytecode = shaderCache->mShaderBytecode;
 					const uint32_t numberOfBytes = shaderBytecode.getNumberOfBytes();
 					ASSERT((0 != numberOfBytes) && "A shader cache must always have a valid shader bytecode, else it's a pointless shader cache. This might be the result of a shader compilation error.");
 					file.write(&shaderCache->mShaderCacheId, sizeof(ShaderCacheId));

@@ -27,7 +27,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include <Renderer/Public/Renderer.h>
+#include <Rhi/Public/Rhi.h>
 
 
 //[-------------------------------------------------------]
@@ -57,7 +57,7 @@ namespace RendererToolkit
 	*  @note
 	*    - The implementation must be multithreading safe since the renderer runtime is allowed to internally use multiple threads
 	*/
-	class IRendererToolkit : public Renderer::RefCount<IRendererToolkit>
+	class IRendererToolkit : public Rhi::RefCount<IRendererToolkit>
 	{
 
 
@@ -144,7 +144,7 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	//[ Type definitions                                      ]
 	//[-------------------------------------------------------]
-	typedef Renderer::SmartRefCount<IRendererToolkit> IRendererToolkitPtr;
+	typedef Rhi::SmartRefCount<IRendererToolkit> IRendererToolkitPtr;
 
 
 //[-------------------------------------------------------]

@@ -54,7 +54,7 @@ namespace RendererRuntime
 
 	AssetPackage& AssetManager::addAssetPackage(AssetPackageId assetPackageId)
 	{
-		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr == tryGetAssetPackageById(assetPackageId), "Renderer runtime asset package ID is already used")
+		RHI_ASSERT(mRendererRuntime.getContext(), nullptr == tryGetAssetPackageById(assetPackageId), "Renderer runtime asset package ID is already used")
 		AssetPackage* assetPackage = new AssetPackage(assetPackageId);
 		mAssetPackageVector.push_back(assetPackage);
 		return *assetPackage;
@@ -73,7 +73,7 @@ namespace RendererRuntime
 		else
 		{
 			// Error!
-			RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Renderer runtime failed to mount the asset package")
+			RHI_ASSERT(mRendererRuntime.getContext(), false, "Renderer runtime failed to mount the asset package")
 			return nullptr;
 		}
 	}
@@ -91,7 +91,7 @@ namespace RendererRuntime
 		AssetPackageVector::const_iterator iterator = std::find_if(mAssetPackageVector.cbegin(), mAssetPackageVector.cend(),
 			[assetPackageId](const AssetPackage* assetPackage) { return (assetPackage->getAssetPackageId() == assetPackageId); }
 			);
-		RENDERER_ASSERT(mRendererRuntime.getContext(), iterator != mAssetPackageVector.cend(), "Unknown renderer runtime asset package ID")
+		RHI_ASSERT(mRendererRuntime.getContext(), iterator != mAssetPackageVector.cend(), "Unknown renderer runtime asset package ID")
 		return **iterator;
 	}
 
@@ -100,7 +100,7 @@ namespace RendererRuntime
 		AssetPackageVector::const_iterator iterator = std::find_if(mAssetPackageVector.cbegin(), mAssetPackageVector.cend(),
 			[assetPackageId](const AssetPackage* assetPackage) { return (assetPackage->getAssetPackageId() == assetPackageId); }
 			);
-		RENDERER_ASSERT(mRendererRuntime.getContext(), iterator != mAssetPackageVector.cend(), "Unknown renderer runtime asset package ID")
+		RHI_ASSERT(mRendererRuntime.getContext(), iterator != mAssetPackageVector.cend(), "Unknown renderer runtime asset package ID")
 		delete *iterator;
 		mAssetPackageVector.erase(iterator);
 	}
@@ -128,7 +128,7 @@ namespace RendererRuntime
 	//[-------------------------------------------------------]
 	AssetPackage* AssetManager::addAssetPackageByVirtualFilename(AssetPackageId assetPackageId, VirtualFilename virtualFilename)
 	{
-		RENDERER_ASSERT(mRendererRuntime.getContext(), nullptr == tryGetAssetPackageById(assetPackageId), "Renderer runtime asset package ID is already used")
+		RHI_ASSERT(mRendererRuntime.getContext(), nullptr == tryGetAssetPackageById(assetPackageId), "Renderer runtime asset package ID is already used")
 		IFileManager& fileManager = mRendererRuntime.getFileManager();
 		IFile* file = fileManager.openFile(IFileManager::FileMode::READ, virtualFilename);
 		if (nullptr != file)
@@ -144,7 +144,7 @@ namespace RendererRuntime
 		else
 		{
 			// Error! This is horrible. No assets.
-			RENDERER_ASSERT(mRendererRuntime.getContext(), false, "Renderer runtime failed to add asset package")
+			RHI_ASSERT(mRendererRuntime.getContext(), false, "Renderer runtime failed to add asset package")
 			return nullptr;
 		}
 	}
