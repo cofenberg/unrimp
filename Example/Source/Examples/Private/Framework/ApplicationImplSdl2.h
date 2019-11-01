@@ -100,7 +100,7 @@ public:
 private:
 	explicit ApplicationImplSdl2(const ApplicationImplSdl2& source) = delete;
 	ApplicationImplSdl2& operator =(const ApplicationImplSdl2& source) = delete;
-	#ifdef RENDERER_RUNTIME_IMGUI
+	#ifdef RENDERER_IMGUI
 		void initializeImGuiKeyMap();
 		void processImGuiSdl2Event(const SDL_Event& sdlEvent);
 		void updateImGuiMousePositionAndButtons();
@@ -115,7 +115,7 @@ private:
 	char		  mWindowTitle[64];		///< ASCII window title
 	SDL_Window*	  mSdlWindow;			///< SDL2 handle, can be a null handler
 	bool		  mFirstUpdate;
-	#ifdef RENDERER_RUNTIME_IMGUI
+	#ifdef RENDERER_IMGUI
 		bool mImGuiMousePressed[3];
 	#endif
 

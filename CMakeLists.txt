@@ -88,16 +88,16 @@ set(SHARED_LIBRARY "1" CACHE BOOL "'true' to build as shared library (dynamic li
 		set(RHI_DIRECT3D12 "1" CACHE BOOL "Build Direct3D 12 RHI?")
 	endif()
 
-# Renderer runtime
-set(RENDERER_RUNTIME "1" CACHE BOOL "Build renderer runtime?")
-if(RENDERER_RUNTIME)
-	set(RENDERER_RUNTIME_GRAPHICS_DEBUGGER "0" CACHE BOOL "For debugging: 'true' to enable graphics debugger support, else 'false' to reduce the binary size. Not enabled by default since RenderDoc disables Direct3D 11 NvAPI resulting in a notable negative performance impact.")
-	set(RENDERER_RUNTIME_PROFILER		   "1" CACHE BOOL "For debugging: 'true' to enable profiler support, else 'false' to reduce the binary size")
-	set(RENDERER_RUNTIME_IMGUI			   "1" CACHE BOOL "For debugging: 'true' to enable ImGui support, else 'false' to reduce the binary size")
+# Renderer
+set(RENDERER "1" CACHE BOOL "Build renderer?")
+if(RENDERER)
+	set(RENDERER_GRAPHICS_DEBUGGER "0" CACHE BOOL "For debugging: 'true' to enable graphics debugger support, else 'false' to reduce the binary size. Not enabled by default since RenderDoc disables Direct3D 11 NvAPI resulting in a notable negative performance impact.")
+	set(RENDERER_PROFILER		   "1" CACHE BOOL "For debugging: 'true' to enable profiler support, else 'false' to reduce the binary size")
+	set(RENDERER_IMGUI			   "1" CACHE BOOL "For debugging: 'true' to enable ImGui support, else 'false' to reduce the binary size")
 
 	# TODO(sw) OpenVR doesn't support non Windows systems yet
 	if(WIN32)
-		set(RENDERER_RUNTIME_OPENVR "1" CACHE BOOL "For virtual reality: 'true' to enable OpenVR support, else 'false' to reduce the binary size")
+		set(RENDERER_OPENVR "1" CACHE BOOL "For virtual reality: 'true' to enable OpenVR support, else 'false' to reduce the binary size")
 	endif()
 endif()
 
@@ -149,7 +149,7 @@ endmacro()
 ##################################################
 ## MACRO: "unrimp_add_conditional_definition()" for setting a conditional preprocessor definition
 #
-# Usage example: "unrimp_add_conditional_definition(RENDERER_RUNTIME_PROFILER)"
+# Usage example: "unrimp_add_conditional_definition(RENDERER_PROFILER)"
 ##################################################
 macro(unrimp_add_conditional_definition definition)
 	if(${definition})
@@ -393,6 +393,6 @@ if(EXAMPLES)
 		set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT "Examples")
 	endif()
 endif()
-if(EXAMPLE_PROJECT_COMPILER AND RENDERER_RUNTIME AND RENDERER_TOOLKIT)
+if(EXAMPLE_PROJECT_COMPILER AND RENDERER AND RENDERER_TOOLKIT)
 	add_subdirectory(Example/Source/ExampleProjectCompiler)
 endif()

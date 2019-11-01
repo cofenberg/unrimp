@@ -27,11 +27,11 @@
 #include "RendererToolkit/Private/Helper/JsonHelper.h"
 #include "RendererToolkit/Private/Context.h"
 
-#include <RendererRuntime/Public/Asset/AssetPackage.h>
-#include <RendererRuntime/Public/Core/File/MemoryFile.h>
-#include <RendererRuntime/Public/Core/File/FileSystemHelper.h>
-#include <RendererRuntime/Public/Resource/ShaderBlueprint/Cache/ShaderProperties.h>
-#include <RendererRuntime/Public/Resource/ShaderBlueprint/Loader/ShaderBlueprintFileFormat.h>
+#include <Renderer/Public/Asset/AssetPackage.h>
+#include <Renderer/Public/Core/File/MemoryFile.h>
+#include <Renderer/Public/Core/File/FileSystemHelper.h>
+#include <Renderer/Public/Resource/ShaderBlueprint/Cache/ShaderProperties.h>
+#include <Renderer/Public/Resource/ShaderBlueprint/Loader/ShaderBlueprintFileFormat.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -60,7 +60,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		void gatherReferencedShaderProperties(const std::string& sourceString, const std::string& instructionName, RendererRuntime::ShaderProperties& referencedShaderProperties)
+		void gatherReferencedShaderProperties(const std::string& sourceString, const std::string& instructionName, Renderer::ShaderProperties& referencedShaderProperties)
 		{
 			const size_t instructionNameLength = instructionName.length();
 			const size_t endPosition = sourceString.length();
@@ -105,7 +105,7 @@ namespace
 						{
 							if (stringPart != "&&" && stringPart != "||")
 							{
-								referencedShaderProperties.setPropertyValue(RendererRuntime::StringId(stringPart.c_str()), 1);
+								referencedShaderProperties.setPropertyValue(Renderer::StringId(stringPart.c_str()), 1);
 							}
 						}
 
@@ -152,7 +152,7 @@ namespace RendererToolkit
 	bool ShaderBlueprintAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const
 	{
 		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFileByRapidJsonDocument(configuration.rapidJsonDocumentAsset);
-		return input.cacheManager.checkIfFileIsModified(configuration.rhiTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), RendererRuntime::v1ShaderBlueprint::FORMAT_VERSION);
+		return input.cacheManager.checkIfFileIsModified(configuration.rhiTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), Renderer::v1ShaderBlueprint::FORMAT_VERSION);
 	}
 
 	void ShaderBlueprintAssetCompiler::compile(const Input& input, const Configuration& configuration) const
@@ -163,9 +163,9 @@ namespace RendererToolkit
 
 		// Ask the cache manager whether or not we need to compile the source file (e.g. source changed or target not there)
 		CacheManager::CacheEntries cacheEntries;
-		if (input.cacheManager.needsToBeCompiled(configuration.rhiTarget, input.virtualAssetFilename, virtualInputFilename, virtualOutputAssetFilename, RendererRuntime::v1ShaderBlueprint::FORMAT_VERSION, cacheEntries))
+		if (input.cacheManager.needsToBeCompiled(configuration.rhiTarget, input.virtualAssetFilename, virtualInputFilename, virtualOutputAssetFilename, Renderer::v1ShaderBlueprint::FORMAT_VERSION, cacheEntries))
 		{
-			RendererRuntime::MemoryFile memoryFile(0, 4096);
+			Renderer::MemoryFile memoryFile(0, 4096);
 
 			{ // Shader blueprint
 				// Get file size and file data
@@ -180,7 +180,7 @@ namespace RendererToolkit
 				}
 
 				// Collect shader piece resources to include
-				std::vector<RendererRuntime::AssetId> includeShaderPieceAssetIds;
+				std::vector<Renderer::AssetId> includeShaderPieceAssetIds;
 				{
 					// Gather "@includepiece(<asset ID>)" and then remove them from the shader source code
 					// TODO(co) This is hacked on-the-fly, we certainly need something more robust
@@ -193,7 +193,7 @@ namespace RendererToolkit
 						const size_t closingPosition = sourceCode.find(")", openingPosition);
 						const size_t numberOfCharacters = closingPosition - openingPosition - 1;
 						const std::string assetIdAsString = sourceCode.substr(openingPosition + 1, numberOfCharacters);
-						const RendererRuntime::AssetId assetId = StringHelper::getSourceAssetIdByString(assetIdAsString.c_str(), input);
+						const Renderer::AssetId assetId = StringHelper::getSourceAssetIdByString(assetIdAsString.c_str(), input);
 						includeShaderPieceAssetIds.push_back(assetId);
 						assetIdToString.emplace(assetId, assetIdAsString);
 						for (size_t i = includePiecePosition; i < closingPosition + 1; ++i)
@@ -206,7 +206,7 @@ namespace RendererToolkit
 					}
 
 					// Map the source asset IDs to the compiled asset IDs
-					for (RendererRuntime::AssetId& assetId : includeShaderPieceAssetIds)
+					for (Renderer::AssetId& assetId : includeShaderPieceAssetIds)
 					{
 						SourceAssetIdToCompiledAssetId::const_iterator iterator = input.sourceAssetIdToCompiledAssetId.find(assetId);
 						if (iterator != input.sourceAssetIdToCompiledAssetId.cend())
@@ -221,8 +221,8 @@ namespace RendererToolkit
 				}
 
 				// Gather IDs of shader properties known to the shader blueprint resource
-				// -> Directly use "RendererRuntime::ShaderProperties" to keep things simple, although we don't need a shader property value
-				RendererRuntime::ShaderProperties referencedShaderProperties;
+				// -> Directly use "Renderer::ShaderProperties" to keep things simple, although we don't need a shader property value
+				Renderer::ShaderProperties referencedShaderProperties;
 				::detail::gatherReferencedShaderProperties(sourceCode, "@property", referencedShaderProperties);
 				::detail::gatherReferencedShaderProperties(sourceCode, "@foreach", referencedShaderProperties);
 				if (sourceCode.find("MAIN_BEGIN_VERTEX") != std::string::npos)
@@ -232,24 +232,24 @@ namespace RendererToolkit
 				}
 
 				{ // Write down the shader blueprint header
-					RendererRuntime::v1ShaderBlueprint::ShaderBlueprintHeader shaderBlueprintHeader;
+					Renderer::v1ShaderBlueprint::ShaderBlueprintHeader shaderBlueprintHeader;
 					shaderBlueprintHeader.numberOfIncludeShaderPieceAssetIds = static_cast<uint16_t>(includeShaderPieceAssetIds.size());
 					shaderBlueprintHeader.numberOfReferencedShaderProperties = static_cast<uint16_t>(referencedShaderProperties.getSortedPropertyVector().size());
 					shaderBlueprintHeader.numberOfShaderSourceCodeBytes		 = static_cast<uint32_t>(numberOfBytes);
-					memoryFile.write(&shaderBlueprintHeader, sizeof(RendererRuntime::v1ShaderBlueprint::ShaderBlueprintHeader));
+					memoryFile.write(&shaderBlueprintHeader, sizeof(Renderer::v1ShaderBlueprint::ShaderBlueprintHeader));
 				}
 
 				// Write down the asset IDs of the shader pieces to include
 				if (!includeShaderPieceAssetIds.empty())
 				{
-					memoryFile.write(includeShaderPieceAssetIds.data(), sizeof(RendererRuntime::AssetId) * includeShaderPieceAssetIds.size());
+					memoryFile.write(includeShaderPieceAssetIds.data(), sizeof(Renderer::AssetId) * includeShaderPieceAssetIds.size());
 				}
 
 				{ // Write down the referenced shader properties
-					const RendererRuntime::ShaderProperties::SortedPropertyVector& sortedPropertyVector = referencedShaderProperties.getSortedPropertyVector();
+					const Renderer::ShaderProperties::SortedPropertyVector& sortedPropertyVector = referencedShaderProperties.getSortedPropertyVector();
 					if (!sortedPropertyVector.empty())
 					{
-						memoryFile.write(sortedPropertyVector.data(), sizeof(RendererRuntime::ShaderProperties::Property) * sortedPropertyVector.size());
+						memoryFile.write(sortedPropertyVector.data(), sizeof(Renderer::ShaderProperties::Property) * sortedPropertyVector.size());
 					}
 				}
 
@@ -258,7 +258,7 @@ namespace RendererToolkit
 			}
 
 			// Write LZ4 compressed output
-			if (!memoryFile.writeLz4CompressedDataByVirtualFilename(RendererRuntime::v1ShaderBlueprint::FORMAT_TYPE, RendererRuntime::v1ShaderBlueprint::FORMAT_VERSION, input.context.getFileManager(), virtualOutputAssetFilename.c_str()))
+			if (!memoryFile.writeLz4CompressedDataByVirtualFilename(Renderer::v1ShaderBlueprint::FORMAT_TYPE, Renderer::v1ShaderBlueprint::FORMAT_VERSION, input.context.getFileManager(), virtualOutputAssetFilename.c_str()))
 			{
 				throw std::runtime_error("Failed to write LZ4 compressed output file \"" + virtualOutputAssetFilename + '\"');
 			}

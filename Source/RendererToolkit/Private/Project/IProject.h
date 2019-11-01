@@ -47,9 +47,9 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace RendererRuntime
+namespace Renderer
 {
-	class IRendererRuntime;
+	class IRenderer;
 	typedef const char* AbsoluteDirectoryName;	///< UTF-8 absolute directory name (example: "c:/MyProject"), without "/" at the end, never ever a null pointer and always finished by a terminating zero
 }
 namespace RendererToolkit
@@ -105,10 +105,10 @@ namespace RendererToolkit
 	//[ Public virtual RendererToolkit::IProject methods      ]
 	//[-------------------------------------------------------]
 	public:
-		virtual void load(RendererRuntime::AbsoluteDirectoryName absoluteDirectoryName) = 0;
+		virtual void load(Renderer::AbsoluteDirectoryName absoluteDirectoryName) = 0;
 		virtual void importAssets(const AbsoluteFilenames& absoluteSourceFilenames, const std::string& targetAssetPackageName, const std::string& targetDirectoryName = "Imported") = 0;
 		virtual void compileAllAssets(const char* rhiTarget) = 0;
-		virtual void startupAssetMonitor(RendererRuntime::IRendererRuntime& rendererRuntime, const char* rhiTarget) = 0;
+		virtual void startupAssetMonitor(Renderer::IRenderer& renderer, const char* rhiTarget) = 0;
 		virtual void shutdownAssetMonitor() = 0;
 
 

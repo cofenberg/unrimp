@@ -29,7 +29,7 @@
 //[-------------------------------------------------------]
 #include "RendererToolkit/Private/AssetCompiler/IAssetCompiler.h"
 
-#include <RendererRuntime/Public/Resource/Material/MaterialProperties.h>
+#include <Renderer/Public/Resource/Material/MaterialProperties.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -41,7 +41,7 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Global definitions                                    ]
 //[-------------------------------------------------------]
-namespace RendererRuntime
+namespace Renderer
 {
 	typedef StringId AssetId;	///< Asset identifier, internally just a POD "uint32_t", string ID scheme is "<project name>/<asset directory>/<asset name>"
 }
@@ -65,15 +65,15 @@ namespace RendererToolkit
 	//[ Public static methods                                 ]
 	//[-------------------------------------------------------]
 	public:
-		static void loadDocumentByFilename(const RendererRuntime::IFileManager& fileManager, const std::string& virtualFilename, const std::string& formatType, const std::string& formatVersion, rapidjson::Document& rapidJsonDocument);
-		static void saveDocumentByFilename(const RendererRuntime::IFileManager& fileManager, const std::string& virtualFilename, const std::string& formatType, const std::string& formatVersion, rapidjson::Value& rapidJsonValue);
+		static void loadDocumentByFilename(const Renderer::IFileManager& fileManager, const std::string& virtualFilename, const std::string& formatType, const std::string& formatVersion, rapidjson::Document& rapidJsonDocument);
+		static void saveDocumentByFilename(const Renderer::IFileManager& fileManager, const std::string& virtualFilename, const std::string& formatType, const std::string& formatVersion, rapidjson::Value& rapidJsonValue);
 		static void mergeObjects(rapidjson::Value& destinationObject, rapidjson::Value& sourceObject, rapidjson::Document& allocatorRapidJsonDocument);
 		[[nodiscard]] static std::string getAssetFile(const rapidjson::Value& rapidJsonValue);
 		[[nodiscard]] static std::string getAssetInputFileByRapidJsonValue(const rapidjson::Value& rapidJsonValue, const std::string_view& valueName = "InputFile");
 		[[nodiscard]] static std::string getAssetInputFileByRapidJsonDocument(const rapidjson::Document& rapidJsonDocument);
-		[[nodiscard]] static const RendererRuntime::MaterialProperty* getMaterialPropertyOfUsageAndValueType(const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector, const std::string& valueAsString, RendererRuntime::MaterialProperty::Usage usage, RendererRuntime::MaterialPropertyValue::ValueType valueType);
-		static void optionalBooleanProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, bool& value, RendererRuntime::MaterialProperty::Usage usage = RendererRuntime::MaterialProperty::Usage::UNKNOWN, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector = nullptr);
-		static void optionalBooleanProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, int& value, RendererRuntime::MaterialProperty::Usage usage = RendererRuntime::MaterialProperty::Usage::UNKNOWN, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector = nullptr);
+		[[nodiscard]] static const Renderer::MaterialProperty* getMaterialPropertyOfUsageAndValueType(const Renderer::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector, const std::string& valueAsString, Renderer::MaterialProperty::Usage usage, Renderer::MaterialPropertyValue::ValueType valueType);
+		static void optionalBooleanProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, bool& value, Renderer::MaterialProperty::Usage usage = Renderer::MaterialProperty::Usage::UNKNOWN, const Renderer::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector = nullptr);
+		static void optionalBooleanProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, int& value, Renderer::MaterialProperty::Usage usage = Renderer::MaterialProperty::Usage::UNKNOWN, const Renderer::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector = nullptr);
 		static void optionalByteProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, uint8_t& value);
 		static void optionalIntegerProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, int& value);
 		static void optionalIntegerProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, unsigned int& value);
@@ -90,15 +90,15 @@ namespace RendererToolkit
 		static void mandatoryStringProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, char* value, uint32_t maximumLength);
 		static void optionalStringProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, char* value, uint32_t maximumLength);
 		static void optionalStringNProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, std::string value[], uint32_t numberOfComponents, char separator = ' ');
-		static void mandatoryStringIdProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, RendererRuntime::StringId& value);
+		static void mandatoryStringIdProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::StringId& value);
 		static void mandatoryStringIdProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, uint32_t& value);
-		static void optionalStringIdProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, RendererRuntime::StringId& value);
+		static void optionalStringIdProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::StringId& value);
 		static void optionalStringIdProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, uint32_t& value);
-		static void mandatoryAssetIdProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, RendererRuntime::AssetId& value);
-		static void optionalAssetIdProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, RendererRuntime::AssetId& value);
+		static void mandatoryAssetIdProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::AssetId& value);
+		static void optionalAssetIdProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::AssetId& value);
 		static void optionalClearFlagsProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, uint32_t& clearFlags);
-		static void optionalCompiledAssetId(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValue, const char* propertyName, RendererRuntime::AssetId& compiledAssetId);
-		[[nodiscard]] static RendererRuntime::AssetId getCompiledAssetId(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValue, const char* propertyName);
+		static void optionalCompiledAssetId(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::AssetId& compiledAssetId);
+		[[nodiscard]] static Renderer::AssetId getCompiledAssetId(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValue, const char* propertyName);
 		[[nodiscard]] static Rhi::TextureFormat::Enum mandatoryTextureFormat(const rapidjson::Value& rapidJsonValue);
 
 

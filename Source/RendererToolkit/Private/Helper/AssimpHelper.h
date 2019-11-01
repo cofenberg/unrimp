@@ -27,7 +27,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include <RendererRuntime/Public/Core/Platform/PlatformTypes.h>
+#include <Renderer/Public/Core/Platform/PlatformTypes.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH

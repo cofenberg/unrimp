@@ -29,7 +29,7 @@
 //[-------------------------------------------------------]
 #include "RendererToolkit/Private/AssetCompiler/IAssetCompiler.h"
 
-#include <RendererRuntime/Public/Resource/Material/MaterialProperties.h>
+#include <Renderer/Public/Resource/Material/MaterialProperties.h>
 
 #include <unordered_map>
 
@@ -37,7 +37,7 @@
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace RendererRuntime
+namespace Renderer
 {
 	class IFile;
 	class ShaderProperties;
@@ -54,8 +54,8 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	//[ Global definitions                                    ]
 	//[-------------------------------------------------------]
-	typedef std::unordered_map<uint32_t, std::string> MaterialPropertyIdToName;				///< Key = "RendererRuntime::MaterialPropertyId"
-	typedef std::unordered_map<uint32_t, uint32_t> SamplerBaseShaderRegisterNameToIndex;	///< Key = "RendererRuntime::StringId(<Base Shader Register Name>)", value = index of the material blueprint sampler state resource to use
+	typedef std::unordered_map<uint32_t, std::string> MaterialPropertyIdToName;				///< Key = "Renderer::MaterialPropertyId"
+	typedef std::unordered_map<uint32_t, uint32_t> SamplerBaseShaderRegisterNameToIndex;	///< Key = "Renderer::StringId(<Base Shader Register Name>)", value = index of the material blueprint sampler state resource to use
 
 
 	//[-------------------------------------------------------]
@@ -73,18 +73,18 @@ namespace RendererToolkit
 		static void optionalPrimitiveTopology(const rapidjson::Value& rapidJsonValue, const char* propertyName, Rhi::PrimitiveTopology& value);
 		[[nodiscard]] static Rhi::PrimitiveTopologyType getPrimitiveTopologyTypeByPrimitiveTopology(Rhi::PrimitiveTopology primitiveTopology);
 		static void optionalShaderVisibilityProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Rhi::ShaderVisibility& value);
-		[[nodiscard]] static RendererRuntime::MaterialProperty::Usage mandatoryMaterialPropertyUsage(const rapidjson::Value& rapidJsonValue);
-		[[nodiscard]] static RendererRuntime::MaterialProperty::ValueType mandatoryMaterialPropertyValueType(const rapidjson::Value& rapidJsonValue);
-		static void getPropertiesByMaterialBlueprintAssetId(const IAssetCompiler::Input& input, RendererRuntime::AssetId materialBlueprintAssetId, RendererRuntime::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector, MaterialPropertyIdToName* materialPropertyIdToName = nullptr);
-		[[nodiscard]] static RendererRuntime::MaterialPropertyValue mandatoryMaterialPropertyValue(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValue, const char* propertyName, const RendererRuntime::MaterialProperty::ValueType valueType);
-		static void readRootSignatureByResourceGroups(const rapidjson::Value& rapidJsonValueResourceGroups, RendererRuntime::IFile& file, bool isComputeMaterialBlueprint);
-		static void readProperties(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValueProperties, RendererRuntime::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector, RendererRuntime::ShaderProperties& visualImportanceOfShaderProperties, RendererRuntime::ShaderProperties& maximumIntegerValueOfShaderProperties, bool ignoreGlobalReferenceFallback, bool sort, bool referencesAllowed, MaterialPropertyIdToName* materialPropertyIdToName = nullptr);
-		static void readComputePipelineStateObject(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValueComputePipelineState, RendererRuntime::IFile& file, const RendererRuntime::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector);
-		static void readGraphicsPipelineStateObject(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValueGraphicsPipelineState, RendererRuntime::IFile& file, const RendererRuntime::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector);
-		static void readUniformBuffersByResourceGroups(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValueResourceGroups, RendererRuntime::IFile& file);
-		static void readTextureBuffersByResourceGroups(const rapidjson::Value& rapidJsonValueResourceGroups, RendererRuntime::IFile& file);
-		static void readSamplerStatesByResourceGroups(const rapidjson::Value& rapidJsonValueResourceGroups, const RendererRuntime::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector, RendererRuntime::IFile& file, SamplerBaseShaderRegisterNameToIndex& samplerBaseShaderRegisterNameToIndex);
-		static void readTexturesByResourceGroups(const IAssetCompiler::Input& input, const RendererRuntime::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector, const rapidjson::Value& rapidJsonValueResourceGroups, const SamplerBaseShaderRegisterNameToIndex& samplerBaseShaderRegisterNameToIndex, RendererRuntime::IFile& file);
+		[[nodiscard]] static Renderer::MaterialProperty::Usage mandatoryMaterialPropertyUsage(const rapidjson::Value& rapidJsonValue);
+		[[nodiscard]] static Renderer::MaterialProperty::ValueType mandatoryMaterialPropertyValueType(const rapidjson::Value& rapidJsonValue);
+		static void getPropertiesByMaterialBlueprintAssetId(const IAssetCompiler::Input& input, Renderer::AssetId materialBlueprintAssetId, Renderer::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector, MaterialPropertyIdToName* materialPropertyIdToName = nullptr);
+		[[nodiscard]] static Renderer::MaterialPropertyValue mandatoryMaterialPropertyValue(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValue, const char* propertyName, const Renderer::MaterialProperty::ValueType valueType);
+		static void readRootSignatureByResourceGroups(const rapidjson::Value& rapidJsonValueResourceGroups, Renderer::IFile& file, bool isComputeMaterialBlueprint);
+		static void readProperties(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValueProperties, Renderer::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector, Renderer::ShaderProperties& visualImportanceOfShaderProperties, Renderer::ShaderProperties& maximumIntegerValueOfShaderProperties, bool ignoreGlobalReferenceFallback, bool sort, bool referencesAllowed, MaterialPropertyIdToName* materialPropertyIdToName = nullptr);
+		static void readComputePipelineStateObject(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValueComputePipelineState, Renderer::IFile& file, const Renderer::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector);
+		static void readGraphicsPipelineStateObject(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValueGraphicsPipelineState, Renderer::IFile& file, const Renderer::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector);
+		static void readUniformBuffersByResourceGroups(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValueResourceGroups, Renderer::IFile& file);
+		static void readTextureBuffersByResourceGroups(const rapidjson::Value& rapidJsonValueResourceGroups, Renderer::IFile& file);
+		static void readSamplerStatesByResourceGroups(const rapidjson::Value& rapidJsonValueResourceGroups, const Renderer::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector, Renderer::IFile& file, SamplerBaseShaderRegisterNameToIndex& samplerBaseShaderRegisterNameToIndex);
+		static void readTexturesByResourceGroups(const IAssetCompiler::Input& input, const Renderer::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector, const rapidjson::Value& rapidJsonValueResourceGroups, const SamplerBaseShaderRegisterNameToIndex& samplerBaseShaderRegisterNameToIndex, Renderer::IFile& file);
 		static void getDependencyFiles(const IAssetCompiler::Input& input, const std::string& virtualInputFilename, std::vector<std::string>& virtualDependencyFilenames);
 
 

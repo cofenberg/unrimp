@@ -27,10 +27,10 @@
 #include "RendererToolkit/Private/Helper/JsonHelper.h"
 #include "RendererToolkit/Private/Context.h"
 
-#include <RendererRuntime/Public/Asset/AssetPackage.h>
-#include <RendererRuntime/Public/Core/File/MemoryFile.h>
-#include <RendererRuntime/Public/Core/File/FileSystemHelper.h>
-#include <RendererRuntime/Public/Resource/ShaderPiece/Loader/ShaderPieceFileFormat.h>
+#include <Renderer/Public/Asset/AssetPackage.h>
+#include <Renderer/Public/Core/File/MemoryFile.h>
+#include <Renderer/Public/Core/File/FileSystemHelper.h>
+#include <Renderer/Public/Resource/ShaderPiece/Loader/ShaderPieceFileFormat.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -65,7 +65,7 @@ namespace RendererToolkit
 	bool ShaderPieceAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const
 	{
 		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFileByRapidJsonDocument(configuration.rapidJsonDocumentAsset);
-		return input.cacheManager.checkIfFileIsModified(configuration.rhiTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), RendererRuntime::v1ShaderPiece::FORMAT_VERSION);
+		return input.cacheManager.checkIfFileIsModified(configuration.rhiTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), Renderer::v1ShaderPiece::FORMAT_VERSION);
 	}
 
 	void ShaderPieceAssetCompiler::compile(const Input& input, const Configuration& configuration) const
@@ -76,9 +76,9 @@ namespace RendererToolkit
 
 		// Ask the cache manager whether or not we need to compile the source file (e.g. source changed or target not there)
 		CacheManager::CacheEntries cacheEntries;
-		if (input.cacheManager.needsToBeCompiled(configuration.rhiTarget, input.virtualAssetFilename, virtualInputFilename, virtualOutputAssetFilename, RendererRuntime::v1ShaderPiece::FORMAT_VERSION, cacheEntries))
+		if (input.cacheManager.needsToBeCompiled(configuration.rhiTarget, input.virtualAssetFilename, virtualInputFilename, virtualOutputAssetFilename, Renderer::v1ShaderPiece::FORMAT_VERSION, cacheEntries))
 		{
-			RendererRuntime::MemoryFile memoryFile(0, 4096);
+			Renderer::MemoryFile memoryFile(0, 4096);
 
 			{ // Shader piece
 				// Get file size and file data
@@ -93,9 +93,9 @@ namespace RendererToolkit
 				}
 
 				{ // Write down the shader piece header
-					RendererRuntime::v1ShaderPiece::ShaderPieceHeader shaderPieceHeader;
+					Renderer::v1ShaderPiece::ShaderPieceHeader shaderPieceHeader;
 					shaderPieceHeader.numberOfShaderSourceCodeBytes = static_cast<uint32_t>(numberOfBytes);
-					memoryFile.write(&shaderPieceHeader, sizeof(RendererRuntime::v1ShaderPiece::ShaderPieceHeader));
+					memoryFile.write(&shaderPieceHeader, sizeof(Renderer::v1ShaderPiece::ShaderPieceHeader));
 				}
 
 				// Dump the unchanged content into the output file stream
@@ -103,7 +103,7 @@ namespace RendererToolkit
 			}
 
 			// Write LZ4 compressed output
-			if (!memoryFile.writeLz4CompressedDataByVirtualFilename(RendererRuntime::v1ShaderPiece::FORMAT_TYPE, RendererRuntime::v1ShaderPiece::FORMAT_VERSION, input.context.getFileManager(), virtualOutputAssetFilename.c_str()))
+			if (!memoryFile.writeLz4CompressedDataByVirtualFilename(Renderer::v1ShaderPiece::FORMAT_TYPE, Renderer::v1ShaderPiece::FORMAT_VERSION, input.context.getFileManager(), virtualOutputAssetFilename.c_str()))
 			{
 				throw std::runtime_error("Failed to write LZ4 compressed output file \"" + virtualOutputAssetFilename + '\"');
 			}

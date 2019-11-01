@@ -130,7 +130,7 @@ public:
 //[-------------------------------------------------------]
 private:
 	template <class ExampleClass>
-	[[nodiscard]] static int runRenderExample(ExampleRunner& exampleRunner, const char* rhiName)
+	[[nodiscard]] static int runRhiExample(ExampleRunner& exampleRunner, const char* rhiName)
 	{
 		ExampleClass exampleClass;
 		exampleClass.mExampleRunner = &exampleRunner;
@@ -138,11 +138,11 @@ private:
 	}
 
 	template <class ExampleClass>
-	[[nodiscard]] static int runRenderRuntimeExample(ExampleRunner& exampleRunner, const char* rhiName)
+	[[nodiscard]] static int runRenderExample(ExampleRunner& exampleRunner, const char* rhiName)
 	{
 		ExampleClass exampleClass;
 		exampleClass.mExampleRunner = &exampleRunner;
-		return IApplicationRendererRuntime(rhiName, exampleClass).run();
+		return IApplicationRenderer(rhiName, exampleClass).run();
 	}
 
 	template <class ExampleClass>

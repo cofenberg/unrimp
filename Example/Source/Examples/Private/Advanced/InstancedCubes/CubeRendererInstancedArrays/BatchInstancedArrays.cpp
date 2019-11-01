@@ -23,7 +23,7 @@
 //[-------------------------------------------------------]
 #include "Examples/Private/Advanced/InstancedCubes/CubeRendererInstancedArrays/BatchInstancedArrays.h"
 
-#include <RendererRuntime/Public/Core/Math/EulerAngles.h>
+#include <Renderer/Public/Core/Math/EulerAngles.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -84,7 +84,7 @@ void BatchInstancedArrays::initialize(Rhi::IBufferManager& bufferManager, Rhi::I
 			}
 
 			{ // Rotation
-				rotation = RendererRuntime::EulerAngles::eulerToQuaternion((rand() % 65536) / 65536.0f, (rand() % 65536) / 65536.0f * 2.0f, (rand() % 65536) / 65536.0f * 3.0f);
+				rotation = Renderer::EulerAngles::eulerToQuaternion((rand() % 65536) / 65536.0f, (rand() % 65536) / 65536.0f * 2.0f, (rand() % 65536) / 65536.0f * 3.0f);
 
 				// r=x
 				*dataCurrent = rotation.x;

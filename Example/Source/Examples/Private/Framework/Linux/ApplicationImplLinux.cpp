@@ -25,11 +25,11 @@
 #include "Examples/Private/Framework/Linux/X11Application.h"
 #include "Examples/Private/Framework/Linux/X11Window.h"
 #include "Examples/Private/Framework/IApplication.h"
-#include "Examples/Private/Framework/IApplicationRendererRuntime.h"
+#include "Examples/Private/Framework/IApplicationRenderer.h"
 
-#ifdef RENDERER_RUNTIME_IMGUI
-	#include <RendererRuntime/Public/IRendererRuntime.h>
-	#include <RendererRuntime/Public/DebugGui/Detail/DebugGuiManagerLinux.h>
+#ifdef RENDERER_IMGUI
+	#include <Renderer/Public/IRenderer.h>
+	#include <Renderer/Public/DebugGui/Detail/DebugGuiManagerLinux.h>
 #endif
 
 #include <X11/Xutil.h>
@@ -97,16 +97,16 @@ public:
 			}
 		}
 
-		#ifdef RENDERER_RUNTIME_IMGUI
+		#ifdef RENDERER_IMGUI
 		{
 			// TODO(co) Evil cast ahead. Maybe simplify the example application framework? After all, it's just an example framework for Unrimp and nothing too generic.
-			const IApplicationRendererRuntime* applicationRendererRuntime = dynamic_cast<IApplicationRendererRuntime*>(&mApplication);
-			if (nullptr != applicationRendererRuntime)
+			const IApplicationRenderer* applicationRenderer = dynamic_cast<IApplicationRenderer*>(&mApplication);
+			if (nullptr != applicationRenderer)
 			{
-				const RendererRuntime::IRendererRuntime* rendererRuntime = applicationRendererRuntime->getRendererRuntime();
-				if (nullptr != rendererRuntime)
+				const Renderer::IRenderer* renderer = applicationRenderer->getRenderer();
+				if (nullptr != renderer)
 				{
-					RendererRuntime::DebugGuiManagerLinux& debugGuiLinux = static_cast<RendererRuntime::DebugGuiManagerLinux&>(rendererRuntime->getDebugGuiManager());
+					Renderer::DebugGuiManagerLinux& debugGuiLinux = static_cast<Renderer::DebugGuiManagerLinux&>(renderer->getDebugGuiManager());
 					switch(event.type)
 					{
 						case ConfigureNotify:

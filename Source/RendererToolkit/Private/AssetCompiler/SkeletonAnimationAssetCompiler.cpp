@@ -30,13 +30,13 @@
 #include "RendererToolkit/Private/Helper/JsonHelper.h"
 #include "RendererToolkit/Private/Context.h"
 
-#include <RendererRuntime/Public/Asset/AssetPackage.h>
-#include <RendererRuntime/Public/Core/File/IFile.h>
-#include <RendererRuntime/Public/Core/File/IFileManager.h>
-#include <RendererRuntime/Public/Core/File/FileSystemHelper.h>
-#include <RendererRuntime/Public/Core/GetInvalid.h>
-#include <RendererRuntime/Public/Resource/SkeletonAnimation/SkeletonAnimationResource.h>
-#include <RendererRuntime/Public/Resource/SkeletonAnimation/Loader/SkeletonAnimationFileFormat.h>
+#include <Renderer/Public/Asset/AssetPackage.h>
+#include <Renderer/Public/Core/File/IFile.h>
+#include <Renderer/Public/Core/File/IFileManager.h>
+#include <Renderer/Public/Core/File/FileSystemHelper.h>
+#include <Renderer/Public/Core/GetInvalid.h>
+#include <Renderer/Public/Resource/SkeletonAnimation/SkeletonAnimationResource.h>
+#include <Renderer/Public/Resource/SkeletonAnimation/Loader/SkeletonAnimationFileFormat.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -162,7 +162,7 @@ namespace RendererToolkit
 	bool SkeletonAnimationAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const
 	{
 		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFileByRapidJsonDocument(configuration.rapidJsonDocumentAsset);
-		return input.cacheManager.checkIfFileIsModified(configuration.rhiTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), RendererRuntime::v1SkeletonAnimation::FORMAT_VERSION);
+		return input.cacheManager.checkIfFileIsModified(configuration.rhiTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), Renderer::v1SkeletonAnimation::FORMAT_VERSION);
 	}
 
 	void SkeletonAnimationAssetCompiler::compile(const Input& input, const Configuration& configuration) const
@@ -174,7 +174,7 @@ namespace RendererToolkit
 
 		// Ask the cache manager whether or not we need to compile the source file (e.g. source changed or target not there)
 		CacheManager::CacheEntries cacheEntries;
-		if (input.cacheManager.needsToBeCompiled(configuration.rhiTarget, input.virtualAssetFilename, virtualInputFilename, virtualOutputAssetFilename, RendererRuntime::v1SkeletonAnimation::FORMAT_VERSION, cacheEntries))
+		if (input.cacheManager.needsToBeCompiled(configuration.rhiTarget, input.virtualAssetFilename, virtualInputFilename, virtualOutputAssetFilename, Renderer::v1SkeletonAnimation::FORMAT_VERSION, cacheEntries))
 		{
 			// Create an instance of the Assimp importer class
 			AssimpLogStream assimpLogStream;
@@ -187,7 +187,7 @@ namespace RendererToolkit
 			if (nullptr != assimpScene && nullptr != assimpScene->mRootNode)
 			{
 				// Read skeleton animation asset compiler configuration
-				uint32_t animationIndex = RendererRuntime::getInvalid<uint32_t>();
+				uint32_t animationIndex = Renderer::getInvalid<uint32_t>();
 				JsonHelper::optionalIntegerProperty(rapidJsonValueSkeletonAnimationAssetCompiler, "AnimationIndex", animationIndex);
 				bool ignoreBoneScale = false;
 				JsonHelper::optionalBooleanProperty(rapidJsonValueSkeletonAnimationAssetCompiler, "IgnoreBoneScale", ignoreBoneScale);
@@ -202,7 +202,7 @@ namespace RendererToolkit
 				}
 				if (assimpScene->mNumAnimations > 1)
 				{
-					if (RendererRuntime::isInvalid(animationIndex))
+					if (Renderer::isInvalid(animationIndex))
 					{
 						throw std::runtime_error("The input file \"" + virtualInputFilename + "\" contains multiple animations, but the skeleton animation compiler wasn't provided with an animation index");
 					}
@@ -283,7 +283,7 @@ namespace RendererToolkit
 						for (uint16_t boneIndex = 0; boneIndex < numberOfBones; ++boneIndex)
 						{
 							const aiNodeAnim* assimpNodeAnim = assimpAnimation->mChannels[boneIndex];
-							boneIds[boneIndex] = RendererRuntime::StringId::calculateFNV(assimpNodeAnim->mNodeName.C_Str());
+							boneIds[boneIndex] = Renderer::StringId::calculateFNV(assimpNodeAnim->mNodeName.C_Str());
 							acl::AnimatedBone& aclAnimatedBone = aclAnimationClip.get_animated_bone(boneIndex);
 
 							// Rotation
@@ -391,7 +391,7 @@ namespace RendererToolkit
 
 					// Open file
 					// -> There's no need for additional LZ4 compression when using ACL
-					RendererRuntime::IFile* file = context.getFileManager().openFile(RendererRuntime::IFileManager::FileMode::WRITE, virtualOutputAssetFilename.c_str());
+					Renderer::IFile* file = context.getFileManager().openFile(Renderer::IFileManager::FileMode::WRITE, virtualOutputAssetFilename.c_str());
 					if (nullptr == file)
 					{
 						throw std::runtime_error("Failed to open destination file \"" + std::string(virtualOutputAssetFilename) + '\"');
@@ -403,17 +403,17 @@ namespace RendererToolkit
 							uint32_t formatType;
 							uint32_t formatVersion;
 						};
-						const FileFormatHeader fileFormatHeader{RendererRuntime::v1SkeletonAnimation::FORMAT_TYPE, RendererRuntime::v1SkeletonAnimation::FORMAT_VERSION};
+						const FileFormatHeader fileFormatHeader{Renderer::v1SkeletonAnimation::FORMAT_TYPE, Renderer::v1SkeletonAnimation::FORMAT_VERSION};
 						file->write(&fileFormatHeader, sizeof(FileFormatHeader));
 					}
 
 					{ // Write down the skeleton animation header
-						RendererRuntime::v1SkeletonAnimation::SkeletonAnimationHeader skeletonAnimationHeader;
+						Renderer::v1SkeletonAnimation::SkeletonAnimationHeader skeletonAnimationHeader;
 						skeletonAnimationHeader.numberOfChannels	  = static_cast<uint8_t>(assimpAnimation->mNumChannels);
 						skeletonAnimationHeader.durationInTicks		  = static_cast<float>(assimpAnimation->mDuration);
 						skeletonAnimationHeader.ticksPerSecond		  = static_cast<float>(assimpAnimation->mTicksPerSecond);
 						skeletonAnimationHeader.aclCompressedClipSize = aclCompressedClip->get_size();
-						file->write(&skeletonAnimationHeader, sizeof(RendererRuntime::v1SkeletonAnimation::SkeletonAnimationHeader));
+						file->write(&skeletonAnimationHeader, sizeof(Renderer::v1SkeletonAnimation::SkeletonAnimationHeader));
 					}
 
 					// Write down bone IDs

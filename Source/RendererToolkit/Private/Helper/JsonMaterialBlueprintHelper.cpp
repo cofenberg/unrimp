@@ -27,11 +27,11 @@
 #include "RendererToolkit/Private/Helper/JsonHelper.h"
 #include "RendererToolkit/Private/Context.h"
 
-#include <RendererRuntime/Public/Core/File/IFile.h>
-#include <RendererRuntime/Public/Core/File/FileSystemHelper.h>
-#include <RendererRuntime/Public/Resource/Material/MaterialResource.h>
-#include <RendererRuntime/Public/Resource/ShaderBlueprint/Cache/ShaderProperties.h>
-#include <RendererRuntime/Public/Resource/MaterialBlueprint/Loader/MaterialBlueprintFileFormat.h>
+#include <Renderer/Public/Core/File/IFile.h>
+#include <Renderer/Public/Core/File/FileSystemHelper.h>
+#include <Renderer/Public/Resource/Material/MaterialResource.h>
+#include <Renderer/Public/Resource/ShaderBlueprint/Cache/ShaderProperties.h>
+#include <Renderer/Public/Resource/MaterialBlueprint/Loader/MaterialBlueprintFileFormat.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -64,12 +64,12 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		[[nodiscard]] inline bool orderByMaterialPropertyId(const RendererRuntime::MaterialProperty& left, const RendererRuntime::MaterialProperty& right)
+		[[nodiscard]] inline bool orderByMaterialPropertyId(const Renderer::MaterialProperty& left, const Renderer::MaterialProperty& right)
 		{
 			return (left.getMaterialPropertyId() < right.getMaterialPropertyId());
 		}
 
-		void optionalBufferUsageProperty(const rapidjson::Value& rapidJsonValueUniformBuffer, const char* propertyName, RendererRuntime::MaterialBlueprintResource::BufferUsage& value)
+		void optionalBufferUsageProperty(const rapidjson::Value& rapidJsonValueUniformBuffer, const char* propertyName, Renderer::MaterialBlueprintResource::BufferUsage& value)
 		{
 			if (rapidJsonValueUniformBuffer.HasMember(propertyName))
 			{
@@ -78,8 +78,8 @@ namespace
 				const rapidjson::SizeType valueStringLength = rapidJsonValueUsage.GetStringLength();
 
 				// Define helper macros
-				#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) value = RendererRuntime::MaterialBlueprintResource::BufferUsage::name;
-				#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) value = RendererRuntime::MaterialBlueprintResource::BufferUsage::name;
+				#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::MaterialBlueprintResource::BufferUsage::name;
+				#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) value = Renderer::MaterialBlueprintResource::BufferUsage::name;
 
 				// Evaluate value
 				IF_VALUE(UNKNOWN)
@@ -105,9 +105,9 @@ namespace
 
 		// TODO(co) Currently unused. Don't delete the function because it will be used in the future (topic: some more scripting features inside material blueprints).
 		/*
-		void executeParameterSetInstruction(const std::string& instructionAsString, RendererRuntime::ShaderProperties& shaderProperties)
+		void executeParameterSetInstruction(const std::string& instructionAsString, Renderer::ShaderProperties& shaderProperties)
 		{
-			// "@pset(<parameter name>, <parameter value to set>)" (same syntax as in "RendererRuntime::ShaderBuilder")
+			// "@pset(<parameter name>, <parameter value to set>)" (same syntax as in "Renderer::ShaderBuilder")
 
 			// Gather required data
 			std::vector<std::string> elements;
@@ -118,7 +118,7 @@ namespace
 				const int32_t parameterValue = std::atoi(elements[1].c_str());
 
 				// Execute
-				shaderProperties.setPropertyValue(RendererRuntime::StringId(parameterName.c_str()), parameterValue);
+				shaderProperties.setPropertyValue(Renderer::StringId(parameterName.c_str()), parameterValue);
 			}
 			else
 			{
@@ -127,13 +127,13 @@ namespace
 		}
 		*/
 
-		[[nodiscard]] int32_t executeCounterInstruction(const std::string& instructionAsString, RendererRuntime::ShaderProperties& shaderProperties)
+		[[nodiscard]] int32_t executeCounterInstruction(const std::string& instructionAsString, Renderer::ShaderProperties& shaderProperties)
 		{
-			// "@counter(<parameter name>)" (same syntax as in "RendererRuntime::ShaderBuilder")
+			// "@counter(<parameter name>)" (same syntax as in "Renderer::ShaderBuilder")
 
 			// Get the shader property ID
 			const size_t valueEndIndex = instructionAsString.find(")", 9);
-			const RendererRuntime::ShaderPropertyId shaderPropertyId = RendererRuntime::StringId(instructionAsString.substr(9, valueEndIndex - 9).c_str());
+			const Renderer::ShaderPropertyId shaderPropertyId = Renderer::StringId(instructionAsString.substr(9, valueEndIndex - 9).c_str());
 
 			// Execute
 			int32_t value = 0;
@@ -144,9 +144,9 @@ namespace
 			return value;
 		}
 
-		[[nodiscard]] uint32_t getIntegerFromInstructionString(const char* instructionAsString, RendererRuntime::ShaderProperties& shaderProperties)
+		[[nodiscard]] uint32_t getIntegerFromInstructionString(const char* instructionAsString, Renderer::ShaderProperties& shaderProperties)
 		{
-			// Check for instruction "@counter(<parameter name>)" (same syntax as in "RendererRuntime::ShaderBuilder")
+			// Check for instruction "@counter(<parameter name>)" (same syntax as in "Renderer::ShaderBuilder")
 			// -> TODO(co) We might want to get rid of the implicit std::string parameter conversion below
 			return static_cast<uint32_t>((strncmp(instructionAsString, "@counter(", 7) == 0) ? executeCounterInstruction(instructionAsString, shaderProperties) : std::atoi(instructionAsString));
 		}
@@ -255,7 +255,7 @@ namespace RendererToolkit
 	{
 		// Parse JSON
 		rapidjson::Document derivedRapidJsonDocument;
-		const RendererRuntime::IFileManager& fileManager = input.context.getFileManager();
+		const Renderer::IFileManager& fileManager = input.context.getFileManager();
 		JsonHelper::loadDocumentByFilename(fileManager, virtualFilename, "MaterialBlueprintAsset", "2", derivedRapidJsonDocument);
 
 		// Handle optional base material blueprint
@@ -443,16 +443,16 @@ namespace RendererToolkit
 		}
 	}
 
-	RendererRuntime::MaterialProperty::Usage JsonMaterialBlueprintHelper::mandatoryMaterialPropertyUsage(const rapidjson::Value& rapidJsonValue)
+	Renderer::MaterialProperty::Usage JsonMaterialBlueprintHelper::mandatoryMaterialPropertyUsage(const rapidjson::Value& rapidJsonValue)
 	{
 		const rapidjson::Value& rapidJsonValueUsage = rapidJsonValue["Usage"];
 		const char* valueAsString = rapidJsonValueUsage.GetString();
 		const rapidjson::SizeType valueStringLength = rapidJsonValueUsage.GetStringLength();
-		RendererRuntime::MaterialProperty::Usage usage = RendererRuntime::MaterialProperty::Usage::UNKNOWN;
+		Renderer::MaterialProperty::Usage usage = Renderer::MaterialProperty::Usage::UNKNOWN;
 
 		// Define helper macros
-		#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) usage = RendererRuntime::MaterialProperty::Usage::name;
-		#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) usage = RendererRuntime::MaterialProperty::Usage::name;
+		#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) usage = Renderer::MaterialProperty::Usage::name;
+		#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) usage = Renderer::MaterialProperty::Usage::name;
 
 		// Evaluate value
 		IF_VALUE(UNKNOWN)
@@ -483,16 +483,16 @@ namespace RendererToolkit
 		return usage;
 	}
 
-	RendererRuntime::MaterialProperty::ValueType JsonMaterialBlueprintHelper::mandatoryMaterialPropertyValueType(const rapidjson::Value& rapidJsonValue)
+	Renderer::MaterialProperty::ValueType JsonMaterialBlueprintHelper::mandatoryMaterialPropertyValueType(const rapidjson::Value& rapidJsonValue)
 	{
 		const rapidjson::Value& rapidJsonValueValueType = rapidJsonValue["ValueType"];
 		const char* valueAsString = rapidJsonValueValueType.GetString();
 		const rapidjson::SizeType valueStringLength = rapidJsonValueValueType.GetStringLength();
-		RendererRuntime::MaterialProperty::ValueType valueType = RendererRuntime::MaterialProperty::ValueType::UNKNOWN;
+		Renderer::MaterialProperty::ValueType valueType = Renderer::MaterialProperty::ValueType::UNKNOWN;
 
 		// Define helper macros
-		#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) valueType = RendererRuntime::MaterialProperty::ValueType::name;
-		#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) valueType = RendererRuntime::MaterialProperty::ValueType::name;
+		#define IF_VALUE(name)			 if (strncmp(valueAsString, #name, valueStringLength) == 0) valueType = Renderer::MaterialProperty::ValueType::name;
+		#define ELSE_IF_VALUE(name) else if (strncmp(valueAsString, #name, valueStringLength) == 0) valueType = Renderer::MaterialProperty::ValueType::name;
 
 		// Evaluate value
 		IF_VALUE(UNKNOWN)
@@ -532,7 +532,7 @@ namespace RendererToolkit
 		return valueType;
 	}
 
-	void JsonMaterialBlueprintHelper::getPropertiesByMaterialBlueprintAssetId(const IAssetCompiler::Input& input, RendererRuntime::AssetId materialBlueprintAssetId, RendererRuntime::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector, MaterialPropertyIdToName* materialPropertyIdToName)
+	void JsonMaterialBlueprintHelper::getPropertiesByMaterialBlueprintAssetId(const IAssetCompiler::Input& input, Renderer::AssetId materialBlueprintAssetId, Renderer::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector, MaterialPropertyIdToName* materialPropertyIdToName)
 	{
 		// TODO(co) Error handling and simplification, has several parts of "RendererToolkit::MaterialBlueprintAssetCompiler" in common
 
@@ -558,189 +558,189 @@ namespace RendererToolkit
 		const std::string virtualMaterialBlueprintFilename = virtualMaterialBlueprintDirectory + '/' + materialBlueprintInputFile;
 		rapidjson::Document rapidJsonDocument;
 		loadDocumentByFilename(input, virtualMaterialBlueprintFilename, rapidJsonDocument);
-		RendererRuntime::ShaderProperties visualImportanceOfShaderProperties;
-		RendererRuntime::ShaderProperties maximumIntegerValueOfShaderProperties;
+		Renderer::ShaderProperties visualImportanceOfShaderProperties;
+		Renderer::ShaderProperties maximumIntegerValueOfShaderProperties;
 		const IAssetCompiler::Input materialBlueprintAssetInput(input.context, input.projectName, input.cacheManager, input.virtualAssetPackageInputDirectory, virtualMaterialBlueprintFilename, virtualMaterialBlueprintDirectory, input.virtualAssetOutputDirectory, input.sourceAssetIdToCompiledAssetId, input.compiledAssetIdToSourceAssetId, input.sourceAssetIdToVirtualFilename, input.defaultTextureAssetIds);
 		readProperties(materialBlueprintAssetInput, rapidJsonDocument["MaterialBlueprintAsset"]["Properties"], sortedMaterialPropertyVector, visualImportanceOfShaderProperties, maximumIntegerValueOfShaderProperties, true, true, false, materialPropertyIdToName);
 	}
 
-	RendererRuntime::MaterialPropertyValue JsonMaterialBlueprintHelper::mandatoryMaterialPropertyValue(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValue, const char* propertyName, const RendererRuntime::MaterialProperty::ValueType valueType)
+	Renderer::MaterialPropertyValue JsonMaterialBlueprintHelper::mandatoryMaterialPropertyValue(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValue, const char* propertyName, const Renderer::MaterialProperty::ValueType valueType)
 	{
 		// Get the material property default value
 		switch (valueType)
 		{
-			case RendererRuntime::MaterialPropertyValue::ValueType::UNKNOWN:
+			case Renderer::MaterialPropertyValue::ValueType::UNKNOWN:
 			{
 				// TODO(co) Error, unknown is nothing which is valid when read from assets
-				return RendererRuntime::MaterialPropertyValue::fromBoolean(false);
+				return Renderer::MaterialPropertyValue::fromBoolean(false);
 			}
 
-			case RendererRuntime::MaterialPropertyValue::ValueType::BOOLEAN:
+			case Renderer::MaterialPropertyValue::ValueType::BOOLEAN:
 			{
 				int value = 0;
 				JsonHelper::optionalBooleanProperty(rapidJsonValue, propertyName, value);
-				return RendererRuntime::MaterialPropertyValue::fromBoolean(0 != value);
+				return Renderer::MaterialPropertyValue::fromBoolean(0 != value);
 			}
 
-			case RendererRuntime::MaterialPropertyValue::ValueType::INTEGER:
+			case Renderer::MaterialPropertyValue::ValueType::INTEGER:
 			{
 				int value = 0;
 				JsonHelper::optionalIntegerProperty(rapidJsonValue, propertyName, value);
-				return RendererRuntime::MaterialPropertyValue::fromInteger(value);
+				return Renderer::MaterialPropertyValue::fromInteger(value);
 			}
 
-			case RendererRuntime::MaterialPropertyValue::ValueType::INTEGER_2:
+			case Renderer::MaterialPropertyValue::ValueType::INTEGER_2:
 			{
 				int values[2] = { 0, 0 };
 				JsonHelper::optionalIntegerNProperty(rapidJsonValue, propertyName, values, 2);
-				return RendererRuntime::MaterialPropertyValue::fromInteger2(values[0], values[1]);
+				return Renderer::MaterialPropertyValue::fromInteger2(values[0], values[1]);
 			}
 
-			case RendererRuntime::MaterialPropertyValue::ValueType::INTEGER_3:
+			case Renderer::MaterialPropertyValue::ValueType::INTEGER_3:
 			{
 				int values[3] = { 0, 0, 0 };
 				JsonHelper::optionalIntegerNProperty(rapidJsonValue, propertyName, values, 3);
-				return RendererRuntime::MaterialPropertyValue::fromInteger3(values[0], values[1], values[2]);
+				return Renderer::MaterialPropertyValue::fromInteger3(values[0], values[1], values[2]);
 			}
 
-			case RendererRuntime::MaterialPropertyValue::ValueType::INTEGER_4:
+			case Renderer::MaterialPropertyValue::ValueType::INTEGER_4:
 			{
 				int values[4] = { 0, 0, 0, 0 };
 				JsonHelper::optionalIntegerNProperty(rapidJsonValue, propertyName, values, 4);
-				return RendererRuntime::MaterialPropertyValue::fromInteger4(values[0], values[1], values[2], values[3]);
+				return Renderer::MaterialPropertyValue::fromInteger4(values[0], values[1], values[2], values[3]);
 			}
 
-			case RendererRuntime::MaterialPropertyValue::ValueType::FLOAT:
+			case Renderer::MaterialPropertyValue::ValueType::FLOAT:
 			{
 				float value = 0.0f;
 				JsonHelper::optionalFloatProperty(rapidJsonValue, propertyName, value);
-				return RendererRuntime::MaterialPropertyValue::fromFloat(value);
+				return Renderer::MaterialPropertyValue::fromFloat(value);
 			}
 
-			case RendererRuntime::MaterialPropertyValue::ValueType::FLOAT_2:
+			case Renderer::MaterialPropertyValue::ValueType::FLOAT_2:
 			{
 				float values[2] = { 0.0f, 0.0f };
 				JsonHelper::optionalFloatNProperty(rapidJsonValue, propertyName, values, 2);
-				return RendererRuntime::MaterialPropertyValue::fromFloat2(values[0], values[1]);
+				return Renderer::MaterialPropertyValue::fromFloat2(values[0], values[1]);
 			}
 
-			case RendererRuntime::MaterialPropertyValue::ValueType::FLOAT_3:
+			case Renderer::MaterialPropertyValue::ValueType::FLOAT_3:
 			{
 				float values[3] = { 0.0f, 0.0f, 0.0f };
 				JsonHelper::optionalFloatNProperty(rapidJsonValue, propertyName, values, 3);
-				return RendererRuntime::MaterialPropertyValue::fromFloat3(values[0], values[1], values[2]);
+				return Renderer::MaterialPropertyValue::fromFloat3(values[0], values[1], values[2]);
 			}
 
-			case RendererRuntime::MaterialPropertyValue::ValueType::FLOAT_4:
+			case Renderer::MaterialPropertyValue::ValueType::FLOAT_4:
 			{
 				float values[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 				JsonHelper::optionalFloatNProperty(rapidJsonValue, propertyName, values, 4);
-				return RendererRuntime::MaterialPropertyValue::fromFloat4(values[0], values[1], values[2], values[3]);
+				return Renderer::MaterialPropertyValue::fromFloat4(values[0], values[1], values[2], values[3]);
 			}
 
-			case RendererRuntime::MaterialPropertyValue::ValueType::FLOAT_3_3:
+			case Renderer::MaterialPropertyValue::ValueType::FLOAT_3_3:
 			{
 				// Declaration property only
-				return RendererRuntime::MaterialPropertyValue::fromFloat3_3();
+				return Renderer::MaterialPropertyValue::fromFloat3_3();
 			}
 
-			case RendererRuntime::MaterialPropertyValue::ValueType::FLOAT_4_4:
+			case Renderer::MaterialPropertyValue::ValueType::FLOAT_4_4:
 			{
 				// Declaration property only
-				return RendererRuntime::MaterialPropertyValue::fromFloat4_4();
+				return Renderer::MaterialPropertyValue::fromFloat4_4();
 			}
 
-			case RendererRuntime::MaterialPropertyValue::ValueType::FILL_MODE:
+			case Renderer::MaterialPropertyValue::ValueType::FILL_MODE:
 			{
 				Rhi::FillMode value = Rhi::FillMode::SOLID;
 				JsonMaterialHelper::optionalFillModeProperty(rapidJsonValue, propertyName, value);
-				return RendererRuntime::MaterialPropertyValue::fromFillMode(value);
+				return Renderer::MaterialPropertyValue::fromFillMode(value);
 			}
 
-			case RendererRuntime::MaterialPropertyValue::ValueType::CULL_MODE:
+			case Renderer::MaterialPropertyValue::ValueType::CULL_MODE:
 			{
 				Rhi::CullMode value = Rhi::CullMode::BACK;
 				JsonMaterialHelper::optionalCullModeProperty(rapidJsonValue, propertyName, value);
-				return RendererRuntime::MaterialPropertyValue::fromCullMode(value);
+				return Renderer::MaterialPropertyValue::fromCullMode(value);
 			}
 
-			case RendererRuntime::MaterialPropertyValue::ValueType::CONSERVATIVE_RASTERIZATION_MODE:
+			case Renderer::MaterialPropertyValue::ValueType::CONSERVATIVE_RASTERIZATION_MODE:
 			{
 				Rhi::ConservativeRasterizationMode value = Rhi::ConservativeRasterizationMode::OFF;
 				JsonMaterialHelper::optionalConservativeRasterizationModeProperty(rapidJsonValue, propertyName, value);
-				return RendererRuntime::MaterialPropertyValue::fromConservativeRasterizationMode(value);
+				return Renderer::MaterialPropertyValue::fromConservativeRasterizationMode(value);
 			}
 
-			case RendererRuntime::MaterialPropertyValue::ValueType::DEPTH_WRITE_MASK:
+			case Renderer::MaterialPropertyValue::ValueType::DEPTH_WRITE_MASK:
 			{
 				Rhi::DepthWriteMask value = Rhi::DepthWriteMask::ALL;
 				JsonMaterialHelper::optionalDepthWriteMaskProperty(rapidJsonValue, propertyName, value);
-				return RendererRuntime::MaterialPropertyValue::fromDepthWriteMask(value);
+				return Renderer::MaterialPropertyValue::fromDepthWriteMask(value);
 			}
 
-			case RendererRuntime::MaterialPropertyValue::ValueType::STENCIL_OP:
+			case Renderer::MaterialPropertyValue::ValueType::STENCIL_OP:
 			{
 				Rhi::StencilOp value = Rhi::StencilOp::KEEP;
 				JsonMaterialHelper::optionalStencilOpProperty(rapidJsonValue, propertyName, value);
-				return RendererRuntime::MaterialPropertyValue::fromStencilOp(value);
+				return Renderer::MaterialPropertyValue::fromStencilOp(value);
 			}
 
-			case RendererRuntime::MaterialPropertyValue::ValueType::COMPARISON_FUNC:
+			case Renderer::MaterialPropertyValue::ValueType::COMPARISON_FUNC:
 			{
 				Rhi::ComparisonFunc value = Rhi::ComparisonFunc::GREATER;	// "Rhi::ComparisonFunc::GREATER" instead of "Rhi::ComparisonFunc::LESS" due to usage of Reversed-Z (see e.g. https://developer.nvidia.com/content/depth-precision-visualized and https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/)
 				JsonMaterialHelper::optionalComparisonFuncProperty(rapidJsonValue, propertyName, value);
-				return RendererRuntime::MaterialPropertyValue::fromComparisonFunc(value);
+				return Renderer::MaterialPropertyValue::fromComparisonFunc(value);
 			}
 
-			case RendererRuntime::MaterialPropertyValue::ValueType::BLEND:
+			case Renderer::MaterialPropertyValue::ValueType::BLEND:
 			{
 				Rhi::Blend value = Rhi::Blend::ONE;
 				JsonMaterialHelper::optionalBlendProperty(rapidJsonValue, propertyName, value);
-				return RendererRuntime::MaterialPropertyValue::fromBlend(value);
+				return Renderer::MaterialPropertyValue::fromBlend(value);
 			}
 
-			case RendererRuntime::MaterialPropertyValue::ValueType::BLEND_OP:
+			case Renderer::MaterialPropertyValue::ValueType::BLEND_OP:
 			{
 				Rhi::BlendOp value = Rhi::BlendOp::ADD;
 				JsonMaterialHelper::optionalBlendOpProperty(rapidJsonValue, propertyName, value);
-				return RendererRuntime::MaterialPropertyValue::fromBlendOp(value);
+				return Renderer::MaterialPropertyValue::fromBlendOp(value);
 			}
 
-			case RendererRuntime::MaterialPropertyValue::ValueType::FILTER_MODE:
+			case Renderer::MaterialPropertyValue::ValueType::FILTER_MODE:
 			{
 				Rhi::FilterMode value = Rhi::FilterMode::MIN_MAG_MIP_LINEAR;
 				JsonMaterialHelper::optionalFilterProperty(rapidJsonValue, propertyName, value);
-				return RendererRuntime::MaterialPropertyValue::fromFilterMode(value);
+				return Renderer::MaterialPropertyValue::fromFilterMode(value);
 			}
 
-			case RendererRuntime::MaterialPropertyValue::ValueType::TEXTURE_ADDRESS_MODE:
+			case Renderer::MaterialPropertyValue::ValueType::TEXTURE_ADDRESS_MODE:
 			{
 				Rhi::TextureAddressMode value = Rhi::TextureAddressMode::CLAMP;
 				JsonMaterialHelper::optionalTextureAddressModeProperty(rapidJsonValue, propertyName, value);
-				return RendererRuntime::MaterialPropertyValue::fromTextureAddressMode(value);
+				return Renderer::MaterialPropertyValue::fromTextureAddressMode(value);
 			}
 
-			case RendererRuntime::MaterialPropertyValue::ValueType::TEXTURE_ASSET_ID:
+			case Renderer::MaterialPropertyValue::ValueType::TEXTURE_ASSET_ID:
 			{
-				RendererRuntime::AssetId textureAssetId = RendererRuntime::getInvalid<RendererRuntime::AssetId>();
+				Renderer::AssetId textureAssetId = Renderer::getInvalid<Renderer::AssetId>();
 				if (rapidJsonValue.HasMember(propertyName))
 				{
 					// Usage of asset IDs is the preferred way to go, but we also need to support the asset ID naming scheme
 					// "<project name>/<asset directory>/<asset name>" to be able to reference e.g. runtime generated assets
 					textureAssetId = StringHelper::getAssetIdByString(rapidJsonValue[propertyName].GetString(), input);
 				}
-				if (RendererRuntime::isInvalid(textureAssetId))
+				if (Renderer::isInvalid(textureAssetId))
 				{
 					throw std::runtime_error("Inside material blueprints, texture asset reference material properties must always have a value");
 				}
 
 				// Done
-				return RendererRuntime::MaterialPropertyValue::fromTextureAssetId(textureAssetId);
+				return Renderer::MaterialPropertyValue::fromTextureAssetId(textureAssetId);
 			}
 
-			case RendererRuntime::MaterialPropertyValue::ValueType::GLOBAL_MATERIAL_PROPERTY_ID:
+			case Renderer::MaterialPropertyValue::ValueType::GLOBAL_MATERIAL_PROPERTY_ID:
 			{
-				RendererRuntime::MaterialPropertyId materialPropertyId = RendererRuntime::getInvalid<RendererRuntime::MaterialPropertyId>();
+				Renderer::MaterialPropertyId materialPropertyId = Renderer::getInvalid<Renderer::MaterialPropertyId>();
 				if (rapidJsonValue.HasMember(propertyName))
 				{
 					// Get the reference value as string
@@ -752,28 +752,28 @@ namespace RendererToolkit
 					if (referenceAsString[0] == '@')
 					{
 						// Write down the material property
-						materialPropertyId = RendererRuntime::StringId(&referenceAsString[1]);
+						materialPropertyId = Renderer::StringId(&referenceAsString[1]);
 					}
 					else
 					{
 						throw std::runtime_error("Inside material blueprints, global material property ID material property values must begin with a @");
 					}
 				}
-				if (RendererRuntime::isInvalid(materialPropertyId))
+				if (Renderer::isInvalid(materialPropertyId))
 				{
 					throw std::runtime_error("Inside material blueprints, global material property ID material properties must always have a value");
 				}
 
 				// Done
-				return RendererRuntime::MaterialPropertyValue::fromGlobalMaterialPropertyId(materialPropertyId);
+				return Renderer::MaterialPropertyValue::fromGlobalMaterialPropertyId(materialPropertyId);
 			}
 		}
 
 		// TODO(co) Error, we should never ever end up in here
-		return RendererRuntime::MaterialPropertyValue::fromBoolean(false);
+		return Renderer::MaterialPropertyValue::fromBoolean(false);
 	}
 
-	void JsonMaterialBlueprintHelper::readRootSignatureByResourceGroups(const rapidjson::Value& rapidJsonValueResourceGroups, RendererRuntime::IFile& file, bool isComputeMaterialBlueprint)
+	void JsonMaterialBlueprintHelper::readRootSignatureByResourceGroups(const rapidjson::Value& rapidJsonValueResourceGroups, Renderer::IFile& file, bool isComputeMaterialBlueprint)
 	{
 		// First: Collect everything we need instead of directly writing it down using an inefficient data layout
 		std::vector<Rhi::RootParameterData> rootParameters;
@@ -785,7 +785,7 @@ namespace RendererToolkit
 			// - "ShaderVisibility"
 			// - "ResourceType"
 			int resourceGroupIndex = 0;
-			RendererRuntime::ShaderProperties shaderProperties;
+			Renderer::ShaderProperties shaderProperties;
 			for (rapidjson::Value::ConstMemberIterator rapidJsonMemberIteratorResourceGroup = rapidJsonValueResourceGroups.MemberBegin(); rapidJsonMemberIteratorResourceGroup != rapidJsonValueResourceGroups.MemberEnd(); ++rapidJsonMemberIteratorResourceGroup)
 			{
 				// Sanity check
@@ -980,12 +980,12 @@ namespace RendererToolkit
 		}
 
 		{ // Write down the root signature header
-			RendererRuntime::v1MaterialBlueprint::RootSignatureHeader rootSignatureHeader;
+			Renderer::v1MaterialBlueprint::RootSignatureHeader rootSignatureHeader;
 			rootSignatureHeader.numberOfRootParameters	 = static_cast<uint32_t>(rootParameters.size());
 			rootSignatureHeader.numberOfDescriptorRanges = static_cast<uint32_t>(descriptorRanges.size());
 			rootSignatureHeader.numberOfStaticSamplers	 = 0;								// TODO(co) Add support for static samplers
 			rootSignatureHeader.flags					 = Rhi::RootSignatureFlags::NONE;	// TODO(co) Add support for flags
-			file.write(&rootSignatureHeader, sizeof(RendererRuntime::v1MaterialBlueprint::RootSignatureHeader));
+			file.write(&rootSignatureHeader, sizeof(Renderer::v1MaterialBlueprint::RootSignatureHeader));
 		}
 
 		// Write down the rest
@@ -999,14 +999,14 @@ namespace RendererToolkit
 		}
 	}
 
-	void JsonMaterialBlueprintHelper::readProperties(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValueProperties, RendererRuntime::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector, RendererRuntime::ShaderProperties& visualImportanceOfShaderProperties, RendererRuntime::ShaderProperties& maximumIntegerValueOfShaderProperties, bool ignoreGlobalReferenceFallback, bool sort, bool referencesAllowed, MaterialPropertyIdToName* materialPropertyIdToName)
+	void JsonMaterialBlueprintHelper::readProperties(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValueProperties, Renderer::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector, Renderer::ShaderProperties& visualImportanceOfShaderProperties, Renderer::ShaderProperties& maximumIntegerValueOfShaderProperties, bool ignoreGlobalReferenceFallback, bool sort, bool referencesAllowed, MaterialPropertyIdToName* materialPropertyIdToName)
 	{
 		for (rapidjson::Value::ConstMemberIterator rapidJsonMemberIterator = rapidJsonValueProperties.MemberBegin(); rapidJsonMemberIterator != rapidJsonValueProperties.MemberEnd(); ++rapidJsonMemberIterator)
 		{
 			const rapidjson::Value& rapidJsonValueProperty = rapidJsonMemberIterator->value;
 
 			// Material property ID
-			const RendererRuntime::MaterialPropertyId materialPropertyId(rapidJsonMemberIterator->name.GetString());
+			const Renderer::MaterialPropertyId materialPropertyId(rapidJsonMemberIterator->name.GetString());
 			if (nullptr != materialPropertyIdToName)
 			{
 				materialPropertyIdToName->emplace(materialPropertyId, rapidJsonMemberIterator->name.GetString());
@@ -1014,11 +1014,11 @@ namespace RendererToolkit
 
 			// Material property usage
 			// -> Optimization: Material resources don't need to store global reference fallbacks, it's sufficient if those are just stored inside material blueprint resources
-			const RendererRuntime::MaterialProperty::Usage usage = mandatoryMaterialPropertyUsage(rapidJsonValueProperty);
-			if (!ignoreGlobalReferenceFallback || RendererRuntime::MaterialProperty::Usage::GLOBAL_REFERENCE_FALLBACK != usage)
+			const Renderer::MaterialProperty::Usage usage = mandatoryMaterialPropertyUsage(rapidJsonValueProperty);
+			if (!ignoreGlobalReferenceFallback || Renderer::MaterialProperty::Usage::GLOBAL_REFERENCE_FALLBACK != usage)
 			{
-				const RendererRuntime::MaterialProperty::ValueType valueType = mandatoryMaterialPropertyValueType(rapidJsonValueProperty);
-				if (RendererRuntime::MaterialProperty::isReferenceUsage(usage))
+				const Renderer::MaterialProperty::ValueType valueType = mandatoryMaterialPropertyValueType(rapidJsonValueProperty);
+				if (Renderer::MaterialProperty::isReferenceUsage(usage))
 				{
 					// Get the reference value as string
 					static constexpr uint32_t NAME_LENGTH = 127 + 1;	// +1 for the terminating zero
@@ -1030,14 +1030,14 @@ namespace RendererToolkit
 					{
 						// Sanity check
 						// -> "GlobalComputeSize" is a fixed build in material property with known specialized processing during runtime, hence do always allow references in this special case
-						if (!referencesAllowed && RendererRuntime::MaterialResource::GLOBAL_COMPUTE_SIZE_PROPERTY_ID != materialPropertyId)
+						if (!referencesAllowed && Renderer::MaterialResource::GLOBAL_COMPUTE_SIZE_PROPERTY_ID != materialPropertyId)
 						{
 							throw std::runtime_error("Material property \"" + std::string(rapidJsonMemberIterator->name.GetString()) + "\" with value \"" + std::string(referenceAsString) + "\" is using \"@\" to reference e.g. a material property value, but references aren't allowed in the current use-case");
 						}
 
 						// Write down the material property
-						const RendererRuntime::StringId referenceAsInteger(&referenceAsString[1]);
-						sortedMaterialPropertyVector.emplace_back(materialPropertyId, usage, RendererRuntime::MaterialProperty::materialPropertyValueFromReference(valueType, referenceAsInteger));
+						const Renderer::StringId referenceAsInteger(&referenceAsString[1]);
+						sortedMaterialPropertyVector.emplace_back(materialPropertyId, usage, Renderer::MaterialProperty::materialPropertyValueFromReference(valueType, referenceAsInteger));
 					}
 					else
 					{
@@ -1055,10 +1055,10 @@ namespace RendererToolkit
 				if (rapidJsonValueProperty.HasMember("VisualImportance"))
 				{
 					// Sanity check: "VisualImportance" is only valid for shader combination properties
-					if (RendererRuntime::MaterialProperty::Usage::SHADER_COMBINATION == usage)
+					if (Renderer::MaterialProperty::Usage::SHADER_COMBINATION == usage)
 					{
 						const char* valueAsString = rapidJsonValueProperty["VisualImportance"].GetString();
-						int32_t visualImportanceOfShaderProperty = RendererRuntime::MaterialBlueprintResource::MANDATORY_SHADER_PROPERTY;
+						int32_t visualImportanceOfShaderProperty = Renderer::MaterialBlueprintResource::MANDATORY_SHADER_PROPERTY;
 						if (strncmp(valueAsString, "MANDATORY", 9) != 0)
 						{
 							visualImportanceOfShaderProperty = std::atoi(valueAsString);
@@ -1072,7 +1072,7 @@ namespace RendererToolkit
 						throw std::runtime_error("Specifying \"VisualImportance\" is only valid for shader combination properties");
 					}
 				}
-				else if (RendererRuntime::MaterialProperty::Usage::SHADER_COMBINATION == usage)
+				else if (Renderer::MaterialProperty::Usage::SHADER_COMBINATION == usage)
 				{
 					// Internally, shader combination properties always need to have a visual importance set
 					// -> We're using the same string hashing for material property ID and shader property ID
@@ -1080,7 +1080,7 @@ namespace RendererToolkit
 				}
 
 				// Mandatory maximum value for integer type shader combination properties to be able to keep the total number of shader combinations manageable
-				if (RendererRuntime::MaterialProperty::Usage::SHADER_COMBINATION == usage && RendererRuntime::MaterialProperty::ValueType::INTEGER == valueType)
+				if (Renderer::MaterialProperty::Usage::SHADER_COMBINATION == usage && Renderer::MaterialProperty::ValueType::INTEGER == valueType)
 				{
 					// TODO(co) Error handling
 
@@ -1104,7 +1104,7 @@ namespace RendererToolkit
 		}
 	}
 
-	void JsonMaterialBlueprintHelper::readComputePipelineStateObject(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValueComputePipelineState, RendererRuntime::IFile& file, const RendererRuntime::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector)
+	void JsonMaterialBlueprintHelper::readComputePipelineStateObject(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValueComputePipelineState, Renderer::IFile& file, const Renderer::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector)
 	{
 		// Sanity check
 		{ // "LocalComputeSize"-property
@@ -1118,16 +1118,16 @@ namespace RendererToolkit
 					"Description": "Fixed build in material property for the compute shader local size (also known as number of threads). Must be identical to in-shader values."
 				}
 			*/
-			RendererRuntime::MaterialProperties::SortedPropertyVector::const_iterator iterator = std::lower_bound(sortedMaterialPropertyVector.cbegin(), sortedMaterialPropertyVector.cend(), RendererRuntime::MaterialResource::LOCAL_COMPUTE_SIZE_PROPERTY_ID, RendererRuntime::detail::OrderByMaterialPropertyId());
-			if (iterator == sortedMaterialPropertyVector.end() || iterator->getMaterialPropertyId() != RendererRuntime::MaterialResource::LOCAL_COMPUTE_SIZE_PROPERTY_ID)
+			Renderer::MaterialProperties::SortedPropertyVector::const_iterator iterator = std::lower_bound(sortedMaterialPropertyVector.cbegin(), sortedMaterialPropertyVector.cend(), Renderer::MaterialResource::LOCAL_COMPUTE_SIZE_PROPERTY_ID, Renderer::detail::OrderByMaterialPropertyId());
+			if (iterator == sortedMaterialPropertyVector.end() || iterator->getMaterialPropertyId() != Renderer::MaterialResource::LOCAL_COMPUTE_SIZE_PROPERTY_ID)
 			{
 				throw std::runtime_error("Compute material blueprints need the fixed build in material property \"LocalComputeSize\" for the compute shader local size (also known as number of threads)");
 			}
-			if (iterator->getValueType() != RendererRuntime::MaterialPropertyValue::ValueType::INTEGER_3)
+			if (iterator->getValueType() != Renderer::MaterialPropertyValue::ValueType::INTEGER_3)
 			{
 				throw std::runtime_error("Compute material blueprint fixed build in material property \"LocalComputeSize\" for the compute shader local size (also known as number of threads) value type must be \"INTEGER_3\"");
 			}
-			if (iterator->getUsage() != RendererRuntime::MaterialProperty::Usage::STATIC)
+			if (iterator->getUsage() != Renderer::MaterialProperty::Usage::STATIC)
 			{
 				throw std::runtime_error("Compute material blueprint fixed build in material property \"LocalComputeSize\" for the compute shader local size (also known as number of threads) usage must be \"STATIC\"");
 			}
@@ -1164,20 +1164,20 @@ namespace RendererToolkit
 					"Description": "Output texture 2D"
 				}
 			*/
-			RendererRuntime::MaterialProperties::SortedPropertyVector::const_iterator iterator = std::lower_bound(sortedMaterialPropertyVector.cbegin(), sortedMaterialPropertyVector.cend(), RendererRuntime::MaterialResource::GLOBAL_COMPUTE_SIZE_PROPERTY_ID, RendererRuntime::detail::OrderByMaterialPropertyId());
-			if (iterator == sortedMaterialPropertyVector.end() || iterator->getMaterialPropertyId() != RendererRuntime::MaterialResource::GLOBAL_COMPUTE_SIZE_PROPERTY_ID)
+			Renderer::MaterialProperties::SortedPropertyVector::const_iterator iterator = std::lower_bound(sortedMaterialPropertyVector.cbegin(), sortedMaterialPropertyVector.cend(), Renderer::MaterialResource::GLOBAL_COMPUTE_SIZE_PROPERTY_ID, Renderer::detail::OrderByMaterialPropertyId());
+			if (iterator == sortedMaterialPropertyVector.end() || iterator->getMaterialPropertyId() != Renderer::MaterialResource::GLOBAL_COMPUTE_SIZE_PROPERTY_ID)
 			{
 				throw std::runtime_error("Compute material blueprints need the fixed build in material property \"GlobalComputeSize\" for the compute shader global size");
 			}
-			if (iterator->getValueType() != RendererRuntime::MaterialPropertyValue::ValueType::INTEGER_3)
+			if (iterator->getValueType() != Renderer::MaterialPropertyValue::ValueType::INTEGER_3)
 			{
 				throw std::runtime_error("Compute material blueprint fixed build in material property \"GlobalComputeSize\" for the compute shader global size value type must be \"INTEGER_3\"");
 			}
-			if (iterator->getUsage() != RendererRuntime::MaterialProperty::Usage::STATIC && iterator->getUsage() != RendererRuntime::MaterialProperty::Usage::MATERIAL_REFERENCE)
+			if (iterator->getUsage() != Renderer::MaterialProperty::Usage::STATIC && iterator->getUsage() != Renderer::MaterialProperty::Usage::MATERIAL_REFERENCE)
 			{
 				throw std::runtime_error("Compute material blueprint fixed build in material property \"GlobalComputeSize\" for the compute shader global size usage must be \"STATIC\" or \"MATERIAL_REFERENCE\"");
 			}
-			if (iterator->getUsage() == RendererRuntime::MaterialProperty::Usage::STATIC)
+			if (iterator->getUsage() == Renderer::MaterialProperty::Usage::STATIC)
 			{
 				// Static value
 				const int* integer3Value = iterator->getInteger3Value();
@@ -1189,17 +1189,17 @@ namespace RendererToolkit
 			else
 			{
 				// Material property reference
-				const RendererRuntime::MaterialPropertyId materialPropertyId = iterator->getReferenceValue();
-				RendererRuntime::MaterialProperties::SortedPropertyVector::const_iterator referenceIterator = std::lower_bound(sortedMaterialPropertyVector.cbegin(), sortedMaterialPropertyVector.cend(), materialPropertyId, RendererRuntime::detail::OrderByMaterialPropertyId());
+				const Renderer::MaterialPropertyId materialPropertyId = iterator->getReferenceValue();
+				Renderer::MaterialProperties::SortedPropertyVector::const_iterator referenceIterator = std::lower_bound(sortedMaterialPropertyVector.cbegin(), sortedMaterialPropertyVector.cend(), materialPropertyId, Renderer::detail::OrderByMaterialPropertyId());
 				if (referenceIterator == sortedMaterialPropertyVector.end() || referenceIterator->getMaterialPropertyId() != materialPropertyId)
 				{
 					throw std::runtime_error("Compute material blueprint fixed build in material property \"GlobalComputeSize\" is referencing an unknown material property");
 				}
-				if (referenceIterator->getValueType() != RendererRuntime::MaterialPropertyValue::ValueType::TEXTURE_ASSET_ID)
+				if (referenceIterator->getValueType() != Renderer::MaterialPropertyValue::ValueType::TEXTURE_ASSET_ID)
 				{
 					throw std::runtime_error("Compute material blueprint fixed build in material property \"GlobalComputeSize\" can only reference texture asset material properties with value type \"TEXTURE_ASSET_ID\"");
 				}
-				if (referenceIterator->getUsage() != RendererRuntime::MaterialProperty::Usage::TEXTURE_REFERENCE)
+				if (referenceIterator->getUsage() != Renderer::MaterialProperty::Usage::TEXTURE_REFERENCE)
 				{
 					throw std::runtime_error("Compute material blueprint fixed build in material property \"GlobalComputeSize\" can only reference texture asset material properties with usage type \"TEXTURE_REFERENCE\"");
 				}
@@ -1208,36 +1208,36 @@ namespace RendererToolkit
 		}
 
 		// Read compute pipeline state object
-		RendererRuntime::AssetId computeShaderBlueprintAssetId = RendererRuntime::getInvalid<RendererRuntime::AssetId>();
+		Renderer::AssetId computeShaderBlueprintAssetId = Renderer::getInvalid<Renderer::AssetId>();
 		JsonHelper::optionalCompiledAssetId(input, rapidJsonValueComputePipelineState, "ComputeShaderBlueprint", computeShaderBlueprintAssetId);
-		file.write(&computeShaderBlueprintAssetId, sizeof(RendererRuntime::AssetId));
+		file.write(&computeShaderBlueprintAssetId, sizeof(Renderer::AssetId));
 	}
 
-	void JsonMaterialBlueprintHelper::readGraphicsPipelineStateObject(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValueGraphicsPipelineState, RendererRuntime::IFile& file, const RendererRuntime::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector)
+	void JsonMaterialBlueprintHelper::readGraphicsPipelineStateObject(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValueGraphicsPipelineState, Renderer::IFile& file, const Renderer::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector)
 	{
 		{ // No compute shader blueprint, this way the loaded knows there's a graphics pipeline state
-			const RendererRuntime::AssetId computeShaderBlueprintAssetId = RendererRuntime::getInvalid<RendererRuntime::AssetId>();
-			file.write(&computeShaderBlueprintAssetId, sizeof(RendererRuntime::AssetId));
+			const Renderer::AssetId computeShaderBlueprintAssetId = Renderer::getInvalid<Renderer::AssetId>();
+			file.write(&computeShaderBlueprintAssetId, sizeof(Renderer::AssetId));
 		}
 
 		{ // Vertex attributes asset ID
-			const RendererRuntime::AssetId vertexAttributesAssetId = StringHelper::getAssetIdByString(rapidJsonValueGraphicsPipelineState["VertexAttributes"].GetString(), input);
-			file.write(&vertexAttributesAssetId, sizeof(RendererRuntime::AssetId));
+			const Renderer::AssetId vertexAttributesAssetId = StringHelper::getAssetIdByString(rapidJsonValueGraphicsPipelineState["VertexAttributes"].GetString(), input);
+			file.write(&vertexAttributesAssetId, sizeof(Renderer::AssetId));
 		}
 
 		{ // Shader blueprints
 			const rapidjson::Value& rapidJsonValueShaderBlueprints = rapidJsonValueGraphicsPipelineState["ShaderBlueprints"];
 
-			RendererRuntime::AssetId shaderBlueprintAssetId[RendererRuntime::NUMBER_OF_GRAPHICS_SHADER_TYPES];
-			memset(shaderBlueprintAssetId, static_cast<int>(RendererRuntime::getInvalid<RendererRuntime::AssetId>()), sizeof(RendererRuntime::AssetId) * RendererRuntime::NUMBER_OF_GRAPHICS_SHADER_TYPES);
-			shaderBlueprintAssetId[static_cast<uint8_t>(RendererRuntime::GraphicsShaderType::Vertex)] = JsonHelper::getCompiledAssetId(input, rapidJsonValueShaderBlueprints, "VertexShaderBlueprint");
-			JsonHelper::optionalCompiledAssetId(input, rapidJsonValueShaderBlueprints, "TessellationControlShaderBlueprint", shaderBlueprintAssetId[static_cast<uint8_t>(RendererRuntime::GraphicsShaderType::TessellationControl)]);
-			JsonHelper::optionalCompiledAssetId(input, rapidJsonValueShaderBlueprints, "TessellationEvaluationShaderBlueprint", shaderBlueprintAssetId[static_cast<uint8_t>(RendererRuntime::GraphicsShaderType::TessellationEvaluation)]);
-			JsonHelper::optionalCompiledAssetId(input, rapidJsonValueShaderBlueprints, "GeometryShaderBlueprint", shaderBlueprintAssetId[static_cast<uint8_t>(RendererRuntime::GraphicsShaderType::Geometry)]);
-			JsonHelper::optionalCompiledAssetId(input, rapidJsonValueShaderBlueprints, "FragmentShaderBlueprint", shaderBlueprintAssetId[static_cast<uint8_t>(RendererRuntime::GraphicsShaderType::Fragment)]);
+			Renderer::AssetId shaderBlueprintAssetId[Renderer::NUMBER_OF_GRAPHICS_SHADER_TYPES];
+			memset(shaderBlueprintAssetId, static_cast<int>(Renderer::getInvalid<Renderer::AssetId>()), sizeof(Renderer::AssetId) * Renderer::NUMBER_OF_GRAPHICS_SHADER_TYPES);
+			shaderBlueprintAssetId[static_cast<uint8_t>(Renderer::GraphicsShaderType::Vertex)] = JsonHelper::getCompiledAssetId(input, rapidJsonValueShaderBlueprints, "VertexShaderBlueprint");
+			JsonHelper::optionalCompiledAssetId(input, rapidJsonValueShaderBlueprints, "TessellationControlShaderBlueprint", shaderBlueprintAssetId[static_cast<uint8_t>(Renderer::GraphicsShaderType::TessellationControl)]);
+			JsonHelper::optionalCompiledAssetId(input, rapidJsonValueShaderBlueprints, "TessellationEvaluationShaderBlueprint", shaderBlueprintAssetId[static_cast<uint8_t>(Renderer::GraphicsShaderType::TessellationEvaluation)]);
+			JsonHelper::optionalCompiledAssetId(input, rapidJsonValueShaderBlueprints, "GeometryShaderBlueprint", shaderBlueprintAssetId[static_cast<uint8_t>(Renderer::GraphicsShaderType::Geometry)]);
+			JsonHelper::optionalCompiledAssetId(input, rapidJsonValueShaderBlueprints, "FragmentShaderBlueprint", shaderBlueprintAssetId[static_cast<uint8_t>(Renderer::GraphicsShaderType::Fragment)]);
 
 			// Write down the shader blueprints
-			file.write(&shaderBlueprintAssetId, sizeof(RendererRuntime::AssetId) * RendererRuntime::NUMBER_OF_GRAPHICS_SHADER_TYPES);
+			file.write(&shaderBlueprintAssetId, sizeof(Renderer::AssetId) * Renderer::NUMBER_OF_GRAPHICS_SHADER_TYPES);
 		}
 
 		// Start with the default settings
@@ -1311,7 +1311,7 @@ namespace RendererToolkit
 			Rhi::BlendState& blendState = graphicsPipelineState.blendState;
 
 			// The optional properties
-			JsonHelper::optionalBooleanProperty(rapidJsonValueBlendState, "AlphaToCoverageEnable", blendState.alphaToCoverageEnable, RendererRuntime::MaterialProperty::Usage::BLEND_STATE, &sortedMaterialPropertyVector);
+			JsonHelper::optionalBooleanProperty(rapidJsonValueBlendState, "AlphaToCoverageEnable", blendState.alphaToCoverageEnable, Renderer::MaterialProperty::Usage::BLEND_STATE, &sortedMaterialPropertyVector);
 			JsonHelper::optionalBooleanProperty(rapidJsonValueBlendState, "IndependentBlendEnable", blendState.independentBlendEnable);
 
 			// The optional render target properties
@@ -1349,7 +1349,7 @@ namespace RendererToolkit
 		file.write(&graphicsPipelineState, sizeof(Rhi::SerializedGraphicsPipelineState));
 	}
 
-	void JsonMaterialBlueprintHelper::readUniformBuffersByResourceGroups(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValueResourceGroups, RendererRuntime::IFile& file)
+	void JsonMaterialBlueprintHelper::readUniformBuffersByResourceGroups(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValueResourceGroups, Renderer::IFile& file)
 	{
 		// Iterate through all resource groups, we're only interested in the following resource parameters
 		// - "ResourceType" = "UNIFORM_BUFFER"
@@ -1382,9 +1382,9 @@ namespace RendererToolkit
 					const rapidjson::Value& rapidJsonValueElementProperties = rapidJsonValue["ElementProperties"];
 
 					// Gather all element properties, don't sort because the user defined order is important in here (data layout in memory)
-					RendererRuntime::MaterialProperties::SortedPropertyVector elementProperties;
-					RendererRuntime::ShaderProperties visualImportanceOfShaderProperties;
-					RendererRuntime::ShaderProperties maximumIntegerValueOfShaderProperties;
+					Renderer::MaterialProperties::SortedPropertyVector elementProperties;
+					Renderer::ShaderProperties visualImportanceOfShaderProperties;
+					Renderer::ShaderProperties maximumIntegerValueOfShaderProperties;
 					readProperties(input, rapidJsonValueElementProperties, elementProperties, visualImportanceOfShaderProperties, maximumIntegerValueOfShaderProperties, true, false, true);
 
 					// Sanity check
@@ -1403,7 +1403,7 @@ namespace RendererToolkit
 					for (size_t i = 0; i < numberOfUniformBufferElementProperties; ++i)
 					{
 						// Get value type number of bytes
-						const uint32_t valueTypeNumberOfBytes = RendererRuntime::MaterialPropertyValue::getValueTypeNumberOfBytes(elementProperties[i].getValueType());
+						const uint32_t valueTypeNumberOfBytes = Renderer::MaterialPropertyValue::getValueTypeNumberOfBytes(elementProperties[i].getValueType());
 						numberOfBytesPerElement += valueTypeNumberOfBytes;
 
 						// Handling of packing rules for uniform variables
@@ -1446,17 +1446,17 @@ namespace RendererToolkit
 					}
 
 					{ // Write down the uniform buffer header
-						RendererRuntime::v1MaterialBlueprint::UniformBufferHeader uniformBufferHeader;
+						Renderer::v1MaterialBlueprint::UniformBufferHeader uniformBufferHeader;
 						uniformBufferHeader.rootParameterIndex = static_cast<uint32_t>(resourceGroupIndex);
 						detail::optionalBufferUsageProperty(rapidJsonValue, "BufferUsage", uniformBufferHeader.bufferUsage);
 						JsonHelper::optionalIntegerProperty(rapidJsonValue, "NumberOfElements", uniformBufferHeader.numberOfElements);
 						uniformBufferHeader.numberOfElementProperties = static_cast<uint32_t>(elementProperties.size());
 						uniformBufferHeader.uniformBufferNumberOfBytes = numberOfBytesPerElement * uniformBufferHeader.numberOfElements;
-						file.write(&uniformBufferHeader, sizeof(RendererRuntime::v1MaterialBlueprint::UniformBufferHeader));
+						file.write(&uniformBufferHeader, sizeof(Renderer::v1MaterialBlueprint::UniformBufferHeader));
 					}
 
 					// Write down the uniform buffer element properties
-					file.write(elementProperties.data(), sizeof(RendererRuntime::MaterialProperty) * elementProperties.size());
+					file.write(elementProperties.data(), sizeof(Renderer::MaterialProperty) * elementProperties.size());
 				}
 
 				// Advance resource index
@@ -1468,7 +1468,7 @@ namespace RendererToolkit
 		}
 	}
 
-	void JsonMaterialBlueprintHelper::readTextureBuffersByResourceGroups(const rapidjson::Value& rapidJsonValueResourceGroups, RendererRuntime::IFile& file)
+	void JsonMaterialBlueprintHelper::readTextureBuffersByResourceGroups(const rapidjson::Value& rapidJsonValueResourceGroups, Renderer::IFile& file)
 	{
 		// Iterate through all resource groups, we're only interested in the following resource parameters
 		// - "ResourceType" = "TEXTURE_BUFFER"
@@ -1498,9 +1498,9 @@ namespace RendererToolkit
 				if (strcmp(rapidJsonValue["ResourceType"].GetString(), "TEXTURE_BUFFER") == 0)
 				{
 					// Write down the texture buffer header
-					RendererRuntime::v1MaterialBlueprint::TextureBufferHeader textureBufferHeader;
+					Renderer::v1MaterialBlueprint::TextureBufferHeader textureBufferHeader;
 					{ // Value type and value
-						const RendererRuntime::MaterialProperty::ValueType valueType = mandatoryMaterialPropertyValueType(rapidJsonValue);
+						const Renderer::MaterialProperty::ValueType valueType = mandatoryMaterialPropertyValueType(rapidJsonValue);
 
 						// Get the reference value as string
 						static constexpr uint32_t NAME_LENGTH = 127 + 1;	// +1 for the terminating zero
@@ -1508,12 +1508,12 @@ namespace RendererToolkit
 						JsonHelper::optionalStringProperty(rapidJsonValue, "Value", referenceAsString, NAME_LENGTH);
 
 						// Construct the material property value
-						const RendererRuntime::StringId referenceAsInteger(&referenceAsString[1]);	// Skip the '@'
-						textureBufferHeader.materialPropertyValue = RendererRuntime::MaterialProperty::materialPropertyValueFromReference(valueType, referenceAsInteger);
+						const Renderer::StringId referenceAsInteger(&referenceAsString[1]);	// Skip the '@'
+						textureBufferHeader.materialPropertyValue = Renderer::MaterialProperty::materialPropertyValueFromReference(valueType, referenceAsInteger);
 					}
 					textureBufferHeader.rootParameterIndex = static_cast<uint32_t>(resourceGroupIndex);
 					detail::optionalBufferUsageProperty(rapidJsonValue, "BufferUsage", textureBufferHeader.bufferUsage);
-					file.write(&textureBufferHeader, sizeof(RendererRuntime::v1MaterialBlueprint::TextureBufferHeader));
+					file.write(&textureBufferHeader, sizeof(Renderer::v1MaterialBlueprint::TextureBufferHeader));
 				}
 
 				// Advance resource index
@@ -1525,7 +1525,7 @@ namespace RendererToolkit
 		}
 	}
 
-	void JsonMaterialBlueprintHelper::readSamplerStatesByResourceGroups(const rapidjson::Value& rapidJsonValueResourceGroups, const RendererRuntime::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector, RendererRuntime::IFile& file, SamplerBaseShaderRegisterNameToIndex& samplerBaseShaderRegisterNameToIndex)
+	void JsonMaterialBlueprintHelper::readSamplerStatesByResourceGroups(const rapidjson::Value& rapidJsonValueResourceGroups, const Renderer::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector, Renderer::IFile& file, SamplerBaseShaderRegisterNameToIndex& samplerBaseShaderRegisterNameToIndex)
 	{
 		// Iterate through all resource groups, we're only interested in the following resource parameters
 		// - "ResourceType" = "SAMPLER_STATE"
@@ -1565,7 +1565,7 @@ namespace RendererToolkit
 				if (strcmp(rapidJsonValue["ResourceType"].GetString(), "SAMPLER_STATE") == 0)
 				{
 					// Start with the default sampler state
-					RendererRuntime::v1MaterialBlueprint::SamplerState materialBlueprintSamplerState;
+					Renderer::v1MaterialBlueprint::SamplerState materialBlueprintSamplerState;
 					materialBlueprintSamplerState.rootParameterIndex = 0;
 					Rhi::SamplerState& samplerState = materialBlueprintSamplerState.samplerState;
 					samplerState = Rhi::ISamplerState::getDefaultSamplerState();
@@ -1573,7 +1573,7 @@ namespace RendererToolkit
 					{ // Mandatory base shader register name
 						char baseShaderRegisterName[Rhi::DescriptorRange::NAME_LENGTH] = {};
 						JsonHelper::mandatoryStringProperty(rapidJsonValue, "BaseShaderRegisterName", baseShaderRegisterName, Rhi::DescriptorRange::NAME_LENGTH);
-						const uint32_t key = RendererRuntime::StringId::calculateFNV(baseShaderRegisterName);
+						const uint32_t key = Renderer::StringId::calculateFNV(baseShaderRegisterName);
 						if (samplerBaseShaderRegisterNameToIndex.find(key) != samplerBaseShaderRegisterNameToIndex.cend())
 						{
 							throw std::runtime_error("Sampler state base shader register name \"" + std::string(baseShaderRegisterName) + "\" is defined multiple times");
@@ -1585,7 +1585,7 @@ namespace RendererToolkit
 					// By default, inside the material blueprint system the texture filter and maximum anisotropy are set to invalid. Unless explicitly
 					// set by a material blueprint author, those values are dynamic during runtime so the user can decide about the performance/quality trade-off.
 					samplerState.filter = Rhi::FilterMode::UNKNOWN;
-					RendererRuntime::setInvalid(samplerState.maxAnisotropy);
+					Renderer::setInvalid(samplerState.maxAnisotropy);
 
 					// The optional properties
 					materialBlueprintSamplerState.rootParameterIndex = static_cast<uint32_t>(resourceGroupIndex);
@@ -1601,7 +1601,7 @@ namespace RendererToolkit
 					JsonHelper::optionalFloatProperty(rapidJsonValue, "MaxLOD", samplerState.maxLOD);
 
 					// Write down the sampler state
-					file.write(&materialBlueprintSamplerState, sizeof(RendererRuntime::v1MaterialBlueprint::SamplerState));
+					file.write(&materialBlueprintSamplerState, sizeof(Renderer::v1MaterialBlueprint::SamplerState));
 				}
 
 				// Advance resource index
@@ -1613,7 +1613,7 @@ namespace RendererToolkit
 		}
 	}
 
-	void JsonMaterialBlueprintHelper::readTexturesByResourceGroups(const IAssetCompiler::Input& input, const RendererRuntime::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector, const rapidjson::Value& rapidJsonValueResourceGroups, const SamplerBaseShaderRegisterNameToIndex& samplerBaseShaderRegisterNameToIndex, RendererRuntime::IFile& file)
+	void JsonMaterialBlueprintHelper::readTexturesByResourceGroups(const IAssetCompiler::Input& input, const Renderer::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector, const rapidjson::Value& rapidJsonValueResourceGroups, const SamplerBaseShaderRegisterNameToIndex& samplerBaseShaderRegisterNameToIndex, Renderer::IFile& file)
 	{
 		// Iterate through all resource groups, we're only interested in the following resource parameters
 		// - "ResourceType" = "TEXTURE_1D", "TEXTURE_1D_ARRAY", "TEXTURE_2D", "TEXTURE_2D_ARRAY", "TEXTURE_3D", "TEXTURE_CUBE"
@@ -1658,7 +1658,7 @@ namespace RendererToolkit
 					// Mandatory fallback texture asset ID
 					// -> We could make this optional, but it's better to be totally restrictive in here so asynchronous texture loading always works nicely (easy when done from the beginning, hard to add this afterwards)
 					// -> Often, but not always this value is identical to a texture asset referencing material property. So, we really have to define an own property for this.
-					const RendererRuntime::AssetId fallbackTextureAssetId = JsonHelper::getCompiledAssetId(input, rapidJsonValue, "FallbackTexture");
+					const Renderer::AssetId fallbackTextureAssetId = JsonHelper::getCompiledAssetId(input, rapidJsonValue, "FallbackTexture");
 
 					// Optional RGB hardware gamma correction
 					bool rgbHardwareGammaCorrection = false;
@@ -1667,13 +1667,13 @@ namespace RendererToolkit
 					// "MipmapsUsed" with the default value "TRUE" isn't used, but it should be defined if mipmaps are not used to support debugging and optimization possibility spotting
 
 					// Map optional (e.g. texel fetch instead of sampling might be used) "SamplerStateBaseShaderRegisterName" to the index of the material blueprint sampler state resource to use
-					uint32_t samplerStateIndex = RendererRuntime::getInvalid<uint32_t>();
+					uint32_t samplerStateIndex = Renderer::getInvalid<uint32_t>();
 					if (rapidJsonValue.HasMember("SamplerStateBaseShaderRegisterName"))
 					{
 						char baseShaderRegisterName[Rhi::DescriptorRange::NAME_LENGTH] = {};
 						JsonHelper::mandatoryStringProperty(rapidJsonValue, "SamplerStateBaseShaderRegisterName", baseShaderRegisterName, Rhi::DescriptorRange::NAME_LENGTH);
-						const uint32_t key = RendererRuntime::StringId::calculateFNV(baseShaderRegisterName);
-						SamplerBaseShaderRegisterNameToIndex::const_iterator iterator = samplerBaseShaderRegisterNameToIndex.find(RendererRuntime::StringId::calculateFNV(baseShaderRegisterName));
+						const uint32_t key = Renderer::StringId::calculateFNV(baseShaderRegisterName);
+						SamplerBaseShaderRegisterNameToIndex::const_iterator iterator = samplerBaseShaderRegisterNameToIndex.find(Renderer::StringId::calculateFNV(baseShaderRegisterName));
 						if (iterator == samplerBaseShaderRegisterNameToIndex.cend())
 						{
 							throw std::runtime_error("Unknown sampler state base shader register name \"" + std::string(baseShaderRegisterName) + '\"');
@@ -1682,20 +1682,20 @@ namespace RendererToolkit
 					}
 
 					// Mandatory usage
-					const RendererRuntime::MaterialProperty::Usage usage = mandatoryMaterialPropertyUsage(rapidJsonValue);
-					const RendererRuntime::MaterialProperty::ValueType valueType = mandatoryMaterialPropertyValueType(rapidJsonValue);
+					const Renderer::MaterialProperty::Usage usage = mandatoryMaterialPropertyUsage(rapidJsonValue);
+					const Renderer::MaterialProperty::ValueType valueType = mandatoryMaterialPropertyValueType(rapidJsonValue);
 					switch (usage)
 					{
-						case RendererRuntime::MaterialProperty::Usage::STATIC:
+						case Renderer::MaterialProperty::Usage::STATIC:
 						{
-							if (RendererRuntime::MaterialProperty::ValueType::TEXTURE_ASSET_ID == valueType)
+							if (Renderer::MaterialProperty::ValueType::TEXTURE_ASSET_ID == valueType)
 							{
 								// Mandatory asset ID
-								const RendererRuntime::MaterialPropertyValue materialPropertyValue = RendererRuntime::MaterialPropertyValue::fromTextureAssetId(StringHelper::getAssetIdByString(rapidJsonValue["Value"].GetString(), input));
+								const Renderer::MaterialPropertyValue materialPropertyValue = Renderer::MaterialPropertyValue::fromTextureAssetId(StringHelper::getAssetIdByString(rapidJsonValue["Value"].GetString(), input));
 
 								// Write down the texture
-								const RendererRuntime::v1MaterialBlueprint::Texture materialBlueprintTexture(rootParameterIndex, RendererRuntime::MaterialProperty(RendererRuntime::getInvalid<RendererRuntime::MaterialPropertyId>(), usage, materialPropertyValue), fallbackTextureAssetId, rgbHardwareGammaCorrection, samplerStateIndex);
-								file.write(&materialBlueprintTexture, sizeof(RendererRuntime::v1MaterialBlueprint::Texture));
+								const Renderer::v1MaterialBlueprint::Texture materialBlueprintTexture(rootParameterIndex, Renderer::MaterialProperty(Renderer::getInvalid<Renderer::MaterialPropertyId>(), usage, materialPropertyValue), fallbackTextureAssetId, rgbHardwareGammaCorrection, samplerStateIndex);
+								file.write(&materialBlueprintTexture, sizeof(Renderer::v1MaterialBlueprint::Texture));
 
 								// TODO(co) Error handling: Compiled asset ID not found (meaning invalid source asset ID given)
 								break;
@@ -1706,9 +1706,9 @@ namespace RendererToolkit
 							}
 						}
 
-						case RendererRuntime::MaterialProperty::Usage::MATERIAL_REFERENCE:
+						case Renderer::MaterialProperty::Usage::MATERIAL_REFERENCE:
 						{
-							if (RendererRuntime::MaterialProperty::ValueType::TEXTURE_ASSET_ID == valueType)
+							if (Renderer::MaterialProperty::ValueType::TEXTURE_ASSET_ID == valueType)
 							{
 								// Get mandatory asset ID
 								// -> The character "@" is used to reference a material property value
@@ -1716,20 +1716,20 @@ namespace RendererToolkit
 								if (sourceAssetIdAsString.length() > 0 && sourceAssetIdAsString[0] == '@')
 								{
 									// Reference a material property value
-									const RendererRuntime::MaterialPropertyId materialPropertyId(sourceAssetIdAsString.substr(1).c_str());
+									const Renderer::MaterialPropertyId materialPropertyId(sourceAssetIdAsString.substr(1).c_str());
 
 									// Figure out the material property value
-									RendererRuntime::MaterialProperties::SortedPropertyVector::const_iterator iterator = std::lower_bound(sortedMaterialPropertyVector.cbegin(), sortedMaterialPropertyVector.cend(), materialPropertyId, RendererRuntime::detail::OrderByMaterialPropertyId());
+									Renderer::MaterialProperties::SortedPropertyVector::const_iterator iterator = std::lower_bound(sortedMaterialPropertyVector.cbegin(), sortedMaterialPropertyVector.cend(), materialPropertyId, Renderer::detail::OrderByMaterialPropertyId());
 									if (iterator != sortedMaterialPropertyVector.end())
 									{
-										const RendererRuntime::MaterialProperty& materialProperty = *iterator;
+										const Renderer::MaterialProperty& materialProperty = *iterator;
 										if (materialProperty.getMaterialPropertyId() == materialPropertyId)
 										{
 											// TODO(co) Error handling: Usage mismatch etc.
 
 											// Write down the texture
-											const RendererRuntime::v1MaterialBlueprint::Texture materialBlueprintTexture(rootParameterIndex, RendererRuntime::MaterialProperty(materialPropertyId, usage, materialProperty), fallbackTextureAssetId, rgbHardwareGammaCorrection, samplerStateIndex);
-											file.write(&materialBlueprintTexture, sizeof(RendererRuntime::v1MaterialBlueprint::Texture));
+											const Renderer::v1MaterialBlueprint::Texture materialBlueprintTexture(rootParameterIndex, Renderer::MaterialProperty(materialPropertyId, usage, materialProperty), fallbackTextureAssetId, rgbHardwareGammaCorrection, samplerStateIndex);
+											file.write(&materialBlueprintTexture, sizeof(Renderer::v1MaterialBlueprint::Texture));
 										}
 									}
 								}
@@ -1745,19 +1745,19 @@ namespace RendererToolkit
 							break;
 						}
 
-						case RendererRuntime::MaterialProperty::Usage::UNKNOWN:
-						case RendererRuntime::MaterialProperty::Usage::SHADER_UNIFORM:
-						case RendererRuntime::MaterialProperty::Usage::SHADER_COMBINATION:
-						case RendererRuntime::MaterialProperty::Usage::RASTERIZER_STATE:
-						case RendererRuntime::MaterialProperty::Usage::DEPTH_STENCIL_STATE:
-						case RendererRuntime::MaterialProperty::Usage::BLEND_STATE:
-						case RendererRuntime::MaterialProperty::Usage::SAMPLER_STATE:
-						case RendererRuntime::MaterialProperty::Usage::TEXTURE_REFERENCE:
-						case RendererRuntime::MaterialProperty::Usage::GLOBAL_REFERENCE:
-						case RendererRuntime::MaterialProperty::Usage::UNKNOWN_REFERENCE:
-						case RendererRuntime::MaterialProperty::Usage::PASS_REFERENCE:
-						case RendererRuntime::MaterialProperty::Usage::INSTANCE_REFERENCE:
-						case RendererRuntime::MaterialProperty::Usage::GLOBAL_REFERENCE_FALLBACK:
+						case Renderer::MaterialProperty::Usage::UNKNOWN:
+						case Renderer::MaterialProperty::Usage::SHADER_UNIFORM:
+						case Renderer::MaterialProperty::Usage::SHADER_COMBINATION:
+						case Renderer::MaterialProperty::Usage::RASTERIZER_STATE:
+						case Renderer::MaterialProperty::Usage::DEPTH_STENCIL_STATE:
+						case Renderer::MaterialProperty::Usage::BLEND_STATE:
+						case Renderer::MaterialProperty::Usage::SAMPLER_STATE:
+						case Renderer::MaterialProperty::Usage::TEXTURE_REFERENCE:
+						case Renderer::MaterialProperty::Usage::GLOBAL_REFERENCE:
+						case Renderer::MaterialProperty::Usage::UNKNOWN_REFERENCE:
+						case Renderer::MaterialProperty::Usage::PASS_REFERENCE:
+						case Renderer::MaterialProperty::Usage::INSTANCE_REFERENCE:
+						case Renderer::MaterialProperty::Usage::GLOBAL_REFERENCE_FALLBACK:
 						default:
 						{
 							throw std::runtime_error("Invalid texture usage");
@@ -1790,7 +1790,7 @@ namespace RendererToolkit
 			std::string baseMaterialBlueprintVirtualInputFilename;
 			try
 			{
-				const RendererRuntime::AssetId materialBlueprintAssetId = StringHelper::getSourceAssetIdByString(rapidJsonValueBaseMaterialBlueprint.GetString(), input);
+				const Renderer::AssetId materialBlueprintAssetId = StringHelper::getSourceAssetIdByString(rapidJsonValueBaseMaterialBlueprint.GetString(), input);
 				baseMaterialBlueprintVirtualInputFilename = input.sourceAssetIdToVirtualAssetFilename(materialBlueprintAssetId);
 				virtualDependencyFilenames.emplace_back(baseMaterialBlueprintVirtualInputFilename);
 				StringHelper::replaceFirstString(baseMaterialBlueprintVirtualInputFilename, ".asset", ".material_blueprint");

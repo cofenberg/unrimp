@@ -35,11 +35,11 @@ Features
 		- Implementations try to stick as best as possible close-to-the-metal and as a result are just a few KiB instead of MiB in memory size
 		- Implementations load the entry points of Vulkan, Direct3D, OpenGL and so on during runtime, meaning it's possible to react on system failures by e.g. dynamically switching to another RHI implementation
 	- Support for static and shared build
-	- Separation into RHI, runtime and toolkit for asset cooking
+	- Separation into RHI, renderer and toolkit for asset cooking
 		- RHI abstracts way the underlying API like Vulkan/OpenGL/DirectX
-		- Runtime designed with end-user and middleware-user in mind
+		- Renderer designed with end-user and middleware-user in mind
 			- Efficiency and responsiveness over flexibility (were it isn't useful in practice)
-			- Intended to be controlled by a high-level entity-component system, no unused implementation feature overkill in the basic runtime
+			- Intended to be controlled by a high-level entity-component system, no unused implementation feature overkill in the basic renderer
 		- Toolkit designed with developer fast iterations in mind: Asset source flexibility, asset background compilation, hot-reloading
 	- Interfaces for log, assert, memory allocator, graphics debugger and profiler so the user has the control over those things
 		- Standard implementations are provided
@@ -109,7 +109,7 @@ Rendering hardware interface (RHI) and implementations
 	- OpenGL: Usage of direct state access (DSA), if available
 
 
-Renderer Runtime (e.g. "The Game")
+Renderer (e.g. "The Game")
 ======
 - During runtime, only platform optimized and compressed binary assets are used
 	- No inefficient generic stuff, no e.g. endianness handling, primarily raw chunks which can be fed into memory and GPU as efficient as possible
@@ -253,7 +253,7 @@ Terminology and Acronyms
 	- Uniform buffer view (UBV)
 	- Shader resource view (SRV)
 	- Unordered access view (UAV)
-- Renderer runtime
+- Renderer
 	- Asset: Lightweight content metadata like ID, type and location (texture, mesh, shader etc. - on this abstraction level everything is an asset)
 	- Resource: A concrete asset type used during runtime in-memory (texture, mesh, shader etc.)
 	- Mesh: 3D-model consisting of a vertex- and index-buffer, geometry subdivided into sub-meshes
@@ -363,7 +363,7 @@ Hints
 ======
 - Error strategy
 	- Inside renderer toolkit: Exceptions in extreme, up to no error tolerance. If something smells odd, blame it to make it possible to detect problems as early as possible in the production pipeline.
-	- Inside renderer runtime: The show must go on. If the floor breaks, just keep smiling and continue dancing.
+	- Inside renderer: The show must go on. If the floor breaks, just keep smiling and continue dancing.
 - Windows using Visual Studio 2019 C++ Open Folder and CMake: IntelliSense keeps failing
 	- Visual Studio 2019 -> Menu bar -> "Options" -> "Text Editor" -> "C/C++" -> "Advanced" -> "Inactive Platform IntelliSense Limit" -> Set it to e.g. 16 (see https://blogs.msdn.microsoft.com/vcblog/2018/01/10/intellisense-enhancements-for-cpp-open-folder-and-cmake/ )
 - How to test the 64 bit world space position support?

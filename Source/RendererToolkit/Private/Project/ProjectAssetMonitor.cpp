@@ -25,8 +25,8 @@
 #include "RendererToolkit/Private/Project/ProjectImpl.h"
 #include "RendererToolkit/Private/Context.h"
 
-#include <RendererRuntime/Public/IRendererRuntime.h>
-#include <RendererRuntime/Public/Core/Platform/PlatformManager.h>
+#include <Renderer/Public/IRenderer.h>
+#include <Renderer/Public/Core/Platform/PlatformManager.h>
 
 #include <SimpleFileWatcher/FileWatcher.h>
 
@@ -76,26 +76,26 @@ namespace RendererToolkit
 						*/
 					{
 						// Get the corresponding asset
-						const RendererRuntime::AssetPackage::SortedAssetVector& sortedAssetVector = mProjectAssetMonitor.mProjectImpl.getAssetPackage().getSortedAssetVector();
+						const Renderer::AssetPackage::SortedAssetVector& sortedAssetVector = mProjectAssetMonitor.mProjectImpl.getAssetPackage().getSortedAssetVector();
 						const size_t numberOfAssets = sortedAssetVector.size();
 						for (size_t i = 0; i < numberOfAssets; ++i)
 						{
-							const RendererRuntime::Asset& asset = sortedAssetVector[i];
+							const Renderer::Asset& asset = sortedAssetVector[i];
 							try
 							{
 								if (mProjectAssetMonitor.mProjectImpl.checkAssetIsChanged(asset, mProjectAssetMonitor.mRhiTarget.c_str()))
 								{
 									// TODO(co) Performance: Add asset compiler queue so we can compile more then one asset at a time in background
-									// TODO(co) At the moment, we only support modifying already existing asset data, we should add support for changes inside the runtime asset package as well
-									RendererRuntime::AssetPackage outputAssetPackage;
+									// TODO(co) At the moment, we only support modifying already existing asset data, we should add support for changes inside the asset package as well
+									Renderer::AssetPackage outputAssetPackage;
 									mProjectAssetMonitor.mProjectImpl.compileAssetIncludingDependencies(asset, mProjectAssetMonitor.mRhiTarget.c_str(), outputAssetPackage);
 
 									// Inform the asset manager about the modified assets (just pass them individually, there's no real benefit in trying to apply "were's one, there are many" in this situation)
-									const RendererRuntime::AssetPackage::SortedAssetVector& sortedOutputAssetVector = outputAssetPackage.getSortedAssetVector();
+									const Renderer::AssetPackage::SortedAssetVector& sortedOutputAssetVector = outputAssetPackage.getSortedAssetVector();
 									const size_t numberOfOutputAssets = sortedOutputAssetVector.size();
 									for (size_t outputAssetIndex = 0; outputAssetIndex < numberOfOutputAssets; ++outputAssetIndex)
 									{
-										mProjectAssetMonitor.mRendererRuntime.reloadResourceByAssetId(sortedOutputAssetVector[outputAssetIndex].assetId);
+										mProjectAssetMonitor.mRenderer.reloadResourceByAssetId(sortedOutputAssetVector[outputAssetIndex].assetId);
 									}
 
 									// A compilation run has been finished do cleanup
@@ -174,9 +174,9 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
-	ProjectAssetMonitor::ProjectAssetMonitor(ProjectImpl& projectImpl, RendererRuntime::IRendererRuntime& rendererRuntime, const std::string& rhiTarget) :
+	ProjectAssetMonitor::ProjectAssetMonitor(ProjectImpl& projectImpl, Renderer::IRenderer& renderer, const std::string& rhiTarget) :
 		mProjectImpl(projectImpl),
-		mRendererRuntime(rendererRuntime),
+		mRenderer(renderer),
 		mRhiTarget(rhiTarget),
 		mShutdownThread(false)
 	{
@@ -195,7 +195,7 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	void ProjectAssetMonitor::threadWorker()
 	{
-		RENDERER_RUNTIME_SET_CURRENT_THREAD_DEBUG_NAME("Asset monitor", "Renderer toolkit: Project asset monitor");
+		RENDERER_SET_CURRENT_THREAD_DEBUG_NAME("Asset monitor", "Renderer toolkit: Project asset monitor");
 
 		// Create the file watcher object
 		FW::FileWatcher fileWatcher;

@@ -35,8 +35,8 @@ unrimp_add_conditional_rhi_definitions()
 ## Includes
 ##################################################
 include_directories(${CMAKE_SOURCE_DIR}/Source)
-include_directories(${CMAKE_SOURCE_DIR}/External/RendererRuntime)	# For "glm", "mikktspace" and "acl"
-include_directories(${CMAKE_SOURCE_DIR}/External/RendererRuntime/crunch/inc)
+include_directories(${CMAKE_SOURCE_DIR}/External/Renderer)	# For "glm", "mikktspace" and "acl"
+include_directories(${CMAKE_SOURCE_DIR}/External/Renderer/crunch/inc)
 include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit)	# For "SimpleFileWatcher" and "ies"
 include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit/RapidJSON/configuration)	# RapidJSON configuration and assert to exception
 include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit/RapidJSON/include)
@@ -49,10 +49,10 @@ link_directories(${CMAKE_SOURCE_DIR}/Library/${OS_ARCHITECTURE})
 ##################################################
 set(EXTERNAL_SOURCE_CODES
 	# crunch external library
-	${CMAKE_SOURCE_DIR}/External/RendererRuntime/crunch/crunchUnityBuild1.cpp
-	${CMAKE_SOURCE_DIR}/External/RendererRuntime/crunch/crunchUnityBuild2.cpp
+	${CMAKE_SOURCE_DIR}/External/Renderer/crunch/crunchUnityBuild1.cpp
+	${CMAKE_SOURCE_DIR}/External/Renderer/crunch/crunchUnityBuild2.cpp
 	# mikktspace external library
-	${CMAKE_SOURCE_DIR}/External/RendererRuntime/mikktspace/mikktspace.c
+	${CMAKE_SOURCE_DIR}/External/Renderer/mikktspace/mikktspace.c
 	# Assimp external library
 	${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/AssimpUnityBuild1.cpp
 	${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/AssimpUnityBuild2.cpp
@@ -176,18 +176,18 @@ add_library(RendererToolkit ${LIBRARY_TYPE} ${SOURCE_CODES})
 if(SHARED_LIBRARY)
 	set_target_properties(RendererToolkit PROPERTIES COMPILE_FLAGS "-DSHARED_LIBRARIES -DRENDERER_TOOLKIT_EXPORTS")
 	if(WIN32)
-		target_link_libraries(RendererToolkit RendererRuntime.lib)
+		target_link_libraries(RendererToolkit Renderer.lib)
 	else()
-		target_link_libraries(RendererToolkit RendererRuntime)
+		target_link_libraries(RendererToolkit Renderer)
 		target_link_libraries(RendererToolkit dl)
 	endif()
-	add_dependencies(RendererToolkit RendererRuntime)
+	add_dependencies(RendererToolkit Renderer)
 else()
 	if(UNIX)
 		set(LIBRARIES ${LIBRARIES} stdc++fs dl)
 	endif()
 	target_link_libraries(RendererToolkit ${LIBRARIES})
-	add_dependencies(RendererToolkit RendererRuntime)
+	add_dependencies(RendererToolkit Renderer)
 endif()
 
 

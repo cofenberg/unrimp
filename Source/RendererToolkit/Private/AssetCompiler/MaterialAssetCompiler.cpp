@@ -29,9 +29,9 @@
 #include "RendererToolkit/Private/Helper/JsonHelper.h"
 #include "RendererToolkit/Private/Context.h"
 
-#include <RendererRuntime/Public/Asset/AssetPackage.h>
-#include <RendererRuntime/Public/Core/File/MemoryFile.h>
-#include <RendererRuntime/Public/Core/File/FileSystemHelper.h>
+#include <Renderer/Public/Asset/AssetPackage.h>
+#include <Renderer/Public/Core/File/MemoryFile.h>
+#include <Renderer/Public/Core/File/FileSystemHelper.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -68,7 +68,7 @@ namespace RendererToolkit
 		std::vector<std::string> virtualDependencyFilenames;
 		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFileByRapidJsonDocument(configuration.rapidJsonDocumentAsset);
 		JsonMaterialHelper::getDependencyFiles(input, virtualInputFilename, virtualDependencyFilenames);
-		return (input.cacheManager.checkIfFileIsModified(configuration.rhiTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), RendererRuntime::v1Material::FORMAT_VERSION) || input.cacheManager.dependencyFilesChanged(virtualDependencyFilenames));
+		return (input.cacheManager.checkIfFileIsModified(configuration.rhiTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), Renderer::v1Material::FORMAT_VERSION) || input.cacheManager.dependencyFilesChanged(virtualDependencyFilenames));
 	}
 
 	void MaterialAssetCompiler::compile(const Input& input, const Configuration& configuration) const
@@ -85,40 +85,40 @@ namespace RendererToolkit
 		CacheManager::CacheEntries cacheEntries;
 		std::vector<std::string> virtualInputFilenames;
 		virtualInputFilenames.emplace_back(virtualInputFilename);
-		if (input.cacheManager.needsToBeCompiled(configuration.rhiTarget, input.virtualAssetFilename, virtualInputFilenames, virtualOutputAssetFilename, RendererRuntime::v1Material::FORMAT_VERSION, cacheEntries) || input.cacheManager.dependencyFilesChanged(virtualDependencyFilenames))
+		if (input.cacheManager.needsToBeCompiled(configuration.rhiTarget, input.virtualAssetFilename, virtualInputFilenames, virtualOutputAssetFilename, Renderer::v1Material::FORMAT_VERSION, cacheEntries) || input.cacheManager.dependencyFilesChanged(virtualDependencyFilenames))
 		{
-			RendererRuntime::MemoryFile memoryFile(0, 1024);
+			Renderer::MemoryFile memoryFile(0, 1024);
 
 			{ // Material
 				// Parse JSON
 				rapidjson::Document rapidJsonDocument;
 				JsonHelper::loadDocumentByFilename(input.context.getFileManager(), virtualInputFilename, "MaterialAsset", "1", rapidJsonDocument);
-				std::vector<RendererRuntime::v1Material::Technique> techniques;
-				RendererRuntime::MaterialProperties::SortedPropertyVector sortedMaterialPropertyVector;
+				std::vector<Renderer::v1Material::Technique> techniques;
+				Renderer::MaterialProperties::SortedPropertyVector sortedMaterialPropertyVector;
 				JsonMaterialHelper::getTechniquesAndPropertiesByMaterialAssetId(input, rapidJsonDocument, techniques, sortedMaterialPropertyVector);
 
 				{ // Write down the material header
-					RendererRuntime::v1Material::MaterialHeader materialHeader;
+					Renderer::v1Material::MaterialHeader materialHeader;
 					materialHeader.numberOfTechniques = static_cast<uint32_t>(techniques.size());
 					materialHeader.numberOfProperties = static_cast<uint32_t>(sortedMaterialPropertyVector.size());
-					memoryFile.write(&materialHeader, sizeof(RendererRuntime::v1Material::MaterialHeader));
+					memoryFile.write(&materialHeader, sizeof(Renderer::v1Material::MaterialHeader));
 				}
 
 				// Write down the material techniques
 				if (!techniques.empty())
 				{
-					memoryFile.write(techniques.data(), sizeof(RendererRuntime::v1Material::Technique) * techniques.size());
+					memoryFile.write(techniques.data(), sizeof(Renderer::v1Material::Technique) * techniques.size());
 				}
 
 				// Write down all material properties
 				if (!sortedMaterialPropertyVector.empty())
 				{
-					memoryFile.write(sortedMaterialPropertyVector.data(), sizeof(RendererRuntime::MaterialProperty) * sortedMaterialPropertyVector.size());
+					memoryFile.write(sortedMaterialPropertyVector.data(), sizeof(Renderer::MaterialProperty) * sortedMaterialPropertyVector.size());
 				}
 			}
 
 			// Write LZ4 compressed output
-			if (!memoryFile.writeLz4CompressedDataByVirtualFilename(RendererRuntime::v1Material::FORMAT_TYPE, RendererRuntime::v1Material::FORMAT_VERSION, input.context.getFileManager(), virtualOutputAssetFilename.c_str()))
+			if (!memoryFile.writeLz4CompressedDataByVirtualFilename(Renderer::v1Material::FORMAT_TYPE, Renderer::v1Material::FORMAT_VERSION, input.context.getFileManager(), virtualOutputAssetFilename.c_str()))
 			{
 				throw std::runtime_error("Failed to write LZ4 compressed output file \"" + virtualOutputAssetFilename + '\"');
 			}

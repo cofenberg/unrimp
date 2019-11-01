@@ -29,19 +29,19 @@
 #include "RendererToolkit/Private/Helper/JsonHelper.h"
 #include "RendererToolkit/Private/Context.h"
 
-#include <RendererRuntime/Public/Asset/AssetPackage.h>
-#include <RendererRuntime/Public/Core/File/MemoryFile.h>
-#include <RendererRuntime/Public/Core/File/FileSystemHelper.h>
-#include <RendererRuntime/Public/Resource/Material/MaterialResourceManager.h>
-#include <RendererRuntime/Public/Resource/CompositorNode/Loader/CompositorNodeFileFormat.h>
-#include <RendererRuntime/Public/Resource/CompositorNode/Pass/Copy/CompositorResourcePassCopy.h>
-#include <RendererRuntime/Public/Resource/CompositorNode/Pass/Compute/CompositorResourcePassCompute.h>
-#include <RendererRuntime/Public/Resource/CompositorNode/Pass/GenerateMipmaps/CompositorResourcePassGenerateMipmaps.h>
-#include <RendererRuntime/Public/Resource/CompositorNode/Pass/Clear/CompositorResourcePassClear.h>
-#include <RendererRuntime/Public/Resource/CompositorNode/Pass/DebugGui/CompositorResourcePassDebugGui.h>
-#include <RendererRuntime/Public/Resource/CompositorNode/Pass/ShadowMap/CompositorResourcePassShadowMap.h>
-#include <RendererRuntime/Public/Resource/CompositorNode/Pass/VrHiddenAreaMesh/CompositorResourcePassVrHiddenAreaMesh.h>
-#include <RendererRuntime/Public/Resource/CompositorNode/Pass/ResolveMultisample/CompositorResourcePassResolveMultisample.h>
+#include <Renderer/Public/Asset/AssetPackage.h>
+#include <Renderer/Public/Core/File/MemoryFile.h>
+#include <Renderer/Public/Core/File/FileSystemHelper.h>
+#include <Renderer/Public/Resource/Material/MaterialResourceManager.h>
+#include <Renderer/Public/Resource/CompositorNode/Loader/CompositorNodeFileFormat.h>
+#include <Renderer/Public/Resource/CompositorNode/Pass/Copy/CompositorResourcePassCopy.h>
+#include <Renderer/Public/Resource/CompositorNode/Pass/Compute/CompositorResourcePassCompute.h>
+#include <Renderer/Public/Resource/CompositorNode/Pass/GenerateMipmaps/CompositorResourcePassGenerateMipmaps.h>
+#include <Renderer/Public/Resource/CompositorNode/Pass/Clear/CompositorResourcePassClear.h>
+#include <Renderer/Public/Resource/CompositorNode/Pass/DebugGui/CompositorResourcePassDebugGui.h>
+#include <Renderer/Public/Resource/CompositorNode/Pass/ShadowMap/CompositorResourcePassShadowMap.h>
+#include <Renderer/Public/Resource/CompositorNode/Pass/VrHiddenAreaMesh/CompositorResourcePassVrHiddenAreaMesh.h>
+#include <Renderer/Public/Resource/CompositorNode/Pass/ResolveMultisample/CompositorResourcePassResolveMultisample.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -72,7 +72,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		void fillSortedMaterialPropertyVector(const RendererToolkit::IAssetCompiler::Input& input, const std::unordered_set<uint32_t>& renderTargetTextureAssetIds, const rapidjson::Value& rapidJsonValuePass, RendererRuntime::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector)
+		void fillSortedMaterialPropertyVector(const RendererToolkit::IAssetCompiler::Input& input, const std::unordered_set<uint32_t>& renderTargetTextureAssetIds, const rapidjson::Value& rapidJsonValuePass, Renderer::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector)
 		{
 			// Check whether or not material properties should be set
 			if (rapidJsonValuePass.HasMember("SetMaterialProperties"))
@@ -93,26 +93,26 @@ namespace
 
 					{ // Need a second round for referenced render target textures so we can write e.g. "ColorMap": "ColorRenderTargetTexture0" ("ColorRenderTargetTexture0" = render target texture)
 						// Collect all material property IDs explicitly defined inside the compositor node asset
-						typedef std::unordered_map<uint32_t, std::string> DefinedMaterialPropertyIds;	// Key = "RendererRuntime::RendererRuntime::MaterialPropertyId"
+						typedef std::unordered_map<uint32_t, std::string> DefinedMaterialPropertyIds;	// Key = "Renderer::Renderer::MaterialPropertyId"
 						DefinedMaterialPropertyIds definedMaterialPropertyIds;
 						for (rapidjson::Value::ConstMemberIterator rapidJsonMemberIteratorProperties = rapidJsonValueProperties.MemberBegin(); rapidJsonMemberIteratorProperties != rapidJsonValueProperties.MemberEnd(); ++rapidJsonMemberIteratorProperties)
 						{
-							definedMaterialPropertyIds.emplace(RendererRuntime::MaterialPropertyId(rapidJsonMemberIteratorProperties->name.GetString()), rapidJsonMemberIteratorProperties->value.GetString());
+							definedMaterialPropertyIds.emplace(Renderer::MaterialPropertyId(rapidJsonMemberIteratorProperties->name.GetString()), rapidJsonMemberIteratorProperties->value.GetString());
 						}
 
 						// Mark material properties as overwritten and update texture asset IDs if necessary
-						for (RendererRuntime::MaterialProperty& materialProperty : sortedMaterialPropertyVector)
+						for (Renderer::MaterialProperty& materialProperty : sortedMaterialPropertyVector)
 						{
 							DefinedMaterialPropertyIds::const_iterator iterator = definedMaterialPropertyIds.find(materialProperty.getMaterialPropertyId());
 							if (iterator!= definedMaterialPropertyIds.end())
 							{
 								materialProperty.setOverwritten(true);
-								if (materialProperty.getValueType() == RendererRuntime::MaterialPropertyValue::ValueType::TEXTURE_ASSET_ID)
+								if (materialProperty.getValueType() == Renderer::MaterialPropertyValue::ValueType::TEXTURE_ASSET_ID)
 								{
-									const RendererRuntime::AssetId assetId = RendererToolkit::StringHelper::getAssetIdByString(iterator->second, input);
+									const Renderer::AssetId assetId = RendererToolkit::StringHelper::getAssetIdByString(iterator->second, input);
 									if (renderTargetTextureAssetIds.find(assetId) != renderTargetTextureAssetIds.end())
 									{
-										static_cast<RendererRuntime::MaterialPropertyValue&>(materialProperty) = RendererRuntime::MaterialPropertyValue::fromTextureAssetId(assetId);
+										static_cast<Renderer::MaterialPropertyValue&>(materialProperty) = Renderer::MaterialPropertyValue::fromTextureAssetId(assetId);
 									}
 								}
 							}
@@ -122,10 +122,10 @@ namespace
 			}
 		}
 
-		void readPass(const rapidjson::Value& rapidJsonValuePass, RendererRuntime::v1CompositorNode::Pass& pass)
+		void readPass(const rapidjson::Value& rapidJsonValuePass, Renderer::v1CompositorNode::Pass& pass)
 		{
 			// Read properties
-			RendererToolkit::JsonHelper::optionalStringProperty(rapidJsonValuePass, "Name", pass.name, RendererRuntime::v1CompositorNode::Pass::MAXIMUM_PASS_NAME_LENGTH);
+			RendererToolkit::JsonHelper::optionalStringProperty(rapidJsonValuePass, "Name", pass.name, Renderer::v1CompositorNode::Pass::MAXIMUM_PASS_NAME_LENGTH);
 			RendererToolkit::JsonHelper::optionalFloatProperty(rapidJsonValuePass, "MinimumDepth", pass.minimumDepth);
 			RendererToolkit::JsonHelper::optionalFloatProperty(rapidJsonValuePass, "MaximumDepth", pass.maximumDepth);
 			RendererToolkit::JsonHelper::optionalIntegerProperty(rapidJsonValuePass, "NumberOfExecutions", pass.numberOfExecutions);
@@ -142,11 +142,11 @@ namespace
 			}
 		}
 
-		void readPassCompute(const RendererToolkit::IAssetCompiler::Input& input, const RendererRuntime::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector, const rapidjson::Value& rapidJsonValuePass, bool materialDefinitionMandatory, RendererRuntime::v1CompositorNode::PassCompute& passCompute)
+		void readPassCompute(const RendererToolkit::IAssetCompiler::Input& input, const Renderer::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector, const rapidjson::Value& rapidJsonValuePass, bool materialDefinitionMandatory, Renderer::v1CompositorNode::PassCompute& passCompute)
 		{
 			// Set data
-			RendererRuntime::AssetId materialAssetId;
-			RendererRuntime::AssetId materialBlueprintAssetId;
+			Renderer::AssetId materialAssetId;
+			Renderer::AssetId materialBlueprintAssetId;
 			RendererToolkit::JsonHelper::optionalCompiledAssetId(input, rapidJsonValuePass, "Material", materialAssetId);
 			RendererToolkit::JsonHelper::optionalStringIdProperty(rapidJsonValuePass, "MaterialTechnique", passCompute.materialTechniqueId);
 			RendererToolkit::JsonHelper::optionalCompiledAssetId(input, rapidJsonValuePass, "MaterialBlueprint", materialBlueprintAssetId);
@@ -155,25 +155,25 @@ namespace
 			passCompute.numberOfMaterialProperties = static_cast<uint32_t>(sortedMaterialPropertyVector.size());
 
 			// Sanity checks
-			if (materialDefinitionMandatory && RendererRuntime::isInvalid(passCompute.materialAssetId) && RendererRuntime::isInvalid(passCompute.materialBlueprintAssetId))
+			if (materialDefinitionMandatory && Renderer::isInvalid(passCompute.materialAssetId) && Renderer::isInvalid(passCompute.materialBlueprintAssetId))
 			{
 				throw std::runtime_error("Material asset ID or material blueprint asset ID must be defined");
 			}
-			if (RendererRuntime::isValid(passCompute.materialAssetId) && RendererRuntime::isValid(passCompute.materialBlueprintAssetId))
+			if (Renderer::isValid(passCompute.materialAssetId) && Renderer::isValid(passCompute.materialBlueprintAssetId))
 			{
 				throw std::runtime_error("Material asset ID is defined, but material blueprint asset ID is defined as well. Only one asset ID is allowed.");
 			}
-			if (RendererRuntime::isValid(passCompute.materialAssetId) && RendererRuntime::isInvalid(passCompute.materialTechniqueId))
+			if (Renderer::isValid(passCompute.materialAssetId) && Renderer::isInvalid(passCompute.materialTechniqueId))
 			{
 				throw std::runtime_error("Material asset ID is defined, but material technique is not defined");
 			}
-			if (RendererRuntime::isValid(passCompute.materialBlueprintAssetId) && RendererRuntime::isInvalid(passCompute.materialTechniqueId))
+			if (Renderer::isValid(passCompute.materialBlueprintAssetId) && Renderer::isInvalid(passCompute.materialTechniqueId))
 			{
-				passCompute.materialTechniqueId = RendererRuntime::MaterialResourceManager::DEFAULT_MATERIAL_TECHNIQUE_ID;
+				passCompute.materialTechniqueId = Renderer::MaterialResourceManager::DEFAULT_MATERIAL_TECHNIQUE_ID;
 			}
 		}
 
-		void readPassScene(const rapidjson::Value& rapidJsonValuePass, RendererRuntime::v1CompositorNode::PassScene& passScene)
+		void readPassScene(const rapidjson::Value& rapidJsonValuePass, Renderer::v1CompositorNode::PassScene& passScene)
 		{
 			// Read properties
 			RendererToolkit::JsonHelper::optionalByteProperty(rapidJsonValuePass, "MinimumRenderQueueIndex", passScene.minimumRenderQueueIndex);
@@ -190,7 +190,7 @@ namespace
 
 		[[nodiscard]] uint32_t getRenderTargetTextureSize(const rapidjson::Value& rapidJsonValueRenderTargetTexture, const char* propertyName, const char* defaultValue)
 		{
-			uint32_t size = RendererRuntime::getInvalid<uint32_t>();
+			uint32_t size = Renderer::getInvalid<uint32_t>();
 			if (rapidJsonValueRenderTargetTexture.HasMember(propertyName))
 			{
 				const char* valueAsString = rapidJsonValueRenderTargetTexture[propertyName].GetString();
@@ -204,7 +204,7 @@ namespace
 
 		[[nodiscard]] uint32_t getForEachInstructionParameters(const std::string& instructionAsString, std::string& scopedIterationCounterVariable)
 		{
-			// "@foreach(<number of iterations>, <scoped iteration counter variable>)" (same syntax as in "RendererRuntime::ShaderBuilder")
+			// "@foreach(<number of iterations>, <scoped iteration counter variable>)" (same syntax as in "Renderer::ShaderBuilder")
 			std::vector<std::string> elements;
 			RendererToolkit::StringHelper::splitString(instructionAsString.substr(9), ",)", elements);
 			if (elements.size() != 2)
@@ -225,7 +225,7 @@ namespace
 			{
 				const std::string targetName = rapidJsonMemberIteratorTargets->name.GetString();
 
-				// Check for instruction "@foreach(<number of iterations>, <scoped iteration counter variable>)" (same syntax as in "RendererRuntime::ShaderBuilder")
+				// Check for instruction "@foreach(<number of iterations>, <scoped iteration counter variable>)" (same syntax as in "Renderer::ShaderBuilder")
 				if (strncmp(targetName.c_str(), "@foreach(", 9) == 0)
 				{
 					// Get the two "@foreach"-parameters
@@ -246,14 +246,14 @@ namespace
 			return numberOfTargets;
 		}
 
-		void processTargets(const RendererToolkit::IAssetCompiler::Input& input, const std::unordered_set<uint32_t>& compositorChannelIds, std::unordered_set<uint32_t>& renderTargetTextureAssetIds, const std::unordered_set<uint32_t>& compositorFramebufferIds, const rapidjson::Value& rapidJsonValueTargets, RendererRuntime::IFile& file)
+		void processTargets(const RendererToolkit::IAssetCompiler::Input& input, const std::unordered_set<uint32_t>& compositorChannelIds, std::unordered_set<uint32_t>& renderTargetTextureAssetIds, const std::unordered_set<uint32_t>& compositorFramebufferIds, const rapidjson::Value& rapidJsonValueTargets, Renderer::IFile& file)
 		{
 			for (rapidjson::Value::ConstMemberIterator rapidJsonMemberIteratorTargets = rapidJsonValueTargets.MemberBegin(); rapidJsonMemberIteratorTargets != rapidJsonValueTargets.MemberEnd(); ++rapidJsonMemberIteratorTargets)
 			{
 				const std::string targetName = rapidJsonMemberIteratorTargets->name.GetString();
 				try
 				{
-					// Check for instruction "@foreach(<number of iterations>, <scoped iteration counter variable>)" (same syntax as in "RendererRuntime::ShaderBuilder")
+					// Check for instruction "@foreach(<number of iterations>, <scoped iteration counter variable>)" (same syntax as in "Renderer::ShaderBuilder")
 					if (strncmp(targetName.c_str(), "@foreach(", 9) == 0)
 					{
 						// Get the two "@foreach"-parameters
@@ -273,22 +273,22 @@ namespace
 						const rapidjson::Value& rapidJsonValuePasses = rapidJsonValueTarget;	// A render target only contains passes, keep this variable to make the content more clear
 
 						{ // Write down the compositor resource node target
-							RendererRuntime::v1CompositorNode::Target target;
+							Renderer::v1CompositorNode::Target target;
 							if (targetName.empty())
 							{
 								// There's no render target, which is valid in case e.g. compute shaders are used inside passes
-								target.compositorChannelId	   = RendererRuntime::getInvalid<RendererRuntime::CompositorChannelId>();
-								target.compositorFramebufferId = RendererRuntime::getInvalid<RendererRuntime::CompositorFramebufferId>();
+								target.compositorChannelId	   = Renderer::getInvalid<Renderer::CompositorChannelId>();
+								target.compositorFramebufferId = Renderer::getInvalid<Renderer::CompositorFramebufferId>();
 							}
 							else
 							{
 								// Render target might be compositor channel (external interconnection) or compositor framebuffer (node internal processing)
-								const uint32_t id = RendererRuntime::StringId::calculateFNV(targetName.c_str());
-								target.compositorChannelId	   = (compositorChannelIds.find(id) != compositorChannelIds.end()) ? id : RendererRuntime::getInvalid<uint32_t>();
-								target.compositorFramebufferId = (compositorFramebufferIds.find(id) != compositorFramebufferIds.end()) ? id : RendererRuntime::getInvalid<uint32_t>();
+								const uint32_t id = Renderer::StringId::calculateFNV(targetName.c_str());
+								target.compositorChannelId	   = (compositorChannelIds.find(id) != compositorChannelIds.end()) ? id : Renderer::getInvalid<uint32_t>();
+								target.compositorFramebufferId = (compositorFramebufferIds.find(id) != compositorFramebufferIds.end()) ? id : Renderer::getInvalid<uint32_t>();
 							}
 							target.numberOfPasses = rapidJsonValuePasses.MemberCount();
-							file.write(&target, sizeof(RendererRuntime::v1CompositorNode::Target));
+							file.write(&target, sizeof(Renderer::v1CompositorNode::Target));
 						}
 
 						// Write down the compositor resource node target passes
@@ -297,58 +297,58 @@ namespace
 							try
 							{
 								const rapidjson::Value& rapidJsonValuePass = rapidJsonMemberIteratorPasses->value;
-								const RendererRuntime::CompositorPassTypeId compositorPassTypeId = RendererRuntime::StringId(rapidJsonMemberIteratorPasses->name.GetString());
+								const Renderer::CompositorPassTypeId compositorPassTypeId = Renderer::StringId(rapidJsonMemberIteratorPasses->name.GetString());
 
 								// Get the compositor resource node target pass type specific data number of bytes
 								// TODO(co) Make this more generic via compositor pass factory
 								uint32_t numberOfBytes = 0;
-								RendererRuntime::MaterialProperties::SortedPropertyVector sortedMaterialPropertyVector;
+								Renderer::MaterialProperties::SortedPropertyVector sortedMaterialPropertyVector;
 								switch (compositorPassTypeId)
 								{
-									case RendererRuntime::CompositorResourcePassClear::TYPE_ID:
-										numberOfBytes = sizeof(RendererRuntime::v1CompositorNode::PassClear);
+									case Renderer::CompositorResourcePassClear::TYPE_ID:
+										numberOfBytes = sizeof(Renderer::v1CompositorNode::PassClear);
 										break;
 
-									case RendererRuntime::CompositorResourcePassVrHiddenAreaMesh::TYPE_ID:
-										numberOfBytes = sizeof(RendererRuntime::v1CompositorNode::PassVrHiddenAreaMesh);
+									case Renderer::CompositorResourcePassVrHiddenAreaMesh::TYPE_ID:
+										numberOfBytes = sizeof(Renderer::v1CompositorNode::PassVrHiddenAreaMesh);
 										break;
 
-									case RendererRuntime::CompositorResourcePassScene::TYPE_ID:
-										numberOfBytes = sizeof(RendererRuntime::v1CompositorNode::PassScene);
+									case Renderer::CompositorResourcePassScene::TYPE_ID:
+										numberOfBytes = sizeof(Renderer::v1CompositorNode::PassScene);
 										break;
 
-									case RendererRuntime::CompositorResourcePassShadowMap::TYPE_ID:
-										numberOfBytes = sizeof(RendererRuntime::v1CompositorNode::PassShadowMap);
+									case Renderer::CompositorResourcePassShadowMap::TYPE_ID:
+										numberOfBytes = sizeof(Renderer::v1CompositorNode::PassShadowMap);
 										break;
 
-									case RendererRuntime::CompositorResourcePassResolveMultisample::TYPE_ID:
-										numberOfBytes = sizeof(RendererRuntime::v1CompositorNode::PassResolveMultisample);
+									case Renderer::CompositorResourcePassResolveMultisample::TYPE_ID:
+										numberOfBytes = sizeof(Renderer::v1CompositorNode::PassResolveMultisample);
 										break;
 
-									case RendererRuntime::CompositorResourcePassCopy::TYPE_ID:
-										numberOfBytes = sizeof(RendererRuntime::v1CompositorNode::PassCopy);
+									case Renderer::CompositorResourcePassCopy::TYPE_ID:
+										numberOfBytes = sizeof(Renderer::v1CompositorNode::PassCopy);
 										break;
 
-									case RendererRuntime::CompositorResourcePassGenerateMipmaps::TYPE_ID:
-										numberOfBytes = sizeof(RendererRuntime::v1CompositorNode::PassGenerateMipmaps);
+									case Renderer::CompositorResourcePassGenerateMipmaps::TYPE_ID:
+										numberOfBytes = sizeof(Renderer::v1CompositorNode::PassGenerateMipmaps);
 										break;
 
-									case RendererRuntime::CompositorResourcePassCompute::TYPE_ID:
+									case Renderer::CompositorResourcePassCompute::TYPE_ID:
 										fillSortedMaterialPropertyVector(input, renderTargetTextureAssetIds, rapidJsonMemberIteratorPasses->value, sortedMaterialPropertyVector);
-										numberOfBytes = static_cast<uint32_t>(sizeof(RendererRuntime::v1CompositorNode::PassCompute) + sizeof(RendererRuntime::MaterialProperty) * sortedMaterialPropertyVector.size());
+										numberOfBytes = static_cast<uint32_t>(sizeof(Renderer::v1CompositorNode::PassCompute) + sizeof(Renderer::MaterialProperty) * sortedMaterialPropertyVector.size());
 										break;
 
-									case RendererRuntime::CompositorResourcePassDebugGui::TYPE_ID:
+									case Renderer::CompositorResourcePassDebugGui::TYPE_ID:
 										fillSortedMaterialPropertyVector(input, renderTargetTextureAssetIds, rapidJsonMemberIteratorPasses->value, sortedMaterialPropertyVector);
-										numberOfBytes = static_cast<uint32_t>(sizeof(RendererRuntime::v1CompositorNode::PassDebugGui) + sizeof(RendererRuntime::MaterialProperty) * sortedMaterialPropertyVector.size());
+										numberOfBytes = static_cast<uint32_t>(sizeof(Renderer::v1CompositorNode::PassDebugGui) + sizeof(Renderer::MaterialProperty) * sortedMaterialPropertyVector.size());
 										break;
 								}
 
 								{ // Write down the compositor resource node target pass header
-									RendererRuntime::v1CompositorNode::PassHeader passHeader;
+									Renderer::v1CompositorNode::PassHeader passHeader;
 									passHeader.compositorPassTypeId = compositorPassTypeId;
 									passHeader.numberOfBytes		= numberOfBytes;
-									file.write(&passHeader, sizeof(RendererRuntime::v1CompositorNode::PassHeader));
+									file.write(&passHeader, sizeof(Renderer::v1CompositorNode::PassHeader));
 								}
 
 								// Write down the compositor resource node target pass type specific data, if there is any
@@ -356,9 +356,9 @@ namespace
 								{
 									switch (compositorPassTypeId)
 									{
-										case RendererRuntime::CompositorResourcePassClear::TYPE_ID:
+										case Renderer::CompositorResourcePassClear::TYPE_ID:
 										{
-											RendererRuntime::v1CompositorNode::PassClear passClear;
+											Renderer::v1CompositorNode::PassClear passClear;
 											strcpy(passClear.name, "Clear compositor pass");
 											readPass(rapidJsonValuePass, passClear);
 
@@ -373,13 +373,13 @@ namespace
 											}
 
 											// Write down
-											file.write(&passClear, sizeof(RendererRuntime::v1CompositorNode::PassClear));
+											file.write(&passClear, sizeof(Renderer::v1CompositorNode::PassClear));
 											break;
 										}
 
-										case RendererRuntime::CompositorResourcePassVrHiddenAreaMesh::TYPE_ID:
+										case Renderer::CompositorResourcePassVrHiddenAreaMesh::TYPE_ID:
 										{
-											RendererRuntime::v1CompositorNode::PassVrHiddenAreaMesh passVrHiddenAreaMesh;
+											Renderer::v1CompositorNode::PassVrHiddenAreaMesh passVrHiddenAreaMesh;
 											strcpy(passVrHiddenAreaMesh.name, "VR hidden area mesh compute pass");
 											readPass(rapidJsonValuePass, passVrHiddenAreaMesh);
 
@@ -400,25 +400,25 @@ namespace
 											}
 
 											// Write down
-											file.write(&passVrHiddenAreaMesh, sizeof(RendererRuntime::v1CompositorNode::PassVrHiddenAreaMesh));
+											file.write(&passVrHiddenAreaMesh, sizeof(Renderer::v1CompositorNode::PassVrHiddenAreaMesh));
 											break;
 										}
 
-										case RendererRuntime::CompositorResourcePassScene::TYPE_ID:
+										case Renderer::CompositorResourcePassScene::TYPE_ID:
 										{
-											RendererRuntime::v1CompositorNode::PassScene passScene;
+											Renderer::v1CompositorNode::PassScene passScene;
 											strcpy(passScene.name, "Scene compositor pass");
 											readPass(rapidJsonValuePass, passScene);
 											readPassScene(rapidJsonValuePass, passScene);
 
 											// Write down
-											file.write(&passScene, sizeof(RendererRuntime::v1CompositorNode::PassScene));
+											file.write(&passScene, sizeof(Renderer::v1CompositorNode::PassScene));
 											break;
 										}
 
-										case RendererRuntime::CompositorResourcePassShadowMap::TYPE_ID:
+										case Renderer::CompositorResourcePassShadowMap::TYPE_ID:
 										{
-											RendererRuntime::v1CompositorNode::PassShadowMap passShadowMap;
+											Renderer::v1CompositorNode::PassShadowMap passShadowMap;
 											strcpy(passShadowMap.name, "Shadow map compositor pass");
 											readPass(rapidJsonValuePass, passShadowMap);
 											readPassScene(rapidJsonValuePass, passShadowMap);
@@ -428,13 +428,13 @@ namespace
 											renderTargetTextureAssetIds.insert(passShadowMap.textureAssetId);
 
 											// Write down
-											file.write(&passShadowMap, sizeof(RendererRuntime::v1CompositorNode::PassShadowMap));
+											file.write(&passShadowMap, sizeof(Renderer::v1CompositorNode::PassShadowMap));
 											break;
 										}
 
-										case RendererRuntime::CompositorResourcePassResolveMultisample::TYPE_ID:
+										case Renderer::CompositorResourcePassResolveMultisample::TYPE_ID:
 										{
-											RendererRuntime::v1CompositorNode::PassResolveMultisample passResolveMultisample;
+											Renderer::v1CompositorNode::PassResolveMultisample passResolveMultisample;
 											strcpy(passResolveMultisample.name, "Resolve multisample compositor pass");
 											readPass(rapidJsonValuePass, passResolveMultisample);
 											RendererToolkit::JsonHelper::mandatoryStringIdProperty(rapidJsonValuePass, "SourceMultisampleFramebuffer", passResolveMultisample.sourceMultisampleCompositorFramebufferId);
@@ -442,13 +442,13 @@ namespace
 											{
 												throw std::runtime_error(std::string("Source multisample framebuffer \"") + rapidJsonValuePass["SourceMultisampleFramebuffer"].GetString() + "\" is unknown");
 											}
-											file.write(&passResolveMultisample, sizeof(RendererRuntime::v1CompositorNode::PassResolveMultisample));
+											file.write(&passResolveMultisample, sizeof(Renderer::v1CompositorNode::PassResolveMultisample));
 											break;
 										}
 
-										case RendererRuntime::CompositorResourcePassCopy::TYPE_ID:
+										case Renderer::CompositorResourcePassCopy::TYPE_ID:
 										{
-											RendererRuntime::v1CompositorNode::PassCopy passCopy;
+											Renderer::v1CompositorNode::PassCopy passCopy;
 											strcpy(passCopy.name, "Copy compositor pass");
 											readPass(rapidJsonValuePass, passCopy);
 											RendererToolkit::JsonHelper::mandatoryStringIdProperty(rapidJsonValuePass, "DestinationTexture", passCopy.destinationTextureAssetId);
@@ -461,13 +461,13 @@ namespace
 											{
 												throw std::runtime_error(std::string("Source texture asset ID \"") + rapidJsonValuePass["SourceTexture"].GetString() + "\" is unknown");
 											}
-											file.write(&passCopy, sizeof(RendererRuntime::v1CompositorNode::PassCopy));
+											file.write(&passCopy, sizeof(Renderer::v1CompositorNode::PassCopy));
 											break;
 										}
 
-										case RendererRuntime::CompositorResourcePassGenerateMipmaps::TYPE_ID:
+										case Renderer::CompositorResourcePassGenerateMipmaps::TYPE_ID:
 										{
-											RendererRuntime::v1CompositorNode::PassGenerateMipmaps passGenerateMipmaps;
+											Renderer::v1CompositorNode::PassGenerateMipmaps passGenerateMipmaps;
 											strcpy(passGenerateMipmaps.name, "Generate mipmaps compositor pass");
 											readPass(rapidJsonValuePass, passGenerateMipmaps);
 											RendererToolkit::JsonHelper::mandatoryStringIdProperty(rapidJsonValuePass, "Texture", passGenerateMipmaps.textureAssetId);
@@ -475,51 +475,51 @@ namespace
 											RendererToolkit::JsonHelper::optionalStringIdProperty(rapidJsonValuePass, "TextureMaterialBlueprintProperty", passGenerateMipmaps.textureMaterialBlueprintProperty);
 
 											// Sanity checks
-											if (RendererRuntime::isValid(passGenerateMipmaps.materialBlueprintAssetId) && RendererRuntime::isInvalid(passGenerateMipmaps.textureMaterialBlueprintProperty))
+											if (Renderer::isValid(passGenerateMipmaps.materialBlueprintAssetId) && Renderer::isInvalid(passGenerateMipmaps.textureMaterialBlueprintProperty))
 											{
 												throw std::runtime_error("Generate mipmaps compositor pass has a set material blueprint, but the texture material blueprint property is undefined. Either you use a custom mipmap generation material blueprint or you don't use one.");
 											}
-											if (RendererRuntime::isInvalid(passGenerateMipmaps.materialBlueprintAssetId) && RendererRuntime::isValid(passGenerateMipmaps.textureMaterialBlueprintProperty))
+											if (Renderer::isInvalid(passGenerateMipmaps.materialBlueprintAssetId) && Renderer::isValid(passGenerateMipmaps.textureMaterialBlueprintProperty))
 											{
 												throw std::runtime_error("Generate mipmaps compositor pass has a set texture material blueprint property, but the material blueprint is undefined. Either you use a custom mipmap generation material blueprint or you don't use one.");
 											}
 
 											// Write down
-											file.write(&passGenerateMipmaps, sizeof(RendererRuntime::v1CompositorNode::PassGenerateMipmaps));
+											file.write(&passGenerateMipmaps, sizeof(Renderer::v1CompositorNode::PassGenerateMipmaps));
 											break;
 										}
 
-										case RendererRuntime::CompositorResourcePassCompute::TYPE_ID:
+										case Renderer::CompositorResourcePassCompute::TYPE_ID:
 										{
-											RendererRuntime::v1CompositorNode::PassCompute passCompute;
+											Renderer::v1CompositorNode::PassCompute passCompute;
 											strcpy(passCompute.name, "Compute compositor pass");
 											readPass(rapidJsonValuePass, passCompute);
 											readPassCompute(input, sortedMaterialPropertyVector, rapidJsonValuePass, true, passCompute);
 
 											// Write down
-											file.write(&passCompute, sizeof(RendererRuntime::v1CompositorNode::PassCompute));
+											file.write(&passCompute, sizeof(Renderer::v1CompositorNode::PassCompute));
 											if (!sortedMaterialPropertyVector.empty())
 											{
 												// Write down all material properties
-												file.write(sortedMaterialPropertyVector.data(), sizeof(RendererRuntime::MaterialProperty) * sortedMaterialPropertyVector.size());
+												file.write(sortedMaterialPropertyVector.data(), sizeof(Renderer::MaterialProperty) * sortedMaterialPropertyVector.size());
 											}
 											break;
 										}
 
-										case RendererRuntime::CompositorResourcePassDebugGui::TYPE_ID:
+										case Renderer::CompositorResourcePassDebugGui::TYPE_ID:
 										{
 											// The material definition is not mandatory for the debug GUI, if nothing is defined the fixed build in RHI configuration resources will be used instead
-											RendererRuntime::v1CompositorNode::PassDebugGui passDebugGui;
+											Renderer::v1CompositorNode::PassDebugGui passDebugGui;
 											strcpy(passDebugGui.name, "Debug GUI compositor pass");
 											readPass(rapidJsonValuePass, passDebugGui);
 											readPassCompute(input, sortedMaterialPropertyVector, rapidJsonValuePass, false, passDebugGui);
 
 											// Write down
-											file.write(&passDebugGui, sizeof(RendererRuntime::v1CompositorNode::PassDebugGui));
+											file.write(&passDebugGui, sizeof(Renderer::v1CompositorNode::PassDebugGui));
 											if (!sortedMaterialPropertyVector.empty())
 											{
 												// Write down all material properties
-												file.write(sortedMaterialPropertyVector.data(), sizeof(RendererRuntime::MaterialProperty) * sortedMaterialPropertyVector.size());
+												file.write(sortedMaterialPropertyVector.data(), sizeof(Renderer::MaterialProperty) * sortedMaterialPropertyVector.size());
 											}
 											break;
 										}
@@ -550,8 +550,8 @@ namespace
 				if (!flagsAsString.empty())
 				{
 					// Define helper macros
-					#define IF_VALUE(name)			 if (flagAsString == #name) value = RendererRuntime::RenderTargetTextureSignature::Flag::name;
-					#define ELSE_IF_VALUE(name) else if (flagAsString == #name) value = RendererRuntime::RenderTargetTextureSignature::Flag::name;
+					#define IF_VALUE(name)			 if (flagAsString == #name) value = Renderer::RenderTargetTextureSignature::Flag::name;
+					#define ELSE_IF_VALUE(name) else if (flagAsString == #name) value = Renderer::RenderTargetTextureSignature::Flag::name;
 
 					// Evaluate flags
 					const size_t numberOfFlags = flagsAsString.size();
@@ -611,7 +611,7 @@ namespace RendererToolkit
 	bool CompositorNodeAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const
 	{
 		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFileByRapidJsonDocument(configuration.rapidJsonDocumentAsset);
-		return input.cacheManager.checkIfFileIsModified(configuration.rhiTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), RendererRuntime::v1CompositorNode::FORMAT_VERSION);
+		return input.cacheManager.checkIfFileIsModified(configuration.rhiTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), Renderer::v1CompositorNode::FORMAT_VERSION);
 	}
 
 	void CompositorNodeAssetCompiler::compile(const Input& input, const Configuration& configuration) const
@@ -622,9 +622,9 @@ namespace RendererToolkit
 
 		// Ask the cache manager whether or not we need to compile the source file (e.g. source changed or target not there)
 		CacheManager::CacheEntries cacheEntries;
-		if (input.cacheManager.needsToBeCompiled(configuration.rhiTarget, input.virtualAssetFilename, virtualInputFilename, virtualOutputAssetFilename, RendererRuntime::v1CompositorNode::FORMAT_VERSION, cacheEntries))
+		if (input.cacheManager.needsToBeCompiled(configuration.rhiTarget, input.virtualAssetFilename, virtualInputFilename, virtualOutputAssetFilename, Renderer::v1CompositorNode::FORMAT_VERSION, cacheEntries))
 		{
-			RendererRuntime::MemoryFile memoryFile(0, 4096);
+			Renderer::MemoryFile memoryFile(0, 4096);
 
 			{ // Compositor node
 				// Parse JSON
@@ -638,22 +638,22 @@ namespace RendererToolkit
 				const rapidjson::Value& rapidJsonValueOutputChannels = rapidJsonValueCompositorNodeAsset["OutputChannels"];
 
 				{ // Write down the compositor node resource header
-					RendererRuntime::v1CompositorNode::CompositorNodeHeader compositorNodeHeader;
+					Renderer::v1CompositorNode::CompositorNodeHeader compositorNodeHeader;
 					compositorNodeHeader.numberOfInputChannels		  = rapidJsonValueInputChannels.MemberCount();
 					compositorNodeHeader.numberOfRenderTargetTextures = rapidJsonValueCompositorNodeAsset.HasMember("RenderTargetTextures") ? rapidJsonValueCompositorNodeAsset["RenderTargetTextures"].MemberCount() : 0;
 					compositorNodeHeader.numberOfFramebuffers		  = rapidJsonValueCompositorNodeAsset.HasMember("Framebuffers") ? rapidJsonValueCompositorNodeAsset["Framebuffers"].MemberCount() : 0;
 					compositorNodeHeader.numberOfTargets			  = ::detail::getNumberOfTargets(rapidJsonValueTargets);
 					compositorNodeHeader.numberOfOutputChannels		  = rapidJsonValueOutputChannels.MemberCount();
-					memoryFile.write(&compositorNodeHeader, sizeof(RendererRuntime::v1CompositorNode::CompositorNodeHeader));
+					memoryFile.write(&compositorNodeHeader, sizeof(Renderer::v1CompositorNode::CompositorNodeHeader));
 				}
 
 				// Write down the compositor resource node input channels
-				std::unordered_set<uint32_t> compositorChannelIds;	// "RendererRuntime::CompositorChannelId"-type
+				std::unordered_set<uint32_t> compositorChannelIds;	// "Renderer::CompositorChannelId"-type
 				for (rapidjson::Value::ConstMemberIterator rapidJsonMemberIteratorInputChannels = rapidJsonValueInputChannels.MemberBegin(); rapidJsonMemberIteratorInputChannels != rapidJsonValueInputChannels.MemberEnd(); ++rapidJsonMemberIteratorInputChannels)
 				{
-					RendererRuntime::v1CompositorNode::Channel channel;
-					channel.id = RendererRuntime::StringId(rapidJsonMemberIteratorInputChannels->value.GetString());
-					memoryFile.write(&channel, sizeof(RendererRuntime::v1CompositorNode::Channel));
+					Renderer::v1CompositorNode::Channel channel;
+					channel.id = Renderer::StringId(rapidJsonMemberIteratorInputChannels->value.GetString());
+					memoryFile.write(&channel, sizeof(Renderer::v1CompositorNode::Channel));
 
 					// Remember that there's a compositor channel with this ID
 					compositorChannelIds.insert(channel.id);
@@ -661,13 +661,13 @@ namespace RendererToolkit
 
 				// Write down the compositor render target textures
 				std::unordered_set<uint32_t> renderTargetTextureAssetIds = input.defaultTextureAssetIds;
-				std::unordered_map<uint32_t, RendererRuntime::RenderTargetTextureSignature> renderTargetTextureSignatures;
+				std::unordered_map<uint32_t, Renderer::RenderTargetTextureSignature> renderTargetTextureSignatures;
 				if (rapidJsonValueCompositorNodeAsset.HasMember("RenderTargetTextures"))
 				{
 					const rapidjson::Value& rapidJsonValueRenderTargetTextures = rapidJsonValueCompositorNodeAsset["RenderTargetTextures"];
 					for (rapidjson::Value::ConstMemberIterator rapidJsonMemberIteratorRenderTargetTextures = rapidJsonValueRenderTargetTextures.MemberBegin(); rapidJsonMemberIteratorRenderTargetTextures != rapidJsonValueRenderTargetTextures.MemberEnd(); ++rapidJsonMemberIteratorRenderTargetTextures)
 					{
-						RendererRuntime::v1CompositorNode::RenderTargetTexture renderTargetTexture;
+						Renderer::v1CompositorNode::RenderTargetTexture renderTargetTexture;
 						renderTargetTexture.assetId = StringHelper::getAssetIdByString(rapidJsonMemberIteratorRenderTargetTextures->name.GetString(), input);
 						{ // Render target texture signature
 							const rapidjson::Value& rapidJsonValueRenderTargetTexture = rapidJsonMemberIteratorRenderTargetTextures->value;
@@ -680,20 +680,20 @@ namespace RendererToolkit
 							const Rhi::TextureFormat::Enum textureFormat = JsonHelper::mandatoryTextureFormat(rapidJsonValueRenderTargetTexture);
 
 							// Flags
-							uint8_t flags = (RendererRuntime::RenderTargetTextureSignature::Flag::SHADER_RESOURCE | RendererRuntime::RenderTargetTextureSignature::Flag::RENDER_TARGET);
-							if (RendererRuntime::isInvalid(width) || RendererRuntime::isInvalid(height))
+							uint8_t flags = (Renderer::RenderTargetTextureSignature::Flag::SHADER_RESOURCE | Renderer::RenderTargetTextureSignature::Flag::RENDER_TARGET);
+							if (Renderer::isInvalid(width) || Renderer::isInvalid(height))
 							{
-								flags |= RendererRuntime::RenderTargetTextureSignature::Flag::ALLOW_RESOLUTION_SCALE;
+								flags |= Renderer::RenderTargetTextureSignature::Flag::ALLOW_RESOLUTION_SCALE;
 							}
 							::detail::optionalRenderTargetTexturesFlagsProperty(rapidJsonValueRenderTargetTexture, "Flags", flags);
-							if (RendererRuntime::isValid(width) && RendererRuntime::isValid(height) && (flags & RendererRuntime::RenderTargetTextureSignature::Flag::ALLOW_RESOLUTION_SCALE) != 0)
+							if (Renderer::isValid(width) && Renderer::isValid(height) && (flags & Renderer::RenderTargetTextureSignature::Flag::ALLOW_RESOLUTION_SCALE) != 0)
 							{
 								throw std::runtime_error(std::string("Render target texture \"") + rapidJsonMemberIteratorRenderTargetTextures->name.GetString() + "\" has a fixed defined width and height, usage of \"ALLOW_RESOLUTION_SCALE\" flag is not allowed for this use-case");
 							}
 
 							// Width scale
 							float widthScale = 1.0f;
-							if (RendererRuntime::isValid(width) && rapidJsonValueRenderTargetTexture.HasMember("WidthScale"))
+							if (Renderer::isValid(width) && rapidJsonValueRenderTargetTexture.HasMember("WidthScale"))
 							{
 								throw std::runtime_error(std::string("Render target texture \"") + rapidJsonMemberIteratorRenderTargetTextures->name.GetString() + "\" has a fixed defined width, usage of \"WidthScale\" is not allowed for this use-case");
 							}
@@ -701,7 +701,7 @@ namespace RendererToolkit
 
 							// Height scale
 							float heightScale = 1.0f;
-							if (RendererRuntime::isValid(height) && rapidJsonValueRenderTargetTexture.HasMember("HeightScale"))
+							if (Renderer::isValid(height) && rapidJsonValueRenderTargetTexture.HasMember("HeightScale"))
 							{
 								throw std::runtime_error(std::string("Render target texture \"") + rapidJsonMemberIteratorRenderTargetTextures->name.GetString() + "\" has a fixed defined height, usage of \"HeightScale\" is not allowed for this use-case");
 							}
@@ -725,10 +725,10 @@ namespace RendererToolkit
 
 							// Write render target texture signature
 							// TODO(co) Add sanity checks to be able to detect editing errors (compressed formats are not supported nor unknown formats, check for name conflicts with channels, unused render target textures etc.)
-							renderTargetTexture.renderTargetTextureSignature = RendererRuntime::RenderTargetTextureSignature(width, height, textureFormat, flags, widthScale, heightScale);
+							renderTargetTexture.renderTargetTextureSignature = Renderer::RenderTargetTextureSignature(width, height, textureFormat, flags, widthScale, heightScale);
 							renderTargetTextureSignatures.emplace(renderTargetTexture.assetId, renderTargetTexture.renderTargetTextureSignature);
 						}
-						memoryFile.write(&renderTargetTexture, sizeof(RendererRuntime::v1CompositorNode::RenderTargetTexture));
+						memoryFile.write(&renderTargetTexture, sizeof(Renderer::v1CompositorNode::RenderTargetTexture));
 
 						// Remember that there's a render target texture with this asset ID
 						renderTargetTextureAssetIds.insert(renderTargetTexture.assetId);
@@ -736,20 +736,20 @@ namespace RendererToolkit
 				}
 
 				// Write down the compositor framebuffers
-				std::unordered_set<uint32_t> compositorFramebufferIds;	// "RendererRuntime::CompositorFramebufferId"-type
+				std::unordered_set<uint32_t> compositorFramebufferIds;	// "Renderer::CompositorFramebufferId"-type
 				if (rapidJsonValueCompositorNodeAsset.HasMember("Framebuffers"))
 				{
 					const rapidjson::Value& rapidJsonValueFramebuffers = rapidJsonValueCompositorNodeAsset["Framebuffers"];
 					for (rapidjson::Value::ConstMemberIterator rapidJsonMemberIteratorFramebuffers = rapidJsonValueFramebuffers.MemberBegin(); rapidJsonMemberIteratorFramebuffers != rapidJsonValueFramebuffers.MemberEnd(); ++rapidJsonMemberIteratorFramebuffers)
 					{
-						RendererRuntime::v1CompositorNode::Framebuffer framebuffer;
-						framebuffer.compositorFramebufferId = RendererRuntime::StringId(rapidJsonMemberIteratorFramebuffers->name.GetString());
+						Renderer::v1CompositorNode::Framebuffer framebuffer;
+						framebuffer.compositorFramebufferId = Renderer::StringId(rapidJsonMemberIteratorFramebuffers->name.GetString());
 						{ // Framebuffer signature
 							const rapidjson::Value& rapidJsonValueFramebuffer = rapidJsonMemberIteratorFramebuffers->value;
 
 							// Optional color framebuffer attachment
 							uint8_t numberOfColorFramebufferAttachments = 0;
-							RendererRuntime::FramebufferSignatureAttachment colorFramebufferSignatureAttachments[8];
+							Renderer::FramebufferSignatureAttachment colorFramebufferSignatureAttachments[8];
 							if (rapidJsonValueFramebuffer.HasMember("ColorTextures") && rapidJsonValueFramebuffer.HasMember("ColorAttachments"))
 							{
 								throw std::runtime_error("Framebuffer \"" + std::string(rapidJsonMemberIteratorFramebuffers->name.GetString()) + "\" is using \"ColorTextures\" as well as \"ColorAttachments\", only one can be used at one and the same time");
@@ -762,16 +762,16 @@ namespace RendererToolkit
 								for (uint8_t i = 0; i < numberOfColorFramebufferAttachments; ++i)
 								{
 									const rapidjson::Value& rapidJsonValueFramebufferColorAttachment = rapidJsonValueFramebufferColorAttachments[i];
-									RendererRuntime::FramebufferSignatureAttachment& colorFramebufferSignatureAttachment = colorFramebufferSignatureAttachments[i];
-									const RendererRuntime::AssetId textureAssetId = StringHelper::getAssetIdByString(rapidJsonValueFramebufferColorAttachment["ColorTexture"].GetString(), input);
-									if (RendererRuntime::isValid(textureAssetId))
+									Renderer::FramebufferSignatureAttachment& colorFramebufferSignatureAttachment = colorFramebufferSignatureAttachments[i];
+									const Renderer::AssetId textureAssetId = StringHelper::getAssetIdByString(rapidJsonValueFramebufferColorAttachment["ColorTexture"].GetString(), input);
+									if (Renderer::isValid(textureAssetId))
 									{
 										if (renderTargetTextureAssetIds.find(textureAssetId) == renderTargetTextureAssetIds.end())
 										{
 											throw std::runtime_error(std::string("Color texture \"") + rapidJsonValueFramebufferColorAttachment["ColorTexture"].GetString() + "\" at index " + std::to_string(i) + " of framebuffer \"" + rapidJsonMemberIteratorFramebuffers->name.GetString() + "\" is unknown");
 										}
 										ASSERT(renderTargetTextureSignatures.find(textureAssetId) != renderTargetTextureSignatures.end());
-										if ((renderTargetTextureSignatures.find(textureAssetId)->second.getFlags() & RendererRuntime::RenderTargetTextureSignature::Flag::RENDER_TARGET) == 0)
+										if ((renderTargetTextureSignatures.find(textureAssetId)->second.getFlags() & Renderer::RenderTargetTextureSignature::Flag::RENDER_TARGET) == 0)
 										{
 											throw std::runtime_error(std::string("Color texture \"") + rapidJsonValueFramebufferColorAttachment["ColorTexture"].GetString() + "\" at index " + std::to_string(i) + " of framebuffer \"" + rapidJsonMemberIteratorFramebuffers->name.GetString() + "\" has no \"RENDER_TARGET\" flag set");
 										}
@@ -788,15 +788,15 @@ namespace RendererToolkit
 								numberOfColorFramebufferAttachments = static_cast<uint8_t>(rapidJsonValueFramebufferColorTextures.Size());
 								for (uint8_t i = 0; i < numberOfColorFramebufferAttachments; ++i)
 								{
-									const RendererRuntime::AssetId textureAssetId = StringHelper::getAssetIdByString(rapidJsonValueFramebufferColorTextures[i].GetString(), input);
-									if (RendererRuntime::isValid(textureAssetId))
+									const Renderer::AssetId textureAssetId = StringHelper::getAssetIdByString(rapidJsonValueFramebufferColorTextures[i].GetString(), input);
+									if (Renderer::isValid(textureAssetId))
 									{
 										if (renderTargetTextureAssetIds.find(textureAssetId) == renderTargetTextureAssetIds.end())
 										{
 											throw std::runtime_error(std::string("Color texture \"") + rapidJsonValueFramebufferColorTextures[i].GetString() + "\" at index " + std::to_string(i) + " of framebuffer \"" + rapidJsonMemberIteratorFramebuffers->name.GetString() + "\" is unknown");
 										}
 										ASSERT(renderTargetTextureSignatures.find(textureAssetId) != renderTargetTextureSignatures.end());
-										if ((renderTargetTextureSignatures.find(textureAssetId)->second.getFlags() & RendererRuntime::RenderTargetTextureSignature::Flag::RENDER_TARGET) == 0)
+										if ((renderTargetTextureSignatures.find(textureAssetId)->second.getFlags() & Renderer::RenderTargetTextureSignature::Flag::RENDER_TARGET) == 0)
 										{
 											throw std::runtime_error(std::string("Color texture \"") + rapidJsonValueFramebufferColorTextures[i].GetString() + "\" at index " + std::to_string(i) + " of framebuffer \"" + rapidJsonMemberIteratorFramebuffers->name.GetString() + "\" has no \"RENDER_TARGET\" flag set");
 										}
@@ -806,8 +806,8 @@ namespace RendererToolkit
 							}
 
 							// Optional depth stencil framebuffer attachment
-							uint32_t depthStencilTextureAssetId = RendererRuntime::getInvalid<uint32_t>();
-							RendererRuntime::FramebufferSignatureAttachment depthStencilFramebufferSignatureAttachment;
+							uint32_t depthStencilTextureAssetId = Renderer::getInvalid<uint32_t>();
+							Renderer::FramebufferSignatureAttachment depthStencilFramebufferSignatureAttachment;
 							if (rapidJsonValueFramebuffer.HasMember("DepthStencilTexture") && rapidJsonValueFramebuffer.HasMember("DepthStencilAttachment"))
 							{
 								throw std::runtime_error("Framebuffer \"" + std::string(rapidJsonMemberIteratorFramebuffers->name.GetString()) + "\" is using \"DepthStencilTexture\" as well as \"DepthStencilAttachment\", only one can be used at one and the same time");
@@ -823,17 +823,17 @@ namespace RendererToolkit
 							else
 							{
 								// Ease-of-use "DepthStencilTexture" for zero mipmap index and layer index, sufficient most of the time
-								depthStencilTextureAssetId = rapidJsonValueFramebuffer.HasMember("DepthStencilTexture") ? StringHelper::getAssetIdByString(rapidJsonValueFramebuffer["DepthStencilTexture"].GetString(), input) : RendererRuntime::getInvalid<RendererRuntime::AssetId>();
+								depthStencilTextureAssetId = rapidJsonValueFramebuffer.HasMember("DepthStencilTexture") ? StringHelper::getAssetIdByString(rapidJsonValueFramebuffer["DepthStencilTexture"].GetString(), input) : Renderer::getInvalid<Renderer::AssetId>();
 							}
 							depthStencilFramebufferSignatureAttachment.textureAssetId = depthStencilTextureAssetId;
-							if (RendererRuntime::isValid(depthStencilTextureAssetId))
+							if (Renderer::isValid(depthStencilTextureAssetId))
 							{
 								if (renderTargetTextureAssetIds.find(depthStencilTextureAssetId) == renderTargetTextureAssetIds.end())
 								{
 									throw std::runtime_error(std::string("Depth stencil texture \"") + rapidJsonValueFramebuffer["DepthStencilTexture"].GetString() + "\" of framebuffer \"" + rapidJsonMemberIteratorFramebuffers->name.GetString() + "\" is unknown");
 								}
 								ASSERT(renderTargetTextureSignatures.find(depthStencilTextureAssetId) != renderTargetTextureSignatures.end());
-								if ((renderTargetTextureSignatures.find(depthStencilTextureAssetId)->second.getFlags() & RendererRuntime::RenderTargetTextureSignature::Flag::RENDER_TARGET) == 0)
+								if ((renderTargetTextureSignatures.find(depthStencilTextureAssetId)->second.getFlags() & Renderer::RenderTargetTextureSignature::Flag::RENDER_TARGET) == 0)
 								{
 									throw std::runtime_error(std::string("Depth stencil texture \"") + rapidJsonValueFramebuffer["DepthStencilTexture"].GetString() + "\" of framebuffer \"" + rapidJsonMemberIteratorFramebuffers->name.GetString() + "\" has no \"RENDER_TARGET\" flag set");
 								}
@@ -841,9 +841,9 @@ namespace RendererToolkit
 
 							// Write framebuffer signature
 							// TODO(co) Add sanity checks to be able to detect editing errors (check for name conflicts with channels, unused framebuffers etc.)
-							framebuffer.framebufferSignature = RendererRuntime::FramebufferSignature(numberOfColorFramebufferAttachments, colorFramebufferSignatureAttachments, depthStencilFramebufferSignatureAttachment);
+							framebuffer.framebufferSignature = Renderer::FramebufferSignature(numberOfColorFramebufferAttachments, colorFramebufferSignatureAttachments, depthStencilFramebufferSignatureAttachment);
 						}
-						memoryFile.write(&framebuffer, sizeof(RendererRuntime::v1CompositorNode::Framebuffer));
+						memoryFile.write(&framebuffer, sizeof(Renderer::v1CompositorNode::Framebuffer));
 
 						// Remember that there's a compositor framebuffer with this ID
 						compositorFramebufferIds.insert(framebuffer.compositorFramebufferId);
@@ -856,14 +856,14 @@ namespace RendererToolkit
 				// Write down the compositor resource node output channels
 				for (rapidjson::Value::ConstMemberIterator rapidJsonMemberIteratorOutputChannels = rapidJsonValueOutputChannels.MemberBegin(); rapidJsonMemberIteratorOutputChannels != rapidJsonValueOutputChannels.MemberEnd(); ++rapidJsonMemberIteratorOutputChannels)
 				{
-					RendererRuntime::v1CompositorNode::Channel channel;
-					channel.id = RendererRuntime::StringId(rapidJsonMemberIteratorOutputChannels->name.GetString());
-					memoryFile.write(&channel, sizeof(RendererRuntime::v1CompositorNode::Channel));
+					Renderer::v1CompositorNode::Channel channel;
+					channel.id = Renderer::StringId(rapidJsonMemberIteratorOutputChannels->name.GetString());
+					memoryFile.write(&channel, sizeof(Renderer::v1CompositorNode::Channel));
 				}
 			}
 
 			// Write LZ4 compressed output
-			if (!memoryFile.writeLz4CompressedDataByVirtualFilename(RendererRuntime::v1CompositorNode::FORMAT_TYPE, RendererRuntime::v1CompositorNode::FORMAT_VERSION, input.context.getFileManager(), virtualOutputAssetFilename.c_str()))
+			if (!memoryFile.writeLz4CompressedDataByVirtualFilename(Renderer::v1CompositorNode::FORMAT_TYPE, Renderer::v1CompositorNode::FORMAT_VERSION, input.context.getFileManager(), virtualOutputAssetFilename.c_str()))
 			{
 				throw std::runtime_error("Failed to write LZ4 compressed output file \"" + virtualOutputAssetFilename + '\"');
 			}

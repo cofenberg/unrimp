@@ -30,8 +30,8 @@
 #include <Rhi/Public/DefaultAllocator.h>
 #include <Rhi/Public/RhiInstance.h>
 
-#if defined(RENDERER_RUNTIME) && defined(RENDERER_RUNTIME_GRAPHICS_DEBUGGER)
-	#include <RendererRuntime/Public/Core/RenderDocGraphicsDebugger.h>
+#if defined(RENDERER) && defined(RENDERER_GRAPHICS_DEBUGGER)
+	#include <Renderer/Public/Core/RenderDocGraphicsDebugger.h>
 #endif
 
 
@@ -69,7 +69,7 @@ namespace
 //[-------------------------------------------------------]
 IApplicationRhi::IApplicationRhi(const char* rhiName, ExampleBase& exampleBase) :
 	IApplication(rhiName),
-	#if defined(RENDERER_RUNTIME) && defined(RENDERER_RUNTIME_GRAPHICS_DEBUGGER)
+	#if defined(RENDERER) && defined(RENDERER_GRAPHICS_DEBUGGER)
 		mGraphicsDebugger(nullptr),
 	#endif
 	mExampleBase(exampleBase),
@@ -262,8 +262,8 @@ void IApplicationRhi::destroyRhi()
 	mRhiInstance = nullptr;
 	delete mRhiContext;
 	mRhiContext = nullptr;
-	#ifdef RENDERER_RUNTIME_GRAPHICS_DEBUGGER
-		delete static_cast<RendererRuntime::RenderDocGraphicsDebugger*>(mGraphicsDebugger);
+	#ifdef RENDERER_GRAPHICS_DEBUGGER
+		delete static_cast<Renderer::RenderDocGraphicsDebugger*>(mGraphicsDebugger);
 	#endif
 }
 
@@ -286,8 +286,8 @@ Rhi::IRhi* IApplicationRhi::createRhiInstance(const char* rhiName)
 			loadRhiApiSharedLibrary = true;
 			mRhiContext = new Rhi::X11Context(log, ::detail::g_DefaultAssert, g_DefaultAllocator, getX11Display(), getNativeWindowHandle());
 		#endif
-		#if defined(RENDERER_RUNTIME) && defined(RENDERER_RUNTIME_GRAPHICS_DEBUGGER)
-			mGraphicsDebugger = new RendererRuntime::RenderDocGraphicsDebugger(*mRhiContext);
+		#if defined(RENDERER) && defined(RENDERER_GRAPHICS_DEBUGGER)
+			mGraphicsDebugger = new Renderer::RenderDocGraphicsDebugger(*mRhiContext);
 		#endif
 		mRhiInstance = new Rhi::RhiInstance(rhiName, *mRhiContext, loadRhiApiSharedLibrary);
 	}

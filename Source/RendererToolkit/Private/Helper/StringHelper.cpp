@@ -22,16 +22,16 @@
 //[ Includes                                              ]
 //[-------------------------------------------------------]
 // Disable some warnings for "std::transform()"-usage
-#include <RendererRuntime/Public/Core/Platform/PlatformTypes.h>
+#include <Renderer/Public/Core/Platform/PlatformTypes.h>
 PRAGMA_WARNING_DISABLE_MSVC(4242)	// warning C4242: '=': conversion from 'int' to 'char', possible loss of data
 PRAGMA_WARNING_DISABLE_MSVC(4244)	// warning C4244: '=': conversion from 'int' to 'char', possible loss of data
 
 #include "RendererToolkit/Private/Helper/StringHelper.h"
 #include "RendererToolkit/Private/Context.h"
 
-#include <RendererRuntime/Public/Core/File/IFile.h>
-#include <RendererRuntime/Public/Core/File/IFileManager.h>
-#include <RendererRuntime/Public/Core/File/FileSystemHelper.h>
+#include <Renderer/Public/Core/File/IFile.h>
+#include <Renderer/Public/Core/File/IFileManager.h>
+#include <Renderer/Public/Core/File/FileSystemHelper.h>
 
 PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'initializing': conversion from 'int' to '::size_t', signed/unsigned mismatch
@@ -359,7 +359,7 @@ namespace RendererToolkit
 			{
 				// "../" = Parent directory
 				// -> Stepping outside the content asset package results in a "file not found"
-				resolvedSourceAssetIdAsString = RendererRuntime::FileSystemHelper::lexicallyNormal(std_filesystem::path(input.virtualAssetInputDirectory + '/' + sourceAssetIdAsString)).generic_string();
+				resolvedSourceAssetIdAsString = Renderer::FileSystemHelper::lexicallyNormal(std_filesystem::path(input.virtualAssetInputDirectory + '/' + sourceAssetIdAsString)).generic_string();
 			}
 			else
 			{
@@ -372,7 +372,7 @@ namespace RendererToolkit
 			}
 
 			// Support for automatically in-memory generated ".asset"-file (e.g. "<name>.asset" will become "<name>.material_blueprint")
-			const std::string virtualAssetFilename = input.sourceAssetIdToVirtualAssetFilename(RendererRuntime::AssetId(resolvedSourceAssetIdAsString.c_str()));
+			const std::string virtualAssetFilename = input.sourceAssetIdToVirtualAssetFilename(Renderer::AssetId(resolvedSourceAssetIdAsString.c_str()));
 
 			// Sanity check: Last chance to provide a human readable error message in case a none existing file is referenced
 			if (!input.context.getFileManager().doesFileExist(virtualAssetFilename.c_str()))
@@ -390,13 +390,13 @@ namespace RendererToolkit
 		}
 	}
 
-	RendererRuntime::AssetId StringHelper::getSourceAssetIdByString(const std::string& sourceAssetIdAsString, const IAssetCompiler::Input& input)
+	Renderer::AssetId StringHelper::getSourceAssetIdByString(const std::string& sourceAssetIdAsString, const IAssetCompiler::Input& input)
 	{
 		// Return the string ID of the resolved source asset ID as string
-		return RendererRuntime::StringId(getSourceAssetFilenameByString(sourceAssetIdAsString, input, false).c_str());
+		return Renderer::StringId(getSourceAssetFilenameByString(sourceAssetIdAsString, input, false).c_str());
 	}
 
-	RendererRuntime::AssetId StringHelper::getAssetIdByString(const std::string& assetIdAsString, const IAssetCompiler::Input& input)
+	Renderer::AssetId StringHelper::getAssetIdByString(const std::string& assetIdAsString, const IAssetCompiler::Input& input)
 	{
 		// Sanity check
 		if (assetIdAsString.empty())
@@ -418,7 +418,7 @@ namespace RendererToolkit
 			else if (assetIdAsString.length() >= 3 && assetIdAsString.substr(0, 3) == "../")
 			{
 				// "../" = Parent directory
-				return input.getCompiledAssetIdBySourceAssetIdAsString(RendererRuntime::FileSystemHelper::lexicallyNormal(std_filesystem::path((input.virtualAssetInputDirectory + '/' + assetIdAsString))).generic_string());
+				return input.getCompiledAssetIdBySourceAssetIdAsString(Renderer::FileSystemHelper::lexicallyNormal(std_filesystem::path((input.virtualAssetInputDirectory + '/' + assetIdAsString))).generic_string());
 			}
 			else
 			{
@@ -436,11 +436,11 @@ namespace RendererToolkit
 		else
 		{
 			// Compiled or runtime generated asset ID naming scheme "<project name>/<asset directory>/<asset name>"
-			return RendererRuntime::AssetId(assetIdAsString.c_str());
+			return Renderer::AssetId(assetIdAsString.c_str());
 		}
 	}
 
-	void StringHelper::readStringByFilename(const RendererRuntime::IFileManager& fileManager, const std::string& virtualFilename, std::string& string)
+	void StringHelper::readStringByFilename(const Renderer::IFileManager& fileManager, const std::string& virtualFilename, std::string& string)
 	{
 		// Sanity check
 		if (!fileManager.doesFileExist(virtualFilename.c_str()))
@@ -449,7 +449,7 @@ namespace RendererToolkit
 		}
 
 		// Open the file for reading
-		RendererRuntime::IFile* file = fileManager.openFile(RendererRuntime::IFileManager::FileMode::READ, virtualFilename.c_str());
+		Renderer::IFile* file = fileManager.openFile(Renderer::IFileManager::FileMode::READ, virtualFilename.c_str());
 		if (nullptr != file)
 		{
 			// Load the whole file content as string
@@ -466,7 +466,7 @@ namespace RendererToolkit
 		}
 	}
 
-	void StringHelper::readStringWithStrippedCommentsByFilename(const RendererRuntime::IFileManager& fileManager, const std::string& virtualFilename, std::string& sourceCode)
+	void StringHelper::readStringWithStrippedCommentsByFilename(const Renderer::IFileManager& fileManager, const std::string& virtualFilename, std::string& sourceCode)
 	{
 		// Read original source code
 		std::string originalSourceCode;

@@ -37,8 +37,8 @@
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
 class ExampleBase;
-#if defined(RENDERER_RUNTIME) && defined(RENDERER_RUNTIME_GRAPHICS_DEBUGGER)
-	namespace RendererRuntime
+#if defined(RENDERER) && defined(RENDERER_GRAPHICS_DEBUGGER)
+	namespace Renderer
 	{
 		class IGraphicsDebugger;
 	}
@@ -142,8 +142,8 @@ protected:
 //[ Protected data                                        ]
 //[-------------------------------------------------------]
 protected:
-	#ifdef RENDERER_RUNTIME_GRAPHICS_DEBUGGER
-		RendererRuntime::IGraphicsDebugger*	mGraphicsDebugger;	///< Graphics debugger instance, can be a null pointer
+	#ifdef RENDERER_GRAPHICS_DEBUGGER
+		Renderer::IGraphicsDebugger* mGraphicsDebugger;	///< Graphics debugger instance, can be a null pointer
 	#endif
 	ExampleBase& mExampleBase;
 

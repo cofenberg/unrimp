@@ -33,7 +33,7 @@ namespace Rhi
 	class IAssert;
 	class IAllocator;
 }
-namespace RendererRuntime
+namespace Renderer
 {
 	class IFileManager;
 }
@@ -72,9 +72,9 @@ namespace RendererToolkit
 		*  @param[in] allocator
 		*    RHI allocator instance to use, the allocator instance must stay valid as long as the renderer toolkit instance exists
 		*  @param[in] fileManager
-		*    Renderer runtime file manager instance to use, the file manager instance must stay valid as long as the renderer toolkit instance exists
+		*    Renderer file manager instance to use, the file manager instance must stay valid as long as the renderer toolkit instance exists
 		*/
-		inline Context(Rhi::ILog& log, Rhi::IAssert& assert, Rhi::IAllocator& allocator, RendererRuntime::IFileManager& fileManager) :
+		inline Context(Rhi::ILog& log, Rhi::IAssert& assert, Rhi::IAllocator& allocator, Renderer::IFileManager& fileManager) :
 			mLog(log),
 			mAssert(assert),
 			mAllocator(allocator),
@@ -130,12 +130,12 @@ namespace RendererToolkit
 
 		/**
 		*  @brief
-		*    Return the used renderer runtime file manager instance
+		*    Return the used renderer file manager instance
 		*
 		*  @return
-		*    The used renderer runtime file manager instance
+		*    The used renderer file manager instance
 		*/
-		[[nodiscard]] inline RendererRuntime::IFileManager& getFileManager() const
+		[[nodiscard]] inline Renderer::IFileManager& getFileManager() const
 		{
 			return mFileManager;
 		}
@@ -153,10 +153,10 @@ namespace RendererToolkit
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		Rhi::ILog&					   mLog;
-		Rhi::IAssert&				   mAssert;
-		Rhi::IAllocator&			   mAllocator;
-		RendererRuntime::IFileManager& mFileManager;
+		Rhi::ILog&				mLog;
+		Rhi::IAssert&			mAssert;
+		Rhi::IAllocator&		mAllocator;
+		Renderer::IFileManager& mFileManager;
 
 
 	};

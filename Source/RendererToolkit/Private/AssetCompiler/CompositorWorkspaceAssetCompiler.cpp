@@ -27,11 +27,11 @@
 #include "RendererToolkit/Private/Helper/JsonHelper.h"
 #include "RendererToolkit/Private/Context.h"
 
-#include <RendererRuntime/Public/Asset/AssetPackage.h>
-#include <RendererRuntime/Public/Core/File/MemoryFile.h>
-#include <RendererRuntime/Public/Core/File/FileSystemHelper.h>
-#include <RendererRuntime/Public/Resource/CompositorWorkspace/Loader/CompositorWorkspaceFileFormat.h>
-#include <RendererRuntime/Public/Resource/CompositorWorkspace/CompositorWorkspaceResource.h>
+#include <Renderer/Public/Asset/AssetPackage.h>
+#include <Renderer/Public/Core/File/MemoryFile.h>
+#include <Renderer/Public/Core/File/FileSystemHelper.h>
+#include <Renderer/Public/Resource/CompositorWorkspace/Loader/CompositorWorkspaceFileFormat.h>
+#include <Renderer/Public/Resource/CompositorWorkspace/CompositorWorkspaceResource.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -66,7 +66,7 @@ namespace RendererToolkit
 	bool CompositorWorkspaceAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const
 	{
 		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFileByRapidJsonDocument(configuration.rapidJsonDocumentAsset);
-		return input.cacheManager.checkIfFileIsModified(configuration.rhiTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), RendererRuntime::v1CompositorWorkspace::FORMAT_VERSION);
+		return input.cacheManager.checkIfFileIsModified(configuration.rhiTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), Renderer::v1CompositorWorkspace::FORMAT_VERSION);
 	}
 
 	void CompositorWorkspaceAssetCompiler::compile(const Input& input, const Configuration& configuration) const
@@ -77,9 +77,9 @@ namespace RendererToolkit
 
 		// Ask the cache manager whether or not we need to compile the source file (e.g. source changed or target not there)
 		CacheManager::CacheEntries cacheEntries;
-		if (input.cacheManager.needsToBeCompiled(configuration.rhiTarget, input.virtualAssetFilename, virtualInputFilename, virtualOutputAssetFilename, RendererRuntime::v1CompositorWorkspace::FORMAT_VERSION, cacheEntries))
+		if (input.cacheManager.needsToBeCompiled(configuration.rhiTarget, input.virtualAssetFilename, virtualInputFilename, virtualOutputAssetFilename, Renderer::v1CompositorWorkspace::FORMAT_VERSION, cacheEntries))
 		{
-			RendererRuntime::MemoryFile memoryFile(0, 4096);
+			Renderer::MemoryFile memoryFile(0, 4096);
 
 			{ // Compositor workspace
 				// Parse JSON
@@ -87,9 +87,9 @@ namespace RendererToolkit
 				JsonHelper::loadDocumentByFilename(input.context.getFileManager(), virtualInputFilename, "CompositorWorkspaceAsset", "1", rapidJsonDocument);
 
 				{ // Write down the compositor workspace resource header
-					RendererRuntime::v1CompositorWorkspace::CompositorWorkspaceHeader compositorWorkspaceHeader;
+					Renderer::v1CompositorWorkspace::CompositorWorkspaceHeader compositorWorkspaceHeader;
 					compositorWorkspaceHeader.unused = 42;	// TODO(co) Currently the compositor workspace header is unused
-					memoryFile.write(&compositorWorkspaceHeader, sizeof(RendererRuntime::v1CompositorWorkspace::CompositorWorkspaceHeader));
+					memoryFile.write(&compositorWorkspaceHeader, sizeof(Renderer::v1CompositorWorkspace::CompositorWorkspaceHeader));
 				}
 
 				// Mandatory main sections of the compositor workspace
@@ -103,12 +103,12 @@ namespace RendererToolkit
 				}
 
 				{ // Write down the compositor resource nodes
-					RendererRuntime::v1CompositorWorkspace::Nodes nodes;
+					Renderer::v1CompositorWorkspace::Nodes nodes;
 					nodes.numberOfNodes = rapidJsonValueNodes.MemberCount();
-					memoryFile.write(&nodes, sizeof(RendererRuntime::v1CompositorWorkspace::Nodes));
+					memoryFile.write(&nodes, sizeof(Renderer::v1CompositorWorkspace::Nodes));
 
 					// Loop through all compositor workspace resource nodes
-					RendererRuntime::CompositorWorkspaceResource::CompositorNodeAssetIds compositorNodeAssetIds;
+					Renderer::CompositorWorkspaceResource::CompositorNodeAssetIds compositorNodeAssetIds;
 					compositorNodeAssetIds.reserve(nodes.numberOfNodes);
 					for (rapidjson::Value::ConstMemberIterator rapidJsonMemberIteratorNodes = rapidJsonValueNodes.MemberBegin(); rapidJsonMemberIteratorNodes != rapidJsonValueNodes.MemberEnd(); ++rapidJsonMemberIteratorNodes)
 					{
@@ -116,12 +116,12 @@ namespace RendererToolkit
 					}
 
 					// Write down compositor node asset IDs
-					memoryFile.write(compositorNodeAssetIds.data(), sizeof(RendererRuntime::AssetId) * nodes.numberOfNodes);
+					memoryFile.write(compositorNodeAssetIds.data(), sizeof(Renderer::AssetId) * nodes.numberOfNodes);
 				}
 			}
 
 			// Write LZ4 compressed output
-			if (!memoryFile.writeLz4CompressedDataByVirtualFilename(RendererRuntime::v1CompositorWorkspace::FORMAT_TYPE, RendererRuntime::v1CompositorWorkspace::FORMAT_VERSION, input.context.getFileManager(), virtualOutputAssetFilename.c_str()))
+			if (!memoryFile.writeLz4CompressedDataByVirtualFilename(Renderer::v1CompositorWorkspace::FORMAT_TYPE, Renderer::v1CompositorWorkspace::FORMAT_VERSION, input.context.getFileManager(), virtualOutputAssetFilename.c_str()))
 			{
 				throw std::runtime_error("Failed to write LZ4 compressed output file \"" + virtualOutputAssetFilename + '\"');
 			}

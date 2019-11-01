@@ -42,10 +42,10 @@ if(WIN32)
 	add_definitions(-DUNICODE)
 endif()
 unrimp_add_conditional_rhi_definitions()
-unrimp_add_conditional_definition(RENDERER_RUNTIME)
-unrimp_add_conditional_definition(RENDERER_RUNTIME_GRAPHICS_DEBUGGER)
-unrimp_add_conditional_definition(RENDERER_RUNTIME_PROFILER)
-if(RENDERER_RUNTIME_PROFILER)
+unrimp_add_conditional_definition(RENDERER)
+unrimp_add_conditional_definition(RENDERER_GRAPHICS_DEBUGGER)
+unrimp_add_conditional_definition(RENDERER_PROFILER)
+if(RENDERER_PROFILER)
 	if(RHI_DIRECT3D11)
 		add_definitions(-DRMT_USE_D3D11=1)
 	endif()
@@ -53,8 +53,8 @@ if(RENDERER_RUNTIME_PROFILER)
 		add_definitions(-DRMT_USE_OPENGL=1)
 	endif()
 endif()
-unrimp_add_conditional_definition(RENDERER_RUNTIME_IMGUI)
-unrimp_add_conditional_definition(RENDERER_RUNTIME_OPENVR)
+unrimp_add_conditional_definition(RENDERER_IMGUI)
+unrimp_add_conditional_definition(RENDERER_OPENVR)
 unrimp_add_conditional_definition(SDL2_FOUND)
 
 # Static builds are usually used for shipping builds, so disable the renderer toolkit for static builds
@@ -72,7 +72,7 @@ include_directories(${CMAKE_SOURCE_DIR}/External/Example)	# For "DeviceInput" an
 if(ANDROID)
 	include_directories(${CMAKE_SOURCE_DIR}/External/Example/Android)
 endif()
-include_directories(${CMAKE_SOURCE_DIR}/External/RendererRuntime)	# "glm", "PhysicsFS", "ImGui", "OpenVR", "RenderDoc" and "Remotery"
+include_directories(${CMAKE_SOURCE_DIR}/External/Renderer)	# "glm", "PhysicsFS", "ImGui", "OpenVR", "RenderDoc" and "Remotery"
 if(RENDERER_TOOLKIT)
 	include_directories(${CMAKE_SOURCE_DIR}/Renderer/RendererToolkit/include)
 endif()
@@ -96,33 +96,33 @@ if(NOT ANDROID)
 	set(EXTERNAL_SOURCE_CODES
 		${EXTERNAL_SOURCE_CODES}
 		# PhysicsFS external library
-		${CMAKE_SOURCE_DIR}/External/RendererRuntime/PhysicsFS/physfs.c
-		${CMAKE_SOURCE_DIR}/External/RendererRuntime/PhysicsFS/physfs_archiver_zip.c
-		${CMAKE_SOURCE_DIR}/External/RendererRuntime/PhysicsFS/physfs_archiver_dir.c
-		${CMAKE_SOURCE_DIR}/External/RendererRuntime/PhysicsFS/physfs_archiver_unpacked.c
-		${CMAKE_SOURCE_DIR}/External/RendererRuntime/PhysicsFS/physfs_byteorder.c
-		${CMAKE_SOURCE_DIR}/External/RendererRuntime/PhysicsFS/physfs_unicode.c
+		${CMAKE_SOURCE_DIR}/External/Renderer/PhysicsFS/physfs.c
+		${CMAKE_SOURCE_DIR}/External/Renderer/PhysicsFS/physfs_archiver_zip.c
+		${CMAKE_SOURCE_DIR}/External/Renderer/PhysicsFS/physfs_archiver_dir.c
+		${CMAKE_SOURCE_DIR}/External/Renderer/PhysicsFS/physfs_archiver_unpacked.c
+		${CMAKE_SOURCE_DIR}/External/Renderer/PhysicsFS/physfs_byteorder.c
+		${CMAKE_SOURCE_DIR}/External/Renderer/PhysicsFS/physfs_unicode.c
 	)
 endif()
 if(WIN32)
 	set(EXTERNAL_SOURCE_CODES
 		${EXTERNAL_SOURCE_CODES}
 		# PhysicsFS external library
-		${CMAKE_SOURCE_DIR}/External/RendererRuntime/PhysicsFS/physfs_platform_windows.c
+		${CMAKE_SOURCE_DIR}/External/Renderer/PhysicsFS/physfs_platform_windows.c
 	)
 elseif(UNIX AND NOT ANDROID)
 	set(EXTERNAL_SOURCE_CODES
 		${EXTERNAL_SOURCE_CODES}
 		# PhysicsFS external library
-		${CMAKE_SOURCE_DIR}/External/RendererRuntime/PhysicsFS/physfs_platform_unix.c
-		${CMAKE_SOURCE_DIR}/External/RendererRuntime/PhysicsFS/physfs_platform_posix.c
+		${CMAKE_SOURCE_DIR}/External/Renderer/PhysicsFS/physfs_platform_unix.c
+		${CMAKE_SOURCE_DIR}/External/Renderer/PhysicsFS/physfs_platform_posix.c
 	)
 endif()
-if(RENDERER_RUNTIME_PROFILER)
+if(RENDERER_PROFILER)
 	set(EXTERNAL_SOURCE_CODES
 		${EXTERNAL_SOURCE_CODES}
 		# Remotery external library
-		${CMAKE_SOURCE_DIR}/External/RendererRuntime/Remotery/Remotery.c
+		${CMAKE_SOURCE_DIR}/External/Renderer/Remotery/Remotery.c
 	)
 endif()
 set(SOURCE_CODES
@@ -159,10 +159,10 @@ elseif(UNIX)
 		Private/Framework/Linux/X11Application.cpp
 	)
 endif()
-if(RENDERER_RUNTIME)
+if(RENDERER)
 	set(SOURCE_CODES
 		${SOURCE_CODES}
-		Private/Framework/IApplicationRendererRuntime.cpp
+		Private/Framework/IApplicationRenderer.cpp
 	)
 endif()
 
@@ -204,13 +204,13 @@ else()
 	set(LIBRARIES ${LIBRARIES} X11 dl)
 endif()
 if(SHARED_LIBRARY)
-	if(RENDERER_RUNTIME)
+	if(RENDERER)
 		if(WIN32)
-			target_link_libraries(Examples RendererRuntime.lib)
+			target_link_libraries(Examples Renderer.lib)
 		else()
-			target_link_libraries(Examples RendererRuntime)
+			target_link_libraries(Examples Renderer)
 		endif()
-		add_dependencies(Examples RendererRuntime)
+		add_dependencies(Examples Renderer)
 	endif()
 	set_target_properties(Examples PROPERTIES COMPILE_FLAGS -DSHARED_LIBRARIES)
 else()
@@ -222,7 +222,7 @@ else()
 	unrimp_add_conditional_library_dependency(Examples RHI_DIRECT3D10 Direct3D10Rhi)
 	unrimp_add_conditional_library_dependency(Examples RHI_DIRECT3D11 Direct3D11Rhi)
 	unrimp_add_conditional_library_dependency(Examples RHI_DIRECT3D12 Direct3D12Rhi)
-	unrimp_add_conditional_library_dependency(Examples RENDERER_RUNTIME RendererRuntime)
+	unrimp_add_conditional_library_dependency(Examples RENDERER Renderer)
 	if(UNIX AND NOT ANDROID)
 		set(LIBRARIES ${LIBRARIES} pthread)
 	endif()

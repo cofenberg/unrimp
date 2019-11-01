@@ -25,8 +25,8 @@
 
 #include <RendererToolkit/Public/RendererToolkitInstance.h>
 
-#include <RendererRuntime/Public/Core/File/FileSystemHelper.h>
-#include <RendererRuntime/Public/Core/File/DefaultFileManager.h>
+#include <Renderer/Public/Core/File/FileSystemHelper.h>
+#include <Renderer/Public/Core/File/DefaultFileManager.h>
 
 #include <Rhi/Public/DefaultLog.h>
 #include <Rhi/Public/DefaultAssert.h>
@@ -41,7 +41,7 @@
 	Rhi::DefaultLog defaultLog;
 	Rhi::DefaultAssert defaultAssert;
 	Rhi::DefaultAllocator defaultAllocator;
-	RendererRuntime::DefaultFileManager defaultFileManager(defaultLog, defaultAssert, defaultAllocator, std_filesystem::canonical(std_filesystem::current_path() / "..").generic_string());
+	Renderer::DefaultFileManager defaultFileManager(defaultLog, defaultAssert, defaultAllocator, std_filesystem::canonical(std_filesystem::current_path() / "..").generic_string());
 	RendererToolkit::Context rendererToolkitContext(defaultLog, defaultAssert, defaultAllocator, defaultFileManager);
 	RendererToolkit::RendererToolkitInstance rendererToolkitInstance(rendererToolkitContext);
 	RendererToolkit::IRendererToolkit* rendererToolkit = rendererToolkitInstance.getRendererToolkit();
@@ -93,7 +93,7 @@
 //[-------------------------------------------------------]
 // Windows implementation
 #ifdef _WIN32
-	#include <RendererRuntime/Public/Core/Platform/WindowsHeader.h>
+	#include <Renderer/Public/Core/Platform/WindowsHeader.h>
 
 	#ifdef _CONSOLE
 		#ifdef UNICODE

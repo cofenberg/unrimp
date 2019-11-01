@@ -790,8 +790,8 @@ WARN_LOGFILE           =
 # spaces. See also FILE_PATTERNS and EXTENSION_MAPPING
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = ../Renderer/Renderer \
-                         ../Renderer/RendererRuntime/include/RendererRuntime \
+INPUT                  = ../Renderer/Rhi \
+                         ../Renderer/Renderer/include/Renderer \
                          ../Renderer/RendererToolkit/include/RendererToolkit
 
 # This tag can be used to specify the character encoding of the source files

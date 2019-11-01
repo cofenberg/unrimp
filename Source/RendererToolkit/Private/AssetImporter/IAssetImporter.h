@@ -27,7 +27,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include <RendererRuntime/Public/Core/StringId.h>
+#include <Renderer/Public/Core/StringId.h>
 
 #include <Rhi/Public/Rhi.h>
 
@@ -64,7 +64,7 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	//[ Global definitions                                    ]
 	//[-------------------------------------------------------]
-	typedef RendererRuntime::StringId AssetImporterClassId;	///< Asset importer type identifier, internally just a POD "uint32_t"
+	typedef Renderer::StringId AssetImporterClassId;	///< Asset importer type identifier, internally just a POD "uint32_t"
 
 
 	//[-------------------------------------------------------]
@@ -72,7 +72,7 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    An asset importer integrates new assets into the source asset database (aka "data source") on which then asset compilers can work in order to transform an asset from a source format into a format the renderer runtime understands
+	*    An asset importer integrates new assets into the source asset database (aka "data source") on which then asset compilers can work in order to transform an asset from a source format into a format the renderer understands
 	*
 	*  @note
 	*    - Asset importers won't manipulate the given source assets to not risk introducing any errors

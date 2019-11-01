@@ -25,7 +25,7 @@
 #include "Examples/Private/Framework/Color4.h"
 #ifdef _WIN32
 	// This is only a simple and close-to-the-metal example, don't use OS stuff directly in more complex projects
-	#include <RendererRuntime/Public/Core/Platform/WindowsHeader.h>
+	#include <Renderer/Public/Core/Platform/WindowsHeader.h>
 #elif defined LINUX
 	// This is only a simple and close-to-the-metal example, don't use OS stuff directly in more complex projects
 	#include "Examples/Private/Framework/Linux/X11Window.h"

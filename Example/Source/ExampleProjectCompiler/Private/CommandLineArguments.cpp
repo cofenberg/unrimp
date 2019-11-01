@@ -23,7 +23,7 @@
 //[-------------------------------------------------------]
 #include "ExampleProjectCompiler/Private/CommandLineArguments.h"
 #ifdef _WIN32
-	#include <RendererRuntime/Public/Core/Platform/WindowsHeader.h>
+	#include <Renderer/Public/Core/Platform/WindowsHeader.h>
 
 	#ifndef UNICODE
 		PRAGMA_WARNING_PUSH

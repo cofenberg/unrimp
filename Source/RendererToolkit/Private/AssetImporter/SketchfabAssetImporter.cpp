@@ -29,9 +29,9 @@
 #include "RendererToolkit/Private/Helper/JsonHelper.h"
 #include "RendererToolkit/Private/Context.h"
 
-#include <RendererRuntime/Public/Core/File/IFile.h>
-#include <RendererRuntime/Public/Core/File/IFileManager.h>
-#include <RendererRuntime/Public/Core/File/FileSystemHelper.h>
+#include <Renderer/Public/Core/File/IFile.h>
+#include <Renderer/Public/Core/File/IFileManager.h>
+#include <Renderer/Public/Core/File/FileSystemHelper.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -213,8 +213,8 @@ namespace
 		//[-------------------------------------------------------]
 		void readFileIntoMemory(const RendererToolkit::IAssetImporter::Input& input, FileData& fileData)
 		{
-			RendererRuntime::IFileManager& fileManager = input.context.getFileManager();
-			RendererRuntime::IFile* file = fileManager.openFile(RendererRuntime::IFileManager::FileMode::READ, input.absoluteSourceFilename.c_str());
+			Renderer::IFileManager& fileManager = input.context.getFileManager();
+			Renderer::IFile* file = fileManager.openFile(Renderer::IFileManager::FileMode::READ, input.absoluteSourceFilename.c_str());
 			if (nullptr != file)
 			{
 				// Load the whole file content
@@ -235,13 +235,13 @@ namespace
 		void extractFromZipToFile(const RendererToolkit::IAssetImporter::Input& input, mz_zip_archive& zipArchive, mz_uint fileIndex, const char* filename)
 		{
 			// Ensure the directory exists
-			RendererRuntime::IFileManager& fileManager = input.context.getFileManager();
+			Renderer::IFileManager& fileManager = input.context.getFileManager();
 			fileManager.createDirectories(input.virtualAssetOutputDirectory.c_str());
 
 			// Write down the uncompressed file
 			// -> Silently ignore and overwrite already existing files (might be a re-import)
 			const std::string virtualFilename = input.virtualAssetOutputDirectory + '/' + std_filesystem::path(filename).filename().generic_string();
-			RendererRuntime::IFile* file = fileManager.openFile(RendererRuntime::IFileManager::FileMode::WRITE, virtualFilename.c_str());
+			Renderer::IFile* file = fileManager.openFile(Renderer::IFileManager::FileMode::WRITE, virtualFilename.c_str());
 			if (nullptr != file)
 			{
 				// Write down the decompress file

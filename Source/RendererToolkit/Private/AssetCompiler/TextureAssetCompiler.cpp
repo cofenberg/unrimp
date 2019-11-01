@@ -27,12 +27,12 @@
 #include "RendererToolkit/Private/Helper/JsonHelper.h"
 #include "RendererToolkit/Private/Context.h"
 
-#include <RendererRuntime/Public/Asset/AssetPackage.h>
-#include <RendererRuntime/Public/Core/File/MemoryFile.h>
-#include <RendererRuntime/Public/Core/File/IFileManager.h>
-#include <RendererRuntime/Public/Core/File/FileSystemHelper.h>
-#include <RendererRuntime/Public/Resource/Texture/Loader/CrnArrayFileFormat.h>
-#include <RendererRuntime/Public/Resource/Texture/Loader/Lz4DdsTextureResourceLoader.h>
+#include <Renderer/Public/Asset/AssetPackage.h>
+#include <Renderer/Public/Core/File/MemoryFile.h>
+#include <Renderer/Public/Core/File/IFileManager.h>
+#include <Renderer/Public/Core/File/FileSystemHelper.h>
+#include <Renderer/Public/Resource/Texture/Loader/CrnArrayFileFormat.h>
+#include <Renderer/Public/Resource/Texture/Loader/Lz4DdsTextureResourceLoader.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -286,7 +286,7 @@ namespace
 				close();
 			}
 
-			[[nodiscard]] inline RendererRuntime::MemoryFile& getMemoryFile()
+			[[nodiscard]] inline Renderer::MemoryFile& getMemoryFile()
 			{
 				return mMemoryFile;
 			}
@@ -375,9 +375,9 @@ namespace
 		//[ Private data                                          ]
 		//[-------------------------------------------------------]
 		private:
-			RendererRuntime::MemoryFile	mMemoryFile;
-			uint64_t					mFileSize;
-			uint64_t					mOffset;
+			Renderer::MemoryFile mMemoryFile;
+			uint64_t			 mFileSize;
+			uint64_t			 mOffset;
 
 
 		};
@@ -390,7 +390,7 @@ namespace
 		//[ Public methods                                        ]
 		//[-------------------------------------------------------]
 		public:
-			FileStream(RendererRuntime::IFileManager& fileManager, RendererRuntime::IFileManager::FileMode fileMode, RendererRuntime::VirtualFilename virtualFilename) :
+			FileStream(Renderer::IFileManager& fileManager, Renderer::IFileManager::FileMode fileMode, Renderer::VirtualFilename virtualFilename) :
 				crnlib::data_stream(virtualFilename, crnlib::cDataStreamReadable),
 				mFileManager(fileManager),
 				mFile(fileManager.openFile(fileMode, virtualFilename)),
@@ -504,10 +504,10 @@ namespace
 		//[ Private data                                          ]
 		//[-------------------------------------------------------]
 		private:
-			RendererRuntime::IFileManager& mFileManager;
-			RendererRuntime::IFile*		   mFile;
-			uint64_t					   mFileSize;
-			uint64_t					   mOffset;
+			Renderer::IFileManager& mFileManager;
+			Renderer::IFile*		mFile;
+			uint64_t				mFileSize;
+			uint64_t				mOffset;
 
 
 		};
@@ -520,7 +520,7 @@ namespace
 		//[ Public methods                                        ]
 		//[-------------------------------------------------------]
 		public:
-			FileDataStreamSerializer(RendererRuntime::IFileManager& fileManager, RendererRuntime::IFileManager::FileMode fileMode, RendererRuntime::VirtualFilename virtualFilename) :
+			FileDataStreamSerializer(Renderer::IFileManager& fileManager, Renderer::IFileManager::FileMode fileMode, Renderer::VirtualFilename virtualFilename) :
 				mFileStream(fileManager, fileMode, virtualFilename)
 			{
 				if (!mFileStream.is_opened())
@@ -630,14 +630,14 @@ namespace
 			value = getTextureSemanticByRapidJsonValue(rapidJsonValue[propertyName]);
 		}
 
-		void load2DCrunchMipmappedTextureInternal(RendererRuntime::IFileManager& fileManager, RendererRuntime::VirtualFilename virtualSourceFilename, crnlib::mipmapped_texture& crunchMipmappedTexture)
+		void load2DCrunchMipmappedTextureInternal(Renderer::IFileManager& fileManager, Renderer::VirtualFilename virtualSourceFilename, crnlib::mipmapped_texture& crunchMipmappedTexture)
 		{
 			crnlib::texture_file_types::format crunchSourceFileFormat = crnlib::texture_file_types::determine_file_format(virtualSourceFilename);
 			if (crunchSourceFileFormat == crnlib::texture_file_types::cFormatInvalid)
 			{
 				throw std::runtime_error("Unrecognized file type \"" + std::string(virtualSourceFilename) + '\"');
 			}
-			FileDataStreamSerializer fileDataStreamSerializer(fileManager, RendererRuntime::IFileManager::FileMode::READ, virtualSourceFilename);
+			FileDataStreamSerializer fileDataStreamSerializer(fileManager, Renderer::IFileManager::FileMode::READ, virtualSourceFilename);
 			if (!crunchMipmappedTexture.read_from_stream(fileDataStreamSerializer, crunchSourceFileFormat))
 			{
 				if (crunchMipmappedTexture.get_last_error().is_empty())
@@ -651,7 +651,7 @@ namespace
 			}
 		}
 
-		void load2DCrunchMipmappedTexture(RendererRuntime::IFileManager& fileManager, RendererRuntime::VirtualFilename virtualSourceFilename, RendererRuntime::VirtualFilename virtualSourceNormalMapFilename, crnlib::mipmapped_texture& crunchMipmappedTexture, crnlib::texture_conversion::convert_params& crunchConvertParams)
+		void load2DCrunchMipmappedTexture(Renderer::IFileManager& fileManager, Renderer::VirtualFilename virtualSourceFilename, Renderer::VirtualFilename virtualSourceNormalMapFilename, crnlib::mipmapped_texture& crunchMipmappedTexture, crnlib::texture_conversion::convert_params& crunchConvertParams)
 		{
 			// Load, generate or compose mipmapped Crunch texture
 			if (nullptr != virtualSourceFilename && nullptr == virtualSourceNormalMapFilename)
@@ -724,7 +724,7 @@ namespace
 			struct Source final
 			{
 				TextureSemantic			  textureSemantic  = TextureSemantic::UNKNOWN;
-				uint8_t					  numberOfChannels = RendererRuntime::getInvalid<uint8_t>();
+				uint8_t					  numberOfChannels = Renderer::getInvalid<uint8_t>();
 				float					  defaultColor[4]  = { 0.0f, 0.0f, 0.0f, 0.0f };
 				crnlib::mipmapped_texture crunchMipmappedTexture;
 			};
@@ -732,8 +732,8 @@ namespace
 
 			struct Destination final
 			{
-				uint8_t sourceIndex	  = RendererRuntime::getInvalid<uint8_t>();
-				uint8_t sourceChannel = RendererRuntime::getInvalid<uint8_t>();
+				uint8_t sourceIndex	  = Renderer::getInvalid<uint8_t>();
+				uint8_t sourceChannel = Renderer::getInvalid<uint8_t>();
 			};
 			typedef std::vector<Destination> Destinations;
 
@@ -742,7 +742,7 @@ namespace
 		//[ Public methods                                        ]
 		//[-------------------------------------------------------]
 		public:
-			TextureChannelPacking(RendererRuntime::IFileManager& fileManager, const RendererToolkit::IAssetCompiler::Configuration& configuration, const rapidjson::Value& rapidJsonValueTextureAssetCompiler, const char* basePath, RendererRuntime::VirtualFilename virtualSourceNormalMapFilename, crnlib::texture_conversion::convert_params& crunchConvertParams)
+			TextureChannelPacking(Renderer::IFileManager& fileManager, const RendererToolkit::IAssetCompiler::Configuration& configuration, const rapidjson::Value& rapidJsonValueTextureAssetCompiler, const char* basePath, Renderer::VirtualFilename virtualSourceNormalMapFilename, crnlib::texture_conversion::convert_params& crunchConvertParams)
 			{
 				loadLayout(configuration, rapidJsonValueTextureAssetCompiler, crunchConvertParams);
 				loadSourceCrunchMipmappedTextures(fileManager, rapidJsonValueTextureAssetCompiler, basePath, virtualSourceNormalMapFilename);
@@ -861,7 +861,7 @@ namespace
 									break;
 								}
 							}
-							if (RendererRuntime::isInvalid(destination.sourceIndex))
+							if (Renderer::isInvalid(destination.sourceIndex))
 							{
 								throw std::runtime_error("Texture channel packing \"" + textureChannelPacking + "\" destination " + std::to_string(i) + ": Found no texture channel packing source for the given texture semantic");
 							}
@@ -887,7 +887,7 @@ namespace
 				}
 			}
 
-			[[nodiscard]] std::string getSourceNormalMapFilename(const char* basePath, RendererRuntime::VirtualFilename virtualSourceNormalMapFilename, const rapidjson::Value& rapidJsonValueInputFiles) const
+			[[nodiscard]] std::string getSourceNormalMapFilename(const char* basePath, Renderer::VirtualFilename virtualSourceNormalMapFilename, const rapidjson::Value& rapidJsonValueInputFiles) const
 			{
 				if (nullptr != virtualSourceNormalMapFilename)
 				{
@@ -910,7 +910,7 @@ namespace
 				return "";
 			}
 
-			void loadSourceCrunchMipmappedTextures(RendererRuntime::IFileManager& fileManager, const rapidjson::Value& rapidJsonValueTextureAssetCompiler, const char* basePath, RendererRuntime::VirtualFilename virtualSourceNormalMapFilename)
+			void loadSourceCrunchMipmappedTextures(Renderer::IFileManager& fileManager, const rapidjson::Value& rapidJsonValueTextureAssetCompiler, const char* basePath, Renderer::VirtualFilename virtualSourceNormalMapFilename)
 			{
 				const bool toksvigSpecularAntiAliasing = isToksvigSpecularAntiAliasingEnabled(rapidJsonValueTextureAssetCompiler);
 
@@ -1023,14 +1023,14 @@ namespace
 				}
 
 				// Get combined maximum width and height of all source textures
-				crnlib::uint maximumWidth = RendererRuntime::getInvalid<crnlib::uint>();
-				crnlib::uint maximumHeight = RendererRuntime::getInvalid<crnlib::uint>();
+				crnlib::uint maximumWidth = Renderer::getInvalid<crnlib::uint>();
+				crnlib::uint maximumHeight = Renderer::getInvalid<crnlib::uint>();
 				for (uint8_t i = 0; i < mSources.size(); ++i)
 				{
 					const Source& source = mSources[i];
 					if (source.crunchMipmappedTexture.is_valid())
 					{
-						if (RendererRuntime::isInvalid(maximumWidth) && RendererRuntime::isInvalid(maximumHeight))
+						if (Renderer::isInvalid(maximumWidth) && Renderer::isInvalid(maximumHeight))
 						{
 							maximumWidth = source.crunchMipmappedTexture.get_width();
 							maximumHeight = source.crunchMipmappedTexture.get_height();
@@ -1385,7 +1385,7 @@ namespace
 			}
 		}
 
-		void loadCubeCrunchMipmappedTexture(RendererRuntime::IFileManager& fileManager, const rapidjson::Value& rapidJsonValueTextureAssetCompiler, const char* basePath, crnlib::mipmapped_texture& crunchMipmappedTexture)
+		void loadCubeCrunchMipmappedTexture(Renderer::IFileManager& fileManager, const rapidjson::Value& rapidJsonValueTextureAssetCompiler, const char* basePath, crnlib::mipmapped_texture& crunchMipmappedTexture)
 		{
 			// The face order must be: +X, -X, -Y, +Y, +Z, -Z
 			const Filenames faceFilenames = getCubemapFilenames(rapidJsonValueTextureAssetCompiler, basePath);
@@ -1393,7 +1393,7 @@ namespace
 			{
 				// Load the 2D source image
 				const std::string& virtualInputFilename = faceFilenames[faceIndex];
-				FileDataStreamSerializer fileDataStreamSerializer(fileManager, RendererRuntime::IFileManager::FileMode::READ, virtualInputFilename.c_str());
+				FileDataStreamSerializer fileDataStreamSerializer(fileManager, Renderer::IFileManager::FileMode::READ, virtualInputFilename.c_str());
 				crnlib::image_u8* source2DImage = crnlib::crnlib_new<crnlib::image_u8>();
 				if (!crnlib::image_utils::read_from_stream(*source2DImage, fileDataStreamSerializer))
 				{
@@ -1425,7 +1425,7 @@ namespace
 			}
 		}
 
-		void loadPackedChannelsCrunchMipmappedTexture(RendererRuntime::IFileManager& fileManager, const RendererToolkit::IAssetCompiler::Configuration& configuration, const rapidjson::Value& rapidJsonValueTextureAssetCompiler, const char* basePath, RendererRuntime::VirtualFilename virtualSourceNormalMapFilename, crnlib::mipmapped_texture& crunchMipmappedTexture, crnlib::texture_conversion::convert_params& crunchConvertParams)
+		void loadPackedChannelsCrunchMipmappedTexture(Renderer::IFileManager& fileManager, const RendererToolkit::IAssetCompiler::Configuration& configuration, const rapidjson::Value& rapidJsonValueTextureAssetCompiler, const char* basePath, Renderer::VirtualFilename virtualSourceNormalMapFilename, crnlib::mipmapped_texture& crunchMipmappedTexture, crnlib::texture_conversion::convert_params& crunchConvertParams)
 		{
 			// Load texture channel packing layout and source textures
 			TextureChannelPacking textureChannelPacking(fileManager, configuration, rapidJsonValueTextureAssetCompiler, basePath, virtualSourceNormalMapFilename, crunchConvertParams);
@@ -1472,13 +1472,13 @@ namespace
 			}
 		}
 
-		void convertFile(const RendererToolkit::IAssetCompiler::Input& input, const RendererToolkit::IAssetCompiler::Configuration& configuration, const rapidjson::Value& rapidJsonValueTextureAssetCompiler, const char* basePath, RendererRuntime::VirtualFilename virtualSourceFilename, RendererRuntime::VirtualFilename virtualDestinationFilename, crnlib::texture_file_types::format outputCrunchTextureFileType, TextureSemantic textureSemantic, bool createMipmaps, float mipmapBlurriness, RendererRuntime::VirtualFilename virtualSourceNormalMapFilename)
+		void convertFile(const RendererToolkit::IAssetCompiler::Input& input, const RendererToolkit::IAssetCompiler::Configuration& configuration, const rapidjson::Value& rapidJsonValueTextureAssetCompiler, const char* basePath, Renderer::VirtualFilename virtualSourceFilename, Renderer::VirtualFilename virtualDestinationFilename, crnlib::texture_file_types::format outputCrunchTextureFileType, TextureSemantic textureSemantic, bool createMipmaps, float mipmapBlurriness, Renderer::VirtualFilename virtualSourceNormalMapFilename)
 		{
 			crnlib::texture_conversion::convert_params crunchConvertParams;
 
 			// Load mipmapped Crunch texture
 			crnlib::mipmapped_texture crunchMipmappedTexture;
-			RendererRuntime::IFileManager& fileManager = input.context.getFileManager();
+			Renderer::IFileManager& fileManager = input.context.getFileManager();
 			if (TextureSemantic::REFLECTION_CUBE_MAP == textureSemantic)
 			{
 				loadCubeCrunchMipmappedTexture(fileManager, rapidJsonValueTextureAssetCompiler, basePath, crunchMipmappedTexture);
@@ -1498,7 +1498,7 @@ namespace
 			}
 
 			// Get absolute destination filename
-			const std::string absoluteDestinationFilename = fileManager.mapVirtualToAbsoluteFilename(RendererRuntime::IFileManager::FileMode::WRITE, virtualDestinationFilename);
+			const std::string absoluteDestinationFilename = fileManager.mapVirtualToAbsoluteFilename(Renderer::IFileManager::FileMode::WRITE, virtualDestinationFilename);
 			if (absoluteDestinationFilename.empty())
 			{
 				throw std::runtime_error("Failed determine the absolute destination filename of the virtual destination filename \"" + std::string(virtualDestinationFilename) + '\"');
@@ -1721,16 +1721,16 @@ namespace
 			}
 
 			// Write LZ4 compressed memory file
-			if (crnlib::texture_file_types::cFormatDDS == outputCrunchTextureFileType && !memoryStream.getMemoryFile().writeLz4CompressedDataByVirtualFilename(RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_TYPE, RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_VERSION, input.context.getFileManager(), virtualDestinationFilename))
+			if (crnlib::texture_file_types::cFormatDDS == outputCrunchTextureFileType && !memoryStream.getMemoryFile().writeLz4CompressedDataByVirtualFilename(Renderer::Lz4DdsTextureResourceLoader::FORMAT_TYPE, Renderer::Lz4DdsTextureResourceLoader::FORMAT_VERSION, input.context.getFileManager(), virtualDestinationFilename))
 			{
 				throw std::runtime_error("Failed to write LZ4 compressed output file \"" + std::string(virtualDestinationFilename) + '\"');
 			}
 		}
 
-		void convertColorCorrectionLookupTable(RendererRuntime::IFileManager& fileManager, RendererRuntime::VirtualFilename virtualInputAssetFilename, RendererRuntime::VirtualFilename virtualOutputAssetFilename)
+		void convertColorCorrectionLookupTable(Renderer::IFileManager& fileManager, Renderer::VirtualFilename virtualInputAssetFilename, Renderer::VirtualFilename virtualOutputAssetFilename)
 		{
 			// Load the 2D source image
-			FileDataStreamSerializer fileDataStreamSerializer(fileManager, RendererRuntime::IFileManager::FileMode::READ, virtualInputAssetFilename);
+			FileDataStreamSerializer fileDataStreamSerializer(fileManager, Renderer::IFileManager::FileMode::READ, virtualInputAssetFilename);
 			crnlib::image_u8 sourceImage;
 			crnlib::image_utils::read_from_stream(sourceImage, fileDataStreamSerializer);
 
@@ -1781,11 +1781,11 @@ namespace
 			ddsSurfaceDesc2.lPitch								= static_cast<crn_int32>((ddsSurfaceDesc2.dwWidth * ddsSurfaceDesc2.ddpfPixelFormat.dwRGBBitCount) >> 3);
 
 			// Write down the 3D destination texture
-			RendererRuntime::MemoryFile memoryFile(0, 4096);
+			Renderer::MemoryFile memoryFile(0, 4096);
 			memoryFile.write("DDS ", sizeof(uint32_t));
 			memoryFile.write(reinterpret_cast<const char*>(&ddsSurfaceDesc2), sizeof(crnlib::DDSURFACEDESC2));
 			memoryFile.write(reinterpret_cast<const char*>(destinationData), sizeof(crnlib::color_quad_u8) * numberOfTexelsPerLayer * depth);
-			if (!memoryFile.writeLz4CompressedDataByVirtualFilename(RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_TYPE, RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_VERSION, fileManager, virtualOutputAssetFilename))
+			if (!memoryFile.writeLz4CompressedDataByVirtualFilename(Renderer::Lz4DdsTextureResourceLoader::FORMAT_TYPE, Renderer::Lz4DdsTextureResourceLoader::FORMAT_VERSION, fileManager, virtualOutputAssetFilename))
 			{
 				delete [] destinationData;
 				throw std::runtime_error("Failed to write to destination file \"" + std::string(virtualOutputAssetFilename) + '\"');
@@ -1795,10 +1795,10 @@ namespace
 			delete [] destinationData;
 		}
 
-		void convertTerrainHeightMap(RendererRuntime::IFileManager& fileManager, RendererRuntime::VirtualFilename virtualInputAssetFilename, RendererRuntime::VirtualFilename virtualOutputAssetFilename)
+		void convertTerrainHeightMap(Renderer::IFileManager& fileManager, Renderer::VirtualFilename virtualInputAssetFilename, Renderer::VirtualFilename virtualOutputAssetFilename)
 		{
 			// Load the 2D source image
-			FileDataStreamSerializer fileDataStreamSerializer(fileManager, RendererRuntime::IFileManager::FileMode::READ, virtualInputAssetFilename);
+			FileDataStreamSerializer fileDataStreamSerializer(fileManager, Renderer::IFileManager::FileMode::READ, virtualInputAssetFilename);
 			crnlib::uint8_vec buf;
 			if (fileDataStreamSerializer.read_entire_file(buf))
 			{
@@ -1832,11 +1832,11 @@ namespace
 					ddsSurfaceDesc2.lPitch								= static_cast<crn_int32>((ddsSurfaceDesc2.dwWidth * ddsSurfaceDesc2.ddpfPixelFormat.dwRGBBitCount) >> 3);
 
 					{ // Write down the 3D destination texture
-						RendererRuntime::MemoryFile memoryFile(0, 4096);
+						Renderer::MemoryFile memoryFile(0, 4096);
 						memoryFile.write("DDS ", sizeof(uint32_t));
 						memoryFile.write(reinterpret_cast<const char*>(&ddsSurfaceDesc2), sizeof(crnlib::DDSURFACEDESC2));
 						memoryFile.write(pData, sizeof(stbi_us) * numberOfTexelsPerLayer);
-						if (!memoryFile.writeLz4CompressedDataByVirtualFilename(RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_TYPE, RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_VERSION, fileManager, virtualOutputAssetFilename))
+						if (!memoryFile.writeLz4CompressedDataByVirtualFilename(Renderer::Lz4DdsTextureResourceLoader::FORMAT_TYPE, Renderer::Lz4DdsTextureResourceLoader::FORMAT_VERSION, fileManager, virtualOutputAssetFilename))
 						{
 							stbi_image_free(pData);
 							throw std::runtime_error("Failed to write to destination file \"" + std::string(virtualOutputAssetFilename) + '\"');
@@ -1867,7 +1867,7 @@ namespace
 		*    - Lookout! This loader requires the user to provide correct loader parameters! (data type, width, height and depth)
 		*    - The image loader is only able to deal with the volumetric image data, not with volumetric specific additional information like voxel size
 		*/
-		void convertVolume(const RendererToolkit::IAssetCompiler::Configuration& configuration, RendererRuntime::IFileManager& fileManager, RendererRuntime::VirtualFilename virtualInputAssetFilename, RendererRuntime::VirtualFilename virtualOutputAssetFilename)
+		void convertVolume(const RendererToolkit::IAssetCompiler::Configuration& configuration, Renderer::IFileManager& fileManager, Renderer::VirtualFilename virtualInputAssetFilename, Renderer::VirtualFilename virtualOutputAssetFilename)
 		{
 			// Get and check the filename extension
 			std::string extension = std_filesystem::path(virtualInputAssetFilename).extension().generic_string();
@@ -1908,7 +1908,7 @@ namespace
 			const uint32_t rawVoumeDataNumberOfBytes = resolution[0] * resolution[1] * resolution[2];
 			std::vector<uint8_t> rawVoumeData;
 			{
-				RendererRuntime::IFile* file = fileManager.openFile(RendererRuntime::IFileManager::FileMode::READ, virtualInputAssetFilename);
+				Renderer::IFile* file = fileManager.openFile(Renderer::IFileManager::FileMode::READ, virtualInputAssetFilename);
 				if (nullptr == file)
 				{
 					throw std::runtime_error("Failed to open source file \"" + std::string(virtualInputAssetFilename) + '\"');
@@ -1937,11 +1937,11 @@ namespace
 			ddsSurfaceDesc2.lPitch								= static_cast<crn_int32>((ddsSurfaceDesc2.dwWidth * ddsSurfaceDesc2.ddpfPixelFormat.dwRGBBitCount) >> 3);
 
 			{ // Write down the 3D destination texture
-				RendererRuntime::MemoryFile memoryFile(0, 4096);
+				Renderer::MemoryFile memoryFile(0, 4096);
 				memoryFile.write("DDS ", sizeof(uint32_t));
 				memoryFile.write(reinterpret_cast<const char*>(&ddsSurfaceDesc2), sizeof(crnlib::DDSURFACEDESC2));
 				memoryFile.write(rawVoumeData.data(), rawVoumeDataNumberOfBytes);
-				if (!memoryFile.writeLz4CompressedDataByVirtualFilename(RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_TYPE, RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_VERSION, fileManager, virtualOutputAssetFilename))
+				if (!memoryFile.writeLz4CompressedDataByVirtualFilename(Renderer::Lz4DdsTextureResourceLoader::FORMAT_TYPE, Renderer::Lz4DdsTextureResourceLoader::FORMAT_VERSION, fileManager, virtualOutputAssetFilename))
 				{
 					throw std::runtime_error("Failed to write to destination file \"" + std::string(virtualOutputAssetFilename) + '\"');
 				}
@@ -1952,7 +1952,7 @@ namespace
 		*  @brief
 		*    Texture compiler implementation for Illuminating Engineering Society (IES) light profile (photometric light data, use e.g. IESviewer ( http://photometricviewer.com/ ) as viewer)
 		*/
-		void convertIesLightProfile(const RendererToolkit::IAssetCompiler::Input& input, const RendererToolkit::IAssetCompiler::Configuration& configuration, RendererRuntime::VirtualFilename virtualOutputAssetFilename)
+		void convertIesLightProfile(const RendererToolkit::IAssetCompiler::Input& input, const RendererToolkit::IAssetCompiler::Configuration& configuration, Renderer::VirtualFilename virtualOutputAssetFilename)
 		{
 			// Get the JSON "IesLightProfile" object
 			uint32_t resolution[2] = { 256, 1 };
@@ -1991,7 +1991,7 @@ namespace
 			std::vector<IESOutputData> iesOutputData;
 			const uint32_t numberOfFiles = rapidJsonValueInputFiles.Size();
 			iesOutputData.resize(numberOfFiles);
-			RendererRuntime::IFileManager& fileManager = input.context.getFileManager();
+			Renderer::IFileManager& fileManager = input.context.getFileManager();
 			for (uint32_t i = 0; i < numberOfFiles; ++i)
 			{
 				// Get virtual input asset filename
@@ -2007,7 +2007,7 @@ namespace
 				// Load file content into memory
 				std::vector<char> iesBuffer;
 				{
-					RendererRuntime::IFile* file = fileManager.openFile(RendererRuntime::IFileManager::FileMode::READ, virtualInputAssetFilename.c_str());
+					Renderer::IFile* file = fileManager.openFile(Renderer::IFileManager::FileMode::READ, virtualInputAssetFilename.c_str());
 					if (nullptr == file)
 					{
 						throw std::runtime_error("Failed to open source file \"" + std::string(virtualInputAssetFilename) + '\"');
@@ -2063,7 +2063,7 @@ namespace
 			ddsHeaderDX10.arraySize  = numberOfFiles;
 
 			{ // Write down the 1D destination texture
-				RendererRuntime::MemoryFile memoryFile(0, 4096);
+				Renderer::MemoryFile memoryFile(0, 4096);
 				memoryFile.write("DDS ", sizeof(uint32_t));
 				memoryFile.write(reinterpret_cast<const char*>(&ddsSurfaceDesc2), sizeof(crnlib::DDSURFACEDESC2));
 				memoryFile.write(reinterpret_cast<const char*>(&ddsHeaderDX10), sizeof(::detail::DdsHeaderDX10));
@@ -2072,7 +2072,7 @@ namespace
 					const IESOutputData& currentIesOutputData = iesOutputData[i];
 					memoryFile.write(currentIesOutputData.stream.data(), currentIesOutputData.stream.size() * sizeof(float));
 				}
-				if (!memoryFile.writeLz4CompressedDataByVirtualFilename(RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_TYPE, RendererRuntime::Lz4DdsTextureResourceLoader::FORMAT_VERSION, fileManager, virtualOutputAssetFilename))
+				if (!memoryFile.writeLz4CompressedDataByVirtualFilename(Renderer::Lz4DdsTextureResourceLoader::FORMAT_TYPE, Renderer::Lz4DdsTextureResourceLoader::FORMAT_VERSION, fileManager, virtualOutputAssetFilename))
 				{
 					throw std::runtime_error("Failed to write to destination file \"" + std::string(virtualOutputAssetFilename) + '\"');
 				}
@@ -2083,12 +2083,12 @@ namespace
 		*  @brief
 		*    Convert CRN array
 		*/
-		void convertCrnArray(const RendererToolkit::IAssetCompiler::Input& input, const RendererToolkit::IAssetCompiler::Configuration& configuration, RendererRuntime::VirtualFilename virtualOutputAssetFilename)
+		void convertCrnArray(const RendererToolkit::IAssetCompiler::Input& input, const RendererToolkit::IAssetCompiler::Configuration& configuration, Renderer::VirtualFilename virtualOutputAssetFilename)
 		{
 			// Read in the texture asset IDs
 			const rapidjson::Value& rapidJsonValueInputFiles = configuration.rapidJsonDocumentAsset["Asset"]["Compiler"]["InputFiles"];
 			const uint32_t numberOfFiles = rapidJsonValueInputFiles.Size();
-			std::vector<RendererRuntime::AssetId> assetIds;
+			std::vector<Renderer::AssetId> assetIds;
 			assetIds.resize(numberOfFiles);
 			for (uint32_t i = 0; i < numberOfFiles; ++i)
 			{
@@ -2098,10 +2098,10 @@ namespace
 			}
 
 			{ // Write down the CRN array destination texture
-				RendererRuntime::MemoryFile memoryFile(0, 1024);
+				Renderer::MemoryFile memoryFile(0, 1024);
 				memoryFile.write(&numberOfFiles, sizeof(uint32_t));
-				memoryFile.write(assetIds.data(), sizeof(RendererRuntime::AssetId) * numberOfFiles);
-				if (!memoryFile.writeLz4CompressedDataByVirtualFilename(RendererRuntime::v1CrnArray::FORMAT_TYPE, RendererRuntime::v1CrnArray::FORMAT_VERSION, input.context.getFileManager(), virtualOutputAssetFilename))
+				memoryFile.write(assetIds.data(), sizeof(Renderer::AssetId) * numberOfFiles);
+				if (!memoryFile.writeLz4CompressedDataByVirtualFilename(Renderer::v1CrnArray::FORMAT_TYPE, Renderer::v1CrnArray::FORMAT_VERSION, input.context.getFileManager(), virtualOutputAssetFilename))
 				{
 					throw std::runtime_error("Failed to write to destination file \"" + std::string(virtualOutputAssetFilename) + '\"');
 				}

@@ -27,7 +27,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include <RendererRuntime/Public/Core/StringId.h>
+#include <Renderer/Public/Core/StringId.h>
 
 #include <Rhi/Public/Rhi.h>
 
@@ -67,7 +67,7 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace RendererRuntime
+namespace Renderer
 {
 	class AssetPackage;
 	class IFileManager;
@@ -89,11 +89,11 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	//[ Global definitions                                    ]
 	//[-------------------------------------------------------]
-	typedef RendererRuntime::StringId				  AssetCompilerClassId;				///< Asset compiler type identifier, internally just a POD "uint32_t"
+	typedef Renderer::StringId						  AssetCompilerClassId;				///< Asset compiler type identifier, internally just a POD "uint32_t"
 	typedef std::unordered_map<uint32_t, uint32_t>	  SourceAssetIdToCompiledAssetId;	///< Key = source asset ID, value = compiled asset ID ("AssetId"-type not used directly or we would need to define a hash-function for it)
 	typedef std::unordered_map<uint32_t, uint32_t>	  CompiledAssetIdToSourceAssetId;	///< Key = compiled asset ID, value = source asset ID ("AssetId"-type not used directly or we would need to define a hash-function for it)
 	typedef std::unordered_map<uint32_t, std::string> SourceAssetIdToVirtualFilename;	///< Key = source asset ID, virtual asset filename
-	typedef std::unordered_set<uint32_t>			  DefaultTextureAssetIds;			///< "RendererRuntime::AssetId"-type for compiled asset IDs
+	typedef std::unordered_set<uint32_t>			  DefaultTextureAssetIds;			///< "Renderer::AssetId"-type for compiled asset IDs
 
 	/**
 	*  @brief
@@ -112,7 +112,7 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    An asset compiler transforms an asset from a source format into a format the renderer runtime understands
+	*    An asset compiler transforms an asset from a source format into a format the renderer understands
 	*
 	*  @note
 	*    - The asset compiler only crunches data already known to the source asset database (aka "data source"), it doesn't process external assets
@@ -172,7 +172,7 @@ namespace RendererToolkit
 			[[nodiscard]] uint32_t getCompiledAssetIdBySourceAssetIdAsString(const std::string& sourceAssetIdAsString) const
 			{
 				// Source asset ID naming scheme "<name>.asset"
-				SourceAssetIdToCompiledAssetId::const_iterator iterator = sourceAssetIdToCompiledAssetId.find(RendererRuntime::StringId::calculateFNV(sourceAssetIdAsString.c_str()));
+				SourceAssetIdToCompiledAssetId::const_iterator iterator = sourceAssetIdToCompiledAssetId.find(Renderer::StringId::calculateFNV(sourceAssetIdAsString.c_str()));
 				if (iterator == sourceAssetIdToCompiledAssetId.cend())
 				{
 					throw std::runtime_error(std::string("Source asset ID \"") + sourceAssetIdAsString + "\" is unknown");

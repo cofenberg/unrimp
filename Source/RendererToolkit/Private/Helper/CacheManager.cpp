@@ -25,11 +25,11 @@
 #include "RendererToolkit/Private/AssetCompiler/IAssetCompiler.h"
 #include "RendererToolkit/Private/Context.h"
 
-#include <RendererRuntime/Public/IRendererRuntime.h>
-#include <RendererRuntime/Public/Core/Math/Math.h>
-#include <RendererRuntime/Public/Core/File/MemoryFile.h>
-#include <RendererRuntime/Public/Core/File/IFileManager.h>
-#include <RendererRuntime/Public/Core/File/FileSystemHelper.h>
+#include <Renderer/Public/IRenderer.h>
+#include <Renderer/Public/Core/Math/Math.h>
+#include <Renderer/Public/Core/File/MemoryFile.h>
+#include <Renderer/Public/Core/File/IFileManager.h>
+#include <Renderer/Public/Core/File/FileSystemHelper.h>
 
 
 //[-------------------------------------------------------]
@@ -54,13 +54,13 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		void getRendererToolkitCacheFilename(const RendererRuntime::IFileManager& fileManager, const std::string& projectName, std::string& virtualDirectoryName, std::string& virtualFilename)
+		void getRendererToolkitCacheFilename(const Renderer::IFileManager& fileManager, const std::string& projectName, std::string& virtualDirectoryName, std::string& virtualFilename)
 		{
 			virtualDirectoryName = fileManager.getLocalDataMountPoint();
 			virtualFilename = virtualDirectoryName + '/' + projectName + ".renderer_toolkit_cache";
 		}
 
-		[[nodiscard]] bool loadRendererToolkitCacheFile(const RendererRuntime::IFileManager& fileManager, const std::string& projectName, RendererRuntime::MemoryFile& memoryFile)
+		[[nodiscard]] bool loadRendererToolkitCacheFile(const Renderer::IFileManager& fileManager, const std::string& projectName, Renderer::MemoryFile& memoryFile)
 		{
 			// Tell the memory mapped file about the LZ4 compressed data and decompress it at once
 			std::string virtualDirectoryName;
@@ -79,11 +79,11 @@ namespace
 			return false;
 		}
 
-		void saveRendererToolkitCacheFile(const RendererToolkit::Context& context, const std::string& projectName, const RendererRuntime::MemoryFile& memoryFile)
+		void saveRendererToolkitCacheFile(const RendererToolkit::Context& context, const std::string& projectName, const Renderer::MemoryFile& memoryFile)
 		{
 			std::string virtualDirectoryName;
 			std::string virtualFilename;
-			const RendererRuntime::IFileManager& fileManager = context.getFileManager();
+			const Renderer::IFileManager& fileManager = context.getFileManager();
 			getRendererToolkitCacheFilename(fileManager, projectName, virtualDirectoryName, virtualFilename);
 			if (fileManager.createDirectories(virtualDirectoryName.c_str()) && !memoryFile.writeLz4CompressedDataByVirtualFilename(RendererToolkitCache::FORMAT_TYPE, RendererToolkitCache::FORMAT_VERSION, fileManager, virtualFilename.c_str()))
 			{
@@ -138,7 +138,7 @@ namespace RendererToolkit
 		}
 
 		// First check if all source files exists
-		const RendererRuntime::IFileManager& fileManager = mContext.getFileManager();
+		const Renderer::IFileManager& fileManager = mContext.getFileManager();
 		for (const std::string& virtualSourceFilename : virtualSourceFilenames)
 		{
 			if (!fileManager.doesFileExist(virtualSourceFilename.c_str()))
@@ -171,7 +171,7 @@ namespace RendererToolkit
 		{
 			// Mark the asset file as changed when asset needs to be compiled and asset file itself didn't changed
 			// -> This is needed to get asset dependencies properly checked
-			mCheckedFilesStatus[RendererRuntime::StringId::calculateFNV(virtualAssetFilename.c_str())].changed = true;
+			mCheckedFilesStatus[Renderer::StringId::calculateFNV(virtualAssetFilename.c_str())].changed = true;
 		}
 
 		// File needs to be compiled either destination doesn't exists, the source data has changed or the asset file has changed
@@ -219,7 +219,7 @@ namespace RendererToolkit
 				{
 					// Asset file itself has not changed but the source file so mark the asset file as changed too
 					// Dependencies are defined via the asset file and with this change the asset which depends on this asset knows if the referenced asset has changed
-					mCheckedFilesStatus[RendererRuntime::StringId::calculateFNV(virtualAssetFilename.c_str())].changed = true;
+					mCheckedFilesStatus[Renderer::StringId::calculateFNV(virtualAssetFilename.c_str())].changed = true;
 				}
 			}
 		}
@@ -236,7 +236,7 @@ namespace RendererToolkit
 	{
 		for (const std::string& virtualDependencyFilename : virtualDependencyFilenames)
 		{
-			CheckedFilesStatus::const_iterator iterator = mCheckedFilesStatus.find(RendererRuntime::StringId::calculateFNV(virtualDependencyFilename.c_str()));
+			CheckedFilesStatus::const_iterator iterator = mCheckedFilesStatus.find(Renderer::StringId::calculateFNV(virtualDependencyFilename.c_str()));
 			if (mCheckedFilesStatus.end() != iterator && iterator->second.changed)
 			{
 				// Changed
@@ -259,7 +259,7 @@ namespace RendererToolkit
 		if (mDiskCacheDirty && nullptr != mContext.getFileManager().getLocalDataMountPoint())
 		{
 			const uint32_t numberOfStoredCacheEntries = static_cast<uint32_t>(mStoredCacheEntries.size());
-			RendererRuntime::MemoryFile memoryFile(0, sizeof(uint32_t) + numberOfStoredCacheEntries * sizeof(CacheEntry));
+			Renderer::MemoryFile memoryFile(0, sizeof(uint32_t) + numberOfStoredCacheEntries * sizeof(CacheEntry));
 			memoryFile.write(&numberOfStoredCacheEntries, sizeof(uint32_t));
 			for (const auto& cacheEntryElement : mStoredCacheEntries)
 			{
@@ -284,7 +284,7 @@ namespace RendererToolkit
 		mCheckedFilesStatus.clear();
 
 		// Load file
-		RendererRuntime::MemoryFile memoryFile;
+		Renderer::MemoryFile memoryFile;
 		if (::detail::loadRendererToolkitCacheFile(mContext.getFileManager(), mProjectName, memoryFile))
 		{
 			uint32_t numberOfStoredCacheEntries = 0;
@@ -299,7 +299,7 @@ namespace RendererToolkit
 		}
 	}
 
-	bool CacheManager::fillEntryForFile(const std::string& rhiTarget, RendererRuntime::StringId fileId, CacheEntry& cacheEntry)
+	bool CacheManager::fillEntryForFile(const std::string& rhiTarget, Renderer::StringId fileId, CacheEntry& cacheEntry)
 	{
 		const StoredCacheEntries::const_iterator iterator = mStoredCacheEntries.find(CacheEntry::generateKey(rhiTarget, fileId));
 		if (mStoredCacheEntries.cend() == iterator)
@@ -321,15 +321,15 @@ namespace RendererToolkit
 		}
 	}
 
-	bool CacheManager::checkIfFileChanged(const std::string& rhiTarget, RendererRuntime::VirtualFilename virtualFilename, uint32_t compilerVersion, CacheEntry& cacheEntry)
+	bool CacheManager::checkIfFileChanged(const std::string& rhiTarget, Renderer::VirtualFilename virtualFilename, uint32_t compilerVersion, CacheEntry& cacheEntry)
 	{
 		// Get the last write time
-		const RendererRuntime::IFileManager& fileManager = mContext.getFileManager();
+		const Renderer::IFileManager& fileManager = mContext.getFileManager();
 		const int64_t fileTime = fileManager.getLastModificationTime(virtualFilename);
 		const int64_t fileSize = fileManager.getFileSize(virtualFilename);
 
 		// Get cache entry data if an entry exists
-		RendererRuntime::StringId fileId(virtualFilename);
+		Renderer::StringId fileId(virtualFilename);
 		const bool hasFileEntry = fillEntryForFile(rhiTarget, fileId, cacheEntry);
 		if (hasFileEntry)
 		{
@@ -362,7 +362,7 @@ namespace RendererToolkit
 			{
 				// Current file differs in file size and/or file time do the second step:
 				// Check the compiler version and the 64-bit FNV-1a hash
-				const uint64_t fileHash = RendererRuntime::Math::calculateFileFNV1a64ByVirtualFilename(fileManager, virtualFilename);
+				const uint64_t fileHash = Renderer::Math::calculateFileFNV1a64ByVirtualFilename(fileManager, virtualFilename);
 				if (cacheEntry.fileHash == fileHash && cacheEntry.compilerVersion == compilerVersion)
 				{
 					// Hash of the file and compiler version didn't changed but store the changed file size/time
@@ -397,11 +397,11 @@ namespace RendererToolkit
 		else
 		{
 			// No cache entry exists yet: Store the data
-			cacheEntry.rhiTargetId		= RendererRuntime::StringId::calculateFNV(rhiTarget.c_str());
+			cacheEntry.rhiTargetId		= Renderer::StringId::calculateFNV(rhiTarget.c_str());
 			cacheEntry.fileId			= fileId;
 			cacheEntry.fileSize			= fileSize;
 			cacheEntry.fileTime			= fileTime;
-			cacheEntry.fileHash			= RendererRuntime::Math::calculateFileFNV1a64ByVirtualFilename(fileManager, virtualFilename);
+			cacheEntry.fileHash			= Renderer::Math::calculateFileFNV1a64ByVirtualFilename(fileManager, virtualFilename);
 			cacheEntry.compilerVersion	= compilerVersion;
 			storeOrUpdateCacheEntry(cacheEntry);
 

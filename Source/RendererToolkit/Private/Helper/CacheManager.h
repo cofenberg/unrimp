@@ -27,8 +27,8 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include <RendererRuntime/Public/Core/StringId.h>
-#include <RendererRuntime/Public/Core/GetInvalid.h>
+#include <Renderer/Public/Core/StringId.h>
+#include <Renderer/Public/Core/GetInvalid.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -49,7 +49,7 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace RendererRuntime
+namespace Renderer
 {
 	typedef const char* VirtualFilename;	///< UTF-8 virtual filename, the virtual filename scheme is "<mount point = project name>/<asset directory>/<asset name>.<file extension>" (example "Example/Mesh/Monster/Squirrel.mesh"), never ever a null pointer and always finished by a terminating zero
 }
@@ -99,9 +99,9 @@ namespace RendererToolkit
 			{
 				return ((static_cast<uint64_t>(rhiTargetId) << 32) | static_cast<uint64_t>(fileId));
 			}
-			[[nodiscard]] static inline uint64_t generateKey(const std::string& rhiTarget, RendererRuntime::StringId fileId)
+			[[nodiscard]] static inline uint64_t generateKey(const std::string& rhiTarget, Renderer::StringId fileId)
 			{
-				return ((static_cast<uint64_t>(RendererRuntime::StringId::calculateFNV(rhiTarget.c_str())) << 32) | static_cast<uint64_t>(fileId.getId()));
+				return ((static_cast<uint64_t>(Renderer::StringId::calculateFNV(rhiTarget.c_str())) << 32) | static_cast<uint64_t>(fileId.getId()));
 			}
 		};
 
@@ -258,7 +258,7 @@ namespace RendererToolkit
 		*  @return
 		*    "true" if a cache entry exists otherwise "false"
 		*/
-		[[nodiscard]] bool fillEntryForFile(const std::string& rhiTarget, RendererRuntime::StringId fileId, CacheEntry& cacheEntry);
+		[[nodiscard]] bool fillEntryForFile(const std::string& rhiTarget, Renderer::StringId fileId, CacheEntry& cacheEntry);
 
 		/**
 		*  @brief
@@ -279,7 +279,7 @@ namespace RendererToolkit
 		*  @note
 		*    - When a change was detected the an cache entry is stored/updated
 		*/
-		[[nodiscard]] bool checkIfFileChanged(const std::string& rhiTarget, RendererRuntime::VirtualFilename virtualFilename, uint32_t compilerVersion, CacheEntry& cacheEntry);
+		[[nodiscard]] bool checkIfFileChanged(const std::string& rhiTarget, Renderer::VirtualFilename virtualFilename, uint32_t compilerVersion, CacheEntry& cacheEntry);
 
 		/**
 		*  @brief
@@ -317,7 +317,7 @@ namespace RendererToolkit
 		StoredCacheEntries mStoredCacheEntries;
 		bool			   mDiskCacheDirty;
 
-		// We use here "uint32_t" instead of "RendererRuntime::StringId" because we don't define a "std::hash"-method for "RendererRuntime::StringId", which internal stores an "uint32_t"
+		// We use here "uint32_t" instead of "Renderer::StringId" because we don't define a "std::hash"-method for "Renderer::StringId", which internal stores an "uint32_t"
 		CheckedFilesStatus mCheckedFilesStatus;	///< Holds the status of each file checked via "RendererToolkit::CacheManager::checkIfFileChanged()"
 
 

@@ -29,8 +29,8 @@
 //[-------------------------------------------------------]
 #include "Examples/Private/Framework/ExampleBase.h"
 
-#ifdef RENDERER_RUNTIME
-	#include <RendererRuntime/Public/Core/Time/Stopwatch.h>
+#ifdef RENDERER
+	#include <Renderer/Public/Core/Time/Stopwatch.h>
 #endif
 
 
@@ -116,8 +116,8 @@ private:
 	uint32_t					mNumberOfCubeInstances;	///< Number of cube instances
 	Rhi::CommandBuffer			mCommandBuffer;			///< Command buffer
 	// The rest is for timing and statistics
-	#ifdef RENDERER_RUNTIME
-		RendererRuntime::Stopwatch mStopwatch;	///< Stopwatch instance
+	#ifdef RENDERER
+		Renderer::Stopwatch mStopwatch;	///< Stopwatch instance
 	#endif
 	float mGlobalTimer;			///< Global timer
 	float mGlobalScale;			///< Global scale

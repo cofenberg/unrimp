@@ -39,7 +39,7 @@ int programEntryPoint(const CommandLineArguments& commandLineArguments)
 //[-------------------------------------------------------]
 // Windows implementation
 #ifdef _WIN32
-	#include <RendererRuntime/Public/Core/Platform/WindowsHeader.h>
+	#include <Renderer/Public/Core/Platform/WindowsHeader.h>
 
 	// Global variables
 	extern "C"

@@ -32,7 +32,7 @@
 #ifdef SHARED_LIBRARIES
 	// Dynamically linked libraries
 	#ifdef _WIN32
-		#include <RendererRuntime/Public/Core/Platform/WindowsHeader.h>
+		#include <Renderer/Public/Core/Platform/WindowsHeader.h>
 	#elif defined LINUX
 		#include <dlfcn.h>
 	#else
@@ -46,7 +46,7 @@
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace RendererRuntime
+namespace Renderer
 {
 	class IFileManager;
 }
@@ -61,7 +61,7 @@ namespace RendererToolkit
 //[ Global functions                                      ]
 //[-------------------------------------------------------]
 #ifndef SHARED_LIBRARIES
-	// Statically linked library create renderer runtime instance signatures
+	// Statically linked library create renderer instance signatures
 	// This is needed to do here because the methods in the library are also defined in global namespace
 
 	// "createRendererToolkitInstance()" signature
@@ -83,7 +83,7 @@ namespace RendererToolkit
 	class Context final
 	{
 	public:
-		inline Context(Rhi::ILog& log, Rhi::IAssert& assert, Rhi::IAllocator& allocator, RendererRuntime::IFileManager& fileManager) :
+		inline Context(Rhi::ILog& log, Rhi::IAssert& assert, Rhi::IAllocator& allocator, Renderer::IFileManager& fileManager) :
 			mLog(log),
 			mAssert(assert),
 			mAllocator(allocator),
@@ -103,7 +103,7 @@ namespace RendererToolkit
 		{
 			return mAllocator;
 		}
-		[[nodiscard]] inline RendererRuntime::IFileManager& getFileManager() const
+		[[nodiscard]] inline Renderer::IFileManager& getFileManager() const
 		{
 			return mFileManager;
 		}
@@ -111,10 +111,10 @@ namespace RendererToolkit
 		explicit Context(const Context&) = delete;
 		Context& operator=(const Context&) = delete;
 	private:
-		Rhi::ILog&					   mLog;
-		Rhi::IAssert&				   mAssert;
-		Rhi::IAllocator&			   mAllocator;
-		RendererRuntime::IFileManager& mFileManager;
+		Rhi::ILog&				mLog;
+		Rhi::IAssert&			mAssert;
+		Rhi::IAllocator&	    mAllocator;
+		Renderer::IFileManager& mFileManager;
 	};
 
 	/**

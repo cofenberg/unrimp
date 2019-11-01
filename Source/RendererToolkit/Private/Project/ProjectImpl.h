@@ -30,7 +30,7 @@
 #include "RendererToolkit/Private/Project/IProject.h"
 #include "RendererToolkit/Private/AssetCompiler/IAssetCompiler.h"	// For "RendererToolkit::QualityStrategy"
 
-#include <RendererRuntime/Public/Asset/AssetPackage.h>
+#include <Renderer/Public/Asset/AssetPackage.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -52,9 +52,9 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace RendererRuntime
+namespace Renderer
 {
-	class IRendererRuntime;
+	class IRenderer;
 }
 namespace RendererToolkit
 {
@@ -78,7 +78,7 @@ namespace RendererToolkit
 	typedef std::unordered_map<uint32_t, uint32_t>	  SourceAssetIdToCompiledAssetId;	///< Key = source asset ID, value = compiled asset ID ("AssetId"-type not used directly or we would need to define a hash-function for it)
 	typedef std::unordered_map<uint32_t, uint32_t>	  CompiledAssetIdToSourceAssetId;	///< Key = compiled asset ID, value = source asset ID ("AssetId"-type not used directly or we would need to define a hash-function for it)
 	typedef std::unordered_map<uint32_t, std::string> SourceAssetIdToVirtualFilename;	///< Key = source asset ID, virtual asset filename
-	typedef std::unordered_set<uint32_t>			  DefaultTextureAssetIds;			///< "RendererRuntime::AssetId"-type for compiled asset IDs
+	typedef std::unordered_set<uint32_t>			  DefaultTextureAssetIds;			///< "Renderer::AssetId"-type for compiled asset IDs
 
 
 	//[-------------------------------------------------------]
@@ -126,15 +126,15 @@ namespace RendererToolkit
 			return mAbsoluteProjectDirectory;
 		}
 
-		[[nodiscard]] inline const RendererRuntime::AssetPackage& getAssetPackage() const
+		[[nodiscard]] inline const Renderer::AssetPackage& getAssetPackage() const
 		{
 			return mAssetPackage;
 		}
 
-		[[nodiscard]] RendererRuntime::VirtualFilename tryGetVirtualFilenameByAssetId(RendererRuntime::AssetId assetId) const;
-		[[nodiscard]] bool checkAssetIsChanged(const RendererRuntime::Asset& asset, const char* rhiTarget);
-		void compileAsset(const RendererRuntime::Asset& asset, const char* rhiTarget, RendererRuntime::AssetPackage& outputAssetPackage);
-		void compileAssetIncludingDependencies(const RendererRuntime::Asset& asset, const char* rhiTarget, RendererRuntime::AssetPackage& outputAssetPackage) noexcept;
+		[[nodiscard]] Renderer::VirtualFilename tryGetVirtualFilenameByAssetId(Renderer::AssetId assetId) const;
+		[[nodiscard]] bool checkAssetIsChanged(const Renderer::Asset& asset, const char* rhiTarget);
+		void compileAsset(const Renderer::Asset& asset, const char* rhiTarget, Renderer::AssetPackage& outputAssetPackage);
+		void compileAssetIncludingDependencies(const Renderer::Asset& asset, const char* rhiTarget, Renderer::AssetPackage& outputAssetPackage) noexcept;
 
 		/**
 		*  @brief
@@ -150,10 +150,10 @@ namespace RendererToolkit
 	//[ Public virtual RendererToolkit::IProject methods      ]
 	//[-------------------------------------------------------]
 	public:
-		virtual void load(RendererRuntime::AbsoluteDirectoryName absoluteProjectDirectoryName) override;
+		virtual void load(Renderer::AbsoluteDirectoryName absoluteProjectDirectoryName) override;
 		virtual void compileAllAssets(const char* rhiTarget) override;
 		virtual void importAssets(const AbsoluteFilenames& absoluteSourceFilenames, const std::string& targetAssetPackageName, const std::string& targetDirectoryName = "Imported") override;
-		virtual void startupAssetMonitor(RendererRuntime::IRendererRuntime& rendererRuntime, const char* rhiTarget) override;
+		virtual void startupAssetMonitor(Renderer::IRenderer& renderer, const char* rhiTarget) override;
 		virtual void shutdownAssetMonitor() override;
 
 
@@ -203,7 +203,7 @@ namespace RendererToolkit
 		std::string							mProjectName;						///< UTF-8 project name
 		std::string							mAbsoluteProjectDirectory;			///< UTF-8 project directory, Has no "/" at the end
 		QualityStrategy						mQualityStrategy;
-		RendererRuntime::AssetPackage		mAssetPackage;
+		Renderer::AssetPackage				mAssetPackage;
 		std::string							mAssetPackageDirectoryName;			///< UTF-8 asset package name, has no "/" at the end
 		SourceAssetIdToCompiledAssetId		mSourceAssetIdToCompiledAssetId;
 		CompiledAssetIdToSourceAssetId		mCompiledAssetIdToSourceAssetId;

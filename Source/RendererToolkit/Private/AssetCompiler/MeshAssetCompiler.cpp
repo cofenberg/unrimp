@@ -30,14 +30,14 @@
 #include "RendererToolkit/Private/Helper/JsonHelper.h"
 #include "RendererToolkit/Private/Context.h"
 
-#include <RendererRuntime/Public/Asset/AssetPackage.h>
-#include <RendererRuntime/Public/Core/Math/Math.h>
-#include <RendererRuntime/Public/Core/File/IFile.h>
-#include <RendererRuntime/Public/Core/File/MemoryFile.h>
-#include <RendererRuntime/Public/Core/File/IFileManager.h>
-#include <RendererRuntime/Public/Core/File/FileSystemHelper.h>
-#include <RendererRuntime/Public/Resource/Mesh/MeshResource.h>
-#include <RendererRuntime/Public/Resource/Mesh/Loader/MeshFileFormat.h>
+#include <Renderer/Public/Asset/AssetPackage.h>
+#include <Renderer/Public/Core/Math/Math.h>
+#include <Renderer/Public/Core/File/IFile.h>
+#include <Renderer/Public/Core/File/MemoryFile.h>
+#include <Renderer/Public/Core/File/IFileManager.h>
+#include <Renderer/Public/Core/File/FileSystemHelper.h>
+#include <Renderer/Public/Resource/Mesh/MeshResource.h>
+#include <Renderer/Public/Resource/Mesh/Loader/MeshFileFormat.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -186,8 +186,8 @@ namespace
 		//[-------------------------------------------------------]
 		static constexpr uint8_t NUMBER_OF_BYTES_PER_VERTEX = 28;										///< Number of bytes per vertex (3 float position, 2 float texture coordinate, 4 short QTangent)
 		static constexpr uint8_t NUMBER_OF_BYTES_PER_SKINNED_VERTEX = NUMBER_OF_BYTES_PER_VERTEX + 8;	///< Number of bytes per skinned vertex (+4 byte bone indices, +4 byte bone weights)
-		typedef std::vector<RendererRuntime::v1Mesh::SubMesh> SubMeshes;
-		typedef std::unordered_map<std::string, RendererRuntime::AssetId> MaterialNameToAssetId;
+		typedef std::vector<Renderer::v1Mesh::SubMesh> SubMeshes;
+		typedef std::unordered_map<std::string, Renderer::AssetId> MaterialNameToAssetId;
 
 
 		//[-------------------------------------------------------]
@@ -204,7 +204,7 @@ namespace
 			uint8_t		 numberOfBones;			///< Number of bones
 			// Structure-of-arrays (SoA)
 			uint8_t*	 boneParentIndices;		///< Cache friendly depth-first rolled up bone parent indices, null pointer only in case of horrible error, free the memory if no longer required
-			uint32_t*	 boneIds;				///< Cache friendly depth-first rolled up bone IDs ("RendererRuntime::StringId" on bone name), null pointer only in case of horrible error, don't free the memory because it's owned by "boneParentIndices"
+			uint32_t*	 boneIds;				///< Cache friendly depth-first rolled up bone IDs ("Renderer::StringId" on bone name), null pointer only in case of horrible error, don't free the memory because it's owned by "boneParentIndices"
 			aiMatrix4x4* localBoneMatrices;		///< Cache friendly depth-first rolled up local bone matrices, null pointer only in case of horrible error, don't free the memory because it's owned by "boneParentIndices"
 			aiMatrix4x4* boneOffsetMatrices;	///< Cache friendly depth-first rolled up bone offset matrices (object space to bone space), null pointer only in case of horrible error, free the memory if no longer required
 
@@ -300,7 +300,7 @@ namespace
 						return boneIndex;
 					}
 				}
-				return RendererRuntime::getInvalid<uint32_t>();
+				return Renderer::getInvalid<uint32_t>();
 			}
 
 
@@ -311,8 +311,8 @@ namespace
 			uint8_t fillSkeletonRecursive(const aiNode& assimpNode, uint8_t parentBoneIndex, uint8_t currentBoneIndex)
 			{
 				// Sanity check
-				const uint32_t boneId = RendererRuntime::StringId::calculateFNV(assimpNode.mName.C_Str());
-				if (RendererRuntime::isValid(getBoneIndexByBoneId(boneId)))
+				const uint32_t boneId = Renderer::StringId::calculateFNV(assimpNode.mName.C_Str());
+				if (Renderer::isValid(getBoneIndexByBoneId(boneId)))
 				{
 					throw std::runtime_error(std::string("Assimp bone name \"") + assimpNode.mName.C_Str() + "\" is not unique");
 				}
@@ -380,7 +380,7 @@ namespace
 
 				{ // Add sub-mesh
 					// Get the source material asset ID
-					RendererRuntime::AssetId materialAssetId = RendererRuntime::getInvalid<RendererRuntime::AssetId>();
+					Renderer::AssetId materialAssetId = Renderer::getInvalid<Renderer::AssetId>();
 					aiString materialName;
 					const aiMaterial* assimpMaterial = assimpScene.mMaterials[assimpMesh.mMaterialIndex];
 					{
@@ -413,9 +413,9 @@ namespace
 					}
 
 					// Add sub-mesh
-					if (RendererRuntime::isValid(materialAssetId))
+					if (Renderer::isValid(materialAssetId))
 					{
-						RendererRuntime::v1Mesh::SubMesh subMesh;
+						Renderer::v1Mesh::SubMesh subMesh;
 						subMesh.materialAssetId	   = materialAssetId;
 						subMesh.startIndexLocation = previousNumberOfIndices;
 						subMesh.numberOfIndices	   = numberOfIndices - previousNumberOfIndices;
@@ -567,7 +567,7 @@ namespace
 							);
 
 							// Calculate tangent frame quaternion
-							const glm::quat tangentFrameQuaternion = RendererRuntime::Math::calculateTangentFrameQuaternion(tangentFrame);
+							const glm::quat tangentFrameQuaternion = Renderer::Math::calculateTangentFrameQuaternion(tangentFrame);
 
 							// Set our vertex buffer 16 bit QTangent
 							short* currentVertexBufferShort = reinterpret_cast<short*>(currentVertex);
@@ -595,8 +595,8 @@ namespace
 					for (unsigned int bone = 0; bone < assimpMesh.mNumBones; ++bone)
 					{
 						const aiBone* assimpBone = assimpMesh.mBones[bone];
-						const uint32_t boneIndex = skeleton.getBoneIndexByBoneId(RendererRuntime::StringId::calculateFNV(assimpBone->mName.C_Str()));
-						if (RendererRuntime::isInvalid(boneIndex))
+						const uint32_t boneIndex = skeleton.getBoneIndexByBoneId(Renderer::StringId::calculateFNV(assimpBone->mName.C_Str()));
+						if (Renderer::isInvalid(boneIndex))
 						{
 							throw std::runtime_error(std::string("Invalid Assimp bone name \"") + assimpBone->mName.C_Str() + '\"');
 						}
@@ -689,7 +689,7 @@ namespace RendererToolkit
 	bool MeshAssetCompiler::checkIfChanged(const Input& input, const Configuration& configuration) const
 	{
 		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFileByRapidJsonDocument(configuration.rapidJsonDocumentAsset);
-		return input.cacheManager.checkIfFileIsModified(configuration.rhiTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), RendererRuntime::v1Mesh::FORMAT_VERSION);
+		return input.cacheManager.checkIfFileIsModified(configuration.rhiTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), Renderer::v1Mesh::FORMAT_VERSION);
 	}
 
 	void MeshAssetCompiler::compile(const Input& input, const Configuration& configuration) const
@@ -701,9 +701,9 @@ namespace RendererToolkit
 
 		// Ask the cache manager whether or not we need to compile the source file (e.g. source changed or target not there)
 		CacheManager::CacheEntries cacheEntries;
-		if (input.cacheManager.needsToBeCompiled(configuration.rhiTarget, input.virtualAssetFilename, virtualInputFilename, virtualOutputAssetFilename, RendererRuntime::v1Mesh::FORMAT_VERSION, cacheEntries))
+		if (input.cacheManager.needsToBeCompiled(configuration.rhiTarget, input.virtualAssetFilename, virtualInputFilename, virtualOutputAssetFilename, Renderer::v1Mesh::FORMAT_VERSION, cacheEntries))
 		{
-			RendererRuntime::MemoryFile memoryFile(0, 42 * 1024);
+			Renderer::MemoryFile memoryFile(0, 42 * 1024);
 
 			// Setup "mikktspace" by Morten S. Mikkelsen for semi-standard tangent space generation (see e.g. https://wiki.blender.org/index.php/Dev:Shading/Tangent_Space_Normal_Maps for background information)
 			SMikkTSpaceInterface mikkTSpaceInterface;
@@ -781,7 +781,7 @@ namespace RendererToolkit
 				const Rhi::IndexBufferFormat::Enum indexBufferFormat = (numberOfVertices > std::numeric_limits<uint16_t>::max()) ? Rhi::IndexBufferFormat::UNSIGNED_INT : Rhi::IndexBufferFormat::UNSIGNED_SHORT;
 
 				// Is there an optional skeleton?
-				const Rhi::VertexAttributes& vertexAttributes = (numberOfBones > 0) ? RendererRuntime::MeshResource::SKINNED_VERTEX_ATTRIBUTES : RendererRuntime::MeshResource::VERTEX_ATTRIBUTES;
+				const Rhi::VertexAttributes& vertexAttributes = (numberOfBones > 0) ? Renderer::MeshResource::SKINNED_VERTEX_ATTRIBUTES : Renderer::MeshResource::VERTEX_ATTRIBUTES;
 				const uint8_t numberOfBytesPerVertex = (numberOfBones > 0) ? ::detail::NUMBER_OF_BYTES_PER_SKINNED_VERTEX : ::detail::NUMBER_OF_BYTES_PER_VERTEX;
 
 				// Allocate memory for the local vertex and index buffer data
@@ -811,7 +811,7 @@ namespace RendererToolkit
 					meshopt_setAllocator(&meshoptimizer::allocate, &meshoptimizer::deallocate);
 
 					// Handle multiple ranges for multiple draw calls
-					for (const RendererRuntime::v1Mesh::SubMesh& subMesh : subMeshes)
+					for (const Renderer::v1Mesh::SubMesh& subMesh : subMeshes)
 					{
 						uint32_t* currentIndexBufferData = &indexBufferData[0] + subMesh.startIndexLocation;
 
@@ -908,14 +908,14 @@ namespace RendererToolkit
 				}
 
 				{ // Write down the mesh header
-					RendererRuntime::v1Mesh::MeshHeader meshHeader;
+					Renderer::v1Mesh::MeshHeader meshHeader;
 
 					// Bounding
 					// -> Calculate the bounding sphere radius enclosing the bounding box (don't use the inner bounding box radius)
 					meshHeader.minimumBoundingBoxPosition = minimumBoundingBoxPosition;
 					meshHeader.maximumBoundingBoxPosition = maximumBoundingBoxPosition;
 					meshHeader.boundingSpherePosition	  = (minimumBoundingBoxPosition + maximumBoundingBoxPosition) * 0.5f;
-					meshHeader.boundingSphereRadius		  = RendererRuntime::Math::calculateInnerBoundingSphereRadius(minimumBoundingBoxPosition, maximumBoundingBoxPosition);
+					meshHeader.boundingSphereRadius		  = Renderer::Math::calculateInnerBoundingSphereRadius(minimumBoundingBoxPosition, maximumBoundingBoxPosition);
 
 					// Vertex and index data
 					meshHeader.numberOfBytesPerVertex	= numberOfBytesPerVertex;
@@ -931,7 +931,7 @@ namespace RendererToolkit
 					meshHeader.numberOfBones = skeleton.numberOfBones;
 
 					// Write down
-					memoryFile.write(&meshHeader, sizeof(RendererRuntime::v1Mesh::MeshHeader));
+					memoryFile.write(&meshHeader, sizeof(Renderer::v1Mesh::MeshHeader));
 				}
 
 				// Write down the vertex and index buffer
@@ -964,7 +964,7 @@ namespace RendererToolkit
 				memoryFile.write(vertexAttributes.attributes, sizeof(Rhi::VertexAttribute) * vertexAttributes.numberOfAttributes);
 
 				// Write down the sub-meshes
-				memoryFile.write(subMeshes.data(), sizeof(RendererRuntime::v1Mesh::SubMesh) * subMeshes.size());
+				memoryFile.write(subMeshes.data(), sizeof(Renderer::v1Mesh::SubMesh) * subMeshes.size());
 
 				// Write down the optional skeleton
 				if (skeleton.numberOfBones > 0)
@@ -988,7 +988,7 @@ namespace RendererToolkit
 			}
 
 			// Write LZ4 compressed output
-			if (!memoryFile.writeLz4CompressedDataByVirtualFilename(RendererRuntime::v1Mesh::FORMAT_TYPE, RendererRuntime::v1Mesh::FORMAT_VERSION, input.context.getFileManager(), virtualOutputAssetFilename.c_str()))
+			if (!memoryFile.writeLz4CompressedDataByVirtualFilename(Renderer::v1Mesh::FORMAT_TYPE, Renderer::v1Mesh::FORMAT_VERSION, input.context.getFileManager(), virtualOutputAssetFilename.c_str()))
 			{
 				throw std::runtime_error("Failed to write LZ4 compressed output file \"" + virtualOutputAssetFilename + '\"');
 			}

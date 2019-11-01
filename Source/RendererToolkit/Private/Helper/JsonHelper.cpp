@@ -24,8 +24,8 @@
 #include "RendererToolkit/Private/Helper/JsonHelper.h"
 #include "RendererToolkit/Private/Helper/StringHelper.h"
 
-#include <RendererRuntime/Public/Core/File/IFile.h>
-#include <RendererRuntime/Public/Core/File/IFileManager.h>
+#include <Renderer/Public/Core/File/IFile.h>
+#include <Renderer/Public/Core/File/IFileManager.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -358,7 +358,7 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	//[ Public static methods                                 ]
 	//[-------------------------------------------------------]
-	void JsonHelper::loadDocumentByFilename(const RendererRuntime::IFileManager& fileManager, const std::string& virtualFilename, const std::string& formatType, const std::string& formatVersion, rapidjson::Document& rapidJsonDocument)
+	void JsonHelper::loadDocumentByFilename(const Renderer::IFileManager& fileManager, const std::string& virtualFilename, const std::string& formatType, const std::string& formatVersion, rapidjson::Document& rapidJsonDocument)
 	{
 		// Load the whole file content as string
 		std::string fileContentAsString;
@@ -394,7 +394,7 @@ namespace RendererToolkit
 		}
 	}
 
-	void JsonHelper::saveDocumentByFilename(const RendererRuntime::IFileManager& fileManager, const std::string& virtualFilename, const std::string& formatType, const std::string& formatVersion, rapidjson::Value& rapidJsonValue)
+	void JsonHelper::saveDocumentByFilename(const Renderer::IFileManager& fileManager, const std::string& virtualFilename, const std::string& formatType, const std::string& formatVersion, rapidjson::Value& rapidJsonValue)
 	{
 		rapidjson::Document rapidJsonDocument(rapidjson::kObjectType);
 		rapidjson::Document::AllocatorType& rapidJsonAllocatorType = rapidJsonDocument.GetAllocator();
@@ -418,7 +418,7 @@ namespace RendererToolkit
 		}
 
 		// Write down the texture asset JSON file
-		RendererRuntime::IFile* file = fileManager.openFile(RendererRuntime::IFileManager::FileMode::WRITE, virtualFilename.c_str());
+		Renderer::IFile* file = fileManager.openFile(Renderer::IFileManager::FileMode::WRITE, virtualFilename.c_str());
 		if (nullptr != file)
 		{
 			const std::string jsonDocumentAsString = outputStringStream.str();
@@ -493,20 +493,20 @@ namespace RendererToolkit
 		return getAssetFile(rapidJsonDocument["Asset"]["Compiler"]["InputFile"]);
 	}
 
-	const RendererRuntime::MaterialProperty* JsonHelper::getMaterialPropertyOfUsageAndValueType(const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector, const std::string& valueAsString, RendererRuntime::MaterialProperty::Usage usage, RendererRuntime::MaterialPropertyValue::ValueType valueType)
+	const Renderer::MaterialProperty* JsonHelper::getMaterialPropertyOfUsageAndValueType(const Renderer::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector, const std::string& valueAsString, Renderer::MaterialProperty::Usage usage, Renderer::MaterialPropertyValue::ValueType valueType)
 	{
 		// The character "@" is used to reference a material property value
 		if (nullptr != sortedMaterialPropertyVector && !valueAsString.empty() && valueAsString[0] == '@')
 		{
 			// Reference a material property value
 			const std::string materialPropertyName = valueAsString.substr(1);
-			const RendererRuntime::MaterialPropertyId materialPropertyId(materialPropertyName.c_str());
+			const Renderer::MaterialPropertyId materialPropertyId(materialPropertyName.c_str());
 
 			// Figure out the material property value
-			RendererRuntime::MaterialProperties::SortedPropertyVector::const_iterator iterator = std::lower_bound(sortedMaterialPropertyVector->cbegin(), sortedMaterialPropertyVector->cend(), materialPropertyId, RendererRuntime::detail::OrderByMaterialPropertyId());
+			Renderer::MaterialProperties::SortedPropertyVector::const_iterator iterator = std::lower_bound(sortedMaterialPropertyVector->cbegin(), sortedMaterialPropertyVector->cend(), materialPropertyId, Renderer::detail::OrderByMaterialPropertyId());
 			if (iterator != sortedMaterialPropertyVector->end() && iterator->getMaterialPropertyId() == materialPropertyId)
 			{
-				const RendererRuntime::MaterialProperty& materialProperty = *iterator;
+				const Renderer::MaterialProperty& materialProperty = *iterator;
 				if (materialProperty.getUsage() == usage && materialProperty.getValueType() == valueType)
 				{
 					return &materialProperty;
@@ -527,7 +527,7 @@ namespace RendererToolkit
 		}
 	}
 
-	void JsonHelper::optionalBooleanProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, bool& value, RendererRuntime::MaterialProperty::Usage usage, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector)
+	void JsonHelper::optionalBooleanProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, bool& value, Renderer::MaterialProperty::Usage usage, const Renderer::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector)
 	{
 		if (rapidJsonValue.HasMember(propertyName))
 		{
@@ -546,7 +546,7 @@ namespace RendererToolkit
 			else
 			{
 				// Might be a material property reference, the called method automatically throws an exception if something looks odd
-				const RendererRuntime::MaterialProperty* materialProperty = getMaterialPropertyOfUsageAndValueType(sortedMaterialPropertyVector, valueAsString, usage, RendererRuntime::MaterialPropertyValue::ValueType::BOOLEAN);
+				const Renderer::MaterialProperty* materialProperty = getMaterialPropertyOfUsageAndValueType(sortedMaterialPropertyVector, valueAsString, usage, Renderer::MaterialPropertyValue::ValueType::BOOLEAN);
 				if (nullptr != materialProperty)
 				{
 					value = materialProperty->getBooleanValue();
@@ -555,7 +555,7 @@ namespace RendererToolkit
 		}
 	}
 
-	void JsonHelper::optionalBooleanProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, int& value, RendererRuntime::MaterialProperty::Usage usage, const RendererRuntime::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector)
+	void JsonHelper::optionalBooleanProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, int& value, Renderer::MaterialProperty::Usage usage, const Renderer::MaterialProperties::SortedPropertyVector* sortedMaterialPropertyVector)
 	{
 		bool booleanValue = (0 != value);
 		optionalBooleanProperty(rapidJsonValue, propertyName, booleanValue, usage, sortedMaterialPropertyVector);
@@ -984,17 +984,17 @@ namespace RendererToolkit
 		}
 	}
 
-	void JsonHelper::mandatoryStringIdProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, RendererRuntime::StringId& value)
+	void JsonHelper::mandatoryStringIdProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::StringId& value)
 	{
-		value = RendererRuntime::StringId(rapidJsonValue[propertyName].GetString());
+		value = Renderer::StringId(rapidJsonValue[propertyName].GetString());
 	}
 
 	void JsonHelper::mandatoryStringIdProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, uint32_t& value)
 	{
-		value = RendererRuntime::StringId(rapidJsonValue[propertyName].GetString());
+		value = Renderer::StringId(rapidJsonValue[propertyName].GetString());
 	}
 
-	void JsonHelper::optionalStringIdProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, RendererRuntime::StringId& value)
+	void JsonHelper::optionalStringIdProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::StringId& value)
 	{
 		if (rapidJsonValue.HasMember(propertyName))
 		{
@@ -1010,12 +1010,12 @@ namespace RendererToolkit
 		}
 	}
 
-	void JsonHelper::mandatoryAssetIdProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, RendererRuntime::AssetId& value)
+	void JsonHelper::mandatoryAssetIdProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::AssetId& value)
 	{
-		value = RendererRuntime::AssetId(rapidJsonValue[propertyName].GetString());
+		value = Renderer::AssetId(rapidJsonValue[propertyName].GetString());
 	}
 
-	void JsonHelper::optionalAssetIdProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, RendererRuntime::AssetId& value)
+	void JsonHelper::optionalAssetIdProperty(const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::AssetId& value)
 	{
 		if (rapidJsonValue.HasMember(propertyName))
 		{
@@ -1066,7 +1066,7 @@ namespace RendererToolkit
 		}
 	}
 
-	void JsonHelper::optionalCompiledAssetId(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValue, const char* propertyName, RendererRuntime::AssetId& compiledAssetId)
+	void JsonHelper::optionalCompiledAssetId(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValue, const char* propertyName, Renderer::AssetId& compiledAssetId)
 	{
 		if (rapidJsonValue.HasMember(propertyName))
 		{
@@ -1074,7 +1074,7 @@ namespace RendererToolkit
 		}
 	}
 
-	RendererRuntime::AssetId JsonHelper::getCompiledAssetId(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValue, const char* propertyName)
+	Renderer::AssetId JsonHelper::getCompiledAssetId(const IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValue, const char* propertyName)
 	{
 		return StringHelper::getAssetIdByString(rapidJsonValue[propertyName].GetString(), input);
 	}

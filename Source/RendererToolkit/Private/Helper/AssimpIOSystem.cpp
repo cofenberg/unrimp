@@ -23,8 +23,8 @@
 //[-------------------------------------------------------]
 #include "RendererToolkit/Private/Helper/AssimpIOSystem.h"
 
-#include <RendererRuntime/Public/Core/File/IFile.h>
-#include <RendererRuntime/Public/Core/File/IFileManager.h>
+#include <Renderer/Public/Core/File/IFile.h>
+#include <Renderer/Public/Core/File/IFileManager.h>
 
 #include <assimp/IOStream.hpp>
 
@@ -51,7 +51,7 @@ namespace
 		//[ Public methods                                        ]
 		//[-------------------------------------------------------]
 		public:
-			inline AssimpIOStream(const RendererRuntime::IFileManager& fileManager, RendererRuntime::IFile& file) :
+			inline AssimpIOStream(const Renderer::IFileManager& fileManager, Renderer::IFile& file) :
 				mFileManager(fileManager),
 				mFile(file),
 				mNumberOfBytes(mFile.getNumberOfBytes()),
@@ -65,7 +65,7 @@ namespace
 				mFileManager.closeFile(mFile);
 			}
 
-			[[nodiscard]] inline RendererRuntime::IFile& getFile() const
+			[[nodiscard]] inline Renderer::IFile& getFile() const
 			{
 				return mFile;
 			}
@@ -144,10 +144,10 @@ namespace
 		//[ Private data                                          ]
 		//[-------------------------------------------------------]
 		private:
-			const RendererRuntime::IFileManager& mFileManager;
-			RendererRuntime::IFile&				 mFile;
-			size_t								 mNumberOfBytes;
-			size_t								 mCurrentPosition;	///< Current position inside the file in bytes
+			const Renderer::IFileManager& mFileManager;
+			Renderer::IFile&			  mFile;
+			size_t						  mNumberOfBytes;
+			size_t						  mCurrentPosition;	///< Current position inside the file in bytes
 
 
 		};
@@ -188,7 +188,7 @@ namespace RendererToolkit
 		if (mFileManager.doesFileExist(pFile))
 		{
 			// Open file
-			RendererRuntime::IFile* file = mFileManager.openFile(RendererRuntime::IFileManager::FileMode::READ, pFile);
+			Renderer::IFile* file = mFileManager.openFile(Renderer::IFileManager::FileMode::READ, pFile);
 			if (nullptr != file)
 			{
 				return new ::detail::AssimpIOStream(mFileManager, *file);

@@ -39,9 +39,9 @@ namespace Rhi
 	class IRhi;
 	class IRenderTarget;
 }
-namespace RendererRuntime
+namespace Renderer
 {
-	class IRendererRuntime;
+	class IRenderer;
 }
 namespace RendererToolkit
 {
@@ -156,21 +156,21 @@ public:
 
 	/**
 	*  @brief
-	*    Return the renderer runtime instance
+	*    Return the renderer instance
 	*
 	*  @return
-	*    The renderer runtime instance, can be a null pointer
+	*    The renderer instance, can be a null pointer
 	*/
-	[[nodiscard]] RendererRuntime::IRendererRuntime* getRendererRuntime() const;
+	[[nodiscard]] Renderer::IRenderer* getRenderer() const;
 
 	/**
 	*  @brief
-	*    Return the renderer runtime instance
+	*    Return the renderer instance
 	*
 	*  @return
-	*    The renderer runtime instance
+	*    The renderer instance
 	*/
-	[[nodiscard]] RendererRuntime::IRendererRuntime& getRendererRuntimeSafe() const;
+	[[nodiscard]] Renderer::IRenderer& getRendererSafe() const;
 
 	/**
 	*  @brief

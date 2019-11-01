@@ -24,8 +24,8 @@
 #include "Examples/Private/Framework/ApplicationImplWindows.h"
 #include "Examples/Private/Framework/IApplication.h"
 
-#ifdef RENDERER_RUNTIME_IMGUI
-	#include <RendererRuntime/Public/DebugGui/Detail/DebugGuiManagerWindows.h>
+#ifdef RENDERER_IMGUI
+	#include <Renderer/Public/DebugGui/Detail/DebugGuiManagerWindows.h>
 #endif
 
 // Disable warnings in external headers, we can't fix them
@@ -286,8 +286,8 @@ LRESULT CALLBACK ApplicationImplWindows::wndProc(HWND hWnd, UINT message, WPARAM
 	}
 
 	// Call the Microsoft Windows callback of the debug GUI
-	#ifdef RENDERER_RUNTIME_IMGUI
-		RendererRuntime::DebugGuiManagerWindows::wndProc(hWnd, message, wParam, lParam);
+	#ifdef RENDERER_IMGUI
+		Renderer::DebugGuiManagerWindows::wndProc(hWnd, message, wParam, lParam);
 	#endif
 
 	// Evaluate message

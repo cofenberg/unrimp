@@ -33,7 +33,7 @@
 //[-------------------------------------------------------]
 //[ Global definitions                                    ]
 //[-------------------------------------------------------]
-namespace RendererRuntime
+namespace Renderer
 {
 	class IFileManager;
 	typedef StringId AssetId;	///< Asset identifier, internally just a POD "uint32_t", string ID scheme is "<project name>/<asset directory>/<asset name>"
@@ -67,10 +67,10 @@ namespace RendererToolkit
 		static std::string& trimWhitespaceCharacters(std::string& s);		// In place
 		[[nodiscard]] static bool isSourceAssetIdAsString(const std::string& sourceAssetIdAsString);
 		[[nodiscard]] static std::string getSourceAssetFilenameByString(const std::string& sourceAssetIdAsString, const IAssetCompiler::Input& input, bool supportAutomaticallyGeneratedAssetFiles = true);
-		[[nodiscard]] static RendererRuntime::AssetId getSourceAssetIdByString(const std::string& sourceAssetIdAsString, const IAssetCompiler::Input& input);
-		[[nodiscard]] static RendererRuntime::AssetId getAssetIdByString(const std::string& assetIdAsString, const IAssetCompiler::Input& input);	// Asset ID name + ID directly
-		static void readStringByFilename(const RendererRuntime::IFileManager& fileManager, const std::string& virtualFilename, std::string& string);
-		static void readStringWithStrippedCommentsByFilename(const RendererRuntime::IFileManager& fileManager, const std::string& virtualFilename, std::string& sourceCode);
+		[[nodiscard]] static Renderer::AssetId getSourceAssetIdByString(const std::string& sourceAssetIdAsString, const IAssetCompiler::Input& input);
+		[[nodiscard]] static Renderer::AssetId getAssetIdByString(const std::string& assetIdAsString, const IAssetCompiler::Input& input);	// Asset ID name + ID directly
+		static void readStringByFilename(const Renderer::IFileManager& fileManager, const std::string& virtualFilename, std::string& string);
+		static void readStringWithStrippedCommentsByFilename(const Renderer::IFileManager& fileManager, const std::string& virtualFilename, std::string& sourceCode);
 
 
 	//[-------------------------------------------------------]

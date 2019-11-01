@@ -29,7 +29,7 @@
 //[-------------------------------------------------------]
 #include "Examples/Private/Framework/IApplicationImpl.h"
 
-#include <RendererRuntime/Public/Core/Platform/WindowsHeader.h>
+#include <Renderer/Public/Core/Platform/WindowsHeader.h>
 
 
 //[-------------------------------------------------------]

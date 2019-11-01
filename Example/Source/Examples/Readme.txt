@@ -148,7 +148,7 @@ Standalone renderer examples.
 		- Vertex shader (VS), tessellation control shader (TCS), tessellation evaluation shader (TES), geometry shader (GS) and fragment shader (FS)
 		- Root signature
 		- Graphics pipeline state object (PSO)
-- Renderer runtime
+- Renderer
 	- "ImGuiExampleSelector"demonstrates:
 		- ImGui usage to select the example to start
 	- "FirstMesh" demonstrates:
@@ -175,7 +175,7 @@ Standalone renderer examples.
 
 
 == Dependencies ==
-- Renderer runtime
+- Renderer
 - Renderer toolkit for hot-reloading support
 - PhysicsFS (directly compiled and linked in)
 - Optional SDL2 ( https://www.libsdl.org/ )
@@ -193,7 +193,7 @@ For supporting a particular RHI implementations:
 - "RHI_DIRECT3D12":	  Enable Direct3D 12 RHI implementation support
 - "UNICODE":		  Enable Microsoft Windows command line Unicode support
 - "SHARED_LIBRARIES": Use RHIs via shared libraries, if this is not defined, the RHIs are statically linked
-- "RENDERER_RUNTIME": Enable renderer runtime support
+- "RENDERER":		  Enable renderer support
 - "RENDERER_TOOLKIT": Enable renderer toolkit support
 - "SDL2_FOUND":"	  Enable SDL2 ( https://www.libsdl.org/ ) support
 - Do also have a look into the RHI header file for RHI implementation preprocessor definitions

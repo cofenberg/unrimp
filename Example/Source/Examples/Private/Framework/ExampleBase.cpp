@@ -38,17 +38,17 @@ Rhi::IRenderTarget* ExampleBase::getMainRenderTarget() const
 	return (nullptr != mApplicationFrontend) ? mApplicationFrontend->getMainRenderTarget() : nullptr;
 }
 
-RendererRuntime::IRendererRuntime* ExampleBase::getRendererRuntime() const
+Renderer::IRenderer* ExampleBase::getRenderer() const
 {
-	return (nullptr != mApplicationFrontend) ? mApplicationFrontend->getRendererRuntime() : nullptr;
+	return (nullptr != mApplicationFrontend) ? mApplicationFrontend->getRenderer() : nullptr;
 }
 
-RendererRuntime::IRendererRuntime& ExampleBase::getRendererRuntimeSafe() const
+Renderer::IRenderer& ExampleBase::getRendererSafe() const
 {
 	ASSERT(nullptr != mApplicationFrontend);
-	RendererRuntime::IRendererRuntime* rendererRuntime = mApplicationFrontend->getRendererRuntime();
-	ASSERT(nullptr != rendererRuntime);
-	return *rendererRuntime;
+	Renderer::IRenderer* renderer = mApplicationFrontend->getRenderer();
+	ASSERT(nullptr != renderer);
+	return *renderer;
 }
 
 RendererToolkit::IRendererToolkit* ExampleBase::getRendererToolkit()

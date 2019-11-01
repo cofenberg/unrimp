@@ -23,9 +23,9 @@
 //[-------------------------------------------------------]
 #include "Examples/Private/Framework/ApplicationImplSdl2.h"
 #include "Examples/Private/Framework/IApplication.h"
-#include "Examples/Private/Framework/IApplicationRendererRuntime.h"
+#include "Examples/Private/Framework/IApplicationRenderer.h"
 
-#ifdef RENDERER_RUNTIME_IMGUI
+#ifdef RENDERER_IMGUI
 	#include <imgui/imgui.h>
 #endif
 
@@ -46,7 +46,7 @@ ApplicationImplSdl2::ApplicationImplSdl2(IApplication& application, const char* 
 	mApplication(&application),
 	mSdlWindow(nullptr),
 	mFirstUpdate(true)
-	#ifdef RENDERER_RUNTIME_IMGUI
+	#ifdef RENDERER_IMGUI
 		, mImGuiMousePressed{ false, false, false }
 	#endif
 {
@@ -94,7 +94,7 @@ bool ApplicationImplSdl2::processMessages()
 			// Show the created SDL2 window
 			SDL_ShowWindow(mSdlWindow);
 		}
-		#ifdef RENDERER_RUNTIME_IMGUI
+		#ifdef RENDERER_IMGUI
 			initializeImGuiKeyMap();
 		#endif
 		mFirstUpdate = false;
@@ -138,14 +138,14 @@ bool ApplicationImplSdl2::processMessages()
 				}
 				break;
 		}
-		#ifdef RENDERER_RUNTIME_IMGUI
+		#ifdef RENDERER_IMGUI
 			if (ImGui::GetCurrentContext() != nullptr)
 			{
 				processImGuiSdl2Event(sdlEvent);
 			}
 		#endif
 	}
-	#ifdef RENDERER_RUNTIME_IMGUI
+	#ifdef RENDERER_IMGUI
 		if (ImGui::GetCurrentContext() != nullptr)
 		{
 			updateImGuiMousePositionAndButtons();
@@ -264,7 +264,7 @@ void ApplicationImplSdl2::showUrgentMessage(const char* message, const char* tit
 //[ Private methods                                       ]
 //[-------------------------------------------------------]
 // Basing on https://github.com/ocornut/imgui/blob/master/examples/imgui_impl_sdl.cpp
-#ifdef RENDERER_RUNTIME_IMGUI
+#ifdef RENDERER_IMGUI
 	void ApplicationImplSdl2::initializeImGuiKeyMap()
 	{
 		// Keyboard mapping: ImGui will use those indices to peek into the "ImGuiIO::KeyDown[]" array that we will update during the application lifetime

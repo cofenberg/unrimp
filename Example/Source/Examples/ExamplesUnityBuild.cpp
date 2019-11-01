@@ -47,18 +47,18 @@
 	#include "Private/Advanced/InstancedCubes/InstancedCubes.cpp"
 	#include "Private/Advanced/IcosahedronTessellation/IcosahedronTessellation.cpp"
 
-// Renderer runtime
-#ifdef RENDERER_RUNTIME
-	#ifdef RENDERER_RUNTIME_IMGUI
-		#include "Private/Runtime/ImGuiExampleSelector/ImGuiExampleSelector.cpp"
+// Renderer
+#ifdef RENDERER
+	#ifdef RENDERER_IMGUI
+		#include "Private/Renderer/ImGuiExampleSelector/ImGuiExampleSelector.cpp"
 	#endif
-	#include "Private/Runtime/FirstMesh/FirstMesh.cpp"
-	#include "Private/Runtime/FirstCompositor/FirstCompositor.cpp"
-	#include "Private/Runtime/FirstCompositor/CompositorInstancePassFirst.cpp"
-	#include "Private/Runtime/FirstCompositor/CompositorPassFactoryFirst.cpp"
-	#include "Private/Runtime/FirstScene/FirstScene.cpp"
-	#include "Private/Runtime/FirstScene/FreeCameraController.cpp"
-	#ifdef RENDERER_RUNTIME_OPENVR
-		#include "Private/Runtime/FirstScene/VrController.cpp"
+	#include "Private/Renderer/FirstMesh/FirstMesh.cpp"
+	#include "Private/Renderer/FirstCompositor/FirstCompositor.cpp"
+	#include "Private/Renderer/FirstCompositor/CompositorInstancePassFirst.cpp"
+	#include "Private/Renderer/FirstCompositor/CompositorPassFactoryFirst.cpp"
+	#include "Private/Renderer/FirstScene/FirstScene.cpp"
+	#include "Private/Renderer/FirstScene/FreeCameraController.cpp"
+	#ifdef RENDERER_OPENVR
+		#include "Private/Renderer/FirstScene/VrController.cpp"
 	#endif
 #endif

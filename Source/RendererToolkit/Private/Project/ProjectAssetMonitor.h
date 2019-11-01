@@ -49,9 +49,9 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace RendererRuntime
+namespace Renderer
 {
-	class IRendererRuntime;
+	class IRenderer;
 }
 namespace RendererToolkit
 {
@@ -92,7 +92,7 @@ namespace RendererToolkit
 		*  @brief
 		*    Constructor
 		*/
-		ProjectAssetMonitor(ProjectImpl& projectImpl, RendererRuntime::IRendererRuntime& rendererRuntime, const std::string& rhiTarget);
+		ProjectAssetMonitor(ProjectImpl& projectImpl, Renderer::IRenderer& renderer, const std::string& rhiTarget);
 
 		/**
 		*  @brief
@@ -124,11 +124,11 @@ namespace RendererToolkit
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		ProjectImpl&					   mProjectImpl;
-		RendererRuntime::IRendererRuntime& mRendererRuntime;
-		std::string						   mRhiTarget;
-		std::atomic<bool>				   mShutdownThread;
-		std::thread						   mThread;
+		ProjectImpl&		 mProjectImpl;
+		Renderer::IRenderer& mRenderer;
+		std::string			 mRhiTarget;
+		std::atomic<bool>	 mShutdownThread;
+		std::thread			 mThread;
 
 
 	};

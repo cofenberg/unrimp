@@ -28,11 +28,11 @@
 #include "RendererToolkit/Private/Helper/JsonHelper.h"
 #include "RendererToolkit/Private/Context.h"
 
-#include <RendererRuntime/Public/Asset/AssetPackage.h>
-#include <RendererRuntime/Public/Core/File/MemoryFile.h>
-#include <RendererRuntime/Public/Core/File/FileSystemHelper.h>
-#include <RendererRuntime/Public/Resource/ShaderBlueprint/Cache/ShaderProperties.h>
-#include <RendererRuntime/Public/Resource/MaterialBlueprint/Loader/MaterialBlueprintFileFormat.h>
+#include <Renderer/Public/Asset/AssetPackage.h>
+#include <Renderer/Public/Core/File/MemoryFile.h>
+#include <Renderer/Public/Core/File/FileSystemHelper.h>
+#include <Renderer/Public/Resource/ShaderBlueprint/Cache/ShaderProperties.h>
+#include <Renderer/Public/Resource/MaterialBlueprint/Loader/MaterialBlueprintFileFormat.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -62,7 +62,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
-		void setMaterialBlueprintHeaderNumberOfResourcesByResourceType(const rapidjson::Value& rapidJsonValueResourceType, RendererRuntime::v1MaterialBlueprint::MaterialBlueprintHeader& materialBlueprintHeader)
+		void setMaterialBlueprintHeaderNumberOfResourcesByResourceType(const rapidjson::Value& rapidJsonValueResourceType, Renderer::v1MaterialBlueprint::MaterialBlueprintHeader& materialBlueprintHeader)
 		{
 			const char* valueAsString = rapidJsonValueResourceType.GetString();
 
@@ -91,7 +91,7 @@ namespace
 			#undef ELSE_IF_VALUE
 		}
 
-		void setMaterialBlueprintHeaderNumberOfResourcesByResourceGroups(const rapidjson::Value& rapidJsonValueResourceGroups, RendererRuntime::v1MaterialBlueprint::MaterialBlueprintHeader& materialBlueprintHeader)
+		void setMaterialBlueprintHeaderNumberOfResourcesByResourceGroups(const rapidjson::Value& rapidJsonValueResourceGroups, Renderer::v1MaterialBlueprint::MaterialBlueprintHeader& materialBlueprintHeader)
 		{
 			// Initialize number of resources
 			materialBlueprintHeader.numberOfUniformBuffers = materialBlueprintHeader.numberOfTextureBuffers = materialBlueprintHeader.numberOfStructuredBuffers = materialBlueprintHeader.numberOfSamplerStates = materialBlueprintHeader.numberOfTextures = 0;
@@ -156,7 +156,7 @@ namespace RendererToolkit
 		std::vector<std::string> virtualDependencyFilenames;
 		const std::string virtualInputFilename = input.virtualAssetInputDirectory + '/' + JsonHelper::getAssetInputFileByRapidJsonDocument(configuration.rapidJsonDocumentAsset);
 		JsonMaterialBlueprintHelper::getDependencyFiles(input, virtualInputFilename, virtualDependencyFilenames);
-		return (input.cacheManager.checkIfFileIsModified(configuration.rhiTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), RendererRuntime::v1MaterialBlueprint::FORMAT_VERSION) || input.cacheManager.dependencyFilesChanged(virtualDependencyFilenames));
+		return (input.cacheManager.checkIfFileIsModified(configuration.rhiTarget, input.virtualAssetFilename, {virtualInputFilename}, getVirtualOutputAssetFilename(input, configuration), Renderer::v1MaterialBlueprint::FORMAT_VERSION) || input.cacheManager.dependencyFilesChanged(virtualDependencyFilenames));
 	}
 
 	void MaterialBlueprintAssetCompiler::compile(const Input& input, const Configuration& configuration) const
@@ -179,9 +179,9 @@ namespace RendererToolkit
 
 		// Ask the cache manager whether or not we need to compile the source file (e.g. source changed or target not there)
 		CacheManager::CacheEntries cacheEntries;
-		if (input.cacheManager.needsToBeCompiled(configuration.rhiTarget, input.virtualAssetFilename, virtualInputFilename, virtualOutputAssetFilename, RendererRuntime::v1MaterialBlueprint::FORMAT_VERSION, cacheEntries) || input.cacheManager.dependencyFilesChanged(virtualDependencyFilenames))
+		if (input.cacheManager.needsToBeCompiled(configuration.rhiTarget, input.virtualAssetFilename, virtualInputFilename, virtualOutputAssetFilename, Renderer::v1MaterialBlueprint::FORMAT_VERSION, cacheEntries) || input.cacheManager.dependencyFilesChanged(virtualDependencyFilenames))
 		{
-			RendererRuntime::MemoryFile memoryFile(0, 4096);
+			Renderer::MemoryFile memoryFile(0, 4096);
 
 			{ // Material blueprint
 				// Parse JSON
@@ -197,11 +197,11 @@ namespace RendererToolkit
 				const rapidjson::Value& rapidJsonValueResourceGroups		 = rapidJsonValueMaterialBlueprintAsset["ResourceGroups"];
 
 				// Gather all material properties
-				RendererRuntime::MaterialProperties::SortedPropertyVector sortedMaterialPropertyVector;
-				RendererRuntime::ShaderProperties visualImportanceOfShaderProperties;
-				RendererRuntime::ShaderProperties maximumIntegerValueOfShaderProperties;
-				const RendererRuntime::ShaderProperties::SortedPropertyVector& visualImportanceOfShaderPropertiesVector = visualImportanceOfShaderProperties.getSortedPropertyVector();
-				const RendererRuntime::ShaderProperties::SortedPropertyVector& maximumIntegerValueOfShaderPropertiesVector = maximumIntegerValueOfShaderProperties.getSortedPropertyVector();
+				Renderer::MaterialProperties::SortedPropertyVector sortedMaterialPropertyVector;
+				Renderer::ShaderProperties visualImportanceOfShaderProperties;
+				Renderer::ShaderProperties maximumIntegerValueOfShaderProperties;
+				const Renderer::ShaderProperties::SortedPropertyVector& visualImportanceOfShaderPropertiesVector = visualImportanceOfShaderProperties.getSortedPropertyVector();
+				const Renderer::ShaderProperties::SortedPropertyVector& maximumIntegerValueOfShaderPropertiesVector = maximumIntegerValueOfShaderProperties.getSortedPropertyVector();
 				if (rapidJsonValueProperties.IsObject())
 				{
 					JsonMaterialBlueprintHelper::readProperties(input, rapidJsonValueProperties, sortedMaterialPropertyVector, visualImportanceOfShaderProperties, maximumIntegerValueOfShaderProperties, false, true, false);
@@ -210,14 +210,14 @@ namespace RendererToolkit
 					if (!allowCrazyNumberOfShaderCombinations)
 					{
 						uint32_t numberOfShaderCombinationProperties = 0;
-						for (const RendererRuntime::MaterialProperty& materialProperty : sortedMaterialPropertyVector)
+						for (const Renderer::MaterialProperty& materialProperty : sortedMaterialPropertyVector)
 						{
-							if (materialProperty.getUsage() == RendererRuntime::MaterialProperty::Usage::SHADER_COMBINATION)
+							if (materialProperty.getUsage() == Renderer::MaterialProperty::Usage::SHADER_COMBINATION)
 							{
 								++numberOfShaderCombinationProperties;
 							}
 						}
-						static constexpr uint32_t MAXIMUM_NUMBER_OF_SHADER_COMBINATIONS = 6;	// This is no technical limit. See "RendererRuntime::MaterialBlueprintResource" class documentation regarding shader combination explosion for background information.
+						static constexpr uint32_t MAXIMUM_NUMBER_OF_SHADER_COMBINATIONS = 6;	// This is no technical limit. See "Renderer::MaterialBlueprintResource" class documentation regarding shader combination explosion for background information.
 						if (numberOfShaderCombinationProperties > MAXIMUM_NUMBER_OF_SHADER_COMBINATIONS)
 						{
 							throw std::runtime_error("Material blueprint asset \"" + virtualInputFilename + "\" is using " + std::to_string(numberOfShaderCombinationProperties) + " shader combination material properties. In order to prevent an shader combination explosion, only " + std::to_string(MAXIMUM_NUMBER_OF_SHADER_COMBINATIONS) + " shader combination material properties are allowed. If you know what you're doing, the child protection can be disabled by using \"AllowCrazyNumberOfShaderCombinations\"=\"TRUE\" inside the material blueprint asset compiler configuration.");
@@ -226,30 +226,30 @@ namespace RendererToolkit
 				}
 
 				{ // Write down the material blueprint header
-					RendererRuntime::v1MaterialBlueprint::MaterialBlueprintHeader materialBlueprintHeader;
+					Renderer::v1MaterialBlueprint::MaterialBlueprintHeader materialBlueprintHeader;
 					materialBlueprintHeader.numberOfProperties							= rapidJsonValueProperties.MemberCount();
 					materialBlueprintHeader.numberOfShaderCombinationProperties			= static_cast<uint32_t>(visualImportanceOfShaderPropertiesVector.size());
 					materialBlueprintHeader.numberOfIntegerShaderCombinationProperties	= static_cast<uint32_t>(maximumIntegerValueOfShaderPropertiesVector.size());	// Each integer shader combination property must have a defined maximum value
 					::detail::setMaterialBlueprintHeaderNumberOfResourcesByResourceGroups(rapidJsonValueResourceGroups, materialBlueprintHeader);
-					memoryFile.write(&materialBlueprintHeader, sizeof(RendererRuntime::v1MaterialBlueprint::MaterialBlueprintHeader));
+					memoryFile.write(&materialBlueprintHeader, sizeof(Renderer::v1MaterialBlueprint::MaterialBlueprintHeader));
 				}
 
 				// Write down all material properties
 				if (!sortedMaterialPropertyVector.empty())
 				{
-					memoryFile.write(sortedMaterialPropertyVector.data(), sizeof(RendererRuntime::MaterialProperty) * sortedMaterialPropertyVector.size());
+					memoryFile.write(sortedMaterialPropertyVector.data(), sizeof(Renderer::MaterialProperty) * sortedMaterialPropertyVector.size());
 				}
 
 				// Write down visual importance of shader properties
 				if (!visualImportanceOfShaderPropertiesVector.empty())
 				{
-					memoryFile.write(visualImportanceOfShaderPropertiesVector.data(), sizeof(RendererRuntime::ShaderProperties::Property) * visualImportanceOfShaderPropertiesVector.size());
+					memoryFile.write(visualImportanceOfShaderPropertiesVector.data(), sizeof(Renderer::ShaderProperties::Property) * visualImportanceOfShaderPropertiesVector.size());
 				}
 
 				// Write down maximum integer value of shader properties
 				if (!maximumIntegerValueOfShaderPropertiesVector.empty())
 				{
-					memoryFile.write(maximumIntegerValueOfShaderPropertiesVector.data(), sizeof(RendererRuntime::ShaderProperties::Property) * maximumIntegerValueOfShaderPropertiesVector.size());
+					memoryFile.write(maximumIntegerValueOfShaderPropertiesVector.data(), sizeof(Renderer::ShaderProperties::Property) * maximumIntegerValueOfShaderPropertiesVector.size());
 				}
 
 				// A material blueprint can have a compute or a graphics pipeline state, but never both at one and the same time
@@ -291,7 +291,7 @@ namespace RendererToolkit
 			}
 
 			// Write LZ4 compressed output
-			if (!memoryFile.writeLz4CompressedDataByVirtualFilename(RendererRuntime::v1MaterialBlueprint::FORMAT_TYPE, RendererRuntime::v1MaterialBlueprint::FORMAT_VERSION, input.context.getFileManager(), virtualOutputAssetFilename.c_str()))
+			if (!memoryFile.writeLz4CompressedDataByVirtualFilename(Renderer::v1MaterialBlueprint::FORMAT_TYPE, Renderer::v1MaterialBlueprint::FORMAT_VERSION, input.context.getFileManager(), virtualOutputAssetFilename.c_str()))
 			{
 				throw std::runtime_error("Failed to write LZ4 compressed output file \"" + virtualOutputAssetFilename + '\"');
 			}

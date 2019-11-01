@@ -27,7 +27,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include <RendererRuntime/Public/Core/Platform/PlatformTypes.h>
+#include <Renderer/Public/Core/Platform/PlatformTypes.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -47,7 +47,7 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace RendererRuntime
+namespace Renderer
 {
 	class IFileManager;
 }
@@ -71,7 +71,7 @@ namespace RendererToolkit
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline explicit AssimpIOSystem(RendererRuntime::IFileManager& fileManager) :
+		inline explicit AssimpIOSystem(Renderer::IFileManager& fileManager) :
 			mFileManager(fileManager)
 		{
 			// Nothing here
@@ -110,7 +110,7 @@ namespace RendererToolkit
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		RendererRuntime::IFileManager& mFileManager;
+		Renderer::IFileManager& mFileManager;
 
 
 	};

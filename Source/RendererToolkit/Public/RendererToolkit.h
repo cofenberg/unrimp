@@ -49,9 +49,9 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
 //[-------------------------------------------------------]
-namespace RendererRuntime
+namespace Renderer
 {
-	class IRendererRuntime;
+	class IRenderer;
 	typedef const char* AbsoluteDirectoryName;
 }
 namespace RendererToolkit
@@ -100,10 +100,10 @@ namespace RendererToolkit
 	public:
 		virtual ~IProject() override;
 	public:
-		virtual void load(RendererRuntime::AbsoluteDirectoryName absoluteProjectDirectoryName) = 0;
+		virtual void load(Renderer::AbsoluteDirectoryName absoluteProjectDirectoryName) = 0;
 		virtual void importAssets(const AbsoluteFilenames& absoluteSourceFilenames, const std::string& targetAssetPackageName, const std::string& targetDirectoryName = "Imported") = 0;
 		virtual void compileAllAssets(const char* rhiTarget) = 0;
-		virtual void startupAssetMonitor(RendererRuntime::IRendererRuntime& rendererRuntime, const char* rhiTarget) = 0;
+		virtual void startupAssetMonitor(Renderer::IRenderer& renderer, const char* rhiTarget) = 0;
 		virtual void shutdownAssetMonitor() = 0;
 	protected:
 		IProject();
