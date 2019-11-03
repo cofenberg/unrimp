@@ -123,7 +123,7 @@ void FirstComputeShader::onInitialization()
 		Rhi::IResource* samplerStateResource = nullptr;
 		{
 			Rhi::SamplerState samplerState = Rhi::ISamplerState::getDefaultSamplerState();
-			samplerState.maxLOD = 0.0f;
+			samplerState.maxLod = 0.0f;
 			samplerStateResource = rhi->createSamplerState(samplerState);
 			mGraphicsSamplerStateGroup = mGraphicsRootSignature->createResourceGroup(1, 1, &samplerStateResource);
 		}

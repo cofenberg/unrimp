@@ -124,7 +124,7 @@
 					"BaseShaderRegister": "0",
 					"Filter": "MIN_MAG_LINEAR_MIP_POINT",
 					"MaxAnisotropy": "1",
-					"MaxLOD": "0.0"
+					"MaxLod": "0.0"
 				}
 			}
 		}

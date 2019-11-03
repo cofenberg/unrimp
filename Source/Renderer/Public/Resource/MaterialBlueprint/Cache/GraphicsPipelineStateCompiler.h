@@ -208,7 +208,7 @@ namespace Renderer
 		void flushQueue(std::mutex& mutex, const CompilerRequests& compilerRequests);
 		void builderThreadWorker();
 		void compilerThreadWorker();
-		[[nodiscard]] Rhi::IGraphicsPipelineState* createGraphicsPipelineState(const Renderer::MaterialBlueprintResource& materialBlueprintResource, uint32_t serializedGraphicsPipelineStateHash, Rhi::IGraphicsProgram& graphicsProgram) const;
+		[[nodiscard]] Rhi::IGraphicsPipelineState* createGraphicsPipelineState(const MaterialBlueprintResource& materialBlueprintResource, uint32_t serializedGraphicsPipelineStateHash, Rhi::IGraphicsProgram& graphicsProgram) const;
 
 
 	//[-------------------------------------------------------]

@@ -5007,14 +5007,14 @@ namespace Direct3D9Rhi
 			ISamplerState(direct3D9Rhi),
 			mDirect3D9MagFilterMode(Mapping::getDirect3D9MagFilterMode(direct3D9Rhi.getContext(), samplerState.filter)),
 			mDirect3D9MinFilterMode(Mapping::getDirect3D9MinFilterMode(direct3D9Rhi.getContext(), samplerState.filter)),
-			mDirect3D9MipFilterMode((0.0f == samplerState.maxLOD) ? D3DTEXF_NONE : Mapping::getDirect3D9MipFilterMode(direct3D9Rhi.getContext(), samplerState.filter)),	// In case "Rhi::SamplerState::maxLOD" is zero, disable mipmapping in order to ensure a correct behaviour when using Direct3D 9, float equal check is valid in here
+			mDirect3D9MipFilterMode((0.0f == samplerState.maxLod) ? D3DTEXF_NONE : Mapping::getDirect3D9MipFilterMode(direct3D9Rhi.getContext(), samplerState.filter)),	// In case "Rhi::SamplerState::maxLod" is zero, disable mipmapping in order to ensure a correct behaviour when using Direct3D 9, float equal check is valid in here
 			mDirect3D9AddressModeU(Mapping::getDirect3D9TextureAddressMode(samplerState.addressU)),
 			mDirect3D9AddressModeV(Mapping::getDirect3D9TextureAddressMode(samplerState.addressV)),
 			mDirect3D9AddressModeW(Mapping::getDirect3D9TextureAddressMode(samplerState.addressW)),
-			mDirect3D9MipLODBias(*(reinterpret_cast<const DWORD*>(&samplerState.mipLODBias))),	// Direct3D 9 type is float, but has to be handed over by using DWORD
+			mDirect3D9MipLodBias(*(reinterpret_cast<const DWORD*>(&samplerState.mipLodBias))),	// Direct3D 9 type is float, but has to be handed over by using DWORD
 			mDirect3D9MaxAnisotropy(samplerState.maxAnisotropy),
 			mDirect3DBorderColor(0),	// Set below
-			mDirect3DMaxMipLevel((samplerState.minLOD > 0.0f) ? static_cast<unsigned long>(samplerState.minLOD) : 0)	// Direct3D 9 type is unsigned long, lookout the Direct3D 9 name is twisted and implies "Rhi::SamplerState::maxLOD" but it's really "Rhi::SamplerState::minLOD"
+			mDirect3DMaxMipLevel((samplerState.minLod > 0.0f) ? static_cast<unsigned long>(samplerState.minLod) : 0)	// Direct3D 9 type is unsigned long, lookout the Direct3D 9 name is twisted and implies "Rhi::SamplerState::maxLod" but it's really "Rhi::SamplerState::minLod"
 		{
 			// Sanity check
 			RHI_ASSERT(direct3D9Rhi.getContext(), samplerState.maxAnisotropy <= direct3D9Rhi.getCapabilities().maximumAnisotropy, "Maximum Direct3D 9 anisotropy value violated")
@@ -5077,8 +5077,8 @@ namespace Direct3D9Rhi
 			// Rhi::SamplerState::addressW
 			FAILED_DEBUG_BREAK(direct3DDevice9.SetSamplerState(sampler, D3DSAMP_ADDRESSW, mDirect3D9AddressModeW));
 
-			// Rhi::SamplerState::mipLODBias
-			FAILED_DEBUG_BREAK(direct3DDevice9.SetSamplerState(sampler, D3DSAMP_MIPMAPLODBIAS, mDirect3D9MipLODBias));
+			// Rhi::SamplerState::mipLodBias
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetSamplerState(sampler, D3DSAMP_MIPMAPLODBIAS, mDirect3D9MipLodBias));
 
 			// Rhi::SamplerState::maxAnisotropy
 			FAILED_DEBUG_BREAK(direct3DDevice9.SetSamplerState(sampler, D3DSAMP_MAXANISOTROPY, mDirect3D9MaxAnisotropy));
@@ -5089,10 +5089,10 @@ namespace Direct3D9Rhi
 			// Rhi::SamplerState::borderColor[4]
 			FAILED_DEBUG_BREAK(direct3DDevice9.SetSamplerState(sampler, D3DSAMP_BORDERCOLOR, mDirect3DBorderColor));
 
-			// Rhi::SamplerState::minLOD
+			// Rhi::SamplerState::minLod
 			FAILED_DEBUG_BREAK(direct3DDevice9.SetSamplerState(sampler, D3DSAMP_MAXMIPLEVEL, mDirect3DMaxMipLevel));
 
-			// Rhi::SamplerState::maxLOD
+			// Rhi::SamplerState::maxLod
 			// -> Not available in Direct3D 9
 		}
 
@@ -5137,7 +5137,7 @@ namespace Direct3D9Rhi
 		DWORD mDirect3D9AddressModeU;	///< Direct3D 9 u address mode
 		DWORD mDirect3D9AddressModeV;	///< Direct3D 9 v address mode
 		DWORD mDirect3D9AddressModeW;	///< Direct3D 9 w address mode
-		DWORD mDirect3D9MipLODBias;		///< Direct3D 9 mipmap LOD bias
+		DWORD mDirect3D9MipLodBias;		///< Direct3D 9 mipmap LOD bias
 		DWORD mDirect3D9MaxAnisotropy;	///< Direct3D 9 maximum anisotropy
 		DWORD mDirect3DBorderColor;		///< Direct3D 9 border color
 		DWORD mDirect3DMaxMipLevel;		///< Direct3D 9 maximum mipmap level

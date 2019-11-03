@@ -354,7 +354,7 @@ namespace Renderer
 		}
 	}
 
-	Rhi::IComputePipelineState* ComputePipelineStateCompiler::createComputePipelineState(const Renderer::MaterialBlueprintResource& materialBlueprintResource, Rhi::IShader& shader) const
+	Rhi::IComputePipelineState* ComputePipelineStateCompiler::createComputePipelineState(const MaterialBlueprintResource& materialBlueprintResource, Rhi::IShader& shader) const
 	{
 		// Create the compute pipeline state object (PSO)
 		const Rhi::IRootSignaturePtr& rootSignaturePtr = materialBlueprintResource.getRootSignaturePtr();

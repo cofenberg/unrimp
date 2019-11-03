@@ -187,7 +187,7 @@ namespace Renderer
 		void flushQueue(std::mutex& mutex, const CompilerRequests& compilerRequests);
 		void builderThreadWorker();
 		void compilerThreadWorker();
-		[[nodiscard]] Rhi::IComputePipelineState* createComputePipelineState(const Renderer::MaterialBlueprintResource& materialBlueprintResource, Rhi::IShader& shader) const;
+		[[nodiscard]] Rhi::IComputePipelineState* createComputePipelineState(const MaterialBlueprintResource& materialBlueprintResource, Rhi::IShader& shader) const;
 
 
 	//[-------------------------------------------------------]

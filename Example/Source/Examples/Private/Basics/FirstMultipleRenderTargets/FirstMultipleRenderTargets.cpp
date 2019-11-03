@@ -77,7 +77,7 @@ void FirstMultipleRenderTargets::onInitialization()
 			{
 				Rhi::SamplerState samplerState = Rhi::ISamplerState::getDefaultSamplerState();
 				samplerState.filter = Rhi::FilterMode::MIN_MAG_MIP_POINT;
-				samplerState.maxLOD = 0.0f;
+				samplerState.maxLod = 0.0f;
 				samplerStateResource = rhi->createSamplerState(samplerState);
 				mSamplerStateGroup = mRootSignature->createResourceGroup(1, 1, &samplerStateResource);
 			}

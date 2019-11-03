@@ -482,14 +482,14 @@ namespace Renderer
 		}
 	}
 
-	Rhi::IGraphicsPipelineState* GraphicsPipelineStateCompiler::createGraphicsPipelineState(const Renderer::MaterialBlueprintResource& materialBlueprintResource, uint32_t serializedGraphicsPipelineStateHash, Rhi::IGraphicsProgram& graphicsProgram) const
+	Rhi::IGraphicsPipelineState* GraphicsPipelineStateCompiler::createGraphicsPipelineState(const MaterialBlueprintResource& materialBlueprintResource, uint32_t serializedGraphicsPipelineStateHash, Rhi::IGraphicsProgram& graphicsProgram) const
 	{
 		// Start with the graphics pipeline state of the material blueprint resource, then copy over serialized graphics pipeline state
 		Rhi::GraphicsPipelineState graphicsPipelineState = materialBlueprintResource.getGraphicsPipelineState();
-		materialBlueprintResource.getResourceManager<Renderer::MaterialBlueprintResourceManager>().applySerializedGraphicsPipelineState(serializedGraphicsPipelineStateHash, graphicsPipelineState);
+		materialBlueprintResource.getResourceManager<MaterialBlueprintResourceManager>().applySerializedGraphicsPipelineState(serializedGraphicsPipelineStateHash, graphicsPipelineState);
 
 		// Setup the dynamic part of the pipeline state
-		const Renderer::IRenderer& renderer = materialBlueprintResource.getResourceManager<Renderer::MaterialBlueprintResourceManager>().getRenderer();
+		const IRenderer& renderer = materialBlueprintResource.getResourceManager<MaterialBlueprintResourceManager>().getRenderer();
 		const Rhi::IRootSignaturePtr& rootSignaturePtr = materialBlueprintResource.getRootSignaturePtr();
 		graphicsPipelineState.rootSignature	   = rootSignaturePtr;
 		graphicsPipelineState.graphicsProgram  = &graphicsProgram;

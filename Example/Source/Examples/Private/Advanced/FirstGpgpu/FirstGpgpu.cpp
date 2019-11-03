@@ -150,7 +150,7 @@ void FirstGpgpu::onInitialization()
 	Rhi::IResource* samplerStateResource = nullptr;
 	{
 		Rhi::SamplerState samplerState = Rhi::ISamplerState::getDefaultSamplerState();
-		samplerState.maxLOD = 0.0f;
+		samplerState.maxLod = 0.0f;
 		samplerStateResource = mRhi->createSamplerState(samplerState);
 		mSamplerStateGroup = mRootSignature->createResourceGroup(1, 1, &samplerStateResource);
 	}

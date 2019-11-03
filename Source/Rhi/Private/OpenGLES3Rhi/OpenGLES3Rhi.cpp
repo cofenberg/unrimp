@@ -6716,16 +6716,16 @@ namespace OpenGLES3Rhi
 		SamplerState(OpenGLES3Rhi& openGLES3Rhi, const Rhi::SamplerState& samplerState) :
 			ISamplerState(openGLES3Rhi),
 			mOpenGLMagFilterMode(Mapping::getOpenGLES3MagFilterMode(openGLES3Rhi.getContext(), samplerState.filter)),
-			mOpenGLMinFilterMode(Mapping::getOpenGLES3MinFilterMode(openGLES3Rhi.getContext(), samplerState.filter, samplerState.maxLOD > 0.0f)),
+			mOpenGLMinFilterMode(Mapping::getOpenGLES3MinFilterMode(openGLES3Rhi.getContext(), samplerState.filter, samplerState.maxLod > 0.0f)),
 			mOpenGLTextureAddressModeS(Mapping::getOpenGLES3TextureAddressMode(samplerState.addressU)),
 			mOpenGLTextureAddressModeT(Mapping::getOpenGLES3TextureAddressMode(samplerState.addressV)),
 			mOpenGLTextureAddressModeR(Mapping::getOpenGLES3TextureAddressMode(samplerState.addressW)),
-			mMipLODBias(samplerState.mipLODBias),
+			mMipLodBias(samplerState.mipLodBias),
 			mMaxAnisotropy(static_cast<float>(samplerState.maxAnisotropy)),	// Maximum anisotropy is "uint32_t" in Direct3D 10 & 11
 			mOpenGLCompareMode(Mapping::getOpenGLES3CompareMode(samplerState.filter)),
 			mOpenGLComparisonFunc(Mapping::getOpenGLES3ComparisonFunc(samplerState.comparisonFunc)),
-			mMinLOD(samplerState.minLOD),
-			mMaxLOD(samplerState.maxLOD)
+			mMinLod(samplerState.minLod),
+			mMaxLod(samplerState.maxLod)
 		{
 			// Sanity check
 			RHI_ASSERT(openGLES3Rhi.getContext(), samplerState.maxAnisotropy <= openGLES3Rhi.getCapabilities().maximumAnisotropy, "Maximum OpenGL ES 3 anisotropy value violated")
@@ -6766,8 +6766,8 @@ namespace OpenGLES3Rhi
 			//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, mOpenGLTextureAddressModeR);
 
 			// TODO(co) Complete me
-			// Rhi::SamplerState::mipLODBias
-			glSamplerParameterf(mOpenGLSampler, GL_TEXTURE_LOD_BIAS, samplerState.mipLODBias);
+			// Rhi::SamplerState::mipLodBias
+			glSamplerParameterf(mOpenGLSampler, GL_TEXTURE_LOD_BIAS, samplerState.mipLodBias);
 
 			// Rhi::SamplerState::maxAnisotropy
 			glSamplerParameterf(mOpenGLSampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, samplerState.maxAnisotropy);
@@ -6779,11 +6779,11 @@ namespace OpenGLES3Rhi
 			// Rhi::SamplerState::borderColor[4]
 			glSamplerParameterfv(mOpenGLSampler, GL_TEXTURE_BORDER_COLOR, samplerState.borderColor);
 
-			// Rhi::SamplerState::minLOD
-			glSamplerParameterf(mOpenGLSampler, GL_TEXTURE_MIN_LOD, samplerState.minLOD);
+			// Rhi::SamplerState::minLod
+			glSamplerParameterf(mOpenGLSampler, GL_TEXTURE_MIN_LOD, samplerState.minLod);
 
-			// Rhi::SamplerState::maxLOD
-			glSamplerParameterf(mOpenGLSampler, GL_TEXTURE_MAX_LOD, samplerState.maxLOD);
+			// Rhi::SamplerState::maxLod
+			glSamplerParameterf(mOpenGLSampler, GL_TEXTURE_MAX_LOD, samplerState.maxLod);
 			*/
 		}
 
@@ -6816,12 +6816,12 @@ namespace OpenGLES3Rhi
 		GLint  mOpenGLTextureAddressModeS;	///< Rhi::SamplerState::addressU
 		GLint  mOpenGLTextureAddressModeT;	///< Rhi::SamplerState::addressV
 		GLint  mOpenGLTextureAddressModeR;	///< Rhi::SamplerState::addressW
-		float  mMipLODBias;					///< Rhi::SamplerState::mipLODBias
+		float  mMipLodBias;					///< Rhi::SamplerState::mipLodBias
 		float  mMaxAnisotropy;				///< Rhi::SamplerState::maxAnisotropy
 		GLint  mOpenGLCompareMode;			///< Rhi::SamplerState::comparisonFunc
 		GLenum mOpenGLComparisonFunc;		///< Rhi::SamplerState::comparisonFunc
-		float  mMinLOD;						///< Rhi::SamplerState::minLOD
-		float  mMaxLOD;						///< Rhi::SamplerState::maxLOD
+		float  mMinLod;						///< Rhi::SamplerState::minLod
+		float  mMaxLod;						///< Rhi::SamplerState::maxLod
 
 
 	};

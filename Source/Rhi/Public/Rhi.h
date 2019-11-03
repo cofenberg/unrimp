@@ -1249,7 +1249,7 @@ namespace Rhi
 	*  @remarks
 	*    == About mipmapping ==
 	*    The texture filter mode does not support explicitly disabling mipmapping. In case our texture does not have
-	*    any mipmaps, set "Rhi::SamplerState::maxLOD" to zero in order to ensure a correct behaviour across the
+	*    any mipmaps, set "Rhi::SamplerState::maxLod" to zero in order to ensure a correct behaviour across the
 	*    difference graphics APIs. When not doing this you usually have no issues when using OpenGL, OpenGL ES 3, Direct 10,
 	*    Direct3D 11 or Direct3D 9 with the "ps_2_0"-profile, but when using Direct3D 9 with the "ps_3_0"-profile you might
 	*    get into trouble due to another internal graphics API behaviour.
@@ -1267,12 +1267,12 @@ namespace Rhi
 		TextureAddressMode addressU;		///< (also known as "S"), Default: "Rhi::TextureAddressMode::CLAMP"
 		TextureAddressMode addressV;		///< (also known as "T"), Default: "Rhi::TextureAddressMode::CLAMP"
 		TextureAddressMode addressW;		///< (also known as "R"), Default: "Rhi::TextureAddressMode::CLAMP"
-		float			   mipLODBias;		///< Default: "0.0f"
+		float			   mipLodBias;		///< Default: "0.0f"
 		uint32_t		   maxAnisotropy;	///< Default: "16"
 		ComparisonFunc	   comparisonFunc;	///< Default: "Rhi::ComparisonFunc::NEVER"
 		float			   borderColor[4];	///< Default: 0.0f, 0.0f, 0.0f, 0.0f
-		float			   minLOD;			///< Default: -3.402823466e+38f (-FLT_MAX)
-		float			   maxLOD;			///< Default: 3.402823466e+38f (FLT_MAX)
+		float			   minLod;			///< Default: -3.402823466e+38f (-FLT_MAX)
+		float			   maxLod;			///< Default: 3.402823466e+38f (FLT_MAX)
 	};
 
 
@@ -5332,8 +5332,8 @@ namespace Rhi
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
-				++getRhi().getStatistics().numberOfCreatedRootSignatures;
-				++getRhi().getStatistics().currentNumberOfRootSignatures;
+				++rhi.getStatistics().numberOfCreatedRootSignatures;
+				++rhi.getStatistics().currentNumberOfRootSignatures;
 			#endif
 		}
 
@@ -5396,8 +5396,8 @@ namespace Rhi
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
-				++getRhi().getStatistics().numberOfCreatedResourceGroups;
-				++getRhi().getStatistics().currentNumberOfResourceGroups;
+				++rhi.getStatistics().numberOfCreatedResourceGroups;
+				++rhi.getStatistics().currentNumberOfResourceGroups;
 			#endif
 		}
 
@@ -5478,8 +5478,8 @@ namespace Rhi
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
-				++getRhi().getStatistics().numberOfCreatedGraphicsPrograms;
-				++getRhi().getStatistics().currentNumberOfGraphicsPrograms;
+				++rhi.getStatistics().numberOfCreatedGraphicsPrograms;
+				++rhi.getStatistics().currentNumberOfGraphicsPrograms;
 			#endif
 		}
 
@@ -5531,8 +5531,8 @@ namespace Rhi
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
-				++getRhi().getStatistics().numberOfCreatedRenderPasses;
-				++getRhi().getStatistics().currentNumberOfRenderPasses;
+				++rhi.getStatistics().numberOfCreatedRenderPasses;
+				++rhi.getStatistics().currentNumberOfRenderPasses;
 			#endif
 		}
 
@@ -5584,8 +5584,8 @@ namespace Rhi
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
-				++getRhi().getStatistics().numberOfCreatedQueryPools;
-				++getRhi().getStatistics().currentNumberOfQueryPools;
+				++rhi.getStatistics().numberOfCreatedQueryPools;
+				++rhi.getStatistics().currentNumberOfQueryPools;
 			#endif
 		}
 
@@ -6199,7 +6199,7 @@ namespace Rhi
 		*    Constructor
 		*
 		*  @param[in] rhi
-		*    Owner rhi instance
+		*    Owner RHI instance
 		*  @param[in] id
 		*    The unique compact vertex array ID
 		*/
@@ -6209,8 +6209,8 @@ namespace Rhi
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
-				++getRhi().getStatistics().numberOfCreatedVertexArrays;
-				++getRhi().getStatistics().currentNumberOfVertexArrays;
+				++rhi.getStatistics().numberOfCreatedVertexArrays;
+				++rhi.getStatistics().currentNumberOfVertexArrays;
 			#endif
 		}
 
@@ -6323,8 +6323,8 @@ namespace Rhi
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
-				++getRhi().getStatistics().numberOfCreatedIndexBuffers;
-				++getRhi().getStatistics().currentNumberOfIndexBuffers;
+				++rhi.getStatistics().numberOfCreatedIndexBuffers;
+				++rhi.getStatistics().currentNumberOfIndexBuffers;
 			#endif
 		}
 
@@ -6376,8 +6376,8 @@ namespace Rhi
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
-				++getRhi().getStatistics().numberOfCreatedVertexBuffers;
-				++getRhi().getStatistics().currentNumberOfVertexBuffers;
+				++rhi.getStatistics().numberOfCreatedVertexBuffers;
+				++rhi.getStatistics().currentNumberOfVertexBuffers;
 			#endif
 		}
 
@@ -6443,8 +6443,8 @@ namespace Rhi
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
-				++getRhi().getStatistics().numberOfCreatedTextureBuffers;
-				++getRhi().getStatistics().currentNumberOfTextureBuffers;
+				++rhi.getStatistics().numberOfCreatedTextureBuffers;
+				++rhi.getStatistics().currentNumberOfTextureBuffers;
 			#endif
 		}
 
@@ -6515,8 +6515,8 @@ namespace Rhi
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
-				++getRhi().getStatistics().numberOfCreatedStructuredBuffers;
-				++getRhi().getStatistics().currentNumberOfStructuredBuffers;
+				++rhi.getStatistics().numberOfCreatedStructuredBuffers;
+				++rhi.getStatistics().currentNumberOfStructuredBuffers;
 			#endif
 		}
 
@@ -6595,8 +6595,8 @@ namespace Rhi
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
-				++getRhi().getStatistics().numberOfCreatedIndirectBuffers;
-				++getRhi().getStatistics().currentNumberOfIndirectBuffers;
+				++rhi.getStatistics().numberOfCreatedIndirectBuffers;
+				++rhi.getStatistics().currentNumberOfIndirectBuffers;
 			#endif
 		}
 
@@ -6664,8 +6664,8 @@ namespace Rhi
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
-				++getRhi().getStatistics().numberOfCreatedUniformBuffers;
-				++getRhi().getStatistics().currentNumberOfUniformBuffers;
+				++rhi.getStatistics().numberOfCreatedUniformBuffers;
+				++rhi.getStatistics().currentNumberOfUniformBuffers;
 			#endif
 		}
 
@@ -7154,8 +7154,8 @@ namespace Rhi
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
-				++getRhi().getStatistics().numberOfCreatedTexture1Ds;
-				++getRhi().getStatistics().currentNumberOfTexture1Ds;
+				++rhi.getStatistics().numberOfCreatedTexture1Ds;
+				++rhi.getStatistics().currentNumberOfTexture1Ds;
 			#endif
 		}
 
@@ -7244,8 +7244,8 @@ namespace Rhi
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
-				++getRhi().getStatistics().numberOfCreatedTexture1DArrays;
-				++getRhi().getStatistics().currentNumberOfTexture1DArrays;
+				++rhi.getStatistics().numberOfCreatedTexture1DArrays;
+				++rhi.getStatistics().currentNumberOfTexture1DArrays;
 			#endif
 		}
 
@@ -7332,8 +7332,8 @@ namespace Rhi
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
-				++getRhi().getStatistics().numberOfCreatedTexture2Ds;
-				++getRhi().getStatistics().currentNumberOfTexture2Ds;
+				++rhi.getStatistics().numberOfCreatedTexture2Ds;
+				++rhi.getStatistics().currentNumberOfTexture2Ds;
 			#endif
 		}
 
@@ -7435,8 +7435,8 @@ namespace Rhi
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
-				++getRhi().getStatistics().numberOfCreatedTexture2DArrays;
-				++getRhi().getStatistics().currentNumberOfTexture2DArrays;
+				++rhi.getStatistics().numberOfCreatedTexture2DArrays;
+				++rhi.getStatistics().currentNumberOfTexture2DArrays;
 			#endif
 		}
 
@@ -7539,8 +7539,8 @@ namespace Rhi
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
-				++getRhi().getStatistics().numberOfCreatedTexture3Ds;
-				++getRhi().getStatistics().currentNumberOfTexture3Ds;
+				++rhi.getStatistics().numberOfCreatedTexture3Ds;
+				++rhi.getStatistics().currentNumberOfTexture3Ds;
 			#endif
 		}
 
@@ -7628,8 +7628,8 @@ namespace Rhi
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
-				++getRhi().getStatistics().numberOfCreatedTextureCubes;
-				++getRhi().getStatistics().currentNumberOfTextureCubes;
+				++rhi.getStatistics().numberOfCreatedTextureCubes;
+				++rhi.getStatistics().currentNumberOfTextureCubes;
 			#endif
 		}
 
@@ -7794,8 +7794,8 @@ namespace Rhi
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
-				++getRhi().getStatistics().numberOfCreatedGraphicsPipelineStates;
-				++getRhi().getStatistics().currentNumberOfGraphicsPipelineStates;
+				++rhi.getStatistics().numberOfCreatedGraphicsPipelineStates;
+				++rhi.getStatistics().currentNumberOfGraphicsPipelineStates;
 			#endif
 		}
 
@@ -7849,8 +7849,8 @@ namespace Rhi
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
-				++getRhi().getStatistics().numberOfCreatedComputePipelineStates;
-				++getRhi().getStatistics().currentNumberOfComputePipelineStates;
+				++rhi.getStatistics().numberOfCreatedComputePipelineStates;
+				++rhi.getStatistics().currentNumberOfComputePipelineStates;
 			#endif
 		}
 
@@ -7908,7 +7908,7 @@ namespace Rhi
 				TextureAddressMode::CLAMP,		// addressU (Rhi::TextureAddressMode)		"CLAMP"							"CLAMP"							"WRAP"					"WRAP"
 				TextureAddressMode::CLAMP,		// addressV (Rhi::TextureAddressMode)		"CLAMP"							"CLAMP"							"WRAP"					"WRAP"
 				TextureAddressMode::CLAMP,		// addressW (Rhi::TextureAddressMode)		"CLAMP"							"CLAMP"							"WRAP"					"WRAP"
-				0.0f,							// mipLODBias (float)						"0.0f"							"0.0f"							"0.0f"					"0.0f"
+				0.0f,							// mipLodBias (float)						"0.0f"							"0.0f"							"0.0f"					"0.0f"
 				16,								// maxAnisotropy (uint32_t)					"16"							"16"							"1"						"1"
 				ComparisonFunc::NEVER,			// comparisonFunc (Rhi::ComparisonFunc)		"NEVER"							"NEVER"							<unsupported>			"LESS_EQUAL"
 				{
@@ -7917,8 +7917,8 @@ namespace Rhi
 					0.0f,						// borderColor[2] (float)					"0.0f"							"0.0f"							"0.0f"					"0.0f"
 					0.0f						// borderColor[3] (float)					"0.0f"							"0.0f"							"0.0f"					"0.0f"
 				},
-				-3.402823466e+38f,				// minLOD (float) - Default: -FLT_MAX		"-3.402823466e+38F (-FLT_MAX)"	"-3.402823466e+38F (-FLT_MAX)"	<unsupported>			"-1000.0f"
-				3.402823466e+38f				// maxLOD (float) - Default: FLT_MAX		"3.402823466e+38F (FLT_MAX)"	"3.402823466e+38F (FLT_MAX)"	"0.0f"					"1000.0f"
+				-3.402823466e+38f,				// minLod (float) - Default: -FLT_MAX		"-3.402823466e+38F (-FLT_MAX)"	"-3.402823466e+38F (-FLT_MAX)"	<unsupported>			"-1000.0f"
+				3.402823466e+38f				// maxLod (float) - Default: FLT_MAX		"3.402823466e+38F (FLT_MAX)"	"3.402823466e+38F (FLT_MAX)"	"0.0f"					"1000.0f"
 			};
 			return SAMPLER_STATE;
 		}
@@ -7951,8 +7951,8 @@ namespace Rhi
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
-				++getRhi().getStatistics().numberOfCreatedSamplerStates;
-				++getRhi().getStatistics().currentNumberOfSamplerStates;
+				++rhi.getStatistics().numberOfCreatedSamplerStates;
+				++rhi.getStatistics().currentNumberOfSamplerStates;
 			#endif
 		}
 
@@ -8062,8 +8062,8 @@ namespace Rhi
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
-				++getRhi().getStatistics().numberOfCreatedVertexShaders;
-				++getRhi().getStatistics().currentNumberOfVertexShaders;
+				++rhi.getStatistics().numberOfCreatedVertexShaders;
+				++rhi.getStatistics().currentNumberOfVertexShaders;
 			#endif
 		}
 
@@ -8115,8 +8115,8 @@ namespace Rhi
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
-				++getRhi().getStatistics().numberOfCreatedTessellationControlShaders;
-				++getRhi().getStatistics().currentNumberOfTessellationControlShaders;
+				++rhi.getStatistics().numberOfCreatedTessellationControlShaders;
+				++rhi.getStatistics().currentNumberOfTessellationControlShaders;
 			#endif
 		}
 
@@ -8168,8 +8168,8 @@ namespace Rhi
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
-				++getRhi().getStatistics().numberOfCreatedTessellationEvaluationShaders;
-				++getRhi().getStatistics().currentNumberOfTessellationEvaluationShaders;
+				++rhi.getStatistics().numberOfCreatedTessellationEvaluationShaders;
+				++rhi.getStatistics().currentNumberOfTessellationEvaluationShaders;
 			#endif
 		}
 
@@ -8221,8 +8221,8 @@ namespace Rhi
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
-				++getRhi().getStatistics().numberOfCreatedGeometryShaders;
-				++getRhi().getStatistics().currentNumberOfGeometryShaders;
+				++rhi.getStatistics().numberOfCreatedGeometryShaders;
+				++rhi.getStatistics().currentNumberOfGeometryShaders;
 			#endif
 		}
 
@@ -8274,8 +8274,8 @@ namespace Rhi
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
-				++getRhi().getStatistics().numberOfCreatedFragmentShaders;
-				++getRhi().getStatistics().currentNumberOfFragmentShaders;
+				++rhi.getStatistics().numberOfCreatedFragmentShaders;
+				++rhi.getStatistics().currentNumberOfFragmentShaders;
 			#endif
 		}
 
@@ -8327,8 +8327,8 @@ namespace Rhi
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
-				++getRhi().getStatistics().numberOfCreatedComputeShaders;
-				++getRhi().getStatistics().currentNumberOfComputeShaders;
+				++rhi.getStatistics().numberOfCreatedComputeShaders;
+				++rhi.getStatistics().currentNumberOfComputeShaders;
 			#endif
 		}
 

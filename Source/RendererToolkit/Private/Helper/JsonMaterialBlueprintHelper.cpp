@@ -1534,12 +1534,12 @@ namespace RendererToolkit
 		// - "AddressU"
 		// - "AddressV"
 		// - "AddressW"
-		// - "MipLODBias"
+		// - "MipLodBias"
 		// - "MaxAnisotropy"
 		// - "ComparisonFunc"
 		// - "BorderColor"
-		// - "MinLOD"
-		// - "MaxLOD"
+		// - "MinLod"
+		// - "MaxLod"
 		int resourceGroupIndex = 0;
 		uint32_t samplerStateIndex = 0;
 		for (rapidjson::Value::ConstMemberIterator rapidJsonMemberIteratorResourceGroup = rapidJsonValueResourceGroups.MemberBegin(); rapidJsonMemberIteratorResourceGroup != rapidJsonValueResourceGroups.MemberEnd(); ++rapidJsonMemberIteratorResourceGroup)
@@ -1593,12 +1593,12 @@ namespace RendererToolkit
 					JsonMaterialHelper::optionalTextureAddressModeProperty(rapidJsonValue, "AddressU", samplerState.addressU, &sortedMaterialPropertyVector);
 					JsonMaterialHelper::optionalTextureAddressModeProperty(rapidJsonValue, "AddressV", samplerState.addressV, &sortedMaterialPropertyVector);
 					JsonMaterialHelper::optionalTextureAddressModeProperty(rapidJsonValue, "AddressW", samplerState.addressW, &sortedMaterialPropertyVector);
-					JsonHelper::optionalFloatProperty(rapidJsonValue, "MipLODBias", samplerState.mipLODBias);
+					JsonHelper::optionalFloatProperty(rapidJsonValue, "MipLodBias", samplerState.mipLodBias);
 					JsonHelper::optionalIntegerProperty(rapidJsonValue, "MaxAnisotropy", samplerState.maxAnisotropy);
 					JsonMaterialHelper::optionalComparisonFuncProperty(rapidJsonValue, "ComparisonFunc", samplerState.comparisonFunc, &sortedMaterialPropertyVector);
 					JsonHelper::optionalFloatNProperty(rapidJsonValue, "BorderColor", samplerState.borderColor, 4);
-					JsonHelper::optionalFloatProperty(rapidJsonValue, "MinLOD", samplerState.minLOD);
-					JsonHelper::optionalFloatProperty(rapidJsonValue, "MaxLOD", samplerState.maxLOD);
+					JsonHelper::optionalFloatProperty(rapidJsonValue, "MinLod", samplerState.minLod);
+					JsonHelper::optionalFloatProperty(rapidJsonValue, "MaxLod", samplerState.maxLod);
 
 					// Write down the sampler state
 					file.write(&materialBlueprintSamplerState, sizeof(Renderer::v1MaterialBlueprint::SamplerState));
